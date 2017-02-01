@@ -18,7 +18,7 @@ void EmptyComponentValue::ReleaseEditorWidget(QWidget* editor)
 {
 }
 
-DAVA_REFLECTION_IMPL(EmptyComponentValue)
+DAVA_VIRTUAL_REFLECTION_IMPL(EmptyComponentValue)
 {
     ReflectionRegistrator<EmptyComponentValue>::Begin()
     .End();

@@ -29,3 +29,10 @@ set(FIND_PACKAGE QT5)
 set(EXCLUDE_FROM_ALL 1)
 
 setup_main_module()
+
+find_package( PythonInterp )
+if( NOT PYTHONINTERP_FOUND )
+    set( PYTHON_EXECUTABLE python )
+endif()
+
+EXECUTE_PROCESS(COMMAND ${PYTHON_EXECUTABLE} "${TArcRootDir}/Sources/TArc/Testing/Private/DeadCodeTrickGen.py")

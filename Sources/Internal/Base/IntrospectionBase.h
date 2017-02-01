@@ -1,13 +1,11 @@
 #ifndef __DAVAENGINE_INTROSPECTION_BASE_H__
 #define __DAVAENGINE_INTROSPECTION_BASE_H__
 
-#include "Reflection/Reflection.h"
-#include "Reflection/ReflectionRegistrator.h"
-
 #include "Base/BaseTypes.h"
-#include "FileSystem/VariantType.h"
-#include "Base/GlobalEnum.h"
 #include "Base/FastName.h"
+#include "Base/GlobalEnum.h"
+#include "FileSystem/VariantType.h"
+#include "Reflection/Reflection.h"
 
 namespace DAVA
 {
@@ -20,6 +18,8 @@ struct MetaInfo;
 // абстрактный базовый класс для интроспекции
 class InspBase : public ReflectionBase
 {
+    DAVA_VIRTUAL_REFLECTION(InspBase);
+
 public:
     InspBase();
 
@@ -28,12 +28,6 @@ public:
 
 protected:
     virtual ~InspBase();
-
-    DAVA_VIRTUAL_REFLECTION(InspBase)
-    {
-        ReflectionRegistrator<InspBase>::Begin()
-        .End();
-    }
 };
 
 struct InspDesc

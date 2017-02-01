@@ -32,7 +32,7 @@ private:
 
     DAVA::RefPtr<SceneEditor2> scene;
 
-    DAVA_VIRTUAL_REFLECTION(SceneData, DAVA::TArc::DataNode)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(SceneData, DAVA::TArc::DataNode)
     {
         DAVA::ReflectionRegistrator<SceneData>::Begin()
         .Field(scenePropertyName, &SceneData::scene)

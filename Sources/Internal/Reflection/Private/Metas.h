@@ -9,9 +9,7 @@ namespace DAVA
 {
 namespace Metas
 {
-/**
-    Defines that Reflected Field can't be changed
-*/
+/** Defines that Reflected Field can't be changed */
 class ReadOnly
 {
 };
@@ -30,26 +28,20 @@ public:
     const Any step;
 };
 
-/**
-    Validation result
-*/
+/** Validation result */
 struct ValidationResult
 {
     /** This enum type defines the state in which a validated value can exist */
     enum class eState
     {
-        /**
-            Inputted value isn't valid and should be discarded
-        */
+        /** Inputted value isn't valid and should be discarded */
         Invalid,
         /**
             Inputted value can be valid. For example value 4 invalid for Range(10, 99)
             but we should allow user continue editing because value 40 is valid
         */
         Intermediate,
-        /**
-        Inputted value is completely valid
-        */
+        /** Inputted value is completely valid */
         Valid
     };
 
@@ -72,9 +64,7 @@ struct ValidationResult
 
 using TValidationFn = ValidationResult (*)(const Any& value, const Any& prevValue);
 
-/**
-    Validator for Reflected Field's value
-*/
+/** Validator for Reflected Field's value */
 class Validator
 {
 public:
@@ -91,16 +81,12 @@ private:
     TValidationFn fn;
 };
 
-/**
-    Base class for all mate Enum types
-*/
+/** Base class for all mate Enum types */
 class Enum
 {
 public:
     virtual ~Enum() = default;
-    /**
-        Returns EnumMap that describe values of Enum
-    */
+    /** Returns EnumMap that describe values of Enum */
     virtual const EnumMap* GetEnumMap() const = 0;
 };
 
@@ -117,16 +103,12 @@ inline const EnumMap* EnumT<T>::GetEnumMap() const
     return GlobalEnumMap<T>::Instance();
 }
 
-/**
-    Base class for all mate Enum types
-*/
+/** Base class for all mate Enum types */
 class Flags
 {
 public:
     virtual ~Flags() = default;
-    /**
-        Returns EnumMap that describe values of bitfield Enum
-    */
+    /** Returns EnumMap that describe values of bitfield Enum */
     virtual const EnumMap* GetFlagsMap() const = 0;
 };
 
@@ -143,52 +125,38 @@ inline const EnumMap* FlagsT<T>::GetFlagsMap() const
     return GlobalEnumMap<T>::Instance();
 }
 
-/**
-    Defines that value of Reflected Field should be File
-*/
+/** Defines that value of Reflected Field should be File */
 class File
 {
 public:
-    /**
-        \arg \c shouldExists defines rule should file exists of not
-    */
+    /** \arg \c shouldExists defines rule should file exists of not */
     File(bool shouldExists = true);
 
     const bool shouldExists;
 };
 
-/**
-    Defines that value of Reflected Field should be Directory
-*/
+/** Defines that value of Reflected Field should be Directory */
 class Directory
 {
 public:
-    /**
-        \arg \c shouldExists defines rule should directory exists of not
-    */
+    /** \arg \c shouldExists defines rule should directory exists of not */
     Directory(bool shouldExists = true);
 
     const bool shouldExists;
 };
 
-/**
-    Defines logical group of set of Reflected Fields under the same name
-*/
+/** Defines logical group of set of Reflected Fields under the same name */
 class Group
 {
 public:
-    /**
-        \arg \c groupName name of logical group
-    */
+    /** \arg \c groupName name of logical group */
     Group(const char* groupName);
     const char* groupName;
 };
 
 using TValueDescriptorFn = String (*)(const Any&);
 
-/**
-    Defines function that can provide string representation of value.
-*/
+/** Defines function that can provide string representation of value. */
 class ValueDescription
 {
 public:
