@@ -97,7 +97,8 @@ public:
         return luaSystem;
     };
 
-    static String ResolvePathToAutomation(const String& automationPath);
+    bool ResolvePathToAutomation();
+    FilePath GetPathTo(const String& path);
 
 protected:
     void DrawTouches();
@@ -112,6 +113,7 @@ protected:
 
 private:
     bool isScreenShotSaving = false;
+    FilePath pathToAutomation;
 
 public:
     uint64 startTimeMS;

@@ -1,8 +1,11 @@
 #pragma once
 
-#include "CommandLine/CommandLineModule.h"
-#include "Qt/Scene/Validation/ValidationProgress.h"
+#include "Classes/CommandLine/CommandLineModule.h"
+#include "Classes/Qt/Scene/Validation/ValidationProgress.h"
 
+#include <Reflection/ReflectionRegistrator.h>
+
+class ProjectManagerData;
 class SceneValidationTool : public CommandLineModule
 {
 public:
@@ -30,7 +33,7 @@ private:
 
     DAVA::FilePath qualityConfigPath;
 
-    DAVA_VIRTUAL_REFLECTION(SceneValidationTool, CommandLineModule)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(SceneValidationTool, CommandLineModule)
     {
         DAVA::ReflectionRegistrator<SceneValidationTool>::Begin()
         .ConstructorByPointer<DAVA::Vector<DAVA::String>>()

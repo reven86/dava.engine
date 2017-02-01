@@ -38,19 +38,19 @@ void SetAbsoulutePosToControlNode(PackageNode* package, ControlNode* node, Contr
     DVASSERT(nullptr != node->GetControl());
     DVASSERT(nullptr != dstNode);
     DVASSERT(nullptr != dstNode->GetControl());
-    auto parent = dstNode->GetControl();
-    auto sizeOffset = parent->GetSize() * parent->GetPivot();
-    auto angle = parent->GetAngle();
-    auto gd = parent->GetGeometricData();
-    const auto& nodeSize = node->GetControl()->GetSize();
+    UIControl* parent = dstNode->GetControl();
+    Vector2 sizeOffset = parent->GetSize() * parent->GetPivot();
+    float32 angle = parent->GetAngle();
+    UIGeometricData gd = parent->GetGeometricData();
+    const Vector2& nodeSize = node->GetControl()->GetSize();
     sizeOffset -= nodeSize / 2;
     sizeOffset *= gd.scale;
-    auto controlPos = gd.position - ::Rotate(sizeOffset, angle); //top left corner of dest control
-    auto relativePos = pos - controlPos; //new abs pos
+    Vector2 controlPos = gd.position - ::Rotate(sizeOffset, angle); //top left corner of dest control
+    Vector2 relativePos = pos - controlPos; //new abs pos
 
     //now calculate new relative pos
 
-    auto scale = gd.scale;
+    Vector2 scale = gd.scale;
     if (scale.x == 0.0f || scale.y == 0.0f)
     {
         relativePos.SetZero();
@@ -60,8 +60,8 @@ void SetAbsoulutePosToControlNode(PackageNode* package, ControlNode* node, Contr
         relativePos /= scale;
     }
     relativePos = ::Rotate(relativePos, -angle);
-    auto rootProperty = node->GetRootProperty();
-    auto positionProperty = rootProperty->FindPropertyByName("position");
+    RootProperty* rootProperty = node->GetRootProperty();
+    AbstractProperty* positionProperty = rootProperty->FindPropertyByName("position");
     DVASSERT(nullptr != positionProperty);
     package->SetControlProperty(node, positionProperty, relativePos);
 }

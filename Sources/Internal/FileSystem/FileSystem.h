@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_FILESYSTEM_H__
-#define __DAVAENGINE_FILESYSTEM_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Base/Singleton.h"
@@ -322,5 +321,3 @@ private:
     friend class File;
 };
 };
-
-#endif // __DAVAENGINE_FILESYSTEM_H__

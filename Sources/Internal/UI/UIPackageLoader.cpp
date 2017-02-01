@@ -223,24 +223,22 @@ void UIPackageLoader::LoadStyleSheets(const YamlNode* styleSheetsNode, AbstractU
 
     for (YamlNode* styleSheetNode : styleSheetMap)
     {
-        const UnorderedMap<String, YamlNode*>& styleSheet = styleSheetNode->AsMap();
+        const YamlNode* properties = styleSheetNode->Get("properties");
 
-        auto propertiesSectionIter = styleSheet.find("properties");
-
-        if (propertiesSectionIter != styleSheet.end())
+        if (properties != nullptr)
         {
             Vector<UIStyleSheetProperty> propertiesToSet;
 
-            for (const auto& propertyIter : propertiesSectionIter->second->AsMap())
+            for (uint32 propertyIndex = 0; propertyIndex < properties->GetCount(); propertyIndex++)
             {
-                FastName propertyName(propertyIter.first);
+                FastName propertyName(properties->GetItemKeyName(propertyIndex));
                 if (propertyDB->IsValidStyleSheetProperty(propertyName))
                 {
-                    uint32 index = propertyDB->GetStyleSheetPropertyIndex(FastName(propertyIter.first));
+                    uint32 index = propertyDB->GetStyleSheetPropertyIndex(propertyName);
                     const UIStyleSheetPropertyDescriptor& propertyDescr = propertyDB->GetStyleSheetPropertyByIndex(index);
                     if (propertyDescr.field_s != nullptr)
                     {
-                        const YamlNode* propertyNode = propertyIter.second;
+                        const YamlNode* propertyNode = properties->Get(propertyIndex);
                         const YamlNode* valueNode = propertyNode;
                         if (propertyNode->GetType() == YamlNode::TYPE_MAP)
                             valueNode = propertyNode->Get("value");
@@ -285,7 +283,7 @@ void UIPackageLoader::LoadStyleSheets(const YamlNode* styleSheetsNode, AbstractU
             }
 
             Vector<String> selectorList;
-            Split(styleSheet.find("selector")->second->AsString(), ",", selectorList);
+            Split(styleSheetNode->Get("selector")->AsString(), ",", selectorList);
             Vector<UIStyleSheetSelectorChain> selectorChains;
             selectorChains.reserve(selectorList.size());
 

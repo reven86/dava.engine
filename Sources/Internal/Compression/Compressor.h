@@ -1,5 +1,4 @@
-#ifndef DAVAENGINE_FILE_SYSTEM_COMPRESSOR_H
-#define DAVAENGINE_FILE_SYSTEM_COMPRESSOR_H
+#pragma once
 
 #include "Base/BaseTypes.h"
 
@@ -24,5 +23,3 @@ public:
 };
 
 } // end namespace DAVA
-
-#endif // DAVAENGINE_FILE_SYSTEM_COMPRESSOR_H

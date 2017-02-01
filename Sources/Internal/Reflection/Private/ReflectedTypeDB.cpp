@@ -1,4 +1,4 @@
-#include "Reflection/Reflection.h"
+#include "Reflection/ReflectedTypeDB.h"
 
 namespace DAVA
 {
@@ -6,6 +6,12 @@ List<std::unique_ptr<ReflectedType>> ReflectedTypeDB::customReflectedTypes;
 UnorderedMap<const Type*, ReflectedType*> ReflectedTypeDB::typeToReflectedTypeMap;
 UnorderedMap<String, ReflectedType*> ReflectedTypeDB::typeNameToReflectedTypeMap;
 UnorderedMap<String, ReflectedType*> ReflectedTypeDB::permanentNameToReflectedTypeMap;
+
+void ReflectedTypeDB::RegisterDBType(ReflectedType* r)
+{
+    typeToReflectedTypeMap[r->type] = r;
+    typeNameToReflectedTypeMap[String(r->type->GetName())] = r;
+}
 
 const ReflectedType* ReflectedTypeDB::GetByType(const Type* type)
 {

@@ -1,0 +1,86 @@
+apply plugin: 'com.android.application'
+import org.gradle.internal.os.OperatingSystem;
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion '25.0.2'
+
+    defaultConfig {
+        applicationId 'com.dava.testbed'
+        minSdkVersion 14
+        targetSdkVersion 25
+
+        externalNativeBuild {
+            ndkBuild {
+                arguments '-j', '8'
+                if (OperatingSystem.current().isWindows()) {
+                    arguments.add('APP_SHORT_COMMANDS=true')
+                }
+            }
+        }
+    }
+
+    externalNativeBuild {
+        ndkBuild {
+            path '../../android/jni/Android.mk'
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+        }
+
+        debug {
+            externalNativeBuild {
+                ndkBuild {
+                    arguments 'NDK_DEBUG=1'
+                }
+            }
+        }
+    }
+
+    productFlavors {
+        fat {
+            dimension 'abi'
+            externalNativeBuild {
+                ndkBuild {
+                    abiFilters 'armeabi-v7a', 'x86'
+                }
+            }
+        }
+
+        armv7a {
+            dimension 'abi'
+            externalNativeBuild {
+                ndkBuild {
+                    abiFilters 'armeabi-v7a'
+                }
+            }
+        }
+
+        x86 {
+            dimension 'abi'
+            externalNativeBuild {
+                ndkBuild {
+                    abiFilters 'x86'
+                }
+            }
+        }
+    }
+
+    sourceSets.main {
+        java.srcDirs = ['../../android/src/']
+        res.srcDirs = ['../../android/res/']
+        aidl.srcDirs = ['../../android/src/']
+        assets.srcDirs = ['../../android/assets/']
+        jniLibs.srcDirs = ['../../android/libs/', "${android.ndkDirectory}/sources/crystax/libs/"]
+        manifest.srcFile '../../android/AndroidManifest.xml'
+    }
+}
+
+dependencies {
+    compile project(':AndroidFramework')
+}
+

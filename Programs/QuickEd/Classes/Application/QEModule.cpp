@@ -29,7 +29,7 @@ public:
     std::unique_ptr<EditorCore> editorCore;
     DAVA::TArc::WindowKey windowKey;
 
-    DAVA_VIRTUAL_REFLECTION(QEGlobalData)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(QEGlobalData)
     {
     };
 };

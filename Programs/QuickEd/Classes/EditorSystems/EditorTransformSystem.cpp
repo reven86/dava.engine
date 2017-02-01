@@ -144,51 +144,75 @@ void EditorTransformSystem::OnActiveAreaChanged(const HUDAreaInfo& areaInfo)
     UpdateNeighboursToMove();
 }
 
-bool EditorTransformSystem::OnInput(UIEvent* currentInput)
+EditorSystemsManager::eDragState EditorTransformSystem::RequireNewState(DAVA::UIEvent* currentInput)
 {
-    if (currentInput->device == eInputDevices::MOUSE && currentInput->mouseButton != eMouseButtons::LEFT)
+    EditorSystemsManager::eDragState dragState = systemsManager->GetDragState();
+    if (dragState == EditorSystemsManager::Transform)
     {
-        return false;
+        if (currentInput->device == eInputDevices::MOUSE
+            && currentInput->phase == UIEvent::Phase::ENDED
+            && currentInput->mouseButton == eMouseButtons::LEFT)
+        {
+            return EditorSystemsManager::NoDrag;
+        }
+        else
+        {
+            return EditorSystemsManager::Transform;
+        }
     }
+    HUDAreaInfo areaInfo = systemsManager->GetCurrentHUDArea();
+    if (areaInfo.area != HUDAreaInfo::NO_AREA
+        && currentInput->phase == UIEvent::Phase::DRAG
+        && currentInput->mouseButton == eMouseButtons::LEFT)
+    {
+        //initialize start mouse position for correct rotation
+        previousMousePos = currentInput->point;
+        return EditorSystemsManager::Transform;
+    }
+    return EditorSystemsManager::NoDrag;
+}
+
+bool EditorTransformSystem::CanProcessInput(DAVA::UIEvent* currentInput) const
+{
+    EditorSystemsManager::eDragState dragState = systemsManager->GetDragState();
+    if (dragState == EditorSystemsManager::Transform || currentInput->device == eInputDevices::KEYBOARD)
+    {
+        return true;
+    }
+        return false;
+}
+
+void EditorTransformSystem::ProcessInput(UIEvent* currentInput)
+{
     switch (currentInput->phase)
     {
     case UIEvent::Phase::KEY_DOWN:
-        return ProcessKey(currentInput->key);
+        ProcessKey(currentInput->key);
+        break;
 
-    case UIEvent::Phase::BEGAN:
-    {
-        systemsManager->transformStateChanged.Emit(true);
-        inTransformState = true;
-        extraDelta.SetZero();
-        prevPos = currentInput->point;
-        return false;
-    }
     case UIEvent::Phase::DRAG:
+        if (currentInput->mouseButton == eMouseButtons::LEFT)
     {
-        eMouseButtons button = currentInput->mouseButton;
-        if (button == eMouseButtons::LEFT && currentInput->point != prevPos)
-        {
-            if (ProcessDrag(currentInput->point))
-            {
-                prevPos = currentInput->point;
+            ProcessDrag(currentInput->point);
             }
-        }
-        return false;
-    }
+        break;
+
     case UIEvent::Phase::ENDED:
         if (activeArea == HUDAreaInfo::ROTATE_AREA)
         {
             ClampAngle();
         }
-        systemsManager->magnetLinesChanged.Emit(Vector<MagnetLineInfo>());
-        if (inTransformState)
-        {
-            systemsManager->transformStateChanged.Emit(false);
-            inTransformState = false;
-        }
-        return false;
+        break;
     default:
-        return false;
+        break;
+    }
+}
+
+void EditorTransformSystem::OnDragStateChanged(EditorSystemsManager::eDragState dragState, EditorSystemsManager::eDragState previousState)
+{
+    if (dragState == EditorSystemsManager::Transform)
+    {
+        extraDelta.SetZero();
     }
 }
 
@@ -204,7 +228,7 @@ void EditorTransformSystem::OnSelectionChanged(const SelectedNodes& selected, co
     UpdateNeighboursToMove();
 }
 
-bool EditorTransformSystem::ProcessKey(Key key)
+void EditorTransformSystem::ProcessKey(Key key)
 {
     if (!selectedControlNodes.empty())
     {
@@ -234,24 +258,18 @@ bool EditorTransformSystem::ProcessKey(Key key)
         if (!deltaPos.IsZero())
         {
             MoveAllSelectedControls(deltaPos, false);
-            return true;
         }
     }
-    return false;
 }
 
-bool EditorTransformSystem::ProcessDrag(Vector2 pos)
+void EditorTransformSystem::ProcessDrag(const Vector2& pos)
 {
-    if (activeArea == HUDAreaInfo::NO_AREA)
-    {
-        return false;
-    }
-    Vector2 delta(pos - prevPos);
+    Vector2 delta = systemsManager->GetMouseDelta();
     switch (activeArea)
     {
     case HUDAreaInfo::FRAME_AREA:
         MoveAllSelectedControls(delta, !IsShiftPressed());
-        return true;
+        break;
     case HUDAreaInfo::TOP_LEFT_AREA:
     case HUDAreaInfo::TOP_CENTER_AREA:
     case HUDAreaInfo::TOP_RIGHT_AREA:
@@ -264,19 +282,20 @@ bool EditorTransformSystem::ProcessDrag(Vector2 pos)
         bool withPivot = IsKeyPressed(KeyboardProxy::KEY_ALT);
         bool rateably = IsKeyPressed(KeyboardProxy::KEY_CTRL);
         ResizeControl(delta, withPivot, rateably);
-        return true;
+        break;
     }
     case HUDAreaInfo::PIVOT_POINT_AREA:
     {
         MovePivot(delta);
-        return true;
+        break;
     }
     case HUDAreaInfo::ROTATE_AREA:
     {
-        return Rotate(pos);
+        RotateControl(pos);
+        break;
     }
     default:
-        return false;
+        break;
     }
 }
 
@@ -811,14 +830,14 @@ Vector2 EditorTransformSystem::AdjustPivotToNearestArea(Vector2& delta)
     return finalPivot;
 }
 
-bool EditorTransformSystem::Rotate(Vector2 pos)
+bool EditorTransformSystem::RotateControl(const Vector2& pos)
 {
     Vector2 rotatePoint(controlGeometricData.GetUnrotatedRect().GetPosition());
     rotatePoint += controlGeometricData.pivotPoint * controlGeometricData.scale;
-    Vector2 l1(prevPos - rotatePoint);
+    Vector2 l1(previousMousePos - rotatePoint);
     Vector2 l2(pos - rotatePoint);
 
-    if (l2.Length() < 15)
+    if (l2.Length() < 15.0f)
     {
         return false;
     }
@@ -833,6 +852,7 @@ bool EditorTransformSystem::Rotate(Vector2 pos)
 
     float32 finalAngle = AdjustRotateToFixedAngle(deltaAngle, originalAngle);
     systemsManager->propertyChanged.Emit(activeControlNode, angleProperty, finalAngle);
+    previousMousePos = pos;
     return true;
 }
 
