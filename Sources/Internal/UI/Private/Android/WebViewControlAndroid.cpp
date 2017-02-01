@@ -567,7 +567,8 @@ void JniWebView::PageLoaded(int id, int* rawPixels, int width, int height)
             Rect rect = webView.GetRect();
             {
                 Sprite* spr = Sprite::CreateFromTexture(tex, 0, 0, width, height, rect.dx, rect.dy);
-                webView.GetBackground()->SetSprite(spr, 0);
+                UIControlBackground* bg = webView.GetOrCreateComponent<UIControlBackground>();
+                bg->SetSprite(spr, 0);
                 SafeRelease(spr);
             }
             SafeRelease(tex);
@@ -576,7 +577,7 @@ void JniWebView::PageLoaded(int id, int* rawPixels, int width, int height)
     else
     {
         // reset sprite to prevent render old sprite under native webveiw
-        webView.SetSprite(nullptr, 0);
+        webView.RemoveComponent(UIComponent::BACKGROUND_COMPONENT);
     }
 }
 

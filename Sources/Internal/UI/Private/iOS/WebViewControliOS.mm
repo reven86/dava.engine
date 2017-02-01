@@ -323,7 +323,8 @@ void WebViewControl::RenderToTextureAndSetAsBackgroundSpriteToControl(UIWebView&
                 RefPtr<Sprite> sprite(Sprite::CreateFromTexture(texture.Get(), 0, 0, width, height, rect.dx, rect.dy));
                 if (sprite != nullptr)
                 {
-                    control.GetBackground()->SetSprite(sprite.Get(), 0);
+                    UIControlBackground* bg = control.GetOrCreateComponent<UIControlBackground>();
+                    bg->SetSprite(sprite.Get(), 0);
                 }
             }
         }
