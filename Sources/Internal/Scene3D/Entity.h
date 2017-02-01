@@ -4,6 +4,7 @@
 #include "Base/BaseObject.h"
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
+#include "Reflection/Reflection.h"
 #include "Render/RenderBase.h"
 #include "Scene3D/SceneNodeAnimationKey.h"
 #include "Entity/Component.h"
@@ -27,9 +28,11 @@ class TransformComponent;
 /**
     \brief Base class of 3D scene hierarchy. All nodes in our scene graph is inherited from this node.
  */
+
 class Entity : public BaseObject
 {
     DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_ENTITY)
+    DAVA_VIRTUAL_REFLECTION(Entity, BaseObject);
 
 protected:
     virtual ~Entity();

@@ -6,7 +6,7 @@
 #include "../QtPropertyData.h"
 #include "Commands2/KeyedArchiveCommand.h"
 
-#include "QtTools/Utils/QtConnections.h"
+#include "TArc/Utils/QtConnections.h"
 
 #include <QLineEdit>
 #include <QComboBox>
@@ -29,7 +29,7 @@ protected:
     mutable RECommand* lastCommand;
     int lastAddedType;
 
-    QtConnections connections;
+    DAVA::TArc::QtConnections connections;
 
     QVariant GetValueInternal() const override;
     bool UpdateValueInternal() override;

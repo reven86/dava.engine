@@ -284,7 +284,7 @@ void Window::FinishEventHandlingOnCurrentFrame()
 
 void Window::HandleWindowCreated(const Private::MainDispatcherEvent& e)
 {
-    Logger::FrameworkDebug("=========== WINDOW_CREATED, dpi %.1f", e.sizeEvent.dpi);
+    Logger::Info("Window::HandleWindowCreated: enter");
 
     MergeSizeChangedEvents(e);
     sizeEventsMerged = true;
@@ -299,11 +299,13 @@ void Window::HandleWindowCreated(const Private::MainDispatcherEvent& e)
     engineBackend->OnWindowCreated(this);
 
     sizeChanged.Emit(this, GetSize(), GetSurfaceSize());
+
+    Logger::Info("Window::HandleWindowCreated: leave");
 }
 
 void Window::HandleWindowDestroyed(const Private::MainDispatcherEvent& e)
 {
-    Logger::FrameworkDebug("=========== WINDOW_DESTROYED");
+    Logger::Info("Window::HandleWindowDestroyed: enter");
 
     engineBackend->OnWindowDestroyed(this);
 
@@ -311,6 +313,8 @@ void Window::HandleWindowDestroyed(const Private::MainDispatcherEvent& e)
     uiControlSystem = nullptr;
 
     engineBackend->DeinitRender(this);
+
+    Logger::Info("Window::HandleWindowDestroyed: leave");
 }
 
 void Window::HandleCursorCaptureLost(const Private::MainDispatcherEvent& e)
@@ -467,7 +471,7 @@ void Window::HandleFocusChanged(const Private::MainDispatcherEvent& e)
 
 void Window::HandleVisibilityChanged(const Private::MainDispatcherEvent& e)
 {
-    Logger::FrameworkDebug("=========== WINDOW_VISIBILITY_CHANGED: state=%s", e.stateEvent.state ? "visible" : "hidden");
+    Logger::Info("Window::HandleVisibilityChanged: become %s", e.stateEvent.state ? "visible" : "hidden");
 
     isVisible = e.stateEvent.state != 0;
     visibilityChanged.Emit(this, isVisible);

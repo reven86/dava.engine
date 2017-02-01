@@ -57,6 +57,11 @@ void PlatformCore::Run()
 
     engineBackend->OnGameLoopStarted();
 
+    if (appPrelaunched)
+    {
+        Logger::Info("Application is PrelaunchActivated");
+    }
+
     while (!quitGameThread)
     {
         uint64 frameBeginTime = SystemTimer::Instance()->AbsoluteMS();
@@ -96,6 +101,12 @@ void PlatformCore::OnLaunchedOrActivated(::Windows::ApplicationModel::Activation
 
     // Force DeviceInfo instantiation for early initialization (due to static nature of DeviceInfo)
     Logger::FrameworkDebug("%s", DeviceInfo::GetPlatformString().c_str());
+
+    if (args->Kind == ActivationKind::Launch)
+    {
+        LaunchActivatedEventArgs ^ launchArgs = static_cast<LaunchActivatedEventArgs ^>(args);
+        appPrelaunched = launchArgs->PrelaunchActivated;
+    }
 
     ApplicationExecutionState prevExecState = args->PreviousExecutionState;
     if (prevExecState != ApplicationExecutionState::Running && prevExecState != ApplicationExecutionState::Suspended)

@@ -1,5 +1,4 @@
-#ifndef COMPRESSION_LZ4_COMPRESSOR_H
-#define COMPRESSION_LZ4_COMPRESSOR_H
+#pragma once
 
 #include "Compression/Compressor.h"
 
@@ -20,5 +19,3 @@ public:
 };
 
 } // end namespace DAVA
-
-#endif // COMPRESSION_LZ4_COMPRESSOR_H

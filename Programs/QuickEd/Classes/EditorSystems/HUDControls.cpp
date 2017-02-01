@@ -65,7 +65,7 @@ bool ControlContainer::GetSystemVisible() const
     return systemVisible;
 }
 
-HUDContainer::HUDContainer(ControlNode* node_)
+HUDContainer::HUDContainer(const ControlNode* node_)
     : ControlContainer(HUDAreaInfo::NO_AREA)
     , node(node_)
 {
@@ -279,7 +279,7 @@ void SetupHUDMagnetRectControl(UIControl* parentControl)
     }
 }
 
-RefPtr<UIControl> CreateHUDRect(ControlNode* node)
+RefPtr<UIControl> CreateHUDRect(const ControlNode* node)
 {
     RefPtr<HUDContainer> container(new HUDContainer(node));
     container->SetName("HUD rect container");

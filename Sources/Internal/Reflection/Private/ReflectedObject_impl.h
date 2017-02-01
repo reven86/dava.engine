@@ -2,10 +2,17 @@
 
 #ifndef __DAVA_Reflection__
 #include "Reflection/Reflection.h"
+#include "..\ReflectedObject.h"
 #endif
 
 namespace DAVA
 {
+inline ReflectedObject::ReflectedObject(void* ptr_, const ReflectedType* reflectedType_)
+    : ptr(ptr_)
+    , reflectedType(reflectedType_)
+{
+}
+
 template <typename T>
 inline ReflectedObject::ReflectedObject(T* ptr_)
     : ptr(ptr_)
@@ -19,6 +26,20 @@ inline ReflectedObject::ReflectedObject(const T* ptr_)
     , reflectedType(ReflectedTypeDB::GetByPointer(ptr_))
     , isConst(true)
 {
+}
+
+inline bool ReflectedObject::operator==(const ReflectedObject& other) const
+{
+    return ptr == other.ptr &&
+    reflectedType == other.reflectedType &&
+    isConst == other.isConst;
+}
+
+inline bool ReflectedObject::operator!=(const ReflectedObject& other) const
+{
+    return ptr != other.ptr ||
+    reflectedType != other.reflectedType ||
+    isConst != other.isConst;
 }
 
 /*
