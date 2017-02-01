@@ -18,7 +18,7 @@ ScenePreviewControl::ScenePreviewControl(const DAVA::Rect& rect)
     SetBasePriority(-100);
     SetInputEnabled(true, true);
     SetDrawToFrameBuffer(true);
-    GetOrCreateComponent<UIUpdateComponent>();
+    GetOrCreateComponent<DAVA::UIUpdateComponent>();
 }
 
 ScenePreviewControl::~ScenePreviewControl()

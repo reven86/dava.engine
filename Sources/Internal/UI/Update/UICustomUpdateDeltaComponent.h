@@ -29,7 +29,7 @@ private:
 
 public:
     INTROSPECTION_EXTEND(UICustomUpdateDeltaComponent, UIComponent,
-        PROPERTY("delta", "Delta", GetDelta, SetDelta, I_SAVE | I_VIEW | I_EDIT))
+                         PROPERTY("delta", "Delta", GetDelta, SetDelta, I_SAVE | I_VIEW | I_EDIT))
 };
 
 inline float32 UICustomUpdateDeltaComponent::GetDelta() const

@@ -38,7 +38,7 @@ void UILayoutSystem::Process(DAVA::float32 elapsedTime)
     }
 
     CheckDirty();
-    
+
     if (currentScreenTransition.Valid())
     {
         Update(currentScreenTransition.Get());

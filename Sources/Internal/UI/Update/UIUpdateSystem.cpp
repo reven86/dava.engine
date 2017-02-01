@@ -96,7 +96,6 @@ void UIUpdateSystem::Process(float32 elapsedTime)
         return;
     }
 
-
     for (UpdateBind& b : binds)
     {
         b.updated = false;
