@@ -32,6 +32,7 @@ class TransformComponent;
 class Entity : public BaseObject
 {
     DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_ENTITY)
+    DAVA_VIRTUAL_REFLECTION(Entity, BaseObject);
 
 protected:
     virtual ~Entity();
@@ -423,8 +424,6 @@ public:
                          PROPERTY("visible", "Visible", GetVisible, SetVisible, I_VIEW | I_EDIT)
                          COLLECTION(components, "components", I_VIEW)
                          )
-
-    DAVA_VIRTUAL_REFLECTION(Entity, BaseObject);
 };
 
 inline bool Entity::GetVisible()

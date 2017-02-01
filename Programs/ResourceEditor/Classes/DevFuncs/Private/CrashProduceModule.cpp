@@ -44,7 +44,7 @@ void CrashProduceModule::PostInit()
     ui->AddAction(REGlobal::MainWindowKey, placementInfo, dumpAction);
 }
 
-DAVA_REFLECTION_IMPL(CrashProduceModule)
+DAVA_VIRTUAL_REFLECTION_IMPL(CrashProduceModule)
 {
     DAVA::ReflectionRegistrator<CrashProduceModule>::Begin()
     .ConstructorByPointer()
