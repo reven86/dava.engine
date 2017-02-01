@@ -24,7 +24,7 @@ void DAVAMessageHandler(QtMsgType type, const QMessageLogContext& context, const
     {
         Vector<QString> ignoredStrings =
         {
-          "QFileSystemWatcher : FindNextChangeNotification failed"
+          "QFileSystemWatcher: FindNextChangeNotification failed"
         };
 
         auto it = std::find_if(ignoredStrings.begin(), ignoredStrings.end(), [&msg](const QString ignored)
