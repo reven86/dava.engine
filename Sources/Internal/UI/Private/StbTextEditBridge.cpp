@@ -302,28 +302,26 @@ bool StbTextEditBridge::SendKeyChar(uint32 keyChar, eModifierKeys modifiers)
 bool StbTextEditBridge::SendKeyChar(uint32 keyChar, uint32 modifiers)
 #endif
 {
-    if (keyChar == '\r')
+    if (keyChar == '\r' || keyChar == '\n')
     {
-        // Transform return career to new line sybmol
+        if (IsSingleLineMode())
+        {
+            // Skip line feed for single line fields
+            return false;
+        }
+        // Transform carriage return to line feed
         keyChar = '\n';
     }
-
-    if(keyChar != '\n' && std::iscntrl(keyChar))
+    else if (std::iscntrl(keyChar))
     {
         // Skip control characters (\b, \t, ^a, ^c, etc.)
         // P.S. backspace already processed in SendKey
         return false;
     }
 
-    if (keyChar == '\n' && IsSingleLineMode())
-    {
-        // Skip \n for single line fields
-        return false;
-    }
-
     if (GetDelegate()->IsCharAvaliable(static_cast<char16>(keyChar)))
     {
-        // Send char only if it available in font
+        // Send char only if it is allowed
         return SendRaw(keyChar); // Can modify text
     }
 
