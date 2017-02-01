@@ -17,7 +17,7 @@ namespace DAVA
  ```
  DLCManager& pm = *engine.GetContext()->packManager;
  // if init failed we will know about it
- pm.networkReady.Connect(this, &PackManagerTest::OnNetworkReady);
+ pm.networkReady.Connect(this, &DLCManagerTest::OnNetworkReady);
 
  FilePath folderWithDownloadedPacks = "~doc:/FolderForPacks/";
  String urlToServerSuperpack = "http://server.net/superpack.3.7.0.mali.dvpk";

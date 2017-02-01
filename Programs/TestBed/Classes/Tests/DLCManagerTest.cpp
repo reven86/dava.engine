@@ -1,4 +1,4 @@
-#include "Tests/PackManagerTest.h"
+#include "Tests/DLCManagerTest.h"
 #include "Infrastructure/TestBed.h"
 
 #include <Engine/Engine.h>
@@ -9,13 +9,13 @@
 
 using namespace DAVA;
 
-PackManagerTest::PackManagerTest(TestBed& app)
-    : BaseScreen(app, "PackManagerTest")
+DLCManagerTest::DLCManagerTest(TestBed& app)
+    : BaseScreen(app, "DLCManagerTest")
     , engine(app.GetEngine())
 {
 }
 
-void PackManagerTest::TextFieldOnTextChanged(UITextField* textField, const WideString& newText, const WideString& /*oldText*/)
+void DLCManagerTest::TextFieldOnTextChanged(UITextField* textField, const WideString& newText, const WideString& /*oldText*/)
 {
     if (url == textField)
     {
@@ -24,7 +24,7 @@ void PackManagerTest::TextFieldOnTextChanged(UITextField* textField, const WideS
     }
 }
 
-void PackManagerTest::UpdateDescription()
+void DLCManagerTest::UpdateDescription()
 {
     String message = DAVA::Format("type name of pack you want to download\n"
                                   "Directory to downloaded packs: \"%s\"\nUrl to common packs: \"%s\"\n",
@@ -33,7 +33,7 @@ void PackManagerTest::UpdateDescription()
     description->SetText(UTF8Utils::EncodeToWideString(message));
 }
 
-void PackManagerTest::LoadResources()
+void DLCManagerTest::LoadResources()
 {
     BaseScreen::LoadResources();
 
@@ -94,7 +94,7 @@ void PackManagerTest::LoadResources()
     loadPack->SetStateFont(0xFF, font);
     loadPack->SetStateFontColor(0xFF, Color::White);
     loadPack->SetStateText(0xFF, L"start loading");
-    loadPack->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &PackManagerTest::OnStartDownloadClicked));
+    loadPack->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &DLCManagerTest::OnStartDownloadClicked));
     AddControl(loadPack);
 
     loadNext = new UIButton(Rect(420, 40, 100, 20));
@@ -102,7 +102,7 @@ void PackManagerTest::LoadResources()
     loadNext->SetStateFont(0xFF, font);
     loadNext->SetStateFontColor(0xFF, Color::White);
     loadNext->SetStateText(0xFF, L"next loading");
-    loadNext->AddEvent(EVENT_TOUCH_DOWN, Message(this, &PackManagerTest::OnStartNextPackClicked));
+    loadNext->AddEvent(EVENT_TOUCH_DOWN, Message(this, &DLCManagerTest::OnStartNextPackClicked));
     AddControl(loadNext);
 
     startServerButton = new UIButton(Rect(420, 70, 100, 20));
@@ -110,7 +110,7 @@ void PackManagerTest::LoadResources()
     startServerButton->SetStateFont(0xFF, font);
     startServerButton->SetStateFontColor(0xFF, Color::White);
     startServerButton->SetStateText(0xFF, L"start server");
-    startServerButton->AddEvent(EVENT_TOUCH_DOWN, Message(this, &PackManagerTest::OnStartStopLocalServerClicked));
+    startServerButton->AddEvent(EVENT_TOUCH_DOWN, Message(this, &DLCManagerTest::OnStartStopLocalServerClicked));
     AddControl(startServerButton);
 
     stopServerButton = new UIButton(Rect(420, 100, 100, 20));
@@ -118,7 +118,7 @@ void PackManagerTest::LoadResources()
     stopServerButton->SetStateFont(0xFF, font);
     stopServerButton->SetStateFontColor(0xFF, Color::White);
     stopServerButton->SetStateText(0xFF, L"stop server");
-    stopServerButton->AddEvent(EVENT_TOUCH_DOWN, Message(this, &PackManagerTest::OnStartStopLocalServerClicked));
+    stopServerButton->AddEvent(EVENT_TOUCH_DOWN, Message(this, &DLCManagerTest::OnStartStopLocalServerClicked));
     AddControl(stopServerButton);
 
     packNameLoading = new UIStaticText(Rect(5, 530, 500, 200));
@@ -178,7 +178,7 @@ void PackManagerTest::LoadResources()
     checkFile->SetStateFont(0xFF, font);
     checkFile->SetStateFontColor(0xFF, Color::White);
     checkFile->SetStateText(0xFF, L"check file");
-    checkFile->AddEvent(EVENT_TOUCH_DOWN, Message(this, &PackManagerTest::OnCheckFileClicked));
+    checkFile->AddEvent(EVENT_TOUCH_DOWN, Message(this, &DLCManagerTest::OnCheckFileClicked));
     AddControl(checkFile);
 
     startInit = new UIButton(Rect(420, 410, 100, 20));
@@ -186,7 +186,7 @@ void PackManagerTest::LoadResources()
     startInit->SetStateFont(0xFF, font);
     startInit->SetStateFontColor(0xFF, Color::White);
     startInit->SetStateText(0xFF, L"PM init");
-    startInit->AddEvent(EVENT_TOUCH_DOWN, Message(this, &PackManagerTest::OnStartInitClicked));
+    startInit->AddEvent(EVENT_TOUCH_DOWN, Message(this, &DLCManagerTest::OnStartInitClicked));
     AddControl(startInit);
 
     startSync = new UIButton(Rect(420, 440, 100, 20));
@@ -194,7 +194,7 @@ void PackManagerTest::LoadResources()
     startSync->SetStateFont(0xFF, font);
     startSync->SetStateFontColor(0xFF, Color::White);
     startSync->SetStateText(0xFF, L"PM sync");
-    startSync->AddEvent(EVENT_TOUCH_DOWN, Message(this, &PackManagerTest::OnStartSyncClicked));
+    startSync->AddEvent(EVENT_TOUCH_DOWN, Message(this, &DLCManagerTest::OnStartSyncClicked));
     AddControl(startSync);
 
     clearDocs = new UIButton(Rect(420, 470, 100, 20));
@@ -202,7 +202,7 @@ void PackManagerTest::LoadResources()
     clearDocs->SetStateFont(0xFF, font);
     clearDocs->SetStateFontColor(0xFF, Color::White);
     clearDocs->SetStateText(0xFF, L"rm dvpk's");
-    clearDocs->AddEvent(EVENT_TOUCH_DOWN, Message(this, &PackManagerTest::OnClearDocsClicked));
+    clearDocs->AddEvent(EVENT_TOUCH_DOWN, Message(this, &DLCManagerTest::OnClearDocsClicked));
     AddControl(clearDocs);
 
     lsDvpks = new UIButton(Rect(420, 500, 100, 20));
@@ -210,7 +210,7 @@ void PackManagerTest::LoadResources()
     lsDvpks->SetStateFont(0xFF, font);
     lsDvpks->SetStateFontColor(0xFF, Color::White);
     lsDvpks->SetStateText(0xFF, L"ls dvpk's");
-    lsDvpks->AddEvent(EVENT_TOUCH_DOWN, Message(this, &PackManagerTest::OnListPacksClicked));
+    lsDvpks->AddEvent(EVENT_TOUCH_DOWN, Message(this, &DLCManagerTest::OnListPacksClicked));
     AddControl(lsDvpks);
 
     dirToListFiles = new UITextField(Rect(5, 300, 400, 20));
@@ -230,11 +230,11 @@ void PackManagerTest::LoadResources()
     lsDirFromPacks->SetStateFont(0xFF, font);
     lsDirFromPacks->SetStateFontColor(0xFF, Color::White);
     lsDirFromPacks->SetStateText(0xFF, L"ls in dvpk");
-    lsDirFromPacks->AddEvent(EVENT_TOUCH_DOWN, Message(this, &PackManagerTest::OnListInDvpkClicked));
+    lsDirFromPacks->AddEvent(EVENT_TOUCH_DOWN, Message(this, &DLCManagerTest::OnListInDvpkClicked));
     AddControl(lsDirFromPacks);
 }
 
-void PackManagerTest::UnloadResources()
+void DLCManagerTest::UnloadResources()
 {
     SafeRelease(loadNext);
     SafeRelease(packNextInput);
@@ -259,7 +259,7 @@ void PackManagerTest::UnloadResources()
     BaseScreen::UnloadResources();
 }
 
-void PackManagerTest::OnRequestUpdated(const DAVA::DLCManager::IRequest& request)
+void DLCManagerTest::OnRequestUpdated(const DAVA::DLCManager::IRequest& request)
 {
     const String& packName = request.GetRequestedPackName();
     // change total download progress
@@ -282,26 +282,26 @@ void PackManagerTest::OnRequestUpdated(const DAVA::DLCManager::IRequest& request
     greenControl->SetRect(rect);
 }
 
-void PackManagerTest::OnNetworkReady(bool isReady)
+void DLCManagerTest::OnNetworkReady(bool isReady)
 {
     // To visualise on MacOS DownloadManager::Instance()->SetDownloadSpeedLimit(100000);
     // on MacOS slowly connect and then fast downloading
-	std::stringstream ss;
-	const char* boolName = isReady ? "True" : "False";
-	ss << "nerwork ready = " << boolName;
+    std::stringstream ss;
+    const char* boolName = isReady ? "True" : "False";
+    ss << "nerwork ready = " << boolName;
     Logger::Info("%s", ss.str().c_str());
 
     packNameLoading->SetText(UTF8Utils::EncodeToWideString("loading: " + ss.str()));
 }
 
-void PackManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, void* callerData)
+void DLCManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
     DLCManager& pm = *engine.GetContext()->packManager;
 
     packNameLoading->SetText(L"done: start init");
 
     pm.networkReady.DisconnectAll();
-    pm.networkReady.Connect(this, &PackManagerTest::OnNetworkReady);
+    pm.networkReady.Connect(this, &DLCManagerTest::OnNetworkReady);
 
     pm.Initialize(folderWithDownloadedPacks, urlToServerSuperpack, DLCManager::Hints());
 
@@ -310,7 +310,7 @@ void PackManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, v
     packNameLoading->SetText(L"done: start initialize PackManager");
 }
 
-void PackManagerTest::OnStartSyncClicked(DAVA::BaseObject* sender, void* data, void* callerData)
+void DLCManagerTest::OnStartSyncClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
     /*
     packNameLoading->SetText(L"done: start sync");
@@ -318,14 +318,14 @@ void PackManagerTest::OnStartSyncClicked(DAVA::BaseObject* sender, void* data, v
     */
 }
 
-void PackManagerTest::OnClearDocsClicked(DAVA::BaseObject* sender, void* data, void* callerData)
+void DLCManagerTest::OnClearDocsClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
     DLCManager& pm = *engine.GetContext()->packManager;
 
     packNameLoading->SetText(L"done: unmount all dvpk's, and remove dir with downloaded dvpk's");
 }
 
-void PackManagerTest::OnListPacksClicked(DAVA::BaseObject* sender, void* data, void* callerData)
+void DLCManagerTest::OnListPacksClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
     DLCManager& pm = *engine.GetContext()->packManager;
     std::stringstream ss;
@@ -340,7 +340,7 @@ void PackManagerTest::OnListPacksClicked(DAVA::BaseObject* sender, void* data, v
     packNameLoading->SetText(UTF8Utils::EncodeToWideString(s));
 }
 
-void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* data, void* callerData)
+void DLCManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
     // To visualise on MacOS DownloadManager::Instance()->SetDownloadSpeedLimit(100000);
     // on MacOS slowly connect and then fast downloading
@@ -348,7 +348,7 @@ void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* dat
     DLCManager& pm = *engine.GetContext()->packManager;
 
     pm.requestUpdated.DisconnectAll();
-    pm.requestUpdated.Connect(this, &PackManagerTest::OnRequestUpdated);
+    pm.requestUpdated.Connect(this, &DLCManagerTest::OnRequestUpdated);
 
     String packName = packInput->GetUtf8Text();
 
@@ -363,13 +363,13 @@ void PackManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* dat
     }
 }
 
-void PackManagerTest::OnStartNextPackClicked(DAVA::BaseObject* sender, void* data, void* callerData)
+void DLCManagerTest::OnStartNextPackClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
     DLCManager& pm = *engine.GetContext()->packManager;
     String packName = packNextInput->GetUtf8Text();
 
     pm.requestUpdated.DisconnectAll();
-    pm.requestUpdated.Connect(this, &PackManagerTest::OnRequestUpdated);
+    pm.requestUpdated.Connect(this, &DLCManagerTest::OnRequestUpdated);
 
     try
     {
@@ -386,7 +386,7 @@ void PackManagerTest::OnStartNextPackClicked(DAVA::BaseObject* sender, void* dat
     }
 }
 
-void PackManagerTest::OnStartStopLocalServerClicked(DAVA::BaseObject* sender, void* data, void* callerData)
+void DLCManagerTest::OnStartStopLocalServerClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
     if (sender == startServerButton)
     {
@@ -430,7 +430,7 @@ void PackManagerTest::OnStartStopLocalServerClicked(DAVA::BaseObject* sender, vo
     }
 }
 
-void PackManagerTest::OnCheckFileClicked(DAVA::BaseObject* sender, void* data, void* callerData)
+void DLCManagerTest::OnCheckFileClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
     DAVA::WideString text = filePathField->GetText();
     DAVA::String fileName = UTF8Utils::EncodeToUTF8(text);
@@ -449,7 +449,7 @@ void PackManagerTest::OnCheckFileClicked(DAVA::BaseObject* sender, void* data, v
     }
 }
 
-void PackManagerTest::OnListInDvpkClicked(DAVA::BaseObject* sender, void* data, void* callerData)
+void DLCManagerTest::OnListInDvpkClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
     WideString text = dirToListFiles->GetText();
     FilePath path(text);

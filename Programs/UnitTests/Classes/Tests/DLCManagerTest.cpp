@@ -32,7 +32,7 @@ public:
     DAVA::DLCManager& packManager;
 };
 
-DAVA_TESTCLASS (PackManagerTest)
+DAVA_TESTCLASS (DLCManagerTest)
 {
     DAVA_TEST (TestDownloadOfVirtualPack)
     {
@@ -40,7 +40,7 @@ DAVA_TESTCLASS (PackManagerTest)
 
         Logger::Info("before init");
 
-        FilePath downloadedPacksDir("~doc:/UnitTests/PackManagerTest/packs/");
+        FilePath downloadedPacksDir("~doc:/UnitTests/DLCManagerTest/packs/");
 
         Logger::Info("clear dirs");
 
@@ -146,7 +146,7 @@ DAVA_TESTCLASS (PackManagerTest)
         }
         catch (std::exception& ex)
         {
-            Logger::Error("PackManagerTest failed: %s", ex.what());
+            Logger::Error("DLCManagerTest failed: %s", ex.what());
             TEST_VERIFY(false);
         }
     }
