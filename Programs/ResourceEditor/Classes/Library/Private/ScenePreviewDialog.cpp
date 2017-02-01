@@ -11,7 +11,7 @@ ScenePreviewDialog::ScenePreviewDialog()
     , clickableBackgound(nullptr)
 {
     UpdateSize();
-    UIControlBackground* bg = GetOrCreateComponent<UIControlBackground>();
+    DAVA::UIControlBackground* bg = GetOrCreateComponent<DAVA::UIControlBackground>();
     bg->color = DAVA::Color(2.0f / 3.0f, 2.0f / 3.0f, 2.0f / 3.0f, 1.0f);
 
     clickableBackgound.reset(new DAVA::UIControl());
@@ -21,7 +21,7 @@ ScenePreviewDialog::ScenePreviewDialog()
     preview.reset(new ScenePreviewControl(DAVA::Rect(0, 0, ControlsFactory::PREVIEW_PANEL_HEIGHT, ControlsFactory::PREVIEW_PANEL_HEIGHT)));
 
     errorMessage.reset(new DAVA::UIStaticText(preview->GetRect()));
-    UIControlBackground* errorMessageBg = errorMessage.GetOrCreateComponent<UIControlBackground>();
+    DAVA::UIControlBackground* errorMessageBg = errorMessage->GetOrCreateComponent<DAVA::UIControlBackground>();
     errorMessageBg->SetAlign(DAVA::ALIGN_HCENTER | DAVA::ALIGN_VCENTER);
     errorMessage->SetMultiline(true);
     errorMessage->SetTextColor(ControlsFactory::GetColorError());
