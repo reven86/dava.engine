@@ -4,8 +4,7 @@
 #include "Base/BaseObject.h"
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
-#include "Reflection/ReflectionRegistrator.h"
-#include "Reflection/ReflectedMeta.h"
+#include "Reflection/Reflection.h"
 #include "Render/RenderBase.h"
 #include "Scene3D/SceneNodeAnimationKey.h"
 #include "Entity/Component.h"
@@ -425,21 +424,7 @@ public:
                          COLLECTION(components, "components", I_VIEW)
                          )
 
-    DAVA_VIRTUAL_REFLECTION(Entity, BaseObject)
-    {
-        ReflectionRegistrator<Entity>::Begin()
-        .DestructorByPointer([](Entity* e)
-                             {
-                                 DAVA::SafeRelease(e);
-                             })
-        .Field("ID", &Entity::GetID, &Entity::SetID)
-        .Field("Name", &Entity::GetName, static_cast<void (Entity::*)(const FastName&)>(&Entity::SetName))
-        .Field("Tag", &Entity::tag)
-        .Field("Flags", &Entity::flags)
-        .Field("Visible", &Entity::GetVisible, &Entity::SetVisible)
-        .Field("Components", &Entity::components)
-        .End();
-    }
+    DAVA_VIRTUAL_REFLECTION(Entity, BaseObject);
 };
 
 inline bool Entity::GetVisible()
