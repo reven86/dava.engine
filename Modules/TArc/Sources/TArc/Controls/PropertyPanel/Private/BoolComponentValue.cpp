@@ -121,7 +121,7 @@ bool BoolComponentValue::HitEventAndResend(QEvent* event, const QStyleOptionView
     return result;
 }
 
-DAVA_REFLECTION_IMPL(BoolComponentValue)
+DAVA_VIRTUAL_REFLECTION_IMPL(BoolComponentValue)
 {
     ReflectionRegistrator<BoolComponentValue>::Begin()
     .Field("bool", &BoolComponentValue::GetCheckState, &BoolComponentValue::SetCheckState)

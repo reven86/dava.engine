@@ -35,7 +35,7 @@ const char* Entity::SCENE_NODE_IS_SOLID_PROPERTY_NAME = "editor.isSolid";
 const char* Entity::SCENE_NODE_IS_LOCKED_PROPERTY_NAME = "editor.isLocked";
 const char* Entity::SCENE_NODE_IS_NOT_REMOVABLE_PROPERTY_NAME = "editor.isNotRemovable";
 
-DAVA_REFLECTION_IMPL(Entity)
+DAVA_VIRTUAL_REFLECTION_IMPL(Entity)
 {
     ReflectionRegistrator<Entity>::Begin()
     .DestructorByPointer([](Entity* e) { DAVA::SafeRelease(e); })
