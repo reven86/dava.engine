@@ -4,7 +4,7 @@
 
 namespace DAVA
 {
-DAVA_REFLECTION_IMPL(InspBase)
+DAVA_VIRTUAL_REFLECTION_IMPL(InspBase)
 {
     ReflectionRegistrator<InspBase>::Begin()
     .End();
