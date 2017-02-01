@@ -12,6 +12,7 @@ namespace DAVA
 {
 namespace TArc
 {
+struct PropertyNode;
 class StaticEditorDrawer
 {
 public:

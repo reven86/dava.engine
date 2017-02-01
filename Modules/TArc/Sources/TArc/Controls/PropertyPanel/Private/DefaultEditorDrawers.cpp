@@ -1,4 +1,5 @@
 #include "TArc/Controls/PropertyPanel/DefaultEditorDrawers.h"
+#include "TArc/Controls/PropertyPanel/PropertyModelExtensions.h"
 
 #include <QStyle>
 #include <QStyleOption>
