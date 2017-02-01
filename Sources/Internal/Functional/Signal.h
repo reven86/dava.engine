@@ -1,290 +1,79 @@
 #pragma once
 
+#include "Debug/DVAssert.h"
 
-#include "Base/BaseTypes.h"
+#include "Base/List.h"
+#include "Base/Token.h"
 #include "Functional/Function.h"
-#include "Functional/SignalBase.h"
+#include "Functional/TrackedObject.h"
+#include "Functional/Private/TrackedWatcher.h"
 
 namespace DAVA
 {
 template <typename... Args>
-class Signal final
+class Signal final : protected TrackedWatcher
 {
 public:
+    using Slot = Function<void(Args...)>;
+
     Signal() = default;
     Signal(const Signal&) = delete;
     Signal& operator=(const Signal&) = delete;
 
     ~Signal();
 
-    template <typename Fn>
-    SigConnectionID Connect(const Fn& fn);
-
     template <typename Obj, typename Fn>
-    SigConnectionID Connect(Obj* obj, const Fn& fn);
+    Token Connect(Obj* obj, const Fn& fn);
 
     template <typename Obj, typename Cls>
-    SigConnectionID Connect(Obj* obj, void (Cls::*const& fn)(Args...));
+    Token Connect(Obj* obj, void (Cls::*const& fn)(Args...));
 
     template <typename Obj, typename Cls>
-    SigConnectionID Connect(Obj* obj, void (Cls::*const& fn)(Args...) const)
+    Token Connect(Obj* obj, void (Cls::*const& fn)(Args...) const);
 
-    void Disconnect(SigConnectionID id);
+    template <typename Fn>
+    Token ConnectDetached(const Fn& fn);
 
-    template <typename Obj>
-    void DisconnectObject(Obj* obj);
+    void Disconnect(void* obj);
+
+    void Disconnect(Token token);
 
     void DisconnectAll();
 
-    template <typename Obj>
-    void BlockObject(Obj* obj, bool block);
+    void Track(Token token, TrackedObject* obj);
 
-    void Block(SigConnectionID id, bool block);
+    void Block(Token token, bool block);
 
-    bool IsBlocked(SigConnectionID id) const;
+    void Block(void* obj, bool block);
+
+    bool IsBlocked(Token token) const;
 
     void Emit(Args... args);
 
 private:
-};
+    void OnTrackedObjectDisconnect(TrackedObject*) override final;
 
-
-
-#if 0
-template <typename MutexType, typename ThreadIDType, typename... Args>
-class SignalImpl : public SignalBase
-{
-public:
-    using Func = Function<void(Args...)>;
-
-    SignalImpl() = default;
-    SignalImpl(const SignalImpl&) = delete;
-    SignalImpl& operator=(const SignalImpl&) = delete;
-
-    ~SignalImpl()
+    struct Connection
     {
-        DisconnectAll();
-    }
+        Token token;
 
-    template <typename Fn>
-    SigConnectionID Connect(const Fn& fn, ThreadIDType tid = {})
-    {
-        Sig11::LockGuard<MutexType> guard(mutex);
-        return AddConnection(nullptr, Func(fn), tid);
-    }
+        void* object;
+        Slot slot;
 
-    template <typename Obj, typename Fn>
-    DAVA_DEPRECATED(SigConnectionID Connect(Obj* obj, const Fn& fn, ThreadIDType tid = {})) //to Smile: it used in case when we need connect static func and use own TrackedObject (see ImGui.cpp)
-    {
-        Sig11::LockGuard<MutexType> guard(mutex);
-        return AddConnection(TrackedObject::Cast(obj), Func(fn), tid);
-    }
-
-    template <typename Obj, typename Cls>
-    SigConnectionID Connect(Obj* obj, void (Cls::*const& fn)(Args...), ThreadIDType tid = ThreadIDType())
-    {
-        Sig11::LockGuard<MutexType> guard(mutex);
-        return AddConnection(TrackedObject::Cast(obj), Func(obj, fn), tid);
-    }
-
-    template <typename Obj, typename Cls>
-    SigConnectionID Connect(Obj* obj, void (Cls::*const& fn)(Args...) const, ThreadIDType tid = ThreadIDType())
-    {
-        Sig11::LockGuard<MutexType> guard(mutex);
-        return AddConnection(TrackedObject::Cast(obj), Func(obj, fn), tid);
-    }
-
-    void Disconnect(SigConnectionID id)
-    {
-        Sig11::LockGuard<MutexType> guard(mutex);
-
-        auto it = connections.find(id);
-        if (it != connections.end())
-        {
-            TrackedObject* obj = it->second.obj;
-            if (nullptr != obj)
-            {
-                obj->Untrack(this);
-                it->second.obj = nullptr;
-            }
-
-            it->second.deleted = true;
-        }
-    }
-
-    void Disconnect(TrackedObject* obj) override final
-    {
-        if (nullptr != obj)
-        {
-            Sig11::LockGuard<MutexType> guard(mutex);
-
-            auto it = connections.begin();
-            auto end = connections.end();
-
-            while (it != end)
-            {
-                if (it->second.obj == obj)
-                {
-                    obj->Untrack(this);
-                    it->second.obj = nullptr;
-                    it->second.deleted = true;
-                }
-
-                it++;
-            }
-        }
-    }
-
-    void DisconnectAll()
-    {
-        Sig11::LockGuard<MutexType> guard(mutex);
-
-        for (auto&& con : connections)
-        {
-            TrackedObject* obj = con.second.obj;
-            if (nullptr != obj)
-            {
-                obj->Untrack(this);
-                con.second.obj = nullptr;
-            }
-            con.second.deleted = true;
-        }
-    }
-
-    void Track(SigConnectionID id, TrackedObject* obj)
-    {
-        Sig11::LockGuard<MutexType> guard(mutex);
-
-        auto it = connections.find(id);
-        if (it != connections.end())
-        {
-            if (nullptr != it->second.obj)
-            {
-                it->second.obj->Untrack(this);
-                it->second.obj = nullptr;
-            }
-
-            if (nullptr != obj && !it->second.deleted)
-            {
-                it->second.obj = obj;
-                obj->Track(this);
-            }
-        }
-    }
-
-    TrackedObject* GetTracked(SigConnectionID id) const
-    {
-        TrackedObject* ret = nullptr;
-
-        auto it = connections.find(id);
-        if (it != connections.end())
-        {
-            ret = it->second.obj;
-        }
-
-        return ret;
-    }
-
-    void Block(SigConnectionID id, bool block)
-    {
-        auto it = connections.find(id);
-        if (it != connections.end())
-        {
-            it->second.blocked = block;
-        }
-    }
-
-    bool IsBlocked(SigConnectionID id) const
-    {
-        bool ret = false;
-
-        auto it = connections.find(id);
-        if (it != connections.end())
-        {
-            ret = it->second.blocked;
-        }
-
-        return ret;
-    }
-
-    virtual void Emit(Args... args) = 0;
-
-protected:
-    struct ConnData
-    {
-        ConnData(Func&& fn_, TrackedObject* obj_, ThreadIDType tid_)
-            : fn(std::move(fn_))
-            , obj(obj_)
-            , tid(tid_)
-            , blocked(false)
-            , deleted(false)
-        {
-        }
-
-        Func fn;
-        void* obj;
-
-        ThreadIDType tid;
+        bool tracked;
         bool blocked;
         bool deleted;
     };
 
-    MutexType mutex;
-    Map<SigConnectionID, ConnData> connections;
+    List<Connection> connections;
 
-private:
-    SigConnectionID AddConnection(TrackedObject* obj, Func&& fn, const ThreadIDType& tid)
-    {
-        SigConnectionID id = SignalBase::GetUniqueConnectionID();
-        connections.emplace(std::make_pair(id, ConnData(std::move(fn), obj, tid)));
+    template <typename Obj>
+    Token AddConnection(Obj* obj, Slot&& slot);
 
-        if (nullptr != obj)
-        {
-            obj->Track(this);
-        }
-
-        return id;
-    }
+    void RemoveConnection(Connection& c);
 };
-
-} // namespace Sig11
-
-template <typename... Args>
-class Signal final : public Sig11::SignalImpl<Sig11::DummyMutex, Sig11::DymmyThreadID, Args...>
-{
-public:
-    using Base = Sig11::SignalImpl<Sig11::DummyMutex, Sig11::DymmyThreadID, Args...>;
-
-    Signal() = default;
-    Signal(const Signal&) = delete;
-    Signal& operator=(const Signal&) = delete;
-
-    void Emit(Args... args) override
-    {
-        auto iter = Base::connections.begin();
-        while (iter != Base::connections.end())
-        {
-            if (iter->second.deleted)
-            {
-                iter = Base::connections.erase(iter);
-            }
-            else
-            {
-                if (!iter->second.blocked)
-                {
-                    // Make functor copy and call its copy:
-                    //  when connected lambda with captured variables disconnects from signal while signal is emitting
-                    //  compiler destroys lambda and its captured variables
-                    auto fn = iter->second.fn;
-                    fn(args...);
-                }
-
-                iter++;
-            }
-        }
-    }
-};
-
-#endif
 
 } // namespace DAVA
+
+#define __DAVA_Signal__
+#include "Functional/Private/Signal_impl.h"
