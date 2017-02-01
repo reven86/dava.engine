@@ -156,7 +156,7 @@ DAVA::Reflection BaseComponentValue::GetReflection()
     return Reflection::Create(&thisValue);
 }
 
-DAVA_REFLECTION_IMPL(BaseComponentValue)
+DAVA_VIRTUAL_REFLECTION_IMPL(BaseComponentValue)
 {
     ReflectionRegistrator<BaseComponentValue>::Begin()
     .End();

@@ -141,7 +141,7 @@ void ShadersModule::OnProjectChanged(const DAVA::Any& projectFieldValue)
     }
 }
 
-DAVA_REFLECTION_IMPL(ShadersModule)
+DAVA_VIRTUAL_REFLECTION_IMPL(ShadersModule)
 {
     DAVA::ReflectionRegistrator<ShadersModule>::Begin()
     .ConstructorByPointer()
