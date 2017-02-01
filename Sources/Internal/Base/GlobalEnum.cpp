@@ -336,6 +336,7 @@ ENUM_DECLARE(UIComponent::eType)
     ENUM_ADD_DESCR(UIComponent::ACTION_COMPONENT, "Action");
     ENUM_ADD_DESCR(UIComponent::ACTION_BINDING_COMPONENT, "ActionBinding");
     ENUM_ADD_DESCR(UIComponent::SCROLL_BAR_DELEGATE_COMPONENT, "ScrollBarDelegate");
+    ENUM_ADD_DESCR(UIComponent::SOUND_COMPONENT, "Sound");
 };
 
 ENUM_DECLARE(UISizePolicyComponent::eSizePolicy)

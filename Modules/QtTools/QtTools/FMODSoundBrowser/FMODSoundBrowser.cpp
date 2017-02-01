@@ -1,12 +1,7 @@
-#include "FMODSoundBrowser.h"
-#include "Classes/Application/REGlobal.h"
-#include "Classes/Project/ProjectManagerData.h"
-#include "Scene/SceneEditor2.h"
-
-#include "Reflection/ReflectedType.h"
+#include "QtTools/FMODSoundBrowser/FMODSoundBrowser.h"
 
 #include "QtTools/WidgetHelpers/SharedIcon.h"
-#include "ui_soundbrowser.h"
+#include "ui_FMODSoundBrowser.h"
 
 #include <QTreeWidget>
 #include <QMessageBox>
@@ -31,19 +26,15 @@ FMODSoundBrowser::FMODSoundBrowser(QWidget* parent)
     QObject::connect(this, SIGNAL(accepted()), this, SLOT(OnAccepted()));
     QObject::connect(this, SIGNAL(rejected()), this, SLOT(OnRejected()));
 
-    projectDataWrapper = REGlobal::CreateDataWrapper(DAVA::ReflectedTypeDB::Get<ProjectManagerData>());
-    projectDataWrapper.SetListener(this);
-
     SetSelectedItem(0);
 
     setModal(true);
+
+    UpdateEventTree();
 }
 
 FMODSoundBrowser::~FMODSoundBrowser()
 {
-#ifdef DAVA_FMOD
-    DAVA::SoundSystem::Instance()->UnloadFMODProjects();
-#endif
     delete ui;
 }
 
@@ -106,15 +97,6 @@ void FMODSoundBrowser::SetSelectedItem(QTreeWidgetItem* item)
         ui->selectButton->setDisabled(false);
     else
         ui->selectButton->setDisabled(true);
-}
-
-void FMODSoundBrowser::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields)
-{
-    auto iter = std::find(fields.begin(), fields.end(), DAVA::Any(ProjectManagerData::ProjectPathProperty));
-    if (iter != fields.end() || fields.empty())
-    {
-        UpdateEventTree();
-    }
 }
 
 void FMODSoundBrowser::SelectItemAndExpandTreeByEventName(const DAVA::String& eventName)

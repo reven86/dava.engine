@@ -25,6 +25,7 @@
 #include "StringPropertyDelegate.h"
 #include "ComboPropertyDelegate.h"
 #include "FilePathPropertyDelegate.h"
+#include "FMODEventPropertyDelegate.h"
 #include "ColorPropertyDelegate.h"
 #include "IntegerPropertyDelegate.h"
 #include "FloatPropertyDelegate.h"
@@ -78,6 +79,8 @@ PropertiesTreeItemDelegate::PropertiesTreeItemDelegate(QObject* parent)
     propertyNameTypeItemDelegates[PropertyPath("*", "bg-gradient")] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
     propertyNameTypeItemDelegates[PropertyPath("*", "bg-contour")] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
     propertyNameTypeItemDelegates[PropertyPath("*", "text-font")] = new FontPropertyDelegate(this);
+
+    propertyNameTypeItemDelegates[PropertyPath("Sound", "*")] = new FMODEventPropertyDelegate(this);
 }
 
 PropertiesTreeItemDelegate::~PropertiesTreeItemDelegate()
@@ -218,6 +221,11 @@ AbstractPropertyDelegate* PropertiesTreeItemDelegate::GetCustomItemDelegateForIn
         if (propNameIt == propertyNameTypeItemDelegates.end())
         {
             propNameIt = propertyNameTypeItemDelegates.find(PropertyPath("*", QString::fromStdString(property->GetName())));
+        }
+
+        if (propNameIt == propertyNameTypeItemDelegates.end())
+        {
+            propNameIt = propertyNameTypeItemDelegates.find(PropertyPath(parentName, "*"));
         }
 
         if (propNameIt != propertyNameTypeItemDelegates.end())

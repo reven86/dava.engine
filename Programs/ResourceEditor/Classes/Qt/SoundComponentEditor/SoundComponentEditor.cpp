@@ -1,8 +1,8 @@
 #include "SoundComponentEditor.h"
-#include "FMODSoundBrowser.h"
 #include "ui_soundcomponenteditor.h"
 #include "Commands2/SoundComponentEditCommands.h"
 
+#include "QtTools/FMODSoundBrowser/FMODSoundBrowser.h"
 #include "QtTools/WidgetHelpers/SharedIcon.h"
 
 #include <QTreeWidget>
@@ -161,7 +161,8 @@ void SoundComponentEditor::OnAddEvent()
 {
     if (component)
     {
-        FMODSoundBrowser* browser = FMODSoundBrowser::Instance();
+        FMODSoundBrowser* browser = new FMODSoundBrowser();
+        browser->deleteLater();
 
         if (selectedEventIndex != -1)
         {

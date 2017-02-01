@@ -104,6 +104,7 @@ UIControlSystem::~UIControlSystem()
         currentScreen = nullptr;
     }
 
+    soundSystem = nullptr;
     inputSystem = nullptr;
     styleSheetSystem = nullptr;
     layoutSystem = nullptr;
