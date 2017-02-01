@@ -268,13 +268,7 @@ void WindowNativeBridge::OnVisibilityChanged(Windows::UI::Core::CoreWindow ^ cor
 void WindowNativeBridge::OnCharacterReceived(::Windows::UI::Core::CoreWindow ^ /*coreWindow*/, ::Windows::UI::Core::CharacterReceivedEventArgs ^ arg)
 {
     eModifierKeys modifierKeys = GetModifierKeys();
-    // Windows translates some Ctrl key combinations into ASCII control characters.
-    // It seems to me that control character are not wanted by game to handle in character message.
-    // https://msdn.microsoft.com/en-us/library/windows/desktop/gg153546(v=vs.85).aspx
-    if ((modifierKeys & eModifierKeys::CONTROL) == eModifierKeys::NONE)
-    {
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, MainDispatcherEvent::KEY_CHAR, arg->KeyCode, modifierKeys, arg->KeyStatus.WasKeyDown));
-    }
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, MainDispatcherEvent::KEY_CHAR, arg->KeyCode, modifierKeys, arg->KeyStatus.WasKeyDown));
 }
 
 void WindowNativeBridge::OnAcceleratorKeyActivated(::Windows::UI::Core::CoreDispatcher ^ /*dispatcher*/, ::Windows::UI::Core::AcceleratorKeyEventArgs ^ arg)

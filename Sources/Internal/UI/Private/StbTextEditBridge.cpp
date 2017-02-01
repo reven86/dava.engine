@@ -302,33 +302,32 @@ bool StbTextEditBridge::SendKeyChar(uint32 keyChar, eModifierKeys modifiers)
 bool StbTextEditBridge::SendKeyChar(uint32 keyChar, uint32 modifiers)
 #endif
 {
-#if defined(__DAVAENGINE_COREV2__)
-    if ((modifiers & (eModifierKeys::CONTROL | eModifierKeys::COMMAND)) != eModifierKeys::NONE)
-#else
-    if ((modifiers & (UIEvent::CONTROL_DOWN | UIEvent::COMMAND_DOWN)))
-#endif
+    if (keyChar == '\r')
     {
-        // Skip chars with Ctrl or Command modifiers
+        // Transform return career to new line sybmol
+        keyChar = '\n';
+    }
+
+    if(keyChar != '\n' && std::iscntrl(keyChar))
+    {
+        // Skip control characters (\b, \t, ^a, ^c, etc.)
+        // P.S. backspace already processed in SendKey
         return false;
     }
 
-    switch (keyChar)
+    if (keyChar == '\n' && IsSingleLineMode())
     {
-    case '\b': // Skip backspace char (processed on SendKey)
-    case '\t': // Disable TAB for now
-        return false;
-    case '\r':
-        keyChar = '\n';
-    case '\n':
-        if (IsSingleLineMode())
-            return false;
-    default: // Send printable characters
-        if (GetDelegate()->IsCharAvaliable(static_cast<char16>(keyChar)))
-        {
-            return SendRaw(keyChar); // Can modify text
-        }
+        // Skip \n for single line fields
         return false;
     }
+
+    if (GetDelegate()->IsCharAvaliable(static_cast<char16>(keyChar)))
+    {
+        // Send char only if it available in font
+        return SendRaw(keyChar); // Can modify text
+    }
+
+    return false;
 }
 
 bool DAVA::StbTextEditBridge::SendRaw(uint32 codePoint)

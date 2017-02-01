@@ -380,21 +380,16 @@ void WindowNativeBridge::KeyEvent(NSEvent* theEvent)
     MainDispatcherEvent::eType type = isPressed ? MainDispatcherEvent::KEY_DOWN : MainDispatcherEvent::KEY_UP;
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, type, key, modifierKeys, isRepeated));
 
-    // macOS translates some Ctrl key combinations into ASCII control characters.
-    // It seems to me that control character are not wanted by game to handle in character message.
-    if ([theEvent type] == NSKeyDown && (modifierKeys & eModifierKeys::CONTROL) == eModifierKeys::NONE)
+    NSString* chars = [theEvent characters];
+    NSUInteger n = [chars length];
+    if (n > 0)
     {
-        NSString* chars = [theEvent characters];
-        NSUInteger n = [chars length];
-        if (n > 0)
+        MainDispatcherEvent e = MainDispatcherEvent::CreateWindowKeyPressEvent(window, MainDispatcherEvent::KEY_CHAR, 0, modifierKeys, false);
+        for (NSUInteger i = 0; i < n; ++i)
         {
-            MainDispatcherEvent e = MainDispatcherEvent::CreateWindowKeyPressEvent(window, MainDispatcherEvent::KEY_CHAR, 0, modifierKeys, false);
-            for (NSUInteger i = 0; i < n; ++i)
-            {
-                uint32 key = [chars characterAtIndex:i];
-                e.keyEvent.key = key;
-                mainDispatcher->PostEvent(e);
-            }
+            uint32 key = [chars characterAtIndex:i];
+            e.keyEvent.key = key;
+            mainDispatcher->PostEvent(e);
         }
     }
 }
