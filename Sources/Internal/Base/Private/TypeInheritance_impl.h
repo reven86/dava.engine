@@ -8,7 +8,7 @@ namespace DAVA
 {
 namespace RttiInheritanceDetail
 {
-static uint32 stubData = 0xcccccccc;
+static uint32_t stubData = 0xcccccccc;
 
 template <typename From, typename To>
 std::ptrdiff_t GetPtrDiff()

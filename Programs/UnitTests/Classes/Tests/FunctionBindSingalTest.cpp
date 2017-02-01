@@ -1,4 +1,4 @@
-#include "DAVAEngine.h"
+#include "Logger/Logger.h"
 #include "Functional/Signal.h"
 #include "UnitTests/UnitTests.h"
 
@@ -152,7 +152,7 @@ struct MindChangingClass
     MindChangingClass(Signal<>& sig)
         : signal(sig)
     {
-        id = signal.Connect([this] { Tick(); });
+        id = signal.ConnectDetached([this] { Tick(); });
     }
 
     void Tick()
@@ -163,7 +163,7 @@ struct MindChangingClass
 
     uint32 count = 0;
     Signal<>& signal;
-    SigConnectionID id;
+    Token id;
 };
 
 // =======================================================================================================================================
@@ -419,12 +419,12 @@ DAVA_TESTCLASS (FunctionBindSignalTest)
         {
             TestObjA* objA = new TestObjA();
 
-            SigConnectionID connA1 = testSignal.Connect(objA, &TestObjA::Slot1);
+            Token connA1 = testSignal.Connect(objA, &TestObjA::Slot1);
             // connA1 will be automatically tracked
             testSignal.Emit(10);
             TEST_VERIFY(objA->v1 == 10);
 
-            SigConnectionID connA2 = testSignal.Connect([objA](int v) {
+            Token connA2 = testSignal.ConnectDetached([objA](int v) {
                 objA->Slot2(v);
             });
             // connA2 wont be automatically tracked
@@ -432,8 +432,8 @@ DAVA_TESTCLASS (FunctionBindSignalTest)
             testSignal.Track(connA2, objA);
             int emitValue_1 = 20;
             testSignal.Emit(emitValue_1);
-            TEST_VERIFY(objA->v1 == 20);
-            TEST_VERIFY(objA->v2 == 20);
+            TEST_VERIFY(objA->v1 == emitValue_1);
+            TEST_VERIFY(objA->v2 == emitValue_1);
 
             // deleting object that is still connected to the signal
             // if that object is derived by TrackedObject it will be
@@ -445,7 +445,7 @@ DAVA_TESTCLASS (FunctionBindSignalTest)
 
         {
             TestObjB objB;
-            SigConnectionID connB1 = testSignal.Connect(&objB, &TestObjB::Slot1);
+            Token connB1 = testSignal.Connect(&objB, &TestObjB::Slot1);
             testSignal.Emit(10);
 
             TEST_VERIFY(objB.v1 == 10);
@@ -472,7 +472,7 @@ DAVA_TESTCLASS (FunctionBindSignalTest)
             testSignal.DisconnectAll();
 
             TestObjC objC;
-            SigConnectionID connC1 = testSignal.Connect([&testSignal, &connC1, &objC](int v) {
+            Token connC1 = testSignal.Connect(&objC, [&testSignal, &connC1, &objC](int v) {
                 objC.Slot1(v);
                 testSignal.Block(connC1, true);
                 testSignal.Emit(20);
@@ -481,6 +481,12 @@ DAVA_TESTCLASS (FunctionBindSignalTest)
 
             TEST_VERIFY(objC.v1 == 10);
             TEST_VERIFY(testSignal.IsBlocked(connC1) == true);
+
+            testSignal.Disconnect(connC1);
+
+            objC.v1 = 20;
+            testSignal.Emit(10);
+            TEST_VERIFY(objC.v1 != 10);
         }
 
         // check if signal will forward complex type gived by value into
@@ -507,8 +513,8 @@ DAVA_TESTCLASS (FunctionBindSignalTest)
             Signal<int&, std::weak_ptr<int>> sig;
 
             // connect twice to the same slot
-            sig.Connect(test_weakptr);
-            sig.Connect(test_weakptr);
+            sig.ConnectDetached(test_weakptr);
+            sig.ConnectDetached(test_weakptr);
 
             int res = 0;
 

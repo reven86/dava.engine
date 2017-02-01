@@ -70,44 +70,38 @@ CEFWebPageRender::~CEFWebPageRender()
 void CEFWebPageRender::ConnectToSignals()
 {
 #if defined(__DAVAENGINE_COREV2__)
-    auto focusChanged = [this](Window*, bool isFocused) -> void
-    {
-        if (!isFocused)
-        {
-            ResetCursor();
-        }
-    };
-    auto windowDestroyed = [this](Window* w) -> void {
+    Engine::Instance()->windowDestroyed.Connect(this, [this](Window* w) -> void {
         if (w == window)
         {
             DisconnectFromSignals();
         }
-    };
-    windowDestroyedConnection = Engine::Instance()->windowDestroyed.Connect(windowDestroyed);
-    focusConnection = window->focusChanged.Connect(focusChanged);
-#else
-    auto focusChanged = [this](bool isFocused) -> void
+    });
+
+    window->focusChanged.Connect(this, [this](Window*, bool isFocused) -> void
     {
         if (!isFocused)
         {
             ResetCursor();
         }
-    };
-    focusConnection = Core::Instance()->focusChanged.Connect(focusChanged);
+    });
+#else
+    Core::Instance()->focusChanged.Connect(this, [this](bool isFocused) -> void
+    {
+        if (!isFocused)
+        {
+            ResetCursor();
+        }
+    });
 #endif
 }
 
 void CEFWebPageRender::DisconnectFromSignals()
 {
 #if defined(__DAVAENGINE_COREV2__)
-    if (windowDestroyedConnection != 0)
-        Engine::Instance()->windowDestroyed.Disconnect(windowDestroyedConnection);
-    if (focusConnection != 0)
-        window->focusChanged.Disconnect(focusConnection);
-    windowDestroyedConnection = 0;
-    focusConnection = 0;
+    Engine::Instance()->windowDestroyed.Disconnect(this);
+    window->focusChanged.Disconnect(this);
 #else
-    Core::Instance()->focusChanged.Disconnect(focusConnection);
+    Core::Instance()->focusChanged.Disconnect(this);
 #endif
 }
 

@@ -20,7 +20,6 @@ public:
     explicit PackManagerImpl(Engine& engine_);
     ~PackManagerImpl() override;
     Engine& engine;
-    SigConnectionID sigConnectionUpdate = 0;
 #else
     PackManagerImpl() = default;
     ~PackManagerImpl() = default;

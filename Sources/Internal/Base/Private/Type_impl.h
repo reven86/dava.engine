@@ -4,6 +4,8 @@
 #include "Base/Type.h"
 #endif
 
+#include "Base/List.h"
+
 namespace DAVA
 {
 namespace TypeDetail
@@ -26,7 +28,7 @@ struct TypeSize<const void>
     static const size_t size = 0;
 };
 
-static std::list<Type**> allTypes;
+static List<Type**> allTypes;
 
 template <typename T>
 struct TypeHolder

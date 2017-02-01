@@ -78,13 +78,13 @@ PackManagerImpl::PackManagerImpl(Engine& engine_)
     : engine(engine_)
 {
     DVASSERT(Thread::IsMainThread());
-    sigConnectionUpdate = engine.update.Connect(this, &PackManagerImpl::Update);
+    engine.update.Connect(this, &PackManagerImpl::Update);
 }
 
 PackManagerImpl::~PackManagerImpl()
 {
     DVASSERT(Thread::IsMainThread());
-    engine.update.Disconnect(sigConnectionUpdate);
+    engine.update.Disconnect(this);
 }
 #endif
 

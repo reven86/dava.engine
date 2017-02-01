@@ -4,32 +4,34 @@
 
 namespace DAVA
 {
-class Token final
+struct Token final
 {
-    friend class TokenProvider;
-
-public:
     Token() = default;
-    ~Token() = default;
 
-    Token(const Token&) = default;
+    bool IsValid() const;
+    operator bool() const;
+    bool operator<(const Token&) const;
 
 private:
     using Tid = uint64;
+    static const Tid invalidTid = 0;
 
-    Tid tid = 0;
+    Token(Tid tid);
 
-    Token(Tid tid_);
+    Tid tid = Token::invalidTid;
+
+    template <typename T>
+    friend class TokenProvider;
 };
 
-struct TokenProvider final
+template <typename T>
+class TokenProvider final
 {
-    template <typename T>
+public:
     static Token Generate();
-
-    template <typename T>
     static bool IsValid(const Token& token);
 };
+
 } // namespace DAVA
 
 #define __Dava_Token__

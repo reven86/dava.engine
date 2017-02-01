@@ -34,7 +34,7 @@ public:
 
         DAVA::Logger::Info("%s", ss.str().c_str());
     }
-    DAVA::SigConnectionID sigConnection;
+    DAVA::Token sigConnection;
     DAVA::IPackManager& packManager;
 };
 

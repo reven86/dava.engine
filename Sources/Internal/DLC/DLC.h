@@ -2,6 +2,7 @@
 #define __DAVAENGINE_DLC_H__
 
 #include "Base/BaseTypes.h"
+#include "Base/Token.h"
 #include "Concurrency/Thread.h"
 #include "Downloader/DownloaderCommon.h"
 #include "Patcher/PatchFile.h"
@@ -223,8 +224,6 @@ protected:
     bool WriteValue(const FilePath& path, uint32 value, const String& version = String());
 
     String MakePatchUrl(uint32 localVer, uint32 removeVer);
-
-    size_t taskStateChangedSignalId = 0;
 };
 }
 

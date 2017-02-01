@@ -141,7 +141,7 @@ void AutotestingSystem::OnAppStarted()
     AutotestingSystemLua::Instance()->InitFromFile(testFileStrPath);
  
 #if defined(__DAVAENGINE_COREV2__)
-    SigConnectionID sid = GetPrimaryWindow()->sizeChanged.Connect(this, &AutotestingSystem::OnWindowSizeChanged);
+    Token sid = GetPrimaryWindow()->sizeChanged.Connect(this, &AutotestingSystem::OnWindowSizeChanged);
     GetPrimaryWindow()->sizeChanged.Track(sid, &localTrackedObject);
 #endif
 

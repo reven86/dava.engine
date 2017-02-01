@@ -13,17 +13,32 @@ inline Token::Token(Tid tid_)
 {
 }
 
-template <typename T>
-Token TokenProvider::Generate()
+inline bool Token::IsValid() const
 {
-    static std::atomic<Token::Tid> tid = { 1 };
-    return Token(tid++);
+    return tid != invalidTid;
+}
+
+inline Token::operator bool() const
+{
+    return IsValid();
+}
+
+inline bool Token::operator<(const Token& t) const
+{
+    return t.tid < tid;
 }
 
 template <typename T>
-bool TokenProvider::IsValid(const Token& token)
+Token TokenProvider<T>::Generate()
 {
-    return (token.tid > 0);
+    static std::atomic<Token::Tid> stid = { Token::invalidTid };
+    return Token(++stid);
+}
+
+template <typename T>
+bool TokenProvider<T>::IsValid(const Token& token)
+{
+    return token.IsValid();
 }
 
 } // namespace DAVA

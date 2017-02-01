@@ -60,11 +60,11 @@ private:
     size_t windowVisibilityChangedConnection = 0;
 #else
     void OnAppMinimizedRestored(bool minimized);
-    SigConnectionID appMinimizedRestoredConnectionId;
+    Token appMinimizedRestoredConnectionId;
 #endif
 
 #if defined(__DAVAENGINE_STEAM__)
-    SigConnectionID overlayConnectionId = 0;
+    Token overlayConnectionId = 0;
     bool overlayVisible = false;
     void OnSteamOverlayChanged(bool overlayActivated);
 #endif
