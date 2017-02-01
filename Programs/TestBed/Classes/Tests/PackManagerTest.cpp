@@ -3,7 +3,7 @@
 
 #include <Engine/Engine.h>
 #include <FileSystem/DynamicMemoryFile.h>
-#include <PackManager/DLCManager.h>
+#include <DLCManager/DLCManager.h>
 #include <UI/Focus/UIFocusComponent.h>
 #include <typeinfo>
 

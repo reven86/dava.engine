@@ -1,14 +1,9 @@
-#include "PackManager/Private/RequestManager.h"
-#include "FileSystem/FileSystem.h"
-#include "Utils/CRC32.h"
-#include "Utils/StringFormat.h"
-#include "DLC/Downloader/DownloadManager.h"
-#include "PackManager/Private/DLCManagerImpl.h"
-#include "Base/Exception.h"
+#include "DLCManager/Private/RequestManager.h"
+#include "DLCManager/Private/DLCManagerImpl.h"
+#include "Debug/DVAssert.h"
 
 namespace DAVA
 {
-
 void RequestManager::Start()
 {
     if (packManager.IsRequestingEnabled())

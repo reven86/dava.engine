@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
-#include "PackManager/DLCManager.h"
+#include "DLCManager/DLCManager.h"
 #include "Compression/Compressor.h"
 
 namespace DAVA

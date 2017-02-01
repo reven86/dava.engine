@@ -1,7 +1,7 @@
 #pragma once
 
-#include "PackManager/DLCManager.h"
-#include "PackManager/Private/RequestManager.h"
+#include "DLCManager/DLCManager.h"
+#include "DLCManager/Private/RequestManager.h"
 #include "FileSystem/Private/PackFormatSpec.h"
 #include "FileSystem/Private/PackMetaData.h"
 #include "Concurrency/Mutex.h"

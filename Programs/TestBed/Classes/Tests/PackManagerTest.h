@@ -2,7 +2,7 @@
 
 #include "Infrastructure/BaseScreen.h"
 #include <FileSystem/FilePath.h>
-#include <PackManager/DLCManager.h>
+#include <DLCManager/DLCManager.h>
 
 class TestBed;
 class PackManagerTest : public BaseScreen, DAVA::UITextFieldDelegate

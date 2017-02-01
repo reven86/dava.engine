@@ -1,6 +1,6 @@
 #pragma once
 
-#include "PackManager/Private/PackRequest.h"
+#include "DLCManager/Private/PackRequest.h"
 
 namespace DAVA
 {

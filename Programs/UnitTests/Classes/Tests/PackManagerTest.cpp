@@ -1,6 +1,6 @@
-#include <PackManager/DLCManager.h>
+#include <DLCManager/DLCManager.h>
 // we need include private file only to call private api in test case
-#include <PackManager/Private/DLCManagerImpl.h>
+#include <DLCManager/Private/DLCManagerImpl.h>
 #include <FileSystem/File.h>
 #include <FileSystem/FileSystem.h>
 #include <Utils/CRC32.h>

@@ -34,7 +34,7 @@
 #include "ModuleManager/ModuleManager.h"
 #include "Network/NetCore.h"
 #include "Notification/LocalNotificationController.h"
-#include "PackManager/Private/DLCManagerImpl.h"
+#include "DLCManager/Private/DLCManagerImpl.h"
 #include "Platform/DeviceInfo.h"
 #include "Platform/DPIHelper.h"
 #include "Platform/SystemTimer.h"
