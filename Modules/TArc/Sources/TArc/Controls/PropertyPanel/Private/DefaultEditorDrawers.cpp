@@ -1,6 +1,8 @@
 #include "TArc/Controls/PropertyPanel/DefaultEditorDrawers.h"
 #include "TArc/Controls/PropertyPanel/PropertyModelExtensions.h"
 
+#include <Reflection/ReflectedMeta.h>
+
 #include <QStyle>
 #include <QStyleOption>
 #include <QPainter>
