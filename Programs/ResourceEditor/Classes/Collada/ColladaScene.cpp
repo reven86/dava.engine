@@ -119,7 +119,7 @@ void ColladaScene::Render()
 
     //	printf("Light Count: %d\n", state.lightIndex);
 
-    currentTime += SystemTimer::FrameDelta();
+    currentTime += SystemTimer::GetFrameDelta();
     if (currentTime >= animationEndTime)
         currentTime = 0;
 

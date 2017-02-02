@@ -2,7 +2,6 @@
 
 #include "FileSystem/KeyedArchive.h"
 
-#include "Platform/SystemTimer.h"
 #include "Debug/DVAssert.h"
 
 ServerCacheEntry::ServerCacheEntry()
