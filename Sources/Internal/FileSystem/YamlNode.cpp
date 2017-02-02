@@ -5,7 +5,7 @@
 #include "Utils/UTF8Utils.h"
 #include "Utils/StringFormat.h"
 #include "Base/Type.h"
-#include "Reflection/Reflection.h"
+#include "Reflection/ReflectedTypeDB.h"
 
 namespace DAVA
 {

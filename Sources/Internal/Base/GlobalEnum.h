@@ -3,7 +3,6 @@
 
 #include "Base/EnumMap.h"
 #include "Base/Any.h"
-#include "Reflection/ReflectedMeta.h"
 
 template <typename T>
 class GlobalEnumMap

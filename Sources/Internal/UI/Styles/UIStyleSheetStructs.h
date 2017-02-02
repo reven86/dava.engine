@@ -9,6 +9,7 @@
 #include "Animation/Interpolation.h"
 #include "Reflection/Reflection.h"
 #include "Reflection/ReflectedStructure.h"
+#include "Reflection/ReflectedType.h"
 
 namespace DAVA
 {
