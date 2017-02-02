@@ -53,7 +53,7 @@ public:
         return DAVA::Texture::GetPrimaryGPUForLoading();
     }
 
-    DAVA_VIRTUAL_REFLECTION(TexturesGPUData, DAVA::TArc::DataNode)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(TexturesGPUData, DAVA::TArc::DataNode)
     {
         DAVA::ReflectionRegistrator<TexturesGPUData>::Begin()
         .Field(TEXTURE_GPU_FIELD_NAME, &TexturesGPUData::GetCurrentTexturesGPU, nullptr)
@@ -269,7 +269,7 @@ void SceneManagerModule::CreateModuleControls(DAVA::TArc::UI* ui)
 
     QAction* deleteSelection = new QAction("Delete Selection", engineRenderWidget);
     deleteSelection->setShortcuts(QList<QKeySequence>() << Qt::Key_Delete << Qt::CTRL + Qt::Key_Backspace);
-    deleteSelection->setShortcutContext(Qt::WidgetShortcut);
+    deleteSelection->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     engineRenderWidget->addAction(deleteSelection);
     connections.AddConnection(deleteSelection, &QAction::triggered, DAVA::MakeFunction(this, &SceneManagerModule::DeleteSelection));
 

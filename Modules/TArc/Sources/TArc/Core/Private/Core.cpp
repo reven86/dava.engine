@@ -33,6 +33,7 @@
 #include <QApplication>
 #include <QOffscreenSurface>
 #include <QOpenGLContext>
+#include <QIcon>
 
 namespace DAVA
 {
@@ -100,7 +101,10 @@ public:
         {
             isInFrame = false;
         };
-        delayedExecutor.DelayedExecute(MakeFunction(&wrappersProcessor, &DataWrappersProcessor::Sync));
+        delayedExecutor.DelayedExecute([this]()
+                                       {
+                                           SyncWrappers();
+                                       });
     }
 
     virtual void OnWindowCreated(DAVA::Window* w)
@@ -194,6 +198,7 @@ protected:
     void SyncWrappers()
     {
         wrappersProcessor.Sync();
+        core->syncSignal.Emit();
     }
 
 protected:

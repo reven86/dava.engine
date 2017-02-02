@@ -4,11 +4,14 @@
 
 #include "TArc/Core/ClientModule.h"
 #include "TArc/Controls/CheckBox.h"
+#include "TArc/Controls/QtBoxLayouts.h"
 #include "TArc/Utils/QtConnections.h"
 
 #include <Base/Any.h>
 #include <Base/BaseTypes.h>
+#include <Functional/Function.h>
 #include <Reflection/ReflectionRegistrator.h>
+#include <Reflection/ReflectedMeta.h>
 
 #include <QtTest>
 #include <QStyle>
@@ -17,6 +20,38 @@
 namespace CheckBoxTestDetails
 {
 DAVA::TArc::WindowKey wndKey = DAVA::FastName("CheckBoxTestWnd");
+
+struct CheckBoxDataSource
+{
+    bool value = true;
+    bool isReadOnly = false;
+
+    bool GetValue() const
+    {
+        return value;
+    }
+
+    static DAVA::String GetDescription(const DAVA::Any& v)
+    {
+        return v.Cast<bool>() == true ? "True" : "False";
+    }
+
+    DAVA::String GetValueDescription() const
+    {
+        return value == true ? "Visible" : "Invisible";
+    }
+
+    DAVA_REFLECTION(CheckBoxDataSource)
+    {
+        DAVA::ReflectionRegistrator<CheckBoxDataSource>::Begin()
+        .Field("value", &CheckBoxDataSource::value)[DAVA::M::ReadOnly(), DAVA::M::ValueDescription(&CheckBoxDataSource::GetDescription)]
+        .Field("readOnlyValue", &CheckBoxDataSource::GetValue, nullptr)
+        .Field("writableValue", &CheckBoxDataSource::value)
+        .Field("isReadOnly", &CheckBoxDataSource::isReadOnly)
+        .Field("writableDescription", &CheckBoxDataSource::GetValueDescription, nullptr)
+        .End();
+    }
+};
 
 class CheckBoxTestModule : public DAVA::TArc::ClientModule
 {
@@ -34,30 +69,113 @@ public:
 
         DAVA::Reflection reflectedModel = DAVA::Reflection::Create(&model);
 
-        DAVA::TArc::ControlDescriptorBuilder<DAVA::TArc::CheckBox::Fields> descrBool;
-        descrBool[CheckBox::Fields::Checked] = "bool";
-        DAVA::TArc::CheckBox* checkBool = new DAVA::TArc::CheckBox(descrBool, GetAccessor(), reflectedModel);
-        DAVA::TArc::PanelKey keyBool("CheckBox_bool", DAVA::TArc::CentralPanelInfo());
-        GetUI()->AddView(wndKey, keyBool, checkBool->ToWidgetCast());
+        QWidget* w = new QWidget();
+        QtVBoxLayout* layout = new QtVBoxLayout(w);
 
-        DAVA::TArc::ControlDescriptorBuilder<DAVA::TArc::CheckBox::Fields> descrState;
-        descrState[CheckBox::Fields::Checked] = "checkState";
-        DAVA::TArc::CheckBox* checkState = new DAVA::TArc::CheckBox(descrState, GetAccessor(), reflectedModel);
-        DAVA::TArc::PanelKey keyState("CheckBox_state", DAVA::TArc::CentralPanelInfo());
-        GetUI()->AddView(wndKey, keyState, checkState->ToWidgetCast());
+        {
+            DAVA::TArc::ControlDescriptorBuilder<DAVA::TArc::CheckBox::Fields> descrBool;
+            descrBool[CheckBox::Fields::Checked] = "bool";
+            CheckBox* checkBox = new DAVA::TArc::CheckBox(descrBool, GetAccessor(), reflectedModel);
+            checkBox->SetObjectName("CheckBox_bool");
+            layout->AddWidget(checkBox);
+        }
+
+        {
+            DAVA::TArc::ControlDescriptorBuilder<DAVA::TArc::CheckBox::Fields> descrState;
+            descrState[CheckBox::Fields::Checked] = "checkState";
+            DAVA::TArc::CheckBox* checkState = new DAVA::TArc::CheckBox(descrState, GetAccessor(), reflectedModel);
+            checkState->SetObjectName("CheckBox_state");
+            layout->AddWidget(checkState);
+        }
+
+        DAVA::Reflection refModel = DAVA::Reflection::Create(&dataSource);
+
+        {
+            DAVA::TArc::ControlDescriptorBuilder<DAVA::TArc::CheckBox::Fields> d;
+            d[CheckBox::Fields::Checked] = "value";
+            DAVA::TArc::CheckBox* checkBox = new DAVA::TArc::CheckBox(d, GetAccessor(), refModel);
+            checkBox->SetObjectName("CheckBox_ReadOnlyMeta");
+            layout->AddWidget(checkBox);
+        }
+
+        {
+            DAVA::TArc::ControlDescriptorBuilder<DAVA::TArc::CheckBox::Fields> d;
+            d[CheckBox::Fields::Checked] = "readOnlyValue";
+            DAVA::TArc::CheckBox* checkBox = new DAVA::TArc::CheckBox(d, GetAccessor(), refModel);
+            checkBox->SetObjectName("CheckBox_ReadOnly");
+            layout->AddWidget(checkBox);
+        }
+
+        {
+            DAVA::TArc::ControlDescriptorBuilder<DAVA::TArc::CheckBox::Fields> d;
+            d[CheckBox::Fields::Checked] = "writableValue";
+            d[CheckBox::Fields::IsReadOnly] = "isReadOnly";
+            d[CheckBox::Fields::TextHint] = "writableDescription";
+            DAVA::TArc::CheckBox* checkBox = new DAVA::TArc::CheckBox(d, GetAccessor(), refModel);
+            checkBox->SetObjectName("CheckBox_writable");
+            layout->AddWidget(checkBox);
+        }
+
+        GetUI()->AddView(wndKey, DAVA::TArc::PanelKey("CheckBoxSandbox", DAVA::TArc::CentralPanelInfo()), w);
     }
 
     DAVA::Map<DAVA::String, DAVA::Any> model;
+    CheckBoxDataSource dataSource;
 
     static CheckBoxTestModule* instance;
 
-    DAVA_VIRTUAL_REFLECTION(CheckBoxTestModule, DAVA::TArc::ClientModule)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(CheckBoxTestModule, DAVA::TArc::ClientModule)
     {
         DAVA::ReflectionRegistrator<CheckBoxTestModule>::Begin()
         .ConstructorByPointer()
         .End();
     }
 };
+
+class EnableEventListener : public QObject
+{
+public:
+    EnableEventListener(QCheckBox* box_, const DAVA::Function<void(bool)>& callback_)
+        : box(box_)
+        , callback(callback_)
+    {
+        TEST_VERIFY(box->isEnabled() == true);
+        box->installEventFilter(this);
+    }
+
+    bool eventFilter(QObject* obj, QEvent* e) override
+    {
+        if (obj == box && e->type() == QEvent::EnabledChange && active == true)
+        {
+            callback(box->isEnabled());
+            active = false;
+        }
+
+        return false;
+    }
+
+private:
+    bool active = true;
+    QCheckBox* box;
+    DAVA::Function<void(bool)> callback;
+};
+
+QPoint GetCheckboxCenter(QWidget* w)
+{
+    QStyle* style = w->style();
+    QStyleOptionButton option;
+    option.initFrom(w);
+    QRect r = style->subElementRect(QStyle::SE_CheckBoxIndicator, &option, w);
+
+    return r.center();
+}
+
+void SimulateClickOnCheckBox(QWidget* w)
+{
+    QTestEventList eventList;
+    eventList.addMouseClick(Qt::MouseButton::LeftButton, Qt::KeyboardModifiers(), GetCheckboxCenter(w));
+    eventList.simulate(w);
+}
 
 CheckBoxTestModule* CheckBoxTestModule::instance = nullptr;
 }
@@ -72,24 +190,16 @@ DAVA_TARC_TESTCLASS(CheckBoxTest)
         TEST_VERIFY(widgets.size() == 1);
         QWidget* w = widgets.front();
 
-        QStyle* style = w->style();
-        QStyleOptionButton option;
-        option.initFrom(w);
-        QRect r = style->subElementRect(QStyle::SE_CheckBoxIndicator, &option, w);
-
-        QTestEventList eventList;
-        eventList.addMouseClick(Qt::MouseButton::LeftButton, Qt::KeyboardModifiers(), r.center());
-
         QCheckBox* checkBox = qobject_cast<QCheckBox*>(w);
         TEST_VERIFY(checkBox != nullptr);
         CheckBoxTestModule* inst = CheckBoxTestModule::instance;
         TEST_VERIFY(inst->model.find("bool") != inst->model.end());
 
-        eventList.simulate(w);
+        SimulateClickOnCheckBox(w);
         TEST_VERIFY(checkBox->isChecked() == false);
         TEST_VERIFY(inst->model["bool"].Cast<bool>() == false);
 
-        eventList.simulate(w);
+        SimulateClickOnCheckBox(w);
         TEST_VERIFY(checkBox->isChecked() == true);
         TEST_VERIFY(inst->model["bool"].Cast<bool>() == true);
     }
@@ -102,27 +212,20 @@ DAVA_TARC_TESTCLASS(CheckBoxTest)
         TEST_VERIFY(widgets.size() == 1);
         QWidget* w = widgets.front();
 
-        QStyle* style = w->style();
-        QStyleOptionButton option;
-        option.initFrom(w);
-        QRect r = style->subElementRect(QStyle::SE_CheckBoxIndicator, &option, w);
-        QTestEventList eventList;
-        eventList.addMouseClick(Qt::MouseButton::LeftButton, Qt::KeyboardModifiers(), r.center());
-
         QCheckBox* checkBox = qobject_cast<QCheckBox*>(w);
         TEST_VERIFY(checkBox != nullptr);
         CheckBoxTestModule* inst = CheckBoxTestModule::instance;
         TEST_VERIFY(inst->model.find("checkState") != inst->model.end());
 
-        eventList.simulate(w);
+        SimulateClickOnCheckBox(w);
         TEST_VERIFY(checkBox->checkState() == Qt::Checked);
         TEST_VERIFY(inst->model["checkState"].Cast<Qt::CheckState>() == Qt::Checked);
 
-        eventList.simulate(w);
+        SimulateClickOnCheckBox(w);
         TEST_VERIFY(checkBox->checkState() == Qt::Unchecked);
         TEST_VERIFY(inst->model["checkState"].Cast<Qt::CheckState>() == Qt::Unchecked);
 
-        eventList.simulate(w);
+        SimulateClickOnCheckBox(w);
         TEST_VERIFY(checkBox->checkState() == Qt::Checked);
         TEST_VERIFY(inst->model["checkState"].Cast<Qt::CheckState>() == Qt::Checked);
     }
@@ -161,7 +264,115 @@ DAVA_TARC_TESTCLASS(CheckBoxTest)
         CheckBoxTestModule::instance->model["checkState"] = Qt::PartiallyChecked;
     }
 
+    void ReadOnlyMetaValueChanged(int newState)
+    {
+        QList<QWidget*> widgets = LookupWidget(CheckBoxTestDetails::wndKey, QString("CheckBox_ReadOnlyMeta"));
+        TEST_VERIFY(widgets.size() == 1);
+        QWidget* w = widgets.front();
+        QCheckBox* checkBox = qobject_cast<QCheckBox*>(w);
+
+        TEST_VERIFY(checkBox->isEnabled() == false);
+        TEST_VERIFY(checkBox->isChecked() == false);
+        TEST_VERIFY(checkBox->text() == QStringLiteral("False"));
+    }
+
+    DAVA_TEST (ReadOnlyMetaTest)
+    {
+        using namespace CheckBoxTestDetails;
+        using namespace testing;
+
+        QList<QWidget*> widgets = LookupWidget(wndKey, QString("CheckBox_ReadOnlyMeta"));
+        TEST_VERIFY(widgets.size() == 1);
+        QWidget* w = widgets.front();
+        QCheckBox* checkBox = qobject_cast<QCheckBox*>(w);
+        TEST_VERIFY(checkBox->isEnabled() == false);
+        TEST_VERIFY(checkBox->isChecked() == true);
+        TEST_VERIFY(checkBox->text() == QStringLiteral("True"));
+
+        SimulateClickOnCheckBox(w);
+        TEST_VERIFY(checkBox->isEnabled() == false);
+        TEST_VERIFY(checkBox->isChecked() == true);
+        TEST_VERIFY(checkBox->text() == QStringLiteral("True"));
+
+        connections.AddConnection(checkBox, &QCheckBox::stateChanged, DAVA::MakeFunction(this, &CheckBoxTest::OnStateChanged));
+        EXPECT_CALL(*this, OnStateChanged(_))
+        .WillOnce(Invoke(this, &CheckBoxTest::ReadOnlyMetaValueChanged));
+        CheckBoxTestModule::instance->dataSource.value = false;
+    }
+
+    DAVA_TEST (ReadOnlyTest)
+    {
+        using namespace CheckBoxTestDetails;
+        using namespace testing;
+
+        QList<QWidget*> widgets = LookupWidget(wndKey, QString("CheckBox_ReadOnly"));
+        TEST_VERIFY(widgets.size() == 1);
+        QWidget* w = widgets.front();
+        QCheckBox* checkBox = qobject_cast<QCheckBox*>(w);
+        TEST_VERIFY(checkBox->isEnabled() == false);
+        TEST_VERIFY(checkBox->isChecked() == false);
+        TEST_VERIFY(checkBox->text() == QStringLiteral(""));
+
+        SimulateClickOnCheckBox(w);
+        TEST_VERIFY(checkBox->isEnabled() == false);
+        TEST_VERIFY(checkBox->isChecked() == false);
+        TEST_VERIFY(checkBox->text() == QStringLiteral(""));
+    }
+
+    DAVA_TEST (WritableTest)
+    {
+        using namespace CheckBoxTestDetails;
+        using namespace testing;
+
+        QList<QWidget*> widgets = LookupWidget(wndKey, QString("CheckBox_writable"));
+        TEST_VERIFY(widgets.size() == 1);
+        QWidget* w = widgets.front();
+        QCheckBox* checkBox = qobject_cast<QCheckBox*>(w);
+        TEST_VERIFY(checkBox->isEnabled() == true);
+        TEST_VERIFY(checkBox->isChecked() == false);
+        TEST_VERIFY(checkBox->text() == QStringLiteral("Invisible"));
+
+        SimulateClickOnCheckBox(w);
+        TEST_VERIFY(checkBox->isEnabled() == true);
+        TEST_VERIFY(checkBox->isChecked() == true);
+
+        eventListener.reset(new CheckBoxTestDetails::EnableEventListener(checkBox, DAVA::MakeFunction(this, &CheckBoxTest::OnEnableChange)));
+        CheckBoxTestModule::instance->dataSource.isReadOnly = true;
+
+        EXPECT_CALL(*this, OnEnableChange(false))
+        .WillOnce(Return());
+    }
+
+    void Update(DAVA::float32 timeElapsed, const DAVA::String& testName) override
+    {
+        if (testName == "WritableTest")
+        {
+            writableTestUpdateCount++;
+            TEST_VERIFY_WITH_MESSAGE(writableTestUpdateCount < 10, "WritableTest failed");
+        }
+
+        TestClass::Update(timeElapsed, testName);
+    }
+
+    bool TestComplete(const DAVA::String& testName) const override
+    {
+        if (testName == "WritableTest")
+        {
+            QList<QWidget*> widgets = LookupWidget(CheckBoxTestDetails::wndKey, QString("CheckBox_writable"));
+            TEST_VERIFY(widgets.size() == 1);
+            QWidget* w = widgets.front();
+            QCheckBox* checkBox = qobject_cast<QCheckBox*>(w);
+            return checkBox->text() == QStringLiteral("Visible");
+        }
+
+        return TestClass::TestComplete(testName);
+    }
+
+    DAVA::int32 writableTestUpdateCount = 0;
+    std::unique_ptr<CheckBoxTestDetails::EnableEventListener> eventListener;
+
     MOCK_METHOD1_VIRTUAL(OnStateChanged, void(int newState));
+    MOCK_METHOD1_VIRTUAL(OnEnableChange, void(bool));
 
     BEGIN_TESTED_MODULES()
     DECLARE_TESTED_MODULE(CheckBoxTestDetails::CheckBoxTestModule);

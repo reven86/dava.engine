@@ -47,11 +47,27 @@ struct SimpleStruct
     {
     }
 
+    enum SimpleEnum
+    {
+        ONE,
+        TWO,
+        THREE
+    };
+
+    enum class ClassEnum
+    {
+        C_ONE,
+        C_TWO,
+        C_THREE
+    };
+
     int a = -38;
     int b = 1024;
     int c = 1;
     int d = 888;
     int e = 54321;
+    SimpleEnum e_simple = TWO;
+    ClassEnum e_class = ClassEnum::C_THREE;
 
     bool operator==(const SimpleStruct& s) const
     {
@@ -71,6 +87,8 @@ struct SimpleStruct
         .DestructorByPointer()
         .Field("a", &SimpleStruct::a)
         .Field("b", &SimpleStruct::b)
+        .Field("e_simple", &SimpleStruct::e_simple)
+        .Field("e_class", &SimpleStruct::e_class)
         .End();
     }
 };
@@ -84,7 +102,7 @@ struct A : public virtual DAVA::ReflectionBase
         return true;
     }
 
-    DAVA_VIRTUAL_REFLECTION(A)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(A)
     {
         DAVA::ReflectionRegistrator<A>::Begin()
         .Field("a", &A::a)
@@ -96,7 +114,7 @@ struct A : public virtual DAVA::ReflectionBase
 struct B : public virtual DAVA::ReflectionBase
 {
     DAVA::String b = "BBB";
-    DAVA_VIRTUAL_REFLECTION(B)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(B)
     {
         DAVA::ReflectionRegistrator<B>::Begin()
         .Field("b", &B::b)
@@ -108,7 +126,7 @@ struct AB : public A, public B
 {
     DAVA::String ab = "ABABAB";
 
-    DAVA_VIRTUAL_REFLECTION(AB, A, B)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(AB, A, B)
     {
         DAVA::ReflectionRegistrator<AB>::Begin()
         .Field("ab", &AB::ab)
@@ -119,7 +137,7 @@ struct AB : public A, public B
 struct D : public AB
 {
     DAVA::String d = "DDD";
-    DAVA_VIRTUAL_REFLECTION(D, AB)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(D, AB)
     {
         DAVA::ReflectionRegistrator<D>::Begin()
         .Field("d", &D::d)
@@ -132,7 +150,7 @@ struct DHolder : DAVA::ReflectionBase
     int i = 0;
     D d;
 
-    DAVA_VIRTUAL_REFLECTION(DHolder)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(DHolder)
     {
         DAVA::ReflectionRegistrator<DHolder>::Begin()
         .Field("i", &DHolder::i)
@@ -306,7 +324,7 @@ protected:
     A* aptr = nullptr;
     DHolder dholder = DHolder();
 
-    DAVA_VIRTUAL_REFLECTION(ReflectionTestClass, A)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(ReflectionTestClass, A)
     {
         DAVA::ReflectionRegistrator<ReflectionTestClass>::Begin()
         .ConstructorByPointer()
@@ -367,7 +385,7 @@ struct BaseOnlyReflection : public A
 
     int aaa = 0;
 
-    DAVA_VIRTUAL_REFLECTION(BaseOnlyReflection, A)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(BaseOnlyReflection, A)
     {
         DAVA::ReflectionRegistrator<BaseOnlyReflection>::Begin()
         .ConstructorByPointer(&BaseOnlyReflection::Create)
@@ -425,6 +443,8 @@ DAVA_TESTCLASS (ReflectionTest)
 
         ReflectionTestClass t;
         DAVA::Reflection t_ref = DAVA::Reflection::Create(&t);
+
+        dumpOutput.clear();
 
         t_ref.Dump(dumpOutput);
         DAVA::Logger::Info("%s", dumpOutput.str().c_str());
@@ -660,5 +680,42 @@ DAVA_TESTCLASS (ReflectionTest)
 
         const ReflectionTestClass* tptr = &t;
         DAVA::Reflection t_pref = DAVA::Reflection::Create(tptr);
+    }
+
+    DAVA_TEST (ValueEnum)
+    {
+        SimpleStruct s;
+        DAVA::Reflection r = DAVA::Reflection::Create(&s);
+
+        DAVA::Any value = r.GetField("e_simple").GetValue();
+        TEST_VERIFY(value.CanCast<int>());
+        TEST_VERIFY(!value.CanCast<char>());
+        TEST_VERIFY(value.Cast<int>() == static_cast<int>(s.e_simple));
+
+        value = r.GetField("e_class").GetValue();
+        TEST_VERIFY(value.CanCast<int>());
+        TEST_VERIFY(!value.CanCast<char>());
+        TEST_VERIFY(value.Cast<int>() == static_cast<int>(s.e_class));
+    }
+
+    DAVA_TEST (ReflectionAny)
+    {
+        const DAVA::ReflectedType* rtype = DAVA::ReflectedTypeDB::Get<SimpleStruct>();
+
+        DAVA::Any anyByPtr = rtype->CreateObject(DAVA::ReflectedType::CreatePolicy::ByPointer);
+        DAVA::Any anyByValue = rtype->CreateObject(DAVA::ReflectedType::CreatePolicy::ByValue);
+
+        DAVA::Reflection anyByPtrRef = DAVA::Reflection::Create(anyByPtr);
+        DAVA::Reflection anyByValueRef = DAVA::Reflection::Create(anyByValue);
+
+        std::ostringstream dumpOutput;
+
+        anyByPtrRef.Dump(dumpOutput);
+        DAVA::Logger::Info("%s", dumpOutput.str().c_str());
+
+        dumpOutput.clear();
+
+        anyByValueRef.Dump(dumpOutput);
+        DAVA::Logger::Info("%s", dumpOutput.str().c_str());
     }
 };

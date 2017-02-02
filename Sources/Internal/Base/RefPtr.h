@@ -190,7 +190,6 @@ struct AnyCompare<RefPtr<T>>
         return s1 == s2;
     }
 };
-
 } // ns
 
 #endif // __DAVA_REF_PTR_H__

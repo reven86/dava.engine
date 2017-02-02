@@ -60,7 +60,7 @@ public:
         for (auto& pair : *c)
         {
             V* v = &(pair.second);
-            ret.push_back({ Any(pair.first), Reflection::Create(v) });
+            ret.emplace_back(Any(pair.first), Reflection::Create(v), nullptr);
         }
 
         return ret;

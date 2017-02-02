@@ -6,13 +6,16 @@
 
 #if defined(__DAVAENGINE_QT__)
 
-#include "Base/Platform.h"
+#include "Functional/Signal.h"
 #include "Engine/Private/EnginePrivateFwd.h"
-#include <QQuickWidget>
 
+#include <QWidget>
+#include <QtEvents>
+
+class QQuickWindow;
 namespace DAVA
 {
-class RenderWidget final : public QQuickWidget
+class RenderWidget final : public QWidget
 {
     Q_OBJECT
 public:
@@ -81,58 +84,21 @@ public:
         }
     };
 
-    Q_SIGNAL void Resized(uint32 width, uint32 height);
-
     void SetClientDelegate(IClientDelegate* delegate);
-
-protected:
-    bool eventFilter(QObject* object, QEvent* e) override;
-    void resizeEvent(QResizeEvent* e) override;
-    void showEvent(QShowEvent* e) override;
-    void hideEvent(QHideEvent* e) override;
-    void closeEvent(QCloseEvent* e) override;
-    void timerEvent(QTimerEvent* e) override;
-    void dragEnterEvent(QDragEnterEvent* e) override;
-    void dragLeaveEvent(QDragLeaveEvent* e) override;
-    void dropEvent(QDropEvent* e) override;
-    void dragMoveEvent(QDragMoveEvent* e) override;
-
-    void mousePressEvent(QMouseEvent* e) override;
-    void mouseReleaseEvent(QMouseEvent* e) override;
-    void mouseDoubleClickEvent(QMouseEvent* e) override;
-    void mouseMoveEvent(QMouseEvent* e) override;
-    void wheelEvent(QWheelEvent* e) override;
-
-    void keyPressEvent(QKeyEvent* e) override;
-    void keyReleaseEvent(QKeyEvent* e) override;
-
-    bool event(QEvent* e) override;
+    Signal<uint32, uint32> resized;
 
 private:
     RenderWidget(IWindowDelegate* widgetDelegate, uint32 width, uint32 height);
     ~RenderWidget();
 
-    Q_SLOT void OnCreated();
-    Q_SLOT void OnFrame();
-    Q_SLOT void OnActiveFocusItemChanged();
-    Q_SLOT void OnSceneGraphInvalidated();
-    Q_SLOT void OnClientDelegateDestroyed();
-
     void ActivateRendering();
     bool IsInitialized() const;
+    QQuickWindow* GetQQuickWindow();
 
 private:
-    IWindowDelegate* widgetDelegate = nullptr;
-    IClientDelegate* clientDelegate = nullptr;
-    bool keyEventRecursiveGuard = false;
-
-    bool isClosing = false;
-    bool isInPaint = false;
-
     friend class Private::WindowBackend;
-
-    struct QtScreenParams;
-    std::unique_ptr<QtScreenParams> screenParams;
+    class RenderWidgetImpl;
+    RenderWidgetImpl* impl = nullptr;
 };
 
 } // namespace DAVA

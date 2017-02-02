@@ -42,7 +42,7 @@ bool BoolComponentValue::IsEnabled() const
     return true;
 }
 
-DAVA_REFLECTION_IMPL(BoolComponentValue)
+DAVA_VIRTUAL_REFLECTION_IMPL(BoolComponentValue)
 {
     ReflectionRegistrator<BoolComponentValue>::Begin()
     .Field("bool", &BoolComponentValue::GetCheckState, &BoolComponentValue::SetCheckState)
