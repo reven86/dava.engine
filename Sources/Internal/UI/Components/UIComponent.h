@@ -11,13 +11,9 @@ class UIControl;
 
 class UIComponent : public BaseObject
 {
-public:
-    DAVA_VIRTUAL_REFLECTION_IN_PLACE(UIComponent, BaseObject)
-    {
-        ReflectionRegistrator<UIComponent>::Begin()
-        .End();
-    }
+    DAVA_VIRTUAL_REFLECTION(UIComponent, BaseObject);
 
+public:
     enum eType
     {
         BACKGROUND_COMPONENT,
@@ -69,7 +65,6 @@ class UIBaseComponent : public UIComponent
     DAVA_VIRTUAL_REFLECTION_IN_PLACE(UIBaseComponent<TYPE>, UIComponent)
     {
         ReflectionRegistrator<UIBaseComponent<TYPE>>::Begin()
-        .Field("type", &UIBaseComponent<TYPE>::GetType, nullptr)
         .End();
     }
 

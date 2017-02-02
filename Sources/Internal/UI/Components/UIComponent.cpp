@@ -1,6 +1,5 @@
 #include "UIComponent.h"
 #include "UI/UIControl.h"
-
 #include "UI/Layouts/UILinearLayoutComponent.h"
 #include "UI/Layouts/UIFlowLayoutComponent.h"
 #include "UI/Layouts/UIFlowLayoutHintComponent.h"
@@ -18,6 +17,14 @@
 
 namespace DAVA
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(UIComponent)
+{
+    ReflectionRegistrator<UIComponent>::Begin()
+    .Field("control", &UIComponent::GetControl, &UIComponent::SetControl)
+    .Field("type", &UIComponent::GetType, nullptr)
+    .End();
+}
+
 UIComponent::UIComponent()
     : control(nullptr)
 {

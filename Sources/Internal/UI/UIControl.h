@@ -195,10 +195,9 @@ class UIControl : public AnimatedObject
 {
     friend class UIInputSystem;
     friend class UIControlSystem;
-
-public:
     DAVA_VIRTUAL_REFLECTION(UIControl, AnimatedObject);
 
+public:
     /**
      \enum Control state bits.
      */

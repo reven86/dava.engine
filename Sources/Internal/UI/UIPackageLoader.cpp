@@ -409,7 +409,6 @@ void UIPackageLoader::LoadComponentPropertiesFromYamlNode(UIControl* control, co
         UIComponent* component = builder->BeginComponentPropertiesSection(nodeDescr.type, nodeDescr.index);
         if (component)
         {
-            const ReflectedStructure* structure = component->Dava__GetReflectedType()->GetStrucutre();
             Reflection componentRef = Reflection::Create(&component);
             Vector<Reflection::Field> fields = componentRef.GetFields();
             for (Reflection::Field& field : fields)

@@ -5,6 +5,7 @@
 #include "Base/BaseObject.h"
 #include "Base/Message.h"
 #include "FileSystem/YamlParser.h"
+#include "Reflection/Reflection.h"
 
 namespace DAVA
 {
@@ -21,6 +22,8 @@ class Animation;
  */
 class AnimatedObject : public BaseObject
 {
+    DAVA_VIRTUAL_REFLECTION(AnimatedObject, BaseObject);
+
 protected:
     virtual ~AnimatedObject();
 
