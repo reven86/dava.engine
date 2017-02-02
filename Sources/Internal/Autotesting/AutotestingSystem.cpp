@@ -96,7 +96,7 @@ bool AutotestingSystem::ResolvePathToAutomation()
     // Try to find automation data in Documents
     if (DeviceInfo::GetPlatform() == DeviceInfo::PLATFORM_ANDROID)
     {
-        pathToAutomation = FileSystem::Instance()->GetPublicDocumentsPath().GetAbsolutePathname() + "/Autoteting/";
+        pathToAutomation = FileSystem::Instance()->GetPublicDocumentsPath().GetAbsolutePathname() + "/Autotesting/";
     }
     else
     {
@@ -200,7 +200,6 @@ void AutotestingSystem::FetchParametersFromIdYaml()
     frameworkRev = option->GetString("FrameworkRev");
 
     // Check is build fol local debugging.  By default: use DB.
-    //bool isLocalBuild = ;
     if ("true" == option->GetString("LocalBuild", "false"))
     {
         groupName = option->GetString("Group", AutotestingDB::DB_ERROR_STR_VALUE);
