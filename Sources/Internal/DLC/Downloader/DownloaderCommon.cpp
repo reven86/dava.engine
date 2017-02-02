@@ -1,6 +1,7 @@
 #include "DownloaderCommon.h"
 #include "FileSystem/File.h"
 #include "FileSystem/FileSystem.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {

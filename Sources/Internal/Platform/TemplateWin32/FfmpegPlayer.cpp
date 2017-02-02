@@ -216,7 +216,7 @@ bool FfmpegPlayer::InitVideo()
     frameWidth = videoCodecContext->width;
     frameBufferSize = ImageUtils::GetSizeInBytes(frameWidth, frameHeight, pixelFormat);
 
-    DVASSERT(nullptr == videoDecodingThread)
+    DVASSERT(nullptr == videoDecodingThread);
 
     videoDecodingThread = Thread::Create(Message(this, &FfmpegPlayer::VideoDecodingThread));
     videoDecodingThread->Start();

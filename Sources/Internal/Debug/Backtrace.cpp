@@ -199,9 +199,19 @@ String GetFrameSymbol(void* frame, bool demangle)
         // All DbgHelp functions are single threaded
         static Mutex mutex;
         LockGuard<Mutex> lock(mutex);
-        if (SymFromAddr(GetCurrentProcess(), reinterpret_cast<DWORD64>(frame), nullptr, symInfo))
+        HANDLE currentProcess = GetCurrentProcess();
+        if (SymFromAddr(currentProcess, reinterpret_cast<DWORD64>(frame), nullptr, symInfo))
         {
-            result = symInfo->Name;
+            const DWORD maxNameSize = 1024;
+            CHAR moduleFileName[maxNameSize];
+            DWORD moduleNameLength = GetModuleFileNameA(reinterpret_cast<HMODULE>(symInfo->ModBase), moduleFileName, maxNameSize);
+            if (moduleNameLength != 0)
+            {
+                const char* moduleName = strrchr(moduleFileName, '\\');
+                result = moduleName != nullptr ? (moduleName + 1) : moduleFileName;
+                result += "!";
+            }
+            result += symInfo->Name;
         }
     }
 
@@ -212,7 +222,8 @@ String GetFrameSymbol(void* frame, bool demangle)
         // Include SO name
         if (dlinfo.dli_fname != nullptr)
         {
-            result = dlinfo.dli_fname;
+            const char* moduleName = rindex(dlinfo.dli_fname, '/');
+            result = moduleName != nullptr ? (moduleName + 1) : dlinfo.dli_fname;
             result += '!';
         }
 
@@ -302,6 +313,12 @@ String GetBacktraceString(void* const* frames, size_t framesSize)
 String GetBacktraceString(const Vector<void*>& backtrace)
 {
     return GetBacktraceString(backtrace.data(), backtrace.size());
+}
+
+String GetBacktraceString(const Vector<void*>& backtrace, size_t framesSize)
+{
+    const size_t length = (framesSize == 0) ? backtrace.size() : std::min(backtrace.size(), framesSize);
+    return GetBacktraceString(backtrace.data(), length);
 }
 
 String GetBacktraceString(size_t depth)

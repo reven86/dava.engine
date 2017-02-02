@@ -1,5 +1,6 @@
 #include "Base/BaseTypes.h"
 #include "Core/Core.h"
+#include "Logger/Logger.h"
 
 #if defined(__DAVAENGINE_IPHONE__)
 
@@ -413,7 +414,7 @@ void TextFieldPlatformImpl::GetText(WideString& string) const
     DVASSERT(nullptr != textInField);
 
     const char* cstr = [textInField cStringUsingEncoding:NSUTF8StringEncoding];
-    DVASSERT_MSG(nullptr != cstr, "TextFieldText can't be converted into UTF8String.");
+    DVASSERT(nullptr != cstr, "TextFieldText can't be converted into UTF8String.");
     if (nullptr != cstr)
     {
         UTF8Utils::EncodeToWideString((DAVA::uint8*)cstr, strlen(cstr), string);

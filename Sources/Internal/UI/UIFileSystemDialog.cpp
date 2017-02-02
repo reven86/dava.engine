@@ -12,6 +12,7 @@
 #include "Platform/SystemTimer.h"
 #include "UI/UIControlSystem.h"
 #include "Render/2D/FTFont.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {
@@ -25,8 +26,8 @@ UIFileSystemDialog::UIFileSystemDialog(const FilePath& _fontPath)
 {
     fontPath = _fontPath;
 
-    background->SetDrawType(UIControlBackground::DRAW_FILL);
-    background->SetColor(Color(0.5, 0.5, 0.5, 0.75));
+    GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
+    GetBackground()->SetColor(Color(0.5f, 0.5f, 0.5f, 0.75f));
     SetPivot(Vector2(0.5f, 0.5f));
 
     operationType = OPERATION_LOAD;

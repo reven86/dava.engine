@@ -1,7 +1,7 @@
 # Only interpret ``if()`` arguments as variables or keywords when unquoted.
-if(NOT (CMAKE_VERSION VERSION_LESS 3.1))
+#if(NOT (CMAKE_VERSION VERSION_LESS 3.1))
     cmake_policy(SET CMP0054 NEW)
-endif()
+#endif()
 
 #
 function ( load_config CONFIG_FILE )
@@ -20,11 +20,6 @@ function ( load_config CONFIG_FILE )
     endforeach()
 
 endfunction ()
-
-# Only interpret ``if()`` arguments as variables or keywords when unquoted.
-if(NOT (CMAKE_VERSION VERSION_LESS 3.1))
-    cmake_policy(SET CMP0054 NEW)
-endif()
 
 if( APPLE AND NOT IOS AND NOT ANDROID )
 	set( MACOS 1 )
@@ -46,7 +41,9 @@ set( DAVA_PREDEFINED_TARGETS_FOLDER     "CMAKE" )
 
 get_filename_component( DAVA_ROOT_DIR ${DAVA_ROOT_DIR} ABSOLUTE )
 
-if (WIN32)
+set( DAVA_BIN_DIR "${DAVA_ROOT_DIR}/Bin" )
+
+if( WIN32  )
 	string ( FIND ${CMAKE_GENERATOR} "Win64" X64_PROJECT )
 
 	if( ${X64_PROJECT} EQUAL -1 )
@@ -56,16 +53,9 @@ if (WIN32)
 		set ( X64_MODE true )
                 set( DAVA_PROJECT_BIT 64 )
 	endif ()
-
-	if( X64_MODE )
-            set( DAVA_TOOLS_BIN_DIR         "${DAVA_ROOT_DIR}/Tools/Bin/x64" )
-	else ()
-            set( DAVA_TOOLS_BIN_DIR         "${DAVA_ROOT_DIR}/Tools/Bin" )
-	endif ()
-    
-else ()
-	set( DAVA_TOOLS_BIN_DIR             "${DAVA_ROOT_DIR}/Tools/Bin" )
 endif()
+
+################
 
 set( DAVA_PLATFORM_LIST IOS 
                         MACOS 
@@ -91,7 +81,7 @@ endif()
 
 set( DAVA_MODULES_DIR                   "${DAVA_ROOT_DIR}/Modules" )
 set( DAVA_SOURCES_DIR                   "${DAVA_ROOT_DIR}/Sources" )
-set( DAVA_TOOLS_DIR                     "${DAVA_SOURCES_DIR}/Tools" )
+set( DAVA_TOOLS_DIR                     "${DAVA_SOURCES_DIR}/Programs" )
 set( DAVA_ENGINE_DIR                    "${DAVA_SOURCES_DIR}/Internal" )
 set( DAVA_EXTERNAL_DIR                  "${DAVA_SOURCES_DIR}/External" )
 set( DAVA_PLATFORM_SRC                  "${DAVA_ENGINE_DIR}/Platform" )
@@ -114,15 +104,7 @@ if ( WINDOWS_UAP )
     set( DAVA_THIRD_PARTY_INCLUDES_PATH "${DAVA_THIRD_PARTY_INCLUDES_PATH}" 
                                         "${DAVA_THIRD_PARTY_ROOT_PATH}/openssl/include/uwp"
                                         "${DAVA_THIRD_PARTY_ROOT_PATH}/fmod_uap/include" )
-
-    #libs paths
-    set ( DAVA_WIN_UAP_LIBRARIES_PATH_COMMON "${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/win10" )
-    
-    #root deployment location for resources
-    #set ( DAVA_WIN_UAP_RESOURCES_DEPLOYMENT_LOCATION "DXFL-DX11" )
-    #add_definitions ( -DDAVA_WIN_UAP_RESOURCES_DEPLOYMENT_LOCATION="${DAVA_WIN_UAP_RESOURCES_DEPLOYMENT_LOCATION}"
-    #                  -DDAVA_WIN_UAP_RESOURCES_PREFIX="_neutral_split.dxfeaturelevel-dx11" )
-
+  
     #Deprecated since cmake 3.4, added for backwards compatibility
     set ( CMAKE_VS_TARGET_PLATFORM_VERSION ${WINDOWS_UAP_TARGET_PLATFORM_VERSION} )
 
@@ -179,14 +161,21 @@ set( DAVA_THIRD_PARTY_INCLUDES_PATH "${DAVA_THIRD_PARTY_INCLUDES_PATH}"
 get_filename_component( DAVA_SPEEDTREE_ROOT_DIR ${DAVA_SPEEDTREE_ROOT_DIR} ABSOLUTE )
 get_filename_component( DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR ${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR} ABSOLUTE )
 
-set( DAVA_BINARY_WIN32_DIR  "${DAVA_TOOLS_BIN_DIR}" "${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/beast/bin"  )
+set( DAVA_BINARY_WIN32_DIR  "${DAVA_THIRD_PARTY_LIBRARIES_PATH}" "${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/beast/bin"  )
 
 set( DAVA_INCLUDE_DIR       ${DAVA_ENGINE_DIR} ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
 
+
 if( NOT DEPLOY_DIR )
     set ( DEPLOY_DIR ${CMAKE_BINARY_DIR}/app )
-
 endif()
+
+if( MACOS AND NOT MAC_DISABLE_BUNDLE)
+    set( DEPLOY_EXECUTE_DIR ${DEPLOY_DIR}/${PROJECT_NAME}.app/Contents/MacOS )
+else()
+    set( DEPLOY_EXECUTE_DIR ${DEPLOY_DIR} )
+endif()
+
 
 #DavaConfig
 if( CUSTOM_DAVA_CONFIG_PATH_MAC AND MACOS )

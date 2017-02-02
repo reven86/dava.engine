@@ -97,17 +97,23 @@ public:
         return luaSystem;
     };
 
-    static String ResolvePathToAutomation(const String& automationPath);
+    bool ResolvePathToAutomation();
+    FilePath GetPathTo(const String& path);
 
 protected:
     void DrawTouches();
     void OnScreenShotInternal(Texture* texture);
+    void OnWindowSizeChanged(Window*, Size2f windowSize, Size2f surfaceSize);
+
+    void ResetScreenshotTexture(Size2i size);
+
     AutotestingSystemLua* luaSystem;
     //DB
     void ExitApp();
 
 private:
     bool isScreenShotSaving = false;
+    FilePath pathToAutomation;
 
 public:
     uint64 startTimeMS;
@@ -159,6 +165,8 @@ public:
     Texture* screenshotTexture = nullptr;
     rhi::HSyncObject screenshotSync;
     bool screenshotRequested = false;
+
+    TrackedObject localTrackedObject;
 };
 
 inline bool AutotestingSystem::GetIsScreenShotSaving() const

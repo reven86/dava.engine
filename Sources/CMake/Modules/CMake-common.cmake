@@ -1,7 +1,7 @@
 # Only interpret ``if()`` arguments as variables or keywords when unquoted.
-if(NOT (CMAKE_VERSION VERSION_LESS 3.1))
+#if(NOT (CMAKE_VERSION VERSION_LESS 3.1))
     cmake_policy(SET CMP0054 NEW)
-endif()
+#endif()
 
 function (append_property KEY_PROP  VALUE)
     GET_PROPERTY(PROP_LIST_VALUE GLOBAL PROPERTY ${KEY_PROP} )
@@ -44,6 +44,16 @@ include ( CMakeDependentOption )
 include ( CMakeParseArguments  )
 include ( UnityBuild           )
 include ( Coverage             )
+include ( ModuleHelper         )
+
+#
+macro ( set_subsystem_console )
+    if( WIN32 )
+        set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_DEBUG   "/SUBSYSTEM:CONSOLE" )
+        set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/SUBSYSTEM:CONSOLE" )
+        set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELWITHDEBINFO "/SUBSYSTEM:CONSOLE" )
+    endif()
+endmacro ()
 
 #
 macro ( set_project_files_properties FILES_LIST )
@@ -818,13 +828,6 @@ macro( convert_graphics )
     if( NOT ARG_PARAM_PACKER AND DEPLOY )
         set( ARG_PARAM_PACKER  "-teamcity" )
     endif()
-
-    execute_process( COMMAND ${PYTHON_EXECUTABLE} ${DAVA_SCRIPTS_FILES_PATH}/convert_graphics.py 
-                                    --pathDataSource=${CMAKE_CURRENT_LIST_DIR}/DataSource 
-                                    --pathDava=${DAVA_ROOT_DIR} 
-                                    --clearData=${ARG_CLEAR}
-                                    --paramPacker=${ARG_PARAM_PACKER}
-                                   )
 
 endmacro()
 

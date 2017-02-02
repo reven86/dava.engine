@@ -22,6 +22,8 @@
 #endif
 
 #include "MemoryManager/MemoryProfiler.h"
+#include "Logger/Logger.h"
+#include "Debug/DVAssertDefaultHandlers.h"
 
 extern void FrameworkDidLaunched();
 extern void FrameworkWillTerminate();
@@ -35,6 +37,8 @@ uint32 GetKeyboardModifiers();
 
 int Core::Run(int argc, char* argv[], AppHandle handle)
 {
+    Assert::SetupDefaultHandlers();
+
 #if defined(DENY_RUN_MULTIPLE_APP_INSTANCES)
     if (AlreadyRunning())
     {
@@ -467,7 +471,7 @@ bool CoreWin32Platform::SetScreenMode(eScreenMode screenMode)
         }
         default:
         {
-            DVASSERT_MSG(false, "Incorrect screen mode");
+            DVASSERT(false, "Incorrect screen mode");
             Logger::Error("Incorrect screen mode");
             return false;
         }
@@ -557,7 +561,7 @@ void CoreWin32Platform::OnMouseMove(int32 x, int32 y)
     }
 }
 
-void CoreWin32Platform::OnMouseWheel(int32 wheelDelta, int32 x, int32 y)
+void CoreWin32Platform::OnMouseWheel(int32 wheelDeltaX, int32 wheelDeltaY, int32 x, int32 y)
 {
     UIEvent e;
     e.physPoint = Vector2(static_cast<float32>(x), static_cast<float32>(y));
@@ -565,16 +569,7 @@ void CoreWin32Platform::OnMouseWheel(int32 wheelDelta, int32 x, int32 y)
     e.phase = UIEvent::Phase::WHEEL;
     e.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
     e.modifiers = GetKeyboardModifiers();
-
-    KeyboardDevice& keybDev = InputSystem::Instance()->GetKeyboard();
-    if (keybDev.IsKeyPressed(Key::LSHIFT) || keybDev.IsKeyPressed(Key::RSHIFT))
-    {
-        e.wheelDelta = { static_cast<float32>(wheelDelta), 0 };
-    }
-    else
-    {
-        e.wheelDelta = { 0, static_cast<float32>(wheelDelta) };
-    }
+    e.wheelDelta = { static_cast<float32>(wheelDeltaX), static_cast<float32>(wheelDeltaY) };
 
     UIControlSystem::Instance()->OnInput(&e);
 }
@@ -672,7 +667,7 @@ bool IsMouseMoveEvent(UINT message)
 
 bool IsMouseWheelEvent(UINT message)
 {
-    return message == WM_MOUSEWHEEL;
+    return message == WM_MOUSEWHEEL || message == WM_MOUSEHWHEEL;
 }
 
 bool IsMouseInputEvent(UINT message, LPARAM messageExtraInfo)
@@ -858,7 +853,15 @@ bool CoreWin32Platform::ProcessMouseWheelEvent(HWND hWnd, UINT message, WPARAM w
         return false;
     }
 
-    OnMouseWheel(zDelta, pos.x, pos.y);
+    if (message == WM_MOUSEHWHEEL)
+    {
+        OnMouseWheel(zDelta, 0, pos.x, pos.y);
+    }
+    else
+    {
+        OnMouseWheel(0, zDelta, pos.x, pos.y);
+    }
+
     return true;
 }
 

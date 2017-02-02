@@ -1,5 +1,4 @@
 #pragma once
-
 #include "Base/BaseTypes.h"
 
 namespace DAVA
@@ -42,6 +41,8 @@ protected:
 
     template <typename T>
     static ReflectedType* Edit();
+
+    static void RegisterDBType(ReflectedType* reflectedType);
 
     static List<std::unique_ptr<ReflectedType>> customReflectedTypes;
     static UnorderedMap<const Type*, ReflectedType*> typeToReflectedTypeMap;

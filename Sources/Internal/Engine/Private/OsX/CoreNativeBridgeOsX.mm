@@ -9,11 +9,12 @@
 
 #include "Engine/Window.h"
 #include "Engine/Private/EngineBackend.h"
-#include "Engine/Private/OsX/PlatformCoreOsx.h"
+#include "Engine/Private/OsX/PlatformCoreOsX.h"
 #include "Engine/Private/OsX/Window/WindowBackendOsX.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 
 #import "Engine/Private/OsX/AppDelegateOsX.h"
+#import "Engine/Mac/PlatformApi.h"
 
 #include "Concurrency/LockGuard.h"
 #include "Logger/Logger.h"
@@ -79,6 +80,9 @@
 
 //////////////////////////////////////////////////////////////////
 
+// Defined in EntryApple.mm
+extern NSAutoreleasePool* preMainLoopReleasePool;
+
 namespace DAVA
 {
 namespace Private
@@ -86,24 +90,28 @@ namespace Private
 CoreNativeBridge::CoreNativeBridge(PlatformCore* core)
     : core(core)
 {
+    appDelegateListeners = [[NSMutableArray alloc] init];
+
     // Force init NSApplication
     [NSApplication sharedApplication];
 }
 
-CoreNativeBridge::~CoreNativeBridge() = default;
+CoreNativeBridge::~CoreNativeBridge()
+{
+    [appDelegateListeners release];
+}
 
 void CoreNativeBridge::Run()
 {
-    @autoreleasepool
-    {
-        appDelegate = [[AppDelegate alloc] initWithBridge:this];
-        [[NSApplication sharedApplication] setDelegate:(id<NSApplicationDelegate>)appDelegate];
+    appDelegate = [[AppDelegate alloc] initWithBridge:this];
+    [[NSApplication sharedApplication] setDelegate:(id<NSApplicationDelegate>)appDelegate];
 
-        // NSApplicationMain never returns
-        // NSApplicationMain itself ignores the argc and argv arguments. Instead, Cocoa gets its arguments indirectly via _NSGetArgv, _NSGetArgc, and _NSGetEnviron.
-        // See https://developer.apple.com/library/mac/documentation/Cocoa/Reference/ApplicationKit/Miscellaneous/AppKit_Functions/#//apple_ref/c/func/NSApplicationMain
-        ::NSApplicationMain(0, nullptr);
-    }
+    [preMainLoopReleasePool drain];
+
+    // NSApplicationMain never returns
+    // NSApplicationMain itself ignores the argc and argv arguments. Instead, Cocoa gets its arguments indirectly via _NSGetArgv, _NSGetArgc, and _NSGetEnviron.
+    // See https://developer.apple.com/library/mac/documentation/Cocoa/Reference/ApplicationKit/Miscellaneous/AppKit_Functions/#//apple_ref/c/func/NSApplicationMain
+    ::NSApplicationMain(0, nullptr);
 }
 
 void CoreNativeBridge::Quit()
@@ -132,8 +140,9 @@ void CoreNativeBridge::OnFrameTimer()
     }
 }
 
-void CoreNativeBridge::ApplicationWillFinishLaunching()
+void CoreNativeBridge::ApplicationWillFinishLaunching(NSNotification* notification)
 {
+    NotifyListeners(ON_WILL_FINISH_LAUNCHING, notification, nullptr, nullptr);
 }
 
 void CoreNativeBridge::ApplicationDidFinishLaunching(NSNotification* notification)
@@ -154,14 +163,14 @@ void CoreNativeBridge::ApplicationDidChangeScreenParameters()
     Logger::Debug("****** CoreNativeBridge::ApplicationDidChangeScreenParameters");
 }
 
-void CoreNativeBridge::ApplicationDidBecomeActive()
+void CoreNativeBridge::ApplicationDidBecomeActive(NSNotification* notification)
 {
-    NotifyListeners(ON_DID_BECOME_ACTIVE, nullptr, nullptr, nullptr);
+    NotifyListeners(ON_DID_BECOME_ACTIVE, notification, nullptr, nullptr);
 }
 
-void CoreNativeBridge::ApplicationDidResignActive()
+void CoreNativeBridge::ApplicationDidResignActive(NSNotification* notification)
 {
-    NotifyListeners(ON_DID_RESIGN_ACTIVE, nullptr, nullptr, nullptr);
+    NotifyListeners(ON_DID_RESIGN_ACTIVE, notification, nullptr, nullptr);
 }
 
 void CoreNativeBridge::ApplicationDidHide()
@@ -195,9 +204,9 @@ bool CoreNativeBridge::ApplicationShouldTerminateAfterLastWindowClosed()
     return false;
 }
 
-void CoreNativeBridge::ApplicationWillTerminate()
+void CoreNativeBridge::ApplicationWillTerminate(NSNotification* notification)
 {
-    NotifyListeners(ON_WILL_TERMINATE, nullptr, nullptr, nullptr);
+    NotifyListeners(ON_WILL_TERMINATE, notification, nullptr, nullptr);
 
     [frameTimer cancel];
 
@@ -212,80 +221,101 @@ void CoreNativeBridge::ApplicationWillTerminate()
     std::exit(exitCode);
 }
 
-void CoreNativeBridge::RegisterNSApplicationDelegateListener(PlatformApi::Mac::NSApplicationDelegateListener* listener)
+void CoreNativeBridge::RegisterDVEApplicationListener(id<DVEApplicationListener> listener)
 {
     DVASSERT(listener != nullptr);
 
-    using std::begin;
-    using std::end;
-
     LockGuard<Mutex> lock(listenersMutex);
-    auto it = std::find(begin(appDelegateListeners), end(appDelegateListeners), listener);
-    if (it == end(appDelegateListeners))
+    if ([appDelegateListeners indexOfObject:listener] == NSNotFound)
     {
-        appDelegateListeners.push_back(listener);
+        [appDelegateListeners addObject:listener];
     }
 }
 
-void CoreNativeBridge::UnregisterNSApplicationDelegateListener(PlatformApi::Mac::NSApplicationDelegateListener* listener)
+void CoreNativeBridge::UnregisterDVEApplicationListener(id<DVEApplicationListener> listener)
 {
-    using std::begin;
-    using std::end;
-
     LockGuard<Mutex> lock(listenersMutex);
-    auto it = std::find(begin(appDelegateListeners), end(appDelegateListeners), listener);
-    if (it != end(appDelegateListeners))
-    {
-        appDelegateListeners.erase(it);
-    }
+    [appDelegateListeners removeObject:listener];
 }
 
 void CoreNativeBridge::NotifyListeners(eNotificationType type, NSObject* arg1, NSObject* arg2, NSObject* arg3)
 {
-    Vector<PlatformApi::Mac::NSApplicationDelegateListener*> listenersCopy;
+    NSArray* listenersCopy = nil;
     {
         // Make copy to allow listeners unregistering inside a callback
         LockGuard<Mutex> lock(listenersMutex);
-        listenersCopy.resize(appDelegateListeners.size());
-        std::copy(appDelegateListeners.begin(), appDelegateListeners.end(), listenersCopy.begin());
+        listenersCopy = [appDelegateListeners copy];
     }
-    for (PlatformApi::Mac::NSApplicationDelegateListener* l : listenersCopy)
+
+    for (id<DVEApplicationListener> listener in listenersCopy)
     {
         switch (type)
         {
+        case ON_WILL_FINISH_LAUNCHING:
+            if ([listener respondsToSelector:@selector(applicationWillFinishLaunching:)])
+            {
+                [listener applicationWillFinishLaunching:static_cast<NSNotification*>(arg1)];
+            }
+            break;
         case ON_DID_FINISH_LAUNCHING:
-            l->applicationDidFinishLaunching(static_cast<NSNotification*>(arg1));
+            if ([listener respondsToSelector:@selector(applicationDidFinishLaunching:)])
+            {
+                [listener applicationDidFinishLaunching:static_cast<NSNotification*>(arg1)];
+            }
             break;
         case ON_DID_BECOME_ACTIVE:
-            l->applicationDidBecomeActive();
+            if ([listener respondsToSelector:@selector(applicationDidBecomeActive:)])
+            {
+                [listener applicationDidBecomeActive:static_cast<NSNotification*>(arg1)];
+            }
             break;
         case ON_DID_RESIGN_ACTIVE:
-            l->applicationDidResignActive();
+            if ([listener respondsToSelector:@selector(applicationDidResignActive:)])
+            {
+                [listener applicationDidResignActive:static_cast<NSNotification*>(arg1)];
+            }
             break;
         case ON_WILL_TERMINATE:
-            l->applicationWillTerminate();
+            if ([listener respondsToSelector:@selector(applicationWillTerminate:)])
+            {
+                [listener applicationWillTerminate:static_cast<NSNotification*>(arg1)];
+            }
             break;
         case ON_DID_RECEIVE_REMOTE_NOTIFICATION:
-            l->didReceiveRemoteNotification(static_cast<NSApplication*>(arg1), static_cast<NSDictionary<NSString*, id>*>(arg2));
+            if ([listener respondsToSelector:@selector(application:didReceiveRemoteNotification:)])
+            {
+                [listener application:static_cast<NSApplication*>(arg1) didReceiveRemoteNotification:static_cast<NSDictionary*>(arg2)];
+            }
             break;
         case ON_DID_REGISTER_REMOTE_NOTIFICATION:
-            l->didRegisterForRemoteNotificationsWithDeviceToken(static_cast<NSApplication*>(arg1), static_cast<NSData*>(arg2));
+            if ([listener respondsToSelector:@selector(application:didRegisterForRemoteNotificationsWithDeviceToken:)])
+            {
+                [listener application:static_cast<NSApplication*>(arg1) didRegisterForRemoteNotificationsWithDeviceToken:static_cast<NSData*>(arg2)];
+            }
             break;
         case ON_DID_FAIL_TO_REGISTER_REMOTE_NOTIFICATION:
-            l->didFailToRegisterForRemoteNotificationsWithError(static_cast<NSApplication*>(arg1), static_cast<NSError*>(arg2));
+            if ([listener respondsToSelector:@selector(application:didFailToRegisterForRemoteNotificationsWithError:)])
+            {
+                [listener application:static_cast<NSApplication*>(arg1) didFailToRegisterForRemoteNotificationsWithError:static_cast<NSError*>(arg2)];
+            }
             break;
         case ON_DID_ACTIVATE_NOTIFICATION:
-            l->didActivateNotification(static_cast<NSUserNotification*>(arg1));
+            if ([listener respondsToSelector:@selector(userNotificationCenter:didActivateNotification:)])
+            {
+                [listener userNotificationCenter:static_cast<NSUserNotificationCenter*>(arg1) didActivateNotification:static_cast<NSUserNotification*>(arg1)];
+            }
             break;
         default:
             break;
         }
     }
+
+    [listenersCopy release];
 }
 
-void CoreNativeBridge::ApplicationDidActivateNotification(NSUserNotification* notification)
+void CoreNativeBridge::ApplicationDidActivateNotification(NSUserNotificationCenter* notificationCenter, NSUserNotification* notification)
 {
-    NotifyListeners(ON_DID_ACTIVATE_NOTIFICATION, notification, nullptr, nullptr);
+    NotifyListeners(ON_DID_ACTIVATE_NOTIFICATION, notificationCenter, notification, nullptr);
 }
 } // namespace Private
 } // namespace DAVA

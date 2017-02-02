@@ -6,6 +6,7 @@
 #include <winsock2.h>
 #include <collection.h>
 
+#include "Logger/Logger.h"
 #include "Debug/DVAssert.h"
 #include "FileSystem/FileSystem.h"
 #include "Utils/MD5.h"

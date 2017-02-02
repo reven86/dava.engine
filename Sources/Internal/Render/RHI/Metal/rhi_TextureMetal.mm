@@ -417,7 +417,7 @@ metal_Texture_Create(const Texture::Descriptor& texDesc)
 //------------------------------------------------------------------------------
 
 static void
-metal_Texture_Delete(Handle tex)
+metal_Texture_Delete(Handle tex, bool)
 {
     TextureMetal_t* self = TextureMetalPool::Get(tex);
 
@@ -663,7 +663,7 @@ void SetToRHIFragment(Handle tex, unsigned unitIndex, id<MTLRenderCommandEncoder
     {
         MTLPurgeableState s = [self->uid setPurgeableState:MTLPurgeableStateKeepCurrent];
 
-        DVASSERT(s != MTLPurgeableStateKeepCurrent)
+        DVASSERT(s != MTLPurgeableStateKeepCurrent);
         if (s == MTLPurgeableStateEmpty)
         {
             if (!self->NeedRestore())

@@ -3,10 +3,8 @@
 
 namespace DAVA
 {
-SceneSystem::SceneSystem(Scene* _scene)
-    : requiredComponents(0)
-    , scene(_scene)
-    , locked(false)
+SceneSystem::SceneSystem(Scene* scene_)
+    : scene(scene_)
 {
 }
 
@@ -107,4 +105,13 @@ bool SceneSystem::IsLocked() const
 {
     return locked;
 }
-};
+
+void SceneSystem::SetScene(Scene* scene_)
+{
+    scene = scene_;
+}
+
+void SceneSystem::InputCancelled(UIEvent* event)
+{
+}
+}

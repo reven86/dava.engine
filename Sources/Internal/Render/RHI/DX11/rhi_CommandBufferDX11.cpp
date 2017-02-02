@@ -209,7 +209,7 @@ ID3D11RasterizerState* CommandBufferDX11_t::GetRasterizerState(const RasterizerP
         desc.CullMode = D3D11_CULL_FRONT;
         break;
     default:
-        DVASSERT_MSG(0, "Invalid CullMode provided");
+        DVASSERT(0, "Invalid CullMode provided");
     }
 
     ID3D11RasterizerState* state = nullptr;
@@ -834,7 +834,7 @@ void CommandBufferDX11_t::ExecuteSoftware()
 
         default:
             DAVA::Logger::Error("unsupported command: %d", cmd->type);
-            DVASSERT_MSG(false, "unsupported command");
+            DVASSERT(false, "unsupported command");
         }
 
         ++commandsExecuted;
@@ -1434,6 +1434,8 @@ static void dx11_FinishFrame()
 
 static void dx11_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)
 {
+    DAVA_PROFILER_CPU_SCOPE(DAVA::ProfilerCPUMarkerName::RHI_EXECUTE_IMMEDIATE_CMDS);
+
     DX11Command* commandData = reinterpret_cast<DX11Command*>(command->cmdData);
     for (DX11Command *cmd = commandData, *cmdEnd = commandData + command->cmdCount; cmd != cmdEnd; ++cmd)
     {
@@ -1598,7 +1600,7 @@ static void dx11_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)
         default:
         {
             DAVA::String message = DAVA::Format("Invalid or unsupported DX11 command: %u", cmd->func);
-            DVASSERT_MSG(0, message.c_str());
+            DVASSERT(0, message.c_str());
         }
         }
     }

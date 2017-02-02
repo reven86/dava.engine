@@ -93,6 +93,12 @@ public:
     virtual FilePath GetCurrentExecutableDirectory();
 
     /**
+     \brief Function to retrieve directory, which contain plugins files
+     \returns plugin directory
+     */
+    virtual FilePath GetPluginDirectory();
+
+    /**
 		\brief Function to set current working directory
 		\param[in] newWorkingDirectory new working directory to be set
 		\returns true if directory set successfully

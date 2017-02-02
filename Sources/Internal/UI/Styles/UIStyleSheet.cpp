@@ -28,16 +28,26 @@ const UIStyleSheetSelectorChain& UIStyleSheet::GetSelectorChain() const
     return selectorChain;
 }
 
-void UIStyleSheet::SetPropertyTable(UIStyleSheetPropertyTable* newProperties)
+const UIStyleSheetSourceInfo& UIStyleSheet::GetSourceInfo() const
 {
-    properties = newProperties;
+    return sourceInfo;
 }
 
-void UIStyleSheet::SetSelectorChain(const UIStyleSheetSelectorChain& newSelectorChain)
+void UIStyleSheet::SetPropertyTable(UIStyleSheetPropertyTable* properties_)
 {
-    selectorChain = newSelectorChain;
+    properties = properties_;
+}
+
+void UIStyleSheet::SetSelectorChain(const UIStyleSheetSelectorChain& selectorChain_)
+{
+    selectorChain = selectorChain_;
 
     RecalculateScore();
+}
+
+void UIStyleSheet::SetSourceInfo(const UIStyleSheetSourceInfo& sourceInfo_)
+{
+    sourceInfo = sourceInfo_;
 }
 
 void UIStyleSheet::RecalculateScore()

@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_SCENE3D_SCENESYSTEM_H__
-#define __DAVAENGINE_SCENE3D_SCENESYSTEM_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 
@@ -101,6 +100,8 @@ public:
     }
 #endif
 
+    virtual void InputCancelled(UIEvent* event);
+
     virtual void SetLocked(bool locked);
     bool IsLocked() const;
 
@@ -115,13 +116,16 @@ public:
     }
 
 protected:
-    inline Scene* GetScene() const;
+    friend class Scene;
+
+    Scene* GetScene() const;
+    virtual void SetScene(Scene* scene);
 
 private:
-    uint64 requiredComponents;
-    Scene* scene;
+    uint64 requiredComponents = 0;
+    Scene* scene = nullptr;
 
-    bool locked;
+    bool locked = false;
 };
 
 // Inline
@@ -139,5 +143,4 @@ inline uint64 SceneSystem::GetRequiredComponents() const
 {
     return requiredComponents;
 }
-};
-#endif //__DAVAENGINE_SCENE3D_SCENESYSTEM_H__
+}
