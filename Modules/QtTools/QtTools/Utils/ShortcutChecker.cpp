@@ -111,7 +111,7 @@ bool CheckContext(QAction* action)
     {
         return CheckWidgetWithChildrenPolicy(action->associatedWidgets());
     }
-    if (context != Qt::WidgetShortcut)
+    if (context == Qt::WidgetShortcut)
     {
         QList<QWidget*> associatedWidgets = action->associatedWidgets();
         auto iter = qFind(associatedWidgets.begin(), associatedWidgets.end(), DAVA::PlatformApi::Qt::GetApplication()->focusWidget());
