@@ -10,7 +10,7 @@ public:
     DAVA::int32 dummyIntField = 0;
     DAVA::float32 dummyFloatField = 0.0f;
 
-    DAVA_VIRTUAL_REFLECTION(DataListenerNode, DAVA::TArc::DataNode)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(DataListenerNode, DAVA::TArc::DataNode)
     {
         DAVA::ReflectionRegistrator<DataListenerNode>::Begin()
         .Field("dummyIntField", &DataListenerNode::dummyIntField)
@@ -83,6 +83,17 @@ DAVA_TARC_TESTCLASS(DataListenerTest)
 
         activeWrapper.CreateEditor<DataListenerNode>()->dummyFloatField = 10.0f;
         secondWrapper.CreateEditor<DataListenerNode>()->dummyIntField = 10;
+    }
+
+    DAVA_TEST (SetFieldValueTest)
+    {
+        using namespace ::testing;
+        EXPECT_CALL(listener, OnDataChanged(_, DAVA::Vector<DAVA::Any>{ DAVA::Any(DAVA::String("dummyFloatField")) }));
+        EXPECT_CALL(secondListener, OnDataChanged(_, DAVA::Vector<DAVA::Any>{ DAVA::Any(DAVA::String("dummyIntField")), DAVA::Any(DAVA::String("dummyFloatField")) }));
+        EXPECT_CALL(bothListener, OnDataChanged(_, DAVA::Vector<DAVA::Any>{ DAVA::Any(DAVA::String("dummyIntField")), DAVA::Any(DAVA::String("dummyFloatField")) }));
+
+        GetActiveContext()->GetData<DataListenerNode>()->dummyFloatField = -100.0f;
+        activeWrapper.SetFieldValue("dummyIntField", -10);
     }
 
     DAVA_TEST (DataNodeDeletingTest)

@@ -29,7 +29,7 @@ protected:
     DAVA::eGPUFamily gpuFamily = DAVA::GPU_ORIGIN;
     DAVA::FilePath outputFile;
 
-    DAVA_VIRTUAL_REFLECTION(SceneImageDump, CommandLineModule)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(SceneImageDump, CommandLineModule)
     {
         DAVA::ReflectionRegistrator<SceneImageDump>::Begin()
         .ConstructorByPointer<DAVA::Vector<DAVA::String>>()

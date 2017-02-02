@@ -20,7 +20,7 @@ SelectionSystem::SelectionSystem(EditorSystemsManager* parent)
     : BaseEditorSystem(parent)
 {
     systemsManager->selectionChanged.Connect(this, &SelectionSystem::OnSelectionChanged);
-    systemsManager->packageNodeChanged.Connect(this, &SelectionSystem::OnPackageNodeChanged);
+    systemsManager->packageChanged.Connect(this, &SelectionSystem::OnPackageChanged);
     systemsManager->selectionRectChanged.Connect(this, &SelectionSystem::OnSelectByRect);
     PreferencesStorage::Instance()->RegisterPreferences(this);
 }
@@ -30,27 +30,37 @@ SelectionSystem::~SelectionSystem()
     PreferencesStorage::Instance()->UnregisterPreferences(this);
 }
 
-bool SelectionSystem::OnInput(UIEvent* currentInput)
+void SelectionSystem::ProcessInput(UIEvent* currentInput)
 {
-    switch (currentInput->phase)
+    if (currentInput->phase == UIEvent::Phase::BEGAN)
     {
-    case UIEvent::Phase::BEGAN:
-        mousePressed = true;
-        ProcessMousePress(currentInput->point, currentInput->mouseButton);
-        break;
-    case UIEvent::Phase::ENDED:
-        if (!mousePressed)
+        if (systemsManager->GetCurrentHUDArea().area != HUDAreaInfo::NO_AREA)
         {
-            ProcessMousePress(currentInput->point, currentInput->mouseButton);
+            selectOnRelease = true;
+            pressedPoint = currentInput->point;
+            return;
         }
-        mousePressed = false;
-    default:
-        break;
     }
-    return false;
+    else if (currentInput->phase == UIEvent::Phase::ENDED)
+    {
+        if (selectOnRelease == false || currentInput->point != pressedPoint)
+        {
+            return;
+        }
+    }
+    else
+    {
+        return;
+    }
+
+    ControlNode* selectedNode = systemsManager->GetControlNodeAtPoint(currentInput->point);
+    if (nullptr != selectedNode)
+    {
+        SelectNode(selectedNode);
+    }
 }
 
-void SelectionSystem::OnPackageNodeChanged(PackageNode* packageNode_)
+void SelectionSystem::OnPackageChanged(PackageNode* packageNode_)
 {
     if (nullptr != packageNode)
     {
@@ -155,19 +165,6 @@ void SelectionSystem::FocusToChild(bool next)
     SelectedNodes newSelectedNodes;
     newSelectedNodes.insert(nextNode);
     SelectNode(newSelectedNodes, selectionContainer.selectedNodes);
-}
-
-void SelectionSystem::ProcessMousePress(const DAVA::Vector2& point, DAVA::eMouseButtons buttonID)
-{
-    ControlNode* selectedNode = nullptr;
-    if (buttonID == DAVA::eMouseButtons::LEFT)
-    {
-        selectedNode = systemsManager->GetControlNodeAtPoint(point);
-    }
-    if (nullptr != selectedNode)
-    {
-        SelectNode(selectedNode);
-    }
 }
 
 void SelectionSystem::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
@@ -299,6 +296,17 @@ void SelectionSystem::GetNodesForSelection(Vector<ControlNode*>& nodesUnderPoint
         return !control->GetVisibilityFlag();
     };
     systemsManager->CollectControlNodes(std::back_inserter(nodesUnderPoint), findPredicate, stopPredicate);
+}
+
+bool SelectionSystem::CanProcessInput(DAVA::UIEvent* currentInput) const
+{
+    EditorSystemsManager::eDisplayState displayState = systemsManager->GetDisplayState();
+    EditorSystemsManager::eDragState dragState = systemsManager->GetDragState();
+    return (displayState == EditorSystemsManager::Edit
+            || displayState == EditorSystemsManager::Preview)
+    && dragState == EditorSystemsManager::NoDrag
+    && currentInput->device == eInputDevices::MOUSE
+    && currentInput->mouseButton == DAVA::eMouseButtons::LEFT;
 }
 
 ControlNode* SelectionSystem::GetCommonNodeUnderPoint(const DAVA::Vector2& point) const
