@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Classes/Qt/Scene/SceneEditor2.h"
+
 #include "TArc/DataProcessing/DataNode.h"
 
 #include "Reflection/ReflectionRegistrator.h"
@@ -7,7 +9,6 @@
 
 #include <QString>
 
-class SceneEditor2;
 class SceneData : public DAVA::TArc::DataNode
 {
 public:
@@ -31,7 +32,7 @@ private:
 
     DAVA::RefPtr<SceneEditor2> scene;
 
-    DAVA_VIRTUAL_REFLECTION(SceneData, DAVA::TArc::DataNode)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(SceneData, DAVA::TArc::DataNode)
     {
         DAVA::ReflectionRegistrator<SceneData>::Begin()
         .Field(scenePropertyName, &SceneData::scene)

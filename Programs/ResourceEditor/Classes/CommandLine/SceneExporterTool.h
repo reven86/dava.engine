@@ -5,10 +5,10 @@
 
 #include "Utils/SceneExporter/SceneExporter.h"
 
-#include "CommandLine/Private/REConsoleModuleCommon.h"
+#include "CommandLine/CommandLineModule.h"
 #include "Reflection/ReflectionRegistrator.h"
 
-class SceneExporterTool : public REConsoleModuleCommon
+class SceneExporterTool : public CommandLineModule
 {
 public:
     SceneExporterTool(const DAVA::Vector<DAVA::String>& commandLine);
@@ -49,7 +49,7 @@ private:
     bool useHDTextures = false;
     bool forceCompressTextures = false;
 
-    DAVA_VIRTUAL_REFLECTION(SceneExporterTool, REConsoleModuleCommon)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(SceneExporterTool, CommandLineModule)
     {
         DAVA::ReflectionRegistrator<SceneExporterTool>::Begin()
         .ConstructorByPointer<DAVA::Vector<DAVA::String>>()

@@ -35,7 +35,7 @@ set                   ( Generated  ${UI_APP_HDRS} ${RCC_APP_SRCS} )
 define_source ( SOURCE    "Classes" "DataQt" )
 
 if ( MACOS )
-	set( APP_DATA		  ${DAVA_TOOLS_BIN_DIR}/7za)
+	set( APP_DATA		  ${DAVA_BIN_DIR}/7za)
 endif ()
 
 set( MACOS_PLIST          ${CMAKE_CURRENT_LIST_DIR}/Info.plist )
@@ -54,13 +54,13 @@ setup_main_executable()
 if( WIN32 )
 ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME} POST_BUILD
 #   OutDir is a MSVC macro variable
-    COMMAND ${CMAKE_COMMAND} -E copy ${DAVA_TOOLS_BIN_DIR}/7z.exe $(OutDir)
-    COMMAND ${CMAKE_COMMAND} -E copy ${DAVA_TOOLS_BIN_DIR}/7z.dll $(OutDir)
+    COMMAND ${CMAKE_COMMAND} -E copy ${DAVA_BIN_DIR}/7z.exe $(OutDir)
+    COMMAND ${CMAKE_COMMAND} -E copy ${DAVA_BIN_DIR}/7z.dll $(OutDir)
 )    
 endif ()
 
 #create package info for users, which install launcher at the first time
-if (WIN32 AND DEPLOY)
+if (WIN32 AND DEPLOY AND NOT DAVA_MEGASOLUTION )
     ADD_CUSTOM_COMMAND(TARGET ${PROJECT_NAME} POST_BUILD
         COMMAND "python" "${CMAKE_CURRENT_LIST_DIR}/Teamcity/createPackageInfo.py"
             "${DEPLOY_DIR}"

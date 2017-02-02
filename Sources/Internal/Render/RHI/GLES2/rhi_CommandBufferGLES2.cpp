@@ -1875,12 +1875,12 @@ static void _GLES2_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)
 
 //------------------------------------------------------------------------------
 
-void ExecGL(GLCommand* command, uint32 cmdCount, bool forceImmediate)
+void ExecGL(GLCommand* command, uint32 cmdCount, bool forceExecute)
 {
     CommonImpl::ImmediateCommand cmd;
     cmd.cmdData = command;
     cmd.cmdCount = cmdCount;
-    cmd.forceImmediate = forceImmediate;
+    cmd.forceExecute = forceExecute;
     RenderLoop::IssueImmediateCommand(&cmd);
 }
 

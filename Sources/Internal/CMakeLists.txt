@@ -153,6 +153,16 @@ endif()
 
 if (DAVA_PLATFORM_QT)
     find_package(QT5 REQUIRED Core Gui Widgets QuickWidgets Network)
+
+    list( APPEND DEFINITIONS    -D__DAVAENGINE_QT__
+                                -DDISABLE_NATIVE_WEBVIEW
+                                -DDISABLE_NATIVE_TEXTFIELD
+                                -DDISABLE_NATIVE_MOVIEVIEW )
+
+endif()
+
+if (NOT DEPLOY)
+    list( APPEND DEFINITIONS -DLOCAL_FRAMEWORK_SOURCE_PATH="${DAVA_ROOT_DIR}" )
 endif()
 
 setup_main_module()

@@ -47,6 +47,11 @@ include ( Coverage             )
 include ( ModuleHelper         )
 
 #
+macro ( dava_add_definitions DAVA_DEFINITIONS )
+    append_property( GLOBAL_DEFINITIONS "${DAVA_DEFINITIONS};${ARGN}" )
+endmacro ()
+
+#
 macro ( set_subsystem_console )
     if( WIN32 )
         set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_DEBUG   "/SUBSYSTEM:CONSOLE" )
@@ -828,13 +833,6 @@ macro( convert_graphics )
     if( NOT ARG_PARAM_PACKER AND DEPLOY )
         set( ARG_PARAM_PACKER  "-teamcity" )
     endif()
-
-    execute_process( COMMAND ${PYTHON_EXECUTABLE} ${DAVA_SCRIPTS_FILES_PATH}/convert_graphics.py 
-                                    --pathDataSource=${CMAKE_CURRENT_LIST_DIR}/DataSource 
-                                    --pathDava=${DAVA_ROOT_DIR} 
-                                    --clearData=${ARG_CLEAR}
-                                    --paramPacker=${ARG_PARAM_PACKER}
-                                   )
 
 endmacro()
 

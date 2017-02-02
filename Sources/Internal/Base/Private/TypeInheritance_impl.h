@@ -56,8 +56,6 @@ inline bool TypeInheritance::DownCast(const Type* from, const Type* to, void* in
 template <typename T, typename... Bases>
 void TypeInheritance::RegisterBases()
 {
-    const Type* type = Type::Instance<T>();
-
     bool basesUnpack[] = { false, TypeInheritance::AddBaseType<T, Bases>()... };
     bool derivedUnpack[] = { false, TypeInheritance::AddDerivedType<Bases, T>()... };
 }

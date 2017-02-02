@@ -13,6 +13,7 @@
 #include "DAVAClassRegistrator.h"
 #include "Analytics/Analytics.h"
 #include "Analytics/LoggingBackend.h"
+#include "AnyCasts/AnyCasts.h"
 #include "Autotesting/AutotestingSystem.h"
 #include "Base/AllocatorFactory.h"
 #include "Base/ObjectFactory.h"
@@ -199,6 +200,7 @@ void EngineBackend::Init(eEngineRunMode engineRunMode, const Vector<String>& mod
     CreateSubsystems(modules);
 
     RegisterDAVAClasses();
+    RegisterAnyCasts();
 
     isInitialized = true;
 }

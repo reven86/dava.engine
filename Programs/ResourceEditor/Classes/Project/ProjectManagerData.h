@@ -5,27 +5,19 @@
 
 #include "FileSystem/FilePath.h"
 
-#include <QString>
-#include <QVector>
-
 class SpritesPackerModule;
 class EditorConfig;
+
+struct MaterialTemplateInfo
+{
+    DAVA::String name;
+    DAVA::String path;
+    DAVA::Vector<DAVA::String> qualities;
+};
+
 class ProjectManagerData : public DAVA::TArc::DataNode
 {
 public:
-    struct AvailableMaterialTemplate
-    {
-        QString name;
-        QString path;
-    };
-
-    struct AvailableMaterialQuality
-    {
-        QString name;
-        QString prefix;
-        QVector<QString> values;
-    };
-
     ProjectManagerData();
     ProjectManagerData(const ProjectManagerData& other) = delete;
     ~ProjectManagerData();
@@ -39,11 +31,9 @@ public:
     DAVA::FilePath GetParticlesConfigPath() const;
     DAVA::FilePath GetParticlesGfxPath() const;
 
-    const QVector<AvailableMaterialTemplate>& GetAvailableMaterialTemplates() const;
-    const QVector<AvailableMaterialQuality>& GetAvailableMaterialQualities() const;
-
     static DAVA::FilePath CreateProjectPathFromPath(const DAVA::FilePath& pathname);
     const EditorConfig* GetEditorConfig() const;
+    const DAVA::Vector<MaterialTemplateInfo>* GetMaterialTemplatesInfo() const;
     DAVA_DEPRECATED(const SpritesPackerModule* GetSpritesModules() const);
 
 public:
@@ -51,14 +41,15 @@ public:
 
 private:
     friend class ProjectManagerModule;
+    friend class ProjectResources;
+
     std::unique_ptr<SpritesPackerModule> spritesPacker;
     std::unique_ptr<EditorConfig> editorConfig;
+    DAVA::Vector<MaterialTemplateInfo> materialTemplatesInfo;
 
     DAVA::FilePath projectPath;
-    QVector<AvailableMaterialTemplate> templates;
-    QVector<AvailableMaterialQuality> qualities;
 
-    DAVA_VIRTUAL_REFLECTION(ProjectManagerData, DAVA::TArc::DataNode)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(ProjectManagerData, DAVA::TArc::DataNode)
     {
         DAVA::ReflectionRegistrator<ProjectManagerData>::Begin()
         .Field(ProjectPathProperty.c_str(), &ProjectManagerData::GetProjectPath, nullptr)

@@ -3,6 +3,7 @@
 
 #include "Base/HashMap.h"
 #include "Base/StaticSingleton.h"
+#include "Base/Any.h"
 
 #include "Concurrency/Mutex.h"
 
@@ -156,8 +157,15 @@ const char* FastName::c_str() const
 
     return nullptr;
 }
+template <>
+struct AnyCompare<FastName>
+{
+    static bool IsEqual(const Any& v1, const Any& v2)
+    {
+        return v1.Get<FastName>() == v2.Get<FastName>();
+    }
 };
-
+};
 namespace std
 {
 template <>

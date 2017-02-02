@@ -11,6 +11,8 @@ AnyPerformanceTest::AnyPerformanceTest(TestBed& app)
 
 void AnyPerformanceTest::LoadResources()
 {
+    using namespace DAVA;
+
     BaseScreen::LoadResources();
 
     ScopedPtr<FTFont> font(FTFont::Create("~res:/Fonts/korinna.ttf"));
@@ -69,23 +71,25 @@ void AnyPerformanceTest::UnloadResources()
     BaseScreen::UnloadResources();
 }
 
-uint64 AnyPerformanceTest::GetLoopCount()
+DAVA::uint64 AnyPerformanceTest::GetLoopCount()
 {
     int res = 0;
 
     auto str = testCount->GetText();
-    sscanf(UTF8Utils::EncodeToUTF8(str).c_str(), "%u", &res);
+    sscanf(DAVA::UTF8Utils::EncodeToUTF8(str).c_str(), "%u", &res);
 
     return res;
 }
 
-void AnyPerformanceTest::SetResult(UIStaticText* st, uint64 ms)
+void AnyPerformanceTest::SetResult(DAVA::UIStaticText* st, DAVA::uint64 ms)
 {
-    st->SetText(Format(L"%u ms", ms));
+    st->SetText(DAVA::Format(L"%u ms", ms));
 }
 
 void AnyPerformanceTest::OnCreateTest(DAVA::BaseObject* sender, void* data, void* callerData)
 {
+    using namespace DAVA;
+
     const Type* type = nullptr;
 
     uint64 sz = GetLoopCount();
@@ -103,6 +107,8 @@ void AnyPerformanceTest::OnCreateTest(DAVA::BaseObject* sender, void* data, void
 
 void AnyPerformanceTest::OnGetSetTest(DAVA::BaseObject* sender, void* data, void* callerData)
 {
+    using namespace DAVA;
+
     Any a(float32(0));
 
     uint64 sz = GetLoopCount();

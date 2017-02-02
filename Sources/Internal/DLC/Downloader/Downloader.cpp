@@ -8,6 +8,7 @@ namespace DAVA
 {
 Downloader::Downloader()
     : fileErrno(0)
+    , implError(0)
 {
 }
 
@@ -110,5 +111,10 @@ DownloadStatistics Downloader::GetStatistics()
 int32 Downloader::GetFileErrno() const
 {
     return fileErrno;
+}
+
+int32 Downloader::GetImplError() const
+{
+    return implError;
 }
 }

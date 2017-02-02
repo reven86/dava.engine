@@ -958,11 +958,17 @@ void Scene::OnSceneReady(Entity* rootNode)
 
 void Scene::Input(DAVA::UIEvent* event)
 {
-    size_t size = systemsToInput.size();
-    for (size_t k = 0; k < size; ++k)
+    for (SceneSystem* system : systemsToInput)
     {
-        SceneSystem* system = systemsToInput[k];
         system->Input(event);
+    }
+}
+
+void Scene::InputCancelled(UIEvent* event)
+{
+    for (SceneSystem* system : systemsToInput)
+    {
+        system->InputCancelled(event);
     }
 }
 

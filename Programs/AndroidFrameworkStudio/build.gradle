@@ -1,0 +1,39 @@
+apply plugin: 'com.android.library'
+
+def FRAMEWORK_PATH = "../.."
+def FRAMEWORK_OLD_PROJECT = "${FRAMEWORK_PATH}/Programs/AndroidFramework"
+
+android {
+    compileSdkVersion 25
+    buildToolsVersion '25.0.2'
+
+    defaultConfig {
+        minSdkVersion 14
+        targetSdkVersion 25
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.txt'
+        }
+    }
+
+    sourceSets.main {
+        java.srcDirs = ["${FRAMEWORK_PATH}/Sources/Internal/Engine/Private/Android/Java/",
+                        "${FRAMEWORK_PATH}/Sources/Internal/Platform/TemplateAndroid/Java/",
+                        "${FRAMEWORK_PATH}/Sources/Internal/Notification/Private/Android/Java/"]
+        res.srcDirs = ["${FRAMEWORK_OLD_PROJECT}/res/"]
+        manifest.srcFile "${FRAMEWORK_OLD_PROJECT}/AndroidManifest.xml"
+    }
+
+    lintOptions {
+        disable 'NewApi','WrongConstant', 'MissingPermission', 'ResourceType'
+    }
+}
+
+dependencies {
+    compile 'com.android.support:support-v4:25.0.1'
+    compile files("${FRAMEWORK_OLD_PROJECT}/libs/com.bda.controller.jar")
+    compile files("${FRAMEWORK_OLD_PROJECT}/libs/fmodex.jar")
+}

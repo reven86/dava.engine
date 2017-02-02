@@ -1,14 +1,13 @@
 #include "Classes/Selection/SelectionModule.h"
 #include "Classes/Selection/SelectionData.h"
 
+#include "Classes/Application/REGlobal.h"
 #include "Classes/SceneManager/SceneData.h"
 
 #include "Classes/Qt/Scene/SceneEditor2.h"
 #include "Classes/Qt/Scene/System/ModifSystem.h"
 #include "Classes/Qt/Scene/System/HoodSystem.h"
 #include "Classes/Qt/Scene/System/WayEditSystem.h"
-
-#include "Classes/Application/REGlobal.h"
 
 #include "TArc/WindowSubSystem/QtAction.h"
 #include "TArc/WindowSubSystem/UI.h"
@@ -106,7 +105,7 @@ void SelectionModule::SelectionByMouseChanged()
     selectionData->SetSelectionAllowed(!allowed);
 }
 
-DAVA_REFLECTION_IMPL(SelectionModule)
+DAVA_VIRTUAL_REFLECTION_IMPL(SelectionModule)
 {
     DAVA::ReflectionRegistrator<SelectionModule>::Begin()
     .ConstructorByPointer()

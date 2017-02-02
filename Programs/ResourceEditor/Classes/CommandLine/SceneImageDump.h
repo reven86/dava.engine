@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Render/RenderBase.h"
-#include "CommandLine/Private/REConsoleModuleCommon.h"
+#include "CommandLine/CommandLineModule.h"
 #include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
@@ -9,7 +9,7 @@ namespace DAVA
 class Camera;
 }
 
-class SceneImageDump : public REConsoleModuleCommon
+class SceneImageDump : public CommandLineModule
 {
 public:
     SceneImageDump(const DAVA::Vector<DAVA::String>& commandLine);
@@ -29,7 +29,7 @@ protected:
     DAVA::eGPUFamily gpuFamily = DAVA::GPU_ORIGIN;
     DAVA::FilePath outputFile;
 
-    DAVA_VIRTUAL_REFLECTION(SceneImageDump, REConsoleModuleCommon)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(SceneImageDump, CommandLineModule)
     {
         DAVA::ReflectionRegistrator<SceneImageDump>::Begin()
         .ConstructorByPointer<DAVA::Vector<DAVA::String>>()

@@ -223,19 +223,22 @@ void CorePlatformAndroid::StartForeground()
     if (wasCreated)
     {
         DAVA::ApplicationCore* core = DAVA::Core::Instance()->GetApplicationCore();
-        if (core)
-        {
-            core->OnResume();
-        }
-        else
+
+        if (!core)
         {
             DAVA::Core::Instance()->SetIsActive(true);
         }
+
         DAVA::Core::Instance()->GoForeground();
         DAVA::Core::Instance()->FocusReceived();
 
         if (!foreground)
             rhi::ResumeRendering();
+
+        if (core)
+        {
+            core->OnResume();
+        }
 
         foreground = true;
     }

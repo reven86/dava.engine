@@ -1,6 +1,9 @@
 cmake_minimum_required (VERSION 3.0)
 project( DavaTools )
 
+set( DAVA_COREV2 1 )
+add_definitions (-D__DAVAENGINE_COREV2__)
+
 if (WIN32)
     add_definitions (-D_CRT_SECURE_NO_DEPRECATE)
 elseif (MACOS AND NOT ANDROID)
@@ -9,9 +12,19 @@ endif()
 
 include ( CMake-common )
 
+
+load_property( PROPERTY_LIST 
+               DEFINITIONS
+               DEFINITIONS_${DAVA_PLATFORM_CURENT} 
+               GLOBAL_DEFINITIONS )
+
+
 include_directories   ( . )
 include_directories   ( ${DAVA_INCLUDE_DIR} ) 
 include_directories   ( ${DAVA_THIRD_PARTY_INCLUDES_PATH} )  
+
+add_definitions ( ${DEFINITIONS} ${DEFINITIONS_${DAVA_PLATFORM_CURENT}} ${GLOBAL_DEFINITIONS} )
+
 
 set( ADDED_CPP_PATTERNS  AssetCache/*.cpp TextureCompression/*.cpp TexturePacker/*.cpp ResourceArchiver/*.cpp )
 set( ADDED_H_PATTERNS    AssetCache/*.h   TextureCompression/*.h   TexturePacker/*.h   ResourceArchiver/*.h  )

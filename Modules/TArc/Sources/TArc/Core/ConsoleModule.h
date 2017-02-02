@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Debug/DVAssert.h"
-#include "Reflection/Reflection.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {
@@ -20,16 +20,20 @@ protected:
     virtual eFrameResult OnFrame() = 0;
     virtual void BeforeDestroyed() = 0;
 
+    virtual int GetExitCode() const;
+
     ContextAccessor& GetAccessor();
 
 private:
     friend class Core;
+    friend class ConsoleModuleTestExecution;
+
     void Init(ContextAccessor* accessor);
 
 private:
-    ContextAccessor* contextAccessor = 0;
+    ContextAccessor* contextAccessor = nullptr;
 
-    DAVA_VIRTUAL_REFLECTION(ConsoleModule)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(ConsoleModule)
     {
     }
 };
@@ -44,6 +48,11 @@ inline ContextAccessor& ConsoleModule::GetAccessor()
 {
     DVASSERT(contextAccessor != nullptr);
     return *contextAccessor;
+}
+
+inline int ConsoleModule::GetExitCode() const
+{
+    return 0;
 }
 
 } // namespace TArc

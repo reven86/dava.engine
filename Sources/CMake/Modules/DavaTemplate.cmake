@@ -29,6 +29,7 @@
 #set( EXECUTABLE_FLAG            )
 #set( FILE_TREE_CHECK_FOLDERS    )
 #set( DEFINITIONS                )
+#set( DEFINITIONS_${DAVA_PLATFORM_CURENT} )
 #
 
 # Only interpret ``if()`` arguments as variables or keywords when unquoted.
@@ -40,9 +41,15 @@ macro( setup_main_executable )
 
 include      ( PlatformSettings )
 
+save_property( PROPERTY_LIST 
+               DEFINITIONS
+               DEFINITIONS_${DAVA_PLATFORM_CURENT}
+             )
+
 load_property( PROPERTY_LIST 
         DEFINITIONS                
         DEFINITIONS_${DAVA_PLATFORM_CURENT}
+        GLOBAL_DEFINITIONS
         TARGET_MODULES_LIST  
         BINARY_WIN32_DIR_RELEASE
         BINARY_WIN32_DIR_DEBUG
@@ -61,6 +68,8 @@ load_property( PROPERTY_LIST
 
         PLUGIN_LIST
     )
+        
+    list( APPEND DEFINITIONS ${GLOBAL_DEFINITIONS} )
 
 if( COVERAGE )
     string(REPLACE ";" " " TARGET_FOLDERS_${PROJECT_NAME} "${TARGET_FOLDERS_${PROJECT_NAME}}" )
@@ -240,7 +249,7 @@ elseif ( WINDOWS_UAP )
     list( APPEND RESOURCES_LIST ${RESOURCE_FILES} )
 
     #add dll's to project and package
-    add_dynamic_libs_win_uap ( ${DAVA_WIN_UAP_LIBRARIES_PATH_COMMON} DAVA_DLL_LIST )
+    add_dynamic_libs_win_uap ( ${DAVA_THIRD_PARTY_LIBRARIES_PATH} DAVA_DLL_LIST )
 
     #add found dll's to project and mark them as deployment content
     if ( DAVA_DLL_LIST_DEBUG )
@@ -832,7 +841,7 @@ if( DEPLOY )
         endif(APP_DATA)
 
        foreach ( ITEM ${DAVA_THIRD_PARTY_LIBS} )
-            execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${DAVA_TOOLS_BIN_DIR}/${ITEM}  ${DEPLOY_DIR} )
+            execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/${ITEM}  ${DEPLOY_DIR} )
         endforeach ()
 
         foreach ( ITEM ${ADDITIONAL_DLL_FILES})

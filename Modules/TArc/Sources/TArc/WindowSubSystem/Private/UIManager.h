@@ -26,7 +26,6 @@ public:
     void InitializationFinished();
 
     void AddView(const WindowKey& windowKey, const PanelKey& panelKey, QWidget* widget) override;
-    void AddView(const WindowKey& windowKey, const PanelKey& panelKey, const QString& resourceName, DataWrapper&& data) override;
     void AddAction(const WindowKey& windowKey, const ActionPlacementInfo& placement, QAction* action) override;
     void RemoveAction(const WindowKey& windowKey, const ActionPlacementInfo& placement) override;
 
@@ -43,9 +42,6 @@ public:
     DAVA_DEPRECATED(QWidget* GetWindow(const WindowKey& windowKey) override);
 
     void InjectWindow(const WindowKey& windowKey, QMainWindow* window);
-
-private:
-    QWidget* LoadView(const QString& name, const QString& resourceName, DataWrapper&& data);
 
 private:
     struct Impl;
