@@ -44,6 +44,9 @@ public:
     NetCore(Engine* e);
     Engine* engine = nullptr;
     size_t sigUpdateId = 0;
+#if defined(__DAVAENGINE_IPHONE__)
+    size_t sigResumedId = 0;
+#endif
 #else
     NetCore();
 #endif

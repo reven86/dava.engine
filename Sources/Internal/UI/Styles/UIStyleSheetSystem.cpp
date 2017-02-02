@@ -3,7 +3,7 @@
 #include "UI/UIControl.h"
 #include "UI/UIControlPackageContext.h"
 #include "UI/Components/UIComponent.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 #include "Animation/LinearPropertyAnimation.h"
 #include "Animation/AnimationManager.h"
 #include "Logger/Logger.h"
@@ -92,11 +92,11 @@ UIStyleSheetSystem::~UIStyleSheetSystem()
 void UIStyleSheetSystem::ProcessControl(UIControl* control, bool styleSheetListChanged /* = false*/)
 {
 #if STYLESHEET_STATS
-    uint64 startTime = SystemTimer::Instance()->GetAbsoluteUs();
+    uint64 startTime = SystemTimer::GetUs();
 #endif
     ProcessControl(control, 0, styleSheetListChanged, true, false, nullptr);
 #if STYLESHEET_STATS
-    statsTime += SystemTimer::Instance()->GetAbsoluteUs() - startTime;
+    statsTime += SystemTimer::GetUs() - startTime;
 #endif
 }
 

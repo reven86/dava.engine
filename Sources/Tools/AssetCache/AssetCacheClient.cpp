@@ -1,10 +1,10 @@
 #include "AssetCacheClient.h"
 
 #include "FileSystem/FileSystem.h"
-#include "Platform/SystemTimer.h"
 #include "Concurrency/LockGuard.h"
 #include "Concurrency/Thread.h"
 #include "Preferences/PreferencesRegistrator.h"
+#include "Time/SystemTimer.h"
 #include "Utils/StringFormat.h"
 #include "Logger/Logger.h"
 
@@ -49,7 +49,7 @@ AssetCache::Error AssetCacheClient::ConnectSynchronously(const ConnectionParams&
     {
         LockGuard<Mutex> guard(connectEstablishLocker);
 
-        uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
+        uint64 startTime = SystemTimer::GetMs();
         while (client.ChannelIsOpened() == false)
         {
             PollNetworkIfSuitable();
@@ -58,7 +58,7 @@ AssetCache::Error AssetCacheClient::ConnectSynchronously(const ConnectionParams&
                 return AssetCache::Error::CANNOT_CONNECT;
             }
 
-            uint64 deltaTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
+            uint64 deltaTime = SystemTimer::GetMs() - startTime;
             if (((currentTimeoutMs > 0) && (deltaTime > currentTimeoutMs)) && (client.ChannelIsOpened() == false))
             {
                 Logger::Error("Timeout on connecting to asset cache %s (%lld ms)", connectionParams.ip.c_str(), currentTimeoutMs);
@@ -204,7 +204,7 @@ AssetCache::Error AssetCacheClient::WaitRequest(uint64 timeoutMs)
 {
     currentTimeoutMs = timeoutMs;
 
-    uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
+    uint64 startTime = SystemTimer::GetMs();
 
     Request currentRequest;
     {
@@ -221,7 +221,7 @@ AssetCache::Error AssetCacheClient::WaitRequest(uint64 timeoutMs)
             currentRequest = request;
         }
 
-        uint64 deltaTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
+        uint64 deltaTime = SystemTimer::GetMs() - startTime;
         if (((timeoutMs > 0) && (deltaTime > timeoutMs)) && (currentRequest.recieved == false) && (currentRequest.processingRequest == false))
         {
             Logger::Debug("Operation timeout: (%lld ms)", timeoutMs);

@@ -18,7 +18,7 @@
 
 #include "Concurrency/LockGuard.h"
 #include "Logger/Logger.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 
 // Wrapper over NSTimer to connect Objective-C NSTimer object to
 // C++ class CoreNativeBridge

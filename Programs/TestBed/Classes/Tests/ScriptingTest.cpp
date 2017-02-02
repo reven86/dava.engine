@@ -202,9 +202,9 @@ void ScriptingTest::Run(Function<int32()> func)
 {
     try
     {
-        uint64 begin = SystemTimer::Instance()->GetAbsoluteUs();
+        uint64 begin = SystemTimer::GetUs();
         int32 nresults = func();
-        uint64 time = SystemTimer::Instance()->GetAbsoluteUs() - begin;
+        uint64 time = SystemTimer::GetUs() - begin;
 
         String output = Format("Run main() time: %llu us\n", time);
         for (int32 i = 1; i <= nresults; ++i)
