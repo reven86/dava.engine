@@ -1,7 +1,7 @@
 #include "Scene3D/Systems/UpdateSystem.h"
 #include "Scene3D/Components/UpdatableComponent.h"
 #include "Scene3D/Entity.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 #include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerMarkerNames.h"
 

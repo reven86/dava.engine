@@ -2,8 +2,8 @@
 #define __DAVAENGINE_NETCORE_H__
 
 #include "Base/BaseTypes.h"
-#include "Functional/Function.h"
 #include "Base/Singleton.h"
+#include "Functional/Function.h"
 
 #include "Network/Base/IOLoop.h"
 #include "Network/Base/IfAddress.h"
@@ -43,7 +43,6 @@ public:
 #if defined(__DAVAENGINE_COREV2__)
     NetCore(Engine* e);
     Engine* engine = nullptr;
-    size_t sigUpdateId = 0;
 #else
     NetCore();
 #endif
