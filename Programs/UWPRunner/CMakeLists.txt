@@ -6,7 +6,7 @@ set    ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../..
 include( CMake-common )
 
 set ( DAVA_COREV2 1 )
-add_definitions (
+dava_add_definitions (
 -D__DAVAENGINE_COREV2__
 -DCONSOLE
 )
@@ -18,7 +18,7 @@ if ( NOT WIN32 OR WINDOWS_UAP )
     message( FATAL_ERROR "This util can be built only on Windows Desktop platform" )
 endif()
 
-add_definitions(
+dava_add_definitions(
 -DQT_NETWORK_LIB
 -DQT_CORE_LIB
 -DQT_HAVE_MMX

@@ -15,7 +15,7 @@
 #include "Debug/Backtrace.h"
 #include "Input/InputSystem.h"
 #include "Logger/Logger.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 
 extern int DAVAMain(DAVA::Vector<DAVA::String> cmdline);
 extern DAVA::Private::AndroidBridge* androidBridge;
@@ -62,12 +62,12 @@ void PlatformCore::Run()
 
     while (!quitGameThread)
     {
-        uint64 frameBeginTime = SystemTimer::Instance()->AbsoluteMS();
+        int64 frameBeginTime = SystemTimer::GetMs();
 
         int32 fps = engineBackend->OnFrame();
 
-        uint64 frameEndTime = SystemTimer::Instance()->AbsoluteMS();
-        uint32 frameDuration = static_cast<uint32>(frameEndTime - frameBeginTime);
+        int64 frameEndTime = SystemTimer::GetMs();
+        int32 frameDuration = static_cast<int32>(frameEndTime - frameBeginTime);
 
         int32 sleep = 1;
         if (fps > 0)
@@ -102,6 +102,19 @@ WindowBackend* PlatformCore::ActivityOnCreate()
 
 void PlatformCore::ActivityOnResume()
 {
+    if (goBackgroundTimeRelativeToBoot > 0)
+    {
+        int64 timeSpentInBackground1 = SystemTimer::GetSystemUptimeUs() - goBackgroundTimeRelativeToBoot;
+        int64 timeSpentInBackground2 = SystemTimer::GetUs() - goBackgroundTime;
+
+        Logger::Debug("Time spent in background %lld us (reported by SystemTimer %lld us)", timeSpentInBackground1, timeSpentInBackground2);
+        // Do adjustment only if SystemTimer has stopped ticking
+        if (timeSpentInBackground1 - timeSpentInBackground2 > 500000l)
+        {
+            EngineBackend::AdjustSystemTimer(timeSpentInBackground1 - timeSpentInBackground2);
+        }
+    }
+
     mainDispatcher->PostEvent(MainDispatcherEvent(MainDispatcherEvent::APP_RESUMED));
 }
 
@@ -109,6 +122,9 @@ void PlatformCore::ActivityOnPause()
 {
     // Blocking call !!!
     mainDispatcher->SendEvent(MainDispatcherEvent(MainDispatcherEvent::APP_SUSPENDED));
+
+    goBackgroundTimeRelativeToBoot = SystemTimer::GetSystemUptimeUs();
+    goBackgroundTime = SystemTimer::GetUs();
 }
 
 void PlatformCore::ActivityOnDestroy()

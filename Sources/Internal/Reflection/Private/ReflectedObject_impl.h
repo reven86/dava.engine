@@ -2,10 +2,17 @@
 
 #ifndef __DAVA_Reflection__
 #include "Reflection/Reflection.h"
+#include "..\ReflectedObject.h"
 #endif
 
 namespace DAVA
 {
+inline ReflectedObject::ReflectedObject(void* ptr_, const ReflectedType* reflectedType_)
+    : ptr(ptr_)
+    , reflectedType(reflectedType_)
+{
+}
+
 template <typename T>
 inline ReflectedObject::ReflectedObject(T* ptr_)
     : ptr(ptr_)

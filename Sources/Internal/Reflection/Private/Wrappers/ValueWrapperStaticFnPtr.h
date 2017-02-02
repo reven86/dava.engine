@@ -25,7 +25,7 @@ public:
         return (nullptr == setter);
     }
 
-    const Type* GetType() const override
+    const Type* GetType(const ReflectedObject& object) const override
     {
         return Type::Instance<GetT>();
     }

@@ -10,6 +10,53 @@ namespace DAVA
 {
 namespace AnyDetail
 {
+enum DummyEnum
+{
+};
+
+template <typename T, bool>
+struct EnumHelper
+{
+    static inline bool CanCast(const Any& any)
+    {
+        return false;
+    }
+
+    static inline T Cast(const Any& any)
+    {
+        DAVA_THROW(Exception, "Any:: can't be casted into specified enum T");
+    }
+};
+
+template <typename T>
+struct EnumHelper<T, true>
+{
+    static bool CanCast(const Any& any)
+    {
+        if (std::is_enum<T>::value)
+        {
+            return any.GetType() == Type::Instance<int>();
+        }
+        else
+        {
+            const Type* t = any.GetType();
+            return (t->IsEnum() && sizeof(DummyEnum) == t->GetSize());
+        }
+    }
+
+    static T Cast(const Any& any)
+    {
+        if (std::is_enum<T>::value)
+        {
+            return static_cast<T>(any.Get<int>());
+        }
+        else
+        {
+            return *static_cast<const T*>(any.GetData());
+        }
+    }
+};
+
 template <typename T>
 struct AnyCastHolder
 {
@@ -35,9 +82,11 @@ UnorderedMap<const Type*, typename AnyCastHolder<T>::CastFn> AnyCastHolder<T>::c
 template <typename T>
 struct AnyCastImpl
 {
+    using EnumHelperT = EnumHelper<T, std::is_enum<T>::value || std::is_same<T, int>::value>;
+
     static bool CanCast(const Any& any)
     {
-        return (nullptr != AnyCastHolder<T>::GetCastFn(any.GetType()));
+        return (nullptr != AnyCastHolder<T>::GetCastFn(any.GetType()) || EnumHelperT::CanCast(any));
     }
 
     static T Cast(const Any& any)
@@ -47,6 +96,11 @@ struct AnyCastImpl
         if (nullptr != fn)
         {
             return (*fn)(any);
+        }
+
+        if (EnumHelperT::CanCast(any))
+        {
+            return EnumHelperT::Cast(any);
         }
 
         DAVA_THROW(Exception, "Any:: can't be casted into specified T");
@@ -60,6 +114,11 @@ struct AnyCastImpl
         if (nullptr != fn)
         {
             return (*fn)(any);
+        }
+
+        if (EnumHelperT::CanCast(any))
+        {
+            return EnumHelperT::Cast(any);
         }
 
         return static_cast<T>(def);

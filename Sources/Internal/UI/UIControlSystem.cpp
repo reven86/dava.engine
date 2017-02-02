@@ -3,7 +3,7 @@
 #include "UI/Styles/UIStyleSheetSystem.h"
 #include "Logger/Logger.h"
 #include "Debug/DVAssert.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 #include "Debug/Replay.h"
 #include "UI/UIControlSystem.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
@@ -327,7 +327,7 @@ void UIControlSystem::Update()
     updateCounter = 0;
     ProcessScreenLogic();
 
-    float32 timeElapsed = SystemTimer::FrameDelta();
+    float32 timeElapsed = SystemTimer::GetFrameDelta();
 
     for (auto& system : systems)
     {
