@@ -527,8 +527,8 @@ void dx11_DetectUWPWorkaround(const InitParam& param)
     fullScreenParameters.width = static_cast<uint32>(displayInfo.rect.dx);
     fullScreenParameters.height = static_cast<uint32>(displayInfo.rect.dy);
 #else
-    fullScreenParameters.width = static_cast<uint32>(DeviceInfo::GetScreenInfo().width);
-    fullScreenParameters.height = static_cast<uint32>(DeviceInfo::GetScreenInfo().height);
+    fullScreenParameters.width = static_cast<uint32>(DAVA::DeviceInfo::GetScreenInfo().width);
+    fullScreenParameters.height = static_cast<uint32>(DAVA::DeviceInfo::GetScreenInfo().height);
 #endif
 
     DAVA::Logger::Info("[RHI-DX11] Detecting configuration by creating test device...");
