@@ -20,8 +20,8 @@ IndexBufferDX9_t
 public:
     IndexBufferDX9_t();
 
-    bool Create(const IndexBuffer::Descriptor& desc, bool force_immediate = false);
-    void Destroy(bool force_immediate = false);
+    bool Create(const IndexBuffer::Descriptor& desc, bool forceExecute = false);
+    void Destroy(bool forceExecute);
 
     uint32 size = 0;
     IDirect3DIndexBuffer9* buffer = nullptr;
@@ -46,7 +46,7 @@ IndexBufferDX9_t::IndexBufferDX9_t()
 
 //------------------------------------------------------------------------------
 
-bool IndexBufferDX9_t::Create(const IndexBuffer::Descriptor& desc, bool force_immediate)
+bool IndexBufferDX9_t::Create(const IndexBuffer::Descriptor& desc, bool forceExecute)
 {
     DVASSERT(desc.size);
     bool success = false;
@@ -87,7 +87,7 @@ bool IndexBufferDX9_t::Create(const IndexBuffer::Descriptor& desc, bool force_im
             cmd_cnt = 1;
         }
 
-        ExecDX9(cmd, cmd_cnt, force_immediate);
+        ExecDX9(cmd, cmd_cnt, forceExecute);
 
         if (SUCCEEDED(cmd[0].retval))
         {
@@ -105,12 +105,12 @@ bool IndexBufferDX9_t::Create(const IndexBuffer::Descriptor& desc, bool force_im
 
 //------------------------------------------------------------------------------
 
-void IndexBufferDX9_t::Destroy(bool force_immediate)
+void IndexBufferDX9_t::Destroy(bool forceExecute)
 {
     if (buffer)
     {
         DX9Command cmd[] = { DX9Command::RELEASE, { uint64_t(&buffer) } };
-        ExecDX9(cmd, countof(cmd), force_immediate);
+        ExecDX9(cmd, countof(cmd), forceExecute);
         DVASSERT(cmd[0].retval == 0);
         buffer = nullptr;
     }
@@ -121,7 +121,7 @@ void IndexBufferDX9_t::Destroy(bool force_immediate)
 
     if (!RecreatePending() && (mappedData != nullptr))
     {
-        DVASSERT(!isMapped)
+        DVASSERT(!isMapped);
         ::free(mappedData);
         mappedData = nullptr;
         updatePending = false;
@@ -150,11 +150,11 @@ dx9_IndexBuffer_Create(const IndexBuffer::Descriptor& desc)
 //------------------------------------------------------------------------------
 
 static void
-dx9_IndexBuffer_Delete(Handle ib)
+dx9_IndexBuffer_Delete(Handle ib, bool forceExecute)
 {
     IndexBufferDX9_t* self = IndexBufferDX9Pool::Get(ib);
     self->SetRecreatePending(false);
-    self->Destroy();
+    self->Destroy(forceExecute);
     IndexBufferDX9Pool::Free(ib);
 }
 

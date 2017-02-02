@@ -263,13 +263,13 @@ FTInternalFont::FTInternalFont(const FilePath& path)
     : fontPath(path)
 {
     ftm = FontManager::Instance()->GetFT();
-    DVASSERT(ftm)
+    DVASSERT(ftm);
 
     FT_Face face = nullptr;
     FT_Error error = ftm->LookupFace(this, &face);
     if (error != FT_Err_Ok || face == nullptr)
     {
-        DVASSERT_MSG(false, "Error on lookup FT face");
+        DVASSERT(false, "Error on lookup FT face");
     }
 }
 

@@ -35,7 +35,7 @@ nvtt::Format GetNVTTFormatByPixelFormat(PixelFormat pixelFormat)
     case FORMAT_RGBA8888:
         return nvtt::Format_RGBA;
     default:
-        DVASSERT_MSG(false, "Unsupported pixel format");
+        DVASSERT(false, "Unsupported pixel format");
         return nvtt::Format_COUNT;
     }
 }
@@ -121,7 +121,7 @@ bool DecompressDxtToRgba(const Image* srcImage, Image* dstImage)
 {
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 
-    DVASSERT_MSG(false, "No need to decompress on mobile platforms");
+    DVASSERT(false, "No need to decompress on mobile platforms");
     return false;
 
 #elif defined(__DAVAENGINE_WIN_UAP__)
@@ -132,7 +132,7 @@ bool DecompressDxtToRgba(const Image* srcImage, Image* dstImage)
     DVASSERT(srcImage);
     DVASSERT(dstImage);
     DVASSERT(IsDxtFormat(srcImage->format));
-    DVASSERT(dstImage->format == FORMAT_RGBA8888)
+    DVASSERT(dstImage->format == FORMAT_RGBA8888);
 
     nvtt::InputOptions inputOptions;
     inputOptions.setTextureLayout(nvtt::TextureType_2D, srcImage->width, srcImage->height);
@@ -188,7 +188,7 @@ bool CompressRgbaToDxt(const Image* srcImage, Image* dstImage)
 {
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 
-    DVASSERT_MSG(false, "No need to compress on mobile platforms");
+    DVASSERT(false, "No need to compress on mobile platforms");
     return false;
 
 #elif defined(__DAVAENGINE_WIN_UAP__)
@@ -198,8 +198,8 @@ bool CompressRgbaToDxt(const Image* srcImage, Image* dstImage)
 #else
     DVASSERT(srcImage);
     DVASSERT(dstImage);
-    DVASSERT_MSG(srcImage->format == FORMAT_RGBA8888, "Source image format is not rgba8888");
-    DVASSERT_MSG(IsDxtFormat(dstImage->format), "Specified format is not a dxt compressed");
+    DVASSERT(srcImage->format == FORMAT_RGBA8888, "Source image format is not rgba8888");
+    DVASSERT(IsDxtFormat(dstImage->format), "Specified format is not a dxt compressed");
 
     nvtt::InputOptions inputOptions;
     inputOptions.setTextureLayout(nvtt::TextureType_2D, srcImage->width, srcImage->height);

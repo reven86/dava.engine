@@ -1,5 +1,6 @@
 #include "Platform/Process.h"
 #include "FileSystem/FilePath.h"
+#include "Logger/Logger.h"
 
 #if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_MACOS__)
 

@@ -40,25 +40,30 @@ struct ScheduledDeleteResource
     Handle handle;
     ResourceType resourceType;
 };
-const static uint32 frameSyncObjectsCount = 16;
+
+static const uint32 FRAME_POOL_SIZE = 16;
 static uint32 currFrameSyncId = 0;
-static DAVA::Array<HSyncObject, frameSyncObjectsCount> frameSyncObjects;
-static DAVA::Array<std::vector<ScheduledDeleteResource>, frameSyncObjectsCount> scheduledDeleteResources;
-static DAVA::Spinlock scheduledDeleteMutex;
+static DAVA::Array<HSyncObject, FRAME_POOL_SIZE> frameSyncObjects;
+static DAVA::Array<std::vector<ScheduledDeleteResource>, FRAME_POOL_SIZE> scheduledDeleteResources;
+static DAVA::Spinlock scheduledDeleteSync;
 static void ProcessScheduledDelete();
 
 void Present() // called from main thread
 {
     DAVA_PROFILER_CPU_SCOPE(DAVA::ProfilerCPUMarkerName::RHI_PRESENT);
 
-    scheduledDeleteMutex.Lock();
-    if (scheduledDeleteResources[currFrameSyncId].size() && !frameSyncObjects[currFrameSyncId].IsValid())
-        frameSyncObjects[currFrameSyncId] = CreateSyncObject();
-    Handle frameSync = frameSyncObjects[currFrameSyncId];
-    currFrameSyncId = (currFrameSyncId + 1) % frameSyncObjectsCount;
-    DVASSERT(scheduledDeleteResources[currFrameSyncId].empty()); //we are not going to mix new resources for deletion with existing once still waiting
-    DVASSERT(!frameSyncObjects[currFrameSyncId].IsValid());
-    scheduledDeleteMutex.Unlock();
+    Handle frameSync;
+    scheduledDeleteSync.Lock();
+    {
+        if (!scheduledDeleteResources[currFrameSyncId].empty() && !frameSyncObjects[currFrameSyncId].IsValid())
+            frameSyncObjects[currFrameSyncId] = CreateSyncObject();
+        frameSync = frameSyncObjects[currFrameSyncId];
+
+        currFrameSyncId = (currFrameSyncId + 1) % FRAME_POOL_SIZE;
+        DVASSERT(scheduledDeleteResources[currFrameSyncId].empty()); //we are not going to mix new resources for deletion with existing once still waiting
+        DVASSERT(!frameSyncObjects[currFrameSyncId].IsValid());
+    }
+    scheduledDeleteSync.Unlock();
 
     bool validFrame = FrameLoop::FinishFrame(frameSync);
 
@@ -72,9 +77,14 @@ void Present() // called from main thread
     if (renderThreadFrameCount == 0) //single thread render
     {
         if (renderThreadSuspended)
+        {
             FrameLoop::RejectFrames();
+        }
         else
+        {
             FrameLoop::ProcessFrame();
+            ProcessScheduledDelete();
+        }
     }
     else //wait for render thread if needed
     {
@@ -91,8 +101,6 @@ void Present() // called from main thread
 
         } while (frameCnt >= renderThreadFrameCount);
     }
-
-    ProcessScheduledDelete();
 }
 
 //------------------------------------------------------------------------------
@@ -152,6 +160,8 @@ static void RenderFunc()
             else
                 FrameLoop::RejectFrames();
             frameDoneEvent.Signal();
+
+            ProcessScheduledDelete();
         }
     }
 
@@ -160,10 +170,10 @@ static void RenderFunc()
 
 void InitializeRenderLoop(uint32 frameCount, DAVA::Thread::eThreadPriority priority, int32 bindToProcessor)
 {
-    DVASSERT(frameCount <= frameSyncObjectsCount);
+    DVASSERT(frameCount <= FRAME_POOL_SIZE);
 
     renderThreadFrameCount = frameCount;
-    FrameLoop::Initialize(frameSyncObjectsCount);
+    FrameLoop::Initialize(FRAME_POOL_SIZE);
 
     if (renderThreadFrameCount)
     {
@@ -249,14 +259,14 @@ void SetResetPending()
 
 void IssueImmediateCommand(CommonImpl::ImmediateCommand* command)
 {
-    DAVA_PROFILER_CPU_SCOPE(DAVA::ProfilerCPUMarkerName::RHI_WAIT_IMMEDIATE_CMDS);
-
-    if (command->forceImmediate || (renderThreadFrameCount == 0))
+    if (command->forceExecute || (renderThreadFrameCount == 0))
     {
         DispatchPlatform::ProcessImmediateCommand(command);
     }
     else
     {
+        DAVA_PROFILER_CPU_SCOPE(DAVA::ProfilerCPUMarkerName::RHI_WAIT_IMMEDIATE_CMDS);
+
         bool scheduled = false;
         bool executed = false;
 
@@ -281,11 +291,7 @@ void IssueImmediateCommand(CommonImpl::ImmediateCommand* command)
             if (!executed)
             {
                 framePreparedEvent.Signal();
-#ifdef __DAVAENGINE_WIN32__
-                DAVA::Thread::Sleep(1);
-#else
-                DAVA::Thread::Yield();
-#endif
+                DAVA::Thread::Sleep(0);
             }
         }
     }
@@ -306,67 +312,75 @@ void CheckImmediateCommand()
 
 void ScheduleResourceDeletion(Handle handle, ResourceType resourceType)
 {
-    scheduledDeleteMutex.Lock();
+    DAVA::LockGuard<DAVA::Spinlock> guard(scheduledDeleteSync);
     scheduledDeleteResources[currFrameSyncId].push_back({ handle, resourceType });
-    scheduledDeleteMutex.Unlock();
 }
 
 void ProcessScheduledDelete()
 {
     DAVA_PROFILER_CPU_SCOPE(DAVA::ProfilerCPUMarkerName::RHI_PROCESS_SCHEDULED_DELETE);
 
-    scheduledDeleteMutex.Lock();
-    for (int i = 0; i < frameSyncObjectsCount; i++)
+    std::vector<std::vector<ScheduledDeleteResource>> resourcesToDelete;
+    scheduledDeleteSync.Lock();
+    for (int i = 0; i < FRAME_POOL_SIZE; i++)
     {
         if (frameSyncObjects[i].IsValid() && SyncObjectSignaled(frameSyncObjects[i]))
         {
-            for (std::vector<ScheduledDeleteResource>::iterator it = scheduledDeleteResources[i].begin(), e = scheduledDeleteResources[i].end(); it != e; ++it)
-            {
-                ScheduledDeleteResource& res = *it;
-                switch (res.resourceType)
-                {
-                case RESOURCE_VERTEX_BUFFER:
-                    VertexBuffer::Delete(res.handle);
-                    break;
-                case RESOURCE_INDEX_BUFFER:
-                    IndexBuffer::Delete(res.handle);
-                    break;
-                case RESOURCE_CONST_BUFFER:
-                    ConstBuffer::Delete(res.handle);
-                    break;
-                case RESOURCE_TEXTURE:
-                    Texture::Delete(res.handle);
-                    break;
-                case RESOURCE_TEXTURE_SET:
-                    TextureSet::Delete(res.handle);
-                    break;
-                case RESOURCE_DEPTHSTENCIL_STATE:
-                    DepthStencilState::Delete(res.handle);
-                    break;
-                case RESOURCE_SAMPLER_STATE:
-                    SamplerState::Delete(res.handle);
-                    break;
-                case RESOURCE_QUERY_BUFFER:
-                    QueryBuffer::Delete(res.handle);
-                    break;
-                case RESOURCE_PIPELINE_STATE:
-                    PipelineState::Delete(res.handle);
-                    break;
-                default:
-                    DVASSERT_MSG(false, "Not supported resource scheduled for deletion");
-                }
-            }
-            scheduledDeleteResources[i].clear();
+            resourcesToDelete.emplace_back();
+            std::swap(resourcesToDelete.back(), scheduledDeleteResources[i]);
+
             DeleteSyncObject(frameSyncObjects[i]);
             frameSyncObjects[i] = HSyncObject();
         }
     }
-    scheduledDeleteMutex.Unlock();
+    scheduledDeleteSync.Unlock();
+
+    for (std::vector<ScheduledDeleteResource>& resources : resourcesToDelete)
+    {
+        for (ScheduledDeleteResource& res : resources)
+        {
+            switch (res.resourceType)
+            {
+            case RESOURCE_VERTEX_BUFFER:
+                VertexBuffer::Delete(res.handle, true);
+                break;
+            case RESOURCE_INDEX_BUFFER:
+                IndexBuffer::Delete(res.handle, true);
+                break;
+            case RESOURCE_CONST_BUFFER:
+                ConstBuffer::Delete(res.handle);
+                break;
+            case RESOURCE_TEXTURE:
+                Texture::Delete(res.handle, true);
+                break;
+            case RESOURCE_TEXTURE_SET:
+                TextureSet::Delete(res.handle);
+                break;
+            case RESOURCE_DEPTHSTENCIL_STATE:
+                DepthStencilState::Delete(res.handle);
+                break;
+            case RESOURCE_SAMPLER_STATE:
+                SamplerState::Delete(res.handle);
+                break;
+            case RESOURCE_QUERY_BUFFER:
+                QueryBuffer::Delete(res.handle);
+                break;
+            case RESOURCE_PIPELINE_STATE:
+                PipelineState::Delete(res.handle);
+                break;
+            case RESOURCE_PERFQUERY:
+                PerfQuery::Delete(res.handle);
+                break;
+            default:
+                DVASSERT(false, "Not supported resource scheduled for deletion");
+            }
+        }
+    }
 }
 
 HSyncObject GetCurrentFrameSyncObject()
 {
-    DAVA::LockGuard<DAVA::Spinlock> lock(scheduledDeleteMutex);
+    DAVA::LockGuard<DAVA::Spinlock> lock(scheduledDeleteSync);
     if (!frameSyncObjects[currFrameSyncId].IsValid())
         frameSyncObjects[currFrameSyncId] = CreateSyncObject();
     return frameSyncObjects[currFrameSyncId];

@@ -99,7 +99,7 @@ void DataWrapper::ClearListener(DataListener* listenerForCheck)
 
 bool DataWrapper::HasData() const
 {
-    if (impl == nullptr || impl->activeContext == nullptr)
+    if (impl == nullptr)
     {
         return false;
     }
@@ -128,9 +128,26 @@ void DataWrapper::SetListener(DataListener* listener)
     impl->nextListenerToSet = listener;
 }
 
+void DataWrapper::SetFieldValue(const Any& fieldKey, const Any& value)
+{
+    DVASSERT(HasData() == true);
+    Reflection data = GetData();
+    Reflection field = data.GetField(fieldKey);
+    DVASSERT(field.IsValid() == true);
+    bool result = field.SetValueWithCast(value);
+    DVASSERT(result);
+    SyncByFieldKey(fieldKey);
+}
+
 bool DataWrapper::IsActive() const
 {
     return !impl.unique();
+}
+
+void DataWrapper::UpdateCachedValue(int32 id, const Any& value)
+{
+    DVASSERT(id < impl->cachedValues.size());
+    impl->cachedValues[id] = value;
 }
 
 void DataWrapper::Sync(bool notifyListener)
@@ -212,6 +229,23 @@ void DataWrapper::Sync(bool notifyListener)
         {
             impl->cachedValues.clear();
             NotifyListener(notifyListener);
+        }
+    }
+}
+
+void DataWrapper::SyncByFieldKey(const Any& fieldKey)
+{
+    DVASSERT(impl != nullptr);
+    DVASSERT(HasData());
+    Reflection data = GetData();
+
+    Vector<Reflection::Field> dataFields = data.GetFields();
+    String fieldName = fieldKey.Cast<String>();
+    for (size_t i = 0; i < dataFields.size(); ++i)
+    {
+        if (dataFields[i].key.Cast<String>() == fieldName)
+        {
+            impl->cachedValues[i] = dataFields[i].ref.GetValue();
         }
     }
 }

@@ -6,6 +6,7 @@
 #include "Platform/SystemTimer.h"
 #include "Animation/LinearPropertyAnimation.h"
 #include "Animation/AnimationManager.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {
@@ -66,7 +67,7 @@ struct AnimatedPropertySetter
             Animate<Color>(control, targetObject, targetIntrospectionMember, targetIntrospectionMember->Value(targetObject).AsColor(), value.AsColor());
             break;
         default:
-            DVASSERT_MSG(false, "Non-animatable property");
+            DVASSERT(false, "Non-animatable property");
         }
     }
 
@@ -89,13 +90,18 @@ void UIStyleSheetSystem::ProcessControl(UIControl* control, bool styleSheetListC
 #if STYLESHEET_STATS
     uint64 startTime = SystemTimer::Instance()->GetAbsoluteUs();
 #endif
-    ProcessControl(control, 0, styleSheetListChanged);
+    ProcessControl(control, 0, styleSheetListChanged, true, false, nullptr);
 #if STYLESHEET_STATS
     statsTime += SystemTimer::Instance()->GetAbsoluteUs() - startTime;
 #endif
 }
 
-void UIStyleSheetSystem::ProcessControl(UIControl* control, int32 distanceFromDirty, bool styleSheetListChanged)
+void UIStyleSheetSystem::DebugControl(UIControl* control, UIStyleSheetProcessDebugData* debugData)
+{
+    ProcessControl(control, 0, true, false, true, debugData);
+}
+
+void UIStyleSheetSystem::ProcessControl(UIControl* control, int32 distanceFromDirty, bool styleSheetListChanged, bool recursively, bool dryRun, UIStyleSheetProcessDebugData* debugData)
 {
     UIControlPackageContext* packageContext = control->GetPackageContext();
     const UIStyleSheetPropertyDataBase* propertyDB = UIStyleSheetPropertyDataBase::Instance();
@@ -134,14 +140,30 @@ void UIStyleSheetSystem::ProcessControl(UIControl* control, int32 distanceFromDi
                 for (const UIStyleSheetProperty& prop : propertyTable)
                 {
                     propertySources[prop.propertyIndex] = &prop;
+
+                    if (debugData != nullptr)
+                    {
+                        debugData->propertySources[prop.propertyIndex] = styleSheet;
+                    }
+                }
+
+                if (debugData != nullptr)
+                {
+                    debugData->styleSheets.push_back(*styleSheetIter);
                 }
             }
         }
 
         const UIStyleSheetPropertySet propertiesToApply = cascadeProperties & (~localControlProperties);
+        if (debugData != nullptr)
+        {
+            debugData->appliedProperties = propertiesToApply;
+        }
+
         const UIStyleSheetPropertySet propertiesToReset = control->GetStyledPropertySet() & (~propertiesToApply) & (~localControlProperties);
 
-        if (propertiesToReset.any() || propertiesToApply.any())
+        if ((propertiesToReset.any() || propertiesToApply.any())
+            && !dryRun)
         {
             for (uint32 propertyIndex = 0; propertyIndex < propertySources.size(); ++propertyIndex)
             {
@@ -173,9 +195,12 @@ void UIStyleSheetSystem::ProcessControl(UIControl* control, int32 distanceFromDi
     control->ResetStyleSheetDirty();
     control->SetStyleSheetInitialized();
 
-    for (UIControl* child : control->GetChildren())
+    if (recursively)
     {
-        ProcessControl(child, distanceFromDirty + 1, styleSheetListChanged);
+        for (UIControl* child : control->GetChildren())
+        {
+            ProcessControl(child, distanceFromDirty + 1, styleSheetListChanged, true, dryRun, debugData);
+        }
     }
 }
 
@@ -291,10 +316,6 @@ void UIStyleSheetSystem::DoForAllPropertyInstances(UIControl* control, uint32 pr
 
         break;
     }
-    case ePropertyOwner::BACKGROUND:
-        if (control->GetBackgroundComponentsCount() > 0)
-            action(control, control->GetBackgroundComponent(0), descr.memberInfo);
-        break;
     case ePropertyOwner::COMPONENT:
         if (UIComponent* component = control->GetComponent(descr.group->componentType))
             action(control, component, descr.memberInfo);

@@ -3,6 +3,7 @@
 #include "Base/BaseTypes.h"
 #include "Functional/Signal.h"
 #include "Render/RenderBase.h"
+#include "FileSystem/FilePath.h"
 
 namespace DAVA
 {

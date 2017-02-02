@@ -1,9 +1,10 @@
 #include "TArc/Testing/TArcTestCore.h"
-#include "TArc/Testing/Private/Selftests/DeadCodeTrick.h"
+#include "TArc/Testing/Private/DeadCodeTrick.h"
 
 #include "Engine/Engine.h"
 
 #include "UnitTests/TestCore.h"
+#include "Utils/StringFormat.h"
 #include "Logger/TeamCityTestsOutput.h"
 #include "UnitTests/UnitTests.h"
 #include "FileSystem/File.h"
@@ -211,7 +212,7 @@ void TestCore::ProcessCommandLine()
 
 void TestCore::OnError()
 {
-    DavaDebugBreak();
+    DVASSERT_HALT();
 }
 
 void TestCore::OnTestClassStarted(const DAVA::String& testClassName)

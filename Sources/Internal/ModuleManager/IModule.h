@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
-#include "ModuleManager/Private/DynamicModuleInitializer.h"
 
 namespace DAVA
 {

@@ -321,7 +321,7 @@ Font::StringMetrics GraphicFont::DrawStringToBuffer(const WideString& str,
             }
             else
             {
-                DVASSERT_MSG(false, "Font should contain .notDef character!");
+                DVASSERT(false, "Font should contain .notDef character!");
                 continue;
             }
         }

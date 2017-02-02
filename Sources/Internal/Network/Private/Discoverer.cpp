@@ -1,5 +1,6 @@
 #include <Functional/Function.h>
 #include <Debug/DVAssert.h>
+#include "Logger/Logger.h"
 
 #include "Network/Private/Discoverer.h"
 #include "Network/Base/NetworkUtils.h"
@@ -18,7 +19,9 @@ Discoverer::Discoverer(IOLoop* ioLoop, const Endpoint& endp, Function<void(size_
     , dataCallback(dataReadyCallback)
     , tcpSocket(ioLoop)
 {
-    DVVERIFY(true == endpoint.Address().ToString(endpAsString.data(), endpAsString.size()));
+    const bool toStringResult = endpoint.Address().ToString(endpAsString.data(), endpAsString.size());
+    DVASSERT(toStringResult);
+
     DVASSERT(true == endpoint.Address().IsMulticast());
     DVASSERT(loop != nullptr && dataCallback != nullptr);
 }

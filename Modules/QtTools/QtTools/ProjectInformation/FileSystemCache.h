@@ -3,7 +3,7 @@
 #include <QStringList>
 #include <memory>
 
-class FileSystemCache
+class FileSystemCache final
 {
 public:
     FileSystemCache(const QStringList& supportedExtensions);

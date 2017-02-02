@@ -2,6 +2,7 @@
 
 #include "TArc/Core/Core.h"
 #include "TArc/Testing/MockInvoker.h"
+#include "TArc/Utils/QtConnections.h"
 
 #include "UnitTests/TestClass.h"
 
@@ -40,6 +41,7 @@ public:
 protected:
     std::unique_ptr<Core> core;
     std::unique_ptr<MockInvoker> mockInvoker;
+    QtConnections connections;
 };
 
 } // namespace TArc

@@ -75,39 +75,53 @@ void AutotestingSystem::InitLua(AutotestingSystemLuaDelegate* _delegate)
     luaSystem->SetDelegate(_delegate);
 }
 
-String AutotestingSystem::ResolvePathToAutomation(const String& automationPath)
+bool AutotestingSystem::ResolvePathToAutomation()
 {
-    Logger::Info("AutotestingSystem::ResolvePathToAutomation platform=%s path=%s", DeviceInfo::GetPlatformString().c_str(), automationPath.c_str());
-    String automationResolvedStrPath;
-    // Try to find automation data in Documents
-    if (DeviceInfo::GetPlatform() == DeviceInfo::PLATFORM_PHONE_WIN_UAP)
+    Logger::Info("AutotestingSystem::ResolvePathToAutomation platform=%s", DeviceInfo::GetPlatformString().c_str());
+    pathToAutomation = "~doc:/atpath.txt";
+    if (FileSystem::Instance()->Exists(pathToAutomation))
     {
-        //TODO: it's temporary solution will be changed with upgrading WinSDK and launching tool
-        automationResolvedStrPath = "d:" + automationPath;
+        ScopedPtr<File> file(File::Create(pathToAutomation, File::OPEN | File::READ));
+        if (file)
+        {
+            pathToAutomation = file->ReadLine();
+            if (FileSystem::Instance()->Exists(pathToAutomation))
+            {
+                Logger::Info("AutotestingSystem::ResolvePathToAutomation resolved path %s", pathToAutomation.GetAbsolutePathname().c_str());
+                return true;
+            }
+        }
     }
-    else if (DeviceInfo::GetPlatform() == DeviceInfo::PLATFORM_ANDROID)
+
+    // Try to find automation data in Documents
+    if (DeviceInfo::GetPlatform() == DeviceInfo::PLATFORM_ANDROID)
     {
-        automationResolvedStrPath = FileSystem::Instance()->GetPublicDocumentsPath().GetAbsolutePathname() + automationPath;
+        pathToAutomation = FileSystem::Instance()->GetPublicDocumentsPath().GetAbsolutePathname() + "/Autoteting/";
     }
     else
     {
-        automationResolvedStrPath = "~doc:" + automationPath;
+        pathToAutomation = "~doc:/Autotesting/";
     }
 
-    if (FilePath(automationResolvedStrPath).Exists())
+    if (FileSystem::Instance()->Exists(pathToAutomation))
     {
-        Logger::Info("AutotestingSystem::ResolvePathToAutomation resolved path=%s", automationResolvedStrPath.c_str());
-        return automationResolvedStrPath;
+        Logger::Info("AutotestingSystem::ResolvePathToAutomation resolved path in documents %s", pathToAutomation.GetAbsolutePathname().c_str());
+        return true;
     }
 
     // If there are no automation data in documents, try to find it in Data
-    if (FilePath("~res:" + automationPath).Exists())
+    pathToAutomation = "~res:/Autotesting/";
+    if (FileSystem::Instance()->Exists(pathToAutomation))
     {
-        automationResolvedStrPath = "~res:" + automationPath;
-        Logger::Info("AutotestingSystem::ResolvePathToAutomation resolved path=%s", automationResolvedStrPath.c_str());
-        return automationResolvedStrPath;
+        Logger::Info("AutotestingSystem::ResolvePathToAutomation resolved in resources %s", pathToAutomation.GetAbsolutePathname().c_str());
+        return true;
     }
-    return "";
+    return false;
+}
+
+FilePath AutotestingSystem::GetPathTo(const String& path)
+{
+    return pathToAutomation + path;
 }
 
 // This method is called on application started and it handle autotest initialisation
@@ -129,28 +143,24 @@ void AutotestingSystem::OnAppStarted()
         FetchParametersFromDB();
     }
 
-    const String testFileLocation = Format("/Autotesting/Tests/%s/%s.lua", groupName.c_str(), testFileName.c_str());
-    String testFileStrPath = ResolvePathToAutomation(testFileLocation);
-    if (testFileStrPath.empty())
+    const String testFileLocation = Format("/Tests/%s/%s.lua", groupName.c_str(), testFileName.c_str());
+    FilePath testFileStrPath = GetPathTo(testFileLocation);
+    if (!FileSystem::Instance()->Exists(testFileStrPath))
     {
         Logger::Error("AutotestingSystemLua::OnAppStarted: couldn't open %s", testFileLocation.c_str());
         return;
     }
 
     AutotestingDB::Instance()->WriteLogHeader();
-
     AutotestingSystemLua::Instance()->InitFromFile(testFileStrPath);
+ 
+#if defined(__DAVAENGINE_COREV2__)
+    SigConnectionID sid = GetPrimaryWindow()->sizeChanged.Connect(this, &AutotestingSystem::OnWindowSizeChanged);
+    GetPrimaryWindow()->sizeChanged.Track(sid, &localTrackedObject);
+#endif
 
     Size2i size = UIControlSystem::Instance()->vcs->GetPhysicalScreenSize();
-
-    Texture::FBODescriptor desc;
-    desc.width = uint32(size.dx);
-    desc.height = uint32(size.dy);
-    desc.format = FORMAT_RGBA8888;
-    desc.needDepth = true;
-    desc.needPixelReadback = true;
-
-    screenshotTexture = Texture::CreateFBO(desc);
+    ResetScreenshotTexture(size);
 }
 
 void AutotestingSystem::OnAppFinished()
@@ -190,8 +200,8 @@ void AutotestingSystem::FetchParametersFromIdYaml()
     frameworkRev = option->GetString("FrameworkRev");
 
     // Check is build fol local debugging.  By default: use DB.
-    bool isLocalBuild = option->GetBool("LocalBuild", false);
-    if (isLocalBuild)
+    //bool isLocalBuild = ;
+    if ("true" == option->GetString("LocalBuild", "false"))
     {
         groupName = option->GetString("Group", AutotestingDB::DB_ERROR_STR_VALUE);
         testFileName = option->GetString("Filename", AutotestingDB::DB_ERROR_STR_VALUE);
@@ -201,12 +211,11 @@ void AutotestingSystem::FetchParametersFromIdYaml()
 
 RefPtr<KeyedArchive> AutotestingSystem::GetIdYamlOptions()
 {
-    const String idYamlStrLocation = "/Autotesting/id.yaml";
-    String idYamlStrPath = ResolvePathToAutomation(idYamlStrLocation);
+    FilePath idYamlStrPath = GetPathTo("/id.yaml");
     RefPtr<KeyedArchive> option(new KeyedArchive());
-    if (idYamlStrPath.empty() || !option->LoadFromYamlFile(idYamlStrPath))
+    if (!FileSystem::Instance()->Exists(idYamlStrPath) || !option->LoadFromYamlFile(idYamlStrPath))
     {
-        ForceQuit("Couldn't open file " + idYamlStrLocation);
+        ForceQuit("Couldn't open file " + idYamlStrPath.GetAbsolutePathname());
     }
 
     return option;
@@ -242,12 +251,11 @@ void AutotestingSystem::FetchParametersFromDB()
 // Read DB parameters from config file and set connection to it
 void AutotestingSystem::SetUpConnectionToDB()
 {
-    const String dbConfigLocation = "/Autotesting/dbConfig.yaml";
-    String dbConfigStrPath = ResolvePathToAutomation(dbConfigLocation);
+    FilePath dbConfigStrPath = GetPathTo("/dbConfig.yaml");
     KeyedArchive* option = new KeyedArchive();
-    if (dbConfigStrPath.empty() || !option->LoadFromYamlFile(dbConfigStrPath))
+    if (!FileSystem::Instance()->Exists(dbConfigStrPath) || !option->LoadFromYamlFile(dbConfigStrPath))
     {
-        ForceQuit("Couldn't open file " + dbConfigLocation);
+        ForceQuit("Couldn't open file " + dbConfigStrPath.GetAbsolutePathname());
     }
 
     String dbName = option->GetString("name");
@@ -315,6 +323,7 @@ void AutotestingSystem::Update(float32 timeElapsed)
     {
         screenshotRequested = false;
 
+        screenshotTexture->Retain();
         Function<void()> fn = Bind(&AutotestingSystem::OnScreenShotInternal, this, screenshotTexture);
         JobManager::Instance()->CreateWorkerJob(fn);
         isScreenShotSaving = true;
@@ -424,7 +433,7 @@ void AutotestingSystem::OnError(const String& errorMessage)
 
 void AutotestingSystem::ForceQuit(const String& errorMessage)
 {
-    DVASSERT_MSG(false, errorMessage.c_str())
+    DVASSERT(false, errorMessage.c_str());
 #if defined(__DAVAENGINE_COREV2__)
     Engine::Instance()->QuitAsync(0);
 #else
@@ -465,6 +474,30 @@ void AutotestingSystem::OnScreenShotInternal(Texture* texture)
     uint64 finishTime = SystemTimer::Instance()->AbsoluteMS();
     Logger::FrameworkDebug("AutotestingSystem::OnScreenShot Upload: %d", finishTime - startTime);
     isScreenShotSaving = false;
+
+    SafeRelease(texture);
+}
+
+void AutotestingSystem::OnWindowSizeChanged(DAVA::Window*, Size2f windowSize, Size2f surfaceSize)
+{
+    Size2i size;
+    size.dx = static_cast<int>(surfaceSize.dx);
+    size.dy = static_cast<int>(surfaceSize.dy);
+    ResetScreenshotTexture(size);
+}
+
+void AutotestingSystem::ResetScreenshotTexture(Size2i size)
+{
+    SafeRelease(screenshotTexture);
+
+    Texture::FBODescriptor desc;
+    desc.width = uint32(size.dx);
+    desc.height = uint32(size.dy);
+    desc.format = FORMAT_RGBA8888;
+    desc.needDepth = true;
+    desc.needPixelReadback = true;
+
+    screenshotTexture = Texture::CreateFBO(desc);
 }
 
 void AutotestingSystem::ClickSystemBack()
