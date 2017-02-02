@@ -80,6 +80,9 @@ public:
 
     void UpdateDisplayConfig();
 
+    // Proxy method that calls SystemTimer::Adjust to prevent many friends to SystemTimer
+    static void AdjustSystemTimer(int64 adjustMicro);
+
 private:
     void RunConsole();
 

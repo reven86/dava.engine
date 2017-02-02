@@ -4,7 +4,7 @@
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/KeyedArchive.h"
 #include "Debug/DVAssert.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 #include "Utils/StringFormat.h"
 #include "Logger/Logger.h"
 
@@ -181,7 +181,7 @@ void CacheDB::Save()
     cache->Save(file);
 
     dbStateChanged = false;
-    lastSaveTime = DAVA::SystemTimer::Instance()->AbsoluteMS();
+    lastSaveTime = DAVA::SystemTimer::GetMs();
 }
 
 void CacheDB::ReduceFullCacheToSize(DAVA::uint64 toSize)
@@ -437,7 +437,7 @@ void CacheDB::Update()
 {
     if (dbStateChanged && (autoSaveTimeout != 0))
     {
-        auto curTime = DAVA::SystemTimer::Instance()->AbsoluteMS();
+        auto curTime = DAVA::SystemTimer::GetMs();
         if (curTime - lastSaveTime > autoSaveTimeout)
         {
             Save();
