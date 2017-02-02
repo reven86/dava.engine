@@ -11,7 +11,6 @@
 #include "Engine/EngineTypes.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 #include "Engine/Private/Dispatcher/UIDispatcher.h"
-#include "Functional/SignalBase.h"
 
 #include <QPointer>
 
@@ -24,7 +23,7 @@ namespace DAVA
 {
 namespace Private
 {
-class WindowBackend final : public TrackedObject, private RenderWidget::IWindowDelegate
+class WindowBackend final : publikedObject, private RenderWidget::IWindowDelegate
 {
 public:
     WindowBackend(EngineBackend* engineBackend, Window* window);

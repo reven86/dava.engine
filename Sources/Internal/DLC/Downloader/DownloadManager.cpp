@@ -27,14 +27,14 @@ Mutex DownloadManager::currentTaskMutex;
 DownloadManager::DownloadManager(Engine* e)
     : engine(e)
 {
-    sigUpdateId = engine->update.Connect(this, &DownloadManager::Update);
+    engine->update.Connect(this, &DownloadManager::Update);
 }
 #endif
 
 DownloadManager::~DownloadManager()
 {
 #if defined(__DAVAENGINE_COREV2__)
-    engine->update.Disconnect(sigUpdateId);
+    engine->update.Disconnect(this);
 #endif
 
     isThreadStarted = false;

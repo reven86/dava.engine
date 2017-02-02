@@ -40,7 +40,6 @@ public:
 #if defined(__DAVAENGINE_COREV2__)
     SoundSystem(Engine* e);
     Engine* engine = nullptr;
-    size_t sigUpdateId = 0;
 #else
     SoundSystem();
 #endif

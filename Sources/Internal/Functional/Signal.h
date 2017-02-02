@@ -6,15 +6,17 @@
 #include "Base/Token.h"
 #include "Functional/Function.h"
 #include "Functional/TrackedObject.h"
-#include "Functional/Private/TrackedWatcher.h"
+#include "Functional/Private/SignalBase.h"
 
 namespace DAVA
 {
+struct SignalConnection;
+
 template <typename... Args>
-class Signal final : protected TrackedWatcher
+class Signal final : protected SignalBase
 {
 public:
-    using Slot = Function<void(Args...)>;
+    using SlotFn = Function<void(Args...)>;
 
     Signal() = default;
     Signal(const Signal&) = delete;
@@ -23,24 +25,24 @@ public:
     ~Signal();
 
     template <typename Obj, typename Fn>
-    Token Connect(Obj* obj, const Fn& fn);
+    SignalConnection Connect(Obj* obj, const Fn& fn);
 
     template <typename Obj, typename Cls>
-    Token Connect(Obj* obj, void (Cls::*const& fn)(Args...));
+    SignalConnection Connect(Obj* obj, void (Cls::*const& fn)(Args...));
 
     template <typename Obj, typename Cls>
-    Token Connect(Obj* obj, void (Cls::*const& fn)(Args...) const);
+    SignalConnection Connect(Obj* obj, void (Cls::*const& fn)(Args...) const);
 
     template <typename Fn>
-    Token ConnectDetached(const Fn& fn);
+    SignalConnection ConnectDetached(const Fn& fn);
 
     void Disconnect(void* obj);
 
-    void Disconnect(Token token);
+    void Disconnect(Token token) override;
 
     void DisconnectAll();
 
-    void Track(Token token, TrackedObject* tracked);
+    void Track(Token token, TrackedObject* tracked) override;
 
     void Block(Token token, bool block);
 
@@ -51,27 +53,36 @@ public:
     void Emit(Args... args);
 
 private:
-    void OnTrackedObjectDisconnect(TrackedObject*) override final;
-
-    struct Connection
+    struct Slot
     {
         Token token;
+        SlotFn fn;
 
         void* object;
         TrackedObject* tracked;
-
-        Slot slot;
 
         bool blocked;
         bool deleted;
     };
 
-    List<Connection> connections;
+    List<Slot> slots;
 
     template <typename Obj>
-    Token AddConnection(Obj* obj, Slot&& slot);
+    SignalConnection AddSlot(Obj* obj, SlotFn&& slotFn);
 
-    void RemoveConnection(Connection& c);
+    void RemSlot(Slot& slot);
+
+    void OnTrackedObjectDestroyed(TrackedObject* object) override;
+};
+
+struct SignalConnection final
+{
+    bool IsConnected() const;
+    void Disconnect() const;
+    void Track(TrackedObject*) const;
+
+    mutable Token token;
+    SignalBase* signal;
 };
 
 } // namespace DAVA

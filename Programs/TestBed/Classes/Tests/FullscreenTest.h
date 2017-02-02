@@ -30,8 +30,6 @@ private:
     void OnPinningClick(DAVA::BaseObject* sender, void* data, void* callerData);
     bool OnToggleFullscreen(DAVA::UIEvent* uie);
 
-    DAVA::SigConnectionID sizeChangedSigConn = DAVA::SigConnectionID();
-
     DAVA::UIStaticText* currentModeText = nullptr;
     DAVA::UIStaticText* currentScaleText = nullptr;
     DAVA::UI3DView* ui3dview = nullptr;

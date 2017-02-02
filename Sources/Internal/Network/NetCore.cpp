@@ -21,7 +21,7 @@ NetCore::NetCore(Engine* e)
     , isFinishing(false)
     , allStopped(false)
 {
-    sigUpdateId = e->update.Connect(this, &NetCore::Poll);
+    e->update.Connect(this, &NetCore::Poll);
 }
 #else
 NetCore::NetCore()
@@ -35,7 +35,7 @@ NetCore::NetCore()
 NetCore::~NetCore()
 {
 #if defined(__DAVAENGINE_COREV2__)
-    engine->update.Disconnect(sigUpdateId);
+    engine->update.Disconnect(this);
 #endif
 
     DVASSERT(true == trackedObjects.empty() && true == dyingObjects.empty());

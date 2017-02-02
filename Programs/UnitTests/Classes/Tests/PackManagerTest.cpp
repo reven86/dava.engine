@@ -13,13 +13,13 @@
 #include "UnitTests/UnitTests.h"
 #include "Engine/Engine.h"
 
-class GameClient
+class GameClient : public DAVA::TrackedObject
 {
 public:
     GameClient(DAVA::IPackManager& packManager_)
         : packManager(packManager_)
     {
-        sigConnection = packManager.packStateChanged.Connect(this, &GameClient::OnPackStateChange);
+        packManager.packStateChanged.Connect(this, &GameClient::OnPackStateChange);
     }
     void OnPackStateChange(const DAVA::IPackManager::Pack& pack)
     {
@@ -34,7 +34,6 @@ public:
 
         DAVA::Logger::Info("%s", ss.str().c_str());
     }
-    DAVA::Token sigConnection;
     DAVA::IPackManager& packManager;
 };
 

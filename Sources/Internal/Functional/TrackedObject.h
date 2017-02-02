@@ -4,15 +4,15 @@
 
 namespace DAVA
 {
-struct TrackedWatcher;
+struct SignalBase;
 struct TrackedObject
 {
     virtual ~TrackedObject();
     void DisconnectAll();
 
 private:
-    friend struct TrackedWatcher;
-    Set<TrackedWatcher*> watchers;
+    friend struct SignalBase;
+    Set<SignalBase*> watchers;
 };
 
 } // namespace DAVA

@@ -24,7 +24,7 @@ void DeviceManagerTest::LoadResources()
     AddControl(uiDisplayDescr);
 
     OnDisplayConfigChanged();
-    tokenDisplayConfigChanged = deviceManager->displayConfigChanged.Connect(this, &DeviceManagerTest::OnDisplayConfigChanged);
+    deviceManager->displayConfigChanged.Connect(this, &DeviceManagerTest::OnDisplayConfigChanged);
 }
 
 void DeviceManagerTest::UnloadResources()
@@ -40,7 +40,7 @@ void DeviceManagerTest::UnloadResources()
     uiDisplays.clear();
     SafeRelease(uiDisplayDescr);
 
-    deviceManager->displayConfigChanged.Disconnect(tokenDisplayConfigChanged);
+    deviceManager->displayConfigChanged.Disconnect(this);
 }
 
 void DeviceManagerTest::OnDisplayConfigChanged()

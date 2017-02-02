@@ -13,9 +13,14 @@ inline Token::Token(Tid tid_)
 {
 }
 
+inline void Token::Reset()
+{
+    tid = tidInvalid;
+}
+
 inline bool Token::IsValid() const
 {
-    return tid != invalidTid;
+    return tid != tidInvalid;
 }
 
 inline Token::operator bool() const
@@ -31,7 +36,7 @@ inline bool Token::operator<(const Token& t) const
 template <typename T>
 Token TokenProvider<T>::Generate()
 {
-    static std::atomic<Token::Tid> stid = { Token::invalidTid };
+    static std::atomic<Token::Tid> stid = { Token::tidInvalid };
     return Token(++stid);
 }
 

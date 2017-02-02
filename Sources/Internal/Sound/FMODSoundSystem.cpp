@@ -66,7 +66,7 @@ Mutex SoundSystem::soundGroupsMutex;
 SoundSystem::SoundSystem(Engine* e)
     : engine(e)
 {
-    sigUpdateId = engine->update.Connect(this, &SoundSystem::Update);
+    engine->update.Connect(this, &SoundSystem::Update);
 #else
 SoundSystem::SoundSystem()
 {
@@ -123,7 +123,7 @@ SoundSystem::SoundSystem()
 SoundSystem::~SoundSystem()
 {
 #if defined(__DAVAENGINE_COREV2__)
-    engine->update.Disconnect(sigUpdateId);
+    engine->update.Disconnect(this);
 #endif
 
     if (fmodEventSystem)

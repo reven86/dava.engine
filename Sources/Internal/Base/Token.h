@@ -8,17 +8,19 @@ struct Token final
 {
     Token() = default;
 
+    void Reset();
     bool IsValid() const;
+
     operator bool() const;
     bool operator<(const Token&) const;
 
 private:
     using Tid = uint64;
-    static const Tid invalidTid = 0;
+    static const Tid tidInvalid = 0;
 
     Token(Tid tid);
 
-    Tid tid = Token::invalidTid;
+    Tid tid = Token::tidInvalid;
 
     template <typename T>
     friend class TokenProvider;

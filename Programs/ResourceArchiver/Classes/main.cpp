@@ -32,16 +32,16 @@ int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
     context->logger->SetLogLevel(Logger::LEVEL_INFO);
     context->logger->EnableConsoleMode();
 
-    e.update.Connect([&e](DAVA::float32)
-                     {
-                         CommandLineApplication app("ResourceArchiver");
-                         app.SetParseErrorCode(ResourceArchiverResult::ERROR_WRONG_COMMAND_LINE);
-                         app.AddTool(std::unique_ptr<CommandLineTool>(new ArchivePackTool));
-                         app.AddTool(std::unique_ptr<CommandLineTool>(new ArchiveUnpackTool));
-                         app.AddTool(std::unique_ptr<CommandLineTool>(new ArchiveListTool));
-                         int retCode = app.Process(e.GetCommandLine());
-                         e.QuitAsync(retCode);
-                     });
+    e.update.ConnectDetached([&e](DAVA::float32)
+                             {
+                                 CommandLineApplication app("ResourceArchiver");
+                                 app.SetParseErrorCode(ResourceArchiverResult::ERROR_WRONG_COMMAND_LINE);
+                                 app.AddTool(std::unique_ptr<CommandLineTool>(new ArchivePackTool));
+                                 app.AddTool(std::unique_ptr<CommandLineTool>(new ArchiveUnpackTool));
+                                 app.AddTool(std::unique_ptr<CommandLineTool>(new ArchiveListTool));
+                                 int retCode = app.Process(e.GetCommandLine());
+                                 e.QuitAsync(retCode);
+                             });
 
     return e.Run();
 }

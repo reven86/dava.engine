@@ -154,7 +154,7 @@ struct MindChangingClass
     MindChangingClass(Signal<>& sig)
         : signal(sig)
     {
-        id = signal.ConnectDetached([this] { Tick(); });
+        id = signal.Connect(this, [this] { Tick(); }).token;
     }
 
     void Tick()
@@ -430,18 +430,22 @@ DAVA_TESTCLASS (FunctionBindSignalTest)
             TestObjA* objA = new TestObjA();
             int check_v = 0;
 
-            Token connA1 = testSignal.Connect(objA, &TestObjA::Slot1);
-            // connA1 will be automatically tracked
+            // will be automatically tracked,
+            // objA is derived from TrackedObject
+            testSignal.Connect(objA, &TestObjA::Slot1);
+
             testSignal.Emit(10);
             TEST_VERIFY(objA->v1 == 10);
 
-            Token connA2 = testSignal.ConnectDetached([objA, &check_v](int v) {
+            SignalConnection connA2 = testSignal.ConnectDetached([objA, &check_v](int v) {
                 objA->Slot2(v);
                 check_v = v;
             });
+
             // connA2 wont be automatically tracked
             // we should add it manually
-            testSignal.Track(connA2, objA);
+            connA2.Track(objA);
+
             int emitValue_1 = 20;
             testSignal.Emit(emitValue_1);
             TEST_VERIFY(objA->v1 == emitValue_1);
@@ -458,14 +462,14 @@ DAVA_TESTCLASS (FunctionBindSignalTest)
 
         {
             TestObjB objB;
-            Token connB1 = testSignal.Connect(&objB, &TestObjB::Slot1);
+            SignalConnection connB1 = testSignal.Connect(&objB, &TestObjB::Slot1);
             testSignal.Emit(10);
 
             TEST_VERIFY(objB.v1 == 10);
 
             // TestObjB isn't derived from TrackedObject, so we
             // should disconnect it manually
-            testSignal.Disconnect(connB1); // <-- if we don't do this there can be crash,
+            connB1.Disconnect(); // <-- if we don't do this there can be crash,
             // when user invokes Emmit after objB becomes out of scope
         }
 
@@ -486,10 +490,11 @@ DAVA_TESTCLASS (FunctionBindSignalTest)
 
             TestObjC objC;
             Token connC1 = testSignal.Connect(&objC, [&testSignal, &connC1, &objC](int v) {
-                objC.Slot1(v);
-                testSignal.Block(connC1, true);
-                testSignal.Emit(20);
-            });
+                                         objC.Slot1(v);
+                                         testSignal.Block(connC1, true);
+                                         testSignal.Emit(20);
+                                     })
+                           .token;
             testSignal.Emit(10); // <-- this shouldn't hang
 
             TEST_VERIFY(objC.v1 == 10);

@@ -1,5 +1,5 @@
 #include "Functional/TrackedObject.h"
-#include "Functional/Private/TrackedWatcher.h"
+#include "Functional/Private/SignalBase.h"
 
 namespace DAVA
 {
@@ -14,9 +14,9 @@ void TrackedObject::DisconnectAll()
     auto end = watchers.end();
     while (it != end)
     {
-        TrackedWatcher* watcher = *it;
+        SignalBase* watcher = *it;
         it++;
-        watcher->OnTrackedObjectDisconnect(this);
+        watcher->OnTrackedObjectDestroyed(this);
     }
 
     watchers.clear();

@@ -173,8 +173,7 @@ void FullscreenTest::LoadResources()
     btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::On3DViewControllClick));
     AddControl(btn);
 
-    auto update = [this](Window*, Size2f, Size2f) { UpdateMode(); };
-    sizeChangedSigConn = GetPrimaryWindow()->sizeChanged.Connect(update);
+    GetPrimaryWindow()->sizeChanged.Connect(this, [this](Window*, Size2f, Size2f) { UpdateMode(); });
 
     UpdateMode();
 }
@@ -197,8 +196,7 @@ void FullscreenTest::UnloadResources()
     // TODO: UIControls and others should be deleted when window is destroyed, not later
     if (GetPrimaryWindow() != nullptr)
     {
-        GetPrimaryWindow()->sizeChanged.Disconnect(sizeChangedSigConn);
-        sizeChangedSigConn = SigConnectionID();
+        GetPrimaryWindow()->sizeChanged.Disconnect(this);
     }
 
     BaseScreen::UnloadResources();
