@@ -3,9 +3,9 @@
 #include "FileSystem/File.h"
 #include "FileSystem/Private/PackArchive.h"
 #include "FileSystem/Private/PackMetaData.h"
+#include "FileSystem/FileAPIHelper.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "Utils/CRC32.h"
-#include "Utils/StringUtils.h"
 #include "DLC/DLC.h"
 #include "Logger/Logger.h"
 #include "Base/Exception.h"
@@ -130,6 +130,8 @@ void DLCManagerImpl::Initialize(const FilePath& dirToDownloadPacks_,
 
     initError = InitError::AllGood;
     initState = InitState::LoadingRequestAskFooter;
+
+    StartScanDownloadedFiles(); // safe to call several times, only first will work
 }
 
 bool DLCManagerImpl::IsInitialized() const
@@ -823,6 +825,134 @@ String DLCManagerImpl::GetRelativeFilePath(uint32 fileIndex)
 {
     uint32 startOfFilePath = startFileNameIndexes.at(fileIndex);
     return &uncompressedFileNames.at(startOfFilePath);
+}
+
+void DLCManagerImpl::StartScanDownloadedFiles()
+{
+    if (ScanState::Wait == scanState)
+    {
+        scanState = ScanState::Starting;
+        scanThread = Thread::Create(Function<void()>(this, &DLCManagerImpl::ThreadScanFunc));
+        scanThread->Start();
+    }
+}
+
+void DLCManagerImpl::RecursiveScan(const FilePath& baseDir, const FilePath& dir, Vector<LocalFileInfo>& files)
+{
+    ScopedPtr<FileList> fl(new FileList(dir, false));
+
+    for (uint32 index = 0; index < fl->GetCount(); ++index)
+    {
+        const FilePath& path = fl->GetPathname(index);
+        if (path.IsDirectoryPathname())
+        {
+            RecursiveScan(baseDir, path, files);
+        }
+        else
+        {
+            if (path.GetExtension() == ".dvpl")
+            {
+                LocalFileInfo info;
+                info.relativeName = path.GetRelativePathname(dir);
+                FILE* f = FileAPI::OpenFile(path.GetAbsolutePathname(), "rb");
+                if (f == nullptr)
+                {
+                    Logger::Error("can't open file %s during scan", path.GetAbsolutePathname().c_str());
+                }
+                else
+                {
+                    int32 footerSize = sizeof(PackFormat::LitePack::Footer);
+                    if (0 == fseek(f, -footerSize, SEEK_END)) // TODO check SEEK_END mey not work on all platforms
+                    {
+                        PackFormat::LitePack::Footer footer;
+                        if (footerSize == fread(&footer, 1, footerSize, f))
+                        {
+                            info.size = footer.sizeCompressed;
+                            info.crc32Hash = footer.crc32Compressed;
+                        }
+                        else
+                        {
+                            Logger::Error("can't read footer in file: %s", path.GetAbsolutePathname().c_str());
+                        }
+                    }
+                    else
+                    {
+                        Logger::Error("can't seek to dvpl footer in file: %s", path.GetAbsolutePathname().c_str());
+                    }
+                    FileAPI::Close(f);
+                }
+                files.push_back(info);
+            }
+        }
+    }
+}
+
+void DLCManagerImpl::ScanFiles(const FilePath& dir, Vector<LocalFileInfo>& files)
+{
+    if (FileSystem::Instance()->IsDirectory(dir))
+    {
+        files.clear();
+        files.reserve(20000);
+        RecursiveScan(dir, dir, files);
+    }
+}
+
+bool DLCManagerImpl::MetaIsReady() const
+{
+    LockGuard<Mutex> lock(protectDM);
+
+    return meta.get() != nullptr;
+}
+
+void DLCManagerImpl::ThreadScanFunc()
+{
+    // TODO scan files in download dir
+
+    {
+        LockGuard<Mutex> lock(scanMutex);
+        scanState = ScanState::CollectingFileInfos;
+    }
+
+    ScanFiles(dirToDownloadedPacks, localFiles);
+
+    {
+        LockGuard<Mutex> lock(scanMutex);
+        scanState = ScanState::WaitForMeta;
+    }
+
+    // TODO wait meta
+
+    while (!MetaIsReady())
+    {
+        Thread::Sleep(100);
+    }
+
+    {
+        LockGuard<Mutex> lock(scanMutex);
+        scanState = ScanState::MergeWithMeta;
+    }
+
+    // TODO merge with meta
+
+    const PackMetaData& meta = GetMeta();
+    // TODO findout is pack loaded before meta?
+    const PackFormat::PackFile& pack = GetPack();
+
+    // TODO
+    // PackArchive::FillFilesInfo(pack, fileNames, fileMap, fileInfos);
+
+    for (const LocalFileInfo& info : localFiles)
+    {
+        // TODO pack.filesTable.data.files[0].
+        // info.relativeName
+    }
+
+    // TODO
+
+    {
+        LockGuard<Mutex> lock(scanMutex);
+        scanState = ScanState::Done;
+    }
 }
 
 } // end namespace DAVA

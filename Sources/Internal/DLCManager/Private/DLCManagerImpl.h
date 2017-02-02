@@ -131,18 +131,36 @@ private:
     PackRequest* AddDeleyedRequest(const String& requestedPackName);
     PackRequest* CreateNewRequest(const String& requestedPackName);
 
+    bool MetaIsReady() const;
+
+    enum class ScanState : uint32
+    {
+        Wait,
+        Starting,
+        CollectingFileInfos,
+        WaitForMeta,
+        MergeWithMeta,
+        Done
+    };
     // info to scan local pack files
     struct LocalFileInfo
     {
         String relativeName;
         uint32 size = 0;
+        uint32 crc32Hash = 0;
     };
     // fill during scan local pack files, emtpy after finish scan
     Vector<LocalFileInfo> localFiles;
     // every bit mean file exist and size match with meta
     std::bitset<32000> fileReady;
     Thread* scanThread = nullptr;
+    ScanState scanState = ScanState::Wait;
     Mutex scanMutex;
+
+    void StartScanDownloadedFiles();
+    void ThreadScanFunc();
+    void ScanFiles(const FilePath& dir, Vector<LocalFileInfo>& files);
+    void RecursiveScan(const FilePath& baseDir, const FilePath& dir, Vector<LocalFileInfo>& files);
 
     mutable Mutex protectDM;
 
