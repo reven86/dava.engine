@@ -34,6 +34,8 @@ WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
 {
     ::memset(&windowPlacement, 0, sizeof(windowPlacement));
     windowPlacement.length = sizeof(WINDOWPLACEMENT);
+
+    lastShiftStates[0] = lastShiftStates[1] = false;
 }
 
 WindowBackend::~WindowBackend()
@@ -845,16 +847,54 @@ LRESULT WindowBackend::OnPointerUpdate(uint32 pointerId, int32 x, int32 y)
 
 LRESULT WindowBackend::OnKeyEvent(uint32 key, uint32 scanCode, bool isPressed, bool isExtended, bool isRepeated)
 {
-    // How to distinguish left and right shift, control and alt
-    // http://stackoverflow.com/a/15977613
-    if (isExtended || (key == VK_SHIFT && ::MapVirtualKeyW(scanCode, MAPVK_VSC_TO_VK_EX) == VK_RSHIFT))
+    // Handle shifts separately to workaround some windows behaviours (see comment inside of OnShiftKeyEvent)
+    if (key == VK_SHIFT)
     {
-        key |= 0x100;
+        return OnShiftKeyEvent();
     }
+    else
+    {
+        // Keyboard class implementation uses 256 + keyId for extended keys (e.g. right shift, right alt etc.)
+        if (isExtended)
+        {
+            key |= 0x100;
+        }
+
+        eModifierKeys modifierKeys = GetModifierKeys();
+        MainDispatcherEvent::eType type = isPressed ? MainDispatcherEvent::KEY_DOWN : MainDispatcherEvent::KEY_UP;
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, type, key, modifierKeys, isRepeated));
+        return 0;
+    }
+}
+
+LRESULT WindowBackend::OnShiftKeyEvent()
+{
+    // Windows does not send event with separate WM_KEYUP for second shift if first one is still pressed
+    // So if it's a shift key event, request and store every shift state explicitly
+
+    static const uint32 shiftKeyCodes[2] = { VK_SHIFT, VK_SHIFT | 0x100 };
+
+    const bool lshiftPressed = ::GetKeyState(VK_LSHIFT) & 0x8000 ? true : false;
+    const bool rshiftPressed = ::GetKeyState(VK_RSHIFT) & 0x8000 ? true : false;
+    const bool currentShiftStates[2] = { lshiftPressed, rshiftPressed };
 
     eModifierKeys modifierKeys = GetModifierKeys();
-    MainDispatcherEvent::eType type = isPressed ? MainDispatcherEvent::KEY_DOWN : MainDispatcherEvent::KEY_UP;
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, type, key, modifierKeys, isRepeated));
+
+    for (int i = 0; i < 2; ++i)
+    {
+        if (lastShiftStates[i] != currentShiftStates[i])
+        {
+            const MainDispatcherEvent::eType eventType = currentShiftStates[i] ? MainDispatcherEvent::KEY_DOWN : MainDispatcherEvent::KEY_UP;
+            mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, eventType, shiftKeyCodes[i], modifierKeys, false));
+        }
+        else if (currentShiftStates[i] == true)
+        {
+            mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, MainDispatcherEvent::KEY_DOWN, shiftKeyCodes[i], modifierKeys, true));
+        }
+
+        lastShiftStates[i] = currentShiftStates[i];
+    }
+
     return 0;
 }
 
