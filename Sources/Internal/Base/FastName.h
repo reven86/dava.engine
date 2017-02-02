@@ -157,7 +157,6 @@ const char* FastName::c_str() const
 
     return nullptr;
 }
-
 template <>
 struct AnyCompare<FastName>
 {
@@ -167,7 +166,6 @@ struct AnyCompare<FastName>
     }
 };
 };
-
 namespace std
 {
 template <>

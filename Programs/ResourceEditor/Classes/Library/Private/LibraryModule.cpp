@@ -126,7 +126,7 @@ void LibraryModule::OnDragStarted()
     HidePreview();
 }
 
-DAVA_REFLECTION_IMPL(LibraryModule)
+DAVA_VIRTUAL_REFLECTION_IMPL(LibraryModule)
 {
     DAVA::ReflectionRegistrator<LibraryModule>::Begin()
     .ConstructorByPointer()

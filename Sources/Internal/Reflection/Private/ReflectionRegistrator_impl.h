@@ -4,10 +4,51 @@
 #include "Reflection/ReflectionRegistrator.h"
 #endif
 
+#define IMPL__DAVA_REFLECTION_IMPL(Cls) \
+    void Cls::Dava__ReflectionInitializerS()
+
+#define IMPL__DAVA_VIRTUAL_REFLECTION_IMPL(Cls) \
+    const DAVA::ReflectedType* Cls::Dava__GetReflectedType() const { return DAVA::ReflectionRegistratorDetail::GetByThisPointer(this); } \
+    void Cls::Dava__ReflectionRegisterBases() { DAVA::ReflectionRegistratorDetail::BasesRegistrator<Cls, Cls::Cls__BaseTypes>::Register(); } \
+    void Cls::Dava__ReflectionInitializerV()
+
+#define IMPL__DAVA_VIRTUAL_REFLECTION_IN_PLACE(Cls, ...) \
+    template <typename FT__> \
+    friend struct DAVA::ReflectionDetail::ReflectionInitializerRunner; \
+    using Cls__BaseTypes = std::tuple<__VA_ARGS__>; \
+    const DAVA::ReflectedType* Dava__GetReflectedType() const override { return DAVA::ReflectionRegistratorDetail::GetByThisPointer(this); } \
+    static void Dava__ReflectionRegisterBases() { DAVA::ReflectionRegistratorDetail::BasesRegistrator<Cls, Cls__BaseTypes>::Register(); } \
+    static void Dava__ReflectionInitializer() { Dava__ReflectionRegisterBases(); Dava__ReflectionInitializerV(); } \
+    static void Dava__ReflectionInitializerV()
+
+#define IMPL__DAVA_REFLECTION_REGISTER_PERMANENT_NAME(Cls) \
+    DAVA::ReflectedTypeDB::RegisterPermanentName(DAVA::ReflectedTypeDB::Get<Cls>(), #Cls)
+
+#define IMPL__DAVA_REFLECTION_REGISTER_CUSTOM_PERMANENT_NAME(Cls, Name) \
+    DAVA::ReflectedTypeDB::RegisterPermanentName(DAVA::ReflectedTypeDB::Get<Cls>(), Name)
+
 namespace DAVA
 {
 namespace ReflectionRegistratorDetail
 {
+template <typename T, typename Bases>
+struct BasesRegistrator;
+
+template <typename T, typename... Bases>
+struct BasesRegistrator<T, std::tuple<Bases...>>
+{
+    static inline void Register()
+    {
+        ReflectedTypeDB::RegisterBases<T, Bases...>();
+    }
+};
+
+template <typename T>
+const ReflectedType* GetByThisPointer(const T* this_)
+{
+    return ReflectedTypeDB::Get<T>();
+}
+
 template <typename T>
 struct FnRetFoReflectionRet
 {
@@ -303,18 +344,27 @@ struct RFCreator<C, GetT (C::*)() const, void (C::*)(SetT)>
 } // namespace ReflectionQualifierDetail
 
 template <typename C>
-ReflectionRegistrator<C>& ReflectionRegistrator<C>::Begin()
+ReflectionRegistrator<C>::ReflectionRegistrator()
 {
-    static ReflectionRegistrator<C> rq;
+    ReflectedType* type = ReflectedTypeDB::Edit<C>();
 
-    if (nullptr == rq.structure)
+    if (type->structure == nullptr)
     {
-        rq.structure = new ReflectedStructure();
+        type->structure.reset(new ReflectedStructure());
+        type->structureWrapper.reset(new StructureWrapperClass(Type::Instance<C>()));
     }
 
-    rq.lastMeta = &rq.structure->meta;
+    structure = type->structure.get();
+    lastMeta = &structure->meta;
+}
 
-    return rq;
+template <typename C>
+ReflectionRegistrator<C>::~ReflectionRegistrator() = default;
+
+template <typename C>
+ReflectionRegistrator<C> ReflectionRegistrator<C>::Begin()
+{
+    return ReflectionRegistrator<C>();
 }
 
 template <typename C>
@@ -420,12 +470,12 @@ ReflectionRegistrator<C>& ReflectionRegistrator<C>::Field(const char* name, GetF
 }
 
 template <typename C>
-template <typename Mt>
-ReflectionRegistrator<C>& ReflectionRegistrator<C>::Method(const char* name, const Mt& method)
+template <typename F>
+ReflectionRegistrator<C>& ReflectionRegistrator<C>::Method(const char* name, const F& fn)
 {
     ReflectedStructure::Method* m = new ReflectedStructure::Method();
     m->name = name;
-    m->method = AnyFn(method);
+    m->fn = AnyFn(fn);
 
     lastMeta = &m->meta;
     structure->methods.emplace_back(m);
@@ -436,9 +486,12 @@ ReflectionRegistrator<C>& ReflectionRegistrator<C>::Method(const char* name, con
 template <typename C>
 ReflectionRegistrator<C>& ReflectionRegistrator<C>::BindMeta(ReflectedMeta&& meta)
 {
+    DVASSERT(nullptr != lastMeta, "Trying to set meta while meta is already set or there is nothing to set it on.");
+
     if (nullptr != lastMeta)
     {
         lastMeta->reset(new ReflectedMeta(std::move(meta)));
+        lastMeta = nullptr;
     }
 
     return *this;
@@ -453,16 +506,13 @@ ReflectionRegistrator<C>& ReflectionRegistrator<C>::operator[](ReflectedMeta&& m
 template <typename C>
 void ReflectionRegistrator<C>::End()
 {
-    if (nullptr != structure)
+    ReflectedType* type = ReflectedTypeDB::Edit<C>();
+    if (nullptr != type->structureWrapper)
     {
-        ReflectedType* type = ReflectedTypeDB::Edit<C>();
-
-        type->structure.reset(structure);
-        type->structureWrapper.reset(new StructureWrapperClass(Type::Instance<C>()));
-
-        structure = nullptr;
+        type->structureWrapper->Update();
     }
 
+    structure = nullptr;
     lastMeta = nullptr;
 }
 
