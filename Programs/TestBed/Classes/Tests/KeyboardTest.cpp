@@ -55,7 +55,8 @@ void KeyboardTest::LoadResources()
     descriptionText->SetTextColor(Color::White);
     descriptionText->SetFont(font);
     descriptionText->GetOrCreateComponent<UIFocusComponent>();
-    descriptionText->SetSpriteAlign(ALIGN_LEFT | ALIGN_TOP);
+    UIControlBackground* descriptionTextBg = descriptionText->GetOrCreateComponent<UIControlBackground>();
+    descriptionTextBg->SetAlign(ALIGN_LEFT | ALIGN_TOP);
     descriptionText->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
     descriptionText->SetMultiline(true);
     descriptionText->SetMultilineType(UIStaticText::MULTILINE_ENABLED_BY_SYMBOL);

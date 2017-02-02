@@ -180,8 +180,8 @@ void StaticWebViewTest::OnButtonSetNormal(BaseObject*, void*, void*)
 
 void StaticWebViewTest::OnButtonAdd10ToAlfa(BaseObject* obj, void* data, void* callerData)
 {
-    Sprite* spr = webView1->GetSprite();
-    UIControlBackground* back = webView1->GetBackground();
+    UIControlBackground* back = webView1->GetOrCreateComponent<UIControlBackground>();
+    Sprite* spr = back ? back->GetSprite() : nullptr;
     if (spr)
     {
         Color color = back->GetColor();
@@ -193,8 +193,8 @@ void StaticWebViewTest::OnButtonAdd10ToAlfa(BaseObject* obj, void* data, void* c
 
 void StaticWebViewTest::OnButtonMinus10FromAlfa(BaseObject* obj, void* data, void* callerData)
 {
-    Sprite* spr = webView1->GetSprite();
-    UIControlBackground* back = webView1->GetBackground();
+    UIControlBackground* back = webView1->GetOrCreateComponent<UIControlBackground>();
+    Sprite* spr = back ? back->GetSprite() : nullptr;
     if (spr)
     {
         Color color = back->GetColor();
