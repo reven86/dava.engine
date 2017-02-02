@@ -136,7 +136,7 @@ bool DLCManagerImpl::IsInitialized() const
 {
     // current inputState can be in differect states becouse of
     // offline mode
-    LockGuard<Mutex> lock(protectPM);
+    LockGuard<Mutex> lock(protectDM);
 
     bool requestManagerCreated = requestManager != nullptr;
 
@@ -758,7 +758,7 @@ void DLCManagerImpl::SetRequestingEnabled(bool value)
 {
     DVASSERT(Thread::IsMainThread());
 
-    LockGuard<Mutex> lock(protectPM);
+    LockGuard<Mutex> lock(protectDM);
 
     if (value)
     {

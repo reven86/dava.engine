@@ -131,7 +131,20 @@ private:
     PackRequest* AddDeleyedRequest(const String& requestedPackName);
     PackRequest* CreateNewRequest(const String& requestedPackName);
 
-    mutable Mutex protectPM;
+    // info to scan local pack files
+    struct LocalFileInfo
+    {
+        String relativeName;
+        uint32 size = 0;
+    };
+    // fill during scan local pack files, emtpy after finish scan
+    Vector<LocalFileInfo> localFiles;
+    // every bit mean file exist and size match with meta
+    std::bitset<32000> fileReady;
+    Thread* scanThread = nullptr;
+    Mutex scanMutex;
+
+    mutable Mutex protectDM;
 
     FilePath localCacheMeta;
     FilePath localCacheFileTable;
