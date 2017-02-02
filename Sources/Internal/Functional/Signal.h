@@ -40,7 +40,7 @@ public:
 
     void DisconnectAll();
 
-    void Track(Token token, TrackedObject* obj);
+    void Track(Token token, TrackedObject* tracked);
 
     void Block(Token token, bool block);
 
@@ -58,9 +58,10 @@ private:
         Token token;
 
         void* object;
+        TrackedObject* tracked;
+
         Slot slot;
 
-        bool tracked;
         bool blocked;
         bool deleted;
     };

@@ -69,21 +69,19 @@ template <typename... Args>
 template <typename Obj>
 Token Signal<Args...>::AddConnection(Obj* obj, Slot&& slot)
 {
-    static const bool is_tracked = std::is_base_of<TrackedObject, Obj>::value;
     Token token = SignalTokenProvider::Generate();
 
     Signal::Connection c;
     c.token = token;
     c.slot = std::move(slot);
-    c.object = obj;
     c.blocked = false;
     c.deleted = false;
-    c.tracked = is_tracked;
+    c.object = obj;
+    c.tracked = SignalDetail::TrackedObjectCaster<Obj, std::is_base_of<TrackedObject, Obj>::value>::Cast(obj);
 
-    if (nullptr != obj && is_tracked)
+    if (nullptr != c.tracked)
     {
-        TrackedObject* to = SignalDetail::TrackedObjectCaster<Obj, is_tracked>::Cast(obj);
-        Watch(to);
+        Watch(c.tracked);
     }
 
     connections.emplace_back(std::move(c));
@@ -95,14 +93,13 @@ void Signal<Args...>::RemoveConnection(Connection& c)
 {
     if (!c.deleted)
     {
-        if (c.tracked)
+        if (nullptr != c.tracked)
         {
-            TrackedObject* to = static_cast<TrackedObject*>(c.object);
-            Unwatch(to);
+            Unwatch(c.tracked);
+            c.tracked = nullptr;
         }
 
         c.object = nullptr;
-        c.tracked = false;
         c.deleted = true;
     }
 }
@@ -132,7 +129,6 @@ void Signal<Args...>::Disconnect(void* obj)
         if (c.object == obj)
         {
             RemoveConnection(c);
-            break;
         }
     }
 }
@@ -147,24 +143,20 @@ void Signal<Args...>::DisconnectAll()
 }
 
 template <typename... Args>
-void Signal<Args...>::Track(Token token, TrackedObject* obj)
+void Signal<Args...>::Track(Token token, TrackedObject* tracked)
 {
-    DVASSERT(nullptr != obj);
     DVASSERT(SignalTokenProvider::IsValid(token));
+    DVASSERT(nullptr != tracked);
 
     auto i = connections.rbegin();
     auto rend = connections.rend();
     for (; i != rend; ++i)
     {
-        if (!i->deleted && i->token == token)
+        if (i->token == token && i->tracked != tracked)
         {
-            RemoveConnection(*i);
-
-            i->object = obj;
-            i->tracked = true;
-            i->deleted = false;
-
-            Watch(obj);
+            Unwatch(i->tracked);
+            i->tracked = tracked;
+            Watch(tracked);
         }
     }
 }

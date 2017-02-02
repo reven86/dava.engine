@@ -418,14 +418,16 @@ DAVA_TESTCLASS (FunctionBindSignalTest)
 
         {
             TestObjA* objA = new TestObjA();
+            int check_v = 0;
 
             Token connA1 = testSignal.Connect(objA, &TestObjA::Slot1);
             // connA1 will be automatically tracked
             testSignal.Emit(10);
             TEST_VERIFY(objA->v1 == 10);
 
-            Token connA2 = testSignal.ConnectDetached([objA](int v) {
+            Token connA2 = testSignal.ConnectDetached([objA, &check_v](int v) {
                 objA->Slot2(v);
+                check_v = v;
             });
             // connA2 wont be automatically tracked
             // we should add it manually
@@ -439,8 +441,9 @@ DAVA_TESTCLASS (FunctionBindSignalTest)
             // if that object is derived by TrackedObject it will be
             // automatically disconnected
             delete objA;
-            const int emitValue_2 = 10;
+            int emitValue_2 = 222111;
             testSignal.Emit(emitValue_2); // <-- this shouldn't crash
+            TEST_VERIFY(check_v != emitValue_2);
         }
 
         {
