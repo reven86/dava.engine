@@ -2,7 +2,7 @@
 
 #include <Tools/AssetCache/AssetCacheConstants.h>
 
-#include <Platform/SystemTimer.h>
+#include <Time/SystemTimer.h>
 #include <Concurrency/Thread.h>
 #include <Logger/Logger.h>
 

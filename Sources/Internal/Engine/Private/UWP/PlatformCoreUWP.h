@@ -55,6 +55,7 @@ private:
 
     bool gameThreadRunning = false;
     bool quitGameThread = false;
+    bool appPrelaunched = false;
 
     Mutex listenersMutex;
     List<PlatformApi::Win10::XamlApplicationListener*> xamlApplicationListeners;

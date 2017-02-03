@@ -61,6 +61,25 @@ void dx11_InitCaps()
     MutableDeviceCaps::Get().isPerfQuerySupported = (dx11.usedFeatureLevel >= D3D_FEATURE_LEVEL_9_2);
     MutableDeviceCaps::Get().maxAnisotropy = D3D11_REQ_MAXANISOTROPY;
 
+    switch (dx11.usedFeatureLevel)
+    {
+    case D3D_FEATURE_LEVEL_9_1:
+    case D3D_FEATURE_LEVEL_9_2:
+        MutableDeviceCaps::Get().maxTextureSize = D3D_FL9_1_REQ_TEXTURE2D_U_OR_V_DIMENSION;
+        break;
+    case D3D_FEATURE_LEVEL_9_3:
+        MutableDeviceCaps::Get().maxTextureSize = D3D_FL9_3_REQ_TEXTURE2D_U_OR_V_DIMENSION;
+        break;
+    case D3D_FEATURE_LEVEL_10_0:
+    case D3D_FEATURE_LEVEL_10_1:
+        MutableDeviceCaps::Get().maxTextureSize = D3D10_REQ_TEXTURE2D_U_OR_V_DIMENSION;
+        break;
+    case D3D_FEATURE_LEVEL_11_0:
+    case D3D_FEATURE_LEVEL_11_1:
+        MutableDeviceCaps::Get().maxTextureSize = D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION;
+        break;
+    }
+
 #if defined(__DAVAENGINE_WIN_UAP__)
     if (DAVA::DeviceInfo::GetPlatform() == DAVA::DeviceInfo::ePlatform::PLATFORM_PHONE_WIN_UAP)
     {
@@ -196,14 +215,8 @@ void DX11_ProcessCallResult(HRESULT hr, const char* call, const char* fileName, 
         const char* reason = DX11_GetErrorText(dx11.device->GetDeviceRemovedReason());
 
         DAVA::String info = DAVA::Format("DX11 Device removed/reset\n%s\nat %s [%u]:\n\n%s\n\n%s", call, fileName, line, actualError, reason);
-
-    #if !defined(__DAVAENGINE_DEBUG__) && !defined(ENABLE_ASSERT_MESSAGE) && !defined(ENABLE_ASSERT_LOGGING) && !defined(ENABLE_ASSERT_BREAK)
-        // write to log if asserts are disabled
         DAVA::Logger::Error(info.c_str());
-    #else
-        // assert will automatically write to log
         DVASSERT(0, info.c_str());
-    #endif
 
         ReportError(dx11.initParameters, RenderingError::DriverError);
         dx11.device = nullptr;

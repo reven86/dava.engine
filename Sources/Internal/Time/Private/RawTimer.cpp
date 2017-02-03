@@ -1,11 +1,11 @@
-#include "Timer/RawTimer.h"
-#include "Platform/SystemTimer.h"
+#include "Time/RawTimer.h"
+#include "Time/SystemTimer.h"
 
 namespace DAVA
 {
 void RawTimer::Start()
 {
-    timerStartTime = SystemTimer::Instance()->AbsoluteMS();
+    timerStartTime = SystemTimer::GetMs();
     isStarted = true;
 }
 
@@ -24,11 +24,11 @@ bool RawTimer::IsStarted()
     return isStarted;
 }
 
-uint64 RawTimer::GetElapsed()
+int64 RawTimer::GetElapsed()
 {
     if (isStarted)
     {
-        return SystemTimer::Instance()->AbsoluteMS() - timerStartTime;
+        return SystemTimer::GetMs() - timerStartTime;
     }
     else
     {

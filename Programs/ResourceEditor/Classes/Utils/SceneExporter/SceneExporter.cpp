@@ -10,7 +10,6 @@
 #include "Particles/ParticleLayer.h"
 #include "Particles/ParticleEmitter.h"
 #include "Platform/Process.h"
-#include "Platform/SystemTimer.h"
 #include "Render/GPUFamilyDescriptor.h"
 #include "Render/TextureDescriptor.h"
 #include "Render/Highlevel/Heightmap.h"

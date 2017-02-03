@@ -1,12 +1,11 @@
-#ifndef __DAVAENGINE_RAW_TIMER_H__
-#define __DAVAENGINE_RAW_TIMER_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 
 namespace DAVA
 {
 /*
- Raw Timer should be used when you need to get elapsed time in miliseconds from calling Start() to calling GetElapsed().
+ Raw Timer should be used when you need to get elapsed time in milliseconds from calling Start() to calling GetElapsed().
  It is not thread safe class.
 */
 
@@ -33,11 +32,10 @@ public:
     /*
      \brief Returns time in ms elapsed from calling Start(). Returns 0 if timer is stopped.
      */
-    uint64 GetElapsed();
+    int64 GetElapsed();
 
 private:
-    uint64 timerStartTime;
+    int64 timerStartTime;
     bool isStarted = false;
 };
 }
-#endif //__DAVAENGINE_RAW_TIMER_H__

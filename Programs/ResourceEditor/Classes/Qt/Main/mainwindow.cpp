@@ -297,7 +297,8 @@ QtMainWindow::~QtMainWindow()
 void QtMainWindow::OnRenderingInitialized()
 {
     ui->landscapeEditorControlsPlaceholder->OnOpenGLInitialized();
-    QObject::connect(DAVA::PlatformApi::Qt::GetRenderWidget(), &DAVA::RenderWidget::Resized, ui->statusBar, &StatusBar::OnSceneGeometryChaged);
+    DAVA::RenderWidget* renderWidget = DAVA::PlatformApi::Qt::GetRenderWidget();
+    renderWidget->resized.Connect(ui->statusBar, &StatusBar::OnSceneGeometryChaged);
 }
 
 void QtMainWindow::AfterInjectInit()

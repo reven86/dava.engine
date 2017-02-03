@@ -61,7 +61,7 @@ public:
         for (auto& it : *c)
         {
             V* v = &it;
-            ret.push_back({ Any(i++), Reflection::Create(v) });
+            ret.emplace_back(Any(i++), Reflection::Create(v), nullptr);
         }
 
         return ret;

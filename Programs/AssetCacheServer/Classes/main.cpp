@@ -1,16 +1,15 @@
-#include "Logger/Logger.h"
-#include "QtHelpers/RunGuard.h"
-
-#include "ServerCore.h"
 #include "UI/AssetCacheServerWindow.h"
-
-#include <QApplication>
-#include <QCryptographicHash>
+#include "ServerCore.h"
 
 #include "Engine/Engine.h"
 #include "Engine/EngineContext.h"
+#include "Logger/Logger.h"
 
-#include "Network/NetCore.h"
+#include "QtHelpers/RunGuard.h"
+#include "QtHelpers/LauncherListener.h"
+
+#include <QApplication>
+#include <QCryptographicHash>
 
 using namespace DAVA;
 
@@ -53,6 +52,16 @@ int Process(Engine& e)
                          server.reset();
                          runGuard.reset();
                      });
+
+    LauncherListener launcherListener;
+    launcherListener.Init([](LauncherListener::eMessage message) {
+        if (message == LauncherListener::eMessage::QUIT)
+        {
+            qApp->quit();
+            return LauncherListener::eReply::ACCEPT;
+        }
+        return LauncherListener::eReply::UNKNOWN_MESSAGE;
+    });
 
     return a.exec();
 }

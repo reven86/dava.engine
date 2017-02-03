@@ -2,7 +2,7 @@
 
 #include "Math/AABBox3.h"
 #include "Core/Core.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 #include "Render/RenderBase.h"
 
 #include "Engine/Engine.h"
@@ -153,7 +153,10 @@ inline void DynamicBindings::UpdateGlobalTimeIfRequired()
 #endif
     if (dynamicParameters[PARAM_GLOBAL_TIME].updateSemantic != globalFrameIndex)
     {
-        frameGlobalTime = SystemTimer::Instance()->GetGlobalTime();
+        // Use SystemTimer::GetGlobalTime although it is deprecated.
+        // SystemTimer::GetFrameTimestamp usually returns number of seconds elapsed from system start and
+        // this value can be big enough to lose some precision later.
+        frameGlobalTime = SystemTimer::GetGlobalTime();
         SetDynamicParam(PARAM_GLOBAL_TIME, &frameGlobalTime, globalFrameIndex);
     }
 }

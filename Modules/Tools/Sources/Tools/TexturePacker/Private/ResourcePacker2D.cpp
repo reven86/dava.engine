@@ -9,8 +9,8 @@
 #include <Core/Core.h>
 #include <Utils/StringUtils.h>
 #include <Platform/DeviceInfo.h>
-#include <Platform/DateTime.h>
-#include <Platform/SystemTimer.h>
+#include <Time/DateTime.h>
+#include <Time/SystemTimer.h>
 #include <Utils/MD5.h>
 #include <Utils/StringFormat.h>
 #include <Utils/UTF8Utils.h>
@@ -292,7 +292,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
         return;
     }
 
-    uint64 packTime = SystemTimer::Instance()->AbsoluteMS();
+    uint64 packTime = SystemTimer::GetMs();
 
     String inputRelativePath = inputPath.GetRelativePathname(rootDirectory);
     FilePath processDir = rootDirectory + GetProcessFolderName() + inputRelativePath;
@@ -495,7 +495,7 @@ void ResourcePacker2D::RecursiveTreeWalk(const FilePath& inputPath, const FilePa
                     }
                 }
 
-                packTime = SystemTimer::Instance()->AbsoluteMS() - packTime;
+                packTime = SystemTimer::GetMs() - packTime;
 
 #if defined(__DAVAENGINE_COREV2__)
                 if (Engine::Instance()->IsConsoleMode())

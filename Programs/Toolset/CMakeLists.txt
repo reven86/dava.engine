@@ -33,9 +33,12 @@ macro ( add_tool TARGET_NAME )
 endmacro ()
 
 ############
+
 set( JOIN_PROJECT_NAME 1 )
 set( DAVA_MEGASOLUTION      1 )
 set( IGNORE_FILE_TREE_CHECK 1 )
+
+dava_add_definitions (-D__DAVAENGINE_COREV2__)
 
 if( NOT DEPLOY_DIR )
     set( DEPLOY_DIR_MACOS             ${CMAKE_BINARY_DIR}/app )
@@ -58,7 +61,7 @@ set( QT_POST_DEPLOY        )
 reset_property ( MIX_APP_DATA )
 
     if ( NOT ONLY_CONTENT_TOOLS )
-        add_tool     ( Launcher        CUSTOM_DEPLOY_DIR ${DEPLOY_DIR} )
+        add_tool     ( Launcher        CUSTOM_DEPLOY_DIR ${DEPLOY_DIR} DEPLOY_DEFINE "-DDAVA_MACOS_DATA_PATH=\"/../Data/\"" )
         add_tool     ( UnitTests       ROOT_DIR "${DAVA_ROOT_DIR}/Programs/UnitTests"       CUSTOM_DEPLOY_DIR ${DEPLOY_DIR} )
         add_tool     ( TestBed         ROOT_DIR "${DAVA_ROOT_DIR}/Programs/TestBed"         CUSTOM_DEPLOY_DIR ${DEPLOY_DIR} )
         add_tool     ( SceneViewer     ROOT_DIR "${DAVA_ROOT_DIR}/Programs/SceneViewer"     CUSTOM_DEPLOY_DIR ${DEPLOY_DIR} )
@@ -106,6 +109,9 @@ reset_property ( MIX_APP_DATA )
     add_tool     ( Dep )
 
     processing_mix_data()
+
+
+    dump_module_log()
 
 ############
 
