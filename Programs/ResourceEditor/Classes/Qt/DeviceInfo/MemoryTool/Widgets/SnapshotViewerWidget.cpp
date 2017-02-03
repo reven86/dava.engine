@@ -1,5 +1,4 @@
 #include "Debug/DVAssert.h"
-#include "Platform/SystemTimer.h"
 
 #include "Qt/DeviceInfo/MemoryTool/Models/SymbolsListModel.h"
 #include "Qt/DeviceInfo/MemoryTool/Models/BranchTreeModel.h"

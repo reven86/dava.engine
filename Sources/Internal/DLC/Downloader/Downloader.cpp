@@ -1,6 +1,6 @@
 #include "Downloader.h"
 #include "DLC/Downloader/DownloadManager.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 #include "Concurrency/LockGuard.h"
 #include "Logger/Logger.h"
 
@@ -65,14 +65,14 @@ void Downloader::CalcStatistics(uint32 dataCame)
 {
     dataToDownloadLeft -= dataCame;
 
-    static uint64 curTime = SystemTimer::Instance()->AbsoluteMS();
+    static uint64 curTime = SystemTimer::GetMs();
     static uint64 prevTime = curTime;
     static uint64 timeDelta = 0;
 
     static uint64 dataSizeCame = 0;
     dataSizeCame += dataCame;
 
-    curTime = SystemTimer::Instance()->AbsoluteMS();
+    curTime = SystemTimer::GetMs();
     timeDelta += curTime - prevTime;
     prevTime = curTime;
 

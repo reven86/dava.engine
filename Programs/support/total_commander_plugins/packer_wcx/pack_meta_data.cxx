@@ -1,4 +1,4 @@
-#include "pack_meta_data.h"
+#include "pack_meta_data.hxx"
 
 #include <algorithm>
 #include <array>
@@ -10,7 +10,7 @@
 
 #include "lz4.h"
 
-static bool LZ4CompressorDecompress(const std::vector<uint8_t>& in,
+static bool lz4_compressor_decompress(const std::vector<uint8_t>& in,
                                     std::vector<uint8_t>& out)
 {
     int32_t decompressResult =
@@ -24,32 +24,32 @@ static bool LZ4CompressorDecompress(const std::vector<uint8_t>& in,
     return true;
 }
 
-PackMetaData::PackMetaData(const void* ptr, std::size_t size)
+pack_meta_data::pack_meta_data(const void* ptr, std::size_t size)
 {
-    Deserialize(ptr, size);
+    deserialize(ptr, size);
 }
 
-uint32_t PackMetaData::GetNumFiles() const
+uint32_t pack_meta_data::get_num_files() const
 {
-    return tableFiles.size();
+    return table_files.size();
 }
 
-uint32_t PackMetaData::GetNumPacks() const
+uint32_t pack_meta_data::get_num_packs() const
 {
-    return tablePacks.size();
+    return table_packs.size();
 }
 
-uint32_t PackMetaData::GetPackIndexForFile(const uint32_t fileIndex) const
+uint32_t pack_meta_data::get_pack_index_for_file(const uint32_t fileIndex) const
 {
-    return tableFiles.at(fileIndex);
+    return table_files.at(fileIndex);
 }
 
-const std::tuple<std::string, std::string>& PackMetaData::GetPackInfo(const uint32_t packIndex) const
+const std::tuple<std::string, std::string>& pack_meta_data::get_pack_info(const uint32_t packIndex) const
 {
-    return tablePacks.at(packIndex);
+    return table_packs.at(packIndex);
 }
 
-std::vector<uint8_t> PackMetaData::Serialize() const
+std::vector<uint8_t> pack_meta_data::serialize() const
 {
     return std::vector<uint8_t>();
 }
@@ -64,7 +64,7 @@ struct membuf : std::streambuf
     }
 };
 
-void PackMetaData::Deserialize(const void* ptr, size_t size)
+void pack_meta_data::deserialize(const void* ptr, size_t size)
 {
     using namespace std;
     assert(ptr != nullptr);
@@ -92,10 +92,10 @@ void PackMetaData::Deserialize(const void* ptr, size_t size)
     {
         throw runtime_error("read metadata error - no numFiles");
     }
-    tableFiles.resize(numFiles);
+    table_files.resize(numFiles);
 
     const uint32_t numFilesBytes = numFiles * 4;
-    file.read(reinterpret_cast<char*>(&tableFiles[0]), numFilesBytes);
+    file.read(reinterpret_cast<char*>(&table_files[0]), numFilesBytes);
     if (!file)
     {
         throw runtime_error("read metadata error - no tableFiles");
@@ -128,7 +128,7 @@ void PackMetaData::Deserialize(const void* ptr, size_t size)
 
     vector<uint8_t> uncompressedBuf(uncompressedSize);
 
-    if (!LZ4CompressorDecompress(compressedBuf, uncompressedBuf))
+    if (!lz4_compressor_decompress(compressedBuf, uncompressedBuf))
     {
         throw runtime_error("read metadata error - can't decompress");
     }
@@ -148,6 +148,6 @@ void PackMetaData::Deserialize(const void* ptr, size_t size)
         }
         packName = line.substr(0, first_space);
         packDependency = line.substr(first_space + 1);
-        tablePacks.push_back({ packName, packDependency });
+        table_packs.push_back({ packName, packDependency });
     }
 }

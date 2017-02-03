@@ -12,7 +12,7 @@
 #include "Autotesting/AutotestingSystem.h"
 #include "Input/InputSystem.h"
 #include "Logger/Logger.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 #include "Render/2D/TextBlock.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
@@ -183,7 +183,7 @@ void Window::Update(float32 frameDelta)
     const EngineContext* context = engineBackend->GetContext();
 
 #if defined(__DAVAENGINE_AUTOTESTING__)
-    float32 realFrameDelta = context->systemTimer->RealFrameDelta();
+    float32 realFrameDelta = SystemTimer::GetRealFrameDelta();
     context->autotestingSystem->Update(realFrameDelta);
 #endif
 

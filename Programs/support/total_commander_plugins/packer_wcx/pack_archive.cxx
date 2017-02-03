@@ -1,4 +1,4 @@
-#include "pack_archive.h"
+#include "pack_archive.hxx"
 
 #include <algorithm>
 #include <cstring>
@@ -7,7 +7,7 @@
 
 #include "lz4.h"
 
-static bool LZ4CompressorDecompress(const std::vector<uint8_t>& in,
+static bool lz4_compressor_decompress(const std::vector<uint8_t>& in,
                                     std::vector<uint8_t>& out)
 {
     int32_t decompressResult = LZ4_decompress_fast(
@@ -21,15 +21,15 @@ static bool LZ4CompressorDecompress(const std::vector<uint8_t>& in,
     return true;
 }
 
-std::uint32_t CRC32ForBuffer(const char* data, std::uint32_t size);
+std::uint32_t crc32_for_buffer(const char* data, std::uint32_t size);
 
 extern std::ofstream l;
 
-PackArchive::PackArchive(const std::string& archiveName)
+pack_archive::pack_archive(const std::string& archiveName)
 {
-    fileIndex = 0;
+    file_index = 0;
     l << "inside pack_archive\n";
-    using namespace PackFormat;
+    using namespace pack_format;
 
     std::string fileName = archiveName;
 
@@ -40,18 +40,18 @@ PackArchive::PackArchive(const std::string& archiveName)
     }
 
     uint64_t size = file.tellg();
-    if (size < sizeof(packFile.footer))
+    if (size < sizeof(pack_file.footer))
     {
         throw std::runtime_error(
         "file size less then pack footer: " + fileName);
     }
 
-    if (!file.seekg(size - sizeof(packFile.footer), std::ios_base::beg))
+    if (!file.seekg(size - sizeof(pack_file.footer), std::ios_base::beg))
     {
         throw std::runtime_error("can't seek to footer in file: " + fileName);
     }
 
-    auto& footerBlock = packFile.footer;
+    auto& footerBlock = pack_file.footer;
     file.read(reinterpret_cast<char*>(&footerBlock), sizeof(footerBlock));
     if (!file)
     {
@@ -60,26 +60,26 @@ PackArchive::PackArchive(const std::string& archiveName)
     }
 
     // count crc32
-    uint32_t crc32footer = CRC32ForBuffer(
-    reinterpret_cast<char*>(&packFile.footer.info),
-    sizeof(packFile.footer.info));
-    if (crc32footer != packFile.footer.infoCrc32)
+    uint32_t crc32footer = crc32_for_buffer(
+    reinterpret_cast<char*>(&pack_file.footer.info),
+    sizeof(pack_file.footer.info));
+    if (crc32footer != pack_file.footer.info_crc32)
     {
         throw std::runtime_error("not match crc32 in footer");
     }
 
-    if (footerBlock.info.packArchiveMarker != FileMarker)
+    if (footerBlock.info.pack_archive_marker != file_marker)
     {
         throw std::runtime_error("incorrect marker in pack file: " + fileName);
     }
 
-    if (footerBlock.info.numFiles > 0)
+    if (footerBlock.info.num_files > 0)
     {
         uint64_t startFilesTableBlock =
-        size - (sizeof(packFile.footer) + packFile.footer.info.filesTableSize);
+        size - (sizeof(pack_file.footer) + pack_file.footer.info.files_table_size);
 
         std::vector<char> tmpBuffer;
-        tmpBuffer.resize(packFile.footer.info.filesTableSize);
+        tmpBuffer.resize(pack_file.footer.info.files_table_size);
 
         if (!file.seekg(startFilesTableBlock, std::ios_base::beg))
         {
@@ -87,39 +87,39 @@ PackArchive::PackArchive(const std::string& archiveName)
             "can't seek to filesTable block in file: " + fileName);
         }
 
-        file.read(tmpBuffer.data(), packFile.footer.info.filesTableSize);
+        file.read(tmpBuffer.data(), pack_file.footer.info.files_table_size);
         if (!file)
         {
             throw std::runtime_error(
             "can't read filesTable block from file: " + fileName);
         }
 
-        uint32_t crc32filesTable = CRC32ForBuffer(tmpBuffer.data(),
-                                                  packFile.footer.info.filesTableSize);
-        if (crc32filesTable != packFile.footer.info.filesTableCrc32)
+        uint32_t crc32filesTable = crc32_for_buffer(tmpBuffer.data(),
+                                                  pack_file.footer.info.files_table_size);
+        if (crc32filesTable != pack_file.footer.info.files_table_crc32)
         {
             throw std::runtime_error(
             "crc32 not match in filesTable in file: " + fileName);
         }
 
         std::vector<uint8_t>& compressedNamesBuffer =
-        packFile.filesTable.names.compressedNames;
-        compressedNamesBuffer.resize(packFile.footer.info.namesSizeCompressed,
+        pack_file.files_table.names.compressed_names;
+        compressedNamesBuffer.resize(pack_file.footer.info.names_size_compressed,
                                      '\0');
 
-        uint32_t sizeOfFilesData = packFile.footer.info.numFiles * sizeof(FileTableEntry);
+        uint32_t sizeOfFilesData = pack_file.footer.info.num_files * sizeof(file_table_entry);
         const char* startOfCompressedNames = &tmpBuffer[sizeOfFilesData];
 
-        packFile.filesTable.names.compressedNames.resize(
-        packFile.footer.info.namesSizeCompressed);
+        pack_file.files_table.names.compressed_names.resize(
+        pack_file.footer.info.names_size_compressed);
 
         std::copy_n(startOfCompressedNames,
-                    packFile.footer.info.namesSizeCompressed,
-                    reinterpret_cast<char*>(packFile.filesTable.names.compressedNames.data()));
+                    pack_file.footer.info.names_size_compressed,
+                    reinterpret_cast<char*>(pack_file.files_table.names.compressed_names.data()));
 
         std::vector<uint8_t> originalNamesBuffer;
-        originalNamesBuffer.resize(packFile.footer.info.namesSizeOriginal);
-        if (!LZ4CompressorDecompress(compressedNamesBuffer,
+        originalNamesBuffer.resize(pack_file.footer.info.names_size_original);
+        if (!lz4_compressor_decompress(compressedNamesBuffer,
                                      originalNamesBuffer))
         {
             throw std::runtime_error("can't uncompress file names");
@@ -128,16 +128,16 @@ PackArchive::PackArchive(const std::string& archiveName)
         std::string fileNames(begin(originalNamesBuffer),
                               end(originalNamesBuffer));
 
-        std::vector<FileTableEntry>& fileTable = packFile.filesTable.data.files;
-        fileTable.resize(footerBlock.info.numFiles);
+        std::vector<file_table_entry>& fileTable = pack_file.files_table.data.files;
+        fileTable.resize(footerBlock.info.num_files);
 
-        FileTableEntry* startFilesData =
-        reinterpret_cast<FileTableEntry*>(tmpBuffer.data());
+        file_table_entry* startFilesData =
+        reinterpret_cast<file_table_entry*>(tmpBuffer.data());
 
-        std::copy_n(startFilesData, footerBlock.info.numFiles,
+        std::copy_n(startFilesData, footerBlock.info.num_files,
                     fileTable.data());
 
-        filesInfo.reserve(footerBlock.info.numFiles);
+        files_info.reserve(footerBlock.info.num_files);
 
         size_t numFiles = std::count_if(begin(fileNames), end(fileNames),
                                         [](const char& ch) {
@@ -153,31 +153,31 @@ PackArchive::PackArchive(const std::string& archiveName)
         size_t fileNameIndex{ 0 };
 
         std::for_each(begin(fileTable), end(fileTable),
-                      [&](FileTableEntry& fileEntry) {
+                      [&](file_table_entry& fileEntry) {
                           const char* fileNameLoc = &fileNames[fileNameIndex];
-                          mapFileData.emplace(fileNameLoc, &fileEntry);
+                          map_file_data.emplace(fileNameLoc, &fileEntry);
 
-                          FileInfo info;
+                          file_info info;
 
                           info.relativeFilePath = fileNameLoc;
-                          info.originalSize = fileEntry.originalSize;
-                          info.compressedSize = fileEntry.compressedSize;
-                          info.hash = fileEntry.compressedCrc32;
+                          info.originalSize = fileEntry.original_size;
+                          info.compressedSize = fileEntry.compressed_size;
+                          info.hash = fileEntry.compressed_crc32;
                           info.compressionType = fileEntry.type;
 
-                          filesInfo.push_back(info);
+                          files_info.push_back(info);
 
                           fileNameIndex = fileNames.find('\0', fileNameIndex + 1);
                           ++fileNameIndex;
                       });
     } // end if (footerBlock.info.numFiles > 0)
 
-    if (footerBlock.metaDataSize > 0)
+    if (footerBlock.meta_data_size > 0)
     {
         l << "parse metadata block\n";
-        uint64_t startMetaBlock = size - (sizeof(packFile.footer) + packFile.footer.info.filesTableSize + footerBlock.metaDataSize);
+        uint64_t startMetaBlock = size - (sizeof(pack_file.footer) + pack_file.footer.info.files_table_size + footerBlock.meta_data_size);
         file.seekg(startMetaBlock, std::fstream::beg);
-        std::vector<uint8_t> metaBlock(footerBlock.metaDataSize);
+        std::vector<uint8_t> metaBlock(footerBlock.meta_data_size);
         if (!file)
         {
             throw std::runtime_error("can't seek meta");
@@ -187,61 +187,61 @@ PackArchive::PackArchive(const std::string& archiveName)
         {
             throw std::runtime_error("can't read meta");
         }
-        packMeta.reset(new PackMetaData(&metaBlock[0], metaBlock.size()));
+        pack_meta.reset(new pack_meta_data(&metaBlock[0], metaBlock.size()));
     }
 
     l << "end constructor\n";
     l << "files:\n";
-    for (auto& f : filesInfo)
+    for (auto& f : files_info)
     {
         l << f.relativeFilePath << '\n';
     }
-    l << "total: " << filesInfo.size() << '\n';
+    l << "total: " << files_info.size() << '\n';
 }
 
-const std::vector<FileInfo>& PackArchive::GetFilesInfo() const
+const std::vector<pack_format::file_info>& pack_archive::get_files_info() const
 {
-    return filesInfo;
+    return files_info;
 }
 
-const FileInfo* PackArchive::GetFileInfo(
+const pack_format::file_info* pack_archive::get_file_info(
 const std::string& relativeFilePath) const
 {
-    auto it = mapFileData.find(relativeFilePath);
+    auto it = map_file_data.find(relativeFilePath);
 
-    if (it != mapFileData.end())
+    if (it != map_file_data.end())
     {
         // find out index of FileInfo*
-        const PackFormat::FileTableEntry* currentFile = it->second;
-        const PackFormat::FileTableEntry* start =
-        packFile.filesTable.data.files.data();
+        const pack_format::file_table_entry* currentFile = it->second;
+        const pack_format::file_table_entry* start =
+        pack_file.files_table.data.files.data();
         ptrdiff_t index = std::distance(start, currentFile);
-        return &filesInfo.at(static_cast<uint32_t>(index));
+        return &files_info.at(static_cast<uint32_t>(index));
     }
     return nullptr;
 }
 
-bool PackArchive::HasFile(const std::string& relativeFilePath) const
+bool pack_archive::has_file(const std::string& relativeFilePath) const
 {
-    auto iterator = mapFileData.find(relativeFilePath);
-    return iterator != mapFileData.end();
+    auto iterator = map_file_data.find(relativeFilePath);
+    return iterator != map_file_data.end();
 }
 
-bool PackArchive::LoadFile(const std::string& relativeFilePath,
-                           std::vector<uint8_t>& output)
+bool pack_archive::load_file(const std::string& relativeFilePath,
+                             std::vector<uint8_t>& output)
 {
-    using namespace PackFormat;
+    using namespace pack_format;
 
-    if (!HasFile(relativeFilePath))
+    if (!has_file(relativeFilePath))
     {
         return false;
     }
 
-    const FileTableEntry& fileEntry =
-    *mapFileData.find(relativeFilePath)->second;
-    output.resize(fileEntry.originalSize);
+    const file_table_entry& fileEntry =
+    *map_file_data.find(relativeFilePath)->second;
+    output.resize(fileEntry.original_size);
 
-    file.seekg(fileEntry.startPosition, std::ios_base::beg);
+    file.seekg(fileEntry.start_position, std::ios_base::beg);
     if (!file)
     {
         return false;
@@ -252,7 +252,7 @@ bool PackArchive::LoadFile(const std::string& relativeFilePath,
     case 0:
     {
         file.read(reinterpret_cast<char*>(output.data()),
-                  fileEntry.originalSize);
+                  fileEntry.original_size);
         if (!file)
         {
             return false;
@@ -262,16 +262,16 @@ bool PackArchive::LoadFile(const std::string& relativeFilePath,
     case 1: // Compressor::Type::Lz4:
     case 2: // Compressor::Type::Lz4HC:
     {
-        std::vector<uint8_t> packedBuf(fileEntry.compressedSize);
+        std::vector<uint8_t> packedBuf(fileEntry.compressed_size);
 
         file.read(reinterpret_cast<char*>(packedBuf.data()),
-                  fileEntry.compressedSize);
+                  fileEntry.compressed_size);
         if (!file)
         {
             return false;
         }
 
-        if (!LZ4CompressorDecompress(packedBuf, output))
+        if (!lz4_compressor_decompress(packedBuf, output))
         {
             return false;
         }
@@ -279,10 +279,10 @@ bool PackArchive::LoadFile(const std::string& relativeFilePath,
     break;
     case 3: // Compressor::Type::RFC1951:
     {
-        std::vector<uint8_t> packedBuf(fileEntry.compressedSize);
+        std::vector<uint8_t> packedBuf(fileEntry.compressed_size);
 
         file.read(reinterpret_cast<char*>(packedBuf.data()),
-                  fileEntry.compressedSize);
+                  fileEntry.compressed_size);
         if (!file)
         {
             return false;
@@ -297,29 +297,29 @@ bool PackArchive::LoadFile(const std::string& relativeFilePath,
     return true;
 }
 
-bool PackArchive::HasMeta() const
+bool pack_archive::has_meta() const
 {
-    return packMeta.get() != nullptr;
+    return pack_meta.get() != nullptr;
 }
 
-const PackMetaData& PackArchive::GetMeta() const
+const pack_meta_data& pack_archive::get_meta() const
 {
-    return *packMeta;
+    return *pack_meta;
 }
 
-std::string PackArchive::PrintMeta() const
+std::string pack_archive::print_meta() const
 {
     using namespace std;
     stringstream ss;
-    if (HasMeta())
+    if (has_meta())
     {
-        const PackMetaData& meta = GetMeta();
-        size_t numFiles = meta.GetNumFiles();
+        const pack_meta_data& meta = get_meta();
+        size_t numFiles = meta.get_num_files();
 
         // find out max filename
         auto max_it =
-        max_element(begin(filesInfo), end(filesInfo),
-                    [](const FileInfo& l, const FileInfo& r) {
+        max_element(begin(files_info), end(files_info),
+                    [](const pack_format::file_info& l, const pack_format::file_info& r) {
                         return l.relativeFilePath.size() < r.relativeFilePath.size();
                     });
 
@@ -329,8 +329,8 @@ std::string PackArchive::PrintMeta() const
         ss << '\n';
         for (unsigned i = 0; i < numFiles; ++i)
         {
-            const auto& p = filesInfo.at(i).relativeFilePath;
-            const auto index = meta.GetPackIndexForFile(i);
+            const auto& p = files_info.at(i).relativeFilePath;
+            const auto index = meta.get_pack_index_for_file(i);
 
             ss << left << setw(max_filename) << p
                << "|" << setw(10) << index << '\n';
@@ -339,14 +339,14 @@ std::string PackArchive::PrintMeta() const
         ss << '\n';
         ss << "-PACKS---------------------------------------------------------";
         ss << '\n';
-        size_t numPacks = meta.GetNumPacks();
+        size_t numPacks = meta.get_num_packs();
         string packName;
         string dependencies;
         size_t max_pack_name = 0;
         size_t max_dep_name = 0;
         for (unsigned i = 0; i < numPacks; ++i)
         {
-            const auto& info = meta.GetPackInfo(i);
+            const auto& info = meta.get_pack_info(i);
             const std::string& packName = std::get<0>(info);
             const std::string& dependencies = std::get<1>(info);
             if (packName.length() > max_pack_name)
@@ -360,7 +360,7 @@ std::string PackArchive::PrintMeta() const
         }
         for (unsigned i = 0; i < numPacks; ++i)
         {
-            const auto& info = meta.GetPackInfo(i);
+            const auto& info = meta.get_pack_info(i);
             const std::string& packName = std::get<0>(info);
             const std::string& dependencies = std::get<1>(info);
             ss << left << setw(max_pack_name)
@@ -421,7 +421,7 @@ const std::uint32_t crc32_tab[256] = {
     0x2d02ef8d
 };
 
-std::uint32_t CRC32ForBuffer(const char* data, std::uint32_t size)
+std::uint32_t crc32_for_buffer(const char* data, std::uint32_t size)
 {
     std::uint32_t crc32 = 0xffffffff;
     for (std::uint32_t i = 0; i < size; ++i)

@@ -4,6 +4,8 @@ set                   ( CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebinfo"
 
 project               ( ResourceEditor )
 
+get_filename_component( FRAMEWORK_PATH "${CMAKE_CURRENT_LIST_DIR}/../../" ABSOLUTE)
+
 set                   ( WARNINGS_AS_ERRORS true )
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${FRAMEWORK_PATH}/Sources/CMake/Modules/" )
 set                   ( TOOL_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
