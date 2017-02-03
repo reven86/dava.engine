@@ -617,7 +617,6 @@ void Window::HandleKeyPress(const Private::MainDispatcherEvent& e)
         uie.phase = UIEvent::Phase::KEY_UP;
     }
 
-    inputSystem->HandleInputEvent(&uie);
     if (pressed)
     {
         keyboard.OnKeyPressed(uie.key);
@@ -626,6 +625,7 @@ void Window::HandleKeyPress(const Private::MainDispatcherEvent& e)
     {
         keyboard.OnKeyUnpressed(uie.key);
     }
+    inputSystem->HandleInputEvent(&uie);
 }
 
 void Window::HandleKeyChar(const Private::MainDispatcherEvent& e)
