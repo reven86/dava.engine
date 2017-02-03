@@ -216,9 +216,7 @@ int EngineBackend::Run()
     }
     else
     {
-        isRunning = true;
         platformCore->Run();
-        isRunning = false;
     }
     return exitCode;
 }

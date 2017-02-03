@@ -62,12 +62,12 @@ void TestUIModule::TestCheckBox()
     dlg->setLayout(layout);
 
     CheckBox::FieldsDescriptor valueDescr;
-    valueDescr.valueFieldName = FastName("value");
+    valueDescr.valueFieldName = DAVA::FastName("value");
     CheckBox* valueBox = new CheckBox(valueDescr, GetAccessor(), reflection, dlg); //->ToWidgetCast();
     layout->addWidget(valueBox->ToWidgetCast());
 
     CheckBox::FieldsDescriptor valueInvertedDescr;
-    valueInvertedDescr.valueFieldName = FastName("invertedValue");
+    valueInvertedDescr.valueFieldName = DAVA::FastName("invertedValue");
     CheckBox* valueInvertedBox = new CheckBox(valueInvertedDescr, GetAccessor(), reflection, dlg); //->ToWidgetCast();
     layout->addWidget(valueInvertedBox->ToWidgetCast());
 
