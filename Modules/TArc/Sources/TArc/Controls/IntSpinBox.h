@@ -1,7 +1,7 @@
 #pragma once
 
-#include "TArc/Controls/ControlProxy.h"
 #include "TArc/Controls/ControlDescriptor.h"
+#include "TArc/Controls/Private/BaseSpinBox.h"
 #include "TArc/Utils/QtConnections.h"
 
 #include <Base/BaseTypes.h>
@@ -15,7 +15,7 @@ namespace DAVA
 {
 namespace TArc
 {
-class IntSpinBox : public ControlProxy<QSpinBox>
+class IntSpinBox : public BaseSpinBox<QSpinBox>
 {
 public:
     enum class Fields : uint32
@@ -29,7 +29,6 @@ public:
 
     IntSpinBox(const ControlDescriptorBuilder<Fields>& fields, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent = nullptr);
     IntSpinBox(const ControlDescriptorBuilder<Fields>& fields, ContextAccessor* accessor, Reflection model, QWidget* parent = nullptr);
-    ~IntSpinBox() override;
 
 private:
     void UpdateControl(const ControlDescriptor& changedFields) override;
@@ -38,34 +37,12 @@ private:
     // SpinBox handlers
     void ValueChanged(int i);
 
-    // Update this control utils
-    void ToEditingState();
-    void ToInvalidState();
-    void ToValidState();
-
 private:
     // Qt reimplemented
     QString textFromValue(int val) const override;
     int valueFromText(const QString& text) const override;
     void fixup(QString& str) const override;
     QValidator::State validate(QString& input, int& pos) const override;
-
-    void keyPressEvent(QKeyEvent* event) override;
-    void focusInEvent(QFocusEvent* event) override;
-    void focusOutEvent(QFocusEvent* event) override;
-
-private:
-    QtConnections connections;
-    QString noValueString = QStringLiteral("<multiple values>");
-
-    enum class ControlState
-    {
-        ValidValue,
-        InvalidValue,
-        Editing
-    };
-
-    Stack<ControlState> stateHistory;
 };
 } // namespace TArc
 } // namespace DAVA

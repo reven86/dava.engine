@@ -13,6 +13,11 @@ Range::Range(const Any& minValue_, const Any& maxValue_, const Any& step_)
 {
 }
 
+FloatNumberAccuracy::FloatNumberAccuracy(uint32 accuracy_)
+    : accuracy(accuracy_)
+{
+}
+
 Validator::Validator(const TValidationFn& fn_)
     : fn(fn_)
 {

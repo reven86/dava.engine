@@ -195,12 +195,20 @@ DAVA_TARC_TESTCLASS(IntSpinBoxTests)
 {
     void SetFocus(QTestEventList & list, QSpinBox * box)
     {
-        QStyleOptionSpinBox opt;
-        opt.initFrom(box);
+        box->clearFocus();
+        if (box->isActiveWindow() == false)
+        {
+            box->activateWindow();
+        }
 
-        QStyle* style = box->style();
-        QRect r = style->subControlRect(QStyle::CC_SpinBox, &opt, QStyle::SC_SpinBoxEditField, box);
-        list.addMouseClick(Qt::LeftButton, Qt::KeyboardModifier(), r.center());
+        box->setFocus(Qt::MouseFocusReason);
+
+        //QStyleOptionSpinBox opt;
+        //opt.initFrom(box);
+
+        //QStyle* style = box->style();
+        //QRect r = style->subControlRect(QStyle::CC_SpinBox, &opt, QStyle::SC_SpinBoxEditField, box);
+        //list.addMouseClick(Qt::LeftButton, Qt::KeyboardModifier(), r.center());
     }
 
     void ButtonClick(QTestEventList & list, bool isUpButton, QSpinBox* box)

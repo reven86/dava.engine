@@ -12,26 +12,22 @@ namespace DAVA
 namespace TArc
 {
 IntSpinBox::IntSpinBox(const ControlDescriptorBuilder<Fields>& fields, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent)
-    : ControlProxy<QSpinBox>(ControlDescriptor(fields), wrappersProcessor, model, parent)
+    : BaseSpinBox<QSpinBox>(ControlDescriptor(fields), wrappersProcessor, model, parent)
 {
     SetupControl();
 }
 
 IntSpinBox::IntSpinBox(const ControlDescriptorBuilder<Fields>& fields, ContextAccessor* accessor, Reflection model, QWidget* parent)
-    : ControlProxy<QSpinBox>(ControlDescriptor(fields), accessor, model, parent)
+    : BaseSpinBox<QSpinBox>(ControlDescriptor(fields), accessor, model, parent)
 {
     SetupControl();
 }
 
-IntSpinBox::~IntSpinBox() = default;
-
 void IntSpinBox::SetupControl()
 {
     setKeyboardTracking(false);
-
     connections.AddConnection(this, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), DAVA::MakeFunction(this, &IntSpinBox::ValueChanged));
     ToValidState();
-    setRange(3, 100);
 }
 
 void IntSpinBox::ValueChanged(int i)
@@ -57,39 +53,6 @@ void IntSpinBox::ValueChanged(int i)
             }
         }
     }
-}
-
-void IntSpinBox::ToEditingState()
-{
-    DVASSERT(hasFocus() == true);
-    DVASSERT(stateHistory.top() != ControlState::Editing);
-
-    ControlState prevState = stateHistory.top();
-    stateHistory.push(ControlState::Editing);
-    if (prevState == ControlState::InvalidValue)
-    {
-        lineEdit()->setText("");
-        setButtonSymbols(QAbstractSpinBox::NoButtons);
-    }
-    else
-    {
-        setButtonSymbols(QAbstractSpinBox::UpDownArrows);
-    }
-}
-
-void IntSpinBox::ToInvalidState()
-{
-    stateHistory = Stack<ControlState>();
-    stateHistory.push(ControlState::InvalidValue);
-    setButtonSymbols(QAbstractSpinBox::NoButtons);
-    lineEdit()->setText(textFromValue(0));
-}
-
-void IntSpinBox::ToValidState()
-{
-    stateHistory = Stack<ControlState>();
-    stateHistory.push(ControlState::ValidValue);
-    setButtonSymbols(QAbstractSpinBox::UpDownArrows);
 }
 
 void IntSpinBox::UpdateControl(const ControlDescriptor& changedFields)
@@ -310,42 +273,6 @@ QValidator::State IntSpinBox::validate(QString& input, int& pos) const
     }
 
     return result;
-}
-
-void IntSpinBox::keyPressEvent(QKeyEvent* event)
-{
-    ControlProxy<QSpinBox>::keyPressEvent(event);
-    int key = event->key();
-    if (key == Qt::Key_Enter || key == Qt::Key_Return)
-    {
-        ValueChanged(value());
-    }
-}
-
-void IntSpinBox::focusInEvent(QFocusEvent* event)
-{
-    ControlProxy<QSpinBox>::focusInEvent(event);
-    ToEditingState();
-}
-
-void IntSpinBox::focusOutEvent(QFocusEvent* event)
-{
-    ControlProxy<QSpinBox>::focusOutEvent(event);
-    if (stateHistory.top() == ControlState::Editing)
-    {
-        stateHistory.pop();
-    }
-    DVASSERT(stateHistory.empty() == false);
-    DVASSERT(stateHistory.top() == ControlState::InvalidValue || stateHistory.top() == ControlState::ValidValue);
-
-    if (stateHistory.top() == ControlState::ValidValue)
-    {
-        ToValidState();
-    }
-    else
-    {
-        ToInvalidState();
-    }
 }
 
 } // namespace TArc

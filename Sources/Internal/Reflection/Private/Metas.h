@@ -28,6 +28,16 @@ public:
     const Any step;
 };
 
+/**
+    Specifies count of signs in fraction part of float number for editing
+*/
+class FloatNumberAccuracy
+{
+public:
+    FloatNumberAccuracy(uint32 accuracy);
+    const uint32 accuracy;
+};
+
 /** Validation result */
 struct ValidationResult
 {
