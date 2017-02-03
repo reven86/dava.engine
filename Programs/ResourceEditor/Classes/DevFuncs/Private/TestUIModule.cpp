@@ -240,7 +240,7 @@ struct IntSpinBoxTestData : public ReflectionBase
         return std::to_string(v);
     }
 
-    DAVA_VIRTUAL_REFLECTION(IntSpinBoxTestData)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(IntSpinBoxTestData)
     {
         ReflectionRegistrator<IntSpinBoxTestData>::Begin()
         .Field("value", &IntSpinBoxTestData::GetValue, &IntSpinBoxTestData::SetValue)[M::Range(0, 300, 2)]

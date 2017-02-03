@@ -56,6 +56,7 @@ private:
 
 private:
     QtConnections connections;
+    QString noValueString = QStringLiteral("<multiple values>");
 
     enum class ControlState
     {

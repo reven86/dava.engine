@@ -36,6 +36,11 @@ void IntSpinBox::SetupControl()
 
 void IntSpinBox::ValueChanged(int i)
 {
+    if (isReadOnly() == true || isEnabled() == false)
+    {
+        return;
+    }
+
     ControlState currentState = stateHistory.top();
     if (currentState == ControlState::Editing)
     {
@@ -141,6 +146,10 @@ void IntSpinBox::UpdateControl(const ControlDescriptor& changedFields)
             }
             else
             {
+                if (value.CanCast<String>())
+                {
+                    noValueString = QString::fromStdString(value.Cast<String>());
+                }
                 ToInvalidState();
             }
         }
@@ -170,7 +179,7 @@ QString IntSpinBox::textFromValue(int val) const
         result = QString::number(val);
         break;
     case DAVA::TArc::IntSpinBox::ControlState::InvalidValue:
-        result = QString("<multiple values>");
+        result = noValueString;
         break;
     case DAVA::TArc::IntSpinBox::ControlState::Editing:
     {
