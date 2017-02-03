@@ -6,7 +6,7 @@
 #include "Core/ApplicationCore.h"
 #include "Core/Core.h"
 #include "Core/PerformanceSettings.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 #include "UI/UIScreenManager.h"
 #include "UI/UIControlSystem.h"
 #include "Input/InputSystem.h"
@@ -231,7 +231,6 @@ void Core::CreateSingletons()
 
     new EngineSettings();
     new LocalizationSystem();
-    new SystemTimer();
     new Random();
     new AnimationManager();
     new FontManager();
@@ -349,8 +348,6 @@ void Core::ReleaseSingletons()
 #ifdef __DAVAENGINE_ANDROID__
     AssetsManagerAndroid::Instance()->Release();
 #endif
-
-    SystemTimer::Instance()->Release();
 }
 
 void Core::SetOptions(KeyedArchive* archiveOfOptions)
@@ -632,7 +629,9 @@ void Core::SystemProcessFrame()
         return;
     }
 
-    SystemTimer::Instance()->Start();
+    SystemTimer::StartFrame();
+    SystemTimer::ComputeRealFrameDelta();
+
     {
         InputSystem::Instance()->OnBeforeUpdate();
 
@@ -647,8 +646,8 @@ void Core::SystemProcessFrame()
         }
 #endif
 
-        float32 frameDelta = SystemTimer::Instance()->FrameDelta();
-        SystemTimer::Instance()->UpdateGlobalTime(frameDelta);
+        float32 frameDelta = SystemTimer::GetFrameDelta();
+        SystemTimer::UpdateGlobalTime(frameDelta);
 
         if (Replay::IsRecord())
         {
@@ -660,7 +659,7 @@ void Core::SystemProcessFrame()
             frameDelta = Replay::Instance()->PlayFrameTime();
             if (Replay::IsPlayback()) //can be unset in previous string
             {
-                SystemTimer::Instance()->SetFrameDelta(frameDelta);
+                SystemTimer::SetFrameDelta(frameDelta);
             }
         }
 
@@ -969,6 +968,12 @@ Analytics::Core& Core::GetAnalyticsCore() const
 void Core::OnRenderingError(rhi::RenderingError error, void* context)
 {
     GetApplicationCore()->OnRenderingIsNotPossible(error);
+}
+
+void Core::AdjustSystemTimer(int64 adjustMicro)
+{
+    Logger::Info("System timer adjusted by %lld us", adjustMicro);
+    SystemTimer::Adjust(adjustMicro);
 }
 
 } // namespace DAVA

@@ -340,6 +340,10 @@ static void gles_check_GL_extensions()
     }
 
     MutableDeviceCaps::Get().maxSamples = static_cast<uint32>(maxSamples);
+
+    GLint maxTextureSize = 1024;
+    GL_CALL(glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize));
+    MutableDeviceCaps::Get().maxTextureSize = maxTextureSize;
 }
 
 //------------------------------------------------------------------------------

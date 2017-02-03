@@ -14,7 +14,7 @@
 #include "Engine/Private/Win32/Window/WindowBackendWin32.h"
 
 #include "Logger/Logger.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 #include "Utils/Utils.h"
 
 namespace DAVA
@@ -89,7 +89,7 @@ void PlatformCore::Run()
 
     for (;;)
     {
-        uint64 frameBeginTime = SystemTimer::Instance()->AbsoluteMS();
+        int64 frameBeginTime = SystemTimer::GetMs();
 
         while (::PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE))
         {
@@ -102,8 +102,8 @@ void PlatformCore::Run()
         }
 
         int32 fps = engineBackend.OnFrame();
-        uint64 frameEndTime = SystemTimer::Instance()->AbsoluteMS();
-        uint32 frameDuration = static_cast<uint32>(frameEndTime - frameBeginTime);
+        int64 frameEndTime = SystemTimer::GetMs();
+        int32 frameDuration = static_cast<int32>(frameEndTime - frameBeginTime);
 
         int32 sleep = 1;
         if (fps > 0)
@@ -112,7 +112,7 @@ void PlatformCore::Run()
             if (sleep < 1)
                 sleep = 1;
         }
-        Sleep(sleep);
+        ::Sleep(sleep);
 
         if (quitLoop)
             break;

@@ -261,7 +261,7 @@ String AutotestingDB::YamlToString(const KeyedArchive* archive)
 
 bool AutotestingDB::SaveToDB(MongodbUpdateObject* dbUpdateObject)
 {
-    uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
+    int64 startTime = SystemTimer::GetMs();
     Logger::Info("AutotestingSystem::SaveToDB");
 
     bool ret = dbUpdateObject->SaveToDB(dbClient);
@@ -271,8 +271,8 @@ bool AutotestingDB::SaveToDB(MongodbUpdateObject* dbUpdateObject)
         Logger::Error("AutotestingSystem::SaveToDB failed");
     }
 
-    uint64 finishTime = SystemTimer::Instance()->AbsoluteMS();
-    Logger::Info("AutotestingSystem::SaveToDB FINISH result time %d", finishTime - startTime);
+    int64 finishTime = SystemTimer::GetMs();
+    Logger::Info("AutotestingSystem::SaveToDB FINISH result time %lld", finishTime - startTime);
     return ret;
 }
 

@@ -4,6 +4,9 @@
 class Document;
 class LibraryWidget;
 class PropertiesWidget;
+class MainWindow;
+class QTabBar;
+class QAction;
 
 class MainWindow::DocumentGroupView : public QObject
 {

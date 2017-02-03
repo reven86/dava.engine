@@ -49,15 +49,13 @@ private:
     void OpenScene();
     void OpenSceneQuckly();
     void OpenSceneByPath(const DAVA::FilePath& scenePath);
+    void AddSceneByPath(const DAVA::FilePath& scenePath);
     void SaveScene();
     void SaveScene(bool saveAs);
     void SaveSceneToFolder(bool compressedTextures);
     void ExportScene();
     void CloseAllScenes(bool needSavingReqiest);
     void ReloadTextures(DAVA::eGPUFamily gpu);
-
-    void ShowPreview(const DAVA::FilePath& scenePath);
-    void HidePreview();
 
     /// Fields value handlers
     void OnActiveTabChanged(const DAVA::Any& contextID);
@@ -111,7 +109,7 @@ private:
 
     QPointer<SceneRenderWidget> renderWidget;
 
-    DAVA_VIRTUAL_REFLECTION(SceneManagerModule, DAVA::TArc::ControllerModule)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(SceneManagerModule, DAVA::TArc::ControllerModule)
     {
         DAVA::ReflectionRegistrator<SceneManagerModule>::Begin()
         .ConstructorByPointer()
