@@ -23,6 +23,7 @@ class EngineBackend final
 {
 public:
     static EngineBackend* Instance();
+    static bool showingModalMessageBox;
 
     static WindowBackend* GetWindowBackend(Window* w);
 
@@ -40,6 +41,7 @@ public:
     bool IsStandaloneGUIMode() const;
     bool IsEmbeddedGUIMode() const;
     bool IsConsoleMode() const;
+    bool IsRunning() const;
 
     const EngineContext* GetContext() const;
     Window* GetPrimaryWindow() const;
@@ -128,6 +130,7 @@ private:
 
     eEngineRunMode runMode = eEngineRunMode::GUI_STANDALONE;
     bool isInitialized = false; // Flag indicating that Init method has been called
+    bool isRunning = false; // Flag indicating that engine is running its loop, i.e. has entered method Run
     bool quitConsole = false;
     bool appIsSuspended = false;
     bool appIsTerminating = false;
@@ -158,6 +161,11 @@ inline bool EngineBackend::IsEmbeddedGUIMode() const
 inline bool EngineBackend::IsConsoleMode() const
 {
     return runMode == eEngineRunMode::CONSOLE_MODE;
+}
+
+inline bool EngineBackend::IsRunning() const
+{
+    return isRunning;
 }
 
 inline const EngineContext* EngineBackend::GetContext() const

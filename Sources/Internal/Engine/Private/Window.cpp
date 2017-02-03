@@ -286,6 +286,7 @@ void Window::HandleWindowCreated(const Private::MainDispatcherEvent& e)
 {
     Logger::FrameworkDebug("=========== WINDOW_CREATED, dpi %.1f", e.sizeEvent.dpi);
 
+    isAlive = true;
     MergeSizeChangedEvents(e);
     sizeEventsMerged = true;
 
@@ -311,6 +312,7 @@ void Window::HandleWindowDestroyed(const Private::MainDispatcherEvent& e)
     uiControlSystem = nullptr;
 
     engineBackend->DeinitRender(this);
+    isAlive = false;
 }
 
 void Window::HandleCursorCaptureLost(const Private::MainDispatcherEvent& e)

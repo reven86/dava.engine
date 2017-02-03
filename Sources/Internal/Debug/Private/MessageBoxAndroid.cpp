@@ -19,12 +19,9 @@ int MessageBox(const String& title, const String& message, const Vector<String>&
 {
     DVASSERT(0 < buttons.size() && buttons.size() <= 3);
 
-    if (buttons.size() == 0 || buttons.size() > 3)
-        return -1;
-
-    // TODO: make use JNI::ObjectRef after merging corev2_android branch to avoid jobject leaks on exception
     try
     {
+        // TODO: make use JNI::ObjectRef after merging corev2_android branch to avoid jobject leaks on exception
         JNI::JavaClass msgboxClass("com/dava/engine/MessageBox");
         Function<jint(jstring, jstring, jstringArray)> showModal = msgboxClass.GetStaticMethod<jint, jstring, jstring, jstringArray>("messageBox");
 

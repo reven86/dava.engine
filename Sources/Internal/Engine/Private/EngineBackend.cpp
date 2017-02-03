@@ -95,6 +95,7 @@ void RunOnUIThread(const Function<void()>& task)
 namespace Private
 {
 EngineBackend* EngineBackend::instance = nullptr;
+bool EngineBackend::showingModalMessageBox = false;
 
 EngineBackend* EngineBackend::Instance()
 {
@@ -215,7 +216,9 @@ int EngineBackend::Run()
     }
     else
     {
+        isRunning = true;
         platformCore->Run();
+        isRunning = false;
     }
     return exitCode;
 }
@@ -534,7 +537,7 @@ void EngineBackend::HandleAppTerminate(const MainDispatcherEvent& e)
             ++it;
 
             // Directly call Close for WindowBackend to tell important information that application is terminating
-            w->GetBackend()->Close(true);
+            GetWindowBackend(w)->Close(true);
         }
     }
     else if (!appIsTerminating)

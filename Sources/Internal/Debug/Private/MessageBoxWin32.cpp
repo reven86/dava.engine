@@ -1,8 +1,7 @@
 #include "Base/Platform.h"
 
 #if defined(__DAVAENGINE_COREV2__)
-#if defined(__DAVAENGINE_QT__)
-#elif defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WIN32__)
 
 #include "Base/BaseTypes.h"
 #include "Concurrency/Thread.h"
@@ -11,6 +10,10 @@
 #include "Engine/Private/Win32/Window/WindowBackendWin32.h"
 #include "Debug/DVAssert.h"
 #include "Utils/UTF8Utils.h"
+
+#if defined(__DAVAENGINE_QT__)
+#include "Engine/PlatformApi.h"
+#endif
 
 namespace DAVA
 {
@@ -128,7 +131,7 @@ LRESULT CALLBACK MessageBoxHook::HookInstaller(int code, WPARAM wparam, LPARAM l
         if (cwp->message == WM_INITDIALOG)
         {
             LONG_PTR newWndProc = reinterpret_cast<LONG_PTR>(&MessageBoxHook::HookWndProc);
-            pthis->oldWndProc = reinterpret_cast<WNDPROC>(::SetWindowLongPtrW(cwp->hwnd, GWL_WNDPROC, newWndProc));
+            pthis->oldWndProc = reinterpret_cast<WNDPROC>(::SetWindowLongPtrW(cwp->hwnd, GWLP_WNDPROC, newWndProc));
         }
     }
     return ::CallNextHookEx(pthis->hhook, code, wparam, lparam);
@@ -162,32 +165,44 @@ int MessageBox(const String& title, const String& message, const Vector<String>&
     DVASSERT(0 < buttons.size() && buttons.size() <= 3);
     DVASSERT(0 <= defaultButton && defaultButton < static_cast<int>(buttons.size()));
 
-    HWND hwnd = nullptr;
-    Window* primaryWindow = GetPrimaryWindow();
-    if (primaryWindow != nullptr)
-    {
-        hwnd = EngineBackend::GetWindowBackend(primaryWindow)->GetHWND();
-    }
-
     int result = -1;
-    auto showMessageBox = [hwnd, &title, &message, &buttons, defaultButton, &result]() {
-        Vector<WideString> wideButtons;
-        wideButtons.reserve(buttons.size());
-        for (const String& s : buttons)
+    auto showMessageBox = [&title, &message, &buttons, defaultButton, &result]()
+    {
+        if (!EngineBackend::showingModalMessageBox)
         {
-            wideButtons.push_back(UTF8Utils::EncodeToWideString(s));
-        }
+            Vector<WideString> wideButtons;
+            wideButtons.reserve(buttons.size());
+            for (const String& s : buttons)
+            {
+                wideButtons.push_back(UTF8Utils::EncodeToWideString(s));
+            }
 
-        MessageBoxHook msgBox;
-        result = msgBox.Show(hwnd, UTF8Utils::EncodeToWideString(title), UTF8Utils::EncodeToWideString(message), std::move(wideButtons), defaultButton);
+            EngineBackend::showingModalMessageBox = true;
+
+#if defined(__DAVAENGINE_QT__)
+            Window* primaryWindow = GetPrimaryWindow();
+            if (primaryWindow != nullptr && primaryWindow->IsAlive())
+                PlatformApi::Qt::AcquireWindowContext(primaryWindow);
+#endif
+
+            MessageBoxHook msgBox;
+            result = msgBox.Show(::GetActiveWindow(), UTF8Utils::EncodeToWideString(title), UTF8Utils::EncodeToWideString(message), std::move(wideButtons), defaultButton);
+
+#if defined(__DAVAENGINE_QT__)
+            if (primaryWindow != nullptr && primaryWindow->IsAlive())
+                PlatformApi::Qt::ReleaseWindowContext(primaryWindow);
+#endif
+
+            EngineBackend::showingModalMessageBox = false;
+        }
     };
 
-    const bool directCall = hwnd == nullptr || Thread::IsMainThread();
-    if (directCall)
+    Window* primaryWindow = GetPrimaryWindow();
+    if (Thread::IsMainThread())
     {
         showMessageBox();
     }
-    else
+    else if (primaryWindow != nullptr && primaryWindow->IsAlive())
     {
         primaryWindow->RunOnUIThread(showMessageBox);
     }

@@ -94,7 +94,7 @@ void PlatformCore::Quit()
 WindowBackend* PlatformCore::ActivityOnCreate()
 {
     Window* primaryWindow = engineBackend->InitializePrimaryWindow();
-    WindowBackend* primaryWindowBackend = primaryWindow->GetBackend();
+    WindowBackend* primaryWindowBackend = EngineBackend::GetWindowBackend(primaryWindow);
     return primaryWindowBackend;
 }
 

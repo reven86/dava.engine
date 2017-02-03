@@ -182,9 +182,9 @@ void WindowBackend::SetCursorInCenter()
 
 void WindowBackend::ProcessPlatformEvents()
 {
-    // Window becomes disabled when modal dialog is shown but handles all messages except input.
-    // Prevent processing UI dispatcher events to exclude cases when WM_TRIGGER_EVENTS is delivered when modal dialog is open.
-    if (::IsWindowEnabled(hwnd))
+    // Prevent processing UI dispatcher events to exclude cases when WM_TRIGGER_EVENTS is delivered
+    // when modal dialog is open as Dispatcher::ProcessEvents is not reentrant now
+    if (!EngineBackend::showingModalMessageBox)
     {
         uiDispatcher.ProcessEvents();
     }
