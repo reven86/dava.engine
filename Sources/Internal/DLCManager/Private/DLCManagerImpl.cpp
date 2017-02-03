@@ -1,4 +1,4 @@
-#include "PackManager/Private/DLCManagerImpl.h"
+#include "DLCManager/Private/DLCManagerImpl.h"
 #include "FileSystem/FileList.h"
 #include "FileSystem/File.h"
 #include "FileSystem/Private/PackArchive.h"
@@ -6,19 +6,16 @@
 #include "DLC/Downloader/DownloadManager.h"
 #include "Utils/CRC32.h"
 #include "Utils/StringUtils.h"
-#include "Utils/StringFormat.h"
 #include "DLC/DLC.h"
 #include "Logger/Logger.h"
 #include "Base/Exception.h"
 #include "Concurrency/Mutex.h"
 #include "Concurrency/LockGuard.h"
 
-#include <algorithm>
-
 namespace DAVA
 {
-IDLCManager::~IDLCManager() = default;
-IDLCManager::IRequest::~IRequest() = default;
+DLCManager::~DLCManager() = default;
+DLCManager::IRequest::~IRequest() = default;
 
 const String& DLCManagerImpl::ToString(DLCManagerImpl::InitState state)
 {
@@ -702,7 +699,7 @@ void DLCManagerImpl::DeleteLocalMetaFiles()
     fs->DeleteFile(localCacheMeta);
 }
 
-const IDLCManager::IRequest* DLCManagerImpl::RequestPack(const String& packName)
+const DLCManager::IRequest* DLCManagerImpl::RequestPack(const String& packName)
 {
     DVASSERT(Thread::IsMainThread());
 

@@ -1,13 +1,13 @@
 #pragma once
 
-#include "PackManager/Private/PackRequest.h"
+#include "DLCManager/Private/PackRequest.h"
 
 namespace DAVA
 {
 class RequestManager
 {
 public:
-    explicit RequestManager(IDLCManager& packManager_)
+    explicit RequestManager(DLCManager& packManager_)
         : packManager(packManager_)
     {
     }
@@ -24,7 +24,7 @@ public:
     void UpdateOrder(PackRequest* request, uint32 newOrderIndex);
 
 private:
-    IDLCManager& packManager;
+    DLCManager& packManager;
     Vector<PackRequest*> requests;
 };
 } // end namespace DAVA

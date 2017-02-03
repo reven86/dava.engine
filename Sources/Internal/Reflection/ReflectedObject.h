@@ -7,6 +7,7 @@ class ReflectedObject final
 {
 public:
     ReflectedObject() = default;
+    ReflectedObject(void* ptr, const ReflectedType* reflectedType);
 
     template <typename T>
     ReflectedObject(T* ptr);

@@ -1,10 +1,10 @@
 #pragma once
 
-#include "PackManager/PackManager.h"
-#include "PackManager/Private/RequestManager.h"
+#include "DLCManager/DLCManager.h"
+#include "DLCManager/Private/RequestManager.h"
 #include "FileSystem/Private/PackFormatSpec.h"
 #include "FileSystem/Private/PackMetaData.h"
-#include "FileSystem/ResourceArchive.h"
+#include "Concurrency/Mutex.h"
 
 #ifdef __DAVAENGINE_COREV2__
 #include "Engine/Engine.h"
@@ -12,7 +12,7 @@
 
 namespace DAVA
 {
-class DLCManagerImpl final : public IDLCManager
+class DLCManagerImpl final : public DLCManager
 {
 public:
     enum class InitState : uint32

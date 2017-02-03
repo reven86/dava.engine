@@ -8,20 +8,20 @@ namespace DAVA
 /**
  Interface for requesting packs from server.
 
- Topical work flow:
+ Typical work flow:
  1. connect to state change signal and to request update signal
  2. call Initialize to connect to server, wait for state become `Pack::Status::Ready`
  3. request pack from server or mount local automatically on request
 
  example:
  ```
- IDLCManager& pm = *engine.GetContext()->packManager;
+ DLCManager& pm = *engine.GetContext()->dlcManager;
  // if init failed we will know about it
- pm.networkReady.Connect(this, &PackManagerTest::OnNetworkReady);
+ pm.networkReady.Connect(this, &DLCManagerTest::OnNetworkReady);
 
  FilePath folderWithDownloadedPacks = "~doc:/FolderForPacks/";
  String urlToServerSuperpack = "http://server.net/superpack.3.7.0.mali.dvpk";
- IDLCManager::Hints hints;
+ DLCManager::Hints hints;
  hints.retryConnectMilliseconds = 1000; // retry connect every second
 
  pm.Initialize(folderWithDownloadedPacks, urlToServerSuperpack, hints);
@@ -31,10 +31,10 @@ namespace DAVA
  ```
 */
 
-class IDLCManager
+class DLCManager
 {
 public:
-    virtual ~IDLCManager();
+    virtual ~DLCManager();
 
     /**
      Proxy interface to easily check pack request progress
@@ -89,7 +89,7 @@ public:
     /** return nullptr if can't find pack */
     virtual const IRequest* RequestPack(const String& packName) = 0;
 
-    /** order - [0..N] - 0 - first, 1, 2, ... , N - last in queue */
+    /** DEPRECATED order - [0..N] - 0 - first, 1, 2, ... , N - last in queue */
     virtual void SetRequestOrder(const IRequest* request, uint32 orderIndex) = 0;
 };
 

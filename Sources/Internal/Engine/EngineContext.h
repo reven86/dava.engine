@@ -28,7 +28,7 @@ class RenderSystem2D;
 class UIScreenManager;
 class LocalNotificationController;
 
-class IDLCManager;
+class DLCManager;
 class AssetsManagerAndroid;
 class ModuleManager;
 class PluginManager;
@@ -80,7 +80,7 @@ public:
     ModuleManager* moduleManager = nullptr;
     PluginManager* pluginManager = nullptr;
 
-    IDLCManager* packManager = nullptr;
+    DLCManager* dlcManager = nullptr;
     Analytics::Core* analyticsCore = nullptr;
 
     EngineSettings* settings = nullptr;

@@ -34,7 +34,7 @@
 #include "ModuleManager/ModuleManager.h"
 #include "Network/NetCore.h"
 #include "Notification/LocalNotificationController.h"
-#include "PackManager/Private/DLCManagerImpl.h"
+#include "DLCManager/Private/DLCManagerImpl.h"
 #include "Platform/DeviceInfo.h"
 #include "Platform/DPIHelper.h"
 #include "Platform/SystemTimer.h"
@@ -762,9 +762,9 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
         }
         else if (m == "PackManager")
         {
-            if (context->packManager == nullptr)
+            if (context->dlcManager == nullptr)
             {
-                context->packManager = new DLCManagerImpl(engine);
+                context->dlcManager = new DLCManagerImpl(engine);
             }
         }
     }
@@ -910,10 +910,10 @@ void EngineBackend::DestroySubsystems()
         context->soundSystem->Release();
         context->soundSystem = nullptr;
     }
-    if (context->packManager != nullptr)
+    if (context->dlcManager != nullptr)
     {
-        delete context->packManager;
-        context->packManager = nullptr;
+        delete context->dlcManager;
+        context->dlcManager = nullptr;
     }
     if (context->inputSystem != nullptr)
     {

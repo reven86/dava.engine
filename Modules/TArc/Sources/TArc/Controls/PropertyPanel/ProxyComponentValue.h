@@ -42,7 +42,7 @@ private:
 
     using TThis = ProxyComponentValue<TStaticEditor, TValueCompositor>;
 
-    DAVA_VIRTUAL_REFLECTION(TThis, BaseComponentValue)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(TThis, BaseComponentValue)
     {
         DAVA::ReflectionRegistrator<TThis>::Begin()
         .End();

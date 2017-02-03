@@ -2,13 +2,13 @@
 
 #include "Infrastructure/BaseScreen.h"
 #include <FileSystem/FilePath.h>
-#include <PackManager/PackManager.h>
+#include <DLCManager/DLCManager.h>
 
 class TestBed;
-class PackManagerTest : public BaseScreen, DAVA::UITextFieldDelegate
+class DLCManagerTest : public BaseScreen, DAVA::UITextFieldDelegate
 {
 public:
-    PackManagerTest(TestBed& app);
+    DLCManagerTest(TestBed& app);
 
 private:
     void TextFieldOnTextChanged(DAVA::UITextField* textField, const DAVA::WideString& newText, const DAVA::WideString& /*oldText*/) override;
@@ -27,13 +27,13 @@ private:
     void OnCheckFileClicked(DAVA::BaseObject* sender, void* data, void* callerData);
     void OnListInDvpkClicked(DAVA::BaseObject* sender, void* data, void* callerData);
 
-    void OnRequestUpdated(const DAVA::IDLCManager::IRequest& request);
+    void OnRequestUpdated(const DAVA::DLCManager::IRequest& request);
     void OnNetworkReady(bool isReady);
 
     DAVA::Engine& engine;
 
     DAVA::String sqliteDbFile = "db_{gpu}.db.zip";
-    DAVA::FilePath folderWithDownloadedPacks = "~doc:/PackManagerTest/packs/";
+    DAVA::FilePath folderWithDownloadedPacks = "~doc:/DLCManagerTest/packs/";
     // TODO quick and dirty way to test download on all platforms, in future replace with local http server
     DAVA::String urlToServerSuperpack = "http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz/test_pack.dvpk";
     //"http://127.0.0.1:2424/test_pack.dvpk";

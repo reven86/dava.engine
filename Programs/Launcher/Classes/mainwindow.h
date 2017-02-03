@@ -3,6 +3,7 @@
 #include "applicationmanager.h"
 #include "buttonswidget.h"
 #include "filedownloader.h"
+
 #include <QMainWindow>
 #include <QListWidgetItem>
 #include <QtGui>
@@ -13,6 +14,8 @@ class BranchesListModel;
 class QSortFilterProxyModel;
 class FileManager;
 class ConfigDownloader;
+class BAManagerClient;
+class ConfigRefresher;
 
 namespace Ui
 {
@@ -28,7 +31,7 @@ public:
     ~MainWindow();
 
 private slots:
-    void OnRefreshClicked();
+    void Refresh();
     void OnListItemClicked(QModelIndex);
 
     void OnRun(int rowNumber);
@@ -46,12 +49,13 @@ private slots:
 
     void OpenPreferencesEditor();
 
+    void ShowTable(const QString& branchID);
+
 private:
     void CheckUpdates();
     void RefreshApps();
 
     void ShowWebpage();
-    void ShowTable(const QString& branchID);
     void ShowUpdateDialog(QQueue<UpdateTask>& tasks);
 
     void RefreshBranchesList();
@@ -65,6 +69,8 @@ private:
 
     Ui::MainWindow* ui = nullptr;
     ApplicationManager* appManager = nullptr;
+    BAManagerClient* baManagerClient = nullptr;
+    ConfigRefresher* configRefresher = nullptr;
 
     FileDownloader* newsDownloader = nullptr;
     ConfigDownloader* configDownloader = nullptr;

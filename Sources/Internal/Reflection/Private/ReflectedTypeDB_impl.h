@@ -28,7 +28,7 @@ const ReflectedType* GetVirtualReflectedTypeImpl(const T* ptr, std::true_type)
                   "It seems that there is inheritance Diamond Problem. "
                   "Try to use virtual inheritance!");
 
-    return static_cast<const ReflectionBase*>(ptr)->GetReflectedType();
+    return static_cast<const ReflectionBase*>(ptr)->Dava__GetReflectedType();
 }
 
 template <typename T>

@@ -30,7 +30,7 @@
 #include "Tests/DlcTest.h"
 #include "Tests/FormatsTest.h"
 #include "Tests/GPUTest.h"
-#include "Tests/PackManagerTest.h"
+#include "Tests/DLCManagerTest.h"
 #include "Tests/ScriptingTest.h"
 #include "Tests/SamplePluginTest.h"
 #include "Tests/AssertTest.h"
@@ -181,7 +181,7 @@ void TestBed::OnGameLoopStopped()
     }
     screens.clear();
     SafeRelease(testListScreen);
-    
+
 #if defined(__DAVAENGINE_QT__)
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_IPHONE__)
@@ -195,7 +195,7 @@ void TestBed::OnEngineCleanup()
 {
     Logger::Debug("****** TestBed::OnEngineCleanup");
     netLogger.Uninstall();
-    
+
 #if !defined(__DAVAENGINE_MACOS__)
     nativeDelegate.reset();
 #endif
@@ -295,14 +295,14 @@ void TestBed::RegisterTests()
     new FormatsTest(*this);
     new AssertTest(*this);
     new FloatingPointExceptionTest(*this);
-    new PackManagerTest(*this);
+    new DLCManagerTest(*this);
     new UILoggingTest(*this);
     new ProfilerTest(*this);
     new ScriptingTest(*this);
     new ImGuiTest(*this);
     new SoundTest(*this);
     new AnyPerformanceTest(*this);
-    
+
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
 
     new SamplePluginTest(*this);

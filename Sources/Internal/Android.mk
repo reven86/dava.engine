@@ -359,6 +359,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/DeviceManager/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/DeviceManager/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/DeviceManager/Private/Android/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/DLCManager/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Engine/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Engine/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Engine/Private/Dispatcher/*.cpp) \
@@ -368,7 +369,6 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Entity/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/FileSystem/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/FileSystem/Private/*.cpp) \
-                     $(wildcard $(LOCAL_PATH)/PackManager/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Input/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Input/Private/Android/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Math/*.cpp) \
@@ -384,6 +384,8 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/BacktraceAndroid/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/ExternC/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/PluginManager/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/PluginManager/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Reflection/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Reflection/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Reflection/Private/Wrappers/*.cpp))

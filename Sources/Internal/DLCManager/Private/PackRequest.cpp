@@ -1,15 +1,13 @@
-#include "PackManager/Private/PackRequest.h"
-#include "PackManager/Private/RequestManager.h"
-#include "PackManager/Private/DLCManagerImpl.h"
+#include "DLCManager/Private/PackRequest.h"
+#include "DLCManager/Private/DLCManagerImpl.h"
 #include "FileSystem/Private/PackMetaData.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/FileAPIHelper.h"
 #include "Utils/CRC32.h"
-#include "Utils/StringFormat.h"
+#include "Utils/Utils.h"
 #include "Logger/Logger.h"
 #include "DLC/DLC.h"
-#include "Base/Exception.h"
 
 namespace DAVA
 {
@@ -231,14 +229,14 @@ void PackRequest::UpdateFileRequest()
                         packManagerImpl.requestUpdated.Emit(*this);
                     }
                 }
-                    break;
+                break;
                 case DL_FINISHED:
                 {
                     dm->GetTotal(taskId, prevDownloadedSize);
                     taskId = 0;
                     status = CheckHash;
                 }
-                    break;
+                break;
                 case DL_UNKNOWN:
                     break;
                 }
