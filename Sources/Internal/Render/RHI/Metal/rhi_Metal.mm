@@ -176,6 +176,23 @@ void Metal_InitContext()
         DAVA::Logger::Error("A7 ios 10 detected");
         _Metal_DrawableDispatchSemaphore = new DAVA::Semaphore(_Metal_DrawableDispatchSemaphoreFrameCount);
     }
+
+    DAVA::uint32 maxTextureSize = 4096u;
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 90000
+    if ([_Metal_Device supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily1_v2] || [_Metal_Device supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily2_v2])
+        maxTextureSize = DAVA::Max(maxTextureSize, 8192u);
+    if ([_Metal_Device supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily3_v1])
+        maxTextureSize = DAVA::Max(maxTextureSize, 16384u);
+#endif
+    
+#if __IPHONE_OS_VERSION_MAX_ALLOWED >= 100000
+    if ([_Metal_Device supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily1_v3] || [_Metal_Device supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily2_v3])
+        maxTextureSize = DAVA::Max(maxTextureSize, 8192u);
+    if ([_Metal_Device supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily3_v2])
+        maxTextureSize = DAVA::Max(maxTextureSize, 16384u);
+#endif
+
+    MutableDeviceCaps::Get().maxTextureSize = maxTextureSize;
 }
 bool Metal_CheckSurface()
 {
