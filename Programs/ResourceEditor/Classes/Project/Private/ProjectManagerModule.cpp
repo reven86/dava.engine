@@ -53,10 +53,10 @@ void ProjectManagerModule::PostInit()
     params.insertionParams.method = InsertionParams::eInsertionMethod::BeforeItem;
 
     recentProject.reset(new RecentMenuItems(params));
-    recentProject->actionTriggered.Connect([this](const DAVA::String& projectPath)
-                                           {
-                                               OpenProjectByPath(DAVA::FilePath(projectPath));
-                                           });
+    recentProject->actionTriggered.ConnectDetached([this](const DAVA::String& projectPath)
+                                                   {
+                                                       OpenProjectByPath(DAVA::FilePath(projectPath));
+                                                   });
 }
 
 void ProjectManagerModule::CreateActions()

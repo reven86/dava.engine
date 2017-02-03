@@ -2,7 +2,7 @@
 
 #include "Base/Introspection.h"
 #include "Preferences/PreferencesRegistrator.h"
-#include "Functional/SignalBase.h"
+#include "Functional/Signal.h"
 #include "Logger/Logger.h"
 
 #if defined(__DAVAENGINE_MACOS__)

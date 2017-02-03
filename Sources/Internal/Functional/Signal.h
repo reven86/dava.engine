@@ -16,8 +16,6 @@ template <typename... Args>
 class Signal final : protected SignalBase
 {
 public:
-    using SlotFn = Function<void(Args...)>;
-
     Signal() = default;
     Signal(const Signal&) = delete;
     Signal& operator=(const Signal&) = delete;
@@ -53,10 +51,12 @@ public:
     void Emit(Args... args);
 
 private:
-    struct Slot
+    using ConnectionFn = Function<void(Args...)>;
+
+    struct Connection
     {
         Token token;
-        SlotFn fn;
+        ConnectionFn fn;
 
         void* object;
         TrackedObject* tracked;
@@ -65,22 +65,27 @@ private:
         bool deleted;
     };
 
-    List<Slot> slots;
+    List<Connection> connections;
 
     template <typename Obj>
-    SignalConnection AddSlot(Obj* obj, SlotFn&& slotFn);
+    SignalConnection AddSlot(Obj* obj, ConnectionFn&& fn);
 
-    void RemSlot(Slot& slot);
+    void RemSlot(Connection& slot);
 
     void OnTrackedObjectDestroyed(TrackedObject* object) override;
 };
 
 struct SignalConnection final
 {
+    SignalConnection(SignalBase*, Token);
+
     bool IsConnected() const;
     void Disconnect() const;
     void Track(TrackedObject*) const;
 
+    operator Token() const;
+
+private:
     mutable Token token;
     SignalBase* signal;
 };

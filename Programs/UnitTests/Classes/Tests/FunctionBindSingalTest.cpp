@@ -154,7 +154,7 @@ struct MindChangingClass
     MindChangingClass(Signal<>& sig)
         : signal(sig)
     {
-        id = signal.Connect(this, [this] { Tick(); }).token;
+        id = signal.Connect(this, [this] { Tick(); });
     }
 
     void Tick()
@@ -490,11 +490,10 @@ DAVA_TESTCLASS (FunctionBindSignalTest)
 
             TestObjC objC;
             Token connC1 = testSignal.Connect(&objC, [&testSignal, &connC1, &objC](int v) {
-                                         objC.Slot1(v);
-                                         testSignal.Block(connC1, true);
-                                         testSignal.Emit(20);
-                                     })
-                           .token;
+                objC.Slot1(v);
+                testSignal.Block(connC1, true);
+                testSignal.Emit(20);
+            });
             testSignal.Emit(10); // <-- this shouldn't hang
 
             TEST_VERIFY(objC.v1 == 10);

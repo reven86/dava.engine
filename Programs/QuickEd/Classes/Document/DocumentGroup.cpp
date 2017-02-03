@@ -32,8 +32,8 @@ DocumentGroup::DocumentGroup(Project* project_, MainWindow::DocumentGroupView* v
     connect(qApp, &QApplication::applicationStateChanged, this, &DocumentGroup::OnApplicationStateChanged);
     commandStackGroup->canUndoChanged.Connect(this, &DocumentGroup::CanUndoChanged);
     commandStackGroup->canRedoChanged.Connect(this, &DocumentGroup::CanRedoChanged);
-    commandStackGroup->undoCommandChanged.Connect([this](const DAVA::Command* command) { emit UndoTextChanged(GetUndoText()); });
-    commandStackGroup->redoCommandChanged.Connect([this](const DAVA::Command* command) { emit RedoTextChanged(GetRedoText()); });
+    commandStackGroup->undoCommandChanged.ConnectDetached([this](const DAVA::Command* command) { emit UndoTextChanged(GetUndoText()); });
+    commandStackGroup->redoCommandChanged.ConnectDetached([this](const DAVA::Command* command) { emit RedoTextChanged(GetRedoText()); });
 
     connect(view, &MainWindow::DocumentGroupView::OpenPackageFile, this, &DocumentGroup::AddDocument);
     connect(this, &DocumentGroup::ActiveDocumentChanged, view, &MainWindow::DocumentGroupView::OnDocumentChanged);

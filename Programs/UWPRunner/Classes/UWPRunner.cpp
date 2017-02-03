@@ -31,7 +31,7 @@ UWPRunner::UWPRunner(const PackageOptions& opt)
     : options(opt)
 {
     //install slot to log consumer
-    logConsumerConnectionID = logConsumer.newMessageNotifier.Connect([this](const String& logStr) {
+    logConsumer.newMessageNotifier.Connect(this, [this](const String& logStr) {
         NetLogOutput(logStr);
     });
 }
@@ -39,7 +39,7 @@ UWPRunner::UWPRunner(const PackageOptions& opt)
 UWPRunner::~UWPRunner()
 {
     cleanNeeded.Emit();
-    logConsumer.newMessageNotifier.Disconnect(logConsumerConnectionID);
+    logConsumer.newMessageNotifier.Disconnect(this);
 
     if (!options.installOnly)
     {
@@ -179,7 +179,7 @@ void UWPRunner::ProcessBundlePackage()
 {
     FilePath package = options.mainPackage;
     bundleHelper.reset(new AppxBundleHelper(package));
-    cleanNeeded.Connect([this] { bundleHelper.reset(); });
+    cleanNeeded.ConnectDetached([this] { bundleHelper.reset(); });
 
     //try to extract package for specified architecture
     if (!options.architecture.empty())

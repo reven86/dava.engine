@@ -35,28 +35,28 @@ template <typename... Args>
 template <typename Fn>
 inline SignalConnection Signal<Args...>::ConnectDetached(const Fn& fn)
 {
-    return AddSlot<void>(nullptr, SlotFn(fn));
+    return AddSlot<void>(nullptr, ConnectionFn(fn));
 }
 
 template <typename... Args>
 template <typename Obj, typename Fn>
 inline SignalConnection Signal<Args...>::Connect(Obj* obj, const Fn& fn)
 {
-    return AddSlot(obj, SlotFn(fn));
+    return AddSlot(obj, ConnectionFn(fn));
 }
 
 template <typename... Args>
 template <typename Obj, typename Cls>
 inline SignalConnection Signal<Args...>::Connect(Obj* obj, void (Cls::*const& fn)(Args...))
 {
-    return AddSlot(obj, SlotFn(obj, fn));
+    return AddSlot(obj, ConnectionFn(obj, fn));
 }
 
 template <typename... Args>
 template <typename Obj, typename Cls>
 inline SignalConnection Signal<Args...>::Connect(Obj* obj, void (Cls::*const& fn)(Args...) const)
 {
-    return AddSlot(obj, SlotFn(obj, fn));
+    return AddSlot(obj, ConnectionFn(obj, fn));
 }
 
 template <typename... Args>
@@ -67,40 +67,40 @@ void Signal<Args...>::OnTrackedObjectDestroyed(TrackedObject* obj)
 
 template <typename... Args>
 template <typename Obj>
-SignalConnection Signal<Args...>::AddSlot(Obj* obj, SlotFn&& fn)
+SignalConnection Signal<Args...>::AddSlot(Obj* obj, ConnectionFn&& fn)
 {
     Token token = SignalTokenProvider::Generate();
 
-    Signal::Slot slot;
-    slot.token = token;
-    slot.fn = std::move(fn);
-    slot.blocked = false;
-    slot.deleted = false;
-    slot.object = obj;
-    slot.tracked = SignalDetail::TrackedObjectCaster<Obj, std::is_base_of<TrackedObject, Obj>::value>::Cast(obj);
+    Signal::Connection c;
+    c.token = token;
+    c.fn = std::move(fn);
+    c.blocked = false;
+    c.deleted = false;
+    c.object = obj;
+    c.tracked = SignalDetail::TrackedObjectCaster<Obj, std::is_base_of<TrackedObject, Obj>::value>::Cast(obj);
 
-    if (nullptr != slot.tracked)
+    if (nullptr != c.tracked)
     {
-        Watch(slot.tracked);
+        Watch(c.tracked);
     }
 
-    slots.emplace_back(std::move(slot));
-    return SignalConnection({ token, this });
+    connections.emplace_back(std::move(c));
+    return SignalConnection(this, token);
 }
 
 template <typename... Args>
-void Signal<Args...>::RemSlot(Slot& slot)
+void Signal<Args...>::RemSlot(Connection& c)
 {
-    if (!slot.deleted)
+    if (!c.deleted)
     {
-        if (nullptr != slot.tracked)
+        if (nullptr != c.tracked)
         {
-            Unwatch(slot.tracked);
-            slot.tracked = nullptr;
+            Unwatch(c.tracked);
+            c.tracked = nullptr;
         }
 
-        slot.object = nullptr;
-        slot.deleted = true;
+        c.object = nullptr;
+        c.deleted = true;
     }
 }
 
@@ -109,11 +109,11 @@ void Signal<Args...>::Disconnect(Token token)
 {
     DVASSERT(SignalTokenProvider::IsValid(token));
 
-    for (auto& slot : slots)
+    for (auto& c : connections)
     {
-        if (slot.token == token)
+        if (c.token == token)
         {
-            RemSlot(slot);
+            RemSlot(c);
             break;
         }
     }
@@ -124,11 +124,11 @@ void Signal<Args...>::Disconnect(void* obj)
 {
     DVASSERT(nullptr != obj);
 
-    for (auto& slot : slots)
+    for (auto& c : connections)
     {
-        if (slot.object == obj || slot.tracked == obj)
+        if (c.object == obj || c.tracked == obj)
         {
-            RemSlot(slot);
+            RemSlot(c);
         }
     }
 }
@@ -136,9 +136,9 @@ void Signal<Args...>::Disconnect(void* obj)
 template <typename... Args>
 void Signal<Args...>::DisconnectAll()
 {
-    for (auto& slot : slots)
+    for (auto& c : connections)
     {
-        RemSlot(slot);
+        RemSlot(c);
     }
 }
 
@@ -148,8 +148,8 @@ void Signal<Args...>::Track(Token token, TrackedObject* tracked)
     DVASSERT(SignalTokenProvider::IsValid(token));
     DVASSERT(nullptr != tracked);
 
-    auto i = slots.rbegin();
-    auto rend = slots.rend();
+    auto i = connections.rbegin();
+    auto rend = connections.rend();
     for (; i != rend; ++i)
     {
         if (i->token == token && i->tracked != tracked)
@@ -168,11 +168,11 @@ void Signal<Args...>::Block(Token token, bool block)
 {
     DVASSERT(SignalTokenProvider::IsValid(token));
 
-    for (auto& slot : slots)
+    for (auto& c : connections)
     {
-        if (slot.token == token)
+        if (c.token == token)
         {
-            slot.blocked = block;
+            c.blocked = block;
             break;
         }
     }
@@ -181,11 +181,11 @@ void Signal<Args...>::Block(Token token, bool block)
 template <typename... Args>
 void Signal<Args...>::Block(void* obj, bool block)
 {
-    for (auto& slot : slots)
+    for (auto& c : connections)
     {
-        if (slot.object == obj)
+        if (c.object == obj)
         {
-            slot.blocked = block;
+            c.blocked = block;
         }
     }
 }
@@ -195,11 +195,11 @@ bool Signal<Args...>::IsBlocked(Token token) const
 {
     DVASSERT(SignalTokenProvider::IsValid(token));
 
-    for (auto& slot : slots)
+    for (auto& c : connections)
     {
-        if (slot.token == token)
+        if (c.token == token)
         {
-            return slot.blocked;
+            return c.blocked;
         }
     }
 
@@ -209,15 +209,21 @@ bool Signal<Args...>::IsBlocked(Token token) const
 template <typename... Args>
 void Signal<Args...>::Emit(Args... args)
 {
-    slots.remove_if([](const Slot& slot) { return slot.deleted; });
+    connections.remove_if([](const Connection& c) { return c.deleted; });
 
-    for (auto& slot : slots)
+    for (auto& c : connections)
     {
-        if (!slot.blocked)
+        if (!c.blocked)
         {
-            slot.fn(args...);
+            c.fn(args...);
         }
     }
+}
+
+inline SignalConnection::SignalConnection(SignalBase* signal_, Token token_)
+    : signal(signal_)
+    , token(token_)
+{
 }
 
 inline bool SignalConnection::IsConnected() const
@@ -240,6 +246,11 @@ inline void SignalConnection::Track(TrackedObject* object) const
     DVASSERT(nullptr != signal);
 
     signal->Track(token, object);
+}
+
+inline SignalConnection::operator Token() const
+{
+    return token;
 }
 
 } // namespace DAVA

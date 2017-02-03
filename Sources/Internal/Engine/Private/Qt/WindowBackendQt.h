@@ -8,7 +8,6 @@
 
 #include "Engine/EngineTypes.h"
 #include "Engine/Qt/RenderWidget.h"
-#include "Engine/EngineTypes.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 #include "Engine/Private/Dispatcher/UIDispatcher.h"
 
@@ -23,7 +22,7 @@ namespace DAVA
 {
 namespace Private
 {
-class WindowBackend final : publikedObject, private RenderWidget::IWindowDelegate
+class WindowBackend final : public TrackedObject, private RenderWidget::IWindowDelegate
 {
 public:
     WindowBackend(EngineBackend* engineBackend, Window* window);
