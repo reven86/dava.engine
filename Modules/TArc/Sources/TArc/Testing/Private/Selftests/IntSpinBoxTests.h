@@ -202,13 +202,6 @@ DAVA_TARC_TESTCLASS(IntSpinBoxTests)
         }
 
         box->setFocus(Qt::MouseFocusReason);
-
-        //QStyleOptionSpinBox opt;
-        //opt.initFrom(box);
-
-        //QStyle* style = box->style();
-        //QRect r = style->subControlRect(QStyle::CC_SpinBox, &opt, QStyle::SC_SpinBoxEditField, box);
-        //list.addMouseClick(Qt::LeftButton, Qt::KeyboardModifier(), r.center());
     }
 
     void ButtonClick(QTestEventList & list, bool isUpButton, QSpinBox* box)
