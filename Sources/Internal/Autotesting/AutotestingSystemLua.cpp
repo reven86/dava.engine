@@ -336,7 +336,7 @@ void AutotestingSystemLua::Update(float32 timeElapsed)
 
 float32 AutotestingSystemLua::GetTimeElapsed()
 {
-    return SystemTimer::RealFrameDelta();
+    return SystemTimer::GetRealFrameDelta();
 }
 
 void AutotestingSystemLua::OnError(const String& errorMessage)
@@ -743,7 +743,7 @@ void AutotestingSystemLua::TouchDown(const Vector2& point, int32 touchId)
     UIEvent touchDown;
     touchDown.phase = UIEvent::Phase::BEGAN;
     touchDown.touchId = touchId;
-    touchDown.timestamp = SystemTimer::Instance()->AbsoluteMS() / 1000.0;
+    touchDown.timestamp = SystemTimer::GetMs() / 1000.0;
     touchDown.physPoint = UIControlSystem::Instance()->vcs->ConvertVirtualToInput(point);
     touchDown.point = point;
     ProcessInput(touchDown);
@@ -753,7 +753,7 @@ void AutotestingSystemLua::TouchMove(const Vector2& point, int32 touchId)
 {
     UIEvent touchMove;
     touchMove.touchId = touchId;
-    touchMove.timestamp = SystemTimer::Instance()->AbsoluteMS() / 1000.0;
+    touchMove.timestamp = SystemTimer::GetMs() / 1000.0;
     touchMove.physPoint = UIControlSystem::Instance()->vcs->ConvertVirtualToInput(point);
     touchMove.point = point;
 
@@ -782,7 +782,7 @@ void AutotestingSystemLua::TouchUp(int32 touchId)
     }
     touchUp.phase = UIEvent::Phase::ENDED;
     touchUp.touchId = touchId;
-    touchUp.timestamp = SystemTimer::Instance()->AbsoluteMS() / 1000.0;
+    touchUp.timestamp = SystemTimer::GetMs() / 1000.0;
 
     ProcessInput(touchUp);
 }
@@ -793,7 +793,7 @@ void AutotestingSystemLua::LeftMouseClickDown(const Vector2& point)
     clickDown.phase = UIEvent::Phase::BEGAN;
     clickDown.device = eInputDevices::MOUSE;
     clickDown.mouseButton = eMouseButtons::LEFT;
-    clickDown.timestamp = SystemTimer::Instance()->AbsoluteMS() / 1000.0;
+    clickDown.timestamp = SystemTimer::GetMs() / 1000.0;
     clickDown.physPoint = UIControlSystem::Instance()->vcs->ConvertVirtualToInput(point);
     clickDown.point = point;
     ProcessInput(clickDown);
@@ -809,7 +809,7 @@ void AutotestingSystemLua::LeftMouseClickUp(const Vector2& point)
     clickUp.phase = UIEvent::Phase::ENDED;
     clickUp.device = eInputDevices::MOUSE;
     clickUp.mouseButton = eMouseButtons::LEFT;
-    clickUp.timestamp = SystemTimer::Instance()->AbsoluteMS() / 1000.0;
+    clickUp.timestamp = SystemTimer::GetMs() / 1000.0;
     clickUp.physPoint = UIControlSystem::Instance()->vcs->ConvertVirtualToInput(point);
     clickUp.point = point;
     ProcessInput(clickUp);
@@ -822,7 +822,7 @@ void AutotestingSystemLua::MouseWheel(const Vector2& point, float32 x, float32 y
     wheel.wheelDelta.y = y;
     wheel.phase = UIEvent::Phase::WHEEL;
     wheel.device = eInputDevices::MOUSE;
-    wheel.timestamp = SystemTimer::Instance()->AbsoluteMS() / 1000.0;
+    wheel.timestamp = SystemTimer::GetMs() / 1000.0;
     wheel.physPoint = UIControlSystem::Instance()->vcs->ConvertVirtualToInput(point);
     wheel.point = point;
     ProcessInput(wheel);

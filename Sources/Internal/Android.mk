@@ -440,8 +440,10 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Scene3D/Systems/Controller/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene3D/Lod/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene3D/Lod/Private/*.cpp) \
-					 $(wildcard $(LOCAL_PATH)/Scripting/Private/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Scripting/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Sound/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Time/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Time/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Concurrency/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/Components/*.cpp) \
@@ -463,7 +465,6 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/DLC/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/DataStorage/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/DataStorage/Android/*.cpp) \
-                     $(wildcard $(LOCAL_PATH)/Timer/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Notification/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Notification/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Notification/Private/Android/*.cpp) \
