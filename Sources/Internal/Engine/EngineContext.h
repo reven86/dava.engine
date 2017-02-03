@@ -8,7 +8,6 @@ namespace DAVA
 {
 class Logger;
 class FileSystem;
-class SystemTimer;
 class AllocatorFactory;
 class Random;
 class PerformanceSettings;
@@ -61,7 +60,6 @@ public:
     // Subsystems that are always created
     Logger* logger = nullptr;
     FileSystem* fileSystem = nullptr;
-    SystemTimer* systemTimer = nullptr;
     AllocatorFactory* allocatorFactory = nullptr;
     Random* random = nullptr;
     PerformanceSettings* performanceSettings = nullptr;

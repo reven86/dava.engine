@@ -29,6 +29,7 @@
 #set( EXECUTABLE_FLAG            )
 #set( FILE_TREE_CHECK_FOLDERS    )
 #set( DEFINITIONS                )
+#set( DEFINITIONS_${DAVA_PLATFORM_CURENT} )
 #
 
 # Only interpret ``if()`` arguments as variables or keywords when unquoted.
@@ -40,9 +41,15 @@ macro( setup_main_executable )
 
 include      ( PlatformSettings )
 
+save_property( PROPERTY_LIST 
+               DEFINITIONS
+               DEFINITIONS_${DAVA_PLATFORM_CURENT}
+             )
+
 load_property( PROPERTY_LIST 
         DEFINITIONS                
         DEFINITIONS_${DAVA_PLATFORM_CURENT}
+        GLOBAL_DEFINITIONS
         TARGET_MODULES_LIST  
         BINARY_WIN32_DIR_RELEASE
         BINARY_WIN32_DIR_DEBUG
@@ -61,6 +68,8 @@ load_property( PROPERTY_LIST
 
         PLUGIN_LIST
     )
+        
+    list( APPEND DEFINITIONS ${GLOBAL_DEFINITIONS} )
 
 if( COVERAGE )
     string(REPLACE ";" " " TARGET_FOLDERS_${PROJECT_NAME} "${TARGET_FOLDERS_${PROJECT_NAME}}" )
@@ -240,7 +249,7 @@ elseif ( WINDOWS_UAP )
     list( APPEND RESOURCES_LIST ${RESOURCE_FILES} )
 
     #add dll's to project and package
-    add_dynamic_libs_win_uap ( ${DAVA_THIRD_PARTY_LIBRARIES_PATH} DAVA_DLL_LIST )
+    add_dynamic_libs_win_uap ( ${DAVA_WIN_UAP_LIBRARIES_PATH_COMMON} DAVA_DLL_LIST )
 
     #add found dll's to project and mark them as deployment content
     if ( DAVA_DLL_LIST_DEBUG )
@@ -679,7 +688,6 @@ endif()
 list ( APPEND DAVA_FOLDERS ${PROJECT_FOLDERS} )
 list ( APPEND DAVA_FOLDERS ${DAVA_ENGINE_DIR} )
 list ( APPEND DAVA_FOLDERS ${FILE_TREE_CHECK_FOLDERS} )
-list ( APPEND DAVA_FOLDERS ${DAVA_THIRD_PARTY_LIBRARIES_PATH} )
 
 if( WIN32 AND NOT WINDOWS_UAP )
     set( COMMAND_PY dpiAwarness --pathVcxProj ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.vcxproj --typeAwerness PerMonitorHighDPIAware )

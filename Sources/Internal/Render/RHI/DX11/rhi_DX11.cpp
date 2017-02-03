@@ -61,6 +61,25 @@ void dx11_InitCaps()
     MutableDeviceCaps::Get().isPerfQuerySupported = (dx11.usedFeatureLevel >= D3D_FEATURE_LEVEL_9_2);
     MutableDeviceCaps::Get().maxAnisotropy = D3D11_REQ_MAXANISOTROPY;
 
+    switch (dx11.usedFeatureLevel)
+    {
+    case D3D_FEATURE_LEVEL_9_1:
+    case D3D_FEATURE_LEVEL_9_2:
+        MutableDeviceCaps::Get().maxTextureSize = D3D_FL9_1_REQ_TEXTURE2D_U_OR_V_DIMENSION;
+        break;
+    case D3D_FEATURE_LEVEL_9_3:
+        MutableDeviceCaps::Get().maxTextureSize = D3D_FL9_3_REQ_TEXTURE2D_U_OR_V_DIMENSION;
+        break;
+    case D3D_FEATURE_LEVEL_10_0:
+    case D3D_FEATURE_LEVEL_10_1:
+        MutableDeviceCaps::Get().maxTextureSize = D3D10_REQ_TEXTURE2D_U_OR_V_DIMENSION;
+        break;
+    case D3D_FEATURE_LEVEL_11_0:
+    case D3D_FEATURE_LEVEL_11_1:
+        MutableDeviceCaps::Get().maxTextureSize = D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION;
+        break;
+    }
+
 #if defined(__DAVAENGINE_WIN_UAP__)
     if (DAVA::DeviceInfo::GetPlatform() == DAVA::DeviceInfo::ePlatform::PLATFORM_PHONE_WIN_UAP)
     {

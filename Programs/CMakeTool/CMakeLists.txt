@@ -4,11 +4,9 @@ set                   ( CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebinfo"
 
 project               ( CMakeTool )
 
-set                   ( DAVA_DISABLE_AUTOTESTS true )
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
 
 include               ( CMake-common )
-
 
 find_package          ( QT5 REQUIRED )
 find_package          ( QtHelpers  REQUIRED )

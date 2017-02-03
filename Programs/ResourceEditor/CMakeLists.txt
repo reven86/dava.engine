@@ -6,8 +6,6 @@ project               ( ResourceEditor )
 
 get_filename_component( FRAMEWORK_PATH "${CMAKE_CURRENT_LIST_DIR}/../../" ABSOLUTE)
 
-set                   ( DAVA_DISABLE_AUTOTESTS true )
-set                   ( DAVA_USE_RENDERSTATS   true )
 set                   ( WARNINGS_AS_ERRORS true )
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${FRAMEWORK_PATH}/Sources/CMake/Modules/" )
 set                   ( TOOL_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
@@ -21,33 +19,28 @@ if (WIN32 AND DEPLOY AND NOT DAVA_MEGASOLUTION )
     set( DEPLOY_BEAST_DIR ${DEPLOY_DIR} )
 endif()
 
+set ( DAVA_COREV2 1 )
 
-# This definitions should be before "find_package( DavaFramework REQUIRED )"
-# to force defines into DavaFramework project
-
-add_definitions       (
+dava_add_definitions       (
 -D__DAVAENGINE_COREV2__
--D__DAVAENGINE_QT__
--DDISABLE_NATIVE_WEBVIEW
--DDISABLE_NATIVE_TEXTFIELD
--DDISABLE_NATIVE_MOVIEVIEW
 )
 
-if (NOT DEPLOY)
-    add_definitions ( -DLOCAL_FRAMEWORK_SOURCE_PATH="${FRAMEWORK_PATH}" )
-endif()
-
-set ( DAVA_COREV2 1 )
-set ( DAVA_PLATFORM_QT 1 )
-set ( DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME 1)
-
 find_package( QT5 REQUIRED )
-find_package( QtHelpers REQUIRED )
-find_package( DavaFramework REQUIRED )
+
 find_package( DavaTools REQUIRED )
+find_package( GMock REQUIRED )
+find_package( QtHelpers REQUIRED )
+
+find_package( DavaFramework REQUIRED COMPONENTS ALL
+                                                DAVA_PLATFORM_QT 
+                                                DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME 
+                                                DAVA_DISABLE_AUTOTESTS 
+                                                DAVA_USE_RENDERSTATS )
+
 find_package( QtTools REQUIRED )
 find_package( TArc REQUIRED )
-find_package( GMock REQUIRED )
+
+#
 
 include_directories   ( "${DAVA_SPEEDTREE_ROOT_DIR}" )
 include_directories   ( "${DAVA_SPEEDTREE_ROOT_DIR}/Sources" )
@@ -70,7 +63,7 @@ include_directories   ( "Classes/Qt/CubemapEditor" )
 include_directories   ( "Classes/Qt/TextureBrowser" )
 include_directories   ( "Classes/Collada" )
 
-add_definitions       (
+dava_add_definitions       (
 -D__DAVAENGINE_RENDERSTATS__
 -DQT_OPENGL_LIB
 -DQT_GUI_LIB
@@ -89,11 +82,11 @@ add_definitions       (
 )
 
 if (NOT PUBLIC_BUILD)
-    add_definitions(-D__DAVAENGINE_SPEEDTREE__)
+    dava_add_definitions(-D__DAVAENGINE_SPEEDTREE__)
 endif()
 
 if (DEPLOY)
-    add_definitions(-DDEPLOY_BUILD)
+    dava_add_definitions(-DDEPLOY_BUILD)
 endif()
 
 file              ( GLOB UI_LIST "DataQt/*.ui" )
@@ -104,7 +97,7 @@ qt5_add_resources ( RCC_APP_SRCS  ${RCC_LIST} )
 
 if( WIN32 )
 	if (NOT PUBLIC_BUILD)
-	    add_definitions( -D__DAVAENGINE_BEAST__ )
+	    dava_add_definitions( -D__DAVAENGINE_BEAST__ )
 	    set( BEAST_DIR ${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR} )
         set( BEAST_WRAPPER "${BEAST_DIR}/wrapper" )
 	    if( X64_MODE )
