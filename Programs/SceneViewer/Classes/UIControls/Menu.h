@@ -39,6 +39,8 @@ public:
     ~Menu();
 
     void Show(bool toShow);
+    void AllowInput(bool);
+
     void AddActionItem(const DAVA::WideString& text, DAVA::Message action);
     Menu* AddSubMenuItem(const DAVA::WideString& text);
     void AddBackItem();

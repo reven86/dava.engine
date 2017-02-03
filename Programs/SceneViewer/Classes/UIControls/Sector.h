@@ -14,6 +14,8 @@ enum SectorColor
     Red
 };
 
+DAVA::Color GetColorByType(SectorColor type);
+
 class Sector : public DAVA::UIControl
 {
 public:

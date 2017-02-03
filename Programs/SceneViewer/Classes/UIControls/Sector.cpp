@@ -47,6 +47,7 @@ DAVA::Color Invert(const DAVA::Color& color)
 {
     return DAVA::Color(1.f - color.r, 1.f - color.g, 1.f - color.b, color.a);
 }
+}
 
 DAVA::Color GetColorByType(SectorColor type)
 {
@@ -63,13 +64,12 @@ DAVA::Color GetColorByType(SectorColor type)
         return DAVA::Color();
     }
 }
-}
 
 Sector::Sector(const DAVA::Vector2& centerPoint, DAVA::float32 startAngle, DAVA::float32 endAngle, DAVA::float32 radius, SectorColor type)
     : UIControl(DAVA::Rect(centerPoint.x, centerPoint.y, radius, radius))
 {
     polygon = SectorDetails::GenerateSectorPolygon(centerPoint, startAngle, endAngle, radius);
-    fillColorPrimary = SectorDetails::GetColorByType(type);
+    fillColorPrimary = GetColorByType(type);
     fillColorInverted = SectorDetails::Invert(fillColorPrimary);
     borderColor = fillColorPrimary;
     borderColor.a += 0.2f;
@@ -109,7 +109,7 @@ bool Sector::IsPointInside(const DAVA::Vector2& point, bool) const
 SectorColorBox::SectorColorBox(const DAVA::Rect& box, SectorColor type)
     : box(box)
 {
-    fillColor = SectorDetails::GetColorByType(type);
+    fillColor = GetColorByType(type);
     borderColor = fillColor;
     borderColor.a += 0.2f;
 }

@@ -1,11 +1,13 @@
 #pragma once
 
 #include "SceneViewerApp.h"
-#include "BaseScreen.h"
+#include "UIScreens/BaseScreen.h"
 #include "UIControls/Menu.h"
+#include "Quality/QualitySettingsDialog.h"
 
 #include <GridTest.h>
 
+#include <UI/UIList.h>
 #include <Scene3D/Systems/Controller/RotationControllerSystem.h>
 #include <Scene3D/Systems/Controller/WASDControllerSystem.h>
 #include <Utils/FpsMeter.h>
@@ -13,7 +15,8 @@
 class ViewSceneScreen
 : public BaseScreen,
   public DAVA::UIFileSystemDialogDelegate,
-  public GridTestListener
+  public GridTestListener,
+  public QualitySettingsDialogDelegate
 {
 public:
     ViewSceneScreen(SceneViewerData& data);
@@ -34,6 +37,9 @@ private:
     void OnFileSelected(DAVA::UIFileSystemDialog* forDialog, const DAVA::FilePath& pathToFile) override;
     void OnFileSytemDialogCanceled(DAVA::UIFileSystemDialog* forDialog) override;
 
+    // QualitySettingsDialogInvoker
+    void OnQualitySettingsEditDone() override;
+
     // GridTestListener
     void OnGridTestStateChanged() override;
 
@@ -42,10 +48,12 @@ private:
     void AddFileDialogControl();
     void AddJoypadControl();
     void AddInfoTextControl();
+    void AddQualitySettingsDialog();
 
     void AddControls();
     void RemoveControls();
 
+    void OnButtonQualitySettings(DAVA::BaseObject* caller, void* param, void* callerData);
     void OnButtonReloadShaders(DAVA::BaseObject* caller, void* param, void* callerData);
     void OnButtonPerformanceTest(DAVA::BaseObject* caller, void* param, void* callerData);
     void OnButtonSelectFromRes(DAVA::BaseObject* caller, void* param, void* callerData);
@@ -71,6 +79,7 @@ private:
     DAVA::ScopedPtr<DAVA::UIJoypad> moveJoyPAD;
     DAVA::ScopedPtr<DAVA::UIFileSystemDialog> fileSystemDialog;
     std::unique_ptr<Menu> menu;
+    DAVA::ScopedPtr<QualitySettingsDialog> qualitySettingsDialog;
 
     //     DAVA::uint64 drawTime = 0;
     //     DAVA::uint64 updateTime = 0;

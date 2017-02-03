@@ -1,8 +1,10 @@
 #include "ViewSceneScreen.h"
 #include "SceneViewerApp.h"
+#include "Settings.h"
 
 #include <Math/MathHelpers.h>
 #include <Render/2D/Sprite.h>
+#include <UI/Layouts/UIAnchorComponent.h>
 
 namespace ViewSceneScreenDetails
 {
@@ -138,6 +140,7 @@ void ViewSceneScreen::AddMenuControl()
     Menu* mainSubMenu = menu->AddSubMenuItem(L"Menu");
 
     Menu* selectSceneSubMenu = mainSubMenu->AddSubMenuItem(L"Select scene");
+    mainSubMenu->AddActionItem(L"Quality settings", DAVA::Message(this, &ViewSceneScreen::OnButtonQualitySettings));
     mainSubMenu->AddActionItem(L"Reload shaders", DAVA::Message(this, &ViewSceneScreen::OnButtonReloadShaders));
     mainSubMenu->AddActionItem(L"Performance test", DAVA::Message(this, &ViewSceneScreen::OnButtonPerformanceTest));
     mainSubMenu->AddBackItem();
@@ -155,14 +158,18 @@ void ViewSceneScreen::AddFileDialogControl()
     fileSystemDialog->SetDelegate(this);
     fileSystemDialog->SetExtensionFilter(".sc2");
     fileSystemDialog->SetOperationType(DAVA::UIFileSystemDialog::OPERATION_LOAD);
+
+    DAVA::UIAnchorComponent* anchor = fileSystemDialog->GetOrCreateComponent<DAVA::UIAnchorComponent>();
+    anchor->SetRightAnchorEnabled(true);
+    anchor->SetRightAnchor(30.f);
+    anchor->SetVCenterAnchorEnabled(true);
 }
 
 void ViewSceneScreen::AddJoypadControl()
 {
     DVASSERT(!moveJoyPAD);
     moveJoyPAD = new DAVA::UIJoypad(DAVA::Rect(10, GetRect().dy - 210.f, 200.f, 200.f));
-    moveJoyPAD->SetDebugDraw(true);
-    DAVA::ScopedPtr<DAVA::Sprite> stickSprite(DAVA::Sprite::CreateFromSourceFile("~res:/Joypad/Stick.png", true));
+    DAVA::ScopedPtr<DAVA::Sprite> stickSprite(DAVA::Sprite::CreateFromSourceFile("~res:/UI/Joypad.png", true));
     moveJoyPAD->SetStickSprite(stickSprite, 0);
     AddControl(moveJoyPAD);
 }
@@ -177,6 +184,14 @@ void ViewSceneScreen::AddInfoTextControl()
     AddControl(infoText);
 }
 
+void ViewSceneScreen::AddQualitySettingsDialog()
+{
+    DVASSERT(!qualitySettingsDialog);
+    qualitySettingsDialog = new QualitySettingsDialog();
+    qualitySettingsDialog->SetParentControl(this);
+    qualitySettingsDialog->SetDelegate(this);
+}
+
 void ViewSceneScreen::AddControls()
 {
     AddSceneViewControl();
@@ -184,10 +199,12 @@ void ViewSceneScreen::AddControls()
     AddFileDialogControl();
     AddInfoTextControl();
     AddJoypadControl();
+    AddQualitySettingsDialog();
 }
 
 void ViewSceneScreen::RemoveControls()
 {
+    qualitySettingsDialog.reset();
     sceneView.reset();
     infoText.reset();
     moveJoyPAD.reset();
@@ -197,7 +214,7 @@ void ViewSceneScreen::RemoveControls()
 
 void ViewSceneScreen::SetCameraAtCenter(DAVA::Camera* camera)
 {
-    DAVA::Vector3 position = DAVA::Vector3(0.f, -45.f, 10.f);
+    DAVA::Vector3 position = DAVA::Vector3(0.f, -65.f, 10.f);
 
     DAVA::Landscape* landscape = FindLandscape(scene);
     if (landscape != nullptr)
@@ -215,6 +232,7 @@ void ViewSceneScreen::SetCameraAtCenter(DAVA::Camera* camera)
 void ViewSceneScreen::OnFileSelected(DAVA::UIFileSystemDialog* forDialog, const DAVA::FilePath& pathToFile)
 {
     scenePath = pathToFile;
+    Settings::Instance()->SetLastOpenedScenePath(scenePath);
     ReloadScene();
 }
 
@@ -263,6 +281,18 @@ void ViewSceneScreen::OnButtonPerformanceTest(DAVA::BaseObject* caller, void* pa
     RemoveControl(moveJoyPAD);
 
     gridTest.Start(sceneView);
+}
+
+void ViewSceneScreen::OnButtonQualitySettings(DAVA::BaseObject* caller, void* param, void* callerData)
+{
+    menu->AllowInput(false);
+    qualitySettingsDialog->SetCurrentScene(scene);
+    qualitySettingsDialog->Show();
+}
+
+void ViewSceneScreen::OnQualitySettingsEditDone()
+{
+    menu->AllowInput(true);
 }
 
 void ViewSceneScreen::OnButtonReloadShaders(DAVA::BaseObject* caller, void* param, void* callerData)

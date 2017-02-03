@@ -48,10 +48,16 @@ DAVA::UIButton* BaseScreen::CreateButton(const DAVA::Rect& rect, const DAVA::Wid
     UIButton* button = new UIButton(rect);
     button->SetStateText(UIControl::STATE_NORMAL, text);
     button->SetStateTextAlign(UIControl::STATE_NORMAL, ALIGN_HCENTER | ALIGN_VCENTER);
-    button->SetStateFont(UIControl::STATE_NORMAL, font);
+
     button->SetStateFontColor(UIControl::STATE_NORMAL, Color::White);
-    button->SetStateFontColor(UIControl::STATE_PRESSED_INSIDE, Color(0.7f, 0.7f, 0.7f, 1.f));
-    button->SetDebugDraw(true);
+    button->SetStateFont(UIControl::STATE_NORMAL, font);
+    button->SetStateTextColorInheritType(UIControl::STATE_NORMAL, UIControlBackground::COLOR_IGNORE_PARENT);
+
+    button->SetStateDrawType(UIControl::STATE_NORMAL, UIControlBackground::DRAW_FILL);
+    button->GetStateBackground(UIControl::STATE_NORMAL)->SetColor(Color(0.4f, 0.5f, 0.4f, 0.9f));
+    button->SetStateDrawType(UIControl::STATE_PRESSED_INSIDE, UIControlBackground::DRAW_FILL);
+    button->GetStateBackground(UIControl::STATE_PRESSED_INSIDE)->SetColor(Color(0.65f, 0.75f, 0.65f, 0.9f));
+
     return button;
 }
 

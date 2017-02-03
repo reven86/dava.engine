@@ -10,14 +10,12 @@ using namespace DAVA;
 const float32 SECTOR_AXIFUGAL_OFFSET_IN_PIXELS = 2.f;
 const float32 SECTOR_MARGIN_IN_PIXELS = 2.f;
 
-const float32 PANORAMA_RECT_MARGIN = 10.f;
-const float32 INFO_RECT_MARGIN = 10.f;
+const float32 MARGIN = 10.f;
 
 const float32 BUTTON_HEIGHT = 60.f;
 
-const float32 INFO_COLOR_BOXES_Y0 = INFO_RECT_MARGIN;
+const float32 INFO_COLOR_BOXES_Y0 = MARGIN;
 const float32 INFO_FPS_RESULTS_Y0 = 120.f;
-const float32 INFO_PREVIEW_Y0 = 240.f;
 
 const float32 LOW_FPS_THRESHOLD = 40.0f;
 const float32 MEDIUM_FPS_THRESHOLD = 50.0f;
@@ -28,13 +26,13 @@ PerformanceResultsScreen::PerformanceResultsScreen(SceneViewerData& data)
 {
     using namespace PerformanceResultsScreenDetails;
 
-    DAVA::float32 panoramaSide = GetSize().dy - 2 * PANORAMA_RECT_MARGIN;
-    panoramaRect = { PANORAMA_RECT_MARGIN, PANORAMA_RECT_MARGIN, panoramaSide, panoramaSide };
+    DAVA::float32 panoramaSide = GetSize().dy - 2 * MARGIN;
+    panoramaRect = { MARGIN, MARGIN, panoramaSide, panoramaSide };
 
-    infoColumnRect.x = PANORAMA_RECT_MARGIN + panoramaRect.dx + PANORAMA_RECT_MARGIN;
-    infoColumnRect.y = INFO_RECT_MARGIN;
-    infoColumnRect.dx = GetSize().dx - infoColumnRect.x - INFO_RECT_MARGIN;
-    infoColumnRect.dy = GetSize().dy - INFO_RECT_MARGIN - INFO_RECT_MARGIN;
+    infoColumnRect.x = MARGIN + panoramaRect.dx + MARGIN;
+    infoColumnRect.y = MARGIN;
+    infoColumnRect.dx = GetSize().dx - infoColumnRect.x - MARGIN;
+    infoColumnRect.dy = GetSize().dy - MARGIN - MARGIN;
 }
 
 void PerformanceResultsScreen::LoadResources()
@@ -159,7 +157,7 @@ void PerformanceResultsScreen::AddColorBoxes()
         Rect textRect;
         textRect.x = infoColumnRect.x + boxMargin + boxSize + boxMargin;
         textRect.y = y0;
-        textRect.dx = GetSize().dx - textRect.x - INFO_RECT_MARGIN;
+        textRect.dx = GetSize().dx - textRect.x - MARGIN;
         textRect.dy = fontSize;
 
         text = new UIStaticText(textRect);
@@ -220,16 +218,27 @@ void PerformanceResultsScreen::AddPreviewControls()
     using namespace DAVA;
     using namespace PerformanceResultsScreenDetails;
 
-    previewFpsText = new UIStaticText(Rect(infoColumnRect.x, INFO_PREVIEW_Y0, infoColumnRect.dx, font->GetSize()));
+    Rect previewRect;
+    previewRect.dx = infoColumnRect.dx;
+    previewRect.dy = infoColumnRect.dx / data.screenAspect;
+    previewRect.x = infoColumnRect.x;
+    previewRect.y = infoColumnRect.y + infoColumnRect.dy - BUTTON_HEIGHT - MARGIN - previewRect.dy;
+
+    previewImage = new UIControl(previewRect);
+    previewImage->SetSpriteDrawType(UIControlBackground::DRAW_STRETCH_BOTH);
+    AddControl(previewImage);
+
+    Rect fpsRect;
+    fpsRect.dx = infoColumnRect.dx;
+    fpsRect.dy = font->GetSize();
+    fpsRect.x = infoColumnRect.x;
+    fpsRect.y = previewRect.y - fpsRect.dy;
+
+    previewFpsText = new UIStaticText(fpsRect);
     previewFpsText->SetFont(font);
     previewFpsText->SetTextColor(Color::White);
     previewFpsText->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
     AddControl(previewFpsText);
-
-    float32 aspect = GetSize().dx / GetSize().dy;
-    previewImage = new UIControl(Rect(infoColumnRect.x, INFO_PREVIEW_Y0 + font->GetSize(), infoColumnRect.dx, infoColumnRect.dx / aspect));
-    previewImage->SetSpriteDrawType(UIControlBackground::DRAW_STRETCH_BOTH);
-    AddControl(previewImage);
 }
 
 void PerformanceResultsScreen::RemovePreviewControls()
@@ -311,12 +320,14 @@ void PerformanceResultsScreen::OnSectorSelected(DAVA::BaseObject* caller, void* 
     }
 
     GridTestSample& sample = data.gridTestResult.samples[sampleIndex];
+    previewFpsText->SetText(DAVA::Format(L"%.1f FPS", sample.fps));
+    previewFpsText->SetTextColor(GetColorByType(EvaluateSectorType(sample.fps)));
+
     if (sample.screenshotPath.Exists())
     {
         DVASSERT(previewImage);
         DAVA::ScopedPtr<DAVA::Sprite> sprite(DAVA::Sprite::CreateFromSourceFile(sample.screenshotPath));
         previewImage->SetSprite(sprite, 0);
-        previewFpsText->SetText(DAVA::Format(L"%.1f FPS", sample.fps));
 
         selectedSector = sector;
         selectedSector->SetMode(Sector::SELECTED);

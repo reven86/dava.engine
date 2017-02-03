@@ -20,6 +20,7 @@ class PerformanceResultsScreen;
 struct SceneViewerData
 {
     DAVA::Engine& engine;
+    DAVA::float32 screenAspect;
     DAVA::FilePath scenePath;
     GridTestResult gridTestResult;
 };

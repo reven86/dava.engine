@@ -1,6 +1,8 @@
 #include "SceneViewerApp.h"
 #include "UIScreens/ViewSceneScreen.h"
 #include "UIScreens/PerformanceResultsScreen.h"
+#include "Quality/QualityPreferences.h"
+#include "Settings.h"
 
 #include <Engine/Engine.h>
 #include <Engine/Window.h>
@@ -12,9 +14,7 @@
 #include <Render/ShaderCache.h>
 #include <Render/Material/FXCache.h>
 
-using namespace DAVA;
-
-SceneViewerApp::SceneViewerApp(Engine& engine)
+SceneViewerApp::SceneViewerApp(DAVA::Engine& engine)
     : data({ engine })
 {
     engine.gameLoopStarted.Connect(this, &SceneViewerApp::OnAppStarted);
@@ -24,6 +24,13 @@ SceneViewerApp::SceneViewerApp(Engine& engine)
     engine.resumed.Connect(this, &SceneViewerApp::OnResume);
     engine.beginFrame.Connect(this, &SceneViewerApp::BeginFrame);
     engine.endFrame.Connect(this, &SceneViewerApp::EndFrame);
+
+    DAVA::QualitySettingsSystem::Instance()->SetKeepUnusedEntities(true);
+    DAVA::QualitySettingsSystem::Instance()->SetMetalPreview(true);
+    DAVA::QualitySettingsSystem::Instance()->SetRuntimeQualitySwitching(true);
+
+    QualityPreferences::Load();
+    data.scenePath = Settings::Instance()->GetLastOpenedScenePath();
 }
 
 void SceneViewerApp::OnAppStarted()
@@ -32,17 +39,21 @@ void SceneViewerApp::OnAppStarted()
 
 void SceneViewerApp::OnWindowCreated(DAVA::Window* w)
 {
+    using namespace DAVA;
+
     data.engine.PrimaryWindow()->draw.Connect(this, &SceneViewerApp::Draw);
 
     const Size2i& physicalSize = UIControlSystem::Instance()->vcs->GetPhysicalScreenSize();
-    float32 aspect = static_cast<float32>(physicalSize.dx) / static_cast<float32>(physicalSize.dy);
+    data.screenAspect = static_cast<float32>(physicalSize.dx) / static_cast<float32>(physicalSize.dy);
+
+    const Size2f windowSize = { 1024.f, 1024.f / data.screenAspect };
 
     w->SetTitleAsync("Scene Viewer");
-    w->SetSizeAsync({ 1024.f, 1024.f / aspect });
-    w->SetVirtualSize(1024.f, 1024.f / aspect);
+    w->SetSizeAsync(windowSize);
+    w->SetVirtualSize(windowSize.dx, windowSize.dy);
 
     VirtualCoordinatesSystem* vcs = DAVA::UIControlSystem::Instance()->vcs;
-    vcs->RegisterAvailableResourceSize(1024, 1024 / aspect, "Gfx");
+    vcs->RegisterAvailableResourceSize(static_cast<int32>(windowSize.dx), static_cast<int32>(windowSize.dy), "Gfx");
 
     Renderer::SetDesiredFPS(60);
     HashMap<FastName, int32> flags;
@@ -92,7 +103,7 @@ void SceneViewerApp::OnWindowCreated(DAVA::Window* w)
 
 void SceneViewerApp::OnAppFinished()
 {
-    DbgDraw::Uninitialize();
+    DAVA::DbgDraw::Uninitialize();
 
     SafeRelease(viewSceneScreen);
     SafeRelease(performanceResultsScreen);
@@ -176,9 +187,9 @@ void SceneViewerApp::EndFrame()
 
 //////////////////////////////////////////////////////////////////////////////////////////////
 
-KeyedArchive* CreateOptions()
+DAVA::KeyedArchive* CreateOptions()
 {
-    KeyedArchive* appOptions = new KeyedArchive();
+    DAVA::KeyedArchive* appOptions = new DAVA::KeyedArchive();
 
     appOptions->SetInt32("shader_const_buffer_size", 4 * 1024 * 1024);
 
@@ -226,7 +237,7 @@ KeyedArchive* CreateOptions()
 
 int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
 {
-    Vector<String> modules =
+    DAVA::Vector<DAVA::String> modules =
     {
       "JobManager",
       "NetCore",
@@ -235,7 +246,7 @@ int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
       "DownloadManager",
     };
     DAVA::Engine e;
-    e.Init(eEngineRunMode::GUI_STANDALONE, modules, CreateOptions());
+    e.Init(DAVA::eEngineRunMode::GUI_STANDALONE, modules, CreateOptions());
 
     SceneViewerApp app(e);
     return e.Run();

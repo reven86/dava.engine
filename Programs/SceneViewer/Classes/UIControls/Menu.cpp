@@ -76,17 +76,25 @@ void Menu::BackToMainMenu()
 
 DAVA::ScopedPtr<DAVA::UIButton> Menu::ConstructMenuButton(const DAVA::WideString& text, const DAVA::Message& action)
 {
+    using namespace DAVA;
+
     DAVA::ScopedPtr<DAVA::UIButton> button(new DAVA::UIButton(nextButtonRect));
     nextButtonRect.y += (nextButtonRect.dy + MenuDetails::SPACE_BETWEEN_BUTTONS);
 
     button->SetVisibilityFlag(IsFirstLevelMenu());
     button->SetStateText(DAVA::UIControl::STATE_NORMAL, text);
+
     button->SetStateTextAlign(DAVA::UIControl::STATE_NORMAL, DAVA::ALIGN_HCENTER | DAVA::ALIGN_VCENTER);
-    button->SetStateFont(DAVA::UIControl::STATE_NORMAL, font);
     button->SetStateFontColor(DAVA::UIControl::STATE_NORMAL, DAVA::Color::White);
-    button->SetStateFontColor(DAVA::UIControl::STATE_PRESSED_INSIDE, DAVA::Color(0.7f, 0.7f, 0.7f, 1.f));
+    button->SetStateFont(DAVA::UIControl::STATE_NORMAL, font);
+    button->SetStateTextColorInheritType(DAVA::UIControl::STATE_NORMAL, DAVA::UIControlBackground::COLOR_IGNORE_PARENT);
+
+    button->SetStateDrawType(UIControl::STATE_NORMAL, UIControlBackground::DRAW_FILL);
+    button->GetStateBackground(UIControl::STATE_NORMAL)->SetColor(Color(0.4f, 0.5f, 0.4f, 0.9f));
+    button->SetStateDrawType(UIControl::STATE_PRESSED_INSIDE, UIControlBackground::DRAW_FILL);
+    button->GetStateBackground(UIControl::STATE_PRESSED_INSIDE)->SetColor(Color(0.65f, 0.75f, 0.65f, 0.9f));
+
     button->AddEvent(DAVA::UIControl::EVENT_TOUCH_UP_INSIDE, action);
-    button->SetDebugDraw(true);
     bearerControl->AddControl(button);
 
     return button;
@@ -97,6 +105,14 @@ void Menu::Show(bool toShow)
     for (auto& menuItem : menuItems)
     {
         menuItem->button->SetVisibilityFlag(toShow);
+    }
+}
+
+void Menu::AllowInput(bool allow)
+{
+    for (auto& item : menuItems)
+    {
+        item->button->SetNoInput(!allow);
     }
 }
 
