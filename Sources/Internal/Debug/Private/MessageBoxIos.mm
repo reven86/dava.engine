@@ -6,15 +6,19 @@
 #include "Base/BaseTypes.h"
 #include "Concurrency/Semaphore.h"
 #include "Concurrency/AutoResetEvent.h"
+#include "Engine/Private/EngineBackend.h"
 #include "Debug/DVAssert.h"
+#include "Logger/Logger.h"
 
 #import <Foundation/NSThread.h>
 #import <UIKit/UIAlertView.h>
-
-bool showingMessageBox = false;
+#import <UIKit/UIApplication.h>
 
 @interface AlertDialog : NSObject<UIAlertViewDelegate>
-
+{
+    BOOL dismissedOnResignActive;
+    UIAlertView* alert;
+}
 - (int)showModal;
 - (void)addButtonWithTitle:(NSString*)buttonTitle;
 - (void)alertView:(UIAlertView*)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex;
@@ -23,6 +27,7 @@ bool showingMessageBox = false;
 @property(nonatomic, assign) NSString* message;
 @property(nonatomic, assign) NSMutableArray<NSString*>* buttonNames;
 @property(nonatomic, readonly) int clickedIndex;
+@property(nonatomic, assign) BOOL dismissOnResignActive;
 
 @end
 
@@ -30,21 +35,28 @@ bool showingMessageBox = false;
 
 - (int)showModal
 {
-    showingMessageBox = true;
+    DAVA::Private::EngineBackend::showingModalMessageBox = true;
 
     @autoreleasepool
     {
-        UIAlertView* alert = [[[UIAlertView alloc] initWithTitle:_title
-                                                         message:_message
-                                                        delegate:self
-                                               cancelButtonTitle:nil
-                                               otherButtonTitles:nil, nil] autorelease];
+        alert = [[[UIAlertView alloc] initWithTitle:_title
+                                            message:_message
+                                           delegate:self
+                                  cancelButtonTitle:nil
+                                  otherButtonTitles:nil, nil] autorelease];
         for (NSString* s : _buttonNames)
         {
             [alert addButtonWithTitle:s];
         }
 
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(applicationWillResignActive:)
+                                                     name:UIApplicationWillResignActiveNotification
+                                                   object:nil];
+
         _clickedIndex = -1;
+        dismissedOnResignActive = NO;
+
         [alert show];
         @autoreleasepool
         {
@@ -53,11 +65,27 @@ bool showingMessageBox = false;
                 [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]];
             }
         }
+
+        [[NSNotificationCenter defaultCenter] removeObserver:self];
         [alert setDelegate:nil];
+        alert = nil;
+        if (dismissedOnResignActive)
+        {
+            _clickedIndex = -1;
+        }
     }
 
-    showingMessageBox = false;
+    DAVA::Private::EngineBackend::showingModalMessageBox = false;
     return _clickedIndex;
+}
+
+- (void)applicationWillResignActive:(NSNotification*)notification
+{
+    if (_dismissOnResignActive)
+    {
+        dismissedOnResignActive = YES;
+        [alert dismissWithClickedButtonIndex:0 animated:NO];
+    }
 }
 
 - (void)addButtonWithTitle:(NSString*)buttonTitle
@@ -95,6 +123,7 @@ int MessageBox(const String& title, const String& message, const Vector<String>&
             AlertDialog* alertDialog = [[[AlertDialog alloc] init] autorelease];
             [alertDialog setTitle:@(title.c_str())];
             [alertDialog setMessage:@(message.c_str())];
+            [alertDialog setDismissOnResignActive:[NSThread isMainThread]];
 
             for (const String& s : buttons)
             {

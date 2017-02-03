@@ -82,11 +82,6 @@ public:
 
     void UpdateDisplayConfig();
 
-#if defined(__DAVAENGINE_IPHONE__)
-    // To know why this method is introduced see comment in CoreNativeBridge::ApplicationDidEnterBackground
-    static void DirectCallAppSuspended(const MainDispatcherEvent& e);
-#endif
-
 private:
     void RunConsole();
 

@@ -975,13 +975,6 @@ void EngineBackend::OnRenderingError(rhi::RenderingError err, void* param)
     abort();
 }
 
-#if defined(__DAVAENGINE_IPHONE__)
-void EngineBackend::DirectCallAppSuspended(const MainDispatcherEvent& e)
-{
-    Instance()->HandleAppSuspended(e);
-}
-#endif
-
 } // namespace Private
 } // namespace DAVA
 

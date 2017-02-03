@@ -113,8 +113,6 @@
 
 @end
 
-extern bool showingMessageBox;
-
 namespace DAVA
 {
 namespace Private
@@ -146,7 +144,7 @@ void CoreNativeBridge::Run()
 
 void CoreNativeBridge::OnFrameTimer()
 {
-    if (!showingMessageBox)
+    if (!EngineBackend::showingModalMessageBox)
     {
         int32 fps = core->OnFrame();
         if (fps <= 0)
@@ -204,19 +202,7 @@ void CoreNativeBridge::ApplicationDidEnterBackground()
     core->didEnterForegroundBackground.Emit(false);
     NotifyListeners(ON_DID_ENTER_BACKGROUND, nullptr, nullptr);
 
-    if (showingMessageBox)
-    {
-        // TODO: improve dispatcher, make it reentrant
-        // Do this ugly direct call due to current dispatcher limitations: Dispatcher::ProcessEvents method
-        // is not reentrant now.
-        // Message box (e.g. DVASSERT) can occur while dispatcher pumps events and blocking call here
-        // leads to reentering ProcessEvents. Also frame procession is disabled when message box is showing.
-        EngineBackend::DirectCallAppSuspended(MainDispatcherEvent(MainDispatcherEvent::APP_SUSPENDED));
-    }
-    else
-    {
-        mainDispatcher->SendEvent(MainDispatcherEvent(MainDispatcherEvent::APP_SUSPENDED)); // Blocking call !!!
-    }
+    mainDispatcher->SendEvent(MainDispatcherEvent(MainDispatcherEvent::APP_SUSPENDED)); // Blocking call !!!
 
     [objcInterop pauseDisplayLink];
 }
