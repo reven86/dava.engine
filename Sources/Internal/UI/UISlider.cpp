@@ -101,7 +101,7 @@ void UISlider::SetValue(float32 value)
 
     if (needSendEvent)
     {
-        PerformEvent(EVENT_VALUE_CHANGED);
+        PerformEvent(EVENT_VALUE_CHANGED, nullptr);
     }
 }
 

@@ -9,6 +9,7 @@
 #include "UI/Input/UIInputSystem.h"
 #include "UI/Layouts/UIAnchorComponent.h"
 #include "UI/Layouts/UILayoutSystem.h"
+#include "UI/Sound/UISoundSystem.h"
 #include "UI/Styles/UIStyleSheetSystem.h"
 #include "Animation/LinearAnimation.h"
 #include "Animation/AnimationManager.h"
@@ -182,20 +183,24 @@ bool UIControl::RemoveAllEvents()
     return false;
 }
 
-void UIControl::PerformEvent(int32 eventType)
+void UIControl::PerformEvent(int32 eventType, UIEvent* uiEvent)
 {
     if (eventDispatcher)
     {
         eventDispatcher->PerformEvent(eventType, this);
     }
+
+    UIControlSystem::Instance()->GetSoundSystem()->ProcessControlEvent(eventType, uiEvent, this);
 }
 
-void UIControl::PerformEventWithData(int32 eventType, void* callerData)
+void UIControl::PerformEventWithData(int32 eventType, UIEvent* uiEvent)
 {
     if (eventDispatcher)
     {
-        eventDispatcher->PerformEventWithData(eventType, this, callerData);
+        eventDispatcher->PerformEventWithData(eventType, this, uiEvent);
     }
+
+    UIControlSystem::Instance()->GetSoundSystem()->ProcessControlEvent(eventType, uiEvent, this);
 }
 
 const List<UIControl*>& UIControl::GetChildren() const
@@ -1991,7 +1996,7 @@ Animation* UIControl::ColorAnimation(const Color& finalColor, float32 time, Inte
 
 void UIControl::OnAllAnimationsFinished()
 {
-    PerformEvent(UIControl::EVENT_ALL_ANIMATIONS_FINISHED);
+    PerformEvent(UIControl::EVENT_ALL_ANIMATIONS_FINISHED, nullptr);
 }
 
 void UIControl::SetDebugDraw(bool _debugDrawEnabled, bool hierarchic /* = false*/)
@@ -2033,14 +2038,14 @@ void UIControl::SetDrawPivotPointMode(eDebugDrawPivotMode mode, bool hierarchic 
 void UIControl::SystemOnFocusLost()
 {
     SetState(GetState() & ~STATE_FOCUSED);
-    PerformEvent(EVENT_FOCUS_LOST);
+    PerformEvent(EVENT_FOCUS_LOST, nullptr);
     OnFocusLost();
 }
 
 void UIControl::SystemOnFocused()
 {
     SetState(GetState() | STATE_FOCUSED);
-    PerformEvent(EVENT_FOCUS_SET);
+    PerformEvent(EVENT_FOCUS_SET, nullptr);
     OnFocused();
 }
 

@@ -175,7 +175,7 @@ bool UIScrollViewContainer::SystemInput(UIEvent* currentTouch)
         {
             currentScroll = nullptr;
             mainTouch = currentTouch->touchId;
-            PerformEvent(EVENT_TOUCH_DOWN);
+            PerformEvent(EVENT_TOUCH_DOWN, currentTouch);
             Input(currentTouch);
         }
     }
