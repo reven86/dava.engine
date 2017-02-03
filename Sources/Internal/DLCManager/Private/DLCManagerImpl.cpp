@@ -494,15 +494,15 @@ void DLCManagerImpl::GetFileTable()
                                                   usedPackFile.filesTable);
 
                 // fill fileNamesIndexes
-                startFileNameIndexes.clear();
-                startFileNameIndexes.reserve(usedPackFile.filesTable.data.files.size());
-                startFileNameIndexes.push_back(0); // first name, and skip last '\0' char
+                startFileNameIndexesInUncompressedNames.clear();
+                startFileNameIndexesInUncompressedNames.reserve(usedPackFile.filesTable.data.files.size());
+                startFileNameIndexesInUncompressedNames.push_back(0); // first name, and skip last '\0' char
                 for (uint32 index = 0, last = static_cast<uint32>(uncompressedFileNames.size()) - 1;
                      index < last; ++index)
                 {
                     if (uncompressedFileNames[index] == '\0')
                     {
-                        startFileNameIndexes.push_back(index + 1);
+                        startFileNameIndexesInUncompressedNames.push_back(index + 1);
                     }
                 }
 
@@ -823,7 +823,7 @@ const String& DLCManagerImpl::GetSuperPackUrl() const
 
 String DLCManagerImpl::GetRelativeFilePath(uint32 fileIndex)
 {
-    uint32 startOfFilePath = startFileNameIndexes.at(fileIndex);
+    uint32 startOfFilePath = startFileNameIndexesInUncompressedNames.at(fileIndex);
     return &uncompressedFileNames.at(startOfFilePath);
 }
 
@@ -938,13 +938,30 @@ void DLCManagerImpl::ThreadScanFunc()
     // TODO findout is pack loaded before meta?
     const PackFormat::PackFile& pack = GetPack();
 
-    // TODO
-    // PackArchive::FillFilesInfo(pack, fileNames, fileMap, fileInfos);
+    Vector<ResourceArchive::FileInfo> filesInfo;
+    PackArchive::FillFilesInfo(pack, uncompressedFileNames, mapFileData, filesInfo);
 
     for (const LocalFileInfo& info : localFiles)
     {
-        // TODO pack.filesTable.data.files[0].
-        // info.relativeName
+        const PackFormat::FileTableEntry* entry = mapFileData[info.relativeName];
+        if (entry != nullptr)
+        {
+            if (entry->compressedCrc32 != info.crc32Hash && entry->compressedSize == info.size)
+            {
+                Logger::Info("hash not match for file: %s delete it", info.relativeName.c_str());
+                FileSystem::Instance()->DeleteFile(dirToDownloadedPacks + info.relativeName);
+            }
+            else
+            {
+                size_t fileIndex = std::distance(&pack.filesTable.data.files[0], entry);
+                scanFileReady.set(fileIndex);
+            }
+        }
+        else
+        {
+            // no such file on server, delete it
+            FileSystem::Instance()->DeleteFile(dirToDownloadedPacks + info.relativeName);
+        }
     }
 
     // TODO

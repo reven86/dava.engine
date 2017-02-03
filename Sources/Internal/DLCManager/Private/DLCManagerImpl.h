@@ -152,7 +152,7 @@ private:
     // fill during scan local pack files, emtpy after finish scan
     Vector<LocalFileInfo> localFiles;
     // every bit mean file exist and size match with meta
-    std::bitset<32000> fileReady;
+    std::bitset<32000> scanFileReady;
     Thread* scanThread = nullptr;
     ScanState scanState = ScanState::Wait;
     Mutex scanMutex;
@@ -182,7 +182,8 @@ private:
     PackFormat::PackFile usedPackFile; // current superpack info
     Vector<uint8> buffer; // tmp buff
     String uncompressedFileNames;
-    Vector<uint32> startFileNameIndexes;
+    UnorderedMap<String, const PackFormat::FileTableEntry*> mapFileData;
+    Vector<uint32> startFileNameIndexesInUncompressedNames;
     // first - relative file name in archive, second - file properties
     // DO I NEED IT? UnorderedMap<String, const PackFormat::FileTableEntry*> initFileData;
     // DO I NEED IN? Vector<ResourceArchive::FileInfo> initfilesInfo;
