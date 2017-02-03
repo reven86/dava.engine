@@ -28,6 +28,7 @@ public:
         UnpakingDB, //!< unpack DB from zip
         DeleteDownloadedPacksIfNotMatchHash, //!< go throw all local packs and unmount it if hash not match then delete
         LoadingPacksDataFromLocalMeta, //!< open local DB and build pack index for all packs
+        WaitScanThreadToFinish, //!< wait till finish scaning of downloaded .dvpl files
         MoveDeleyedRequestsToQueue, //!< mount all local packs downloaded and not mounted later
         Ready, //!< starting from this state client can call any method, second initialize will work too
         Offline //!< server not accessible, retry initialization after Hints::retryConnectMilliseconds
@@ -124,6 +125,7 @@ private:
     void StoreAllMountedPackNames();
     void DeleteOldPacks();
     void LoadPacksDataFromMeta();
+    void WaitScanThreadToFinish();
     void StartDeleyedRequests();
     // helper functions
     void DeleteLocalMetaFiles();
@@ -146,7 +148,7 @@ private:
     struct LocalFileInfo
     {
         String relativeName;
-        uint32 size = 0;
+        uint32 compressedSize = 0;
         uint32 crc32Hash = 0;
     };
     // fill during scan local pack files, emtpy after finish scan

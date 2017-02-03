@@ -31,11 +31,12 @@ const String& DLCManagerImpl::ToString(DLCManagerImpl::InitState state)
         "UnpakingDB",
         "DeleteDownloadedPacksIfNotMatchHash",
         "LoadingPacksDataFromLocalMeta",
+        "WaitScanThreadToFinish",
         "MoveDeleyedRequestsToQueue",
         "Ready",
         "Offline"
     };
-    DVASSERT(states.size() == 14);
+    DVASSERT(states.size() == 15);
     return states.at(static_cast<size_t>(state));
 }
 
@@ -207,6 +208,15 @@ void DLCManagerImpl::Update(float frameDelta)
     }
 }
 
+void DLCManagerImpl::WaitScanThreadToFinish()
+{
+    LockGuard<Mutex> lock(scanMutex);
+    if (scanState == ScanState::Done)
+    {
+        initState = InitState::MoveDeleyedRequestsToQueue;
+    }
+}
+
 void DLCManagerImpl::ContinueInitialization(float frameDelta)
 {
     if (timeWaitingNextInitializationAttempt > 0.f)
@@ -269,9 +279,13 @@ void DLCManagerImpl::ContinueInitialization(float frameDelta)
     {
         LoadPacksDataFromMeta();
     }
+    else if (InitState::WaitScanThreadToFinish == initState)
+    {
+        WaitScanThreadToFinish();
+    }
     else if (InitState::MoveDeleyedRequestsToQueue == initState)
     {
-        StartDeleyedRequests();
+        StartDeleyedRequests(); // TODO change order with wait Scan
     }
     else if (InitState::Ready == initState)
     {
@@ -673,12 +687,20 @@ void DLCManagerImpl::LoadPacksDataFromMeta()
         return;
     }
 
-    initState = InitState::MoveDeleyedRequestsToQueue;
+    initState = InitState::WaitScanThreadToFinish;
 }
 
 void DLCManagerImpl::StartDeleyedRequests()
 {
     //Logger::FrameworkDebug("pack manager mount_downloaded_packs");
+    if (scanThread != nullptr)
+    {
+        // scan thread should be finished already
+        if (scanThread->IsJoinable())
+        {
+            scanThread->Join();
+        }
+    }
 
     for (auto request : delayedRequests)
     {
@@ -844,7 +866,7 @@ void DLCManagerImpl::RecursiveScan(const FilePath& baseDir, const FilePath& dir,
     for (uint32 index = 0; index < fl->GetCount(); ++index)
     {
         const FilePath& path = fl->GetPathname(index);
-        if (path.IsDirectoryPathname())
+        if (fl->IsDirectory(index) && !fl->IsNavigationDirectory(index))
         {
             RecursiveScan(baseDir, path, files);
         }
@@ -867,7 +889,7 @@ void DLCManagerImpl::RecursiveScan(const FilePath& baseDir, const FilePath& dir,
                         PackFormat::LitePack::Footer footer;
                         if (footerSize == fread(&footer, 1, footerSize, f))
                         {
-                            info.size = footer.sizeCompressed;
+                            info.compressedSize = footer.sizeCompressed;
                             info.crc32Hash = footer.crc32Compressed;
                         }
                         else
@@ -906,7 +928,7 @@ bool DLCManagerImpl::MetaIsReady() const
 
 void DLCManagerImpl::ThreadScanFunc()
 {
-    // TODO scan files in download dir
+    // scan files in download dir
 
     {
         LockGuard<Mutex> lock(scanMutex);
@@ -920,7 +942,7 @@ void DLCManagerImpl::ThreadScanFunc()
         scanState = ScanState::WaitForMeta;
     }
 
-    // TODO wait meta
+    // wait meta
 
     while (!MetaIsReady())
     {
@@ -932,10 +954,8 @@ void DLCManagerImpl::ThreadScanFunc()
         scanState = ScanState::MergeWithMeta;
     }
 
-    // TODO merge with meta
-
-    const PackMetaData& meta = GetMeta();
-    // TODO findout is pack loaded before meta?
+    // merge with meta
+    // Yes! is pack loaded before meta
     const PackFormat::PackFile& pack = GetPack();
 
     Vector<ResourceArchive::FileInfo> filesInfo;
@@ -946,7 +966,7 @@ void DLCManagerImpl::ThreadScanFunc()
         const PackFormat::FileTableEntry* entry = mapFileData[info.relativeName];
         if (entry != nullptr)
         {
-            if (entry->compressedCrc32 != info.crc32Hash && entry->compressedSize == info.size)
+            if (entry->compressedCrc32 != info.crc32Hash && entry->compressedSize == info.compressedSize)
             {
                 Logger::Info("hash not match for file: %s delete it", info.relativeName.c_str());
                 FileSystem::Instance()->DeleteFile(dirToDownloadedPacks + info.relativeName);
@@ -964,7 +984,7 @@ void DLCManagerImpl::ThreadScanFunc()
         }
     }
 
-    // TODO
+    // finish thread
 
     {
         LockGuard<Mutex> lock(scanMutex);
