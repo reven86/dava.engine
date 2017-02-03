@@ -1,7 +1,7 @@
 #pragma once
 
-#include "AssetCache/ServerNetProxy.h"
-#include "AssetCache/ClientNetProxy.h"
+#include <Tools/AssetCache/ServerNetProxy.h>
+#include <Tools/AssetCache/ClientNetProxy.h>
 
 #include "AssetCacheHttpServer.h"
 #include "ServerLogics.h"

@@ -79,7 +79,7 @@ bool CheckWidgetWithChildrenPolicy(QList<QWidget*> associatedWidgets)
         w = w->parentWidget();
     }
 
-    foreach(QWidget* shortcutWidget, associatedWidgets)
+    foreach (QWidget* shortcutWidget, associatedWidgets)
     {
         if (focusHierarcy.find(shortcutWidget) != focusHierarcy.end())
         {

@@ -1,11 +1,11 @@
 #include "RemoveRequest.h"
 
+#include <Tools/AssetCache/AssetCacheClient.h>
+
 #include "FileSystem/File.h"
 #include "Platform/DeviceInfo.h"
 #include "Utils/Utils.h"
 #include "Logger/Logger.h"
-
-#include "AssetCache/AssetCacheClient.h"
 
 RemoveRequest::RemoveRequest()
     : CacheRequest("remove")
