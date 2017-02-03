@@ -2,7 +2,6 @@
 #define __DAVAENGINE_GLOBAL_ENUM_H__
 
 #include "Base/EnumMap.h"
-#include "Base/Any.h"
 
 template <typename T>
 class GlobalEnumMap

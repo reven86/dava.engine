@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
-#include "Base/AnyFn.h"
 
 namespace DAVA
 {

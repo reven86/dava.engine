@@ -37,8 +37,8 @@ class KeyedArchive;
 
 class BaseObject : public InspBase
 {
-    DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_BASEOBJECT);
     DAVA_VIRTUAL_REFLECTION(BaseObject, InspBase);
+    DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_BASEOBJECT)
 
 protected:
     //! Destructor
