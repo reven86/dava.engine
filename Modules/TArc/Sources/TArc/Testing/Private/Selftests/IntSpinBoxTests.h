@@ -198,9 +198,12 @@ DAVA_TARC_TESTCLASS(IntSpinBoxTests)
         box->clearFocus();
         if (box->isActiveWindow() == false)
         {
-            box->activateWindow();
-        }
+            QWidget* topLevel = box;
+            while (topLevel->parent() != nullptr)
+                topLevel = topLevel->parentWidget();
 
+            qApp->setActiveWindow(topLevel);
+        }
         box->setFocus(Qt::MouseFocusReason);
     }
 
@@ -429,6 +432,7 @@ DAVA_TARC_TESTCLASS(IntSpinBoxTests)
 
     DAVA_TEST (ValueSyncTest)
     {
+        using namespace ::testing;
         using namespace IntSpinBoxTestDetails;
         Holder::moduleInstance->model.value = 16;
         Holder::moduleInstance->model.rangeMeta.reset(new M::Range(10, 100, 4));

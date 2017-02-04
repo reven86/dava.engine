@@ -14,6 +14,28 @@ DoubleSpinBox::DoubleSpinBox(const ControlDescriptorBuilder<Fields>& fields, Con
 {
 }
 
+void DoubleSpinBox::UpdateControl(const ControlDescriptor& changedFields)
+{
+    if (changedFields.IsChanged(Fields::Accuracy))
+    {
+        DAVA::Reflection r = model.GetField(changedFields.GetName(Fields::Accuracy));
+        DVASSERT(r.IsValid());
+        setDecimals(r.GetValue().Cast<int>());
+    }
+    else if (changedFields.IsChanged(Fields::Value))
+    {
+        DAVA::Reflection r = model.GetField(changedFields.GetName(Fields::Value));
+        DVASSERT(r.IsValid());
+        const M::FloatNumberAccuracy* meta = r.GetMeta<M::FloatNumberAccuracy>();
+        if (meta != nullptr)
+        {
+            setDecimals(meta->accuracy);
+        }
+    }
+
+    TBase::UpdateControl(changedFields);
+}
+
 bool DoubleSpinBox::FromText(const QString& input, double& output) const
 {
     bool isOk = false;
@@ -35,6 +57,37 @@ bool DoubleSpinBox::IsEqualValue(double v1, double v2) const
 
 QValidator::State DoubleSpinBox::TypeSpecificValidate(const QString& input) const
 {
+    if (input[0] == QChar('-'))
+    {
+        if (minimum() >= 0)
+        {
+            return QValidator::Invalid;
+        }
+
+        if (input.size() < 3)
+        {
+            return QValidator::Intermediate;
+        }
+
+        if (input[1].digitValue() == 0 && input[2] != QChar('.'))
+        {
+            return QValidator::Invalid;
+        }
+    }
+    else
+    {
+        if (input.size() >= 2 && input[0].digitValue() == 0 && input[1] != QChar('.'))
+        {
+            return QValidator::Invalid;
+        }
+    }
+
+    int pointIndex = input.indexOf('.');
+    if (pointIndex != -1 && (input.size() - pointIndex) > decimals() + 1)
+    {
+        return QValidator::Invalid;
+    }
+
     return QValidator::Acceptable;
 }
 

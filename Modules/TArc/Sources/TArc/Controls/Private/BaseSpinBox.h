@@ -4,11 +4,11 @@
 #include "TArc/Controls/Private/ValidationUtils.h"
 #include "TArc/Utils/QtConnections.h"
 
-#include <QLineEdit>
 #include <QAbstractSpinBox>
+#include <QKeyEvent>
+#include <QLineEdit>
 #include <QString>
 #include <QToolTip>
-#include <QKeyEvent>
 
 namespace DAVA
 {
@@ -43,8 +43,7 @@ public:
 protected:
     void UpdateControl(const ControlDescriptor& changedFields) override
     {
-        auto updateRangeFn = [this](const M::Range* range)
-        {
+        auto updateRangeFn = [this](const M::Range* range) {
             if (range == nullptr)
             {
                 return;
@@ -52,15 +51,15 @@ protected:
 
             TEditableType minV = range->minValue.Cast<TEditableType>(std::numeric_limits<TEditableType>::min());
             TEditableType maxV = range->maxValue.Cast<TEditableType>(std::numeric_limits<TEditableType>::max());
-            if (minV != minimum() || maxV != maximum())
+            if (minV != this->minimum() || maxV != this->maximum())
             {
-                setRange(minV, maxV);
+                this->setRange(minV, maxV);
             }
 
             TEditableType valueStep = range->step.Cast<TEditableType>(1);
-            if (valueStep != singleStep())
+            if (valueStep != this->singleStep())
             {
-                setSingleStep(valueStep);
+                this->setSingleStep(valueStep);
             }
         };
 
@@ -68,18 +67,18 @@ protected:
         bool readOnlychanged = changedFields.IsChanged(BaseFields::IsReadOnly);
         if (valueChanged == true || readOnlychanged == true)
         {
-            DAVA::Reflection fieldValue = model.GetField(changedFields.GetName(BaseFields::Value));
+            DAVA::Reflection fieldValue = this->model.GetField(changedFields.GetName(BaseFields::Value));
             DVASSERT(fieldValue.IsValid());
 
             bool isReadOnly = fieldValue.IsReadonly() || fieldValue.GetMeta<M::ReadOnly>();
             if (changedFields.IsChanged(BaseFields::IsReadOnly))
             {
-                DAVA::Reflection readOnlyField = model.GetField(changedFields.GetName(BaseFields::IsReadOnly));
+                DAVA::Reflection readOnlyField = this->model.GetField(changedFields.GetName(BaseFields::IsReadOnly));
                 DVASSERT(readOnlyField.IsValid());
                 isReadOnly |= readOnlyField.GetValue().Cast<bool>();
             }
 
-            setReadOnly(isReadOnly);
+            this->setReadOnly(isReadOnly);
             if (changedFields.GetName(BaseFields::Range).IsValid() == false)
             {
                 updateRangeFn(fieldValue.GetMeta<M::Range>());
@@ -91,7 +90,7 @@ protected:
                 if (value.CanCast<TEditableType>())
                 {
                     TEditableType v = value.Cast<TEditableType>();
-                    setValue(v);
+                    this->setValue(v);
                 }
                 else
                 {
@@ -106,14 +105,14 @@ protected:
 
         if (changedFields.IsChanged(BaseFields::IsEnabled))
         {
-            DAVA::Reflection enabledField = model.GetField(changedFields.GetName(BaseFields::IsEnabled));
+            DAVA::Reflection enabledField = this->model.GetField(changedFields.GetName(BaseFields::IsEnabled));
             DVASSERT(enabledField.IsValid());
-            setEnabled(enabledField.GetValue().Cast<bool>());
+            this->setEnabled(enabledField.GetValue().Cast<bool>());
         }
 
         if (changedFields.IsChanged(BaseFields::Range))
         {
-            DAVA::Reflection rangeField = model.GetField(changedFields.GetName(BaseFields::Range));
+            DAVA::Reflection rangeField = this->model.GetField(changedFields.GetName(BaseFields::Range));
             DVASSERT(rangeField.IsValid());
             updateRangeFn(rangeField.GetValue().Cast<const M::Range*>());
         }
@@ -121,14 +120,14 @@ protected:
 
     void SetupSpinBoxBase()
     {
-        setKeyboardTracking(false);
+        this->setKeyboardTracking(false);
         connections.AddConnection(this, static_cast<void (TBase::*)(TEditableType)>(&TBase::valueChanged), DAVA::MakeFunction(this, &BaseSpinBox<TBase, TEditableType>::ValueChanged));
         ToValidState();
     }
 
     void ValueChanged(TEditableType val)
     {
-        if (isReadOnly() == true || isEnabled() == false)
+        if (this->isReadOnly() == true || this->isEnabled() == false)
         {
             return;
         }
@@ -136,15 +135,15 @@ protected:
         ControlState currentState = stateHistory.top();
         if (currentState == ControlState::Editing)
         {
-            QString text = lineEdit()->text();
+            QString text = this->lineEdit()->text();
             TEditableType inputValue;
             if (FromText(text, inputValue))
             {
                 if (IsEqualValue(inputValue, val))
                 {
                     ToValidState();
-                    wrapper.SetFieldValue(GetFieldName(BaseFields::Value), val);
-                    if (hasFocus() == true)
+                    this->wrapper.SetFieldValue(this->GetFieldName(BaseFields::Value), val);
+                    if (this->hasFocus() == true)
                     {
                         ToEditingState();
                     }
@@ -155,19 +154,19 @@ protected:
 
     void ToEditingState()
     {
-        DVASSERT(hasFocus() == true);
+        DVASSERT(this->hasFocus() == true);
         DVASSERT(stateHistory.top() != ControlState::Editing);
 
         ControlState prevState = stateHistory.top();
         stateHistory.push(ControlState::Editing);
         if (prevState == ControlState::InvalidValue)
         {
-            lineEdit()->setText("");
-            setButtonSymbols(QAbstractSpinBox::NoButtons);
+            this->lineEdit()->setText("");
+            this->setButtonSymbols(QAbstractSpinBox::NoButtons);
         }
         else
         {
-            setButtonSymbols(QAbstractSpinBox::UpDownArrows);
+            this->setButtonSymbols(QAbstractSpinBox::UpDownArrows);
         }
     }
 
@@ -175,15 +174,15 @@ protected:
     {
         stateHistory = Stack<ControlState>();
         stateHistory.push(ControlState::InvalidValue);
-        setButtonSymbols(QAbstractSpinBox::NoButtons);
-        lineEdit()->setText(textFromValue(0));
+        this->setButtonSymbols(QAbstractSpinBox::NoButtons);
+        this->lineEdit()->setText(textFromValue(0));
     }
 
     void ToValidState()
     {
         stateHistory = Stack<ControlState>();
         stateHistory.push(ControlState::ValidValue);
-        setButtonSymbols(QAbstractSpinBox::UpDownArrows);
+        this->setButtonSymbols(QAbstractSpinBox::UpDownArrows);
     }
 
     virtual bool FromText(const QString& input, TEditableType& output) const = 0;
@@ -196,10 +195,10 @@ protected:
         TEditableType v;
         if (FromText(str, v))
         {
-            if (v < minimum() || v > maximum())
+            if (v < this->minimum() || v > this->maximum())
             {
-                QString message = QString("Out of bounds %1 : %2").arg(minimum()).arg(maximum());
-                QToolTip::showText(mapToGlobal(geometry().topLeft()), message);
+                QString message = QString("Out of bounds %1 : %2").arg(this->minimum()).arg(this->maximum());
+                QToolTip::showText(this->mapToGlobal(this->geometry().topLeft()), message);
             }
         }
     }
@@ -228,10 +227,10 @@ protected:
 
         if (FromText(input, v))
         {
-            if (minimum() <= v && v <= maximum())
+            if (this->minimum() <= v && v <= this->maximum())
             {
                 result = QValidator::Acceptable;
-                Reflection valueField = model.GetField(GetFieldName(BaseFields::Value));
+                Reflection valueField = this->model.GetField(this->GetFieldName(BaseFields::Value));
                 DVASSERT(valueField.IsValid());
                 const M::Validator* validator = valueField.GetMeta<M::Validator>();
                 if (validator != nullptr)
@@ -244,7 +243,7 @@ protected:
 
                     if (!r.message.empty())
                     {
-                        QToolTip::showText(mapToGlobal(QPoint(0, 0)), QString::fromStdString(r.message));
+                        QToolTip::showText(this->mapToGlobal(QPoint(0, 0)), QString::fromStdString(r.message));
                     }
 
                     result = ConvertValidationState(r.state);
@@ -252,7 +251,7 @@ protected:
             }
             else
             {
-                TEditableType zeroNearestBoundary = Min(Abs(minimum()), Abs(maximum()));
+                TEditableType zeroNearestBoundary = Min(Abs(this->minimum()), Abs(this->maximum()));
                 if (Abs(v) < zeroNearestBoundary)
                 {
                     result = QValidator::Intermediate;
@@ -296,7 +295,7 @@ private:
             bool convertValToString = stateHistoryCopy.top() == ControlState::ValidValue;
             if (convertValToString == false)
             {
-                QString editText = lineEdit()->text();
+                QString editText = this->lineEdit()->text();
                 TEditableType parsedValue;
                 if (FromText(editText, parsedValue))
                 {
@@ -321,7 +320,7 @@ private:
     {
         if (stateHistory.top() == ControlState::InvalidValue)
         {
-            return value();
+            return this->value();
         }
 
         TEditableType v = TEditableType();
@@ -335,7 +334,7 @@ private:
         int key = event->key();
         if (key == Qt::Key_Enter || key == Qt::Key_Return)
         {
-            emit valueChanged(value());
+            this->valueChanged(this->value());
         }
     }
 
