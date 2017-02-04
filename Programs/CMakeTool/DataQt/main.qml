@@ -417,6 +417,7 @@ ApplicationWindow {
                     processWrapper: processWrapper
                     buildFolder: rowLayout_buildFolder.path
                     cmakeFolder: rowLayout_cmakeFolder.path
+                    property double startTime: 0
                     onCmakeWillBeLaunched: {
                         displayHtmlFormat = true;
                         textArea_processText.text = "";
@@ -430,6 +431,22 @@ ApplicationWindow {
                     onBuildStarted: {
                         displayHtmlFormat = false;
                         textArea_processText.text = ""
+                    }
+                    Connections {
+                        target: processWrapper
+                        onConfigureStarted: {
+                            columnLayoutOutput.startTime = new Date().getTime();
+                            textArea_processText.append("start time: " + Qt.formatTime(new Date(),"hh:mm:zzz"));
+                        }
+                        onConfigureFinished: {
+                            textArea_processText.append("end configure time: " + Qt.formatTime(new Date(),"hh:mm:zzz"))
+                            var diff =  new Date().getTime() - columnLayoutOutput.startTime;
+                            var ms = diff % 1000;
+                            var s = Math.floor((diff / 1000) % 60);
+                            var m = Math.floor((diff / 1000 / 60) % 60);
+                            var h = Math.floor(diff / 1000 / 60 / 60);
+                            textArea_processText.append("total configure time: " + (h != 0 ? (h + ":") : "") + m + ":" + s + ":" + ms);
+                        }
                     }
                 }
             }

@@ -157,9 +157,13 @@ void ProcessWrapper::OnProcessStateChanged(QProcess::ProcessState newState)
     }
 
     emit processStateTextChanged("cmake process is " + processState);
-    if (newState == QProcess::NotRunning)
+    if (currentProcessDetails.configuringProject)
     {
-        if (currentProcessDetails.configuringProject)
+        if (newState == QProcess::Running)
+        {
+            configureStarted();
+        }
+        else if (newState == QProcess::NotRunning)
         {
             if (currentProcessDetails.hasErrors)
             {
@@ -170,6 +174,10 @@ void ProcessWrapper::OnProcessStateChanged(QProcess::ProcessState newState)
                 configureFinished();
             }
         }
+    }
+
+    if (newState == QProcess::NotRunning)
+    {
         QMetaObject::invokeMethod(this, "StartNextCommand", Qt::QueuedConnection);
     }
 }
