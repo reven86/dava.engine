@@ -37,6 +37,11 @@ void UISoundSystem::FreeEvents()
     soundEvents.clear();
 }
 
+void UISoundSystem::SetGlobalParameter(const DAVA::FastName& parameter, float value)
+{
+    globalParameters[parameter] = value;
+}
+
 void UISoundSystem::TriggerEvent(const FastName& eventName, const UIEvent* uiEvent, UIControl* control)
 {
     RefPtr<SoundEvent> event = GetEvent(eventName);
@@ -46,6 +51,14 @@ void UISoundSystem::TriggerEvent(const FastName& eventName, const UIEvent* uiEve
         event->Stop();
     }
 
+    SetupEventPan(event.Get(), uiEvent, control);
+    SetupEventGlobalParameters(event.Get());
+
+    event->Trigger();
+}
+
+void UISoundSystem::SetupEventPan(SoundEvent* event, const UIEvent* uiEvent, UIControl* control)
+{
     if (event->IsParameterExists(SOUND_PARAM_PAN))
     {
         const float32 PAN_DEFAULT = 0.0f;
@@ -72,8 +85,17 @@ void UISoundSystem::TriggerEvent(const FastName& eventName, const UIEvent* uiEve
 
         event->SetParameterValue(SOUND_PARAM_PAN, pan);
     }
+}
 
-    event->Trigger();
+void UISoundSystem::SetupEventGlobalParameters(SoundEvent* event)
+{
+    for (const GlobalParameterMap::value_type& param : globalParameters)
+    {
+        if (event->IsParameterExists(param.first))
+        {
+            event->SetParameterValue(param.first, param.second);
+        }
+    }
 }
 
 RefPtr<SoundEvent> UISoundSystem::GetEvent(const FastName& eventName)
