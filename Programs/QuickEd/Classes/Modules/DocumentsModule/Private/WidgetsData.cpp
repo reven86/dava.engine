@@ -1,5 +1,9 @@
 #include "Modules/DocumentsModule/WidgetsData.h"
 
+DAVA_VIRTUAL_REFLECTION_IMPL(WidgetsData)
+{
+}
+
 WidgetsData::WidgetsData() = default;
 
 WidgetsData::~WidgetsData()

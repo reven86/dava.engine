@@ -7,30 +7,41 @@
 #include <FileSystem/YamlNode.h>
 #include <Utils/Utils.h>
 #include <Utils/StringFormat.h>
+#include <FileSystem/YamlParser.h>
+
+#include <QObject>
+#include <QFileInfo>
+
+DAVA_VIRTUAL_REFLECTION_IMPL(ProjectData)
+{
+    DAVA::ReflectionRegistrator<ProjectData>::Begin()
+    .Field(projectPathPropertyName, &ProjectData::GetProjectFile, nullptr)
+    .Field(uiDirectoryPropertyName, &ProjectData::GetUiDirectory, nullptr)
+    .End();
+}
 
 using namespace DAVA;
 
 const char* ProjectData::projectPathPropertyName = "ProjectPath";
 const char* ProjectData::uiDirectoryPropertyName = "UI directory";
 
-std::tuple<std::unique_ptr<ProjectData>, ResultList> ProjectData::ParseLegacyProperties(const DAVA::FilePath& projectFile, const YamlNode* root, int version)
+DAVA::ResultList ProjectData::ParseLegacyProperties(const DAVA::FilePath& projectFile, const YamlNode* root, int version)
 {
     ResultList resultList;
 
-    DVASSERT(version == ProjectData::CURRENT_PROJECT_FILE_VERSION - 1, "Supported only ");
+    DVASSERT(version == ProjectData::CURRENT_PROJECT_FILE_VERSION - 1, "Supported only one recent previous version of project");
     if (version != ProjectData::CURRENT_PROJECT_FILE_VERSION - 1)
     {
         String message = Format("Supported only project files with versions %d and %d.", ProjectData::CURRENT_PROJECT_FILE_VERSION, ProjectData::CURRENT_PROJECT_FILE_VERSION - 1);
         resultList.AddResult(Result::RESULT_ERROR, message);
-        return std::make_tuple(std::unique_ptr<ProjectData>(), resultList);
+        return resultList;
     }
 
-    std::unique_ptr<ProjectData> data = ProjectData::Default();
-    data->additionalResourceDirectory.relative = String("./Data/");
+    additionalResourceDirectory.relative = String("./Data/");
 
     if (root == nullptr) // for support old project
     {
-        data->SetDefaultLanguage("");
+        SetDefaultLanguage("");
     }
     else
     {
@@ -43,7 +54,7 @@ std::tuple<std::unique_ptr<ProjectData>, ResultList> ProjectData::ParseLegacyPro
             if (nullptr != defaultFontPath)
             {
                 String fontsConfigsPath = FilePath(defaultFontPath->AsString()).GetDirectory().GetRelativePathname("~res:/");
-                data->fontsConfigsDirectory.relative = fontsConfigsPath;
+                fontsConfigsDirectory.relative = fontsConfigsPath;
             }
         }
 
@@ -52,8 +63,8 @@ std::tuple<std::unique_ptr<ProjectData>, ResultList> ProjectData::ParseLegacyPro
         if (localizationPathNode != nullptr && localeNode != nullptr)
         {
             String localePath = FilePath(localizationPathNode->AsString()).GetRelativePathname("~res:/");
-            data->textsDirectory.relative = localePath;
-            data->defaultLanguage = localeNode->AsString();
+            textsDirectory.relative = localePath;
+            defaultLanguage = localeNode->AsString();
         }
 
         const YamlNode* libraryNode = root->Get("Library");
@@ -62,14 +73,14 @@ std::tuple<std::unique_ptr<ProjectData>, ResultList> ProjectData::ParseLegacyPro
             for (uint32 i = 0; i < libraryNode->GetCount(); i++)
             {
                 String packagePath = FilePath(libraryNode->Get(i)->AsString()).GetRelativePathname("~res:/");
-                data->libraryPackages.push_back({ "", packagePath });
+                libraryPackages.push_back({ "", packagePath });
             }
         }
     }
 
-    data->SetProjectFile(projectFile);
+    SetProjectFile(projectFile);
 
-    return std::make_tuple(std::move(data), resultList);
+    return resultList;
 }
 
 void ProjectData::RefreshAbsolutePaths()
@@ -102,22 +113,6 @@ void ProjectData::RefreshAbsolutePaths()
     {
         resDir.absolute = MakeAbsolutePath(resDir.relative);
     }
-}
-
-std::unique_ptr<ProjectData> ProjectData::Default()
-{
-    std::unique_ptr<ProjectData> data(new ProjectData());
-
-    data->resourceDirectory.relative = "./DataSource/";
-    data->convertedResourceDirectory.relative = "./Data/";
-    data->gfxDirectories.push_back({ ResDir{ FilePath(), String("./Gfx/") }, Size2i(960, 640) });
-    data->uiDirectory.relative = "./UI/";
-    data->fontsDirectory.relative = "./Fonts/";
-    data->fontsConfigsDirectory.relative = "./Fonts/Configs/";
-    data->textsDirectory.relative = "./Strings/";
-    data->defaultLanguage = "en";
-
-    return data;
 }
 
 const ProjectData::ResDir& ProjectData::GetResourceDirectory() const
@@ -170,6 +165,16 @@ const Map<String, DAVA::Set<FastName>>& ProjectData::GetPrototypes() const
     return prototypes;
 }
 
+const DAVA::String& ProjectData::GetDefaultLanguage() const
+{
+    return defaultLanguage;
+}
+
+void ProjectData::SetDefaultLanguage(const DAVA::String& lang)
+{
+    defaultLanguage = lang;
+}
+
 DAVA::FilePath ProjectData::MakeAbsolutePath(const DAVA::String& relPath) const
 {
     if (relPath.empty())
@@ -193,7 +198,7 @@ DAVA::FilePath ProjectData::MakeAbsolutePath(const DAVA::String& relPath) const
     return FilePath();
 }
 
-std::tuple<std::unique_ptr<ProjectData>, ResultList> ProjectData::Parse(const DAVA::FilePath& projectFile, const YamlNode* root)
+DAVA::ResultList ProjectData::Parse(const DAVA::FilePath& projectFile, const YamlNode* root)
 {
     int32 version = 0;
     if (root != nullptr)
@@ -222,36 +227,34 @@ std::tuple<std::unique_ptr<ProjectData>, ResultList> ProjectData::Parse(const DA
         String message = Format("Wrong project properties in file %s.", projectFile.GetAbsolutePathname().c_str());
         resultList.AddResult(Result::RESULT_ERROR, message);
 
-        return std::make_tuple(std::unique_ptr<ProjectData>(), resultList);
+        return resultList;
     }
-
-    std::unique_ptr<ProjectData> data = Default();
 
     const YamlNode* resourceDirNode = ProjectDataNode->Get("ResourceDirectory");
     if (resourceDirNode != nullptr)
     {
-        data->resourceDirectory.relative = resourceDirNode->AsString();
+        resourceDirectory.relative = resourceDirNode->AsString();
     }
     else
     {
-        String message = Format("Data source directory not set. Used default directory: %s.", data->resourceDirectory.relative.c_str());
+        String message = Format("Data source directory not set. Used default directory: %s.", resourceDirectory.relative.c_str());
         resultList.AddResult(Result::RESULT_WARNING, message);
     }
 
     const YamlNode* additionalResourceDirNode = ProjectDataNode->Get("AdditionalResourceDirectory");
     if (additionalResourceDirNode != nullptr)
     {
-        data->additionalResourceDirectory.relative = additionalResourceDirNode->AsString();
+        additionalResourceDirectory.relative = additionalResourceDirNode->AsString();
     }
 
     const YamlNode* convertedResourceDirNode = ProjectDataNode->Get("ConvertedResourceDirectory");
     if (convertedResourceDirNode != nullptr)
     {
-        data->convertedResourceDirectory.relative = convertedResourceDirNode->AsString();
+        convertedResourceDirectory.relative = convertedResourceDirNode->AsString();
     }
     else
     {
-        String message = Format("Directory for converted sources not set. Used default directory: %s.", data->convertedResourceDirectory.relative.c_str());
+        String message = Format("Directory for converted sources not set. Used default directory: %s.", convertedResourceDirectory.relative.c_str());
         resultList.AddResult(Result::RESULT_WARNING, message);
     }
 
@@ -265,64 +268,64 @@ std::tuple<std::unique_ptr<ProjectData>, ResultList> ProjectData::Parse(const DA
             String directory = gfxDirNode->Get("directory")->AsString();
             Vector2 res = gfxDirNode->Get("resolution")->AsVector2();
             Size2i resolution((int32)res.dx, (int32)res.dy);
-            data->gfxDirectories.push_back({ ResDir{ FilePath(), directory }, resolution });
+            gfxDirectories.push_back({ ResDir{ FilePath(), directory }, resolution });
         }
     }
     else
     {
         String message = Format("Data source directories not set. Used default directory: %s, with resolution %dx%d.",
-                                data->gfxDirectories.front().directory.relative.c_str(),
-                                data->gfxDirectories.front().resolution.dx,
-                                data->gfxDirectories.front().resolution.dy);
+                                gfxDirectories.front().directory.relative.c_str(),
+                                gfxDirectories.front().resolution.dx,
+                                gfxDirectories.front().resolution.dy);
         resultList.AddResult(Result::RESULT_WARNING, message);
     }
 
     const YamlNode* uiDirNode = ProjectDataNode->Get("UiDirectory");
     if (uiDirNode != nullptr)
     {
-        data->uiDirectory.relative = uiDirNode->AsString();
+        uiDirectory.relative = uiDirNode->AsString();
     }
     else
     {
-        String message = Format("Data source directories not set. Used default directory: %s.", data->uiDirectory.relative.c_str());
+        String message = Format("Data source directories not set. Used default directory: %s.", uiDirectory.relative.c_str());
         resultList.AddResult(Result::RESULT_WARNING, message);
     }
 
     const YamlNode* fontsDirNode = ProjectDataNode->Get("FontsDirectory");
     if (fontsDirNode != nullptr)
     {
-        data->fontsDirectory.relative = fontsDirNode->AsString();
+        fontsDirectory.relative = fontsDirNode->AsString();
     }
     else
     {
-        String message = Format("Data source directories not set. Used default directory: %s.", data->fontsDirectory.relative.c_str());
+        String message = Format("Data source directories not set. Used default directory: %s.", fontsDirectory.relative.c_str());
         resultList.AddResult(Result::RESULT_WARNING, message);
     }
 
     const YamlNode* fontsConfigsDirNode = ProjectDataNode->Get("FontsConfigsDirectory");
     if (fontsConfigsDirNode != nullptr)
     {
-        data->fontsConfigsDirectory.relative = fontsConfigsDirNode->AsString();
+        fontsConfigsDirectory.relative = fontsConfigsDirNode->AsString();
     }
     else
     {
-        String message = Format("Data source directories not set. Used default directory: %s.", data->fontsConfigsDirectory.relative.c_str());
+        String message = Format("Data source directories not set. Used default directory: %s.", fontsConfigsDirectory.relative.c_str());
         resultList.AddResult(Result::RESULT_WARNING, message);
     }
 
     const YamlNode* textsDirNode = ProjectDataNode->Get("TextsDirectory");
     if (textsDirNode != nullptr)
     {
-        data->textsDirectory.relative = textsDirNode->AsString();
+        textsDirectory.relative = textsDirNode->AsString();
         const YamlNode* defaultLanguageNode = ProjectDataNode->Get("DefaultLanguage");
         if (defaultLanguageNode != nullptr)
         {
-            data->defaultLanguage = defaultLanguageNode->AsString();
+            defaultLanguage = defaultLanguageNode->AsString();
         }
     }
     else
     {
-        String message = Format("Data source directories not set. Used default directory: %s.", data->textsDirectory.relative.c_str());
+        String message = Format("Data source directories not set. Used default directory: %s.", textsDirectory.relative.c_str());
         resultList.AddResult(Result::RESULT_WARNING, message);
     }
 
@@ -331,7 +334,7 @@ std::tuple<std::unique_ptr<ProjectData>, ResultList> ProjectData::Parse(const DA
     {
         for (uint32 i = 0; i < libraryNode->GetCount(); i++)
         {
-            data->libraryPackages.push_back(ResDir{ FilePath(), libraryNode->Get(i)->AsString() });
+            libraryPackages.push_back(ResDir{ FilePath(), libraryNode->Get(i)->AsString() });
         }
     }
 
@@ -350,16 +353,47 @@ std::tuple<std::unique_ptr<ProjectData>, ResultList> ProjectData::Parse(const DA
             }
 
             const String& packagePath = packNode->Get("file")->AsString();
-            data->prototypes[packagePath] = packagePrototypes;
+            prototypes[packagePath] = packagePrototypes;
         }
     }
 
-    data->SetProjectFile(projectFile);
+    SetProjectFile(projectFile);
 
-    return std::make_tuple(std::move(data), resultList);
+    return resultList;
 }
 
-RefPtr<YamlNode> ProjectData::SerializeToYamlNode(const ProjectData* data)
+DAVA::ResultList ProjectData::LoadProject(const QString& path)
+{
+    using namespace DAVA;
+    ResultList resultList;
+
+    QFileInfo fileInfo(path);
+    if (!fileInfo.exists())
+    {
+        QString message = QObject::tr("%1 does not exist.").arg(path);
+        resultList.AddResult(Result::RESULT_ERROR, message.toStdString());
+        return resultList;
+    }
+
+    if (!fileInfo.isFile())
+    {
+        QString message = QObject::tr("%1 is not a file.").arg(path);
+        resultList.AddResult(Result::RESULT_ERROR, message.toStdString());
+        return resultList;
+    }
+
+    RefPtr<YamlParser> parser(YamlParser::Create(path.toStdString()));
+    if (parser.Get() == nullptr)
+    {
+        QString message = QObject::tr("Can not parse project file %1.").arg(path);
+        resultList.AddResult(Result::RESULT_ERROR, message.toStdString());
+
+        return resultList;
+    }
+    return Parse(path.toStdString(), parser->GetRootNode());
+}
+
+RefPtr<YamlNode> ProjectData::SerializeToYamlNode() const
 {
     RefPtr<YamlNode> node(YamlNode::CreateMapNode(false));
 
@@ -368,23 +402,23 @@ RefPtr<YamlNode> ProjectData::SerializeToYamlNode(const ProjectData* data)
     node->Add("Header", headerNode);
 
     YamlNode* propertiesNode(YamlNode::CreateMapNode(false));
-    propertiesNode->Add("ResourceDirectory", data->resourceDirectory.relative);
+    propertiesNode->Add("ResourceDirectory", resourceDirectory.relative);
 
-    if (!data->additionalResourceDirectory.relative.empty())
+    if (!additionalResourceDirectory.relative.empty())
     {
-        propertiesNode->Add("AdditionalResourceDirectory", data->additionalResourceDirectory.relative);
+        propertiesNode->Add("AdditionalResourceDirectory", additionalResourceDirectory.relative);
     }
 
-    propertiesNode->Add("IntermediateResourceDirectory", data->convertedResourceDirectory.relative);
+    propertiesNode->Add("IntermediateResourceDirectory", convertedResourceDirectory.relative);
 
-    propertiesNode->Add("UiDirectory", data->uiDirectory.relative);
-    propertiesNode->Add("FontsDirectory", data->fontsDirectory.relative);
-    propertiesNode->Add("FontsConfigsDirectory", data->fontsConfigsDirectory.relative);
-    propertiesNode->Add("TextsDirectory", data->textsDirectory.relative);
-    propertiesNode->Add("DefaultLanguage", data->defaultLanguage);
+    propertiesNode->Add("UiDirectory", uiDirectory.relative);
+    propertiesNode->Add("FontsDirectory", fontsDirectory.relative);
+    propertiesNode->Add("FontsConfigsDirectory", fontsConfigsDirectory.relative);
+    propertiesNode->Add("TextsDirectory", textsDirectory.relative);
+    propertiesNode->Add("DefaultLanguage", defaultLanguage);
 
     YamlNode* gfxDirsNode(YamlNode::CreateArrayNode(YamlNode::AR_BLOCK_REPRESENTATION));
-    for (const auto& gfxDir : data->gfxDirectories)
+    for (const auto& gfxDir : gfxDirectories)
     {
         YamlNode* gfxDirNode(YamlNode::CreateMapNode(false));
         gfxDirNode->Add("directory", gfxDir.directory.relative);
@@ -395,7 +429,7 @@ RefPtr<YamlNode> ProjectData::SerializeToYamlNode(const ProjectData* data)
     propertiesNode->Add("GfxDirectories", gfxDirsNode);
 
     YamlNode* librarysNode(YamlNode::CreateArrayNode(YamlNode::AR_BLOCK_REPRESENTATION));
-    for (const auto& resDir : data->libraryPackages)
+    for (const auto& resDir : libraryPackages)
     {
         librarysNode->Add(resDir.relative);
     }
@@ -404,6 +438,18 @@ RefPtr<YamlNode> ProjectData::SerializeToYamlNode(const ProjectData* data)
     node->Add("ProjectData", propertiesNode);
 
     return node;
+}
+
+ProjectData::ProjectData()
+{
+    resourceDirectory.relative = "./DataSource/";
+    convertedResourceDirectory.relative = "./Data/";
+    gfxDirectories.push_back({ ResDir{ FilePath(), String("./Gfx/") }, Size2i(960, 640) });
+    uiDirectory.relative = "./UI/";
+    fontsDirectory.relative = "./Fonts/";
+    fontsConfigsDirectory.relative = "./Fonts/Configs/";
+    textsDirectory.relative = "./Strings/";
+    defaultLanguage = "en";
 }
 
 const DAVA::String& ProjectData::GetProjectFileName()

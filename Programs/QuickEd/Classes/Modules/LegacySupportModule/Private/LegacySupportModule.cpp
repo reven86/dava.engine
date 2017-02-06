@@ -10,6 +10,13 @@
 #include <TArc/Utils/ModuleCollection.h>
 #include <TArc/Core/ContextAccessor.h>
 
+DAVA_VIRTUAL_REFLECTION_IMPL(LegacySupportModule)
+{
+    DAVA::ReflectionRegistrator<LegacySupportModule>::Begin()
+    .ConstructorByPointer()
+    .End();
+}
+
 void LegacySupportModule::PostInit()
 {
     using namespace DAVA::TArc;

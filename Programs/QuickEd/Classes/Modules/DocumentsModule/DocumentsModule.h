@@ -2,11 +2,15 @@
 
 #include "Application/QEGlobal.h"
 #include <TArc/Core/ControllerModule.h>
+#include <TArc/DataProcessing/DataContext.h>
 #include <TArc/Utils/QtConnections.h>
+
+#include <QtTools/Utils/QtDelayedExecutor.h>
 
 class PreviewWidget;
 class EditorSystemsManager;
 struct DocumentData;
+class ControlNode;
 
 class DocumentsModule : public DAVA::TArc::ControllerModule
 {
@@ -38,7 +42,8 @@ private:
     void OpenDocument(const QString& path);
     std::unique_ptr<DocumentData> CreateDocument(const QString& path);
 
-    void TryCloseActiveDocument();
+    void CloseActiveDocument();
+    void CloseDocument(const DAVA::TArc::DataContext::ContextID& id);
     void CloseAllDocuments();
     void CloseDocuments(const QEGlobal::IDList& ids);
 
@@ -53,14 +58,13 @@ private:
 
     void OnActiveTabChanged(const DAVA::Any& contextID);
 
-    PreviewWidget* centralWidget = nullptr;
+    //previewWidget helper functions
+    void ChangeControlText(ControlNode* node);
+
+    PreviewWidget* previewWidget = nullptr;
     std::unique_ptr<EditorSystemsManager> systemsManager;
     DAVA::TArc::QtConnections connections;
+    QtDelayedExecutor delayedExecutor;
 
-    DAVA_VIRTUAL_REFLECTION_IN_PLACE(DocumentsModule, DAVA::TArc::ControllerModule)
-    {
-        DAVA::ReflectionRegistrator<DocumentsModule>::Begin()
-        .ConstructorByPointer()
-        .End();
-    }
+    DAVA_VIRTUAL_REFLECTION(DocumentsModule, DAVA::TArc::ControllerModule);
 };

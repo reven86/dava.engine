@@ -73,7 +73,6 @@ private:
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OnFontPresetChanged();
 
-    ProjectData* projectData = nullptr;
     QString projectDirectory;
     QString projectName;
     QString uiResourcesPath;

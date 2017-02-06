@@ -35,10 +35,5 @@ private:
     std::unique_ptr<RecentMenuItems> recentProjects;
     QtDelayedExecutor delayedExecutor;
 
-    DAVA_VIRTUAL_REFLECTION_IN_PLACE(ProjectModule, DAVA::TArc::ClientModule)
-    {
-        DAVA::ReflectionRegistrator<ProjectModule>::Begin()
-        .ConstructorByPointer()
-        .End();
-    }
+    DAVA_VIRTUAL_REFLECTION(ProjectModule, DAVA::TArc::ClientModule);
 };

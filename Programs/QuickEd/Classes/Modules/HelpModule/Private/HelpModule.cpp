@@ -9,6 +9,13 @@
 
 #include <QDesktopServices>
 
+DAVA_VIRTUAL_REFLECTION_IMPL(HelpModule)
+{
+    DAVA::ReflectionRegistrator<HelpModule>::Begin()
+    .ConstructorByPointer()
+    .End();
+}
+
 namespace HelpModuleDetails
 {
 static const DAVA::String helpDirectory("~doc:/Help/");
@@ -23,9 +30,8 @@ void HelpModule::PostInit()
 void HelpModule::CreateActions()
 {
     using namespace DAVA::TArc;
-    ContextAccessor* accessor = GetAccessor();
 
-    QtAction* action = new QtAction(accessor, QIcon(":/Icons/help.png"), QString("QuickEd Help"));
+    QAction* action = new QAction(QIcon(":/Icons/help.png"), "QuickEd Help", nullptr);
     connections.AddConnection(action, &QAction::triggered, DAVA::Bind(&HelpModule::UnpackHelp, this));
 
     ActionPlacementInfo placementInfo;

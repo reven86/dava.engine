@@ -33,8 +33,7 @@ QWidget* ResourceFilePropertyDelegate::createEditor(QWidget* parent, const Prope
     DVASSERT(context.project != nullptr);
     project = context.project;
 #if defined(__DAVAENGINE_MACOS__)
-    const ProjectProperties & project->GetProjectProperties();
-    symLinkRestorer = std::make_unique<MacOSSymLinkRestorer>(QString::fromStdString(properties.GetResourceDirectory().absolute.GetStringValue()));
+    symLinkRestorer = std::make_unique<MacOSSymLinkRestorer>(QString::fromStdString(project->GetResourceDirectory().absolute.GetStringValue()));
 #endif
     projectResourceDir = context.project->GetResourceDirectory();
     lineEdit = new QLineEdit(parent);

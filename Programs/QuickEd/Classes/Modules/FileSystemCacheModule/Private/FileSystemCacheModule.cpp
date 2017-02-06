@@ -18,6 +18,12 @@
 #include <Engine/Engine.h>
 #include <FileSystem/FileSystem.h>
 
+DAVA_VIRTUAL_REFLECTION_IMPL(FileSystemCacheModule)
+{
+    DAVA::ReflectionRegistrator<FileSystemCacheModule>::Begin()
+    .End();
+}
+
 void FileSystemCacheModule::PostInit()
 {
     using namespace DAVA;

@@ -42,7 +42,7 @@ Project::Project(MainWindow::ProjectView* view_, DAVA::TArc::ContextAccessor* ac
 {
     using namespace TArc;
     DataContext* globalContext = accessor->GetGlobalContext();
-    projectData = globalContext->GetData<ProjectData>();
+    ProjectData* projectData = globalContext->GetData<ProjectData>();
     DVASSERT(projectData != nullptr);
     projectDirectory = QString::fromStdString(projectData->GetProjectDirectory().GetStringValue());
     projectName = QString::fromStdString(projectData->GetProjectFile().GetFilename());
@@ -105,6 +105,8 @@ Project::~Project()
 
     editorLocalizationSystem->Cleanup();
     editorFontSystem->ClearAllFonts();
+
+    ProjectData* projectData = accessor->GetGlobalContext()->GetData<ProjectData>();
     FilePath::RemoveResourcesFolder(projectData->GetResourceDirectory().absolute);
     FilePath::RemoveResourcesFolder(projectData->GetAdditionalResourceDirectory().absolute);
     FilePath::RemoveResourcesFolder(projectData->GetConvertedResourceDirectory().absolute);
@@ -112,11 +114,13 @@ Project::~Project()
 
 Vector<ProjectData::ResDir> Project::GetLibraryPackages() const
 {
+    ProjectData* projectData = accessor->GetGlobalContext()->GetData<ProjectData>();
     return projectData->GetLibraryPackages();
 }
 
 const Map<String, Set<DAVA::FastName>>& Project::GetPrototypes() const
 {
+    ProjectData* projectData = accessor->GetGlobalContext()->GetData<ProjectData>();
     return projectData->GetPrototypes();
 }
 
@@ -223,6 +227,7 @@ void Project::SetGlobalStyleClasses(const QString& classesStr)
 
 QString Project::GetResourceDirectory() const
 {
+    ProjectData* projectData = accessor->GetGlobalContext()->GetData<ProjectData>();
     return QString::fromStdString(projectData->GetResourceDirectory().absolute.GetStringValue());
 }
 
@@ -286,6 +291,7 @@ void Project::OnSelectionChanged(const SelectedNodes& selected, const SelectedNo
 
 QString Project::GetProjectPath() const
 {
+    ProjectData* projectData = accessor->GetGlobalContext()->GetData<ProjectData>();
     return QString::fromStdString(projectData->GetProjectFile().GetStringValue());
 }
 

@@ -55,6 +55,9 @@ public:
     void InjectRenderWidget(DAVA::RenderWidget* renderWidget);
     void OnContextWasChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* oldOne);
 
+    DAVA::Signal<DAVA::uint64> requestCloseTab;
+    DAVA::Signal<ControlNode*> requestChangeTextInNode;
+
 signals:
     void DeleteRequested();
     void ImportRequested();
@@ -92,7 +95,6 @@ private:
     void ShowMenu(const QMouseEvent* mouseEvent);
     bool AddSelectionMenuSection(QMenu* parentMenu, const QPoint& pos);
     bool CanChangeTextInControl(const ControlNode* node) const;
-    void ChangeControlText(ControlNode* node);
 
     void InitFromSystemsManager(EditorSystemsManager* systemsManager);
 

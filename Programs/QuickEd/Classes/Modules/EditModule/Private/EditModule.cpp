@@ -9,6 +9,13 @@
 
 #include <Command/CommandStack.h>
 
+DAVA_VIRTUAL_REFLECTION_IMPL(EditModule)
+{
+    DAVA::ReflectionRegistrator<EditModule>::Begin()
+    .ConstructorByPointer()
+    .End();
+}
+
 const QString undoActionName("Undo");
 const QString redoActionName("Redo");
 

@@ -235,8 +235,7 @@ void SceneManagerModule::PostInit()
         fieldBinder->BindField(fieldDescr, DAVA::MakeFunction(this, &SceneManagerModule::OnProjectPathChanged));
     }
 
-    RecentMenuItems::Params params(REGlobal::MainWindowKey);
-    params.accessor = accessor;
+    RecentMenuItems::Params params(REGlobal::MainWindowKey, accessor, "Recent scenes");
     params.ui = ui;
     params.menuSubPath << "File";
     params.predicateFieldDescriptor.fieldName = DAVA::FastName(ProjectManagerData::ProjectPathProperty);
@@ -248,23 +247,10 @@ void SceneManagerModule::PostInit()
     params.getMaximumCount = []() {
         return SettingsManager::GetValue(Settings::General_RecentFilesCount).AsInt32();
     };
-    params.getRecentFiles = []() -> DAVA::Vector<DAVA::String> {
-        DAVA::VariantType recentFilesVariant = SettingsManager::GetValue(Settings::Internal_RecentFiles);
-        if (recentFilesVariant.GetType() == DAVA::VariantType::TYPE_KEYED_ARCHIVE)
-        {
-            return ConvertKAToVector(recentFilesVariant.AsKeyedArchive());
-        }
-        return DAVA::Vector<DAVA::String>();
-    };
-    params.updateRecentFiles = [](const DAVA::Vector<DAVA::String> data) {
-        DAVA::RefPtr<DAVA::KeyedArchive> archive(ConvertVectorToKA(data));
-        SettingsManager::SetValue(Settings::Internal_RecentFiles, DAVA::VariantType(archive.Get()));
-    };
-
     params.insertionParams.method = InsertionParams::eInsertionMethod::AfterItem;
     params.insertionParams.item = QString("importSeparator");
 
-    recentItems.reset(new RecentMenuItems(params));
+    recentItems.reset(new RecentMenuItems(std::move(params)));
     recentItems->actionTriggered.Connect([this](const DAVA::String& scenePath)
                                          {
                                              OpenSceneByPath(DAVA::FilePath(scenePath));

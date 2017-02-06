@@ -11,10 +11,16 @@
 #include <Engine/PlatformApi.h>
 #include <FileSystem/YamlNode.h>
 #include <FileSystem/YamlEmitter.h>
-#include <FileSystem/YamlParser.h>
 #include <Base/Result.h>
 
 #include <QApplication>
+
+DAVA_VIRTUAL_REFLECTION_IMPL(ProjectModule)
+{
+    DAVA::ReflectionRegistrator<ProjectModule>::Begin()
+    .ConstructorByPointer()
+    .End();
+}
 
 namespace ProjectModuleDetails
 {
@@ -23,11 +29,8 @@ const DAVA::String lastProjectKey = "Last project";
 const DAVA::String projectsHistoryKey = "Projects history";
 const DAVA::uint32 projectsHistoryMaxSize = 5;
 
+DAVA::Result CreateNewProjectInfrastructure(const QString& projectPath);
 bool SerializeProjectDataToFile(const ProjectData* data);
-std::tuple<std::unique_ptr<ProjectData>, DAVA::ResultList> LoadFromFile(const QString& projectFile);
-std::tuple<std::unique_ptr<ProjectData>, DAVA::ResultList> CreateProject(const QString& path);
-DAVA::Result CreateProjectStructure(const QString& projectFilePath);
-std::tuple<QString, DAVA::ResultList> CreateNewProject();
 }
 
 ProjectModule::ProjectModule() = default;
@@ -59,7 +62,7 @@ void ProjectModule::CreateActions()
     UI* ui = GetUI();
     //action new project
     {
-        QtAction* action = new QtAction(accessor, QIcon(":/Icons/newscene.png"), newProjectActionName);
+        QAction* action = new QAction(QIcon(":/Icons/newscene.png"), newProjectActionName, nullptr);
         connections.AddConnection(action, &QAction::triggered, DAVA::Bind(&ProjectModule::OnNewProject, this));
         ActionPlacementInfo placementInfo;
         placementInfo.AddPlacementPoint(CreateMenuPoint(fileMenuName, { InsertionParams::eInsertionMethod::BeforeItem }));
@@ -70,7 +73,7 @@ void ProjectModule::CreateActions()
 
     //action open project
     {
-        QtAction* action = new QtAction(accessor, QIcon(":/Icons/openproject.png"), openProjectActionName);
+        QAction* action = new QAction(QIcon(":/Icons/openproject.png"), openProjectActionName, nullptr);
         action->setShortcut(QKeySequence("Ctrl+O"));
         connections.AddConnection(action, &QAction::triggered, DAVA::Bind(&ProjectModule::OnOpenProject, this));
         ActionPlacementInfo placementInfo;
@@ -116,24 +119,14 @@ void ProjectModule::CreateActions()
 
     //Recent content
     {
-        RecentMenuItems::Params params(QEGlobal::windowKey);
-        params.accessor = accessor;
+        RecentMenuItems::Params params(QEGlobal::windowKey, accessor, "recent projects");
         params.ui = GetUI();
         params.getMaximumCount = [this]() {
             return ProjectModuleDetails::projectsHistoryMaxSize;
         };
-
-        params.getRecentFiles = [this]() -> DAVA::Vector<DAVA::String> {
-            PropertiesItem propsItem = GetAccessor()->CreatePropertiesNode(ProjectModuleDetails::propertiesKey);
-            return propsItem.Get<DAVA::Vector<DAVA::String>>(ProjectModuleDetails::projectsHistoryKey);
-        };
-        params.updateRecentFiles = [this](const DAVA::Vector<DAVA::String>& history) {
-            PropertiesItem propsItem = GetAccessor()->CreatePropertiesNode(ProjectModuleDetails::propertiesKey);
-            return propsItem.Set(ProjectModuleDetails::projectsHistoryKey, DAVA::Any(history));
-        };
         params.menuSubPath << fileMenuName << recentProjectsActionName;
         params.insertionParams.method = InsertionParams::eInsertionMethod::BeforeItem;
-        recentProjects.reset(new RecentMenuItems(params));
+        recentProjects.reset(new RecentMenuItems(std::move(params)));
         recentProjects->actionTriggered.Connect([this](const DAVA::String& projectPath) {
             OpenProject(projectPath);
         });
@@ -171,16 +164,39 @@ void ProjectModule::OnOpenProject()
 
 void ProjectModule::OnNewProject()
 {
-    DAVA::ResultList resultList;
+    using namespace DAVA;
+    using namespace TArc;
+
+    ResultList resultList;
     QString newProjectPath;
 
-    std::tie(newProjectPath, resultList) = ProjectModuleDetails::CreateNewProject();
-
-    if (!newProjectPath.isEmpty())
+    DirectoryDialogParams params;
+    params.title = QObject::tr("Select directory for new project");
+    QString projectDirPath = GetUI()->GetExistingDirectory(QEGlobal::windowKey, params);
+    if (projectDirPath.isEmpty())
     {
-        OpenProject(newProjectPath.toStdString());
+        return;
     }
-    ShowResultList(QObject::tr("Error while creating project"), resultList);
+
+    QDir projectDir(projectDirPath);
+    const QString projectFileName = QString::fromStdString(ProjectData::GetProjectFileName());
+    QString fullProjectFilePath = projectDir.absoluteFilePath(projectFileName);
+    if (QFile::exists(fullProjectFilePath))
+    {
+        ResultList resultList(Result(Result::RESULT_WARNING, QObject::tr("Project file exists!").toStdString()));
+        ShowResultList(QObject::tr("Error while creating project"), resultList);
+        return;
+    }
+
+    Result result = ProjectModuleDetails::CreateNewProjectInfrastructure(fullProjectFilePath);
+    if (result.type != Result::RESULT_SUCCESS)
+    {
+        ResultList resultList(result);
+        ShowResultList(QObject::tr("Error while creating project"), resultList);
+        return;
+    }
+    DVASSERT(fullProjectFilePath.isEmpty() == false);
+    OpenProject(newProjectPath.toStdString());
 }
 
 void ProjectModule::OpenProject(const DAVA::String& path)
@@ -194,8 +210,8 @@ void ProjectModule::OpenProject(const DAVA::String& path)
     DAVA::ResultList resultList;
     std::unique_ptr<ProjectData> newProjectData;
 
-    std::tie(newProjectData, resultList) = ProjectModuleDetails::CreateProject(QString::fromStdString(path));
-    if (newProjectData)
+    resultList = newProjectData->LoadProject(QString::fromStdString(path));
+    if (resultList)
     {
         DAVA::String lastProjectPath = newProjectData->GetProjectFile().GetAbsolutePathname();
         recentProjects->Add(lastProjectPath);
@@ -268,63 +284,12 @@ void ProjectModule::ShowResultList(const QString& title, const DAVA::ResultList&
     });
 }
 
-namespace ProjectModuleDetails
-{
-bool SerializeProjectDataToFile(const ProjectData* data)
-{
-    using namespace DAVA;
-
-    RefPtr<YamlNode> node = ProjectData::SerializeToYamlNode(data);
-
-    return YamlEmitter::SaveToYamlFile(data->GetProjectFile(), node.Get());
-}
-
-std::tuple<std::unique_ptr<ProjectData>, DAVA::ResultList> LoadFromFile(const QString& projectFile)
-{
-    using namespace DAVA;
-    ResultList resultList;
-
-    RefPtr<YamlParser> parser(YamlParser::Create(projectFile.toStdString()));
-    if (parser.Get() == nullptr)
-    {
-        QString message = QObject::tr("Can not parse project file %1.").arg(projectFile);
-        resultList.AddResult(Result::RESULT_ERROR, message.toStdString());
-
-        return std::make_tuple(std::unique_ptr<ProjectData>(), resultList);
-    }
-
-    return ProjectData::Parse(projectFile.toStdString(), parser->GetRootNode());
-}
-
-std::tuple<std::unique_ptr<ProjectData>, DAVA::ResultList> CreateProject(const QString& path)
-{
-    using namespace DAVA;
-    ResultList resultList;
-
-    QFileInfo fileInfo(path);
-    if (!fileInfo.exists())
-    {
-        QString message = QObject::tr("%1 does not exist.").arg(path);
-        resultList.AddResult(Result::RESULT_ERROR, message.toStdString());
-        return std::make_tuple(nullptr, resultList);
-    }
-
-    if (!fileInfo.isFile())
-    {
-        QString message = QObject::tr("%1 is not a file.").arg(path);
-        resultList.AddResult(Result::RESULT_ERROR, message.toStdString());
-        return std::make_tuple(nullptr, resultList);
-    }
-
-    return LoadFromFile(path);
-}
-
-DAVA::Result CreateProjectStructure(const QString& projectFilePath)
+DAVA::Result ProjectModuleDetails::CreateNewProjectInfrastructure(const QString& projectFilePath)
 {
     using namespace DAVA;
     QDir projectDir(QFileInfo(projectFilePath).absolutePath());
 
-    std::unique_ptr<ProjectData> defaultSettings = ProjectData::Default();
+    std::unique_ptr<ProjectData> defaultSettings(new ProjectData());
 
     QString resourceDirectory = QString::fromStdString(defaultSettings->GetResourceDirectory().relative);
     if (!projectDir.mkpath(resourceDirectory))
@@ -395,38 +360,13 @@ DAVA::Result CreateProjectStructure(const QString& projectFilePath)
     return Result();
 }
 
-std::tuple<QString, DAVA::ResultList> CreateNewProject()
+bool ProjectModuleDetails::SerializeProjectDataToFile(const ProjectData* data)
 {
     using namespace DAVA;
 
-    ResultList resultList;
+    RefPtr<YamlNode> node = data->SerializeToYamlNode();
 
-    QApplication* app = PlatformApi::Qt::GetApplication();
-
-    QString projectDirPath = QFileDialog::getExistingDirectory(app->activeWindow(), QObject::tr("Select directory for new project"));
-    if (projectDirPath.isEmpty())
-    {
-        return std::make_tuple(QString(), resultList);
-    }
-
-    QDir projectDir(projectDirPath);
-    const QString projectFileName = QString::fromStdString(ProjectData::GetProjectFileName());
-    QString fullProjectFilePath = projectDir.absoluteFilePath(projectFileName);
-    if (QFile::exists(fullProjectFilePath))
-    {
-        resultList.AddResult(Result::RESULT_WARNING, QObject::tr("Project file exists!").toStdString());
-        return std::make_tuple(QString(), resultList);
-    }
-
-    Result result = CreateProjectStructure(fullProjectFilePath);
-    if (result.type != Result::RESULT_SUCCESS)
-    {
-        resultList.AddResult(result);
-        return std::make_tuple(QString(), resultList);
-    }
-
-    return std::make_tuple(fullProjectFilePath, resultList);
-}
+    return YamlEmitter::SaveToYamlFile(data->GetProjectFile(), node.Get());
 }
 
 DECL_GUI_MODULE(ProjectModule);

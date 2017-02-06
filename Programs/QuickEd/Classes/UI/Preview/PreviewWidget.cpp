@@ -25,7 +25,6 @@
 #include <TArc/DataProcessing/DataContext.h>
 
 #include <QtTools/Updaters/ContinuousUpdater.h>
-#include <QtTools/InputDialogs/MultilineTextInputDialog.h>
 
 #include <UI/UIControl.h>
 #include <UI/UIStaticText.h>
@@ -476,6 +475,7 @@ void PreviewWidget::InitUI(DAVA::TArc::ContextAccessor* accessor)
     DAVA::TArc::DataContext* ctx = accessor->GetGlobalContext();
     ctx->CreateData(std::make_unique<SceneTabsModel>());
     DAVA::TArc::SceneTabbar* tabBar = new DAVA::TArc::SceneTabbar(accessor, DAVA::Reflection::Create(ctx->GetData<SceneTabsModel>()), this);
+    tabBar->closeTab.Connect(&requestCloseTab, &DAVA::Signal<DAVA::uint64>::Emit);
     tabBar->setElideMode(Qt::ElideNone);
     tabBar->setTabsClosable(true);
     tabBar->setUsesScrollButtons(true);
@@ -525,7 +525,7 @@ void PreviewWidget::ShowMenu(const QMouseEvent* mouseEvent)
     {
         QString name = QString::fromStdString(node->GetName());
         QAction* action = menu.addAction(tr("Change text in %1").arg(name));
-        connect(action, &QAction::triggered, [this, node]() { ChangeControlText(node); });
+        connect(action, &QAction::triggered, [this, node]() { requestChangeTextInNode.Emit(node); });
     }
     if (!menu.actions().isEmpty())
     {
@@ -580,45 +580,6 @@ bool PreviewWidget::CanChangeTextInControl(const ControlNode* node) const
 
     UIStaticText* staticText = dynamic_cast<UIStaticText*>(control);
     return staticText != nullptr;
-}
-
-void PreviewWidget::ChangeControlText(ControlNode* node)
-{
-    using namespace DAVA::TArc;
-    DVASSERT(node != nullptr);
-
-    UIControl* control = node->GetControl();
-
-    UIStaticText* staticText = dynamic_cast<UIStaticText*>(control);
-    DVASSERT(staticText != nullptr);
-
-    RootProperty* rootProperty = node->GetRootProperty();
-    AbstractProperty* textProperty = rootProperty->FindPropertyByName("Text");
-    DVASSERT(textProperty != nullptr);
-
-    String text = textProperty->GetValue().AsString();
-
-    QString label = tr("Enter new text, please");
-    bool ok;
-    QString inputText = MultilineTextInputDialog::GetMultiLineText(this, label, label, QString::fromStdString(text), &ok);
-    if (ok)
-    {
-        DataContext* activeContext = accessor->GetActiveContext();
-        DVASSERT(nullptr != activeContext);
-        Document* document = activeContext->GetData<Document>();
-        DVASSERT(nullptr != document);
-        QtModelPackageCommandExecutor* executor = document->GetCommandExecutor();
-        executor->BeginMacro("change text by user");
-        AbstractProperty* multilineProperty = rootProperty->FindPropertyByName("Multi Line");
-        DVASSERT(multilineProperty != nullptr);
-        UIStaticText::eMultiline multilineType = static_cast<UIStaticText::eMultiline>(multilineProperty->GetValue().AsInt32());
-        if (inputText.contains('\n') && multilineType == UIStaticText::MULTILINE_DISABLED)
-        {
-            executor->ChangeProperty(node, multilineProperty, VariantType(UIStaticText::MULTILINE_ENABLED));
-        }
-        executor->ChangeProperty(node, textProperty, VariantType(inputText.toStdString()));
-        executor->EndMacro();
-    }
 }
 
 void PreviewWidget::OnWheel(QWheelEvent* event)
@@ -697,7 +658,7 @@ void PreviewWidget::OnMouseReleased(QMouseEvent* event)
     }
     if (nodeToChangeTextOnMouseRelease != nullptr)
     {
-        ChangeControlText(nodeToChangeTextOnMouseRelease);
+        requestChangeTextInNode.Emit(nodeToChangeTextOnMouseRelease);
         nodeToChangeTextOnMouseRelease = nullptr;
     }
 }
@@ -853,7 +814,7 @@ void PreviewWidget::OnKeyPressed(QKeyEvent* event)
             ControlNode* node = dynamic_cast<ControlNode*>(*selectedNodes.begin());
             if (CanChangeTextInControl(node))
             {
-                ChangeControlText(node);
+                requestChangeTextInNode.Emit(node);
             }
         }
     }
@@ -871,6 +832,7 @@ void PreviewWidget::OnDragStateChanged(EditorSystemsManager::eDragState dragStat
     DVASSERT(nullptr != documentData);
     Document* document = activeContext->GetData<Document>();
     DVASSERT(nullptr != document);
+    //TODO: move this code to the TransformSystem when systems will be moved to the TArc
     QtModelPackageCommandExecutor* executor = document->GetCommandExecutor();
     if (dragState == EditorSystemsManager::Transform)
     {
@@ -889,6 +851,7 @@ void PreviewWidget::OnPropertyChanged(ControlNode* node, AbstractProperty* prope
     using namespace DAVA::TArc;
     DataContext* activeContext = accessor->GetActiveContext();
     DVASSERT(activeContext != nullptr);
+    //TODO: move this code to the TransformSystem when systems will be moved to the TArc
     Document* document = activeContext->GetData<Document>();
     DVASSERT(nullptr != document);
     QtModelPackageCommandExecutor* commandExecutor = document->GetCommandExecutor();

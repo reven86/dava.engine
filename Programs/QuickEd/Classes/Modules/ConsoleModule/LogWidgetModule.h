@@ -23,12 +23,7 @@ class LogWidgetModule : public DAVA::TArc::ClientModule, public DAVA::InspBase
     LoggerOutputObject* loggerOutput = nullptr; //will be deleted by logger. Isn't it fun?
     LogWidget* logWidget = nullptr;
 
-    DAVA_VIRTUAL_REFLECTION_IN_PLACE(LogWidgetModule, DAVA::TArc::ClientModule)
-    {
-        DAVA::ReflectionRegistrator<LogWidgetModule>::Begin()
-        .ConstructorByPointer()
-        .End();
-    }
+    DAVA_VIRTUAL_REFLECTION(LogWidgetModule, DAVA::TArc::ClientModule);
 
 public:
     INTROSPECTION(LogWidgetModule,

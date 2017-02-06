@@ -41,7 +41,5 @@ private:
 
     std::unique_ptr<QtModelPackageCommandExecutor> commandExecutor;
 
-    DAVA_VIRTUAL_REFLECTION_IN_PLACE(Document, DAVA::TArc::DataNode)
-    {
-    }
+    DAVA_VIRTUAL_REFLECTION(Document, DAVA::TArc::DataNode);
 };

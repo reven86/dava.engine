@@ -16,10 +16,5 @@ public:
 private:
     std::unique_ptr<SpritesPacker> spritesPacker;
 
-    DAVA_VIRTUAL_REFLECTION_IN_PLACE(SpritesPackerData, DAVA::TArc::DataNode)
-    {
-        DAVA::ReflectionRegistrator<SpritesPackerData>::Begin()
-        .ConstructorByPointer()
-        .End();
-    }
+    DAVA_VIRTUAL_REFLECTION(SpritesPackerData, DAVA::TArc::DataNode);
 };

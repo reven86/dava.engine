@@ -54,7 +54,7 @@ void MainWindow::ProjectView::SetProjectActionsEnabled(bool enabled)
 {
     mainWindow->ui->actionJumpToPrototype->setEnabled(enabled);
     mainWindow->ui->actionFindPrototypeInstances->setEnabled(enabled);
-    mainWindow->ui->toolBarPlugins->setEnabled(enabled);
+    mainWindow->ui->toolBarGlobal->setEnabled(enabled);
 
     mainWindow->ui->fileSystemDockWidget->setEnabled(enabled);
 }
@@ -84,8 +84,8 @@ void MainWindow::ProjectView::InitLanguageBox()
     layout->addWidget(comboboxLanguage);
     QWidget* wrapper = new QWidget();
     wrapper->setLayout(layout);
-    mainWindow->ui->toolBarPlugins->addSeparator();
-    mainWindow->ui->toolBarPlugins->addWidget(wrapper);
+    mainWindow->ui->toolBarGlobal->addSeparator();
+    mainWindow->ui->toolBarGlobal->addWidget(wrapper);
 
     void (QComboBox::*currentIndexChangedFn)(int) = &QComboBox::currentIndexChanged;
     connect(comboboxLanguage, currentIndexChangedFn, this, &MainWindow::ProjectView::OnCurrentLanguageChanged);
@@ -95,8 +95,8 @@ void MainWindow::ProjectView::InitRtlBox()
 {
     QCheckBox* rtlBox = new QCheckBox(tr("Right-to-left"));
     rtlBox->setLayoutDirection(Qt::RightToLeft);
-    mainWindow->ui->toolBarPlugins->addSeparator();
-    mainWindow->ui->toolBarPlugins->addWidget(rtlBox);
+    mainWindow->ui->toolBarGlobal->addSeparator();
+    mainWindow->ui->toolBarGlobal->addWidget(rtlBox);
     connect(rtlBox, &QCheckBox::stateChanged, this, &MainWindow::ProjectView::OnRtlChanged);
 }
 
@@ -104,8 +104,8 @@ void MainWindow::ProjectView::InitBiDiSupportBox()
 {
     QCheckBox* bidiSupportBox = new QCheckBox(tr("BiDi Support"));
     bidiSupportBox->setLayoutDirection(Qt::RightToLeft);
-    mainWindow->ui->toolBarPlugins->addSeparator();
-    mainWindow->ui->toolBarPlugins->addWidget(bidiSupportBox);
+    mainWindow->ui->toolBarGlobal->addSeparator();
+    mainWindow->ui->toolBarGlobal->addWidget(bidiSupportBox);
     connect(bidiSupportBox, &QCheckBox::stateChanged, this, &MainWindow::ProjectView::OnBiDiSupportChanged);
 }
 
@@ -121,8 +121,8 @@ void MainWindow::ProjectView::InitGlobalClasses()
     layout->addWidget(classesEdit);
     QWidget* wrapper = new QWidget();
     wrapper->setLayout(layout);
-    mainWindow->ui->toolBarPlugins->addSeparator();
-    mainWindow->ui->toolBarPlugins->addWidget(wrapper);
+    mainWindow->ui->toolBarGlobal->addSeparator();
+    mainWindow->ui->toolBarGlobal->addWidget(wrapper);
     connect(classesEdit, &QLineEdit::textChanged, this, &MainWindow::ProjectView::OnGlobalClassesChanged);
 }
 

@@ -48,16 +48,5 @@ struct DocumentData : public DAVA::TArc::DataNode
     DAVA::RefPtr<PackageNode> package;
     std::unique_ptr<DAVA::CommandStack> commandStack;
 
-    DAVA_VIRTUAL_REFLECTION_IN_PLACE(DocumentData, DAVA::TArc::DataNode)
-    {
-        DAVA::ReflectionRegistrator<DocumentData>::Begin()
-        .Field(packagePropertyName, &DocumentData::package)
-        .Field(canSavePropertyName, &DocumentData::CanSave, nullptr)
-        .Field(canUndoPropertyName, &DocumentData::CanUndo, nullptr)
-        .Field(canRedoPropertyName, &DocumentData::CanRedo, nullptr)
-        .Field(undoTextPropertyName, &DocumentData::GetUndoText, nullptr)
-        .Field(redoTextPropertyName, &DocumentData::GetRedoText, nullptr)
-        .Field(canClosePropertyName, &DocumentData::canClosePropertyName)
-        .End();
-    }
+    DAVA_VIRTUAL_REFLECTION(DocumentData, DAVA::TArc::DataNode);
 };

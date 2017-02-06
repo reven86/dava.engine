@@ -22,7 +22,5 @@ public:
 
 private:
     DAVA::UnorderedMap<void*, WidgetContext*> contexts;
-    DAVA_VIRTUAL_REFLECTION_IN_PLACE(WidgetsData, DAVA::TArc::DataNode)
-    {
-    }
+    DAVA_VIRTUAL_REFLECTION(WidgetsData, DAVA::TArc::DataNode);
 };

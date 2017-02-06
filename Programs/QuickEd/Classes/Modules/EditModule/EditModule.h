@@ -15,10 +15,5 @@ class EditModule : public DAVA::TArc::ClientModule
 
     DAVA::TArc::QtConnections connections;
 
-    DAVA_VIRTUAL_REFLECTION_IN_PLACE(EditModule, DAVA::TArc::ClientModule)
-    {
-        DAVA::ReflectionRegistrator<EditModule>::Begin()
-        .ConstructorByPointer()
-        .End();
-    }
+    DAVA_VIRTUAL_REFLECTION(EditModule, DAVA::TArc::ClientModule);
 };

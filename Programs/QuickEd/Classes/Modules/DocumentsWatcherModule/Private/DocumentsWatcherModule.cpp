@@ -9,6 +9,13 @@
 #include <QFileSystemWatcher>
 #include <QApplication>
 
+DAVA_VIRTUAL_REFLECTION_IMPL(DocumentsWatcherModule)
+{
+    DAVA::ReflectionRegistrator<DocumentsWatcherModule>::Begin()
+    .ConstructorByPointer()
+    .End();
+}
+
 void DocumentsWatcherModule::PostInit()
 {
     using namespace DAVA;

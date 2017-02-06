@@ -43,30 +43,17 @@ void ProjectManagerModule::PostInit()
     CreateActions();
     RegisterOperations();
 
-    RecentMenuItems::Params params(REGlobal::MainWindowKey);
-    params.accessor = accessor;
+    RecentMenuItems::Params params(REGlobal::MainWindowKey, accessor, "Recent projects");
     params.ui = GetUI();
     params.getMaximumCount = []() {
         return SettingsManager::GetValue(Settings::General_RecentProjectsCount).AsInt32();
-    };
-    params.getRecentFiles = []() -> DAVA::Vector<DAVA::String> {
-        DAVA::VariantType recentFilesVariant = SettingsManager::GetValue(Settings::Internal_RecentProjects);
-        if (recentFilesVariant.GetType() == DAVA::VariantType::TYPE_KEYED_ARCHIVE)
-        {
-            return ConvertKAToVector(recentFilesVariant.AsKeyedArchive());
-        }
-        return DAVA::Vector<DAVA::String>();
-    };
-    params.updateRecentFiles = [](const DAVA::Vector<DAVA::String> data) {
-        DAVA::RefPtr<DAVA::KeyedArchive> archive(ConvertVectorToKA(data));
-        SettingsManager::SetValue(Settings::Internal_RecentProjects, DAVA::VariantType(archive.Get()));
     };
 
     params.menuSubPath << "File"
                        << "Recent Projects";
     params.insertionParams.method = InsertionParams::eInsertionMethod::BeforeItem;
 
-    recentProjects.reset(new RecentMenuItems(params));
+    recentProjects.reset(new RecentMenuItems(std::move(params)));
     recentProjects->actionTriggered.Connect([this](const DAVA::String& projectPath)
                                             {
                                                 OpenProjectByPath(DAVA::FilePath(projectPath));

@@ -94,9 +94,7 @@ private:
     ProjectView* projectView = nullptr;
     DocumentGroupView* documentGroupView = nullptr;
 
-    DAVA_VIRTUAL_REFLECTION_IN_PLACE(MainWindow, DAVA::TArc::DataNode)
-    {
-    }
+    DAVA_VIRTUAL_REFLECTION(MainWindow, DAVA::TArc::DataNode);
 
 public:
     INTROSPECTION(MainWindow,

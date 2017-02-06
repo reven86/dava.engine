@@ -15,6 +15,13 @@ REGISTER_PREFERENCES_ON_START(LogWidgetModule,
                               PREF_ARG("consoleState", DAVA::String())
                               )
 
+DAVA_VIRTUAL_REFLECTION_IMPL(LogWidgetModule)
+{
+    DAVA::ReflectionRegistrator<LogWidgetModule>::Begin()
+    .ConstructorByPointer()
+    .End();
+}
+
 void LogWidgetModule::PostInit()
 {
     loggerOutput = new LoggerOutputObject();

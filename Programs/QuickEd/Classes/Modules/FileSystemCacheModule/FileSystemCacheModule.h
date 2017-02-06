@@ -18,9 +18,5 @@ class FileSystemCacheModule : public DAVA::TArc::ClientModule
     DAVA::TArc::FieldBinder projectUiPathFieldBinder;
     DAVA::TArc::QtConnections connections;
 
-    DAVA_VIRTUAL_REFLECTION_IN_PLACE(FileSystemCacheModule, DAVA::TArc::ClientModule)
-    {
-        DAVA::ReflectionRegistrator<FileSystemCacheModule>::Begin()
-        .End();
-    }
+    DAVA_VIRTUAL_REFLECTION(FileSystemCacheModule, DAVA::TArc::ClientModule);
 };

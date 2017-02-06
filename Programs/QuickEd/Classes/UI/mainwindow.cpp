@@ -31,6 +31,10 @@ REGISTER_PREFERENCES_ON_START(MainWindow,
                               PREF_ARG("isPixelized", false),
                               )
 
+DAVA_VIRTUAL_REFLECTION_IMPL(MainWindow)
+{
+}
+
 Q_DECLARE_METATYPE(const InspMember*);
 
 MainWindow::MainWindow(QWidget* parent)
@@ -101,8 +105,8 @@ void MainWindow::InitEmulationMode()
     emulationBox = new QCheckBox("Emulation", this);
     emulationBox->setLayoutDirection(Qt::RightToLeft);
     connect(emulationBox, &QCheckBox::toggled, this, &MainWindow::EmulationModeChanged);
-    ui->toolBarPlugins->addSeparator();
-    ui->toolBarPlugins->addWidget(emulationBox);
+    ui->toolBarGlobal->addSeparator();
+    ui->toolBarGlobal->addWidget(emulationBox);
 }
 
 void MainWindow::SetupViewMenu()
@@ -116,7 +120,7 @@ void MainWindow::SetupViewMenu()
                             << ui->styleSheetInspectorWidget->toggleViewAction()
                             << ui->findWidget->toggleViewAction()
                             << ui->mainToolbar->toggleViewAction()
-                            << ui->toolBarPlugins->toggleViewAction();
+                            << ui->toolBarGlobal->toggleViewAction();
 
     QAction* separator = ui->View->insertSeparator(ui->menuApplicationStyle->menuAction());
     ui->View->insertActions(separator, dockWidgetToggleActions);

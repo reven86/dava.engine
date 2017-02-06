@@ -32,12 +32,7 @@ private:
     std::unique_ptr<DAVA::AssetCacheClient> cacheClient;
     DAVA::AssetCacheClient::ConnectionParams connectionParams;
 
-    DAVA_VIRTUAL_REFLECTION_IN_PLACE(SpritesPackerModule, DAVA::TArc::ClientModule)
-    {
-        DAVA::ReflectionRegistrator<SpritesPackerModule>::Begin()
-        .ConstructorByPointer()
-        .End();
-    }
+    DAVA_VIRTUAL_REFLECTION(SpritesPackerModule, DAVA::TArc::ClientModule);
 
 public:
     INTROSPECTION(SpritesPackerModule,

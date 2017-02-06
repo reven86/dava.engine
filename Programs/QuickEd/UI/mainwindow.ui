@@ -194,7 +194,7 @@
     <number>1</number>
    </attribute>
   </widget>
-  <widget class="QToolBar" name="toolBarPlugins">
+  <widget class="QToolBar" name="toolBarGlobal">
    <property name="windowTitle">
     <string>Project ToolBar</string>
    </property>

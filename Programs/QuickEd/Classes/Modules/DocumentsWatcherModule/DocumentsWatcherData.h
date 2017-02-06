@@ -14,7 +14,5 @@ struct DocumentsWatcherData : public DAVA::TArc::DataNode
     void Unwatch(const QString& path);
 
     std::unique_ptr<QFileSystemWatcher> watcher;
-    DAVA_VIRTUAL_REFLECTION_IN_PLACE(DocumentsWatcherData, DAVA::TArc::DataNode)
-    {
-    }
+    DAVA_VIRTUAL_REFLECTION(DocumentsWatcherData, DAVA::TArc::DataNode);
 };

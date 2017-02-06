@@ -18,10 +18,5 @@ class LegacySupportModule : public DAVA::TArc::ClientModule, private DAVA::TArc:
 
     std::unique_ptr<Project> project;
 
-    DAVA_VIRTUAL_REFLECTION_IN_PLACE(LegacySupportModule, DAVA::TArc::ClientModule)
-    {
-        DAVA::ReflectionRegistrator<LegacySupportModule>::Begin()
-        .ConstructorByPointer()
-        .End();
-    }
+    DAVA_VIRTUAL_REFLECTION(LegacySupportModule, DAVA::TArc::ClientModule);
 };

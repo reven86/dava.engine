@@ -31,10 +31,5 @@ class DocumentsWatcherModule : public DAVA::TArc::ClientModule
     //this mutex is used to control situation, when some files changed or removed while modal dialog "confirm changes" is displayed
     QMutex syncMutex;
 
-    DAVA_VIRTUAL_REFLECTION_IN_PLACE(DocumentsWatcherModule, DAVA::TArc::ClientModule)
-    {
-        DAVA::ReflectionRegistrator<DocumentsWatcherModule>::Begin()
-        .ConstructorByPointer()
-        .End();
-    }
+    DAVA_VIRTUAL_REFLECTION(DocumentsWatcherModule, DAVA::TArc::ClientModule);
 };

@@ -2,6 +2,13 @@
 
 #include <QtTools/ReloadSprites/SpritesPacker.h>
 
+DAVA_VIRTUAL_REFLECTION_IMPL(SpritesPackerData)
+{
+    DAVA::ReflectionRegistrator<SpritesPackerData>::Begin()
+    .ConstructorByPointer()
+    .End();
+}
+
 SpritesPackerData::SpritesPackerData()
 {
     spritesPacker.reset(new SpritesPacker());

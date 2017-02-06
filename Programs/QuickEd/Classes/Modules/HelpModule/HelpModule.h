@@ -14,10 +14,5 @@ class HelpModule : public DAVA::TArc::ClientModule
 
     DAVA::TArc::QtConnections connections;
 
-    DAVA_VIRTUAL_REFLECTION_IN_PLACE(HelpModule, DAVA::TArc::ClientModule)
-    {
-        DAVA::ReflectionRegistrator<HelpModule>::Begin()
-        .ConstructorByPointer()
-        .End();
-    }
+    DAVA_VIRTUAL_REFLECTION(HelpModule, DAVA::TArc::ClientModule);
 };

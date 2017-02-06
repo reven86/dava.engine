@@ -4,6 +4,12 @@
 #include "Modules/DocumentsModule/WidgetsData.h"
 #include "Modules/DocumentsWatcherModule/DocumentsWatcherData.h"
 
+//helpers
+#include "UI/QtModelPackageCommandExecutor.h"
+#include "Modules/DocumentsModule/Document.h"
+#include "Model/ControlProperties/RootProperty.h"
+#include "Model/PackageHierarchy/ControlNode.h"
+
 #include "EditorSystems/EditorSystemsManager.h"
 
 #include "Application/QEGlobal.h"
@@ -25,9 +31,11 @@
 #include <TArc/Utils/ModuleCollection.h>
 
 #include <QTTools/Utils/Themes/Themes.h>
+#include <QtTools/InputDialogs/MultilineTextInputDialog.h>
 
 #include <Command/CommandStack.h>
 #include <UI/UIPackageLoader.h>
+#include <UI/UIStaticText.h>
 #include <Render/Renderer.h>
 #include <Render/DynamicBufferAllocator.h>
 #include <Particles/ParticleEmitter.h>
@@ -35,6 +43,13 @@
 #include <DAVAVersion.h>
 
 #include <QAction>
+
+DAVA_VIRTUAL_REFLECTION_IMPL(DocumentsModule)
+{
+    DAVA::ReflectionRegistrator<DocumentsModule>::Begin()
+    .ConstructorByPointer()
+    .End();
+}
 
 DocumentsModule::DocumentsModule() = default;
 DocumentsModule::~DocumentsModule() = default;
@@ -46,7 +61,11 @@ void DocumentsModule::OnRenderSystemInitialized(DAVA::Window* window)
     Renderer::SetDesiredFPS(60);
     DynamicBufferAllocator::SetPageSize(DynamicBufferAllocator::DEFAULT_PAGE_SIZE);
 
-    InvokeOperation(QEGlobal::OpenLastProject.ID);
+    //we can not invoke operations inside RenderInitialized function
+    //because RenderInitialized invokes inside DAVA frame and main eventLoop can not be continued to prevent another OnFrame call
+    delayedExecutor.DelayedExecute([this]() {
+        InvokeOperation(QEGlobal::OpenLastProject.ID);
+    });
 }
 
 bool DocumentsModule::CanWindowBeClosedSilently(const DAVA::TArc::WindowKey& key, DAVA::String& requestWindowText)
@@ -157,7 +176,7 @@ void DocumentsModule::OnContextWasChanged(DAVA::TArc::DataContext* current, DAVA
         SceneTabsModel* tabsModel = GetAccessor()->GetGlobalContext()->GetData<SceneTabsModel>();
         tabsModel->activeContexID = current->GetID();
     }
-    centralWidget->OnContextWasChanged(current, oldOne);
+    previewWidget->OnContextWasChanged(current, oldOne);
 }
 
 void DocumentsModule::InitEditorSystems()
@@ -195,8 +214,11 @@ void DocumentsModule::InitCentralWidget()
     ContextAccessor* accessor = GetAccessor();
 
     RenderWidget* renderWidget = GetContextManager()->GetRenderWidget();
-    centralWidget = new PreviewWidget(accessor, renderWidget, systemsManager.get());
-    ui->AddView(QEGlobal::windowKey, panelKey, centralWidget);
+
+    previewWidget = new PreviewWidget(accessor, renderWidget, systemsManager.get());
+    previewWidget->requestCloseTab.Connect([this](uint64 id) { CloseDocument(id); });
+    previewWidget->requestChangeTextInNode.Connect(this, &DocumentsModule::ChangeControlText);
+    ui->AddView(QEGlobal::windowKey, panelKey, previewWidget);
 }
 
 void DocumentsModule::CreateActions()
@@ -239,7 +261,7 @@ void DocumentsModule::CreateActions()
 
     //action save all documents
     {
-        QAction* action = new QtAction(accessor, QIcon(":/Icons/savesceneall.png"), saveAllDocumentsActionName);
+        QAction* action = new QAction(QIcon(":/Icons/savesceneall.png"), saveAllDocumentsActionName, nullptr);
         action->setShortcut(QKeySequence("Ctrl+Shift+S"));
         action->setShortcutContext(Qt::ApplicationShortcut);
 
@@ -264,7 +286,7 @@ void DocumentsModule::CreateActions()
             return fieldValue.CanCast<RefPtr<PackageNode>>() && fieldValue.Cast<RefPtr<PackageNode>>().Get() != nullptr;
         });
 
-        connections.AddConnection(action, &QAction::triggered, Bind(&DocumentsModule::TryCloseActiveDocument, this));
+        connections.AddConnection(action, &QAction::triggered, Bind(&DocumentsModule::CloseActiveDocument, this));
         ActionPlacementInfo placementInfo;
         placementInfo.AddPlacementPoint(CreateMenuPoint(fileMenuName, { InsertionParams::eInsertionMethod::AfterItem, saveAllDocumentsActionName }));
         ui->AddAction(QEGlobal::windowKey, placementInfo, action);
@@ -358,16 +380,67 @@ void DocumentsModule::OnActiveTabChanged(const DAVA::Any& contextID)
     contextManager->ActivateContext(newContextID);
 }
 
-void DocumentsModule::TryCloseActiveDocument()
+void DocumentsModule::ChangeControlText(ControlNode* node)
+{
+    using namespace DAVA;
+    using namespace TArc;
+    DVASSERT(node != nullptr);
+
+    UIControl* control = node->GetControl();
+
+    UIStaticText* staticText = dynamic_cast<UIStaticText*>(control);
+    DVASSERT(staticText != nullptr);
+
+    RootProperty* rootProperty = node->GetRootProperty();
+    AbstractProperty* textProperty = rootProperty->FindPropertyByName("Text");
+    DVASSERT(textProperty != nullptr);
+
+    String text = textProperty->GetValue().AsString();
+
+    QString label = QObject::tr("Enter new text, please");
+    bool ok;
+    QString inputText = MultilineTextInputDialog::GetMultiLineText(GetUI()->GetWindow(QEGlobal::windowKey), label, label, QString::fromStdString(text), &ok);
+    if (ok)
+    {
+        ContextAccessor* accessor = GetAccessor();
+        DataContext* activeContext = accessor->GetActiveContext();
+        DVASSERT(nullptr != activeContext);
+        //TODO: remove this code when commandExecutor will be removed
+        Document* document = activeContext->GetData<Document>();
+        DVASSERT(nullptr != document);
+        QtModelPackageCommandExecutor* executor = document->GetCommandExecutor();
+        executor->BeginMacro("change text by user");
+        AbstractProperty* multilineProperty = rootProperty->FindPropertyByName("Multi Line");
+        DVASSERT(multilineProperty != nullptr);
+        UIStaticText::eMultiline multilineType = static_cast<UIStaticText::eMultiline>(multilineProperty->GetValue().AsInt32());
+        if (inputText.contains('\n') && multilineType == UIStaticText::MULTILINE_DISABLED)
+        {
+            executor->ChangeProperty(node, multilineProperty, VariantType(UIStaticText::MULTILINE_ENABLED));
+        }
+        executor->ChangeProperty(node, textProperty, VariantType(inputText.toStdString()));
+        executor->EndMacro();
+    }
+}
+
+void DocumentsModule::CloseActiveDocument()
+{
+    using namespace DAVA::TArc;
+    ContextAccessor* accessor = GetAccessor();
+    DataContext* active = accessor->GetActiveContext();
+    DVASSERT(active != nullptr);
+    CloseDocument(active->GetID());
+}
+
+void DocumentsModule::CloseDocument(const DAVA::TArc::DataContext::ContextID& id)
 {
     using namespace DAVA::TArc;
 
     ContextAccessor* accessor = GetAccessor();
     ContextManager* contextManager = GetContextManager();
 
-    DataContext* activeContext = accessor->GetActiveContext();
-    DVASSERT(activeContext != nullptr);
-    DocumentData* data = activeContext->GetData<DocumentData>();
+    DataContext* context = accessor->GetContext(id);
+    DVASSERT(context != nullptr);
+    DocumentData* data = context->GetData<DocumentData>();
     DVASSERT(nullptr != data);
     if (data->CanSave())
     {
@@ -384,14 +457,14 @@ void DocumentsModule::TryCloseActiveDocument()
 
         if (ret == ModalMessageParams::Save)
         {
-            SaveDocument(activeContext->GetID());
+            SaveDocument(id);
         }
         else if (ret == ModalMessageParams::Cancel)
         {
             return;
         }
     }
-    contextManager->DeleteContext(activeContext->GetID());
+    contextManager->DeleteContext(id);
 }
 
 void DocumentsModule::CloseAllDocuments()

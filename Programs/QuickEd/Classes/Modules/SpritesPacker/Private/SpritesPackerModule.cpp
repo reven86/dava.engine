@@ -24,6 +24,13 @@ REGISTER_PREFERENCES_ON_START(SpritesPackerModule,
                               PREF_ARG("isUsingAssetCache", false),
                               )
 
+DAVA_VIRTUAL_REFLECTION_IMPL(SpritesPackerModule)
+{
+    DAVA::ReflectionRegistrator<SpritesPackerModule>::Begin()
+    .ConstructorByPointer()
+    .End();
+}
+
 SpritesPackerModule::SpritesPackerModule() = default;
 SpritesPackerModule::~SpritesPackerModule() = default;
 
@@ -66,7 +73,7 @@ void SpritesPackerModule::CreateActions()
 
     ActionPlacementInfo placementInfo;
     placementInfo.AddPlacementPoint(CreateMenuPoint("Tools", { InsertionParams::eInsertionMethod::AfterItem }));
-    placementInfo.AddPlacementPoint(CreateToolbarPoint("toolBarPlugins", { InsertionParams::eInsertionMethod::BeforeItem }));
+    placementInfo.AddPlacementPoint(CreateToolbarPoint("toolBarGlobal", { InsertionParams::eInsertionMethod::BeforeItem }));
 
     GetUI()->AddAction(QEGlobal::windowKey, placementInfo, action);
 }

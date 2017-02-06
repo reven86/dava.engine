@@ -6,6 +6,19 @@
 
 #include <QFileInfo>
 
+DAVA_VIRTUAL_REFLECTION_IMPL(DocumentData)
+{
+    DAVA::ReflectionRegistrator<DocumentData>::Begin()
+    .Field(packagePropertyName, &DocumentData::package)
+    .Field(canSavePropertyName, &DocumentData::CanSave, nullptr)
+    .Field(canUndoPropertyName, &DocumentData::CanUndo, nullptr)
+    .Field(canRedoPropertyName, &DocumentData::CanRedo, nullptr)
+    .Field(undoTextPropertyName, &DocumentData::GetUndoText, nullptr)
+    .Field(redoTextPropertyName, &DocumentData::GetRedoText, nullptr)
+    .Field(canClosePropertyName, &DocumentData::canClosePropertyName)
+    .End();
+}
+
 DocumentData::DocumentData(const DAVA::RefPtr<PackageNode>& package_)
     : package(package_)
     , commandStack(new DAVA::CommandStack())

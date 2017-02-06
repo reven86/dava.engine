@@ -17,10 +17,5 @@ public:
 private:
     std::unique_ptr<FileSystemCache> fileSystemCache;
 
-    DAVA_VIRTUAL_REFLECTION_IN_PLACE(FileSystemCacheData, DAVA::TArc::DataNode)
-    {
-        DAVA::ReflectionRegistrator<FileSystemCacheData>::Begin()
-        .ConstructorByPointer<QStringList>()
-        .End();
-    }
+    DAVA_VIRTUAL_REFLECTION(FileSystemCacheData, DAVA::TArc::DataNode);
 };

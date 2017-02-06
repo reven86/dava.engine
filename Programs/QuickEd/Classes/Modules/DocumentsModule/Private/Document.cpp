@@ -10,6 +10,10 @@
 
 #include <TArc/Core/ContextAccessor.h>
 
+DAVA_VIRTUAL_REFLECTION_IMPL(Document)
+{
+}
+
 Document::Document(DAVA::TArc::ContextAccessor* accessor_, DAVA::TArc::DataContext::ContextID contextId_)
     : accessor(accessor_)
     , contextId(contextId_)

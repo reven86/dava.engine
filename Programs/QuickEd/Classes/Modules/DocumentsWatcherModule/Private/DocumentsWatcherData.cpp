@@ -4,6 +4,10 @@
 
 #include <QFileSystemWatcher>
 
+DAVA_VIRTUAL_REFLECTION_IMPL(DocumentsWatcherData)
+{
+}
+
 DocumentsWatcherData::DocumentsWatcherData()
 {
     watcher.reset(new QFileSystemWatcher());

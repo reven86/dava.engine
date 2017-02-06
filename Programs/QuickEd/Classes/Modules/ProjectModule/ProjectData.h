@@ -31,15 +31,15 @@ public:
         DAVA::Size2i resolution;
     };
 
+    ProjectData();
+
     static const DAVA::int32 CURRENT_PROJECT_FILE_VERSION = 1;
-
-    static std::unique_ptr<ProjectData> Default();
-
-    static std::tuple<std::unique_ptr<ProjectData>, DAVA::ResultList> Parse(const DAVA::FilePath& projectFile, const DAVA::YamlNode* node);
-    static DAVA::RefPtr<DAVA::YamlNode> SerializeToYamlNode(const ProjectData* properties);
 
     static const DAVA::String& GetProjectFileName();
     static const DAVA::String& GetFontsConfigFileName();
+
+    DAVA::ResultList LoadProject(const QString& path);
+    DAVA::RefPtr<DAVA::YamlNode> SerializeToYamlNode() const;
 
     const DAVA::FilePath& GetProjectFile() const;
     void SetProjectFile(const DAVA::FilePath& newProjectFile);
@@ -57,21 +57,17 @@ public:
     const DAVA::Vector<ResDir>& GetLibraryPackages() const;
     const DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>>& GetPrototypes() const;
 
-    const DAVA::String& GetDefaultLanguage() const
-    {
-        return defaultLanguage;
-    }
+    const DAVA::String& GetDefaultLanguage() const;
 
-    void SetDefaultLanguage(const DAVA::String& lang)
-    {
-        defaultLanguage = lang;
-    }
+    void SetDefaultLanguage(const DAVA::String& lang);
 
     static const char* projectPathPropertyName;
     static const char* uiDirectoryPropertyName;
 
 private:
-    static std::tuple<std::unique_ptr<ProjectData>, DAVA::ResultList> ParseLegacyProperties(const DAVA::FilePath& projectFile, const DAVA::YamlNode* root, int version);
+    DAVA::ResultList ParseLegacyProperties(const DAVA::FilePath& projectFile, const DAVA::YamlNode* root, int version);
+    DAVA::ResultList Parse(const DAVA::FilePath& projectFile, const DAVA::YamlNode* node);
+
     void RefreshAbsolutePaths();
     DAVA::FilePath MakeAbsolutePath(const DAVA::String& relPath) const;
 
@@ -92,11 +88,5 @@ private:
     DAVA::Vector<ResDir> libraryPackages;
     DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>> prototypes;
 
-    DAVA_VIRTUAL_REFLECTION_IN_PLACE(ProjectData, DAVA::TArc::DataNode)
-    {
-        DAVA::ReflectionRegistrator<ProjectData>::Begin()
-        .Field(projectPathPropertyName, &ProjectData::GetProjectFile, nullptr)
-        .Field(uiDirectoryPropertyName, &ProjectData::GetUiDirectory, nullptr)
-        .End();
-    }
+    DAVA_VIRTUAL_REFLECTION(ProjectData, DAVA::TArc::DataNode);
 };

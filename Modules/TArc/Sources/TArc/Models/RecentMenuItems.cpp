@@ -9,8 +9,13 @@
 #include <QMenu>
 #include <QAction>
 
-RecentMenuItems::RecentMenuItems(const Params& params_)
-    : params(params_)
+namespace RecentMenuItemsDetails
+{
+const DAVA::String recentItemsKey = "recent items";
+}
+
+RecentMenuItems::RecentMenuItems(Params&& params_)
+    : params(std::move(params_))
 {
     InitMenuItems();
 }
@@ -52,10 +57,10 @@ void RecentMenuItems::InitMenuItems()
             action->SetStateUpdationFunction(DAVA::TArc::QtAction::Enabled, params.predicateFieldDescriptor, params.enablePredicate);
         }
 
-        QObject::connect(action, &QAction::triggered, [path, this]()
-                         {
-                             actionTriggered.Emit(path);
-                         });
+        connections.AddConnection(action, &QAction::triggered, [path, this]()
+                                  {
+                                      actionTriggered.Emit(path);
+                                  });
 
         DAVA::TArc::ActionPlacementInfo placement(DAVA::TArc::CreateMenuPoint(params.menuSubPath));
         params.ui->AddAction(params.windowKey, placement, action);
@@ -77,37 +82,35 @@ void RecentMenuItems::AddInternal(const DAVA::String& recent)
     DAVA::uint32 size = DAVA::Min((DAVA::uint32)vectorToSave.size(), recentFilesMaxCount);
 
     vectorToSave.resize(size);
-
-    params.updateRecentFiles(vectorToSave);
+    params.propertiesItem.Set(RecentMenuItemsDetails::recentItemsKey, vectorToSave);
 }
 
 DAVA::Vector<DAVA::String> RecentMenuItems::Get() const
 {
-    DAVA::Vector<DAVA::String> retVector = params.getRecentFiles();
-    DAVA::uint32 recentFilesMaxCount = params.getMaximumCount();
-    DAVA::uint32 size = DAVA::Min(static_cast<DAVA::uint32>(retVector.size()), recentFilesMaxCount);
+    using namespace DAVA;
+    Vector<DAVA::String> retVector = params.propertiesItem.Get<Vector<String>>(RecentMenuItemsDetails::recentItemsKey);
+    uint32 recentFilesMaxCount = params.getMaximumCount();
+    uint32 size = Min(static_cast<uint32>(retVector.size()), recentFilesMaxCount);
     retVector.resize(size);
     return retVector;
 }
 
-extern DAVA::Vector<DAVA::String> ConvertKAToVector(const DAVA::KeyedArchive* archive)
+RecentMenuItems::Params::Params(const DAVA::TArc::WindowKey& windowKey_, DAVA::TArc::ContextAccessor* accessor_, const DAVA::String& propertiesItemKey)
+    : windowKey(windowKey_)
+    , accessor(accessor_)
+    , propertiesItem(accessor->CreatePropertiesNode(propertiesItemKey))
 {
-    DAVA::Vector<DAVA::String> recentFiles;
-    const DAVA::uint32 count = archive->Count();
-    recentFiles.resize(count);
-    for (DAVA::uint32 i = 0; i < count; ++i)
-    {
-        recentFiles[i] = archive->GetString(DAVA::Format("%d", i));
-    }
-    return recentFiles;
 }
 
-extern DAVA::KeyedArchive* ConvertVectorToKA(const DAVA::Vector<DAVA::String>& vector)
+RecentMenuItems::Params::Params(RecentMenuItems::Params&& params)
+    : accessor(params.accessor)
+    , ui(params.ui)
+    , menuSubPath(std::move(params.menuSubPath))
+    , insertionParams(std::move(insertionParams))
+    , getMaximumCount(std::move(params.getMaximumCount))
+    , propertiesItem(std::move(params.propertiesItem))
+    , predicateFieldDescriptor(std::move(params.predicateFieldDescriptor))
+    , enablePredicate(std::move(enablePredicate))
+    , windowKey(std::move(windowKey))
 {
-    DAVA::KeyedArchive* archive = new DAVA::KeyedArchive();
-    for (DAVA::uint32 i = 0, count = static_cast<DAVA::uint32>(vector.size()); i < count; ++i)
-    {
-        archive->SetString(DAVA::Format("%d", i), vector[i]);
-    }
-    return archive;
 }
