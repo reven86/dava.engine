@@ -406,9 +406,9 @@ const Compressor* GetCompressor(Compressor::Type compressorType)
 }
 
 bool Pack(const Vector<CollectedFile>& collectedFiles,
-	const DAVA::Compressor::Type compressionType,
-	const FilePath& metaDb,
-	File* outputFile)
+          const DAVA::Compressor::Type compressionType,
+          const FilePath& metaDb,
+          File* outputFile)
 {
     PackFormat::PackFile packFile;
 
@@ -496,7 +496,7 @@ bool Pack(const Vector<CollectedFile>& collectedFiles,
 
             Vector<uint8>& useBuffer = (useCompressedBuffer ? compressedFileBuffer : origFileBuffer);
 
-			// TODO if (genDvpl)
+            // TODO if (genDvpl)
 
             fileEntry.startPosition = dataOffset;
             fileEntry.originalSize = static_cast<uint32>(origFileBuffer.size());
@@ -648,89 +648,90 @@ bool Pack(const Vector<CollectedFile>& collectedFiles,
 
 bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type compressionType, const FilePath& archivePath, const FilePath& metaDb)
 {
-	if (archivePath.IsDirectoryPathname()) // generate DVPL's for each file
-	{
-		for(const CollectedFile& collectedFile : collectedFiles)
-		{
-			ScopedPtr<File> file(File::Create(collectedFile.absPath, File::OPEN | File::READ));
-			if (!file)
-			{
-				Logger::Error("can't open: %s", collectedFile.absPath.GetAbsolutePathname().c_str());
-				return false;
-			}
+    if (archivePath.IsDirectoryPathname()) // generate DVPL's for each file
+    {
+        for (const CollectedFile& collectedFile : collectedFiles)
+        {
+            ScopedPtr<File> file(File::Create(collectedFile.absPath, File::OPEN | File::READ));
+            if (!file)
+            {
+                Logger::Error("can't open: %s", collectedFile.absPath.GetAbsolutePathname().c_str());
+                return false;
+            }
 
-			Vector<uint8> in_bytes(static_cast<size_t>(file->GetSize()));
-			Vector<uint8> out_bytes;
-			uint32 read = file->Read(&in_bytes[0], static_cast<uint32>(in_bytes.size()));
-			if (read != in_bytes.size())
-			{
-				Logger::Error("can't read file: %s", collectedFile.absPath.GetAbsolutePathname().c_str());
-				return false;
-			}
+            Vector<uint8> in_bytes(static_cast<size_t>(file->GetSize()));
+            Vector<uint8> out_bytes;
+            uint32 read = file->Read(&in_bytes[0], static_cast<uint32>(in_bytes.size()));
+            if (read != in_bytes.size())
+            {
+                Logger::Error("can't read file: %s", collectedFile.absPath.GetAbsolutePathname().c_str());
+                return false;
+            }
 
-			if (!LZ4HCCompressor().Compress(in_bytes, out_bytes))
-			{
-				Logger::Error("can't compress file: %s", collectedFile.absPath.GetAbsolutePathname().c_str());
-				return false;
-			}
-			const FilePath outputFileName = archivePath + collectedFile.archivePath + ".dvpl";
-			const FilePath outputDir = outputFileName.GetDirectory();
-			if (!FileSystem::Instance()->IsDirectory(outputDir))
-			{
-				FileSystem::Instance()->CreateDirectory(outputDir, true);
-			}
-			ScopedPtr<File> outFile(File::Create(outputFileName, File::CREATE | File::WRITE));
-			if (!outFile)
-			{
-				Logger::Error("can't create output file: %s", outputFileName.GetAbsolutePathname().c_str());
-				return false;
-			}
+            if (!LZ4HCCompressor().Compress(in_bytes, out_bytes))
+            {
+                Logger::Error("can't compress file: %s", collectedFile.absPath.GetAbsolutePathname().c_str());
+                return false;
+            }
+            const FilePath outputFileName = archivePath + collectedFile.archivePath + ".dvpl";
+            const FilePath outputDir = outputFileName.GetDirectory();
+            if (!FileSystem::Instance()->IsDirectory(outputDir))
+            {
+                FileSystem::Instance()->CreateDirectory(outputDir, true);
+            }
+            ScopedPtr<File> outFile(File::Create(outputFileName, File::CREATE | File::WRITE));
+            if (!outFile)
+            {
+                Logger::Error("can't create output file: %s", outputFileName.GetAbsolutePathname().c_str());
+                return false;
+            }
 
-			uint32 written = outFile->Write(&out_bytes[0], static_cast<uint32>(out_bytes.size()));
-			if (written != out_bytes.size())
-			{
-				Logger::Error("can't write output file: %s", outputFileName.GetAbsolutePathname().c_str());
-				return false;
-			}
+            uint32 written = outFile->Write(&out_bytes[0], static_cast<uint32>(out_bytes.size()));
+            if (written != out_bytes.size())
+            {
+                Logger::Error("can't write output file: %s", outputFileName.GetAbsolutePathname().c_str());
+                return false;
+            }
 
-			PackFormat::LitePack::Footer footer;
-			footer.crc32Compressed = CRC32::ForBuffer(&out_bytes[0], out_bytes.size());
-			footer.sizeCompressed = static_cast<uint32>(out_bytes.size());
-			footer.sizeUncompressed = static_cast<uint32>(in_bytes.size());
-			footer.type = Compressor::Type::Lz4HC;
-			footer.packMarkerLite = PackFormat::FILE_MARKER_LITE;
+            PackFormat::LitePack::Footer footer;
+            footer.crc32Compressed = CRC32::ForBuffer(&out_bytes[0], out_bytes.size());
+            footer.sizeCompressed = static_cast<uint32>(out_bytes.size());
+            footer.sizeUncompressed = static_cast<uint32>(in_bytes.size());
+            footer.type = Compressor::Type::Lz4HC;
+            footer.packMarkerLite = PackFormat::FILE_MARKER_LITE;
 
-			written = outFile->Write(&footer, sizeof(footer));
-			if (written != sizeof(footer))
-			{
-				Logger::Error("can't write footer to file: %s", outputFileName.GetAbsolutePathname().c_str());
-				return false;
-			}
-		}
-		return true;
-	} else
-	{
-		ScopedPtr<File> outputFile(File::Create(archivePath, File::CREATE | File::WRITE));
-		if (!outputFile)
-		{
-			Logger::Error("Can't create %s", archivePath.GetAbsolutePathname().c_str());
-			return false;
-		}
+            written = outFile->Write(&footer, sizeof(footer));
+            if (written != sizeof(footer))
+            {
+                Logger::Error("can't write footer to file: %s", outputFileName.GetAbsolutePathname().c_str());
+                return false;
+            }
+        }
+        return true;
+    }
+    else
+    {
+        ScopedPtr<File> outputFile(File::Create(archivePath, File::CREATE | File::WRITE));
+        if (!outputFile)
+        {
+            Logger::Error("Can't create %s", archivePath.GetAbsolutePathname().c_str());
+            return false;
+        }
 
-		bool packWasSuccessfull = Pack(collectedFiles, compressionType, metaDb, outputFile);
-		outputFile.reset();
+        bool packWasSuccessfull = Pack(collectedFiles, compressionType, metaDb, outputFile);
+        outputFile.reset();
 
-		if (packWasSuccessfull)
-		{
-			return true;
-		}
+        if (packWasSuccessfull)
+        {
+            return true;
+        }
 
-		if (!FileSystem::Instance()->DeleteFile(archivePath))
-		{
-			Logger::Error("Can't delete %s", archivePath.GetAbsolutePathname().c_str());
-		}
-		return false;
-	}
+        if (!FileSystem::Instance()->DeleteFile(archivePath))
+        {
+            Logger::Error("Can't delete %s", archivePath.GetAbsolutePathname().c_str());
+        }
+        return false;
+    }
 }
 
 bool CreateArchive(const Params& params)
