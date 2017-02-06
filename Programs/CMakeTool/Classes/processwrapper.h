@@ -28,8 +28,6 @@ signals:
 
     void configureStarted();
     void configureEnded();
-    void processStateTextChanged(const QString& text);
-    void processErrorTextChanged(const QString& text);
 
     void processStateTextChanged(const QString& text);
     void processErrorTextChanged(const QString& text);
