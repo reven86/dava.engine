@@ -22,7 +22,7 @@ protected:
     volatile bool threadCancel;
     volatile bool threadFinished;
 
-    void ThreadFunc(BaseObject* bo, void* userParam, void* callerParam);
+    void ThreadFunc();
 };
 }
 

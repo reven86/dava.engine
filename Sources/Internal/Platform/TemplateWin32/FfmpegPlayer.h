@@ -127,9 +127,9 @@ private:
     void ClearBuffers();
     void CloseMovie();
 
-    void VideoDecodingThread(BaseObject* caller, void* callerData, void* userData);
-    void AudioDecodingThread(BaseObject* caller, void* callerData, void* userData);
-    void ReadingThread(BaseObject* caller, void* callerData, void* userData);
+    void VideoDecodingThread();
+    void AudioDecodingThread();
+    void ReadingThread();
     void SortPacketsByVideoAndAudio(AV::AVPacket* packet);
 
     FilePath moviePath;

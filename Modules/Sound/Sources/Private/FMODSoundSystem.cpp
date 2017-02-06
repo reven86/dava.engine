@@ -77,6 +77,11 @@ FMODSoundSystem* FMODSoundSystem::Instance()
     return  instFMODSoundSystem;
 }
 
+#if defined(__DAVAENGINE_ANDROID__)
+jobject fmodActivityListenerGlobalRef = nullptr;
+Function<void(jobject)> fmodActivityListenerUnregisterMethod = nullptr;
+#endif
+
 #if defined(__DAVAENGINE_COREV2__)
 FMODSoundSystem::FMODSoundSystem(Engine* e)
     : engine(e), SoundSystem(e)

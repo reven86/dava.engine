@@ -93,7 +93,11 @@ QModelIndex ReflectedPropertyModel::index(int row, int column, const QModelIndex
 {
     if (parent.isValid())
     {
-        return createIndex(row, column, MapItem(parent));
+        ReflectedPropertyItem* item = MapItem(parent);
+        if (row < item->GetChildCount())
+            return createIndex(row, column, item);
+
+        return QModelIndex();
     }
 
     return createIndex(row, column, nullptr);
@@ -155,9 +159,7 @@ void ReflectedPropertyModel::SetObjects(Vector<Reflection> objects)
 
     for (Reflection& obj : objects)
     {
-        Reflection::Field field;
-        field.ref = std::move(obj);
-        field.key = Any(String("SelfRoot"));
+        Reflection::Field field(String("SelfRoot"), std::move(obj), nullptr);
         std::shared_ptr<PropertyNode> rootNode = childCreator.CreateRoot(std::move(field));
         nodeToItem.emplace(rootNode, rootItem.get());
         rootItem->AddPropertyNode(rootNode);

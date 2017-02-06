@@ -15,9 +15,10 @@
 
 #include "Logger/Logger.h"
 
-#include "Platform/SystemTimer.h"
-#include "Platform/DateTime.h"
 #include "Platform/DeviceInfo.h"
+
+#include "Time/DateTime.h"
+#include "Time/SystemTimer.h"
 
 // system stuff
 #include "Utils/Utils.h"

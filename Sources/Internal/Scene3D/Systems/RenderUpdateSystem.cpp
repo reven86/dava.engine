@@ -15,7 +15,7 @@
 #include "Render/Highlevel/RenderBatch.h"
 #include "Render/Highlevel/RenderSystem.h"
 #include "Scene3D/Scene.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 #include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerMarkerNames.h"
 

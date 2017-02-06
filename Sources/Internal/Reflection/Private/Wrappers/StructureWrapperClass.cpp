@@ -1,39 +1,53 @@
+#include "Reflection/ReflectedTypeDB.h"
 #include "Reflection/Private/Wrappers/StructureWrapperClass.h"
 
 namespace DAVA
 {
-StructureWrapperClass::StructureWrapperClass(const Type* type)
+StructureWrapperClass::StructureWrapperClass(const Type* type_)
+    : rootType(ReflectedTypeDB::GetByType(type_))
 {
-    FillCache(type);
+    FillCache(rootType);
 }
 
-void StructureWrapperClass::FillCache(const Type* type)
+void StructureWrapperClass::Update()
 {
-    FillCacheEntries(type);
+    fieldsCache.clear();
+    methodsCache.clear();
 
-    const TypeInheritance* inheritance = type->GetInheritance();
+    FillCache(rootType);
+}
+
+void StructureWrapperClass::FillCache(const ReflectedType* reflectedType)
+{
+    FillCacheEntries(reflectedType);
+
+    const TypeInheritance* inheritance = reflectedType->GetType()->GetInheritance();
     if (nullptr != inheritance)
     {
         const Vector<TypeInheritance::Info>& baseTypesInfo = inheritance->GetBaseTypes();
         for (auto& baseInfo : baseTypesInfo)
         {
-            FillCache(baseInfo.type);
+            FillCache(ReflectedTypeDB::GetByType(baseInfo.type));
         }
     }
 }
 
-void StructureWrapperClass::FillCacheEntries(const Type* type)
+void StructureWrapperClass::FillCacheEntries(const ReflectedType* reflectedType)
 {
-    const ReflectedType* reflectedType = ReflectedTypeDB::GetByType(type);
-    const ReflectedStructure* structure = reflectedType->GetStrucutre();
+    const ReflectedType* inheritType = nullptr;
+    if (reflectedType != rootType)
+    {
+        inheritType = reflectedType;
+    }
 
+    const ReflectedStructure* structure = reflectedType->GetStrucutre();
     if (nullptr != structure)
     {
         for (auto& f : structure->fields)
         {
             const ReflectedStructure::Field* field = f.get();
 
-            fieldsCache.push_back(field);
+            fieldsCache.push_back({ field, inheritType });
             fieldsNameIndexes[field->name] = fieldsCache.size() - 1;
         }
 
@@ -41,7 +55,7 @@ void StructureWrapperClass::FillCacheEntries(const Type* type)
         {
             const ReflectedStructure::Method* method = m.get();
 
-            methodsCache.push_back(method);
+            methodsCache.push_back({ method });
             methodsNameIndexes[method->name] = methodsCache.size() - 1;
         }
     }
@@ -68,7 +82,7 @@ Reflection StructureWrapperClass::GetField(const ReflectedObject& object, const 
             auto it = fieldsNameIndexes.find(name);
             if (it != fieldsNameIndexes.end())
             {
-                const ReflectedStructure::Field* field = fieldsCache[it->second];
+                const ReflectedStructure::Field* field = fieldsCache[it->second].field;
                 return Reflection(vw->GetValueObject(object), field->valueWrapper.get(), nullptr, field->meta.get());
             }
         }
@@ -82,9 +96,14 @@ Vector<Reflection::Field> StructureWrapperClass::GetFields(const ReflectedObject
     Vector<Reflection::Field> ret;
 
     ret.reserve(fieldsCache.size());
-    for (const ReflectedStructure::Field* field : fieldsCache)
+    for (const CachedFieldEntry& fieldEntry : fieldsCache)
     {
-        ret.push_back({ DAVA::Any(field->name), Reflection(vw->GetValueObject(object), field->valueWrapper.get(), nullptr, field->meta.get()) });
+        const ReflectedStructure::Field* field = fieldEntry.field;
+
+        Any key(field->name);
+        Reflection ref(vw->GetValueObject(object), field->valueWrapper.get(), nullptr, field->meta.get());
+
+        ret.emplace_back(std::move(key), std::move(ref), fieldEntry.inheritFrom);
     }
 
     return ret;
@@ -105,7 +124,7 @@ AnyFn StructureWrapperClass::GetMethod(const ReflectedObject& object, const Valu
         auto it = methodsNameIndexes.find(name);
         if (it != methodsNameIndexes.end())
         {
-            return methodsCache[it->second]->method.BindThis(this_);
+            return methodsCache[it->second].method->fn.BindThis(this_);
         }
     }
     return AnyFn();
@@ -118,9 +137,14 @@ Vector<Reflection::Method> StructureWrapperClass::GetMethods(const ReflectedObje
     void* this_ = vw->GetValueObject(object).GetVoidPtr();
 
     ret.reserve(methodsCache.size());
-    for (const ReflectedStructure::Method* m : methodsCache)
+    for (const CachedMethodEntry& methodEntry : methodsCache)
     {
-        ret.push_back({ m->name, m->method.BindThis(this_) });
+        const ReflectedStructure::Method* method = methodEntry.method;
+
+        String key(method->name);
+        AnyFn fn = method->fn.BindThis(this_);
+
+        ret.emplace_back(std::move(key), std::move(fn));
     }
 
     return ret;

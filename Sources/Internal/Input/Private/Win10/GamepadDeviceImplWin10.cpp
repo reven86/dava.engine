@@ -4,7 +4,7 @@
 #if defined(__DAVAENGINE_WIN_UAP__)
 
 #include "Input/GamepadDevice.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 
 namespace DAVA
 {
@@ -20,7 +20,7 @@ void GamepadDeviceImpl::Update()
     float32 readBuf[GamepadDevice::ELEMENT_COUNT];
     ReadElements(readBuf, GamepadDevice::ELEMENT_COUNT);
 
-    uint64 timestamp = SystemTimer::Instance()->FrameStampTimeMS();
+    int64 timestamp = SystemTimer::GetMs();
     for (size_t i = 0; i < GamepadDevice::ELEMENT_COUNT; ++i)
     {
         if (gamepadDevice->elementValues[i] != readBuf[i])

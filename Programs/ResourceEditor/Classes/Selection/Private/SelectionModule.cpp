@@ -105,7 +105,7 @@ void SelectionModule::SelectionByMouseChanged()
     selectionData->SetSelectionAllowed(!allowed);
 }
 
-DAVA_REFLECTION_IMPL(SelectionModule)
+DAVA_VIRTUAL_REFLECTION_IMPL(SelectionModule)
 {
     DAVA::ReflectionRegistrator<SelectionModule>::Begin()
     .ConstructorByPointer()

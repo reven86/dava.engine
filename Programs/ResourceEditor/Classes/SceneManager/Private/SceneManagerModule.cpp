@@ -53,7 +53,7 @@ public:
         return DAVA::Texture::GetPrimaryGPUForLoading();
     }
 
-    DAVA_VIRTUAL_REFLECTION(TexturesGPUData, DAVA::TArc::DataNode)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(TexturesGPUData, DAVA::TArc::DataNode)
     {
         DAVA::ReflectionRegistrator<TexturesGPUData>::Begin()
         .Field(TEXTURE_GPU_FIELD_NAME, &TexturesGPUData::GetCurrentTexturesGPU, nullptr)

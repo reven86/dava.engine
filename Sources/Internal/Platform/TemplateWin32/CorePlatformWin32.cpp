@@ -13,7 +13,7 @@
 #include "Platform/DPIHelper.h"
 #include "Platform/DeviceInfo.h"
 #include "Platform/TemplateWin32/CorePlatformWin32.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "UI/UIControlSystem.h"
 #include "Utils/UTF8Utils.h"
@@ -302,7 +302,7 @@ void CoreWin32Platform::ClearMouseButtons()
 
     e.phase = UIEvent::Phase::ENDED;
     e.device = eInputDevices::MOUSE;
-    e.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.f);
+    e.timestamp = (SystemTimer::GetMs() / 1000.f);
     e.modifiers = GetKeyboardModifiers();
 
     for (uint32 mouseButton = static_cast<uint32>(eMouseButtons::FIRST);
@@ -332,7 +332,7 @@ void CoreWin32Platform::Run()
     MSG msg;
     while (1)
     {
-        uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
+        uint64 startTime = SystemTimer::GetMs();
 
         // process messages
         willQuit = false;
@@ -360,7 +360,7 @@ void CoreWin32Platform::Run()
         int32 fps = Renderer::GetDesiredFPS();
         if (fps > 0)
         {
-            int32 elapsedTime = static_cast<int32>(SystemTimer::Instance()->AbsoluteMS() - startTime);
+            int32 elapsedTime = static_cast<int32>(SystemTimer::GetMs() - startTime);
             int32 sleepMs = (1000 / fps) - elapsedTime;
             if (sleepMs > 0)
             {
@@ -536,7 +536,7 @@ void CoreWin32Platform::OnMouseMove(int32 x, int32 y)
     UIEvent e;
     e.physPoint = Vector2(static_cast<float32>(x), static_cast<float32>(y));
     e.device = eInputDevices::MOUSE;
-    e.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+    e.timestamp = (SystemTimer::GetMs() / 1000.0);
     e.modifiers = GetKeyboardModifiers();
 
     if (mouseButtonState.any())
@@ -567,7 +567,7 @@ void CoreWin32Platform::OnMouseWheel(int32 wheelDeltaX, int32 wheelDeltaY, int32
     e.physPoint = Vector2(static_cast<float32>(x), static_cast<float32>(y));
     e.device = eInputDevices::MOUSE;
     e.phase = UIEvent::Phase::WHEEL;
-    e.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+    e.timestamp = (SystemTimer::GetMs() / 1000.0);
     e.modifiers = GetKeyboardModifiers();
     e.wheelDelta = { static_cast<float32>(wheelDeltaX), static_cast<float32>(wheelDeltaY) };
 
@@ -588,7 +588,7 @@ void CoreWin32Platform::OnMouseClick(UIEvent::Phase phase, eMouseButtons button,
     e.device = eInputDevices::MOUSE;
     e.phase = phase;
     e.mouseButton = button;
-    e.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+    e.timestamp = (SystemTimer::GetMs() / 1000.0);
     e.modifiers = GetKeyboardModifiers();
 
     UIControlSystem::Instance()->OnInput(&e);
@@ -612,7 +612,7 @@ void CoreWin32Platform::OnTouchEvent(UIEvent::Phase phase, eInputDevices deviceI
     newTouch.physPoint = Vector2(x, y);
     newTouch.phase = phase;
     newTouch.device = deviceId;
-    newTouch.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+    newTouch.timestamp = (SystemTimer::GetMs() / 1000.0);
     newTouch.modifiers = GetKeyboardModifiers();
 
     UIControlSystem::Instance()->OnInput(&newTouch);
@@ -966,7 +966,7 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
         ev.phase = UIEvent::Phase::KEY_UP;
         ev.key = keyboard.GetDavaKeyForSystemKey(systemKeyCode);
         ev.device = eInputDevices::KEYBOARD;
-        ev.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+        ev.timestamp = (SystemTimer::GetMs() / 1000.0);
         ev.modifiers = GetKeyboardModifiers();
 
         UIControlSystem::Instance()->OnInput(&ev);
@@ -1003,7 +1003,7 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
         }
         ev.key = keyboard.GetDavaKeyForSystemKey(systemKeyCode);
         ev.device = eInputDevices::KEYBOARD;
-        ev.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+        ev.timestamp = (SystemTimer::GetMs() / 1000.0);
         ev.modifiers = GetKeyboardModifiers();
 
         UIControlSystem::Instance()->OnInput(&ev);
@@ -1025,7 +1025,7 @@ LRESULT CALLBACK CoreWin32Platform::WndProc(HWND hWnd, UINT message, WPARAM wPar
             ev.phase = UIEvent::Phase::CHAR_REPEAT;
         }
         ev.device = eInputDevices::KEYBOARD;
-        ev.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+        ev.timestamp = (SystemTimer::GetMs() / 1000.0);
         ev.modifiers = GetKeyboardModifiers();
 
         UIControlSystem::Instance()->OnInput(&ev);
