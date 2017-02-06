@@ -49,6 +49,11 @@ public:
         return this;
     }
 
+    void ForceUpdateControl()
+    {
+        OnDataChanged(wrapper, Vector<Any>());
+    }
+
 protected:
     void OnDataChanged(const DataWrapper& wrapper, const Vector<Any>& fields) override
     {

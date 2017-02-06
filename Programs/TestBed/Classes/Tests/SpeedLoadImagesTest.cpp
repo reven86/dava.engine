@@ -1,7 +1,7 @@
 #include "SpeedLoadImagesTest.h"
 
-#include "Platform/SystemTimer.h"
 #include "Render/Image/ImageSystem.h"
+#include "Time/SystemTimer.h"
 #include "Utils/UTF8Utils.h"
 
 using namespace DAVA;
@@ -196,9 +196,9 @@ uint64 SpeedLoadImagesTest::GetLoadTime(const FilePath& path)
     uint64 allTime = 0;
     for (auto i = 0; i < number; ++i)
     {
-        uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
+        uint64 startTime = SystemTimer::GetMs();
         ImageSystem::Load(infile, imageSet);
-        uint64 finishTime = SystemTimer::Instance()->AbsoluteMS();
+        uint64 finishTime = SystemTimer::GetMs();
         allTime += finishTime - startTime;
 
         for (auto image : imageSet)

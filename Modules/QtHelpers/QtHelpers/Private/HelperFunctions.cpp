@@ -33,6 +33,6 @@ void InvokeInAutoreleasePool(std::function<void()> function)
 {
     function();
 }
-#endif 
+#endif
 
 } // namespace QtHelpers

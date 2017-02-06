@@ -1,10 +1,11 @@
 #pragma once
 
-#include "Base/BaseTypes.h"
-#include "UI/UIControlBackground.h"
-#include "UI/Styles/UIStyleSheetPropertyDataBase.h"
 #include "Animation/AnimatedObject.h"
 #include "Animation/Interpolation.h"
+#include "Base/BaseTypes.h"
+#include "UI/Styles/UIStyleSheetPropertyDataBase.h"
+#include "UI/UIControlBackground.h"
+#include "UI/UIGeometricData.h"
 
 namespace DAVA
 {
@@ -19,133 +20,6 @@ class UIControlFamily;
 class UIControlPackageContext;
 
 #define CONTROL_TOUCH_AREA 15
-/**
-     \ingroup controlsystem
-     \brief Compound of geometric transformations used to draw control in the screen space.
-     */
-
-class UIGeometricData
-{
-    friend class UIControl;
-
-public:
-    UIGeometricData()
-        : scale(1.0f, 1.0f)
-        , angle(0.0f)
-        , cosA(1.0f)
-        , sinA(0.0f)
-        , calculatedAngle(0.0f)
-    {
-    }
-    Vector2 position;
-    Vector2 size;
-
-    Vector2 pivotPoint;
-    Vector2 scale;
-    float32 angle;
-
-    mutable float32 cosA;
-    mutable float32 sinA;
-
-    void AddGeometricData(const UIGeometricData& data)
-    {
-        position.x = data.position.x - data.pivotPoint.x * data.scale.x + position.x * data.scale.x;
-        position.y = data.position.y - data.pivotPoint.y * data.scale.y + position.y * data.scale.y;
-        if (data.angle != 0)
-        {
-            float tmpX = position.x;
-            position.x = (tmpX - data.position.x) * data.cosA + (data.position.y - position.y) * data.sinA + data.position.x;
-            position.y = (tmpX - data.position.x) * data.sinA + (position.y - data.position.y) * data.cosA + data.position.y;
-        }
-        scale.x *= data.scale.x;
-        scale.y *= data.scale.y;
-        angle += data.angle;
-        if (angle != calculatedAngle)
-        {
-            if (angle != data.angle)
-            {
-                cosA = std::cos(angle);
-                sinA = std::sin(angle);
-            }
-            else
-            {
-                cosA = data.cosA;
-                sinA = data.sinA;
-            }
-            calculatedAngle = angle;
-        }
-
-        unrotatedRect.x = position.x - pivotPoint.x * scale.x;
-        unrotatedRect.y = position.y - pivotPoint.y * scale.y;
-        unrotatedRect.dx = size.x * scale.x;
-        unrotatedRect.dy = size.y * scale.y;
-    }
-
-    DAVA_DEPRECATED(void AddToGeometricData(const UIGeometricData& data))
-    {
-        AddGeometricData(data);
-    }
-
-    void BuildTransformMatrix(Matrix3& transformMatr) const
-    {
-        Matrix3 pivotMatr;
-        pivotMatr.BuildTranslation(-pivotPoint);
-
-        Matrix3 translateMatr;
-        translateMatr.BuildTranslation(position);
-        // well it must be here otherwise there is a bug!
-        if (calculatedAngle != angle)
-        {
-            cosA = std::cos(angle);
-            sinA = std::sin(angle);
-            calculatedAngle = angle;
-        }
-        Matrix3 rotateMatr;
-        rotateMatr.BuildRotation(cosA, sinA);
-
-        Matrix3 scaleMatr;
-        scaleMatr.BuildScale(scale);
-
-        transformMatr = pivotMatr * scaleMatr * rotateMatr * translateMatr;
-    }
-
-    void GetPolygon(Polygon2& polygon) const
-    {
-        polygon.Clear();
-        polygon.points.reserve(4);
-        polygon.AddPoint(Vector2());
-        polygon.AddPoint(Vector2(size.x, 0));
-        polygon.AddPoint(size);
-        polygon.AddPoint(Vector2(0, size.y));
-
-        Matrix3 transformMtx;
-        BuildTransformMatrix(transformMtx);
-        polygon.Transform(transformMtx);
-    }
-
-    const Rect& GetUnrotatedRect() const
-    {
-        return unrotatedRect;
-    }
-
-    Rect GetAABBox() const
-    {
-        Polygon2 polygon;
-        GetPolygon(polygon);
-
-        AABBox2 aabbox;
-        for (int32 i = 0; i < polygon.GetPointCount(); ++i)
-        {
-            aabbox.AddPoint(polygon.GetPoints()[i]);
-        }
-        Rect bboxRect = Rect(aabbox.min, aabbox.max - aabbox.min);
-        return bboxRect;
-    }
-
-private:
-    mutable float32 calculatedAngle;
-    Rect unrotatedRect;
-};
 
 /**
      \ingroup controlsystem

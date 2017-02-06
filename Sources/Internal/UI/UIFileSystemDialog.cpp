@@ -9,7 +9,7 @@
 #include "FileSystem/FileList.h"
 #include "Utils/UTF8Utils.h"
 #include "Core/Core.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 #include "UI/UIControlSystem.h"
 #include "Render/2D/FTFont.h"
 #include "Logger/Logger.h"
@@ -504,7 +504,7 @@ void UIFileSystemDialog::OnCellSelected(UIList* forList, UIListCell* selectedCel
         UIControlBackground* bg = lastSelected->GetOrCreateComponent<UIControlBackground>();
         bg->SetDrawType(UIControlBackground::DRAW_ALIGNED);
     }
-    uint64 curTime = SystemTimer::Instance()->AbsoluteMS();
+    uint64 curTime = SystemTimer::GetMs();
     if (curTime - lastSelectionTime < 330 && lastSelected == selectedCell)
     {
         lastSelected = selectedCell;

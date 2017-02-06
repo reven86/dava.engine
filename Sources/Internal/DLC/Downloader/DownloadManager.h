@@ -21,6 +21,7 @@ public:
     DownloadManager(Engine* e);
     Engine* engine = nullptr;
     size_t sigUpdateId = 0;
+    size_t sigBackgroundUpdateId = 0;
 #else
     DownloadManager() = default;
 #endif
@@ -113,7 +114,7 @@ private:
 
     void StartProcessingThread();
     void StopProcessingThread();
-    void ThreadFunction(BaseObject* caller, void* callerData, void* userData);
+    void ThreadFunction();
 
     void ClearQueue(Deque<DownloadTaskDescription*>& queue);
     DownloadTaskDescription* ExtractFromQueue(Deque<DownloadTaskDescription*>& queue, const uint32& taskId);
