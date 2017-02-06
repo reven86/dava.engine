@@ -32,12 +32,17 @@ FilePathEdit::FilePathEdit(const Params& params, ContextAccessor* accessor, Refl
 void FilePathEdit::SetupControl()
 {
     edit = new QLineEdit(this);
+    edit->setObjectName("filePathEdit");
+
     button = new QToolButton(this);
     button->setAutoRaise(true);
     button->setIcon(QIcon(":/TArc/Resources/openfile.png"));
     button->setToolButtonStyle(Qt::ToolButtonIconOnly);
+    button->setObjectName("openFileDialogButton");
 
     QHBoxLayout* layout = new QHBoxLayout(this);
+    layout->setSpacing(0);
+    layout->setMargin(0);
     layout->addWidget(edit);
     layout->addWidget(button);
 
@@ -52,16 +57,21 @@ void FilePathEdit::EditingFinished()
 {
     if (!edit->isReadOnly())
     {
-        M::ValidationResult validation = FixUp(edit->text().toStdString());
+        FilePath path(edit->text().toStdString());
+        M::ValidationResult validation = FixUp(path);
         if (validation.state == M::ValidationResult::eState::Valid)
         {
-            wrapper.SetFieldValue(GetFieldName(Fields::Value), edit->text().toStdString());
+            wrapper.SetFieldValue(GetFieldName(Fields::Value), path);
+            if (path.GetStringValue() != path.GetAbsolutePathname())
+            {
+                edit->setText(QString::fromStdString(path.GetAbsolutePathname()));
+            }
         }
         else
         {
             Reflection r = model.GetField(GetFieldName(Fields::Value));
             DVASSERT(r.IsValid());
-            edit->setText(QString::fromStdString(r.GetValue().Cast<String>()));
+            edit->setText(QString::fromStdString(r.GetValue().Cast<FilePath>().GetAbsolutePathname()));
             if (validation.message.empty() == false)
             {
                 ShowHint(QString::fromStdString(validation.message));
@@ -127,7 +137,7 @@ void FilePathEdit::UpdateControl(const ControlDescriptor& descriptor)
 
         if (textChanged)
         {
-            edit->setText(QString::fromStdString(fieldValue.GetValue().Cast<String>()));
+            edit->setText(QString::fromStdString(fieldValue.GetValue().Cast<FilePath>().GetAbsolutePathname()));
         }
     }
 
@@ -168,7 +178,7 @@ M::ValidationResult FilePathEdit::FixUp(const Any& value) const
     QString filters;
     ExtractMetaInfo(isFile, shouldExists, filters);
 
-    FilePath path(value.Cast<String>());
+    FilePath path(value.Cast<FilePath>());
     bool isDir = path.IsDirectoryPathname();
     if (isFile == true && isDir == true)
     {
