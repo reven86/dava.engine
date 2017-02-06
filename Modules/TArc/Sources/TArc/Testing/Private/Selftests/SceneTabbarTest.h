@@ -34,7 +34,7 @@ public:
     DAVA::uint64 activeTab = 0;
     DAVA::Map<DAVA::uint64, Tab> tabs;
 
-    DAVA_VIRTUAL_REFLECTION(TabsModel, DAVA::TArc::DataNode)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(TabsModel, DAVA::TArc::DataNode)
     {
         DAVA::ReflectionRegistrator<TabsModel>::Begin()
         .Field(DAVA::TArc::SceneTabbar::activeTabPropertyName, &TabsModel::activeTab)
@@ -84,7 +84,7 @@ public:
         ui->AddView(wndKey, panelKey, tabbar);
     }
 
-    DAVA_VIRTUAL_REFLECTION(TabbarModule, DAVA::TArc::MockClientModule, DAVA::Singleton<TabbarModule>)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(TabbarModule, DAVA::TArc::MockClientModule, DAVA::Singleton<TabbarModule>)
     {
         DAVA::ReflectionRegistrator<TabbarModule>::Begin()
         .ConstructorByPointer()

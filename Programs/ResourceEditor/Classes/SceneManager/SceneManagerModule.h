@@ -109,7 +109,7 @@ private:
 
     QPointer<SceneRenderWidget> renderWidget;
 
-    DAVA_VIRTUAL_REFLECTION(SceneManagerModule, DAVA::TArc::ControllerModule)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(SceneManagerModule, DAVA::TArc::ControllerModule)
     {
         DAVA::ReflectionRegistrator<SceneManagerModule>::Begin()
         .ConstructorByPointer()

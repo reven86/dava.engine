@@ -7,7 +7,7 @@
 
 #include "Functional/Function.h"
 
-#include "AssetCache/AssetCacheClient.h"
+#include <Tools/AssetCache/AssetCacheClient.h>
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
 #include "QtTools/ReloadSprites/SpritesPacker.h"
 

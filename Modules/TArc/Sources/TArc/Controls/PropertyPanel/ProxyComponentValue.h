@@ -26,9 +26,9 @@ protected:
         return valueCompositor.Compose(nodes);
     }
 
-    bool IsValidValueToSet(const Any& value) const override
+    bool IsValidValueToSet(const Any& newValue, const Any& currentValue) const override
     {
-        return valueCompositor.IsValidValue(value);
+        return valueCompositor.IsValidValue(newValue, currentValue);
     }
 
     const StaticEditorDrawer* GetStaticEditorDrawer() const override
@@ -36,13 +36,13 @@ protected:
         return &staticEditor;
     }
 
-private:
+protected:
     TStaticEditor staticEditor;
     TValueCompositor valueCompositor;
 
     using TThis = ProxyComponentValue<TStaticEditor, TValueCompositor>;
 
-    DAVA_VIRTUAL_REFLECTION(TThis, BaseComponentValue)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(TThis, BaseComponentValue)
     {
         DAVA::ReflectionRegistrator<TThis>::Begin()
         .End();

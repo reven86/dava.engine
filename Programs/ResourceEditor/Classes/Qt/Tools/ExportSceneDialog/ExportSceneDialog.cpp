@@ -5,7 +5,7 @@
 #include "Classes/Project/ProjectManagerData.h"
 
 #include "Settings/SettingsManager.h"
-#include "TextureCompression/TextureConverter.h"
+#include <Tools/TextureCompression/TextureConverter.h>
 
 #include "Base/GlobalEnum.h"
 #include "Debug/DVAssert.h"

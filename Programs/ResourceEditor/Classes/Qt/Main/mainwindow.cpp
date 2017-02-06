@@ -1,5 +1,5 @@
 #include "mainwindow.h"
-#include "version.h"
+#include <Tools/Version.h>
 #include "Classes/Qt/BeastDialog/BeastDialog.h"
 #include "Classes/Qt/CubemapEditor/CubemapTextureBrowser.h"
 #include "Classes/Qt/CubemapEditor/CubemapUtils.h"
@@ -72,7 +72,7 @@
 
 #include "Render/2D/Sprite.h"
 
-#include "TextureCompression/TextureConverter.h"
+#include <Tools/TextureCompression/TextureConverter.h>
 
 #include "TArc/WindowSubSystem/Private/WaitDialog.h"
 
@@ -297,7 +297,8 @@ QtMainWindow::~QtMainWindow()
 void QtMainWindow::OnRenderingInitialized()
 {
     ui->landscapeEditorControlsPlaceholder->OnOpenGLInitialized();
-    QObject::connect(DAVA::PlatformApi::Qt::GetRenderWidget(), &DAVA::RenderWidget::Resized, ui->statusBar, &StatusBar::OnSceneGeometryChaged);
+    DAVA::RenderWidget* renderWidget = DAVA::PlatformApi::Qt::GetRenderWidget();
+    renderWidget->resized.Connect(ui->statusBar, &StatusBar::OnSceneGeometryChaged);
 }
 
 void QtMainWindow::AfterInjectInit()

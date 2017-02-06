@@ -1,6 +1,6 @@
 #include "UI/UIList.h"
 #include "Debug/DVAssert.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 #include "UI/UIControlSystem.h"
 #include "Base/ObjectFactory.h"
 #include "UI/UIControlHelpers.h"
@@ -299,11 +299,11 @@ void UIList::Update(float32 timeElapsed)
         // this code works for scroll through touch screen.
         if (orientation == ORIENTATION_HORIZONTAL)
         {
-            r.x = scroll->GetPosition(d, SystemTimer::FrameDelta(), lockTouch);
+            r.x = scroll->GetPosition(d, SystemTimer::GetFrameDelta(), lockTouch);
         }
         else
         {
-            r.y = scroll->GetPosition(d, SystemTimer::FrameDelta(), lockTouch);
+            r.y = scroll->GetPosition(d, SystemTimer::GetFrameDelta(), lockTouch);
         }
     }
 

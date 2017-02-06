@@ -2,7 +2,6 @@
 
 namespace DAVA
 {
-
 SampleModule::SampleModule(Engine* engine)
     : IModule(engine)
 {
@@ -18,5 +17,4 @@ void SampleModule::Shutdown()
 {
     statusList.emplace_back(eStatus::ES_SHUTDOWN);
 }
-
 }

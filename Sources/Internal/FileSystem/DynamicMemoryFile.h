@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_MEMORY_FILE_H__
-#define __DAVAENGINE_MEMORY_FILE_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
@@ -95,6 +94,3 @@ inline const Vector<uint8>& DynamicMemoryFile::GetDataVector() const
     return data;
 }
 };
-
-
-#endif

@@ -235,6 +235,11 @@ void DataWrapper::Sync(bool notifyListener)
 
 void DataWrapper::SyncByFieldKey(const Any& fieldKey)
 {
+    if (impl->cachedValues.empty())
+    {
+        return;
+    }
+
     DVASSERT(impl != nullptr);
     DVASSERT(HasData());
     Reflection data = GetData();

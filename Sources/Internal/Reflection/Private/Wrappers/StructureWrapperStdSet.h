@@ -66,7 +66,7 @@ public:
             // std::set values shouldn't be modified
             // so get const pointer on value
             const K* v = &(*it);
-            ret.push_back({ Any(*v), Reflection::Create(v) });
+            ret.emplace_back(Any(*v), Reflection::Create(v), nullptr);
         }
 
         return ret;

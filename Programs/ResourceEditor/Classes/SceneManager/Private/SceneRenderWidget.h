@@ -14,6 +14,7 @@
 #include "TArc/Utils/QtConnections.h"
 
 #include "Engine/Qt/RenderWidget.h"
+#include "Functional/SignalBase.h"
 
 #include <QFrame>
 
@@ -28,7 +29,9 @@ class ContextAccessor;
 
 class SceneEditor2;
 class SelectableGroup;
-class SceneRenderWidget : public QFrame, private DAVA::TArc::DataListener, private DAVA::RenderWidget::IClientDelegate
+class SceneRenderWidget : public QFrame, private DAVA::TArc::DataListener,
+                          private DAVA::RenderWidget::IClientDelegate,
+                          public DAVA::TrackedObject
 {
     Q_OBJECT
 public:

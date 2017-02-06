@@ -1,7 +1,7 @@
 #pragma once
 
-#include "TextureCompression/TextureConverter.h"
-#include "AssetCache/AssetCacheClient.h"
+#include <Tools/TextureCompression/TextureConverter.h>
+#include <Tools/AssetCache/AssetCacheClient.h>
 
 #include "Utils/SceneExporter/SceneExporter.h"
 
@@ -49,7 +49,7 @@ private:
     bool useHDTextures = false;
     bool forceCompressTextures = false;
 
-    DAVA_VIRTUAL_REFLECTION(SceneExporterTool, CommandLineModule)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(SceneExporterTool, CommandLineModule)
     {
         DAVA::ReflectionRegistrator<SceneExporterTool>::Begin()
         .ConstructorByPointer<DAVA::Vector<DAVA::String>>()
