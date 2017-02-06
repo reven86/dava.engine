@@ -489,7 +489,8 @@ void TextFieldPlatformImpl::SetSpriteFromImage(Image* image) const
             sprite = Sprite::CreateFromTexture(texture.Get(), 0, 0, texture->GetWidth(), texture->GetHeight(), textFieldRect.dx, textFieldRect.dy);
         }
 
-        uiTextField->SetSprite(sprite, 0);
+        UIControlBackground* bg = uiTextField->GetOrCreateComponent<UIControlBackground>();
+        bg->SetSprite(sprite, 0);
     }
 }
 
