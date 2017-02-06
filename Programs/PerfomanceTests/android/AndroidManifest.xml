@@ -26,7 +26,7 @@
         android:backupAgent="JNIBackupAgent">
         
         <!-- List of shared libraries to load at startup -->
-        <meta-data android:name="boot_modules" android:value="crystax;c++_shared;fmodex;fmodevent;PerformanceTests"/>
+        <meta-data android:name="com.dava.engine.BootModules" android:value="crystax;c++_shared;fmodex;fmodevent;PerformanceTests"/>
         
         <meta-data android:name="com.google.android.backup.api_key"
     		android:value="Enter your Backup Key API here" />

@@ -40,6 +40,9 @@ private:
 
     bool quitGameThread = false;
 
+    int64 goBackgroundTimeRelativeToBoot = 0;
+    int64 goBackgroundTime = 0;
+
     // Friends
     friend struct AndroidBridge;
 };

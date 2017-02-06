@@ -28,6 +28,7 @@ DownloadManager::DownloadManager(Engine* e)
     : engine(e)
 {
     sigUpdateId = engine->update.Connect(this, &DownloadManager::Update);
+    sigBackgroundUpdateId = engine->backgroundUpdate.Connect(this, &DownloadManager::Update);
 }
 #endif
 
@@ -35,6 +36,7 @@ DownloadManager::~DownloadManager()
 {
 #if defined(__DAVAENGINE_COREV2__)
     engine->update.Disconnect(sigUpdateId);
+    engine->backgroundUpdate.Disconnect(sigBackgroundUpdateId);
 #endif
 
     isThreadStarted = false;
@@ -487,6 +489,17 @@ bool DownloadManager::GetError(const uint32& taskId, DownloadError& error)
     return true;
 }
 
+bool DownloadManager::GetImplError(const uint32& taskId, int32& implError)
+{
+    DownloadTaskDescription* task = GetTaskForId(taskId);
+    if (!task)
+        return false;
+
+    implError = task->implError;
+
+    return true;
+}
+
 bool DownloadManager::GetFileErrno(const uint32& taskId, int32& fileErrno)
 {
     DownloadTaskDescription* task = GetTaskForId(taskId);
@@ -660,6 +673,7 @@ DownloadError DownloadManager::TryDownload()
     // retrieve remote file size
     currentTask->error = downloader->GetSize(currentTask->url, currentTask->downloadTotal, currentTask->timeout);
     currentTask->fileErrno = downloader->GetFileErrno();
+    currentTask->implError = downloader->GetImplError();
     if (DLE_NO_ERROR != currentTask->error)
     {
         return currentTask->error;
@@ -706,6 +720,7 @@ DownloadError DownloadManager::TryDownload()
                                               currentTask->partsCount,
                                               currentTask->timeout);
     currentTask->fileErrno = downloader->GetFileErrno();
+    currentTask->implError = downloader->GetImplError();
 
     // seems server doesn't supports download resuming. So we need to download whole file.
     if (DLE_COULDNT_RESUME == currentTask->error)
@@ -720,6 +735,7 @@ DownloadError DownloadManager::TryDownload()
                                                       currentTask->partsCount,
                                                       currentTask->timeout);
             currentTask->fileErrno = downloader->GetFileErrno();
+            currentTask->implError = downloader->GetImplError();
         }
     }
 

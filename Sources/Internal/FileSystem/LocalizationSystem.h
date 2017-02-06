@@ -26,8 +26,8 @@ public:
 
     String GetCountryCode() const;
 
-    const String& GetLocalizedString(const String& utf8Key) const;
-    const String& GetLocalizedString(const String& utf8Key, const String& langId) const;
+    String GetLocalizedString(const String& utf8Key) const;
+    String GetLocalizedString(const String& utf8Key, const String& langId) const;
     void SetLocalizedString(const String& utf8Key, const String& utf8Value);
     void RemoveLocalizedString(const String& utf8Key);
 
@@ -73,7 +73,7 @@ private:
     YamlParser::YamlDataHolder* dataHolder;
 };
 
-inline const String& LocalizedUtf8String(const String& utf8Key)
+inline String LocalizedUtf8String(const String& utf8Key)
 {
     return LocalizationSystem::Instance()->GetLocalizedString(utf8Key);
 }

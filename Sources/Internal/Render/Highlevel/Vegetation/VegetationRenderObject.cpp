@@ -10,7 +10,7 @@
 #include "Scene3D/Systems/FoliageSystem.h"
 #include "Render/RenderHelper.h"
 #include "Render/TextureDescriptor.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 #include "Job/JobManager.h"
 
 #include "Render/Highlevel/Vegetation/VegetationGeometry.h"

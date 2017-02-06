@@ -54,6 +54,8 @@ public:
 
     const KeyedArchive* GetOptions() const;
 
+    bool IsSuspended() const;
+
     Window* InitializePrimaryWindow();
 
     void Init(eEngineRunMode engineRunMode, const Vector<String>& modules, KeyedArchive* options_);
@@ -79,6 +81,9 @@ public:
     void DeinitRender(Window* w);
 
     void UpdateDisplayConfig();
+
+    // Proxy method that calls SystemTimer::Adjust to prevent many friends to SystemTimer
+    static void AdjustSystemTimer(int64 adjustMicro);
 
 private:
     void RunConsole();

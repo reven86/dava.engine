@@ -313,6 +313,14 @@ public:
     */
     Vector<char*> GetCommandLineAsArgv() const;
 
+    /**
+        Return value indicating if an app is in suspended state.
+        You can also use `suspended` and `resumed` signals to keep track of this value.
+
+        \note Only these platforms support suspending: Win10, iOS, Android.
+    */
+    bool IsSuspended() const;
+
 public:
     Signal<> gameLoopStarted; //!< Emited just before entring game loop. Note: native windows are not created yet and renderer is not initialized.
     Signal<> gameLoopStopped; //!< Emited after exiting game loop, application should prepare to terminate.
