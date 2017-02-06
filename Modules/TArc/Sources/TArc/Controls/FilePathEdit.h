@@ -52,7 +52,7 @@ private:
     void ExtractMetaInfo(bool& isFile, bool& shouldExists, QString& filters) const;
 
 private:
-    UI* ui;
+    UI* ui = nullptr;
     WindowKey wndKey;
     QtConnections connections;
     QLineEdit* edit = nullptr;
