@@ -63,7 +63,7 @@ struct pack_file
     } footer;
 }; // end PackFile struct
 
-struct lite_pack
+struct LitePack
 {
     struct compressed_bytes
     {
@@ -71,8 +71,8 @@ struct lite_pack
 
     struct footer
     {
-        uint32_t size_uncompressed;
-        uint32_t size_compressed;
+        uint32_t sizeUncompressed;
+        uint32_t sizeCompressed;
         uint32_t crc32_compressed;
         uint32_t type;
         std::array<char, 4> pack_marker_lite;
@@ -99,6 +99,6 @@ static_assert(sizeof(pack_file::footer_block) == 44,
               "header block size changed, something bad happened!");
 static_assert(sizeof(file_table_entry) == 32,
               "file table entry size changed, something bad happened!");
-static_assert(sizeof(lite_pack::footer) == 20, "check lite footer size");
+static_assert(sizeof(LitePack::footer) == 20, "check lite footer size");
 
 } // end of PackFormat namespace

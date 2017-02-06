@@ -1,4 +1,4 @@
-#include "lite_archive.hxx"
+#include "lite_archive.h"
 
 #include "lz4.h"
 
@@ -16,7 +16,7 @@ static bool LZ4CompressorDecompress(const std::vector<uint8_t>& in,
     return true;
 }
 
-lite_archive::lite_archive(const std::string& file)
+LiteArchive::LiteArchive(const std::string& file)
     : file_name(file)
 {
     ifile.open(file_name, std::ios_base::binary);
@@ -50,12 +50,12 @@ lite_archive::lite_archive(const std::string& file)
     l << "open done\n";
 }
 
-const std::vector<pack_format::file_info>& lite_archive::get_files_info() const
+const std::vector<pack_format::file_info>& LiteArchive::GetFilesInfo() const
 {
     return file_info;
 }
 
-const pack_format::file_info* lite_archive::get_file_info(const std::string& relative) const
+const pack_format::file_info* LiteArchive::GetFileInfo(const std::string& relative) const
 {
     if (relative == file_info[0].relativeFilePath)
     {
@@ -64,12 +64,12 @@ const pack_format::file_info* lite_archive::get_file_info(const std::string& rel
     return nullptr;
 }
 
-bool lite_archive::has_file(const std::string& relative) const
+bool LiteArchive::HasFile(const std::string& relative) const
 {
     return relative == file_info[0].relativeFilePath;
 }
 
-bool lite_archive::load_file(const std::string& relative, std::vector<uint8_t>& output)
+bool LiteArchive::HoadFile(const std::string& relative, std::vector<uint8_t>& output)
 {
     l << "start loading file: " << relative << '\n';
     if (relative != file_info[0].relativeFilePath)
@@ -132,17 +132,17 @@ bool lite_archive::load_file(const std::string& relative, std::vector<uint8_t>& 
     return true;
 }
 
-bool lite_archive::has_meta() const
+bool LiteArchive::HasMeta() const
 {
     return false;
 }
 
-const pack_meta_data& lite_archive::get_meta() const
+const pack_meta_data& LiteArchive::GetMeta() const
 {
     throw std::runtime_error("no meta");
 }
 
-std::string lite_archive::print_meta() const
+std::string LiteArchive::PrintMeta() const
 {
     return "no meta";
 }

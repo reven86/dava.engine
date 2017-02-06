@@ -1,4 +1,4 @@
-#include "pack_meta_data.hxx"
+#include "pack_meta_data.h"
 
 #include <algorithm>
 #include <array>
@@ -11,7 +11,7 @@
 #include "lz4.h"
 
 static bool lz4_compressor_decompress(const std::vector<uint8_t>& in,
-                                    std::vector<uint8_t>& out)
+                                      std::vector<uint8_t>& out)
 {
     int32_t decompressResult =
     LZ4_decompress_fast(reinterpret_cast<const char*>(in.data()),

@@ -1,4 +1,4 @@
-#include "pack_archive.hxx"
+#include "pack_archive.h"
 
 #include <algorithm>
 #include <cstring>
@@ -8,7 +8,7 @@
 #include "lz4.h"
 
 static bool lz4_compressor_decompress(const std::vector<uint8_t>& in,
-                                    std::vector<uint8_t>& out)
+                                      std::vector<uint8_t>& out)
 {
     int32_t decompressResult = LZ4_decompress_fast(
     reinterpret_cast<const char*>(in.data()),
@@ -25,7 +25,7 @@ std::uint32_t crc32_for_buffer(const char* data, std::uint32_t size);
 
 extern std::ofstream l;
 
-pack_archive::pack_archive(const std::string& archiveName)
+PackArchive::PackArchive(const std::string& archiveName)
 {
     file_index = 0;
     l << "inside pack_archive\n";
@@ -95,7 +95,7 @@ pack_archive::pack_archive(const std::string& archiveName)
         }
 
         uint32_t crc32filesTable = crc32_for_buffer(tmpBuffer.data(),
-                                                  pack_file.footer.info.files_table_size);
+                                                    pack_file.footer.info.files_table_size);
         if (crc32filesTable != pack_file.footer.info.files_table_crc32)
         {
             throw std::runtime_error(
@@ -120,7 +120,7 @@ pack_archive::pack_archive(const std::string& archiveName)
         std::vector<uint8_t> originalNamesBuffer;
         originalNamesBuffer.resize(pack_file.footer.info.names_size_original);
         if (!lz4_compressor_decompress(compressedNamesBuffer,
-                                     originalNamesBuffer))
+                                       originalNamesBuffer))
         {
             throw std::runtime_error("can't uncompress file names");
         }
@@ -199,12 +199,12 @@ pack_archive::pack_archive(const std::string& archiveName)
     l << "total: " << files_info.size() << '\n';
 }
 
-const std::vector<pack_format::file_info>& pack_archive::get_files_info() const
+const std::vector<pack_format::file_info>& PackArchive::GetFilesInfo() const
 {
     return files_info;
 }
 
-const pack_format::file_info* pack_archive::get_file_info(
+const pack_format::file_info* PackArchive::GetFileInfo(
 const std::string& relativeFilePath) const
 {
     auto it = map_file_data.find(relativeFilePath);
@@ -221,18 +221,18 @@ const std::string& relativeFilePath) const
     return nullptr;
 }
 
-bool pack_archive::has_file(const std::string& relativeFilePath) const
+bool PackArchive::HasFile(const std::string& relativeFilePath) const
 {
     auto iterator = map_file_data.find(relativeFilePath);
     return iterator != map_file_data.end();
 }
 
-bool pack_archive::load_file(const std::string& relativeFilePath,
-                             std::vector<uint8_t>& output)
+bool PackArchive::HoadFile(const std::string& relativeFilePath,
+                           std::vector<uint8_t>& output)
 {
     using namespace pack_format;
 
-    if (!has_file(relativeFilePath))
+    if (!HasFile(relativeFilePath))
     {
         return false;
     }
@@ -297,23 +297,23 @@ bool pack_archive::load_file(const std::string& relativeFilePath,
     return true;
 }
 
-bool pack_archive::has_meta() const
+bool PackArchive::HasMeta() const
 {
     return pack_meta.get() != nullptr;
 }
 
-const pack_meta_data& pack_archive::get_meta() const
+const pack_meta_data& PackArchive::GetMeta() const
 {
     return *pack_meta;
 }
 
-std::string pack_archive::print_meta() const
+std::string PackArchive::PrintMeta() const
 {
     using namespace std;
     stringstream ss;
-    if (has_meta())
+    if (HasMeta())
     {
-        const pack_meta_data& meta = get_meta();
+        const pack_meta_data& meta = GetMeta();
         size_t numFiles = meta.get_num_files();
 
         // find out max filename

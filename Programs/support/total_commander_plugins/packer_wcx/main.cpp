@@ -4,7 +4,7 @@
 #include <fstream>
 #include <sstream>
 
-#include "iarchive.hxx"
+#include "archive.h"
 
 using DWORD = std::uint32_t;
 const std::uint32_t MAX_PATH = 260;
@@ -49,12 +49,12 @@ HANDLE STDCALL OpenArchive(tOpenArchiveData* ArchiveData)
         }
     }
 
-    iarchive* archive = nullptr;
+    Archive* archive = nullptr;
     try
     {
         l << "begin open archive: " << ArchiveData->ArcName << '\n';
 
-        archive = create(ArchiveData->ArcName);
+        archive = Create(ArchiveData->ArcName);
 
         l << "open archive: " << ArchiveData->ArcName << '\n';
     }
@@ -68,7 +68,7 @@ HANDLE STDCALL OpenArchive(tOpenArchiveData* ArchiveData)
 
 int STDCALL CloseArchive(HANDLE hArcData)
 {
-    iarchive* archive = reinterpret_cast<iarchive*>(hArcData);
+    Archive* archive = reinterpret_cast<Archive*>(hArcData);
 
     l << "close archive: " << archive->archive_name << '\n';
 
@@ -81,9 +81,9 @@ int STDCALL ReadHeader(HANDLE hArcData, tHeaderData* HeaderData)
 {
     l << "read header\n";
 
-    iarchive* archive = reinterpret_cast<iarchive*>(hArcData);
+    Archive* archive = reinterpret_cast<Archive*>(hArcData);
 
-    const std::vector<pack_format::file_info>& files = archive->get_files_info();
+    const std::vector<pack_format::file_info>& files = archive->GetFilesInfo();
     if (archive->file_index < files.size())
     {
         const pack_format::file_info& info = files.at(archive->file_index);
@@ -117,7 +117,7 @@ int STDCALL ReadHeader(HANDLE hArcData, tHeaderData* HeaderData)
     }
     else
     {
-        if (archive->file_index == files.size() && archive->has_meta())
+        if (archive->file_index == files.size() && archive->HasMeta())
         {
             ++archive->file_index;
             std::memset(HeaderData, 0, sizeof(*HeaderData));
@@ -125,7 +125,7 @@ int STDCALL ReadHeader(HANDLE hArcData, tHeaderData* HeaderData)
             std::strncpy(HeaderData->FileName, "meta.meta", MAX_PATH);
             std::strncpy(HeaderData->ArcName, archive->archive_name.c_str(), MAX_PATH);
             HeaderData->PackSize = 0;
-            auto& meta = archive->get_meta();
+            auto& meta = archive->GetMeta();
             HeaderData->UnpSize = meta.get_num_packs();
 
             archive->last_file_name = "meta.meta";
@@ -159,19 +159,19 @@ int STDCALL ProcessFile(HANDLE hArcData, int Operation, char* DestPath,
     }
     else if (PK_EXTRACT == Operation)
     {
-        iarchive* archive = reinterpret_cast<iarchive*>(hArcData);
+        Archive* archive = reinterpret_cast<Archive*>(hArcData);
         if (archive->last_file_name == std::string("meta.meta"))
         {
-            std::string data = archive->print_meta();
+            std::string data = archive->PrintMeta();
             std::string outputName = DestName ? DestName : DestPath;
 
             std::ofstream out(outputName, std::ios_base::binary);
             out.write(reinterpret_cast<const char*>(data.data()), data.size());
         }
-        else if (archive->has_file(archive->last_file_name))
+        else if (archive->HasFile(archive->last_file_name))
         {
             std::vector<uint8_t> data;
-            archive->load_file(archive->last_file_name, data);
+            archive->HoadFile(archive->last_file_name, data);
             std::string outputName = DestName ? DestName : DestPath;
 
             std::ofstream out(outputName, std::ios_base::binary);
