@@ -31,6 +31,15 @@ class Dispatcher final
 {
 public:
     /**
+        Enum that specifies how to execute event when SendEvent is invoked from the same thread as dispatcher linked thread
+    */
+    enum class eSendPolicy
+    {
+        SERIALIZED_EXECUTION = 0, //<! Default behavior: firstly execute all events in queue and then sent event
+        IMMEDIATE_EXECUTION = 1, //<! Immediately execute sent event, do not execute events in queue
+    };
+
+    /**
         Dispatcher constructor
 
         \param handler Function object which will be invoked for each event when application calls `ProcessEvents`
@@ -64,7 +73,7 @@ public:
         Place event into queue and wait until event is processed.
     */
     template <typename U>
-    void SendEvent(U&& e);
+    void SendEvent(U&& e, eSendPolicy policy = eSendPolicy::SERIALIZED_EXECUTION);
 
     /**
         Process events that are currently in queue. For each event in queue dispatcher
@@ -130,20 +139,29 @@ void Dispatcher<T>::PostEvent(U&& e)
 
 template <typename T>
 template <typename U>
-void Dispatcher<T>::SendEvent(U&& e)
+void Dispatcher<T>::SendEvent(U&& e, eSendPolicy policy)
 {
     DVASSERT(linkedThreadId != 0, "Before calling SendEvent you must call LinkToCurrentThread");
 
     uint64 curThreadId = Thread::GetCurrentIdAsUInt64();
     if (linkedThreadId == curThreadId)
     {
-        // If blocking call is made from the same thread as thread that calls ProcessEvents
-        // simply call ProcessEvents
+        switch (policy)
+        {
+        case eSendPolicy::SERIALIZED_EXECUTION:
         {
             LockGuard<Mutex> lock(mutex);
             eventQueue.emplace_back(std::forward<U>(e));
         }
-        ProcessEvents();
+            ProcessEvents();
+            break;
+        case eSendPolicy::IMMEDIATE_EXECUTION:
+            eventHandler(e);
+            break;
+        default:
+            DVASSERT(0);
+            break;
+        }
     }
     else
     {
