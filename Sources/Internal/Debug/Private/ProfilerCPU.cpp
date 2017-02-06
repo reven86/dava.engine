@@ -1,5 +1,5 @@
 #include "Debug/ProfilerCPU.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 #include "Concurrency/Thread.h"
 #include "Base/AllocatorFactory.h"
 #include "Debug/DVAssert.h"
@@ -61,7 +61,7 @@ protected:
 
 uint64 TimeStampUs()
 {
-    return DAVA::SystemTimer::Instance()->GetAbsoluteUs();
+    return DAVA::SystemTimer::GetUs();
 }
 
 bool NameEquals(const char* name1, const char* name2)

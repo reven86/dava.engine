@@ -17,7 +17,7 @@ LocalNotificationProgress::~LocalNotificationProgress()
 
 void LocalNotificationProgress::SetProgressCurrent(const uint32 _currentProgress)
 {
-    if (progress != _currentProgress)
+    if (isVisible && (progress != _currentProgress))
     {
         isChanged = true;
         progress = _currentProgress;

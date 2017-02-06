@@ -136,7 +136,7 @@ void DataWrapper::SetFieldValue(const Any& fieldKey, const Any& value)
     DVASSERT(field.IsValid() == true);
     bool result = field.SetValueWithCast(value);
     DVASSERT(result);
-    Sync(false);
+    SyncByFieldKey(fieldKey);
 }
 
 bool DataWrapper::IsActive() const
@@ -229,6 +229,28 @@ void DataWrapper::Sync(bool notifyListener)
         {
             impl->cachedValues.clear();
             NotifyListener(notifyListener);
+        }
+    }
+}
+
+void DataWrapper::SyncByFieldKey(const Any& fieldKey)
+{
+    if (impl->cachedValues.empty())
+    {
+        return;
+    }
+
+    DVASSERT(impl != nullptr);
+    DVASSERT(HasData());
+    Reflection data = GetData();
+
+    Vector<Reflection::Field> dataFields = data.GetFields();
+    String fieldName = fieldKey.Cast<String>();
+    for (size_t i = 0; i < dataFields.size(); ++i)
+    {
+        if (dataFields[i].key.Cast<String>() == fieldName)
+        {
+            impl->cachedValues[i] = dataFields[i].ref.GetValue();
         }
     }
 }

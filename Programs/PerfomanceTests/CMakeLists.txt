@@ -2,22 +2,20 @@ cmake_minimum_required (VERSION 3.0)
 
 project      ( PerformanceTests )
 
-set( DAVA_DISABLE_AUTOTESTS true )
-
-if ( ENABLE_MEM_PROFILING )
-    add_definitions( -DDAVA_MEMORY_PROFILING_ENABLE )
-endif()
-
 set          ( WARNINGS_AS_ERRORS true )
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
 include      ( CMake-common )
 
+if ( ENABLE_MEM_PROFILING )
+    dava_add_definitions( -DDAVA_MEMORY_PROFILING_ENABLE )
+endif()
+
 set ( DAVA_COREV2 1 )
-add_definitions       (
+dava_add_definitions       (
 -D__DAVAENGINE_COREV2__
 )
 
-find_package( DavaFramework REQUIRED )
+find_package( DavaFramework REQUIRED COMPONENTS ALL DAVA_DISABLE_AUTOTESTS )
 
 include_directories   ( "iOSSpecific" )
 include_directories   ( "Classes" )

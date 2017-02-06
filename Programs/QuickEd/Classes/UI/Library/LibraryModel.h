@@ -26,8 +26,7 @@ public:
     LibraryModel(QObject* parent = nullptr);
     ~LibraryModel() override;
 
-    void SetLibraryPackages(const DAVA::Vector<DAVA::FilePath>& libraryPackages);
-    void SetPrototypes(const DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>>& prototypes);
+    void SetProjectLibraries(const DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>>& prototypes, const DAVA::Vector<DAVA::FilePath>& libraryPackages);
 
     Qt::ItemFlags flags(const QModelIndex& index) const override;
     QStringList mimeTypes() const override;
@@ -40,7 +39,6 @@ private:
     QVariant data(const QModelIndex& index, int role) const override;
 
     QModelIndex indexByNode(const void* node, const QStandardItem* item) const;
-    void BuildModel();
     void AddControl(ControlNode* node, QStandardItem* rootItem, bool makePrototype);
     void AddPackageControls(PackageControlsNode* packageControls, QStandardItem* rootItem, bool makePrototype);
     QStandardItem* CreatePackageControlsItem(PackageNode* package, bool makePrototype);

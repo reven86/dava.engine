@@ -52,24 +52,140 @@ ReflectedMeta&& operator, (ReflectedMeta && rmeta, Meta<T, IndexT>&& meta);
 
 namespace M
 {
+/**
+    \defgroup metas Metas
+*/
+
+/**
+    \ingroup metas
+    Add hint that indicates ReadOnly policy for some Reflected Field
+*/
 using ReadOnly = Meta<Metas::ReadOnly>;
+
+/**
+    \ingroup metas
+    Add hint that indicates valid range of value
+    \arg \c minValue has value of DAVA::Any
+    \arg \c maxValue has value of DAVA::Any
+    Control will try to cast minValue and maxValue to control specific type T
+    If some of bound couldn't be casted to T, this bound will be equal std::numeric_limits<T>::min\max.
+*/
 using Range = Meta<Metas::Range>;
 
-using ValidatorResult = Metas::ValidationResult;
-using TValidationFn = Metas::TValidationFn;
+/**
+    \ingroup metas
+    Add value validation function to Reflected Field.
+    \arg \c validationFn should be pointer on a free function with specified signature \c TValidationFn
+*/
 using Validator = Meta<Metas::Validator>;
+/**
+    \ingroup metas
+    Validation callback
+*/
+using TValidationFn = Metas::TValidationFn;
+/**
+    \ingroup metas
+    Result of validation function
+    To get more information check Metas::ValidationResult documentation
+*/
+using ValidatorResult = Metas::ValidationResult;
 
+/**
+    \ingroup metas
+    Add hint that indicates that value of Reflected Field is enum and value has String representation
+    The following sample shows how to specify Enum meta for field:
+    \anchor enum_example
+    \code
+    enum ErrorCode
+    {
+        NoErrors,
+        OutOfBound,
+        InvalidArgument
+    }
+
+    DAVA_REFLECTION(Error)
+    {
+        ReflectionRegistrator<Error>::Begin()
+            .Field("error", &Error::error)[M::EnumT<ErrorCode>()]
+            .End()
+    }
+    \endcode
+
+    To get Enum meta from field you shoul use M::Enum:
+    \code
+    Reflection ref = model.GetField("error");
+    const M::Enum* enumMeta = ref.GetMeta<M::Enum>();
+    if (enumMeta != nullptr)
+    {
+        const EnumMap* enumMap = enumMeta->GetEnumMap();
+        // some client code here
+    }
+    \endcode
+*/
 using Enum = Meta<Metas::Enum>;
+/**
+    \ingroup metas
+    Template helper to specify Enum meta.
+    You should use it in ReflectionRegistrator.
+    To gen more information see \ref enum_example "Enum Example"
+*/
 template <typename T>
 using EnumT = Meta<Metas::EnumT<T>, Metas::Enum>;
 
+/**
+    \ingroup metas
+    Add hint that indicate Flags value of Reflected Field.
+    Work the same as Enum meta.
+    User should look after the values of Enum inside Flags to provide truly bitfield Enum
+*/
 using Flags = Meta<Metas::Flags>;
+/**
+    \ingroup metas
+    Template helper to specify Flags meta.
+    You should use it in ReflectionRegistrator.
+    To gen more information see \ref enum_example "Enum Example"
+*/
 template <typename T>
 using FlagsT = Meta<Metas::FlagsT<T>, Metas::Flags>;
 
+/**
+    \ingroup metas
+    Add hint that indicate value of Reflected Field as File.
+    \arg \c shouldExists has type of bool
+*/
 using File = Meta<Metas::File>;
+/**
+    \ingroup metas
+    Add hint that indicate value of Reflected Field as Directory.
+    \arg \c shouldExists has type of bool
+*/
 using Directory = Meta<Metas::Directory>;
+/**
+    \ingroup metas
+    Specify logically group for set of Reflected Fields.
+    \arg \c groupName has type of DAVA::String
+*/
 using Group = Meta<Metas::Group>;
+/**
+    \ingroup metas
+    Specify function that can provide string representation of value.
+    \arg \c descriptionFunction has value of String (*)(const DAVA::Any& value)
+
+    Example:
+    \code
+    void VisibleFieldDescription(const Any& value)
+    {
+        return value.Cast<bool>() == true ? String("Visible") : String("Invisible");
+    }
+
+    DAVA_REFLECTION(Entity)
+    {
+        ReflectionRegistrator<Entity>::Begin()
+        .Field("Visible", &Entity::visible)[M::ValueDescription(&VisibleFieldDescription)]
+        .End();
+    }
+    \endcode
+*/
 using ValueDescription = Meta<Metas::ValueDescription>;
 }
 

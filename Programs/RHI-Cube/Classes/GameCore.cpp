@@ -331,7 +331,7 @@ void GameCore::SetupCube()
     td.fragmentTexture[0] = cube.tex;
     cube.texSet = rhi::AcquireTextureSet(td);
 
-    cube_t0 = SystemTimer::Instance()->AbsoluteMS();
+    cube_t0 = SystemTimer::GetMs();
     cube_angle = 0;
 }
 
@@ -866,7 +866,7 @@ void GameCore::DrawTank()
     rhi::RenderPass::Begin(pass);
     rhi::CommandBuffer::Begin(cb[0]);    
 
-    float angle = 0.001f*float(SystemTimer::Instance()->AbsoluteMS()) * (30.0f*3.1415f / 180.0f);    
+    float angle = 0.001f*float(SystemTimer::GetMs()) * (30.0f*3.1415f / 180.0f);    
 
     float clr[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
     Matrix4 world;
@@ -1085,7 +1085,7 @@ void GameCore::SetupInstancedCube()
     td.fragmentTexture[0] = icube.tex;
     icube.texSet = rhi::AcquireTextureSet(td);
 
-    icube_t0 = SystemTimer::Instance()->AbsoluteMS();
+    icube_t0 = SystemTimer::GetMs();
     icube_angle = 0;
 }
 
@@ -1148,7 +1148,7 @@ void GameCore::DrawInstancedCube()
     rhi::RenderPass::Begin(pass);
     rhi::BeginPacketList(pl[0]);
 
-    uint64 icube_t1 = SystemTimer::Instance()->AbsoluteMS();
+    uint64 icube_t1 = SystemTimer::GetMs();
     uint64 dt = icube_t1 - icube_t0;
 
     icube_angle += 0.001f * float(dt) * (30.0f * 3.1415f / 180.0f);
@@ -1298,7 +1298,7 @@ void GameCore::rhiDraw()
     
 #else
 
-    uint64 cube_t1 = SystemTimer::Instance()->AbsoluteMS();
+    uint64 cube_t1 = SystemTimer::GetMs();
     uint64 dt = cube_t1 - cube_t0;
 
     cube_angle += 0.001f * float(dt) * (30.0f * 3.1415f / 180.0f);
@@ -1478,7 +1478,7 @@ void GameCore::manticoreDraw()
 
 #else
 
-    uint64 cube_t1 = SystemTimer::Instance()->AbsoluteMS();
+    uint64 cube_t1 = SystemTimer::GetMs();
     uint64 dt = cube_t1 - cube_t0;
 
     cube_angle += 0.001f * float(dt) * (30.0f * 3.1415f / 180.0f);
@@ -1646,7 +1646,7 @@ void GameCore::visibilityTestDraw()
     rhi::RenderPass::Begin(pass);
     rhi::BeginPacketList(pl[0]);
 
-    uint64 cube_t1 = SystemTimer::Instance()->AbsoluteMS();
+    uint64 cube_t1 = SystemTimer::GetMs();
     uint64 dt = cube_t1 - cube_t0;
 
     cube_angle += 0.001f * float(dt) * (30.0f * 3.1415f / 180.0f);
@@ -1750,7 +1750,7 @@ void GameCore::rtDraw()
         rhi::RenderPass::Begin(pass);
         rhi::BeginPacketList(pl[0]);
 
-        uint64 cube_t1 = SystemTimer::Instance()->AbsoluteMS();
+        uint64 cube_t1 = SystemTimer::GetMs();
         uint64 dt = cube_t1 - cube_t0;
 
         cube_angle += 0.001f * float(dt) * (30.0f * 3.1415f / 180.0f);

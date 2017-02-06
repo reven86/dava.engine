@@ -110,6 +110,7 @@ private:
     LRESULT OnPointerClick(uint32 pointerId, int32 x, int32 y);
     LRESULT OnPointerUpdate(uint32 pointerId, int32 x, int32 y);
     LRESULT OnKeyEvent(uint32 key, uint32 scanCode, bool isPressed, bool isExtended, bool isRepeated);
+    LRESULT OnShiftKeyEvent();
     LRESULT OnCharEvent(uint32 key, bool isRepeated);
     LRESULT OnCreate();
     LRESULT OnSetCursor(LPARAM lparam);
@@ -180,6 +181,8 @@ private:
     static const DWORD windowedStyle = WS_OVERLAPPEDWINDOW;
     static const DWORD fullscreenStyle = WS_POPUP;
     static const DWORD windowExStyle = 0;
+
+    bool lastShiftStates[2];
 };
 
 inline void* WindowBackend::GetHandle() const

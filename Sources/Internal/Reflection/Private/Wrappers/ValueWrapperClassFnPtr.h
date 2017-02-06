@@ -27,7 +27,7 @@ public:
         return (nullptr == setter || object.IsConst());
     }
 
-    const Type* GetType() const override
+    const Type* GetType(const ReflectedObject& object) const override
     {
         return Type::Instance<GetT>();
     }
