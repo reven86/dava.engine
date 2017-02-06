@@ -1,10 +1,10 @@
 #pragma once
 
-#include "Utils/StringFormat.h"
+#include <Tools/TextureCompression/TextureConverter.h>
+#include <Tools/AssetCache/AssetCache.h>
 
-#include "Utils/SceneUtils/SceneUtils.h"
-#include "TextureCompression/TextureConverter.h"
-#include "AssetCache/AssetCache.h"
+#include <Utils/StringFormat.h>
+#include <Utils/SceneUtils/SceneUtils.h>
 
 namespace DAVA
 {

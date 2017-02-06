@@ -1,5 +1,5 @@
-#include "TexturePacker/ResourcePacker2D.h"
-#include "TextureCompression/PVRConverter.h"
+#include <Tools/TexturePacker/ResourcePacker2D.h>
+#include <Tools/TextureCompression/PVRConverter.h>
 
 #include "Engine/Engine.h"
 #include "CommandLine/CommandLineParser.h"

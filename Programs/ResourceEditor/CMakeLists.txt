@@ -25,9 +25,10 @@ dava_add_definitions       (
 -D__DAVAENGINE_COREV2__
 )
 
-find_package( QT5 REQUIRED )
-
 find_package( DavaTools REQUIRED )
+
+
+find_package( QT5 REQUIRED )
 find_package( GMock REQUIRED )
 find_package( QtHelpers REQUIRED )
 

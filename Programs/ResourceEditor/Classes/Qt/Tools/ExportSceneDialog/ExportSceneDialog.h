@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Render/RenderBase.h"
-#include "TextureCompression/TextureConverter.h"
+#include <Tools/TextureCompression/TextureConverter.h>
+#include <Render/RenderBase.h>
 
 #include <QDialog.h>
 

@@ -26,9 +26,9 @@ protected:
         return valueCompositor.Compose(nodes);
     }
 
-    bool IsValidValueToSet(const Any& value) const override
+    bool IsValidValueToSet(const Any& newValue, const Any& currentValue) const override
     {
-        return valueCompositor.IsValidValue(value);
+        return valueCompositor.IsValidValue(newValue, currentValue);
     }
 
     const StaticEditorDrawer* GetStaticEditorDrawer() const override
@@ -36,7 +36,7 @@ protected:
         return &staticEditor;
     }
 
-private:
+protected:
     TStaticEditor staticEditor;
     TValueCompositor valueCompositor;
 
