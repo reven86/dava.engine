@@ -21,42 +21,52 @@ UISoundComponent* UISoundComponent::Clone() const
     return new UISoundComponent(*this);
 }
 
-void UISoundComponent::SetSoundEventName(UIControl::eEventType eventType, const FastName& eventName)
+void UISoundComponent::SetSoundEventName(UIControl::eEventType uiEventType, const FastName& soundEventName)
 {
-    soundEventNames[eventType] = eventName;
+    soundEventNames[uiEventType] = soundEventName;
 }
 
-const FastName& UISoundComponent::GetSoundEventName(UIControl::eEventType eventType) const
+const FastName& UISoundComponent::GetSoundEventName(UIControl::eEventType uiEventType) const
 {
-    return soundEventNames[eventType];
+    return soundEventNames[uiEventType];
 }
 
-void UISoundComponent::SetTouchDownSoundEventName(const FastName& eventName)
+void UISoundComponent::SetOnTouchDownSoundEventName(const FastName& soundEventName)
 {
-    SetSoundEventName(UIControl::EVENT_TOUCH_DOWN, eventName);
+    SetSoundEventName(UIControl::EVENT_TOUCH_DOWN, soundEventName);
 }
 
-const FastName& UISoundComponent::GetTouchDownSoundEventName() const
+const FastName& UISoundComponent::GetOnTouchDownSoundEventName() const
 {
     return GetSoundEventName(UIControl::EVENT_TOUCH_DOWN);
 }
 
-void UISoundComponent::SetTouchUpInsideSoundEventName(const FastName& eventName)
+void UISoundComponent::SetOnTouchUpInsideSoundEventName(const FastName& soundEventName)
 {
-    SetSoundEventName(UIControl::EVENT_TOUCH_UP_INSIDE, eventName);
+    SetSoundEventName(UIControl::EVENT_TOUCH_UP_INSIDE, soundEventName);
 }
 
-const FastName& UISoundComponent::GetTouchUpInsideSoundEventName() const
+const FastName& UISoundComponent::GetOnTouchUpInsideSoundEventName() const
 {
     return GetSoundEventName(UIControl::EVENT_TOUCH_UP_INSIDE);
 }
 
-void UISoundComponent::SetValueChangedSoundEventName(const FastName& eventName)
+void UISoundComponent::SetOnTouchUpOutsideSoundEventName(const FastName& soundEventName)
 {
-    SetSoundEventName(UIControl::EVENT_VALUE_CHANGED, eventName);
+    SetSoundEventName(UIControl::EVENT_TOUCH_UP_OUTSIDE, soundEventName);
 }
 
-const FastName& UISoundComponent::GetValueChangedSoundEventName() const
+const FastName& UISoundComponent::GetOnTouchUpOutsideSoundEventName() const
+{
+    return GetSoundEventName(UIControl::EVENT_TOUCH_UP_OUTSIDE);
+}
+
+void UISoundComponent::SetOnValueChangedSoundEventName(const FastName& soundEventName)
+{
+    SetSoundEventName(UIControl::EVENT_VALUE_CHANGED, soundEventName);
+}
+
+const FastName& UISoundComponent::GetOnValueChangedSoundEventName() const
 {
     return GetSoundEventName(UIControl::EVENT_VALUE_CHANGED);
 }

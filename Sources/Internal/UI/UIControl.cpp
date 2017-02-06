@@ -183,7 +183,7 @@ bool UIControl::RemoveAllEvents()
     return false;
 }
 
-void UIControl::PerformEvent(int32 eventType, UIEvent* uiEvent)
+void UIControl::PerformEvent(int32 eventType, UIEvent* uiEvent /* = nullptr*/)
 {
     if (eventDispatcher)
     {
@@ -193,11 +193,11 @@ void UIControl::PerformEvent(int32 eventType, UIEvent* uiEvent)
     UIControlSystem::Instance()->GetSoundSystem()->ProcessControlEvent(eventType, uiEvent, this);
 }
 
-void UIControl::PerformEventWithData(int32 eventType, UIEvent* uiEvent)
+void UIControl::PerformEventWithData(int32 eventType, void* callerData, UIEvent* uiEvent /* = nullptr*/)
 {
     if (eventDispatcher)
     {
-        eventDispatcher->PerformEventWithData(eventType, this, uiEvent);
+        eventDispatcher->PerformEventWithData(eventType, this, callerData);
     }
 
     UIControlSystem::Instance()->GetSoundSystem()->ProcessControlEvent(eventType, uiEvent, this);
@@ -1321,7 +1321,7 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
                     currentInputID = currentInput->touchId;
                 }
 
-                PerformEventWithData(EVENT_TOUCH_DOWN, currentInput);
+                PerformEventWithData(EVENT_TOUCH_DOWN, currentInput, currentInput);
 
                 Input(currentInput);
                 return true;
@@ -1411,7 +1411,7 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
                         eEventType event = isPointInside ? EVENT_TOUCH_UP_INSIDE : EVENT_TOUCH_UP_OUTSIDE;
 
                         Analytics::EmitUIEvent(this, event, currentInput);
-                        PerformEventWithData(event, currentInput);
+                        PerformEventWithData(event, currentInput, currentInput);
 
                         if (isPointInside)
                         {

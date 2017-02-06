@@ -202,13 +202,13 @@ void UISlider::Input(UIEvent* currentInput)
     {
         if (oldVal != currentValue)
         {
-            PerformEventWithData(EVENT_VALUE_CHANGED, currentInput);
+            PerformEventWithData(EVENT_VALUE_CHANGED, currentInput, currentInput);
         }
     }
     else if (currentInput->phase == UIEvent::Phase::ENDED)
     {
         /* if not continuos always perform event because last move position almost always the same as end pos */
-        PerformEventWithData(EVENT_VALUE_CHANGED, currentInput);
+        PerformEventWithData(EVENT_VALUE_CHANGED, currentInput, currentInput);
     }
 
     RecalcButtonPos();

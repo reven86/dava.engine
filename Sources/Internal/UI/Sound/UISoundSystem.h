@@ -32,6 +32,8 @@ private:
 
     RefPtr<SoundEvent> GetEvent(const FastName& eventName);
 
+    bool ShouldSkip(int32 eventType, const UIEvent* uiEvent, UIControl* control);
+
     GlobalParameterMap globalParameters;
     SoundEventMap soundEvents;
 };
