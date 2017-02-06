@@ -132,7 +132,7 @@ void WindowBackend::Close(bool appIsTerminating)
         // true value is always called on termination.
         if (surfaceView != nullptr)
         {
-            mainDispatcher->SendEvent(MainDispatcherEvent::CreateWindowDestroyedEvent(window));
+            mainDispatcher->SendEvent(MainDispatcherEvent::CreateWindowDestroyedEvent(window), MainDispatcher::eSendPolicy::IMMEDIATE_EXECUTION);
 
             JNIEnv* env = JNI::GetEnv();
             env->DeleteGlobalRef(surfaceView);
