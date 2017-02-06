@@ -480,17 +480,17 @@ void TextFieldPlatformImpl::SetSpriteFromImage(Image* image) const
 {
     if (uiTextField != nullptr)
     {
-        Sprite* sprite = nullptr;
+        RefPtr<Sprite> sprite;
 
         if (image != nullptr)
         {
             const Rect textFieldRect = uiTextField->GetRect();
             RefPtr<Texture> texture(Texture::CreateFromData(FORMAT_RGBA8888, image->GetData(), image->GetWidth(), image->GetHeight(), false));
-            sprite = Sprite::CreateFromTexture(texture.Get(), 0, 0, texture->GetWidth(), texture->GetHeight(), textFieldRect.dx, textFieldRect.dy);
+            sprite.Set(Sprite::CreateFromTexture(texture.Get(), 0, 0, texture->GetWidth(), texture->GetHeight(), textFieldRect.dx, textFieldRect.dy));
         }
 
         UIControlBackground* bg = uiTextField->GetOrCreateComponent<UIControlBackground>();
-        bg->SetSprite(sprite, 0);
+        bg->SetSprite(sprite.Get(), 0);
     }
 }
 
