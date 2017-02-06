@@ -73,8 +73,6 @@ const FastName Settings::General_Mouse_InvertWheel = FastName("General/Mouse/Inv
 const FastName Settings::General_Mouse_WheelMoveCamera = FastName("General/Mouse/WheelMoveCamera");
 const FastName Settings::General_Mouse_WheelMoveIntensity = FastName("General/Mouse/WheelMoveIntensity");
 
-const FastName Settings::Debug_DataWithMaterialsPathname = FastName("Debug/DataWithMaterialsPathname");
-
 const FastName Settings::InternalGroup = FastName("Internal");
 const FastName Settings::Internal_TextureViewGPU = FastName("Internal/TextureViewGPU");
 const FastName Settings::Internal_SpriteViewGPU = FastName("Internal/SpriteViewGPU");

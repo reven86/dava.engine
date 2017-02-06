@@ -1,7 +1,7 @@
 #include "Input/AccelerometerAndroid.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 
 namespace DAVA
 {
@@ -35,7 +35,7 @@ void AccelerometerAndroidImpl::SetAccelerationData(float x, float y, float z)
     if (enabled)
     {
         //			Logger::Debug("[AccelerometerAndroidImpl::SetAccelerationData] x=%f; y=%f; z=%f", x, y, z);
-        uint64 curTime = SystemTimer::Instance()->GetTickCount();
+        int64 curTime = SystemTimer::GetMs();
         float32 delta = (curTime - lastUpdate) / 1000.0f;
         if (updRate < delta)
         {

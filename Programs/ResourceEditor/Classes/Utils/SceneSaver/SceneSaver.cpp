@@ -10,6 +10,7 @@
 
 #include "FileSystem/FileList.h"
 #include "Scene3D/Components/CustomPropertiesComponent.h"
+#include "Time/SystemTimer.h"
 
 using namespace DAVA;
 
@@ -79,7 +80,7 @@ void SceneSaver::ResaveFile(const String& fileName)
 
 void SceneSaver::SaveScene(Scene* scene, const FilePath& fileName)
 {
-    uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
+    uint64 startTime = SystemTimer::GetMs();
 
     DVASSERT(0 == texturesForSave.size());
 
@@ -136,7 +137,7 @@ void SceneSaver::SaveScene(Scene* scene, const FilePath& fileName)
         Logger::Error("Can't move file %s", fileName.GetAbsolutePathname().c_str());
     }
 
-    uint64 saveTime = SystemTimer::Instance()->AbsoluteMS() - startTime;
+    uint64 saveTime = SystemTimer::GetMs() - startTime;
     Logger::FrameworkDebug("Save of %s to folder was done for %ldms", fileName.GetStringValue().c_str(), saveTime);
 }
 

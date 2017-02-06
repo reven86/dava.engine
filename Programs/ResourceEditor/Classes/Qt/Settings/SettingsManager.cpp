@@ -1,7 +1,7 @@
 #include "Settings/SettingsManager.h"
 
 #include "Scene/System/EditorMaterialSystem.h"
-#include "TextureCompression/TextureConverter.h"
+#include <Tools/TextureCompression/TextureConverter.h>
 
 #include "Scene/System/CollisionSystem.h"
 
@@ -15,7 +15,7 @@
 #include "FileSystem/VariantType.h"
 #include "Render/RenderBase.h"
 
-#include "AssetCache/AssetCache.h"
+#include <Tools/AssetCache/AssetCache.h>
 
 #define SETTINGS_CONFIG_FILE "~doc:/ResourceEditorOptions.archive"
 
@@ -144,8 +144,6 @@ void SettingsManager::Init()
     CreateValue(Settings::Internal_CustomPalette, DAVA::VariantType(reinterpret_cast<DAVA::uint8*>(colors), nColors * sizeof(*colors)));
     CreateValue(Settings::General_ColorMultiplyMax, DAVA::VariantType(static_cast<DAVA::float32>(2.0)));
     CreateValue(Settings::Internal_LogWidget, DAVA::VariantType(nullptr, 0));
-
-    CreateValue(Settings::Debug_DataWithMaterialsPathname, DAVA::VariantType(DAVA::String())); //use string because we cannot right now set filter for file dialog
 }
 
 DAVA::VariantType SettingsManager::GetValue(const DAVA::FastName& path)

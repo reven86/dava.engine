@@ -130,6 +130,8 @@ public:
     INTROSPECTION(BaseObject,
                   MEMBER(referenceCount, "referenceCount", I_SAVE)
                   )
+
+    DAVA_VIRTUAL_REFLECTION(BaseObject, InspBase);
 };
 
 template <typename T>

@@ -68,6 +68,9 @@ struct CoreNativeBridge final
 
     Mutex listenersMutex;
     List<PlatformApi::Ios::UIApplicationDelegateListener*> appDelegateListeners;
+
+    int64 goBackgroundTimeRelativeToBoot = 0;
+    int64 goBackgroundTime = 0;
 };
 
 } // namespace Private

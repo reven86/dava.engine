@@ -138,7 +138,7 @@ private:
     DAVA_NOINLINE void CollectBacktrace(Backtrace* backtrace, size_t nskip);
     void ObtainBacktraceSymbols(const Backtrace* backtrace);
 
-    void SymbolCollectorThread(BaseObject*, void*, void*);
+    void SymbolCollectorThread();
 
 private:
     MemoryBlock* head = nullptr; // Linked list of tracked memory blocks

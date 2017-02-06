@@ -107,17 +107,6 @@ QString ProcessID(const QString& id)
     return result;
 }
 
-bool FillAppFields(AppVersion* appVer, const QJsonObject& entry, bool toolset)
-{
-    QString buildType = entry["build_type"].toString();
-    appVer->id = ProcessID(buildType);
-    appVer->url = entry["artifacts"].toString();
-    appVer->buildNum = entry["build_num"].toString();
-    appVer->runPath = toolset ? "" : entry["exe_location"].toString();
-    appVer->isToolSet = toolset;
-    return !appVer->id.isEmpty();
-}
-
 bool ExtractApp(const QString& appName, const QJsonObject& entry, Branch* branch, bool toolset)
 {
     if (appName.isEmpty())
@@ -178,7 +167,7 @@ bool GetBranches(const QJsonValue& value, QVector<Branch>& branches)
         }
 
         QString appName = entry["build_name"].toString();
-        if (appName.startsWith("toolset", Qt::CaseInsensitive))
+        if (IsToolset(appName))
         {
             for (const QString& toolsetApp : ConfigParser::GetToolsetApplications())
             {
@@ -199,6 +188,22 @@ bool GetBranches(const QJsonValue& value, QVector<Branch>& branches)
 
     return isValid;
 }
+}
+
+bool IsToolset(const QString& appName)
+{
+    return appName.startsWith("toolset", Qt::CaseInsensitive);
+}
+
+bool FillAppFields(AppVersion* appVer, const QJsonObject& entry, bool toolset)
+{
+    QString buildType = entry["build_type"].toString();
+    appVer->id = ConfigParserDetails::ProcessID(buildType);
+    appVer->url = entry["artifacts"].toString();
+    appVer->buildNum = entry["build_num"].toString();
+    appVer->runPath = toolset ? "" : entry["exe_location"].toString();
+    appVer->isToolSet = toolset;
+    return !appVer->id.isEmpty();
 }
 
 AppVersion AppVersion::LoadFromYamlNode(const YAML::Node* node)
@@ -699,16 +704,34 @@ Application* ConfigParser::GetApplication(const QString& branchID, const QString
         int appCount = branch->applications.size();
         for (int i = 0; i < appCount; ++i)
             if (branch->applications[i].id == appID)
+            {
                 return &branch->applications[i];
+            }
     }
 
-    return 0;
+    return nullptr;
+}
+
+const Application* ConfigParser::GetApplication(const QString& branchID, const QString& appID) const
+{
+    const Branch* branch = GetBranch(branchID);
+    if (branch != nullptr)
+    {
+        int appCount = branch->applications.size();
+        for (int i = 0; i < appCount; ++i)
+            if (branch->applications[i].id == appID)
+            {
+                return &branch->applications[i];
+            }
+    }
+
+    return nullptr;
 }
 
 AppVersion* ConfigParser::GetAppVersion(const QString& branchID, const QString& appID, const QString& ver)
 {
     Application* app = GetApplication(branchID, appID);
-    if (app)
+    if (app != nullptr)
     {
         int versCount = app->versions.size();
         for (int i = 0; i < versCount; ++i)
@@ -716,7 +739,7 @@ AppVersion* ConfigParser::GetAppVersion(const QString& branchID, const QString& 
                 return &app->versions[i];
     }
 
-    return 0;
+    return nullptr;
 }
 
 QString ConfigParser::GetString(const QString& stringID) const

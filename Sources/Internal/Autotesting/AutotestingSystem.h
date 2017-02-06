@@ -8,10 +8,9 @@
 #include "DAVAEngine.h"
 #include "Base/Singleton.h"
 #include "FileSystem/FileSystem.h"
+#include "Time/DateTime.h"
 
 #include "Autotesting/AutotestingSystemLua.h"
-
-#include "Platform/DateTime.h"
 
 namespace DAVA
 {
@@ -97,7 +96,8 @@ public:
         return luaSystem;
     };
 
-    static String ResolvePathToAutomation(const String& automationPath);
+    bool ResolvePathToAutomation();
+    FilePath GetPathTo(const String& path);
 
 protected:
     void DrawTouches();
@@ -112,9 +112,10 @@ protected:
 
 private:
     bool isScreenShotSaving = false;
+    FilePath pathToAutomation;
 
 public:
-    uint64 startTimeMS;
+    float32 startTime = 0.f;
 
     bool isInit;
     bool isRunning;

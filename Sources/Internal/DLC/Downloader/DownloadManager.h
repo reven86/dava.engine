@@ -21,6 +21,7 @@ public:
     DownloadManager(Engine* e);
     Engine* engine = nullptr;
     size_t sigUpdateId = 0;
+    size_t sigBackgroundUpdateId = 0;
 #else
     DownloadManager() = default;
 #endif
@@ -89,6 +90,7 @@ public:
     bool GetTotal(const uint32& taskId, uint64& total);
     bool GetProgress(const uint32& taskId, uint64& progress);
     bool GetError(const uint32& taskId, DownloadError& error);
+    bool GetImplError(const uint32& taskId, int32& implError);
     bool GetFileErrno(const uint32& taskId, int32& fileErrno);
     bool GetBuffer(uint32 taskId, void*& buffer, uint32& nread);
     DownloadStatistics GetStatistics();
@@ -112,7 +114,7 @@ private:
 
     void StartProcessingThread();
     void StopProcessingThread();
-    void ThreadFunction(BaseObject* caller, void* callerData, void* userData);
+    void ThreadFunction();
 
     void ClearQueue(Deque<DownloadTaskDescription*>& queue);
     DownloadTaskDescription* ExtractFromQueue(Deque<DownloadTaskDescription*>& queue, const uint32& taskId);

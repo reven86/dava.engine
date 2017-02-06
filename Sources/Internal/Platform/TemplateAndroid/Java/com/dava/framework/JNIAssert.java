@@ -5,8 +5,10 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 
-public class JNIAssert {
-    
+import com.dava.engine.DavaActivity;
+
+public class JNIAssert
+{    
     public static volatile boolean waitUserInputOnAssertDialog = false;
     
     private static boolean breakExecution = false;
@@ -15,7 +17,13 @@ public class JNIAssert {
 	public static synchronized boolean Assert(final boolean isModal,
 	        final String message)
 	{
+        // Using both DavaActivity & JNIActivity as a temporary solution until new message boxes arrive
+
 		Activity activity = JNIActivity.GetActivity();
+        if (activity == null)
+        {
+            activity = DavaActivity.instance();
+        }
 
         if (activity == null || activity.isFinishing())
         {
@@ -23,9 +31,12 @@ public class JNIAssert {
             return false;
         }
 
+        final boolean isPaused = (activity instanceof JNIActivity) ? JNIActivity.isPaused : ((DavaActivity)activity).isPaused();
+        final boolean isFocused = (activity instanceof JNIActivity) ? JNIActivity.isFocused : ((DavaActivity)activity).isFocused();
+
 		AlertDialog.Builder alertDialog = new AlertDialog.Builder(activity);
 		alertDialog.setMessage(message);
-		if (isModal && !JNIActivity.isPaused && JNIActivity.isFocused)
+		if (isModal && !isPaused && isFocused)
 		{
 		    waitUserInputOnAssertDialog = true;
 		    waitUserInput(activity, alertDialog);

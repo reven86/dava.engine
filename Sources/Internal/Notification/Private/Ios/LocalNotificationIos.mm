@@ -7,7 +7,6 @@
 #import <UIKit/UIApplication.h>
 #import <UIKit/UILocalNotification.h>
 #import "Utils/NSStringUtils.h"
-#import "Platform/DateTime.h"
 
 namespace DAVA
 {

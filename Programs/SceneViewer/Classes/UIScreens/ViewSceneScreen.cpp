@@ -402,11 +402,11 @@ void ViewSceneScreen::OnButtonReloadShaders(DAVA::BaseObject* caller, void* para
 
 void ViewSceneScreen::Draw(const DAVA::UIGeometricData& geometricData)
 {
-    //DAVA::uint64 startTime = DAVA::SystemTimer::Instance()->GetAbsoluteNano();
+    //DAVA::uint64 startTime = DAVA::SystemTimer::Instance()->GetNs();
 
     BaseScreen::Draw(geometricData);
 
-    //drawTime += (SystemTimer::Instance()->GetAbsoluteNano() - startTime);
+    //drawTime += (SystemTimer::Instance()->GetNs() - startTime);
 }
 
 void ViewSceneScreen::ReloadScene()
