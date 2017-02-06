@@ -2,17 +2,18 @@ cmake_minimum_required( VERSION 3.0 )
 
 project               ( ResourcePatcher )
 
-set                   ( DAVA_DISABLE_AUTOTESTS true )
 set                   ( WARNINGS_AS_ERRORS true )
 set                   ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
 include               ( CMake-common )
 
 set ( DAVA_COREV2 1 )
-add_definitions ( -D__DAVAENGINE_COREV2__ 
-                             -DCONSOLE)
-
-find_package          ( DavaFramework REQUIRED )
+dava_add_definitions ( -D__DAVAENGINE_COREV2__ )
 find_package          ( DavaTools     REQUIRED )
+
+
+dava_add_definitions ( -DCONSOLE )
+
+find_package          ( DavaFramework REQUIRED COMPONENTS ALL DAVA_DISABLE_AUTOTESTS )
 
 include_directories   ( "Classes" )
 

@@ -5,7 +5,7 @@
 #include "Scene3D/Components/TransformComponent.h"
 #include "Scene3D/Components/ParticleEffectComponent.h"
 #include "Render/Highlevel/Camera.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 #include "Core/PerformanceSettings.h"
 #include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerMarkerNames.h"

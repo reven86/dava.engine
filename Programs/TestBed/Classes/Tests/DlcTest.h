@@ -11,8 +11,8 @@ class TestBed;
 
 struct DLCCrashTest
 {
-    uint64 cancelTimeout;
-    uint64 exitTimeout;
+    int64 cancelTimeout;
+    int64 exitTimeout;
     uint32 retryCount;
 
     DAVA::FilePath testingFileFlag;

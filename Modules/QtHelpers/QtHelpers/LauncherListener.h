@@ -37,14 +37,14 @@ public:
     //SetProcessRequestFunction([](eMessage message) { return UNKNOWN_MESSAGE; };
     using ProcessRequestFunction = std::function<eReply(eMessage)>;
     bool Init(ProcessRequestFunction function);
-    
+
 private slots:
     void OnNewConnection();
     void ProcessTransportLevel();
 
 private:
-    int ProcessChannelLevel(const QByteArray &data);
-    int ProcessDataLevel(const QByteArray &data);
+    int ProcessChannelLevel(const QByteArray& data);
+    int ProcessDataLevel(const QByteArray& data);
 
     QString lastError;
     std::unique_ptr<QLocalServer> server;

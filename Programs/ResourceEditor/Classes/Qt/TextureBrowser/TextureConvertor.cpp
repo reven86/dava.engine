@@ -9,10 +9,11 @@
 
 #include "Main/mainwindow.h"
 #include "TextureBrowser/TextureConvertor.h"
-#include "TextureCompression/TextureConverter.h"
 #include "Deprecated/SceneValidator.h"
-#include "Render/Image/LibDdsHelper.h"
 
+#include <Tools/TextureCompression/TextureConverter.h>
+
+#include "Render/Image/LibDdsHelper.h"
 #include "FileSystem/FileSystem.h"
 
 #include "Main/QtUtils.h"

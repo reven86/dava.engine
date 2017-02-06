@@ -1,7 +1,7 @@
 #pragma once
 
-#include "TextureCompression/TextureConverter.h"
-#include "AssetCache/AssetCacheClient.h"
+#include <Tools/TextureCompression/TextureConverter.h>
+#include <Tools/AssetCache/AssetCacheClient.h>
 
 #include "Utils/SceneExporter/SceneExporter.h"
 

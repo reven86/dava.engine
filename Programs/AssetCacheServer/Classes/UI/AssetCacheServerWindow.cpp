@@ -1,14 +1,14 @@
-#include "Version.h"
-
 #include "UI/AssetCacheServerWindow.h"
 #include "ui_AssetCacheServerWidget.h"
 #include "UI/SharedPoolWidget.h"
 #include "UI/SharedServerWidget.h"
 
-#include "AssetCache/AssetCacheConstants.h"
-
 #include "ApplicationSettings.h"
 #include "CustomServerWidget.h"
+
+#include <Tools/AssetCache/AssetCacheConstants.h>
+#include <Tools/Version.h>
+
 
 #include "FileSystem/KeyedArchive.h"
 #include "FileSystem/FileSystem.h"
