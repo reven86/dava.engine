@@ -28,6 +28,7 @@ DownloadManager::DownloadManager(Engine* e)
     : engine(e)
 {
     engine->update.Connect(this, &DownloadManager::Update);
+    engine->backgroundUpdate.Connect(this, &DownloadManager::Update);
 }
 #endif
 
@@ -35,6 +36,7 @@ DownloadManager::~DownloadManager()
 {
 #if defined(__DAVAENGINE_COREV2__)
     engine->update.Disconnect(this);
+    engine->backgroundUpdate.Disconnect(this);
 #endif
 
     isThreadStarted = false;

@@ -23,7 +23,7 @@ LauncherListener::~LauncherListener()
 
 bool LauncherListener::Init(ProcessRequestFunction function)
 {
-    QApplication *application = qApp;
+    QApplication* application = qApp;
     if (application == nullptr)
     {
         lastError = "LauncherListener: application was not initialized";
@@ -33,7 +33,7 @@ bool LauncherListener::Init(ProcessRequestFunction function)
     CFURLRef url = (CFURLRef)CFAutorelease((CFURLRef)CFBundleCopyBundleURL(CFBundleGetMainBundle()));
     QString appPath = QUrl::fromCFURL(url).path();
     //launcher will use app as a file, but not as a folder
-    while(appPath.endsWith('/'))
+    while (appPath.endsWith('/'))
     {
         appPath.chop(1);
     }
@@ -60,7 +60,7 @@ bool LauncherListener::Init(ProcessRequestFunction function)
 
 void LauncherListener::OnNewConnection()
 {
-    QLocalSocket *clientConnection = server->nextPendingConnection();
+    QLocalSocket* clientConnection = server->nextPendingConnection();
 
     QObject::connect(clientConnection, &QLocalSocket::disconnected, clientConnection, &QLocalSocket::deleteLater);
     QObject::connect(clientConnection, &QLocalSocket::readyRead, this, &LauncherListener::ProcessTransportLevel);
@@ -68,7 +68,7 @@ void LauncherListener::OnNewConnection()
 
 void LauncherListener::ProcessTransportLevel()
 {
-    QLocalSocket *clientConnection = qobject_cast<QLocalSocket*>(sender());
+    QLocalSocket* clientConnection = qobject_cast<QLocalSocket*>(sender());
     if (clientConnection == nullptr)
     {
         qCritical() << "internal error, OnReadyRead called not from QLocalSocket";
@@ -88,7 +88,7 @@ void LauncherListener::ProcessTransportLevel()
     clientConnection->disconnectFromServer();
 }
 
-int LauncherListener::ProcessChannelLevel(const QByteArray &data)
+int LauncherListener::ProcessChannelLevel(const QByteArray& data)
 {
     using namespace LauncherIPCHelpers;
     bool ok = false;
@@ -104,7 +104,7 @@ int LauncherListener::ProcessChannelLevel(const QByteArray &data)
     return UNKNOWN_MESSAGE;
 }
 
-int LauncherListener::ProcessDataLevel(const QByteArray &data)
+int LauncherListener::ProcessDataLevel(const QByteArray& data)
 {
     bool ok = false;
     int messageCode = data.toInt(&ok);

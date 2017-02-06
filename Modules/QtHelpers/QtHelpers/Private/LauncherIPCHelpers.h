@@ -20,11 +20,10 @@ enum eProtocolReply
     USER_REPLY = 0xffff
 };
 
-QString PathToKey(const QString &path);
-
+QString PathToKey(const QString& path);
 }
 
-inline QString LauncherIPCHelpers::PathToKey(const QString &path)
+inline QString LauncherIPCHelpers::PathToKey(const QString& path)
 {
     return QCryptographicHash::hash(path.toUtf8(), QCryptographicHash::Sha1).toHex();
 }
