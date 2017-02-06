@@ -162,7 +162,7 @@ protected:
         DAVA::Reflection field = model.GetField(GetFieldName(role));
         if (field.IsValid())
         {
-            return field.GetValue<CastType>();
+            return field.GetValue().Cast<CastType>(defaultValue);
         }
 
         return defaultValue;
