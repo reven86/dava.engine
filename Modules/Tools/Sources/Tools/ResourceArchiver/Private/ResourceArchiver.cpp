@@ -659,7 +659,7 @@ bool Pack(const Vector<CollectedFile>& collectedFiles, DAVA::Compressor::Type co
 				return false;
 			}
 
-			Vector<uint8> in_bytes(file->GetSize());
+			Vector<uint8> in_bytes(static_cast<size_t>(file->GetSize()));
 			Vector<uint8> out_bytes;
 			uint32 read = file->Read(&in_bytes[0], static_cast<uint32>(in_bytes.size()));
 			if (read != in_bytes.size())
