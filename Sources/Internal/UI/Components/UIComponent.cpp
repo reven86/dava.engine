@@ -16,6 +16,7 @@
 #include "UI/Input/UIActionBindingComponent.h"
 #include "UI/Scroll/UIScrollBarDelegateComponent.h"
 #include "UI/Sound/UISoundComponent.h"
+#include "UI/Sound/UISliderSoundComponent.h"
 
 namespace DAVA
 {
@@ -89,6 +90,9 @@ UIComponent* UIComponent::CreateByType(uint32 componentType)
 
     case SOUND_COMPONENT:
         return new UISoundComponent();
+
+    case SLIDER_SOUND_COMPONENT:
+        return new UISliderSoundComponent();
 
     default:
         DVASSERT(false);

@@ -32,20 +32,6 @@ private:
 
     DAVA::Array<FastName, UIControl::EVENTS_COUNT> soundEventNames;
 
-    //     enum eEventType
-    //     {
-    //         EVENT_TOUCH_DOWN = 1, //!<Trigger when mouse button or touch comes down inside the control.
-    //         EVENT_TOUCH_UP_INSIDE = 2, //!<Trigger when mouse pressure or touch processed by the control is released.
-    //         EVENT_VALUE_CHANGED = 3, //!<Used with sliders, spinners and switches. Trigger when value of the control is changed. Non-NULL callerData means that value is changed from code, not from UI.
-    //         EVENT_HOVERED_SET = 4, //!<
-    //         EVENT_HOVERED_REMOVED = 5, //!<
-    //         EVENT_FOCUS_SET = 6, //!<Trigger when control becomes focused
-    //         EVENT_FOCUS_LOST = 7, //!<Trigger when control losts focus
-    //         EVENT_TOUCH_UP_OUTSIDE = 8, //!<Trigger when mouse pressure or touch processed by the control is released outside of the control.
-    //         EVENT_ALL_ANIMATIONS_FINISHED = 9, //!<Trigger when all animations associated with control are ended.
-    //         EVENTS_COUNT
-    //     };
-
 public:
     INTROSPECTION_EXTEND(UISoundComponent, UIComponent,
                          PROPERTY("touchDownEventName", "EVENT_TOUCH_DOWN", GetTouchDownSoundEventName, SetTouchDownSoundEventName, I_SAVE | I_VIEW | I_EDIT | I_LOAD)

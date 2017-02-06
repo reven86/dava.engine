@@ -23,6 +23,29 @@ void UISoundSystem::ProcessControlEvent(int32 eventType, const UIEvent* uiEvent,
 
     if (soundComponent)
     {
+        if (eventType == UIControl::EVENT_VALUE_CHANGED)
+        {
+            UISliderSoundComponent* sliderSoundComponent = control->GetComponent<UISliderSoundComponent>();
+            if (sliderSoundComponent)
+            {
+                UISlider* slider = dynamic_cast<UISlider*>(control);
+
+                if (slider)
+                {
+                    const float32 value = slider->GetValue();
+
+                    const int32 normalizedValue = (int32)(slider->GetValue() / sliderSoundComponent->GetStep());
+
+                    if (sliderSoundComponent->normalizedValue == normalizedValue)
+                    {
+                        return;
+                    }
+
+                    sliderSoundComponent->normalizedValue = normalizedValue;
+                }
+            }
+        }
+
         const FastName& soundEventName = soundComponent->GetSoundEventName(static_cast<UIControl::eEventType>(eventType));
 
         if (soundEventName.IsValid())
