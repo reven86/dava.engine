@@ -29,6 +29,8 @@
 #include "Beast/BeastProxy.h"
 #endif //__DAVAENGINE_BEAST__
 
+#include "Classes/DevFuncs/TestUIModuleData.h"
+
 #include "TArc/Core/Core.h"
 #include "TArc/Testing/TArcTestClass.h"
 #include "TArc/Utils/ModuleCollection.h"
@@ -209,4 +211,12 @@ void REApplication::CreateConsoleModules(DAVA::TArc::Core* tarcCore) const
         DAVA::Logger::Error("Cannot create commandLine module for command \'%s\'", command.c_str());
         createModuleFn("-help");
     }
+}
+
+void REApplication::RegisterEditorAnyCasts()
+{
+    DAVA::TArc::BaseApplication::RegisterEditorAnyCasts();
+
+    DAVA::AnyCast<ComboBoxTestDataDescr, DAVA::String>::Register(&ComboBoxTestDataDescrToString);
+    DAVA::AnyCast<ComboBoxTestDataDescr, QIcon>::Register(&ComboBoxTestDataDescrToQIcon);
 }

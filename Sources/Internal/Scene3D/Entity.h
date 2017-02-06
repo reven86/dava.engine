@@ -407,10 +407,6 @@ protected:
     uint32 id;
     uint32 sceneId;
 
-    //TODO: remove it!!!!
-    int testEnum = EVENT_CREATE_ENTITY;
-    //END_OF_TODO
-
 private:
     Vector<Component*> components;
     EntityFamily* family;

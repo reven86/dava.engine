@@ -1,10 +1,14 @@
+
 #include "TArc/Controls/ComboBox.h"
 #include "TArc/Utils/ScopedValueGuard.h"
+#include "TArc/DataProcessing/AnyQMetaType.h"
 
 #include <Base/FastName.h>
+#include <Logger/Logger.h>
 #include <Reflection/ReflectedMeta.h>
 
 #include <QSignalBlocker>
+#include <QVariant>
 
 namespace DAVA
 {
@@ -20,9 +24,10 @@ const M::Enum* GetEnumMeta(const Reflection& fieldValue, const Reflection& field
         return enumMeta;
     }
 
-    if (fieldEnumerator.IsValid() && fieldEnumerator.GetValue().CanCast<const M::Enum*>())
+    Any value = fieldEnumerator.GetValue();
+    if (fieldEnumerator.IsValid() && value.CanCast<const M::Enum*>())
     {
-        return fieldEnumerator.GetValue().Cast<const M::Enum*>();
+        return value.Cast<const M::Enum*>();
     }
 
     return nullptr;
@@ -44,6 +49,8 @@ ComboBox::ComboBox(const ControlDescriptorBuilder<Fields>& fields, ContextAccess
 void ComboBox::SetupControl()
 {
     connections.AddConnection(this, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), MakeFunction(this, &ComboBox::CurrentIndexChanged));
+
+    installEventFilter(this);
 }
 
 void ComboBox::UpdateControl(const ControlDescriptor& changedFields)
@@ -64,7 +71,7 @@ void ComboBox::UpdateControl(const ControlDescriptor& changedFields)
     ProcessReadOnlyState(fieldValue, changedFields);
 
     int countInCombo = count();
-    if (countInCombo == 0)
+    if (countInCombo == 0 || changedFields.IsChanged(Fields::Enumerator))
     {
         CreateItems(fieldValue, fieldEnumerator);
     }
@@ -91,6 +98,12 @@ void ComboBox::ProcessReadOnlyState(const Reflection& fieldValue, const ControlD
 void ComboBox::CreateItems(const Reflection& fieldValue, const Reflection& fieldEnumerator)
 {
     QSignalBlocker blockSignals(this);
+
+    if (count() != 0)
+    {
+        clear();
+    }
+
     const M::Enum* enumMeta = ComboBoxDetails::GetEnumMeta(fieldValue, fieldEnumerator);
     if (enumMeta != nullptr)
     {
@@ -102,7 +115,10 @@ void ComboBox::CreateItems(const Reflection& fieldValue, const Reflection& field
             bool ok = enumMap->GetValue(i, iValue);
             if (ok)
             {
-                addItem(enumMap->ToString(iValue), iValue);
+                QVariant dataValue;
+                dataValue.setValue(Any(iValue));
+
+                addItem(enumMap->ToString(iValue), dataValue);
             }
             else
             {
@@ -117,7 +133,19 @@ void ComboBox::CreateItems(const Reflection& fieldValue, const Reflection& field
         Vector<Reflection::Field> fields = fieldEnumerator.GetFields();
         for (Reflection::Field& field : fields)
         {
-            addItem(field.ref.GetValue().Cast<String>().c_str(), field.key.Cast<int>());
+            Any fieldDescr = field.ref.GetValue();
+
+            QVariant dataValue;
+            dataValue.setValue(field.key);
+
+            if (fieldDescr.CanCast<QIcon>())
+            {
+                addItem(fieldDescr.Cast<QIcon>(), fieldDescr.Cast<String>().c_str(), dataValue);
+            }
+            else
+            {
+                addItem(fieldDescr.Cast<String>().c_str(), dataValue);
+            }
         }
     }
 }
@@ -127,11 +155,11 @@ int ComboBox::SelectCurrentItem(const Reflection& fieldValue, const Reflection& 
     Any value = fieldValue.GetValue();
     if (value.IsEmpty() == false)
     {
-        int intValue = value.Cast<int>();
         int countInCombo = count();
         for (int i = 0; i < countInCombo; ++i)
         {
-            if (intValue == itemData(i).toInt())
+            Any iAny = itemData(i).value<Any>();
+            if (value == iAny)
             {
                 return i;
             }
@@ -149,8 +177,7 @@ void ComboBox::CurrentIndexChanged(int newCurrentItem)
         return;
     }
 
-    int newValue = itemData(newCurrentItem).toInt();
-    wrapper.SetFieldValue(GetFieldName(Fields::Value), newValue);
+    wrapper.SetFieldValue(GetFieldName(Fields::Value), itemData(newCurrentItem).value<Any>());
 }
 
 } // namespace TArc

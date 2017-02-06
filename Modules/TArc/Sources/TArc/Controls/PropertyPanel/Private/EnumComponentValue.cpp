@@ -24,7 +24,7 @@ const M::Enum* EnumComponentValue::GetEnumerator() const
 {
     if (nodes.empty() == false)
     {
-        return nodes[0]->field.ref.GetMeta<M::Enum>();
+        return nodes.front()->field.ref.GetMeta<M::Enum>();
     }
     return nullptr;
 }
@@ -34,21 +34,16 @@ QWidget* EnumComponentValue::AcquireEditorWidget(QWidget* parent, const QStyleOp
     ControlDescriptorBuilder<ComboBox::Fields> descr;
     descr[ComboBox::Fields::Value] = "value";
     descr[ComboBox::Fields::Enumerator] = "enumerator";
+    descr[ComboBox::Fields::IsReadOnly] = "readOnly";
     return (new ComboBox(descr, GetWrappersProcessor(), GetReflection(), parent))->ToWidgetCast();
-}
-
-void EnumComponentValue::ReleaseEditorWidget(QWidget* editor)
-{
-    editor->deleteLater();
 }
 
 bool EnumComponentValue::IsReadOnly() const
 {
-    return nodes.front()->field.ref.IsReadonly();
-}
-
-bool EnumComponentValue::IsEnabled() const
-{
+    if (nodes.empty() == false)
+    {
+        return nodes.front()->field.ref.IsReadonly();
+    }
     return true;
 }
 
@@ -58,7 +53,6 @@ DAVA_VIRTUAL_REFLECTION_IMPL(EnumComponentValue)
     .Field("value", &EnumComponentValue::GetValueAny, &EnumComponentValue::SetValueAny)
     .Field("enumerator", &EnumComponentValue::GetEnumerator, nullptr)
     .Field("readOnly", &EnumComponentValue::IsReadOnly, nullptr)
-    .Field("enabled", &EnumComponentValue::IsEnabled, nullptr)
     .End();
 }
 } //TArc

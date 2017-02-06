@@ -4,20 +4,25 @@
 
 #include "TArc/Core/ClientModule.h"
 #include "TArc/Controls/ComboBox.h"
+#include "TArc/Controls/QtBoxLayouts.h"
 #include "TArc/Utils/QtConnections.h"
+
+#include <QtTools/Utils/QtDelayedExecutor.h>
 
 #include <Base/Any.h>
 #include <Base/BaseTypes.h>
 #include <Base/FastName.h>
+#include <Base/GlobalEnum.h>
+#include <Reflection/ReflectedMeta.h>
 #include <Reflection/ReflectionRegistrator.h>
 
 #include <QtTest>
 #include <QComboBox>
 #include <QStyle>
 #include <QStyleOption>
-
 #include <QAbstractItemView>
-#include <QDebug>
+#include <QAbstractItemModel>
+#include <QWidget>
 
 namespace ComboBoxTestDetails
 {
@@ -28,36 +33,82 @@ class ComboBoxTestModule : public DAVA::TArc::ClientModule
 public:
     enum eTestedValue
     {
-        first = 10,
+        first = 0,
         second,
-        third
+        third,
+        count
     };
 
     class TestModel : public ReflectionBase
     {
     public:
-        int value = eTestedValue::second;
+        int value = eTestedValue::first;
 
-        DAVA::UnorderedMap<int, DAVA::FastName> enumeratorUnordered = DAVA::UnorderedMap<int, DAVA::FastName>
+        DAVA::UnorderedMap<int, DAVA::FastName> enumeratorUnorderedMap = DAVA::UnorderedMap<int, DAVA::FastName>
         {
-          { third, DAVA::FastName("third") },
-          { second, DAVA::FastName("second") },
           { first, DAVA::FastName("first") },
+          { second, DAVA::FastName("second") },
+          { third, DAVA::FastName("third") }
         };
 
-        DAVA::Map<int, DAVA::String> enumeratorOrdered = DAVA::Map<int, DAVA::String>
+        DAVA::Map<int, DAVA::String> enumeratorOrderedMap = DAVA::Map<int, DAVA::String>
         {
           { third, "third" },
           { second, "second" },
           { first, "first" }
         };
 
+        DAVA::Vector<DAVA::String> enumeratorVector = DAVA::Vector<DAVA::String>
+        {
+          "first", "second", "third"
+        };
+
+        DAVA::Set<DAVA::String> enumeratorSet = DAVA::Set<DAVA::String>
+        {
+          "first", "second", "third"
+        };
+
+        size_t GetSize_tValue() const
+        {
+            return value;
+        }
+
+        void SetSize_tValue(size_t newValue)
+        {
+            value = static_cast<int>(newValue);
+        }
+
+        const DAVA::String GetStringValue() const
+        {
+            auto it = enumeratorSet.begin();
+            std::advance(it, value);
+            return *it;
+        }
+
+        void SetStringValue(const DAVA::String& newStringValue)
+        {
+            auto it = enumeratorSet.begin();
+            for (int i = 0; i < static_cast<int>(enumeratorSet.size()); ++i, ++it)
+            {
+                if (newStringValue == *it)
+                {
+                    value = i;
+                    break;
+                }
+            }
+        }
+
         DAVA_VIRTUAL_REFLECTION_IN_PLACE(TestModel, ReflectionBase)
         {
             DAVA::ReflectionRegistrator<TestModel>::Begin()
+            .Field("valueMeta", &TestModel::value)[DAVA::M::EnumT<ComboBoxTestModule::eTestedValue>()]
             .Field("value", &TestModel::value)
-            .Field("enumeratorUnordered", &TestModel::enumeratorUnordered)
-            .Field("enumeratorOrdered", &TestModel::enumeratorOrdered)
+            .Field("valueSize_t", &TestModel::GetSize_tValue, &TestModel::SetSize_tValue)
+            .Field("valueString", &TestModel::GetStringValue, &TestModel::SetStringValue)
+            .Field("enumeratorUnorderedMap", &TestModel::enumeratorUnorderedMap)
+            .Field("enumeratorOrderedMap", &TestModel::enumeratorOrderedMap)
+            .Field("enumeratorVector", &TestModel::enumeratorVector)
+            .Field("enumeratorSet", &TestModel::enumeratorSet)
             .End();
         }
     };
@@ -75,23 +126,55 @@ public:
 
         DAVA::Reflection reflectedModel = DAVA::Reflection::Create(&model);
 
+        QWidget* w = new QWidget();
+        QtVBoxLayout* layout = new QtVBoxLayout(w);
+
         {
             ControlDescriptorBuilder<ComboBox::Fields> descriptor;
-            descriptor[ComboBox::Fields::Value] = "value";
-            descriptor[ComboBox::Fields::Enumerator] = "enumeratorUnordered";
+            descriptor[ComboBox::Fields::Value] = "valueMeta";
             ComboBox* comboBox = new ComboBox(descriptor, GetAccessor(), reflectedModel);
-            DAVA::TArc::PanelKey panelKey("ComboBoxUnordered", DAVA::TArc::CentralPanelInfo());
-            GetUI()->AddView(wndKey, panelKey, comboBox->ToWidgetCast());
+            comboBox->SetObjectName("ComboBoxMeta");
+            layout->AddWidget(comboBox);
         }
 
         {
             ControlDescriptorBuilder<ComboBox::Fields> descriptor;
             descriptor[ComboBox::Fields::Value] = "value";
-            descriptor[ComboBox::Fields::Enumerator] = "enumeratorOrdered";
+            descriptor[ComboBox::Fields::Enumerator] = "enumeratorUnorderedMap";
             ComboBox* comboBox = new ComboBox(descriptor, GetAccessor(), reflectedModel);
-            DAVA::TArc::PanelKey panelKey("ComboBoxOrdered", DAVA::TArc::CentralPanelInfo());
-            GetUI()->AddView(wndKey, panelKey, comboBox->ToWidgetCast());
+            comboBox->SetObjectName("ComboBoxUnorderedMap");
+            layout->AddWidget(comboBox);
         }
+
+        {
+            ControlDescriptorBuilder<ComboBox::Fields> descriptor;
+            descriptor[ComboBox::Fields::Value] = "value";
+            descriptor[ComboBox::Fields::Enumerator] = "enumeratorOrderedMap";
+            ComboBox* comboBox = new ComboBox(descriptor, GetAccessor(), reflectedModel);
+            comboBox->SetObjectName("ComboBoxOrderedMap");
+            layout->AddWidget(comboBox);
+        }
+
+        {
+            ControlDescriptorBuilder<ComboBox::Fields> descriptor;
+            descriptor[ComboBox::Fields::Value] = "valueSize_t";
+            descriptor[ComboBox::Fields::Enumerator] = "enumeratorVector";
+            ComboBox* comboBox = new ComboBox(descriptor, GetAccessor(), reflectedModel);
+            comboBox->SetObjectName("ComboBoxVector");
+            layout->AddWidget(comboBox);
+        }
+
+        {
+            ControlDescriptorBuilder<ComboBox::Fields> descriptor;
+            descriptor[ComboBox::Fields::Value] = "valueString";
+            descriptor[ComboBox::Fields::Enumerator] = "enumeratorSet";
+            ComboBox* comboBox = new ComboBox(descriptor, GetAccessor(), reflectedModel);
+            comboBox->SetObjectName("ComboBoxSet");
+            layout->AddWidget(comboBox);
+        }
+
+        DAVA::TArc::PanelKey panelKey("ComboBoxTest", DAVA::TArc::CentralPanelInfo());
+        GetUI()->AddView(wndKey, panelKey, w);
     }
 
     static ComboBoxTestModule* instance;
@@ -107,81 +190,163 @@ public:
 ComboBoxTestModule* ComboBoxTestModule::instance = nullptr;
 }
 
+ENUM_DECLARE(ComboBoxTestDetails::ComboBoxTestModule::eTestedValue)
+{
+    ENUM_ADD_DESCR(static_cast<int>(ComboBoxTestDetails::ComboBoxTestModule::eTestedValue::first), "1st");
+    ENUM_ADD_DESCR(static_cast<int>(ComboBoxTestDetails::ComboBoxTestModule::eTestedValue::second), "2nd");
+    ENUM_ADD_DESCR(static_cast<int>(ComboBoxTestDetails::ComboBoxTestModule::eTestedValue::third), "3rd");
+}
+
 DAVA_TARC_TESTCLASS(ComboBoxTest)
 {
-    // disabled because of modal loop of QComboBox
-    //    DAVA_TEST (ComboTestUnordered)
-    //    {
-    //        using namespace ComboBoxTestDetails;
-    //
-    //        QList<QWidget*> widgets = LookupWidget(wndKey, QString("ComboBoxUnordered"));
-    //        TEST_VERIFY(widgets.size() == 1);
-    //        QWidget* w = widgets.front();
-    //
-    //        QStyle* style = w->style();
-    //        QStyleOptionButton option;
-    //        option.initFrom(w);
-    //        QRect r = style->subElementRect(QStyle::SE_ComboBoxLayoutItem, &option, w);
-    //
-    //        QTestEventList eventList;
-    //        eventList.addMouseClick(Qt::MouseButton::LeftButton, Qt::KeyboardModifiers(), r.center());
-    //
-    //        QComboBox* comboBox = qobject_cast<QComboBox*>(w);
-    //        TEST_VERIFY(comboBox != nullptr);
-    //        TEST_VERIFY(comboBox->currentIndex() == 1);
-    //
-    //        ComboBoxTestModule* inst = ComboBoxTestModule::instance;
-    //        TEST_VERIFY(inst->model.value == ComboBoxTestModule::eTestedValue::second);
-    //
-    //        eventList.simulate(w);
-    //
-    //        QTestEventList eventListPopup;
-    //        eventListPopup.addMouseClick(Qt::MouseButton::LeftButton, Qt::KeyboardModifiers());
-    //        TEST_VERIFY(comboBox != nullptr);
-    //        TEST_VERIFY(comboBox->currentIndex() == 1);
-    //        TEST_VERIFY(inst->model.value == ComboBoxTestModule::eTestedValue::second);
-    //
-    //        eventListPopup.simulate(comboBox->view());
-    //        TEST_VERIFY(comboBox->currentIndex() == 2);
-    //        TEST_VERIFY(inst->model.value == ComboBoxTestModule::eTestedValue::third);
-    //    }
+    DAVA::Vector<std::pair<QString, DAVA::Vector<int>>> comboTestData;
+    int currentTest = 0;
 
-    DAVA_TEST (ComboModuleTestUnordered)
+    void InitTestData()
+    {
+        using namespace ComboBoxTestDetails;
+
+        comboTestData.clear();
+        comboTestData.reserve(5);
+
+        DAVA::Vector<int> unordered;
+        ComboBoxTestModule* inst = ComboBoxTestModule::instance;
+        for (const std::pair<int, DAVA::FastName>& un : inst->model.enumeratorUnorderedMap)
+        {
+            unordered.push_back(un.first);
+        }
+        comboTestData.push_back({ "ComboBoxMeta", { ComboBoxTestModule::eTestedValue::first, ComboBoxTestModule::eTestedValue::second, ComboBoxTestModule::eTestedValue::third } });
+        comboTestData.push_back({ "ComboBoxUnorderedMap", unordered });
+        comboTestData.push_back({ "ComboBoxOrderedMap", { ComboBoxTestModule::eTestedValue::first, ComboBoxTestModule::eTestedValue::second, ComboBoxTestModule::eTestedValue::third } });
+        comboTestData.push_back({ "ComboBoxVector", { ComboBoxTestModule::eTestedValue::first, ComboBoxTestModule::eTestedValue::second, ComboBoxTestModule::eTestedValue::third } });
+        comboTestData.push_back({ "ComboBoxSet", { ComboBoxTestModule::eTestedValue::first, ComboBoxTestModule::eTestedValue::second, ComboBoxTestModule::eTestedValue::third } });
+    }
+
+    QComboBox* GetComboBox(const QString& comboName)
+    {
+        using namespace ComboBoxTestDetails;
+
+        QList<QWidget*> widgets = LookupWidget(wndKey, comboName);
+        TEST_VERIFY(widgets.size() == 1);
+        QWidget* w = widgets.front();
+        QComboBox* comboBox = qobject_cast<QComboBox*>(w);
+        TEST_VERIFY(comboBox != nullptr);
+
+        return comboBox;
+    }
+
+    void TestComboEventsEnd()
+    {
+        using namespace ComboBoxTestDetails;
+
+        const QString& comboName = comboTestData[currentTest].first;
+        const DAVA::Vector<int>& testedValues = comboTestData[currentTest].second;
+
+        QTestEventList eventList;
+        eventList.addKeyPress(Qt::Key_Down);
+
+        QComboBox* comboBox = GetComboBox(comboName);
+        ComboBoxTestModule* inst = ComboBoxTestModule::instance;
+
+        TEST_VERIFY(comboBox->currentIndex() == 0);
+        TEST_VERIFY(inst->model.value == testedValues[comboBox->currentIndex()]);
+
+        eventList.simulate(comboBox);
+        TEST_VERIFY(comboBox->currentIndex() == 1);
+        TEST_VERIFY(inst->model.value == testedValues[comboBox->currentIndex()]);
+
+        eventList.simulate(comboBox);
+        TEST_VERIFY(comboBox->currentIndex() == 2);
+        TEST_VERIFY(inst->model.value == testedValues[comboBox->currentIndex()]);
+
+        ++currentTest;
+        if (currentTest < static_cast<int>(comboTestData.size()))
+        {
+            TestComboEventsStart();
+        }
+    }
+
+    void TestComboEventsStart()
     {
         using namespace ComboBoxTestDetails;
         using namespace testing;
 
-        QList<QWidget*> widgets = LookupWidget(wndKey, QString("ComboBoxUnordered"));
-        TEST_VERIFY(widgets.size() == 1);
-        QWidget* w = widgets.front();
-        QComboBox* checkBox = qobject_cast<QComboBox*>(w);
-        connections.AddConnection(checkBox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), DAVA::MakeFunction(this, &ComboBoxTest::IndexChangedUnordered));
+        const DAVA::Vector<int>& testedValues = comboTestData[currentTest].second;
+        TEST_VERIFY(static_cast<int>(testedValues.size()) == ComboBoxTestModule::eTestedValue::count);
 
-        EXPECT_CALL(*this, IndexChangedUnordered(ComboBoxTestModule::eTestedValue::third - ComboBoxTestModule::eTestedValue::first))
-        .WillOnce(Return());
+        ComboBoxTestModule* inst = ComboBoxTestModule::instance;
+        inst->model.value = testedValues[0];
 
-        ComboBoxTestModule::instance->model.value = ComboBoxTestModule::eTestedValue::third;
+        EXPECT_CALL(*this, AfterWrappersSync())
+        .WillOnce(Invoke(this, &ComboBoxTest::TestComboEventsEnd));
     }
 
-    DAVA_TEST (ComboModuleTestOrdered)
+    DAVA_TEST (ShouldBeFirst_ComboTest)
+    {
+        currentTest = 0;
+        InitTestData();
+
+        TestComboEventsStart();
+    }
+
+    void TestComboModuleStart()
     {
         using namespace ComboBoxTestDetails;
         using namespace testing;
 
-        QList<QWidget*> widgets = LookupWidget(wndKey, QString("ComboBoxOrdered"));
-        TEST_VERIFY(widgets.size() == 1);
-        QWidget* w = widgets.front();
-        QComboBox* checkBox = qobject_cast<QComboBox*>(w);
-        connections.AddConnection(checkBox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), DAVA::MakeFunction(this, &ComboBoxTest::IndexChangedOrdered));
+        const QString& comboName = comboTestData[currentTest].first;
+        QComboBox* comboBox = GetComboBox(comboName);
+        connections.AddConnection(comboBox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), DAVA::MakeFunction(this, &ComboBoxTest::IndexChanged));
 
-        EXPECT_CALL(*this, IndexChangedOrdered(ComboBoxTestModule::eTestedValue::second - ComboBoxTestModule::eTestedValue::first))
-        .WillOnce(Return());
+        ComboBoxTestModule::instance->model.value = (ComboBoxTestModule::instance->model.value + 1) % ComboBoxTestModule::eTestedValue::count;
 
-        ComboBoxTestModule::instance->model.value = ComboBoxTestModule::eTestedValue::second;
+        EXPECT_CALL(*this, AfterWrappersSync())
+        .WillOnce(Invoke(this, &ComboBoxTest::TestComboModuleEnd));
     }
 
-    MOCK_METHOD1_VIRTUAL(IndexChangedOrdered, void(int newCurrentItem));
-    MOCK_METHOD1_VIRTUAL(IndexChangedUnordered, void(int newCurrentItem));
+    void TestComboModuleEnd()
+    {
+        const QString& comboName = comboTestData[currentTest].first;
+        QComboBox* comboBox = GetComboBox(comboName);
+        connections.RemoveConnection(comboBox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged));
+
+        ++currentTest;
+        if (currentTest < static_cast<int>(comboTestData.size()))
+        {
+            TestComboModuleStart();
+        }
+    }
+
+    DAVA_TEST (ShouldBeSecond_ComboTest)
+    {
+        currentTest = 0;
+        InitTestData();
+
+        using namespace testing;
+
+        //we should wait untill all dataModels and controls will by syncronized
+        EXPECT_CALL(*this, AfterWrappersSync())
+        .WillOnce(Invoke(this, &ComboBoxTest::TestComboModuleStart));
+
+        EXPECT_CALL(*this, IndexChanged(_))
+        .Times(comboTestData.size());
+    }
+
+    bool TestComplete(const DAVA::String& testName) const override
+    {
+        if (testName == "ShouldBeFirst_ComboTest")
+        {
+            return (currentTest == static_cast<int>(comboTestData.size()));
+        }
+        else if (testName == "ShouldBeSecond_ComboTest")
+        {
+            return (currentTest == static_cast<int>(comboTestData.size()));
+        }
+        return true;
+    }
+
+    MOCK_METHOD0_VIRTUAL(AfterWrappersSync, void());
+    MOCK_METHOD1_VIRTUAL(IndexChanged, void(int newCurrentItem));
 
     BEGIN_TESTED_MODULES()
     DECLARE_TESTED_MODULE(ComboBoxTestDetails::ComboBoxTestModule);

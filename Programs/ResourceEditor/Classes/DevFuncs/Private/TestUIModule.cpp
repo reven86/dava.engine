@@ -1,4 +1,5 @@
 #include "Classes/DevFuncs/TestUIModule.h"
+#include "Classes/DevFuncs/TestUIModuleData.h"
 #include "Classes/Application/REGlobal.h"
 
 #include <TArc/WindowSubSystem/UI.h>
@@ -7,6 +8,9 @@
 #include <TArc/Controls/CheckBox.h>
 #include <TArc/Controls/ComboBox.h>
 #include <TArc/Controls/LineEdit.h>
+
+#include <QtTools/WidgetHelpers/SharedIcon.h>
+
 
 #include <Reflection/ReflectionRegistrator.h>
 #include <Reflection/ReflectedMeta.h>
@@ -221,9 +225,9 @@ struct ComboBoxTestData : public ReflectionBase
 {
     enum eTest
     {
-        FIRST = 33,
-        SECOND = 22,
-        THIRD = 11
+        FIRST = 0,
+        SECOND,
+        THIRD
     };
 
     //int
@@ -237,15 +241,72 @@ struct ComboBoxTestData : public ReflectionBase
         testValue = newValue;
     }
 
-    Map<int, String> enumerator = Map<int, String>{
+    size_t GetValueSize_t() const
+    {
+        return testValue;
+    }
+    void SetValueSize_t(size_t newValue)
+    {
+        testValue = static_cast<int>(newValue);
+    }
+
+    Map<int, String> enumeratorMap = Map<int, String>{
         { FIRST, "FIRST" },
         { SECOND, "SECOND" },
         { THIRD, "THIRD" }
     };
 
-    const Map<int, String>& GetEnumerator() const
+    Vector<String> enumeratorVector = Vector<String>{ "FIRST", "SECOND", "THIRD" };
+
+    const Map<int, ComboBoxTestDataDescr>& GetEnumeratorMap() const
     {
-        return enumerator;
+        static Map<int, ComboBoxTestDataDescr> iconEnumerator = Map<int, ComboBoxTestDataDescr>
+        {
+          { FIRST, { "FIRST", SharedIcon(":/QtIcons/openscene.png") } },
+          { SECOND, { "SECOND", SharedIcon(":/QtIcons/sound.png") } },
+          { THIRD, { "THIRD", SharedIcon(":/QtIcons/remove.png") } }
+        };
+
+        return iconEnumerator;
+    }
+
+    const Set<String>& GetEnumeratorSet() const
+    {
+        static Set<String> enumeratorSet = Set<String>{ "1_FIRST", "2_SECOND", "3_THIRD" };
+        return enumeratorSet;
+    }
+
+    const String GetStringValue() const
+    {
+        const Set<String>& setEnumerator = GetEnumeratorSet();
+        auto it = setEnumerator.begin();
+
+        int i = 0;
+        for (int i = 0; i < static_cast<int>(setEnumerator.size()); ++i, ++it)
+        {
+            if (i == testValue)
+            {
+                return *it;
+            }
+        }
+
+        return String();
+    }
+
+    void SetStringValue(const String& str)
+    {
+        const Set<String>& setEnumerator = GetEnumeratorSet();
+        auto it = setEnumerator.begin();
+
+        int i = 0;
+        for (int i = 0; i < static_cast<int>(setEnumerator.size()); ++i, ++it)
+        {
+            if (str == *it)
+            {
+                testValue = i;
+                break;
+            }
+        }
     }
 
     bool readOnly = false;
@@ -255,10 +316,14 @@ struct ComboBoxTestData : public ReflectionBase
         ReflectionRegistrator<ComboBoxTestData>::Begin()
         .Field("readOnly", &ComboBoxTestData::readOnly)
         .Field("value", &ComboBoxTestData::testValue)
+        .Field("valueSize_t", &ComboBoxTestData::GetValueSize_t, &ComboBoxTestData::SetValueSize_t)
+        .Field("valueString", &ComboBoxTestData::GetStringValue, &ComboBoxTestData::SetStringValue)
         .Field("method", &ComboBoxTestData::GetValue, &ComboBoxTestData::SetValue)
 
-        .Field("enumeratorValue", &ComboBoxTestData::enumerator)
-        .Field("enumeratorMethod", &ComboBoxTestData::GetEnumerator, nullptr)
+        .Field("enumeratorValueMap", &ComboBoxTestData::enumeratorMap)
+        .Field("enumeratorValueVector", &ComboBoxTestData::enumeratorVector)
+        .Field("enumeratorMethod", &ComboBoxTestData::GetEnumeratorMap, nullptr)
+        .Field("enumeratorMethodSet", &ComboBoxTestData::GetEnumeratorSet, nullptr)
 
         .Field("valueMetaReadOnly", &ComboBoxTestData::testValue)[DAVA::M::EnumT<ComboBoxTestData::eTest>(), DAVA::M::ReadOnly()]
         .Field("methodMetaOnlyGetter", &ComboBoxTestData::GetValue, nullptr)[DAVA::M::EnumT<ComboBoxTestData::eTest>()]
@@ -315,7 +380,7 @@ struct ComboBoxTestData : public ReflectionBase
         {
             ControlDescriptorBuilder<ComboBox::Fields> desr;
             desr[ComboBox::Fields::Value] = "value";
-            desr[ComboBox::Fields::Enumerator] = "enumeratorValue";
+            desr[ComboBox::Fields::Enumerator] = "enumeratorValueMap";
             addTest("Value[Enumerator]: ", desr);
         }
 
@@ -328,9 +393,9 @@ struct ComboBoxTestData : public ReflectionBase
 
         {
             ControlDescriptorBuilder<ComboBox::Fields> desr;
-            desr[ComboBox::Fields::Value] = "method";
-            desr[ComboBox::Fields::Enumerator] = "enumeratorValue";
-            addTest("Method[Enumerator]: ", desr);
+            desr[ComboBox::Fields::Value] = "valueSize_t";
+            desr[ComboBox::Fields::Enumerator] = "enumeratorValueVector";
+            addTest("Value[EnumeratorVector]: ", desr);
         }
 
         {
@@ -338,6 +403,13 @@ struct ComboBoxTestData : public ReflectionBase
             desr[ComboBox::Fields::Value] = "method";
             desr[ComboBox::Fields::Enumerator] = "enumeratorMethod";
             addTest("Method[EnumeratorMethod]: ", desr);
+        }
+
+        {
+            ControlDescriptorBuilder<ComboBox::Fields> desr;
+            desr[ComboBox::Fields::Value] = "valueString";
+            desr[ComboBox::Fields::Enumerator] = "enumeratorMethodSet";
+            addTest("StringValue[EnumeratorSet]: ", desr);
         }
 
         //readonly check box

@@ -18,7 +18,6 @@ public:
 
 protected:
     QWidget* AcquireEditorWidget(QWidget* parent, const QStyleOptionViewItem& option) override;
-    void ReleaseEditorWidget(QWidget* editor) override;
 
 private:
     Any GetValueAny() const;
@@ -27,7 +26,6 @@ private:
     const M::Enum* GetEnumerator() const;
 
     bool IsReadOnly() const;
-    bool IsEnabled() const;
 
 private:
     DAVA_VIRTUAL_REFLECTION(EnumComponentValue, ProxyComponentValue<EnumEditorDrawer, EnumValueCompositor>);

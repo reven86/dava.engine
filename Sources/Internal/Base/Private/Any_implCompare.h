@@ -47,4 +47,28 @@ struct AnyCompare<UnorderedMap<K, V, Hash, Eq>>
     }
 };
 
+template <typename V, typename Eq>
+struct AnyCompare<Set<V, Eq>>
+{
+    static bool IsEqual(const Any& v1, const Any& v2)
+    {
+        using SetType = Set<V, Eq>;
+        const SetType& s1 = v1.Get<SetType>();
+        const SetType& s2 = v2.Get<SetType>();
+        return s1 == s2;
+    }
+};
+
+template <typename V>
+struct AnyCompare<Vector<V>>
+{
+    static bool IsEqual(const Any& v1, const Any& v2)
+    {
+        using VectorType = Vector<V>;
+        const VectorType& vv1 = v1.Get<VectorType>();
+        const VectorType& vv2 = v2.Get<VectorType>();
+        return vv1 == vv2;
+    }
+};
+
 } // namespace DAVA
