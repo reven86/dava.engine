@@ -13,7 +13,7 @@ def main():
     options = parser.parse_args()
 
 ##    
-    pathFolderVersion = os.path.join(options.dava_path, 'Sources/Tools')
+    pathFolderVersion = os.path.join(options.dava_path, 'Modules/Tools/Sources/Tools')
     pathFileVersion   = os.path.join(pathFolderVersion, 'Version.h')
 
     titleName         = pack_app.ArchiveName( None, options.dava_path, options.build_number ) 

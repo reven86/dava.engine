@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Base/BaseTypes.h"
-#include "AssetCache/CachedItemValue.h"
+#include <Tools/AssetCache/CachedItemValue.h>
+#include <Base/BaseTypes.h>
 #include <chrono>
 
 namespace DAVA

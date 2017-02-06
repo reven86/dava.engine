@@ -12,7 +12,7 @@
 #include "Render/RHI/rhi_ShaderSource.h"
 #include "Render/RHI/Common/PreProcess.h"
 #include "Render/DynamicBufferAllocator.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 #include "Debug/DVAssert.h"
 
 namespace ImGuiImplDetails
@@ -369,7 +369,7 @@ void OnFrameBegin()
     if (!ImGuiImplDetails::initialized)
         return;
 
-    ImGui::GetIO().DeltaTime = DAVA::SystemTimer::Instance()->FrameDelta();
+    ImGui::GetIO().DeltaTime = DAVA::SystemTimer::GetFrameDelta();
 
     ImGuiImplDetails::framebufferSize.dx = int32(DAVA::Renderer::GetFramebufferWidth());
     ImGuiImplDetails::framebufferSize.dy = int32(DAVA::Renderer::GetFramebufferHeight());

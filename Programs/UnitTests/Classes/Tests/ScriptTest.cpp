@@ -7,25 +7,7 @@
 
 struct ReflClass : public DAVA::ReflectionBase
 {
-    DAVA_VIRTUAL_REFLECTION(ReflClass)
-    {
-        DAVA::ReflectionRegistrator<ReflClass>::Begin()
-        .Field("intVal", &ReflClass::intVal)
-        .Field("floatVal", &ReflClass::floatVal)
-        .Field("stringVal", &ReflClass::stringVal)
-        .Field("boolVal", &ReflClass::boolVal)
-        .Field("colorVal", &ReflClass::colorVal)
-        .Field("subClass", &ReflClass::subClass)
-        .Method("returnTrue", &ReflClass::returnTrue)
-        .Method("invert", &ReflClass::invert)
-        .Method("sum2", &ReflClass::sum2)
-        .Method("sum3", &ReflClass::sum3)
-        .Method("sum4", &ReflClass::sum4)
-        .Method("sum5", &ReflClass::sum5)
-        .Method("sum6", &ReflClass::sum6)
-        .Method("sum7", &ReflClass::sum7)
-        .End();
-    }
+    DAVA_VIRTUAL_REFLECTION(ReflClass);
 
     ReflClass()
         : colorVal(DAVA::Color::White)
@@ -80,6 +62,26 @@ public:
     DAVA::Color colorVal;
     ReflClass* subClass = nullptr;
 };
+
+DAVA_VIRTUAL_REFLECTION_IMPL(ReflClass)
+{
+    DAVA::ReflectionRegistrator<ReflClass>::Begin()
+    .Field("intVal", &ReflClass::intVal)
+    .Field("floatVal", &ReflClass::floatVal)
+    .Field("stringVal", &ReflClass::stringVal)
+    .Field("boolVal", &ReflClass::boolVal)
+    .Field("colorVal", &ReflClass::colorVal)
+    .Field("subClass", &ReflClass::subClass)
+    .Method("returnTrue", &ReflClass::returnTrue)
+    .Method("invert", &ReflClass::invert)
+    .Method("sum2", &ReflClass::sum2)
+    .Method("sum3", &ReflClass::sum3)
+    .Method("sum4", &ReflClass::sum4)
+    .Method("sum5", &ReflClass::sum5)
+    .Method("sum6", &ReflClass::sum6)
+    .Method("sum7", &ReflClass::sum7)
+    .End();
+}
 
 DAVA_TESTCLASS (ScriptTest)
 {

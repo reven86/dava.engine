@@ -6,7 +6,7 @@
 #include "Render/Image/Image.h"
 #include "Utils/StringFormat.h"
 #include "Utils/Random.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 #include "Render/Highlevel/Landscape.h"
 #include "Render/Image/ImageSystem.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
@@ -43,7 +43,7 @@ void StaticOcclusion::StartBuildOcclusion(StaticOcclusionData* _currentData, Ren
     yBlockCount = currentData->sizeY;
     zBlockCount = currentData->sizeZ;
 
-    stats.buildStartTime = SystemTimer::Instance()->GetAbsoluteNano();
+    stats.buildStartTime = SystemTimer::GetNs();
     stats.blockProcessingTime = stats.buildStartTime;
     stats.buildDuration = 0.0;
     stats.totalRenderPasses = 0;
@@ -103,7 +103,7 @@ bool StaticOcclusion::ProccessBlock()
     {
         AdvanceToNextBlock();
 
-        auto currentTime = SystemTimer::Instance()->GetAbsoluteNano();
+        auto currentTime = SystemTimer::GetNs();
         stats.buildDuration += static_cast<double>(currentTime - stats.blockProcessingTime) / 1e+9;
         stats.blockProcessingTime = currentTime;
 

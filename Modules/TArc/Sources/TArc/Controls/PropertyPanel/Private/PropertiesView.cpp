@@ -33,8 +33,6 @@ PropertiesView::PropertiesView(ContextAccessor* accessor, const FieldDescriptor&
 
 PropertiesView::~PropertiesView()
 {
-    int x = 0;
-    x++;
 }
 
 void PropertiesView::RegisterExtension(const std::shared_ptr<ExtensionChain>& extension)
@@ -55,6 +53,7 @@ void PropertiesView::SetupUI()
     setLayout(layout);
 
     view = new QTreeView(this);
+    view->setEditTriggers(QAbstractItemView::CurrentChanged | QAbstractItemView::SelectedClicked | QAbstractItemView::EditKeyPressed);
     layout->addWidget(view);
 
     view->setModel(model.get());
