@@ -1,0 +1,53 @@
+set( NAME_MODULE Sound )
+
+set( MODULE_TYPE STATIC )#INLINE STATIC DYNAMIC 
+
+set( HPP_FILES                       Sources/*.h Sources/*.hpp )
+set( CPP_FILES                       Sources/Private/*.cpp )
+set( CPP_FILES_IOS                   Sources/Private/iOS/*.mm )
+
+set( LIBRARIES_FMOD                  ${CMAKE_CURRENT_LIST_DIR}/Libs/lib )
+set( DYNAMIC_FMOD                    ${CMAKE_CURRENT_LIST_DIR}/Libs/bin )
+
+set( INCLUDES                        ${CMAKE_CURRENT_LIST_DIR}/Libs/include 
+                                     ${CMAKE_CURRENT_LIST_DIR}/Sources 
+                                     ${DAVA_ENGINE_DIR} 
+                                     ${DAVA_THIRD_PARTY_ROOT_PATH}/include )
+
+set( STATIC_LIBRARIES_IOS            ${LIBRARIES_FMOD}/ios/libfmodevent_iphoneos.a 
+                                     ${LIBRARIES_FMOD}/ios/libfmodex_iphoneos.a )
+
+set( STATIC_LIBRARIES_WIN32_RELEASE  ${LIBRARIES_FMOD}/win/x86/Release/fmod_event.lib 
+                                     ${LIBRARIES_FMOD}/win/x86/Release/fmodex_vc.lib )
+
+set( STATIC_LIBRARIES_WIN32_DEBUG    ${LIBRARIES_FMOD}/win/x86/Debug/fmod_event.lib 
+                                     ${LIBRARIES_FMOD}/win/x86/Debug/fmodex_vc.lib )
+
+set( STATIC_LIBRARIES_WIN64_RELEASE  ${LIBRARIES_FMOD}/win/x64/Release/fmod_event.lib 
+                                     ${LIBRARIES_FMOD}/win/x64/Release/fmodex_vc.lib )
+
+set( STATIC_LIBRARIES_WIN64_DEBUG    ${LIBRARIES_FMOD}/win/x64/Debug/fmod_event.lib 
+                                     ${LIBRARIES_FMOD}/win/x64/Debug/fmodex_vc.lib )
+
+set( DYNAMIC_LIBRARIES_ANDROID       ${DYNAMIC_FMOD}/android/${ANDROID_NDK_ABI_NAME}/libfmodevent.so 
+                                     ${DYNAMIC_FMOD}/android/${ANDROID_NDK_ABI_NAME}/libfmodex.so )
+
+set( DYNAMIC_LIBRARIES_WIN32         ${DYNAMIC_FMOD}/fmodex.dll 
+                                     ${DYNAMIC_FMOD}/fmod_event.dll )
+
+set( DYNAMIC_LIBRARIES_WIN64         ${DYNAMIC_FMOD}/fmodex64.dll 
+                                     ${DYNAMIC_FMOD}/fmod_event64.dll )
+
+set( DYNAMIC_LIBRARIES_MACOS         ${DYNAMIC_FMOD}/libfmodevent.dylib
+                                     ${DYNAMIC_FMOD}/libfmodex.dylib )
+
+setup_main_module()
+
+
+
+
+
+
+
+
+

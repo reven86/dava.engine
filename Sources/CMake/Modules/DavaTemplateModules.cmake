@@ -460,10 +460,8 @@ macro( setup_main_module )
 
             foreach ( ITEM  HPP_FILES_RECURSE HPP_FILES
                             CPP_FILES_RECURSE CPP_FILES )
-
                 list( APPEND ${ITEM}   ${${ITEM}_${CONECTION_TYPE}} )
                 list( APPEND ${ITEM}_${DAVA_PLATFORM_CURENT} ${${ITEM}_${CONECTION_TYPE}_${DAVA_PLATFORM_CURENT}} )
-            
             endforeach ()
 
         endif()

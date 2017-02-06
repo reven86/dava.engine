@@ -1,5 +1,3 @@
-#ifdef DAVA_FMOD
-
 #ifndef __DAVAENGINE_FMODUTILS_H__
 #define __DAVAENGINE_FMODUTILS_H__
 
@@ -31,5 +29,3 @@ namespace DAVA
 };
 
 #endif //__DAVAENGINE_FMODUTILS_H__
-
-#endif //DAVA_FMOD

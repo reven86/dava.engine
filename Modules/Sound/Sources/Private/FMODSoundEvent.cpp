@@ -1,7 +1,6 @@
-#ifdef DAVA_FMOD
 
-#include "Sound/FMODSoundEvent.h"
-#include "Sound/SoundSystem.h"
+#include "FMODSoundEvent.h"
+#include "FMODSoundSystem.h"
 #include "Scene3D/Entity.h"
 
 #include "Concurrency/Thread.h"
@@ -28,10 +27,10 @@ FMODSoundEvent::FMODSoundEvent(const FastName& _eventName)
     DVASSERT(_eventName.c_str()[0] != '/');
     eventName = _eventName;
 
-    if (SoundSystem::Instance()->fmodEventSystem)
+    if (FMODSoundSystem::Instance()->fmodEventSystem)
     {
         FMOD::Event* fmodEventInfo = nullptr;
-        SoundSystem::Instance()->fmodEventSystem->getEvent(eventName.c_str(), FMOD_EVENT_INFOONLY, &fmodEventInfo);
+        FMODSoundSystem::Instance()->fmodEventSystem->getEvent(eventName.c_str(), FMOD_EVENT_INFOONLY, &fmodEventInfo);
         if (fmodEventInfo)
         {
             FMOD_MODE mode = 0;
@@ -52,12 +51,12 @@ FMODSoundEvent::~FMODSoundEvent()
 {
     DVASSERT(fmodEventInstances.size() == 0);
 
-    SoundSystem::Instance()->RemoveSoundEventFromGroups(this);
+    FMODSoundSystem::Instance()->RemoveSoundEventFromGroups(this);
 }
 
 bool FMODSoundEvent::Trigger()
 {
-    SoundSystem* soundSystem = SoundSystem::Instance();
+    FMODSoundSystem* soundSystem = FMODSoundSystem::Instance();
     FMOD::EventSystem* fmodEventSystem = soundSystem->fmodEventSystem;
 
     if (fmodEventSystem == nullptr)
@@ -190,7 +189,7 @@ void FMODSoundEvent::UpdateInstancesPosition()
 
 void FMODSoundEvent::Stop(bool force /* = false */)
 {
-    SoundSystem* soundSystem = SoundSystem::Instance();
+    FMODSoundSystem* soundSystem = FMODSoundSystem::Instance();
 
     Vector<FMOD::Event*> instancesCopy(fmodEventInstances);
     size_t instancesCount = instancesCopy.size();
@@ -279,7 +278,7 @@ void FMODSoundEvent::PerformCallback(FMOD::Event* fmodEvent)
     {
         PerformEvent(SoundEvent::EVENT_END);
         fmodEventInstances.erase(it);
-        SoundSystem::Instance()->ReleaseOnUpdate(this);
+        FMODSoundSystem::Instance()->ReleaseOnUpdate(this);
     }
 }
 
@@ -294,7 +293,7 @@ void FMODSoundEvent::GetEventParametersInfo(Vector<SoundEventParameterInfo>& par
     }
     else
     {
-        FMOD::EventSystem* fmodEventSystem = SoundSystem::Instance()->fmodEventSystem;
+        FMOD::EventSystem* fmodEventSystem = FMODSoundSystem::Instance()->fmodEventSystem;
         if (fmodEventSystem)
         {
             FMOD_VERIFY(fmodEventSystem->getEvent(eventName.c_str(), FMOD_EVENT_INFOONLY, &event));
@@ -333,7 +332,7 @@ String FMODSoundEvent::GetEventName() const
 float32 FMODSoundEvent::GetMaxDistance() const
 {
     float32 distance = 0;
-    FMOD::EventSystem* fmodEventSystem = SoundSystem::Instance()->fmodEventSystem;
+    FMOD::EventSystem* fmodEventSystem = FMODSoundSystem::Instance()->fmodEventSystem;
     FMOD::Event* fmodEventInfo = nullptr;
 
     if (fmodEventSystem)
@@ -365,5 +364,3 @@ FMOD_RESULT F_CALLBACK FMODSoundEvent::FMODEventCallback(FMOD_EVENT* event, FMOD
     return FMOD_OK;
 }
 };
-
-#endif //DAVA_FMOD

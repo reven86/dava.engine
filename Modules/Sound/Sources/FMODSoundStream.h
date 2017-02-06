@@ -1,7 +1,7 @@
 #pragma once
 
-#include "SoundStream.h"
-#include "Sound/FMODUtils.h"
+#include "Sound/SoundStream.h"
+#include "FMODUtils.h"
 #include "fmod.h"
 
 namespace DAVA

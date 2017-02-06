@@ -158,6 +158,7 @@
 // Sound & Music
 #include "Sound/SoundEvent.h"
 #include "Sound/SoundSystem.h"
+#include "Sound/SoundComponent.h"
 
 // Particle System
 #include "Particles/ParticleEmitter.h"
@@ -217,7 +218,6 @@
 #include "Scene3D/Components/UpdatableComponent.h"
 #include "Scene3D/Components/SwitchComponent.h"
 #include "Scene3D/Components/UserComponent.h"
-#include "Scene3D/Components/SoundComponent.h"
 #include "Scene3D/Components/ActionComponent.h"
 #include "Scene3D/Components/StaticOcclusionComponent.h"
 #include "Scene3D/Components/QualitySettingsComponent.h"

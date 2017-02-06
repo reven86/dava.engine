@@ -1,5 +1,3 @@
-#ifdef DAVA_FMOD
-
 #ifndef __DAVAENGINE_FMOD_FILE_SOUND_EVENT_H__
 #define __DAVAENGINE_FMOD_FILE_SOUND_EVENT_H__
 
@@ -10,7 +8,7 @@
 #include "Base/EventDispatcher.h"
 #include "Sound/SoundEvent.h"
 #include "Concurrency/Mutex.h"
-#include "Sound/FMODUtils.h"
+#include "FMODUtils.h"
 
 namespace FMOD
 {
@@ -86,10 +84,8 @@ protected:
     FMOD::Sound* fmodSound;
     FMOD::ChannelGroup* fmodInstanceGroup;
 
-    friend class SoundSystem;
+    friend class FMODSoundSystem;
 };
 };
 
 #endif //__DAVAENGINE_FMOD_FILE_SOUND_EVENT_H__
-
-#endif //DAVA_FMOD

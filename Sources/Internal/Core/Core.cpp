@@ -211,7 +211,7 @@ void Core::CreateSingletons()
     Logger::Debug("SoundSystem init start");
     try
     {
-        new SoundSystem();
+        CreateSoundSystem();
     }
     catch (std::exception& ex)
     {

@@ -1,7 +1,6 @@
-#ifdef DAVA_FMOD
 
-#include "Sound/FMODFileSoundEvent.h"
-#include "Sound/SoundSystem.h"
+#include "FMODFileSoundEvent.h"
+#include "FMODSoundSystem.h"
 #include "Scene3D/Entity.h"
 
 namespace DAVA
@@ -13,7 +12,7 @@ Mutex FMODFileSoundEvent::soundMapMutex;
 
 FMODFileSoundEvent* FMODFileSoundEvent::CreateWithFlags(const FilePath& fileName, uint32 flags, int32 priority /* = 128 */)
 {
-    SoundSystem* soundSystem = SoundSystem::Instance();
+    FMODSoundSystem* soundSystem = FMODSoundSystem::Instance();
 
     FMODFileSoundEvent* sound = new FMODFileSoundEvent(fileName, flags, priority);
 
@@ -86,7 +85,7 @@ FMODFileSoundEvent::~FMODFileSoundEvent()
     if (fmodInstanceGroup)
         FMOD_VERIFY(fmodInstanceGroup->release());
 
-    SoundSystem::Instance()->RemoveSoundEventFromGroups(this);
+    FMODSoundSystem::Instance()->RemoveSoundEventFromGroups(this);
 }
 
 int32 FMODFileSoundEvent::Release()
@@ -109,11 +108,11 @@ int32 FMODFileSoundEvent::Release()
 
 bool FMODFileSoundEvent::Trigger()
 {
-    if (nullptr == SoundSystem::Instance()->fmodSystem)
+    if (nullptr == FMODSoundSystem::Instance()->fmodSystem)
         return false;
 
     FMOD::Channel* fmodInstance = nullptr;
-    FMOD_VERIFY(SoundSystem::Instance()->fmodSystem->playSound(FMOD_CHANNEL_FREE, fmodSound, true, &fmodInstance)); //start sound paused
+    FMOD_VERIFY(FMODSoundSystem::Instance()->fmodSystem->playSound(FMOD_CHANNEL_FREE, fmodSound, true, &fmodInstance)); //start sound paused
     if (fmodInstance && fmodInstanceGroup)
     {
         FMOD_VERIFY(fmodInstance->setPriority(priority));
@@ -239,7 +238,7 @@ FMOD_RESULT F_CALLBACK FMODFileSoundEvent::SoundInstanceEndPlaying(FMOD_CHANNEL*
             if (sound)
             {
                 sound->PerformEvent(EVENT_END);
-                SoundSystem::Instance()->ReleaseOnUpdate(sound);
+                FMODSoundSystem::Instance()->ReleaseOnUpdate(sound);
             }
         }
     }
@@ -248,4 +247,3 @@ FMOD_RESULT F_CALLBACK FMODFileSoundEvent::SoundInstanceEndPlaying(FMOD_CHANNEL*
 }
 };
 
-#endif //DAVA_FMOD
