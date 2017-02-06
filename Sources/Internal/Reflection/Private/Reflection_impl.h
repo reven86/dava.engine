@@ -4,41 +4,8 @@
 #include "Reflection/Reflection.h"
 #endif
 
+#include "Reflection/Private/Reflection_pre_impl.h"
 #include "Reflection/Private/Wrappers/ValueWrapperDefault.h"
-
-#define IMPL__DAVA_REFLECTION(Cls) \
-    template <typename FT__> \
-    friend struct DAVA::ReflectedTypeDBDetail::ReflectionInitializerRunner; \
-    static void __ReflectionInitializer() \
-    { \
-        static_assert(!std::is_base_of<DAVA::ReflectionBase, Cls>::value, "Use DAVA_VIRTUAL_REFLECTION for classes derived from ReflectionBase"); \
-        __ReflectionInitializer_Impl(); \
-    } \
-    static void __ReflectionInitializer_Impl()
-
-#define IMPL__DAVA_VIRTUAL_REFLECTION(Cls, ...) \
-    template <typename FT__> \
-    friend struct DAVA::ReflectedTypeDBDetail::ReflectionInitializerRunner; \
-    const DAVA::ReflectedType* GetReflectedType() const override \
-    { \
-        return DAVA::ReflectedTypeDBDetail::GetByThisPointer(this); \
-    } \
-    static void __ReflectionInitializer() \
-    { \
-        static_assert(std::is_base_of<DAVA::ReflectionBase, Cls>::value, "Use DAVA_REFLECTION for classes that didn't derived from ReflectionBase"); \
-        DAVA::ReflectedTypeDB::RegisterBases<Cls, ##__VA_ARGS__>(); \
-        __ReflectionInitializer_Impl(); \
-    } \
-    static void __ReflectionInitializer_Impl()
-
-#define IMPL__DAVA_REFLECTION_IMPL(Cls) \
-    void Cls::__ReflectionInitializer_Impl()
-
-#define IMPL__DAVA_REFLECTION_REGISTER_PERMANENT_NAME(Cls) \
-    DAVA::ReflectedTypeDB::RegisterPermanentName(DAVA::ReflectedTypeDB::Get<Cls>(), #Cls)
-
-#define IMPL__DAVA_REFLECTION_REGISTER_CUSTOM_PERMANENT_NAME(Cls, Name) \
-    DAVA::ReflectedTypeDB::RegisterPermanentName(DAVA::ReflectedTypeDB::Get<Cls>(), Name)
 
 namespace DAVA
 {
@@ -49,7 +16,7 @@ inline bool Reflection::IsReadonly() const
 
 inline const Type* Reflection::GetValueType() const
 {
-    return valueWrapper->GetType();
+    return valueWrapper->GetType(object);
 }
 
 inline ReflectedObject Reflection::GetValueObject() const
@@ -100,7 +67,6 @@ Reflection Reflection::Create(T* objectPtr, const ReflectedMeta* objectMeta)
 
     return Reflection();
 }
-
 template <>
 struct AnyCompare<Reflection>
 {

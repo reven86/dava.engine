@@ -676,12 +676,12 @@ void DLCCrashTest::Update(float32 timeElapsed, DLC* dlc)
 
 void DLCCrashTest::ExitThread(BaseObject* caller, void* callerData, void* userData)
 {
-    DAVA::uint64 start = DAVA::SystemTimer::Instance()->AbsoluteMS();
-    DAVA::uint64 elapsed = 0;
+    DAVA::int64 start = DAVA::SystemTimer::GetMs();
+    DAVA::int64 elapsed = 0;
 
     while (elapsed < exitTimeout)
     {
-        elapsed = (DAVA::SystemTimer::Instance()->AbsoluteMS() - start) / 1000;
+        elapsed = (DAVA::SystemTimer::GetMs() - start) / 1000;
         Thread::Sleep(100);
     }
 

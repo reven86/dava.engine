@@ -24,7 +24,7 @@ std::array<FastName, EngineSettings::SETTING_VALUE_COUNT> EngineSettings::Engine
 
 DAVA_REFLECTION_IMPL(EngineSettings)
 {
-    auto& registrator = ReflectionRegistrator<EngineSettings>::Begin();
+    auto registrator = ReflectionRegistrator<EngineSettings>::Begin();
 
     //settings setup
     EngineSettingsDetails::SetupSetting<SETTING_LANDSCAPE_RENDERMODE, eSettingValue>(registrator, "Landscape.RenderMode", LANDSCAPE_MORPHING, LANDSCAPE_NO_INSTANCING, LANDSCAPE_MORPHING);

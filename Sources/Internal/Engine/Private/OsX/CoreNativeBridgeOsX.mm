@@ -9,7 +9,7 @@
 
 #include "Engine/Window.h"
 #include "Engine/Private/EngineBackend.h"
-#include "Engine/Private/OsX/PlatformCoreOsx.h"
+#include "Engine/Private/OsX/PlatformCoreOsX.h"
 #include "Engine/Private/OsX/Window/WindowBackendOsX.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 
@@ -18,7 +18,7 @@
 
 #include "Concurrency/LockGuard.h"
 #include "Logger/Logger.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 
 // Wrapper over NSTimer to connect Objective-C NSTimer object to
 // C++ class CoreNativeBridge

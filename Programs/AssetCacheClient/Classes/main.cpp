@@ -4,7 +4,6 @@
 #include "Job/JobManager.h"
 #include "Logger/Logger.h"
 #include "Network/NetCore.h"
-#include "Platform/SystemTimer.h"
 #include "Engine/Engine.h"
 
 #include "ClientApplication.h"

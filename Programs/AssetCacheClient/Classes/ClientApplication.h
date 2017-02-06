@@ -3,7 +3,7 @@
 
 #include "Base/BaseTypes.h"
 
-#include "AssetCache/AssetCacheClient.h"
+#include <Tools/AssetCache/AssetCacheClient.h>
 
 class CacheRequest;
 class ClientApplication final
