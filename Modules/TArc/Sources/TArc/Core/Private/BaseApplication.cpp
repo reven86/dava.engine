@@ -8,12 +8,18 @@
 #include "Engine/Engine.h"
 #include "CommandLine/CommandLineParser.h"
 
+void InitREResources()
+{
+    Q_INIT_RESOURCE(TArcResources);
+}
+
 namespace DAVA
 {
 namespace TArc
 {
 int BaseApplication::Run()
 {
+    InitREResources();
     if (!AllowMultipleInstances())
     {
         QtHelpers::RunGuard runGuard(GetInstanceKey());
