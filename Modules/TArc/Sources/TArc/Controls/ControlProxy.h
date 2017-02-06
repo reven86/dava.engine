@@ -135,6 +135,39 @@ protected:
 
     virtual void UpdateControl(const ControlDescriptor& descriptor) = 0;
 
+    template <typename Enum>
+    bool IsValueReadOnly(const ControlDescriptor& descriptor, Enum valueRole, Enum readOnlyRole) const
+    {
+        DAVA::Reflection fieldValue = model.GetField(descriptor.GetName(valueRole));
+        DVASSERT(fieldValue.IsValid());
+
+        bool readOnlyFieldValue = false;
+        if (descriptor.IsChanged(readOnlyRole))
+        {
+            DAVA::Reflection fieldReadOnly = model.GetField(descriptor.GetName(readOnlyRole));
+            if (fieldReadOnly.IsValid())
+            {
+                readOnlyFieldValue = fieldReadOnly.GetValue().Cast<bool>();
+            }
+        }
+
+        return fieldValue.IsReadonly() == true ||
+        fieldValue.GetMeta<DAVA::M::ReadOnly>() != nullptr ||
+        readOnlyFieldValue == true;
+    }
+
+    template <typename CastType, typename Enum>
+    CastType GetFieldValue(Enum role, const CastType& defaultValue)
+    {
+        DAVA::Reflection field = model.GetField(GetFieldName(role));
+        if (field.IsValid())
+        {
+            return field.GetValue<CastType>();
+        }
+
+        return defaultValue;
+    }
+
 protected:
     Reflection model;
     DataWrapper wrapper;

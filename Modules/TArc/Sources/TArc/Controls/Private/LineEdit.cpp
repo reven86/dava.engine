@@ -46,16 +46,7 @@ void LineEdit::UpdateControl(const ControlDescriptor& descriptor)
         DAVA::Reflection fieldValue = model.GetField(descriptor.GetName(Fields::Text));
         DVASSERT(fieldValue.IsValid());
 
-        bool readOnlyFieldValue = false;
-        if (readOnlyChanged)
-        {
-            DAVA::Reflection fieldReadOnly = model.GetField(descriptor.GetName(Fields::IsReadOnly));
-            if (fieldReadOnly.IsValid())
-            {
-                readOnlyFieldValue = fieldReadOnly.GetValue().Cast<bool>();
-            }
-        }
-        setReadOnly(fieldValue.IsReadonly() == true || fieldValue.GetMeta<DAVA::M::ReadOnly>() != nullptr || readOnlyFieldValue == true);
+        setReadOnly(IsValueReadOnly(descriptor, Fields::Text, Fields::IsReadOnly));
 
         if (textChanged)
         {
@@ -65,26 +56,12 @@ void LineEdit::UpdateControl(const ControlDescriptor& descriptor)
 
     if (descriptor.IsChanged(Fields::IsEnabled))
     {
-        DAVA::Reflection fieldEnabled = model.GetField(descriptor.GetName(Fields::IsEnabled));
-        bool isEnabled = true;
-        if (fieldEnabled.IsValid())
-        {
-            isEnabled = fieldEnabled.GetValue().Cast<bool>();
-        }
-
-        setEnabled(isEnabled);
+        setEnabled(GetFieldValue<bool>(Fields::IsEnabled, true));
     }
 
     if (descriptor.IsChanged(Fields::PlaceHolder))
     {
-        DAVA::Reflection fieldPlaceholder = model.GetField(descriptor.GetName(Fields::PlaceHolder));
-        String placeHolder;
-        if (fieldPlaceholder.IsValid())
-        {
-            placeHolder = fieldPlaceholder.GetValue().Cast<String>();
-        }
-
-        setPlaceholderText(QString::fromStdString(placeHolder));
+        setPlaceholderText(QString::fromStdString(GetFieldValue<String>(Fields::PlaceHolder, "")));
     }
 }
 

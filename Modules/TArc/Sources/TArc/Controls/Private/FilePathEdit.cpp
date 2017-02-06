@@ -121,48 +121,24 @@ void FilePathEdit::UpdateControl(const ControlDescriptor& descriptor)
     bool textChanged = descriptor.IsChanged(Fields::Value);
     if (readOnlyChanged || textChanged)
     {
-        DAVA::Reflection fieldValue = model.GetField(descriptor.GetName(Fields::Value));
-        DVASSERT(fieldValue.IsValid());
-
-        bool readOnlyFieldValue = false;
-        if (readOnlyChanged)
-        {
-            DAVA::Reflection fieldReadOnly = model.GetField(descriptor.GetName(Fields::IsReadOnly));
-            if (fieldReadOnly.IsValid())
-            {
-                readOnlyFieldValue = fieldReadOnly.GetValue().Cast<bool>();
-            }
-        }
-        edit->setReadOnly(fieldValue.IsReadonly() == true || fieldValue.GetMeta<DAVA::M::ReadOnly>() != nullptr || readOnlyFieldValue == true);
+        edit->setReadOnly(IsValueReadOnly(descriptor, Fields::Value, Fields::IsReadOnly));
 
         if (textChanged)
         {
+            DAVA::Reflection fieldValue = model.GetField(descriptor.GetName(Fields::Value));
+            DVASSERT(fieldValue.IsValid());
             edit->setText(QString::fromStdString(fieldValue.GetValue().Cast<FilePath>().GetAbsolutePathname()));
         }
     }
 
     if (descriptor.IsChanged(Fields::IsEnabled))
     {
-        DAVA::Reflection fieldEnabled = model.GetField(descriptor.GetName(Fields::IsEnabled));
-        bool isEnabled = true;
-        if (fieldEnabled.IsValid())
-        {
-            isEnabled = fieldEnabled.GetValue().Cast<bool>();
-        }
-
-        edit->setEnabled(isEnabled);
+        edit->setEnabled(GetFieldValue<bool>(Fields::IsEnabled, true));
     }
 
     if (descriptor.IsChanged(Fields::PlaceHolder))
     {
-        DAVA::Reflection fieldPlaceholder = model.GetField(descriptor.GetName(Fields::PlaceHolder));
-        String placeHolder;
-        if (fieldPlaceholder.IsValid())
-        {
-            placeHolder = fieldPlaceholder.GetValue().Cast<String>();
-        }
-
-        edit->setPlaceholderText(QString::fromStdString(placeHolder));
+        edit->setPlaceholderText(QString::fromStdString(GetFieldValue<String>(Fields::PlaceHolder, "")));
     }
 
     button->setEnabled(edit->isReadOnly() == false && edit->isEnabled() == true);
