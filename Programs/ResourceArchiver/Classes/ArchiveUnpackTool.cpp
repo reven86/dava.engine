@@ -2,7 +2,7 @@
 #include "Base/GlobalEnum.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/FileList.h"
-#include "ResourceArchiver/ResourceArchiver.h"
+#include <Tools/ResourceArchiver/ResourceArchiver.h>
 
 #include "ArchiveUnpackTool.h"
 #include "ResultCodes.h"

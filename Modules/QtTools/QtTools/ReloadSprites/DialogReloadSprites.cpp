@@ -7,7 +7,8 @@
 #include "QtTools/ConsoleWidget/LoggerOutputObject.h"
 #include "QtTools/WarningGuard/QtWarningsHandler.h"
 
-#include "TextureCompression/TextureConverter.h"
+#include <Tools/TextureCompression/TextureConverter.h>
+
 PUSH_QT_WARNING_SUPRESSOR
 #include "ui_DialogReloadSprites.h"
 #include <QTimer>

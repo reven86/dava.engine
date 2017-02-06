@@ -19,6 +19,9 @@ class UITextFieldDelegate;
 class Color;
 class UIGeometricData;
 
+class Sprite;
+class Image;
+
 class TextFieldPlatformImpl final : public std::enable_shared_from_this<TextFieldPlatformImpl>
 {
 public:
@@ -72,6 +75,7 @@ public:
 
     void nativeOnFocusChange(JNIEnv* env, jboolean hasFocus);
     void nativeOnKeyboardShown(JNIEnv* env, jint x, jint y, jint w, jint h);
+    void nativeOnKeyboardHidden(JNIEnv* env);
     void nativeOnEnterPressed(JNIEnv* env);
     jboolean nativeOnKeyPressed(JNIEnv* env, jint replacementStart, jint replacementLength, jstring replaceWith);
     void nativeOnTextChanged(JNIEnv* env, jstring newText, jboolean programmaticTextChange);
@@ -83,6 +87,8 @@ private:
     void OnEnterPressed();
     bool OnKeyPressed(int32 replacementStart, int32 replacementLength, WideString& replaceWith);
     void OnTextChanged(const WideString& newText, bool programmaticTextChange);
+
+    void SetSpriteFromImage(Image* image) const;
 
 private:
     Window* window = nullptr;

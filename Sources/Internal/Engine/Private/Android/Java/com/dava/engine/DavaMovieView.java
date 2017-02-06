@@ -451,7 +451,7 @@ final class DavaMovieView implements MediaPlayer.OnCompletionListener,
             break;
         }
 
-        setNativePositionAndSize(x, y, width, height);
+        setNativePositionAndSize(x, y, params.width, params.height);
         nativeMovieView.setLayoutParams(params);
         
         movieLoaded = true;

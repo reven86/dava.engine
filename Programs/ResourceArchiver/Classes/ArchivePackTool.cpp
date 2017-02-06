@@ -1,8 +1,8 @@
 #include "ArchivePackTool.h"
 
 #include <FileSystem/FileSystem.h>
-#include <ResourceArchiver/ResourceArchiver.h>
-#include <AssetCache/AssetCacheClient.h>
+#include <Tools/ResourceArchiver/ResourceArchiver.h>
+#include <Tools/AssetCache/AssetCacheClient.h>
 #include <Utils/StringUtils.h>
 #include <Utils/StringFormat.h>
 #include <Logger/Logger.h>
