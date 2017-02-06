@@ -123,49 +123,49 @@ void JavaClass::Initialize()
     jclass jclass_JNIActivity = env->FindClass("com/dava/framework/JNIActivity");
     if (jclass_JNIActivity == nullptr)
     {
-        DAVA_JNI_EXCEPTION_CHECK
+        DAVA_JNI_EXCEPTION_CHECK();
         abort();
     }
 
     jclass jclass_Class = env->GetObjectClass(jclass_JNIActivity);
     if (jclass_Class == nullptr)
     {
-        DAVA_JNI_EXCEPTION_CHECK
+        DAVA_JNI_EXCEPTION_CHECK();
         abort();
     }
 
     jclass jclass_ClassLoader = env->FindClass("java/lang/ClassLoader");
     if (jclass_ClassLoader == nullptr)
     {
-        DAVA_JNI_EXCEPTION_CHECK
+        DAVA_JNI_EXCEPTION_CHECK();
         abort();
     }
 
     jmethodID jmethod_Class_getClassLoader = env->GetMethodID(jclass_Class, "getClassLoader", "()Ljava/lang/ClassLoader;");
     if (jmethod_Class_getClassLoader == nullptr)
     {
-        DAVA_JNI_EXCEPTION_CHECK
+        DAVA_JNI_EXCEPTION_CHECK();
         abort();
     }
 
     jobject classLoader1 = env->CallObjectMethod(jclass_JNIActivity, jmethod_Class_getClassLoader);
     if (classLoader1 == nullptr)
     {
-        DAVA_JNI_EXCEPTION_CHECK
+        DAVA_JNI_EXCEPTION_CHECK();
         abort();
     }
 
     classLoader = env->NewGlobalRef(classLoader1);
     if (classLoader == nullptr)
     {
-        DAVA_JNI_EXCEPTION_CHECK
+        DAVA_JNI_EXCEPTION_CHECK();
         abort();
     }
 
     jmethod_ClassLoader_findClass = env->GetMethodID(jclass_ClassLoader, "loadClass", "(Ljava/lang/String;)Ljava/lang/Class;");
     if (jmethod_ClassLoader_findClass == nullptr)
     {
-        DAVA_JNI_EXCEPTION_CHECK
+        DAVA_JNI_EXCEPTION_CHECK();
         abort();
     }
 }
@@ -211,7 +211,7 @@ void JavaClass::FindJavaClass()
     jclass foundLocalRefClass = static_cast<jclass>(env->CallObjectMethod(classLoader, jmethod_ClassLoader_findClass, className));
     env->DeleteLocalRef(className);
 
-    DAVA_JNI_EXCEPTION_CHECK
+    DAVA_JNI_EXCEPTION_CHECK();
 
     if (nullptr == foundLocalRefClass)
     {

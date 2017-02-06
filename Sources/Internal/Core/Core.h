@@ -258,6 +258,8 @@ public:
     IPackManager& GetPackManager() const;
     Analytics::Core& GetAnalyticsCore() const;
 
+    static void AdjustSystemTimer(int64 adjustMicro);
+
 protected:
     eScreenOrientation screenOrientation;
 

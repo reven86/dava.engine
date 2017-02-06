@@ -361,7 +361,7 @@ void LocalizationSystem::UnloadStringFile(const FilePath& fileName)
     DVASSERT(0 && "Method do not implemented");
 }
 
-const String& LocalizationSystem::GetLocalizedString(const String& utf8Key) const
+String LocalizationSystem::GetLocalizedString(const String& utf8Key) const
 {
     for (auto it = stringsList.rbegin(); it != stringsList.rend(); ++it)
     {
@@ -376,7 +376,7 @@ const String& LocalizationSystem::GetLocalizedString(const String& utf8Key) cons
     return utf8Key;
 }
 
-const String& LocalizationSystem::GetLocalizedString(const String& utf8Key, const String& langId) const
+String LocalizationSystem::GetLocalizedString(const String& utf8Key, const String& langId) const
 {
     for (auto it = stringsList.rbegin(); it != stringsList.rend(); ++it)
     {

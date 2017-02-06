@@ -1,8 +1,9 @@
 #ifndef __SERVER_LOGICS_H__
 #define __SERVER_LOGICS_H__
 
-#include "AssetCache/AssetCache.h"
 #include "CacheDB.h"
+
+#include <Tools/AssetCache/AssetCache.h>
 
 class ServerLogics : public DAVA::AssetCache::ServerNetProxyListener,
                      public DAVA::AssetCache::ClientNetProxyListener
