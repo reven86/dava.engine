@@ -43,7 +43,7 @@ bool DoubleSpinBox::FromText(const QString& input, double& output) const
     return isOk;
 }
 
-QString DoubleSpinBox::ToText(const double& value) const
+QString DoubleSpinBox::ToText(const double value) const
 {
     return QString::number(value, 'f', decimals());
 }

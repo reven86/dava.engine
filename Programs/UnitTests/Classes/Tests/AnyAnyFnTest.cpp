@@ -314,6 +314,7 @@ DAVA_TESTCLASS (AnyAnyFnTest)
         TEST_VERIFY(a != Any(3));
         TEST_VERIFY(Any(3) != a);
         TEST_VERIFY(Any() == Any());
+        TEST_VERIFY((Any() != Any()) == false);
     }
 
     DAVA_TEST (AnyTestPtr)

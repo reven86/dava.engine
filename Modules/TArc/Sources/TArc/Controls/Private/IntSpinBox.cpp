@@ -28,7 +28,7 @@ bool IntSpinBox::FromText(const QString& input, int& output) const
     return isOk;
 }
 
-QString IntSpinBox::ToText(const int& output) const
+QString IntSpinBox::ToText(const int output) const
 {
     return QString::number(output);
 }
