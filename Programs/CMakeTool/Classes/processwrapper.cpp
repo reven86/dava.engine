@@ -178,6 +178,17 @@ void ProcessWrapper::OnProcessStateChanged(QProcess::ProcessState newState)
 
     if (newState == QProcess::NotRunning)
     {
+        if (currentProcessDetails.configuringProject)
+        {
+            if (currentProcessDetails.hasErrors)
+            {
+                configureFailed();
+            }
+            else
+            {
+                configureFinished();
+            }
+        }
         QMetaObject::invokeMethod(this, "StartNextCommand", Qt::QueuedConnection);
     }
 }
