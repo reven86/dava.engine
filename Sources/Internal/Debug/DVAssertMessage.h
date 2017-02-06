@@ -1,6 +1,8 @@
 #ifndef __DAVAENGINE_DVASSERT_MESSAGE_H__
 #define __DAVAENGINE_DVASSERT_MESSAGE_H__
 
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "DAVAConfig.h"
 #include "Base/BaseTypes.h"
 #include "Functional/Function.h"
@@ -28,4 +30,5 @@ bool InnerShow(eModalType modalType, const char* content);
 };
 };
 
+#endif // !defined(__DAVAENGINE_COREV2__)
 #endif // __DAVAENGINE_DVASSERT_MESSAGE_H__

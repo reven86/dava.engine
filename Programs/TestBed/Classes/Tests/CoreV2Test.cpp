@@ -58,8 +58,6 @@ void CoreV2Test::LoadResources()
     buttonDisableClose = CreateUIButton(font, Rect(500, y, 200, h), "Disable close", &CoreV2Test::OnDisableEnableClose);
     buttonEnableClose = CreateUIButton(font, Rect(500, y += h + gap, 200, h), "Enable close", &CoreV2Test::OnDisableEnableClose);
 
-    buttonMessageBox = CreateUIButton(font, Rect(500, y += h + gap, 200, h), "Message box", &CoreV2Test::OnMessageBox);
-
     tokenOnWindowCreated = engine.windowCreated.Connect(MakeFunction(this, &CoreV2Test::OnWindowCreated));
     tokenOnWindowDestroyed = engine.windowDestroyed.Connect(MakeFunction(this, &CoreV2Test::OnWindowDestroyed));
     engine.SetCloseRequestHandler(MakeFunction(this, &CoreV2Test::OnWindowWantsToClose));
@@ -80,7 +78,6 @@ void CoreV2Test::UnloadResources()
     SafeRelease(buttonRunOnUI);
     SafeRelease(buttonDisableClose);
     SafeRelease(buttonEnableClose);
-    SafeRelease(buttonMessageBox);
 
     SafeRelease(buttonDispTrigger1);
     SafeRelease(buttonDispTrigger2);
@@ -135,36 +132,6 @@ void CoreV2Test::OnDisableEnableClose(DAVA::BaseObject* obj, void* data, void* c
         Logger::Debug("Closing application or window by user is enabled");
         closeDisabled = false;
     }
-}
-
-void CoreV2Test::OnMessageBox(DAVA::BaseObject* obj, void* data, void* callerData)
-{
-    Thread* threads[3] = {};
-    int num = 0;
-    for (Thread*& t : threads)
-    {
-        t = Thread::Create([num]() {
-            int r = 0;
-            String msg = Format("Message %d\n Thread: %lld", num, Thread::GetCurrentIdAsUInt64());
-            switch (num)
-            {
-            case 0:
-                r = Debug::MessageBox("Message box", msg, { "Close me" }, 0);
-                break;
-            case 1:
-                r = Debug::MessageBox("Message box", msg, { "Button 1", "Button 2" }, 1);
-                break;
-            case 2:
-                r = Debug::MessageBox("Message box", msg, { "Ping", "Pong", "Kaboom" }, 2);
-                break;
-            }
-            Logger::Debug("You choose button %d", r);
-        });
-        t->Start();
-        num += 1;
-    }
-
-    // Here `threads` array is leaked
 }
 
 void CoreV2Test::OnRun(DAVA::BaseObject* obj, void* data, void* callerData)
