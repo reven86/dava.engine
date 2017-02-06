@@ -360,6 +360,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/DeviceManager/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/DeviceManager/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/DeviceManager/Private/Android/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/DLCManager/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Engine/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Engine/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Engine/Private/Dispatcher/*.cpp) \
@@ -369,7 +370,6 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Entity/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/FileSystem/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/FileSystem/Private/*.cpp) \
-                     $(wildcard $(LOCAL_PATH)/PackManager/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Input/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Input/Private/Android/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Math/*.cpp) \
@@ -470,7 +470,8 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Notification/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Notification/Private/Android/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/CommandLine/*.cpp) \
-                     $(wildcard $(LOCAL_PATH)/Logger/*.cpp))
+                     $(wildcard $(LOCAL_PATH)/Logger/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/AnyCasts/Private/*.cpp))
 
 include $(BUILD_STATIC_LIBRARY)
 

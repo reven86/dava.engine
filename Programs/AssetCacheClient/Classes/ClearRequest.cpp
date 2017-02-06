@@ -1,5 +1,5 @@
 #include "ClearRequest.h"
-#include "AssetCache/AssetCacheClient.h"
+#include <Tools/AssetCache/AssetCacheClient.h>
 
 ClearRequest::ClearRequest()
     : CacheRequest("clear")

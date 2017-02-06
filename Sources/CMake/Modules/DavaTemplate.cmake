@@ -510,10 +510,10 @@ if( ANDROID AND NOT ANDROID_CUSTOM_BUILD )
         # ANDROID_BOOT_CLASSES variable should contain semicolon delimited list of class names
         # Both ANDROID_BOOT_MODULES and ANDROID_BOOT_CLASSES are not required to be set in CMakeLists.txt
         if (ANDROID_BOOT_MODULES)
-            set (ANDROID_BOOT_MODULES "<meta-data android:name=\"boot_modules\" android:value=\"${ANDROID_BOOT_MODULES}\"/>")
+            set (ANDROID_BOOT_MODULES "<meta-data android:name=\"com.dava.engine.BootModules\" android:value=\"${ANDROID_BOOT_MODULES}\"/>")
         endif()
         if (ANDROID_BOOT_CLASSES)
-            set (ANDROID_BOOT_CLASSES "<meta-data android:name=\"boot_classes\" android:value=\"${ANDROID_BOOT_CLASSES}\"/>")
+            set (ANDROID_BOOT_CLASSES "<meta-data android:name=\"com.dava.engine.BootClasses\" android:value=\"${ANDROID_BOOT_CLASSES}\"/>")
         endif()
     endif()
 

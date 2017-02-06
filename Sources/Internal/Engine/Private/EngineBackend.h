@@ -55,6 +55,8 @@ public:
 
     const KeyedArchive* GetOptions() const;
 
+    bool IsSuspended() const;
+
     Window* InitializePrimaryWindow();
 
     void Init(eEngineRunMode engineRunMode, const Vector<String>& modules, KeyedArchive* options_);

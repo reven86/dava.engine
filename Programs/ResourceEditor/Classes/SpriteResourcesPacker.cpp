@@ -2,8 +2,8 @@
 
 #include "Platform/DeviceInfo.h"
 
+#include <Tools/TexturePacker/ResourcePacker2D.h>
 #include "SpriteResourcesPacker.h"
-#include "TexturePacker/ResourcePacker2D.h"
 #include "Settings/SettingsManager.h"
 
 SpriteResourcesPacker::~SpriteResourcesPacker()
