@@ -31,7 +31,7 @@ public:
 
 private:
     bool FromText(const QString& input, int& output) const override;
-    QString ToText(const int& output) const override;
+    QString ToText(const int output) const override;
     bool IsEqualValue(int v1, int v2) const override;
 
     QValidator::State TypeSpecificValidate(const QString& input) const override;

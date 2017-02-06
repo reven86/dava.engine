@@ -34,7 +34,7 @@ public:
 private:
     void UpdateControl(const ControlDescriptor& changedFields) override;
     bool FromText(const QString& input, double& output) const override;
-    QString ToText(const double& value) const override;
+    QString ToText(const double value) const override;
     bool IsEqualValue(double v1, double v2) const override;
 
     QValidator::State TypeSpecificValidate(const QString& input) const override;

@@ -193,7 +193,7 @@ using Holder = TestModuleHolder<DoubleSpinBoxTestModule>;
 
 DAVA_TARC_TESTCLASS(DoubleSpinBoxTests)
 {
-    void SetFocus(QTestEventList & list, QDoubleSpinBox * box)
+    void SetFocus(QDoubleSpinBox * box)
     {
         box->clearFocus();
         if (box->isActiveWindow() == false)
@@ -230,7 +230,7 @@ DAVA_TARC_TESTCLASS(DoubleSpinBoxTests)
 
         // simulate spin value lower than minimum
         QTestEventList events;
-        SetFocus(events, box);
+        SetFocus(box);
         for (int i = 0; i < 40; ++i) // 10 (current value) - 40 * 0.2 (single step value) == 2
             ButtonClick(events, false, box);
         events.simulate(box);
@@ -282,21 +282,21 @@ DAVA_TARC_TESTCLASS(DoubleSpinBoxTests)
         QDoubleSpinBox* box = LookupSingleWidget<QDoubleSpinBox>(wndKey, spinName);
 
         QTestEventList events;
-        SetFocus(events, box);
+        SetFocus(box);
         ButtonClick(events, false, box);
         events.simulate(box);
         TEST_VERIFY(box->value() == readOnlyValue);
         TEST_VERIFY(box->value() == module->model.value);
 
         events.clear();
-        SetFocus(events, box);
+        SetFocus(box);
         ButtonClick(events, true, box);
         events.simulate(box);
         TEST_VERIFY(box->value() == readOnlyValue);
         TEST_VERIFY(box->value() == module->model.value);
 
         events.clear();
-        SetFocus(events, box);
+        SetFocus(box);
         events.addKeyClick(Qt::Key_Delete);
         events.addKeyClicks("24");
         events.addKeyClick(Qt::Key_Return);
@@ -339,18 +339,11 @@ DAVA_TARC_TESTCLASS(DoubleSpinBoxTests)
         DoubleSpinBoxTestDetails::Holder::moduleInstance->model.isEnabled = true;
     }
 
-    void ApplyFocus(QDoubleSpinBox * box)
-    {
-        QTestEventList e;
-        SetFocus(e, box);
-        e.simulate(box);
-    }
-
     void NoValueTest(const QString& name, const QString& focusSpinName, const QString& hintText)
     {
         using namespace DoubleSpinBoxTestDetails;
         QDoubleSpinBox* focusSpin = LookupSingleWidget<QDoubleSpinBox>(wndKey, focusSpinName);
-        ApplyFocus(focusSpin);
+        SetFocus(focusSpin);
 
         QDoubleSpinBox* box = LookupSingleWidget<QDoubleSpinBox>(wndKey, name);
         TEST_VERIFY(box->text() == hintText);
@@ -358,23 +351,23 @@ DAVA_TARC_TESTCLASS(DoubleSpinBoxTests)
         DoubleSpinBoxTestModule* module = Holder::moduleInstance;
         float64 value = module->model.value;
 
-        ApplyFocus(box);
+        SetFocus(box);
         TEST_VERIFY(box->text() == "");
         TEST_VERIFY(value == module->model.value);
 
-        ApplyFocus(focusSpin);
+        SetFocus(focusSpin);
         TEST_VERIFY(box->text() == hintText);
         TEST_VERIFY(value == module->model.value);
 
         QTestEventList events;
-        SetFocus(events, box);
+        SetFocus(box);
         ButtonClick(events, true, box);
         events.simulate(box);
         TEST_VERIFY(box->text() == "");
         TEST_VERIFY(value == module->model.value);
 
         events.clear();
-        SetFocus(events, box);
+        SetFocus(box);
         events.addKeyClicks("18");
         events.addKeyClick(Qt::Key_Enter);
         events.simulate(box);
@@ -384,7 +377,7 @@ DAVA_TARC_TESTCLASS(DoubleSpinBoxTests)
         TEST_VERIFY(box->text() == QString::number(module->model.value));
 
         events.clear();
-        SetFocus(events, box);
+        SetFocus(box);
         ButtonClick(events, false, box);
         events.simulate(box);
         TEST_VERIFY(box->value() == 17.0);
@@ -421,7 +414,7 @@ DAVA_TARC_TESTCLASS(DoubleSpinBoxTests)
         TEST_VERIFY(metaRangeSpin->singleStep() == 0.4);
 
         QTestEventList events;
-        SetFocus(events, metaRangeSpin);
+        SetFocus(metaRangeSpin);
         ButtonClick(events, true, metaRangeSpin);
         events.simulate(metaRangeSpin);
         TEST_VERIFY(metaRangeSpin->value() == 16.4);
