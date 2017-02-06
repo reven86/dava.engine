@@ -16,44 +16,45 @@ public class ScheduledNotificationReceiver extends BroadcastReceiver
     @Override
     public void onReceive(Context context, Intent intent)
     {
-        DavaActivity activity = DavaActivity.instance();
         Intent tapIntent;
-        if(activity != null)
+        String activityClassName = intent.getStringExtra("activityClassName");
+		if (null == activityClassName)
+		{
+			Log.e(DavaActivity.LOG_TAG, "ScheduledNotificationReceiver.onReceive intent not contain activityClassName.");
+            return;
+		}
+        try
         {
-            tapIntent = new Intent(context, activity.getClass());
+            Class<?> activityClass = Class.forName(activityClassName);
+            tapIntent = new Intent(context, activityClass);
         }
-        else
+        catch (ClassNotFoundException e)
         {
-            String activityClassName = intent.getStringExtra("activityClassName");
-            try
-            {
-                Class<?> activityClass = Class.forName(activityClassName);
-                tapIntent = new Intent(context, activityClass);
-            }
-            catch (ClassNotFoundException e)
-            {
-                Log.e(DavaActivity.LOG_TAG, "ScheduledNotificationReceiver.onReceive Incorrect activityClassName");
-                return;
-            }
+			Log.e(DavaActivity.LOG_TAG, "ScheduledNotificationReceiver.onReceive activityClassName not found.");
+            return;
         }
 
-        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, tapIntent, PendingIntent.FLAG_UPDATE_CURRENT);
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
-        
         Uri uri = null;
         if (intent.getBooleanExtra("useSound", false))
         {
             uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
         }
         String uid = intent.getStringExtra("uid");
+		int hash = 0;
+		if (null != uid)
+		{
+			hash = uid.hashCode();
+		}
+        tapIntent.putExtra("uid", uid);
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, hash, tapIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+		NotificationCompat.Builder builder = new NotificationCompat.Builder(context);
         builder.setContentTitle(intent.getStringExtra("title"))
                .setContentText(intent.getStringExtra("text"))
                .setSmallIcon(intent.getIntExtra("icon", 0))
-               .setContentIntent(pendingIntent)
-               .setAutoCancel(true)
+			   .setContentIntent(pendingIntent)
                .setSound(uri);
 
-        NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-        notificationManager.notify(uid, 0, builder.build());
+		NotificationManager notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);     
+		notificationManager.notify(uid, 0, builder.build());
     }
 }

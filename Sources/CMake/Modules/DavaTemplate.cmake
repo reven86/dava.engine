@@ -249,7 +249,7 @@ elseif ( WINDOWS_UAP )
     list( APPEND RESOURCES_LIST ${RESOURCE_FILES} )
 
     #add dll's to project and package
-    add_dynamic_libs_win_uap ( ${DAVA_THIRD_PARTY_LIBRARIES_PATH} DAVA_DLL_LIST )
+    add_dynamic_libs_win_uap ( ${DAVA_WIN_UAP_LIBRARIES_PATH_COMMON} DAVA_DLL_LIST )
 
     #add found dll's to project and mark them as deployment content
     if ( DAVA_DLL_LIST_DEBUG )
@@ -510,10 +510,10 @@ if( ANDROID AND NOT ANDROID_CUSTOM_BUILD )
         # ANDROID_BOOT_CLASSES variable should contain semicolon delimited list of class names
         # Both ANDROID_BOOT_MODULES and ANDROID_BOOT_CLASSES are not required to be set in CMakeLists.txt
         if (ANDROID_BOOT_MODULES)
-            set (ANDROID_BOOT_MODULES "<meta-data android:name=\"boot_modules\" android:value=\"${ANDROID_BOOT_MODULES}\"/>")
+            set (ANDROID_BOOT_MODULES "<meta-data android:name=\"com.dava.engine.BootModules\" android:value=\"${ANDROID_BOOT_MODULES}\"/>")
         endif()
         if (ANDROID_BOOT_CLASSES)
-            set (ANDROID_BOOT_CLASSES "<meta-data android:name=\"boot_classes\" android:value=\"${ANDROID_BOOT_CLASSES}\"/>")
+            set (ANDROID_BOOT_CLASSES "<meta-data android:name=\"com.dava.engine.BootClasses\" android:value=\"${ANDROID_BOOT_CLASSES}\"/>")
         endif()
     endif()
 
@@ -688,7 +688,6 @@ endif()
 list ( APPEND DAVA_FOLDERS ${PROJECT_FOLDERS} )
 list ( APPEND DAVA_FOLDERS ${DAVA_ENGINE_DIR} )
 list ( APPEND DAVA_FOLDERS ${FILE_TREE_CHECK_FOLDERS} )
-list ( APPEND DAVA_FOLDERS ${DAVA_THIRD_PARTY_LIBRARIES_PATH} )
 
 if( WIN32 AND NOT WINDOWS_UAP )
     set( COMMAND_PY dpiAwarness --pathVcxProj ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.vcxproj --typeAwerness PerMonitorHighDPIAware )

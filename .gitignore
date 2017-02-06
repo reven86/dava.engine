@@ -47,9 +47,7 @@ fmod.log
 *.user
 /DavaConfig.in
 *.xccheckout
-Projects/UnitTests/android/assets
 
-Projects/UnitTests/android/.settings/*
 .vs
 .tup
 .idea
@@ -72,15 +70,18 @@ AppPackages
 !/Libs/lib_CMake/win/x64/NGT/Release
 !/Libs/lib_CMake/win/x64/NGT/Debug
 !/Sources/Internal/Debug
-Projects/TestBed/android/assets/
-Projects/TestBed/android/obj/
-Projects/TestBed/android/bin/
-Projects/TestBed/android/libs/
-Projects/TestBed/android/gen/
-Projects/TestBed/android/.settings/
+
+Programs/AndroidFramework/tmp-src
+Programs/UnitTests/android/assets
+Programs/UnitTests/android/.settings/*
+Programs/TestBed/android/assets/
+Programs/TestBed/android/obj/
+Programs/TestBed/android/bin/
+Programs/TestBed/android/libs/
+Programs/TestBed/android/gen/
+Programs/TestBed/android/.settings/
 global_setting.settings
 .vscode/
-Projects/AndroidFramework/tmp-src
 
 local.properties
 

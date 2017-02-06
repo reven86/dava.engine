@@ -1,10 +1,10 @@
 #include "UI/UILoadingScreen.h"
-#include "Platform/SystemTimer.h"
 #include "UI/UIControlSystem.h"
 #include "UI/UIScreenManager.h"
 #include "Debug/Replay.h"
 #include "Job/JobManager.h"
 #include "Concurrency/Thread.h"
+#include "Time/SystemTimer.h"
 
 namespace DAVA
 {
@@ -75,7 +75,7 @@ void UILoadingScreen::OnInactive()
     if (Replay::Instance())
     {
         Replay::Instance()->PauseReplay(false);
-        SystemTimer::Instance()->SetFrameDelta(0.33f); //TODO: this is temporary solution for "first frame after loading" issue
+        SystemTimer::SetFrameDelta(0.33f); //TODO: this is temporary solution for "first frame after loading" issue
     }
 }
 };

@@ -1,5 +1,5 @@
-#include "TexturePacker/ResourcePacker2D.h"
-#include "TextureCompression/PVRConverter.h"
+#include <Tools/TexturePacker/ResourcePacker2D.h>
+#include <Tools/TextureCompression/PVRConverter.h>
 
 #include "Engine/Engine.h"
 #include "CommandLine/CommandLineParser.h"
@@ -7,7 +7,7 @@
 #include "Logger/Logger.h"
 #include "Logger/TeamcityOutput.h"
 #include "Debug/DVAssertDefaultHandlers.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 #include "Utils/Utils.h"
 
 using namespace DAVA;
@@ -88,7 +88,7 @@ void ProcessRecourcePacker(Engine& e)
 
     PVRConverter::Instance()->SetPVRTexTool(pvrTexToolFolder + pvrTexToolName);
 
-    uint64 elapsedTime = SystemTimer::Instance()->AbsoluteMS();
+    uint64 elapsedTime = SystemTimer::GetMs();
     Logger::FrameworkDebug("[Resource Packer Started]");
     Logger::FrameworkDebug("[INPUT DIR] - [%s]", resourcePacker.inputGfxDirectory.GetAbsolutePathname().c_str());
     Logger::FrameworkDebug("[OUTPUT DIR] - [%s]", resourcePacker.outputGfxDirectory.GetAbsolutePathname().c_str());
@@ -155,7 +155,7 @@ void ProcessRecourcePacker(Engine& e)
         cacheClient.Disconnect();
     }
 
-    elapsedTime = SystemTimer::Instance()->AbsoluteMS() - elapsedTime;
+    elapsedTime = SystemTimer::GetMs() - elapsedTime;
     Logger::FrameworkDebug("[Resource Packer Compile Time: %0.3lf seconds]", static_cast<float64>(elapsedTime) / 1000.0);
 }
 

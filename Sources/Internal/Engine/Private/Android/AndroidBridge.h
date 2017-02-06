@@ -39,6 +39,8 @@ struct AndroidBridge final
     static const String& GetApplicationPath();
     static const String& GetPackageName();
 
+    static void HideSplashView();
+
     static void AttachPlatformCore(PlatformCore* platformCore);
 
     void InitializeEngine(String externalFilesDir,
@@ -62,7 +64,7 @@ struct AndroidBridge final
 
     jobject activity = nullptr; // Reference to DavaActivity instance
     jmethodID methodDavaActivity_postFinish = nullptr; // DavaActivity.postFinish method
-
+    jmethodID methodDavaActivity_hideSplashView = nullptr; // DavaActivity.hideSplashView method
     EngineBackend* engineBackend = nullptr;
     PlatformCore* core = nullptr;
 
