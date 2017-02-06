@@ -5,19 +5,19 @@
 #include <UI/UIControl.h>
 #include <Base/BaseTypes.h>
 
-class ExclusiveSet;
-class ExclusiveSetListener
+class TriggerBox;
+class TriggerBoxListener
 {
 public:
-    virtual void OnOptionChanged(ExclusiveSet*) = 0;
+    virtual void OnOptionChanged(TriggerBox*) = 0;
 };
 
-class ExclusiveSet : public DAVA::UIControl, public LockedButtonHolder
+class TriggerBox : public DAVA::UIControl, public LockedButtonHolder
 {
 public:
     using OptionID = DAVA::uint32;
 
-    explicit ExclusiveSet(ExclusiveSetListener& listener, DAVA::Font* font);
+    explicit TriggerBox(TriggerBoxListener& listener, DAVA::Font* font);
 
     bool AddOption(OptionID optionId, const DAVA::WideString& text, bool toSelect = false);
     void SetOptionSelected(OptionID optionID);
@@ -30,7 +30,7 @@ private:
     OptionsMap::iterator FindOptionByValue(LockedButton* button);
 
 private:
-    ExclusiveSetListener& listener;
+    TriggerBoxListener& listener;
     DAVA::Font* font = nullptr;
     DAVA::float32 nextButtonX = 10.f;
     OptionsMap options;

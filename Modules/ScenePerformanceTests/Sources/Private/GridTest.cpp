@@ -28,7 +28,7 @@ const float32 LOW_FPS_THRESHOLD = 40.f;
 
 const uint32 GRID_SIZE = 8;
 const uint32 ANGLE_COUNT = 8;
-const float32 EXPOSURE_DURATION_SEC = 0.3f;
+const float32 EXPOSURE_DURATION_SEC = 1.f;
 const float32 ELEVATION_ABOVE_LANDSCAPE = 10.f;
 
 const uint32 PANORAMA_IMAGE_SIZE = 512;
@@ -46,15 +46,12 @@ void SetSamplePosition(Scene* scene, const GridTestSample& sample)
 class Screenshot
 {
 public:
-    explicit Screenshot(UI3DView* sceneView, const FilePath& path)
-        : sceneView(sceneView)
-        , savePath(path) {}
+    explicit Screenshot(UI3DView* sceneView) : sceneView(sceneView) {}
     virtual ~Screenshot() {}
     virtual void MakeScreenshot() = 0;
     virtual void SaveScreenshot(Texture* screenshot) = 0;
 
     UI3DView* sceneView = nullptr;
-    const FilePath& savePath;
     bool saved = false;
 };
 
@@ -67,11 +64,13 @@ public:
     void SaveScreenshot(Texture* screenshot) override;
 
     const GridTestSample& sample;
+    const FilePath& savePath;
 };
 
 SectorScreenshot::SectorScreenshot(UI3DView* sceneView, const GridTestSample& sample)
-    : Screenshot(sceneView, sample.screenshotPath)
+    : Screenshot(sceneView)
     , sample(sample)
+    , savePath(sample.screenshotPath)
 {
 }
 
@@ -93,17 +92,20 @@ void SectorScreenshot::SaveScreenshot(Texture* screenshot)
 class PanoramaScreenshot : public Screenshot
 {
 public:
-    explicit PanoramaScreenshot(UI3DView* sceneView, FilePath& path);
+    explicit PanoramaScreenshot(UI3DView* sceneView, ScopedPtr<Image>& image, FilePath savePath);
     void MakeScreenshot() override;
     void SaveScreenshot(Texture* screenshot) override;
     
 private:
+    ScopedPtr<Image>& image;
+    FilePath savePath;
     bool vertexFogWasOverriden = false;
     int32 vertexFogValue = 0;
 };
 
-PanoramaScreenshot::PanoramaScreenshot(UI3DView* sceneView, FilePath& path)
-    : Screenshot(sceneView, path)
+PanoramaScreenshot::PanoramaScreenshot(UI3DView* sceneView, ScopedPtr<Image>& image, FilePath savePath)
+    : Screenshot(sceneView)
+    , image(image)
 {
 }
 
@@ -137,13 +139,19 @@ void PanoramaScreenshot::SaveScreenshot(Texture* screenshot)
         sceneView->GetScene()->GetGlobalMaterial()->SetFlag(NMaterialFlagName::FLAG_VERTEXFOG, vertexFogValue);
     }
     
-    ScopedPtr<Image> image(screenshot->CreateImageFromMemory());
+    ScopedPtr<Image> screenshotImage(screenshot->CreateImageFromMemory());
     const Size2i& size = UIControlSystem::Instance()->vcs->GetPhysicalScreenSize();
-    image->ResizeCanvas(static_cast<uint32>(size.dx), static_cast<uint32>(size.dy));
-    ScopedPtr<Image> i(Image::Create(PANORAMA_IMAGE_SIZE, PANORAMA_IMAGE_SIZE, FORMAT_RGBA8888));
-    ImageConvert::ResizeRGBA8Billinear(reinterpret_cast<uint32*>(image->data), image->GetWidth(), image->GetHeight(),
-        reinterpret_cast<uint32*>(i->data), i->width, i->height);
-    i->Save(savePath);
+    screenshotImage->ResizeCanvas(static_cast<uint32>(size.dx), static_cast<uint32>(size.dy));
+
+    image.reset(Image::Create(PANORAMA_IMAGE_SIZE, PANORAMA_IMAGE_SIZE, FORMAT_RGBA8888));
+    ImageConvert::ResizeRGBA8Billinear(reinterpret_cast<uint32*>(screenshotImage->data), screenshotImage->GetWidth(), screenshotImage->GetHeight(),
+        reinterpret_cast<uint32*>(image->data), image->width, image->height);
+
+    if (savePath.Exists())
+    {
+        image->Save(savePath);
+    }
+
     saved = true;
 }
 }
@@ -151,7 +159,7 @@ void PanoramaScreenshot::SaveScreenshot(Texture* screenshot)
 class GridTestImpl final
 {
 public:
-    explicit GridTestImpl(DAVA::Engine& engine, GridTestListener* listener);
+    explicit GridTestImpl(DAVA::Engine& engine, GridTestListener* listener, GridTest::Mode mode);
     ~GridTestImpl();
 
     bool Start(const DAVA::ScopedPtr<DAVA::UI3DView>& s);
@@ -178,7 +186,8 @@ private:
     DAVA::Scene* scene = nullptr;
     DAVA::ScopedPtr<DAVA::UI3DView> sceneView;
 
-    GridTest::State state = GridTest::State::Finished;
+    GridTest::Mode mode = GridTest::Mode::ModeDefault;
+    GridTest::State state = GridTest::StateFinished;
 
     DAVA::FpsMeter fpsMeter;
 
@@ -210,9 +219,10 @@ void GridTestImpl::ClearResults()
     result.avgFPS = result.minFPS = result.maxFPS = 0.f;
 }
 
-GridTestImpl::GridTestImpl(DAVA::Engine& engine, GridTestListener* listener)
+GridTestImpl::GridTestImpl(DAVA::Engine& engine, GridTestListener* listener, GridTest::Mode mode)
     : engine(engine)
     , listener(listener)
+    , mode(mode)
     , fpsMeter(GridTestDetails::EXPOSURE_DURATION_SEC)
 {
     updateSignalID = engine.update.Connect(this, &GridTestImpl::Update);
@@ -229,7 +239,7 @@ bool GridTestImpl::Start(const DAVA::ScopedPtr<DAVA::UI3DView>& view)
     using namespace GridTestDetails;
     using namespace DAVA;
 
-    if (state != GridTest::State::Finished)
+    if (state != GridTest::StateFinished)
     {
         DVASSERT(false, "can't start already started test");
         return false;
@@ -303,11 +313,15 @@ bool GridTestImpl::Start(const DAVA::ScopedPtr<DAVA::UI3DView>& view)
         invertedDirection = !invertedDirection;
     }
 
-    SetState(GridTest::State::Running);
-    DateTime now = DateTime::Now();
-    reportFolderPath = FilePath(Format("~doc:/PerformanceReports/GridTest_%u/", now.GetTimestamp()));
-    FileSystem::Instance()->CreateDirectory(reportFolderPath, true);
-    reportFile = File::Create(reportFolderPath + "report.txt", File::CREATE | File::WRITE);
+    SetState(GridTest::StateRunning);
+
+    if (mode == GridTest::ModeGenerateReport)
+    {
+        DateTime now = DateTime::Now();
+        reportFolderPath = FilePath(Format("~doc:/PerformanceReports/GridTest_%u/", now.GetTimestamp()));
+        FileSystem::Instance()->CreateDirectory(reportFolderPath, true);
+        reportFile = File::Create(reportFolderPath + "report.txt", File::CREATE | File::WRITE);
+    }
 
     framesSinceLastSave = 0;
     screenshotsToStart.clear();
@@ -321,12 +335,12 @@ bool GridTestImpl::Start(const DAVA::ScopedPtr<DAVA::UI3DView>& view)
 
 void GridTestImpl::Stop()
 {
-    if (state == GridTest::State::Running)
+    if (state == GridTest::StateRunning)
     {
         DAVA::FileSystem::Instance()->DeleteDirectory(reportFolderPath);
-        state = GridTest::State::Finished;
+        state = GridTest::StateFinished;
     }
-    else if (state == GridTest::State::MakingScreenshots)
+    else if (state == GridTest::StateMakingScreenshots)
     {
         screenshotsToStart.clear();
         // as soon as currently processing screenshots will be saved, class state changes to Finished
@@ -369,8 +383,6 @@ void GridTestImpl::ProcessMeasuredSamples()
     {
         GridTestSample& sample = result.samples[sampleIndex];
 
-        reportFile->WriteLine(Format("Sample %.0f.%.0f.%.0f angle %.0f-%.0f: fps %.1f", sample.pos.x, sample.pos.y, sample.pos.z, sample.cos, sample.sine, sample.fps));
-
         result.avgFPS += sample.fps;
 
         if (sample.fps < result.minFPS)
@@ -379,24 +391,33 @@ void GridTestImpl::ProcessMeasuredSamples()
         if (sample.fps > result.maxFPS)
             result.maxFPS = sample.fps;
 
-        if (sample.fps < GridTestDetails::LOW_FPS_THRESHOLD)
+        if (mode == GridTest::ModeGenerateReport)
         {
-            String screenshotName = Format("screenshot_fps%2.0f_frame%u.png", sample.fps, sampleIndex);
-            sample.screenshotPath = reportFolderPath + screenshotName;
-            screenshotsToStart.emplace_back(new GridTestDetails::SectorScreenshot(sceneView, sample));
+            reportFile->WriteLine(Format("Sample %.0f.%.0f.%.0f angle %.0f-%.0f: fps %.1f", sample.pos.x, sample.pos.y, sample.pos.z, sample.cos, sample.sine, sample.fps));
+
+            if (sample.fps < GridTestDetails::LOW_FPS_THRESHOLD)
+            {
+                String screenshotName = Format("screenshot_fps%2.0f_frame%u.png", sample.fps, sampleIndex);
+                sample.screenshotPath = reportFolderPath + screenshotName;
+                screenshotsToStart.emplace_back(new GridTestDetails::SectorScreenshot(sceneView, sample));
+            }
         }
     }
 
-    result.panoramaPath = reportFolderPath + "panorama.png";
-    screenshotsToStart.emplace_back(new GridTestDetails::PanoramaScreenshot(sceneView, result.panoramaPath));
-
     result.avgFPS /= result.samples.size();
-    String total = Format("Avg fps: %.1f, min %.1f, max %.1f", result.avgFPS, result.minFPS, result.maxFPS);
-    Logger::Info("%s", total.c_str());
-    reportFile->WriteLine(total);
-    reportFile.reset();
 
-    SetState(GridTest::State::MakingScreenshots);
+    if (mode == GridTest::ModeGenerateReport)
+    {
+        String total = Format("Avg fps: %.1f, min %.1f, max %.1f", result.avgFPS, result.minFPS, result.maxFPS);
+        reportFile->WriteLine(total);
+        reportFile.reset();
+
+        result.panoramaPath = reportFolderPath + "panorama.png";
+    }
+
+    screenshotsToStart.emplace_back(new GridTestDetails::PanoramaScreenshot(sceneView, result.panoramaImage, result.panoramaPath));
+
+    SetState(GridTest::StateMakingScreenshots);
 }
 
 void GridTestImpl::Update(DAVA::float32 timeElapsed)
@@ -405,7 +426,7 @@ void GridTestImpl::Update(DAVA::float32 timeElapsed)
 
     switch (state)
     {
-    case GridTest::State::Running:
+    case GridTest::StateRunning:
     {
         fpsMeter.Update(timeElapsed);
         if (fpsMeter.IsFpsReady())
@@ -424,7 +445,7 @@ void GridTestImpl::Update(DAVA::float32 timeElapsed)
         }
         return;
     }
-    case GridTest::State::MakingScreenshots:
+    case GridTest::StateMakingScreenshots:
     {
         if (!screenshotsToStart.empty())
         {
@@ -442,13 +463,13 @@ void GridTestImpl::Update(DAVA::float32 timeElapsed)
 
             if (screenshotsToSave.empty())
             {
-                SetState(GridTest::State::Finished);
+                SetState(GridTest::StateFinished);
             }
         }
 
         return;
     }
-    case GridTest::State::Finished:
+    case GridTest::StateFinished:
     default:
     {
         return;
@@ -467,8 +488,8 @@ void GridTestImpl::SetState(GridTest::State newState)
     }
 }
 
-GridTest::GridTest(DAVA::Engine& engine, GridTestListener* listener)
-    : impl(new GridTestImpl(engine, listener))
+GridTest::GridTest(DAVA::Engine& engine, GridTestListener* listener, Mode mode)
+    : impl(new GridTestImpl(engine, listener, mode))
 {
 }
 

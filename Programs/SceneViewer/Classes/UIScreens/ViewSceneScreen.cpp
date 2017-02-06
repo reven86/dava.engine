@@ -10,11 +10,15 @@ namespace ViewSceneScreenDetails
 {
 const DAVA::float32 ABOVE_LANDSCAPE_ELEVATION = 10.f;
 const DAVA::float32 INFO_UPDATE_INTERVAL_SEC = 0.5f;
+
+const DAVA::String BOTSPAWN_PROPERTY_VALUE = "botspawn";
+const DAVA::String TANK_MODEL_PATH = "~res:/Tanks/USSR/T54S.sc2";
 }
 
 ViewSceneScreen::ViewSceneScreen(SceneViewerData& data)
     : data(data)
     , scenePath(data.scenePath)
+    , scene(data.scene)
     , fpsMeter(ViewSceneScreenDetails::INFO_UPDATE_INTERVAL_SEC)
     , gridTest(data.engine, this)
 {
@@ -23,15 +27,55 @@ ViewSceneScreen::ViewSceneScreen(SceneViewerData& data)
 void ViewSceneScreen::LoadResources()
 {
     BaseScreen::LoadResources();
+    if (!scene)
+    {
+        LoadScene();
+    }
     AddControls();
-    LoadScene();
+    PlaceSceneAtScreen();
 }
 
 void ViewSceneScreen::UnloadResources()
 {
-    UnloadScene();
+    RemoveSceneFromScreen();
     RemoveControls();
     BaseScreen::UnloadResources();
+}
+
+void ViewSceneScreen::PlaceSceneAtScreen()
+{
+    using namespace DAVA;
+
+    DVASSERT(scene);
+    DVASSERT(sceneView);
+
+    Camera* camera = scene->GetCurrentCamera();
+    camera->SetupPerspective(70.f, data.screenAspect, 0.5f, 2500.f);
+    camera->SetUp(DAVA::Vector3(0.f, 0.f, 1.f));
+    SetCameraAtCenter(camera);
+    //camera->SetPosition(Vector3(0, -10, 1));
+
+    rotationControllerSystem = new DAVA::RotationControllerSystem(scene);
+    scene->AddSystem(rotationControllerSystem, MAKE_COMPONENT_MASK(Component::CAMERA_COMPONENT) | MAKE_COMPONENT_MASK(Component::ROTATION_CONTROLLER_COMPONENT),
+                     Scene::SCENE_SYSTEM_REQUIRE_PROCESS | Scene::SCENE_SYSTEM_REQUIRE_INPUT);
+
+    wasdSystem = new WASDControllerSystem(scene);
+    scene->AddSystem(wasdSystem, MAKE_COMPONENT_MASK(Component::CAMERA_COMPONENT) | MAKE_COMPONENT_MASK(Component::WASD_CONTROLLER_COMPONENT),
+                     Scene::SCENE_SYSTEM_REQUIRE_PROCESS);
+
+    sceneView->SetScene(scene);
+}
+
+void ViewSceneScreen::RemoveSceneFromScreen()
+{
+    if (scene)
+    {
+        scene->RemoveSystem(rotationControllerSystem);
+        scene->RemoveSystem(wasdSystem);
+        SafeDelete(rotationControllerSystem);
+        SafeDelete(wasdSystem);
+    }
+    sceneView->SetScene(nullptr);
 }
 
 void ViewSceneScreen::LoadScene()
@@ -86,40 +130,57 @@ void ViewSceneScreen::LoadScene()
     */
 
     ScopedPtr<Camera> camera(new Camera);
-
-    float32 aspect = static_cast<float32>(GetSize().dy) / static_cast<float32>(GetSize().dx);
-    camera->SetupPerspective(70.f, aspect, 0.5f, 2500.f);
-    camera->SetUp(DAVA::Vector3(0.f, 0.f, 1.f));
-    SetCameraAtCenter(camera);
-    //camera->SetPosition(Vector3(0, -10, 1));
     scene->AddCamera(camera);
     scene->SetCurrentCamera(camera);
 
-    Entity* cameraEntity = new Entity();
+    ScopedPtr<Entity> cameraEntity(new Entity());
     cameraEntity->AddComponent(new CameraComponent(camera));
     cameraEntity->AddComponent(new WASDControllerComponent());
     cameraEntity->AddComponent(new RotationControllerComponent());
     scene->AddNode(cameraEntity);
-    cameraEntity->Release();
 
-    rotationControllerSystem = new DAVA::RotationControllerSystem(scene);
-    scene->AddSystem(rotationControllerSystem, MAKE_COMPONENT_MASK(Component::CAMERA_COMPONENT) | MAKE_COMPONENT_MASK(Component::ROTATION_CONTROLLER_COMPONENT),
-                     Scene::SCENE_SYSTEM_REQUIRE_PROCESS | Scene::SCENE_SYSTEM_REQUIRE_INPUT);
-
-    wasdSystem = new WASDControllerSystem(scene);
-    scene->AddSystem(wasdSystem, MAKE_COMPONENT_MASK(Component::CAMERA_COMPONENT) | MAKE_COMPONENT_MASK(Component::WASD_CONTROLLER_COMPONENT),
-                     Scene::SCENE_SYSTEM_REQUIRE_PROCESS);
-
-    DVASSERT(sceneView);
-    sceneView->SetScene(scene);
+    AddTanksAtScene();
 }
 
-void ViewSceneScreen::UnloadScene()
+void ViewSceneScreen::AddTanksAtScene()
 {
-    if (scene)
+    using namespace ViewSceneScreenDetails;
+    using namespace DAVA;
+
+    List<Entity*> spawnPoints;
+    scene->GetChildEntitiesWithComponent(spawnPoints, Component::CUSTOM_PROPERTIES_COMPONENT, false);
+
+    for (List<Entity*>::iterator it = spawnPoints.begin(); it != spawnPoints.end();)
     {
-        sceneView->SetScene(nullptr);
-        scene.reset();
+        KeyedArchive* props = GetCustomPropertiesArchieve(*it);
+        DVASSERT(props);
+
+        if (props->IsKeyExists("type") && props->GetString("type") == BOTSPAWN_PROPERTY_VALUE)
+        {
+            ++it;
+        }
+        else
+        {
+            auto itDel = it++;
+            spawnPoints.erase(itDel);
+        }
+    }
+
+    if (!spawnPoints.empty())
+    {
+        ScopedPtr<Scene> tank(new Scene());
+        if (SceneFileV2::eError::ERROR_NO_ERROR == tank->LoadScene(ViewSceneScreenDetails::TANK_MODEL_PATH))
+        {
+            for (Entity* spawnPoint : spawnPoints)
+            {
+                Entity* clonedTank = new Entity;
+                tank->Clone(clonedTank);
+                while (clonedTank->GetChildrenCount() != 0)
+                {
+                    spawnPoint->AddNode(clonedTank->GetChild(0));
+                }
+            }
+        }
     }
 }
 
@@ -274,7 +335,7 @@ void ViewSceneScreen::OnButtonSelectFromExt(DAVA::BaseObject* caller, void* para
 
 void ViewSceneScreen::OnButtonPerformanceTest(DAVA::BaseObject* caller, void* param, void* callerData)
 {
-    if (gridTest.GetState() != GridTest::Finished)
+    if (gridTest.GetState() != GridTest::StateFinished)
         return;
 
     menu->Show(false);
@@ -350,8 +411,9 @@ void ViewSceneScreen::Draw(const DAVA::UIGeometricData& geometricData)
 
 void ViewSceneScreen::ReloadScene()
 {
-    UnloadScene();
+    RemoveSceneFromScreen();
     LoadScene();
+    PlaceSceneAtScreen();
 }
 
 void ViewSceneScreen::ProcessUserInput(DAVA::float32 timeElapsed)
@@ -400,7 +462,7 @@ void ViewSceneScreen::UpdateInfo(DAVA::float32 timeElapsed)
 
 void ViewSceneScreen::OnGridTestStateChanged()
 {
-    if (gridTest.GetState() == GridTest::Finished)
+    if (gridTest.GetState() == GridTest::StateFinished)
     {
         data.gridTestResult = gridTest.GetResult();
         SetNextScreen();

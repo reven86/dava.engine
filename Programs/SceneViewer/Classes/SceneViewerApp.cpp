@@ -103,6 +103,8 @@ void SceneViewerApp::OnWindowCreated(DAVA::Window* w)
 
 void SceneViewerApp::OnAppFinished()
 {
+    data.scene.reset();
+
     DAVA::DbgDraw::Uninitialize();
 
     SafeRelease(viewSceneScreen);

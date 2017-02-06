@@ -20,7 +20,7 @@ public:
 
 private:
     void OnBackButton(BaseObject* caller, void* param, void* callerData);
-    void OnSectorSelected(BaseObject* caller, void* param, void* callerData);
+    void OnSectorPressed(BaseObject* caller, void* param, void* callerData);
 
     void AddButtons();
     void RemoveButtons();
@@ -45,9 +45,14 @@ private:
     DAVA::float32 SceneDistanceToScreenDistance(DAVA::float32 distance);
     DAVA::Vector2 ScenePointToScreenPoint(DAVA::Vector3 scenePoint);
     SectorColor EvaluateSectorType(DAVA::float32 fps);
+    void SetSamplePosition(DAVA::Scene* scene, const GridTestSample& sample);
+    void SelectLowestFpsSector();
+    void SetSectorSelected(Sector*);
 
 private:
     SceneViewerData& data;
+
+    DAVA::Camera* camera = nullptr;
 
     DAVA::Rect infoColumnRect;
     DAVA::Rect panoramaRect;
@@ -63,6 +68,6 @@ private:
     DAVA::ScopedPtr<DAVA::UIStaticText> redBoxText;
     DAVA::ScopedPtr<DAVA::UIStaticText> previewFpsText;
     DAVA::ScopedPtr<DAVA::UIStaticText> fpsResultsText;
-    DAVA::ScopedPtr<DAVA::UIControl> previewImage;
+    DAVA::ScopedPtr<DAVA::UI3DView> preview;
     DAVA::ScopedPtr<DAVA::UIButton> backButton;
 };

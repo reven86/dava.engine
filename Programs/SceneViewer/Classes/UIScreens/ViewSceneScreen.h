@@ -67,12 +67,14 @@ private:
     void SetCameraAtCenter(DAVA::Camera* camera);
 
     void LoadScene();
-    void UnloadScene();
     void ReloadScene();
+    void PlaceSceneAtScreen();
+    void RemoveSceneFromScreen();
+    void AddTanksAtScene();
 
     SceneViewerData& data;
     DAVA::FilePath& scenePath;
-    DAVA::ScopedPtr<DAVA::Scene> scene;
+    DAVA::ScopedPtr<DAVA::Scene>& scene;
     DAVA::ScopedPtr<DAVA::UI3DView> sceneView;
 
     DAVA::ScopedPtr<DAVA::UIStaticText> infoText;
@@ -84,8 +86,8 @@ private:
     //     DAVA::uint64 drawTime = 0;
     //     DAVA::uint64 updateTime = 0;
 
-    DAVA::RotationControllerSystem* rotationControllerSystem;
-    DAVA::WASDControllerSystem* wasdSystem;
+    DAVA::RotationControllerSystem* rotationControllerSystem = nullptr;
+    DAVA::WASDControllerSystem* wasdSystem = nullptr;
 
     //     Vector2 cursorPosition;
     //     float32 cursorSize = 0.1f;

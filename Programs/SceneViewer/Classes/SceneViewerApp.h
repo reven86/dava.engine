@@ -22,10 +22,11 @@ struct SceneViewerData
     DAVA::Engine& engine;
     DAVA::float32 screenAspect;
     DAVA::FilePath scenePath;
+    DAVA::ScopedPtr<DAVA::Scene> scene;
     GridTestResult gridTestResult;
 };
 
-class SceneViewerApp
+class SceneViewerApp final
 {
 public:
     SceneViewerApp(DAVA::Engine& e);
@@ -41,12 +42,11 @@ public:
     void Draw(DAVA::Window* window);
     void EndFrame();
 
-protected:
+private:
     void CreateDocumentsFolder();
 
     ViewSceneScreen* viewSceneScreen = nullptr;
     PerformanceResultsScreen* performanceResultsScreen = nullptr;
 
-private:
     SceneViewerData data;
 };

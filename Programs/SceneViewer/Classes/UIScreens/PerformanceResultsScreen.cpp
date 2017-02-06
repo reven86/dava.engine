@@ -77,7 +77,7 @@ void PerformanceResultsScreen::AddBackgroundMap()
     using namespace DAVA;
 
     ScopedPtr<UIControlBackground> panoramaBackground(new UIControlBackground());
-    ScopedPtr<Sprite> sprite(Sprite::CreateFromSourceFile(data.gridTestResult.panoramaPath));
+    ScopedPtr<Sprite> sprite(Sprite::CreateFromImage(data.gridTestResult.panoramaImage));
     panoramaBackground->SetSprite(sprite);
     panoramaBackground->SetDrawType(UIControlBackground::DRAW_STRETCH_BOTH);
     panoramaBackground->SetAlign(eAlign::ALIGN_LEFT | eAlign::ALIGN_TOP);
@@ -120,7 +120,7 @@ void PerformanceResultsScreen::AddSectors()
         float32 radius = SceneDistanceToScreenDistance(step / 2) - SECTOR_MARGIN_IN_PIXELS - SECTOR_AXIFUGAL_OFFSET_IN_PIXELS;
         SectorColor sectorType = EvaluateSectorType(sample.fps);
         DAVA::ScopedPtr<Sector> sector(new Sector(samplePointOnScreen, startAngle, endAngle, radius, sectorType));
-        sector->AddEvent(DAVA::UIControl::EVENT_TOUCH_UP_INSIDE, DAVA::Message(this, &PerformanceResultsScreen::OnSectorSelected));
+        sector->AddEvent(DAVA::UIControl::EVENT_TOUCH_UP_INSIDE, DAVA::Message(this, &PerformanceResultsScreen::OnSectorPressed));
         sectors.push_back(sector);
         sectorToSample[sector] = sampleIndex;
         AddControl(sector);
@@ -224,9 +224,14 @@ void PerformanceResultsScreen::AddPreviewControls()
     previewRect.x = infoColumnRect.x;
     previewRect.y = infoColumnRect.y + infoColumnRect.dy - BUTTON_HEIGHT - MARGIN - previewRect.dy;
 
-    previewImage = new UIControl(previewRect);
-    previewImage->SetSpriteDrawType(UIControlBackground::DRAW_STRETCH_BOTH);
-    AddControl(previewImage);
+    preview = new UI3DView(previewRect);
+    preview->SetScene(data.scene);
+    AddControl(preview);
+
+    camera = data.scene->GetCurrentCamera();
+    DVASSERT(camera != nullptr);
+    camera->SetupPerspective(70.f, data.screenAspect, 0.5f, 2500.f);
+    camera->SetUp(DAVA::Vector3(0.f, 0.f, 1.f));
 
     Rect fpsRect;
     fpsRect.dx = infoColumnRect.dx;
@@ -239,13 +244,36 @@ void PerformanceResultsScreen::AddPreviewControls()
     previewFpsText->SetTextColor(Color::White);
     previewFpsText->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
     AddControl(previewFpsText);
+
+    SelectLowestFpsSector();
+}
+
+void PerformanceResultsScreen::SelectLowestFpsSector()
+{
+    DAVA::Vector<GridTestSample>& samples = data.gridTestResult.samples;
+
+    DAVA::float32 lowestFps = 100.f;
+    Sector* lowestFpsSector = nullptr;
+
+    for (auto& entry : sectorToSample)
+    {
+        DAVA::uint32 sampleId = entry.second;
+        DVASSERT(sampleId < samples.size());
+        if (samples[sampleId].fps < lowestFps)
+        {
+            lowestFps = samples[sampleId].fps;
+            lowestFpsSector = entry.first;
+        }
+    }
+
+    SetSectorSelected(lowestFpsSector);
 }
 
 void PerformanceResultsScreen::RemovePreviewControls()
 {
-    RemoveControl(previewImage);
+    RemoveControl(preview);
     RemoveControl(previewFpsText);
-    previewImage.reset();
+    preview.reset();
     previewFpsText.reset();
 }
 
@@ -289,7 +317,13 @@ void PerformanceResultsScreen::OnBackButton(DAVA::BaseObject* caller, void* para
     SetPreviousScreen();
 }
 
-void PerformanceResultsScreen::OnSectorSelected(DAVA::BaseObject* caller, void* param, void* callerData)
+void PerformanceResultsScreen::SetSamplePosition(DAVA::Scene* scene, const GridTestSample& sample)
+{
+    camera->SetPosition(sample.pos);
+    camera->SetDirection(DAVA::Vector3(sample.cos, sample.sine, 0));
+}
+
+void PerformanceResultsScreen::OnSectorPressed(DAVA::BaseObject* caller, void* param, void* callerData)
 {
     Sector* sector = static_cast<Sector*>(caller);
     if (sector == nullptr)
@@ -298,10 +332,16 @@ void PerformanceResultsScreen::OnSectorSelected(DAVA::BaseObject* caller, void* 
         return;
     }
 
+    SetSectorSelected(sector);
+}
+
+void PerformanceResultsScreen::SetSectorSelected(Sector* sector)
+{
+    DVASSERT(sector != nullptr);
+
     if (selectedSector != nullptr)
     {
         selectedSector->SetMode(Sector::UNSELECTED);
-        previewImage->SetSprite(nullptr, 0);
         previewFpsText->SetText(L"");
     }
 
@@ -323,13 +363,8 @@ void PerformanceResultsScreen::OnSectorSelected(DAVA::BaseObject* caller, void* 
     previewFpsText->SetText(DAVA::Format(L"%.1f FPS", sample.fps));
     previewFpsText->SetTextColor(GetColorByType(EvaluateSectorType(sample.fps)));
 
-    if (sample.screenshotPath.Exists())
-    {
-        DVASSERT(previewImage);
-        DAVA::ScopedPtr<DAVA::Sprite> sprite(DAVA::Sprite::CreateFromSourceFile(sample.screenshotPath));
-        previewImage->SetSprite(sprite, 0);
+    SetSamplePosition(data.scene, sample);
 
-        selectedSector = sector;
-        selectedSector->SetMode(Sector::SELECTED);
-    }
+    selectedSector = sector;
+    selectedSector->SetMode(Sector::SELECTED);
 }

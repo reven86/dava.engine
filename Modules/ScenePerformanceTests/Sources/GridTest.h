@@ -31,6 +31,7 @@ struct GridTestResult
     DAVA::float32 sceneMax = 0.f;
     DAVA::float32 gridStep = 0.f;
     DAVA::float32 sampleAngleDegrees = 0.f;
+    DAVA::ScopedPtr<DAVA::Image> panoramaImage;
     DAVA::FilePath panoramaPath;
     DAVA::Vector<GridTestSample> samples;
     DAVA::float32 avgFPS = 0.f;
@@ -41,14 +42,20 @@ struct GridTestResult
 class GridTest final
 {
 public:
-    enum State : DAVA::uint8
+    enum Mode : DAVA::uint8
     {
-        Running,
-        MakingScreenshots,
-        Finished
+        ModeDefault = 0x0,
+        ModeGenerateReport = 0x1
     };
 
-    explicit GridTest(DAVA::Engine& engine, GridTestListener* listener);
+    enum State : DAVA::uint8
+    {
+        StateRunning,
+        StateMakingScreenshots,
+        StateFinished
+    };
+
+    explicit GridTest(DAVA::Engine& engine, GridTestListener* listener, Mode mode = ModeDefault);
     ~GridTest();
 
     bool Start(const DAVA::ScopedPtr<DAVA::UI3DView>& s);

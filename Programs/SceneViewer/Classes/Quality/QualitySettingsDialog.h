@@ -1,7 +1,7 @@
 #pragma once
 
-#include "UIControls/ExclusiveSet.h"
-#include "UIControls/BinaryExclusiveSet.h"
+#include "UIControls/TriggerBox.h"
+#include "UIControls/BinaryTriggerBox.h"
 
 #include <UI/UIControl.h>
 #include <UI/UIList.h>
@@ -24,7 +24,7 @@ class QualitySettingsDialog final
   ,
   public DAVA::UIListDelegate
   ,
-  public ExclusiveSetListener
+  public TriggerBoxListener
 {
 public:
     QualitySettingsDialog();
@@ -43,7 +43,7 @@ private:
     DAVA::UIListCell* CellAtIndex(DAVA::UIList* list, DAVA::int32 index) override;
 
     // ExclusiveSetListener
-    void OnOptionChanged(ExclusiveSet*);
+    void OnOptionChanged(TriggerBox*);
 
     void OnButtonOk(DAVA::BaseObject* caller, void* param, void* callerData);
     void OnButtonCancel(DAVA::BaseObject* caller, void* param, void* callerData);
@@ -69,13 +69,13 @@ private:
 
     DAVA::Vector<DAVA::ScopedPtr<DAVA::UIListCell>> cells;
 
-    DAVA::ScopedPtr<ExclusiveSet> textureQualityBox;
-    DAVA::ScopedPtr<ExclusiveSet> anisotropyQualityBox;
-    DAVA::ScopedPtr<ExclusiveSet> multisamplingQualityBox;
-    DAVA::Vector<DAVA::ScopedPtr<ExclusiveSet>> materialQualityBoxes;
-    DAVA::ScopedPtr<ExclusiveSet> particleQualityBox;
-    DAVA::Vector<DAVA::ScopedPtr<BinaryExclusiveSet>> qualityOptionBoxes;
-    DAVA::ScopedPtr<BinaryExclusiveSet> metalOptionBox;
+    DAVA::ScopedPtr<TriggerBox> textureQualityBox;
+    DAVA::ScopedPtr<TriggerBox> anisotropyQualityBox;
+    DAVA::ScopedPtr<TriggerBox> multisamplingQualityBox;
+    DAVA::Vector<DAVA::ScopedPtr<TriggerBox>> materialQualityBoxes;
+    DAVA::ScopedPtr<TriggerBox> particleQualityBox;
+    DAVA::Vector<DAVA::ScopedPtr<BinaryTriggerBox>> qualityOptionBoxes;
+    DAVA::ScopedPtr<BinaryTriggerBox> metalOptionBox;
 
     DAVA::UIButton* okButton = nullptr;
     DAVA::UIButton* cancelButton = nullptr;

@@ -1,16 +1,16 @@
-#include "ExclusiveSet.h"
+#include "TriggerBox.h"
 
 #include <Render/2D/Font.h>
 #include <UI/Layouts/UIAnchorComponent.h>
 #include <Utils/StringFormat.h>
 
-ExclusiveSet::ExclusiveSet(ExclusiveSetListener& listener, DAVA::Font* font)
+TriggerBox::TriggerBox(TriggerBoxListener& listener, DAVA::Font* font)
     : listener(listener)
     , font(font)
 {
 }
 
-bool ExclusiveSet::AddOption(ExclusiveSet::OptionID optionId, const DAVA::WideString& text, bool toSelect /* = false*/)
+bool TriggerBox::AddOption(TriggerBox::OptionID optionId, const DAVA::WideString& text, bool toSelect /* = false*/)
 {
     using namespace DAVA;
 
@@ -50,7 +50,7 @@ bool ExclusiveSet::AddOption(ExclusiveSet::OptionID optionId, const DAVA::WideSt
     return true;
 }
 
-void ExclusiveSet::SetOptionSelected(ExclusiveSet::OptionID optionID)
+void TriggerBox::SetOptionSelected(TriggerBox::OptionID optionID)
 {
     DVASSERT(selectedOption != options.end());
 
@@ -65,13 +65,13 @@ void ExclusiveSet::SetOptionSelected(ExclusiveSet::OptionID optionID)
     }
 }
 
-ExclusiveSet::OptionID ExclusiveSet::GetSelectedOptionID() const
+TriggerBox::OptionID TriggerBox::GetSelectedOptionID() const
 {
     DVASSERT(selectedOption != options.end());
     return selectedOption->first;
 }
 
-void ExclusiveSet::OnButtonPressed(LockedButton* button)
+void TriggerBox::OnButtonPressed(LockedButton* button)
 {
     DVASSERT(selectedOption != options.end());
     selectedOption->second->SetSelected(false);
@@ -81,7 +81,7 @@ void ExclusiveSet::OnButtonPressed(LockedButton* button)
     listener.OnOptionChanged(this);
 }
 
-ExclusiveSet::OptionsMap::iterator ExclusiveSet::FindOptionByValue(LockedButton* button)
+TriggerBox::OptionsMap::iterator TriggerBox::FindOptionByValue(LockedButton* button)
 {
     return std::find_if(options.begin(), options.end(), [button](OptionsMap::value_type& entry)
                         {

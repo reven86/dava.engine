@@ -1,5 +1,6 @@
 #include "QualitySettingsDialog.h"
-#include "UIControls/ExclusiveSet.h"
+#include "QualityPreferences.h"
+#include "UIControls/TriggerBox.h"
 
 #include <Base/Message.h>
 #include <UI/Layouts/UISizePolicyComponent.h>
@@ -260,7 +261,7 @@ void QualitySettingsDialog::BuildQualityControls()
 
             cell->SetLeftColumnText(L"Textures:");
 
-            textureQualityBox = new ExclusiveSet(*this, font);
+            textureQualityBox = new TriggerBox(*this, font);
             cell->SetRightColumnControl(textureQualityBox);
 
             DAVA::FastName curTxQuality = DAVA::QualitySettingsSystem::Instance()->GetCurTextureQuality();
@@ -269,7 +270,7 @@ void QualitySettingsDialog::BuildQualityControls()
             {
                 DAVA::FastName txQualityName = DAVA::QualitySettingsSystem::Instance()->GetTextureQualityName(i);
                 bool isCurrentQuality = (txQualityName == curTxQuality);
-                textureQualityBox->AddOption(static_cast<ExclusiveSet::OptionID>(i), ToWideString(txQualityName), isCurrentQuality);
+                textureQualityBox->AddOption(static_cast<TriggerBox::OptionID>(i), ToWideString(txQualityName), isCurrentQuality);
             }
         }
     }
@@ -283,7 +284,7 @@ void QualitySettingsDialog::BuildQualityControls()
 
         cell->SetLeftColumnText(L"Anisotropy:");
 
-        anisotropyQualityBox = new ExclusiveSet(*this, font);
+        anisotropyQualityBox = new TriggerBox(*this, font);
         cell->SetRightColumnControl(anisotropyQualityBox);
 
         DAVA::FastName curAnQuality = DAVA::QualitySettingsSystem::Instance()->GetCurAnisotropyQuality();
@@ -292,7 +293,7 @@ void QualitySettingsDialog::BuildQualityControls()
         {
             DAVA::FastName anQualityName = DAVA::QualitySettingsSystem::Instance()->GetAnisotropyQualityName(i);
             bool isCurrentQuality = (anQualityName == curAnQuality);
-            anisotropyQualityBox->AddOption(static_cast<ExclusiveSet::OptionID>(i), ToWideString(anQualityName), isCurrentQuality);
+            anisotropyQualityBox->AddOption(static_cast<TriggerBox::OptionID>(i), ToWideString(anQualityName), isCurrentQuality);
         }
     }
 
@@ -305,7 +306,7 @@ void QualitySettingsDialog::BuildQualityControls()
 
         cell->SetLeftColumnText(L"Multisampling:");
 
-        multisamplingQualityBox = new ExclusiveSet(*this, font);
+        multisamplingQualityBox = new TriggerBox(*this, font);
         cell->SetRightColumnControl(multisamplingQualityBox);
 
         DAVA::FastName curQuality = DAVA::QualitySettingsSystem::Instance()->GetCurMSAAQuality();
@@ -314,7 +315,7 @@ void QualitySettingsDialog::BuildQualityControls()
         {
             DAVA::FastName qualityName = DAVA::QualitySettingsSystem::Instance()->GetMSAAQualityName(i);
             bool isCurrentQuality = (qualityName == curQuality);
-            multisamplingQualityBox->AddOption(static_cast<ExclusiveSet::OptionID>(i), ToWideString(qualityName), isCurrentQuality);
+            multisamplingQualityBox->AddOption(static_cast<TriggerBox::OptionID>(i), ToWideString(qualityName), isCurrentQuality);
         }
     }
 
@@ -332,7 +333,7 @@ void QualitySettingsDialog::BuildQualityControls()
 
             cell->SetLeftColumnText(ToWideString(groupName) + L":");
 
-            DAVA::ScopedPtr<ExclusiveSet> materialQualityBox(new ExclusiveSet(*this, font));
+            DAVA::ScopedPtr<TriggerBox> materialQualityBox(new TriggerBox(*this, font));
             materialQualityBoxes.push_back(materialQualityBox);
             cell->SetRightColumnControl(materialQualityBox);
 
@@ -342,7 +343,7 @@ void QualitySettingsDialog::BuildQualityControls()
             {
                 DAVA::FastName qualityName = DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityName(groupName, j);
                 bool isCurrentQuality = (qualityName == curQuality);
-                materialQualityBox->AddOption(static_cast<ExclusiveSet::OptionID>(j), ToWideString(qualityName), isCurrentQuality);
+                materialQualityBox->AddOption(static_cast<TriggerBox::OptionID>(j), ToWideString(qualityName), isCurrentQuality);
             }
         }
     }
@@ -358,7 +359,7 @@ void QualitySettingsDialog::BuildQualityControls()
 
         cell->SetLeftColumnText(L"Quality:");
 
-        particleQualityBox = new ExclusiveSet(*this, font);
+        particleQualityBox = new TriggerBox(*this, font);
         cell->SetRightColumnControl(particleQualityBox);
 
         DAVA::FastName curQuality = particlesSettings.GetCurrentQuality();
@@ -367,7 +368,7 @@ void QualitySettingsDialog::BuildQualityControls()
         {
             DAVA::FastName qualityName = particlesSettings.GetQualityName(i);
             bool isCurrentQuality = (qualityName == curQuality);
-            particleQualityBox->AddOption(static_cast<ExclusiveSet::OptionID>(i), ToWideString(qualityName), isCurrentQuality);
+            particleQualityBox->AddOption(static_cast<TriggerBox::OptionID>(i), ToWideString(qualityName), isCurrentQuality);
         }
     }
 
@@ -384,7 +385,7 @@ void QualitySettingsDialog::BuildQualityControls()
             DAVA::FastName optionName = DAVA::QualitySettingsSystem::Instance()->GetOptionName(i);
             cell->SetLeftColumnText(ToWideString(optionName) + L":");
 
-            ScopedPtr<BinaryExclusiveSet> binaryBox(new BinaryExclusiveSet(*this, font, L"Yes", L"No"));
+            ScopedPtr<BinaryTriggerBox> binaryBox(new BinaryTriggerBox(*this, font, L"Yes", L"No"));
             qualityOptionBoxes.push_back(binaryBox);
             cell->SetRightColumnControl(binaryBox);
             binaryBox->SetOn(DAVA::QualitySettingsSystem::Instance()->IsOptionEnabled(optionName));
@@ -396,7 +397,7 @@ void QualitySettingsDialog::BuildQualityControls()
 
             cell->SetLeftColumnText(L"Metal Enabled:");
 
-            metalOptionBox = new BinaryExclusiveSet(*this, font, L"Yes", L"No");
+            metalOptionBox = new BinaryTriggerBox(*this, font, L"Yes", L"No");
             cell->SetRightColumnControl(metalOptionBox);
             metalOptionBox->SetOn(DAVA::QualitySettingsSystem::Instance()->GetMetalPreview());
         }
@@ -453,7 +454,7 @@ void QualitySettingsDialog::ApplyQualitySettings()
     for (size_t i = 0; i < DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityGroupCount(); ++i)
     {
         DVASSERT(i < materialQualityBoxes.size());
-        ExclusiveSet* materialQualityBox = materialQualityBoxes[i];
+        TriggerBox* materialQualityBox = materialQualityBoxes[i];
 
         DAVA::FastName groupName = DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityGroupName(i);
 
@@ -494,7 +495,7 @@ void QualitySettingsDialog::ApplyQualitySettings()
     for (DAVA::int32 i = 0; i < optionsCount; ++i)
     {
         DVASSERT(i < qualityOptionBoxes.size());
-        BinaryExclusiveSet* optionBox = qualityOptionBoxes[i];
+        BinaryTriggerBox* optionBox = qualityOptionBoxes[i];
         bool checked = optionBox->IsOn();
 
         DAVA::FastName optionName = DAVA::QualitySettingsSystem::Instance()->GetOptionName(i);
@@ -542,7 +543,7 @@ void QualitySettingsDialog::ResetQualitySettings()
             DAVA::FastName qualityName = DAVA::QualitySettingsSystem::Instance()->GetTextureQualityName(i);
             if (qualityName == curQuality)
             {
-                textureQualityBox->SetOptionSelected(static_cast<ExclusiveSet::OptionID>(i));
+                textureQualityBox->SetOptionSelected(static_cast<TriggerBox::OptionID>(i));
                 break;
             }
         }
@@ -556,7 +557,7 @@ void QualitySettingsDialog::ResetQualitySettings()
             DAVA::FastName anQualityName = DAVA::QualitySettingsSystem::Instance()->GetAnisotropyQualityName(i);
             if (curAnQuality == anQualityName)
             {
-                anisotropyQualityBox->SetOptionSelected(static_cast<ExclusiveSet::OptionID>(i));
+                anisotropyQualityBox->SetOptionSelected(static_cast<TriggerBox::OptionID>(i));
                 break;
             }
         }
@@ -570,7 +571,7 @@ void QualitySettingsDialog::ResetQualitySettings()
             DAVA::FastName qualityName = DAVA::QualitySettingsSystem::Instance()->GetMSAAQualityName(i);
             if (curQuality == qualityName)
             {
-                multisamplingQualityBox->SetOptionSelected(static_cast<ExclusiveSet::OptionID>(i));
+                multisamplingQualityBox->SetOptionSelected(static_cast<TriggerBox::OptionID>(i));
                 break;
             }
         }
@@ -579,7 +580,7 @@ void QualitySettingsDialog::ResetQualitySettings()
     // materials quality
     for (size_t i = 0; i < DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityGroupCount(); ++i)
     {
-        ExclusiveSet* materialQualityBox = materialQualityBoxes[i];
+        TriggerBox* materialQualityBox = materialQualityBoxes[i];
 
         DAVA::FastName groupName = DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityGroupName(i);
         DAVA::FastName curQuality = DAVA::QualitySettingsSystem::Instance()->GetCurMaterialQuality(groupName);
@@ -589,7 +590,7 @@ void QualitySettingsDialog::ResetQualitySettings()
             DAVA::FastName qualityName = DAVA::QualitySettingsSystem::Instance()->GetMaterialQualityName(groupName, j);
             if (qualityName == curQuality)
             {
-                materialQualityBox->SetOptionSelected(static_cast<ExclusiveSet::OptionID>(j));
+                materialQualityBox->SetOptionSelected(static_cast<TriggerBox::OptionID>(j));
                 break;
             }
         }
@@ -606,7 +607,7 @@ void QualitySettingsDialog::ResetQualitySettings()
             DAVA::FastName qualityName = particlesSettings.GetQualityName(i);
             if (curQuality == qualityName)
             {
-                particleQualityBox->SetOptionSelected(static_cast<ExclusiveSet::OptionID>(i));
+                particleQualityBox->SetOptionSelected(static_cast<TriggerBox::OptionID>(i));
                 break;
                 ;
             }
@@ -620,7 +621,7 @@ void QualitySettingsDialog::ResetQualitySettings()
         DAVA::FastName optionName = DAVA::QualitySettingsSystem::Instance()->GetOptionName(i);
 
         DVASSERT(i < qualityOptionBoxes.size());
-        BinaryExclusiveSet* binaryBox = qualityOptionBoxes[i];
+        BinaryTriggerBox* binaryBox = qualityOptionBoxes[i];
         binaryBox->SetOn(DAVA::QualitySettingsSystem::Instance()->IsOptionEnabled(optionName));
     }
 
@@ -775,7 +776,7 @@ DAVA::UIListCell* QualitySettingsDialog::CellAtIndex(DAVA::UIList* list, DAVA::i
     return cells[index];
 }
 
-void QualitySettingsDialog::OnOptionChanged(ExclusiveSet*)
+void QualitySettingsDialog::OnOptionChanged(TriggerBox*)
 {
     applyButton->SetState(UIControl::eControlState::STATE_NORMAL);
 }
