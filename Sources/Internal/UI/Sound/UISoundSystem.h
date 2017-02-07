@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
+#include "Sound/SoundEvent.h"
+#include "UI/UIControl.h"
 #include "UI/UISystem.h"
 
 namespace DAVA

@@ -2,8 +2,10 @@
 
 #include "Engine/Engine.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "Sound/SoundSystem.h"
 #include "UI/Sound/UISoundComponent.h"
 #include "UI/Sound/UISoundValueFilterComponent.h"
+#include "UI/UISlider.h"
 
 namespace DAVA
 {

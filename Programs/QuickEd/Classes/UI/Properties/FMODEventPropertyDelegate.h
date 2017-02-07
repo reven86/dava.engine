@@ -1,6 +1,7 @@
 #pragma once
 
 #include "BasePropertyDelegate.h"
+#include "Base/BaseTypes.h"
 
 class Project;
 

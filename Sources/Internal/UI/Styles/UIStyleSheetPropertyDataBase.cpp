@@ -9,6 +9,7 @@
 #include "UI/Layouts/UIIgnoreLayoutComponent.h"
 #include "UI/Layouts/UISizePolicyComponent.h"
 #include "UI/Layouts/UIAnchorComponent.h"
+#include "UI/Sound/UISoundComponent.h"
 
 namespace DAVA
 {
