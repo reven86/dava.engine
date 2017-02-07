@@ -347,7 +347,7 @@ struct ComboBoxTestData : public ReflectionBase
         {
             QHBoxLayout* lineLayout = new QHBoxLayout();
             lineLayout->addWidget(new QLabel(testName, parent));
-            
+
             ComboBox* comboBox = new ComboBox(descriptor, accessor, dataModel, parent);
             lineLayout->addWidget(comboBox->ToWidgetCast());
             boxLayout->addLayout(lineLayout);
