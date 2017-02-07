@@ -380,16 +380,19 @@ void WindowNativeBridge::KeyEvent(NSEvent* theEvent)
     MainDispatcherEvent::eType type = isPressed ? MainDispatcherEvent::KEY_DOWN : MainDispatcherEvent::KEY_UP;
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, type, key, modifierKeys, isRepeated));
 
-    NSString* chars = [theEvent characters];
-    NSUInteger n = [chars length];
-    if (n > 0)
+    if ([theEvent type] == NSKeyDown)
     {
-        MainDispatcherEvent e = MainDispatcherEvent::CreateWindowKeyPressEvent(window, MainDispatcherEvent::KEY_CHAR, 0, modifierKeys, false);
-        for (NSUInteger i = 0; i < n; ++i)
+        NSString* chars = [theEvent characters];
+        NSUInteger n = [chars length];
+        if (n > 0)
         {
-            uint32 key = [chars characterAtIndex:i];
-            e.keyEvent.key = key;
-            mainDispatcher->PostEvent(e);
+            MainDispatcherEvent e = MainDispatcherEvent::CreateWindowKeyPressEvent(window, MainDispatcherEvent::KEY_CHAR, 0, modifierKeys, false);
+            for (NSUInteger i = 0; i < n; ++i)
+            {
+                uint32 key = [chars characterAtIndex:i];
+                e.keyEvent.key = key;
+                mainDispatcher->PostEvent(e);
+            }
         }
     }
 }

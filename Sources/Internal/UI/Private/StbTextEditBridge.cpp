@@ -302,6 +302,16 @@ bool StbTextEditBridge::SendKeyChar(uint32 keyChar, eModifierKeys modifiers)
 bool StbTextEditBridge::SendKeyChar(uint32 keyChar, uint32 modifiers)
 #endif
 {
+#if defined(__DAVAENGINE_COREV2__)
+    if ((modifiers & eModifierKeys::COMMAND) != eModifierKeys::NONE)
+#else
+    if (modifiers & UIEvent::COMMAND_DOWN)
+#endif
+    {
+        // Skip CMD+char input under MacOS
+        return false;
+    }
+
     if (keyChar == '\r' || keyChar == '\n')
     {
         if (IsSingleLineMode())
