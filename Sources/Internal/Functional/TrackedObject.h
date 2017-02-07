@@ -5,6 +5,11 @@
 namespace DAVA
 {
 struct SignalBase;
+
+/**
+    \ingroup functional
+    TrackedObject is ...
+*/
 struct TrackedObject
 {
     virtual ~TrackedObject();
