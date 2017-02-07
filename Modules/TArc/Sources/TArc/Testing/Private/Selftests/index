@@ -2,6 +2,8 @@ CheckBoxTest.h
 ClientModuleTest.h
 ContextHierarchyTest.h
 DataListenerTest.h
+DoubleSpinBoxTests.h
 FieldBinderTest.h
+IntSpinBoxTests.h
 LineEditTest.h
 SceneTabbarTest.h
