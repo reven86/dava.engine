@@ -35,12 +35,12 @@
 
 - (void)dealloc
 {
-    [super dealloc];
-
     [_title release];
     [_message release];
     if (buttonNames != nil)
         [buttonNames release];
+
+    [super dealloc];
 }
 
 - (int)showModal
