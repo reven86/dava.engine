@@ -479,3 +479,13 @@ const DAVA::FilePath& ProjectData::GetProjectDirectory() const
 {
     return projectDirectory;
 }
+
+bool ProjectData::ResDir::operator==(const ProjectData::ResDir& other) const
+{
+    if (this == &other)
+    {
+        return true;
+    }
+    return other.absolute == absolute &&
+    other.relative == relative;
+}

@@ -149,7 +149,12 @@ void FileSystemCache::Impl::UntrackDirectory(const QString& directory)
 
 void FileSystemCache::Impl::UntrackAllDirectories()
 {
-    bool removeResult = ForceRemovePaths(watcher->directories());
+    QStringList directories = watcher->directories();
+    if (directories.isEmpty())
+    {
+        return;
+    }
+    bool removeResult = ForceRemovePaths(directories);
     DVASSERT(removeResult);
     directories.clear();
     files.clear();

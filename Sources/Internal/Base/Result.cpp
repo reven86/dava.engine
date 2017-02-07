@@ -106,3 +106,10 @@ ResultList& ResultList::AddResultList(ResultList&& resultList)
     }
     return *this;
 }
+
+bool ResultList::HasErrors() const
+{
+    return std::find_if(results.begin(), results.end(), [](const Result& result) {
+               return result.type == Result::RESULT_ERROR;
+           }) != results.end();
+}

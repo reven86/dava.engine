@@ -33,7 +33,6 @@ protected:
 
 private:
     void InitEditorSystems();
-    void InitMainWindow();
     void InitCentralWidget();
 
     void CreateActions();

@@ -195,6 +195,10 @@ protected:
 
     void ActivateContextImpl(DataContext* context)
     {
+        if (context == activeContext)
+        {
+            return;
+        }
         BeforeContextSwitch(activeContext, context);
         DataContext* oldContext = activeContext;
         activeContext = context;

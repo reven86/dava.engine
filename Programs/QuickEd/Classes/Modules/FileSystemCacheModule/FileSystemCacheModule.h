@@ -15,7 +15,7 @@ class FileSystemCacheModule : public DAVA::TArc::ClientModule
 
     void OnUIPathChanged(const DAVA::Any& path);
 
-    DAVA::TArc::FieldBinder projectUiPathFieldBinder;
+    std::unique_ptr<DAVA::TArc::FieldBinder> projectUiPathFieldBinder;
     DAVA::TArc::QtConnections connections;
 
     DAVA_VIRTUAL_REFLECTION(FileSystemCacheModule, DAVA::TArc::ClientModule);

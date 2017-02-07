@@ -4,13 +4,9 @@
 #include "EditorSystems/EditorSystemsManager.h"
 #include "EditorSystems/SelectionContainer.h"
 #include <QWidget>
+#include <QFrame>
 #include <QCursor>
 #include <QPointer>
-
-namespace Ui
-{
-class PreviewWidget;
-}
 
 namespace DAVA
 {
@@ -44,7 +40,7 @@ class QDragLeaveEvent;
 class QDropEvent;
 class QMenu;
 
-class PreviewWidget : public QWidget, private DAVA::RenderWidget::IClientDelegate
+class PreviewWidget : public QFrame, private DAVA::RenderWidget::IClientDelegate
 {
     Q_OBJECT
 public:

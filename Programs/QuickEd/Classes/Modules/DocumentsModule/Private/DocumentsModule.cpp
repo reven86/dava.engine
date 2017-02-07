@@ -23,7 +23,6 @@
 #include "Model/QuickEdPackageBuilder.h"
 #include "Model/YamlPackageSerializer.h"
 
-#include <TArc/WindowSubSystem/Private/UIManager.h>
 #include <TArc/WindowSubSystem/UI.h>
 #include <TArc/WindowSubSystem/ActionUtils.h>
 #include <TArc/WindowSubSystem/QtAction.h>
@@ -39,8 +38,6 @@
 #include <Render/Renderer.h>
 #include <Render/DynamicBufferAllocator.h>
 #include <Particles/ParticleEmitter.h>
-#include <Tools/version.h>
-#include <DAVAVersion.h>
 
 #include <QAction>
 
@@ -117,7 +114,6 @@ void DocumentsModule::PostInit()
     using namespace TArc;
 
     Themes::InitFromQApplication();
-    InitMainWindow();
     InitEditorSystems();
     InitCentralWidget();
 
@@ -136,10 +132,6 @@ void DocumentsModule::PostInit()
 
 void DocumentsModule::OnWindowClosed(const DAVA::TArc::WindowKey& key)
 {
-    using namespace DAVA::TArc;
-    ContextAccessor* accessor = GetAccessor();
-    DataContext* globalData = accessor->GetGlobalContext();
-    globalData->DeleteData<MainWindow>();
 }
 
 void DocumentsModule::OnContextCreated(DAVA::TArc::DataContext* context)
@@ -185,32 +177,12 @@ void DocumentsModule::InitEditorSystems()
     systemsManager.reset(new EditorSystemsManager());
 }
 
-void DocumentsModule::InitMainWindow()
-{
-    using namespace DAVA;
-    using namespace TArc;
-
-    std::unique_ptr<MainWindow> mainWindow(new MainWindow());
-    MainWindow* mainWindowPtr = mainWindow.get();
-    const char* editorTitle = "DAVA Framework - QuickEd | %1-%2 [%3 bit]";
-    uint32 bit = static_cast<DAVA::uint32>(sizeof(DAVA::pointer_size) * 8);
-    QString title = QString(editorTitle).arg(DAVAENGINE_VERSION).arg(APPLICATION_BUILD_VERSION).arg(bit);
-    mainWindowPtr->SetEditorTitle(title);
-
-    UIManager* ui = static_cast<UIManager*>(GetUI());
-    ui->InjectWindow(QEGlobal::windowKey, mainWindowPtr);
-    ContextAccessor* accessor = GetAccessor();
-    DataContext* globalContext = accessor->GetGlobalContext();
-    globalContext->CreateData(std::move(mainWindow));
-}
-
 void DocumentsModule::InitCentralWidget()
 {
     using namespace DAVA;
     using namespace TArc;
 
     UI* ui = GetUI();
-    PanelKey panelKey(QStringLiteral("CentralWidget"), CentralPanelInfo());
     ContextAccessor* accessor = GetAccessor();
 
     RenderWidget* renderWidget = GetContextManager()->GetRenderWidget();
@@ -218,6 +190,7 @@ void DocumentsModule::InitCentralWidget()
     previewWidget = new PreviewWidget(accessor, renderWidget, systemsManager.get());
     previewWidget->requestCloseTab.Connect([this](uint64 id) { CloseDocument(id); });
     previewWidget->requestChangeTextInNode.Connect(this, &DocumentsModule::ChangeControlText);
+    PanelKey panelKey(QStringLiteral("CentralWidget"), CentralPanelInfo());
     ui->AddView(QEGlobal::windowKey, panelKey, previewWidget);
 }
 

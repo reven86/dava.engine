@@ -1,4 +1,5 @@
 #include "Application/QEApplication.h"
+#include "Modules/LegacySupportModule/LegacySupportModule.h"
 
 #include <TArc/Core/Core.h>
 #include <TArc/Utils/ModuleCollection.h>
@@ -115,6 +116,7 @@ QString QEApplication::GetInstanceKey() const
 void QEApplication::CreateModules(DAVA::TArc::Core* tarcCore) const
 {
     Q_INIT_RESOURCE(QtToolsResources);
+    tarcCore->CreateModule<LegacySupportModule>();
     for (const DAVA::ReflectedType* type : DAVA::TArc::ModuleCollection::Instance()->GetGuiModules())
     {
         tarcCore->CreateModule(type);

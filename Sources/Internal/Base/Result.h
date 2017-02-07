@@ -40,6 +40,7 @@ public:
     ~ResultList() = default;
     operator bool() const;
     bool IsSuccess() const;
+    bool HasErrors() const;
     ResultList& operator=(const ResultList& resultList) = default;
     ResultList& operator=(ResultList&& resultList);
     ResultList& operator<<(const Result& result);

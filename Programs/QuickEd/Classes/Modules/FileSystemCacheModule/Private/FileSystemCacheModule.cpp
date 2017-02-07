@@ -21,6 +21,7 @@
 DAVA_VIRTUAL_REFLECTION_IMPL(FileSystemCacheModule)
 {
     DAVA::ReflectionRegistrator<FileSystemCacheModule>::Begin()
+    .ConstructorByPointer()
     .End();
 }
 
@@ -32,7 +33,8 @@ void FileSystemCacheModule::PostInit()
     FieldDescriptor fieldDescr;
     fieldDescr.type = ReflectedTypeDB::Get<ProjectData>();
     fieldDescr.fieldName = FastName(ProjectData::uiDirectoryPropertyName);
-    projectUiPathFieldBinder.BindField(fieldDescr, MakeFunction(this, &FileSystemCacheModule::OnUIPathChanged));
+    projectUiPathFieldBinder = std::make_unique<FieldBinder>(GetAccessor());
+    projectUiPathFieldBinder->BindField(fieldDescr, MakeFunction(this, &FileSystemCacheModule::OnUIPathChanged));
 
     ContextAccessor* accessor = GetAccessor();
     DataContext* globalContext = accessor->GetGlobalContext();
@@ -48,6 +50,7 @@ void FileSystemCacheModule::OnWindowClosed(const DAVA::TArc::WindowKey& key)
     ContextAccessor* accessor = GetAccessor();
     DataContext* globalContext = accessor->GetGlobalContext();
     globalContext->DeleteData<FileSystemCache>();
+    projectUiPathFieldBinder.release();
 }
 
 void FileSystemCacheModule::OnUIPathChanged(const DAVA::Any& path)

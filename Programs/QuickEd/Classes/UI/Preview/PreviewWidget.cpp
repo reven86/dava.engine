@@ -60,7 +60,7 @@ struct PreviewContext : WidgetContext
 }
 
 PreviewWidget::PreviewWidget(DAVA::TArc::ContextAccessor* accessor_, DAVA::RenderWidget* renderWidget, EditorSystemsManager* systemsManager)
-    : QWidget()
+    : QFrame()
     , accessor(accessor_)
     , rulerController(new RulerController(this))
     , continuousUpdater(new ContinuousUpdater(MakeFunction(this, &PreviewWidget::NotifySelectionChanged), this, 300))
@@ -102,6 +102,7 @@ PreviewWidget::PreviewWidget(DAVA::TArc::ContextAccessor* accessor_, DAVA::Rende
 
 PreviewWidget::~PreviewWidget()
 {
+    renderWidget->setParent(nullptr);
     continuousUpdater->Stop();
 }
 
@@ -157,25 +158,25 @@ void PreviewWidget::CreateActions()
     importPackageAction->setShortcut(QKeySequence::New);
     importPackageAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     connect(importPackageAction, &QAction::triggered, this, &PreviewWidget::ImportRequested);
-    renderWidget->addAction(importPackageAction);
+    addAction(importPackageAction);
 
     QAction* cutAction = new QAction(tr("Cut"), this);
     cutAction->setShortcut(QKeySequence::Cut);
     cutAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     connect(cutAction, &QAction::triggered, this, &PreviewWidget::CutRequested);
-    renderWidget->addAction(cutAction);
+    addAction(cutAction);
 
     QAction* copyAction = new QAction(tr("Copy"), this);
     copyAction->setShortcut(QKeySequence::Copy);
     copyAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     connect(copyAction, &QAction::triggered, this, &PreviewWidget::CopyRequested);
-    renderWidget->addAction(copyAction);
+    addAction(copyAction);
 
     QAction* pasteAction = new QAction(tr("Paste"), this);
     pasteAction->setShortcut(QKeySequence::Paste);
     pasteAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     connect(pasteAction, &QAction::triggered, this, &PreviewWidget::PasteRequested);
-    renderWidget->addAction(pasteAction);
+    addAction(pasteAction);
 
     QAction* deleteAction = new QAction(tr("Delete"), this);
 #if defined Q_OS_WIN
@@ -186,22 +187,22 @@ void PreviewWidget::CreateActions()
 
     deleteAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     connect(deleteAction, &QAction::triggered, this, &PreviewWidget::DeleteRequested);
-    renderWidget->addAction(deleteAction);
+    addAction(deleteAction);
 
     selectAllAction = new QAction(tr("Select all"), this);
     selectAllAction->setShortcut(QKeySequence::SelectAll);
     selectAllAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    renderWidget->addAction(selectAllAction);
+    addAction(selectAllAction);
 
     focusNextChildAction = new QAction(tr("Focus next child"), this);
     focusNextChildAction->setShortcut(Qt::Key_Tab);
     focusNextChildAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    renderWidget->addAction(focusNextChildAction);
+    addAction(focusNextChildAction);
 
     focusPreviousChildAction = new QAction(tr("Focus frevious child"), this);
     focusPreviousChildAction->setShortcut(static_cast<int>(Qt::ShiftModifier | Qt::Key_Tab));
     focusPreviousChildAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    renderWidget->addAction(focusPreviousChildAction);
+    addAction(focusPreviousChildAction);
 }
 
 void PreviewWidget::OnContextWasChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* oldOne)
@@ -490,8 +491,8 @@ void PreviewWidget::InitUI(DAVA::TArc::ContextAccessor* accessor)
     verticalRuler->SetRulerOrientation(Qt::Vertical);
     gridLayout->addWidget(verticalRuler, 2, 0, 1, 1);
 
-    QSizePolicy sizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    renderWidget->setSizePolicy(sizePolicy);
+    QSizePolicy expandingPolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    renderWidget->setSizePolicy(expandingPolicy);
     gridLayout->addWidget(renderWidget, 2, 1, 1, 2);
 
     verticalScrollBar = new QScrollBar(this);
@@ -505,6 +506,7 @@ void PreviewWidget::InitUI(DAVA::TArc::ContextAccessor* accessor)
     gridLayout->addWidget(scaleCombo, 3, 1, 1, 1);
 
     horizontalScrollBar = new QScrollBar(this);
+    horizontalScrollBar->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
     horizontalScrollBar->setOrientation(Qt::Horizontal);
 
     gridLayout->addWidget(horizontalScrollBar, 3, 2, 1, 1);

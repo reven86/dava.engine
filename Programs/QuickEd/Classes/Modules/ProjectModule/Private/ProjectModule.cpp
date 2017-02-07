@@ -208,10 +208,10 @@ void ProjectModule::OpenProject(const DAVA::String& path)
     }
 
     DAVA::ResultList resultList;
-    std::unique_ptr<ProjectData> newProjectData;
+    std::unique_ptr<ProjectData> newProjectData = std::make_unique<ProjectData>();
 
     resultList = newProjectData->LoadProject(QString::fromStdString(path));
-    if (resultList)
+    if (resultList.HasErrors() == false)
     {
         DAVA::String lastProjectPath = newProjectData->GetProjectFile().GetAbsolutePathname();
         recentProjects->Add(lastProjectPath);
@@ -266,8 +266,7 @@ void ProjectModule::ShowResultList(const QString& title, const DAVA::ResultList&
     QStringList errors;
     for (const Result& result : resultList.GetResults())
     {
-        if (result.type == Result::RESULT_ERROR ||
-            result.type == Result::RESULT_WARNING)
+        if (result.type == Result::RESULT_ERROR)
         {
             errors << QString::fromStdString(result.message);
         }
@@ -279,9 +278,7 @@ void ProjectModule::ShowResultList(const QString& title, const DAVA::ResultList&
     params.message = errors.join('\n');
     params.buttons = ModalMessageParams::Ok;
     UI* ui = GetUI();
-    delayedExecutor.DelayedExecute([ui, params]() {
-        ui->ShowModalMessage(QEGlobal::windowKey, params);
-    });
+    ui->ShowModalMessage(QEGlobal::windowKey, params);
 }
 
 DAVA::Result ProjectModuleDetails::CreateNewProjectInfrastructure(const QString& projectFilePath)

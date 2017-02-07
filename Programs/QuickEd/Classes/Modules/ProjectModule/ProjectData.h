@@ -23,6 +23,7 @@ public:
     {
         DAVA::FilePath absolute;
         DAVA::String relative;
+        bool operator==(const ResDir& other) const;
     };
 
     struct GfxDir
@@ -90,3 +91,17 @@ private:
 
     DAVA_VIRTUAL_REFLECTION(ProjectData, DAVA::TArc::DataNode);
 };
+
+namespace DAVA
+{
+template <>
+struct AnyCompare<ProjectData::ResDir>
+{
+    static bool IsEqual(const Any& v1, const Any& v2)
+    {
+        const ProjectData::ResDir& s1 = v1.Get<ProjectData::ResDir>();
+        const ProjectData::ResDir& s2 = v2.Get<ProjectData::ResDir>();
+        return s1 == s2;
+    }
+};
+}
