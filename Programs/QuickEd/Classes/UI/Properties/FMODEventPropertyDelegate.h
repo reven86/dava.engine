@@ -18,6 +18,7 @@ public:
     void enumEditorActions(QWidget* parent, const QModelIndex& index, QList<QAction*>& actions) override;
 
 private slots:
+    void playEventClicked();
     void selectEventClicked();
     void clearEventClicked();
     void OnEditingFinished();
