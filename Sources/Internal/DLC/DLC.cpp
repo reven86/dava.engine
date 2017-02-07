@@ -853,7 +853,7 @@ void DLC::StepPatchBegin()
     }
 
     Logger::InfoToFile(logsFilePath, "[DLC::StepPatchBegin] Patching, %d files to patch", dlcContext.totalPatchCount);
-    patchingThread = Thread::Create(Message(this, &DLC::PatchingThread));
+    patchingThread = Thread::Create(MakeFunction(this, &DLC::PatchingThread));
     patchingThread->Start();
 }
 
@@ -909,7 +909,7 @@ void DLC::StepPatchCancel()
     patchingThread->Join();
 }
 
-void DLC::PatchingThread(BaseObject* caller, void* callerData, void* userData)
+void DLC::PatchingThread()
 {
     Logger::InfoToFile(logsFilePath, "[DLC::PatchingThread] Patching thread started");
     PatchFileReader patchReader(dlcContext.remotePatchStorePath, false, true);

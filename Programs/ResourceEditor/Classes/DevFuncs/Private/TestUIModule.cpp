@@ -1,23 +1,26 @@
 #include "Classes/DevFuncs/TestUIModule.h"
 #include "Classes/Application/REGlobal.h"
 
-#include <TArc/WindowSubSystem/UI.h>
-#include <TArc/WindowSubSystem/ActionUtils.h>
-#include <TArc/Utils/ModuleCollection.h>
 #include <TArc/Controls/CheckBox.h>
+#include <TArc/Controls/IntSpinBox.h>
+#include <TArc/Controls/DoubleSpinBox.h>
 #include <TArc/Controls/LineEdit.h>
+#include <TArc/Controls/QtBoxLayouts.h>
+#include <TArc/Utils/ModuleCollection.h>
+#include <TArc/WindowSubSystem/ActionUtils.h>
+#include <TArc/WindowSubSystem/UI.h>
 
-#include <Reflection/ReflectionRegistrator.h>
 #include <Reflection/ReflectedMeta.h>
+#include <Reflection/ReflectionRegistrator.h>
 
 #include <Logger/Logger.h>
 
 #include <QAction>
 #include <QDialog>
-#include <QVBoxLayout>
 #include <QGroupBox>
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QVBoxLayout>
 
 namespace TestUIModuleDetails
 {
@@ -118,16 +121,16 @@ struct LineEditTestData : public ReflectionBase
         return value == true ? "Enabled" : "Disabled";
     }
 
-    static M::ValidatorResult ValidateText(const Any& value, const Any& prevValue)
+    static M::ValidationResult ValidateText(const Any& value, const Any& prevValue)
     {
         String v = value.Cast<String>();
         String pv = prevValue.Cast<String>();
-        M::ValidatorResult r;
-        r.state = M::ValidatorResult::eState::Valid;
+        M::ValidationResult r;
+        r.state = M::ValidationResult::eState::Valid;
 
         if (v.size() > 20)
         {
-            r.state = M::ValidatorResult::eState::Invalid;
+            r.state = M::ValidationResult::eState::Invalid;
             r.message = "Too long text!";
         }
 
@@ -215,6 +218,148 @@ struct LineEditTestData : public ReflectionBase
     }
 };
 
+struct IntSpinBoxTestData : public ReflectionBase
+{
+    int v = 10;
+
+    Any GetValue() const
+    {
+        if (v == 10)
+        {
+            return Any();
+        }
+        return Any(v);
+    }
+
+    void SetValue(const Any& value)
+    {
+        v = value.Cast<int>();
+    }
+
+    String GetTextValue() const
+    {
+        return std::to_string(v);
+    }
+
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(IntSpinBoxTestData)
+    {
+        ReflectionRegistrator<IntSpinBoxTestData>::Begin()
+        .Field("value", &IntSpinBoxTestData::GetValue, &IntSpinBoxTestData::SetValue)[M::Range(0, 300, 2)]
+        .Field("text", &IntSpinBoxTestData::GetTextValue, nullptr)
+        .End();
+    }
+
+    static Result Create(TArc::ContextAccessor* accessor, QWidget* parent)
+    {
+        using namespace DAVA::TArc;
+
+        Result r;
+        IntSpinBoxTestData* data = new IntSpinBoxTestData();
+        r.model = data;
+        QtVBoxLayout* layout = new QtVBoxLayout();
+        r.layout = layout;
+        Reflection reflection = Reflection::Create(data);
+
+        {
+            ControlDescriptorBuilder<IntSpinBox::Fields> descr;
+            descr[IntSpinBox::Fields::Value] = "value";
+            IntSpinBox* spinBox = new IntSpinBox(descr, accessor, reflection, parent);
+            layout->AddWidget(spinBox);
+        }
+
+        {
+            ControlDescriptorBuilder<LineEdit::Fields> d;
+            d[LineEdit::Fields::Text] = "text";
+            layout->AddWidget(new LineEdit(d, accessor, reflection, parent));
+        }
+
+        return r;
+    }
+};
+
+struct DoubleSpinBoxTestData : public ReflectionBase
+{
+    double v = 10;
+    int accuracy = 3;
+
+    Any GetValue() const
+    {
+        if (v == 10.0)
+        {
+            return Any("No value");
+        }
+        return Any(v);
+    }
+
+    void SetValue(const Any& value)
+    {
+        v = value.Cast<double>();
+    }
+
+    int GetAccuracy() const
+    {
+        return accuracy;
+    }
+
+    void SetAccuracy(int v)
+    {
+        accuracy = v;
+    }
+
+    String GetTextValue() const
+    {
+        return std::to_string(v);
+    }
+
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(IntSpinBoxTestData)
+    {
+        ReflectionRegistrator<DoubleSpinBoxTestData>::Begin()
+        .Field("value", &DoubleSpinBoxTestData::GetValue, &DoubleSpinBoxTestData::SetValue)[M::Range(-100.0, 300, 0.2), M::FloatNumberAccuracy(4)]
+        .Field("accuracy", &DoubleSpinBoxTestData::GetAccuracy, &DoubleSpinBoxTestData::SetAccuracy)
+        .Field("text", &DoubleSpinBoxTestData::GetTextValue, nullptr)
+        .End();
+    }
+
+    static Result Create(TArc::ContextAccessor* accessor, QWidget* parent)
+    {
+        using namespace DAVA::TArc;
+
+        Result r;
+        DoubleSpinBoxTestData* data = new DoubleSpinBoxTestData();
+        r.model = data;
+        QtVBoxLayout* layout = new QtVBoxLayout();
+        r.layout = layout;
+        Reflection reflection = Reflection::Create(data);
+
+        {
+            ControlDescriptorBuilder<DoubleSpinBox::Fields> descr;
+            descr[DoubleSpinBox::Fields::Value] = "value";
+            layout->AddWidget(new DoubleSpinBox(descr, accessor, reflection, parent));
+        }
+
+        {
+            ControlDescriptorBuilder<DoubleSpinBox::Fields> descr;
+            descr[DoubleSpinBox::Fields::Value] = "value";
+            descr[DoubleSpinBox::Fields::Accuracy] = "accuracy";
+            layout->AddWidget(new DoubleSpinBox(descr, accessor, reflection, parent));
+        }
+
+        {
+            ControlDescriptorBuilder<IntSpinBox::Fields> descr;
+            descr[IntSpinBox::Fields::Value] = "accuracy";
+            layout->AddWidget(new IntSpinBox(descr, accessor, reflection, parent));
+        }
+
+        {
+            ControlDescriptorBuilder<LineEdit::Fields> d;
+            d[LineEdit::Fields::Text] = "text";
+            layout->AddWidget(new LineEdit(d, accessor, reflection, parent));
+        }
+
+        return r;
+    }
+};
+
 struct Node
 {
     TestSpaceCreator creator;
@@ -243,7 +388,9 @@ void TestUIModule::ShowDialog()
     DAVA::Vector<Node> nodes =
     {
       { &CheckBoxTestData::Create, "CheckBox Test" },
-      { &LineEditTestData::Create, "LineEdit Test" }
+      { &LineEditTestData::Create, "LineEdit Test" },
+      { &IntSpinBoxTestData::Create, "SpinBoxTest" },
+      { &DoubleSpinBoxTestData::Create, "Double Spin" }
     };
     DAVA::Vector<DAVA::ReflectionBase*> data;
 

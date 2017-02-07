@@ -36,7 +36,7 @@
 #include "ModuleManager/ModuleManager.h"
 #include "Network/NetCore.h"
 #include "Notification/LocalNotificationController.h"
-#include "PackManager/Private/PackManagerImpl.h"
+#include "DLCManager/Private/DLCManagerImpl.h"
 #include "Platform/DeviceInfo.h"
 #include "Platform/DPIHelper.h"
 #include "Platform/Steam.h"
@@ -771,9 +771,9 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
         }
         else if (m == "PackManager")
         {
-            if (context->packManager == nullptr)
+            if (context->dlcManager == nullptr)
             {
-                context->packManager = new PackManagerImpl(*engine);
+                context->dlcManager = new DLCManagerImpl(engine);
             }
         }
     }
@@ -783,7 +783,7 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
         context->inputSystem = new InputSystem(engine);
         context->uiScreenManager = new UIScreenManager();
         context->localNotificationController = new LocalNotificationController();
-        
+
 #if defined(__DAVAENGINE_STEAM__)
         Steam::Init();
 #endif
@@ -919,10 +919,10 @@ void EngineBackend::DestroySubsystems()
         context->soundSystem->Release();
         context->soundSystem = nullptr;
     }
-    if (context->packManager != nullptr)
+    if (context->dlcManager != nullptr)
     {
-        delete context->packManager;
-        context->packManager = nullptr;
+        delete context->dlcManager;
+        context->dlcManager = nullptr;
     }
     if (context->inputSystem != nullptr)
     {
@@ -938,7 +938,7 @@ void EngineBackend::DestroySubsystems()
         context->netCore->Release();
         context->netCore = nullptr;
     }
-    
+
 #if defined(__DAVAENGINE_ANDROID__)
     if (context->assetsManager != nullptr)
     {

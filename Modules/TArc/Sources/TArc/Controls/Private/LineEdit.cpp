@@ -88,7 +88,7 @@ void LineEdit::UpdateControl(const ControlDescriptor& descriptor)
     }
 }
 
-M::ValidatorResult LineEdit::Validate(const Any& value) const
+M::ValidationResult LineEdit::Validate(const Any& value) const
 {
     Reflection field = model.GetField(GetFieldName(Fields::Text));
     DVASSERT(field.IsValid());
@@ -99,8 +99,8 @@ M::ValidatorResult LineEdit::Validate(const Any& value) const
         return validator->Validate(value, field.GetValue());
     }
 
-    M::ValidatorResult r;
-    r.state = M::ValidatorResult::eState::Valid;
+    M::ValidationResult r;
+    r.state = M::ValidationResult::eState::Valid;
     return r;
 }
 
