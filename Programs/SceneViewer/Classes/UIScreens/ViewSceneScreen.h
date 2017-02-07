@@ -43,7 +43,6 @@ private:
     // GridTestListener
     void OnGridTestStateChanged() override;
 
-    void AddSceneViewControl();
     void AddMenuControl();
     void AddFileDialogControl();
     void AddJoypadControl();

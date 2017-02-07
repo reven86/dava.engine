@@ -14,7 +14,7 @@ DAVA::String SETTING_QUALITY_PARTICLE = "Quality/Particle";
 DAVA::String SETTING_QUALITY_OPTIONS = "Quality/Options/";
 DAVA::String SETTING_QUALITY_METAL = "Quality/Metal";
 
-void QualityPreferences::Load()
+void Load()
 {
     using namespace DAVA;
 
@@ -118,7 +118,7 @@ void QualityPreferences::Load()
     }
 }
 
-void QualityPreferences::Save()
+void Save()
 {
     using namespace DAVA;
 

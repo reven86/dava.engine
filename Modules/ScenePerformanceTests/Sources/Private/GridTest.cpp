@@ -46,8 +46,13 @@ void SetSamplePosition(Scene* scene, const GridTestSample& sample)
 class Screenshot
 {
 public:
-    explicit Screenshot(UI3DView* sceneView) : sceneView(sceneView) {}
-    virtual ~Screenshot() {}
+    explicit Screenshot(UI3DView* sceneView)
+        : sceneView(sceneView)
+    {
+    }
+    virtual ~Screenshot()
+    {
+    }
     virtual void MakeScreenshot() = 0;
     virtual void SaveScreenshot(Texture* screenshot) = 0;
 
@@ -95,7 +100,7 @@ public:
     explicit PanoramaScreenshot(UI3DView* sceneView, ScopedPtr<Image>& image, FilePath savePath);
     void MakeScreenshot() override;
     void SaveScreenshot(Texture* screenshot) override;
-    
+
 private:
     ScopedPtr<Image>& image;
     FilePath savePath;
@@ -138,14 +143,14 @@ void PanoramaScreenshot::SaveScreenshot(Texture* screenshot)
     {
         sceneView->GetScene()->GetGlobalMaterial()->SetFlag(NMaterialFlagName::FLAG_VERTEXFOG, vertexFogValue);
     }
-    
+
     ScopedPtr<Image> screenshotImage(screenshot->CreateImageFromMemory());
     const Size2i& size = UIControlSystem::Instance()->vcs->GetPhysicalScreenSize();
     screenshotImage->ResizeCanvas(static_cast<uint32>(size.dx), static_cast<uint32>(size.dy));
 
     image.reset(Image::Create(PANORAMA_IMAGE_SIZE, PANORAMA_IMAGE_SIZE, FORMAT_RGBA8888));
     ImageConvert::ResizeRGBA8Billinear(reinterpret_cast<uint32*>(screenshotImage->data), screenshotImage->GetWidth(), screenshotImage->GetHeight(),
-        reinterpret_cast<uint32*>(image->data), image->width, image->height);
+                                       reinterpret_cast<uint32*>(image->data), image->width, image->height);
 
     if (savePath.Exists())
     {
