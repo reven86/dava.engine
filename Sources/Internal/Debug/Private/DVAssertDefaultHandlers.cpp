@@ -61,7 +61,7 @@ FailBehaviour DefaultDialogBoxHandler(const AssertInfo& assertInfo)
                             assertInfo.lineNumber,
                             Debug::GetBacktraceString(assertInfo.backtrace, backtraceDepth).c_str());
     // clang-format on
-    int choice = Debug::MessageBox("Assert", message, { "Break", "Continue" }, 0);
+    int choice = Debug::MessageBox("Assert", message, { "Break", "Continue" }, 1);
     // If by some reason MessageBox cannot be shown or is shown non-modal break execution
     return choice <= 0 ? FailBehaviour::Halt : FailBehaviour::Continue;
 #else
