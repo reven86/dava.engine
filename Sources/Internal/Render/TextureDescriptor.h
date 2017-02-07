@@ -21,7 +21,7 @@ class TextureDescriptor final
     };
 
 public:
-    static const int8 CURRENT_VERSION = 12;
+    static const int8 CURRENT_VERSION = 13;
 
     struct TextureDrawSettings : public InspBase
     {

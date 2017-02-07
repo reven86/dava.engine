@@ -10,6 +10,7 @@ namespace DAVA
 namespace LibHDRDetails
 {
 const String kRadianceHeader = "#?RADIANCE";
+const String kRGBEHeader = "#?RGBE";
 const String kRadianceFormatEntry = "FORMAT";
 const String kRadiance32Bit_RLE_RGBE = "32-BIT_RLE_RGBE";
 
@@ -39,14 +40,18 @@ bool LibHDRHelper::CanProcessFileInternal(File* infile) const
 {
     String buffer(1024, 0);
     infile->ReadLine(&buffer[0], static_cast<uint32>(buffer.size()));
-    return strcmp(buffer.c_str(), LibHDRDetails::kRadianceHeader.c_str()) == 0;
+    return (strcmp(buffer.c_str(), LibHDRDetails::kRadianceHeader.c_str()) == 0) ||
+    (strcmp(buffer.c_str(), LibHDRDetails::kRGBEHeader.c_str()) == 0);
 }
 
 ImageInfo LibHDRHelper::GetImageInfo(File* infile, Size2i& flip) const
 {
     String buffer(1024, 0);
     infile->ReadLine(&buffer[0], static_cast<uint32>(buffer.size()));
-    if (strcmp(buffer.c_str(), LibHDRDetails::kRadianceHeader.c_str()))
+    bool validHeader = (strcmp(buffer.c_str(), LibHDRDetails::kRadianceHeader.c_str()) == 0) ||
+    (strcmp(buffer.c_str(), LibHDRDetails::kRGBEHeader.c_str()) == 0);
+
+    if (!validHeader)
     {
         Logger::Error("HDR file contain invalid header: %s", buffer.c_str());
         return ImageInfo();

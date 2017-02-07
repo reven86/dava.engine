@@ -368,6 +368,9 @@ bool TextureDescriptor::Load(const FilePath& filePathname)
     case 12:
         LoadVersion12(file);
         break;
+    case 13:
+        LoadVersion12(file); // same as 12, but with HDR format support, descriptor structure has not been changed
+        break;
     default:
     {
         Logger::Error("[TextureDescriptor::Load] Version %d is not supported", version);
