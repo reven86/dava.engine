@@ -1,7 +1,5 @@
 #include "UISoundComponent.h"
 
-#include "UI/UIControl.h"
-
 namespace DAVA
 {
 UISoundComponent::UISoundComponent()

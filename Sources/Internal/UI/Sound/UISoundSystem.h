@@ -23,7 +23,7 @@ public:
 
 private:
     static const DAVA::FastName SOUND_PARAM_PAN;
-    static const DAVA::FastName UI_SOUND_GROUP;
+    static const DAVA::FastName SOUND_GROUP;
 
     using SoundEventMap = UnorderedMap<FastName, RefPtr<SoundEvent>>;
     using GlobalParameterMap = UnorderedMap<FastName, float32>;
