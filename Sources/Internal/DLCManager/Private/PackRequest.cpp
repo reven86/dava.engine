@@ -26,7 +26,11 @@ PackRequest::PackRequest(DLCManagerImpl& packManager_, const String& pack_, Vect
 
 PackRequest::~PackRequest()
 {
-    Stop();
+    if (taskId != 0)
+    {
+        DownloadManager::Instance()->Cancel(taskId);
+        taskId = 0;
+    }
 }
 
 void PackRequest::Start()

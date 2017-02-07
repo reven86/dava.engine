@@ -88,6 +88,8 @@ public:
 
     void SetRequestOrder(const IRequest* request, uint32 orderIndex) override;
 
+    void RemovePack(const String& packName) override;
+
     const FilePath& GetLocalPacksDirectory() const;
 
     const String& GetSuperPackUrl() const;

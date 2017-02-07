@@ -335,6 +335,12 @@ PackRequest* DLCManagerImpl::CreateNewRequest(const String& requestedPackName)
 
     Vector<uint32> packIndexes = meta->GetFileIndexes(requestedPackName);
 
+    // check all requested files already downloaded
+    packIndexes.erase(remove_if(begin(packIndexes), end(packIndexes), [&](uint32 index)
+                                {
+                                    return scanFileReady.at(index);
+                                }));
+
     PackRequest* request = new PackRequest(*this, requestedPackName, std::move(packIndexes));
 
     Vector<String> deps = request->GetDependencies();
@@ -344,6 +350,7 @@ PackRequest* DLCManagerImpl::CreateNewRequest(const String& requestedPackName)
         PackRequest* r = FindRequest(dependent);
         if (nullptr == r)
         {
+            // recursive call
             PackRequest* dependentRequest = CreateNewRequest(dependent);
             DVASSERT(dependentRequest != nullptr);
         }
@@ -776,6 +783,46 @@ void DLCManagerImpl::SetRequestOrder(const IRequest* request, uint32 orderIndex)
                 {
                     delayedRequests.push_back(req);
                 }
+            }
+        }
+    }
+}
+
+void DLCManagerImpl::RemovePack(const String& requestedPackName)
+{
+    DVASSERT(Thread::IsMainThread());
+
+    PackRequest* request = FindRequest(requestedPackName);
+    if (nullptr != request)
+    {
+        requestManager->Remove(request);
+
+        auto it = find(begin(requests), end(requests), request);
+        if (it != end(requests))
+        {
+            requests.erase(it);
+        }
+
+        it = find(begin(delayedRequests), end(delayedRequests), request);
+        if (it != end(delayedRequests))
+        {
+            delayedRequests.erase(it);
+        }
+
+        delete request;
+    }
+
+    if (IsInitialized())
+    {
+        // remove all files for pack
+        Vector<uint32> fileIndexes = meta->GetFileIndexes(requestedPackName);
+        for (uint32 index : fileIndexes)
+        {
+            if (scanFileReady.at(index))
+            {
+                const String relFile = GetRelativeFilePath(index);
+                FileSystem::Instance()->DeleteFile(dirToDownloadedPacks + relFile);
+                scanFileReady.reset(index);
             }
         }
     }

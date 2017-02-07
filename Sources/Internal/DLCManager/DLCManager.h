@@ -91,6 +91,8 @@ public:
 
     /** DEPRECATED order - [0..N] - 0 - first, 1, 2, ... , N - last in queue */
     virtual void SetRequestOrder(const IRequest* request, uint32 orderIndex) = 0;
+
+    virtual void RemovePack(const String& packName) = 0;
 };
 
 } // end namespace DAVA
