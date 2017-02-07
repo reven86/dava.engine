@@ -385,12 +385,12 @@ struct FilePathEditTestData : public ReflectionBase
 
     DAVA_VIRTUAL_REFLECTION_IN_PLACE(FilePathEditTestData, ReflectionBase)
     {
-        using namespace DAVA::M;
+        using namespace DAVA;
 
         ReflectionRegistrator<FilePathEditTestData>::Begin()
-        .Field("readOnlyMetaText", &FilePathEditTestData::path)[ReadOnly()]
+        .Field("readOnlyMetaText", &FilePathEditTestData::path)[M::ReadOnly()]
         .Field("readOnlyText", &FilePathEditTestData::GetText, nullptr)
-        .Field("path", &FilePathEditTestData::GetText, &FilePathEditTestData::SetText)[File(true, "Materials (*.material);;Meta (*.meta)")]
+        .Field("path", &FilePathEditTestData::GetText, &FilePathEditTestData::SetText)[M::File(true, "Materials (*.material);;Meta (*.meta)")]
         .Field("filters", &FilePathEditTestData::GetFilters, nullptr)
         .Field("isTextReadOnly", &FilePathEditTestData::isReadOnly)
         .Field("isTextEnabled", &FilePathEditTestData::isEnabled)

@@ -51,7 +51,7 @@ void DAVA::TArc::BaseSpinBox<TBase, TEditableType>::UpdateControl(const ControlD
         DAVA::Reflection fieldValue = this->model.GetField(changedFields.GetName(BaseFields::Value));
         DVASSERT(fieldValue.IsValid());
 
-        this->setReadOnly(IsValueReadOnly(changedFields, BaseFields::Value, BaseFields::IsReadOnly));
+        this->setReadOnly(this->IsValueReadOnly(changedFields, BaseFields::Value, BaseFields::IsReadOnly));
         if (changedFields.GetName(BaseFields::Range).IsValid() == false)
         {
             updateRangeFn(fieldValue.GetMeta<M::Range>());
@@ -78,12 +78,12 @@ void DAVA::TArc::BaseSpinBox<TBase, TEditableType>::UpdateControl(const ControlD
 
     if (changedFields.IsChanged(BaseFields::IsEnabled))
     {
-        this->setEnabled(GetFieldValue<bool>(BaseFields::IsEnabled, true));
+        this->setEnabled(this->template GetFieldValue<bool>(BaseFields::IsEnabled, true));
     }
 
     if (changedFields.IsChanged(BaseFields::Range))
     {
-        updateRangeFn(GetFieldValue<const M::Range*>(BaseFields::Range, nullptr));
+        updateRangeFn(this->template GetFieldValue<const M::Range*, int>(BaseFields::Range, nullptr));
     }
 }
 
