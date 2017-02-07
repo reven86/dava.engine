@@ -32,7 +32,7 @@ find_package( QT5 REQUIRED )
 find_package( GMock REQUIRED )
 find_package( QtHelpers REQUIRED )
 
-find_package( DavaFramework REQUIRED COMPONENTS ALL
+find_package( DavaFramework REQUIRED COMPONENTS "Sound"
                                                 DAVA_PLATFORM_QT 
                                                 DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME 
                                                 DAVA_DISABLE_AUTOTESTS 

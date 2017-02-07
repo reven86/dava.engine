@@ -41,6 +41,8 @@ set( DYNAMIC_LIBRARIES_WIN64         ${DYNAMIC_FMOD}/fmodex64.dll
 set( DYNAMIC_LIBRARIES_MACOS         ${DYNAMIC_FMOD}/libfmodevent.dylib
                                      ${DYNAMIC_FMOD}/libfmodex.dylib )
 
+set(EXCLUDE_FROM_ALL true )
+
 setup_main_module()
 
 
