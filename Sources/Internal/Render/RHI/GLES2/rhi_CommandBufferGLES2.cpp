@@ -568,6 +568,7 @@ void CommandBufferGLES2_t::Execute()
                 unsigned rt_level[MAX_RENDER_TARGET_COUNT];
                 unsigned rt_count = 0;
                 bool apply_fb = true;
+                bool do_clear = true;
 
                 def_viewport[0] = 0;
                 def_viewport[1] = 0;
@@ -598,6 +599,7 @@ void CommandBufferGLES2_t::Execute()
                             def_viewport[3] = _GLES2_DefaultFrameBuffer_Height;
                             rt_count = 1;
                             apply_fb = false;
+                            do_clear = true;
                         }
                         break;
                     }
@@ -623,6 +625,7 @@ void CommandBufferGLES2_t::Execute()
                     {
                         glClearBufferfi(GL_DEPTH_STENCIL, 0, passCfg.depthStencilBuffer.clearDepth, 0);
                     }
+                    do_clear = false;
                     #endif
 
                     #if defined(__DAVAENGINE_MACOS__)
@@ -633,9 +636,17 @@ void CommandBufferGLES2_t::Execute()
                         GL_CALL(glClearDepthf(passCfg.depthStencilBuffer.clearDepth));
                         GL_CALL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT));
                     }
+                    do_clear = false;
                     #endif
                 }
-                else
+
+
+                #if defined(__DAVAENGINE_IPHONE__)
+                if (rt_count == 1)
+                    do_clear = true;
+                #endif
+
+                if (do_clear)
                 {
                     GLuint flags = 0;
 
