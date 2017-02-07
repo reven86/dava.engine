@@ -6,6 +6,7 @@
 #elif defined(__DAVAENGINE_MACOS__)
 #include <sys/types.h>
 #include <sys/sysctl.h>
+#include <unistd.h>
 #endif
 
 namespace DAVA

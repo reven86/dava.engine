@@ -8,7 +8,7 @@ class ValueProperty : public AbstractProperty
     DAVA_VIRTUAL_REFLECTION(ValueProperty, AbstractProperty);
 
 public:
-    ValueProperty(const DAVA::String& propName, const DAVA::Type* type, bool builtinSubProps = false);
+    ValueProperty(const DAVA::String& propName, const DAVA::Type* type);
 
 protected:
     virtual ~ValueProperty();
@@ -44,6 +44,8 @@ public:
     virtual void SetDefaultSubValue(DAVA::int32 index, const DAVA::Any& newValue);
 
 protected:
+    void GenerateBuiltInSubProperties();
+
     virtual void ApplyValue(const DAVA::Any& value);
     void SetName(const DAVA::String& newName);
     void SetOverridden(bool overridden);
@@ -54,7 +56,6 @@ private:
     DAVA::Any ChangeValueComponent(const DAVA::Any& value, const DAVA::Any& component, DAVA::int32 index) const;
     const DAVA::Type* GetValueTypeComponent(DAVA::int32 index) const;
     DAVA::Any GetValueComponent(const DAVA::Any& value, DAVA::int32 index) const;
-    void GenerateBuiltInSubProperties();
 
 private:
     DAVA::String name;

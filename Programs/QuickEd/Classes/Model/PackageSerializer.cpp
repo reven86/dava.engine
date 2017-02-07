@@ -452,7 +452,7 @@ void PackageSerializer::PutValueProperty(const DAVA::String& name, ValueProperty
     }
     else if (property->GetType() == AbstractProperty::TYPE_ENUM)
     {
-        PutValue(name, property->GetEnumMeta()->CastToString(value), true);
+        PutValue(name, property->GetEnumMap()->ToString(value.Get<int32>()), true);
     }
     else if (value.CanGet<Vector2>())
     {

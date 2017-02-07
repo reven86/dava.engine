@@ -8,20 +8,20 @@
 
 using namespace DAVA;
 
-ControlPropertiesSection::ControlPropertiesSection(DAVA::UIControl* control_, const ControlPropertiesSection* sourceSection, eCloneType cloneType)
-    : SectionProperty(control_->GetClassName())
+ControlPropertiesSection::ControlPropertiesSection(const DAVA::String &name, DAVA::UIControl* control_, const DAVA::Type *type, const Vector<Reflection::Field> &fields, const ControlPropertiesSection* sourceSection, eCloneType cloneType)
+    : SectionProperty(name)
     , control(SafeRetain(control_))
 {
-    Reflection controlRef = Reflection::Create(&control);
-    Vector<Reflection::Field> fields = controlRef.GetFields();
-
     for (const Reflection::Field& field : fields)
     {
-        String name = field.key.Get<String>();
-        IntrospectionProperty* sourceProperty = nullptr == sourceSection ? nullptr : sourceSection->FindChildPropertyByName(name);
-        IntrospectionProperty* prop = IntrospectionProperty::Create(control, name, field.ref, sourceProperty, cloneType);
-        AddProperty(prop);
-        SafeRelease(prop);
+        if (field.inheritFrom->GetType() == type)
+        {
+            String name = field.key.Get<String>();
+            IntrospectionProperty* sourceProperty = nullptr == sourceSection ? nullptr : sourceSection->FindChildPropertyByName(name);
+            IntrospectionProperty* prop = IntrospectionProperty::Create(control, name, field.ref, sourceProperty, cloneType);
+            AddProperty(prop);
+            SafeRelease(prop);
+        }
     }
 }
 

@@ -19,7 +19,6 @@ DAVA_VIRTUAL_REFLECTION_IMPL(UIList)
     [
     M::EnumT<eListOrientation>()
     ]
-    .Field("delegate", &UIList::GetDelegate, &UIList::SetDelegate)
     .End();
 }
 

@@ -27,7 +27,12 @@ RootProperty::RootProperty(ControlNode* _node, const RootProperty* sourcePropert
     , nameProperty(nullptr)
 {
     AddBaseProperties(node->GetControl(), sourceProperties, cloneType);
-    MakeControlPropertiesSection(node->GetControl(), sourceProperties, cloneType);
+
+    
+    UIControl *control = node->GetControl();
+    Reflection controlRef = Reflection::Create(&control);
+    Vector<Reflection::Field> fields = controlRef.GetFields();
+    MakeControlPropertiesSection(node->GetControl(), ReflectedTypeDB::GetByPointer(control)->GetType(), fields, sourceProperties, cloneType);
 
     if (sourceProperties)
     {
@@ -377,27 +382,35 @@ void RootProperty::AddBaseProperties(DAVA::UIControl* control, const RootPropert
         prop->SetParent(this);
 }
 
-void RootProperty::MakeControlPropertiesSection(DAVA::UIControl* control, const RootProperty* sourceProperties, eCloneType copyType)
+void RootProperty::MakeControlPropertiesSection(DAVA::UIControl* control, const DAVA::Type *type, const Vector<Reflection::Field> &fields, const RootProperty* sourceProperties, eCloneType copyType)
 {
-    // TODO: rewrite code
-    //    const InspInfo* baseInfo = typeInfo->BaseInfo();
-    //    if (baseInfo)
-    //        MakeControlPropertiesSection(control, baseInfo, sourceProperties, copyType);
-    //
-    //    bool hasProperties = false;
-    //    for (int i = 0; i < typeInfo->MembersCount(); i++)
-    //    {
-    //        const InspMember* member = typeInfo->Member(i);
-    //        if ((member->Flags() & I_EDIT) != 0)
-    //        {
-    //            hasProperties = true;
-    //            break;
-    //        }
-    //    }
-    //    if (hasProperties)
+    const TypeInheritance* inheritance = type->GetInheritance();
+    if (type != Type::Instance<UIControl>() && inheritance != nullptr)
     {
-        ControlPropertiesSection* sourceSection = sourceProperties == nullptr ? nullptr : sourceProperties->GetControlPropertiesSection(control->GetClassName());
-        ControlPropertiesSection* section = new ControlPropertiesSection(control, sourceSection, copyType);
+        const Vector<TypeInheritance::Info>& baseTypesInfo = inheritance->GetBaseTypes();
+        for (const TypeInheritance::Info& baseInfo : baseTypesInfo)
+        {
+            MakeControlPropertiesSection(control, baseInfo.type, fields, sourceProperties, copyType);
+        }
+    }
+    
+    bool hasProperties = false;
+    for (const Reflection::Field &field : fields)
+    {
+        if (field.inheritFrom->GetType() == type)
+        {
+            hasProperties = true;
+            break;
+        }
+    }
+    
+    if (hasProperties)
+    {
+        const ReflectedType *rt = ReflectedTypeDB::GetByType(type);
+        String sectionName = rt->GetPermanentName();
+        ControlPropertiesSection* sourceSection = sourceProperties == nullptr ? nullptr : sourceProperties->GetControlPropertiesSection(sectionName);
+        
+        ControlPropertiesSection* section = new ControlPropertiesSection(sectionName, control, type, fields, sourceSection, copyType);
         section->SetParent(this);
         controlProperties.push_back(section);
     }

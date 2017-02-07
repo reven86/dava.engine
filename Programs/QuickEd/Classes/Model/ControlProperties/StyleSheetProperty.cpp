@@ -11,21 +11,21 @@
 
 using namespace DAVA;
 
-DAVA_REFLECTION_IMPL(StyleSheetProperty)
+DAVA_VIRTUAL_REFLECTION_IMPL(StyleSheetProperty)
 {
     ReflectionRegistrator<StyleSheetProperty>::Begin()
     .Field("transition", &StyleSheetProperty::HasTransition, &StyleSheetProperty::SetTransition)
     .Field("transitionTime", &StyleSheetProperty::GetTransitionTime, &StyleSheetProperty::SetTransitionTime)
     .Field("transitionFunction", &StyleSheetProperty::GetTransitionFunction, &StyleSheetProperty::SetTransitionFunction)
     [
-    EnumMeta::Create<Interpolation::FuncType>()
+     M::EnumT<Interpolation::FuncType>()
     ]
 
     .End();
 }
 
 StyleSheetProperty::StyleSheetProperty(const DAVA::UIStyleSheetProperty& property_)
-    : ValueProperty("prop", property_.value.GetType(), false)
+    : ValueProperty("prop", property_.value.GetType())
     , property(property_)
 {
     const UIStyleSheetPropertyDescriptor& descr = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(property.propertyIndex);
@@ -69,14 +69,16 @@ StyleSheetProperty::ePropertyType StyleSheetProperty::GetType() const
     const UIStyleSheetPropertyDescriptor& descr = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(property.propertyIndex);
     if (descr.field_s->meta)
     {
-        const EnumMeta* meta = descr.field_s->meta->GetMeta<EnumMeta>();
-        if (meta)
+        const M::Enum* enumMeta = descr.field_s->meta->GetMeta<M::Enum>();
+        if (enumMeta != nullptr)
         {
-            if (meta->IsFlags())
-            {
-                return TYPE_FLAGS;
-            }
             return TYPE_ENUM;
+        }
+        
+        const M::Flags* flagsMeta = descr.field_s->meta->GetMeta<M::Flags>();
+        if (flagsMeta != nullptr)
+        {
+            return TYPE_FLAGS;
         }
     }
     return TYPE_VARIANT;
@@ -87,21 +89,17 @@ const EnumMap* StyleSheetProperty::GetEnumMap() const
     const UIStyleSheetPropertyDescriptor& descr = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(property.propertyIndex);
     if (descr.field_s->meta)
     {
-        const EnumMeta* meta = descr.field_s->meta->GetMeta<EnumMeta>();
-        if (meta)
+        const M::Enum* enumMeta = descr.field_s->meta->GetMeta<M::Enum>();
+        if (enumMeta != nullptr)
         {
-            return meta->GetEnumMap();
+            return enumMeta->GetEnumMap();
         }
-    }
-    return nullptr;
-}
-
-const EnumMeta* StyleSheetProperty::GetEnumMeta() const
-{
-    const UIStyleSheetPropertyDescriptor& descr = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(property.propertyIndex);
-    if (descr.field_s->meta)
-    {
-        return descr.field_s->meta->GetMeta<EnumMeta>();
+        
+        const M::Flags* flagsMeta = descr.field_s->meta->GetMeta<M::Flags>();
+        if (flagsMeta != nullptr)
+        {
+            return flagsMeta->GetFlagsMap();
+        }
     }
     return nullptr;
 }

@@ -1,6 +1,7 @@
 #include "QtDavaConvertion.h"
 #include "QtTools/Utils/Utils.h"
 #include "Utils/StringFormat.h"
+#include "Reflection/ReflectedMeta.h"
 #include <QString>
 #include <QColor>
 #include <QVariant>
@@ -192,33 +193,32 @@ QString AnyToQString(const DAVA::Any& val, const DAVA::ReflectedStructure::Field
 {
     if (field->meta)
     {
-        const EnumMeta* enumMeta = field->meta->GetMeta<EnumMeta>();
+        const M::Flags* flagsMeta =  field->meta->GetMeta<M::Flags>();
+        if (flagsMeta != nullptr)
+        {
+            int32 e = val.Get<int32>();
+            QString res = "";
+            int p = 0;
+            while (e)
+            {
+                if ((e & 0x01) != 0)
+                {
+                    if (!res.isEmpty())
+                        res += " | ";
+
+                    const int32 enumValue = 1 << p;
+                    res += QString::fromStdString(flagsMeta->GetFlagsMap()->ToString(enumValue));
+                }
+                p++;
+                e >>= 1;
+            }
+            return res;
+        }
+        
+        const M::Enum* enumMeta =  field->meta->GetMeta<M::Enum>();
         if (enumMeta != nullptr)
         {
-            if (enumMeta->IsFlags())
-            {
-                int32 e = val.Get<int32>();
-                QString res = "";
-                int p = 0;
-                while (e)
-                {
-                    if ((e & 0x01) != 0)
-                    {
-                        if (!res.isEmpty())
-                            res += " | ";
-
-                        const int32 enumValue = 1 << p;
-                        res += QString::fromStdString(enumMeta->GetEnumMap()->ToString(enumValue));
-                    }
-                    p++;
-                    e >>= 1;
-                }
-                return res;
-            }
-            else
-            {
-                return QString::fromStdString(enumMeta->CastToString(val));
-            }
+            return QString::fromStdString(enumMeta->GetEnumMap()->ToString(val.Get<int32>()));
         }
     }
 

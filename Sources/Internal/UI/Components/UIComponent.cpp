@@ -20,7 +20,6 @@ namespace DAVA
 DAVA_VIRTUAL_REFLECTION_IMPL(UIComponent)
 {
     ReflectionRegistrator<UIComponent>::Begin()
-    .Field("control", &UIComponent::GetControl, &UIComponent::SetControl)
     .Field("type", &UIComponent::GetType, nullptr)
     .End();
 }

@@ -375,12 +375,17 @@ void UIPackageLoader::LoadControl(const YamlNode* node, AbstractUIPackageBuilder
 
 void UIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl* control, const Reflection& ref, const YamlNode* node, AbstractUIPackageBuilder* builder)
 {
-    builder->BeginControlPropertiesSection(control->GetClassName());
     Vector<Reflection::Field> fields = ref.GetFields();
+    Logger::Debug("!");
+    for (const Reflection::Field& field : fields)
+    {
+        Logger::Debug(" ... %s", field.key.Get<String>().c_str());
+    }
+    Logger::Debug(">");
     for (const Reflection::Field& field : fields)
     {
         String name = field.key.Get<String>();
-        if (name == "components" || name == "background")
+        if (name == "components")
         {
             // TODO: Make loading components by reflection here
             continue;
@@ -389,11 +394,16 @@ void UIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl* control, cons
         Any res;
         if (node)
         {
+            
             res = ReadAnyFromYamlNode(field.ref, node, name);
+            if (!res.IsEmpty())
+            {
+                builder->BeginControlPropertiesSection(ReflectedTypeDB::GetByType(field.inheritFrom->GetType())->GetPermanentName());
+                builder->ProcessProperty(field, res);
+                builder->EndControlPropertiesSection();
+            }
         }
-        builder->ProcessProperty(field, res);
     }
-    builder->EndControlPropertiesSection();
 }
 
 void UIPackageLoader::LoadComponentPropertiesFromYamlNode(UIControl* control, const YamlNode* node, AbstractUIPackageBuilder* builder)
@@ -411,8 +421,10 @@ void UIPackageLoader::LoadComponentPropertiesFromYamlNode(UIControl* control, co
         {
             Reflection componentRef = Reflection::Create(&component);
             Vector<Reflection::Field> fields = componentRef.GetFields();
+            Logger::Debug("!!!! OPEN");
             for (Reflection::Field& field : fields)
             {
+                Logger::Debug("!!!!   F: %s", field.key.Get<String>().c_str());
                 Any res;
                 if (nodeDescr.type == UIComponent::LINEAR_LAYOUT_COMPONENT && version <= LAST_VERSION_WITH_LINEAR_LAYOUT_LEGACY_ORIENTATION)
                 {
@@ -458,6 +470,7 @@ void UIPackageLoader::LoadComponentPropertiesFromYamlNode(UIControl* control, co
 
                 builder->ProcessProperty(field, res);
             }
+            Logger::Debug("!!!! CLOSE");
         }
 
         builder->EndComponentPropertiesSection();
