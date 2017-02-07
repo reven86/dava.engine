@@ -11,6 +11,7 @@
 #include "Base/Exception.h"
 #include "Concurrency/Mutex.h"
 #include "Concurrency/LockGuard.h"
+#include "Time/SystemTimer.h"
 
 namespace DAVA
 {
@@ -210,7 +211,7 @@ void DLCManagerImpl::Update(float frameDelta)
 
 void DLCManagerImpl::WaitScanThreadToFinish()
 {
-    LockGuard<Mutex> lock(scanMutex);
+    // TODO how to know scanThread - finished?
     if (scanState == ScanState::Done)
     {
         initState = InitState::MoveDeleyedRequestsToQueue;
@@ -687,18 +688,26 @@ void DLCManagerImpl::LoadPacksDataFromMeta()
         return;
     }
 
+    metaDataLoadedSem.Post();
+
     initState = InitState::WaitScanThreadToFinish;
 }
 
 void DLCManagerImpl::StartDeleyedRequests()
 {
     //Logger::FrameworkDebug("pack manager mount_downloaded_packs");
+    if (scanState != ScanState::Done)
+    {
+        return;
+    }
+
     if (scanThread != nullptr)
     {
         // scan thread should be finished already
         if (scanThread->IsJoinable())
         {
             scanThread->Join();
+            scanThread = nullptr;
         }
     }
 
@@ -866,7 +875,11 @@ void DLCManagerImpl::RecursiveScan(const FilePath& baseDir, const FilePath& dir,
     for (uint32 index = 0; index < fl->GetCount(); ++index)
     {
         const FilePath& path = fl->GetPathname(index);
-        if (fl->IsDirectory(index) && !fl->IsNavigationDirectory(index))
+        if (fl->IsNavigationDirectory(index))
+        {
+            continue;
+        }
+        if (fl->IsDirectory(index))
         {
             RecursiveScan(baseDir, path, files);
         }
@@ -914,45 +927,29 @@ void DLCManagerImpl::ScanFiles(const FilePath& dir, Vector<LocalFileInfo>& files
     if (FileSystem::Instance()->IsDirectory(dir))
     {
         files.clear();
-        files.reserve(20000);
+        files.reserve(22000); // now around 21000 files in build
         RecursiveScan(dir, dir, files);
     }
-}
-
-bool DLCManagerImpl::MetaIsReady() const
-{
-    LockGuard<Mutex> lock(protectDM);
-
-    return meta.get() != nullptr;
 }
 
 void DLCManagerImpl::ThreadScanFunc()
 {
     // scan files in download dir
+    scanState = ScanState::CollectingFileInfos;
 
-    {
-        LockGuard<Mutex> lock(scanMutex);
-        scanState = ScanState::CollectingFileInfos;
-    }
+    int64 startTime = SystemTimer::GetMs();
 
     ScanFiles(dirToDownloadedPacks, localFiles);
 
-    {
-        LockGuard<Mutex> lock(scanMutex);
-        scanState = ScanState::WaitForMeta;
-    }
+    int64 finishScan = SystemTimer::GetMs() - startTime;
 
-    // wait meta
+    Logger::Info("finish scan files for: %fsec total files: %ld", finishScan / 1000.f, localFiles.size());
 
-    while (!MetaIsReady())
-    {
-        Thread::Sleep(100);
-    }
+    scanState = ScanState::WaitForMeta;
 
-    {
-        LockGuard<Mutex> lock(scanMutex);
-        scanState = ScanState::MergeWithMeta;
-    }
+    metaDataLoadedSem.Wait();
+
+    scanState = ScanState::MergeWithMeta;
 
     // merge with meta
     // Yes! is pack loaded before meta
@@ -985,11 +982,7 @@ void DLCManagerImpl::ThreadScanFunc()
     }
 
     // finish thread
-
-    {
-        LockGuard<Mutex> lock(scanMutex);
-        scanState = ScanState::Done;
-    }
+    scanState = ScanState::Done;
 }
 
 } // end namespace DAVA

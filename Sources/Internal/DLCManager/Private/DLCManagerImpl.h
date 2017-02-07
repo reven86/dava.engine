@@ -5,6 +5,8 @@
 #include "FileSystem/Private/PackFormatSpec.h"
 #include "FileSystem/Private/PackMetaData.h"
 #include "Concurrency/Mutex.h"
+#include "Concurrency/Semaphore.h"
+#include "Concurrency/Thread.h"
 
 #ifdef __DAVAENGINE_COREV2__
 #include "Engine/Engine.h"
@@ -133,8 +135,6 @@ private:
     PackRequest* AddDeleyedRequest(const String& requestedPackName);
     PackRequest* CreateNewRequest(const String& requestedPackName);
 
-    bool MetaIsReady() const;
-
     enum class ScanState : uint32
     {
         Wait,
@@ -156,8 +156,8 @@ private:
     // every bit mean file exist and size match with meta
     std::bitset<32000> scanFileReady;
     Thread* scanThread = nullptr;
-    ScanState scanState = ScanState::Wait;
-    Mutex scanMutex;
+    std::atomic<ScanState> scanState{ ScanState::Wait };
+    Semaphore metaDataLoadedSem;
 
     void StartScanDownloadedFiles();
     void ThreadScanFunc();
