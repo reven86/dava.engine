@@ -165,7 +165,7 @@ void MemoryManager::Update()
 {
     if (nullptr == symbolCollectorThread)
     {
-        symbolCollectorThread = Thread::Create(Message(this, &MemoryManager::SymbolCollectorThread));
+        symbolCollectorThread = Thread::Create(MakeFunction(this, &MemoryManager::SymbolCollectorThread));
         symbolCollectorThread->Start();
     }
 
@@ -1085,7 +1085,7 @@ bool MemoryManager::GetMemorySnapshot(uint64 timestamp, File* file, uint32* snap
     return true;
 }
 
-void MemoryManager::SymbolCollectorThread(BaseObject*, void*, void*)
+void MemoryManager::SymbolCollectorThread()
 {
     const size_t BUF_CAPACITY = 1000; // Select some reasonable buffer for backtraces
     // to give some job to symbol collector

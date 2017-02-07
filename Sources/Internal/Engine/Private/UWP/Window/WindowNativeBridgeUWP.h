@@ -52,6 +52,7 @@ private:
 
     void OnCharacterReceived(::Windows::UI::Core::CoreWindow ^ coreWindow, ::Windows::UI::Core::CharacterReceivedEventArgs ^ arg);
     void OnAcceleratorKeyActivated(::Windows::UI::Core::CoreDispatcher ^ dispatcher, ::Windows::UI::Core::AcceleratorKeyEventArgs ^ arg);
+    void OnShiftKeyActivated();
 
     void OnSizeChanged(::Platform::Object ^ sender, ::Windows::UI::Xaml::SizeChangedEventArgs ^ arg);
     void OnCompositionScaleChanged(::Windows::UI::Xaml::Controls::SwapChainPanel ^ panel, ::Platform::Object ^ obj);
@@ -106,6 +107,8 @@ private:
     eCursorCapture captureMode = eCursorCapture::OFF;
     uint32 mouseMoveSkipCount = 0;
     const uint32 SKIP_N_MOUSE_MOVE_EVENTS = 4;
+
+    bool lastShiftStates[2];
 };
 
 inline void* WindowNativeBridge::GetHandle() const

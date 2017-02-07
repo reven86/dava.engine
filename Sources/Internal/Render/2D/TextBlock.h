@@ -107,7 +107,7 @@ public:
     TextBlock* Clone();
     void CopyDataFrom(TextBlock* block);
 
-    const Vector<int32>& GetStringSizes();
+    const Vector<float32>& GetStringSizes();
         
 
 #if defined(LOCALIZATION_DEBUG)
@@ -192,7 +192,7 @@ private:
     WideString logicalText;
     WideString visualText;
     Vector<WideString> multilineStrings;
-    Vector<int32> stringSizes;
+    Vector<float32> stringSizes;
 
     bool isMultilineEnabled : 1;
     bool isMultilineBySymbolEnabled : 1;

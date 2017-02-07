@@ -7,40 +7,43 @@ if( NOT DAVA_MEGASOLUTION )
     #set ( DAVA_MEMORY_PROFILER 1 )
 endif()
 
-# Now testbed is core v2 only
-set (DAVA_COREV2 1)
-add_definitions(-D__DAVAENGINE_COREV2__)
-
-# Uncomment to use local resources for android
-# add_definitions(-DUSE_LOCAL_RESOURCES)
-
-set          ( DAVA_DISABLE_AUTOTESTS true )
 set          ( WARNINGS_AS_ERRORS true )
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" )
 include      ( CMake-common  )
 
-set ( DAVA_COMPONENTS "Sound" "SampleModule" )
+# Now testbed is core v2 only
+set (DAVA_COREV2 1)
+dava_add_definitions(-D__DAVAENGINE_COREV2__)
+
+# Uncomment to use local resources for android
+# dava_add_definitions(-DUSE_LOCAL_RESOURCES)
+
+set ( DAVA_COMPONENTS "ALL" "SampleModule" "DAVA_DISABLE_AUTOTESTS" )
 if ( WIN32 AND NOT WIN_UAP AND NOT DAVA_PLATFORM_QT)
     list ( APPEND DAVA_COMPONENTS "CEFWebview" )
 endif ()
 
 if (DAVA_PLATFORM_QT)
-    set (DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME 1)
-    add_definitions(-D__DAVAENGINE_QT__)
+    list(APPEND DAVA_COMPONENTS DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME )
+    dava_add_definitions(-D__DAVAENGINE_QT__)
     if ( MACOS )
-        add_definitions(-DDISABLE_NATIVE_TEXTFIELD)
-        add_definitions(-DDISABLE_NATIVE_WEBVIEW)
-        add_definitions(-DDISABLE_NATIVE_MOVIEVIEW)
+        dava_add_definitions(-DDISABLE_NATIVE_TEXTFIELD)
+        dava_add_definitions(-DDISABLE_NATIVE_WEBVIEW)
+        dava_add_definitions(-DDISABLE_NATIVE_MOVIEVIEW)
     endif()
     find_package(QT5 REQUIRED Core Gui Widgets QuickWidgets Network)
     set( ADDED_BINARY_DIR ${QT_ACTUAL_PATH}/bin )
 endif()
 
+dava_add_definitions(-DLOCALIZATION_DEBUG)
+
+
 if( MACOS OR WIN32 )
-    add_plugin( SamplePlugin "${DAVA_MODULES_DIR}/SamplePlugin" )
+    add_plugin( SamplePlugin "${DAVA_MODULES_DIR}/SamplePlugin" COMPONENTS  ${DAVA_COMPONENTS} )
 endif()
 
-find_package( DavaFramework REQUIRED "${DAVA_COMPONENTS}" )
+
+find_package( DavaFramework REQUIRED COMPONENTS ${DAVA_COMPONENTS} )
 
 include_directories   ( "Classes" )
 include_directories   ( "Classes/Infrastructure" )

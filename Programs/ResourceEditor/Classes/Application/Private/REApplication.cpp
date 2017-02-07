@@ -4,7 +4,7 @@
 #include "Classes/Project/ProjectManagerModule.h"
 #include "Classes/SceneManager/SceneManagerModule.h"
 
-#include "TextureCompression/PVRConverter.h"
+#include <Tools/TextureCompression/PVRConverter.h>
 #include "Settings/SettingsManager.h"
 #include "Deprecated/SceneValidator.h"
 #include "Preferences/PreferencesStorage.h"

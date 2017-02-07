@@ -2,6 +2,8 @@
 #include "Tests/AnyPerformanceTest.h"
 #include "UI/Focus/UIFocusComponent.h"
 
+using namespace DAVA;
+
 AnyPerformanceTest::AnyPerformanceTest(TestBed& app)
     : BaseScreen(app, "AnyPerformanceTest")
 {
@@ -91,13 +93,13 @@ void AnyPerformanceTest::OnCreateTest(DAVA::BaseObject* sender, void* data, void
     const Type* type = nullptr;
 
     uint64 sz = GetLoopCount();
-    uint64 startMs = SystemTimer::Instance()->AbsoluteMS();
+    uint64 startMs = SystemTimer::GetMs();
     for (uint64 i = 0; i < sz; ++i)
     {
         Any a(i);
         type = a.GetType();
     }
-    uint64 endMs = SystemTimer::Instance()->AbsoluteMS();
+    uint64 endMs = SystemTimer::GetMs();
 
     Logger::FrameworkDebug("%p", type);
     SetResult(resultCreate, endMs - startMs);
@@ -110,14 +112,14 @@ void AnyPerformanceTest::OnGetSetTest(DAVA::BaseObject* sender, void* data, void
     Any a(float32(0));
 
     uint64 sz = GetLoopCount();
-    uint64 startMs = SystemTimer::Instance()->AbsoluteMS();
+    uint64 startMs = SystemTimer::GetMs();
     for (uint64 i = 0; i < sz; ++i)
     {
         float32 v = a.Get<float32>();
         v += static_cast<float32>(i);
         a.Set(v);
     }
-    uint64 endMs = SystemTimer::Instance()->AbsoluteMS();
+    uint64 endMs = SystemTimer::GetMs();
 
     Logger::FrameworkDebug("%f", a.Get<float32>());
     SetResult(resultGetSet, endMs - startMs);

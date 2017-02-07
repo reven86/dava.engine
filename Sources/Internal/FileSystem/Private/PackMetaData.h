@@ -19,11 +19,14 @@ public:
 		*/
     PackMetaData(const void* ptr, std::size_t size);
 
+    Vector<uint32> GetFileIndexes(const String& requestedPackName) const;
+
     uint32 GetPackIndexForFile(const uint32 fileIndex) const;
     /**
 	    Return tuple (packName, packDependencies)
 	*/
     const std::tuple<String, String>& GetPackInfo(const uint32 packIndex) const;
+    const std::tuple<String, String>& GetPackInfo(const String& packName) const;
 
     Vector<uint8> Serialize() const;
     void Deserialize(const void* ptr, size_t size);

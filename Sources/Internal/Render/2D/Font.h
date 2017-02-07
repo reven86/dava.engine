@@ -39,9 +39,9 @@ public:
     struct StringMetrics
     {
         Rect2i drawRect;
-        int32 height = 0;
-        int32 width = 0;
-        int32 baseline = 0;
+        float32 height = 0.f;
+        float32 width = 0.f;
+        float32 baseline = 0.f;
     };
 
 protected:
