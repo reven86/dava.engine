@@ -30,7 +30,7 @@ int MessageBox(const String& title, const String& message, const Vector<String>&
 
         JNI::GlobalRef<jclass> stringClass = JNI::LoadJavaClass("java/lang/String", true, env);
         jsize n = static_cast<jsize>(buttons.size());
-        JNI::LocalRef<jstringArray> jbuttons = env->NewObjectArray(n, stringClass, nullptr); // TODO: should I delete array elements explicitly?
+        JNI::LocalRef<jstringArray> jbuttons = env->NewObjectArray(n, stringClass, nullptr);
         for (jsize i = 0; i < n; ++i)
         {
             JNI::LocalRef<jstring> jbuttonName = JNI::StringToJavaString(buttons[i], env);

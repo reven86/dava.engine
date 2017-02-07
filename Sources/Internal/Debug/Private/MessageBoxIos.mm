@@ -18,20 +18,30 @@
 {
     BOOL dismissedOnResignActive;
     UIAlertView* alert;
+    NSMutableArray<NSString*>* buttonNames;
 }
 - (int)showModal;
 - (void)addButtonWithTitle:(NSString*)buttonTitle;
 - (void)alertView:(UIAlertView*)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex;
 
-@property(nonatomic, assign) NSString* title;
-@property(nonatomic, assign) NSString* message;
-@property(nonatomic, assign) NSMutableArray<NSString*>* buttonNames;
+@property(nonatomic, retain) NSString* title;
+@property(nonatomic, retain) NSString* message;
 @property(nonatomic, readonly) int clickedIndex;
 @property(nonatomic, assign) BOOL dismissOnResignActive;
 
 @end
 
 @implementation AlertDialog
+
+- (void)dealloc
+{
+    [super dealloc];
+
+    [_title release];
+    [_message release];
+    if (buttonNames != nil)
+        [buttonNames release];
+}
 
 - (int)showModal
 {
@@ -44,7 +54,7 @@
                                            delegate:self
                                   cancelButtonTitle:nil
                                   otherButtonTitles:nil, nil] autorelease];
-        for (NSString* s : _buttonNames)
+        for (NSString* s : buttonNames)
         {
             [alert addButtonWithTitle:s];
         }
@@ -90,11 +100,11 @@
 
 - (void)addButtonWithTitle:(NSString*)buttonTitle
 {
-    if (_buttonNames == nil)
+    if (buttonNames == nil)
     {
-        _buttonNames = [[NSMutableArray alloc] init];
+        buttonNames = [[NSMutableArray alloc] init];
     }
-    [_buttonNames addObject:buttonTitle];
+    [buttonNames addObject:buttonTitle];
 }
 
 - (void)alertView:(UIAlertView*)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex
@@ -138,19 +148,23 @@ int MessageBox(const String& title, const String& message, const Vector<String>&
         }
     };
 
-    const bool directCall = [NSThread isMainThread];
-    if (directCall)
+    // Application hangs when MessageBox is shown before invoking UIApplicationMain (called in Engine::Run).
+    // Experimentally I determined that currentMode of main run loop is nil before UIApplicationMain is called.
+    if ([[NSRunLoop mainRunLoop] currentMode] != nil)
     {
-        showMessageBox();
-    }
-    else
-    {
-        // Do not use Window::RunOnUIThread as message box becomes unresponsive to user input.
-        // I do not know why so.
-        semaphore.Wait();
-        showMessageBox();
-        autoEvent.Wait();
-        semaphore.Post(1);
+        if ([NSThread isMainThread])
+        {
+            showMessageBox();
+        }
+        else
+        {
+            // Do not use Window::RunOnUIThread as message box becomes unresponsive to user input.
+            // I do not know why so.
+            semaphore.Wait();
+            showMessageBox();
+            autoEvent.Wait();
+            semaphore.Post(1);
+        }
     }
     return result;
 }

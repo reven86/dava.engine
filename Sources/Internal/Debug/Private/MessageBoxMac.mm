@@ -7,7 +7,6 @@
 #include "Engine/Engine.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Debug/DVAssert.h"
-#include "Utils/NSStringUtils.h"
 
 #if defined(__DAVAENGINE_QT__)
 #include "Engine/PlatformApi.h"
@@ -35,13 +34,13 @@ int MessageBox(const String& title, const String& message, const Vector<String>&
             @autoreleasepool
             {
                 NSAlert* alert = [[[NSAlert alloc] init] autorelease];
-                [alert setMessageText:NSStringFromString(title)];
-                [alert setInformativeText:NSStringFromString(message)];
+                [alert setMessageText:@(title.c_str())];
+                [alert setInformativeText:@(message.c_str())];
 
                 int i = 0;
                 for (const String& s : buttons)
                 {
-                    NSButton* alertButton = [alert addButtonWithTitle:NSStringFromString(s)];
+                    NSButton* alertButton = [alert addButtonWithTitle:@(s.c_str())];
                     if (i == defaultButton)
                         [alertButton setKeyEquivalent:@"\r"];
                     else
@@ -69,7 +68,7 @@ int MessageBox(const String& title, const String& message, const Vector<String>&
                     result = 2;
                     break;
                 default:
-                    result = 0;
+                    result = -1;
                     break;
                 }
                 
