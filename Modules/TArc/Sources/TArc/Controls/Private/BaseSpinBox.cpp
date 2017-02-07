@@ -326,8 +326,17 @@ void DAVA::TArc::BaseSpinBox<TBase, TEditableType>::focusOutEvent(QFocusEvent* e
     }
 }
 
+#if __clang__
+_Pragma("clang diagnostic push")
+_Pragma("clang diagnostic ignored \"-Wweak-template-vtables\"")
+#endif
+
 template class BaseSpinBox<QSpinBox, int>;
 template class BaseSpinBox<QDoubleSpinBox, double>;
+
+#if __clang__
+_Pragma("clang diagnostic pop")
+#endif
 
 } // namespace TArc
 } // namespace DAVA

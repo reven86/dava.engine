@@ -27,4 +27,12 @@ void ShowInOSFileManager(const QString& path)
 #endif //
 }
 
+//realisation for windows, only calls given function
+#ifdef Q_OS_WIN
+void InvokeInAutoreleasePool(std::function<void()> function)
+{
+    function();
+}
+#endif
+
 } // namespace QtHelpers

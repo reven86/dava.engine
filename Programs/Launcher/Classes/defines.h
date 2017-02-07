@@ -5,7 +5,7 @@
 
 ////Global launcher defines
 
-#define LAUNCHER_VER "0.9 build 22"
+#define LAUNCHER_VER "0.9 build 23"
 
 #define LOCAL_CONFIG_NAME "localConfig.yaml"
 
@@ -36,7 +36,7 @@
 
 #ifdef Q_OS_WIN
 #define TABLE_STYLESHEET "QComboBox {margin-top: 7px; margin-bottom: 7px; padding-left: 5px;} QLabel {padding-left: 4px;padding-right: 4px;}"
-#elif defined(Q_OS_DARWIN)
+#elif defined(Q_OS_MAC)
 #define TABLE_STYLESHEET "QLabel {padding-left: 4px;padding-right: 4px;}"
 #endif
 

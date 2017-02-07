@@ -1,10 +1,10 @@
 #pragma once
 
+#include <Tools/TextureCompression/TextureConverter.h>
+
 #include "Base/BaseTypes.h"
 #include "Render/RenderBase.h"
 #include "FileSystem/FilePath.h"
-
-#include "TextureCompression/TextureConverter.h"
 
 #include <QObject>
 
