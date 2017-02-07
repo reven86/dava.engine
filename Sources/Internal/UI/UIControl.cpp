@@ -183,24 +183,24 @@ bool UIControl::RemoveAllEvents()
     return false;
 }
 
-void UIControl::PerformEvent(int32 eventType, UIEvent* uiEvent /* = nullptr*/)
+void UIControl::PerformEvent(int32 eventType, const UIEvent* uiEvent /* = nullptr*/)
 {
     if (eventDispatcher)
     {
         eventDispatcher->PerformEvent(eventType, this);
     }
 
-    UIControlSystem::Instance()->GetSoundSystem()->ProcessControlEvent(eventType, uiEvent, this);
+    UIControlSystem::Instance()->ProcessControlEvent(eventType, uiEvent, this);
 }
 
-void UIControl::PerformEventWithData(int32 eventType, void* callerData, UIEvent* uiEvent /* = nullptr*/)
+void UIControl::PerformEventWithData(int32 eventType, void* callerData, const UIEvent* uiEvent /* = nullptr*/)
 {
     if (eventDispatcher)
     {
         eventDispatcher->PerformEventWithData(eventType, this, callerData);
     }
 
-    UIControlSystem::Instance()->GetSoundSystem()->ProcessControlEvent(eventType, uiEvent, this);
+    UIControlSystem::Instance()->ProcessControlEvent(eventType, uiEvent, this);
 }
 
 const List<UIControl*>& UIControl::GetChildren() const

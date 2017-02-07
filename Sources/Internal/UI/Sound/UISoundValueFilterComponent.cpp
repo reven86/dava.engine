@@ -9,6 +9,7 @@ UISoundValueFilterComponent::UISoundValueFilterComponent()
 }
 
 UISoundValueFilterComponent::UISoundValueFilterComponent(const UISoundValueFilterComponent& src)
+    : step(src.step)
 {
 }
 

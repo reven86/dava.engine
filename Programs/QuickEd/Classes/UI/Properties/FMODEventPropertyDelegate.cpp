@@ -16,7 +16,6 @@ using namespace DAVA;
 
 FMODEventPropertyDelegate::FMODEventPropertyDelegate(PropertiesTreeItemDelegate* delegate)
     : BasePropertyDelegate(delegate)
-
 {
 }
 
@@ -38,8 +37,8 @@ QWidget* FMODEventPropertyDelegate::createEditor(QWidget* parent, const Properti
 void FMODEventPropertyDelegate::setEditorData(QWidget*, const QModelIndex& index) const
 {
     VariantType variant = index.data(Qt::EditRole).value<VariantType>();
-    const FastName& fn = variant.AsFastName();
-    const QString& stringValue = StringToQString(fn.IsValid() ? fn.c_str() : "");
+    const FastName& fastNameValue = variant.AsFastName();
+    const QString& stringValue = StringToQString(fastNameValue.IsValid() ? fastNameValue.c_str() : "");
     DVASSERT(!lineEdit.isNull());
     lineEdit->setText(stringValue);
 }
@@ -89,10 +88,10 @@ void FMODEventPropertyDelegate::selectEventClicked()
     FMODSoundBrowser* soundBrowser = new FMODSoundBrowser(editor->parentWidget());
     soundBrowser->deleteLater();
 
-    QString pathText = lineEdit->text();
-    if (!pathText.isEmpty())
+    const QString& currentEventName = lineEdit->text();
+    if (!currentEventName.isEmpty())
     {
-        soundBrowser->SetCurrentEvent(pathText.toStdString());
+        soundBrowser->SetCurrentEvent(currentEventName.toStdString());
     }
 
     if (soundBrowser->exec() == QDialog::Accepted)
@@ -127,7 +126,7 @@ void FMODEventPropertyDelegate::OnEditingFinished()
     QWidget* editor = lineEdit->parentWidget();
     DVASSERT(editor != nullptr);
     const QString& text = lineEdit->text();
-    if (!text.isEmpty() && !IsPathValid(text))
+    if (!text.isEmpty() && !IsSoundEventValid(text))
     {
         return;
     }
@@ -142,12 +141,12 @@ void FMODEventPropertyDelegate::OnTextChanged(const QString& text)
     QString textCopy(text);
 
     QColor globalTextColor = qApp->palette().color(QPalette::Text);
-    QColor nextColor = IsPathValid(text) ? globalTextColor : Qt::red;
+    QColor nextColor = IsSoundEventValid(text) ? globalTextColor : Qt::red;
     palette.setColor(QPalette::Text, nextColor);
     lineEdit->setPalette(palette);
 }
 
-bool FMODEventPropertyDelegate::IsPathValid(const QString& path)
+bool FMODEventPropertyDelegate::IsSoundEventValid(const QString& eventName)
 {
-    return std::find(eventNames.begin(), eventNames.end(), path.toStdString()) != eventNames.end();
+    return std::find(eventNames.begin(), eventNames.end(), eventName.toStdString()) != eventNames.end();
 }

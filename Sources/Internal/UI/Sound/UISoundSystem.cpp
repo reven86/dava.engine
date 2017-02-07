@@ -24,7 +24,7 @@ void UISoundSystem::ProcessControlEvent(int32 eventType, const UIEvent* uiEvent,
 
         if (soundComponent)
         {
-            if (!ShouldSkip(eventType, uiEvent, control))
+            if (!ShouldSkipEvent(eventType, uiEvent, control))
             {
                 const FastName& soundEventName = soundComponent->GetSoundEventName(static_cast<UIControl::eEventType>(eventType));
 
@@ -119,7 +119,7 @@ void UISoundSystem::ProcessControlEvent(int32 eventType, const UIEvent* uiEvent,
         }
     }
 
-    bool UISoundSystem::ShouldSkip(int32 eventType, const UIEvent* uiEvent, UIControl* control)
+    bool UISoundSystem::ShouldSkipEvent(int32 eventType, const UIEvent* uiEvent, UIControl* control)
     {
         if (eventType == UIControl::EVENT_VALUE_CHANGED)
         {

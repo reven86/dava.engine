@@ -532,6 +532,11 @@ UIControl* UIControlSystem::GetFocusedControl() const
     return GetFocusSystem()->GetFocusedControl();
 }
 
+void UIControlSystem::ProcessControlEvent(int32 eventType, const UIEvent* uiEvent, UIControl* control)
+{
+    soundSystem->ProcessControlEvent(eventType, uiEvent, control);
+}
+
 const UIGeometricData& UIControlSystem::GetBaseGeometricData() const
 {
     return baseGeometricData;

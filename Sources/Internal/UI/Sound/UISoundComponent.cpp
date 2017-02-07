@@ -9,6 +9,7 @@ UISoundComponent::UISoundComponent()
 }
 
 UISoundComponent::UISoundComponent(const UISoundComponent& src)
+    : soundEventNames(src.soundEventNames)
 {
 }
 

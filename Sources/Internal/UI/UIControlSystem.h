@@ -254,6 +254,11 @@ public:
 	 */
     UIControl* GetFocusedControl() const;
 
+    /*
+     \brief Called by the control himself
+     */
+    void ProcessControlEvent(int32 eventType, const UIEvent* uiEvent, UIControl* control);
+
     void AddScreenSwitchListener(ScreenSwitchListener* listener);
     void RemoveScreenSwitchListener(ScreenSwitchListener* listener);
 

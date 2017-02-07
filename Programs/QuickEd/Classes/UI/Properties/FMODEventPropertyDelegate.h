@@ -23,7 +23,7 @@ private slots:
     void OnTextChanged(const QString& text);
 
 private:
-    bool IsPathValid(const QString& path);
+    bool IsSoundEventValid(const QString& eventName);
     QPointer<QLineEdit> lineEdit = nullptr;
     DAVA::Vector<DAVA::String> eventNames;
 };

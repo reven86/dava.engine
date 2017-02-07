@@ -497,11 +497,14 @@ QString PropertiesModel::makeQVariant(const AbstractProperty* property) const
         return UnescapeString(WideStringToQString(val.AsWideString()));
 
     case VariantType::TYPE_FASTNAME:
-        return val.AsFastName().IsValid()
-        ?
-        StringToQString(val.AsFastName().c_str())
-        :
-        "";
+        if (val.AsFastName().IsValid())
+        {
+            return StringToQString(val.AsFastName().c_str());
+        }
+        else
+        {
+            return "";
+        }
 
     case VariantType::TYPE_VECTOR2:
         return StringToQString(Format("%g; %g", val.AsVector2().x, val.AsVector2().y));
