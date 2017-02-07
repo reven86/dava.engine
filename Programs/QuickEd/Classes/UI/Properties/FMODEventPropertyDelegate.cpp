@@ -71,12 +71,28 @@ void FMODEventPropertyDelegate::enumEditorActions(QWidget* parent, const QModelI
     actions.push_back(selectEventAction);
     connect(selectEventAction, SIGNAL(triggered(bool)), this, SLOT(selectEventClicked()));
 
+    QAction* playEventAction = new QAction(QIcon(":/Icons/play.png"), tr("play"), parent);
+    playEventAction->setToolTip(tr("Play sound event"));
+    actions.push_back(playEventAction);
+    connect(playEventAction, SIGNAL(triggered(bool)), this, SLOT(playEventClicked()));
+
     QAction* clearEventAction = new QAction(QIcon(":/Icons/editclear.png"), tr("clear"), parent);
     clearEventAction->setToolTip(tr("Clear sound event"));
     actions.push_back(clearEventAction);
     connect(clearEventAction, SIGNAL(triggered(bool)), this, SLOT(clearEventClicked()));
 
     BasePropertyDelegate::enumEditorActions(parent, index, actions);
+}
+
+void FMODEventPropertyDelegate::playEventClicked()
+{
+    const QString& currentEventName = lineEdit->text();
+    if (!currentEventName.isEmpty() && IsSoundEventValid(currentEventName))
+    {
+        RefPtr<SoundEvent> event(SoundSystem::Instance()->CreateSoundEventByID(FastName(currentEventName.toStdString()), FastName()));
+
+        event->Trigger();
+    }
 }
 
 void FMODEventPropertyDelegate::selectEventClicked()
