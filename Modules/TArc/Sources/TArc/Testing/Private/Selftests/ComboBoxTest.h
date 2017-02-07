@@ -329,7 +329,7 @@ DAVA_TARC_TESTCLASS(ComboBoxTest)
         .WillOnce(Invoke(this, &ComboBoxTest::TestComboModuleStart));
 
         EXPECT_CALL(*this, IndexChanged(_))
-        .Times(comboTestData.size());
+        .Times(static_cast<int>(comboTestData.size()));
     }
 
     bool TestComplete(const DAVA::String& testName) const override

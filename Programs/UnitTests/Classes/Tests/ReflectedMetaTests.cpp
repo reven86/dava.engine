@@ -9,13 +9,13 @@
 
 namespace ReflectedMetaDetails
 {
-DAVA::M::ValidatorResult ValidateY(const DAVA::Any& value, const DAVA::Any& prevValue)
+DAVA::M::ValidationResult ValidateY(const DAVA::Any& value, const DAVA::Any& prevValue)
 {
     using namespace DAVA::M;
 
     const double& v = value.Get<double>();
-    ValidatorResult result;
-    result.state = (v < -10.0 || v > 20.0) ? ValidatorResult::eState::Valid : ValidatorResult::eState::Invalid;
+    ValidationResult result;
+    result.state = (v < -10.0 || v > 20.0) ? ValidationResult::eState::Valid : ValidationResult::eState::Invalid;
 
     return result;
 }
@@ -36,7 +36,7 @@ public:
     DAVA_REFLECTION(TestClass)
     {
         DAVA::ReflectionRegistrator<TestClass>::Begin()[DAVA::M::File(false)]
-        .Field("x", &TestClass::x)[DAVA::M::ReadOnly(), DAVA::M::Range(10, 20)]
+        .Field("x", &TestClass::x)[DAVA::M::ReadOnly(), DAVA::M::Range(10, 20, 1)]
         .Field("y", &TestClass::y)[DAVA::M::Validator(&ValidateY), DAVA::M::Group("geometry")]
         .Field("enum", &TestClass::e)[DAVA::M::EnumT<TestEnum>()]
         .End();
@@ -68,6 +68,7 @@ DAVA_TESTCLASS (ReflectedMetaTest)
         TEST_VERIFY(range != nullptr);
         TEST_VERIFY(range->minValue.Cast<DAVA::int32>() == 10);
         TEST_VERIFY(range->maxValue.Cast<DAVA::int32>() == 20);
+        TEST_VERIFY(range->step.Cast<DAVA::int32>() == 1);
 
         DAVA::Reflection fieldY = r.GetField("y");
         TEST_VERIFY(fieldY.IsValid());
@@ -78,11 +79,11 @@ DAVA_TESTCLASS (ReflectedMetaTest)
 
         const DAVA::M::Validator* validator = fieldY.GetMeta<DAVA::M::Validator>();
         TEST_VERIFY(validator != nullptr);
-        DAVA::M::ValidatorResult result = validator->Validate(double(30.0), 0);
-        TEST_VERIFY(result.state == DAVA::M::ValidatorResult::eState::Valid);
+        DAVA::M::ValidationResult result = validator->Validate(double(30.0), 0);
+        TEST_VERIFY(result.state == DAVA::M::ValidationResult::eState::Valid);
 
         result = validator->Validate(double(0.0), 0);
-        TEST_VERIFY(result.state == DAVA::M::ValidatorResult::eState::Invalid);
+        TEST_VERIFY(result.state == DAVA::M::ValidationResult::eState::Invalid);
 
         DAVA::Reflection fieldE = r.GetField("enum");
         TEST_VERIFY(fieldE.IsValid());
