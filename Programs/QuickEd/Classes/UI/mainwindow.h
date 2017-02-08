@@ -1,5 +1,7 @@
 #pragma once
 
+#include "ui_mainwindow.h"
+
 #include <TArc/DataProcessing/DataNode.h>
 
 #if defined(__DAVAENGINE_MACOS__)
@@ -31,7 +33,7 @@ namespace Ui
 class MainWindow;
 }
 
-class MainWindow : public QMainWindow, public DAVA::TArc::DataNode, public DAVA::InspBase, public DAVA::TrackedObject
+class MainWindow : public QMainWindow, public DAVA::InspBase, public DAVA::TrackedObject, public Ui::MainWindow
 {
     Q_OBJECT
 
@@ -74,8 +76,6 @@ private:
 
     bool eventFilter(QObject* object, QEvent* event) override;
 
-    std::unique_ptr<Ui::MainWindow> ui;
-
     QString editorTitle;
     QString projectPath;
 
@@ -93,8 +93,6 @@ private:
 
     ProjectView* projectView = nullptr;
     DocumentGroupView* documentGroupView = nullptr;
-
-    DAVA_VIRTUAL_REFLECTION(MainWindow, DAVA::TArc::DataNode);
 
 public:
     INTROSPECTION(MainWindow,

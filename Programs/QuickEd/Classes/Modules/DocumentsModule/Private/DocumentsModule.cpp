@@ -4,6 +4,10 @@
 #include "Modules/DocumentsModule/WidgetsData.h"
 #include "Modules/DocumentsWatcherModule/DocumentsWatcherData.h"
 
+//legacy
+#include "Modules/LegacySupportModule/LegacySupportData.h"
+#include "UI/Package/PackageModel.h"
+
 //helpers
 #include "UI/QtModelPackageCommandExecutor.h"
 #include "Modules/DocumentsModule/Document.h"
@@ -28,6 +32,7 @@
 #include <TArc/WindowSubSystem/QtAction.h>
 #include <TArc/Models/SceneTabsModel.h>
 #include <TArc/Utils/ModuleCollection.h>
+#include <TArc/Core/FieldBinder.h>
 
 #include <QTTools/Utils/Themes/Themes.h>
 #include <QtTools/InputDialogs/MultilineTextInputDialog.h>
@@ -120,14 +125,11 @@ void DocumentsModule::PostInit()
     RegisterOperations();
     CreateActions();
 
-    //legacy part
-    ContextAccessor* accessor = GetAccessor();
-    DataContext* globalContext = accessor->GetGlobalContext();
-    MainWindow* mainWindow = globalContext->GetData<MainWindow>();
-    DVASSERT(nullptr != mainWindow);
-    MainWindow::DocumentGroupView* documentGroupView = mainWindow->GetProjectView()->GetDocumentGroupView();
-
-    connections.AddConnection(documentGroupView, &MainWindow::DocumentGroupView::OpenPackageFile, MakeFunction(this, &DocumentsModule::OpenDocument));
+    fieldBinder.reset(new FieldBinder(GetAccessor()));
+    FieldDescriptor descriptor;
+    descriptor.type = ReflectedTypeDB::Get<DocumentData>();
+    descriptor.fieldName = FastName(DocumentData::canSavePropertyName);
+    fieldBinder->BindField(descriptor, MakeFunction(this, &DocumentsModule::OnCanSaveChanged));
 }
 
 void DocumentsModule::OnWindowClosed(const DAVA::TArc::WindowKey& key)
@@ -138,6 +140,11 @@ void DocumentsModule::OnContextCreated(DAVA::TArc::DataContext* context)
 {
     SceneTabsModel* tabsModel = GetAccessor()->GetGlobalContext()->GetData<SceneTabsModel>();
     DVASSERT(tabsModel != nullptr);
+    DocumentData* data = context->GetData<DocumentData>();
+    DVASSERT(nullptr != data);
+    TabDescriptor descriptor;
+    descriptor.tabTitle = data->GetName().toStdString();
+    descriptor.tabTooltip = data->GetPackageAbsolutePath().toStdString();
     tabsModel->tabs.emplace(context->GetID(), TabDescriptor());
 }
 
@@ -149,32 +156,25 @@ void DocumentsModule::OnContextDeleted(DAVA::TArc::DataContext* context)
     tabsModel->tabs.erase(context->GetID());
 }
 
+void DocumentsModule::OnContextWillBeChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* newOne)
+{
+    systemsManager->OnContextWillBeChanged(current, newOne);
+    previewWidget->OnContextWillBeChanged(current, newOne);
+}
+
 void DocumentsModule::OnContextWasChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* oldOne)
 {
-    using namespace DAVA::TArc;
-    systemsManager->magnetLinesChanged.Emit({});
-    systemsManager->ClearHighlight();
-
-    if (current != nullptr)
-    {
-        systemsManager->packageChanged.Emit(nullptr);
-    }
-    else
-    {
-        DocumentData* documentData = current->GetData<DocumentData>();
-        DVASSERT(nullptr != documentData);
-        systemsManager->packageChanged.Emit(documentData->package.Get());
-
-        SceneTabsModel* tabsModel = GetAccessor()->GetGlobalContext()->GetData<SceneTabsModel>();
-        tabsModel->activeContexID = current->GetID();
-    }
+    systemsManager->OnContextWasChanged(current, oldOne);
     previewWidget->OnContextWasChanged(current, oldOne);
+
+    SceneTabsModel* tabsModel = GetAccessor()->GetGlobalContext()->GetData<SceneTabsModel>();
+    tabsModel->activeContexID = current->GetID();
 }
 
 void DocumentsModule::InitEditorSystems()
 {
     DVASSERT(nullptr == systemsManager);
-    systemsManager.reset(new EditorSystemsManager());
+    systemsManager.reset(new EditorSystemsManager(GetAccessor()));
 }
 
 void DocumentsModule::InitCentralWidget()
@@ -192,6 +192,21 @@ void DocumentsModule::InitCentralWidget()
     previewWidget->requestChangeTextInNode.Connect(this, &DocumentsModule::ChangeControlText);
     PanelKey panelKey(QStringLiteral("CentralWidget"), CentralPanelInfo());
     ui->AddView(QEGlobal::windowKey, panelKey, previewWidget);
+
+    //legacy part
+    LegacySupportData* legacyData = accessor->GetGlobalContext()->GetData<LegacySupportData>();
+    MainWindow* mainWindow = legacyData->GetMainWindow();
+
+    QObject::connect(mainWindow, &MainWindow::EmulationModeChanged, previewWidget, &PreviewWidget::OnEmulationModeChanged);
+    QObject::connect(previewWidget, &PreviewWidget::DropRequested, mainWindow->packageWidget->GetPackageModel(), &PackageModel::OnDropMimeData, Qt::DirectConnection);
+    QObject::connect(previewWidget, &PreviewWidget::DeleteRequested, mainWindow->packageWidget, &PackageWidget::OnDelete);
+    QObject::connect(previewWidget, &PreviewWidget::ImportRequested, mainWindow->packageWidget, &PackageWidget::OnImport);
+    QObject::connect(previewWidget, &PreviewWidget::CutRequested, mainWindow->packageWidget, &PackageWidget::OnCut);
+    QObject::connect(previewWidget, &PreviewWidget::CopyRequested, mainWindow->packageWidget, &PackageWidget::OnCopy);
+    QObject::connect(previewWidget, &PreviewWidget::PasteRequested, mainWindow->packageWidget, &PackageWidget::OnPaste);
+    QObject::connect(previewWidget, &PreviewWidget::SelectionChanged, mainWindow->packageWidget, &PackageWidget::OnSelectionChanged);
+
+    QObject::connect(mainWindow->packageWidget, &PackageWidget::SelectedNodesChanged, previewWidget, &PreviewWidget::OnSelectionChanged);
 }
 
 void DocumentsModule::CreateActions()
@@ -292,7 +307,7 @@ void DocumentsModule::CreateActions()
         QAction* separator = new QAction(toolBarSeparatorName, nullptr);
         separator->setSeparator(true);
         ActionPlacementInfo placementInfo;
-        placementInfo.AddPlacementPoint(CreateToolbarPoint(toolBarName, { InsertionParams::eInsertionMethod::AfterItem, saveDocumentActionName }));
+        placementInfo.AddPlacementPoint(CreateToolbarPoint(toolBarName, { InsertionParams::eInsertionMethod::AfterItem, saveAllDocumentsActionName }));
         ui->AddAction(QEGlobal::windowKey, placementInfo, separator);
     }
 }
@@ -316,7 +331,8 @@ void DocumentsModule::OpenDocument(const QString& path)
         initialData.push_back(std::move(documentData));
         initialData.emplace_back(new WidgetsData());
         ContextManager* contextManager = GetContextManager();
-        contextManager->CreateContext(std::move(initialData));
+        DataContext::ContextID id = contextManager->CreateContext(std::move(initialData));
+        contextManager->ActivateContext(id);
     }
 }
 
@@ -351,6 +367,28 @@ void DocumentsModule::OnActiveTabChanged(const DAVA::Any& contextID)
         newContextID = static_cast<DataContext::ContextID>(contextID.Cast<DAVA::uint64>());
     }
     contextManager->ActivateContext(newContextID);
+}
+
+void DocumentsModule::OnCanSaveChanged(const DAVA::Any& canSave)
+{
+    using namespace DAVA;
+    using namespace TArc;
+
+    ContextAccessor* accessor = GetAccessor();
+    DataContext* activeContext = accessor->GetActiveContext();
+    if (activeContext == nullptr)
+    {
+        return;
+    }
+    DataContext::ContextID id = activeContext->GetID();
+    DocumentData* data = activeContext->GetData<DocumentData>();
+    DVASSERT(nullptr != data);
+
+    SceneTabsModel* tabsModel = accessor->GetGlobalContext()->GetData<SceneTabsModel>();
+    DVASSERT(tabsModel->tabs.find(id) != tabsModel->tabs.end());
+    TabDescriptor& descriptor = tabsModel->tabs[id];
+    QString newTitle = data->GetName() + (data->CanSave() ? "*" : "");
+    descriptor.tabTitle = newTitle.toStdString();
 }
 
 void DocumentsModule::ChangeControlText(ControlNode* node)

@@ -15,20 +15,20 @@ MainWindow::DocumentGroupView::DocumentGroupView(MainWindow* mainWindow_)
     , mainWindow(mainWindow_)
 {
     SetDocumentActionsEnabled(false);
-    connect(this, &MainWindow::DocumentGroupView::OnDocumentChanged, mainWindow->ui->packageWidget, &PackageWidget::OnDocumentChanged);
-    connect(this, &MainWindow::DocumentGroupView::OnDocumentChanged, mainWindow->ui->libraryWidget, &LibraryWidget::OnDocumentChanged);
-    connect(this, &MainWindow::DocumentGroupView::OnDocumentChanged, mainWindow->ui->propertiesWidget, &PropertiesWidget::OnDocumentChanged);
-    connect(this, &MainWindow::DocumentGroupView::OnDocumentChanged, mainWindow->ui->styleSheetInspectorWidget, &StyleSheetInspectorWidget::OnDocumentChanged);
+    connect(this, &MainWindow::DocumentGroupView::OnDocumentChanged, mainWindow->packageWidget, &PackageWidget::OnDocumentChanged);
+    connect(this, &MainWindow::DocumentGroupView::OnDocumentChanged, mainWindow->libraryWidget, &LibraryWidget::OnDocumentChanged);
+    connect(this, &MainWindow::DocumentGroupView::OnDocumentChanged, mainWindow->propertiesWidget, &PropertiesWidget::OnDocumentChanged);
+    connect(this, &MainWindow::DocumentGroupView::OnDocumentChanged, mainWindow->styleSheetInspectorWidget, &StyleSheetInspectorWidget::OnDocumentChanged);
 
-    connect(mainWindow->ui->fileSystemDockWidget, &FileSystemDockWidget::OpenPackageFile, this, &MainWindow::DocumentGroupView::OpenPackageFile);
+    connect(mainWindow->fileSystemDockWidget, &FileSystemDockWidget::OpenPackageFile, this, &MainWindow::DocumentGroupView::OpenPackageFile);
 }
 
 void MainWindow::DocumentGroupView::SetDocumentActionsEnabled(bool enabled)
 {
-    mainWindow->ui->packageWidget->setEnabled(enabled);
-    mainWindow->ui->propertiesWidget->setEnabled(enabled);
-    mainWindow->ui->libraryWidget->setEnabled(enabled);
-    mainWindow->ui->styleSheetInspectorWidget->setEnabled(enabled);
+    mainWindow->packageWidget->setEnabled(enabled);
+    mainWindow->propertiesWidget->setEnabled(enabled);
+    mainWindow->libraryWidget->setEnabled(enabled);
+    mainWindow->styleSheetInspectorWidget->setEnabled(enabled);
 }
 
 void MainWindow::DocumentGroupView::SetProject(Project* project)
@@ -40,12 +40,12 @@ void MainWindow::DocumentGroupView::SetProject(Project* project)
         {
             libraryPackages.push_back(resDir.absolute);
         }
-        mainWindow->ui->libraryWidget->SetProjectLibraries(project->GetPrototypes(), libraryPackages);
+        mainWindow->libraryWidget->SetProjectLibraries(project->GetPrototypes(), libraryPackages);
     }
     else
     {
-        mainWindow->ui->libraryWidget->SetProjectLibraries(DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>>(), DAVA::Vector<DAVA::FilePath>());
+        mainWindow->libraryWidget->SetProjectLibraries(DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>>(), DAVA::Vector<DAVA::FilePath>());
     }
 
-    mainWindow->ui->propertiesWidget->SetProject(project);
+    mainWindow->propertiesWidget->SetProject(project);
 }

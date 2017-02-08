@@ -1,4 +1,5 @@
 #include "Modules/LegacySupportModule/LegacySupportModule.h"
+#include "Modules/LegacySupportModule/LegacySupportData.h"
 #include "Modules/DocumentsModule/Document.h"
 #include "Modules/ProjectModule/ProjectData.h"
 #include "Modules/ProjectModule/Project.h"
@@ -31,6 +32,7 @@ void LegacySupportModule::PostInit()
     projectDataWrapper.SetListener(this);
 
     InitMainWindow();
+    RegisterOperations();
 }
 
 void LegacySupportModule::OnWindowClosed(const DAVA::TArc::WindowKey& key)
@@ -38,9 +40,11 @@ void LegacySupportModule::OnWindowClosed(const DAVA::TArc::WindowKey& key)
     using namespace DAVA::TArc;
     ContextAccessor* accessor = GetAccessor();
     DataContext* globalData = accessor->GetGlobalContext();
-    globalData->DeleteData<MainWindow>();
-
     projectDataWrapper.SetListener(nullptr);
+
+    //this code is writed to support legacy work with Project
+    //when we removing ProjectData inside OnWindowClose we dont receive OnDataChanged
+    project = nullptr;
 }
 
 void LegacySupportModule::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields)
@@ -52,19 +56,17 @@ void LegacySupportModule::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, 
     }
     ContextAccessor* accessor = GetAccessor();
     DataContext* globalContext = accessor->GetGlobalContext();
-    MainWindow* mainWindow = globalContext->GetData<MainWindow>();
+    LegacySupportData* data = globalContext->GetData<LegacySupportData>();
+    MainWindow* mainWindow = data->GetMainWindow();
     MainWindow::ProjectView* projectView = mainWindow->GetProjectView();
-    MainWindow::DocumentGroupView* documentGroupView = projectView->GetDocumentGroupView();
     if (wrapper.HasData())
     {
         project.reset(new Project(projectView, accessor));
     }
     else
     {
-        project.release();
+        project = nullptr;
     }
-    projectView->OnProjectChanged(project.get());
-    documentGroupView->SetProject(project.get());
 }
 
 void LegacySupportModule::OnContextCreated(DAVA::TArc::DataContext* context)
@@ -80,12 +82,17 @@ void LegacySupportModule::OnContextWasChanged(DAVA::TArc::DataContext* current, 
     using namespace DAVA::TArc;
     ContextAccessor* accessor = GetAccessor();
     DataContext* globalContext = accessor->GetGlobalContext();
-    MainWindow* mainWindow = globalContext->GetData<MainWindow>();
+    LegacySupportData* data = globalContext->GetData<LegacySupportData>();
+    MainWindow* mainWindow = data->GetMainWindow();
     MainWindow::ProjectView* projectView = mainWindow->GetProjectView();
     MainWindow::DocumentGroupView* documentGroupView = projectView->GetDocumentGroupView();
-
-    Document* document = current->GetData<Document>();
+    Document* document = nullptr;
+    if (current != nullptr)
+    {
+        document = current->GetData<Document>();
+    }
     documentGroupView->OnDocumentChanged(document);
+    documentGroupView->SetDocumentActionsEnabled(document != nullptr);
 }
 
 void LegacySupportModule::InitMainWindow()
@@ -93,8 +100,14 @@ void LegacySupportModule::InitMainWindow()
     using namespace DAVA;
     using namespace TArc;
 
-    std::unique_ptr<MainWindow> mainWindow(new MainWindow());
-    MainWindow* mainWindowPtr = mainWindow.get();
+    std::unique_ptr<LegacySupportData> data(new LegacySupportData());
+
+    MainWindow* mainWindowPtr = data->GetMainWindow();
+    MainWindow::DocumentGroupView* documentGroupView = mainWindowPtr->GetProjectView()->GetDocumentGroupView();
+    connections.AddConnection(documentGroupView, &MainWindow::DocumentGroupView::OpenPackageFile, [this](const QString& path) {
+        InvokeOperation(QEGlobal::OpenDocumentByPath.ID, path);
+    });
+
     const char* editorTitle = "DAVA Framework - QuickEd | %1-%2 [%3 bit]";
     uint32 bit = static_cast<DAVA::uint32>(sizeof(DAVA::pointer_size) * 8);
     QString title = QString(editorTitle).arg(DAVAENGINE_VERSION).arg(APPLICATION_BUILD_VERSION).arg(bit);
@@ -104,5 +117,18 @@ void LegacySupportModule::InitMainWindow()
     ui->InjectWindow(QEGlobal::windowKey, mainWindowPtr);
     ContextAccessor* accessor = GetAccessor();
     DataContext* globalContext = accessor->GetGlobalContext();
-    globalContext->CreateData(std::move(mainWindow));
+    globalContext->CreateData(std::move(data));
+}
+
+void LegacySupportModule::RegisterOperations()
+{
+    using namespace DAVA;
+    using namespace TArc;
+    ContextAccessor* accessor = GetAccessor();
+    DataContext* globalContext = accessor->GetGlobalContext();
+
+    LegacySupportData* data = globalContext->GetData<LegacySupportData>();
+    MainWindow* mainWindow = data->GetMainWindow();
+    MainWindow::ProjectView* view = mainWindow->GetProjectView();
+    RegisterOperation(QEGlobal::SelectFile.ID, view, &MainWindow::ProjectView::SelectFile);
 }

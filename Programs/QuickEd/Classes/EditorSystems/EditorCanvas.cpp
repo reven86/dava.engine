@@ -11,7 +11,6 @@ EditorCanvas::EditorCanvas(EditorSystemsManager* parent)
 {
     movableControl = systemsManager->GetScalableControl();
     systemsManager->contentSizeChanged.Connect(this, &EditorCanvas::OnContentSizeChanged);
-    systemsManager->viewSizeChanged.Connect(this, &EditorCanvas::OnViewSizeChanged);
 }
 
 EditorCanvas::~EditorCanvas() = default;
@@ -121,7 +120,7 @@ void EditorCanvas::SetPosition(const Vector2& position_)
     {
         position = fixedPos;
         UpdatePosition();
-        ositionChanged.Emit(position);
+        positionChanged.Emit(position);
     }
 }
 
@@ -138,11 +137,12 @@ void EditorCanvas::UpdatePosition()
     {
         offset.dy = position.y;
     }
-    offset -= Vector2(margin, margin);
-    Vector2 position(-offset.dx, -offset.dy);
-    movableControl->SetPosition(position);
 
-    nestedControlPositionChanged.Emit(position);
+    offset -= Vector2(margin, margin);
+    Vector2 counterPosition(-offset.dx, -offset.dy);
+    movableControl->SetPosition(counterPosition);
+
+    nestedControlPositionChanged.Emit(counterPosition);
 }
 
 bool EditorCanvas::CanProcessInput(DAVA::UIEvent* currentInput) const

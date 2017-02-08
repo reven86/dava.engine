@@ -14,6 +14,12 @@ class UIControl;
 class UIEvent;
 class VariantType;
 class UIGeometricData;
+
+namespace TArc
+{
+class ContextAccessor;
+class DataContext;
+}
 }
 
 struct HUDAreaInfo
@@ -99,7 +105,7 @@ public:
         Edit
     };
 
-    explicit EditorSystemsManager();
+    explicit EditorSystemsManager(DAVA::TArc::ContextAccessor* accessor);
     ~EditorSystemsManager();
 
     eDragState GetDragState() const;
@@ -127,6 +133,9 @@ public:
     void ClearSelection();
     void SelectNode(ControlNode* node);
 
+    void OnContextWillBeChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* newOne);
+    void OnContextWasChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* oldOne);
+
     DAVA::UIControl* GetRootControl() const;
     DAVA::UIControl* GetScalableControl() const;
 
@@ -143,8 +152,6 @@ public:
     DAVA::Signal<bool> emulationModeChanged;
     DAVA::Signal<eDragState /*currentState*/, eDragState /*previousState*/> dragStateChanged;
     DAVA::Signal<eDisplayState /*currentState*/, eDisplayState /*previousState*/> displayStateChanged;
-    //render widget size changed
-    DAVA::Signal<DAVA::uint32 /*width*/, DAVA::uint32 /*height*/> viewSizeChanged;
 
     //helpers
     DAVA::Vector2 GetMouseDelta() const;
@@ -171,6 +178,8 @@ private:
     void OnDragStateChanged(eDragState currentState, eDragState previousState);
     void OnDisplayStateChanged(eDisplayState currentState, eDisplayState previousState);
 
+    DAVA::TArc::ContextAccessor* accessor = nullptr;
+
     DAVA::RefPtr<DAVA::UIControl> rootControl;
     DAVA::RefPtr<DAVA::UIControl> inputLayerControl;
     DAVA::RefPtr<DAVA::UIControl> scalableControl;
@@ -178,7 +187,6 @@ private:
     DAVA::List<std::unique_ptr<BaseEditorSystem>> systems;
 
     PackageNode* package = nullptr;
-    SelectedControls selectedControlNodes;
     SortedPackageBaseNodeSet editingRootControls;
     SelectionContainer selectionContainer;
     EditorControlsView* controlViewPtr = nullptr; //weak pointer to canvas system;

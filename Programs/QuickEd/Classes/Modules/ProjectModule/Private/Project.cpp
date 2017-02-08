@@ -8,7 +8,10 @@
 #include "Modules/ProjectModule/Private/EditorFontSystem.h"
 #include "Modules/FileSystemCacheModule/FileSystemCacheData.h"
 
+#include "Sound/SoundSystem.h"
+#include "Scene3D/Systems/QualitySettingsSystem.h"
 #include "UI/ProjectView.h"
+#include "UI/DocumentGroupView.h"
 #include "UI/Find/FindFilter.h"
 
 #include <TArc/Core/ContextAccessor.h>
@@ -82,6 +85,8 @@ Project::Project(MainWindow::ProjectView* view_, DAVA::TArc::ContextAccessor* ac
     view->SetProjectActionsEnabled(true);
     view->SetProjectPath(GetProjectPath());
     view->SetLanguages(GetAvailableLanguages(), GetCurrentLanguage());
+    view->OnProjectChanged(this);
+    view->GetDocumentGroupView()->SetProject(this);
 
     connections.AddConnection(editorLocalizationSystem.get(), &EditorLocalizationSystem::CurrentLocaleChanged, MakeFunction(view, &MainWindow::ProjectView::SetCurrentLanguage));
     connections.AddConnection(editorFontSystem.get(), &EditorFontSystem::FontPresetChanged, MakeFunction(this, &Project::OnFontPresetChanged));
@@ -93,23 +98,27 @@ Project::Project(MainWindow::ProjectView* view_, DAVA::TArc::ContextAccessor* ac
     connections.AddConnection(view, &MainWindow::ProjectView::JumpToPrototype, MakeFunction(this, &Project::OnJumpToPrototype));
     connections.AddConnection(view, &MainWindow::ProjectView::FindPrototypeInstances, MakeFunction(this, &Project::OnFindPrototypeInstances));
     connections.AddConnection(view, &MainWindow::ProjectView::SelectionChanged, MakeFunction(this, &Project::OnSelectionChanged));
+
+    QualitySettingsSystem::Instance()->Load("~res:/quality.yaml");
+    engineContext->soundSystem->InitFromQualitySettings();
 }
 
 Project::~Project()
 {
+    const EngineContext* engineContext = GetEngineContext();
+    engineContext->soundSystem->UnloadFMODProjects();
+
     view->SetLanguages(QStringList(), QString());
     view->SetProjectPath(QString());
     view->SetProjectActionsEnabled(false);
 
     view->SetResourceDirectory(QString());
 
+    view->OnProjectChanged(nullptr);
+    view->GetDocumentGroupView()->SetProject(nullptr);
+
     editorLocalizationSystem->Cleanup();
     editorFontSystem->ClearAllFonts();
-
-    ProjectData* projectData = accessor->GetGlobalContext()->GetData<ProjectData>();
-    FilePath::RemoveResourcesFolder(projectData->GetResourceDirectory().absolute);
-    FilePath::RemoveResourcesFolder(projectData->GetAdditionalResourceDirectory().absolute);
-    FilePath::RemoveResourcesFolder(projectData->GetConvertedResourceDirectory().absolute);
 }
 
 Vector<ProjectData::ResDir> Project::GetLibraryPackages() const

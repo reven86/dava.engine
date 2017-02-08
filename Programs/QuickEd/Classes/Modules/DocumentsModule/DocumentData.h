@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Model/PackageHierarchy/PackageNode.h"
+#include "Application/AnyHelpers.h"
+#include "EditorSystems/SelectionContainer.h"
 
 #include <TArc/DataProcessing/DataNode.h>
 
@@ -44,9 +46,11 @@ struct DocumentData : public DAVA::TArc::DataNode
     static const char* undoTextPropertyName;
     static const char* redoTextPropertyName;
     static const char* canClosePropertyName;
+    static const char* selectionPropertyName;
 
     DAVA::RefPtr<PackageNode> package;
     std::unique_ptr<DAVA::CommandStack> commandStack;
+    SelectedNodes selection;
 
     DAVA_VIRTUAL_REFLECTION(DocumentData, DAVA::TArc::DataNode);
 };

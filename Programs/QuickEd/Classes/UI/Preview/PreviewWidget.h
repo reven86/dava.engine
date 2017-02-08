@@ -25,6 +25,7 @@ class RulerController;
 class EditorCanvas;
 class CursorInterpreter;
 class AbstractProperty;
+class ContinuousUpdater;
 
 class QGridLayout;
 class RulerWidget;
@@ -35,7 +36,6 @@ class RulerController;
 class QWheelEvent;
 class QNativeGestureEvent;
 class QDragMoveEvent;
-class ContinuousUpdater;
 class QDragLeaveEvent;
 class QDropEvent;
 class QMenu;
@@ -49,6 +49,8 @@ public:
     void SelectControl(const DAVA::String& path);
 
     void InjectRenderWidget(DAVA::RenderWidget* renderWidget);
+
+    void OnContextWillBeChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* newOne);
     void OnContextWasChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* oldOne);
 
     DAVA::Signal<DAVA::uint64> requestCloseTab;

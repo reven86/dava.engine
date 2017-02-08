@@ -1,6 +1,9 @@
 #pragma once
 
+#include "Modules/ProjectModule/Project.h"
+
 #include <TArc/Core/ClientModule.h>
+#include <TArc/Utils/QtConnections.h>
 
 #include <TArc/DataProcessing/DataWrapper.h>
 #include <TArc/DataProcessing/DataListener.h>
@@ -17,8 +20,10 @@ class LegacySupportModule : public DAVA::TArc::ClientModule, private DAVA::TArc:
 
     void InitMainWindow();
 
-    DAVA::TArc::DataWrapper projectDataWrapper;
+    void RegisterOperations();
 
+    DAVA::TArc::QtConnections connections;
+    DAVA::TArc::DataWrapper projectDataWrapper;
     std::unique_ptr<Project> project;
 
     DAVA_VIRTUAL_REFLECTION(LegacySupportModule, DAVA::TArc::ClientModule);

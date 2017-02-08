@@ -111,7 +111,8 @@ void ProjectModule::CreateActions()
 
     // Separator
     {
-        QAction* separator = new QAction("project actions separator", nullptr);
+        QAction* separator = new QAction(nullptr);
+        separator->setObjectName("project actions separator");
         separator->setSeparator(true);
         DAVA::TArc::ActionPlacementInfo placementInfo(DAVA::TArc::CreateMenuPoint("File", DAVA::TArc::InsertionParams(InsertionParams::eInsertionMethod::AfterItem, recentProjectsActionName)));
         ui->AddAction(QEGlobal::windowKey, placementInfo, separator);

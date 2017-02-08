@@ -33,4 +33,7 @@ DECLARE_OPERATION_ID(ReloadDocuments);
 //if document is exist but have changes - ask user for permissions for this operation
 //if user cancel this operation - nothing will happen
 DECLARE_OPERATION_ID(CloseDocuments);
+
+//select file in FileSystemDockWidget by it path
+DECLARE_OPERATION_ID(SelectFile);
 }

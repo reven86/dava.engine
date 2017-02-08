@@ -4,9 +4,6 @@
 
 #include "Application/QEGlobal.h"
 
-#include "UI/mainwindow.h"
-#include "UI/ProjectView.h"
-
 #include <TArc/WindowSubSystem/UI.h>
 #include <TArc/WindowSubSystem/QtAction.h>
 #include <TArc/WindowSubSystem/ActionUtils.h>
@@ -32,11 +29,12 @@ void FileSystemCacheModule::PostInit()
 
     FieldDescriptor fieldDescr;
     fieldDescr.type = ReflectedTypeDB::Get<ProjectData>();
-    fieldDescr.fieldName = FastName(ProjectData::uiDirectoryPropertyName);
-    projectUiPathFieldBinder = std::make_unique<FieldBinder>(GetAccessor());
-    projectUiPathFieldBinder->BindField(fieldDescr, MakeFunction(this, &FileSystemCacheModule::OnUIPathChanged));
+    fieldDescr.fieldName = FastName(ProjectData::projectPathPropertyName);
 
     ContextAccessor* accessor = GetAccessor();
+    projectDataWrapper = accessor->CreateWrapper(ReflectedTypeDB::Get<ProjectData>());
+    projectDataWrapper.SetListener(this);
+
     DataContext* globalContext = accessor->GetGlobalContext();
     globalContext->CreateData(std::make_unique<FileSystemCacheData>(QStringList() << "yaml"));
 
@@ -50,25 +48,31 @@ void FileSystemCacheModule::OnWindowClosed(const DAVA::TArc::WindowKey& key)
     ContextAccessor* accessor = GetAccessor();
     DataContext* globalContext = accessor->GetGlobalContext();
     globalContext->DeleteData<FileSystemCache>();
-    projectUiPathFieldBinder.release();
+    projectUiPathFieldBinder = nullptr;
 }
 
-void FileSystemCacheModule::OnUIPathChanged(const DAVA::Any& path)
+void FileSystemCacheModule::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields)
 {
     using namespace DAVA;
     using namespace TArc;
+
+    if (fields.empty() == false)
+    {
+        return;
+    }
     ContextAccessor* accessor = GetAccessor();
     DataContext* globalContext = accessor->GetGlobalContext();
 
     FileSystemCacheData* fileSystemCacheData = globalContext->GetData<FileSystemCacheData>();
     FileSystemCache* fileSystemCache = fileSystemCacheData->GetFileSystemCache();
-    if (path.CanCast<ProjectData::ResDir>() == false)
+
+    ProjectData* projectData = globalContext->GetData<ProjectData>();
+    if (projectData == false)
     {
         fileSystemCache->UntrackAllDirectories();
         return;
     }
-    ProjectData::ResDir uiDir = path.Cast<ProjectData::ResDir>();
-    const FilePath& uiDirectory = uiDir.absolute;
+    FilePath uiDirectory = projectData->GetUiDirectory().absolute;
     FileSystem* fileSystem = GetEngineContext()->fileSystem;
     DVASSERT(fileSystem->IsDirectory(uiDirectory));
     QString uiResourcesPath = QString::fromStdString(uiDirectory.GetStringValue());
@@ -78,7 +82,8 @@ void FileSystemCacheModule::OnUIPathChanged(const DAVA::Any& path)
 
 void FileSystemCacheModule::CreateActions()
 {
-    using namespace DAVA::TArc;
+    using namespace DAVA;
+    using namespace TArc;
     const QString findFileInProjectActionName("Find file in project...");
 
     ContextAccessor* accessor = GetAccessor();
@@ -91,9 +96,9 @@ void FileSystemCacheModule::CreateActions()
     connections.AddConnection(action, &QAction::triggered, DAVA::Bind(&FileSystemCacheModule::OnFindFile, this));
     FieldDescriptor fieldDescr;
     fieldDescr.type = DAVA::ReflectedTypeDB::Get<ProjectData>();
-    fieldDescr.fieldName = DAVA::FastName(ProjectData::uiDirectoryPropertyName);
+    fieldDescr.fieldName = DAVA::FastName(ProjectData::projectPathPropertyName);
     action->SetStateUpdationFunction(QtAction::Enabled, fieldDescr, [](const DAVA::Any& fieldValue) -> DAVA::Any {
-        return fieldValue.CanCast<ProjectData::ResDir>() && !fieldValue.Cast<ProjectData::ResDir>().absolute.IsEmpty();
+        return fieldValue.CanCast<FilePath>() && !fieldValue.Cast<FilePath>().IsEmpty();
     });
 
     ActionPlacementInfo placementInfo;
@@ -109,16 +114,14 @@ void FileSystemCacheModule::OnFindFile()
     DataContext* globalContext = accessor->GetGlobalContext();
     FileSystemCacheData* cacheData = globalContext->GetData<FileSystemCacheData>();
     FileSystemCache* cache = cacheData->GetFileSystemCache();
-    MainWindow* mainWindow = globalContext->GetData<MainWindow>();
-    DVASSERT(mainWindow != nullptr);
     DVASSERT(cache != nullptr);
 
-    QString filePath = FindFileDialog::GetFilePath(cache, "yaml", mainWindow);
+    QString filePath = FindFileDialog::GetFilePath(cache, "yaml", GetUI()->GetWindow(QEGlobal::windowKey));
     if (filePath.isEmpty())
     {
         return;
     }
-    mainWindow->GetProjectView()->SelectFile(filePath);
+    InvokeOperation(QEGlobal::SelectFile.ID, filePath);
     InvokeOperation(QEGlobal::OpenDocumentByPath.ID, filePath);
 }
 

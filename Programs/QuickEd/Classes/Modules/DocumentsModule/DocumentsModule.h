@@ -7,6 +7,14 @@
 
 #include <QtTools/Utils/QtDelayedExecutor.h>
 
+namespace DAVA
+{
+namespace TArc
+{
+class FieldBinder;
+}
+}
+
 class PreviewWidget;
 class EditorSystemsManager;
 struct DocumentData;
@@ -29,6 +37,7 @@ protected:
 
     void OnContextCreated(DAVA::TArc::DataContext* context) override;
     void OnContextDeleted(DAVA::TArc::DataContext* context) override;
+    void OnContextWillBeChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* newOne) override;
     void OnContextWasChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* oldOne) override;
 
 private:
@@ -56,6 +65,7 @@ private:
     void SaveCurrentDocument();
 
     void OnActiveTabChanged(const DAVA::Any& contextID);
+    void OnCanSaveChanged(const DAVA::Any& canSave);
 
     //previewWidget helper functions
     void ChangeControlText(ControlNode* node);
@@ -64,6 +74,7 @@ private:
     std::unique_ptr<EditorSystemsManager> systemsManager;
     DAVA::TArc::QtConnections connections;
     QtDelayedExecutor delayedExecutor;
+    std::unique_ptr<DAVA::TArc::FieldBinder> fieldBinder;
 
     DAVA_VIRTUAL_REFLECTION(DocumentsModule, DAVA::TArc::ControllerModule);
 };

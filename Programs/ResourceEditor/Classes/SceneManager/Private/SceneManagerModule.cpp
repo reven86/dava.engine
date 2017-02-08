@@ -1158,7 +1158,7 @@ void SceneManagerModule::UpdateTabTitle(DAVA::uint64 contextID)
     }
 
     SceneTabsModel* tabsModel = accessor->GetGlobalContext()->GetData<SceneTabsModel>();
-    DVASSERT(tabsModel->tabs.count(contextID) > 0);
+    DVASSERT(tabsModel->tabs.find(contextID) != tabsModel->tabs.end());
     TabDescriptor& tabDescr = tabsModel->tabs[contextID];
     tabDescr.tabTitle = tabName;
     tabDescr.tabTooltip = tabTooltip;

@@ -1,4 +1,5 @@
 #include "EditorSystems/EditorSystemsManager.h"
+#include "Modules/DocumentsModule/DocumentData.h"
 
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
@@ -11,13 +12,16 @@
 #include "EditorSystems/KeyboardProxy.h"
 #include "EditorSystems/EditorControlsView.h"
 
-#include "UI/UIControl.h"
-#include "UI/Input/UIModalInputComponent.h"
-#include "UI/Input/UIInputSystem.h"
-#include "UI/UIControlSystem.h"
-#include "UI/UIScreen.h"
-#include "UI/UIScreenManager.h"
-#include "Engine/Engine.h"
+#include <TArc/Core/ContextAccessor.h>
+#include <TArc/DataProcessing/DataContext.h>
+
+#include <UI/UIControl.h>
+#include <UI/Input/UIModalInputComponent.h>
+#include <UI/Input/UIInputSystem.h>
+#include <UI/UIControlSystem.h>
+#include <UI/UIScreen.h>
+#include <UI/UIScreenManager.h>
+#include <Engine/Engine.h>
 
 using namespace DAVA;
 
@@ -47,8 +51,9 @@ private:
 };
 }
 
-EditorSystemsManager::EditorSystemsManager()
-    : rootControl(new UIControl())
+EditorSystemsManager::EditorSystemsManager(DAVA::TArc::ContextAccessor* accessor_)
+    : accessor(accessor_)
+    , rootControl(new UIControl())
     , inputLayerControl(new EditorSystemsManagerDetails::InputLayerControl(this))
     , scalableControl(new UIControl())
     , editingRootControls(CompareByLCA)
@@ -190,6 +195,35 @@ void EditorSystemsManager::SelectNode(ControlNode* node)
     selectionSystemPtr->SelectNode(node);
 }
 
+void EditorSystemsManager::OnContextWillBeChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* newOne)
+{
+    if (current != nullptr)
+    {
+        DocumentData* documentData = current->GetData<DocumentData>();
+        DVASSERT(nullptr != documentData);
+        SelectedNodes deselect = documentData->selection;
+        selectionChanged.Emit(SelectedNodes(), deselect);
+
+        magnetLinesChanged.Emit({});
+        ClearHighlight();
+        packageChanged.Emit(nullptr);
+    }
+}
+
+void EditorSystemsManager::OnContextWasChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* oldOne)
+{
+    if (current != nullptr)
+    {
+        DocumentData* documentData = current->GetData<DocumentData>();
+        DVASSERT(nullptr != documentData);
+        packageChanged.Emit(documentData->package.Get());
+        if (documentData->selection.empty() == false)
+        {
+            selectionChanged.Emit(documentData->selection, SelectedNodes());
+        }
+    }
+}
+
 void EditorSystemsManager::SetDisplayState(eDisplayState newDisplayState)
 {
     if (displayState == newDisplayState)
@@ -204,8 +238,14 @@ void EditorSystemsManager::SetDisplayState(eDisplayState newDisplayState)
 
 void EditorSystemsManager::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
-    SelectionContainer::MergeSelectionToContainer(selected, deselected, selectedControlNodes);
-    if (!selectedControlNodes.empty())
+    using namespace DAVA::TArc;
+    DataContext* active = accessor->GetActiveContext();
+    DVASSERT(active != nullptr);
+    DocumentData* data = active->GetData<DocumentData>();
+    DVASSERT(data != nullptr);
+    SelectionContainer::MergeSelectionToContainer(selected, deselected, data->selection);
+
+    if (!data->selection.empty())
     {
         RefreshRootControls();
     }
@@ -263,11 +303,18 @@ void EditorSystemsManager::ControlWasAdded(ControlNode* node, ControlsContainerN
 
 void EditorSystemsManager::RefreshRootControls()
 {
+    using namespace DAVA::TArc;
     SortedPackageBaseNodeSet newRootControls(CompareByLCA);
 
     if (nullptr != package)
     {
-        if (selectedControlNodes.empty())
+        DataContext* active = accessor->GetActiveContext();
+        DVASSERT(active != nullptr);
+        DocumentData* data = active->GetData<DocumentData>();
+        DVASSERT(data != nullptr);
+        const SelectedNodes& selection = data->selection;
+
+        if (selection.empty())
         {
             PackageControlsNode* controlsNode = package->GetPackageControlsNode();
             for (int index = 0; index < controlsNode->GetCount(); ++index)
@@ -277,9 +324,9 @@ void EditorSystemsManager::RefreshRootControls()
         }
         else
         {
-            for (ControlNode* selectedControlNode : selectedControlNodes)
+            for (PackageBaseNode* selectedNode : selection)
             {
-                PackageBaseNode* root = static_cast<PackageBaseNode*>(selectedControlNode);
+                PackageBaseNode* root = selectedNode;
                 while (nullptr != root->GetParent() && nullptr != root->GetParent()->GetControl())
                 {
                     root = root->GetParent();

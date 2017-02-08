@@ -43,8 +43,8 @@ void LogWidgetModule::OnWindowClosed(const DAVA::TArc::WindowKey& key)
 {
     connections.RemoveConnection(loggerOutput, &LoggerOutputObject::OutputReady);
 
-    DAVA::TArc::PropertiesItem item = GetAccessor()->CreatePropertiesNode(LogWidgetModuleDetails::logWidgetModulePropertiesName);
-    item.Set(LogWidgetModuleDetails::logWidgetPropertiesName, logWidget->Serialize());
+    //DAVA::TArc::PropertiesItem item = GetAccessor()->CreatePropertiesNode(LogWidgetModuleDetails::logWidgetModulePropertiesName);
+    //item.Set(LogWidgetModuleDetails::logWidgetPropertiesName, logWidget->Serialize());
 }
 
 void LogWidgetModule::OnLogOutput(DAVA::Logger::eLogLevel ll, const QByteArray& output)

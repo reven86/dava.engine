@@ -97,12 +97,12 @@ PreviewWidget::PreviewWidget(DAVA::TArc::ContextAccessor* accessor_, DAVA::Rende
     scaleCombo->setValidator(new QRegExpValidator(regEx));
     scaleCombo->setInsertPolicy(QComboBox::NoInsert);
     OnScaleChanged(1.0f);
+    editorCanvas->SetScale(1.0f);
     UpdateScrollArea();
 }
 
 PreviewWidget::~PreviewWidget()
 {
-    renderWidget->setParent(nullptr);
     continuousUpdater->Stop();
 }
 
@@ -150,6 +150,15 @@ void PreviewWidget::InjectRenderWidget(DAVA::RenderWidget* renderWidget_)
     renderWidget->resized.Connect(this, &PreviewWidget::OnResized);
 
     renderWidget->SetClientDelegate(this);
+}
+
+void PreviewWidget::OnContextWillBeChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* newOne)
+{
+    if (current != nullptr)
+    {
+        continuousUpdater->Stop();
+        DVASSERT(selectionContainer.selectedNodes.empty());
+    }
 }
 
 void PreviewWidget::CreateActions()
@@ -207,7 +216,6 @@ void PreviewWidget::CreateActions()
 
 void PreviewWidget::OnContextWasChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* oldOne)
 {
-    continuousUpdater->Stop();
     if (oldOne != nullptr)
     {
         DocumentData* documentData = oldOne->GetData<DocumentData>();
@@ -378,7 +386,7 @@ void PreviewWidget::OnPositionChanged(const Vector2& position)
 
 void PreviewWidget::OnResized(DAVA::uint32 width, DAVA::uint32 height)
 {
-    systemsManager->viewSizeChanged.Emit(width, height);
+    editorCanvas->OnViewSizeChanged(width, height);
 
     const EngineContext* engineContext = GetEngineContext();
     VirtualCoordinatesSystem* vcs = engineContext->uiControlSystem->vcs;
@@ -406,7 +414,7 @@ void PreviewWidget::InitFromSystemsManager(EditorSystemsManager* systemsManager_
 
     editorCanvas = new EditorCanvas(systemsManager);
     editorCanvas->sizeChanged.Connect(this, &PreviewWidget::UpdateScrollArea);
-    editorCanvas->ositionChanged.Connect(this, &PreviewWidget::OnPositionChanged);
+    editorCanvas->positionChanged.Connect(this, &PreviewWidget::OnPositionChanged);
     editorCanvas->nestedControlPositionChanged.Connect(this, &PreviewWidget::OnNestedControlPositionChanged);
     editorCanvas->scaleChanged.Connect(this, &PreviewWidget::OnScaleChanged);
     systemsManager->AddEditorSystem(editorCanvas);

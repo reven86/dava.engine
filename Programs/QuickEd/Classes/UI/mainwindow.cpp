@@ -18,8 +18,6 @@
 #include "UI/ProjectView.h"
 #include "UI/DocumentGroupView.h"
 
-#include "ui_mainwindow.h"
-
 #include <Base/Result.h>
 
 #include <QMessageBox>
@@ -31,22 +29,17 @@ REGISTER_PREFERENCES_ON_START(MainWindow,
                               PREF_ARG("isPixelized", false),
                               )
 
-DAVA_VIRTUAL_REFLECTION_IMPL(MainWindow)
-{
-}
-
 Q_DECLARE_METATYPE(const InspMember*);
 
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
-    , ui(new Ui::MainWindow())
 #if defined(__DAVAENGINE_MACOS__)
     , shortcutChecker(this)
 #endif //__DAVAENGINE_MACOS__
 {
-    ui->setupUi(this);
+    setupUi(this);
     setWindowIcon(QIcon(":/icon.ico"));
-    DebugTools::ConnectToUI(ui.get());
+    DebugTools::ConnectToUI(this);
     SetupShortcuts();
     SetupViewMenu();
 
@@ -58,7 +51,7 @@ MainWindow::MainWindow(QWidget* parent)
 
     PreferencesStorage::Instance()->RegisterPreferences(this);
 
-    connect(ui->packageWidget, &PackageWidget::CurrentIndexChanged, ui->propertiesWidget, &PropertiesWidget::UpdateModel);
+    connect(packageWidget, &PackageWidget::CurrentIndexChanged, propertiesWidget, &PropertiesWidget::UpdateModel);
 
     qApp->installEventFilter(this);
 }
@@ -86,18 +79,18 @@ void MainWindow::SetupShortcuts()
 {
 //Qt can not set multishortcut or enum shortcut in Qt designer
 #if defined(__DAVAENGINE_WIN32__)
-    ui->actionZoomIn->setShortcuts(QList<QKeySequence>()
-                                   << Qt::CTRL + Qt::Key_Equal
-                                   << Qt::CTRL + Qt::Key_Plus);
+    actionZoomIn->setShortcuts(QList<QKeySequence>()
+                               << Qt::CTRL + Qt::Key_Equal
+                               << Qt::CTRL + Qt::Key_Plus);
 #endif
 }
 
 void MainWindow::ConnectActions()
 {
-    connect(ui->actionExit, &QAction::triggered, this, &MainWindow::close);
+    connect(actionExit, &QAction::triggered, this, &MainWindow::close);
 
-    connect(ui->actionPixelized, &QAction::triggered, this, &MainWindow::OnPixelizationStateChanged);
-    connect(ui->actionPreferences, &QAction::triggered, this, &MainWindow::OnEditorPreferencesTriggered);
+    connect(actionPixelized, &QAction::triggered, this, &MainWindow::OnPixelizationStateChanged);
+    connect(actionPreferences, &QAction::triggered, this, &MainWindow::OnEditorPreferencesTriggered);
 }
 
 void MainWindow::InitEmulationMode()
@@ -105,25 +98,25 @@ void MainWindow::InitEmulationMode()
     emulationBox = new QCheckBox("Emulation", this);
     emulationBox->setLayoutDirection(Qt::RightToLeft);
     connect(emulationBox, &QCheckBox::toggled, this, &MainWindow::EmulationModeChanged);
-    ui->toolBarGlobal->addSeparator();
-    ui->toolBarGlobal->addWidget(emulationBox);
+    toolBarGlobal->addSeparator();
+    toolBarGlobal->addWidget(emulationBox);
 }
 
 void MainWindow::SetupViewMenu()
 {
     // Setup the common menu actions.
     QList<QAction*> dockWidgetToggleActions;
-    dockWidgetToggleActions << ui->propertiesWidget->toggleViewAction()
-                            << ui->fileSystemDockWidget->toggleViewAction()
-                            << ui->packageWidget->toggleViewAction()
-                            << ui->libraryWidget->toggleViewAction()
-                            << ui->styleSheetInspectorWidget->toggleViewAction()
-                            << ui->findWidget->toggleViewAction()
-                            << ui->mainToolbar->toggleViewAction()
-                            << ui->toolBarGlobal->toggleViewAction();
+    dockWidgetToggleActions << propertiesWidget->toggleViewAction()
+                            << fileSystemDockWidget->toggleViewAction()
+                            << packageWidget->toggleViewAction()
+                            << libraryWidget->toggleViewAction()
+                            << styleSheetInspectorWidget->toggleViewAction()
+                            << findWidget->toggleViewAction()
+                            << mainToolbar->toggleViewAction()
+                            << toolBarGlobal->toggleViewAction();
 
-    QAction* separator = ui->View->insertSeparator(ui->menuApplicationStyle->menuAction());
-    ui->View->insertActions(separator, dockWidgetToggleActions);
+    QAction* separator = View->insertSeparator(menuApplicationStyle->menuAction());
+    View->insertActions(separator, dockWidgetToggleActions);
 
     SetupAppStyleMenu();
     SetupBackgroundMenu();
@@ -134,14 +127,14 @@ void MainWindow::SetupAppStyleMenu()
     QActionGroup* actionGroup = new QActionGroup(this);
     for (const QString& theme : Themes::ThemesNames())
     {
-        QAction* action = new QAction(theme, ui->View);
+        QAction* action = new QAction(theme, View);
         actionGroup->addAction(action);
         action->setCheckable(true);
         if (theme == Themes::GetCurrentThemeStr())
         {
             action->setChecked(true);
         }
-        ui->menuApplicationStyle->addAction(action);
+        menuApplicationStyle->addAction(action);
     }
     connect(actionGroup, &QActionGroup::triggered, [](QAction* action) {
         if (action->isChecked())
@@ -174,7 +167,7 @@ void MainWindow::SetupBackgroundMenu()
         QString str(member->Name().c_str());
         if (str.contains(QRegExp("backgroundColor\\d+")))
         {
-            QAction* colorAction = new QAction(QString("Background color %1").arg(index), ui->menuGridColor);
+            QAction* colorAction = new QAction(QString("Background color %1").arg(index), menuGridColor);
             backgroundActions->addAction(colorAction);
             colorAction->setCheckable(true);
             colorAction->setData(QVariant::fromValue<const InspMember*>(member));
@@ -182,7 +175,7 @@ void MainWindow::SetupBackgroundMenu()
             {
                 colorAction->setChecked(true);
             }
-            ui->menuGridColor->addAction(colorAction);
+            menuGridColor->addAction(colorAction);
             QColor color = ColorToQColor(PreferencesStorage::Instance()->GetValue(member).AsColor());
             colorAction->setIcon(CreateIconFromColor(color));
             connect(colorAction, &QAction::toggled, [this, index](bool toggled)
@@ -240,12 +233,12 @@ void MainWindow::OnEditorPreferencesTriggered()
 
 bool MainWindow::IsPixelized() const
 {
-    return ui->actionPixelized->isChecked();
+    return actionPixelized->isChecked();
 }
 
 void MainWindow::SetPixelized(bool pixelized)
 {
-    ui->actionPixelized->setChecked(pixelized);
+    actionPixelized->setChecked(pixelized);
 }
 
 void MainWindow::UpdateWindowTitle()

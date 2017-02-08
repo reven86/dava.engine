@@ -16,6 +16,7 @@ DAVA_VIRTUAL_REFLECTION_IMPL(DocumentData)
     .Field(undoTextPropertyName, &DocumentData::GetUndoText, nullptr)
     .Field(redoTextPropertyName, &DocumentData::GetRedoText, nullptr)
     .Field(canClosePropertyName, &DocumentData::canClosePropertyName)
+    .Field(selectionPropertyName, &DocumentData::selection)
     .End();
 }
 
@@ -84,3 +85,4 @@ const char* DocumentData::canRedoPropertyName = "can redo";
 const char* DocumentData::undoTextPropertyName = "undo text";
 const char* DocumentData::redoTextPropertyName = "redo text";
 const char* DocumentData::canClosePropertyName = "can close";
+const char* DocumentData::selectionPropertyName = "selection";

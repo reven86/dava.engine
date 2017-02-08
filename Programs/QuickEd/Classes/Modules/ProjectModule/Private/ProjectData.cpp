@@ -16,14 +16,12 @@ DAVA_VIRTUAL_REFLECTION_IMPL(ProjectData)
 {
     DAVA::ReflectionRegistrator<ProjectData>::Begin()
     .Field(projectPathPropertyName, &ProjectData::GetProjectFile, nullptr)
-    .Field(uiDirectoryPropertyName, &ProjectData::GetUiDirectory, nullptr)
     .End();
 }
 
 using namespace DAVA;
 
 const char* ProjectData::projectPathPropertyName = "ProjectPath";
-const char* ProjectData::uiDirectoryPropertyName = "UI directory";
 
 DAVA::ResultList ProjectData::ParseLegacyProperties(const DAVA::FilePath& projectFile, const YamlNode* root, int version)
 {
@@ -450,6 +448,13 @@ ProjectData::ProjectData()
     fontsConfigsDirectory.relative = "./Fonts/Configs/";
     textsDirectory.relative = "./Strings/";
     defaultLanguage = "en";
+}
+
+ProjectData::~ProjectData()
+{
+    FilePath::RemoveResourcesFolder(resourceDirectory.absolute);
+    FilePath::RemoveResourcesFolder(additionalResourceDirectory.absolute);
+    FilePath::RemoveResourcesFolder(convertedResourceDirectory.absolute);
 }
 
 const DAVA::String& ProjectData::GetProjectFileName()
