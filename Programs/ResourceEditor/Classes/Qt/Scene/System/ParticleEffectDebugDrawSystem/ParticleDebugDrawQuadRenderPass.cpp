@@ -1,26 +1,28 @@
 #include "Classes/Qt/Scene/System/ParticleEffectDebugDrawSystem/ParticleDebugDrawQuadRenderPass.h"
+#include "Classes/Qt/Scene/System/ParticleEffectDebugDrawSystem/ParticleEffectDebugDrawSystem.h"
 #include "Render/RHI/rhi_Type.h"
 #include "Render/RHI/rhi_Public.h"
 
 
 using namespace DAVA;
 
-const FastName ParticleDebugDrawQuadRenderPass::PASS_DEBUG_DRAW_QUAD("DebugDrawQuad");
-const Array<ParticleDebugDrawQuadRenderPass::VertexPT, 6> ParticleDebugDrawQuadRenderPass::quad =
-{ {
-    { Vector3(-10.f, 0.f, -10.f), Vector2(0.0f, 1.0f) },
-    { Vector3(10.f, 0.f, -10.f), Vector2(1.0f, 1.0f) },
-    { Vector3(-10.f, 0.f, 10.f), Vector2(0.0f, 0.0f) },
-    { Vector3(-10.f, 0.f, 10.f), Vector2(0.0f, 0.0f) },
-    { Vector3(10.f, 0.f, -10.f), Vector2(1.0f, 1.0f) },
-    { Vector3(10.f, 0.f, 10.f), Vector2(1.0f, 0.0f) }
-} };
-
+const FastName ParticleDebugDrawQuadRenderPass::PASS_DEBUG_DRAW_QUAD("ForwardPass");
 
 void ParticleDebugDrawQuadRenderPass::PrepareRenderData()
 {
+    static const int vertsCount = 6;
+    static const Array<ParticleDebugDrawQuadRenderPass::VertexPT, vertsCount> quad =
+    { {
+        { Vector3(-10.f, 0.f, -10.f), Vector2(0.0f, 1.0f) },
+        { Vector3(10.f, 0.f, -10.f), Vector2(1.0f, 1.0f) },
+        { Vector3(-10.f, 0.f, 10.f), Vector2(0.0f, 0.0f) },
+        { Vector3(-10.f, 0.f, 10.f), Vector2(0.0f, 0.0f) },
+        { Vector3(10.f, 0.f, -10.f), Vector2(1.0f, 1.0f) },
+        { Vector3(10.f, 0.f, 10.f), Vector2(1.0f, 0.0f) }
+    } };
+
     rhi::VertexBuffer::Descriptor vDesc = {};
-    vDesc.size = sizeof(VertexPT) * 6;
+    vDesc.size = sizeof(VertexPT) * vertsCount;
     vDesc.initialData = quad.data();
     vDesc.usage = rhi::USAGE_STATICDRAW;
     quadBuffer = rhi::CreateVertexBuffer(vDesc);
@@ -35,11 +37,6 @@ void ParticleDebugDrawQuadRenderPass::PrepareRenderData()
     
     quadPacket.primitiveType = rhi::PRIMITIVE_TRIANGLELIST;
     quadPacket.primitiveCount = 2;
-    
-    quadMaterial = new NMaterial();
-    quadMaterial->SetFXName(NMaterialName::TEXTURED_OPAQUE);
-    quadMaterial->AddTexture(NMaterialTextureName::TEXTURE_ALBEDO, debugTexture);
-    quadMaterial->PreBuildMaterial(PASS_FORWARD);
 }
 
 void ParticleDebugDrawQuadRenderPass::ByndDynamicParams(Camera* cam)
@@ -52,21 +49,21 @@ void ParticleDebugDrawQuadRenderPass::ByndDynamicParams(Camera* cam)
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_LOCAL_BOUNDING_BOX, &bbox, reinterpret_cast<pointer_size>(&bbox));
 }
 
-ParticleDebugDrawQuadRenderPass::ParticleDebugDrawQuadRenderPass(const DAVA::FastName& name, DAVA::RenderSystem* renderSystem, DAVA::Texture* texture) 
-    : RenderPass(name), debugTexture(texture)
+ParticleDebugDrawQuadRenderPass::ParticleDebugDrawQuadRenderPass(ParticleDebugQuadRenderPassConfig config)
+    : RenderPass(config.name), quadMaterial(config.quadMaterial), quadHeatMaterial(config.quadHeatMaterial), drawMode(config.drawMode)
 {
-    passConfig = renderSystem->GetMainPassConfig();
+    passConfig = config.renderSystem->GetMainPassConfig();
+    quadMaterial->PreBuildMaterial(passName);
+    quadHeatMaterial->PreBuildMaterial(passName);
 //     passConfig.priority = DAVA::PRIORITY_MAIN_3D + 2;
     
     SetRenderTargetProperties(passConfig.viewport.width, passConfig.viewport.height, DAVA::PixelFormat::FORMAT_RGBA8888);
-
     PrepareRenderData();
 }
 
 ParticleDebugDrawQuadRenderPass::~ParticleDebugDrawQuadRenderPass()
 {
     rhi::DeleteVertexBuffer(quadBuffer);
-    SafeRelease(quadMaterial);
 }
 
 void ParticleDebugDrawQuadRenderPass::Draw(DAVA::RenderSystem* renderSystem)
@@ -77,9 +74,12 @@ void ParticleDebugDrawQuadRenderPass::Draw(DAVA::RenderSystem* renderSystem)
     if (BeginRenderPass())
     {        
         ByndDynamicParams(cam);
-        quadMaterial->BindParams(quadPacket);
-        //quadPacket.cullMode = rhi::CULL_NONE;
-        rhi::AddPacket(packetList, quadPacket);        
-        EndRenderPass();        
+        if (drawMode == eParticleDebugDrawMode::OVERDRAW)
+            quadHeatMaterial->BindParams(quadPacket);
+        else
+            quadMaterial->BindParams(quadPacket);
+
+        rhi::AddPacket(packetList, quadPacket);
+        EndRenderPass();
     }
 }

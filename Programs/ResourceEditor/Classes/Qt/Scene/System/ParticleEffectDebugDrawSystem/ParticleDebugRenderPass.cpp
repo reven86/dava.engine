@@ -1,4 +1,5 @@
 #include "Classes/Qt/Scene/System/ParticleEffectDebugDrawSystem/ParticleDebugRenderPass.h"
+#include "Classes/Qt/Scene/System/ParticleEffectDebugDrawSystem/ParticleEffectDebugDrawSystem.h"
 #include "Render/RHI/rhi_Type.h"
 #include "Render/RHI/rhi_Public.h"
 #include "Debug/ProfilerCPU.h"
@@ -12,7 +13,6 @@ DAVA::Texture* ParticleDebugRenderPass::GetTexture() const
 {
     return debugTexture;
 }
-
 
 void ParticleDebugRenderPass::PrepareParticlesVisibilityArray(Camera* camera, RenderSystem* renderSystem)
 {
@@ -52,23 +52,18 @@ void ParticleDebugRenderPass::PrepareParticlesBatchesArray(const Vector<RenderOb
         {
             RenderBatch* batch = renderObject->GetActiveRenderBatch(batchIndex);
 
-            
             NMaterial* material = batch->GetMaterial();
             DVASSERT(material);
 
             if (material->PreBuildMaterial(passName))
-            {
                 particleBatches.AddRenderBatch(batch);
-                //layersBatchArrays[material->GetRenderLayerID()].AddRenderBatch(batch);
-            }
-            
-            //batch->SetMaterial(tmp);
         }
     }
 }
 
-ParticleDebugRenderPass::ParticleDebugRenderPass(const DAVA::FastName& name, RenderSystem* renderSystem, NMaterial* wireframeMaterial, NMaterial* overdrawMaterial, NMaterial* showAlphaMaterial, DAVA::UnorderedMap<RenderObject*, ParticleEffectComponent*>* componentsMap)
-    : RenderPass(name), wireframeMaterial(wireframeMaterial), overdrawMaterial(overdrawMaterial), componentsMap(componentsMap), showAlphaMaterial(showAlphaMaterial)
+ParticleDebugRenderPass::ParticleDebugRenderPass(ParticleDebugRenderPassConfig config)
+    : RenderPass(config.name), wireframeMaterial(config.wireframeMaterial), overdrawMaterial(config.overdrawMaterial), 
+        componentsMap(config.componentsMap), showAlphaMaterial(config.showAlphaMaterial), drawMode(config.drawMode)
 {
     passConfig.priority = DAVA::PRIORITY_MAIN_3D;
     
@@ -85,16 +80,6 @@ ParticleDebugRenderPass::ParticleDebugRenderPass(const DAVA::FastName& name, Ren
     passConfig.colorBuffer[0].clearColor[2] = 0.0f;
     passConfig.colorBuffer[0].clearColor[3] = 0.0f;
     SetViewport(Rect(0, 0, width, width));
-
-//     AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_OPAQUE_ID, RenderLayer::LAYER_SORTING_FLAGS_OPAQUE));
-//     AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_AFTER_OPAQUE_ID, RenderLayer::LAYER_SORTING_FLAGS_AFTER_OPAQUE));
-//     AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_VEGETATION_ID, RenderLayer::LAYER_SORTING_FLAGS_VEGETATION));
-//     AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_ALPHA_TEST_LAYER_ID, RenderLayer::LAYER_SORTING_FLAGS_ALPHA_TEST_LAYER));
-// //     AddRenderLayer(new ShadowVolumeRenderLayer(RenderLayer::RENDER_LAYER_SHADOW_VOLUME_ID, RenderLayer::LAYER_SORTING_FLAGS_SHADOW_VOLUME));
-//     AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_WATER_ID, RenderLayer::LAYER_SORTING_FLAGS_WATER));
-//     AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_TRANSLUCENT_ID, RenderLayer::LAYER_SORTING_FLAGS_TRANSLUCENT));
-//     AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_AFTER_TRANSLUCENT_ID, RenderLayer::LAYER_SORTING_FLAGS_AFTER_TRANSLUCENT));
-//     AddRenderLayer(new RenderLayer(RenderLayer::RENDER_LAYER_DEBUG_DRAW_ID, RenderLayer::LAYER_SORTING_FLAGS_DEBUG_DRAW));
 }
 
 void ParticleDebugRenderPass::Draw(DAVA::RenderSystem* renderSystem)
@@ -102,12 +87,10 @@ void ParticleDebugRenderPass::Draw(DAVA::RenderSystem* renderSystem)
     Camera* mainCamera = renderSystem->GetMainCamera();
     Camera* drawCamera = renderSystem->GetDrawCamera();
     SetupCameraParams(mainCamera, drawCamera);
-
-
+    
     if (BeginRenderPass())
     {
-        PrepareParticlesVisibilityArray(mainCamera, renderSystem);
-        //DrawLayers(mainCamera);
+        PrepareParticlesVisibilityArray(mainCamera, renderSystem);        
         DrawBatches(mainCamera);
         EndRenderPass();
     }
@@ -126,7 +109,7 @@ void ParticleDebugRenderPass::DrawBatches(Camera* camera)
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_VIEWPORT_SIZE, &viewportSize, reinterpret_cast<pointer_size>(&viewportSize));
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_RCP_VIEWPORT_SIZE, &rcpViewportSize, reinterpret_cast<pointer_size>(&rcpViewportSize));
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_VIEWPORT_OFFSET, &viewportOffset, reinterpret_cast<pointer_size>(&viewportOffset));
-            
+
     particleBatches.Sort(camera);
 
     MakePacket(camera);
@@ -141,18 +124,7 @@ void ParticleDebugRenderPass::MakePacket(Camera* camera)
         RenderBatch* batch = particleBatches.Get(i);
         RenderObject* renderObject = batch->GetRenderObject();
         renderObject->BindDynamicParameters(camera);
-        NMaterial* mat = batch->GetMaterial();
-        if (wireframeMaterial->PreBuildMaterial(passName))
-            mat = wireframeMaterial;
-        if (overdrawMaterial->PreBuildMaterial(passName))
-            mat = overdrawMaterial;
-
-        if (showAlphaMaterial->PreBuildMaterial(passName))
-            mat = showAlphaMaterial;
-        if (mat->HasLocalTexture(NMaterialTextureName::TEXTURE_ALBEDO))
-            mat->SetTexture(NMaterialTextureName::TEXTURE_ALBEDO, batch->GetMaterial()->GetLocalTexture(NMaterialTextureName::TEXTURE_ALBEDO));
-        else
-            mat->AddTexture(NMaterialTextureName::TEXTURE_ALBEDO, batch->GetMaterial()->GetLocalTexture(NMaterialTextureName::TEXTURE_ALBEDO));
+        NMaterial* mat = SelectMaterial(batch); 
 
         if (mat != nullptr)
         {
@@ -166,4 +138,30 @@ void ParticleDebugRenderPass::MakePacket(Camera* camera)
             rhi::AddPacket(packetList, packet);
         }
     }
+}
+
+DAVA::NMaterial* ParticleDebugRenderPass::SelectMaterial(RenderBatch* batch)
+{    
+    switch (drawMode)
+    {
+    case eParticleDebugDrawMode::WIREFRAME:
+        if (wireframeMaterial->PreBuildMaterial(passName))
+            return wireframeMaterial;
+        break;
+    case eParticleDebugDrawMode::OVERDRAW:
+        if (overdrawMaterial->PreBuildMaterial(passName))
+            return overdrawMaterial;
+        break;
+    case eParticleDebugDrawMode::LOW_ALPHA:
+        NMaterial* mat = nullptr;
+        if (showAlphaMaterial->PreBuildMaterial(passName))
+            mat = showAlphaMaterial;
+        if (mat->HasLocalTexture(NMaterialTextureName::TEXTURE_ALBEDO))
+            mat->SetTexture(NMaterialTextureName::TEXTURE_ALBEDO, batch->GetMaterial()->GetLocalTexture(NMaterialTextureName::TEXTURE_ALBEDO));
+        else
+            mat->AddTexture(NMaterialTextureName::TEXTURE_ALBEDO, batch->GetMaterial()->GetLocalTexture(NMaterialTextureName::TEXTURE_ALBEDO));
+        return mat;
+        break;
+    }
+    return nullptr;
 }

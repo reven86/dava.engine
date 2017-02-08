@@ -19,6 +19,6 @@ fragment_out fp_main( fragment_in input )
     float4 color = tex2D(particlesRT, input.texcoord0);
 
     output.color = tex2D(heatMap, float2(color.r, 0));
-
+    // output.color = float4(0.5);
     return output;
 }

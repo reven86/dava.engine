@@ -58,6 +58,7 @@ const FastName NMaterialName::PARTICLES = FastName("~res:/Materials/Particles/Pa
 const FastName NMaterialName::DEBUG_DRAW_OPAQUE = FastName("~res:/Materials/DebugDraw/Debug.Opaque.material");
 const FastName NMaterialName::DEBUG_DRAW_ALPHABLEND = FastName("~res:/Materials/DebugDraw/Debug.Alphablend.material");
 const FastName NMaterialName::DEBUG_DRAW_WIREFRAME = FastName("~res:/Materials/DebugDraw/Wireframe.material");
+const FastName NMaterialName::DEBUG_DRAW_PARTICLES_OVERDRAW = FastName("~res:/Materials/DebugDraw/Debug.Particles.material");
 
 const FastName NMaterialName::WATER_ALL_QUALITIES = FastName("~res:/Materials/WaterAllQualities.material");
 
@@ -74,6 +75,9 @@ const FastName NMaterialTextureName::TEXTURE_DECALTEXTURE("decaltexture");
 
 const FastName NMaterialTextureName::TEXTURE_DYNAMIC_REFLECTION("dynamicReflection");
 const FastName NMaterialTextureName::TEXTURE_DYNAMIC_REFRACTION("dynamicRefraction");
+
+const FastName NMaterialTextureName::TEXTURE_PARTICLES_HEATMAP("heatMap");
+const FastName NMaterialTextureName::TEXTURE_PARTICLES_RT("particlesRT");
 
 //params
 

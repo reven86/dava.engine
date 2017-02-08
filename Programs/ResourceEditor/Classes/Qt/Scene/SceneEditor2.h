@@ -166,6 +166,8 @@ public:
     DAVA::uint32 GetFramesCount() const;
     void ResetFramesCount();
 
+    inline ParticleEffectDebugDrawSystem* GetParticleDebugSystem() const;
+
     DAVA_DEPRECATED(void MarkAsChanged()); // for old material & particle editors
 
 protected:
@@ -210,6 +212,11 @@ private:
         SceneEditor2* editor = nullptr;
     };
 };
+
+ParticleEffectDebugDrawSystem* SceneEditor2::GetParticleDebugSystem() const
+{
+    return particleEffectDebugDrawSystem;
+}
 
 Q_DECLARE_METATYPE(SceneEditor2*)
 

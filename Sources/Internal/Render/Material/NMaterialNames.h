@@ -65,6 +65,7 @@ public:
     static const FastName DEBUG_DRAW_OPAQUE;
     static const FastName DEBUG_DRAW_ALPHABLEND;
     static const FastName DEBUG_DRAW_WIREFRAME;
+    static const FastName DEBUG_DRAW_PARTICLES_OVERDRAW;
 
     static const FastName WATER_ALL_QUALITIES;
 };
@@ -85,6 +86,9 @@ public:
 
     static const FastName TEXTURE_DYNAMIC_REFLECTION;
     static const FastName TEXTURE_DYNAMIC_REFRACTION;
+
+    static const FastName TEXTURE_PARTICLES_HEATMAP;
+    static const FastName TEXTURE_PARTICLES_RT;
 
     static bool IsRuntimeTexture(const FastName& texture);
 };

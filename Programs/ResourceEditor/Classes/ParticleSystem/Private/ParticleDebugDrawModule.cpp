@@ -11,29 +11,30 @@
 
 #include <QWidget>
 
-ENUM_DECLARE(DebugDrawEnum)
+ENUM_DECLARE(eParticleDebugDrawMode)
 {
-    ENUM_ADD_DESCR(DebugDrawEnum::First, "First");
-    ENUM_ADD_DESCR(DebugDrawEnum::Second, "Second");
-    ENUM_ADD_DESCR(DebugDrawEnum::Third, "Third");
+    ENUM_ADD_DESCR(eParticleDebugDrawMode::LOW_ALPHA, "Low alpha");
+    ENUM_ADD_DESCR(eParticleDebugDrawMode::WIREFRAME, "Wireframe");
+    ENUM_ADD_DESCR(eParticleDebugDrawMode::OVERDRAW, "Overdraw");
 }
 
 namespace ParticleDebugDrawModuleDetail
 {
-DAVA::String BoolValueDescription(const DAVA::Any&v)
+DAVA::String ParticlesDebugStytemState(const DAVA::Any& isSystemOn)
 {
-    if (v.Get<bool>() == true)
-        return "True";
-    else
-        return "False";
+    return "Particles debug";
+//     if (isSystemOn.Get<bool>() == true)
+//         return "Disable particles debug";
+//     else
+//         return "Enable particles debug";
 }
 }
 
 class ParticleDebugDrawData : public DAVA::TArc::DataNode
 {
 public:
-    bool isBool = true;
-    DebugDrawEnum enumValue = First;
+    bool isSystemOn = true;
+    eParticleDebugDrawMode drawMode = eParticleDebugDrawMode::OVERDRAW;
 
     DAVA_VIRTUAL_REFLECTION_IN_PLACE(ParticleDebugDrawData, DAVA::TArc::DataNode)
     {
@@ -79,14 +80,14 @@ void ParticleDebugDrawModule::PostInit()
     GetUI()->AddAction(REGlobal::MainWindowKey, placementInfo, action);
 }
 
-bool ParticleDebugDrawModule::IsBool() const
+bool ParticleDebugDrawModule::GetSystemEnabledState() const
 {
-    return GetAccessor()->GetGlobalContext()->GetData<ParticleDebugDrawData>()->isBool;
+    return GetAccessor()->GetGlobalContext()->GetData<ParticleDebugDrawData>()->isSystemOn;
 }
 
-void ParticleDebugDrawModule::SetBool(bool v)
+void ParticleDebugDrawModule::SetSystemEnabledState(bool v)
 {
-    GetAccessor()->GetGlobalContext()->GetData<ParticleDebugDrawData>()->isBool = v;
+    GetAccessor()->GetGlobalContext()->GetData<ParticleDebugDrawData>()->isSystemOn = v;
     UpdateSceneSystem();
 }
 
@@ -95,14 +96,14 @@ bool ParticleDebugDrawModule::IsDisabled() const
     return GetAccessor()->GetContextCount() == 0;
 }
 
-DebugDrawEnum ParticleDebugDrawModule::GetEnumValue() const
+eParticleDebugDrawMode ParticleDebugDrawModule::GetDrawMode() const
 {
-    return GetAccessor()->GetGlobalContext()->GetData<ParticleDebugDrawData>()->enumValue;
+    return GetAccessor()->GetGlobalContext()->GetData<ParticleDebugDrawData>()->drawMode;
 }
 
-void ParticleDebugDrawModule::SetEnumValue(DebugDrawEnum v)
+void ParticleDebugDrawModule::SetDrawMode(eParticleDebugDrawMode mode)
 {
-    GetAccessor()->GetGlobalContext()->GetData<ParticleDebugDrawData>()->enumValue = v;
+    GetAccessor()->GetGlobalContext()->GetData<ParticleDebugDrawData>()->drawMode = mode;
     UpdateSceneSystem();
 }
 
@@ -114,7 +115,12 @@ void ParticleDebugDrawModule::UpdateSceneSystem()
     accessor->ForEachContext([data](DataContext& ctx)
     {
         SceneData::TSceneType scene = ctx.GetData<SceneData>()->GetScene();
-        //scene->
+        ParticleEffectDebugDrawSystem* particleEffectDebugDrawSystem = scene->GetParticleDebugSystem();
+        if (particleEffectDebugDrawSystem != nullptr)
+        {
+            particleEffectDebugDrawSystem->SetIsEnabled(data->isSystemOn);
+            particleEffectDebugDrawSystem->SetDrawMode(data->drawMode);
+        }
     });
 }
 
@@ -122,12 +128,11 @@ DAVA_VIRTUAL_REFLECTION_IMPL(ParticleDebugDrawModule)
 {
     DAVA::ReflectionRegistrator<ParticleDebugDrawModule>::Begin()
         .ConstructorByPointer()
-        .Field("boolProperty", &ParticleDebugDrawModule::IsBool, &ParticleDebugDrawModule::SetBool)
-            [DAVA::M::ValueDescription(&ParticleDebugDrawModuleDetail::BoolValueDescription)]
-        .Field("enumProperty", &ParticleDebugDrawModule::GetEnumValue, &ParticleDebugDrawModule::SetEnumValue)[DAVA::M::EnumT<DebugDrawEnum>()]
+        .Field("boolProperty", &ParticleDebugDrawModule::GetSystemEnabledState, &ParticleDebugDrawModule::SetSystemEnabledState)
+            [DAVA::M::ValueDescription(&ParticleDebugDrawModuleDetail::ParticlesDebugStytemState)]
+        .Field("enumProperty", &ParticleDebugDrawModule::GetDrawMode, &ParticleDebugDrawModule::SetDrawMode)[DAVA::M::EnumT<eParticleDebugDrawMode>()]
         .Field("readOnly", &ParticleDebugDrawModule::IsDisabled, nullptr)
         .End();
 }
-
 
 DECL_GUI_MODULE(ParticleDebugDrawModule);

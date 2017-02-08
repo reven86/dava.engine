@@ -3,6 +3,7 @@
 #include "Classes/SceneManager/SceneData.h"
 #include "Classes/Qt/MaterialEditor/MaterialEditor.h"
 #include "Classes/Qt/Scene/System/VisibilityCheckSystem/VisibilityCheckSystem.h"
+#include "Classes/Qt/Scene/System/ParticleEffectDebugDrawSystem/ParticleEffectDebugDrawSystem.h"
 #include "Classes/Qt/Scene/System/EditorMaterialSystem.h"
 #include "Classes/Qt/Scene/SceneEditor2.h"
 #include "Classes/Qt/Settings/SettingsManager.h"
@@ -80,6 +81,13 @@ void ShadersModule::ReloadShaders()
                                       {
                                           material.second->InvalidateRenderVariants();
                                       }
+                                                                            
+                                      const Vector<DAVA::NMaterial*>* const particleDebug = sceneEditor->GetParticleDebugSystem()->GetMaterials();
+                                      for (auto material : *particleDebug)
+                                      {
+                                          material->InvalidateRenderVariants();
+                                      }
+
 
                                       DAVA::Set<DAVA::NMaterial*> materialList;
                                       sceneEditor->foliageSystem->CollectFoliageMaterials(materialList);

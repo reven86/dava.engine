@@ -4,10 +4,20 @@
 #include "Render/Highlevel/RenderSystem.h"
 #include "Base/FastName.h"
 
+enum eParticleDebugDrawMode;
+
 class ParticleDebugDrawQuadRenderPass : public DAVA::RenderPass
 {
 public:
-    ParticleDebugDrawQuadRenderPass(const DAVA::FastName& name, DAVA::RenderSystem* renderSystem, DAVA::Texture* texHandle);
+    struct ParticleDebugQuadRenderPassConfig
+    {
+        const DAVA::FastName& name;
+        RenderSystem* renderSystem;
+        DAVA::NMaterial* quadMaterial;
+        DAVA::NMaterial* quadHeatMaterial;
+        const eParticleDebugDrawMode& drawMode;
+    };
+    ParticleDebugDrawQuadRenderPass(ParticleDebugQuadRenderPassConfig config);
     ~ParticleDebugDrawQuadRenderPass();
     void Draw(DAVA::RenderSystem* renderSystem) override;
     static const DAVA::FastName PASS_DEBUG_DRAW_QUAD;
@@ -18,17 +28,16 @@ private:
         Vector3 position;
         Vector2 uv;
     };
-
-    DAVA::Texture* debugTexture;
-    //static constexpr int VERTEX_COUNT = 6;
-    static const DAVA::Array<VertexPT, 6> quad;
-    DAVA::NMaterial* quadMaterial;
     void PrepareRenderData();
+
+    DAVA::NMaterial* quadMaterial;
+    DAVA::NMaterial* quadHeatMaterial;
+
+    const eParticleDebugDrawMode& drawMode;
     
     rhi::HVertexBuffer quadBuffer;
 
     rhi::Packet quadPacket;
 
     void ByndDynamicParams(Camera* cam);
-
 };

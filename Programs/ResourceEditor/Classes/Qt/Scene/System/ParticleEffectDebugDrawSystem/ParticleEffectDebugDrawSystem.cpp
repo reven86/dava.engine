@@ -7,13 +7,67 @@
 
 ParticleEffectDebugDrawSystem::ParticleEffectDebugDrawSystem(Scene* scene) : SceneSystem(scene)
 {
+
+    if (scene != nullptr)
+    {
+        GenerateDebugMaterials();
+
+        scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::START_PARTICLE_EFFECT);
+        scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::STOP_PARTICLE_EFFECT);
+        renderSystem = scene->GetRenderSystem();
+        
+        ParticleDebugRenderPass::ParticleDebugRenderPassConfig config =
+        { ParticleDebugRenderPass::PASS_DEBUG_DRAW_PARTICLES, renderSystem, wireframeMaterial, overdrawMaterial, showAlphaMaterial, drawMode, &componentsMap };
+        renderPass = new ParticleDebugRenderPass(config);
+
+        heatTexture = GenerateHeatTexture();
+        GenerateQuadMaterials();
+
+        ParticleDebugDrawQuadRenderPass::ParticleDebugQuadRenderPassConfig quadPassConfig =
+        { ParticleDebugDrawQuadRenderPass::PASS_DEBUG_DRAW_QUAD, renderSystem, quadMaterial, quadHeatMaterial, drawMode };
+        drawQuadPass = new ParticleDebugDrawQuadRenderPass(quadPassConfig);
+    }
+    materials.push_back(wireframeMaterial);
+    materials.push_back(overdrawMaterial);
+    materials.push_back(showAlphaMaterial);
+    materials.push_back(quadMaterial);
+    materials.push_back(quadHeatMaterial);
+}
+
+ParticleEffectDebugDrawSystem::~ParticleEffectDebugDrawSystem()
+{
+    SafeDelete(renderPass);
+    SafeDelete(drawQuadPass);
+    
+    SafeRelease(wireframeMaterial);
+    SafeRelease(overdrawMaterial);
+    SafeRelease(showAlphaMaterial);
+
+    SafeRelease(quadMaterial);
+    SafeRelease(quadHeatMaterial);
+
+    SafeRelease(heatTexture);
+}
+
+void ParticleEffectDebugDrawSystem::Draw()
+{
+    if (!isEnabled)
+        return;
+
+    renderPass->Draw(renderSystem);
+    drawQuadPass->Draw(renderSystem);
+}
+
+void ParticleEffectDebugDrawSystem::GenerateDebugMaterials()
+{
     if (wireframeMaterial == nullptr)
     {
         wireframeMaterial = new NMaterial();
         wireframeMaterial->SetFXName(NMaterialName::DEBUG_DRAW_WIREFRAME);
 
-        Color wireframeColor(1.0f, 1.0f, 1.0f, 1.0f);
+        Color wireframeColor(0.0f, 0.0f, 0.0f, 1.0f);
         wireframeMaterial->AddProperty(FastName("color"), wireframeColor.color, rhi::ShaderProp::TYPE_FLOAT4);
+        wireframeMaterial->AddFlag(NMaterialFlagName::FLAG_BLENDING, eBlending::BLENDING_ALPHABLEND);
     }
     if (overdrawMaterial == nullptr)
     {
@@ -30,32 +84,66 @@ ParticleEffectDebugDrawSystem::ParticleEffectDebugDrawSystem(Scene* scene) : Sce
         showAlphaMaterial->AddFlag(NMaterialFlagName::FLAG_BLENDING, eBlending::BLENDING_ALPHABLEND);
         float32 threshold = 0.05f;
         showAlphaMaterial->AddProperty(FastName("particleAlphaThreshold"), &threshold, rhi::ShaderProp::TYPE_FLOAT1);
-        
-        //showAlphaMaterial->SetTexture(NMaterialTextureName::TEXTURE_ALBEDO, nullptr);
     }
-    if (scene != nullptr)
+}
+
+void ParticleEffectDebugDrawSystem::GenerateQuadMaterials()
+{
+    quadMaterial = new NMaterial();
+    quadMaterial->SetFXName(NMaterialName::TEXTURED_ALPHABLEND);
+    quadMaterial->AddTexture(NMaterialTextureName::TEXTURE_ALBEDO, renderPass->GetTexture());
+    quadMaterial->AddFlag(NMaterialFlagName::FLAG_BLENDING, eBlending::BLENDING_ALPHABLEND);
+
+    quadHeatMaterial = new NMaterial();
+    quadHeatMaterial->SetFXName(NMaterialName::DEBUG_DRAW_PARTICLES_OVERDRAW);
+    quadHeatMaterial->AddTexture(NMaterialTextureName::TEXTURE_PARTICLES_HEATMAP, heatTexture);
+    quadHeatMaterial->AddTexture(NMaterialTextureName::TEXTURE_PARTICLES_RT, renderPass->GetTexture());
+    quadHeatMaterial->AddFlag(NMaterialFlagName::FLAG_BLENDING, eBlending::BLENDING_ALPHABLEND);
+}
+
+DAVA::Texture* ParticleEffectDebugDrawSystem::GenerateHeatTexture()
+{
+    static const int32 width = 32;
+    static const int32 height = 1;
+    static const size_t dataSize = width * height * 4;
+
+    unsigned char* data = new unsigned char[dataSize];
+    for (int i = 0; i < dataSize; i += 4)
     {
-
-        scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::START_PARTICLE_EFFECT);
-        scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::STOP_PARTICLE_EFFECT);
-        renderSystem = scene->GetRenderSystem();
-        renderPass = new ParticleDebugRenderPass(ParticleDebugRenderPass::PASS_DEBUG_DRAW_PARTICLES, renderSystem, wireframeMaterial, overdrawMaterial, showAlphaMaterial, &componentsMap); 
-        drawQuadPass = new ParticleDebugDrawQuadRenderPass(ParticleDebugDrawQuadRenderPass::PASS_DEBUG_DRAW_QUAD, renderSystem, renderPass->GetTexture());
+        Vector4 color = LerpColors((float32)i / (4 * width));
+        data[i] = static_cast<uint8>(color.x);
+        data[i + 1] = static_cast<uint8>(color.y);
+        data[i + 2] = static_cast<uint8>(color.z);
+        data[i + 3] = static_cast<uint8>(color.w);
     }
+    Texture* texture = Texture::CreateFromData(FORMAT_RGBA8888, data, width, height, false);
+
+    delete[] data;
+
+    return texture;
 }
 
-ParticleEffectDebugDrawSystem::~ParticleEffectDebugDrawSystem()
+DAVA::Vector4 ParticleEffectDebugDrawSystem::LerpColors(float normalizedWidth)
 {
-    SafeDelete(renderPass);
-    SafeRelease(wireframeMaterial);
-    SafeRelease(overdrawMaterial);
-    SafeRelease(showAlphaMaterial);
-}
+    static const Vector<TextureKey> keys =
+    {
+        TextureKey(Vector4(0.0f, 0.0f, 0.0f, 0.0f), 0.0f),
+        TextureKey(Vector4(0.0f, 0.0f, 0.0f, 0.0f), 0.1f),
+        TextureKey(Vector4(0.0f, 128.0f, 0.0f, 255.0f), 0.3f),
+        TextureKey(Vector4(255.0f, 128.0f, 0.0f, 255.0f), 0.5f),
+        TextureKey(Vector4(255.0f, 0.0f, 0.0f, 255.0f), 1.0f)
+    };
+    const TextureKey* current;
+    const TextureKey* next;
+    for (int i = 0; i < keys.size() - 1; i++) // binary search by time will be better but why to bother in this case.
+        if (keys[i].time <= normalizedWidth && keys[i + 1].time >= normalizedWidth)
+        {
+            current = &keys[i];
+            next = &keys[i + 1];
+        }
 
-void ParticleEffectDebugDrawSystem::Draw()
-{
-    renderPass->Draw(renderSystem);
-    drawQuadPass->Draw(renderSystem);
+    float t = (normalizedWidth - current->time) / (next->time - current->time);
+    return Lerp(current->color, next->color, t);
 }
 
 void ParticleEffectDebugDrawSystem::AddToActive(ParticleEffectComponent* effect)
@@ -73,7 +161,6 @@ void ParticleEffectDebugDrawSystem::RemoveFromActive(ParticleEffectComponent* ef
     activeComponents.erase(it);
     componentsMap.erase(effect->GetRenderObject());
 }
-
 
 void ParticleEffectDebugDrawSystem::RemoveEntity(Entity* entity)
 {

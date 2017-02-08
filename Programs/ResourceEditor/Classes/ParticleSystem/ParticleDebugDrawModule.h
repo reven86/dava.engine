@@ -5,12 +5,7 @@
 #include <Reflection/Reflection.h>
 #include <Base/GlobalEnum.h>
 
-enum DebugDrawEnum
-{
-    First,
-    Second,
-    Third
-};
+#include "Classes/Qt/Scene/System/ParticleEffectDebugDrawSystem/ParticleEffectDebugDrawSystem.h"
 
 class ParticleDebugDrawModule : public DAVA::TArc::ClientModule
 {
@@ -20,13 +15,13 @@ protected:
     void PostInit() override;
 
 private:
-    bool IsBool() const;
-    void SetBool(bool v);
+    bool GetSystemEnabledState() const;
+    void SetSystemEnabledState(bool enabled);
 
     bool IsDisabled() const;
 
-    DebugDrawEnum GetEnumValue() const;
-    void SetEnumValue(DebugDrawEnum v);
+    eParticleDebugDrawMode GetDrawMode() const;
+    void SetDrawMode(eParticleDebugDrawMode drawMode);
 
     void UpdateSceneSystem();
 
