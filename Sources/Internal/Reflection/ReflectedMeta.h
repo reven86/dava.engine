@@ -61,7 +61,6 @@ namespace M
     Add hint that indicates ReadOnly policy for some Reflected Field
 */
 using ReadOnly = Meta<Metas::ReadOnly>;
-
 /**
     \ingroup metas
     Add hint that indicates valid range of value
@@ -71,7 +70,12 @@ using ReadOnly = Meta<Metas::ReadOnly>;
     If some of bound couldn't be casted to T, this bound will be equal std::numeric_limits<T>::min\max.
 */
 using Range = Meta<Metas::Range>;
-
+/**
+    \ingroup metas
+    Specifies count of signs in fraction part of float number for editing
+    \arg \c accuracy has value of DAVA::uint32
+*/
+using FloatNumberAccuracy = Meta<Metas::FloatNumberAccuracy>;
 /**
     \ingroup metas
     Add value validation function to Reflected Field.
@@ -88,7 +92,7 @@ using TValidationFn = Metas::TValidationFn;
     Result of validation function
     To get more information check Metas::ValidationResult documentation
 */
-using ValidatorResult = Metas::ValidationResult;
+using ValidationResult = Metas::ValidationResult;
 
 /**
     \ingroup metas
