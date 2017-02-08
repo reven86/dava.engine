@@ -1,6 +1,7 @@
 #pragma once
 
-#include "AssetCache/AssetCacheConstants.h"
+#include <Tools/AssetCache/AssetCacheConstants.h>
+
 #include "FileSystem/FilePath.h"
 #include "Network/Base/Endpoint.h"
 #include <QObject>

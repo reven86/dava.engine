@@ -24,7 +24,7 @@
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "DLC/Downloader/CurlDownloader.h"
-#include "PackManager/Private/PackManagerImpl.h"
+#include "DLCManager/Private/DLCManagerImpl.h"
 #include "Notification/LocalNotificationController.h"
 #include "Platform/DeviceInfo.h"
 #include "Render/Renderer.h"
@@ -63,7 +63,7 @@
 
 #include "Core.h"
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
-#include "PackManager/Private/PackManagerImpl.h"
+#include "DLCManager/Private/DLCManagerImpl.h"
 #include "Analytics/Analytics.h"
 
 namespace DAVA
@@ -234,13 +234,11 @@ void Core::CreateSingletons()
     new Random();
     new AnimationManager();
     new FontManager();
+    new VirtualCoordinatesSystem();
     new UIControlSystem();
     new InputSystem();
     new PerformanceSettings();
     new VersionInfo();
-
-    new VirtualCoordinatesSystem();
-    UIControlSystem::Instance()->vcs = VirtualCoordinatesSystem::Instance();
 
     new RenderSystem2D();
 
@@ -257,7 +255,7 @@ void Core::CreateSingletons()
     new DownloadManager();
     DownloadManager::Instance()->SetDownloader(new CurlDownloader());
 
-    packManager.reset(new PackManagerImpl);
+    dlcManager.reset(new DLCManagerImpl);
     analyticsCore.reset(new Analytics::Core);
 
     new LocalNotificationController();
@@ -334,7 +332,7 @@ void Core::ReleaseSingletons()
     Random::Instance()->Release();
     RenderSystem2D::Instance()->Release();
 
-    packManager.reset();
+    dlcManager.reset();
     analyticsCore.reset();
 
     DownloadManager::Instance()->Release();
@@ -665,7 +663,7 @@ void Core::SystemProcessFrame()
 
         LocalNotificationController::Instance()->Update();
         DownloadManager::Instance()->Update();
-        static_cast<PackManagerImpl*>(packManager.get())->Update(frameDelta);
+        static_cast<DLCManagerImpl*>(dlcManager.get())->Update(frameDelta);
 
         JobManager::Instance()->Update();
 
@@ -953,10 +951,10 @@ void* DAVA::Core::GetNativeWindow() const
     return nullptr;
 }
 
-IPackManager& Core::GetPackManager() const
+DLCManager& Core::GetPackManager() const
 {
-    DVASSERT(packManager);
-    return *packManager;
+    DVASSERT(dlcManager);
+    return *dlcManager;
 }
 
 Analytics::Core& Core::GetAnalyticsCore() const

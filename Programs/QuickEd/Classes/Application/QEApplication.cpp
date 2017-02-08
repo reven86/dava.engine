@@ -2,7 +2,7 @@
 #include "Application/QEModule.h"
 
 #include "Render/Renderer.h"
-#include "TextureCompression/PVRConverter.h"
+#include <Tools/TextureCompression/PVRConverter.h>
 #include "Particles/ParticleEmitter.h"
 
 #include "Preferences/PreferencesStorage.h"

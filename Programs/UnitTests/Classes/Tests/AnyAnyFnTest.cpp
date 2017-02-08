@@ -305,6 +305,18 @@ DAVA_TESTCLASS (AnyAnyFnTest)
         }
     }
 
+    DAVA_TEST (EmptyAnyCastGetTest)
+    {
+        Any a;
+        TEST_VERIFY(a.CanGet<int32>() == false);
+        TEST_VERIFY(a.CanCast<int32>() == false);
+
+        TEST_VERIFY(a != Any(3));
+        TEST_VERIFY(Any(3) != a);
+        TEST_VERIFY(Any() == Any());
+        TEST_VERIFY((Any() != Any()) == false);
+    }
+
     DAVA_TEST (AnyTestPtr)
     {
         B b;

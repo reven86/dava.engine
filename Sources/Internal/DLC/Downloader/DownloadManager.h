@@ -112,7 +112,7 @@ private:
 
     void StartProcessingThread();
     void StopProcessingThread();
-    void ThreadFunction(BaseObject* caller, void* callerData, void* userData);
+    void ThreadFunction();
 
     void ClearQueue(Deque<DownloadTaskDescription*>& queue);
     DownloadTaskDescription* ExtractFromQueue(Deque<DownloadTaskDescription*>& queue, const uint32& taskId);

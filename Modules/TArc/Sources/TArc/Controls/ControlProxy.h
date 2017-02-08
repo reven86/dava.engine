@@ -16,25 +16,23 @@ template <typename TBase>
 class ControlProxy : protected TBase, protected DataListener
 {
 public:
-    ControlProxy(const ControlDescriptor& descriptor, DataWrappersProcessor* wrappersProcessor, Reflection model_, QWidget* parent)
+    ControlProxy(const ControlDescriptor& descriptor_, DataWrappersProcessor* wrappersProcessor, Reflection model_, QWidget* parent)
         : TBase(parent)
+        , descriptor(descriptor_)
         , model(model_)
-        , descriptor(descriptor)
     {
-        wrapper = wrappersProcessor->CreateWrapper(MakeFunction(this, &ControlProxy<TBase>::GetModel), nullptr);
-        wrapper.SetListener(this);
+        SetupControl(wrappersProcessor);
     }
 
-    ControlProxy(const ControlDescriptor& descriptor, ContextAccessor* accessor, Reflection model_, QWidget* parent)
+    ControlProxy(const ControlDescriptor& descriptor_, ContextAccessor* accessor, Reflection model_, QWidget* parent)
         : TBase(parent)
+        , descriptor(descriptor_)
         , model(model_)
-        , descriptor(descriptor)
     {
-        wrapper = accessor->CreateWrapper(MakeFunction(this, &ControlProxy<TBase>::GetModel));
-        wrapper.SetListener(this);
+        SetupControl(accessor);
     }
 
-    ~ControlProxy()
+    ~ControlProxy() override
     {
         wrapper.SetListener(nullptr);
     }
@@ -47,6 +45,42 @@ public:
     QWidget* ToWidgetCast()
     {
         return this;
+    }
+
+    void ForceUpdateControl()
+    {
+        OnDataChanged(wrapper, Vector<Any>());
+    }
+
+protected:
+    template <typename TPrivate>
+    ControlProxy(const ControlDescriptor& descriptor_, DataWrappersProcessor* wrappersProcessor, Reflection model_, TPrivate&& d, QWidget* parent)
+        : TBase(std::move(d), parent)
+        , descriptor(descriptor_)
+        , model(model_)
+    {
+        SetupControl(wrappersProcessor);
+    }
+
+    template <typename TPrivate>
+    ControlProxy(const ControlDescriptor& descriptor_, ContextAccessor* accessor, Reflection model_, TPrivate&& d, QWidget* parent)
+        : TBase(std::move(d), parent)
+        , descriptor(descriptor_)
+        , model(model_)
+    {
+        SetupControl(accessor);
+    }
+
+    void SetupControl(DataWrappersProcessor* wrappersProcessor)
+    {
+        wrapper = wrappersProcessor->CreateWrapper(MakeFunction(this, &ControlProxy<TBase>::GetModel), nullptr);
+        wrapper.SetListener(this);
+    }
+
+    void SetupControl(ContextAccessor* accessor)
+    {
+        wrapper = accessor->CreateWrapper(MakeFunction(this, &ControlProxy<TBase>::GetModel));
+        wrapper.SetListener(this);
     }
 
 protected:

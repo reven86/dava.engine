@@ -8,11 +8,11 @@ set                   ( NO_CEF true )
 include               ( CMake-common )
 
 set ( DAVA_COREV2 1 )
-dava_add_definitions ( -D__DAVAENGINE_COREV2__ 
-                             -DCONSOLE)
+dava_add_definitions  ( -D__DAVAENGINE_COREV2__ )
+find_package          ( DavaTools REQUIRED )
 
+dava_add_definitions  ( -DCONSOLE )
 find_package          ( DavaFramework REQUIRED COMPONENTS ALL DAVA_DISABLE_AUTOTESTS )
-find_package          ( DavaTools     REQUIRED )
 
 include_directories   ( "Classes" )
 

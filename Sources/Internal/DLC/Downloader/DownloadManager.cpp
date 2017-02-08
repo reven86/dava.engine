@@ -28,6 +28,7 @@ DownloadManager::DownloadManager(Engine* e)
     : engine(e)
 {
     engine->update.Connect(this, &DownloadManager::Update);
+    engine->backgroundUpdate.Connect(this, &DownloadManager::Update);
 }
 #endif
 
@@ -35,6 +36,7 @@ DownloadManager::~DownloadManager()
 {
 #if defined(__DAVAENGINE_COREV2__)
     engine->update.Disconnect(this);
+    engine->backgroundUpdate.Disconnect(this);
 #endif
 
     isThreadStarted = false;
@@ -77,7 +79,7 @@ void DownloadManager::StartProcessingThread()
     DVASSERT(!isThreadStarted);
     DVASSERT(NULL == thisThread);
 
-    thisThread = Thread::Create(Message(this, &DownloadManager::ThreadFunction));
+    thisThread = Thread::Create(MakeFunction(this, &DownloadManager::ThreadFunction));
     isThreadStarted = true;
     thisThread->Start();
 }
@@ -300,7 +302,7 @@ void DownloadManager::Clear(const uint32& taskId)
     }
 }
 
-void DownloadManager::ThreadFunction(BaseObject* caller, void* callerData, void* userData)
+void DownloadManager::ThreadFunction()
 {
     while (isThreadStarted)
     {

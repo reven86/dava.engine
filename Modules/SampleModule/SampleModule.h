@@ -8,10 +8,8 @@
 
 namespace DAVA
 {
-    
 class ModuleManager;
 
-  
 class SampleModule : public IModule
 {
 public:
@@ -21,19 +19,18 @@ public:
         ES_INIT,
         ES_SHUTDOWN
     };
-    
+
     const Vector<eStatus>& StatusList() const
     {
         return statusList;
     }
-    
+
     SampleModule(Engine* engine);
-    
+
     void Init() override;
     void Shutdown() override;
-    
+
 private:
     Vector<eStatus> statusList;
 };
-    
 };

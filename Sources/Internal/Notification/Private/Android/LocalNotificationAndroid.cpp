@@ -29,6 +29,7 @@ LocalNotificationAndroid::LocalNotificationAndroid(const String& _id)
     removeAllDelayedNotifications = notificationProvider.GetStaticMethod<void>("RemoveAllDelayedNotifications");
 }
 
+// TODO: Remove this method, after transition on Core V2.
 void LocalNotificationAndroid::SetAction(const WideString& action)
 {
     LockGuard<Mutex> mutexGuard(javaCallMutex);

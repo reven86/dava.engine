@@ -217,7 +217,7 @@ protected:
     void StepClean();
     void StepDone();
 
-    void PatchingThread(BaseObject* caller, void* callerData, void* userData);
+    void PatchingThread();
 
     // helper functions
     bool ReadValue(const FilePath& path, uint32* value, String* version = nullptr);
