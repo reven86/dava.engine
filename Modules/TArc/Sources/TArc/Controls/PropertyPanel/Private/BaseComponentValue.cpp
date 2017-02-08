@@ -90,6 +90,11 @@ InteractiveEditorProxy BaseComponentValue::GetInteractiveEditor()
     return InteractiveEditorProxy(this);
 }
 
+void BaseComponentValue::ReleaseEditorWidget(QWidget* editor)
+{
+    editor->deleteLater();
+}
+
 bool BaseComponentValue::EditorEvent(QEvent* event, const QStyleOptionViewItem& option)
 {
     return false;

@@ -22,9 +22,20 @@ class ReadOnly
 class Range
 {
 public:
-    Range(const Any& minValue, const Any& maxValue);
+    Range(const Any& minValue, const Any& maxValue, const Any& step);
     const Any minValue;
     const Any maxValue;
+    const Any step;
+};
+
+/**
+    Specifies count of signs in fraction part of float number for editing
+*/
+class FloatNumberAccuracy
+{
+public:
+    FloatNumberAccuracy(uint32 accuracy);
+    const uint32 accuracy;
 };
 
 /** Validation result */
