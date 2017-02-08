@@ -52,7 +52,7 @@ private:
 
     static const size_t ELEMENT_COUNT = static_cast<size_t>(eGamepadElements::LAST) + 1;
     float32 elementValues[ELEMENT_COUNT];
-    uint64 elementTimestamps[ELEMENT_COUNT];
+    int64 elementTimestamps[ELEMENT_COUNT];
     std::bitset<ELEMENT_COUNT> elementChangedMask;
 };
 

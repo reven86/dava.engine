@@ -11,7 +11,7 @@
 class QLabel;
 class SceneEditor2;
 class SelectableGroup;
-class StatusBar final : public QStatusBar, private DAVA::TArc::DataListener
+class StatusBar final : public QStatusBar, private DAVA::TArc::DataListener, public DAVA::TrackedObject
 {
     Q_OBJECT
 

@@ -1,7 +1,8 @@
 #pragma once
 
+#include <Tools/TextureCompression/TextureConverter.h>
+
 #include "Render/TextureDescriptor.h"
-#include "TextureCompression/TextureConverter.h"
 #include "CommandLine/CommandLineModule.h"
 #include "Reflection/ReflectionRegistrator.h"
 
@@ -44,7 +45,7 @@ private:
     DAVA::TextureConverter::eConvertQuality quality = DAVA::TextureConverter::ECQ_DEFAULT;
     DAVA::Map<DAVA::eGPUFamily, DAVA::TextureDescriptor::Compression> compressionParams;
 
-    DAVA_VIRTUAL_REFLECTION(TextureDescriptorTool, CommandLineModule)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(TextureDescriptorTool, CommandLineModule)
     {
         DAVA::ReflectionRegistrator<TextureDescriptorTool>::Begin()
         .ConstructorByPointer<DAVA::Vector<DAVA::String>>()

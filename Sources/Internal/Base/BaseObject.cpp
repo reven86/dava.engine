@@ -3,9 +3,16 @@
 #include "FileSystem/KeyedArchive.h"
 #include "Base/Introspection.h"
 #include "Utils/StringFormat.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(BaseObject)
+{
+    ReflectionRegistrator<BaseObject>::Begin()
+    .End();
+}
+
 const String& BaseObject::GetClassName() const
 {
     return ObjectFactory::Instance()->GetName(this);

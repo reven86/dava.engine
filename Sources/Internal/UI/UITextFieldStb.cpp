@@ -5,7 +5,7 @@
 #include "UI/UIStaticText.h"
 #include "UI/UIControlSystem.h"
 #include "UI/UIEvent.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Input/InputSystem.h"
 #include "Input/KeyboardDevice.h"
@@ -179,7 +179,7 @@ void TextFieldStbImpl::UpdateRect(const Rect&)
 
     if (control == UIControlSystem::Instance()->GetFocusedControl() && isEditing)
     {
-        float32 timeElapsed = SystemTimer::Instance()->FrameDelta();
+        float32 timeElapsed = SystemTimer::GetFrameDelta();
         cursorTime += timeElapsed;
         if (cursorTime >= 0.5f)
         {
@@ -595,7 +595,6 @@ void TextFieldStbImpl::UpdateSelection(uint32 start, uint32 end)
 void TextFieldStbImpl::UpdateCursor(uint32 cursorPos, bool insertMode)
 {
     const TextBox* tb = staticText->GetTextBlock()->GetTextBox();
-    const Vector<int32> linesSizes = staticText->GetTextBlock()->GetStringSizes();
 
     Rect r;
     r.dx = DEFAULT_CURSOR_WIDTH;

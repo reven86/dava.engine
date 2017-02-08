@@ -28,7 +28,7 @@ public:
     struct Method
     {
         String name;
-        AnyFn method;
+        AnyFn fn;
         std::unique_ptr<ReflectedMeta> meta;
     };
 

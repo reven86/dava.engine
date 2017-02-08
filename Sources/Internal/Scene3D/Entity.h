@@ -4,8 +4,7 @@
 #include "Base/BaseObject.h"
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
-#include "Reflection/ReflectionRegistrator.h"
-#include "Reflection/ReflectedMeta.h"
+#include "Reflection/Reflection.h"
 #include "Render/RenderBase.h"
 #include "Scene3D/SceneNodeAnimationKey.h"
 #include "Entity/Component.h"
@@ -33,6 +32,7 @@ class TransformComponent;
 class Entity : public BaseObject
 {
     DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_ENTITY)
+    DAVA_VIRTUAL_REFLECTION(Entity, BaseObject);
 
 protected:
     virtual ~Entity();
@@ -259,7 +259,7 @@ public:
     virtual Entity* Clone(Entity* dstNode = NULL);
 
     // Do we need enum, or we can use virtual functions?
-    enum
+    enum eEvent
     {
         EVENT_CREATE_ENTITY = 1,
         EVENT_DELETE_ENTITY,
@@ -424,22 +424,6 @@ public:
                          PROPERTY("visible", "Visible", GetVisible, SetVisible, I_VIEW | I_EDIT)
                          COLLECTION(components, "components", I_VIEW)
                          )
-
-    DAVA_VIRTUAL_REFLECTION(Entity, BaseObject)
-    {
-        ReflectionRegistrator<Entity>::Begin()
-        .DestructorByPointer([](Entity* e)
-                             {
-                                 DAVA::SafeRelease(e);
-                             })
-        .Field("ID", &Entity::GetID, &Entity::SetID)
-        .Field("Name", &Entity::GetName, static_cast<void (Entity::*)(const FastName&)>(&Entity::SetName))
-        .Field("Tag", &Entity::tag)
-        .Field("Flags", &Entity::flags)
-        .Field("Visible", &Entity::GetVisible, &Entity::SetVisible)
-        .Field("Components", &Entity::components)
-        .End();
-    }
 };
 
 inline bool Entity::GetVisible()

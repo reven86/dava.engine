@@ -12,7 +12,7 @@
 #include "UI/UIScreenManager.h"
 
 #include "Logger/Logger.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 
 #import <UIKit/UIKit.h>
 
@@ -28,6 +28,8 @@
 
 - (id)init:(DAVA::Private::CoreNativeBridge*)nativeBridge;
 - (void)setDisplayLinkInterval:(DAVA::int32)interval;
+- (void)pauseDisplayLink;
+- (void)resumeDisplayLink;
 - (void)cancelDisplayLink;
 - (void)enableGameControllerObserver:(BOOL)enable;
 
@@ -59,6 +61,16 @@
         [displayLink setFrameInterval:interval];
         curInterval = interval;
     }
+}
+
+- (void)pauseDisplayLink
+{
+    displayLink.paused = YES;
+}
+
+- (void)resumeDisplayLink
+{
+    displayLink.paused = NO;
 }
 
 - (void)cancelDisplayLink
@@ -204,13 +216,31 @@ void CoreNativeBridge::ApplicationDidEnterBackground(UIApplication* app)
     NotifyListeners(ON_DID_ENTER_BACKGROUND, app);
 
     mainDispatcher->SendEvent(MainDispatcherEvent(MainDispatcherEvent::APP_SUSPENDED)); // Blocking call !!!
+
+    [objcInterop pauseDisplayLink];
+
+    goBackgroundTimeRelativeToBoot = SystemTimer::GetSystemUptimeUs();
+    goBackgroundTime = SystemTimer::GetUs();
 }
 
 void CoreNativeBridge::ApplicationWillEnterForeground(UIApplication* app)
 {
     mainDispatcher->PostEvent(MainDispatcherEvent(MainDispatcherEvent::APP_RESUMED));
     core->didEnterForegroundBackground.Emit(true);
+
     NotifyListeners(ON_WILL_ENTER_FOREGROUND, app);
+
+    [objcInterop resumeDisplayLink];
+
+    int64 timeSpentInBackground1 = SystemTimer::GetSystemUptimeUs() - goBackgroundTimeRelativeToBoot;
+    int64 timeSpentInBackground2 = SystemTimer::GetUs() - goBackgroundTime;
+
+    Logger::Debug("Time spent in background %lld us (reported by SystemTimer %lld us)", timeSpentInBackground1, timeSpentInBackground2);
+    // Do adjustment only if SystemTimer has stopped ticking
+    if (timeSpentInBackground1 - timeSpentInBackground2 > 500000l)
+    {
+        EngineBackend::AdjustSystemTimer(timeSpentInBackground1 - timeSpentInBackground2);
+    }
 }
 
 void CoreNativeBridge::ApplicationWillTerminate(UIApplication* app)

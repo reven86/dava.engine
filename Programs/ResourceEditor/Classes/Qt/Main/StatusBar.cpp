@@ -1,6 +1,6 @@
 #include "StatusBar.h"
 
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 
 #include "Main/mainwindow.h"
 #include "Scene/SceneEditor2.h"
@@ -152,7 +152,7 @@ void StatusBar::UpdateFPS()
         activeScene->ResetFramesCount();
     }
 
-    DAVA::uint64 currentTimeMS = DAVA::SystemTimer::Instance()->AbsoluteMS();
+    DAVA::uint64 currentTimeMS = DAVA::SystemTimer::GetMs();
 
     if (frames > 0 && lastTimeMS != 0 && lastTimeMS != currentTimeMS)
     {

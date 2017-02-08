@@ -49,9 +49,6 @@ public:
     void UpdateLastLogValue(const QString& log);
     void BreakLog();
 
-signals:
-    void AppInstalled(const QString& branchID, const QString& appID, const AppVersion& version);
-
 public slots:
     void OnCancelClicked();
 

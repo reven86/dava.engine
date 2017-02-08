@@ -92,6 +92,9 @@ struct CoreNativeBridge final
 
     Mutex listenersMutex;
     NSMutableArray* appDelegateListeners;
+
+    int64 goBackgroundTimeRelativeToBoot = 0;
+    int64 goBackgroundTime = 0;
 };
 
 } // namespace Private
