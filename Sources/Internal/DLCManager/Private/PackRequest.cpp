@@ -14,6 +14,7 @@ namespace DAVA
 PackRequest::PackRequest(DLCManagerImpl& packManager_, const String& pack_)
     : packManagerImpl(packManager_)
     , requestedPackName(pack_)
+    , delayedRequest(true)
 {
 }
 
@@ -21,7 +22,13 @@ PackRequest::PackRequest(DLCManagerImpl& packManager_, const String& pack_, Vect
     : packManagerImpl(packManager_)
     , fileIndexes(std::move(fileIndexes_))
     , requestedPackName(pack_)
+    , delayedRequest(false)
 {
+    if (fileIndexes.empty())
+    {
+        // march that all files already loaded or empty virtual pack
+        status = Ready;
+    }
 }
 
 PackRequest::~PackRequest()
@@ -81,7 +88,7 @@ uint64 PackRequest::GetDownloadedSize() const
 /** return true when all files loaded and ready */
 bool PackRequest::IsDownloaded() const
 {
-    return numOfDownloadedFile == fileIndexes.size();
+    return !delayedRequest && numOfDownloadedFile == fileIndexes.size();
 }
 
 void PackRequest::SetFileIndexes(Vector<uint32> fileIndexes_)
@@ -123,7 +130,7 @@ void PackRequest::Update()
             UpdateFileRequest();
         }
 
-        if (IsDownloadedFileRequest())
+        if (!IsDownloadedFileRequest())
         {
             packManagerImpl.requestUpdated.Emit(*this);
             do
@@ -182,21 +189,10 @@ void PackRequest::UpdateFileRequest()
         break;
     case CheckLocalFile:
     {
-        FileSystem* fs = FileSystem::Instance();
-        String fullPathDvpl = localFile.GetAbsolutePathname();
-        uint64 size = FileAPI::GetFileSize(fullPathDvpl);
-
-        if (size != std::numeric_limits<uint64>::max())
+        if (packManagerImpl.IsFileReady(fileIndex))
         {
-            if (size == (sizeOfCompressedFile + sizeof(PackFormat::LitePack::Footer)))
-            {
-                status = CheckHash;
-            }
-            else
-            {
-                fs->DeleteFile(fullPathDvpl);
-                status = LoadingPackFile;
-            }
+            status = Ready;
+            packManagerImpl.requestUpdated.Emit(*this);
         }
         else
         {
@@ -209,6 +205,7 @@ void PackRequest::UpdateFileRequest()
         DownloadManager* dm = DownloadManager::Instance();
         if (taskId == 0)
         {
+            FileSystem::Instance()->DeleteFile(localFile); // just in case (hash not match, size not match...)
             taskId = dm->DownloadRange(url, localFile, startLoadingPos, sizeOfCompressedFile);
         }
         else
@@ -289,8 +286,8 @@ void PackRequest::UpdateFileRequest()
 
             downloadedSize += (sizeOfCompressedFile + sizeof(footer));
 
-            packManagerImpl.requestUpdated.Emit(*this);
             status = Ready;
+            packManagerImpl.requestUpdated.Emit(*this);
         }
         else
         {

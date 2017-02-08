@@ -336,10 +336,12 @@ PackRequest* DLCManagerImpl::CreateNewRequest(const String& requestedPackName)
     Vector<uint32> packIndexes = meta->GetFileIndexes(requestedPackName);
 
     // check all requested files already downloaded
-    packIndexes.erase(remove_if(begin(packIndexes), end(packIndexes), [&](uint32 index)
-                                {
-                                    return scanFileReady.at(index);
-                                }));
+    auto isFileDownloaded = [&](uint32 index) { return scanFileReady.at(index); };
+    auto removeIt = remove_if(begin(packIndexes), end(packIndexes), isFileDownloaded);
+    if (removeIt != end(packIndexes))
+    {
+        packIndexes.erase(removeIt, end(packIndexes));
+    }
 
     PackRequest* request = new PackRequest(*this, requestedPackName, std::move(packIndexes));
 
@@ -1004,6 +1006,8 @@ void DLCManagerImpl::ThreadScanFunc()
 
     Vector<ResourceArchive::FileInfo> filesInfo;
     PackArchive::FillFilesInfo(pack, uncompressedFileNames, mapFileData, filesInfo);
+
+    // TODO fix relative file names
 
     for (const LocalFileInfo& info : localFiles)
     {

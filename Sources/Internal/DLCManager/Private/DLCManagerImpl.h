@@ -116,6 +116,12 @@ public:
         return usedPackFile;
     }
 
+    // use only after initialization
+    bool IsFileReady(uint32 fileIndex) const
+    {
+        return scanFileReady.at(fileIndex);
+    }
+
 private:
     // initialization state functions
     void AskFooter();
