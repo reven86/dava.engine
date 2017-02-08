@@ -46,8 +46,6 @@ public:
 #endif
     ~FMODSoundSystem();
 
-    static FMODSoundSystem* Instance();
-
     SoundStream* CreateSoundStream(SoundStreamDelegate* streamDelegate, uint32 channelsCount);
 
     SoundEvent* CreateSoundEventByID(const FastName& eventName, const FastName& groupName);
@@ -142,8 +140,6 @@ protected:
     Map<FilePath, FMOD::EventProject*> projectsMap;
 
     Vector<String> toplevelGroups;
-
-    static FMODSoundSystem* instFMODSoundSystem;
 
     friend class FMODFileSoundEvent;
     friend class FMODSoundEvent;
