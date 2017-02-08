@@ -6,6 +6,8 @@
 #
 function ( load_config CONFIG_FILE )
 
+    message( STATUS "Load DAVACONFIG ------>>>>>" )
+
     file( STRINGS ${CONFIG_FILE} ConfigContents )
     foreach( NameAndValue ${ConfigContents} )
         string( REGEX REPLACE "^[ ]+" "" NameAndValue ${NameAndValue} )
@@ -16,8 +18,9 @@ function ( load_config CONFIG_FILE )
         if( NOT ${Name} )
             set( ${Name} "${Value}" PARENT_SCOPE )
         endif()
-        message("---" [${Name}] "  " [${Value}] )
+        message( STATUS "---" [${Name}] "  " [${Value}] )
     endforeach()
+    message( STATUS "END load DAVACONFIG ------>>>>>" )
 
 endfunction ()
 
