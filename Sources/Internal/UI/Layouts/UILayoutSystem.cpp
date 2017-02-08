@@ -82,8 +82,8 @@ void UILayoutSystem::ApplyLayout(UIControl* control)
 
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::UI_LAYOUTING);
 
-    ProcessAxis(Vector2::AXIS_X);
-    ProcessAxis(Vector2::AXIS_Y);
+    ProcessAxis(Vector2::AXIS_X, true);
+    ProcessAxis(Vector2::AXIS_Y, true);
 
     ApplySizesAndPositions();
 
@@ -98,8 +98,8 @@ void UILayoutSystem::ApplyLayoutNonRecursive(UIControl* control)
 
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::UI_LAYOUTING);
 
-    ProcessAxis(Vector2::AXIS_X);
-    ProcessAxis(Vector2::AXIS_Y);
+    ProcessAxis(Vector2::AXIS_X, false);
+    ProcessAxis(Vector2::AXIS_Y, false);
 
     ApplyPositions();
 
@@ -199,9 +199,12 @@ void UILayoutSystem::CollectControlChildren(UIControl* control, int32 parentInde
     }
 }
 
-void UILayoutSystem::ProcessAxis(Vector2::eAxis axis)
+void UILayoutSystem::ProcessAxis(Vector2::eAxis axis, bool processSizes)
 {
-    DoMeasurePhase(axis);
+    if (processSizes)
+    {
+        DoMeasurePhase(axis);
+    }
     DoLayoutPhase(axis);
 }
 
