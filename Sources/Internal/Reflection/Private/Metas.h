@@ -140,8 +140,9 @@ class File
 {
 public:
     /** \arg \c shouldExists defines rule should file exists of not */
-    File(bool shouldExists = true);
+    File(bool shouldExists = true, const String& filters = String());
 
+    const String filters;
     const bool shouldExists;
 };
 
