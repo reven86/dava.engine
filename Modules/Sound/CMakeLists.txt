@@ -29,6 +29,14 @@ set( STATIC_LIBRARIES_WIN64_RELEASE  ${LIBRARIES_FMOD}/win/x64/Release/fmod_even
 set( STATIC_LIBRARIES_WIN64_DEBUG    ${LIBRARIES_FMOD}/win/x64/Debug/fmod_event.lib 
                                      ${LIBRARIES_FMOD}/win/x64/Debug/fmodex_vc.lib )
 
+
+set( STATIC_LIBRARIES_WINUAP_RELEASE ${LIBRARIES_FMOD}/win10/$(Platform)/Release/fmod_eventUWPL.lib 
+                                     ${LIBRARIES_FMOD}/win10/$(Platform)/Release/fmodexUWP_vc.lib )
+
+set( STATIC_LIBRARIES_WINUAP_DEBUG   ${LIBRARIES_FMOD}/win10/$(Platform)/Debug/fmod_eventUWP.lib 
+                                     ${LIBRARIES_FMOD}/win10/$(Platform)/Debug/fmodexUWP_vc.lib )
+
+
 set( DYNAMIC_LIBRARIES_ANDROID       ${DYNAMIC_FMOD}/android/${ANDROID_NDK_ABI_NAME}/libfmodevent.so 
                                      ${DYNAMIC_FMOD}/android/${ANDROID_NDK_ABI_NAME}/libfmodex.so )
 
@@ -40,6 +48,11 @@ set( DYNAMIC_LIBRARIES_WIN64         ${DYNAMIC_FMOD}/fmodex64.dll
 
 set( DYNAMIC_LIBRARIES_MACOS         ${DYNAMIC_FMOD}/libfmodevent.dylib
                                      ${DYNAMIC_FMOD}/libfmodex.dylib )
+
+
+set( DYNAMIC_LIBRARIES_WINUAP        ${LIBRARIES_FMOD}/win10/$(Platform)/Release/fmod_eventUWParm.dll 
+                                     ${LIBRARIES_FMOD}/win10/$(Platform)/Release/fmodexUWParm.dll )
+
 
 set(EXCLUDE_FROM_ALL true )
 
