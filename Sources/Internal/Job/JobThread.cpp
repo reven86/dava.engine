@@ -8,7 +8,7 @@ JobThread::JobThread(JobQueueWorker* _workerQueue, Semaphore* _workerDoneSem)
     , threadCancel(false)
     , threadFinished(false)
 {
-    thread = Thread::Create(Message(this, &JobThread::ThreadFunc));
+    thread = Thread::Create(MakeFunction(this, &JobThread::ThreadFunc));
     thread->SetName("DAVA::JobThread");
     thread->Start();
 }
@@ -28,7 +28,7 @@ JobThread::~JobThread()
     SafeRelease(thread);
 }
 
-void JobThread::ThreadFunc(BaseObject* bo, void* userParam, void* callerParam)
+void JobThread::ThreadFunc()
 {
     while (!threadCancel)
     {

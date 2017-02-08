@@ -19,8 +19,12 @@ extern "C"
 JNIEXPORT void JNICALL Java_com_dava_engine_DavaMovieView_nativeReleaseWeakPtr(JNIEnv* env, jclass jclazz, jlong backendPointer)
 {
     using DAVA::MovieViewControl;
-    std::weak_ptr<MovieViewControl>* weak = reinterpret_cast<std::weak_ptr<MovieViewControl>*>(static_cast<uintptr_t>(backendPointer));
-    delete weak;
+
+    // Postpone deleting in case some other jobs are posted to main thread
+    DAVA::RunOnMainThreadAsync([backendPointer]() {
+        std::weak_ptr<MovieViewControl>* weak = reinterpret_cast<std::weak_ptr<MovieViewControl>*>(static_cast<uintptr_t>(backendPointer));
+        delete weak;
+    });
 }
 
 } // extern "C"

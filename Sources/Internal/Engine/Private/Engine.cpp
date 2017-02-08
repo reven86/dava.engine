@@ -115,6 +115,11 @@ const KeyedArchive* Engine::GetOptions() const
     return engineBackend->GetOptions();
 }
 
+bool Engine::IsSuspended() const
+{
+    return engineBackend->IsSuspended();
+}
+
 } // namespace DAVA
 
 #endif // __DAVAENGINE_COREV2__

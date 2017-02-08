@@ -6,9 +6,15 @@ namespace DAVA
 {
 namespace Metas
 {
-Range::Range(const Any& minValue_, const Any& maxValue_)
+Range::Range(const Any& minValue_, const Any& maxValue_, const Any& step_)
     : minValue(minValue_)
     , maxValue(maxValue_)
+    , step(step_)
+{
+}
+
+FloatNumberAccuracy::FloatNumberAccuracy(uint32 accuracy_)
+    : accuracy(accuracy_)
 {
 }
 

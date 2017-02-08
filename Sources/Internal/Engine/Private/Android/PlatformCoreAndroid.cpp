@@ -56,6 +56,8 @@ void PlatformCore::Init()
 
 void PlatformCore::Run()
 {
+    AndroidBridge::HideSplashView();
+
     engineBackend->OnGameLoopStarted();
 
     while (!quitGameThread)

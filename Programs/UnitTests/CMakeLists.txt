@@ -15,8 +15,12 @@ if( NOT DAVA_MEGASOLUTION AND NOT DISABLE_MEMORY_PROFILER )
     set ( DAVA_MEMORY_PROFILER 1 )
 endif()
 
-if (DAVA_COREV2)
+if ( DAVA_COREV2 )
     dava_add_definitions(-D__DAVAENGINE_COREV2__)
+endif()
+
+if ( WIN32 OR MACOS )
+    find_package(DavaTools REQUIRED )
 endif()
 
 # Enable LOCALIZATION_DEBUG in UnitTests to verify successful compilation
@@ -33,10 +37,6 @@ endif()
 
 find_package( Steam REQUIRED )
 find_package( DavaFramework REQUIRED COMPONENTS "${DAVA_COMPONENTS}" )
-if ( WIN32 OR MACOS )
-## temporary disabled because DavaTools is not DAVA-module
-#	find_package(DavaTools REQUIRED )
-endif()
 
 include_directories   ( "Classes" )
 

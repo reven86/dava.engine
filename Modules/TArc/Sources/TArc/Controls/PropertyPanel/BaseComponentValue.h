@@ -13,6 +13,7 @@ class QStyleOptionViewItem;
 class QModelIndex;
 class QStyle;
 class QPainter;
+class QEvent;
 
 namespace DAVA
 {
@@ -62,6 +63,7 @@ public:
 
     StaticEditorProxy GetStaticEditor();
     InteractiveEditorProxy GetInteractiveEditor();
+    virtual bool EditorEvent(QEvent* event, const QStyleOptionViewItem& option);
 
     QString GetPropertyName() const;
     int32 GetPropertiesNodeCount() const;
@@ -69,11 +71,11 @@ public:
 
 protected:
     virtual Any GetValue() const = 0;
-    virtual bool IsValidValueToSet(const Any& value) const = 0;
+    virtual bool IsValidValueToSet(const Any& newValue, const Any& currentValue) const = 0;
     void SetValue(const Any& value);
     virtual const StaticEditorDrawer* GetStaticEditorDrawer() const = 0;
     virtual QWidget* AcquireEditorWidget(QWidget* parent, const QStyleOptionViewItem& option) = 0;
-    virtual void ReleaseEditorWidget(QWidget* editor) = 0;
+    virtual void ReleaseEditorWidget(QWidget* editor);
 
     void AddPropertyNode(const std::shared_ptr<PropertyNode>& node);
     void RemovePropertyNode(const std::shared_ptr<PropertyNode>& node);
