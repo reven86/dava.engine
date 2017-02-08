@@ -44,6 +44,7 @@ class FogSettingsChangedReceiver;
 class VisibilityCheckSystem;
 class RECommandStack;
 class EditorSceneSystem;
+class ParticleEffectDebugDrawSystem;
 
 class SceneEditor2 : public DAVA::Scene
 {
@@ -76,6 +77,7 @@ public:
     RulerToolSystem* rulerToolSystem = nullptr;
     StructureSystem* structureSystem = nullptr;
     EditorParticlesSystem* particlesSystem = nullptr;
+    ParticleEffectDebugDrawSystem* particleEffectDebugDrawSystem = nullptr;
     EditorLightSystem* editorLightSystem = nullptr;
     TextDrawSystem* textDrawSystem = nullptr;
     DebugDrawSystem* debugDrawSystem = nullptr;

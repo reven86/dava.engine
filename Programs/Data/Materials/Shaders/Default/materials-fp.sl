@@ -154,6 +154,10 @@ fragment_out
     [material][a] property float lightmapSize = 1.0;
 #endif
 
+#if PARTICLE_DEBUG_SHOW_ALPHA
+    [material][a] property float particleAlphaThreshold = 0.2f;
+#endif
+
 inline float 
 FresnelShlick( float NdotL, float Cspec )
 {
@@ -576,6 +580,14 @@ fragment_out fp_main( fragment_in input )
             //VI: fog equation is inside of color equation for framebuffer fetch
             output.color.rgb = lerp( output.color.rgb, varFogColor, varFogAmoung );
         #endif
+    #endif
+
+    #if PARTICLE_DEBUG_SHOW_ALPHA
+        if (output.color.a < particleAlphaThreshold)
+            output.color = float4(0.0f, 0.0f, 1.0f, 0.3f);
+    #endif
+    #if PARTICLE_DEBUG_SHOW_OVERDRAW
+        output.color = float4(0.1f, 0.0f, 0.05f, 1.0f);
     #endif
 
     return output;

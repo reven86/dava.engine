@@ -26,6 +26,7 @@
 #include "Classes/Qt/Scene/System/VisibilityCheckSystem/VisibilityCheckSystem.h"
 #include "Classes/Qt/Scene/System/EditorVegetationSystem.h"
 #include "Classes/Qt/Scene/System/EditorSceneSystem.h"
+#include "Classes/Qt/Scene/System/ParticleEffectDebugDrawSystem/ParticleEffectDebugDrawSystem.h"
 
 // framework
 #include "Debug/DVAssert.h"
@@ -131,6 +132,9 @@ SceneEditor2::SceneEditor2()
     particlesSystem = new EditorParticlesSystem(this);
     AddSystem(particlesSystem, MAKE_COMPONENT_MASK(DAVA::Component::PARTICLE_EFFECT_COMPONENT), 0, renderUpdateSystem);
 
+    particleEffectDebugDrawSystem = new ParticleEffectDebugDrawSystem(this);
+    AddSystem(particleEffectDebugDrawSystem, MAKE_COMPONENT_MASK(DAVA::Component::PARTICLE_EFFECT_COMPONENT), 0, renderUpdateSystem);
+    
     textDrawSystem = new TextDrawSystem(this, cameraSystem);
     AddSystem(textDrawSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS, renderUpdateSystem);
 
