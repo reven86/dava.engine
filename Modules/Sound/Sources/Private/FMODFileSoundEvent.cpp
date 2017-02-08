@@ -10,11 +10,9 @@ Map<FMOD::Sound*, int32> soundRefsMap;
 
 Mutex FMODFileSoundEvent::soundMapMutex;
 
-FMODFileSoundEvent* FMODFileSoundEvent::CreateWithFlags(const FilePath& fileName, uint32 flags, int32 priority /* = 128 */)
+FMODFileSoundEvent* FMODFileSoundEvent::CreateWithFlags(const FilePath& fileName, uint32 flags, int32 priority, FMODSoundSystem* rootSoundSystem )
 {
-    FMODSoundSystem* soundSystem = FMODSoundSystem::Instance();
-
-    FMODFileSoundEvent* sound = new FMODFileSoundEvent(fileName, flags, priority);
+    FMODFileSoundEvent* sound = new FMODFileSoundEvent(fileName, flags, priority, rootSoundSystem);
 
     FMOD_MODE fmodMode = FMOD_DEFAULT;
 
@@ -37,9 +35,9 @@ FMODFileSoundEvent* FMODFileSoundEvent::CreateWithFlags(const FilePath& fileName
     }
     else
     {
-        if (soundSystem->fmodSystem)
+        if (rootSoundSystem->fmodSystem)
         {
-            FMOD_VERIFY(soundSystem->fmodSystem->createSound(fileName.GetStringValue().c_str(), fmodMode, 0, &sound->fmodSound));
+            FMOD_VERIFY(rootSoundSystem->fmodSystem->createSound(fileName.GetStringValue().c_str(), fmodMode, 0, &sound->fmodSound));
         }
 
         if (!sound->fmodSound)
@@ -57,16 +55,16 @@ FMODFileSoundEvent* FMODFileSoundEvent::CreateWithFlags(const FilePath& fileName
     }
     soundMapMutex.Unlock();
 
-    if (soundSystem->fmodSystem)
+    if (rootSoundSystem->fmodSystem)
     {
-        FMOD_VERIFY(soundSystem->fmodSystem->createChannelGroup(0, &sound->fmodInstanceGroup));
-        FMOD_VERIFY(soundSystem->masterChannelGroup->addGroup(sound->fmodInstanceGroup));
+        FMOD_VERIFY(rootSoundSystem->fmodSystem->createChannelGroup(0, &sound->fmodInstanceGroup));
+        FMOD_VERIFY(rootSoundSystem->masterChannelGroup->addGroup(sound->fmodInstanceGroup));
     }
 
     return sound;
 }
 
-FMODFileSoundEvent::FMODFileSoundEvent(const FilePath& _fileName, uint32 _flags, int32 _priority)
+FMODFileSoundEvent::FMODFileSoundEvent(const FilePath& _fileName, uint32 _flags, int32 _priority, FMODSoundSystem* rootSoundSystem )
     :
     fileName(_fileName)
     ,
@@ -77,6 +75,8 @@ FMODFileSoundEvent::FMODFileSoundEvent(const FilePath& _fileName, uint32 _flags,
     fmodSound(0)
     ,
     fmodInstanceGroup(0)
+    ,
+    soundSystem(rootSoundSystem )
 {
 }
 
@@ -85,7 +85,7 @@ FMODFileSoundEvent::~FMODFileSoundEvent()
     if (fmodInstanceGroup)
         FMOD_VERIFY(fmodInstanceGroup->release());
 
-    FMODSoundSystem::Instance()->RemoveSoundEventFromGroups(this);
+    soundSystem->RemoveSoundEventFromGroups(this);
 }
 
 int32 FMODFileSoundEvent::Release()
@@ -108,11 +108,11 @@ int32 FMODFileSoundEvent::Release()
 
 bool FMODFileSoundEvent::Trigger()
 {
-    if (nullptr == FMODSoundSystem::Instance()->fmodSystem)
+    if (nullptr == soundSystem->fmodSystem)
         return false;
 
     FMOD::Channel* fmodInstance = nullptr;
-    FMOD_VERIFY(FMODSoundSystem::Instance()->fmodSystem->playSound(FMOD_CHANNEL_FREE, fmodSound, true, &fmodInstance)); //start sound paused
+    FMOD_VERIFY(soundSystem->fmodSystem->playSound(FMOD_CHANNEL_FREE, fmodSound, true, &fmodInstance)); //start sound paused
     if (fmodInstance && fmodInstanceGroup)
     {
         FMOD_VERIFY(fmodInstance->setPriority(priority));
@@ -238,7 +238,7 @@ FMOD_RESULT F_CALLBACK FMODFileSoundEvent::SoundInstanceEndPlaying(FMOD_CHANNEL*
             if (sound)
             {
                 sound->PerformEvent(EVENT_END);
-                FMODSoundSystem::Instance()->ReleaseOnUpdate(sound);
+                sound->soundSystem->ReleaseOnUpdate(sound);
             }
         }
     }

@@ -19,6 +19,8 @@ class Channel;
 
 namespace DAVA
 {
+class FMODSoundSystem;
+
 class FMODFileSoundEvent : public SoundEvent
 {
 public:
@@ -68,10 +70,10 @@ public:
     };
 
 protected:
-    FMODFileSoundEvent(const FilePath& fileName, uint32 flags, int32 priority);
+    FMODFileSoundEvent(const FilePath& fileName, uint32 flags, int32 priority, FMODSoundSystem* rootSoundSystem );
     virtual ~FMODFileSoundEvent();
 
-    static FMODFileSoundEvent* CreateWithFlags(const FilePath& fileName, uint32 flags, int32 priority = 128);
+    static FMODFileSoundEvent* CreateWithFlags(const FilePath& fileName, uint32 flags, int32 priority, FMODSoundSystem* rootSoundSystem );
 
     static Mutex soundMapMutex;
 
@@ -83,6 +85,8 @@ protected:
 
     FMOD::Sound* fmodSound;
     FMOD::ChannelGroup* fmodInstanceGroup;
+
+    FMODSoundSystem* soundSystem;
 
     friend class FMODSoundSystem;
 };

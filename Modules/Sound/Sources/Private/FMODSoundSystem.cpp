@@ -65,17 +65,10 @@ static const FastName SEREALIZE_EVENTTYPE_EVENTSYSTEM("eventFromSystem");
 
 Mutex FMODSoundSystem::soundGroupsMutex;
 
-FMODSoundSystem* FMODSoundSystem::instFMODSoundSystem = nullptr;
-
 #if defined(__DAVAENGINE_ANDROID__)
 jobject fmodActivityListenerGlobalRef = nullptr;
 Function<void(jobject)> fmodActivityListenerUnregisterMethod = nullptr;
 #endif
-
-FMODSoundSystem* FMODSoundSystem::Instance()
-{
-    return  instFMODSoundSystem;
-}
 
 #if defined(__DAVAENGINE_ANDROID__)
 jobject fmodActivityListenerGlobalRef = nullptr;
@@ -86,7 +79,6 @@ Function<void(jobject)> fmodActivityListenerUnregisterMethod = nullptr;
 FMODSoundSystem::FMODSoundSystem(Engine* e)
     : engine(e), SoundSystem(e)
 {
-    instFMODSoundSystem = this;
     sigUpdateId = engine->update.Connect(this, &FMODSoundSystem::Update);
 #else
 FMODSoundSystem::FMODSoundSystem()
@@ -221,7 +213,7 @@ SoundStream* FMODSoundSystem::CreateSoundStream(SoundStreamDelegate* streamDeleg
 
 SoundEvent* FMODSoundSystem::CreateSoundEventByID(const FastName& eventName, const FastName& groupName)
 {
-    SoundEvent* event = new FMODSoundEvent(eventName);
+    SoundEvent* event = new FMODSoundEvent(eventName, this);
     AddSoundEventToGroup(groupName, event);
 
     return event;
@@ -244,7 +236,7 @@ SoundEvent* FMODSoundSystem::CreateSoundEventFromFile(const FilePath& fileName, 
 
     if (!event)
     {
-        event = FMODFileSoundEvent::CreateWithFlags(fileName, flags, priority);
+        event = FMODFileSoundEvent::CreateWithFlags(fileName, flags, priority, this);
     }
 
     if (event)

@@ -15,6 +15,8 @@ class Event;
 
 namespace DAVA
 {
+class FMODSoundSystem;
+
 class FMODSoundEvent : public SoundEvent
 {
 public:
@@ -46,7 +48,7 @@ public:
     virtual float32 GetMaxDistance() const;
 
 protected:
-    FMODSoundEvent(const FastName& eventName);
+    FMODSoundEvent(const FastName& eventName, FMODSoundSystem* rootSoundSystem );
     void ApplyParamsToEvent(FMOD::Event* event);
     void InitParamsMap();
 
@@ -59,6 +61,8 @@ protected:
 
     FastNameMap<float32> paramsValues;
     Vector<FMOD::Event*> fmodEventInstances;
+
+    FMODSoundSystem* soundSystem;
 
     friend class FMODSoundSystem;
 };

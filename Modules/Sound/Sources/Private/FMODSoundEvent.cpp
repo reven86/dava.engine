@@ -20,17 +20,17 @@ static float32 SpeedToPitchInOctaves(const float32 speed)
     return std::log2f(speed);
 }
 
-FMODSoundEvent::FMODSoundEvent(const FastName& _eventName)
-    :
-    is3D(false)
+FMODSoundEvent::FMODSoundEvent(const FastName& _eventName, FMODSoundSystem* rootSoundSystem )
+    : is3D(false),
+      soundSystem( rootSoundSystem )
 {
     DVASSERT(_eventName.c_str()[0] != '/');
     eventName = _eventName;
 
-    if (FMODSoundSystem::Instance()->fmodEventSystem)
+    if (soundSystem->fmodEventSystem)
     {
         FMOD::Event* fmodEventInfo = nullptr;
-        FMODSoundSystem::Instance()->fmodEventSystem->getEvent(eventName.c_str(), FMOD_EVENT_INFOONLY, &fmodEventInfo);
+        soundSystem->fmodEventSystem->getEvent(eventName.c_str(), FMOD_EVENT_INFOONLY, &fmodEventInfo);
         if (fmodEventInfo)
         {
             FMOD_MODE mode = 0;
@@ -51,12 +51,11 @@ FMODSoundEvent::~FMODSoundEvent()
 {
     DVASSERT(fmodEventInstances.size() == 0);
 
-    FMODSoundSystem::Instance()->RemoveSoundEventFromGroups(this);
+    soundSystem->RemoveSoundEventFromGroups(this);
 }
 
 bool FMODSoundEvent::Trigger()
 {
-    FMODSoundSystem* soundSystem = FMODSoundSystem::Instance();
     FMOD::EventSystem* fmodEventSystem = soundSystem->fmodEventSystem;
 
     if (fmodEventSystem == nullptr)
@@ -189,8 +188,6 @@ void FMODSoundEvent::UpdateInstancesPosition()
 
 void FMODSoundEvent::Stop(bool force /* = false */)
 {
-    FMODSoundSystem* soundSystem = FMODSoundSystem::Instance();
-
     Vector<FMOD::Event*> instancesCopy(fmodEventInstances);
     size_t instancesCount = instancesCopy.size();
     for (size_t i = 0; i < instancesCount; ++i)
@@ -278,7 +275,7 @@ void FMODSoundEvent::PerformCallback(FMOD::Event* fmodEvent)
     {
         PerformEvent(SoundEvent::EVENT_END);
         fmodEventInstances.erase(it);
-        FMODSoundSystem::Instance()->ReleaseOnUpdate(this);
+        soundSystem->ReleaseOnUpdate(this);
     }
 }
 
@@ -293,7 +290,7 @@ void FMODSoundEvent::GetEventParametersInfo(Vector<SoundEventParameterInfo>& par
     }
     else
     {
-        FMOD::EventSystem* fmodEventSystem = FMODSoundSystem::Instance()->fmodEventSystem;
+        FMOD::EventSystem* fmodEventSystem = soundSystem->fmodEventSystem;
         if (fmodEventSystem)
         {
             FMOD_VERIFY(fmodEventSystem->getEvent(eventName.c_str(), FMOD_EVENT_INFOONLY, &event));
@@ -332,7 +329,7 @@ String FMODSoundEvent::GetEventName() const
 float32 FMODSoundEvent::GetMaxDistance() const
 {
     float32 distance = 0;
-    FMOD::EventSystem* fmodEventSystem = FMODSoundSystem::Instance()->fmodEventSystem;
+    FMOD::EventSystem* fmodEventSystem = soundSystem->fmodEventSystem;
     FMOD::Event* fmodEventInfo = nullptr;
 
     if (fmodEventSystem)
