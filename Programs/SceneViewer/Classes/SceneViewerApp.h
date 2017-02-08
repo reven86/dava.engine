@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Settings.h"
+
 #include <GridTest.h>
 
 #include <DAVAEngine.h>
@@ -20,6 +22,7 @@ class PerformanceResultsScreen;
 struct SceneViewerData
 {
     DAVA::Engine& engine;
+    Settings settings;
     DAVA::float32 screenAspect;
     DAVA::FilePath scenePath;
     DAVA::ScopedPtr<DAVA::Scene> scene;

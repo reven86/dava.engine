@@ -1,5 +1,4 @@
 #include "QualityPreferences.h"
-#include "Settings.h"
 
 #include <Scene3D/Systems/QualitySettingsSystem.h>
 #include <FileSystem/KeyedArchive.h>
@@ -14,11 +13,11 @@ DAVA::String SETTING_QUALITY_PARTICLE = "Quality/Particle";
 DAVA::String SETTING_QUALITY_OPTIONS = "Quality/Options/";
 DAVA::String SETTING_QUALITY_METAL = "Quality/Metal";
 
-void QualityPreferences::Load()
+void QualityPreferences::LoadFromSettings(Settings& appSettings)
 {
     using namespace DAVA;
 
-    const KeyedArchive* settings = Settings::Instance()->GetQualitySettings();
+    const KeyedArchive* settings = appSettings.GetQualitySettings();
     if (settings != nullptr)
     {
         VariantType* value = settings->GetVariant(SETTING_QUALITY_TEXTURE);
@@ -118,7 +117,7 @@ void QualityPreferences::Load()
     }
 }
 
-void QualityPreferences::Save()
+void QualityPreferences::SaveToSettings(Settings& appSettings)
 {
     using namespace DAVA;
 
@@ -154,6 +153,6 @@ void QualityPreferences::Save()
 
     archive->SetBool(SETTING_QUALITY_METAL, QualitySettingsSystem::Instance()->GetMetalPreview());
 
-    Settings::Instance()->SetQualitySettings(archive);
+    appSettings.SetQualitySettings(archive);
 }
 }

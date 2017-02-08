@@ -17,7 +17,7 @@ class TriggerBox : public DAVA::UIControl, public LockedButtonHolder
 public:
     using OptionID = DAVA::uint32;
 
-    explicit TriggerBox(TriggerBoxListener& listener, DAVA::Font* font);
+    explicit TriggerBox(TriggerBoxListener& listener, DAVA::ScopedPtr<DAVA::Font>& font);
 
     bool AddOption(OptionID optionId, const DAVA::WideString& text, bool toSelect = false);
     void SetOptionSelected(OptionID optionID);
@@ -31,7 +31,7 @@ private:
 
 private:
     TriggerBoxListener& listener;
-    DAVA::Font* font = nullptr;
+    DAVA::ScopedPtr<DAVA::Font> font = nullptr;
     DAVA::float32 nextButtonX = 10.f;
     OptionsMap options;
     OptionsMap::iterator selectedOption = options.end();

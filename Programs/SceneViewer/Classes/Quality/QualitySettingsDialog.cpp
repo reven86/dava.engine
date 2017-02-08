@@ -35,6 +35,7 @@ public:
             UIAnchorComponent* anchor = GetOrCreateComponent<UIAnchorComponent>();
             anchor->SetHCenterAnchorEnabled(true);
         }
+
         GetBackground()->SetColor(Color(0.65f, 0.65f, 0.65f, OPACITY));
         GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
 
@@ -67,13 +68,13 @@ public:
 
     void SetLeftColumnText(const WideString& text)
     {
-        DVASSERT(leftColumnText != nullptr);
+        DVASSERT(leftColumnText);
         leftColumnText->SetText(text);
     }
 
     void SetRightColumnControl(UIControl* control)
     {
-        DVASSERT(rightColumn != nullptr);
+        DVASSERT(rightColumn);
         DVASSERT(control != nullptr);
         rightColumn->AddControl(control);
 
@@ -85,8 +86,8 @@ public:
     }
 
 private:
-    UIStaticText* leftColumnText = nullptr;
-    UIControl* rightColumn = nullptr;
+    ScopedPtr<UIStaticText> leftColumnText = nullptr;
+    ScopedPtr<UIControl> rightColumn = nullptr;
 };
 
 class CaptionCell : public UIListCell
@@ -100,7 +101,7 @@ public:
         sizePolicy->SetHorizontalPolicy(UISizePolicyComponent::PERCENT_OF_PARENT);
         sizePolicy->SetHorizontalValue(100.0f);
 
-        UIStaticText* captionText = new UIStaticText(Rect(0.f, 0.f, 150.f, 0.f));
+        ScopedPtr<UIStaticText> captionText(new UIStaticText(Rect(0.f, 0.f, 150.f, 0.f)));
         captionText->SetFont(font);
         captionText->SetTextAlign(ALIGN_VCENTER);
         captionText->SetTextColorInheritType(UIControlBackground::COLOR_IGNORE_PARENT);
@@ -117,7 +118,8 @@ public:
 };
 }
 
-QualitySettingsDialog::QualitySettingsDialog()
+QualitySettingsDialog::QualitySettingsDialog(Settings& settings)
+    : settings(settings)
 {
     using namespace DAVA;
 
@@ -141,7 +143,7 @@ QualitySettingsDialog::QualitySettingsDialog()
         anchor->SetVCenterAnchorEnabled(true);
     }
 
-    UIStaticText* captionText = new UIStaticText(Rect(0.f, 0.f, 0.f, cellHeight));
+    captionText = new UIStaticText(Rect(0.f, 0.f, 0.f, cellHeight));
     captionText->SetText(L"Quality settings");
     captionText->SetFont(font);
     captionText->SetTextAlign(ALIGN_VCENTER | ALIGN_HCENTER);
@@ -155,7 +157,7 @@ QualitySettingsDialog::QualitySettingsDialog()
 
     float32 margin = 5.f;
 
-    UIList* scrollableOptionsList = new UIList(Rect(), UIList::ORIENTATION_VERTICAL);
+    scrollableOptionsList = new UIList(Rect(), UIList::ORIENTATION_VERTICAL);
     scrollableOptionsList->SetDelegate(this);
     {
         UIAnchorComponent* anchor = scrollableOptionsList->GetOrCreateComponent<UIAnchorComponent>();
@@ -174,7 +176,7 @@ QualitySettingsDialog::QualitySettingsDialog()
 
     float32 buttonWidth = cellHeight * 3.0f;
 
-    okButton = new UIButton(Rect(0.f, 0.f, buttonWidth, cellHeight - 2 * margin));
+    ScopedPtr<UIButton> okButton(new UIButton(Rect(0.f, 0.f, buttonWidth, cellHeight - 2 * margin)));
     okButton->SetStateDrawType(UIControl::STATE_NORMAL, UIControlBackground::DRAW_FILL);
     okButton->GetStateBackground(UIControl::STATE_NORMAL)->SetColor(Color(0.5f, 0.6f, 0.5f, 0.5f));
     okButton->SetStateDrawType(UIControl::STATE_PRESSED_INSIDE, UIControlBackground::DRAW_FILL);
@@ -192,7 +194,7 @@ QualitySettingsDialog::QualitySettingsDialog()
     }
     AddControl(okButton);
 
-    cancelButton = new UIButton(Rect(0.f, 0.f, buttonWidth, cellHeight - 2 * margin));
+    ScopedPtr<UIButton> cancelButton(new UIButton(Rect(0.f, 0.f, buttonWidth, cellHeight - 2 * margin)));
     cancelButton->SetStateDrawType(UIControl::STATE_NORMAL, UIControlBackground::DRAW_FILL);
     cancelButton->GetStateBackground(UIControl::STATE_NORMAL)->SetColor(Color(0.6f, 0.5f, 0.5f, 0.5f));
     cancelButton->SetStateDrawType(UIControl::STATE_PRESSED_INSIDE, UIControlBackground::DRAW_FILL);
@@ -248,7 +250,7 @@ void QualitySettingsDialog::BuildQualityControls()
     auto AddCaptionCell = [this](const WideString& text)
     {
         CaptionCell* captionCell = new CaptionCell(font, text);
-        cells.emplace_back(captionCell);
+        cells.push_back(captionCell);
     };
 
     // textures quality
@@ -257,7 +259,7 @@ void QualitySettingsDialog::BuildQualityControls()
 
         {
             QualitySettingsCell* cell = new QualitySettingsCell(font);
-            cells.emplace_back(cell);
+            cells.push_back(cell);
 
             cell->SetLeftColumnText(L"Textures:");
 
@@ -408,6 +410,17 @@ void QualitySettingsDialog::BuildQualityControls()
     applyButton->SetState(UIControl::eControlState::STATE_DISABLED);
 }
 
+QualitySettingsDialog::~QualitySettingsDialog()
+{
+    for (CellData& cellData : cells)
+    {
+        if (!cellData.wasRequested)
+        {
+            SafeRelease(cellData.cell); // remaining cells (i.e. wasRequested == false) are owned (and will be deleted) by UIList mechanism
+        }
+    }
+}
+
 void QualitySettingsDialog::ApplyQualitySettings()
 {
     // textures quality
@@ -528,7 +541,7 @@ void QualitySettingsDialog::ApplyQualitySettings()
         scene->foliageSystem->SyncFoliageWithLandscape();
     }
 
-    QualityPreferences::Save();
+    QualityPreferences::SaveToSettings(settings);
     applyButton->SetState(UIControl::eControlState::STATE_DISABLED);
 }
 
@@ -609,7 +622,6 @@ void QualitySettingsDialog::ResetQualitySettings()
             {
                 particleQualityBox->SetOptionSelected(static_cast<TriggerBox::OptionID>(i));
                 break;
-                ;
             }
         }
     }
@@ -660,7 +672,7 @@ void QualitySettingsDialog::ApplyTextureQuality()
         DAVA::Set<DAVA::MaterialTextureInfo*> materialTextures;
         material->CollectLocalTextures(materialTextures);
 
-        for (auto const& matTex : materialTextures)
+        for (DAVA::MaterialTextureInfo* matTex : materialTextures)
         {
             if (DAVA::FileSystem::Instance()->Exists(matTex->path) && matTex->texture)
             {
@@ -772,8 +784,16 @@ DAVA::float32 QualitySettingsDialog::CellHeight(DAVA::UIList* list, DAVA::int32 
 
 DAVA::UIListCell* QualitySettingsDialog::CellAtIndex(DAVA::UIList* list, DAVA::int32 index)
 {
-    DVASSERT(index < cells.size());
-    return cells[index];
+    DAVA::UIListCell* c = list->GetReusableCell(DAVA::Format("cell%d", index));
+    if (!c)
+    {
+        cells[index].wasRequested = true;
+        return cells[index].cell;
+    }
+    else
+    {
+        return c;
+    }
 }
 
 void QualitySettingsDialog::OnOptionChanged(TriggerBox*)

@@ -6,7 +6,7 @@ TriggerBox::OptionID OptionOn = 0;
 TriggerBox::OptionID OptionOff = 1;
 }
 
-BinaryTriggerBox::BinaryTriggerBox(TriggerBoxListener& listener, DAVA::Font* font, const DAVA::WideString& onOptionText, const DAVA::WideString& offOptionText)
+BinaryTriggerBox::BinaryTriggerBox(TriggerBoxListener& listener, DAVA::ScopedPtr<DAVA::Font>& font, const DAVA::WideString& onOptionText, const DAVA::WideString& offOptionText)
     : TriggerBox(listener, font)
 {
     AddOption(BinaryExclusiveSetDetails::OptionOn, onOptionText, true);

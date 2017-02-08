@@ -248,7 +248,7 @@ void ViewSceneScreen::AddInfoTextControl()
 void ViewSceneScreen::AddQualitySettingsDialog()
 {
     DVASSERT(!qualitySettingsDialog);
-    qualitySettingsDialog = new QualitySettingsDialog();
+    qualitySettingsDialog = new QualitySettingsDialog(data.settings);
     qualitySettingsDialog->SetParentControl(this);
     qualitySettingsDialog->SetDelegate(this);
 }
@@ -293,7 +293,7 @@ void ViewSceneScreen::SetCameraAtCenter(DAVA::Camera* camera)
 void ViewSceneScreen::OnFileSelected(DAVA::UIFileSystemDialog* forDialog, const DAVA::FilePath& pathToFile)
 {
     scenePath = pathToFile;
-    Settings::Instance()->SetLastOpenedScenePath(scenePath);
+    data.settings.SetLastOpenedScenePath(scenePath);
     ReloadScene();
 }
 

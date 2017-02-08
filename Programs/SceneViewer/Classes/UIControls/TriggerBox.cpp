@@ -4,7 +4,7 @@
 #include <UI/Layouts/UIAnchorComponent.h>
 #include <Utils/StringFormat.h>
 
-TriggerBox::TriggerBox(TriggerBoxListener& listener, DAVA::Font* font)
+TriggerBox::TriggerBox(TriggerBoxListener& listener, DAVA::ScopedPtr<DAVA::Font>& font)
     : listener(listener)
     , font(font)
 {

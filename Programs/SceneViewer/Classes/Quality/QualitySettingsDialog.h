@@ -20,14 +20,13 @@ class Scene;
 }
 
 class QualitySettingsDialog final
-: public DAVA::UIControl
-  ,
-  public DAVA::UIListDelegate
-  ,
+: public DAVA::UIControl,
+  public DAVA::UIListDelegate,
   public TriggerBoxListener
 {
 public:
-    QualitySettingsDialog();
+    QualitySettingsDialog(Settings& settings);
+    ~QualitySettingsDialog();
 
     void SetParentControl(UIControl*);
     void SetDelegate(QualitySettingsDialogDelegate*);
@@ -59,15 +58,26 @@ private:
     void ReloadEntityEmitters(DAVA::Entity*);
 
 private:
+    Settings& settings;
+
     DAVA::UIControl* parentControl = nullptr;
     QualitySettingsDialogDelegate* delegate = nullptr;
 
     DAVA::Scene* scene = nullptr;
 
     DAVA::float32 cellHeight = 0.f;
-    DAVA::Font* font = nullptr;
+    DAVA::ScopedPtr<DAVA::Font> font = nullptr;
 
-    DAVA::Vector<DAVA::ScopedPtr<DAVA::UIListCell>> cells;
+    struct CellData
+    {
+        CellData(DAVA::UIListCell* cell)
+            : cell(cell)
+        {
+        }
+        DAVA::UIListCell* cell = nullptr;
+        bool wasRequested = false;
+    };
+    DAVA::Vector<CellData> cells;
 
     DAVA::ScopedPtr<TriggerBox> textureQualityBox;
     DAVA::ScopedPtr<TriggerBox> anisotropyQualityBox;
@@ -77,7 +87,7 @@ private:
     DAVA::Vector<DAVA::ScopedPtr<BinaryTriggerBox>> qualityOptionBoxes;
     DAVA::ScopedPtr<BinaryTriggerBox> metalOptionBox;
 
-    DAVA::UIButton* okButton = nullptr;
-    DAVA::UIButton* cancelButton = nullptr;
-    DAVA::UIButton* applyButton = nullptr;
+    DAVA::ScopedPtr<DAVA::UIButton> applyButton;
+    DAVA::ScopedPtr<DAVA::UIStaticText> captionText;
+    DAVA::ScopedPtr<DAVA::UIList> scrollableOptionsList;
 };

@@ -60,7 +60,7 @@ void Settings::SetQualitySettings(DAVA::KeyedArchive* archive)
 
 DAVA::FilePath Settings::GetLastOpenedScenePath() const
 {
-    DAVA::VariantType* value = Settings::Instance()->GetValue(SceneViewerSettingsDetails::SETTING_LAST_OPENED_SCENE);
+    DAVA::VariantType* value = GetValue(SceneViewerSettingsDetails::SETTING_LAST_OPENED_SCENE);
     if (value != nullptr && value->GetType() == DAVA::VariantType::TYPE_FILEPATH)
     {
         return value->AsFilePath();

@@ -2,7 +2,6 @@
 #include "UIScreens/ViewSceneScreen.h"
 #include "UIScreens/PerformanceResultsScreen.h"
 #include "Quality/QualityPreferences.h"
-#include "Settings.h"
 
 #include <Engine/Engine.h>
 #include <Engine/Window.h>
@@ -29,8 +28,8 @@ SceneViewerApp::SceneViewerApp(DAVA::Engine& engine)
     DAVA::QualitySettingsSystem::Instance()->SetMetalPreview(true);
     DAVA::QualitySettingsSystem::Instance()->SetRuntimeQualitySwitching(true);
 
-    QualityPreferences::Load();
-    data.scenePath = Settings::Instance()->GetLastOpenedScenePath();
+    QualityPreferences::LoadFromSettings(data.settings);
+    data.scenePath = data.settings.GetLastOpenedScenePath();
 }
 
 void SceneViewerApp::OnAppStarted()

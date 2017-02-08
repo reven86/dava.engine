@@ -35,7 +35,7 @@ struct SubMenuItem : public MenuItem
 class Menu final
 {
 public:
-    explicit Menu(Menu* parentMenu, DAVA::UIControl* bearerControl, DAVA::Font* font, DAVA::Rect& firstButtonRect);
+    explicit Menu(Menu* parentMenu, DAVA::UIControl* bearerControl, DAVA::ScopedPtr<DAVA::Font>&, DAVA::Rect& firstButtonRect);
     ~Menu();
 
     void Show(bool toShow);
@@ -55,7 +55,7 @@ private:
 private:
     Menu* parentMenu = nullptr;
     DAVA::UIControl* bearerControl = nullptr;
-    DAVA::Font* font = nullptr;
+    DAVA::ScopedPtr<DAVA::Font> font = nullptr;
 
     DAVA::Vector<std::unique_ptr<MenuItem>> menuItems;
 

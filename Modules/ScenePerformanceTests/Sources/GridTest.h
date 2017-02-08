@@ -8,7 +8,9 @@
 class GridTestListener
 {
 public:
-    virtual ~GridTestListener() {}
+    virtual ~GridTestListener()
+    {
+    }
     virtual void OnGridTestStateChanged() = 0;
 };
 

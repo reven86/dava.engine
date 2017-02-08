@@ -81,12 +81,14 @@ void PerformanceResultsScreen::AddBackgroundMap()
     panoramaBackground->SetSprite(sprite);
     panoramaBackground->SetDrawType(UIControlBackground::DRAW_STRETCH_BOTH);
     panoramaBackground->SetAlign(eAlign::ALIGN_LEFT | eAlign::ALIGN_TOP);
+
     UIControlBackground::UIMargins panoramaMargins;
     panoramaMargins.left = panoramaRect.x;
     panoramaMargins.top = panoramaRect.y;
     panoramaMargins.bottom = GetSize().dy - panoramaRect.y - panoramaRect.dy;
     panoramaMargins.right = GetSize().dx - panoramaRect.x - panoramaRect.dx;
     panoramaBackground->SetMargins(&panoramaMargins);
+
     SetBackground(panoramaBackground);
 }
 

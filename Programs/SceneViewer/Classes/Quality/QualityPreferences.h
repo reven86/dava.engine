@@ -1,10 +1,12 @@
 #pragma once
 
+#include "SceneViewerApp.h"
+
 namespace QualityPreferences
 {
 /** loads quality preferences from application settings and sets them to QualitySettingsSystem */
-void Load();
+void LoadFromSettings(Settings&);
 
 /** gets quality preferences from QualitySettingsSystem and saves them to application settings*/
-void Save();
+void SaveToSettings(Settings&);
 };

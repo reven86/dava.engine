@@ -6,7 +6,7 @@
 #include <FileSystem/KeyedArchive.h>
 #include <Base/ScopedPtr.h>
 
-class Settings : public DAVA::StaticSingleton<Settings>
+class Settings
 {
 public:
     Settings();

@@ -20,7 +20,7 @@ namespace MenuDetails
 const DAVA::float32 SPACE_BETWEEN_BUTTONS = 10.0f;
 }
 
-Menu::Menu(Menu* parentMenu, DAVA::UIControl* bearerControl, DAVA::Font* font, DAVA::Rect& firstButtonRect)
+Menu::Menu(Menu* parentMenu, DAVA::UIControl* bearerControl, DAVA::ScopedPtr<DAVA::Font>& font, DAVA::Rect& firstButtonRect)
     : parentMenu(parentMenu)
     , bearerControl(bearerControl)
     , font(font)
@@ -31,7 +31,7 @@ Menu::Menu(Menu* parentMenu, DAVA::UIControl* bearerControl, DAVA::Font* font, D
 
 Menu::~Menu()
 {
-    for (auto& item : menuItems)
+    for (std::unique_ptr<MenuItem>& item : menuItems)
     {
         bearerControl->RemoveControl(item->button);
     }
