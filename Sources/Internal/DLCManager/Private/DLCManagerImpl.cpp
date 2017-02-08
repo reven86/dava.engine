@@ -937,7 +937,7 @@ void DLCManagerImpl::RecursiveScan(const FilePath& baseDir, const FilePath& dir,
             if (path.GetExtension() == ".dvpl")
             {
                 LocalFileInfo info;
-                info.relativeName = path.GetRelativePathname(dir);
+                info.relativeName = path.GetRelativePathname(baseDir);
                 FILE* f = FileAPI::OpenFile(path.GetAbsolutePathname(), "rb");
                 if (f == nullptr)
                 {
@@ -1007,14 +1007,15 @@ void DLCManagerImpl::ThreadScanFunc()
     Vector<ResourceArchive::FileInfo> filesInfo;
     PackArchive::FillFilesInfo(pack, uncompressedFileNames, mapFileData, filesInfo);
 
-    // TODO fix relative file names
+    String relativeNameWithoutDvpl;
 
     for (const LocalFileInfo& info : localFiles)
     {
-        const PackFormat::FileTableEntry* entry = mapFileData[info.relativeName];
+        relativeNameWithoutDvpl = info.relativeName.substr(0, info.relativeName.size() - 5);
+        const PackFormat::FileTableEntry* entry = mapFileData[relativeNameWithoutDvpl];
         if (entry != nullptr)
         {
-            if (entry->compressedCrc32 != info.crc32Hash && entry->compressedSize == info.compressedSize)
+            if (entry->compressedCrc32 != info.crc32Hash || entry->compressedSize != info.compressedSize)
             {
                 Logger::Info("hash not match for file: %s delete it", info.relativeName.c_str());
                 FileSystem::Instance()->DeleteFile(dirToDownloadedPacks + info.relativeName);
