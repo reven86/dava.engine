@@ -5,8 +5,8 @@
 #include "UI/Styles/UIStyleSheetStructs.h"
 #include "Model/ControlProperties/SectionProperty.h"
 
-#include "PackageInformation.h"
-#include "ControlInformation.h"
+#include "StaticPackageInformation.h"
+#include "StaticControlInformation.h"
 
 class PackageNode;
 class ControlNode;
@@ -14,11 +14,11 @@ class StyleSheetNode;
 class ControlsContainerNode;
 class IntrospectionProperty;
 
-class PackageInformationBuilder : public DAVA::AbstractUIPackageBuilder
+class StaticPackageInformationBuilder : public DAVA::AbstractUIPackageBuilder
 {
 public:
-    PackageInformationBuilder(PackageInformationCache* cache);
-    ~PackageInformationBuilder() override;
+    StaticPackageInformationBuilder(PackageInformationCache* cache);
+    ~StaticPackageInformationBuilder() override;
 
     void BeginPackage(const DAVA::FilePath& packagePath) override;
     void EndPackage() override;
@@ -41,12 +41,12 @@ public:
 
     void ProcessProperty(const DAVA::InspMember* member, const DAVA::VariantType& value) override;
 
-    std::shared_ptr<PackageInformation> GetPackage() const;
+    std::shared_ptr<StaticPackageInformation> GetPackage() const;
 
 private:
     struct Description;
 
-    std::shared_ptr<PackageInformation> packageInformation;
+    std::shared_ptr<StaticPackageInformation> packageInformation;
     DAVA::Vector<Description> stack;
 
     PackageInformationCache* cache = nullptr;

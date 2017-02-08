@@ -1,6 +1,6 @@
 #include "Finder.h"
 
-#include "UI/Find/PackageInformationBuilder.h"
+#include "UI/Find/StaticPackageInformationBuilder.h"
 
 #include "UI/UIPackageLoader.h"
 
@@ -33,23 +33,25 @@ void Finder::Process()
         }
 
         FilePath path(pathStr.toStdString());
-        PackageInformationBuilder builder(&packagesCache);
+        StaticPackageInformationBuilder builder(&packagesCache);
 
         if (UIPackageLoader(*prototypes).LoadPackage(path, &builder))
         {
             const std::shared_ptr<PackageInformation>& package = builder.GetPackage();
-            if (filter->CanAcceptPackage(package))
+            if (filter->CanAcceptPackage(package.get()))
             {
                 currentItem = FindItem(package->GetPath());
 
-                for (const std::shared_ptr<ControlInformation>& control : package->GetControls())
+                package->VisitControls(
+                [this, &path](const ControlInformation* control)
                 {
                     CollectControls(path, control, false);
-                }
-                for (const std::shared_ptr<ControlInformation>& prototype : package->GetPrototypes())
+                });
+                package->VisitPrototypes(
+                [this, &path](const ControlInformation* prototype)
                 {
                     CollectControls(path, prototype, true);
-                }
+                });
 
                 if (!currentItem.GetControlPaths().empty())
                 {
@@ -70,15 +72,16 @@ void Finder::Stop()
     cancelling = true;
 }
 
-void Finder::CollectControls(const FilePath& path, const std::shared_ptr<ControlInformation>& control, bool inPrototypeSection)
+void Finder::CollectControls(const FilePath& path, const ControlInformation* control, bool inPrototypeSection)
 {
     if (filter->CanAcceptControl(control))
     {
-        currentItem.AddPathToControl(control->GetPathToControl());
+        currentItem.AddPathToControl(ControlInformationHelpers::GetPathToControl(control));
     }
 
-    for (const std::shared_ptr<ControlInformation>& child : control->GetChildren())
+    control->VisitChildren(
+    [this, &path, inPrototypeSection](const ControlInformation* child)
     {
         CollectControls(path, child, inPrototypeSection);
-    }
+    });
 }

@@ -6,32 +6,13 @@
 class PackageInformation
 {
 public:
-    PackageInformation(const DAVA::String& path);
+    virtual ~PackageInformation()
+    {
+    }
 
-    const DAVA::String& GetPath() const;
+    virtual DAVA::String GetPath() const = 0;
 
-    void AddImportedPackage(const std::shared_ptr<PackageInformation>& package);
-    void AddControl(const std::shared_ptr<ControlInformation>& control);
-    void AddPrototype(const std::shared_ptr<ControlInformation>& prototype);
-
-    const DAVA::Vector<std::shared_ptr<PackageInformation>>& GetImportedPackages() const;
-    const DAVA::Vector<std::shared_ptr<ControlInformation>>& GetPrototypes() const;
-    const DAVA::Vector<std::shared_ptr<ControlInformation>>& GetControls() const;
-    std::shared_ptr<ControlInformation> FindPrototypeByName(const DAVA::FastName& name) const;
-
-private:
-    DAVA::String path;
-    DAVA::Vector<std::shared_ptr<PackageInformation>> importedPackages;
-    DAVA::Vector<std::shared_ptr<ControlInformation>> controls;
-    DAVA::Vector<std::shared_ptr<ControlInformation>> prototypes;
-};
-
-class PackageInformationCache
-{
-public:
-    void Put(const std::shared_ptr<PackageInformation>& package);
-    std::shared_ptr<PackageInformation> Find(const DAVA::String& path);
-
-private:
-    DAVA::Map<DAVA::String, std::shared_ptr<PackageInformation>> packages;
+    virtual void VisitImportedPackages(const DAVA::Function<void(const PackageInformation*)>& visitor) const = 0;
+    virtual void VisitControls(const DAVA::Function<void(const ControlInformation*)>& visitor) const = 0;
+    virtual void VisitPrototypes(const DAVA::Function<void(const ControlInformation*)>& visitor) const = 0;
 };

@@ -23,7 +23,7 @@ signals:
     void ProgressChanged(int filesProcessed, int totalFiles);
 
 private:
-    void CollectControls(const DAVA::FilePath& path, const std::shared_ptr<ControlInformation>& control, bool inPrototypeSection);
+    void CollectControls(const DAVA::FilePath& path, const ControlInformation* control, bool inPrototypeSection);
 
     QStringList files;
     std::unique_ptr<FindFilter> filter;
