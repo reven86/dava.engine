@@ -64,5 +64,32 @@ bool BoolValueCompositor::IsValidValue(const Any& newValue, const Any& currentVa
     return newCheckedState != Qt::PartiallyChecked && newCheckedState != currentCheckedState;
 }
 
+Any EnumValueCompositor::Compose(const Vector<std::shared_ptr<PropertyNode>>& nodes) const
+{
+    Any value = nodes.front()->cachedValue;
+    for (const std::shared_ptr<const PropertyNode>& node : nodes)
+    {
+        if (value != node->cachedValue)
+        {
+            return Any();
+        }
+    }
+
+    return value;
+}
+
+bool EnumValueCompositor::IsValidValue(const Any& newValue, const Any& currentValue) const
+{
+    if (newValue.IsEmpty() || currentValue.IsEmpty())
+    {
+        return false;
+    }
+
+    int newIntValue = newValue.Cast<int>();
+    int currentIntValue = currentValue.Cast<int>();
+
+    return newIntValue != currentIntValue;
+}
+
 } // namespace TArc
 } // namespace DAVA

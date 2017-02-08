@@ -1,7 +1,9 @@
 #include "Classes/DevFuncs/TestUIModule.h"
+#include "Classes/DevFuncs/TestUIModuleData.h"
 #include "Classes/Application/REGlobal.h"
 
 #include <TArc/Controls/CheckBox.h>
+#include <TArc/Controls/ComboBox.h>
 #include <TArc/Controls/IntSpinBox.h>
 #include <TArc/Controls/DoubleSpinBox.h>
 #include <TArc/Controls/LineEdit.h>
@@ -10,9 +12,12 @@
 #include <TArc/WindowSubSystem/ActionUtils.h>
 #include <TArc/WindowSubSystem/UI.h>
 
+#include <QtTools/WidgetHelpers/SharedIcon.h>
+
 #include <Reflection/ReflectedMeta.h>
 #include <Reflection/ReflectionRegistrator.h>
 
+#include <Base/GlobalEnum.h>
 #include <Logger/Logger.h>
 
 #include <QAction>
@@ -218,6 +223,214 @@ struct LineEditTestData : public ReflectionBase
     }
 };
 
+struct ComboBoxTestData : public ReflectionBase
+{
+    enum eTest
+    {
+        FIRST = 0,
+        SECOND,
+        THIRD
+    };
+
+    //int
+    int testValue = eTest::SECOND;
+    int GetValue() const
+    {
+        return testValue;
+    }
+    void SetValue(int newValue)
+    {
+        testValue = newValue;
+    }
+
+    size_t GetValueSize_t() const
+    {
+        return testValue;
+    }
+    void SetValueSize_t(size_t newValue)
+    {
+        testValue = static_cast<int>(newValue);
+    }
+
+    Map<int, String> enumeratorMap = Map<int, String>{
+        { FIRST, "FIRST" },
+        { SECOND, "SECOND" },
+        { THIRD, "THIRD" }
+    };
+
+    Vector<String> enumeratorVector = Vector<String>{ "FIRST", "SECOND", "THIRD" };
+
+    const Map<int, ComboBoxTestDataDescr>& GetEnumeratorMap() const
+    {
+        static Map<int, ComboBoxTestDataDescr> iconEnumerator = Map<int, ComboBoxTestDataDescr>
+        {
+          { FIRST, { "FIRST", SharedIcon(":/QtIcons/openscene.png") } },
+          { SECOND, { "SECOND", SharedIcon(":/QtIcons/sound.png") } },
+          { THIRD, { "THIRD", SharedIcon(":/QtIcons/remove.png") } }
+        };
+
+        return iconEnumerator;
+    }
+
+    const Set<String>& GetEnumeratorSet() const
+    {
+        static Set<String> enumeratorSet = Set<String>{ "1_FIRST", "2_SECOND", "3_THIRD" };
+        return enumeratorSet;
+    }
+
+    const String GetStringValue() const
+    {
+        const Set<String>& setEnumerator = GetEnumeratorSet();
+        auto it = setEnumerator.begin();
+
+        int i = 0;
+        for (int i = 0; i < static_cast<int>(setEnumerator.size()); ++i, ++it)
+        {
+            if (i == testValue)
+            {
+                return *it;
+            }
+        }
+
+        return String();
+    }
+
+    void SetStringValue(const String& str)
+    {
+        const Set<String>& setEnumerator = GetEnumeratorSet();
+        auto it = setEnumerator.begin();
+
+        int i = 0;
+        for (int i = 0; i < static_cast<int>(setEnumerator.size()); ++i, ++it)
+        {
+            if (str == *it)
+            {
+                testValue = i;
+                break;
+            }
+        }
+    }
+
+    bool readOnly = false;
+
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(ComboBoxTestData, ReflectionBase)
+    {
+        ReflectionRegistrator<ComboBoxTestData>::Begin()
+        .Field("readOnly", &ComboBoxTestData::readOnly)
+        .Field("value", &ComboBoxTestData::testValue)
+        .Field("valueSize_t", &ComboBoxTestData::GetValueSize_t, &ComboBoxTestData::SetValueSize_t)
+        .Field("valueString", &ComboBoxTestData::GetStringValue, &ComboBoxTestData::SetStringValue)
+        .Field("method", &ComboBoxTestData::GetValue, &ComboBoxTestData::SetValue)
+
+        .Field("enumeratorValueMap", &ComboBoxTestData::enumeratorMap)
+        .Field("enumeratorValueVector", &ComboBoxTestData::enumeratorVector)
+        .Field("enumeratorMethod", &ComboBoxTestData::GetEnumeratorMap, nullptr)
+        .Field("enumeratorMethodSet", &ComboBoxTestData::GetEnumeratorSet, nullptr)
+
+        .Field("valueMetaReadOnly", &ComboBoxTestData::testValue)[DAVA::M::EnumT<ComboBoxTestData::eTest>(), DAVA::M::ReadOnly()]
+        .Field("methodMetaOnlyGetter", &ComboBoxTestData::GetValue, nullptr)[DAVA::M::EnumT<ComboBoxTestData::eTest>()]
+        .Field("valueMeta", &ComboBoxTestData::testValue)[DAVA::M::EnumT<ComboBoxTestData::eTest>()]
+        .Field("methodMeta", &ComboBoxTestData::GetValue, &ComboBoxTestData::SetValue)[DAVA::M::EnumT<ComboBoxTestData::eTest>()]
+        .End();
+    }
+
+    static Result Create(TArc::ContextAccessor* accessor, QWidget* parent)
+    {
+        using namespace DAVA::TArc;
+
+        ComboBoxTestData* data = new ComboBoxTestData();
+        Reflection dataModel = Reflection::Create(data);
+
+        QVBoxLayout* boxLayout = new QVBoxLayout();
+
+        auto addTest = [&](const QString& testName, const ControlDescriptorBuilder<ComboBox::Fields> descriptor)
+        {
+            QHBoxLayout* lineLayout = new QHBoxLayout();
+            lineLayout->addWidget(new QLabel(testName, parent));
+
+            ComboBox* comboBox = new ComboBox(descriptor, accessor, dataModel, parent);
+            lineLayout->addWidget(comboBox->ToWidgetCast());
+            boxLayout->addLayout(lineLayout);
+        };
+
+        // read only
+        {
+            ControlDescriptorBuilder<ComboBox::Fields> desr;
+            desr[ComboBox::Fields::Value] = "valueMeta";
+            desr[ComboBox::Fields::IsReadOnly] = "readOnly";
+            addTest("Value[Meta][ReadOnly by field]:", desr);
+        }
+
+        {
+            ControlDescriptorBuilder<ComboBox::Fields> desr;
+            desr[ComboBox::Fields::Value] = "valueMetaReadOnly";
+            addTest("Value[Meta][ReadOnly]: ", desr);
+        }
+
+        {
+            ControlDescriptorBuilder<ComboBox::Fields> desr;
+            desr[ComboBox::Fields::Value] = "methodMetaOnlyGetter";
+            addTest("Method[Meta][NoSetter == ReadOnly]: ", desr);
+        }
+
+        {
+            ControlDescriptorBuilder<ComboBox::Fields> desr;
+            desr[ComboBox::Fields::Value] = "methodMeta";
+            addTest("Method[Meta]: ", desr);
+        }
+
+        //enumerator
+        {
+            ControlDescriptorBuilder<ComboBox::Fields> desr;
+            desr[ComboBox::Fields::Value] = "value";
+            desr[ComboBox::Fields::Enumerator] = "enumeratorValueMap";
+            addTest("Value[Enumerator]: ", desr);
+        }
+
+        {
+            ControlDescriptorBuilder<ComboBox::Fields> desr;
+            desr[ComboBox::Fields::Value] = "value";
+            desr[ComboBox::Fields::Enumerator] = "enumeratorMethod";
+            addTest("Value[EnumeratorMethod]: ", desr);
+        }
+
+        {
+            ControlDescriptorBuilder<ComboBox::Fields> desr;
+            desr[ComboBox::Fields::Value] = "valueSize_t";
+            desr[ComboBox::Fields::Enumerator] = "enumeratorValueVector";
+            addTest("Value[EnumeratorVector]: ", desr);
+        }
+
+        {
+            ControlDescriptorBuilder<ComboBox::Fields> desr;
+            desr[ComboBox::Fields::Value] = "method";
+            desr[ComboBox::Fields::Enumerator] = "enumeratorMethod";
+            addTest("Method[EnumeratorMethod]: ", desr);
+        }
+
+        {
+            ControlDescriptorBuilder<ComboBox::Fields> desr;
+            desr[ComboBox::Fields::Value] = "valueString";
+            desr[ComboBox::Fields::Enumerator] = "enumeratorMethodSet";
+            addTest("StringValue[EnumeratorSet]: ", desr);
+        }
+
+        //readonly check box
+        {
+            //add read only check box
+            ControlDescriptorBuilder<CheckBox::Fields> descr;
+            descr[CheckBox::Fields::Checked] = "readOnly";
+            CheckBox* readOnlyBox = new CheckBox(descr, accessor, dataModel, parent);
+            boxLayout->addWidget(readOnlyBox->ToWidgetCast());
+        }
+
+        Result r;
+        r.model = data;
+        r.layout = boxLayout;
+        return r;
+    }
+};
+
 struct IntSpinBoxTestData : public ReflectionBase
 {
     int v = 10;
@@ -367,6 +580,13 @@ struct Node
 };
 }
 
+ENUM_DECLARE(TestUIModuleDetails::ComboBoxTestData::eTest)
+{
+    ENUM_ADD_DESCR(static_cast<int>(TestUIModuleDetails::ComboBoxTestData::eTest::FIRST), "1st");
+    ENUM_ADD_DESCR(static_cast<int>(TestUIModuleDetails::ComboBoxTestData::eTest::SECOND), "2nd");
+    ENUM_ADD_DESCR(static_cast<int>(TestUIModuleDetails::ComboBoxTestData::eTest::THIRD), "3rd");
+}
+
 void TestUIModule::PostInit()
 {
     using namespace DAVA::TArc;
@@ -389,6 +609,7 @@ void TestUIModule::ShowDialog()
     {
       { &CheckBoxTestData::Create, "CheckBox Test" },
       { &LineEditTestData::Create, "LineEdit Test" },
+      { &ComboBoxTestData::Create, "ComboBox Test" },
       { &IntSpinBoxTestData::Create, "SpinBoxTest" },
       { &DoubleSpinBoxTestData::Create, "Double Spin" }
     };
