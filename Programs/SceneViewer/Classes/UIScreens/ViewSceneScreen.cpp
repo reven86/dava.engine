@@ -31,8 +31,8 @@ void ViewSceneScreen::LoadResources()
     {
         LoadScene();
     }
-    AddControls();
     PlaceSceneAtScreen();
+    AddControls();
 }
 
 void ViewSceneScreen::UnloadResources()
@@ -46,24 +46,28 @@ void ViewSceneScreen::PlaceSceneAtScreen()
 {
     using namespace DAVA;
 
-    DVASSERT(scene);
-    DVASSERT(sceneView);
+    if (scene)
+    {
+        Camera* camera = scene->GetCurrentCamera();
+        camera->SetupPerspective(70.f, data.screenAspect, 0.5f, 2500.f);
+        camera->SetUp(DAVA::Vector3(0.f, 0.f, 1.f));
+        SetCameraAtCenter(camera);
+        //camera->SetPosition(Vector3(0, -10, 1));
 
-    Camera* camera = scene->GetCurrentCamera();
-    camera->SetupPerspective(70.f, data.screenAspect, 0.5f, 2500.f);
-    camera->SetUp(DAVA::Vector3(0.f, 0.f, 1.f));
-    SetCameraAtCenter(camera);
-    //camera->SetPosition(Vector3(0, -10, 1));
+        rotationControllerSystem = new DAVA::RotationControllerSystem(scene);
+        scene->AddSystem(rotationControllerSystem, MAKE_COMPONENT_MASK(Component::CAMERA_COMPONENT) | MAKE_COMPONENT_MASK(Component::ROTATION_CONTROLLER_COMPONENT),
+                         Scene::SCENE_SYSTEM_REQUIRE_PROCESS | Scene::SCENE_SYSTEM_REQUIRE_INPUT);
 
-    rotationControllerSystem = new DAVA::RotationControllerSystem(scene);
-    scene->AddSystem(rotationControllerSystem, MAKE_COMPONENT_MASK(Component::CAMERA_COMPONENT) | MAKE_COMPONENT_MASK(Component::ROTATION_CONTROLLER_COMPONENT),
-                     Scene::SCENE_SYSTEM_REQUIRE_PROCESS | Scene::SCENE_SYSTEM_REQUIRE_INPUT);
+        wasdSystem = new WASDControllerSystem(scene);
+        scene->AddSystem(wasdSystem, MAKE_COMPONENT_MASK(Component::CAMERA_COMPONENT) | MAKE_COMPONENT_MASK(Component::WASD_CONTROLLER_COMPONENT),
+                         Scene::SCENE_SYSTEM_REQUIRE_PROCESS);
 
-    wasdSystem = new WASDControllerSystem(scene);
-    scene->AddSystem(wasdSystem, MAKE_COMPONENT_MASK(Component::CAMERA_COMPONENT) | MAKE_COMPONENT_MASK(Component::WASD_CONTROLLER_COMPONENT),
-                     Scene::SCENE_SYSTEM_REQUIRE_PROCESS);
-
-    sceneView->SetScene(scene);
+        sceneView = new DAVA::UI3DView(GetRect());
+        //sceneView->SetFrameBufferScaleFactor(0.5f);
+        //sceneView->SetDrawToFrameBuffer(true);
+        AddControl(sceneView);
+        sceneView->SetScene(scene);
+    }
 }
 
 void ViewSceneScreen::RemoveSceneFromScreen()
@@ -71,11 +75,14 @@ void ViewSceneScreen::RemoveSceneFromScreen()
     if (scene)
     {
         scene->RemoveSystem(rotationControllerSystem);
-        scene->RemoveSystem(wasdSystem);
         SafeDelete(rotationControllerSystem);
+
+        scene->RemoveSystem(wasdSystem);
         SafeDelete(wasdSystem);
+
+        RemoveControl(sceneView);
+        sceneView.reset();
     }
-    sceneView->SetScene(nullptr);
 }
 
 void ViewSceneScreen::LoadScene()
@@ -184,15 +191,6 @@ void ViewSceneScreen::AddTanksAtScene()
     }
 }
 
-void ViewSceneScreen::AddSceneViewControl()
-{
-    DVASSERT(!sceneView);
-    sceneView = new DAVA::UI3DView(GetRect());
-    //sceneView->SetFrameBufferScaleFactor(0.5f);
-    //sceneView->SetDrawToFrameBuffer(true);
-    AddControl(sceneView);
-}
-
 void ViewSceneScreen::AddMenuControl()
 {
     DVASSERT(!menu);
@@ -255,7 +253,6 @@ void ViewSceneScreen::AddQualitySettingsDialog()
 
 void ViewSceneScreen::AddControls()
 {
-    AddSceneViewControl();
     AddMenuControl();
     AddFileDialogControl();
     AddInfoTextControl();
@@ -266,7 +263,6 @@ void ViewSceneScreen::AddControls()
 void ViewSceneScreen::RemoveControls()
 {
     qualitySettingsDialog.reset();
-    sceneView.reset();
     infoText.reset();
     moveJoyPAD.reset();
     fileSystemDialog.reset();
@@ -335,13 +331,13 @@ void ViewSceneScreen::OnButtonSelectFromExt(DAVA::BaseObject* caller, void* para
 
 void ViewSceneScreen::OnButtonPerformanceTest(DAVA::BaseObject* caller, void* param, void* callerData)
 {
-    if (gridTest.GetState() != GridTest::StateFinished)
-        return;
+    if (scene && gridTest.GetState() == GridTest::StateFinished)
+    {
+        menu->Show(false);
+        RemoveControl(moveJoyPAD);
 
-    menu->Show(false);
-    RemoveControl(moveJoyPAD);
-
-    gridTest.Start(sceneView);
+        gridTest.Start(sceneView);
+    }
 }
 
 void ViewSceneScreen::OnButtonQualitySettings(DAVA::BaseObject* caller, void* param, void* callerData)
@@ -360,44 +356,47 @@ void ViewSceneScreen::OnButtonReloadShaders(DAVA::BaseObject* caller, void* para
 {
     using namespace DAVA;
 
-    ShaderDescriptorCache::ReloadShaders();
-
-    List<NMaterial*> materials;
-    scene->GetDataNodes(materials);
-    for (auto material : materials)
+    if (scene)
     {
-        material->InvalidateRenderVariants();
-    }
+        ShaderDescriptorCache::ReloadShaders();
 
-    const Map<uint64, NMaterial*>& particleInstances = scene->particleEffectSystem->GetMaterialInstances();
-    for (auto material : particleInstances)
-    {
-        material.second->InvalidateRenderVariants();
-    }
-
-    DAVA::Set<DAVA::NMaterial*> materialList;
-    scene->foliageSystem->CollectFoliageMaterials(materialList);
-    for (auto material : materialList)
-    {
-        if (material)
+        List<NMaterial*> materials;
+        scene->GetDataNodes(materials);
+        for (auto material : materials)
+        {
             material->InvalidateRenderVariants();
+        }
+
+        const Map<uint64, NMaterial*>& particleInstances = scene->particleEffectSystem->GetMaterialInstances();
+        for (auto material : particleInstances)
+        {
+            material.second->InvalidateRenderVariants();
+        }
+
+        DAVA::Set<DAVA::NMaterial*> materialList;
+        scene->foliageSystem->CollectFoliageMaterials(materialList);
+        for (auto material : materialList)
+        {
+            if (material)
+                material->InvalidateRenderVariants();
+        }
+
+        scene->renderSystem->GetDebugDrawer()->InvalidateMaterials();
+        scene->renderSystem->SetForceUpdateLights();
+        
+    #define INVALIDATE_2D_MATERIAL(material) \
+        if (RenderSystem2D::material) \
+            RenderSystem2D::material->InvalidateRenderVariants();
+
+        INVALIDATE_2D_MATERIAL(DEFAULT_2D_COLOR_MATERIAL)
+        INVALIDATE_2D_MATERIAL(DEFAULT_2D_FILL_ALPHA_MATERIAL)
+        INVALIDATE_2D_MATERIAL(DEFAULT_2D_TEXTURE_MATERIAL)
+        INVALIDATE_2D_MATERIAL(DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL)
+        INVALIDATE_2D_MATERIAL(DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL)
+        INVALIDATE_2D_MATERIAL(DEFAULT_2D_TEXTURE_GRAYSCALE_MATERIAL)
+        
+    #undef INVALIDATE_2D_MATERIAL
     }
-
-    scene->renderSystem->GetDebugDrawer()->InvalidateMaterials();
-    scene->renderSystem->SetForceUpdateLights();
-    
-#define INVALIDATE_2D_MATERIAL(material) \
-    if (RenderSystem2D::material) \
-        RenderSystem2D::material->InvalidateRenderVariants();
-
-    INVALIDATE_2D_MATERIAL(DEFAULT_2D_COLOR_MATERIAL)
-    INVALIDATE_2D_MATERIAL(DEFAULT_2D_FILL_ALPHA_MATERIAL)
-    INVALIDATE_2D_MATERIAL(DEFAULT_2D_TEXTURE_MATERIAL)
-    INVALIDATE_2D_MATERIAL(DEFAULT_2D_TEXTURE_NOBLEND_MATERIAL)
-    INVALIDATE_2D_MATERIAL(DEFAULT_2D_TEXTURE_ALPHA8_MATERIAL)
-    INVALIDATE_2D_MATERIAL(DEFAULT_2D_TEXTURE_GRAYSCALE_MATERIAL)
-    
-#undef INVALIDATE_2D_MATERIAL
 }
 
 void ViewSceneScreen::Draw(const DAVA::UIGeometricData& geometricData)
@@ -418,28 +417,31 @@ void ViewSceneScreen::ReloadScene()
 
 void ViewSceneScreen::ProcessUserInput(DAVA::float32 timeElapsed)
 {
-    using namespace DAVA;
+    if (scene)
+    {
+        using namespace DAVA;
 
-    KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
-    //     if (keyboard.IsKeyPressed(Key::NUMPAD6))
-    //         cursorPosition.x += timeElapsed / 16.f;
-    //     if (keyboard.IsKeyPressed(Key::NUMPAD4))
-    //         cursorPosition.x -= timeElapsed / 16.f;
-    //     if (keyboard.IsKeyPressed(Key::NUMPAD8))
-    //         cursorPosition.y += timeElapsed / 16.f;
-    //     if (keyboard.IsKeyPressed(Key::NUMPAD2))
-    //         cursorPosition.y -= timeElapsed / 16.f;
-    if (keyboard.IsKeyPressed(Key::SPACE))
-        wasdSystem->SetMoveSpeed(30.f);
-    else
-        wasdSystem->SetMoveSpeed(10.f);
+        KeyboardDevice& keyboard = InputSystem::Instance()->GetKeyboard();
+        //     if (keyboard.IsKeyPressed(Key::NUMPAD6))
+        //         cursorPosition.x += timeElapsed / 16.f;
+        //     if (keyboard.IsKeyPressed(Key::NUMPAD4))
+        //         cursorPosition.x -= timeElapsed / 16.f;
+        //     if (keyboard.IsKeyPressed(Key::NUMPAD8))
+        //         cursorPosition.y += timeElapsed / 16.f;
+        //     if (keyboard.IsKeyPressed(Key::NUMPAD2))
+        //         cursorPosition.y -= timeElapsed / 16.f;
+        if (keyboard.IsKeyPressed(Key::SPACE))
+            wasdSystem->SetMoveSpeed(30.f);
+        else
+            wasdSystem->SetMoveSpeed(10.f);
 
-    Camera* camera = scene->GetDrawCamera();
-    Vector2 joypadPos = moveJoyPAD->GetDigitalPosition();
-    Vector3 cameraMoveOffset = (joypadPos.x * camera->GetLeft() - joypadPos.y * camera->GetDirection()) * timeElapsed * 20.f;
+        Camera* camera = scene->GetDrawCamera();
+        Vector2 joypadPos = moveJoyPAD->GetDigitalPosition();
+        Vector3 cameraMoveOffset = (joypadPos.x * camera->GetLeft() - joypadPos.y * camera->GetDirection()) * timeElapsed * 20.f;
 
-    camera->SetPosition(camera->GetPosition() + cameraMoveOffset);
-    camera->SetTarget(camera->GetTarget() + cameraMoveOffset);
+        camera->SetPosition(camera->GetPosition() + cameraMoveOffset);
+        camera->SetTarget(camera->GetTarget() + cameraMoveOffset);
+    }
 }
 
 void ViewSceneScreen::Update(DAVA::float32 timeElapsed)

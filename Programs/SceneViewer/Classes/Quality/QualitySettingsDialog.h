@@ -42,7 +42,7 @@ private:
     DAVA::UIListCell* CellAtIndex(DAVA::UIList* list, DAVA::int32 index) override;
 
     // ExclusiveSetListener
-    void OnOptionChanged(TriggerBox*);
+    void OnOptionChanged(TriggerBox*) override;
 
     void OnButtonOk(DAVA::BaseObject* caller, void* param, void* callerData);
     void OnButtonCancel(DAVA::BaseObject* caller, void* param, void* callerData);

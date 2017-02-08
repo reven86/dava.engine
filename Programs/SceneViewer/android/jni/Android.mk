@@ -27,6 +27,7 @@ LOCAL_SRC_FILES := \
 	$(wildcard $(DV_PROJECT_ROOT)/Classes/*.cpp) \
 	$(wildcard $(DV_PROJECT_ROOT)/Classes/UIControls/*.cpp) \
 	$(wildcard $(DV_PROJECT_ROOT)/Classes/UIScreens/*.cpp) \
+	$(wildcard $(DV_PROJECT_ROOT)/Classes/Quality/*.cpp) \
 	$(wildcard $(DAVA_ROOT)/Sources/Tools/TeamcityOutput/*.cpp) \
 	$(wildcard $(DAVA_ROOT)/Modules/ScenePerformanceTests/Sources/Private/*.cpp))
 
