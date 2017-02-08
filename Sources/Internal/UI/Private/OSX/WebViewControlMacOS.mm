@@ -247,18 +247,17 @@ WebViewControl::WebViewControl(UIWebView* uiWebView)
 
 #if defined(__DAVAENGINE_COREV2__)
     PlatformApi::Mac::AddNSView(window, bridge->webView);
-
-    windowVisibilityChangedConnection = window->visibilityChanged.Connect(this, &WebViewControl::OnWindowVisibilityChanged);
+    window->visibilityChanged.Connect(this, &WebViewControl::OnWindowVisibilityChanged);
 #else
     NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
     [openGLView addSubview:bridge->webView];
 
     CoreMacOSPlatformBase* xcore = static_cast<CoreMacOSPlatformBase*>(Core::Instance());
-    appMinimizedRestoredConnectionId = xcore->signalAppMinimizedRestored.Connect(this, &WebViewControl::OnAppMinimizedRestored);
+    xcore->signalAppMinimizedRestored.Connect(this, &WebViewControl::OnAppMinimizedRestored);
 #endif
 
 #if defined(__DAVAENGINE_STEAM__)
-    overlayConnectionId = Steam::GameOverlayActivated.Connect(this, &WebViewControl::OnSteamOverlayChanged);
+    Steam::GameOverlayActivated.Connect(this, &WebViewControl::OnSteamOverlayChanged);
 #endif
 
     SetBackgroundTransparency(true);
@@ -267,14 +266,14 @@ WebViewControl::WebViewControl(UIWebView* uiWebView)
 WebViewControl::~WebViewControl()
 {
 #if defined(__DAVAENGINE_STEAM__)
-    Steam::GameOverlayActivated.Disconnect(overlayConnectionId);
+    Steam::GameOverlayActivated.Disconnect(this);
 #endif
 
 #if defined(__DAVAENGINE_COREV2__)
-    window->visibilityChanged.Disconnect(windowVisibilityChangedConnection);
+    window->visibilityChanged.Disconnect(this);
 #else
     CoreMacOSPlatformBase* xcore = static_cast<CoreMacOSPlatformBase*>(Core::Instance());
-    xcore->signalAppMinimizedRestored.Disconnect(appMinimizedRestoredConnectionId);
+    xcore->signalAppMinimizedRestored.Disconnect(this);
 #endif
 
     [bridge->bitmapImageRep release];
