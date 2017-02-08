@@ -402,7 +402,7 @@ void UIPackageLoader::LoadComponentPropertiesFromYamlNode(UIControl* control, co
     bool bgProcessed = false;
     for (ComponentNode& nodeDescr : components)
     {
-        if (nodeDescr.type == UIComponent::BACKGROUND_COMPONENT)
+        if (nodeDescr.type == Type::Instance<UIControlBackground>())
         {
             bgProcessed = true;
         }
@@ -414,10 +414,10 @@ void UIPackageLoader::LoadComponentPropertiesFromYamlNode(UIControl* control, co
             for (Reflection::Field& field : fields)
             {
                 Any res;
-                if (nodeDescr.type == UIComponent::LINEAR_LAYOUT_COMPONENT && version <= LAST_VERSION_WITH_LINEAR_LAYOUT_LEGACY_ORIENTATION)
+                if (nodeDescr.type == Type::Instance<UILinearLayoutComponent>() && version <= LAST_VERSION_WITH_LINEAR_LAYOUT_LEGACY_ORIENTATION)
                 {
                     FastName name(field.key.Get<String>());
-                    if (nodeDescr.type == UIComponent::LINEAR_LAYOUT_COMPONENT && name == FastName("orientation"))
+                    if (nodeDescr.type == Type::Instance<UILinearLayoutComponent>() && name == FastName("orientation"))
                     {
                         const YamlNode* valueNode = nodeDescr.node->Get(name.c_str());
                         if (valueNode)
@@ -437,7 +437,7 @@ void UIPackageLoader::LoadComponentPropertiesFromYamlNode(UIControl* control, co
                         }
                     }
                 }
-                if (nodeDescr.type == UIComponent::BACKGROUND_COMPONENT && version <= LAST_VERSION_WITH_LEGACY_SPRITE_MODIFICATION)
+                if (nodeDescr.type == Type::Instance<UIControlBackground>() && version <= LAST_VERSION_WITH_LEGACY_SPRITE_MODIFICATION)
                 {
                     static const FastName propertyName("spriteModification");
                     const FastName name(field.key.Cast<String>());
@@ -464,7 +464,7 @@ void UIPackageLoader::LoadComponentPropertiesFromYamlNode(UIControl* control, co
     }
     if (!bgProcessed)
     {
-        builder->BeginComponentPropertiesSection(UIComponent::BACKGROUND_COMPONENT, 0);
+        builder->BeginComponentPropertiesSection(Type::Instance<UIControlBackground>(), 0);
         builder->EndComponentPropertiesSection();
     }
 }
@@ -483,7 +483,7 @@ void UIPackageLoader::ProcessLegacyAligns(UIControl* control, const YamlNode* no
 
     if (hasAnchorProperties)
     {
-        UIComponent* component = builder->BeginComponentPropertiesSection(UIComponent::ANCHOR_COMPONENT, 0);
+        UIComponent* component = builder->BeginComponentPropertiesSection(Type::Instance<UIAnchorComponent>(), 0);
         if (component)
         {
             Reflection componentRef = Reflection::Create(&component);
@@ -508,8 +508,6 @@ Vector<UIPackageLoader::ComponentNode> UIPackageLoader::ExtractComponentNodes(co
 
     if (componentsNode)
     {
-        const EnumMap* componentTypes = GlobalEnumMap<UIComponent::eType>::Instance();
-
         for (uint32 i = 0; i < componentsNode->GetCount(); i++)
         {
             const String& fullName = componentsNode->GetItemKeyName(i);
@@ -517,21 +515,18 @@ Vector<UIPackageLoader::ComponentNode> UIPackageLoader::ExtractComponentNodes(co
             String componentName = fullName.substr(0, lastChar + 1);
             uint32 componentIndex = atoi(fullName.substr(lastChar + 1).c_str());
 
-            int32 componentType = 0;
-            if (componentTypes->ToValue(componentName.c_str(), componentType))
+            const ReflectedType* type = ReflectedTypeDB::GetByPermanentName(componentName);
+            if (type)
             {
-                if (componentType < UIComponent::COMPONENT_COUNT)
-                {
-                    ComponentNode n;
-                    n.node = componentsNode->Get(i);
-                    n.type = componentType;
-                    n.index = componentIndex;
-                    components.push_back(n);
-                }
-                else
-                {
-                    DVASSERT(false);
-                }
+                ComponentNode n;
+                n.node = componentsNode->Get(i);
+                n.type = type->GetType();
+                n.index = componentIndex;
+                components.push_back(n);
+            }
+            else
+            {
+                DVASSERT(false);
             }
         }
 

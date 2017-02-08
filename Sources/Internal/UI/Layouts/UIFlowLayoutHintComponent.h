@@ -9,9 +9,9 @@ namespace DAVA
 {
 class UIControl;
 
-class UIFlowLayoutHintComponent : public UIBaseComponent<UIComponent::FLOW_LAYOUT_HINT_COMPONENT>
+class UIFlowLayoutHintComponent : public UIComponent
 {
-    DAVA_VIRTUAL_REFLECTION(UIFlowLayoutHintComponent, UIBaseComponent<UIComponent::FLOW_LAYOUT_HINT_COMPONENT>);
+    DAVA_VIRTUAL_REFLECTION(UIFlowLayoutHintComponent, UIComponent);
 
 public:
     UIFlowLayoutHintComponent();

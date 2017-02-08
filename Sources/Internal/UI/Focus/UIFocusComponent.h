@@ -9,9 +9,9 @@
 
 namespace DAVA
 {
-class UIFocusComponent : public UIBaseComponent<UIComponent::FOCUS_COMPONENT>
+class UIFocusComponent : public UIComponent
 {
-    DAVA_VIRTUAL_REFLECTION(UIFocusComponent, UIBaseComponent<UIComponent::FOCUS_COMPONENT>);
+    DAVA_VIRTUAL_REFLECTION(UIFocusComponent, UIComponent);
 
 public:
     UIFocusComponent();

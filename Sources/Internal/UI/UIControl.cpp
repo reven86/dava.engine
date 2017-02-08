@@ -91,6 +91,7 @@ UIControl::UIControl(const Rect& rect)
     visible = true;
 
     UpdateFamily();
+
     GetOrCreateComponent<UIControlBackground>();
     /*
             VB:
@@ -2237,7 +2238,7 @@ void UIControl::InsertComponentAt(UIComponent* component, uint32 index)
     }
 }
 
-UIComponent* UIControl::GetComponent(uint32 componentType, uint32 index) const
+UIComponent* UIControl::GetComponent(const Type* componentType, uint32 index) const
 {
     uint32 maxCount = family->GetComponentsCount(componentType);
     if (index < maxCount)
@@ -2259,7 +2260,7 @@ int32 UIControl::GetComponentIndex(const UIComponent* component) const
     return -1;
 }
 
-UIComponent* UIControl::GetOrCreateComponent(uint32 componentType, uint32 index)
+UIComponent* UIControl::GetOrCreateComponent(const Type* componentType, uint32 index)
 {
     UIComponent* ret = GetComponent(componentType, index);
     if (!ret)
@@ -2310,7 +2311,7 @@ void UIControl::RemoveComponent(const Vector<UIComponent*>::iterator& it)
     }
 }
 
-void UIControl::RemoveComponent(uint32 componentType, uint32 index)
+void UIControl::RemoveComponent(const Type* componentType, uint32 index)
 {
     UIComponent* c = GetComponent(componentType, index);
     if (c)
@@ -2331,14 +2332,9 @@ uint32 UIControl::GetComponentCount() const
     return static_cast<uint32>(components.size());
 }
 
-uint32 UIControl::GetComponentCount(uint32 componentType) const
+uint32 UIControl::GetComponentCount(const Type* componentType) const
 {
     return family->GetComponentsCount(componentType);
-}
-
-uint64 UIControl::GetAvailableComponentFlags() const
-{
-    return family->GetComponentsFlags();
 }
 
 const Vector<UIComponent*>& UIControl::GetComponents()

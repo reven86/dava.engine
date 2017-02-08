@@ -8,9 +8,9 @@ namespace DAVA
 {
 class UIControl;
 
-class UISizePolicyComponent : public UIBaseComponent<UIComponent::SIZE_POLICY_COMPONENT>
+class UISizePolicyComponent : public UIComponent
 {
-    DAVA_VIRTUAL_REFLECTION(UISizePolicyComponent, UIBaseComponent<UIComponent::SIZE_POLICY_COMPONENT>);
+    DAVA_VIRTUAL_REFLECTION(UISizePolicyComponent, UIComponent);
 
 public:
     enum eSizePolicy

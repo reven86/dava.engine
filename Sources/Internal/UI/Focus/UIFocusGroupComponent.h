@@ -8,9 +8,9 @@
 
 namespace DAVA
 {
-class UIFocusGroupComponent : public UIBaseComponent<UIComponent::FOCUS_GROUP_COMPONENT>
+class UIFocusGroupComponent : public UIComponent
 {
-    DAVA_VIRTUAL_REFLECTION(UIFocusGroupComponent, UIBaseComponent<UIComponent::FOCUS_GROUP_COMPONENT>);
+    DAVA_VIRTUAL_REFLECTION(UIFocusGroupComponent, UIComponent);
 
 public:
     UIFocusGroupComponent();

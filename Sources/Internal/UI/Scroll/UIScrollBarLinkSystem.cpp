@@ -43,7 +43,7 @@ void UIScrollBarLinkSystem::UnregisterControl(UIControl* control)
 
 void UIScrollBarLinkSystem::RegisterComponent(UIControl* control, UIComponent* component)
 {
-    if (component->GetType() == UIScrollBarDelegateComponent::C_TYPE)
+    if (component->GetType() == Type::Instance<UIScrollBarDelegateComponent>())
     {
         LinkScrollBar(static_cast<UIScrollBarDelegateComponent*>(component));
     }
@@ -51,7 +51,7 @@ void UIScrollBarLinkSystem::RegisterComponent(UIControl* control, UIComponent* c
 
 void UIScrollBarLinkSystem::UnregisterComponent(UIControl* control, UIComponent* component)
 {
-    if (component->GetType() == UIScrollBarDelegateComponent::C_TYPE)
+    if (component->GetType() == Type::Instance<UIScrollBarDelegateComponent>())
     {
         UnlinkScrollBar(static_cast<UIScrollBarDelegateComponent*>(component));
     }

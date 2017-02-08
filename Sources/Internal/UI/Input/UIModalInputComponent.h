@@ -10,9 +10,9 @@ namespace DAVA
 {
 class UIControl;
 
-class UIModalInputComponent : public UIBaseComponent<UIComponent::MODAL_INPUT_COMPONENT>
+class UIModalInputComponent : public UIComponent
 {
-    DAVA_VIRTUAL_REFLECTION(UIModalInputComponent, UIBaseComponent<UIComponent::MODAL_INPUT_COMPONENT>);
+    DAVA_VIRTUAL_REFLECTION(UIModalInputComponent, UIComponent);
 
 public:
     UIModalInputComponent();

@@ -330,7 +330,7 @@ void DefaultUIPackageBuilder::EndControlPropertiesSection()
     currentObject = nullptr;
 }
 
-UIComponent* DefaultUIPackageBuilder::BeginComponentPropertiesSection(uint32 componentType, uint32 componentIndex)
+UIComponent* DefaultUIPackageBuilder::BeginComponentPropertiesSection(const Type* componentType, uint32 componentIndex)
 {
     UIControl* control = controlsStack.back()->control.Get();
     UIComponent* component = control->GetComponent(componentType, componentIndex);

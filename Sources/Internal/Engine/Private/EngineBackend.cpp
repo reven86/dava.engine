@@ -116,10 +116,13 @@ EngineBackend::EngineBackend(const Vector<String>& cmdargs)
     DVASSERT(instance == nullptr);
     instance = this;
 
+    RegisterDAVAClasses();
+    RegisterAnyCasts();
+
     // The following subsystems should be created earlier than other:
     //  - Logger, to log messages on startup
     //  - FileSystem, to load config files with init options
-    //  - DeviceManager, to check what hatdware is available
+    //  - DeviceManager, to check what hardware is available
     context->logger = new Logger;
     context->settings = new EngineSettings();
     context->fileSystem = new FileSystem;
@@ -198,9 +201,6 @@ void EngineBackend::Init(eEngineRunMode engineRunMode, const Vector<String>& mod
     //  - PackManager
     // Other subsystems are always created
     CreateSubsystems(modules);
-
-    RegisterDAVAClasses();
-    RegisterAnyCasts();
 
     isInitialized = true;
 }

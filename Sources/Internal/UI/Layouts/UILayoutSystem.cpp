@@ -132,8 +132,7 @@ UIControl* UILayoutSystem::FindNotDependentOnChildrenControl(UIControl* control)
 
 bool UILayoutSystem::HaveToLayoutAfterReorder(const UIControl* control) const
 {
-    static const uint64 sensitiveComponents = UIComponent::LINEAR_LAYOUT_COMPONENT | UIComponent::FLOW_LAYOUT_COMPONENT;
-    if ((control->GetAvailableComponentFlags() & sensitiveComponents) != 0)
+    if (control->GetComponentCount<UILinearLayoutComponent>() && control->GetComponentCount<UIFlowLayoutComponent>())
     {
         return true;
     }
@@ -155,13 +154,12 @@ bool UILayoutSystem::HaveToLayoutAfterReposition(const UIControl* control) const
         return false;
     }
 
-    if ((control->GetAvailableComponentFlags() & UIComponent::ANCHOR_COMPONENT) != 0)
+    if (control->GetComponentCount<UIAnchorComponent>())
     {
         return true;
     }
 
-    static const uint64 parentComponents = UIComponent::LINEAR_LAYOUT_COMPONENT | UIComponent::FLOW_LAYOUT_COMPONENT;
-    if ((parent->GetAvailableComponentFlags() & parentComponents) != 0)
+    if (parent->GetComponentCount<UILinearLayoutComponent>() && parent->GetComponentCount<UIFlowLayoutComponent>())
     {
         return true;
     }

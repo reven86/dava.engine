@@ -13,16 +13,16 @@
 namespace DAVA
 {
 UIStyleSheetPropertyDataBase::UIStyleSheetPropertyDataBase()
-    : controlGroup("", -1, ReflectedTypeDB::Get<UIControl>())
-    , bgGroup("bg", UIComponent::BACKGROUND_COMPONENT, ReflectedTypeDB::Get<UIControlBackground>())
-    , staticTextGroup("text", -1, ReflectedTypeDB::Get<UIStaticText>())
-    , textFieldGroup("textField", -1, ReflectedTypeDB::Get<UITextField>())
-    , linearLayoutGroup("linearLayout", UIComponent::LINEAR_LAYOUT_COMPONENT, ReflectedTypeDB::Get<UILinearLayoutComponent>())
-    , flowLayoutGroup("flowLayout", UIComponent::FLOW_LAYOUT_COMPONENT, ReflectedTypeDB::Get<UIFlowLayoutComponent>())
-    , flowLayoutHintGroup("flowLayoutHint", UIComponent::FLOW_LAYOUT_HINT_COMPONENT, ReflectedTypeDB::Get<UIFlowLayoutHintComponent>())
-    , ignoreLayoutGroup("ignoreLayout", UIComponent::IGNORE_LAYOUT_COMPONENT, ReflectedTypeDB::Get<UIIgnoreLayoutComponent>())
-    , sizePolicyGroup("sizePolicy", UIComponent::SIZE_POLICY_COMPONENT, ReflectedTypeDB::Get<UISizePolicyComponent>())
-    , anchorGroup("anchor", UIComponent::ANCHOR_COMPONENT, ReflectedTypeDB::Get<UIAnchorComponent>())
+    : controlGroup("", Type::Instance<UIControl>(), ReflectedTypeDB::Get<UIControl>())
+    , bgGroup("bg", Type::Instance<UIControlBackground>(), ReflectedTypeDB::Get<UIControlBackground>())
+    , staticTextGroup("text", Type::Instance<UIControl>(), ReflectedTypeDB::Get<UIStaticText>())
+    , textFieldGroup("textField", Type::Instance<UIControl>(), ReflectedTypeDB::Get<UITextField>())
+    , linearLayoutGroup("linearLayout", Type::Instance<UILinearLayoutComponent>(), ReflectedTypeDB::Get<UILinearLayoutComponent>())
+    , flowLayoutGroup("flowLayout", Type::Instance<UIFlowLayoutComponent>(), ReflectedTypeDB::Get<UIFlowLayoutComponent>())
+    , flowLayoutHintGroup("flowLayoutHint", Type::Instance<UIFlowLayoutHintComponent>(), ReflectedTypeDB::Get<UIFlowLayoutHintComponent>())
+    , ignoreLayoutGroup("ignoreLayout", Type::Instance<UIIgnoreLayoutComponent>(), ReflectedTypeDB::Get<UIIgnoreLayoutComponent>())
+    , sizePolicyGroup("sizePolicy", Type::Instance<UISizePolicyComponent>(), ReflectedTypeDB::Get<UISizePolicyComponent>())
+    , anchorGroup("anchor", Type::Instance<UIAnchorComponent>(), ReflectedTypeDB::Get<UIAnchorComponent>())
     , properties({ { UIStyleSheetPropertyDescriptor(&controlGroup, "angle", 0.0f),
                      UIStyleSheetPropertyDescriptor(&controlGroup, "scale", Vector2(1.0f, 1.0f)),
                      UIStyleSheetPropertyDescriptor(&controlGroup, "visible", true),
@@ -180,7 +180,7 @@ const UIStyleSheetPropertyDescriptor& UIStyleSheetPropertyDataBase::GetStyleShee
     return properties[index];
 }
 
-int32 UIStyleSheetPropertyDataBase::FindStyleSheetProperty(int32 componentType, const FastName& name) const
+int32 UIStyleSheetPropertyDataBase::FindStyleSheetProperty(const Type* componentType, const FastName& name) const
 {
     for (size_t index = 0; index < properties.size(); index++)
     {

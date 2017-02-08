@@ -303,7 +303,7 @@ void UIStyleSheetSystem::DoForAllPropertyInstances(UIControl* control, uint32 pr
 
     const UIStyleSheetPropertyDescriptor& descr = propertyDB->GetStyleSheetPropertyByIndex(propertyIndex);
 
-    if (descr.group->componentType == -1)
+    if (descr.group->componentType == Type::Instance<UIControl>())
     {
         Reflection cRef = Reflection::Create(&control);
         Reflection fRef = cRef.GetField(descr.field_s->name);
