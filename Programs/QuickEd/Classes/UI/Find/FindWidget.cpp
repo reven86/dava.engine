@@ -1,7 +1,7 @@
 #include "FindWidget.h"
 
-#include "Document/Document.h"
-#include "Project/Project.h"
+#include "Modules/DocumentsModule/Document.h"
+#include "Modules/ProjectModule/Project.h"
 #include "UI/Find/Finder.h"
 #include "QtTools/ProjectInformation/FileSystemCache.h"
 

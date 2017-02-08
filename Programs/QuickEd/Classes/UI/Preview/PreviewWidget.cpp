@@ -1,17 +1,10 @@
 #include "PreviewWidget.h"
 
-#include "UI/UIControl.h"
-#include "UI/UIStaticText.h"
-#include "UI/UIControlSystem.h"
-#include "Engine/Engine.h"
-
-#include "QtTools/Updaters/ContinuousUpdater.h"
-#include "QtTools/InputDialogs/MultilineTextInputDialog.h"
-
-#include "Document/Document.h"
 #include "EditorSystems/EditorSystemsManager.h"
 
 #include "EditorSystems/EditorCanvas.h"
+#include "EditorSystems/CursorSystem.h"
+
 #include "Ruler/RulerWidget.h"
 #include "Ruler/RulerController.h"
 #include "UI/QtModelPackageCommandExecutor.h"
@@ -22,12 +15,34 @@
 #include "Model/ControlProperties/RootProperty.h"
 #include "Model/ControlProperties/VisibleValueProperty.h"
 
+#include "Modules/DocumentsModule/Document.h"
+#include "Modules/DocumentsModule/DocumentData.h"
+#include "Modules/DocumentsModule/WidgetsData.h"
+
+#include <TArc/Controls/SceneTabbar.h>
+#include <TArc/Models/SceneTabsModel.h>
+#include <TArc/Core/ContextAccessor.h>
+#include <TArc/DataProcessing/DataContext.h>
+
+#include <QtTools/Updaters/ContinuousUpdater.h>
+#include <QtTools/InputDialogs/MultilineTextInputDialog.h>
+
+#include <UI/UIControl.h>
+#include <UI/UIStaticText.h>
+#include <UI/UIControlSystem.h>
+#include <Engine/Engine.h>
+
 #include <QLineEdit>
 #include <QScreen>
 #include <QMenu>
 #include <QShortCut>
 #include <QFileInfo>
 #include <QInputDialog>
+#include <QComboBox>
+#include <QScrollBar>
+#include <QGridLayout>
+
+#include <QApplication>
 #include <QTimer>
 
 using namespace DAVA;
@@ -43,15 +58,11 @@ struct PreviewContext : WidgetContext
 {
     Vector2 canvasPosition;
 };
-
-struct SystemsContext : WidgetContext
-{
-    SelectedNodes selection;
-};
 }
 
-PreviewWidget::PreviewWidget(QWidget* parent)
-    : QWidget(parent)
+PreviewWidget::PreviewWidget(DAVA::TArc::ContextAccessor* accessor_, DAVA::RenderWidget* renderWidget, EditorSystemsManager* systemsManager)
+    : QWidget()
+    , accessor(accessor_)
     , rulerController(new RulerController(this))
     , continuousUpdater(new ContinuousUpdater(MakeFunction(this, &PreviewWidget::NotifySelectionChanged), this, 300))
 {
@@ -59,15 +70,17 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     percentages << 0.25f << 0.33f << 0.50f << 0.67f << 0.75f << 0.90f
                 << 1.00f << 1.10f << 1.25f << 1.50f << 1.75f << 2.00f
                 << 2.50f << 3.00f << 4.00f << 5.00f << 6.00f << 7.00f << 8.00f;
-    setupUi(this);
+    InjectRenderWidget(renderWidget);
+
+    InitUI(accessor);
+
+    InitFromSystemsManager(systemsManager);
 
     connect(rulerController, &RulerController::HorisontalRulerSettingsChanged, horizontalRuler, &RulerWidget::OnRulerSettingsChanged);
     connect(rulerController, &RulerController::VerticalRulerSettingsChanged, verticalRuler, &RulerWidget::OnRulerSettingsChanged);
 
     connect(rulerController, &RulerController::HorisontalRulerMarkPositionChanged, horizontalRuler, &RulerWidget::OnMarkerPositionChanged);
     connect(rulerController, &RulerController::VerticalRulerMarkPositionChanged, verticalRuler, &RulerWidget::OnMarkerPositionChanged);
-
-    verticalRuler->SetRulerOrientation(Qt::Vertical);
 
     // Setup the Scale Combo.
     for (auto percentage : percentages)
@@ -95,9 +108,13 @@ PreviewWidget::~PreviewWidget()
 
 void PreviewWidget::SelectControl(const DAVA::String& path)
 {
-    if (document != nullptr)
+    using namespace DAVA::TArc;
+    DataContext* dataContext = accessor->GetActiveContext();
+    if (dataContext != nullptr)
     {
-        PackageNode* package = document->GetPackage();
+        DocumentData* documentData = dataContext->GetData<DocumentData>();
+        DVASSERT(nullptr != documentData);
+        PackageNode* package = documentData->package.Get();
         ControlNode* node = package->GetPrototypes()->FindControlNodeByPath(path);
         if (!node)
         {
@@ -129,12 +146,10 @@ void PreviewWidget::InjectRenderWidget(DAVA::RenderWidget* renderWidget_)
     renderWidget = renderWidget_;
     CreateActions();
 
-    InitEditorSystems();
 
     renderWidget->resized.Connect(this, &PreviewWidget::OnResized);
 
     renderWidget->SetClientDelegate(this);
-    frame->layout()->addWidget(renderWidget);
 }
 
 void PreviewWidget::CreateActions()
@@ -190,63 +205,38 @@ void PreviewWidget::CreateActions()
     renderWidget->addAction(focusPreviousChildAction);
 }
 
-void PreviewWidget::OnDocumentChanged(Document* arg)
+void PreviewWidget::OnContextWasChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* oldOne)
 {
-    SaveSystemsContextAndClear();
-
-    DVASSERT(nullptr != systemsManager);
     continuousUpdater->Stop();
-    SaveContext();
-    document = arg;
-    systemsManager->magnetLinesChanged.Emit({});
-    systemsManager->ClearHighlight();
-    if (document.isNull())
+    if (oldOne != nullptr)
     {
-        systemsManager->packageChanged.Emit(nullptr);
-    }
-    else
-    {
-        systemsManager->packageChanged.Emit(document->GetPackage());
-        LoadContext();
-    }
+        DocumentData* documentData = oldOne->GetData<DocumentData>();
+        DVASSERT(nullptr != documentData);
+        //check that we do not leave document in non valid state
+        DVASSERT(documentData->package->CanUpdateAll());
 
-    LoadSystemsContext(arg);
-}
+        WidgetsData* widgetsData = oldOne->GetData<WidgetsData>();
+        DVASSERT(widgetsData != nullptr);
 
-void PreviewWidget::SaveSystemsContextAndClear()
-{
-    if (!document.isNull())
+        PreviewContext* context = DynamicTypeCheck<PreviewContext*>(widgetsData->GetContext(this));
+        context->canvasPosition = editorCanvas->GetPosition();
+    };
+    if (current != nullptr)
     {
-        SystemsContext* systemsContext = DynamicTypeCheck<SystemsContext*>(document->GetContext(systemsManager.get()));
-        systemsContext->selection = selectionContainer.selectedNodes;
-    }
-    if (!selectionContainer.selectedNodes.empty())
-    {
-        DVASSERT(!document.isNull());
-        systemsManager->ClearSelection();
-        continuousUpdater->Stop();
-        DVASSERT(selectionContainer.selectedNodes.empty());
-    }
-}
+        WidgetsData* widgetsData = current->GetData<WidgetsData>();
+        DVASSERT(widgetsData != nullptr);
 
-void PreviewWidget::LoadSystemsContext(Document* arg)
-{
-    DVASSERT(arg == document.data());
-    if (document.isNull())
-    {
-        return;
-    }
-    SystemsContext* context = DynamicTypeCheck<SystemsContext*>(document->GetContext(systemsManager.get()));
-    if (nullptr == context)
-    {
-        document->SetContext(systemsManager.get(), new SystemsContext());
-    }
-    else
-    {
-        selectionContainer.selectedNodes = context->selection;
-        if (!selectionContainer.selectedNodes.empty())
+        PreviewContext* context = DynamicTypeCheck<PreviewContext*>(widgetsData->GetContext(this));
+        if (nullptr == context)
         {
-            systemsManager->selectionChanged.Emit(selectionContainer.selectedNodes, SelectedNodes());
+            context = new PreviewContext();
+            widgetsData->SetContext(this, context);
+            Vector2 position(horizontalScrollBar->maximum() / 2.0f, verticalScrollBar->maximum() / 2.0f);
+            editorCanvas->SetPosition(position);
+        }
+        else
+        {
+            editorCanvas->SetPosition(context->canvasPosition);
         }
     }
 }
@@ -400,26 +390,29 @@ void PreviewWidget::OnResized(DAVA::uint32 width, DAVA::uint32 height)
     UpdateScrollArea();
 }
 
-void PreviewWidget::InitEditorSystems()
+void PreviewWidget::InitFromSystemsManager(EditorSystemsManager* systemsManager_)
 {
     DVASSERT(nullptr == systemsManager);
-    systemsManager.reset(new EditorSystemsManager(renderWidget));
+    systemsManager = systemsManager_;
 
     systemsManager->rootControlPositionChanged.Connect(this, &PreviewWidget::OnRootControlPositionChanged);
     systemsManager->selectionChanged.Connect(this, &PreviewWidget::OnSelectionInSystemsChanged);
     systemsManager->propertyChanged.Connect(this, &PreviewWidget::OnPropertyChanged);
     systemsManager->dragStateChanged.Connect(this, &PreviewWidget::OnDragStateChanged);
 
-    connect(focusNextChildAction, &QAction::triggered, std::bind(&EditorSystemsManager::FocusNextChild, systemsManager.get()));
-    connect(focusPreviousChildAction, &QAction::triggered, std::bind(&EditorSystemsManager::FocusPreviousChild, systemsManager.get()));
-    connect(selectAllAction, &QAction::triggered, std::bind(&EditorSystemsManager::SelectAll, systemsManager.get()));
-    editorCanvas = systemsManager->GetEditorCanvas();
+    connect(focusNextChildAction, &QAction::triggered, std::bind(&EditorSystemsManager::FocusNextChild, systemsManager));
+    connect(focusPreviousChildAction, &QAction::triggered, std::bind(&EditorSystemsManager::FocusPreviousChild, systemsManager));
+    connect(selectAllAction, &QAction::triggered, std::bind(&EditorSystemsManager::SelectAll, systemsManager));
+
+    editorCanvas = new EditorCanvas(systemsManager);
     editorCanvas->sizeChanged.Connect(this, &PreviewWidget::UpdateScrollArea);
     editorCanvas->ositionChanged.Connect(this, &PreviewWidget::OnPositionChanged);
     editorCanvas->nestedControlPositionChanged.Connect(this, &PreviewWidget::OnNestedControlPositionChanged);
     editorCanvas->scaleChanged.Connect(this, &PreviewWidget::OnScaleChanged);
-    //fastest way to apply displayed scale to the editorCanvas
-    OnScaleByComboText();
+    systemsManager->AddEditorSystem(editorCanvas);
+
+    CursorSystem* cursorSystem = new CursorSystem(renderWidget, systemsManager);
+    systemsManager->AddEditorSystem(cursorSystem);
 }
 
 void PreviewWidget::OnScaleChanged(float32 scale)
@@ -474,6 +467,47 @@ void PreviewWidget::OnHScrollbarMoved(int hPosition)
     {
         editorCanvas->SetPosition(canvasPosition);
     }
+}
+
+void PreviewWidget::InitUI(DAVA::TArc::ContextAccessor* accessor)
+{
+    gridLayout = new QGridLayout(this);
+
+    DAVA::TArc::DataContext* ctx = accessor->GetGlobalContext();
+    ctx->CreateData(std::make_unique<SceneTabsModel>());
+    DAVA::TArc::SceneTabbar* tabBar = new DAVA::TArc::SceneTabbar(accessor, DAVA::Reflection::Create(ctx->GetData<SceneTabsModel>()), this);
+    tabBar->setElideMode(Qt::ElideNone);
+    tabBar->setTabsClosable(true);
+    tabBar->setUsesScrollButtons(true);
+    gridLayout->addWidget(tabBar, 0, 0, 1, 3);
+
+    horizontalRuler = new RulerWidget(this);
+    horizontalRuler->SetRulerOrientation(Qt::Horizontal);
+
+    gridLayout->addWidget(horizontalRuler, 1, 1, 1, 2);
+
+    verticalRuler = new RulerWidget(this);
+    verticalRuler->SetRulerOrientation(Qt::Vertical);
+    gridLayout->addWidget(verticalRuler, 2, 0, 1, 1);
+
+    QSizePolicy sizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    renderWidget->setSizePolicy(sizePolicy);
+    gridLayout->addWidget(renderWidget, 2, 1, 1, 2);
+
+    verticalScrollBar = new QScrollBar(this);
+    verticalScrollBar->setOrientation(Qt::Vertical);
+
+    gridLayout->addWidget(verticalScrollBar, 2, 3, 1, 1);
+
+    scaleCombo = new QComboBox(this);
+    scaleCombo->setEditable(true);
+
+    gridLayout->addWidget(scaleCombo, 3, 1, 1, 1);
+
+    horizontalScrollBar = new QScrollBar(this);
+    horizontalScrollBar->setOrientation(Qt::Horizontal);
+
+    gridLayout->addWidget(horizontalScrollBar, 3, 2, 1, 1);
 }
 
 void PreviewWidget::ShowMenu(const QMouseEvent* mouseEvent)
@@ -550,6 +584,7 @@ bool PreviewWidget::CanChangeTextInControl(const ControlNode* node) const
 
 void PreviewWidget::ChangeControlText(ControlNode* node)
 {
+    using namespace DAVA::TArc;
     DVASSERT(node != nullptr);
 
     UIControl* control = node->GetControl();
@@ -568,7 +603,10 @@ void PreviewWidget::ChangeControlText(ControlNode* node)
     QString inputText = MultilineTextInputDialog::GetMultiLineText(this, label, label, QString::fromStdString(text), &ok);
     if (ok)
     {
-        DVASSERT(document != nullptr);
+        DataContext* activeContext = accessor->GetActiveContext();
+        DVASSERT(nullptr != activeContext);
+        Document* document = activeContext->GetData<Document>();
+        DVASSERT(nullptr != document);
         QtModelPackageCommandExecutor* executor = document->GetCommandExecutor();
         executor->BeginMacro("change text by user");
         AbstractProperty* multilineProperty = rootProperty->FindPropertyByName("Multi Line");
@@ -583,38 +621,9 @@ void PreviewWidget::ChangeControlText(ControlNode* node)
     }
 }
 
-void PreviewWidget::LoadContext()
-{
-    PreviewContext* context = DynamicTypeCheck<PreviewContext*>(document->GetContext(this));
-    if (nullptr == context)
-    {
-        context = new PreviewContext();
-        document->SetContext(this, context);
-        Vector2 position(horizontalScrollBar->maximum() / 2.0f, verticalScrollBar->maximum() / 2.0f);
-        editorCanvas->SetPosition(position);
-    }
-    else
-    {
-        editorCanvas->SetPosition(context->canvasPosition);
-    }
-}
-
-void PreviewWidget::SaveContext()
-{
-    if (document.isNull())
-    {
-        return;
-    }
-
-    //check that we do not leave document in non valid state
-    DVASSERT(document->GetPackage()->CanUpdateAll());
-    PreviewContext* context = DynamicTypeCheck<PreviewContext*>(document->GetContext(this));
-    context->canvasPosition = editorCanvas->GetPosition();
-}
-
 void PreviewWidget::OnWheel(QWheelEvent* event)
 {
-    if (document.isNull())
+    if (accessor->GetActiveContext() == nullptr)
     {
         return;
     }
@@ -657,7 +666,7 @@ void PreviewWidget::OnWheel(QWheelEvent* event)
 
 void PreviewWidget::OnNativeGuesture(QNativeGestureEvent* event)
 {
-    if (document.isNull())
+    if (accessor->GetActiveContext() == nullptr)
     {
         return;
     }
@@ -745,7 +754,6 @@ bool PreviewWidget::ProcessDragMoveEvent(QDropEvent* event)
     }
     else if (mimeData->hasFormat("text/plain") || mimeData->hasFormat(PackageMimeData::MIME_TYPE))
     {
-        DVASSERT(nullptr != document);
         QPoint pos = event->pos();
         DAVA::Vector2 davaPos(pos.x(), pos.y());
         ControlNode* node = systemsManager->GetControlNodeAtPoint(davaPos);
@@ -802,7 +810,10 @@ void PreviewWidget::OnDrop(QDropEvent* event)
         uint32 index = 0;
         if (node == nullptr)
         {
-            node = DynamicTypeCheck<PackageBaseNode*>(document->GetPackage()->GetPackageControlsNode());
+            DAVA::TArc::DataContext* active = accessor->GetActiveContext();
+            DVASSERT(active != nullptr);
+            DocumentData* data = active->GetData<DocumentData>();
+            node = DynamicTypeCheck<PackageBaseNode*>(data->package->GetPackageControlsNode());
             index = systemsManager->GetIndexOfNearestRootControl(pos);
         }
         else
@@ -850,27 +861,36 @@ void PreviewWidget::OnKeyPressed(QKeyEvent* event)
 
 void PreviewWidget::OnDragStateChanged(EditorSystemsManager::eDragState dragState, EditorSystemsManager::eDragState previousState)
 {
-    if (document == nullptr)
+    using namespace DAVA::TArc;
+    DataContext* activeContext = accessor->GetActiveContext();
+    if (activeContext == nullptr)
     {
         return;
     }
+    DocumentData* documentData = activeContext->GetData<DocumentData>();
+    DVASSERT(nullptr != documentData);
+    Document* document = activeContext->GetData<Document>();
+    DVASSERT(nullptr != document);
     QtModelPackageCommandExecutor* executor = document->GetCommandExecutor();
-
     if (dragState == EditorSystemsManager::Transform)
     {
-        document->SetCanClose(false);
+        documentData->canClose = false;
         executor->BeginMacro("transformations");
     }
     else if (previousState == EditorSystemsManager::Transform)
     {
-        document->SetCanClose(true);
+        documentData->canClose = true;
         executor->EndMacro();
     }
 }
 
 void PreviewWidget::OnPropertyChanged(ControlNode* node, AbstractProperty* property, VariantType newValue)
 {
-    DVASSERT(!document.isNull());
+    using namespace DAVA::TArc;
+    DataContext* activeContext = accessor->GetActiveContext();
+    DVASSERT(activeContext != nullptr);
+    Document* document = activeContext->GetData<Document>();
+    DVASSERT(nullptr != document);
     QtModelPackageCommandExecutor* commandExecutor = document->GetCommandExecutor();
     commandExecutor->ChangeProperty(node, property, newValue);
 }

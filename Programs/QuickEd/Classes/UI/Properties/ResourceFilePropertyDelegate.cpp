@@ -8,7 +8,7 @@
 #include "PropertiesTreeItemDelegate.h"
 #include "Utils/QtDavaConvertion.h"
 #include "QtTools/FileDialogs/FileDialog.h"
-#include "Project/Project.h"
+#include "Modules/ProjectModule/Project.h"
 
 #include "Engine/Engine.h"
 
@@ -32,6 +32,10 @@ QWidget* ResourceFilePropertyDelegate::createEditor(QWidget* parent, const Prope
 {
     DVASSERT(context.project != nullptr);
     project = context.project;
+#if defined(__DAVAENGINE_MACOS__)
+    const ProjectProperties & project->GetProjectProperties();
+    symLinkRestorer = std::make_unique<MacOSSymLinkRestorer>(QString::fromStdString(properties.GetResourceDirectory().absolute.GetStringValue()));
+#endif
     projectResourceDir = context.project->GetResourceDirectory();
     lineEdit = new QLineEdit(parent);
     lineEdit->setObjectName(QString::fromUtf8("lineEdit"));
@@ -108,7 +112,7 @@ void ResourceFilePropertyDelegate::selectFileClicked()
 
     if (project)
     {
-        filePathText = project->RestoreSymLinkInFilePath(filePathText);
+        filePathText = RestoreSymLinkInFilePath(filePathText);
     }
 
     if (!filePathText.isEmpty())
@@ -174,4 +178,13 @@ bool ResourceFilePropertyDelegate::IsPathValid(const QString& path)
 
     DAVA::FileSystem* fileSystem = DAVA::Engine::Instance()->GetContext()->fileSystem;
     return fileSystem->Exists(filePath);
+}
+
+QString ResourceFilePropertyDelegate::RestoreSymLinkInFilePath(const QString& filePath) const
+{
+#if defined(__DAVAENGINE_MACOS__)
+    return symLinkRestorer->RestoreSymLinkInFilePath(filePath);
+#else
+    return filePath;
+#endif
 }

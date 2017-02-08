@@ -1,7 +1,6 @@
 #include "ProjectView.h"
-#include "QtTools/ReloadSprites/DialogReloadSprites.h"
 #include "ui_mainwindow.h"
-#include "Project/Project.h"
+#include "Modules/ProjectModule/Project.h"
 
 #include <QComboBox>
 #include <QCheckBox>
@@ -14,13 +13,8 @@ MainWindow::ProjectView::ProjectView(MainWindow* mainWindow_)
     InitPluginsToolBar();
     SetProjectActionsEnabled(false);
 
-    connect(mainWindow->ui->actionReloadSprites, &QAction::triggered, this, &MainWindow::ProjectView::ReloadSprites);
-    connect(mainWindow->ui->actionFindFileInProject, &QAction::triggered, this, &MainWindow::ProjectView::FindFileInProject);
-    connect(mainWindow->ui->previewWidget, &PreviewWidget::SelectionChanged, mainWindow->ui->styleSheetInspectorWidget, &StyleSheetInspectorWidget::OnSelectionChanged);
     connect(mainWindow->ui->actionJumpToPrototype, &QAction::triggered, this, &MainWindow::ProjectView::JumpToPrototype);
     connect(mainWindow->ui->actionFindPrototypeInstances, &QAction::triggered, this, &MainWindow::ProjectView::FindPrototypeInstances);
-
-    connect(mainWindow->ui->previewWidget, &PreviewWidget::SelectionChanged, this, &MainWindow::ProjectView::OnSelectionChanged);
 
     connect(this, &MainWindow::ProjectView::ProjectChanged, mainWindow->ui->findWidget, &FindWidget::OnProjectChanged);
 
@@ -58,8 +52,6 @@ void MainWindow::ProjectView::SetCurrentLanguage(const QString& currentLangCode)
 
 void MainWindow::ProjectView::SetProjectActionsEnabled(bool enabled)
 {
-    mainWindow->ui->actionCloseProject->setEnabled(enabled);
-    mainWindow->ui->actionFindFileInProject->setEnabled(enabled);
     mainWindow->ui->actionJumpToPrototype->setEnabled(enabled);
     mainWindow->ui->actionFindPrototypeInstances->setEnabled(enabled);
     mainWindow->ui->toolBarPlugins->setEnabled(enabled);
@@ -175,11 +167,6 @@ void MainWindow::ProjectView::SelectFile(const QString& filePath)
     mainWindow->ui->fileSystemDockWidget->SelectFile(filePath);
 }
 
-void MainWindow::ProjectView::SelectControl(const DAVA::String& controlPath)
-{
-    mainWindow->ui->previewWidget->SelectControl(controlPath);
-}
-
 void MainWindow::ProjectView::FindControls(std::unique_ptr<FindFilter>&& filter)
 {
     mainWindow->ui->findWidget->Find(std::move(filter));
@@ -188,16 +175,6 @@ void MainWindow::ProjectView::FindControls(std::unique_ptr<FindFilter>&& filter)
 void MainWindow::ProjectView::SetResourceDirectory(const QString& path)
 {
     mainWindow->ui->fileSystemDockWidget->SetResourceDirectory(path);
-}
-
-void MainWindow::ProjectView::ExecDialogReloadSprites(SpritesPacker* packer)
-{
-    DVASSERT(nullptr != packer);
-    auto lastFlags = mainWindow->acceptableLoggerFlags;
-    mainWindow->acceptableLoggerFlags = (1 << DAVA::Logger::LEVEL_ERROR) | (1 << DAVA::Logger::LEVEL_WARNING);
-    DialogReloadSprites dialogReloadSprites(packer, mainWindow);
-    dialogReloadSprites.exec();
-    mainWindow->acceptableLoggerFlags = lastFlags;
 }
 
 QString MainWindow::ProjectView::ConvertLangCodeToString(const QString& langCode)

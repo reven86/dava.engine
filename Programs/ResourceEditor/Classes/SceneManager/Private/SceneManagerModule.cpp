@@ -10,28 +10,27 @@
 #include "Classes/Qt/Scene/SceneHelper.h"
 #include "Classes/Qt/SpritesPacker/SpritesPackerModule.h"
 
-#include "Classes/SceneManager/Private/SceneRenderWidget.h"
-#include "Classes/SceneManager/Private/SceneTabsModel.h"
 #include "Classes/Utils/SceneSaver/SceneSaver.h"
 
 #include "Commands2/Base/RECommandStack.h"
 
-#include "TArc/WindowSubSystem/QtAction.h"
-#include "TArc/WindowSubSystem/UI.h"
-#include "TArc/WindowSubSystem/ActionUtils.h"
+#include <TArc/WindowSubSystem/QtAction.h>
+#include <TArc/WindowSubSystem/UI.h>
+#include <TArc/WindowSubSystem/ActionUtils.h>
+#include <TArc/Models/SceneTabsModel.h>
 
-#include "QtTools/FileDialogs/FindFileDialog.h"
-#include "QtTools/ProjectInformation/FileSystemCache.h"
+#include <QtTools/FileDialogs/FindFileDialog.h>
+#include <QtTools/ProjectInformation/FileSystemCache.h>
 
-#include "Engine/EngineContext.h"
-#include "Reflection/ReflectedType.h"
-#include "Render/Renderer.h"
-#include "Render/DynamicBufferAllocator.h"
-#include "FileSystem/FileSystem.h"
-#include "Functional/Function.h"
-#include "Base/FastName.h"
-#include "Base/Any.h"
-#include "Base/GlobalEnum.h"
+#include <Engine/EngineContext.h>
+#include <Reflection/ReflectedType.h>
+#include <Render/Renderer.h>
+#include <Render/DynamicBufferAllocator.h>
+#include <FileSystem/FileSystem.h>
+#include <Functional/Function.h>
+#include <Base/FastName.h>
+#include <Base/Any.h>
+#include <Base/GlobalEnum.h>
 
 #include <QList>
 #include <QString>
@@ -236,7 +235,7 @@ void SceneManagerModule::PostInit()
         fieldBinder->BindField(fieldDescr, DAVA::MakeFunction(this, &SceneManagerModule::OnProjectPathChanged));
     }
 
-    RecentMenuItems::Params params;
+    RecentMenuItems::Params params(REGlobal::MainWindowKey);
     params.accessor = accessor;
     params.ui = ui;
     params.menuSubPath << "File";
@@ -246,8 +245,22 @@ void SceneManagerModule::PostInit()
     {
         return v.CanCast<DAVA::FilePath>() && !v.Cast<DAVA::FilePath>().IsEmpty();
     };
-    params.settingsKeyCount = Settings::General_RecentFilesCount;
-    params.settingsKeyData = Settings::Internal_RecentFiles;
+    params.getMaximumCount = []() {
+        return SettingsManager::GetValue(Settings::General_RecentFilesCount).AsInt32();
+    };
+    params.getRecentFiles = []() -> DAVA::Vector<DAVA::String> {
+        DAVA::VariantType recentFilesVariant = SettingsManager::GetValue(Settings::Internal_RecentFiles);
+        if (recentFilesVariant.GetType() == DAVA::VariantType::TYPE_KEYED_ARCHIVE)
+        {
+            return ConvertKAToVector(recentFilesVariant.AsKeyedArchive());
+        }
+        return DAVA::Vector<DAVA::String>();
+    };
+    params.updateRecentFiles = [](const DAVA::Vector<DAVA::String> data) {
+        DAVA::RefPtr<DAVA::KeyedArchive> archive(ConvertVectorToKA(data));
+        SettingsManager::SetValue(Settings::Internal_RecentFiles, DAVA::VariantType(archive.Get()));
+    };
+
     params.insertionParams.method = InsertionParams::eInsertionMethod::AfterItem;
     params.insertionParams.item = QString("importSeparator");
 

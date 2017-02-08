@@ -1,15 +1,16 @@
 #pragma once
 
-#include "Base/Introspection.h"
-#include "Preferences/PreferencesRegistrator.h"
-#include "Functional/SignalBase.h"
-#include "Logger/Logger.h"
+#include <TArc/DataProcessing/DataNode.h>
 
 #if defined(__DAVAENGINE_MACOS__)
-#include "QtTools/Utils/ShortcutChecker.h"
+#include <QtTools/Utils/ShortcutChecker.h>
 #endif //__DAVAENGINE_MACOS__
+#include <QtTools/Utils/QtDelayedExecutor.h>
 
-#include "QtTools/Utils/QtDelayedExecutor.h"
+#include <Base/Introspection.h>
+#include <Preferences/PreferencesRegistrator.h>
+#include <Functional/SignalBase.h>
+
 #include <QMainWindow>
 
 namespace DAVA
@@ -17,8 +18,6 @@ namespace DAVA
 class RenderWidget;
 }
 
-class LoggerOutputObject;
-class Project;
 class QCheckBox;
 class QActionGroup;
 
@@ -32,7 +31,7 @@ namespace Ui
 class MainWindow;
 }
 
-class MainWindow : public QMainWindow, public DAVA::InspBase, public DAVA::TrackedObject
+class MainWindow : public QMainWindow, public DAVA::TArc::DataNode, public DAVA::InspBase, public DAVA::TrackedObject
 {
     Q_OBJECT
 
@@ -45,27 +44,14 @@ public:
     ~MainWindow() override;
 
     void SetEditorTitle(const QString& editorTitle);
-    void SetRecentProjects(const QStringList& lastProjectsPathes);
-    void InjectRenderWidget(DAVA::RenderWidget* renderWidget);
-
-    void ShowResultList(const QString& title, const DAVA::ResultList& resultList);
 
     ProjectView* GetProjectView();
 
 signals:
-    void NewProject();
-    void OpenProject();
-    void CloseProject();
-    void RecentProject(const QString& path);
-
-    void ShowHelp();
-
     void EmulationModeChanged(bool emulationMode);
 
 private slots:
-    void OnRecentMenu(QAction* action);
     void OnPixelizationStateChanged(bool isPixelized);
-    void OnLogOutput(DAVA::Logger::eLogLevel ll, const QByteArray& output);
     void OnEditorPreferencesTriggered();
 
 private:
@@ -88,16 +74,10 @@ private:
 
     bool eventFilter(QObject* object, QEvent* event) override;
 
-    DAVA::String GetConsoleState() const;
-    void SetConsoleState(const DAVA::String& array);
-
     std::unique_ptr<Ui::MainWindow> ui;
 
     QString editorTitle;
     QString projectPath;
-
-    LoggerOutputObject* loggerOutput = nullptr; //will be deleted by logger. Isn't it fun?
-    qint64 acceptableLoggerFlags = ~0; //all flags accepted
 
     QCheckBox* emulationBox = nullptr;
 
@@ -113,11 +93,13 @@ private:
 
     ProjectView* projectView = nullptr;
     DocumentGroupView* documentGroupView = nullptr;
-    //std::unique_ptr<DocumentView> documentView;
+
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(MainWindow, DAVA::TArc::DataNode)
+    {
+    }
 
 public:
     INTROSPECTION(MainWindow,
                   PROPERTY("isPixelized", "MainWindowInternal/IsPixelized", IsPixelized, SetPixelized, DAVA::I_PREFERENCE)
-                  PROPERTY("consoleState", "MainWindowInternal/ConsoleState", GetConsoleState, SetConsoleState, DAVA::I_PREFERENCE)
                   )
 };

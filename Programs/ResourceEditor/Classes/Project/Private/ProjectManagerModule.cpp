@@ -43,20 +43,34 @@ void ProjectManagerModule::PostInit()
     CreateActions();
     RegisterOperations();
 
-    RecentMenuItems::Params params;
+    RecentMenuItems::Params params(REGlobal::MainWindowKey);
     params.accessor = accessor;
     params.ui = GetUI();
-    params.settingsKeyCount = Settings::General_RecentProjectsCount;
-    params.settingsKeyData = Settings::Internal_RecentProjects;
+    params.getMaximumCount = []() {
+        return SettingsManager::GetValue(Settings::General_RecentProjectsCount).AsInt32();
+    };
+    params.getRecentFiles = []() -> DAVA::Vector<DAVA::String> {
+        DAVA::VariantType recentFilesVariant = SettingsManager::GetValue(Settings::Internal_RecentProjects);
+        if (recentFilesVariant.GetType() == DAVA::VariantType::TYPE_KEYED_ARCHIVE)
+        {
+            return ConvertKAToVector(recentFilesVariant.AsKeyedArchive());
+        }
+        return DAVA::Vector<DAVA::String>();
+    };
+    params.updateRecentFiles = [](const DAVA::Vector<DAVA::String> data) {
+        DAVA::RefPtr<DAVA::KeyedArchive> archive(ConvertVectorToKA(data));
+        SettingsManager::SetValue(Settings::Internal_RecentProjects, DAVA::VariantType(archive.Get()));
+    };
+
     params.menuSubPath << "File"
                        << "Recent Projects";
     params.insertionParams.method = InsertionParams::eInsertionMethod::BeforeItem;
 
-    recentProject.reset(new RecentMenuItems(params));
-    recentProject->actionTriggered.Connect([this](const DAVA::String& projectPath)
-                                           {
-                                               OpenProjectByPath(DAVA::FilePath(projectPath));
-                                           });
+    recentProjects.reset(new RecentMenuItems(params));
+    recentProjects->actionTriggered.Connect([this](const DAVA::String& projectPath)
+                                            {
+                                                OpenProjectByPath(DAVA::FilePath(projectPath));
+                                            });
 }
 
 void ProjectManagerModule::CreateActions()
@@ -194,7 +208,7 @@ void ProjectManagerModule::OpenProjectImpl(const DAVA::FilePath& incomePath)
 
     propsItem.Set(Settings::Internal_LastProjectPath.c_str(), DAVA::Any(data->projectPath));
 
-    recentProject->Add(incomePath.GetAbsolutePathname());
+    recentProjects->Add(incomePath.GetAbsolutePathname());
 }
 
 void ProjectManagerModule::OpenLastProject()

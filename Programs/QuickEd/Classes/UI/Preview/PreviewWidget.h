@@ -1,7 +1,6 @@
 #pragma once
 #include "Engine/Qt/RenderWidget.h"
 
-#include "ui_PreviewWidget.h"
 #include "EditorSystems/EditorSystemsManager.h"
 #include "EditorSystems/SelectionContainer.h"
 #include <QWidget>
@@ -12,14 +11,31 @@ namespace Ui
 {
 class PreviewWidget;
 }
-class EditorSystemsManager;
 
-class Document;
+namespace DAVA
+{
+namespace TArc
+{
+class ContextAccessor;
+class DataContext;
+}
+}
+class EditorSystemsManager;
+class WidgetsData;
+
 class ControlNode;
 class PackageBaseNode;
 class RulerController;
 class EditorCanvas;
+class CursorInterpreter;
 class AbstractProperty;
+
+class QGridLayout;
+class RulerWidget;
+class RulerController;
+class QComboBox;
+class QScrollBar;
+class RulerController;
 class QWheelEvent;
 class QNativeGestureEvent;
 class QDragMoveEvent;
@@ -28,15 +44,16 @@ class QDragLeaveEvent;
 class QDropEvent;
 class QMenu;
 
-class PreviewWidget : public QWidget, public Ui::PreviewWidget, private DAVA::RenderWidget::IClientDelegate
+class PreviewWidget : public QWidget, private DAVA::RenderWidget::IClientDelegate
 {
     Q_OBJECT
 public:
-    explicit PreviewWidget(QWidget* parent = nullptr);
+    explicit PreviewWidget(DAVA::TArc::ContextAccessor* accessor, DAVA::RenderWidget* renderWidget, EditorSystemsManager* systemsManager);
     ~PreviewWidget();
     void SelectControl(const DAVA::String& path);
 
     void InjectRenderWidget(DAVA::RenderWidget* renderWidget);
+    void OnContextWasChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* oldOne);
 
 signals:
     void DeleteRequested();
@@ -49,9 +66,6 @@ signals:
     void DropRequested(const QMimeData* data, Qt::DropAction action, PackageBaseNode* targetNode, DAVA::uint32 destIndex, const DAVA::Vector2* pos);
 
 public slots:
-    void OnDocumentChanged(Document* document);
-    void SaveSystemsContextAndClear();
-    void LoadSystemsContext(Document* document);
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OnRootControlPositionChanged(const DAVA::Vector2& pos);
     void OnNestedControlPositionChanged(const DAVA::Vector2& pos);
@@ -74,15 +88,13 @@ private slots:
     void OnResized(DAVA::uint32 width, DAVA::uint32 height);
 
 private:
+    void InitUI(DAVA::TArc::ContextAccessor* accessor);
     void ShowMenu(const QMouseEvent* mouseEvent);
     bool AddSelectionMenuSection(QMenu* parentMenu, const QPoint& pos);
     bool CanChangeTextInControl(const ControlNode* node) const;
     void ChangeControlText(ControlNode* node);
 
-    void LoadContext();
-    void SaveContext();
-
-    void InitEditorSystems();
+    void InitFromSystemsManager(EditorSystemsManager* systemsManager);
 
 private:
     void CreateActions();
@@ -111,7 +123,7 @@ private:
     void UpdateDragScreenState();
     float GetScaleFromComboboxText() const;
 
-    QPointer<Document> document;
+    DAVA::TArc::ContextAccessor* accessor = nullptr;
     DAVA::RenderWidget* renderWidget = nullptr;
 
     QList<float> percentages;
@@ -125,8 +137,9 @@ private:
     QAction* focusNextChildAction = nullptr;
     QAction* focusPreviousChildAction = nullptr;
 
-    std::unique_ptr<EditorSystemsManager> systemsManager;
+    EditorSystemsManager* systemsManager = nullptr;
     EditorCanvas* editorCanvas = nullptr;
+    CursorInterpreter* cursorInterpreter = nullptr;
 
     ContinuousUpdater* continuousUpdater = nullptr;
 
@@ -135,4 +148,11 @@ private:
 
     //we can show model dialogs only when mouse released, so remember node to change text when mouse will be released
     ControlNode* nodeToChangeTextOnMouseRelease = nullptr;
+
+    QGridLayout* gridLayout = nullptr;
+    RulerWidget* horizontalRuler = nullptr;
+    RulerWidget* verticalRuler = nullptr;
+    QComboBox* scaleCombo = nullptr;
+    QScrollBar* horizontalScrollBar = nullptr;
+    QScrollBar* verticalScrollBar = nullptr;
 };

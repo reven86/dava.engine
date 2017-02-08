@@ -6,10 +6,10 @@
 
 using namespace DAVA;
 
-EditorCanvas::EditorCanvas(UIControl* movableControl_, EditorSystemsManager* parent)
+EditorCanvas::EditorCanvas(EditorSystemsManager* parent)
     : BaseEditorSystem(parent)
-    , movableControl(movableControl_)
 {
+    movableControl = systemsManager->GetScalableControl();
     systemsManager->contentSizeChanged.Connect(this, &EditorCanvas::OnContentSizeChanged);
     systemsManager->viewSizeChanged.Connect(this, &EditorCanvas::OnViewSizeChanged);
 }

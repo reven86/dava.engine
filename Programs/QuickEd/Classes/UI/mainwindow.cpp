@@ -1,6 +1,5 @@
 #include "mainwindow.h"
-#include "Document/Document.h"
-#include "Document/DocumentGroup.h"
+#include "Modules/DocumentsModule/Document.h"
 #include "Render/Texture.h"
 
 #include "UI/FileSystemView/FileSystemDockWidget.h"
@@ -9,7 +8,6 @@
 
 #include "QtTools/FileDialogs/FileDialog.h"
 #include "QtTools/ReloadSprites/DialogReloadSprites.h"
-#include "QtTools/ConsoleWidget/LoggerOutputObject.h"
 #include "Preferences/PreferencesStorage.h"
 #include "QtTools/EditorPreferences/PreferencesActionsFactory.h"
 #include "Preferences/PreferencesDialog.h"
@@ -22,6 +20,8 @@
 
 #include "ui_mainwindow.h"
 
+#include <Base/Result.h>
+
 #include <QMessageBox>
 #include <QCheckBox>
 
@@ -29,7 +29,6 @@ using namespace DAVA;
 
 REGISTER_PREFERENCES_ON_START(MainWindow,
                               PREF_ARG("isPixelized", false),
-                              PREF_ARG("consoleState", String())
                               )
 
 Q_DECLARE_METATYPE(const InspMember*);
@@ -37,12 +36,12 @@ Q_DECLARE_METATYPE(const InspMember*);
 MainWindow::MainWindow(QWidget* parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow())
-    , loggerOutput(new LoggerOutputObject)
 #if defined(__DAVAENGINE_MACOS__)
     , shortcutChecker(this)
 #endif //__DAVAENGINE_MACOS__
 {
     ui->setupUi(this);
+    setWindowIcon(QIcon(":/icon.ico"));
     DebugTools::ConnectToUI(ui.get());
     SetupShortcuts();
     SetupViewMenu();
@@ -53,26 +52,9 @@ MainWindow::MainWindow(QWidget* parent)
     InitEmulationMode();
     ConnectActions();
 
-    ui->tabBar->setElideMode(Qt::ElideNone);
-    ui->tabBar->setTabsClosable(true);
-    ui->tabBar->setUsesScrollButtons(true);
-
     PreferencesStorage::Instance()->RegisterPreferences(this);
 
-    connect(this, &MainWindow::EmulationModeChanged, ui->previewWidget, &PreviewWidget::OnEmulationModeChanged);
-    connect(ui->previewWidget, &PreviewWidget::DropRequested, ui->packageWidget->GetPackageModel(), &PackageModel::OnDropMimeData, Qt::DirectConnection);
-    connect(ui->previewWidget, &PreviewWidget::DeleteRequested, ui->packageWidget, &PackageWidget::OnDelete);
-    connect(ui->previewWidget, &PreviewWidget::ImportRequested, ui->packageWidget, &PackageWidget::OnImport);
-    connect(ui->previewWidget, &PreviewWidget::CutRequested, ui->packageWidget, &PackageWidget::OnCut);
-    connect(ui->previewWidget, &PreviewWidget::CopyRequested, ui->packageWidget, &PackageWidget::OnCopy);
-    connect(ui->previewWidget, &PreviewWidget::PasteRequested, ui->packageWidget, &PackageWidget::OnPaste);
-    connect(ui->previewWidget, &PreviewWidget::SelectionChanged, ui->packageWidget, &PackageWidget::OnSelectionChanged);
-
-    connect(ui->packageWidget, &PackageWidget::SelectedNodesChanged, ui->previewWidget, &PreviewWidget::OnSelectionChanged);
-
     connect(ui->packageWidget, &PackageWidget::CurrentIndexChanged, ui->propertiesWidget, &PropertiesWidget::UpdateModel);
-
-    connect(loggerOutput, &LoggerOutputObject::OutputReady, this, &MainWindow::OnLogOutput, Qt::DirectConnection);
 
     qApp->installEventFilter(this);
 }
@@ -96,33 +78,9 @@ void MainWindow::SetProjectPath(const QString& projectPath_)
     UpdateWindowTitle();
 }
 
-void MainWindow::OnRecentMenu(QAction* action)
-{
-    QString projectPath = action->data().toString();
-
-    if (projectPath.isEmpty())
-    {
-        return;
-    }
-
-    emit RecentProject(projectPath);
-}
-
 void MainWindow::SetupShortcuts()
 {
-    //Qt can not set multishortcut or enum shortcut in Qt designer
-    ui->actionReloadDocument->setShortcuts(QList<QKeySequence>()
-                                           << Qt::CTRL + Qt::Key_R
-                                           << Qt::Key_F5);
-
-    ui->actionRedo->setShortcuts(QList<QKeySequence>()
-                                 << Qt::CTRL + Qt::Key_Y
-                                 << Qt::CTRL + Qt::SHIFT + Qt::Key_Z);
-
-    ui->actionFindFileInProject->setShortcuts(QList<QKeySequence>()
-                                              << Qt::CTRL + Qt::SHIFT + Qt::Key_O
-                                              << Qt::ALT + Qt::SHIFT + Qt::Key_O);
-// Remap zoom in/out shorcuts for windows platform
+//Qt can not set multishortcut or enum shortcut in Qt designer
 #if defined(__DAVAENGINE_WIN32__)
     ui->actionZoomIn->setShortcuts(QList<QKeySequence>()
                                    << Qt::CTRL + Qt::Key_Equal
@@ -132,20 +90,10 @@ void MainWindow::SetupShortcuts()
 
 void MainWindow::ConnectActions()
 {
-    connect(ui->actionNewProject, &QAction::triggered, this, &MainWindow::NewProject);
-    connect(ui->actionOpenProject, &QAction::triggered, this, &MainWindow::OpenProject);
-    connect(ui->actionCloseProject, &QAction::triggered, this, &MainWindow::CloseProject);
     connect(ui->actionExit, &QAction::triggered, this, &MainWindow::close);
-    connect(ui->menuRecent, &QMenu::triggered, this, &MainWindow::OnRecentMenu);
-
-    connect(ui->actionHelp, &QAction::triggered, this, &MainWindow::ShowHelp);
 
     connect(ui->actionPixelized, &QAction::triggered, this, &MainWindow::OnPixelizationStateChanged);
     connect(ui->actionPreferences, &QAction::triggered, this, &MainWindow::OnEditorPreferencesTriggered);
-
-    connect(ui->actionZoomOut, &QAction::triggered, ui->previewWidget, &PreviewWidget::OnDecrementScale);
-    connect(ui->actionZoomIn, &QAction::triggered, ui->previewWidget, &PreviewWidget::OnIncrementScale);
-    connect(ui->actionActualZoom, &QAction::triggered, ui->previewWidget, &PreviewWidget::SetActualScale);
 }
 
 void MainWindow::InitEmulationMode()
@@ -166,13 +114,12 @@ void MainWindow::SetupViewMenu()
                             << ui->packageWidget->toggleViewAction()
                             << ui->libraryWidget->toggleViewAction()
                             << ui->styleSheetInspectorWidget->toggleViewAction()
-                            << ui->consoleDockWidget->toggleViewAction()
                             << ui->findWidget->toggleViewAction()
                             << ui->mainToolbar->toggleViewAction()
                             << ui->toolBarPlugins->toggleViewAction();
 
-    QAction* separator = ui->menuView->insertSeparator(ui->menuApplicationStyle->menuAction());
-    ui->menuView->insertActions(separator, dockWidgetToggleActions);
+    QAction* separator = ui->View->insertSeparator(ui->menuApplicationStyle->menuAction());
+    ui->View->insertActions(separator, dockWidgetToggleActions);
 
     SetupAppStyleMenu();
     SetupBackgroundMenu();
@@ -183,7 +130,7 @@ void MainWindow::SetupAppStyleMenu()
     QActionGroup* actionGroup = new QActionGroup(this);
     for (const QString& theme : Themes::ThemesNames())
     {
-        QAction* action = new QAction(theme, ui->menuView);
+        QAction* action = new QAction(theme, ui->View);
         actionGroup->addAction(action);
         action->setCheckable(true);
         if (theme == Themes::GetCurrentThemeStr())
@@ -247,45 +194,6 @@ void MainWindow::SetupBackgroundMenu()
     }
 }
 
-void MainWindow::SetRecentProjects(const QStringList& lastProjectsPathes)
-{
-    ui->menuRecent->clear();
-    for (auto& projectPath : lastProjectsPathes)
-    {
-        QAction* recentProject = new QAction(projectPath, this);
-        recentProject->setData(projectPath);
-        ui->menuRecent->addAction(recentProject);
-    }
-    ui->menuRecent->setEnabled(!lastProjectsPathes.isEmpty());
-}
-
-void MainWindow::InjectRenderWidget(DAVA::RenderWidget* renderWidget)
-{
-    ui->previewWidget->InjectRenderWidget(renderWidget);
-}
-
-void MainWindow::ShowResultList(const QString& title, const DAVA::ResultList& resultList)
-{
-    QStringList errors;
-    for (const Result& result : resultList.GetResults())
-    {
-        if (result.type == Result::RESULT_ERROR ||
-            result.type == Result::RESULT_FAILURE)
-        {
-            errors << QString::fromStdString(result.message);
-        }
-    }
-
-    if (!errors.empty())
-    {
-        QString errorStr = errors.join('\n');
-
-        delayedExecutor.DelayedExecute([errorStr]() {
-            QMessageBox::warning(qApp->activeWindow(), tr("Error while loading project"), errorStr);
-        });
-    }
-}
-
 MainWindow::ProjectView* MainWindow::GetProjectView()
 {
     return projectView;
@@ -318,14 +226,6 @@ void MainWindow::OnPreferencesPropertyChanged(const InspMember* member, const Va
 void MainWindow::OnPixelizationStateChanged(bool isPixelized)
 {
     Texture::SetPixelization(isPixelized);
-}
-
-void MainWindow::OnLogOutput(Logger::eLogLevel logLevel, const QByteArray& output)
-{
-    if (static_cast<int32>(1 << logLevel) & acceptableLoggerFlags)
-    {
-        ui->logWidget->AddMessage(logLevel, output);
-    }
 }
 
 void MainWindow::OnEditorPreferencesTriggered()
@@ -367,16 +267,4 @@ bool MainWindow::eventFilter(QObject* object, QEvent* event)
     }
 #endif
     return false;
-}
-
-String MainWindow::GetConsoleState() const
-{
-    QByteArray consoleState = ui->logWidget->Serialize().toBase64();
-    return consoleState.toStdString();
-}
-
-void MainWindow::SetConsoleState(const String& array)
-{
-    QByteArray consoleState = QByteArray::fromStdString(array);
-    ui->logWidget->Deserialize(QByteArray::fromBase64(consoleState));
 }

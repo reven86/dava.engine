@@ -2,7 +2,7 @@
 
 #include "UI/FileSystemView/ValidatedTextInputDialog.h"
 #include "UI/FileSystemView/FileSystemModel.h"
-#include "Project/Project.h"
+#include "Modules/ProjectModule/Project.h"
 
 #include "QtTools/FileDialogs/FileDialog.h"
 #include "QtTools/Utils/Utils.h"

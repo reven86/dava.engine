@@ -1,6 +1,7 @@
 #pragma once
 #include "UI/mainwindow.h"
 
+class Project;
 class Document;
 class LibraryWidget;
 class PropertiesWidget;
@@ -18,7 +19,6 @@ public:
 
     void SetProject(Project* project);
 
-    QTabBar* GetTabBar();
     QAction* GetActionRedo();
     QAction* GetActionUndo();
 

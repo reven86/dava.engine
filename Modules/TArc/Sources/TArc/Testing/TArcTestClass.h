@@ -29,10 +29,14 @@ public:
 
     MockInvoker* GetMockInvoker();
     DataContext* GetActiveContext();
+    const DataContext* GetActiveContext() const;
     DataContext* GetGlobalContext();
+    const DataContext* GetGlobalContext() const;
     DataWrapper CreateWrapper(const DAVA::ReflectedType* type);
     ContextAccessor* GetAccessor();
+    const ContextAccessor* GetAccessor() const;
     ContextManager* GetContextManager();
+    const ContextManager* GetContextManager() const;
 
     QWidget* GetWindow(const WindowKey& wndKey) const;
     QList<QWidget*> LookupWidget(const WindowKey& wndKey, const QString& objectName) const;

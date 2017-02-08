@@ -1,19 +1,15 @@
 #include "EditorSystems/EditorSystemsManager.h"
 
-#include "Engine/Qt/RenderWidget.h"
-
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 
 #include "EditorSystems/SelectionSystem.h"
 #include "EditorSystems/EditorControlsView.h"
-#include "EditorSystems/CursorSystem.h"
 #include "EditorSystems/HUDSystem.h"
 #include "EditorSystems/EditorTransformSystem.h"
 #include "EditorSystems/KeyboardProxy.h"
 #include "EditorSystems/EditorControlsView.h"
-#include "EditorSystems/EditorCanvas.h"
 
 #include "UI/UIControl.h"
 #include "UI/Input/UIModalInputComponent.h"
@@ -51,7 +47,7 @@ private:
 };
 }
 
-EditorSystemsManager::EditorSystemsManager(RenderWidget* renderWidget)
+EditorSystemsManager::EditorSystemsManager()
     : rootControl(new UIControl())
     , inputLayerControl(new EditorSystemsManagerDetails::InputLayerControl(this))
     , scalableControl(new UIControl())
@@ -78,10 +74,7 @@ EditorSystemsManager::EditorSystemsManager(RenderWidget* renderWidget)
     selectionSystemPtr = new SelectionSystem(this);
     systems.emplace_back(selectionSystemPtr);
     systems.emplace_back(new HUDSystem(this));
-    systems.emplace_back(new CursorSystem(renderWidget, this));
     systems.emplace_back(new ::EditorTransformSystem(this));
-    editorCanvasPtr = new EditorCanvas(scalableControl.Get(), this);
-    systems.emplace_back(editorCanvasPtr);
 
     for (auto it = systems.begin(); it != systems.end(); ++it)
     {
@@ -356,6 +349,11 @@ UIControl* EditorSystemsManager::GetRootControl() const
     return rootControl.Get();
 }
 
+DAVA::UIControl* EditorSystemsManager::GetScalableControl() const
+{
+    return scalableControl.Get();
+}
+
 Vector2 EditorSystemsManager::GetMouseDelta() const
 {
     return mouseDelta;
@@ -381,9 +379,11 @@ HUDAreaInfo EditorSystemsManager::GetCurrentHUDArea() const
     return currentHUDArea;
 }
 
-EditorCanvas* EditorSystemsManager::GetEditorCanvas() const
+void EditorSystemsManager::AddEditorSystem(BaseEditorSystem* system)
 {
-    return editorCanvasPtr;
+    dragStateChanged.Connect(system, &BaseEditorSystem::OnDragStateChanged);
+    displayStateChanged.Connect(system, &BaseEditorSystem::OnDisplayStateChanged);
+    systems.emplace_back(system);
 }
 
 void EditorSystemsManager::SetDragState(eDragState newDragState)

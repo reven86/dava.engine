@@ -15,10 +15,12 @@
 #include "Model/PackageHierarchy/StyleSheetsNode.h"
 
 #include "Model/YamlPackageSerializer.h"
-#include "Document/Document.h"
+#include "Modules/DocumentsModule/Document.h"
+#include "Modules/DocumentsModule/WidgetsData.h"
 #include "UI/Package/FilteredPackageModel.h"
 #include "UI/Package/PackageModel.h"
-#include "QtTools/FileDialogs/FileDialog.h"
+
+#include <QtTools/FileDialogs/FileDialog.h>
 
 using namespace DAVA;
 
@@ -176,7 +178,7 @@ void PackageWidget::OnDocumentChanged(Document* arg)
     document = arg;
     PackageNode* package = nullptr;
     QtModelPackageCommandExecutor* commandExecutor = nullptr;
-    if (!document.isNull())
+    if (document != nullptr)
     {
         package = document->GetPackage();
         commandExecutor = document->GetCommandExecutor();
@@ -252,7 +254,7 @@ void PackageWidget::PlaceActions()
 
 void PackageWidget::LoadContext()
 {
-    if (!document.isNull())
+    if (document != nullptr)
     {
         //restore context
         PackageContext* context = dynamic_cast<PackageContext*>(document->GetContext(this));
@@ -270,7 +272,7 @@ void PackageWidget::LoadContext()
 
 void PackageWidget::SaveContext()
 {
-    if (document.isNull())
+    if (document == nullptr)
     {
         return;
     }
@@ -379,7 +381,7 @@ void PackageWidget::CopyNodesToClipboard(const Vector<ControlNode*>& controls, c
     if (!controls.empty() || !styles.empty())
     {
         YamlPackageSerializer serializer;
-        DVASSERT(!document.isNull());
+        DVASSERT(document != nullptr);
         PackageNode* package = document->GetPackage();
         serializer.SerializePackageNodes(package, controls, styles);
         String str = serializer.WriteToString();
@@ -458,7 +460,7 @@ void PackageWidget::OnImport()
         packages.push_back(FilePath(fileName.toStdString()));
     }
     DVASSERT(!packages.empty());
-    DVASSERT(!document.isNull());
+    DVASSERT(document != nullptr);
     PackageNode* package = document->GetPackage();
     QtModelPackageCommandExecutor* commandExecutor = document->GetCommandExecutor();
     commandExecutor->AddImportedPackagesIntoPackage(packages, package);
@@ -490,7 +492,7 @@ void PackageWidget::OnPaste()
         if (!baseNode->IsReadOnly())
         {
             String string = clipboard->mimeData()->text().toStdString();
-            DVASSERT(!document.isNull());
+            DVASSERT(document != nullptr);
             PackageNode* package = document->GetPackage();
             document->GetCommandExecutor()->Paste(package, baseNode, baseNode->GetCount(), string);
         }
@@ -512,7 +514,7 @@ void PackageWidget::OnCut()
 
 void PackageWidget::OnDelete()
 {
-    if (document.isNull())
+    if (document == nullptr)
     {
         return;
     }
@@ -551,7 +553,7 @@ void PackageWidget::OnAddStyle()
     const DAVA::Vector<DAVA::UIStyleSheetProperty> properties;
 
     ScopedPtr<StyleSheetNode> style(new StyleSheetNode(UIStyleSheetSourceInfo(document->GetPackageFilePath()), selectorChains, properties));
-    DVASSERT(!document.isNull());
+    DVASSERT(document != nullptr);
     PackageNode* package = document->GetPackage();
     QtModelPackageCommandExecutor* commandExecutor = document->GetCommandExecutor();
     StyleSheetsNode* styleSheets = package->GetStyleSheets();
@@ -653,7 +655,7 @@ void PackageWidget::OnMoveRight()
 
 void PackageWidget::MoveNodeImpl(PackageBaseNode* node, PackageBaseNode* dest, DAVA::uint32 destIndex)
 {
-    DVASSERT(!document.isNull());
+    DVASSERT(document != nullptr);
     QtModelPackageCommandExecutor* commandExecutor = document->GetCommandExecutor();
 
     if (dynamic_cast<ControlNode*>(node) != nullptr)
@@ -680,7 +682,7 @@ void PackageWidget::MoveNodeImpl(PackageBaseNode* node, PackageBaseNode* dest, D
 
 void PackageWidget::OnFilterTextChanged(const QString& filterText)
 {
-    if (!document.isNull())
+    if (document != nullptr)
     {
         if (lastFilterTextEmpty)
         {
@@ -853,8 +855,8 @@ void PackageWidget::SetSelectedNodes(const SelectedNodes& selected, const Select
     selectionContainer.MergeSelection(reallySelected, reallyDeselected);
 
     RefreshActions();
-    DVASSERT(!document.isNull());
-    if (document.isNull())
+    DVASSERT(document != nullptr);
+    if (document == nullptr)
     {
         return;
     }

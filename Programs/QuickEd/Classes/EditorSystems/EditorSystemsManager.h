@@ -14,7 +14,6 @@ class UIControl;
 class UIEvent;
 class VariantType;
 class UIGeometricData;
-class RenderWidget;
 }
 
 struct HUDAreaInfo
@@ -69,7 +68,6 @@ class PackageNode;
 class EditorControlsView;
 class SelectionSystem;
 class HUDSystem;
-class EditorCanvas;
 
 class EditorSystemsManager : PackageListener
 {
@@ -101,14 +99,14 @@ public:
         Edit
     };
 
-    explicit EditorSystemsManager(DAVA::RenderWidget* renderWidget);
+    explicit EditorSystemsManager();
     ~EditorSystemsManager();
 
     eDragState GetDragState() const;
     eDisplayState GetDisplayState() const;
     HUDAreaInfo GetCurrentHUDArea() const;
 
-    EditorCanvas* GetEditorCanvas() const;
+    void AddEditorSystem(BaseEditorSystem* system);
 
     void OnInput(DAVA::UIEvent* currentInput);
 
@@ -130,6 +128,7 @@ public:
     void SelectNode(ControlNode* node);
 
     DAVA::UIControl* GetRootControl() const;
+    DAVA::UIControl* GetScalableControl() const;
 
     DAVA::Signal<const SelectedNodes& /*selected*/, const SelectedNodes& /*deselected*/> selectionChanged;
     DAVA::Signal<const HUDAreaInfo& /*areaInfo*/> activeAreaChanged;
@@ -185,7 +184,6 @@ private:
     EditorControlsView* controlViewPtr = nullptr; //weak pointer to canvas system;
     SelectionSystem* selectionSystemPtr = nullptr; // weak pointer to selection system
     HUDSystem* hudSystemPtr = nullptr;
-    EditorCanvas* editorCanvasPtr = nullptr;
 
     eDragState dragState = NoDrag;
     eDragState previousDragState = NoDrag;

@@ -3,7 +3,6 @@
 #include "UI/mainwindow.h"
 #include "EditorSystems/SelectionContainer.h"
 
-class SpritesPacker;
 class QComboBox;
 class FindItem;
 class FindFilter;
@@ -21,10 +20,7 @@ public:
 
     void SetResourceDirectory(const QString& path);
     void SelectFile(const QString& filePath);
-    void SelectControl(const DAVA::String& controlPath);
     void FindControls(std::unique_ptr<FindFilter>&& filter);
-
-    void ExecDialogReloadSprites(SpritesPacker* packer);
 
     void SetProjectActionsEnabled(bool enable);
 
@@ -37,7 +33,6 @@ signals:
     void BiDiSupportChanged(bool support);
     void GlobalStyleClassesChanged(const QString& classesStr);
     void CurrentLanguageChanged(const QString& newLangCode);
-    void ReloadSprites();
     void FindFileInProject();
     void JumpToPrototype();
     void FindPrototypeInstances();

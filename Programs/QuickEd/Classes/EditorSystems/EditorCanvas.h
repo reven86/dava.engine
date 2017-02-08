@@ -13,7 +13,7 @@ class UIControl;
 class EditorCanvas final : public BaseEditorSystem
 {
 public:
-    EditorCanvas(DAVA::UIControl* movableControl, EditorSystemsManager* parent);
+    EditorCanvas(EditorSystemsManager* parent);
     ~EditorCanvas() override;
 
     bool CanProcessInput(DAVA::UIEvent* currentInput) const override;

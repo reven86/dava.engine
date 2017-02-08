@@ -3,6 +3,8 @@
 #include "Logger/Logger.h"
 #include "Debug/DVAssert.h"
 
+#include <Utils/StringFormat.h>
+
 #include <QVariant>
 #include <QJsonDocument>
 #include <QJsonObject>
@@ -18,6 +20,7 @@ namespace TArc
 {
 namespace PropertiesHolderDetails
 {
+const char* stringListDelimiter = ";# ";
 struct JSONObject
 {
     JSONObject(const QString& name_)
@@ -54,9 +57,8 @@ struct PropertiesItem::Impl : public PropertiesHolderDetails::JSONObject
     template <typename T, typename std::enable_if<!std::is_pointer<T>::value && !std::is_fundamental<T>::value, int>::type = 0>
     void Set(const QString& key, const T& value);
 
-    QJsonValue ToValue(const QString& value);
-    QJsonValue ToValue(const QByteArray& value);
-    QJsonValue ToValue(const DAVA::FilePath& value);
+    template <typename T>
+    QJsonValue ToValue(const T& value);
 
     template <typename T>
     T Get(const QString& key, const T& defaultValue);
@@ -67,9 +69,8 @@ struct PropertiesItem::Impl : public PropertiesHolderDetails::JSONObject
     template <typename T, typename std::enable_if<std::is_pointer<T>::value, int>::type = 0>
     T FromValue(const QJsonValue& value, const T& defaultValue);
 
-    QString FromValue(const QJsonValue& value, const QString& defaultValue);
-    QByteArray FromValue(const QJsonValue& value, const QByteArray& defaultValue);
-    DAVA::FilePath FromValue(const QJsonValue& value, const DAVA::FilePath& defaultValue);
+    template <typename T, typename std::enable_if<!std::is_pointer<T>::value && !std::is_fundamental<T>::value, int>::type = 0>
+    T FromValue(const QJsonValue& value, const T& defaultValue);
 
     void SaveToParent();
 
@@ -138,7 +139,7 @@ void PropertiesItem::Impl::Set(const QString& key, T value)
 template <typename T, typename std::enable_if<std::is_pointer<T>::value, int>::type>
 void PropertiesItem::Impl::Set(const QString& key, const T& value)
 {
-    DVASSERT(false, "unsupported type: pointer");
+    static_assert(false, "unsupported type: pointer");
 }
 
 template <typename T, typename std::enable_if<!std::is_pointer<T>::value && !std::is_fundamental<T>::value, int>::type>
@@ -147,19 +148,10 @@ void PropertiesItem::Impl::Set(const QString& key, const T& value)
     jsonObject[key] = ToValue(value);
 }
 
-QJsonValue PropertiesItem::Impl::ToValue(const QString& value)
+template <typename T>
+QJsonValue PropertiesItem::Impl::ToValue(const T& value)
 {
-    return QJsonValue(value);
-}
-
-QJsonValue PropertiesItem::Impl::ToValue(const QByteArray& value)
-{
-    return QJsonValue(QString(value.toBase64()));
-}
-
-QJsonValue PropertiesItem::Impl::ToValue(const DAVA::FilePath& value)
-{
-    return QJsonValue(QString::fromStdString(value.GetAbsolutePathname()));
+    static_assert(false, "conversion between T and QJsonValue is not declared");
 }
 
 template <typename T>
@@ -190,14 +182,58 @@ T PropertiesItem::Impl::FromValue(const QJsonValue& value, const T& defaultValue
 template <typename T, typename std::enable_if<std::is_pointer<T>::value, int>::type>
 T PropertiesItem::Impl::FromValue(const QJsonValue& value, const T& defaultValue)
 {
-    DVASSERT(false, "unsupported type: pointer");
+    static_assert(false, "unsupported type: pointer");
 }
 
+template <typename T, typename std::enable_if<!std::is_pointer<T>::value && !std::is_fundamental<T>::value, int>::type>
+T PropertiesItem::Impl::FromValue(const QJsonValue& value, const T& defaultValue)
+{
+    static_assert(false, "conversion between QJsonValue and T is not declared");
+}
+
+template <>
+QJsonValue PropertiesItem::Impl::ToValue(const QString& value)
+{
+    return QJsonValue(value);
+}
+
+template <>
+QJsonValue PropertiesItem::Impl::ToValue(const QByteArray& value)
+{
+    return QJsonValue(QString(value.toBase64()));
+}
+
+template <>
+QJsonValue PropertiesItem::Impl::ToValue(const DAVA::FilePath& value)
+{
+    return QJsonValue(QString::fromStdString(value.GetAbsolutePathname()));
+}
+
+template <>
+QJsonValue PropertiesItem::Impl::ToValue(const DAVA::String& value)
+{
+    return QJsonValue(QString::fromStdString(value));
+}
+
+template <>
+QJsonValue PropertiesItem::Impl::ToValue(const DAVA::Vector<DAVA::String>& value)
+{
+    QStringList stringList;
+    std::transform(value.begin(), value.end(), std::back_inserter(stringList), [](const DAVA::String& string) {
+        DAVA::String errorMessage = DAVA::Format("string to save %s contains special character used to save: %s", string.c_str(), PropertiesHolderDetails::stringListDelimiter);
+        DVASSERT("%s", errorMessage.c_str());
+        return QString::fromStdString(string);
+    });
+    return stringList.join(PropertiesHolderDetails::stringListDelimiter);
+}
+
+template <>
 QString PropertiesItem::Impl::FromValue(const QJsonValue& value, const QString& defaultValue)
 {
     return value.toString(defaultValue);
 }
 
+template <>
 QByteArray PropertiesItem::Impl::FromValue(const QJsonValue& value, const QByteArray& defaultValue)
 {
     if (value.isString())
@@ -210,11 +246,43 @@ QByteArray PropertiesItem::Impl::FromValue(const QJsonValue& value, const QByteA
     }
 }
 
+template <>
 DAVA::FilePath PropertiesItem::Impl::FromValue(const QJsonValue& value, const DAVA::FilePath& defaultValue)
 {
     if (value.isString())
     {
         return DAVA::FilePath(value.toString().toStdString());
+    }
+    else
+    {
+        return defaultValue;
+    }
+}
+
+template <>
+DAVA::String PropertiesItem::Impl::FromValue(const QJsonValue& value, const DAVA::String& defaultValue)
+{
+    if (value.isString())
+    {
+        return value.toString().toStdString();
+    }
+    else
+    {
+        return defaultValue;
+    }
+}
+
+template <>
+DAVA::Vector<DAVA::String> PropertiesItem::Impl::FromValue(const QJsonValue& value, const DAVA::Vector<DAVA::String>& defaultValue)
+{
+    if (value.isString())
+    {
+        DAVA::Vector<DAVA::String> retVal;
+        QStringList stringList = value.toString().split(PropertiesHolderDetails::stringListDelimiter);
+        std::transform(stringList.begin(), stringList.end(), std::back_inserter(retVal), [](const QString& string) {
+            return string.toStdString();
+        });
+        return retVal;
     }
     else
     {
@@ -329,6 +397,12 @@ PropertiesItem::PropertiesItem(const PropertiesItem& parent, const String& name)
 {
 }
 
+#define ENUM_CAP \
+        else \
+        { \
+            DVASSERT(false, "type is not enumerated in the ENUM_TYPES define!");\
+        }
+
 #define SAVE_IF_ACCEPTABLE(value, type, T, key) \
     if (type == Type::Instance<T>()) \
     { \
@@ -341,6 +415,7 @@ PropertiesItem::PropertiesItem(const PropertiesItem& parent, const String& name)
         { \
             Logger::Debug("PropertiesHolder::Save: can not get type %s with message %s", type->GetName(), exception.what()); \
         } \
+        return; \
     }
 
 #define LOAD_IF_ACCEPTABLE(value, type, T, key) \
@@ -367,7 +442,10 @@ PropertiesItem::PropertiesItem(const PropertiesItem& parent, const String& name)
     METHOD(value, type, float64, key) \
     METHOD(value, type, QString, key) \
     METHOD(value, type, QByteArray, key) \
-    METHOD(value, type, DAVA::FilePath, key)
+    METHOD(value, type, DAVA::FilePath, key) \
+    METHOD(value, type, DAVA::String, key) \
+    METHOD(value, type, DAVA::Vector<DAVA::String>, key) \
+    ENUM_CAP
 
 void PropertiesItem::Set(const String& key, const Any& value)
 {
