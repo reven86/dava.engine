@@ -21,7 +21,7 @@ CheckBox::CheckBox(const ControlDescriptorBuilder<Fields>& fields, ContextAccess
 
 void CheckBox::SetupControl()
 {
-    connections.AddConnection(static_cast<QCheckBox*>(this), &QCheckBox::stateChanged, MakeFunction(this, &CheckBox::StateChanged));
+    connections.AddConnection(this, &QCheckBox::stateChanged, MakeFunction(this, &CheckBox::StateChanged));
 }
 
 void CheckBox::UpdateControl(const ControlDescriptor& changedFields)

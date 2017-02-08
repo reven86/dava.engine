@@ -5,30 +5,30 @@
 #include "TArc/Controls/PropertyPanel/DefaultEditorDrawers.h"
 #include "TArc/Controls/PropertyPanel/DefaultValueCompositors.h"
 
-#include <Base/BaseTypes.h>
+#include <Reflection/ReflectedMeta.h>
 
 namespace DAVA
 {
 namespace TArc
 {
-class TextComponentValue : public ProxyComponentValue<TextEditorDrawer, TextValueCompositor>
+class EnumComponentValue : public ProxyComponentValue<EnumEditorDrawer, EnumValueCompositor>
 {
 public:
-    TextComponentValue() = default;
-    ~TextComponentValue() override = default;
+    EnumComponentValue() = default;
 
 protected:
     QWidget* AcquireEditorWidget(QWidget* parent, const QStyleOptionViewItem& option) override;
 
 private:
-    String GetText() const;
-    void SetText(const DAVA::String& text);
+    Any GetValueAny() const;
+    void SetValueAny(const Any& newValue);
+
+    const M::Enum* GetEnumerator() const;
 
     bool IsReadOnly() const;
-    bool IsEnabled() const;
 
 private:
-    DAVA_VIRTUAL_REFLECTION(TextComponentValue, ProxyComponentValue<TextEditorDrawer, TextValueCompositor>);
+    DAVA_VIRTUAL_REFLECTION(EnumComponentValue, ProxyComponentValue<EnumEditorDrawer, EnumValueCompositor>);
 };
 }
 }

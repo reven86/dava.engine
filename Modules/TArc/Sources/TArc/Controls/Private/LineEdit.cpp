@@ -24,7 +24,7 @@ LineEdit::LineEdit(const ControlDescriptorBuilder<LineEdit::Fields>& fields, Con
 
 void LineEdit::SetupControl()
 {
-    connections.AddConnection(static_cast<QLineEdit*>(this), &QLineEdit::editingFinished, MakeFunction(this, &LineEdit::EditingFinished));
+    connections.AddConnection(this, &QLineEdit::editingFinished, MakeFunction(this, &LineEdit::EditingFinished));
     TextValidator* validator = new TextValidator(this, this);
     setValidator(validator);
 }
