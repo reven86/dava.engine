@@ -127,13 +127,14 @@ void PreviewWidget::InjectRenderWidget(DAVA::RenderWidget* renderWidget_)
 {
     DVASSERT(renderWidget_ != nullptr);
     renderWidget = renderWidget_;
+    CreateActions();
+
     InitEditorSystems();
 
     renderWidget->resized.Connect(this, &PreviewWidget::OnResized);
 
     renderWidget->SetClientDelegate(this);
     frame->layout()->addWidget(renderWidget);
-    CreateActions();
 }
 
 void PreviewWidget::CreateActions()

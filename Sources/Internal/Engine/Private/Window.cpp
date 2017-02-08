@@ -350,7 +350,6 @@ void Window::HandleSizeChanged(const Private::MainDispatcherEvent& e)
             if (uiControlSystem->vcs->GetReloadResourceOnResize())
             {
                 Sprite::ValidateForSize();
-                TextBlock::ScreenResolutionChanged();
             }
         }
     }
@@ -617,7 +616,6 @@ void Window::HandleKeyPress(const Private::MainDispatcherEvent& e)
         uie.phase = UIEvent::Phase::KEY_UP;
     }
 
-    inputSystem->HandleInputEvent(&uie);
     if (pressed)
     {
         keyboard.OnKeyPressed(uie.key);
@@ -626,6 +624,7 @@ void Window::HandleKeyPress(const Private::MainDispatcherEvent& e)
     {
         keyboard.OnKeyUnpressed(uie.key);
     }
+    inputSystem->HandleInputEvent(&uie);
 }
 
 void Window::HandleKeyChar(const Private::MainDispatcherEvent& e)

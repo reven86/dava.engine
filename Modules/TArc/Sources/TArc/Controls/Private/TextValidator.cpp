@@ -16,7 +16,7 @@ TextValidator::TextValidator(ValidatorDelegate* d_, QObject* parent)
 void TextValidator::fixup(QString& input) const
 {
     Any inputValue(input.toStdString());
-    M::ValidatorResult result = d->Validate(inputValue);
+    M::ValidationResult result = d->Validate(inputValue);
     if (!result.fixedValue.IsEmpty())
     {
         input = QString::fromStdString(result.fixedValue.Cast<String>());
@@ -26,7 +26,7 @@ void TextValidator::fixup(QString& input) const
 QValidator::State TextValidator::validate(QString& input, int& pos) const
 {
     Any inputValue(input.toStdString());
-    M::ValidatorResult result = d->Validate(inputValue);
+    M::ValidationResult result = d->Validate(inputValue);
     if (!result.fixedValue.IsEmpty())
     {
         input = QString::fromStdString(result.fixedValue.Cast<String>());
@@ -39,9 +39,9 @@ QValidator::State TextValidator::validate(QString& input, int& pos) const
 
     switch (result.state)
     {
-    case M::ValidatorResult::eState::Valid:
+    case M::ValidationResult::eState::Valid:
         return QValidator::Acceptable;
-    case M::ValidatorResult::eState::Intermediate:
+    case M::ValidationResult::eState::Intermediate:
         return QValidator::Intermediate;
     default:
         return QValidator::Invalid;

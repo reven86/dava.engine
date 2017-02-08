@@ -86,6 +86,11 @@ public:
     static bool IsMainThread();
 
     /**
+        Return the currently running thread.
+    */
+    static Thread* Current();
+
+    /**
 		\brief static function to create instance of thread object based on Message.
 		This functions create thread based on message. 
         It do not start the thread until Start function called.

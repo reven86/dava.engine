@@ -2,7 +2,14 @@
 #include "../Common/RenderLoop.h"
 #include "../Common/FrameLoop.h"
 #include "../Common/dbg_StatSet.h"
+
+#if defined(__DAVAENGINE_COREV2__)
+#include "Engine/Engine.h"
+#include "DeviceManager/DeviceManager.h"
 #include "Platform/DeviceInfo.h"
+#else
+#include "Platform/DeviceInfo.h"
+#endif
 
 #if defined(__DAVAENGINE_WIN_UAP__)
 #include <wrl/client.h>
@@ -314,18 +321,11 @@ ComPtr<IDXGIAdapter> dx11_SelectAdapter()
 
     const AdapterWithDesc& selected = availableAdapters.front();
     DAVA::Logger::Info("[RHI-DX11] Using adapter `%S` (vendor: %04X, subsystem: %04X)", selected.desc.Description, selected.desc.VendorId, selected.desc.SubSysId);
-    {
-        // Find out if we should use workaround for AMD GPU
-        char info[256] = {};
-        WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, selected.desc.Description, -1, info, countof(info) - 1, nullptr, nullptr);
-        DAVA::UWPWorkaround::enableSurfaceSizeWorkaround |= strstr(info, "AMD Radeon HD") && (info[strlen(info) - 1] == 'G');
-    }
     return selected.adapter;
 }
 
-bool dx11_CreateDevice(const InitParam& param)
+bool dx11_CreateDeviceWithAdapter(const InitParam& param, ComPtr<IDXGIAdapter> adapter)
 {
-    DAVA::Logger::Info("[RHI-DX11] Creting device...");
     UINT deviceFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
 
 #if defined(__DAVAENGINE_DEBUG__)
@@ -333,7 +333,6 @@ bool dx11_CreateDevice(const InitParam& param)
         deviceFlags |= D3D11_CREATE_DEVICE_DEBUG;
 #endif
 
-    ComPtr<IDXGIAdapter> adapter = dx11_SelectAdapter();
     if (adapter.Get() == nullptr)
         DAVA::Logger::Info("[RHI-DX11] Creating device without selected adapter");
 
@@ -399,6 +398,13 @@ bool dx11_CreateDevice(const InitParam& param)
     return true;
 }
 
+bool dx11_CreateDevice(const InitParam& param)
+{
+    DAVA::Logger::Info("[RHI-DX11] Creting device...");
+    ComPtr<IDXGIAdapter> adapter = dx11_SelectAdapter();
+    return dx11_CreateDeviceWithAdapter(param, adapter);
+}
+
 void dx11_DestroyDevice()
 {
     dx11.renderTarget.Reset();
@@ -442,15 +448,6 @@ bool dx11_CreateSwapChain(const InitParam& param)
     catch (...)
     {
         dx11_DestroyDevice();
-        if (DAVA::UWPWorkaround::enableSurfaceSizeWorkaround)
-        {
-            DAVA::Logger::Error("[RHI-DX11] failed to create swapchain even with workaround. Terminating application.");
-        }
-        else
-        {
-            DAVA::Logger::Error("[RHI-DX11] failed to create swapchain, attempting with workaround...");
-            DAVA::UWPWorkaround::enableSurfaceSizeWorkaround = true;
-        }
         return false;
     }
 
@@ -488,6 +485,8 @@ bool dx11_ResizeSwapChain(uint32 width, uint32 height, float scaleX, float scale
     dx11.context->ClearState();
     dx11.context->Flush();
 
+    height += (DAVA::UWPWorkaround::enableSurfaceSizeWorkaround ? 1 : 0);
+
     if (!DX11Check(dx11.swapChain->ResizeBuffers(dx11.BackBuffersCount, width, height, dx11.BackBufferFormat, 0)))
         return false;
 
@@ -519,6 +518,50 @@ bool dx11_ResizeSwapChain(uint32 width, uint32 height, float scaleX, float scale
         return false;
 
     return true;
+}
+
+void dx11_DetectUWPWorkaround(const InitParam& param)
+{
+    DAVA::Logger::Info("[RHI-DX11] Detecting configuration ... ");
+
+    ComPtr<IDXGIAdapter> adapter = dx11_SelectAdapter();
+    if (adapter.Get())
+    {
+        DXGI_ADAPTER_DESC desc = {};
+        adapter->GetDesc(&desc);
+        char info[256] = {};
+        WideCharToMultiByte(CP_ACP, WC_NO_BEST_FIT_CHARS, desc.Description, -1, info, countof(info) - 1, nullptr, nullptr);
+
+        DAVA::UWPWorkaround::enableSurfaceSizeWorkaround = strstr(info, "AMD Radeon HD") && (info[strlen(info) - 1] == 'G');
+        if (DAVA::UWPWorkaround::enableSurfaceSizeWorkaround)
+        {
+            DAVA::Logger::Warning("[RHI-DX11] Detected %s GPU, using altered configuration.", info);
+            return;
+        }
+    }
+
+    InitParam fullScreenParameters = param;
+
+#if defined(__DAVAENGINE_COREV2__)
+    const DAVA::DisplayInfo& displayInfo = DAVA::GetEngineContext()->deviceManager->GetPrimaryDisplay();
+    fullScreenParameters.width = static_cast<uint32>(displayInfo.rect.dx);
+    fullScreenParameters.height = static_cast<uint32>(displayInfo.rect.dy);
+#else
+    fullScreenParameters.width = static_cast<uint32>(DAVA::DeviceInfo::GetScreenInfo().width);
+    fullScreenParameters.height = static_cast<uint32>(DAVA::DeviceInfo::GetScreenInfo().height);
+#endif
+
+    DAVA::Logger::Info("[RHI-DX11] Detecting configuration by creating test device...");
+    if (dx11_CreateDeviceWithAdapter(fullScreenParameters, adapter))
+    {
+        if (!dx11_CreateSwapChain(fullScreenParameters))
+        {
+            DAVA::Logger::Warning("[RHI-DX11] Failed to create SwapChain using default configuration");
+            DAVA::UWPWorkaround::enableSurfaceSizeWorkaround = true;
+        }
+    }
+    DAVA::Logger::Warning("[RHI-DX11] Using altered configuration: %s", DAVA::UWPWorkaround::enableSurfaceSizeWorkaround ? "YES" : "NO");
+    dx11_DestroyDevice();
 }
 
 /*
@@ -625,20 +668,18 @@ static void dx11_InitContext()
     dx11.hasDebugLayers = dx11_HasDebugLayers();
 #endif
 
+    dx11_DetectUWPWorkaround(dx11.initParameters);
+
     if (!dx11_CreateDevice(dx11.initParameters))
     {
         ReportError(dx11.initParameters, RenderingError::FailedToInitialize);
         return;
     }
 
-    if (!dx11_CreateSwapChain(dx11.initParameters) && DAVA::UWPWorkaround::enableSurfaceSizeWorkaround)
+    if (!dx11_CreateSwapChain(dx11.initParameters))
     {
-        dx11_DestroyDevice();
-        if (!dx11_CreateSwapChain(dx11.initParameters))
-        {
-            ReportError(dx11.initParameters, RenderingError::FailedToInitialize);
-            return;
-        }
+        ReportError(dx11.initParameters, RenderingError::FailedToInitialize);
+        return;
     }
 
     if (!dx11_ResizeSwapChain(dx11.initParameters.width, dx11.initParameters.height, dx11.initParameters.scaleX, dx11.initParameters.scaleY))

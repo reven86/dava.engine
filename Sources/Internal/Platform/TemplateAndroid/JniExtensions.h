@@ -2,6 +2,9 @@
 #define __JNI_EXTENSIONS_H__
 
 #include "Base/BaseTypes.h"
+
+#if !defined(__DAVAENGINE_COREV2__)
+
 #if defined(__DAVAENGINE_ANDROID__)
 
 #include <jni.h>
@@ -31,5 +34,7 @@ protected:
 }
 
 #endif // __DAVAENGINE_ANDROID__
+
+#endif // __DAVAENGINE_COREV2__
 
 #endif // __JNI_EXTENSIONS_H__

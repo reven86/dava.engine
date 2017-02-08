@@ -8,7 +8,7 @@ namespace DAVA
 {
 namespace TArc
 {
-class QtVBoxLayout : QVBoxLayout
+class QtVBoxLayout : public QVBoxLayout
 {
 public:
     QtVBoxLayout() = default;
@@ -24,7 +24,7 @@ void QtVBoxLayout::AddWidget(ControlProxy<T>* control, int stretch, Qt::Alignmen
     addWidget(control->ToWidgetCast(), stretch, alignment);
 }
 
-class QtHBoxLayout : QHBoxLayout
+class QtHBoxLayout : public QHBoxLayout
 {
 public:
     QtHBoxLayout() = default;
