@@ -91,10 +91,27 @@ list( REMOVE_DUPLICATES QT5_FIND_COMPONENTS)
 set ( QT_CMAKE_RULES "${QT_ACTUAL_PATH}/lib/cmake")
 
 if (NOT EXISTS ${QT_CMAKE_RULES})
+
+   message( STATUS "DAVA_CONFIG_PATH  - ${DAVA_CONFIG_PATH}")
+
+message( STATUS "   dava config   " )
+    file( STRINGS ${DAVA_CONFIG_PATH} ConfigContents )
+    foreach( NameAndValue ${ConfigContents} )
+        string( REGEX REPLACE "^[ ]+" "" NameAndValue ${NameAndValue} )
+        string( REGEX MATCH "^[^=]+" Name ${NameAndValue} )
+        string( REPLACE "${Name}=" "" Value ${NameAndValue} )
+        string( STRIP "${Name}" Name)
+        string( STRIP "${Value}" Value)
+        if( NOT ${Name} )
+            set( ${Name} "${Value}" PARENT_SCOPE )
+        endif()
+        message( STATUS "---" [${Name}] "  " [${Value}] )
+    endforeach()
+message( STATUS "   end dava config   " )
+
+
    message( STATUS "QT_ACTUAL_PATH    - ${QT_ACTUAL_PATH}")
    message( STATUS "QT_CMAKE_RULES    - ${QT_CMAKE_RULES}")
-   message( STATUS "DAVA_CONFIG_PATH  - ${DAVA_CONFIG_PATH}")
-   message( STATUS "CUSTOM_DAVA_CONFIG_PATH  - ${CUSTOM_DAVA_CONFIG_PATH}")
 
 
    message( FATAL_ERROR "Please set the correct path to QT5 in file DavaConfig.in"  ) 
