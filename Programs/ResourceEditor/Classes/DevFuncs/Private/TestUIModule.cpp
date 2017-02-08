@@ -4,6 +4,7 @@
 
 #include <TArc/Controls/CheckBox.h>
 #include <TArc/Controls/ComboBox.h>
+#include <TArc/Controls/ComboBoxCheckable.h>
 #include <TArc/Controls/IntSpinBox.h>
 #include <TArc/Controls/DoubleSpinBox.h>
 #include <TArc/Controls/IntSpinBox.h>
@@ -19,8 +20,9 @@
 #include <Reflection/ReflectedMeta.h>
 #include <Reflection/ReflectionRegistrator.h>
 
-#include <Base/GlobalEnum.h>
 #include <Logger/Logger.h>
+#include <Base/GlobalEnum.h>
+#include <Base/Vector.h>
 
 #include <QAction>
 #include <QDialog>
@@ -345,7 +347,7 @@ struct ComboBoxTestData : public ReflectionBase
 
         QVBoxLayout* boxLayout = new QVBoxLayout();
 
-        auto addTest = [&](const QString& testName, const ControlDescriptorBuilder<ComboBox::Fields> descriptor)
+        auto addTest = [&](const QString& testName, const ControlDescriptorBuilder<ComboBox::Fields>& descriptor)
         {
             QHBoxLayout* lineLayout = new QHBoxLayout();
             lineLayout->addWidget(new QLabel(testName, parent));
@@ -415,6 +417,90 @@ struct ComboBoxTestData : public ReflectionBase
             desr[ComboBox::Fields::Value] = "valueString";
             desr[ComboBox::Fields::Enumerator] = "enumeratorMethodSet";
             addTest("StringValue[EnumeratorSet]: ", desr);
+        }
+
+        //readonly check box
+        {
+            //add read only check box
+            ControlDescriptorBuilder<CheckBox::Fields> descr;
+            descr[CheckBox::Fields::Checked] = "readOnly";
+            CheckBox* readOnlyBox = new CheckBox(descr, accessor, dataModel, parent);
+            boxLayout->addWidget(readOnlyBox->ToWidgetCast());
+        }
+
+        Result r;
+        r.model = data;
+        r.layout = boxLayout;
+        return r;
+    }
+};
+
+struct ComboBoxCheckableTestData : public ReflectionBase
+{
+    enum eFlags
+    {
+        NONE = 0,
+        BIT_1 = 1 << 0,
+        BIT_2 = 1 << 1,
+        BIT_3 = 1 << 2,
+
+        MIX_1_2 = BIT_1 | BIT_2,
+        MIX_1_3 = BIT_1 | BIT_3,
+        MIX_2_3 = BIT_2 | BIT_3,
+
+        ALL = BIT_1 | BIT_2 | BIT_3
+    };
+
+    //int
+    int testValue = eFlags::BIT_2;
+    bool readOnly = false;
+
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(ComboBoxCheckableTestData, ReflectionBase)
+    {
+        ReflectionRegistrator<ComboBoxCheckableTestData>::Begin()
+        .Field("readOnly", &ComboBoxCheckableTestData::readOnly)
+        .Field("value", &ComboBoxCheckableTestData::testValue)[DAVA::M::FlagsT<ComboBoxCheckableTestData::eFlags>()]
+        .Field("valueMetaReadOnly", &ComboBoxCheckableTestData::testValue)[DAVA::M::FlagsT<ComboBoxCheckableTestData::eFlags>(), DAVA::M::ReadOnly()]
+        .End();
+    }
+
+    static Result Create(TArc::UI* ui, TArc::ContextAccessor* accessor, QWidget* parent)
+    {
+        using namespace DAVA::TArc;
+
+        ComboBoxCheckableTestData* data = new ComboBoxCheckableTestData();
+        Reflection dataModel = Reflection::Create(data);
+
+        QVBoxLayout* boxLayout = new QVBoxLayout();
+
+        auto addTest = [&](const QString& testName, const ControlDescriptorBuilder<ComboBoxCheckable::Fields>& descriptor)
+        {
+            QHBoxLayout* lineLayout = new QHBoxLayout();
+            lineLayout->addWidget(new QLabel(testName, parent));
+
+            ComboBoxCheckable* comboBox = new ComboBoxCheckable(descriptor, accessor, dataModel, parent);
+            lineLayout->addWidget(comboBox->ToWidgetCast());
+            boxLayout->addLayout(lineLayout);
+        };
+
+        // read only
+        {
+            ControlDescriptorBuilder<ComboBoxCheckable::Fields> desr;
+            desr[ComboBoxCheckable::Fields::Value] = "value";
+            desr[ComboBoxCheckable::Fields::IsReadOnly] = "readOnly";
+            addTest("Value[ReadOnly by field]:", desr);
+        }
+
+        {
+            ControlDescriptorBuilder<ComboBoxCheckable::Fields> desr;
+            desr[ComboBoxCheckable::Fields::Value] = "value";
+            addTest("Value: ", desr);
+        }
+
+        {
+            ControlDescriptorBuilder<ComboBoxCheckable::Fields> desr;
+            desr[ComboBoxCheckable::Fields::Value] = "valueMetaReadOnly";
+            addTest("Value[ReadOnly by Meeta]:", desr);
         }
 
         //readonly check box
@@ -701,6 +787,18 @@ ENUM_DECLARE(TestUIModuleDetails::ComboBoxTestData::eTest)
     ENUM_ADD_DESCR(static_cast<int>(TestUIModuleDetails::ComboBoxTestData::eTest::THIRD), "3rd");
 }
 
+ENUM_DECLARE(TestUIModuleDetails::ComboBoxCheckableTestData::eFlags)
+{
+    ENUM_ADD_DESCR(static_cast<int>(TestUIModuleDetails::ComboBoxCheckableTestData::eFlags::NONE), "None");
+    ENUM_ADD_DESCR(static_cast<int>(TestUIModuleDetails::ComboBoxCheckableTestData::eFlags::BIT_1), "1-st");
+    ENUM_ADD_DESCR(static_cast<int>(TestUIModuleDetails::ComboBoxCheckableTestData::eFlags::BIT_2), "2-nd");
+    ENUM_ADD_DESCR(static_cast<int>(TestUIModuleDetails::ComboBoxCheckableTestData::eFlags::BIT_3), "3-rd");
+    ENUM_ADD_DESCR(static_cast<int>(TestUIModuleDetails::ComboBoxCheckableTestData::eFlags::MIX_1_2), "MIX_1_2");
+    ENUM_ADD_DESCR(static_cast<int>(TestUIModuleDetails::ComboBoxCheckableTestData::eFlags::MIX_1_3), "MIX_1_3");
+    ENUM_ADD_DESCR(static_cast<int>(TestUIModuleDetails::ComboBoxCheckableTestData::eFlags::MIX_2_3), "MIX_2_3");
+    ENUM_ADD_DESCR(static_cast<int>(TestUIModuleDetails::ComboBoxCheckableTestData::eFlags::ALL), "All");
+}
+
 void TestUIModule::PostInit()
 {
     using namespace DAVA::TArc;
@@ -719,15 +817,17 @@ void TestUIModule::ShowDialog()
     QGridLayout* layout = new QGridLayout(dlg);
     dlg->setLayout(layout);
 
-    DAVA::Vector<Node> nodes =
+    DAVA::Vector<Node> nodes = DAVA::Vector<Node>
     {
       { &CheckBoxTestData::Create, "CheckBox Test" },
       { &LineEditTestData::Create, "LineEdit Test" },
       { &ComboBoxTestData::Create, "ComboBox Test" },
+      { &ComboBoxCheckableTestData::Create, "ComboBoxCheckable Test" },
       { &IntSpinBoxTestData::Create, "SpinBoxTest" },
       { &DoubleSpinBoxTestData::Create, "Double Spin" },
       { &FilePathEditTestData::Create, "FilePath" }
     };
+
     DAVA::Vector<DAVA::ReflectionBase*> data;
 
     const int columnCount = 4;
