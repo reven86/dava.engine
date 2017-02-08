@@ -578,11 +578,12 @@ struct DoubleSpinBoxTestData : public ReflectionBase
 struct FilePathEditTestData : public ReflectionBase
 {
     FilePath path = "~res:/Materials/2d.Color.material";
+    FilePath root = "~res:/Materials/";
     String placeHolder = "Empty string";
     bool isReadOnly = false;
     bool isEnabled = true;
 
-    FilePath GetText() const
+    const FilePath& GetText() const
     {
         return path;
     }
@@ -609,6 +610,7 @@ struct FilePathEditTestData : public ReflectionBase
         .Field("isTextReadOnly", &FilePathEditTestData::isReadOnly)
         .Field("isTextEnabled", &FilePathEditTestData::isEnabled)
         .Field("placeholder", &FilePathEditTestData::placeHolder)
+        .Field("rootDir", &FilePathEditTestData::root)
         .End();
     }
 
@@ -653,6 +655,8 @@ struct FilePathEditTestData : public ReflectionBase
             p.fields[FilePathEdit::Fields::PlaceHolder] = "placeholder";
             p.fields[FilePathEdit::Fields::IsReadOnly] = "isTextReadOnly";
             p.fields[FilePathEdit::Fields::IsEnabled] = "isTextEnabled";
+            p.fields[FilePathEdit::Fields::DialogTitle] = "placeholder";
+            p.fields[FilePathEdit::Fields::RootDirectory] = "rootDir";
             //p.fields[FilePathEdit::Fields::Filters] = "filters";
             lineLayout->AddWidget(new FilePathEdit(p, accessor, Reflection::Create(data), parent));
             boxLayout->addLayout(lineLayout);
@@ -726,7 +730,7 @@ void TestUIModule::ShowDialog()
     };
     DAVA::Vector<DAVA::ReflectionBase*> data;
 
-    const int columnCount = 6;
+    const int columnCount = 4;
     int currentColumn = 0;
     int currentRow = 0;
     DAVA::TArc::ContextAccessor* accessor = GetAccessor();

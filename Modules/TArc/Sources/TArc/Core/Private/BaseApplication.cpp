@@ -8,7 +8,7 @@
 #include "Engine/Engine.h"
 #include "CommandLine/CommandLineParser.h"
 
-void InitREResources()
+void InitTArcResources()
 {
     Q_INIT_RESOURCE(TArcResources);
 }
@@ -19,7 +19,7 @@ namespace TArc
 {
 int BaseApplication::Run()
 {
-    InitREResources();
+    InitTArcResources();
     if (!AllowMultipleInstances())
     {
         QtHelpers::RunGuard runGuard(GetInstanceKey());

@@ -157,12 +157,16 @@ protected:
     }
 
     template <typename CastType, typename Enum>
-    CastType GetFieldValue(Enum role, const CastType& defaultValue)
+    CastType GetFieldValue(Enum role, const CastType& defaultValue) const
     {
-        DAVA::Reflection field = model.GetField(GetFieldName(role));
-        if (field.IsValid())
+        const FastName& fieldName = GetFieldName(role);
+        if (fieldName.IsValid() == true)
         {
-            return field.GetValue().Cast<CastType>(defaultValue);
+            DAVA::Reflection field = model.GetField(fieldName);
+            if (field.IsValid())
+            {
+                return field.GetValue().Cast<CastType>(defaultValue);
+            }
         }
 
         return defaultValue;

@@ -25,12 +25,14 @@ public:
         IsReadOnly,
         IsEnabled,
         Filters,
+        DialogTitle,
+        RootDirectory,
         FieldCount
     };
 
     struct Params
     {
-        UI* ui;
+        UI* ui = nullptr;
         WindowKey wndKey = FastName("");
         ControlDescriptorBuilder<Fields> fields;
     };

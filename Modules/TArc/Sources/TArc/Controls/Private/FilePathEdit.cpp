@@ -2,6 +2,7 @@
 #include "TArc/Controls/Private/TextValidator.h"
 
 #include <Base/FastName.h>
+#include <Utils/StringFormat.h>
 #include <Reflection/ReflectedMeta.h>
 
 #include <QHBoxLayout>
@@ -95,7 +96,7 @@ void FilePathEdit::ButtonClicked()
             FileDialogParams params;
             params.dir = edit->text();
             params.filters = filters;
-            params.title = QStringLiteral("Open File");
+            params.title = QString::fromStdString(GetFieldValue<String>(Fields::DialogTitle, "Open File"));
 
             path = ui->GetOpenFileName(wndKey, params);
         }
@@ -103,7 +104,7 @@ void FilePathEdit::ButtonClicked()
         {
             DirectoryDialogParams params;
             params.dir = edit->text();
-            params.title = QStringLiteral("Open directory");
+            params.title = QString::fromStdString(GetFieldValue<String>(Fields::DialogTitle, "Open directory"));
             path = ui->GetExistingDirectory(wndKey, params);
         }
 
@@ -159,17 +160,24 @@ M::ValidationResult FilePathEdit::FixUp(const Any& value) const
     if (isFile == true && isDir == true)
     {
         result.state = M::ValidationResult::eState::Invalid;
-        result.message = "Should be file";
+        result.message = "Should be a file";
     }
     else if (isFile == false && isDir == false)
     {
         result.state = M::ValidationResult::eState::Invalid;
-        result.message = "Should directory";
+        result.message = "Should be a directory";
     }
     else if (shouldExists == true && path.Exists() == false)
     {
         result.state = M::ValidationResult::eState::Invalid;
-        result.message = "Path should exists";
+        result.message = "Path should exist";
+    }
+
+    FilePath rootDir = GetFieldValue<FilePath>(Fields::RootDirectory, FilePath());
+    if (!rootDir.IsEmpty() && !FilePath::ContainPath(path, rootDir))
+    {
+        result.state = M::ValidationResult::eState::Invalid;
+        result.message = Format("Base folder is : %s.\nYour path should be inside it or inside it's subdirectoryes", rootDir.GetAbsolutePathname().c_str());
     }
 
     return result;
