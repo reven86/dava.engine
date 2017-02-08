@@ -20,15 +20,10 @@ PackRequest::PackRequest(DLCManagerImpl& packManager_, const String& pack_)
 
 PackRequest::PackRequest(DLCManagerImpl& packManager_, const String& pack_, Vector<uint32> fileIndexes_)
     : packManagerImpl(packManager_)
-    , fileIndexes(std::move(fileIndexes_))
     , requestedPackName(pack_)
     , delayedRequest(false)
 {
-    if (fileIndexes.empty())
-    {
-        // march that all files already loaded or empty virtual pack
-        status = Ready;
-    }
+    SetFileIndexes(std::move(fileIndexes_));
 }
 
 PackRequest::~PackRequest()
@@ -94,6 +89,14 @@ bool PackRequest::IsDownloaded() const
 void PackRequest::SetFileIndexes(Vector<uint32> fileIndexes_)
 {
     fileIndexes = std::move(fileIndexes_);
+    delayedRequest = false;
+
+    if (fileIndexes.empty())
+    {
+        // all files already loaded or empty virtual pack
+        status = Ready;
+        packManagerImpl.requestUpdated.Emit(*this);
+    }
 }
 
 void PackRequest::InitializeCurrentFileRequest()
@@ -120,9 +123,7 @@ void PackRequest::Update()
     DVASSERT(Thread::IsMainThread());
     DVASSERT(packManagerImpl.IsInitialized());
 
-    uint32 countChecksPerUpdate = packManagerImpl.GetHints().checkLocalFileExistPerUpdate;
-
-    if (numOfDownloadedFile < fileIndexes.size() && countChecksPerUpdate > 0)
+    if (numOfDownloadedFile < fileIndexes.size())
     {
         if (localFile.IsEmpty())
         {
@@ -130,9 +131,9 @@ void PackRequest::Update()
             UpdateFileRequest();
         }
 
-        if (!IsDownloadedFileRequest())
+        if (IsDownloadedFileRequest())
         {
-            packManagerImpl.requestUpdated.Emit(*this);
+            uint32 countChecksPerUpdate = packManagerImpl.GetHints().checkLocalFileExistPerUpdate;
             do
             {
                 numOfDownloadedFile++;
@@ -253,20 +254,6 @@ void PackRequest::UpdateFileRequest()
     case CheckHash:
     {
         prevDownloadedSize = 0;
-        if (FileSystem::Instance()->IsFile(localFile))
-        {
-            uint64 size = 0;
-            FileSystem::Instance()->GetFileSize(localFile + ".dvpl", size);
-            if (size == (sizeOfCompressedFile + sizeof(PackFormat::LitePack::Footer)))
-            {
-                downloadedSize += (sizeOfCompressedFile + sizeof(PackFormat::LitePack::Footer));
-                status = Ready;
-                packManagerImpl.requestUpdated.Emit(*this);
-                return;
-            }
-
-            FileSystem::Instance()->DeleteFile(localFile + ".dvpl");
-        }
 
         uint32 fileCrc32 = CRC32::ForFile(localFile);
         if (fileCrc32 == hashFromMeta)

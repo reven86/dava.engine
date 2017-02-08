@@ -119,7 +119,7 @@ public:
     // use only after initialization
     bool IsFileReady(uint32 fileIndex) const
     {
-        return scanFileReady.at(fileIndex);
+        return fileIndex < scanFileReady.size() && scanFileReady.test(fileIndex);
     }
 
 private:

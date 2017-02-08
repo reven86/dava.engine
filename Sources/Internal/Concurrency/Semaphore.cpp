@@ -1,5 +1,3 @@
-#pragma once
-
 #include "Concurrency/Semaphore.h"
 
 #include "Base/Platform.h"
@@ -72,20 +70,20 @@ Semaphore::Semaphore(uint32 count)
 
 Semaphore::~Semaphore()
 {
-    dispatch_release(semaphore);
+    dispatch_release(reinterpret_cast<dispatch_semaphore_t>(semaphore));
 }
 
 void Semaphore::Post(uint32 count)
 {
     while (count-- > 0)
     {
-        dispatch_semaphore_signal(semaphore);
+        dispatch_semaphore_signal(reinterpret_cast<dispatch_semaphore_t>(semaphore));
     }
 }
 
 void Semaphore::Wait()
 {
-    dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
+    dispatch_semaphore_wait(reinterpret_cast<dispatch_semaphore_t>(semaphore), DISPATCH_TIME_FOREVER);
 }
 
 #elif defined(__DAVAENGINE_ANDROID__)

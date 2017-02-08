@@ -336,7 +336,7 @@ PackRequest* DLCManagerImpl::CreateNewRequest(const String& requestedPackName)
     Vector<uint32> packIndexes = meta->GetFileIndexes(requestedPackName);
 
     // check all requested files already downloaded
-    auto isFileDownloaded = [&](uint32 index) { return scanFileReady.at(index); };
+    auto isFileDownloaded = [&](uint32 index) { return IsFileReady(index); };
     auto removeIt = remove_if(begin(packIndexes), end(packIndexes), isFileDownloaded);
     if (removeIt != end(packIndexes))
     {
@@ -820,7 +820,7 @@ void DLCManagerImpl::RemovePack(const String& requestedPackName)
         Vector<uint32> fileIndexes = meta->GetFileIndexes(requestedPackName);
         for (uint32 index : fileIndexes)
         {
-            if (scanFileReady.at(index))
+            if (IsFileReady(index))
             {
                 const String relFile = GetRelativeFilePath(index);
                 FileSystem::Instance()->DeleteFile(dirToDownloadedPacks + relFile);
