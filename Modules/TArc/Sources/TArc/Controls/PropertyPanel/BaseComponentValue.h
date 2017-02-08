@@ -75,7 +75,7 @@ protected:
     void SetValue(const Any& value);
     virtual const StaticEditorDrawer* GetStaticEditorDrawer() const = 0;
     virtual QWidget* AcquireEditorWidget(QWidget* parent, const QStyleOptionViewItem& option) = 0;
-    virtual void ReleaseEditorWidget(QWidget* editor) = 0;
+    virtual void ReleaseEditorWidget(QWidget* editor);
 
     void AddPropertyNode(const std::shared_ptr<PropertyNode>& node);
     void RemovePropertyNode(const std::shared_ptr<PropertyNode>& node);

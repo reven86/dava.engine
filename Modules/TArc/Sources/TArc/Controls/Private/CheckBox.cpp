@@ -21,7 +21,7 @@ CheckBox::CheckBox(const ControlDescriptorBuilder<Fields>& fields, ContextAccess
 
 void CheckBox::SetupControl()
 {
-    connections.AddConnection(static_cast<QCheckBox*>(this), &QCheckBox::stateChanged, MakeFunction(this, &CheckBox::StateChanged));
+    connections.AddConnection(this, &QCheckBox::stateChanged, MakeFunction(this, &CheckBox::StateChanged));
 }
 
 void CheckBox::UpdateControl(const ControlDescriptor& changedFields)
@@ -29,16 +29,7 @@ void CheckBox::UpdateControl(const ControlDescriptor& changedFields)
     DAVA::Reflection fieldValue = model.GetField(changedFields.GetName(Fields::Checked));
     DVASSERT(fieldValue.IsValid());
 
-    bool readOnly = fieldValue.IsReadonly();
-    readOnly |= fieldValue.GetMeta<DAVA::M::ReadOnly>() != nullptr;
-    if (changedFields.IsChanged(Fields::IsReadOnly) == true)
-    {
-        DAVA::Reflection readOnlyField = model.GetField(changedFields.GetName(Fields::IsReadOnly));
-        DVASSERT(readOnlyField.IsValid());
-        readOnly |= readOnlyField.GetValue().Cast<bool>();
-    }
-
-    setEnabled(!readOnly);
+    setEnabled(!IsValueReadOnly(changedFields, Fields::Checked, Fields::IsReadOnly));
 
     const DAVA::M::ValueDescription* valueDescriptor = fieldValue.GetMeta<DAVA::M::ValueDescription>();
     if (valueDescriptor != nullptr)

@@ -133,12 +133,6 @@ bool PropertiesViewDelegate::eventFilter(QObject* obj, QEvent* e)
         return false;
     }
 
-    if (e->type() == QEvent::FocusOut)
-    {
-        emit commitData(w);
-        emit closeEditor(w);
-    }
-
     if (e->type() == QEvent::KeyRelease)
     {
         QKeyEvent* keyEvent = static_cast<QKeyEvent*>(e);
