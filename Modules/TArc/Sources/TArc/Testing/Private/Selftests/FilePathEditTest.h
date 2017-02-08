@@ -214,9 +214,8 @@ DAVA_TARC_TESTCLASS(FilePathEditTest)
         TEST_VERIFY(edit->text().toStdString() == module->data.filePath.GetAbsolutePathname());
 
         DAVA::FilePath newFilePath("~res:/Materials/2d.AlphaFill.material");
-        edit->setCursorPosition(edit->text().size());
+        edit->selectAll();
         e.clear();
-        e.addKeyClick(Qt::Key_Home, Qt::ShiftModifier);
         e.addKeyClick(Qt::Key_Delete);
         e.addKeyClicks(QString::fromStdString(newFilePath.GetStringValue()));
         e.addKeyClick(Qt::Key_Enter);
