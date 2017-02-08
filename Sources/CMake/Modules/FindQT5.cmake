@@ -11,6 +11,9 @@ endif ()
 
 set(QT_ACTUAL_PATH ${${QT_VERSION}_PATH})
 
+
+message( "QT_ACTUAL_PATH ------------------- ${QT_ACTUAL_PATH}")
+
 macro ( qt_deploy )
     if ( NOT QT5_FOUND )
         return ()

@@ -16,7 +16,7 @@ function ( load_config CONFIG_FILE )
         if( NOT ${Name} )
             set( ${Name} "${Value}" PARENT_SCOPE )
         endif()
-        #  message("---" [${Name}] "  " [${Value}] )
+        message("---" [${Name}] "  " [${Value}] )
     endforeach()
 
 endfunction ()
