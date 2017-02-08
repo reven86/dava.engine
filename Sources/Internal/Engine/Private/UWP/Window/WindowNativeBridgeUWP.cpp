@@ -589,6 +589,7 @@ void WindowNativeBridge::CreateBaseXamlUI()
 {
     using ::Windows::UI::Xaml::Markup::XamlReader;
     using ::Windows::UI::Xaml::ResourceDictionary;
+    using ::Windows::UI::Xaml::Input::KeyboardNavigationMode;
     using namespace ::Windows::UI::Xaml::Controls;
 
     xamlCanvas = ref new Canvas;
@@ -618,6 +619,8 @@ void WindowNativeBridge::CreateBaseXamlUI()
     xamlControlThatStealsFocus->Content = L"I steal your focus";
     xamlControlThatStealsFocus->Width = 30;
     xamlControlThatStealsFocus->Height = 20;
+    xamlControlThatStealsFocus->TabNavigation = KeyboardNavigationMode::Cycle;
+
     AddXamlControl(xamlControlThatStealsFocus);
     PositionXamlControl(xamlControlThatStealsFocus, -1000.0f, -1000.0f);
 
