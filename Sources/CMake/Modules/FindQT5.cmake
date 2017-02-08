@@ -11,9 +11,6 @@ endif ()
 
 set(QT_ACTUAL_PATH ${${QT_VERSION}_PATH})
 
-
-message( STATUS "QT_ACTUAL_PATH ------------------- ${QT_ACTUAL_PATH}")
-
 macro ( qt_deploy )
     if ( NOT QT5_FOUND )
         return ()
@@ -94,6 +91,9 @@ list( REMOVE_DUPLICATES QT5_FIND_COMPONENTS)
 set ( QT_CMAKE_RULES "${QT_ACTUAL_PATH}/lib/cmake")
 
 if (NOT EXISTS ${QT_CMAKE_RULES})
+   message( STATUS "QT_ACTUAL_PATH  - ${QT_ACTUAL_PATH}")
+   message( STATUS "QT_CMAKE_RULES  - ${QT_CMAKE_RULES}")
+
    message( FATAL_ERROR "Please set the correct path to QT5 in file DavaConfig.in"  ) 
 endif()
 
