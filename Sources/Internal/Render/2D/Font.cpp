@@ -86,7 +86,7 @@ int32 Font::GetVerticalSpacing() const
 Size2i Font::GetStringSize(const WideString& str, Vector<float32>* charSizes)
 {
     StringMetrics metrics = GetStringMetrics(str, charSizes);
-    return Size2i(metrics.width, metrics.height);
+    return Size2i(int32(std::ceil(metrics.width)), int32(std::ceil(metrics.height)));
 }
 
 Font::eFontType Font::GetFontType() const
