@@ -36,6 +36,7 @@ class EngineSettings;
 class DeviceManager;
 
 class AutotestingSystem;
+class ComponentManager;
 
 namespace Net
 {
@@ -90,6 +91,7 @@ public:
     DeviceManager* deviceManager = nullptr;
 
     AutotestingSystem* autotestingSystem = nullptr;
+    ComponentManager* componentManager = nullptr;
 };
 
 } // namespace DAVA

@@ -13,7 +13,7 @@ DAVA_VIRTUAL_REFLECTION_IMPL(UIComponent)
 UIComponent::UIComponent()
     : control(nullptr)
 {
-    type = ReflectedTypeDB::GetByPointer(this)->GetType();
+    //type = ReflectedTypeDB::GetByPointer(this)->GetType();
 }
 
 UIComponent::UIComponent(const UIComponent& src)
@@ -63,6 +63,6 @@ RefPtr<UIComponent> UIComponent::SafeClone() const
 
 const Type* UIComponent::GetType() const
 {
-    return type;
+    return ReflectedTypeDB::GetByPointer(this)->GetType();
 }
 }
