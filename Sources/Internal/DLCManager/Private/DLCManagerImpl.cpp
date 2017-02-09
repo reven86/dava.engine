@@ -1027,11 +1027,16 @@ void DLCManagerImpl::ThreadScanFunc()
         }
     }
 
-    RunOnMainThreadAsync([this]()
-                         {
-                             // finish thread
-                             scanState = ScanState::Done;
-                         });
+// FIXME bug with sync in prev old core_v_1 (now we switch everything to V_2, but unit test not)
+#ifdef __DAVAENGINE_COREV2__
+    DAVA::RunOnMainThreadAsync([this]()
+                               {
+                                   // finish thread
+                                   scanState = ScanState::Done;
+                               });
+#else
+    scanState = ScanState::Done;
+#endif
 }
 
 } // end namespace DAVA
