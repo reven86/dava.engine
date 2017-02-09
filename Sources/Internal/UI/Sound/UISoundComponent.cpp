@@ -11,10 +11,6 @@ UISoundComponent::UISoundComponent(const UISoundComponent& src)
 {
 }
 
-UISoundComponent::~UISoundComponent()
-{
-}
-
 UISoundComponent* UISoundComponent::Clone() const
 {
     return new UISoundComponent(*this);

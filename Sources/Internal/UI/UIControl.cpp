@@ -185,22 +185,22 @@ bool UIControl::RemoveAllEvents()
 
 void UIControl::PerformEvent(int32 eventType, const UIEvent* uiEvent /* = nullptr*/)
 {
+    UIControlSystem::Instance()->ProcessControlEvent(eventType, uiEvent, this);
+
     if (eventDispatcher)
     {
         eventDispatcher->PerformEvent(eventType, this);
     }
-
-    UIControlSystem::Instance()->ProcessControlEvent(eventType, uiEvent, this);
 }
 
 void UIControl::PerformEventWithData(int32 eventType, void* callerData, const UIEvent* uiEvent /* = nullptr*/)
 {
+    UIControlSystem::Instance()->ProcessControlEvent(eventType, uiEvent, this);
+
     if (eventDispatcher)
     {
         eventDispatcher->PerformEventWithData(eventType, this, callerData);
     }
-
-    UIControlSystem::Instance()->ProcessControlEvent(eventType, uiEvent, this);
 }
 
 const List<UIControl*>& UIControl::GetChildren() const

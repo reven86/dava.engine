@@ -22,7 +22,7 @@ public:
     DAVA::String GetSelectSoundEvent();
 
 private slots:
-    void OnEventSelected(QTreeWidgetItem* item, int column);
+    void OnEventSelected(QTreeWidgetItem* current, QTreeWidgetItem* previous);
     void OnEventDoubleClicked(QTreeWidgetItem* item, int column);
 
     void OnAccepted();

@@ -161,17 +161,16 @@ void SoundComponentEditor::OnAddEvent()
 {
     if (component)
     {
-        FMODSoundBrowser* browser = new FMODSoundBrowser();
-        browser->deleteLater();
+        FMODSoundBrowser browser;
 
         if (selectedEventIndex != -1)
         {
             DAVA::SoundEvent* soundEvent = component->GetSoundEvent(selectedEventIndex);
-            browser->SetCurrentEvent(soundEvent->GetEventName());
+            browser.SetCurrentEvent(soundEvent->GetEventName());
         }
-        if (browser->exec() == QDialog::Accepted)
+        if (browser.exec() == QDialog::Accepted)
         {
-            DAVA::String selectedEventName = browser->GetSelectSoundEvent();
+            DAVA::String selectedEventName = browser.GetSelectSoundEvent();
             DAVA::SoundEvent* sEvent = DAVA::SoundSystem::Instance()->CreateSoundEventByID(DAVA::FastName(selectedEventName), DAVA::FastName("FX"));
 
             scene->Exec(std::unique_ptr<DAVA::Command>(new AddSoundEventCommand(component->GetEntity(), sEvent)));

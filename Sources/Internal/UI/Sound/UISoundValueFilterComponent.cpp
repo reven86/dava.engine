@@ -10,10 +10,7 @@ UISoundValueFilterComponent::UISoundValueFilterComponent()
 
 UISoundValueFilterComponent::UISoundValueFilterComponent(const UISoundValueFilterComponent& src)
     : step(src.step)
-{
-}
-
-UISoundValueFilterComponent::~UISoundValueFilterComponent()
+    , normalizedValue(src.normalizedValue)
 {
 }
 

@@ -10,13 +10,13 @@ public:
     UISoundValueFilterComponent();
     UISoundValueFilterComponent(const UISoundValueFilterComponent& src);
 
-    virtual UISoundValueFilterComponent* Clone() const override;
+    UISoundValueFilterComponent* Clone() const override;
 
     void SetStep(float32 step);
     float32 GetStep() const;
 
 protected:
-    virtual ~UISoundValueFilterComponent();
+    ~UISoundValueFilterComponent() override = default;
 
 private:
     friend class UISoundSystem;

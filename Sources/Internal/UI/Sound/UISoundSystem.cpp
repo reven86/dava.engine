@@ -9,8 +9,11 @@
 
 namespace DAVA
 {
-const FastName UISoundSystem::SOUND_PARAM_PAN("pan");
-const FastName UISoundSystem::SOUND_GROUP("UI_SOUND_GROUP");
+namespace
+{
+const FastName SOUND_PARAM_PAN("pan");
+const FastName SOUND_GROUP("UI_SOUND_GROUP");
+}
 
 UISoundSystem::UISoundSystem()
 {
@@ -20,11 +23,11 @@ UISoundSystem::~UISoundSystem()
 {
 }
 
-void UISoundSystem::ProcessControlEvent(int32 eventType, const UIEvent* uiEvent, UIControl* control)
+void UISoundSystem::ProcessControlEvent(int32 eventType, const UIEvent* uiEvent, const UIControl* control)
 {
     UISoundComponent* soundComponent = control->GetComponent<UISoundComponent>();
 
-    if (soundComponent)
+    if (soundComponent != nullptr)
     {
         if (!ShouldSkipEvent(eventType, uiEvent, control))
         {
@@ -43,12 +46,12 @@ void UISoundSystem::FreeEvents()
     soundEvents.clear();
 }
 
-void UISoundSystem::SetGlobalParameter(const DAVA::FastName& parameter, float value)
+void UISoundSystem::SetGlobalParameter(const FastName& parameter, float32 value)
 {
     globalParameters[parameter] = value;
 }
 
-void UISoundSystem::TriggerEvent(const FastName& eventName, const UIEvent* uiEvent, UIControl* control)
+void UISoundSystem::TriggerEvent(const FastName& eventName, const UIEvent* uiEvent, const UIControl* control)
 {
     RefPtr<SoundEvent> event = GetEvent(eventName);
 
@@ -63,7 +66,7 @@ void UISoundSystem::TriggerEvent(const FastName& eventName, const UIEvent* uiEve
     event->Trigger();
 }
 
-void UISoundSystem::SetupEventPan(SoundEvent* event, const UIEvent* uiEvent, UIControl* control)
+void UISoundSystem::SetupEventPan(SoundEvent* event, const UIEvent* uiEvent, const UIControl* control)
 {
     if (event->IsParameterExists(SOUND_PARAM_PAN))
     {
@@ -74,7 +77,7 @@ void UISoundSystem::SetupEventPan(SoundEvent* event, const UIEvent* uiEvent, UIC
 
         float32 pan = PAN_DEFAULT;
         float32 pointX = 0.0f;
-        if (uiEvent)
+        if (uiEvent != nullptr)
         {
             pointX = uiEvent->point.x;
         }
@@ -121,21 +124,21 @@ RefPtr<SoundEvent> UISoundSystem::GetEvent(const FastName& eventName)
     }
 }
 
-bool UISoundSystem::ShouldSkipEvent(int32 eventType, const UIEvent* uiEvent, UIControl* control)
+bool UISoundSystem::ShouldSkipEvent(int32 eventType, const UIEvent* uiEvent, const UIControl* control) const
 {
     if (eventType == UIControl::EVENT_VALUE_CHANGED)
     {
         UISoundValueFilterComponent* valueFilterComponent = control->GetComponent<UISoundValueFilterComponent>();
-        if (valueFilterComponent)
+        if (valueFilterComponent != nullptr)
         {
             // we need some kind of generic way to get control value, for now branch here
-            UISlider* slider = dynamic_cast<UISlider*>(control);
+            const UISlider* slider = dynamic_cast<const UISlider*>(control);
 
-            if (slider)
+            if (slider != nullptr)
             {
                 const float32 value = slider->GetValue();
 
-                const int32 normalizedValue = (int32)(slider->GetValue() / valueFilterComponent->GetStep());
+                const int32 normalizedValue = static_cast<int32>(value / valueFilterComponent->GetStep());
 
                 if (valueFilterComponent->normalizedValue == normalizedValue)
                 {

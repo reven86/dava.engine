@@ -30,7 +30,7 @@ public:
     const FastName& GetOnValueChangedSoundEventName() const;
 
 protected:
-    virtual ~UISoundComponent();
+    ~UISoundComponent() override = default;
 
 private:
     UISoundComponent& operator=(const UISoundComponent&) = delete;
@@ -39,9 +39,9 @@ private:
 
 public:
     INTROSPECTION_EXTEND(UISoundComponent, UIComponent,
-                         PROPERTY("onTouchDownSoundEventName", "EVENT_TOUCH_DOWN", GetOnTouchDownSoundEventName, SetOnTouchDownSoundEventName, I_SAVE | I_VIEW | I_EDIT | I_LOAD)
-                         PROPERTY("onTouchUpInsideSoundEventName", "EVENT_TOUCH_UP_INSIDE", GetOnTouchUpInsideSoundEventName, SetOnTouchUpInsideSoundEventName, I_SAVE | I_VIEW | I_EDIT | I_LOAD)
-                         PROPERTY("onTouchUpOutsideSoundEventName", "EVENT_TOUCH_UP_OUTSIDE", GetOnTouchUpOutsideSoundEventName, SetOnTouchUpOutsideSoundEventName, I_SAVE | I_VIEW | I_EDIT | I_LOAD)
-                         PROPERTY("onValueChangedSoundEventName", "EVENT_VALUE_CHANGED", GetOnValueChangedSoundEventName, SetOnValueChangedSoundEventName, I_SAVE | I_VIEW | I_EDIT | I_LOAD));
+                         PROPERTY("touchDown", "Touch Down", GetOnTouchDownSoundEventName, SetOnTouchDownSoundEventName, I_SAVE | I_VIEW | I_EDIT | I_LOAD)
+                         PROPERTY("touchUpInside", "Touch Up Inside", GetOnTouchUpInsideSoundEventName, SetOnTouchUpInsideSoundEventName, I_SAVE | I_VIEW | I_EDIT | I_LOAD)
+                         PROPERTY("touchUpOutside", "Touch Up Outside", GetOnTouchUpOutsideSoundEventName, SetOnTouchUpOutsideSoundEventName, I_SAVE | I_VIEW | I_EDIT | I_LOAD)
+                         PROPERTY("valueChanged", "Value Changed", GetOnValueChangedSoundEventName, SetOnValueChangedSoundEventName, I_SAVE | I_VIEW | I_EDIT | I_LOAD));
 };
 }

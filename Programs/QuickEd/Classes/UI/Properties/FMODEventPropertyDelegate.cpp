@@ -101,18 +101,17 @@ void FMODEventPropertyDelegate::selectEventClicked()
     QWidget* editor = lineEdit->parentWidget();
     DVASSERT(editor != nullptr);
 
-    FMODSoundBrowser* soundBrowser = new FMODSoundBrowser(editor->parentWidget());
-    soundBrowser->deleteLater();
+    FMODSoundBrowser soundBrowser(editor->parentWidget());
 
     const QString& currentEventName = lineEdit->text();
     if (!currentEventName.isEmpty())
     {
-        soundBrowser->SetCurrentEvent(currentEventName.toStdString());
+        soundBrowser.SetCurrentEvent(currentEventName.toStdString());
     }
 
-    if (soundBrowser->exec() == QDialog::Accepted)
+    if (soundBrowser.exec() == QDialog::Accepted)
     {
-        const String& selectedEventName = soundBrowser->GetSelectSoundEvent();
+        const String& selectedEventName = soundBrowser.GetSelectSoundEvent();
 
         lineEdit->setText(StringToQString(selectedEventName));
 

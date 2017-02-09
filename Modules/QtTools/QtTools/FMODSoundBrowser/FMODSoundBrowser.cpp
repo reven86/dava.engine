@@ -18,7 +18,7 @@ FMODSoundBrowser::FMODSoundBrowser(QWidget* parent)
     setWindowFlags(Qt::Dialog | Qt::WindowTitleHint | Qt::WindowSystemMenuHint);
 
     QObject::connect(ui->treeWidget, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(OnEventDoubleClicked(QTreeWidgetItem*, int)));
-    QObject::connect(ui->treeWidget, SIGNAL(itemClicked(QTreeWidgetItem*, int)), this, SLOT(OnEventSelected(QTreeWidgetItem*, int)));
+    QObject::connect(ui->treeWidget, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)), this, SLOT(OnEventSelected(QTreeWidgetItem*, QTreeWidgetItem*)));
 
     QObject::connect(ui->selectButton, SIGNAL(clicked()), this, SLOT(accept()));
     QObject::connect(ui->cancelButton, SIGNAL(clicked()), this, SLOT(reject()));
@@ -60,10 +60,10 @@ void FMODSoundBrowser::UpdateEventTree()
 #endif //DAVA_FMOD
 }
 
-void FMODSoundBrowser::OnEventSelected(QTreeWidgetItem* item, int column)
+void FMODSoundBrowser::OnEventSelected(QTreeWidgetItem* current, QTreeWidgetItem* previous)
 {
-    if (!item->childCount())
-        SetSelectedItem(item);
+    if (!current->childCount())
+        SetSelectedItem(current);
     else
         SetSelectedItem(0);
 }

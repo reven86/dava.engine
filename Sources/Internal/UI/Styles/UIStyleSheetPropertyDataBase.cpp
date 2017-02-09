@@ -101,10 +101,10 @@ UIStyleSheetPropertyDataBase::UIStyleSheetPropertyDataBase()
                      UIStyleSheetPropertyDescriptor(&anchorGroup, FastName("vCenterAnchorEnabled"), VariantType(false)),
                      UIStyleSheetPropertyDescriptor(&anchorGroup, FastName("vCenterAnchor"), VariantType(0.0f)),
 
-                     UIStyleSheetPropertyDescriptor(&soundGroup, FastName("onTouchDownSoundEventName"), VariantType(FastName())),
-                     UIStyleSheetPropertyDescriptor(&soundGroup, FastName("onTouchUpInsideSoundEventName"), VariantType(FastName())),
-                     UIStyleSheetPropertyDescriptor(&soundGroup, FastName("onTouchUpOutsideSoundEventName"), VariantType(FastName())),
-                     UIStyleSheetPropertyDescriptor(&soundGroup, FastName("onValueChangedSoundEventName"), VariantType(FastName())) } })
+                     UIStyleSheetPropertyDescriptor(&soundGroup, FastName("touchDown"), VariantType(FastName())),
+                     UIStyleSheetPropertyDescriptor(&soundGroup, FastName("touchUpInside"), VariantType(FastName())),
+                     UIStyleSheetPropertyDescriptor(&soundGroup, FastName("touchUpOutside"), VariantType(FastName())),
+                     UIStyleSheetPropertyDescriptor(&soundGroup, FastName("valueChanged"), VariantType(FastName())) } })
 {
     UnorderedMap<FastName, FastName> legacyNames;
     legacyNames[FastName("bg-drawType")] = FastName("drawType");
