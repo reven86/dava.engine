@@ -55,11 +55,29 @@ Vector<String> PackRequest::GetDependencies() const
     Vector<String> requestNames;
 
     const PackMetaData& meta = packManagerImpl.GetMeta();
-    const auto& packInfo = meta.GetPackInfo(requestedPackName);
-    String dependencies = std::get<1>(packInfo);
+    const PackMetaData::PackInfo& packInfo = meta.GetPackInfo(requestedPackName);
+    const String& dependencies = packInfo.packDependencies;
     String delimiter(", ");
 
     Split(dependencies, delimiter, requestNames);
+
+    // convert every name from string representation of index to packName
+    for (String& pack : requestNames)
+    {
+        uint32 index = 0;
+        try
+        {
+            unsigned long i = stoul(pack);
+            index = static_cast<uint32>(i);
+        }
+        catch (std::exception& ex)
+        {
+            Logger::Error("bad dependency index for pack: %s, index value: %s, error message: %s", packInfo.packName.c_str(), pack.c_str(), ex.what());
+            DAVA_THROW(Exception, "bad dependency pack index see log");
+        }
+        const PackMetaData::PackInfo& info = meta.GetPackInfo(index);
+        pack = info.packName;
+    }
 
     return requestNames;
 }

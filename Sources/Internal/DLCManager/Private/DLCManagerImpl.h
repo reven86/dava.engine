@@ -147,9 +147,6 @@ private:
     {
         Wait,
         Starting,
-        CollectingFileInfos,
-        WaitForMeta,
-        MergeWithMeta,
         Done
     };
     // info to scan local pack files
@@ -164,7 +161,7 @@ private:
     // every bit mean file exist and size match with meta
     std::bitset<32000> scanFileReady;
     Thread* scanThread = nullptr;
-    std::atomic<ScanState> scanState{ ScanState::Wait };
+    ScanState scanState{ ScanState::Wait };
     Semaphore metaDataLoadedSem;
 
     void StartScanDownloadedFiles();
@@ -179,6 +176,7 @@ private:
     FilePath dirToDownloadedPacks;
     String urlToSuperPack;
     bool isProcessingEnabled = false;
+    bool isNetworkReadyLastState = false;
     std::unique_ptr<RequestManager> requestManager;
     std::unique_ptr<PackMetaData> meta;
 

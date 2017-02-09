@@ -67,6 +67,7 @@ public:
     {
         uint32 retryConnectMilliseconds = 5000; //!< try to reconnect to server if `Offline` state
         uint32 checkLocalFileExistPerUpdate = 100; //!< how many file to check per Update call
+        uint32 maxFilesToDownload = 22000; //!< arond 22000 files now we have in build
     };
 
     /**

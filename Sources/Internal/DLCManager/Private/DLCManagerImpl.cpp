@@ -286,7 +286,7 @@ void DLCManagerImpl::ContinueInitialization(float frameDelta)
     }
     else if (InitState::MoveDeleyedRequestsToQueue == initState)
     {
-        StartDeleyedRequests(); // TODO change order with wait Scan
+        StartDeleyedRequests();
     }
     else if (InitState::Ready == initState)
     {
@@ -299,12 +299,17 @@ void DLCManagerImpl::ContinueInitialization(float frameDelta)
     {
         if (initError != InitError::AllGood)
         {
-            networkReady.Emit(false);
+            isNetworkReadyLastState = false;
+            networkReady.Emit(isNetworkReadyLastState);
             RetryInit();
         }
         else
         {
-            networkReady.Emit(true);
+            if (!isNetworkReadyLastState)
+            {
+                isNetworkReadyLastState = true;
+                networkReady.Emit(isNetworkReadyLastState);
+            }
         }
     }
 }
@@ -705,19 +710,14 @@ void DLCManagerImpl::LoadPacksDataFromMeta()
 void DLCManagerImpl::StartDeleyedRequests()
 {
     //Logger::FrameworkDebug("pack manager mount_downloaded_packs");
-    if (scanState != ScanState::Done)
-    {
-        return;
-    }
-
     if (scanThread != nullptr)
     {
         // scan thread should be finished already
         if (scanThread->IsJoinable())
         {
             scanThread->Join();
-            scanThread = nullptr;
         }
+        scanThread = nullptr;
     }
 
     for (auto request : delayedRequests)
@@ -912,7 +912,7 @@ void DLCManagerImpl::StartScanDownloadedFiles()
     if (ScanState::Wait == scanState)
     {
         scanState = ScanState::Starting;
-        scanThread = Thread::Create(Function<void()>(this, &DLCManagerImpl::ThreadScanFunc));
+        scanThread = Thread::Create(MakeFunction(this, &DLCManagerImpl::ThreadScanFunc));
         scanThread->Start();
     }
 }
@@ -976,7 +976,7 @@ void DLCManagerImpl::ScanFiles(const FilePath& dir, Vector<LocalFileInfo>& files
     if (FileSystem::Instance()->IsDirectory(dir))
     {
         files.clear();
-        files.reserve(22000); // now around 21000 files in build
+        files.reserve(hints.maxFilesToDownload);
         RecursiveScan(dir, dir, files);
     }
 }
@@ -984,8 +984,6 @@ void DLCManagerImpl::ScanFiles(const FilePath& dir, Vector<LocalFileInfo>& files
 void DLCManagerImpl::ThreadScanFunc()
 {
     // scan files in download dir
-    scanState = ScanState::CollectingFileInfos;
-
     int64 startTime = SystemTimer::GetMs();
 
     ScanFiles(dirToDownloadedPacks, localFiles);
@@ -994,11 +992,7 @@ void DLCManagerImpl::ThreadScanFunc()
 
     Logger::Info("finish scan files for: %fsec total files: %ld", finishScan / 1000.f, localFiles.size());
 
-    scanState = ScanState::WaitForMeta;
-
     metaDataLoadedSem.Wait();
-
-    scanState = ScanState::MergeWithMeta;
 
     // merge with meta
     // Yes! is pack loaded before meta
@@ -1033,8 +1027,11 @@ void DLCManagerImpl::ThreadScanFunc()
         }
     }
 
-    // finish thread
-    scanState = ScanState::Done;
+    RunOnMainThreadAsync([this]()
+                         {
+                             // finish thread
+                             scanState = ScanState::Done;
+                         });
 }
 
 } // end namespace DAVA
