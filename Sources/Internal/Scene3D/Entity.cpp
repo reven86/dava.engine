@@ -22,6 +22,7 @@
 #include "Reflection/ReflectionRegistrator.h"
 #include <functional>
 
+
 #define USE_VECTOR(x) ((((uint64)1 << (uint64)x) & vectorComponentsMask) != (uint64)0)
 
 namespace DAVA

@@ -1,9 +1,9 @@
 #include "../Common/rhi_Private.h"
 #include "../Common/rhi_Pool.h"
-#include "../rhi_Public.h"
 #include "rhi_Metal.h"
 
 #include "../rhi_Type.h"
+#include "../rhi_Public.h"
 #include "../Common/dbg_StatSet.h"
 
 #include "Debug/DVAssert.h"
@@ -527,7 +527,7 @@ void SetRenderPassAttachments(MTLRenderPassDescriptor* desc, const RenderPassCon
     }
 }
 
-void CheckDefaultDepthStencilBuffer()
+void CheckDefaultBuffers()
 {
     DAVA::LockGuard<DAVA::Mutex> guard(_Metal_ResetSync);
 
@@ -553,6 +553,7 @@ void CheckDefaultDepthStencilBuffer()
 
         _Metal_DefDepthBuf = [_Metal_Device newTextureWithDescriptor:depthDesc];
         _Metal_DefStencilBuf = [_Metal_Device newTextureWithDescriptor:stencilDesc];
+        _Metal_Layer.drawableSize = CGSizeMake(width, height);
 
         _Metal_ResetPending = false;
     }
@@ -563,18 +564,17 @@ void CheckDefaultDepthStencilBuffer()
 bool RenderPassMetal_t::Initialize()
 {
     bool need_drawable = cfg.colorBuffer[0].texture == InvalidHandle;
-
     if (need_drawable && !_Metal_currentDrawable)
     {
         if (_Metal_DrawableDispatchSemaphore != nullptr)
             _Metal_DrawableDispatchSemaphore->Wait();
+
         @autoreleasepool
         {
-            _Metal_currentDrawable = [[_Metal_Layer nextDrawable] retain];
-            //            MTL_TRACE(" next.drawable= %p %i %s", (void*)(f.drawable), [f.drawable retainCount], NSStringFromClass([f.drawable class]).UTF8String);
-            _Metal_DefFrameBuf = _Metal_currentDrawable.texture;
+            CheckDefaultBuffers();
 
-            CheckDefaultDepthStencilBuffer();
+            _Metal_currentDrawable = [[_Metal_Layer nextDrawable] retain];
+            _Metal_DefFrameBuf = _Metal_currentDrawable.texture;
         }
     }
 
@@ -695,12 +695,12 @@ static Handle metal_RenderPass_Allocate(const RenderPassConfig& passConf, uint32
     {
         @autoreleasepool
         {
-            _Metal_currentDrawable = [_Metal_Layer nextDrawable];
-            [_Metal_currentDrawable retain];
-            _Metal_DefFrameBuf = _Metal_currentDrawable.texture;
-            MTL_TRACE(" next.drawable= %p %i %s", (void*)(_Metal_currentDrawable), [_Metal_currentDrawable retainCount], NSStringFromClass([_Metal_currentDrawable class]).UTF8String);
+            CheckDefaultBuffers();
 
-            CheckDefaultDepthStencilBuffer();
+            _Metal_currentDrawable = [[_Metal_Layer nextDrawable] retain];
+            _Metal_DefFrameBuf = _Metal_currentDrawable.texture;
+
+            MTL_TRACE(" next.drawable= %p %i %s", (void*)(_Metal_currentDrawable), [_Metal_currentDrawable retainCount], NSStringFromClass([_Metal_currentDrawable class]).UTF8String);
         }
     }
 
