@@ -42,5 +42,4 @@ private:
     DAVA::UIButton* viewScaleMinus = nullptr;
 
     DAVA::uint32 inputHandlerToken = 0;
-    DAVA::SigConnectionID windowSizeChangedToken = 0;
 };

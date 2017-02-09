@@ -17,8 +17,7 @@ void FullscreenTest::LoadResources()
     BaseScreen::LoadResources();
 
     inputHandlerToken = GetEngineContext()->inputSystem->AddHandler(eInputDevices::CLASS_KEYBOARD, MakeFunction(this, &FullscreenTest::OnToggleFullscreen));
-
-    windowSizeChangedToken = GetPrimaryWindow()->sizeChanged.Connect(this, &FullscreenTest::OnWindowSizeChanged);
+    GetPrimaryWindow()->sizeChanged.Connect(this, &FullscreenTest::OnWindowSizeChanged);
 
     GetBackground()->SetColor(Color::White);
 
@@ -217,7 +216,7 @@ void FullscreenTest::LoadResources()
 void FullscreenTest::UnloadResources()
 {
     GetEngineContext()->inputSystem->RemoveHandler(inputHandlerToken);
-    GetPrimaryWindow()->sizeChanged.Disconnect(windowSizeChangedToken);
+    GetPrimaryWindow()->sizeChanged.Disconnect(this);
 
     if (ui3dview->GetScene())
     {
