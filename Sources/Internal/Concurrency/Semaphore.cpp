@@ -66,7 +66,7 @@ void Semaphore::Wait()
 
 Semaphore::Semaphore(uint32 count)
 {
-    semaphore = dispatch_semaphore_create(count);
+    semaphore = reinterpret_cast<uintptr_t>(dispatch_semaphore_create(count));
 }
 
 Semaphore::~Semaphore()
