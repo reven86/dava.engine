@@ -36,5 +36,16 @@ public:
     QString GetTextHint(const Any& value, const Vector<std::shared_ptr<PropertyNode>>* nodes) const;
 };
 
+class EnumEditorDrawer : public StaticEditorDrawer
+{
+public:
+    ~EnumEditorDrawer() override = default;
+    void InitStyleOptions(Params& params) const override;
+    uint32 GetHeight(Params params) const override;
+    void Draw(QPainter* painter, Params params) const override;
+
+    QString GetTextHint(const Any& value, const Vector<std::shared_ptr<PropertyNode>>* nodes) const;
+};
+
 } // namespace TArc
 } // namespace DAVA

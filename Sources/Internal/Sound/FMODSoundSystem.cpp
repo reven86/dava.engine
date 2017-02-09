@@ -76,6 +76,8 @@ SoundSystem::SoundSystem(Engine* e)
     : engine(e)
 {
     engine->update.Connect(this, &SoundSystem::Update);
+    engine->suspended.Connect(this, &SoundSystem::OnSuspend);
+    engine->resumed.Connect(this, &SoundSystem::OnResume);
 #else
 SoundSystem::SoundSystem()
 {
@@ -148,6 +150,8 @@ SoundSystem::~SoundSystem()
 {
 #if defined(__DAVAENGINE_COREV2__)
     engine->update.Disconnect(this);
+    engine->suspended.Disconnect(this);
+    engine->resumed.Disconnect(this);
 
 #if defined(__DAVAENGINE_ANDROID__)
     if (fmodActivityListenerGlobalRef != nullptr)
@@ -438,7 +442,11 @@ void SoundSystem::UnloadFMODProjects()
     toplevelGroups.clear();
 }
 
+#if defined(__DAVAENGINE_COREV2__)
+void SoundSystem::OnUpdate(float32 timeElapsed)
+#else
 void SoundSystem::Update(float32 timeElapsed)
+#endif
 {
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::SOUND_SYSTEM);
 
@@ -497,7 +505,11 @@ int32 SoundSystem::GetChannelsMax() const
     return softChannels;
 }
 
+#if defined(__DAVAENGINE_COREV2__)
+void SoundSystem::OnSuspend()
+#else
 void SoundSystem::Suspend()
+#endif
 {
 #ifdef __DAVAENGINE_ANDROID__
     //SoundSystem should be suspended by FMODAudioDevice::stop() on JAVA layer.
@@ -506,7 +518,11 @@ void SoundSystem::Suspend()
 #endif
 }
 
+#if defined(__DAVAENGINE_COREV2__)
+void SoundSystem::OnResume()
+#else
 void SoundSystem::Resume()
+#endif
 {
 #ifdef __DAVAENGINE_IPHONE__
     FMOD_IPhone_RestoreAudioSession();

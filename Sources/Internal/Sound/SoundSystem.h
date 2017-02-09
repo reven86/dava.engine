@@ -54,10 +54,13 @@ public:
     SoundEvent* DeserializeEvent(KeyedArchive* archive);
     SoundEvent* CloneEvent(const SoundEvent* sEvent);
 
+    void Mute(bool value);
+
+#if !defined(__DAVAENGINE_COREV2__)
     void Update(float32 timeElapsed);
     void Suspend();
     void Resume();
-    void Mute(bool value);
+#endif
 
     void SetCurrentLocale(const String& langID);
     String GetCurrentLocale() const;
@@ -119,8 +122,13 @@ public:
 #endif
 
 protected:
-    void GetGroupEventsNamesRecursive(FMOD::EventGroup* group, String& currNamePath, Vector<String>& names);
+#if defined(__DAVAENGINE_COREV2__)
+    void OnUpdate(float32 timeElapsed);
+    void OnSuspend();
+    void OnResume();
+#endif
 
+    void GetGroupEventsNamesRecursive(FMOD::EventGroup* group, String& currNamePath, Vector<String>& names);
     void AddSoundEventToGroup(const FastName& groupName, SoundEvent* event);
     void RemoveSoundEventFromGroups(SoundEvent* event);
 
