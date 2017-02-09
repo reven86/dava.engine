@@ -1,4 +1,5 @@
 #include "Tests/UIMovieTest.h"
+#include "Engine/Engine.h"
 
 namespace
 {
@@ -12,7 +13,9 @@ UIMovieTest::UIMovieTest(TestBed& app)
 
 void UIMovieTest::LoadResources()
 {
-    movieView = new UIMovieView(Rect(100, 10, 940, 600));
+    Size2f vsz = GetPrimaryWindow()->GetVirtualSize();
+
+    movieView = new UIMovieView(Rect(10, 10, vsz.dx - 20, vsz.dy - 120));
     movieView->OpenMovie(path, OpenMovieParams());
 
     movieView->SetDebugDraw(true);
@@ -23,19 +26,23 @@ void UIMovieTest::LoadResources()
     DVASSERT(font);
     font->SetSize(14);
 
-    playButton = CreateUIButton(font, Rect(10, 620, 60, 20), "Play", &UIMovieTest::ButtonPressed);
-    stopButton = CreateUIButton(font, Rect(80, 620, 60, 20), "Stop", &UIMovieTest::ButtonPressed);
-    pauseButton = CreateUIButton(font, Rect(150, 620, 60, 20), "Pause", &UIMovieTest::ButtonPressed);
-    resumeButton = CreateUIButton(font, Rect(220, 620, 60, 20), "Resume", &UIMovieTest::ButtonPressed);
-    hideButton = CreateUIButton(font, Rect(290, 620, 60, 20), "Hide", &UIMovieTest::ButtonPressed);
-    showButton = CreateUIButton(font, Rect(360, 620, 60, 20), "Show", &UIMovieTest::ButtonPressed);
+    float32 y = vsz.dy - 90;
 
-    buttonScale0 = CreateUIButton(font, Rect(10, 660, 100, 20), "None", &UIMovieTest::ScaleButtonPressed);
-    buttonScale1 = CreateUIButton(font, Rect(120, 660, 100, 20), "Aspect fit", &UIMovieTest::ScaleButtonPressed);
-    buttonScale2 = CreateUIButton(font, Rect(10, 690, 100, 20), "Aspect fill", &UIMovieTest::ScaleButtonPressed);
-    buttonScale3 = CreateUIButton(font, Rect(120, 690, 100, 20), "Fill", &UIMovieTest::ScaleButtonPressed);
+    playButton = CreateUIButton(font, Rect(10, y, 60, 40), "Play", &UIMovieTest::ButtonPressed);
+    stopButton = CreateUIButton(font, Rect(80, y, 60, 40), "Stop", &UIMovieTest::ButtonPressed);
+    pauseButton = CreateUIButton(font, Rect(150, y, 60, 40), "Pause", &UIMovieTest::ButtonPressed);
+    resumeButton = CreateUIButton(font, Rect(220, y, 60, 40), "Resume", &UIMovieTest::ButtonPressed);
+    hideButton = CreateUIButton(font, Rect(290, y, 60, 40), "Hide", &UIMovieTest::ButtonPressed);
+    showButton = CreateUIButton(font, Rect(360, y, 60, 40), "Show", &UIMovieTest::ButtonPressed);
 
-    playerStateText = new UIStaticText(Rect(470, 620, 100, 20));
+    y += 50;
+
+    buttonScale0 = CreateUIButton(font, Rect(10, y, 100, 40), "None", &UIMovieTest::ScaleButtonPressed);
+    buttonScale1 = CreateUIButton(font, Rect(120, y, 100, 40), "Aspect fit", &UIMovieTest::ScaleButtonPressed);
+    buttonScale2 = CreateUIButton(font, Rect(220, y, 100, 40), "Aspect fill", &UIMovieTest::ScaleButtonPressed);
+    buttonScale3 = CreateUIButton(font, Rect(320, y, 100, 40), "Fill", &UIMovieTest::ScaleButtonPressed);
+
+    playerStateText = new UIStaticText(Rect(vsz.dx - 100, vsz.dy - 110, 100, 20));
     playerStateText->SetFont(font);
     AddControl(playerStateText);
 
