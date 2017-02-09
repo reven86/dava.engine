@@ -7,6 +7,8 @@ namespace DAVA
 struct SignalBase
 {
 public:
+    virtual ~SignalBase() = default;
+
     void Watch(TrackedObject* object)
     {
         object->watchers.insert(this);
