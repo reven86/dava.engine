@@ -50,7 +50,11 @@ UIControlSystem::UIControlSystem()
 #if defined(__DAVAENGINE_COREV2__)
     vcs = new VirtualCoordinatesSystem();
     vcs->EnableReloadResourceOnResize(true);
+#else
+    vcs = VirtualCoordinatesSystem::Instance();
 #endif
+    vcs->virtualSizeChanged.Connect([](const Size2i&) { TextBlock::ScreenResolutionChanged(); });
+    vcs->physicalSizeChanged.Connect([](const Size2i&) { TextBlock::ScreenResolutionChanged(); });
 
     screenshoter = new UIScreenshoter();
 

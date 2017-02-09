@@ -364,7 +364,7 @@ Animation* UIStaticText::ShadowColorAnimation(const Color& finalColor, float32 t
     return animation;
 }
 
-const Vector<int32>& UIStaticText::GetStringSizes() const
+const Vector<float32>& UIStaticText::GetStringSizes() const
 {
     return textBlock->GetStringSizes();
 }

@@ -596,7 +596,6 @@ void TextFieldStbImpl::UpdateSelection(uint32 start, uint32 end)
 void TextFieldStbImpl::UpdateCursor(uint32 cursorPos, bool insertMode)
 {
     const TextBox* tb = staticText->GetTextBlock()->GetTextBox();
-    const Vector<int32> linesSizes = staticText->GetTextBlock()->GetStringSizes();
 
     Rect r;
     r.dx = DEFAULT_CURSOR_WIDTH;
