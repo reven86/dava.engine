@@ -259,11 +259,6 @@ inline SignalConnection::SignalConnection(SignalConnection&& sc)
     sc.signal = nullptr;
 }
 
-inline bool SignalConnection::IsConnected() const
-{
-    return token.IsValid();
-}
-
 inline void SignalConnection::Disconnect() const
 {
     DVASSERT(token.IsValid());

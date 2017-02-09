@@ -177,6 +177,58 @@ struct SignalConnection;
 
 
     ### Automatic Connection Management
+
+    Signals can automatically track the lifetime of objects involved in signal/slot connections, including automatic
+    disconnection of slots when objects involved in the slot call are destroyed. 
+    
+    \code
+    struct Hello
+    { ... };
+
+    void main()
+    {
+        Hello *hello = new Hello();
+        sig.Connect(hello, &Hello::foo);
+
+        sig.Emit(); // OK
+        delete hello;
+        sig.Emit(); // segmentation fault, `sig` don't know that `h` object was destroyed
+    }
+    \endcode 
+
+    However, with Signal one may track any object which is inherited from special class - TrackedObject.
+    A slot will automatically disconnect when any of its tracked objects expire.
+
+    \code
+    struct Hello : public TrackedObject
+    { ... };
+    \endcode
+
+    \code
+    sig.Emit(); // OK, Prints "Hello"
+    delete hello;   // automatically disconnect from all signals
+    sig.Emit(); // OK, Prints nothig 
+    \endcode
+
+    Also one may use TrackedObject that isn't part of the slot.
+
+    \code
+    void main()
+    {
+        World world; // isn't derived from TrackedObject
+
+        TrackedObject* to;
+
+        sig.Connect(to, [](){ std::cout << "Lambda"; });
+        sig.Connect(&world, &World::foo).Track(to);
+
+        sig.Emit(); // Prints "Lambda World"
+
+        delete to; // All connection tracked by `to` disconnect
+
+        sig.Emit(); // OK, Prints nothig 
+    }
+    \endcode
 */
 template <typename... Args>
 class Signal final : protected SignalBase
@@ -338,8 +390,8 @@ private:
 /**
     \ingroup functional
     The SignalConnection class represents a connection between a Signal and a Slot. 
-    It is a lightweight object that has the ability to query whether the signal and slot
-    are currently connected, and to disconnect the signal and slot.
+    It is a lightweight object that has the ability to disconnect the signal and slot
+    or set it to be tracked with given TrackedObject.
 */
 struct SignalConnection final
 {
@@ -348,10 +400,13 @@ struct SignalConnection final
     SignalConnection(const SignalConnection&) = delete;
     SignalConnection& operator=(const SignalConnection&) = delete;
 
-    bool IsConnected() const;
+    /** Disconnect this connection. */
     void Disconnect() const;
+
+    /** Set this connection to be tracked with given TrackedObject. */
     void Track(TrackedObject*) const;
 
+    /** Cast to Token. Returned connection Token can be use later to disconnect corresponding slot from signal. */
     operator Token() const;
 
 private:

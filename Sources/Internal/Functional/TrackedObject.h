@@ -8,7 +8,7 @@ struct SignalBase;
 
 /**
     \ingroup functional
-    TrackedObject is ...
+    TrackedObject is class used for Signal automatic connection management.
 */
 struct TrackedObject
 {
