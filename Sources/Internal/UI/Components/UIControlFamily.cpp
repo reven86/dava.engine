@@ -1,4 +1,6 @@
-#include "UIControlFamily.h"
+#include "UI/Components/UIControlFamily.h"
+#include "Engine/Engine.h"
+#include "Entity/ComponentManager.h"
 
 namespace DAVA
 {
@@ -17,71 +19,33 @@ UIControlFamily* UIControlFamily::GetOrCreate(const Vector<UIComponent*>& compon
 UIControlFamily::UIControlFamily(const Vector<UIComponent*>& components)
     : refCount(0)
 {
-    types.reserve(components.size());
-    for (UIComponent* c : components)
+    ComponentManager* cm = GetEngineContext()->componentManager;
+    componentIndices.resize(cm->GetComponentsCount());
+    componentsCount.resize(cm->GetComponentsCount());
+
+    int32 size = static_cast<int32>(components.size());
+    hash = size;
+    for (int32 i = size - 1; i >= 0; --i)
     {
-        types.push_back(c->GetType());
-    }
-    hash = types.size();
-    TypeCount tc;
-    for (const Type* t : types)
-    {
-        hash ^= reinterpret_cast<uint64>(t) + 0x9e3779b9 + (hash << 6) + (hash >> 2);
-        if (t != tc.type)
-        {
-            if (tc.type == nullptr)
-            {
-                //first iteration
-                tc.count = 1;
-                tc.type = t;
-            }
-            else
-            {
-                //dump previous type
-                typeCounts.push_back(tc);
-                tc.type = t;
-                tc.count = 1;
-            }
-        }
-        else
-        {
-            tc.count++;
-        }
-    }
-    if (tc.type != nullptr)
-    {
-        typeCounts.push_back(tc);
+        int32 type = components[i]->GetRuntimeType();
+        hash ^= type + 0x9e3779b9 + (hash << 6) + (hash >> 2);
+        componentIndices[type] = i;
+        componentsCount[type]++;
     }
 }
 
-uint32 UIControlFamily::GetComponentIndex(const Type* componentType, uint32 index) const
+uint32 UIControlFamily::GetComponentIndex(int32 runtimeType, uint32 index) const
 {
-    DVASSERT(GetComponentsCount(componentType) >= index);
+    DVASSERT(GetComponentsCount(runtimeType) >= index);
 
-    size_t size = types.size();
-    for (size_t i = 0; i < size; ++i)
-    {
-        if (types[i] == componentType)
-        {
-            return static_cast<uint32>(i + index);
-        }
-    }
-    throw std::logic_error("componentType no found");
+    return componentIndices[runtimeType] + index;
 }
 
-uint32 UIControlFamily::GetComponentsCount(const Type* componentType) const
+uint32 UIControlFamily::GetComponentsCount(int32 runtimeType) const
 {
-    uint32 ret = 0;
-    for (const TypeCount& tc : typeCounts)
-    {
-        if (tc.type == componentType)
-        {
-            ret = tc.count;
-            break;
-        }
-    }
+    DVASSERT(runtimeType < componentsCount.size());
 
-    return ret;
+    return componentsCount[runtimeType];
 }
 
 void UIControlFamily::Release(UIControlFamily*& family)
@@ -92,6 +56,6 @@ void UIControlFamily::Release(UIControlFamily*& family)
 
 bool UIControlFamily::operator==(const UIControlFamily& rhs) const
 {
-    return (hash == rhs.hash) && (types == rhs.types);
+    return (hash == rhs.hash) && (componentsCount == rhs.componentsCount);
 }
 }

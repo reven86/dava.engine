@@ -7,7 +7,7 @@
 
 namespace DAVA
 {
-class UILinearLayoutComponent : public UIComponent
+class UILinearLayoutComponent : public UIBaseComponent<UILinearLayoutComponent>
 {
     DAVA_VIRTUAL_REFLECTION(UILinearLayoutComponent, UIComponent);
 

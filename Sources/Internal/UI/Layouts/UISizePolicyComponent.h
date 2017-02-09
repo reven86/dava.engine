@@ -8,7 +8,7 @@ namespace DAVA
 {
 class UIControl;
 
-class UISizePolicyComponent : public UIComponent
+class UISizePolicyComponent : public UIBaseComponent<UISizePolicyComponent>
 {
     DAVA_VIRTUAL_REFLECTION(UISizePolicyComponent, UIComponent);
 

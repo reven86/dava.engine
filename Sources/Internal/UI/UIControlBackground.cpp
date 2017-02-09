@@ -65,7 +65,7 @@ UIControlBackground::UIControlBackground()
 }
 
 UIControlBackground::UIControlBackground(const UIControlBackground& src)
-    : UIComponent(src)
+    : UIBaseComponent<UIControlBackground>(src)
     , spr(src.spr)
     , align(src.align)
     , type(src.type)

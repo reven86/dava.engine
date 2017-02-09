@@ -117,14 +117,14 @@ EngineBackend::EngineBackend(const Vector<String>& cmdargs)
     DVASSERT(instance == nullptr);
     instance = this;
 
-    RegisterDAVAClasses();
-    RegisterAnyCasts();
-
     // The following subsystems should be created earlier than other:
     //  - Logger, to log messages on startup
     //  - FileSystem, to load config files with init options
     //  - DeviceManager, to check what hardware is available
     context->logger = new Logger;
+    context->componentManager = new ComponentManager();
+    RegisterDAVAClasses();
+    RegisterAnyCasts();
     context->settings = new EngineSettings();
     context->fileSystem = new FileSystem;
     FilePath::InitializeBundleName();
@@ -723,7 +723,7 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
     context->performanceSettings = new PerformanceSettings();
     context->versionInfo = new VersionInfo();
     context->renderSystem2D = new RenderSystem2D();
-    context->componentManager = new ComponentManager();
+
     context->uiControlSystem = new UIControlSystem();
     context->animationManager = new AnimationManager();
     context->fontManager = new FontManager();
@@ -846,7 +846,6 @@ void EngineBackend::DestroySubsystems()
     }
 
     SafeRelease(context->localNotificationController);
-    SafeDelete(context->componentManager);
     SafeRelease(context->uiScreenManager);
     SafeRelease(context->uiControlSystem);
     SafeRelease(context->fontManager);
@@ -886,6 +885,7 @@ void EngineBackend::DestroySubsystems()
         delete context->deviceManager;
         context->deviceManager = nullptr;
     }
+    SafeDelete(context->componentManager);
     SafeRelease(context->logger);
 }
 

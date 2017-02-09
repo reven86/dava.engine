@@ -11,8 +11,8 @@ namespace DAVA
 class UIControlFamily
 {
 public:
-    uint32 GetComponentIndex(const Type* componentType, uint32 index) const;
-    uint32 GetComponentsCount(const Type* componentType) const;
+    uint32 GetComponentIndex(int32 runtimeType, uint32 index) const;
+    uint32 GetComponentsCount(int32 runtimeType) const;
 
     static UIControlFamily* GetOrCreate(const Vector<UIComponent*>& components);
     static void Release(UIControlFamily*& family);
@@ -23,16 +23,10 @@ private:
     UIControlFamily(const Vector<UIComponent*>& components);
 
     int32 refCount = 0;
+    int32 hash = 0;
 
-    Vector<const Type*> types;
-    uint64 hash = 0;
-
-    struct TypeCount
-    {
-        const Type* type = nullptr;
-        uint32 count = 0;
-    };
-    Vector<TypeCount> typeCounts;
+    Vector<uint32> componentIndices;
+    Vector<uint32> componentsCount;
 
     template <typename EntityFamilyType>
     friend class BaseFamilyRepository;

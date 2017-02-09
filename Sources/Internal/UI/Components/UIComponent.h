@@ -31,11 +31,12 @@ public:
 
     RefPtr<UIComponent> SafeClone() const;
 
-    const Type* GetType() const;
+    virtual int32 GetRuntimeType() const = 0;
+
+    virtual const Type* GetType() const = 0;
 
 private:
     UIControl* control;
-    const Type* type;
 };
 
 inline void UIComponent::SetControl(UIControl* _control)
@@ -47,6 +48,37 @@ inline UIControl* UIComponent::GetControl() const
 {
     return control;
 }
+
+template <class T>
+class UIBaseComponent : public UIComponent
+{
+public:
+    int32 GetRuntimeType() const override
+    {
+        return runtimeType;
+    }
+
+    static int32 GetStaticRuntimeType()
+    {
+        return runtimeType;
+    }
+
+    const Type* GetType() const override
+    {
+        return reflectionType;
+    }
+
+private:
+    static int32 runtimeType;
+    static const Type* reflectionType;
+    friend class ComponentManager;
+};
+
+template <class T>
+int32 UIBaseComponent<T>::runtimeType = -1;
+
+template <class T>
+const Type* UIBaseComponent<T>::reflectionType = Type::Instance<T>();
 }
 
 

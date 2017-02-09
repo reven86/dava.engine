@@ -8,7 +8,7 @@ namespace DAVA
 {
 class UIControl;
 
-class UIIgnoreLayoutComponent : public UIComponent
+class UIIgnoreLayoutComponent : public UIBaseComponent<UIIgnoreLayoutComponent>
 {
     DAVA_VIRTUAL_REFLECTION(UIIgnoreLayoutComponent, UIComponent);
 

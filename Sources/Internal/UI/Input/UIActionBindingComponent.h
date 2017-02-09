@@ -14,7 +14,7 @@ namespace DAVA
 {
 class UIControl;
 
-class UIActionBindingComponent : public UIComponent
+class UIActionBindingComponent : public UIBaseComponent<UIActionBindingComponent>
 {
     DAVA_VIRTUAL_REFLECTION(UIActionBindingComponent, UIComponent);
 

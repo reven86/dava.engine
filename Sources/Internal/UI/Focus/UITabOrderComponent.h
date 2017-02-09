@@ -8,7 +8,7 @@
 
 namespace DAVA
 {
-class UITabOrderComponent : public UIComponent
+class UITabOrderComponent : public UIBaseComponent<UITabOrderComponent>
 {
     DAVA_VIRTUAL_REFLECTION(UITabOrderComponent, UIComponent);
 

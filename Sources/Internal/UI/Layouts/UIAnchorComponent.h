@@ -6,7 +6,7 @@
 
 namespace DAVA
 {
-class UIAnchorComponent : public UIComponent
+class UIAnchorComponent : public UIBaseComponent<UIAnchorComponent>
 {
     DAVA_VIRTUAL_REFLECTION(UIAnchorComponent, UIComponent);
 

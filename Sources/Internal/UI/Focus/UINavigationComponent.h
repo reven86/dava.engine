@@ -9,7 +9,7 @@
 
 namespace DAVA
 {
-class UINavigationComponent : public UIComponent
+class UINavigationComponent : public UIBaseComponent<UINavigationComponent>
 {
     DAVA_VIRTUAL_REFLECTION(UINavigationComponent, UIComponent);
 

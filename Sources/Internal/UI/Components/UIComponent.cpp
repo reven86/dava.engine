@@ -61,8 +61,8 @@ RefPtr<UIComponent> UIComponent::SafeClone() const
     return RefPtr<UIComponent>(Clone());
 }
 
-const Type* UIComponent::GetType() const
-{
-    return ReflectedTypeDB::GetByPointer(this)->GetType();
-}
+//const Type* UIComponent::GetType() const
+//{
+//    return ReflectedTypeDB::GetByPointer(this)->GetType();
+//}
 }

@@ -16,6 +16,8 @@
 #include "UI/Input/UIActionComponent.h"
 #include "UI/Input/UIActionBindingComponent.h"
 #include "UI/Scroll/UIScrollBarDelegateComponent.h"
+#include "Engine/Engine.h"
+#include "Entity/ComponentManager.h"
 
 using namespace DAVA;
 
@@ -41,6 +43,24 @@ void DAVA::RegisterDAVAClasses()
     DAVA_REFLECTION_REGISTER_CUSTOM_PERMANENT_NAME(UIActionComponent, "Action");
     DAVA_REFLECTION_REGISTER_CUSTOM_PERMANENT_NAME(UIActionBindingComponent, "ActionBinding");
     DAVA_REFLECTION_REGISTER_CUSTOM_PERMANENT_NAME(UIScrollBarDelegateComponent, "ScrollBarDelegate");
+
+    GetEngineContext()->componentManager->RegisterUIComponent<UIControlBackground>();
+    GetEngineContext()->componentManager->RegisterUIComponent<UILinearLayoutComponent>();
+    GetEngineContext()->componentManager->RegisterUIComponent<UIControlBackground>();
+    GetEngineContext()->componentManager->RegisterUIComponent<UILinearLayoutComponent>();
+    GetEngineContext()->componentManager->RegisterUIComponent<UIFlowLayoutComponent>();
+    GetEngineContext()->componentManager->RegisterUIComponent<UIFlowLayoutHintComponent>();
+    GetEngineContext()->componentManager->RegisterUIComponent<UIIgnoreLayoutComponent>();
+    GetEngineContext()->componentManager->RegisterUIComponent<UISizePolicyComponent>();
+    GetEngineContext()->componentManager->RegisterUIComponent<UIAnchorComponent>();
+    GetEngineContext()->componentManager->RegisterUIComponent<UIModalInputComponent>();
+    GetEngineContext()->componentManager->RegisterUIComponent<UIFocusComponent>();
+    GetEngineContext()->componentManager->RegisterUIComponent<UIFocusGroupComponent>();
+    GetEngineContext()->componentManager->RegisterUIComponent<UINavigationComponent>();
+    GetEngineContext()->componentManager->RegisterUIComponent<UITabOrderComponent>();
+    GetEngineContext()->componentManager->RegisterUIComponent<UIActionComponent>();
+    GetEngineContext()->componentManager->RegisterUIComponent<UIActionBindingComponent>();
+    GetEngineContext()->componentManager->RegisterUIComponent<UIScrollBarDelegateComponent>();
 }
 
 #if !defined(__DAVAENGINE_ANDROID__)
