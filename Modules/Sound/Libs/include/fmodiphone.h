@@ -7,7 +7,6 @@
 
 #include "fmod.h"
 
-
 /*
 [ENUM]
 [
@@ -28,15 +27,14 @@
 */
 typedef enum
 {
-    FMOD_IPHONE_SESSIONCATEGORY_DEFAULT,            /* Default for the device OS version (MediaPlayback for iPhone OS 2.0 to 2.1, SoloAmbientSound for iPhone OS 2.2 onwards) */
-    FMOD_IPHONE_SESSIONCATEGORY_AMBIENTSOUND,       /* kAudioSessionCategory_AmbientSound ~ obeys slient switch, silent when locked, mixes with other audio, not allowed in background */
-    FMOD_IPHONE_SESSIONCATEGORY_SOLOAMBIENTSOUND,   /* kAudioSessionCategory_SoloAmbientSound (iPhone OS >= 2.2 required) ~ obeys slient switch, silent when locked, doesn't mix with other audio, not allowed in background */
-    FMOD_IPHONE_SESSIONCATEGORY_MEDIAPLAYBACK,      /* kAudioSessionCategory_MediaPlayback ~ ignores slient switch, plays when locked, doesn't mix with other audio (unless forced), allowed in background */
-    FMOD_IPHONE_SESSIONCATEGORY_PLAYANDRECORD,      /* kAudioSessionCategory_PlayAndRecord ~ ignores slient switch, plays when locked, doesn't mix with other audio (unless forced), allowed in background */
-    
-    FMOD_IPHONE_SESSIONCATEGORY_FORCEINT = 65536    /* Makes sure this enum is signed 32bit */
-} FMOD_IPHONE_SESSIONCATEGORY;
+    FMOD_IPHONE_SESSIONCATEGORY_DEFAULT, /* Default for the device OS version (MediaPlayback for iPhone OS 2.0 to 2.1, SoloAmbientSound for iPhone OS 2.2 onwards) */
+    FMOD_IPHONE_SESSIONCATEGORY_AMBIENTSOUND, /* kAudioSessionCategory_AmbientSound ~ obeys slient switch, silent when locked, mixes with other audio, not allowed in background */
+    FMOD_IPHONE_SESSIONCATEGORY_SOLOAMBIENTSOUND, /* kAudioSessionCategory_SoloAmbientSound (iPhone OS >= 2.2 required) ~ obeys slient switch, silent when locked, doesn't mix with other audio, not allowed in background */
+    FMOD_IPHONE_SESSIONCATEGORY_MEDIAPLAYBACK, /* kAudioSessionCategory_MediaPlayback ~ ignores slient switch, plays when locked, doesn't mix with other audio (unless forced), allowed in background */
+    FMOD_IPHONE_SESSIONCATEGORY_PLAYANDRECORD, /* kAudioSessionCategory_PlayAndRecord ~ ignores slient switch, plays when locked, doesn't mix with other audio (unless forced), allowed in background */
 
+    FMOD_IPHONE_SESSIONCATEGORY_FORCEINT = 65536 /* Makes sure this enum is signed 32bit */
+} FMOD_IPHONE_SESSIONCATEGORY;
 
 /*
 [ENUM]
@@ -56,13 +54,12 @@ typedef enum
 */
 typedef enum
 {
-    FMOD_AUDIOQUEUE_CODECPOLICY_DEFAULT,            /* Try hardware first, if it's in use or prohibited by audio session, try software. */
-    FMOD_AUDIOQUEUE_CODECPOLICY_SOFTWAREONLY,       /* kAudioQueueHardwareCodecPolicy_UseSoftwareOnly ~ try software, if not available fail. */
-    FMOD_AUDIOQUEUE_CODECPOLICY_HARDWAREONLY,       /* kAudioQueueHardwareCodecPolicy_UseHardwareOnly ~ try hardware, if not available fail. */
-    
-    FMOD_AUDIOQUEUE_CODECPOLICY_FORCEINT = 65536    /* Makes sure this enum is signed 32bit */
-} FMOD_AUDIOQUEUE_CODECPOLICY;
+    FMOD_AUDIOQUEUE_CODECPOLICY_DEFAULT, /* Try hardware first, if it's in use or prohibited by audio session, try software. */
+    FMOD_AUDIOQUEUE_CODECPOLICY_SOFTWAREONLY, /* kAudioQueueHardwareCodecPolicy_UseSoftwareOnly ~ try software, if not available fail. */
+    FMOD_AUDIOQUEUE_CODECPOLICY_HARDWAREONLY, /* kAudioQueueHardwareCodecPolicy_UseHardwareOnly ~ try hardware, if not available fail. */
 
+    FMOD_AUDIOQUEUE_CODECPOLICY_FORCEINT = 65536 /* Makes sure this enum is signed 32bit */
+} FMOD_AUDIOQUEUE_CODECPOLICY;
 
 /*
 [STRUCTURE] 
@@ -83,9 +80,9 @@ typedef enum
 */
 typedef struct FMOD_IPHONE_EXTRADRIVERDATA
 {
-    FMOD_IPHONE_SESSIONCATEGORY  sessionCategory;        /* (IN)  Default audio session category to use for output */
-    bool                         forceSpeakerOutput;     /* (IN)  Force audio out the main speaker, don't allow output to be redirected to the receiver speaker when recording (iPhone OS >= 2.1 required) */
-    bool                         forceMixWithOthers;     /* (IN)  Force mixing behavior allowing iPod audio to play with FMOD even if the audio session doesn't usually permit this */ 
+    FMOD_IPHONE_SESSIONCATEGORY sessionCategory; /* (IN)  Default audio session category to use for output */
+    bool forceSpeakerOutput; /* (IN)  Force audio out the main speaker, don't allow output to be redirected to the receiver speaker when recording (iPhone OS >= 2.1 required) */
+    bool forceMixWithOthers; /* (IN)  Force mixing behavior allowing iPod audio to play with FMOD even if the audio session doesn't usually permit this */
 } FMOD_IPHONE_EXTRADRIVERDATA;
 
 #ifdef __cplusplus
@@ -111,8 +108,7 @@ extern "C"
     [SEE_ALSO]
 ]
 */
-FMOD_RESULT F_API FMOD_IPhone_OtherAudioIsPlaying(bool *playing);
-
+FMOD_RESULT F_API FMOD_IPhone_OtherAudioIsPlaying(bool* playing);
 
 /*
 [
@@ -134,7 +130,6 @@ FMOD_RESULT F_API FMOD_IPhone_OtherAudioIsPlaying(bool *playing);
 */
 FMOD_RESULT F_API FMOD_IPhone_DuckOtherAudio(bool duck);
 
-
 /*
 [
 	[DESCRIPTION]
@@ -154,7 +149,6 @@ FMOD_RESULT F_API FMOD_IPhone_DuckOtherAudio(bool duck);
 ]
 */
 FMOD_RESULT F_API FMOD_IPhone_MixWithOtherAudio(bool mix);
-
 
 /*
 [
@@ -180,4 +174,4 @@ FMOD_RESULT F_API FMOD_IPhone_RestoreAudioSession();
 }
 #endif
     
-#endif  /* _FMODIPHONE_H */
+#endif /* _FMODIPHONE_H */

@@ -48,7 +48,7 @@ public:
     virtual float32 GetMaxDistance() const;
 
 protected:
-    FMODSoundEvent(const FastName& eventName, FMODSoundSystem* rootSoundSystem );
+    FMODSoundEvent(const FastName& eventName, FMODSoundSystem* rootSoundSystem);
     void ApplyParamsToEvent(FMOD::Event* event);
     void InitParamsMap();
 

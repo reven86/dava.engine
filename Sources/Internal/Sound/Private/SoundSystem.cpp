@@ -120,7 +120,6 @@ void SoundSystem::Suspend()
 
 void SoundSystem::Resume()
 {
-
 }
 #endif
 
@@ -193,12 +192,9 @@ bool SoundSystem::IsSystemMusicPlaying()
 
 void SoundSystem::DuckSystemMusic(bool duck)
 {
-
 }
 
 void SoundSystem::ParseSFXConfig(const FilePath& configPath)
 {
 }
 }
-
-

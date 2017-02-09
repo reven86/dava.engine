@@ -20,9 +20,10 @@ static float32 SpeedToPitchInOctaves(const float32 speed)
     return std::log2f(speed);
 }
 
-FMODSoundEvent::FMODSoundEvent(const FastName& _eventName, FMODSoundSystem* rootSoundSystem )
-    : is3D(false),
-      soundSystem( rootSoundSystem )
+FMODSoundEvent::FMODSoundEvent(const FastName& _eventName, FMODSoundSystem* rootSoundSystem)
+    : is3D(false)
+    ,
+    soundSystem(rootSoundSystem)
 {
     DVASSERT(_eventName.c_str()[0] != '/');
     eventName = _eventName;

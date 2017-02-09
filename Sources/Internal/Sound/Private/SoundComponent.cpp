@@ -13,7 +13,6 @@
 
 namespace DAVA
 {
-
 SoundComponent::SoundComponent()
 {
 }
@@ -184,5 +183,4 @@ void SoundComponent::Deserialize(KeyedArchive* archive, SerializationContext* se
 
     Component::Deserialize(archive, serializationContext);
 }
-
 };

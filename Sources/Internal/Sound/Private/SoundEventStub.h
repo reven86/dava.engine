@@ -4,7 +4,6 @@
 
 namespace DAVA
 {
-
 class SoundEventStub : public SoundEvent
 {
 public:
@@ -33,7 +32,6 @@ public:
 
     void SetSpeed(float32 speed)
     {
-
     }
 
     void SetPosition(const Vector3& position)
@@ -76,6 +74,4 @@ public:
         return 0.0f;
     }
 };
-
-
 }

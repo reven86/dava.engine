@@ -766,7 +766,7 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
         {
             if (context->soundSystem == nullptr)
             {
-                context->soundSystem = CreateSoundSystem(engine );
+                context->soundSystem = CreateSoundSystem(engine);
             }
         }
         else if (m == "PackManager")

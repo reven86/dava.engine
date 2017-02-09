@@ -4,7 +4,6 @@
 
 namespace DAVA
 {
-
 class SoundStreamStub : public SoundStream
 {
 public:
@@ -22,5 +21,4 @@ public:
     {
     }
 };
-
 }

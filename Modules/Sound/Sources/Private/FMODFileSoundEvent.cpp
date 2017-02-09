@@ -10,7 +10,7 @@ Map<FMOD::Sound*, int32> soundRefsMap;
 
 Mutex FMODFileSoundEvent::soundMapMutex;
 
-FMODFileSoundEvent* FMODFileSoundEvent::CreateWithFlags(const FilePath& fileName, uint32 flags, int32 priority, FMODSoundSystem* rootSoundSystem )
+FMODFileSoundEvent* FMODFileSoundEvent::CreateWithFlags(const FilePath& fileName, uint32 flags, int32 priority, FMODSoundSystem* rootSoundSystem)
 {
     FMODFileSoundEvent* sound = new FMODFileSoundEvent(fileName, flags, priority, rootSoundSystem);
 
@@ -64,7 +64,7 @@ FMODFileSoundEvent* FMODFileSoundEvent::CreateWithFlags(const FilePath& fileName
     return sound;
 }
 
-FMODFileSoundEvent::FMODFileSoundEvent(const FilePath& _fileName, uint32 _flags, int32 _priority, FMODSoundSystem* rootSoundSystem )
+FMODFileSoundEvent::FMODFileSoundEvent(const FilePath& _fileName, uint32 _flags, int32 _priority, FMODSoundSystem* rootSoundSystem)
     :
     fileName(_fileName)
     ,
@@ -76,7 +76,7 @@ FMODFileSoundEvent::FMODFileSoundEvent(const FilePath& _fileName, uint32 _flags,
     ,
     fmodInstanceGroup(0)
     ,
-    soundSystem(rootSoundSystem )
+    soundSystem(rootSoundSystem)
 {
 }
 
@@ -246,4 +246,3 @@ FMOD_RESULT F_CALLBACK FMODFileSoundEvent::SoundInstanceEndPlaying(FMOD_CHANNEL*
     return FMOD_OK;
 }
 };
-

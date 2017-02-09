@@ -13,7 +13,6 @@
 
 namespace DAVA
 {
-
 class Engine;
 class Component;
 class SoundSystem : public Singleton<SoundSystem>

@@ -70,10 +70,10 @@ public:
     };
 
 protected:
-    FMODFileSoundEvent(const FilePath& fileName, uint32 flags, int32 priority, FMODSoundSystem* rootSoundSystem );
+    FMODFileSoundEvent(const FilePath& fileName, uint32 flags, int32 priority, FMODSoundSystem* rootSoundSystem);
     virtual ~FMODFileSoundEvent();
 
-    static FMODFileSoundEvent* CreateWithFlags(const FilePath& fileName, uint32 flags, int32 priority, FMODSoundSystem* rootSoundSystem );
+    static FMODFileSoundEvent* CreateWithFlags(const FilePath& fileName, uint32 flags, int32 priority, FMODSoundSystem* rootSoundSystem);
 
     static Mutex soundMapMutex;
 

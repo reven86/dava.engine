@@ -71,7 +71,8 @@ Function<void(jobject)> fmodActivityListenerUnregisterMethod = nullptr;
 
 #if defined(__DAVAENGINE_COREV2__)
 FMODSoundSystem::FMODSoundSystem(Engine* e)
-    : engine(e), SoundSystem(e)
+    : engine(e)
+    , SoundSystem(e)
 {
     onUpdateToken = engine->update.Connect(this, &FMODSoundSystem::OnUpdate);
     onSuspendToken = engine->suspended.Connect(this, &FMODSoundSystem::OnSuspend);
@@ -211,7 +212,7 @@ SoundStream* FMODSoundSystem::CreateSoundStream(SoundStreamDelegate* streamDeleg
 
 SoundEvent* FMODSoundSystem::CreateSoundEventByID(const FastName& eventName, const FastName& groupName)
 {
-    SoundEvent* event = new FMODSoundEvent(eventName,this);
+    SoundEvent* event = new FMODSoundEvent(eventName, this);
     AddSoundEventToGroup(groupName, event);
 
     return event;
@@ -898,4 +899,3 @@ FMOD_RESULT F_CALLBACK DAVA_FMOD_FILE_CLOSECALLBACK(void* handle, void* userdata
     return FMOD_OK;
 }
 };
-

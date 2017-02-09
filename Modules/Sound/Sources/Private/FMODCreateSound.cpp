@@ -7,26 +7,25 @@ namespace DAVA
 
 SoundSystem* CreateSoundSystem(Engine* e)
 {
-    static SoundSystem*  instSoundSystem = nullptr;
-    if( nullptr == instSoundSystem )
+    static SoundSystem* instSoundSystem = nullptr;
+    if (nullptr == instSoundSystem)
     {
         instSoundSystem = new FMODSoundSystem(e);
     }
-    return  instSoundSystem;
+    return instSoundSystem;
 }
 
 #else
 
 SoundSystem* CreateSoundSystem()
 {
-    static SoundSystem*  instSoundSystem = nullptr;
-    if( nullptr == instSoundSystem )
+    static SoundSystem* instSoundSystem = nullptr;
+    if (nullptr == instSoundSystem)
     {
         instSoundSystem = new FMODSoundSystem();
     }
-    return  instSoundSystem;
+    return instSoundSystem;
 }
 
 #endif
-
 }
