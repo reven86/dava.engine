@@ -585,6 +585,8 @@ fragment_out fp_main( fragment_in input )
     #if PARTICLE_DEBUG_SHOW_ALPHA
         if (output.color.a < particleAlphaThreshold)
             output.color = float4(0.0f, 0.0f, 1.0f, 0.3f);
+        else
+            output.color = 0.0;
     #endif
     #if PARTICLE_DEBUG_SHOW_OVERDRAW
         output.color = float4(0.1f, 0.0f, 0.05f, 1.0f);

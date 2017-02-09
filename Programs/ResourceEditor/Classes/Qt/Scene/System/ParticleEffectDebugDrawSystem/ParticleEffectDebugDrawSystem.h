@@ -37,9 +37,13 @@ public:
 
     inline bool GetIsEnabled() const;
     inline void SetIsEnabled(bool enable);
+
+    inline bool GetIsDrawOnlySected() const;
+    inline void SetIsDrawOnlySelected(bool showOnlySelected);
+
     inline const Vector<NMaterial*>* const GetMaterials() const;
 
-
+    void SetSelectedParticles(DAVA::UnorderedSet<RenderObject*> selectedParticles);
 private:
     struct TextureKey
     {
@@ -53,12 +57,13 @@ private:
     void RemoveFromActive(ParticleEffectComponent* effect);
 
     DAVA::Vector<ParticleEffectComponent*> activeComponents;
-    DAVA::UnorderedMap<RenderObject*, ParticleEffectComponent*> componentsMap;
+    DAVA::UnorderedSet<RenderObject*> selectedParticles;
     ParticleDebugRenderPass* renderPass = nullptr;
     ParticleDebugDrawQuadRenderPass* drawQuadPass = nullptr;
     DAVA::RenderSystem* renderSystem = nullptr;
 
     bool isEnabled = false;
+    bool isDrawOnlySelected = false;
     eParticleDebugDrawMode drawMode = WIREFRAME;
 
     NMaterial* wireframeMaterial = nullptr;
@@ -91,6 +96,17 @@ bool ParticleEffectDebugDrawSystem::GetIsEnabled() const
 void ParticleEffectDebugDrawSystem::SetIsEnabled(bool enable)
 {
     isEnabled = enable;
+}
+
+bool ParticleEffectDebugDrawSystem::GetIsDrawOnlySected() const
+{
+    return isDrawOnlySelected;
+}
+
+void ParticleEffectDebugDrawSystem::SetIsDrawOnlySelected(bool enable)
+{
+    Logger::Debug("IS only selected %d", enable);
+    isDrawOnlySelected = enable;
 }
 
 const Vector<NMaterial*>* const ParticleEffectDebugDrawSystem::GetMaterials() const

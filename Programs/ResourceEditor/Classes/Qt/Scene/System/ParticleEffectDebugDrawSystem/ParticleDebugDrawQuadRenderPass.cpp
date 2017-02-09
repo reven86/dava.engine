@@ -1,10 +1,9 @@
 #include "Classes/Qt/Scene/System/ParticleEffectDebugDrawSystem/ParticleDebugDrawQuadRenderPass.h"
+
 #include "Classes/Qt/Scene/System/ParticleEffectDebugDrawSystem/ParticleEffectDebugDrawSystem.h"
+
 #include "Render/RHI/rhi_Type.h"
 #include "Render/RHI/rhi_Public.h"
-
-
-using namespace DAVA;
 
 const FastName ParticleDebugDrawQuadRenderPass::PASS_DEBUG_DRAW_QUAD("ForwardPass");
 
@@ -55,7 +54,6 @@ ParticleDebugDrawQuadRenderPass::ParticleDebugDrawQuadRenderPass(ParticleDebugQu
     passConfig = config.renderSystem->GetMainPassConfig();
     quadMaterial->PreBuildMaterial(passName);
     quadHeatMaterial->PreBuildMaterial(passName);
-//     passConfig.priority = DAVA::PRIORITY_MAIN_3D + 2;
     
     SetRenderTargetProperties(passConfig.viewport.width, passConfig.viewport.height, DAVA::PixelFormat::FORMAT_RGBA8888);
     PrepareRenderData();

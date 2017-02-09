@@ -1,8 +1,14 @@
 #pragma once
 
-#include "Render/Highlevel/RenderPass.h"
-#include "Render/Highlevel/RenderSystem.h"
 #include "Base/FastName.h"
+#include "Render/RHI/rhi_Public.h"
+#include "Math/Vector.h"
+
+namespace DAVA
+{
+class RenderSystem;
+class NMaterial;
+}
 
 enum eParticleDebugDrawMode;
 
@@ -12,7 +18,7 @@ public:
     struct ParticleDebugQuadRenderPassConfig
     {
         const DAVA::FastName& name;
-        RenderSystem* renderSystem;
+        DAVA::RenderSystem* renderSystem;
         DAVA::NMaterial* quadMaterial;
         DAVA::NMaterial* quadHeatMaterial;
         const eParticleDebugDrawMode& drawMode;
@@ -29,15 +35,12 @@ private:
         Vector2 uv;
     };
     void PrepareRenderData();
+    void ByndDynamicParams(Camera* cam);
 
     DAVA::NMaterial* quadMaterial;
     DAVA::NMaterial* quadHeatMaterial;
 
-    const eParticleDebugDrawMode& drawMode;
-    
+    const eParticleDebugDrawMode& drawMode;    
     rhi::HVertexBuffer quadBuffer;
-
     rhi::Packet quadPacket;
-
-    void ByndDynamicParams(Camera* cam);
 };

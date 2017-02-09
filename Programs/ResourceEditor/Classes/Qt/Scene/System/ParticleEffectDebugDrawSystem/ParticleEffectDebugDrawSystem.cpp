@@ -2,9 +2,6 @@
 #include "Classes/Qt/Scene/System/ParticleEffectDebugDrawSystem/ParticleDebugRenderPass.h"
 #include "Classes/Qt/Scene/System/ParticleEffectDebugDrawSystem/ParticleDebugDrawQuadRenderPass.h"
 
-
-#include "Logger/Logger.h"
-
 ParticleEffectDebugDrawSystem::ParticleEffectDebugDrawSystem(Scene* scene) : SceneSystem(scene)
 {
 
@@ -17,7 +14,8 @@ ParticleEffectDebugDrawSystem::ParticleEffectDebugDrawSystem(Scene* scene) : Sce
         renderSystem = scene->GetRenderSystem();
         
         ParticleDebugRenderPass::ParticleDebugRenderPassConfig config =
-        { ParticleDebugRenderPass::PASS_DEBUG_DRAW_PARTICLES, renderSystem, wireframeMaterial, overdrawMaterial, showAlphaMaterial, drawMode, &componentsMap };
+        { ParticleDebugRenderPass::PASS_DEBUG_DRAW_PARTICLES, renderSystem, wireframeMaterial, overdrawMaterial, 
+            showAlphaMaterial, drawMode, isDrawOnlySelected, &selectedParticles };
         renderPass = new ParticleDebugRenderPass(config);
 
         heatTexture = GenerateHeatTexture();
@@ -90,14 +88,15 @@ void ParticleEffectDebugDrawSystem::GenerateDebugMaterials()
 void ParticleEffectDebugDrawSystem::GenerateQuadMaterials()
 {
     quadMaterial = new NMaterial();
-    quadMaterial->SetFXName(NMaterialName::TEXTURED_ALPHABLEND);
-    quadMaterial->AddTexture(NMaterialTextureName::TEXTURE_ALBEDO, renderPass->GetTexture());
+    quadMaterial->SetFXName(NMaterialName::DEBUG_DRAW_PARTICLES);
+    quadMaterial->AddTexture(NMaterialTextureName::TEXTURE_PARTICLES_RT, renderPass->GetTexture());
     quadMaterial->AddFlag(NMaterialFlagName::FLAG_BLENDING, eBlending::BLENDING_ALPHABLEND);
 
     quadHeatMaterial = new NMaterial();
-    quadHeatMaterial->SetFXName(NMaterialName::DEBUG_DRAW_PARTICLES_OVERDRAW);
+    quadHeatMaterial->SetFXName(NMaterialName::DEBUG_DRAW_PARTICLES);
     quadHeatMaterial->AddTexture(NMaterialTextureName::TEXTURE_PARTICLES_HEATMAP, heatTexture);
     quadHeatMaterial->AddTexture(NMaterialTextureName::TEXTURE_PARTICLES_RT, renderPass->GetTexture());
+    quadHeatMaterial->AddFlag(NMaterialFlagName::FLAG_PARTICLES_DEBUG_SHOW_OVERDRAW, 1);
     quadHeatMaterial->AddFlag(NMaterialFlagName::FLAG_BLENDING, eBlending::BLENDING_ALPHABLEND);
 }
 
@@ -128,7 +127,7 @@ DAVA::Vector4 ParticleEffectDebugDrawSystem::LerpColors(float normalizedWidth)
     static const Vector<TextureKey> keys =
     {
         TextureKey(Vector4(0.0f, 0.0f, 0.0f, 0.0f), 0.0f),
-        TextureKey(Vector4(0.0f, 0.0f, 0.0f, 0.0f), 0.1f),
+        TextureKey(Vector4(128.0f, 128.0f, 128.0f, 255.0f), 0.1f),
         TextureKey(Vector4(0.0f, 128.0f, 0.0f, 255.0f), 0.3f),
         TextureKey(Vector4(255.0f, 128.0f, 0.0f, 255.0f), 0.5f),
         TextureKey(Vector4(255.0f, 0.0f, 0.0f, 255.0f), 1.0f)
@@ -146,12 +145,16 @@ DAVA::Vector4 ParticleEffectDebugDrawSystem::LerpColors(float normalizedWidth)
     return Lerp(current->color, next->color, t);
 }
 
+void ParticleEffectDebugDrawSystem::SetSelectedParticles(DAVA::UnorderedSet<RenderObject *> selectedParticles_)
+{
+    selectedParticles = selectedParticles_;
+}
+
 void ParticleEffectDebugDrawSystem::AddToActive(ParticleEffectComponent* effect)
 {
     Vector<ParticleEffectComponent*>::iterator it = std::find(activeComponents.begin(), activeComponents.end(), effect);
     if (it == activeComponents.end())
         activeComponents.push_back(effect);
-    componentsMap[effect->GetRenderObject()] = effect;
 }
 
 void ParticleEffectDebugDrawSystem::RemoveFromActive(ParticleEffectComponent* effect)
@@ -159,7 +162,6 @@ void ParticleEffectDebugDrawSystem::RemoveFromActive(ParticleEffectComponent* ef
     Vector<ParticleEffectComponent*>::iterator it = std::find(activeComponents.begin(), activeComponents.end(), effect);
     DVASSERT(it != activeComponents.end());
     activeComponents.erase(it);
-    componentsMap.erase(effect->GetRenderObject());
 }
 
 void ParticleEffectDebugDrawSystem::RemoveEntity(Entity* entity)

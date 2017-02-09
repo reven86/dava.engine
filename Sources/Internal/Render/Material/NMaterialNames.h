@@ -65,7 +65,7 @@ public:
     static const FastName DEBUG_DRAW_OPAQUE;
     static const FastName DEBUG_DRAW_ALPHABLEND;
     static const FastName DEBUG_DRAW_WIREFRAME;
-    static const FastName DEBUG_DRAW_PARTICLES_OVERDRAW;
+    static const FastName DEBUG_DRAW_PARTICLES;
 
     static const FastName WATER_ALL_QUALITIES;
 };
@@ -198,6 +198,8 @@ public:
     static const FastName FLAG_ILLUMINATION_SHADOW_RECEIVER;
 
     static const FastName FLAG_TEST_OCCLUSION;
+
+    static const FastName FLAG_PARTICLES_DEBUG_SHOW_OVERDRAW;
 
     static bool IsRuntimeFlag(const FastName& flag);
 };

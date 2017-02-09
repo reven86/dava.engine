@@ -1,13 +1,19 @@
 #pragma once
 
-#include "Render/Highlevel/RenderPass.h"
-#include "Render/Highlevel/RenderSystem.h"
-#include "Classes/Qt/Scene/System/ParticleEffectDebugDrawSystem/ParticleEffectDebugDrawSystem.h"
 #include "Base/FastName.h"
+#include "Render/RenderBase.h"
+
+enum eParticleDebugDrawMode;
+
+namespace DAVA
+{
+class RenderSystem;
+class NMaterial;
+class Texture;
+}
 
 class ParticleDebugRenderPass : public DAVA::RenderPass
 {
-
 public:
     struct ParticleDebugRenderPassConfig
     {
@@ -17,7 +23,8 @@ public:
         NMaterial* overdrawMaterial;
         NMaterial* showAlphaMaterial;
         const eParticleDebugDrawMode& drawMode;
-        UnorderedMap<RenderObject*, ParticleEffectComponent*>* componentsMap;
+        const bool& drawOnlySelected;
+        UnorderedSet<RenderObject*>* selectedParticles;
     };
 
     ParticleDebugRenderPass(ParticleDebugRenderPassConfig config);
@@ -31,8 +38,9 @@ private:
     NMaterial* overdrawMaterial;
     NMaterial* showAlphaMaterial;
     RenderBatchArray particleBatches;
-    DAVA::UnorderedMap<RenderObject*, ParticleEffectComponent*>* componentsMap;
+    DAVA::UnorderedSet<RenderObject*>* selectedParticles;
     const eParticleDebugDrawMode& drawMode;
+    const bool& drawOnlySelected;
 
     void DrawBatches(Camera* camera);
     void PrepareParticlesVisibilityArray(Camera* camera, RenderSystem* renderSystem);

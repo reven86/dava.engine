@@ -1,11 +1,12 @@
 #include "Classes/Qt/Scene/System/ParticleEffectDebugDrawSystem/ParticleDebugRenderPass.h"
-#include "Classes/Qt/Scene/System/ParticleEffectDebugDrawSystem/ParticleEffectDebugDrawSystem.h"
+
 #include "Render/RHI/rhi_Type.h"
 #include "Render/RHI/rhi_Public.h"
+
 #include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerMarkerNames.h"
 
-using namespace DAVA;
+#include "Classes/Qt/Scene/System/ParticleEffectDebugDrawSystem/ParticleEffectDebugDrawSystem.h"
 
 const DAVA::FastName ParticleDebugRenderPass::PASS_DEBUG_DRAW_PARTICLES("ForwardPass");
 
@@ -27,9 +28,13 @@ void ParticleDebugRenderPass::PrepareParticlesVisibilityArray(Camera* camera, Re
     visibilityArray.erase(std::remove_if(visibilityArray.begin(), visibilityArray.end(),
         [this](RenderObject* obj) 
         {
-        return (*componentsMap).count(obj) == 0 ||
-            obj->GetType() != RenderObject::TYPE_PARTICLE_EMTITTER ||
-            !(*componentsMap)[obj]->GetWireframeMode();            
+        // Remove obj if obj is not a particle or if showOnlySelected flag is set
+        // if obj is not a particle or it is particle but not in selection set
+        bool isParticle = obj->GetType() == RenderObject::TYPE_PARTICLE_EMTITTER; 
+        bool inSet = true;
+        if (drawOnlySelected)
+            inSet = selectedParticles->count(obj);        
+        return !(isParticle && inSet);
         }), visibilityArray.end());
 
     particleBatches.Clear();
@@ -63,7 +68,8 @@ void ParticleDebugRenderPass::PrepareParticlesBatchesArray(const Vector<RenderOb
 
 ParticleDebugRenderPass::ParticleDebugRenderPass(ParticleDebugRenderPassConfig config)
     : RenderPass(config.name), wireframeMaterial(config.wireframeMaterial), overdrawMaterial(config.overdrawMaterial), 
-        componentsMap(config.componentsMap), showAlphaMaterial(config.showAlphaMaterial), drawMode(config.drawMode)
+        selectedParticles(config.selectedParticles), showAlphaMaterial(config.showAlphaMaterial), 
+        drawMode(config.drawMode), drawOnlySelected(config.drawOnlySelected)
 {
     passConfig.priority = DAVA::PRIORITY_MAIN_3D;
     
@@ -100,7 +106,7 @@ void ParticleDebugRenderPass::DrawBatches(Camera* camera)
 {
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::RENDER_PASS_DRAW_LAYERS)
 
-        ShaderDescriptorCache::ClearDynamicBindigs();
+    ShaderDescriptorCache::ClearDynamicBindigs();
 
     //per pass viewport bindings
     viewportSize = Vector2(viewport.dx, viewport.dy);

@@ -58,7 +58,7 @@ const FastName NMaterialName::PARTICLES = FastName("~res:/Materials/Particles/Pa
 const FastName NMaterialName::DEBUG_DRAW_OPAQUE = FastName("~res:/Materials/DebugDraw/Debug.Opaque.material");
 const FastName NMaterialName::DEBUG_DRAW_ALPHABLEND = FastName("~res:/Materials/DebugDraw/Debug.Alphablend.material");
 const FastName NMaterialName::DEBUG_DRAW_WIREFRAME = FastName("~res:/Materials/DebugDraw/Wireframe.material");
-const FastName NMaterialName::DEBUG_DRAW_PARTICLES_OVERDRAW = FastName("~res:/Materials/DebugDraw/Debug.Particles.material");
+const FastName NMaterialName::DEBUG_DRAW_PARTICLES = FastName("~res:/Materials/DebugDraw/Debug.Particles.material");
 
 const FastName NMaterialName::WATER_ALL_QUALITIES = FastName("~res:/Materials/WaterAllQualities.material");
 
@@ -179,6 +179,8 @@ const FastName NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_CASTER = FastName("IL
 const FastName NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER = FastName("ILLUMINATION_SHADOW_RECEIVER");
 
 const FastName NMaterialFlagName::FLAG_TEST_OCCLUSION = FastName("TEST_OCCLUSION");
+
+const FastName NMaterialFlagName::FLAG_PARTICLES_DEBUG_SHOW_OVERDRAW = FastName("SHOW_OVERDRAW");
 
 //quality
 const FastName NMaterialQualityName::QUALITY_FLAG_NAME = FastName("Quality");
