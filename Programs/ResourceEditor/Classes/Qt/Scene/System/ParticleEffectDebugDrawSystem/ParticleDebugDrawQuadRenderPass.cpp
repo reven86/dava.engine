@@ -13,12 +13,12 @@ void ParticleDebugDrawQuadRenderPass::PrepareRenderData()
     static const int vertsCount = 6;
     static const Array<ParticleDebugDrawQuadRenderPass::VertexPT, vertsCount> quad =
     { {
-        { Vector3(-10.f, 0.f, -10.f), Vector2(0.0f, 1.0f) },
-        { Vector3(10.f, 0.f, -10.f), Vector2(1.0f, 1.0f) },
-        { Vector3(-10.f, 0.f, 10.f), Vector2(0.0f, 0.0f) },
-        { Vector3(-10.f, 0.f, 10.f), Vector2(0.0f, 0.0f) },
-        { Vector3(10.f, 0.f, -10.f), Vector2(1.0f, 1.0f) },
-        { Vector3(10.f, 0.f, 10.f), Vector2(1.0f, 0.0f) }
+        { Vector3(-1.f, 0.f, -1.f), Vector2(0.0f, 1.0f) },
+        { Vector3(1.f, 0.f, -1.f), Vector2(1.0f, 1.0f) },
+        { Vector3(-1.f, 0.f, 1.f), Vector2(0.0f, 0.0f) },
+        { Vector3(-1.f, 0.f, 1.f), Vector2(0.0f, 0.0f) },
+        { Vector3(1.f, 0.f, -1.f), Vector2(1.0f, 1.0f) },
+        { Vector3(1.f, 0.f, 1.f), Vector2(1.0f, 0.0f) }
     } };
 
     rhi::VertexBuffer::Descriptor vDesc = {};
@@ -70,6 +70,10 @@ void ParticleDebugDrawQuadRenderPass::Draw(DAVA::RenderSystem* renderSystem)
 {
     Camera* cam = renderSystem->GetDrawCamera();
     SetupCameraParams(cam, cam);
+    passConfig.viewport.x = 0;
+    passConfig.viewport.y = 0;
+    passConfig.viewport.width = Renderer::GetFramebufferWidth();
+    passConfig.viewport.height = Renderer::GetFramebufferHeight();
 
     if (BeginRenderPass())
     {        
