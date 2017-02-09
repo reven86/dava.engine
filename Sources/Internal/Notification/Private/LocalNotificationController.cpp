@@ -7,7 +7,7 @@
 #include "Notification/Private/LocalNotificationStub.h"
 
 #include "Notification/Private/Mac/LocalNotificationListenerBridge.h"
-#include "Notification/Private/Ios/LocalNotificationListenerIos.h"
+#include "Notification/Private/Ios/LocalNotificationListenerBridge.h"
 #include "Notification/Private/Win10/LocalNotificationListenerWin10.h"
 #include "Notification/Private/Android/LocalNotificationListenerAndroid.h"
 #include "Notification/Private/LocalNotificationListenerStub.h"
