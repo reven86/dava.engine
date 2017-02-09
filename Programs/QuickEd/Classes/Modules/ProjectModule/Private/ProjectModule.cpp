@@ -40,11 +40,13 @@ void ProjectModule::PostInit()
 {
     CreateActions();
     RegisterOperation(QEGlobal::OpenLastProject.ID, this, &ProjectModule::OpenLastProject);
+    RegisterOperation(ProjectModuleTesting::CreateProjectOperation.ID, this, &ProjectModule::CreateProject);
 }
 
 void ProjectModule::OnWindowClosed(const DAVA::TArc::WindowKey& key)
 {
     CloseProject();
+    DVASSERT(GetAccessor()->GetContextCount() == 0);
 }
 
 void ProjectModule::CreateActions()
@@ -120,7 +122,7 @@ void ProjectModule::CreateActions()
 
     //Recent content
     {
-        RecentMenuItems::Params params(QEGlobal::windowKey, accessor, "recent projects");
+        RecentMenuItems::Params params(QEGlobal::windowKey, accessor, ProjectModuleDetails::projectsHistoryKey);
         params.ui = GetUI();
         params.getMaximumCount = [this]() {
             return ProjectModuleDetails::projectsHistoryMaxSize;
@@ -168,9 +170,6 @@ void ProjectModule::OnNewProject()
     using namespace DAVA;
     using namespace TArc;
 
-    ResultList resultList;
-    QString newProjectPath;
-
     DirectoryDialogParams params;
     params.title = QObject::tr("Select directory for new project");
     QString projectDirPath = GetUI()->GetExistingDirectory(QEGlobal::windowKey, params);
@@ -178,6 +177,16 @@ void ProjectModule::OnNewProject()
     {
         return;
     }
+
+    CreateProject(projectDirPath);
+}
+
+void ProjectModule::CreateProject(const QString& projectDirPath)
+{
+    using namespace DAVA;
+    using namespace TArc;
+
+    ResultList resultList;
 
     QDir projectDir(projectDirPath);
     const QString projectFileName = QString::fromStdString(ProjectData::GetProjectFileName());
@@ -197,16 +206,18 @@ void ProjectModule::OnNewProject()
         return;
     }
     DVASSERT(fullProjectFilePath.isEmpty() == false);
-    OpenProject(newProjectPath.toStdString());
+    OpenProject(fullProjectFilePath.toStdString());
 }
 
 void ProjectModule::OpenProject(const DAVA::String& path)
 {
     using namespace DAVA::TArc;
-    if (!CloseProject())
+
+    if (CloseProject() == false)
     {
         return;
     }
+    ContextAccessor* accessor = GetAccessor();
 
     DAVA::ResultList resultList;
     std::unique_ptr<ProjectData> newProjectData = std::make_unique<ProjectData>();
@@ -217,7 +228,6 @@ void ProjectModule::OpenProject(const DAVA::String& path)
         DAVA::String lastProjectPath = newProjectData->GetProjectFile().GetAbsolutePathname();
         recentProjects->Add(lastProjectPath);
 
-        ContextAccessor* accessor = GetAccessor();
         PropertiesItem propsItem = accessor->CreatePropertiesNode(ProjectModuleDetails::propertiesKey);
         propsItem.Set(ProjectModuleDetails::lastProjectKey.c_str(), DAVA::Any(lastProjectPath));
 
@@ -233,20 +243,21 @@ bool ProjectModule::CloseProject()
     ContextAccessor* accessor = GetAccessor();
     DataContext* globalContext = accessor->GetGlobalContext();
     InvokeOperation(QEGlobal::CloseAllDocuments.ID);
+    //project was not closed
     if (accessor->GetContextCount() != 0)
     {
         return false;
     }
-
     globalContext->DeleteData<ProjectData>();
     return true;
 }
 
 void ProjectModule::OpenLastProject()
 {
-    using namespace DAVA::TArc;
+    using namespace DAVA;
+    using namespace TArc;
     ContextAccessor* accessor = GetAccessor();
-    DAVA::String projectPath;
+    String projectPath;
     {
         PropertiesItem propsItem = accessor->CreatePropertiesNode(ProjectModuleDetails::propertiesKey);
         projectPath = propsItem.Get<DAVA::String>(ProjectModuleDetails::lastProjectKey);
@@ -365,6 +376,11 @@ bool ProjectModuleDetails::SerializeProjectDataToFile(const ProjectData* data)
     RefPtr<YamlNode> node = data->SerializeToYamlNode();
 
     return YamlEmitter::SaveToYamlFile(data->GetProjectFile(), node.Get());
+}
+
+namespace ProjectModuleTesting
+{
+IMPL_OPERATION_ID(CreateProjectOperation);
 }
 
 DECL_GUI_MODULE(ProjectModule);

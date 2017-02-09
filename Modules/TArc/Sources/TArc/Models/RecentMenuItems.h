@@ -34,19 +34,13 @@ public:
     struct Params
     {
         Params(const DAVA::TArc::WindowKey& windowKey_, DAVA::TArc::ContextAccessor* accessor_, const DAVA::String& propertiesItemKey);
-        ~Params() = default;
-        Params(const Params& holder) = delete;
-        Params(Params&& holder);
-        Params& operator=(const Params& params) = delete;
-        Params& operator=(Params&& params) = delete;
 
         DAVA::TArc::ContextAccessor* accessor = nullptr;
         DAVA::TArc::UI* ui = nullptr;
         QList<QString> menuSubPath;
         DAVA::TArc::InsertionParams insertionParams;
         DAVA::Function<DAVA::uint32()> getMaximumCount;
-        DAVA::TArc::PropertiesItem propertiesItem;
-
+        const DAVA::String propertiesItemKey;
         DAVA::TArc::FieldDescriptor predicateFieldDescriptor;
         DAVA::Function<DAVA::Any(const DAVA::Any&)> enablePredicate;
         DAVA::TArc::WindowKey windowKey;

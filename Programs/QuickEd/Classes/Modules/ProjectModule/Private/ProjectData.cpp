@@ -433,7 +433,7 @@ RefPtr<YamlNode> ProjectData::SerializeToYamlNode() const
     }
     propertiesNode->Add("Library", librarysNode);
 
-    node->Add("ProjectData", propertiesNode);
+    node->Add("ProjectProperties", propertiesNode);
 
     return node;
 }

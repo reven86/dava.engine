@@ -69,48 +69,39 @@ void RecentMenuItems::InitMenuItems()
 
 void RecentMenuItems::AddInternal(const DAVA::String& recent)
 {
-    DAVA::Vector<DAVA::String> vectorToSave = Get();
+    using namespace DAVA;
+    Vector<String> vectorToSave = Get();
 
-    DAVA::FilePath filePath(recent);
-    DAVA::String stringToInsert = filePath.GetAbsolutePathname();
+    FilePath filePath(recent);
+    String stringToInsert = filePath.GetAbsolutePathname();
 
     //check present set to avoid duplicates
     vectorToSave.erase(std::remove(vectorToSave.begin(), vectorToSave.end(), stringToInsert), vectorToSave.end());
     vectorToSave.insert(vectorToSave.begin(), stringToInsert);
 
-    DAVA::uint32 recentFilesMaxCount = params.getMaximumCount();
-    DAVA::uint32 size = DAVA::Min((DAVA::uint32)vectorToSave.size(), recentFilesMaxCount);
+    uint32 recentFilesMaxCount = params.getMaximumCount();
+    uint32 size = Min((uint32)vectorToSave.size(), recentFilesMaxCount);
 
     vectorToSave.resize(size);
-    params.propertiesItem.Set(RecentMenuItemsDetails::recentItemsKey, vectorToSave);
+    TArc::PropertiesItem item = params.accessor->CreatePropertiesNode(params.propertiesItemKey);
+    item.Set(RecentMenuItemsDetails::recentItemsKey, vectorToSave);
 }
 
 DAVA::Vector<DAVA::String> RecentMenuItems::Get() const
 {
     using namespace DAVA;
-    Vector<DAVA::String> retVector = params.propertiesItem.Get<Vector<String>>(RecentMenuItemsDetails::recentItemsKey);
+    TArc::PropertiesItem item = params.accessor->CreatePropertiesNode(params.propertiesItemKey);
+    Vector<String> retVector = item.Get<Vector<String>>(RecentMenuItemsDetails::recentItemsKey);
     uint32 recentFilesMaxCount = params.getMaximumCount();
     uint32 size = Min(static_cast<uint32>(retVector.size()), recentFilesMaxCount);
     retVector.resize(size);
     return retVector;
 }
 
-RecentMenuItems::Params::Params(const DAVA::TArc::WindowKey& windowKey_, DAVA::TArc::ContextAccessor* accessor_, const DAVA::String& propertiesItemKey)
+RecentMenuItems::Params::Params(const DAVA::TArc::WindowKey& windowKey_, DAVA::TArc::ContextAccessor* accessor_, const DAVA::String& propertiesItemKey_)
     : windowKey(windowKey_)
     , accessor(accessor_)
-    , propertiesItem(accessor->CreatePropertiesNode(propertiesItemKey))
+    , propertiesItemKey(propertiesItemKey_)
 {
 }
 
-RecentMenuItems::Params::Params(RecentMenuItems::Params&& params)
-    : accessor(params.accessor)
-    , ui(params.ui)
-    , menuSubPath(std::move(params.menuSubPath))
-    , insertionParams(std::move(params.insertionParams))
-    , getMaximumCount(std::move(params.getMaximumCount))
-    , propertiesItem(std::move(params.propertiesItem))
-    , predicateFieldDescriptor(std::move(params.predicateFieldDescriptor))
-    , enablePredicate(std::move(params.enablePredicate))
-    , windowKey(std::move(params.windowKey))
-{
-}

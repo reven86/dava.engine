@@ -38,6 +38,9 @@ public:
     ContextManager* GetContextManager();
     const ContextManager* GetContextManager() const;
 
+    template <typename... Args>
+    void InvokeOperation(int operationId, const Args&... args);
+
     QWidget* GetWindow(const WindowKey& wndKey) const;
     QList<QWidget*> LookupWidget(const WindowKey& wndKey, const QString& objectName) const;
 
@@ -63,6 +66,12 @@ protected:
     QtConnections connections;
     bool updateForCurrentTestCalled = false;
 };
+
+template <typename... Args>
+inline void TestClass::InvokeOperation(int operationId, const Args&... args)
+{
+    core->GetCoreInterface()->Invoke(operationId, args...);
+}
 
 } // namespace TArc
 } // namespace DAVA

@@ -3,6 +3,7 @@
 #include <TArc/Core/ClientModule.h>
 #include <TArc/Models/RecentMenuItems.h>
 #include <TArc/Utils/QtConnections.h>
+#include <TArc/Core/OperationRegistrator.h>
 
 namespace DAVA
 {
@@ -23,6 +24,7 @@ private:
 
     void OnOpenProject();
     void OnNewProject();
+    void CreateProject(const QString& projectDir);
 
     bool CloseProject();
     void OpenProject(const DAVA::String& path);
@@ -34,3 +36,8 @@ private:
 
     DAVA_VIRTUAL_REFLECTION(ProjectModule, DAVA::TArc::ClientModule);
 };
+
+namespace ProjectModuleTesting
+{
+DECLARE_OPERATION_ID(CreateProjectOperation);
+}

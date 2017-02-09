@@ -278,7 +278,8 @@ DAVA::Vector<DAVA::String> PropertiesItem::Impl::FromValue(const QJsonValue& val
     if (value.isString())
     {
         DAVA::Vector<DAVA::String> retVal;
-        QStringList stringList = value.toString().split(PropertiesHolderDetails::stringListDelimiter);
+        QString stringValue = value.toString();
+        QStringList stringList = stringValue.split(PropertiesHolderDetails::stringListDelimiter, QString::SkipEmptyParts);
         std::transform(stringList.begin(), stringList.end(), std::back_inserter(retVal), [](const QString& string) {
             return string.toStdString();
         });
