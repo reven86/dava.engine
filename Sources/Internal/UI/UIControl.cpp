@@ -2332,20 +2332,29 @@ void UIControl::RemoveComponent(const Vector<UIComponent*>::iterator& it)
     }
 }
 
-//void UIControl::RemoveComponent(const Type* componentType, uint32 index)
-//{
-//    UIComponent* c = GetComponent(componentType, index);
-//    if (c)
-//    {
-//        RemoveComponent(c);
-//    }
-//}
-
 void UIControl::RemoveComponent(UIComponent* component)
 {
     DVASSERT(component);
     auto it = std::find(components.begin(), components.end(), component);
     RemoveComponent(it);
+}
+
+void UIControl::RemoveComponent(int32 runtimeType, uint32 index /*= 0*/)
+{
+    UIComponent* c = GetComponent(runtimeType, index);
+    if (c)
+    {
+        RemoveComponent(c);
+    }
+}
+
+void UIControl::RemoveComponent(const Type* componentType, uint32 index)
+{
+    UIComponent* c = GetComponent(componentType, index);
+    if (c)
+    {
+        RemoveComponent(c);
+    }
 }
 
 uint32 UIControl::GetComponentCount() const

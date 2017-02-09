@@ -43,7 +43,7 @@ uint32 UIControlFamily::GetComponentIndex(int32 runtimeType, uint32 index) const
 
 uint32 UIControlFamily::GetComponentsCount(int32 runtimeType) const
 {
-    DVASSERT(runtimeType < componentsCount.size());
+    DVASSERT(runtimeType < static_cast<int32>(componentsCount.size()));
 
     return componentsCount[runtimeType];
 }

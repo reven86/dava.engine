@@ -1078,7 +1078,8 @@ public:
     void AddComponent(UIComponent* component);
     void InsertComponentAt(UIComponent* component, uint32 index);
     void RemoveComponent(UIComponent* component);
-    //void RemoveComponent(int32 runtimeType, uint32 index = 0);
+    void RemoveComponent(const Type* type, uint32 index = 0);
+    void RemoveComponent(int32 runtimeType, uint32 index = 0);
     void RemoveAllComponents();
 
     UIComponent* GetComponent(int32 runtimeType, uint32 index = 0) const;
