@@ -75,13 +75,13 @@ DLCManagerImpl::DLCManagerImpl(Engine* engine_)
     : engine(*engine_)
 {
     DVASSERT(Thread::IsMainThread());
-    sigConnectionUpdate = engine.update.Connect(this, &DLCManagerImpl::Update);
+    engine.update.Connect(this, &DLCManagerImpl::Update);
 }
 
 DLCManagerImpl::~DLCManagerImpl()
 {
     DVASSERT(Thread::IsMainThread());
-    engine.update.Disconnect(sigConnectionUpdate);
+    engine.update.Disconnect(this);
 
     for (auto request : requests)
     {
