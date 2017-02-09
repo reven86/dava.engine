@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Base/BaseTypes.h"
+#include <cstdint>
 
 namespace DAVA
 {
@@ -8,16 +8,27 @@ namespace DAVA
 class Semaphore
 {
 public:
-    Semaphore(uint32 count = 0);
+    /**
+		default semaphore state is zero 0
+	*/
+    Semaphore(uint32_t count = 0U);
     Semaphore(const Semaphore&) = delete;
     Semaphore(Semaphore&&) = delete;
     ~Semaphore();
 
-    void Post(uint32 count = 1);
+    /**
+		increment semaphore with count (default 1)
+	*/
+    void Post(uint32_t count = 1);
+    /**
+		decrement semaphore with 1 and wait till semaphore value become >= 0,
+		if semaphore already zero or more return immediately and continue
+	*/
     void Wait();
 
 protected:
-    void* semaphore = nullptr;
+    //!< platform dependent semaphore handle
+    uintptr_t semaphore = 0;
 };
 
 } // end namespace DAVA

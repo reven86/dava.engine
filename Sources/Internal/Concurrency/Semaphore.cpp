@@ -1,5 +1,6 @@
 #include "Concurrency/Semaphore.h"
 
+#include "Base/BaseTypes.h"
 #include "Base/Platform.h"
 #include "Debug/DVAssert.h"
 
@@ -14,13 +15,13 @@ namespace DAVA
 
 #if defined(__DAVAENGINE_WINDOWS__)
 // HANDLE semaphore;
-static_assert(sizeof(HANDLE) == sizeof(void*), "fix native semaphore type");
+static_assert(sizeof(HANDLE) == sizeof(uintptr_t), "fix native semaphore type");
 #elif defined(__DAVAENGINE_APPLE__)
 // dispatch_semaphore_t semaphore;
-static_assert(sizeof(dispatch_semaphore_t) == sizeof(void*), "fix native semaphore type");
+static_assert(sizeof(dispatch_semaphore_t) == sizeof(uintptr_t), "fix native semaphore type");
 #elif defined(__DAVAENGINE_ANDROID__)
 // sem_t semaphore;
-static_assert(sizeof(sem_t) == sizeof(void*), "fix native semaphore type");
+static_assert(sizeof(sem_t) == sizeof(uintptr_t), "fix native semaphore type");
 #endif //PLATFORMS
 
 
@@ -34,27 +35,27 @@ static_assert(sizeof(sem_t) == sizeof(void*), "fix native semaphore type");
 Semaphore::Semaphore(uint32 count)
 {
 #ifdef __DAVAENGINE_WIN32__
-    semaphore = CreateSemaphore(nullptr, count, 0x0FFFFFFF, nullptr);
+    semaphore = reinterpret_cast<uintptr_t>(CreateSemaphoreW(nullptr, count, 0x0FFFFFFF, nullptr));
 #else
-    semaphore = CreateSemaphoreEx(nullptr, count, 0x0FFFFFFF, nullptr, 0, SEMAPHORE_ALL_ACCESS);
+    semaphore = reinterpret_cast<uintptr_t>(CreateSemaphoreEx(nullptr, count, 0x0FFFFFFF, nullptr, 0, SEMAPHORE_ALL_ACCESS));
 #endif
-    DVASSERT(nullptr != semaphore);
+    DVASSERT(0 != semaphore);
 }
 
 Semaphore::~Semaphore()
 {
-    CloseHandle(semaphore);
+    CloseHandle(reinterpret_cast<HANDLE>(semaphore));
 }
 
 void Semaphore::Post(uint32 count)
 {
     DVASSERT(count > 0);
-    ReleaseSemaphore(semaphore, count, nullptr);
+    ReleaseSemaphore(reinterpret_cast<HANDLE>(semaphore), count, nullptr);
 }
 
 void Semaphore::Wait()
 {
-    WaitForSingleObjectEx(semaphore, INFINITE, FALSE);
+    WaitForSingleObjectEx(reinterpret_cast<HANDLE>(semaphore), INFINITE, FALSE);
 }
 
 #elif defined(__DAVAENGINE_APPLE__)
