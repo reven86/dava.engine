@@ -45,6 +45,7 @@ public:
     bool drawOnlySelected = false;
     eParticleDebugDrawMode drawMode = eParticleDebugDrawMode::OVERDRAW;
     DAVA::UnorderedSet<RenderObject*> selectedParticles;
+    float32 alphaThreshold = 0.05f;
 
     DAVA_VIRTUAL_REFLECTION_IN_PLACE(ParticleDebugDrawData, DAVA::TArc::DataNode)
     {
@@ -164,6 +165,7 @@ void ParticleDebugDrawModule::UpdateSceneSystem()
             particleEffectDebugDrawSystem->SetDrawMode(data->drawMode);
             particleEffectDebugDrawSystem->SetIsDrawOnlySelected(data->drawOnlySelected);
             particleEffectDebugDrawSystem->SetSelectedParticles(data->selectedParticles);
+            particleEffectDebugDrawSystem->SetAlphaThreshold(SettingsManager::GetValue(Settings::General_ParticleEditor_ParticleDebugAlphaTheshold).AsFloat());
         }
     });
 }

@@ -73,8 +73,10 @@ void ParticleDebugDrawQuadRenderPass::Draw(DAVA::RenderSystem* renderSystem)
     passConfig.viewport.width = Renderer::GetFramebufferWidth();
     passConfig.viewport.height = Renderer::GetFramebufferHeight();
 
-    if (BeginRenderPass())
-    {        
+    if (quadMaterial->PreBuildMaterial(passName) 
+        && quadHeatMaterial->PreBuildMaterial(passName) 
+        && BeginRenderPass())
+    {
         ByndDynamicParams(cam);
         if (drawMode == eParticleDebugDrawMode::OVERDRAW)
             quadHeatMaterial->BindParams(quadPacket);

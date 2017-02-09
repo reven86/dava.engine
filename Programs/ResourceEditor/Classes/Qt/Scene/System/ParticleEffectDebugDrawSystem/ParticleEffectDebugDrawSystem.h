@@ -44,6 +44,8 @@ public:
     inline const Vector<NMaterial*>* const GetMaterials() const;
 
     void SetSelectedParticles(DAVA::UnorderedSet<RenderObject*> selectedParticles);
+    void SetAlphaThreshold(float32 threshold);
+
 private:
     struct TextureKey
     {

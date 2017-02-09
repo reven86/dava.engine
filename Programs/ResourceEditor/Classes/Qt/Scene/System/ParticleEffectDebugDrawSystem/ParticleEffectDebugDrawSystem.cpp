@@ -76,12 +76,13 @@ void ParticleEffectDebugDrawSystem::GenerateDebugMaterials()
     }
     if (showAlphaMaterial == nullptr)
     {
+        float alphaThreshold = 0.05f;
+
         showAlphaMaterial = new NMaterial();
         showAlphaMaterial->SetFXName(NMaterialName::PARTICLES);
         showAlphaMaterial->AddFlag(FastName("PARTICLE_DEBUG_SHOW_ALPHA"), true);
-        showAlphaMaterial->AddFlag(NMaterialFlagName::FLAG_BLENDING, eBlending::BLENDING_ALPHABLEND);
-        float32 threshold = 0.05f;
-        showAlphaMaterial->AddProperty(FastName("particleAlphaThreshold"), &threshold, rhi::ShaderProp::TYPE_FLOAT1);
+        showAlphaMaterial->AddFlag(NMaterialFlagName::FLAG_BLENDING, eBlending::BLENDING_ALPHABLEND);        
+        showAlphaMaterial->AddProperty(FastName("particleAlphaThreshold"), &alphaThreshold, rhi::ShaderProp::TYPE_FLOAT1);
     }
 }
 
@@ -126,10 +127,12 @@ DAVA::Vector4 ParticleEffectDebugDrawSystem::LerpColors(float normalizedWidth)
 {
     static const Vector<TextureKey> keys =
     {
-        TextureKey(Vector4(0.0f, 0.0f, 0.0f, 0.0f), 0.0f),
-        TextureKey(Vector4(128.0f, 128.0f, 128.0f, 255.0f), 0.1f),
-        TextureKey(Vector4(0.0f, 128.0f, 0.0f, 255.0f), 0.3f),
-        TextureKey(Vector4(255.0f, 128.0f, 0.0f, 255.0f), 0.5f),
+        TextureKey(Vector4(0.0f, 0.0f, 0.0f, 0.0f), 0.f),
+        TextureKey(Vector4(0.0f, 255.0f, 0.0f, 128.0f), 0.001f),
+        TextureKey(Vector4(0.0f, 255.0f, 0.0f, 255.0f), 0.02f),
+        TextureKey(Vector4(100.0f, 100.0f, 0.0f, 255.0f), 0.08f),
+        TextureKey(Vector4(255.0f, 80.0f, 0.0f, 255.0f), 0.2f),
+        TextureKey(Vector4(255.0f, 64.0f, 0.0f, 255.0f), 0.5f),
         TextureKey(Vector4(255.0f, 0.0f, 0.0f, 255.0f), 1.0f)
     };
     const TextureKey* current;
@@ -140,6 +143,8 @@ DAVA::Vector4 ParticleEffectDebugDrawSystem::LerpColors(float normalizedWidth)
             current = &keys[i];
             next = &keys[i + 1];
         }
+    if (current == nullptr)
+        return Vector4(0, 0, 0, 0);
 
     float t = (normalizedWidth - current->time) / (next->time - current->time);
     return Lerp(current->color, next->color, t);
@@ -186,6 +191,13 @@ void ParticleEffectDebugDrawSystem::ImmediateEvent(Component* component, uint32 
         AddToActive(effect);
     else if (event == EventSystem::STOP_PARTICLE_EFFECT)
         RemoveFromActive(effect);
+}
+
+void ParticleEffectDebugDrawSystem::SetAlphaThreshold(float32 threshold)
+{
+    threshold = Clamp(threshold, 0.0f, 1.0f);
+    if (showAlphaMaterial != nullptr)
+        showAlphaMaterial->SetPropertyValue(FastName("particleAlphaThreshold"), &threshold);
 }
 
 void ParticleEffectDebugDrawSystem::Process(float32 timeElapsed)
