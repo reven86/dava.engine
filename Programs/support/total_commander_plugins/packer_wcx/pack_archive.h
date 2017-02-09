@@ -6,37 +6,34 @@
 #include <unordered_map>
 #include <vector>
 
+#include "archive.h"
 #include "pack_format.h"
 #include "pack_meta_data.h"
 
-class PackArchive final
+class PackArchive final : public Archive
 {
 public:
     explicit PackArchive(const std::string& archiveName);
 
-    const std::vector<FileInfo>& GetFilesInfo() const;
+    const std::vector<pack_format::file_info>& GetFilesInfo() const override;
 
-    const FileInfo* GetFileInfo(const std::string& relativeFilePath) const;
+    const pack_format::file_info* GetFileInfo(const std::string& relative) const override;
 
-    bool HasFile(const std::string& relativeFilePath) const;
+    bool HasFile(const std::string& relative) const override;
 
     bool
-    LoadFile(const std::string& relativeFilePath, std::vector<uint8_t>& output);
+    HoadFile(const std::string& relativeFilePath, std::vector<uint8_t>& output) override;
 
-    bool HasMeta() const;
+    bool HasMeta() const override;
 
-    const PackMetaData& GetMeta() const;
+    const pack_meta_data& GetMeta() const override;
 
-    std::string PrintMeta() const;
-
-    int32_t fileIndex = 0;
-    std::string arcName;
-    std::string lastFileName;
+    std::string PrintMeta() const override;
 
 private:
     std::ifstream file;
-    PackFormat::PackFile packFile;
-    std::unique_ptr<PackMetaData> packMeta;
-    std::unordered_map<std::string, PackFormat::FileTableEntry*> mapFileData;
-    std::vector<FileInfo> filesInfo;
+    pack_format::pack_file pack_file;
+    std::unique_ptr<pack_meta_data> pack_meta;
+    std::unordered_map<std::string, pack_format::file_table_entry*> map_file_data;
+    std::vector<pack_format::file_info> files_info;
 };

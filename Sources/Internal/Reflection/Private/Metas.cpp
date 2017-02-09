@@ -29,8 +29,9 @@ ValidationResult Validator::Validate(const Any& value, const Any& prevValue) con
     return fn(value, prevValue);
 }
 
-File::File(bool shouldExists_)
+File::File(bool shouldExists_, const String& filters_)
     : shouldExists(shouldExists_)
+    , filters(filters_)
 {
 }
 

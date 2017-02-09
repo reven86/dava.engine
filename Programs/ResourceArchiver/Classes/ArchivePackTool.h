@@ -28,6 +28,7 @@ private:
     DAVA::Compressor::Type compressionType;
     bool addHidden = false;
     bool useCache = false;
+    bool genDvpl = false;
     DAVA::AssetCacheClient::ConnectionParams assetCacheParams;
     DAVA::String logFileName;
     DAVA::String srcDir;

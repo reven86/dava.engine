@@ -1,3 +1,5 @@
 <RCC>
-    <qresource prefix="/TArc"/>
+    <qresource prefix="/TArc">
+      <file>Resources/openfile.png</file>
+    </qresource>
 </RCC>
