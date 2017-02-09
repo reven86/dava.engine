@@ -375,12 +375,11 @@ void UIPackageLoader::LoadControl(const YamlNode* node, AbstractUIPackageBuilder
 
 void UIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl* control, const Reflection& ref, const YamlNode* node, AbstractUIPackageBuilder* builder)
 {
-    builder->BeginControlPropertiesSection(control->GetClassName());
     Vector<Reflection::Field> fields = ref.GetFields();
     for (const Reflection::Field& field : fields)
     {
         String name = field.key.Get<String>();
-        if (name == "components" || name == "background")
+        if (name == "components")
         {
             // TODO: Make loading components by reflection here
             continue;
@@ -389,11 +388,16 @@ void UIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl* control, cons
         Any res;
         if (node)
         {
+            
             res = ReadAnyFromYamlNode(field.ref, node, name);
+            if (!res.IsEmpty())
+            {
+                builder->BeginControlPropertiesSection(ReflectedTypeDB::GetByType(field.inheritFrom->GetType())->GetPermanentName());
+                builder->ProcessProperty(field, res);
+                builder->EndControlPropertiesSection();
+            }
         }
-        builder->ProcessProperty(field, res);
     }
-    builder->EndControlPropertiesSection();
 }
 
 void UIPackageLoader::LoadComponentPropertiesFromYamlNode(UIControl* control, const YamlNode* node, AbstractUIPackageBuilder* builder)

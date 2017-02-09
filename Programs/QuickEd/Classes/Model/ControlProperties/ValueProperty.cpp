@@ -13,20 +13,16 @@ static const Vector<String> COLOR_COMPONENT_NAMES = { "Red", "Green", "Blue", "A
 static const Vector<String> MARGINS_COMPONENT_NAMESs = { "Left", "Top", "Right", "Bottom" };
 }
 
-DAVA_REFLECTION_IMPL(ValueProperty)
+DAVA_VIRTUAL_REFLECTION_IMPL(ValueProperty)
 {
     ReflectionRegistrator<ValueProperty>::Begin()
     .End();
 }
 
-ValueProperty::ValueProperty(const String& propName, const DAVA::Type* type_, bool builtinSubProps)
+ValueProperty::ValueProperty(const String& propName, const DAVA::Type* type_)
     : name(propName)
     , valueType(type_ != nullptr ? type_->Decay() : nullptr)
 {
-    if (builtinSubProps)
-    {
-        GenerateBuiltInSubProperties();
-    }
 }
 
 ValueProperty::~ValueProperty()
@@ -176,6 +172,53 @@ Any ValueProperty::GetDefaultSubValue(int32 index) const
 void ValueProperty::SetDefaultSubValue(int32 index, const Any& newValue)
 {
     SetDefaultValue(ChangeValueComponent(defaultValue, newValue, index));
+}
+
+void ValueProperty::GenerateBuiltInSubProperties()
+{
+    const Vector<String>* componentNames = nullptr;
+    Vector<SubValueProperty*> subProperties;
+    const Type* valueType = GetValueType();
+    if (valueType == Type::Instance<Vector2>())
+    {
+        componentNames = &SValueProperty::VECTOR2_COMPONENT_NAMES;
+    }
+    else if (valueType == Type::Instance<Color>())
+    {
+        componentNames = &SValueProperty::COLOR_COMPONENT_NAMES;
+    }
+    else if (valueType == Type::Instance<Vector4>())
+    {
+        componentNames = &SValueProperty::MARGINS_COMPONENT_NAMESs;
+    }
+    else if (GetType() == TYPE_FLAGS)
+    {
+        const EnumMap* map = GetEnumMap();
+        if (map != nullptr)
+        {
+            for (size_type i = 0; i < map->GetCount(); ++i)
+            {
+                int val = 0;
+                const bool getSucceeded = map->GetValue(i, val);
+                DVASSERT(getSucceeded);
+                subProperties.push_back(new SubValueProperty(static_cast<int32>(i), map->ToString(val)));
+            }
+        }
+    }
+    
+    if (componentNames != nullptr)
+    {
+        for (size_type i = 0; i < componentNames->size(); ++i)
+            subProperties.push_back(new SubValueProperty(static_cast<int32>(i), componentNames->at(i)));
+    }
+    
+    for (SubValueProperty* prop : subProperties)
+    {
+        prop->SetParent(this);
+        AddSubValueProperty(prop);
+        SafeRelease(prop);
+    }
+    subProperties.clear();
 }
 
 int32 ValueProperty::GetStylePropertyIndex() const
@@ -339,51 +382,4 @@ Any ValueProperty::GetValueComponent(const Any& value, int32 index) const
 
     DVASSERT(false);
     return Any();
-}
-
-void ValueProperty::GenerateBuiltInSubProperties()
-{
-    const Vector<String>* componentNames = nullptr;
-    Vector<SubValueProperty*> subProperties;
-    const Type* valueType = GetValueType();
-    if (valueType == Type::Instance<Vector2>())
-    {
-        componentNames = &SValueProperty::VECTOR2_COMPONENT_NAMES;
-    }
-    else if (valueType == Type::Instance<Color>())
-    {
-        componentNames = &SValueProperty::COLOR_COMPONENT_NAMES;
-    }
-    else if (valueType == Type::Instance<Vector4>())
-    {
-        componentNames = &SValueProperty::MARGINS_COMPONENT_NAMESs;
-    }
-    else
-    {
-        const EnumMap* map = GetEnumMap();
-        if (map != nullptr)
-        {
-            for (size_type i = 0; i < map->GetCount(); ++i)
-            {
-                int val = 0;
-                const bool getSucceeded = map->GetValue(i, val);
-                DVASSERT(getSucceeded);
-                subProperties.push_back(new SubValueProperty(static_cast<int32>(i), map->ToString(val)));
-            }
-        }
-    }
-
-    if (componentNames != nullptr)
-    {
-        for (size_type i = 0; i < componentNames->size(); ++i)
-            subProperties.push_back(new SubValueProperty(static_cast<int32>(i), componentNames->at(i)));
-    }
-
-    for (SubValueProperty* prop : subProperties)
-    {
-        prop->SetParent(this);
-        AddSubValueProperty(prop);
-        SafeRelease(prop);
-    }
-    subProperties.clear();
 }

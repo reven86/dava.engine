@@ -13,7 +13,10 @@ DAVA_VIRTUAL_REFLECTION_IMPL(UIScrollBar)
     ReflectionRegistrator<UIScrollBar>::Begin()
     .ConstructorByPointer()
     .DestructorByPointer([](UIScrollBar* o) { o->Release(); })
-    .Field("orientation", &UIScrollBar::GetOrientation, &UIScrollBar::SetOrientation) // TODO: make enum
+    .Field("orientation", &UIScrollBar::GetOrientation, &UIScrollBar::SetOrientation)
+    [
+     M::EnumT<eScrollOrientation>()
+     ]
     .End();
 }
 

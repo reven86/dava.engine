@@ -199,8 +199,8 @@ void EngineBackend::Init(eEngineRunMode engineRunMode, const Vector<String>& mod
     // Other subsystems are always created
     CreateSubsystems(modules);
 
-    RegisterDAVAClasses();
     RegisterAnyCasts();
+    RegisterDAVAClasses();
 
     isInitialized = true;
 }

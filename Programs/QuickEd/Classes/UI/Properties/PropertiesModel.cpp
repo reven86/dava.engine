@@ -434,7 +434,7 @@ QString PropertiesModel::makeQVariant(const AbstractProperty* property) const
 
     if (property->GetType() == AbstractProperty::TYPE_ENUM)
     {
-        return QString::fromStdString(property->GetEnumMeta()->CastToString(val));
+        return QString::fromStdString(property->GetEnumMap()->ToString(val.Cast<int32>()));
     }
 
     if (property->GetType() == AbstractProperty::TYPE_FLAGS)
@@ -553,6 +553,7 @@ QString PropertiesModel::makeQVariant(const AbstractProperty* property) const
     {
         return StringToQString(val.Get<FilePath>().GetStringValue());
     }
+
 
     DVASSERT(false);
     return QString();

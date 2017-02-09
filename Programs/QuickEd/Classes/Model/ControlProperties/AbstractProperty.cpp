@@ -3,7 +3,7 @@
 
 using namespace DAVA;
 
-DAVA_REFLECTION_IMPL(AbstractProperty)
+DAVA_VIRTUAL_REFLECTION_IMPL(AbstractProperty)
 {
     ReflectionRegistrator<AbstractProperty>::Begin()
     .End();
@@ -99,11 +99,6 @@ void AbstractProperty::SetDefaultValue(const Any& newValue)
 }
 
 const EnumMap* AbstractProperty::GetEnumMap() const
-{
-    return nullptr;
-}
-
-const EnumMeta* AbstractProperty::GetEnumMeta() const
 {
     return nullptr;
 }
