@@ -75,7 +75,7 @@ Function<void(jobject)> fmodActivityListenerUnregisterMethod = nullptr;
 SoundSystem::SoundSystem(Engine* e)
     : engine(e)
 {
-    engine->update.Connect(this, &SoundSystem::Update);
+    engine->update.Connect(this, &SoundSystem::OnUpdate);
     engine->suspended.Connect(this, &SoundSystem::OnSuspend);
     engine->resumed.Connect(this, &SoundSystem::OnResume);
 #else
