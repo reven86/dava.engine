@@ -528,56 +528,6 @@ void ParticleEffectComponent::SetRefractionVisible(bool visible)
     effectRenderObject->SetRefractionVisible(visible);
 }
 
-bool ParticleEffectComponent::GetWireframeMode() const
-{
-    return wireframeMode;
-}
-
-void ParticleEffectComponent::SetWireframeMode(bool mode)
-{
-    if (mode)
-        overdrawMode = showAlphaBelowThresholdMode = false;
-    effectRenderObject->SetDrawMode(mode ? eParticleDrawMode::WIREFRAME : eParticleDrawMode::NORMAL);
-    wireframeMode = mode;    
-}
-
-bool ParticleEffectComponent::GetOverdrawMode() const
-{
-    return overdrawMode;
-}
-
-void ParticleEffectComponent::SetOverdrawMode(bool mode)
-{
-    if (mode)
-        wireframeMode = showAlphaBelowThresholdMode = false;
-    overdrawMode = mode;
-    effectRenderObject->SetDrawMode(mode ? eParticleDrawMode::OVERDRAW : eParticleDrawMode::NORMAL);
-}
-
-bool ParticleEffectComponent::GetShowAlphaBelowThresholdMode() const
-{
-    return showAlphaBelowThresholdMode;
-}
-
-void ParticleEffectComponent::SetShowAlphaBelowThresholdMode(bool mode)
-{
-    if (mode)
-        wireframeMode = overdrawMode = false;
-    showAlphaBelowThresholdMode = mode;
-    effectRenderObject->SetDrawMode(mode ? eParticleDrawMode::SHOW_ALPHA : eParticleDrawMode::NORMAL);
-}
-
-DAVA::float32 ParticleEffectComponent::GetAlphaThreshold() const
-{
-    return alphaTheshold;
-}
-
-void ParticleEffectComponent::SetAlphaThreshold(float32 threshold)
-{
-    alphaTheshold = Max(threshold, 0.0f);
-    effectRenderObject->SetAlphaThreshold(threshold);
-}
-
 void ParticleEffectComponent::ReloadEmitters()
 {
     const ParticlesQualitySettings::FilepathSelector* filepathSelector = QualitySettingsSystem::Instance()->GetParticlesQualitySettings().GetOrCreateFilepathSelector();

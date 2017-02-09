@@ -28,13 +28,12 @@ void ParticleDebugRenderPass::PrepareParticlesVisibilityArray(Camera* camera, Re
     visibilityArray.erase(std::remove_if(visibilityArray.begin(), visibilityArray.end(),
         [this](RenderObject* obj) 
         {
-        // Remove obj if obj is not a particle or if showOnlySelected flag is set
-        // if obj is not a particle or it is particle but not in selection set
-        bool isParticle = obj->GetType() == RenderObject::TYPE_PARTICLE_EMTITTER; 
-        bool inSet = true;
-        if (drawOnlySelected)
-            inSet = selectedParticles->count(obj);        
-        return !(isParticle && inSet);
+            // Remove obj if obj is not a particle or if showOnlySelected flag is set
+            // if obj is not a particle or it is particle but not in selection set
+            bool isParticle = obj->GetType() == RenderObject::TYPE_PARTICLE_EMTITTER;
+            bool inSet = drawOnlySelected ? selectedParticles->count(obj) : true;
+
+            return !(isParticle && inSet);
         }), visibilityArray.end());
 
     particleBatches.Clear();

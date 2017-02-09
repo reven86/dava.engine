@@ -78,16 +78,7 @@ public:
 
     inline eState GetAnimationState() const;
     inline ParticleRenderObject* GetRenderObject() const;
-
-    bool GetWireframeMode() const;
-    void SetWireframeMode(bool mode);
-    bool GetOverdrawMode() const;
-    void SetOverdrawMode(bool mode);
-    bool GetShowAlphaBelowThresholdMode() const;
-    void SetShowAlphaBelowThresholdMode(bool mode);
-    float32 GetAlphaThreshold() const;
-    void SetAlphaThreshold(float32 threshold);
-
+    
     void ReloadEmitters();
 
 private:
@@ -120,11 +111,6 @@ private:
     bool stopWhenEmpty = false; //if true effect is considered finished when no particles left, otherwise effect is considered finished if time>effectDuration
     bool clearOnRestart = true; // when effect is restarted repeatsCount
     bool isPaused = false;
-
-    bool wireframeMode = false;
-    bool overdrawMode = false;
-    bool showAlphaBelowThresholdMode = false;
-    float32 alphaTheshold = 0.2f;
 
 public: //mostly editor commands
     uint32 GetEmittersCount() const;
@@ -162,10 +148,6 @@ public:
 
                          PROPERTY("visibleReflection", "Visible Reflection", GetReflectionVisible, SetReflectionVisible, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("visibleRefraction", "Visible Refraction", GetRefractionVisible, SetRefractionVisible, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("wireframeMode", "wireframeMode", GetWireframeMode, SetWireframeMode, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("overdrawMode", "overdrawMode", GetOverdrawMode, SetOverdrawMode, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("showAlphaBelowThresholdMode", "showAlphaBelowThresholdMode", GetShowAlphaBelowThresholdMode, SetShowAlphaBelowThresholdMode, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("alphaTheshold", "alphaTheshold", GetAlphaThreshold, SetAlphaThreshold, I_SAVE | I_VIEW | I_EDIT)
                          );
 };
 

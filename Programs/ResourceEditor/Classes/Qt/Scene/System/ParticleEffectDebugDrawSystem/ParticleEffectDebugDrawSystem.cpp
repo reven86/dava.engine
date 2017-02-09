@@ -88,17 +88,23 @@ void ParticleEffectDebugDrawSystem::GenerateDebugMaterials()
 
 void ParticleEffectDebugDrawSystem::GenerateQuadMaterials()
 {
-    quadMaterial = new NMaterial();
-    quadMaterial->SetFXName(NMaterialName::DEBUG_DRAW_PARTICLES);
-    quadMaterial->AddTexture(NMaterialTextureName::TEXTURE_PARTICLES_RT, renderPass->GetTexture());
-    quadMaterial->AddFlag(NMaterialFlagName::FLAG_BLENDING, eBlending::BLENDING_ALPHABLEND);
+    if (quadMaterial == nullptr)
+    {
+        quadMaterial = new NMaterial();
+        quadMaterial->SetFXName(NMaterialName::DEBUG_DRAW_PARTICLES);
+        quadMaterial->AddTexture(NMaterialTextureName::TEXTURE_PARTICLES_RT, renderPass->GetTexture());
+        quadMaterial->AddFlag(NMaterialFlagName::FLAG_BLENDING, eBlending::BLENDING_ALPHABLEND);
+    }
 
-    quadHeatMaterial = new NMaterial();
-    quadHeatMaterial->SetFXName(NMaterialName::DEBUG_DRAW_PARTICLES);
-    quadHeatMaterial->AddTexture(NMaterialTextureName::TEXTURE_PARTICLES_HEATMAP, heatTexture);
-    quadHeatMaterial->AddTexture(NMaterialTextureName::TEXTURE_PARTICLES_RT, renderPass->GetTexture());
-    quadHeatMaterial->AddFlag(NMaterialFlagName::FLAG_PARTICLES_DEBUG_SHOW_OVERDRAW, 1);
-    quadHeatMaterial->AddFlag(NMaterialFlagName::FLAG_BLENDING, eBlending::BLENDING_ALPHABLEND);
+    if (quadHeatMaterial == nullptr)
+    {
+        quadHeatMaterial = new NMaterial();
+        quadHeatMaterial->SetFXName(NMaterialName::DEBUG_DRAW_PARTICLES);
+        quadHeatMaterial->AddTexture(NMaterialTextureName::TEXTURE_PARTICLES_HEATMAP, heatTexture);
+        quadHeatMaterial->AddTexture(NMaterialTextureName::TEXTURE_PARTICLES_RT, renderPass->GetTexture());
+        quadHeatMaterial->AddFlag(NMaterialFlagName::FLAG_PARTICLES_DEBUG_SHOW_OVERDRAW, 1);
+        quadHeatMaterial->AddFlag(NMaterialFlagName::FLAG_BLENDING, eBlending::BLENDING_ALPHABLEND);
+    }
 }
 
 DAVA::Texture* ParticleEffectDebugDrawSystem::GenerateHeatTexture()
