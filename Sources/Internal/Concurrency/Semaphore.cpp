@@ -93,25 +93,25 @@ void Semaphore::Wait()
 // ##########################################################################################################
 Semaphore::Semaphore(uint32 count)
 {
-    sem_init(&semaphore, 0, count);
+    sem_init(reinterpret_cast<sem_t*>(&semaphore), 0, count);
 }
 
 Semaphore::~Semaphore()
 {
-    sem_destroy(&semaphore);
+    sem_destroy(reinterpret_cast<sem_t*>(&semaphore));
 }
 
 void Semaphore::Post(uint32 count)
 {
     while (count-- > 0)
     {
-        sem_post(&semaphore);
+        sem_post(reinterpret_cast<sem_t*>(&semaphore));
     }
 }
 
 void Semaphore::Wait()
 {
-    sem_wait(&semaphore);
+    sem_wait(reinterpret_cast<sem_t*>(&semaphore));
 }
 #endif
 } // end namespace DAVA
