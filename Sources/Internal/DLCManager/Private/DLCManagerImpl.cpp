@@ -18,9 +18,9 @@ namespace DAVA
 DLCManager::~DLCManager() = default;
 DLCManager::IRequest::~IRequest() = default;
 
-const String& DLCManagerImpl::ToString(DLCManagerImpl::InitState state)
+const String& DLCManagerImpl::ToString(InitState state)
 {
-    static Vector<String> states{
+    static const Vector<String> states{
         "Starting",
         "LoadingRequestAskFooter",
         "LoadingRequestGetFooter",
@@ -37,13 +37,13 @@ const String& DLCManagerImpl::ToString(DLCManagerImpl::InitState state)
         "Ready",
         "Offline"
     };
-    DVASSERT(states.size() == 15);
+    DVASSERT(states.size() == static_cast<uint32>(InitState::State_COUNT));
     return states.at(static_cast<size_t>(state));
 }
 
-const String& DLCManagerImpl::ToString(DLCManagerImpl::InitError state)
+const String& DLCManagerImpl::ToString(InitError state)
 {
-    static Vector<String> states{
+    static const Vector<String> states{
         "AllGood",
         "CantCopyLocalDB",
         "CantMountLocalPacks",
@@ -53,7 +53,7 @@ const String& DLCManagerImpl::ToString(DLCManagerImpl::InitError state)
         "LoadingPacksDataFailed",
         "MountingDownloadedPackFailed"
     };
-    DVASSERT(states.size() == 8);
+    DVASSERT(states.size() == static_cast<size_t>(InitError::Error_COUNT));
     return states.at(static_cast<size_t>(state));
 }
 

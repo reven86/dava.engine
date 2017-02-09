@@ -33,7 +33,9 @@ public:
         WaitScanThreadToFinish, //!< wait till finish scaning of downloaded .dvpl files
         MoveDeleyedRequestsToQueue, //!< mount all local packs downloaded and not mounted later
         Ready, //!< starting from this state client can call any method, second initialize will work too
-        Offline //!< server not accessible, retry initialization after Hints::retryConnectMilliseconds
+        Offline, //!< server not accessible, retry initialization after Hints::retryConnectMilliseconds
+
+        State_COUNT
     };
 
     static const String& ToString(InitState state);
@@ -47,7 +49,9 @@ public:
         UnpackingDBFailed,
         DeleteDownloadedPackFailed,
         LoadingPacksDataFailed,
-        MountingDownloadedPackFailed
+        MountingDownloadedPackFailed,
+
+        Error_COUNT
     };
 
     static const String& ToString(InitError state);

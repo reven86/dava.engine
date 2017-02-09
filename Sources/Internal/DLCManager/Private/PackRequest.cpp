@@ -3,7 +3,6 @@
 #include "FileSystem/Private/PackMetaData.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "FileSystem/FileSystem.h"
-#include "FileSystem/FileAPIHelper.h"
 #include "Utils/CRC32.h"
 #include "Utils/Utils.h"
 #include "Logger/Logger.h"
