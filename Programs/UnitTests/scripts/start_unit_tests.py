@@ -171,7 +171,7 @@ while continue_process_stdout:
         sys.stdout.flush()
 
 
-if sys.platform == "darwin" and start_on_ios == False:
+if sys.platform == "darwin" and start_on_ios == False and start_on_android == False:
     pathScriptDir        = os.path.dirname(os.path.realpath(__file__))
     pathCoverageDir      = os.path.realpath( os.path.join(pathScriptDir, '../../../RepoTools/coverage') )
     pathHtmlReportScript = os.path.join( pathCoverageDir, 'coverage_report.py' )   

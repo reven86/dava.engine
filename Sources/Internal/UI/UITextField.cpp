@@ -125,7 +125,7 @@ void UITextField::Update(float32 timeElapsed)
 
 void UITextField::OnActive()
 {
-#if defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_COREV2__)
+#if defined(__DAVAENGINE_IPHONE__)
     textFieldImpl->ShowField();
     textFieldImpl->SetVisible(IsVisible());
 #endif
@@ -133,7 +133,7 @@ void UITextField::OnActive()
 
 void UITextField::OnInactive()
 {
-#if defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_COREV2__)
+#if defined(__DAVAENGINE_IPHONE__)
     textFieldImpl->HideField();
 #endif
 }

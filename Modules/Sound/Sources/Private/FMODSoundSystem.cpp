@@ -1,5 +1,4 @@
 #include "FMODSoundSystem.h"
-
 #include "FileSystem/FileList.h"
 #include "Scene3D/Entity.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
@@ -70,16 +69,13 @@ jobject fmodActivityListenerGlobalRef = nullptr;
 Function<void(jobject)> fmodActivityListenerUnregisterMethod = nullptr;
 #endif
 
-#if defined(__DAVAENGINE_ANDROID__)
-jobject fmodActivityListenerGlobalRef = nullptr;
-Function<void(jobject)> fmodActivityListenerUnregisterMethod = nullptr;
-#endif
-
 #if defined(__DAVAENGINE_COREV2__)
 FMODSoundSystem::FMODSoundSystem(Engine* e)
     : engine(e), SoundSystem(e)
 {
-    sigUpdateId = engine->update.Connect(this, &FMODSoundSystem::Update);
+    onUpdateToken = engine->update.Connect(this, &FMODSoundSystem::OnUpdate);
+    onSuspendToken = engine->suspended.Connect(this, &FMODSoundSystem::OnSuspend);
+    onResumeToken = engine->resumed.Connect(this, &FMODSoundSystem::OnResume);
 #else
 FMODSoundSystem::FMODSoundSystem()
 {
@@ -151,7 +147,9 @@ FMODSoundSystem::FMODSoundSystem()
 FMODSoundSystem::~FMODSoundSystem()
 {
 #if defined(__DAVAENGINE_COREV2__)
-    engine->update.Disconnect(sigUpdateId);
+    engine->update.Disconnect(onUpdateToken);
+    engine->suspended.Disconnect(onSuspendToken);
+    engine->resumed.Disconnect(onResumeToken);
 
 #if defined(__DAVAENGINE_ANDROID__)
     if (fmodActivityListenerGlobalRef != nullptr)
@@ -213,7 +211,7 @@ SoundStream* FMODSoundSystem::CreateSoundStream(SoundStreamDelegate* streamDeleg
 
 SoundEvent* FMODSoundSystem::CreateSoundEventByID(const FastName& eventName, const FastName& groupName)
 {
-    SoundEvent* event = new FMODSoundEvent(eventName, this);
+    SoundEvent* event = new FMODSoundEvent(eventName,this);
     AddSoundEventToGroup(groupName, event);
 
     return event;
@@ -442,7 +440,11 @@ void FMODSoundSystem::UnloadFMODProjects()
     toplevelGroups.clear();
 }
 
+#if defined(__DAVAENGINE_COREV2__)
+void FMODSoundSystem::OnUpdate(float32 timeElapsed)
+#else
 void FMODSoundSystem::Update(float32 timeElapsed)
+#endif
 {
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::SOUND_SYSTEM);
 
@@ -501,7 +503,11 @@ int32 FMODSoundSystem::GetChannelsMax() const
     return softChannels;
 }
 
+#if defined(__DAVAENGINE_COREV2__)
+void FMODSoundSystem::OnSuspend()
+#else
 void FMODSoundSystem::Suspend()
+#endif
 {
 #ifdef __DAVAENGINE_ANDROID__
     //SoundSystem should be suspended by FMODAudioDevice::stop() on JAVA layer.
@@ -510,7 +516,11 @@ void FMODSoundSystem::Suspend()
 #endif
 }
 
+#if defined(__DAVAENGINE_COREV2__)
+void FMODSoundSystem::OnResume()
+#else
 void FMODSoundSystem::Resume()
+#endif
 {
 #ifdef __DAVAENGINE_IPHONE__
     FMOD_IPhone_RestoreAudioSession();
@@ -888,5 +898,4 @@ FMOD_RESULT F_CALLBACK DAVA_FMOD_FILE_CLOSECALLBACK(void* handle, void* userdata
     return FMOD_OK;
 }
 };
-
 

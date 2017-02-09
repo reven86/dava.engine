@@ -119,6 +119,17 @@ public:
 #endif
 
 protected:
+    
+#if defined(__DAVAENGINE_COREV2__)
+    void OnUpdate(float32 timeElapsed);
+    void OnSuspend();
+    void OnResume();
+    
+    size_t onUpdateToken = 0;
+    size_t onSuspendToken = 0;
+    size_t onResumeToken = 0;
+#endif
+    
     void GetGroupEventsNamesRecursive(FMOD::EventGroup* group, String& currNamePath, Vector<String>& names);
 
     void AddSoundEventToGroup(const FastName& groupName, SoundEvent* event);

@@ -17,7 +17,6 @@ namespace DAVA
 SoundSystem::SoundSystem(Engine* e)
     : engine(e)
 {
-    sigUpdateId = engine->update.Connect(this, &SoundSystem::Update);
 #else
 SoundSystem::SoundSystem()
 {
@@ -26,9 +25,6 @@ SoundSystem::SoundSystem()
 
 SoundSystem::~SoundSystem()
 {
-#if defined(__DAVAENGINE_COREV2__)
-    engine->update.Disconnect(sigUpdateId);
-#endif
 }
 
 void SoundSystem::InitFromQualitySettings()
@@ -85,10 +81,6 @@ void SoundSystem::UnloadFMODProjects()
 {
 }
 
-void SoundSystem::Update(float32 timeElapsed)
-{
-}
-
 uint32 SoundSystem::GetMemoryUsageBytes() const
 {
     uint32 memory = 0;
@@ -113,17 +105,24 @@ int32 SoundSystem::GetChannelsMax() const
     return softChannels;
 }
 
+void SoundSystem::Mute(bool value)
+{
+}
+    
+#if !defined(__DAVAENGINE_COREV2__)
+void SoundSystem::Update(float32 timeElapsed)
+{
+}
+
 void SoundSystem::Suspend()
 {
 }
 
 void SoundSystem::Resume()
 {
-}
 
-void SoundSystem::Mute(bool value)
-{
 }
+#endif
 
 void SoundSystem::SetCurrentLocale(const String& langID)
 {
@@ -197,6 +196,9 @@ void SoundSystem::DuckSystemMusic(bool duck)
 
 }
 
+void SoundSystem::ParseSFXConfig(const FilePath& configPath)
+{
+}
 }
 
 

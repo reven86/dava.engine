@@ -22,7 +22,6 @@ public:
 #if defined(__DAVAENGINE_COREV2__)
     SoundSystem(Engine* e);
     Engine* engine = nullptr;
-    size_t sigUpdateId = 0;
 #else
     SoundSystem();
 #endif
@@ -37,10 +36,13 @@ public:
     virtual SoundEvent* DeserializeEvent(KeyedArchive* archive);
     virtual SoundEvent* CloneEvent(const SoundEvent* sEvent);
 
+    virtual void Mute(bool value);
+
+#if !defined(__DAVAENGINE_COREV2__)
     virtual void Update(float32 timeElapsed);
     virtual void Suspend();
     virtual void Resume();
-    virtual void Mute(bool value);
+#endif
 
     virtual void SetCurrentLocale(const String& langID);
     virtual String GetCurrentLocale() const;
@@ -61,6 +63,11 @@ public:
     virtual void SetDebugMode(bool debug = true);
     virtual bool IsDebugModeOn() const;
 
+    virtual bool IsSystemMusicPlaying();
+
+    virtual void DuckSystemMusic(bool duck);
+
+public:
     virtual void LoadFEV(const FilePath& filePath);
     virtual void UnloadFEV(const FilePath& filePath);
     virtual void UnloadFMODProjects();
@@ -76,19 +83,18 @@ public:
     virtual int32 GetChannelsUsed() const;
     virtual int32 GetChannelsMax() const;
 
+#ifdef __DAVAENGINE_IPHONE__
     virtual bool IsSystemMusicPlaying();
     virtual void DuckSystemMusic(bool duck);
-};
-
-#if defined(__DAVAENGINE_COREV2__)
-
-SoundSystem* CreateSoundSystem( Engine* e );
-
-#else
-
-SoundSystem* CreateSoundSystem();
-
 #endif
 
-
+protected:
+    virtual void ParseSFXConfig(const FilePath& configPath);
+};
+    
+#if defined(__DAVAENGINE_COREV2__)
+SoundSystem* CreateSoundSystem(Engine* e);
+#else
+SoundSystem* CreateSoundSystem();
+#endif
 };
