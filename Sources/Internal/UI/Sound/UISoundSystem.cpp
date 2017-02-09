@@ -9,7 +9,7 @@
 
 namespace DAVA
 {
-namespace
+namespace UISoundSystemDetail
 {
 const FastName SOUND_PARAM_PAN("pan");
 const FastName SOUND_GROUP("UI_SOUND_GROUP");
@@ -68,7 +68,7 @@ void UISoundSystem::TriggerEvent(const FastName& eventName, const UIEvent* uiEve
 
 void UISoundSystem::SetupEventPan(SoundEvent* event, const UIEvent* uiEvent, const UIControl* control)
 {
-    if (event->IsParameterExists(SOUND_PARAM_PAN))
+    if (event->IsParameterExists(UISoundSystemDetail::SOUND_PARAM_PAN))
     {
         const float32 PAN_DEFAULT = 0.0f;
         const float32 PAN_LEFT = -1.0f;
@@ -92,7 +92,7 @@ void UISoundSystem::SetupEventPan(SoundEvent* event, const UIEvent* uiEvent, con
         pan = PAN_LEFT + PAN_RANGE * (pointX / VirtualCoordinatesSystem::Instance()->GetVirtualScreenSize().dx);
 #endif
 
-        event->SetParameterValue(SOUND_PARAM_PAN, pan);
+        event->SetParameterValue(UISoundSystemDetail::SOUND_PARAM_PAN, pan);
     }
 }
 
@@ -112,7 +112,7 @@ RefPtr<SoundEvent> UISoundSystem::GetEvent(const FastName& eventName)
     SoundEventMap::iterator eventIter = soundEvents.find(eventName);
     if (eventIter == soundEvents.end())
     {
-        RefPtr<SoundEvent> event(SoundSystem::Instance()->CreateSoundEventByID(eventName, SOUND_GROUP));
+        RefPtr<SoundEvent> event(SoundSystem::Instance()->CreateSoundEventByID(eventName, UISoundSystemDetail::SOUND_GROUP));
 
         soundEvents[eventName] = event;
 
