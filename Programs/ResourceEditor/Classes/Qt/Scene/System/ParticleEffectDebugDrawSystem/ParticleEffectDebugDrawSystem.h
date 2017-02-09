@@ -105,7 +105,6 @@ bool ParticleEffectDebugDrawSystem::GetIsDrawOnlySected() const
 
 void ParticleEffectDebugDrawSystem::SetIsDrawOnlySelected(bool enable)
 {
-    Logger::Debug("IS only selected %d", enable);
     isDrawOnlySelected = enable;
 }
 
