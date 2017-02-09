@@ -33,7 +33,7 @@ String ControlNodeInformation::GetPrototypePackagePath() const
 
     if (prototype != nullptr)
     {
-        return prototype->GetPackage()->GetPath().GetStringValue();
+        return prototype->GetPackage()->GetPath().GetFrameworkPath();
     }
     else
     {

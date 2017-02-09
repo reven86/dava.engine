@@ -12,7 +12,7 @@ PackageNodeInformation::PackageNodeInformation(const PackageNode* packageNode_)
 
 String PackageNodeInformation::GetPath() const
 {
-    return packageNode->GetPath().GetStringValue();
+    return packageNode->GetPath().GetFrameworkPath();
 }
 
 void PackageNodeInformation::VisitImportedPackages(const DAVA::Function<void(const PackageInformation*)>& visitor) const
