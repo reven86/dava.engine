@@ -15,7 +15,7 @@ DAVA_VIRTUAL_REFLECTION_IMPL(UIList)
     ReflectionRegistrator<UIList>::Begin()
     .ConstructorByPointer()
     .DestructorByPointer([](UIList* o) { o->Release(); })
-    .Field("orientation", &UIList::GetOrientation, &UIList::SetOrientation) // TODO: make enum
+    .Field("orientation", &UIList::GetOrientation, &UIList::SetOrientation)
     [
     M::EnumT<eListOrientation>()
     ]
