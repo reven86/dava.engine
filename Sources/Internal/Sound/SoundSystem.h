@@ -82,11 +82,6 @@ public:
     virtual int32 GetChannelsUsed() const;
     virtual int32 GetChannelsMax() const;
 
-#ifdef __DAVAENGINE_IPHONE__
-    virtual bool IsSystemMusicPlaying();
-    virtual void DuckSystemMusic(bool duck);
-#endif
-
 protected:
     virtual void ParseSFXConfig(const FilePath& configPath);
 };
