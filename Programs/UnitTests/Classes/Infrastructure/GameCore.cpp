@@ -45,7 +45,6 @@ const String testCoverageFileName = "Tests.cover";
 int DAVAMain(Vector<String> cmdline)
 {
     Assert::AddHandler(Assert::DefaultLoggerHandler);
-    Assert::AddHandler([](const Assert::AssertInfo&) { return Assert::FailBehaviour::Halt; }); // Fail on assert
 
     KeyedArchive* appOptions = new KeyedArchive();
     appOptions->SetInt32("rhi_threaded_frame_count", 2);
