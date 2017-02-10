@@ -2,7 +2,7 @@
 
 #include "SubValueProperty.h"
 #include <Base/BaseMath.h>
-#include "Reflection/ReflectionRegistrator.h"
+#include <Reflection/ReflectionRegistrator.h>
 
 using namespace DAVA;
 
@@ -10,7 +10,7 @@ namespace SValueProperty
 {
 static const Vector<String> VECTOR2_COMPONENT_NAMES = { "X", "Y" };
 static const Vector<String> COLOR_COMPONENT_NAMES = { "Red", "Green", "Blue", "Alpha" };
-static const Vector<String> MARGINS_COMPONENT_NAMESs = { "Left", "Top", "Right", "Bottom" };
+static const Vector<String> MARGINS_COMPONENT_NAMES = { "Left", "Top", "Right", "Bottom" };
 }
 
 DAVA_VIRTUAL_REFLECTION_IMPL(ValueProperty)
@@ -189,7 +189,7 @@ void ValueProperty::GenerateBuiltInSubProperties()
     }
     else if (valueType == Type::Instance<Vector4>())
     {
-        componentNames = &SValueProperty::MARGINS_COMPONENT_NAMESs;
+        componentNames = &SValueProperty::MARGINS_COMPONENT_NAMES;
     }
     else if (GetType() == TYPE_FLAGS)
     {

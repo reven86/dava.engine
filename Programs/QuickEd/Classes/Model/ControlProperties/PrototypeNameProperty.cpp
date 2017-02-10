@@ -27,11 +27,6 @@ AbstractProperty::ePropertyType PrototypeNameProperty::GetType() const
     return TYPE_VARIANT;
 }
 
-const DAVA::Type* PrototypeNameProperty::GetValueType() const
-{
-    return Type::Instance<String>();
-}
-
 DAVA::Any PrototypeNameProperty::GetValue() const
 {
     return Any(GetPrototypeName());

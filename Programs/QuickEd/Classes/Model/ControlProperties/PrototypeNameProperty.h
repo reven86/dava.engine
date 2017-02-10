@@ -17,7 +17,6 @@ public:
     void Accept(PropertyVisitor* visitor) override;
 
     ePropertyType GetType() const override;
-    const DAVA::Type* GetValueType() const override;
     DAVA::Any GetValue() const override;
     bool IsReadOnly() const override;
     DAVA::String GetPrototypeName() const;
