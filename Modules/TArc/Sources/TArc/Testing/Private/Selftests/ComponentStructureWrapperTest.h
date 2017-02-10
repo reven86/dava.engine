@@ -82,6 +82,7 @@ protected:
 };
 }
 
+// clang-format off
 ENUM_DECLARE(ComponentStructureWrapperTestDetail::DummyEnum)
 {
     ENUM_ADD(ComponentStructureWrapperTestDetail::First);
@@ -91,60 +92,60 @@ ENUM_DECLARE(ComponentStructureWrapperTestDetail::DummyEnum)
 
 DAVA_TARC_TESTCLASS(ComponentStructureWrapperTest)
 {
-  void CheckValueField(const DAVA::Reflection& field)
-  {
-  using namespace ComponentStructureWrapperTestDetail;
-TEST_VERIFY(field.HasMeta<DAVA::M::Range>());
-TEST_VERIFY(field.HasMeta<DAVA::M::Enum>());
-
-const DAVA::M::Range* rangeMeta = field.GetMeta<DAVA::M::Range>();
-TEST_VERIFY(rangeMeta->minValue.Cast<int>() == 1);
-TEST_VERIFY(rangeMeta->maxValue.Cast<int>() == 20);
-TEST_VERIFY(rangeMeta->step.Cast<int>() == 3);
-
-const DAVA::M::Enum* enumMeta = field.GetMeta<DAVA::M::Enum>();
-TEST_VERIFY(enumMeta->GetEnumMap() == GlobalEnumMap<DummyEnum>::Instance());
-
-TEST_VERIFY(field.HasMeta<DAVA::M::ProxyMetaRequire>() == false);
-}
-
-void CheckNoMetaField(const DAVA::Reflection& field)
-{
-    TEST_VERIFY(field.HasMeta<DAVA::M::Range>() == false);
-    TEST_VERIFY(field.HasMeta<DAVA::M::Enum>() == false);
-}
-
-DAVA_TEST (ProxyMetaTest)
-{
-    using namespace ComponentStructureWrapperTestDetail;
-
-    ValueNode node;
-    DAVA::Reflection r = DAVA::Reflection::Create(&node);
-    std::shared_ptr<DAVA::TArc::PropertyNode> propNode(new DAVA::TArc::PropertyNode());
-    propNode->field.ref = r.GetField("x");
-    propNode->field.key = DAVA::Any("x");
-    propNode->propertyType = DAVA::TArc::PropertyNode::RealProperty;
-    propNode->cachedValue = propNode->field.ref.GetValue();
-
-    DummyComponentValue value;
-    value.Add(propNode);
-
-    DAVA::Reflection valueR = DAVA::Reflection::Create(&value);
-    CheckValueField(valueR.GetField("value"));
-    CheckNoMetaField(valueR.GetField("notProxyField"));
-
+    void CheckValueField(const DAVA::Reflection& field)
     {
+        using namespace ComponentStructureWrapperTestDetail;
+        TEST_VERIFY(field.HasMeta<DAVA::M::Range>());
+        TEST_VERIFY(field.HasMeta<DAVA::M::Enum>());
+
+        const DAVA::M::Range* rangeMeta = field.GetMeta<DAVA::M::Range>();
+        TEST_VERIFY(rangeMeta->minValue.Cast<int>() == 1);
+        TEST_VERIFY(rangeMeta->maxValue.Cast<int>() == 20);
+        TEST_VERIFY(rangeMeta->step.Cast<int>() == 3);
+
+        const DAVA::M::Enum* enumMeta = field.GetMeta<DAVA::M::Enum>();
+        TEST_VERIFY(enumMeta->GetEnumMap() == GlobalEnumMap<DummyEnum>::Instance());
+
+        TEST_VERIFY(field.HasMeta<DAVA::M::ProxyMetaRequire>() == false);
+    }
+
+    void CheckNoMetaField(const DAVA::Reflection& field)
+    {
+        TEST_VERIFY(field.HasMeta<DAVA::M::Range>() == false);
+        TEST_VERIFY(field.HasMeta<DAVA::M::Enum>() == false);
+    }
+
+    DAVA_TEST (ProxyMetaTest)
+    {
+        using namespace ComponentStructureWrapperTestDetail;
+
+        ValueNode node;
+        DAVA::Reflection r = DAVA::Reflection::Create(&node);
+        std::shared_ptr<DAVA::TArc::PropertyNode> propNode(new DAVA::TArc::PropertyNode());
+        propNode->field.ref = r.GetField("x");
+        propNode->field.key = DAVA::Any("x");
+        propNode->propertyType = DAVA::TArc::PropertyNode::RealProperty;
+        propNode->cachedValue = propNode->field.ref.GetValue();
+
+        DummyComponentValue value;
+        value.Add(propNode);
+
+        DAVA::Reflection valueR = DAVA::Reflection::Create(&value);
+        CheckValueField(valueR.GetField("value"));
+        CheckNoMetaField(valueR.GetField("notProxyField"));
+
         DAVA::Vector<DAVA::Reflection::Field> fields = valueR.GetFields();
         for (const DAVA::Reflection::Field& f : fields)
         {
             if (f.key.Cast<DAVA::String>() == "value")
+            {
                 CheckValueField(f.ref);
+            }
             else if (f.key.Cast<DAVA::String>() == "notProxyField")
             {
                 CheckNoMetaField(f.ref);
             }
         }
     }
-}
-}
-;
+};
+    // clang-format on
