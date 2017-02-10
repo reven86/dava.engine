@@ -39,6 +39,9 @@ signals:
     void SelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void ProjectChanged(Project* project);
 
+    void JumpToControl(const DAVA::FilePath& packagePath, const DAVA::String& controlName);
+    void JumpToPackage(const DAVA::FilePath& packagePath);
+
 public slots:
     void OnProjectChanged(Project* project);
 

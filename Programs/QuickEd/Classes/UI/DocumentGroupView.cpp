@@ -1,7 +1,7 @@
 #include "DocumentGroupView.h"
 
-#include "Modules/DocumentsModule/Document.h"
-#include "Modules/ProjectModule/Project.h"
+#include "Modules/LegacySupportModule/Private/Document.h"
+#include "Modules/LegacySupportModule/Private/Project.h"
 #include "UI/Library/LibraryWidget.h"
 #include "UI/Package/PackageWidget.h"
 #include "UI/Preview/PreviewWidget.h"

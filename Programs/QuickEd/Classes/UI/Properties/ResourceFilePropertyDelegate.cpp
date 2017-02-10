@@ -8,7 +8,7 @@
 #include "PropertiesTreeItemDelegate.h"
 #include "Utils/QtDavaConvertion.h"
 #include "QtTools/FileDialogs/FileDialog.h"
-#include "Modules/ProjectModule/Project.h"
+#include "Modules/LegacySupportModule/Private/Project.h"
 
 #include "Engine/Engine.h"
 

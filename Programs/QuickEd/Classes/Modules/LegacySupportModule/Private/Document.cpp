@@ -1,6 +1,5 @@
-#include "Modules/DocumentsModule/Document.h"
+#include "Modules/LegacySupportModule/Private/Document.h"
 #include "Modules/DocumentsModule/DocumentData.h"
-#include "Modules/DocumentsModule/WidgetsData.h"
 
 #include "UI/QtModelPackageCommandExecutor.h"
 
@@ -9,10 +8,6 @@
 #include "Model/PackageHierarchy/PackageNode.h"
 
 #include <TArc/Core/ContextAccessor.h>
-
-DAVA_VIRTUAL_REFLECTION_IMPL(Document)
-{
-}
 
 Document::Document(DAVA::TArc::ContextAccessor* accessor_, DAVA::TArc::DataContext::ContextID contextId_)
     : accessor(accessor_)
@@ -24,7 +19,13 @@ Document::Document(DAVA::TArc::ContextAccessor* accessor_, DAVA::TArc::DataConte
     commandExecutor.reset(new QtModelPackageCommandExecutor(projectData, this));
 }
 
-Document::~Document() = default;
+Document::~Document()
+{
+    for (auto& context : contexts)
+    {
+        delete context.second;
+    }
+}
 
 const DAVA::FilePath& Document::GetPackageFilePath() const
 {
@@ -33,7 +34,8 @@ const DAVA::FilePath& Document::GetPackageFilePath() const
     DVASSERT(nullptr != dataContext);
     const DocumentData* data = dataContext->GetData<DocumentData>();
     DVASSERT(nullptr != data);
-    return data->package->GetPath();
+    const PackageNode* package = data->GetPackageNode();
+    return package->GetPath();
 }
 
 DAVA::CommandStack* Document::GetCommandStack() const
@@ -43,7 +45,8 @@ DAVA::CommandStack* Document::GetCommandStack() const
     DVASSERT(nullptr != dataContext);
     const DocumentData* data = dataContext->GetData<DocumentData>();
     DVASSERT(nullptr != data);
-    return data->commandStack.get();
+
+    return data->GetCommandStack();
 }
 
 PackageNode* Document::GetPackage() const
@@ -53,7 +56,8 @@ PackageNode* Document::GetPackage() const
     DVASSERT(nullptr != dataContext);
     const DocumentData* data = dataContext->GetData<DocumentData>();
     DVASSERT(nullptr != data);
-    return data->package.Get();
+    const PackageNode* package = data->GetPackageNode();
+    return const_cast<PackageNode*>(package);
 }
 
 QtModelPackageCommandExecutor* Document::GetCommandExecutor() const
@@ -63,30 +67,22 @@ QtModelPackageCommandExecutor* Document::GetCommandExecutor() const
 
 WidgetContext* Document::GetContext(void* requester) const
 {
-    using namespace DAVA::TArc;
-    DataContext* dataContext = accessor->GetContext(contextId);
-    DVASSERT(nullptr != dataContext);
-    WidgetsData* data = dataContext->GetData<WidgetsData>();
-    DVASSERT(nullptr != data);
-    return data->GetContext(requester);
+    auto iter = contexts.find(requester);
+    if (iter != contexts.end())
+    {
+        return iter->second;
+    }
+    return nullptr;
 }
 
 void Document::SetContext(void* requester, WidgetContext* widgetContext)
 {
-    using namespace DAVA::TArc;
-    DataContext* dataContext = accessor->GetContext(contextId);
-    DVASSERT(nullptr != dataContext);
-    WidgetsData* data = dataContext->GetData<WidgetsData>();
-    DVASSERT(nullptr != data);
-    return data->SetContext(requester, widgetContext);
-}
-
-void Document::SetCanClose(bool val)
-{
-    using namespace DAVA::TArc;
-    DataContext* dataContext = accessor->GetContext(contextId);
-    DVASSERT(nullptr != dataContext);
-    DocumentData* data = dataContext->GetData<DocumentData>();
-    DVASSERT(nullptr != data);
-    data->canClose = val;
+    auto iter = contexts.find(requester);
+    if (iter != contexts.end())
+    {
+        DVASSERT(false, "document already have this context");
+        delete iter->second;
+        contexts.erase(iter);
+    }
+    contexts.emplace(requester, widgetContext);
 }

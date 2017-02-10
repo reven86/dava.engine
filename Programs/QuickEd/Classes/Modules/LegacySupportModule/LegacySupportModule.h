@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Modules/ProjectModule/Project.h"
+#include "Modules/LegacySupportModule/Private/Project.h"
 
 #include <TArc/Core/ClientModule.h>
 #include <TArc/Utils/QtConnections.h>
@@ -22,9 +22,14 @@ class LegacySupportModule : public DAVA::TArc::ClientModule, private DAVA::TArc:
 
     void RegisterOperations();
 
+    void JumpToControl(const DAVA::FilePath& packagePath, const DAVA::String& controlName);
+    void JumpToPackage(const DAVA::FilePath& packagePath);
+    void OnJumpToPrototype();
+
     DAVA::TArc::QtConnections connections;
     DAVA::TArc::DataWrapper projectDataWrapper;
     std::unique_ptr<Project> project;
+    DAVA::Map<DAVA::TArc::DataContext::ContextID, std::unique_ptr<Document>> documents;
 
     DAVA_VIRTUAL_REFLECTION(LegacySupportModule, DAVA::TArc::ClientModule);
 };

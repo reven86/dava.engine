@@ -1,6 +1,6 @@
 #include "QtModelPackageCommandExecutor.h"
 
-#include "Modules/DocumentsModule/Document.h"
+#include "Modules/LegacySupportModule/Private/Document.h"
 #include "Command/CommandStack.h"
 
 #include "QECommands/ChangePropertyValueCommand.h"
@@ -145,7 +145,7 @@ void QtModelPackageCommandExecutor::ChangeProperty(ControlNode* node, AbstractPr
 {
     if (!property->IsReadOnly())
     {
-        ExecCommand(std::unique_ptr<Command>(new ChangePropertyValueCommand(packageNode, node, property, value)));
+        ExecCommand(std::unique_ptr<Command>(new ChangePropertyValueCommand(node, property, value)));
     }
 }
 
@@ -153,7 +153,7 @@ void QtModelPackageCommandExecutor::ResetProperty(ControlNode* node, AbstractPro
 {
     if (!property->IsReadOnly())
     {
-        ExecCommand(std::unique_ptr<Command>(new ChangePropertyValueCommand(packageNode, node, property, VariantType())));
+        ExecCommand(std::unique_ptr<Command>(new ChangePropertyValueCommand(node, property, VariantType())));
     }
 }
 

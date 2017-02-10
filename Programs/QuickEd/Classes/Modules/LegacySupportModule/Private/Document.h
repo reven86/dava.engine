@@ -1,9 +1,17 @@
 #pragma once
 
-#include <TArc/DataProcessing/DataNode.h>
 #include <TArc/DataProcessing/DataContext.h>
 
 #include <QString>
+
+struct WidgetContext
+{
+    virtual ~WidgetContext() = 0;
+};
+
+inline WidgetContext::~WidgetContext()
+{
+}
 
 namespace DAVA
 {
@@ -15,11 +23,10 @@ class ContextAccessor;
 }
 }
 
-struct WidgetContext;
 class PackageNode;
 class QtModelPackageCommandExecutor;
 
-class Document : public DAVA::TArc::DataNode
+class Document
 {
 public:
     explicit Document(DAVA::TArc::ContextAccessor* accessor, DAVA::TArc::DataContext::ContextID contextId);
@@ -33,13 +40,10 @@ public:
     WidgetContext* GetContext(void* requester) const;
     void SetContext(void* requester, WidgetContext* widgetContext);
 
-    void SetCanClose(bool val);
-
 private:
     DAVA::TArc::ContextAccessor* accessor = nullptr;
     DAVA::TArc::DataContext::ContextID contextId;
 
     std::unique_ptr<QtModelPackageCommandExecutor> commandExecutor;
-
-    DAVA_VIRTUAL_REFLECTION(Document, DAVA::TArc::DataNode);
+    DAVA::UnorderedMap<void*, WidgetContext*> contexts;
 };

@@ -14,7 +14,7 @@ class FileSystemCacheModule : public DAVA::TArc::ClientModule, public DAVA::TArc
     void OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields);
 
     void CreateActions();
-    void OnFindFile();
+    void FastOpenDocument();
 
     std::unique_ptr<DAVA::TArc::FieldBinder> projectUiPathFieldBinder;
     DAVA::TArc::QtConnections connections;

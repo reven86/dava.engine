@@ -6,6 +6,7 @@
 
 #include <TArc/DataProcessing/DataNode.h>
 #include <TArc/Utils/QtConnections.h>
+#include <TArc/Core/OperationInvoker.h>
 
 #include <Base/Result.h>
 #include <Preferences/PreferencesRegistrator.h>
@@ -27,6 +28,7 @@ class YamlNode;
 namespace TArc
 {
 class ContextAccessor;
+class OperationInvoker;
 }
 }
 
@@ -64,11 +66,7 @@ public:
     DAVA::Vector<ProjectData::ResDir> GetLibraryPackages() const;
     const DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>>& GetPrototypes() const;
 
-    void JumpToControl(const DAVA::FilePath& packagePath, const DAVA::String& controlName);
-    void JumpToPackage(const DAVA::FilePath& packagePath);
-
 private:
-    void OnJumpToPrototype();
     void OnFindPrototypeInstances();
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OnFontPresetChanged();

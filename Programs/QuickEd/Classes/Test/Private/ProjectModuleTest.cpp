@@ -1,6 +1,6 @@
 #include "Modules/ProjectModule/ProjectModule.h"
 #include "Modules/ProjectModule/ProjectData.h"
-#include "Modules/ProjectModule/Project.h"
+#include "Modules/LegacySupportModule/Private/Project.h"
 
 #include "Test/TestHelpers.h"
 

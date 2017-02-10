@@ -2,6 +2,7 @@
 
 #include <TArc/DataProcessing/DataNode.h>
 
+#include <Base/Result.h>
 #include <Base/BaseTypes.h>
 #include <Base/RefPtr.h>
 #include <FileSystem/FilePath.h>
@@ -39,12 +40,9 @@ public:
 
     static const DAVA::String& GetProjectFileName();
     static const DAVA::String& GetFontsConfigFileName();
-
-    DAVA::ResultList LoadProject(const QString& path);
-    DAVA::RefPtr<DAVA::YamlNode> SerializeToYamlNode() const;
+    static DAVA::Result CreateNewProjectInfrastructure(const QString& projectPath);
 
     const DAVA::FilePath& GetProjectFile() const;
-    void SetProjectFile(const DAVA::FilePath& newProjectFile);
     const DAVA::FilePath& GetProjectDirectory() const;
 
     const ResDir& GetResourceDirectory() const;
@@ -61,16 +59,24 @@ public:
 
     const DAVA::String& GetDefaultLanguage() const;
 
-    void SetDefaultLanguage(const DAVA::String& lang);
+    bool Save() const;
 
     static const char* projectPathPropertyName;
 
 private:
+    friend class ProjectModule;
+
     DAVA::ResultList ParseLegacyProperties(const DAVA::FilePath& projectFile, const DAVA::YamlNode* root, int version);
     DAVA::ResultList Parse(const DAVA::FilePath& projectFile, const DAVA::YamlNode* node);
 
     void RefreshAbsolutePaths();
     DAVA::FilePath MakeAbsolutePath(const DAVA::String& relPath) const;
+
+    DAVA::ResultList LoadProject(const QString& path);
+    DAVA::RefPtr<DAVA::YamlNode> SerializeToYamlNode() const;
+
+    void SetProjectFile(const DAVA::FilePath& newProjectFile);
+    void SetDefaultLanguage(const DAVA::String& lang);
 
     DAVA::FilePath projectFile;
     DAVA::FilePath projectDirectory;

@@ -1,6 +1,6 @@
 #include "ProjectView.h"
 #include "ui_mainwindow.h"
-#include "Modules/ProjectModule/Project.h"
+#include "Modules/LegacySupportModule/Private/Project.h"
 
 #include <QComboBox>
 #include <QCheckBox>
@@ -20,6 +20,9 @@ MainWindow::ProjectView::ProjectView(MainWindow* mainWindow_)
 
     mainWindow->packageWidget->treeView->addAction(mainWindow->actionJumpToPrototype);
     mainWindow->packageWidget->treeView->addAction(mainWindow->actionFindPrototypeInstances);
+
+    connect(mainWindow->findWidget, &FindWidget::JumpToControl, this, &MainWindow::ProjectView::JumpToControl);
+    connect(mainWindow->findWidget, &FindWidget::JumpToPackage, this, &MainWindow::ProjectView::JumpToPackage);
 }
 
 void MainWindow::ProjectView::SetLanguages(const QStringList& availableLangsCodes, const QString& currentLangCode)

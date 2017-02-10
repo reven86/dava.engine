@@ -4,7 +4,7 @@
 #include "Utils/QtDavaConvertion.h"
 #include "UI/Dialogs/DialogConfigurePreset.h"
 #include "UI/Dialogs/DialogAddPreset.h"
-#include "Modules/ProjectModule/Project.h"
+#include "Modules/LegacySupportModule/Private/Project.h"
 
 #include <QAction>
 #include <QComboBox>

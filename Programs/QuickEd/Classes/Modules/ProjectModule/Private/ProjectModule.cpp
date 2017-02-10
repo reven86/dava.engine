@@ -9,8 +9,6 @@
 #include <TArc/Utils/ModuleCollection.h>
 
 #include <Engine/PlatformApi.h>
-#include <FileSystem/YamlNode.h>
-#include <FileSystem/YamlEmitter.h>
 #include <Base/Result.h>
 
 #include <QApplication>
@@ -28,9 +26,6 @@ const DAVA::String propertiesKey = "ProjectModuleProperties";
 const DAVA::String lastProjectKey = "Last project";
 const DAVA::String projectsHistoryKey = "Projects history";
 const DAVA::uint32 projectsHistoryMaxSize = 5;
-
-DAVA::Result CreateNewProjectInfrastructure(const QString& projectPath);
-bool SerializeProjectDataToFile(const ProjectData* data);
 }
 
 ProjectModule::ProjectModule() = default;
@@ -41,6 +36,12 @@ void ProjectModule::PostInit()
     CreateActions();
     RegisterOperation(QEGlobal::OpenLastProject.ID, this, &ProjectModule::OpenLastProject);
     RegisterOperation(ProjectModuleTesting::CreateProjectOperation.ID, this, &ProjectModule::CreateProject);
+
+    //we can not invoke operations inside RenderInitialized function
+    //because RenderInitialized invokes inside DAVA frame and main eventLoop can not be continued to prevent another OnFrame call
+    delayedExecutor.DelayedExecute([this]() {
+        OpenLastProject();
+    });
 }
 
 void ProjectModule::OnWindowClosed(const DAVA::TArc::WindowKey& key)
@@ -198,7 +199,7 @@ void ProjectModule::CreateProject(const QString& projectDirPath)
         return;
     }
 
-    Result result = ProjectModuleDetails::CreateNewProjectInfrastructure(fullProjectFilePath);
+    Result result = ProjectData::CreateNewProjectInfrastructure(fullProjectFilePath);
     if (result.type != Result::RESULT_SUCCESS)
     {
         ResultList resultList(result);
@@ -291,91 +292,6 @@ void ProjectModule::ShowResultList(const QString& title, const DAVA::ResultList&
     params.buttons = ModalMessageParams::Ok;
     UI* ui = GetUI();
     ui->ShowModalMessage(QEGlobal::windowKey, params);
-}
-
-DAVA::Result ProjectModuleDetails::CreateNewProjectInfrastructure(const QString& projectFilePath)
-{
-    using namespace DAVA;
-    QDir projectDir(QFileInfo(projectFilePath).absolutePath());
-
-    std::unique_ptr<ProjectData> defaultSettings(new ProjectData());
-
-    QString resourceDirectory = QString::fromStdString(defaultSettings->GetResourceDirectory().relative);
-    if (!projectDir.mkpath(resourceDirectory))
-    {
-        return Result(Result::RESULT_ERROR, QObject::tr("Can not create resource directory %1.").arg(resourceDirectory).toStdString());
-    }
-
-    QString intermediateResourceDirectory = QString::fromStdString(defaultSettings->GetConvertedResourceDirectory().relative);
-    if (intermediateResourceDirectory != resourceDirectory && !projectDir.mkpath(intermediateResourceDirectory))
-    {
-        return Result(Result::RESULT_ERROR, QObject::tr("Can not create intermediate resource directory %1.").arg(intermediateResourceDirectory).toStdString());
-    }
-
-    QDir resourceDir(projectDir.absolutePath() + "/" + resourceDirectory);
-
-    QString gfxDirectory = QString::fromStdString(defaultSettings->GetGfxDirectories().front().directory.relative);
-    if (!resourceDir.mkpath(gfxDirectory))
-    {
-        return Result(Result::RESULT_ERROR, QObject::tr("Can not create gfx directory %1.").arg(gfxDirectory).toStdString());
-    }
-
-    QString uiDirectory = QString::fromStdString(defaultSettings->GetUiDirectory().relative);
-    if (!resourceDir.mkpath(uiDirectory))
-    {
-        return Result(Result::RESULT_ERROR, QObject::tr("Can not create UI directory %1.").arg(uiDirectory).toStdString());
-    }
-
-    QString textsDirectory = QString::fromStdString(defaultSettings->GetTextsDirectory().relative);
-    if (!resourceDir.mkpath(textsDirectory))
-    {
-        return Result(Result::RESULT_ERROR, QObject::tr("Can not create UI directory %1.").arg(textsDirectory).toStdString());
-    }
-
-    QString fontsDirectory = QString::fromStdString(defaultSettings->GetFontsDirectory().relative);
-    if (!resourceDir.mkpath(fontsDirectory))
-    {
-        return Result(Result::RESULT_ERROR, QObject::tr("Can not create fonts directory %1.").arg(fontsDirectory).toStdString());
-    }
-
-    QString fontsConfigDirectory = QString::fromStdString(defaultSettings->GetFontsConfigsDirectory().relative);
-    if (!resourceDir.mkpath(fontsConfigDirectory))
-    {
-        return Result(Result::RESULT_ERROR, QObject::tr("Can not create fonts config directory %1.").arg(fontsConfigDirectory).toStdString());
-    }
-
-    QDir textsDir(resourceDir.absolutePath() + "/" + textsDirectory);
-    QFile defaultLanguageTextFile(textsDir.absoluteFilePath(QString::fromStdString(defaultSettings->GetDefaultLanguage()) + ".yaml"));
-    if (!defaultLanguageTextFile.open(QFile::WriteOnly | QFile::Truncate))
-    {
-        return Result(Result::RESULT_ERROR, QObject::tr("Can not create localization file %1.").arg(defaultLanguageTextFile.fileName()).toStdString());
-    }
-    defaultLanguageTextFile.close();
-
-    QDir fontsConfigDir(resourceDir.absolutePath() + "/" + fontsConfigDirectory);
-    QFile defaultFontsConfigFile(fontsConfigDir.absoluteFilePath(QString::fromStdString(ProjectData::GetFontsConfigFileName())));
-    if (!defaultFontsConfigFile.open(QFile::WriteOnly | QFile::Truncate))
-    {
-        return Result(Result::RESULT_ERROR, QObject::tr("Can not create fonts config file %1.").arg(defaultFontsConfigFile.fileName()).toStdString());
-    }
-    defaultFontsConfigFile.close();
-
-    defaultSettings->SetProjectFile(projectFilePath.toStdString());
-    if (!ProjectModuleDetails::SerializeProjectDataToFile(defaultSettings.get()))
-    {
-        return Result(Result::RESULT_ERROR, QObject::tr("Can not create project file %1.").arg(projectFilePath).toStdString());
-    }
-
-    return Result();
-}
-
-bool ProjectModuleDetails::SerializeProjectDataToFile(const ProjectData* data)
-{
-    using namespace DAVA;
-
-    RefPtr<YamlNode> node = data->SerializeToYamlNode();
-
-    return YamlEmitter::SaveToYamlFile(data->GetProjectFile(), node.Get());
 }
 
 namespace ProjectModuleTesting

@@ -1,4 +1,4 @@
-#include "Modules/DocumentsWatcherModule/DocumentsWatcherData.h"
+#include "Modules/DocumentsModule/DocumentsWatcherData.h"
 
 #include <Logger/Logger.h>
 

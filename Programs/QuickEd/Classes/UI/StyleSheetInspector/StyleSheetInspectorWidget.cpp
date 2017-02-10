@@ -1,5 +1,5 @@
 #include "UI/StyleSheetInspector/StyleSheetInspectorWidget.h"
-#include "Modules/DocumentsModule/Document.h"
+#include "Modules/LegacySupportModule/Private/Document.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "UI/Styles/UIStyleSheet.h"
 #include "UI/Styles/UIStyleSheetSystem.h"

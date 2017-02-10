@@ -11,9 +11,11 @@ class LegacySupportData : public DAVA::TArc::DataNode
 public:
     LegacySupportData();
     ~LegacySupportData() override;
-    MainWindow* GetMainWindow() const;
 
 private:
+    friend class LegacySupportModule;
+    MainWindow* GetMainWindow() const;
+
     QPointer<MainWindow> mainWindow;
     DAVA_VIRTUAL_REFLECTION(LegacySupportData, DAVA::TArc::DataNode);
 };

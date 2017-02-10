@@ -1,12 +1,17 @@
 #pragma once
 
-#include "Base/BaseTypes.h"
-#include "Base/RefPtr.h"
-#include "Functional/Signal.h"
 #include "Model/PackageHierarchy/PackageListener.h"
 #include "EditorSystems/SelectionContainer.h"
-#include "Math/Rect.h"
-#include "Math/Vector.h"
+
+#include <TArc/DataProcessing/DataWrapper.h>
+#include <TArc/DataProcessing/DataListener.h>
+
+#include <Base/BaseTypes.h>
+#include <Base/RefPtr.h>
+#include <Functional/Signal.h>
+
+#include <Math/Rect.h>
+#include <Math/Vector.h>
 
 namespace DAVA
 {
@@ -75,7 +80,7 @@ class EditorControlsView;
 class SelectionSystem;
 class HUDSystem;
 
-class EditorSystemsManager : PackageListener
+class EditorSystemsManager : PackageListener, private DAVA::TArc::DataListener
 {
     using StopPredicate = std::function<bool(const ControlNode*)>;
     static StopPredicate defaultStopPredicate;
@@ -133,9 +138,6 @@ public:
     void ClearSelection();
     void SelectNode(ControlNode* node);
 
-    void OnContextWillBeChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* newOne);
-    void OnContextWasChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* oldOne);
-
     DAVA::UIControl* GetRootControl() const;
     DAVA::UIControl* GetScalableControl() const;
 
@@ -156,6 +158,8 @@ public:
     //helpers
     DAVA::Vector2 GetMouseDelta() const;
     DAVA::Vector2 GetLastMousePos() const;
+
+    void OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields) override;
 
 private:
     void SetDragState(eDragState dragState);
@@ -192,6 +196,7 @@ private:
     EditorControlsView* controlViewPtr = nullptr; //weak pointer to canvas system;
     SelectionSystem* selectionSystemPtr = nullptr; // weak pointer to selection system
     HUDSystem* hudSystemPtr = nullptr;
+    SelectedControls selectedControlNodes;
 
     eDragState dragState = NoDrag;
     eDragState previousDragState = NoDrag;
@@ -202,6 +207,8 @@ private:
     //helpers
     DAVA::Vector2 lastMousePos;
     DAVA::Vector2 mouseDelta;
+
+    DAVA::TArc::DataWrapper documentDataWrapper;
 };
 
 template <class OutIt, class Predicate>

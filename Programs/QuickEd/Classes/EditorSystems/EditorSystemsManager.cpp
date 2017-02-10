@@ -68,6 +68,9 @@ EditorSystemsManager::EditorSystemsManager(DAVA::TArc::ContextAccessor* accessor
     rootControl->AddControl(inputLayerControl.Get());
     scalableControl->SetName(FastName("scalableContent"));
 
+    documentDataWrapper = accessor->CreateWrapper(DAVA::ReflectedTypeDB::Get<DocumentData>());
+    documentDataWrapper.SetListener(this);
+
     InitDAVAScreen();
 
     packageChanged.Connect(this, &EditorSystemsManager::OnPackageChanged);
@@ -195,35 +198,6 @@ void EditorSystemsManager::SelectNode(ControlNode* node)
     selectionSystemPtr->SelectNode(node);
 }
 
-void EditorSystemsManager::OnContextWillBeChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* newOne)
-{
-    if (current != nullptr)
-    {
-        DocumentData* documentData = current->GetData<DocumentData>();
-        DVASSERT(nullptr != documentData);
-        SelectedNodes deselect = documentData->selection;
-        selectionChanged.Emit(SelectedNodes(), deselect);
-
-        magnetLinesChanged.Emit({});
-        ClearHighlight();
-        packageChanged.Emit(nullptr);
-    }
-}
-
-void EditorSystemsManager::OnContextWasChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* oldOne)
-{
-    if (current != nullptr)
-    {
-        DocumentData* documentData = current->GetData<DocumentData>();
-        DVASSERT(nullptr != documentData);
-        packageChanged.Emit(documentData->package.Get());
-        if (documentData->selection.empty() == false)
-        {
-            selectionChanged.Emit(documentData->selection, SelectedNodes());
-        }
-    }
-}
-
 void EditorSystemsManager::SetDisplayState(eDisplayState newDisplayState)
 {
     if (displayState == newDisplayState)
@@ -239,13 +213,9 @@ void EditorSystemsManager::SetDisplayState(eDisplayState newDisplayState)
 void EditorSystemsManager::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
 {
     using namespace DAVA::TArc;
-    DataContext* active = accessor->GetActiveContext();
-    DVASSERT(active != nullptr);
-    DocumentData* data = active->GetData<DocumentData>();
-    DVASSERT(data != nullptr);
-    SelectionContainer::MergeSelectionToContainer(selected, deselected, data->selection);
-
-    if (!data->selection.empty())
+    DocumentData* data = accessor->GetActiveContext()->GetData<DocumentData>();
+    SelectionContainer::MergeSelectionToContainer(selected, deselected, selectedControlNodes);
+    if (!selectedControlNodes.empty())
     {
         RefreshRootControls();
     }
@@ -267,6 +237,10 @@ void EditorSystemsManager::OnPackageChanged(PackageNode* package_)
     {
         package->RemoveListener(this);
     }
+    magnetLinesChanged.Emit({});
+    ClearHighlight();
+    packageChanged.Emit(nullptr);
+
     package = package_;
     RefreshRootControls();
     if (nullptr != package)
@@ -303,18 +277,11 @@ void EditorSystemsManager::ControlWasAdded(ControlNode* node, ControlsContainerN
 
 void EditorSystemsManager::RefreshRootControls()
 {
-    using namespace DAVA::TArc;
     SortedPackageBaseNodeSet newRootControls(CompareByLCA);
 
     if (nullptr != package)
     {
-        DataContext* active = accessor->GetActiveContext();
-        DVASSERT(active != nullptr);
-        DocumentData* data = active->GetData<DocumentData>();
-        DVASSERT(data != nullptr);
-        const SelectedNodes& selection = data->selection;
-
-        if (selection.empty())
+        if (selectedControlNodes.empty())
         {
             PackageControlsNode* controlsNode = package->GetPackageControlsNode();
             for (int index = 0; index < controlsNode->GetCount(); ++index)
@@ -324,9 +291,9 @@ void EditorSystemsManager::RefreshRootControls()
         }
         else
         {
-            for (PackageBaseNode* selectedNode : selection)
+            for (ControlNode* selectedControlNode : selectedControlNodes)
             {
-                PackageBaseNode* root = selectedNode;
+                PackageBaseNode* root = static_cast<PackageBaseNode*>(selectedControlNode);
                 while (nullptr != root->GetParent() && nullptr != root->GetParent()->GetControl())
                 {
                     root = root->GetParent();
@@ -409,6 +376,20 @@ Vector2 EditorSystemsManager::GetMouseDelta() const
 DAVA::Vector2 EditorSystemsManager::GetLastMousePos() const
 {
     return lastMousePos;
+}
+
+void EditorSystemsManager::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields)
+{
+    DVASSERT(wrapper == documentDataWrapper);
+    if (wrapper.HasData() == false)
+    {
+        selectionChanged.Emit(SelectedNodes(), selectionContainer.selectedNodes);
+        return;
+    }
+    if (wrapper.HasData() && fields.empty())
+    {
+        selectionContainer.selectedNodes = wrapper.GetFieldValue(DocumentData::selectionPropertyName);
+    }
 }
 
 EditorSystemsManager::eDragState EditorSystemsManager::GetDragState() const

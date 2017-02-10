@@ -1,4 +1,4 @@
-#include "Modules/ProjectModule/Project.h"
+#include "Modules/LegacySupportModule/Private/Project.h"
 
 #include "Modules/DocumentsModule/DocumentData.h"
 #include "Model/PackageHierarchy/PackageNode.h"
@@ -15,6 +15,7 @@
 #include "UI/Find/FindFilter.h"
 
 #include <TArc/Core/ContextAccessor.h>
+#include <TArc/Core/OperationInvoker.h>
 #include <TArc/DataProcessing/DataContext.h>
 
 #include <QtTools/ReloadSprites/SpritesPacker.h>
@@ -95,7 +96,6 @@ Project::Project(MainWindow::ProjectView* view_, DAVA::TArc::ContextAccessor* ac
     connections.AddConnection(view, &MainWindow::ProjectView::RtlChanged, MakeFunction(this, &Project::SetRtl));
     connections.AddConnection(view, &MainWindow::ProjectView::BiDiSupportChanged, MakeFunction(this, &Project::SetBiDiSupport));
     connections.AddConnection(view, &MainWindow::ProjectView::GlobalStyleClassesChanged, MakeFunction(this, &Project::SetGlobalStyleClasses));
-    connections.AddConnection(view, &MainWindow::ProjectView::JumpToPrototype, MakeFunction(this, &Project::OnJumpToPrototype));
     connections.AddConnection(view, &MainWindow::ProjectView::FindPrototypeInstances, MakeFunction(this, &Project::OnFindPrototypeInstances));
     connections.AddConnection(view, &MainWindow::ProjectView::SelectionChanged, MakeFunction(this, &Project::OnSelectionChanged));
 
@@ -240,40 +240,6 @@ QString Project::GetResourceDirectory() const
     return QString::fromStdString(projectData->GetResourceDirectory().absolute.GetStringValue());
 }
 
-void Project::JumpToControl(const DAVA::FilePath& packagePath, const DAVA::String& controlName)
-{
-    //Document* document = documentGroup->AddDocument(QString::fromStdString(packagePath.GetAbsolutePathname()));
-    //    if (document != nullptr)
-    {
-        DVASSERT("implement plz");
-        //view->SelectControl(controlName);
-    }
-}
-
-void Project::JumpToPackage(const DAVA::FilePath& packagePath)
-{
-    //documentGroup->AddDocument(QString::fromStdString(packagePath.GetAbsolutePathname()));
-}
-
-void Project::OnJumpToPrototype()
-{
-    const Set<PackageBaseNode*>& nodes = selectionContainer.selectedNodes;
-    if (nodes.size() == 1)
-    {
-        auto it = nodes.begin();
-        PackageBaseNode* node = *it;
-
-        ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
-        if (controlNode != nullptr && controlNode->GetPrototype() != nullptr)
-        {
-            ControlNode* prototypeNode = controlNode->GetPrototype();
-            FilePath path = prototypeNode->GetPackage()->GetPath();
-            String name = prototypeNode->GetName();
-            JumpToControl(path, name);
-        }
-    }
-}
-
 void Project::OnFindPrototypeInstances()
 {
     const Set<PackageBaseNode*>& nodes = selectionContainer.selectedNodes;
@@ -329,7 +295,7 @@ const FileSystemCache* Project::GetFileSystemCache() const
     using namespace DAVA::TArc;
     DataContext* globalContext = accessor->GetGlobalContext();
     DVASSERT(nullptr != globalContext);
-    FileSystemCacheData* fileSystemCacheData = globalContext->GetData<FileSystemCacheData>();
+    const FileSystemCacheData* fileSystemCacheData = globalContext->GetData<FileSystemCacheData>();
     DVASSERT(nullptr != fileSystemCacheData);
     return fileSystemCacheData->GetFileSystemCache();
 }

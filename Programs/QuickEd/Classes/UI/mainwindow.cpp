@@ -1,5 +1,5 @@
 #include "mainwindow.h"
-#include "Modules/DocumentsModule/Document.h"
+#include "Modules/LegacySupportModule/Private/Document.h"
 #include "Render/Texture.h"
 
 #include "UI/FileSystemView/FileSystemDockWidget.h"

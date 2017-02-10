@@ -27,10 +27,6 @@ void FileSystemCacheModule::PostInit()
     using namespace DAVA;
     using namespace TArc;
 
-    FieldDescriptor fieldDescr;
-    fieldDescr.type = ReflectedTypeDB::Get<ProjectData>();
-    fieldDescr.fieldName = FastName(ProjectData::projectPathPropertyName);
-
     ContextAccessor* accessor = GetAccessor();
     projectDataWrapper = accessor->CreateWrapper(ReflectedTypeDB::Get<ProjectData>());
     projectDataWrapper.SetListener(this);
@@ -93,7 +89,7 @@ void FileSystemCacheModule::CreateActions()
     action->setShortcuts(QList<QKeySequence>()
                          << Qt::CTRL + Qt::SHIFT + Qt::Key_O
                          << Qt::ALT + Qt::SHIFT + Qt::Key_O);
-    connections.AddConnection(action, &QAction::triggered, DAVA::Bind(&FileSystemCacheModule::OnFindFile, this));
+    connections.AddConnection(action, &QAction::triggered, DAVA::Bind(&FileSystemCacheModule::FastOpenDocument, this));
     FieldDescriptor fieldDescr;
     fieldDescr.type = DAVA::ReflectedTypeDB::Get<ProjectData>();
     fieldDescr.fieldName = DAVA::FastName(ProjectData::projectPathPropertyName);
@@ -107,7 +103,7 @@ void FileSystemCacheModule::CreateActions()
     GetUI()->AddAction(QEGlobal::windowKey, placementInfo, action);
 }
 
-void FileSystemCacheModule::OnFindFile()
+void FileSystemCacheModule::FastOpenDocument()
 {
     using namespace DAVA::TArc;
     ContextAccessor* accessor = GetAccessor();

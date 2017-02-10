@@ -1,7 +1,7 @@
 #include "FindWidget.h"
 
-#include "Modules/DocumentsModule/Document.h"
-#include "Modules/ProjectModule/Project.h"
+#include "Modules/LegacySupportModule/Private/Document.h"
+#include "Modules/LegacySupportModule/Private/Project.h"
 #include "UI/Find/Finder.h"
 #include "QtTools/ProjectInformation/FileSystemCache.h"
 
@@ -101,11 +101,11 @@ void FindWidget::OnActivated(const QModelIndex& index)
         if (index.data(CONTROL_DATA).isValid())
         {
             QString control = index.data(CONTROL_DATA).toString();
-            project->JumpToControl(FilePath(path.toStdString()), control.toStdString());
+            emit JumpToControl(FilePath(path.toStdString()), control.toStdString());
         }
         else
         {
-            project->JumpToPackage(FilePath(path.toStdString()));
+            emit JumpToPackage(FilePath(path.toStdString()));
         }
     }
 }

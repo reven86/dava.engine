@@ -32,7 +32,7 @@ void HelpModule::CreateActions()
     using namespace DAVA::TArc;
 
     QAction* action = new QAction(QIcon(":/Icons/help.png"), "QuickEd Help", nullptr);
-    connections.AddConnection(action, &QAction::triggered, DAVA::Bind(&HelpModule::UnpackHelp, this));
+    connections.AddConnection(action, &QAction::triggered, DAVA::Bind(&HelpModule::OnShowHelp, this));
 
     ActionPlacementInfo placementInfo;
     placementInfo.AddPlacementPoint(CreateMenuPoint("Help", { InsertionParams::eInsertionMethod::AfterItem }));

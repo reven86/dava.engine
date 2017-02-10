@@ -9,14 +9,14 @@
 DAVA_VIRTUAL_REFLECTION_IMPL(DocumentData)
 {
     DAVA::ReflectionRegistrator<DocumentData>::Begin()
-    .Field(packagePropertyName, &DocumentData::package)
+    .Field(packagePropertyName, &DocumentData::GetPackageNode, nullptr)
     .Field(canSavePropertyName, &DocumentData::CanSave, nullptr)
     .Field(canUndoPropertyName, &DocumentData::CanUndo, nullptr)
     .Field(canRedoPropertyName, &DocumentData::CanRedo, nullptr)
     .Field(undoTextPropertyName, &DocumentData::GetUndoText, nullptr)
     .Field(redoTextPropertyName, &DocumentData::GetRedoText, nullptr)
-    .Field(canClosePropertyName, &DocumentData::canClosePropertyName)
-    .Field(selectionPropertyName, &DocumentData::selection)
+    .Field(canClosePropertyName, &DocumentData::CanClose, nullptr)
+    .Field(selectionPropertyName, &DocumentData::GetSelectedNodes, &DocumentData::SetSelectedNodes)
     .End();
 }
 
@@ -27,6 +27,26 @@ DocumentData::DocumentData(const DAVA::RefPtr<PackageNode>& package_)
 }
 
 DocumentData::~DocumentData() = default;
+
+DAVA::CommandStack* DocumentData::GetCommandStack() const
+{
+    return commandStack.get();
+}
+
+const PackageNode* DocumentData::GetPackageNode() const
+{
+    return package.Get();
+}
+
+const SelectedNodes& DocumentData::GetSelectedNodes() const
+{
+    return selection.selectedNodes;
+}
+
+void DocumentData::SetSelectedNodes(const SelectedNodes& nodes)
+{
+    selection.selectedNodes = nodes;
+}
 
 QString DocumentData::GetName() const
 {
@@ -59,6 +79,16 @@ QString DocumentData::GetRedoText() const
     const DAVA::Command* command = commandStack->GetRedoCommand();
     DAVA::String text = (command != nullptr ? command->GetDescription() : "");
     return QString::fromStdString(text);
+}
+
+bool DocumentData::IsDocumentExists() const
+{
+    return documentExists;
+}
+
+bool DocumentData::CanClose() const
+{
+    return documentExists;
 }
 
 QString DocumentData::GetUndoText() const

@@ -15,9 +15,9 @@
 #include "Model/ControlProperties/RootProperty.h"
 #include "Model/ControlProperties/VisibleValueProperty.h"
 
-#include "Modules/DocumentsModule/Document.h"
+#include "Modules/LegacySupportModule/Private/Document.h"
 #include "Modules/DocumentsModule/DocumentData.h"
-#include "Modules/DocumentsModule/WidgetsData.h"
+#include "Modules/DocumentsModule/CentralWidgetData.h"
 
 #include <TArc/Controls/SceneTabbar.h>
 #include <TArc/Models/SceneTabsModel.h>
@@ -52,11 +52,6 @@ QString ScaleStringFromReal(float scale)
 {
     return QString("%1 %").arg(static_cast<int>(scale * 100.0f + 0.5f));
 }
-
-struct PreviewContext : WidgetContext
-{
-    Vector2 canvasPosition;
-};
 }
 
 PreviewWidget::PreviewWidget(DAVA::TArc::ContextAccessor* accessor_, DAVA::RenderWidget* renderWidget, EditorSystemsManager* systemsManager)
@@ -104,28 +99,6 @@ PreviewWidget::PreviewWidget(DAVA::TArc::ContextAccessor* accessor_, DAVA::Rende
 PreviewWidget::~PreviewWidget()
 {
     continuousUpdater->Stop();
-}
-
-void PreviewWidget::SelectControl(const DAVA::String& path)
-{
-    using namespace DAVA::TArc;
-    DataContext* dataContext = accessor->GetActiveContext();
-    if (dataContext != nullptr)
-    {
-        DocumentData* documentData = dataContext->GetData<DocumentData>();
-        DVASSERT(nullptr != documentData);
-        PackageNode* package = documentData->package.Get();
-        ControlNode* node = package->GetPrototypes()->FindControlNodeByPath(path);
-        if (!node)
-        {
-            node = package->GetPackageControlsNode()->FindControlNodeByPath(path);
-        }
-        if (node != nullptr)
-        {
-            systemsManager->ClearSelection();
-            systemsManager->SelectNode(node);
-        }
-    }
 }
 
 float PreviewWidget::GetScaleFromComboboxText() const
@@ -218,34 +191,16 @@ void PreviewWidget::OnContextWasChanged(DAVA::TArc::DataContext* current, DAVA::
 {
     if (oldOne != nullptr)
     {
-        DocumentData* documentData = oldOne->GetData<DocumentData>();
-        DVASSERT(nullptr != documentData);
-        //check that we do not leave document in non valid state
-        DVASSERT(documentData->package->CanUpdateAll());
-
-        WidgetsData* widgetsData = oldOne->GetData<WidgetsData>();
-        DVASSERT(widgetsData != nullptr);
-
-        PreviewContext* context = DynamicTypeCheck<PreviewContext*>(widgetsData->GetContext(this));
-        context->canvasPosition = editorCanvas->GetPosition();
+        CentralWidgetData* widgetData = oldOne->GetData<CentralWidgetData>();
+        DVASSERT(widgetData != nullptr);
+        widgetData->canvasPosition = editorCanvas->GetPosition();
     };
     if (current != nullptr)
     {
-        WidgetsData* widgetsData = current->GetData<WidgetsData>();
-        DVASSERT(widgetsData != nullptr);
-
-        PreviewContext* context = DynamicTypeCheck<PreviewContext*>(widgetsData->GetContext(this));
-        if (nullptr == context)
-        {
-            context = new PreviewContext();
-            widgetsData->SetContext(this, context);
-            Vector2 position(horizontalScrollBar->maximum() / 2.0f, verticalScrollBar->maximum() / 2.0f);
-            editorCanvas->SetPosition(position);
-        }
-        else
-        {
-            editorCanvas->SetPosition(context->canvasPosition);
-        }
+        CentralWidgetData* widgetData = current->GetData<CentralWidgetData>();
+        DVASSERT(widgetData != nullptr);
+        editorCanvas->SetPosition(widgetData->canvasPosition);
+        //TODO: implement position at center
     }
 }
 
@@ -405,8 +360,6 @@ void PreviewWidget::InitFromSystemsManager(EditorSystemsManager* systemsManager_
 
     systemsManager->rootControlPositionChanged.Connect(this, &PreviewWidget::OnRootControlPositionChanged);
     systemsManager->selectionChanged.Connect(this, &PreviewWidget::OnSelectionInSystemsChanged);
-    systemsManager->propertyChanged.Connect(this, &PreviewWidget::OnPropertyChanged);
-    systemsManager->dragStateChanged.Connect(this, &PreviewWidget::OnDragStateChanged);
 
     connect(focusNextChildAction, &QAction::triggered, std::bind(&EditorSystemsManager::FocusNextChild, systemsManager));
     connect(focusPreviousChildAction, &QAction::triggered, std::bind(&EditorSystemsManager::FocusPreviousChild, systemsManager));
@@ -485,6 +438,7 @@ void PreviewWidget::InitUI(DAVA::TArc::ContextAccessor* accessor)
     ctx->CreateData(std::make_unique<SceneTabsModel>());
     DAVA::TArc::SceneTabbar* tabBar = new DAVA::TArc::SceneTabbar(accessor, DAVA::Reflection::Create(ctx->GetData<SceneTabsModel>()), this);
     tabBar->closeTab.Connect(&requestCloseTab, &DAVA::Signal<DAVA::uint64>::Emit);
+
     tabBar->setElideMode(Qt::ElideNone);
     tabBar->setTabsClosable(true);
     tabBar->setUsesScrollButtons(true);
@@ -783,8 +737,7 @@ void PreviewWidget::OnDrop(QDropEvent* event)
         {
             DAVA::TArc::DataContext* active = accessor->GetActiveContext();
             DVASSERT(active != nullptr);
-            DocumentData* data = active->GetData<DocumentData>();
-            node = DynamicTypeCheck<PackageBaseNode*>(data->package->GetPackageControlsNode());
+            node = DynamicTypeCheck<PackageBaseNode*>(node->GetPackage()->GetPackageControlsNode());
             index = systemsManager->GetIndexOfNearestRootControl(pos);
         }
         else
@@ -828,44 +781,6 @@ void PreviewWidget::OnKeyPressed(QKeyEvent* event)
             }
         }
     }
-}
-
-void PreviewWidget::OnDragStateChanged(EditorSystemsManager::eDragState dragState, EditorSystemsManager::eDragState previousState)
-{
-    using namespace DAVA::TArc;
-    DataContext* activeContext = accessor->GetActiveContext();
-    if (activeContext == nullptr)
-    {
-        return;
-    }
-    DocumentData* documentData = activeContext->GetData<DocumentData>();
-    DVASSERT(nullptr != documentData);
-    Document* document = activeContext->GetData<Document>();
-    DVASSERT(nullptr != document);
-    //TODO: move this code to the TransformSystem when systems will be moved to the TArc
-    QtModelPackageCommandExecutor* executor = document->GetCommandExecutor();
-    if (dragState == EditorSystemsManager::Transform)
-    {
-        documentData->canClose = false;
-        executor->BeginMacro("transformations");
-    }
-    else if (previousState == EditorSystemsManager::Transform)
-    {
-        documentData->canClose = true;
-        executor->EndMacro();
-    }
-}
-
-void PreviewWidget::OnPropertyChanged(ControlNode* node, AbstractProperty* property, VariantType newValue)
-{
-    using namespace DAVA::TArc;
-    DataContext* activeContext = accessor->GetActiveContext();
-    DVASSERT(activeContext != nullptr);
-    //TODO: move this code to the TransformSystem when systems will be moved to the TArc
-    Document* document = activeContext->GetData<Document>();
-    DVASSERT(nullptr != document);
-    QtModelPackageCommandExecutor* commandExecutor = document->GetCommandExecutor();
-    commandExecutor->ChangeProperty(node, property, newValue);
 }
 
 float PreviewWidget::GetScaleFromWheelEvent(int ticksCount) const

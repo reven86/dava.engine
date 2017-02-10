@@ -1,10 +1,10 @@
 #pragma once
 
 #include "Model/PackageHierarchy/PackageNode.h"
-#include "Application/AnyHelpers.h"
 #include "EditorSystems/SelectionContainer.h"
 
 #include <TArc/DataProcessing/DataNode.h>
+#include <TArc/DataProcessing/AnySupport/AnyQStringCompare.h>
 
 #include <Base/BaseTypes.h>
 #include <Base/RefPtr.h>
@@ -17,10 +17,17 @@ class CommandStack;
 }
 class PackageNode;
 
-struct DocumentData : public DAVA::TArc::DataNode
+class DocumentData : public DAVA::TArc::DataNode
 {
+public:
     DocumentData(const DAVA::RefPtr<PackageNode>& package);
     ~DocumentData() override;
+
+    const PackageNode* GetPackageNode() const;
+    DAVA_DEPRECATED(DAVA::CommandStack* GetCommandStack() const;)
+
+    const SelectedNodes& GetSelectedNodes() const;
+    void SetSelectedNodes(const SelectedNodes& selection);
 
     QString GetName() const;
     QString GetPackageAbsolutePath() const;
@@ -32,12 +39,11 @@ struct DocumentData : public DAVA::TArc::DataNode
     QString GetUndoText() const;
     QString GetRedoText() const;
 
-    void RefreshLayout();
-    void RefreshAllControlProperties();
+    bool IsDocumentExists() const;
+    bool CanClose() const;
 
-    bool documentExists = true;
-
-    bool canClose = true;
+    DAVA_DEPRECATED(void RefreshLayout();)
+    DAVA_DEPRECATED(void RefreshAllControlProperties());
 
     static const char* packagePropertyName;
     static const char* canSavePropertyName;
@@ -48,9 +54,15 @@ struct DocumentData : public DAVA::TArc::DataNode
     static const char* canClosePropertyName;
     static const char* selectionPropertyName;
 
+private:
+    friend class DocumentsModule;
+
     DAVA::RefPtr<PackageNode> package;
     std::unique_ptr<DAVA::CommandStack> commandStack;
-    SelectedNodes selection;
+    SelectionContainer selection;
+
+    bool documentExists = true;
+    bool canClose = true;
 
     DAVA_VIRTUAL_REFLECTION(DocumentData, DAVA::TArc::DataNode);
 };

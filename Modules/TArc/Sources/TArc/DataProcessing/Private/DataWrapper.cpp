@@ -139,6 +139,17 @@ void DataWrapper::SetFieldValue(const Any& fieldKey, const Any& value)
     SyncByFieldKey(fieldKey);
 }
 
+void DataWrapper::GetFieldValue(const Any& fieldKey) const
+{
+    DVASSERT(HasData() == true);
+    Reflection data = GetData();
+    Reflection field = data.GetField(fieldKey);
+    DVASSERT(field.IsValid() == true);
+    Any retVal = field.GetValue();
+    DVASSERT(result);
+    return retVal;
+}
+
 bool DataWrapper::IsActive() const
 {
     return !impl.unique();

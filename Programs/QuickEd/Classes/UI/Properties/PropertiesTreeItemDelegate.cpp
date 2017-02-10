@@ -33,7 +33,7 @@
 #include "FontPropertyDelegate.h"
 #include "TablePropertyDelegate.h"
 #include "CompletionsProviderForScrollBar.h"
-#include "Modules/ProjectModule/Project.h"
+#include "Modules/LegacySupportModule/Private/Project.h"
 
 using namespace DAVA;
 

@@ -11,10 +11,12 @@ public:
     FileSystemCacheData(const QStringList& extensions);
     ~FileSystemCacheData() override;
 
-    FileSystemCache* GetFileSystemCache();
     const FileSystemCache* GetFileSystemCache() const;
 
 private:
+    friend class FileSystemCacheModule;
+
+    FileSystemCache* GetFileSystemCache();
     std::unique_ptr<FileSystemCache> fileSystemCache;
 
     DAVA_VIRTUAL_REFLECTION(FileSystemCacheData, DAVA::TArc::DataNode);

@@ -1,5 +1,5 @@
 #include "LibraryWidget.h"
-#include "Modules/DocumentsModule/Document.h"
+#include "Modules/LegacySupportModule/Private/Document.h"
 #include "LibraryModel.h"
 
 #include "UI/UIControl.h"

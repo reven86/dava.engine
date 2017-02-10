@@ -1,7 +1,7 @@
 #include "Modules/SpritesPacker/SpritesPackerModule.h"
 #include "Modules/SpritesPacker/SpritesPackerData.h"
 #include "Modules/ProjectModule/ProjectData.h"
-#include "Modules/ProjectModule/Project.h"
+#include "Modules/LegacySupportModule/Private/Project.h"
 #include "Application/QEGlobal.h"
 
 #include <TArc/DataProcessing/DataContext.h>

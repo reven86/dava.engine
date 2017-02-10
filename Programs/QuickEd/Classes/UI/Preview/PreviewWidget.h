@@ -1,8 +1,10 @@
 #pragma once
-#include "Engine/Qt/RenderWidget.h"
 
 #include "EditorSystems/EditorSystemsManager.h"
 #include "EditorSystems/SelectionContainer.h"
+
+#include <Engine/Qt/RenderWidget.h>
+
 #include <QWidget>
 #include <QFrame>
 #include <QCursor>
@@ -46,7 +48,6 @@ class PreviewWidget : public QFrame, private DAVA::RenderWidget::IClientDelegate
 public:
     explicit PreviewWidget(DAVA::TArc::ContextAccessor* accessor, DAVA::RenderWidget* renderWidget, EditorSystemsManager* systemsManager);
     ~PreviewWidget();
-    void SelectControl(const DAVA::String& path);
 
     void InjectRenderWidget(DAVA::RenderWidget* renderWidget);
 
@@ -110,9 +111,6 @@ private:
     void OnDragLeaved(QDragLeaveEvent* event) override;
     void OnDrop(QDropEvent* event) override;
     void OnKeyPressed(QKeyEvent* event) override;
-
-    void OnDragStateChanged(EditorSystemsManager::eDragState dragState, EditorSystemsManager::eDragState previousState);
-    void OnPropertyChanged(ControlNode* node, AbstractProperty* property, DAVA::VariantType newValue);
 
     float GetScaleFromWheelEvent(int ticksCount) const;
     float GetNextScale(float currentScale, int ticksCount) const;
