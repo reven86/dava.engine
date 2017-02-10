@@ -3,6 +3,9 @@
 #include "EditorSystems/EditorSystemsManager.h"
 #include "EditorSystems/SelectionContainer.h"
 
+#include <TArc/DataProcessing/DataWrapper.h>
+#include <TArc/DataProcessing/DataListener.h>
+
 #include <Engine/Qt/RenderWidget.h>
 
 #include <QWidget>
@@ -42,7 +45,7 @@ class QDragLeaveEvent;
 class QDropEvent;
 class QMenu;
 
-class PreviewWidget : public QFrame, private DAVA::RenderWidget::IClientDelegate
+class PreviewWidget : public QFrame, private DAVA::RenderWidget::IClientDelegate, DAVA::TArc::DataListener
 {
     Q_OBJECT
 public:
@@ -50,9 +53,6 @@ public:
     ~PreviewWidget();
 
     void InjectRenderWidget(DAVA::RenderWidget* renderWidget);
-
-    void OnContextWillBeChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* newOne);
-    void OnContextWasChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* oldOne);
 
     DAVA::Signal<DAVA::uint64> requestCloseTab;
     DAVA::Signal<ControlNode*> requestChangeTextInNode;
@@ -120,6 +120,7 @@ private:
     void NotifySelectionChanged();
     void UpdateDragScreenState();
     float GetScaleFromComboboxText() const;
+    void OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields) override;
 
     DAVA::TArc::ContextAccessor* accessor = nullptr;
     DAVA::RenderWidget* renderWidget = nullptr;
@@ -143,6 +144,8 @@ private:
 
     SelectedNodes tmpSelected; //for continuousUpdater
     SelectedNodes tmpDeselected; //for continuousUpdater
+
+    DAVA::TArc::DataWrapper dataWrapper;
 
     //we can show model dialogs only when mouse released, so remember node to change text when mouse will be released
     ControlNode* nodeToChangeTextOnMouseRelease = nullptr;

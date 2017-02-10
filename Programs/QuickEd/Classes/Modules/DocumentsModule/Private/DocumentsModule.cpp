@@ -115,6 +115,7 @@ void DocumentsModule::PostInit()
     using namespace TArc;
 
     Themes::InitFromQApplication();
+    InitWatcher();
     InitEditorSystems();
     InitCentralWidget();
 
@@ -143,6 +144,8 @@ void DocumentsModule::OnWindowClosed(const DAVA::TArc::WindowKey& key)
     using namespace DAVA;
     using namespace TArc;
 
+    CloseAllDocuments();
+
     ContextAccessor* accessor = GetAccessor();
     DataContext* context = accessor->GetGlobalContext();
     context->DeleteData<DocumentsWatcherData>();
@@ -150,6 +153,7 @@ void DocumentsModule::OnWindowClosed(const DAVA::TArc::WindowKey& key)
 
 void DocumentsModule::OnContextCreated(DAVA::TArc::DataContext* context)
 {
+    using namespace DAVA::TArc;
     SceneTabsModel* tabsModel = GetAccessor()->GetGlobalContext()->GetData<SceneTabsModel>();
     DVASSERT(tabsModel != nullptr);
     DocumentData* data = context->GetData<DocumentData>();
@@ -161,36 +165,38 @@ void DocumentsModule::OnContextCreated(DAVA::TArc::DataContext* context)
     tabsModel->tabs.emplace(context->GetID(), TabDescriptor());
 
     QString path = data->GetPackageAbsolutePath();
-    DocumentsWatcherData* watcherData = context->GetData<DocumentsWatcherData>();
+    DataContext* globalContext = GetAccessor()->GetGlobalContext();
+    DocumentsWatcherData* watcherData = globalContext->GetData<DocumentsWatcherData>();
     watcherData->Watch(path);
 }
 
 void DocumentsModule::OnContextDeleted(DAVA::TArc::DataContext* context)
 {
+    using namespace DAVA::TArc;
     SceneTabsModel* tabsModel = GetAccessor()->GetGlobalContext()->GetData<SceneTabsModel>();
     DVASSERT(tabsModel != nullptr);
     tabsModel->tabs.erase(context->GetID());
 
     DocumentData* data = context->GetData<DocumentData>();
     QString path = data->GetPackageAbsolutePath();
-    DocumentsWatcherData* watcherData = context->GetData<DocumentsWatcherData>();
+    DataContext* globalContext = GetAccessor()->GetGlobalContext();
+    DocumentsWatcherData* watcherData = globalContext->GetData<DocumentsWatcherData>();
     watcherData->Unwatch(path);
 }
 
 void DocumentsModule::OnContextWillBeChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* newOne)
 {
-    DocumentData* documentData = current->GetData<DocumentData>();
-    DVASSERT(nullptr != documentData);
-    //check that we do not leave document in non valid state
-    DVASSERT(documentData->package->CanUpdateAll());
-
-    previewWidget->OnContextWillBeChanged(current, newOne);
+    if (current != nullptr)
+    {
+        DocumentData* documentData = current->GetData<DocumentData>();
+        DVASSERT(nullptr != documentData);
+        //check that we do not leave document in non valid state
+        DVASSERT(documentData->package->CanUpdateAll());
+    }
 }
 
 void DocumentsModule::OnContextWasChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* oldOne)
 {
-    previewWidget->OnContextWasChanged(current, oldOne);
-
     SceneTabsModel* tabsModel = GetAccessor()->GetGlobalContext()->GetData<SceneTabsModel>();
     tabsModel->activeContexID = current->GetID();
 }
@@ -229,6 +235,7 @@ void DocumentsModule::InitCentralWidget()
     QObject::connect(previewWidget, &PreviewWidget::CutRequested, mainWindow->packageWidget, &PackageWidget::OnCut);
     QObject::connect(previewWidget, &PreviewWidget::CopyRequested, mainWindow->packageWidget, &PackageWidget::OnCopy);
     QObject::connect(previewWidget, &PreviewWidget::PasteRequested, mainWindow->packageWidget, &PackageWidget::OnPaste);
+
     QObject::connect(previewWidget, &PreviewWidget::SelectionChanged, mainWindow->packageWidget, &PackageWidget::OnSelectionChanged);
 
     QObject::connect(mainWindow->packageWidget, &PackageWidget::SelectedNodesChanged, previewWidget, &PreviewWidget::OnSelectionChanged);
@@ -245,8 +252,8 @@ void DocumentsModule::InitWatcher()
     connections.AddConnection(app, &QApplication::applicationStateChanged, MakeFunction(this, &DocumentsModule::OnApplicationStateChanged));
 
     ContextAccessor* accessor = GetAccessor();
-    DataContext* context = accessor->GetGlobalContext();
-    context->CreateData(std::move(data));
+    DataContext* globalContext = accessor->GetGlobalContext();
+    globalContext->CreateData(std::move(data));
 }
 
 void DocumentsModule::CreateActions()
@@ -311,7 +318,7 @@ void DocumentsModule::CreateActions()
         fieldDescr.type = ReflectedTypeDB::Get<DocumentData>();
         fieldDescr.fieldName = FastName(DocumentData::packagePropertyName);
         action->SetStateUpdationFunction(QtAction::Enabled, fieldDescr, [](const Any& fieldValue) -> Any {
-            return fieldValue.CanCast<RefPtr<PackageNode>>() && fieldValue.Cast<RefPtr<PackageNode>>().Get() != nullptr;
+            return fieldValue.CanCast<PackageNode*>() && fieldValue.Cast<PackageNode*>() != nullptr;
         });
 
         connections.AddConnection(action, &QAction::triggered, Bind(&DocumentsModule::CloseActiveDocument, this));
@@ -333,7 +340,7 @@ void DocumentsModule::CreateActions()
         fieldDescr.type = ReflectedTypeDB::Get<DocumentData>();
         fieldDescr.fieldName = FastName(DocumentData::packagePropertyName);
         action->SetStateUpdationFunction(QtAction::Enabled, fieldDescr, [](const Any& fieldValue) -> Any {
-            return fieldValue.CanCast<RefPtr<PackageNode>>() && fieldValue.Cast<RefPtr<PackageNode>>().Get() != nullptr;
+            return fieldValue.CanCast<PackageNode*>() && fieldValue.Cast<PackageNode*>() != nullptr;
         });
 
         connections.AddConnection(action, &QAction::triggered, Bind(&DocumentsModule::ReloadCurrentDocument, this));
@@ -815,7 +822,8 @@ void DocumentsModule::SaveDocument(const DAVA::TArc::DataContext::ContextID& con
     ContextAccessor* accessor = GetAccessor();
     DataContext* context = accessor->GetContext(contextID);
     DVASSERT(nullptr != context);
-    DocumentsWatcherData* watcherData = context->GetData<DocumentsWatcherData>();
+    DataContext* globalContext = accessor->GetGlobalContext();
+    DocumentsWatcherData* watcherData = globalContext->GetData<DocumentsWatcherData>();
     DVASSERT(nullptr != watcherData);
     DocumentData* data = context->GetData<DocumentData>();
 

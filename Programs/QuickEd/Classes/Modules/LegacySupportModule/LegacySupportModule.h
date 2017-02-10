@@ -25,6 +25,7 @@ class LegacySupportModule : public DAVA::TArc::ClientModule, private DAVA::TArc:
     void JumpToControl(const DAVA::FilePath& packagePath, const DAVA::String& controlName);
     void JumpToPackage(const DAVA::FilePath& packagePath);
     void OnJumpToPrototype();
+    void OnFindPrototypeInstances();
 
     DAVA::TArc::QtConnections connections;
     DAVA::TArc::DataWrapper projectDataWrapper;

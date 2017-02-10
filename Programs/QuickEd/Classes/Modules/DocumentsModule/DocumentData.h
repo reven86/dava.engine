@@ -27,7 +27,6 @@ public:
     DAVA_DEPRECATED(DAVA::CommandStack* GetCommandStack() const;)
 
     const SelectedNodes& GetSelectedNodes() const;
-    void SetSelectedNodes(const SelectedNodes& selection);
 
     QString GetName() const;
     QString GetPackageAbsolutePath() const;
@@ -56,6 +55,7 @@ public:
 
 private:
     friend class DocumentsModule;
+    void SetSelectedNodes(const SelectedNodes& selection);
 
     DAVA::RefPtr<PackageNode> package;
     std::unique_ptr<DAVA::CommandStack> commandStack;

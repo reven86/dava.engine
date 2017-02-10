@@ -96,8 +96,6 @@ Project::Project(MainWindow::ProjectView* view_, DAVA::TArc::ContextAccessor* ac
     connections.AddConnection(view, &MainWindow::ProjectView::RtlChanged, MakeFunction(this, &Project::SetRtl));
     connections.AddConnection(view, &MainWindow::ProjectView::BiDiSupportChanged, MakeFunction(this, &Project::SetBiDiSupport));
     connections.AddConnection(view, &MainWindow::ProjectView::GlobalStyleClassesChanged, MakeFunction(this, &Project::SetGlobalStyleClasses));
-    connections.AddConnection(view, &MainWindow::ProjectView::FindPrototypeInstances, MakeFunction(this, &Project::OnFindPrototypeInstances));
-    connections.AddConnection(view, &MainWindow::ProjectView::SelectionChanged, MakeFunction(this, &Project::OnSelectionChanged));
 
     QualitySettingsSystem::Instance()->Load("~res:/quality.yaml");
     engineContext->soundSystem->InitFromQualitySettings();
@@ -238,30 +236,6 @@ QString Project::GetResourceDirectory() const
 {
     ProjectData* projectData = accessor->GetGlobalContext()->GetData<ProjectData>();
     return QString::fromStdString(projectData->GetResourceDirectory().absolute.GetStringValue());
-}
-
-void Project::OnFindPrototypeInstances()
-{
-    const Set<PackageBaseNode*>& nodes = selectionContainer.selectedNodes;
-    if (nodes.size() == 1)
-    {
-        auto it = nodes.begin();
-        PackageBaseNode* node = *it;
-
-        ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
-        if (controlNode != nullptr)
-        {
-            FilePath path = controlNode->GetPackage()->GetPath();
-            String name = controlNode->GetName();
-
-            view->FindControls(std::make_unique<PrototypeUsagesFilter>(path.GetFrameworkPath(), FastName(name)));
-        }
-    }
-}
-
-void Project::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
-{
-    selectionContainer.MergeSelection(selected, deselected);
 }
 
 QString Project::GetProjectPath() const

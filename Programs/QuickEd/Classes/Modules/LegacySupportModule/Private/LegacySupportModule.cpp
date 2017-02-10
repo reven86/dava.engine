@@ -113,6 +113,7 @@ void LegacySupportModule::InitMainWindow()
     connections.AddConnection(projectView, &MainWindow::ProjectView::JumpToControl, MakeFunction(this, &LegacySupportModule::JumpToControl));
     connections.AddConnection(projectView, &MainWindow::ProjectView::JumpToPackage, MakeFunction(this, &LegacySupportModule::JumpToPackage));
     connections.AddConnection(projectView, &MainWindow::ProjectView::JumpToPrototype, MakeFunction(this, &LegacySupportModule::OnJumpToPrototype));
+    connections.AddConnection(projectView, &MainWindow::ProjectView::FindPrototypeInstances, MakeFunction(this, &LegacySupportModule::OnFindPrototypeInstances));
 
     MainWindow::DocumentGroupView* documentGroupView = projectView->GetDocumentGroupView();
     connections.AddConnection(documentGroupView, &MainWindow::DocumentGroupView::OpenPackageFile, [this](const QString& path) {
@@ -142,6 +143,39 @@ void LegacySupportModule::RegisterOperations()
     MainWindow* mainWindow = data->GetMainWindow();
     MainWindow::ProjectView* view = mainWindow->GetProjectView();
     RegisterOperation(QEGlobal::SelectFile.ID, view, &MainWindow::ProjectView::SelectFile);
+}
+
+void LegacySupportModule::OnFindPrototypeInstances()
+{
+    using namespace DAVA;
+    using namespace TArc;
+
+    ContextAccessor* accessor = GetAccessor();
+    DataContext* activeContext = accessor->GetActiveContext();
+    DVASSERT(nullptr != activeContext);
+
+    const DocumentData* documentData = activeContext->GetData<DocumentData>();
+    const SelectedNodes& nodes = documentData->GetSelectedNodes();
+
+    if (nodes.size() == 1)
+    {
+        auto it = nodes.begin();
+        PackageBaseNode* node = *it;
+
+        ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
+        if (controlNode != nullptr)
+        {
+            FilePath path = controlNode->GetPackage()->GetPath();
+            String name = controlNode->GetName();
+
+            DataContext* globalContext = accessor->GetGlobalContext();
+            LegacySupportData* data = globalContext->GetData<LegacySupportData>();
+            MainWindow* mainWindow = data->GetMainWindow();
+            MainWindow::ProjectView* view = mainWindow->GetProjectView();
+
+            view->FindControls(std::make_unique<PrototypeUsagesFilter>(path.GetFrameworkPath(), FastName(name)));
+        }
+    }
 }
 
 void LegacySupportModule::OnJumpToPrototype()

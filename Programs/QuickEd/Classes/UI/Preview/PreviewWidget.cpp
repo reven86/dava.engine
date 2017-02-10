@@ -15,7 +15,6 @@
 #include "Model/ControlProperties/RootProperty.h"
 #include "Model/ControlProperties/VisibleValueProperty.h"
 
-#include "Modules/LegacySupportModule/Private/Document.h"
 #include "Modules/DocumentsModule/DocumentData.h"
 #include "Modules/DocumentsModule/CentralWidgetData.h"
 
@@ -60,6 +59,9 @@ PreviewWidget::PreviewWidget(DAVA::TArc::ContextAccessor* accessor_, DAVA::Rende
     , rulerController(new RulerController(this))
     , continuousUpdater(new ContinuousUpdater(MakeFunction(this, &PreviewWidget::NotifySelectionChanged), this, 300))
 {
+    dataWrapper = accessor->CreateWrapper(DAVA::ReflectedTypeDB::Get<DocumentData>());
+    dataWrapper.SetListener(this);
+
     qRegisterMetaType<SelectedNodes>("SelectedNodes");
     percentages << 0.25f << 0.33f << 0.50f << 0.67f << 0.75f << 0.90f
                 << 1.00f << 1.10f << 1.25f << 1.50f << 1.75f << 2.00f
@@ -125,15 +127,6 @@ void PreviewWidget::InjectRenderWidget(DAVA::RenderWidget* renderWidget_)
     renderWidget->SetClientDelegate(this);
 }
 
-void PreviewWidget::OnContextWillBeChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* newOne)
-{
-    if (current != nullptr)
-    {
-        continuousUpdater->Stop();
-        DVASSERT(selectionContainer.selectedNodes.empty());
-    }
-}
-
 void PreviewWidget::CreateActions()
 {
     QAction* importPackageAction = new QAction(tr("Import package"), this);
@@ -187,20 +180,18 @@ void PreviewWidget::CreateActions()
     addAction(focusPreviousChildAction);
 }
 
-void PreviewWidget::OnContextWasChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* oldOne)
+#include <QDebug>
+void PreviewWidget::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields)
 {
-    if (oldOne != nullptr)
+    using namespace DAVA::TArc;
+    if (wrapper.HasData() && fields.empty())
     {
-        CentralWidgetData* widgetData = oldOne->GetData<CentralWidgetData>();
-        DVASSERT(widgetData != nullptr);
-        widgetData->canvasPosition = editorCanvas->GetPosition();
-    };
-    if (current != nullptr)
-    {
-        CentralWidgetData* widgetData = current->GetData<CentralWidgetData>();
+        DataContext* activeContext = accessor->GetActiveContext();
+        DVASSERT(nullptr != activeContext);
+        CentralWidgetData* widgetData = activeContext->GetData<CentralWidgetData>();
         DVASSERT(widgetData != nullptr);
         editorCanvas->SetPosition(widgetData->canvasPosition);
-        //TODO: implement position at center
+        qDebug() << verticalScrollBar->maximum() << horizontalScrollBar->maximum();
     }
 }
 

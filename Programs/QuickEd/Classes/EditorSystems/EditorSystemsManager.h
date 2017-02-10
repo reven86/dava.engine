@@ -159,8 +159,6 @@ public:
     DAVA::Vector2 GetMouseDelta() const;
     DAVA::Vector2 GetLastMousePos() const;
 
-    void OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields) override;
-
 private:
     void SetDragState(eDragState dragState);
     void SetDisplayState(eDisplayState displayState);
@@ -182,6 +180,8 @@ private:
     void OnDragStateChanged(eDragState currentState, eDragState previousState);
     void OnDisplayStateChanged(eDisplayState currentState, eDisplayState previousState);
 
+    void OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields) override;
+
     DAVA::TArc::ContextAccessor* accessor = nullptr;
 
     DAVA::RefPtr<DAVA::UIControl> rootControl;
@@ -196,7 +196,6 @@ private:
     EditorControlsView* controlViewPtr = nullptr; //weak pointer to canvas system;
     SelectionSystem* selectionSystemPtr = nullptr; // weak pointer to selection system
     HUDSystem* hudSystemPtr = nullptr;
-    SelectedControls selectedControlNodes;
 
     eDragState dragState = NoDrag;
     eDragState previousDragState = NoDrag;

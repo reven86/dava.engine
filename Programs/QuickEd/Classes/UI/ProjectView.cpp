@@ -160,11 +160,6 @@ void MainWindow::ProjectView::OnCurrentLanguageChanged(int newLanguageIndex)
     emit CurrentLanguageChanged(langCode);
 }
 
-void MainWindow::ProjectView::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
-{
-    emit SelectionChanged(selected, deselected);
-}
-
 void MainWindow::ProjectView::SelectFile(const QString& filePath)
 {
     mainWindow->fileSystemDockWidget->SelectFile(filePath);

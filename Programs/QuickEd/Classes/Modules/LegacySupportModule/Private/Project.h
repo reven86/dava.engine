@@ -2,7 +2,6 @@
 
 #include "Modules/ProjectModule/ProjectData.h"
 #include "UI/mainwindow.h"
-#include "EditorSystems/SelectionContainer.h"
 
 #include <TArc/DataProcessing/DataNode.h>
 #include <TArc/Utils/QtConnections.h>
@@ -67,8 +66,6 @@ public:
     const DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>>& GetPrototypes() const;
 
 private:
-    void OnFindPrototypeInstances();
-    void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OnFontPresetChanged();
 
     QString projectDirectory;
@@ -78,7 +75,6 @@ private:
     MainWindow::ProjectView* view = nullptr;
     std::unique_ptr<EditorFontSystem> editorFontSystem;
     std::unique_ptr<EditorLocalizationSystem> editorLocalizationSystem;
-    SelectionContainer selectionContainer;
 
     DAVA::TArc::QtConnections connections;
     DAVA::TArc::ContextAccessor* accessor = nullptr;

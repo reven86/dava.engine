@@ -214,8 +214,8 @@ void EditorSystemsManager::OnSelectionChanged(const SelectedNodes& selected, con
 {
     using namespace DAVA::TArc;
     DocumentData* data = accessor->GetActiveContext()->GetData<DocumentData>();
-    SelectionContainer::MergeSelectionToContainer(selected, deselected, selectedControlNodes);
-    if (!selectedControlNodes.empty())
+    selectionContainer.MergeSelection(selected, deselected);
+    if (!selectionContainer.selectedNodes.empty())
     {
         RefreshRootControls();
     }
@@ -239,7 +239,6 @@ void EditorSystemsManager::OnPackageChanged(PackageNode* package_)
     }
     magnetLinesChanged.Emit({});
     ClearHighlight();
-    packageChanged.Emit(nullptr);
 
     package = package_;
     RefreshRootControls();
@@ -281,7 +280,7 @@ void EditorSystemsManager::RefreshRootControls()
 
     if (nullptr != package)
     {
-        if (selectedControlNodes.empty())
+        if (selectionContainer.selectedNodes.empty())
         {
             PackageControlsNode* controlsNode = package->GetPackageControlsNode();
             for (int index = 0; index < controlsNode->GetCount(); ++index)
@@ -291,9 +290,9 @@ void EditorSystemsManager::RefreshRootControls()
         }
         else
         {
-            for (ControlNode* selectedControlNode : selectedControlNodes)
+            for (PackageBaseNode* selectedNode : selectionContainer.selectedNodes)
             {
-                PackageBaseNode* root = static_cast<PackageBaseNode*>(selectedControlNode);
+                PackageBaseNode* root = selectedNode;
                 while (nullptr != root->GetParent() && nullptr != root->GetParent()->GetControl())
                 {
                     root = root->GetParent();
@@ -380,15 +379,52 @@ DAVA::Vector2 EditorSystemsManager::GetLastMousePos() const
 
 void EditorSystemsManager::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields)
 {
+    using namespace DAVA;
     DVASSERT(wrapper == documentDataWrapper);
+
+    DAVA::Function<void(void)> updatePackage = [this]() {
+        PackageNode* package = nullptr;
+        Any packageValue = documentDataWrapper.GetFieldValue(DocumentData::packagePropertyName);
+        if (packageValue.CanCast<PackageNode*>())
+        {
+            package = packageValue.Cast<PackageNode*>();
+        }
+        packageChanged.Emit(package);
+    };
+
     if (wrapper.HasData() == false)
     {
-        selectionChanged.Emit(SelectedNodes(), selectionContainer.selectedNodes);
+        updatePackage();
+        if (selectionContainer.selectedNodes.empty() == false)
+        {
+            selectionChanged.Emit(SelectedNodes(), selectionContainer.selectedNodes);
+        }
         return;
     }
+
     if (wrapper.HasData() && fields.empty())
     {
-        selectionContainer.selectedNodes = wrapper.GetFieldValue(DocumentData::selectionPropertyName);
+        updatePackage();
+
+        if (selectionContainer.selectedNodes.empty() == false)
+        {
+            selectionChanged.Emit(SelectedNodes(), selectionContainer.selectedNodes);
+        }
+        Any selectedNodes = wrapper.GetFieldValue(DocumentData::selectionPropertyName);
+        DVASSERT(selectedNodes.CanCast<SelectedNodes>());
+        selectionContainer.selectedNodes = selectedNodes.Cast<SelectedNodes>();
+        if (selectionContainer.selectedNodes.empty() == false)
+        {
+            selectionChanged.Emit(selectionContainer.selectedNodes, SelectedNodes());
+        }
+    }
+    else if (std::find(fields.begin(), fields.end(), Any(DocumentData::packagePropertyName)) != fields.end())
+    {
+        updatePackage();
+    }
+    else if (std::find(fields.begin(), fields.end(), Any(DocumentData::selectionPropertyName)) != fields.end())
+    {
+        RefreshRootControls();
     }
 }
 
