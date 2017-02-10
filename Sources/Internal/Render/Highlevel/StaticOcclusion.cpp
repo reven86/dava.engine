@@ -31,7 +31,7 @@ StaticOcclusion::~StaticOcclusion()
     SafeDelete(staticOcclusionRenderPass);
 }
 
-void StaticOcclusion::StartBuildOcclusion(StaticOcclusionData* _currentData, RenderSystem* _renderSystem, Landscape* _landscape, int32 _occlusionPixelThreshold, int32 _occlusionPixelThresholdForSpeedtree)
+void StaticOcclusion::StartBuildOcclusion(StaticOcclusionData* _currentData, RenderSystem* _renderSystem, Landscape* _landscape, uint32 _occlusionPixelThreshold, uint32 _occlusionPixelThresholdForSpeedtree)
 {
     lastInfoMessage = "Preparing to build static occlusion...";
     staticOcclusionRenderPass = new StaticOcclusionRenderPass(PASS_FORWARD);
@@ -336,11 +336,11 @@ bool StaticOcclusion::ProcessRecorderQueries()
                 int32& samplesPassed = fr->samplesPassed[req->GetStaticOcclusionIndex()];
                 samplesPassed += rhi::QueryValue(fr->queryBuffer, index);
 
-                int32 threshold = req->GetType() != RenderObject::TYPE_SPEED_TREE ?
+                uint32 threshold = req->GetType() != RenderObject::TYPE_SPEED_TREE ?
                 occlusionPixelThreshold :
                 occlusionPixelThresholdForSpeedtree;
 
-                if (samplesPassed > threshold)
+                if (static_cast<uint32>(samplesPassed) > threshold)
                 {
                     bool alreadyVisible = currentData->IsObjectVisibleFromBlock(fr->blockIndex, req->GetStaticOcclusionIndex());
                     DVASSERT(!alreadyVisible);
