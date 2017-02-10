@@ -131,19 +131,6 @@ UIStyleSheetPropertyDataBase::UIStyleSheetPropertyDataBase()
     for (int32 propertyIndex = 0; propertyIndex < STYLE_SHEET_PROPERTY_COUNT; propertyIndex++)
     {
         UIStyleSheetPropertyDescriptor& descr = properties[propertyIndex];
-        //         for (int32 i = 0; i < descr.group->typeInfo->MembersCount(); i++)
-        //         {
-        //             const InspMember* member = descr.group->typeInfo->Member(i);
-        //             if (member->Name() == descr.name)
-        //             {
-        //                 DVASSERT(descr.memberInfo == nullptr);
-        //                 DVASSERT(descr.defaultValue.GetType() == VariantType::TypeFromMetaInfo(member->Type()));
-        //                 descr.memberInfo = member;
-        //                 break;
-        //             }
-        //         }
-        //         DVASSERT(descr.memberInfo != nullptr);
-
         FastName fullName = FastName(descr.GetFullName());
         propertyNameToIndexMap[fullName] = propertyIndex;
 
