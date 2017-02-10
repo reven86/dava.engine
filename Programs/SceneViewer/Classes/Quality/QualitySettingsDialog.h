@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Settings.h"
+
 #include "UIControls/TriggerBox.h"
 #include "UIControls/BinaryTriggerBox.h"
 
