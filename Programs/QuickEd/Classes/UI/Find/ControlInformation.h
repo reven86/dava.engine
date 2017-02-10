@@ -3,6 +3,7 @@
 #include "Base/BaseTypes.h"
 #include "Base/FastName.h"
 #include "Functional/Functional.h"
+#include "FileSystem/VariantType.h"
 
 class ControlInformation;
 
