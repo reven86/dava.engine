@@ -868,7 +868,7 @@ void PreviewWidget::OnDragStateChanged(EditorSystemsManager::eDragState dragStat
     }
 }
 
-void PreviewWidget::OnPropertyChanged(ControlNode* node, AbstractProperty* property, Any newValue)
+void PreviewWidget::OnPropertyChanged(ControlNode* node, AbstractProperty* property, const Any& newValue)
 {
     DVASSERT(!document.isNull());
     QtModelPackageCommandExecutor* commandExecutor = document->GetCommandExecutor();

@@ -100,7 +100,7 @@ private:
     void OnKeyPressed(QKeyEvent* event) override;
 
     void OnDragStateChanged(EditorSystemsManager::eDragState dragState, EditorSystemsManager::eDragState previousState);
-    void OnPropertyChanged(ControlNode* node, AbstractProperty* property, DAVA::Any newValue);
+    void OnPropertyChanged(ControlNode* node, AbstractProperty* property, const DAVA::Any& newValue);
 
     float GetScaleFromWheelEvent(int ticksCount) const;
     float GetNextScale(float currentScale, int ticksCount) const;

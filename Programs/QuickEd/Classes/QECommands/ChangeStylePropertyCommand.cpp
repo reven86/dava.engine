@@ -4,12 +4,12 @@
 #include "Model/PackageHierarchy/StyleSheetNode.h"
 #include "Model/ControlProperties/AbstractProperty.h"
 
-ChangeStylePropertyCommand::ChangeStylePropertyCommand(PackageNode* _root, StyleSheetNode* _node, AbstractProperty* prop, const DAVA::Any& newVal)
-    : DAVA::Command(DAVA::String("change ") + prop->GetName().c_str())
+ChangeStylePropertyCommand::ChangeStylePropertyCommand(PackageNode* _root, StyleSheetNode* _node, AbstractProperty* _property, const DAVA::Any& _newVal)
+    : DAVA::Command(DAVA::String("change ") + _property->GetName().c_str())
     , root(SafeRetain(_root))
     , node(SafeRetain(_node))
-    , property(SafeRetain(prop))
-    , newValue(newVal)
+    , property(SafeRetain(_property))
+    , newValue(_newVal)
 {
     oldValue = property->GetValue();
 }

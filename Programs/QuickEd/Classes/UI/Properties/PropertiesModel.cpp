@@ -237,7 +237,7 @@ bool PropertiesModel::setData(const QModelIndex& index, const QVariant& value, i
     {
         Any newVal;
 
-        if (value.userType() == QMetaTypeId<Any>::qt_metatype_id())
+        if (value.canConvert<Any>())
         {
             newVal = value.value<Any>();
         }
