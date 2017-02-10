@@ -55,7 +55,7 @@ struct StaticOcclusionFrameResult
     uint32 blockIndex = 0;
     rhi::HQueryBuffer queryBuffer = rhi::HQueryBuffer(rhi::InvalidHandle);
     Vector<RenderObject*> frameRequests;
-    DAVA::UnorderedMap<uint16, int32> samplesPassed = {}; // First - object's static occlusion index. Second - pixels drawn for this object in current block.
+    DAVA::UnorderedMap<uint16, int32> samplesPassed; // First - object's static occlusion index. Second - pixels drawn for this object in current block.
 };
 
 class StaticOcclusion
@@ -120,7 +120,7 @@ private:
     uint32 currentFrameY = 0;
     uint32 currentFrameZ = 0;
     int32 occlusionPixelThreshold = 0;
-    int32 occlusionPixelThresholdForSpeedtree;
+    int32 occlusionPixelThresholdForSpeedtree = 0;
 };
 };
 

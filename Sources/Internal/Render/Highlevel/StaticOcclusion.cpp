@@ -336,11 +336,11 @@ bool StaticOcclusion::ProcessRecorderQueries()
                 int32& samplesPassed = fr->samplesPassed[req->GetStaticOcclusionIndex()];
                 samplesPassed += rhi::QueryValue(fr->queryBuffer, index);
 
-                int32 thershold = req->GetType() != RenderObject::TYPE_SPEED_TREE ?
+                int32 threshold = req->GetType() != RenderObject::TYPE_SPEED_TREE ?
                 occlusionPixelThreshold :
                 occlusionPixelThresholdForSpeedtree;
 
-                if (samplesPassed > thershold)
+                if (samplesPassed > threshold)
                 {
                     bool alreadyVisible = currentData->IsObjectVisibleFromBlock(fr->blockIndex, req->GetStaticOcclusionIndex());
                     DVASSERT(!alreadyVisible);
