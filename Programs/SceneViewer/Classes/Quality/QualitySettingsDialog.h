@@ -13,6 +13,9 @@
 class QualitySettingsDialogDelegate
 {
 public:
+    virtual ~QualitySettingsDialogDelegate()
+    {
+    }
     virtual void OnQualitySettingsEditDone() = 0;
 };
 
