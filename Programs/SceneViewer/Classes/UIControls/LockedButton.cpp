@@ -17,12 +17,12 @@ LockedButton::LockedButton(LockedButtonHolder& holder, DAVA::Font* font, const D
     AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &LockedButton::OnPressed));
 }
 
-bool LockedButton::IsSelected() const
+bool LockedButton::IsLocked() const
 {
     return GetState() == DAVA::UIControl::STATE_SELECTED;
 }
 
-void LockedButton::SetSelected(bool selected)
+void LockedButton::SetLocked(bool selected)
 {
     SetState(selected ? DAVA::UIControl::STATE_SELECTED : DAVA::UIControl::STATE_NORMAL);
     SetInputEnabled(!selected);

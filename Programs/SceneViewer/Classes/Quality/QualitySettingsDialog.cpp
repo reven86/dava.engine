@@ -507,7 +507,7 @@ void QualitySettingsDialog::ApplyQualitySettings()
     DAVA::int32 optionsCount = DAVA::QualitySettingsSystem::Instance()->GetOptionsCount();
     for (DAVA::int32 i = 0; i < optionsCount; ++i)
     {
-        DVASSERT(i < qualityOptionBoxes.size());
+        DVASSERT(static_cast<size_t>(i) < qualityOptionBoxes.size());
         BinaryTriggerBox* optionBox = qualityOptionBoxes[i];
         bool checked = optionBox->IsOn();
 
@@ -632,7 +632,7 @@ void QualitySettingsDialog::ResetQualitySettings()
     {
         DAVA::FastName optionName = DAVA::QualitySettingsSystem::Instance()->GetOptionName(i);
 
-        DVASSERT(i < qualityOptionBoxes.size());
+        DVASSERT(static_cast<size_t>(i) < qualityOptionBoxes.size());
         BinaryTriggerBox* binaryBox = qualityOptionBoxes[i];
         binaryBox->SetOn(DAVA::QualitySettingsSystem::Instance()->IsOptionEnabled(optionName));
     }

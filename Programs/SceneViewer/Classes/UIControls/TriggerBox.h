@@ -9,6 +9,9 @@ class TriggerBox;
 class TriggerBoxListener
 {
 public:
+    virtual ~TriggerBoxListener()
+    {
+    }
     virtual void OnOptionChanged(TriggerBox*) = 0;
 };
 

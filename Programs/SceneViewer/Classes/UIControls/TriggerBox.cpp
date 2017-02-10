@@ -42,7 +42,7 @@ bool TriggerBox::AddOption(TriggerBox::OptionID optionId, const DAVA::WideString
     {
         selectedOption = optionIter;
         LockedButton* button = selectedOption->second;
-        button->SetSelected(true);
+        button->SetLocked(true);
     }
 
     AddControl(lockedButton);
@@ -59,8 +59,8 @@ void TriggerBox::SetOptionSelected(TriggerBox::OptionID optionID)
 
     if (it != selectedOption)
     {
-        selectedOption->second->SetSelected(false);
-        it->second->SetSelected(true);
+        selectedOption->second->SetLocked(false);
+        it->second->SetLocked(true);
         selectedOption = it;
     }
 }
@@ -74,10 +74,10 @@ TriggerBox::OptionID TriggerBox::GetSelectedOptionID() const
 void TriggerBox::OnButtonPressed(LockedButton* button)
 {
     DVASSERT(selectedOption != options.end());
-    selectedOption->second->SetSelected(false);
+    selectedOption->second->SetLocked(false);
     selectedOption = FindOptionByValue(button);
     DVASSERT(selectedOption != options.end());
-    selectedOption->second->SetSelected(true);
+    selectedOption->second->SetLocked(true);
     listener.OnOptionChanged(this);
 }
 
