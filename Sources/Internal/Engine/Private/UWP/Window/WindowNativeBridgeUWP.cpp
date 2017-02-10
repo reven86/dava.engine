@@ -98,6 +98,21 @@ void WindowNativeBridge::UnfocusXamlControl()
 {
     // XAML controls cannot be unfocused programmatically, this is especially useful for text fields
     // So use dummy offscreen control that steals focus
+
+    if (xamlControlThatStealsFocus == nullptr)
+    {
+        // Windows UAP doesn't allow to unfocus UI control programmatically
+        // It only permits to set focus at another control
+        // So create dummy offscreen button that steals focus when there is
+        // a need to unfocus native control, especially useful for text fields
+        xamlControlThatStealsFocus = ref new Windows::UI::Xaml::Controls::Button();
+        xamlControlThatStealsFocus->Content = L"I steal your focus";
+        xamlControlThatStealsFocus->Width = 30;
+        xamlControlThatStealsFocus->Height = 20;
+        AddXamlControl(xamlControlThatStealsFocus);
+        PositionXamlControl(xamlControlThatStealsFocus, -1000.0f, -1000.0f);
+    }
+
     xamlControlThatStealsFocus->Focus(::Windows::UI::Xaml::FocusState::Pointer);
 }
 
@@ -527,6 +542,12 @@ void WindowNativeBridge::OnMouseMoved(Windows::Devices::Input::MouseDevice ^ mou
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window, x, y, modifierKeys, true));
 }
 
+void WindowNativeBridge::OnKeyboardShowing(Windows::UI::ViewManagement::InputPane ^ sender, Windows::UI::ViewManagement::InputPaneVisibilityEventArgs ^ args)
+{
+    // Notify Windows that we'll handle layout by ourselves
+    args->EnsuredFocusedElementInView = true;
+}
+
 eModifierKeys WindowNativeBridge::GetModifierKeys() const
 {
     using ::Windows::System::VirtualKey;
@@ -613,17 +634,6 @@ void WindowNativeBridge::CreateBaseXamlUI()
         AddXamlControl(dummyTextBox);
     }
 
-    // Windows UAP doesn't allow to unfocus UI control programmatically
-    // It only permits to set focus at another control
-    // So create dummy offscreen button that steals focus when there is
-    // a need to unfocus native control, especially useful for text fields
-    xamlControlThatStealsFocus = ref new Button();
-    xamlControlThatStealsFocus->Content = L"I steal your focus";
-    xamlControlThatStealsFocus->Width = 30;
-    xamlControlThatStealsFocus->Height = 20;
-    AddXamlControl(xamlControlThatStealsFocus);
-    PositionXamlControl(xamlControlThatStealsFocus, -1000.0f, -1000.0f);
-
     xamlWindow->Content = xamlSwapChainPanel;
 }
 
@@ -635,6 +645,7 @@ void WindowNativeBridge::InstallEventHandlers()
     using namespace ::Windows::UI::Xaml;
     using namespace ::Windows::UI::Xaml::Input;
     using namespace ::Windows::UI::Xaml::Controls;
+    using namespace ::Windows::UI::ViewManagement;
 
     CoreWindow ^ coreWindow = xamlWindow->CoreWindow;
 
@@ -652,12 +663,16 @@ void WindowNativeBridge::InstallEventHandlers()
     tokenPointerCaptureLost = xamlSwapChainPanel->PointerCaptureLost += ref new PointerEventHandler(this, &WindowNativeBridge::OnPointerCaptureLost);
     tokenPointerMoved = xamlSwapChainPanel->PointerMoved += ref new PointerEventHandler(this, &WindowNativeBridge::OnPointerMoved);
     tokenPointerWheelChanged = xamlSwapChainPanel->PointerWheelChanged += ref new PointerEventHandler(this, &WindowNativeBridge::OnPointerWheelChanged);
+    
+    tokenKeyboardShowing = InputPane::GetForCurrentView()->Showing += ref new TypedEventHandler<InputPane ^, InputPaneVisibilityEventArgs ^>(this, &WindowNativeBridge::OnKeyboardShowing);
 }
 
 void WindowNativeBridge::UninstallEventHandlers()
 {
     using ::Windows::UI::Core::CoreWindow;
     using ::Windows::Devices::Input::MouseDevice;
+ 
+    using namespace ::Windows::UI::ViewManagement;
 
     CoreWindow ^ coreWindow = xamlWindow->CoreWindow;
     MouseDevice ^ mouseDevice = MouseDevice::GetForCurrentView();
@@ -678,6 +693,8 @@ void WindowNativeBridge::UninstallEventHandlers()
     xamlSwapChainPanel->PointerWheelChanged -= tokenPointerWheelChanged;
 
     mouseDevice->MouseMoved -= tokenMouseMoved;
+
+    InputPane::GetForCurrentView()->Showing -= tokenKeyboardShowing;
 }
 
 ::Platform::String ^ WindowNativeBridge::xamlWorkaroundWebViewProblems = LR"(

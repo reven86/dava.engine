@@ -183,7 +183,6 @@ private: // Event handlers
     void OnSelectionChanged();
 
     // Onscreen keyboard events
-    void OnKeyboardHiding(Windows::UI::ViewManagement::InputPaneVisibilityEventArgs ^ args);
     void OnKeyboardShowing(Windows::UI::ViewManagement::InputPaneVisibilityEventArgs ^ args);
 
     // Signal handlers
