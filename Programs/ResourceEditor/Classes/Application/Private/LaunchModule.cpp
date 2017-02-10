@@ -93,5 +93,3 @@ void LaunchModule::UnpackHelpDoc()
     }
     SettingsManager::SetValue(Settings::Internal_EditorVersion, DAVA::VariantType(DAVA::String(APPLICATION_BUILD_VERSION)));
 }
-
-DECL_GUI_MODULE(LaunchModule);
