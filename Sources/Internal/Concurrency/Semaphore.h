@@ -9,7 +9,7 @@ class Semaphore
 {
 public:
     /**
-		The initial count for the semaphore object(0). This value must be greater than or equal to zero
+		The initial count for the semaphore object(0). This value must be greater than or equal to zero.
 	*/
     Semaphore(uint32_t count = 0U);
     Semaphore(const Semaphore&) = delete;
@@ -21,7 +21,7 @@ public:
 	*/
     void Post(uint32_t count = 1);
     /**
-		Wait till semaphore becomes more then 0 and decrement with 1
+		Wait till semaphore becomes more then 0 and decrement with 1 it.
 	*/
     void Wait();
 
