@@ -72,28 +72,6 @@ void StaticOcclusionComponent::Deserialize(KeyedArchive* archive, SerializationC
     Component::Deserialize(archive, serializationContext);
 }
 
-void StaticOcclusionComponent::SetOcclusionPixelThreshold(int32 pixelThreshold)
-{
-    pixelThreshold = Max(0, pixelThreshold);
-    occlusionPixelThreshold = pixelThreshold;
-}
-
-void StaticOcclusionComponent::SetOcclusionPixelThresholdForSpeedtree(int32 pixelThreshold)
-{
-    pixelThreshold = Max(0, pixelThreshold);
-    occlusionPixelThresholdForSpeedtree = pixelThreshold;
-}
-
-int32 StaticOcclusionComponent::GetOcclusionPixelThreshold() const
-{
-    return occlusionPixelThreshold;
-}
-
-int32 StaticOcclusionComponent::GetOcclusionPixelThresholdForSpeedtree() const
-{
-    return occlusionPixelThresholdForSpeedtree;
-}
-
 StaticOcclusionDataComponent::StaticOcclusionDataComponent()
 {
 }

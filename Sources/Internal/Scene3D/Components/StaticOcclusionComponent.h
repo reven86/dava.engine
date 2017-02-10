@@ -208,5 +208,27 @@ inline const float32* StaticOcclusionComponent::GetCellHeightOffsets() const
 {
     return placeOnLandscape ? &cellHeightOffset.front() : NULL;
 }
+
+inline void StaticOcclusionComponent::SetOcclusionPixelThreshold(int32 pixelThreshold)
+{
+    pixelThreshold = Max(0, pixelThreshold);
+    occlusionPixelThreshold = pixelThreshold;
+}
+
+inline void StaticOcclusionComponent::SetOcclusionPixelThresholdForSpeedtree(int32 pixelThreshold)
+{
+    pixelThreshold = Max(0, pixelThreshold);
+    occlusionPixelThresholdForSpeedtree = pixelThreshold;
+}
+
+inline int32 StaticOcclusionComponent::GetOcclusionPixelThreshold() const
+{
+    return occlusionPixelThreshold;
+}
+
+inline int32 StaticOcclusionComponent::GetOcclusionPixelThresholdForSpeedtree() const
+{
+    return occlusionPixelThresholdForSpeedtree;
+}
 }
 #endif //__DAVAENGINE_SWITCH_COMPONENT_H__
