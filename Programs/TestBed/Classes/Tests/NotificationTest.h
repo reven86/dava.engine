@@ -44,6 +44,7 @@ private:
     UIButton* showNotificationProgress;
     UIButton* hideNotificationProgress;
     UIStaticText* activateFromNotification;
+    UITextField* notificationDelayTextField;
 
     LocalNotificationProgress* notificationProgress;
     LocalNotificationText* notificationText;
