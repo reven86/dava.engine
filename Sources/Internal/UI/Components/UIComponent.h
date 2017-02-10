@@ -1,9 +1,7 @@
-#ifndef __DAVAENGINE_UI_COMPONENT_H__
-#define __DAVAENGINE_UI_COMPONENT_H__
+#pragma once
 
 #include "Base/BaseObject.h"
 #include "Reflection/Reflection.h"
-#include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {
@@ -81,5 +79,3 @@ template <class T>
 const Type* UIBaseComponent<T>::reflectionType = Type::Instance<T>();
 }
 
-
-#endif //__DAVAENGINE_UI_COMPONENT_H__

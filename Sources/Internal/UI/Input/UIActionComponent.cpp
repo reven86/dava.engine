@@ -1,5 +1,5 @@
-#include "UIActionComponent.h"
-
+#include "UI/Input/UIActionComponent.h"
+#include "Reflection/ReflectionRegistrator.h"
 #include "UI/UIControl.h"
 #include "UI/UIControlHelpers.h"
 

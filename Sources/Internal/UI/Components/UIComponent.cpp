@@ -1,5 +1,6 @@
-#include "UIComponent.h"
+#include "UI/Components/UIComponent.h"
 #include "UI/UIControl.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {
@@ -13,7 +14,6 @@ DAVA_VIRTUAL_REFLECTION_IMPL(UIComponent)
 UIComponent::UIComponent()
     : control(nullptr)
 {
-    //type = ReflectedTypeDB::GetByPointer(this)->GetType();
 }
 
 UIComponent::UIComponent(const UIComponent& src)
@@ -60,9 +60,4 @@ RefPtr<UIComponent> UIComponent::SafeClone() const
 {
     return RefPtr<UIComponent>(Clone());
 }
-
-//const Type* UIComponent::GetType() const
-//{
-//    return ReflectedTypeDB::GetByPointer(this)->GetType();
-//}
 }

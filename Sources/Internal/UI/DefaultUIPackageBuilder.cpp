@@ -15,6 +15,7 @@
 #include "Styles/UIStyleSheetSystem.h"
 
 #include "Logger/Logger.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {

@@ -1077,34 +1077,36 @@ private:
 public:
     void AddComponent(UIComponent* component);
     void InsertComponentAt(UIComponent* component, uint32 index);
+
     void RemoveComponent(UIComponent* component);
     void RemoveComponent(const Type* type, uint32 index = 0);
     void RemoveComponent(int32 runtimeType, uint32 index = 0);
     void RemoveAllComponents();
 
-    UIComponent* GetComponent(int32 runtimeType, uint32 index = 0) const;
     UIComponent* GetComponent(const Type* type, uint32 index = 0) const;
-    int32 GetComponentIndex(const UIComponent* component) const;
-    UIComponent* GetOrCreateComponent(const Type* type, uint32 index = 0);
-
+    UIComponent* GetComponent(int32 runtimeType, uint32 index = 0) const;
     template <class T>
     inline T* GetComponent(uint32 index = 0) const
     {
         return DynamicTypeCheck<T*>(GetComponent(T::GetStaticRuntimeType(), index));
     }
+
+    int32 GetComponentIndex(const UIComponent* component) const;
+
+    UIComponent* GetOrCreateComponent(const Type* type, uint32 index = 0);
     template <class T>
     inline T* GetOrCreateComponent(uint32 index = 0)
     {
         return DynamicTypeCheck<T*>(GetOrCreateComponent(Type::Instance<T>(), index));
     }
+
+    uint32 GetComponentCount() const;
+    uint32 GetComponentCount(int32 runtimeType) const;
     template <class T>
     inline uint32 GetComponentCount() const
     {
         return GetComponentCount(T::GetStaticRuntimeType());
     }
-
-    uint32 GetComponentCount() const;
-    uint32 GetComponentCount(int32 runtimeType) const;
 
     const Vector<UIComponent*>& GetComponents();
 

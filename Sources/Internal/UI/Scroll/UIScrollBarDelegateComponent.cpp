@@ -1,4 +1,5 @@
-#include "UIScrollBarDelegateComponent.h"
+#include "UI/Scroll/UIScrollBarDelegateComponent.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {

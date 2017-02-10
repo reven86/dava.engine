@@ -46,8 +46,6 @@ void DAVA::RegisterDAVAClasses()
 
     GetEngineContext()->componentManager->RegisterUIComponent<UIControlBackground>();
     GetEngineContext()->componentManager->RegisterUIComponent<UILinearLayoutComponent>();
-    GetEngineContext()->componentManager->RegisterUIComponent<UIControlBackground>();
-    GetEngineContext()->componentManager->RegisterUIComponent<UILinearLayoutComponent>();
     GetEngineContext()->componentManager->RegisterUIComponent<UIFlowLayoutComponent>();
     GetEngineContext()->componentManager->RegisterUIComponent<UIFlowLayoutHintComponent>();
     GetEngineContext()->componentManager->RegisterUIComponent<UIIgnoreLayoutComponent>();

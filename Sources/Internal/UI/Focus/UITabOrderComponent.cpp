@@ -1,4 +1,5 @@
-#include "UITabOrderComponent.h"
+#include "UI/Focus/UITabOrderComponent.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {

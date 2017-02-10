@@ -1,4 +1,4 @@
-#include "UIPackageLoader.h"
+#include "UI/UIPackageLoader.h"
 
 #include "Base/ObjectFactory.h"
 #include "FileSystem/FileSystem.h"
@@ -15,6 +15,7 @@
 #include "UI/Layouts/UILinearLayoutComponent.h"
 #include "Utils/Utils.h"
 #include "Logger/Logger.h"
+#include "Reflection/ReflectedTypeDB.h"
 
 namespace DAVA
 {
