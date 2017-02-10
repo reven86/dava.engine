@@ -152,6 +152,7 @@ void ComboBox::CreateItems(const Reflection& fieldValue, const Reflection& field
 
 int ComboBox::SelectCurrentItem(const Reflection& fieldValue, const Reflection& fieldEnumerator)
 {
+    const M::Enum* enumMeta = ComboBoxDetails::GetEnumMeta(fieldValue, fieldEnumerator);
     Any value = fieldValue.GetValue();
     if (value.IsEmpty() == false)
     {
@@ -159,7 +160,11 @@ int ComboBox::SelectCurrentItem(const Reflection& fieldValue, const Reflection& 
         for (int i = 0; i < countInCombo; ++i)
         {
             Any iAny = itemData(i).value<Any>();
-            if (value == iAny)
+            if (enumMeta != nullptr && value.Cast<int>() == iAny.Cast<int>())
+            {
+                return i;
+            }
+            else if (value == iAny)
             {
                 return i;
             }

@@ -3,16 +3,15 @@
 #include "Base/FastName.h"
 #include "Render/RenderBase.h"
 
-enum eParticleDebugDrawMode;
-
 namespace DAVA
 {
 class RenderSystem;
 class NMaterial;
 class Texture;
-}
 
-class ParticleDebugRenderPass : public DAVA::RenderPass
+enum eParticleDebugDrawMode;
+
+class ParticleDebugRenderPass : public RenderPass
 {
 public:
     struct ParticleDebugRenderPassConfig
@@ -48,3 +47,4 @@ private:
     void MakePacket(Camera* camera);
     NMaterial* SelectMaterial(RenderBatch* batch);
 };
+}

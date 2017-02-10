@@ -3,7 +3,6 @@
 #include "Classes/SceneManager/SceneData.h"
 #include "Classes/Qt/MaterialEditor/MaterialEditor.h"
 #include "Classes/Qt/Scene/System/VisibilityCheckSystem/VisibilityCheckSystem.h"
-#include "Classes/Qt/Scene/System/ParticleEffectDebugDrawSystem/ParticleEffectDebugDrawSystem.h"
 #include "Classes/Qt/Scene/System/EditorMaterialSystem.h"
 #include "Classes/Qt/Scene/SceneEditor2.h"
 #include "Classes/Qt/Settings/SettingsManager.h"
@@ -24,6 +23,7 @@
 #include "Render/Material/NMaterial.h"
 #include "Render/ShaderCache.h"
 #include "Scene3D/Systems/FoliageSystem.h"
+#include "Particles/ParticleEffectDebugDrawSystem/ParticleEffectDebugDrawSystem.h"
 
 namespace ShadersModuleDetail
 {

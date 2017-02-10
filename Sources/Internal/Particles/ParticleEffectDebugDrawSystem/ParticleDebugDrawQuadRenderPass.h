@@ -3,16 +3,16 @@
 #include "Base/FastName.h"
 #include "Render/RHI/rhi_Public.h"
 #include "Math/Vector.h"
+#include "Render/Highlevel/RenderPass.h"
 
 namespace DAVA
 {
 class RenderSystem;
 class NMaterial;
-}
 
 enum eParticleDebugDrawMode;
 
-class ParticleDebugDrawQuadRenderPass : public DAVA::RenderPass
+class ParticleDebugDrawQuadRenderPass : public RenderPass
 {
 public:
     struct ParticleDebugQuadRenderPassConfig
@@ -28,7 +28,7 @@ public:
     void Draw(DAVA::RenderSystem* renderSystem) override;
     static const DAVA::FastName PASS_DEBUG_DRAW_QUAD;
 
-private:    
+private:
     struct VertexPT
     {
         Vector3 position;
@@ -40,7 +40,8 @@ private:
     DAVA::NMaterial* quadMaterial;
     DAVA::NMaterial* quadHeatMaterial;
 
-    const eParticleDebugDrawMode& drawMode;    
+    const eParticleDebugDrawMode& drawMode;
     rhi::HVertexBuffer quadBuffer;
     rhi::Packet quadPacket;
 };
+}

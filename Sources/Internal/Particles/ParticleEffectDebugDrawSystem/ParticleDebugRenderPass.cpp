@@ -1,4 +1,4 @@
-#include "Classes/Qt/Scene/System/ParticleEffectDebugDrawSystem/ParticleDebugRenderPass.h"
+#include "Particles/ParticleEffectDebugDrawSystem/ParticleDebugRenderPass.h"
 
 #include "Render/RHI/rhi_Type.h"
 #include "Render/RHI/rhi_Public.h"
@@ -6,8 +6,10 @@
 #include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerMarkerNames.h"
 
-#include "Classes/Qt/Scene/System/ParticleEffectDebugDrawSystem/ParticleEffectDebugDrawSystem.h"
+#include "Particles/ParticleEffectDebugDrawSystem/ParticleEffectDebugDrawSystem.h"
 
+namespace DAVA
+{
 const DAVA::FastName ParticleDebugRenderPass::PASS_DEBUG_DRAW_PARTICLES("ForwardPass");
 
 DAVA::Texture* ParticleDebugRenderPass::GetTexture() const
@@ -19,22 +21,22 @@ void ParticleDebugRenderPass::PrepareParticlesVisibilityArray(Camera* camera, Re
 {
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::RENDER_PASS_PREPARE_ARRAYS)
 
-    uint32 currVisibilityCriteria = RenderObject::CLIPPING_VISIBILITY_CRITERIA;
+        uint32 currVisibilityCriteria = RenderObject::CLIPPING_VISIBILITY_CRITERIA;
     if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::ENABLE_STATIC_OCCLUSION))
         currVisibilityCriteria &= ~RenderObject::VISIBLE_STATIC_OCCLUSION;
 
     visibilityArray.clear();
     renderSystem->GetRenderHierarchy()->Clip(camera, visibilityArray, currVisibilityCriteria);
     visibilityArray.erase(std::remove_if(visibilityArray.begin(), visibilityArray.end(),
-        [this](RenderObject* obj) 
-        {
-            // Remove obj if obj is not a particle or if showOnlySelected flag is set
-            // if obj is not a particle or it is particle but not in selection set
-            bool isParticle = obj->GetType() == RenderObject::TYPE_PARTICLE_EMTITTER;
-            bool inSet = drawOnlySelected ? selectedParticles->count(obj) : true;
+        [this](RenderObject* obj)
+    {
+        // Remove obj if obj is not a particle or if showOnlySelected flag is set
+        // if obj is not a particle or it is particle but not in selection set
+        bool isParticle = obj->GetType() == RenderObject::TYPE_PARTICLE_EMTITTER;
+        bool inSet = drawOnlySelected ? selectedParticles->count(obj) > 0 : true;
 
-            return !(isParticle && inSet);
-        }), visibilityArray.end());
+        return !(isParticle && inSet);
+    }), visibilityArray.end());
 
     particleBatches.Clear();
     PrepareParticlesBatchesArray(visibilityArray, camera);
@@ -66,12 +68,12 @@ void ParticleDebugRenderPass::PrepareParticlesBatchesArray(const Vector<RenderOb
 }
 
 ParticleDebugRenderPass::ParticleDebugRenderPass(ParticleDebugRenderPassConfig config)
-    : RenderPass(config.name), wireframeMaterial(config.wireframeMaterial), overdrawMaterial(config.overdrawMaterial), 
-        selectedParticles(config.selectedParticles), showAlphaMaterial(config.showAlphaMaterial), 
-        drawMode(config.drawMode), drawOnlySelected(config.drawOnlySelected)
+    : RenderPass(config.name), wireframeMaterial(config.wireframeMaterial), overdrawMaterial(config.overdrawMaterial),
+    selectedParticles(config.selectedParticles), showAlphaMaterial(config.showAlphaMaterial),
+    drawMode(config.drawMode), drawOnlySelected(config.drawOnlySelected)
 {
     passConfig.priority = DAVA::PRIORITY_MAIN_3D;
-    
+
     static const int width = 1024;
     static const int height = 1024;
     debugTexture = DAVA::Texture::CreateFBO(width, height, DAVA::PixelFormat::FORMAT_RGBA8888);
@@ -84,7 +86,7 @@ ParticleDebugRenderPass::ParticleDebugRenderPass(ParticleDebugRenderPassConfig c
     passConfig.colorBuffer[0].clearColor[1] = 0.0f;
     passConfig.colorBuffer[0].clearColor[2] = 0.0f;
     passConfig.colorBuffer[0].clearColor[3] = 0.0f;
-    SetViewport(Rect(0, 0, width, width));
+    SetViewport(Rect(0, 0, static_cast<float32>(height), static_cast<float32>(width)));
 }
 
 void ParticleDebugRenderPass::Draw(DAVA::RenderSystem* renderSystem)
@@ -92,10 +94,10 @@ void ParticleDebugRenderPass::Draw(DAVA::RenderSystem* renderSystem)
     Camera* mainCamera = renderSystem->GetMainCamera();
     Camera* drawCamera = renderSystem->GetDrawCamera();
     SetupCameraParams(mainCamera, drawCamera);
-    
+
     if (BeginRenderPass())
     {
-        PrepareParticlesVisibilityArray(mainCamera, renderSystem);        
+        PrepareParticlesVisibilityArray(mainCamera, renderSystem);
         DrawBatches(mainCamera);
         EndRenderPass();
     }
@@ -105,7 +107,7 @@ void ParticleDebugRenderPass::DrawBatches(Camera* camera)
 {
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::RENDER_PASS_DRAW_LAYERS)
 
-    ShaderDescriptorCache::ClearDynamicBindigs();
+        ShaderDescriptorCache::ClearDynamicBindigs();
 
     //per pass viewport bindings
     viewportSize = Vector2(viewport.dx, viewport.dy);
@@ -129,7 +131,7 @@ void ParticleDebugRenderPass::MakePacket(Camera* camera)
         RenderBatch* batch = particleBatches.Get(i);
         RenderObject* renderObject = batch->GetRenderObject();
         renderObject->BindDynamicParameters(camera);
-        NMaterial* mat = SelectMaterial(batch); 
+        NMaterial* mat = SelectMaterial(batch);
 
         if (mat != nullptr)
         {
@@ -146,7 +148,7 @@ void ParticleDebugRenderPass::MakePacket(Camera* camera)
 }
 
 DAVA::NMaterial* ParticleDebugRenderPass::SelectMaterial(RenderBatch* batch)
-{    
+{
     switch (drawMode)
     {
     case eParticleDebugDrawMode::WIREFRAME:
@@ -169,4 +171,5 @@ DAVA::NMaterial* ParticleDebugRenderPass::SelectMaterial(RenderBatch* batch)
         break;
     }
     return nullptr;
+}
 }

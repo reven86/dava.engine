@@ -1,6 +1,7 @@
 #include "Classes/ParticleSystem/ParticleDebugDrawModule.h"
 
-#include "Classes/Qt/Scene/System/ParticleEffectDebugDrawSystem/ParticleEffectDebugDrawSystem.h"
+#include "Particles/ParticleEffectDebugDrawSystem/ParticleEffectDebugDrawSystem.h"
+
 #include "Classes/SceneManager/SceneData.h"
 #include "Classes/Selection/SelectionData.h"
 #include "Classes/Selection/SelectableGroup.h"
@@ -17,6 +18,8 @@
 #include <TArc/DataProcessing/DataNode.h>
 
 #include <QWidget>
+
+using DAVA::eParticleDebugDrawMode;
 
 ENUM_DECLARE(eParticleDebugDrawMode)
 {
@@ -158,7 +161,7 @@ void ParticleDebugDrawModule::UpdateSceneSystem()
     accessor->ForEachContext([data](DataContext& ctx)
     {
         SceneData::TSceneType scene = ctx.GetData<SceneData>()->GetScene();
-        ParticleEffectDebugDrawSystem* particleEffectDebugDrawSystem = scene->GetParticleDebugSystem();
+        DAVA::ParticleEffectDebugDrawSystem* particleEffectDebugDrawSystem = scene->GetParticleDebugSystem();
         if (particleEffectDebugDrawSystem != nullptr)
         {
             particleEffectDebugDrawSystem->SetIsEnabled(data->isSystemOn);

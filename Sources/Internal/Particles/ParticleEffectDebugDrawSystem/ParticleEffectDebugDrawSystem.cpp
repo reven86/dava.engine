@@ -1,10 +1,11 @@
-#include "Classes/Qt/Scene/System/ParticleEffectDebugDrawSystem/ParticleEffectDebugDrawSystem.h"
-#include "Classes/Qt/Scene/System/ParticleEffectDebugDrawSystem/ParticleDebugRenderPass.h"
-#include "Classes/Qt/Scene/System/ParticleEffectDebugDrawSystem/ParticleDebugDrawQuadRenderPass.h"
+#include "Particles/ParticleEffectDebugDrawSystem/ParticleEffectDebugDrawSystem.h"
+#include "Particles/ParticleEffectDebugDrawSystem/ParticleDebugRenderPass.h"
+#include "Particles/ParticleEffectDebugDrawSystem/ParticleDebugDrawQuadRenderPass.h"
 
+namespace DAVA
+{
 ParticleEffectDebugDrawSystem::ParticleEffectDebugDrawSystem(Scene* scene) : SceneSystem(scene)
 {
-
     if (scene != nullptr)
     {
         GenerateDebugMaterials();
@@ -12,9 +13,9 @@ ParticleEffectDebugDrawSystem::ParticleEffectDebugDrawSystem(Scene* scene) : Sce
         scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::START_PARTICLE_EFFECT);
         scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::STOP_PARTICLE_EFFECT);
         renderSystem = scene->GetRenderSystem();
-        
+
         ParticleDebugRenderPass::ParticleDebugRenderPassConfig config =
-        { ParticleDebugRenderPass::PASS_DEBUG_DRAW_PARTICLES, renderSystem, wireframeMaterial, overdrawMaterial, 
+        { ParticleDebugRenderPass::PASS_DEBUG_DRAW_PARTICLES, renderSystem, wireframeMaterial, overdrawMaterial,
             showAlphaMaterial, drawMode, isDrawOnlySelected, &selectedParticles };
         renderPass = new ParticleDebugRenderPass(config);
 
@@ -36,7 +37,7 @@ ParticleEffectDebugDrawSystem::~ParticleEffectDebugDrawSystem()
 {
     SafeDelete(renderPass);
     SafeDelete(drawQuadPass);
-    
+
     SafeRelease(wireframeMaterial);
     SafeRelease(overdrawMaterial);
     SafeRelease(showAlphaMaterial);
@@ -81,7 +82,7 @@ void ParticleEffectDebugDrawSystem::GenerateDebugMaterials()
         showAlphaMaterial = new NMaterial();
         showAlphaMaterial->SetFXName(NMaterialName::PARTICLES);
         showAlphaMaterial->AddFlag(FastName("PARTICLE_DEBUG_SHOW_ALPHA"), true);
-        showAlphaMaterial->AddFlag(NMaterialFlagName::FLAG_BLENDING, eBlending::BLENDING_ALPHABLEND);        
+        showAlphaMaterial->AddFlag(NMaterialFlagName::FLAG_BLENDING, eBlending::BLENDING_ALPHABLEND);
         showAlphaMaterial->AddProperty(FastName("particleAlphaThreshold"), &alphaThreshold, rhi::ShaderProp::TYPE_FLOAT1);
     }
 }
@@ -209,4 +210,5 @@ void ParticleEffectDebugDrawSystem::SetAlphaThreshold(float32 threshold)
 void ParticleEffectDebugDrawSystem::Process(float32 timeElapsed)
 {
 
+}
 }

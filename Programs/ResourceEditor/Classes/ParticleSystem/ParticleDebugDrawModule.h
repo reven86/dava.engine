@@ -7,10 +7,11 @@
 #include <Reflection/Reflection.h>
 #include <Base/GlobalEnum.h>
 
-enum eParticleDebugDrawMode;
 
 namespace DAVA
 {
+enum eParticleDebugDrawMode;
+
 namespace TArc
 {
 class FieldBinder;
@@ -35,12 +36,12 @@ private:
 
     bool IsDisabled() const;
 
-    eParticleDebugDrawMode GetDrawMode() const;
-    void SetDrawMode(eParticleDebugDrawMode drawMode);
+    DAVA::eParticleDebugDrawMode GetDrawMode() const;
+    void SetDrawMode(DAVA::eParticleDebugDrawMode drawMode);
 
     void UpdateSceneSystem();
     DAVA::UnorderedSet<RenderObject*> ProcessSelection(const SelectableGroup& group);
     std::shared_ptr<DAVA::TArc::FieldBinder> filedBinder;
 
-DAVA_VIRTUAL_REFLECTION(ParticleDebugDrawModule, DAVA::TArc::ClientModule);
+DAVA_VIRTUAL_REFLECTION(DAVA::ParticleDebugDrawModule, DAVA::TArc::ClientModule);
 };

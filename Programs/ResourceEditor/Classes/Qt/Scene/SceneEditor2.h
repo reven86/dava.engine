@@ -44,7 +44,11 @@ class FogSettingsChangedReceiver;
 class VisibilityCheckSystem;
 class RECommandStack;
 class EditorSceneSystem;
+
+namespace DAVA
+{
 class ParticleEffectDebugDrawSystem;
+}
 
 class SceneEditor2 : public DAVA::Scene
 {
@@ -77,7 +81,7 @@ public:
     RulerToolSystem* rulerToolSystem = nullptr;
     StructureSystem* structureSystem = nullptr;
     EditorParticlesSystem* particlesSystem = nullptr;
-    ParticleEffectDebugDrawSystem* particleEffectDebugDrawSystem = nullptr;
+    DAVA::ParticleEffectDebugDrawSystem* particleEffectDebugDrawSystem = nullptr;
     EditorLightSystem* editorLightSystem = nullptr;
     TextDrawSystem* textDrawSystem = nullptr;
     DebugDrawSystem* debugDrawSystem = nullptr;
@@ -166,7 +170,7 @@ public:
     DAVA::uint32 GetFramesCount() const;
     void ResetFramesCount();
 
-    inline ParticleEffectDebugDrawSystem* GetParticleDebugSystem() const;
+    inline DAVA::ParticleEffectDebugDrawSystem* GetParticleDebugSystem() const;
 
     DAVA_DEPRECATED(void MarkAsChanged()); // for old material & particle editors
 
@@ -213,7 +217,7 @@ private:
     };
 };
 
-ParticleEffectDebugDrawSystem* SceneEditor2::GetParticleDebugSystem() const
+DAVA::ParticleEffectDebugDrawSystem* SceneEditor2::GetParticleDebugSystem() const
 {
     return particleEffectDebugDrawSystem;
 }

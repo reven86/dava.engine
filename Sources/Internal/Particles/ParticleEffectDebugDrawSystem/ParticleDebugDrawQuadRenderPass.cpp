@@ -1,10 +1,12 @@
-#include "Classes/Qt/Scene/System/ParticleEffectDebugDrawSystem/ParticleDebugDrawQuadRenderPass.h"
+#include "Particles/ParticleEffectDebugDrawSystem/ParticleDebugDrawQuadRenderPass.h"
 
-#include "Classes/Qt/Scene/System/ParticleEffectDebugDrawSystem/ParticleEffectDebugDrawSystem.h"
+#include "Particles/ParticleEffectDebugDrawSystem/ParticleEffectDebugDrawSystem.h"
 
 #include "Render/RHI/rhi_Type.h"
 #include "Render/RHI/rhi_Public.h"
 
+namespace DAVA
+{
 const FastName ParticleDebugDrawQuadRenderPass::PASS_DEBUG_DRAW_QUAD("ForwardPass");
 
 void ParticleDebugDrawQuadRenderPass::PrepareRenderData()
@@ -33,7 +35,7 @@ void ParticleDebugDrawQuadRenderPass::PrepareRenderData()
     quadPacket.vertexLayoutUID = rhi::VertexLayout::UniqueId(layout);
     quadPacket.vertexStreamCount = 1;
     quadPacket.vertexStream[0] = quadBuffer;
-    
+
     quadPacket.primitiveType = rhi::PRIMITIVE_TRIANGLELIST;
     quadPacket.primitiveCount = 2;
 }
@@ -54,7 +56,7 @@ ParticleDebugDrawQuadRenderPass::ParticleDebugDrawQuadRenderPass(ParticleDebugQu
     passConfig = config.renderSystem->GetMainPassConfig();
     quadMaterial->PreBuildMaterial(passName);
     quadHeatMaterial->PreBuildMaterial(passName);
-    
+
     SetRenderTargetProperties(passConfig.viewport.width, passConfig.viewport.height, DAVA::PixelFormat::FORMAT_RGBA8888);
     PrepareRenderData();
 }
@@ -73,8 +75,8 @@ void ParticleDebugDrawQuadRenderPass::Draw(DAVA::RenderSystem* renderSystem)
     passConfig.viewport.width = Renderer::GetFramebufferWidth();
     passConfig.viewport.height = Renderer::GetFramebufferHeight();
 
-    if (quadMaterial->PreBuildMaterial(passName) 
-        && quadHeatMaterial->PreBuildMaterial(passName) 
+    if (quadMaterial->PreBuildMaterial(passName)
+        && quadHeatMaterial->PreBuildMaterial(passName)
         && BeginRenderPass())
     {
         ByndDynamicParams(cam);
@@ -86,4 +88,5 @@ void ParticleDebugDrawQuadRenderPass::Draw(DAVA::RenderSystem* renderSystem)
         rhi::AddPacket(packetList, quadPacket);
         EndRenderPass();
     }
+}
 }

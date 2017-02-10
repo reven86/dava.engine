@@ -1,8 +1,9 @@
 #pragma once
 
 #include "DAVAEngine.h"
-#include "Classes/Qt/Scene/System/EditorSceneSystem.h"
 
+namespace DAVA
+{
 class ParticleDebugRenderPass;
 class ParticleDebugDrawQuadRenderPass;
 
@@ -13,7 +14,7 @@ enum eParticleDebugDrawMode
     OVERDRAW
 };
 
-class ParticleEffectDebugDrawSystem : public DAVA::SceneSystem, public EditorSceneSystem
+class ParticleEffectDebugDrawSystem : public SceneSystem
 {
 public:
     ParticleEffectDebugDrawSystem(Scene* scene);
@@ -24,7 +25,7 @@ public:
     void RemoveComponent(Entity* entity, Component* component) override;
     void ImmediateEvent(Component* component, uint32 event) override;
     void Process(float32 timeElapsed) override;
-    void Draw() override;
+    void Draw();
 
     void GenerateDebugMaterials();
     void GenerateQuadMaterials();
@@ -90,7 +91,7 @@ void ParticleEffectDebugDrawSystem::SetDrawMode(eParticleDebugDrawMode mode)
     drawMode = mode;
 }
 
-bool ParticleEffectDebugDrawSystem::GetIsEnabled() const 
+bool ParticleEffectDebugDrawSystem::GetIsEnabled() const
 {
     return isEnabled;
 }
@@ -114,4 +115,4 @@ const Vector<NMaterial*>* const ParticleEffectDebugDrawSystem::GetMaterials() co
 {
     return &materials;
 }
- 
+}

@@ -3,6 +3,7 @@
 #include "Classes/Project/ProjectManagerData.h"
 #include "Classes/Application/REGlobal.h"
 #include "Classes/Selection/Selection.h"
+#include "Particles/ParticleEffectDebugDrawSystem/ParticleEffectDebugDrawSystem.h"
 
 #include "Settings/SettingsManager.h"
 #include "Deprecated/SceneValidator.h"
@@ -26,7 +27,6 @@
 #include "Classes/Qt/Scene/System/VisibilityCheckSystem/VisibilityCheckSystem.h"
 #include "Classes/Qt/Scene/System/EditorVegetationSystem.h"
 #include "Classes/Qt/Scene/System/EditorSceneSystem.h"
-#include "Classes/Qt/Scene/System/ParticleEffectDebugDrawSystem/ParticleEffectDebugDrawSystem.h"
 
 // framework
 #include "Debug/DVAssert.h"
@@ -541,6 +541,7 @@ void SceneEditor2::Draw()
         {
             system->Draw();
         }
+        particleEffectDebugDrawSystem->Draw();
     }
 }
 
