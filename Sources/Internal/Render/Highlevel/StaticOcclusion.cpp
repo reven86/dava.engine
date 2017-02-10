@@ -336,10 +336,8 @@ bool StaticOcclusion::ProcessRecorderQueries()
                 int32& samplesPassed = fr->samplesPassed[req->GetStaticOcclusionIndex()];
                 samplesPassed += rhi::QueryValue(fr->queryBuffer, index);
 
-                int32 thershold = req->GetType() != RenderObject::TYPE_SPEED_TREE
-                ?
-                occlusionPixelThreshold
-                :
+                int32 thershold = req->GetType() != RenderObject::TYPE_SPEED_TREE ?
+                occlusionPixelThreshold :
                 occlusionPixelThresholdForSpeedtree;
 
                 if (samplesPassed > thershold)
