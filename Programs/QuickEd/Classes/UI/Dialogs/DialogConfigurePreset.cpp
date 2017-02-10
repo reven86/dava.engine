@@ -3,6 +3,8 @@
 #include "Render/2D/FTFont.h"
 #include "Helpers/ResourcesManageHelper.h"
 #include "FileSystem/LocalizationSystem.h"
+#include "Engine/Engine.h"
+
 #include "Project/EditorFontSystem.h"
 #include "ui_DialogConfigurePreset.h"
 #include <QFileInfo>
@@ -27,7 +29,8 @@ DialogConfigurePreset::DialogConfigurePreset(EditorFontSystem* editorFontSystem_
 
     ui->comboBox_locale->addItems(editorFontSystem->GetAvailableFontLocales());
 
-    ui->comboBox_locale->setCurrentText(QString::fromStdString(LocalizationSystem::Instance()->GetCurrentLocale()));
+    const EngineContext* engineContext = GetEngineContext();
+    ui->comboBox_locale->setCurrentText(QString::fromStdString(engineContext->localizationSystem->GetCurrentLocale()));
 
     initPreset();
 

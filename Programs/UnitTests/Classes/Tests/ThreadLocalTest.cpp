@@ -45,7 +45,7 @@ DAVA_TESTCLASS (ThreadLocalTest)
         tlsClass.Reset(new TlsClass(4, "Main thread"));
 
         // Run another thread which changes values of thread local variables
-        Thread* thread = Thread::Create(Message(this, &ThreadLocalTest::ThreadFunc));
+        Thread* thread = Thread::Create(MakeFunction(this, &ThreadLocalTest::ThreadFunc));
         thread->Start();
         thread->Join();
         SafeRelease(thread);
@@ -65,7 +65,7 @@ DAVA_TESTCLASS (ThreadLocalTest)
         tlsClass.Reset();
     }
 
-    void ThreadFunc(BaseObject*, void*, void*)
+    void ThreadFunc()
     {
         // Set thread local variables in another thread
         tlsInt.Reset(new int(333));

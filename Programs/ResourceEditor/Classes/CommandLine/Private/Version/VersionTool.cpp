@@ -1,8 +1,9 @@
 #include "CommandLine/VersionTool.h"
 #include "Logger/Logger.h"
 
+#include <Tools/Version.h>
+
 #include "DAVAVersion.h"
-#include "Version.h"
 #include "TArc/Utils/ModuleCollection.h"
 
 #include <QtGlobal>

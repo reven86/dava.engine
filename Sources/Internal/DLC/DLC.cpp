@@ -643,6 +643,7 @@ void DLC::StepCheckPatchFinish(uint32 id, DownloadStatus status)
                     else
                     {
                         // some other unexpected error during check process
+                        Logger::ErrorToFile(logsFilePath, "[DLC::StepCheckPatchFinish] Unexpected download error: %u.", downloadErrorFull);
                         PostError(DE_CHECK_ERROR);
                     }
                 }
@@ -780,7 +781,10 @@ void DLC::StepDownloadPatchFinish(uint32 id, DownloadStatus status)
         if (DL_FINISHED == status)
         {
             DownloadError downloadError;
+            int32 implError;
+
             DownloadManager::Instance()->GetError(id, downloadError);
+            DownloadManager::Instance()->GetImplError(id, implError);
 
             switch (downloadError)
             {
@@ -807,7 +811,7 @@ void DLC::StepDownloadPatchFinish(uint32 id, DownloadStatus status)
 
             default:
                 // some other unexpected error during download process
-                Logger::ErrorToFile(logsFilePath, "[DLC::StepDownloadPatchFinish] Unexpected download error.");
+                Logger::ErrorToFile(logsFilePath, "[DLC::StepDownloadPatchFinish] Unexpected download error: %u, implError %u.", downloadError, implError);
                 PostError(DE_DOWNLOAD_ERROR);
                 break;
             }
@@ -849,7 +853,7 @@ void DLC::StepPatchBegin()
     }
 
     Logger::InfoToFile(logsFilePath, "[DLC::StepPatchBegin] Patching, %d files to patch", dlcContext.totalPatchCount);
-    patchingThread = Thread::Create(Message(this, &DLC::PatchingThread));
+    patchingThread = Thread::Create(MakeFunction(this, &DLC::PatchingThread));
     patchingThread->Start();
 }
 
@@ -905,7 +909,7 @@ void DLC::StepPatchCancel()
     patchingThread->Join();
 }
 
-void DLC::PatchingThread(BaseObject* caller, void* callerData, void* userData)
+void DLC::PatchingThread()
 {
     Logger::InfoToFile(logsFilePath, "[DLC::PatchingThread] Patching thread started");
     PatchFileReader patchReader(dlcContext.remotePatchStorePath, false, true);

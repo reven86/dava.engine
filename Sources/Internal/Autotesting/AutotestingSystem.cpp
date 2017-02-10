@@ -6,9 +6,9 @@
 #include "Engine/Engine.h"
 #include "Render/RenderHelper.h"
 #include "FileSystem/FileList.h"
-#include "Platform/DeviceInfo.h"
-#include "Platform/DateTime.h"
 #include "FileSystem/KeyedArchive.h"
+#include "Platform/DeviceInfo.h"
+#include "Time/DateTime.h"
 
 #include "Autotesting/AutotestingSystemLua.h"
 #include "Autotesting/AutotestingDB.h"
@@ -19,7 +19,6 @@ namespace DAVA
 {
 AutotestingSystem::AutotestingSystem()
     : luaSystem(nullptr)
-    , startTimeMS(0)
     , isInit(false)
     , isRunning(false)
     , needExitApp(false)
@@ -75,39 +74,53 @@ void AutotestingSystem::InitLua(AutotestingSystemLuaDelegate* _delegate)
     luaSystem->SetDelegate(_delegate);
 }
 
-String AutotestingSystem::ResolvePathToAutomation(const String& automationPath)
+bool AutotestingSystem::ResolvePathToAutomation()
 {
-    Logger::Info("AutotestingSystem::ResolvePathToAutomation platform=%s path=%s", DeviceInfo::GetPlatformString().c_str(), automationPath.c_str());
-    String automationResolvedStrPath;
-    // Try to find automation data in Documents
-    if (DeviceInfo::GetPlatform() == DeviceInfo::PLATFORM_PHONE_WIN_UAP)
+    Logger::Info("AutotestingSystem::ResolvePathToAutomation platform=%s", DeviceInfo::GetPlatformString().c_str());
+    pathToAutomation = "~doc:/atpath.txt";
+    if (FileSystem::Instance()->Exists(pathToAutomation))
     {
-        //TODO: it's temporary solution will be changed with upgrading WinSDK and launching tool
-        automationResolvedStrPath = "d:" + automationPath;
+        ScopedPtr<File> file(File::Create(pathToAutomation, File::OPEN | File::READ));
+        if (file)
+        {
+            pathToAutomation = file->ReadLine();
+            if (FileSystem::Instance()->Exists(pathToAutomation))
+            {
+                Logger::Info("AutotestingSystem::ResolvePathToAutomation resolved path %s", pathToAutomation.GetAbsolutePathname().c_str());
+                return true;
+            }
+        }
     }
-    else if (DeviceInfo::GetPlatform() == DeviceInfo::PLATFORM_ANDROID)
+
+    // Try to find automation data in Documents
+    if (DeviceInfo::GetPlatform() == DeviceInfo::PLATFORM_ANDROID)
     {
-        automationResolvedStrPath = FileSystem::Instance()->GetPublicDocumentsPath().GetAbsolutePathname() + automationPath;
+        pathToAutomation = FileSystem::Instance()->GetPublicDocumentsPath().GetAbsolutePathname() + "/Autotesting/";
     }
     else
     {
-        automationResolvedStrPath = "~doc:" + automationPath;
+        pathToAutomation = "~doc:/Autotesting/";
     }
 
-    if (FilePath(automationResolvedStrPath).Exists())
+    if (FileSystem::Instance()->Exists(pathToAutomation))
     {
-        Logger::Info("AutotestingSystem::ResolvePathToAutomation resolved path=%s", automationResolvedStrPath.c_str());
-        return automationResolvedStrPath;
+        Logger::Info("AutotestingSystem::ResolvePathToAutomation resolved path in documents %s", pathToAutomation.GetAbsolutePathname().c_str());
+        return true;
     }
 
     // If there are no automation data in documents, try to find it in Data
-    if (FilePath("~res:" + automationPath).Exists())
+    pathToAutomation = "~res:/Autotesting/";
+    if (FileSystem::Instance()->Exists(pathToAutomation))
     {
-        automationResolvedStrPath = "~res:" + automationPath;
-        Logger::Info("AutotestingSystem::ResolvePathToAutomation resolved path=%s", automationResolvedStrPath.c_str());
-        return automationResolvedStrPath;
+        Logger::Info("AutotestingSystem::ResolvePathToAutomation resolved in resources %s", pathToAutomation.GetAbsolutePathname().c_str());
+        return true;
     }
-    return "";
+    return false;
+}
+
+FilePath AutotestingSystem::GetPathTo(const String& path)
+{
+    return pathToAutomation + path;
 }
 
 // This method is called on application started and it handle autotest initialisation
@@ -129,9 +142,9 @@ void AutotestingSystem::OnAppStarted()
         FetchParametersFromDB();
     }
 
-    const String testFileLocation = Format("/Autotesting/Tests/%s/%s.lua", groupName.c_str(), testFileName.c_str());
-    String testFileStrPath = ResolvePathToAutomation(testFileLocation);
-    if (testFileStrPath.empty())
+    const String testFileLocation = Format("/Tests/%s/%s.lua", groupName.c_str(), testFileName.c_str());
+    FilePath testFileStrPath = GetPathTo(testFileLocation);
+    if (!FileSystem::Instance()->Exists(testFileStrPath))
     {
         Logger::Error("AutotestingSystemLua::OnAppStarted: couldn't open %s", testFileLocation.c_str());
         return;
@@ -186,8 +199,7 @@ void AutotestingSystem::FetchParametersFromIdYaml()
     frameworkRev = option->GetString("FrameworkRev");
 
     // Check is build fol local debugging.  By default: use DB.
-    bool isLocalBuild = option->GetBool("LocalBuild", false);
-    if (isLocalBuild)
+    if ("true" == option->GetString("LocalBuild", "false"))
     {
         groupName = option->GetString("Group", AutotestingDB::DB_ERROR_STR_VALUE);
         testFileName = option->GetString("Filename", AutotestingDB::DB_ERROR_STR_VALUE);
@@ -197,12 +209,11 @@ void AutotestingSystem::FetchParametersFromIdYaml()
 
 RefPtr<KeyedArchive> AutotestingSystem::GetIdYamlOptions()
 {
-    const String idYamlStrLocation = "/Autotesting/id.yaml";
-    String idYamlStrPath = ResolvePathToAutomation(idYamlStrLocation);
+    FilePath idYamlStrPath = GetPathTo("/id.yaml");
     RefPtr<KeyedArchive> option(new KeyedArchive());
-    if (idYamlStrPath.empty() || !option->LoadFromYamlFile(idYamlStrPath))
+    if (!FileSystem::Instance()->Exists(idYamlStrPath) || !option->LoadFromYamlFile(idYamlStrPath))
     {
-        ForceQuit("Couldn't open file " + idYamlStrLocation);
+        ForceQuit("Couldn't open file " + idYamlStrPath.GetAbsolutePathname());
     }
 
     return option;
@@ -238,12 +249,11 @@ void AutotestingSystem::FetchParametersFromDB()
 // Read DB parameters from config file and set connection to it
 void AutotestingSystem::SetUpConnectionToDB()
 {
-    const String dbConfigLocation = "/Autotesting/dbConfig.yaml";
-    String dbConfigStrPath = ResolvePathToAutomation(dbConfigLocation);
+    FilePath dbConfigStrPath = GetPathTo("/dbConfig.yaml");
     KeyedArchive* option = new KeyedArchive();
-    if (dbConfigStrPath.empty() || !option->LoadFromYamlFile(dbConfigStrPath))
+    if (!FileSystem::Instance()->Exists(dbConfigStrPath) || !option->LoadFromYamlFile(dbConfigStrPath))
     {
-        ForceQuit("Couldn't open file " + dbConfigLocation);
+        ForceQuit("Couldn't open file " + dbConfigStrPath.GetAbsolutePathname());
     }
 
     String dbName = option->GetString("name");
@@ -397,7 +407,7 @@ void AutotestingSystem::DrawTouches()
 void AutotestingSystem::OnTestStarted()
 {
     Logger::Info("AutotestingSystem::OnTestsStarted");
-    startTimeMS = SystemTimer::Instance()->FrameStampTimeMS();
+    startTime = SystemTimer::GetFrameTimestamp();
     luaSystem->StartTest();
 }
 
@@ -452,15 +462,15 @@ void AutotestingSystem::OnScreenShotInternal(Texture* texture)
     DVASSERT(texture);
 
     Logger::Info("AutotestingSystem::OnScreenShot %s", screenshotName.c_str());
-    uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
+    int64 startTime = SystemTimer::GetMs();
 
     DAVA::ScopedPtr<DAVA::Image> image(texture->CreateImageFromMemory());
     const Size2i& size = UIControlSystem::Instance()->vcs->GetPhysicalScreenSize();
     image->ResizeCanvas(uint32(size.dx), uint32(size.dy));
     image->Save(FilePath(AutotestingDB::Instance()->logsFolder + Format("/%s.png", screenshotName.c_str())));
 
-    uint64 finishTime = SystemTimer::Instance()->AbsoluteMS();
-    Logger::FrameworkDebug("AutotestingSystem::OnScreenShot Upload: %d", finishTime - startTime);
+    int64 finishTime = SystemTimer::GetMs();
+    Logger::FrameworkDebug("AutotestingSystem::OnScreenShot Upload: %lld", finishTime - startTime);
     isScreenShotSaving = false;
 
     SafeRelease(texture);
@@ -494,7 +504,7 @@ void AutotestingSystem::ClickSystemBack()
     keyEvent.device = eInputDevices::KEYBOARD;
     keyEvent.phase = DAVA::UIEvent::Phase::KEY_DOWN;
     keyEvent.key = DAVA::Key::BACK;
-    keyEvent.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+    keyEvent.timestamp = SystemTimer::GetMs() / 1000.0;
     UIControlSystem::Instance()->OnInput(&keyEvent);
 }
 
@@ -504,7 +514,7 @@ void AutotestingSystem::PressEscape()
     keyEvent.device = eInputDevices::KEYBOARD;
     keyEvent.phase = DAVA::UIEvent::Phase::KEY_DOWN;
     keyEvent.key = DAVA::Key::ESCAPE;
-    keyEvent.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+    keyEvent.timestamp = SystemTimer::GetMs() / 1000.0;
     UIControlSystem::Instance()->OnInput(&keyEvent);
 }
 

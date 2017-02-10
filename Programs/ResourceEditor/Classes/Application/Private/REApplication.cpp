@@ -4,7 +4,7 @@
 #include "Classes/Project/ProjectManagerModule.h"
 #include "Classes/SceneManager/SceneManagerModule.h"
 
-#include "TextureCompression/PVRConverter.h"
+#include <Tools/TextureCompression/PVRConverter.h>
 #include "Settings/SettingsManager.h"
 #include "Deprecated/SceneValidator.h"
 #include "Preferences/PreferencesStorage.h"
@@ -28,6 +28,8 @@
 #else
 #include "Beast/BeastProxy.h"
 #endif //__DAVAENGINE_BEAST__
+
+#include "Classes/DevFuncs/TestUIModuleData.h"
 
 #include "TArc/Core/Core.h"
 #include "TArc/Testing/TArcTestClass.h"
@@ -209,4 +211,12 @@ void REApplication::CreateConsoleModules(DAVA::TArc::Core* tarcCore) const
         DAVA::Logger::Error("Cannot create commandLine module for command \'%s\'", command.c_str());
         createModuleFn("-help");
     }
+}
+
+void REApplication::RegisterEditorAnyCasts()
+{
+    DAVA::TArc::BaseApplication::RegisterEditorAnyCasts();
+
+    DAVA::AnyCast<ComboBoxTestDataDescr, DAVA::String>::Register(&ComboBoxTestDataDescrToString);
+    DAVA::AnyCast<ComboBoxTestDataDescr, QIcon>::Register(&ComboBoxTestDataDescrToQIcon);
 }

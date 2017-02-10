@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_MUTEX_H__
-#define __DAVAENGINE_MUTEX_H__
+#pragma once
 
 #include "Base/Platform.h"
 
@@ -95,8 +94,6 @@ public:
     RecursiveMutex(const RecursiveMutex&) = delete;
     RecursiveMutex& operator=(const RecursiveMutex&) = delete;
 };
-	
+
 #endif // defined(USE_CPP11_CONCURRENCY)
 };
-
-#endif // __DAVAENGINE_MUTEX_H__

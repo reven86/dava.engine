@@ -12,7 +12,7 @@
 #include "Engine/Private/Android/PlatformCoreAndroid.h"
 
 #include "Logger/Logger.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 
 extern "C"
 {
@@ -284,6 +284,9 @@ void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, in
         }));
     }
 
+    const float previousWindowWidth = windowWidth;
+    const float previousWindowHeight = windowHeight;
+
     windowWidth = static_cast<float32>(width);
     windowHeight = static_cast<float32>(height);
     dpi = static_cast<float32>(displayDpi);
@@ -310,9 +313,21 @@ void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, in
     }
     else
     {
-        // Do not use passed surfaceWidth & surfaceHeight, instead calculate it based on current scale factor
-        // To handle cases when a surface has been recreated with original size (e.g. when switched to another app and returned back)
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, windowWidth, windowHeight, windowWidth * surfaceScale, windowHeight * surfaceScale, surfaceScale, dpi, eFullscreen::On));
+        // If surface size has changed, post sizeChanged event
+        // Otherwise we should reset renderer since surface has been recreated
+
+        if (!FLOAT_EQUAL(previousWindowWidth, windowWidth) || !FLOAT_EQUAL(previousWindowHeight, windowHeight))
+        {
+            // Do not use passed surfaceWidth & surfaceHeight, instead calculate it based on current scale factor
+            // To handle cases when a surface has been recreated with original size (e.g. when switched to another app and returned back)
+            mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, windowWidth, windowHeight, windowWidth * surfaceScale, windowHeight * surfaceScale, surfaceScale, dpi, eFullscreen::On));
+        }
+        else
+        {
+            mainDispatcher->PostEvent(MainDispatcherEvent::CreateFunctorEvent([this]() {
+                engineBackend->ResetRenderer(this->window, !this->IsWindowReadyForRender());
+            }));
+        }
     }
 }
 

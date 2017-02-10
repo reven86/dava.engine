@@ -21,8 +21,24 @@ void DAVAMessageHandler(QtMsgType type, const QMessageLogContext& context, const
         DAVA::Logger::Warning("Qt Warning: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
         break;
     case QtCriticalMsg:
-        DAVA::Logger::Error("Qt Critical: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+    {
+        Vector<QString> ignoredStrings =
+        {
+          "QFileSystemWatcher: FindNextChangeNotification failed"
+        };
+
+        auto it = std::find_if(ignoredStrings.begin(), ignoredStrings.end(), [&msg](const QString ignored)
+                               {
+                                   return msg.contains(ignored);
+                               });
+
+        if (it == ignoredStrings.end())
+        { //we should log only not ignored messages
+            DAVA::Logger::Error("Qt Critical: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
+        }
+
         break;
+    }
     case QtFatalMsg:
         DAVA::Logger::Error("Qt Fatal: %s (%s:%u, %s)\n", localMsg.constData(), context.file, context.line, context.function);
         DVASSERT(false);

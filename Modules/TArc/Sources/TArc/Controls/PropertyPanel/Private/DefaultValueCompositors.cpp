@@ -17,7 +17,7 @@ Any EmptyValueCompositor::Compose(const Vector<std::shared_ptr<PropertyNode>>& n
     return Any();
 }
 
-bool EmptyValueCompositor::IsValidValue(const Any& value) const
+bool EmptyValueCompositor::IsValidValue(const Any& newValue, const Any& currentValue) const
 {
     return false;
 }
@@ -36,9 +36,11 @@ Any TextValueCompositor::Compose(const Vector<std::shared_ptr<PropertyNode>>& no
     return value.Cast<String>();
 }
 
-bool TextValueCompositor::IsValidValue(const Any& value) const
+bool TextValueCompositor::IsValidValue(const Any& newValue, const Any& currentValue) const
 {
-    return value.Cast<String>() != multipleValuesValue;
+    String newStrignValue = newValue.Cast<String>();
+    String currentStringValue = currentValue.Cast<String>();
+    return newStrignValue != multipleValuesValue && newStrignValue != currentStringValue;
 }
 
 Any BoolValueCompositor::Compose(const Vector<std::shared_ptr<PropertyNode>>& nodes) const
@@ -55,10 +57,38 @@ Any BoolValueCompositor::Compose(const Vector<std::shared_ptr<PropertyNode>>& no
     return value.Cast<bool>() ? Qt::Checked : Qt::Unchecked;
 }
 
-bool BoolValueCompositor::IsValidValue(const Any& value) const
+bool BoolValueCompositor::IsValidValue(const Any& newValue, const Any& currentValue) const
 {
-    Qt::CheckState checkedState = value.Cast<Qt::CheckState>(Qt::PartiallyChecked);
-    return checkedState != Qt::PartiallyChecked;
+    Qt::CheckState newCheckedState = newValue.Cast<Qt::CheckState>(Qt::PartiallyChecked);
+    Qt::CheckState currentCheckedState = currentValue.Cast<Qt::CheckState>(Qt::PartiallyChecked);
+    return newCheckedState != Qt::PartiallyChecked && newCheckedState != currentCheckedState;
+}
+
+Any EnumValueCompositor::Compose(const Vector<std::shared_ptr<PropertyNode>>& nodes) const
+{
+    Any value = nodes.front()->cachedValue;
+    for (const std::shared_ptr<const PropertyNode>& node : nodes)
+    {
+        if (value != node->cachedValue)
+        {
+            return Any();
+        }
+    }
+
+    return value;
+}
+
+bool EnumValueCompositor::IsValidValue(const Any& newValue, const Any& currentValue) const
+{
+    if (newValue.IsEmpty() || currentValue.IsEmpty())
+    {
+        return false;
+    }
+
+    int newIntValue = newValue.Cast<int>();
+    int currentIntValue = currentValue.Cast<int>();
+
+    return newIntValue != currentIntValue;
 }
 
 } // namespace TArc

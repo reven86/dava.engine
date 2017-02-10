@@ -11,9 +11,12 @@
 
 class FileManager;
 struct AppVersion;
+class AppsCommandsSender;
+
 class ApplicationManager : public QObject
 {
     Q_OBJECT
+
 public:
     explicit ApplicationManager(QObject* parent = 0);
 
@@ -21,13 +24,22 @@ public:
 
     ConfigParser* GetLocalConfig();
     ConfigParser* GetRemoteConfig();
+    const AppVersion* GetInstalledVersion(const QString& branchID, const QString& appID) const;
+    AppVersion* GetInstalledVersion(const QString& branchID, const QString& appID);
+
+    AppsCommandsSender* GetAppsCommandsSender() const;
+
+    void OnAppInstalled(const QString& branchID, const QString& appID, const AppVersion& version);
 
     void CheckUpdates(QQueue<UpdateTask>& tasks);
 
-    void ShowApplicataionInExplorer(const QString& branchID, const QString& appID, const QString& versionID);
+    void ShowApplicataionInExplorer(const QString& branchID, const QString& appID);
+    void RunApplication(const QString& branchID, const QString& appID);
     void RunApplication(const QString& branchID, const QString& appID, const QString& versionID);
-    bool RemoveApplication(const QString& branchID, const QString& appID, bool canReject);
+    //TODO:  silent need to be removed, all dialogs must be displayed on the client side
+    bool RemoveApplication(const QString& branchID, const QString& appID, bool canReject, bool silent);
     bool RemoveBranch(const QString& branchID);
+    bool PrepareToInstallNewApplication(const QString& branchID, const QString& appID, bool willInstallToolset, bool silent, QStringList& appsToRestart);
 
     bool ShouldShowNews();
     void NewsShowed();
@@ -40,11 +52,18 @@ public:
     //this is a helper to get executable file name
     static QString GetLocalAppPath(const AppVersion* version, const QString& appID);
 
-public slots:
-    void OnAppInstalled(const QString& branchID, const QString& appID, const AppVersion& version);
+signals:
+    void BranchChanged(const QString& branch);
 
 private:
     void LoadLocalConfig(const QString& configPath);
+    bool TryStopApp(const QString& runPath) const;
+    bool CanRemoveApp(const QString& branchID, const QString& appID, bool canReject, bool silent) const;
+
+    //before call this function check that app is not running
+    bool RemoveApplicationImpl(const QString& branchID, const QString& appID, bool silent);
+    bool CanTryStopApplication(const QString& applicationName) const;
+
     QString ExtractApplicationRunPath(const QString& branchID, const QString& appID, const QString& versionID);
 
     QString GetApplicationDirectory_kostil(const QString& branchID, const QString& appID) const;
@@ -55,6 +74,7 @@ private:
     ConfigParser remoteConfig;
 
     FileManager* fileManager = nullptr;
+    AppsCommandsSender* commandsSender = nullptr;
 };
 
 #endif // APPLICATIONMANAGER_H

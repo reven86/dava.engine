@@ -3,13 +3,11 @@
 #include <Engine/Engine.h>
 #include <Engine/EngineSettings.h>
 
-#include "Debug/DVAssertDefaultHandlers.h"
-#include "Platform/DateTime.h"
-#include "CommandLine/CommandLineParser.h"
-#include "Utils/Utils.h"
-#include <Platform/DateTime.h>
 #include <CommandLine/CommandLineParser.h>
+#include <Debug/DVAssertDefaultHandlers.h>
+#include <Time/DateTime.h>
 #include <Utils/Utils.h>
+
 #include "Infrastructure/TestListScreen.h"
 #include "Tests/NotificationTest.h"
 #include "Tests/UIScrollViewTest.h"
@@ -30,7 +28,7 @@
 #include "Tests/DlcTest.h"
 #include "Tests/FormatsTest.h"
 #include "Tests/GPUTest.h"
-#include "Tests/PackManagerTest.h"
+#include "Tests/DLCManagerTest.h"
 #include "Tests/ScriptingTest.h"
 #include "Tests/SamplePluginTest.h"
 #include "Tests/AssertTest.h"
@@ -72,7 +70,7 @@ int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
 #elif defined(__DAVAENGINE_MACOS__)
     appOptions->SetInt32("renderer", rhi::RHI_GLES2);
 #elif defined(__DAVAENGINE_IPHONE__)
-    appOptions->SetInt32("renderer", rhi::RHI_GLES2);
+    appOptions->SetInt32("renderer", rhi::RHI_METAL);
 #elif defined(__DAVAENGINE_WIN32__)
     appOptions->SetInt32("renderer", rhi::RHI_DX9);
 #elif defined(__DAVAENGINE_WIN_UAP__)
@@ -119,8 +117,7 @@ TestBed::TestBed(Engine& engine)
 #elif defined(__DAVAENGINE_MACOS__)
     RegisterMacApplicationListener();
 #elif defined(__DAVAENGINE_IPHONE__)
-    nativeDelegate.reset(new NativeDelegateIos());
-    PlatformApi::Ios::RegisterUIApplicationDelegateListener(nativeDelegate.get());
+    RegisterIosApplicationListener();
 #elif defined(__DAVAENGINE_WIN_UAP__)
     nativeDelegate.reset(new NativeDelegateWin10());
     PlatformApi::Win10::RegisterXamlApplicationListener(nativeDelegate.get());
@@ -181,11 +178,9 @@ void TestBed::OnGameLoopStopped()
     }
     screens.clear();
     SafeRelease(testListScreen);
-    
+
 #if defined(__DAVAENGINE_QT__)
 // TODO: plarform defines
-#elif defined(__DAVAENGINE_IPHONE__)
-    PlatformApi::Ios::UnregisterUIApplicationDelegateListener(nativeDelegate.get());
 #elif defined(__DAVAENGINE_WIN_UAP__)
     PlatformApi::Win10::UnregisterXamlApplicationListener(nativeDelegate.get());
 #endif
@@ -195,7 +190,7 @@ void TestBed::OnEngineCleanup()
 {
     Logger::Debug("****** TestBed::OnEngineCleanup");
     netLogger.Uninstall();
-    
+
 #if !defined(__DAVAENGINE_MACOS__)
     nativeDelegate.reset();
 #endif
@@ -205,8 +200,29 @@ void TestBed::OnWindowCreated(DAVA::Window* w)
 {
     Logger::Error("****** TestBed::OnWindowCreated");
 
-    w->SetVirtualSize(1024, 768);
-    w->GetUIControlSystem()->vcs->RegisterAvailableResourceSize(1024, 768, "Gfx");
+    DAVA::int32 resW = 1024;
+    DAVA::int32 resH = 768;
+
+    float resDPI = 240.0;
+    float virtualSizeScale = 1.0f;
+
+    // For devices with very high dpi ( > resDPI) we will scale virtual size
+    // to make it slightly smaller that for the regular devices.
+    // In this way on very high dpi devices (usualy phones) all UI-contols
+    // will be slightly larger.
+    {
+        float winDpi = w->GetDPI();
+        if (winDpi > resDPI)
+        {
+            virtualSizeScale = std::max(0.75f, (resDPI / winDpi));
+        }
+    }
+
+    float vw = static_cast<float>(resW * virtualSizeScale);
+    float vh = static_cast<float>(resH * virtualSizeScale);
+
+    w->SetVirtualSize(vw, vh);
+    w->GetUIControlSystem()->vcs->RegisterAvailableResourceSize(resW, resH, "Gfx");
     w->GetUIControlSystem()->SetClearColor(Color::Black);
 
     testListScreen = new TestListScreen();
@@ -295,14 +311,14 @@ void TestBed::RegisterTests()
     new FormatsTest(*this);
     new AssertTest(*this);
     new FloatingPointExceptionTest(*this);
-    new PackManagerTest(*this);
+    new DLCManagerTest(*this);
     new UILoggingTest(*this);
     new ProfilerTest(*this);
     new ScriptingTest(*this);
     new ImGuiTest(*this);
     new SoundTest(*this);
     new AnyPerformanceTest(*this);
-    
+
 #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
 
     new SamplePluginTest(*this);

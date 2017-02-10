@@ -11,7 +11,7 @@ protected:
     void PostInit() override;
 
 private:
-    void TestCheckBox();
+    void ShowDialog();
 
     DAVA::TArc::QtConnections connections;
 

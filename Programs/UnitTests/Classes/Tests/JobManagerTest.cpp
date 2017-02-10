@@ -67,7 +67,7 @@ DAVA_TESTCLASS (JobManagerTest)
     {
         JobManagerTestData testData;
 
-        Thread* thread = Thread::Create(Message(this, &JobManagerTest::ThreadFunc, &testData));
+        Thread* thread = Thread::Create([this, &testData]() { this->ThreadFunc(&testData); });
         thread->Start();
 
         while (thread->GetState() != Thread::STATE_ENDED)
@@ -87,10 +87,8 @@ DAVA_TESTCLASS (JobManagerTest)
         // ...
     }
 
-    void ThreadFunc(BaseObject * bo, void* userParam, void* callerParam)
+    void ThreadFunc(JobManagerTestData * data)
     {
-        JobManagerTestData* data = static_cast<JobManagerTestData*>(userParam);
-
         for (uint32 i = 0; i < JOBS_COUNT; i++)
         {
             uint32 count = 50;

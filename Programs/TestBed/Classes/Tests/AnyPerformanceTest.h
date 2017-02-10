@@ -2,6 +2,12 @@
 
 #include "Infrastructure/BaseScreen.h"
 
+namespace DAVA
+{
+class UITextField;
+class UIStaticText;
+}
+
 class TestBed;
 class AnyPerformanceTest : public BaseScreen
 {
