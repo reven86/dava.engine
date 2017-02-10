@@ -343,6 +343,12 @@ void Scene::CreateSystems()
         skeletonSystem = new SkeletonSystem(this);
         AddSystem(skeletonSystem, MAKE_COMPONENT_MASK(Component::SKELETON_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
     }
+
+    if (DAVA::Renderer::GetOptions()->IsOptionEnabled(DAVA::RenderOptions::DEBUG_DRAW_STATIC_OCCLUSION) && !staticOcclusionDebugDrawSystem)
+    {
+        staticOcclusionDebugDrawSystem = new DAVA::StaticOcclusionDebugDrawSystem(this);
+        AddSystem(staticOcclusionDebugDrawSystem, MAKE_COMPONENT_MASK(DAVA::Component::STATIC_OCCLUSION_COMPONENT), 0, renderUpdateSystem);
+    }
 }
 
 Scene::~Scene()

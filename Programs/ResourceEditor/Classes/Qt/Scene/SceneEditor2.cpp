@@ -175,13 +175,7 @@ SceneEditor2::SceneEditor2()
     AddSystem(visibilityCheckSystem, MAKE_COMPONENT_MASK(DAVA::Component::VISIBILITY_CHECK_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
 
     editorVegetationSystem = new EditorVegetationSystem(this);
-    AddSystem(editorVegetationSystem, MAKE_COMPONENT_MASK(DAVA::Component::RENDER_COMPONENT), 0);
-
-    if (DAVA::Renderer::GetOptions()->IsOptionEnabled(DAVA::RenderOptions::DEBUG_DRAW_STATIC_OCCLUSION) && !staticOcclusionDebugDrawSystem)
-    {
-        staticOcclusionDebugDrawSystem = new DAVA::StaticOcclusionDebugDrawSystem(this);
-        AddSystem(staticOcclusionDebugDrawSystem, MAKE_COMPONENT_MASK(DAVA::Component::STATIC_OCCLUSION_COMPONENT), 0, renderUpdateSystem);
-    }
+    AddSystem(editorVegetationSystem, MAKE_COMPONENT_MASK(DAVA::Component::RENDER_COMPONENT), 0);    
 
     SceneSignals::Instance()->EmitOpened(this);
 
