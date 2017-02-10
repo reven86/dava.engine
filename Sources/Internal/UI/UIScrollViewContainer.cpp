@@ -48,6 +48,12 @@ void UIScrollViewContainer::SetSize(const Vector2& size)
     ApplySizeChanges();
 }
 
+void UIScrollViewContainer::SetPosition(const Vector2& pos)
+{
+    UIControl::SetPosition(pos);
+    ApplySizeChanges();
+}
+
 void UIScrollViewContainer::ApplySizeChanges()
 {
     UIControl* parent = GetParent();
