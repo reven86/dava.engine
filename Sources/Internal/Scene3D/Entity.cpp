@@ -16,10 +16,12 @@
 #include "Scene3D/Systems/EventSystem.h"
 #include "Scene3D/Systems/GlobalEventSystem.h"
 #include "Scene3D/Components/SwitchComponent.h"
+#include "Scene3D/Private/EntityHelpers.h"
 #include "Utils/Random.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Reflection/ReflectionRegistrator.h"
 #include <functional>
+
 
 #define USE_VECTOR(x) ((((uint64)1 << (uint64)x) & vectorComponentsMask) != (uint64)0)
 
@@ -34,15 +36,15 @@ const char* Entity::SCENE_NODE_IS_SOLID_PROPERTY_NAME = "editor.isSolid";
 const char* Entity::SCENE_NODE_IS_LOCKED_PROPERTY_NAME = "editor.isLocked";
 const char* Entity::SCENE_NODE_IS_NOT_REMOVABLE_PROPERTY_NAME = "editor.isNotRemovable";
 
-DAVA_REFLECTION_IMPL(Entity)
+DAVA_VIRTUAL_REFLECTION_IMPL(Entity)
 {
     ReflectionRegistrator<Entity>::Begin()
     .DestructorByPointer([](Entity* e) { DAVA::SafeRelease(e); })
-    .Field("ID", &Entity::GetID, &Entity::SetID)
+    .Field("ID", &Entity::GetID, &Entity::SetID)[M::ReadOnly()]
     .Field("Name", &Entity::GetName, static_cast<void (Entity::*)(const FastName&)>(&Entity::SetName))
     .Field("Tag", &Entity::tag)
     .Field("Flags", &Entity::flags)
-    .Field("Visible", &Entity::GetVisible, &Entity::SetVisible)
+    .Field("Visible", &Entity::GetVisible, &Entity::SetVisible)[M::ValueDescription(&VisibleValueDescription)]
     .Field("Components", &Entity::components)
     .End();
 }

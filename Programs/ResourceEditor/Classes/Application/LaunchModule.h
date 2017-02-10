@@ -17,7 +17,7 @@ private:
     class FirstSceneCreator;
     QtDelayedExecutor delayedExecutor;
 
-    DAVA_VIRTUAL_REFLECTION(LaunchModule, DAVA::TArc::ClientModule)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(LaunchModule, DAVA::TArc::ClientModule)
     {
         DAVA::ReflectionRegistrator<LaunchModule>::Begin()
         .ConstructorByPointer()

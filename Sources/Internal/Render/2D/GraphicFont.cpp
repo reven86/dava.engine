@@ -410,9 +410,9 @@ Font::StringMetrics GraphicFont::DrawStringToBuffer(const WideString& str,
     metrics.drawRect.dx += -metrics.drawRect.x + 1;
     metrics.drawRect.dy += -metrics.drawRect.y + 1;
 
-    metrics.height = int32(std::ceil(lastY));
-    metrics.width = int32(std::ceil(lastX));
-    metrics.baseline = yOffset + int32(fontInternal->baselineHeight);
+    metrics.height = lastY;
+    metrics.width = lastX;
+    metrics.baseline = yOffset + fontInternal->baselineHeight;
     return metrics;
 }
 

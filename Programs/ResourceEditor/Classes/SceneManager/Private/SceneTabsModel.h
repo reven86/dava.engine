@@ -32,7 +32,7 @@ public:
     TTabsCollection tabs;
 
 private:
-    DAVA_VIRTUAL_REFLECTION(SceneTabsModel, DAVA::TArc::DataNode)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(SceneTabsModel, DAVA::TArc::DataNode)
     {
         DAVA::ReflectionRegistrator<SceneTabsModel>::Begin()
         .Field(DAVA::TArc::SceneTabbar::activeTabPropertyName, &SceneTabsModel::activeContexID)

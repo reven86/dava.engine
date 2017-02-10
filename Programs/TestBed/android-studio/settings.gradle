@@ -1,0 +1,3 @@
+include ':AndroidFramework'
+project(':AndroidFramework').projectDir = file('../../AndroidFrameworkStudio')
+include ':TestBed'

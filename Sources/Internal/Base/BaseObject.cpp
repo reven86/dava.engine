@@ -7,7 +7,7 @@
 
 namespace DAVA
 {
-DAVA_REFLECTION_IMPL(BaseObject)
+DAVA_VIRTUAL_REFLECTION_IMPL(BaseObject)
 {
     ReflectionRegistrator<BaseObject>::Begin()
     .End();

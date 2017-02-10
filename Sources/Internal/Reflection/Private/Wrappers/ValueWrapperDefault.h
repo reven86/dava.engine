@@ -19,7 +19,7 @@ public:
         return isConst || object.IsConst();
     }
 
-    const Type* GetType() const override
+    const Type* GetType(const ReflectedObject& object) const override
     {
         return Type::Instance<T>();
     }

@@ -15,18 +15,18 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}")
 
 set(SOURCE_FILES 
-        main.cxx 
-        iarchive.cxx
-        lite_archive.cxx
-        pack_archive.cxx 
-        pack_archive.cxx 
-        pack_meta_data.cxx
+        main.cpp 
+        iarchive.cpp
+        lite_archive.cpp
+        pack_archive.cpp 
+        pack_archive.cpp 
+        pack_meta_data.cpp
         lz4.c
         lz4.h 
-        iarchive.hxx
-        lite_archive.hxx
-        pack_archive.hxx 
-        pack_format.hxx 
+        iarchive.h
+        lite_archive.h
+        pack_archive.h 
+        pack_format.h 
         wcxhead.h)
 
 add_library(double_commander_packer_plugin SHARED ${SOURCE_FILES})

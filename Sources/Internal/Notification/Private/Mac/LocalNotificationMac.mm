@@ -8,7 +8,6 @@
 #import <Foundation/Foundation.h>
 
 #import "Utils/NSStringUtils.h"
-#import "Platform/DateTime.h"
 
 namespace DAVA
 {

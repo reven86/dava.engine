@@ -27,7 +27,7 @@ using AppHandle = struct android_app*;
 using AppHandle = uint32;
 #endif
 
-class IDLCManager;
+class DLCManager;
 
 namespace Analytics
 {
@@ -255,8 +255,10 @@ public:
     Signal<> systemAppFinished;
     Signal<float32> updated;
 
-    IDLCManager& GetPackManager() const;
+    DLCManager& GetPackManager() const;
     Analytics::Core& GetAnalyticsCore() const;
+
+    static void AdjustSystemTimer(int64 adjustMicro);
 
 protected:
     eScreenOrientation screenOrientation;
@@ -293,7 +295,7 @@ private:
     };
     ScreenMetrics screenMetrics;
 
-    std::unique_ptr<IDLCManager> packManager;
+    std::unique_ptr<DLCManager> dlcManager;
     std::unique_ptr<Analytics::Core> analyticsCore;
 };
 

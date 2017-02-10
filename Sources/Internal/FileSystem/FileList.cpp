@@ -1,7 +1,5 @@
 #include "FileSystem/FileList.h"
 #include "Utils/UTF8Utils.h"
-#include "Utils/Utils.h"
-#include "PackManager/PackManager.h"
 #include "Logger/Logger.h"
 #if defined(__DAVAENGINE_COREV2__)
 #include "Engine/Engine.h"
@@ -38,25 +36,6 @@ FileList::FileList(const FilePath& filepath, bool includeHidden)
     DVASSERT(filepath.IsDirectoryPathname());
 
     path = filepath;
-
-// first check if required files inside DVPK archives
-#ifdef __DAVAENGINE_COREV2__
-    // TODO: remove this strange check introduced because some applications (e.g. ResourceEditor)
-    // access Engine object after it has been destroyed
-    IDLCManager* pm = nullptr;
-    Engine* e = Engine::Instance();
-    DVASSERT(e != nullptr);
-    const EngineContext* context = e->GetContext();
-    DVASSERT(context != nullptr);
-    pm = context->packManager;
-#else
-    IDLCManager* pm = nullptr;
-    Core* core = Core::Instance();
-    if (core != nullptr)
-    {
-        pm = &(core->GetPackManager());
-    }
-#endif
 
 // now check native FS for files
 #if defined(__DAVAENGINE_WINDOWS__)

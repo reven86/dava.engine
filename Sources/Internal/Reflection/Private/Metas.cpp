@@ -6,9 +6,15 @@ namespace DAVA
 {
 namespace Metas
 {
-Range::Range(const Any& minValue_, const Any& maxValue_)
+Range::Range(const Any& minValue_, const Any& maxValue_, const Any& step_)
     : minValue(minValue_)
     , maxValue(maxValue_)
+    , step(step_)
+{
+}
+
+FloatNumberAccuracy::FloatNumberAccuracy(uint32 accuracy_)
+    : accuracy(accuracy_)
 {
 }
 
@@ -23,8 +29,9 @@ ValidationResult Validator::Validate(const Any& value, const Any& prevValue) con
     return fn(value, prevValue);
 }
 
-File::File(bool shouldExists_)
+File::File(bool shouldExists_, const String& filters_)
     : shouldExists(shouldExists_)
+    , filters(filters_)
 {
 }
 

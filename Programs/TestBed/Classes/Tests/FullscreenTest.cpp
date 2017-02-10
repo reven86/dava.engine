@@ -18,94 +18,85 @@ void FullscreenTest::LoadResources()
 
     inputHandlerToken = GetEngineContext()->inputSystem->AddHandler(eInputDevices::CLASS_KEYBOARD, MakeFunction(this, &FullscreenTest::OnToggleFullscreen));
 
+    windowSizeChangedToken = GetPrimaryWindow()->sizeChanged.Connect(this, &FullscreenTest::OnWindowSizeChanged);
+
     GetBackground()->SetColor(Color::White);
 
     ScopedPtr<Font> font(FTFont::Create("~res:/Fonts/korinna.ttf"));
 
-    // Screen mode test
-    ScopedPtr<UIButton> btn(new UIButton(Rect(10, 10, 300, 20)));
-    btn->SetStateFont(0xFF, font);
-    btn->SetStateText(0xFF, L"Refresh status");
-    btn->SetDebugDraw(true);
-    btn->SetTag(99);
-    btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::OnSelectModeClick));
-    AddControl(btn);
+    float y = 35;
 
-    btn.reset(new UIButton(Rect(10, 35, 300, 20)));
+    // Screen mode buttons
+    ScopedPtr<UIButton> btn(new UIButton(Rect(10, y, 150, 50)));
     btn->SetStateFont(0xFF, font);
     btn->SetStateText(0xFF, L"Windowed");
     btn->SetDebugDraw(true);
     btn->SetTag(0);
+    btn->SetStateFontColor(UIButton::STATE_PRESSED_INSIDE, Color(0.0f, 1.0f, 0.0f, 1.0f));
     btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::OnSelectModeClick));
     AddControl(btn);
 
-    btn.reset(new UIButton(Rect(10, 60, 300, 20)));
+    btn.reset(new UIButton(Rect(170, y, 150, 50)));
     btn->SetStateFont(0xFF, font);
     btn->SetStateText(0xFF, L"Fullsreen");
     btn->SetDebugDraw(true);
     btn->SetTag(1);
+    btn->SetStateFontColor(UIButton::STATE_PRESSED_INSIDE, Color(0.0f, 1.0f, 0.0f, 1.0f));
     btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::OnSelectModeClick));
     AddControl(btn);
 
-    currentModeText = new UIStaticText(Rect(310, 10, 300, 20));
+    // Screen mode info
+    btn.reset(new UIButton(Rect(520, y, 80, 50)));
+    btn->SetStateFont(0xFF, font);
+    btn->SetStateText(0xFF, L"Refresh");
+    btn->SetDebugDraw(true);
+    btn->SetTag(99);
+    btn->SetStateFontColor(UIButton::STATE_PRESSED_INSIDE, Color(0.0f, 1.0f, 0.0f, 1.0f));
+    btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::OnSelectModeClick));
+    AddControl(btn);
+
+    currentModeText = new UIStaticText(Rect(300, y, 220, 50));
     currentModeText->SetFont(font);
     currentModeText->SetTextColor(Color::White);
     AddControl(currentModeText);
 
+    y += 70;
+
     // pinning mode
-    btn.reset(new UIButton(Rect(10, 85, 300, 20)));
+    btn.reset(new UIButton(Rect(10, y, 150, 50)));
     btn->SetStateFont(0xFF, font);
-    btn->SetStateText(0xFF, L"Mouse Visibility: false");
+    btn->SetStateText(0xFF, L"Toggle Mouse Visibility");
     btn->SetDebugDraw(true);
     btn->SetTag(0);
+    btn->SetStateFontColor(UIButton::STATE_PRESSED_INSIDE, Color(0.0f, 1.0f, 0.0f, 1.0f));
     btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::OnPinningClick));
     AddControl(btn);
 
-    btn.reset(new UIButton(Rect(10, 110, 300, 20)));
+    btn.reset(new UIButton(Rect(170, y, 150, 50)));
     btn->SetStateFont(0xFF, font);
-    btn->SetStateText(0xFF, L"Mouse Capture Mode: Pinning");
+    btn->SetStateText(0xFF, L"Toggle Mouse Pinning");
     btn->SetDebugDraw(true);
     btn->SetTag(1);
+    btn->SetStateFontColor(UIButton::STATE_PRESSED_INSIDE, Color(0.0f, 1.0f, 0.0f, 1.0f));
     btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::OnPinningClick));
     AddControl(btn);
 
-    pinningText = new UIStaticText(Rect(310, 30, 300, 35));
+    pinningText = new UIStaticText(Rect(300, y, 220, 20));
     pinningText->SetFont(font);
     pinningText->SetMultiline(true);
     pinningText->SetTextColor(Color::White);
     AddControl(pinningText);
 
-    pinningMousePosText = new UIStaticText(Rect(310, 70, 300, 20));
+    pinningMousePosText = new UIStaticText(Rect(300, y + 50, 220, 20));
     pinningMousePosText->SetFont(font);
     pinningMousePosText->SetTextColor(Color(0.5f, 0.5f, .0f, 1.0f));
     pinningMousePosText->SetVisibilityFlag(false);
     AddControl(pinningMousePosText);
 
-    // Scale factor test
-
-    btn.reset(new UIButton(Rect(10, 135, 145, 30)));
-    btn->SetStateFont(0xFF, font);
-    btn->SetStateText(0xFF, L"Mul +0.1");
-    btn->SetDebugDraw(true);
-    btn->AddEvent(UIButton::EVENT_TOUCH_UP_INSIDE, Message(this, &FullscreenTest::OnMulUp));
-    AddControl(btn);
-
-    btn.reset(new UIButton(Rect(155, 135, 145, 30)));
-    btn->SetStateFont(0xFF, font);
-    btn->SetStateText(0xFF, L"Mul -0.1");
-    btn->SetDebugDraw(true);
-    btn->AddEvent(UIButton::EVENT_TOUCH_UP_INSIDE, Message(this, &FullscreenTest::OnMulDown));
-    AddControl(btn);
-
-    currentScaleText = new UIStaticText(Rect(310, 125, 300, 30));
-    currentScaleText->SetFont(font);
-    currentScaleText->SetTextColor(Color::White);
-    currentScaleText->SetText(Format(L"%f", GetPrimaryWindow()->GetSurfaceScale()));
-    AddControl(currentScaleText);
+    y = 170;
 
     // UI3DView test
-
-    ui3dview = new UI3DView(Rect(10, 175, 320, 240));
+    ui3dview = new UI3DView(Rect(10, y, 320, 240));
     ui3dview->SetDebugDraw(true);
 
     ScopedPtr<Scene> scene(new Scene());
@@ -135,46 +126,91 @@ void FullscreenTest::LoadResources()
     ui3dview->SetScene(scene);
     AddControl(ui3dview);
 
-    btn.reset(new UIButton(Rect(340, 175, 145, 20)));
-    btn->SetStateFont(0xFF, font);
-    btn->SetStateText(0xFF, L"3d Scale +0.1");
-    btn->SetDebugDraw(true);
-    btn->SetTag(0);
-    btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::On3DViewControllClick));
-    AddControl(btn);
+    viewScalePlus = new UIButton(Rect(340, y, 145, 50));
+    viewScalePlus->SetStateFont(0xFF, font);
+    viewScalePlus->SetStateText(0xFF, L"3dView FBO Scale +0.1");
+    viewScalePlus->SetDebugDraw(true);
+    viewScalePlus->SetTag(0);
+    viewScalePlus->SetDisabled(true);
+    viewScalePlus->SetStateFontColor(UIButton::STATE_DISABLED, Color(0.5f, 0.5f, 0.5f, 0.5f));
+    viewScalePlus->SetStateFontColor(UIButton::STATE_PRESSED_INSIDE, Color(0.0f, 1.0f, 0.0f, 1.0f));
+    viewScalePlus->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::On3DViewControllClick));
+    AddControl(viewScalePlus);
 
-    btn.reset(new UIButton(Rect(340, 205, 145, 20)));
-    btn->SetStateFont(0xFF, font);
-    btn->SetStateText(0xFF, L"3d Scale -0.1");
-    btn->SetDebugDraw(true);
-    btn->SetTag(1);
-    btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::On3DViewControllClick));
-    AddControl(btn);
+    y += 60;
 
-    currentScaleText = new UIStaticText(Rect(340, 235, 145, 20));
+    currentScaleText = new UIStaticText(Rect(340, y, 145, 20));
     currentScaleText->SetFont(font);
     currentScaleText->SetTextColor(Color::White);
     currentScaleText->SetText(Format(L"%f", ui3dview->GetFrameBufferScaleFactor()));
     AddControl(currentScaleText);
 
-    btn.reset(new UIButton(Rect(340, 265, 145, 20)));
+    y += 30;
+
+    viewScaleMinus = new UIButton(Rect(340, y, 145, 50));
+    viewScaleMinus->SetStateFont(0xFF, font);
+    viewScaleMinus->SetStateText(0xFF, L"3dView FBO Scale -0.1");
+    viewScaleMinus->SetDebugDraw(true);
+    viewScaleMinus->SetTag(1);
+    viewScaleMinus->SetDisabled(true);
+    viewScaleMinus->SetStateFontColor(UIButton::STATE_DISABLED, Color(0.5f, 0.5f, 0.5f, 0.5f));
+    viewScaleMinus->SetStateFontColor(UIButton::STATE_PRESSED_INSIDE, Color(0.0f, 1.0f, 0.0f, 1.0f));
+    viewScaleMinus->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::On3DViewControllClick));
+    AddControl(viewScaleMinus);
+
+    y = 170 + 250;
+
+    btn.reset(new UIButton(Rect(10, y, 150, 40)));
     btn->SetStateFont(0xFF, font);
-    btn->SetStateText(0xFF, L"On draw to FBO");
+    btn->SetStateText(0xFF, L"3dView FBO On");
     btn->SetDebugDraw(true);
     btn->SetTag(2);
+    btn->SetStateFontColor(UIButton::STATE_DISABLED, Color(0.5f, 0.5f, 0.5f, 0.5f));
+    btn->SetStateFontColor(UIButton::STATE_PRESSED_INSIDE, Color(0.0f, 1.0f, 0.0f, 1.0f));
     btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::On3DViewControllClick));
     AddControl(btn);
 
-    btn.reset(new UIButton(Rect(340, 295, 145, 20)));
+    btn.reset(new UIButton(Rect(170, y, 150, 40)));
     btn->SetStateFont(0xFF, font);
-    btn->SetStateText(0xFF, L"Off draw to FBO");
+    btn->SetStateText(0xFF, L"3dView FBO Off");
     btn->SetDebugDraw(true);
     btn->SetTag(3);
+    btn->SetStateFontColor(UIButton::STATE_DISABLED, Color(0.5f, 0.5f, 0.5f, 0.5f));
+    btn->SetStateFontColor(UIButton::STATE_PRESSED_INSIDE, Color(0.0f, 1.0f, 0.0f, 1.0f));
     btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::On3DViewControllClick));
     AddControl(btn);
 
     auto update = [this](Window*, Size2f, Size2f) { UpdateMode(); };
     sizeChangedSigConn = GetPrimaryWindow()->sizeChanged.Connect(update);
+
+    // Scale factor test
+    y = 170;
+
+    btn.reset(new UIButton(Rect(500, y, 145, 50)));
+    btn->SetStateFont(0xFF, font);
+    btn->SetStateText(0xFF, L"Whole Scale +0.1");
+    btn->SetDebugDraw(true);
+    btn->SetStateFontColor(UIButton::STATE_PRESSED_INSIDE, Color(0.0f, 1.0f, 0.0f, 1.0f));
+    btn->AddEvent(UIButton::EVENT_TOUCH_UP_INSIDE, Message(this, &FullscreenTest::OnMulUp));
+    AddControl(btn);
+
+    y += 60;
+
+    currentScaleText = new UIStaticText(Rect(500, y, 145, 20));
+    currentScaleText->SetFont(font);
+    currentScaleText->SetTextColor(Color::White);
+    currentScaleText->SetText(Format(L"%f", GetPrimaryWindow()->GetSurfaceScale()));
+    AddControl(currentScaleText);
+
+    y += 30;
+
+    btn.reset(new UIButton(Rect(500, y, 145, 50)));
+    btn->SetStateFont(0xFF, font);
+    btn->SetStateText(0xFF, L"Whole Scale -0.1");
+    btn->SetDebugDraw(true);
+    btn->SetStateFontColor(UIButton::STATE_PRESSED_INSIDE, Color(0.0f, 1.0f, 0.0f, 1.0f));
+    btn->AddEvent(UIButton::EVENT_TOUCH_UP_INSIDE, Message(this, &FullscreenTest::OnMulDown));
+    AddControl(btn);
 
     UpdateMode();
 }
@@ -182,6 +218,7 @@ void FullscreenTest::LoadResources()
 void FullscreenTest::UnloadResources()
 {
     GetEngineContext()->inputSystem->RemoveHandler(inputHandlerToken);
+    GetPrimaryWindow()->sizeChanged.Disconnect(windowSizeChangedToken);
 
     if (ui3dview->GetScene())
     {
@@ -227,7 +264,6 @@ void FullscreenTest::OnMulUp(BaseObject* sender, void* data, void* callerData)
     mul += 0.1f;
 
     GetPrimaryWindow()->SetSurfaceScaleAsync(mul);
-    currentScaleText->SetText(Format(L"%f", mul));
 }
 
 void FullscreenTest::OnMulDown(BaseObject* sender, void* data, void* callerData)
@@ -236,7 +272,6 @@ void FullscreenTest::OnMulDown(BaseObject* sender, void* data, void* callerData)
     mul -= 0.1f;
 
     GetPrimaryWindow()->SetSurfaceScaleAsync(mul);
-    currentScaleText->SetText(Format(L"%f", mul));
 }
 
 void FullscreenTest::On3DViewControllClick(BaseObject* sender, void* data, void* callerData)
@@ -268,9 +303,13 @@ void FullscreenTest::On3DViewControllClick(BaseObject* sender, void* data, void*
     }
     case 2: // turn on
         ui3dview->SetDrawToFrameBuffer(true);
+        viewScalePlus->SetDisabled(false);
+        viewScaleMinus->SetDisabled(false);
         break;
     case 3: // turn off
         ui3dview->SetDrawToFrameBuffer(false);
+        viewScalePlus->SetDisabled(true);
+        viewScaleMinus->SetDisabled(true);
         break;
     }
 }
@@ -329,25 +368,25 @@ void FullscreenTest::UpdateMode()
     WideString outStr;
     if (w->GetCursorCapture() == eCursorCapture::PINNING)
     {
-        outStr += L"Mouse Capture Mode = PINNING";
+        outStr += L"Mouse Capture = PINNING";
         outStr += L"\n";
-        outStr += L"Mouse visibility = false";
+        outStr += L"Mouse visibility = OFF";
         outStr += L"\n";
         outStr += L"press Middle Mouse Button to turn off";
         pinningMousePosText->SetVisibilityFlag(true);
     }
     else
     {
-        outStr += L"Mouse Capture Mode mode: OFF";
+        outStr += L"Mouse Capture = OFF";
         outStr += L"\n";
         if (w->GetCursorVisibility())
         {
-            outStr += L"Mouse visibility = true";
+            outStr += L"Mouse visibility = ON";
             pinningMousePosText->SetVisibilityFlag(false);
         }
         else
         {
-            outStr += L"Mouse visibility = false";
+            outStr += L"Mouse visibility = OFF";
             outStr += L"\n";
             outStr += L"press Middle Mouse Button to turn off";
             pinningMousePosText->SetVisibilityFlag(true);
@@ -384,4 +423,9 @@ bool FullscreenTest::SystemInput(UIEvent* currentInput)
     }
 
     return BaseScreen::SystemInput(currentInput);
+}
+
+void FullscreenTest::OnWindowSizeChanged(DAVA::Window*, DAVA::Size2f windowSize, DAVA::Size2f surfaceSize)
+{
+    currentScaleText->SetText(Format(L"%f", GetPrimaryWindow()->GetSurfaceScale()));
 }

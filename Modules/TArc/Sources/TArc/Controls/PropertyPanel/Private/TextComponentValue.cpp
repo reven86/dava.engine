@@ -27,11 +27,6 @@ QWidget* TextComponentValue::AcquireEditorWidget(QWidget* parent, const QStyleOp
     return (new LineEdit(descr, GetWrappersProcessor(), GetReflection(), parent))->ToWidgetCast();
 }
 
-void TextComponentValue::ReleaseEditorWidget(QWidget* editor)
-{
-    editor->deleteLater();
-}
-
 bool TextComponentValue::IsReadOnly() const
 {
     return nodes.front()->field.ref.IsReadonly();
@@ -42,7 +37,7 @@ bool TextComponentValue::IsEnabled() const
     return true;
 }
 
-DAVA_REFLECTION_IMPL(TextComponentValue)
+DAVA_VIRTUAL_REFLECTION_IMPL(TextComponentValue)
 {
     ReflectionRegistrator<TextComponentValue>::Begin()
     .Field("text", &TextComponentValue::GetText, &TextComponentValue::SetText)

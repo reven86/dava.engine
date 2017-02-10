@@ -3,16 +3,19 @@
 #include "filemanager.h"
 #include "applicationmanager.h"
 #include "errormessenger.h"
-#include "processhelper.h"
 #include "mainwindow.h"
 #include "defines.h"
+
+#include "QtHelpers/ProcessHelper.h"
+
 #include <QNetworkReply>
 #include <QDir>
 #include <QPushButton>
 #include <QListWidget>
 #include <QTreeView>
+#include <QMessageBox>
 
-namespace UpdateDialog_local
+namespace UpdateDialogDetails
 {
 class UpdateDialogZipFunctor : public ZipUtils::ZipOperationFunctor
 {
@@ -100,6 +103,7 @@ void UpdateDialog::UpdateButton()
     ui->cancelButton->setDefault(true);
     ui->cancelButton->setIcon(QIcon(":/Icons/ok.png"));
     ui->cancelButton->setFocusPolicy(Qt::StrongFocus);
+    accept();
 }
 
 void UpdateDialog::StartNextTask()
@@ -170,9 +174,9 @@ void UpdateDialog::DownloadFinished()
     {
         return;
     }
-    QByteArray readedData = currentDownload->readAll();
     QNetworkReply::NetworkError error = currentDownload->error();
     QString errorString = currentDownload->errorString();
+    QByteArray readedData = currentDownload->readAll();
 
     currentDownload->deleteLater();
     currentDownload = nullptr;
@@ -189,40 +193,27 @@ void UpdateDialog::DownloadFinished()
         ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_NETWORK, error, errorString);
         return;
     }
-    FileManager* fileManager = appManager->GetFileManager();
-    const QString& archiveFilepath = fileManager->GetTempDownloadFilePath();
-    QFile outputFile;
-    outputFile.setFileName(archiveFilepath);
-    outputFile.open(QFile::WriteOnly);
-    outputFile.write(readedData);
 
-    QString filePath = outputFile.fileName();
-    outputFile.close();
+    QString filePath;
+    FileManager* fileManager = appManager->GetFileManager();
+    bool archiveCreated = fileManager->CreateZipFile(readedData, filePath);
+    if (archiveCreated == false)
+    {
+        UpdateLastLogValue(tr("Can not create archive %1!").arg(filePath));
+        BreakLog();
+        return;
+    }
+    UpdateLastLogValue(tr("Download Complete!"));
 
     const UpdateTask& task = tasks.head();
-    bool canRemoveCorrectrly = true;
-    //we need to remove toolset application, whether they was in toolset or not
-    if (task.newVersion.isToolSet)
-    {
-        QStringList toolsetApps = appManager->GetLocalConfig()->GetTranslatedToolsetApplications();
-        for (auto iter = toolsetApps.begin(); iter != toolsetApps.end() && canRemoveCorrectrly; ++iter)
-        {
-            canRemoveCorrectrly = appManager->RemoveApplication(task.branchID, *iter, false);
-        }
-    }
-    else
-    {
-        //if current application is a part of toolset, all toolset applications will be removed.
-        canRemoveCorrectrly = appManager->RemoveApplication(task.branchID, task.appID, false);
-    }
+    QStringList applicationsToRestart;
+    bool canRemoveCorrectrly = appManager->PrepareToInstallNewApplication(task.branchID, task.appID, task.newVersion.isToolSet, false, applicationsToRestart);
     if (canRemoveCorrectrly == false)
     {
         UpdateLastLogValue("Removing applications Failed!");
         BreakLog();
         return;
     }
-
-    UpdateLastLogValue(tr("Download Complete!"));
 
     AddLogValue(tr("Unpacking archive..."));
 
@@ -234,7 +225,7 @@ void UpdateDialog::DownloadFinished()
     if (ListArchive(filePath, files)
         && UnpackArchive(filePath, appDir, files))
     {
-        emit AppInstalled(task.branchID, task.appID, task.newVersion);
+        appManager->OnAppInstalled(task.branchID, task.appID, task.newVersion);
         UpdateLastLogValue("Unpack Complete!");
         CompleteLog();
     }
@@ -246,7 +237,12 @@ void UpdateDialog::DownloadFinished()
     ui->cancelButton->setEnabled(true);
     FileManager::DeleteDirectory(fileManager->GetTempDirectory());
 
+    for (const QString& appToRestart : applicationsToRestart)
+    {
+        appManager->RunApplication(task.branchID, appToRestart);
+    }
     tasks.dequeue();
+
     StartNextTask();
 }
 
@@ -271,13 +267,13 @@ void UpdateDialog::OnNetworkAccessibleChanged(QNetworkAccessManager::NetworkAcce
 
 bool UpdateDialog::ListArchive(const QString& archivePath, ZipUtils::CompressedFilesAndSizes& files)
 {
-    UpdateDialog_local::UpdateDialogZipFunctor functor("Retreiveing archive info...", "Unpacking archive...", tr("Archive not found or damaged!"), this, nullptr);
+    UpdateDialogDetails::UpdateDialogZipFunctor functor("Retreiveing archive info...", "Unpacking archive...", tr("Archive not found or damaged!"), this, nullptr);
     return ZipUtils::GetFileList(archivePath, files, functor);
 }
 
 bool UpdateDialog::UnpackArchive(const QString& archivePath, const QString& outDir, const ZipUtils::CompressedFilesAndSizes& files)
 {
-    UpdateDialog_local::UpdateDialogZipFunctor functor(tr("Unpacking archive..."), tr("Archive unpacked!"), tr("Unpacking failed!"), this, ui->progressBar_unpacking);
+    UpdateDialogDetails::UpdateDialogZipFunctor functor(tr("Unpacking archive..."), tr("Archive unpacked!"), tr("Unpacking failed!"), this, ui->progressBar_unpacking);
     return ZipUtils::UnpackZipArchive(archivePath, outDir, files, functor);
 }
 

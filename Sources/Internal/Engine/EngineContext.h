@@ -8,7 +8,6 @@ namespace DAVA
 {
 class Logger;
 class FileSystem;
-class SystemTimer;
 class AllocatorFactory;
 class Random;
 class PerformanceSettings;
@@ -28,7 +27,7 @@ class RenderSystem2D;
 class UIScreenManager;
 class LocalNotificationController;
 
-class IDLCManager;
+class DLCManager;
 class AssetsManagerAndroid;
 class ModuleManager;
 class PluginManager;
@@ -61,7 +60,6 @@ public:
     // Subsystems that are always created
     Logger* logger = nullptr;
     FileSystem* fileSystem = nullptr;
-    SystemTimer* systemTimer = nullptr;
     AllocatorFactory* allocatorFactory = nullptr;
     Random* random = nullptr;
     PerformanceSettings* performanceSettings = nullptr;
@@ -80,7 +78,7 @@ public:
     ModuleManager* moduleManager = nullptr;
     PluginManager* pluginManager = nullptr;
 
-    IDLCManager* packManager = nullptr;
+    DLCManager* dlcManager = nullptr;
     Analytics::Core* analyticsCore = nullptr;
 
     EngineSettings* settings = nullptr;

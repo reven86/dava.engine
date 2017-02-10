@@ -4,91 +4,11 @@
 #include "Reflection/Reflection.h"
 #endif
 
+#include "Reflection/Private/Reflection_pre_impl.h"
 #include "Reflection/Private/Wrappers/ValueWrapperDefault.h"
-
-#define IMPL__DAVA_REFLECTION(Cls) \
-    template <typename FT__> \
-    friend struct DAVA::ReflectionDetail::ReflectionInitializerRunner; \
-    static void __ReflectionInitializer() \
-    { \
-        static_assert(!std::is_base_of<DAVA::ReflectionBase, Cls>::value, "Use DAVA_VIRTUAL_REFLECTION for classes derived from ReflectionBase"); \
-        __ReflectionInitializer_Impl(); \
-    } \
-    static void __ReflectionInitializer_Impl()
-
-#define IMPL__DAVA_VIRTUAL_REFLECTION(Cls, ...) \
-    template <typename FT__> \
-    friend struct DAVA::ReflectionDetail::ReflectionInitializerRunner; \
-    const DAVA::ReflectedType* GetReflectedType() const override \
-    { \
-        return DAVA::ReflectionDetail::GetByThisPointer(this); \
-    } \
-    static void __ReflectionInitializer() \
-    { \
-        static_assert(std::is_base_of<DAVA::ReflectionBase, Cls>::value, "Use DAVA_REFLECTION for classes that didn't derived from ReflectionBase"); \
-        DAVA::ReflectedTypeDB::RegisterBases<Cls, ##__VA_ARGS__>(); \
-        __ReflectionInitializer_Impl(); \
-    } \
-    static void __ReflectionInitializer_Impl()
-
-#define IMPL__DAVA_REFLECTION_IMPL(Cls) \
-    void Cls::__ReflectionInitializer_Impl()
-
-#define IMPL__DAVA_REFLECTION_REGISTER_PERMANENT_NAME(Cls) \
-    DAVA::ReflectedTypeDB::RegisterPermanentName(DAVA::ReflectedTypeDB::Get<Cls>(), #Cls)
-
-#define IMPL__DAVA_REFLECTION_REGISTER_CUSTOM_PERMANENT_NAME(Cls, Name) \
-    DAVA::ReflectedTypeDB::RegisterPermanentName(DAVA::ReflectedTypeDB::Get<Cls>(), Name)
 
 namespace DAVA
 {
-namespace ReflectionDetail
-{
-template <typename T>
-struct ReflectionInitializerRunner
-{
-protected:
-    template <typename U, void (*)()>
-    struct SFINAE
-    {
-    };
-
-    template <typename U>
-    static char Test(SFINAE<U, &U::__ReflectionInitializer>*);
-
-    template <typename U>
-    static int Test(...);
-
-    static const bool value = std::is_same<decltype(Test<T>(0)), char>::value;
-
-    inline static void RunImpl(std::true_type)
-    {
-        // T has TypeInitializer function,
-        // so we should run it
-        T::__ReflectionInitializer();
-    }
-
-    inline static void RunImpl(std::false_type)
-    {
-        // T don't have TypeInitializer function,
-        // so nothing to do here
-    }
-
-public:
-    static void Run()
-    {
-        using CheckType = typename std::conditional<std::is_class<T>::value, ReflectionInitializerRunner<T>, std::false_type>::type;
-        RunImpl(std::integral_constant<bool, CheckType::value>());
-    }
-};
-
-template <typename T>
-const ReflectedType* GetByThisPointer(const T* this_)
-{
-    return ReflectedTypeDB::Get<T>();
-}
-}
-
 inline bool Reflection::IsReadonly() const
 {
     return valueWrapper->IsReadonly(object);
@@ -96,7 +16,7 @@ inline bool Reflection::IsReadonly() const
 
 inline const Type* Reflection::GetValueType() const
 {
-    return valueWrapper->GetType();
+    return valueWrapper->GetType(object);
 }
 
 inline ReflectedObject Reflection::GetValueObject() const
@@ -118,7 +38,6 @@ inline bool Reflection::SetValueWithCast(const Any& value) const
 {
     return valueWrapper->SetValueWithCast(object, value);
 }
-
 inline bool Reflection::IsValid() const
 {
     return (nullptr != valueWrapper && object.IsValid());
@@ -147,7 +66,6 @@ Reflection Reflection::Create(T* objectPtr, const ReflectedMeta* objectMeta)
 
     return Reflection();
 }
-
 template <>
 struct AnyCompare<Reflection>
 {

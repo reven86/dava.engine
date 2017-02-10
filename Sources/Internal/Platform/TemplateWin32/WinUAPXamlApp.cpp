@@ -10,7 +10,7 @@
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "UI/UIScreenManager.h"
 
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 #include "Platform/TemplateWin32/CorePlatformWinUAP.h"
 #include "Platform/TemplateWin32/WinUAPXamlApp.h"
 #include "Platform/TemplateWin32/DispatcherWinUAP.h"
@@ -259,16 +259,15 @@ void WinUAPXamlApp::Run(::Windows::ApplicationModel::Activation::LaunchActivated
         EmitPushNotification(args);
     }
 
-    SystemTimer* sysTimer = SystemTimer::Instance();
     while (!quitFlag)
     {
         dispatcher->ProcessTasks();
 
         //  Control FPS
         {
-            static uint64 startTime = sysTimer->AbsoluteMS();
+            static uint64 startTime = SystemTimer::GetMs();
 
-            uint64 elapsedTime = sysTimer->AbsoluteMS() - startTime;
+            uint64 elapsedTime = SystemTimer::GetMs() - startTime;
             int32 fpsLimit = Renderer::GetDesiredFPS();
             if (fpsLimit > 0)
             {
@@ -279,7 +278,7 @@ void WinUAPXamlApp::Run(::Windows::ApplicationModel::Activation::LaunchActivated
                     Thread::Sleep(static_cast<uint32>(sleepMs));
                 }
             }
-            startTime = sysTimer->AbsoluteMS();
+            startTime = SystemTimer::GetMs();
         }
 
         Core::Instance()->SystemProcessFrame();
@@ -645,7 +644,7 @@ void WinUAPXamlApp::OnSwapChainPanelPointerWheel(Platform::Object ^ /*sender*/, 
         ev.phase = UIEvent::Phase::WHEEL;
         ev.device = ToDavaDeviceId(type);
         ev.physPoint = physPoint;
-        ev.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+        ev.timestamp = (SystemTimer::GetMs() / 1000.0);
         UIControlSystem::Instance()->OnInput(&ev);
     });
 }
@@ -701,7 +700,7 @@ void WinUAPXamlApp::OnAcceleratorKeyActivated(Windows::UI::Core::CoreDispatcher 
         uiEvent.phase = phase;
         uiEvent.modifiers = modifiers;
         uiEvent.key = keyboard.GetDavaKeyForSystemKey(key);
-        uiEvent.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+        uiEvent.timestamp = (SystemTimer::GetMs() / 1000.0);
         UIControlSystem::Instance()->OnInput(&uiEvent);
 
         switch (uiEvent.phase)
@@ -729,7 +728,7 @@ void WinUAPXamlApp::OnChar(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::
         DVASSERT(unicodeChar < 0xFFFF); // wchar_t is 16 bit, so keyChar dosnt fit
         ev.keyChar = unicodeChar;
         ev.device = eInputDevices::KEYBOARD;
-        ev.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+        ev.timestamp = (SystemTimer::GetMs() / 1000.0);
         ev.modifiers = modifiers;
         if (isRepeat)
         {
@@ -815,7 +814,7 @@ void WinUAPXamlApp::DAVATouchEvent(UIEvent::Phase phase, float32 x, float32 y, i
     newTouch.phase = phase;
     newTouch.device = device;
     newTouch.modifiers = modifiers;
-    newTouch.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+    newTouch.timestamp = (SystemTimer::GetMs() / 1000.0);
     UIControlSystem::Instance()->OnInput(&newTouch);
 }
 
@@ -1087,7 +1086,7 @@ void WinUAPXamlApp::SendBackKeyEvents()
         ev.key = Key::BACK;
         ev.device = eInputDevices::KEYBOARD;
         ev.modifiers = modifiers;
-        ev.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+        ev.timestamp = (SystemTimer::GetMs() / 1000.0);
 
         UIControlSystem::Instance()->OnInput(&ev);
         InputSystem::Instance()->GetKeyboard().OnKeyPressed(Key::BACK);

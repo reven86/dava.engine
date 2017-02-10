@@ -2,6 +2,7 @@ package com.dava.engine;
 
 import android.graphics.Rect;
 import android.graphics.PixelFormat;
+import android.os.Build;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewTreeObserver;
@@ -60,7 +61,15 @@ class DavaKeyboardState extends DavaActivity.ActivityListenerImpl
     {
         if (layout != null)
         {
-            layout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.JELLY_BEAN)
+            {
+                layout.getViewTreeObserver().removeGlobalOnLayoutListener(this);
+            }
+            else
+            {
+                layout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+            }
+
             DavaActivity.instance().getWindowManager().removeView(layout);
 
             keyboardRect.left = 0;
