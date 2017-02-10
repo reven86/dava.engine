@@ -11,7 +11,6 @@ class DLCManagerImpl;
 /**
 	Downdload several files
 */
-
 class PackRequest : public DLCManager::IRequest
 {
 public:
