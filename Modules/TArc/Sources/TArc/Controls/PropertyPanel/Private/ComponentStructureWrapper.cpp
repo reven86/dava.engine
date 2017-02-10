@@ -4,6 +4,9 @@
 #include "TArc/Controls/PropertyPanel/BaseComponentValue.h"
 
 #include <Reflection/Reflection.h>
+#include <Reflection/Private/Wrappers/StructureWrapperClass.h>
+#include <Base/Type.h>
+#include <Base/TypeInheritance.h>
 
 namespace DAVA
 {
@@ -44,14 +47,18 @@ Vector<Reflection::Field> ComponentStructureWrapper::GetFields(const ReflectedOb
     const Type* objType = obj.GetReflectedType()->GetType();
     const Type* componentType = Type::Instance<BaseComponentValue*>();
     Vector<Reflection::Field> fields = classWrapper->GetFields(obj, vw);
-    for (Reflection::Field f : fields)
+    if (TypeInheritance::CanCast(objType, componentType))
     {
-        if (f.ref.HasMeta<M::ProxyMetaRequire>() && TypeInheritance::CanCast(objType, componentType))
+        BaseComponentValue* componentValue = obj.GetPtr<BaseComponentValue>();
+        if (!componentValue->nodes.empty())
         {
-            BaseComponentValue* componentValue = obj.GetPtr<BaseComponentValue>();
-            if (!componentValue->nodes.empty())
+            const Reflection& metaProvider = componentValue->nodes.front()->field.ref;
+            for (Reflection::Field& f : fields)
             {
-                f.ref = Reflection::Create(f.ref, componentValue->nodes.front()->field.ref);
+                if (f.ref.HasMeta<M::ProxyMetaRequire>())
+                {
+                    f.ref = Reflection::Create(f.ref, metaProvider);
+                }
             }
         }
     }

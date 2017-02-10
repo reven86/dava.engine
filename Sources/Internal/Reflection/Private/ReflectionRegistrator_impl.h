@@ -369,7 +369,7 @@ template <typename C>
 ReflectionRegistrator<C>::~ReflectionRegistrator() = default;
 
 template <typename C>
-ReflectionRegistrator<C> ReflectionRegistrator<C>::Begin(std::unique_ptr<StructureWrapper>&& customStructureWrapper = std::unique_ptr<StructureWrapper>())
+ReflectionRegistrator<C> ReflectionRegistrator<C>::Begin(std::unique_ptr<StructureWrapper>&& customStructureWrapper)
 {
     return ReflectionRegistrator<C>(std::move(customStructureWrapper));
 }
