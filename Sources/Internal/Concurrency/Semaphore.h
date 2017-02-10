@@ -9,7 +9,7 @@ class Semaphore
 {
 public:
     /**
-		default semaphore state is zero 0
+		The initial count for the semaphore object(0). This value must be greater than or equal to zero
 	*/
     Semaphore(uint32_t count = 0U);
     Semaphore(const Semaphore&) = delete;
@@ -17,12 +17,11 @@ public:
     ~Semaphore();
 
     /**
-		increment semaphore with count (default 1)
+		Increases the count of the specified semaphore object by a specified amount. (default 1)
 	*/
     void Post(uint32_t count = 1);
     /**
-		decrement semaphore with 1 and wait till semaphore value become >= 0,
-		if semaphore already zero or more return immediately and continue
+		Wait till semaphore becomes more then 0 and decrement with 1
 	*/
     void Wait();
 
