@@ -148,4 +148,4 @@ DAVA_TARC_TESTCLASS(ComponentStructureWrapperTest)
         }
     }
 };
-    // clang-format on
+// clang-format on
