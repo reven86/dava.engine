@@ -5,10 +5,12 @@
 #include "Render/Highlevel/Landscape.h"
 #include "Render/Highlevel/RenderPassNames.h"
 
+namespace LandscapeThumbnails
+{
 using namespace DAVA;
 
-namespace
-{
+static RequestID RequestIDCounter = InvalidID + 1;
+
 class MaterialFlagsDisabler
 {
 public:
@@ -56,13 +58,23 @@ struct ThumbnailRequest
     Texture* texture = nullptr;
     LandscapeThumbnails::Callback callback;
     MaterialFlagsDisabler flagsDisabler;
+    RequestID requestID;
+    bool cancelled = false;
 
-    ThumbnailRequest(rhi::HSyncObject so, Landscape* l, const ScopedPtr<NMaterial>& thumbnailMaterial, const DAVA::Vector<FastName>& flagsToDisable, Texture* tex, LandscapeThumbnails::Callback cb)
+    ThumbnailRequest(
+    rhi::HSyncObject so,
+    Landscape* l,
+    const ScopedPtr<NMaterial>& thumbnailMaterial,
+    const DAVA::Vector<FastName>& flagsToDisable,
+    Texture* tex,
+    LandscapeThumbnails::Callback cb,
+    RequestID requestId)
         : syncObject(so)
         , landscape(l)
         , texture(tex)
         , callback(cb)
         , flagsDisabler(thumbnailMaterial, flagsToDisable)
+        , requestID(requestId)
     {
     }
 };
@@ -98,12 +110,14 @@ void OnCreateLandscapeTextureCompleted(rhi::HSyncObject syncObject)
 
     for (const auto& req : completedRequests)
     {
-        req.callback(req.landscape, req.texture);
+        if (!req.cancelled)
+        {
+            req.callback(req.landscape, req.texture);
+        }
     }
 }
-}
 
-void LandscapeThumbnails::Create(DAVA::Landscape* landscape, LandscapeThumbnails::Callback handler)
+RequestID Create(DAVA::Landscape* landscape, LandscapeThumbnails::Callback handler)
 {
     const uint32 TEXTURE_TILE_FULL_SIZE = 2048;
 
@@ -126,6 +140,8 @@ void LandscapeThumbnails::Create(DAVA::Landscape* landscape, LandscapeThumbnails
     renderData->SetIndex(5, 3);
     renderData->BuildBuffers();
 
+    RequestID requestID = RequestIDCounter++;
+
     ScopedPtr<NMaterial> thumbnailMaterial(landscape->GetMaterial()->Clone());
     rhi::HSyncObject syncObject = rhi::CreateSyncObject();
     Texture* texture = Texture::CreateFBO(TEXTURE_TILE_FULL_SIZE, TEXTURE_TILE_FULL_SIZE, FORMAT_RGBA8888);
@@ -136,7 +152,7 @@ void LandscapeThumbnails::Create(DAVA::Landscape* landscape, LandscapeThumbnails
         };
 
         DAVA::LockGuard<DAVA::Mutex> lock(requests.mutex);
-        requests.list.emplace_back(syncObject, landscape, thumbnailMaterial, flagsToDisable, texture, handler);
+        requests.list.emplace_back(syncObject, landscape, thumbnailMaterial, flagsToDisable, texture, handler, requestID);
     }
     RenderCallbacks::RegisterSyncCallback(syncObject, MakeFunction(&OnCreateLandscapeTextureCompleted));
 
@@ -172,4 +188,19 @@ void LandscapeThumbnails::Create(DAVA::Landscape* landscape, LandscapeThumbnails
     rhi::AddPacket(packetList, packet);
     rhi::EndPacketList(packetList, syncObject);
     rhi::EndRenderPass(renderPass);
+
+    return requestID;
+}
+
+void CancelRequest(RequestID requestID)
+{
+    DAVA::LockGuard<DAVA::Mutex> lock(requests.mutex);
+    for (ThumbnailRequest& rq : requests.list)
+    {
+        if (rq.requestID == requestID)
+        {
+            rq.cancelled = true;
+        }
+    }
+}
 }
