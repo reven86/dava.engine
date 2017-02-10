@@ -7,7 +7,8 @@
 #include "Classes/Project/ProjectManagerData.h"
 #include "Classes/Qt/Settings/SettingsManager.h"
 #include "Classes/StringConstants.h"
-#include "version.h"
+
+#include <Tools/Version.h>
 
 #include "TArc/DataProcessing/DataListener.h"
 #include "TArc/DataProcessing/DataWrapper.h"

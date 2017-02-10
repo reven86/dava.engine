@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Render/TextureDescriptor.h"
+#include <Tools/TextureCompression/TextureConverter.h>
 
-#include "Utils/SceneUtils/SceneUtils.h"
-#include "TextureCompression/TextureConverter.h"
+#include <Render/TextureDescriptor.h>
+#include <Utils/SceneUtils/SceneUtils.h>
 
 namespace DAVA
 {

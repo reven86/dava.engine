@@ -10,13 +10,13 @@ public:
         ES_INIT,
         ES_SHUTDOWN
     };
-    
+
     SamplePlugin(DAVA::Engine* engine)
-      : IModule(engine)
+        : IModule(engine)
     {
         statusList.emplace_back(eStatus::ES_UNKNOWN);
     }
-    
+
     ~SamplePlugin()
     {
     }
@@ -25,18 +25,14 @@ public:
     {
         statusList.emplace_back(eStatus::ES_INIT);
     }
-    
+
     void Shutdown() override
     {
         statusList.emplace_back(eStatus::ES_SHUTDOWN);
     }
-    
+
 private:
     DAVA::Vector<eStatus> statusList;
-    
 };
 
-EXPORT_PLUGIN( SamplePlugin )
-
-
-
+EXPORT_PLUGIN(SamplePlugin)

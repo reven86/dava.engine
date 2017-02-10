@@ -1,5 +1,7 @@
 #include "JniExtensions.h"
 
+#if !defined(__DAVAENGINE_COREV2__)
+
 #if defined(__DAVAENGINE_ANDROID__)
 
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
@@ -12,11 +14,9 @@ namespace DAVA
 {
 JniExtension::JniExtension()
 {
-#if !defined(__DAVAENGINE_COREV2__)
     CorePlatformAndroid* core = static_cast<CorePlatformAndroid*>(Core::Instance());
     AndroidSystemDelegate* delegate = core->GetAndroidSystemDelegate();
     vm = delegate->GetVM();
-#endif
 }
 
 JniExtension::~JniExtension()
@@ -52,7 +52,6 @@ JNIEnv* JniExtension::GetEnvironment() const
     // right way to take JNIEnv
     // JNIEnv is valid only for the thread where it was gotten.
     // we shouldn't store JNIEnv.
-
     JNIEnv* env;
     if (JNI_EDETACHED == vm->GetEnv(reinterpret_cast<void**>(&env), JNI_VERSION_1_6))
     {
@@ -73,3 +72,5 @@ Rect JniExtension::V2P(const Rect& srcRect) const
 } //namespace DAVA
 
 #endif // __DAVAENGINE_ANDROID__
+
+#endif // __DAVAENGINE_COREV2__

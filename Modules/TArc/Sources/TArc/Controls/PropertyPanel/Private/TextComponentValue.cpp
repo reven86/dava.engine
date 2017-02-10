@@ -27,11 +27,6 @@ QWidget* TextComponentValue::AcquireEditorWidget(QWidget* parent, const QStyleOp
     return (new LineEdit(descr, GetWrappersProcessor(), GetReflection(), parent))->ToWidgetCast();
 }
 
-void TextComponentValue::ReleaseEditorWidget(QWidget* editor)
-{
-    editor->deleteLater();
-}
-
 bool TextComponentValue::IsReadOnly() const
 {
     return nodes.front()->field.ref.IsReadonly();

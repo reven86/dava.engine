@@ -72,7 +72,7 @@ using FileTableEntry = PackFile::FilesTableBlock::FilesData::Data;
 /**
 	One file packed with our custom compression + 20 bytes footer
 	in the end of file with info to decompress content.
-	We will use it later in our new IDLCManager to download game
+	We will use it later in our new DLCManager to download game
 	content file by file to reduce size
 */
 struct LitePack

@@ -20,8 +20,7 @@ public:
     LibraryWidget(QWidget* parent = nullptr);
     ~LibraryWidget() = default;
 
-    void SetLibraryPackages(const DAVA::Vector<DAVA::FilePath>& libraryPackages);
-    void SetPrototypes(const DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>>& prototypes);
+    void SetProjectLibraries(const DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>>& prototypes, const DAVA::Vector<DAVA::FilePath>& libraryPackages);
 
 public slots:
     void OnDocumentChanged(Document* document);

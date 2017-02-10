@@ -51,7 +51,6 @@ Project::Project(MainWindow::ProjectView* view_, const ProjectProperties& proper
     , view(view_)
     , editorFontSystem(new EditorFontSystem(this))
     , editorLocalizationSystem(new EditorLocalizationSystem(this))
-    , documentGroup(new DocumentGroup(this, view->GetDocumentGroupView()))
     , spritesPacker(new SpritesPacker())
     , fileSystemCache(new FileSystemCache(QStringList() << "yaml"))
 {
@@ -87,6 +86,8 @@ Project::Project(MainWindow::ProjectView* view_, const ProjectProperties& proper
 
     fileSystemCache->TrackDirectory(uiResourcesPath);
     view->SetResourceDirectory(uiResourcesPath);
+
+    documentGroup.reset(new DocumentGroup(this, view->GetDocumentGroupView()));
 
     view->SetProjectActionsEnabled(true);
     view->SetProjectPath(GetProjectPath());
