@@ -664,7 +664,7 @@ void WindowNativeBridge::InstallEventHandlers()
     tokenPointerCaptureLost = xamlSwapChainPanel->PointerCaptureLost += ref new PointerEventHandler(this, &WindowNativeBridge::OnPointerCaptureLost);
     tokenPointerMoved = xamlSwapChainPanel->PointerMoved += ref new PointerEventHandler(this, &WindowNativeBridge::OnPointerMoved);
     tokenPointerWheelChanged = xamlSwapChainPanel->PointerWheelChanged += ref new PointerEventHandler(this, &WindowNativeBridge::OnPointerWheelChanged);
-    
+
     tokenKeyboardShowing = InputPane::GetForCurrentView()->Showing += ref new TypedEventHandler<InputPane ^, InputPaneVisibilityEventArgs ^>(this, &WindowNativeBridge::OnKeyboardShowing);
 }
 
@@ -672,7 +672,7 @@ void WindowNativeBridge::UninstallEventHandlers()
 {
     using ::Windows::UI::Core::CoreWindow;
     using ::Windows::Devices::Input::MouseDevice;
- 
+
     using namespace ::Windows::UI::ViewManagement;
 
     CoreWindow ^ coreWindow = xamlWindow->CoreWindow;
