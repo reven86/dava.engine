@@ -63,5 +63,5 @@ const String& CustomClassProperty::GetCustomClassName() const
 
 void CustomClassProperty::ApplyValue(const DAVA::Any& value)
 {
-    customClass = value.Get<String>();
+    customClass = value.Cast<String>();
 }

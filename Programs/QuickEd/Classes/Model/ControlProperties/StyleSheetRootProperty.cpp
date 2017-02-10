@@ -260,7 +260,7 @@ String StyleSheetRootProperty::GetSelectorsAsString() const
     {
         if (i > 0)
             stream << ", ";
-        stream << selectors->GetProperty(i)->GetValue().Get<String>();
+        stream << selectors->GetProperty(i)->GetValue().Cast<String>();
     }
     return stream.str();
 }

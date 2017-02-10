@@ -38,7 +38,7 @@ void FontPropertyDelegate::setEditorData(QWidget* rawEditor, const QModelIndex& 
     QComboBox* editor = rawEditor->findChild<QComboBox*>("comboBox");
 
     Any variant = index.data(Qt::EditRole).value<Any>();
-    editor->setCurrentText(QString::fromStdString(variant.Get<String>()));
+    editor->setCurrentText(QString::fromStdString(variant.Cast<String>()));
 }
 
 bool FontPropertyDelegate::setModelData(QWidget* rawEditor, QAbstractItemModel* model, const QModelIndex& index) const

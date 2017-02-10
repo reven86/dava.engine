@@ -29,6 +29,6 @@ Any FontValueProperty::GetValue() const
 
 void FontValueProperty::ApplyValue(const DAVA::Any& value)
 {
-    presetName = value.Get<String>();
+    presetName = value.Cast<String>();
     reflection.SetValue(presetName);
 }

@@ -1,7 +1,7 @@
 #include "QtDavaConvertion.h"
 #include "QtTools/Utils/Utils.h"
-#include "Utils/StringFormat.h"
-#include "Reflection/ReflectedMeta.h"
+#include <Utils/StringFormat.h>
+#include <Reflection/ReflectedMeta.h>
 #include <QString>
 #include <QColor>
 #include <QVariant>

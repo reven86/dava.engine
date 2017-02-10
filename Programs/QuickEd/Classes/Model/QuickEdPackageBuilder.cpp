@@ -284,7 +284,7 @@ void QuickEdPackageBuilder::ProcessProperty(const Reflection::Field& field, cons
 {
     if (currentObject && currentSection)
     {
-        ValueProperty* property = currentSection->FindChildPropertyByName(field.key.Get<String>());
+        ValueProperty* property = currentSection->FindChildPropertyByName(field.key.Cast<String>());
         if (property && !value.IsEmpty())
         {
             if (property->GetStylePropertyIndex() != -1)

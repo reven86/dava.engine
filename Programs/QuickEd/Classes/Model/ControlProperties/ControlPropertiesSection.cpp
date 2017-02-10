@@ -16,7 +16,7 @@ ControlPropertiesSection::ControlPropertiesSection(const DAVA::String &name, DAV
     {
         if (field.inheritFrom->GetType() == type)
         {
-            String name = field.key.Get<String>();
+            String name = field.key.Cast<String>();
             IntrospectionProperty* sourceProperty = nullptr == sourceSection ? nullptr : sourceSection->FindChildPropertyByName(name);
             IntrospectionProperty* prop = IntrospectionProperty::Create(control, name, field.ref, sourceProperty, cloneType);
             AddProperty(prop);

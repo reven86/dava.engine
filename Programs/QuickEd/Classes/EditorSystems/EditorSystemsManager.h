@@ -136,7 +136,7 @@ public:
     DAVA::Signal<const ControlNode*> highlightNode;
     DAVA::Signal<const DAVA::Rect& /*selectionRectControl*/> selectionRectChanged;
     DAVA::Signal<const DAVA::Vector2&> contentSizeChanged;
-    DAVA::Signal<ControlNode*, AbstractProperty*, DAVA::Any> propertyChanged;
+    DAVA::Signal<ControlNode*, AbstractProperty*, const DAVA::Any&> propertyChanged;
     DAVA::Signal<const SortedPackageBaseNodeSet&> editingRootControlsChanged;
     DAVA::Signal<const DAVA::Vector2& /*new position*/> rootControlPositionChanged;
     DAVA::Signal<PackageNode* /*node*/> packageChanged;
