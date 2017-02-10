@@ -350,8 +350,11 @@ void TextFieldStbImpl::SetShadowColor(const Color& c)
 
 void TextFieldStbImpl::SetTextAlign(int32 align)
 {
-    DropLastCursorAndSelection();
-    staticText->SetTextAlign(align);
+    if (staticText->GetTextAlign() != align)
+    {
+        DropLastCursorAndSelection();
+        staticText->SetTextAlign(align);
+    }
 }
 
 TextBlock::eUseRtlAlign TextFieldStbImpl::GetTextUseRtlAlign()
@@ -361,20 +364,30 @@ TextBlock::eUseRtlAlign TextFieldStbImpl::GetTextUseRtlAlign()
 
 void TextFieldStbImpl::SetTextUseRtlAlign(TextBlock::eUseRtlAlign align)
 {
-    DropLastCursorAndSelection();
-    staticText->SetTextUseRtlAlign(align);
+    if (staticText->GetTextUseRtlAlign() != align)
+    {
+        DropLastCursorAndSelection();
+        staticText->SetTextUseRtlAlign(align);
+    }
 }
 
 void TextFieldStbImpl::SetSize(const Vector2 vector2)
 {
-    staticText->SetSize(vector2);
+    if (staticText->GetSize() != vector2)
+    {
+        DropLastCursorAndSelection();
+        staticText->SetSize(vector2);
+    }
 }
 
 void TextFieldStbImpl::SetMultiline(bool is_multiline)
 {
-    DropLastCursorAndSelection();
-    staticText->SetMultiline(is_multiline);
-    stb->SetSingleLineMode(!is_multiline);
+    if (staticText->GetMultiline() != is_multiline)
+    {
+        DropLastCursorAndSelection();
+        staticText->SetMultiline(is_multiline);
+        stb->SetSingleLineMode(!is_multiline);
+    }
 }
 
 Color TextFieldStbImpl::GetTextColor()
@@ -399,8 +412,11 @@ rhi::int32 TextFieldStbImpl::GetTextAlign()
 
 void TextFieldStbImpl::SetRect(const Rect& rect)
 {
-    DropLastCursorAndSelection();
-    staticText->SetSize(rect.GetSize());
+    if (staticText->GetSize() != rect.GetSize())
+    {
+        DropLastCursorAndSelection();
+        staticText->SetSize(rect.GetSize());
+    }
 }
 
 void TextFieldStbImpl::SystemDraw(const UIGeometricData& d)
@@ -595,7 +611,6 @@ void TextFieldStbImpl::UpdateSelection(uint32 start, uint32 end)
 void TextFieldStbImpl::UpdateCursor(uint32 cursorPos, bool insertMode)
 {
     const TextBox* tb = staticText->GetTextBlock()->GetTextBox();
-    const Vector<int32> linesSizes = staticText->GetTextBlock()->GetStringSizes();
 
     Rect r;
     r.dx = DEFAULT_CURSOR_WIDTH;

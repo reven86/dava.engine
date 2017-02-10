@@ -31,5 +31,13 @@ public:
     bool IsValidValue(const Any& newValue, const Any& currentValue) const override;
 };
 
+class EnumValueCompositor : public ValueCompositor
+{
+public:
+    ~EnumValueCompositor() override = default;
+    Any Compose(const Vector<std::shared_ptr<PropertyNode>>& nodes) const override;
+    bool IsValidValue(const Any& newValue, const Any& currentValue) const override;
+};
+
 } // namespace TArc
 } // namespace DAVA

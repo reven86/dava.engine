@@ -166,6 +166,11 @@ void Any::Set(T&& value, NotAny<T>)
 template <typename T>
 bool Any::CanCast() const
 {
+    if (nullptr == type)
+    {
+        return false;
+    }
+
     return CanGet<T>() || AnyDetail::AnyCastImpl<T>::CanCast(*this);
 }
 

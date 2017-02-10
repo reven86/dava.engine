@@ -350,7 +350,6 @@ void Window::HandleSizeChanged(const Private::MainDispatcherEvent& e)
             if (uiControlSystem->vcs->GetReloadResourceOnResize())
             {
                 Sprite::ValidateForSize();
-                TextBlock::ScreenResolutionChanged();
             }
         }
     }
