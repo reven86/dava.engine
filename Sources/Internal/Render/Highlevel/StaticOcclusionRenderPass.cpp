@@ -215,7 +215,7 @@ void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem* renderSystem, C
         }
         packet.cullMode = rhi::CULL_NONE;
         packet.depthStencilState = depthWriteStateState[batch.second];
-        rhi::AddPacket(packetList, packet);        
+        rhi::AddPacket(packetList, packet);
         ++k;
     }
 
