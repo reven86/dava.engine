@@ -234,7 +234,6 @@ void TextFieldPlatformImpl::OwnerIsDying()
             auto self{ shared_from_this() };
             window->RunOnUIThreadAsync([this, self]() {
                 InputPane::GetForCurrentView()->Showing -= tokenKeyboardShowing;
-                InputPane::GetForCurrentView()->Hiding -= tokenKeyboardHiding;
                 PlatformApi::Win10::RemoveXamlControl(window, nativeControlHolder);
             });
         }
