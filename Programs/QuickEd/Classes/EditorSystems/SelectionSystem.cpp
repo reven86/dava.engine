@@ -75,15 +75,12 @@ void SelectionSystem::OnPackageChanged(PackageNode* packageNode_)
 
 void SelectionSystem::ControlWasRemoved(ControlNode* node, ControlsContainerNode*)
 {
-    SelectedNodes deselected;
-    deselected.insert(node);
-    SelectNode(SelectedNodes(), deselected);
+    selectionContainer.selectedNodes.erase(node);
+    systemsManager->selectionChanged.Emit(selectionContainer.selectedNodes);
 }
 
 void SelectionSystem::OnSelectByRect(const Rect& rect)
 {
-    SelectedNodes deselected;
-    SelectedNodes selected;
     Set<ControlNode*> areaNodes;
     auto predicate = [rect](const ControlNode* node) -> bool {
         const UIControl* control = node->GetControl();
@@ -95,32 +92,32 @@ void SelectionSystem::OnSelectByRect(const Rect& rect)
         DVASSERT(nullptr != control);
         return !control->GetVisibilityFlag();
     };
+    SelectedNodes newSelection;
+    if (IsKeyPressed(KeyboardProxy::KEY_SHIFT))
+    {
+        newSelection = selectionContainer.selectedNodes;
+    }
     systemsManager->CollectControlNodes(std::inserter(areaNodes, areaNodes.end()), predicate, stopPredicate);
     if (!areaNodes.empty())
     {
         for (ControlNode* node : areaNodes)
         {
-            selected.insert(node);
+            newSelection.insert(node);
         }
     }
-    if (!IsKeyPressed(KeyboardProxy::KEY_SHIFT))
-    {
-        //deselect all not selected by rect
-        std::set_difference(selectionContainer.selectedNodes.begin(), selectionContainer.selectedNodes.end(), areaNodes.begin(), areaNodes.end(), std::inserter(deselected, deselected.end()));
-    }
-    SelectNode(selected, deselected);
+    SelectNodes(newSelection);
 }
 
 void SelectionSystem::ClearSelection()
 {
-    SelectNode(SelectedNodes(), selectionContainer.selectedNodes);
+    SelectNodes(SelectedNodes());
 }
 
 void SelectionSystem::SelectAllControls()
 {
     SelectedNodes selected;
     systemsManager->CollectControlNodes(std::inserter(selected, selected.end()), [](const ControlNode*) { return true; });
-    SelectNode(selected, SelectedNodes());
+    SelectNodes(selected);
 }
 
 void SelectionSystem::FocusNextChild()
@@ -162,55 +159,42 @@ void SelectionSystem::FocusToChild(bool next)
         nextNode = findIt == allNodes.begin() ? allNodes.back() : *(--findIt);
     }
 
-    SelectedNodes newSelectedNodes;
-    newSelectedNodes.insert(nextNode);
-    SelectNode(newSelectedNodes, selectionContainer.selectedNodes);
+    SelectNodes({ nextNode });
 }
 
-void SelectionSystem::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
+void SelectionSystem::OnSelectionChanged(const SelectedNodes& selection)
 {
-    selectionContainer.MergeSelection(selected, deselected);
+    selectionContainer.selectedNodes = selection;
 }
 
-void SelectionSystem::SelectNode(const SelectedNodes& selected, const SelectedNodes& deselected)
+void SelectionSystem::SelectNodes(const SelectedNodes& selection)
 {
-    SelectedNodes reallySelected;
-    SelectedNodes reallyDeselected;
-    selectionContainer.GetOnlyExistedItems(deselected, reallyDeselected);
-    selectionContainer.GetNotExistedItems(selected, reallySelected);
-    selectionContainer.MergeSelection(reallySelected, reallyDeselected);
+    selectionContainer.selectedNodes = selection;
 
-    if (!reallySelected.empty() || !reallyDeselected.empty())
-    {
-        systemsManager->selectionChanged.Emit(reallySelected, reallyDeselected);
-    }
+    systemsManager->selectionChanged.Emit(selection);
 }
 
 void SelectionSystem::SelectNode(ControlNode* selectedNode)
 {
-    SelectedNodes selected;
-    SelectedNodes deselected;
-    if (!IsKeyPressed(KeyboardProxy::KEY_SHIFT) && !IsKeyPressed(KeyboardProxy::KEY_CTRL))
+    SelectedNodes newSelection;
+    if (IsKeyPressed(KeyboardProxy::KEY_SHIFT) || IsKeyPressed(KeyboardProxy::KEY_CTRL))
     {
-        deselected = selectionContainer.selectedNodes;
+        newSelection = selectionContainer.selectedNodes;
     }
 
     if (selectedNode != nullptr)
     {
         if (IsKeyPressed(KeyboardProxy::KEY_CTRL) && selectionContainer.IsSelected(selectedNode))
         {
-            deselected.insert(selectedNode);
+            newSelection.erase(selectedNode);
         }
         else
         {
-            selected.insert(selectedNode);
+            newSelection.insert(selectedNode);
         }
     }
-    for (PackageBaseNode* controlNode : selected)
-    {
-        deselected.erase(controlNode);
-    }
-    SelectNode(selected, deselected);
+
+    SelectNodes(newSelection);
 }
 
 ControlNode* SelectionSystem::FindSmallNodeUnderNode(const Vector<ControlNode*>& nodesUnderPoint) const

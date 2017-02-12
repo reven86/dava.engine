@@ -24,7 +24,7 @@ private:
     void OnDragStateChanged(EditorSystemsManager::eDragState currentState, EditorSystemsManager::eDragState previousState) override;
     void OnDisplayStateChanged(EditorSystemsManager::eDisplayState currentState, EditorSystemsManager::eDisplayState previousState) override;
 
-    void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
+    void OnSelectionChanged(const SelectedNodes& selection);
     void OnHighlightNode(const ControlNode* node);
 
     void OnMagnetLinesChanged(const DAVA::Vector<MagnetLineInfo>& magnetLines);

@@ -58,9 +58,19 @@ EditorSystemsManager::EditorSystemsManager(DAVA::TArc::ContextAccessor* accessor
     , scalableControl(new UIControl())
     , editingRootControls(CompareByLCA)
 {
+    using namespace DAVA;
+    using namespace TArc;
+
     dragStateChanged.Connect(this, &EditorSystemsManager::OnDragStateChanged);
     displayStateChanged.Connect(this, &EditorSystemsManager::OnDisplayStateChanged);
     activeAreaChanged.Connect(this, &EditorSystemsManager::OnActiveHUDAreaChanged);
+    selectionChanged.Connect([this](const SelectedNodes& nodes) {
+        //remove this "if" when other systems will not emit signal selectionChanged
+        if (documentDataWrapper.HasData())
+        {
+            documentDataWrapper.SetFieldValue(DocumentData::selectionPropertyName, nodes);
+        }
+    });
 
     rootControl->SetName(FastName("rootControl"));
     rootControl->AddControl(scalableControl.Get());
@@ -68,13 +78,12 @@ EditorSystemsManager::EditorSystemsManager(DAVA::TArc::ContextAccessor* accessor
     rootControl->AddControl(inputLayerControl.Get());
     scalableControl->SetName(FastName("scalableContent"));
 
-    documentDataWrapper = accessor->CreateWrapper(DAVA::ReflectedTypeDB::Get<DocumentData>());
+    documentDataWrapper = accessor->CreateWrapper(ReflectedTypeDB::Get<DocumentData>());
     documentDataWrapper.SetListener(this);
 
     InitDAVAScreen();
 
     packageChanged.Connect(this, &EditorSystemsManager::OnPackageChanged);
-    selectionChanged.Connect(this, &EditorSystemsManager::OnSelectionChanged);
 
     controlViewPtr = new EditorControlsView(scalableControl.Get(), this);
     systems.emplace_back(controlViewPtr);
@@ -210,17 +219,6 @@ void EditorSystemsManager::SetDisplayState(eDisplayState newDisplayState)
     displayStateChanged.Emit(displayState, previousDisplayState);
 }
 
-void EditorSystemsManager::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
-{
-    using namespace DAVA::TArc;
-    DocumentData* data = accessor->GetActiveContext()->GetData<DocumentData>();
-    selectionContainer.MergeSelection(selected, deselected);
-    if (!selectionContainer.selectedNodes.empty())
-    {
-        RefreshRootControls();
-    }
-}
-
 void EditorSystemsManager::OnEditingRootControlsChanged(const SortedPackageBaseNodeSet& rootControls)
 {
     SetDisplayState(rootControls.size() <= 1 ? Edit : Preview);
@@ -246,6 +244,45 @@ void EditorSystemsManager::OnPackageChanged(PackageNode* package_)
     {
         package->AddListener(this);
     }
+}
+
+void EditorSystemsManager::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields)
+{
+    using namespace DAVA;
+    using namespace TArc;
+    if (wrapper.HasData() == false)
+    {
+        OnSelectionDataChanged(Any());
+        OnPackageDataChanged(Any());
+    }
+
+    else if (wrapper.HasData() && fields.empty())
+    {
+        OnSelectionDataChanged(wrapper.GetFieldValue(DocumentData::selectionPropertyName));
+        OnPackageDataChanged(wrapper.GetFieldValue(DocumentData::packagePropertyName));
+    }
+    else
+    {
+        bool needRefresh = false;
+        //capture by const reference
+        auto updateField = [&wrapper, &fields, &needRefresh](const Any& name, Function<void(const Any&)> updateFn) {
+            if (std::find(fields.begin(), fields.end(), name) != fields.end())
+            {
+                updateFn(wrapper.GetFieldValue(name));
+                needRefresh = true;
+            }
+        };
+
+        updateField(DocumentData::selectionPropertyName,
+                    MakeFunction(this, &EditorSystemsManager::OnSelectionDataChanged));
+        updateField(DocumentData::packagePropertyName,
+                    MakeFunction(this, &EditorSystemsManager::OnPackageDataChanged));
+        if (needRefresh == false)
+        {
+            return;
+        }
+    }
+    RefreshRootControls();
 }
 
 void EditorSystemsManager::ControlWasRemoved(ControlNode* node, ControlsContainerNode* /*from*/)
@@ -277,10 +314,11 @@ void EditorSystemsManager::ControlWasAdded(ControlNode* node, ControlsContainerN
 void EditorSystemsManager::RefreshRootControls()
 {
     SortedPackageBaseNodeSet newRootControls(CompareByLCA);
-
     if (nullptr != package)
     {
-        if (selectionContainer.selectedNodes.empty())
+        Any selectionValue = documentDataWrapper.GetFieldValue(DocumentData::selectionPropertyName);
+        SelectedNodes selection = selectionValue.Cast<SelectedNodes>(SelectedNodes());
+        if (selection.empty())
         {
             PackageControlsNode* controlsNode = package->GetPackageControlsNode();
             for (int index = 0; index < controlsNode->GetCount(); ++index)
@@ -290,7 +328,7 @@ void EditorSystemsManager::RefreshRootControls()
         }
         else
         {
-            for (PackageBaseNode* selectedNode : selectionContainer.selectedNodes)
+            for (PackageBaseNode* selectedNode : selection)
             {
                 PackageBaseNode* root = selectedNode;
                 while (nullptr != root->GetParent() && nullptr != root->GetParent()->GetControl())
@@ -377,55 +415,20 @@ DAVA::Vector2 EditorSystemsManager::GetLastMousePos() const
     return lastMousePos;
 }
 
-void EditorSystemsManager::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields)
+void EditorSystemsManager::OnPackageDataChanged(const DAVA::Any& packageValue)
 {
-    using namespace DAVA;
-    DVASSERT(wrapper == documentDataWrapper);
-
-    DAVA::Function<void(void)> updatePackage = [this]() {
-        PackageNode* package = nullptr;
-        Any packageValue = documentDataWrapper.GetFieldValue(DocumentData::packagePropertyName);
-        if (packageValue.CanCast<PackageNode*>())
-        {
-            package = packageValue.Cast<PackageNode*>();
-        }
-        packageChanged.Emit(package);
-    };
-
-    if (wrapper.HasData() == false)
+    PackageNode* package = nullptr;
+    if (packageValue.CanCast<PackageNode*>())
     {
-        updatePackage();
-        if (selectionContainer.selectedNodes.empty() == false)
-        {
-            selectionChanged.Emit(SelectedNodes(), selectionContainer.selectedNodes);
-        }
-        return;
+        package = packageValue.Cast<PackageNode*>();
     }
+    packageChanged.Emit(package);
+}
 
-    if (wrapper.HasData() && fields.empty())
-    {
-        updatePackage();
-
-        if (selectionContainer.selectedNodes.empty() == false)
-        {
-            selectionChanged.Emit(SelectedNodes(), selectionContainer.selectedNodes);
-        }
-        Any selectedNodes = wrapper.GetFieldValue(DocumentData::selectionPropertyName);
-        DVASSERT(selectedNodes.CanCast<SelectedNodes>());
-        selectionContainer.selectedNodes = selectedNodes.Cast<SelectedNodes>();
-        if (selectionContainer.selectedNodes.empty() == false)
-        {
-            selectionChanged.Emit(selectionContainer.selectedNodes, SelectedNodes());
-        }
-    }
-    else if (std::find(fields.begin(), fields.end(), Any(DocumentData::packagePropertyName)) != fields.end())
-    {
-        updatePackage();
-    }
-    else if (std::find(fields.begin(), fields.end(), Any(DocumentData::selectionPropertyName)) != fields.end())
-    {
-        RefreshRootControls();
-    }
+void EditorSystemsManager::OnSelectionDataChanged(const DAVA::Any& newSelectionValue)
+{
+    SelectedNodes selection = newSelectionValue.Cast<SelectedNodes>(SelectedNodes());
+    selectionChanged.Emit(selection);
 }
 
 EditorSystemsManager::eDragState EditorSystemsManager::GetDragState() const

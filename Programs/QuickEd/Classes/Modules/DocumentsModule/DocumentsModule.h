@@ -53,12 +53,13 @@ private:
     void OnUndo();
     void OnRedo();
 
-    void OpenDocument(const QString& path);
+    DAVA::TArc::DataContext::ContextID OpenDocument(const QString& path);
     std::unique_ptr<DocumentData> CreateDocument(const QString& path);
 
     void CloseActiveDocument();
     void CloseDocument(const DAVA::TArc::DataContext::ContextID& id);
     void CloseAllDocuments();
+    void DeleteAllDocuments();
     void CloseDocuments(const DAVA::Set<DAVA::TArc::DataContext::ContextID>& ids);
 
     void ReloadCurrentDocument();
@@ -73,6 +74,12 @@ private:
     void OnActiveTabChanged(const DAVA::Any& contextID);
     void OnCanSaveChanged(const DAVA::Any& canSave);
 
+    //forward selection to the properties wigdet and back
+    //remove it when package will becomes separate module
+    DAVA_DEPRECATED(void OnSelectionInPackageChanged(const SelectedNodes& selection);)
+
+    void SelectControl(const QString& documentPath, const QString& controlPath);
+
     //previewWidget helper functions
     void ChangeControlText(ControlNode* node);
 
@@ -83,7 +90,6 @@ private:
     void ApplyFileChanges();
     DAVA::TArc::DataContext::ContextID GetContextByPath(const QString& path) const;
 
-    void SelectControl(const DAVA::String& path);
     void OnDragStateChanged(EditorSystemsManager::eDragState dragState, EditorSystemsManager::eDragState previousState);
     void OnPropertyChanged(ControlNode* node, AbstractProperty* property, DAVA::VariantType newValue);
 

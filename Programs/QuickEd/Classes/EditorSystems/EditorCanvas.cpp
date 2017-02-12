@@ -88,8 +88,8 @@ void EditorCanvas::UpdateContentSize()
 {
     Vector2 marginsSize(margin * 2.0f, margin * 2.0f);
     size = contentSize * scale + marginsSize;
-    UpdatePosition();
     sizeChanged.Emit(size);
+    UpdatePosition();
 }
 
 void EditorCanvas::SetScale(float32 arg)

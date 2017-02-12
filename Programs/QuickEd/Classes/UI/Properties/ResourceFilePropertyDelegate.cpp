@@ -9,6 +9,7 @@
 #include "Utils/QtDavaConvertion.h"
 #include "QtTools/FileDialogs/FileDialog.h"
 #include "Modules/LegacySupportModule/Private/Project.h"
+#include "Utils/MacOSSymLinkRestorer.h"
 
 #include "Engine/Engine.h"
 
@@ -33,7 +34,8 @@ QWidget* ResourceFilePropertyDelegate::createEditor(QWidget* parent, const Prope
     DVASSERT(context.project != nullptr);
     project = context.project;
 #if defined(__DAVAENGINE_MACOS__)
-    symLinkRestorer = std::make_unique<MacOSSymLinkRestorer>(QString::fromStdString(project->GetResourceDirectory().absolute.GetStringValue()));
+    QString directoryPath = project->GetResourceDirectory();
+    symLinkRestorer = std::make_unique<MacOSSymLinkRestorer>(directoryPath);
 #endif
     projectResourceDir = context.project->GetResourceDirectory();
     lineEdit = new QLineEdit(parent);

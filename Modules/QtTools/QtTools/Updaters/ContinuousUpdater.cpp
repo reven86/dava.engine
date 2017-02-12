@@ -2,8 +2,8 @@
 
 #include <QTimer>
 
-ContinuousUpdater::ContinuousUpdater(Updater updater_, QObject* parent, int updateInterval)
-    : QObject(parent)
+ContinuousUpdater::ContinuousUpdater(Updater updater_, int updateInterval)
+    : QObject(nullptr)
     , updater(updater_)
     , timer(new QTimer(this))
 {
@@ -30,6 +30,12 @@ void ContinuousUpdater::Stop()
         updater();
         needUpdate = false;
     }
+}
+
+void ContinuousUpdater::Abort()
+{
+    timer->stop();
+    needUpdate = false;
 }
 
 void ContinuousUpdater::OnTimer()

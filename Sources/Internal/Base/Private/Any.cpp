@@ -52,24 +52,11 @@ bool Any::operator==(const Any& any) const
         return false;
     }
 
-    if (any.type->IsPointer())
+    if (type->IsPointer() && any.type->IsPointer())
     {
-        if (type->IsPointer())
-        {
-            return anyStorage.GetSimple<void*>() == any.anyStorage.GetSimple<void*>();
-        }
-        else
-        {
-            return false;
-        }
+        return anyStorage.GetSimple<void*>() == any.anyStorage.GetSimple<void*>();
     }
-
-    if (type != any.type)
-    {
-        return false;
-    }
-
-    if (type->IsTrivial())
+    else if (type->IsTrivial() && type == any.type)
     {
         return (0 == std::memcmp(anyStorage.GetData(), any.anyStorage.GetData(), type->GetSize()));
     }

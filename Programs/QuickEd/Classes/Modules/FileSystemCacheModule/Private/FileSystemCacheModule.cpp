@@ -63,7 +63,7 @@ void FileSystemCacheModule::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper
     FileSystemCache* fileSystemCache = fileSystemCacheData->GetFileSystemCache();
 
     ProjectData* projectData = globalContext->GetData<ProjectData>();
-    if (projectData == false)
+    if (projectData == nullptr)
     {
         fileSystemCache->UntrackAllDirectories();
         return;

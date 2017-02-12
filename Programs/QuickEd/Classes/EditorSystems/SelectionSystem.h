@@ -43,13 +43,13 @@ private:
     void OnSelectByRect(const DAVA::Rect& rect);
 
     void FocusToChild(bool next);
-    void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
-    void SelectNode(const SelectedNodes& selected, const SelectedNodes& deselected);
+    void SelectNodes(const SelectedNodes& selection);
+    void OnSelectionChanged(const SelectedNodes& selection);
 
     ControlNode* FindSmallNodeUnderNode(const DAVA::Vector<ControlNode*>& nodesUnderPoint) const;
 
     SelectionContainer selectionContainer;
-    PackageNode* packageNode = nullptr;
+    DAVA::RefPtr<PackageNode> packageNode;
     bool canFindCommonForSelection = true;
 
     bool selectOnRelease = false;

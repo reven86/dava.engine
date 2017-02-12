@@ -22,6 +22,7 @@
 
 #include <QMessageBox>
 #include <QCheckBox>
+#include <QKeyEvent>
 
 using namespace DAVA;
 

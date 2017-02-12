@@ -8,7 +8,6 @@
 #include "Modules/ProjectModule/Private/EditorFontSystem.h"
 #include "Modules/FileSystemCacheModule/FileSystemCacheData.h"
 
-#include "Sound/SoundSystem.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 #include "UI/ProjectView.h"
 #include "UI/DocumentGroupView.h"
@@ -98,14 +97,10 @@ Project::Project(MainWindow::ProjectView* view_, DAVA::TArc::ContextAccessor* ac
     connections.AddConnection(view, &MainWindow::ProjectView::GlobalStyleClassesChanged, MakeFunction(this, &Project::SetGlobalStyleClasses));
 
     QualitySettingsSystem::Instance()->Load("~res:/quality.yaml");
-    engineContext->soundSystem->InitFromQualitySettings();
 }
 
 Project::~Project()
 {
-    const EngineContext* engineContext = GetEngineContext();
-    engineContext->soundSystem->UnloadFMODProjects();
-
     view->SetLanguages(QStringList(), QString());
     view->SetProjectPath(QString());
     view->SetProjectActionsEnabled(false);

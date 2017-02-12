@@ -1,10 +1,5 @@
 #include "PropertiesModel.h"
 
-#include "QtTools/Utils/Utils.h"
-
-#include <QFont>
-#include <QVector2D>
-#include <QVector4D>
 #include "Modules/LegacySupportModule/Private/Document.h"
 #include "Ui/QtModelPackageCommandExecutor.h"
 
@@ -20,29 +15,33 @@
 #include "QECommands/ChangePropertyValueCommand.h"
 #include "UI/QtModelPackageCommandExecutor.h"
 
-#include "UI/UIControl.h"
 
-#include "QtTools/Updaters/ContinuousUpdater.h"
-#include "QtTools/Utils/Themes/Themes.h"
-#include "QtTools/Utils/Utils.h"
+#include <QtTools/Utils/Themes/Themes.h>
+#include <QtTools/Utils/Utils.h>
+
+#include <UI/UIControl.h>
+
+#include <QFont>
+#include <QVector2D>
+#include <QVector4D>
 
 using namespace DAVA;
 
 PropertiesModel::PropertiesModel(QObject* parent)
     : QAbstractItemModel(parent)
-    , continuousUpdater(new ContinuousUpdater(MakeFunction(this, &PropertiesModel::UpdateAllChangedProperties), this, 500))
+    , continuousUpdater(MakeFunction(this, &PropertiesModel::UpdateAllChangedProperties), 500)
 {
 }
 
 PropertiesModel::~PropertiesModel()
 {
     CleanUp();
-    continuousUpdater->Stop();
+    continuousUpdater.Abort();
 }
 
 void PropertiesModel::Reset(PackageBaseNode* node_, QtModelPackageCommandExecutor* commandExecutor_)
 {
-    continuousUpdater->Stop();
+    continuousUpdater.Abort();
     beginResetModel();
     CleanUp();
     commandExecutor = commandExecutor_;
@@ -304,7 +303,7 @@ void PropertiesModel::UpdateAllChangedProperties()
 void PropertiesModel::PropertyChanged(AbstractProperty* property)
 {
     changedProperties.insert(RefPtr<AbstractProperty>::ConstructWithRetain(property));
-    continuousUpdater->Update();
+    continuousUpdater.Update();
 }
 
 void PropertiesModel::UpdateProperty(AbstractProperty* property)

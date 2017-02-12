@@ -15,10 +15,10 @@ MainWindow::DocumentGroupView::DocumentGroupView(MainWindow* mainWindow_)
     , mainWindow(mainWindow_)
 {
     SetDocumentActionsEnabled(false);
-    connect(this, &MainWindow::DocumentGroupView::OnDocumentChanged, mainWindow->packageWidget, &PackageWidget::OnDocumentChanged);
-    connect(this, &MainWindow::DocumentGroupView::OnDocumentChanged, mainWindow->libraryWidget, &LibraryWidget::OnDocumentChanged);
-    connect(this, &MainWindow::DocumentGroupView::OnDocumentChanged, mainWindow->propertiesWidget, &PropertiesWidget::OnDocumentChanged);
-    connect(this, &MainWindow::DocumentGroupView::OnDocumentChanged, mainWindow->styleSheetInspectorWidget, &StyleSheetInspectorWidget::OnDocumentChanged);
+    connect(this, &MainWindow::DocumentGroupView::DocumentChanged, mainWindow->packageWidget, &PackageWidget::OnDocumentChanged);
+    connect(this, &MainWindow::DocumentGroupView::DocumentChanged, mainWindow->libraryWidget, &LibraryWidget::OnDocumentChanged);
+    connect(this, &MainWindow::DocumentGroupView::DocumentChanged, mainWindow->propertiesWidget, &PropertiesWidget::OnDocumentChanged);
+    connect(this, &MainWindow::DocumentGroupView::DocumentChanged, mainWindow->styleSheetInspectorWidget, &StyleSheetInspectorWidget::OnDocumentChanged);
 
     connect(mainWindow->fileSystemDockWidget, &FileSystemDockWidget::OpenPackageFile, this, &MainWindow::DocumentGroupView::OpenPackageFile);
 }
@@ -48,4 +48,10 @@ void MainWindow::DocumentGroupView::SetProject(Project* project)
     }
 
     mainWindow->propertiesWidget->SetProject(project);
+}
+
+void MainWindow::DocumentGroupView::SetDocument(Document* document)
+{
+    SetDocumentActionsEnabled(document != nullptr);
+    emit DocumentChanged(document);
 }

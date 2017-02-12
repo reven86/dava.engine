@@ -11,7 +11,7 @@ class FileSystemCacheModule : public DAVA::TArc::ClientModule, public DAVA::TArc
 {
     void PostInit() override;
     void OnWindowClosed(const DAVA::TArc::WindowKey& key) override;
-    void OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields);
+    void OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields) override;
 
     void CreateActions();
     void FastOpenDocument();

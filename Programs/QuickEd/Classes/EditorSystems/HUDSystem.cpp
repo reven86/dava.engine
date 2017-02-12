@@ -129,10 +129,9 @@ HUDSystem::~HUDSystem()
     systemsManager->GetRootControl()->RemoveControl(hudControl.Get());
 }
 
-void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
+void HUDSystem::OnSelectionChanged(const SelectedNodes& selection)
 {
-    selectionContainer.MergeSelection(selected, deselected);
-    for (auto node : deselected)
+    for (auto node : selectionContainer.selectedNodes)
     {
         ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
         if (nullptr != controlNode)
@@ -141,8 +140,9 @@ void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const Selected
             sortedControlList.erase(controlNode);
         }
     }
+    selectionContainer.selectedNodes = selection;
 
-    for (auto node : selected)
+    for (auto node : selectionContainer.selectedNodes)
     {
         ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
         if (controlNode != nullptr)

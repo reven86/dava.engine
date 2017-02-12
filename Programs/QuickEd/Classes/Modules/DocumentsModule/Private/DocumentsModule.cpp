@@ -114,6 +114,8 @@ void DocumentsModule::PostInit()
     using namespace DAVA;
     using namespace TArc;
 
+    fieldBinder.reset(new FieldBinder(GetAccessor()));
+
     Themes::InitFromQApplication();
     InitWatcher();
     InitEditorSystems();
@@ -123,19 +125,19 @@ void DocumentsModule::PostInit()
     CreateActions();
     CreateUndoRedoActions();
 
-    fieldBinder.reset(new FieldBinder(GetAccessor()));
+    //bind canSave to draw "*" in tabBar
     {
         FieldDescriptor descriptor;
         descriptor.type = ReflectedTypeDB::Get<DocumentData>();
         descriptor.fieldName = FastName(DocumentData::canSavePropertyName);
         fieldBinder->BindField(descriptor, MakeFunction(this, &DocumentsModule::OnCanSaveChanged));
     }
-
+    //bind active tab to change context
     {
-        DAVA::TArc::FieldDescriptor descriptor;
-        descriptor.type = DAVA::ReflectedTypeDB::Get<SceneTabsModel>();
-        descriptor.fieldName = DAVA::FastName(DAVA::TArc::SceneTabbar::activeTabPropertyName);
-        fieldBinder->BindField(descriptor, DAVA::MakeFunction(this, &DocumentsModule::OnActiveTabChanged));
+        FieldDescriptor descriptor;
+        descriptor.type = ReflectedTypeDB::Get<SceneTabsModel>();
+        descriptor.fieldName = FastName(SceneTabbar::activeTabPropertyName);
+        fieldBinder->BindField(descriptor, MakeFunction(this, &DocumentsModule::OnActiveTabChanged));
     }
 }
 
@@ -144,7 +146,7 @@ void DocumentsModule::OnWindowClosed(const DAVA::TArc::WindowKey& key)
     using namespace DAVA;
     using namespace TArc;
 
-    CloseAllDocuments();
+    DeleteAllDocuments();
 
     ContextAccessor* accessor = GetAccessor();
     DataContext* context = accessor->GetGlobalContext();
@@ -162,8 +164,9 @@ void DocumentsModule::OnContextCreated(DAVA::TArc::DataContext* context)
     TabDescriptor descriptor;
     descriptor.tabTitle = data->GetName().toStdString();
     descriptor.tabTooltip = data->GetPackageAbsolutePath().toStdString();
-    tabsModel->tabs.emplace(context->GetID(), TabDescriptor());
 
+    auto emplaceResult = tabsModel->tabs.emplace(context->GetID(), descriptor);
+    DVASSERT(emplaceResult.second, "emplace new tab failed");
     QString path = data->GetPackageAbsolutePath();
     DataContext* globalContext = GetAccessor()->GetGlobalContext();
     DocumentsWatcherData* watcherData = globalContext->GetData<DocumentsWatcherData>();
@@ -225,7 +228,7 @@ void DocumentsModule::InitCentralWidget()
     PanelKey panelKey(QStringLiteral("CentralWidget"), CentralPanelInfo());
     ui->AddView(QEGlobal::windowKey, panelKey, previewWidget);
 
-    //legacy part
+    //legacy part. Remove it when package will be refactored
     MainWindow* mainWindow = qobject_cast<MainWindow*>(GetUI()->GetWindow(QEGlobal::windowKey));
 
     QObject::connect(mainWindow, &MainWindow::EmulationModeChanged, previewWidget, &PreviewWidget::OnEmulationModeChanged);
@@ -235,10 +238,6 @@ void DocumentsModule::InitCentralWidget()
     QObject::connect(previewWidget, &PreviewWidget::CutRequested, mainWindow->packageWidget, &PackageWidget::OnCut);
     QObject::connect(previewWidget, &PreviewWidget::CopyRequested, mainWindow->packageWidget, &PackageWidget::OnCopy);
     QObject::connect(previewWidget, &PreviewWidget::PasteRequested, mainWindow->packageWidget, &PackageWidget::OnPaste);
-
-    QObject::connect(previewWidget, &PreviewWidget::SelectionChanged, mainWindow->packageWidget, &PackageWidget::OnSelectionChanged);
-
-    QObject::connect(mainWindow->packageWidget, &PackageWidget::SelectedNodesChanged, previewWidget, &PreviewWidget::OnSelectionChanged);
 }
 
 void DocumentsModule::InitWatcher()
@@ -332,7 +331,7 @@ void DocumentsModule::CreateActions()
         QtAction* action = new QtAction(accessor, reloadDocumentActionName);
         action->setShortcuts(QList<QKeySequence>()
                              << QKeySequence("Ctrl+R")
-                             << QKeySequence(Qt::Key_F5));
+                             << QKeySequence("F5"));
 
         action->setShortcutContext(Qt::ApplicationShortcut);
 
@@ -404,7 +403,7 @@ void DocumentsModule::CreateUndoRedoActions()
         fieldDescrUndoText.fieldName = FastName(DocumentData::undoTextPropertyName);
         action->SetStateUpdationFunction(QtAction::Text, fieldDescrUndoText, Bind(makeActionName, "Undo", _1));
 
-        connections.AddConnection(action, &QAction::trigger, MakeFunction(this, &DocumentsModule::OnUndo));
+        connections.AddConnection(action, &QAction::triggered, MakeFunction(this, &DocumentsModule::OnUndo));
         ActionPlacementInfo placementInfo;
         placementInfo.AddPlacementPoint(CreateMenuPoint(editMenuName, { InsertionParams::eInsertionMethod::BeforeItem }));
         placementInfo.AddPlacementPoint(CreateToolbarPoint(toolBarName, { InsertionParams::eInsertionMethod::AfterItem, "documents separator" }));
@@ -417,8 +416,8 @@ void DocumentsModule::CreateUndoRedoActions()
         QtAction* action = new QtAction(accessor, QIcon(":/Icons/edit_redo.png"), redoActionName);
         action->setShortcutContext(Qt::ApplicationShortcut);
         action->setShortcuts(QList<QKeySequence>()
-                             << Qt::CTRL + Qt::Key_Y
-                             << Qt::CTRL + Qt::SHIFT + Qt::Key_Z);
+                             << QKeySequence("Ctrl+Y")
+                             << QKeySequence("Ctrl+Shift+Z"));
 
         FieldDescriptor fieldDescrCanRedo;
         fieldDescrCanRedo.type = ReflectedTypeDB::Get<DocumentData>();
@@ -432,7 +431,7 @@ void DocumentsModule::CreateUndoRedoActions()
         fieldDescrUndoText.fieldName = FastName(DocumentData::redoTextPropertyName);
         action->SetStateUpdationFunction(QtAction::Text, fieldDescrUndoText, Bind(makeActionName, "Redo", _1));
 
-        connections.AddConnection(action, &QAction::trigger, Bind(&DocumentsModule::OnRedo, this));
+        connections.AddConnection(action, &QAction::triggered, MakeFunction(this, &DocumentsModule::OnRedo));
         ActionPlacementInfo placementInfo;
         placementInfo.AddPlacementPoint(CreateMenuPoint(editMenuName, { InsertionParams::eInsertionMethod::AfterItem, undoActionName }));
         placementInfo.AddPlacementPoint(CreateToolbarPoint(toolBarName, { InsertionParams::eInsertionMethod::AfterItem, undoActionName }));
@@ -482,22 +481,44 @@ void DocumentsModule::RegisterOperations()
 {
     RegisterOperation(QEGlobal::OpenDocumentByPath.ID, this, &DocumentsModule::OpenDocument);
     RegisterOperation(QEGlobal::CloseAllDocuments.ID, this, &DocumentsModule::CloseAllDocuments);
+    RegisterOperation(QEGlobal::SelectControl.ID, this, &DocumentsModule::SelectControl);
 }
 
-void DocumentsModule::OpenDocument(const QString& path)
+DAVA::TArc::DataContext::ContextID DocumentsModule::OpenDocument(const QString& path)
 {
     using namespace DAVA;
     using namespace TArc;
-    std::unique_ptr<DocumentData> documentData = CreateDocument(path);
-    if (documentData != nullptr)
+
+    ContextAccessor* accessor = GetAccessor();
+    DataContext::ContextID id = DataContext::Empty;
+    accessor->ForEachContext([&id, path](const DAVA::TArc::DataContext& context) {
+        DocumentData* data = context.GetData<DocumentData>();
+        if (data->GetPackageAbsolutePath() == path)
+        {
+            DVASSERT(id == DataContext::Empty);
+            id = context.GetID();
+        }
+    });
+
+    ContextManager* contextManager = GetContextManager();
+
+    if (id == DataContext::Empty)
     {
-        DAVA::Vector<std::unique_ptr<DAVA::TArc::DataNode>> initialData;
-        initialData.push_back(std::move(documentData));
-        initialData.emplace_back(new CentralWidgetData());
-        ContextManager* contextManager = GetContextManager();
-        DataContext::ContextID id = contextManager->CreateContext(std::move(initialData));
+        std::unique_ptr<DocumentData> documentData = CreateDocument(path);
+        if (documentData != nullptr)
+        {
+            DAVA::Vector<std::unique_ptr<DAVA::TArc::DataNode>> initialData;
+            initialData.push_back(std::move(documentData));
+            initialData.emplace_back(new CentralWidgetData());
+            id = contextManager->CreateContext(std::move(initialData));
+            contextManager->ActivateContext(id);
+        }
+    }
+    if (id != DataContext::Empty)
+    {
         contextManager->ActivateContext(id);
     }
+    return DataContext::Empty;
 }
 
 std::unique_ptr<DocumentData> DocumentsModule::CreateDocument(const QString& path)
@@ -555,6 +576,44 @@ void DocumentsModule::OnCanSaveChanged(const DAVA::Any& canSave)
         QString newTitle = data->GetName() + (data->CanSave() ? "*" : "");
         descriptor.tabTitle = newTitle.toStdString();
     });
+}
+
+void DocumentsModule::OnSelectionInPackageChanged(const SelectedNodes& selection)
+{
+    using namespace DAVA;
+    using namespace TArc;
+
+    ContextAccessor* accessor = GetAccessor();
+    DataContext* activeContext = accessor->GetActiveContext();
+    DVASSERT(nullptr != activeContext);
+    DocumentData* data = activeContext->GetData<DocumentData>();
+    data->SetSelectedNodes(selection);
+}
+
+void DocumentsModule::SelectControl(const QString& documentPath, const QString& controlPath)
+{
+    using namespace DAVA;
+    using namespace TArc;
+    DataContext::ContextID id = OpenDocument(documentPath);
+    if (id == DataContext::Empty)
+    {
+        return;
+    }
+    ContextAccessor* accessor = GetAccessor();
+    DataContext* activeContext = accessor->GetContext(id);
+    DVASSERT(id == activeContext->GetID());
+    DocumentData* data = activeContext->GetData<DocumentData>();
+    const PackageNode* package = data->GetPackageNode();
+    String controlPathStr = controlPath.toStdString();
+    ControlNode* node = package->GetPrototypes()->FindControlNodeByPath(controlPathStr);
+    if (node == nullptr)
+    {
+        node = package->GetPackageControlsNode()->FindControlNodeByPath(controlPathStr);
+    }
+    if (node != nullptr)
+    {
+        data->SetSelectedNodes({ node });
+    }
 }
 
 void DocumentsModule::ChangeControlText(ControlNode* node)
@@ -665,6 +724,12 @@ void DocumentsModule::CloseAllDocuments()
             SaveAllDocuments();
         }
     }
+    DeleteAllDocuments();
+}
+
+void DocumentsModule::DeleteAllDocuments()
+{
+    using namespace DAVA::TArc;
     ContextAccessor* accessor = GetAccessor();
     ContextManager* contextManager = GetContextManager();
     DAVA::Vector<DataContext::ContextID> contexts;
@@ -688,7 +753,6 @@ void DocumentsModule::CloseDocuments(const DAVA::Set<DAVA::TArc::DataContext::Co
         contextManager->ActivateContext(id);
         const DataContext* context = accessor->GetContext(id);
         DVASSERT(nullptr != context);
-        contextManager->ActivateContext(id);
         const DocumentData* data = context->GetData<DocumentData>();
         DVASSERT(data != nullptr);
         ModalMessageParams::Button button = ModalMessageParams::No;
@@ -722,26 +786,20 @@ void DocumentsModule::ReloadCurrentDocument()
 void DocumentsModule::ReloadDocument(const DAVA::TArc::DataContext::ContextID& contextID)
 {
     using namespace DAVA::TArc;
+
+    ContextManager* contextManager = GetContextManager();
+    contextManager->ActivateContext(contextID);
+
     ContextAccessor* accessor = GetAccessor();
     DataContext* context = accessor->GetContext(contextID);
     DVASSERT(context != nullptr);
-    ContextManager* contextManager = GetContextManager();
-    bool reactivate = accessor->GetActiveContext()->GetID() == contextID;
-    if (reactivate)
-    {
-        //all other quicked modules must be moved to the
-        contextManager->ActivateContext(DataContext::Empty);
-    }
+    DVASSERT(contextID == accessor->GetActiveContext()->GetID());
     DocumentData* currentData = context->GetData<DocumentData>();
     QString path = currentData->GetPackageAbsolutePath();
     context->DeleteData<DocumentData>();
 
     std::unique_ptr<DocumentData> newData = CreateDocument(path);
     context->CreateData(std::move(newData));
-    if (reactivate)
-    {
-        contextManager->ActivateContext(contextID);
-    }
 }
 
 void DocumentsModule::ReloadDocuments(const DAVA::Set<DAVA::TArc::DataContext::ContextID>& ids)
@@ -785,9 +843,14 @@ void DocumentsModule::ReloadDocuments(const DAVA::Set<DAVA::TArc::DataContext::C
                 params.title = QObject::tr("File %1 changed").arg(data->GetName());
                 params.message = QObject::tr("%1\n\nThis file has been modified outside of the editor. Do you want to reload it?").arg(data->GetPackageAbsolutePath());
                 params.icon = ModalMessageParams::Warning;
-                params.buttons = changedCount > 1 ?
-                (ModalMessageParams::Yes | ModalMessageParams::YesToAll | ModalMessageParams::No | ModalMessageParams::NoToAll) :
-                (ModalMessageParams::Yes | ModalMessageParams::No, ModalMessageParams::Yes);
+                if (changedCount == 1)
+                {
+                    params.buttons = ModalMessageParams::Yes | ModalMessageParams::No | ModalMessageParams::Yes;
+                }
+                else
+                {
+                    params.buttons = ModalMessageParams::Yes | ModalMessageParams::YesToAll | ModalMessageParams::No | ModalMessageParams::NoToAll;
+                }
 
                 ModalMessageParams::Button button = GetUI()->ShowModalMessage(QEGlobal::windowKey, params);
                 yesToAll = (button == ModalMessageParams::YesToAll);
@@ -910,7 +973,7 @@ void DocumentsModule::ApplyFileChanges()
     }
     if (!removed.empty())
     {
-        CloseDocuments(changed);
+        CloseDocuments(removed);
     }
 }
 
@@ -919,38 +982,15 @@ DAVA::TArc::DataContext::ContextID DocumentsModule::GetContextByPath(const QStri
     using namespace DAVA::TArc;
     DataContext::ContextID ret = DataContext::Empty;
     GetAccessor()->ForEachContext([path, &ret](const DataContext& context) {
-        DVASSERT(ret == DataContext::Empty);
         DocumentData* data = context.GetData<DocumentData>();
         if (data->GetPackageAbsolutePath() == path)
         {
+            DVASSERT(ret == DataContext::Empty);
             ret = context.GetID();
         }
     });
     DVASSERT(ret != DataContext::Empty);
     return ret;
-}
-
-void DocumentsModule::SelectControl(const DAVA::String& path)
-{
-    using namespace DAVA::TArc;
-    ContextAccessor* accessor = GetAccessor();
-    DataContext* dataContext = accessor->GetActiveContext();
-    if (dataContext != nullptr)
-    {
-        DocumentData* documentData = dataContext->GetData<DocumentData>();
-        DVASSERT(nullptr != documentData);
-        PackageNode* package = documentData->package.Get();
-        ControlNode* node = package->GetPrototypes()->FindControlNodeByPath(path);
-        if (!node)
-        {
-            node = package->GetPackageControlsNode()->FindControlNodeByPath(path);
-        }
-        if (node != nullptr)
-        {
-            systemsManager->ClearSelection();
-            systemsManager->SelectNode(node);
-        }
-    }
 }
 
 void DocumentsModule::OnDragStateChanged(EditorSystemsManager::eDragState dragState, EditorSystemsManager::eDragState previousState)

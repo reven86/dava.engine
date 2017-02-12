@@ -18,7 +18,7 @@ public:
     void SetDocumentActionsEnabled(bool enabled);
 
     void SetProject(Project* project);
-
+    void SetDocument(Document* document);
     QAction* GetActionRedo();
     QAction* GetActionUndo();
 
@@ -31,5 +31,5 @@ public:
 
 signals:
     void OpenPackageFile(const QString& path);
-    void OnDocumentChanged(Document* document);
+    void DocumentChanged(Document* document);
 };

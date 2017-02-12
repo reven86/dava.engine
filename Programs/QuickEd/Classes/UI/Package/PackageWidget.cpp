@@ -21,6 +21,8 @@
 
 #include <QtTools/FileDialogs/FileDialog.h>
 
+#include <Base/Any.h>
+
 using namespace DAVA;
 
 namespace
@@ -435,7 +437,7 @@ void PackageWidget::OnSelectionChangedFromView(const QItemSelection& proxySelect
     selectionContainer.MergeSelection(selected, deselected);
 
     RefreshActions();
-    emit SelectedNodesChanged(selected, deselected);
+    emit SelectedNodesChanged(selectionContainer.selectedNodes);
 }
 
 void PackageWidget::OnImport()
@@ -748,9 +750,8 @@ void PackageWidget::OnAfterProcessNodes(const SelectedNodes& nodes)
     {
         return;
     }
-    auto deselected = selectionContainer.selectedNodes; //make a copy of a class member
-    OnSelectionChanged(nodes, deselected);
-    emit SelectedNodesChanged(nodes, deselected); //this is only way to select manually in package widget
+    OnSelectionChanged(nodes);
+    emit SelectedNodesChanged(selectionContainer.selectedNodes); //this is only way to select manually in package widget
     for (const auto& node : expandedNodes)
     {
         QModelIndex srcIndex = packageModel->indexByNode(node);
@@ -836,34 +837,38 @@ void PackageWidget::RestoreExpandedIndexes(const ExpandedIndexes& indexes)
     }
 }
 
-void PackageWidget::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
+void PackageWidget::OnSelectionChanged(const DAVA::Any& selectionValue)
 {
     disconnect(treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &PackageWidget::OnSelectionChangedFromView);
-    SetSelectedNodes(selected, deselected);
+    SelectedNodes selection = selectionValue.Cast<SelectedNodes>(SelectedNodes());
+    SetSelectedNodes(selection);
     connect(treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &PackageWidget::OnSelectionChangedFromView);
 }
 
-void PackageWidget::SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected)
+void PackageWidget::SetSelectedNodes(const SelectedNodes& selection)
 {
-    DVASSERT(!selected.empty() || !deselected.empty());
-    //we can catch response from systems when we select any of controlNodes in package widget
-    SelectedNodes reallySelected;
-    SelectedNodes reallyDeselected;
-    selectionContainer.GetOnlyExistedItems(deselected, reallyDeselected);
-    selectionContainer.GetNotExistedItems(selected, reallySelected);
-    selectionContainer.MergeSelection(reallySelected, reallyDeselected);
-
     RefreshActions();
-    DVASSERT(document != nullptr);
     if (document == nullptr)
     {
         return;
     }
-    for (const auto& node : reallyDeselected)
+
+    //this code is used to synchronize last selected item with properties model
+    SelectedNodes selected;
+    SelectedNodes deselected;
+
+    selectionContainer.GetNotExistedItems(selection, selected);
+    SelectionContainer tmpContainer = { selection };
+    tmpContainer.GetNotExistedItems(selectionContainer.selectedNodes, deselected);
+
+    selectionContainer.selectedNodes = selection;
+
+    for (PackageBaseNode* node : deselected)
     {
         DeselectNodeImpl(node);
     }
-    for (const auto& node : reallySelected)
+
+    for (PackageBaseNode* node : selected)
     {
         SelectNodeImpl(node);
     }

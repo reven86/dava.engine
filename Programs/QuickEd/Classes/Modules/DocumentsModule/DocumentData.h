@@ -55,6 +55,7 @@ public:
 
 private:
     friend class DocumentsModule;
+
     void SetSelectedNodes(const SelectedNodes& selection);
 
     DAVA::RefPtr<PackageNode> package;

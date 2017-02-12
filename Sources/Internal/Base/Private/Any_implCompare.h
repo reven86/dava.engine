@@ -17,8 +17,15 @@ struct AnyCompare<String>
 {
     static bool IsEqual(const Any& v1, const Any& v2)
     {
-        const String& s1 = v1.Get<String>();
-        const String& s2 = v2.Get<String>();
+        bool canCastV1 = v1.CanCast<String>();
+        bool canCastV2 = v2.CanCast<String>();
+        if (canCastV1 == false || canCastV2 == false)
+        {
+            return false;
+        }
+
+        const String& s1 = v1.Cast<String>();
+        const String& s2 = v2.Cast<String>();
         return s1 == s2;
     }
 };

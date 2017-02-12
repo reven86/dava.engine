@@ -139,7 +139,7 @@ void PropertiesItem::Impl::Set(const QString& key, T value)
 template <typename T, typename std::enable_if<std::is_pointer<T>::value, int>::type>
 void PropertiesItem::Impl::Set(const QString& key, const T& value)
 {
-    static_assert(false, "unsupported type: pointer");
+    DVASSERT(false, "unsupported type: pointer");
 }
 
 template <typename T, typename std::enable_if<!std::is_pointer<T>::value && !std::is_fundamental<T>::value, int>::type>
@@ -151,7 +151,7 @@ void PropertiesItem::Impl::Set(const QString& key, const T& value)
 template <typename T>
 QJsonValue PropertiesItem::Impl::ToValue(const T& value)
 {
-    static_assert(false, "conversion between T and QJsonValue is not declared");
+    DVASSERT(false, "conversion between T and QJsonValue is not declared");
 }
 
 template <typename T>
@@ -182,13 +182,13 @@ T PropertiesItem::Impl::FromValue(const QJsonValue& value, const T& defaultValue
 template <typename T, typename std::enable_if<std::is_pointer<T>::value, int>::type>
 T PropertiesItem::Impl::FromValue(const QJsonValue& value, const T& defaultValue)
 {
-    static_assert(false, "unsupported type: pointer");
+    DVASSERT(false, "unsupported type: pointer");
 }
 
 template <typename T, typename std::enable_if<!std::is_pointer<T>::value && !std::is_fundamental<T>::value, int>::type>
 T PropertiesItem::Impl::FromValue(const QJsonValue& value, const T& defaultValue)
 {
-    static_assert(false, "conversion between QJsonValue and T is not declared");
+    DVASSERT(false, "conversion between QJsonValue and T is not declared");
 }
 
 template <>

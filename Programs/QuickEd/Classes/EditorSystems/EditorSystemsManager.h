@@ -80,7 +80,7 @@ class EditorControlsView;
 class SelectionSystem;
 class HUDSystem;
 
-class EditorSystemsManager : PackageListener, private DAVA::TArc::DataListener
+class EditorSystemsManager : PackageListener, DAVA::TArc::DataListener
 {
     using StopPredicate = std::function<bool(const ControlNode*)>;
     static StopPredicate defaultStopPredicate;
@@ -141,7 +141,7 @@ public:
     DAVA::UIControl* GetRootControl() const;
     DAVA::UIControl* GetScalableControl() const;
 
-    DAVA::Signal<const SelectedNodes& /*selected*/, const SelectedNodes& /*deselected*/> selectionChanged;
+    DAVA::Signal<const SelectedNodes& /*selection*/> selectionChanged;
     DAVA::Signal<const HUDAreaInfo& /*areaInfo*/> activeAreaChanged;
     DAVA::Signal<const DAVA::Vector<MagnetLineInfo>& /*magnetLines*/> magnetLinesChanged;
     DAVA::Signal<const ControlNode*> highlightNode;
@@ -163,7 +163,6 @@ private:
     void SetDragState(eDragState dragState);
     void SetDisplayState(eDisplayState displayState);
 
-    void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OnEditingRootControlsChanged(const SortedPackageBaseNodeSet& rootControls);
     void OnActiveHUDAreaChanged(const HUDAreaInfo& areaInfo);
 
@@ -180,6 +179,9 @@ private:
     void OnDragStateChanged(eDragState currentState, eDragState previousState);
     void OnDisplayStateChanged(eDisplayState currentState, eDisplayState previousState);
 
+    void OnSelectionDataChanged(const DAVA::Any& newSelection);
+    void OnPackageDataChanged(const DAVA::Any& package);
+
     void OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields) override;
 
     DAVA::TArc::ContextAccessor* accessor = nullptr;
@@ -190,9 +192,8 @@ private:
 
     DAVA::List<std::unique_ptr<BaseEditorSystem>> systems;
 
-    PackageNode* package = nullptr;
+    DAVA::RefPtr<PackageNode> package;
     SortedPackageBaseNodeSet editingRootControls;
-    SelectionContainer selectionContainer;
     EditorControlsView* controlViewPtr = nullptr; //weak pointer to canvas system;
     SelectionSystem* selectionSystemPtr = nullptr; // weak pointer to selection system
     HUDSystem* hudSystemPtr = nullptr;

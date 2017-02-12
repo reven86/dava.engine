@@ -57,11 +57,7 @@ PreviewWidget::PreviewWidget(DAVA::TArc::ContextAccessor* accessor_, DAVA::Rende
     : QFrame()
     , accessor(accessor_)
     , rulerController(new RulerController(this))
-    , continuousUpdater(new ContinuousUpdater(MakeFunction(this, &PreviewWidget::NotifySelectionChanged), this, 300))
 {
-    dataWrapper = accessor->CreateWrapper(DAVA::ReflectedTypeDB::Get<DocumentData>());
-    dataWrapper.SetListener(this);
-
     qRegisterMetaType<SelectedNodes>("SelectedNodes");
     percentages << 0.25f << 0.33f << 0.50f << 0.67f << 0.75f << 0.90f
                 << 1.00f << 1.10f << 1.25f << 1.50f << 1.75f << 2.00f
@@ -98,10 +94,7 @@ PreviewWidget::PreviewWidget(DAVA::TArc::ContextAccessor* accessor_, DAVA::Rende
     UpdateScrollArea();
 }
 
-PreviewWidget::~PreviewWidget()
-{
-    continuousUpdater->Stop();
-}
+PreviewWidget::~PreviewWidget() = default;
 
 float PreviewWidget::GetScaleFromComboboxText() const
 {
@@ -120,7 +113,6 @@ void PreviewWidget::InjectRenderWidget(DAVA::RenderWidget* renderWidget_)
     DVASSERT(renderWidget_ != nullptr);
     renderWidget = renderWidget_;
     CreateActions();
-
 
     renderWidget->resized.Connect(this, &PreviewWidget::OnResized);
 
@@ -178,26 +170,6 @@ void PreviewWidget::CreateActions()
     focusPreviousChildAction->setShortcut(static_cast<int>(Qt::ShiftModifier | Qt::Key_Tab));
     focusPreviousChildAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     addAction(focusPreviousChildAction);
-}
-
-#include <QDebug>
-void PreviewWidget::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields)
-{
-    using namespace DAVA::TArc;
-    if (wrapper.HasData() && fields.empty())
-    {
-        DataContext* activeContext = accessor->GetActiveContext();
-        DVASSERT(nullptr != activeContext);
-        CentralWidgetData* widgetData = activeContext->GetData<CentralWidgetData>();
-        DVASSERT(widgetData != nullptr);
-        editorCanvas->SetPosition(widgetData->canvasPosition);
-        qDebug() << verticalScrollBar->maximum() << horizontalScrollBar->maximum();
-    }
-}
-
-void PreviewWidget::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
-{
-    systemsManager->selectionChanged.Emit(selected, deselected);
 }
 
 void PreviewWidget::OnRootControlPositionChanged(const Vector2& pos)
@@ -321,13 +293,39 @@ void PreviewWidget::UpdateScrollArea(const DAVA::Vector2& /*size*/)
         Vector2 maxPos = editorCanvas->GetMaximumPos();
         horizontalScrollBar->setRange(minPos.x, maxPos.x);
         verticalScrollBar->setRange(minPos.y, maxPos.y);
+
+        //we can load previous used position only when canvas size is changed
+        //it must be fixed when each of editorsytems will be a separate module with it own data
+        using namespace DAVA::TArc;
+        DataContext* activeContext = accessor->GetActiveContext();
+        if (activeContext != nullptr)
+        {
+            CentralWidgetData* data = activeContext->GetData<CentralWidgetData>();
+            if (data->canvasPosition == CentralWidgetData::invalidPosition)
+            {
+                editorCanvas->SetPosition(editorCanvas->GetMaximumPos() / 2.0f);
+            }
+            else
+            {
+                editorCanvas->SetPosition(data->canvasPosition);
+            }
+        }
     }
 }
 
 void PreviewWidget::OnPositionChanged(const Vector2& position)
 {
+    using namespace DAVA::TArc;
     horizontalScrollBar->setSliderPosition(position.x);
     verticalScrollBar->setSliderPosition(position.y);
+
+    DataContext* activeContext = accessor->GetActiveContext();
+    if (activeContext == nullptr)
+    {
+        return;
+    }
+    CentralWidgetData* data = activeContext->GetData<CentralWidgetData>();
+    data->canvasPosition = position;
 }
 
 void PreviewWidget::OnResized(DAVA::uint32 width, DAVA::uint32 height)
@@ -350,7 +348,6 @@ void PreviewWidget::InitFromSystemsManager(EditorSystemsManager* systemsManager_
     systemsManager = systemsManager_;
 
     systemsManager->rootControlPositionChanged.Connect(this, &PreviewWidget::OnRootControlPositionChanged);
-    systemsManager->selectionChanged.Connect(this, &PreviewWidget::OnSelectionInSystemsChanged);
 
     connect(focusNextChildAction, &QAction::triggered, std::bind(&EditorSystemsManager::FocusNextChild, systemsManager));
     connect(focusPreviousChildAction, &QAction::triggered, std::bind(&EditorSystemsManager::FocusPreviousChild, systemsManager));
@@ -427,7 +424,8 @@ void PreviewWidget::InitUI(DAVA::TArc::ContextAccessor* accessor)
 
     DAVA::TArc::DataContext* ctx = accessor->GetGlobalContext();
     ctx->CreateData(std::make_unique<SceneTabsModel>());
-    DAVA::TArc::SceneTabbar* tabBar = new DAVA::TArc::SceneTabbar(accessor, DAVA::Reflection::Create(ctx->GetData<SceneTabsModel>()), this);
+    DAVA::Reflection reflection = DAVA::Reflection::Create(ctx->GetData<SceneTabsModel>());
+    DAVA::TArc::SceneTabbar* tabBar = new DAVA::TArc::SceneTabbar(accessor, reflection, this);
     tabBar->closeTab.Connect(&requestCloseTab, &DAVA::Signal<DAVA::uint64>::Emit);
 
     tabBar->setElideMode(Qt::ElideNone);
@@ -490,6 +488,8 @@ void PreviewWidget::ShowMenu(const QMouseEvent* mouseEvent)
 
 bool PreviewWidget::AddSelectionMenuSection(QMenu* menu, const QPoint& pos)
 {
+    using namespace DAVA;
+    using namespace TArc;
     Vector<ControlNode*> nodesUnderPoint;
     Vector2 davaPos(pos.x(), pos.y());
     auto predicateForMenu = [davaPos](const ControlNode* node) -> bool
@@ -513,7 +513,13 @@ bool PreviewWidget::AddSelectionMenuSection(QMenu* menu, const QPoint& pos)
         QAction* action = new QAction(QString::fromStdString(controlNode->GetName()), menu);
         action->setCheckable(true);
         menu->addAction(action);
-        if (selectionContainer.IsSelected(controlNode))
+
+        DataContext* activeContext = accessor->GetActiveContext();
+        DVASSERT(activeContext != nullptr);
+        DocumentData* data = activeContext->GetData<DocumentData>();
+        const SelectedNodes& selectedNodes = data->GetSelectedNodes();
+
+        if (selectedNodes.find(controlNode) != selectedNodes.end())
         {
             action->setChecked(true);
         }
@@ -755,6 +761,8 @@ void PreviewWidget::OnDrop(QDropEvent* event)
 
 void PreviewWidget::OnKeyPressed(QKeyEvent* event)
 {
+    using namespace DAVA;
+    using namespace TArc;
     if (event->isAutoRepeat())
     {
         return;
@@ -762,7 +770,13 @@ void PreviewWidget::OnKeyPressed(QKeyEvent* event)
     int key = event->key();
     if (key == Qt::Key_Enter || key == Qt::Key_Return)
     {
-        SelectedNodes selectedNodes = selectionContainer.selectedNodes;
+        DataContext* active = accessor->GetActiveContext();
+        if (active == nullptr)
+        {
+            return;
+        }
+        DocumentData* data = active->GetData<DocumentData>();
+        const SelectedNodes& selectedNodes = data->GetSelectedNodes();
         if (selectedNodes.size() == 1)
         {
             ControlNode* node = dynamic_cast<ControlNode*>(*selectedNodes.begin());
@@ -800,32 +814,6 @@ float PreviewWidget::GetNextScale(float currentScale, int ticksCount) const
     ticksCount = std::min(distance, ticksCount);
     std::advance(iter, ticksCount);
     return iter != percentages.end() ? *iter : percentages.last();
-}
-
-void PreviewWidget::OnSelectionInSystemsChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
-{
-    for (const auto& node : deselected)
-    {
-        tmpSelected.erase(node);
-        tmpDeselected.insert(node);
-    }
-    for (const auto& node : selected)
-    {
-        tmpSelected.insert(node);
-        tmpDeselected.erase(node);
-    }
-    selectionContainer.MergeSelection(selected, deselected);
-    continuousUpdater->Update();
-}
-
-void PreviewWidget::NotifySelectionChanged()
-{
-    if (!tmpSelected.empty() || !tmpDeselected.empty())
-    {
-        emit SelectionChanged(tmpSelected, tmpDeselected);
-    }
-    tmpSelected.clear();
-    tmpDeselected.clear();
 }
 
 float PreviewWidget::GetPreviousScale(float currentScale, int ticksCount) const

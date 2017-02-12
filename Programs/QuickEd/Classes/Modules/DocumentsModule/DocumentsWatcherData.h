@@ -18,6 +18,7 @@ private:
     void Watch(const QString& path);
     void Unwatch(const QString& path);
 
+    //store changed ids to iterate them when application will be active
     DAVA::Set<DAVA::TArc::DataContext::ContextID> changedDocuments;
     std::unique_ptr<QFileSystemWatcher> watcher;
     DAVA_VIRTUAL_REFLECTION(DocumentsWatcherData, DAVA::TArc::DataNode);

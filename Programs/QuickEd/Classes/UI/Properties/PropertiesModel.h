@@ -1,10 +1,11 @@
-#ifndef __QUICKED_PROPERTIES_MODEL_H__
-#define __QUICKED_PROPERTIES_MODEL_H__
-
-#include "Base/RefPtr.h"
-#include "FileSystem/VariantType.h"
+#pragma once
 
 #include "Model/ControlProperties/PropertyListener.h"
+
+#include <QtTools/Updaters/ContinuousUpdater.h>
+
+#include <Base/RefPtr.h>
+#include <FileSystem/VariantType.h>
 
 #include <QAbstractItemModel>
 #include <QSet>
@@ -20,7 +21,6 @@ class ControlNode;
 class StyleSheetNode;
 class QtModelPackageCommandExecutor;
 class ComponentPropertiesSection;
-class ContinuousUpdater;
 
 class PropertiesModel : public QAbstractItemModel, private PropertyListener
 {
@@ -90,7 +90,5 @@ protected:
     AbstractProperty* rootProperty = nullptr;
     QtModelPackageCommandExecutor* commandExecutor = nullptr;
     DAVA::Set<DAVA::RefPtr<AbstractProperty>> changedProperties;
-    ContinuousUpdater* continuousUpdater = nullptr;
+    ContinuousUpdater continuousUpdater;
 };
-
-#endif // __QUICKED_PROPERTIES_MODEL_H__

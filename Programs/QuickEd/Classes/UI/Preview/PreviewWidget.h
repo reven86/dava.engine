@@ -1,10 +1,6 @@
 #pragma once
 
 #include "EditorSystems/EditorSystemsManager.h"
-#include "EditorSystems/SelectionContainer.h"
-
-#include <TArc/DataProcessing/DataWrapper.h>
-#include <TArc/DataProcessing/DataListener.h>
 
 #include <Engine/Qt/RenderWidget.h>
 
@@ -45,7 +41,7 @@ class QDragLeaveEvent;
 class QDropEvent;
 class QMenu;
 
-class PreviewWidget : public QFrame, private DAVA::RenderWidget::IClientDelegate, DAVA::TArc::DataListener
+class PreviewWidget : public QFrame, private DAVA::RenderWidget::IClientDelegate
 {
     Q_OBJECT
 public:
@@ -63,12 +59,10 @@ signals:
     void CutRequested();
     void CopyRequested();
     void PasteRequested();
-    void SelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OpenPackageFile(QString path);
     void DropRequested(const QMimeData* data, Qt::DropAction action, PackageBaseNode* targetNode, DAVA::uint32 destIndex, const DAVA::Vector2* pos);
 
 public slots:
-    void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OnRootControlPositionChanged(const DAVA::Vector2& pos);
     void OnNestedControlPositionChanged(const DAVA::Vector2& pos);
     void OnEmulationModeChanged(bool emulationMode);
@@ -116,18 +110,14 @@ private:
     float GetNextScale(float currentScale, int ticksCount) const;
     float GetPreviousScale(float currentScale, int ticksCount) const;
 
-    void OnSelectionInSystemsChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
-    void NotifySelectionChanged();
     void UpdateDragScreenState();
     float GetScaleFromComboboxText() const;
-    void OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields) override;
 
     DAVA::TArc::ContextAccessor* accessor = nullptr;
     DAVA::RenderWidget* renderWidget = nullptr;
 
     QList<float> percentages;
 
-    SelectionContainer selectionContainer;
     RulerController* rulerController = nullptr;
     QPoint rootControlPos;
     QPoint canvasPos;
@@ -139,13 +129,6 @@ private:
     EditorSystemsManager* systemsManager = nullptr;
     EditorCanvas* editorCanvas = nullptr;
     CursorInterpreter* cursorInterpreter = nullptr;
-
-    ContinuousUpdater* continuousUpdater = nullptr;
-
-    SelectedNodes tmpSelected; //for continuousUpdater
-    SelectedNodes tmpDeselected; //for continuousUpdater
-
-    DAVA::TArc::DataWrapper dataWrapper;
 
     //we can show model dialogs only when mouse released, so remember node to change text when mouse will be released
     ControlNode* nodeToChangeTextOnMouseRelease = nullptr;

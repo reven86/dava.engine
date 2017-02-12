@@ -13,10 +13,9 @@ class Project;
 class LegacySupportModule : public DAVA::TArc::ClientModule, private DAVA::TArc::DataListener
 {
     void PostInit() override;
-    void OnWindowClosed(const DAVA::TArc::WindowKey& key);
+    void OnWindowClosed(const DAVA::TArc::WindowKey& key) override;
     void OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields) override;
     void OnContextCreated(DAVA::TArc::DataContext* context) override;
-    void OnContextWasChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* oldOne);
 
     void InitMainWindow();
 
@@ -29,6 +28,7 @@ class LegacySupportModule : public DAVA::TArc::ClientModule, private DAVA::TArc:
 
     DAVA::TArc::QtConnections connections;
     DAVA::TArc::DataWrapper projectDataWrapper;
+    DAVA::TArc::DataWrapper documentDataWrapper;
     std::unique_ptr<Project> project;
     DAVA::Map<DAVA::TArc::DataContext::ContextID, std::unique_ptr<Document>> documents;
 

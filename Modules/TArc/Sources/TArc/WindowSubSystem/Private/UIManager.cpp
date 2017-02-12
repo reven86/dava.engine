@@ -111,7 +111,7 @@ QMessageBox::Icon Convert(const ModalMessageParams::Icon& icon)
     using IconNode = std::pair<QMessageBox::Icon, ModalMessageParams::Icon>;
     auto iter = std::find_if(iconsConvertor.begin(), iconsConvertor.end(), [icon](const IconNode& node)
                              {
-                                 return node.first == icon;
+                                 return node.first == static_cast<QMessageBox::Icon>(icon);
                              });
     DVASSERT(iter != iconsConvertor.end());
     return iter->first;
@@ -122,7 +122,7 @@ ModalMessageParams::Icon Convert(const QMessageBox::Icon& icon)
     using IconNode = std::pair<QMessageBox::Icon, ModalMessageParams::Icon>;
     auto iter = std::find_if(iconsConvertor.begin(), iconsConvertor.end(), [icon](const IconNode& node)
                              {
-                                 return node.second == icon;
+                                 return static_cast<QMessageBox::Icon>(node.second) == icon;
                              });
     DVASSERT(iter != iconsConvertor.end());
     return iter->second;
