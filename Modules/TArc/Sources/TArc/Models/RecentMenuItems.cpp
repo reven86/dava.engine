@@ -104,4 +104,3 @@ RecentMenuItems::Params::Params(const DAVA::TArc::WindowKey& windowKey_, DAVA::T
     , propertiesItemKey(propertiesItemKey_)
 {
 }
-

@@ -17,7 +17,7 @@ public:
     void Update();
     void Stop(); //sync method to stop timer and call Update if it's needed
     void Abort(); //sync method to stop timer and not call update
-    
+
 private slots:
     void OnTimer();
 
