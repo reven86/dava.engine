@@ -263,8 +263,7 @@ void UIStaticText::Draw(const UIGeometricData& geometricData)
         UIControl::Draw(geometricData);
         return;
     }
-
-    Rect textBlockRect = GetRect();
+    Rect textBlockRect = CalculateTextBlockRect(geometricData);
     if (textBlock->GetFont() && textBlock->GetFont()->GetFontType() == Font::TYPE_DISTANCE)
     {
         // Correct rect and setup position and scale for distance fonts
@@ -395,6 +394,12 @@ void UIStaticText::PrepareSprite()
         shadowBg->SetSprite(NULL, 0);
         textBg->SetSprite(NULL, 0);
     }
+}
+
+Rect UIStaticText::CalculateTextBlockRect(const UIGeometricData& geometricData) const
+{
+    Rect resultRect(geometricData.position, geometricData.size);
+    return resultRect;
 }
 
 String UIStaticText::GetFontPresetName() const

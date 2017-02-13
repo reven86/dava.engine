@@ -134,6 +134,7 @@ public:
     void SetForceBiDiSupportEnabled(bool value);
 
 protected:
+    Rect CalculateTextBlockRect(const UIGeometricData& geometricData) const;
 #if defined(LOCALIZATION_DEBUG)
     void DrawLocalizationDebug(const UIGeometricData& textGeomData) const;
     void DrawLocalizationErrors(const UIGeometricData& textGeomData, const UIGeometricData& elementGeomData) const;
