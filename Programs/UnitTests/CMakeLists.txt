@@ -64,7 +64,7 @@ set( MACOS_XIB                  ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FO
 set( MACOS_PLIST                ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/Info.plist )
 
 set( ANDROID_PACKAGE            "com.dava.unittests" )
-set( ANDROID_APP_NAME           "UnitTests" )
+set( ANDROID_APP_NAME           "UnitTestApp" )
 
 set( ANDROID_ICO                ${CMAKE_CURRENT_LIST_DIR}/android/ic_launcher-web.png )
 
