@@ -1989,11 +1989,6 @@ Animation* UIControl::ColorAnimation(const Color& finalColor, float32 time, Inte
     return animation;
 }
 
-void UIControl::OnAllAnimationsFinished()
-{
-    PerformEvent(UIControl::EVENT_ALL_ANIMATIONS_FINISHED);
-}
-
 void UIControl::SetDebugDraw(bool _debugDrawEnabled, bool hierarchic /* = false*/)
 {
     debugDrawEnabled = _debugDrawEnabled;
