@@ -5,6 +5,7 @@
 #include "Sound/SoundSystem.h"
 #include "UI/Sound/UISoundComponent.h"
 #include "UI/Sound/UISoundValueFilterComponent.h"
+#include "UI/UIEvent.h"
 #include "UI/UISlider.h"
 
 namespace DAVA
