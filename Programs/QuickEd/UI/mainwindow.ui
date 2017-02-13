@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1024</width>
-    <height>865</height>
+    <height>851</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -273,7 +273,7 @@
     <number>2</number>
    </attribute>
   </widget>
-  <widget class="FindWidget" name="findWidget">
+  <widget class="FindResultsWidget" name="findResultsWidget">
    <property name="windowTitle">
     <string>Find</string>
    </property>
@@ -565,8 +565,35 @@
    <property name="text">
     <string>Find Prototype Instances</string>
    </property>
+  </action>
+  <action name="actionFindInDocument">
+   <property name="text">
+    <string>Find...</string>
+   </property>
+   <property name="toolTip">
+    <string>Find...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+F</string>
+   </property>
+  </action>
+  <action name="actionFindInProject">
+   <property name="text">
+    <string>Find in Project...</string>
+   </property>
+   <property name="toolTip">
+    <string>Find in Project...</string>
+   </property>
    <property name="shortcut">
     <string>Ctrl+Shift+F</string>
+   </property>
+  </action>
+  <action name="actionCancelFind">
+   <property name="text">
+    <string>Cancel Find</string>
+   </property>
+   <property name="shortcut">
+    <string>Esc</string>
    </property>
   </action>
  </widget>
@@ -619,9 +646,9 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>FindWidget</class>
+   <class>FindResultsWidget</class>
    <extends>QDockWidget</extends>
-   <header>UI/Find/FindWidget.h</header>
+   <header>UI/Find/FindResultsWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

@@ -1,4 +1,4 @@
-#include "FindWidget.h"
+#include "FindResultsWidget.h"
 
 #include "Document/Document.h"
 #include "Project/Project.h"
@@ -11,7 +11,7 @@
 
 using namespace DAVA;
 
-FindWidget::FindWidget(QWidget* parent)
+FindResultsWidget::FindResultsWidget(QWidget* parent)
     : QDockWidget(parent)
 {
     qRegisterMetaType<FindItem>("FindItem");
@@ -20,13 +20,13 @@ FindWidget::FindWidget(QWidget* parent)
 
     model = new QStandardItemModel();
     ui.treeView->setModel(model);
-    connect(ui.treeView, &QTreeView::activated, this, &FindWidget::OnActivated);
+    connect(ui.treeView, &QTreeView::activated, this, &FindResultsWidget::OnActivated);
     ui.treeView->installEventFilter(this);
 }
 
-FindWidget::~FindWidget() = default;
+FindResultsWidget::~FindResultsWidget() = default;
 
-void FindWidget::Find(std::unique_ptr<FindFilter>&& filter)
+void FindResultsWidget::Find(std::unique_ptr<FindFilter>&& filter)
 {
     if (finder == nullptr)
     {
@@ -37,18 +37,18 @@ void FindWidget::Find(std::unique_ptr<FindFilter>&& filter)
         if (project != nullptr)
         {
             QStringList files = project->GetFileSystemCache()->GetFiles("yaml");
-            finder = new Finder(files, std::move(filter), &(project->GetPrototypes()));
+            finder = new Finder(std::move(filter), &(project->GetPrototypes()));
 
-            connect(finder, &Finder::ProgressChanged, this, &FindWidget::OnProgressChanged, Qt::QueuedConnection);
-            connect(finder, &Finder::ItemFound, this, &FindWidget::OnItemFound, Qt::QueuedConnection);
-            connect(finder, &Finder::Finished, this, &FindWidget::OnFindFinished, Qt::QueuedConnection);
+            connect(finder, &Finder::ProgressChanged, this, &FindResultsWidget::OnProgressChanged, Qt::QueuedConnection);
+            connect(finder, &Finder::ItemFound, this, &FindResultsWidget::OnItemFound, Qt::QueuedConnection);
+            connect(finder, &Finder::Finished, this, &FindResultsWidget::OnFindFinished, Qt::QueuedConnection);
 
-            QtConcurrent::run([this]() { finder->Process(); });
+            QtConcurrent::run([this, files]() { finder->Process(files); });
         }
     }
 }
 
-void FindWidget::OnProjectChanged(Project* project_)
+void FindResultsWidget::OnProjectChanged(Project* project_)
 {
     if (finder)
     {
@@ -59,7 +59,7 @@ void FindWidget::OnProjectChanged(Project* project_)
     model->removeRows(0, model->rowCount());
 }
 
-void FindWidget::OnItemFound(FindItem item)
+void FindResultsWidget::OnItemFound(FindItem item)
 {
     String fwPath = item.GetFile().GetFrameworkPath();
     QStandardItem* pathItem = new QStandardItem(fwPath.c_str());
@@ -77,12 +77,12 @@ void FindWidget::OnItemFound(FindItem item)
     }
 }
 
-void FindWidget::OnProgressChanged(int filesProcessed, int totalFiles)
+void FindResultsWidget::OnProgressChanged(int filesProcessed, int totalFiles)
 {
     this->setWindowTitle(QString("Find - %1%").arg(filesProcessed * 100 / totalFiles));
 }
 
-void FindWidget::OnFindFinished()
+void FindResultsWidget::OnFindFinished()
 {
     if (finder)
     {
@@ -93,7 +93,7 @@ void FindWidget::OnFindFinished()
     this->setWindowTitle(QString("Find - Finished"));
 }
 
-void FindWidget::OnActivated(const QModelIndex& index)
+void FindResultsWidget::OnActivated(const QModelIndex& index)
 {
     if (project)
     {
@@ -110,7 +110,7 @@ void FindWidget::OnActivated(const QModelIndex& index)
     }
 }
 
-bool FindWidget::eventFilter(QObject* obj, QEvent* event)
+bool FindResultsWidget::eventFilter(QObject* obj, QEvent* event)
 {
     if (event->type() == QEvent::KeyPress)
     {

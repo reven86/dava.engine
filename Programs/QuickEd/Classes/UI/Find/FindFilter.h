@@ -42,3 +42,16 @@ public:
 private:
     DAVA::Vector<std::shared_ptr<FindFilter>> filters;
 };
+
+class ControlNameFilter : public FindFilter
+{
+public:
+    ControlNameFilter(const DAVA::FastName& expectedName);
+    ~ControlNameFilter();
+
+    bool CanAcceptPackage(const PackageInformation* package) const override;
+    bool CanAcceptControl(const ControlInformation* control) const override;
+
+private:
+    DAVA::FastName expectedName;
+};

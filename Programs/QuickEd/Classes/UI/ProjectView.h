@@ -24,6 +24,9 @@ public:
     void SelectControl(const DAVA::String& controlPath);
     void FindControls(std::unique_ptr<FindFilter>&& filter);
 
+    void ShowFindInDocument();
+    void CancelFindInDocument();
+
     void ExecDialogReloadSprites(SpritesPacker* packer);
 
     void SetProjectActionsEnabled(bool enable);

@@ -2,7 +2,6 @@
 
 #include <QFrame>
 #include <QPointer>
-#include <QStandardItemModel>
 
 #include "Base/BaseTypes.h"
 
@@ -20,19 +19,12 @@ public:
     SearchCriteriasWidget(QWidget* parent = nullptr);
     ~SearchCriteriasWidget() override;
 
-public slots:
-    void OnDocumentChanged(Document* arg)
-    {
-        doc = arg;
-    };
+    std::shared_ptr<FindFilter> BuildFindFilter() const;
 
 private slots:
     void OnAddCriteriaClicked();
     void OnRemoveCriteriaClicked();
 
 private:
-    QStandardItemModel* model = nullptr;
     std::unique_ptr<Ui::SearchCriteriasWidget> ui;
-
-    Document* doc = nullptr;
 };

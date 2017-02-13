@@ -14,8 +14,8 @@
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="1" colspan="2">
-    <widget class="SearchCriteriasWidget" name="searchCriterias"/>
+   <item row="0" column="0" colspan="4">
+    <widget class="FindInDocumentWidget" name="findInDocumentWidget" native="true"/>
    </item>
    <item row="1" column="1" colspan="2">
     <widget class="RulerWidget" name="horizontalRuler" native="true"/>
@@ -41,7 +41,16 @@
       <property name="spacing">
        <number>0</number>
       </property>
-      <property name="margin">
+      <property name="leftMargin">
+       <number>0</number>
+      </property>
+      <property name="topMargin">
+       <number>0</number>
+      </property>
+      <property name="rightMargin">
+       <number>0</number>
+      </property>
+      <property name="bottomMargin">
        <number>0</number>
       </property>
      </layout>
@@ -102,9 +111,9 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>SearchCriteriasWidget</class>
+   <class>FindInDocumentWidget</class>
    <extends>QWidget</extends>
-   <header>UI/Find/SearchCriteriasWidget.h</header>
+   <header>UI/Find/FindInDocumentWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

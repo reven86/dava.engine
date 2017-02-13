@@ -23,6 +23,8 @@ public:
     SearchCriteriaWidget(QWidget* parent = nullptr);
     ~SearchCriteriaWidget() override;
 
+    std::shared_ptr<FindFilter> BuildFindFilter() const;
+
 signals:
     void AddAnotherCriteria();
     void RemoveCriteria();

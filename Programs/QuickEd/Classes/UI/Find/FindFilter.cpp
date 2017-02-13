@@ -74,3 +74,22 @@ bool CompositeFilter::CanAcceptControl(const ControlInformation* control) const
                            return filter->CanAcceptControl(control);
                        });
 }
+
+ControlNameFilter::ControlNameFilter(const DAVA::FastName& expectedName_)
+    : expectedName(expectedName_)
+{
+}
+
+ControlNameFilter::~ControlNameFilter()
+{
+}
+
+bool ControlNameFilter::CanAcceptPackage(const PackageInformation* package) const
+{
+    return true;
+}
+
+bool ControlNameFilter::CanAcceptControl(const ControlInformation* control) const
+{
+    return control->GetName() == expectedName;
+}

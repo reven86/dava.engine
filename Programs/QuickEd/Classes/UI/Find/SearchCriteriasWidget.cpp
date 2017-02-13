@@ -24,6 +24,8 @@ void SearchCriteriasWidget::OnAddCriteriaClicked()
 
     QObject::connect(criteria, SIGNAL(AddAnotherCriteria()), this, SLOT(OnAddCriteriaClicked()));
     QObject::connect(criteria, SIGNAL(RemoveCriteria()), this, SLOT(OnRemoveCriteriaClicked()));
+
+    setFocusProxy(criteria);
 }
 
 void SearchCriteriasWidget::OnRemoveCriteriaClicked()
@@ -34,4 +36,11 @@ void SearchCriteriasWidget::OnRemoveCriteriaClicked()
         ui->criteriasList->removeWidget(s);
         s->deleteLater();
     }
+}
+
+std::shared_ptr<FindFilter> SearchCriteriasWidget::BuildFindFilter() const
+{
+    DAVA::Vector<std::shared_ptr<FindFilter>> filters;
+
+    return std::make_shared<CompositeFilter>(filters);
 }

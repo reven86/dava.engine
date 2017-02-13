@@ -3,7 +3,7 @@
 #include <QDockWidget>
 #include <QPointer>
 #include <QStandardItemModel>
-#include "ui_FindWidget.h"
+#include "ui_FindResultsWidget.h"
 
 #include "UI/Find/FindItem.h"
 #include "UI/Find/FindFilter.h"
@@ -13,12 +13,12 @@ class Document;
 class Project;
 class Finder;
 
-class FindWidget : public QDockWidget
+class FindResultsWidget : public QDockWidget
 {
     Q_OBJECT
 public:
-    FindWidget(QWidget* parent = nullptr);
-    ~FindWidget() override;
+    FindResultsWidget(QWidget* parent = nullptr);
+    ~FindResultsWidget() override;
 
     void Find(std::unique_ptr<FindFilter>&& filter);
 
@@ -40,7 +40,7 @@ private:
         CONTROL_DATA
     };
 
-    Ui::FindWidget ui;
+    Ui::FindResultsWidget ui;
     std::unique_ptr<FindFilter> filter;
     QStandardItemModel* model = nullptr;
 

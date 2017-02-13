@@ -19,10 +19,12 @@ MainWindow::ProjectView::ProjectView(MainWindow* mainWindow_)
     connect(mainWindow->ui->previewWidget, &PreviewWidget::SelectionChanged, mainWindow->ui->styleSheetInspectorWidget, &StyleSheetInspectorWidget::OnSelectionChanged);
     connect(mainWindow->ui->actionJumpToPrototype, &QAction::triggered, this, &MainWindow::ProjectView::JumpToPrototype);
     connect(mainWindow->ui->actionFindPrototypeInstances, &QAction::triggered, this, &MainWindow::ProjectView::FindPrototypeInstances);
+    connect(mainWindow->ui->actionFindInDocument, &QAction::triggered, this, &MainWindow::ProjectView::ShowFindInDocument);
+    connect(mainWindow->ui->actionCancelFind, &QAction::triggered, this, &MainWindow::ProjectView::CancelFindInDocument);
 
     connect(mainWindow->ui->previewWidget, &PreviewWidget::SelectionChanged, this, &MainWindow::ProjectView::OnSelectionChanged);
 
-    connect(this, &MainWindow::ProjectView::ProjectChanged, mainWindow->ui->findWidget, &FindWidget::OnProjectChanged);
+    connect(this, &MainWindow::ProjectView::ProjectChanged, mainWindow->ui->findResultsWidget, &FindResultsWidget::OnProjectChanged);
 
     mainWindow->ui->packageWidget->treeView->addAction(mainWindow->ui->actionJumpToPrototype);
     mainWindow->ui->packageWidget->treeView->addAction(mainWindow->ui->actionFindPrototypeInstances);
@@ -62,6 +64,7 @@ void MainWindow::ProjectView::SetProjectActionsEnabled(bool enabled)
     mainWindow->ui->actionFindFileInProject->setEnabled(enabled);
     mainWindow->ui->actionJumpToPrototype->setEnabled(enabled);
     mainWindow->ui->actionFindPrototypeInstances->setEnabled(enabled);
+    mainWindow->ui->actionFindInDocument->setEnabled(enabled);
     mainWindow->ui->toolBarPlugins->setEnabled(enabled);
 
     mainWindow->ui->fileSystemDockWidget->setEnabled(enabled);
@@ -182,7 +185,18 @@ void MainWindow::ProjectView::SelectControl(const DAVA::String& controlPath)
 
 void MainWindow::ProjectView::FindControls(std::unique_ptr<FindFilter>&& filter)
 {
-    mainWindow->ui->findWidget->Find(std::move(filter));
+    mainWindow->ui->findResultsWidget->Find(std::move(filter));
+}
+
+void MainWindow::ProjectView::ShowFindInDocument()
+{
+    mainWindow->ui->previewWidget->findInDocumentWidget->show();
+    mainWindow->ui->previewWidget->findInDocumentWidget->setFocus();
+}
+
+void MainWindow::ProjectView::CancelFindInDocument()
+{
+    mainWindow->ui->previewWidget->findInDocumentWidget->hide();
 }
 
 void MainWindow::ProjectView::SetResourceDirectory(const QString& path)
