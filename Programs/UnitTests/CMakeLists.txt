@@ -5,7 +5,7 @@ endif()
 
 project ( UnitTests )
 
-set          ( WARNINGS_AS_ERRORS true )
+#set          ( WARNINGS_AS_ERRORS true )
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" )
 include      ( CMake-common )
 

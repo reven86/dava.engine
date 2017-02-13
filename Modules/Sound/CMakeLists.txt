@@ -7,7 +7,6 @@ set( CPP_FILES                       Sources/Private/*.cpp )
 set( CPP_FILES_IOS                   Sources/Private/iOS/*.mm )
 
 set( LIBRARIES_FMOD                  ${CMAKE_CURRENT_LIST_DIR}/Libs/lib )
-set( DYNAMIC_FMOD                    ${CMAKE_CURRENT_LIST_DIR}/Libs/bin )
 
 set( INCLUDES                        ${CMAKE_CURRENT_LIST_DIR}/Libs/include 
                                      ${CMAKE_CURRENT_LIST_DIR}/Sources 
@@ -37,22 +36,23 @@ set( STATIC_LIBRARIES_WINUAP_DEBUG   ${LIBRARIES_FMOD}/win10/$(Platform)/Debug/f
                                      ${LIBRARIES_FMOD}/win10/$(Platform)/Debug/fmodexUWP_vc.lib )
 
 
-set( DYNAMIC_LIBRARIES_ANDROID       ${DYNAMIC_FMOD}/android/${ANDROID_NDK_ABI_NAME}/libfmodevent.so 
-                                     ${DYNAMIC_FMOD}/android/${ANDROID_NDK_ABI_NAME}/libfmodex.so )
+set( DYNAMIC_LIBRARIES_ANDROID       ${LIBRARIES_FMOD}/android/${ANDROID_NDK_ABI_NAME}/libfmodevent.so 
+                                     ${LIBRARIES_FMOD}/android/${ANDROID_NDK_ABI_NAME}/libfmodex.so )
 
-set( DYNAMIC_LIBRARIES_WIN32         ${DYNAMIC_FMOD}/fmodex.dll 
-                                     ${DYNAMIC_FMOD}/fmod_event.dll )
+set( DYNAMIC_LIBRARIES_WIN32         ${LIBRARIES_FMOD}/win/x86/Release/fmodex.dll 
+                                     ${LIBRARIES_FMOD}/win/x86/Release/fmod_event.dll )
 
-set( DYNAMIC_LIBRARIES_WIN64         ${DYNAMIC_FMOD}/fmodex64.dll 
-                                     ${DYNAMIC_FMOD}/fmod_event64.dll )
+set( DYNAMIC_LIBRARIES_WIN64         ${LIBRARIES_FMOD}/win/x64/Release/fmodex64.dll 
+                                     ${LIBRARIES_FMOD}/win/x64/Release/fmod_event64.dll )
 
-set( DYNAMIC_LIBRARIES_MACOS         ${DYNAMIC_FMOD}/libfmodevent.dylib
-                                     ${DYNAMIC_FMOD}/libfmodex.dylib )
+set( DYNAMIC_LIBRARIES_MACOS         ${LIBRARIES_FMOD}/macos/libfmodevent.dylib
+                                     ${LIBRARIES_FMOD}/macos/libfmodex.dylib )
 
 
 set( DYNAMIC_LIBRARIES_WINUAP        ${LIBRARIES_FMOD}/win10/$(Platform)/Release/fmod_eventUWParm.dll 
                                      ${LIBRARIES_FMOD}/win10/$(Platform)/Release/fmodexUWParm.dll )
 
+set( JAR_FOLDERS_ANDROID             ${LIBRARIES_FMOD}/android/jar )
 
 set(EXCLUDE_FROM_ALL true )
 
