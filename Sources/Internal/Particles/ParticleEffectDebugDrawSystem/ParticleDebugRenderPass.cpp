@@ -21,7 +21,7 @@ void ParticleDebugRenderPass::PrepareParticlesVisibilityArray(Camera* camera, Re
 {
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::RENDER_PASS_PREPARE_ARRAYS)
 
-        uint32 currVisibilityCriteria = RenderObject::CLIPPING_VISIBILITY_CRITERIA;
+    uint32 currVisibilityCriteria = RenderObject::CLIPPING_VISIBILITY_CRITERIA;
     if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::ENABLE_STATIC_OCCLUSION))
         currVisibilityCriteria &= ~RenderObject::VISIBLE_STATIC_OCCLUSION;
 

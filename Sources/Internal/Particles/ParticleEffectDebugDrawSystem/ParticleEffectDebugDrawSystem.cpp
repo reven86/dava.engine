@@ -51,9 +51,6 @@ ParticleEffectDebugDrawSystem::~ParticleEffectDebugDrawSystem()
 
 void ParticleEffectDebugDrawSystem::Draw()
 {
-//     if (!isEnabled)
-//         return;
-
     renderPass->Draw(renderSystem);
     drawQuadPass->Draw(renderSystem);
 }
@@ -143,9 +140,9 @@ DAVA::Vector4 ParticleEffectDebugDrawSystem::LerpColors(float normalizedWidth)
         TextureKey(Vector4(255.0f, 64.0f, 0.0f, 255.0f), 0.5f),
         TextureKey(Vector4(255.0f, 0.0f, 0.0f, 255.0f), 1.0f)
     };
-    const TextureKey* current;
-    const TextureKey* next;
-    for (int i = 0; i < keys.size() - 1; i++) // binary search by time will be better but why to bother in this case.
+    const TextureKey* current = nullptr;
+    const TextureKey* next = nullptr;
+    for (int i = 0; i < keys.size() - 1; i++)
         if (keys[i].time <= normalizedWidth && keys[i + 1].time >= normalizedWidth)
         {
             current = &keys[i];
@@ -163,54 +160,11 @@ void ParticleEffectDebugDrawSystem::SetSelectedParticles(DAVA::UnorderedSet<Rend
     selectedParticles = selectedParticles_;
 }
 
-void ParticleEffectDebugDrawSystem::AddToActive(ParticleEffectComponent* effect)
-{
-    Vector<ParticleEffectComponent*>::iterator it = std::find(activeComponents.begin(), activeComponents.end(), effect);
-    if (it == activeComponents.end())
-        activeComponents.push_back(effect);
-}
-
-void ParticleEffectDebugDrawSystem::RemoveFromActive(ParticleEffectComponent* effect)
-{
-    Vector<ParticleEffectComponent*>::iterator it = std::find(activeComponents.begin(), activeComponents.end(), effect);
-    // DVASSERT(it != activeComponents.end());
-    if (it != activeComponents.end())
-        activeComponents.erase(it);
-}
-
-void ParticleEffectDebugDrawSystem::RemoveEntity(Entity* entity)
-{
-    ParticleEffectComponent* effect = static_cast<ParticleEffectComponent*>(entity->GetComponent(Component::PARTICLE_EFFECT_COMPONENT));
-    if (effect != nullptr && effect->GetAnimationState() != ParticleEffectComponent::STATE_STOPPED)
-        RemoveFromActive(effect);
-}
-
-void ParticleEffectDebugDrawSystem::RemoveComponent(Entity* entity, Component* component)
-{
-    ParticleEffectComponent* effect = static_cast<ParticleEffectComponent*>(component);
-    if (effect != nullptr && effect->GetAnimationState() != ParticleEffectComponent::STATE_STOPPED)
-        RemoveFromActive(effect);
-}
-
-void ParticleEffectDebugDrawSystem::ImmediateEvent(Component* component, uint32 event)
-{
-    DVASSERT(component->GetType() == Component::PARTICLE_EFFECT_COMPONENT);
-    ParticleEffectComponent* effect = static_cast<ParticleEffectComponent*>(component);
-    if (event == EventSystem::START_PARTICLE_EFFECT)
-        AddToActive(effect);
-    else if (event == EventSystem::STOP_PARTICLE_EFFECT)
-        RemoveFromActive(effect);
-}
 
 void ParticleEffectDebugDrawSystem::SetAlphaThreshold(float32 threshold)
 {
     threshold = Clamp(threshold, 0.0f, 1.0f);
     if (showAlphaMaterial != nullptr)
         showAlphaMaterial->SetPropertyValue(FastName("particleAlphaThreshold"), &threshold);
-}
-
-void ParticleEffectDebugDrawSystem::Process(float32 timeElapsed)
-{
-
 }
 }

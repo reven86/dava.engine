@@ -355,7 +355,7 @@ void Scene::CreateSystems()
     if (DAVA::Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DEBUG_DRAW_PARTICLES) && particleEffectDebugDrawSystem == nullptr)
     {
         particleEffectDebugDrawSystem = new ParticleEffectDebugDrawSystem(this);
-        AddSystem(particleEffectDebugDrawSystem, MAKE_COMPONENT_MASK(Component::PARTICLE_EFFECT_COMPONENT), 0);
+        AddSystem(particleEffectDebugDrawSystem, 0);
     }
 }
 
@@ -1016,7 +1016,7 @@ void Scene::HandleEvent(Observable* observable)
     if (DAVA::Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DEBUG_DRAW_PARTICLES) && particleEffectDebugDrawSystem == nullptr)
     {
         particleEffectDebugDrawSystem = new ParticleEffectDebugDrawSystem(this);
-        AddSystem(particleEffectDebugDrawSystem, MAKE_COMPONENT_MASK(Component::PARTICLE_EFFECT_COMPONENT), 0);
+        AddSystem(particleEffectDebugDrawSystem, 0);
     }
     else if (!DAVA::Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DEBUG_DRAW_PARTICLES) && particleEffectDebugDrawSystem != nullptr)
     {

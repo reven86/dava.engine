@@ -21,10 +21,6 @@ public:
 
     ~ParticleEffectDebugDrawSystem();
 
-    void RemoveEntity(Entity* entity) override;
-    void RemoveComponent(Entity* entity, Component* component) override;
-    void ImmediateEvent(Component* component, uint32 event) override;
-    void Process(float32 timeElapsed) override;
     void Draw();
 
     void GenerateDebugMaterials();
@@ -35,9 +31,6 @@ public:
 
     inline eParticleDebugDrawMode GetDrawMode() const;
     inline void SetDrawMode(eParticleDebugDrawMode mode);
-
-    inline bool GetIsEnabled() const;
-    inline void SetIsEnabled(bool enable);
 
     inline bool GetIsDrawOnlySected() const;
     inline void SetIsDrawOnlySelected(bool showOnlySelected);
@@ -56,16 +49,11 @@ private:
         {}
     };
 
-    void AddToActive(ParticleEffectComponent* effect);
-    void RemoveFromActive(ParticleEffectComponent* effect);
-
-    DAVA::Vector<ParticleEffectComponent*> activeComponents;
     DAVA::UnorderedSet<RenderObject*> selectedParticles;
     ParticleDebugRenderPass* renderPass = nullptr;
     ParticleDebugDrawQuadRenderPass* drawQuadPass = nullptr;
     DAVA::RenderSystem* renderSystem = nullptr;
 
-    bool isEnabled = false;
     bool isDrawOnlySelected = false;
     eParticleDebugDrawMode drawMode = WIREFRAME;
 
@@ -76,7 +64,7 @@ private:
     NMaterial* quadMaterial = nullptr;
     NMaterial* quadHeatMaterial = nullptr;
 
-    Texture* heatTexture;
+    Texture* heatTexture = nullptr;
 
     Vector<NMaterial*> materials;
 };
@@ -89,16 +77,6 @@ eParticleDebugDrawMode ParticleEffectDebugDrawSystem::GetDrawMode() const
 void ParticleEffectDebugDrawSystem::SetDrawMode(eParticleDebugDrawMode mode)
 {
     drawMode = mode;
-}
-
-bool ParticleEffectDebugDrawSystem::GetIsEnabled() const
-{
-    return isEnabled;
-}
-
-void ParticleEffectDebugDrawSystem::SetIsEnabled(bool enable)
-{
-    isEnabled = enable;
 }
 
 bool ParticleEffectDebugDrawSystem::GetIsDrawOnlySected() const
