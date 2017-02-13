@@ -82,15 +82,31 @@ Vector2 EditorCanvas::GetMinimumPos() const
 
 Vector2 EditorCanvas::GetMaximumPos() const
 {
-    return size - viewSize;
+    using namespace DAVA;
+    Vector2 maxPos = size - viewSize;
+    Vector2 minPos = GetMinimumPos();
+    return Vector2(Max(maxPos.x, minPos.x), Max(maxPos.y, minPos.y));
 }
 
 void EditorCanvas::UpdateContentSize()
 {
     Vector2 marginsSize(margin * 2.0f, margin * 2.0f);
     size = contentSize * scale + marginsSize;
-    UpdatePosition();
+    Vector2 sizeDiff = (size - viewSize) / 2.0f;
+    if ((needCentralize.first && sizeDiff.dx > 0.0f)
+        || (needCentralize.second && sizeDiff.dy > 0.0f))
+    {
+        Vector2 newPosition(needCentralize.first ? sizeDiff.dx : position.x,
+                            needCentralize.second ? sizeDiff.dy : position.y);
+        SetPosition(newPosition);
+    }
+    else
+    {
+        UpdatePosition();
+    }
     sizeChanged.Emit(size);
+
+    needCentralize = { size.dx < viewSize.dx, size.dy < viewSize.dy };
 }
 
 void EditorCanvas::SetScale(float32 arg)
@@ -113,15 +129,17 @@ void EditorCanvas::OnViewSizeChanged(DAVA::uint32 width, DAVA::uint32 height)
 
 void EditorCanvas::SetPosition(const Vector2& position_)
 {
+    needCentralize = { false, false };
     Vector2 minPos = GetMinimumPos();
     Vector2 maxPos = GetMaximumPos();
     Vector2 fixedPos(Clamp(position_.x, minPos.x, maxPos.x),
                      Clamp(position_.y, minPos.y, maxPos.y));
+
     if (fixedPos != position)
     {
         position = fixedPos;
         UpdatePosition();
-        ositionChanged.Emit(position);
+        positionChanged.Emit(position);
     }
 }
 
@@ -139,10 +157,10 @@ void EditorCanvas::UpdatePosition()
         offset.dy = position.y;
     }
     offset -= Vector2(margin, margin);
-    Vector2 position(-offset.dx, -offset.dy);
-    movableControl->SetPosition(position);
+    Vector2 newPosition(-offset.dx, -offset.dy);
+    movableControl->SetPosition(newPosition);
 
-    nestedControlPositionChanged.Emit(position);
+    nestedControlPositionChanged.Emit(newPosition);
 }
 
 bool EditorCanvas::CanProcessInput(DAVA::UIEvent* currentInput) const
