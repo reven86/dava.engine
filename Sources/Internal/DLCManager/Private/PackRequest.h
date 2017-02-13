@@ -59,7 +59,7 @@ private:
         uint64 startLoadingPos = 0;
         uint64 sizeOfCompressedFile = 0;
         uint64 sizeOfUncompressedFile = 0;
-        uint64 prevDownloadedSize = 0;
+        uint64 downloadedFileSize = 0;
         uint32 taskId = 0;
         Compressor::Type compressionType = Compressor::Type::Lz4HC;
         Status status = Wait;
@@ -83,7 +83,6 @@ private:
     String requestedPackName;
 
     uint32 numOfDownloadedFile = 0;
-    uint64 downloadedSize = 0;
 
     // if this fild is false, you can check fileIndexes
     // else fileIndexes maybe empty and wait initialization

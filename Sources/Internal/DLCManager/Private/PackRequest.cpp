@@ -24,7 +24,7 @@ PackRequest::PackRequest(DLCManagerImpl& packManager_, const String& pack_, Vect
     , requestedPackName(pack_)
     , delayedRequest(false)
 {
-    SetFileIndexes(std::move(fileIndexes_));
+    SetFileIndexes(move(fileIndexes_));
 }
 
 PackRequest::~PackRequest()
@@ -101,7 +101,7 @@ uint64 PackRequest::GetSize() const
 uint64 PackRequest::GetDownloadedSize() const
 {
     uint64 requestsSize = std::accumulate(begin(requests), end(requests), uint64(0), [](uint64 sum, const FileRequest& r) {
-        return sum + r.prevDownloadedSize;
+        return sum + r.downloadedFileSize;
     });
     return requestsSize;
 }
@@ -178,11 +178,7 @@ void PackRequest::Update()
             InitializeFileRequests();
         }
 
-        if (IsDownloaded())
-        {
-            uint32 countChecksPerUpdate = packManagerImpl.GetHints().checkLocalFileExistPerUpdate;
-        }
-        else
+        if (!IsDownloaded())
         {
             UpdateFileRequests();
         }
@@ -208,13 +204,15 @@ void PackRequest::InitializeFileRequest(const uint32 fileIndex_,
     fileRequest.status = Wait;
     fileRequest.taskId = 0;
     fileRequest.url = url_;
-    fileRequest.prevDownloadedSize = 0;
+    fileRequest.downloadedFileSize = 0;
     fileRequest.compressionType = compressionType_;
 }
 
 void PackRequest::UpdateFileRequests()
 {
     // TODO refactor method
+
+    bool callSignal = false;
 
     for (FileRequest& fileRequest : requests)
     {
@@ -228,7 +226,13 @@ void PackRequest::UpdateFileRequests()
             if (packManagerImpl.IsFileReady(fileRequest.fileIndex))
             {
                 fileRequest.status = Ready;
-                packManagerImpl.requestUpdated.Emit(*this);
+                uint64 fileSize = 0;
+                if (FileSystem::Instance()->GetFileSize(fileRequest.localFile, fileSize))
+                {
+                    DVASSERT(fileSize == fileRequest.sizeOfCompressedFile + sizeof(PackFormat::LitePack::Footer));
+                    fileRequest.downloadedFileSize = fileSize;
+                }
+                callSignal = true;
             }
             else
             {
@@ -259,20 +263,22 @@ void PackRequest::UpdateFileRequests()
                         uint64 progress = 0;
                         if (dm->GetProgress(fileRequest.taskId, progress))
                         {
-                            fileRequest.prevDownloadedSize = progress;
+                            fileRequest.downloadedFileSize = progress;
                             uint64 s = GetSize();
                             uint64 ds = GetDownloadedSize();
                             DVASSERT(s > 0);
                             DVASSERT(s >= ds);
-                            packManagerImpl.requestUpdated.Emit(*this);
+                            callSignal = true;
                         }
                     }
                     break;
                     case DL_FINISHED:
                     {
-                        dm->GetTotal(fileRequest.taskId, fileRequest.prevDownloadedSize);
+                        dm->GetProgress(fileRequest.taskId, fileRequest.downloadedFileSize);
+                        // return full superpack size dm->GetTotal(fileRequest.taskId, fileRequest.downloadedFileSize);
                         fileRequest.taskId = 0;
                         fileRequest.status = CheckHash;
+                        callSignal = true;
                     }
                     break;
                     case DL_UNKNOWN:
@@ -284,8 +290,6 @@ void PackRequest::UpdateFileRequests()
         }
         case CheckHash:
         {
-            fileRequest.prevDownloadedSize = 0;
-
             uint32 fileCrc32 = CRC32::ForFile(fileRequest.localFile);
             if (fileCrc32 == fileRequest.hashFromMeta)
             {
@@ -299,16 +303,20 @@ void PackRequest::UpdateFileRequests()
 
                 {
                     ScopedPtr<File> f(File::Create(fileRequest.localFile, File::WRITE | File::APPEND | File::OPEN));
-                    f->Write(&footer, sizeof(footer));
+                    uint32 written = f->Write(&footer, sizeof(footer));
+                    DVASSERT(written == sizeof(footer));
                 }
 
-                downloadedSize += (fileRequest.sizeOfCompressedFile + sizeof(footer));
+                DVASSERT(fileRequest.downloadedFileSize == footer.sizeCompressed);
+
+                fileRequest.downloadedFileSize += sizeof(footer);
 
                 fileRequest.status = Ready;
-                packManagerImpl.requestUpdated.Emit(*this);
+                callSignal = true;
             }
             else
             {
+                fileRequest.downloadedFileSize = 0;
                 // try download again
                 FileSystem::Instance()->DeleteFile(fileRequest.localFile);
                 fileRequest.status = LoadingPackFile;
@@ -321,6 +329,12 @@ void PackRequest::UpdateFileRequests()
             break;
         } // end switch
     } // end for requests
+
+    // call signal only once during update
+    if (callSignal)
+    {
+        packManagerImpl.requestUpdated.Emit(*this);
+    }
 }
 
 } // end namespace DAVA
