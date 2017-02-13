@@ -19,12 +19,8 @@ ConfigDownloader::ConfigDownloader(ApplicationManager* manager, QWidget* parent)
     connect(networkManager, &QNetworkAccessManager::finished, this, &ConfigDownloader::DownloadFinished);
     connect(ui->cancelButton, &QPushButton::clicked, this, &ConfigDownloader::OnCancelClicked);
 
-    //init URLS with default;
-    for (int i = 0; i < URLTypesCount; ++i)
-    {
-        eURLType type = static_cast<eURLType>(i);
-        urls[type] = GetDefaultURL(type);
-    }
+    //init class member with default value
+    serverHostName = "http://ba-manager.wargaming.net";
 }
 
 ConfigDownloader::~ConfigDownloader()
@@ -36,40 +32,53 @@ int ConfigDownloader::exec()
 {
     aborted = false;
     appManager->GetRemoteConfig()->Clear();
-
-    for (const QString& str : urls)
+    for (int i = LauncherInfoURL; i < URLTypesCount; ++i)
     {
-        requests << networkManager->get(QNetworkRequest(QUrl(str)));
+        eURLType type = static_cast<eURLType>(i);
+        QUrl url(GetServerHostName() + GetURL(type));
+        requests << networkManager->get(QNetworkRequest(url));
     }
     return QDialog::exec();
 }
 
-QString ConfigDownloader::GetDefaultURL(eURLType type) const
+QString ConfigDownloader::GetURL(eURLType type) const
 {
     switch (type)
     {
     case LauncherInfoURL:
-        return "http://ba-manager.wargaming.net/panel/modules/jsonAPI/lite.php?source=launcher";
+        return "/panel/modules/jsonAPI/launcher/lite.php?source=launcher";
+    case LauncherTestInfoURL:
+        return "/panel/modules/jsonAPI/launcher/lite4test.php?source=launcher";
     case StringsURL:
-        return "http://ba-manager.wargaming.net/panel/modules/jsonAPI/lite.php?source=seo_list";
+        return "/panel/modules/jsonAPI/launcher/lite.php?source=seo_list";
     case FavoritesURL:
-        return "http://ba-manager.wargaming.net/panel/modules/jsonAPI/lite.php?source=branches&filter=os:" + platformString;
+        return "/panel/modules/jsonAPI/launcher/lite.php?source=branches&filter=os:" + platformString;
     case AllBuildsURL:
-        return "http://ba-manager.wargaming.net/panel/modules/jsonAPI/lite.php?source=builds&filter=os:" + platformString;
+        return "/panel/modules/jsonAPI/launcher/lite.php?source=builds&filter=os:" + platformString;
     default:
         Q_ASSERT(false && "unacceptable request");
         return QString();
     }
 }
 
-QString ConfigDownloader::GetURL(eURLType type) const
+QString ConfigDownloader::GetServerHostName() const
 {
-    return urls[type];
+    return serverHostName;
 }
 
-void ConfigDownloader::SetURL(eURLType type, QString url)
+bool ConfigDownloader::IsTestAPIUsed() const
 {
-    urls[type] = url;
+    return useTestAPI;
+}
+
+void ConfigDownloader::SetUseTestAPI(bool use)
+{
+    useTestAPI = true;
+}
+
+void ConfigDownloader::SetServerHostName(const QString& url)
+{
+    serverHostName = url;
 }
 
 void ConfigDownloader::DownloadFinished(QNetworkReply* reply)

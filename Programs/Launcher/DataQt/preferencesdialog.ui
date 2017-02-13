@@ -16,31 +16,108 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <layout class="QGridLayout" name="gridLayout">
-     <item row="4" column="2">
-      <widget class="QPushButton" name="pushButton_resetAllBuildsURL">
-       <property name="toolTip">
-        <string>Reset to default</string>
+     <item row="2" column="0">
+      <widget class="QLabel" name="label_14">
+       <property name="text">
+        <string>Launcher test info URL</string>
        </property>
+      </widget>
+     </item>
+     <item row="4" column="2">
+      <widget class="QPushButton" name="pushButton_copyMetaInfoURL">
        <property name="text">
         <string/>
        </property>
        <property name="icon">
         <iconset resource="icons.qrc">
-         <normaloff>:/Icons/undo.png</normaloff>:/Icons/undo.png</iconset>
+         <normaloff>:/Icons/copy.png</normaloff>:/Icons/copy.png</iconset>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="2">
+      <widget class="QPushButton" name="pushButton_copyFavoritesURL">
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="icons.qrc">
+         <normaloff>:/Icons/copy.png</normaloff>:/Icons/copy.png</iconset>
+       </property>
+      </widget>
+     </item>
+     <item row="6" column="2">
+      <widget class="QPushButton" name="pushButton_copyAllBuildsURL">
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="icons.qrc">
+         <normaloff>:/Icons/copy.png</normaloff>:/Icons/copy.png</iconset>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QLabel" name="label_launcherInfoURL">
+       <property name="text">
+        <string/>
+       </property>
+       <property name="openExternalLinks">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="5" column="1">
+      <widget class="QLabel" name="label_launcherFavoritesURL">
+       <property name="text">
+        <string/>
+       </property>
+       <property name="openExternalLinks">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1">
+      <widget class="QLabel" name="label_launcherMetaInfoURL">
+       <property name="text">
+        <string/>
+       </property>
+       <property name="openExternalLinks">
+        <bool>true</bool>
        </property>
       </widget>
      </item>
      <item row="1" column="1">
-      <widget class="QLineEdit" name="lineEdit_launcherInfoURL">
-       <property name="toolTip">
-        <string>URL to get launcher version, url to launcher.zip etc.</string>
-       </property>
+      <widget class="QLineEdit" name="lineEdit_serverHostName">
        <property name="placeholderText">
-        <string>URL to get launcher version, url to launcher.zip etc.</string>
+        <string>example: https://ba-manager.wargaming.net</string>
        </property>
       </widget>
      </item>
      <item row="1" column="0">
+      <widget class="QLabel" name="label_9">
+       <property name="text">
+        <string>Server hostname</string>
+       </property>
+      </widget>
+     </item>
+     <item row="9" column="2">
+      <widget class="QLabel" name="label_8">
+       <property name="text">
+        <string>ms</string>
+       </property>
+      </widget>
+     </item>
+     <item row="8" column="1">
+      <widget class="QCheckBox" name="checkBox_autorefreshEnabled">
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item row="9" column="1">
+      <widget class="QSpinBox" name="spinBox_autorefreshTimeout"/>
+     </item>
+     <item row="3" column="0">
       <widget class="QLabel" name="label_2">
        <property name="text">
         <string>Launcher info URL</string>
@@ -81,100 +158,28 @@
        </property>
       </widget>
      </item>
-     <item row="4" column="1">
-      <widget class="QLineEdit" name="lineEdit_allBuildsURL">
-       <property name="toolTip">
-        <string>URL to get all builds in all branches</string>
-       </property>
-       <property name="placeholderText">
-        <string>URL to get all builds in all branches</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1">
-      <widget class="QLineEdit" name="lineEdit_metaInfoURL">
-       <property name="toolTip">
-        <string>URL to get applications display name</string>
-       </property>
-       <property name="placeholderText">
-        <string>URL to get applications display name</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="1">
-      <widget class="QLineEdit" name="lineEdit_favoritesURL">
-       <property name="toolTip">
-        <string>URL to get favorites branches</string>
-       </property>
-       <property name="placeholderText">
-        <string>URL to get favorites branches</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="0">
+     <item row="4" column="0">
       <widget class="QLabel" name="label_3">
        <property name="text">
         <string>Meta info URL</string>
        </property>
       </widget>
      </item>
-     <item row="3" column="0">
+     <item row="5" column="0">
       <widget class="QLabel" name="label_4">
        <property name="text">
         <string>Favorites URL</string>
        </property>
       </widget>
      </item>
-     <item row="4" column="0">
+     <item row="6" column="0">
       <widget class="QLabel" name="label_5">
        <property name="text">
         <string>All builds URL</string>
        </property>
       </widget>
      </item>
-     <item row="1" column="2">
-      <widget class="QPushButton" name="pushButton_resetLauncherInfoURL">
-       <property name="toolTip">
-        <string>Reset to default</string>
-       </property>
-       <property name="text">
-        <string/>
-       </property>
-       <property name="icon">
-        <iconset resource="icons.qrc">
-         <normaloff>:/Icons/undo.png</normaloff>:/Icons/undo.png</iconset>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="2">
-      <widget class="QPushButton" name="pushButton_resetMetaInfoURL">
-       <property name="toolTip">
-        <string>Reset to default</string>
-       </property>
-       <property name="text">
-        <string/>
-       </property>
-       <property name="icon">
-        <iconset resource="icons.qrc">
-         <normaloff>:/Icons/undo.png</normaloff>:/Icons/undo.png</iconset>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="2">
-      <widget class="QPushButton" name="pushButton_resetFavoritesURL">
-       <property name="toolTip">
-        <string>Reset to default</string>
-       </property>
-       <property name="text">
-        <string/>
-       </property>
-       <property name="icon">
-        <iconset resource="icons.qrc">
-         <normaloff>:/Icons/undo.png</normaloff>:/Icons/undo.png</iconset>
-       </property>
-      </widget>
-     </item>
-     <item row="5" column="0">
+     <item row="8" column="0">
       <widget class="QLabel" name="label_6">
        <property name="text">
         <string>Autorefresh enabled</string>
@@ -184,7 +189,7 @@
        </property>
       </widget>
      </item>
-     <item row="6" column="0">
+     <item row="9" column="0">
       <widget class="QLabel" name="label_7">
        <property name="text">
         <string>Autorefresh timeout</string>
@@ -192,19 +197,69 @@
       </widget>
      </item>
      <item row="6" column="1">
-      <widget class="QSpinBox" name="spinBox_autorefreshTimeout"/>
+      <widget class="QLabel" name="label_allBuildsURL">
+       <property name="text">
+        <string/>
+       </property>
+       <property name="openExternalLinks">
+        <bool>true</bool>
+       </property>
+      </widget>
      </item>
-     <item row="5" column="1">
-      <widget class="QCheckBox" name="checkBox_autorefreshEnabled">
+     <item row="3" column="2">
+      <widget class="QPushButton" name="pushButton_copyLauncherInfoURL">
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset>
+         <normaloff>Icons/copy.png</normaloff>Icons/copy.png</iconset>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="2">
+      <widget class="QPushButton" name="pushButton_copyLauncherTestInfoURL">
+       <property name="text">
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="icons.qrc">
+         <normaloff>:/Icons/copy.png</normaloff>:/Icons/copy.png</iconset>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QLabel" name="label_launcherInfoTestURL">
+       <property name="text">
+        <string/>
+       </property>
+       <property name="openExternalLinks">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="0">
+      <widget class="QLabel" name="label_16">
+       <property name="text">
+        <string>Use test API</string>
+       </property>
+      </widget>
+     </item>
+     <item row="7" column="1">
+      <widget class="QCheckBox" name="checkBox_useTestAPI">
        <property name="text">
         <string/>
        </property>
       </widget>
      </item>
-     <item row="6" column="2">
-      <widget class="QLabel" name="label_8">
+     <item row="1" column="2">
+      <widget class="QPushButton" name="pushButton_copyServerHostName">
        <property name="text">
-        <string>ms</string>
+        <string/>
+       </property>
+       <property name="icon">
+        <iconset resource="icons.qrc">
+         <normaloff>:/Icons/copy.png</normaloff>:/Icons/copy.png</iconset>
        </property>
       </widget>
      </item>
