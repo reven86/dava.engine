@@ -344,14 +344,21 @@ struct RFCreator<C, GetT (C::*)() const, void (C::*)(SetT)>
 } // namespace ReflectionQualifierDetail
 
 template <typename C>
-ReflectionRegistrator<C>::ReflectionRegistrator()
+ReflectionRegistrator<C>::ReflectionRegistrator(std::unique_ptr<StructureWrapper>&& customStructureWrapper)
 {
     ReflectedType* type = ReflectedTypeDB::Edit<C>();
 
     if (type->structure == nullptr)
     {
         type->structure.reset(new ReflectedStructure());
-        type->structureWrapper.reset(new StructureWrapperClass(Type::Instance<C>()));
+        if (customStructureWrapper != nullptr)
+        {
+            type->structureWrapper = std::move(customStructureWrapper);
+        }
+        else
+        {
+            type->structureWrapper.reset(new StructureWrapperClass(Type::Instance<C>()));
+        }
     }
 
     structure = type->structure.get();
@@ -362,9 +369,9 @@ template <typename C>
 ReflectionRegistrator<C>::~ReflectionRegistrator() = default;
 
 template <typename C>
-ReflectionRegistrator<C> ReflectionRegistrator<C>::Begin()
+ReflectionRegistrator<C> ReflectionRegistrator<C>::Begin(std::unique_ptr<StructureWrapper>&& customStructureWrapper)
 {
-    return ReflectionRegistrator<C>();
+    return ReflectionRegistrator<C>(std::move(customStructureWrapper));
 }
 
 template <typename C>
