@@ -41,7 +41,7 @@ void StyleSheetSelectorProperty::Accept(PropertyVisitor* visitor)
 
 const DAVA::Type* StyleSheetSelectorProperty::GetValueType() const
 {
-    return nullptr;
+    return Type::Instance<String>();
 }
 
 AbstractProperty::ePropertyType StyleSheetSelectorProperty::GetType() const

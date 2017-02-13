@@ -31,41 +31,18 @@ void IntegerPropertyDelegate::setEditorData(QWidget* rawEditor, const QModelInde
     DAVA::Any value = index.data(Qt::EditRole).value<DAVA::Any>();
     editor->setMinimum(-99999);
     editor->setMaximum(99999);
-    if (value.CanGet<DAVA::int8>())
+    if (value.CanGet<DAVA::int8>() || value.CanGet<DAVA::int16>() || value.CanGet<DAVA::int32>() || value.CanGet<DAVA::int64>())
     {
-        editor->setValue(value.Get<DAVA::int8>());
+        editor->setValue(value.Cast<DAVA::int32>());
     }
-    else if (value.CanGet<DAVA::uint8>())
+    else if (value.CanGet<DAVA::uint8>() || value.CanGet<DAVA::uint16>() || value.CanGet<DAVA::uint32>() || value.CanGet<DAVA::uint64>())
     {
         editor->setMinimum(0);
-        editor->setValue(value.Get<DAVA::uint8>());
+        editor->setValue(value.Cast<DAVA::int32>());
     }
-    else if (value.CanGet<DAVA::int16>())
+    else
     {
-        editor->setValue(value.Get<DAVA::int16>());
-    }
-    else if (value.CanGet<DAVA::uint16>())
-    {
-        editor->setMinimum(0);
-        editor->setValue(value.Get<DAVA::uint16>());
-    }
-    else if (value.CanGet<DAVA::int32>())
-    {
-        editor->setValue(value.Get<DAVA::int32>());
-    }
-    else if (value.CanGet<DAVA::uint32>())
-    {
-        editor->setMinimum(0);
-        editor->setValue(value.Get<DAVA::uint32>());
-    }
-    else if (value.CanGet<DAVA::int64>())
-    {
-        editor->setValue(value.Get<DAVA::int64>());
-    }
-    else if (value.CanGet<DAVA::uint64>())
-    {
-        editor->setMinimum(0);
-        editor->setValue(value.Get<DAVA::uint64>());
+        DVASSERT(false);
     }
 
     editor->blockSignals(false);
