@@ -1,106 +1,144 @@
-#include "DAVAEngine.h"
+#include "Concurrency/ManualResetEvent.h"
+#include "Concurrency/Mutex.h"
+#include "Concurrency/Thread.h"
+#include "Engine/Engine.h"
+#include "Engine/Private/Dispatcher/Dispatcher.h"
+#include "Functional/Function.h"
 #include "UnitTests/UnitTests.h"
-
-#if 0 // not working in corev2 defined(__DAVAENGINE_WIN_UAP__)
-
-#include "Platform/TemplateWin32/DispatcherWinUAP.h"
 
 using namespace DAVA;
 
-DAVA_TESTCLASS (DispatcherWinUAPTest)
+class SyncBarrier final
 {
-    DispatcherWinUAPTest()
-        : dispatcher1(std::make_unique<DispatcherWinUAP>())
-        , dispatcher2(std::make_unique<DispatcherWinUAP>())
+public:
+    SyncBarrier(uint32 totalThreads, uint32 spinCount = 2000)
+        : syncEvent(false)
+        , totalThreads(totalThreads)
     {
-        int h = 0;
     }
 
-    DAVA_TEST (DispatcherTest)
+    void Enter()
     {
-        ScopedPtr<Thread> thread1(Thread::Create([this]() { Thread1(); }));
-        ScopedPtr<Thread> thread2(Thread::Create([this]() { Thread2(); }));
-
-        thread1->Start();
-        thread2->Start();
-
-        thread1->Join();
-        thread2->Join();
-
-        TEST_VERIFY(counter == 10);
-        TEST_VERIFY(stage1 == 3);
-        TEST_VERIFY(stage2 == 1);
-    }
-
-    void Thread1()
-    {
-        dispatcher1->BindToCurrentThread();
-        while (!byeThread1)
+        mutex.Lock();
+        waitingThreads += 1;
+        bool rendezvous = waitingThreads == totalThreads;
+        if (rendezvous)
         {
-            dispatcher1->ProcessTasks();
-            switch (stage1)
-            {
-            case 0:
-                // Run increment on other thread
-                for (int32 i = 0; i < 10; ++i)
-                {
-                    dispatcher2->RunAsync([this]() { counter += 1; });
-                }
-                stage1 += 1;
-                break;
-            case 1:
-                // Check whether task is executed in the second dispatcher context
-                dispatcher2->RunAsync([this]() {
-                    TEST_VERIFY(dispatcher2->BoundThreadId() == Thread::GetCurrentId());
-                });
-                stage1 += 1;
-                break;
-            case 2:
-                // Test blocking call
-                dispatcher2->RunAsyncAndWait([this]() {
-                    checkMe = 42;
-                });
-                TEST_VERIFY(checkMe == 42);
-                stage1 += 1;
-                break;
-            case 3:
-                // Test completion task
-                dispatcher2->RunAsync([this]() {
-                    byeThread1 = true;
-                    byeThread2 = true;
-                });
-                break;
-            }
+            waitingThreads = 0;
+        }
+        mutex.Unlock();
+
+        if (rendezvous)
+        {
+            syncEvent.Signal();
+        }
+        else
+        {
+            syncEvent.Wait();
         }
     }
 
-    void Thread2()
-    {
-        dispatcher2->BindToCurrentThread();
-        while (!byeThread2)
-        {
-            dispatcher2->ProcessTasks();
-            switch (stage2)
-            {
-            case 0:
-                dispatcher1->RunAsyncAndWait([this]() {
-                    TEST_VERIFY(dispatcher1->BoundThreadId() == Thread::GetCurrentId());
-                });
-                stage2 += 1;
-                break;
-            }
-        }
-    }
-
-    std::unique_ptr<DispatcherWinUAP> dispatcher1;
-    std::unique_ptr<DispatcherWinUAP> dispatcher2;
-    volatile bool byeThread1 = false;
-    volatile bool byeThread2 = false;
-
-    int32 stage1 = 0;
-    int32 stage2 = 0;
-    int32 counter = 0;
-    int32 checkMe = -1;
+private:
+    Mutex mutex;
+    ManualResetEvent syncEvent;
+    uint32 totalThreads = 0;
+    uint32 waitingThreads = 0;
 };
 
-#endif
+DAVA_TESTCLASS (DispatcherTest)
+{
+    using MyDispatcher = Dispatcher<Function<void()>>;
+
+    DispatcherTest()
+        : barrier(2)
+    {
+    }
+
+    bool TestComplete(const String&)const override
+    {
+        if (testsComplete)
+        {
+            dispatcherThread->Join();
+            dispatcherThread->Release();
+
+            testThread->Join();
+            testThread->Release();
+        }
+        return testsComplete;
+    }
+
+    DAVA_TEST (Test)
+    {
+        dispatcherThread = Thread::Create([this]() { DispatcherThread(); });
+        dispatcherThread->Start();
+
+        testThread = Thread::Create([this]() { TestThread(); });
+        testThread->Start();
+    }
+
+    void TestThread()
+    {
+        barrier.Enter();
+
+        // Post tasks to increment counter by 1
+        for (int i = 0; i < 10; ++i)
+        {
+            dispatcher->PostEvent([this]() { counter += 1; });
+        }
+
+        // Do blocking call to ensure previous posts are processed
+        dispatcher->SendEvent([]() {});
+        TEST_VERIFY(counter == 10);
+
+        // Wait each event procession
+        int testWithMe = 0;
+        for (int i = 0; i < 10; ++i)
+        {
+            testWithMe += i;
+            dispatcher->SendEvent([this, i]() { counter2 += i; });
+            TEST_VERIFY(counter2 == testWithMe);
+        }
+
+        dispatcher->PostEvent([this]() {
+            // Post and send events from dispatcher's thread
+            for (int i = 0; i < 10; ++i)
+            {
+                dispatcher->PostEvent([this]() { counter3 += 1; });
+            }
+            dispatcher->SendEvent([]() {});
+            TEST_VERIFY(counter3 == 10);
+        });
+
+        // Tell dispatcher's thread to exit
+        dispatcher->PostEvent([this]() { byeDispatcherThread = true; });
+        RunOnMainThreadAsync([this]() { testsComplete = true; });
+    }
+
+    void DispatcherThread()
+    {
+        dispatcher = new MyDispatcher([](const Function<void()>& fn) { fn(); });
+        dispatcher->LinkToCurrentThread();
+        barrier.Enter();
+
+        while (!byeDispatcherThread)
+        {
+            dispatcher->ProcessEvents();
+            Thread::Sleep(50);
+        }
+
+        delete dispatcher;
+        dispatcher = nullptr;
+    }
+
+    SyncBarrier barrier;
+    MyDispatcher* dispatcher = nullptr;
+    Thread* testThread = nullptr;
+    Thread* dispatcherThread = nullptr;
+
+    bool testsComplete = false;
+    bool byeDispatcherThread = false;
+
+    int counter = 0;
+    int counter2 = 0;
+    int counter3 = 0;
+};
