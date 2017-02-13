@@ -59,7 +59,7 @@ struct ThumbnailRequest
     LandscapeThumbnails::Callback callback;
     MaterialFlagsDisabler flagsDisabler;
     RequestID requestID = InvalidID;
-    Atomic<bool> cancelled = false;
+    Atomic<bool> cancelled{ false };
 
     ThumbnailRequest(
     rhi::HSyncObject so,
