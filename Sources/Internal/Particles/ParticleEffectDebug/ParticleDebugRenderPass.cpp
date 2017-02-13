@@ -153,27 +153,28 @@ void ParticleDebugRenderPass::MakePacket(Camera* camera)
 
 NMaterial* ParticleDebugRenderPass::SelectMaterial(RenderBatch* batch)
 {
-    switch (drawMode)
+    if (drawMode == eParticleDebugDrawMode::WIREFRAME && wireframeMaterial->PreBuildMaterial(passName))
+        return wireframeMaterial;
+
+    if (drawMode == eParticleDebugDrawMode::OVERDRAW && overdrawMaterial->PreBuildMaterial(passName))
+        return overdrawMaterial;
+
+    if (drawMode == eParticleDebugDrawMode::LOW_ALPHA)
     {
-    case eParticleDebugDrawMode::WIREFRAME:
-        if (wireframeMaterial->PreBuildMaterial(passName))
-            return wireframeMaterial;
-        break;
-    case eParticleDebugDrawMode::OVERDRAW:
-        if (overdrawMaterial->PreBuildMaterial(passName))
-            return overdrawMaterial;
-        break;
-    case eParticleDebugDrawMode::LOW_ALPHA:
         NMaterial* mat = nullptr;
         if (showAlphaMaterial->PreBuildMaterial(passName))
             mat = showAlphaMaterial;
+        else
+            return nullptr;
+
         if (mat->HasLocalTexture(NMaterialTextureName::TEXTURE_ALBEDO))
             mat->SetTexture(NMaterialTextureName::TEXTURE_ALBEDO, batch->GetMaterial()->GetLocalTexture(NMaterialTextureName::TEXTURE_ALBEDO));
         else
             mat->AddTexture(NMaterialTextureName::TEXTURE_ALBEDO, batch->GetMaterial()->GetLocalTexture(NMaterialTextureName::TEXTURE_ALBEDO));
+
         return mat;
-        break;
     }
+
     return nullptr;
 }
 }
