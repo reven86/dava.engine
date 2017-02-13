@@ -1,5 +1,4 @@
-#ifndef __LANDSCAPE_THUMBNAIL_CREATOR__
-#define __LANDSCAPE_THUMBNAIL_CREATOR__
+#pragma once
 
 #include "Functional/Function.h"
 
@@ -19,5 +18,3 @@ const RequestID InvalidID = 0;
 RequestID Create(DAVA::Landscape*, Callback callback);
 void CancelRequest(RequestID);
 };
-
-#endif // __LANDSCAPE_THUMBNAIL_CREATOR__

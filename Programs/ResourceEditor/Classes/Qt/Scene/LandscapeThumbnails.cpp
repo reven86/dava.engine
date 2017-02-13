@@ -58,8 +58,8 @@ struct ThumbnailRequest
     Texture* texture = nullptr;
     LandscapeThumbnails::Callback callback;
     MaterialFlagsDisabler flagsDisabler;
-    RequestID requestID;
-    bool cancelled = false;
+    RequestID requestID = InvalidID;
+    Atomic<bool> cancelled = false;
 
     ThumbnailRequest(
     rhi::HSyncObject so,
@@ -82,15 +82,14 @@ struct ThumbnailRequest
 struct Requests
 {
     DAVA::Mutex mutex;
-    Vector<ThumbnailRequest> list;
+    List<ThumbnailRequest> list;
 };
 
 static Requests requests;
 
 void OnCreateLandscapeTextureCompleted(rhi::HSyncObject syncObject)
 {
-    Vector<ThumbnailRequest> completedRequests;
-    completedRequests.reserve(requests.list.size());
+    List<ThumbnailRequest> completedRequests;
     {
         DAVA::LockGuard<DAVA::Mutex> lock(requests.mutex);
         auto i = requests.list.begin();
@@ -98,8 +97,7 @@ void OnCreateLandscapeTextureCompleted(rhi::HSyncObject syncObject)
         {
             if (i->syncObject == syncObject)
             {
-                completedRequests.push_back(*i);
-                i = requests.list.erase(i);
+                completedRequests.splice(completedRequests.end(), requests.list, i++);
             }
             else
             {
@@ -110,7 +108,7 @@ void OnCreateLandscapeTextureCompleted(rhi::HSyncObject syncObject)
 
     for (const auto& req : completedRequests)
     {
-        if (!req.cancelled)
+        if (req.cancelled.Get() == false)
         {
             req.callback(req.landscape, req.texture);
         }
