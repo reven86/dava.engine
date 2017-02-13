@@ -53,7 +53,7 @@ elseif( WIN32 )
 
 endif()
 
-define_source                  ( SOURCE "Classes" ${PLATFORM_SPECIFIC_FOLDER} )
+define_source                  ( SOURCE "Classes" )
 
 set( STEAM_APPID                Win32Specific/steam_appid.txt )
 set( APP_DATA                   ${CMAKE_CURRENT_LIST_DIR}/Data )
@@ -69,7 +69,6 @@ set( ANDROID_APP_NAME           "UnitTests" )
 set( ANDROID_ICO                ${CMAKE_CURRENT_LIST_DIR}/android/ic_launcher-web.png )
 
 set( ADDED_SRC                  ${IOS_ADD_SRC} )
-set( UNIFIED_IGNORE_LIST_IOS    "iOSSpecific" )
 
 
 #uncomment this 2 strings to link libjpeg as additional project.
