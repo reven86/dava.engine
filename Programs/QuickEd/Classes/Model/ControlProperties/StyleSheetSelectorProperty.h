@@ -30,7 +30,6 @@ public:
 
     void Accept(PropertyVisitor* visitor) override;
 
-    const DAVA::Type* GetValueType() const override;
     ePropertyType GetType() const override;
     DAVA::uint32 GetFlags() const override;
 
