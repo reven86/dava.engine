@@ -158,19 +158,19 @@ void ParticleDebugDrawModule::UpdateSceneSystem()
     using namespace DAVA::TArc;
     ContextAccessor* accessor = GetAccessor();
     ParticleDebugDrawData* data = GetAccessor()->GetGlobalContext()->GetData<ParticleDebugDrawData>();
-    
+
     accessor->ForEachContext([data](DataContext& ctx)
-    {
-        SceneData::TSceneType scene = ctx.GetData<SceneData>()->GetScene();
-        DAVA::ParticleEffectDebugDrawSystem* particleEffectDebugDrawSystem = scene->GetParticleEffectDebugDrawSystem();
-        if (particleEffectDebugDrawSystem != nullptr)
-        {
-            particleEffectDebugDrawSystem->SetDrawMode(data->drawMode);
-            particleEffectDebugDrawSystem->SetIsDrawOnlySelected(data->drawOnlySelected);
-            particleEffectDebugDrawSystem->SetSelectedParticles(data->selectedParticles);
-            particleEffectDebugDrawSystem->SetAlphaThreshold(SettingsManager::GetValue(Settings::General_ParticleEditor_ParticleDebugAlphaTheshold).AsFloat());
-        }
-    });
+                             {
+                                 SceneData::TSceneType scene = ctx.GetData<SceneData>()->GetScene();
+                                 DAVA::ParticleEffectDebugDrawSystem* particleEffectDebugDrawSystem = scene->GetParticleEffectDebugDrawSystem();
+                                 if (particleEffectDebugDrawSystem != nullptr)
+                                 {
+                                     particleEffectDebugDrawSystem->SetDrawMode(data->drawMode);
+                                     particleEffectDebugDrawSystem->SetIsDrawOnlySelected(data->drawOnlySelected);
+                                     particleEffectDebugDrawSystem->SetSelectedParticles(data->selectedParticles);
+                                     particleEffectDebugDrawSystem->SetAlphaThreshold(SettingsManager::GetValue(Settings::General_ParticleEditor_ParticleDebugAlphaTheshold).AsFloat());
+                                 }
+                             });
 }
 
 DAVA::UnorderedSet<RenderObject*> ParticleDebugDrawModule::ProcessSelection(const SelectableGroup& group)
@@ -189,14 +189,14 @@ DAVA::UnorderedSet<RenderObject*> ParticleDebugDrawModule::ProcessSelection(cons
 DAVA_VIRTUAL_REFLECTION_IMPL(ParticleDebugDrawModule)
 {
     DAVA::ReflectionRegistrator<ParticleDebugDrawModule>::Begin()
-        .ConstructorByPointer()
-        .Field("isEnabledProperty", &ParticleDebugDrawModule::GetSystemEnabledState, &ParticleDebugDrawModule::SetSystemEnabledState)
-            [DAVA::M::ValueDescription(&ParticleDebugDrawModuleDetail::ParticlesDebugStytemState)]
-        .Field("drawModeProperty", &ParticleDebugDrawModule::GetDrawMode, &ParticleDebugDrawModule::SetDrawMode)[DAVA::M::EnumT<eParticleDebugDrawMode>()]
-        .Field("drawSelectedProperty", &ParticleDebugDrawModule::GetDrawOnlySelected, &ParticleDebugDrawModule::SetDrawOnlySelected)
-            [DAVA::M::ValueDescription(&ParticleDebugDrawModuleDetail::ParticlesDebugStytemDrawSelectedState)]
-        .Field("readOnly", &ParticleDebugDrawModule::IsDisabled, nullptr)
-        .End();
+    .ConstructorByPointer()
+    .Field("isEnabledProperty", &ParticleDebugDrawModule::GetSystemEnabledState, &ParticleDebugDrawModule::SetSystemEnabledState)
+    [DAVA::M::ValueDescription(&ParticleDebugDrawModuleDetail::ParticlesDebugStytemState)]
+    .Field("drawModeProperty", &ParticleDebugDrawModule::GetDrawMode, &ParticleDebugDrawModule::SetDrawMode)[DAVA::M::EnumT<eParticleDebugDrawMode>()]
+    .Field("drawSelectedProperty", &ParticleDebugDrawModule::GetDrawOnlySelected, &ParticleDebugDrawModule::SetDrawOnlySelected)
+    [DAVA::M::ValueDescription(&ParticleDebugDrawModuleDetail::ParticlesDebugStytemDrawSelectedState)]
+    .Field("readOnly", &ParticleDebugDrawModule::IsDisabled, nullptr)
+    .End();
 }
 
 DECL_GUI_MODULE(ParticleDebugDrawModule);

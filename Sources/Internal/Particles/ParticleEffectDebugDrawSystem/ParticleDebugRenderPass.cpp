@@ -28,15 +28,16 @@ void ParticleDebugRenderPass::PrepareParticlesVisibilityArray(Camera* camera, Re
     visibilityArray.clear();
     renderSystem->GetRenderHierarchy()->Clip(camera, visibilityArray, currVisibilityCriteria);
     visibilityArray.erase(std::remove_if(visibilityArray.begin(), visibilityArray.end(),
-        [this](RenderObject* obj)
-    {
-        // Remove obj if obj is not a particle or if showOnlySelected flag is set
-        // if obj is not a particle or it is particle but not in selection set
-        bool isParticle = obj->GetType() == RenderObject::TYPE_PARTICLE_EMTITTER;
-        bool inSet = drawOnlySelected ? selectedParticles->count(obj) > 0 : true;
+                                         [this](RenderObject* obj)
+                                         {
+                                             // Remove obj if obj is not a particle or if showOnlySelected flag is set
+                                             // if obj is not a particle or it is particle but not in selection set
+                                             bool isParticle = obj->GetType() == RenderObject::TYPE_PARTICLE_EMTITTER;
+                                             bool inSet = drawOnlySelected ? selectedParticles->count(obj) > 0 : true;
 
-        return !(isParticle && inSet);
-    }), visibilityArray.end());
+                                             return !(isParticle && inSet);
+                                         }),
+                          visibilityArray.end());
 
     particleBatches.Clear();
     PrepareParticlesBatchesArray(visibilityArray, camera);
@@ -68,9 +69,13 @@ void ParticleDebugRenderPass::PrepareParticlesBatchesArray(const Vector<RenderOb
 }
 
 ParticleDebugRenderPass::ParticleDebugRenderPass(ParticleDebugRenderPassConfig config)
-    : RenderPass(config.name), wireframeMaterial(config.wireframeMaterial), overdrawMaterial(config.overdrawMaterial),
-    selectedParticles(config.selectedParticles), showAlphaMaterial(config.showAlphaMaterial),
-    drawMode(config.drawMode), drawOnlySelected(config.drawOnlySelected)
+    : RenderPass(config.name)
+    , wireframeMaterial(config.wireframeMaterial)
+    , overdrawMaterial(config.overdrawMaterial)
+    , selectedParticles(config.selectedParticles)
+    , showAlphaMaterial(config.showAlphaMaterial)
+    , drawMode(config.drawMode)
+    , drawOnlySelected(config.drawOnlySelected)
 {
     passConfig.priority = DAVA::PRIORITY_MAIN_3D;
 

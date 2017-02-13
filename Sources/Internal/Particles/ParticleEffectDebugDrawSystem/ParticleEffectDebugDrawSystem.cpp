@@ -4,7 +4,8 @@
 
 namespace DAVA
 {
-ParticleEffectDebugDrawSystem::ParticleEffectDebugDrawSystem(Scene* scene) : SceneSystem(scene)
+ParticleEffectDebugDrawSystem::ParticleEffectDebugDrawSystem(Scene* scene)
+    : SceneSystem(scene)
 {
     if (scene != nullptr)
     {
@@ -16,7 +17,7 @@ ParticleEffectDebugDrawSystem::ParticleEffectDebugDrawSystem(Scene* scene) : Sce
 
         ParticleDebugRenderPass::ParticleDebugRenderPassConfig config =
         { ParticleDebugRenderPass::PASS_DEBUG_DRAW_PARTICLES, renderSystem, wireframeMaterial, overdrawMaterial,
-            showAlphaMaterial, drawMode, isDrawOnlySelected, &selectedParticles };
+          showAlphaMaterial, drawMode, isDrawOnlySelected, &selectedParticles };
         renderPass = new ParticleDebugRenderPass(config);
 
         heatTexture = GenerateHeatTexture();
@@ -132,13 +133,13 @@ DAVA::Vector4 ParticleEffectDebugDrawSystem::LerpColors(float normalizedWidth)
 {
     static const Vector<TextureKey> keys =
     {
-        TextureKey(Vector4(0.0f, 0.0f, 0.0f, 0.0f), 0.f),
-        TextureKey(Vector4(0.0f, 255.0f, 0.0f, 128.0f), 0.001f),
-        TextureKey(Vector4(0.0f, 255.0f, 0.0f, 255.0f), 0.02f),
-        TextureKey(Vector4(100.0f, 100.0f, 0.0f, 255.0f), 0.08f),
-        TextureKey(Vector4(255.0f, 80.0f, 0.0f, 255.0f), 0.2f),
-        TextureKey(Vector4(255.0f, 64.0f, 0.0f, 255.0f), 0.5f),
-        TextureKey(Vector4(255.0f, 0.0f, 0.0f, 255.0f), 1.0f)
+      TextureKey(Vector4(0.0f, 0.0f, 0.0f, 0.0f), 0.f),
+      TextureKey(Vector4(0.0f, 255.0f, 0.0f, 128.0f), 0.001f),
+      TextureKey(Vector4(0.0f, 255.0f, 0.0f, 255.0f), 0.02f),
+      TextureKey(Vector4(100.0f, 100.0f, 0.0f, 255.0f), 0.08f),
+      TextureKey(Vector4(255.0f, 80.0f, 0.0f, 255.0f), 0.2f),
+      TextureKey(Vector4(255.0f, 64.0f, 0.0f, 255.0f), 0.5f),
+      TextureKey(Vector4(255.0f, 0.0f, 0.0f, 255.0f), 1.0f)
     };
     const TextureKey* current = nullptr;
     const TextureKey* next = nullptr;
@@ -155,11 +156,10 @@ DAVA::Vector4 ParticleEffectDebugDrawSystem::LerpColors(float normalizedWidth)
     return Lerp(current->color, next->color, t);
 }
 
-void ParticleEffectDebugDrawSystem::SetSelectedParticles(DAVA::UnorderedSet<RenderObject *> selectedParticles_)
+void ParticleEffectDebugDrawSystem::SetSelectedParticles(DAVA::UnorderedSet<RenderObject*> selectedParticles_)
 {
     selectedParticles = selectedParticles_;
 }
-
 
 void ParticleEffectDebugDrawSystem::SetAlphaThreshold(float32 threshold)
 {

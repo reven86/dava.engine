@@ -168,7 +168,7 @@ public:
 
     DAVA::uint32 GetFramesCount() const;
     void ResetFramesCount();
-    
+
     DAVA_DEPRECATED(void MarkAsChanged()); // for old material & particle editors
 
 protected:

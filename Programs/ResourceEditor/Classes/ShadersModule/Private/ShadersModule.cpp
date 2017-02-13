@@ -81,13 +81,12 @@ void ShadersModule::ReloadShaders()
                                       {
                                           material.second->InvalidateRenderVariants();
                                       }
-                                                                            
+
                                       const Vector<DAVA::NMaterial*>* const particleDebug = sceneEditor->GetParticleEffectDebugDrawSystem()->GetMaterials();
                                       for (auto material : *particleDebug)
                                       {
                                           material->InvalidateRenderVariants();
                                       }
-
 
                                       DAVA::Set<DAVA::NMaterial*> materialList;
                                       sceneEditor->foliageSystem->CollectFoliageMaterials(materialList);

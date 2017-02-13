@@ -45,8 +45,11 @@ private:
     {
         Vector4 color = {};
         float32 time = 0.0f;
-        TextureKey(Vector4 color, float32 time) : color(color), time(time)
-        {}
+        TextureKey(Vector4 color, float32 time)
+            : color(color)
+            , time(time)
+        {
+        }
     };
 
     DAVA::UnorderedSet<RenderObject*> selectedParticles;

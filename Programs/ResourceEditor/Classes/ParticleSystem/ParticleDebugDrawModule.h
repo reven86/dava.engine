@@ -7,7 +7,6 @@
 #include <Reflection/Reflection.h>
 #include <Base/GlobalEnum.h>
 
-
 namespace DAVA
 {
 enum eParticleDebugDrawMode;
@@ -43,5 +42,5 @@ private:
     DAVA::UnorderedSet<RenderObject*> ProcessSelection(const SelectableGroup& group);
     std::shared_ptr<DAVA::TArc::FieldBinder> filedBinder;
 
-DAVA_VIRTUAL_REFLECTION(DAVA::ParticleDebugDrawModule, DAVA::TArc::ClientModule);
+    DAVA_VIRTUAL_REFLECTION(DAVA::ParticleDebugDrawModule, DAVA::TArc::ClientModule);
 };

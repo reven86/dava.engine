@@ -14,12 +14,12 @@ void ParticleDebugDrawQuadRenderPass::PrepareRenderData()
     static const int vertsCount = 6;
     static const Array<ParticleDebugDrawQuadRenderPass::VertexPT, vertsCount> quad =
     { {
-        { Vector3(-1.f, 0.f, -1.f), Vector2(0.0f, 1.0f) },
-        { Vector3(1.f, 0.f, -1.f), Vector2(1.0f, 1.0f) },
-        { Vector3(-1.f, 0.f, 1.f), Vector2(0.0f, 0.0f) },
-        { Vector3(-1.f, 0.f, 1.f), Vector2(0.0f, 0.0f) },
-        { Vector3(1.f, 0.f, -1.f), Vector2(1.0f, 1.0f) },
-        { Vector3(1.f, 0.f, 1.f), Vector2(1.0f, 0.0f) }
+    { Vector3(-1.f, 0.f, -1.f), Vector2(0.0f, 1.0f) },
+    { Vector3(1.f, 0.f, -1.f), Vector2(1.0f, 1.0f) },
+    { Vector3(-1.f, 0.f, 1.f), Vector2(0.0f, 0.0f) },
+    { Vector3(-1.f, 0.f, 1.f), Vector2(0.0f, 0.0f) },
+    { Vector3(1.f, 0.f, -1.f), Vector2(1.0f, 1.0f) },
+    { Vector3(1.f, 0.f, 1.f), Vector2(1.0f, 0.0f) }
     } };
 
     rhi::VertexBuffer::Descriptor vDesc = {};
@@ -51,7 +51,10 @@ void ParticleDebugDrawQuadRenderPass::ByndDynamicParams(Camera* cam)
 }
 
 ParticleDebugDrawQuadRenderPass::ParticleDebugDrawQuadRenderPass(ParticleDebugQuadRenderPassConfig config)
-    : RenderPass(config.name), quadMaterial(config.quadMaterial), quadHeatMaterial(config.quadHeatMaterial), drawMode(config.drawMode)
+    : RenderPass(config.name)
+    , quadMaterial(config.quadMaterial)
+    , quadHeatMaterial(config.quadHeatMaterial)
+    , drawMode(config.drawMode)
 {
     passConfig = config.renderSystem->GetMainPassConfig();
     passConfig.colorBuffer[0].loadAction = rhi::LOADACTION_LOAD;

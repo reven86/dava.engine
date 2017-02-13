@@ -130,7 +130,7 @@ SceneEditor2::SceneEditor2()
 
     particlesSystem = new EditorParticlesSystem(this);
     AddSystem(particlesSystem, MAKE_COMPONENT_MASK(DAVA::Component::PARTICLE_EFFECT_COMPONENT), 0, renderUpdateSystem);
-    
+
     textDrawSystem = new TextDrawSystem(this, cameraSystem);
     AddSystem(textDrawSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS, renderUpdateSystem);
 
@@ -171,7 +171,7 @@ SceneEditor2::SceneEditor2()
     AddSystem(visibilityCheckSystem, MAKE_COMPONENT_MASK(DAVA::Component::VISIBILITY_CHECK_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
 
     editorVegetationSystem = new EditorVegetationSystem(this);
-    AddSystem(editorVegetationSystem, MAKE_COMPONENT_MASK(DAVA::Component::RENDER_COMPONENT), 0);    
+    AddSystem(editorVegetationSystem, MAKE_COMPONENT_MASK(DAVA::Component::RENDER_COMPONENT), 0);
 
     SceneSignals::Instance()->EmitOpened(this);
 

@@ -78,7 +78,7 @@ public:
 
     inline eState GetAnimationState() const;
     inline ParticleRenderObject* GetRenderObject() const;
-    
+
     void ReloadEmitters();
 
 private:
