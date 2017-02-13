@@ -283,6 +283,8 @@ if( WIN )
 
 endif()
 
+set( DAVA_DYNAMIC_LIBRARIES_WIN64    ${DAVA_MODULES_DIR}/Sound/Libs/android/${ANDROID_NDK_ABI_NAME}/libfmodevent.so 
+                                     ${DAVA_MODULES_DIR}/Sound/Libs/android/${ANDROID_NDK_ABI_NAME}/libfmodex.so )
 
 if( WINUAP ) 
     add_static_libs_win_uap ( "${DAVA_WIN_UAP_LIBRARIES_PATH_COMMON}" LIST_SHARED_LIBRARIES )
