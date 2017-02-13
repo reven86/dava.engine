@@ -29,7 +29,7 @@ PreferencesIntrospectionProperty::PreferencesIntrospectionProperty(const DAVA::I
     {
         SetName(name.substr(index + 1));
     }
-    
+
     GenerateBuiltInSubProperties();
 }
 

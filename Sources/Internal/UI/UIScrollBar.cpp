@@ -15,8 +15,8 @@ DAVA_VIRTUAL_REFLECTION_IMPL(UIScrollBar)
     .DestructorByPointer([](UIScrollBar* o) { o->Release(); })
     .Field("orientation", &UIScrollBar::GetOrientation, &UIScrollBar::SetOrientation)
     [
-     M::EnumT<eScrollOrientation>()
-     ]
+    M::EnumT<eScrollOrientation>()
+    ]
     .End();
 }
 

@@ -18,7 +18,7 @@ DAVA_VIRTUAL_REFLECTION_IMPL(StyleSheetProperty)
     .Field("transitionTime", &StyleSheetProperty::GetTransitionTime, &StyleSheetProperty::SetTransitionTime)
     .Field("transitionFunction", &StyleSheetProperty::GetTransitionFunction, &StyleSheetProperty::SetTransitionFunction)
     [
-     M::EnumT<Interpolation::FuncType>()
+    M::EnumT<Interpolation::FuncType>()
     ]
 
     .End();
@@ -74,7 +74,7 @@ StyleSheetProperty::ePropertyType StyleSheetProperty::GetType() const
         {
             return TYPE_ENUM;
         }
-        
+
         const M::Flags* flagsMeta = descr.field_s->meta->GetMeta<M::Flags>();
         if (flagsMeta != nullptr)
         {
@@ -94,7 +94,7 @@ const EnumMap* StyleSheetProperty::GetEnumMap() const
         {
             return enumMeta->GetEnumMap();
         }
-        
+
         const M::Flags* flagsMeta = descr.field_s->meta->GetMeta<M::Flags>();
         if (flagsMeta != nullptr)
         {

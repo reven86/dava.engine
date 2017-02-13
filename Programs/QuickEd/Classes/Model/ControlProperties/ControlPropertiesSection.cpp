@@ -8,7 +8,7 @@
 
 using namespace DAVA;
 
-ControlPropertiesSection::ControlPropertiesSection(const DAVA::String &name, DAVA::UIControl* control_, const DAVA::Type *type, const Vector<Reflection::Field> &fields, const ControlPropertiesSection* sourceSection, eCloneType cloneType)
+ControlPropertiesSection::ControlPropertiesSection(const DAVA::String& name, DAVA::UIControl* control_, const DAVA::Type* type, const Vector<Reflection::Field>& fields, const ControlPropertiesSection* sourceSection, eCloneType cloneType)
     : SectionProperty(name)
     , control(SafeRetain(control_))
 {

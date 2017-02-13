@@ -18,7 +18,7 @@
     static void Dava__ReflectionInitializer() \
     { \
         static bool registred = false; \
-        if(!registred) { \
+        if (!registred) { \
             registred = true; \
             Dava__ReflectionRegisterBases(); \
             Dava__ReflectionInitializerV(); \

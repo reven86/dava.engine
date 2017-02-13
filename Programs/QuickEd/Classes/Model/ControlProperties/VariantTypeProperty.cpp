@@ -13,7 +13,7 @@ VariantTypeProperty::VariantTypeProperty(const String& name, Any& vt)
     , value(vt)
 {
     SetOverridden(true);
-    
+
     GenerateBuiltInSubProperties();
 }
 

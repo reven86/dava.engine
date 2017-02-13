@@ -554,7 +554,6 @@ QString PropertiesModel::makeQVariant(const AbstractProperty* property) const
         return StringToQString(val.Get<FilePath>().GetStringValue());
     }
 
-
     DVASSERT(false);
     return QString();
 }

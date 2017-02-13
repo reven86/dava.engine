@@ -388,7 +388,6 @@ void UIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl* control, cons
         Any res;
         if (node)
         {
-            
             res = ReadAnyFromYamlNode(field.ref, node, name);
             if (!res.IsEmpty())
             {

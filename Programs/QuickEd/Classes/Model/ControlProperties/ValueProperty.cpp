@@ -205,13 +205,13 @@ void ValueProperty::GenerateBuiltInSubProperties()
             }
         }
     }
-    
+
     if (componentNames != nullptr)
     {
         for (size_type i = 0; i < componentNames->size(); ++i)
             subProperties.push_back(new SubValueProperty(static_cast<int32>(i), componentNames->at(i)));
     }
-    
+
     for (SubValueProperty* prop : subProperties)
     {
         prop->SetParent(this);

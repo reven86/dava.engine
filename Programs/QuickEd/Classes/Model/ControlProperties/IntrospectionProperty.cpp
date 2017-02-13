@@ -54,7 +54,7 @@ IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject* anObject, DAVA::i
         sourceValue = sourceProperty->sourceValue;
     else
         sourceValue = reflection.GetValue();
-    
+
     GenerateBuiltInSubProperties();
 }
 
@@ -120,13 +120,13 @@ IntrospectionProperty::ePropertyType IntrospectionProperty::GetType() const
     {
         return TYPE_ENUM;
     }
-    
+
     const M::Flags* flagsMeta = reflection.GetMeta<M::Flags>();
     if (flagsMeta)
     {
         return TYPE_FLAGS;
     }
-    
+
     return TYPE_VARIANT;
 }
 
@@ -137,13 +137,13 @@ const EnumMap* IntrospectionProperty::GetEnumMap() const
     {
         return enumMeta->GetEnumMap();
     }
-    
+
     const M::Flags* flagsMeta = reflection.GetMeta<M::Flags>();
     if (flagsMeta != nullptr)
     {
         return flagsMeta->GetFlagsMap();
     }
-    
+
     return nullptr;
 }
 

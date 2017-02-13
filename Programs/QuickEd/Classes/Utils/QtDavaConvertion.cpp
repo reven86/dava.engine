@@ -7,7 +7,6 @@
 #include <QVariant>
 #include <QVector2D>
 
-
 using namespace DAVA;
 
 DAVA::String QStringToString(const QString& str)
@@ -194,7 +193,7 @@ QString AnyToQString(const DAVA::Any& val, const DAVA::ReflectedStructure::Field
 {
     if (field->meta)
     {
-        const M::Flags* flagsMeta =  field->meta->GetMeta<M::Flags>();
+        const M::Flags* flagsMeta = field->meta->GetMeta<M::Flags>();
         if (flagsMeta != nullptr)
         {
             int32 e = val.Get<int32>();
@@ -215,8 +214,8 @@ QString AnyToQString(const DAVA::Any& val, const DAVA::ReflectedStructure::Field
             }
             return res;
         }
-        
-        const M::Enum* enumMeta =  field->meta->GetMeta<M::Enum>();
+
+        const M::Enum* enumMeta = field->meta->GetMeta<M::Enum>();
         if (enumMeta != nullptr)
         {
             return QString::fromStdString(enumMeta->GetEnumMap()->ToString(val.Get<int32>()));
