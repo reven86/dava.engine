@@ -82,7 +82,6 @@ Vector2 EditorCanvas::GetMinimumPos() const
 
 Vector2 EditorCanvas::GetMaximumPos() const
 {
-    using namespace DAVA;
     Vector2 maxPos = size - viewSize;
     Vector2 minPos = GetMinimumPos();
     return Vector2(Max(maxPos.x, minPos.x), Max(maxPos.y, minPos.y));
