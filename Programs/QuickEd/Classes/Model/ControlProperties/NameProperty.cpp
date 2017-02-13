@@ -7,15 +7,15 @@
 
 using namespace DAVA;
 
-NameProperty::NameProperty(ControlNode* anControl, const NameProperty* sourceProperty, eCloneType cloneType)
+NameProperty::NameProperty(ControlNode* controlNode_, const NameProperty* sourceProperty, eCloneType cloneType)
     : ValueProperty("Name", Type::Instance<String>())
-    , control(anControl) // weak ptr
+    , controlNode(controlNode_) // weak ptr
 {
     if (sourceProperty)
     {
-        control->GetControl()->SetName(sourceProperty->GetValue().Cast<FastName>());
+        controlNode->GetControl()->SetName(sourceProperty->GetValue().Cast<FastName>());
 
-        if (cloneType == CT_INHERIT && control->GetCreationType() == ControlNode::CREATED_FROM_PROTOTYPE_CHILD)
+        if (cloneType == CT_INHERIT && controlNode->GetCreationType() == ControlNode::CREATED_FROM_PROTOTYPE_CHILD)
         {
             AttachPrototypeProperty(sourceProperty);
         }
@@ -24,7 +24,7 @@ NameProperty::NameProperty(ControlNode* anControl, const NameProperty* sourcePro
 
 NameProperty::~NameProperty()
 {
-    control = nullptr; // weak ptr
+    controlNode = nullptr; // weak ptr
 }
 
 void NameProperty::Refresh(DAVA::int32 refreshFlags)
@@ -42,7 +42,7 @@ void NameProperty::Accept(PropertyVisitor* visitor)
 
 bool NameProperty::IsReadOnly() const
 {
-    return control->GetCreationType() == ControlNode::CREATED_FROM_PROTOTYPE_CHILD || ValueProperty::IsReadOnly();
+    return controlNode->GetCreationType() == ControlNode::CREATED_FROM_PROTOTYPE_CHILD || ValueProperty::IsReadOnly();
 }
 
 NameProperty::ePropertyType NameProperty::GetType() const
@@ -57,24 +57,24 @@ DAVA::uint32 NameProperty::GetFlags() const
 
 Any NameProperty::GetValue() const
 {
-    return Any(control->GetName());
+    return Any(controlNode->GetName());
 }
 
 bool NameProperty::IsOverriddenLocally() const
 {
-    return control->GetCreationType() != ControlNode::CREATED_FROM_PROTOTYPE_CHILD;
+    return controlNode->GetCreationType() != ControlNode::CREATED_FROM_PROTOTYPE_CHILD;
 }
 
 ControlNode* NameProperty::GetControlNode() const
 {
-    return control;
+    return controlNode;
 }
 
 void NameProperty::ApplyValue(const DAVA::Any& value)
 {
     if (value.CanGet<String>())
     {
-        control->GetControl()->SetName(value.Cast<FastName>());
+        controlNode->GetControl()->SetName(value.Cast<FastName>());
     }
     else
     {

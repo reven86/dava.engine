@@ -10,7 +10,6 @@ namespace DAVA
 DAVA_VIRTUAL_REFLECTION_IMPL(BaseObject)
 {
     ReflectionRegistrator<BaseObject>::Begin()
-    .Field("referenceCount", &BaseObject::GetRetainCount, nullptr)
     .End();
 }
 
