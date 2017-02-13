@@ -1,4 +1,5 @@
 #include "Base/Result.h"
+#include "Debug/DVAssert.h"
 
 using namespace DAVA;
 
