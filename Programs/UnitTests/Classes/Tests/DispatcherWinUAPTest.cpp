@@ -1,8 +1,6 @@
 #include "DAVAEngine.h"
 #include "UnitTests/UnitTests.h"
 
-#include "Infrastructure/TextureUtils.h"
-
 #if 0 // not working in corev2 defined(__DAVAENGINE_WIN_UAP__)
 
 #include "Platform/TemplateWin32/DispatcherWinUAP.h"
