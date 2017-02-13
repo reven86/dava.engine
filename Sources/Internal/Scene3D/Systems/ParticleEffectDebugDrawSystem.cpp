@@ -117,7 +117,7 @@ DAVA::Texture* ParticleEffectDebugDrawSystem::GenerateHeatTexture()
     static const size_t dataSize = width * height * 4;
 
     unsigned char* data = new unsigned char[dataSize];
-    for (int i = 0; i < dataSize; i += 4)
+    for (size_t i = 0; i < dataSize; i += 4)
     {
         Vector4 color = LerpColors(static_cast<float32>(i) / (4 * width));
         data[i] = static_cast<uint8>(color.x);
