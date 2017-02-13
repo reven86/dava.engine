@@ -54,6 +54,8 @@ ParticleDebugDrawQuadRenderPass::ParticleDebugDrawQuadRenderPass(ParticleDebugQu
     : RenderPass(config.name), quadMaterial(config.quadMaterial), quadHeatMaterial(config.quadHeatMaterial), drawMode(config.drawMode)
 {
     passConfig = config.renderSystem->GetMainPassConfig();
+    passConfig.colorBuffer[0].loadAction = rhi::LOADACTION_LOAD;
+
     quadMaterial->PreBuildMaterial(passName);
     quadHeatMaterial->PreBuildMaterial(passName);
 

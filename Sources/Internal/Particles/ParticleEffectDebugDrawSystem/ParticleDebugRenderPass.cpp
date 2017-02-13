@@ -107,7 +107,7 @@ void ParticleDebugRenderPass::DrawBatches(Camera* camera)
 {
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::RENDER_PASS_DRAW_LAYERS)
 
-        ShaderDescriptorCache::ClearDynamicBindigs();
+    ShaderDescriptorCache::ClearDynamicBindigs();
 
     //per pass viewport bindings
     viewportSize = Vector2(viewport.dx, viewport.dy);
