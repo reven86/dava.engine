@@ -2,11 +2,11 @@
 
 #include "Engine/Engine.h"
 
+#if !defined(__DAVAENGINE_ANDROID__)
+
 #include "SampleModule.h"
 
 using namespace DAVA;
-
-#if !defined(__DAVAENGINE_ANDROID__)
 
 DAVA_TESTCLASS (SampleModuleTest)
 {
@@ -23,4 +23,4 @@ DAVA_TESTCLASS (SampleModuleTest)
     }
 };
 
-#endif //#if defined(__DAVAENGINE_ANDROID__)
+#endif // !defined(__DAVAENGINE_ANDROID__)
