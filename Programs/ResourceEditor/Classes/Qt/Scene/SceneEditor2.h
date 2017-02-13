@@ -45,11 +45,6 @@ class VisibilityCheckSystem;
 class RECommandStack;
 class EditorSceneSystem;
 
-namespace DAVA
-{
-class ParticleEffectDebugDrawSystem;
-}
-
 class SceneEditor2 : public DAVA::Scene
 {
 public:
