@@ -6,9 +6,11 @@
 
 #include "PropertyVisitor.h"
 #include "SubValueProperty.h"
+
 #include "UI/Styles/UIStyleSheetPropertyDataBase.h"
 #include <Base/BaseMath.h>
 #include <UI/UIControl.h>
+#include <Reflection/ReflectedMeta.h>
 
 using namespace DAVA;
 
@@ -79,7 +81,7 @@ IntrospectionProperty* IntrospectionProperty::Create(UIControl* control, const S
     }
     else
     {
-        IntrospectionProperty* result = new IntrospectionProperty(control, -1, name, ref, sourceProperty, cloneType);
+        IntrospectionProperty* result = new IntrospectionProperty(control, Type::Instance<void>(), name, ref, sourceProperty, cloneType);
         if (name == INTROSPECTION_PROPERTY_NAME_SIZE || name == INTROSPECTION_PROPERTY_NAME_POSITION)
         {
             result->flags |= EF_DEPENDS_ON_LAYOUTS;

@@ -2366,6 +2366,12 @@ uint32 UIControl::GetComponentCount(int32 runtimeType) const
     return family->GetComponentsCount(runtimeType);
 }
 
+uint32 UIControl::GetComponentCount(const Type* type) const
+{
+    ComponentManager* cm = GetEngineContext()->componentManager;
+    return family->GetComponentsCount(cm->RuntimeTypeFromType(type));
+}
+
 const Vector<UIComponent*>& UIControl::GetComponents()
 {
     return components;

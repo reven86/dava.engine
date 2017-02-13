@@ -17,6 +17,11 @@ public:
         return typeToRuntimeType[type];
     }
 
+    const UnorderedMap<const Type*, int32>& GetRegisteredTypes()
+    {
+        return typeToRuntimeType;
+    }
+
 private:
     int32 runtimeComponentsCount = 0;
     UnorderedMap<const Type*, int32> typeToRuntimeType;

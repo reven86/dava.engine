@@ -1073,41 +1073,85 @@ private:
     eViewState viewState = eViewState::INACTIVE;
     bool inputEnabled : 1;
 
-    /* Components */
 public:
+    /**
+    Add specified 'component'. 
+    The behavior is undefined unless 'component' is a valid pointer and 'component' is not already added to any UIControl.
+    */
     void AddComponent(UIComponent* component);
+
+    /**
+    Add specified 'component' at specified 'index' for multi-component support.
+    For example, control has 4 UIActionComponents [a, b, c, d] with indeces [0, 1, 2, 3]. If we call InsertComponentAt(e, 2), we will get control with [a, b, e, c, d] components. If we call InsertComponentAt(e, 4 or more), we will get control with [a, b, c, d, e] components. 
+    The behavior is undefined unless 'component' is a valid pointer and 'component' is not already added to any UIControl.
+    */
     void InsertComponentAt(UIComponent* component, uint32 index);
 
+    /** 
+    Remove specified 'component' if it is already added to control.
+    The behavior is undefined unless 'component' is a valid pointer.
+    */
     void RemoveComponent(UIComponent* component);
+
+    /** Remove component with specified 'type' at specified 'index'. */
     void RemoveComponent(const Type* type, uint32 index = 0);
+
+    /** Remove component with specified 'runtimeType' at specified 'index'. */
     void RemoveComponent(int32 runtimeType, uint32 index = 0);
+
+    /** Remove all components. */
     void RemoveAllComponents();
 
+    /** Return UIComponent with specified 'type' at specified 'index'. Return nullptr if such component is not found. */
     UIComponent* GetComponent(const Type* type, uint32 index = 0) const;
+
+    /** Return UIComponent with specified 'runtimeType' at specified 'index'. Return nullptr if such component is not found. */
     UIComponent* GetComponent(int32 runtimeType, uint32 index = 0) const;
+
+    /** Return UIComponent with specified type 'T' at specified 'index'. */
     template <class T>
     inline T* GetComponent(uint32 index = 0) const
     {
         return DynamicTypeCheck<T*>(GetComponent(T::GetStaticRuntimeType(), index));
     }
 
+    /**
+    Return index in UIControl::components of specified 'component'. Return -1 if 'component' is not found in control.
+    The behavior is undefined unless 'component' is a valid pointer.
+    */
     int32 GetComponentIndex(const UIComponent* component) const;
 
+    /** Return UIComponent with specified 'type' at specified 'index'. 
+    If such component is not found, new component with 'type' is created, added to control and returned. 
+    In case of creation, the behavior is undefined until 'index' is 0. */
     UIComponent* GetOrCreateComponent(const Type* type, uint32 index = 0);
+
+    /** Return UIComponent with specified type'T' at specified 'index'.
+    If such component is not found, new component with 'type' is created, added to control and returned.
+    In case of creation, the behavior is undefined until 'index' is 0. */
     template <class T>
     inline T* GetOrCreateComponent(uint32 index = 0)
     {
         return DynamicTypeCheck<T*>(GetOrCreateComponent(Type::Instance<T>(), index));
     }
 
+    /** Return total number of components. */
     uint32 GetComponentCount() const;
+
+    /** Return total number of components with specified 'type'. */
+    uint32 GetComponentCount(const Type* type) const;
+
+    /** Return total number of components with specified 'runtimeType'. */
     uint32 GetComponentCount(int32 runtimeType) const;
+
+    /** Return total number of components with specified 'T'. */
     template <class T>
     inline uint32 GetComponentCount() const
     {
         return GetComponentCount(T::GetStaticRuntimeType());
     }
 
+    /** Return UIControl::components reference. */
     const Vector<UIComponent*>& GetComponents();
 
 private:

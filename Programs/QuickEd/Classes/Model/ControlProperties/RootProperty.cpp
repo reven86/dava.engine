@@ -17,6 +17,8 @@
 
 #include <UI/UIControl.h>
 #include <Reflection/ReflectedTypeDB.h>
+#include <Entity/ComponentManager.h>
+#include <Engine/Engine.h>
 
 using namespace DAVA;
 
@@ -418,10 +420,12 @@ void RootProperty::MakeControlPropertiesSection(DAVA::UIControl* control, const 
 
 uint32 RootProperty::GetComponentAbsIndex(const DAVA::Type* componentType, DAVA::uint32 index) const
 {
+    ComponentManager* cm = GetEngineContext()->componentManager;
+    int32 runtimeType = cm->RuntimeTypeFromType(componentType);
     uint32 i = 0;
     for (ComponentPropertiesSection* section : componentProperties)
     {
-        if (section->GetComponentType() >= componentType)
+        if (cm->RuntimeTypeFromType(section->GetComponentType()) >= runtimeType)
         {
             return index + i;
         }
