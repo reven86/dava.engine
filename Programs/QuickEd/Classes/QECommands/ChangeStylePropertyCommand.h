@@ -11,7 +11,7 @@ class AbstractProperty;
 class ChangeStylePropertyCommand : public DAVA::Command
 {
 public:
-    ChangeStylePropertyCommand(PackageNode* _root, StyleSheetNode* _node, AbstractProperty* _property, const DAVA::Any& newValue);
+    ChangeStylePropertyCommand(PackageNode* _root, StyleSheetNode* _node, AbstractProperty* _property, const DAVA::Any& _newValue);
     virtual ~ChangeStylePropertyCommand();
 
     void Redo() override;

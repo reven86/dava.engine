@@ -237,7 +237,7 @@ bool PropertiesModel::setData(const QModelIndex& index, const QVariant& value, i
     {
         Any newVal;
 
-        if (value.userType() == QMetaTypeId<Any>::qt_metatype_id())
+        if (value.canConvert<Any>())
         {
             newVal = value.value<Any>();
         }
@@ -434,7 +434,7 @@ QString PropertiesModel::makeQVariant(const AbstractProperty* property) const
 
     if (property->GetType() == AbstractProperty::TYPE_ENUM)
     {
-        return QString::fromStdString(property->GetEnumMeta()->CastToString(val));
+        return QString::fromStdString(property->GetEnumMap()->ToString(val.Cast<int32>()));
     }
 
     if (property->GetType() == AbstractProperty::TYPE_FLAGS)

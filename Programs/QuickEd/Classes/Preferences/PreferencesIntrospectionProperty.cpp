@@ -4,7 +4,7 @@
 #include "Utils/QtDavaConvertion.h"
 
 PreferencesIntrospectionProperty::PreferencesIntrospectionProperty(const DAVA::InspMember* member_)
-    : ValueProperty(member_->Desc().text, VariantTypeToType(DAVA::VariantType::TypeFromMetaInfo(member_->Type())), true)
+    : ValueProperty(member_->Desc().text, VariantTypeToType(DAVA::VariantType::TypeFromMetaInfo(member_->Type())))
     , member(member_)
 {
     DAVA::VariantType defaultValue = PreferencesStorage::Instance()->GetDefaultValue(member);
@@ -29,6 +29,8 @@ PreferencesIntrospectionProperty::PreferencesIntrospectionProperty(const DAVA::I
     {
         SetName(name.substr(index + 1));
     }
+
+    GenerateBuiltInSubProperties();
 }
 
 void PreferencesIntrospectionProperty::ApplyPreference()

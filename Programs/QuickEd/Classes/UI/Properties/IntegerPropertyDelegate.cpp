@@ -28,44 +28,44 @@ void IntegerPropertyDelegate::setEditorData(QWidget* rawEditor, const QModelInde
     QSpinBox* editor = rawEditor->findChild<QSpinBox*>("spinBox");
 
     editor->blockSignals(true);
-    DAVA::Any variant = index.data(Qt::EditRole).value<DAVA::Any>();
+    DAVA::Any value = index.data(Qt::EditRole).value<DAVA::Any>();
     editor->setMinimum(-99999);
     editor->setMaximum(99999);
-    if (variant.CanGet<DAVA::int8>())
+    if (value.CanGet<DAVA::int8>())
     {
-        editor->setValue(variant.Get<DAVA::int8>());
+        editor->setValue(value.Get<DAVA::int8>());
     }
-    else if (variant.CanGet<DAVA::uint8>())
+    else if (value.CanGet<DAVA::uint8>())
     {
         editor->setMinimum(0);
-        editor->setValue(variant.Get<DAVA::uint8>());
+        editor->setValue(value.Get<DAVA::uint8>());
     }
-    else if (variant.CanGet<DAVA::int16>())
+    else if (value.CanGet<DAVA::int16>())
     {
-        editor->setValue(variant.Get<DAVA::int16>());
+        editor->setValue(value.Get<DAVA::int16>());
     }
-    else if (variant.CanGet<DAVA::uint16>())
-    {
-        editor->setMinimum(0);
-        editor->setValue(variant.Get<DAVA::uint16>());
-    }
-    else if (variant.CanGet<DAVA::int32>())
-    {
-        editor->setValue(variant.Get<DAVA::int32>());
-    }
-    else if (variant.CanGet<DAVA::uint32>())
+    else if (value.CanGet<DAVA::uint16>())
     {
         editor->setMinimum(0);
-        editor->setValue(variant.Get<DAVA::uint32>());
+        editor->setValue(value.Get<DAVA::uint16>());
     }
-    else if (variant.CanGet<DAVA::int64>())
+    else if (value.CanGet<DAVA::int32>())
     {
-        editor->setValue(variant.Get<DAVA::int64>());
+        editor->setValue(value.Get<DAVA::int32>());
     }
-    else if (variant.CanGet<DAVA::uint64>())
+    else if (value.CanGet<DAVA::uint32>())
     {
         editor->setMinimum(0);
-        editor->setValue(variant.Get<DAVA::uint64>());
+        editor->setValue(value.Get<DAVA::uint32>());
+    }
+    else if (value.CanGet<DAVA::int64>())
+    {
+        editor->setValue(value.Get<DAVA::int64>());
+    }
+    else if (value.CanGet<DAVA::uint64>())
+    {
+        editor->setMinimum(0);
+        editor->setValue(value.Get<DAVA::uint64>());
     }
 
     editor->blockSignals(false);

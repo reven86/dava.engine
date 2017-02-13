@@ -34,12 +34,6 @@ void StructureWrapperClass::FillCache(const ReflectedType* reflectedType)
 
 void StructureWrapperClass::FillCacheEntries(const ReflectedType* reflectedType)
 {
-    const ReflectedType* inheritType = nullptr;
-    if (reflectedType != rootType)
-    {
-        inheritType = reflectedType;
-    }
-
     const ReflectedStructure* structure = reflectedType->GetStrucutre();
     if (nullptr != structure)
     {
@@ -47,7 +41,7 @@ void StructureWrapperClass::FillCacheEntries(const ReflectedType* reflectedType)
         {
             const ReflectedStructure::Field* field = f.get();
 
-            fieldsCache.push_back({ field, inheritType });
+            fieldsCache.push_back({ field, reflectedType });
             fieldsNameIndexes[field->name] = fieldsCache.size() - 1;
         }
 

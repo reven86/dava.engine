@@ -62,7 +62,7 @@ Any StyleSheetSelectorProperty::GetValue() const
 void StyleSheetSelectorProperty::ApplyValue(const DAVA::Any& aValue)
 {
     Vector<String> selectorList;
-    Split(aValue.Get<String>(), ",", selectorList);
+    Split(aValue.Cast<String>(), ",", selectorList);
 
     if (!selectorList.empty())
     {

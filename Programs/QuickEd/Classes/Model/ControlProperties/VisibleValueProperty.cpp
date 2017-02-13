@@ -26,6 +26,6 @@ Any VisibleValueProperty::GetValue() const
 
 void VisibleValueProperty::ApplyValue(const DAVA::Any& value)
 {
-    visibleInGame = value.Get<bool>();
+    visibleInGame = value.Cast<bool>();
     reflection.SetValue(visibleInGame && visibleInEditor);
 }

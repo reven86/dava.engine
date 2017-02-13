@@ -23,7 +23,7 @@ const String INTROSPECTION_PROPERTY_NAME_VISIBLE("visible");
 }
 
 IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject* anObject, DAVA::int32 componentType, const String& name, const DAVA::Reflection& ref, const IntrospectionProperty* sourceProperty, eCloneType copyType)
-    : ValueProperty(name, ref.GetValueType(), true)
+    : ValueProperty(name, ref.GetValueType())
     , object(SafeRetain(anObject))
     , reflection(ref)
     , flags(EF_CAN_RESET)
@@ -54,6 +54,8 @@ IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject* anObject, DAVA::i
         sourceValue = sourceProperty->sourceValue;
     else
         sourceValue = reflection.GetValue();
+
+    GenerateBuiltInSubProperties();
 }
 
 IntrospectionProperty::~IntrospectionProperty()
@@ -113,14 +115,16 @@ uint32 IntrospectionProperty::GetFlags() const
 
 IntrospectionProperty::ePropertyType IntrospectionProperty::GetType() const
 {
-    const EnumMeta* enumMeta = reflection.GetMeta<EnumMeta>();
+    const M::Enum* enumMeta = reflection.GetMeta<M::Enum>();
     if (enumMeta)
     {
-        if (enumMeta->IsFlags())
-        {
-            return TYPE_FLAGS;
-        }
         return TYPE_ENUM;
+    }
+
+    const M::Flags* flagsMeta = reflection.GetMeta<M::Flags>();
+    if (flagsMeta)
+    {
+        return TYPE_FLAGS;
     }
 
     return TYPE_VARIANT;
@@ -128,18 +132,19 @@ IntrospectionProperty::ePropertyType IntrospectionProperty::GetType() const
 
 const EnumMap* IntrospectionProperty::GetEnumMap() const
 {
-    const EnumMeta* enumMeta = reflection.GetMeta<EnumMeta>();
-    if (enumMeta)
+    const M::Enum* enumMeta = reflection.GetMeta<M::Enum>();
+    if (enumMeta != nullptr)
     {
         return enumMeta->GetEnumMap();
     }
 
-    return nullptr;
-}
+    const M::Flags* flagsMeta = reflection.GetMeta<M::Flags>();
+    if (flagsMeta != nullptr)
+    {
+        return flagsMeta->GetFlagsMap();
+    }
 
-const EnumMeta* IntrospectionProperty::GetEnumMeta() const
-{
-    return reflection.GetMeta<EnumMeta>();
+    return nullptr;
 }
 
 Any IntrospectionProperty::GetValue() const
@@ -155,5 +160,5 @@ void IntrospectionProperty::DisableResetFeature()
 void IntrospectionProperty::ApplyValue(const DAVA::Any& value)
 {
     sourceValue = value;
-    reflection.SetValue(value);
+    reflection.SetValueWithCast(value);
 }

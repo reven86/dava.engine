@@ -39,11 +39,14 @@ ComponentPropertiesSection::ComponentPropertiesSection(DAVA::UIControl* control_
     Vector<Reflection::Field> fields = componentRef.GetFields();
     for (const Reflection::Field& field : fields)
     {
-        String name = field.key.Get<String>();
-        const IntrospectionProperty* sourceProp = sourceSection == nullptr ? nullptr : sourceSection->FindChildPropertyByName(name);
-        IntrospectionProperty* prop = new IntrospectionProperty(component, type_, name, field.ref, sourceProp, cloneType);
-        AddProperty(prop);
-        SafeRelease(prop);
+        if (!(field.ref.IsReadonly() || field.ref.HasMeta<DAVA::M::ReadOnly>()))
+        {
+            String name = field.key.Get<String>();
+            const IntrospectionProperty* sourceProp = sourceSection == nullptr ? nullptr : sourceSection->FindChildPropertyByName(name);
+            IntrospectionProperty* prop = new IntrospectionProperty(component, type_, name, field.ref, sourceProp, cloneType);
+            AddProperty(prop);
+            SafeRelease(prop);
+        }
     }
 }
 
@@ -75,7 +78,7 @@ void ComponentPropertiesSection::AttachPrototypeSection(ComponentPropertiesSecti
 
         for (const Reflection::Field& field : fields)
         {
-            String name = field.key.Get<String>();
+            String name = field.key.Cast<String>();
             ValueProperty* value = FindChildPropertyByName(name);
             ValueProperty* prototypeValue = prototypeSection->FindChildPropertyByName(name);
             value->AttachPrototypeProperty(prototypeValue);

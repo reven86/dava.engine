@@ -9,10 +9,12 @@
 using namespace DAVA;
 
 VariantTypeProperty::VariantTypeProperty(const String& name, Any& vt)
-    : ValueProperty(name, vt.GetType(), true)
+    : ValueProperty(name, vt.GetType())
     , value(vt)
 {
     SetOverridden(true);
+
+    GenerateBuiltInSubProperties();
 }
 
 VariantTypeProperty::~VariantTypeProperty()

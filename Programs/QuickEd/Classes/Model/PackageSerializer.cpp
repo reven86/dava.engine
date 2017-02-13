@@ -435,11 +435,11 @@ void PackageSerializer::PutValueProperty(const DAVA::String& name, ValueProperty
 {
     Any value = property->GetValue();
 
-    if (value.CanGet<int32>() && property->GetType() == AbstractProperty::TYPE_FLAGS)
+    if (property->GetType() == AbstractProperty::TYPE_FLAGS)
     {
         Vector<String> values;
         const EnumMap* enumMap = property->GetEnumMap();
-        int val = value.Get<int32>();
+        int val = value.Cast<int32>();
         int p = 1;
         while (val > 0)
         {
@@ -452,7 +452,7 @@ void PackageSerializer::PutValueProperty(const DAVA::String& name, ValueProperty
     }
     else if (property->GetType() == AbstractProperty::TYPE_ENUM)
     {
-        PutValue(name, property->GetEnumMeta()->CastToString(value), true);
+        PutValue(name, property->GetEnumMap()->ToString(value.Cast<int32>()), true);
     }
     else if (value.CanGet<Vector2>())
     {
