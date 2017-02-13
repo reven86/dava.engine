@@ -262,7 +262,7 @@ void QuickEdPackageBuilder::EndControlPropertiesSection()
     currentObject = nullptr;
 }
 
-UIComponent* QuickEdPackageBuilder::BeginComponentPropertiesSection(uint32 componentType, DAVA::uint32 componentIndex)
+UIComponent* QuickEdPackageBuilder::BeginComponentPropertiesSection(const Type* componentType, DAVA::uint32 componentIndex)
 {
     ControlNode* node = controlsStack.back().node;
     ComponentPropertiesSection* section;

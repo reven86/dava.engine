@@ -4,6 +4,7 @@
 #include "TArc/Controls/PropertyPanel/BaseComponentValue.h"
 
 #include <Reflection/Reflection.h>
+#include <Reflection/ReflectedType.h>
 #include <Reflection/Private/Wrappers/StructureWrapperClass.h>
 #include <Base/Type.h>
 #include <Base/TypeInheritance.h>

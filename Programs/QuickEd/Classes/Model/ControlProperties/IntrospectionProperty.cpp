@@ -22,7 +22,7 @@ const String INTROSPECTION_PROPERTY_NAME_CLASSES("classes");
 const String INTROSPECTION_PROPERTY_NAME_VISIBLE("visible");
 }
 
-IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject* anObject, DAVA::int32 componentType, const String& name, const DAVA::Reflection& ref, const IntrospectionProperty* sourceProperty, eCloneType copyType)
+IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject* anObject, const DAVA::Type* componentType, const String& name, const DAVA::Reflection& ref, const IntrospectionProperty* sourceProperty, eCloneType copyType)
     : ValueProperty(name, ref.GetValueType())
     , object(SafeRetain(anObject))
     , reflection(ref)

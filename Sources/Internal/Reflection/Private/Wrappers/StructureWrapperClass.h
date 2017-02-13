@@ -4,6 +4,7 @@
 #include "Reflection/Reflection.h"
 #endif
 
+#include "Reflection/ReflectedStructure.h"
 #include "Reflection/Private/Wrappers/StructureWrapperDefault.h"
 
 namespace DAVA

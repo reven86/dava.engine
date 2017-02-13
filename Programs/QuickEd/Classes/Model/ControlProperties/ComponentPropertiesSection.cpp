@@ -3,13 +3,14 @@
 #include "IntrospectionProperty.h"
 #include "PropertyVisitor.h"
 
-#include "UI/UIControl.h"
-
-#include "Utils/StringFormat.h"
+#include <UI/UIControl.h>
+#include <Utils/StringFormat.h>
+#include <Reflection/ReflectedMeta.h>
+#include <Reflection/ReflectedTypeDB.h>
 
 using namespace DAVA;
 
-ComponentPropertiesSection::ComponentPropertiesSection(DAVA::UIControl* control_, DAVA::UIComponent::eType type_, int32 index_, const ComponentPropertiesSection* sourceSection, eCloneType cloneType)
+ComponentPropertiesSection::ComponentPropertiesSection(DAVA::UIControl* control_, const DAVA::Type* type_, int32 index_, const ComponentPropertiesSection* sourceSection, eCloneType cloneType)
     : SectionProperty("")
     , control(SafeRetain(control_))
     , component(nullptr)
@@ -62,7 +63,7 @@ UIComponent* ComponentPropertiesSection::GetComponent() const
     return component;
 }
 
-DAVA::uint32 ComponentPropertiesSection::GetComponentType() const
+const DAVA::Type* ComponentPropertiesSection::GetComponentType() const
 {
     return component->GetType();
 }
@@ -184,7 +185,7 @@ void ComponentPropertiesSection::Accept(PropertyVisitor* visitor)
 
 String ComponentPropertiesSection::GetComponentName() const
 {
-    return GlobalEnumMap<UIComponent::eType>::Instance()->ToString(component->GetType());
+    return ReflectedTypeDB::GetByType(component->GetType())->GetPermanentName();
 }
 
 void ComponentPropertiesSection::RefreshName()

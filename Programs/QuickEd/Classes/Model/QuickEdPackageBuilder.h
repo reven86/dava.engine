@@ -33,7 +33,7 @@ public:
     virtual void BeginControlPropertiesSection(const DAVA::String& name) override;
     virtual void EndControlPropertiesSection() override;
 
-    virtual DAVA::UIComponent* BeginComponentPropertiesSection(DAVA::uint32 componentType, DAVA::uint32 componentIndex) override;
+    virtual DAVA::UIComponent* BeginComponentPropertiesSection(const DAVA::Type* componentType, DAVA::uint32 componentIndex) override;
     virtual void EndComponentPropertiesSection() override;
 
     virtual void ProcessProperty(const DAVA::Reflection::Field& field, const DAVA::Any& value) override;
