@@ -146,7 +146,7 @@ DAVA::Vector4 ParticleEffectDebugDrawSystem::LerpColors(float normalizedWidth)
     };
     const TextureKey* current = nullptr;
     const TextureKey* next = nullptr;
-    for (int i = 0; i < keys.size() - 1; i++)
+    for (size_t i = 0; i < keys.size() - 1; i++)
         if (keys[i].time <= normalizedWidth && keys[i + 1].time >= normalizedWidth)
         {
             current = &keys[i];
