@@ -222,12 +222,18 @@ void UIControl::SetName(const String& name_)
 
 void UIControl::SetName(const FastName& name_)
 {
-    if (name != name_)
+    if (name == name_)
     {
-        SetStyleSheetDirty();
+        return;
     }
 
+#if defined(__DAVAENGINE_DEBUG__)
+    DVASSERT(UIControlHelpers::IsControlNameValid(name_.c_str()));
+#endif
+
     name = name_;
+
+    SetStyleSheetDirty();
 }
 
 void UIControl::SetTag(int32 _tag)
