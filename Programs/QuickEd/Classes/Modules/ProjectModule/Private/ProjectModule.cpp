@@ -224,7 +224,8 @@ void ProjectModule::OpenProject(const DAVA::String& path)
     std::unique_ptr<ProjectData> newProjectData = std::make_unique<ProjectData>();
 
     resultList = newProjectData->LoadProject(QString::fromStdString(path));
-    if (resultList.HasErrors() == false)
+
+    if (resultList)
     {
         DAVA::String lastProjectPath = newProjectData->GetProjectFile().GetAbsolutePathname();
         recentProjects->Add(lastProjectPath);

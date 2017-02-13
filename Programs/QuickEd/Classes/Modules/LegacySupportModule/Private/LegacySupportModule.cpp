@@ -115,13 +115,13 @@ void LegacySupportModule::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, 
             DVASSERT(document != nullptr);
             packageWidget->OnSelectionChanged(Any());
 
-            if (std::find(fields.begin(), fields.end(), DocumentData::packagePropertyName) != fields.end())
+            if (std::find(fields.begin(), fields.end(), String(DocumentData::packagePropertyName)) != fields.end())
             {
                 documentGroupView->SetDocument(document);
             }
             if (selectionValue.IsEmpty() == false)
             {
-                if (std::find(fields.begin(), fields.end(), DocumentData::selectionPropertyName) != fields.end())
+                if (std::find(fields.begin(), fields.end(), String(DocumentData::selectionPropertyName)) != fields.end())
                 {
                     packageWidget->OnSelectionChanged(selectionValue);
                 }

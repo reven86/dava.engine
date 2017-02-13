@@ -265,7 +265,7 @@ void EditorSystemsManager::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper,
     {
         bool needRefresh = false;
         //capture by const reference
-        auto updateField = [&wrapper, &fields, &needRefresh](const Any& name, Function<void(const Any&)> updateFn) {
+        auto updateField = [&wrapper, &fields, &needRefresh](const String& name, Function<void(const Any&)> updateFn) {
             if (std::find(fields.begin(), fields.end(), name) != fields.end())
             {
                 updateFn(wrapper.GetFieldValue(name));
