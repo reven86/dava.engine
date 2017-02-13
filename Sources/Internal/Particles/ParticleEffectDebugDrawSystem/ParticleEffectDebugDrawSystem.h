@@ -1,11 +1,18 @@
 #pragma once
 
-#include "DAVAEngine.h"
+#include "Base/BaseTypes.h"
+
+#include "Entity/SceneSystem.h"
+#include "Math/Vector.h"
 
 namespace DAVA
 {
 class ParticleDebugRenderPass;
 class ParticleDebugDrawQuadRenderPass;
+class Texture;
+class NMaterial;
+class RenderObject;
+class RenderSystem;
 
 enum eParticleDebugDrawMode
 {
@@ -26,7 +33,7 @@ public:
     void GenerateDebugMaterials();
     void GenerateQuadMaterials();
 
-    DAVA::Texture* GenerateHeatTexture();
+    Texture* GenerateHeatTexture();
     Vector4 LerpColors(float normalizedWidth);
 
     inline eParticleDebugDrawMode GetDrawMode() const;
@@ -37,7 +44,7 @@ public:
 
     inline const Vector<NMaterial*>* const GetMaterials() const;
 
-    void SetSelectedParticles(DAVA::UnorderedSet<RenderObject*> selectedParticles);
+    void SetSelectedParticles(UnorderedSet<RenderObject*> selectedParticles);
     void SetAlphaThreshold(float32 threshold);
 
 private:
@@ -52,10 +59,10 @@ private:
         }
     };
 
-    DAVA::UnorderedSet<RenderObject*> selectedParticles;
+    UnorderedSet<RenderObject*> selectedParticles;
     ParticleDebugRenderPass* renderPass = nullptr;
     ParticleDebugDrawQuadRenderPass* drawQuadPass = nullptr;
-    DAVA::RenderSystem* renderSystem = nullptr;
+    RenderSystem* renderSystem = nullptr;
 
     bool isDrawOnlySelected = false;
     eParticleDebugDrawMode drawMode = WIREFRAME;

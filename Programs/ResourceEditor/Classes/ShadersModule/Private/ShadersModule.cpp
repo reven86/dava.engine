@@ -82,7 +82,7 @@ void ShadersModule::ReloadShaders()
                                           material.second->InvalidateRenderVariants();
                                       }
 
-                                      const Vector<DAVA::NMaterial*>* const particleDebug = sceneEditor->GetParticleEffectDebugDrawSystem()->GetMaterials();
+                                      const DAVA::Vector<DAVA::NMaterial*>* const particleDebug = sceneEditor->GetParticleEffectDebugDrawSystem()->GetMaterials();
                                       for (auto material : *particleDebug)
                                       {
                                           material->InvalidateRenderVariants();

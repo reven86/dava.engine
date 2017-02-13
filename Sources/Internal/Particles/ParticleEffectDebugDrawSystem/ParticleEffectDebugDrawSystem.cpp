@@ -1,6 +1,11 @@
 #include "Particles/ParticleEffectDebugDrawSystem/ParticleEffectDebugDrawSystem.h"
+
 #include "Particles/ParticleEffectDebugDrawSystem/ParticleDebugRenderPass.h"
 #include "Particles/ParticleEffectDebugDrawSystem/ParticleDebugDrawQuadRenderPass.h"
+
+#include "Render/Highlevel/RenderSystem.h"
+
+#include "Scene3D/Scene.h"
 
 namespace DAVA
 {
@@ -11,8 +16,6 @@ ParticleEffectDebugDrawSystem::ParticleEffectDebugDrawSystem(Scene* scene)
     {
         GenerateDebugMaterials();
 
-        scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::START_PARTICLE_EFFECT);
-        scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::STOP_PARTICLE_EFFECT);
         renderSystem = scene->GetRenderSystem();
 
         ParticleDebugRenderPass::ParticleDebugRenderPassConfig config =

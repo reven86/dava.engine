@@ -10,12 +10,15 @@
 namespace DAVA
 {
 enum eParticleDebugDrawMode;
+class RenderObject;
 
 namespace TArc
 {
 class FieldBinder;
 }
 }
+
+class SelectableGroup;
 
 class ParticleDebugDrawModule : public DAVA::TArc::ClientModule
 {
@@ -39,7 +42,7 @@ private:
     void SetDrawMode(DAVA::eParticleDebugDrawMode drawMode);
 
     void UpdateSceneSystem();
-    DAVA::UnorderedSet<RenderObject*> ProcessSelection(const SelectableGroup& group);
+    DAVA::UnorderedSet<DAVA::RenderObject*> ProcessSelection(const SelectableGroup& group);
     std::shared_ptr<DAVA::TArc::FieldBinder> filedBinder;
 
     DAVA_VIRTUAL_REFLECTION(DAVA::ParticleDebugDrawModule, DAVA::TArc::ClientModule);

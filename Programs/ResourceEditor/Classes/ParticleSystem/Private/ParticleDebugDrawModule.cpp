@@ -2,14 +2,18 @@
 
 #include "Particles/ParticleEffectDebugDrawSystem/ParticleEffectDebugDrawSystem.h"
 
+#include "Classes/Application/REGlobal.h"
 #include "Classes/SceneManager/SceneData.h"
 #include "Classes/Selection/SelectionData.h"
 #include "Classes/Selection/SelectableGroup.h"
 
+#include "Base/BaseTypes.h"
 #include "Scene3D/Entity.h"
+#include "Render/Highlevel/RenderObject.h"
 
 #include <TArc/Utils/ModuleCollection.h>
 #include <TArc/WindowSubSystem/ActionUtils.h>
+#include <TArc/WindowSubSystem/UI.h>
 #include <TArc/Controls/CheckBox.h>
 #include <TArc/Controls/ComboBox.h>
 #include <TArc/Controls/QtBoxLayouts.h>
@@ -18,6 +22,7 @@
 #include <TArc/DataProcessing/DataNode.h>
 
 #include <QWidget>
+#include <QAction>
 
 using DAVA::eParticleDebugDrawMode;
 
@@ -47,8 +52,8 @@ public:
     bool isSystemOn = false;
     bool drawOnlySelected = false;
     eParticleDebugDrawMode drawMode = eParticleDebugDrawMode::OVERDRAW;
-    DAVA::UnorderedSet<RenderObject*> selectedParticles;
-    float32 alphaThreshold = 0.05f;
+    DAVA::UnorderedSet<DAVA::RenderObject*> selectedParticles;
+    DAVA::float32 alphaThreshold = 0.05f;
 
     DAVA_VIRTUAL_REFLECTION_IN_PLACE(ParticleDebugDrawData, DAVA::TArc::DataNode)
     {
@@ -122,7 +127,7 @@ bool ParticleDebugDrawModule::GetSystemEnabledState() const
 void ParticleDebugDrawModule::SetSystemEnabledState(bool enabled)
 {
     GetAccessor()->GetGlobalContext()->GetData<ParticleDebugDrawData>()->isSystemOn = enabled;
-    DAVA::Renderer::GetOptions()->SetOption(RenderOptions::DEBUG_DRAW_PARTICLES, enabled);
+    DAVA::Renderer::GetOptions()->SetOption(DAVA::RenderOptions::DEBUG_DRAW_PARTICLES, enabled);
     UpdateSceneSystem();
 }
 
@@ -173,13 +178,13 @@ void ParticleDebugDrawModule::UpdateSceneSystem()
                              });
 }
 
-DAVA::UnorderedSet<RenderObject*> ParticleDebugDrawModule::ProcessSelection(const SelectableGroup& group)
+DAVA::UnorderedSet<DAVA::RenderObject*> ParticleDebugDrawModule::ProcessSelection(const SelectableGroup& group)
 {
-    uint32 count = static_cast<uint32>(group.GetSize());
-    UnorderedSet<RenderObject*> particleObjects;
+    DAVA::uint32 count = static_cast<DAVA::uint32>(group.GetSize());
+    DAVA::UnorderedSet<DAVA::RenderObject*> particleObjects;
     for (auto entity : group.ObjectsOfType<DAVA::Entity>())
     {
-        ParticleEffectComponent* particleComponent = static_cast<ParticleEffectComponent*>(entity->GetComponent(Component::PARTICLE_EFFECT_COMPONENT));
+        DAVA::ParticleEffectComponent* particleComponent = static_cast<DAVA::ParticleEffectComponent*>(entity->GetComponent(DAVA::Component::PARTICLE_EFFECT_COMPONENT));
         if (particleComponent != nullptr)
             particleObjects.insert(particleComponent->GetRenderObject());
     }

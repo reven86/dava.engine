@@ -1,18 +1,20 @@
 #include "Particles/ParticleEffectDebugDrawSystem/ParticleDebugRenderPass.h"
 
+#include "Particles/ParticleEffectDebugDrawSystem/ParticleEffectDebugDrawSystem.h"
+
 #include "Render/RHI/rhi_Type.h"
 #include "Render/RHI/rhi_Public.h"
+#include "Render/ShaderCache.h"
 
 #include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerMarkerNames.h"
 
-#include "Particles/ParticleEffectDebugDrawSystem/ParticleEffectDebugDrawSystem.h"
 
 namespace DAVA
 {
-const DAVA::FastName ParticleDebugRenderPass::PASS_DEBUG_DRAW_PARTICLES("ForwardPass");
+const FastName ParticleDebugRenderPass::PASS_DEBUG_DRAW_PARTICLES("ForwardPass");
 
-DAVA::Texture* ParticleDebugRenderPass::GetTexture() const
+Texture* ParticleDebugRenderPass::GetTexture() const
 {
     return debugTexture;
 }
@@ -81,8 +83,8 @@ ParticleDebugRenderPass::ParticleDebugRenderPass(ParticleDebugRenderPassConfig c
 
     static const int width = 1024;
     static const int height = 1024;
-    debugTexture = DAVA::Texture::CreateFBO(width, height, DAVA::PixelFormat::FORMAT_RGBA8888);
-    SetRenderTargetProperties(width, height, DAVA::PixelFormat::FORMAT_RGBA8888);
+    debugTexture = Texture::CreateFBO(width, height, PixelFormat::FORMAT_RGBA8888);
+    SetRenderTargetProperties(width, height, PixelFormat::FORMAT_RGBA8888);
 
     passConfig.colorBuffer[0].texture = debugTexture->handle;
     passConfig.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
@@ -152,7 +154,7 @@ void ParticleDebugRenderPass::MakePacket(Camera* camera)
     }
 }
 
-DAVA::NMaterial* ParticleDebugRenderPass::SelectMaterial(RenderBatch* batch)
+NMaterial* ParticleDebugRenderPass::SelectMaterial(RenderBatch* batch)
 {
     switch (drawMode)
     {

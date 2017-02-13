@@ -1,7 +1,9 @@
 #pragma once
 
 #include "Base/FastName.h"
+
 #include "Render/RenderBase.h"
+#include "Render/Highlevel/RenderPass.h"
 
 namespace DAVA
 {
@@ -16,7 +18,7 @@ class ParticleDebugRenderPass : public RenderPass
 public:
     struct ParticleDebugRenderPassConfig
     {
-        const DAVA::FastName& name;
+        const FastName& name;
         RenderSystem* renderSystem;
         NMaterial* wireframeMaterial;
         NMaterial* overdrawMaterial;
@@ -27,17 +29,17 @@ public:
     };
 
     ParticleDebugRenderPass(ParticleDebugRenderPassConfig config);
-    void Draw(DAVA::RenderSystem* renderSystem) override;
-    static const DAVA::FastName PASS_DEBUG_DRAW_PARTICLES;
-    DAVA::Texture* GetTexture() const;
+    void Draw(RenderSystem* renderSystem) override;
+    static const FastName PASS_DEBUG_DRAW_PARTICLES;
+    Texture* GetTexture() const;
 
 private:
-    DAVA::Texture* debugTexture;
+    Texture* debugTexture;
     NMaterial* wireframeMaterial;
     NMaterial* overdrawMaterial;
     NMaterial* showAlphaMaterial;
     RenderBatchArray particleBatches;
-    DAVA::UnorderedSet<RenderObject*>* selectedParticles;
+    UnorderedSet<RenderObject*>* selectedParticles;
     const eParticleDebugDrawMode& drawMode;
     const bool& drawOnlySelected;
 
