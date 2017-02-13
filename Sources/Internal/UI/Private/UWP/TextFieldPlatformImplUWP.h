@@ -17,6 +17,9 @@ class UIGeometricData;
 class UITextField;
 class UITextFieldDelegate;
 class Window;
+#if !defined(__DAVAENGINE_COREV2__)
+class CorePlatformWinUAP;
+#endif
 
 class TextFieldPlatformImpl : public std::enable_shared_from_this<TextFieldPlatformImpl>
 {
@@ -78,7 +81,11 @@ class TextFieldPlatformImpl : public std::enable_shared_from_this<TextFieldPlatf
     };
 
 public:
+#if defined(__DAVAENGINE_COREV2__)
     TextFieldPlatformImpl(Window* w, UITextField* uiTextField);
+#else
+    TextFieldPlatformImpl(UITextField* uiTextField);
+#endif
     ~TextFieldPlatformImpl();
 
     void Initialize();
@@ -183,8 +190,11 @@ private: // Event handlers
     void OnWindowDestroyed(Window* w);
 
 private:
+#if defined(__DAVAENGINE_COREV2__)
     Window* window = nullptr;
-
+#else
+    CorePlatformWinUAP* core;
+#endif
     UITextField* uiTextField = nullptr;
     UITextFieldDelegate* textFieldDelegate = nullptr;
     // Windows UAP has two different controls for text input and password input
@@ -196,6 +206,9 @@ private:
 
     // Tokens to unsubscribe from touch keyboard event handlers
     Windows::Foundation::EventRegistrationToken tokenKeyboardShowing;
+#if !defined(__DAVAENGINE_COREV2__)
+    Windows::Foundation::EventRegistrationToken tokenKeyboardHiding;
+#endif
 
     bool ignoreTextChange = false;
     bool waitRenderToTextureComplete = false; // If flag is set do not move native control offscreen to get rid of some flickering
@@ -210,8 +223,10 @@ private:
     TextFieldProperties properties;
     bool programmaticTextChange = false;
 
+#if defined(__DAVAENGINE_COREV2__)
     Texture* texture = nullptr;
     Sprite* sprite = nullptr;
+#endif
 
     size_t windowSizeChangedConnection = 0;
     size_t windowDestroyedConnection = 0;

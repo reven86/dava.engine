@@ -20,7 +20,12 @@
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageConvert.h"
 
+#if defined(__DAVAENGINE_COREV2__)
 #include "Engine/Engine.h"
+#else
+#include "Platform/TemplateWin32/WinUAPXamlApp.h"
+#include "Platform/TemplateWin32/CorePlatformWinUAP.h"
+#endif
 
 #include <ppltasks.h>
 
@@ -152,29 +157,63 @@ void TextFieldPlatformImpl::TextFieldProperties::ClearChangedFlags()
 Windows::UI::Xaml::Style ^ TextFieldPlatformImpl::customTextBoxStyle = nullptr;
 Windows::UI::Xaml::Style ^ TextFieldPlatformImpl::customPasswordBoxStyle = nullptr;
 
+#if defined(__DAVAENGINE_COREV2__)
 TextFieldPlatformImpl::TextFieldPlatformImpl(Window* w, UITextField* uiTextField)
     : window(w)
     , uiTextField(uiTextField)
     , properties()
+#else
+TextFieldPlatformImpl::TextFieldPlatformImpl(UITextField* uiTextField)
+    : core(static_cast<CorePlatformWinUAP*>(Core::Instance()))
+    , uiTextField(uiTextField)
+    , properties()
+#endif
 {
 }
 
 TextFieldPlatformImpl::~TextFieldPlatformImpl()
 {
+#if defined(__DAVAENGINE_COREV2__)
     nativeControlHolder = nullptr;
     nativeControl = nullptr;
     nativeText = nullptr;
     nativePassword = nullptr;
+#else
+    using ::Windows::Foundation::EventRegistrationToken;
+    using ::Windows::UI::Xaml::UIElement;
+    using ::Windows::UI::ViewManagement::InputPane;
+
+    if (nativeControl != nullptr)
+    {
+        UIElement ^ p = nativeControlHolder;
+        EventRegistrationToken tokenHiding = tokenKeyboardHiding;
+        EventRegistrationToken tokenShowing = tokenKeyboardShowing;
+        core->RunOnUIThread([p, tokenHiding, tokenShowing]() { // We don't need blocking call here
+            InputPane::GetForCurrentView()->Showing -= tokenHiding;
+            InputPane::GetForCurrentView()->Hiding -= tokenShowing;
+            static_cast<CorePlatformWinUAP*>(Core::Instance())->XamlApplication()->RemoveUIElement(p);
+        });
+
+        nativeControlHolder = nullptr;
+        nativeControl = nullptr;
+        nativeText = nullptr;
+        nativePassword = nullptr;
+    }
+#endif
 }
 
 void TextFieldPlatformImpl::Initialize()
 {
     uiTextField->GetBackground()->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
+#if defined(__DAVAENGINE_COREV2__)
     uiTextField->GetBackground()->SetMaterial(RenderSystem2D::DEFAULT_2D_TEXTURE_PREMULTIPLIED_ALPHA_MATERIAL);
+#endif
     properties.createNew = true;
 
+#if defined(__DAVAENGINE_COREV2__)
     windowSizeChangedConnection = window->sizeChanged.Connect(this, &TextFieldPlatformImpl::OnWindowSizeChanged);
     windowDestroyedConnection = Engine::Instance()->windowDestroyed.Connect(this, &TextFieldPlatformImpl::OnWindowDestroyed);
+#endif
 }
 
 void TextFieldPlatformImpl::OwnerIsDying()
@@ -184,6 +223,7 @@ void TextFieldPlatformImpl::OwnerIsDying()
     uiTextField = nullptr;
     textFieldDelegate = nullptr;
 
+#if defined(__DAVAENGINE_COREV2__)
     // UITextField that owns this impl is in process of destruction and native control is no longer needed,
     // so remove it from hierarchy. But do not delete reference to it as some methods running in other threads
     // can use native control, e.g. thread where rendering to texture is being performed.
@@ -204,6 +244,7 @@ void TextFieldPlatformImpl::OwnerIsDying()
 
     SafeRelease(sprite);
     SafeRelease(texture);
+#endif
 }
 
 void TextFieldPlatformImpl::SetVisible(bool isVisible)
@@ -217,7 +258,7 @@ void TextFieldPlatformImpl::SetVisible(bool isVisible)
         if (!isVisible)
         { // Immediately hide native control if it has been already created
             auto self{ shared_from_this() };
-
+#if defined(__DAVAENGINE_COREV2__)
             if (window != nullptr)
             {
                 window->RunOnUIThreadAsync([this, self]() {
@@ -227,6 +268,14 @@ void TextFieldPlatformImpl::SetVisible(bool isVisible)
                     }
                 });
             }
+#else
+            core->RunOnUIThread([this, self]() {
+                if (nativeControl != nullptr)
+                {
+                    SetNativeVisible(false);
+                }
+            });
+#endif
         }
     }
 }
@@ -278,10 +327,15 @@ void TextFieldPlatformImpl::UpdateRect(const Rect& rect)
 
         auto self{ shared_from_this() };
         TextFieldProperties props(properties);
-
+#if defined(__DAVAENGINE_COREV2__)
         window->RunOnUIThreadAsync([this, self, props] {
             ProcessProperties(props);
         });
+#else
+        core->RunOnUIThread([this, self, props] {
+            ProcessProperties(props);
+        });
+#endif
 
         properties.createNew = false;
         properties.focusChanged = false;
@@ -350,8 +404,11 @@ void TextFieldPlatformImpl::SetTextUseRtlAlign(bool useRtlAlign)
 
 void TextFieldPlatformImpl::SetFontSize(float32 virtualFontSize)
 {
+#if defined(__DAVAENGINE_COREV2__)
     VirtualCoordinatesSystem* vcs = window->GetUIControlSystem()->vcs;
-
+#else
+    VirtualCoordinatesSystem* vcs = UIControlSystem::Instance()->vcs;
+#endif
     properties.fontSize = vcs->ConvertVirtualToInputX(virtualFontSize);
     properties.virtualFontSize = virtualFontSize;
     properties.fontSizeChanged = true;
@@ -464,14 +521,22 @@ void TextFieldPlatformImpl::CreateNativeControl(bool textControl)
     {
         nativeText = ref new Windows::UI::Xaml::Controls::TextBox();
         nativeControl = nativeText;
+#if defined(__DAVAENGINE_COREV2__)
         nativeText->Style = customTextBoxStyle;
+#else
+        core->XamlApplication()->SetTextBoxCustomStyle(nativeText);
+#endif
         InstallTextEventHandlers();
     }
     else
     {
         nativePassword = ref new PasswordBox();
         nativeControl = nativePassword;
+#if defined(__DAVAENGINE_COREV2__)
         nativePassword->Style = customPasswordBoxStyle;
+#else
+        core->XamlApplication()->SetPasswordBoxCustomStyle(nativePassword);
+#endif
         InstallPasswordEventHandlers();
     }
     InstallCommonEventHandlers();
@@ -497,12 +562,20 @@ void TextFieldPlatformImpl::CreateNativeControl(bool textControl)
     nativeControlHolder->MinWidth = 0.0;
     nativeControlHolder->MinHeight = 0.0;
     nativeControlHolder->Child = nativeControl;
+#if defined(__DAVAENGINE_COREV2__)
     PlatformApi::Win10::AddXamlControl(window, nativeControlHolder);
+#else
+    core->XamlApplication()->AddUIElement(nativeControlHolder);
+#endif
 }
 
 void TextFieldPlatformImpl::DeleteNativeControl()
 {
+#if defined(__DAVAENGINE_COREV2__)
     PlatformApi::Win10::RemoveXamlControl(window, nativeControlHolder);
+#else
+    core->XamlApplication()->RemoveUIElement(nativeControlHolder);
+#endif
     nativeControl = nullptr;
     nativeText = nullptr;
     nativePassword = nullptr;
@@ -606,10 +679,17 @@ void TextFieldPlatformImpl::OnKeyDown(::Windows::UI::Xaml::Input::KeyRoutedEvent
     case VirtualKey::Escape:
     {
         auto self{ shared_from_this() };
+#if defined(__DAVAENGINE_COREV2__)
         RunOnMainThreadAsync([this, self]() {
             if (textFieldDelegate != nullptr)
                 textFieldDelegate->TextFieldShouldCancel(uiTextField);
         });
+#else
+        core->RunOnMainThread([this, self]() {
+            if (textFieldDelegate != nullptr)
+                textFieldDelegate->TextFieldShouldCancel(uiTextField);
+        });
+#endif
     }
     break;
     case VirtualKey::Enter:
@@ -618,10 +698,17 @@ void TextFieldPlatformImpl::OnKeyDown(::Windows::UI::Xaml::Input::KeyRoutedEvent
         if (!IsMultiline() && 0 == args->KeyStatus.RepeatCount)
         {
             auto self{ shared_from_this() };
+#if defined(__DAVAENGINE_COREV2__)
             RunOnMainThreadAsync([this, self]() {
                 if (textFieldDelegate != nullptr)
                     textFieldDelegate->TextFieldShouldReturn(uiTextField);
             });
+#else
+            core->RunOnMainThread([this, self]() {
+                if (textFieldDelegate != nullptr)
+                    textFieldDelegate->TextFieldShouldReturn(uiTextField);
+            });
+#endif
         }
         break;
     default:
@@ -634,11 +721,15 @@ void TextFieldPlatformImpl::OnGotFocus()
     using ::Windows::UI::Xaml::Input::Pointer;
     using ::Windows::UI::ViewManagement::InputPane;
 
+#if defined(__DAVAENGINE_COREV2__)
     Pointer ^ lastPressedPointer = PlatformApi::Win10::GetLastPressedPointer(window);
     if (lastPressedPointer != nullptr)
     {
         nativeControl->CapturePointer(lastPressedPointer);
     }
+#else
+    core->XamlApplication()->CaptureTextBox(nativeControl);
+#endif
 
     SetNativeCaretPosition(GetNativeText()->Length());
 
@@ -651,8 +742,11 @@ void TextFieldPlatformImpl::OnGotFocus()
         SetNativePositionAndSize(rectInWindowSpace, false);
     }
     auto self{ shared_from_this() };
-
+#if defined(__DAVAENGINE_COREV2__)
     RunOnMainThreadAsync([this, self, multiline, keyboardRect]() {
+#else
+    core->RunOnMainThread([this, self, multiline, keyboardRect]() {
+#endif
         if (uiTextField != nullptr)
         {
             if (!multiline)
@@ -693,7 +787,11 @@ void TextFieldPlatformImpl::OnLostFocus()
     }
 
     auto self{ shared_from_this() };
+#if defined(__DAVAENGINE_COREV2__)
     RunOnMainThreadAsync([this, self]() {
+#else
+    core->RunOnMainThread([this, self]() {
+#endif
         if (uiTextField != nullptr)
         {
             uiTextField->OnKeyboardHidden();
@@ -725,8 +823,11 @@ void TextFieldPlatformImpl::OnTextChanged()
 
     bool textAccepted = true;
     auto self{ shared_from_this() };
-
+#if defined(__DAVAENGINE_COREV2__)
     RunOnMainThread([this, self, &newText, &textAccepted, &textToRestore]() {
+#else
+    core->RunOnMainThreadBlocked([this, self, &newText, &textAccepted, &textToRestore]() {
+#endif
         bool targetAlive = uiTextField != nullptr && textFieldDelegate != nullptr;
         if (programmaticTextChange && targetAlive && newText != lastProgrammaticText)
         {
@@ -781,7 +882,11 @@ void TextFieldPlatformImpl::OnKeyboardShowing(::Windows::UI::ViewManagement::Inp
         DAVA::Rect keyboardRect(srcRect.X, srcRect.Y, srcRect.Width, srcRect.Height);
 
         auto self{ shared_from_this() };
+#if defined(__DAVAENGINE_COREV2__)
         RunOnMainThreadAsync([this, self, keyboardRect]() {
+#else
+        core->RunOnMainThread([this, self, keyboardRect]() {
+#endif
             if (textFieldDelegate != nullptr)
             {
                 Rect rect = WindowToVirtual(keyboardRect);
@@ -800,7 +905,9 @@ void TextFieldPlatformImpl::OnWindowSizeChanged(Window* w, Size2f windowSize, Si
 void TextFieldPlatformImpl::OnWindowDestroyed(Window* w)
 {
     OwnerIsDying();
+#if defined(__DAVAENGINE_COREV2__)
     window = nullptr;
+#endif
 }
 
 void TextFieldPlatformImpl::ProcessProperties(const TextFieldProperties& props)
@@ -834,7 +941,11 @@ void TextFieldPlatformImpl::ProcessProperties(const TextFieldProperties& props)
         if (props.focus)
             nativeControl->Focus(::Windows::UI::Xaml::FocusState::Pointer);
         else if (HasFocus())
+#if defined(__DAVAENGINE_COREV2__)
             PlatformApi::Win10::UnfocusXamlControl(window, nativeControl);
+#else
+            core->XamlApplication()->UnfocusUIElement();
+#endif
     }
 
     if (!IsMultiline() && !HasFocus())
@@ -911,8 +1022,11 @@ void TextFieldPlatformImpl::SetNativePositionAndSize(const Rect& rect, bool offS
     }
     nativeControlHolder->Width = std::max(0.0f, rect.dx);
     nativeControlHolder->Height = std::max(0.0f, rect.dy);
-
+#if defined(__DAVAENGINE_COREV2__)
     PlatformApi::Win10::PositionXamlControl(window, nativeControlHolder, rect.x - xOffset, rect.y - yOffset);
+#else
+    core->XamlApplication()->PositionUIElement(nativeControlHolder, rect.x - xOffset, rect.y - yOffset);
+#endif
 }
 
 void TextFieldPlatformImpl::SetNativeVisible(bool visible)
@@ -1117,13 +1231,21 @@ bool TextFieldPlatformImpl::IsMultiline() const
 
 Rect TextFieldPlatformImpl::VirtualToWindow(const Rect& srcRect) const
 {
+#if defined(__DAVAENGINE_COREV2__)
     VirtualCoordinatesSystem* vcs = window->GetUIControlSystem()->vcs;
+#else
+    VirtualCoordinatesSystem* vcs = UIControlSystem::Instance()->vcs;
+#endif
     return vcs->ConvertVirtualToInput(srcRect);
 }
 
 Rect TextFieldPlatformImpl::WindowToVirtual(const Rect& srcRect) const
 {
+#if defined(__DAVAENGINE_COREV2__)
     VirtualCoordinatesSystem* vcs = window->GetUIControlSystem()->vcs;
+#else
+    VirtualCoordinatesSystem* vcs = UIControlSystem::Instance()->vcs;
+#endif
     return vcs->ConvertInputToVirtual(srcRect);
 }
 
@@ -1153,15 +1275,29 @@ void TextFieldPlatformImpl::RenderToTexture(bool moveOffScreenOnCompletion)
             index += 1;
         }
 
+#if defined(__DAVAENGINE_COREV2__)
         RunOnMainThreadAsync([this, self, moveOffScreenOnCompletion, buf=std::move(buf), imageWidth, imageHeight]() mutable {
+#else
+        core->RunOnMainThread([this, self, moveOffScreenOnCompletion, buf=std::move(buf), imageWidth, imageHeight]() mutable {
+#endif
             if (uiTextField != nullptr && !uiTextField->IsEditing() && !curText.empty())
             {
+#if !defined(__DAVAENGINE_COREV2__)
+                Sprite* sprite = nullptr;
+#endif
                 sprite = CreateSpriteFromPreviewData(&buf[0], imageWidth, imageHeight);
                 uiTextField->SetSprite(sprite, 0);
+#if !defined(__DAVAENGINE_COREV2__)
+                SafeRelease(sprite);
+#endif
             }
             if (moveOffScreenOnCompletion)
             {
+#if defined(__DAVAENGINE_COREV2__)
                 window->RunOnUIThreadAsync([this, self]() {
+#else
+                core->RunOnUIThread([this, self]() {
+#endif
                     waitRenderToTextureComplete = false;
                     if (!HasFocus())
                     { // Do not hide control if it has gained focus while rendering to texture
@@ -1184,6 +1320,7 @@ void TextFieldPlatformImpl::RenderToTexture(bool moveOffScreenOnCompletion)
 
 Sprite* TextFieldPlatformImpl::CreateSpriteFromPreviewData(uint8* imageData, uint32 width, uint32 height)
 {
+#if defined(__DAVAENGINE_COREV2__)
     ImageConvert::SwapRedBlueChannels(FORMAT_RGBA8888, imageData, width, height, ImageUtils::GetPitchInBytes(width, FORMAT_RGBA8888), nullptr);
     if (texture == nullptr || texture->width != width || texture->height != height)
     {
@@ -1201,6 +1338,11 @@ Sprite* TextFieldPlatformImpl::CreateSpriteFromPreviewData(uint8* imageData, uin
         texture->TexImage(0, width, height, imageData, imageDataSize, Texture::INVALID_CUBEMAP_FACE);
     }
     return sprite;
+#else
+    ScopedPtr<Image> imgSrc(Image::CreateFromData(width, height, FORMAT_RGBA8888, imageData));
+    ImageConvert::SwapRedBlueChannels(imgSrc);
+    return Sprite::CreateFromImage(imgSrc, true, false);
+#endif
 }
 
 Platform::String ^ TextFieldPlatformImpl::xamlTextBoxStyles = LR"(
