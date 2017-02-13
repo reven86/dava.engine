@@ -1,7 +1,5 @@
 #include "Particles/ParticleEffectDebug/ParticleDebugDrawQuadRenderPass.h"
 
-#include "Scene3D/Systems/ParticleEffectDebugDrawSystem.h"
-
 #include "Render/RHI/rhi_Type.h"
 #include "Render/RHI/rhi_Public.h"
 

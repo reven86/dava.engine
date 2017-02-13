@@ -1,5 +1,7 @@
 #pragma once
 
+#include "Scene3D/Systems/ParticleEffectDebugDrawSystem.h"
+
 #include "Base/FastName.h"
 #include "Render/RHI/rhi_Public.h"
 #include "Math/Vector.h"
@@ -9,8 +11,6 @@ namespace DAVA
 {
 class RenderSystem;
 class NMaterial;
-
-enum eParticleDebugDrawMode;
 
 class ParticleDebugDrawQuadRenderPass : public RenderPass
 {

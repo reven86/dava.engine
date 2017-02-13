@@ -7,9 +7,10 @@
 #include <Reflection/Reflection.h>
 #include <Base/GlobalEnum.h>
 
+#include "Scene3D/Systems/ParticleEffectDebugDrawSystem.h"
+
 namespace DAVA
 {
-enum eParticleDebugDrawMode;
 class RenderObject;
 
 namespace TArc
