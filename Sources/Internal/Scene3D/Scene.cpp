@@ -34,7 +34,7 @@
 #include "Scene3D/Systems/SkeletonSystem.h"
 #include "Scene3D/Systems/AnimationSystem.h"
 #include "Scene3D/Systems/LandscapeSystem.h"
-#include "Particles/ParticleEffectDebugDrawSystem/ParticleEffectDebugDrawSystem.h"
+#include "Scene3D/Systems/ParticleEffectDebugDrawSystem.h"
 
 #include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerMarkerNames.h"

@@ -23,7 +23,7 @@
 #include "Render/Material/NMaterial.h"
 #include "Render/ShaderCache.h"
 #include "Scene3D/Systems/FoliageSystem.h"
-#include "Particles/ParticleEffectDebugDrawSystem/ParticleEffectDebugDrawSystem.h"
+#include "Scene3D/Systems/ParticleEffectDebugDrawSystem.h"
 
 namespace ShadersModuleDetail
 {

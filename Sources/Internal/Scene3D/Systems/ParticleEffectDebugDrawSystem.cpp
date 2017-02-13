@@ -1,7 +1,7 @@
-#include "Particles/ParticleEffectDebugDrawSystem/ParticleEffectDebugDrawSystem.h"
+#include "Scene3D/Systems/ParticleEffectDebugDrawSystem.h"
 
-#include "Particles/ParticleEffectDebugDrawSystem/ParticleDebugRenderPass.h"
-#include "Particles/ParticleEffectDebugDrawSystem/ParticleDebugDrawQuadRenderPass.h"
+#include "Particles/ParticleEffectDebug/ParticleDebugRenderPass.h"
+#include "Particles/ParticleEffectDebug/ParticleDebugDrawQuadRenderPass.h"
 
 #include "Render/Highlevel/RenderSystem.h"
 

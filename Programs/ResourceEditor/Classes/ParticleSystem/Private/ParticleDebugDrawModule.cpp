@@ -1,6 +1,6 @@
 #include "Classes/ParticleSystem/ParticleDebugDrawModule.h"
 
-#include "Particles/ParticleEffectDebugDrawSystem/ParticleEffectDebugDrawSystem.h"
+#include "Scene3D/Systems/ParticleEffectDebugDrawSystem.h"
 
 #include "Classes/Application/REGlobal.h"
 #include "Classes/SceneManager/SceneData.h"

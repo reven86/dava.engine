@@ -1,6 +1,6 @@
-#include "Particles/ParticleEffectDebugDrawSystem/ParticleDebugRenderPass.h"
+#include "Particles/ParticleEffectDebug/ParticleDebugRenderPass.h"
 
-#include "Particles/ParticleEffectDebugDrawSystem/ParticleEffectDebugDrawSystem.h"
+#include "Scene3D/Systems/ParticleEffectDebugDrawSystem.h"
 
 #include "Render/RHI/rhi_Type.h"
 #include "Render/RHI/rhi_Public.h"
