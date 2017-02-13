@@ -19,13 +19,13 @@ UISoundValueFilterComponent* UISoundValueFilterComponent::Clone() const
     return new UISoundValueFilterComponent(*this);
 }
 
-void UISoundValueFilterComponent::SetStep(float32 step_)
-{
-    step = step_;
-}
-
 float32 UISoundValueFilterComponent::GetStep() const
 {
     return step;
+}
+
+void UISoundValueFilterComponent::SetStep(float32 step_)
+{
+    step = step_;
 }
 }

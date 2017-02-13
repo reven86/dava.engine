@@ -14,20 +14,20 @@ public:
 
     virtual UISoundComponent* Clone() const override;
 
-    void SetSoundEventName(UIControl::eEventType uiEventType, const FastName& soundEventName);
     const FastName& GetSoundEventName(UIControl::eEventType uiEventType) const;
+    void SetSoundEventName(UIControl::eEventType uiEventType, const FastName& soundEventName);
 
-    void SetOnTouchDownSoundEventName(const FastName& soundEventName);
     const FastName& GetOnTouchDownSoundEventName() const;
+    void SetOnTouchDownSoundEventName(const FastName& soundEventName);
 
-    void SetOnTouchUpInsideSoundEventName(const FastName& soundEventName);
     const FastName& GetOnTouchUpInsideSoundEventName() const;
+    void SetOnTouchUpInsideSoundEventName(const FastName& soundEventName);
 
-    void SetOnTouchUpOutsideSoundEventName(const FastName& soundEventName);
     const FastName& GetOnTouchUpOutsideSoundEventName() const;
+    void SetOnTouchUpOutsideSoundEventName(const FastName& soundEventName);
 
-    void SetOnValueChangedSoundEventName(const FastName& soundEventName);
     const FastName& GetOnValueChangedSoundEventName() const;
+    void SetOnValueChangedSoundEventName(const FastName& soundEventName);
 
 protected:
     ~UISoundComponent() override = default;

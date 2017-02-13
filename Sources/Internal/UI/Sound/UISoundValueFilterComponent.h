@@ -12,8 +12,8 @@ public:
 
     UISoundValueFilterComponent* Clone() const override;
 
-    void SetStep(float32 step);
     float32 GetStep() const;
+    void SetStep(float32 step);
 
 protected:
     ~UISoundValueFilterComponent() override = default;
