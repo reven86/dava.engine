@@ -46,12 +46,13 @@ ParticleEffectDebugDrawSystem::~ParticleEffectDebugDrawSystem()
     SafeRelease(quadHeatMaterial);
 
     SafeRelease(heatTexture);
+    materials.clear();
 }
 
 void ParticleEffectDebugDrawSystem::Draw()
 {
-    if (!isEnabled)
-        return;
+//     if (!isEnabled)
+//         return;
 
     renderPass->Draw(renderSystem);
     drawQuadPass->Draw(renderSystem);
@@ -172,8 +173,9 @@ void ParticleEffectDebugDrawSystem::AddToActive(ParticleEffectComponent* effect)
 void ParticleEffectDebugDrawSystem::RemoveFromActive(ParticleEffectComponent* effect)
 {
     Vector<ParticleEffectComponent*>::iterator it = std::find(activeComponents.begin(), activeComponents.end(), effect);
-    DVASSERT(it != activeComponents.end());
-    activeComponents.erase(it);
+    // DVASSERT(it != activeComponents.end());
+    if (it != activeComponents.end())
+        activeComponents.erase(it);
 }
 
 void ParticleEffectDebugDrawSystem::RemoveEntity(Entity* entity)

@@ -34,6 +34,7 @@
 #include "Scene3D/Systems/SkeletonSystem.h"
 #include "Scene3D/Systems/AnimationSystem.h"
 #include "Scene3D/Systems/LandscapeSystem.h"
+#include "Particles/ParticleEffectDebugDrawSystem/ParticleEffectDebugDrawSystem.h"
 
 #include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerMarkerNames.h"
@@ -176,6 +177,7 @@ Scene::Scene(uint32 _systemsMask /* = SCENE_SYSTEM_ALL_MASK */)
     , windSystem(0)
     , animationSystem(0)
     , staticOcclusionDebugDrawSystem(0)
+    , particleEffectDebugDrawSystem(0)
     , systemsMask(_systemsMask)
     , maxEntityIDCounter(0)
     , sceneGlobalMaterial(0)
@@ -348,6 +350,12 @@ void Scene::CreateSystems()
     {
         staticOcclusionDebugDrawSystem = new DAVA::StaticOcclusionDebugDrawSystem(this);
         AddSystem(staticOcclusionDebugDrawSystem, MAKE_COMPONENT_MASK(DAVA::Component::STATIC_OCCLUSION_COMPONENT), 0, renderUpdateSystem);
+    }
+
+    if (DAVA::Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DEBUG_DRAW_PARTICLES) && particleEffectDebugDrawSystem == nullptr)
+    {
+        particleEffectDebugDrawSystem = new ParticleEffectDebugDrawSystem(this);
+        AddSystem(particleEffectDebugDrawSystem, MAKE_COMPONENT_MASK(Component::PARTICLE_EFFECT_COMPONENT), 0);
     }
 }
 
@@ -708,6 +716,8 @@ void Scene::Draw()
 
     renderSystem->Render();
 
+    if (particleEffectDebugDrawSystem != nullptr)
+        particleEffectDebugDrawSystem->Draw();
     //foliageSystem->DebugDrawVegetation();
 
     drawTime = SystemTimer::GetMs() - time;
@@ -881,6 +891,11 @@ AnimationSystem* Scene::GetAnimationSystem() const
     return animationSystem;
 }
 
+ParticleEffectDebugDrawSystem* Scene::GetParticleEffectDebugDrawSystem() const
+{
+    return particleEffectDebugDrawSystem;
+}
+
 /*void Scene::Save(KeyedArchive * archive)
 {
     // Perform refactoring and add Matrix4, Vector4 types to VariantType and KeyedArchive
@@ -996,6 +1011,17 @@ void Scene::HandleEvent(Observable* observable)
     {
         RemoveSystem(staticOcclusionDebugDrawSystem);
         SafeDelete(staticOcclusionDebugDrawSystem);
+    }
+
+    if (DAVA::Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DEBUG_DRAW_PARTICLES) && particleEffectDebugDrawSystem == nullptr)
+    {
+        particleEffectDebugDrawSystem = new ParticleEffectDebugDrawSystem(this);
+        AddSystem(particleEffectDebugDrawSystem, MAKE_COMPONENT_MASK(Component::PARTICLE_EFFECT_COMPONENT), 0);
+    }
+    else if (!DAVA::Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DEBUG_DRAW_PARTICLES) && particleEffectDebugDrawSystem != nullptr)
+    {
+        RemoveSystem(particleEffectDebugDrawSystem);
+        SafeDelete(particleEffectDebugDrawSystem);
     }
 }
 

@@ -81,7 +81,6 @@ public:
     RulerToolSystem* rulerToolSystem = nullptr;
     StructureSystem* structureSystem = nullptr;
     EditorParticlesSystem* particlesSystem = nullptr;
-    DAVA::ParticleEffectDebugDrawSystem* particleEffectDebugDrawSystem = nullptr;
     EditorLightSystem* editorLightSystem = nullptr;
     TextDrawSystem* textDrawSystem = nullptr;
     DebugDrawSystem* debugDrawSystem = nullptr;
@@ -169,9 +168,7 @@ public:
 
     DAVA::uint32 GetFramesCount() const;
     void ResetFramesCount();
-
-    inline DAVA::ParticleEffectDebugDrawSystem* GetParticleDebugSystem() const;
-
+    
     DAVA_DEPRECATED(void MarkAsChanged()); // for old material & particle editors
 
 protected:
@@ -216,11 +213,6 @@ private:
         SceneEditor2* editor = nullptr;
     };
 };
-
-DAVA::ParticleEffectDebugDrawSystem* SceneEditor2::GetParticleDebugSystem() const
-{
-    return particleEffectDebugDrawSystem;
-}
 
 Q_DECLARE_METATYPE(SceneEditor2*)
 

@@ -3,7 +3,6 @@
 #include "Classes/Project/ProjectManagerData.h"
 #include "Classes/Application/REGlobal.h"
 #include "Classes/Selection/Selection.h"
-#include "Particles/ParticleEffectDebugDrawSystem/ParticleEffectDebugDrawSystem.h"
 
 #include "Settings/SettingsManager.h"
 #include "Deprecated/SceneValidator.h"
@@ -131,9 +130,6 @@ SceneEditor2::SceneEditor2()
 
     particlesSystem = new EditorParticlesSystem(this);
     AddSystem(particlesSystem, MAKE_COMPONENT_MASK(DAVA::Component::PARTICLE_EFFECT_COMPONENT), 0, renderUpdateSystem);
-
-    particleEffectDebugDrawSystem = new ParticleEffectDebugDrawSystem(this);
-    AddSystem(particleEffectDebugDrawSystem, MAKE_COMPONENT_MASK(DAVA::Component::PARTICLE_EFFECT_COMPONENT), 0, renderUpdateSystem);
     
     textDrawSystem = new TextDrawSystem(this, cameraSystem);
     AddSystem(textDrawSystem, 0, SCENE_SYSTEM_REQUIRE_PROCESS, renderUpdateSystem);
@@ -535,7 +531,6 @@ void SceneEditor2::Draw()
         {
             system->Draw();
         }
-        particleEffectDebugDrawSystem->Draw();
     }
 }
 

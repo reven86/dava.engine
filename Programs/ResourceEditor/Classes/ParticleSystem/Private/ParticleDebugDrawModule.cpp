@@ -119,9 +119,10 @@ bool ParticleDebugDrawModule::GetSystemEnabledState() const
     return GetAccessor()->GetGlobalContext()->GetData<ParticleDebugDrawData>()->isSystemOn;
 }
 
-void ParticleDebugDrawModule::SetSystemEnabledState(bool v)
+void ParticleDebugDrawModule::SetSystemEnabledState(bool enabled)
 {
-    GetAccessor()->GetGlobalContext()->GetData<ParticleDebugDrawData>()->isSystemOn = v;
+    GetAccessor()->GetGlobalContext()->GetData<ParticleDebugDrawData>()->isSystemOn = enabled;
+    DAVA::Renderer::GetOptions()->SetOption(RenderOptions::DEBUG_DRAW_PARTICLES, enabled);
     UpdateSceneSystem();
 }
 
@@ -161,10 +162,9 @@ void ParticleDebugDrawModule::UpdateSceneSystem()
     accessor->ForEachContext([data](DataContext& ctx)
     {
         SceneData::TSceneType scene = ctx.GetData<SceneData>()->GetScene();
-        DAVA::ParticleEffectDebugDrawSystem* particleEffectDebugDrawSystem = scene->GetParticleDebugSystem();
+        DAVA::ParticleEffectDebugDrawSystem* particleEffectDebugDrawSystem = scene->GetParticleEffectDebugDrawSystem();
         if (particleEffectDebugDrawSystem != nullptr)
         {
-            particleEffectDebugDrawSystem->SetIsEnabled(data->isSystemOn);
             particleEffectDebugDrawSystem->SetDrawMode(data->drawMode);
             particleEffectDebugDrawSystem->SetIsDrawOnlySelected(data->drawOnlySelected);
             particleEffectDebugDrawSystem->SetSelectedParticles(data->selectedParticles);
