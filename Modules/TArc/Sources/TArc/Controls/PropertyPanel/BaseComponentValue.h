@@ -70,6 +70,7 @@ public:
     std::shared_ptr<const PropertyNode> GetPropertyNode(int32 index) const;
 
 protected:
+    friend class ComponentStructureWrapper;
     virtual Any GetValue() const = 0;
     virtual bool IsValidValueToSet(const Any& newValue, const Any& currentValue) const = 0;
     void SetValue(const Any& value);
