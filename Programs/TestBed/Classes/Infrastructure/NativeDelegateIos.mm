@@ -2,12 +2,25 @@
 
 #if defined(__DAVAENGINE_IPHONE__)
 
+#import <Engine/Ios/PlatformApi.h>
 #import <Foundation/Foundation.h>
 
 #include <Logger/Logger.h>
 #include <Utils/NSStringUtils.h>
 
-void NativeDelegateIos::didFinishLaunchingWithOptions(UIApplication* application, NSDictionary* launchOptions)
+@interface NativeDelegateIos : NSObject<DVEApplicationListener>
+- (BOOL)application:(UIApplication*)application didFinishLaunchingWithOptions:(NSDictionary*)launchOptions;
+- (void)applicationDidReceiveMemoryWarning:(UIApplication*)application;
+- (void)applicationDidBecomeActive:(UIApplication*)application;
+- (void)applicationWillResignActive:(UIApplication*)application;
+- (void)applicationDidEnterBackground:(UIApplication*)application;
+- (void)applicationWillEnterForeground:(UIApplication*)application;
+- (void)applicationWillTerminate:(UIApplication*)application;
+@end
+
+@implementation NativeDelegateIos
+
+- (BOOL)application:(UIApplication*)application didFinishLaunchingWithOptions:(NSDictionary*)launchOptions
 {
     using namespace DAVA;
     Logger::Debug("TestBed.NativeDelegateIos::didFinishLaunchingWithOptions: enter");
@@ -19,31 +32,46 @@ void NativeDelegateIos::didFinishLaunchingWithOptions(UIApplication* application
         Logger::Debug("        %s: %d", k.c_str(), d.c_str());
     }
     Logger::Debug("TestBed.NativeDelegateIos::didFinishLaunchingWithOptions: leave");
+
+    return YES;
 }
 
-void NativeDelegateIos::applicationDidBecomeActive()
+- (void)applicationDidReceiveMemoryWarning:(UIApplication*)application
+{
+    DAVA::Logger::Debug("TestBed.NativeDelegateIos::applicationDidReceiveMemoryWarning");
+}
+
+- (void)applicationDidBecomeActive:(UIApplication*)application;
 {
     DAVA::Logger::Debug("TestBed.NativeDelegateIos::applicationDidBecomeActive");
 }
 
-void NativeDelegateIos::applicationDidResignActive()
+- (void)applicationWillResignActive:(UIApplication*)application;
 {
-    DAVA::Logger::Debug("TestBed.NativeDelegateIos::applicationDidResignActive");
+    DAVA::Logger::Debug("TestBed.NativeDelegateIos::applicationWillResignActive");
 }
 
-void NativeDelegateIos::applicationWillEnterForeground()
+- (void)applicationWillEnterForeground:(UIApplication*)application;
 {
     DAVA::Logger::Debug("TestBed.NativeDelegateIos::applicationWillEnterForeground");
 }
 
-void NativeDelegateIos::applicationDidEnterBackground()
+- (void)applicationDidEnterBackground:(UIApplication*)application;
 {
     DAVA::Logger::Debug("TestBed.NativeDelegateIos::applicationDidEnterBackground");
 }
 
-void NativeDelegateIos::applicationWillTerminate()
+- (void)applicationWillTerminate:(UIApplication*)application;
 {
     DAVA::Logger::Debug("TestBed.NativeDelegateIos::applicationWillTerminate");
 }
 
-#endif // __DAVAENGINE_MACOS__
+@end
+
+void RegisterIosApplicationListener()
+{
+    // Will be retained inside of implementation and released when app exits
+    DAVA::PlatformApi::Ios::RegisterDVEApplicationListener([[[NativeDelegateIos alloc] init] autorelease]);
+}
+
+#endif // __DAVAENGINE_IPHONE__

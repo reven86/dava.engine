@@ -220,6 +220,7 @@ void HUDSystem::OnHighlightNode(const ControlNode* node)
     if (hoveredNodeControl != nullptr)
     {
         hudControl->RemoveControl(hoveredNodeControl.Get());
+        hoveredNodeControl.Set(nullptr);
     }
     if (node != nullptr)
     {

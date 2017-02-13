@@ -58,7 +58,7 @@ void TextBlockRender::DrawText()
             }
             if (align & ALIGN_HJUSTIFY && justify)
             {
-                stringSize = textBlock->stringSizes[line];
+                stringSize = int32(std::ceil(textBlock->stringSizes[line]));
                 blockWidth = textBlock->cacheW;
             }
             else
