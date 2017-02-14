@@ -4,7 +4,7 @@
 #if defined(__DAVAENGINE_IPHONE__)
 
 #include "Engine/Engine.h"
-#include "Engine/PlatformApi.h"
+#include "Engine/Ios/PlatformApi.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/iOS/PlatformCoreiOS.h"
 #include "Engine/Private/iOS/Window/WindowBackendiOS.h"
@@ -113,6 +113,8 @@
 
 @end
 
+extern NSAutoreleasePool* preMainLoopReleasePool;
+
 namespace DAVA
 {
 namespace Private
@@ -129,12 +131,18 @@ CoreNativeBridge::CoreNativeBridge(PlatformCore* core)
     , mainDispatcher(core->dispatcher)
 {
     coreNativeBridge = this;
+    appDelegateListeners = [[NSMutableArray alloc] init];
 }
 
-CoreNativeBridge::~CoreNativeBridge() = default;
+CoreNativeBridge::~CoreNativeBridge()
+{
+    [appDelegateListeners release];
+}
 
 void CoreNativeBridge::Run()
 {
+    [preMainLoopReleasePool drain];
+
     @autoreleasepool
     {
         // UIApplicationMain never returns
@@ -157,13 +165,14 @@ void CoreNativeBridge::OnFrameTimer()
     }
 }
 
-bool CoreNativeBridge::ApplicationWillFinishLaunchingWithOptions(NSDictionary* launchOptions)
+BOOL CoreNativeBridge::ApplicationWillFinishLaunchingWithOptions(UIApplication* app, NSDictionary* launchOptions)
 {
     Logger::FrameworkDebug("******** applicationWillFinishLaunchingWithOptions");
-    return true;
+
+    return NotifyListeners(ON_WILL_FINISH_LAUNCHING, app, launchOptions);
 }
 
-bool CoreNativeBridge::ApplicationDidFinishLaunchingWithOptions(UIApplication* application, NSDictionary* launchOptions)
+BOOL CoreNativeBridge::ApplicationDidFinishLaunchingWithOptions(UIApplication* app, NSDictionary* launchOptions)
 {
     Logger::FrameworkDebug("******** applicationDidFinishLaunchingWithOptions");
 
@@ -174,33 +183,31 @@ bool CoreNativeBridge::ApplicationDidFinishLaunchingWithOptions(UIApplication* a
 
     objcInterop = [[ObjectiveCInterop alloc] init:this];
     [objcInterop setDisplayLinkInterval:1];
-
     [objcInterop enableGameControllerObserver:YES];
 
-    NotifyListeners(ON_DID_FINISH_LAUNCHING, application, launchOptions);
-    return true;
+    return NotifyListeners(ON_DID_FINISH_LAUNCHING, app, launchOptions);
 }
 
-void CoreNativeBridge::ApplicationDidBecomeActive()
+void CoreNativeBridge::ApplicationDidBecomeActive(UIApplication* app)
 {
     Logger::FrameworkDebug("******** applicationDidBecomeActive");
 
     core->didBecomeResignActive.Emit(true);
-    NotifyListeners(ON_DID_BECOME_ACTIVE, nullptr, nullptr);
+    NotifyListeners(ON_DID_BECOME_ACTIVE, app);
 }
 
-void CoreNativeBridge::ApplicationWillResignActive()
+void CoreNativeBridge::ApplicationWillResignActive(UIApplication* app)
 {
     Logger::FrameworkDebug("******** applicationWillResignActive");
 
     core->didBecomeResignActive.Emit(false);
-    NotifyListeners(ON_WILL_RESIGN_ACTIVE, nullptr, nullptr);
+    NotifyListeners(ON_WILL_RESIGN_ACTIVE, app);
 }
 
-void CoreNativeBridge::ApplicationDidEnterBackground()
+void CoreNativeBridge::ApplicationDidEnterBackground(UIApplication* app)
 {
     core->didEnterForegroundBackground.Emit(false);
-    NotifyListeners(ON_DID_ENTER_BACKGROUND, nullptr, nullptr);
+    NotifyListeners(ON_DID_ENTER_BACKGROUND, app);
 
     mainDispatcher->SendEvent(MainDispatcherEvent(MainDispatcherEvent::APP_SUSPENDED)); // Blocking call !!!
 
@@ -210,11 +217,12 @@ void CoreNativeBridge::ApplicationDidEnterBackground()
     goBackgroundTime = SystemTimer::GetUs();
 }
 
-void CoreNativeBridge::ApplicationWillEnterForeground()
+void CoreNativeBridge::ApplicationWillEnterForeground(UIApplication* app)
 {
     mainDispatcher->PostEvent(MainDispatcherEvent(MainDispatcherEvent::APP_RESUMED));
     core->didEnterForegroundBackground.Emit(true);
-    NotifyListeners(ON_WILL_ENTER_FOREGROUND, nullptr, nullptr);
+
+    NotifyListeners(ON_WILL_ENTER_FOREGROUND, app);
 
     [objcInterop resumeDisplayLink];
 
@@ -229,22 +237,54 @@ void CoreNativeBridge::ApplicationWillEnterForeground()
     }
 }
 
-void CoreNativeBridge::ApplicationWillTerminate()
+void CoreNativeBridge::ApplicationWillTerminate(UIApplication* app)
 {
     Logger::FrameworkDebug("******** applicationWillTerminate");
 
-    NotifyListeners(ON_WILL_TERMINATE, nullptr, nullptr);
+    NotifyListeners(ON_WILL_TERMINATE, app);
 
     [objcInterop cancelDisplayLink];
     [objcInterop enableGameControllerObserver:NO];
 
-    engineBackend->OnGameLoopStopped();
-    engineBackend->OnEngineCleanup();
+    WindowBackend* primaryWindowBackend = EngineBackend::GetWindowBackend(engineBackend->GetPrimaryWindow());
+    primaryWindowBackend->Close(true);
 }
 
-void CoreNativeBridge::ApplicationDidReceiveMemoryWarning()
+void CoreNativeBridge::ApplicationDidReceiveMemoryWarning(UIApplication* app)
 {
     Logger::FrameworkDebug("******** applicationDidReceiveMemoryWarning");
+
+    NotifyListeners(ON_DID_RECEIVE_MEMORY_WARNING, app);
+}
+
+void CoreNativeBridge::ApplicationDidReceiveLocalNotification(UIApplication* app, UILocalNotification* notification)
+{
+    NotifyListeners(ON_DID_RECEIVE_LOCAL_NOTIFICATION, app, notification);
+}
+
+void CoreNativeBridge::DidReceiveRemoteNotification(UIApplication* app, NSDictionary* userInfo)
+{
+    NotifyListeners(ON_DID_RECEIVE_REMOTE_NOTIFICATION, app, userInfo);
+}
+
+void CoreNativeBridge::DidRegisterForRemoteNotificationsWithDeviceToken(UIApplication* app, NSData* deviceToken)
+{
+    NotifyListeners(ON_DID_REGISTER_FOR_REMOTE_NOTIFICATION_WITH_TOKEN, app, deviceToken);
+}
+
+void CoreNativeBridge::DidFailToRegisterForRemoteNotificationsWithError(UIApplication* app, NSError* error)
+{
+    NotifyListeners(ON_DID_FAIL_REGISTER_FOR_REMOTE_NOTIFICATION_WITH_ERROR, app, error);
+}
+
+void CoreNativeBridge::HandleActionWithIdentifier(UIApplication* app, NSString* identifier, NSDictionary* userInfo, id completionHandler)
+{
+    NotifyListeners(ON_HANDLE_ACTION_WITH_IDENTIFIER, app, identifier, userInfo, completionHandler);
+}
+
+BOOL CoreNativeBridge::OpenURL(UIApplication* app, NSURL* url, NSString* sourceApplication, id annotation)
+{
+    return NotifyListeners(ON_OPEN_URL, app, url, sourceApplication, annotation);
 }
 
 void CoreNativeBridge::GameControllerDidConnected()
@@ -257,78 +297,146 @@ void CoreNativeBridge::GameControllerDidDisconnected()
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateGamepadRemovedEvent(0));
 }
 
-void CoreNativeBridge::RegisterUIApplicationDelegateListener(PlatformApi::Ios::UIApplicationDelegateListener* listener)
+void CoreNativeBridge::RegisterDVEApplicationListener(id<DVEApplicationListener> listener)
 {
     DVASSERT(listener != nullptr);
 
-    using std::begin;
-    using std::end;
-
     LockGuard<Mutex> lock(listenersMutex);
-    auto it = std::find(begin(appDelegateListeners), end(appDelegateListeners), listener);
-    if (it == end(appDelegateListeners))
+    if ([appDelegateListeners indexOfObject:listener] == NSNotFound)
     {
-        appDelegateListeners.push_back(listener);
+        [appDelegateListeners addObject:listener];
     }
 }
 
-void CoreNativeBridge::UnregisterUIApplicationDelegateListener(PlatformApi::Ios::UIApplicationDelegateListener* listener)
+void CoreNativeBridge::UnregisterDVEApplicationListener(id<DVEApplicationListener> listener)
 {
-    using std::begin;
-    using std::end;
-
     LockGuard<Mutex> lock(listenersMutex);
-    auto it = std::find(begin(appDelegateListeners), end(appDelegateListeners), listener);
-    if (it != end(appDelegateListeners))
-    {
-        appDelegateListeners.erase(it);
-    }
+    [appDelegateListeners removeObject:listener];
 }
 
-void CoreNativeBridge::NotifyListeners(eNotificationType type, NSObject* arg1, NSObject* arg2)
+BOOL CoreNativeBridge::NotifyListeners(eNotificationType type, NSObject* arg1, NSObject* arg2, NSObject* arg3, id arg4)
 {
-    Vector<PlatformApi::Ios::UIApplicationDelegateListener*> listenersCopy;
+    BOOL ret = YES;
+
+    NSArray* listenersCopy = nil;
     {
         // Make copy to allow listeners unregistering inside a callback
         LockGuard<Mutex> lock(listenersMutex);
-        listenersCopy.resize(appDelegateListeners.size());
-        std::copy(appDelegateListeners.begin(), appDelegateListeners.end(), listenersCopy.begin());
+        listenersCopy = [appDelegateListeners copy];
     }
-    for (PlatformApi::Ios::UIApplicationDelegateListener* l : listenersCopy)
+
+    // some notification types require ret value
+    // to be initialized with "NO"
+    switch (type)
+    {
+    case ON_OPEN_URL:
+        ret = NO;
+        break;
+    default:
+        break;
+    }
+
+    for (id<DVEApplicationListener> listener in listenersCopy)
     {
         switch (type)
         {
+        case ON_WILL_FINISH_LAUNCHING:
+            if ([listener respondsToSelector:@selector(application:willFinishLaunchingWithOptions:)])
+            {
+                ret &= [listener application:static_cast<UIApplication*>(arg1) willFinishLaunchingWithOptions:static_cast<NSDictionary*>(arg2)];
+            }
+            break;
+
         case ON_DID_FINISH_LAUNCHING:
-            l->didFinishLaunchingWithOptions(static_cast<UIApplication*>(arg1), static_cast<NSDictionary*>(arg2));
+            if ([listener respondsToSelector:@selector(application:didFinishLaunchingWithOptions:)])
+            {
+                ret &= [listener application:static_cast<UIApplication*>(arg1) didFinishLaunchingWithOptions:static_cast<NSDictionary*>(arg2)];
+            }
             break;
         case ON_DID_BECOME_ACTIVE:
-            l->applicationDidBecomeActive();
+            if ([listener respondsToSelector:@selector(application:applicationDidBecomeActive:)])
+            {
+                [listener applicationDidBecomeActive:static_cast<UIApplication*>(arg1)];
+            }
             break;
         case ON_WILL_RESIGN_ACTIVE:
-            l->applicationDidResignActive();
-            break;
-        case ON_WILL_ENTER_FOREGROUND:
-            l->applicationWillEnterForeground();
+            if ([listener respondsToSelector:@selector(applicationWillResignActive:)])
+            {
+                [listener applicationWillResignActive:static_cast<UIApplication*>(arg1)];
+            }
             break;
         case ON_DID_ENTER_BACKGROUND:
-            l->applicationDidEnterBackground();
+            if ([listener respondsToSelector:@selector(applicationDidEnterBackground:)])
+            {
+                [listener applicationDidEnterBackground:static_cast<UIApplication*>(arg1)];
+            }
+            break;
+        case ON_WILL_ENTER_FOREGROUND:
+            if ([listener respondsToSelector:@selector(applicationWillEnterForeground:)])
+            {
+                [listener applicationWillEnterForeground:static_cast<UIApplication*>(arg1)];
+            }
             break;
         case ON_WILL_TERMINATE:
-            l->applicationWillTerminate();
+            if ([listener respondsToSelector:@selector(applicationWillTerminate:)])
+            {
+                [listener applicationWillTerminate:static_cast<UIApplication*>(arg1)];
+            }
+            break;
+        case ON_DID_RECEIVE_MEMORY_WARNING:
+            if ([listener respondsToSelector:@selector(applicationDidReceiveMemoryWarning:)])
+            {
+                [listener applicationDidReceiveMemoryWarning:static_cast<UIApplication*>(arg1)];
+            }
+            break;
+        case ON_DID_REGISTER_FOR_REMOTE_NOTIFICATION_WITH_TOKEN:
+            if ([listener respondsToSelector:@selector(application:didRegisterForRemoteNotificationsWithDeviceToken:)])
+            {
+                [listener application:static_cast<UIApplication*>(arg1) didRegisterForRemoteNotificationsWithDeviceToken:static_cast<NSData*>(arg2)];
+            }
+            break;
+        case ON_DID_FAIL_REGISTER_FOR_REMOTE_NOTIFICATION_WITH_ERROR:
+            if ([listener respondsToSelector:@selector(application:didFailToRegisterForRemoteNotificationsWithError:)])
+            {
+                [listener application:static_cast<UIApplication*>(arg1) didFailToRegisterForRemoteNotificationsWithError:static_cast<NSError*>(arg2)];
+            }
+            break;
+        case ON_DID_RECEIVE_REMOTE_NOTIFICATION:
+            if ([listener respondsToSelector:@selector(application:didReceiveRemoteNotification:)])
+            {
+                [listener application:static_cast<UIApplication*>(arg1) didReceiveRemoteNotification:static_cast<NSDictionary*>(arg2)];
+            }
             break;
         case ON_DID_RECEIVE_LOCAL_NOTIFICATION:
-            l->didReceiveLocalNotification(static_cast<UILocalNotification*>(arg1));
+            if ([listener respondsToSelector:@selector(application:didReceiveLocalNotification:)])
+            {
+                [listener application:static_cast<UIApplication*>(arg1) didReceiveLocalNotification:static_cast<UILocalNotification*>(arg2)];
+            }
             break;
+        case ON_HANDLE_ACTION_WITH_IDENTIFIER:
+            if ([listener respondsToSelector:@selector(application:handleActionWithIdentifier:forRemoteNotification:completionHandler:)])
+            {
+                [listener application:static_cast<UIApplication*>(arg1) handleActionWithIdentifier:static_cast<NSString*>(arg2) forRemoteNotification:static_cast<NSDictionary*>(arg3) completionHandler:arg4];
+            }
+            break;
+        case ON_OPEN_URL:
+            if ([listener respondsToSelector:@selector(application:openURL:sourceApplication:annotation:)])
+            {
+                ret |= [listener application:static_cast<UIApplication*>(arg1) openURL:static_cast<NSURL*>(arg2) sourceApplication:static_cast<NSString*>(arg3) annotation:arg4];
+            }
+            break;
+
         default:
+            DVASSERT(false);
             break;
         }
     }
+
+    [listenersCopy release];
+
+    return ret;
 }
 
-void CoreNativeBridge::ApplicationDidReceiveLocalNotification(UILocalNotification* notification)
-{
-    NotifyListeners(ON_DID_RECEIVE_LOCAL_NOTIFICATION, notification, nullptr);
-}
 } // namespace Private
 } // namespace DAVA
 

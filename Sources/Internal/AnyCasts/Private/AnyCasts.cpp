@@ -4,6 +4,8 @@
 #include "Base/BaseTypes.h"
 #include "Base/FastName.h"
 
+#include "FileSystem/FilePath.h"
+
 namespace DAVA
 {
 const char* StringToCharPointer(const Any& value)
@@ -48,6 +50,16 @@ String IntegralToString(const Any& value)
     return std::to_string(value.Get<T>());
 }
 
+String FilePathToString(const Any& value)
+{
+    return value.Get<FilePath>().GetAbsolutePathname();
+}
+
+FilePath StringToFilePath(const Any& value)
+{
+    return FilePath(value.Get<String>());
+}
+
 void RegisterAnyCasts()
 {
     AnyCast<String, const char*>::Register(&StringToCharPointer);
@@ -60,6 +72,8 @@ void RegisterAnyCasts()
     AnyCast<size_t, int32>::Register(&StaticCast<size_t, int32>);
     AnyCast<int32, String>::Register(&IntegralToString<int32>);
     AnyCast<size_t, String>::Register(&IntegralToString<size_t>);
+    AnyCast<FilePath, String>::Register(&FilePathToString);
+    AnyCast<String, FilePath>::Register(&StringToFilePath);
 }
 
 } // namespace DAVA

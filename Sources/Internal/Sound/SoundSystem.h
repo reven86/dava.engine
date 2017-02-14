@@ -40,7 +40,6 @@ public:
 #if defined(__DAVAENGINE_COREV2__)
     SoundSystem(Engine* e);
     Engine* engine = nullptr;
-    size_t sigUpdateId = 0;
 #else
     SoundSystem();
 #endif
@@ -55,10 +54,13 @@ public:
     SoundEvent* DeserializeEvent(KeyedArchive* archive);
     SoundEvent* CloneEvent(const SoundEvent* sEvent);
 
+    void Mute(bool value);
+
+#if !defined(__DAVAENGINE_COREV2__)
     void Update(float32 timeElapsed);
     void Suspend();
     void Resume();
-    void Mute(bool value);
+#endif
 
     void SetCurrentLocale(const String& langID);
     String GetCurrentLocale() const;
@@ -120,8 +122,17 @@ public:
 #endif
 
 protected:
-    void GetGroupEventsNamesRecursive(FMOD::EventGroup* group, String& currNamePath, Vector<String>& names);
+#if defined(__DAVAENGINE_COREV2__)
+    void OnUpdate(float32 timeElapsed);
+    void OnSuspend();
+    void OnResume();
 
+    size_t onUpdateToken = 0;
+    size_t onSuspendToken = 0;
+    size_t onResumeToken = 0;
+#endif
+
+    void GetGroupEventsNamesRecursive(FMOD::EventGroup* group, String& currNamePath, Vector<String>& names);
     void AddSoundEventToGroup(const FastName& groupName, SoundEvent* event);
     void RemoveSoundEventFromGroups(SoundEvent* event);
 

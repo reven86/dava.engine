@@ -259,7 +259,7 @@ public:
     virtual Entity* Clone(Entity* dstNode = NULL);
 
     // Do we need enum, or we can use virtual functions?
-    enum
+    enum eEvent
     {
         EVENT_CREATE_ENTITY = 1,
         EVENT_DELETE_ENTITY,

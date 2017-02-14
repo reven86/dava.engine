@@ -1,23 +1,11 @@
-#include "TextureUtils.h"
+#include "Infrastructure/TextureUtils.h"
+
+#include "Render/2D/Sprite.h"
+#include "Render/Image/Image.h"
 #include "Render/PixelFormatDescriptor.h"
+#include "Render/Texture.h"
 
 using namespace DAVA;
-
-Sprite* TextureUtils::CreateSpriteFromTexture(const String& texturePathname)
-{
-    Sprite* createdSprite = NULL;
-
-    Texture* texture = Texture::CreateFromFile(texturePathname);
-    if (texture)
-    {
-        createdSprite = Sprite::CreateFromTexture(texture, 0, 0,
-                                                  static_cast<float32>(texture->GetWidth()),
-                                                  static_cast<float32>(texture->GetHeight()));
-        texture->Release();
-    }
-
-    return createdSprite;
-}
 
 TextureUtils::CompareResult TextureUtils::CompareImages(const Image* first, const Image* second, PixelFormat format)
 {
