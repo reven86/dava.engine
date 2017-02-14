@@ -1,11 +1,24 @@
 #include "CurlDownloader.h"
 #include "Logger/Logger.h"
 
+#include <curl/curl.h>
+
 namespace DAVA
 {
 bool CurlDownloader::isCURLInit = false;
 
-CurlDownloader::ErrorWithPriority CurlDownloader::errorsByPriority[] = {
+DownloadError ErrorForEasyHandle(CURL* easyHandle, CURLcode status, bool isRangeRequestSent);
+DownloadError HandleDownloadResults(CURLM* multiHandle, bool isRangeRequestSent);
+DownloadError CurlmCodeToDownloadError(CURLMcode curlMultiCode);
+DownloadError TakeMostImportantReturnValue(const Vector<DownloadError>& errorList);
+
+struct ErrorWithPriority
+{
+    DownloadError error;
+    char8 priority;
+};
+
+ErrorWithPriority errorsByPriority[] = {
     { DLE_INIT_ERROR, 0 },
     { DLE_FILE_ERROR, 1 },
     { DLE_COULDNT_RESOLVE_HOST, 2 },
@@ -22,7 +35,7 @@ CurlDownloader::ErrorWithPriority CurlDownloader::errorsByPriority[] = {
 CurlDownloader::CurlDownloader()
     : isDownloadInterrupting(false)
     , currentDownloadPartsCount(0)
-    , multiHandle(NULL)
+    , multiHandle(nullptr)
     , storePath("")
     , downloadUrl("")
     , operationTimeout(30)
@@ -30,8 +43,8 @@ CurlDownloader::CurlDownloader()
     , sizeToDownload(0)
     , downloadSpeedLimit(0)
     , saveResult(DLE_NO_ERROR)
-    , chunkInfo(NULL)
-    , saveThread(NULL)
+    , chunkInfo(nullptr)
+    , saveThread(nullptr)
     , allowedBuffersInMemory(3)
     , maxChunkSize(20 * 1024 * 1024)
     , minChunkSize(16 * 1024)
@@ -208,7 +221,11 @@ DownloadError CurlDownloader::SetupDownload(uint64 seek, uint32 size)
     return retCode;
 }
 
-CURLMcode CurlDownloader::Perform()
+CURLMcode CurlDownloaderPerform(CURLM*& multiHandle,
+                                RawTimer& inactivityConnectionTimer,
+                                long& operationTimeout,
+                                bool& isDownloadInterrupting,
+                                Vector<CURL*>& easyHandles)
 {
     CURLMcode ret;
     int handlesRunning = 0;
@@ -273,7 +290,7 @@ CURLMcode CurlDownloader::Perform()
         else
         {
             // Curl documentation recommends to sleep not less than 200ms in this case
-            Thread::Sleep(200);
+            Thread::Sleep(200); // TODO I'm think this is stupid error 200 ms is too much
             rc = 0;
         }
 
@@ -347,6 +364,8 @@ void CurlDownloader::CleanupDownload()
 
 void CurlDownloader::SaveChunkHandler()
 {
+    // TODO refactor. use semaphore to waikeup save data and wait again
+
     Thread* thisThread = Thread::Current();
     bool hasChunksToSave;
 
@@ -402,7 +421,11 @@ DownloadError CurlDownloader::DownloadRangeOfFile(uint64 seek, uint32 size)
 
     SetupDownload(seek, size);
 
-    CURLMcode retPerform = Perform();
+    CURLMcode retPerform = CurlDownloaderPerform(multiHandle,
+                                                 inactivityConnectionTimer,
+                                                 operationTimeout,
+                                                 isDownloadInterrupting,
+                                                 easyHandles);
 
     DVASSERT(CURLM_CALL_MULTI_PERFORM != retPerform); // should not be used in curl 7.20.0 and later.
 
@@ -417,7 +440,7 @@ DownloadError CurlDownloader::DownloadRangeOfFile(uint64 seek, uint32 size)
 
     if (CURLM_OK == retPerform)
     {
-        retCode = HandleDownloadResults(multiHandle);
+        retCode = HandleDownloadResults(multiHandle, isRangeRequestSent);
     }
     else
     {
@@ -737,7 +760,7 @@ DownloadError CurlDownloader::GetSize(const String& url, uint64& retSize, int32 
         sizeToDownload = 0;
     }
 
-    DownloadError retError = ErrorForEasyHandle(currentCurlHandle, curlStatus);
+    DownloadError retError = ErrorForEasyHandle(currentCurlHandle, curlStatus, isRangeRequestSent);
     retSize = static_cast<uint64>(sizeToDownload);
 
     implError = curlStatus;
@@ -748,7 +771,7 @@ DownloadError CurlDownloader::GetSize(const String& url, uint64& retSize, int32 
     return retError;
 }
 
-DownloadError CurlDownloader::CurlStatusToDownloadStatus(CURLcode status) const
+DownloadError CurlStatusToDownloadStatus(CURLcode status)
 {
     switch (status)
     {
@@ -775,7 +798,7 @@ DownloadError CurlDownloader::CurlStatusToDownloadStatus(CURLcode status) const
     }
 }
 
-DownloadError CurlDownloader::CurlmCodeToDownloadError(CURLMcode curlMultiCode) const
+DownloadError CurlmCodeToDownloadError(CURLMcode curlMultiCode)
 {
     switch (curlMultiCode)
     {
@@ -795,7 +818,7 @@ DownloadError CurlDownloader::CurlmCodeToDownloadError(CURLMcode curlMultiCode) 
     }
 }
 
-DownloadError CurlDownloader::HttpCodeToDownloadError(long code) const
+DownloadError HttpCodeToDownloadError(long code, bool isRangeRequestSent)
 {
     HttpCodeClass code_class = static_cast<HttpCodeClass>(code / 100);
     switch (code_class)
@@ -823,7 +846,7 @@ void CurlDownloader::SetTimeout(CURL* easyHandle)
     curl_easy_setopt(easyHandle, CURLOPT_SERVER_RESPONSE_TIMEOUT, operationTimeout);
 }
 
-DownloadError CurlDownloader::HandleDownloadResults(CURLM* multiHandle)
+DownloadError HandleDownloadResults(CURLM* multiHandle, bool isRangeRequestSent)
 {
     // handle easy handles states
     Vector<DownloadError> results;
@@ -837,13 +860,13 @@ DownloadError CurlDownloader::HandleDownloadResults(CURLM* multiHandle)
             break;
         }
 
-        results.push_back(ErrorForEasyHandle(message->easy_handle, message->data.result));
+        results.push_back(ErrorForEasyHandle(message->easy_handle, message->data.result, isRangeRequestSent));
     } while (0 != messagesRest);
 
     return TakeMostImportantReturnValue(results);
 }
 
-DownloadError CurlDownloader::ErrorForEasyHandle(CURL* easyHandle, CURLcode status) const
+DownloadError ErrorForEasyHandle(CURL* easyHandle, CURLcode status, bool isRangeRequestSent)
 {
     DownloadError retError;
 
@@ -852,7 +875,7 @@ DownloadError CurlDownloader::ErrorForEasyHandle(CURL* easyHandle, CURLcode stat
 
     // to discuss. It is ideal to place it to DownloadManager because in that case we need to use same code inside each downloader.
 
-    DownloadError httpError = HttpCodeToDownloadError(httpCode);
+    DownloadError httpError = HttpCodeToDownloadError(httpCode, isRangeRequestSent);
     if (DLE_NO_ERROR != httpError)
     {
         retError = httpError;
@@ -865,7 +888,7 @@ DownloadError CurlDownloader::ErrorForEasyHandle(CURL* easyHandle, CURLcode stat
     return retError;
 }
 
-DownloadError CurlDownloader::TakeMostImportantReturnValue(const Vector<DownloadError>& errorList) const
+DownloadError TakeMostImportantReturnValue(const Vector<DownloadError>& errorList)
 {
     char8 errorCount = sizeof(errorsByPriority) / sizeof(ErrorWithPriority);
     int32 retIndex = errorCount - 1; // last error in the list is the less important.

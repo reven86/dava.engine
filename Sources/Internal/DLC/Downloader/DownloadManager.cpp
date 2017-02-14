@@ -123,7 +123,7 @@ void DownloadManager::Update()
                 StopProcessingThread();
 
             currentTaskMutex.Lock();
-            currentTask = NULL;
+            currentTask = nullptr;
             currentTaskMutex.Unlock();
         }
     }
@@ -238,7 +238,7 @@ void DownloadManager::Cancel(const uint32& taskId)
     }
     else
     {
-        DownloadTaskDescription* pendingTask = NULL;
+        DownloadTaskDescription* pendingTask = nullptr;
         pendingTask = ExtractFromQueue(pendingTaskQueue, taskId);
         if (pendingTask)
         {
@@ -330,7 +330,7 @@ void DownloadManager::ClearAll()
     ClearPending();
     ClearDone();
 
-    DownloadTaskDescription* currentTaskToClear = NULL;
+    DownloadTaskDescription* currentTaskToClear = nullptr;
 
     currentTaskToClear = currentTask;
 

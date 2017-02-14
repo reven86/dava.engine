@@ -137,7 +137,6 @@ private:
     DownloadError TryDownload();
     DownloadError TryDownloadIntoBuffer();
     void Interrupt();
-    bool IsInterrupting();
     void MakeFullDownload();
     void MakeResumedDownload();
     void ResetRetriesCount();
