@@ -12,9 +12,6 @@ vertex_out
     float2 texcoord0 : TEXCOORD0;
 };
 
-[auto][a] property float4x4 worldViewProjMatrix;
-
-
 vertex_out vp_main( vertex_in input )
 {
     vertex_out  output;
