@@ -1,10 +1,13 @@
 #include "TextComponentValue.h"
 #include "TArc/Controls/LineEdit.h"
 #include "TArc/Controls/PropertyPanel/DefaultEditorDrawers.h"
+#include "TArc/Controls/PropertyPanel/Private/ComponentStructureWrapper.h"
+#include "TArc/Controls/PropertyPanel/Private/PropertyPanelMeta.h"
 #include "TArc/DataProcessing/DataWrappersProcessor.h"
 
-#include "Reflection/ReflectionRegistrator.h"
-#include "Base/FastName.h"
+#include <Reflection/ReflectionRegistrator.h>
+#include <Reflection/ReflectedMeta.h>
+#include <Base/FastName.h>
 
 namespace DAVA
 {
@@ -29,20 +32,15 @@ QWidget* TextComponentValue::AcquireEditorWidget(QWidget* parent, const QStyleOp
 
 bool TextComponentValue::IsReadOnly() const
 {
-    return nodes.front()->field.ref.IsReadonly();
-}
-
-bool TextComponentValue::IsEnabled() const
-{
-    return true;
+    Reflection r = nodes.front()->field.ref;
+    return r.IsReadonly() || r.HasMeta<M::ReadOnly>();
 }
 
 DAVA_VIRTUAL_REFLECTION_IMPL(TextComponentValue)
 {
-    ReflectionRegistrator<TextComponentValue>::Begin()
-    .Field("text", &TextComponentValue::GetText, &TextComponentValue::SetText)
+    ReflectionRegistrator<TextComponentValue>::Begin(CreateComponentStructureWrapper<TextComponentValue>())
+    .Field("text", &TextComponentValue::GetText, &TextComponentValue::SetText)[M::ProxyMetaRequire()]
     .Field("readOnly", &TextComponentValue::IsReadOnly, nullptr)
-    .Field("enabled", &TextComponentValue::IsEnabled, nullptr)
     .End();
 }
 }

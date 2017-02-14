@@ -1,6 +1,8 @@
 #include "TArc/Controls/PropertyPanel/Private/EnumComponentValue.h"
 #include "TArc/Controls/ComboBox.h"
 #include "TArc/Controls/PropertyPanel/DefaultEditorDrawers.h"
+#include "TArc/Controls/PropertyPanel/Private/ComponentStructureWrapper.h"
+#include "TArc/Controls/PropertyPanel/Private/PropertyPanelMeta.h"
 #include "TArc/DataProcessing/DataWrappersProcessor.h"
 
 #include <Reflection/ReflectionRegistrator.h>
@@ -20,20 +22,10 @@ Any EnumComponentValue::GetValueAny() const
     return GetValue();
 }
 
-const M::Enum* EnumComponentValue::GetEnumerator() const
-{
-    if (nodes.empty() == false)
-    {
-        return nodes.front()->field.ref.GetMeta<M::Enum>();
-    }
-    return nullptr;
-}
-
 QWidget* EnumComponentValue::AcquireEditorWidget(QWidget* parent, const QStyleOptionViewItem& option)
 {
     ControlDescriptorBuilder<ComboBox::Fields> descr;
     descr[ComboBox::Fields::Value] = "value";
-    descr[ComboBox::Fields::Enumerator] = "enumerator";
     descr[ComboBox::Fields::IsReadOnly] = "readOnly";
     return (new ComboBox(descr, GetWrappersProcessor(), GetReflection(), parent))->ToWidgetCast();
 }
@@ -49,9 +41,8 @@ bool EnumComponentValue::IsReadOnly() const
 
 DAVA_VIRTUAL_REFLECTION_IMPL(EnumComponentValue)
 {
-    ReflectionRegistrator<EnumComponentValue>::Begin()
-    .Field("value", &EnumComponentValue::GetValueAny, &EnumComponentValue::SetValueAny)
-    .Field("enumerator", &EnumComponentValue::GetEnumerator, nullptr)
+    ReflectionRegistrator<EnumComponentValue>::Begin(CreateComponentStructureWrapper<EnumComponentValue>())
+    .Field("value", &EnumComponentValue::GetValueAny, &EnumComponentValue::SetValueAny)[M::ProxyMetaRequire()]
     .Field("readOnly", &EnumComponentValue::IsReadOnly, nullptr)
     .End();
 }

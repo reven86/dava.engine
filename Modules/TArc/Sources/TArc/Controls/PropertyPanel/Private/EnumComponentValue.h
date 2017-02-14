@@ -23,8 +23,6 @@ private:
     Any GetValueAny() const;
     void SetValueAny(const Any& newValue);
 
-    const M::Enum* GetEnumerator() const;
-
     bool IsReadOnly() const;
 
 private:
