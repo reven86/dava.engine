@@ -114,7 +114,7 @@ void ComboBoxCheckable::UpdateControl(const ControlDescriptor& changedFields)
     Reflection fieldValue = model.GetField(changedFields.GetName(Fields::Value));
     DVASSERT(fieldValue.IsValid());
 
-    if (count() == 0 || valueChanged)
+    if (count() == 0)
     {
         CreateItems(fieldValue);
     }
@@ -144,9 +144,7 @@ void ComboBoxCheckable::CreateItems(const Reflection& fieldValue)
             {
                 if (iValue != 0)
                 {
-                    QVariant dataValue;
-                    dataValue.setValue(Any(iValue));
-                    addItem(enumMap->ToString(iValue), dataValue);
+                    addItem(enumMap->ToString(iValue), iValue);
                 }
             }
             else
@@ -208,7 +206,7 @@ void ComboBoxCheckable::UpdateCheckedState()
     DVASSERT(countInCombo == abstractModel->rowCount());
     for (int i = 0; i < countInCombo; ++i)
     {
-        int iAny = itemData(i).value<Any>().Cast<int>();
+        int iAny = itemData(i).value<int>();
         bool flagEnabled = ((cachedValue & iAny) == iAny);
         Qt::CheckState state = flagEnabled ? Qt::Checked : Qt::Unchecked;
 
@@ -242,7 +240,7 @@ bool ComboBoxCheckable::eventFilter(QObject* obj, QEvent* e)
             else
             {
                 QVariant checkData = abstractModel->data(index, Qt::CheckStateRole);
-                int iAny = itemData(index.row()).value<Any>().Cast<int>();
+                int iAny = itemData(index.row()).value<int>();
 
                 if (previousState == Qt::Checked)
                 {
