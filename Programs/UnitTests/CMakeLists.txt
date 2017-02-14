@@ -79,14 +79,13 @@ if ( WINDOWS_UAP )
     set ( WIN_STORE_MANIFEST_PACKAGE_GUID "49484B77-9BB6-4FBC-9D56-77593EF55C45" )
 endif ()
 
-setup_main_executable()
-
 if (ANDROID)
     # Libraries and classes to load at startup
     set (ANDROID_BOOT_MODULES "crystax;c++_shared;fmodex;fmodevent;UnitTests")
     set (ANDROID_BOOT_CLASSES "com.dava.unittests.UnitTests")
 endif()
 
+setup_main_executable()
 convert_graphics()
 
 if (IOS)
