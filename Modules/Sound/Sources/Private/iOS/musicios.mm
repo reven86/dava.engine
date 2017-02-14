@@ -113,7 +113,7 @@ namespace DAVA
 {
 MusicIOSSoundEvent* MusicIOSSoundEvent::CreateMusicEvent(const FilePath& path, FMODSoundSystem* fmodSoundSystem)
 {
-    MusicIOSSoundEvent* event = new MusicIOSSoundEvent(path, fmodSoundSystem );
+    MusicIOSSoundEvent* event = new MusicIOSSoundEvent(path, fmodSoundSystem);
     if (event->Init())
         return event;
 
@@ -124,7 +124,7 @@ MusicIOSSoundEvent* MusicIOSSoundEvent::CreateMusicEvent(const FilePath& path, F
     return 0;
 }
 
-MusicIOSSoundEvent::MusicIOSSoundEvent(const FilePath& path, FMODSoundSystem* fmodSoundSystem )
+MusicIOSSoundEvent::MusicIOSSoundEvent(const FilePath& path, FMODSoundSystem* fmodSoundSystem)
     :
     avSound(0)
     ,

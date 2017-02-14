@@ -1,8 +1,6 @@
 set( NAME_MODULE_STUB  Sound )
 
-set( CPP_FILES         Private/SoundComponent.cpp 
-                       Private/SoundUpdateSystem.cpp 
-                       Private/SoundSystem.cpp ) 
+set( CPP_FILES         Private/SoundSystem.cpp ) 
 set( CPP_FILES_STUB    Private/*Stub.cpp )#only stub mode
 set( CPP_FILES_IMPL    Private/*Impl.cpp )#only impl mode
 

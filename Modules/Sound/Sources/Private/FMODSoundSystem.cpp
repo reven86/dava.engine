@@ -225,7 +225,7 @@ SoundEvent* FMODSoundSystem::CreateSoundEventFromFile(const FilePath& fileName, 
 #ifdef __DAVAENGINE_IPHONE__
     if ((flags & SoundEvent::SOUND_EVENT_CREATE_STREAM) && !(flags & SoundEvent::SOUND_EVENT_CREATE_3D))
     {
-        MusicIOSSoundEvent* musicEvent = MusicIOSSoundEvent::CreateMusicEvent(fileName,this);
+        MusicIOSSoundEvent* musicEvent = MusicIOSSoundEvent::CreateMusicEvent(fileName, this);
         if (musicEvent && (flags & SoundEvent::SOUND_EVENT_CREATE_LOOP))
             musicEvent->SetLoopCount(-1);
 

@@ -1,4 +1,3 @@
-#include "Sound/SoundUpdateSystem.h"
 
 #include "Scene3D/Scene.h"
 #include "Render/Texture.h"
@@ -34,6 +33,7 @@
 #include "Scene3D/Systems/SkeletonSystem.h"
 #include "Scene3D/Systems/AnimationSystem.h"
 #include "Scene3D/Systems/LandscapeSystem.h"
+#include "Scene3D/Systems/SoundUpdateSystem.h"
 
 #include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerMarkerNames.h"

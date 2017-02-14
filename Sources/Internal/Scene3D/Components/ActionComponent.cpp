@@ -1,4 +1,3 @@
-#include "Sound/SoundComponent.h"
 #include "Scene3D/Entity.h"
 #include "Particles/ParticleEmitter.h"
 #include "Sound/SoundEvent.h"
@@ -6,6 +5,7 @@
 #include "Scene3D/Components/ParticleEffectComponent.h"
 #include "Scene3D/Components/AnimationComponent.h"
 #include "Scene3D/Components/WaveComponent.h"
+#include "Scene3D/Components/SoundComponent.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/Systems/ActionUpdateSystem.h"
 
