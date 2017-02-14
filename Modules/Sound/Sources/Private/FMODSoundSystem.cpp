@@ -15,7 +15,7 @@
 
 #ifdef __DAVAENGINE_IPHONE__
 #include "fmodiphone.h"
-#include "Sound/iOS/musicios.h"
+#include "Private/iOS/musicios.h"
 #elif __DAVAENGINE_ANDROID__
 #include "Engine/Android/JNIBridge.h"
 #endif
@@ -225,7 +225,7 @@ SoundEvent* FMODSoundSystem::CreateSoundEventFromFile(const FilePath& fileName, 
 #ifdef __DAVAENGINE_IPHONE__
     if ((flags & SoundEvent::SOUND_EVENT_CREATE_STREAM) && !(flags & SoundEvent::SOUND_EVENT_CREATE_3D))
     {
-        MusicIOSSoundEvent* musicEvent = MusicIOSSoundEvent::CreateMusicEvent(fileName);
+        MusicIOSSoundEvent* musicEvent = MusicIOSSoundEvent::CreateMusicEvent(fileName,this);
         if (musicEvent && (flags & SoundEvent::SOUND_EVENT_CREATE_LOOP))
             musicEvent->SetLoopCount(-1);
 

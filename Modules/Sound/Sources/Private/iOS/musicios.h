@@ -6,10 +6,11 @@
 
 namespace DAVA
 {
+class FMODSoundSystem;
 class MusicIOSSoundEvent : public SoundEvent
 {
 public:
-    static MusicIOSSoundEvent* CreateMusicEvent(const FilePath& path);
+    static MusicIOSSoundEvent* CreateMusicEvent(const FilePath& path, FMODSoundSystem* fmodSoundSystem);
 
     virtual bool Trigger();
     virtual bool IsActive() const;
@@ -55,12 +56,13 @@ public:
     void PerformEndCallback();
 
 protected:
-    MusicIOSSoundEvent(const FilePath& path);
+    MusicIOSSoundEvent(const FilePath& path, FMODSoundSystem* fmodSoundSystem);
     virtual bool Init();
     virtual ~MusicIOSSoundEvent();
 
     void* avSound;
     FilePath filePath;
+    FMODSoundSystem* soundSystem;
 };
 };
 
