@@ -59,6 +59,30 @@ Local(private) namespaces should use `Detail` suffix, i.e. `MyUtilsDetail`.
 ####Header guard
 Header files are guarder by `#pragma once`
 
+####Includes and Order of Includes
+Use standard order for readability and to avoid hidden dependencies: C library, C++ library, other libraries' `.h`, your project's `.h`.
+Your project `.h` must be included with `#include "You\Project\Path.h"` while external `.h` should be included with `#include <Library\Path.h>`
+```cpp
+// external includes
+#include <vector>
+
+#include <curl\curl.h>
+#include <zlib\zlib.h>
+
+// project includes
+#include "Base\BaseTypes.h"
+#include "Debug\DVAssert.h"
+```
+
+All of a project's header files should be listed as descendants of the project's source directory without use of UNIX directory shortcuts `.` (the current directory) or `..` (the parent directory). For example, Base/BaseTypes.h should be included as:
+
+```cpp
+// for Base/BaseTypes.cpp file
+#include "Base/BaseTypes.h"
+```
+
+Within each section the includes should be ordered alphabetically. Note that older code might not conform to this rule and should be fixed when convenient.
+
 ####Commented code
 Remove commented code, we have revision control system for history. 
 
