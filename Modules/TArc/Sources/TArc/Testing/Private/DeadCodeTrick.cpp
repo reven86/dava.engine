@@ -9,6 +9,7 @@
 #include "TArc/Testing/Private/Selftests/FilePathEditTest.h"
 #include "TArc/Testing/Private/Selftests/IntSpinBoxTests.h"
 #include "TArc/Testing/Private/Selftests/LineEditTest.h"
+#include "TArc/Testing/Private/Selftests/QtWrapLayoutTests.h"
 #include "TArc/Testing/Private/Selftests/SceneTabbarTest.h"
 
 namespace DAVA

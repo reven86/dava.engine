@@ -8,10 +8,11 @@ namespace DAVA
 {
 namespace TArc
 {
+class QtWrapLayoutPrivate;
 class QtWrapLayout : public QLayout
 {
     Q_OBJECT
-    Q_DECLARE_PRIVATE(QtWrapLayout)
+    Q_DECLARE_PRIVATE(QtWrapLayout);
 
 public:
     QtWrapLayout(QWidget* parent = nullptr);
@@ -22,7 +23,7 @@ public:
     int32 GetVerticalSpacing() const;
     void SetVerticalSpacing(int32 spacing);
 
-    void AddLayout(QLayout* layout, int32 stretch = 0);
+    void AddLayout(QLayout* layout);
 
     // reimplemented from QLayout
     void addItem(QLayoutItem* item) override;
