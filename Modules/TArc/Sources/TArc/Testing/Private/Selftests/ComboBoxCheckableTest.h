@@ -128,7 +128,8 @@ DAVA_TARC_TESTCLASS(ComboBoxCheckableTest)
         changeStateEvents.addMouseClick(Qt::MouseButton::LeftButton, Qt::KeyboardModifiers(), v->visualRect(index).center());
         changeStateEvents.simulate(v->viewport());
 
-        QCoreApplication::postEvent(v->viewport(), new QHideEvent());
+        QHideEvent hideEvent;
+        QCoreApplication::sendEvent(v->viewport(), &hideEvent);
     }
 
     DAVA_TEST (CheckableTest)
