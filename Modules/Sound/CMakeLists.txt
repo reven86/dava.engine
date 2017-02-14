@@ -29,7 +29,7 @@ set( STATIC_LIBRARIES_WIN64_DEBUG    ${LIBRARIES_FMOD}/win/x64/Debug/fmod_event.
                                      ${LIBRARIES_FMOD}/win/x64/Debug/fmodex_vc.lib )
 
 
-set( STATIC_LIBRARIES_WINUAP_RELEASE ${LIBRARIES_FMOD}/win10/$(Platform)/Release/fmod_eventUWPL.lib 
+set( STATIC_LIBRARIES_WINUAP_RELEASE ${LIBRARIES_FMOD}/win10/$(Platform)/Release/fmod_eventUWP.lib 
                                      ${LIBRARIES_FMOD}/win10/$(Platform)/Release/fmodexUWP_vc.lib )
 
 set( STATIC_LIBRARIES_WINUAP_DEBUG   ${LIBRARIES_FMOD}/win10/$(Platform)/Debug/fmod_eventUWP.lib 
