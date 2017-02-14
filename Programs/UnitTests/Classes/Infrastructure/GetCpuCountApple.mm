@@ -1,6 +1,6 @@
 #include "Base/BaseTypes.h"
 
-#ifdef __DAVAENGINE_APPLE__
+#if defined(__DAVAENGINE_APPLE__)
 
 #import <Foundation/NSProcessInfo.h>
 

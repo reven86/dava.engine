@@ -36,7 +36,7 @@ public:
     void SetPosition(const DAVA::Vector2& position);
 
     DAVA::Signal<const DAVA::Vector2&> sizeChanged;
-    DAVA::Signal<const DAVA::Vector2&> ositionChanged;
+    DAVA::Signal<const DAVA::Vector2&> positionChanged;
     DAVA::Signal<const DAVA::Vector2&> nestedControlPositionChanged; //control position, excluding margins
     DAVA::Signal<DAVA::float32> scaleChanged;
 
@@ -60,4 +60,5 @@ private:
     const DAVA::float32 margin = 50.0f;
     bool isMouseMidButtonPressed = false;
     bool isSpacePressed = false;
+    std::pair<bool, bool> needCentralize = { false, false };
 };
