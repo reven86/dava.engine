@@ -67,6 +67,7 @@ public:
     {
         uint32 retryConnectMilliseconds = 5000; //!< try to reconnect to server if `Offline` state
         uint32 checkLocalFileExistPerUpdate = 100; //!< how many file to check per Update call
+        uint32 maxFilesToDownload = 22000; //!< arond 22000 files now we have in build
     };
 
     /**
@@ -91,6 +92,8 @@ public:
 
     /** DEPRECATED order - [0..N] - 0 - first, 1, 2, ... , N - last in queue */
     virtual void SetRequestOrder(const IRequest* request, uint32 orderIndex) = 0;
+
+    virtual void RemovePack(const String& packName) = 0;
 };
 
 } // end namespace DAVA
