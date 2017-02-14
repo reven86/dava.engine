@@ -11,7 +11,7 @@
 #include "Scene3D/Components/TransformComponent.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/Components/RenderComponent.h"
-
+#include "Logger/Logger.h"
 #include "Base/Map.h"
 
 namespace DAVA
