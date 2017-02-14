@@ -65,7 +65,7 @@ private:
     RenderSystem* renderSystem = nullptr;
 
     bool isDrawOnlySelected = false;
-    eParticleDebugDrawMode drawMode = WIREFRAME;
+    eParticleDebugDrawMode drawMode = OVERDRAW;
 
     NMaterial* wireframeMaterial = nullptr;
     NMaterial* overdrawMaterial = nullptr;
