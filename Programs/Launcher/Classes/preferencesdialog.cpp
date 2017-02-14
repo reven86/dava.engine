@@ -164,6 +164,7 @@ void PreferencesDialog::Init(FileManager* fileManager_, ConfigDownloader* config
     spinBox_autorefreshTimeout->setRange(minTimeout, maxTimeout);
     spinBox_autorefreshTimeout->setEnabled(true);
     spinBox_autorefreshTimeout->setValue(configRefresher->GetTimeout());
+    OnServerHostNameChanged(lineEdit_serverHostName->text());
 }
 
 void PreferencesDialog::AcceptData()
@@ -208,7 +209,9 @@ void PreferencesDialog::OnServerHostNameChanged(const QString& name)
     for (int i = ConfigDownloader::LauncherInfoURL; i < ConfigDownloader::URLTypesCount; ++i)
     {
         ConfigDownloader::eURLType type = static_cast<ConfigDownloader::eURLType>(i);
-        urlWidgets[type]->setText(name + configDownloader->GetURL(type));
+        QString text = name + configDownloader->GetURL(type);
+
+        urlWidgets[type]->setText("<a href=\"" + text + "\">" + text + "</a>");
     }
 }
 
@@ -221,5 +224,6 @@ void PreferencesDialog::OnButtonCopyURLClicked()
     ConfigDownloader::eURLType type = static_cast<ConfigDownloader::eURLType>(typeInt);
     Q_ASSERT(ok);
     Q_ASSERT(urlWidgets.contains(type));
-    QApplication::clipboard()->setText(urlWidgets[type]->text());
+    QString text = lineEdit_serverHostName->text() + configDownloader->GetURL(type);
+    QApplication::clipboard()->setText(text);
 }

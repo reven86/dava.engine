@@ -32,7 +32,18 @@ int ConfigDownloader::exec()
 {
     aborted = false;
     appManager->GetRemoteConfig()->Clear();
-    for (int i = LauncherInfoURL; i < URLTypesCount; ++i)
+    QUrl launcherUrl;
+    if (IsTestAPIUsed())
+    {
+        launcherUrl = QUrl(GetServerHostName() + GetURL(LauncherTestInfoURL));
+    }
+    else
+    {
+        launcherUrl = QUrl(GetServerHostName() + GetURL(LauncherInfoURL));
+    }
+    requests << networkManager->get(QNetworkRequest(launcherUrl));
+
+    for (int i = StringsURL; i < URLTypesCount; ++i)
     {
         eURLType type = static_cast<eURLType>(i);
         QUrl url(GetServerHostName() + GetURL(type));
@@ -73,7 +84,7 @@ bool ConfigDownloader::IsTestAPIUsed() const
 
 void ConfigDownloader::SetUseTestAPI(bool use)
 {
-    useTestAPI = true;
+    useTestAPI = use;
 }
 
 void ConfigDownloader::SetServerHostName(const QString& url)
