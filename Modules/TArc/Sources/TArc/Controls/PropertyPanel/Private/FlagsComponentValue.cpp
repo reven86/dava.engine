@@ -12,7 +12,6 @@ namespace DAVA
 {
 namespace TArc
 {
-
 void FlagsComponentValue::SetValueAny(const Any& newValue)
 {
     SetValue(newValue);
