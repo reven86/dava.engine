@@ -5,6 +5,7 @@
 
 #include "Base/BaseTypes.h"
 #include "Concurrency/Thread.h"
+#include "Concurrency/ThreadLocalPtr.h"
 #include "Engine/Engine.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Win32/Window/WindowBackendWin32.h"
@@ -51,13 +52,13 @@ private:
     Vector<WideString> buttons;
     size_t buttonCount = 0;
 
-    static MessageBoxHook* pthis;
     static const int buttonTypes[3];
     static const int defaultButtons[3];
     static const IdToIndexMap map[6];
+    static ThreadLocalPtr<MessageBoxHook> thisPointerPerThread;
 };
 
-MessageBoxHook* MessageBoxHook::pthis = nullptr;
+ThreadLocalPtr<MessageBoxHook> MessageBoxHook::thisPointerPerThread([](MessageBoxHook*) {});
 
 const int MessageBoxHook::buttonTypes[3] = {
     MB_OK,
@@ -82,13 +83,12 @@ const MessageBoxHook::IdToIndexMap MessageBoxHook::map[6] = {
 
 MessageBoxHook::MessageBoxHook()
 {
-    DVASSERT(pthis == nullptr);
-    pthis = this;
+    thisPointerPerThread.Reset(this);
 }
 
 MessageBoxHook::~MessageBoxHook()
 {
-    pthis = nullptr;
+    thisPointerPerThread.Reset();
 }
 
 int MessageBoxHook::Show(HWND hwndParent, WideString caption, WideString message, Vector<WideString> buttonNames, int defaultButton)
@@ -125,6 +125,7 @@ void MessageBoxHook::PrepareButtons(HWND hwnd)
 
 LRESULT CALLBACK MessageBoxHook::HookInstaller(int code, WPARAM wparam, LPARAM lparam)
 {
+    MessageBoxHook* pthis = thisPointerPerThread.Get();
     if (code == HC_ACTION)
     {
         CWPSTRUCT* cwp = reinterpret_cast<CWPSTRUCT*>(lparam);
@@ -139,6 +140,7 @@ LRESULT CALLBACK MessageBoxHook::HookInstaller(int code, WPARAM wparam, LPARAM l
 
 LRESULT CALLBACK MessageBoxHook::HookWndProc(HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam)
 {
+    MessageBoxHook* pthis = thisPointerPerThread.Get();
     LRESULT lresult = ::CallWindowProcW(pthis->oldWndProc, hwnd, message, wparam, lparam);
     if (message == WM_INITDIALOG)
     {
