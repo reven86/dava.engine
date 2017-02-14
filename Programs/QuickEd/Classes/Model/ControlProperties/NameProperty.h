@@ -8,7 +8,7 @@ class ControlNode;
 class NameProperty : public ValueProperty
 {
 public:
-    NameProperty(ControlNode* control, const NameProperty* sourceProperty, eCloneType cloneType);
+    NameProperty(ControlNode* controlNode, const NameProperty* sourceProperty, eCloneType cloneType);
 
 protected:
     virtual ~NameProperty();
@@ -32,7 +32,7 @@ protected:
     void ApplyValue(const DAVA::Any& value) override;
 
 protected:
-    ControlNode* control; // weak
+    ControlNode* controlNode; // weak
 };
 
 #endif // __QUICKED_NAME_PROPERTY_H__

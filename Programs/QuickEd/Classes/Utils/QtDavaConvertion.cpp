@@ -224,39 +224,39 @@ QString AnyToQString(const DAVA::Any& val, const DAVA::ReflectedStructure::Field
 
     if (val.CanGet<int32>())
     {
-        return QVariant(val.Get<int32>()).toString();
+        return QString::number(val.Get<int32>());
     }
     else if (val.CanGet<uint32>())
     {
-        return QVariant(val.Get<uint32>()).toString();
+        return QString::number(val.Get<uint32>());
     }
     else if (val.CanGet<uint64>())
     {
-        return QVariant(val.Get<uint64>()).toString();
+        return QString::number(val.Get<uint64>());
     }
     else if (val.CanGet<int64>())
     {
-        return QVariant(val.Get<int64>()).toString();
+        return QString::number(val.Get<int64>());
     }
     else if (val.CanGet<uint16>())
     {
-        return QVariant(val.Get<int16>()).toString();
+        return QString::number(val.Get<int16>());
     }
     else if (val.CanGet<int16>())
     {
-        return QVariant(val.Get<int16>()).toString();
+        return QString::number(val.Get<int16>());
     }
     else if (val.CanGet<uint8>())
     {
-        return QVariant(val.Get<uint8>()).toString();
+        return QString::number(val.Get<uint8>());
     }
     else if (val.CanGet<int8>())
     {
-        return QVariant(val.Get<int8>()).toString();
+        return QString::number(val.Get<int8>());
     }
     else if (val.CanGet<float32>())
     {
-        return QVariant(val.Get<float32>()).toString();
+        return QString::number(val.Get<float32>());
     }
     else if (val.CanGet<String>())
     {

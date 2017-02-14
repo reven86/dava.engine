@@ -40,7 +40,6 @@ void TablePropertyDelegate::setEditorData(QWidget* rawEditor, const QModelIndex&
     else
     {
         DVASSERT(false);
-        stringValue = WideStringToQString(variant.Get<DAVA::WideString>());
     }
     editor->blockSignals(true);
     editor->setText(stringValue);

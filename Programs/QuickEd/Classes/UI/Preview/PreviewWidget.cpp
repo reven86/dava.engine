@@ -561,7 +561,7 @@ void PreviewWidget::ChangeControlText(ControlNode* node)
     AbstractProperty* textProperty = rootProperty->FindPropertyByName("text");
     DVASSERT(textProperty != nullptr);
 
-    String text = textProperty->GetValue().Get<String>();
+    String text = textProperty->GetValue().Cast<String>();
 
     QString label = tr("Enter new text, please");
     bool ok;

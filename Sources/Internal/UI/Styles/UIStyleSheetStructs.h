@@ -33,7 +33,6 @@ struct UIStyleSheetPropertyDescriptor
 
     FastName name;
     Any defaultValue;
-    String fieldName;
     const ReflectedStructure::Field* field_s = nullptr;
 
     UIStyleSheetPropertyDescriptor(UIStyleSheetPropertyGroup* group_, const char* name_, const Any& defaultValue_)
