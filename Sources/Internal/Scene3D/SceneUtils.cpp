@@ -73,7 +73,7 @@ bool CombineEntityLods(Entity* forRootNode)
         return true;
     }
 
-    //model validation step: we should ignore compination of lods if we find several geometry meshes per lod
+    //model validation step: we should ignore combination of lods if we found several geometry meshes per lod
     if (VerifyNames(lodNodes, lod0) == false)
     {
         return false;
