@@ -377,7 +377,7 @@ void QtWrapLayout::SetHorizontalSpacing(int32 spacing)
 int32 QtWrapLayout::GetVerticalSpacing() const
 {
     Q_D(const QtWrapLayout);
-    if (d->hSpacing >= 0)
+    if (d->vSpacing >= 0)
     {
         return d->vSpacing;
     }
@@ -422,7 +422,7 @@ void QtWrapLayout::addItem(QLayoutItem* item)
 QLayoutItem* QtWrapLayout::itemAt(int index) const
 {
     Q_D(const QtWrapLayout);
-    if (index < static_cast<int>(d->items.size()))
+    if (static_cast<int>(d->items.size()) <= index)
         return nullptr;
 
     return d->items[index]->item;
@@ -431,7 +431,7 @@ QLayoutItem* QtWrapLayout::itemAt(int index) const
 QLayoutItem* QtWrapLayout::takeAt(int index)
 {
     Q_D(QtWrapLayout);
-    if (index < static_cast<int>(d->items.size()))
+    if (static_cast<int>(d->items.size()) <= index)
         return nullptr;
 
     QtWrapLayoutItem* wrapItem = d->items[index];
