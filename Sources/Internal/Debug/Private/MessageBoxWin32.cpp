@@ -4,6 +4,7 @@
 #if defined(__DAVAENGINE_WIN32__)
 
 #include "Base/BaseTypes.h"
+#include "Concurrency/Semaphore.h"
 #include "Concurrency/Thread.h"
 #include "Concurrency/ThreadLocalPtr.h"
 #include "Engine/Engine.h"
@@ -99,7 +100,7 @@ int MessageBoxHook::Show(HWND hwndParent, WideString caption, WideString message
 
     // Install hook procedure to replace buttons names for standrd MessageBox function
     hhook = ::SetWindowsHookExW(WH_CALLWNDPROC, &MessageBoxHook::HookInstaller, nullptr, ::GetCurrentThreadId());
-    const UINT style = MB_ICONEXCLAMATION | defaultButtons[defaultButton] | buttonTypes[buttonCount - 1];
+    const UINT style = MB_SYSTEMMODAL | MB_ICONEXCLAMATION | defaultButtons[defaultButton] | buttonTypes[buttonCount - 1];
     int choice = ::MessageBoxW(hwndParent, message.c_str(), caption.c_str(), style);
     ::UnhookWindowsHookEx(hhook);
 
@@ -164,41 +165,63 @@ int MessageBox(const String& title, const String& message, const Vector<String>&
 {
     using namespace DAVA::Private;
 
+    struct MessageBoxParams
+    {
+        WideString title;
+        WideString message;
+        Vector<WideString> buttons;
+        int defaultButton;
+
+        bool (*onEnter)();
+        void (*onLeave)();
+    };
+
     DVASSERT(0 < buttons.size() && buttons.size() <= 3);
     DVASSERT(0 <= defaultButton && defaultButton < static_cast<int>(buttons.size()));
 
-    int result = -1;
-    auto showMessageBox = [&title, &message, &buttons, defaultButton, &result]()
+    MessageBoxParams params;
+    params.title = UTF8Utils::EncodeToWideString(title);
+    params.message = UTF8Utils::EncodeToWideString(message);
+    params.defaultButton = defaultButton;
+    for (const String& s : buttons)
     {
-        if (!EngineBackend::showingModalMessageBox)
+        params.buttons.push_back(UTF8Utils::EncodeToWideString(s));
+    }
+
+    int result = -1;
+    auto showMessageBox = [&params, &result]() {
+        if (params.onEnter())
         {
-            Vector<WideString> wideButtons;
-            wideButtons.reserve(buttons.size());
-            for (const String& s : buttons)
-            {
-                wideButtons.push_back(UTF8Utils::EncodeToWideString(s));
-            }
-
-            EngineBackend::showingModalMessageBox = true;
-
-#if defined(__DAVAENGINE_QT__)
-            Window* primaryWindow = GetPrimaryWindow();
-            if (primaryWindow != nullptr && primaryWindow->IsAlive())
-                PlatformApi::Qt::AcquireWindowContext(primaryWindow);
-#endif
-
+            HWND hwnd = ::GetActiveWindow();
             MessageBoxHook msgBox;
-            result = msgBox.Show(::GetActiveWindow(), UTF8Utils::EncodeToWideString(title), UTF8Utils::EncodeToWideString(message), std::move(wideButtons), defaultButton);
+            result = msgBox.Show(hwnd,
+                                 std::move(params.title),
+                                 std::move(params.message),
+                                 std::move(params.buttons),
+                                 params.defaultButton);
 
-#if defined(__DAVAENGINE_QT__)
-            if (primaryWindow != nullptr && primaryWindow->IsAlive())
-                PlatformApi::Qt::ReleaseWindowContext(primaryWindow);
-#endif
-
-            EngineBackend::showingModalMessageBox = false;
+            params.onLeave();
         }
     };
 
+#if defined(__DAVAENGINE_QT__)
+    params.onEnter = []() -> bool {
+        if (!EngineBackend::showingModalMessageBox)
+        {
+            EngineBackend::showingModalMessageBox = true;
+            Window* primaryWindow = GetPrimaryWindow();
+            if (primaryWindow != nullptr && primaryWindow->IsAlive())
+                PlatformApi::Qt::AcquireWindowContext(primaryWindow);
+            return true;
+        }
+        return false;
+    };
+    params.onLeave = []() {
+        Window* primaryWindow = GetPrimaryWindow();
+        if (primaryWindow != nullptr && primaryWindow->IsAlive())
+            PlatformApi::Qt::ReleaseWindowContext(primaryWindow);
+        EngineBackend::showingModalMessageBox = false;
+    };
     Window* primaryWindow = GetPrimaryWindow();
     if (Thread::IsMainThread())
     {
@@ -208,6 +231,27 @@ int MessageBox(const String& title, const String& message, const Vector<String>&
     {
         primaryWindow->RunOnUIThread(showMessageBox);
     }
+#else
+    params.onEnter = []() -> bool { return true; };
+    params.onLeave = []() {};
+    if (Thread::IsMainThread())
+    {
+        showMessageBox();
+    }
+    else
+    {
+        static Semaphore semaphore(1);
+
+        semaphore.Wait();
+
+        Thread* t = Thread::Create([&showMessageBox]() { showMessageBox(); });
+        t->Start();
+        t->Join();
+        t->Release();
+
+        semaphore.Post();
+    }
+#endif
     return result;
 }
 
