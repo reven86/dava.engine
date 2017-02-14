@@ -9,7 +9,7 @@ ContinuousUpdater::ContinuousUpdater(Updater updater_, int updateInterval)
     timer->setSingleShot(true);
     timer->setInterval(updateInterval);
 
-    QObject::connect(timer.get(), &QTimer::timeout, [this](){OnTimer(); });
+    QObject::connect(timer.get(), &QTimer::timeout, [this]() { OnTimer(); });
 }
 
 ContinuousUpdater::~ContinuousUpdater() = default;
