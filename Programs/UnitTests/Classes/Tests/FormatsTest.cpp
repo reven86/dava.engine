@@ -1,7 +1,12 @@
-#include "Render/PixelFormatDescriptor.h"
+#include "Base/GlobalEnum.h"
+#include "Render/Image/Image.h"
 #include "Render/Image/ImageConvert.h"
-
+#include "Render/Image/ImageSystem.h"
+#include "Render/PixelFormatDescriptor.h"
+#include "Render/RHI/rhi_Public.h"
 #include "UnitTests/UnitTests.h"
+#include "Utils/StringFormat.h"
+
 #include "Infrastructure/TextureUtils.h"
 
 using namespace DAVA;
