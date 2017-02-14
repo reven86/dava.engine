@@ -93,6 +93,11 @@ ParticleDebugRenderPass::ParticleDebugRenderPass(ParticleDebugRenderPassConfig c
     SetViewport(Rect(0, 0, static_cast<float32>(height), static_cast<float32>(width)));
 }
 
+ParticleDebugRenderPass::~ParticleDebugRenderPass()
+{
+    SafeRelease(debugTexture);
+}
+
 void ParticleDebugRenderPass::Draw(DAVA::RenderSystem* renderSystem)
 {
     Camera* mainCamera = renderSystem->GetMainCamera();

@@ -29,16 +29,19 @@ ParticleEffectDebugDrawSystem::ParticleEffectDebugDrawSystem(Scene* scene)
         ParticleDebugDrawQuadRenderPass::ParticleDebugQuadRenderPassConfig quadPassConfig =
         { ParticleDebugDrawQuadRenderPass::PASS_DEBUG_DRAW_QUAD, renderSystem, quadMaterial, quadHeatMaterial, drawMode };
         drawQuadPass = new ParticleDebugDrawQuadRenderPass(quadPassConfig);
+        materials.push_back(wireframeMaterial);
+        materials.push_back(overdrawMaterial);
+        materials.push_back(showAlphaMaterial);
+        materials.push_back(quadMaterial);
+        materials.push_back(quadHeatMaterial);
+
     }
-    materials.push_back(wireframeMaterial);
-    materials.push_back(overdrawMaterial);
-    materials.push_back(showAlphaMaterial);
-    materials.push_back(quadMaterial);
-    materials.push_back(quadHeatMaterial);
 }
 
 ParticleEffectDebugDrawSystem::~ParticleEffectDebugDrawSystem()
 {
+    materials.clear();
+
     SafeDelete(renderPass);
     SafeDelete(drawQuadPass);
 
@@ -50,7 +53,6 @@ ParticleEffectDebugDrawSystem::~ParticleEffectDebugDrawSystem()
     SafeRelease(quadHeatMaterial);
 
     SafeRelease(heatTexture);
-    materials.clear();
 }
 
 void ParticleEffectDebugDrawSystem::Draw()

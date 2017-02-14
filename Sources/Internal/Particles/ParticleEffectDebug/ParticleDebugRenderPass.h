@@ -28,6 +28,7 @@ public:
     };
 
     ParticleDebugRenderPass(ParticleDebugRenderPassConfig config);
+    ~ParticleDebugRenderPass();
     void Draw(RenderSystem* renderSystem) override;
     static const FastName PASS_DEBUG_DRAW_PARTICLES;
     Texture* GetTexture() const;
