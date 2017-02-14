@@ -26,7 +26,7 @@ class ReflectionRegistrator final
 public:
     ~ReflectionRegistrator();
 
-    static ReflectionRegistrator Begin();
+    static ReflectionRegistrator Begin(std::unique_ptr<StructureWrapper>&& customStructureWrapper = std::unique_ptr<StructureWrapper>());
 
     template <typename... Args>
     ReflectionRegistrator& ConstructorByValue();
@@ -60,7 +60,7 @@ public:
     void End();
 
 private:
-    ReflectionRegistrator();
+    ReflectionRegistrator(std::unique_ptr<StructureWrapper>&& customStructureWrapper);
 
     ReflectedStructure* structure = nullptr;
     std::unique_ptr<ReflectedMeta>* lastMeta;

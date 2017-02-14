@@ -6,6 +6,7 @@
 #if defined(__DAVAENGINE_COREV2__)
 #include "Engine/Engine.h"
 #include "DeviceManager/DeviceManager.h"
+#include "Platform/DeviceInfo.h"
 #else
 #include "Platform/DeviceInfo.h"
 #endif

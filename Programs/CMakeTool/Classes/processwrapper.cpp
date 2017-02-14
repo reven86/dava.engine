@@ -20,9 +20,18 @@ ProcessWrapper::ProcessWrapper(QObject* parent)
     connect(&process, static_cast<void (QProcess::*)(QProcess::ProcessError)>(&QProcess::error), this, &ProcessWrapper::OnProcessError);
 }
 
-void ProcessWrapper::LaunchCmake(const QString& command, bool needClean, const QString& buildFolder)
+void ProcessWrapper::StartConfigure(const QString& command, bool needClean, const QString& buildFolder)
 {
-    taskQueue.enqueue({ command, needClean, buildFolder });
+    taskQueue.enqueue({ command, needClean, buildFolder, true });
+    if (process.state() == QProcess::NotRunning)
+    {
+        StartNextCommand();
+    }
+}
+
+void ProcessWrapper::LaunchCmake(const QString& command)
+{
+    taskQueue.enqueue({ command, false, "", false });
     if (process.state() == QProcess::NotRunning)
     {
         StartNextCommand();
@@ -125,6 +134,7 @@ void ProcessWrapper::OnReadyReadStandardOutput()
 
 void ProcessWrapper::OnReadyReadStandardError()
 {
+    currentProcessDetails.hasErrors = true;
     QString text = process.readAllStandardError();
     emit processStandardError(text);
 }
@@ -146,7 +156,26 @@ void ProcessWrapper::OnProcessStateChanged(QProcess::ProcessState newState)
         break;
     }
 
-    emit processStateChanged("cmake process is " + processState);
+    emit processStateTextChanged("cmake process is " + processState);
+    if (currentProcessDetails.configuringProject)
+    {
+        if (newState == QProcess::Running)
+        {
+            configureStarted();
+        }
+        else if (newState == QProcess::NotRunning)
+        {
+            if (currentProcessDetails.hasErrors)
+            {
+                configureFailed();
+            }
+            else
+            {
+                configureFinished();
+            }
+        }
+    }
+
     if (newState == QProcess::NotRunning)
     {
         QMetaObject::invokeMethod(this, "StartNextCommand", Qt::QueuedConnection);
@@ -177,7 +206,11 @@ void ProcessWrapper::OnProcessError(QProcess::ProcessError error)
         processError = "unknown error";
         break;
     }
-    emit processErrorChanged("process error: " + processError);
+    currentProcessDetails.hasErrors = true;
+    //mark current process as not configure to prevent sending signals inside OnProcessStateChanged
+    currentProcessDetails.configuringProject = false;
+    configureFailed();
+    emit processErrorTextChanged("process error: " + processError);
 }
 
 void ProcessWrapper::StartNextCommand()
@@ -209,6 +242,8 @@ void ProcessWrapper::StartNextCommand()
         }
     }
     Q_ASSERT(process.state() == QProcess::NotRunning);
+    currentProcessDetails.configuringProject = task.configure;
+    currentProcessDetails.hasErrors = false;
     process.start(task.command);
 }
 
