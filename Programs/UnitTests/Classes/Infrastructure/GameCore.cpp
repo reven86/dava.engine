@@ -1,16 +1,25 @@
-#include "Base/BaseTypes.h"
-#include "Engine/Engine.h"
-#include "UnitTests/UnitTests.h"
-#include "CommandLine/CommandLineParser.h"
-#include "FileSystem/KeyedArchive.h"
-#include "Utils/Utils.h"
-#include "Utils/StringFormat.h"
-#include "Debug/DVAssertDefaultHandlers.h"
-
 #include "Infrastructure/GameCore.h"
 
+#include "CommandLine/CommandLineParser.h"
+#include "Debug/DVAssert.h"
+#include "Debug/DVAssertDefaultHandlers.h"
+#include "Engine/Engine.h"
+#include "FileSystem/KeyedArchive.h"
+#include "Logger/Logger.h"
+#include "Logger/TeamCityTestsOutput.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "UI/UIControlSystem.h"
+#include "UnitTests/UnitTests.h"
+#include "Utils/StringFormat.h"
+
+#if defined(__DAVAENGINE_STEAM__)
+#include "Platform/Steam.h"
+#endif
+
 #if defined(__DAVAENGINE_WIN_UAP__)
+#include "Network/PeerDesription.h"
 #include "Network/NetConfig.h"
+#include "Network/Services/NetLogger.h"
 #include "Platform/TemplateWin32/UAPNetworkHelper.h"
 #endif
 
@@ -29,22 +38,16 @@ String disableTheseTestClasses = "";
 bool teamcityOutputEnabled = true; // Flag whether to enable TeamCity output
 bool teamcityCaptureStdout = false; // Flag whether to set TeamCity option 'captureStandardOutput=true'
 
-const String TestCoverageFileName = "Tests.cover";
-}
+const String testCoverageFileName = "Tests.cover";
 
-#if defined(__DAVAENGINE_COREV2__)
+} // unnamed namespace
 
 int DAVAMain(Vector<String> cmdline)
 {
     Assert::AddHandler(Assert::DefaultLoggerHandler);
 
     KeyedArchive* appOptions = new KeyedArchive();
-    appOptions->SetString("title", "UnitTests");
-    appOptions->SetInt32("fullscreen", 0);
-    appOptions->SetInt32("bpp", 32);
     appOptions->SetInt32("rhi_threaded_frame_count", 2);
-    appOptions->SetInt32("width", 1024);
-    appOptions->SetInt32("height", 768);
 #if defined(__DAVAENGINE_QT__)
     appOptions->SetInt32("renderer", rhi::RHI_GLES2);
 #elif defined(__DAVAENGINE_MACOS__)
@@ -52,11 +55,15 @@ int DAVAMain(Vector<String> cmdline)
 #elif defined(__DAVAENGINE_IPHONE__)
     appOptions->SetInt32("renderer", rhi::RHI_GLES2);
 #elif defined(__DAVAENGINE_WIN32__)
-    appOptions->SetInt32("renderer", rhi::RHI_DX9);
+    appOptions->SetInt32("renderer", rhi::RHI_GLES2);
 #elif defined(__DAVAENGINE_WIN_UAP__)
     appOptions->SetInt32("renderer", rhi::RHI_DX11);
 #elif defined(__DAVAENGINE_ANDROID__)
     appOptions->SetInt32("renderer", rhi::RHI_GLES2);
+#endif
+
+#if defined(__DAVAENGINE_STEAM__)
+    appOptions->SetUInt32(Steam::appIdPropertyKey, 0);
 #endif
 
     Vector<String> modules = {
@@ -78,45 +85,23 @@ int DAVAMain(Vector<String> cmdline)
 
 GameCore::GameCore(DAVA::Engine& e)
     : engine(e)
+#if defined(__DAVAENGINE_WIN_UAP__)
+    , netLogger(std::make_unique<Net::NetLogger>(true, 1000))
+#endif
 {
     engine.gameLoopStarted.Connect(this, &GameCore::OnAppStarted);
     engine.gameLoopStopped.Connect(this, &GameCore::OnAppFinished);
     engine.update.Connect(this, &GameCore::Update);
+    engine.windowCreated.Connect(this, &GameCore::OnWindowCreated);
 }
 
 void GameCore::Update(float32 timeElapsed)
 {
-    ProcessTests(timeElapsed);
+    if (!isFinishing)
+    {
+        ProcessTests(timeElapsed);
+    }
 }
-
-#else // __DAVAENGINE_COREV2__
-
-void GameCore::OnSuspend()
-{
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-    ApplicationCore::OnSuspend();
-#endif
-}
-
-void GameCore::OnResume()
-{
-    ApplicationCore::OnResume();
-}
-
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-void GameCore::OnForeground()
-{
-    ApplicationCore::OnForeground();
-}
-#endif //#if defined (__DAVAENGINE_IPHONE__) || defined (__DAVAENGINE_ANDROID__)
-
-void GameCore::Update(float32 timeElapsed)
-{
-    ProcessTests(timeElapsed);
-    ApplicationCore::Update(timeElapsed);
-}
-
-#endif // !__DAVAENGINE_COREV2__
 
 void GameCore::ProcessCommandLine()
 {
@@ -148,8 +133,9 @@ void GameCore::OnAppStarted()
 
     if (teamcityOutputEnabled)
     {
-        teamCityOutput.SetCaptureStdoutFlag(teamcityCaptureStdout);
-        Logger::Instance()->AddCustomOutput(&teamCityOutput);
+        teamCityOutput.reset(new TeamcityTestsOutput());
+        teamCityOutput->SetCaptureStdoutFlag(teamcityCaptureStdout);
+        engine.GetContext()->logger->AddCustomOutput(teamCityOutput.get());
     }
 
     UnitTests::TestCore::Instance()->Init(MakeFunction(this, &GameCore::OnTestClassStarted),
@@ -170,27 +156,33 @@ void GameCore::OnAppStarted()
     if (!UnitTests::TestCore::Instance()->HasTestClasses())
     {
         Logger::Error("%s", "There are no test classes");
-#if defined(__DAVAENGINE_COREV2__)
-        engine.QuitAsync(0);
-#else
-        Core::Instance()->Quit();
-#endif
+        Quit(0);
     }
     else
     {
 #if defined(TEST_COVERAGE)
-        RefPtr<File> covergeFile(File::Create(TestCoverageFileName, File::CREATE | File::WRITE));
+        RefPtr<File> covergeFile(File::Create(testCoverageFileName, File::CREATE | File::WRITE));
         TEST_VERIFY(covergeFile);
         covergeFile->Flush();
 #endif // __DAVAENGINE_MACOS__
     }
 }
 
+void GameCore::OnWindowCreated(Window* w)
+{
+    w->SetTitleAsync("UnitTests");
+    w->SetVirtualSize(1024.f, 768.f);
+
+    VirtualCoordinatesSystem* vcs = w->GetUIControlSystem()->vcs;
+    vcs->RegisterAvailableResourceSize(1024, 768, "Gfx");
+}
+
 void GameCore::OnAppFinished()
 {
     if (teamcityOutputEnabled)
     {
-        DAVA::Logger::Instance()->RemoveCustomOutput(&teamCityOutput);
+        engine.GetContext()->logger->RemoveCustomOutput(teamCityOutput.get());
+        teamCityOutput.reset();
     }
 
 #if defined(__DAVAENGINE_WIN_UAP__)
@@ -261,10 +253,10 @@ void GameCore::ProcessTestCoverage()
         }
     }
 
-    RefPtr<File> coverageFile(File::Create(TestCoverageFileName, File::APPEND | File::WRITE));
+    RefPtr<File> coverageFile(File::Create(testCoverageFileName, File::APPEND | File::WRITE));
     DVASSERT(coverageFile);
 
-    auto toJson = [&coverageFile](DAVA::String item) { coverageFile->Write(item.c_str(), item.size()); };
+    auto toJson = [&coverageFile](const DAVA::String& item) { coverageFile->Write(item.c_str(), item.size()); };
 
     toJson("{ \n");
 
@@ -334,11 +326,16 @@ void GameCore::FinishTests()
 {
     // Inform teamcity script we just finished all tests
     Logger::Debug("Finish all tests.");
-#if defined(__DAVAENGINE_COREV2__)
-    engine.QuitAsync(0);
-#else
-    Core::Instance()->Quit();
-#endif
+    Quit(0);
+}
+
+void GameCore::Quit(int exitCode)
+{
+    if (!isFinishing)
+    {
+        engine.QuitAsync(exitCode);
+        isFinishing = true;
+    }
 }
 
 #if defined(__DAVAENGINE_WIN_UAP__)
@@ -346,19 +343,21 @@ void GameCore::InitNetwork()
 {
     using namespace Net;
 
+    // clang-format off
     auto loggerCreate = [this](uint32 serviceId, void*) -> IChannelListener* {
         if (!loggerInUse)
         {
             loggerInUse = true;
-            return &netLogger;
+            return netLogger.get();
         }
         return nullptr;
     };
+    auto loggerDestroy = [this](IChannelListener*, void*) -> void {
+        loggerInUse = false;
+    };
+    // clang-format on
 
-    NetCore::Instance()->RegisterService(
-    NetCore::SERVICE_LOG,
-    loggerCreate,
-    [this](IChannelListener* obj, void*) -> void { loggerInUse = false; });
+    NetCore::Instance()->RegisterService(NetCore::SERVICE_LOG, loggerCreate, loggerDestroy);
 
     eNetworkRole role = UAPNetworkHelper::GetCurrentNetworkRole();
     Net::Endpoint endpoint = UAPNetworkHelper::GetCurrentEndPoint();
@@ -368,40 +367,19 @@ void GameCore::InitNetwork()
     config.AddService(NetCore::SERVICE_LOG);
 
     netController = NetCore::Instance()->CreateController(config, nullptr);
-
-    flusher.reset(new LogFlusher(&netLogger));
 }
 
 void GameCore::UnInitNetwork()
 {
-    netLogger.Uninstall();
-    flusher->FlushLogs();
-    flusher.reset();
-
-    Net::NetCore::Instance()->DestroyControllerBlocked(netController);
-}
-
-GameCore::LogFlusher::LogFlusher(Net::NetLogger* logger)
-    : netLogger(logger)
-{
-    Logger::AddCustomOutput(this);
-}
-
-GameCore::LogFlusher::~LogFlusher()
-{
-    Logger::RemoveCustomOutput(this);
-}
-
-void GameCore::LogFlusher::FlushLogs()
-{
+    netLogger->Uninstall();
+    // Run network loop untill all messages are sent to receiver
     while (netLogger->IsChannelOpen() && netLogger->GetMessageQueueSize() != 0)
     {
         Net::NetCore::Instance()->Poll();
     }
+
+    Net::NetCore::Instance()->DestroyControllerBlocked(netController);
+    netLogger.reset();
 }
 
-void GameCore::LogFlusher::Output(DAVA::Logger::eLogLevel, const DAVA::char8*)
-{
-    FlushLogs();
-}
 #endif // __DAVAENGINE_WIN_UAP__
