@@ -4,15 +4,18 @@
 
 namespace DAVA
 {
+/**
+
+*/
 class ComponentManager
 {
 public:
     template <class T>
-    void RegisterUIComponent();
+    void RegisterComponent();
 
     uint32 GetComponentsCount();
 
-    int32 RuntimeTypeFromType(const Type* type)
+    int32 GetRuntimeType(const Type* type)
     {
         return typeToRuntimeType[type];
     }
@@ -28,7 +31,7 @@ private:
 };
 
 template <class T>
-void ComponentManager::RegisterUIComponent()
+void ComponentManager::RegisterComponent()
 {
     bool isUIComponent = std::is_base_of<UIComponent, T>::value;
     if (isUIComponent)

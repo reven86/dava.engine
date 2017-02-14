@@ -421,11 +421,11 @@ void RootProperty::MakeControlPropertiesSection(DAVA::UIControl* control, const 
 uint32 RootProperty::GetComponentAbsIndex(const DAVA::Type* componentType, DAVA::uint32 index) const
 {
     ComponentManager* cm = GetEngineContext()->componentManager;
-    int32 runtimeType = cm->RuntimeTypeFromType(componentType);
+    int32 runtimeType = cm->GetRuntimeType(componentType);
     uint32 i = 0;
     for (ComponentPropertiesSection* section : componentProperties)
     {
-        if (cm->RuntimeTypeFromType(section->GetComponentType()) >= runtimeType)
+        if (cm->GetRuntimeType(section->GetComponentType()) >= runtimeType)
         {
             return index + i;
         }

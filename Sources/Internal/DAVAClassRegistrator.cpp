@@ -44,21 +44,21 @@ void DAVA::RegisterDAVAClasses()
     DAVA_REFLECTION_REGISTER_CUSTOM_PERMANENT_NAME(UIActionBindingComponent, "ActionBinding");
     DAVA_REFLECTION_REGISTER_CUSTOM_PERMANENT_NAME(UIScrollBarDelegateComponent, "ScrollBarDelegate");
 
-    GetEngineContext()->componentManager->RegisterUIComponent<UIControlBackground>();
-    GetEngineContext()->componentManager->RegisterUIComponent<UILinearLayoutComponent>();
-    GetEngineContext()->componentManager->RegisterUIComponent<UIFlowLayoutComponent>();
-    GetEngineContext()->componentManager->RegisterUIComponent<UIFlowLayoutHintComponent>();
-    GetEngineContext()->componentManager->RegisterUIComponent<UIIgnoreLayoutComponent>();
-    GetEngineContext()->componentManager->RegisterUIComponent<UISizePolicyComponent>();
-    GetEngineContext()->componentManager->RegisterUIComponent<UIAnchorComponent>();
-    GetEngineContext()->componentManager->RegisterUIComponent<UIModalInputComponent>();
-    GetEngineContext()->componentManager->RegisterUIComponent<UIFocusComponent>();
-    GetEngineContext()->componentManager->RegisterUIComponent<UIFocusGroupComponent>();
-    GetEngineContext()->componentManager->RegisterUIComponent<UINavigationComponent>();
-    GetEngineContext()->componentManager->RegisterUIComponent<UITabOrderComponent>();
-    GetEngineContext()->componentManager->RegisterUIComponent<UIActionComponent>();
-    GetEngineContext()->componentManager->RegisterUIComponent<UIActionBindingComponent>();
-    GetEngineContext()->componentManager->RegisterUIComponent<UIScrollBarDelegateComponent>();
+    GetEngineContext()->componentManager->RegisterComponent<UIControlBackground>();
+    GetEngineContext()->componentManager->RegisterComponent<UILinearLayoutComponent>();
+    GetEngineContext()->componentManager->RegisterComponent<UIFlowLayoutComponent>();
+    GetEngineContext()->componentManager->RegisterComponent<UIFlowLayoutHintComponent>();
+    GetEngineContext()->componentManager->RegisterComponent<UIIgnoreLayoutComponent>();
+    GetEngineContext()->componentManager->RegisterComponent<UISizePolicyComponent>();
+    GetEngineContext()->componentManager->RegisterComponent<UIAnchorComponent>();
+    GetEngineContext()->componentManager->RegisterComponent<UIModalInputComponent>();
+    GetEngineContext()->componentManager->RegisterComponent<UIFocusComponent>();
+    GetEngineContext()->componentManager->RegisterComponent<UIFocusGroupComponent>();
+    GetEngineContext()->componentManager->RegisterComponent<UINavigationComponent>();
+    GetEngineContext()->componentManager->RegisterComponent<UITabOrderComponent>();
+    GetEngineContext()->componentManager->RegisterComponent<UIActionComponent>();
+    GetEngineContext()->componentManager->RegisterComponent<UIActionBindingComponent>();
+    GetEngineContext()->componentManager->RegisterComponent<UIScrollBarDelegateComponent>();
     
 #if !defined(__DAVAENGINE_ANDROID__)
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(TheoraPlayer);

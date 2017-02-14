@@ -2251,7 +2251,7 @@ UIComponent* UIControl::GetComponent(int32 runtimeType, uint32 index) const
 UIComponent* UIControl::GetComponent(const Type* type, uint32 index /*= 0*/) const
 {
     ComponentManager* cm = GetEngineContext()->componentManager;
-    return GetComponent(cm->RuntimeTypeFromType(type), index);
+    return GetComponent(cm->GetRuntimeType(type), index);
 }
 
 int32 UIControl::GetComponentIndex(const UIComponent* component) const
@@ -2269,7 +2269,7 @@ int32 UIControl::GetComponentIndex(const UIComponent* component) const
 UIComponent* UIControl::GetOrCreateComponent(const Type* type, uint32 index)
 {
     ComponentManager* cm = GetEngineContext()->componentManager;
-    UIComponent* ret = GetComponent(cm->RuntimeTypeFromType(type), index);
+    UIComponent* ret = GetComponent(cm->GetRuntimeType(type), index);
     if (!ret)
     {
         DVASSERT(index == 0);
@@ -2369,7 +2369,7 @@ uint32 UIControl::GetComponentCount(int32 runtimeType) const
 uint32 UIControl::GetComponentCount(const Type* type) const
 {
     ComponentManager* cm = GetEngineContext()->componentManager;
-    return family->GetComponentsCount(cm->RuntimeTypeFromType(type));
+    return family->GetComponentsCount(cm->GetRuntimeType(type));
 }
 
 const Vector<UIComponent*>& UIControl::GetComponents()
