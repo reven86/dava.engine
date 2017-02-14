@@ -51,6 +51,5 @@ private:
     DAVA::Vector<DAVA::RefPtr<DAVA::UIControl>> magnetControls;
     DAVA::Vector<DAVA::RefPtr<DAVA::UIControl>> magnetTargetControls;
     SortedPackageBaseNodeSet sortedControlList;
-    SelectionContainer selectionContainer;
     DAVA::RefPtr<DAVA::UIControl> hoveredNodeControl;
 };

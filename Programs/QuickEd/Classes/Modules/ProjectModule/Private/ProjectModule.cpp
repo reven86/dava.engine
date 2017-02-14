@@ -94,7 +94,7 @@ void ProjectModule::CreateActions()
         fieldDescr.type = DAVA::ReflectedTypeDB::Get<ProjectData>();
         fieldDescr.fieldName = DAVA::FastName(ProjectData::projectPathPropertyName);
         action->SetStateUpdationFunction(QtAction::Enabled, fieldDescr, [](const DAVA::Any& fieldValue) -> DAVA::Any {
-            return fieldValue.CanCast<DAVA::FilePath>() && !fieldValue.Cast<DAVA::FilePath>().IsEmpty();
+            return !fieldValue.Cast<DAVA::FilePath>(DAVA::FilePath()).IsEmpty();
         });
 
         connections.AddConnection(action, &QAction::triggered, DAVA::Bind(&ProjectModule::CloseProject, this));

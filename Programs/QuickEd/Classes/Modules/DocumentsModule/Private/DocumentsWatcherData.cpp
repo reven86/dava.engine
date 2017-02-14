@@ -1,4 +1,4 @@
-#include "Modules/DocumentsModule/DocumentsWatcherData.h"
+#include "Modules/DocumentsModule/Private/DocumentsWatcherData.h"
 
 #include <Logger/Logger.h>
 
@@ -19,8 +19,7 @@ void DocumentsWatcherData::Watch(const QString& path)
 {
     if (watcher->addPath(path) == false)
     {
-        QString errorMessage = "Can not watch document " + path;
-        DAVA::Logger::Error(errorMessage.toStdString().c_str());
+        DAVA::Logger::Error("Can not watch document %s", path.toStdString().c_str());
     }
 }
 
@@ -28,7 +27,6 @@ void DocumentsWatcherData::Unwatch(const QString& path)
 {
     if (watcher->removePath(path) == false)
     {
-        QString errorMessage = "Can not unwatch document " + path;
-        DAVA::Logger::Error(errorMessage.toStdString().c_str());
+        DAVA::Logger::Error("Can not unwatch document %s", path.toStdString().c_str());
     }
 }

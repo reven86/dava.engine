@@ -16,7 +16,7 @@
 #include "Model/ControlProperties/VisibleValueProperty.h"
 
 #include "Modules/DocumentsModule/DocumentData.h"
-#include "Modules/DocumentsModule/CentralWidgetData.h"
+#include "Modules/DocumentsModule/Private/CentralWidgetData.h"
 
 #include <TArc/Controls/SceneTabbar.h>
 #include <TArc/Models/SceneTabsModel.h>

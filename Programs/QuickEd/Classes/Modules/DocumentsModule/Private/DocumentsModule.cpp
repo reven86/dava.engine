@@ -1,8 +1,8 @@
-﻿#include "Modules/DocumentsModule/DocumentsModule.h"
+#include "Modules/DocumentsModule/DocumentsModule.h"
 #include "Modules/LegacySupportModule/Private/Project.h"
 #include "Modules/DocumentsModule/DocumentData.h"
-#include "Modules/DocumentsModule/DocumentsWatcherData.h"
-#include "Modules/DocumentsModule/CentralWidgetData.h"
+#include "Modules/DocumentsModule/Private/DocumentsWatcherData.h"
+#include "Modules/DocumentsModule/Private/CentralWidgetData.h"
 #include "Modules/LegacySupportModule/Private/Document.h"
 
 #include "QECommands/ChangePropertyValueCommand.h"
@@ -22,6 +22,7 @@
 #include "UI/DocumentGroupView.h"
 #include "UI/ProjectView.h"
 #include "UI/Preview/PreviewWidget.h"
+#include "UI/Package/PackageWidget.h"
 
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/QuickEdPackageBuilder.h"
@@ -46,6 +47,7 @@
 #include <Engine/PlatformApi.h>
 
 #include <QAction>
+#include <QApplication>
 #include <QFileSystemWatcher>
 
 DAVA_VIRTUAL_REFLECTION_IMPL(DocumentsModule)
@@ -122,7 +124,7 @@ void DocumentsModule::PostInit()
     InitCentralWidget();
 
     RegisterOperations();
-    CreateActions();
+    CreateDocumentsActions();
     CreateUndoRedoActions();
 
     //bind canSave to draw "*" in tabBar
@@ -232,12 +234,12 @@ void DocumentsModule::InitCentralWidget()
     MainWindow* mainWindow = qobject_cast<MainWindow*>(GetUI()->GetWindow(QEGlobal::windowKey));
 
     QObject::connect(mainWindow, &MainWindow::EmulationModeChanged, previewWidget, &PreviewWidget::OnEmulationModeChanged);
-    QObject::connect(previewWidget, &PreviewWidget::DropRequested, mainWindow->packageWidget->GetPackageModel(), &PackageModel::OnDropMimeData, Qt::DirectConnection);
-    QObject::connect(previewWidget, &PreviewWidget::DeleteRequested, mainWindow->packageWidget, &PackageWidget::OnDelete);
-    QObject::connect(previewWidget, &PreviewWidget::ImportRequested, mainWindow->packageWidget, &PackageWidget::OnImport);
-    QObject::connect(previewWidget, &PreviewWidget::CutRequested, mainWindow->packageWidget, &PackageWidget::OnCut);
-    QObject::connect(previewWidget, &PreviewWidget::CopyRequested, mainWindow->packageWidget, &PackageWidget::OnCopy);
-    QObject::connect(previewWidget, &PreviewWidget::PasteRequested, mainWindow->packageWidget, &PackageWidget::OnPaste);
+    QObject::connect(previewWidget, &PreviewWidget::DropRequested, mainWindow->GetPackageWidget()->GetPackageModel(), &PackageModel::OnDropMimeData, Qt::DirectConnection);
+    QObject::connect(previewWidget, &PreviewWidget::DeleteRequested, mainWindow->GetPackageWidget(), &PackageWidget::OnDelete);
+    QObject::connect(previewWidget, &PreviewWidget::ImportRequested, mainWindow->GetPackageWidget(), &PackageWidget::OnImport);
+    QObject::connect(previewWidget, &PreviewWidget::CutRequested, mainWindow->GetPackageWidget(), &PackageWidget::OnCut);
+    QObject::connect(previewWidget, &PreviewWidget::CopyRequested, mainWindow->GetPackageWidget(), &PackageWidget::OnCopy);
+    QObject::connect(previewWidget, &PreviewWidget::PasteRequested, mainWindow->GetPackageWidget(), &PackageWidget::OnPaste);
 }
 
 void DocumentsModule::InitWatcher()
@@ -255,7 +257,7 @@ void DocumentsModule::InitWatcher()
     globalContext->CreateData(std::move(data));
 }
 
-void DocumentsModule::CreateActions()
+void DocumentsModule::CreateDocumentsActions()
 {
     using namespace DAVA;
     using namespace TArc;
@@ -283,7 +285,7 @@ void DocumentsModule::CreateActions()
         fieldDescr.type = ReflectedTypeDB::Get<DocumentData>();
         fieldDescr.fieldName = FastName(DocumentData::canSavePropertyName);
         action->SetStateUpdationFunction(QtAction::Enabled, fieldDescr, [](const Any& fieldValue) -> Any {
-            return fieldValue.CanCast<bool>() && fieldValue.Cast<bool>();
+            return fieldValue.Cast<bool>(false);
         });
 
         ActionPlacementInfo placementInfo;
@@ -395,7 +397,7 @@ void DocumentsModule::CreateUndoRedoActions()
         fieldDescrCanUndo.type = ReflectedTypeDB::Get<DocumentData>();
         fieldDescrCanUndo.fieldName = FastName(DocumentData::canUndoPropertyName);
         action->SetStateUpdationFunction(QtAction::Enabled, fieldDescrCanUndo, [](const Any& fieldValue) -> Any {
-            return fieldValue.CanCast<bool>() && fieldValue.Cast<bool>();
+            return fieldValue.Cast<bool>(false);
         });
 
         FieldDescriptor fieldDescrUndoText;
@@ -423,7 +425,7 @@ void DocumentsModule::CreateUndoRedoActions()
         fieldDescrCanRedo.type = ReflectedTypeDB::Get<DocumentData>();
         fieldDescrCanRedo.fieldName = FastName(DocumentData::canRedoPropertyName);
         action->SetStateUpdationFunction(QtAction::Enabled, fieldDescrCanRedo, [](const Any& fieldValue) -> Any {
-            return fieldValue.CanCast<bool>() && fieldValue.Cast<bool>();
+            return fieldValue.Cast<bool>(false);
         });
 
         FieldDescriptor fieldDescrUndoText;
@@ -511,14 +513,13 @@ DAVA::TArc::DataContext::ContextID DocumentsModule::OpenDocument(const QString& 
             initialData.push_back(std::move(documentData));
             initialData.emplace_back(new CentralWidgetData());
             id = contextManager->CreateContext(std::move(initialData));
-            contextManager->ActivateContext(id);
         }
     }
     if (id != DataContext::Empty)
     {
         contextManager->ActivateContext(id);
     }
-    return DataContext::Empty;
+    return id;
 }
 
 std::unique_ptr<DocumentData> DocumentsModule::CreateDocument(const QString& path)
@@ -563,31 +564,22 @@ void DocumentsModule::OnCanSaveChanged(const DAVA::Any& canSave)
     using namespace DAVA;
     using namespace TArc;
 
-    //right now we can receive CanSaveChanged from any of all open documents
-    ContextAccessor* accessor = GetAccessor();
-    accessor->ForEachContext([accessor](const DataContext& context) {
-        DataContext::ContextID id = context.GetID();
-        DocumentData* data = context.GetData<DocumentData>();
-        DVASSERT(nullptr != data);
-
-        SceneTabsModel* tabsModel = accessor->GetGlobalContext()->GetData<SceneTabsModel>();
-        DVASSERT(tabsModel->tabs.find(id) != tabsModel->tabs.end());
-        TabDescriptor& descriptor = tabsModel->tabs[id];
-        QString newTitle = data->GetName() + (data->CanSave() ? "*" : "");
-        descriptor.tabTitle = newTitle.toStdString();
-    });
-}
-
-void DocumentsModule::OnSelectionInPackageChanged(const SelectedNodes& selection)
-{
-    using namespace DAVA;
-    using namespace TArc;
-
     ContextAccessor* accessor = GetAccessor();
     DataContext* activeContext = accessor->GetActiveContext();
-    DVASSERT(nullptr != activeContext);
+    if (activeContext == nullptr)
+    {
+        return;
+    }
+
+    DataContext::ContextID id = activeContext->GetID();
     DocumentData* data = activeContext->GetData<DocumentData>();
-    data->SetSelectedNodes(selection);
+    DVASSERT(nullptr != data);
+
+    SceneTabsModel* tabsModel = accessor->GetGlobalContext()->GetData<SceneTabsModel>();
+    DVASSERT(tabsModel->tabs.find(id) != tabsModel->tabs.end());
+    TabDescriptor& descriptor = tabsModel->tabs[id];
+    QString newTitle = data->GetName() + (data->CanSave() ? "*" : "");
+    descriptor.tabTitle = newTitle.toStdString();
 }
 
 void DocumentsModule::SelectControl(const QString& documentPath, const QString& controlPath)
@@ -616,6 +608,7 @@ void DocumentsModule::SelectControl(const QString& documentPath, const QString& 
     }
 }
 
+//TODO: generalize changes in central widget
 void DocumentsModule::ChangeControlText(ControlNode* node)
 {
     using namespace DAVA;

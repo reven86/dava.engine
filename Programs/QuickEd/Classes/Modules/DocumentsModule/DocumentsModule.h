@@ -45,7 +45,7 @@ private:
     void InitCentralWidget();
     void InitWatcher();
 
-    void CreateActions();
+    void CreateDocumentsActions();
     void RegisterOperations();
 
     //Edit
@@ -73,10 +73,6 @@ private:
 
     void OnActiveTabChanged(const DAVA::Any& contextID);
     void OnCanSaveChanged(const DAVA::Any& canSave);
-
-    //forward selection to the properties wigdet and back
-    //remove it when package will becomes separate module
-    DAVA_DEPRECATED(void OnSelectionInPackageChanged(const SelectedNodes& selection);)
 
     void SelectControl(const QString& documentPath, const QString& controlPath);
 

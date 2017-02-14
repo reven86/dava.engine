@@ -1,4 +1,4 @@
-#include "Modules/DocumentsModule/CentralWidgetData.h"
+#include "Modules/DocumentsModule/Private/CentralWidgetData.h"
 
 const char* CentralWidgetData::canvasPositionPropertyName = "canvas posititon";
 

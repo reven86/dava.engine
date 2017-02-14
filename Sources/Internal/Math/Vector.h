@@ -2,7 +2,6 @@
 
 #include <cmath>
 #include "Base/BaseTypes.h"
-#include "Base/Any.h"
 #include "Math/MathConstants.h"
 
 namespace DAVA
@@ -1161,15 +1160,4 @@ inline Vector4 Normalize(const Vector4& v)
     res.Normalize();
     return res;
 }
-
-template <>
-struct AnyCompare<Vector2>
-{
-    static bool IsEqual(const Any& v1, const Any& v2)
-    {
-        const Vector2& vv1 = v1.Get<Vector2>();
-        const Vector2& vv2 = v2.Get<Vector2>();
-        return vv1 == vv2;
-    }
-};
 };

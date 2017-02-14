@@ -1,7 +1,5 @@
 #pragma once
 
-#include "ui_mainwindow.h"
-
 #include <TArc/DataProcessing/DataNode.h>
 
 #if defined(__DAVAENGINE_MACOS__)
@@ -15,25 +13,22 @@
 
 #include <QMainWindow>
 
-namespace DAVA
+namespace Ui
 {
-class RenderWidget;
+class MainWindow;
 }
 
-class QCheckBox;
-class QActionGroup;
+class PackageWidget;
 
 namespace DAVA
 {
 class ResultList;
 }
 
-namespace Ui
-{
-class MainWindow;
-}
+class QCheckBox;
+class QActionGroup;
 
-class MainWindow : public QMainWindow, public DAVA::InspBase, public DAVA::TrackedObject, public Ui::MainWindow
+class MainWindow : public QMainWindow, public DAVA::InspBase, public DAVA::TrackedObject
 {
     Q_OBJECT
 
@@ -47,7 +42,8 @@ public:
 
     void SetEditorTitle(const QString& editorTitle);
 
-    ProjectView* GetProjectView();
+    ProjectView* GetProjectView() const;
+    PackageWidget* GetPackageWidget() const;
 
 signals:
     void EmulationModeChanged(bool emulationMode);
@@ -75,6 +71,8 @@ private:
     void UpdateWindowTitle();
 
     bool eventFilter(QObject* object, QEvent* event) override;
+
+    std::unique_ptr<Ui::MainWindow> ui;
 
     QString editorTitle;
     QString projectPath;

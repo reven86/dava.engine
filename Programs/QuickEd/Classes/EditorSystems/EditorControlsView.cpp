@@ -317,7 +317,6 @@ void BackgroundController::AdjustToNestedControl()
     Vector2 size = rect.GetSize();
     positionHolderControl->SetPosition(pos);
     gridControl->SetSize(size);
-    contentSizeChanged.Emit();
     rootControlPosChanged.Emit(pos);
 }
 
@@ -362,6 +361,7 @@ void BackgroundController::FitGridIfParentIsNested(PackageBaseNode* node)
         if (parent->GetControl() == nestedControl) //we change child in the nested control
         {
             AdjustToNestedControl();
+            contentSizeChanged.Emit();
             return;
         }
         parent = parent->GetParent();
@@ -416,6 +416,7 @@ void EditorControlsView::OnDragStateChanged(EditorSystemsManager::eDragState /*c
             control->AdjustToNestedControl();
         }
     }
+    Layout();
 }
 
 void EditorControlsView::ControlWasRemoved(ControlNode* node, ControlsContainerNode* from)

@@ -141,10 +141,7 @@ void DataWrapper::SetFieldValue(const Any& fieldKey, const Any& value)
 
 Any DataWrapper::GetFieldValue(const Any& fieldKey) const
 {
-    if (HasData() == false)
-    {
-        return Any();
-    }
+    DVASSERT(HasData());
     Reflection data = GetData();
     Reflection field = data.GetField(fieldKey);
     DVASSERT(field.IsValid() == true);

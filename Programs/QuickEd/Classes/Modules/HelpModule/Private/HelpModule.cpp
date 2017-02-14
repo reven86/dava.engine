@@ -56,8 +56,7 @@ void HelpModule::UnpackHelp()
         }
         catch (std::exception& ex)
         {
-            Logger::Error("%s", ex.what());
-            DVASSERT(false && "can't unpack help docs to documents dir");
+            Logger::Error("can not unpack help. Reason is: %s", ex.what());
         }
     }
 }

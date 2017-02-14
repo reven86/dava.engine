@@ -15,9 +15,7 @@ namespace TArc
 class ContextAccessor
 {
 public:
-    virtual ~ContextAccessor()
-    {
-    }
+    virtual ~ContextAccessor() = default;
 
     virtual void ForEachContext(const Function<void(DataContext&)>& functor) = 0;
     virtual void ForEachContext(const Function<void(const DataContext&)>& functor) const = 0;

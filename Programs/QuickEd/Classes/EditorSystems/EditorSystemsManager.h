@@ -184,8 +184,6 @@ private:
 
     void OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields) override;
 
-    DAVA::TArc::ContextAccessor* accessor = nullptr;
-
     DAVA::RefPtr<DAVA::UIControl> rootControl;
     DAVA::RefPtr<DAVA::UIControl> inputLayerControl;
     DAVA::RefPtr<DAVA::UIControl> scalableControl;

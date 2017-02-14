@@ -1,5 +1,4 @@
 #include "Modules/LegacySupportModule/LegacySupportModule.h"
-#include "Modules/LegacySupportModule/LegacySupportData.h"
 #include "Modules/LegacySupportModule/Private/Document.h"
 #include "Modules/DocumentsModule/DocumentData.h"
 #include "Modules/ProjectModule/ProjectData.h"
@@ -11,7 +10,9 @@
 
 #include "UI/mainwindow.h"
 #include "UI/ProjectView.h"
+#include "UI/Package/PackageWidget.h"
 #include "UI/DocumentGroupView.h"
+#include "UI/Find/FindFilter.h"
 
 #include <TArc/Core/ContextAccessor.h>
 #include <TArc/WindowSubSystem/Private/UIManager.h>
@@ -59,8 +60,9 @@ void LegacySupportModule::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, 
     using namespace DAVA::TArc;
     ContextAccessor* accessor = GetAccessor();
     DataContext* globalContext = accessor->GetGlobalContext();
-    LegacySupportData* data = globalContext->GetData<LegacySupportData>();
-    MainWindow* mainWindow = data->GetMainWindow();
+    QWidget* window = GetUI()->GetWindow(QEGlobal::windowKey);
+    MainWindow* mainWindow = qobject_cast<MainWindow*>(window);
+    DVASSERT(mainWindow != nullptr);
     MainWindow::ProjectView* projectView = mainWindow->GetProjectView();
 
     if (wrapper == projectDataWrapper)
@@ -79,7 +81,6 @@ void LegacySupportModule::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, 
             project = nullptr;
         }
     }
-
     else if (wrapper == documentDataWrapper)
     {
         using namespace DAVA;
@@ -94,19 +95,18 @@ void LegacySupportModule::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, 
             DVASSERT(iter != documents.end());
             document = iter->second.get();
         }
-        Any selectionValue = wrapper.GetFieldValue(DocumentData::selectionPropertyName);
-        PackageWidget* packageWidget = mainWindow->packageWidget;
+        PackageWidget* packageWidget = mainWindow->GetPackageWidget();
         if (wrapper.HasData() == false)
         {
-            packageWidget->OnSelectionChanged(selectionValue);
+            packageWidget->OnSelectionChanged(Any());
             DVASSERT(document == nullptr);
             documentGroupView->SetDocument(document);
         }
-
         else if (wrapper.HasData() && fields.empty())
         {
             DVASSERT(document != nullptr);
             documentGroupView->SetDocument(document);
+            Any selectionValue = wrapper.GetFieldValue(DocumentData::selectionPropertyName);
             packageWidget->OnSelectionChanged(selectionValue);
         }
         else
@@ -119,6 +119,8 @@ void LegacySupportModule::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, 
             {
                 documentGroupView->SetDocument(document);
             }
+
+            Any selectionValue = wrapper.GetFieldValue(DocumentData::selectionPropertyName);
             if (selectionValue.IsEmpty() == false)
             {
                 if (std::find(fields.begin(), fields.end(), String(DocumentData::selectionPropertyName)) != fields.end())
@@ -143,10 +145,8 @@ void LegacySupportModule::InitMainWindow()
     using namespace DAVA;
     using namespace TArc;
 
-    std::unique_ptr<LegacySupportData> data(new LegacySupportData());
-
-    MainWindow* mainWindowPtr = data->GetMainWindow();
-    MainWindow::ProjectView* projectView = mainWindowPtr->GetProjectView();
+    MainWindow* mainWindow = new MainWindow();
+    MainWindow::ProjectView* projectView = mainWindow->GetProjectView();
 
     connections.AddConnection(projectView, &MainWindow::ProjectView::JumpToControl, MakeFunction(this, &LegacySupportModule::JumpToControl));
     connections.AddConnection(projectView, &MainWindow::ProjectView::JumpToPackage, MakeFunction(this, &LegacySupportModule::JumpToPackage));
@@ -158,20 +158,19 @@ void LegacySupportModule::InitMainWindow()
         InvokeOperation(QEGlobal::OpenDocumentByPath.ID, path);
     });
 
-    connections.AddConnection(mainWindowPtr->packageWidget, &PackageWidget::SelectedNodesChanged, [this](const SelectedNodes& selection) {
+    connections.AddConnection(mainWindow->GetPackageWidget(), &PackageWidget::SelectedNodesChanged, [this](const SelectedNodes& selection) {
         documentDataWrapper.SetFieldValue(DocumentData::selectionPropertyName, selection);
     });
 
     const char* editorTitle = "DAVA Framework - QuickEd | %1-%2 [%3 bit]";
     uint32 bit = static_cast<DAVA::uint32>(sizeof(DAVA::pointer_size) * 8);
     QString title = QString(editorTitle).arg(DAVAENGINE_VERSION).arg(APPLICATION_BUILD_VERSION).arg(bit);
-    mainWindowPtr->SetEditorTitle(title);
+    mainWindow->SetEditorTitle(title);
 
     UIManager* ui = static_cast<UIManager*>(GetUI());
-    ui->InjectWindow(QEGlobal::windowKey, mainWindowPtr);
+    ui->InjectWindow(QEGlobal::windowKey, mainWindow);
     ContextAccessor* accessor = GetAccessor();
     DataContext* globalContext = accessor->GetGlobalContext();
-    globalContext->CreateData(std::move(data));
 }
 
 void LegacySupportModule::RegisterOperations()
@@ -181,8 +180,9 @@ void LegacySupportModule::RegisterOperations()
     ContextAccessor* accessor = GetAccessor();
     DataContext* globalContext = accessor->GetGlobalContext();
 
-    LegacySupportData* data = globalContext->GetData<LegacySupportData>();
-    MainWindow* mainWindow = data->GetMainWindow();
+    QWidget* window = GetUI()->GetWindow(QEGlobal::windowKey);
+    MainWindow* mainWindow = qobject_cast<MainWindow*>(window);
+    DVASSERT(nullptr != mainWindow);
     MainWindow::ProjectView* view = mainWindow->GetProjectView();
     RegisterOperation(QEGlobal::SelectFile.ID, view, &MainWindow::ProjectView::SelectFile);
 }
@@ -211,8 +211,8 @@ void LegacySupportModule::OnFindPrototypeInstances()
             String name = controlNode->GetName();
 
             DataContext* globalContext = accessor->GetGlobalContext();
-            LegacySupportData* data = globalContext->GetData<LegacySupportData>();
-            MainWindow* mainWindow = data->GetMainWindow();
+            QWidget* window = GetUI()->GetWindow(QEGlobal::windowKey);
+            MainWindow* mainWindow = qobject_cast<MainWindow*>(window);
             MainWindow::ProjectView* view = mainWindow->GetProjectView();
 
             view->FindControls(std::make_unique<PrototypeUsagesFilter>(path.GetFrameworkPath(), FastName(name)));

@@ -13,16 +13,16 @@ MainWindow::ProjectView::ProjectView(MainWindow* mainWindow_)
     InitPluginsToolBar();
     SetProjectActionsEnabled(false);
 
-    connect(mainWindow->actionJumpToPrototype, &QAction::triggered, this, &MainWindow::ProjectView::JumpToPrototype);
-    connect(mainWindow->actionFindPrototypeInstances, &QAction::triggered, this, &MainWindow::ProjectView::FindPrototypeInstances);
+    connect(mainWindow->ui->actionJumpToPrototype, &QAction::triggered, this, &MainWindow::ProjectView::JumpToPrototype);
+    connect(mainWindow->ui->actionFindPrototypeInstances, &QAction::triggered, this, &MainWindow::ProjectView::FindPrototypeInstances);
 
-    connect(this, &MainWindow::ProjectView::ProjectChanged, mainWindow->findWidget, &FindWidget::OnProjectChanged);
+    connect(this, &MainWindow::ProjectView::ProjectChanged, mainWindow->ui->findWidget, &FindWidget::OnProjectChanged);
 
-    mainWindow->packageWidget->treeView->addAction(mainWindow->actionJumpToPrototype);
-    mainWindow->packageWidget->treeView->addAction(mainWindow->actionFindPrototypeInstances);
+    mainWindow->ui->packageWidget->treeView->addAction(mainWindow->ui->actionJumpToPrototype);
+    mainWindow->ui->packageWidget->treeView->addAction(mainWindow->ui->actionFindPrototypeInstances);
 
-    connect(mainWindow->findWidget, &FindWidget::JumpToControl, this, &MainWindow::ProjectView::JumpToControl);
-    connect(mainWindow->findWidget, &FindWidget::JumpToPackage, this, &MainWindow::ProjectView::JumpToPackage);
+    connect(mainWindow->ui->findWidget, &FindWidget::JumpToControl, this, &MainWindow::ProjectView::JumpToControl);
+    connect(mainWindow->ui->findWidget, &FindWidget::JumpToPackage, this, &MainWindow::ProjectView::JumpToPackage);
 }
 
 void MainWindow::ProjectView::SetLanguages(const QStringList& availableLangsCodes, const QString& currentLangCode)
@@ -55,11 +55,11 @@ void MainWindow::ProjectView::SetCurrentLanguage(const QString& currentLangCode)
 
 void MainWindow::ProjectView::SetProjectActionsEnabled(bool enabled)
 {
-    mainWindow->actionJumpToPrototype->setEnabled(enabled);
-    mainWindow->actionFindPrototypeInstances->setEnabled(enabled);
-    mainWindow->toolBarGlobal->setEnabled(enabled);
+    mainWindow->ui->actionJumpToPrototype->setEnabled(enabled);
+    mainWindow->ui->actionFindPrototypeInstances->setEnabled(enabled);
+    mainWindow->ui->toolBarGlobal->setEnabled(enabled);
 
-    mainWindow->fileSystemDockWidget->setEnabled(enabled);
+    mainWindow->ui->fileSystemDockWidget->setEnabled(enabled);
 }
 
 MainWindow::DocumentGroupView* MainWindow::ProjectView::GetDocumentGroupView()
@@ -87,8 +87,8 @@ void MainWindow::ProjectView::InitLanguageBox()
     layout->addWidget(comboboxLanguage);
     QWidget* wrapper = new QWidget();
     wrapper->setLayout(layout);
-    mainWindow->toolBarGlobal->addSeparator();
-    mainWindow->toolBarGlobal->addWidget(wrapper);
+    mainWindow->ui->toolBarGlobal->addSeparator();
+    mainWindow->ui->toolBarGlobal->addWidget(wrapper);
 
     void (QComboBox::*currentIndexChangedFn)(int) = &QComboBox::currentIndexChanged;
     connect(comboboxLanguage, currentIndexChangedFn, this, &MainWindow::ProjectView::OnCurrentLanguageChanged);
@@ -98,8 +98,8 @@ void MainWindow::ProjectView::InitRtlBox()
 {
     QCheckBox* rtlBox = new QCheckBox(tr("Right-to-left"));
     rtlBox->setLayoutDirection(Qt::RightToLeft);
-    mainWindow->toolBarGlobal->addSeparator();
-    mainWindow->toolBarGlobal->addWidget(rtlBox);
+    mainWindow->ui->toolBarGlobal->addSeparator();
+    mainWindow->ui->toolBarGlobal->addWidget(rtlBox);
     connect(rtlBox, &QCheckBox::stateChanged, this, &MainWindow::ProjectView::OnRtlChanged);
 }
 
@@ -107,8 +107,8 @@ void MainWindow::ProjectView::InitBiDiSupportBox()
 {
     QCheckBox* bidiSupportBox = new QCheckBox(tr("BiDi Support"));
     bidiSupportBox->setLayoutDirection(Qt::RightToLeft);
-    mainWindow->toolBarGlobal->addSeparator();
-    mainWindow->toolBarGlobal->addWidget(bidiSupportBox);
+    mainWindow->ui->toolBarGlobal->addSeparator();
+    mainWindow->ui->toolBarGlobal->addWidget(bidiSupportBox);
     connect(bidiSupportBox, &QCheckBox::stateChanged, this, &MainWindow::ProjectView::OnBiDiSupportChanged);
 }
 
@@ -124,8 +124,8 @@ void MainWindow::ProjectView::InitGlobalClasses()
     layout->addWidget(classesEdit);
     QWidget* wrapper = new QWidget();
     wrapper->setLayout(layout);
-    mainWindow->toolBarGlobal->addSeparator();
-    mainWindow->toolBarGlobal->addWidget(wrapper);
+    mainWindow->ui->toolBarGlobal->addSeparator();
+    mainWindow->ui->toolBarGlobal->addWidget(wrapper);
     connect(classesEdit, &QLineEdit::textChanged, this, &MainWindow::ProjectView::OnGlobalClassesChanged);
 }
 
@@ -162,17 +162,17 @@ void MainWindow::ProjectView::OnCurrentLanguageChanged(int newLanguageIndex)
 
 void MainWindow::ProjectView::SelectFile(const QString& filePath)
 {
-    mainWindow->fileSystemDockWidget->SelectFile(filePath);
+    mainWindow->ui->fileSystemDockWidget->SelectFile(filePath);
 }
 
 void MainWindow::ProjectView::FindControls(std::unique_ptr<FindFilter>&& filter)
 {
-    mainWindow->findWidget->Find(std::move(filter));
+    mainWindow->ui->findWidget->Find(std::move(filter));
 }
 
 void MainWindow::ProjectView::SetResourceDirectory(const QString& path)
 {
-    mainWindow->fileSystemDockWidget->SetResourceDirectory(path);
+    mainWindow->ui->fileSystemDockWidget->SetResourceDirectory(path);
 }
 
 QString MainWindow::ProjectView::ConvertLangCodeToString(const QString& langCode)

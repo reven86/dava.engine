@@ -51,9 +51,8 @@ private:
 };
 }
 
-EditorSystemsManager::EditorSystemsManager(DAVA::TArc::ContextAccessor* accessor_)
-    : accessor(accessor_)
-    , rootControl(new UIControl())
+EditorSystemsManager::EditorSystemsManager(DAVA::TArc::ContextAccessor* accessor)
+    : rootControl(new UIControl())
     , inputLayerControl(new EditorSystemsManagerDetails::InputLayerControl(this))
     , scalableControl(new UIControl())
     , editingRootControls(CompareByLCA)
@@ -255,7 +254,6 @@ void EditorSystemsManager::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper,
         OnSelectionDataChanged(Any());
         OnPackageDataChanged(Any());
     }
-
     else if (wrapper.HasData() && fields.empty())
     {
         OnSelectionDataChanged(wrapper.GetFieldValue(DocumentData::selectionPropertyName));
@@ -264,7 +262,6 @@ void EditorSystemsManager::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper,
     else
     {
         bool needRefresh = false;
-        //capture by const reference
         auto updateField = [&wrapper, &fields, &needRefresh](const String& name, Function<void(const Any&)> updateFn) {
             if (std::find(fields.begin(), fields.end(), name) != fields.end())
             {

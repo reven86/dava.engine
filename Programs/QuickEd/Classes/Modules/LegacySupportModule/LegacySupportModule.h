@@ -9,6 +9,7 @@
 #include <TArc/DataProcessing/DataListener.h>
 
 class Project;
+class Document;
 
 class LegacySupportModule : public DAVA::TArc::ClientModule, private DAVA::TArc::DataListener
 {

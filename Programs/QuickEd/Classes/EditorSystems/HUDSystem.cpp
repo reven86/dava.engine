@@ -131,18 +131,10 @@ HUDSystem::~HUDSystem()
 
 void HUDSystem::OnSelectionChanged(const SelectedNodes& selection)
 {
-    for (auto node : selectionContainer.selectedNodes)
-    {
-        ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
-        if (nullptr != controlNode)
-        {
-            hudMap.erase(controlNode);
-            sortedControlList.erase(controlNode);
-        }
-    }
-    selectionContainer.selectedNodes = selection;
+    sortedControlList.clear();
+    hudMap.clear();
 
-    for (auto node : selectionContainer.selectedNodes)
+    for (auto node : selection)
     {
         ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
         if (controlNode != nullptr)
@@ -163,7 +155,7 @@ void HUDSystem::OnSelectionChanged(const SelectedNodes& selection)
 
 void HUDSystem::ProcessInput(UIEvent* currentInput)
 {
-    bool findPivot = selectionContainer.selectedNodes.size() == 1 && IsKeyPressed(KeyboardProxy::KEY_CTRL) && IsKeyPressed(KeyboardProxy::KEY_ALT);
+    bool findPivot = hudMap.size() == 1 && IsKeyPressed(KeyboardProxy::KEY_CTRL) && IsKeyPressed(KeyboardProxy::KEY_ALT);
     eSearchOrder searchOrder = findPivot ? SEARCH_BACKWARD : SEARCH_FORWARD;
     hoveredPoint = currentInput->point;
     UIEvent::Phase phase = currentInput->phase;
