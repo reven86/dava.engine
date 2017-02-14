@@ -3,7 +3,6 @@
 #include "FileSystem/Private/PackMetaData.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "FileSystem/FileSystem.h"
-#include "FileSystem/FileAPIHelper.h"
 #include "Utils/CRC32.h"
 #include "Utils/Utils.h"
 #include "Logger/Logger.h"
@@ -14,19 +13,25 @@ namespace DAVA
 PackRequest::PackRequest(DLCManagerImpl& packManager_, const String& pack_)
     : packManagerImpl(packManager_)
     , requestedPackName(pack_)
+    , delayedRequest(true)
 {
 }
 
 PackRequest::PackRequest(DLCManagerImpl& packManager_, const String& pack_, Vector<uint32> fileIndexes_)
     : packManagerImpl(packManager_)
-    , fileIndexes(std::move(fileIndexes_))
     , requestedPackName(pack_)
+    , delayedRequest(false)
 {
+    SetFileIndexes(std::move(fileIndexes_));
 }
 
 PackRequest::~PackRequest()
 {
-    Stop();
+    if (taskId != 0)
+    {
+        DownloadManager::Instance()->Cancel(taskId);
+        taskId = 0;
+    }
 }
 
 void PackRequest::Start()
@@ -49,11 +54,29 @@ Vector<String> PackRequest::GetDependencies() const
     Vector<String> requestNames;
 
     const PackMetaData& meta = packManagerImpl.GetMeta();
-    const auto& packInfo = meta.GetPackInfo(requestedPackName);
-    String dependencies = std::get<1>(packInfo);
+    const PackMetaData::PackInfo& packInfo = meta.GetPackInfo(requestedPackName);
+    const String& dependencies = packInfo.packDependencies;
     String delimiter(", ");
 
     Split(dependencies, delimiter, requestNames);
+
+    // convert every name from string representation of index to packName
+    for (String& pack : requestNames)
+    {
+        uint32 index = 0;
+        try
+        {
+            unsigned long i = stoul(pack);
+            index = static_cast<uint32>(i);
+        }
+        catch (std::exception& ex)
+        {
+            Logger::Error("bad dependency index for pack: %s, index value: %s, error message: %s", packInfo.packName.c_str(), pack.c_str(), ex.what());
+            DAVA_THROW(Exception, "bad dependency pack index see log");
+        }
+        const PackMetaData::PackInfo& info = meta.GetPackInfo(index);
+        pack = info.packName;
+    }
 
     return requestNames;
 }
@@ -77,12 +100,20 @@ uint64 PackRequest::GetDownloadedSize() const
 /** return true when all files loaded and ready */
 bool PackRequest::IsDownloaded() const
 {
-    return numOfDownloadedFile == fileIndexes.size();
+    return !delayedRequest && numOfDownloadedFile == fileIndexes.size();
 }
 
 void PackRequest::SetFileIndexes(Vector<uint32> fileIndexes_)
 {
     fileIndexes = std::move(fileIndexes_);
+    delayedRequest = false;
+
+    if (fileIndexes.empty())
+    {
+        // all files already loaded or empty virtual pack
+        status = Ready;
+        packManagerImpl.requestUpdated.Emit(*this);
+    }
 }
 
 void PackRequest::InitializeCurrentFileRequest()
@@ -109,9 +140,7 @@ void PackRequest::Update()
     DVASSERT(Thread::IsMainThread());
     DVASSERT(packManagerImpl.IsInitialized());
 
-    uint32 countChecksPerUpdate = packManagerImpl.GetHints().checkLocalFileExistPerUpdate;
-
-    if (numOfDownloadedFile < fileIndexes.size() && countChecksPerUpdate > 0)
+    if (numOfDownloadedFile < fileIndexes.size())
     {
         if (localFile.IsEmpty())
         {
@@ -121,7 +150,7 @@ void PackRequest::Update()
 
         if (IsDownloadedFileRequest())
         {
-            packManagerImpl.requestUpdated.Emit(*this);
+            uint32 countChecksPerUpdate = packManagerImpl.GetHints().checkLocalFileExistPerUpdate;
             do
             {
                 numOfDownloadedFile++;
@@ -178,21 +207,10 @@ void PackRequest::UpdateFileRequest()
         break;
     case CheckLocalFile:
     {
-        FileSystem* fs = FileSystem::Instance();
-        String fullPathDvpl = localFile.GetAbsolutePathname();
-        uint64 size = FileAPI::GetFileSize(fullPathDvpl);
-
-        if (size != std::numeric_limits<uint64>::max())
+        if (packManagerImpl.IsFileReady(fileIndex))
         {
-            if (size == (sizeOfCompressedFile + sizeof(PackFormat::LitePack::Footer)))
-            {
-                status = CheckHash;
-            }
-            else
-            {
-                fs->DeleteFile(fullPathDvpl);
-                status = LoadingPackFile;
-            }
+            status = Ready;
+            packManagerImpl.requestUpdated.Emit(*this);
         }
         else
         {
@@ -205,6 +223,7 @@ void PackRequest::UpdateFileRequest()
         DownloadManager* dm = DownloadManager::Instance();
         if (taskId == 0)
         {
+            FileSystem::Instance()->DeleteFile(localFile); // just in case (hash not match, size not match...)
             taskId = dm->DownloadRange(url, localFile, startLoadingPos, sizeOfCompressedFile);
         }
         else
@@ -252,20 +271,6 @@ void PackRequest::UpdateFileRequest()
     case CheckHash:
     {
         prevDownloadedSize = 0;
-        if (FileSystem::Instance()->IsFile(localFile))
-        {
-            uint64 size = 0;
-            FileSystem::Instance()->GetFileSize(localFile + ".dvpl", size);
-            if (size == (sizeOfCompressedFile + sizeof(PackFormat::LitePack::Footer)))
-            {
-                downloadedSize += (sizeOfCompressedFile + sizeof(PackFormat::LitePack::Footer));
-                status = Ready;
-                packManagerImpl.requestUpdated.Emit(*this);
-                return;
-            }
-
-            FileSystem::Instance()->DeleteFile(localFile + ".dvpl");
-        }
 
         uint32 fileCrc32 = CRC32::ForFile(localFile);
         if (fileCrc32 == hashFromMeta)
@@ -285,8 +290,8 @@ void PackRequest::UpdateFileRequest()
 
             downloadedSize += (sizeOfCompressedFile + sizeof(footer));
 
-            packManagerImpl.requestUpdated.Emit(*this);
             status = Ready;
+            packManagerImpl.requestUpdated.Emit(*this);
         }
         else
         {

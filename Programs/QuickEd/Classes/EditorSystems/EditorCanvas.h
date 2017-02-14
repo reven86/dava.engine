@@ -60,4 +60,5 @@ private:
     const DAVA::float32 margin = 50.0f;
     bool isMouseMidButtonPressed = false;
     bool isSpacePressed = false;
+    std::pair<bool, bool> needCentralize = { false, false };
 };
