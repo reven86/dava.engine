@@ -65,7 +65,7 @@ void WindowBackend::Close(bool appIsTerminating)
     {
         // If application is terminating then send event as if window has been destroyed.
         // Engine ensures that Close with appIsTerminating with true value is always called on termination.
-        mainDispatcher->SendEvent(MainDispatcherEvent::CreateWindowDestroyedEvent(window));
+        mainDispatcher->SendEvent(MainDispatcherEvent::CreateWindowDestroyedEvent(window), MainDispatcher::eSendPolicy::IMMEDIATE_EXECUTION);
     }
 }
 
