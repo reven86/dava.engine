@@ -70,7 +70,7 @@ def start_unittests_on_android_device():
         stdout=subprocess.PIPE)
     # start unittests on device
     subprocess.Popen(
-        ["adb", "shell", "am", "start", "-n", "com.dava.unittests/com.dava.unittests." + PRJ_NAME_BASE])
+        ["adb", "shell", "am", "start", "-n", "com.dava.unittests/com.dava.engine.DavaActivity"])
     return sub_process
 
 def start_unittests_on_uwp_device():

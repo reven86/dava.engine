@@ -1,5 +1,4 @@
-#ifndef FILESYSTEMHELPER_H
-#define FILESYSTEMHELPER_H
+#pragma once
 
 #include <QObject>
 #include <QVariant>
@@ -28,5 +27,3 @@ public:
     Q_INVOKABLE QString FindCMakeBin(const QString& pathToDavaFramework, const QString& frameworkDirName) const;
     static eErrorCode ClearFolderIfKeyFileExists(const QString& buildFolder, const QString& keyFile);
 };
-
-#endif // FILESYSTEMHELPER_H

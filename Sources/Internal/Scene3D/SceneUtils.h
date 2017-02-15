@@ -14,8 +14,9 @@ namespace SceneUtils
 {
 /*
  \brief Iterates over all scene nodes, searches nodes with speciefic names and makes new nodes with lods.
+ \return true if combination was successfull
 */
-void CombineLods(Scene* scene);
+bool CombineLods(Scene* scene);
 
 /*
  \brief Creates Entity name for speciefic lod index by pattern.
@@ -26,8 +27,9 @@ String LodNameForIndex(const String& pattern, uint32 lodIndex);
  \brief Finds all enitities with SameName_lod0 and then iterates over that nodes and searches similar ones with another lods.
         Then takes all found nodes with the same name and different lods and makes one new entity with multiple render barches for 
         different lods. It is our convience - "EntityName_lod%d". If we'll change it - we should write new function like this.
+ \return true if combination was successfull
  */
-void CombineEntityLods(Entity* forRootNode);
+bool CombineEntityLods(Entity* forRootNode);
 
 /*
  \brief Iterates ecursive over all nodes from currentNode and deeper. 
