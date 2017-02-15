@@ -41,13 +41,14 @@ class MessageBox extends DialogFragment
                 }
             }
 
-            MessageBox msgbox = new MessageBox(title, content, buttons);
+            MessageBox msgbox = new MessageBox();
+            msgbox.prepare(title, content, buttons);
             return inUIThread ? msgbox.showModalNonBlocking() : msgbox.showModalBlocking();
         }
         return -1;
     }
 
-    private MessageBox(String title, String content, String[] buttons)
+    private void prepare(String title, String content, String[] buttons)
     {
         originatedFromMainThread = DavaActivity.isNativeMainThread();
 
