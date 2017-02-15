@@ -11,6 +11,8 @@ typedef void CURLM;
 
 namespace DAVA
 {
+class Thread;
+
 class CurlDownloader final : public Downloader
 {
 public:

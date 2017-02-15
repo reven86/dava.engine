@@ -17,9 +17,7 @@ class Downloader
 
 public:
     Downloader();
-    virtual ~Downloader()
-    {
-    }
+    virtual ~Downloader() = default;
 
     /* all methods putted into protected section because they should be used only from DownloadManager. */
 protected:
