@@ -551,13 +551,12 @@ void TextFieldPlatformImpl::TextFieldUpdateTexture(uint32_t id, int32* rawPixels
                 SafeRelease(spr);
             };
 
-            UIControlBackground* bg = textField.GetOrCreateComponent<UIControlBackground>();
-            bg->SetSprite(spr, 0);
+            textField.GetBackground()->SetSprite(spr, 0);
         }
         else
         {
             // reset sprite to prevent render old sprite under android view
-            textField.RemoveComponent(UIComponent::BACKGROUND_COMPONENT);
+            textField.SetSprite(nullptr, 0);
         }
     }
 }

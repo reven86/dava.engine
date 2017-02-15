@@ -369,14 +369,14 @@ void UIControlSystem::Draw()
 
     if (currentScreenTransition)
     {
-        currentScreenTransition->SystemDraw(baseGeometricData, nullptr);
+        currentScreenTransition->SystemDraw(baseGeometricData);
     }
     else if (currentScreen)
     {
-        currentScreen->SystemDraw(baseGeometricData, nullptr);
+        currentScreen->SystemDraw(baseGeometricData);
     }
 
-    popupContainer->SystemDraw(baseGeometricData, nullptr);
+    popupContainer->SystemDraw(baseGeometricData);
 
     if (frameSkip > 0)
     {

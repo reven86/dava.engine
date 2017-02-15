@@ -313,9 +313,8 @@ void EditorSystemsManager::InitDAVAScreen()
 
     backgroundControl->SetName(FastName("Background control of scroll area controller"));
     ScopedPtr<UIScreen> davaUIScreen(new UIScreen());
-    UIControlBackground* screenBackground = davaUIScreen->GetOrCreateComponent<UIControlBackground>();
-    screenBackground->SetDrawType(UIControlBackground::DRAW_FILL);
-    screenBackground->SetColor(Color(0.3f, 0.3f, 0.3f, 1.0f));
+    davaUIScreen->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
+    davaUIScreen->GetBackground()->SetColor(Color(0.3f, 0.3f, 0.3f, 1.0f));
     const EngineContext* engineContext = GetEngineContext();
     engineContext->uiScreenManager->RegisterScreen(0, davaUIScreen);
     engineContext->uiScreenManager->SetFirst(0);

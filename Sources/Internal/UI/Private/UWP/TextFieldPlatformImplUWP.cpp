@@ -204,10 +204,9 @@ TextFieldPlatformImpl::~TextFieldPlatformImpl()
 
 void TextFieldPlatformImpl::Initialize()
 {
-    UIControlBackground* bg = uiTextField->GetOrCreateComponent<UIControlBackground>();
-    bg->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
+    uiTextField->GetBackground()->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
 #if defined(__DAVAENGINE_COREV2__)
-    bg->SetMaterial(RenderSystem2D::DEFAULT_2D_TEXTURE_PREMULTIPLIED_ALPHA_MATERIAL);
+    uiTextField->GetBackground()->SetMaterial(RenderSystem2D::DEFAULT_2D_TEXTURE_PREMULTIPLIED_ALPHA_MATERIAL);
 #endif
     properties.createNew = true;
 
@@ -325,9 +324,7 @@ void TextFieldPlatformImpl::UpdateRect(const Rect& rect)
     if (properties.createNew || properties.anyPropertyChanged || properties.focusChanged)
     {
         if (properties.textChanged && properties.focusChanged && properties.focus)
-        {
-            uiTextField->RemoveComponent(UIComponent::BACKGROUND_COMPONENT);
-        }
+            uiTextField->SetSprite(nullptr, 0);
 
         auto self{ shared_from_this() };
         TextFieldProperties props(properties);
@@ -372,7 +369,7 @@ void TextFieldPlatformImpl::SetText(const WideString& text)
     curText = text;
     if (text.empty())
     { // Immediatly remove sprite image if new text is empty to get rid of some flickering
-        uiTextField->RemoveComponent(UIComponent::BACKGROUND_COMPONENT);
+        uiTextField->SetSprite(nullptr, 0);
     }
     programmaticTextChange = true;
 }
@@ -759,9 +756,7 @@ void TextFieldPlatformImpl::OnGotFocus()
         if (uiTextField != nullptr)
         {
             if (!multiline)
-            {
-                uiTextField->RemoveComponent(UIComponent::BACKGROUND_COMPONENT);
-            }
+                uiTextField->SetSprite(nullptr, 0);
 
             // Manually set focus through direct call to UITextField::SetFocused()
             // Reason: UIControlSystem has no chance to know whether control has got focus when
@@ -1305,8 +1300,7 @@ void TextFieldPlatformImpl::RenderToTexture(bool moveOffScreenOnCompletion)
                 Sprite* sprite = nullptr;
 #endif
                 sprite = CreateSpriteFromPreviewData(&buf[0], imageWidth, imageHeight);
-                UIControlBackground *bg = uiTextField->GetOrCreateComponent<UIControlBackground>();
-                bg->SetSprite(sprite, 0);
+                uiTextField->SetSprite(sprite, 0);
 #if !defined(__DAVAENGINE_COREV2__)
                 SafeRelease(sprite);
 #endif

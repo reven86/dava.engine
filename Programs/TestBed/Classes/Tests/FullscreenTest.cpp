@@ -19,8 +19,8 @@ void FullscreenTest::LoadResources()
     inputHandlerToken = GetEngineContext()->inputSystem->AddHandler(eInputDevices::CLASS_KEYBOARD, MakeFunction(this, &FullscreenTest::OnToggleFullscreen));
 
     windowSizeChangedToken = GetPrimaryWindow()->sizeChanged.Connect(this, &FullscreenTest::OnWindowSizeChanged);
-    UIControlBackground* background = GetOrCreateComponent<UIControlBackground>();
-    background->SetColor(Color::White);
+
+    GetBackground()->SetColor(Color::White);
 
     ScopedPtr<Font> font(FTFont::Create("~res:/Fonts/korinna.ttf"));
 

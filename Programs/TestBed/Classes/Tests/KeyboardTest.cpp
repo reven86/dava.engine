@@ -55,8 +55,7 @@ void KeyboardTest::LoadResources()
     descriptionText->SetTextColor(Color::White);
     descriptionText->SetFont(font);
     descriptionText->GetOrCreateComponent<UIFocusComponent>();
-    UIControlBackground* descriptionTextBg = descriptionText->GetOrCreateComponent<UIControlBackground>();
-    descriptionTextBg->SetAlign(ALIGN_LEFT | ALIGN_TOP);
+    descriptionText->SetSpriteAlign(ALIGN_LEFT | ALIGN_TOP);
     descriptionText->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
     descriptionText->SetMultiline(true);
     descriptionText->SetMultilineType(UIStaticText::MULTILINE_ENABLED_BY_SYMBOL);
@@ -106,20 +105,18 @@ void KeyboardTest::LoadResources()
     gamepad = new UIControl(gamepadPos);
     FilePath pathToBack("~res:/TestData/GamepadTest/gamepad.png");
     ScopedPtr<Sprite> gamepadSprite(Sprite::CreateFromSourceFile(pathToBack));
-    UIControlBackground* bg = gamepad->GetOrCreateComponent<UIControlBackground>();
-    bg->SetModification(ESM_VFLIP | ESM_HFLIP);
-    bg->SetSprite(gamepadSprite, 0);
+    gamepad->GetBackground()->SetModification(ESM_VFLIP | ESM_HFLIP);
+    gamepad->SetSprite(gamepadSprite, 0);
     AddControl(gamepad);
 
     for (auto& buttonOrAxisName : gamepadButtonsNames)
     {
         UIControl* img = new UIControl(gamepadPos);
         auto path = FilePath("~res:/TestData/GamepadTest/") + buttonOrAxisName + ".png";
-        UIControlBackground* bg = img->GetOrCreateComponent<UIControlBackground>();
-        bg->SetModification(ESM_VFLIP | ESM_HFLIP);
+        img->GetBackground()->SetModification(ESM_VFLIP | ESM_HFLIP);
 
         ScopedPtr<Sprite> sprite(Sprite::CreateFromSourceFile(path));
-        bg->SetSprite(sprite, 0);
+        img->SetSprite(sprite, 0);
         gamepadButtons[buttonOrAxisName] = img;
         AddControl(img);
         img->SetVisibilityFlag(false);

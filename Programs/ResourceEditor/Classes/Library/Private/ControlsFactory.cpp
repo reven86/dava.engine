@@ -83,24 +83,21 @@ DAVA::Color ControlsFactory::GetColorError()
 DAVA::UIControl* ControlsFactory::CreateLine(const DAVA::Rect& rect, DAVA::Color color)
 {
     DAVA::UIControl* lineControl = new DAVA::UIControl(rect);
-    DAVA::UIControlBackground* bg = lineControl->GetOrCreateComponent<DAVA::UIControlBackground>();
-    bg->color = color;
-    bg->SetDrawType(DAVA::UIControlBackground::DRAW_FILL);
+    lineControl->GetBackground()->color = color;
+    lineControl->GetBackground()->SetDrawType(DAVA::UIControlBackground::DRAW_FILL);
     return lineControl;
 }
 
 void ControlsFactory::CustomizeDialogFreeSpace(DAVA::UIControl* c)
 {
-    DAVA::UIControlBackground* bg = c->GetOrCreateComponent<DAVA::UIControlBackground>();
-    bg->color = DAVA::Color(0.0f, 0.0f, 0.0f, 0.3f);
-    bg->SetDrawType(DAVA::UIControlBackground::DRAW_FILL);
+    c->GetBackground()->color = DAVA::Color(0.0f, 0.0f, 0.0f, 0.3f);
+    c->GetBackground()->SetDrawType(DAVA::UIControlBackground::DRAW_FILL);
 }
 
 void ControlsFactory::CustomizeDialog(DAVA::UIControl* c)
 {
-    DAVA::UIControlBackground* bg = c->GetOrCreateComponent<DAVA::UIControlBackground>();
-    bg->color = DAVA::Color(0.0f, 0.0f, 0.0f, 0.5f);
-    bg->SetDrawType(DAVA::UIControlBackground::DRAW_FILL);
+    c->GetBackground()->color = DAVA::Color(0.0f, 0.0f, 0.0f, 0.5f);
+    c->GetBackground()->SetDrawType(DAVA::UIControlBackground::DRAW_FILL);
 }
 
 void ControlsFactory::AddBorder(DAVA::UIControl* c)

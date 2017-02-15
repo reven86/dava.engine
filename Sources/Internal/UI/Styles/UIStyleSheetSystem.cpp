@@ -317,20 +317,9 @@ void UIStyleSheetSystem::DoForAllPropertyInstances(UIControl* control, uint32 pr
         break;
     }
     case ePropertyOwner::COMPONENT:
-    {
-        UIComponent* component = control->GetComponent(descr.group->componentType);
-        if (component)
-        {
+        if (UIComponent* component = control->GetComponent(descr.group->componentType))
             action(control, component, descr.memberInfo);
-        }
-        else
-        {
-            const char* componentName = GlobalEnumMap<UIComponent::eType>::Instance()->ToString(descr.group->componentType);
-            const char* controlName = control->GetName().c_str();
-            Logger::Warning("Style sheet can not find component \'%s\' in control \'%s\'", componentName, controlName);
-        }
         break;
-    }
     default:
         DVASSERT(false);
         break;

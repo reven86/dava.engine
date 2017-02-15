@@ -77,9 +77,8 @@ void DeviceManagerTest::OnDisplayConfigChanged()
         ui->SetFont(font);
         ui->SetDebugDraw(true);
         ui->SetInputEnabled(true);
-        UIControlBackground* uiBg = ui->GetOrCreateComponent<UIControlBackground>();
-        uiBg->SetColor(Color(0, 0, 0.8f, 1));
-        uiBg->SetDrawType(UIControlBackground::DRAW_FILL);
+        ui->GetBackground()->SetColor(Color(0, 0, 0.8f, 1));
+        ui->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
         ui->SetText(UTF8Utils::EncodeToWideString(Format("%d", n + 1)));
         ui->SetTextAlign(ALIGN_HCENTER | ALIGN_VCENTER);
         ui->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE,

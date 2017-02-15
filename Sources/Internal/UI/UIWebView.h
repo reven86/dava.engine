@@ -57,7 +57,7 @@ public:
     UIWebView* Clone() override;
     void CopyDataFrom(UIControl* srcControl) override;
 
-    void SystemDraw(const UIGeometricData& geometricData, const DAVA::UIControlBackground* parentBackground) override;
+    void SystemDraw(const UIGeometricData& geometricData) override;
     void Draw(const UIGeometricData& geometricData) override;
     void Input(UIEvent* currentInput) override;
 

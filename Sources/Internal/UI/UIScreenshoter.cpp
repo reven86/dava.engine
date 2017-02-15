@@ -113,7 +113,7 @@ void UIScreenshoter::MakeScreenshotInternal(UIControl* control, Texture* screens
     {
         control->SystemUpdate(0.0f);
     }
-    control->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData(), nullptr);
+    control->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData());
 
     //[CLEAR ALPHA]
     if (clearAlpha)

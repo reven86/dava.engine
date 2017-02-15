@@ -681,8 +681,7 @@ void WebViewControl::RenderToTexture()
                 {
                     if (uiWebView != nullptr)
                     {
-                        UIControlBackground* bg = uiWebView->GetOrCreateComponent<UIControlBackground>();
-                        bg->SetSprite(sprite.Get(), 0);
+                        uiWebView->SetSprite(sprite.Get(), 0);
                     }
                 });
 #else
@@ -690,8 +689,7 @@ void WebViewControl::RenderToTexture()
                 {
                     if (uiWebView != nullptr)
                     {
-                        UIControlBackground* bg = uiWebView->GetOrCreateComponent<UIControlBackground>();
-                        bg->SetSprite(sprite.Get(), 0);
+                        uiWebView->SetSprite(sprite.Get(), 0);
                     }
                 });
 #endif

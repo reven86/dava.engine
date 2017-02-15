@@ -45,21 +45,21 @@ void UIScreen::SetFillBorderOrder(UIScreen::eFillBorderOrder fillOrder)
     fillBorderOrder = fillOrder;
 }
 
-void UIScreen::SystemDraw(const UIGeometricData& geometricData, const UIControlBackground* parentBackground)
+void UIScreen::SystemDraw(const UIGeometricData& geometricData)
 {
     if (fillBorderOrder == FILL_BORDER_BEFORE_DRAW)
     {
         FillScreenBorders(geometricData);
-        UIControl::SystemDraw(geometricData, parentBackground);
+        UIControl::SystemDraw(geometricData);
     }
     else if (fillBorderOrder == FILL_BORDER_AFTER_DRAW)
     {
-        UIControl::SystemDraw(geometricData, parentBackground);
+        UIControl::SystemDraw(geometricData);
         FillScreenBorders(geometricData);
     }
     else
     {
-        UIControl::SystemDraw(geometricData, parentBackground);
+        UIControl::SystemDraw(geometricData);
     }
 }
 

@@ -670,9 +670,9 @@ void UITextField::SetFontByPresetName(const String& presetName)
     }
 }
 
-void UITextField::SystemDraw(const UIGeometricData& geometricData, const UIControlBackground* parentBackground)
+void UITextField::SystemDraw(const UIGeometricData& geometricData)
 {
-    UIControl::SystemDraw(geometricData, parentBackground);
+    UIControl::SystemDraw(geometricData);
 
     UIGeometricData localData = GetLocalGeometricData();
     localData.AddGeometricData(geometricData);

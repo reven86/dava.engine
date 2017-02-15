@@ -113,8 +113,7 @@ void StaticWebViewTest::LoadResources()
     overlapedImage = new UIControl(Rect(500, 0, 300, 300));
     FilePath imgPath("~res:/TestData/UI/Rotation.png");
     ScopedPtr<Sprite> sprite(Sprite::CreateFromSourceFile(imgPath));
-    UIControlBackground* overlapedImageBg = overlapedImage->GetOrCreateComponent<UIControlBackground>();
-    overlapedImageBg->SetSprite(sprite, 0);
+    overlapedImage->SetSprite(sprite, 0);
     overlapedImage->SetDebugDraw(true);
     AddControl(overlapedImage);
 
@@ -180,8 +179,8 @@ void StaticWebViewTest::OnButtonSetNormal(BaseObject*, void*, void*)
 
 void StaticWebViewTest::OnButtonAdd10ToAlfa(BaseObject* obj, void* data, void* callerData)
 {
-    UIControlBackground* back = webView1->GetOrCreateComponent<UIControlBackground>();
-    Sprite* spr = back ? back->GetSprite() : nullptr;
+    Sprite* spr = webView1->GetSprite();
+    UIControlBackground* back = webView1->GetBackground();
     if (spr)
     {
         Color color = back->GetColor();
@@ -193,8 +192,8 @@ void StaticWebViewTest::OnButtonAdd10ToAlfa(BaseObject* obj, void* data, void* c
 
 void StaticWebViewTest::OnButtonMinus10FromAlfa(BaseObject* obj, void* data, void* callerData)
 {
-    UIControlBackground* back = webView1->GetOrCreateComponent<UIControlBackground>();
-    Sprite* spr = back ? back->GetSprite() : nullptr;
+    Sprite* spr = webView1->GetSprite();
+    UIControlBackground* back = webView1->GetBackground();
     if (spr)
     {
         Color color = back->GetColor();

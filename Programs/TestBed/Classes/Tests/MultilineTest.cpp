@@ -138,10 +138,9 @@ void MultilineTest::LoadResources()
     SafeRelease(field);
 
     topLayerControl = new UIControl(Rect(CONTROL_LENGHT / 3, Y_OFFSET, CONTROL_LENGHT / 3, 3 * (Y_OFFSET + CONTROL_HEIGTH + 10)));
-    UIControlBackground* topLayerControlBg = topLayerControl->GetOrCreateComponent<UIControlBackground>();
-    topLayerControlBg->SetColor(Color(1.0f, 0.0f, 0.0f, 0.5f));
-    topLayerControlBg->SetDrawType(UIControlBackground::DRAW_FILL);
-    topLayerControlBg->SetColorInheritType(UIControlBackground::COLOR_IGNORE_PARENT);
+    topLayerControl->GetBackground()->SetColor(Color(1.0f, 0.0f, 0.0f, 0.5f));
+    topLayerControl->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
+    topLayerControl->GetBackground()->SetColorInheritType(UIControlBackground::COLOR_IGNORE_PARENT);
     topLayerControl->SetDebugDraw(true);
     AddControl(topLayerControl);
 

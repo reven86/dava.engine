@@ -90,8 +90,7 @@ UIListCell* TestListScreen::CellAtIndex(UIList* list, int32 index)
         }
 
         SafeRelease(font);
-        UIControlBackground* background = c->GetOrCreateComponent<UIControlBackground>();
-        background->SetColor(Color(0.75, 0.75, 0.75, 0.5));
+        c->GetBackground()->SetColor(Color(0.75, 0.75, 0.75, 0.5));
     }
 
     auto screen = testScreens.at(index);

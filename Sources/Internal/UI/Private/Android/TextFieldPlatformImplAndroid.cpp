@@ -238,7 +238,7 @@ void TextFieldPlatformImpl::SetText(const WideString& text)
 
             if (curText.empty())
             { // Immediately remove sprite image if new text is empty to get rid of some flickering
-                uiTextField->RemoveComponent(UIComponent::BACKGROUND_COMPONENT);
+                uiTextField->SetSprite(nullptr, 0);
             }
         }
     }
@@ -480,17 +480,16 @@ void TextFieldPlatformImpl::SetSpriteFromImage(Image* image) const
 {
     if (uiTextField != nullptr)
     {
-        RefPtr<Sprite> sprite;
+        Sprite* sprite = nullptr;
 
         if (image != nullptr)
         {
             const Rect textFieldRect = uiTextField->GetRect();
             RefPtr<Texture> texture(Texture::CreateFromData(FORMAT_RGBA8888, image->GetData(), image->GetWidth(), image->GetHeight(), false));
-            sprite.Set(Sprite::CreateFromTexture(texture.Get(), 0, 0, texture->GetWidth(), texture->GetHeight(), textFieldRect.dx, textFieldRect.dy));
+            sprite = Sprite::CreateFromTexture(texture.Get(), 0, 0, texture->GetWidth(), texture->GetHeight(), textFieldRect.dx, textFieldRect.dy);
         }
 
-        UIControlBackground* bg = uiTextField->GetOrCreateComponent<UIControlBackground>();
-        bg->SetSprite(sprite.Get(), 0);
+        uiTextField->SetSprite(sprite, 0);
     }
 }
 
@@ -506,7 +505,7 @@ void TextFieldPlatformImpl::OnFocusChanged(bool hasFocus)
                 uiTextField->SetFocused();
             }
             uiTextField->StartEdit();
-            uiTextField->RemoveComponent(UIComponent::BACKGROUND_COMPONENT);
+            uiTextField->SetSprite(nullptr, 0);
         }
         else
         {
