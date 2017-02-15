@@ -285,6 +285,7 @@ WebViewControl::WebViewControl(UIWebView* uiWebView)
 #if defined(__DAVAENGINE_COREV2__)
     PlatformApi::Mac::AddNSView(window, bridge->webView);
 
+    windowDestroyedConnection = Engine::Instance()->windowDestroyed.Connect(this, &WebViewControl::OnWindowDestroyed);
     windowVisibilityChangedConnection = window->visibilityChanged.Connect(this, &WebViewControl::OnWindowVisibilityChanged);
 #else
     NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
@@ -308,7 +309,11 @@ WebViewControl::~WebViewControl()
 #endif
 
 #if defined(__DAVAENGINE_COREV2__)
-    window->visibilityChanged.Disconnect(windowVisibilityChangedConnection);
+    if (nullptr != window)
+    {
+        window->visibilityChanged.Disconnect(windowVisibilityChangedConnection);
+        Engine::Instance()->windowDestroyed.Disconnect(windowDestroyedConnection);
+    }
 #else
     CoreMacOSPlatformBase* xcore = static_cast<CoreMacOSPlatformBase*>(Core::Instance());
     xcore->signalAppMinimizedRestored.Disconnect(appMinimizedRestoredConnectionId);
@@ -318,7 +323,10 @@ WebViewControl::~WebViewControl()
     bridge->bitmapImageRep = nullptr;
 
 #if defined(__DAVAENGINE_COREV2__)
-    PlatformApi::Mac::RemoveNSView(window, bridge->webView);
+    if (nullptr != window)
+    {
+        PlatformApi::Mac::RemoveNSView(window, bridge->webView);
+    }
 #else
     [bridge->webView removeFromSuperview];
 #endif
@@ -582,6 +590,14 @@ void WebViewControl::SetNativeVisible(bool visible)
 }
 
 #if defined(__DAVAENGINE_COREV2__)
+void WebViewControl::OnWindowDestroyed(Window* w)
+{
+    if (window == w)
+    {
+        window = nullptr;
+    }
+}
+
 void WebViewControl::OnWindowVisibilityChanged(Window* w, bool visible)
 {
     if (visible && isVisible)
