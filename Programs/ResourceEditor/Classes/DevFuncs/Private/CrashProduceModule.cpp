@@ -35,7 +35,7 @@ void CrashProduceModule::PostInit()
     ui->AddAction(REGlobal::MainWindowKey, placementInfo, sequencalsAssert);
 
     QAction* threadAssertAction = new QAction("Generate Assert From Thread", nullptr);
-    connections.AddConnection(threadAssertAction, &QAction::triggered, [ui]()
+    connections.AddConnection(threadAssertAction, &QAction::triggered, []()
                               {
                                   std::thread t([]() {
                                       DVASSERT(0, "Assert from foreign thread");

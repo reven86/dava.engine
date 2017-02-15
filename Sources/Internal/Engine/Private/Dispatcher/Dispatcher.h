@@ -35,7 +35,7 @@ public:
     */
     enum class eSendPolicy
     {
-        SERIALIZED_EXECUTION = 0, //<! Default behavior: firstly execute all events in queue and then sent event
+        QUEUED_EXECUTION = 0, //<! Default behavior: firstly execute all events in queue and then sent event
         IMMEDIATE_EXECUTION = 1, //<! Immediately execute sent event, do not execute events in queue
     };
 
@@ -73,7 +73,7 @@ public:
         Place event into queue and wait until event is processed.
     */
     template <typename U>
-    void SendEvent(U&& e, eSendPolicy policy = eSendPolicy::SERIALIZED_EXECUTION);
+    void SendEvent(U&& e, eSendPolicy policy = eSendPolicy::QUEUED_EXECUTION);
 
     /**
         Process events that are currently in queue. For each event in queue dispatcher
@@ -148,11 +148,13 @@ void Dispatcher<T>::SendEvent(U&& e, eSendPolicy policy)
     {
         switch (policy)
         {
-        case eSendPolicy::SERIALIZED_EXECUTION:
-        {
-            LockGuard<Mutex> lock(mutex);
-            eventQueue.emplace_back(std::forward<U>(e));
-        }
+        case eSendPolicy::QUEUED_EXECUTION:
+            // clang-format off
+            {
+                LockGuard<Mutex> lock(mutex);
+                eventQueue.emplace_back(std::forward<U>(e));
+            }
+            // clang-format on
             ProcessEvents();
             break;
         case eSendPolicy::IMMEDIATE_EXECUTION:
@@ -190,12 +192,12 @@ void Dispatcher<T>::ProcessEvents()
 {
     DVASSERT(!processEventsInProgress, "Dispatcher: nested call of ProcessEvents detected");
 
-    bool completeBlockingCall = false;
+    bool shouldCompleteBlockingCall = false;
     processEventsInProgress = true;
     {
         LockGuard<Mutex> lock(mutex);
         eventQueue.swap(readyEvents);
-        std::swap(blockingCallInQueue, completeBlockingCall);
+        std::swap(blockingCallInQueue, shouldCompleteBlockingCall);
     }
 
     curEventIndex = 0;
@@ -205,7 +207,7 @@ void Dispatcher<T>::ProcessEvents()
         curEventIndex += 1;
     }
     readyEvents.clear();
-    if (completeBlockingCall)
+    if (shouldCompleteBlockingCall)
     {
         signalEvent.Signal();
     }
