@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Base/BaseObject.h"
 #include "FileSystem/FilePath.h"
 
 namespace DAVA

@@ -72,7 +72,6 @@ static void WriteBufferToFile(const Vector<uint8>& outDB, const FilePath& path)
     }
 }
 
-#ifdef __DAVAENGINE_COREV2__
 DLCManagerImpl::DLCManagerImpl(Engine* engine_)
     : engine(*engine_)
 {
@@ -84,12 +83,16 @@ DLCManagerImpl::~DLCManagerImpl()
 {
     DVASSERT(Thread::IsMainThread());
 
-    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    // TODO: leanid take care of your threads and semaphores
-    // Force semaphore release as it may be waited on forever in ThreadScanFunc
-    // and releasing such a semaphore leads to crash
-    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    metaDataLoadedSem.Post();
+    if (scanThread)
+    {
+        scanThread->Cancel();
+        metaDataLoadedSem.Post();
+        if (scanThread->IsJoinable())
+        {
+            scanThread->Join();
+            scanThread = nullptr;
+        }
+    }
 
     engine.update.Disconnect(sigConnectionUpdate);
 
@@ -103,7 +106,6 @@ DLCManagerImpl::~DLCManagerImpl()
         delete request;
     }
 }
-#endif
 
 void DLCManagerImpl::Initialize(const FilePath& dirToDownloadPacks_,
                                 const String& urlToServerSuperpack_,
@@ -991,6 +993,7 @@ void DLCManagerImpl::ScanFiles(const FilePath& dir, Vector<LocalFileInfo>& files
 
 void DLCManagerImpl::ThreadScanFunc()
 {
+    Thread* thisThread = Thread::Current();
     // scan files in download dir
     int64 startTime = SystemTimer::GetMs();
 
@@ -1000,12 +1003,14 @@ void DLCManagerImpl::ThreadScanFunc()
 
     Logger::Info("finish scan files for: %fsec total files: %ld", finishScan / 1000.f, localFiles.size());
 
+    if (thisThread->IsCancelling())
+    {
+        return;
+    }
+
     metaDataLoadedSem.Wait();
 
-    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    // TODO: leanid take care of your threads and semaphores
-    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    if (meta == nullptr)
+    if (thisThread->IsCancelling() || meta == nullptr)
     {
         return;
     }
@@ -1018,6 +1023,11 @@ void DLCManagerImpl::ThreadScanFunc()
     PackArchive::FillFilesInfo(pack, uncompressedFileNames, mapFileData, filesInfo);
 
     String relativeNameWithoutDvpl;
+
+    if (thisThread->IsCancelling())
+    {
+        return;
+    }
 
     for (const LocalFileInfo& info : localFiles)
     {
@@ -1043,16 +1053,16 @@ void DLCManagerImpl::ThreadScanFunc()
         }
     }
 
-// FIXME bug with sync in prev old core_v_1 (now we switch everything to V_2, but unit test not)
-#ifdef __DAVAENGINE_COREV2__
+    if (thisThread->IsCancelling())
+    {
+        return;
+    }
+
     DAVA::RunOnMainThreadAsync([this]()
                                {
                                    // finish thread
                                    scanState = ScanState::Done;
                                });
-#else
-    scanState = ScanState::Done;
-#endif
 }
 
 } // end namespace DAVA

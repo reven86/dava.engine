@@ -1,5 +1,7 @@
 #include "CurlDownloader.h"
 #include "Logger/Logger.h"
+#include "FileSystem/File.h"
+#include "Concurrency/Thread.h"
 
 #include <curl/curl.h>
 
