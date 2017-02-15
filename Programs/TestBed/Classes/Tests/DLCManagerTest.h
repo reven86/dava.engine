@@ -9,6 +9,7 @@ class DLCManagerTest : public BaseScreen, DAVA::UITextFieldDelegate
 {
 public:
     DLCManagerTest(TestBed& app);
+    ~DLCManagerTest();
 
 private:
     void TextFieldOnTextChanged(DAVA::UITextField* textField, const DAVA::WideString& newText, const DAVA::WideString& /*oldText*/) override;

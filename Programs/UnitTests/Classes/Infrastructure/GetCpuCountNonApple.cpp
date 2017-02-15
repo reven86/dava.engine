@@ -1,26 +1,24 @@
 #include "Base/BaseTypes.h"
 #include "Base/Platform.h"
 
-#ifndef __DAVAENGINE_APPLE__
-
 using namespace DAVA;
 
-#ifdef __DAVAENGINE_ANDROID__
+#if defined(__DAVAENGINE_ANDROID__)
+
 #include <unistd.h>
 
 int32 GetCpuCount()
 {
     return sysconf(_SC_NPROCESSORS_CONF);
 }
-#endif
 
-#ifdef __DAVAENGINE_WINDOWS__
+#elif defined(__DAVAENGINE_WINDOWS__)
+
 int32 GetCpuCount()
 {
     SYSTEM_INFO sysinfo;
-    GetSystemInfo(&sysinfo);
-    return sysinfo.dwNumberOfProcessors;
+    ::GetSystemInfo(&sysinfo);
+    return static_cast<int32>(sysinfo.dwNumberOfProcessors);
 }
-#endif
 
-#endif // !__DAVAENGINE_APPLE__
+#endif
