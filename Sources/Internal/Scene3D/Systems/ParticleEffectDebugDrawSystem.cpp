@@ -21,6 +21,7 @@ ParticleEffectDebugDrawSystem::ParticleEffectDebugDrawSystem(Scene* scene)
         ParticleDebugRenderPass::ParticleDebugRenderPassConfig config =
         { ParticleDebugRenderPass::PASS_DEBUG_DRAW_PARTICLES, renderSystem, wireframeMaterial, overdrawMaterial,
           showAlphaMaterial, drawMode, isDrawOnlySelected, &selectedParticles };
+
         renderPass = new ParticleDebugRenderPass(config);
 
         heatTexture = GenerateHeatTexture();
@@ -28,13 +29,13 @@ ParticleEffectDebugDrawSystem::ParticleEffectDebugDrawSystem(Scene* scene)
 
         ParticleDebugDrawQuadRenderPass::ParticleDebugQuadRenderPassConfig quadPassConfig =
         { ParticleDebugDrawQuadRenderPass::PASS_DEBUG_DRAW_QUAD, renderSystem, quadMaterial, quadHeatMaterial, drawMode };
+
         drawQuadPass = new ParticleDebugDrawQuadRenderPass(quadPassConfig);
         materials.push_back(wireframeMaterial);
         materials.push_back(overdrawMaterial);
         materials.push_back(showAlphaMaterial);
         materials.push_back(quadMaterial);
         materials.push_back(quadHeatMaterial);
-
     }
 }
 
@@ -57,6 +58,8 @@ ParticleEffectDebugDrawSystem::~ParticleEffectDebugDrawSystem()
 
 void ParticleEffectDebugDrawSystem::Draw()
 {
+    DVASSERT(renderPass != nullptr && drawQuadPass != nullptr);
+
     renderPass->Draw(renderSystem);
     drawQuadPass->Draw(renderSystem);
 }
@@ -112,7 +115,7 @@ void ParticleEffectDebugDrawSystem::GenerateQuadMaterials()
     }
 }
 
-DAVA::Texture* ParticleEffectDebugDrawSystem::GenerateHeatTexture()
+DAVA::Texture* ParticleEffectDebugDrawSystem::GenerateHeatTexture() const
 {
     static const int32 width = 32;
     static const int32 height = 1;
@@ -134,7 +137,7 @@ DAVA::Texture* ParticleEffectDebugDrawSystem::GenerateHeatTexture()
     return texture;
 }
 
-DAVA::Vector4 ParticleEffectDebugDrawSystem::LerpColors(float normalizedWidth)
+DAVA::Vector4 ParticleEffectDebugDrawSystem::LerpColors(float normalizedWidth) const
 {
     static const Vector<TextureKey> keys =
     {
@@ -146,8 +149,10 @@ DAVA::Vector4 ParticleEffectDebugDrawSystem::LerpColors(float normalizedWidth)
       TextureKey(Vector4(255.0f, 64.0f, 0.0f, 255.0f), 0.5f),
       TextureKey(Vector4(255.0f, 0.0f, 0.0f, 255.0f), 1.0f)
     };
+
     const TextureKey* current = nullptr;
     const TextureKey* next = nullptr;
+
     for (size_t i = 0; i < keys.size() - 1; i++)
         if (keys[i].time <= normalizedWidth && keys[i + 1].time >= normalizedWidth)
         {

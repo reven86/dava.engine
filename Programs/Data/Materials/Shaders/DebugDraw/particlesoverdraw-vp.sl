@@ -16,7 +16,7 @@ vertex_out vp_main( vertex_in input )
 {
     vertex_out  output;
     
-    output.position = float4(input.position.xzy, 1.0);
+    output.position = float4(input.position.xyz, 1.0);
     output.texcoord0 = input.texcoord0;
 
     return output;

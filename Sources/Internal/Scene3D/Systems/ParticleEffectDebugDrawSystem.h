@@ -25,7 +25,6 @@ class ParticleEffectDebugDrawSystem : public SceneSystem
 {
 public:
     ParticleEffectDebugDrawSystem(Scene* scene);
-
     ~ParticleEffectDebugDrawSystem();
 
     void Draw();
@@ -33,8 +32,8 @@ public:
     void GenerateDebugMaterials();
     void GenerateQuadMaterials();
 
-    Texture* GenerateHeatTexture();
-    Vector4 LerpColors(float normalizedWidth);
+    Texture* GenerateHeatTexture() const;
+    Vector4 LerpColors(float normalizedWidth) const;
 
     inline eParticleDebugDrawMode GetDrawMode() const;
     inline void SetDrawMode(eParticleDebugDrawMode mode);

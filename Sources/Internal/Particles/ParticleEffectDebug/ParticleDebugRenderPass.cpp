@@ -11,9 +11,74 @@ namespace DAVA
 {
 const FastName ParticleDebugRenderPass::PASS_DEBUG_DRAW_PARTICLES("ForwardPass");
 
+ParticleDebugRenderPass::ParticleDebugRenderPass(ParticleDebugRenderPassConfig config)
+    : RenderPass(config.name)
+    , debugTexture(nullptr)
+    , wireframeMaterial(config.wireframeMaterial)
+    , overdrawMaterial(config.overdrawMaterial)
+    , selectedParticles(config.selectedParticles)
+    , showAlphaMaterial(config.showAlphaMaterial)
+    , drawMode(config.drawMode)
+    , drawOnlySelected(config.drawOnlySelected)
+{
+    passConfig.priority = DAVA::PRIORITY_MAIN_3D;
+
+    static const int width = 1024;
+    static const int height = 1024;
+    debugTexture = Texture::CreateFBO(width, height, PixelFormat::FORMAT_RGBA8888);
+    SetRenderTargetProperties(width, height, PixelFormat::FORMAT_RGBA8888);
+
+    passConfig.colorBuffer[0].texture = debugTexture->handle;
+    passConfig.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
+    passConfig.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
+    passConfig.colorBuffer[0].clearColor[0] = 0.0f;
+    passConfig.colorBuffer[0].clearColor[1] = 0.0f;
+    passConfig.colorBuffer[0].clearColor[2] = 0.0f;
+    passConfig.colorBuffer[0].clearColor[3] = 0.0f;
+    SetViewport(Rect(0, 0, static_cast<float32>(height), static_cast<float32>(width)));
+}
+
+ParticleDebugRenderPass::~ParticleDebugRenderPass()
+{
+    SafeRelease(debugTexture);
+}
+
+void ParticleDebugRenderPass::Draw(DAVA::RenderSystem* renderSystem)
+{
+    Camera* mainCamera = renderSystem->GetMainCamera();
+    Camera* drawCamera = renderSystem->GetDrawCamera();
+    SetupCameraParams(mainCamera, drawCamera);
+
+    if (BeginRenderPass())
+    {
+        PrepareParticlesVisibilityArray(mainCamera, renderSystem);
+        DrawBatches(mainCamera);
+        EndRenderPass();
+    }
+}
+
 Texture* ParticleDebugRenderPass::GetTexture() const
 {
     return debugTexture;
+}
+
+void ParticleDebugRenderPass::DrawBatches(Camera* camera)
+{
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::RENDER_PASS_DRAW_LAYERS)
+
+    ShaderDescriptorCache::ClearDynamicBindigs();
+
+    //per pass viewport bindings
+    viewportSize = Vector2(viewport.dx, viewport.dy);
+    rcpViewportSize = Vector2(1.0f / viewport.dx, 1.0f / viewport.dy);
+    viewportOffset = Vector2(viewport.x, viewport.y);
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_VIEWPORT_SIZE, &viewportSize, reinterpret_cast<pointer_size>(&viewportSize));
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_RCP_VIEWPORT_SIZE, &rcpViewportSize, reinterpret_cast<pointer_size>(&rcpViewportSize));
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_VIEWPORT_OFFSET, &viewportOffset, reinterpret_cast<pointer_size>(&viewportOffset));
+
+    particleBatches.Sort(camera);
+
+    MakePacket(camera);
 }
 
 void ParticleDebugRenderPass::PrepareParticlesVisibilityArray(Camera* camera, RenderSystem* renderSystem)
@@ -65,70 +130,6 @@ void ParticleDebugRenderPass::PrepareParticlesBatchesArray(const Vector<RenderOb
                 particleBatches.AddRenderBatch(batch);
         }
     }
-}
-
-ParticleDebugRenderPass::ParticleDebugRenderPass(ParticleDebugRenderPassConfig config)
-    : RenderPass(config.name)
-    , wireframeMaterial(config.wireframeMaterial)
-    , overdrawMaterial(config.overdrawMaterial)
-    , selectedParticles(config.selectedParticles)
-    , showAlphaMaterial(config.showAlphaMaterial)
-    , drawMode(config.drawMode)
-    , drawOnlySelected(config.drawOnlySelected)
-{
-    passConfig.priority = DAVA::PRIORITY_MAIN_3D;
-
-    static const int width = 1024;
-    static const int height = 1024;
-    debugTexture = Texture::CreateFBO(width, height, PixelFormat::FORMAT_RGBA8888);
-    SetRenderTargetProperties(width, height, PixelFormat::FORMAT_RGBA8888);
-
-    passConfig.colorBuffer[0].texture = debugTexture->handle;
-    passConfig.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
-    passConfig.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
-    passConfig.colorBuffer[0].clearColor[0] = 0.0f;
-    passConfig.colorBuffer[0].clearColor[1] = 0.0f;
-    passConfig.colorBuffer[0].clearColor[2] = 0.0f;
-    passConfig.colorBuffer[0].clearColor[3] = 0.0f;
-    SetViewport(Rect(0, 0, static_cast<float32>(height), static_cast<float32>(width)));
-}
-
-ParticleDebugRenderPass::~ParticleDebugRenderPass()
-{
-    SafeRelease(debugTexture);
-}
-
-void ParticleDebugRenderPass::Draw(DAVA::RenderSystem* renderSystem)
-{
-    Camera* mainCamera = renderSystem->GetMainCamera();
-    Camera* drawCamera = renderSystem->GetDrawCamera();
-    SetupCameraParams(mainCamera, drawCamera);
-
-    if (BeginRenderPass())
-    {
-        PrepareParticlesVisibilityArray(mainCamera, renderSystem);
-        DrawBatches(mainCamera);
-        EndRenderPass();
-    }
-}
-
-void ParticleDebugRenderPass::DrawBatches(Camera* camera)
-{
-    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::RENDER_PASS_DRAW_LAYERS)
-
-    ShaderDescriptorCache::ClearDynamicBindigs();
-
-    //per pass viewport bindings
-    viewportSize = Vector2(viewport.dx, viewport.dy);
-    rcpViewportSize = Vector2(1.0f / viewport.dx, 1.0f / viewport.dy);
-    viewportOffset = Vector2(viewport.x, viewport.y);
-    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_VIEWPORT_SIZE, &viewportSize, reinterpret_cast<pointer_size>(&viewportSize));
-    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_RCP_VIEWPORT_SIZE, &rcpViewportSize, reinterpret_cast<pointer_size>(&rcpViewportSize));
-    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_VIEWPORT_OFFSET, &viewportOffset, reinterpret_cast<pointer_size>(&viewportOffset));
-
-    particleBatches.Sort(camera);
-
-    MakePacket(camera);
 }
 
 void ParticleDebugRenderPass::MakePacket(Camera* camera)

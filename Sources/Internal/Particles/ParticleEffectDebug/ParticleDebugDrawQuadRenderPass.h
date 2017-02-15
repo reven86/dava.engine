@@ -4,8 +4,8 @@
 
 #include "Base/FastName.h"
 #include "Render/RHI/rhi_Public.h"
-#include "Math/Vector.h"
 #include "Render/Highlevel/RenderPass.h"
+#include "Math/Vector.h"
 
 namespace DAVA
 {
@@ -23,9 +23,12 @@ public:
         DAVA::NMaterial* quadHeatMaterial;
         const eParticleDebugDrawMode& drawMode;
     };
+
     ParticleDebugDrawQuadRenderPass(ParticleDebugQuadRenderPassConfig config);
     ~ParticleDebugDrawQuadRenderPass();
+
     void Draw(DAVA::RenderSystem* renderSystem) override;
+
     static const DAVA::FastName PASS_DEBUG_DRAW_QUAD;
 
 private:
@@ -35,7 +38,6 @@ private:
         Vector2 uv;
     };
     void PrepareRenderData();
-    void ByndDynamicParams(Camera* cam);
 
     DAVA::NMaterial* quadMaterial;
     DAVA::NMaterial* quadHeatMaterial;
