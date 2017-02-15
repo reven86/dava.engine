@@ -103,12 +103,12 @@ protected:
     /** Return error specified for downloader implementation. Useful for debugging/tracing download errors. */
     int32 GetImplError() const;
 
-    int32 fileErrno;
-    int32 implError;
+    int32 fileErrno = 0;
+    int32 implError = 0;
     Function<void(uint64)> notifyProgress;
 
 private:
-    uint64 dataToDownloadLeft;
+    uint64 dataToDownloadLeft = 0;
 
     Spinlock statisticsMutex;
     DownloadStatistics statistics;

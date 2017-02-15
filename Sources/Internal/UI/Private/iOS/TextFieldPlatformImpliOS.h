@@ -82,7 +82,7 @@ private:
 #if defined(__DAVAENGINE_COREV2__)
     void OnWindowDestroyed(Window* destroyedWindow);
 
-    SigConnectionID windowDestroyedSigId;
+    size_t windowDestroyedSigId;
     Window* window = nullptr;
 #endif
     struct TextFieldObjcBridge;
