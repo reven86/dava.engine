@@ -6,13 +6,10 @@
 #include "TArc/Controls/QtBoxLayouts.h"
 #include "TArc/Controls/LineEdit.h"
 
-#include <QWidget>
-#include <QLabel>
-
-//#include "TArc/Core/ClientModule.h"
-//
 #include <Reflection/ReflectionRegistrator.h>
 
+#include <QWidget>
+#include <QLabel>
 #include <QResizeEvent>
 
 namespace QtWrapLayoutTestDetail
@@ -32,138 +29,141 @@ DAVA_REFLECTION_IMPL(LineEditData)
 }
 }
 
+// clang-format off
 DAVA_TARC_TESTCLASS(QtWrapLayoutTests)
 {
-  DAVA_TEST (ResizeLayoutTest)
-  {
-  QWidget* w = new QWidget();
-DAVA::TArc::QtWrapLayout* layout = new DAVA::TArc::QtWrapLayout(w);
-layout->setMargin(8);
-layout->SetHorizontalSpacing(4);
-layout->SetVerticalSpacing(3);
+    DAVA_TEST (ResizeLayoutTest)
+    {
+        QWidget* w = new QWidget();
+        DAVA::TArc::QtWrapLayout* layout = new DAVA::TArc::QtWrapLayout(w);
+        DAVA::int32 margin = 8;
+        DAVA::int32 hSpacing = 4;
+        DAVA::int32 vSpacing = 3;
+        layout->setMargin(margin);
+        layout->SetHorizontalSpacing(hSpacing);
+        layout->SetVerticalSpacing(vSpacing);
 
-QtWrapLayoutTestDetail::LineEditData data;
-DAVA::Reflection r = DAVA::Reflection::Create(&data);
+        QtWrapLayoutTestDetail::LineEditData data;
+        DAVA::Reflection r = DAVA::Reflection::Create(&data);
 
-{
-    DAVA::TArc::QtHBoxLayout* box = new DAVA::TArc::QtHBoxLayout();
-    QLabel* l = new QLabel("X:");
-    box->addWidget(l);
+        {
+            DAVA::TArc::QtHBoxLayout* box = new DAVA::TArc::QtHBoxLayout();
+            QLabel* l = new QLabel("X:");
+            box->addWidget(l);
 
-    DAVA::TArc::ControlDescriptorBuilder<DAVA::TArc::LineEdit::Fields> descriptor;
-    descriptor[DAVA::TArc::LineEdit::Fields::Text] = "text";
-    DAVA::TArc::LineEdit* lineEdit = new DAVA::TArc::LineEdit(descriptor, GetAccessor(), r);
-    box->AddWidget(lineEdit);
-    box->setObjectName("boxX");
+            DAVA::TArc::ControlDescriptorBuilder<DAVA::TArc::LineEdit::Fields> descriptor;
+            descriptor[DAVA::TArc::LineEdit::Fields::Text] = "text";
+            DAVA::TArc::LineEdit* lineEdit = new DAVA::TArc::LineEdit(descriptor, GetAccessor(), r);
+            box->AddWidget(lineEdit);
+            box->setObjectName("boxX");
 
-    layout->AddLayout(box);
-}
+            layout->AddLayout(box);
+        }
 
-{
-    DAVA::TArc::QtHBoxLayout* box = new DAVA::TArc::QtHBoxLayout();
-    QLabel* l = new QLabel("Y:");
-    box->addWidget(l);
+        {
+            DAVA::TArc::QtHBoxLayout* box = new DAVA::TArc::QtHBoxLayout();
+            QLabel* l = new QLabel("Y:");
+            box->addWidget(l);
 
-    DAVA::TArc::ControlDescriptorBuilder<DAVA::TArc::LineEdit::Fields> descriptor;
-    descriptor[DAVA::TArc::LineEdit::Fields::Text] = "text";
-    DAVA::TArc::LineEdit* lineEdit = new DAVA::TArc::LineEdit(descriptor, GetAccessor(), r);
-    box->AddWidget(lineEdit);
-    box->setObjectName("boxY");
+            DAVA::TArc::ControlDescriptorBuilder<DAVA::TArc::LineEdit::Fields> descriptor;
+            descriptor[DAVA::TArc::LineEdit::Fields::Text] = "text";
+            DAVA::TArc::LineEdit* lineEdit = new DAVA::TArc::LineEdit(descriptor, GetAccessor(), r);
+            box->AddWidget(lineEdit);
+            box->setObjectName("boxY");
 
-    layout->AddLayout(box);
-}
+            layout->AddLayout(box);
+        }
 
-{
-    DAVA::TArc::QtHBoxLayout* box = new DAVA::TArc::QtHBoxLayout();
-    QLabel* l = new QLabel("Z:");
-    box->addWidget(l);
+        {
+            DAVA::TArc::QtHBoxLayout* box = new DAVA::TArc::QtHBoxLayout();
+            QLabel* l = new QLabel("Z:");
+            box->addWidget(l);
 
-    DAVA::TArc::ControlDescriptorBuilder<DAVA::TArc::LineEdit::Fields> descriptor;
-    descriptor[DAVA::TArc::LineEdit::Fields::Text] = "text";
-    DAVA::TArc::LineEdit* lineEdit = new DAVA::TArc::LineEdit(descriptor, GetAccessor(), r);
-    box->AddWidget(lineEdit);
-    box->setObjectName("boxZ");
+            DAVA::TArc::ControlDescriptorBuilder<DAVA::TArc::LineEdit::Fields> descriptor;
+            descriptor[DAVA::TArc::LineEdit::Fields::Text] = "text";
+            DAVA::TArc::LineEdit* lineEdit = new DAVA::TArc::LineEdit(descriptor, GetAccessor(), r);
+            box->AddWidget(lineEdit);
+            box->setObjectName("boxZ");
 
-    layout->AddLayout(box);
-}
+            layout->AddLayout(box);
+        }
 
-{
-    DAVA::TArc::QtHBoxLayout* box = new DAVA::TArc::QtHBoxLayout();
-    QLabel* l = new QLabel("W:");
-    box->addWidget(l);
+        {
+            DAVA::TArc::QtHBoxLayout* box = new DAVA::TArc::QtHBoxLayout();
+            QLabel* l = new QLabel("W:");
+            box->addWidget(l);
 
-    DAVA::TArc::ControlDescriptorBuilder<DAVA::TArc::LineEdit::Fields> descriptor;
-    descriptor[DAVA::TArc::LineEdit::Fields::Text] = "text";
-    DAVA::TArc::LineEdit* lineEdit = new DAVA::TArc::LineEdit(descriptor, GetAccessor(), r);
-    box->AddWidget(lineEdit);
-    box->setObjectName("boxW");
+            DAVA::TArc::ControlDescriptorBuilder<DAVA::TArc::LineEdit::Fields> descriptor;
+            descriptor[DAVA::TArc::LineEdit::Fields::Text] = "text";
+            DAVA::TArc::LineEdit* lineEdit = new DAVA::TArc::LineEdit(descriptor, GetAccessor(), r);
+            box->AddWidget(lineEdit);
+            box->setObjectName("boxW");
 
-    layout->AddLayout(box);
-}
+            layout->AddLayout(box);
+        }
 
-QLayout* boxXLayout = w->findChild<QLayout*>("boxX");
-QLayout* boxYLayout = w->findChild<QLayout*>("boxY");
-QLayout* boxZLayout = w->findChild<QLayout*>("boxZ");
-QLayout* boxWLayout = w->findChild<QLayout*>("boxW");
+        QLayout* boxXLayout = w->findChild<QLayout*>("boxX");
+        QLayout* boxYLayout = w->findChild<QLayout*>("boxY");
+        QLayout* boxZLayout = w->findChild<QLayout*>("boxZ");
+        QLayout* boxWLayout = w->findChild<QLayout*>("boxW");
 
-TEST_VERIFY(boxXLayout != nullptr);
-TEST_VERIFY(boxYLayout != nullptr);
-TEST_VERIFY(boxZLayout != nullptr);
-TEST_VERIFY(boxWLayout != nullptr);
+        TEST_VERIFY(boxXLayout != nullptr);
+        TEST_VERIFY(boxYLayout != nullptr);
+        TEST_VERIFY(boxZLayout != nullptr);
+        TEST_VERIFY(boxWLayout != nullptr);
 
-DAVA::int32 minRowWidth = 2 * 8 + // margin
-3 * 4 + // spacing
-boxXLayout->minimumSize().width() +
-boxYLayout->minimumSize().width() +
-boxZLayout->minimumSize().width() +
-boxWLayout->minimumSize().width();
+        DAVA::int32 minRowWidth = 2 * margin + 3 * hSpacing +
+                                  boxXLayout->minimumSize().width() +
+                                  boxYLayout->minimumSize().width() +
+                                  boxZLayout->minimumSize().width() +
+                                  boxWLayout->minimumSize().width();
 
-w->resize(minRowWidth, 100);
-w->show();
+        w->resize(minRowWidth, 100);
+        w->show();
 
-{
-    DAVA::int32 layoutOffset = 8; // first layout has offset 8 because of margin
+        {
+            DAVA::int32 layoutOffset = margin; // first layout has offset 8 because of margin
 
-    TEST_VERIFY(boxXLayout->geometry() == QRect(QPoint(layoutOffset, 8), boxXLayout->minimumSize()));
-    layoutOffset += boxXLayout->geometry().width() + 4;
-    TEST_VERIFY(boxYLayout->geometry() == QRect(QPoint(layoutOffset, 8), boxYLayout->minimumSize()));
-    layoutOffset += boxYLayout->geometry().width() + 4;
-    TEST_VERIFY(boxZLayout->geometry() == QRect(QPoint(layoutOffset, 8), boxZLayout->minimumSize()));
-    layoutOffset += boxZLayout->geometry().width() + 4;
-    TEST_VERIFY(boxWLayout->geometry() == QRect(QPoint(layoutOffset, 8), boxWLayout->minimumSize()));
-}
+            TEST_VERIFY(boxXLayout->geometry() == QRect(QPoint(layoutOffset, margin), boxXLayout->minimumSize()));
+            layoutOffset += boxXLayout->geometry().width() + hSpacing;
+            TEST_VERIFY(boxYLayout->geometry() == QRect(QPoint(layoutOffset, margin), boxYLayout->minimumSize()));
+            layoutOffset += boxYLayout->geometry().width() + hSpacing;
+            TEST_VERIFY(boxZLayout->geometry() == QRect(QPoint(layoutOffset, margin), boxZLayout->minimumSize()));
+            layoutOffset += boxZLayout->geometry().width() + hSpacing;
+            TEST_VERIFY(boxWLayout->geometry() == QRect(QPoint(layoutOffset, margin), boxWLayout->minimumSize()));
+        }
 
-w->resize(minRowWidth - 60, 100);
+        w->resize(minRowWidth - 60, 100);
 
-{
-    DAVA::int32 layoutWOffset = 8; // first layout has offset 8 because of margin
+        {
+            DAVA::int32 layoutWOffset = margin; // first layout has offset 8 because of margin
 
-    TEST_VERIFY(boxXLayout->geometry() == QRect(QPoint(layoutWOffset, 8), boxXLayout->geometry().size()));
-    layoutWOffset += boxXLayout->geometry().width() + 4;
-    TEST_VERIFY(boxYLayout->geometry() == QRect(QPoint(layoutWOffset, 8), boxYLayout->geometry().size()));
-    layoutWOffset = 8;
-    DAVA::int32 layoutHOffset = DAVA::Max(boxXLayout->geometry().height(), boxYLayout->geometry().height()) + 8 + 3; // 8 - margin, 3 - spacing
-    TEST_VERIFY(boxZLayout->geometry() == QRect(QPoint(layoutWOffset, layoutHOffset), boxZLayout->geometry().size()));
-    layoutWOffset += boxZLayout->geometry().width() + 4;
-    TEST_VERIFY(boxWLayout->geometry() == QRect(QPoint(layoutWOffset, layoutHOffset), boxWLayout->geometry().size()));
-}
+            TEST_VERIFY(boxXLayout->geometry() == QRect(QPoint(layoutWOffset, margin), boxXLayout->geometry().size()));
+            layoutWOffset += boxXLayout->geometry().width() + hSpacing;
+            TEST_VERIFY(boxYLayout->geometry() == QRect(QPoint(layoutWOffset, margin), boxYLayout->geometry().size()));
+            layoutWOffset = margin;
+            DAVA::int32 layoutHOffset = DAVA::Max(boxXLayout->geometry().height(), boxYLayout->geometry().height()) + margin + vSpacing; // 8 - margin, 3 - spacing
+            TEST_VERIFY(boxZLayout->geometry() == QRect(QPoint(layoutWOffset, layoutHOffset), boxZLayout->geometry().size()));
+            layoutWOffset += boxZLayout->geometry().width() + hSpacing;
+            TEST_VERIFY(boxWLayout->geometry() == QRect(QPoint(layoutWOffset, layoutHOffset), boxWLayout->geometry().size()));
+        }
 
-w->resize(boxXLayout->minimumSize().width() + 10, 100);
+        w->resize(boxXLayout->minimumSize().width() + 10, 100);
 
-{
-    DAVA::int32 expectedLayoutWidth = w->width() - 2 * 8;
-    DAVA::int32 layoutHOffset = 8; // first layout has offset 8 because of margin
+        {
+            DAVA::int32 expectedLayoutWidth = w->width() - 2 * margin;
+            DAVA::int32 layoutHOffset = margin;
 
-    TEST_VERIFY(boxXLayout->geometry() == QRect(QPoint(8, layoutHOffset), QSize(expectedLayoutWidth, boxXLayout->geometry().height())));
-    layoutHOffset += (boxXLayout->geometry().height() + 3);
-    TEST_VERIFY(boxYLayout->geometry() == QRect(QPoint(8, layoutHOffset), QSize(expectedLayoutWidth, boxYLayout->geometry().height())));
-    layoutHOffset += (boxYLayout->geometry().height() + 3);
-    TEST_VERIFY(boxZLayout->geometry() == QRect(QPoint(8, layoutHOffset), QSize(expectedLayoutWidth, boxZLayout->geometry().height())));
-    layoutHOffset += (boxZLayout->geometry().height() + 3);
-    TEST_VERIFY(boxWLayout->geometry() == QRect(QPoint(8, layoutHOffset), QSize(expectedLayoutWidth, boxWLayout->geometry().height())));
-}
+            TEST_VERIFY(boxXLayout->geometry() == QRect(QPoint(margin, layoutHOffset), QSize(expectedLayoutWidth, boxXLayout->geometry().height())));
+            layoutHOffset += (boxXLayout->geometry().height() + vSpacing);
+            TEST_VERIFY(boxYLayout->geometry() == QRect(QPoint(margin, layoutHOffset), QSize(expectedLayoutWidth, boxYLayout->geometry().height())));
+            layoutHOffset += (boxYLayout->geometry().height() + vSpacing);
+            TEST_VERIFY(boxZLayout->geometry() == QRect(QPoint(margin, layoutHOffset), QSize(expectedLayoutWidth, boxZLayout->geometry().height())));
+            layoutHOffset += (boxZLayout->geometry().height() + vSpacing);
+            TEST_VERIFY(boxWLayout->geometry() == QRect(QPoint(margin, layoutHOffset), QSize(expectedLayoutWidth, boxWLayout->geometry().height())));
+        }
 
-delete w;
-}
-}
-;
+        delete w;
+    }
+};
+// clang-format on
