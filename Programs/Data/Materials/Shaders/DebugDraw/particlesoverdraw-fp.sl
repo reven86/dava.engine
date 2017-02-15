@@ -26,6 +26,6 @@ fragment_out fp_main( fragment_in input )
 #if SHOW_OVERDRAW
     output.color = tex2D(heatMap, float2(color.r, 0));
 #endif
-    // output.color = color;
+
     return output;
 }
