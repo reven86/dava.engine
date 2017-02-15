@@ -9,10 +9,10 @@ namespace DAVA
 {
 bool CurlDownloader::isCURLInit = false;
 
-DownloadError ErrorForEasyHandle(CURL* easyHandle, CURLcode status, bool isRangeRequestSent);
-DownloadError HandleDownloadResults(CURLM* multiHandle, bool isRangeRequestSent);
-DownloadError CurlmCodeToDownloadError(CURLMcode curlMultiCode);
-DownloadError TakeMostImportantReturnValue(const Vector<DownloadError>& errorList);
+static DownloadError ErrorForEasyHandle(CURL* easyHandle, CURLcode status, bool isRangeRequestSent);
+static DownloadError HandleDownloadResults(CURLM* multiHandle, bool isRangeRequestSent);
+static DownloadError CurlmCodeToDownloadError(CURLMcode curlMultiCode);
+static DownloadError TakeMostImportantReturnValue(const Vector<DownloadError>& errorList);
 
 struct ErrorWithPriority
 {
