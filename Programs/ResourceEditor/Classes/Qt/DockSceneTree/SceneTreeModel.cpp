@@ -268,7 +268,7 @@ QStringList SceneTreeModel::mimeTypes() const
     QStringList types;
 
     types << MimeDataHelper2<DAVA::Entity>::GetMimeType();
-    types << MimeDataHelper2<DAVA::ParticleEmitter>::GetMimeType();
+    types << MimeDataHelper2<DAVA::ParticleEmitterInstance>::GetMimeType();
     types << MimeDataHelper2<DAVA::ParticleLayer>::GetMimeType();
     types << MimeDataHelper2<DAVA::ParticleForce>::GetMimeType();
 
