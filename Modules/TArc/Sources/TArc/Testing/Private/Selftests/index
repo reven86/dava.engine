@@ -1,5 +1,6 @@
 CheckBoxTest.h
 ClientModuleTest.h
+ComboBoxCheckableTest.h
 ComboBoxTest.h
 ComponentStructureWrapperTest.h
 ContextHierarchyTest.h
