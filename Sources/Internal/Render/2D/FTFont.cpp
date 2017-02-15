@@ -372,8 +372,8 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void* buff
     FT_Vector* advances = new FT_Vector[strLen];
     Prepare(ft_size->face, advances);
 
-    int32 baseSize = int32(std::ceil((faceBboxYMax - faceBboxYMin) * ftToPixelScale));
-    int32 multilineOffsetY = baseSize + offsetY * 2;
+    float32 baseSize = (faceBboxYMax - faceBboxYMin) * ftToPixelScale;
+    int32 multilineOffsetY = int32(std::ceil(baseSize)) + offsetY * 2;
 
     int32 justifyOffset = 0;
     int32 fixJustifyOffset = 0;
@@ -385,9 +385,9 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void* buff
     }
 
     Font::StringMetrics metrics;
-    metrics.baseline = int32(faceBboxYMax * ftToPixelScale);
+    metrics.baseline = faceBboxYMax * ftToPixelScale;
     metrics.height = baseSize;
-    metrics.drawRect = Rect2i(0x7fffffff, 0x7fffffff, 0, baseSize); // Setup rect with maximum int32 value for x/y, and zero width
+    metrics.drawRect = Rect2i(0x7fffffff, 0x7fffffff, 0, int32(std::ceil(baseSize))); // Setup rect with maximum int32 value for x/y, and zero width
 
     int32 layoutWidth = 0; // width in FT points
 
@@ -473,7 +473,7 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void* buff
                 if (glyph.index == 0) // guess bitmap dimensions for empty bitmap
                 {
                     width = int32(advances[i].x) >> ftToPixelShift;
-                    height = 2 * metrics.baseline - metrics.height;
+                    height = int32(std::ceil(2 * metrics.baseline - metrics.height));
                     left = int32(pen.x) >> ftToPixelShift;
                     top = multilineOffsetY - (int32(pen.y) >> ftToPixelShift) - height;
                 }
@@ -552,13 +552,13 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void* buff
         metrics.drawRect.y = int32(std::floor(UIControlSystem::Instance()->vcs->ConvertPhysicalToVirtualY(float32(metrics.drawRect.y))));
         metrics.drawRect.dx = int32(std::ceil(UIControlSystem::Instance()->vcs->ConvertPhysicalToVirtualX(float32(metrics.drawRect.dx))));
         metrics.drawRect.dy = int32(std::ceil(UIControlSystem::Instance()->vcs->ConvertPhysicalToVirtualY(float32(metrics.drawRect.dy))));
-        metrics.baseline = int32(std::ceil(UIControlSystem::Instance()->vcs->ConvertPhysicalToVirtualX(float32(metrics.baseline))));
-        metrics.height = int32(std::ceil(UIControlSystem::Instance()->vcs->ConvertPhysicalToVirtualY(float32(metrics.height))));
-        metrics.width = int32(std::ceil(UIControlSystem::Instance()->vcs->ConvertPhysicalToVirtualX(totalWidth)));
+        metrics.baseline = UIControlSystem::Instance()->vcs->ConvertPhysicalToVirtualX(metrics.baseline);
+        metrics.height = UIControlSystem::Instance()->vcs->ConvertPhysicalToVirtualY(metrics.height);
+        metrics.width = UIControlSystem::Instance()->vcs->ConvertPhysicalToVirtualX(totalWidth);
     }
     else
     {
-        metrics.width = int32(std::ceil(totalWidth));
+        metrics.width = totalWidth;
     }
     return metrics;
 }

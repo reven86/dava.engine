@@ -208,16 +208,13 @@ void WindowNativeBridge::SetCursorCapture(eCursorCapture mode)
         switch (captureMode)
         {
         case DAVA::eCursorCapture::OFF:
-            tokenPointerMoved = xamlSwapChainPanel->PointerMoved += ref new PointerEventHandler(this, &WindowNativeBridge::OnPointerMoved);
             mouseDevice->MouseMoved -= tokenMouseMoved;
             break;
         case DAVA::eCursorCapture::FRAME:
             // now, not implemented
             break;
         case DAVA::eCursorCapture::PINNING:
-            xamlSwapChainPanel->PointerMoved -= tokenPointerMoved;
             tokenMouseMoved = mouseDevice->MouseMoved += ref new TypedEventHandler<MouseDevice ^, MouseEventArgs ^>(this, &WindowNativeBridge::OnMouseMoved);
-            // after enabled Pinning mode, skip move events, large x, y delta
             mouseMoveSkipCount = SKIP_N_MOUSE_MOVE_EVENTS;
             break;
         }
@@ -269,13 +266,7 @@ void WindowNativeBridge::OnVisibilityChanged(Windows::UI::Core::CoreWindow ^ cor
 void WindowNativeBridge::OnCharacterReceived(::Windows::UI::Core::CoreWindow ^ /*coreWindow*/, ::Windows::UI::Core::CharacterReceivedEventArgs ^ arg)
 {
     eModifierKeys modifierKeys = GetModifierKeys();
-    // Windows translates some Ctrl key combinations into ASCII control characters.
-    // It seems to me that control character are not wanted by game to handle in character message.
-    // https://msdn.microsoft.com/en-us/library/windows/desktop/gg153546(v=vs.85).aspx
-    if ((modifierKeys & eModifierKeys::CONTROL) == eModifierKeys::NONE)
-    {
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, MainDispatcherEvent::KEY_CHAR, arg->KeyCode, modifierKeys, arg->KeyStatus.WasKeyDown));
-    }
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, MainDispatcherEvent::KEY_CHAR, arg->KeyCode, modifierKeys, arg->KeyStatus.WasKeyDown));
 }
 
 void WindowNativeBridge::OnAcceleratorKeyActivated(::Windows::UI::Core::CoreDispatcher ^ /*dispatcher*/, ::Windows::UI::Core::AcceleratorKeyEventArgs ^ arg)
@@ -472,15 +463,20 @@ void WindowNativeBridge::OnPointerMoved(::Platform::Object ^ sender, ::Windows::
     float32 y = pointerPoint->Position.Y;
     if (deviceType == PointerDeviceType::Mouse)
     {
+        bool pinning = captureMode == eCursorCapture::PINNING;
         if (prop->PointerUpdateKind != PointerUpdateKind::Other)
         {
             // First mouse button down (and last mouse button up) comes through OnPointerPressed/OnPointerReleased, other mouse clicks come here
             bool isPressed = false;
             eMouseButtons button = GetMouseButtonState(prop->PointerUpdateKind, &isPressed);
             MainDispatcherEvent::eType type = isPressed ? MainDispatcherEvent::MOUSE_BUTTON_DOWN : MainDispatcherEvent::MOUSE_BUTTON_UP;
-            mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, type, button, x, y, 1, modifierKeys, false));
+            mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, type, button, x, y, 1, modifierKeys, pinning));
         }
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window, x, y, modifierKeys, false));
+        if (!pinning)
+        {
+            // In pinning mouse deltas are sent in OnMouseMoved method
+            mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window, x, y, modifierKeys, false));
+        }
     }
     else if (deviceType == PointerDeviceType::Touch)
     {
@@ -514,6 +510,7 @@ void WindowNativeBridge::OnMouseMoved(Windows::Devices::Input::MouseDevice ^ mou
 {
     if (mouseMoveSkipCount > 0)
     {
+        // Skip some first move events to discard large deltas
         mouseMoveSkipCount--;
         return;
     }
