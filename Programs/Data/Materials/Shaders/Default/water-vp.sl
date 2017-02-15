@@ -128,19 +128,19 @@ vertex_out vp_main( vertex_in input )
 //texcoords
     #if (!DEBUG_UNITY_Z_NORMAL)||(SHADING == SHADING_PERVERTEX ) //prevent unused variables cut
         float2 inTexCoord0 = input.uv0;
-        output.uv = inTexCoord0 * normal0Scale + normal0ShiftPerSecond * globalTime;
+        output.uv = inTexCoord0 * normal0Scale + frac(normal0ShiftPerSecond * globalTime);
         #if (SHADING == SHADING_PERPIXEL) && SEPARATE_NORMALMAPS
             #if DEBUG_NORMAL_ROTATION
                 float rota = normalRotation/180.0*3.1415;        
                 float cr = cos(rota);
                 float sr = sin(rota);
                 float2 rotatedTC = float2(inTexCoord0.x * cr + inTexCoord0.y * sr, inTexCoord0.x * sr - inTexCoord0.y * cr);
-                output.uv1 = rotatedTC * normal1Scale + normal1ShiftPerSecond * globalTime;
+                output.uv1 = rotatedTC * normal1Scale + frac(normal1ShiftPerSecond * globalTime);
             #else            
-                output.uv1 = inTexCoord0 * normal1Scale + normal1ShiftPerSecond * globalTime;
+                output.uv1 = inTexCoord0 * normal1Scale + frac(normal1ShiftPerSecond * globalTime);
             #endif
         #else
-            output.uv1 = float2(inTexCoord0.x+inTexCoord0.y, inTexCoord0.y-inTexCoord0.x) * normal1Scale + normal1ShiftPerSecond * globalTime;
+            output.uv1 = float2(inTexCoord0.x+inTexCoord0.y, inTexCoord0.y-inTexCoord0.x) * normal1Scale + frac(normal1ShiftPerSecond * globalTime);
         #endif
         
         #if (SHADING == SHADING_PERVERTEX)
