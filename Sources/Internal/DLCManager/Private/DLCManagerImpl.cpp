@@ -90,8 +90,9 @@ DLCManagerImpl::~DLCManagerImpl()
         if (scanThread->IsJoinable())
         {
             scanThread->Join();
-            scanThread = nullptr;
         }
+        scanThread->Release();
+        scanThread = nullptr;
     }
 
     engine.update.Disconnect(sigConnectionUpdate);
@@ -727,6 +728,7 @@ void DLCManagerImpl::StartDeleyedRequests()
         {
             scanThread->Join();
         }
+        scanThread->Release();
         scanThread = nullptr;
     }
 
