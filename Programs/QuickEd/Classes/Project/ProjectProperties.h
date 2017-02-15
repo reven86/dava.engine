@@ -38,6 +38,7 @@ public:
     void SetProjectFile(const DAVA::FilePath& newProjectFile);
     const DAVA::FilePath& GetProjectDirectory() const;
 
+    const ResDir& GetPluginsDirectory() const;
     const ResDir& GetResourceDirectory() const;
     const ResDir& GetAdditionalResourceDirectory() const;
     const ResDir& GetConvertedResourceDirectory() const;
@@ -70,6 +71,7 @@ private:
 
     DAVA::String defaultLanguage;
 
+    ResDir pluginsDirectory;
     ResDir resourceDirectory;
     ResDir additionalResourceDirectory;
     ResDir convertedResourceDirectory;

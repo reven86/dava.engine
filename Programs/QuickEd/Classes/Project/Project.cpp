@@ -10,18 +10,19 @@
 #include "UI/ProjectView.h"
 #include "UI/Find/FindFilter.h"
 
-#include "QtTools/ReloadSprites/SpritesPacker.h"
-#include "QtTools/ProjectInformation/FileSystemCache.h"
-#include "QtTools/FileDialogs/FindFileDialog.h"
+#include <QtTools/ReloadSprites/SpritesPacker.h>
+#include <QtTools/ProjectInformation/FileSystemCache.h>
+#include <QtTools/FileDialogs/FindFileDialog.h>
 
-#include "Engine/Engine.h"
-#include "FileSystem/FileSystem.h"
-#include "FileSystem/YamlEmitter.h"
-#include "FileSystem/YamlNode.h"
-#include "FileSystem/YamlParser.h"
-#include "UI/Styles/UIStyleSheetSystem.h"
-#include "UI/UIControlSystem.h"
-#include "Utils/Utils.h"
+#include <Engine/Engine.h>
+#include <FileSystem/FileSystem.h>
+#include <FileSystem/YamlEmitter.h>
+#include <FileSystem/YamlNode.h>
+#include <FileSystem/YamlParser.h>
+#include <UI/Styles/UIStyleSheetSystem.h>
+#include <UI/UIControlSystem.h>
+#include <Utils/Utils.h>
+#include <PluginManager/PluginManager.h>
 
 #include <QDir>
 #include <QApplication>
@@ -55,6 +56,7 @@ Project::Project(MainWindow::ProjectView* view_, const ProjectProperties& proper
     , fileSystemCache(new FileSystemCache(QStringList() << "yaml"))
 {
     const EngineContext* engineContext = GetEngineContext();
+
     DAVA::FileSystem* fileSystem = engineContext->fileSystem;
     if (fileSystem->IsDirectory(properties.GetAdditionalResourceDirectory().absolute))
     {
@@ -83,6 +85,17 @@ Project::Project(MainWindow::ProjectView* view_, const ProjectProperties& proper
     FilePath uiDirectory = properties.GetUiDirectory().absolute;
     DVASSERT(fileSystem->IsDirectory(uiDirectory));
     uiResourcesPath = QString::fromStdString(uiDirectory.GetStringValue());
+
+    FilePath pluginsDirectory = properties.GetPluginsDirectory().absolute;
+    if (fileSystem->IsDirectory(pluginsDirectory))
+    {
+        PluginManager* pluginManager = engineContext->pluginManager;
+        Vector<FilePath> loadedPlugins = pluginManager->GetPlugins(pluginsDirectory, PluginManager::Auto);
+        for (const FilePath& pluginPath : loadedPlugins)
+        {
+            pluginManager->LoadPlugin(pluginPath);
+        }
+    }
 
     fileSystemCache->TrackDirectory(uiResourcesPath);
     view->SetResourceDirectory(uiResourcesPath);

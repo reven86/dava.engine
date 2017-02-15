@@ -65,6 +65,12 @@ DAVA::Result CreateProjectStructure(const QString& projectFilePath)
 
     ProjectProperties defaultSettings = ProjectProperties::Default();
 
+    QString pluginsDirectory = QString::fromStdString(defaultSettings.GetPluginsDirectory().relative);
+    if (pluginsDirectory.isEmpty() == false && projectDir.mkpath(pluginsDirectory) == false)
+    {
+        return Result(Result::RESULT_ERROR, QObject::tr("Can not create plugins directory %1").arg(pluginsDirectory).toStdString());
+    }
+
     QString resourceDirectory = QString::fromStdString(defaultSettings.GetResourceDirectory().relative);
     if (!projectDir.mkpath(resourceDirectory))
     {
