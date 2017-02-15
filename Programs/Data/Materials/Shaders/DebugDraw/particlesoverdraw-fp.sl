@@ -16,7 +16,6 @@ uniform sampler2D particlesRT;
     uniform sampler2D heatMap;
 #endif
 
-
 fragment_out fp_main( fragment_in input )
 {
     fragment_out output;
