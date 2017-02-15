@@ -1,36 +1,47 @@
 package com.dava.unittests;
 
-import android.os.Bundle;
-import android.view.Menu;
+public class UnitTests
+{
+    private static UnitTests instance = null;
 
-import com.dava.framework.JNIActivity;
-import com.dava.framework.JNISurfaceView;
+    public native void nativeCall();
 
-public class UnitTests extends JNIActivity {
-	
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-	}
+    public UnitTests()
+    {
+        instance = this;
+    }
 
-	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		// Inflate the menu; this adds items to the action bar if it is present.
-		getMenuInflater().inflate(R.menu.activity_main, menu);
-		return true;
-	}
+    public static UnitTests instance()
+    {
+        return instance;
+    }
 
-	@Override
-	public JNISurfaceView FindSurfaceView() {
-		setContentView(R.layout.activity_main);
-		JNISurfaceView view = (JNISurfaceView) findViewById(R.id.view1);
-		return view;
-	}
+    public void doNativeCall()
+    {
+        nativeCall();
+    }
 
-	private native void nativeCall(int countC, boolean releaseRef);
-	public void TestCallToNativeInitiatedByJava(int countJava, int countC, boolean releaseRef) {
-		for (int i = 0; i < countJava; ++i) {
-			nativeCall(countC, releaseRef);
-		}
-	}
+    public String sum(int a, int b, int c)
+    {
+        return String.format("%d", a + b + c);
+    }
+
+    public static String[] generateStringArray(int n, int start)
+    {
+        String[] v = new String[n];
+        for (int i = 0;i < n;++i)
+        {
+            v[i] = String.format("%d", i + start);
+        }
+        return v;
+    }
+
+    public String[] updateStringArray(String[] v)
+    {
+        for (int i = 0;i < v.length;++i)
+        {
+            v[i] = String.format("%s-xray", v[i]);
+        }
+        return v;
+    }
 }
