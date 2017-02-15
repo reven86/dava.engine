@@ -292,7 +292,7 @@ CURLMcode CurlDownloaderPerform(CURLM*& multiHandle,
         else
         {
             // Curl documentation recommends to sleep not less than 200ms in this case
-            Thread::Sleep(200); // TODO I'm think this is stupid error 200 ms is too much
+            Thread::Sleep(50); // TODO I'm think this is stupid error 200 ms is too much
             rc = 0;
         }
 
