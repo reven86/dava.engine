@@ -25,7 +25,8 @@ ParticleDebugDrawQuadRenderPass::ParticleDebugDrawQuadRenderPass(ParticleDebugQu
 
 ParticleDebugDrawQuadRenderPass::~ParticleDebugDrawQuadRenderPass()
 {
-    rhi::DeleteVertexBuffer(quadBuffer);
+    if (quadBuffer.IsValid())
+        rhi::DeleteVertexBuffer(quadBuffer);
 }
 
 void ParticleDebugDrawQuadRenderPass::Draw(DAVA::RenderSystem* renderSystem)
