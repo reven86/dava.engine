@@ -43,7 +43,7 @@ DAVA_VIRTUAL_REFLECTION_IMPL(Entity)
     .Field("ID", &Entity::GetID, &Entity::SetID)[M::ReadOnly()]
     .Field("Name", &Entity::GetName, static_cast<void (Entity::*)(const FastName&)>(&Entity::SetName))
     .Field("Tag", &Entity::tag)
-    .Field("Flags", &Entity::flags)
+    .Field("Flags", &Entity::flags)[M::FlagsT<Entity::EntityFlags>()]
     .Field("Visible", &Entity::GetVisible, &Entity::SetVisible)[M::ValueDescription(&VisibleValueDescription)]
     .Field("Components", &Entity::components)
     .End();

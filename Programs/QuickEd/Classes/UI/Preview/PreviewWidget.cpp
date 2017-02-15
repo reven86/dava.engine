@@ -415,7 +415,7 @@ void PreviewWidget::InitEditorSystems()
     connect(selectAllAction, &QAction::triggered, std::bind(&EditorSystemsManager::SelectAll, systemsManager.get()));
     editorCanvas = systemsManager->GetEditorCanvas();
     editorCanvas->sizeChanged.Connect(this, &PreviewWidget::UpdateScrollArea);
-    editorCanvas->ositionChanged.Connect(this, &PreviewWidget::OnPositionChanged);
+    editorCanvas->positionChanged.Connect(this, &PreviewWidget::OnPositionChanged);
     editorCanvas->nestedControlPositionChanged.Connect(this, &PreviewWidget::OnNestedControlPositionChanged);
     editorCanvas->scaleChanged.Connect(this, &PreviewWidget::OnScaleChanged);
     //fastest way to apply displayed scale to the editorCanvas

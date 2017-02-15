@@ -3,12 +3,11 @@
 #include "Time/SystemTimer.h"
 #include "Concurrency/LockGuard.h"
 #include "Logger/Logger.h"
+#include "Debug/DVAssert.h"
 
 namespace DAVA
 {
 Downloader::Downloader()
-    : fileErrno(0)
-    , implError(0)
 {
 }
 
@@ -63,6 +62,7 @@ void Downloader::ResetStatistics(uint64 sizeToDownload)
 
 void Downloader::CalcStatistics(uint32 dataCame)
 {
+    DVASSERT(dataToDownloadLeft >= dataCame);
     dataToDownloadLeft -= dataCame;
 
     static uint64 curTime = SystemTimer::GetMs();

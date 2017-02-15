@@ -1,5 +1,4 @@
-#ifndef __DATA_DOWNLOADER_H__
-#define __DATA_DOWNLOADER_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Concurrency/Thread.h"
@@ -109,16 +108,14 @@ protected:
     int32 GetImplError() const;
 
 protected:
-    int32 fileErrno;
-    int32 implError;
+    int32 fileErrno = 0;
+    int32 implError = 0;
     Function<void(uint64)> notifyProgress;
 
 private:
-    uint64 dataToDownloadLeft;
+    uint64 dataToDownloadLeft = 0;
 
     Spinlock statisticsMutex;
     DownloadStatistics statistics;
 };
 }
-
-#endif
