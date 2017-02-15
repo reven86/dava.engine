@@ -83,6 +83,14 @@ DLCManagerImpl::DLCManagerImpl(Engine* engine_)
 DLCManagerImpl::~DLCManagerImpl()
 {
     DVASSERT(Thread::IsMainThread());
+
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // TODO: leanid take care of your threads and semaphores
+    // Force semaphore release as it may be waited on forever in ThreadScanFunc
+    // and releasing such a semaphore leads to crash
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    metaDataLoadedSem.Post();
+
     engine.update.Disconnect(sigConnectionUpdate);
 
     for (auto request : requests)
@@ -993,6 +1001,14 @@ void DLCManagerImpl::ThreadScanFunc()
     Logger::Info("finish scan files for: %fsec total files: %ld", finishScan / 1000.f, localFiles.size());
 
     metaDataLoadedSem.Wait();
+
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    // TODO: leanid take care of your threads and semaphores
+    // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    if (meta == nullptr)
+    {
+        return;
+    }
 
     // merge with meta
     // Yes! is pack loaded before meta
