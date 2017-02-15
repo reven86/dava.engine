@@ -5,7 +5,6 @@
 #include <FileSystem/DynamicMemoryFile.h>
 #include <DLCManager/DLCManager.h>
 #include <UI/Focus/UIFocusComponent.h>
-#include <typeinfo>
 
 using namespace DAVA;
 
@@ -13,6 +12,14 @@ DLCManagerTest::DLCManagerTest(TestBed& app)
     : BaseScreen(app, "DLCManagerTest")
     , engine(app.GetEngine())
 {
+}
+
+DLCManagerTest::~DLCManagerTest()
+{
+    DLCManager& dm = *engine.GetContext()->dlcManager;
+
+    dm.requestUpdated.DisconnectAll();
+    dm.networkReady.DisconnectAll();
 }
 
 void DLCManagerTest::TextFieldOnTextChanged(UITextField* textField, const WideString& newText, const WideString& /*oldText*/)
@@ -36,31 +43,6 @@ void DLCManagerTest::UpdateDescription()
 void DLCManagerTest::LoadResources()
 {
     BaseScreen::LoadResources();
-
-    eGPUFamily gpu = DeviceInfo::GetGPUFamily();
-    switch (gpu)
-    {
-    case GPU_ADRENO:
-        gpuArchitecture = "adreno";
-        break;
-    case GPU_DX11:
-        gpuArchitecture = "dx11";
-        break;
-    case GPU_MALI:
-        gpuArchitecture = "mali";
-        break;
-    case GPU_POWERVR_IOS:
-        gpuArchitecture = "pvr_ios";
-        break;
-    case GPU_POWERVR_ANDROID:
-        gpuArchitecture = "pvr_android";
-        break;
-    case GPU_TEGRA:
-        gpuArchitecture = "tegra";
-        break;
-    default:
-        throw std::runtime_error("unknown gpu famili");
-    }
 
     ScopedPtr<FTFont> font(FTFont::Create("~res:/Fonts/korinna.ttf"));
     font->SetSize(14);

@@ -4,9 +4,12 @@
 
 #include <TArc/Controls/CheckBox.h>
 #include <TArc/Controls/ComboBox.h>
+#include <TArc/Controls/ComboBoxCheckable.h>
 #include <TArc/Controls/IntSpinBox.h>
 #include <TArc/Controls/DoubleSpinBox.h>
+#include <TArc/Controls/IntSpinBox.h>
 #include <TArc/Controls/LineEdit.h>
+#include <TArc/Controls/FilePathEdit.h>
 #include <TArc/Controls/QtBoxLayouts.h>
 #include <TArc/Utils/ModuleCollection.h>
 #include <TArc/WindowSubSystem/ActionUtils.h>
@@ -17,8 +20,9 @@
 #include <Reflection/ReflectedMeta.h>
 #include <Reflection/ReflectionRegistrator.h>
 
-#include <Base/GlobalEnum.h>
 #include <Logger/Logger.h>
+#include <Base/GlobalEnum.h>
+#include <Base/Vector.h>
 
 #include <QAction>
 #include <QDialog>
@@ -36,7 +40,7 @@ struct Result
     QLayout* layout = nullptr;
 };
 
-using TestSpaceCreator = Result (*)(TArc::ContextAccessor* accessor, QWidget* parent);
+using TestSpaceCreator = Result (*)(TArc::UI* ui, TArc::ContextAccessor* accessor, QWidget* parent);
 
 struct CheckBoxTestData : public ReflectionBase
 {
@@ -71,7 +75,7 @@ struct CheckBoxTestData : public ReflectionBase
         .End();
     }
 
-    static Result Create(TArc::ContextAccessor* accessor, QWidget* parent)
+    static Result Create(TArc::UI* ui, TArc::ContextAccessor* accessor, QWidget* parent)
     {
         using namespace DAVA::TArc;
 
@@ -156,7 +160,7 @@ struct LineEditTestData : public ReflectionBase
         .End();
     }
 
-    static Result Create(TArc::ContextAccessor* accessor, QWidget* parent)
+    static Result Create(TArc::UI* ui, TArc::ContextAccessor* accessor, QWidget* parent)
     {
         using namespace DAVA::TArc;
         LineEditTestData* data = new LineEditTestData();
@@ -334,7 +338,7 @@ struct ComboBoxTestData : public ReflectionBase
         .End();
     }
 
-    static Result Create(TArc::ContextAccessor* accessor, QWidget* parent)
+    static Result Create(TArc::UI* ui, TArc::ContextAccessor* accessor, QWidget* parent)
     {
         using namespace DAVA::TArc;
 
@@ -343,7 +347,7 @@ struct ComboBoxTestData : public ReflectionBase
 
         QVBoxLayout* boxLayout = new QVBoxLayout();
 
-        auto addTest = [&](const QString& testName, const ControlDescriptorBuilder<ComboBox::Fields> descriptor)
+        auto addTest = [&](const QString& testName, const ControlDescriptorBuilder<ComboBox::Fields>& descriptor)
         {
             QHBoxLayout* lineLayout = new QHBoxLayout();
             lineLayout->addWidget(new QLabel(testName, parent));
@@ -431,6 +435,90 @@ struct ComboBoxTestData : public ReflectionBase
     }
 };
 
+struct ComboBoxCheckableTestData : public ReflectionBase
+{
+    enum eFlags
+    {
+        NONE = 0,
+        BIT_1 = 1 << 0,
+        BIT_2 = 1 << 1,
+        BIT_3 = 1 << 2,
+
+        MIX_1_2 = BIT_1 | BIT_2,
+        MIX_1_3 = BIT_1 | BIT_3,
+        MIX_2_3 = BIT_2 | BIT_3,
+
+        ALL = BIT_1 | BIT_2 | BIT_3
+    };
+
+    //int
+    int testValue = eFlags::BIT_2;
+    bool readOnly = false;
+
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(ComboBoxCheckableTestData, ReflectionBase)
+    {
+        ReflectionRegistrator<ComboBoxCheckableTestData>::Begin()
+        .Field("readOnly", &ComboBoxCheckableTestData::readOnly)
+        .Field("value", &ComboBoxCheckableTestData::testValue)[DAVA::M::FlagsT<ComboBoxCheckableTestData::eFlags>()]
+        .Field("valueMetaReadOnly", &ComboBoxCheckableTestData::testValue)[DAVA::M::FlagsT<ComboBoxCheckableTestData::eFlags>(), DAVA::M::ReadOnly()]
+        .End();
+    }
+
+    static Result Create(TArc::UI* ui, TArc::ContextAccessor* accessor, QWidget* parent)
+    {
+        using namespace DAVA::TArc;
+
+        ComboBoxCheckableTestData* data = new ComboBoxCheckableTestData();
+        Reflection dataModel = Reflection::Create(data);
+
+        QVBoxLayout* boxLayout = new QVBoxLayout();
+
+        auto addTest = [&](const QString& testName, const ControlDescriptorBuilder<ComboBoxCheckable::Fields>& descriptor)
+        {
+            QHBoxLayout* lineLayout = new QHBoxLayout();
+            lineLayout->addWidget(new QLabel(testName, parent));
+
+            ComboBoxCheckable* comboBox = new ComboBoxCheckable(descriptor, accessor, dataModel, parent);
+            lineLayout->addWidget(comboBox->ToWidgetCast());
+            boxLayout->addLayout(lineLayout);
+        };
+
+        // read only
+        {
+            ControlDescriptorBuilder<ComboBoxCheckable::Fields> desr;
+            desr[ComboBoxCheckable::Fields::Value] = "value";
+            desr[ComboBoxCheckable::Fields::IsReadOnly] = "readOnly";
+            addTest("Value[ReadOnly by field]:", desr);
+        }
+
+        {
+            ControlDescriptorBuilder<ComboBoxCheckable::Fields> desr;
+            desr[ComboBoxCheckable::Fields::Value] = "value";
+            addTest("Value: ", desr);
+        }
+
+        {
+            ControlDescriptorBuilder<ComboBoxCheckable::Fields> desr;
+            desr[ComboBoxCheckable::Fields::Value] = "valueMetaReadOnly";
+            addTest("Value[ReadOnly by Meeta]:", desr);
+        }
+
+        //readonly check box
+        {
+            //add read only check box
+            ControlDescriptorBuilder<CheckBox::Fields> descr;
+            descr[CheckBox::Fields::Checked] = "readOnly";
+            CheckBox* readOnlyBox = new CheckBox(descr, accessor, dataModel, parent);
+            boxLayout->addWidget(readOnlyBox->ToWidgetCast());
+        }
+
+        Result r;
+        r.model = data;
+        r.layout = boxLayout;
+        return r;
+    }
+};
+
 struct IntSpinBoxTestData : public ReflectionBase
 {
     int v = 10;
@@ -462,7 +550,7 @@ struct IntSpinBoxTestData : public ReflectionBase
         .End();
     }
 
-    static Result Create(TArc::ContextAccessor* accessor, QWidget* parent)
+    static Result Create(TArc::UI* ui, TArc::ContextAccessor* accessor, QWidget* parent)
     {
         using namespace DAVA::TArc;
 
@@ -533,7 +621,7 @@ struct DoubleSpinBoxTestData : public ReflectionBase
         .End();
     }
 
-    static Result Create(TArc::ContextAccessor* accessor, QWidget* parent)
+    static Result Create(TArc::UI* ui, TArc::ContextAccessor* accessor, QWidget* parent)
     {
         using namespace DAVA::TArc;
 
@@ -573,6 +661,118 @@ struct DoubleSpinBoxTestData : public ReflectionBase
     }
 };
 
+struct FilePathEditTestData : public ReflectionBase
+{
+    FilePath path = "~res:/Materials/2d.Color.material";
+    FilePath root = "~res:/Materials/";
+    String placeHolder = "Empty string";
+    bool isReadOnly = false;
+    bool isEnabled = true;
+
+    const FilePath& GetText() const
+    {
+        return path;
+    }
+
+    void SetText(const FilePath& t)
+    {
+        path = t;
+    }
+
+    String GetFilters() const
+    {
+        return "Materials (*.material)";
+    }
+
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(FilePathEditTestData, ReflectionBase)
+    {
+        using namespace DAVA;
+
+        ReflectionRegistrator<FilePathEditTestData>::Begin()
+        .Field("readOnlyMetaText", &FilePathEditTestData::path)[M::ReadOnly()]
+        .Field("readOnlyText", &FilePathEditTestData::GetText, nullptr)
+        .Field("path", &FilePathEditTestData::GetText, &FilePathEditTestData::SetText)[M::File(true, "Materials (*.material);;Meta (*.meta)")]
+        .Field("filters", &FilePathEditTestData::GetFilters, nullptr)
+        .Field("isTextReadOnly", &FilePathEditTestData::isReadOnly)
+        .Field("isTextEnabled", &FilePathEditTestData::isEnabled)
+        .Field("placeholder", &FilePathEditTestData::placeHolder)
+        .Field("rootDir", &FilePathEditTestData::root)
+        .End();
+    }
+
+    static Result Create(TArc::UI* ui, TArc::ContextAccessor* accessor, QWidget* parent)
+    {
+        using namespace DAVA::TArc;
+        FilePathEditTestData* data = new FilePathEditTestData();
+        QVBoxLayout* boxLayout = new QVBoxLayout();
+
+        {
+            QtHBoxLayout* lineLayout = new QtHBoxLayout();
+            lineLayout->addWidget(new QLabel("Meta read only : ", parent));
+
+            FilePathEdit::Params p;
+            p.ui = ui;
+            p.wndKey = REGlobal::MainWindowKey;
+            p.fields[FilePathEdit::Fields::Value] = "readOnlyMetaText";
+            lineLayout->AddWidget(new FilePathEdit(p, accessor, Reflection::Create(data), parent));
+            boxLayout->addLayout(lineLayout);
+        }
+
+        {
+            QtHBoxLayout* lineLayout = new QtHBoxLayout();
+            lineLayout->addWidget(new QLabel("Read only : ", parent));
+
+            FilePathEdit::Params p;
+            p.ui = ui;
+            p.wndKey = REGlobal::MainWindowKey;
+            p.fields[FilePathEdit::Fields::Value] = "readOnlyText";
+            lineLayout->AddWidget(new FilePathEdit(p, accessor, Reflection::Create(data), parent));
+            boxLayout->addLayout(lineLayout);
+        }
+
+        {
+            QtHBoxLayout* lineLayout = new QtHBoxLayout();
+            lineLayout->addWidget(new QLabel("Editable : ", parent));
+
+            FilePathEdit::Params p;
+            p.ui = ui;
+            p.wndKey = REGlobal::MainWindowKey;
+            p.fields[FilePathEdit::Fields::Value] = "path";
+            p.fields[FilePathEdit::Fields::PlaceHolder] = "placeholder";
+            p.fields[FilePathEdit::Fields::IsReadOnly] = "isTextReadOnly";
+            p.fields[FilePathEdit::Fields::IsEnabled] = "isTextEnabled";
+            p.fields[FilePathEdit::Fields::DialogTitle] = "placeholder";
+            p.fields[FilePathEdit::Fields::RootDirectory] = "rootDir";
+            //p.fields[FilePathEdit::Fields::Filters] = "filters";
+            lineLayout->AddWidget(new FilePathEdit(p, accessor, Reflection::Create(data), parent));
+            boxLayout->addLayout(lineLayout);
+
+            {
+                // Read only check box
+                ControlDescriptorBuilder<CheckBox::Fields> descr;
+                descr[CheckBox::Fields::Checked] = "isTextReadOnly";
+                CheckBox* checkBox = new CheckBox(descr, accessor, Reflection::Create(data), parent);
+                boxLayout->addWidget(checkBox->ToWidgetCast());
+            }
+
+            {
+                // Is enabled
+                ControlDescriptorBuilder<CheckBox::Fields> descr;
+                descr[CheckBox::Fields::Checked] = "isTextEnabled";
+                CheckBox* checkBox = new CheckBox(descr, accessor, Reflection::Create(data), parent);
+
+                QVBoxLayout* vbox = new QVBoxLayout(checkBox->ToWidgetCast());
+                boxLayout->addWidget(checkBox->ToWidgetCast());
+            }
+        }
+
+        Result r;
+        r.model = data;
+        r.layout = boxLayout;
+        return r;
+    }
+};
+
 struct Node
 {
     TestSpaceCreator creator;
@@ -585,6 +785,18 @@ ENUM_DECLARE(TestUIModuleDetails::ComboBoxTestData::eTest)
     ENUM_ADD_DESCR(static_cast<int>(TestUIModuleDetails::ComboBoxTestData::eTest::FIRST), "1st");
     ENUM_ADD_DESCR(static_cast<int>(TestUIModuleDetails::ComboBoxTestData::eTest::SECOND), "2nd");
     ENUM_ADD_DESCR(static_cast<int>(TestUIModuleDetails::ComboBoxTestData::eTest::THIRD), "3rd");
+}
+
+ENUM_DECLARE(TestUIModuleDetails::ComboBoxCheckableTestData::eFlags)
+{
+    ENUM_ADD_DESCR(static_cast<int>(TestUIModuleDetails::ComboBoxCheckableTestData::eFlags::NONE), "None");
+    ENUM_ADD_DESCR(static_cast<int>(TestUIModuleDetails::ComboBoxCheckableTestData::eFlags::BIT_1), "1-st");
+    ENUM_ADD_DESCR(static_cast<int>(TestUIModuleDetails::ComboBoxCheckableTestData::eFlags::BIT_2), "2-nd");
+    ENUM_ADD_DESCR(static_cast<int>(TestUIModuleDetails::ComboBoxCheckableTestData::eFlags::BIT_3), "3-rd");
+    ENUM_ADD_DESCR(static_cast<int>(TestUIModuleDetails::ComboBoxCheckableTestData::eFlags::MIX_1_2), "MIX_1_2");
+    ENUM_ADD_DESCR(static_cast<int>(TestUIModuleDetails::ComboBoxCheckableTestData::eFlags::MIX_1_3), "MIX_1_3");
+    ENUM_ADD_DESCR(static_cast<int>(TestUIModuleDetails::ComboBoxCheckableTestData::eFlags::MIX_2_3), "MIX_2_3");
+    ENUM_ADD_DESCR(static_cast<int>(TestUIModuleDetails::ComboBoxCheckableTestData::eFlags::ALL), "All");
 }
 
 void TestUIModule::PostInit()
@@ -605,25 +817,29 @@ void TestUIModule::ShowDialog()
     QGridLayout* layout = new QGridLayout(dlg);
     dlg->setLayout(layout);
 
-    DAVA::Vector<Node> nodes =
+    DAVA::Vector<Node> nodes = DAVA::Vector<Node>
     {
       { &CheckBoxTestData::Create, "CheckBox Test" },
       { &LineEditTestData::Create, "LineEdit Test" },
       { &ComboBoxTestData::Create, "ComboBox Test" },
+      { &ComboBoxCheckableTestData::Create, "ComboBoxCheckable Test" },
       { &IntSpinBoxTestData::Create, "SpinBoxTest" },
-      { &DoubleSpinBoxTestData::Create, "Double Spin" }
+      { &DoubleSpinBoxTestData::Create, "Double Spin" },
+      { &FilePathEditTestData::Create, "FilePath" }
     };
+
     DAVA::Vector<DAVA::ReflectionBase*> data;
 
-    const int columnCount = 6;
+    const int columnCount = 4;
     int currentColumn = 0;
     int currentRow = 0;
     DAVA::TArc::ContextAccessor* accessor = GetAccessor();
+    DAVA::TArc::UI* ui = GetUI();
     for (Node& node : nodes)
     {
         QGroupBox* groupBox = new QGroupBox(node.title, dlg);
 
-        Result r = node.creator(accessor, groupBox);
+        Result r = node.creator(ui, accessor, groupBox);
         data.push_back(r.model);
 
         groupBox->setLayout(r.layout);
