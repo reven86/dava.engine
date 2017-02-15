@@ -179,5 +179,10 @@ private:
     TValueDescriptorFn fn;
 };
 
+/** Mark some field as sub property. Used in some TArc controls: Vector2 editor, Vector3 editor, Rect editor etc.*/
+class SubProperty
+{
+};
+
 } // namespace Mates
 } // namespace DAVA

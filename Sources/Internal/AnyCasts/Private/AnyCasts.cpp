@@ -74,6 +74,9 @@ void RegisterAnyCasts()
     AnyCast<size_t, String>::Register(&IntegralToString<size_t>);
     AnyCast<FilePath, String>::Register(&FilePathToString);
     AnyCast<String, FilePath>::Register(&StringToFilePath);
+
+    AnyCast<float64, float32>::RegisterDefault();
+    AnyCast<float32, float64>::RegisterDefault();
 }
 
 } // namespace DAVA

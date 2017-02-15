@@ -7,11 +7,13 @@ namespace TArc
 DoubleSpinBox::DoubleSpinBox(const ControlDescriptorBuilder<Fields>& fields, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent /*= nullptr*/)
     : TBase(ControlDescriptor(fields), wrappersProcessor, model, parent)
 {
+    setDecimals(6);
 }
 
 DoubleSpinBox::DoubleSpinBox(const ControlDescriptorBuilder<Fields>& fields, ContextAccessor* accessor, Reflection model, QWidget* parent /*= nullptr*/)
     : TBase(ControlDescriptor(fields), accessor, model, parent)
 {
+    setDecimals(6);
 }
 
 void DoubleSpinBox::UpdateControl(const ControlDescriptor& changedFields)
@@ -45,7 +47,7 @@ bool DoubleSpinBox::FromText(const QString& input, double& output) const
 
 QString DoubleSpinBox::ToText(const double value) const
 {
-    return QString::number(value, 'f', decimals());
+    return QString::number(value);
 }
 
 bool DoubleSpinBox::IsEqualValue(double v1, double v2) const

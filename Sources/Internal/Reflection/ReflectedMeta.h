@@ -191,6 +191,8 @@ using Group = Meta<Metas::Group>;
     \endcode
 */
 using ValueDescription = Meta<Metas::ValueDescription>;
+
+using SubProperty = Meta<Metas::SubProperty>;
 }
 
 } // namespace DAVA

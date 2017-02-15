@@ -1,7 +1,84 @@
 #include "Math/AABBox3.h"
+#include "Reflection/ReflectionRegistrator.h"
+#include "Reflection/ReflectedMeta.h"
 
 namespace DAVA
 {
+namespace AABBox3Detail
+{
+float32 GetMinX(AABBox3* box)
+{
+    return box->min.x;
+}
+
+void SetMinX(AABBox3* box, float32 v)
+{
+    box->min.x = v;
+}
+
+float32 GetMinY(AABBox3* box)
+{
+    return box->min.y;
+}
+
+void SetMinY(AABBox3* box, float32 v)
+{
+    box->min.y = v;
+}
+
+float32 GetMinZ(AABBox3* box)
+{
+    return box->min.z;
+}
+
+void SetMinZ(AABBox3* box, float32 v)
+{
+    box->min.z = v;
+}
+
+float32 GetMaxX(AABBox3* box)
+{
+    return box->max.x;
+}
+
+void SetMaxX(AABBox3* box, float32 v)
+{
+    box->max.x = v;
+}
+
+float32 GetMaxY(AABBox3* box)
+{
+    return box->max.y;
+}
+
+void SetMaxY(AABBox3* box, float32 v)
+{
+    box->max.y = v;
+}
+
+float32 GetMaxZ(AABBox3* box)
+{
+    return box->max.z;
+}
+
+void SetMaxZ(AABBox3* box, float32 v)
+{
+    box->max.z = v;
+}
+}
+
+DAVA_REFLECTION_IMPL(AABBox3)
+{
+    ReflectionRegistrator<AABBox3>::Begin()
+    .Field("MinX", &AABBox3Detail::GetMinX, &AABBox3Detail::SetMinX)[M::SubProperty()]
+    .Field("MinY", &AABBox3Detail::GetMinY, &AABBox3Detail::SetMinY)[M::SubProperty()]
+    .Field("MinZ", &AABBox3Detail::GetMinZ, &AABBox3Detail::SetMinZ)[M::SubProperty()]
+    .Field("MaxX", &AABBox3Detail::GetMaxX, &AABBox3Detail::SetMaxX)[M::SubProperty()]
+    .Field("MaxY", &AABBox3Detail::GetMaxY, &AABBox3Detail::SetMaxY)[M::SubProperty()]
+    .Field("MaxZ", &AABBox3Detail::GetMaxZ, &AABBox3Detail::SetMaxZ)[M::SubProperty()]
+    .End();
+}
+
 //! \brief check if bounding box intersect ray
 bool AABBox3::IsIntersectsWithRay(Ray3& r, float32& tmin, float32& tmax, float32 t0, float32 t1)
 {
@@ -121,5 +198,13 @@ AABBox3 AABBox3::GetMaxRotationExtentBox(const Vector3& rotationCenter) const
 {
     float32 rotationRadius = (GetCenter() - rotationCenter).Length();
     return AABBox3(rotationCenter, 2.0f * (rotationRadius + GetBoundingSphereRadius()));
+}
+
+template <>
+bool AnyCompare<AABBox3>::IsEqual(const DAVA::Any& v1, const DAVA::Any& v2)
+{
+    const AABBox3& bbox1 = v1.Get<AABBox3>();
+    const AABBox3& bbox2 = v2.Get<AABBox3>();
+    return bbox1 == bbox2;
 }
 };

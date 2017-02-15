@@ -2,7 +2,9 @@
 
 #include <cmath>
 #include "Base/BaseTypes.h"
+#include "Base/Any.h"
 #include "Math/MathConstants.h"
+#include "Reflection/Reflection.h"
 
 namespace DAVA
 {
@@ -83,6 +85,8 @@ public:
     //! Comparison operators
     inline bool operator==(const Vector2& _v) const;
     inline bool operator!=(const Vector2& _v) const;
+
+    DAVA_REFLECTION(Vector2);
 };
 //! operators
 inline Vector2 operator-(const Vector2& _v1, const Vector2& _v2);
@@ -204,6 +208,8 @@ public:
     //! Comparison operators
     inline bool operator==(const Vector3& _v) const;
     inline bool operator!=(const Vector3& _v) const;
+
+    DAVA_REFLECTION(Vector3);
 };
 
 //! operators
@@ -299,6 +305,8 @@ public:
 
     inline Vector3& GetVector3();
     inline const Vector3& GetVector3() const;
+
+    DAVA_REFLECTION(Vector4);
 };
 
 //! operators
@@ -1160,4 +1168,8 @@ inline Vector4 Normalize(const Vector4& v)
     res.Normalize();
     return res;
 }
+
+extern template AnyCompare<Vector2>;
+extern template AnyCompare<Vector3>;
+extern template AnyCompare<Vector4>;
 };
