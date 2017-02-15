@@ -11,7 +11,7 @@ typedef void CURLM;
 
 namespace DAVA
 {
-class CurlDownloader : public Downloader
+class CurlDownloader final : public Downloader
 {
 public:
     CurlDownloader();
@@ -22,11 +22,6 @@ protected:
         \brief Interrupts current download.
      */
     void Interrupt() override;
-    /**
-        \brief Init an easy handle for use it later for any Curl operation. Setups all common paramaters.
-        Returns a pointer to CURL easy handle. NULL if there was an init error.
-     */
-    static CURL* CurlSimpleInit();
     /**
      \brief Get content size in bytes for remote Url.
      \param[in] url - destination fie Url

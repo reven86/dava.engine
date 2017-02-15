@@ -558,7 +558,7 @@ void DownloadManager::ClearQueue(Deque<DownloadTaskDescription*>& queue)
 
 DownloadTaskDescription* DownloadManager::ExtractFromQueue(Deque<DownloadTaskDescription*>& queue, const uint32& taskId)
 {
-    DownloadTaskDescription* extractedTask = NULL;
+    DownloadTaskDescription* extractedTask = nullptr;
 
     if (!queue.empty())
     {
@@ -585,7 +585,7 @@ void DownloadManager::PlaceToQueue(Deque<DownloadTaskDescription*>& queue, Downl
 
 DownloadTaskDescription* DownloadManager::GetTaskForId(const uint32& taskId)
 {
-    DownloadTaskDescription* retPointer = NULL;
+    DownloadTaskDescription* retPointer = nullptr;
 
     if (currentTask && taskId == currentTask->id)
     {

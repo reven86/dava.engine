@@ -18,7 +18,7 @@ struct ErrorWithPriority
     char8 priority;
 };
 
-ErrorWithPriority errorsByPriority[] = {
+const ErrorWithPriority errorsByPriority[] = {
     { DLE_INIT_ERROR, 0 },
     { DLE_FILE_ERROR, 1 },
     { DLE_COULDNT_RESOLVE_HOST, 2 },
@@ -107,7 +107,7 @@ void CurlDownloader::Interrupt()
     isDownloadInterrupting = true;
 }
 
-CURL* CurlDownloader::CurlSimpleInit()
+static CURL* CurlSimpleInit()
 {
     /* init the curl session */
     CURL* curl_handle = curl_easy_init();
@@ -344,22 +344,20 @@ CURLMcode CurlDownloaderPerform(CURLM*& multiHandle,
 
 void CurlDownloader::CleanupDownload()
 {
-    Vector<DownloadPart*>::iterator endP = downloadParts.end();
-    for (Vector<DownloadPart*>::iterator it = downloadParts.begin(); it != endP; ++it)
+    curl_multi_cleanup(multiHandle);
+    multiHandle = nullptr;
+
+    for (DownloadPart* part : downloadParts)
     {
-        SafeDelete(*it);
+        SafeDelete(part);
     }
     downloadParts.clear();
 
-    Vector<CURL*>::iterator endH = easyHandles.end();
-    for (Vector<CURL*>::iterator it = easyHandles.begin(); it != endH; ++it)
+    for (CURL* easy : easyHandles)
     {
-        curl_easy_cleanup(*it);
+        curl_easy_cleanup(easy);
     }
     easyHandles.clear();
-
-    curl_multi_cleanup(multiHandle);
-    multiHandle = NULL;
 }
 
 void CurlDownloader::SaveChunkHandler()
@@ -379,7 +377,7 @@ void CurlDownloader::SaveChunkHandler()
         {
             chunksMutex.Lock();
             DataChunkInfo* chunk = chunksToSave.front();
-            if (NULL != chunk)
+            if (nullptr != chunk)
             {
                 chunksToSave.pop_front();
             }
@@ -755,7 +753,7 @@ DownloadError CurlDownloader::GetSize(const String& url, uint64& retSize, int32 
 
     CURLcode curlStatus = curl_easy_perform(currentCurlHandle);
     curl_easy_getinfo(currentCurlHandle, CURLINFO_CONTENT_LENGTH_DOWNLOAD, &sizeToDownload);
-    if (0 > sizeToDownload)
+    if (sizeToDownload < 0)
     {
         sizeToDownload = 0;
     }
@@ -798,7 +796,7 @@ DownloadError CurlStatusToDownloadStatus(CURLcode status)
     }
 }
 
-DownloadError CurlmCodeToDownloadError(CURLMcode curlMultiCode)
+static DownloadError CurlmCodeToDownloadError(CURLMcode curlMultiCode)
 {
     switch (curlMultiCode)
     {
@@ -846,7 +844,7 @@ void CurlDownloader::SetTimeout(CURL* easyHandle)
     curl_easy_setopt(easyHandle, CURLOPT_SERVER_RESPONSE_TIMEOUT, operationTimeout);
 }
 
-DownloadError HandleDownloadResults(CURLM* multiHandle, bool isRangeRequestSent)
+static DownloadError HandleDownloadResults(CURLM* multiHandle, bool isRangeRequestSent)
 {
     // handle easy handles states
     Vector<DownloadError> results;
@@ -866,7 +864,7 @@ DownloadError HandleDownloadResults(CURLM* multiHandle, bool isRangeRequestSent)
     return TakeMostImportantReturnValue(results);
 }
 
-DownloadError ErrorForEasyHandle(CURL* easyHandle, CURLcode status, bool isRangeRequestSent)
+static DownloadError ErrorForEasyHandle(CURL* easyHandle, CURLcode status, bool isRangeRequestSent)
 {
     DownloadError retError;
 
@@ -888,7 +886,7 @@ DownloadError ErrorForEasyHandle(CURL* easyHandle, CURLcode status, bool isRange
     return retError;
 }
 
-DownloadError TakeMostImportantReturnValue(const Vector<DownloadError>& errorList)
+static DownloadError TakeMostImportantReturnValue(const Vector<DownloadError>& errorList)
 {
     char8 errorCount = sizeof(errorsByPriority) / sizeof(ErrorWithPriority);
     int32 retIndex = errorCount - 1; // last error in the list is the less important.

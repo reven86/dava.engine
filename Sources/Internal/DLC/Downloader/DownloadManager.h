@@ -12,7 +12,7 @@ class Thread;
 class Downloader;
 class Engine;
 
-class DownloadManager : public Singleton<DownloadManager>
+class DownloadManager final : public Singleton<DownloadManager>
 {
     friend class Downloader;
 
