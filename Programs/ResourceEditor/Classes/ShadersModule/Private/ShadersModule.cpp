@@ -82,10 +82,14 @@ void ShadersModule::ReloadShaders()
                                           material.second->InvalidateRenderVariants();
                                       }
 
-                                      const DAVA::Vector<DAVA::NMaterial*>* const particleDebug = sceneEditor->GetParticleEffectDebugDrawSystem()->GetMaterials();
-                                      for (auto material : *particleDebug)
+                                      ParticleEffectDebugDrawSystem* particleEffectDebugDrawSystem = sceneEditor->GetParticleEffectDebugDrawSystem();
+                                      if (particleEffectDebugDrawSystem != nullptr)
                                       {
-                                          material->InvalidateRenderVariants();
+                                          const DAVA::Vector<DAVA::NMaterial*>* const particleDebug = particleEffectDebugDrawSystem->GetMaterials();
+                                          for (auto material : *particleDebug)
+                                          {
+                                              material->InvalidateRenderVariants();
+                                          }
                                       }
 
                                       DAVA::Set<DAVA::NMaterial*> materialList;
