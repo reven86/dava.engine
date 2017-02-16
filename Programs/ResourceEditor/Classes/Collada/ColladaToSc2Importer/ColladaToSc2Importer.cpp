@@ -19,6 +19,11 @@
 
 namespace DAVA
 {
+ColladaToSc2Importer::ColladaToSc2Importer(std::unique_ptr<DAEConverter::ImportParams>&& params_)
+    : params(std::move(params_))
+{
+}
+
 // Creates Dava::Mesh from ColladaMeshInstance and puts it
 Mesh* ColladaToSc2Importer::GetMeshFromCollada(ColladaMeshInstance* mesh, const bool isShadow)
 {
@@ -245,6 +250,7 @@ eColladaErrorCodes ColladaToSc2Importer::SaveSC2(ColladaScene* colladaScene, con
         bool combinedSuccessfull = SceneUtils::CombineLods(scene);
         if (combinedSuccessfull)
         {
+            DAEConverter::RestoreCustomProperties(RefPtr<Scene>::ConstructWithRetain(scene), scenePath, params.get());
             SceneFileV2::eError saveRes = scene->SaveScene(scenePath);
 
             if (saveRes > SceneFileV2::eError::ERROR_NO_ERROR)
