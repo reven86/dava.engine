@@ -702,6 +702,7 @@ const String AutotestingSystem::GetControlHierarchy(UIControl* control)
         hierarhy = Format("%s/%s", iter->GetName().c_str(), hierarhy.c_str());
         iter = iter->GetParent();
     }
+    FilePath scriptPath = GetRecordedScriptPath();
     hierarhy = Format("%s%s", hierarhy.c_str(), control->GetName().c_str());
     return hierarhy;
 }
@@ -742,6 +743,11 @@ String AutotestingSystem::GetLuaString(int32 count)
         }
     }
     return result;
+}
+
+FilePath AutotestingSystem::GetRecordedScriptPath()
+{
+    return FilePath::AddPath(pathToAutomation, "RecordedScript.lua");
 }
 
 FilePath AutotestingSystem::GetRecordedScriptPath()
