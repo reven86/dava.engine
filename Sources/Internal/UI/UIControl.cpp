@@ -1414,7 +1414,14 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
 
                         if (AutotestingSystem::Instance()->IsRecording())
                         {
-                            AutotestingSystem::Instance()->OnRecordUserAction(this);
+                            if (!GetParent()->GetName().IsValid())
+                            {
+                                AutotestingSystem::Instance()->OnRecordFastSelectControl(this);
+                            }
+                            else
+                            {
+                                AutotestingSystem::Instance()->OnRecordClickControl(this);
+                            }
                         }
 
                         if (isPointInside)

@@ -99,8 +99,13 @@ public:
 
     bool ResolvePathToAutomation();
     FilePath GetPathTo(const String& path);
-    void OnRecordUserAction(UIControl*);
 
+    void OnRecordClickControl(UIControl*);
+    void OnRecordWaitControl(UIControl*);
+    void OnRecordDoubleClickControl(UIControl*);
+    void OnRecordSetText(UIControl*);
+    void OnRecordCheckText(UIControl*);
+    void OnRecordFastSelectControl(UIControl*);
     void StartRecording();
     void StopRecording();
     bool IsRecording()
@@ -121,12 +126,18 @@ protected:
     //DB
     void ExitApp();
 
+    //Recording
+    const String GetControlHierarchy(UIControl*);
+    const String WrapWithFunctionCall(const String&, const String&);
+    void SaveLineToFile(const String&, const String&);
+
 private:
     bool isScreenShotSaving = false;
     FilePath pathToAutomation;
     File* recordedActs;
 
 public:
+    static const String RecordScriptFileName;
     float32 startTime = 0.f;
 
     bool isInit;
