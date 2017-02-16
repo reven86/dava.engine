@@ -10,6 +10,11 @@ namespace FileAPI
 	fileName - utf8 string
 */
 FILE* OpenFile(const String& fileName, const String& mode);
+
+/**
+	close file with double check
+*/
+int32 Close(FILE* f);
 /**
 	fileName - utf8 string
 */
@@ -29,5 +34,11 @@ bool IsRegularFile(const String& fileName);
 	dirName - utf8 string
 */
 bool IsDirectory(const String& dirName);
+
+/**
+	fileName - utf8 string
+	return std::numeric_limits<uint64>::max() on error
+*/
+uint64 GetFileSize(const String& fileName);
 }
 }

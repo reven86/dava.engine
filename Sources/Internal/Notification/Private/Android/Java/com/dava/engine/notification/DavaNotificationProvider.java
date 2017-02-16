@@ -43,14 +43,23 @@ public class DavaNotificationProvider {
             Log.d(DavaActivity.LOG_TAG, "DavaNotificationProvider not inited!");
             return;
         }
-        icon = android.R.drawable.sym_def_app_icon;
+
+        if (icon == 0)
+        {
+            icon = android.R.drawable.sym_def_app_icon;
+        }
+
         builder.setSmallIcon(icon);
     }
 
-    static void SetNotificationIcon(int value)
+    public static void SetNotificationIcon(int value)
     {
         icon = value;
-        builder.setSmallIcon(icon);
+
+        if (builder != null)
+        {
+            builder.setSmallIcon(icon);
+        }
     }
 
     static int GetNotificationIcon()
@@ -64,20 +73,9 @@ public class DavaNotificationProvider {
         builder.setContentTitle("").setContentText("").setProgress(0, 0, false);
     }
 
+	// TODO: Remove this method, after transition on Core V2.
     static void EnableTapAction(String uid)
     {
-        Log.d(DavaActivity.LOG_TAG, "DavaNotificationProvider.EnableTapAction");
-        if (isInited)
-        {
-            CleanBuilder();
-            
-            Intent intent = new Intent(activity, activity.getClass());
-            intent.putExtra("uid", uid);
-            PendingIntent pIntent = PendingIntent.getActivity(activity, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-            builder.setContentIntent(pIntent);
-
-            notificationManager.notify(uid, 0, builder.build());
-        }
     }
     
     static void NotifyProgress(String uid, String title, String text, int maxValue, int value, boolean useSound)
@@ -91,11 +89,18 @@ public class DavaNotificationProvider {
             {
                 uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);    
             }
+
+            Intent intent = new Intent(activity, activity.getClass());
+            intent.putExtra("uid", uid);
+			int hash = uid.hashCode();
+            PendingIntent pIntent = PendingIntent.getActivity(activity, hash, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
             
             builder.setContentTitle(title)
-                .setContentText(text)
-                .setProgress(maxValue, value, false)
-                .setSound(uri);
+                   .setContentText(text)
+                   .setProgress(maxValue, value, false)
+                   .setSound(uri)
+				   .setContentIntent(pIntent);
             
             notificationManager.notify(uid, 0, builder.build());
         }
@@ -113,10 +118,18 @@ public class DavaNotificationProvider {
             {
                 uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);    
             }
-            
+            Intent intent = new Intent(activity, activity.getClass());
+			int hash = 0;
+			if (null != uid)
+			{
+				hash = uid.hashCode();
+			}
+            intent.putExtra("uid", uid);
+            PendingIntent pIntent = PendingIntent.getActivity(activity, hash, intent, PendingIntent.FLAG_UPDATE_CURRENT);
             builder.setContentTitle(title)
                     .setContentText(text)
-                    .setSound(uri);
+                    .setSound(uri)
+					.setContentIntent(pIntent);
 
             notificationManager.notify(uid, 0, builder.build());
         }
@@ -147,7 +160,6 @@ public class DavaNotificationProvider {
         PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_CANCEL_CURRENT);
         AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
         alarmManager.cancel(pendingIntent);
-        notificationManager.cancelAll();
     }
 
     static void HideNotification(String uid)

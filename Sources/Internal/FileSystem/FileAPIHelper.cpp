@@ -30,6 +30,20 @@ FILE* OpenFile(const String& fileName, const String& mode)
 #endif
 }
 
+int32 Close(FILE* f)
+{
+    int32 result = EOF;
+    if (f != nullptr)
+    {
+        result = fclose(f);
+        if (result != 0)
+        {
+            Logger::Error("error during close file stream");
+        }
+    }
+    return result;
+}
+
 int32 RemoveFile(const String& fileName)
 {
 #ifdef __DAVAENGINE_WINDOWS__
@@ -109,6 +123,23 @@ bool IsDirectory(const String& dirName)
         Logger::Error("Unexpected error in %s: errno = (%d)", __FUNCTION__, static_cast<int32>(errno));
     }
     return false;
+}
+
+uint64 GetFileSize(const String& fileName)
+{
+    Stat fileStat;
+
+#ifdef __DAVAENGINE_WINDOWS__
+    WideString p = UTF8Utils::EncodeToWideString(fileName);
+    int32 result = FileStat(p.c_str(), &fileStat);
+#else
+    int32 result = FileStat(fileName.c_str(), &fileStat);
+#endif
+    if (result == 0)
+    {
+        return static_cast<uint64>(fileStat.st_size);
+    }
+    return std::numeric_limits<uint64>::max();
 }
 
 } // end namespace FileAPI

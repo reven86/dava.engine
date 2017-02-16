@@ -27,7 +27,7 @@ using AppHandle = struct android_app*;
 using AppHandle = uint32;
 #endif
 
-class IPackManager;
+class DLCManager;
 
 namespace Analytics
 {
@@ -255,7 +255,7 @@ public:
     Signal<> systemAppFinished;
     Signal<float32> updated;
 
-    IPackManager& GetPackManager() const;
+    DLCManager& GetPackManager() const;
     Analytics::Core& GetAnalyticsCore() const;
 
     static void AdjustSystemTimer(int64 adjustMicro);
@@ -295,7 +295,7 @@ private:
     };
     ScreenMetrics screenMetrics;
 
-    std::unique_ptr<IPackManager> packManager;
+    std::unique_ptr<DLCManager> dlcManager;
     std::unique_ptr<Analytics::Core> analyticsCore;
 };
 
