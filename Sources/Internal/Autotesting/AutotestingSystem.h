@@ -110,6 +110,8 @@ public:
 
     void OnRightMouseButton(UIEvent* e);
 
+    FilePath GetRecordedScriptPath();
+
 protected:
     void DrawTouches();
     void OnScreenShotInternal(Texture* texture);

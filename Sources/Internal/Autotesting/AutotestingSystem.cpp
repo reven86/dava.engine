@@ -659,7 +659,7 @@ void AutotestingSystem::OnRecordUserAction(UIControl* control)
 
         iter = iter->GetParent();
     }
-    FilePath scriptPath = FilePath::AddPath(pathToAutomation, String("RecordedScript.lua"));
+    FilePath scriptPath = GetRecordedScriptPath();
     if (FileSystem::Instance()->Exists(scriptPath))
     {
         recordedActs = File::Create(scriptPath, File::APPEND | File::WRITE);
@@ -671,6 +671,11 @@ void AutotestingSystem::OnRecordUserAction(UIControl* control)
     recordedActs->WriteLine(Format("ClickControl('%s%s')", hierarhy.c_str(), control->GetName().c_str()));
 
     SafeRelease(recordedActs);
+}
+
+FilePath AutotestingSystem::GetRecordedScriptPath()
+{
+    return FilePath::AddPath(pathToAutomation, "RecordedScript.lua");
 }
 
 void AutotestingSystem::StartRecording()
