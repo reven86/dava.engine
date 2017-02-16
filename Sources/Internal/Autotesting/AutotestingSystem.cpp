@@ -683,6 +683,11 @@ void AutotestingSystem::StopRecording()
     isRecording = false;
 }
 
+void AutotestingSystem::OnRightMouseButton(UIEvent* e)
+{
+    Logger::Debug("OnRightMouseButton %f %f", e->point.x, e->point.y);
+}
+
 // Multiplayer API
 
 // Working with DB api

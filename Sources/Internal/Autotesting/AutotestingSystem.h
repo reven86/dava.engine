@@ -108,6 +108,8 @@ public:
         return isRecording;
     }
 
+    void OnRightMouseButton(UIEvent* e);
+
 protected:
     void DrawTouches();
     void OnScreenShotInternal(Texture* texture);
