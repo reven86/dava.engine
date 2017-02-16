@@ -99,6 +99,13 @@ public:
     bool ResolvePathToAutomation();
     FilePath GetPathTo(const String& path);
 
+    void StartRecording();
+    void StopRecording();
+    bool IsRecording()
+    {
+        return isRecording;
+    }
+
 protected:
     void DrawTouches();
     void OnScreenShotInternal(Texture* texture);
@@ -166,6 +173,8 @@ public:
     bool screenshotRequested = false;
 
     TrackedObject localTrackedObject;
+
+    bool isRecording = false;
 };
 
 inline bool AutotestingSystem::GetIsScreenShotSaving() const

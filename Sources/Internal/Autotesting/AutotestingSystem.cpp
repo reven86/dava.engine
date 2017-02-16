@@ -649,6 +649,16 @@ void AutotestingSystem::ExitApp()
     timeBeforeExit = 1.0f;
 }
 
+void AutotestingSystem::StartRecording()
+{
+    isRecording = true;
+}
+
+void AutotestingSystem::StopRecording()
+{
+    isRecording = false;
+}
+
 // Multiplayer API
 
 // Working with DB api
