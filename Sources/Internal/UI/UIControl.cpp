@@ -20,6 +20,10 @@
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/Renderer.h"
 
+#ifdef __DAVAENGINE_AUTOTESTING__
+#include "Autotesting/AutotestingSystem.h"
+#endif
+
 #include "Components/UIComponent.h"
 #include "Components/UIControlFamily.h"
 #include "Concurrency/LockGuard.h"
@@ -1407,6 +1411,8 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
 
                         Analytics::EmitUIEvent(this, event, currentInput);
                         PerformEventWithData(event, currentInput);
+
+                        AutotestingSystem::Instance()->OnRecordUserAction(this);
 
                         if (isPointInside)
                         {

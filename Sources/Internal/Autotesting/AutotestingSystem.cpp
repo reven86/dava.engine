@@ -648,6 +648,18 @@ void AutotestingSystem::ExitApp()
     needExitApp = true;
     timeBeforeExit = 1.0f;
 }
+void AutotestingSystem::OnRecordUserAction(UIControl* control) const
+{
+    UIControl* iter = control->GetParent();
+    String hierarhy;
+    while (iter)
+    {
+        hierarhy = Format("%s/%s", iter->GetName().c_str(), hierarhy.c_str());
+
+        iter = iter->GetParent();
+    }
+    Logger::Debug("UIControl::SystemProcessInput::  ClickControl('%s%s')", hierarhy.c_str(), control->GetName().c_str());
+}
 
 // Multiplayer API
 

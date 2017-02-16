@@ -98,6 +98,7 @@ public:
 
     bool ResolvePathToAutomation();
     FilePath GetPathTo(const String& path);
+    void OnRecordUserAction(UIControl*) const;
 
 protected:
     void DrawTouches();
