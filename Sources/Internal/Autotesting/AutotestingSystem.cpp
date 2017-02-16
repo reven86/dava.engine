@@ -64,6 +64,7 @@ AutotestingSystem::~AutotestingSystem()
         AutotestingDB::Instance()->Release();
 
     SafeRelease(screenshotTexture);
+    SafeRelease(recordedActs);
 }
 
 void AutotestingSystem::InitLua(AutotestingSystemLuaDelegate* _delegate)
@@ -648,7 +649,7 @@ void AutotestingSystem::ExitApp()
     needExitApp = true;
     timeBeforeExit = 1.0f;
 }
-void AutotestingSystem::OnRecordUserAction(UIControl* control) const
+void AutotestingSystem::OnRecordUserAction(UIControl* control)
 {
     UIControl* iter = control->GetParent();
     String hierarhy;
@@ -658,7 +659,18 @@ void AutotestingSystem::OnRecordUserAction(UIControl* control) const
 
         iter = iter->GetParent();
     }
-    Logger::Debug("UIControl::SystemProcessInput::  ClickControl('%s%s')", hierarhy.c_str(), control->GetName().c_str());
+    FilePath scriptPath = FilePath::AddPath(pathToAutomation, String("RecordedScript.lua"));
+    if (FileSystem::Instance()->Exists(scriptPath))
+    {
+        recordedActs = File::Create(scriptPath, File::APPEND | File::WRITE);
+    }
+    else
+    {
+        recordedActs = File::Create(scriptPath, File::CREATE | File::WRITE);
+    }
+    recordedActs->WriteLine(Format("ClickControl('%s%s')", hierarhy.c_str(), control->GetName().c_str()));
+
+    SafeRelease(recordedActs);
 }
 
 void AutotestingSystem::StartRecording()

@@ -1412,7 +1412,10 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
                         Analytics::EmitUIEvent(this, event, currentInput);
                         PerformEventWithData(event, currentInput);
 
-                        AutotestingSystem::Instance()->OnRecordUserAction(this);
+                        if (AutotestingSystem::Instance()->IsRecording())
+                        {
+                            AutotestingSystem::Instance()->OnRecordUserAction(this);
+                        }
 
                         if (isPointInside)
                         {

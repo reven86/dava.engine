@@ -8,6 +8,7 @@
 #include "DAVAEngine.h"
 #include "Base/Singleton.h"
 #include "FileSystem/FileSystem.h"
+#include "FileSystem/File.h"
 #include "Time/DateTime.h"
 
 #include "Autotesting/AutotestingSystemLua.h"
@@ -98,7 +99,7 @@ public:
 
     bool ResolvePathToAutomation();
     FilePath GetPathTo(const String& path);
-    void OnRecordUserAction(UIControl*) const;
+    void OnRecordUserAction(UIControl*);
 
     void StartRecording();
     void StopRecording();
@@ -121,6 +122,7 @@ protected:
 private:
     bool isScreenShotSaving = false;
     FilePath pathToAutomation;
+    File* recordedActs;
 
 public:
     float32 startTime = 0.f;
