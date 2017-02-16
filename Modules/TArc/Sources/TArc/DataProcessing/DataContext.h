@@ -1,12 +1,11 @@
 #pragma once
-#define DAVAENGINE_DATACONTEXT__H
 
-#include "Base/BaseTypes.h"
-#include "Base/Type.h"
+#include "TArc/DataProcessing/DataNode.h"
 
-#include "Functional/Function.h"
-
-#include "DataNode.h"
+#include <Functional/Function.h>
+#include <Reflection/Reflection.h>
+#include <Base/BaseTypes.h>
+#include <Base/Type.h>
 
 namespace DAVA
 {
@@ -38,8 +37,12 @@ public:
 private:
     DataContext* parentContext = nullptr;
     UnorderedMap<const ReflectedType*, DataNode*> dataMap;
+
+    DAVA_REFLECTION(DataContext);
 };
 } // namespace TArc
 } // namespace DAVA
 
+#define DAVAENGINE_DATACONTEXT__H
 #include "TArc/DataProcessing/Private/DataContext_impl.h"
+#undef DAVAENGINE_DATACONTEXT__H

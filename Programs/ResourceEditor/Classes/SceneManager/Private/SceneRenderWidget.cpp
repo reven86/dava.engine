@@ -1,5 +1,4 @@
 #include "Classes/SceneManager/Private/SceneRenderWidget.h"
-#include "Classes/SceneManager/Private/SceneTabsModel.h"
 #include "Classes/SceneManager/SceneData.h"
 
 #include "Classes/Qt/Scene/SceneSignals.h"
@@ -24,10 +23,7 @@ SceneRenderWidget::SceneRenderWidget(DAVA::TArc::ContextAccessor* accessor_, DAV
     activeSceneWrapper = accessor->CreateWrapper(DAVA::ReflectedTypeDB::Get<SceneData>());
     activeSceneWrapper.SetListener(this);
 
-    DataContext* ctx = accessor->GetGlobalContext();
-    ctx->CreateData(std::make_unique<SceneTabsModel>());
-
-    SceneTabbar* tabBar = new SceneTabbar(accessor, DAVA::Reflection::Create(ctx->GetData<SceneTabsModel>()), this);
+    SceneTabbar* tabBar = new SceneTabbar(accessor, DAVA::Reflection::Create(&accessor), this);
     tabBar->setAcceptDrops(true);
     tabBar->setFocusPolicy(Qt::StrongFocus);
     tabBar->setTabsClosable(true);

@@ -11,7 +11,6 @@
 #include "Classes/Qt/SpritesPacker/SpritesPackerModule.h"
 
 #include "Classes/SceneManager/Private/SceneRenderWidget.h"
-#include "Classes/SceneManager/Private/SceneTabsModel.h"
 #include "Classes/Utils/SceneSaver/SceneSaver.h"
 
 #include "Commands2/Base/RECommandStack.h"
@@ -134,30 +133,6 @@ void SceneManagerModule::RestoreOnWindowClose(const DAVA::TArc::WindowKey& key)
 {
 }
 
-void SceneManagerModule::OnContextCreated(DAVA::TArc::DataContext* context)
-{
-#if defined(__DAVAENGINE_DEBUG__)
-    SceneData* sceneData = context->GetData<SceneData>();
-    DVASSERT(sceneData != nullptr);
-    DVASSERT(sceneData->scene.Get() != nullptr);
-#endif
-
-    using namespace DAVA::TArc;
-    SceneTabsModel* tabsModel = GetAccessor()->GetGlobalContext()->GetData<SceneTabsModel>();
-    DVASSERT(tabsModel != nullptr);
-
-    tabsModel->tabs.emplace(context->GetID(), TabDescriptor());
-}
-
-void SceneManagerModule::OnContextDeleted(DAVA::TArc::DataContext* context)
-{
-    using namespace DAVA::TArc;
-    SceneTabsModel* tabsModel = GetAccessor()->GetGlobalContext()->GetData<SceneTabsModel>();
-    DVASSERT(tabsModel != nullptr);
-
-    tabsModel->tabs.erase(context->GetID());
-}
-
 void SceneManagerModule::OnContextWillBeChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* newOne)
 {
     using namespace DAVA::TArc;
@@ -181,10 +156,6 @@ void SceneManagerModule::OnContextWasChanged(DAVA::TArc::DataContext* current, D
     SceneData* data = current->GetData<SceneData>();
     DVASSERT(data->scene.Get() != nullptr);
     data->scene->Activate();
-
-    SceneTabsModel* tabsModel = GetAccessor()->GetGlobalContext()->GetData<SceneTabsModel>();
-    tabsModel->activeContexID = current->GetID();
-    tabsModel->tabs[current->GetID()].tabTitle = data->scene->GetScenePath().GetFilename();
 }
 
 void SceneManagerModule::OnWindowClosed(const DAVA::TArc::WindowKey& key)
@@ -214,21 +185,6 @@ void SceneManagerModule::PostInit()
 
     fieldBinder.reset(new DAVA::TArc::FieldBinder(accessor));
 
-    {
-        DAVA::TArc::FieldDescriptor fieldDescr;
-        fieldDescr.type = DAVA::ReflectedTypeDB::Get<SceneTabsModel>();
-        fieldDescr.fieldName = DAVA::FastName(DAVA::TArc::SceneTabbar::activeTabPropertyName);
-        fieldBinder->BindField(fieldDescr, DAVA::MakeFunction(this, &SceneManagerModule::OnActiveTabChanged));
-    }
-    {
-        DAVA::TArc::FieldDescriptor fieldDescr;
-        fieldDescr.type = DAVA::ReflectedTypeDB::Get<SceneData>();
-        fieldDescr.fieldName = DAVA::FastName(SceneData::sceneChangedPropertyName);
-        fieldBinder->BindField(fieldDescr, DAVA::MakeFunction(this, &SceneManagerModule::OnScenePathChanged));
-
-        fieldDescr.fieldName = DAVA::FastName(SceneData::scenePathPropertyName);
-        fieldBinder->BindField(fieldDescr, DAVA::MakeFunction(this, &SceneManagerModule::OnScenePathChanged));
-    }
     {
         DAVA::TArc::FieldDescriptor fieldDescr;
         fieldDescr.type = DAVA::ReflectedTypeDB::Get<ProjectManagerData>();
@@ -1001,32 +957,6 @@ void SceneManagerModule::ReloadTextures(DAVA::eGPUFamily gpu)
     }
 }
 
-void SceneManagerModule::OnActiveTabChanged(const DAVA::Any& contextID)
-{
-    using namespace DAVA::TArc;
-    ContextManager* contextManager = GetContextManager();
-    DataContext::ContextID newContextID = DataContext::Empty;
-
-    if (contextID.CanCast<DAVA::uint64>())
-    {
-        newContextID = static_cast<DataContext::ContextID>(contextID.Cast<DAVA::uint64>());
-    }
-
-    contextManager->ActivateContext(newContextID);
-}
-
-void SceneManagerModule::OnScenePathChanged(const DAVA::Any& scenePath)
-{
-    using namespace DAVA::TArc;
-    DataContext* ctx = GetAccessor()->GetActiveContext();
-    if (ctx == nullptr)
-    {
-        return;
-    }
-
-    UpdateTabTitle(ctx->GetID());
-}
-
 void SceneManagerModule::OnProjectPathChanged(const DAVA::Any& projectPath)
 {
     DVASSERT(sceneFilesCache);
@@ -1140,31 +1070,6 @@ void SceneManagerModule::OnDrop(QObject* target, QDropEvent* event)
 ///////////////////////////////
 ///           Helpers       ///
 ///////////////////////////////
-void SceneManagerModule::UpdateTabTitle(DAVA::uint64 contextID)
-{
-    using namespace DAVA::TArc;
-    ContextAccessor* accessor = GetAccessor();
-    DataContext* activeContext = accessor->GetActiveContext();
-    DVASSERT(activeContext);
-    SceneData* sceneData = activeContext->GetData<SceneData>();
-    DVASSERT(sceneData);
-
-    const DAVA::FilePath& scenePath = sceneData->GetScenePath();
-    DAVA::String tabName = scenePath.GetFilename();
-    DAVA::String tabTooltip = scenePath.GetAbsolutePathname();
-
-    if (sceneData->IsSceneChanged())
-    {
-        tabName += "*";
-    }
-
-    SceneTabsModel* tabsModel = accessor->GetGlobalContext()->GetData<SceneTabsModel>();
-    DVASSERT(tabsModel->tabs.count(contextID) > 0);
-    TabDescriptor& tabDescr = tabsModel->tabs[contextID];
-    tabDescr.tabTitle = tabName;
-    tabDescr.tabTooltip = tabTooltip;
-}
-
 bool SceneManagerModule::CanCloseScene(SceneData* data)
 {
     using namespace DAVA::TArc;
