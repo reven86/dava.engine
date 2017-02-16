@@ -661,6 +661,16 @@ void AutotestingSystem::OnRecordUserAction(UIControl* control) const
     Logger::Debug("UIControl::SystemProcessInput::  ClickControl('%s%s')", hierarhy.c_str(), control->GetName().c_str());
 }
 
+void AutotestingSystem::StartRecording()
+{
+    isRecording = true;
+}
+
+void AutotestingSystem::StopRecording()
+{
+    isRecording = false;
+}
+
 // Multiplayer API
 
 // Working with DB api
