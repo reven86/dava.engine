@@ -725,7 +725,7 @@ void AutotestingSystem::WriteScriptLine(const String& textLine)
 
 String AutotestingSystem::GetLuaString(int32 count)
 {
-    FilePath scriptPath = pathToAutomation + "RecordedScript.lua";
+    FilePath scriptPath = GetRecordedScriptPath();
     ScopedPtr<File> file(File::Create(scriptPath, File::OPEN | File::READ));
     String result = "ERROR_EMPTY_STRING";
     if (file)
@@ -743,11 +743,6 @@ String AutotestingSystem::GetLuaString(int32 count)
         }
     }
     return result;
-}
-
-FilePath AutotestingSystem::GetRecordedScriptPath()
-{
-    return FilePath::AddPath(pathToAutomation, "RecordedScript.lua");
 }
 
 FilePath AutotestingSystem::GetRecordedScriptPath()
