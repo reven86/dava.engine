@@ -146,6 +146,17 @@ void AutotestingSystemLua::InitFromFile(const FilePath& luaFilePath)
         const char* err = lua_tostring(luaState, -1);
         AutotestingSystem::Instance()->ForceQuit(Format("AutotestingSystemLua::InitFromFile SetPackagePath failed: %s", err));
     }
+    
+    
+    for (const auto &path : FileSystem::Instance()->EnumerateFilesInDirectory(AutotestingSystem::Instance()->GetPathTo("/Actions/")))
+    {
+        RunScript(Format("require '%s'", path.GetBasename().c_str()));
+        /*if (!FileSystem::Instance()->Exists(automationAPIStrPath) || !RunScriptFromFile(automationAPIStrPath))
+         {
+         AutotestingSystem::Instance()->ForceQuit(Format("Initialization of '%s' was failed.", path.GetAbsolutePathname().c_str()));
+         }*/
+        Logger::Info("Used memory after '%s': %d", path.GetBasename().c_str(), GetUsedMemory());
+    }
 
     if (!LoadScriptFromFile(luaFilePath))
     {
@@ -232,7 +243,7 @@ int AutotestingSystemLua::RequireModule(lua_State* L)
 
 void AutotestingSystemLua::StackDump(lua_State* L)
 {
-    Logger::FrameworkDebug("*** Stack Dump ***");
+    Logger::Debug("*** Stack Dump ***");
     int i;
     int top = lua_gettop(L);
 
@@ -243,27 +254,27 @@ void AutotestingSystemLua::StackDump(lua_State* L)
         {
         case LUA_TSTRING:
         { /* strings */
-            Logger::FrameworkDebug("'%s'", lua_tostring(L, i));
+            Logger::Debug("'%s'", lua_tostring(L, i));
             break;
         }
         case LUA_TBOOLEAN:
         { /* booleans */
-            Logger::FrameworkDebug(lua_toboolean(L, i) ? "true" : "false");
+            Logger::Debug(lua_toboolean(L, i) ? "true" : "false");
             break;
         }
         case LUA_TNUMBER:
         { /* numbers */
-            Logger::FrameworkDebug("%g", lua_tonumber(L, i));
+            Logger::Debug("%g", lua_tonumber(L, i));
             break;
         }
         default:
         { /* other values */
-            Logger::FrameworkDebug("%s", lua_typename(L, t));
+            Logger::Debug("%s", lua_typename(L, t));
             break;
         }
         }
     }
-    Logger::FrameworkDebug("*** Stack Dump END***"); /* end the listing */
+    Logger::Debug("*** Stack Dump END***"); /* end the listing */
 }
 
 // Multiplayer API
@@ -888,7 +899,7 @@ bool AutotestingSystemLua::LoadScript(const String& luaScript)
 
 bool AutotestingSystemLua::LoadScriptFromFile(const FilePath& luaFilePath)
 {
-    Logger::FrameworkDebug("AutotestingSystemLua::LoadScriptFromFile: %s", luaFilePath.GetAbsolutePathname().c_str());
+    Logger::Debug("AutotestingSystemLua::LoadScriptFromFile: %s", luaFilePath.GetAbsolutePathname().c_str());
     File* file = File::Create(luaFilePath, File::OPEN | File::READ);
     if (!file)
     {

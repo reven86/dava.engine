@@ -100,7 +100,8 @@ public:
     bool ResolvePathToAutomation();
     FilePath GetPathTo(const String& path);
     void OnRecordUserAction(UIControl*);
-
+    String GetLuaString(int32 count);
+    
     void StartRecording();
     void StopRecording();
     bool IsRecording()
