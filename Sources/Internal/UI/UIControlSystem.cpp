@@ -27,6 +27,7 @@
 #include "Debug/ProfilerOverlay.h"
 #include "Engine/Engine.h"
 #include "Input/MouseDevice.h"
+#include "Autotesting/AutotestingSystem.h"
 
 namespace DAVA
 {
@@ -422,7 +423,14 @@ void UIControlSystem::OnInput(UIEvent* newEvent)
         {
             Replay::Instance()->RecordEvent(newEvent);
         }
-        inputSystem->HandleEvent(newEvent);
+        if (newEvent->mouseButton == eMouseButtons::RIGHT)
+        {
+            AutotestingSystem::Instance()->OnRightMouseButton(newEvent);
+        }
+        else
+        {
+            inputSystem->HandleEvent(newEvent);
+        }
     } // end if frameSkip <= 0
 }
 
