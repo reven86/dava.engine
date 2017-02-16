@@ -157,6 +157,16 @@ void AutotestingSystemLua::InitFromFile(const FilePath& luaFilePath)
         Logger::Info("Used memory after '%s': %d", path.GetBasename().c_str(), GetUsedMemory());
     }
 
+    for (const auto& path : FileSystem::Instance()->EnumerateFilesInDirectory(AutotestingSystem::Instance()->GetPathTo("/Actions/")))
+    {
+        RunScript(Format("require '%s'", path.GetBasename().c_str()));
+        /*if (!FileSystem::Instance()->Exists(automationAPIStrPath) || !RunScriptFromFile(automationAPIStrPath))
+         {
+         AutotestingSystem::Instance()->ForceQuit(Format("Initialization of '%s' was failed.", path.GetAbsolutePathname().c_str()));
+         }*/
+        Logger::Info("Used memory after '%s': %d", path.GetBasename().c_str(), GetUsedMemory());
+    }
+
     if (!LoadScriptFromFile(luaFilePath))
     {
         AutotestingSystem::Instance()->ForceQuit("Load of '" + luaFilePath.GetAbsolutePathname() + "' was failed failed");

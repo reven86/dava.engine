@@ -106,6 +106,7 @@ public:
     void OnRecordSetText(UIControl*);
     void OnRecordCheckText(UIControl*);
     void OnRecordFastSelectControl(UIControl*);
+    String GetLuaString(int32 count);
     void StartRecording();
     void StopRecording();
     bool IsRecording()
