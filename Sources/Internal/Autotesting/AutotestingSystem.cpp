@@ -656,41 +656,41 @@ void AutotestingSystem::OnRecordWaitControl(UIControl* control)
 {
     const String& hierarchy = GetControlHierarchy(control);
     const String& codeLine = Format("WaitControl('%s')", hierarchy.c_str());
-    SaveLineToFile(RecordScriptFileName, codeLine);
+    WriteScriptLine(codeLine);
 }
 
 void AutotestingSystem::OnRecordClickControl(UIControl* control)
 {
     const String& hierarchy = GetControlHierarchy(control);
     const String& codeLine = Format("ClickControl('%s')", hierarchy.c_str());
-    SaveLineToFile(RecordScriptFileName, codeLine);
+    WriteScriptLine(codeLine);
 }
 
 void AutotestingSystem::OnRecordDoubleClickControl(UIControl* control)
 {
     const String& hierarchy = GetControlHierarchy(control);
     const String& codeLine = Format("DoubleClick('%s')", hierarchy.c_str());
-    SaveLineToFile(RecordScriptFileName, codeLine);
+    WriteScriptLine(codeLine);
 }
 
 void AutotestingSystem::OnRecordSetText(UIControl* control)
 {
     const String& hierarchy = GetControlHierarchy(control);
     const String& codeLine = Format("SetText('%s')", hierarchy.c_str());
-    SaveLineToFile(RecordScriptFileName, codeLine);
+    WriteScriptLine(codeLine);
 }
 
 void AutotestingSystem::OnRecordCheckText(UIControl* control)
 {
     const String& hierarchy = GetControlHierarchy(control);
     const String& codeLine = Format("CheckText('%s')", hierarchy.c_str());
-    SaveLineToFile(RecordScriptFileName, codeLine);
+    WriteScriptLine(codeLine);
 }
 
 void AutotestingSystem::OnRecordFastSelectControl(UIControl* control)
 {
     const String& codeLine = Format("FastSelectControl('%s')", control->GetName().c_str());
-    SaveLineToFile(RecordScriptFileName, codeLine);
+    WriteScriptLine(codeLine);
 }
 
 const String AutotestingSystem::GetControlHierarchy(UIControl* control)
@@ -705,12 +705,10 @@ const String AutotestingSystem::GetControlHierarchy(UIControl* control)
     hierarhy = Format("%s%s", hierarhy.c_str(), control->GetName().c_str());
     return hierarhy;
 }
-//Format("ClickControl('%s%s')", hierarhy.c_str(), control->GetName().c_str());
-//RecordScriptFileName
-//Format("ClickControl('%s%s')", hierarhy.c_str(), control->GetName().c_str())
-void AutotestingSystem::SaveLineToFile(const String& fileName, const String& textLine)
+
+void AutotestingSystem::WriteScriptLine(const String& textLine)
 {
-    FilePath scriptPath = FilePath::AddPath(pathToAutomation, fileName);
+    FilePath scriptPath = GetRecordedScriptPath();
     if (FileSystem::Instance()->Exists(scriptPath))
     {
         recordedActs = File::Create(scriptPath, File::APPEND | File::WRITE);
@@ -722,6 +720,11 @@ void AutotestingSystem::SaveLineToFile(const String& fileName, const String& tex
     DVASSERT(nullptr != recordedActs);
     recordedActs->WriteLine(textLine);
     SafeRelease(recordedActs);
+}
+
+FilePath AutotestingSystem::GetRecordedScriptPath()
+{
+    return FilePath::AddPath(pathToAutomation, RecordScriptFileName);
 }
 
 void AutotestingSystem::StartRecording()

@@ -115,6 +115,8 @@ public:
 
     void OnRightMouseButton(UIEvent* e);
 
+    FilePath GetRecordedScriptPath();
+
 protected:
     void DrawTouches();
     void OnScreenShotInternal(Texture* texture);
@@ -129,7 +131,7 @@ protected:
     //Recording
     const String GetControlHierarchy(UIControl*);
     const String WrapWithFunctionCall(const String&, const String&);
-    void SaveLineToFile(const String&, const String&);
+    void WriteScriptLine(const String&);
 
 private:
     bool isScreenShotSaving = false;
