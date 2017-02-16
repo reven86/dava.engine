@@ -10,3 +10,4 @@ FieldBinderTest.h
 FilePathEditTest.h
 IntSpinBoxTests.h
 LineEditTest.h
+QtWrapLayoutTests.h
