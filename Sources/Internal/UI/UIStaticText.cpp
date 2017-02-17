@@ -241,6 +241,14 @@ bool UIStaticText::IsHeightDependsOnWidth() const
     return textBlock->GetMultiline();
 }
 
+Vector<eUIControlActionType> UIStaticText::GetAvailableActions()
+{
+    Vector<eUIControlActionType> availableActions= UIControl::GetAvailableActions();
+    availableActions.push_back(eUIControlActionType::CHECK_TEXT);
+
+    return availableActions;
+}
+
 const Color& UIStaticText::GetTextColor() const
 {
     return textBg->GetColor();

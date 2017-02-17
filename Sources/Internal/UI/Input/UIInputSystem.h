@@ -72,7 +72,7 @@ public:
     static const FastName ACTION_ESCAPE;
 
     DAVA::Signal<UIEvent*> notProcessedEventSignal;
-
+    UIScreen *GetCurrentScreen() { return currentScreen; };
 private:
     bool HandleTouchEvent(UIEvent* event);
     bool HandleKeyEvent(UIEvent* event);
