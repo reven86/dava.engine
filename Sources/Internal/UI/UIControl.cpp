@@ -1427,7 +1427,6 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
                         eEventType event = isPointInside ? EVENT_TOUCH_UP_INSIDE : EVENT_TOUCH_UP_OUTSIDE;
 
                         Analytics::EmitUIEvent(this, event, currentInput);
-                        PerformEventWithData(event, currentInput);
 
                         if (AutotestingSystem::Instance()->IsRecording())
                         {
@@ -1440,6 +1439,8 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
                                 AutotestingSystem::Instance()->OnRecordClickControl(this);
                             }
                         }
+
+                        PerformEventWithData(event, currentInput);
 
                         if (isPointInside)
                         {
