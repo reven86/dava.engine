@@ -66,7 +66,6 @@ ReflectedType* ReflectedTypeDB::CreateCustomType(const Type* type, const String&
     typeNameToReflectedTypeMap[rttiName] = ret;
 
     RegisterPermanentName(ret, permanentName);
-
     return ret;
 }
 

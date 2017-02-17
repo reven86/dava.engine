@@ -21,6 +21,19 @@ class UIControlPackageContext;
 
 #define CONTROL_TOUCH_AREA 15
 
+enum class eUIControlActionType : int32
+{
+    NONE = 0,
+
+    WAIT_CONTROL_BECOME_ENABLED = 1,
+    WAIT_CONTROL_BECOME_VISIBLE = 2,
+    WAIT_CONTROL_DISSAPEARED = 3,
+
+    IS_DISABLED = 4,
+    IS_VISIBLE = 5,
+
+    CHECK_TEXT = 6,
+};
 /**
      \ingroup controlsystem
      \brief Base control system unit.
@@ -216,6 +229,7 @@ public:
     virtual bool GetVCenterAlignEnabled() const;
     virtual void SetBottomAlignEnabled(bool isEnabled);
     virtual bool GetBottomAlignEnabled() const;
+    virtual Vector<eUIControlActionType> GetAvailableActions();
 
     /**
      \brief Returns untransformed control rect.

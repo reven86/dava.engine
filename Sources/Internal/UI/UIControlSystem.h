@@ -55,6 +55,13 @@ public:
 		Also ControlSystem processed all user input events to the controls.
 	 */
 
+class UIAutotestingDelegate
+{
+public:
+    virtual bool OnRightMouseButtonEvent(UIEvent *e) = 0;
+    virtual bool OnLeftMouseButtonEvent(UIEvent *e) = 0;
+};
+
 class UIControlSystem : public Singleton<UIControlSystem>
 {
 protected:
@@ -93,6 +100,12 @@ public:
 	 \returns currently seted screen
 	 */
     UIScreen* GetScreen() const;
+    
+    /**
+    \brief Adds new popup to the popup container.
+    \param[in] Popup control to add.
+    */
+    void SetAutotestingDelegate(UIAutotestingDelegate* del);
 
     /**
 	 \brief Adds new popup to the popup container.
@@ -336,6 +349,7 @@ private:
     friend void Core::CreateSingletons();
 #endif
 
+    UIAutotestingDelegate* autotestingDelegate = nullptr;
     Vector<std::unique_ptr<UISystem>> systems;
     UILayoutSystem* layoutSystem = nullptr;
     UIStyleSheetSystem* styleSheetSystem = nullptr;

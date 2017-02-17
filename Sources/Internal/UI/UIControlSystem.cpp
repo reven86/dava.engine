@@ -147,6 +147,11 @@ UIScreen* UIControlSystem::GetScreen() const
     return currentScreen.Get();
 }
 
+void UIControlSystem::SetAutotestingDelegate(UIAutotestingDelegate* del)
+{
+    autotestingDelegate = del;
+}
+
 void UIControlSystem::AddPopup(UIPopup* newPopup)
 {
     Set<UIPopup*>::const_iterator it = popupsToRemove.find(newPopup);
@@ -423,15 +428,23 @@ void UIControlSystem::OnInput(UIEvent* newEvent)
         {
             Replay::Instance()->RecordEvent(newEvent);
         }
+        bool shouldHandleEvent = true;
         if (newEvent->mouseButton == eMouseButtons::RIGHT)
         {
-            AutotestingSystem::Instance()->OnRightMouseButton(newEvent);
+            if (nullptr != autotestingDelegate)
+            {
+                shouldHandleEvent = autotestingDelegate->OnRightMouseButtonEvent(newEvent);
+            }
         }
-        else
+        else if (newEvent->mouseButton == eMouseButtons::LEFT)
+        {
+            shouldHandleEvent = autotestingDelegate->OnLeftMouseButtonEvent(newEvent);
+        }
+        if (shouldHandleEvent)
         {
             inputSystem->HandleEvent(newEvent);
         }
-    } // end if frameSkip <= 0
+    } 
 }
 
 void UIControlSystem::CancelInput(UIEvent* touch)

@@ -450,6 +450,19 @@ bool UIControl::GetBottomAlignEnabled() const
     return anchor != nullptr ? anchor->IsBottomAnchorEnabled() : false;
 }
 
+Vector<eUIControlActionType> UIControl::GetAvailableActions()
+{
+    using AT = eUIControlActionType;
+    return 
+    {  
+          AT::WAIT_CONTROL_BECOME_ENABLED
+        , AT::WAIT_CONTROL_BECOME_VISIBLE
+        , AT::WAIT_CONTROL_DISSAPEARED
+        , AT::IS_DISABLED
+        , AT::IS_VISIBLE
+    };
+}
+
 void UIControl::SetBackground(UIControlBackground* newBg)
 {
     UIControlBackground* currentBg = GetComponent<UIControlBackground>();
