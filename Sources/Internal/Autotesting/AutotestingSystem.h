@@ -99,7 +99,6 @@ public:
 
     bool ResolvePathToAutomation();
     FilePath GetPathTo(const String& path);
-    void OnRecordUserAction(UIControl*);
 
     // Returns String at 'lineNumber'.
     // If 'lineNumber' points to empy line next non-empty line is read and 'lineNumber' is adjusted.

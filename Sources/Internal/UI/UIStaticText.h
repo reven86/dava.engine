@@ -97,6 +97,8 @@ public:
     Vector2 GetContentPreferredSize(const Vector2& constraints) const override;
     bool IsHeightDependsOnWidth() const override;
 
+    Vector<eUIControlActionType> GetAvailableActions() override;
+
     void PrepareSprite();
 
     DAVA_DEPRECATED(const WideString& GetText() const);

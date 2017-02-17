@@ -73,6 +73,11 @@ public:
 
     DAVA::Signal<UIEvent*> notProcessedEventSignal;
 
+    UIScreen* GetCurrentScreen()
+    {
+        return currentScreen;
+    };
+
 private:
     bool HandleTouchEvent(UIEvent* event);
     bool HandleKeyEvent(UIEvent* event);

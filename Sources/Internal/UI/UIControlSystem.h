@@ -48,6 +48,13 @@ public:
     }
 };
 
+class UIAutotestingDelegate
+{
+public:
+    virtual bool OnRightMouseButtonEvent(UIEvent* e) = 0;
+    virtual bool OnLeftMouseButtonEvent(UIEvent* e) = 0;
+};
+
 /**
 	 \brief	UIControlSystem it's a core of the all controls work.
 		ControlSystem managed all update, draw, appearence and disappearence of the controls.
@@ -93,6 +100,11 @@ public:
 	 \returns currently seted screen
 	 */
     UIScreen* GetScreen() const;
+
+    void SetAutotestingDelegate(UIAutotestingDelegate* del)
+    {
+        autotestingDelegate = del;
+    }
 
     /**
 	 \brief Adds new popup to the popup container.
@@ -336,6 +348,7 @@ private:
     friend void Core::CreateSingletons();
 #endif
 
+    UIAutotestingDelegate* autotestingDelegate = nullptr;
     Vector<std::unique_ptr<UISystem>> systems;
     UILayoutSystem* layoutSystem = nullptr;
     UIStyleSheetSystem* styleSheetSystem = nullptr;
