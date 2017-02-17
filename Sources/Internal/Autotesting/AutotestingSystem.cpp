@@ -665,8 +665,11 @@ void AutotestingSystem::OnRecordWaitControl(UIControl* control)
 void AutotestingSystem::OnRecordClickControl(UIControl* control)
 {
     const String& hierarchy = GetControlHierarchy(control);
-    const String& codeLine = Format("ClickControl('%s')", hierarchy.c_str());
-    WriteScriptLine(codeLine);
+    if (hierarchy.find("DebugPopup") == String::npos)
+    {
+        const String& codeLine = Format("ClickControl('%s')", hierarchy.c_str());
+        WriteScriptLine(codeLine);
+    }
 }
 
 void AutotestingSystem::OnRecordDoubleClickControl(UIControl* control)
