@@ -655,13 +655,6 @@ void AutotestingSystem::ExitApp()
     timeBeforeExit = 1.0f;
 }
 
-void AutotestingSystem::OnRecordWaitControl(UIControl* control)
-{
-    const String& hierarchy = GetControlHierarchy(control);
-    const String& codeLine = Format("WaitControl('%s')", hierarchy.c_str());
-    WriteScriptLine(codeLine);
-}
-
 void AutotestingSystem::OnRecordClickControl(UIControl* control)
 {
     const String& hierarchy = GetControlHierarchy(control);
@@ -686,13 +679,46 @@ void AutotestingSystem::OnRecordSetText(UIControl* control, const String& text)
 void AutotestingSystem::OnRecordCheckText(UIControl* control)
 {
     const String& hierarchy = GetControlHierarchy(control);
-    const String& codeLine = Format("CheckText('%s')", hierarchy.c_str());
+    const String& text = DynamicTypeCheck<UIStaticText*>(control)->GetUtf8Text();
+    const String& codeLine = Format("CheckText('%s', '%s')", hierarchy.c_str(), text.c_str());
     WriteScriptLine(codeLine);
 }
 
 void AutotestingSystem::OnRecordFastSelectControl(UIControl* control)
 {
     const String& codeLine = Format("FastSelectControl('%s')", control->GetName().c_str());
+    WriteScriptLine(codeLine);
+}
+
+void AutotestingSystem::OnRecordWaitControlBecomeVisible(UIControl* control)
+{
+    const String& hierarchy = GetControlHierarchy(control);
+    const String& codeLine = Format("WaitControlBecomeVisible('%s')", hierarchy.c_str());
+    WriteScriptLine(codeLine);
+}
+void AutotestingSystem::OnRecordWaitControlBecomeEnabled(UIControl* control)
+{
+    const String& hierarchy = GetControlHierarchy(control);
+    const String& codeLine = Format("WaitControlBecomeEnabled('%s')", hierarchy.c_str());
+    WriteScriptLine(codeLine);
+}
+void AutotestingSystem::OnRecordWaitControlDissapeared(UIControl* control)
+{
+    const String& hierarchy = GetControlHierarchy(control);
+    const String& codeLine = Format("WaitControlDissapeared('%s')", hierarchy.c_str());
+    WriteScriptLine(codeLine);
+}
+
+void AutotestingSystem::OnRecordIsVisible(UIControl* control)
+{
+    const String& hierarchy = GetControlHierarchy(control);
+    const String& codeLine = Format("IsVisible('%s')", hierarchy.c_str());
+    WriteScriptLine(codeLine);
+}
+void AutotestingSystem::OnRecordIsDisabled(UIControl* control)
+{
+    const String& hierarchy = GetControlHierarchy(control);
+    const String& codeLine = Format("IsDisabled('%s')", hierarchy.c_str());
     WriteScriptLine(codeLine);
 }
 
@@ -712,6 +738,10 @@ const String AutotestingSystem::GetControlHierarchy(UIControl* control)
 
 void AutotestingSystem::WriteScriptLine(const String& textLine)
 {
+    if (!isRecording)
+    {
+        return;
+    }
     FilePath scriptPath = GetRecordedScriptPath();
     if (FileSystem::Instance()->Exists(scriptPath))
     {

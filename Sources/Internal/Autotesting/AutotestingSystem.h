@@ -106,11 +106,18 @@ public:
     String GetLuaString(int32& lineNumber);
 
     void OnRecordClickControl(UIControl*);
-    void OnRecordWaitControl(UIControl*);
     void OnRecordDoubleClickControl(UIControl*);
+    void OnRecordFastSelectControl(UIControl*);
+
+    void OnRecordWaitControlBecomeVisible(UIControl*);
+    void OnRecordWaitControlBecomeEnabled(UIControl*);
+    void OnRecordWaitControlDissapeared(UIControl*);
+
     void OnRecordSetText(UIControl*, const String&);
     void OnRecordCheckText(UIControl*);
-    void OnRecordFastSelectControl(UIControl*);
+
+    void OnRecordIsVisible(UIControl*);
+    void OnRecordIsDisabled(UIControl*);
 
     void StartRecording();
     void StopRecording();
