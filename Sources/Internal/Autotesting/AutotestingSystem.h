@@ -100,8 +100,12 @@ public:
     bool ResolvePathToAutomation();
     FilePath GetPathTo(const String& path);
     void OnRecordUserAction(UIControl*);
-    String GetLuaString(int32 count);
-    
+
+    // Returns String at 'lineNumber'.
+    // If 'lineNumber' points to empy line next non-empty line is read and 'lineNumber' is adjusted.
+    // If 'lineNumber' points beyond file scope empty line is returned and 'lineNumber' is set to '-1'
+    String GetLuaString(int32& lineNumber);
+
     void StartRecording();
     void StopRecording();
     bool IsRecording()
@@ -112,6 +116,15 @@ public:
     void OnRightMouseButton(UIEvent* e);
 
     FilePath GetRecordedScriptPath();
+
+    void SetTestFinishedCallback(const Function<void()> callback)
+    {
+        testFinishedCallback = callback;
+    }
+    void SetTestErrorCallback(const Function<void(String)> callback)
+    {
+        testErrorCallback = callback;
+    }
 
 protected:
     void DrawTouches();
@@ -128,6 +141,9 @@ private:
     bool isScreenShotSaving = false;
     FilePath pathToAutomation;
     File* recordedActs;
+
+    Function<void()> testFinishedCallback;
+    Function<void(String)> testErrorCallback;
 
 public:
     float32 startTime = 0.f;

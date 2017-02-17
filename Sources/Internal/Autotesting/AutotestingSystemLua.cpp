@@ -158,17 +158,24 @@ void AutotestingSystemLua::InitFromFile(const FilePath& luaFilePath)
         Logger::Info("Used memory after '%s': %d", path.GetBasename().c_str(), GetUsedMemory());
     }
 
-    if (!LoadScriptFromFile(luaFilePath))
+    if (!luaFilePath.IsEmpty())
     {
-        AutotestingSystem::Instance()->ForceQuit("Load of '" + luaFilePath.GetAbsolutePathname() + "' was failed failed");
+        if (!LoadScriptFromFile(luaFilePath))
+        {
+            AutotestingSystem::Instance()->ForceQuit("Load of '" + luaFilePath.GetAbsolutePathname() + "' was failed failed");
+        }
     }
 
     lua_getglobal(luaState, "ResumeTest");
     resumeTestFunctionRef = luaL_ref(luaState, LUA_REGISTRYINDEX);
-
     AutotestingSystem::Instance()->OnInit();
-    String baseName = FilePath(luaFilePath).GetBasename();
-    lua_pushstring(luaState, baseName.c_str());
+
+    if (!luaFilePath.IsEmpty())
+    {
+        String baseName = FilePath(luaFilePath).GetBasename();
+        lua_pushstring(luaState, baseName.c_str());
+    }
+
     AutotestingSystem::Instance()->RunTests();
 }
 
@@ -451,6 +458,10 @@ UIControl* AutotestingSystemLua::FindControl(UIControl* srcControl, const String
     {
         return nullptr;
     }
+
+    if (srcControl->GetName().c_str() == controlName)
+        return srcControl;
+
     int32 index = atoi(controlName.c_str());
     if (Format("%d", index) != controlName)
     {

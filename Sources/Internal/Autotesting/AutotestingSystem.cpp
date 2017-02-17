@@ -148,7 +148,7 @@ void AutotestingSystem::OnAppStarted()
     if (!FileSystem::Instance()->Exists(testFileStrPath))
     {
         Logger::Error("AutotestingSystemLua::OnAppStarted: couldn't open %s", testFileLocation.c_str());
-        return;
+        testFileStrPath = "";
     }
 
     AutotestingDB::Instance()->WriteLogHeader();
@@ -427,7 +427,9 @@ void AutotestingSystem::OnError(const String& errorMessage)
         AutotestingDB::Instance()->WriteState(deviceName, "State", "error");
     }
 
-    ExitApp();
+    testErrorCallback(errorMessage);
+
+    //ExitApp();
 }
 
 void AutotestingSystem::ForceQuit(const String& errorMessage)
@@ -534,7 +536,8 @@ void AutotestingSystem::OnTestsFinished()
     // Mark test as SUCCESS
     AutotestingDB::Instance()->Log("INFO", "Test finished.");
 
-    ExitApp();
+    testFinishedCallback();
+    //ExitApp();
 }
 
 void AutotestingSystem::OnTestSkipped()
@@ -672,26 +675,38 @@ void AutotestingSystem::OnRecordUserAction(UIControl* control)
 
     SafeRelease(recordedActs);
 }
-    
-String AutotestingSystem::GetLuaString(int32 count)
+
+String AutotestingSystem::GetLuaString(int32& lineNumber)
 {
-    FilePath scriptPath = pathToAutomation +"RecordedScript.lua";
+    String result;
+
+    FilePath scriptPath = GetRecordedScriptPath();
     ScopedPtr<File> file (File::Create(scriptPath, File::OPEN | File::READ));
-    String result = "ERROR_EMPTY_STRING";
+    bool eofReached = false;
     if (file)
     {
-        for (int32 i = 0; i <= count; i++)
+        for (int32 i = 0; i <= lineNumber; i++)
         {
             if (!file->IsEof())
             {
                 result = file->ReadLine();
+                if (i == lineNumber && result.empty())
+                {
+                    lineNumber++; //skip empty lines
+                }
             }
             else
             {
-                break;
+                lineNumber = -1;
+                result = "";
             }
         }
     }
+    else
+    {
+        lineNumber = -1;
+    }
+
     return result;
 }
 
