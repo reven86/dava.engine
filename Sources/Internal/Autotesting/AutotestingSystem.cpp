@@ -17,6 +17,8 @@
 
 namespace DAVA
 {
+const String AutotestingSystem::RecordScriptFileName("RecordedScript.lua");
+
 AutotestingSystem::AutotestingSystem()
     : luaSystem(nullptr)
     , isInit(false)
@@ -652,16 +654,64 @@ void AutotestingSystem::ExitApp()
     needExitApp = true;
     timeBeforeExit = 1.0f;
 }
-void AutotestingSystem::OnRecordUserAction(UIControl* control)
+
+void AutotestingSystem::OnRecordWaitControl(UIControl* control)
+{
+    const String& hierarchy = GetControlHierarchy(control);
+    const String& codeLine = Format("WaitControl('%s')", hierarchy.c_str());
+    WriteScriptLine(codeLine);
+}
+
+void AutotestingSystem::OnRecordClickControl(UIControl* control)
+{
+    const String& hierarchy = GetControlHierarchy(control);
+    const String& codeLine = Format("ClickControl('%s')", hierarchy.c_str());
+    WriteScriptLine(codeLine);
+}
+
+void AutotestingSystem::OnRecordDoubleClickControl(UIControl* control)
+{
+    const String& hierarchy = GetControlHierarchy(control);
+    const String& codeLine = Format("DoubleClick('%s')", hierarchy.c_str());
+    WriteScriptLine(codeLine);
+}
+
+void AutotestingSystem::OnRecordSetText(UIControl* control)
+{
+    const String& hierarchy = GetControlHierarchy(control);
+    const String& codeLine = Format("SetText('%s')", hierarchy.c_str());
+    WriteScriptLine(codeLine);
+}
+
+void AutotestingSystem::OnRecordCheckText(UIControl* control)
+{
+    const String& hierarchy = GetControlHierarchy(control);
+    const String& codeLine = Format("CheckText('%s')", hierarchy.c_str());
+    WriteScriptLine(codeLine);
+}
+
+void AutotestingSystem::OnRecordFastSelectControl(UIControl* control)
+{
+    const String& codeLine = Format("FastSelectControl('%s')", control->GetName().c_str());
+    WriteScriptLine(codeLine);
+}
+
+const String AutotestingSystem::GetControlHierarchy(UIControl* control)
 {
     UIControl* iter = control->GetParent();
     String hierarhy;
     while (iter)
     {
         hierarhy = Format("%s/%s", iter->GetName().c_str(), hierarhy.c_str());
-
         iter = iter->GetParent();
     }
+    FilePath scriptPath = GetRecordedScriptPath();
+    hierarhy = Format("%s%s", hierarhy.c_str(), control->GetName().c_str());
+    return hierarhy;
+}
+
+void AutotestingSystem::WriteScriptLine(const String& textLine)
+{
     FilePath scriptPath = GetRecordedScriptPath();
     if (FileSystem::Instance()->Exists(scriptPath))
     {
@@ -671,8 +721,8 @@ void AutotestingSystem::OnRecordUserAction(UIControl* control)
     {
         recordedActs = File::Create(scriptPath, File::CREATE | File::WRITE);
     }
-    recordedActs->WriteLine(Format("ClickControl('%s%s')", hierarhy.c_str(), control->GetName().c_str()));
-
+    DVASSERT(nullptr != recordedActs);
+    recordedActs->WriteLine(textLine);
     SafeRelease(recordedActs);
 }
 
@@ -683,6 +733,7 @@ String AutotestingSystem::GetLuaString(int32& lineNumber)
     FilePath scriptPath = GetRecordedScriptPath();
     ScopedPtr<File> file (File::Create(scriptPath, File::OPEN | File::READ));
     bool eofReached = false;
+
     if (file)
     {
         for (int32 i = 0; i <= lineNumber; i++)
@@ -712,7 +763,7 @@ String AutotestingSystem::GetLuaString(int32& lineNumber)
 
 FilePath AutotestingSystem::GetRecordedScriptPath()
 {
-    return FilePath::AddPath(pathToAutomation, "RecordedScript.lua");
+    return FilePath::AddPath(pathToAutomation, RecordScriptFileName);
 }
 
 void AutotestingSystem::StartRecording()

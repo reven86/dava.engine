@@ -106,6 +106,13 @@ public:
     // If 'lineNumber' points beyond file scope empty line is returned and 'lineNumber' is set to '-1'
     String GetLuaString(int32& lineNumber);
 
+    void OnRecordClickControl(UIControl*);
+    void OnRecordWaitControl(UIControl*);
+    void OnRecordDoubleClickControl(UIControl*);
+    void OnRecordSetText(UIControl*);
+    void OnRecordCheckText(UIControl*);
+    void OnRecordFastSelectControl(UIControl*);
+
     void StartRecording();
     void StopRecording();
     bool IsRecording()
@@ -137,6 +144,11 @@ protected:
     //DB
     void ExitApp();
 
+    //Recording
+    const String GetControlHierarchy(UIControl*);
+    const String WrapWithFunctionCall(const String&, const String&);
+    void WriteScriptLine(const String&);
+
 private:
     bool isScreenShotSaving = false;
     FilePath pathToAutomation;
@@ -146,6 +158,7 @@ private:
     Function<void(String)> testErrorCallback;
 
 public:
+    static const String RecordScriptFileName;
     float32 startTime = 0.f;
 
     bool isInit;
