@@ -21,6 +21,11 @@
 #else
 #define DAVA_TEXTFIELD_USE_STB
 #include "UI/UITextFieldStb.h"
+
+#ifdef __DAVAENGINE_AUTOTESTING__
+#include "Autotesting/AutotestingSystem.h"
+#endif
+
 namespace DAVA
 {
 class TextFieldPlatformImpl : public TextFieldStbImpl
@@ -115,6 +120,7 @@ void UITextField::StopEdit()
         SetRenderToTexture(true);
         textFieldImpl->CloseKeyboard();
         OnStopEditing();
+        AutotestingSystem::Instance()->OnRecordSetText(this, GetUtf8Text());
     }
 }
 

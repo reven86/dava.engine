@@ -109,7 +109,7 @@ public:
     void OnRecordClickControl(UIControl*);
     void OnRecordWaitControl(UIControl*);
     void OnRecordDoubleClickControl(UIControl*);
-    void OnRecordSetText(UIControl*);
+    void OnRecordSetText(UIControl*, const String&);
     void OnRecordCheckText(UIControl*);
     void OnRecordFastSelectControl(UIControl*);
 

@@ -676,10 +676,10 @@ void AutotestingSystem::OnRecordDoubleClickControl(UIControl* control)
     WriteScriptLine(codeLine);
 }
 
-void AutotestingSystem::OnRecordSetText(UIControl* control)
+void AutotestingSystem::OnRecordSetText(UIControl* control, const String& text)
 {
     const String& hierarchy = GetControlHierarchy(control);
-    const String& codeLine = Format("SetText('%s')", hierarchy.c_str());
+    const String& codeLine = Format("SetText('%s', '%s')", hierarchy.c_str(), text.c_str());
     WriteScriptLine(codeLine);
 }
 
