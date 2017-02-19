@@ -734,7 +734,10 @@ void PreviewWidget::OnDrop(QDropEvent* event)
         {
             DAVA::TArc::DataContext* active = accessor->GetActiveContext();
             DVASSERT(active != nullptr);
-            node = DynamicTypeCheck<PackageBaseNode*>(node->GetPackage()->GetPackageControlsNode());
+            const DocumentData* data = active->GetData<DocumentData>();
+            DVASSERT(data != nullptr);
+            const PackageNode* package = data->GetPackageNode();
+            node = DynamicTypeCheck<PackageBaseNode*>(package->GetPackageControlsNode());
             index = systemsManager->GetIndexOfNearestRootControl(pos);
         }
         else

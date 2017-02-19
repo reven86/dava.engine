@@ -312,8 +312,6 @@ void DocumentsModule::CreateDocumentsActions()
     //action close document
     {
         QtAction* action = new QtAction(accessor, closeDocumentActionName);
-        action->setShortcut(QKeySequence("Ctrl+W"));
-        action->setShortcutContext(Qt::ApplicationShortcut);
 
         FieldDescriptor fieldDescr;
         fieldDescr.type = ReflectedTypeDB::Get<DocumentData>();
@@ -845,7 +843,7 @@ void DocumentsModule::ReloadDocuments(const DAVA::Set<DAVA::TArc::DataContext::C
                     params.buttons = ModalMessageParams::Yes | ModalMessageParams::YesToAll | ModalMessageParams::No | ModalMessageParams::NoToAll;
                 }
 
-                ModalMessageParams::Button button = GetUI()->ShowModalMessage(QEGlobal::windowKey, params);
+                button = GetUI()->ShowModalMessage(QEGlobal::windowKey, params);
                 yesToAll = (button == ModalMessageParams::YesToAll);
                 noToAll = (button == ModalMessageParams::NoToAll);
             }

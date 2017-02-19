@@ -16,7 +16,6 @@
 
 #include <TArc/Core/ContextAccessor.h>
 #include <TArc/WindowSubSystem/Private/UIManager.h>
-
 #include <Tools/version.h>
 #include <DAVAVersion.h>
 
@@ -57,7 +56,8 @@ void LegacySupportModule::OnWindowClosed(const DAVA::TArc::WindowKey& key)
 
 void LegacySupportModule::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields)
 {
-    using namespace DAVA::TArc;
+    using namespace DAVA;
+    using namespace TArc;
     ContextAccessor* accessor = GetAccessor();
     DataContext* globalContext = accessor->GetGlobalContext();
     QWidget* window = GetUI()->GetWindow(QEGlobal::windowKey);
@@ -67,24 +67,15 @@ void LegacySupportModule::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, 
 
     if (wrapper == projectDataWrapper)
     {
-        if (fields.empty() == false)
-        {
-            return;
-        }
-
-        if (wrapper.HasData())
+        project = nullptr;
+        if (std::find(fields.begin(), fields.end(), String(ProjectData::projectPathPropertyName)) != fields.end()
+            || wrapper.HasData())
         {
             project.reset(new Project(projectView, accessor));
-        }
-        else
-        {
-            project = nullptr;
         }
     }
     else if (wrapper == documentDataWrapper)
     {
-        using namespace DAVA;
-        using namespace TArc;
 
         MainWindow::DocumentGroupView* documentGroupView = projectView->GetDocumentGroupView();
         DataContext* activeContext = accessor->GetActiveContext();
@@ -96,12 +87,14 @@ void LegacySupportModule::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, 
             document = iter->second.get();
         }
         PackageWidget* packageWidget = mainWindow->GetPackageWidget();
+
         if (wrapper.HasData() == false)
         {
             packageWidget->OnSelectionChanged(Any());
             DVASSERT(document == nullptr);
             documentGroupView->SetDocument(document);
         }
+
         else if (wrapper.HasData() && fields.empty())
         {
             DVASSERT(document != nullptr);
@@ -113,17 +106,19 @@ void LegacySupportModule::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, 
         {
             //event-based code require selectionChange first, packageChange second and than another selecitonChanged
             DVASSERT(document != nullptr);
-            packageWidget->OnSelectionChanged(Any());
-
-            if (std::find(fields.begin(), fields.end(), String(DocumentData::packagePropertyName)) != fields.end())
+            bool selectionWasChanged = std::find(fields.begin(), fields.end(), String(DocumentData::selectionPropertyName)) != fields.end();
+            bool packageWasChanged = std::find(fields.begin(), fields.end(), String(DocumentData::packagePropertyName)) != fields.end();
+            if (selectionWasChanged || packageWasChanged)
             {
-                documentGroupView->SetDocument(document);
-            }
+                packageWidget->OnSelectionChanged(Any());
 
-            Any selectionValue = wrapper.GetFieldValue(DocumentData::selectionPropertyName);
-            if (selectionValue.IsEmpty() == false)
-            {
-                if (std::find(fields.begin(), fields.end(), String(DocumentData::selectionPropertyName)) != fields.end())
+                if (packageWasChanged)
+                {
+                    documentGroupView->SetDocument(document);
+                }
+
+                Any selectionValue = wrapper.GetFieldValue(DocumentData::selectionPropertyName);
+                if (selectionValue.IsEmpty() == false && selectionWasChanged)
                 {
                     packageWidget->OnSelectionChanged(selectionValue);
                 }

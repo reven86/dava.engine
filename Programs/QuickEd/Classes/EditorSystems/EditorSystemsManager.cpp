@@ -327,6 +327,10 @@ void EditorSystemsManager::RefreshRootControls()
         {
             for (PackageBaseNode* selectedNode : selection)
             {
+                if (dynamic_cast<ControlNode*>(selectedNode) == nullptr)
+                {
+                    continue;
+                }
                 PackageBaseNode* root = selectedNode;
                 while (nullptr != root->GetParent() && nullptr != root->GetParent()->GetControl())
                 {
