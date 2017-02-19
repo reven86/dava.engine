@@ -76,7 +76,6 @@ void LegacySupportModule::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, 
     }
     else if (wrapper == documentDataWrapper)
     {
-
         MainWindow::DocumentGroupView* documentGroupView = projectView->GetDocumentGroupView();
         DataContext* activeContext = accessor->GetActiveContext();
         Document* document = nullptr;
