@@ -302,6 +302,8 @@ inline FilePath::ePathType FilePath::GetType() const
     return pathType;
 }
 
+template <>
+bool AnyCompare<FilePath>::IsEqual(const DAVA::Any& v1, const DAVA::Any& v2);
 extern template struct AnyCompare<FilePath>;
 
 } // end namespace DAVA

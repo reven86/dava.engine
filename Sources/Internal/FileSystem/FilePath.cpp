@@ -984,8 +984,6 @@ String FilePath::AsURL() const
 template <>
 bool AnyCompare<FilePath>::IsEqual(const Any& v1, const Any& v2)
 {
-    const FilePath& filePath1 = v1.Get<FilePath>();
-    const FilePath& filePath2 = v2.Get<FilePath>();
-    return filePath1 == filePath2;
+    return v1.Get<FilePath>() == v2.Get<FilePath>();
 }
 }

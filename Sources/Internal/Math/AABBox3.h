@@ -257,5 +257,7 @@ inline Vector3 AABBox3::GetSize() const
     return Vector3(Abs(max.x - min.x), Abs(max.y - min.y), Abs(max.z - min.z));
 }
 
+template <>
+bool AnyCompare<AABBox3>::IsEqual(const DAVA::Any& v1, const DAVA::Any& v2);
 extern template struct AnyCompare<AABBox3>;
 }

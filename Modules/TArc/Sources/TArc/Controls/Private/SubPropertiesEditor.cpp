@@ -16,7 +16,7 @@ namespace SubPropertiesEditorDetail
 template <typename TControl, typename TAccessor>
 TControl* CreateControl(typename TControl::Fields role, const String& fieldName, TAccessor* accessor, const Reflection& model)
 {
-    ControlDescriptorBuilder<TControl::Fields> descr;
+    ControlDescriptorBuilder<typename TControl::Fields> descr;
     descr[role] = fieldName;
     TControl* control = new TControl(descr, accessor, model);
     return control;

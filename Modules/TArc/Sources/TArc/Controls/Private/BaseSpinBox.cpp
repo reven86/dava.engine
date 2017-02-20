@@ -46,7 +46,7 @@ void DAVA::TArc::BaseSpinBox<TBase, TEditableType>::UpdateRange()
       // I don't create int64 and uint64 nodes because the most wide type that supported by QSpinBox is int
     };
 
-    Reflection valueField = this->model.GetField(GetFieldName(BaseFields::Value));
+    Reflection valueField = this->model.GetField(this->GetFieldName(BaseFields::Value));
     DVASSERT(valueField.IsValid());
     const Type* valueType = valueField.GetValueType();
     if (valueType->IsConst())
@@ -62,10 +62,10 @@ void DAVA::TArc::BaseSpinBox<TBase, TEditableType>::UpdateRange()
     TEditableType valueStep = static_cast<TEditableType>(1);
 
     const M::Range* rangeMeta = nullptr;
-    FastName rangeFieldName = GetFieldName(BaseFields::Range);
+    FastName rangeFieldName = this->GetFieldName(BaseFields::Range);
     if (rangeFieldName.IsValid())
     {
-        rangeMeta = GetFieldValue<const M::Range*>(BaseFields::Range, nullptr);
+        rangeMeta = this->template GetFieldValue<const M::Range*>(BaseFields::Range, nullptr);
         if (rangeMeta == nullptr)
         {
             rangeMeta = valueField.GetMeta<M::Range>();

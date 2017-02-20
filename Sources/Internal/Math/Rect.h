@@ -277,6 +277,8 @@ inline Rect Rect::operator-(const Vector2& pt) const
     return Rect(x - pt.x, y - pt.y, dx, dy);
 }
 
-extern template AnyCompare<Rect>;
+template <>
+bool AnyCompare<Rect>::IsEqual(const DAVA::Any& v1, const DAVA::Any& v2);
+extern template struct AnyCompare<Rect>;
 
 }; // end of namespace DAVA

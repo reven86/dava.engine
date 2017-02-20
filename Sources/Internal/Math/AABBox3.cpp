@@ -203,8 +203,6 @@ AABBox3 AABBox3::GetMaxRotationExtentBox(const Vector3& rotationCenter) const
 template <>
 bool AnyCompare<AABBox3>::IsEqual(const DAVA::Any& v1, const DAVA::Any& v2)
 {
-    const AABBox3& bbox1 = v1.Get<AABBox3>();
-    const AABBox3& bbox2 = v2.Get<AABBox3>();
-    return bbox1 == bbox2;
+    return v1.Get<AABBox3>() == v2.Get<AABBox3>();
 }
 };

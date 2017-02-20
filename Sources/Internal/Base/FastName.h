@@ -158,6 +158,8 @@ const char* FastName::c_str() const
     return nullptr;
 }
 
+template <>
+bool AnyCompare<FastName>::IsEqual(const Any& v1, const Any& v2);
 extern template struct AnyCompare<FastName>;
 };
 
