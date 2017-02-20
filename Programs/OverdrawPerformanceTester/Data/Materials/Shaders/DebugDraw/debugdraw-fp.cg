@@ -1,0 +1,14 @@
+#include "blending.cgh"
+
+FPROG_IN_BEGIN
+FPROG_IN_END
+
+FPROG_OUT_BEGIN
+    FPROG_OUT_COLOR
+FPROG_OUT_END
+
+property float4  color   : static,a : ;
+
+FPROG_BEGIN
+    FP_OUT_COLOR = color;
+FPROG_END
