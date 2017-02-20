@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Functional/Function.h"
+#include <Base/BaseTypes.h>
+#include <Functional/Function.h>
 
 namespace DAVA
 {
