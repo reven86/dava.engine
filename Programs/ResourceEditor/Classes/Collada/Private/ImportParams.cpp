@@ -184,22 +184,22 @@ void LoadMaterial(const DAVA::FilePath& sceneDirPath, DAVA::NMaterial* material,
     material->RemoveConfig(0);
 }
 
-void SaveComponent(DAVA::RefPtr<DAVA::Entity> entity, DAVA::Map<DAVA::FastName, DAVA::Component*>& componentMap, const DAVA::Function<DAVA::Component*(DAVA::Entity*)>& getComponentFn)
+void SaveComponent(DAVA::Entity* entity, DAVA::Map<DAVA::FastName, DAVA::Component*>& componentMap, const DAVA::Function<DAVA::Component*(DAVA::Entity*)>& getComponentFn)
 {
-    DAVA::Component* component = getComponentFn(entity.Get());
+    DAVA::Component* component = getComponentFn(entity);
     if (component != nullptr)
     {
         componentMap.emplace(entity->GetName(), component->Clone(nullptr));
     }
 }
 
-void RestoreComponent(DAVA::RefPtr<DAVA::Entity> entity, DAVA::Map<DAVA::FastName, DAVA::Component*>& componentMap, const DAVA::Function<DAVA::Component*(DAVA::Entity*)>& getComponentFn)
+void RestoreComponent(DAVA::Entity* entity, DAVA::Map<DAVA::FastName, DAVA::Component*>& componentMap, const DAVA::Function<DAVA::Component*(DAVA::Entity*)>& getComponentFn)
 {
     const DAVA::FastName& entityName = entity->GetName();
     auto iter = componentMap.find(entityName);
     if (iter != componentMap.end())
     {
-        DAVA::Component* component = getComponentFn(entity.Get());
+        DAVA::Component* component = getComponentFn(entity);
         if (component != nullptr)
         {
             entity->RemoveComponent(component);
@@ -210,7 +210,7 @@ void RestoreComponent(DAVA::RefPtr<DAVA::Entity> entity, DAVA::Map<DAVA::FastNam
     }
 }
 
-void AccumulateImportParamsImpl(const DAVA::RefPtr<DAVA::Entity>& entity, const DAVA::FilePath& sceneDirPath, ImportParams* params)
+void AccumulateImportParamsImpl(DAVA::Entity* entity, const DAVA::FilePath& sceneDirPath, ImportParams* params)
 {
     using namespace DAVA;
 
@@ -224,7 +224,7 @@ void AccumulateImportParamsImpl(const DAVA::RefPtr<DAVA::Entity>& entity, const 
                       return GetLodComponent(entity);
                   });
 
-    RenderComponent* renderComponent = GetRenderComponent(entity.Get());
+    RenderComponent* renderComponent = GetRenderComponent(entity);
     if (renderComponent != nullptr)
     {
         RenderObject* renderObject = renderComponent->GetRenderObject();
@@ -249,12 +249,11 @@ void AccumulateImportParamsImpl(const DAVA::RefPtr<DAVA::Entity>& entity, const 
 
     for (int32 i = 0; i < entity->GetChildrenCount(); ++i)
     {
-        RefPtr<Entity> child = RefPtr<Entity>::ConstructWithRetain(entity->GetChild(i));
-        AccumulateImportParamsImpl(child, sceneDirPath, params);
+        AccumulateImportParamsImpl(entity->GetChild(i), sceneDirPath, params);
     }
 }
 
-void RestoreSceneParamsImpl(const DAVA::RefPtr<DAVA::Entity>& entity, const DAVA::FilePath& sceneDirPath, ImportParams* params, DAVA::Set<DAVA::FastName>& loadedMaterials)
+void RestoreSceneParamsImpl(DAVA::Entity* entity, const DAVA::FilePath& sceneDirPath, ImportParams* params, DAVA::Set<DAVA::FastName>& loadedMaterials)
 {
     using namespace DAVA;
 
@@ -271,7 +270,7 @@ void RestoreSceneParamsImpl(const DAVA::RefPtr<DAVA::Entity>& entity, const DAVA
                          return GetLodComponent(entity);
                      });
 
-    RenderComponent* renderComponent = GetRenderComponent(entity.Get());
+    RenderComponent* renderComponent = GetRenderComponent(entity);
     if (renderComponent != nullptr)
     {
         RenderObject* renderObject = renderComponent->GetRenderObject();
@@ -299,8 +298,7 @@ void RestoreSceneParamsImpl(const DAVA::RefPtr<DAVA::Entity>& entity, const DAVA
 
     for (int32 i = 0; i < entity->GetChildrenCount(); ++i)
     {
-        RefPtr<Entity> child = RefPtr<Entity>::ConstructWithRetain(entity->GetChild(i));
-        RestoreSceneParamsImpl(child, sceneDirPath, params, loadedMaterials);
+        RestoreSceneParamsImpl(entity->GetChild(i), sceneDirPath, params, loadedMaterials);
     }
 }
 }
@@ -322,13 +320,13 @@ ImportParams::~ImportParams()
 
 void AccumulateImportParams(DAVA::RefPtr<DAVA::Scene> scene, const DAVA::FilePath& scenePath, ImportParams* params)
 {
-    ImportParamsDetail::AccumulateImportParamsImpl(scene, scenePath.GetDirectory(), params);
+    ImportParamsDetail::AccumulateImportParamsImpl(scene.Get(), scenePath.GetDirectory(), params);
 }
 
 void RestoreSceneParams(DAVA::RefPtr<DAVA::Scene> scene, const DAVA::FilePath& scenePath, ImportParams* params)
 {
     DAVA::Set<DAVA::FastName> loadedMaterials;
-    ImportParamsDetail::RestoreSceneParamsImpl(scene, scenePath.GetDirectory(), params, loadedMaterials);
+    ImportParamsDetail::RestoreSceneParamsImpl(scene.Get(), scenePath.GetDirectory(), params, loadedMaterials);
 }
 
 } // namespace DAEConverter
