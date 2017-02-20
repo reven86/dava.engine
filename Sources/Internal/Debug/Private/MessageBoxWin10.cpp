@@ -17,7 +17,7 @@ namespace DAVA
 {
 namespace Debug
 {
-namespace MessageBoxInternals
+namespace MessageBoxDetail
 {
 ref class MessageBoxImpl sealed
 {
@@ -187,14 +187,14 @@ void MessageBoxImpl::OnButtonClick(::Windows::UI::Popups::IUICommand ^ cmd)
     autoEvent.Signal();
 }
 
-} // namespace MessageBoxInternals
+} // namespace MessageBoxDetail
 
 int MessageBox(const String& title, const String& message, const Vector<String>& buttons, int defaultButton)
 {
     DVASSERT(0 < buttons.size() && buttons.size() <= 3);
     DVASSERT(0 <= defaultButton && defaultButton < static_cast<int>(buttons.size()));
 
-    return MessageBoxInternals::MessageBoxImpl::ShowModal(title, message, buttons, defaultButton);
+    return MessageBoxDetail::MessageBoxImpl::ShowModal(title, message, buttons, defaultButton);
 }
 
 } // namespace Debug

@@ -21,7 +21,7 @@ namespace DAVA
 {
 namespace Debug
 {
-namespace MessageBoxInternals
+namespace MessageBoxDetail
 {
 class MessageBoxHook
 {
@@ -165,7 +165,7 @@ BOOL CALLBACK MessageBoxHook::EnumChildProcStart(HWND hwnd, LPARAM lparam)
 
 Semaphore semaphore(1);
 
-} // namespace MessageBoxInternals
+} // namespace MessageBoxDetail
 
 int MessageBox(const String& title, const String& message, const Vector<String>& buttons, int defaultButton)
 {
@@ -199,7 +199,7 @@ int MessageBox(const String& title, const String& message, const Vector<String>&
         if (params.onEnter())
         {
             HWND hwnd = ::GetActiveWindow();
-            MessageBoxInternals::MessageBoxHook msgBox;
+            MessageBoxDetail::MessageBoxHook msgBox;
             result = msgBox.Show(hwnd,
                                  std::move(params.title),
                                  std::move(params.message),
@@ -246,14 +246,14 @@ int MessageBox(const String& title, const String& message, const Vector<String>&
     }
     else
     {
-        MessageBoxInternals::semaphore.Wait();
+        MessageBoxDetail::semaphore.Wait();
 
         Thread* t = Thread::Create([&showMessageBox]() { showMessageBox(); });
         t->Start();
         t->Join();
         t->Release();
 
-        MessageBoxInternals::semaphore.Post();
+        MessageBoxDetail::semaphore.Post();
     }
 #endif
     return result;

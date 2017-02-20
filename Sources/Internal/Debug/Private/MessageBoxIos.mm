@@ -118,11 +118,11 @@ namespace DAVA
 {
 namespace Debug
 {
-namespace MessageBoxInternals
+namespace MessageBoxDetail
 {
 Semaphore semaphore(1);
 AutoResetEvent autoEvent;
-} // namespace MessageBoxInternals
+} // namespace MessageBoxDetail
 
 int MessageBox(const String& title, const String& message, const Vector<String>& buttons, int defaultButton)
 {
@@ -147,7 +147,7 @@ int MessageBox(const String& title, const String& message, const Vector<String>&
                                           withObject:nil
                                        waitUntilDone:YES];
             result = [alertDialog clickedIndex];
-            MessageBoxInternals::autoEvent.Signal();
+            MessageBoxDetail::autoEvent.Signal();
         }
     };
 
@@ -163,10 +163,10 @@ int MessageBox(const String& title, const String& message, const Vector<String>&
         {
             // Do not use Window::RunOnUIThread as message box becomes unresponsive to user input.
             // I do not know why so.
-            MessageBoxInternals::semaphore.Wait();
+            MessageBoxDetail::semaphore.Wait();
             showMessageBox();
-            MessageBoxInternals::autoEvent.Wait();
-            MessageBoxInternals::semaphore.Post(1);
+            MessageBoxDetail::autoEvent.Wait();
+            MessageBoxDetail::semaphore.Post(1);
         }
     }
     return result;
