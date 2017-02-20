@@ -55,21 +55,27 @@ void DAVA::TArc::BaseSpinBox<TBase, TEditableType>::UpdateRange()
     }
 
     auto iter = defaultRangeMap.find(valueType);
-    DVASSERT(iter != defaultRangeMap.end());
 
-    TEditableType minV = iter->second.first.Cast<TEditableType>(std::numeric_limits<TEditableType>::min());
-    TEditableType maxV = iter->second.second.Cast<TEditableType>(std::numeric_limits<TEditableType>::max());
+    TEditableType minV = std::numeric_limits<TEditableType>::lowest();
+    TEditableType maxV = std::numeric_limits<TEditableType>::max();
     TEditableType valueStep = static_cast<TEditableType>(1);
+
+    if (iter != defaultRangeMap.end()) // we can use any type that can be casted to double or int (Any for example)
+    {
+        minV = iter->second.first.Cast<TEditableType>(std::numeric_limits<TEditableType>::lowest());
+        maxV = iter->second.second.Cast<TEditableType>(std::numeric_limits<TEditableType>::max());
+    }
 
     const M::Range* rangeMeta = nullptr;
     FastName rangeFieldName = this->GetFieldName(BaseFields::Range);
     if (rangeFieldName.IsValid())
     {
         rangeMeta = this->template GetFieldValue<const M::Range*>(BaseFields::Range, nullptr);
-        if (rangeMeta == nullptr)
-        {
-            rangeMeta = valueField.GetMeta<M::Range>();
-        }
+    }
+
+    if (rangeMeta == nullptr)
+    {
+        rangeMeta = valueField.GetMeta<M::Range>();
     }
 
     if (rangeMeta != nullptr)

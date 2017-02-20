@@ -47,7 +47,7 @@ bool DoubleSpinBox::FromText(const QString& input, double& output) const
 
 QString DoubleSpinBox::ToText(const double value) const
 {
-    return QString::number(value);
+    return QString::number(value, 'f');
 }
 
 bool DoubleSpinBox::IsEqualValue(double v1, double v2) const
