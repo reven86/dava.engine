@@ -5,7 +5,6 @@
 #include "UI/UIControl.h"
 #include "EditorSystems/EditorSystemsManager.h"
 #include "EditorSystems/KeyboardProxy.h"
-#include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 #include "Model/ControlProperties/RootProperty.h"
 #include "Model/ControlProperties/VisibleValueProperty.h"
@@ -20,7 +19,6 @@ SelectionSystem::SelectionSystem(EditorSystemsManager* parent)
     : BaseEditorSystem(parent)
 {
     systemsManager->selectionChanged.Connect(this, &SelectionSystem::OnSelectionChanged);
-    systemsManager->packageChanged.Connect(this, &SelectionSystem::OnPackageChanged);
     systemsManager->selectionRectChanged.Connect(this, &SelectionSystem::OnSelectByRect);
     PreferencesStorage::Instance()->RegisterPreferences(this);
 }
@@ -58,25 +56,6 @@ void SelectionSystem::ProcessInput(UIEvent* currentInput)
     {
         SelectNode(selectedNode);
     }
-}
-
-void SelectionSystem::OnPackageChanged(PackageNode* packageNode_)
-{
-    if (nullptr != packageNode)
-    {
-        packageNode->RemoveListener(this);
-    }
-    packageNode = packageNode_;
-    if (nullptr != packageNode)
-    {
-        packageNode->AddListener(this);
-    }
-}
-
-void SelectionSystem::ControlWasRemoved(ControlNode* node, ControlsContainerNode*)
-{
-    selectionContainer.selectedNodes.erase(node);
-    systemsManager->selectionChanged.Emit(selectionContainer.selectedNodes);
 }
 
 void SelectionSystem::OnSelectByRect(const Rect& rect)

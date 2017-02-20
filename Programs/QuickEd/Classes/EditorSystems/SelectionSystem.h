@@ -5,7 +5,6 @@
 #include "Math/Rect.h"
 #include "UI/UIEvent.h"
 #include "Functional/SignalBase.h"
-#include "Model/PackageHierarchy/PackageListener.h"
 #include "Preferences/PreferencesRegistrator.h"
 
 class EditorSystemsManager;
@@ -17,7 +16,7 @@ namespace DAVA
 class Vector2;
 }
 
-class SelectionSystem : public BaseEditorSystem, PackageListener, public DAVA::InspBase
+class SelectionSystem : public BaseEditorSystem, public DAVA::InspBase
 {
 public:
     SelectionSystem(EditorSystemsManager* doc);
@@ -38,8 +37,6 @@ private:
 
     void GetNodesForSelection(DAVA::Vector<ControlNode*>& nodesUnderPoint, const DAVA::Vector2& point) const;
     void ProcessInput(DAVA::UIEvent* currentInput) override;
-    void OnPackageChanged(PackageNode* packageNode);
-    void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from) override;
     void OnSelectByRect(const DAVA::Rect& rect);
 
     void FocusToChild(bool next);
@@ -49,7 +46,6 @@ private:
     ControlNode* FindSmallNodeUnderNode(const DAVA::Vector<ControlNode*>& nodesUnderPoint) const;
 
     SelectionContainer selectionContainer;
-    DAVA::RefPtr<PackageNode> packageNode;
     bool canFindCommonForSelection = true;
 
     bool selectOnRelease = false;

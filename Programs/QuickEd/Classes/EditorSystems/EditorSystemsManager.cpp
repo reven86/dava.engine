@@ -249,37 +249,36 @@ void EditorSystemsManager::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper,
 {
     using namespace DAVA;
     using namespace TArc;
-    if (wrapper.HasData() == false)
+    bool selectionWasChanged = true;
+    bool packageWasChanged = true;
+    if (wrapper.HasData() && fields.empty() == false)
     {
-        OnSelectionDataChanged(Any());
-        OnPackageDataChanged(Any());
+        selectionWasChanged = std::find(fields.begin(), fields.end(), String(DocumentData::selectionPropertyName)) != fields.end();
+        packageWasChanged = std::find(fields.begin(), fields.end(), String(DocumentData::packagePropertyName)) != fields.end();
     }
-    else if (wrapper.HasData() && fields.empty())
+    if (selectionWasChanged || packageWasChanged)
     {
-        OnSelectionDataChanged(wrapper.GetFieldValue(DocumentData::selectionPropertyName));
-        OnPackageDataChanged(wrapper.GetFieldValue(DocumentData::packagePropertyName));
+        RefreshRootControls();
     }
-    else
-    {
-        bool needRefresh = false;
-        auto updateField = [&wrapper, &fields, &needRefresh](const String& name, Function<void(const Any&)> updateFn) {
-            if (std::find(fields.begin(), fields.end(), name) != fields.end())
-            {
-                updateFn(wrapper.GetFieldValue(name));
-                needRefresh = true;
-            }
-        };
 
-        updateField(DocumentData::selectionPropertyName,
-                    MakeFunction(this, &EditorSystemsManager::OnSelectionDataChanged));
-        updateField(DocumentData::packagePropertyName,
-                    MakeFunction(this, &EditorSystemsManager::OnPackageDataChanged));
-        if (needRefresh == false)
+    if (selectionWasChanged)
+    {
+        Any selectedNodes;
+        if (wrapper.HasData())
         {
-            return;
+            selectedNodes = wrapper.GetFieldValue(DocumentData::selectionPropertyName);
         }
+        OnSelectionDataChanged(selectedNodes);
     }
-    RefreshRootControls();
+    if (packageWasChanged)
+    {
+        Any package;
+        if (wrapper.HasData())
+        {
+            package = wrapper.GetFieldValue(DocumentData::packagePropertyName);
+        }
+        OnPackageDataChanged(package);
+    }
 }
 
 void EditorSystemsManager::ControlWasRemoved(ControlNode* node, ControlsContainerNode* /*from*/)
@@ -313,7 +312,11 @@ void EditorSystemsManager::RefreshRootControls()
     SortedPackageBaseNodeSet newRootControls(CompareByLCA);
     if (nullptr != package)
     {
-        Any selectionValue = documentDataWrapper.GetFieldValue(DocumentData::selectionPropertyName);
+        Any selectionValue;
+        if (documentDataWrapper.HasData())
+        {
+            selectionValue = documentDataWrapper.GetFieldValue(DocumentData::selectionPropertyName);
+        }
         SelectedNodes selection = selectionValue.Cast<SelectedNodes>(SelectedNodes());
         if (selection.empty())
         {

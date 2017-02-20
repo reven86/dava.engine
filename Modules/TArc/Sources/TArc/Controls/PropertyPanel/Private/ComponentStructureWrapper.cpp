@@ -7,6 +7,7 @@
 #include <Reflection/ReflectedStructure.h>
 #include <Reflection/ReflectedObject.h>
 #include <Reflection/ReflectedType.h>
+#include <Reflection/ReflectedTypeDB.h>
 #include <Reflection/Private/ReflectedObject_impl.h>
 #include <Reflection/Private/Wrappers/StructureWrapperClass.h>
 #include <Base/Type.h>

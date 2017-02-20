@@ -188,7 +188,10 @@ void LegacySupportModule::OnFindPrototypeInstances()
 
     ContextAccessor* accessor = GetAccessor();
     DataContext* activeContext = accessor->GetActiveContext();
-    DVASSERT(nullptr != activeContext);
+    if (activeContext == nullptr)
+    {
+        return;
+    }
 
     const DocumentData* documentData = activeContext->GetData<DocumentData>();
     const SelectedNodes& nodes = documentData->GetSelectedNodes();
@@ -221,7 +224,11 @@ void LegacySupportModule::OnJumpToPrototype()
 
     ContextAccessor* accessor = GetAccessor();
     DataContext* activeContext = accessor->GetActiveContext();
-    DVASSERT(nullptr != activeContext);
+
+    if (activeContext == nullptr)
+    {
+        return;
+    }
 
     const DocumentData* documentData = activeContext->GetData<DocumentData>();
     const SelectedNodes& nodes = documentData->GetSelectedNodes();
