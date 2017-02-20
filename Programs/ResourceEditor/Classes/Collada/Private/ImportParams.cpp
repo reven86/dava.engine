@@ -27,9 +27,9 @@ void SaveConfigToArchive(const DAVA::FilePath& sceneDirPath, const DAVA::Materia
     }
 
     ScopedPtr<KeyedArchive> propertiesArchive(new KeyedArchive());
-    for (HashMap<FastName, NMaterialProperty *>::iterator it = config.localProperties.begin(), itEnd = config.localProperties.end(); it != itEnd; ++it)
+    for (const auto& propertyPair : config.localProperties)
     {
-        NMaterialProperty* property = it->second;
+        NMaterialProperty* property = propertyPair.second;
 
         uint32 dataSize = ShaderDescriptor::CalculateDataSize(property->type, property->arraySize) * sizeof(float32);
         uint32 storageSize = sizeof(uint8) + sizeof(uint32) + dataSize;
@@ -39,31 +39,31 @@ void SaveConfigToArchive(const DAVA::FilePath& sceneDirPath, const DAVA::Materia
         memcpy(propertyStorage + sizeof(uint8), &property->arraySize, sizeof(uint32));
         memcpy(propertyStorage + sizeof(uint8) + sizeof(uint32), property->data.get(), dataSize);
 
-        propertiesArchive->SetByteArray(it->first.c_str(), propertyStorage, storageSize);
+        propertiesArchive->SetByteArray(propertyPair.first.c_str(), propertyStorage, storageSize);
 
         SafeDeleteArray(propertyStorage);
     }
     archive->SetArchive("properties", propertiesArchive);
 
     ScopedPtr<KeyedArchive> texturesArchive(new KeyedArchive());
-    for (auto it = config.localTextures.begin(), itEnd = config.localTextures.end(); it != itEnd; ++it)
+    for (const auto& texturePair : config.localTextures)
     {
-        if (!NMaterialTextureName::IsRuntimeTexture(it->first) && !it->second->path.IsEmpty())
+        if (!NMaterialTextureName::IsRuntimeTexture(texturePair.first) && !texturePair.second->path.IsEmpty())
         {
-            String textureRelativePath = it->second->path.GetRelativePathname(sceneDirPath);
+            String textureRelativePath = texturePair.second->path.GetRelativePathname(sceneDirPath);
             if (textureRelativePath.size() > 0)
             {
-                texturesArchive->SetString(it->first.c_str(), textureRelativePath);
+                texturesArchive->SetString(texturePair.first.c_str(), textureRelativePath);
             }
         }
     }
     archive->SetArchive("textures", texturesArchive);
 
     ScopedPtr<KeyedArchive> flagsArchive(new KeyedArchive());
-    for (HashMap<FastName, int32>::iterator it = config.localFlags.begin(), itEnd = config.localFlags.end(); it != itEnd; ++it)
+    for (const auto& flagPair : config.localFlags)
     {
-        if (!NMaterialFlagName::IsRuntimeFlag(it->first))
-            flagsArchive->SetInt32(it->first.c_str(), it->second);
+        if (!NMaterialFlagName::IsRuntimeFlag(flagPair.first))
+            flagsArchive->SetInt32(flagPair.first.c_str(), flagPair.second);
     }
     archive->SetArchive("flags", flagsArchive);
 }
@@ -109,14 +109,14 @@ void LoadConfigFromArchive(const DAVA::FilePath& sceneDirPath, DAVA::MaterialCon
     if (archive->IsKeyExists("properties"))
     {
         const KeyedArchive::UnderlyingMap& propsMap = archive->GetArchive("properties")->GetArchieveData();
-        for (KeyedArchive::UnderlyingMap::const_iterator it = propsMap.begin(); it != propsMap.end(); ++it)
+        for (const auto& iter : propsMap)
         {
-            const VariantType* propVariant = it->second;
+            const VariantType* propVariant = iter.second;
             DVASSERT(VariantType::TYPE_BYTE_ARRAY == propVariant->type);
             DVASSERT(propVariant->AsByteArraySize() >= static_cast<int32>(sizeof(uint8) + sizeof(uint32)));
 
             const uint8* ptr = propVariant->AsByteArray();
-            FastName propName = FastName(it->first);
+            FastName propName = FastName(iter.first);
             uint8 propType = *ptr;
             ptr += sizeof(uint8);
             uint32 propSize = *(reinterpret_cast<const uint32*>(ptr));
@@ -136,21 +136,21 @@ void LoadConfigFromArchive(const DAVA::FilePath& sceneDirPath, DAVA::MaterialCon
     if (archive->IsKeyExists("textures"))
     {
         const KeyedArchive::UnderlyingMap& texturesMap = archive->GetArchive("textures")->GetArchieveData();
-        for (KeyedArchive::UnderlyingMap::const_iterator it = texturesMap.begin(); it != texturesMap.end(); ++it)
+        for (const auto& iter : texturesMap)
         {
-            String relativePathname = it->second->AsString();
+            String relativePathname = iter.second->AsString();
             MaterialTextureInfo* texInfo = new MaterialTextureInfo();
             texInfo->path = sceneDirPath + relativePathname;
-            config.localTextures[FastName(it->first)] = texInfo;
+            config.localTextures[FastName(iter.first)] = texInfo;
         }
     }
 
     if (archive->IsKeyExists("flags"))
     {
         const KeyedArchive::UnderlyingMap& flagsMap = archive->GetArchive("flags")->GetArchieveData();
-        for (KeyedArchive::UnderlyingMap::const_iterator it = flagsMap.begin(); it != flagsMap.end(); ++it)
+        for (const auto& iter : flagsMap)
         {
-            config.localFlags[FastName(it->first)] = it->second->AsInt32();
+            config.localFlags[FastName(iter.first)] = iter.second->AsInt32();
         }
     }
 }
@@ -177,9 +177,9 @@ void LoadMaterial(const DAVA::FilePath& sceneDirPath, DAVA::NMaterial* material,
         LoadConfigFromArchive(sceneDirPath, configs[i], configArchive);
     }
 
-    for (size_t i = 0; i < configs.size(); ++i)
+    for (const MaterialConfig& config : configs)
     {
-        material->InsertConfig(material->GetConfigCount(), configs[i]);
+        material->InsertConfig(material->GetConfigCount(), config);
     }
     material->RemoveConfig(0);
 }

@@ -28,7 +28,7 @@ private:
     Mesh* GetMeshFromCollada(ColladaMeshInstance* mesh, const bool isShadow);
 
     ImportLibrary library;
-    std::unique_ptr<DAEConverter::ImportParams>&& params;
+    std::unique_ptr<DAEConverter::ImportParams> params;
 };
 };
 
