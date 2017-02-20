@@ -398,12 +398,6 @@ bool SceneTreeModel::dropMimeData(const QMimeData* data, Qt::DropAction action, 
     }
     break;
 
-    case DropingMaterial:
-    {
-        DVASSERT(false, "This can't be done. Materials should be assigned only on RenderBatch");
-    }
-    break;
-
     default:
         break;
     }
@@ -535,16 +529,6 @@ bool SceneTreeModel::DropCanBeAccepted(const QMimeData* data, Qt::DropAction act
             {
                 ret = true;
             }
-        }
-    }
-    break;
-
-    case DropingMaterial:
-    {
-        DAVA::Entity* targetEntity = SceneTreeItemEntity::GetEntity(parentItem);
-        if (targetEntity)
-        {
-            ret = true;
         }
     }
     break;
@@ -728,10 +712,6 @@ int SceneTreeModel::GetDropType(const QMimeData* data) const
         else if (MimeDataHelper2<DAVA::ParticleForce>::IsValid(data))
         {
             ret = DropingForce;
-        }
-        else if (MimeDataHelper2<DAVA::NMaterial>::IsValid(data))
-        {
-            ret = DropingMaterial;
         }
     }
 
