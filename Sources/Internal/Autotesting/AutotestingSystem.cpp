@@ -57,6 +57,10 @@ AutotestingSystem::AutotestingSystem()
     , waitCheckTimeLeft(0.0f)
 {
     new AutotestingDB();
+
+    //default behavior for autotests is to exit on test end/error
+    SetTestFinishedCallback([this] { ExitApp(); });
+    SetTestErrorCallback([this](const String& error) { ExitApp(); });
 }
 
 AutotestingSystem::~AutotestingSystem()
@@ -430,8 +434,6 @@ void AutotestingSystem::OnError(const String& errorMessage)
     }
 
     testErrorCallback(errorMessage);
-
-    //ExitApp();
 }
 
 void AutotestingSystem::ForceQuit(const String& errorMessage)
@@ -539,7 +541,6 @@ void AutotestingSystem::OnTestsFinished()
     AutotestingDB::Instance()->Log("INFO", "Test finished.");
 
     testFinishedCallback();
-    //ExitApp();
 }
 
 void AutotestingSystem::OnTestSkipped()

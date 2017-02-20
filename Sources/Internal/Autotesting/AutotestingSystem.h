@@ -132,7 +132,7 @@ public:
     {
         testFinishedCallback = callback;
     }
-    void SetTestErrorCallback(const Function<void(String)> callback)
+    void SetTestErrorCallback(const Function<void(const String&)> callback)
     {
         testErrorCallback = callback;
     }
@@ -159,7 +159,7 @@ private:
     File* recordedActs;
 
     Function<void()> testFinishedCallback;
-    Function<void(String)> testErrorCallback;
+    Function<void(const String&)> testErrorCallback;
 
 public:
     static const String RecordScriptFileName;
