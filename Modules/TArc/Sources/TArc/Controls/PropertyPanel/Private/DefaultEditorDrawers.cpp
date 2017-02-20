@@ -1,6 +1,8 @@
 #include "TArc/Controls/PropertyPanel/DefaultEditorDrawers.h"
 #include "TArc/Controls/PropertyPanel/PropertyModelExtensions.h"
 
+#include "TArc/Controls/ComboBoxCheckable.h"
+
 #include <Reflection/ReflectedMeta.h>
 
 #include <QStyle>
@@ -94,18 +96,18 @@ QString BoolEditorDrawer::GetTextHint(const Any& value, const Vector<std::shared
     return result;
 }
 
-void EnumEditorDrawer::InitStyleOptions(Params& params) const
+void DefaultEnumEditorDrawer::InitStyleOptions(Params& params) const
 {
     params.options.text = GetTextHint(params.value, params.nodes);
 }
 
-uint32 EnumEditorDrawer::GetHeight(Params params) const
+uint32 DefaultEnumEditorDrawer::GetHeight(Params params) const
 {
     InitStyleOptions(params);
     return params.style->sizeFromContents(QStyle::CT_ComboBox, &params.options, QSize(), params.options.widget).height();
 }
 
-void EnumEditorDrawer::Draw(QPainter* painter, Params params) const
+void DefaultEnumEditorDrawer::Draw(QPainter* painter, Params params) const
 {
     InitStyleOptions(params);
 
@@ -120,7 +122,7 @@ void EnumEditorDrawer::Draw(QPainter* painter, Params params) const
 QString EnumEditorDrawer::GetTextHint(const Any& value, const Vector<std::shared_ptr<PropertyNode>>* nodes) const
 {
     QString result;
-    if (value.IsEmpty() == false)
+    if (value.IsEmpty() == false && nodes->empty() == false)
     {
         const M::Enum* enumMeta = nodes->front()->field.ref.GetMeta<M::Enum>();
         if (enumMeta != nullptr)
@@ -129,6 +131,22 @@ QString EnumEditorDrawer::GetTextHint(const Any& value, const Vector<std::shared
 
             const EnumMap* enumMap = enumMeta->GetEnumMap();
             result = enumMap->ToString(intValue);
+        }
+    }
+
+    return result;
+}
+
+QString FlagsEditorDrawer::GetTextHint(const Any& value, const Vector<std::shared_ptr<PropertyNode>>* nodes) const
+{
+    QString result;
+    if (nodes->empty() == false)
+    {
+        const M::Flags* enumFlags = nodes->front()->field.ref.GetMeta<M::Flags>();
+        if (enumFlags != nullptr)
+        {
+            const EnumMap* enumMap = enumFlags->GetFlagsMap();
+            result = CreateTextComboCheckable(value, enumMap);
         }
     }
 

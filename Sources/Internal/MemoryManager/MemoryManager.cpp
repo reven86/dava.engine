@@ -512,7 +512,8 @@ void MemoryManager::InternalDeallocate(void* ptr)
 
 uint32 MemoryManager::GetSystemMemoryUsage() const
 {
-#if defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_WINDOWS__)
+    return 0;
 #elif defined(__DAVAENGINE_APPLE__)
     struct task_basic_info info;
     mach_msg_type_number_t size = sizeof(info);
@@ -520,13 +521,13 @@ uint32 MemoryManager::GetSystemMemoryUsage() const
     {
         return static_cast<uint32>(info.resident_size);
     }
+    return 0;
 #elif defined(__DAVAENGINE_ANDROID__)
     // http://stackoverflow.com/questions/17109284/how-to-find-memory-usage-of-my-android-application-written-c-using-ndk
     // http://androidxref.com/source/xref/frameworks/base/core/jni/android_os_Debug.cpp (Jelly Bean 4.2)
     struct mallinfo info = mallinfo();
     return static_cast<uint32>(info.uordblks);
 #endif
-    return 0;
 }
 
 uint32 MemoryManager::GetTrackedMemoryUsage(uint32 poolIndex) const

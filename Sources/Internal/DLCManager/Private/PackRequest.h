@@ -81,8 +81,11 @@ private:
     String requestedPackName;
 
     uint32 numOfDownloadedFile = 0;
-
     uint64 downloadedSize = 0;
+
+    // if this fild is false, you can check fileIndexes
+    // else fileIndexes maybe empty and wait initialization
+    bool delayedRequest = true;
 };
 
 } // end namespace DAVA
