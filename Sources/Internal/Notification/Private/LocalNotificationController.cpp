@@ -131,6 +131,11 @@ void LocalNotificationController::Update()
     }
 }
 
+void LocalNotificationController::RequestPermisions()
+{
+    LocalNotificationImpl::RequestPermisions();
+}
+
 LocalNotification* const LocalNotificationController::GetNotificationById(const String& id)
 {
     LockGuard<Mutex> guard(notificationsListMutex);

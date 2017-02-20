@@ -18,6 +18,7 @@ struct UILocalNotificationWrapper
 LocalNotificationIOS::LocalNotificationIOS(const String& _id)
     : notification(NULL)
 {
+    RequestPermisions();
     notificationId = _id;
 }
 
@@ -113,6 +114,30 @@ void LocalNotificationIOS::RemoveAllDelayedNotifications()
 LocalNotificationImpl* LocalNotificationImpl::Create(const String& _id)
 {
     return new LocalNotificationIOS(_id);
+}
+
+void LocalNotificationImpl::RequestPermisions()
+{
+// https://developer.apple.com/reference/uikit/uiapplication/1622932-registerusernotificationsettings
+// available 8.0 and later
+    
+#if defined(__IPHONE_8_0)
+    static bool registred = false;
+
+    if (!registred)
+    {
+        NSString* version = [[UIDevice currentDevice] systemVersion];
+        if ([version compare:@"8.0" options:NSNumericSearch] != NSOrderedAscending)
+        {
+            if ([UIApplication instancesRespondToSelector:@selector(registerUserNotificationSettings:)])
+            {
+                [[UIApplication sharedApplication] registerUserNotificationSettings:[UIUserNotificationSettings settingsForTypes:UIUserNotificationTypeAlert | UIUserNotificationTypeBadge | UIUserNotificationTypeSound categories:nil]];
+            }
+        }
+
+        registred = true;
+    }
+#endif
 }
 }
 #endif // defined(__DAVAENGINE_IPHONE__)

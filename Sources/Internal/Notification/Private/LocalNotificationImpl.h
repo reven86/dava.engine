@@ -19,6 +19,7 @@ public:
     virtual void RemoveAllDelayedNotifications() = 0;
 
     static LocalNotificationImpl* Create(const String& _id);
+    static void RequestPermisions();
 
     const DAVA::String& GetId()
     {

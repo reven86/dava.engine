@@ -360,7 +360,7 @@ BOOL CoreNativeBridge::NotifyListeners(eNotificationType type, NSObject* arg1, N
             }
             break;
         case ON_DID_BECOME_ACTIVE:
-            if ([listener respondsToSelector:@selector(application:applicationDidBecomeActive:)])
+            if ([listener respondsToSelector:@selector(applicationDidBecomeActive:)])
             {
                 [listener applicationDidBecomeActive:static_cast<UIApplication*>(arg1)];
             }

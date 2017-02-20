@@ -107,6 +107,10 @@ LocalNotificationImpl* LocalNotificationImpl::Create(const String& _id)
 {
     return new LocalNotificationAndroid(_id);
 }
+
+void LocalNotificationImpl::RequestPermisions()
+{
+}
 } // namespace DAVA
 
 #if !defined(__DAVAENGINE_COREV2__)
