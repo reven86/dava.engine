@@ -32,8 +32,6 @@ private:
     void SetupControl();
     void UpdateControl(const ControlDescriptor& changedfields) override;
 
-    void ProcessReadOnlyState(const Reflection& fieldValue, const ControlDescriptor& changedfields);
-
     void CreateItems(const Reflection& fieldValue, const Reflection& fieldEnumerator);
     int SelectCurrentItem(const Reflection& fieldValue, const Reflection& fieldEnumerator);
 
