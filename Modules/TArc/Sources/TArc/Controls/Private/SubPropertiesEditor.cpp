@@ -1,3 +1,4 @@
+
 #include "TArc/Controls/SubPropertiesEditor.h"
 #include "TArc/Controls/DoubleSpinBox.h"
 #include "TArc/Controls/IntSpinBox.h"
@@ -37,11 +38,7 @@ SubPropertiesEditor::SubPropertiesEditor(const ControlDescriptorBuilder<Fields>&
 
 void SubPropertiesEditor::UpdateControl(const ControlDescriptor& descriptor)
 {
-    bool isReadOnly = IsValueReadOnly(descriptor, Fields::Value, Fields::IsReadOnly);
-    for (QWidget* w : subControls)
-    {
-        w->setEnabled(!isReadOnly);
-    }
+    setEnabled(!IsValueReadOnly(descriptor, Fields::Value, Fields::IsReadOnly));
 }
 
 template <typename T>
@@ -59,7 +56,6 @@ void DAVA::TArc::SubPropertiesEditor::SetupControl(T* accessor)
     layout->setMargin(1);
 
     Vector<Reflection::Field> subFields = valueField.GetFields();
-    subControls.reserve(subFields.size() * 2);
     for (Reflection::Field& field : subFields)
     {
         if (field.ref.HasMeta<M::SubProperty>())
@@ -72,7 +68,6 @@ void DAVA::TArc::SubPropertiesEditor::SetupControl(T* accessor)
 
             QLabel* label = new QLabel(QString::fromStdString(subFieldName));
             subPropertyLayout->addWidget(label);
-            subControls.push_back(label);
 
             QWidget* editorWidget = nullptr;
 
@@ -98,15 +93,12 @@ void DAVA::TArc::SubPropertiesEditor::SetupControl(T* accessor)
 
             if (editorWidget != nullptr)
             {
-                subControls.push_back(editorWidget);
                 QSizePolicy sizePolicy = editorWidget->sizePolicy();
                 sizePolicy.setHorizontalPolicy(QSizePolicy::Expanding);
                 editorWidget->setSizePolicy(sizePolicy);
             }
         }
     }
-
-    subControls.shrink_to_fit();
 }
 
 } // namespace TArc

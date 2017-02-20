@@ -882,7 +882,9 @@ void TestUIModule::ShowDialog()
 {
     using namespace TestUIModuleDetails;
     QDialog* dlg = new QDialog();
-    QGridLayout* layout = new QGridLayout(dlg);
+    QHBoxLayout* layout = new QHBoxLayout(dlg);
+    QTabWidget* tabWidget = new QTabWidget(dlg);
+    layout->addWidget(tabWidget);
     dlg->setLayout(layout);
 
     DAVA::Vector<Node> nodes = DAVA::Vector<Node>
@@ -912,7 +914,7 @@ void TestUIModule::ShowDialog()
         data.push_back(r.model);
 
         groupBox->setLayout(r.layout);
-        layout->addWidget(groupBox, currentRow, currentColumn);
+        tabWidget->addTab(groupBox, node.title);
         ++currentColumn;
         if (currentColumn > columnCount)
         {

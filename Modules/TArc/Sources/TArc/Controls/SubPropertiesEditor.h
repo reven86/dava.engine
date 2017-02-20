@@ -27,8 +27,6 @@ protected:
 
     template <typename T>
     void SetupControl(T* accessor);
-
-    Vector<QWidget*> subControls;
 };
 
 } // namespace TArc

@@ -5,7 +5,6 @@
 #include "Base/Any.h"
 #include "Math/Vector.h"
 #include "Math/Ray.h"
-#include "Reflection/Reflection.h"
 
 namespace DAVA
 {
@@ -107,8 +106,6 @@ public:
 
     float32 GetBoundingSphereRadius() const;
     AABBox3 GetMaxRotationExtentBox(const Vector3& rotationCenter) const;
-
-    DAVA_REFLECTION(AABBox3);
 };
 
 //! \brief construct empty bounding box
