@@ -76,4 +76,13 @@ bool Any::operator==(const Any& any) const
 
     return (*compareFn)(*this, any);
 }
+
+template <>
+bool AnyCompare<String>::IsEqual(const Any& v1, const Any& v2)
+{
+    const String& c1 = v1.Get<String>();
+    const String& c2 = v2.Get<String>();
+    return c1 == c2;
+}
+
 } // namespace DAVA

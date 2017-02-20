@@ -24,4 +24,12 @@ Color MakeGrayScale(const Color& rgb)
     float32 channel = rgb.r * 0.3f + rgb.g * 0.59f + rgb.b * 0.11f;
     return Color(channel, channel, channel, rgb.a);
 }
+
+template <>
+bool AnyCompare<Color>::IsEqual(const Any& v1, const Any& v2)
+{
+    const Color& c1 = v1.Get<Color>();
+    const Color& c2 = v2.Get<Color>();
+    return c1 == c2;
+}
 }
