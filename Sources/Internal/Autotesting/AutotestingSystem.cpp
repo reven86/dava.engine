@@ -708,7 +708,7 @@ void AutotestingSystem::OnRecordWaitControlBecomeEnabled(UIControl* control)
 void AutotestingSystem::OnRecordWaitControlDissapeared(UIControl* control)
 {
     const String& hierarchy = GetControlHierarchy(control);
-    const String& codeLine = Format("WaitControlDissapeared('%s')", hierarchy.c_str());
+    const String& codeLine = Format("WaitControlDisappeared('%s')", hierarchy.c_str());
     WriteScriptLine(codeLine);
 }
 
