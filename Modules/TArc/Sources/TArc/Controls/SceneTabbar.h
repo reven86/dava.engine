@@ -41,8 +41,8 @@ private:
     void OnCloseTabRequest(int index);
     void OnCloseCurrentTab();
 
-    uint64 GetIDByWrapper(const DataWrapper& wrapper);
-    int GetTabIndexByID(uint64 id);
+    uint64 GetIDByWrapper(const DataWrapper& wrapper) const;
+    int GetTabIndexByID(uint64 id) const;
 
 private:
     ContextAccessor* accessor;

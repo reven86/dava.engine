@@ -248,7 +248,7 @@ void SceneTabbar::OnCloseCurrentTab()
     }
 }
 
-uint64 SceneTabbar::GetIDByWrapper(const DataWrapper& wrapper)
+uint64 SceneTabbar::GetIDByWrapper(const DataWrapper& wrapper) const
 {
     for (const auto& iter : tabWrappers)
     {
@@ -262,7 +262,7 @@ uint64 SceneTabbar::GetIDByWrapper(const DataWrapper& wrapper)
     return static_cast<uint64>(-1);
 }
 
-int SceneTabbar::GetTabIndexByID(uint64 id)
+int SceneTabbar::GetTabIndexByID(uint64 id) const
 {
     for (int i = 0; i < count(); ++i)
     {
