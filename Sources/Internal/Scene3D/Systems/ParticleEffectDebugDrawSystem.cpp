@@ -85,12 +85,14 @@ void ParticleEffectDebugDrawSystem::GenerateDebugMaterials()
     if (showAlphaMaterial == nullptr)
     {
         float alphaThreshold = 0.05f;
+        Color debugShowAlphaColor(0.0f, 0.0f, 1.0f, 0.4f);
 
         showAlphaMaterial = new NMaterial();
         showAlphaMaterial->SetFXName(NMaterialName::PARTICLES);
         showAlphaMaterial->AddFlag(FastName("PARTICLE_DEBUG_SHOW_ALPHA"), true);
         showAlphaMaterial->AddFlag(NMaterialFlagName::FLAG_BLENDING, eBlending::BLENDING_ALPHABLEND);
         showAlphaMaterial->AddProperty(FastName("particleAlphaThreshold"), &alphaThreshold, rhi::ShaderProp::TYPE_FLOAT1);
+        showAlphaMaterial->AddProperty(FastName("particleDebugShowAlphaColor"), debugShowAlphaColor.color, rhi::ShaderProp::TYPE_FLOAT4);
     }
 }
 

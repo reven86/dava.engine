@@ -156,6 +156,7 @@ fragment_out
 
 #if PARTICLE_DEBUG_SHOW_ALPHA
     [material][a] property float particleAlphaThreshold = 0.2f;
+    [material][a] property float4 particleDebugShowAlphaColor =  float4(0.0f, 0.0f, 1.0f, 0.4f);
 #endif
 
 inline float 
@@ -584,7 +585,7 @@ fragment_out fp_main( fragment_in input )
 
     #if PARTICLE_DEBUG_SHOW_ALPHA
         if (output.color.a < particleAlphaThreshold)
-            output.color = float4(0.0f, 0.0f, 1.0f, 0.4f);
+            output.color = particleDebugShowAlphaColor;
         else
             output.color = 0.0;
     #endif
