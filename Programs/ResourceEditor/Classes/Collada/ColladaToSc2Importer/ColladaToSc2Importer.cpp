@@ -250,7 +250,7 @@ eColladaErrorCodes ColladaToSc2Importer::SaveSC2(ColladaScene* colladaScene, con
         bool combinedSuccessfull = SceneUtils::CombineLods(scene);
         if (combinedSuccessfull)
         {
-            DAEConverter::RestoreCustomProperties(RefPtr<Scene>::ConstructWithRetain(scene), scenePath, params.get());
+            DAEConverter::RestoreSceneParams(RefPtr<Scene>::ConstructWithRetain(scene), scenePath, params.get());
             SceneFileV2::eError saveRes = scene->SaveScene(scenePath);
 
             if (saveRes > SceneFileV2::eError::ERROR_NO_ERROR)

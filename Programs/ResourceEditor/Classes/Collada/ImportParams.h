@@ -24,7 +24,7 @@ struct ImportParams
     DAVA::Map<DAVA::FastName, DAVA::RefPtr<DAVA::KeyedArchive>> materialsMap;
 };
 
-void RestoreCustomProperties(DAVA::RefPtr<DAVA::Scene> scene, const DAVA::FilePath& scenePath, ImportParams* params);
+void RestoreSceneParams(DAVA::RefPtr<DAVA::Scene> scene, const DAVA::FilePath& scenePath, ImportParams* params);
 void AccumulateImportParams(DAVA::RefPtr<DAVA::Scene> scene, const DAVA::FilePath& scenePath, ImportParams* params);
 
 } // namespace DAEConverter
