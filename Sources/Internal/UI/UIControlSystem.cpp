@@ -424,23 +424,7 @@ void UIControlSystem::OnInput(UIEvent* newEvent)
             Replay::Instance()->RecordEvent(newEvent);
         }
 
-        bool shouldHandleEvent = true;
-        if (newEvent->mouseButton == eMouseButtons::RIGHT)
-        {
-            if (nullptr != autotestingDelegate)
-            {
-                shouldHandleEvent = autotestingDelegate->OnRightMouseButtonEvent(newEvent);
-            }
-        }
-        else if (newEvent->mouseButton == eMouseButtons::LEFT)
-        {
-            shouldHandleEvent = autotestingDelegate->OnLeftMouseButtonEvent(newEvent);
-        }
-
-        if (shouldHandleEvent)
-        {
-            inputSystem->HandleEvent(newEvent);
-        }
+        inputSystem->HandleEvent(newEvent);
     } // end if frameSkip <= 0
 }
 
