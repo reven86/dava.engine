@@ -5,7 +5,8 @@
 #if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_IPHONE__)
 
-#include <Foundation/Foundation.h>
+#import <Foundation/Foundation.h>
+#import <UIKit/UIApplication.h>
 
 #include "Concurrency/Mutex.h"
 #include "Engine/Private/EnginePrivateFwd.h"
