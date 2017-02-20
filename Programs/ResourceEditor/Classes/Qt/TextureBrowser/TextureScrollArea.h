@@ -25,13 +25,19 @@ public:
         ChannelAll = 0xFFFFFFFF
     };
 
+    enum ChannelApplyMode
+    {
+        ApplyNow, // apply to image immediately
+        DoNotApplyNow // apply on next setImage
+    };
+
     TextureScrollArea(QWidget* parent = 0);
     ~TextureScrollArea();
 
     void setImage(const QImage& image);
     void setImage(const QList<QImage>& images, int flags = 0x000000FF); //this method sets cubemap faces
     QImage getImage();
-    void setColorChannel(int mask);
+    void setColorChannel(int mask, ChannelApplyMode mode = ApplyNow);
 
     QColor getPixelColor(QPoint pos);
     float getTextureZoom();
