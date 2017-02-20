@@ -66,4 +66,3 @@ protected:
     friend class FMODSoundSystem;
 };
 };
-

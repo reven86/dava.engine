@@ -76,6 +76,6 @@ public:
 protected:
     virtual void ParseSFXConfig(const FilePath& configPath);
 };
-    
+
 SoundSystem* CreateSoundSystem(Engine* e);
 };

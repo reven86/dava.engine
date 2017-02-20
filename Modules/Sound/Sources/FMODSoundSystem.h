@@ -107,7 +107,6 @@ public:
 #endif
 
 protected:
-    
     void OnUpdate(float32 timeElapsed);
     void OnSuspend();
     void OnResume();

@@ -86,4 +86,3 @@ inline bool SoundEvent::IsDirectional() const
     return isDirectional;
 }
 };
-
