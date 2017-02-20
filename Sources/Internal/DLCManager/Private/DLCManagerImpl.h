@@ -8,12 +8,10 @@
 #include "Concurrency/Semaphore.h"
 #include "Concurrency/Thread.h"
 
-#ifdef __DAVAENGINE_COREV2__
-#include "Engine/Engine.h"
-#endif
-
 namespace DAVA
 {
+class Engine;
+
 class DLCManagerImpl final : public DLCManager
 {
 public:
@@ -58,8 +56,6 @@ public:
 
     explicit DLCManagerImpl(Engine* engine_);
     ~DLCManagerImpl();
-    Engine& engine;
-    SigConnectionID sigConnectionUpdate = 0;
 
     void Initialize(const FilePath& dirToDownloadPacks_,
                     const String& urlToServerSuperpack_,
@@ -155,6 +151,10 @@ private:
         uint32 compressedSize = 0;
         uint32 crc32Hash = 0;
     };
+
+    Engine& engine;
+    SigConnectionID sigConnectionUpdate = 0;
+
     // fill during scan local pack files, emtpy after finish scan
     Vector<LocalFileInfo> localFiles;
     // every bit mean file exist and size match with meta

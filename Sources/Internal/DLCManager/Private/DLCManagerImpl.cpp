@@ -12,6 +12,7 @@
 #include "Concurrency/Mutex.h"
 #include "Concurrency/LockGuard.h"
 #include "Time/SystemTimer.h"
+#include "Engine/Engine.h"
 
 namespace DAVA
 {
