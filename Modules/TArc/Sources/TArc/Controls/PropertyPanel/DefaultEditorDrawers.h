@@ -10,7 +10,6 @@ struct PropertyNode;
 class EmptyEditorDrawer : public StaticEditorDrawer
 {
 public:
-    ~EmptyEditorDrawer() override = default;
     void InitStyleOptions(Params& params) const override;
     uint32 GetHeight(Params params) const override;
     void Draw(QPainter* painter, Params params) const override;
@@ -19,7 +18,6 @@ public:
 class TextEditorDrawer : public StaticEditorDrawer
 {
 public:
-    ~TextEditorDrawer() override = default;
     void InitStyleOptions(Params& params) const override;
     uint32 GetHeight(Params params) const override;
     void Draw(QPainter* painter, Params params) const override;
@@ -28,12 +26,33 @@ public:
 class BoolEditorDrawer : public StaticEditorDrawer
 {
 public:
-    ~BoolEditorDrawer() override = default;
     void InitStyleOptions(Params& params) const override;
     uint32 GetHeight(Params params) const override;
     void Draw(QPainter* painter, Params params) const override;
 
     QString GetTextHint(const Any& value, const Vector<std::shared_ptr<PropertyNode>>* nodes) const;
+};
+
+class DefaultEnumEditorDrawer : public StaticEditorDrawer
+{
+public:
+    void InitStyleOptions(Params& params) const override;
+    uint32 GetHeight(Params params) const override;
+    void Draw(QPainter* painter, Params params) const override;
+
+    virtual QString GetTextHint(const Any& value, const Vector<std::shared_ptr<PropertyNode>>* nodes) const = 0;
+};
+
+class EnumEditorDrawer : public DefaultEnumEditorDrawer
+{
+public:
+    QString GetTextHint(const Any& value, const Vector<std::shared_ptr<PropertyNode>>* nodes) const override;
+};
+
+class FlagsEditorDrawer : public DefaultEnumEditorDrawer
+{
+public:
+    QString GetTextHint(const Any& value, const Vector<std::shared_ptr<PropertyNode>>* nodes) const override;
 };
 
 } // namespace TArc

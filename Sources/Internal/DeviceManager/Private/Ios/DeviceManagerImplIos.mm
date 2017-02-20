@@ -3,21 +3,144 @@
 #if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_IPHONE__)
 
+#include <sys/utsname.h>
+
 #include "DeviceManager/DeviceManager.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
+
+#import <UIKit/UIScreen.h>
 
 namespace DAVA
 {
 namespace Private
 {
+static const CGFloat defaultIPhoneDpi = 160;
+float32 DeviceManagerImpl::GetIPhoneMainScreenDpi()
+{
+    enum eIosDpi
+    {
+        IPHONE_3_IPAD_MINI = 163,
+        IPHONE_4_5_6_SE_IPAD_MINI2_MINI3 = 326,
+        IPAD_1_2 = 132,
+        IPAD_3_4_AIR_AIR2_PRO = 264,
+        IPHONE_6_PLUS = 401,
+        IPHONE_6_PLUS_ZOOM = 461,
+    };
+
+    struct AppleDevice
+    {
+        int minSide;
+        int dpi;
+        const char* machineTag;
+    };
+
+    static AppleDevice listOfAppleDevices[] =
+    {
+      { 320, IPHONE_3_IPAD_MINI, "" },
+      { 640, IPHONE_4_5_6_SE_IPAD_MINI2_MINI3, "" },
+      { 750, IPHONE_4_5_6_SE_IPAD_MINI2_MINI3, "" },
+      { 768, IPAD_1_2, "" },
+      { 768, IPHONE_3_IPAD_MINI, "mini" },
+      { 1080, IPHONE_6_PLUS, "" },
+      { 1242, IPHONE_6_PLUS_ZOOM, "" },
+      { 1536, IPAD_3_4_AIR_AIR2_PRO, "" },
+      { 1536, IPHONE_4_5_6_SE_IPAD_MINI2_MINI3, "mini" },
+      { 2048, IPAD_3_4_AIR_AIR2_PRO, "" }
+    };
+
+    CGSize screenSize = [ ::UIScreen mainScreen].bounds.size;
+    CGFloat screenScale = [ ::UIScreen mainScreen].scale;
+
+    float32 dpi = static_cast<float32>(defaultIPhoneDpi * screenScale);
+    CGFloat minSide = std::min(screenSize.width * screenScale, screenSize.height * screenScale);
+
+    // find possible device with calculated side
+    List<AppleDevice*> possibleDevices;
+    for (size_t i = 0, sz = std::extent<decltype(listOfAppleDevices)>(); i < sz; ++i)
+    {
+        if (listOfAppleDevices[i].minSide == minSide)
+        {
+            possibleDevices.push_back(&listOfAppleDevices[i]);
+        }
+    }
+
+    // get device name
+    struct utsname systemInfo;
+    uname(&systemInfo);
+
+    String thisMachine = systemInfo.machine;
+
+    // search real device from possibles
+    AppleDevice* realDevice = nullptr;
+    for (auto d : possibleDevices)
+    {
+        if (thisMachine.find(d->machineTag) != String::npos)
+        {
+            realDevice = d;
+        }
+    }
+
+    // if found - use real device dpi
+    if (nullptr != realDevice)
+    {
+        dpi = realDevice->dpi;
+    }
+
+    return dpi;
+}
+
 DeviceManagerImpl::DeviceManagerImpl(DeviceManager* devManager, Private::MainDispatcher* dispatcher)
     : deviceManager(devManager)
     , mainDispatcher(dispatcher)
 {
+    UpdateDisplayConfig();
 }
 
 void DeviceManagerImpl::UpdateDisplayConfig()
 {
+    size_t screensCount = [[ ::UIScreen screens] count];
+
+    deviceManager->displays.clear();
+    deviceManager->displays.reserve(screensCount);
+
+    ::UIScreen* mainScreen = [ ::UIScreen mainScreen];
+    for (::UIScreen* screen in [ ::UIScreen screens])
+    {
+        DisplayInfo displayInfo;
+
+        CGRect screenRect = [screen bounds];
+        CGFloat screenScale = [screen scale];
+
+        if (screen == mainScreen)
+        {
+            if (screenRect.size.height > screenRect.size.width)
+            {
+                screenRect = CGRectMake(screenRect.origin.y, screenRect.origin.x, screenRect.size.height, screenRect.size.width);
+            }
+
+            float32 dpi = GetIPhoneMainScreenDpi();
+            displayInfo.rawDpiX = dpi;
+            displayInfo.rawDpiY = dpi;
+            displayInfo.name = "mainScreen";
+            displayInfo.primary = true;
+        }
+        else
+        {
+            DVASSERT(false, "DPI retriving isn't implemented");
+
+            displayInfo.rawDpiX = 160; // temp dpi, must be changed
+            displayInfo.rawDpiY = 160; // temp dpi, must be changed
+            displayInfo.name = "display";
+        }
+
+        displayInfo.systemId = reinterpret_cast<uintptr_t>(screen);
+        displayInfo.rect.x = screenRect.origin.x;
+        displayInfo.rect.y = screenRect.origin.y;
+        displayInfo.rect.dx = screenRect.size.width * screenScale;
+        displayInfo.rect.dy = screenRect.size.height * screenScale;
+
+        deviceManager->displays.push_back(displayInfo);
+    }
 }
 
 } // namespace Private

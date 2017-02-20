@@ -38,7 +38,6 @@ inline bool Reflection::SetValueWithCast(const Any& value) const
 {
     return valueWrapper->SetValueWithCast(object, value);
 }
-
 inline bool Reflection::IsValid() const
 {
     return (nullptr != valueWrapper && object.IsValid());

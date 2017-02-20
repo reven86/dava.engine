@@ -400,6 +400,11 @@ Reflection Reflection::Create(const Any& any, const ReflectedMeta* objectMeta)
     return Reflection();
 }
 
+Reflection Reflection::Create(const Reflection& etalon, const Reflection& metaProvider)
+{
+    return Reflection(etalon.object, etalon.valueWrapper, etalon.structureWrapper, metaProvider.meta);
+}
+
 Reflection::Field::Field(Any&& key_, Reflection&& ref_, const ReflectedType* inheritFrom_)
     : key(key_)
     , ref(ref_)

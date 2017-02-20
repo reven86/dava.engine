@@ -1,5 +1,4 @@
-#ifndef HELP_H
-#define HELP_H
+#pragma once
 
 #include <QObject>
 #include <QString>
@@ -15,5 +14,3 @@ public:
 private:
     QString helpPath;
 };
-
-#endif // HELP_H

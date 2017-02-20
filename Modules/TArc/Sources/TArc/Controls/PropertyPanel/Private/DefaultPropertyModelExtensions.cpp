@@ -4,6 +4,8 @@
 #include "TArc/Controls/PropertyPanel/Private/ObjectsPool.h"
 #include "TArc/Controls/PropertyPanel/Private/TextComponentValue.h"
 #include "TArc/Controls/PropertyPanel/Private/BoolComponentValue.h"
+#include "TArc/Controls/PropertyPanel/Private/EnumComponentValue.h"
+#include "TArc/Controls/PropertyPanel/Private/FlagsComponentValue.h"
 #include "TArc/Controls/PropertyPanel/Private/IntComponentValue.h"
 #include "TArc/Controls/PropertyPanel/Private/EmptyComponentValue.h"
 
@@ -88,6 +90,15 @@ ReflectedPropertyItem* DefaultMergeValueExtension::LookUpItem(const std::shared_
 
 std::unique_ptr<BaseComponentValue> DefaultEditorComponentExtension::GetEditor(const std::shared_ptr<const PropertyNode>& node) const
 {
+    if (node->field.ref.GetMeta<M::Enum>() != nullptr)
+    {
+        return std::make_unique<EnumComponentValue>();
+    }
+    else if (node->field.ref.GetMeta<M::Flags>() != nullptr)
+    {
+        return std::make_unique<FlagsComponentValue>();
+    }
+
     const Type* valueType = node->cachedValue.GetType();
     if (valueType == Type::Instance<String>() ||
         valueType == Type::Instance<FastName>() ||
