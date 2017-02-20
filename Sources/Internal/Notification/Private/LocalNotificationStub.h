@@ -50,7 +50,7 @@ LocalNotificationImpl* LocalNotificationImpl::Create(const String& _id)
     return new LocalNotificationStub(_id);
 }
 
-void LocalNotificationImpl::RequestPermisions()
+void LocalNotificationImpl::RequestPermissions()
 {
 }
 

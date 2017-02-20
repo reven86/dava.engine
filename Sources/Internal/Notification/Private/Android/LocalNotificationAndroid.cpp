@@ -108,7 +108,7 @@ LocalNotificationImpl* LocalNotificationImpl::Create(const String& _id)
     return new LocalNotificationAndroid(_id);
 }
 
-void LocalNotificationImpl::RequestPermisions()
+void LocalNotificationImpl::RequestPermissions()
 {
 }
 } // namespace DAVA

@@ -152,7 +152,7 @@ LocalNotificationImpl* LocalNotificationImpl::Create(const String& _id)
     return new LocalNotificationUAP(_id);
 }
 
-void LocalNotificationImpl::RequestPermisions()
+void LocalNotificationImpl::RequestPermissions()
 {
 }
 

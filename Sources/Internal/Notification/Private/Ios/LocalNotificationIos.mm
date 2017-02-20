@@ -116,7 +116,7 @@ LocalNotificationImpl* LocalNotificationImpl::Create(const String& _id)
     return new LocalNotificationIOS(_id);
 }
 
-void LocalNotificationImpl::RequestPermisions()
+void LocalNotificationImpl::RequestPermissions()
 {
 // https://developer.apple.com/reference/uikit/uiapplication/1622932-registerusernotificationsettings
 // available 8.0 and later

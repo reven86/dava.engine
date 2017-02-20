@@ -131,7 +131,7 @@ void LocalNotificationController::Update()
     }
 }
 
-void LocalNotificationController::RequestPermisions()
+void LocalNotificationController::RequestPermissions()
 {
     LocalNotificationImpl::RequestPermisions();
 }
