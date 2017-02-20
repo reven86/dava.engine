@@ -657,11 +657,21 @@ void AutotestingSystem::ExitApp()
 
 void AutotestingSystem::OnRecordClickControl(UIControl* control)
 {
-    const String& hierarchy = GetControlHierarchy(control);
-    if (hierarchy.find("DebugPopup") == String::npos)
+    if (IsRecording())
     {
-        const String& codeLine = Format("ClickControl('%s')", hierarchy.c_str());
-        WriteScriptLine(codeLine);
+        if (!control->GetParent()->GetName().IsValid()) //this criteria is so unreliable..
+        {
+            AutotestingSystem::Instance()->OnRecordFastSelectControl(control);
+        }
+        else
+        {
+            const String& hierarchy = GetControlHierarchy(control);
+            if (hierarchy.find("DebugPopup") == String::npos)
+            {
+                const String& codeLine = Format("ClickControl('%s')", hierarchy.c_str());
+                WriteScriptLine(codeLine);
+            }
+        }
     }
 }
 

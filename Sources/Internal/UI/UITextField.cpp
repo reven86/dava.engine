@@ -120,7 +120,9 @@ void UITextField::StopEdit()
         SetRenderToTexture(true);
         textFieldImpl->CloseKeyboard();
         OnStopEditing();
+#ifdef __DAVAENGINE_AUTOTESTING__
         AutotestingSystem::Instance()->OnRecordSetText(this, GetUtf8Text());
+#endif
     }
 }
 

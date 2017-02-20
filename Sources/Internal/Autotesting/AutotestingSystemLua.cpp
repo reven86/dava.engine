@@ -107,11 +107,11 @@ void AutotestingSystemLua::InitFromFile(const FilePath& luaFilePath)
 {
     if (luaState)
     {
-        Logger::Debug("AutotestingSystemLua::Has initialised already.");
+        Logger::FrameworkDebug("AutotestingSystemLua::Has initialised already.");
         return;
     }
 
-    Logger::Debug("AutotestingSystemLua::InitFromFile luaFilePath=%s", luaFilePath.GetAbsolutePathname().c_str());
+    Logger::FrameworkDebug("AutotestingSystemLua::InitFromFile luaFilePath=%s", luaFilePath.GetAbsolutePathname().c_str());
 
 #if !defined(DAVA_MEMORY_PROFILING_ENABLE)
     memoryPool = malloc(LUA_MEMORY_POOL_SIZE);
@@ -146,16 +146,15 @@ void AutotestingSystemLua::InitFromFile(const FilePath& luaFilePath)
         const char* err = lua_tostring(luaState, -1);
         AutotestingSystem::Instance()->ForceQuit(Format("AutotestingSystemLua::InitFromFile SetPackagePath failed: %s", err));
     }
-    
-    
-    for (const auto &path : FileSystem::Instance()->EnumerateFilesInDirectory(AutotestingSystem::Instance()->GetPathTo("/Actions/")))
+
+    //Empty 'luaFilePath' means we start record&play mode. In this mode we load all requirements beforehand.
+    if (luaFilePath.IsEmpty())
     {
-        RunScript(Format("require '%s'", path.GetBasename().c_str()));
-        /*if (!FileSystem::Instance()->Exists(automationAPIStrPath) || !RunScriptFromFile(automationAPIStrPath))
-         {
-         AutotestingSystem::Instance()->ForceQuit(Format("Initialization of '%s' was failed.", path.GetAbsolutePathname().c_str()));
-         }*/
-        Logger::Info("Used memory after '%s': %d", path.GetBasename().c_str(), GetUsedMemory());
+        for (const auto& path : FileSystem::Instance()->EnumerateFilesInDirectory(AutotestingSystem::Instance()->GetPathTo("/Actions/")))
+        {
+            RunScript(Format("require '%s'", path.GetBasename().c_str()));
+            Logger::FrameworkDebug("Used memory after '%s': %d", path.GetBasename().c_str(), GetUsedMemory());
+        }
     }
 
     if (!luaFilePath.IsEmpty())
@@ -187,7 +186,7 @@ void AutotestingSystemLua::StartTest()
 int AutotestingSystemLua::Print(lua_State* L)
 {
     const char* str = lua_tostring(L, -1);
-    Logger::Debug("AutotestingSystemLua::Print: %s", str);
+    Logger::FrameworkDebug("AutotestingSystemLua::Print: %s", str);
     lua_pop(L, 1);
     return 0;
 }
@@ -250,7 +249,7 @@ int AutotestingSystemLua::RequireModule(lua_State* L)
 
 void AutotestingSystemLua::StackDump(lua_State* L)
 {
-    Logger::Debug("*** Stack Dump ***");
+    Logger::FrameworkDebug("*** Stack Dump ***");
     int i;
     int top = lua_gettop(L);
 
@@ -261,27 +260,27 @@ void AutotestingSystemLua::StackDump(lua_State* L)
         {
         case LUA_TSTRING:
         { /* strings */
-            Logger::Debug("'%s'", lua_tostring(L, i));
+            Logger::FrameworkDebug("'%s'", lua_tostring(L, i));
             break;
         }
         case LUA_TBOOLEAN:
         { /* booleans */
-            Logger::Debug(lua_toboolean(L, i) ? "true" : "false");
+            Logger::FrameworkDebug(lua_toboolean(L, i) ? "true" : "false");
             break;
         }
         case LUA_TNUMBER:
         { /* numbers */
-            Logger::Debug("%g", lua_tonumber(L, i));
+            Logger::FrameworkDebug("%g", lua_tonumber(L, i));
             break;
         }
         default:
         { /* other values */
-            Logger::Debug("%s", lua_typename(L, t));
+            Logger::FrameworkDebug("%s", lua_typename(L, t));
             break;
         }
         }
     }
-    Logger::Debug("*** Stack Dump END***"); /* end the listing */
+    Logger::FrameworkDebug("*** Stack Dump END***"); /* end the listing */
 }
 
 // Multiplayer API
@@ -643,7 +642,7 @@ uint32 AutotestingSystemLua::GetTextColor(UIControl* control)
 
 bool AutotestingSystemLua::IsSelected(UIControl* control) const
 {
-    Logger::Debug("AutotestingSystemLua::IsSelected Check is control %s selected", control->GetName().c_str());
+    Logger::FrameworkDebug("AutotestingSystemLua::IsSelected Check is control %s selected", control->GetName().c_str());
     UISwitch* switchControl = dynamic_cast<UISwitch*>(control);
     if (switchControl)
     {
@@ -910,7 +909,7 @@ bool AutotestingSystemLua::LoadScript(const String& luaScript)
 
 bool AutotestingSystemLua::LoadScriptFromFile(const FilePath& luaFilePath)
 {
-    Logger::Debug("AutotestingSystemLua::LoadScriptFromFile: %s", luaFilePath.GetAbsolutePathname().c_str());
+    Logger::FrameworkDebug("AutotestingSystemLua::LoadScriptFromFile: %s", luaFilePath.GetAbsolutePathname().c_str());
     File* file = File::Create(luaFilePath, File::OPEN | File::READ);
     if (!file)
     {
@@ -964,7 +963,7 @@ bool AutotestingSystemLua::RunScript()
     if (lua_pcall(luaState, 1, 1, 0))
     {
         const char* err = lua_tostring(luaState, -1);
-        Logger::Debug("AutotestingSystemLua::RunScript error: %s", err);
+        Logger::FrameworkDebug("AutotestingSystemLua::RunScript error: %s", err);
         return false;
     }
     return true;

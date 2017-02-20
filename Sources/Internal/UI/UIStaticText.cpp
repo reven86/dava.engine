@@ -380,14 +380,6 @@ void UIStaticText::SetForceBiDiSupportEnabled(bool value)
     }
 }
 
-Vector<eUIControlActionType> UIStaticText::GetAvailableActions()
-{
-    Vector<eUIControlActionType> availableActions = UIControl::GetAvailableActions();
-    availableActions.push_back(eUIControlActionType::CHECK_TEXT);
-
-    return availableActions;
-}
-
 void UIStaticText::PrepareSprite()
 {
     if (textBlock->IsSpriteReady())

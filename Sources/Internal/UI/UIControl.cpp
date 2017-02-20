@@ -450,23 +450,6 @@ bool UIControl::GetBottomAlignEnabled() const
     return anchor != nullptr ? anchor->IsBottomAnchorEnabled() : false;
 }
 
-Vector<eUIControlActionType> UIControl::GetAvailableActions()
-{
-    using AT = eUIControlActionType;
-    return
-    {
-      AT::WAIT_CONTROL_BECOME_ENABLED
-      ,
-      AT::WAIT_CONTROL_BECOME_VISIBLE
-      ,
-      AT::WAIT_CONTROL_DISSAPEARED
-      ,
-      AT::IS_DISABLED
-      ,
-      AT::IS_VISIBLE
-    };
-}
-
 void UIControl::SetBackground(UIControlBackground* newBg)
 {
     UIControlBackground* currentBg = GetComponent<UIControlBackground>();
@@ -1427,19 +1410,9 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
                         eEventType event = isPointInside ? EVENT_TOUCH_UP_INSIDE : EVENT_TOUCH_UP_OUTSIDE;
 
                         Analytics::EmitUIEvent(this, event, currentInput);
-
-                        if (AutotestingSystem::Instance()->IsRecording())
-                        {
-                            if (!GetParent()->GetName().IsValid())
-                            {
-                                AutotestingSystem::Instance()->OnRecordFastSelectControl(this);
-                            }
-                            else
-                            {
-                                AutotestingSystem::Instance()->OnRecordClickControl(this);
-                            }
-                        }
-
+#ifdef __DAVAENGINE_AUTOTESTING__
+                        AutotestingSystem::Instance()->OnRecordClickControl(this);
+#endif
                         PerformEventWithData(event, currentInput);
 
                         if (isPointInside)
