@@ -258,8 +258,8 @@ bool CollectFilesFromDB(const FilePath& baseDirPath, const FilePath& metaDbPath,
         FileSystem* fs = FileSystem::Instance();
 #endif
 
-        db << "SELECT path FROM files"
-        >> [&](String path)
+        db << "SELECT path, pack_index FROM files"
+        >> [&](String path, int64 /*packIndex*/) // HACK we have to do request as "SELECT path, pack_index FROM files" to save order
         {
             std::transform(begin(path), end(path), begin(path), [](char c) { return c == '\\' ? '/' : c; });
 
