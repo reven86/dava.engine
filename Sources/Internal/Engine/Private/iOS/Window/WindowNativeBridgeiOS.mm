@@ -25,7 +25,6 @@
 {
     DAVA::Private::WindowNativeBridge* bridge;
 }
-@property(nonatomic, assign) DAVA::Private::WindowNativeBridge* pw;
 
 - (id)init:(DAVA::Private::WindowNativeBridge*)windowBridge;
 - (void)processPlatformEvents;
@@ -37,7 +36,10 @@
 - (id)init:(DAVA::Private::WindowNativeBridge*)windowBridge
 {
     self = [super init];
-    bridge = windowBridge;
+    if (self != nil)
+    {
+        bridge = windowBridge;
+    }
     return self;
 }
 
@@ -63,7 +65,7 @@ WindowNativeBridge::WindowNativeBridge(WindowBackend* windowBackend, const Keyed
 
 WindowNativeBridge::~WindowNativeBridge()
 {
-    [objcInterop dealloc];
+    [objcInterop release];
 }
 
 void* WindowNativeBridge::GetHandle() const
