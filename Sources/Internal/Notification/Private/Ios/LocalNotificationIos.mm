@@ -18,7 +18,7 @@ struct UILocalNotificationWrapper
 LocalNotificationIOS::LocalNotificationIOS(const String& _id)
     : notification(NULL)
 {
-    RequestPermisions();
+    RequestPermissions();
     notificationId = _id;
 }
 
