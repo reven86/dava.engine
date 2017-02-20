@@ -19,37 +19,19 @@ DAVA_VIRTUAL_REFLECTION_IMPL(UIControlBackground)
     ReflectionRegistrator<UIControlBackground>::Begin()
     .ConstructorByPointer()
     .DestructorByPointer([](UIControlBackground* o) { o->Release(); })
-    .Field("drawType", &UIControlBackground::GetBgDrawType, &UIControlBackground::SetBgDrawType) // TODO: make enum
-    [
-    M::EnumT<eDrawType>()
-    ]
+    .Field("drawType", &UIControlBackground::GetBgDrawType, &UIControlBackground::SetBgDrawType)[M::EnumT<eDrawType>()]
     .Field<FilePath (UIControlBackground::*)() const, void (UIControlBackground::*)(const FilePath&)>("sprite", &UIControlBackground::GetBgSpritePath, &UIControlBackground::SetSprite)
     .Field<int32 (UIControlBackground::*)() const, void (UIControlBackground::*)(int32)>("frame", &UIControlBackground::GetFrame, &UIControlBackground::SetFrame)
     .Field("mask", &UIControlBackground::GetMaskSpritePath, &UIControlBackground::SetMaskSpriteFromPath)
     .Field("detail", &UIControlBackground::GetDetailSpritePath, &UIControlBackground::SetDetailSpriteFromPath)
     .Field("gradient", &UIControlBackground::GetGradientSpritePath, &UIControlBackground::SetGradientSpriteFromPath)
     .Field("contour", &UIControlBackground::GetContourSpritePath, &UIControlBackground::SetContourSpriteFromPath)
-    .Field("spriteModification", &UIControlBackground::GetModification, &UIControlBackground::SetModification) // TODO: make enum
-    [
-    M::FlagsT<eSpriteModification>()
-    ]
-    .Field("gradientMode", &UIControlBackground::GetGradientBlendMode, &UIControlBackground::SetGradientBlendMode) // TODO: make enum
-    [
-    M::EnumT<eGradientBlendMode>()
-    ]
+    .Field("spriteModification", &UIControlBackground::GetModification, &UIControlBackground::SetModification)[M::FlagsT<eSpriteModification>()]
+    .Field("gradientMode", &UIControlBackground::GetGradientBlendMode, &UIControlBackground::SetGradientBlendMode)[M::EnumT<eGradientBlendMode>()]
     .Field("color", &UIControlBackground::GetColor, &UIControlBackground::SetColor)
-    .Field("colorInherit", &UIControlBackground::GetBgColorInherit, &UIControlBackground::SetBgColorInherit) // TODO: make enum
-    [
-    M::EnumT<eColorInheritType>()
-    ]
-    .Field("perPixelAccuracy", &UIControlBackground::GetBgPerPixelAccuracy, &UIControlBackground::SetBgPerPixelAccuracy) // TODO: make enum
-    [
-    M::EnumT<ePerPixelAccuracyType>()
-    ]
-    .Field("align", &UIControlBackground::GetAlign, &UIControlBackground::SetAlign) // TODO: make enum
-    [
-    M::FlagsT<eAlign>()
-    ]
+    .Field("colorInherit", &UIControlBackground::GetBgColorInherit, &UIControlBackground::SetBgColorInherit)[M::EnumT<eColorInheritType>()]
+    .Field("perPixelAccuracy", &UIControlBackground::GetBgPerPixelAccuracy, &UIControlBackground::SetBgPerPixelAccuracy)[M::EnumT<ePerPixelAccuracyType>()]
+    .Field("align", &UIControlBackground::GetAlign, &UIControlBackground::SetAlign)[M::FlagsT<eAlign>()]
     .Field("leftRightStretchCap", &UIControlBackground::GetLeftRightStretchCap, &UIControlBackground::SetLeftRightStretchCap)
     .Field("topBottomStretchCap", &UIControlBackground::GetTopBottomStretchCap, &UIControlBackground::SetTopBottomStretchCap)
     .Field("margins", &UIControlBackground::GetMarginsAsVector4, &UIControlBackground::SetMarginsAsVector4)

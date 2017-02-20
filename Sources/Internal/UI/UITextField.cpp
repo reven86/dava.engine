@@ -53,50 +53,20 @@ DAVA_VIRTUAL_REFLECTION_IMPL(UITextField)
     .Field("selectioncolor", &UITextField::GetSelectionColor, &UITextField::SetSelectionColor) // TODO: camel style
     .Field("shadowoffset", &UITextField::GetShadowOffset, &UITextField::SetShadowOffset) // TODO: camel style
     .Field("shadowcolor", &UITextField::GetShadowColor, &UITextField::SetShadowColor) // TODO: camel style
-    .Field("textalign", &UITextField::GetTextAlign, &UITextField::SetTextAlign) // TODO: make enum // TODO: camel style
-    [
-    M::FlagsT<eAlign>()
-    ]
-    .Field("textUseRtlAlign", &UITextField::GetTextUseRtlAlign, &UITextField::SetTextUseRtlAlign)
-    [
-    M::EnumT<TextBlock::eUseRtlAlign>()
-    ]
+    .Field("textalign", &UITextField::GetTextAlign, &UITextField::SetTextAlign)[M::FlagsT<eAlign>()] // TODO: camel style
+    .Field("textUseRtlAlign", &UITextField::GetTextUseRtlAlign, &UITextField::SetTextUseRtlAlign)[M::EnumT<TextBlock::eUseRtlAlign>()]
     .Field("maxLength", &UITextField::GetMaxLength, &UITextField::SetMaxLength)
     .Field("isPassword", &UITextField::IsPassword, &UITextField::SetIsPassword)
     .Field("isMultiline", &UITextField::IsMultiline, &UITextField::SetMultiline)
-    .Field("autoCapitalizationType", &UITextField::GetAutoCapitalizationType, &UITextField::SetAutoCapitalizationType) // TODO: make enum
-    [
-    M::EnumT<eAutoCapitalizationType>()
-    ]
-    .Field("autoCorrectionType", &UITextField::GetAutoCorrectionType, &UITextField::SetAutoCorrectionType) // TODO: make enum
-    [
-    M::EnumT<eAutoCorrectionType>()
-    ]
-    .Field("spellCheckingType", &UITextField::GetSpellCheckingType, &UITextField::SetSpellCheckingType) // TODO: make enum
-    [
-    M::EnumT<eSpellCheckingType>()
-    ]
-    .Field("keyboardAppearanceType", &UITextField::GetKeyboardAppearanceType, &UITextField::SetKeyboardAppearanceType) // TODO: make enum
-    [
-    M::EnumT<eKeyboardAppearanceType>()
-    ]
-    .Field("keyboardType", &UITextField::GetKeyboardType, &UITextField::SetKeyboardType) // TODO: make enum
-    [
-    M::EnumT<eKeyboardType>()
-    ]
-    .Field("returnKeyType", &UITextField::GetReturnKeyType, &UITextField::SetReturnKeyType) // TODO: make enum
-    [
-    M::EnumT<eReturnKeyType>()
-    ]
+    .Field("autoCapitalizationType", &UITextField::GetAutoCapitalizationType, &UITextField::SetAutoCapitalizationType)[M::EnumT<eAutoCapitalizationType>()]
+    .Field("autoCorrectionType", &UITextField::GetAutoCorrectionType, &UITextField::SetAutoCorrectionType)[M::EnumT<eAutoCorrectionType>()]
+    .Field("spellCheckingType", &UITextField::GetSpellCheckingType, &UITextField::SetSpellCheckingType)[M::EnumT<eSpellCheckingType>()]
+    .Field("keyboardAppearanceType", &UITextField::GetKeyboardAppearanceType, &UITextField::SetKeyboardAppearanceType)[M::EnumT<eKeyboardAppearanceType>()]
+    .Field("keyboardType", &UITextField::GetKeyboardType, &UITextField::SetKeyboardType)[M::EnumT<eKeyboardType>()]
+    .Field("returnKeyType", &UITextField::GetReturnKeyType, &UITextField::SetReturnKeyType)[M::EnumT<eReturnKeyType>()]
     .Field("enableReturnKeyAutomatically", &UITextField::IsEnableReturnKeyAutomatically, &UITextField::SetEnableReturnKeyAutomatically)
-    .Field("startEditPolicy", &UITextField::GetStartEditPolicy, &UITextField::SetStartEditPolicy)
-    [
-    M::EnumT<eStartEditPolicy>()
-    ]
-    .Field("stopEditPolicy", &UITextField::GetStopEditPolicy, &UITextField::SetStopEditPolicy)
-    [
-    M::EnumT<eStopEditPolicy>()
-    ]
+    .Field("startEditPolicy", &UITextField::GetStartEditPolicy, &UITextField::SetStartEditPolicy)[M::EnumT<eStartEditPolicy>()]
+    .Field("stopEditPolicy", &UITextField::GetStopEditPolicy, &UITextField::SetStopEditPolicy)[M::EnumT<eStopEditPolicy>()]
     .End();
 }
 
