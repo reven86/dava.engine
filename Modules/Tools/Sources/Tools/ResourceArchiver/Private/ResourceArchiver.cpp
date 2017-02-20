@@ -252,11 +252,7 @@ bool CollectFilesFromDB(const FilePath& baseDirPath, const FilePath& metaDbPath,
         collectedFiles.clear();
         collectedFiles.reserve(numFiles);
 
-#ifdef __DAVAENGINE_COREV2__
         FileSystem* fs = GetEngineContext()->fileSystem;
-#else
-        FileSystem* fs = FileSystem::Instance();
-#endif
 
         db << "SELECT path, pack_index FROM files"
         >> [&](String path, int64 /*packIndex*/) // HACK we have to do request as "SELECT path, pack_index FROM files" to save order
