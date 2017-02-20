@@ -65,18 +65,12 @@ FMODFileSoundEvent* FMODFileSoundEvent::CreateWithFlags(const FilePath& fileName
 }
 
 FMODFileSoundEvent::FMODFileSoundEvent(const FilePath& _fileName, uint32 _flags, int32 _priority, FMODSoundSystem* rootSoundSystem)
-    :
-    fileName(_fileName)
-    ,
-    priority(_priority)
-    ,
-    flags(_flags)
-    ,
-    fmodSound(0)
-    ,
-    fmodInstanceGroup(0)
-    ,
-    soundSystem(rootSoundSystem)
+    : fileName(_fileName)
+    , priority(_priority)
+    , flags(_flags)
+    , fmodSound(0)
+    , fmodInstanceGroup(0)
+    , soundSystem(rootSoundSystem)
 {
 }
 

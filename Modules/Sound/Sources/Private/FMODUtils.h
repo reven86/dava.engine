@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_FMODUTILS_H__
-#define __DAVAENGINE_FMODUTILS_H__
+#pragma once
 
 #ifdef __clang__
 #pragma clang diagnostic push
@@ -28,4 +27,3 @@ namespace DAVA
 }
 };
 
-#endif //__DAVAENGINE_FMODUTILS_H__

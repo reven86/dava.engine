@@ -2,7 +2,7 @@ set( NAME_MODULE Sound )
 
 set( MODULE_TYPE STATIC )#INLINE STATIC DYNAMIC 
 
-set( HPP_FILES                       Sources/*.h Sources/*.hpp )
+set( HPP_FILES                       Sources/*.h Sources/Private/*.h )
 set( CPP_FILES                       Sources/Private/*.cpp )
 set( CPP_FILES_IOS                   Sources/Private/iOS/*.mm )
 

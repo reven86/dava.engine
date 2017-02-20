@@ -6,7 +6,6 @@
 #include "Base/FastName.h"
 #include "FileSystem/FilePath.h"
 #include "Base/EventDispatcher.h"
-#include "Base/FastName.h"
 #include "Sound/SoundEvent.h"
 #include "Concurrency/Mutex.h"
 #include "Sound/SoundStream.h"
@@ -33,13 +32,9 @@ class FMODSoundSystem : public SoundSystem
     static Mutex soundGroupsMutex;
 
 public:
-#if defined(__DAVAENGINE_COREV2__)
     FMODSoundSystem(Engine* e);
     Engine* engine = nullptr;
-    size_t sigUpdateId = 0;
-#else
-    FMODSoundSystem();
-#endif
+
     ~FMODSoundSystem();
 
     SoundStream* CreateSoundStream(SoundStreamDelegate* streamDelegate, uint32 channelsCount);
@@ -51,9 +46,6 @@ public:
     SoundEvent* DeserializeEvent(KeyedArchive* archive);
     SoundEvent* CloneEvent(const SoundEvent* sEvent);
 
-    void Update(float32 timeElapsed);
-    void Suspend();
-    void Resume();
     void Mute(bool value);
 
     void SetCurrentLocale(const String& langID);
@@ -116,7 +108,6 @@ public:
 
 protected:
     
-#if defined(__DAVAENGINE_COREV2__)
     void OnUpdate(float32 timeElapsed);
     void OnSuspend();
     void OnResume();
@@ -124,7 +115,6 @@ protected:
     size_t onUpdateToken = 0;
     size_t onSuspendToken = 0;
     size_t onResumeToken = 0;
-#endif
 
     void GetGroupEventsNamesRecursive(FMOD::EventGroup* group, String& currNamePath, Vector<String>& names);
 

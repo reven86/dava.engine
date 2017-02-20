@@ -13,14 +13,9 @@
 
 namespace DAVA
 {
-#if defined(__DAVAENGINE_COREV2__)
 SoundSystem::SoundSystem(Engine* e)
     : engine(e)
 {
-#else
-SoundSystem::SoundSystem()
-{
-#endif
 }
 
 SoundSystem::~SoundSystem()
@@ -108,20 +103,6 @@ int32 SoundSystem::GetChannelsMax() const
 void SoundSystem::Mute(bool value)
 {
 }
-    
-#if !defined(__DAVAENGINE_COREV2__)
-void SoundSystem::Update(float32 timeElapsed)
-{
-}
-
-void SoundSystem::Suspend()
-{
-}
-
-void SoundSystem::Resume()
-{
-}
-#endif
 
 void SoundSystem::SetCurrentLocale(const String& langID)
 {

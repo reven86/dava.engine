@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_FMOD_FILE_SOUND_EVENT_H__
-#define __DAVAENGINE_FMOD_FILE_SOUND_EVENT_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
@@ -92,4 +91,3 @@ protected:
 };
 };
 
-#endif //__DAVAENGINE_FMOD_FILE_SOUND_EVENT_H__

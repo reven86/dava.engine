@@ -18,12 +18,9 @@ class Component;
 class SoundSystem : public Singleton<SoundSystem>
 {
 public:
-#if defined(__DAVAENGINE_COREV2__)
     SoundSystem(Engine* e);
     Engine* engine = nullptr;
-#else
-    SoundSystem();
-#endif
+
     virtual ~SoundSystem();
 
     virtual SoundStream* CreateSoundStream(SoundStreamDelegate* streamDelegate, uint32 channelsCount);
@@ -36,12 +33,6 @@ public:
     virtual SoundEvent* CloneEvent(const SoundEvent* sEvent);
 
     virtual void Mute(bool value);
-
-#if !defined(__DAVAENGINE_COREV2__)
-    virtual void Update(float32 timeElapsed);
-    virtual void Suspend();
-    virtual void Resume();
-#endif
 
     virtual void SetCurrentLocale(const String& langID);
     virtual String GetCurrentLocale() const;
@@ -86,9 +77,5 @@ protected:
     virtual void ParseSFXConfig(const FilePath& configPath);
 };
     
-#if defined(__DAVAENGINE_COREV2__)
 SoundSystem* CreateSoundSystem(Engine* e);
-#else
-SoundSystem* CreateSoundSystem();
-#endif
 };

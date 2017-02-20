@@ -69,7 +69,6 @@ jobject fmodActivityListenerGlobalRef = nullptr;
 Function<void(jobject)> fmodActivityListenerUnregisterMethod = nullptr;
 #endif
 
-#if defined(__DAVAENGINE_COREV2__)
 FMODSoundSystem::FMODSoundSystem(Engine* e)
     : engine(e)
     , SoundSystem(e)
@@ -77,10 +76,6 @@ FMODSoundSystem::FMODSoundSystem(Engine* e)
     onUpdateToken = engine->update.Connect(this, &FMODSoundSystem::OnUpdate);
     onSuspendToken = engine->suspended.Connect(this, &FMODSoundSystem::OnSuspend);
     onResumeToken = engine->resumed.Connect(this, &FMODSoundSystem::OnResume);
-#else
-FMODSoundSystem::FMODSoundSystem()
-{
-#endif
     SetDebugMode(false);
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
@@ -147,7 +142,6 @@ FMODSoundSystem::FMODSoundSystem()
 
 FMODSoundSystem::~FMODSoundSystem()
 {
-#if defined(__DAVAENGINE_COREV2__)
     engine->update.Disconnect(onUpdateToken);
     engine->suspended.Disconnect(onSuspendToken);
     engine->resumed.Disconnect(onResumeToken);
@@ -161,7 +155,6 @@ FMODSoundSystem::~FMODSoundSystem()
         env->DeleteGlobalRef(fmodActivityListenerGlobalRef);
         fmodActivityListenerGlobalRef = nullptr;
     }
-#endif
 #endif
 
     if (fmodEventSystem)
@@ -441,11 +434,7 @@ void FMODSoundSystem::UnloadFMODProjects()
     toplevelGroups.clear();
 }
 
-#if defined(__DAVAENGINE_COREV2__)
 void FMODSoundSystem::OnUpdate(float32 timeElapsed)
-#else
-void FMODSoundSystem::Update(float32 timeElapsed)
-#endif
 {
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::SOUND_SYSTEM);
 
@@ -504,11 +493,7 @@ int32 FMODSoundSystem::GetChannelsMax() const
     return softChannels;
 }
 
-#if defined(__DAVAENGINE_COREV2__)
 void FMODSoundSystem::OnSuspend()
-#else
-void FMODSoundSystem::Suspend()
-#endif
 {
 #ifdef __DAVAENGINE_ANDROID__
     //SoundSystem should be suspended by FMODAudioDevice::stop() on JAVA layer.
@@ -517,11 +502,7 @@ void FMODSoundSystem::Suspend()
 #endif
 }
 
-#if defined(__DAVAENGINE_COREV2__)
 void FMODSoundSystem::OnResume()
-#else
-void FMODSoundSystem::Resume()
-#endif
 {
 #ifdef __DAVAENGINE_IPHONE__
     FMOD_IPhone_RestoreAudioSession();
