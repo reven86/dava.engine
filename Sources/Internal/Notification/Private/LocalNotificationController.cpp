@@ -133,7 +133,7 @@ void LocalNotificationController::Update()
 
 void LocalNotificationController::RequestPermissions()
 {
-    LocalNotificationImpl::RequestPermisions();
+    LocalNotificationImpl::RequestPermissions();
 }
 
 LocalNotification* const LocalNotificationController::GetNotificationById(const String& id)

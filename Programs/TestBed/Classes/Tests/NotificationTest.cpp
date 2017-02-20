@@ -94,7 +94,7 @@ void NotificationScreen::LoadResources()
     notificationDelayTextField->SetText(L"5");
     AddControl(notificationDelayTextField);
 
-    LocalNotificationController::Instance()->RequestPermisions();
+    LocalNotificationController::Instance()->RequestPermissions();
 
     SafeRelease(font);
 }
