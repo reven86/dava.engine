@@ -126,8 +126,6 @@ public:
         return isRecording;
     }
 
-    void OnRightMouseButton(UIEvent* e);
-
     FilePath GetRecordedScriptPath();
 
     void SetTestFinishedCallback(const Function<void()> callback)

@@ -107,11 +107,11 @@ void AutotestingSystemLua::InitFromFile(const FilePath& luaFilePath)
 {
     if (luaState)
     {
-        Logger::FrameworkDebug("AutotestingSystemLua::Has initialised already.");
+        Logger::Debug("AutotestingSystemLua::Has initialised already.");
         return;
     }
 
-    Logger::FrameworkDebug("AutotestingSystemLua::InitFromFile luaFilePath=%s", luaFilePath.GetAbsolutePathname().c_str());
+    Logger::Debug("AutotestingSystemLua::InitFromFile luaFilePath=%s", luaFilePath.GetAbsolutePathname().c_str());
 
 #if !defined(DAVA_MEMORY_PROFILING_ENABLE)
     memoryPool = malloc(LUA_MEMORY_POOL_SIZE);
@@ -147,21 +147,19 @@ void AutotestingSystemLua::InitFromFile(const FilePath& luaFilePath)
         AutotestingSystem::Instance()->ForceQuit(Format("AutotestingSystemLua::InitFromFile SetPackagePath failed: %s", err));
     }
 
-    //Empty 'luaFilePath' means we start record&play mode. In this mode we load all requirements beforehand.
-    if (luaFilePath.IsEmpty())
-    {
-        for (const auto& path : FileSystem::Instance()->EnumerateFilesInDirectory(AutotestingSystem::Instance()->GetPathTo("/Actions/")))
-        {
-            RunScript(Format("require '%s'", path.GetBasename().c_str()));
-            Logger::FrameworkDebug("Used memory after '%s': %d", path.GetBasename().c_str(), GetUsedMemory());
-        }
-    }
-
     if (!luaFilePath.IsEmpty())
     {
         if (!LoadScriptFromFile(luaFilePath))
         {
             AutotestingSystem::Instance()->ForceQuit("Load of '" + luaFilePath.GetAbsolutePathname() + "' was failed failed");
+        }
+    }
+    else //Empty 'luaFilePath' means we start record&play mode. In this mode we load all requirements beforehand.
+    {
+        for (const auto& path : FileSystem::Instance()->EnumerateFilesInDirectory(AutotestingSystem::Instance()->GetPathTo("/Actions/")))
+        {
+            RunScript(Format("require '%s'", path.GetBasename().c_str()));
+            Logger::FrameworkDebug("Used memory after '%s': %d", path.GetBasename().c_str(), GetUsedMemory());
         }
     }
 
@@ -186,7 +184,7 @@ void AutotestingSystemLua::StartTest()
 int AutotestingSystemLua::Print(lua_State* L)
 {
     const char* str = lua_tostring(L, -1);
-    Logger::FrameworkDebug("AutotestingSystemLua::Print: %s", str);
+    Logger::Debug("AutotestingSystemLua::Print: %s", str);
     lua_pop(L, 1);
     return 0;
 }
@@ -642,7 +640,7 @@ uint32 AutotestingSystemLua::GetTextColor(UIControl* control)
 
 bool AutotestingSystemLua::IsSelected(UIControl* control) const
 {
-    Logger::FrameworkDebug("AutotestingSystemLua::IsSelected Check is control %s selected", control->GetName().c_str());
+    Logger::Debug("AutotestingSystemLua::IsSelected Check is control %s selected", control->GetName().c_str());
     UISwitch* switchControl = dynamic_cast<UISwitch*>(control);
     if (switchControl)
     {
@@ -963,7 +961,7 @@ bool AutotestingSystemLua::RunScript()
     if (lua_pcall(luaState, 1, 1, 0))
     {
         const char* err = lua_tostring(luaState, -1);
-        Logger::FrameworkDebug("AutotestingSystemLua::RunScript error: %s", err);
+        Logger::Debug("AutotestingSystemLua::RunScript error: %s", err);
         return false;
     }
     return true;
