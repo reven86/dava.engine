@@ -1,5 +1,11 @@
 #include "Menu.h"
 
+void MenuItem::SetEnabled(bool enabled)
+{
+    button->SetState(enabled ? DAVA::UIControl::eControlState::STATE_NORMAL : DAVA::UIControl::eControlState::STATE_DISABLED);
+    button->SetInputEnabled(enabled);
+}
+
 ActionItem::ActionItem(Menu* parentMenu, DAVA::Message& action)
     : parentMenu(parentMenu)
     , action(action)
@@ -18,6 +24,7 @@ void ActionItem::OnActivate(DAVA::BaseObject* caller, void* param, void* callerD
 namespace MenuDetails
 {
 const DAVA::float32 SPACE_BETWEEN_BUTTONS = 10.0f;
+const DAVA::Color GRAY(0.6f, 0.6f, 0.6f, 1.f);
 }
 
 Menu::Menu(Menu* parentMenu, DAVA::UIControl* bearerControl, DAVA::ScopedPtr<DAVA::Font>& font, DAVA::Rect& firstButtonRect)
@@ -37,14 +44,15 @@ Menu::~Menu()
     }
 }
 
-void Menu::AddActionItem(const DAVA::WideString& text, DAVA::Message action)
+ActionItem* Menu::AddActionItem(const DAVA::WideString& text, DAVA::Message action)
 {
     ActionItem* actionItem = new ActionItem(this, action);
     menuItems.emplace_back(actionItem);
     actionItem->button = ConstructMenuButton(text, DAVA::Message(actionItem, &ActionItem::OnActivate));
+    return actionItem;
 }
 
-Menu* Menu::AddSubMenuItem(const DAVA::WideString& text)
+SubMenuItem* Menu::AddSubMenuItem(const DAVA::WideString& text)
 {
     SubMenuItem* subMenuItem = new SubMenuItem;
     menuItems.emplace_back(subMenuItem);
@@ -52,7 +60,7 @@ Menu* Menu::AddSubMenuItem(const DAVA::WideString& text)
     subMenuItem->submenu.reset(new Menu(this, bearerControl, font, firstButtonRect));
     subMenuItem->button = ConstructMenuButton(text, DAVA::Message(subMenuItem->submenu.get(), &Menu::OnActivate));
 
-    return subMenuItem->submenu.get();
+    return subMenuItem;
 }
 
 void Menu::AddBackItem()
@@ -89,6 +97,8 @@ DAVA::ScopedPtr<DAVA::UIButton> Menu::ConstructMenuButton(const DAVA::WideString
     button->SetStateFont(DAVA::UIControl::STATE_NORMAL, font);
     button->SetStateTextColorInheritType(DAVA::UIControl::STATE_NORMAL, DAVA::UIControlBackground::COLOR_IGNORE_PARENT);
 
+    button->SetStateFontColor(DAVA::UIControl::STATE_DISABLED, MenuDetails::GRAY);
+
     button->SetStateDrawType(UIControl::STATE_NORMAL, UIControlBackground::DRAW_FILL);
     button->GetStateBackground(UIControl::STATE_NORMAL)->SetColor(Color(0.4f, 0.5f, 0.4f, 0.9f));
     button->SetStateDrawType(UIControl::STATE_PRESSED_INSIDE, UIControlBackground::DRAW_FILL);
@@ -100,11 +110,33 @@ DAVA::ScopedPtr<DAVA::UIButton> Menu::ConstructMenuButton(const DAVA::WideString
     return button;
 }
 
+void Menu::BringAtFront()
+{
+    for (std::unique_ptr<MenuItem>& menuItem : menuItems)
+    {
+        bearerControl->BringChildFront(menuItem->button);
+
+        SubMenuItem* subMenuItem = dynamic_cast<SubMenuItem*>(menuItem.get());
+        if (subMenuItem != nullptr)
+        {
+            subMenuItem->submenu->BringAtFront();
+        }
+    }
+}
+
 void Menu::Show(bool toShow)
 {
     for (auto& menuItem : menuItems)
     {
         menuItem->button->SetVisibilityFlag(toShow);
+    }
+}
+
+void Menu::SetEnabled(bool enabled)
+{
+    for (auto& menuItem : menuItems)
+    {
+        menuItem->SetEnabled(enabled);
     }
 }
 

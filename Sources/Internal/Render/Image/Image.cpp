@@ -22,7 +22,9 @@ uint32 GetSizeInBytes(uint32 width, uint32 height, PixelFormat format)
     }
 
     uint32 bitsPerPixel = PixelFormatDescriptor::GetPixelFormatSizeInBits(format);
-    return (bitsPerPixel * width * height / 8);
+    uint32 rowSize = (bitsPerPixel * width) / 8;
+
+    return rowSize * height;
 }
 
 uint32 GetPitchInBytes(uint32 width, PixelFormat format)

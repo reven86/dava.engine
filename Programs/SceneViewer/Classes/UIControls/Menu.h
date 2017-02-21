@@ -11,6 +11,10 @@
 
 struct MenuItem
 {
+    virtual ~MenuItem()
+    {
+    }
+    void SetEnabled(bool);
     DAVA::ScopedPtr<DAVA::UIButton> button;
 };
 
@@ -38,11 +42,13 @@ public:
     explicit Menu(Menu* parentMenu, DAVA::UIControl* bearerControl, DAVA::ScopedPtr<DAVA::Font>&, DAVA::Rect& firstButtonRect);
     ~Menu();
 
+    void BringAtFront();
     void Show(bool toShow);
+    void SetEnabled(bool enabled);
     void AllowInput(bool);
 
-    void AddActionItem(const DAVA::WideString& text, DAVA::Message action);
-    Menu* AddSubMenuItem(const DAVA::WideString& text);
+    ActionItem* AddActionItem(const DAVA::WideString& text, DAVA::Message action);
+    SubMenuItem* AddSubMenuItem(const DAVA::WideString& text);
     void AddBackItem();
     void BackToMainMenu();
 

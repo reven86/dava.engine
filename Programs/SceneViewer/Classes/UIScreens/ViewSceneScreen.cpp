@@ -31,8 +31,8 @@ void ViewSceneScreen::LoadResources()
     {
         LoadScene();
     }
-    PlaceSceneAtScreen();
     AddControls();
+    PlaceSceneAtScreen();
 }
 
 void ViewSceneScreen::UnloadResources()
@@ -67,6 +67,19 @@ void ViewSceneScreen::PlaceSceneAtScreen()
         //sceneView->SetDrawToFrameBuffer(true);
         AddControl(sceneView);
         sceneView->SetScene(scene);
+
+        if (menu)
+        {
+            menu->BringAtFront();
+            qualitySettingsMenuItem->SetEnabled(true);
+            reloadShadersMenuItem->SetEnabled(true);
+            performanceTestMenuItem->SetEnabled(true);
+        }
+
+        if (moveJoyPAD)
+        {
+            BringChildFront(moveJoyPAD);
+        }
     }
 }
 
@@ -82,6 +95,13 @@ void ViewSceneScreen::RemoveSceneFromScreen()
 
         RemoveControl(sceneView);
         sceneView.reset();
+
+        if (menu)
+        {
+            qualitySettingsMenuItem->SetEnabled(false);
+            reloadShadersMenuItem->SetEnabled(false);
+            performanceTestMenuItem->SetEnabled(false);
+        }
     }
 }
 
@@ -90,63 +110,70 @@ void ViewSceneScreen::LoadScene()
     using namespace DAVA;
 
     scene = new Scene();
-    scene->LoadScene(scenePath);
 
-    /*
+    SceneFileV2::eError result = scene->LoadScene(scenePath);
+    if (result == SceneFileV2::ERROR_NO_ERROR)
     {
-    Entity* hullNode = entity->FindByName("hull")->Clone();
+        /*
+        {
+        Entity* hullNode = entity->FindByName("hull")->Clone();
 
 
-    //create hull hierarchy to collapse in skinned mesh
-    Entity * hullSkeletonRoot = new Entity();
-    hullSkeletonRoot->SetName("hull");
-    hullSkeletonRoot->AddNode(hullNode);
+        //create hull hierarchy to collapse in skinned mesh
+        Entity * hullSkeletonRoot = new Entity();
+        hullSkeletonRoot->SetName("hull");
+        hullSkeletonRoot->AddNode(hullNode);
 
-    Vector<SkeletonComponent::JointConfig> hullJointsConfig;
-    RenderObject * skinnedHullObject = MeshUtils::CreateSkinnedMesh(hullSkeletonRoot, hullJointsConfig);
-    ((RenderComponent *)hullNode->GetOrCreateComponent(Component::RENDER_COMPONENT))->SetRenderObject(skinnedHullObject);
-    skinnedHullObject->Release();
-    hullSkeletonRoot->Release();
+        Vector<SkeletonComponent::JointConfig> hullJointsConfig;
+        RenderObject * skinnedHullObject = MeshUtils::CreateSkinnedMesh(hullSkeletonRoot, hullJointsConfig);
+        ((RenderComponent *)hullNode->GetOrCreateComponent(Component::RENDER_COMPONENT))->SetRenderObject(skinnedHullObject);
+        skinnedHullObject->Release();
+        hullSkeletonRoot->Release();
 
-    Matrix4 x;
-    x.CreateTranslation(Vector3(-20,0,0));
+        Matrix4 x;
+        x.CreateTranslation(Vector3(-20,0,0));
 
-    //    hullNode->SetLocalTransform( x );
-    hullNode->RemoveAllChildren();
-    scene->AddNode( hullNode );
+        //    hullNode->SetLocalTransform( x );
+        hullNode->RemoveAllChildren();
+        scene->AddNode( hullNode );
 
-    SkeletonComponent * hullSkeleton = new SkeletonComponent();
-    hullSkeleton->SetConfigJoints(hullJointsConfig);
-    hullNode->AddComponent(hullSkeleton);
+        SkeletonComponent * hullSkeleton = new SkeletonComponent();
+        hullSkeleton->SetConfigJoints(hullJointsConfig);
+        hullNode->AddComponent(hullSkeleton);
 
 
-    Light*          light   = new Light();
-    LightComponent* light_c = new LightComponent( light );
-    Entity*         light_e = new Entity();
-    Matrix4         light_x; light_x.Identity();
+        Light*          light   = new Light();
+        LightComponent* light_c = new LightComponent( light );
+        Entity*         light_e = new Entity();
+        Matrix4         light_x; light_x.Identity();
 
-    light_c->SetLightType( Light::TYPE_DIRECTIONAL );
-    light_c->SetDirection( Vector3(0,-1,0) );
+        light_c->SetLightType( Light::TYPE_DIRECTIONAL );
+        light_c->SetDirection( Vector3(0,-1,0) );
 
-    light_e->SetLocalTransform( light_x );
+        light_e->SetLocalTransform( light_x );
 
-    light_e->SetName( "test-light" );
-    light_e->AddComponent( light_c );
-    scene->AddNode( light_e );
+        light_e->SetName( "test-light" );
+        light_e->AddComponent( light_c );
+        scene->AddNode( light_e );
+        }
+        */
+
+        ScopedPtr<Camera> camera(new Camera);
+        scene->AddCamera(camera);
+        scene->SetCurrentCamera(camera);
+
+        ScopedPtr<Entity> cameraEntity(new Entity());
+        cameraEntity->AddComponent(new CameraComponent(camera));
+        cameraEntity->AddComponent(new WASDControllerComponent());
+        cameraEntity->AddComponent(new RotationControllerComponent());
+        scene->AddNode(cameraEntity);
+
+        AddTanksAtScene();
     }
-    */
-
-    ScopedPtr<Camera> camera(new Camera);
-    scene->AddCamera(camera);
-    scene->SetCurrentCamera(camera);
-
-    ScopedPtr<Entity> cameraEntity(new Entity());
-    cameraEntity->AddComponent(new CameraComponent(camera));
-    cameraEntity->AddComponent(new WASDControllerComponent());
-    cameraEntity->AddComponent(new RotationControllerComponent());
-    scene->AddNode(cameraEntity);
-
-    AddTanksAtScene();
+    else
+    {
+        scene.reset();
+    }
 }
 
 void ViewSceneScreen::AddTanksAtScene()
@@ -196,14 +223,21 @@ void ViewSceneScreen::AddMenuControl()
     DVASSERT(!menu);
     DAVA::Rect rect = DAVA::Rect(10.f, 30.f, 250.f, 60.f);
     menu.reset(new Menu(nullptr, this, font, rect));
-    Menu* mainSubMenu = menu->AddSubMenuItem(L"Menu");
 
-    Menu* selectSceneSubMenu = mainSubMenu->AddSubMenuItem(L"Select scene");
-    mainSubMenu->AddActionItem(L"Quality settings", DAVA::Message(this, &ViewSceneScreen::OnButtonQualitySettings));
-    mainSubMenu->AddActionItem(L"Reload shaders", DAVA::Message(this, &ViewSceneScreen::OnButtonReloadShaders));
-    mainSubMenu->AddActionItem(L"Performance test", DAVA::Message(this, &ViewSceneScreen::OnButtonPerformanceTest));
+    SubMenuItem* mainSubMenuItem = menu->AddSubMenuItem(L"Menu");
+    Menu* mainSubMenu = mainSubMenuItem->submenu.get();
+
+    SubMenuItem* selectSceneSubMenuItem = mainSubMenu->AddSubMenuItem(L"Select scene");
+    qualitySettingsMenuItem = mainSubMenu->AddActionItem(L"Quality settings", DAVA::Message(this, &ViewSceneScreen::OnButtonQualitySettings));
+    reloadShadersMenuItem = mainSubMenu->AddActionItem(L"Reload shaders", DAVA::Message(this, &ViewSceneScreen::OnButtonReloadShaders));
+    performanceTestMenuItem = mainSubMenu->AddActionItem(L"Performance test", DAVA::Message(this, &ViewSceneScreen::OnButtonPerformanceTest));
     mainSubMenu->AddBackItem();
 
+    qualitySettingsMenuItem->SetEnabled(false);
+    reloadShadersMenuItem->SetEnabled(false);
+    performanceTestMenuItem->SetEnabled(false);
+
+    Menu* selectSceneSubMenu = selectSceneSubMenuItem->submenu.get();
     selectSceneSubMenu->AddActionItem(L"Select from ~res", DAVA::Message(this, &ViewSceneScreen::OnButtonSelectFromRes));
     selectSceneSubMenu->AddActionItem(L"Select from documents", DAVA::Message(this, &ViewSceneScreen::OnButtonSelectFromDoc));
     selectSceneSubMenu->AddActionItem(L"Select from ext storage", DAVA::Message(this, &ViewSceneScreen::OnButtonSelectFromExt));
@@ -266,7 +300,11 @@ void ViewSceneScreen::RemoveControls()
     infoText.reset();
     moveJoyPAD.reset();
     fileSystemDialog.reset();
+
     menu.reset();
+    qualitySettingsMenuItem = nullptr;
+    reloadShadersMenuItem = nullptr;
+    performanceTestMenuItem = nullptr;
 }
 
 void ViewSceneScreen::SetCameraAtCenter(DAVA::Camera* camera)
@@ -288,6 +326,7 @@ void ViewSceneScreen::SetCameraAtCenter(DAVA::Camera* camera)
 
 void ViewSceneScreen::OnFileSelected(DAVA::UIFileSystemDialog* forDialog, const DAVA::FilePath& pathToFile)
 {
+    menu->SetEnabled(true);
     scenePath = pathToFile;
     data.settings.SetLastOpenedScenePath(scenePath);
     ReloadScene();
@@ -295,6 +334,7 @@ void ViewSceneScreen::OnFileSelected(DAVA::UIFileSystemDialog* forDialog, const 
 
 void ViewSceneScreen::OnFileSytemDialogCanceled(DAVA::UIFileSystemDialog* forDialog)
 {
+    menu->SetEnabled(true);
 }
 
 void ViewSceneScreen::OnButtonSelectFromRes(DAVA::BaseObject* caller, void* param, void* callerData)
@@ -302,6 +342,7 @@ void ViewSceneScreen::OnButtonSelectFromRes(DAVA::BaseObject* caller, void* para
     DVASSERT(fileSystemDialog);
     fileSystemDialog->SetCurrentDir("~res:/");
     fileSystemDialog->Show(this);
+    menu->SetEnabled(false);
 }
 
 void ViewSceneScreen::OnButtonSelectFromDoc(DAVA::BaseObject* caller, void* param, void* callerData)
@@ -309,6 +350,7 @@ void ViewSceneScreen::OnButtonSelectFromDoc(DAVA::BaseObject* caller, void* para
     DVASSERT(fileSystemDialog);
     fileSystemDialog->SetCurrentDir("~doc:/");
     fileSystemDialog->Show(this);
+    menu->SetEnabled(false);
 }
 
 void ViewSceneScreen::OnButtonSelectFromExt(DAVA::BaseObject* caller, void* param, void* callerData)
@@ -327,29 +369,28 @@ void ViewSceneScreen::OnButtonSelectFromExt(DAVA::BaseObject* caller, void* para
             return;
         }
     }
+    menu->SetEnabled(false);
 }
 
 void ViewSceneScreen::OnButtonPerformanceTest(DAVA::BaseObject* caller, void* param, void* callerData)
 {
-    if (scene && gridTest.GetState() == GridTest::StateFinished)
+    if (scene && gridTest.GetState() == GridTest::StateFinished && gridTest.Start(sceneView) == true)
     {
         menu->Show(false);
         RemoveControl(moveJoyPAD);
-
-        gridTest.Start(sceneView);
     }
 }
 
 void ViewSceneScreen::OnButtonQualitySettings(DAVA::BaseObject* caller, void* param, void* callerData)
 {
-    menu->AllowInput(false);
+    menu->SetEnabled(false);
     qualitySettingsDialog->SetCurrentScene(scene);
     qualitySettingsDialog->Show();
 }
 
 void ViewSceneScreen::OnQualitySettingsEditDone()
 {
-    menu->AllowInput(true);
+    menu->SetEnabled(true);
 }
 
 void ViewSceneScreen::OnButtonReloadShaders(DAVA::BaseObject* caller, void* param, void* callerData)

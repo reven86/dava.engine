@@ -1,5 +1,6 @@
 #include "Tests/NotificationTest.h"
 #include "Base/Message.h"
+#include "UI/Focus/UIFocusComponent.h"
 
 using namespace DAVA;
 
@@ -33,10 +34,10 @@ void NotificationScreen::LoadResources()
     showNotificationText->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &NotificationScreen::OnNotifyText));
     AddControl(showNotificationText);
 
-    showNotificationTextDelayed = new UIButton(Rect(10, 100, 450, 60));
+    showNotificationTextDelayed = new UIButton(Rect(10, 100, 400, 60));
     showNotificationTextDelayed->SetStateFont(0xFF, font);
     showNotificationTextDelayed->SetStateFontColor(0xFF, Color::White);
-    showNotificationTextDelayed->SetStateText(0xFF, L"Notify text in 5 seconds");
+    showNotificationTextDelayed->SetStateText(0xFF, L"Notify text after X seconds");
 
     showNotificationTextDelayed->SetDebugDraw(true);
     showNotificationTextDelayed->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &NotificationScreen::OnNotifyTextDelayed));
@@ -85,6 +86,14 @@ void NotificationScreen::LoadResources()
     activateFromNotification->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
     AddControl(activateFromNotification);
 
+    notificationDelayTextField = new UITextField(Rect(420, 100, 35, 60));
+    notificationDelayTextField->GetOrCreateComponent<UIFocusComponent>();
+    notificationDelayTextField->SetFont(font);
+    notificationDelayTextField->SetDebugDraw(true);
+    notificationDelayTextField->SetTextAlign(ALIGN_HCENTER | ALIGN_VCENTER);
+    notificationDelayTextField->SetText(L"5");
+    AddControl(notificationDelayTextField);
+
     SafeRelease(font);
 }
 
@@ -97,6 +106,7 @@ void NotificationScreen::UnloadResources()
     SafeRelease(showNotificationText);
     SafeRelease(showNotificationProgress);
     SafeRelease(hideNotificationProgress);
+    SafeRelease(notificationDelayTextField);
 }
 
 void NotificationScreen::Update(float32 timeElapsed)
@@ -161,7 +171,8 @@ void NotificationScreen::OnNotifyText(BaseObject* obj, void* data, void* callerD
 
 void NotificationScreen::OnNotifyTextDelayed(BaseObject* obj, void* data, void* callerData)
 {
-    LocalNotificationController::Instance()->PostDelayedNotification(L"Test Delayed notification Title", L"Some text", 5);
+    int delayInSeconds = std::atoi(UTF8Utils::EncodeToUTF8(notificationDelayTextField->GetText()).c_str());
+    LocalNotificationController::Instance()->PostDelayedNotification(L"Test Delayed notification Title", L"Some text", delayInSeconds);
 }
 
 void NotificationScreen::OnNotifyCancelDelayed(BaseObject* obj, void* data, void* callerData)

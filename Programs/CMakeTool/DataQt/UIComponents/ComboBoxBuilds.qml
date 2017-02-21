@@ -1,5 +1,5 @@
-import QtQuick 2.2
-import QtQuick.Controls 1.3
+import QtQuick 2.6
+import QtQuick.Controls 1.5
 
 ComboBox {
     id: comboBox_buildFolder
