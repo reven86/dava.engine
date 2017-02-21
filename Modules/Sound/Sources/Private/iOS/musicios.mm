@@ -2,8 +2,6 @@
 #include "FileSystem/FilePath.h"
 #include "FMODSoundSystem.h"
 
-#ifdef __DAVAENGINE_IPHONE__
-
 #include "musicios.h"
 #import <AVFoundation/AVFoundation.h>
 
@@ -125,12 +123,9 @@ MusicIOSSoundEvent* MusicIOSSoundEvent::CreateMusicEvent(const FilePath& path, F
 }
 
 MusicIOSSoundEvent::MusicIOSSoundEvent(const FilePath& path, FMODSoundSystem* fmodSoundSystem)
-    :
-    avSound(0)
-    ,
-    soundSystem(fmodSoundSystem)
-    ,
-    filePath(path)
+    : avSound(0)
+    , soundSystem(fmodSoundSystem)
+    , filePath(path)
 {
 }
 
@@ -223,4 +218,3 @@ void MusicIOSSoundEvent::PerformEndCallback()
     PerformEvent(DAVA::MusicIOSSoundEvent::EVENT_END);
 }
 };
-#endif //#ifdef __DAVAENGINE_IPHONE__

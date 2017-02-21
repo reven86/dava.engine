@@ -1,8 +1,8 @@
 #pragma once
 
-#ifdef __DAVAENGINE_IPHONE__
-
 #include "Sound/SoundEvent.h"
+
+DAVA_FORWARD_DECLARE_OBJC_CLASS(AvSound);
 
 namespace DAVA
 {
@@ -60,10 +60,9 @@ protected:
     virtual bool Init();
     virtual ~MusicIOSSoundEvent();
 
-    void* avSound;
+    AvSound* avSound;
     FilePath filePath;
     FMODSoundSystem* soundSystem;
 };
 };
 
-#endif //#ifdef __DAVAENGINE_IPHONE__

@@ -61,7 +61,7 @@ protected:
     FastNameMap<float32> paramsValues;
     Vector<FMOD::Event*> fmodEventInstances;
 
-    FMODSoundSystem* soundSystem;
+    FMODSoundSystem* soundSystem = nullptr;
 
     friend class FMODSoundSystem;
 };

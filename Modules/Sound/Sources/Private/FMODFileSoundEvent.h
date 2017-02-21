@@ -82,10 +82,10 @@ protected:
     int32 priority;
     uint32 flags;
 
-    FMOD::Sound* fmodSound;
-    FMOD::ChannelGroup* fmodInstanceGroup;
+    FMOD::Sound* fmodSound = nullptr;
+    FMOD::ChannelGroup* fmodInstanceGroup = nullptr;
 
-    FMODSoundSystem* soundSystem;
+    FMODSoundSystem* soundSystem = nullptr;
 
     friend class FMODSoundSystem;
 };
