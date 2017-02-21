@@ -5,15 +5,15 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
 	<key>CFBundleDisplayName</key>
-	<string>SceneViewer</string>
+	<string>OverdrawPerformanceTester</string>
 	<key>CFBundleExecutable</key>
-	<string>SceneViewer</string>
+	<string>OverdrawPerformanceTester</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.davaconsulting.SceneViewer</string>
+	<string>com.davaconsulting.OverdrawPerformanceTester</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
-	<string>UnitTests</string>
+	<string>OverdrawPerformanceTester</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleSignature</key>
