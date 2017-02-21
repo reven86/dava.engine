@@ -27,7 +27,7 @@ bool TriggerBox::AddOption(TriggerBox::OptionID optionId, const DAVA::WideString
         return false;
     }
 
-    int32 textWidth = font->GetStringMetrics(text).width;
+    float32 textWidth = font->GetStringMetrics(text).width;
     float32 buttonWidth = textWidth + 20.f;
     float32 buttonHeight = font->GetSize() * 1.5f;
     Rect buttonRect(nextButtonX, 0.f, buttonWidth, buttonHeight);

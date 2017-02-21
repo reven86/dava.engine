@@ -45,6 +45,12 @@ set( ANDROID_ICO                   ${CMAKE_CURRENT_LIST_DIR}/android/ic_launcher
 
 set( ADDED_SRC                     ${IOS_ADD_SRC} )
 
+if (ANDROID)
+    # Libraries and classes to load at startup
+    set (ANDROID_BOOT_MODULES "crystax;c++_shared;fmodex;fmodevent;SceneViewer")
+    set (ANDROID_BOOT_CLASSES "com.dava.sceneviewer.SceneViewer")
+endif()
+
 if ( WINDOWS_UAP )
     set ( WIN_STORE_MANIFEST_PACKAGE_GUID "C3B05534-90DF-4E75-829E-25D10C77FE49" )
 endif ()
