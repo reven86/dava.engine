@@ -8,6 +8,10 @@
 
 #include "Engine/Engine.h"
 
+#ifdef __DAVAENGINE_AUTOTESTING__
+#include "Autotesting/AutotestingSystem.h"
+#endif
+
 #if defined(__DAVAENGINE_ANDROID__)
 #if defined(__DAVAENGINE_COREV2__)
 #include "UI/Private/Android/TextFieldPlatformImplAndroid.h"
@@ -21,10 +25,6 @@
 #else
 #define DAVA_TEXTFIELD_USE_STB
 #include "UI/UITextFieldStb.h"
-
-#ifdef __DAVAENGINE_AUTOTESTING__
-#include "Autotesting/AutotestingSystem.h"
-#endif
 
 namespace DAVA
 {
