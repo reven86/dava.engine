@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Modules/LegacySupportModule/Private/Project.h"
+#include "EditorSystems/SelectionContainer.h"
 
 #include <TArc/Core/ClientModule.h>
 #include <TArc/Utils/QtConnections.h>
@@ -26,6 +27,8 @@ class LegacySupportModule : public DAVA::TArc::ClientModule, private DAVA::TArc:
     void JumpToPackage(const DAVA::FilePath& packagePath);
     void OnJumpToPrototype();
     void OnFindPrototypeInstances();
+
+    void OnSelectionInPackageChanged(const SelectedNodes& nodes);
 
     DAVA::TArc::QtConnections connections;
     DAVA::TArc::DataWrapper projectDataWrapper;

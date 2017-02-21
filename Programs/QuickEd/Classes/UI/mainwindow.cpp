@@ -44,7 +44,6 @@ MainWindow::MainWindow(QWidget* parent)
     ui->setupUi(this);
     setWindowIcon(QIcon(":/icon.ico"));
     DebugTools::ConnectToUI(ui.get());
-    SetupShortcuts();
     SetupViewMenu();
 
     projectView = new ProjectView(this);
@@ -79,16 +78,6 @@ void MainWindow::SetProjectPath(const QString& projectPath_)
     UpdateWindowTitle();
 }
 
-void MainWindow::SetupShortcuts()
-{
-//Qt can not set multishortcut or enum shortcut in Qt designer
-#if defined(__DAVAENGINE_WIN32__)
-    ui->actionZoomIn->setShortcuts(QList<QKeySequence>()
-                                   << Qt::CTRL + Qt::Key_Equal
-                                   << Qt::CTRL + Qt::Key_Plus);
-#endif
-}
-
 void MainWindow::ConnectActions()
 {
     connect(ui->actionExit, &QAction::triggered, this, &MainWindow::close);
@@ -120,7 +109,7 @@ void MainWindow::SetupViewMenu()
                             << ui->toolBarGlobal->toggleViewAction();
 
     QAction* separator = ui->View->insertSeparator(ui->menuApplicationStyle->menuAction());
-    ui->View->insertActions(separator, dockWidgetToggleActions);
+    ui->Dock->insertActions(separator, dockWidgetToggleActions);
 
     SetupAppStyleMenu();
     SetupBackgroundMenu();
@@ -203,6 +192,11 @@ MainWindow::ProjectView* MainWindow::GetProjectView() const
 PackageWidget* MainWindow::GetPackageWidget() const
 {
     return ui->packageWidget;
+}
+
+StyleSheetInspectorWidget* MainWindow::GetStyleSheetInspectorWidget() const
+{
+    return ui->styleSheetInspectorWidget;
 }
 
 void MainWindow::OnPreferencesPropertyChanged(const InspMember* member, const VariantType& value)

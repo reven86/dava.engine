@@ -729,7 +729,7 @@ QString UIManager::GetSaveFileName(const WindowKey& windowKey, const FileDialogP
     QString filePath = QFileDialog::getSaveFileName(windowInfo.window, params.title, dir, params.filters);
     if (!filePath.isEmpty())
     {
-        impl->propertiesHolder.Set(UIManagerDetail::FILE_DIR_KEY, QFileInfo(filePath).absoluteDir());
+        impl->propertiesHolder.Set(UIManagerDetail::FILE_DIR_KEY, QFileInfo(filePath).absoluteFilePath());
     }
     return filePath;
 }

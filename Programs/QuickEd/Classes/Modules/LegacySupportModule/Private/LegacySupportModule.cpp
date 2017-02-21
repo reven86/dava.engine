@@ -13,9 +13,13 @@
 #include "UI/Package/PackageWidget.h"
 #include "UI/DocumentGroupView.h"
 #include "UI/Find/FindFilter.h"
+#include "UI/StyleSheetInspector/StyleSheetInspectorWidget.h"
 
 #include <TArc/Core/ContextAccessor.h>
 #include <TArc/WindowSubSystem/Private/UIManager.h>
+
+#include <QTTools/Utils/Themes/Themes.h>
+
 #include <Tools/version.h>
 #include <DAVAVersion.h>
 
@@ -30,6 +34,9 @@ void LegacySupportModule::PostInit()
 {
     using namespace DAVA;
     using namespace TArc;
+
+    Themes::InitFromQApplication();
+
     ContextAccessor* accessor = GetAccessor();
 
     projectDataWrapper = accessor->CreateWrapper(DAVA::ReflectedTypeDB::Get<ProjectData>());
@@ -86,10 +93,11 @@ void LegacySupportModule::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, 
             document = iter->second.get();
         }
         PackageWidget* packageWidget = mainWindow->GetPackageWidget();
-
+        StyleSheetInspectorWidget* ssInspectorWidget = mainWindow->GetStyleSheetInspectorWidget();
         if (wrapper.HasData() == false)
         {
             packageWidget->OnSelectionChanged(Any());
+            ssInspectorWidget->OnSelectionChanged(Any());
             DVASSERT(document == nullptr);
             documentGroupView->SetDocument(document);
         }
@@ -100,6 +108,7 @@ void LegacySupportModule::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, 
             documentGroupView->SetDocument(document);
             Any selectionValue = wrapper.GetFieldValue(DocumentData::selectionPropertyName);
             packageWidget->OnSelectionChanged(selectionValue);
+            ssInspectorWidget->OnSelectionChanged(selectionValue);
         }
         else
         {
@@ -110,6 +119,7 @@ void LegacySupportModule::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, 
             if (selectionWasChanged || packageWasChanged)
             {
                 packageWidget->OnSelectionChanged(Any());
+                ssInspectorWidget->OnSelectionChanged(Any());
 
                 if (packageWasChanged)
                 {
@@ -120,6 +130,7 @@ void LegacySupportModule::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, 
                 if (selectionValue.IsEmpty() == false && selectionWasChanged)
                 {
                     packageWidget->OnSelectionChanged(selectionValue);
+                    ssInspectorWidget->OnSelectionChanged(selectionValue);
                 }
             }
         }
@@ -152,9 +163,7 @@ void LegacySupportModule::InitMainWindow()
         InvokeOperation(QEGlobal::OpenDocumentByPath.ID, path);
     });
 
-    connections.AddConnection(mainWindow->GetPackageWidget(), &PackageWidget::SelectedNodesChanged, [this](const SelectedNodes& selection) {
-        documentDataWrapper.SetFieldValue(DocumentData::selectionPropertyName, selection);
-    });
+    connections.AddConnection(mainWindow->GetPackageWidget(), &PackageWidget::SelectedNodesChanged, MakeFunction(this, &LegacySupportModule::OnSelectionInPackageChanged));
 
     const char* editorTitle = "DAVA Framework - QuickEd | %1-%2 [%3 bit]";
     uint32 bit = static_cast<DAVA::uint32>(sizeof(DAVA::pointer_size) * 8);
@@ -215,6 +224,21 @@ void LegacySupportModule::OnFindPrototypeInstances()
             view->FindControls(std::make_unique<PrototypeUsagesFilter>(path.GetFrameworkPath(), FastName(name)));
         }
     }
+}
+
+void LegacySupportModule::OnSelectionInPackageChanged(const SelectedNodes& selection)
+{
+    using namespace DAVA;
+    using namespace TArc;
+    documentDataWrapper.SetFieldValue(DocumentData::selectionPropertyName, selection);
+    //document data wrapper will not emit "selectionChanged" back. Call "selection changed" for another widgets manually
+    ContextAccessor* accessor = GetAccessor();
+    DataContext* globalContext = accessor->GetGlobalContext();
+    QWidget* window = GetUI()->GetWindow(QEGlobal::windowKey);
+    MainWindow* mainWindow = qobject_cast<MainWindow*>(window);
+    DVASSERT(mainWindow != nullptr);
+    StyleSheetInspectorWidget* ssInspectorWidget = mainWindow->GetStyleSheetInspectorWidget();
+    ssInspectorWidget->OnSelectionChanged(selection);
 }
 
 void LegacySupportModule::OnJumpToPrototype()

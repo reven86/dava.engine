@@ -35,7 +35,6 @@
 #include <TArc/Utils/ModuleCollection.h>
 #include <TArc/Core/FieldBinder.h>
 
-#include <QTTools/Utils/Themes/Themes.h>
 #include <QtTools/InputDialogs/MultilineTextInputDialog.h>
 
 #include <Command/CommandStack.h>
@@ -118,7 +117,6 @@ void DocumentsModule::PostInit()
 
     fieldBinder.reset(new FieldBinder(GetAccessor()));
 
-    Themes::InitFromQApplication();
     InitWatcher();
     InitEditorSystems();
     InitCentralWidget();
@@ -126,6 +124,7 @@ void DocumentsModule::PostInit()
     RegisterOperations();
     CreateDocumentsActions();
     CreateUndoRedoActions();
+    CreateViewActions();
 
     //bind canSave to draw "*" in tabBar
     {
@@ -477,6 +476,64 @@ void DocumentsModule::OnRedo()
     data->commandStack->Redo();
 }
 
+void DocumentsModule::CreateViewActions()
+{
+    using namespace DAVA;
+    using namespace TArc;
+
+    const QString zoomInActionName("Zoom In");
+    const QString zoomOutActionName("Zoom Out");
+    const QString actualZoolActionName("Actual zoom");
+
+    const QString viewMenuName("View");
+
+    ContextAccessor* accessor = GetAccessor();
+    UI* ui = GetUI();
+
+    //Zoom in
+    {
+        QAction* action = new QAction(zoomInActionName, nullptr);
+        action->setShortcutContext(Qt::WindowShortcut);
+        action->setShortcuts(QList<QKeySequence>()
+                             << QKeySequence("Ctrl+=")
+                             << QKeySequence("Ctrl++"));
+
+        connections.AddConnection(action, &QAction::triggered, MakeFunction(previewWidget, &PreviewWidget::OnIncrementScale));
+        ActionPlacementInfo placementInfo;
+        placementInfo.AddPlacementPoint(CreateMenuPoint(viewMenuName, { InsertionParams::eInsertionMethod::AfterItem, "zoomSeparator" }));
+
+        ui->AddAction(QEGlobal::windowKey, placementInfo, action);
+    }
+
+    //Zoom out
+    {
+        QAction* action = new QAction(zoomOutActionName, nullptr);
+        action->setShortcutContext(Qt::WindowShortcut);
+        action->setShortcut(QKeySequence("Ctrl+-"));
+
+        connections.AddConnection(action, &QAction::triggered, MakeFunction(previewWidget, &PreviewWidget::OnDecrementScale));
+
+        ActionPlacementInfo placementInfo;
+        placementInfo.AddPlacementPoint(CreateMenuPoint(viewMenuName, { InsertionParams::eInsertionMethod::AfterItem, zoomInActionName }));
+
+        ui->AddAction(QEGlobal::windowKey, placementInfo, action);
+    }
+
+    //Actual zoom
+    {
+        QAction* action = new QAction(actualZoolActionName, nullptr);
+        action->setShortcutContext(Qt::WindowShortcut);
+        action->setShortcut(QKeySequence("Ctrl+0"));
+
+        connections.AddConnection(action, &QAction::triggered, MakeFunction(previewWidget, &PreviewWidget::SetActualScale));
+
+        ActionPlacementInfo placementInfo;
+        placementInfo.AddPlacementPoint(CreateMenuPoint(viewMenuName, { InsertionParams::eInsertionMethod::AfterItem, zoomOutActionName }));
+
+        ui->AddAction(QEGlobal::windowKey, placementInfo, action);
+    }
+}
+
 void DocumentsModule::RegisterOperations()
 {
     RegisterOperation(QEGlobal::OpenDocumentByPath.ID, this, &DocumentsModule::OpenDocument);
@@ -541,6 +598,15 @@ std::unique_ptr<DocumentData> DocumentsModule::CreateDocument(const QString& pat
         RefPtr<PackageNode> packageRef = builder.BuildPackage();
         DVASSERT(packageRef.Get() != nullptr);
         documentData.reset(new DocumentData(packageRef));
+    }
+    else
+    {
+        ModalMessageParams params;
+        params.icon = ModalMessageParams::Warning;
+        params.title = QObject::tr("Can not create document");
+        params.message = QObject::tr("Can not create document by path:\n%1").arg(path);
+        params.buttons = ModalMessageParams::Ok;
+        GetUI()->ShowModalMessage(QEGlobal::windowKey, params);
     }
     return documentData;
 }
@@ -787,10 +853,18 @@ void DocumentsModule::ReloadDocument(const DAVA::TArc::DataContext::ContextID& c
     DVASSERT(contextID == accessor->GetActiveContext()->GetID());
     DocumentData* currentData = context->GetData<DocumentData>();
     QString path = currentData->GetPackageAbsolutePath();
-    context->DeleteData<DocumentData>();
 
     std::unique_ptr<DocumentData> newData = CreateDocument(path);
-    context->CreateData(std::move(newData));
+    //whoops! document was broken or damaged, can not use this context any more
+    if (newData != nullptr)
+    {
+        context->DeleteData<DocumentData>();
+        context->CreateData(std::move(newData));
+    }
+    else
+    {
+        contextManager->DeleteContext(contextID);
+    }
 }
 
 void DocumentsModule::ReloadDocuments(const DAVA::Set<DAVA::TArc::DataContext::ContextID>& ids)

@@ -872,4 +872,7 @@ void PackageWidget::SetSelectedNodes(const SelectedNodes& selection)
     {
         SelectNodeImpl(node);
     }
+
+    //TODO: remove refreshActions and all selection logic when Package will be a TArc module
+    RefreshActions();
 }

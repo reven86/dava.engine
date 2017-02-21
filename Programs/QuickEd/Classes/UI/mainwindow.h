@@ -19,6 +19,7 @@ class MainWindow;
 }
 
 class PackageWidget;
+class StyleSheetInspectorWidget;
 
 namespace DAVA
 {
@@ -44,6 +45,7 @@ public:
 
     ProjectView* GetProjectView() const;
     PackageWidget* GetPackageWidget() const;
+    StyleSheetInspectorWidget* GetStyleSheetInspectorWidget() const;
 
 signals:
     void EmulationModeChanged(bool emulationMode);
@@ -55,7 +57,6 @@ private slots:
 private:
     void SetProjectPath(const QString& projectPath);
 
-    void SetupShortcuts();
     void ConnectActions();
     void InitEmulationMode();
     void SetupViewMenu();

@@ -281,7 +281,7 @@ void EditorSystemsManager::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper,
     }
 }
 
-void EditorSystemsManager::ControlWasRemoved(ControlNode* node, ControlsContainerNode* /*from*/)
+void EditorSystemsManager::ControlWillBeRemoved(ControlNode* node, ControlsContainerNode* /*from*/)
 {
     if (std::find(editingRootControls.begin(), editingRootControls.end(), node) != editingRootControls.end())
     {
@@ -343,6 +343,11 @@ void EditorSystemsManager::RefreshRootControls()
                 {
                     newRootControls.insert(root);
                 }
+            }
+            //no controls selected, so dont refresh visible content
+            if (newRootControls.empty())
+            {
+                return;
             }
         }
     }

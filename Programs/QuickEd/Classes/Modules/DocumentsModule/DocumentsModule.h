@@ -53,6 +53,9 @@ private:
     void OnUndo();
     void OnRedo();
 
+    //View
+    void CreateViewActions();
+
     DAVA::TArc::DataContext::ContextID OpenDocument(const QString& path);
     std::unique_ptr<DocumentData> CreateDocument(const QString& path);
 

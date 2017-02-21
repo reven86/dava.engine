@@ -52,7 +52,8 @@ void FileSystemCacheModule::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper
     using namespace DAVA;
     using namespace TArc;
 
-    if (fields.empty() == false)
+    if (fields.empty() == false &&
+        std::find(fields.begin(), fields.end(), String(ProjectData::projectPathPropertyName)) == fields.end())
     {
         return;
     }
@@ -62,10 +63,11 @@ void FileSystemCacheModule::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper
     FileSystemCacheData* fileSystemCacheData = globalContext->GetData<FileSystemCacheData>();
     FileSystemCache* fileSystemCache = fileSystemCacheData->GetFileSystemCache();
 
+    fileSystemCache->UntrackAllDirectories();
+
     ProjectData* projectData = globalContext->GetData<ProjectData>();
     if (projectData == nullptr)
     {
-        fileSystemCache->UntrackAllDirectories();
         return;
     }
     FilePath uiDirectory = projectData->GetUiDirectory().absolute;

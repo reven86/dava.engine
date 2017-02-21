@@ -170,7 +170,7 @@ private:
     void CollectControlNodesImpl(OutIt destination, Predicate predicate, StopPredicate stopPredicate, ControlNode* node) const;
 
     void OnPackageChanged(PackageNode* node);
-    void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from) override;
+    void ControlWillBeRemoved(ControlNode* node, ControlsContainerNode* from) override;
     void ControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int index) override;
     void RefreshRootControls();
     void OnTransformStateChanged(bool inTransformState);

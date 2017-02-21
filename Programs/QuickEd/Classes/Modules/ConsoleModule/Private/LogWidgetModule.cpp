@@ -32,10 +32,11 @@ void LogWidgetModule::PostInit()
     DAVA::TArc::PropertiesItem item = GetAccessor()->CreatePropertiesNode(LogWidgetModuleDetails::logWidgetModulePropertiesName);
     logWidget->Deserialize(item.Get<QByteArray>(LogWidgetModuleDetails::logWidgetPropertiesName));
 
+    const char* title = "Console";
     DAVA::TArc::DockPanelInfo panelInfo;
-    panelInfo.title = "LogWidget";
+    panelInfo.title = title;
     panelInfo.area = Qt::BottomDockWidgetArea;
-    DAVA::TArc::PanelKey panelKey(QStringLiteral("LogWidget"), panelInfo);
+    DAVA::TArc::PanelKey panelKey(title, panelInfo);
     GetUI()->AddView(QEGlobal::windowKey, panelKey, logWidget);
 }
 
