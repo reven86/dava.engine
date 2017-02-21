@@ -3,9 +3,13 @@
 #include "Document/Document.h"
 #include "Project/Project.h"
 #include "UI/Find/Finder.h"
-#include "QtTools/ProjectInformation/FileSystemCache.h"
 
-#include "UI/UIControl.h"
+#include <QtTools/ProjectInformation/FileSystemCache.h>
+
+#include <QtHelpers/HelperFunctions.h>
+
+#include <UI/UIControl.h>
+
 #include <QtConcurrent>
 #include <QKeyEvent>
 
@@ -43,7 +47,7 @@ void FindWidget::Find(std::unique_ptr<FindFilter>&& filter)
             connect(finder, &Finder::ItemFound, this, &FindWidget::OnItemFound, Qt::QueuedConnection);
             connect(finder, &Finder::Finished, this, &FindWidget::OnFindFinished, Qt::QueuedConnection);
 
-            QtConcurrent::run([this]() { finder->Process(); });
+            QtConcurrent::run(QtHelpers::InvokeInAutoreleasePool, [this]() { finder->Process(); });
         }
     }
 }

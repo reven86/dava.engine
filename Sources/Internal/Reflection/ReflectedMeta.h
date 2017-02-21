@@ -76,6 +76,14 @@ using Range = Meta<Metas::Range>;
     \arg \c accuracy has value of DAVA::uint32
 */
 using FloatNumberAccuracy = Meta<Metas::FloatNumberAccuracy>;
+
+/**
+ \ingroup metas
+ Specifies maximum count of characters in text for editing
+ \arg \c length has value of DAVA::uint32
+ */
+using MaxLength = Meta<Metas::MaxLength>;
+
 /**
     \ingroup metas
     Add value validation function to Reflected Field.
