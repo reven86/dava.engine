@@ -28,7 +28,8 @@ void UISoundSystem::ProcessControlEvent(int32 eventType, const UIEvent* uiEvent,
 {
     UISoundComponent* soundComponent = control->GetComponent<UISoundComponent>();
 
-    if (soundComponent != nullptr)
+    if (soundComponent != nullptr
+        && uiEvent != nullptr)
     {
         if (!ShouldSkipEvent(eventType, uiEvent, control))
         {
@@ -139,14 +140,18 @@ bool UISoundSystem::ShouldSkipEvent(int32 eventType, const UIEvent* uiEvent, con
             {
                 const float32 value = slider->GetValue();
 
-                const int32 normalizedValue = static_cast<int32>(value / valueFilterComponent->GetStep());
+                const int32 nvalue = valueFilterComponent->normalizedValue;
 
-                if (valueFilterComponent->normalizedValue == normalizedValue)
+                const float32 step = valueFilterComponent->GetStep();
+                const float32 deadZone = valueFilterComponent->GetDeadZone();
+
+                if ((value < nvalue * step - deadZone)
+                    || (value > (nvalue + 1) * step + deadZone))
                 {
-                    return true;
+                    valueFilterComponent->normalizedValue = static_cast<int32>(value / step);
                 }
 
-                valueFilterComponent->normalizedValue = normalizedValue;
+                return nvalue == valueFilterComponent->normalizedValue;
             }
         }
     }

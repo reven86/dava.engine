@@ -10,6 +10,7 @@ UISoundValueFilterComponent::UISoundValueFilterComponent()
 
 UISoundValueFilterComponent::UISoundValueFilterComponent(const UISoundValueFilterComponent& src)
     : step(src.step)
+    , deadZone(src.deadZone)
     , normalizedValue(src.normalizedValue)
 {
 }
@@ -27,5 +28,15 @@ float32 UISoundValueFilterComponent::GetStep() const
 void UISoundValueFilterComponent::SetStep(float32 step_)
 {
     step = step_;
+}
+
+float32 UISoundValueFilterComponent::GetDeadZone() const
+{
+    return deadZone;
+}
+
+void UISoundValueFilterComponent::SetDeadZone(float32 deadZone_)
+{
+    deadZone = deadZone_;
 }
 }
