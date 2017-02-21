@@ -10,6 +10,11 @@ namespace FileAPI
 	fileName - utf8 string
 */
 FILE* OpenFile(const String& fileName, const String& mode);
+
+/**
+	close file with double check
+*/
+int32 Close(FILE* f);
 /**
 	fileName - utf8 string
 */

@@ -31,6 +31,7 @@ WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
     , uiDispatcher(MakeFunction(this, &WindowBackend::UIEventHandler), MakeFunction(this, &WindowBackend::TriggerPlatformEvents))
     , minWidth(Window::smallestWidth)
     , minHeight(Window::smallestHeight)
+    , lastCursorPosition({ 0, 0 })
 {
     ::memset(&windowPlacement, 0, sizeof(windowPlacement));
     windowPlacement.length = sizeof(WINDOWPLACEMENT);

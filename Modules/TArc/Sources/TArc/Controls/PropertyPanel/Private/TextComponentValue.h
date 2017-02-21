@@ -25,7 +25,6 @@ private:
     void SetText(const DAVA::String& text);
 
     bool IsReadOnly() const;
-    bool IsEnabled() const;
 
 private:
     DAVA_VIRTUAL_REFLECTION(TextComponentValue, ProxyComponentValue<TextEditorDrawer, TextValueCompositor>);

@@ -18,6 +18,11 @@ FloatNumberAccuracy::FloatNumberAccuracy(uint32 accuracy_)
 {
 }
 
+MaxLength::MaxLength(uint32 length_)
+    : length(length_)
+{
+}
+
 Validator::Validator(const TValidationFn& fn_)
     : fn(fn_)
 {
