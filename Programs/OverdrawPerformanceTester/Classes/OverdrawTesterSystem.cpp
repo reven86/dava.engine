@@ -9,6 +9,7 @@
 #include "Render/Highlevel/RenderPassNames.h"
 #include "Render/Texture.h"
 #include "OverdrawTesterRenderObject.h"
+#include "Utils/StringFormat.h"
 #include "Logger/Logger.h"
 
 namespace OverdrawPerformanceTester
@@ -92,6 +93,11 @@ void OverdrawTesterSystem::RemoveEntity(DAVA::Entity* entity)
         DVASSERT(it != activeRenderObjects.end());
         activeRenderObjects.erase(it);
     }
+}
+
+DAVA::WideString OverdrawTesterSystem::GetInfoString()
+{
+    return textureSamples != 5 ? DAVA::Format(L" ||| Texture samples: %d", textureSamples) : L" ||| Dependent read";
 }
 
 void OverdrawTesterSystem::Process(DAVA::float32 timeElapsed)

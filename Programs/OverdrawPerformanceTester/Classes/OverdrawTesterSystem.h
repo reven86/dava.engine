@@ -4,6 +4,7 @@
 #include "Math/Vector.h"
 #include "Base/BaseTypes.h"
 #include "Base/FastName.h"
+#include "Base/String.h"
 
 namespace DAVA
 {
@@ -25,6 +26,8 @@ public:
     void AddEntity(DAVA::Entity* entity) override;
     void RemoveEntity(DAVA::Entity* entity) override;
 
+    DAVA::WideString GetInfoString();
+
     virtual void Process(DAVA::float32 timeElapsed) override;
 
 private:
@@ -37,10 +40,6 @@ private:
     DAVA::uint32 textureSamples = 0;
 
     DAVA::Vector<DAVA::Texture*> textures;
-    DAVA::Texture* t1;
-    DAVA::Texture* t2;
-    DAVA::Texture* t3;
-    DAVA::Texture* t4;
 
     bool finished = false;
     void SetupMaterial(const DAVA::FastName* keyword, const DAVA::FastName* texture);

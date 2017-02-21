@@ -120,12 +120,12 @@ void ViewSceneScreen::LoadResources()
 //         reloadShadersButton->SetDebugDraw(true);
 //         AddControl(reloadShadersButton);
 // 
-//         DVASSERT(info == NULL);
-//         info = new UIStaticText(Rect(0, 0, 335, 30.f));
-//         info->SetFont(font);
-//         info->SetTextColor(Color::White);
-//         info->SetTextAlign(ALIGN_VCENTER | ALIGN_RIGHT);
-//         AddControl(info);
+        DVASSERT(info == NULL);
+        info = new UIStaticText(Rect(0, 0, 335, 30.f));
+        info->SetFont(font);
+        info->SetTextColor(Color::White);
+//         info->SetTextAlign( | ALIGN_RIGHT);
+        AddControl(info);
 // 
 //         moveJoyPAD = new UIJoypad(Rect(0, screenRect.dy - 200.f, 200.f, 200.f));
 //         moveJoyPAD->SetDebugDraw(true);
@@ -242,7 +242,7 @@ void ViewSceneScreen::Update(float32 timeElapsed)
 //     camera->SetTarget(camera->GetTarget() + cameraMoveOffset);
 }
 
-static const float32 INFO_UPDATE_TIME = 1.0f;
+static const float32 INFO_UPDATE_TIME = 0.3f;
 void ViewSceneScreen::UpdateInfo(float32 timeElapsed)
 {
     ++frameCounter;
@@ -251,10 +251,8 @@ void ViewSceneScreen::UpdateInfo(float32 timeElapsed)
     if (framesTime > INFO_UPDATE_TIME)
     {
         int32 fps = (int32)(frameCounter / framesTime);
-//         info->SetText(Format(L"FPS: %d", fps));
-//         info->SetText(L"OLOLOLOLOSHA");
+        info->SetText(testerSystem != nullptr ? Format(L"FPS: %d", fps) + testerSystem->GetInfoString() : Format(L"FPS: %d", fps));
 
-        Logger::Info("%d", fps);
         framesTime -= INFO_UPDATE_TIME;
         frameCounter = 0;
 
