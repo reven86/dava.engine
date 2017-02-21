@@ -2,7 +2,6 @@
 
 namespace DAVA
 {
-
 template <>
 bool AnyCompare<Rect>::IsEqual(const DAVA::Any& v1, const DAVA::Any& v2)
 {

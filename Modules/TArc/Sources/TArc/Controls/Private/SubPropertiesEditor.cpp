@@ -1,4 +1,3 @@
-
 #include "TArc/Controls/SubPropertiesEditor.h"
 #include "TArc/Controls/DoubleSpinBox.h"
 #include "TArc/Controls/IntSpinBox.h"
