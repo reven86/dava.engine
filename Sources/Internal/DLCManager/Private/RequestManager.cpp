@@ -117,10 +117,12 @@ void RequestManager::SetPriorityToRequest(PackRequest* request)
         }
         // 3. find position after "request"
         it = find(begin(requests), end(requests), request);
+        it++;
         // 4. insert all previously removed request after preserve order
         for (PackRequest* r : removeFromBeg)
         {
             it = requests.insert(it, r);
+            it++;
         }
     }
 
