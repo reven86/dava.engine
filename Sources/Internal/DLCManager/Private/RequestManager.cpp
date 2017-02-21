@@ -113,7 +113,7 @@ void RequestManager::SetPriorityToRequest(PackRequest* request)
         // 2. remove all NOT sub request from begining queue
         for (PackRequest* r : removeFromBeg)
         {
-            requests.erase(find_if(begin(requests), end(requests), r));
+            requests.erase(find(begin(requests), end(requests), r));
         }
         // 3. find position after "request"
         it = find(begin(requests), end(requests), request);
