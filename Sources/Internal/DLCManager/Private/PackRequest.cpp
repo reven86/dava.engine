@@ -33,7 +33,11 @@ PackRequest::~PackRequest()
     {
         if (r.taskId != 0)
         {
-            DownloadManager::Instance()->Cancel(r.taskId);
+            DownloadManager* dm = DownloadManager::Instance();
+            if (dm)
+            {
+                dm->Cancel(r.taskId);
+            }
             r.taskId = 0;
         }
     }
