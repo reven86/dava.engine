@@ -142,7 +142,8 @@ void PackRequest::SetFileIndexes(Vector<uint32> fileIndexes_)
     if (fileIndexes.empty())
     {
         // all files already loaded or empty virtual pack
-        packManagerImpl.requestUpdated.Emit(*this);
+        // couse infinite recursion on client
+        // packManagerImpl.requestUpdated.Emit(*this);
     }
 }
 
