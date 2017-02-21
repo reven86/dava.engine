@@ -156,7 +156,7 @@ void AutotestingSystemLua::InitFromFile(const FilePath& luaFilePath)
     }
     else //Empty 'luaFilePath' means we start record&play mode. In this mode we load all requirements beforehand.
     {
-        for (const auto& path : FileSystem::Instance()->EnumerateFilesInDirectory(AutotestingSystem::Instance()->GetPathTo("/Actions/")))
+        for (const FilePath& path : FileSystem::Instance()->EnumerateFilesInDirectory(AutotestingSystem::Instance()->GetPathTo("/Actions/")))
         {
             RunScript(Format("require '%s'", path.GetBasename().c_str()));
             Logger::FrameworkDebug("Used memory after '%s': %d", path.GetBasename().c_str(), GetUsedMemory());

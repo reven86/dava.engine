@@ -7,8 +7,6 @@
 
 #include "DAVAEngine.h"
 #include "Base/Singleton.h"
-#include "FileSystem/FileSystem.h"
-#include "FileSystem/File.h"
 #include "Time/DateTime.h"
 
 #include "Autotesting/AutotestingSystemLua.h"
@@ -98,12 +96,12 @@ public:
     };
 
     bool ResolvePathToAutomation();
-    FilePath GetPathTo(const String& path);
+    FilePath GetPathTo(const String& path) const;
 
     // Returns String at 'lineNumber'.
     // If 'lineNumber' points to empy line next non-empty line is read and 'lineNumber' is adjusted.
     // If 'lineNumber' points beyond file scope empty line is returned and 'lineNumber' is set to '-1'
-    String GetLuaString(int32& lineNumber);
+    String GetLuaString(int32& lineNumber) const;
 
     void OnRecordClickControl(UIControl*);
     void OnRecordDoubleClickControl(UIControl*);
@@ -121,12 +119,12 @@ public:
 
     void StartRecording();
     void StopRecording();
-    bool IsRecording()
+    bool IsRecording() const
     {
         return isRecording;
     }
 
-    FilePath GetRecordedScriptPath();
+    FilePath GetRecordedScriptPath() const;
 
     void SetTestFinishedCallback(const Function<void()> callback)
     {
@@ -149,14 +147,12 @@ protected:
     void ExitApp();
 
     //Recording
-    const String GetControlHierarchy(UIControl*);
-    const String WrapWithFunctionCall(const String&, const String&);
+    String GetControlHierarchy(UIControl*) const;
     void WriteScriptLine(const String&);
 
 private:
     bool isScreenShotSaving = false;
     FilePath pathToAutomation;
-    File* recordedActs;
 
     Function<void()> testFinishedCallback;
     Function<void(const String&)> testErrorCallback;

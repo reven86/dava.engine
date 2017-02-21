@@ -4,8 +4,6 @@
 
 #include "Core/Core.h"
 #include "Engine/Engine.h"
-#include "Render/RenderHelper.h"
-#include "FileSystem/FileList.h"
 #include "FileSystem/KeyedArchive.h"
 #include "Platform/DeviceInfo.h"
 #include "Time/DateTime.h"
@@ -70,7 +68,6 @@ AutotestingSystem::~AutotestingSystem()
         AutotestingDB::Instance()->Release();
 
     SafeRelease(screenshotTexture);
-    SafeRelease(recordedActs);
 }
 
 void AutotestingSystem::InitLua(AutotestingSystemLuaDelegate* _delegate)
@@ -85,13 +82,13 @@ bool AutotestingSystem::ResolvePathToAutomation()
 {
     Logger::Info("AutotestingSystem::ResolvePathToAutomation platform=%s", DeviceInfo::GetPlatformString().c_str());
     pathToAutomation = "~doc:/atpath.txt";
-    if (FileSystem::Instance()->Exists(pathToAutomation))
+    if (GetEngineContext()->fileSystem->Exists(pathToAutomation))
     {
         ScopedPtr<File> file(File::Create(pathToAutomation, File::OPEN | File::READ));
         if (file)
         {
             pathToAutomation = file->ReadLine();
-            if (FileSystem::Instance()->Exists(pathToAutomation))
+            if (GetEngineContext()->fileSystem->Exists(pathToAutomation))
             {
                 Logger::Info("AutotestingSystem::ResolvePathToAutomation resolved path %s", pathToAutomation.GetAbsolutePathname().c_str());
                 return true;
@@ -102,14 +99,14 @@ bool AutotestingSystem::ResolvePathToAutomation()
     // Try to find automation data in Documents
     if (DeviceInfo::GetPlatform() == DeviceInfo::PLATFORM_ANDROID)
     {
-        pathToAutomation = FileSystem::Instance()->GetPublicDocumentsPath().GetAbsolutePathname() + "/Autotesting/";
+        pathToAutomation = GetEngineContext()->fileSystem->GetPublicDocumentsPath().GetAbsolutePathname() + "/Autotesting/";
     }
     else
     {
         pathToAutomation = "~doc:/Autotesting/";
     }
 
-    if (FileSystem::Instance()->Exists(pathToAutomation))
+    if (GetEngineContext()->fileSystem->Exists(pathToAutomation))
     {
         Logger::Info("AutotestingSystem::ResolvePathToAutomation resolved path in documents %s", pathToAutomation.GetAbsolutePathname().c_str());
         return true;
@@ -117,7 +114,7 @@ bool AutotestingSystem::ResolvePathToAutomation()
 
     // If there are no automation data in documents, try to find it in Data
     pathToAutomation = "~res:/Autotesting/";
-    if (FileSystem::Instance()->Exists(pathToAutomation))
+    if (GetEngineContext()->fileSystem->Exists(pathToAutomation))
     {
         Logger::Info("AutotestingSystem::ResolvePathToAutomation resolved in resources %s", pathToAutomation.GetAbsolutePathname().c_str());
         return true;
@@ -125,7 +122,7 @@ bool AutotestingSystem::ResolvePathToAutomation()
     return false;
 }
 
-FilePath AutotestingSystem::GetPathTo(const String& path)
+FilePath AutotestingSystem::GetPathTo(const String& path) const
 {
     return pathToAutomation + path;
 }
@@ -151,7 +148,7 @@ void AutotestingSystem::OnAppStarted()
 
     const String testFileLocation = Format("/Tests/%s/%s.lua", groupName.c_str(), testFileName.c_str());
     FilePath testFileStrPath = GetPathTo(testFileLocation);
-    if (!FileSystem::Instance()->Exists(testFileStrPath))
+    if (!GetEngineContext()->fileSystem->Exists(testFileStrPath))
     {
         Logger::Error("AutotestingSystemLua::OnAppStarted: couldn't open %s", testFileLocation.c_str());
         testFileStrPath = "";
@@ -218,7 +215,7 @@ RefPtr<KeyedArchive> AutotestingSystem::GetIdYamlOptions()
 {
     FilePath idYamlStrPath = GetPathTo("/id.yaml");
     RefPtr<KeyedArchive> option(new KeyedArchive());
-    if (!FileSystem::Instance()->Exists(idYamlStrPath) || !option->LoadFromYamlFile(idYamlStrPath))
+    if (!GetEngineContext()->fileSystem->Exists(idYamlStrPath) || !option->LoadFromYamlFile(idYamlStrPath))
     {
         ForceQuit("Couldn't open file " + idYamlStrPath.GetAbsolutePathname());
     }
@@ -258,7 +255,7 @@ void AutotestingSystem::SetUpConnectionToDB()
 {
     FilePath dbConfigStrPath = GetPathTo("/dbConfig.yaml");
     KeyedArchive* option = new KeyedArchive();
-    if (!FileSystem::Instance()->Exists(dbConfigStrPath) || !option->LoadFromYamlFile(dbConfigStrPath))
+    if (!GetEngineContext()->fileSystem->Exists(dbConfigStrPath) || !option->LoadFromYamlFile(dbConfigStrPath))
     {
         ForceQuit("Couldn't open file " + dbConfigStrPath.GetAbsolutePathname());
     }
@@ -658,7 +655,7 @@ void AutotestingSystem::ExitApp()
 
 void AutotestingSystem::OnRecordClickControl(UIControl* control)
 {
-    if (IsRecording())
+    if (isRecording)
     {
         if (!control->GetParent()->GetName().IsValid()) //this criteria is so unreliable..
         {
@@ -666,10 +663,10 @@ void AutotestingSystem::OnRecordClickControl(UIControl* control)
         }
         else
         {
-            const String& hierarchy = GetControlHierarchy(control);
+            String hierarchy = GetControlHierarchy(control);
             if (hierarchy.find("DebugPopup") == String::npos)
             {
-                const String& codeLine = Format("ClickControl('%s')", hierarchy.c_str());
+                String codeLine = Format("ClickControl('%s')", hierarchy.c_str());
                 WriteScriptLine(codeLine);
             }
         }
@@ -736,7 +733,7 @@ void AutotestingSystem::OnRecordIsDisabled(UIControl* control)
     WriteScriptLine(codeLine);
 }
 
-const String AutotestingSystem::GetControlHierarchy(UIControl* control)
+String AutotestingSystem::GetControlHierarchy(UIControl* control) const
 {
     UIControl* iter = control->GetParent();
     String hierarhy;
@@ -757,20 +754,22 @@ void AutotestingSystem::WriteScriptLine(const String& textLine)
         return;
     }
     FilePath scriptPath = GetRecordedScriptPath();
-    if (FileSystem::Instance()->Exists(scriptPath))
+    ScopedPtr<File> recordedActs(nullptr);
+    if (GetEngineContext()->fileSystem->Exists(scriptPath))
     {
-        recordedActs = File::Create(scriptPath, File::APPEND | File::WRITE);
+        recordedActs.reset(File::Create(scriptPath, File::APPEND | File::WRITE));
     }
     else
     {
-        recordedActs = File::Create(scriptPath, File::CREATE | File::WRITE);
+        recordedActs.reset(File::Create(scriptPath, File::CREATE | File::WRITE));
     }
-    DVASSERT(nullptr != recordedActs);
-    recordedActs->WriteLine(textLine);
-    SafeRelease(recordedActs);
+    if (recordedActs)
+    {
+        recordedActs->WriteLine(textLine);
+    }
 }
 
-String AutotestingSystem::GetLuaString(int32& lineNumber)
+String AutotestingSystem::GetLuaString(int32& lineNumber) const
 {
     String result;
 
@@ -804,9 +803,9 @@ String AutotestingSystem::GetLuaString(int32& lineNumber)
     return result;
 }
 
-FilePath AutotestingSystem::GetRecordedScriptPath()
+FilePath AutotestingSystem::GetRecordedScriptPath() const
 {
-    return FilePath::AddPath(pathToAutomation, RecordScriptFileName);
+    return pathToAutomation + RecordScriptFileName;
 }
 
 void AutotestingSystem::StartRecording()
