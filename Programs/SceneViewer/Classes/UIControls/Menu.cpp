@@ -132,6 +132,14 @@ void Menu::Show(bool toShow)
     }
 }
 
+void Menu::SetEnabled(bool enabled)
+{
+    for (auto& menuItem : menuItems)
+    {
+        menuItem->SetEnabled(enabled);
+    }
+}
+
 void Menu::AllowInput(bool allow)
 {
     for (auto& item : menuItems)

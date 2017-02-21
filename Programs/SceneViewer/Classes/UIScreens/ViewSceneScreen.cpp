@@ -326,6 +326,7 @@ void ViewSceneScreen::SetCameraAtCenter(DAVA::Camera* camera)
 
 void ViewSceneScreen::OnFileSelected(DAVA::UIFileSystemDialog* forDialog, const DAVA::FilePath& pathToFile)
 {
+    menu->SetEnabled(true);
     scenePath = pathToFile;
     data.settings.SetLastOpenedScenePath(scenePath);
     ReloadScene();
@@ -333,6 +334,7 @@ void ViewSceneScreen::OnFileSelected(DAVA::UIFileSystemDialog* forDialog, const 
 
 void ViewSceneScreen::OnFileSytemDialogCanceled(DAVA::UIFileSystemDialog* forDialog)
 {
+    menu->SetEnabled(true);
 }
 
 void ViewSceneScreen::OnButtonSelectFromRes(DAVA::BaseObject* caller, void* param, void* callerData)
@@ -340,6 +342,7 @@ void ViewSceneScreen::OnButtonSelectFromRes(DAVA::BaseObject* caller, void* para
     DVASSERT(fileSystemDialog);
     fileSystemDialog->SetCurrentDir("~res:/");
     fileSystemDialog->Show(this);
+    menu->SetEnabled(false);
 }
 
 void ViewSceneScreen::OnButtonSelectFromDoc(DAVA::BaseObject* caller, void* param, void* callerData)
@@ -347,6 +350,7 @@ void ViewSceneScreen::OnButtonSelectFromDoc(DAVA::BaseObject* caller, void* para
     DVASSERT(fileSystemDialog);
     fileSystemDialog->SetCurrentDir("~doc:/");
     fileSystemDialog->Show(this);
+    menu->SetEnabled(false);
 }
 
 void ViewSceneScreen::OnButtonSelectFromExt(DAVA::BaseObject* caller, void* param, void* callerData)
@@ -365,6 +369,7 @@ void ViewSceneScreen::OnButtonSelectFromExt(DAVA::BaseObject* caller, void* para
             return;
         }
     }
+    menu->SetEnabled(false);
 }
 
 void ViewSceneScreen::OnButtonPerformanceTest(DAVA::BaseObject* caller, void* param, void* callerData)
@@ -378,14 +383,14 @@ void ViewSceneScreen::OnButtonPerformanceTest(DAVA::BaseObject* caller, void* pa
 
 void ViewSceneScreen::OnButtonQualitySettings(DAVA::BaseObject* caller, void* param, void* callerData)
 {
-    menu->AllowInput(false);
+    menu->SetEnabled(false);
     qualitySettingsDialog->SetCurrentScene(scene);
     qualitySettingsDialog->Show();
 }
 
 void ViewSceneScreen::OnQualitySettingsEditDone()
 {
-    menu->AllowInput(true);
+    menu->SetEnabled(true);
 }
 
 void ViewSceneScreen::OnButtonReloadShaders(DAVA::BaseObject* caller, void* param, void* callerData)

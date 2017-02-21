@@ -44,6 +44,7 @@ public:
 
     void BringAtFront();
     void Show(bool toShow);
+    void SetEnabled(bool enabled);
     void AllowInput(bool);
 
     ActionItem* AddActionItem(const DAVA::WideString& text, DAVA::Message action);
