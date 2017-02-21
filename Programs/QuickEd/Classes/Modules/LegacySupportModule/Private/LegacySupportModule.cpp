@@ -197,6 +197,7 @@ void LegacySupportModule::OnFindPrototypeInstances()
 
     ContextAccessor* accessor = GetAccessor();
     DataContext* activeContext = accessor->GetActiveContext();
+    //TODO: bind this action to current document when Package will be moved to TArc
     if (activeContext == nullptr)
     {
         return;
@@ -249,6 +250,7 @@ void LegacySupportModule::OnJumpToPrototype()
     ContextAccessor* accessor = GetAccessor();
     DataContext* activeContext = accessor->GetActiveContext();
 
+    //TODO: bind this action to current document when Package will be moved to TArc
     if (activeContext == nullptr)
     {
         return;
