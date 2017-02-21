@@ -60,6 +60,18 @@ void UIStylesTest::UnloadResources()
 
 void UIStylesTest::Update(float32 delta)
 {
+    static float32 updateDelta = 0.f;
+    static uint32 framesCount = 0;
+
     BaseScreen::Update(delta);
-    statusText->SetUtf8Text(Format("FPS: %f, count: %d", 1. / SystemTimer::GetRealFrameDelta(), container->GetChildren().size()));
+
+    updateDelta += SystemTimer::GetRealFrameDelta();
+    framesCount += 1;
+    if (updateDelta > 0.5f)
+    {
+        float32 fps = framesCount / updateDelta;
+        statusText->SetUtf8Text(Format("FPS: %f, count: %d", fps, container->GetChildren().size()));
+        updateDelta = 0.f;
+        framesCount = 0;
+    }
 }

@@ -18,6 +18,7 @@ Controls:
     name: "Window"
     position: [0.000000, 0.000000]
     size: [555.000000, 586.000000]
+    noInput: true
     components:
         SizePolicy:
             horizontalPolicy: "PercentOfParent"
