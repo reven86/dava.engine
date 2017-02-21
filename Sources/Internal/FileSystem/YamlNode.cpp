@@ -820,7 +820,14 @@ bool YamlNode::InitStringFromVariantType(const VariantType& varType)
     break;
     case VariantType::TYPE_FASTNAME:
     {
-        InternalSetString(varType.AsFastName().c_str(), SR_DOUBLE_QUOTED_REPRESENTATION);
+        if (varType.AsFastName().IsValid())
+        {
+            InternalSetString(varType.AsFastName().c_str(), SR_DOUBLE_QUOTED_REPRESENTATION);
+        }
+        else
+        {
+            InternalSetString("", SR_DOUBLE_QUOTED_REPRESENTATION);
+        }
     }
     break;
 
