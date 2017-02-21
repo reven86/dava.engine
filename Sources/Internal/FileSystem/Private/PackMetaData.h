@@ -22,11 +22,17 @@ public:
     Vector<uint32> GetFileIndexes(const String& requestedPackName) const;
 
     uint32 GetPackIndexForFile(const uint32 fileIndex) const;
+
+    struct PackInfo
+    {
+        String packName;
+        String packDependencies;
+    };
     /**
 	    Return tuple (packName, packDependencies)
 	*/
-    const std::tuple<String, String>& GetPackInfo(const uint32 packIndex) const;
-    const std::tuple<String, String>& GetPackInfo(const String& packName) const;
+    const PackInfo& GetPackInfo(const uint32 packIndex) const;
+    const PackInfo& GetPackInfo(const String& packName) const;
 
     Vector<uint8> Serialize() const;
     void Deserialize(const void* ptr, size_t size);
@@ -38,7 +44,7 @@ private:
     Vector<uint32> packIndexes;
     // table 2.
     // packIndex(0-NUM_PACKS) -> packName, dependencies
-    Vector<std::tuple<String, String>> packDependencies;
+    Vector<PackInfo> packDependencies;
 };
 
 } // end namespace DAVA

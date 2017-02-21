@@ -8,6 +8,8 @@
 #include <QFileDialog>
 #include <QJsonObject>
 #include <QJsonDocument>
+#include <QApplication>
+#include <QClipboard>
 
 namespace PreferencesDialogDetails
 {
@@ -17,13 +19,9 @@ const char* filesDirectoryKey = "storage path";
 const char* launcherProtocolKey = "BA-manager key";
 const char* autorefreshEnabledKey = "autorefresh enabled";
 const char* autorefreshTimeoutKey = "autorefresh timeout";
-const QMap<ConfigDownloader::eURLType, QString> urlKeys = {
-    { ConfigDownloader::LauncherInfoURL, "launcherInfo url" },
-    { ConfigDownloader::StringsURL, "launcher strings url" },
-    { ConfigDownloader::FavoritesURL, "favorites url" },
-    { ConfigDownloader::AllBuildsURL, "all builds url" }
+const char* serverHostNameKey = "Ba-manager url";
+const char* useTestAPIKey = "use test API";
 };
-}
 
 void PreferencesDialog::ShowPreferencesDialog(FileManager* fileManager, ConfigDownloader* configDownloader, ConfigRefresher* refresher, QWidget* parent)
 {
@@ -40,10 +38,8 @@ void SavePreferences(FileManager* fileManager, ConfigDownloader* configDownloade
     QJsonObject rootObject;
     rootObject[PreferencesDialogDetails::filesDirectoryKey] = fileManager->GetFilesDirectory();
     rootObject[PreferencesDialogDetails::launcherProtocolKey] = commandListener->GetProtocolKey();
-    for (auto iter = PreferencesDialogDetails::urlKeys.cbegin(); iter != PreferencesDialogDetails::urlKeys.cend(); ++iter)
-    {
-        rootObject[iter.value()] = configDownloader->GetURL(iter.key());
-    }
+    rootObject[PreferencesDialogDetails::serverHostNameKey] = configDownloader->GetServerHostName();
+    rootObject[PreferencesDialogDetails::useTestAPIKey] = configDownloader->IsTestAPIUsed();
 
     rootObject[PreferencesDialogDetails::autorefreshEnabledKey] = refresher->IsEnabled();
     rootObject[PreferencesDialogDetails::autorefreshTimeoutKey] = refresher->GetTimeout();
@@ -80,19 +76,24 @@ void LoadPreferences(FileManager* fileManager, ConfigDownloader* configDownloade
     }
 
     QJsonObject rootObject = document.object();
-    for (auto iter = PreferencesDialogDetails::urlKeys.cbegin(); iter != PreferencesDialogDetails::urlKeys.cend(); ++iter)
+    QJsonValue serverHostNameValue = rootObject[PreferencesDialogDetails::serverHostNameKey];
+    if (serverHostNameValue.isString())
     {
-        QJsonValue value = rootObject[iter.value()];
-        if (value.isString())
-        {
-            configDownloader->SetURL(iter.key(), value.toString());
-        }
+        configDownloader->SetServerHostName(serverHostNameValue.toString());
     }
+
+    QJsonValue canUseTestAPIValue = rootObject[PreferencesDialogDetails::useTestAPIKey];
+    if (canUseTestAPIValue.isBool())
+    {
+        configDownloader->SetUseTestAPI(canUseTestAPIValue.toBool());
+    }
+
     QJsonValue filesDirValue = rootObject[PreferencesDialogDetails::filesDirectoryKey];
     if (filesDirValue.isString())
     {
         fileManager->SetFilesDirectory(filesDirValue.toString());
     }
+
     QJsonValue protocolKeyValue = rootObject[PreferencesDialogDetails::launcherProtocolKey];
     if (protocolKeyValue.isString())
     {
@@ -118,6 +119,7 @@ PreferencesDialog::PreferencesDialog(QWidget* parent)
     setupUi(this);
     connect(pushButton_selectStorageDir, &QPushButton::clicked, this, &PreferencesDialog::OnButtonChooseFilesPathClicked);
     connect(lineEdit_launcherDataPath, &QLineEdit::textChanged, this, &PreferencesDialog::ProcessSaveButtonEnabled);
+    connect(lineEdit_serverHostName, &QLineEdit::textChanged, this, &PreferencesDialog::ProcessSaveButtonEnabled);
 }
 
 void PreferencesDialog::Init(FileManager* fileManager_, ConfigDownloader* configDownloader_, ConfigRefresher* refresher_)
@@ -131,26 +133,30 @@ void PreferencesDialog::Init(FileManager* fileManager_, ConfigDownloader* config
 
     lineEdit_launcherDataPath->setText(fileManager->GetFilesDirectory());
 
-    urlWidgets[ConfigDownloader::LauncherInfoURL] = lineEdit_launcherInfoURL;
-    urlWidgets[ConfigDownloader::StringsURL] = lineEdit_metaInfoURL;
-    urlWidgets[ConfigDownloader::FavoritesURL] = lineEdit_favoritesURL;
-    urlWidgets[ConfigDownloader::AllBuildsURL] = lineEdit_allBuildsURL;
+    lineEdit_serverHostName->setText(configDownloader->GetServerHostName());
+    connect(lineEdit_serverHostName, &QLineEdit::textChanged, this, &PreferencesDialog::OnServerHostNameChanged);
 
-    resetUrlWidgets[ConfigDownloader::LauncherInfoURL] = pushButton_resetLauncherInfoURL;
-    resetUrlWidgets[ConfigDownloader::StringsURL] = pushButton_resetMetaInfoURL;
-    resetUrlWidgets[ConfigDownloader::FavoritesURL] = pushButton_resetFavoritesURL;
-    resetUrlWidgets[ConfigDownloader::AllBuildsURL] = pushButton_resetAllBuildsURL;
+    urlWidgets[ConfigDownloader::LauncherInfoURL] = label_launcherInfoURL;
+    urlWidgets[ConfigDownloader::LauncherTestInfoURL] = label_launcherInfoTestURL;
+    urlWidgets[ConfigDownloader::StringsURL] = label_launcherMetaInfoURL;
+    urlWidgets[ConfigDownloader::FavoritesURL] = label_launcherFavoritesURL;
+    urlWidgets[ConfigDownloader::AllBuildsURL] = label_allBuildsURL;
 
-    for (int i = 0; i < ConfigDownloader::URLTypesCount; ++i)
+    copyURLWidgets[ConfigDownloader::LauncherInfoURL] = pushButton_copyLauncherInfoURL;
+    copyURLWidgets[ConfigDownloader::LauncherTestInfoURL] = pushButton_copyLauncherTestInfoURL;
+    copyURLWidgets[ConfigDownloader::StringsURL] = pushButton_copyMetaInfoURL;
+    copyURLWidgets[ConfigDownloader::FavoritesURL] = pushButton_copyFavoritesURL;
+    copyURLWidgets[ConfigDownloader::AllBuildsURL] = pushButton_copyAllBuildsURL;
+
+    for (int i = ConfigDownloader::LauncherInfoURL; i < ConfigDownloader::URLTypesCount; ++i)
     {
         ConfigDownloader::eURLType type = static_cast<ConfigDownloader::eURLType>(i);
         urlWidgets[type]->setProperty(PreferencesDialogDetails::propertyKey, i);
-        urlWidgets[type]->setText(configDownloader->GetURL(type));
-        resetUrlWidgets[type]->setProperty(PreferencesDialogDetails::propertyKey, i);
+        copyURLWidgets[type]->setProperty(PreferencesDialogDetails::propertyKey, i);
 
-        connect(resetUrlWidgets[type], &QPushButton::clicked, this, &PreferencesDialog::OnButtonResetURLClicked);
-        connect(urlWidgets[type], &QLineEdit::textChanged, this, &PreferencesDialog::ProcessSaveButtonEnabled);
+        connect(copyURLWidgets[type], &QPushButton::clicked, this, &PreferencesDialog::OnButtonCopyURLClicked);
     }
+    checkBox_useTestAPI->setChecked(configDownloader->IsTestAPIUsed());
 
     checkBox_autorefreshEnabled->setChecked(configRefresher->IsEnabled());
     int minTimeout = configRefresher->GetMinimumTimeout();
@@ -158,6 +164,7 @@ void PreferencesDialog::Init(FileManager* fileManager_, ConfigDownloader* config
     spinBox_autorefreshTimeout->setRange(minTimeout, maxTimeout);
     spinBox_autorefreshTimeout->setEnabled(true);
     spinBox_autorefreshTimeout->setValue(configRefresher->GetTimeout());
+    OnServerHostNameChanged(lineEdit_serverHostName->text());
 }
 
 void PreferencesDialog::AcceptData()
@@ -167,11 +174,8 @@ void PreferencesDialog::AcceptData()
 
     fileManager->SetFilesDirectory(lineEdit_launcherDataPath->text());
 
-    for (int i = 0; i < ConfigDownloader::URLTypesCount; ++i)
-    {
-        ConfigDownloader::eURLType type = static_cast<ConfigDownloader::eURLType>(i);
-        configDownloader->SetURL(type, urlWidgets[type]->text());
-    }
+    configDownloader->SetServerHostName(lineEdit_serverHostName->text());
+    configDownloader->SetUseTestAPI(checkBox_useTestAPI->isChecked());
 
     configRefresher->SetEnabled(checkBox_autorefreshEnabled->isChecked());
     configRefresher->SetTimeout(spinBox_autorefreshTimeout->value());
@@ -188,15 +192,7 @@ void PreferencesDialog::OnButtonChooseFilesPathClicked()
 
 void PreferencesDialog::ProcessSaveButtonEnabled()
 {
-    bool enabled = true;
-    for (QLineEdit* lineEdit : urlWidgets)
-    {
-        if (lineEdit->text().isEmpty())
-        {
-            enabled = false;
-            break;
-        }
-    }
+    bool enabled = (lineEdit_serverHostName->text().isEmpty() == false);
     if (enabled)
     {
         QString path = lineEdit_launcherDataPath->text();
@@ -208,7 +204,18 @@ void PreferencesDialog::ProcessSaveButtonEnabled()
     button->setEnabled(enabled);
 }
 
-void PreferencesDialog::OnButtonResetURLClicked()
+void PreferencesDialog::OnServerHostNameChanged(const QString& name)
+{
+    for (int i = ConfigDownloader::LauncherInfoURL; i < ConfigDownloader::URLTypesCount; ++i)
+    {
+        ConfigDownloader::eURLType type = static_cast<ConfigDownloader::eURLType>(i);
+        QString text = name + configDownloader->GetURL(type);
+
+        urlWidgets[type]->setText("<a href=\"" + text + "\">" + text + "</a>");
+    }
+}
+
+void PreferencesDialog::OnButtonCopyURLClicked()
 {
     QPushButton* button = qobject_cast<QPushButton*>(sender());
     Q_ASSERT(button != nullptr);
@@ -216,5 +223,7 @@ void PreferencesDialog::OnButtonResetURLClicked()
     int typeInt = button->property(PreferencesDialogDetails::propertyKey).toInt(&ok);
     ConfigDownloader::eURLType type = static_cast<ConfigDownloader::eURLType>(typeInt);
     Q_ASSERT(ok);
-    urlWidgets[type]->setText(configDownloader->GetDefaultURL(type));
+    Q_ASSERT(urlWidgets.contains(type));
+    QString text = lineEdit_serverHostName->text() + configDownloader->GetURL(type);
+    QApplication::clipboard()->setText(text);
 }
