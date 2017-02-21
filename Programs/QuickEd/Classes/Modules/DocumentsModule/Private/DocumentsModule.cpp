@@ -483,12 +483,23 @@ void DocumentsModule::CreateViewActions()
 
     const QString zoomInActionName("Zoom In");
     const QString zoomOutActionName("Zoom Out");
-    const QString actualZoolActionName("Actual zoom");
+    const QString actualZoomActionName("Actual zoom");
+    const QString zoomSeparator("zoom separator");
 
     const QString viewMenuName("View");
 
     ContextAccessor* accessor = GetAccessor();
     UI* ui = GetUI();
+
+    // Separator
+    {
+        QAction* separator = new QAction(nullptr);
+        separator->setObjectName(zoomSeparator);
+        separator->setSeparator(true);
+        ActionPlacementInfo placementInfo;
+        placementInfo.AddPlacementPoint(CreateMenuPoint(viewMenuName, { InsertionParams::eInsertionMethod::AfterItem, "menuGridColor" }));
+        ui->AddAction(QEGlobal::windowKey, placementInfo, separator);
+    }
 
     //Zoom in
     {
@@ -500,7 +511,7 @@ void DocumentsModule::CreateViewActions()
 
         connections.AddConnection(action, &QAction::triggered, MakeFunction(previewWidget, &PreviewWidget::OnIncrementScale));
         ActionPlacementInfo placementInfo;
-        placementInfo.AddPlacementPoint(CreateMenuPoint(viewMenuName, { InsertionParams::eInsertionMethod::AfterItem, "zoomSeparator" }));
+        placementInfo.AddPlacementPoint(CreateMenuPoint(viewMenuName, { InsertionParams::eInsertionMethod::AfterItem, zoomSeparator }));
 
         ui->AddAction(QEGlobal::windowKey, placementInfo, action);
     }
@@ -521,7 +532,7 @@ void DocumentsModule::CreateViewActions()
 
     //Actual zoom
     {
-        QAction* action = new QAction(actualZoolActionName, nullptr);
+        QAction* action = new QAction(actualZoomActionName, nullptr);
         action->setShortcutContext(Qt::WindowShortcut);
         action->setShortcut(QKeySequence("Ctrl+0"));
 
