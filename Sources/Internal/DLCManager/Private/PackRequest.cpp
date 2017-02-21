@@ -117,6 +117,11 @@ bool PackRequest::IsDownloaded() const
         return false;
     }
 
+    if (requests.size() != fileIndexes.size())
+    {
+        return false; // not initialized yet
+    }
+
     bool allReady = true;
     for (const FileRequest& r : requests)
     {
