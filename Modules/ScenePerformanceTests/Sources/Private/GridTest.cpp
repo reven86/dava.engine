@@ -342,7 +342,10 @@ void GridTestImpl::Stop()
 {
     if (state == GridTest::StateRunning)
     {
-        DAVA::FileSystem::Instance()->DeleteDirectory(reportFolderPath);
+        if (mode == GridTest::ModeGenerateReport)
+        {
+            DAVA::FileSystem::Instance()->DeleteDirectory(reportFolderPath);
+        }
         state = GridTest::StateFinished;
     }
     else if (state == GridTest::StateMakingScreenshots)

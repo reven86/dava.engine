@@ -79,8 +79,12 @@ private:
     DAVA::ScopedPtr<DAVA::UIStaticText> infoText;
     DAVA::ScopedPtr<DAVA::UIJoypad> moveJoyPAD;
     DAVA::ScopedPtr<DAVA::UIFileSystemDialog> fileSystemDialog;
-    std::unique_ptr<Menu> menu;
     DAVA::ScopedPtr<QualitySettingsDialog> qualitySettingsDialog;
+
+    std::unique_ptr<Menu> menu;
+    MenuItem* qualitySettingsMenuItem = nullptr;
+    MenuItem* reloadShadersMenuItem = nullptr;
+    MenuItem* performanceTestMenuItem = nullptr;
 
     //     DAVA::uint64 drawTime = 0;
     //     DAVA::uint64 updateTime = 0;
