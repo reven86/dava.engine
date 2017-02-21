@@ -28,8 +28,12 @@ OverdrawTesterRenderObject::OverdrawTesterRenderObject(DAVA::float32 addOverdraw
     layout.AddElement(rhi::VS_POSITION, 0, rhi::VDT_FLOAT, 3);
     layout.AddElement(rhi::VS_TEXCOORD, 0, rhi::VDT_FLOAT, 2);
 
+    uint32 layoutId = rhi::VertexLayout::UniqueId(layout);
+
     batch = new RenderBatch();
     batch->SetRenderObject(this);
+
+    batch->vertexLayoutId = layoutId;
 
     vertexStride = (3 + 2) * sizeof(float);
 
