@@ -141,6 +141,7 @@ public:
 
     bool RunScript(const String& luaScript);
     bool RunScriptFromFile(const FilePath& luaFilePath);
+
 protected:
 #if !defined(SWIG)
     inline void ParsePath(const String& path, Vector<String>& parsedPath) const;
@@ -148,7 +149,6 @@ protected:
     bool LoadScript(const String& luaScript);
     bool LoadScriptFromFile(const FilePath& luaFilePath);
     bool RunScript();
-
 
     bool LoadWrappedLuaObjects();
 

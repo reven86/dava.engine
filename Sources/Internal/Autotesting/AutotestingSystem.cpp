@@ -775,8 +775,7 @@ String AutotestingSystem::GetLuaString(int32& lineNumber)
     String result;
 
     FilePath scriptPath = GetRecordedScriptPath();
-    ScopedPtr<File> file (File::Create(scriptPath, File::OPEN | File::READ));
-    bool eofReached = false;
+    ScopedPtr<File> file(File::Create(scriptPath, File::OPEN | File::READ));
 
     if (file)
     {
