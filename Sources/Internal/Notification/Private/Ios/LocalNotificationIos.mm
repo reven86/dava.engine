@@ -6,6 +6,7 @@
 #import "Notification/Private/LocalNotificationImpl.h"
 #import <UIKit/UIApplication.h>
 #import <UIKit/UILocalNotification.h>
+#import <UIKit/UIUserNotificationSettings.h>
 #import "Utils/NSStringUtils.h"
 
 namespace DAVA
