@@ -40,6 +40,7 @@
 #include "Tests/DeviceManagerTest.h"
 #include "Tests/SoundTest.h"
 #include "Tests/AnyPerformanceTest.h"
+#include "Tests/UIStylesTest.h"
 //$UNITTEST_INCLUDE
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
@@ -325,6 +326,7 @@ void TestBed::RegisterTests()
 
 #endif
 
+    new UIStylesTest(*this);
     //$UNITTEST_CTOR
 }
 
