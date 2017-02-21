@@ -317,6 +317,8 @@ void EngineBackend::OnEngineCleanup()
     dispatcher = nullptr;
     platformCore = nullptr;
 
+    DAVA_MEMORY_PROFILER_FINISH();
+
     Logger::Info("EngineBackend::OnEngineCleanup: leave");
 }
 
