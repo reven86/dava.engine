@@ -25,8 +25,7 @@ APP_LDFLAGS  += -fsanitize=address
 #LIBCXX_FORCE_REBUILD := true # if you want to see bug in stl line code
 endif
 
-# Uncomment to use core v2, do not forget to edit AndroidManifest.xml
-# APP_CFLAGS += -D__DAVAENGINE_COREV2__
+APP_CFLAGS += -D__DAVAENGINE_COREV2__
 
 APP_ABI += armeabi-v7a
 APP_ABI += x86

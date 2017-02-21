@@ -30,6 +30,20 @@ FILE* OpenFile(const String& fileName, const String& mode)
 #endif
 }
 
+int32 Close(FILE* f)
+{
+    int32 result = EOF;
+    if (f != nullptr)
+    {
+        result = fclose(f);
+        if (result != 0)
+        {
+            Logger::Error("error during close file stream");
+        }
+    }
+    return result;
+}
+
 int32 RemoveFile(const String& fileName)
 {
 #ifdef __DAVAENGINE_WINDOWS__

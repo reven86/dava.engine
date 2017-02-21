@@ -1,9 +1,10 @@
 #include <algorithm>
 #include <cstdlib>
 #include <cstring>
+#include <fstream>
 #include <sstream>
 
-#include "pack_archive.h"
+#include "archive.h"
 
 using DWORD = std::uint32_t;
 const std::uint32_t MAX_PATH = 260;
@@ -48,12 +49,12 @@ HANDLE STDCALL OpenArchive(tOpenArchiveData* ArchiveData)
         }
     }
 
-    PackArchive* archive = nullptr;
+    Archive* archive = nullptr;
     try
     {
         l << "begin open archive: " << ArchiveData->ArcName << '\n';
 
-        archive = new PackArchive(ArchiveData->ArcName);
+        archive = Create(ArchiveData->ArcName);
 
         l << "open archive: " << ArchiveData->ArcName << '\n';
     }
@@ -67,9 +68,9 @@ HANDLE STDCALL OpenArchive(tOpenArchiveData* ArchiveData)
 
 int STDCALL CloseArchive(HANDLE hArcData)
 {
-    PackArchive* archive = reinterpret_cast<PackArchive*>(hArcData);
+    Archive* archive = reinterpret_cast<Archive*>(hArcData);
 
-    l << "close archive: " << archive->arcName << '\n';
+    l << "close archive: " << archive->archive_name << '\n';
 
     delete archive;
     return 0;
@@ -80,12 +81,12 @@ int STDCALL ReadHeader(HANDLE hArcData, tHeaderData* HeaderData)
 {
     l << "read header\n";
 
-    PackArchive* archive = reinterpret_cast<PackArchive*>(hArcData);
+    Archive* archive = reinterpret_cast<Archive*>(hArcData);
 
-    const std::vector<FileInfo>& files = archive->GetFilesInfo();
-    if (archive->fileIndex < files.size())
+    const std::vector<pack_format::file_info>& files = archive->GetFilesInfo();
+    if (archive->file_index < files.size())
     {
-        const FileInfo& info = files.at(archive->fileIndex);
+        const pack_format::file_info& info = files.at(archive->file_index);
 
         std::string name(info.relativeFilePath);
 
@@ -100,41 +101,41 @@ int STDCALL ReadHeader(HANDLE hArcData, tHeaderData* HeaderData)
 
         HeaderData->FileAttr = 1; // FILE_SHARE_READ;
         std::strncpy(HeaderData->FileName, name.c_str(), MAX_PATH);
-        std::strncpy(HeaderData->ArcName, archive->arcName.c_str(), MAX_PATH);
+        std::strncpy(HeaderData->ArcName, archive->archive_name.c_str(), MAX_PATH);
 
         HeaderData->FileCRC = info.hash;
         HeaderData->FileTime = 0;
         HeaderData->UnpSize = info.originalSize;
         HeaderData->PackSize = info.compressedSize;
 
-        archive->lastFileName = info.relativeFilePath;
+        archive->last_file_name = info.relativeFilePath;
 
         l << "read header file: " << HeaderData->FileName << " relative: "
-          << info.relativeFilePath << " index: " << archive->fileIndex << '\n';
+          << info.relativeFilePath << " index: " << archive->file_index << '\n';
 
-        ++archive->fileIndex;
+        ++archive->file_index;
     }
     else
     {
-        if (archive->fileIndex == files.size() && archive->HasMeta())
+        if (archive->file_index == files.size() && archive->HasMeta())
         {
-            ++archive->fileIndex;
+            ++archive->file_index;
             std::memset(HeaderData, 0, sizeof(*HeaderData));
 
             std::strncpy(HeaderData->FileName, "meta.meta", MAX_PATH);
-            std::strncpy(HeaderData->ArcName, archive->arcName.c_str(), MAX_PATH);
+            std::strncpy(HeaderData->ArcName, archive->archive_name.c_str(), MAX_PATH);
             HeaderData->PackSize = 0;
             auto& meta = archive->GetMeta();
-            HeaderData->UnpSize = meta.GetNumPacks();
+            HeaderData->UnpSize = meta.get_num_packs();
 
-            archive->lastFileName = "meta.meta";
+            archive->last_file_name = "meta.meta";
 
             l << "add meta file\n";
             return 0;
         }
         else
         {
-            archive->fileIndex = 0;
+            archive->file_index = 0;
             std::memset(HeaderData, 0, sizeof(*HeaderData));
 
             l << "end header\n";
@@ -158,8 +159,8 @@ int STDCALL ProcessFile(HANDLE hArcData, int Operation, char* DestPath,
     }
     else if (PK_EXTRACT == Operation)
     {
-        PackArchive* archive = reinterpret_cast<PackArchive*>(hArcData);
-        if (archive->lastFileName == std::string("meta.meta"))
+        Archive* archive = reinterpret_cast<Archive*>(hArcData);
+        if (archive->last_file_name == std::string("meta.meta"))
         {
             std::string data = archive->PrintMeta();
             std::string outputName = DestName ? DestName : DestPath;
@@ -167,10 +168,10 @@ int STDCALL ProcessFile(HANDLE hArcData, int Operation, char* DestPath,
             std::ofstream out(outputName, std::ios_base::binary);
             out.write(reinterpret_cast<const char*>(data.data()), data.size());
         }
-        else if (archive->HasFile(archive->lastFileName))
+        else if (archive->HasFile(archive->last_file_name))
         {
             std::vector<uint8_t> data;
-            archive->LoadFile(archive->lastFileName, data);
+            archive->HoadFile(archive->last_file_name, data);
             std::string outputName = DestName ? DestName : DestPath;
 
             std::ofstream out(outputName, std::ios_base::binary);

@@ -4,8 +4,8 @@
 #if defined(__DAVAENGINE_IPHONE__)
 
 #include "Engine/Private/EngineBackend.h"
-#include "Engine/Private/Ios/PlatformCoreiOS.h"
-#include "Engine/Private/Ios/CoreNativeBridgeiOS.h"
+#include "Engine/Private/iOS/PlatformCoreiOS.h"
+#include "Engine/Private/iOS/CoreNativeBridgeiOS.h"
 #include "Engine/Private/iOS/Window/WindowBackendiOS.h"
 #include "Engine/Private/iOS/Window/WindowNativeBridgeiOS.h"
 #include "Render/Image/Image.h"
@@ -84,7 +84,7 @@ Image* ConvertUIImageToImage(UIImage* nativeImage)
             const uint32 bitsPerComponent = 8;
             const uint32 bytesPerRow = bytesPerPixel * width;
 
-            //Memset(rawData, 0, width * height * bytesPerPixel);
+            Memset(rawData, 0, width * height * bytesPerPixel);
 
             CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
             CGContextRef context = CGBitmapContextCreate(rawData,
@@ -104,18 +104,18 @@ Image* ConvertUIImageToImage(UIImage* nativeImage)
     return image;
 }
 
-void RegisterUIApplicationDelegateListener(UIApplicationDelegateListener* listener)
+void RegisterDVEApplicationListener(id<DVEApplicationListener> listener)
 {
     using namespace DAVA::Private;
     PlatformCore* core = EngineBackend::Instance()->GetPlatformCore();
-    core->bridge->RegisterUIApplicationDelegateListener(listener);
+    core->bridge->RegisterDVEApplicationListener(listener);
 }
 
-void UnregisterUIApplicationDelegateListener(UIApplicationDelegateListener* listener)
+void UnregisterDVEApplicationListener(id<DVEApplicationListener> listener)
 {
     using namespace DAVA::Private;
     PlatformCore* core = EngineBackend::Instance()->GetPlatformCore();
-    core->bridge->UnregisterUIApplicationDelegateListener(listener);
+    core->bridge->UnregisterDVEApplicationListener(listener);
 }
 
 } // namespace Ios

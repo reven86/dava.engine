@@ -22,6 +22,7 @@ public:
     void Push(PackRequest*);
     void Pop();
     void UpdateOrder(PackRequest* request, uint32 newOrderIndex);
+    void Remove(PackRequest* request);
 
 private:
     DLCManager& packManager;

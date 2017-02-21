@@ -19,14 +19,12 @@ public:
 
 protected:
     QWidget* AcquireEditorWidget(QWidget* parent, const QStyleOptionViewItem& option) override;
-    void ReleaseEditorWidget(QWidget* editor) override;
 
 private:
     String GetText() const;
     void SetText(const DAVA::String& text);
 
     bool IsReadOnly() const;
-    bool IsEnabled() const;
 
 private:
     DAVA_VIRTUAL_REFLECTION(TextComponentValue, ProxyComponentValue<TextEditorDrawer, TextValueCompositor>);

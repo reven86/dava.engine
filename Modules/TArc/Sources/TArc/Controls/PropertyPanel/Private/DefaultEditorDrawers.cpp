@@ -1,10 +1,13 @@
 #include "TArc/Controls/PropertyPanel/DefaultEditorDrawers.h"
 #include "TArc/Controls/PropertyPanel/PropertyModelExtensions.h"
 
+#include "TArc/Controls/ComboBoxCheckable.h"
+
 #include <Reflection/ReflectedMeta.h>
 
 #include <QStyle>
 #include <QStyleOption>
+#include <QStyleOptionComboBox>
 #include <QPainter>
 
 namespace DAVA
@@ -87,6 +90,63 @@ QString BoolEditorDrawer::GetTextHint(const Any& value, const Vector<std::shared
         else
         {
             result = (state == Qt::Checked) ? EditorDrawerDetails::trueString : EditorDrawerDetails::falseString;
+        }
+    }
+
+    return result;
+}
+
+void DefaultEnumEditorDrawer::InitStyleOptions(Params& params) const
+{
+    params.options.text = GetTextHint(params.value, params.nodes);
+}
+
+uint32 DefaultEnumEditorDrawer::GetHeight(Params params) const
+{
+    InitStyleOptions(params);
+    return params.style->sizeFromContents(QStyle::CT_ComboBox, &params.options, QSize(), params.options.widget).height();
+}
+
+void DefaultEnumEditorDrawer::Draw(QPainter* painter, Params params) const
+{
+    InitStyleOptions(params);
+
+    QStyleOptionComboBox box;
+    box.rect = params.options.rect;
+    box.currentText = params.options.text;
+
+    params.style->drawComplexControl(QStyle::CC_ComboBox, &box, painter, params.options.widget);
+    params.style->drawControl(QStyle::CE_ComboBoxLabel, &box, painter, params.options.widget);
+}
+
+QString EnumEditorDrawer::GetTextHint(const Any& value, const Vector<std::shared_ptr<PropertyNode>>* nodes) const
+{
+    QString result;
+    if (value.IsEmpty() == false && nodes->empty() == false)
+    {
+        const M::Enum* enumMeta = nodes->front()->field.ref.GetMeta<M::Enum>();
+        if (enumMeta != nullptr)
+        {
+            int intValue = value.Cast<int>();
+
+            const EnumMap* enumMap = enumMeta->GetEnumMap();
+            result = enumMap->ToString(intValue);
+        }
+    }
+
+    return result;
+}
+
+QString FlagsEditorDrawer::GetTextHint(const Any& value, const Vector<std::shared_ptr<PropertyNode>>* nodes) const
+{
+    QString result;
+    if (nodes->empty() == false)
+    {
+        const M::Flags* enumFlags = nodes->front()->field.ref.GetMeta<M::Flags>();
+        if (enumFlags != nullptr)
+        {
+            const EnumMap* enumMap = enumFlags->GetFlagsMap();
+            result = CreateTextComboCheckable(value, enumMap);
         }
     }
 

@@ -21,6 +21,8 @@ struct DeviceManagerImpl final
 
     DeviceManager* deviceManager = nullptr;
     Private::MainDispatcher* mainDispatcher = nullptr;
+
+    static float32 GetIPhoneMainScreenDpi();
 };
 
 } // namespace Private
