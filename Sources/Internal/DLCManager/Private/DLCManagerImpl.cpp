@@ -772,10 +772,12 @@ const DLCManager::IRequest* DLCManagerImpl::RequestPack(const String& packName)
     return request;
 }
 
-void DLCManagerImpl::SetRequestOrder(const IRequest* request, uint32 orderIndex)
+void DLCManagerImpl::SetPriorityToRequest(const IRequest* request)
 {
     DVASSERT(Thread::IsMainThread());
 
+    return; // TODO reimplement it
+    /*
     if (request != nullptr)
     {
         const PackRequest* r = dynamic_cast<const PackRequest*>(request);
@@ -801,6 +803,7 @@ void DLCManagerImpl::SetRequestOrder(const IRequest* request, uint32 orderIndex)
             }
         }
     }
+     */
 }
 
 void DLCManagerImpl::RemovePack(const String& requestedPackName)

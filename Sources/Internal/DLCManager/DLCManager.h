@@ -90,8 +90,9 @@ public:
     /** return nullptr if can't find pack */
     virtual const IRequest* RequestPack(const String& packName) = 0;
 
-    /** DEPRECATED order - [0..N] - 0 - first, 1, 2, ... , N - last in queue */
-    virtual void SetRequestOrder(const IRequest* request, uint32 orderIndex) = 0;
+    /** Update request queue to first download dependency of selected request
+        and then request itself */
+    virtual void SetPriorityToRequest(const IRequest* request) = 0;
 
     virtual void RemovePack(const String& packName) = 0;
 };
