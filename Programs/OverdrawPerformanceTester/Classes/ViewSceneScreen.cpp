@@ -62,7 +62,7 @@ void ViewSceneScreen::LoadResources()
     }
     */
         testerSystem = new OverdrawPerformanceTester::OverdrawTesterSystem(scene);
-        scene->AddSystem(testerSystem, MAKE_COMPONENT_MASK(OverdrawPerformanceTester::OverdrawTesterComonent::OVERDRAW_TESTER_COMPONENT));
+        scene->AddSystem(testerSystem, MAKE_COMPONENT_MASK(OverdrawPerformanceTester::OverdrawTesterComonent::OVERDRAW_TESTER_COMPONENT), DAVA::Scene::SCENE_SYSTEM_REQUIRE_PROCESS);
 
         ScopedPtr<Camera> camera(new Camera());
 
@@ -89,6 +89,17 @@ void ViewSceneScreen::LoadResources()
         overdrawTesterEntity->AddComponent(new OverdrawPerformanceTester::OverdrawTesterComonent());
         scene->AddNode(overdrawTesterEntity);
         overdrawTesterEntity->Release();
+
+        Rect screenRect = GetRect();
+        Size2i screenSize = UIControlSystem::Instance()->vcs->GetVirtualScreenSize();
+        screenRect.dx = static_cast<float32>(screenSize.dx);
+        screenRect.dy = static_cast<float32>(screenSize.dy);
+        SetRect(screenRect);
+        ScopedPtr<UI3DView> sceneView(new UI3DView(screenRect));
+        sceneView->SetScene(scene);
+        //sceneView->SetFrameBufferScaleFactor(0.5f);
+        //sceneView->SetDrawToFrameBuffer(true);
+        AddControl(sceneView);
 // 
 //         rotationControllerSystem = new RotationControllerSystem(scene);
 //         scene->AddSystem(rotationControllerSystem, MAKE_COMPONENT_MASK(Component::CAMERA_COMPONENT) | MAKE_COMPONENT_MASK(Component::ROTATION_CONTROLLER_COMPONENT),
@@ -98,16 +109,6 @@ void ViewSceneScreen::LoadResources()
 //         scene->AddSystem(wasdSystem, MAKE_COMPONENT_MASK(Component::CAMERA_COMPONENT) | MAKE_COMPONENT_MASK(Component::WASD_CONTROLLER_COMPONENT),
 //                          Scene::SCENE_SYSTEM_REQUIRE_PROCESS);
 // 
-//         Rect screenRect = GetRect();
-//         Size2i screenSize = UIControlSystem::Instance()->vcs->GetVirtualScreenSize();
-//         screenRect.dx = static_cast<float32>(screenSize.dx);
-//         screenRect.dy = static_cast<float32>(screenSize.dy);
-//         SetRect(screenRect);
-//         ScopedPtr<UI3DView> sceneView(new UI3DView(screenRect));
-//         sceneView->SetScene(scene);
-//         //sceneView->SetFrameBufferScaleFactor(0.5f);
-//         //sceneView->SetDrawToFrameBuffer(true);
-//         AddControl(sceneView);
 // 
 //         ScopedPtr<UIButton> backButton(CreateButton(Rect(0, 0, 90, 30), L"||||||||||||||||||||||"));
 //         backButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &ViewSceneScreen::OnBack));

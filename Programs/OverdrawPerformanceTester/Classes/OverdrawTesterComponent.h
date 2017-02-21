@@ -11,6 +11,7 @@ class Entity;
 namespace OverdrawPerformanceTester
 {
 using DAVA::uint32;
+using DAVA::float32;
 
 class OverdrawTesterRenderObject;
 
@@ -27,14 +28,16 @@ public:
     ~OverdrawTesterComonent();
     
     inline OverdrawTesterRenderObject* GetRenderObject() const;
-
-    INTROSPECTION_EXTEND(OverdrawTesterComonent, Component,
-        NULL);
-
     Component* Clone(DAVA::Entity* toEntity) override;
 
 private:
     OverdrawTesterRenderObject* renderObject;
+    float32 addOverdrawPercent = 10.0f;
+    uint32 stepsCount = 100;
+
+public:
+    INTROSPECTION_EXTEND(OverdrawTesterComonent, Component,
+        NULL);
 };
 
 OverdrawTesterRenderObject* OverdrawTesterComonent::GetRenderObject() const

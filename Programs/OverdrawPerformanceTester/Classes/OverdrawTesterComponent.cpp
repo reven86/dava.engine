@@ -2,13 +2,15 @@
 
 #include "OverdrawTesterRenderObject.h"
 #include "Scene3D/Entity.h"
+#include "Math/Matrix4.h"
 
 namespace OverdrawPerformanceTester
 {
 
 OverdrawTesterComonent::OverdrawTesterComonent()
 {
-    renderObject = new OverdrawTesterRenderObject();
+    renderObject = new OverdrawTesterRenderObject(addOverdrawPercent);
+    renderObject->SetWorldTransformPtr(&DAVA::Matrix4::IDENTITY);
 }
 
 OverdrawTesterComonent::~OverdrawTesterComonent()
