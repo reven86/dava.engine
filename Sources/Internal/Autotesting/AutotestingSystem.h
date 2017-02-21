@@ -124,8 +124,6 @@ public:
         return isRecording;
     }
 
-    FilePath GetRecordedScriptPath() const;
-
     void SetTestFinishedCallback(const Function<void()> callback)
     {
         testFinishedCallback = callback;

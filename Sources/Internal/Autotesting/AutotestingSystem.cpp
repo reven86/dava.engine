@@ -742,7 +742,7 @@ String AutotestingSystem::GetControlHierarchy(UIControl* control) const
         hierarhy = Format("%s/%s", iter->GetName().c_str(), hierarhy.c_str());
         iter = iter->GetParent();
     }
-    FilePath scriptPath = GetRecordedScriptPath();
+    FilePath scriptPath = pathToAutomation + RecordScriptFileName;
     hierarhy = Format("%s%s", hierarhy.c_str(), control->GetName().c_str());
     return hierarhy;
 }
@@ -753,7 +753,7 @@ void AutotestingSystem::WriteScriptLine(const String& textLine)
     {
         return;
     }
-    FilePath scriptPath = GetRecordedScriptPath();
+    FilePath scriptPath = pathToAutomation + RecordScriptFileName;
     ScopedPtr<File> recordedActs(nullptr);
     if (GetEngineContext()->fileSystem->Exists(scriptPath))
     {
@@ -773,7 +773,7 @@ String AutotestingSystem::GetLuaString(int32& lineNumber) const
 {
     String result;
 
-    FilePath scriptPath = GetRecordedScriptPath();
+    FilePath scriptPath = pathToAutomation + RecordScriptFileName;
     ScopedPtr<File> file(File::Create(scriptPath, File::OPEN | File::READ));
 
     if (file)
@@ -801,11 +801,6 @@ String AutotestingSystem::GetLuaString(int32& lineNumber) const
     }
 
     return result;
-}
-
-FilePath AutotestingSystem::GetRecordedScriptPath() const
-{
-    return pathToAutomation + RecordScriptFileName;
 }
 
 void AutotestingSystem::StartRecording()
