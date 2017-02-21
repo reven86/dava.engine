@@ -47,7 +47,11 @@ void SceneViewerApp::OnWindowCreated(DAVA::Window* w)
 
     const Size2f windowSize = { 1024.f, 1024.f / data.screenAspect };
 
-    w->SetTitleAsync("Scene Viewer");
+    DAVA::String title = DAVA::Format("DAVA Engine - Scene Viewer | %s [%u bit]", DAVAENGINE_VERSION,
+                                      static_cast<DAVA::uint32>(sizeof(DAVA::pointer_size) * 8));
+
+    w->SetTitleAsync(title);
+
     w->SetSizeAsync(windowSize);
     w->SetVirtualSize(windowSize.dx, windowSize.dy);
 
