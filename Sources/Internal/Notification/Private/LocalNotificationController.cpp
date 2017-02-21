@@ -5,6 +5,7 @@
 
 #include "Notification/Private/Android/LocalNotificationAndroid.h"
 #include "Notification/Private/LocalNotificationStub.h"
+#include "Notification/Private/LocalNotificationImpl.h"
 
 #include "Notification/Private/Mac/LocalNotificationListenerBridge.h"
 #include "Notification/Private/Ios/LocalNotificationListenerBridge.h"
