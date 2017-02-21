@@ -19,12 +19,12 @@ endif
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := fmodex-prebuild
-LOCAL_SRC_FILES := ../../Libs/fmod/lib/android/$(TARGET_ARCH_ABI)/libfmodex.so
+LOCAL_SRC_FILES := ../../Modules/Sound/Libs/Android/$(TARGET_ARCH_ABI)/libfmodex.so
 include $(PREBUILT_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := fmodevent-prebuild
-LOCAL_SRC_FILES := ../../Libs/fmod/lib/android/$(TARGET_ARCH_ABI)/libfmodevent.so
+LOCAL_SRC_FILES := ../../Modules/Sound/Libs/Android/$(TARGET_ARCH_ABI)/libfmodevent.so
 include $(PREBUILT_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
@@ -118,7 +118,7 @@ DAVA_ROOT := $(LOCAL_PATH)
 DV_LOCAL_C_INCLUDES := $(LOCAL_PATH)
 DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../Tools/
 DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/include
-DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/fmod/include
+DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Modules/Sound/Libs/Include
 DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/lua/include
 DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/icucommon/source/common
 DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/openssl/include/android
@@ -441,7 +441,8 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Scene3D/Lod/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene3D/Lod/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scripting/Private/*.cpp) \
-                     $(wildcard $(LOCAL_PATH)/Sound/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Sound/Private/SoundSystem.cpp) \
+                     $(wildcard $(DAVA_ROOT)/Modules/Sound/Sources/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Time/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Time/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Concurrency/*.cpp) \
