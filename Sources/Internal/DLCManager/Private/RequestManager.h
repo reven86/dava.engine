@@ -21,7 +21,7 @@ public:
     PackRequest* Top() const;
     void Push(PackRequest*);
     void Pop();
-    void UpdateOrder(PackRequest* request, uint32 newOrderIndex);
+    void SetPriorityToRequest(PackRequest* request);
     void Remove(PackRequest* request);
 
 private:

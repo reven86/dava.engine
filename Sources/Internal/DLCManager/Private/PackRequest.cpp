@@ -146,6 +146,30 @@ void PackRequest::SetFileIndexes(Vector<uint32> fileIndexes_)
     }
 }
 
+bool PackRequest::IsSubRequest(const PackRequest* other) const
+{
+    Vector<String> dep = GetDependencies();
+    for (const String& s : dep)
+    {
+        PackRequest* r = packManagerImpl.FindRequest(s);
+        if (r != nullptr)
+        {
+            if (r == other)
+            {
+                return true;
+            }
+            else
+            {
+                if (r->IsSubRequest(other))
+                {
+                    return true;
+                }
+            }
+        }
+    }
+    return false;
+}
+
 void PackRequest::InitializeFileRequests()
 {
     if (fileIndexes.size() != requests.size())

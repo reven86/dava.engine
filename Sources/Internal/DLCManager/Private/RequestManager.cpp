@@ -83,8 +83,9 @@ void RequestManager::Push(PackRequest* request_)
     requests.push_back(request_);
 }
 
-void RequestManager::UpdateOrder(PackRequest* request, uint32 orderIndex)
+void RequestManager::SetPriorityToRequest(PackRequest* request)
 {
+    DVASSERT(Thread::IsMainThread());
     DVASSERT(request != nullptr);
 
     PackRequest* prevTop = Top();
@@ -96,15 +97,30 @@ void RequestManager::UpdateOrder(PackRequest* request, uint32 orderIndex)
     auto it = find(begin(requests), end(requests), request);
     if (it != end(requests))
     {
-        requests.erase(it);
-        if (orderIndex >= requests.size())
+        // 1. collect all request not sub request for "request"
+        Vector<PackRequest*> removeFromBeg;
+        for (PackRequest* r : requests)
         {
-            requests.push_back(request);
+            if (r == request)
+            {
+                break;
+            }
+            if (!request->IsSubRequest(r))
+            {
+                removeFromBeg.push_back(r);
+            }
         }
-        else
+        // 2. remove all NOT sub request from begining queue
+        for (PackRequest* r : removeFromBeg)
         {
-            auto insertIt = begin(requests) + orderIndex;
-            requests.insert(insertIt, request);
+            requests.erase(find_if(begin(requests), end(requests), r));
+        }
+        // 3. find position after "request"
+        it = find(begin(requests), end(requests), request);
+        // 4. insert all previously removed request after preserve order
+        for (PackRequest* r : removeFromBeg)
+        {
+            it = requests.insert(it, r);
         }
     }
 

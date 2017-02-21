@@ -776,15 +776,13 @@ void DLCManagerImpl::SetPriorityToRequest(const IRequest* request)
 {
     DVASSERT(Thread::IsMainThread());
 
-    return; // TODO reimplement it
-    /*
     if (request != nullptr)
     {
         const PackRequest* r = dynamic_cast<const PackRequest*>(request);
         PackRequest* req = const_cast<PackRequest*>(r);
         if (IsInitialized())
         {
-            requestManager->UpdateOrder(req, orderIndex);
+            requestManager->SetPriorityToRequest(req);
         }
         else
         {
@@ -792,9 +790,9 @@ void DLCManagerImpl::SetPriorityToRequest(const IRequest* request)
             if (it != end(delayedRequests))
             {
                 delayedRequests.erase(it);
-                if (delayedRequests.size() > orderIndex)
+                if (!delayedRequests.empty())
                 {
-                    delayedRequests.insert(delayedRequests.begin() + orderIndex, req);
+                    delayedRequests.insert(delayedRequests.begin(), req);
                 }
                 else
                 {
@@ -803,7 +801,6 @@ void DLCManagerImpl::SetPriorityToRequest(const IRequest* request)
             }
         }
     }
-     */
 }
 
 void DLCManagerImpl::RemovePack(const String& requestedPackName)

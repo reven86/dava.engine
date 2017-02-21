@@ -35,6 +35,9 @@ public:
 
     void SetFileIndexes(Vector<uint32> fileIndexes_);
 
+    /** this request depends for other, so other should be downloaded first */
+    bool IsSubRequest(const PackRequest* other) const;
+
 private:
     void InitializeFileRequests();
 
