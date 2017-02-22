@@ -23,9 +23,11 @@ public:
 
 private:
     DAVA::Array<DAVA::Vector<ViewSceneScreen::FrameData>, 6>* performanceData;
+    void DrawLegend(int32 w, int32 h);
     bool shouldDrawGraph = false;
 
     static const DAVA::Array<DAVA::Color, 6> chartColors;
+    static const DAVA::Array<DAVA::String, 6> legend;
     static const DAVA::Vector2 chartOffset;
     static const DAVA::Color gridColor;
     static const DAVA::float32 chartLen;

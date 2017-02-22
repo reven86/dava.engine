@@ -16,6 +16,16 @@ const DAVA::float32 ChartPainterSystem::fpsStep = 10.0f;
 const DAVA::float32 ChartPainterSystem::overdrawStepCount = maxOverdraw / overdrawStep;
 const DAVA::float32 ChartPainterSystem::fpsStepCount = maxFps / fpsStep;
 
+const DAVA::Array<DAVA::String, 6> ChartPainterSystem::legend =
+{ {
+    "0 tex",
+    "1 tex",
+    "2 tex",
+    "3 tex",
+    "4 tex",
+    "dep r"
+} };
+
 const DAVA::Array<DAVA::Color, 6> ChartPainterSystem::chartColors =
 { {
     { 0.0f, 1.0f, 0.0f, 1.0f},
@@ -44,7 +54,9 @@ void ChartPainterSystem::Process(float32 timeElapsed)
 
     int32 w = vcs->GetVirtualScreenSize().dx;
     int32 h = vcs->GetVirtualScreenSize().dy;
-    
+
+    DrawLegend(w, h);
+
     DrawGrid(w, h);
     DrawCharts(w, h);
 
@@ -77,7 +89,7 @@ void ChartPainterSystem::DrawGrid(int32 w, int32 h)
         p.AddPoint({ (chartOffset.x + chartLen) * w, pointY });
         RenderSystem2D::Instance()->DrawPolygon(p, false, gridColor);
 
-        DbgDraw::Text2D(static_cast<int32>(chartOffset.x * w), static_cast<int32>(pointY), textColor, "%f", i * fpsStep);
+        DbgDraw::Text2D(static_cast<int32>(0.05f * w), static_cast<int32>(pointY), textColor, "%.2f", i * fpsStep);
     }
 
     for (int32 i = 1; i < overdrawStepCount + 1; i++)
@@ -90,7 +102,7 @@ void ChartPainterSystem::DrawGrid(int32 w, int32 h)
         p.AddPoint({ pointX, chartOffset.y * h });
         p.AddPoint({ pointX, (chartOffset.y + chartLen) * h });
         RenderSystem2D::Instance()->DrawPolygon(p, false, gridColor);
-        DbgDraw::Text2D(static_cast<int32>(pointX), static_cast<int32>((chartOffset.y + chartLen) * h), textColor, "%f", i * overdrawStep);
+        DbgDraw::Text2D(static_cast<int32>(pointX), static_cast<int32>((chartOffset.y + chartLen) * h), textColor, "%.2f", i * overdrawStep);
     }
 }
 
@@ -146,6 +158,25 @@ void ChartPainterSystem::FlushDbgText()
 
     rhi::EndPacketList(packetList);
     rhi::EndRenderPass(pass);
+}
+
+void ChartPainterSystem::DrawLegend(int32 w, int32 h)
+{
+    float32 initialOffset = static_cast<float32>(w) / 14.0f;
+    float32 step = static_cast<float32>(w) / 7.0f;
+    int32 lineOffset = static_cast<int32>(static_cast<float32>(w) / 9.0f);
+    int32 yPos = static_cast<int32>(0.05f * h);
+    float32 yPosFloat = 0.05f * h;
+    for (int i = 0; i < 6; i++)
+    {
+        int32 startX = static_cast<int32>(step * i + initialOffset);
+        float32 startXFloat = step * i + initialOffset;
+        Polygon2 p;
+        p.AddPoint({ startXFloat, yPosFloat });
+        p.AddPoint({ startXFloat + lineOffset, yPosFloat });
+        RenderSystem2D::Instance()->DrawPolygon(p, false, chartColors[i]);
+        DbgDraw::Text2D(startX, yPos, textColor, "%s", legend[i].c_str());
+    }
 }
 
 }
