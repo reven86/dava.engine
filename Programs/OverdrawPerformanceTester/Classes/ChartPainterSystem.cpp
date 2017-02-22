@@ -72,8 +72,10 @@ void ChartPainterSystem::Process(float32 timeElapsed)
             normalizedFps *= fpsLen;
             normalizedOverdraw *= overdrawLen;
 
-            float32 pointX = (normalizedOverdraw + offset.x) * w;
-            float32 pointY = (normalizedFps + offset.y) * h;
+            float32 pointX = (normalizedOverdraw + offset.x);
+            float32 pointY = 1 - (normalizedFps + offset.y);
+            pointX *= w;
+            pointY *= h;
 
             p.AddPoint( { pointX, pointY } );
         }
