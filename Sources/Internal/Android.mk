@@ -19,12 +19,12 @@ endif
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := fmodex-prebuild
-LOCAL_SRC_FILES := ../../Libs/fmod/lib/android/$(TARGET_ARCH_ABI)/libfmodex.so
+LOCAL_SRC_FILES := ../../Libs/lib_CMake/android/$(TARGET_ARCH_ABI)/libfmodex.so
 include $(PREBUILT_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := fmodevent-prebuild
-LOCAL_SRC_FILES := ../../Libs/fmod/lib/android/$(TARGET_ARCH_ABI)/libfmodevent.so
+LOCAL_SRC_FILES := ../../Libs/lib_CMake/android/$(TARGET_ARCH_ABI)/libfmodevent.so
 include $(PREBUILT_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
