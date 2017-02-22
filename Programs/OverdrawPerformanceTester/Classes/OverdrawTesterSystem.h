@@ -38,6 +38,7 @@ private:
     DAVA::uint32 stepsCount = 1;
     DAVA::uint32 maxStepsCount = 100;
     DAVA::uint32 textureSamples = 0;
+    DAVA::float32 overdrawPercent = 10.0f;
 
     DAVA::Vector<DAVA::Texture*> textures;
 

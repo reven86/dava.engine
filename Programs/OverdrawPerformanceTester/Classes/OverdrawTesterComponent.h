@@ -30,6 +30,8 @@ public:
     inline OverdrawTesterRenderObject* GetRenderObject() const;
     Component* Clone(DAVA::Entity* toEntity) override;
 
+    inline uint32 GetStepsCount() const;
+    inline float32 GetStepOverdraw() const;
 private:
     OverdrawTesterRenderObject* renderObject;
     float32 addOverdrawPercent = 10.0f;
@@ -43,5 +45,15 @@ public:
 OverdrawTesterRenderObject* OverdrawTesterComonent::GetRenderObject() const
 {
     return renderObject;
+}
+
+uint32 OverdrawTesterComonent::GetStepsCount() const
+{
+    return stepsCount;
+}
+
+float32 OverdrawTesterComonent::GetStepOverdraw() const
+{
+    return addOverdrawPercent;
 }
 }

@@ -18,8 +18,8 @@ using DAVA::DynamicBufferAllocator::AllocResultVB;
 using DAVA::DynamicBufferAllocator::AllocResultIB;
 using DAVA::Camera;
 
-OverdrawTesterRenderObject::OverdrawTesterRenderObject(DAVA::float32 addOverdrawPercent_)
-    : addOverdrawPercent(addOverdrawPercent_), stepsCount(0), addOverdrawPercentNormalized(addOverdrawPercent_ * 0.01f)
+OverdrawTesterRenderObject::OverdrawTesterRenderObject(float32 addOverdrawPercent_, uint32 maxStepsCount_) 
+    : addOverdrawPercent(addOverdrawPercent_), addOverdrawPercentNormalized(addOverdrawPercent_ * 0.01f)
 {
     AddFlag(RenderObject::ALWAYS_CLIPPING_VISIBLE);
     AddFlag(RenderObject::CUSTOM_PREPARE_TO_RENDER);
@@ -27,22 +27,60 @@ OverdrawTesterRenderObject::OverdrawTesterRenderObject(DAVA::float32 addOverdraw
     rhi::VertexLayout layout;
     layout.AddElement(rhi::VS_POSITION, 0, rhi::VDT_FLOAT, 3);
     layout.AddElement(rhi::VS_TEXCOORD, 0, rhi::VDT_FLOAT, 2);
-
     uint32 layoutId = rhi::VertexLayout::UniqueId(layout);
 
-    batch = new RenderBatch();
-    batch->SetRenderObject(this);
-
-    batch->vertexLayoutId = layoutId;
-
     vertexStride = (3 + 2) * sizeof(float);
+    GenerateIndexBuffer();
+
+    for (uint32 i = 0; i < maxStepsCount_; i++)
+    {
+        GenerateQuad(i, layoutId);
+    }
 
     bbox.AddPoint(Vector3(1.0f, 1.0f, 1.0f));
 }
 
+void OverdrawTesterRenderObject::GenerateQuad(uint32 index, uint32 layoutId)
+{
+    float32 start = addOverdrawPercentNormalized * index;
+    start = start - static_cast<int32>(start);
+    start = start < 0.999f ? start : 0.0f;
+
+    start = start * 2 - 1.0f;
+    float32 end = start + 2.0f * addOverdrawPercentNormalized;
+    end = end < 0.999f ? end : 1.0f;
+
+    auto quad = GetQuadVerts(start, end);
+
+    rhi::VertexBuffer::Descriptor desc;
+    desc.usage = rhi::USAGE_STATICDRAW;
+    desc.size = 4 * sizeof(QuadVertex);
+    desc.initialData = quad.data();
+    rhi::HVertexBuffer vBuffer = rhi::CreateVertexBuffer(desc);
+
+    RenderBatch* renderBatch = new RenderBatch();
+    renderBatch->SetRenderObject(this);
+    renderBatch->vertexLayoutId = layoutId;
+    renderBatch->vertexBuffer = vBuffer;
+    renderBatch->indexBuffer = iBuffer;
+    renderBatch->indexCount = 6;
+    renderBatch->vertexCount = 6;
+
+    quads.push_back(renderBatch);
+}
+
 OverdrawTesterRenderObject::~OverdrawTesterRenderObject()
 {
-    SafeRelease(batch);
+    for (auto batch : quads)
+    {
+        if (batch->vertexBuffer.IsValid())
+            rhi::DeleteVertexBuffer(batch->vertexBuffer);
+        DAVA::SafeRelease(batch);
+    }
+    quads.clear();
+
+    if (iBuffer.IsValid())
+        rhi::DeleteIndexBuffer(iBuffer);
 }
 
 void OverdrawTesterRenderObject::PrepareToRender(DAVA::Camera* camera)
@@ -51,67 +89,21 @@ void OverdrawTesterRenderObject::PrepareToRender(DAVA::Camera* camera)
     if (material == nullptr || currentStepsCount == 0)
         return;
     activeVerts.clear();
+
     for (uint32 i = 0; i < currentStepsCount; i++)
-    {
-        float32 start = addOverdrawPercentNormalized * i;
-        start = start - static_cast<int32>(start);
-        start = start < 0.999f ? start : 0.0f;
-
-        start = start * 2 - 1.0f;
-        float32 end = start + 2.0f * addOverdrawPercentNormalized;
-        end = end < 0.999f ? end : 1.0f;
-
-        auto quad = GetQuad(start, end);
-        for (int j = 0; j < 6; j++)
-            activeVerts.push_back(quad[j]);
-    }
-    uint32 vertsToAllocate = static_cast<uint32>(activeVerts.size());
-    AllocResultVB vBuffer = DAVA::DynamicBufferAllocator::AllocateVertexBuffer(vertexStride, vertsToAllocate);
-    AllocResultIB iBuffer = DAVA::DynamicBufferAllocator::AllocateIndexBuffer(vertsToAllocate);
-    uint8* currVert = vBuffer.data;
-    uint16* currIndex = iBuffer.data;
-    for (int i = 0; i < activeVerts.size(); i++)
-    {
-
-        QuadVertex* vert = reinterpret_cast<QuadVertex*>(currVert);
-        vert->position = activeVerts[i].position;
-        vert->texcoord = activeVerts[i].texcoord;
-        *currIndex = i;
-
-        currVert += vertexStride;
-        currIndex++;
-    }
-    batch->vertexBuffer = vBuffer.buffer;
-    batch->vertexCount = vertsToAllocate;
-    batch->indexBuffer = iBuffer.buffer;
-    batch->indexCount = vertsToAllocate;
-
-    activeRenderBatchArray.push_back(batch);
+        activeRenderBatchArray.push_back(quads[i]);
 }
 
-DAVA::Array<OverdrawTesterRenderObject::QuadVertex, 6> OverdrawTesterRenderObject::GetQuad(float32 xStart, float32 xEnd)
+DAVA::Array<OverdrawTesterRenderObject::QuadVertex, 6> OverdrawTesterRenderObject::GetQuadVerts(float32 xStart, float32 xEnd)
 {
-    Vector3 p0(xStart, -1.0f, 0.0f);
-    Vector3 p1(xStart, 1.0f, 0.0f);
-    Vector3 p2(xEnd, 1.0f, 0.0f);
-    Vector3 p3(xEnd, -1.0f, 0.0f);
-
-    Vector2 t0(0.0f, 0.0f);
-    Vector2 t1(0.0f, 1.0f);
-    Vector2 t2(1.0f, 1.0f);
-    Vector2 t3(1.0f, 0.0f);
-
     return
     { {
-        { p0, t0 },
-        { p3, t3 },
-        { p1, t1 },
-        { p3, t3 },
-        { p2, t2 },
-        { p1, t1 }
-        } };
+        { { xStart, -1.0f, 1.0f }, { 0.0f, 0.0f } },
+        { { xStart, 1.0f, 1.0f }, { 0.0f, 1.0f } },
+        { { xEnd, 1.0f, 1.0f }, { 1.0f, 1.0f } },
+        { { xEnd, -1.0f, 1.0f }, { 1.0f, 0.0f } }
+    } };
 }
-
 
 void OverdrawTesterRenderObject::RecalculateWorldBoundingBox()
 {
@@ -121,6 +113,17 @@ void OverdrawTesterRenderObject::RecalculateWorldBoundingBox()
 void OverdrawTesterRenderObject::BindDynamicParameters(Camera* camera)
 {
     DAVA::Renderer::GetDynamicBindings().SetDynamicParam(DAVA::DynamicBindings::PARAM_WORLD, &DAVA::Matrix4::IDENTITY, reinterpret_cast<DAVA::pointer_size>(&DAVA::Matrix4::IDENTITY));
+}
+
+void OverdrawTesterRenderObject::GenerateIndexBuffer()
+{
+    DAVA::Array<uint16, 6> indices = { 0, 3, 1, 1, 3, 2 };
+    rhi::IndexBuffer::Descriptor iDesc;
+    iDesc.indexSize = rhi::INDEX_SIZE_16BIT;
+    iDesc.size = 6 * sizeof(uint16);
+    iDesc.usage = rhi::USAGE_STATICDRAW;
+    iDesc.initialData = indices.data();
+    iBuffer = rhi::CreateIndexBuffer(iDesc);
 }
 
 }

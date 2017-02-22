@@ -26,7 +26,7 @@ fragment_out
 fragment_out fp_main( fragment_in input )
 {
     fragment_out output;
-    output.color = float4(input.texcoord0, 0.0f, 0.05f);
+    output.color = float4(input.texcoord0 * 0.5f, 0.0f, 0.05f);
 
     #if DEPENDENT_READ_TEST
         float4 uv = tex2D(t1, input.texcoord0);

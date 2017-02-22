@@ -76,6 +76,8 @@ void OverdrawTesterSystem::AddEntity(DAVA::Entity* entity)
     OverdrawTesterComonent* comp = static_cast<OverdrawTesterComonent*>(entity->GetComponent(OverdrawTesterComonent::OVERDRAW_TESTER_COMPONENT));
     if (comp != nullptr)
     {
+        maxStepsCount = comp->GetStepsCount();
+        overdrawPercent = comp->GetStepOverdraw();
         OverdrawTesterRenderObject* renderObject = comp->GetRenderObject();
         renderObject->SetDrawMaterial(overdrawMaterial);
         GetScene()->GetRenderSystem()->RenderPermanent(renderObject);
@@ -97,14 +99,15 @@ void OverdrawTesterSystem::RemoveEntity(DAVA::Entity* entity)
 
 DAVA::WideString OverdrawTesterSystem::GetInfoString()
 {
-    return textureSamples != 5 ? DAVA::Format(L" ||| Texture samples: %d", textureSamples) : L" ||| Dependent read";
+    return textureSamples != 5 ? DAVA::Format(L" ||| Texture samples: %d ||| Overdraw %d%", textureSamples, static_cast<DAVA::int32>(overdrawPercent*stepsCount)) : 
+        DAVA::Format(L" ||| Dependent read ||| Overdraw %d%", static_cast<DAVA::int32>(overdrawPercent*stepsCount));
 }
 
 void OverdrawTesterSystem::Process(DAVA::float32 timeElapsed)
 {
     if (finished) return;
 
-    static const float increasePercentTime = 0.03f;
+    static const float increasePercentTime = 0.1f;
     static float32 i = 0;
     i += timeElapsed;
     if (i >= increasePercentTime)
@@ -120,13 +123,9 @@ void OverdrawTesterSystem::Process(DAVA::float32 timeElapsed)
         if (textureSamples < 5)
             SetupMaterial(&keywords[textureSamples - 1], &textureNames[textureSamples - 1]);
         else if (textureSamples == 5)
-        {
             overdrawMaterial->AddFlag(FastName("DEPENDENT_READ_TEST"), 1);
-        }
         else
-        {
             finished = true;
-        }
     }
 
     for (auto renderObject : activeRenderObjects)
@@ -140,10 +139,10 @@ DAVA::Texture* OverdrawTesterSystem::GenerateTexture(DAVA::Vector4 startColor, D
 
     unsigned char* data = new unsigned char[width * height * 4];
     uint32 dataIndex = 0;
-    for (uint32 i = 0; i < width; i++)
-        for (uint32 j = 0; j < height; j++)
+    for (uint32 i = 0; i < height; i++)
+        for (uint32 j = 0; j < width; j++)
         {
-            Vector4 finalColor = Lerp(startColor, endColor, static_cast<float>(j) / height);
+            Vector4 finalColor = Lerp(startColor, endColor, static_cast<float>(j) / width);
             data[dataIndex++] = static_cast<uint8>(finalColor.x);
             data[dataIndex++] = static_cast<uint8>(finalColor.y);
             data[dataIndex++] = static_cast<uint8>(finalColor.z);

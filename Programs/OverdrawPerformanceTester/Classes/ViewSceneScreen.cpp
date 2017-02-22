@@ -100,6 +100,12 @@ void ViewSceneScreen::LoadResources()
         //sceneView->SetFrameBufferScaleFactor(0.5f);
         //sceneView->SetDrawToFrameBuffer(true);
         AddControl(sceneView);
+
+        rhi::RenderPassConfig& config = scene->GetRenderSystem()->GetMainPassConfig();
+        config.colorBuffer[0].clearColor[0] = 0.4f;
+        config.colorBuffer[0].clearColor[1] = 0.4f;
+        config.colorBuffer[0].clearColor[2] = 0.4f;
+        config.colorBuffer[0].clearColor[3] = 0.4f;
 // 
 //         rotationControllerSystem = new RotationControllerSystem(scene);
 //         scene->AddSystem(rotationControllerSystem, MAKE_COMPONENT_MASK(Component::CAMERA_COMPONENT) | MAKE_COMPONENT_MASK(Component::ROTATION_CONTROLLER_COMPONENT),
@@ -121,10 +127,10 @@ void ViewSceneScreen::LoadResources()
 //         AddControl(reloadShadersButton);
 // 
         DVASSERT(info == NULL);
-        info = new UIStaticText(Rect(0, 0, 335, 30.f));
+        info = new UIStaticText(Rect(0, 0, 1024, 30.f));
         info->SetFont(font);
         info->SetTextColor(Color::White);
-//         info->SetTextAlign( | ALIGN_RIGHT);
+        info->SetTextAlign(ALIGN_LEFT);
         AddControl(info);
 // 
 //         moveJoyPAD = new UIJoypad(Rect(0, screenRect.dy - 200.f, 200.f, 200.f));
@@ -212,6 +218,12 @@ void ViewSceneScreen::Draw(const DAVA::UIGeometricData& geometricData)
 
 void ViewSceneScreen::Update(float32 timeElapsed)
 {
+    rhi::RenderPassConfig& config = scene->GetRenderSystem()->GetMainPassConfig();
+    config.colorBuffer[0].clearColor[0] = 0.4f;
+    config.colorBuffer[0].clearColor[1] = 0.4f;
+    config.colorBuffer[0].clearColor[2] = 0.4f;
+    config.colorBuffer[0].clearColor[3] = 0.4f;
+
     uint64 startTime = SystemTimer::GetNs();
 
     BaseScreen::Update(timeElapsed);

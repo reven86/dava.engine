@@ -9,7 +9,7 @@ namespace OverdrawPerformanceTester
 
 OverdrawTesterComonent::OverdrawTesterComonent()
 {
-    renderObject = new OverdrawTesterRenderObject(addOverdrawPercent);
+    renderObject = new OverdrawTesterRenderObject(addOverdrawPercent, stepsCount);
     renderObject->SetWorldTransformPtr(&DAVA::Matrix4::IDENTITY);
 }
 

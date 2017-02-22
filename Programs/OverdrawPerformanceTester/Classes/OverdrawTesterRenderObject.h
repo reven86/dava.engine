@@ -21,8 +21,9 @@ public:
         DAVA::Vector2 texcoord;
     };
 
-    OverdrawTesterRenderObject(DAVA::float32 addOverdrawPercent_);
+    OverdrawTesterRenderObject(DAVA::float32 addOverdrawPercent_, DAVA::uint32 maxStepsCount_);
     ~OverdrawTesterRenderObject();
+
 
     void PrepareToRender(DAVA::Camera* camera) override;
     void RecalculateWorldBoundingBox() override;
@@ -38,17 +39,21 @@ public:
     inline void RecalcBoundingBox() override;
 
 private:
-    DAVA::Array<OverdrawTesterRenderObject::QuadVertex, 6> GetQuad(float32 xStart, float32 xEnd);
+    void GenerateQuad(DAVA::uint32 index, DAVA::uint32 layoutId);
+    DAVA::Array<OverdrawTesterRenderObject::QuadVertex, 6> GetQuadVerts(float32 xStart, float32 xEnd);
+    void GenerateIndexBuffer();
 
     DAVA::Vector<QuadVertex> activeVerts;
     DAVA::uint32 vertexLayoutId;
     DAVA::NMaterial* material = nullptr;
-    DAVA::RenderBatch* batch = nullptr;
     DAVA::float32 addOverdrawPercent;
     DAVA::float32 addOverdrawPercentNormalized;
-    DAVA::uint32 stepsCount;
     DAVA::uint32 vertexStride;
     DAVA::uint32 currentStepsCount;
+
+    DAVA::Vector<DAVA::RenderBatch*> quads;
+
+    rhi::HIndexBuffer iBuffer;
 };
 
 DAVA::uint32 OverdrawTesterRenderObject::GetCurrentStepsCount() const 
@@ -69,7 +74,8 @@ DAVA::NMaterial* OverdrawTesterRenderObject::GetDrawMaterial() const
 void OverdrawTesterRenderObject::SetDrawMaterial(DAVA::NMaterial* newMat)
 {
     material = newMat;
-    batch->SetMaterial(material);
+    for (auto batch : quads)
+        batch->SetMaterial(material);
 }
 
 void OverdrawTesterRenderObject::RecalcBoundingBox()
