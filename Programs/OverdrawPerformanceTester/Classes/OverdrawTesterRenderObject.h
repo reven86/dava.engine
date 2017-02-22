@@ -2,6 +2,7 @@
 
 #include "Base/BaseTypes.h"
 #include "Render/Highlevel/RenderObject.h"
+#include "Math/Vector.h"
 
 namespace DAVA
 {
@@ -40,7 +41,7 @@ public:
 
 private:
     void GenerateQuad(DAVA::uint32 index, DAVA::uint32 layoutId);
-    DAVA::Array<OverdrawTesterRenderObject::QuadVertex, 6> GetQuadVerts(float32 xStart, float32 xEnd);
+    DAVA::Array<OverdrawTesterRenderObject::QuadVertex, 6> GetQuadVerts(DAVA::float32 xStart, DAVA::float32 xEnd);
     void GenerateIndexBuffer();
 
     DAVA::Vector<QuadVertex> activeVerts;

@@ -41,7 +41,8 @@ const Array<FastName, 4> OverdrawTesterSystem::textureNames =
     FastName("t4")
 } };
 
-OverdrawTesterSystem::OverdrawTesterSystem(DAVA::Scene* scene) : SceneSystem(scene)
+OverdrawTesterSystem::OverdrawTesterSystem(DAVA::Scene* scene, DAVA::Function<void()> finishCallback_) 
+    : SceneSystem(scene), finishCallback(finishCallback_)
 {
     overdrawMaterial = new NMaterial();
     overdrawMaterial->SetFXName(FastName("~res:/CustomMaterials/OverdrawTester.material"));
@@ -107,7 +108,7 @@ void OverdrawTesterSystem::Process(DAVA::float32 timeElapsed)
 {
     if (finished) return;
 
-    static const float increasePercentTime = 0.1f;
+    static const float increasePercentTime = 0.02f;
     static float32 i = 0;
     i += timeElapsed;
     if (i >= increasePercentTime)
@@ -125,7 +126,11 @@ void OverdrawTesterSystem::Process(DAVA::float32 timeElapsed)
         else if (textureSampleCount == 5)
             overdrawMaterial->AddFlag(FastName("DEPENDENT_READ_TEST"), 1);
         else
+        {
             finished = true;
+            if (finishCallback)
+                finishCallback();
+        }
     }
 
     for (auto renderObject : activeRenderObjects)

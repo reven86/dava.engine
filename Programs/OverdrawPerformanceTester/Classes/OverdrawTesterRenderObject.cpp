@@ -13,7 +13,9 @@ using DAVA::Vector2;
 using DAVA::Vector3;
 using DAVA::uint8;
 using DAVA::uint16;
+using DAVA::uint32;
 using DAVA::int32;
+using DAVA::float32;
 using DAVA::DynamicBufferAllocator::AllocResultVB;
 using DAVA::DynamicBufferAllocator::AllocResultIB;
 using DAVA::Camera;
@@ -21,8 +23,8 @@ using DAVA::Camera;
 OverdrawTesterRenderObject::OverdrawTesterRenderObject(float32 addOverdrawPercent_, uint32 maxStepsCount_) 
     : addOverdrawPercent(addOverdrawPercent_), addOverdrawPercentNormalized(addOverdrawPercent_ * 0.01f)
 {
-    AddFlag(RenderObject::ALWAYS_CLIPPING_VISIBLE);
-    AddFlag(RenderObject::CUSTOM_PREPARE_TO_RENDER);
+    this->AddFlag(RenderObject::ALWAYS_CLIPPING_VISIBLE);
+    this->AddFlag(RenderObject::CUSTOM_PREPARE_TO_RENDER);
 
     rhi::VertexLayout layout;
     layout.AddElement(rhi::VS_POSITION, 0, rhi::VDT_FLOAT, 3);

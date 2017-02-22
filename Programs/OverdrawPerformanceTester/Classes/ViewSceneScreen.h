@@ -12,6 +12,7 @@ class WASDControllerSystem;
 namespace OverdrawPerformanceTester
 {
 class OverdrawTesterSystem;
+class ChartPainterSystem;
 }
 
 class ViewSceneScreen : public BaseScreen
@@ -59,6 +60,7 @@ protected:
     DAVA::Array<DAVA::Vector<FrameData>, 6> performanceData;
 
     OverdrawPerformanceTester::OverdrawTesterSystem* testerSystem;
+    OverdrawPerformanceTester::ChartPainterSystem* chartPainterSystem;
 
     Vector2 cursorPosition;
     float32 cursorSize = 0.1f;

@@ -5,6 +5,7 @@
 #include "Base/BaseTypes.h"
 #include "Base/FastName.h"
 #include "Base/String.h"
+#include "Functional/Function.h"
 
 namespace DAVA
 {
@@ -20,7 +21,7 @@ class OverdrawTesterRenderObject;
 class OverdrawTesterSystem : public DAVA::SceneSystem
 {
 public:
-    OverdrawTesterSystem(DAVA::Scene* scene);
+    OverdrawTesterSystem(DAVA::Scene* scene, DAVA::Function<void()> finishCallback_);
     ~OverdrawTesterSystem();
 
     void AddEntity(DAVA::Entity* entity) override;
@@ -35,6 +36,7 @@ public:
 
 private:
     DAVA::Texture* GenerateTexture(DAVA::Vector4 startColor, DAVA::Vector4 endColor);
+    void SetupMaterial(const DAVA::FastName* keyword, const DAVA::FastName* texture);
 
     DAVA::Vector<OverdrawTesterRenderObject*> activeRenderObjects;
     DAVA::NMaterial* overdrawMaterial;
@@ -46,7 +48,8 @@ private:
     DAVA::Vector<DAVA::Texture*> textures;
 
     bool finished = false;
-    void SetupMaterial(const DAVA::FastName* keyword, const DAVA::FastName* texture);
+
+    DAVA::Function<void()> finishCallback;
 
     static const DAVA::Array<DAVA::FastName, 4> keywords;
     static const DAVA::Array<DAVA::FastName, 4> textureNames;

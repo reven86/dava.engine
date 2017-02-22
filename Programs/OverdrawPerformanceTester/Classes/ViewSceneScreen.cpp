@@ -4,6 +4,7 @@
 #include "Scene3D/Systems/Controller/WASDControllerSystem.h"
 #include "OverdrawTesterComponent.h"
 #include "OverdrawTesterSystem.h"
+#include "ChartPainterSystem.h"
 
 #include "Render/2D/Sprite.h"
 
@@ -61,8 +62,11 @@ void ViewSceneScreen::LoadResources()
         scene->AddNode( light_e );
     }
     */
-        testerSystem = new OverdrawPerformanceTester::OverdrawTesterSystem(scene);
+        testerSystem = new OverdrawPerformanceTester::OverdrawTesterSystem(scene, [this]() { chartPainterSystem->SetShouldDrawGraph(true); });
         scene->AddSystem(testerSystem, MAKE_COMPONENT_MASK(OverdrawPerformanceTester::OverdrawTesterComonent::OVERDRAW_TESTER_COMPONENT), DAVA::Scene::SCENE_SYSTEM_REQUIRE_PROCESS);
+
+        chartPainterSystem = new OverdrawPerformanceTester::ChartPainterSystem(scene, &performanceData);
+        scene->AddSystem(chartPainterSystem, 0, DAVA::Scene::SCENE_SYSTEM_REQUIRE_PROCESS);
 
         ScopedPtr<Camera> camera(new Camera());
 
@@ -126,12 +130,12 @@ void ViewSceneScreen::LoadResources()
 //         reloadShadersButton->SetDebugDraw(true);
 //         AddControl(reloadShadersButton);
 // 
-        DVASSERT(info == NULL);
-        info = new UIStaticText(Rect(0, 0, 1024, 30.f));
-        info->SetFont(font);
-        info->SetTextColor(Color::White);
-        info->SetTextAlign(ALIGN_LEFT);
-        AddControl(info);
+//         DVASSERT(info == NULL);
+//         info = new UIStaticText(Rect(0, 0, 1024, 30.f));
+//         info->SetFont(font);
+//         info->SetTextColor(Color::White);
+//         info->SetTextAlign(ALIGN_LEFT);
+//         AddControl(info);
 // 
 //         moveJoyPAD = new UIJoypad(Rect(0, screenRect.dy - 200.f, 200.f, 200.f));
 //         moveJoyPAD->SetDebugDraw(true);
@@ -154,6 +158,10 @@ void ViewSceneScreen::UnloadResources()
 
     scene->RemoveSystem(testerSystem);
     SafeDelete(testerSystem);
+
+    scene->RemoveSystem(chartPainterSystem);
+    SafeDelete(chartPainterSystem);
+
     SafeRelease(scene);
 //     SafeRelease(info);
 
@@ -176,11 +184,11 @@ void ViewSceneScreen::OnReloadShaders(DAVA::BaseObject* caller, void* param, voi
         material->InvalidateRenderVariants();
     }
 
-    const Map<uint64, NMaterial*>& particleInstances = scene->particleEffectSystem->GetMaterialInstances();
-    for (auto material : particleInstances)
-    {
-        material.second->InvalidateRenderVariants();
-    }
+//     const Map<uint64, NMaterial*>& particleInstances = scene->particleEffectSystem->GetMaterialInstances();
+//     for (auto material : particleInstances)
+//     {
+//         material.second->InvalidateRenderVariants();
+//     }
 
     DAVA::Set<DAVA::NMaterial*> materialList;
     scene->foliageSystem->CollectFoliageMaterials(materialList);
@@ -254,7 +262,7 @@ void ViewSceneScreen::Update(float32 timeElapsed)
 //     camera->SetTarget(camera->GetTarget() + cameraMoveOffset);
 }
 
-static const float32 INFO_UPDATE_TIME = 0.3f;
+static const float32 INFO_UPDATE_TIME = 0.2f;
 void ViewSceneScreen::UpdateInfo(float32 timeElapsed)
 {
     ++frameCounter;
@@ -263,7 +271,7 @@ void ViewSceneScreen::UpdateInfo(float32 timeElapsed)
     if (framesTime > INFO_UPDATE_TIME)
     {
         int32 fps = (int32)(frameCounter / framesTime);
-        info->SetText(testerSystem != nullptr ? Format(L"FPS: %d", fps) + testerSystem->GetInfoString() : Format(L"FPS: %d", fps));
+        //info->SetText(testerSystem != nullptr ? Format(L"FPS: %d", fps) + testerSystem->GetInfoString() : Format(L"FPS: %d", fps));
 
         if (testerSystem->GetCurrentSampleCount() < 6)
             performanceData[testerSystem->GetCurrentSampleCount()].push_back({ fps, testerSystem->GetCurrentOverdraw() });
