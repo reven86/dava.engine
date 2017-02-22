@@ -29,22 +29,19 @@ ChartPainterSystem::~ChartPainterSystem()
 
 void ChartPainterSystem::Process(float32 timeElapsed)
 {
-    DAVA::DbgDraw::EnsureInited();
-    uint32 TEXT_COLOR = rhi::NativeColorRGBA(1.f, 1.f, 1.f, 1.f);
-    DAVA::DbgDraw::Text2D(100, 100, TEXT_COLOR, "some text %d", 5);
-    DAVA::DbgDraw::FilledRect2D(0, 0, 200, 200, TEXT_COLOR);
 
+    if (!shouldDrawGraph) return;
 
     VirtualCoordinatesSystem* vcs = DAVA::UIControlSystem::Instance()->vcs;
-//     vcs->SetVirtualScreenSize(10, 10);
-
 
     int32 w = vcs->GetVirtualScreenSize().dx;
     int32 h = vcs->GetVirtualScreenSize().dy;
 
-    Vector2 origin(0.1f * w, 0.9f * h);
+    Vector2 offset(0.1f, 0.1f);
+
+    Vector2 origin(offset.x * w, 0.9f * h);
     Vector2 xAxis(0.9f * w, 0.9f * h);
-    Vector2 yAxis(0.1f * w, 0.1f * h);
+    Vector2 yAxis(0.1f * w, offset.y * h);
 
     Polygon2 p;
     p.AddPoint(origin);
@@ -55,7 +52,11 @@ void ChartPainterSystem::Process(float32 timeElapsed)
     p.AddPoint(yAxis);
     RenderSystem2D::Instance()->DrawPolygon(p, false, Color::White);
 
-    if (!shouldDrawGraph) return;
+    float32 maxOverdraw = 1000.0f;
+    float32 maxFps = 70.0f;
+    float32 overdrawLen = 0.8f;
+    float32 fpsLen = 0.8f;
+
 
     for (int i = 0; i < 6; i++)
     {
@@ -64,10 +65,17 @@ void ChartPainterSystem::Process(float32 timeElapsed)
         {
             float32 overdraw = (*performanceData)[i][j].Overdraw;
             float32 fps = static_cast<DAVA::float32>((*performanceData)[i][j].FPS);
-            fps *= 10;
-            fps = h - fps;
 
-            p.AddPoint( { overdraw, fps } );
+            float32 normalizedFps = fps / maxFps;
+            float32 normalizedOverdraw = overdraw / maxOverdraw;
+
+            normalizedFps *= fpsLen;
+            normalizedOverdraw *= overdrawLen;
+
+            float32 pointX = (normalizedOverdraw + offset.x) * w;
+            float32 pointY = (normalizedFps + offset.y) * h;
+
+            p.AddPoint( { pointX, pointY } );
         }
 
         RenderSystem2D::Instance()->DrawPolygon(p, false, chartColors[i]);
