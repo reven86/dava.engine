@@ -8,6 +8,10 @@
 
 #include "Engine/Engine.h"
 
+#ifdef __DAVAENGINE_AUTOTESTING__
+#include "Autotesting/AutotestingSystem.h"
+#endif
+
 #if defined(__DAVAENGINE_ANDROID__)
 #if defined(__DAVAENGINE_COREV2__)
 #include "UI/Private/Android/TextFieldPlatformImplAndroid.h"
@@ -21,6 +25,7 @@
 #else
 #define DAVA_TEXTFIELD_USE_STB
 #include "UI/UITextFieldStb.h"
+
 namespace DAVA
 {
 class TextFieldPlatformImpl : public TextFieldStbImpl
@@ -115,6 +120,9 @@ void UITextField::StopEdit()
         SetRenderToTexture(true);
         textFieldImpl->CloseKeyboard();
         OnStopEditing();
+#ifdef __DAVAENGINE_AUTOTESTING__
+        AutotestingSystem::Instance()->OnRecordSetText(this, GetUtf8Text());
+#endif
     }
 }
 
