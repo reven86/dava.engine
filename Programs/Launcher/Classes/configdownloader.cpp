@@ -64,8 +64,14 @@ QString ConfigDownloader::GetURL(eURLType type) const
         return "/panel/modules/jsonAPI/launcher/lite.php?source=seo_list";
     case FavoritesURL:
         return "/panel/modules/jsonAPI/launcher/lite.php?source=branches&filter=os:" + platformString;
-    case AllBuildsURL:
+    case AllBuildsCurrentPlatformURL:
         return "/panel/modules/jsonAPI/launcher/lite.php?source=builds&filter=os:" + platformString;
+    case AllBuildsAndroidURL:
+        return "/panel/modules/jsonAPI/launcher/lite.php?source=builds&filter=os:android";
+    case AllBuildsIOSURL:
+        return "/panel/modules/jsonAPI/launcher/lite.php?source=builds&filter=os:ios";
+    case AllBuildsUWPURL:
+        return "/panel/modules/jsonAPI/launcher/lite.php?source=builds&filter=os:uwp";
     default:
         Q_ASSERT(false && "unacceptable request");
         return QString();
