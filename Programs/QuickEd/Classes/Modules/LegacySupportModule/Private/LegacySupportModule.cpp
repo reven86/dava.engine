@@ -78,8 +78,8 @@ void LegacySupportModule::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, 
         if (std::find(fields.begin(), fields.end(), String(ProjectData::projectPathPropertyName)) != fields.end()
             || wrapper.HasData())
         {
-            delayedExecutor.DelayedExecute([this, projectView](){
-                project.reset(new Project(projectView, GetAccessor())); 
+            delayedExecutor.DelayedExecute([this, projectView]() {
+                project.reset(new Project(projectView, GetAccessor()));
             });
         }
     }
