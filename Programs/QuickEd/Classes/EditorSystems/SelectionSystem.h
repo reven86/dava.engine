@@ -2,10 +2,13 @@
 
 #include "EditorSystems/SelectionContainer.h"
 #include "EditorSystems/BaseEditorSystem.h"
-#include "Math/Rect.h"
-#include "UI/UIEvent.h"
-#include "Functional/SignalBase.h"
-#include "Preferences/PreferencesRegistrator.h"
+
+#include <TArc/DataProcessing/DataWrapper.h>
+
+#include <Math/Rect.h>
+#include <UI/UIEvent.h>
+#include <Functional/SignalBase.h>
+#include <Preferences/PreferencesRegistrator.h>
 
 class EditorSystemsManager;
 class ControlNode;
@@ -14,12 +17,16 @@ class ControlsContainerNode;
 namespace DAVA
 {
 class Vector2;
+namespace TArc
+{
+class ContextAccessor;
+}
 }
 
 class SelectionSystem : public BaseEditorSystem, public DAVA::InspBase
 {
 public:
-    SelectionSystem(EditorSystemsManager* doc);
+    SelectionSystem(EditorSystemsManager* doc, DAVA::TArc::ContextAccessor* accessor);
     ~SelectionSystem() override;
 
     void ClearSelection();
@@ -50,6 +57,9 @@ private:
 
     bool selectOnRelease = false;
     DAVA::Vector2 pressedPoint = DAVA::Vector2(-1.0f, -1.0f);
+    DAVA::TArc::ContextAccessor* accessor = nullptr;
+
+    DAVA::TArc::DataWrapper documentDataWrapper;
 
 public:
     INTROSPECTION(SelectionSystem,

@@ -7,6 +7,8 @@
 #include <TArc/DataProcessing/DataContext.h>
 #include <TArc/Utils/QtConnections.h>
 
+#include <QtTools/Utils/QtDelayedExecutor.h>
+
 namespace DAVA
 {
 namespace TArc
@@ -17,7 +19,7 @@ class FieldBinder;
 
 class PreviewWidget;
 class EditorSystemsManager;
-class DocumentData;
+class PackageNode;
 class ControlNode;
 
 class DocumentsModule : public DAVA::TArc::ControllerModule
@@ -57,7 +59,7 @@ private:
     void CreateViewActions();
 
     DAVA::TArc::DataContext::ContextID OpenDocument(const QString& path);
-    std::unique_ptr<DocumentData> CreateDocument(const QString& path);
+    DAVA::RefPtr<PackageNode> CreateDocument(const QString& path);
 
     void CloseActiveDocument();
     void CloseDocument(const DAVA::TArc::DataContext::ContextID& id);
@@ -96,6 +98,8 @@ private:
     std::unique_ptr<EditorSystemsManager> systemsManager;
     DAVA::TArc::QtConnections connections;
     std::unique_ptr<DAVA::TArc::FieldBinder> fieldBinder;
+
+    QtDelayedExecutor delayedExecutor;
 
     DAVA_VIRTUAL_REFLECTION(DocumentsModule, DAVA::TArc::ControllerModule);
 };

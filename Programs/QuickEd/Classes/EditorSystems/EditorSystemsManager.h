@@ -172,7 +172,6 @@ private:
     void OnPackageChanged(PackageNode* node);
     void ControlWillBeRemoved(ControlNode* node, ControlsContainerNode* from) override;
     void ControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int index) override;
-    void RefreshRootControls();
     void OnTransformStateChanged(bool inTransformState);
     void InitDAVAScreen();
 

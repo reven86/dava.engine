@@ -29,30 +29,47 @@ using namespace DAVA;
 
 PropertiesModel::PropertiesModel(QObject* parent)
     : QAbstractItemModel(parent)
-    , continuousUpdater(MakeFunction(this, &PropertiesModel::UpdateAllChangedProperties), 500)
+    , propertiesUpdater(MakeFunction(this, &PropertiesModel::UpdateAllChangedProperties), 500)
+    , nodeUpdater(MakeFunction(this, &PropertiesModel::ResetInternal), 300)
 {
 }
 
 PropertiesModel::~PropertiesModel()
 {
     CleanUp();
-    continuousUpdater.Abort();
+    propertiesUpdater.Abort();
+    nodeUpdater.Abort();
 }
 
 void PropertiesModel::Reset(PackageBaseNode* node_, QtModelPackageCommandExecutor* commandExecutor_)
 {
-    continuousUpdater.Abort();
+    nodeToReset = node_;
+    bool canDelay = nodeToReset != nullptr && (commandExecutor == nullptr || commandExecutor == commandExecutor_);
+    
+    commandExecutor = commandExecutor_;
+    if (canDelay)
+    {
+        nodeUpdater.Update();
+    }
+    else
+    {
+        nodeUpdater.Stop();
+    }
+}
+
+void PropertiesModel::ResetInternal()
+{
+    propertiesUpdater.Abort();
     beginResetModel();
     CleanUp();
-    commandExecutor = commandExecutor_;
-    controlNode = dynamic_cast<ControlNode*>(node_);
+    controlNode = dynamic_cast<ControlNode*>(nodeToReset);
     if (nullptr != controlNode)
     {
         controlNode->GetRootProperty()->AddListener(this);
         rootProperty = controlNode->GetRootProperty();
     }
 
-    styleSheet = dynamic_cast<StyleSheetNode*>(node_);
+    styleSheet = dynamic_cast<StyleSheetNode*>(nodeToReset);
     if (nullptr != styleSheet)
     {
         styleSheet->GetRootProperty()->AddListener(this);
@@ -303,7 +320,7 @@ void PropertiesModel::UpdateAllChangedProperties()
 void PropertiesModel::PropertyChanged(AbstractProperty* property)
 {
     changedProperties.insert(RefPtr<AbstractProperty>::ConstructWithRetain(property));
-    continuousUpdater.Update();
+    propertiesUpdater.Update();
 }
 
 void PropertiesModel::UpdateProperty(AbstractProperty* property)

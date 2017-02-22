@@ -13,8 +13,8 @@ public:
     ~ContinuousUpdater();
 
     void Update();
-    void Stop(); //sync method to stop timer and call Update if it's needed
-    void Abort(); //sync method to stop timer and not call update
+    void Stop(); //sync method to stop timer and call Update
+    void Abort(); //sync method to stop timer and don't call update
 
     void OnTimer();
 

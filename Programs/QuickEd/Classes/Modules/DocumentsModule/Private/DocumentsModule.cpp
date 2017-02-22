@@ -458,7 +458,6 @@ void DocumentsModule::OnUndo()
     DVASSERT(context != nullptr);
     DocumentData* data = context->GetData<DocumentData>();
     DVASSERT(data != nullptr);
-    DVASSERT(data->commandStack->CanUndo());
     data->commandStack->Undo();
 }
 
@@ -472,7 +471,6 @@ void DocumentsModule::OnRedo()
     DVASSERT(context != nullptr);
     DocumentData* data = context->GetData<DocumentData>();
     DVASSERT(data != nullptr);
-    DVASSERT(data->commandStack->CanRedo());
     data->commandStack->Redo();
 }
 
@@ -572,11 +570,11 @@ DAVA::TArc::DataContext::ContextID DocumentsModule::OpenDocument(const QString& 
 
     if (id == DataContext::Empty)
     {
-        std::unique_ptr<DocumentData> documentData = CreateDocument(path);
-        if (documentData != nullptr)
+        RefPtr<PackageNode> package = CreateDocument(path);
+        if (package != nullptr)
         {
             DAVA::Vector<std::unique_ptr<DAVA::TArc::DataNode>> initialData;
-            initialData.push_back(std::move(documentData));
+            initialData.emplace_back(new DocumentData(package));
             initialData.emplace_back(new CentralWidgetData());
             id = contextManager->CreateContext(std::move(initialData));
         }
@@ -588,7 +586,7 @@ DAVA::TArc::DataContext::ContextID DocumentsModule::OpenDocument(const QString& 
     return id;
 }
 
-std::unique_ptr<DocumentData> DocumentsModule::CreateDocument(const QString& path)
+DAVA::RefPtr<PackageNode> DocumentsModule::CreateDocument(const QString& path)
 {
     using namespace DAVA;
     using namespace TArc;
@@ -603,23 +601,25 @@ std::unique_ptr<DocumentData> DocumentsModule::CreateDocument(const QString& pat
     UIPackageLoader packageLoader(projectData->GetPrototypes());
     bool packageLoaded = packageLoader.LoadPackage(davaPath, &builder);
 
-    std::unique_ptr<DocumentData> documentData;
     if (packageLoaded)
     {
         RefPtr<PackageNode> packageRef = builder.BuildPackage();
         DVASSERT(packageRef.Get() != nullptr);
-        documentData.reset(new DocumentData(packageRef));
+        return packageRef;
     }
     else
     {
-        ModalMessageParams params;
-        params.icon = ModalMessageParams::Warning;
-        params.title = QObject::tr("Can not create document");
-        params.message = QObject::tr("Can not create document by path:\n%1").arg(path);
-        params.buttons = ModalMessageParams::Ok;
-        GetUI()->ShowModalMessage(QEGlobal::windowKey, params);
+        //we need to continue current operation and not stop it with a modal message
+        delayedExecutor.DelayedExecute([this, path]() {
+            ModalMessageParams params;
+            params.icon = ModalMessageParams::Warning;
+            params.title = QObject::tr("Can not create document");
+            params.message = QObject::tr("Can not create document by path:\n%1").arg(path);
+            params.buttons = ModalMessageParams::Ok;
+            GetUI()->ShowModalMessage(QEGlobal::windowKey, params);
+        });
     }
-    return documentData;
+    return RefPtr<PackageNode>();
 }
 
 void DocumentsModule::OnActiveTabChanged(const DAVA::Any& contextID)
@@ -853,7 +853,8 @@ void DocumentsModule::ReloadCurrentDocument()
 
 void DocumentsModule::ReloadDocument(const DAVA::TArc::DataContext::ContextID& contextID)
 {
-    using namespace DAVA::TArc;
+    using namespace DAVA;
+    using namespace TArc;
 
     ContextManager* contextManager = GetContextManager();
     contextManager->ActivateContext(contextID);
@@ -865,12 +866,14 @@ void DocumentsModule::ReloadDocument(const DAVA::TArc::DataContext::ContextID& c
     DocumentData* currentData = context->GetData<DocumentData>();
     QString path = currentData->GetPackageAbsolutePath();
 
-    std::unique_ptr<DocumentData> newData = CreateDocument(path);
-    //whoops! document was broken or damaged, can not use this context any more
-    if (newData != nullptr)
+    RefPtr<PackageNode> package = CreateDocument(path);
+    //if document was created successfully - delete previous data and create new one with new package.
+    //this required because current program modules storing selection and another data as pointers to package children
+    //else, if document was broken or damaged, can not use this context any more
+    if (package != nullptr)
     {
         context->DeleteData<DocumentData>();
-        context->CreateData(std::move(newData));
+        context->CreateData(std::make_unique<DocumentData>(package));
     }
     else
     {

@@ -27,11 +27,8 @@ void ContinuousUpdater::Update()
 void ContinuousUpdater::Stop()
 {
     timer->stop();
-    if (needUpdate)
-    {
-        updater();
-        needUpdate = false;
-    }
+    updater();
+    needUpdate = false;
 }
 
 void ContinuousUpdater::Abort()

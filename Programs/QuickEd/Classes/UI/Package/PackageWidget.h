@@ -34,7 +34,7 @@ public:
     ~PackageWidget();
 
     PackageModel* GetPackageModel() const;
-    using ExpandedIndexes = QList<QPersistentModelIndex>;
+    using ExpandedIndexes = QModelIndexList;
 
     void OnSelectionChanged(const DAVA::Any& selection);
 

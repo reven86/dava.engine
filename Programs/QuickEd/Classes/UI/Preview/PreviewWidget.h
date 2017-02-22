@@ -26,7 +26,6 @@ class RulerController;
 class EditorCanvas;
 class CursorInterpreter;
 class AbstractProperty;
-class ContinuousUpdater;
 
 class QGridLayout;
 class RulerWidget;

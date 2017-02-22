@@ -409,7 +409,7 @@ void PackageWidget::OnSelectionChangedFromView(const QItemSelection& proxySelect
     {
         QModelIndex srcIndex = filteredPackageModel->mapToSource(index);
         DVASSERT(!currentIndexes.empty());
-        for (const QPersistentModelIndex& currIndex : currentIndexes)
+        for (const QModelIndex& currIndex : currentIndexes)
         {
             if (currIndex == srcIndex)
             {
@@ -763,10 +763,6 @@ void PackageWidget::OnAfterProcessNodes(const SelectedNodes& nodes)
 
 void PackageWidget::OnCurrentIndexChanged(const QModelIndex& index, const QModelIndex&)
 {
-    if (!index.isValid())
-    {
-        emit CurrentIndexChanged(nullptr);
-    }
     QModelIndex mappedIndex = filteredPackageModel->mapToSource(index);
     PackageBaseNode* node = static_cast<PackageBaseNode*>(mappedIndex.internalPointer());
     emit CurrentIndexChanged(node);
@@ -782,7 +778,7 @@ void PackageWidget::DeselectNodeImpl(PackageBaseNode* node)
         treeView->selectionModel()->select(dstIndex, QItemSelectionModel::Deselect);
     }
     DVASSERT(!currentIndexes.empty());
-    for (const QPersistentModelIndex& index : currentIndexes)
+    for (const QModelIndex& index : currentIndexes)
     {
         if (index == srcIndex)
         {
@@ -792,7 +788,7 @@ void PackageWidget::DeselectNodeImpl(PackageBaseNode* node)
     }
     if (!currentIndexes.empty())
     {
-        QPersistentModelIndex index = currentIndexes.back();
+        QModelIndex index = currentIndexes.back();
         if (srcIndex == index)
         {
             QModelIndex dstIndex = filteredPackageModel->mapFromSource(index);

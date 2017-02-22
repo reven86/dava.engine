@@ -1,13 +1,19 @@
-#include "Input/InputSystem.h"
 #include "EditorSystems/SelectionSystem.h"
-#include "Model/PackageHierarchy/ControlNode.h"
-#include "UI/UIEvent.h"
-#include "UI/UIControl.h"
 #include "EditorSystems/EditorSystemsManager.h"
 #include "EditorSystems/KeyboardProxy.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 #include "Model/ControlProperties/RootProperty.h"
 #include "Model/ControlProperties/VisibleValueProperty.h"
+#include "Model/PackageHierarchy/ControlNode.h"
+
+#include "Modules/DocumentsModule/DocumentData.h"
+
+#include <TArc/Core/ContextAccessor.h>
+
+#include <Reflection/ReflectedTypeDB.h>
+#include <UI/UIEvent.h>
+#include <UI/UIControl.h>
+#include <Input/InputSystem.h>
 
 using namespace DAVA;
 
@@ -15,9 +21,11 @@ REGISTER_PREFERENCES_ON_START(SelectionSystem,
                               PREF_ARG("CanFindCommonForSelection", true),
                               )
 
-SelectionSystem::SelectionSystem(EditorSystemsManager* parent)
+SelectionSystem::SelectionSystem(EditorSystemsManager* parent, DAVA::TArc::ContextAccessor* accessor_)
     : BaseEditorSystem(parent)
+    , accessor(accessor_)
 {
+    documentDataWrapper = accessor->CreateWrapper(DAVA::ReflectedTypeDB::Get<DocumentData>());
     systemsManager->selectionChanged.Connect(this, &SelectionSystem::OnSelectionChanged);
     systemsManager->selectionRectChanged.Connect(this, &SelectionSystem::OnSelectByRect);
     PreferencesStorage::Instance()->RegisterPreferences(this);
@@ -149,8 +157,11 @@ void SelectionSystem::OnSelectionChanged(const SelectedNodes& selection)
 void SelectionSystem::SelectNodes(const SelectedNodes& selection)
 {
     selectionContainer.selectedNodes = selection;
-
-    systemsManager->selectionChanged.Emit(selection);
+    //remove this "if" when other systems will not emit signal selectionChanged
+    if (documentDataWrapper.HasData())
+    {
+        documentDataWrapper.SetFieldValue(DocumentData::selectionPropertyName, selection);
+    }
 }
 
 void SelectionSystem::SelectNode(ControlNode* selectedNode)

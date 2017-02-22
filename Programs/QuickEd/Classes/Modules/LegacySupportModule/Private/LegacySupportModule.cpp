@@ -118,20 +118,16 @@ void LegacySupportModule::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, 
             bool packageWasChanged = std::find(fields.begin(), fields.end(), String(DocumentData::packagePropertyName)) != fields.end();
             if (selectionWasChanged || packageWasChanged)
             {
-                packageWidget->OnSelectionChanged(Any());
-                ssInspectorWidget->OnSelectionChanged(Any());
-
                 if (packageWasChanged)
                 {
+                    packageWidget->OnSelectionChanged(Any());
+                    ssInspectorWidget->OnSelectionChanged(Any());
                     documentGroupView->SetDocument(document);
                 }
 
                 Any selectionValue = wrapper.GetFieldValue(DocumentData::selectionPropertyName);
-                if (selectionValue.IsEmpty() == false && selectionWasChanged)
-                {
-                    packageWidget->OnSelectionChanged(selectionValue);
-                    ssInspectorWidget->OnSelectionChanged(selectionValue);
-                }
+                packageWidget->OnSelectionChanged(selectionValue);
+                ssInspectorWidget->OnSelectionChanged(selectionValue);
             }
         }
     }

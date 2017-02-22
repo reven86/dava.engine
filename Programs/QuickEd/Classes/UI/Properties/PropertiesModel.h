@@ -54,7 +54,7 @@ signals:
 
 protected:
     void UpdateAllChangedProperties();
-
+    void ResetInternal();
     // PropertyListener
     void PropertyChanged(AbstractProperty* property) override;
     void UpdateProperty(AbstractProperty* property);
@@ -85,10 +85,12 @@ protected:
     void CleanUp();
 
 protected:
+    PackageBaseNode* nodeToReset = nullptr;
     ControlNode* controlNode = nullptr;
     StyleSheetNode* styleSheet = nullptr;
     AbstractProperty* rootProperty = nullptr;
     QtModelPackageCommandExecutor* commandExecutor = nullptr;
     DAVA::Set<DAVA::RefPtr<AbstractProperty>> changedProperties;
-    ContinuousUpdater continuousUpdater;
+    ContinuousUpdater propertiesUpdater;
+    ContinuousUpdater nodeUpdater;
 };
