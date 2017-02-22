@@ -44,8 +44,11 @@ PropertiesModel::~PropertiesModel()
 void PropertiesModel::Reset(PackageBaseNode* node_, QtModelPackageCommandExecutor* commandExecutor_)
 {
     nodeToReset = node_;
+    //to make better performance when we selecting all controls by mouse rect
+    //update current item using continuousUpdater
+    //but if new item came from another document or this item is nullptr - we need to refresh model immediately
     bool canDelay = nodeToReset != nullptr && (commandExecutor == nullptr || commandExecutor == commandExecutor_);
-    
+
     commandExecutor = commandExecutor_;
     if (canDelay)
     {

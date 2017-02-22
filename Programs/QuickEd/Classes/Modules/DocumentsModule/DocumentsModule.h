@@ -59,7 +59,7 @@ private:
     void CreateViewActions();
 
     DAVA::TArc::DataContext::ContextID OpenDocument(const QString& path);
-    DAVA::RefPtr<PackageNode> CreateDocument(const QString& path);
+    DAVA::RefPtr<PackageNode> CreatePackage(const QString& path);
 
     void CloseActiveDocument();
     void CloseDocument(const DAVA::TArc::DataContext::ContextID& id);

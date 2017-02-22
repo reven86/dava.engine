@@ -78,6 +78,11 @@ void LegacySupportModule::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, 
         if (std::find(fields.begin(), fields.end(), String(ProjectData::projectPathPropertyName)) != fields.end()
             || wrapper.HasData())
         {
+            //this is a dirty hack to apply window resizing on application start
+            //when application is started DAVA screen can not be displayed correctly until project is loaded
+            {
+                qApp->processEvents();
+            }
             project.reset(new Project(projectView, accessor));
         }
     }

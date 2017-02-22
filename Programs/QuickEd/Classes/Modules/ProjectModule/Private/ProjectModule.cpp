@@ -12,7 +12,6 @@
 #include <Base/Result.h>
 
 #include <QApplication>
-#include <QTimer>
 
 DAVA_VIRTUAL_REFLECTION_IMPL(ProjectModule)
 {
@@ -40,9 +39,7 @@ void ProjectModule::PostInit()
 
     //we can not invoke operations inside RenderInitialized function
     //because RenderInitialized invokes inside DAVA frame and main eventLoop can not be continued to prevent another OnFrame call
-    //TODO: realize frameUpdater to call functions after N frames
-    //without it we will see black screen on central widget while project is loading
-    QTimer::singleShot(500, [this]{
+    delayedExecutor.DelayedExecute([this]() {
         OpenLastProject();
     });
 }

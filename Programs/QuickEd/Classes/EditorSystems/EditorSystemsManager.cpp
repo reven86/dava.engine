@@ -282,7 +282,6 @@ void EditorSystemsManager::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper,
     //update selection
     if (selectionChanged)
     {
-
         if (selection.empty() == false)
         {
             SortedPackageBaseNodeSet newRootControls(CompareByLCA);
