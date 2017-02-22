@@ -117,6 +117,7 @@ HUDSystem::HUDSystem(EditorSystemsManager* parent)
     , sortedControlList(CompareByLCA)
 {
     hudControl->SetName(FastName("hudControl"));
+    systemsManager->highlightNode.Connect(this, &HUDSystem::OnHighlightNode);
     systemsManager->selectionChanged.Connect(this, &HUDSystem::OnSelectionChanged);
     systemsManager->magnetLinesChanged.Connect(this, &HUDSystem::OnMagnetLinesChanged);
     systemsManager->packageChanged.Connect(this, &HUDSystem::OnPackageChanged);

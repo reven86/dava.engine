@@ -16,6 +16,7 @@
 
 #include "Model/YamlPackageSerializer.h"
 #include "Modules/LegacySupportModule/Private/Document.h"
+#include "Modules/DocumentsModule/DocumentData.h"
 #include "UI/Package/FilteredPackageModel.h"
 #include "UI/Package/PackageModel.h"
 
@@ -278,6 +279,11 @@ void PackageWidget::SaveContext()
         return;
     }
     PackageContext* context = dynamic_cast<PackageContext*>(document->GetContext(this));
+    //context was removed because document was reloaded
+    if (context == nullptr)
+    {
+        return;
+    }
     if (filterLine->text().isEmpty())
     {
         context->expandedIndexes = GetExpandedIndexes();

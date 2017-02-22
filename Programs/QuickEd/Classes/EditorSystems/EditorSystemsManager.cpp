@@ -311,32 +311,39 @@ void EditorSystemsManager::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper,
     }
 }
 
-void EditorSystemsManager::ControlWillBeRemoved(ControlNode* node, ControlsContainerNode* /*from*/)
+void EditorSystemsManager::ControlWillBeRemoved(ControlNode* nodeToRemove, ControlsContainerNode* /*from*/)
 {
-    if (std::find(editingRootControls.begin(), editingRootControls.end(), node) != editingRootControls.end())
+    //if selected control and its children we will receive Removed signal only for top-level control
+    DVASSERT(documentDataWrapper.HasData());
+    Any selectionValue = documentDataWrapper.GetFieldValue(DocumentData::selectionPropertyName);
+    SelectedNodes nodes = selectionValue.Cast<SelectedNodes>(SelectedNodes());
+    for (auto iter = nodes.begin(); iter != nodes.end();)
     {
-        //if selected control and its children we will receive Removed signal only for top-level control
-        DVASSERT(documentDataWrapper.HasData());
-        Any nodesValue = documentDataWrapper.GetFieldValue(DocumentData::selectionPropertyName);
-        SelectedNodes nodes = nodesValue.Get<SelectedNodes>(SelectedNodes());
-        for (auto iter = nodes.begin(); iter != nodes.end();)
+        PackageBaseNode* node = *iter;
+        bool found = false;
+        while (node != nullptr && found == false)
         {
-            PackageBaseNode* node = *iter;
-            while (node != nullptr)
+            if (node == nodeToRemove)
             {
-                if (nodes.find(node) != nodes.end())
-                {
-                    iter = nodes.erase(iter);
-                }
+                iter = nodes.erase(iter);
+                found = true;
             }
-            ++iter;
         }
-        //we need to synchronize Data in active context and systems state
-        //TODO fix it when all editor systems will be separate TArc modules
-        documentDataWrapper.SetFieldValue(DocumentData::selectionPropertyName, nodes);
-        OnSelectionDataChanged(nodes);
+        ++iter;
+    }
+    //we need to synchronize Data in active context and systems state
+    //TODO fix it when all editor systems will be separate TArc modules
+    documentDataWrapper.SetFieldValue(DocumentData::selectionPropertyName, nodes);
+    OnSelectionDataChanged(nodes);
 
-        editingRootControls.erase(node);
+    //when we removing items node is still highlighted
+    //because selectionChanged sending before editingRootControlsChanged
+    //and HUDSystem think that we have node under point to highlight
+    HighlightNode(nullptr);
+
+    if (std::find(editingRootControls.begin(), editingRootControls.end(), nodeToRemove) != editingRootControls.end())
+    {
+        editingRootControls.erase(nodeToRemove);
         editingRootControlsChanged.Emit(editingRootControls);
     }
 }
