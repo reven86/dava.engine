@@ -46,4 +46,8 @@ private:
 
     std::unique_ptr<QtModelPackageCommandExecutor> commandExecutor;
     DAVA::UnorderedMap<void*, WidgetContext*> contexts;
+
+    //store package to check that document is reloaded or not
+    //TODO: remove this when PackageWidget will be separate module
+    PackageNode* package = nullptr;
 };

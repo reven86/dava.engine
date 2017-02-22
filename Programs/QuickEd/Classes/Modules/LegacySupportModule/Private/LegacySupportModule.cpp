@@ -88,9 +88,10 @@ void LegacySupportModule::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, 
         MainWindow::DocumentGroupView* documentGroupView = projectView->GetDocumentGroupView();
         DataContext* activeContext = accessor->GetActiveContext();
         Document* document = nullptr;
+        DataContext::ContextID contextID = activeContext->GetID();
         if (activeContext != nullptr)
         {
-            auto iter = documents.find(activeContext->GetID());
+            auto iter = documents.find(contextID);
             DVASSERT(iter != documents.end());
             document = iter->second.get();
         }
@@ -120,11 +121,23 @@ void LegacySupportModule::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, 
             bool packageWasChanged = std::find(fields.begin(), fields.end(), String(DocumentData::packagePropertyName)) != fields.end();
             if (selectionWasChanged || packageWasChanged)
             {
+                bool documentWasChanged = false;
                 if (packageWasChanged)
                 {
+                    DocumentData* documentData = activeContext->GetData<DocumentData>();
+                    if (documentData->GetPackageNode() != document->GetPackage())
+                    {
+                        document = new Document(accessor, contextID);
+                        documentWasChanged = true;
+                    }
+
                     packageWidget->OnSelectionChanged(Any());
                     ssInspectorWidget->OnSelectionChanged(Any());
                     documentGroupView->SetDocument(document);
+                    if (documentWasChanged)
+                    {
+                        documents[contextID].reset(document);
+                    }
                 }
 
                 Any selectionValue = wrapper.GetFieldValue(DocumentData::selectionPropertyName);

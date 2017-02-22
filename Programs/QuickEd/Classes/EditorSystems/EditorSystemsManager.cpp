@@ -258,33 +258,20 @@ void EditorSystemsManager::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper,
     bool selectionChanged = std::find(fields.begin(), fields.end(), String(DocumentData::selectionPropertyName)) != fields.end();
     bool packageChanged = std::find(fields.begin(), fields.end(), String(DocumentData::packagePropertyName)) != fields.end();
 
-    Any selectionValue = wrapper.GetFieldValue(DocumentData::selectionPropertyName);
-    SelectedNodes selection = selectionValue.Get(SelectedNodes());
-    //update package
-    if (fields.empty() || packageChanged)
+    Function<SortedPackageBaseNodeSet(const SelectedNodes&, const PackageNode*)> CreateRootControls = [](const SelectedNodes& selection, const PackageNode* package)
     {
-        Any packageValue = wrapper.GetFieldValue(DocumentData::packagePropertyName);
-        PackageNode* package = packageValue.Cast<PackageNode*>();
-
-        if (selectionChanged == false || selection.empty())
+        SortedPackageBaseNodeSet newRootControls(CompareByLCA);
+        if (selection.empty())
         {
-            SortedPackageBaseNodeSet newRootControls(CompareByLCA);
             PackageControlsNode* controlsNode = package->GetPackageControlsNode();
             for (int index = 0; index < controlsNode->GetCount(); ++index)
             {
                 newRootControls.insert(controlsNode->Get(index));
             }
-            editingRootControlsChanged.Emit(newRootControls);
+            return newRootControls;
         }
-        OnPackageDataChanged(packageValue);
-    }
-
-    //update selection
-    if (selectionChanged)
-    {
-        if (selection.empty() == false)
+        else
         {
-            SortedPackageBaseNodeSet newRootControls(CompareByLCA);
             for (PackageBaseNode* selectedNode : selection)
             {
                 if (dynamic_cast<ControlNode*>(selectedNode) == nullptr)
@@ -301,6 +288,34 @@ void EditorSystemsManager::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper,
                     newRootControls.insert(root);
                 }
             }
+            return newRootControls;
+        }
+    };
+
+    Any selectionValue = wrapper.GetFieldValue(DocumentData::selectionPropertyName);
+    SelectedNodes selection = selectionValue.Get(SelectedNodes());
+
+    if (fields.empty() || packageChanged)
+    {
+        Any packageValue = wrapper.GetFieldValue(DocumentData::packagePropertyName);
+        PackageNode* package = packageValue.Cast<PackageNode*>();
+
+        if (selectionChanged == false || selection.empty())
+        {
+            editingRootControlsChanged.Emit(CreateRootControls(selection, package));
+        }
+        OnPackageDataChanged(packageValue);
+        //when document is closed and active document is changed we receive empty fields
+        OnSelectionDataChanged(selection);
+    }
+
+    //update selection
+    if (selectionChanged)
+    {
+        //if package was not changed and selection is empty -> do nothing
+        if (selection.empty() == false)
+        {
+            SortedPackageBaseNodeSet newRootControls = CreateRootControls(selection, package.Get());
             //no controls selected, so don't refresh visible content
             if (newRootControls.empty() == false)
             {

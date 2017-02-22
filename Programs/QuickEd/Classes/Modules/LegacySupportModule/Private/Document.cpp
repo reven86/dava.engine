@@ -14,6 +14,10 @@ Document::Document(DAVA::TArc::ContextAccessor* accessor_, DAVA::TArc::DataConte
     , contextId(contextId_)
 {
     using namespace DAVA::TArc;
+    DataContext* dataContext = accessor->GetContext(contextId);
+    const DocumentData* documentData = dataContext->GetData<DocumentData>();
+    package = const_cast<PackageNode*>(documentData->GetPackageNode());
+
     DataContext* globalContext = accessor->GetGlobalContext();
     ProjectData* projectData = globalContext->GetData<ProjectData>();
     commandExecutor.reset(new QtModelPackageCommandExecutor(projectData, this));
@@ -51,13 +55,7 @@ DAVA::CommandStack* Document::GetCommandStack() const
 
 PackageNode* Document::GetPackage() const
 {
-    using namespace DAVA::TArc;
-    const DataContext* dataContext = accessor->GetContext(contextId);
-    DVASSERT(nullptr != dataContext);
-    const DocumentData* data = dataContext->GetData<DocumentData>();
-    DVASSERT(nullptr != data);
-    const PackageNode* package = data->GetPackageNode();
-    return const_cast<PackageNode*>(package);
+    return package;
 }
 
 QtModelPackageCommandExecutor* Document::GetCommandExecutor() const
