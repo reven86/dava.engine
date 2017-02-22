@@ -4,8 +4,8 @@
 #if defined(__DAVAENGINE_IPHONE__)
 
 #include "Engine/Private/EngineBackend.h"
-#include "Engine/Private/Ios/PlatformCoreiOS.h"
-#include "Engine/Private/Ios/CoreNativeBridgeiOS.h"
+#include "Engine/Private/iOS/PlatformCoreiOS.h"
+#include "Engine/Private/iOS/CoreNativeBridgeiOS.h"
 #include "Engine/Private/iOS/Window/WindowBackendiOS.h"
 #include "Engine/Private/iOS/Window/WindowNativeBridgeiOS.h"
 #include "Render/Image/Image.h"
