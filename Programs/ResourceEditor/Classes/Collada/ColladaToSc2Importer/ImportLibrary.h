@@ -32,6 +32,8 @@ private:
     Map<ColladaPolygonGroupInstance*, PolygonGroup*> polygons;
     Map<FastName, NMaterial*> materialParents;
     Map<SceneNodeAnimation*, AnimationData*> animations;
+
+    DAVA::uint32 materialInstanceNumber = 0;
 };
 
 inline void ImportLibrary::FlipTexCoords(Vector2& v) const
