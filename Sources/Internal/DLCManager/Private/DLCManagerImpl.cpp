@@ -655,8 +655,17 @@ void DLCManagerImpl::ParseMeta()
     {
         DAVA_THROW(DAVA::Exception, "on server bad superpack!!! Footer meta not match crc32");
     }
-
-    WriteBufferToFile(buffer, localCacheMeta);
+    try
+    {
+        WriteBufferToFile(buffer, localCacheMeta);
+    }
+    catch (std::exception& ex)
+    {
+        Logger::Error("%s", ex.what());
+        noSpaceLeftOnDevice.Emit(localCacheMeta.GetAbsolutePathname());
+        RetryInit();
+        return;
+    }
 
     buffer.clear();
     buffer.shrink_to_fit();

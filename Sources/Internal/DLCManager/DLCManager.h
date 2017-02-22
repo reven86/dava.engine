@@ -62,6 +62,11 @@ public:
     Signal<bool> networkReady;
     /** signal per user request with full size of all depended packs */
     Signal<const IRequest&> requestUpdated;
+    /** signal about fail download(or write) file into device, parameter is
+		full path to file failed create or write.
+		Immediately after signal DLCManager requesting disabled
+		*/
+    Signal<const String&> noSpaceLeftOnDevice;
 
     struct Hints
     {

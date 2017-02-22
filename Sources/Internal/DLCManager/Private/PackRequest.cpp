@@ -159,12 +159,10 @@ bool PackRequest::IsSubRequest(const PackRequest* other) const
             {
                 return true;
             }
-            else
+
+            if (r->IsSubRequest(other))
             {
-                if (r->IsSubRequest(other))
-                {
-                    return true;
-                }
+                return true;
             }
         }
     }
@@ -308,8 +306,26 @@ void PackRequest::UpdateFileRequests()
                     break;
                     case DL_FINISHED:
                     {
+                        DownloadError downloadError = DLE_NO_ERROR;
+                        if (dm->GetError(fileRequest.taskId, downloadError))
+                        {
+                            if (DLE_NO_ERROR != downloadError)
+                            {
+                                String err = DLC::ToString(downloadError);
+                                Logger::Error("can't download file: %s couse: %s",
+                                              fileRequest.localFile.GetAbsolutePathname(),
+                                              err.c_str());
+
+                                if (DLE_FILE_ERROR == downloadError)
+                                {
+                                    packManagerImpl.noSpaceLeftOnDevice.Emit(fileRequest.localFile.GetAbsolutePathname());
+                                    packManagerImpl.SetRequestingEnabled(false);
+                                    return;
+                                }
+                            }
+                        }
                         dm->GetProgress(fileRequest.taskId, fileRequest.downloadedFileSize);
-                        // return full superpack size dm->GetTotal(fileRequest.taskId, fileRequest.downloadedFileSize);
+
                         fileRequest.taskId = 0;
                         fileRequest.status = CheckHash;
                         callSignal = true;
