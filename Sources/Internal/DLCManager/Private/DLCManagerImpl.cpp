@@ -73,12 +73,14 @@ static void WriteBufferToFile(const Vector<uint8>& outDB, const FilePath& path)
     }
 }
 
+#ifdef __DAVAENGINE_COREV2__
 DLCManagerImpl::DLCManagerImpl(Engine* engine_)
     : engine(*engine_)
 {
     DVASSERT(Thread::IsMainThread());
     sigConnectionUpdate = engine.update.Connect(this, &DLCManagerImpl::Update);
 }
+#endif
 
 DLCManagerImpl::~DLCManagerImpl()
 {
@@ -95,9 +97,9 @@ DLCManagerImpl::~DLCManagerImpl()
         scanThread->Release();
         scanThread = nullptr;
     }
-
+#ifdef __DAVAENGINE_COREV2__
     engine.update.Disconnect(sigConnectionUpdate);
-
+#endif
     for (auto request : requests)
     {
         delete request;
@@ -1060,12 +1062,13 @@ void DLCManagerImpl::ThreadScanFunc()
     {
         return;
     }
-
+#ifdef __DAVAENGINE_COREV2__
     DAVA::RunOnMainThreadAsync([this]()
                                {
                                    // finish thread
                                    scanState = ScanState::Done;
                                });
+#endif
 }
 
 } // end namespace DAVA
