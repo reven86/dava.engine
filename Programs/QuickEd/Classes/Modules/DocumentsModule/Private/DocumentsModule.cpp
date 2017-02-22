@@ -570,7 +570,7 @@ DAVA::TArc::DataContext::ContextID DocumentsModule::OpenDocument(const QString& 
 
     if (id == DataContext::Empty)
     {
-        RefPtr<PackageNode> package = CreateDocument(path);
+        RefPtr<PackageNode> package = CreatePackage(path);
         if (package != nullptr)
         {
             DAVA::Vector<std::unique_ptr<DAVA::TArc::DataNode>> initialData;
@@ -586,7 +586,7 @@ DAVA::TArc::DataContext::ContextID DocumentsModule::OpenDocument(const QString& 
     return id;
 }
 
-DAVA::RefPtr<PackageNode> DocumentsModule::CreateDocument(const QString& path)
+DAVA::RefPtr<PackageNode> DocumentsModule::CreatePackage(const QString& path)
 {
     using namespace DAVA;
     using namespace TArc;
@@ -866,7 +866,7 @@ void DocumentsModule::ReloadDocument(const DAVA::TArc::DataContext::ContextID& c
     DocumentData* currentData = context->GetData<DocumentData>();
     QString path = currentData->GetPackageAbsolutePath();
 
-    RefPtr<PackageNode> package = CreateDocument(path);
+    RefPtr<PackageNode> package = CreatePackage(path);
     //if document was created successfully - delete previous data and create new one with new package.
     //this required because current program modules storing selection and another data as pointers to package children
     //else, if document was broken or damaged, can not use this context any more
