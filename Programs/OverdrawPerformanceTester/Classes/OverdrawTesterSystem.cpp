@@ -99,8 +99,8 @@ void OverdrawTesterSystem::RemoveEntity(DAVA::Entity* entity)
 
 DAVA::WideString OverdrawTesterSystem::GetInfoString()
 {
-    return textureSamples != 5 ? DAVA::Format(L" ||| Texture samples: %d ||| Overdraw %d%", textureSamples, static_cast<DAVA::int32>(overdrawPercent*stepsCount)) : 
-        DAVA::Format(L" ||| Dependent read ||| Overdraw %d%", static_cast<DAVA::int32>(overdrawPercent*stepsCount));
+    return textureSampleCount != 5 ? DAVA::Format(L" ||| Texture samples: %d ||| Overdraw %d%", textureSampleCount, static_cast<DAVA::int32>(overdrawPercent*currentStepsCount)) : 
+        DAVA::Format(L" ||| Dependent read ||| Overdraw %d%", static_cast<DAVA::int32>(overdrawPercent*currentStepsCount));
 }
 
 void OverdrawTesterSystem::Process(DAVA::float32 timeElapsed)
@@ -112,24 +112,24 @@ void OverdrawTesterSystem::Process(DAVA::float32 timeElapsed)
     i += timeElapsed;
     if (i >= increasePercentTime)
     {
-        stepsCount++;
+        currentStepsCount++;
         i -= increasePercentTime;
     }
-    if (stepsCount > maxStepsCount)
+    if (currentStepsCount > maxStepsCount)
     {
-        stepsCount = 0;
+        currentStepsCount = 0;
         i = 0;
-        textureSamples++;
-        if (textureSamples < 5)
-            SetupMaterial(&keywords[textureSamples - 1], &textureNames[textureSamples - 1]);
-        else if (textureSamples == 5)
+        textureSampleCount++;
+        if (textureSampleCount < 5)
+            SetupMaterial(&keywords[textureSampleCount - 1], &textureNames[textureSampleCount - 1]);
+        else if (textureSampleCount == 5)
             overdrawMaterial->AddFlag(FastName("DEPENDENT_READ_TEST"), 1);
         else
             finished = true;
     }
 
     for (auto renderObject : activeRenderObjects)
-        renderObject->SetCurrentStepsCount(stepsCount);
+        renderObject->SetCurrentStepsCount(currentStepsCount);
 }
 
 DAVA::Texture* OverdrawTesterSystem::GenerateTexture(DAVA::Vector4 startColor, DAVA::Vector4 endColor)
@@ -157,7 +157,7 @@ DAVA::Texture* OverdrawTesterSystem::GenerateTexture(DAVA::Vector4 startColor, D
 void OverdrawTesterSystem::SetupMaterial(const DAVA::FastName* keyword, const DAVA::FastName* texture)
 {
     overdrawMaterial->AddFlag(*keyword, 1);
-    overdrawMaterial->AddTexture(*texture, textures[textureSamples - 1]);
+    overdrawMaterial->AddTexture(*texture, textures[textureSampleCount - 1]);
 }
 
 }

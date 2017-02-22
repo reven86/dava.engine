@@ -22,6 +22,12 @@ protected:
     }
 
 public:
+    struct FrameData
+    {
+        DAVA::uint32 FPS;
+        DAVA::float32 Overdraw;
+    };
+
     virtual void LoadResources();
     virtual void UnloadResources();
 
@@ -49,6 +55,8 @@ protected:
     DAVA::Scene* scene = nullptr;
     DAVA::RotationControllerSystem* rotationControllerSystem = nullptr;
     DAVA::WASDControllerSystem* wasdSystem = nullptr;
+
+    DAVA::Array<DAVA::Vector<FrameData>, 6> performanceData;
 
     OverdrawPerformanceTester::OverdrawTesterSystem* testerSystem;
 

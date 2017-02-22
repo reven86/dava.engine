@@ -265,6 +265,9 @@ void ViewSceneScreen::UpdateInfo(float32 timeElapsed)
         int32 fps = (int32)(frameCounter / framesTime);
         info->SetText(testerSystem != nullptr ? Format(L"FPS: %d", fps) + testerSystem->GetInfoString() : Format(L"FPS: %d", fps));
 
+        if (testerSystem->GetCurrentSampleCount() < 6)
+            performanceData[testerSystem->GetCurrentSampleCount()].push_back({ fps, testerSystem->GetCurrentOverdraw() });
+
         framesTime -= INFO_UPDATE_TIME;
         frameCounter = 0;
 
