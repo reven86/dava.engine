@@ -59,8 +59,6 @@ void LocalNotificationIOS::Hide()
 
 void LocalNotificationIOS::ShowText(const WideString& title, const WideString& text, bool useSound)
 {
-    RequestPermissions();
-
     if (NULL == notification)
     {
         notification = new UILocalNotificationWrapper();
@@ -92,8 +90,6 @@ void LocalNotificationIOS::ShowProgress(const WideString& title, const WideStrin
 
 void LocalNotificationIOS::PostDelayedNotification(const WideString& title, const WideString& text, int delaySeconds, bool useSound)
 {
-    RequestPermissions();
-
     UILocalNotification* notification = [[[UILocalNotification alloc] init] autorelease];
     notification.alertBody = NSStringFromWideString(text);
     notification.timeZone = [NSTimeZone defaultTimeZone];
