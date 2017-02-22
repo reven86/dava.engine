@@ -88,7 +88,7 @@ public:
 
     PackRequest* FindRequest(const String& requestedPackName) const;
 
-    void SetRequestOrder(const IRequest* request, uint32 orderIndex) override;
+    void SetPriorityToRequest(const IRequest* request) override;
 
     void RemovePack(const String& packName) override;
 
