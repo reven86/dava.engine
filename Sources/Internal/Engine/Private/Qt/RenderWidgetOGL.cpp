@@ -1,6 +1,12 @@
 #include "Engine/Private/Qt/RenderWidgetOGL.h"
+
+#if defined(__DAVAENGINE_COREV2__)
+#if defined(__DAVAENGINE_QT__)
 #include "Engine/Qt/IClientDelegate.h"
 #include "Engine/Private/Qt/IWindowDelegate.h"
+#include "Input/InputSystem.h"
+#include "Input/KeyboardDevice.h"
+#include "Logger/Logger.h"
 #include "Debug/DVAssert.h"
 
 #include <QQuickItem>
@@ -10,7 +16,7 @@
 
 namespace DAVA
 {
-class RenderWidgetOGL::OGLContextBinder
+class RenderWidgetOGL::OGLContextBinder final
 {
 public:
     OGLContextBinder(QSurface* surface, QOpenGLContext* context)
@@ -253,3 +259,6 @@ QWindow* RenderWidgetOGL::GetQWindow()
 }
 
 } // namespace DAVA
+
+#endif // __DAVAENGINE_QT__
+#endif // __DAVAENGINE_COREV2__

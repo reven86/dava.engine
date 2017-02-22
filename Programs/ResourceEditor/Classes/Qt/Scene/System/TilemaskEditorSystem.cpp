@@ -63,7 +63,7 @@ TilemaskEditorSystem::TilemaskEditorSystem(DAVA::Scene* scene)
 
     quadBuffer = rhi::CreateVertexBuffer(static_cast<DAVA::uint32>(buffer.size() * sizeof(DAVA::float32)));
     rhi::UpdateVertexBuffer(quadBuffer, buffer.data(), 0, static_cast<DAVA::uint32>(buffer.size() * sizeof(DAVA::float32)));
-    RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(this, &TilemaskEditorSystem::UpdateVertexBuffer));
+    DAVA::RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(this, &TilemaskEditorSystem::UpdateVertexBuffer));
 
     quadPacket.vertexStreamCount = 1;
     quadPacket.vertexStream[0] = quadBuffer;
@@ -85,7 +85,7 @@ TilemaskEditorSystem::TilemaskEditorSystem(DAVA::Scene* scene)
 
 TilemaskEditorSystem::~TilemaskEditorSystem()
 {
-    RenderCallbacks::UnRegisterResourceRestoreCallback(MakeFunction(this, &TilemaskEditorSystem::UpdateVertexBuffer));
+    DAVA::RenderCallbacks::UnRegisterResourceRestoreCallback(MakeFunction(this, &TilemaskEditorSystem::UpdateVertexBuffer));
     rhi::DeleteVertexBuffer(quadBuffer);
 
     SafeRelease(editorMaterial);

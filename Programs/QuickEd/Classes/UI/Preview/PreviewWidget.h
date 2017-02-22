@@ -4,6 +4,7 @@
 #include "ui_PreviewWidget.h"
 #include "EditorSystems/EditorSystemsManager.h"
 #include "EditorSystems/SelectionContainer.h"
+#include <Engine/Qt/IClientDelegate.h>
 #include <QWidget>
 #include <QCursor>
 #include <QPointer>
@@ -28,7 +29,7 @@ class QDragLeaveEvent;
 class QDropEvent;
 class QMenu;
 
-class PreviewWidget : public QWidget, public Ui::PreviewWidget, private DAVA::RenderWidget::IClientDelegate
+class PreviewWidget : public QWidget, public Ui::PreviewWidget, private DAVA::IClientDelegate
 {
     Q_OBJECT
 public:

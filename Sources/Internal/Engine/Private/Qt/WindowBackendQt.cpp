@@ -39,7 +39,6 @@ public:
 
 namespace Private
 {
-
 class TriggerProcessEvent : public QEvent
 {
 public:

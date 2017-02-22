@@ -1,8 +1,12 @@
 #pragma once
 
+#if defined(__DAVAENGINE_COREV2__)
+#if defined(__DAVAENGINE_QT__)
+
 #include "Engine/EngineTypes.h"
 #include "Engine/Private/Qt/IWindowDelegate.h"
 #include "Engine/Qt/IClientDelegate.h"
+#include "Render/RHI/rhi_Public.h"
 #include "Functional/Signal.h"
 #include "Debug/DVAssert.h"
 #include "Base/BaseTypes.h"
@@ -80,3 +84,5 @@ protected:
 };
 
 } // namespace DAVA
+#endif // __DAVAENGINE_QT__
+#endif // __DAVAENGINE_COREV2__
