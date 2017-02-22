@@ -6,6 +6,16 @@
 namespace OverdrawPerformanceTester
 {
 
+const DAVA::Vector2 ChartPainterSystem::chartOffset(0.1f, 0.1f);
+const DAVA::Color ChartPainterSystem::gridColor(0.4f, 0.4f, 0.4f, 0.4f);
+const DAVA::float32 ChartPainterSystem::chartLen = 0.8f;
+const DAVA::float32 ChartPainterSystem::maxFps = 70.0f;
+const DAVA::float32 ChartPainterSystem::maxOverdraw = 1000.0f;
+const DAVA::float32 ChartPainterSystem::overdrawStep = 100.0f;
+const DAVA::float32 ChartPainterSystem::fpsStep = 10.0f;
+const DAVA::float32 ChartPainterSystem::overdrawStepCount = maxOverdraw / overdrawStep;
+const DAVA::float32 ChartPainterSystem::fpsStepCount = maxFps / fpsStep;
+
 const DAVA::Array<DAVA::Color, 6> ChartPainterSystem::chartColors =
 { {
     { 0.0f, 1.0f, 0.0f, 1.0f},
@@ -17,9 +27,8 @@ const DAVA::Array<DAVA::Color, 6> ChartPainterSystem::chartColors =
 } };
 
 ChartPainterSystem::ChartPainterSystem(DAVA::Scene* scene, DAVA::Array<DAVA::Vector<ViewSceneScreen::FrameData>, 6>* preformanceData_)
-    : DAVA::SceneSystem(scene), performanceData(preformanceData_)
+    : DAVA::SceneSystem(scene), performanceData(preformanceData_), textColor(rhi::NativeColorRGBA(1.0f, 1.0f, 1.0f, 1.0f))
 {
-
 }
 
 ChartPainterSystem::~ChartPainterSystem()
@@ -29,19 +38,24 @@ ChartPainterSystem::~ChartPainterSystem()
 
 void ChartPainterSystem::Process(float32 timeElapsed)
 {
-
     if (!shouldDrawGraph) return;
 
     VirtualCoordinatesSystem* vcs = DAVA::UIControlSystem::Instance()->vcs;
 
     int32 w = vcs->GetVirtualScreenSize().dx;
     int32 h = vcs->GetVirtualScreenSize().dy;
+    
+    DrawGrid(w, h);
+    DrawCharts(w, h);
 
-    Vector2 offset(0.1f, 0.1f);
+    FlushDbgText();
+}
 
-    Vector2 origin(offset.x * w, 0.9f * h);
-    Vector2 xAxis(0.9f * w, 0.9f * h);
-    Vector2 yAxis(0.1f * w, offset.y * h);
+void ChartPainterSystem::DrawGrid(int32 w, int32 h)
+{
+    Vector2 origin(chartOffset.x * w, (chartOffset.y + chartLen) * h);
+    Vector2 xAxis((chartOffset.x + chartLen) * w, (chartOffset.y + chartLen) * h);
+    Vector2 yAxis(chartOffset.x * w, chartOffset.y * h);
 
     Polygon2 p;
     p.AddPoint(origin);
@@ -52,36 +66,36 @@ void ChartPainterSystem::Process(float32 timeElapsed)
     p.AddPoint(yAxis);
     RenderSystem2D::Instance()->DrawPolygon(p, false, Color::White);
 
-    float32 maxOverdraw = 1000.0f;
-    float32 maxFps = 70.0f;
-    float32 overdrawLen = 0.8f;
-    float32 fpsLen = 0.8f;
-
-    Color col(0.4f, 0.4f, 0.4f, 0.4f);
-    for (int32 i = 1; i < 8; i++)
+    for (int32 i = 1; i < fpsStepCount + 1; i++)
     {
         p.Clear();
-        float32 normalizedFps = (i * 10) / maxFps;
-        normalizedFps *= fpsLen;
-        float32 pointY = 1 - (normalizedFps + offset.y);
+        float32 normalizedFps = (i * fpsStep) / maxFps;
+        normalizedFps *= chartLen;
+        float32 pointY = 1 - (normalizedFps + chartOffset.y);
         pointY *= h;
-        p.AddPoint({ offset.x * w, pointY });
-        p.AddPoint({ (offset.x + overdrawLen) * w, pointY });
-        RenderSystem2D::Instance()->DrawPolygon(p, false, col);
+        p.AddPoint({ chartOffset.x * w, pointY });
+        p.AddPoint({ (chartOffset.x + chartLen) * w, pointY });
+        RenderSystem2D::Instance()->DrawPolygon(p, false, gridColor);
+
+        DbgDraw::Text2D(static_cast<int32>(chartOffset.x * w), static_cast<int32>(pointY), textColor, "%f", i * fpsStep);
     }
 
-    for (int32 i = 1; i < 11; i++)
+    for (int32 i = 1; i < overdrawStepCount + 1; i++)
     {
         p.Clear();
-        float32 normalizedOverdraw = (i * 100) / maxOverdraw;
-        normalizedOverdraw *= overdrawLen;
-        float32 pointX = normalizedOverdraw + offset.x;
+        float32 normalizedOverdraw = (i * overdrawStep) / maxOverdraw;
+        normalizedOverdraw *= chartLen;
+        float32 pointX = normalizedOverdraw + chartOffset.x;
         pointX *= w;
-        p.AddPoint({ pointX, offset.y * h });
-        p.AddPoint({ pointX, (offset.y + overdrawLen) * h });
-        RenderSystem2D::Instance()->DrawPolygon(p, false, col);
+        p.AddPoint({ pointX, chartOffset.y * h });
+        p.AddPoint({ pointX, (chartOffset.y + chartLen) * h });
+        RenderSystem2D::Instance()->DrawPolygon(p, false, gridColor);
+        DbgDraw::Text2D(static_cast<int32>(pointX), static_cast<int32>((chartOffset.y + chartLen) * h), textColor, "%f", i * overdrawStep);
     }
+}
 
+void ChartPainterSystem::DrawCharts(int32 w, int32 h)
+{
     for (int i = 0; i < 6; i++)
     {
         Polygon2 p;
@@ -93,24 +107,45 @@ void ChartPainterSystem::Process(float32 timeElapsed)
             float32 normalizedFps = fps / maxFps;
             float32 normalizedOverdraw = overdraw / maxOverdraw;
 
-            normalizedFps *= fpsLen;
-            normalizedOverdraw *= overdrawLen;
+            normalizedFps *= chartLen;
+            normalizedOverdraw *= chartLen;
 
-            float32 pointX = (normalizedOverdraw + offset.x);
-            float32 pointY = 1 - (normalizedFps + offset.y);
+            float32 pointX = (normalizedOverdraw + chartOffset.x);
+            float32 pointY = 1 - (normalizedFps + chartOffset.y);
             pointX *= w;
             pointY *= h;
 
-            p.AddPoint( { pointX, pointY } );
+            p.AddPoint({ pointX, pointY });
         }
 
         RenderSystem2D::Instance()->DrawPolygon(p, false, chartColors[i]);
     }
+}
 
-//     Polygon2 p;
-//     p.AddPoint(Vector2(0, 0));
-//     p.AddPoint(Vector2(static_cast<float32>(w), static_cast<float32>(h)));
-//     RenderSystem2D::Instance()->DrawPolygon(p, false, DAVA::Color::White);
+void ChartPainterSystem::FlushDbgText()
+{
+    rhi::RenderPassConfig passConfig;
+    passConfig.colorBuffer[0].loadAction = rhi::LOADACTION_LOAD;
+    passConfig.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
+    passConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_NONE;
+    passConfig.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
+    passConfig.priority = PRIORITY_MAIN_2D - 10;
+    passConfig.viewport.x = 0;
+    passConfig.viewport.y = 0;
+    passConfig.viewport.width = Renderer::GetFramebufferWidth();
+    passConfig.viewport.height = Renderer::GetFramebufferHeight();
+
+    DbgDraw::SetScreenSize(Renderer::GetFramebufferWidth(), Renderer::GetFramebufferHeight());
+
+    rhi::HPacketList packetList;
+    rhi::HRenderPass pass = rhi::AllocateRenderPass(passConfig, 1, &packetList);
+    rhi::BeginRenderPass(pass);
+    rhi::BeginPacketList(packetList);
+
+    DbgDraw::FlushBatched(packetList);
+
+    rhi::EndPacketList(packetList);
+    rhi::EndRenderPass(pass);
 }
 
 }

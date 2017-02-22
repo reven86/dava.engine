@@ -139,8 +139,8 @@ void OverdrawTesterSystem::Process(DAVA::float32 timeElapsed)
 
 DAVA::Texture* OverdrawTesterSystem::GenerateTexture(DAVA::Vector4 startColor, DAVA::Vector4 endColor)
 {
-    static const uint32 width = 64;
-    static const uint32 height = 64;
+    static const uint32 width = 2048;
+    static const uint32 height = 2048;
 
     unsigned char* data = new unsigned char[width * height * 4];
     uint32 dataIndex = 0;
