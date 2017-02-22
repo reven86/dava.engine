@@ -51,24 +51,24 @@ RenderWidgetBackendImpl<TBase>::RenderWidgetBackendImpl(IWindowDelegate* windowD
     : TBase(parent)
     , RenderWidgetBackend(windowDelegate)
 {
-    setAcceptDrops(true);
-    setMouseTracking(true);
+    this->setAcceptDrops(true);
+    this->setMouseTracking(true);
 
-    setFocusPolicy(Qt::StrongFocus);
-    setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
-    setMinimumSize(QSize(width, height));
+    this->setFocusPolicy(Qt::StrongFocus);
+    this->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
+    this->setMinimumSize(QSize(width, height));
 }
 
 template <typename TBase>
 void RenderWidgetBackendImpl<TBase>::OnCreated()
 {
     RenderWidgetBackendDetails::Kostil_ForceUpdateCurrentScreen(this, GetQWindow(), PlatformApi::Qt::GetApplication());
-    screenParams.screenScale = devicePixelRatio();
-    screenParams.logicalDPI = logicalDpiX();
+    screenParams.screenScale = this->devicePixelRatio();
+    screenParams.logicalDPI = this->logicalDpiX();
 
     windowDelegate->OnCreated();
 
-    QSize size = geometry().size();
+    QSize size = this->geometry().size();
     windowDelegate->OnResized(size.width(), size.height(), IsInFullScreen());
     resized.Emit(size.width(), size.height());
 }
@@ -76,16 +76,16 @@ void RenderWidgetBackendImpl<TBase>::OnCreated()
 template <typename TBase>
 void RenderWidgetBackendImpl<TBase>::OnFrame()
 {
-    if (screenParams.screenScale != devicePixelRatio())
+    if (screenParams.screenScale != this->devicePixelRatio())
     {
-        screenParams.screenScale = devicePixelRatio();
-        QSize size = geometry().size();
+        screenParams.screenScale = this->devicePixelRatio();
+        QSize size = this->geometry().size();
         windowDelegate->OnResized(size.width(), size.height(), IsInFullScreen());
     }
 
-    if (screenParams.logicalDPI != logicalDpiX())
+    if (screenParams.logicalDPI != this->logicalDpiX())
     {
-        screenParams.logicalDPI = logicalDpiX();
+        screenParams.logicalDPI = this->logicalDpiX();
         windowDelegate->OnDpiChanged(static_cast<float32>(screenParams.logicalDPI));
     }
 

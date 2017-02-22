@@ -1177,7 +1177,7 @@ void _DX9_ResetBlock()
     Logger::Info("[DX9 RESET] reset succeeded ...");
 #if !defined(DAVA_DISABLE_CLEAR_ON_RESET)
     //clear buffer
-    DX9_CALL(_D3D9_Device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_RGBA(0, 1, 0, 1), 1.0, 0), "Clear");
+    DX9_CALL(_D3D9_Device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_RGBA(0, 0, 0, 1), 1.0, 0), "Clear");
     _D3D9_Device->Present(NULL, NULL, NULL, NULL);
 #endif
 

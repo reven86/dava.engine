@@ -23,7 +23,7 @@ public:
     void ReleaseContext() override;
 
 protected:
-    bool eventFilter(QObject* obj, QEvent* e);
+    bool eventFilter(QObject* obj, QEvent* e) override;
 
     bool IsInFullScreen() const override;
     QWindow* GetQWindow() override;

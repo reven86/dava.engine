@@ -31,8 +31,8 @@ protected:
     virtual QWindow* GetQWindow() override;
 
 private:
-    void OnCreated();
-    void OnFrame();
+    void OnCreated() override;
+    void OnFrame() override;
     void OnActiveFocusItemChanged();
     void OnSceneGraphInvalidated();
 

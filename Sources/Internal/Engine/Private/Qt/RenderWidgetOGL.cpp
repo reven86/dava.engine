@@ -105,7 +105,10 @@ void ReleaseContextImpl()
     RenderWidgetOGL::OGLContextBinder::binder->ReleaseContext();
 }
 
+namespace RenderWidgetOGLDetail
+{
 const char* initializedPropertyName = "initialized";
+}
 
 RenderWidgetOGL::RenderWidgetOGL(IWindowDelegate* widgetDelegate, uint32 width, uint32 height, QWidget* parent)
     : TBase(widgetDelegate, width, height, parent)
@@ -123,7 +126,7 @@ RenderWidgetOGL::RenderWidgetOGL(IWindowDelegate* widgetDelegate, uint32 width, 
 void RenderWidgetOGL::OnCreated()
 {
     QObject::disconnect(quickWindow(), &QQuickWindow::beforeSynchronizing, this, &RenderWidgetOGL::OnCreated);
-    setProperty(initializedPropertyName, true);
+    setProperty(RenderWidgetOGLDetail::initializedPropertyName, true);
 
     // QuickWidnow in QQuickWidget is not "real" window, it doesn't have "platform window" handle,
     // so Qt can't make context current for that surface. Real surface is QOffscreenWindow that live inside
@@ -173,7 +176,7 @@ void RenderWidgetOGL::ActivateRendering()
 
 bool RenderWidgetOGL::IsInitialized() const
 {
-    return property(initializedPropertyName).isValid();
+    return property(RenderWidgetOGLDetail::initializedPropertyName).isValid();
 }
 
 void RenderWidgetOGL::Update()
