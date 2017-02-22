@@ -43,6 +43,7 @@ public:
     static const DAVA::FastName General_AssetCache_Timeout;
 
     static const DAVA::FastName General_AutoConvertation;
+    static const DAVA::FastName General_RenderBackend;
 
     static const DAVA::FastName Scene_GridStep;
     static const DAVA::FastName Scene_GridSize;

@@ -1,23 +1,32 @@
 #include "Settings/SettingsManager.h"
 
 #include "Scene/System/EditorMaterialSystem.h"
-#include <Tools/TextureCompression/TextureConverter.h>
-
 #include "Scene/System/CollisionSystem.h"
 
 #include "Classes/Selection/SelectionSystem.h"
 
+#include <Tools/TextureCompression/TextureConverter.h>
+#include <Tools/AssetCache/AssetCache.h>
+
+#include <FileSystem/KeyedArchive.h>
+#include <FileSystem/VariantType.h>
+#include <Render/RenderBase.h>
+#include <Base/GlobalEnum.h>
+
 #include <QColor>
 #include <QDebug>
 
-// framework
-#include "FileSystem/KeyedArchive.h"
-#include "FileSystem/VariantType.h"
-#include "Render/RenderBase.h"
-
-#include <Tools/AssetCache/AssetCache.h>
-
 #define SETTINGS_CONFIG_FILE "~doc:/ResourceEditorOptions.archive"
+
+ENUM_DECLARE(RenderingBackend)
+{
+#if defined(__DAVAENGINE_WIN32__)
+    // Uncomment this line to allow DX11 backend
+    //ENUM_ADD_DESCR(static_cast<int>(RenderingBackend::DX11), "DirectX 11");
+    ENUM_ADD_DESCR(static_cast<int>(RenderingBackend::DX9), "DirectX 9");
+#endif
+    ENUM_ADD_DESCR(static_cast<int>(RenderingBackend::OpenGL), "OpenGL");
+}
 
 SettingsManager::SettingsManager()
 {
@@ -64,6 +73,8 @@ void SettingsManager::Init()
     CreateValue(Settings::General_AssetCache_Port, DAVA::VariantType(static_cast<DAVA::uint32>(DAVA::AssetCache::ASSET_SERVER_PORT)));
     CreateValue(Settings::General_AssetCache_Timeout, DAVA::VariantType(static_cast<DAVA::uint32>(10)));
     CreateValue(Settings::General_AutoConvertation, DAVA::VariantType(true));
+    CreateValue(Settings::General_RenderBackend, DAVA::VariantType(static_cast<DAVA::int32>(RenderingBackend::OpenGL)),
+                DAVA::InspDesc("Rendering backend", GlobalEnumMap<RenderingBackend>::Instance()));
 
     CreateValue(Settings::Scene_GridStep, DAVA::VariantType(10.0f));
     CreateValue(Settings::Scene_GridSize, DAVA::VariantType(600.0f));

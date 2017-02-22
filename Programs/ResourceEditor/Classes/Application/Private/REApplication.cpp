@@ -51,20 +51,22 @@
 
 namespace REApplicationDetail
 {
-DAVA::KeyedArchive* CreateOptions()
+rhi::Api Convert(RenderingBackend r)
 {
-    DAVA::KeyedArchive* appOptions = new DAVA::KeyedArchive();
+    switch (r)
+    {
+    case RenderingBackend::DX11:
+        return rhi::RHI_DX11;
+    case RenderingBackend::DX9:
+        return rhi::RHI_DX9;
+    case RenderingBackend::OpenGL:
+        return rhi::RHI_GLES2;
+    default:
+        DVASSERT(false);
+        break;
+    }
 
-    appOptions->SetInt32("bpp", 32);
-    appOptions->SetInt32("renderer", rhi::RHI_GLES2);
-    appOptions->SetInt32("max_index_buffer_count", 16384);
-    appOptions->SetInt32("max_vertex_buffer_count", 16384);
-    appOptions->SetInt32("max_const_buffer_count", 32767);
-    appOptions->SetInt32("max_texture_count", 2048);
-
-    appOptions->SetInt32("shader_const_buffer_size", 256 * 1024 * 1024);
-
-    return appOptions;
+    return rhi::RHI_GLES2;
 }
 }
 
@@ -91,7 +93,7 @@ DAVA::TArc::BaseApplication::EngineInitInfo REApplication::GetInitInfo() const
       "DownloadManager",
     };
 
-    initInfo.options.Set(REApplicationDetail::CreateOptions());
+    initInfo.options.Set(CreateOptions());
     return initInfo;
 }
 
@@ -128,8 +130,11 @@ void REApplication::Init(const DAVA::EngineContext* engineContext)
     engineContext->logger->SetLogFilename("ResourceEditor.txt");
 
     settingsManager = new SettingsManager();
-    beastProxy = new BEAST_PROXY_TYPE();
+    RenderingBackend renderBackend = static_cast<RenderingBackend>(settingsManager->GetValue(Settings::General_RenderBackend).AsInt32());
 
+    appOptions->SetInt32("renderer", REApplicationDetail::Convert(renderBackend));
+
+    beastProxy = new BEAST_PROXY_TYPE();
     const char* settingsPath = "ResourceEditorSettings.archive";
     DAVA::FilePath localPrefrencesPath(engineContext->fileSystem->GetCurrentDocumentsDirectory() + settingsPath);
     PreferencesStorage::Instance()->SetupStoragePath(localPrefrencesPath);
@@ -219,4 +224,21 @@ void REApplication::RegisterEditorAnyCasts()
 
     DAVA::AnyCast<ComboBoxTestDataDescr, DAVA::String>::Register(&ComboBoxTestDataDescrToString);
     DAVA::AnyCast<ComboBoxTestDataDescr, QIcon>::Register(&ComboBoxTestDataDescrToQIcon);
+}
+
+DAVA::KeyedArchive* REApplication::CreateOptions() const
+{
+    appOptions.ConstructInplace();
+
+    appOptions->SetInt32("bpp", 32);
+    appOptions->SetInt32("renderer", rhi::RHI_GLES2);
+    appOptions->SetInt32("max_index_buffer_count", 16384);
+    appOptions->SetInt32("max_vertex_buffer_count", 16384);
+    appOptions->SetInt32("max_const_buffer_count", 32767);
+    appOptions->SetInt32("max_texture_count", 2048);
+
+    appOptions->SetInt32("shader_const_buffer_size", 256 * 1024 * 1024);
+    appOptions->Retain();
+
+    return appOptions.Get();
 }
