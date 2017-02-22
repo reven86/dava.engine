@@ -805,11 +805,13 @@ String AutotestingSystem::GetLuaString(int32& lineNumber) const
 
 void AutotestingSystem::StartRecording()
 {
+    DVASSERT(!isRecording);
     isRecording = true;
 }
 
 void AutotestingSystem::StopRecording()
 {
+    DVASSERT(isRecording);
     isRecording = false;
 }
 
