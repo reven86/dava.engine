@@ -57,6 +57,30 @@ void ChartPainterSystem::Process(float32 timeElapsed)
     float32 overdrawLen = 0.8f;
     float32 fpsLen = 0.8f;
 
+    Color col(0.4f, 0.4f, 0.4f, 0.4f);
+    for (int32 i = 1; i < 8; i++)
+    {
+        p.Clear();
+        float32 normalizedFps = (i * 10) / maxFps;
+        normalizedFps *= fpsLen;
+        float32 pointY = 1 - (normalizedFps + offset.y);
+        pointY *= h;
+        p.AddPoint({ offset.x * w, pointY });
+        p.AddPoint({ (offset.x + overdrawLen) * w, pointY });
+        RenderSystem2D::Instance()->DrawPolygon(p, false, col);
+    }
+
+    for (int32 i = 1; i < 11; i++)
+    {
+        p.Clear();
+        float32 normalizedOverdraw = (i * 100) / maxOverdraw;
+        normalizedOverdraw *= overdrawLen;
+        float32 pointX = normalizedOverdraw + offset.x;
+        pointX *= w;
+        p.AddPoint({ pointX, offset.y * h });
+        p.AddPoint({ pointX, (offset.y + overdrawLen) * h });
+        RenderSystem2D::Instance()->DrawPolygon(p, false, col);
+    }
 
     for (int i = 0; i < 6; i++)
     {
