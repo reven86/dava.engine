@@ -27,14 +27,15 @@ void macos_gl_reset(const rhi::ResetParam& params)
 
     const GLint backingSize[2] = { GLint(_GLES2_DefaultFrameBuffer_Width), GLint(_GLES2_DefaultFrameBuffer_Height) };
 
-    CGLSetParameter(context.CGLContextObj, kCGLCPSurfaceBackingSize, backingSize);
-    CGLEnable(context.CGLContextObj, kCGLCESurfaceBackingSize);
-    CGLUpdateContext(context.CGLContextObj);
-
     GLint swapInt = params.vsyncEnabled ? 1 : 0;
     [context setValues:&swapInt forParameter:NSOpenGLCPSwapInterval];
+    [context setValues:backingSize forParameter:NSOpenGLContextParameterSurfaceBackingSize];
 
-    [[view layer] setContentsScale:params.scaleX];
+    CGLEnable(context.CGLContextObj, kCGLCESurfaceBackingSize);
+    [context update];
+
+    CAOpenGLLayer* layer = static_cast<CAOpenGLLayer*>([view layer]);
+    [layer setContentsScale:params.scaleX];
     [view update];
 }
 
