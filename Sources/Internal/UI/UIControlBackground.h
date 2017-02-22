@@ -76,8 +76,6 @@ public:
 
     UIControlBackground(const UIControlBackground& src);
 
-    virtual bool IsEqualTo(const UIControlBackground* back) const;
-
     /**
      \brief Returns Sprite used for draw.
      \returns Sprite used for draw.
@@ -311,7 +309,7 @@ public:
     int32 GetGradientBlendMode() const;
     void SetGradientBlendMode(int32 mode);
 
-    INTROSPECTION_EXTEND(UIControlBackground, BaseObject,
+    INTROSPECTION_EXTEND(UIControlBackground, UIBaseComponent<UIComponent::BACKGROUND_COMPONENT>,
                          PROPERTY("drawType", InspDesc("Draw Type", GlobalEnumMap<eDrawType>::Instance()), GetBgDrawType, SetBgDrawType, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("sprite", "Sprite", GetBgSpritePath, SetSprite, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("frame", "Sprite Frame", GetFrame, SetFrame, I_SAVE | I_VIEW | I_EDIT)

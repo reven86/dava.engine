@@ -657,7 +657,7 @@ vertex_out vp_main( vertex_in input )
 
         
     #if TEXTURE0_ANIMATION_SHIFT
-        output.varTexCoord0 += tex0ShiftPerSecond * globalTime;
+        output.varTexCoord0 += frac(tex0ShiftPerSecond * globalTime);
     #endif
 
 #endif

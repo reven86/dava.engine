@@ -142,6 +142,11 @@ void Thread::ThreadFunction(void* param)
     t->id = GetCurrentId();
 
     t->threadFunc();
+
+    // Zero id to mark thread as finished in thread list obtained through GetThreadList() function.
+    // This prevents from retrieving invalid Thread instance through Thread::Current()
+    // as system can reuse thread ids.
+    std::memset(&t->id, 0, sizeof(t->id));
     t->state = STATE_ENDED;
 }
 

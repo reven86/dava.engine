@@ -56,22 +56,6 @@ UIControlBackground::~UIControlBackground()
     ReleaseDrawData();
 }
 
-bool UIControlBackground::IsEqualTo(const UIControlBackground* back) const
-{
-    if (GetDrawType() != back->GetDrawType() ||
-        Sprite::GetPathString(GetSprite()) != Sprite::GetPathString(back->GetSprite()) ||
-        GetFrame() != back->GetFrame() ||
-        GetAlign() != back->GetAlign() ||
-        GetColor() != back->GetColor() ||
-        GetColorInheritType() != back->GetColorInheritType() ||
-        GetModification() != back->GetModification() ||
-        GetLeftRightStretchCap() != back->GetLeftRightStretchCap() ||
-        GetTopBottomStretchCap() != back->GetTopBottomStretchCap() ||
-        GetPerPixelAccuracyType() != back->GetPerPixelAccuracyType())
-        return false;
-    return true;
-}
-
 Sprite* UIControlBackground::GetSprite() const
 {
     return spr.Get();
@@ -115,6 +99,11 @@ void UIControlBackground::SetSprite(Sprite* drawSprite, int32 drawFrame)
 void UIControlBackground::SetSprite(Sprite* drawSprite)
 {
     spr = drawSprite;
+
+    if (GetControl()) //workaround for standalone backgrounds
+    {
+        GetControl()->SetLayoutDirty();
+    }
 }
 
 void UIControlBackground::SetSprite(const FilePath& path)
@@ -146,11 +135,20 @@ void UIControlBackground::SetAlign(int32 drawAlign)
 {
     align = drawAlign;
 }
+
 void UIControlBackground::SetDrawType(UIControlBackground::eDrawType drawType)
 {
     if (type != drawType)
+    {
         ReleaseDrawData();
+    }
+
     type = drawType;
+
+    if (GetControl()) //workaround for standalone backgrounds
+    {
+        GetControl()->SetLayoutDirty();
+    }
 }
 
 void UIControlBackground::SetModification(int32 modification)

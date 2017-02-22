@@ -38,6 +38,16 @@ public:
     const uint32 accuracy;
 };
 
+/**
+ Specifies maximum count of characters in text for editing
+ */
+class MaxLength
+{
+public:
+    MaxLength(uint32 length);
+    const uint32 length;
+};
+
 /** Validation result */
 struct ValidationResult
 {

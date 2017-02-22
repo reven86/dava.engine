@@ -1,8 +1,6 @@
 #include "DAVAEngine.h"
 #include "UnitTests/UnitTests.h"
 
-#include "Infrastructure/TextureUtils.h"
-
 using namespace DAVA;
 
 DAVA_TESTCLASS (GPUFamilyTest)
