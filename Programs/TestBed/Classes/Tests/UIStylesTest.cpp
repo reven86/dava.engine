@@ -42,8 +42,8 @@ void UIStylesTest::LoadResources()
     }
 
     proto = pkgBuilder.GetPackage()->GetControl("Proto");
-    container = main->FindByName("Container");
-    statusText = main->FindByName<UIStaticText>("StatusText");
+    container = main->FindByPath("**/Container");
+    statusText = main->FindByPath<UIStaticText*>("**/StatusText");
 
     for (uint32 i = 0; i < 1000; ++i)
     {
