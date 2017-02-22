@@ -49,7 +49,7 @@ private:
     void CollectControls(UIControl* control, bool recursive);
     void CollectControlChildren(UIControl* control, int32 parentIndex, bool recursive);
 
-    void ProcessAxis(Vector2::eAxis axis);
+    void ProcessAxis(Vector2::eAxis axis, bool processSizes);
     void DoMeasurePhase(Vector2::eAxis axis);
     void DoLayoutPhase(Vector2::eAxis axis);
 
