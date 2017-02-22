@@ -56,15 +56,10 @@ public:
 
     static const String& ToString(InitError state);
 
-#ifdef __DAVAENGINE_COREV2__
     explicit DLCManagerImpl(Engine* engine_);
     ~DLCManagerImpl();
     Engine& engine;
     SigConnectionID sigConnectionUpdate = 0;
-#else
-    DLCManagerImpl() = default;
-    ~DLCManagerImpl() = default;
-#endif
 
     void Initialize(const FilePath& dirToDownloadPacks_,
                     const String& urlToServerSuperpack_,
