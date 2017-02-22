@@ -7,6 +7,7 @@
 
 #include <Network/NetCore.h>
 #include <Network/Base/Endpoint.h>
+#include <Network/ServiceRegistrar.h>
 
 #include <Network/PeerDesription.h>
 
@@ -84,6 +85,12 @@ private:
 private:
     QPointer<QStandardItemModel> model;
     QPointer<DeviceListWidget> view;
+
+    DAVA::Net::ServiceCreatorAsync loggerServiceCreatorAsync;
+    DAVA::Net::ServiceDeleterAsync loggerServiceDeleterAsync;
+
+    DAVA::Net::ServiceCreatorAsync profilerServiceCreatorAsync;
+    DAVA::Net::ServiceDeleterAsync profilerServiceDeleterAsync;
 
 private:
     static QStandardItem* CreateDeviceItem(const DAVA::Net::Endpoint& endp, const DAVA::Net::PeerDescription& peerDescr);

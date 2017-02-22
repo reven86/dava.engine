@@ -62,6 +62,8 @@ DAVA::KeyedArchive* CreateOptions()
 
     appOptions->SetInt32("shader_const_buffer_size", 256 * 1024 * 1024);
 
+    appOptions->SetBool("separate_net_thread", true);
+
     return appOptions;
 }
 }

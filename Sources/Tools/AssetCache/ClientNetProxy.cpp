@@ -32,7 +32,7 @@ bool ClientNetProxy::Connect(const String& ip, uint16 port)
 
 void ClientNetProxy::Disconnect()
 {
-    Logger::FrameworkDebug("Disconnect");
+    Logger::FrameworkDebug("ClientNetProxy::Disconnect");
     openedChannel = nullptr;
 
     addressResolver.Cancel();

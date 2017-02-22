@@ -8,6 +8,10 @@
 
 #include "Engine/EngineModule.h"
 
+
+#include "Base/BaseTypes.h"
+#include "Platform/DateTime.h"
+
 namespace DAVA
 {
 namespace Net
@@ -21,9 +25,20 @@ NetCore::NetCore(Engine* e)
     , isFinishing(false)
     , allStopped(false)
 {
+    bool separateThreadDefaultValue = false;
+    const KeyedArchive* options = e->GetOptions();
+    useSeparateThread = options->GetBool("separate_net_thread", separateThreadDefaultValue);
+
     sigUpdateId = e->update.Connect(this, &NetCore::OnEngineUpdate);
-    netThread = Thread::Create([this]() { NetThreadHandler(); });
-    netThread->Start();
+
+    NetCallbacksHolder::Mode mode = (useSeparateThread ? NetCallbacksHolder::AddInQueue : NetCallbacksHolder::ExecuteImmediately);
+    netCallbacksHolder.reset(new NetCallbacksHolder(mode));
+
+    if (useSeparateThread)
+    {
+        netThread = Thread::Create([this]() { NetThreadHandler(); });
+        netThread->Start();
+    }
 }
 #else
 NetCore::NetCore()
@@ -41,9 +56,6 @@ NetCore::~NetCore()
 #endif
 
     DVASSERT(true == trackedObjects.empty() && true == dyingObjects.empty());
-
-    loop.PostQuit();
-    netThread->Join();
 }
 
 void NetCore::NetThreadHandler()
@@ -53,17 +65,20 @@ void NetCore::NetThreadHandler()
 
 void NetCore::OnEngineUpdate(float32)
 {
-    ExecPendingCallbacks();
+    if (useSeparateThread)
+        ExecPendingCallbacks();
+    else
+        Poll();
 }
 
 void NetCore::ExecPendingCallbacks()
 {
-    netCallbacksHolder.ExecPendingCallbacks();
+    netCallbacksHolder->ExecPendingCallbacks();
 }
 
 NetCallbacksHolder* NetCore::GetNetCallbacksHolder()
 {
-    return &netCallbacksHolder;
+    return netCallbacksHolder.get();
 }
 
 NetCore::TrackId NetCore::CreateController(const NetConfig& config, void* context, uint32 readTimeout)
@@ -120,7 +135,7 @@ void NetCore::DestroyController(TrackId id)
     {
         discovererId = INVALID_TRACK_ID;
     }
-    loop.Post(Bind(&NetCore::DoDestroy, this, id, nullptr));
+    loop.Post(Bind(&NetCore::DoDestroy, this, GetTrackedObject(id)));
 #endif
 }
 
@@ -128,16 +143,49 @@ void NetCore::DestroyControllerBlocked(TrackId id)
 {
 #if !defined(DAVA_NETWORK_DISABLE)
     DVASSERT(false == isFinishing);
-    DVASSERT(GetTrackedObject(id) != nullptr);
 
-    volatile bool oneStopped = false;
-    loop.Post(Bind(&NetCore::DoDestroy, this, id, &oneStopped));
+    IController* ctrl = GetTrackedObject(id);
+    DVASSERT(ctrl != nullptr);
 
-    // Block until given controller is stopped and destroyed
-    while (!oneStopped)
+    if (trackedObjects.erase(ctrl) > 0)
     {
+        {
+            LockGuard<Mutex> lock(dyingObjectsMutex);
+            auto emplaceRes = dyingObjects.emplace(ctrl);
+        }
+        loop.Post(Bind(&NetCore::DoDestroy, this, ctrl));
+
+        while (true)
+        {
+            {
+                LockGuard<Mutex> lock(dyingObjectsMutex);
+                if (dyingObjects.find(ctrl) == dyingObjects.end())
+                {
+                    break;
+                }
+            }
+
+            if (useSeparateThread)
+                ExecPendingCallbacks();
+            else
+                Poll();
+        }
     }
 #endif
+}
+
+bool NetCore::PostAllToDestroy()
+{
+    LockGuard<Mutex> lock(dyingObjectsMutex);
+    bool hasControllersToDestroy = !trackedObjects.empty();
+    for (IController* ctrl : trackedObjects)
+    {
+        dyingObjects.emplace(ctrl);
+        loop.Post(Bind(&NetCore::DoDestroy, this, ctrl));
+    }
+    trackedObjects.clear();
+
+    return hasControllersToDestroy;
 }
 
 void NetCore::DestroyAllControllers(Function<void()> callback)
@@ -146,20 +194,38 @@ void NetCore::DestroyAllControllers(Function<void()> callback)
     DVASSERT(false == isFinishing && controllersStoppedCallback == nullptr);
 
     controllersStoppedCallback = callback;
-    loop.Post(MakeFunction(this, &NetCore::DoDestroyAll));
+    PostAllToDestroy();
 #endif
 }
 
 void NetCore::DestroyAllControllersBlocked()
 {
 #if !defined(DAVA_NETWORK_DISABLE)
-    DVASSERT(false == isFinishing && false == allStopped && controllersStoppedCallback == nullptr);
-    loop.Post(MakeFunction(this, &NetCore::DoDestroyAll));
+    DVASSERT(false == isFinishing && controllersStoppedCallback == nullptr);
 
-    // Block until all controllers are stopped and destroyed
-    while (!allStopped)
-        ;
-    allStopped = false;
+    auto duration = std::chrono::system_clock::now().time_since_epoch();
+    auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+    Logger::Debug("thread %u (%d): %s", Thread::GetCurrentId(), millis, __FUNCTION__);
+
+    PostAllToDestroy();
+
+    while (true)
+    {
+        LockGuard<Mutex> lock(dyingObjectsMutex);
+        if (dyingObjects.empty())
+            break;
+
+        if (useSeparateThread)
+            ExecPendingCallbacks();
+        else
+            Poll();
+    }
+
+    {
+        auto duration = std::chrono::system_clock::now().time_since_epoch();
+        auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+        Logger::Debug("thread %u (%d): %s done", Thread::GetCurrentId(), millis, __FUNCTION__);
+    }
 #endif
 }
 
@@ -171,13 +237,57 @@ void NetCore::RestartAllControllers()
 #endif
 }
 
-void NetCore::Finish(bool runOutLoop)
+void NetCore::Finish(bool doBlocked)
 {
 #if !defined(DAVA_NETWORK_DISABLE)
+
+    auto duration = std::chrono::system_clock::now().time_since_epoch();
+    auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+    Logger::Debug("thread %u (%d): %s", Thread::GetCurrentId(), millis, __FUNCTION__);
+
     isFinishing = true;
-    loop.Post(MakeFunction(this, &NetCore::DoDestroyAll));
-    if (runOutLoop)
-        loop.Run(IOLoop::RUN_DEFAULT);
+    bool hasControllersToDestroy = PostAllToDestroy();
+
+    if (hasControllersToDestroy)
+    {
+        if (doBlocked)
+        {
+            if (useSeparateThread)
+            {
+                while (true)
+                {
+                    LockGuard<Mutex> lock(dyingObjectsMutex);
+                    if (dyingObjects.empty())
+                        break;
+
+                    ExecPendingCallbacks();
+                }
+                netThread->Join();
+            }
+            else
+            {
+                loop.Run(IOLoop::RUN_DEFAULT);
+            }
+        }
+    }
+    else
+    {
+        AllDestroyed();
+        if (useSeparateThread)
+        {
+            netThread->Join();
+        }
+        else
+        {
+            loop.Run(IOLoop::RUN_DEFAULT);
+        }
+    }
+
+    {
+        auto duration = std::chrono::system_clock::now().time_since_epoch();
+        auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+        Logger::Debug("thread %u (%d): %s run done!", Thread::GetCurrentId(), millis, __FUNCTION__);
+    }
 #endif
 }
 
@@ -190,7 +300,7 @@ bool NetCore::TryDiscoverDevice(const Endpoint& endpoint)
         if (it != trackedObjects.end())
         {
             // Variable is named in honor of big fan and donater of tanks - Sergey Demidov
-            // And this man assures that cast below is valid, so do not worry, guys
+            // And this man assures that cast below is valid, so do not worry,  guys
             Discoverer* SergeyDemidov = static_cast<Discoverer*>(*it);
             return SergeyDemidov->TryDiscoverDevice(endpoint);
         }
@@ -209,44 +319,27 @@ void NetCore::DoStart(IController* ctrl)
 
 void NetCore::DoRestart()
 {
-    for (Set<IController *>::iterator i = trackedObjects.begin(), e = trackedObjects.end(); i != e; ++i)
+    for (IController* ctrl : trackedObjects)
     {
-        IController* ctrl = *i;
         ctrl->Restart();
     }
 }
 
-void NetCore::DoDestroy(TrackId id, volatile bool* stoppedFlag)
+void NetCore::DoDestroy(IController* ctrl)
 {
-    DVASSERT(GetTrackedObject(id) != NULL);
-    IController* ctrl = GetTrackedObject(id);
-    if (trackedObjects.erase(ctrl) > 0)
-    {
-        dyingObjects.insert(ctrl);
-        ctrl->Stop(Bind(&NetCore::TrackedObjectStopped, this, _1, stoppedFlag));
-    }
-    else if (stoppedFlag != nullptr)
-        *stoppedFlag = true;
-}
-
-void NetCore::DoDestroyAll()
-{
-    for (Set<IController *>::iterator i = trackedObjects.begin(), e = trackedObjects.end(); i != e; ++i)
-    {
-        IController* ctrl = *i;
-        dyingObjects.insert(ctrl);
-        ctrl->Stop(Bind(&NetCore::TrackedObjectStopped, this, _1, nullptr));
-    }
-    trackedObjects.clear();
-
-    if (true == dyingObjects.empty())
-    {
-        AllDestroyed();
-    }
+    auto duration = std::chrono::system_clock::now().time_since_epoch();
+    auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+    Logger::Debug("thread %u (%d): %s", Thread::GetCurrentId(), millis, __FUNCTION__);
+    DVASSERT(ctrl != nullptr);
+    ctrl->Stop(Bind(&NetCore::TrackedObjectStopped, this, _1));
 }
 
 void NetCore::AllDestroyed()
 {
+    auto duration = std::chrono::system_clock::now().time_since_epoch();
+    auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+    Logger::Debug("thread %u (%d): %s", Thread::GetCurrentId(), millis, __FUNCTION__);
+
     allStopped = true;
     if (controllersStoppedCallback != nullptr)
     {
@@ -255,6 +348,9 @@ void NetCore::AllDestroyed()
     }
     if (true == isFinishing)
     {
+        auto duration = std::chrono::system_clock::now().time_since_epoch();
+        auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+        Logger::Debug("thread %u (%d): postquit", Thread::GetCurrentId(), millis, __FUNCTION__);
         loop.PostQuit();
     }
 }
@@ -267,16 +363,22 @@ IController* NetCore::GetTrackedObject(TrackId id) const
     return (i != trackedObjects.end()) ? *i : nullptr;
 }
 
-void NetCore::TrackedObjectStopped(IController* obj, volatile bool* stoppedFlag)
+void NetCore::TrackedObjectStopped(IController* obj)
 {
-    DVASSERT(dyingObjects.find(obj) != dyingObjects.end());
-    if (dyingObjects.erase(obj) > 0) // erase returns number of erased elements
+    //     auto duration = std::chrono::system_clock::now().time_since_epoch();
+    //     auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+    //     Logger::Debug("thread %u (%d): %s", Thread::GetCurrentId(), millis, __FUNCTION__);
+
+    LockGuard<Mutex> lock(dyingObjectsMutex);
+    if (dyingObjects.erase(obj) > 0)
     {
-        SafeDelete(obj);
-        if (stoppedFlag != nullptr)
-        {
-            *stoppedFlag = true;
-        }
+        auto duration = std::chrono::system_clock::now().time_since_epoch();
+        auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
+        Logger::Debug("thread %u (%d): %s setting destroy = true", Thread::GetCurrentId(), millis, __FUNCTION__);
+    }
+    else
+    {
+        DVASSERT(false && "dying object is not found");
     }
 
     if (true == dyingObjects.empty() && true == trackedObjects.empty())

@@ -14,6 +14,7 @@
 #include "Network/IChannel.h"
 #include "Network/NetCallbacksHolder.h"
 #include "Concurrency/Thread.h"
+#include "Concurrency/Semaphore.h"
 
 namespace DAVA
 {
@@ -45,6 +46,7 @@ public:
 
 public:
 #if defined(__DAVAENGINE_COREV2__)
+
     NetCore(Engine* e);
     Engine* engine = nullptr;
     size_t sigUpdateId = 0;
@@ -99,18 +101,22 @@ private:
     void NetThreadHandler();
     void DoStart(IController* ctrl);
     void DoRestart();
-    void DoDestroy(TrackId id, volatile bool* stoppedFlag);
-    void DoDestroyAll();
+
+    bool PostAllToDestroy();
+    void DoDestroy(IController* ctrl);
     void AllDestroyed();
     IController* GetTrackedObject(TrackId id) const;
-    void TrackedObjectStopped(IController* obj, volatile bool* stoppedFlag);
+    void TrackedObjectStopped(IController* obj);
 
     TrackId ObjectToTrackId(const IController* obj) const;
     IController* TrackIdToObject(TrackId id) const;
 
 private:
     IOLoop loop; // Heart of NetCore and network library - event loop
+    bool useSeparateThread = false;
     Set<IController*> trackedObjects; // Running objects
+
+    Mutex dyingObjectsMutex;
     Set<IController*> dyingObjects;
     ServiceRegistrar registrar; //-V730_NOINIT
     Function<void()> controllersStoppedCallback;
@@ -121,7 +127,7 @@ private:
     TrackId discovererId = INVALID_TRACK_ID;
 #endif
     RefPtr<Thread> netThread;
-    NetCallbacksHolder netCallbacksHolder;
+    std::unique_ptr<NetCallbacksHolder> netCallbacksHolder;
 };
 
 //////////////////////////////////////////////////////////////////////////
