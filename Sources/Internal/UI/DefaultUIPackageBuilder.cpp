@@ -355,12 +355,12 @@ void DefaultUIPackageBuilder::ProcessProperty(const Reflection::Field& field, co
 
     if (currentObject && !value.IsEmpty())
     {
-        FastName name(field.key.Get<String>());
-        int32 propertyIndex = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyIndex(name);
-        if (propertyIndex >= 0)
+        UIStyleSheetPropertyDataBase* sdb = UIStyleSheetPropertyDataBase::Instance();
+        FastName name = field.key.Cast<FastName>();
+        if (sdb->IsValidStyleSheetProperty(name))
         {
             UIControl* control = controlsStack.back()->control.Get();
-            control->SetPropertyLocalFlag(propertyIndex, true);
+            control->SetPropertyLocalFlag(sdb->GetStyleSheetPropertyIndex(name), true);
         }
         if (name == PROPERTY_NAME_TEXT)
         {

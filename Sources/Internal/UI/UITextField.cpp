@@ -8,6 +8,10 @@
 #include "Engine/Engine.h"
 #include "Reflection/ReflectionRegistrator.h"
 
+#ifdef __DAVAENGINE_AUTOTESTING__
+#include "Autotesting/AutotestingSystem.h"
+#endif
+
 #if defined(__DAVAENGINE_ANDROID__)
 #if defined(__DAVAENGINE_COREV2__)
 #include "UI/Private/Android/TextFieldPlatformImplAndroid.h"
@@ -144,6 +148,9 @@ void UITextField::StopEdit()
         SetRenderToTexture(true);
         textFieldImpl->CloseKeyboard();
         OnStopEditing();
+#ifdef __DAVAENGINE_AUTOTESTING__
+        AutotestingSystem::Instance()->OnRecordSetText(this, GetUtf8Text());
+#endif
     }
 }
 
@@ -699,9 +706,9 @@ void UITextField::SetFontByPresetName(const String& presetName)
     }
 }
 
-void UITextField::SystemDraw(const UIGeometricData& geometricData)
+void UITextField::SystemDraw(const UIGeometricData& geometricData, const UIControlBackground* parentBackground)
 {
-    UIControl::SystemDraw(geometricData);
+    UIControl::SystemDraw(geometricData, parentBackground);
 
     UIGeometricData localData = GetLocalGeometricData();
     localData.AddGeometricData(geometricData);

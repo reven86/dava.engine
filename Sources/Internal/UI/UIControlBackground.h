@@ -112,8 +112,6 @@ public:
 
     UIControlBackground(const UIControlBackground& src);
 
-    virtual bool IsEqualTo(const UIControlBackground* back) const;
-
     /**
      \brief Returns Sprite used for draw.
      \returns Sprite used for draw.

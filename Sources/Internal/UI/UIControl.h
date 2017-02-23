@@ -129,94 +129,69 @@ public:
         You can call this function directly for the controlBackgound.
      \returns Sprite used for draw.
      */
-    virtual Sprite* GetSprite() const;
+    DAVA_DEPRECATED(Sprite* GetSprite() const);
     /**
      \brief Returns Sprite frame used for draw in the current UIControlBackground object.
         You can call this function directly for the controlBackgound.
      \returns Sprite frame used for draw.
      */
-    int32 GetFrame() const;
+    DAVA_DEPRECATED(int32 GetFrame() const);
     /**
      \brief Returns draw type used for draw in the current UIControlBackground object.
         You can call this function directly for the controlBackgound.
      \returns Draw type used for draw.
      */
-    virtual UIControlBackground::eDrawType GetSpriteDrawType() const;
+    DAVA_DEPRECATED(virtual UIControlBackground::eDrawType GetSpriteDrawType() const);
     /**
      \brief Returns Sprite align used for draw in the current UIControlBackground object.
         You can call this function directly for the controlBackgound.
      \returns Sprite eAlign bit mask used for draw.
      */
-    virtual int32 GetSpriteAlign() const;
+    DAVA_DEPRECATED(virtual int32 GetSpriteAlign() const);
     /**
      \brief Sets Sprite for the control UIControlBackground object.
      \param[in] spriteName Sprite path-name.
      \param[in] spriteFrame Sprite frame you want to use for draw.
      */
-    virtual void SetSprite(const FilePath& spriteName, int32 spriteFrame);
+    DAVA_DEPRECATED(virtual void SetSprite(const FilePath& spriteName, int32 spriteFrame));
     /**
      \brief Sets Sprite for the control UIControlBackground object.
      \param[in] newSprite Pointer for a Sprite.
      \param[in] spriteFrame Sprite frame you want to use for draw.
      */
-    virtual void SetSprite(Sprite* newSprite, int32 spriteFrame);
+    DAVA_DEPRECATED(virtual void SetSprite(Sprite* newSprite, int32 spriteFrame));
     /**
      \brief Sets Sprite frame you want to use for draw for the control UIControlBackground object.
      \param[in] spriteFrame Sprite frame.
      */
-    virtual void SetSpriteFrame(int32 spriteFrame);
+    DAVA_DEPRECATED(virtual void SetSpriteFrame(int32 spriteFrame));
     /**
      \brief Sets Sprite frame you want to use for draw for the control UIControlBackground object.
      \param[in] frame Sprite frame name.
      */
-    virtual void SetSpriteFrame(const FastName& frameName);
+    DAVA_DEPRECATED(virtual void SetSpriteFrame(const FastName& frameName));
     /**
      \brief Sets draw type you want to use the control UIControlBackground object.
      \param[in] drawType Draw type to use for drawing.
      */
-    virtual void SetSpriteDrawType(UIControlBackground::eDrawType drawType);
+    DAVA_DEPRECATED(virtual void SetSpriteDrawType(UIControlBackground::eDrawType drawType));
     /**
      \brief Sets Sprite align you want to use for draw for the control UIControlBackground object.
      \param[in] drawAlign Sprite eAlign bit mask.
      */
-    virtual void SetSpriteAlign(int32 align);
+    DAVA_DEPRECATED(virtual void SetSpriteAlign(int32 align));
 
     /**
      \brief Sets background what will be used for draw.
         Background is cloned inside control.
      \param[in] newBg control background you want to use for draw.
      */
-    void SetBackground(UIControlBackground* newBg);
+    DAVA_DEPRECATED(void SetBackground(UIControlBackground* newBg));
     /**
      \brief Returns current background used for draw.
      \returns background used for draw.
      */
-    UIControlBackground* GetBackground() const;
-
-    virtual void SetLeftAlign(float32 align);
-    virtual float32 GetLeftAlign() const;
-    virtual void SetHCenterAlign(float32 align);
-    virtual float32 GetHCenterAlign() const;
-    virtual void SetRightAlign(float32 align);
-    virtual float32 GetRightAlign() const;
-    virtual void SetTopAlign(float32 align);
-    virtual float32 GetTopAlign() const;
-    virtual void SetVCenterAlign(float32 align);
-    virtual float32 GetVCenterAlign() const;
-    virtual void SetBottomAlign(float32 align);
-    virtual float32 GetBottomAlign() const;
-    virtual void SetLeftAlignEnabled(bool isEnabled);
-    virtual bool GetLeftAlignEnabled() const;
-    virtual void SetHCenterAlignEnabled(bool isEnabled);
-    virtual bool GetHCenterAlignEnabled() const;
-    virtual void SetRightAlignEnabled(bool isEnabled);
-    virtual bool GetRightAlignEnabled() const;
-    virtual void SetTopAlignEnabled(bool isEnabled);
-    virtual bool GetTopAlignEnabled() const;
-    virtual void SetVCenterAlignEnabled(bool isEnabled);
-    virtual bool GetVCenterAlignEnabled() const;
-    virtual void SetBottomAlignEnabled(bool isEnabled);
-    virtual bool GetBottomAlignEnabled() const;
+    DAVA_DEPRECATED(UIControlBackground* GetBackground() const);
 
     /**
      \brief Returns untransformed control rect.
@@ -831,7 +806,7 @@ public:
         Can be overriden to adjust draw hierarchy.
      \param[in] geometricData Parent geometric data.
      */
-    virtual void SystemDraw(const UIGeometricData& geometricData); // Internal method used by ControlSystem
+    virtual void SystemDraw(const UIGeometricData& geometricData, const DAVA::UIControlBackground* parentBackground); // Internal method used by ControlSystem
 
     /**
      \brief set parent draw color into control
