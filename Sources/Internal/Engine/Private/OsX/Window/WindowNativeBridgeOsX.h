@@ -83,8 +83,6 @@ struct WindowNativeBridge final
     static eMouseButtons GetMouseButton(NSEvent* theEvent);
 
     void SetSurfaceScale(const float32 scale);
-    void ForceBackBufferUpdateOSX109();
-
     //////////////////////////////////////////////////////////////////////////
 
     WindowBackend* windowBackend = nullptr;

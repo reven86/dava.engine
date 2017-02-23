@@ -29,14 +29,19 @@ void macos_gl_reset(const rhi::ResetParam& params)
 
     GLint swapInt = params.vsyncEnabled ? 1 : 0;
     [context setValues:&swapInt forParameter:NSOpenGLCPSwapInterval];
-    [context setValues:backingSize forParameter:NSOpenGLContextParameterSurfaceBackingSize];
+    [context setValues:backingSize forParameter:NSOpenGLCPSurfaceBackingSize];
 
     CGLEnable(context.CGLContextObj, kCGLCESurfaceBackingSize);
     [context update];
 
-    CAOpenGLLayer* layer = static_cast<CAOpenGLLayer*>([view layer]);
-    [layer setContentsScale:params.scaleX];
-    [view update];
+    // Workaround: resize NSView to force it to apply new backing size
+    // This is dirty hack, but unfortunately at the moment we do not
+    // know another solution
+    {
+        NSSize sz = [view frame].size;
+        [view setFrameSize:NSMakeSize(sz.width - 1, sz.height - 1)];
+        [view setFrameSize:sz];
+    }
 }
 
 void macos_gl_end_frame()

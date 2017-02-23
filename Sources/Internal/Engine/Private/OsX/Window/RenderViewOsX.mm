@@ -55,8 +55,6 @@
                                                   owner:self
                                                userInfo:nil];
     [self addTrackingArea:trackingArea];
-    [self setWantsBestResolutionOpenGLSurface:YES];
-
     return self;
 }
 
@@ -82,6 +80,10 @@
     CGDisplayModeRelease(mode);
     CFRelease(pixelEncoding);
     return bitsPerPixel;
+}
+
+- (void)reshape
+{
 }
 
 - (BOOL)isOpaque

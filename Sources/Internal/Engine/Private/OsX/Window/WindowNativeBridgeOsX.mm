@@ -58,14 +58,6 @@ bool WindowNativeBridge::CreateWindow(float32 x, float32 y, float32 width, float
     // create render view and add it into window
     renderView = [[RenderView alloc] initWithBridge:this];
 
-    // to be able to add native controls (WebView, TextFiled etc.)
-    // we should set `setWantsLayers = YES` before setting
-    // renderView as contentView for our window
-    if ([[NSProcessInfo processInfo] isOperatingSystemAtLeastVersion:{ 10, 10, 0 }])
-    {
-        [renderView setWantsLayer:YES];
-    }
-
     // now set renderView as contentView
     [nswindow setContentView:renderView];
 
@@ -194,20 +186,20 @@ void WindowNativeBridge::WindowDidResignKey()
 
 void WindowNativeBridge::HandleSizeChanging(WindowNativeBridge::SizeChangingReason reason)
 {
-    CGSize size = [renderView frame].size;
-    CGSize surfSize = [renderView convertSizeToBacking:size];
     float32 dpi = GetDpi();
-
     eFullscreen fullscreen = isFullscreen ? eFullscreen::On : eFullscreen::Off;
 
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, size.width, size.height, surfSize.width * surfaceScale, surfSize.height * surfaceScale, surfaceScale, dpi, fullscreen));
+    CGSize windowSize = [renderView frame].size;
+    CGFloat backingScale = [nswindow backingScaleFactor];
+    CGFloat surfaceWidth = windowSize.width * surfaceScale * backingScale;
+    CGFloat surfaceHeight = windowSize.height * surfaceScale * backingScale;
+
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, windowSize.width, windowSize.height, surfaceWidth, surfaceHeight, surfaceScale, dpi, fullscreen));
 
     if (reason == WindowNativeBridge::SizeChangingReason::WindowDpiChanged)
     {
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowDpiChangedEvent(window, dpi));
     }
-
-    ForceBackBufferUpdateOSX109();
 }
 
 void WindowNativeBridge::WindowDidResize()
@@ -582,23 +574,6 @@ void WindowNativeBridge::SetSurfaceScale(const float32 scale)
 {
     surfaceScale = scale;
     HandleSizeChanging(WindowNativeBridge::SizeChangingReason::WindowSurfaceChanged);
-}
-
-void WindowNativeBridge::ForceBackBufferUpdateOSX109()
-{
-    // 10.9.xx is less that 10.10.00
-    if (![[NSProcessInfo processInfo] isOperatingSystemAtLeastVersion:{ 10, 10, 0 }])
-    {
-        // Workaround #1: to force change backbuffer size
-        // after resizing or change scaling
-        // Workaround #2: to ensure that native controls
-        // will be added above renderView
-        [nswindow setContentView:nil]; // #1
-        [renderView setWantsLayer:YES]; // #2
-        [nswindow setContentView:renderView]; // #1
-        [renderView setWantsLayer:NO]; // #2
-        [nswindow makeFirstResponder:renderView]; // #1
-    }
 }
 
 } // namespace Private
