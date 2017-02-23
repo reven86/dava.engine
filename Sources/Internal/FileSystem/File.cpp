@@ -146,22 +146,28 @@ File* File::CompressedCreate(const FilePath& filename, uint32 attributes)
         return nullptr;
     }
 
-    if (footer.type != Compressor::Type::Lz4HC)
+    if (footer.type == Compressor::Type::Lz4HC || footer.type == Compressor::Type::Lz4)
     {
-        Logger::Error("incorrect compression type: %d file:", static_cast<int32>(footer.type), filename.GetAbsolutePathname().c_str());
-        return nullptr;
+        Vector<uint8> uncompressed(footer.sizeUncompressed);
+
+        if (!LZ4HCCompressor().Decompress(compressed, uncompressed))
+        {
+            Logger::Error("decompress failed on file:", filename.GetAbsolutePathname().c_str());
+            return nullptr;
+        }
+
+        DynamicMemoryFile* file = DynamicMemoryFile::Create(std::move(uncompressed), attributes, filename);
+        return file;
     }
 
-    Vector<uint8> uncompressed(footer.sizeUncompressed);
-
-    if (!LZ4HCCompressor().Decompress(compressed, uncompressed))
+    if (footer.type == Compressor::Type::None)
     {
-        Logger::Error("decompress failed on file:", filename.GetAbsolutePathname().c_str());
-        return nullptr;
+        DynamicMemoryFile* file = DynamicMemoryFile::Create(std::move(compressed), attributes, filename);
+        return file;
     }
 
-    DynamicMemoryFile* file = DynamicMemoryFile::Create(std::move(uncompressed), attributes, filename);
-    return file;
+    Logger::Error("incorrect compression type: %d file:", static_cast<int32>(footer.type), filename.GetAbsolutePathname().c_str());
+    return nullptr;
 }
 
 File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
