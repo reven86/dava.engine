@@ -3,9 +3,6 @@
 #include "Base/Any.h"
 #endif
 
-#include "Math/Color.h"
-#include "Math/Vector.h"
-
 namespace DAVA
 {
 template <typename T>
@@ -18,28 +15,6 @@ bool AnyCompare<T>::IsEqual(const Any&, const Any&)
 template <>
 bool AnyCompare<String>::IsEqual(const Any& v1, const Any& v2);
 extern template struct AnyCompare<String>;
-
-template <>
-struct AnyCompare<Vector2>
-{
-    static bool IsEqual(const Any& v1, const Any& v2)
-    {
-        const Vector2& vec1 = v1.Get<Vector2>();
-        const Vector2& vec2 = v2.Get<Vector2>();
-        return vec1 == vec2;
-    }
-};
-
-template <>
-struct AnyCompare<Color>
-{
-    static bool IsEqual(const Any& v1, const Any& v2)
-    {
-        const Color& c1 = v1.Get<Color>();
-        const Color& c2 = v2.Get<Color>();
-        return c1 == c2;
-    }
-};
 
 template <typename K, typename V, typename Eq>
 struct AnyCompare<Map<K, V, Eq>>
