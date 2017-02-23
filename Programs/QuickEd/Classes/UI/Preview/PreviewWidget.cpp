@@ -82,8 +82,8 @@ PreviewWidget::PreviewWidget(DAVA::TArc::ContextAccessor* accessor_, DAVA::Rende
     connect(scaleCombo, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &PreviewWidget::OnScaleByComboIndex);
     connect(scaleCombo->lineEdit(), &QLineEdit::editingFinished, this, &PreviewWidget::OnScaleByComboText);
 
-    connect(verticalScrollBar, &QScrollBar::valueChanged, this, &PreviewWidget::OnVScrollbarMoved);
-    connect(horizontalScrollBar, &QScrollBar::valueChanged, this, &PreviewWidget::OnHScrollbarMoved);
+    connect(verticalScrollBar, &QScrollBar::actionTriggered, this, &PreviewWidget::OnVScrollbarActionTriggered);
+    connect(horizontalScrollBar, &QScrollBar::actionTriggered, this, &PreviewWidget::OnHScrollbarActionTriggered);
 
     QRegExp regEx("[0-8]?([0-9]|[0-9]){0,2}\\s?\\%?");
     scaleCombo->setValidator(new QRegExpValidator(regEx));
@@ -372,20 +372,20 @@ void PreviewWidget::OnScaleByComboText()
     }
 }
 
-void PreviewWidget::OnVScrollbarMoved(int vPosition)
+void PreviewWidget::OnVScrollbarActionTriggered(int /*action*/)
 {
     Vector2 canvasPosition = editorCanvas->GetPosition();
-    canvasPosition.y = vPosition;
+    canvasPosition.y = verticalScrollBar->sliderPosition();
     if (editorCanvas != nullptr)
     {
         editorCanvas->SetPosition(canvasPosition);
     }
 }
 
-void PreviewWidget::OnHScrollbarMoved(int hPosition)
+void PreviewWidget::OnHScrollbarActionTriggered(int /*action*/)
 {
     Vector2 canvasPosition = editorCanvas->GetPosition();
-    canvasPosition.x = hPosition;
+    canvasPosition.x = horizontalScrollBar->sliderPosition();
     if (editorCanvas != nullptr)
     {
         editorCanvas->SetPosition(canvasPosition);

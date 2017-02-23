@@ -74,8 +74,8 @@ private slots:
     void OnScaleByComboIndex(int value);
     void OnScaleByComboText();
 
-    void OnVScrollbarMoved(int position);
-    void OnHScrollbarMoved(int position);
+    void OnVScrollbarActionTriggered(int action);
+    void OnHScrollbarActionTriggered(int action);
 
     //function argument used for signals compatibility
     void UpdateScrollArea(const DAVA::Vector2& size = DAVA::Vector2(0.0f, 0.0f));
