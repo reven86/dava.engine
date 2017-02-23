@@ -262,7 +262,7 @@ void ViewSceneScreen::Update(float32 timeElapsed)
 //     camera->SetTarget(camera->GetTarget() + cameraMoveOffset);
 }
 
-static const float32 INFO_UPDATE_TIME = 0.5f;
+static const float32 INFO_UPDATE_TIME = 1.0f;
 void ViewSceneScreen::UpdateInfo(float32 timeElapsed)
 {
     ++frameCounter;

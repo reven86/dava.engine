@@ -170,13 +170,13 @@ void ChartPainterSystem::DrawLegend(int32 w, int32 h)
     float32 initialOffset = static_cast<float32>(w) / 14.0f;
     float32 textInitialOffset = static_cast<float32>(Renderer::GetFramebufferWidth()) / 14.0f;
     float32 step = static_cast<float32>(w) / 7.0f;
-    float32 textStep = static_cast<int32>(static_cast<float32>(Renderer::GetFramebufferWidth()) / 7.0f);
+    float32 textStep = static_cast<float32>(Renderer::GetFramebufferWidth()) / 7.0f;
     int32 lineOffset = static_cast<int32>(static_cast<float32>(w) / 9.0f);
     int32 yPos = static_cast<int32>(0.05f * Renderer::GetFramebufferHeight());
     float32 yPosFloat = 0.05f * h;
     for (int i = 0; i < 6; i++)
     {
-        int32 startX = textStep * i + textInitialOffset;
+        int32 startX = static_cast<int32>(textStep * i + textInitialOffset);
         float32 startXFloat = step * i + initialOffset;
         Polygon2 p;
         p.AddPoint({ startXFloat, yPosFloat });

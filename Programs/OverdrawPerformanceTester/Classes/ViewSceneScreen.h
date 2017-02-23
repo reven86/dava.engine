@@ -53,6 +53,9 @@ protected:
     DAVA::uint64 drawTime = 0;
     DAVA::uint64 updateTime = 0;
 
+    DAVA::int32 framesCount = 0;
+    DAVA::float32 frameTime = 0;
+
     DAVA::Scene* scene = nullptr;
     DAVA::RotationControllerSystem* rotationControllerSystem = nullptr;
     DAVA::WASDControllerSystem* wasdSystem = nullptr;
@@ -61,7 +64,7 @@ protected:
 
     OverdrawPerformanceTester::OverdrawTesterSystem* testerSystem;
     OverdrawPerformanceTester::ChartPainterSystem* chartPainterSystem;
-
+    
     Vector2 cursorPosition;
     float32 cursorSize = 0.1f;
 };

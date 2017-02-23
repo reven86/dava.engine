@@ -44,6 +44,10 @@ private:
     DAVA::uint32 maxStepsCount = 100;
     DAVA::uint32 textureSampleCount = 0;
     DAVA::float32 overdrawPercent = 10.0f;
+    DAVA::float32 increasePercentTime = 0.05f;
+
+    DAVA::int32 framesCount = 0;
+    DAVA::float32 frameTime = 0;
 
     DAVA::Vector<DAVA::Texture*> textures;
 
@@ -53,6 +57,8 @@ private:
 
     static const DAVA::Array<DAVA::FastName, 4> keywords;
     static const DAVA::Array<DAVA::FastName, 4> textureNames;
+
+    inline void SetIncreasePercentTime(DAVA::float32 time);
 };
 
 DAVA::float32 OverdrawTesterSystem::GetCurrentOverdraw() const
@@ -63,5 +69,10 @@ DAVA::float32 OverdrawTesterSystem::GetCurrentOverdraw() const
 DAVA::uint32 OverdrawTesterSystem::GetCurrentSampleCount() const
 {
     return textureSampleCount;
+}
+
+void OverdrawTesterSystem::SetIncreasePercentTime(DAVA::float32 time)
+{
+    increasePercentTime = time;
 }
 }

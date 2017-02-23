@@ -110,7 +110,15 @@ void OverdrawTesterSystem::Process(DAVA::float32 timeElapsed)
 {
     if (finished) return;
 
-    static const float increasePercentTime = 0.5f;
+    framesCount++;
+    frameTime += timeElapsed;
+    if (frameTime >= 1.0f)
+    {
+        frameTime -= 1.0f;
+        float fps = framesCount;
+        framesCount = 0;
+    }
+
     static float32 i = 0;
     i += timeElapsed;
     if (i >= increasePercentTime)
