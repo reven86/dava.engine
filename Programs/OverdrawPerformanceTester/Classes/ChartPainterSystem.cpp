@@ -9,12 +9,14 @@ namespace OverdrawPerformanceTester
 const DAVA::Vector2 ChartPainterSystem::chartOffset(0.1f, 0.1f);
 const DAVA::Color ChartPainterSystem::gridColor(0.4f, 0.4f, 0.4f, 0.4f);
 const DAVA::float32 ChartPainterSystem::chartLen = 0.8f;
-const DAVA::float32 ChartPainterSystem::maxFps = 70.0f;
+const DAVA::float32 ChartPainterSystem::maxFrametime = 1.0f / 10.0f;
+const DAVA::float32 ChartPainterSystem::minFrametime = 1.0f / 70.0f;
+const DAVA::float32 ChartPainterSystem::frametimeAxisLen = maxFrametime - minFrametime;
 const DAVA::float32 ChartPainterSystem::maxOverdraw = 1000.0f;
 const DAVA::float32 ChartPainterSystem::overdrawStep = 100.0f;
-const DAVA::float32 ChartPainterSystem::fpsStep = 10.0f;
+const DAVA::float32 ChartPainterSystem::frametimeStep = 0.01f;
 const DAVA::float32 ChartPainterSystem::overdrawStepCount = maxOverdraw / overdrawStep;
-const DAVA::float32 ChartPainterSystem::fpsStepCount = maxFps / fpsStep;
+const DAVA::float32 ChartPainterSystem::frametimeStepCount = frametimeAxisLen / frametimeStep;
 
 const DAVA::Array<DAVA::String, 6> ChartPainterSystem::legend =
 { {
@@ -78,10 +80,11 @@ void ChartPainterSystem::DrawGrid(int32 w, int32 h)
     p.AddPoint(yAxis);
     RenderSystem2D::Instance()->DrawPolygon(p, false, Color::White);
 
-    for (int32 i = 1; i < fpsStepCount + 1; i++)
+    int32 stepCount = static_cast<int>(frametimeStepCount + 1);
+    for (int32 i = 1; i < stepCount + 1; i++)
     {
         p.Clear();
-        float32 normalizedFps = (i * fpsStep) / maxFps;
+        float32 normalizedFps = (i * frametimeStep) / frametimeAxisLen;
         normalizedFps *= chartLen;
         float32 pointY = 1 - (normalizedFps + chartOffset.y);
         pointY *= h;
@@ -89,7 +92,7 @@ void ChartPainterSystem::DrawGrid(int32 w, int32 h)
         p.AddPoint({ (chartOffset.x + chartLen) * w, pointY });
         RenderSystem2D::Instance()->DrawPolygon(p, false, gridColor);
 
-        DbgDraw::Text2D(static_cast<int32>(0.05f * w), static_cast<int32>(pointY), textColor, "%.2f", i * fpsStep);
+        DbgDraw::Text2D(static_cast<int32>(0.05f * w), static_cast<int32>(pointY), textColor, "%.2f", i * frametimeStep + minFrametime);
     }
 
     for (int32 i = 1; i < overdrawStepCount + 1; i++)
@@ -114,9 +117,9 @@ void ChartPainterSystem::DrawCharts(int32 w, int32 h)
         for (int j = 0; j < (*performanceData)[i].size(); j++)
         {
             float32 overdraw = (*performanceData)[i][j].Overdraw;
-            float32 fps = static_cast<DAVA::float32>((*performanceData)[i][j].FPS);
+            float32 fps = static_cast<DAVA::float32>((*performanceData)[i][j].FPS) - minFrametime;
 
-            float32 normalizedFps = fps / maxFps;
+            float32 normalizedFps = fps / frametimeAxisLen;
             float32 normalizedOverdraw = overdraw / maxOverdraw;
 
             normalizedFps *= chartLen;

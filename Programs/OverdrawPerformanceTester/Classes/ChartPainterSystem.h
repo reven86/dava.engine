@@ -31,12 +31,14 @@ private:
     static const DAVA::Vector2 chartOffset;
     static const DAVA::Color gridColor;
     static const DAVA::float32 chartLen;
-    static const DAVA::float32 maxFps;
+    static const DAVA::float32 maxFrametime;
     static const DAVA::float32 maxOverdraw;
     static const DAVA::float32 overdrawStep;
-    static const DAVA::float32 fpsStep;
+    static const DAVA::float32 frametimeStep;
+    static const DAVA::float32 minFrametime;
+    static const DAVA::float32 frametimeAxisLen;
     static const DAVA::float32 overdrawStepCount;
-    static const DAVA::float32 fpsStepCount;
+    static const DAVA::float32 frametimeStepCount;
     const DAVA::uint32 textColor;
 };
 

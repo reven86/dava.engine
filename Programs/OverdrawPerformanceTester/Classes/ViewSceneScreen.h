@@ -25,7 +25,7 @@ protected:
 public:
     struct FrameData
     {
-        DAVA::int32 FPS;
+        DAVA::float32 FPS;
         DAVA::float32 Overdraw;
     };
 
