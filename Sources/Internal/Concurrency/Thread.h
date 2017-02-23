@@ -9,6 +9,7 @@
 #include "Concurrency/Atomic.h"
 #include "Concurrency/ConcurrentObject.h"
 #include "Concurrency/Mutex.h"
+#include "Functional/Function.h"
 
 #if !defined(__DAVAENGINE_WINDOWS__)
 #include <pthread.h>
@@ -83,6 +84,11 @@ public:
 		\returns true if now main thread executes
 	*/
     static bool IsMainThread();
+
+    /**
+        Return the currently running thread.
+    */
+    static Thread* Current();
 
     /**
 		\brief static function to create instance of thread object based on Message.

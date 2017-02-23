@@ -7,7 +7,7 @@
 #include "Render/RenderOptions.h"
 #include "Render/MipmapReplacer.h"
 
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 #include "FileSystem/FileSystem.h"
 
 #include "Scene3D/SceneFileV2.h"
@@ -484,42 +484,49 @@ void Scene::ImmediateEvent(Entity * entity, uint32 componentType, uint32 event)
 }
 #endif
 
-void Scene::AddSystem(SceneSystem* sceneSystem, uint64 componentFlags, uint32 processFlags /*= 0*/, SceneSystem* insertBeforeSceneForProcess /* = nullptr */)
+void Scene::AddSystem(SceneSystem* sceneSystem, uint64 componentFlags, uint32 processFlags /*= 0*/, SceneSystem* insertBeforeSceneForProcess /* = nullptr */, SceneSystem* insertBeforeSceneForInput /* = nullptr*/)
 {
     sceneSystem->SetRequiredComponents(componentFlags);
     //Set<SceneSystem*> & systemSetForType = componentTypeMapping.GetValue(componentFlags);
     //systemSetForType.insert(sceneSystem);
     systems.push_back(sceneSystem);
 
-    if (processFlags & SCENE_SYSTEM_REQUIRE_PROCESS)
+    auto insertSystemBefore = [sceneSystem](Vector<SceneSystem*>& container, SceneSystem* beforeThisSystem)
     {
-        bool wasInsertedForUpdate = false;
-        if (insertBeforeSceneForProcess)
+        if (beforeThisSystem != nullptr)
         {
-            Vector<SceneSystem*>::iterator itEnd = systemsToProcess.end();
-            for (Vector<SceneSystem*>::iterator it = systemsToProcess.begin(); it != itEnd; ++it)
+            Vector<SceneSystem*>::iterator itEnd = container.end();
+            for (Vector<SceneSystem*>::iterator it = container.begin(); it != itEnd; ++it)
             {
-                if (insertBeforeSceneForProcess == (*it))
+                if (beforeThisSystem == (*it))
                 {
-                    systemsToProcess.insert(it, sceneSystem);
-                    wasInsertedForUpdate = true;
-                    break;
+                    container.insert(it, sceneSystem);
+                    return true;
                 }
             }
         }
         else
         {
-            systemsToProcess.push_back(sceneSystem);
-            wasInsertedForUpdate = true;
+            container.push_back(sceneSystem);
+            return true;
         }
-        DVASSERT(wasInsertedForUpdate);
+
+        return false;
+    };
+
+    if (processFlags & SCENE_SYSTEM_REQUIRE_PROCESS)
+    {
+        bool wasInsertedForProcess = insertSystemBefore(systemsToProcess, insertBeforeSceneForProcess);
+        DVASSERT(wasInsertedForProcess);
     }
 
     if (processFlags & SCENE_SYSTEM_REQUIRE_INPUT)
     {
-        systemsToInput.push_back(sceneSystem);
+        bool wasInsertedForInput = insertSystemBefore(systemsToInput, insertBeforeSceneForInput);
+        DVASSERT(wasInsertedForInput);
     }
 
+    sceneSystem->SetScene(this);
     RegisterEntitiesInSystemRecursively(sceneSystem, this);
 }
 
@@ -530,7 +537,15 @@ void Scene::RemoveSystem(SceneSystem* sceneSystem)
     RemoveSystem(systemsToProcess, sceneSystem);
     RemoveSystem(systemsToInput, sceneSystem);
 
-    DVVERIFY(RemoveSystem(systems, sceneSystem));
+    bool removed = RemoveSystem(systems, sceneSystem);
+    if (removed)
+    {
+        sceneSystem->SetScene(nullptr);
+    }
+    else
+    {
+        DVASSERT(false, "Failed to remove system from scene");
+    }
 }
 
 bool Scene::RemoveSystem(Vector<SceneSystem*>& storage, SceneSystem* system)
@@ -637,7 +652,7 @@ void Scene::Update(float timeElapsed)
 {
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::SCENE_UPDATE)
 
-    uint64 time = SystemTimer::Instance()->AbsoluteMS();
+    uint64 time = SystemTimer::GetMs();
 
     size_t size = systemsToProcess.size();
     for (size_t k = 0; k < size; ++k)
@@ -662,7 +677,7 @@ void Scene::Update(float timeElapsed)
         }
     }
 
-    updateTime = SystemTimer::Instance()->AbsoluteMS() - time;
+    updateTime = SystemTimer::GetMs() - time;
 }
 
 void Scene::Draw()
@@ -683,13 +698,13 @@ void Scene::Draw()
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_SHADOW_COLOR, shadowDataPtr, reinterpret_cast<pointer_size>(shadowDataPtr));
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WATER_CLEAR_COLOR, waterDataPtr, reinterpret_cast<pointer_size>(waterDataPtr));
 
-    uint64 time = SystemTimer::Instance()->AbsoluteMS();
+    uint64 time = SystemTimer::GetMs();
 
     renderSystem->Render();
 
     //foliageSystem->DebugDrawVegetation();
 
-    drawTime = SystemTimer::Instance()->AbsoluteMS() - time;
+    drawTime = SystemTimer::GetMs() - time;
 }
 
 void Scene::SceneDidLoaded()
@@ -943,11 +958,17 @@ void Scene::OnSceneReady(Entity* rootNode)
 
 void Scene::Input(DAVA::UIEvent* event)
 {
-    size_t size = systemsToInput.size();
-    for (size_t k = 0; k < size; ++k)
+    for (SceneSystem* system : systemsToInput)
     {
-        SceneSystem* system = systemsToInput[k];
         system->Input(event);
+    }
+}
+
+void Scene::InputCancelled(UIEvent* event)
+{
+    for (SceneSystem* system : systemsToInput)
+    {
+        system->InputCancelled(event);
     }
 }
 

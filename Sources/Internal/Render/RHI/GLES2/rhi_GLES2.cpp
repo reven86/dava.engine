@@ -340,6 +340,10 @@ static void gles_check_GL_extensions()
     }
 
     MutableDeviceCaps::Get().maxSamples = static_cast<uint32>(maxSamples);
+
+    GLint maxTextureSize = 1024;
+    GL_CALL(glGetIntegerv(GL_MAX_TEXTURE_SIZE, &maxTextureSize));
+    MutableDeviceCaps::Get().maxTextureSize = maxTextureSize;
 }
 
 //------------------------------------------------------------------------------
@@ -628,7 +632,7 @@ GLint GetGLRenderTargetFormat(rhi::TextureFormat rhiFormat)
     }
 
     default:
-        DVASSERT_MSG(0, "Unsupported or unknown render target format specified");
+        DVASSERT(0, "Unsupported or unknown render target format specified");
         return 0;
     }
 }
@@ -907,7 +911,7 @@ bool GetGLTextureFormat(rhi::TextureFormat rhiFormat, GLint* internalFormat, GLi
 
     default:
         success = false;
-        DVASSERT_MSG(0, "Unsupported or unknown texture format specified");
+        DVASSERT(0, "Unsupported or unknown texture format specified");
     }
 
     return success;

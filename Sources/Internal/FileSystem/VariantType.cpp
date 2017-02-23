@@ -10,6 +10,7 @@
 #include "Math/Matrix3.h"
 #include "Math/Matrix4.h"
 #include "Utils/Utils.h"
+#include "Utils/UTF8Utils.h"
 #include "Base/Meta.h"
 #include "Math/Color.h"
 #include "Base/FastName.h"
@@ -148,7 +149,7 @@ VariantType::VariantType(const String& value)
 VariantType::VariantType(const WideString& value)
     : pointerValue(nullptr)
 {
-    SetWideString(value);
+    SetString(UTF8Utils::EncodeToUTF8(value));
 }
 
 VariantType::VariantType(const uint8* _array, int32 arraySizeInBytes)
@@ -317,8 +318,8 @@ void VariantType::SetString(const String& value)
 void VariantType::SetWideString(const WideString& value)
 {
     ReleasePointer();
-    type = TYPE_WIDE_STRING;
-    wideStringValue = new WideString(value);
+    type = TYPE_STRING;
+    stringValue = new String(UTF8Utils::EncodeToUTF8(value));
 }
 
 void VariantType::SetByteArray(const uint8* array, int32 arraySizeInBytes)
@@ -634,10 +635,14 @@ const String& VariantType::AsString() const
     return *stringValue;
 }
 
-const WideString& VariantType::AsWideString() const
+WideString VariantType::AsWideString() const
 {
-    DVASSERT(type == TYPE_WIDE_STRING);
-    return *wideStringValue;
+    DVASSERT(type == TYPE_STRING);
+    if (type == TYPE_STRING)
+    {
+        return UTF8Utils::EncodeToWideString(*stringValue);
+    }
+    return L""; // no warning
 }
 
 const uint8* VariantType::AsByteArray() const
@@ -740,7 +745,7 @@ const FilePath& VariantType::AsFilePath() const
 
 bool VariantType::Write(File* fp) const
 {
-    DVASSERT(type != TYPE_NONE)
+    DVASSERT(type != TYPE_NONE);
     int32 written = fp->Write(&type, 1);
     if (written != 1)
     {
@@ -1027,7 +1032,7 @@ bool VariantType::Write(File* fp) const
     break;
     default:
     {
-        DVASSERT_MSG(false, "Writing wrong variant type");
+        DVASSERT(false, "Writing wrong variant type");
         return true;
     }
     }
@@ -1161,6 +1166,11 @@ bool VariantType::Read(File* fp)
             }
             (*wideStringValue)[k] = c;
         }
+        // convert into utf8 string
+        String* str = new String(UTF8Utils::EncodeToUTF8(*wideStringValue));
+        delete wideStringValue;
+        stringValue = str;
+        type = TYPE_STRING;
     }
     break;
     case TYPE_BYTE_ARRAY:
@@ -1597,7 +1607,7 @@ bool VariantType::operator==(const VariantType& other) const
     //TypE_NONE and TYPES_COUNT
     default:
     {
-        DVASSERT_MSG(false, "wrong variant type passed to IsEqual");
+        DVASSERT(false, "wrong variant type passed to IsEqual");
         return true;
     }
     }
@@ -1827,13 +1837,13 @@ void VariantType::SaveData(void* dst, const MetaInfo* meta, const VariantType& v
         }
     }
 
-    DVASSERT(nullptr != valMeta)
+    DVASSERT(nullptr != valMeta);
 
     // Destination meta type differ from source meta type
     // this happen only for int8 and uint8 types, because we are storing them in int32 and uint32
     if (meta != valMeta)
     {
-        DVASSERT_MSG(false, "Destination type differ from source type");
+        DVASSERT(false, "Destination type differ from source type");
         return;
     }
     switch (val.type)

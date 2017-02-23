@@ -7,6 +7,10 @@
 #include "UI/UIControlSystem.h"
 #include "Utils/TextBox.h"
 #include "Utils/StringUtils.h"
+#include "Logger/Logger.h"
+
+#include "Debug/ProfilerCPU.h"
+#include "Debug/ProfilerMarkerNames.h"
 
 #include <numeric>
 
@@ -299,7 +303,7 @@ const Vector2& TextBlock::GetTextSize()
     return cacheTextSize;
 }
 
-const Vector<int32>& TextBlock::GetStringSizes()
+const Vector<float32>& TextBlock::GetStringSizes()
 {
     CalculateCacheParamsIfNeed();
     return stringSizes;
@@ -411,6 +415,8 @@ void TextBlock::NeedPrepare(Texture* texture /*=NULL*/)
 {
     needCalculateCacheParams = true;
     needPrepareInternal = true;
+    cachedLayoutData.size = TextBlockDetail::INVALID_VECTOR;
+    cachedLayoutData.width = TextBlockDetail::INVALID_WIDTH;
 }
 
 void TextBlock::PrepareInternal()
@@ -427,6 +433,8 @@ void TextBlock::PrepareInternal()
 
 void TextBlock::CalculateCacheParams()
 {
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::UI_TEXTBLOCK_RECALC_PARAMS);
+
     stringSizes.clear();
     multilineStrings.clear();
 
@@ -731,12 +739,14 @@ void TextBlock::CalculateCacheParams()
     }
     else //if(!isMultilineEnabled)
     {
-        DVASSERT_MSG(textBox->GetLinesCount() > 0, "Empty lines information");
+        DVASSERT(textBox->GetLinesCount() > 0, "Empty lines information");
 
         int32 yOffset = font->GetVerticalSpacing();
-        int32 fontHeight = font->GetFontHeight() + yOffset;
-        textMetrics.width = textMetrics.drawRect.dx = 0;
-        textMetrics.height = textMetrics.drawRect.dy = fontHeight * int32(textBox->GetLinesCount()) - yOffset;
+        float32 fontHeight = float32(font->GetFontHeight() + yOffset);
+        textMetrics.width = 0.f;
+        textMetrics.drawRect.dx = 0;
+        textMetrics.height = fontHeight * textBox->GetLinesCount() - yOffset;
+        textMetrics.drawRect.dy = int32(std::ceil(textMetrics.height));
 
         if (fittingType && (requestedSize.dy >= 0 /* || requestedSize.dx >= 0*/) && visualText.size() > 3)
         {
@@ -761,8 +771,9 @@ void TextBlock::CalculateCacheParams()
                             font->GetStringMetrics(visualText, &charactersSizes);
                             textBox->Split(multilineWrapMode, breaks, charactersSizes, drawSize.dx);
 
-                            fontHeight = font->GetFontHeight() + yOffset;
-                            textMetrics.height = textMetrics.drawRect.dy = fontHeight * int32(textBox->GetLinesCount()) - yOffset;
+                            fontHeight = float32(font->GetFontHeight() + yOffset);
+                            textMetrics.height = fontHeight * textBox->GetLinesCount() - yOffset;
+                            textMetrics.drawRect.dy = int32(std::ceil(textMetrics.height));
                             break;
                         }
                     }
@@ -821,8 +832,9 @@ void TextBlock::CalculateCacheParams()
                 font->GetStringMetrics(visualText, &charactersSizes);
                 textBox->Split(multilineWrapMode, breaks, charactersSizes, drawSize.dx);
 
-                fontHeight = font->GetFontHeight() + yOffset;
-                textMetrics.height = textMetrics.drawRect.dy = fontHeight * int32(textBox->GetLinesCount()) - yOffset;
+                fontHeight = float32(font->GetFontHeight() + yOffset);
+                textMetrics.height = fontHeight * textBox->GetLinesCount() - yOffset;
+                textMetrics.drawRect.dy = int32(std::ceil(textMetrics.height));
             };
         }
 
@@ -850,7 +862,8 @@ void TextBlock::CalculateCacheParams()
             }
             linesCount = needLines;
         }
-        textMetrics.height = textMetrics.drawRect.dy = fontHeight * linesCount - yOffset;
+        textMetrics.height = fontHeight * linesCount - yOffset;
+        textMetrics.drawRect.dy = int32(std::ceil(textMetrics.height));
 
         // Get lines as visual strings and its metrics
         stringSizes.reserve(linesCount);
@@ -868,7 +881,7 @@ void TextBlock::CalculateCacheParams()
 
             if (requestedSize.dx >= 0)
             {
-                textMetrics.width = Max(textMetrics.width, Min(stringSize.width, static_cast<int32>(drawSize.x)));
+                textMetrics.width = Max(textMetrics.width, Min(stringSize.width, drawSize.x));
             }
             else
             {
@@ -961,10 +974,10 @@ void TextBlock::CalculateCacheParams()
     cacheOx = ox;
     cacheOy = oy;
 
-    cacheW = int32(std::floor(drawSize.dx));
+    cacheW = int32(std::ceil(drawSize.dx));
     cacheFinalSize.x = float32(textMetrics.drawRect.dx);
     cacheFinalSize.y = float32(textMetrics.drawRect.dy);
-    cacheTextSize = Vector2(float32(textMetrics.width), float32(textMetrics.height));
+    cacheTextSize = Vector2(std::ceil(textMetrics.width), std::ceil(textMetrics.height));
 
     // Align sprite offset
     if (visualAlign & ALIGN_LEFT /*|| align & ALIGN_HJUSTIFY*/)
@@ -1015,6 +1028,7 @@ void TextBlock::PreDraw()
 
     if (needPrepareInternal)
     {
+        DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::UI_TEXTBLOCK_PREPARE);
         PrepareInternal();
     }
 

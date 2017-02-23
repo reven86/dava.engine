@@ -4,17 +4,18 @@
 
 #if defined(__DAVAENGINE_ANDROID__)
 
+#include "Base/Exception.h"
 #include "Engine/Window.h"
 #include "Engine/Android/JNIBridge.h"
-#include "Engine/Android/NativeServiceAndroid.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcherEvent.h"
 #include "Engine/Private/Android/AndroidBridge.h"
 #include "Engine/Private/Android/Window/WindowBackendAndroid.h"
 
+#include "Debug/Backtrace.h"
 #include "Input/InputSystem.h"
-#include "Platform/SystemTimer.h"
 #include "Logger/Logger.h"
+#include "Time/SystemTimer.h"
 
 extern int DAVAMain(DAVA::Vector<DAVA::String> cmdline);
 extern DAVA::Private::AndroidBridge* androidBridge;
@@ -43,7 +44,6 @@ namespace Private
 PlatformCore::PlatformCore(EngineBackend* engineBackend)
     : engineBackend(engineBackend)
     , mainDispatcher(engineBackend->GetDispatcher())
-    , nativeService(new NativeService(this))
 {
     AndroidBridge::AttachPlatformCore(this);
 }
@@ -56,16 +56,18 @@ void PlatformCore::Init()
 
 void PlatformCore::Run()
 {
+    AndroidBridge::HideSplashView();
+
     engineBackend->OnGameLoopStarted();
 
     while (!quitGameThread)
     {
-        uint64 frameBeginTime = SystemTimer::Instance()->AbsoluteMS();
+        int64 frameBeginTime = SystemTimer::GetMs();
 
         int32 fps = engineBackend->OnFrame();
 
-        uint64 frameEndTime = SystemTimer::Instance()->AbsoluteMS();
-        uint32 frameDuration = static_cast<uint32>(frameEndTime - frameBeginTime);
+        int64 frameEndTime = SystemTimer::GetMs();
+        int32 frameDuration = static_cast<int32>(frameEndTime - frameBeginTime);
 
         int32 sleep = 1;
         if (fps > 0)
@@ -100,6 +102,19 @@ WindowBackend* PlatformCore::ActivityOnCreate()
 
 void PlatformCore::ActivityOnResume()
 {
+    if (goBackgroundTimeRelativeToBoot > 0)
+    {
+        int64 timeSpentInBackground1 = SystemTimer::GetSystemUptimeUs() - goBackgroundTimeRelativeToBoot;
+        int64 timeSpentInBackground2 = SystemTimer::GetUs() - goBackgroundTime;
+
+        Logger::Debug("Time spent in background %lld us (reported by SystemTimer %lld us)", timeSpentInBackground1, timeSpentInBackground2);
+        // Do adjustment only if SystemTimer has stopped ticking
+        if (timeSpentInBackground1 - timeSpentInBackground2 > 500000l)
+        {
+            EngineBackend::AdjustSystemTimer(timeSpentInBackground1 - timeSpentInBackground2);
+        }
+    }
+
     mainDispatcher->PostEvent(MainDispatcherEvent(MainDispatcherEvent::APP_RESUMED));
 }
 
@@ -107,6 +122,9 @@ void PlatformCore::ActivityOnPause()
 {
     // Blocking call !!!
     mainDispatcher->SendEvent(MainDispatcherEvent(MainDispatcherEvent::APP_SUSPENDED));
+
+    goBackgroundTimeRelativeToBoot = SystemTimer::GetSystemUptimeUs();
+    goBackgroundTime = SystemTimer::GetUs();
 }
 
 void PlatformCore::ActivityOnDestroy()
@@ -118,8 +136,25 @@ void PlatformCore::ActivityOnDestroy()
 
 void PlatformCore::GameThread()
 {
-    Vector<String> cmdline;
-    DAVAMain(std::move(cmdline));
+    try
+    {
+        DAVAMain(std::move(androidBridge->cmdargs));
+    }
+    catch (const Exception& e)
+    {
+        StringStream ss;
+        ss << "!!! Unhandled DAVA::Exception at `" << e.file << "`: " << e.line << std::endl;
+        ss << Debug::GetBacktraceString(e.callstack) << std::endl;
+        Logger::PlatformLog(Logger::LEVEL_ERROR, ss.str().c_str());
+        throw;
+    }
+    catch (const std::exception& e)
+    {
+        StringStream ss;
+        ss << "!!! Unhandled std::exception in DAVAMain: " << e.what() << std::endl;
+        Logger::PlatformLog(Logger::LEVEL_ERROR, ss.str().c_str());
+        throw;
+    }
 }
 
 void PlatformCore::OnGamepadAdded(int32 deviceId, const String& name, bool hasTriggerButtons)

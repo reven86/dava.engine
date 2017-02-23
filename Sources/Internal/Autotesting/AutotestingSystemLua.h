@@ -42,7 +42,7 @@ public:
 #if !defined(SWIG)
     void SetDelegate(AutotestingSystemLuaDelegate* _delegate);
 
-    void InitFromFile(const String& luaFilePath);
+    void InitFromFile(const FilePath& luaFilePath);
 
     void StartTest();
 
@@ -113,6 +113,7 @@ public:
     bool SetText(const String& path, const String& text); // lua uses ansi strings
     bool CheckText(UIControl* control, const String& expectedText);
     bool CheckMsgText(UIControl* control, const String& key);
+    String GetTaggedClass(UIControl* control, const String& tag);
     String GetText(UIControl* control);
     uint32 GetTextColor(UIControl* control);
 
@@ -138,6 +139,9 @@ public:
     String MakeScreenshot();
     bool GetIsScreenShotSaving() const;
 
+    bool RunScript(const String& luaScript);
+    bool RunScriptFromFile(const FilePath& luaFilePath);
+
 protected:
 #if !defined(SWIG)
     inline void ParsePath(const String& path, Vector<String>& parsedPath) const;
@@ -146,8 +150,6 @@ protected:
     bool LoadScriptFromFile(const FilePath& luaFilePath);
     bool RunScript();
 
-    bool RunScript(const String& luaScript);
-    bool RunScriptFromFile(const FilePath& luaFilePath);
     bool LoadWrappedLuaObjects();
 
     AutotestingSystemLuaDelegate* delegate;

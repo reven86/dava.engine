@@ -2,6 +2,8 @@
 #include "Render/RHI/rhi_ShaderCache.h"
 #include "FileSystem/FileSystem.h"
 #include "Concurrency/LockGuard.h"
+#include "Logger/Logger.h"
+#include "Utils/StringFormat.h"
 #include "Render/RHI/rhi_ShaderSource.h"
 #include "Render/RHI/Common/PreProcess.h"
 
@@ -171,6 +173,16 @@ void SetLoadingNotifyEnabled(bool enable)
     loadingNotifyEnabled = enable;
 }
 
+
+#define DUMP_SOURCES 0
+#define TRACE_CACHE_USAGE 0
+
+#if TRACE_CACHE_USAGE
+#define LOG_TRACE_USAGE(usage, ...) Logger::Info(usage, __VA_ARGS__)
+#else
+#define LOG_TRACE_USAGE(...)
+#endif
+
 ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastName, int32>& defines)
 {
     DVASSERT(initialized);
@@ -182,25 +194,6 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
     auto descriptorIt = shaderDescriptors.find(key);
     if (descriptorIt != shaderDescriptors.end())
         return descriptorIt->second;
-
-    if (loadingNotifyEnabled)
-    {
-        Vector<String> sortedKeys;
-        sortedKeys.reserve(defines.size());
-        for (const auto& define : defines)
-        {
-            sortedKeys.emplace_back(DAVA::Format("%s=%d,", define.first.c_str(), define.second));
-        }
-        std::sort(sortedKeys.begin(), sortedKeys.end());
-
-        String flags;
-        flags.reserve(16 * defines.size());
-        for (const auto& define : sortedKeys)
-        {
-            flags += define;
-        }
-        Logger::Error("Forbidden call to GetShaderDescriptor(%s, { %s })", name.c_str(), flags.c_str());
-    }
 
     //not found - create new shader
     Vector<String> progDefines;
@@ -232,6 +225,11 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
     for (size_t i = 0; i != progDefines.size(); i += 2)
         resName += Format("%s = %s, ", progDefines[i + 0].c_str(), progDefines[i + 1].c_str());
 
+    if (loadingNotifyEnabled)
+    {
+        Logger::Error("Forbidden call to GetShaderDescriptor %s", resName.c_str());
+    }
+
     FastName vProgUid, fProgUid;
     vProgUid = FastName(String("vSource: ") + resName);
     fProgUid = FastName(String("fSource: ") + resName);
@@ -239,52 +237,31 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
     ShaderSourceCode sourceCode = GetSourceCode(name);
     const uint32 vSrcHash = HashValue_N(sourceCode.vertexProgText.data(), static_cast<uint32>(strlen(sourceCode.vertexProgText.data())));
     const uint32 fSrcHash = HashValue_N(sourceCode.fragmentProgText.data(), static_cast<uint32>(strlen(sourceCode.fragmentProgText.data())));
+
     const rhi::ShaderSource* vSource = rhi::ShaderSourceCache::Get(vProgUid, vSrcHash);
     const rhi::ShaderSource* fSource = rhi::ShaderSourceCache::Get(fProgUid, fSrcHash);
 
-#define TRACE_CACHE_USAGE 0
+    bool isCachedShader = false;
 
-    if (vSource)
+    if (!vSource || !fSource)
     {
-#if TRACE_CACHE_USAGE
-        Logger::Info("using cached \"%s\"", vProgUid.c_str());
-#endif
-    }
-    else
-    {
-#if TRACE_CACHE_USAGE
-        Logger::Info("building \"%s\"", vProgUid.c_str());
-#endif
+        LOG_TRACE_USAGE("building \"%s\"", vProgUid.c_str());
         vSource = rhi::ShaderSourceCache::Add(sourceCode.vertexProgSourcePath.GetFrameworkPath().c_str(), vProgUid, rhi::PROG_VERTEX, sourceCode.vertexProgText.data(), progDefines);
-
-        if (!vSource)
-        {
-            Logger::Error("failed to construct \"%s\"", vProgUid.c_str());
-            vSource = nullptr;
-        }
-    }
-
-    if (fSource)
-    {
-#if TRACE_CACHE_USAGE
-        Logger::Info("using cached \"%s\"", fProgUid.c_str());
-#endif
+        fSource = rhi::ShaderSourceCache::Add(sourceCode.fragmentProgSourcePath.GetFrameworkPath().c_str(), fProgUid, rhi::PROG_FRAGMENT, sourceCode.fragmentProgText.data(), progDefines);
     }
     else
     {
-#if TRACE_CACHE_USAGE
-        Logger::Info("building \"%s\"", fProgUid.c_str());
-#endif
-        fSource = rhi::ShaderSourceCache::Add(sourceCode.fragmentProgSourcePath.GetFrameworkPath().c_str(), fProgUid, rhi::PROG_FRAGMENT, sourceCode.fragmentProgText.data(), progDefines);
-
-        if (!fSource)
-        {
-            Logger::Error("failed to construct \"%s\"", fProgUid.c_str());
-        }
+        LOG_TRACE_USAGE("using cached \"%s\"", vProgUid.c_str());
+        isCachedShader = true;
     }
 
     if (!vSource || !fSource)
     {
+        if (!vSource)
+            Logger::Error("failed to construct vSource for \"%s\"", vProgUid.c_str());
+        if (!fSource)
+            Logger::Error("failed to construct fSource for \"%s\"", fProgUid.c_str());
+
         // don't try to create pipeline-state, return 'not-valid'
         rhi::PipelineState::Descriptor psDesc;
         psDesc.vprogUid = vProgUid;
@@ -297,19 +274,17 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
         return res;
     }
 
-#if 0
+#if DUMP_SOURCES
     Logger::Info("\n\n%s", vProgUid.c_str());
     vSource->Dump();
-#endif
-    const std::string& vpBin = vSource->GetSourceCode(rhi::HostApi());
-    rhi::ShaderCache::UpdateProgBinary(rhi::HostApi(), rhi::PROG_VERTEX, vProgUid, vpBin.c_str(), unsigned(vpBin.length()));
-#if 0
     Logger::Info("\n\n%s", fProgUid.c_str());
     fSource->Dump();
 #endif
+
+    const std::string& vpBin = vSource->GetSourceCode(rhi::HostApi());
+    rhi::ShaderCache::UpdateProgBinary(rhi::HostApi(), rhi::PROG_VERTEX, vProgUid, vpBin.c_str(), unsigned(vpBin.length()));
     const std::string& fpBin = fSource->GetSourceCode(rhi::HostApi());
     rhi::ShaderCache::UpdateProgBinary(rhi::HostApi(), rhi::PROG_FRAGMENT, fProgUid, fpBin.c_str(), unsigned(fpBin.length()));
-
     //ShaderDescr
     rhi::PipelineState::Descriptor psDesc;
     psDesc.vprogUid = vProgUid;
@@ -317,6 +292,30 @@ ShaderDescriptor* GetShaderDescriptor(const FastName& name, const HashMap<FastNa
     psDesc.vertexLayout = vSource->ShaderVertexLayout();
     psDesc.blending = fSource->Blending();
     rhi::HPipelineState piplineState = rhi::AcquireRenderPipelineState(psDesc);
+
+    //in case we have broken shaders in cache, replace them with newly compiled
+    if ((!piplineState.IsValid()) && isCachedShader)
+    {
+        DAVA::Logger::Info("cached shader compilation failed ");
+        DAVA::Logger::Info("  vprog-uid = %s", vProgUid.c_str());
+        DAVA::Logger::Info("  fprog-uid = %s", fProgUid.c_str());
+        DAVA::Logger::Info("trying to replace from source files");
+
+        vSource = rhi::ShaderSourceCache::Add(sourceCode.vertexProgSourcePath.GetFrameworkPath().c_str(), vProgUid, rhi::PROG_VERTEX, sourceCode.vertexProgText.data(), progDefines);
+        fSource = rhi::ShaderSourceCache::Add(sourceCode.fragmentProgSourcePath.GetFrameworkPath().c_str(), fProgUid, rhi::PROG_FRAGMENT, sourceCode.fragmentProgText.data(), progDefines);
+
+        const std::string& vpBin = vSource->GetSourceCode(rhi::HostApi());
+        rhi::ShaderCache::UpdateProgBinary(rhi::HostApi(), rhi::PROG_VERTEX, vProgUid, vpBin.c_str(), unsigned(vpBin.length()));
+        const std::string& fpBin = fSource->GetSourceCode(rhi::HostApi());
+        rhi::ShaderCache::UpdateProgBinary(rhi::HostApi(), rhi::PROG_FRAGMENT, fProgUid, fpBin.c_str(), unsigned(fpBin.length()));
+
+        psDesc.vprogUid = vProgUid;
+        psDesc.fprogUid = fProgUid;
+        psDesc.vertexLayout = vSource->ShaderVertexLayout();
+        psDesc.blending = fSource->Blending();
+        piplineState = rhi::AcquireRenderPipelineState(psDesc);
+    }
+
     ShaderDescriptor* res = new ShaderDescriptor(piplineState, vProgUid, fProgUid);
     res->sourceName = name;
     res->defines = defines;

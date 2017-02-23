@@ -1,9 +1,12 @@
 #include "Base/BaseTypes.h"
 #include "Core/Core.h"
+#include "Logger/Logger.h"
 
 #if defined(__DAVAENGINE_IPHONE__)
 
-#include <UIKit/UIKit.h>
+#import <UIKit/UIKit.h>
+
+#include "Logger/Logger.h"
 #include "UI/UITextField.h"
 #include "UI/Private/iOS/TextFieldPlatformImpliOS.h"
 #include "UI/Private/iOS/UITextFieldHolder.h"
@@ -15,8 +18,8 @@
 #include "Utils/UTF8Utils.h"
 
 #if defined(__DAVAENGINE_COREV2__)
-#include "Engine/EngineModule.h"
-#include "Engine/WindowNativeService.h"
+#include "Engine/Engine.h"
+#include "Engine/Ios/PlatformApi.h"
 #else
 #import "Platform/TemplateiOS/HelperAppDelegate.h"
 #include "UI/Private/iOS/WebViewControliOS.h"
@@ -42,8 +45,7 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(Window* w, UITextField* uiTextField
 {
     DVASSERT(isSingleLine);
 
-    WindowNativeService* nativeService = window->GetNativeService();
-    bridge->textFieldHolder = static_cast<UITextFieldHolder*>(nativeService->GetUIViewFromPool("UITextFieldHolder"));
+    bridge->textFieldHolder = static_cast<UITextFieldHolder*>(PlatformApi::Ios::GetUIViewFromPool(window, "UITextFieldHolder"));
     [bridge->textFieldHolder attachWindow:window];
 
     DVASSERT(bridge->textFieldHolder->textCtrl != nullptr);
@@ -60,6 +62,8 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(Window* w, UITextField* uiTextField
     {
         UpdateNativeRect(prevRect, 0);
     }
+
+    windowDestroyedSigId = Engine::Instance()->windowDestroyed.Connect(this, &TextFieldPlatformImpl::OnWindowDestroyed);
 }
 
 TextFieldPlatformImpl::~TextFieldPlatformImpl()
@@ -77,9 +81,22 @@ TextFieldPlatformImpl::~TextFieldPlatformImpl()
         [textFieldHolder addSubview:textFieldHolder->textCtrl];
     }
 
-    WindowNativeService* nativeService = window->GetNativeService();
-    nativeService->ReturnUIViewToPool(textFieldHolder);
+    if (window != nullptr)
+    {
+        PlatformApi::Ios::ReturnUIViewToPool(window, textFieldHolder);
+    }
+
+    Engine::Instance()->windowDestroyed.Disconnect(windowDestroyedSigId);
 }
+
+void TextFieldPlatformImpl::OnWindowDestroyed(Window* destroyedWindow)
+{
+    if (destroyedWindow == window)
+    {
+        window = nullptr;
+    }
+}
+
 #else // defined(__DAVAENGINE_COREV2__)
 TextFieldPlatformImpl::TextFieldPlatformImpl(DAVA::UITextField* tf)
     : bridge(new TextFieldObjcBridge)
@@ -416,7 +433,7 @@ void TextFieldPlatformImpl::GetText(WideString& string) const
     DVASSERT(nullptr != textInField);
 
     const char* cstr = [textInField cStringUsingEncoding:NSUTF8StringEncoding];
-    DVASSERT_MSG(nullptr != cstr, "TextFieldText can't be converted into UTF8String.");
+    DVASSERT(nullptr != cstr, "TextFieldText can't be converted into UTF8String.");
     if (nullptr != cstr)
     {
         UTF8Utils::EncodeToWideString((DAVA::uint8*)cstr, strlen(cstr), string);
@@ -653,10 +670,10 @@ void TextFieldPlatformImpl::UpdateStaticTexture()
     if (renderToTexture && deltaMoveControl != 0 && text.length > 0)
     {
 #if defined(__DAVAENGINE_COREV2__)
-        UIImage* nativeImage = WindowNativeService::RenderUIViewToUIImage(textView);
+        UIImage* nativeImage = PlatformApi::Ios::RenderUIViewToUIImage(textView);
         if (nativeImage != nullptr)
         {
-            RefPtr<Image> image(WindowNativeService::ConvertUIImageToImage(nativeImage));
+            RefPtr<Image> image(PlatformApi::Ios::ConvertUIImageToImage(nativeImage));
             if (image != nullptr)
             {
                 RefPtr<Texture> texture(Texture::CreateFromData(image.Get(), false));
@@ -668,7 +685,8 @@ void TextFieldPlatformImpl::UpdateStaticTexture()
                     RefPtr<Sprite> sprite(Sprite::CreateFromTexture(texture.Get(), 0, 0, width, height, rect.dx, rect.dy));
                     if (sprite != nullptr)
                     {
-                        davaTextField.GetBackground()->SetSprite(sprite.Get(), 0);
+                        UIControlBackground* bg = davaTextField.GetOrCreateComponent<UIControlBackground>();
+                        bg->SetSprite(sprite.Get(), 0);
                     }
                 }
             }
@@ -686,8 +704,8 @@ void TextFieldPlatformImpl::UpdateStaticTexture()
     }
     else
     {
-        // set null background
-        davaTextField.GetBackground()->SetSprite(nullptr, 0);
+        // remove background component
+        davaTextField.RemoveComponent(UIComponent::BACKGROUND_COMPONENT);
     }
 }
 

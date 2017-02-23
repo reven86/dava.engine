@@ -47,7 +47,7 @@ void UnRegisterResourceRestoreCallback(Function<void()> callback)
             return;
         }
     }
-    DVASSERT_MSG(0, "Attempting to remove unregistered callback");
+    DVASSERT(0, "Attempting to remove unregistered callback");
 }
 
 void RegisterPostRestoreCallback(Function<void()> callback)
@@ -73,7 +73,7 @@ void UnRegisterPostRestoreCallback(Function<void()> callback)
             return;
         }
     }
-    DVASSERT_MSG(0, "Attempting to remove unregistered callback");
+    DVASSERT(0, "Attempting to remove unregistered callback");
 }
 
 void ExecuteResourcesCallbacks()

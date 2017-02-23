@@ -1,14 +1,14 @@
 #include "TArc/Testing/TArcTestCore.h"
-#include "TArc/Testing/Private/Selftests/DeadCodeTrick.h"
+#include "TArc/Testing/Private/DeadCodeTrick.h"
 
 #include "Engine/Engine.h"
 
 #include "UnitTests/TestCore.h"
+#include "Utils/StringFormat.h"
 #include "Logger/TeamCityTestsOutput.h"
 #include "UnitTests/UnitTests.h"
 #include "FileSystem/File.h"
 #include "CommandLine/CommandLineParser.h"
-#include "Engine/NativeService.h"
 #include "Engine/Qt/RenderWidget.h"
 
 #include <QTimer>
@@ -81,7 +81,7 @@ void TestCore::OnAppStarted()
     if (!UnitTests::TestCore::Instance()->HasTestClasses())
     {
         Logger::Error("%s", "There are no test classes");
-        e.Quit();
+        e.QuitAsync(0);
     }
     else
     {
@@ -212,7 +212,7 @@ void TestCore::ProcessCommandLine()
 
 void TestCore::OnError()
 {
-    DavaDebugBreak();
+    DVASSERT_HALT();
 }
 
 void TestCore::OnTestClassStarted(const DAVA::String& testClassName)
@@ -248,8 +248,6 @@ void TestCore::OnTestFinished(const DAVA::String& testClassName, const DAVA::Str
 
 void TestCore::OnTestFailed(const String& testClassName, const String& testName, const String& condition, const char* filename, int lineno, const String& userMessage)
 {
-    OnError();
-
     String errorString;
     if (userMessage.empty())
     {
@@ -260,6 +258,7 @@ void TestCore::OnTestFailed(const String& testClassName, const String& testName,
         errorString = Format("%s:%d: %s (%s)", filename, lineno, testName.c_str(), userMessage.c_str());
     }
     Logger::Error("%s", TeamcityTestsOutput::FormatTestFailed(testClassName, testName, condition, errorString).c_str());
+    OnError();
 }
 
 void TestCore::OnTestPartResult(const ::testing::TestPartResult& testPartResult)
@@ -274,12 +273,12 @@ void TestCore::FinishTests()
 {
     // Inform teamcity script we just finished all tests
     Logger::Debug("Finish all tests.");
-    e.GetNativeService()->GetApplication()->quit();
+    PlatformApi::Qt::GetApplication()->quit();
 }
 
 void TestCore::CreateRenderWidget()
 {
-    RenderWidget* w = e.GetNativeService()->GetRenderWidget();
+    RenderWidget* w = PlatformApi::Qt::GetRenderWidget();
     w->show();
 }
 

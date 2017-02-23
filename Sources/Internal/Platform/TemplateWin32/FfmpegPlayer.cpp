@@ -86,7 +86,7 @@ void FfmpegPlayer::Play()
 
         if (isAudioSubsystemInited || isVideoSubsystemInited)
         {
-            readingDataThread = Thread::Create(Message(this, &FfmpegPlayer::ReadingThread));
+            readingDataThread = Thread::Create(MakeFunction(this, &FfmpegPlayer::ReadingThread));
             readingDataThread->Start();
         }
     }
@@ -216,9 +216,9 @@ bool FfmpegPlayer::InitVideo()
     frameWidth = videoCodecContext->width;
     frameBufferSize = ImageUtils::GetSizeInBytes(frameWidth, frameHeight, pixelFormat);
 
-    DVASSERT(nullptr == videoDecodingThread)
+    DVASSERT(nullptr == videoDecodingThread);
 
-    videoDecodingThread = Thread::Create(Message(this, &FfmpegPlayer::VideoDecodingThread));
+    videoDecodingThread = Thread::Create(MakeFunction(this, &FfmpegPlayer::VideoDecodingThread));
     videoDecodingThread->Start();
 
     return true;
@@ -345,7 +345,7 @@ bool FfmpegPlayer::InitAudio()
 
     DVASSERT(nullptr == audioDecodingThread);
 
-    audioDecodingThread = Thread::Create(Message(this, &FfmpegPlayer::AudioDecodingThread));
+    audioDecodingThread = Thread::Create(MakeFunction(this, &FfmpegPlayer::AudioDecodingThread));
     audioDecodingThread->Start();
 
     return true;
@@ -580,9 +580,9 @@ void FfmpegPlayer::DecodeAudio(AV::AVPacket* packet, float64 timeElapsed)
     pcmBuffer.Write(outAudioBuffer.data(), outAudioBufferSize);
 }
 
-void FfmpegPlayer::AudioDecodingThread(BaseObject* caller, void* callerData, void* userData)
+void FfmpegPlayer::AudioDecodingThread()
 {
-    Thread* thread = static_cast<Thread*>(caller);
+    Thread* thread = Thread::Current();
     if (nullptr == thread)
     {
         return;
@@ -626,9 +626,9 @@ void FfmpegPlayer::AudioDecodingThread(BaseObject* caller, void* callerData, voi
     } while (!thread->IsCancelling());
 }
 
-void FfmpegPlayer::VideoDecodingThread(BaseObject* caller, void* callerData, void* userData)
+void FfmpegPlayer::VideoDecodingThread()
 {
-    Thread* thread = static_cast<Thread*>(caller);
+    Thread* thread = Thread::Current();
     if (nullptr == thread)
     {
         return;
@@ -702,9 +702,9 @@ void FfmpegPlayer::PrefetchData(uint32 dataSize)
     }
 }
 
-void FfmpegPlayer::ReadingThread(BaseObject* caller, void* callerData, void* userData)
+void FfmpegPlayer::ReadingThread()
 {
-    Thread* thread = static_cast<Thread*>(caller);
+    Thread* thread = Thread::Current();
     if (nullptr == thread)
     {
         return;

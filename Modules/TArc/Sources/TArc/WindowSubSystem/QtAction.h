@@ -24,7 +24,8 @@ public:
     {
         Enabled, // call back should return Any that can be casted to bool
         Checked,
-        Text
+        Text, // DAVA::String
+        Icon // DAVA::String
     };
 
     void SetStateUpdationFunction(eActionState state, const FieldDescriptor& fieldDescr, const Function<Any(const Any&)>& fn);

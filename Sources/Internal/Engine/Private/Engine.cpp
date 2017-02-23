@@ -1,6 +1,6 @@
-#if defined(__DAVAENGINE_COREV2__)
-
 #include "Engine/Engine.h"
+
+#if defined(__DAVAENGINE_COREV2__)
 
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
@@ -35,14 +35,9 @@ Engine::~Engine()
     EngineSingletonNamespace::engineSingleton = nullptr;
 }
 
-EngineContext* Engine::GetContext() const
+const EngineContext* Engine::GetContext() const
 {
-    return engineBackend->GetEngineContext();
-}
-
-NativeService* Engine::GetNativeService() const
-{
-    return engineBackend->GetNativeService();
+    return engineBackend->GetContext();
 }
 
 Window* Engine::PrimaryWindow() const
@@ -80,7 +75,7 @@ int Engine::Run()
     return engineBackend->Run();
 }
 
-void Engine::Quit(int exitCode)
+void Engine::QuitAsync(int exitCode)
 {
     engineBackend->Quit(exitCode);
 }
@@ -90,12 +85,12 @@ void Engine::SetCloseRequestHandler(const Function<bool(Window*)>& handler)
     engineBackend->SetCloseRequestHandler(handler);
 }
 
-void Engine::RunAsyncOnMainThread(const Function<void()>& task)
+void Engine::RunOnMainThreadAsync(const Function<void()>& task)
 {
     engineBackend->DispatchOnMainThread(task, false);
 }
 
-void Engine::RunAndWaitOnMainThread(const Function<void()>& task)
+void Engine::RunOnMainThread(const Function<void()>& task)
 {
     engineBackend->DispatchOnMainThread(task, true);
 }
@@ -118,6 +113,11 @@ Vector<char*> Engine::GetCommandLineAsArgv() const
 const KeyedArchive* Engine::GetOptions() const
 {
     return engineBackend->GetOptions();
+}
+
+bool Engine::IsSuspended() const
+{
+    return engineBackend->IsSuspended();
 }
 
 } // namespace DAVA

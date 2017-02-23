@@ -7,6 +7,7 @@ namespace DAVA
 namespace PackFormat
 {
 const Array<char8, 4> FILE_MARKER{ { 'D', 'V', 'P', 'K' } };
+const Array<char8, 4> FILE_MARKER_LITE{ { 'D', 'V', 'P', 'L' } };
 
 struct PackFile
 {
@@ -14,6 +15,11 @@ struct PackFile
     struct PackedFilesBlock
     {
     } rawBytesOfCompressedFiles;
+
+    // 0 or footer.metaDataSize bytes
+    struct CustomMetadataBlock
+    {
+    } metadata;
 
     struct FilesTableBlock
     {
@@ -28,7 +34,7 @@ struct PackFile
                 uint32 compressedCrc32;
                 Compressor::Type type;
                 uint32 originalCrc32;
-                Array<char8, 4> reserved; // null bytes, leave for future
+                uint32 metaIndex; // can be castom user index in metaData
             };
 
             Vector<Data> files;
@@ -45,7 +51,9 @@ struct PackFile
 
     struct FooterBlock
     {
-        Array<char, 4> reserved; // null bytes (space for future)
+        Array<uint8, 8> reserved;
+        uint32 metaDataCrc32; // 0 or crc32 for custom user meta block
+        uint32 metaDataSize; // 0 or size of custom user meta data block
         uint32 infoCrc32;
         struct Info
         {
@@ -61,8 +69,31 @@ struct PackFile
 
 using FileTableEntry = PackFile::FilesTableBlock::FilesData::Data;
 
-static_assert(sizeof(PackFile::FooterBlock) == 32, "header block size changed, something bad happened!");
-static_assert(sizeof(FileTableEntry) == 32, "file table entry size changed, something bad happened!");
+/**
+	One file packed with our custom compression + 20 bytes footer
+	in the end of file with info to decompress content.
+	We will use it later in our new DLCManager to download game
+	content file by file to reduce size
+*/
+struct LitePack
+{
+    struct CompressedBytes
+    {
+    };
+
+    struct Footer
+    {
+        uint32 sizeUncompressed;
+        uint32 sizeCompressed;
+        uint32 crc32Compressed;
+        Compressor::Type type;
+        Array<char8, 4> packMarkerLite;
+    };
+};
+
+static_assert(sizeof(LitePack::Footer) == 20, "footer block size changed");
+static_assert(sizeof(PackFile::FooterBlock) == 44, "header block size changed");
+static_assert(sizeof(FileTableEntry) == 32, "file table entry size changed");
 
 } // end of PackFormat namespace
 

@@ -2,18 +2,20 @@
 
 #include "Engine/Engine.h"
 
-#include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
-#include "FileSystem/FileSystem.h"
-#include "FileSystem/ResourceArchive.h"
 #include "FileSystem/DynamicMemoryFile.h"
 #include "FileSystem/FileAPIHelper.h"
+#include "FileSystem/FileSystem.h"
+#include "FileSystem/Private/PackFormatSpec.h"
+#include "FileSystem/ResourceArchive.h"
+#include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
 
-#include "Utils/StringFormat.h"
-#include "Concurrency/Mutex.h"
+#include "Compression/LZ4Compressor.h"
 #include "Concurrency/LockGuard.h"
+#include "Concurrency/Mutex.h"
 #include "Concurrency/Thread.h"
 #include "Core/Core.h"
-#include "PackManager/PackManager.h"
+#include "Logger/Logger.h"
+#include "Utils/StringFormat.h"
 
 #if defined(__DAVAENGINE_WINDOWS__)
 #include <io.h>
@@ -21,8 +23,8 @@
 #include <unistd.h>
 #endif
 
-#include <sys/stat.h>
 #include <ctime>
+#include <sys/stat.h>
 
 namespace DAVA
 {
@@ -96,6 +98,72 @@ bool File::IsFileInMountedArchive(const String& packName, const String& relative
     }
 }
 
+File* File::CompressedCreate(const FilePath& filename, uint32 attributes)
+{
+    ScopedPtr<File> f(PureCreate(filename, attributes));
+
+    if (!f)
+    {
+        return nullptr;
+    }
+
+    uint32 fileSize = static_cast<uint32>(f->GetSize());
+    uint32 footerSize = static_cast<uint32>(sizeof(PackFormat::LitePack::Footer));
+
+    if (fileSize < footerSize)
+    {
+        Logger::Error("compressed file too small: %s", filename.GetAbsolutePathname().c_str());
+        return nullptr;
+    }
+
+    int64 footerPos = fileSize - footerSize;
+
+    if (!f->Seek(footerPos, SEEK_FROM_START))
+    {
+        Logger::Error("can't seek to footer: %s", filename.GetAbsolutePathname().c_str());
+        return nullptr;
+    }
+
+    PackFormat::LitePack::Footer footer;
+
+    if (footerSize != f->Read(&footer, sizeof(footer)))
+    {
+        Logger::Error("can't read footer: %s", filename.GetAbsolutePathname().c_str());
+        return nullptr;
+    }
+
+    if (!f->Seek(0, SEEK_FROM_START))
+    {
+        Logger::Error("can't seek to begin: %s", filename.GetAbsolutePathname().c_str());
+        return nullptr;
+    }
+
+    Vector<uint8> compressed(footer.sizeCompressed);
+
+    if (footer.sizeCompressed != f->Read(&compressed[0], footer.sizeCompressed))
+    {
+        Logger::Error("can't read compressed bytes: %s", filename.GetAbsolutePathname().c_str());
+        return nullptr;
+    }
+
+    if (footer.type != Compressor::Type::Lz4HC)
+    {
+        Logger::Error("incorrect compression type: %d file:", static_cast<int32>(footer.type), filename.GetAbsolutePathname().c_str());
+        return nullptr;
+    }
+
+    Vector<uint8> uncompressed(footer.sizeUncompressed);
+
+    if (!LZ4HCCompressor().Decompress(compressed, uncompressed))
+    {
+        Logger::Error("decompress failed on file:", filename.GetAbsolutePathname().c_str());
+        return nullptr;
+    }
+
+    DynamicMemoryFile* file = DynamicMemoryFile::Create(std::move(uncompressed), attributes, filename);
+    return file;
+}
+
 File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
 {
     if (filename.IsDirectoryPathname())
@@ -103,41 +171,18 @@ File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
         return nullptr;
     }
 
-    if (FilePath::PATH_IN_RESOURCES == filename.GetType() && !((attributes & CREATE) || (attributes & WRITE)))
+    File* result = PureCreate(filename, attributes);
+
+    if (!(attributes & (File::WRITE | File::CREATE | File::APPEND)))
     {
-        String relative = filename.GetRelativePathname("~res:/");
-        Vector<uint8> contentAndSize;
-
-// now with PackManager we can improve perfomance by lookup pack name
-// from DB with all files, then check if such pack mounted and from
-// mountedPackIndex find by name archive with file or skip to next step
-#ifdef __DAVAENGINE_COREV2__
-        // TODO: remove this strange check introduced because some applications (e.g. ResourceEditor)
-        // access Engine object after it has beem destroyed
-        Engine* e = Engine::Instance();
-        DVASSERT(e != nullptr);
-        EngineContext* context = e->GetContext();
-        DVASSERT(context != nullptr);
-        IPackManager* pm = context->packManager;
-#else
-        IPackManager* pm = &Core::Instance()->GetPackManager();
-#endif
-
-        if (nullptr != pm && pm->IsInitialized())
+        FilePath compressedFile = filename + ".dvpl";
+        if (FileAPI::IsRegularFile(compressedFile.GetAbsolutePathname()))
         {
-            const String& packName = pm->FindPackName(filename);
-            if (!packName.empty())
-            {
-                File* file = LoadFileFromMountedArchive(packName, relative);
-                if (file != nullptr)
-                {
-                    return file;
-                }
-            }
+            result = CompressedCreate(compressedFile, attributes);
         }
     }
 
-    return PureCreate(filename, attributes);
+    return result;
 }
 
 #ifdef __DAVAENGINE_ANDROID__
@@ -148,7 +193,7 @@ static File* CreateFromAPK(const FilePath& filePath, uint32 attributes)
     LockGuard<Mutex> guard(mutex);
 
     AssetsManagerAndroid* assetsManager = AssetsManagerAndroid::Instance();
-    DVASSERT_MSG(assetsManager, "[CreateFromAPK] Need to create AssetsManager before loading files");
+    DVASSERT(assetsManager, "[CreateFromAPK] Need to create AssetsManager before loading files");
 
     Vector<uint8> data;
     if (!assetsManager->LoadFile(filePath.GetAbsolutePathname(), data))
@@ -164,30 +209,23 @@ File* File::PureCreate(const FilePath& filePath, uint32 attributes)
 {
     FILE* file = nullptr;
     uint64 size = 0;
-    FilePath::NativeStringType path = filePath.GetNativeAbsolutePathname();
+    String path = filePath.GetAbsolutePathname();
 
     if ((attributes & File::OPEN) && (attributes & File::READ))
     {
         if (attributes & File::WRITE)
         {
-            file = FileAPI::OpenFile(path.c_str(), NativeStringLiteral("r+b"));
+            file = FileAPI::OpenFile(path, "r+b");
         }
         else
         {
-            file = FileAPI::OpenFile(path.c_str(), NativeStringLiteral("rb"));
+            file = FileAPI::OpenFile(path, "rb");
         }
 
         if (!file)
         {
 #ifdef __DAVAENGINE_ANDROID__
-            bool isFileExistOnRealFS = false;
-
-            FileAPI::Stat fileStat;
-            int result = FileAPI::FileStat(path.c_str(), &fileStat);
-            if (result == 0)
-            {
-                isFileExistOnRealFS = (0 != (fileStat.st_mode & S_IFREG));
-            }
+            bool isFileExistOnRealFS = FileAPI::IsRegularFile(path);
 
             if (isFileExistOnRealFS)
             {
@@ -196,11 +234,11 @@ File* File::PureCreate(const FilePath& filePath, uint32 attributes)
                 {
                     if (attributes & File::WRITE)
                     {
-                        file = FileAPI::OpenFile(path.c_str(), NativeStringLiteral("r+b"));
+                        file = FileAPI::OpenFile(path, "r+b");
                     }
                     else
                     {
-                        file = FileAPI::OpenFile(path.c_str(), NativeStringLiteral("rb"));
+                        file = FileAPI::OpenFile(path, "rb");
                     }
 
                     if (!file)
@@ -241,13 +279,13 @@ File* File::PureCreate(const FilePath& filePath, uint32 attributes)
     }
     else if ((attributes & File::CREATE) && (attributes & File::WRITE))
     {
-        file = FileAPI::OpenFile(path.c_str(), NativeStringLiteral("wb"));
+        file = FileAPI::OpenFile(path, "wb");
         if (!file)
             return nullptr;
     }
     else if ((attributes & File::APPEND) && (attributes & File::WRITE))
     {
-        file = FileAPI::OpenFile(path.c_str(), NativeStringLiteral("ab"));
+        file = FileAPI::OpenFile(path, "ab");
         if (!file)
             return nullptr;
         if (0 != SetFilePos(file, 0, SEEK_END))

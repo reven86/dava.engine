@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_LOCAL_NOTIFICATION_TEXT_H__
-#define __DAVAENGINE_LOCAL_NOTIFICATION_TEXT_H__
+#pragma once
 
 #include "Notification/LocalNotification.h"
 
@@ -10,6 +9,4 @@ class LocalNotificationText : public LocalNotification
 private:
     void ImplShow() override;
 };
-}
-
-#endif // __NOTIFICATION_H__
+} // namespace DAVA

@@ -105,6 +105,9 @@ void AndroidBridge::InitializeJNI(JNIEnv* env)
         methodDavaActivity_postFinish = env->GetMethodID(jclassDavaActivity, "postQuit", "()V");
         JNI::CheckJavaException(env, true);
 
+        methodDavaActivity_hideSplashView = env->GetMethodID(jclassDavaActivity, "hideSplashView", "()V");
+        JNI::CheckJavaException(env, true);
+
         // Get java.lang.Class<com.dava.engine.DavaActivity>
         jclass jclassClass = env->GetObjectClass(jclassDavaActivity);
         JNI::CheckJavaException(env, true);
@@ -137,6 +140,20 @@ void AndroidBridge::InitializeJNI(JNIEnv* env)
     }
 }
 
+void AndroidBridge::HideSplashView()
+{
+    try
+    {
+        JNIEnv* env = GetEnv();
+        env->CallVoidMethod(androidBridge->activity, androidBridge->methodDavaActivity_hideSplashView);
+        JNI::CheckJavaException(env, true);
+    }
+    catch (const JNI::Exception& e)
+    {
+        ANDROID_LOG_ERROR("hideSplashView call failed: %s", e.what());
+    }
+}
+
 void AndroidBridge::AttachPlatformCore(PlatformCore* platformCore)
 {
     if (platformCore == nullptr || androidBridge->core != nullptr)
@@ -159,14 +176,16 @@ void AndroidBridge::InitializeEngine(String externalFilesDir,
         abort();
     }
 
-    Vector<String> cmdargs = GetCommandArgs(cmdline);
-    engineBackend = new EngineBackend(cmdargs);
-
     externalDocumentsDir = std::move(externalFilesDir);
     internalDocumentsDir = std::move(internalFilesDir);
     appPath = std::move(sourceDir);
     packageName = std::move(apkName);
 
+    cmdargs = GetCommandArgs(cmdline);
+    engineBackend = new EngineBackend(cmdargs);
+
+    // Log parameters only after EngineBackend instance is created
+    // Since it's responsible for creating Logger instance
     Logger::FrameworkDebug("=========== externalDocumentsDir='%s'", externalDocumentsDir.c_str());
     Logger::FrameworkDebug("=========== internalDocumentsDir='%s'", internalDocumentsDir.c_str());
     Logger::FrameworkDebug("=========== appPath='%s'", appPath.c_str());

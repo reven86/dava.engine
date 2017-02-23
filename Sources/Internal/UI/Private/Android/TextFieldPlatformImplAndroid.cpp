@@ -5,7 +5,6 @@
 
 #include "Engine/Engine.h"
 #include "Engine/Window.h"
-#include "Engine/Android/WindowNativeServiceAndroid.h"
 
 #include "Logger/Logger.h"
 #include "Utils/UTF8Utils.h"
@@ -21,8 +20,12 @@ extern "C"
 JNIEXPORT void JNICALL Java_com_dava_engine_DavaTextField_nativeReleaseWeakPtr(JNIEnv* env, jclass jclazz, jlong backendPointer)
 {
     using DAVA::TextFieldPlatformImpl;
-    std::weak_ptr<TextFieldPlatformImpl>* weak = reinterpret_cast<std::weak_ptr<TextFieldPlatformImpl>*>(static_cast<uintptr_t>(backendPointer));
-    delete weak;
+
+    // Postpone deleting in case some other jobs are posted to main thread
+    DAVA::RunOnMainThreadAsync([backendPointer]() {
+        std::weak_ptr<TextFieldPlatformImpl>* weak = reinterpret_cast<std::weak_ptr<TextFieldPlatformImpl>*>(static_cast<uintptr_t>(backendPointer));
+        delete weak;
+    });
 }
 
 JNIEXPORT void JNICALL Java_com_dava_engine_DavaTextField_nativeOnFocusChange(JNIEnv* env, jclass jclazz, jlong backendPointer, jboolean hasFocus)
@@ -39,6 +42,14 @@ JNIEXPORT void JNICALL Java_com_dava_engine_DavaTextField_nativeOnKeyboardShown(
     std::weak_ptr<TextFieldPlatformImpl>* weak = reinterpret_cast<std::weak_ptr<TextFieldPlatformImpl>*>(static_cast<uintptr_t>(backendPointer));
     if (auto backend = weak->lock())
         backend->nativeOnKeyboardShown(env, x, y, w, h);
+}
+
+JNIEXPORT void JNICALL Java_com_dava_engine_DavaTextField_nativeOnKeyboardHidden(JNIEnv* env, jclass jclazz, jlong backendPointer)
+{
+    using DAVA::TextFieldPlatformImpl;
+    std::weak_ptr<TextFieldPlatformImpl>* weak = reinterpret_cast<std::weak_ptr<TextFieldPlatformImpl>*>(static_cast<uintptr_t>(backendPointer));
+    if (auto backend = weak->lock())
+        backend->nativeOnKeyboardHidden(env);
 }
 
 JNIEXPORT void JNICALL Java_com_dava_engine_DavaTextField_nativeOnEnterPressed(JNIEnv* env, jclass jclazz, jlong backendPointer)
@@ -118,12 +129,12 @@ void TextFieldPlatformImpl::Initialize()
     catch (const JNI::Exception& e)
     {
         Logger::Error("[TextFieldControl] failed to init java bridge: %s", e.what());
-        DVASSERT_MSG(false, e.what());
+        DVASSERT(false, e.what());
         return;
     }
 
     std::weak_ptr<TextFieldPlatformImpl>* selfWeakPtr = new std::weak_ptr<TextFieldPlatformImpl>(shared_from_this());
-    jobject obj = window->GetNativeService()->CreateNativeControl("com.dava.engine.DavaTextField", selfWeakPtr);
+    jobject obj = PlatformApi::Android::CreateNativeControl(window, "com.dava.engine.DavaTextField", selfWeakPtr);
     if (obj != nullptr)
     {
         JNIEnv* env = JNI::GetEnv();
@@ -227,7 +238,7 @@ void TextFieldPlatformImpl::SetText(const WideString& text)
 
             if (curText.empty())
             { // Immediately remove sprite image if new text is empty to get rid of some flickering
-                uiTextField->SetSprite(nullptr, 0);
+                uiTextField->RemoveComponent(UIComponent::BACKGROUND_COMPONENT);
             }
         }
     }
@@ -375,7 +386,7 @@ void TextFieldPlatformImpl::SetCursorPos(uint32 pos)
 
 void TextFieldPlatformImpl::nativeOnFocusChange(JNIEnv* env, jboolean hasFocus)
 {
-    Engine::Instance()->RunAsyncOnMainThread([this, hasFocus]() {
+    RunOnMainThreadAsync([this, hasFocus]() {
         OnFocusChanged(hasFocus == JNI_TRUE);
     });
 }
@@ -386,14 +397,26 @@ void TextFieldPlatformImpl::nativeOnKeyboardShown(JNIEnv* env, jint x, jint y, j
                       static_cast<float32>(y),
                       static_cast<float32>(w),
                       static_cast<float32>(h));
-    Engine::Instance()->RunAsyncOnMainThread([this, keyboardRect]() {
-        OnKeyboardShown(keyboardRect);
+
+    RunOnMainThreadAsync([this, keyboardRect]() {
+        const Rect keyboardVirtualRect = window->GetUIControlSystem()->vcs->ConvertInputToVirtual(keyboardRect);
+        OnKeyboardShown(keyboardVirtualRect);
+    });
+}
+
+void TextFieldPlatformImpl::nativeOnKeyboardHidden(JNIEnv* env)
+{
+    RunOnMainThreadAsync([this]() {
+        if (uiTextField != nullptr)
+        {
+            uiTextField->OnKeyboardHidden();
+        }
     });
 }
 
 void TextFieldPlatformImpl::nativeOnEnterPressed(JNIEnv* env)
 {
-    Engine::Instance()->RunAsyncOnMainThread([this]() {
+    RunOnMainThreadAsync([this]() {
         OnEnterPressed();
     });
 }
@@ -402,7 +425,7 @@ jboolean TextFieldPlatformImpl::nativeOnKeyPressed(JNIEnv* env, jint replacement
 {
     bool accept = true;
     WideString s = JNI::JavaStringToWideString(replaceWith, env);
-    Engine::Instance()->RunAndWaitOnMainThread([this, replacementStart, replacementLength, s, &accept]() mutable {
+    RunOnMainThread([this, replacementStart, replacementLength, s, &accept]() mutable {
         accept = OnKeyPressed(replacementStart, replacementLength, s);
     });
     return accept ? JNI_TRUE : JNI_FALSE;
@@ -411,32 +434,64 @@ jboolean TextFieldPlatformImpl::nativeOnKeyPressed(JNIEnv* env, jint replacement
 void TextFieldPlatformImpl::nativeOnTextChanged(JNIEnv* env, jstring newText, jboolean programmaticTextChange)
 {
     WideString s = JNI::JavaStringToWideString(newText, env);
-    Engine::Instance()->RunAsyncOnMainThread([this, s, programmaticTextChange]() {
+    RunOnMainThreadAsync([this, s, programmaticTextChange]() {
         OnTextChanged(s, programmaticTextChange == JNI_TRUE);
     });
 }
 
 void TextFieldPlatformImpl::nativeOnTextureReady(JNIEnv* env, jintArray pixels, jint w, jint h)
 {
-    RefPtr<Sprite> sprite;
+    RefPtr<Image> image;
     if (pixels != nullptr)
     {
         jint* arrayElements = env->GetIntArrayElements(pixels, nullptr);
 
-        ScopedPtr<Image> image(Image::CreateFromData(w, h, FORMAT_RGBA8888, reinterpret_cast<const uint8*>(arrayElements)));
-        ImageConvert::SwapRedBlueChannels(image);
-        sprite.Set(Sprite::CreateFromImage(image, true, false));
+        uint8* imageBytes = reinterpret_cast<uint8*>(arrayElements);
+        image.Set(Image::CreateFromData(w, h, FORMAT_RGBA8888, imageBytes));
+        ImageConvert::SwapRedBlueChannels(image.Get());
 
         // JNI_ABORT tells to free the buffer without copying back the possible changes
         env->ReleaseIntArrayElements(pixels, arrayElements, JNI_ABORT);
     }
 
-    Engine::Instance()->RunAsyncOnMainThread([this, sprite]() {
+    RunOnMainThreadAsync([this, image]() {
         if (uiTextField != nullptr)
         {
-            uiTextField->SetSprite(sprite.Get(), 0);
+            // We cannot create Sprite from texture if renderer is suspended (since it requires to execute OpenGL commands)
+            // So if this is the case, wait until app is resumed and proceed
+
+            if (!Engine::Instance()->IsSuspended())
+            {
+                SetSpriteFromImage(image.Get());
+            }
+            else
+            {
+                std::shared_ptr<SigConnectionID> connectionIdPtr = std::make_shared<SigConnectionID>();
+                *connectionIdPtr = Engine::Instance()->resumed.Connect([this, image, connectionIdPtr]() {
+                    Engine::Instance()->resumed.Disconnect(*connectionIdPtr);
+                    SetSpriteFromImage(image.Get());
+                });
+            }
         }
     });
+}
+
+void TextFieldPlatformImpl::SetSpriteFromImage(Image* image) const
+{
+    if (uiTextField != nullptr)
+    {
+        RefPtr<Sprite> sprite;
+
+        if (image != nullptr)
+        {
+            const Rect textFieldRect = uiTextField->GetRect();
+            RefPtr<Texture> texture(Texture::CreateFromData(FORMAT_RGBA8888, image->GetData(), image->GetWidth(), image->GetHeight(), false));
+            sprite.Set(Sprite::CreateFromTexture(texture.Get(), 0, 0, texture->GetWidth(), texture->GetHeight(), textFieldRect.dx, textFieldRect.dy));
+        }
+
+        UIControlBackground* bg = uiTextField->GetOrCreateComponent<UIControlBackground>();
+        bg->SetSprite(sprite.Get(), 0);
+    }
 }
 
 void TextFieldPlatformImpl::OnFocusChanged(bool hasFocus)
@@ -451,11 +506,10 @@ void TextFieldPlatformImpl::OnFocusChanged(bool hasFocus)
                 uiTextField->SetFocused();
             }
             uiTextField->StartEdit();
-            uiTextField->SetSprite(nullptr, 0);
+            uiTextField->RemoveComponent(UIComponent::BACKGROUND_COMPONENT);
         }
         else
         {
-            uiTextField->OnKeyboardHidden();
             uiTextField->StopEdit();
         }
     }

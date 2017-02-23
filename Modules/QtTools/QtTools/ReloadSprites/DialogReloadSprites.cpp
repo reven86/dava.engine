@@ -7,7 +7,8 @@
 #include "QtTools/ConsoleWidget/LoggerOutputObject.h"
 #include "QtTools/WarningGuard/QtWarningsHandler.h"
 
-#include "TextureCompression/TextureConverter.h"
+#include <Tools/TextureCompression/TextureConverter.h>
+
 PUSH_QT_WARNING_SUPRESSOR
 #include "ui_DialogReloadSprites.h"
 #include <QTimer>
@@ -58,7 +59,7 @@ DialogReloadSprites::DialogReloadSprites(SpritesPacker* packer, QWidget* parent)
         bool ok = gpuMap->GetValue(i, value);
         if (!ok)
         {
-            DVASSERT_MSG(ok, "wrong enum used to create GPU list");
+            DVASSERT(ok, "wrong enum used to create GPU list");
             break;
         }
         ui->comboBox_targetGPU->addItem(gpuMap->ToString(value), value);
@@ -71,7 +72,7 @@ DialogReloadSprites::DialogReloadSprites(SpritesPacker* packer, QWidget* parent)
         bool ok = qualityMap->GetValue(i, value);
         if (!ok)
         {
-            DVASSERT_MSG(ok, "wrong enum used to create quality list");
+            DVASSERT(ok, "wrong enum used to create quality list");
             break;
         }
         ui->comboBox_quality->addItem(qualityMap->ToString(value), value);

@@ -12,7 +12,6 @@
 #include "Render/RHI/rhi_Public.h"
 #include "Functional/Signal.h"
 #include "ModuleManager/ModuleManager.h"
-
 /**
 	\defgroup core Core
 	Application entry point and place where you can find all information about platform indepedent and platform dependent initialization and
@@ -28,7 +27,7 @@ using AppHandle = struct android_app*;
 using AppHandle = uint32;
 #endif
 
-class IPackManager;
+class DLCManager;
 
 namespace Analytics
 {
@@ -256,8 +255,10 @@ public:
     Signal<> systemAppFinished;
     Signal<float32> updated;
 
-    IPackManager& GetPackManager() const;
+    DLCManager& GetPackManager() const;
     Analytics::Core& GetAnalyticsCore() const;
+
+    static void AdjustSystemTimer(int64 adjustMicro);
 
 protected:
     eScreenOrientation screenOrientation;
@@ -294,7 +295,7 @@ private:
     };
     ScreenMetrics screenMetrics;
 
-    std::unique_ptr<IPackManager> packManager;
+    std::unique_ptr<DLCManager> dlcManager;
     std::unique_ptr<Analytics::Core> analyticsCore;
 };
 

@@ -4,7 +4,9 @@
 #if defined(__DAVAENGINE_COREV2__)
 
 #include "Engine/Private/Android/AndroidBridge.h"
+#include "Logger/Logger.h"
 #include "Platform/DeviceInfo.h"
+#include "Time/SystemTimer.h"
 
 namespace DAVA
 {
@@ -30,7 +32,6 @@ JavaVM* GetJVM()
 #include "UI/Private/Android/WebViewControlAndroid.h"
 #include "Debug/DVAssertMessage.h"
 #include "Platform/TemplateAndroid/DeviceInfoAndroid.h"
-#include "Platform/TemplateAndroid/DateTimeAndroid.h"
 #include "Utils/UtilsAndroid.h"
 #include "UI/UITextFieldAndroid.h"
 #include "UI/Private/Android/MovieViewControlAndroid.h"
@@ -363,15 +364,15 @@ DAVA::UIEvent CreateUIEventFromJavaEvent(JNIEnv* env, jobject input,
 
     if (event.phase == DAVA::UIEvent::Phase::JOYSTICK)
     {
-        event.device = DAVA::UIEvent::Device::GAMEPAD;
+        event.device = DAVA::eInputDevices::GAMEPAD;
     }
     else if (event.phase >= DAVA::UIEvent::Phase::CHAR && event.phase <= DAVA::UIEvent::Phase::KEY_UP)
     {
-        event.device = DAVA::UIEvent::Device::KEYBOARD;
+        event.device = DAVA::eInputDevices::KEYBOARD;
     }
     else
     {
-        event.device = DAVA::UIEvent::Device::TOUCH_SURFACE;
+        event.device = DAVA::eInputDevices::TOUCH_SURFACE;
     }
 
     return event;
@@ -501,8 +502,23 @@ void Java_com_dava_framework_JNISurfaceView_nativeProcessFrame(JNIEnv* env, jobj
     }
 }
 
+static DAVA::int64 goBackgroundTimeRelativeToBoot = 0;
+static DAVA::int64 goBackgroundTime = 0;
+
 void Java_com_dava_framework_JNIActivity_nativeOnResume(JNIEnv* env, jobject classthis)
 {
+    if (goBackgroundTimeRelativeToBoot > 0)
+    {
+        DAVA::int64 timeSpentInBackground1 = DAVA::SystemTimer::GetSystemUptimeUs() - goBackgroundTimeRelativeToBoot;
+        DAVA::int64 timeSpentInBackground2 = DAVA::SystemTimer::GetUs() - goBackgroundTime;
+
+        DAVA::Logger::Debug("Time spent in background %lld us (reported by SystemTimer %lld us)", timeSpentInBackground1, timeSpentInBackground2);
+        if (timeSpentInBackground1 - timeSpentInBackground2 > 500000l)
+        {
+            DAVA::Core::AdjustSystemTimer(timeSpentInBackground1 - timeSpentInBackground2);
+        }
+    }
+
     if (core)
     {
         core->StartForeground();
@@ -511,6 +527,9 @@ void Java_com_dava_framework_JNIActivity_nativeOnResume(JNIEnv* env, jobject cla
 
 void Java_com_dava_framework_JNIActivity_nativeOnPause(JNIEnv* env, jobject classthis, jboolean isLock)
 {
+    goBackgroundTimeRelativeToBoot = DAVA::SystemTimer::GetSystemUptimeUs();
+    goBackgroundTime = DAVA::SystemTimer::GetUs();
+
     if (core)
     {
         core->StopForeground(isLock);

@@ -7,6 +7,7 @@
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/YamlNode.h"
 #include "Render/Highlevel/RenderObject.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {

@@ -1,6 +1,9 @@
 #pragma once
 
 #include "TArc/Core/Private/CoreInterface.h"
+#include "TArc/Core/ControllerModule.h"
+#include "TArc/Core/ClientModule.h"
+#include "TArc/Core/ConsoleModule.h"
 #include "TArc/WindowSubSystem/Private/UIManager.h"
 
 #include "Base/BaseTypes.h"
@@ -15,10 +18,6 @@ class Engine;
 
 namespace TArc
 {
-class ClientModule;
-class ControllerModule;
-class ConsoleModule;
-
 // back compatibility
 class CoreInterface;
 
@@ -31,29 +30,48 @@ public:
     template <typename T, typename... Args>
     void CreateModule(Args&&... args)
     {
-        static_assert(std::is_base_of<ConsoleModule, T>::value ||
-                      std::is_base_of<ClientModule, T>::value ||
-                      std::is_base_of<ControllerModule, T>::value,
-                      "Module should be Derived from one of base classes: ControllerModule, ClientModule, ConsoleModule");
+        CreateModule(ReflectedTypeDB::Get<T>(), std::forward<Args>(args)...);
+    }
+
+    template <typename... Args>
+    void CreateModule(const ReflectedType* reflectedType, Args&&... args)
+    {
+        const Type* type = reflectedType->GetType()->Pointer();
+        bool isClientModule = TypeInheritance::CanCast(type, Type::Instance<ClientModule*>());
+        bool isControllerModule = TypeInheritance::CanCast(type, Type::Instance<ControllerModule*>());
+        bool isConsoleModule = TypeInheritance::CanCast(type, Type::Instance<ConsoleModule*>());
+
+        DVASSERT(isClientModule == true || isConsoleModule == true || isConsoleModule, "Module should be Derived from one of base classes: ControllerModule, ClientModule, ConsoleModule");
 
         bool isConsoleMode = IsConsoleMode();
-        bool isConsoleModule = std::is_base_of<ConsoleModule, T>::value;
         if (isConsoleMode == true && isConsoleModule == false)
         {
-            DVASSERT_MSG(false, "In console mode module should be Derived from ConsoleModule");
+            DVASSERT(false, "In console mode module should be Derived from ConsoleModule");
             return;
         }
 
         if (isConsoleMode == false && isConsoleModule == true)
         {
-            DVASSERT_MSG(false, "In GUI mode module should be Derived from ControllerModule or ClientModule");
+            DVASSERT(false, "In GUI mode module should be Derived from ControllerModule or ClientModule");
             return;
         }
 
-        AddModule(new T(std::forward<Args>(args)...));
+        Any object = reflectedType->CreateObject(ReflectedType::CreatePolicy::ByPointer, std::forward<Args>(args)...);
+        if (isControllerModule)
+        {
+            AddModule(object.Cast<ControllerModule*>());
+        }
+        else if (isClientModule)
+        {
+            AddModule(object.Cast<ClientModule*>());
+        }
+        else
+        {
+            AddModule(object.Cast<ConsoleModule*>());
+        }
     }
 
-    DAVA_DEPRECATED(EngineContext* GetEngineContext());
+    DAVA_DEPRECATED(const EngineContext* GetEngineContext());
     DAVA_DEPRECATED(CoreInterface* GetCoreInterface());
     DAVA_DEPRECATED(UI* GetUI());
 
@@ -75,6 +93,7 @@ private:
     void OnWindowCreated(DAVA::Window* w);
     bool HasControllerModule() const;
     void SetInvokeListener(OperationInvoker* proxyInvoker);
+    DAVA::Signal<> syncSignal;
 
 private:
     class Impl;

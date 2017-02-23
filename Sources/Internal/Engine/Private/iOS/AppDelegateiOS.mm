@@ -1,7 +1,6 @@
-#if defined(__DAVAENGINE_COREV2__)
-
 #include "Engine/Private/iOS/AppDelegateiOS.h"
 
+#if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_IPHONE__)
 
 #include "Engine/Private/iOS/CoreNativeBridgeiOS.h"
@@ -19,42 +18,79 @@ extern CoreNativeBridge* coreNativeBridge;
 - (BOOL)application:(UIApplication*)application willFinishLaunchingWithOptions:(NSDictionary*)launchOptions
 {
     bridge = DAVA::Private::coreNativeBridge;
-    return bridge->ApplicationWillFinishLaunchingWithOptions(launchOptions) ? YES : NO;
+    return bridge->ApplicationWillFinishLaunchingWithOptions(application, launchOptions);
 }
 
 - (BOOL)application:(UIApplication*)application didFinishLaunchingWithOptions:(NSDictionary*)launchOptions
 {
-    return bridge->ApplicationDidFinishLaunchingWithOptions(launchOptions) ? YES : NO;
+    return bridge->ApplicationDidFinishLaunchingWithOptions(application, launchOptions);
 }
 
 - (void)applicationDidBecomeActive:(UIApplication*)application
 {
-    bridge->ApplicationDidBecomeActive();
+    bridge->ApplicationDidBecomeActive(application);
 }
 
 - (void)applicationWillResignActive:(UIApplication*)application
 {
-    bridge->ApplicationWillResignActive();
+    bridge->ApplicationWillResignActive(application);
 }
 
 - (void)applicationDidEnterBackground:(UIApplication*)application
 {
-    bridge->ApplicationDidEnterBackground();
+    bridge->ApplicationDidEnterBackground(application);
 }
 
 - (void)applicationWillEnterForeground:(UIApplication*)application
 {
-    bridge->ApplicationWillEnterForeground();
+    bridge->ApplicationWillEnterForeground(application);
 }
 
 - (void)applicationWillTerminate:(UIApplication*)application
 {
-    bridge->ApplicationWillTerminate();
+    bridge->ApplicationWillTerminate(application);
 }
 
 - (void)applicationDidReceiveMemoryWarning:(UIApplication*)application
 {
-    bridge->ApplicationDidReceiveMemoryWarning();
+    bridge->ApplicationDidReceiveMemoryWarning(application);
+}
+
+- (void)application:(UIApplication*)application didReceiveRemoteNotification:(NSDictionary*)userInfo
+{
+    bridge->DidReceiveRemoteNotification(application, userInfo);
+}
+
+- (void)application:(UIApplication*)application didReceiveRemoteNotification:(NSDictionary*)userInfo fetchCompletionHandler:(void (^)(UIBackgroundFetchResult result))completionHandler
+{
+    bridge->DidReceiveRemoteNotificationFetchCompletionHandler(application, userInfo, completionHandler);
+}
+
+- (void)application:(UIApplication*)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData*)deviceToken
+{
+    bridge->DidRegisterForRemoteNotificationsWithDeviceToken(application, deviceToken);
+}
+
+- (void)application:(UIApplication*)application didFailToRegisterForRemoteNotificationsWithError:(NSError*)error
+{
+    bridge->DidFailToRegisterForRemoteNotificationsWithError(application, error);
+}
+
+- (void)application:(UIApplication*)application didReceiveLocalNotification:(UILocalNotification*)notification
+{
+    bridge->ApplicationDidReceiveLocalNotification(application, notification);
+}
+
+- (void)application:(UIApplication*)application handleActionWithIdentifier:(NSString*)identifier
+     forRemoteNotification:(NSDictionary*)userInfo
+         completionHandler:(void (^)())completionHandler
+{
+    bridge->HandleActionWithIdentifier(application, identifier, userInfo, completionHandler);
+}
+
+- (BOOL)application:(UIApplication*)application openURL:(NSURL*)url sourceApplication:(NSString*)sourceApplication annotation:(id)annotation
+{
+    return bridge->OpenURL(application, url, sourceApplication, annotation);
 }
 
 @end

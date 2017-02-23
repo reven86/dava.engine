@@ -1,19 +1,18 @@
 #include "UILayoutSystem.h"
 
-#include "UILinearLayoutComponent.h"
-#include "UIFlowLayoutComponent.h"
-#include "UIAnchorComponent.h"
-#include "UISizePolicyComponent.h"
-
-#include "SizeMeasuringAlgorithm.h"
-#include "LinearLayoutAlgorithm.h"
-#include "FlowLayoutAlgorithm.h"
-#include "AnchorLayoutAlgorithm.h"
-
-#include "UI/UIControl.h"
-#include "UI/Styles/UIStyleSheetPropertyDataBase.h"
-
 #include "Concurrency/Thread.h"
+#include "Debug/ProfilerCPU.h"
+#include "Debug/ProfilerMarkerNames.h"
+#include "Entity/Component.h"
+#include "UI/Layouts/AnchorLayoutAlgorithm.h"
+#include "UI/Layouts/FlowLayoutAlgorithm.h"
+#include "UI/Layouts/LinearLayoutAlgorithm.h"
+#include "UI/Layouts/SizeMeasuringAlgorithm.h"
+#include "UI/Layouts/UIAnchorComponent.h"
+#include "UI/Layouts/UIFlowLayoutComponent.h"
+#include "UI/Layouts/UILinearLayoutComponent.h"
+#include "UI/Layouts/UISizePolicyComponent.h"
+#include "UI/UIControl.h"
 
 namespace DAVA
 {
@@ -78,8 +77,10 @@ void UILayoutSystem::ApplyLayout(UIControl* control)
 
     CollectControls(control, true);
 
-    ProcessAxis(Vector2::AXIS_X);
-    ProcessAxis(Vector2::AXIS_Y);
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::UI_LAYOUTING);
+
+    ProcessAxis(Vector2::AXIS_X, true);
+    ProcessAxis(Vector2::AXIS_Y, true);
 
     ApplySizesAndPositions();
 
@@ -92,8 +93,10 @@ void UILayoutSystem::ApplyLayoutNonRecursive(UIControl* control)
 
     CollectControls(control, false);
 
-    ProcessAxis(Vector2::AXIS_X);
-    ProcessAxis(Vector2::AXIS_Y);
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::UI_LAYOUTING);
+
+    ProcessAxis(Vector2::AXIS_X, false);
+    ProcessAxis(Vector2::AXIS_Y, false);
 
     ApplyPositions();
 
@@ -126,7 +129,8 @@ UIControl* UILayoutSystem::FindNotDependentOnChildrenControl(UIControl* control)
 
 bool UILayoutSystem::HaveToLayoutAfterReorder(const UIControl* control) const
 {
-    static const uint64 sensitiveComponents = UIComponent::LINEAR_LAYOUT_COMPONENT | UIComponent::FLOW_LAYOUT_COMPONENT;
+    static const uint64 sensitiveComponents = MAKE_COMPONENT_MASK(UIComponent::LINEAR_LAYOUT_COMPONENT) |
+    MAKE_COMPONENT_MASK(UIComponent::FLOW_LAYOUT_COMPONENT);
     if ((control->GetAvailableComponentFlags() & sensitiveComponents) != 0)
     {
         return true;
@@ -149,12 +153,13 @@ bool UILayoutSystem::HaveToLayoutAfterReposition(const UIControl* control) const
         return false;
     }
 
-    if ((control->GetAvailableComponentFlags() & UIComponent::ANCHOR_COMPONENT) != 0)
+    if ((control->GetAvailableComponentFlags() & MAKE_COMPONENT_MASK(UIComponent::ANCHOR_COMPONENT)) != 0)
     {
         return true;
     }
 
-    static const uint64 parentComponents = UIComponent::LINEAR_LAYOUT_COMPONENT | UIComponent::FLOW_LAYOUT_COMPONENT;
+    static const uint64 parentComponents = MAKE_COMPONENT_MASK(UIComponent::LINEAR_LAYOUT_COMPONENT) |
+    MAKE_COMPONENT_MASK(UIComponent::FLOW_LAYOUT_COMPONENT);
     if ((parent->GetAvailableComponentFlags() & parentComponents) != 0)
     {
         return true;
@@ -193,9 +198,12 @@ void UILayoutSystem::CollectControlChildren(UIControl* control, int32 parentInde
     }
 }
 
-void UILayoutSystem::ProcessAxis(Vector2::eAxis axis)
+void UILayoutSystem::ProcessAxis(Vector2::eAxis axis, bool processSizes)
 {
-    DoMeasurePhase(axis);
+    if (processSizes)
+    {
+        DoMeasurePhase(axis);
+    }
     DoLayoutPhase(axis);
 }
 

@@ -9,8 +9,8 @@
 #include "UI/UIControlSystem.h"
 
 #if defined(__DAVAENGINE_COREV2__)
-#include "Engine/EngineModule.h"
-#include "Engine/WindowNativeService.h"
+#include "Engine/Engine.h"
+#include "Engine/Ios/PlatformApi.h"
 #else
 #include "Core/Core.h"
 #import "Platform/TemplateiOS/HelperAppDelegate.h"
@@ -197,8 +197,7 @@ WebViewControl::WebViewControl(UIWebView* uiWebView)
 #endif
 {
 #if defined(__DAVAENGINE_COREV2__)
-    WindowNativeService* nativeService = window->GetNativeService();
-    bridge->nativeWebView = static_cast<::UIWebView*>(nativeService->GetUIViewFromPool("UIWebView"));
+    bridge->nativeWebView = static_cast<::UIWebView*>(PlatformApi::Ios::GetUIViewFromPool(window, "UIWebView"));
 #else
     HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
     BackgroundView* backgroundView = [appDelegate renderViewController].backgroundView;
@@ -295,7 +294,8 @@ void WebViewControl::SetImageAsSpriteToControl(void* imagePtr, UIControl& contro
                 DAVA::Sprite* spr = DAVA::Sprite::CreateFromTexture(tex, 0, 0, width, height, rect.dx, rect.dy);
                 DVASSERT(spr);
 
-                control.GetBackground()->SetSprite(spr, 0);
+                UIControlBackground* bg = control.GetOrCreateComponent<UIControlBackground>();
+                bg->SetSprite(spr, 0);
                 DAVA::SafeRelease(spr);
             }
             DAVA::SafeRelease(tex);
@@ -308,11 +308,11 @@ void WebViewControl::SetImageAsSpriteToControl(void* imagePtr, UIControl& contro
 void WebViewControl::RenderToTextureAndSetAsBackgroundSpriteToControl(UIWebView& control)
 {
 #if defined(__DAVAENGINE_COREV2__)
-    UIImage* nativeImage = WindowNativeService::RenderUIViewToUIImage(bridge->nativeWebView);
+    UIImage* nativeImage = PlatformApi::Ios::RenderUIViewToUIImage(bridge->nativeWebView);
 
     if (nativeImage != nullptr)
     {
-        RefPtr<Image> image(WindowNativeService::ConvertUIImageToImage(nativeImage));
+        RefPtr<Image> image(PlatformApi::Ios::ConvertUIImageToImage(nativeImage));
         if (image != nullptr)
         {
             RefPtr<Texture> texture(Texture::CreateFromData(image.Get(), false));
@@ -324,7 +324,8 @@ void WebViewControl::RenderToTextureAndSetAsBackgroundSpriteToControl(UIWebView&
                 RefPtr<Sprite> sprite(Sprite::CreateFromTexture(texture.Get(), 0, 0, width, height, rect.dx, rect.dy));
                 if (sprite != nullptr)
                 {
-                    control.GetBackground()->SetSprite(sprite.Get(), 0);
+                    UIControlBackground* bg = control.GetOrCreateComponent<UIControlBackground>();
+                    bg->SetSprite(sprite.Get(), 0);
                 }
             }
         }
@@ -367,8 +368,7 @@ WebViewControl::~WebViewControl()
     [innerWebView resignFirstResponder];
 
 #if defined(__DAVAENGINE_COREV2__)
-    WindowNativeService* nativeService = window->GetNativeService();
-    nativeService->ReturnUIViewToPool(innerWebView);
+    PlatformApi::Ios::ReturnUIViewToPool(window, innerWebView);
 #else
     HelperAppDelegate* appDelegate = [[UIApplication sharedApplication] delegate];
     BackgroundView* backgroundView = [appDelegate renderViewController].backgroundView;

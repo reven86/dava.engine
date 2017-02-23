@@ -1,3 +1,4 @@
+#include "Logger/Logger.h"
 #include "SharedPreferences.h"
 
 namespace DAVA
@@ -57,6 +58,7 @@ String SharedPreferences::GetStringValue(const String& key)
 
     env->DeleteLocalRef(jkey);
     env->DeleteLocalRef(jdefvalue);
+    env->DeleteLocalRef(jvalue);
 
     return retValue;
 }

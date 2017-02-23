@@ -3,8 +3,7 @@
 #if defined __DAVAENGINE_MACOS__ && !defined DISABLE_NATIVE_WEBVIEW
 
 #if defined(__DAVAENGINE_COREV2__)
-#include "Engine/EngineModule.h"
-#include "Engine/WindowNativeService.h"
+#include "Engine/Engine.h"
 #else
 #include "Platform/TemplateMacOS/MainWindowController.h"
 #include "Platform/TemplateMacOS/CorePlatformMacOS.h"
@@ -19,6 +18,41 @@
 
 #import <WebKit/WebKit.h>
 #import <AppKit/NSWorkspace.h>
+
+#import "Engine/Mac/PlatformApi.h"
+
+// Subclassing from WebView to make workaround:
+// Webview should be hidden while window is resizing
+// (if not, it looks pretty bad for the user)
+@interface MacWebView : WebView
+{
+    NSPoint origin;
+}
+@end
+
+@implementation MacWebView
+- (id)initWithFrame:(NSRect)frame
+{
+    self = [super initWithFrame:frame];
+    return self;
+}
+- (void)viewWillStartLiveResize
+{
+    // Instead of really hidding webview we are moving it
+    // far away from the visible screen because we are not
+    // controlling its visible state directly - there are some
+    // cases when webview is hidden (e.m. by user or by steam overlay)
+    // during window resizing so it should stay hidden after resizing
+    // is compleat
+
+    origin = [self frame].origin;
+    [self setFrameOrigin:NSMakePoint(10000, 10000)];
+}
+- (void)viewDidEndLiveResize
+{
+    [self setFrameOrigin:origin];
+}
+@end
 
 // A delegate is needed to block the context menu. Note - this delegate
 // is informal, so no inheritance from WebUIDelegate needed.
@@ -200,9 +234,7 @@ WebViewControl::WebViewControl(UIWebView* uiWebView)
 {
     bridge->controlUIDelegate = [[WebViewControlUIDelegate alloc] init];
     bridge->policyDelegate = [[WebViewPolicyDelegate alloc] init];
-    bridge->webView = [[WebView alloc] initWithFrame:NSMakeRect(0.0f, 0.0f, 0.0f, 0.0f)
-                                           frameName:nil
-                                           groupName:nil];
+    bridge->webView = [[MacWebView alloc] initWithFrame:NSMakeRect(0.0f, 0.0f, 0.0f, 0.0f)];
     [bridge->webView setWantsLayer:YES];
     [bridge->webView setShouldUpdateWhileOffscreen:YES]; // for rendering to texture
 
@@ -214,7 +246,7 @@ WebViewControl::WebViewControl(UIWebView* uiWebView)
     [bridge->policyDelegate setUiWebViewControl:&uiWebViewControl];
 
 #if defined(__DAVAENGINE_COREV2__)
-    window->GetNativeService()->AddNSView(bridge->webView);
+    PlatformApi::Mac::AddNSView(window, bridge->webView);
 
     windowVisibilityChangedConnection = window->visibilityChanged.Connect(this, &WebViewControl::OnWindowVisibilityChanged);
 #else
@@ -249,7 +281,7 @@ WebViewControl::~WebViewControl()
     bridge->bitmapImageRep = nullptr;
 
 #if defined(__DAVAENGINE_COREV2__)
-    window->GetNativeService()->RemoveNSView(bridge->webView);
+    PlatformApi::Mac::RemoveNSView(window, bridge->webView);
 #else
     [bridge->webView removeFromSuperview];
 #endif
@@ -337,8 +369,8 @@ void WebViewControl::OpenFromBuffer(const String& string, const FilePath& basePa
 
 void WebViewControl::SetRect(const Rect& srcRect)
 {
-    DAVA::Rect r = DAVA::UIControlSystem::Instance()->vcs->ConvertVirtualToInput(srcRect);
-    DAVA::float32 dy = static_cast<DAVA::float32>(DAVA::UIControlSystem::Instance()->vcs->GetInputScreenSize().dy);
+    Rect r = UIControlSystem::Instance()->vcs->ConvertVirtualToInput(srcRect);
+    float32 dy = static_cast<float32>(UIControlSystem::Instance()->vcs->GetInputScreenSize().dy);
     [bridge->webView setFrame:NSMakeRect(r.x, dy - r.y - r.dy, r.dx, r.dy)];
 
     if (isRenderToTexture)
@@ -392,7 +424,7 @@ void WebViewControl::SetRenderToTexture(bool value)
     else
     {
         // remove sprite from UIControl and show native window
-        uiWebViewControl.SetSprite(0, 0);
+        uiWebViewControl.RemoveComponent(UIComponent::BACKGROUND_COMPONENT);
         if (isVisible)
         {
             SetNativeVisible(true);
@@ -429,7 +461,7 @@ void WebViewControl::RenderToTextureAndSetAsBackgroundSpriteToControl(UIWebView&
 
     if (bridge->bitmapImageRep == nullptr)
     {
-        uiWebViewControl.SetSprite(nullptr, 0);
+        uiWebViewControl.RemoveComponent(UIComponent::BACKGROUND_COMPONENT);
         return;
     }
 
@@ -458,7 +490,7 @@ void WebViewControl::RenderToTextureAndSetAsBackgroundSpriteToControl(UIWebView&
     else
     {
         DVASSERT(false && "[WebView] Unexpected bits per pixel value");
-        uiWebViewControl.SetSprite(nullptr, 0);
+        uiWebViewControl.RemoveComponent(UIComponent::BACKGROUND_COMPONENT);
         return;
     }
 
@@ -490,7 +522,8 @@ void WebViewControl::RenderToTextureAndSetAsBackgroundSpriteToControl(UIWebView&
             const Rect& rect = uiWebViewControl.GetRect();
             {
                 RefPtr<Sprite> sprite(Sprite::CreateFromTexture(tex.Get(), 0, 0, w, h, rect.dx, rect.dy));
-                uiWebViewControl.SetSprite(sprite.Get(), 0);
+                UIControlBackground* bg = uiWebViewControl.GetOrCreateComponent<UIControlBackground>();
+                bg->SetSprite(sprite.Get(), 0);
             }
         }
     }

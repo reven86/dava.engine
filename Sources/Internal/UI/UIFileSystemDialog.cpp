@@ -1,14 +1,18 @@
 #include "UI/UIFileSystemDialog.h"
+
+#include <algorithm>
+
+#include "UI/UIButton.h"
 #include "UI/UIList.h"
 #include "UI/UITextField.h"
 #include "UI/UIStaticText.h"
 #include "FileSystem/FileList.h"
-#include "Utils/Utils.h"
+#include "Utils/UTF8Utils.h"
 #include "Core/Core.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 #include "UI/UIControlSystem.h"
-#include <algorithm>
 #include "Render/2D/FTFont.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {
@@ -21,9 +25,9 @@ UIFileSystemDialog::UIFileSystemDialog(const FilePath& _fontPath)
                 )
 {
     fontPath = _fontPath;
-
-    background->SetDrawType(UIControlBackground::DRAW_FILL);
-    background->SetColor(Color(0.5, 0.5, 0.5, 0.75));
+    UIControlBackground* bg = GetOrCreateComponent<UIControlBackground>();
+    bg->SetDrawType(UIControlBackground::DRAW_FILL);
+    bg->SetColor(Color(0.5f, 0.5f, 0.5f, 0.75f));
     SetPivot(Vector2(0.5f, 0.5f));
 
     operationType = OPERATION_LOAD;
@@ -36,8 +40,9 @@ UIFileSystemDialog::UIFileSystemDialog(const FilePath& _fontPath)
     float32 halfBorder = float32(int32(border / 2.0f));
     fileListView = new UIList(Rect(border, border + cellH, size.x - border * 2.0f, size.y - cellH * 3.0f - border * 3.0f), UIList::ORIENTATION_VERTICAL);
     fileListView->SetDelegate(this);
-    fileListView->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
-    fileListView->GetBackground()->SetColor(Color(0.25f, 0.25f, 0.25f, 0.25f));
+    UIControlBackground* fileListViewBg = fileListView->GetOrCreateComponent<UIControlBackground>();
+    fileListViewBg->SetDrawType(UIControlBackground::DRAW_FILL);
+    fileListViewBg->SetColor(Color(0.25f, 0.25f, 0.25f, 0.25f));
     AddControl(fileListView);
 
     lastSelectionTime = 0;
@@ -123,8 +128,9 @@ UIFileSystemDialog::UIFileSystemDialog(const FilePath& _fontPath)
     textField = new UITextField(Rect(textFieldOffset,
                                      positiveButton->relativePosition.y,
                                      negativeButton->relativePosition.x - border - textFieldOffset, cellH));
-    textField->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
-    textField->GetBackground()->SetColor(Color(0.25f, 0.25f, 0.25f, 0.25f));
+    UIControlBackground* textFieldBg = textField->GetOrCreateComponent<UIControlBackground>();
+    textFieldBg->SetDrawType(UIControlBackground::DRAW_FILL);
+    textFieldBg->SetColor(Color(0.25f, 0.25f, 0.25f, 0.25f));
     textField->SetFont(f);
     textField->SetDelegate(this);
 
@@ -180,11 +186,11 @@ void UIFileSystemDialog::SaveFinishing()
         FilePath selectedFile(currentDir);
         if (textField->GetText().find(L".") != textField->GetText().npos)
         {
-            selectedFile += WStringToString(textField->GetText());
+            selectedFile += UTF8Utils::EncodeToUTF8(textField->GetText());
         }
         else
         {
-            selectedFile += (WStringToString(textField->GetText()) + extensionFilter[0]);
+            selectedFile += (UTF8Utils::EncodeToUTF8(textField->GetText()) + extensionFilter[0]);
         }
         OnFileSelected(selectedFile);
         GetParent()->RemoveControl(this);
@@ -306,7 +312,7 @@ void UIFileSystemDialog::OnIndexSelected(int32 index)
 
 void UIFileSystemDialog::RefreshList()
 {
-    workingPath->SetText(StringToWString(currentDir.GetAbsolutePathname()));
+    workingPath->SetText(UTF8Utils::EncodeToWideString(currentDir.GetAbsolutePathname()));
     if (operationType != OPERATION_CHOOSE_DIR)
     {
         positiveButton->SetDisabled(true);
@@ -375,7 +381,7 @@ void UIFileSystemDialog::RefreshList()
                 {
                     lastSelectedIndex = static_cast<int32>(fileUnits.size());
                     positiveButton->SetDisabled(false);
-                    textField->SetText(StringToWString(files->GetFilename(fu.indexInFileList)));
+                    textField->SetText(UTF8Utils::EncodeToWideString(files->GetFilename(fu.indexInFileList)));
                 }
                 String ext = fu.path.GetExtension();
                 std::transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
@@ -454,25 +460,27 @@ UIListCell* UIFileSystemDialog::CellAtIndex(UIList* forList, int32 index)
         text->SetFont(f);
         text->SetTextColor(Color(1.f, 1.f, 1.f, 1.f));
         SafeRelease(f);
-        c->GetBackground()->SetColor(Color(0.75, 0.75, 0.75, 0.5));
+        UIControlBackground* bg = c->GetOrCreateComponent<UIControlBackground>();
+        bg->SetColor(Color(0.75, 0.75, 0.75, 0.5));
     }
     UIStaticText* t = static_cast<UIStaticText*>(c->FindByName("CellText"));
     if (fileUnits[index].type == FUNIT_FILE)
     {
-        t->SetText(StringToWString(fileUnits[index].name));
+        t->SetText(UTF8Utils::EncodeToWideString(fileUnits[index].name));
     }
     else
     {
-        t->SetText(StringToWString("[" + fileUnits[index].name + "]"));
+        t->SetText(UTF8Utils::EncodeToWideString("[" + fileUnits[index].name + "]"));
     }
 
+    UIControlBackground* bg = c->GetOrCreateComponent<UIControlBackground>();
     if (index != lastSelectedIndex)
     {
-        c->GetBackground()->SetDrawType(UIControlBackground::DRAW_ALIGNED);
+        bg->SetDrawType(UIControlBackground::DRAW_ALIGNED);
     }
     else
     {
-        c->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
+        bg->SetDrawType(UIControlBackground::DRAW_FILL);
         lastSelected = c;
     }
 
@@ -493,14 +501,16 @@ void UIFileSystemDialog::OnCellSelected(UIList* forList, UIListCell* selectedCel
 {
     if (lastSelected)
     {
-        lastSelected->GetBackground()->SetDrawType(UIControlBackground::DRAW_ALIGNED);
+        UIControlBackground* bg = lastSelected->GetOrCreateComponent<UIControlBackground>();
+        bg->SetDrawType(UIControlBackground::DRAW_ALIGNED);
     }
-    uint64 curTime = SystemTimer::Instance()->AbsoluteMS();
+    uint64 curTime = SystemTimer::GetMs();
     if (curTime - lastSelectionTime < 330 && lastSelected == selectedCell)
     {
         lastSelected = selectedCell;
         lastSelectedIndex = lastSelected->GetIndex();
-        lastSelected->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
+        UIControlBackground* bg = lastSelected->GetOrCreateComponent<UIControlBackground>();
+        bg->SetDrawType(UIControlBackground::DRAW_FILL);
         lastSelectionTime = curTime;
         OnIndexSelected(lastSelectedIndex);
     }
@@ -508,7 +518,8 @@ void UIFileSystemDialog::OnCellSelected(UIList* forList, UIListCell* selectedCel
     {
         lastSelected = selectedCell;
         lastSelectedIndex = lastSelected->GetIndex();
-        lastSelected->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
+        UIControlBackground* bg = lastSelected->GetOrCreateComponent<UIControlBackground>();
+        bg->SetDrawType(UIControlBackground::DRAW_FILL);
         lastSelectionTime = curTime;
         if (operationType == OPERATION_LOAD)
         {
@@ -525,7 +536,7 @@ void UIFileSystemDialog::OnCellSelected(UIList* forList, UIListCell* selectedCel
         {
             if (fileUnits[selectedCell->GetIndex()].type == FUNIT_FILE)
             {
-                textField->SetText(StringToWString(files->GetPathname(fileUnits[lastSelectedIndex].indexInFileList).GetFilename()));
+                textField->SetText(UTF8Utils::EncodeToWideString(files->GetPathname(fileUnits[lastSelectedIndex].indexInFileList).GetFilename()));
                 positiveButton->SetDisabled(false);
             }
         }

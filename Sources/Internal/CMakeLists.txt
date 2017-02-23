@@ -100,8 +100,6 @@ set( UNITY_IGNORE_LIST              "Internal/Autotesting"
 
 set( UNITY_IGNORE_LIST_APPLE        "DataStorage/Apple/ICloudKeyValue.cpp"
                                     "TemplateMacOS/CoreMacOSPlatformBase.cpp"
-                                    "Notification/LocalNotificationIOS.cpp"
-                                    "Notification/LocalNotificationMac.cpp"
                                     "Concurrency/ThreadPosix.cpp"
                                     "Render/Texture.cpp" 
                                     "Render/RHI/GLES2"
@@ -155,6 +153,16 @@ endif()
 
 if (DAVA_PLATFORM_QT)
     find_package(QT5 REQUIRED Core Gui Widgets QuickWidgets Network)
+
+    list( APPEND DEFINITIONS    -D__DAVAENGINE_QT__
+                                -DDISABLE_NATIVE_WEBVIEW
+                                -DDISABLE_NATIVE_TEXTFIELD
+                                -DDISABLE_NATIVE_MOVIEVIEW )
+
+endif()
+
+if (NOT DEPLOY)
+    list( APPEND DEFINITIONS -DLOCAL_FRAMEWORK_SOURCE_PATH="${DAVA_ROOT_DIR}" )
 endif()
 
 setup_main_module()

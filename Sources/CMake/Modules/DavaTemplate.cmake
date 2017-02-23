@@ -29,20 +29,27 @@
 #set( EXECUTABLE_FLAG            )
 #set( FILE_TREE_CHECK_FOLDERS    )
 #set( DEFINITIONS                )
+#set( DEFINITIONS_${DAVA_PLATFORM_CURENT} )
 #
 
 # Only interpret ``if()`` arguments as variables or keywords when unquoted.
-if(NOT (CMAKE_VERSION VERSION_LESS 3.1))
+#if(NOT (CMAKE_VERSION VERSION_LESS 3.1))
     cmake_policy(SET CMP0054 NEW)
-endif()
+#endif()
 
 macro( setup_main_executable )
 
 include      ( PlatformSettings )
 
+save_property( PROPERTY_LIST 
+               DEFINITIONS
+               DEFINITIONS_${DAVA_PLATFORM_CURENT}
+             )
+
 load_property( PROPERTY_LIST 
         DEFINITIONS                
         DEFINITIONS_${DAVA_PLATFORM_CURENT}
+        GLOBAL_DEFINITIONS
         TARGET_MODULES_LIST  
         BINARY_WIN32_DIR_RELEASE
         BINARY_WIN32_DIR_DEBUG
@@ -58,7 +65,11 @@ load_property( PROPERTY_LIST
         DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}
         INCLUDES
         INCLUDES_${DAVA_PLATFORM_CURENT}
+
+        PLUGIN_LIST
     )
+        
+    list( APPEND DEFINITIONS ${GLOBAL_DEFINITIONS} )
 
 if( COVERAGE )
     string(REPLACE ";" " " TARGET_FOLDERS_${PROJECT_NAME} "${TARGET_FOLDERS_${PROJECT_NAME}}" )
@@ -150,6 +161,7 @@ if( DAVA_FOUND )
     list( APPEND ANDROID_JAVA_LIBS  ${DAVA_THIRD_PARTY_ROOT_PATH}/lib_CMake/android/jar )
     list( APPEND ANDROID_JAVA_SRC   ${DAVA_ENGINE_DIR}/Platform/TemplateAndroid/Java )
     list( APPEND ANDROID_JAVA_SRC   ${DAVA_ENGINE_DIR}/Engine/Private/Android/Java )
+    list( APPEND ANDROID_JAVA_SRC   ${DAVA_ENGINE_DIR}/Notification/Private/Android/Java )
 
 endif()
 
@@ -444,21 +456,38 @@ if (QT5_FOUND)
     link_with_qt5(${PROJECT_NAME})
 endif()
 
-if ( QT5_FOUND AND WIN32 )
+if ( QT5_FOUND )
     set (QTCONF_TARGET_DIR "${CMAKE_BINARY_DIR}/${CMAKE_CFG_INTDIR}")
     if (DEPLOY_DIR AND DEPLOY)
         set (QTCONF_TARGET_DIR ${DEPLOY_DIR})
     endif()
 
+    if (MACOS)
+        set (QTCONF_TARGET_DIR "${QTCONF_TARGET_DIR}/${PROJECT_NAME}.app/Contents/Resources")
+    endif()
     set ( QTCONF_DEPLOY_PATH "${QTCONF_TARGET_DIR}/qt.conf" )
 
     get_filename_component (ABS_QT_PATH "${QT5_LIB_PATH}/../" ABSOLUTE)
     set ( PLUGINS_PATH  ${ABS_QT_PATH}/plugins )
     set ( QML_IMPORT_PATH ${ABS_QT_PATH}/qml)
     set ( QML2_IMPORT_PATH ${ABS_QT_PATH}/qml)
+
+    if (DEPLOY)
+        if ( MACOS )
+            set ( PLUGINS_PATH  "PlugIns" )
+            set ( QML_IMPORT_PATH "Resources/qml" )
+            set ( QML2_IMPORT_PATH "Resources/qml" )
+        elseif( WIN32 )
+            set ( PLUGINS_PATH  "." )
+            set ( QML_IMPORT_PATH "." )
+            set ( QML2_IMPORT_PATH "." )
+        else()
+            ASSERT(false, "Unsuported platform for Qt based application")
+        endif()
+    endif()
  
     configure_file( ${DAVA_CONFIGURE_FILES_PATH}/QtConfTemplate.in
-                             ${CMAKE_CURRENT_BINARY_DIR}/QtConfTemplate.in  )
+                    ${CMAKE_CURRENT_BINARY_DIR}/QtConfTemplate.in )
 
     ADD_CUSTOM_COMMAND( TARGET ${PROJECT_NAME}  POST_BUILD
        COMMAND ${CMAKE_COMMAND} -E copy
@@ -481,10 +510,10 @@ if( ANDROID AND NOT ANDROID_CUSTOM_BUILD )
         # ANDROID_BOOT_CLASSES variable should contain semicolon delimited list of class names
         # Both ANDROID_BOOT_MODULES and ANDROID_BOOT_CLASSES are not required to be set in CMakeLists.txt
         if (ANDROID_BOOT_MODULES)
-            set (ANDROID_BOOT_MODULES "<meta-data android:name=\"boot_modules\" android:value=\"${ANDROID_BOOT_MODULES}\"/>")
+            set (ANDROID_BOOT_MODULES "<meta-data android:name=\"com.dava.engine.BootModules\" android:value=\"${ANDROID_BOOT_MODULES}\"/>")
         endif()
         if (ANDROID_BOOT_CLASSES)
-            set (ANDROID_BOOT_CLASSES "<meta-data android:name=\"boot_classes\" android:value=\"${ANDROID_BOOT_CLASSES}\"/>")
+            set (ANDROID_BOOT_CLASSES "<meta-data android:name=\"com.dava.engine.BootClasses\" android:value=\"${ANDROID_BOOT_CLASSES}\"/>")
         endif()
     endif()
 
@@ -599,6 +628,7 @@ elseif ( WIN32 )
 
     # Generate debug info also in release builds
     set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/DEBUG /SUBSYSTEM:WINDOWS" )
+    set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELWITHDEBINFO "/DEBUG /SUBSYSTEM:WINDOWS" )
 
     if( NOT DAVA_DEBUGGER_WORKING_DIRECTORY )
         set( DAVA_DEBUGGER_WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR} )
@@ -658,7 +688,6 @@ endif()
 list ( APPEND DAVA_FOLDERS ${PROJECT_FOLDERS} )
 list ( APPEND DAVA_FOLDERS ${DAVA_ENGINE_DIR} )
 list ( APPEND DAVA_FOLDERS ${FILE_TREE_CHECK_FOLDERS} )
-list ( APPEND DAVA_FOLDERS ${DAVA_THIRD_PARTY_LIBRARIES_PATH} )
 
 if( WIN32 AND NOT WINDOWS_UAP )
     set( COMMAND_PY dpiAwarness --pathVcxProj ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.vcxproj --typeAwerness PerMonitorHighDPIAware )
@@ -780,7 +809,7 @@ if (NGT_FOUND OR DAVA_NGTTOOLS_FOUND)
 endif()
 
 if( DEPLOY )
-    message( "DEPLOY ${PROJECT_NAME} to ${DEPLOY_DIR}")
+    message( STATUS "DEPLOY ${PROJECT_NAME} to ${DEPLOY_DIR}")
     execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${DEPLOY_DIR} )
     
     if( DEPLOY_TO_BIN OR DEPLOY_TO_BIN_${DAVA_PLATFORM_CURENT} )
@@ -811,7 +840,7 @@ if( DEPLOY )
         endif(APP_DATA)
 
        foreach ( ITEM ${DAVA_THIRD_PARTY_LIBS} )
-            execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${DAVA_TOOLS_BIN_DIR}/${ITEM}  ${DEPLOY_DIR} )
+            execute_process( COMMAND ${CMAKE_COMMAND} -E copy ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/${ITEM}  ${DEPLOY_DIR} )
         endforeach ()
 
         foreach ( ITEM ${ADDITIONAL_DLL_FILES})
@@ -873,6 +902,70 @@ if( DEPLOY )
     if( QT5_FOUND AND NOT QT_POST_DEPLOY )
         qt_deploy( )
     endif()
+
+endif()
+
+if( PLUGIN_LIST )
+    add_dependencies( ${PROJECT_NAME} ${PLUGIN_LIST} )
+
+    if( DEPLOY )
+        set( PLUGIN_OUT_DIR ${DEPLOY_EXECUTE_DIR} )
+    else()
+        set( PLUGIN_OUT_DIR "$<TARGET_FILE_DIR:${PROJECT_NAME}>" )
+    endif()
+
+    foreach( PLUGIN ${PLUGIN_LIST} )
+
+        get_property( ${PLUGIN}_RELATIVE_PATH_TO_FOLDER GLOBAL PROPERTY ${PLUGIN}_RELATIVE_PATH_TO_FOLDER )
+        get_property( ${PLUGIN}_PLUGIN_COPY_ADD_FILES GLOBAL PROPERTY ${PLUGIN}_PLUGIN_COPY_ADD_FILES )
+
+        if( APPLE )
+            set( PLUGIN_OUT_DIR  "${PLUGIN_OUT_DIR}/../PlugIns" )
+        else ()
+            set( PLUGIN_OUT_DIR  "${PLUGIN_OUT_DIR}/PlugIns" )
+        endif()
+
+        if( ${PLUGIN}_RELATIVE_PATH_TO_FOLDER )
+            set( PLUGIN_OUT_DIR ${PLUGIN_OUT_DIR}/${${PLUGIN}_RELATIVE_PATH_TO_FOLDER} )
+        endif()
+
+        set_property( GLOBAL PROPERTY ${PLUGIN}_RELATIVE_PATH_TO_FOLDER )
+
+        foreach( OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES} )
+            string( TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG )
+                        
+            if( APPLE )
+                set_target_properties( ${PLUGIN} PROPERTIES LIBRARY_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${PLUGIN_OUT_DIR} )                
+            else()
+                set_target_properties( ${PLUGIN} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${PLUGIN_OUT_DIR} )
+            endif()
+
+        endforeach( )
+
+        if(  ${PLUGIN}_PLUGIN_COPY_ADD_FILES )
+
+            foreach( ITEM ${${PLUGIN}_PLUGIN_COPY_ADD_FILES} )
+
+                if( IS_DIRECTORY ${ITEM} )
+                    get_filename_component( FOLDER_NAME ${ITEM}  NAME    )
+
+                    add_custom_command ( TARGET ${PROJECT_NAME}  POST_BUILD
+                               COMMAND ${CMAKE_COMMAND} -E copy_directory
+                               ${ITEM}
+                               ${PLUGIN_OUT_DIR}/${FOLDER_NAME} ) 
+
+                else()
+                    add_custom_command ( TARGET ${PROJECT_NAME}  POST_BUILD
+                               COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                               ${ITEM}
+                               ${PLUGIN_OUT_DIR} )                    
+                endif()
+
+            endforeach( )
+
+        endif()
+                    
+    endforeach( )
 
 endif()
 

@@ -8,11 +8,14 @@
 #include "TArc/WindowSubSystem/Private/UIManager.h"
 #include "TArc/Utils/AssertGuard.h"
 #include "TArc/Utils/RhiEmptyFrame.h"
+#include "TArc/Utils/Private/CrashDumpHandler.h"
+#include "TArc/Utils/QtMessageHandler.h"
+#include "TArc/DataProcessing/DataWrappersProcessor.h"
+
 #include "QtTools/Utils/QtDelayedExecutor.h"
 
 #include "Engine/Engine.h"
 #include "Engine/Window.h"
-#include "Engine/NativeService.h"
 #include "Engine/EngineContext.h"
 
 #include "Functional/Function.h"
@@ -30,6 +33,7 @@
 #include <QApplication>
 #include <QOffscreenSurface>
 #include <QOpenGLContext>
+#include <QIcon>
 
 namespace DAVA
 {
@@ -43,12 +47,12 @@ public:
         , core(core_)
         , globalContext(new DataContext())
     {
+        InitCrashDumpHandler();
     }
 
     ~Impl()
     {
         DVASSERT(contexts.empty());
-        DVASSERT(wrappers.empty());
     }
 
     virtual void AddModule(ConsoleModule* module)
@@ -80,8 +84,8 @@ public:
 
     virtual void OnLoopStopped()
     {
+        wrappersProcessor.Shoutdown();
         contexts.clear();
-        wrappers.clear();
         globalContext.reset();
     }
 
@@ -97,7 +101,10 @@ public:
         {
             isInFrame = false;
         };
-        delayedExecutor.DelayedExecute(DAVA::Function<void(void)>(this, &Core::Impl::SyncWrappers));
+        delayedExecutor.DelayedExecute([this]()
+                                       {
+                                           SyncWrappers();
+                                       });
     }
 
     virtual void OnWindowCreated(DAVA::Window* w)
@@ -112,7 +119,7 @@ public:
         }
     }
 
-    uint32 GetContextCount() const
+    uint32 GetContextCount() const override
     {
         return static_cast<uint32>(contexts.size());
     }
@@ -144,29 +151,23 @@ public:
 
     DataWrapper CreateWrapper(const ReflectedType* type) override
     {
-        DataWrapper wrapper(type);
-        wrapper.SetContext(activeContext != nullptr ? activeContext : globalContext.get());
-        wrappers.push_back(wrapper);
-        return wrapper;
+        return wrappersProcessor.CreateWrapper(type, activeContext != nullptr ? activeContext : globalContext.get());
     }
 
     DataWrapper CreateWrapper(const DataWrapper::DataAccessor& accessor) override
     {
-        DataWrapper wrapper(accessor);
-        wrapper.SetContext(activeContext != nullptr ? activeContext : globalContext.get());
-        wrappers.push_back(wrapper);
-        return wrapper;
+        return wrappersProcessor.CreateWrapper(accessor, activeContext != nullptr ? activeContext : globalContext.get());
     }
 
-    PropertiesItem CreatePropertiesNode(const String& nodeName)
+    PropertiesItem CreatePropertiesNode(const String& nodeName) override
     {
         DVASSERT(propertiesHolder != nullptr);
         return propertiesHolder->CreateSubHolder(nodeName);
     }
 
-    EngineContext* GetEngineContext() override
+    const EngineContext* GetEngineContext() override
     {
-        EngineContext* engineContext = engine.GetContext();
+        const EngineContext* engineContext = engine.GetContext();
         DVASSERT(engineContext);
         return engineContext;
     }
@@ -189,37 +190,15 @@ protected:
         BeforeContextSwitch(activeContext, context);
         DataContext* oldContext = activeContext;
         activeContext = context;
-        for (DataWrapper& wrapper : wrappers)
-        {
-            wrapper.SetContext(activeContext != nullptr ? activeContext : globalContext.get());
-        }
+        wrappersProcessor.SetContext(activeContext != nullptr ? activeContext : globalContext.get());
         AfterContextSwitch(activeContext, oldContext);
+        SyncWrappers();
     }
 
     void SyncWrappers()
     {
-        if (recursiveSyncGuard == true)
-        {
-            return;
-        }
-        recursiveSyncGuard = true;
-        size_t index = 0;
-        while (index < wrappers.size())
-        {
-            if (!wrappers[index].IsActive())
-            {
-                DAVA::RemoveExchangingWithLast(wrappers, index);
-            }
-            else
-            {
-                ++index;
-            }
-        }
-        for (DataWrapper& wrapper : wrappers)
-        {
-            wrapper.Sync(true);
-        }
-        recursiveSyncGuard = false;
+        wrappersProcessor.Sync();
+        core->syncSignal.Emit();
     }
 
 protected:
@@ -229,12 +208,11 @@ protected:
     std::unique_ptr<DataContext> globalContext;
     Vector<std::unique_ptr<DataContext>> contexts;
     DataContext* activeContext = nullptr;
-    Vector<DataWrapper> wrappers;
+    DataWrappersProcessor wrappersProcessor;
     bool isInFrame = false;
 
     std::unique_ptr<PropertiesHolder> propertiesHolder;
     QtDelayedExecutor delayedExecutor;
-    bool recursiveSyncGuard = false;
 };
 
 class Core::ConsoleImpl : public Core::Impl
@@ -304,7 +282,7 @@ public:
         rendererParams.scaleY = 1.0f;
         Renderer::Initialize(renderer, rendererParams);
 
-        EngineContext* engineContext = engine.GetContext();
+        const EngineContext* engineContext = engine.GetContext();
         VirtualCoordinatesSystem* vcs = engineContext->uiControlSystem->vcs;
         vcs->SetInputScreenAreaSize(rendererParams.width, rendererParams.height);
         vcs->SetPhysicalScreenSize(rendererParams.width, rendererParams.height);
@@ -336,13 +314,18 @@ public:
             RhiEmptyFrame frame;
             if (modules.front()->OnFrame() == ConsoleModule::eFrameResult::FINISHED)
             {
+                if (exitCode == 0)
+                {
+                    exitCode = modules.front()->GetExitCode();
+                }
+
                 modules.front()->BeforeDestroyed();
                 modules.pop_front();
             }
 
             if (modules.empty() == true)
             {
-                engine.Quit(0);
+                engine.QuitAsync(exitCode);
             }
         }
         context->swapBuffers(surface);
@@ -421,6 +404,7 @@ private:
     QOpenGLContext* context = nullptr;
     int argc = 0;
     Vector<char*> argv;
+    int exitCode = 0;
 };
 
 class Core::GuiImpl : public Core::Impl, public UIManager::Delegate
@@ -455,13 +439,12 @@ public:
 
     void OnLoopStarted() override
     {
+        qInstallMessageHandler(&DAVAMessageHandler);
         Impl::OnLoopStarted();
 
-        ToolsAssetGuard::Instance()->Init();
-
-        engine.GetNativeService()->GetApplication()->setWindowIcon(QIcon(":/icons/appIcon.ico"));
+        PlatformApi::Qt::GetApplication()->setWindowIcon(QIcon(":/icons/appIcon.ico"));
         uiManager.reset(new UIManager(this, propertiesHolder->CreateSubHolder("UIManager")));
-        DVASSERT_MSG(controllerModule != nullptr, "Controller Module hasn't been registered");
+        DVASSERT(controllerModule != nullptr, "Controller Module hasn't been registered");
         for (std::unique_ptr<ClientModule>& module : modules)
         {
             module->Init(this, uiManager.get());
@@ -594,7 +577,7 @@ public:
 
     RenderWidget* GetRenderWidget() const override
     {
-        return engine.GetNativeService()->GetRenderWidget();
+        return PlatformApi::Qt::GetRenderWidget();
     }
 
     void Invoke(int operationId) override
@@ -661,22 +644,27 @@ public:
         DVASSERT(controllerModule != nullptr);
         bool result = true;
         QCloseEvent closeEvent;
+        String requestWindowText;
         if (controllerModule->ControlWindowClosing(key, &closeEvent))
         {
             result = closeEvent.isAccepted();
         }
-        else if (controllerModule->CanWindowBeClosedSilently(key) == false)
+        else if (controllerModule->CanWindowBeClosedSilently(key, requestWindowText) == false)
         {
+            if (requestWindowText.empty())
+            {
+                requestWindowText = "Some files have been modified\nDo you want to save changes?";
+            }
             ModalMessageParams params;
-            params.buttons = ModalMessageParams::Buttons(ModalMessageParams::Yes | ModalMessageParams::No | ModalMessageParams::Cancel);
-            params.message = "Some files have been modified\nDo you want to save changes?";
+            params.buttons = ModalMessageParams::Buttons(ModalMessageParams::SaveAll | ModalMessageParams::NoToAll | ModalMessageParams::Cancel);
+            params.message = QString::fromStdString(requestWindowText);
             params.title = "Save Changes?";
             ModalMessageParams::Button resultButton = uiManager->ShowModalMessage(key, params);
-            if (resultButton == ModalMessageParams::Yes)
+            if (resultButton == ModalMessageParams::SaveAll)
             {
                 controllerModule->SaveOnWindowClose(key);
             }
-            else if (resultButton == ModalMessageParams::No)
+            else if (resultButton == ModalMessageParams::NoToAll)
             {
                 controllerModule->RestoreOnWindowClose(key);
             }
@@ -721,7 +709,7 @@ private:
         }
     }
 
-    void AfterContextSwitch(DataContext* currentContext, DataContext* oldOne)
+    void AfterContextSwitch(DataContext* currentContext, DataContext* oldOne) override
     {
         for (std::unique_ptr<ClientModule>& module : modules)
         {
@@ -778,7 +766,7 @@ Core::Core(Engine& engine, bool connectSignals)
 
 Core::~Core() = default;
 
-EngineContext* Core::GetEngineContext()
+const EngineContext* Core::GetEngineContext()
 {
     return impl->GetEngineContext();
 }

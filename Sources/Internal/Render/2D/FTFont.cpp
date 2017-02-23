@@ -2,7 +2,7 @@
 #include "Render/2D/FTFont.h"
 #include "Render/2D/FontManager.h"
 #include "Logger/Logger.h"
-#include "Utils/Utils.h"
+#include "Utils/UTF8Utils.h"
 #include "Debug/DVAssert.h"
 #include "FileSystem/File.h"
 #include "Core/Core.h"
@@ -12,26 +12,7 @@
 #include "FileSystem/FilePath.h"
 #include "UI/UIControlSystem.h"
 
-#ifdef __DAVAENGINE_WIN_UAP__
-#define generic GenericFromFreeTypeLibrary
-#endif
-
-#ifdef __clang__
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wold-style-cast"
-#endif
-
-#include <ft2build.h>
-#include <freetype/ftglyph.h>
-#include FT_FREETYPE_H
-
-#ifdef __clang__
-#pragma clang diagnostic pop
-#endif
-
-#ifdef __DAVAENGINE_WIN_UAP__
-#undef generic
-#endif
+#include "Render/2D/Private/FTManager.h"
 
 namespace DAVA
 {
@@ -42,19 +23,15 @@ using FontMap = Map<String, FTInternalFont*>;
 #endif //#ifdef USE_FILEPATH_IN_MAP
 FontMap fontMap;
 
-class FTInternalFont : public BaseObject
+class FTInternalFont : public BaseObject, public FTManager::FaceID
 {
     friend class FTFont;
-    FilePath fontPath;
-    FT_StreamRec streamFont;
-    File* fontFile;
 
 private:
     FTInternalFont(const FilePath& path);
     virtual ~FTInternalFont();
 
 public:
-    FT_Face face;
     Font::StringMetrics DrawString(const WideString& str, void* buffer, int32 bufWidth, int32 bufHeight,
                                    uint8 r, uint8 g, uint8 b, uint8 a,
                                    float32 size, bool realDraw,
@@ -63,52 +40,66 @@ public:
                                    float32 ascendScale, float32 descendScale,
                                    Vector<float32>* charSizes = NULL,
                                    bool contentScaleIncluded = false);
-    uint32 GetFontHeight(float32 size, float32 ascendScale, float32 descendScale) const;
+    uint32 GetFontHeight(float32 size, float32 ascendScale, float32 descendScale);
+    bool IsCharAvaliable(char16 ch);
 
-    bool IsCharAvaliable(char16 ch) const;
-
-    virtual int32 Release();
+    // FaceID methods
+    FT_Error OpenFace(FT_Library library, FT_Face* ftface) override;
 
 private:
-    void SetFTCharSize(float32 size) const;
-
-    static Mutex drawStringMutex;
+    FTManager* ftm = nullptr;
+    FilePath fontPath;
+    FT_StreamRec stream;
 
     struct Glyph
     {
-        Glyph()
-            : index(0)
-            , image(0)
-            , delta(0){};
+        FT_UInt index = 0;
+        FT_Glyph image = nullptr; /* the glyph image */
+        FT_Pos delta = 0; /* delta caused by hinting */
 
         bool operator<(const Glyph& right) const
         {
             return image < right.image;
         };
-
-        FT_UInt index;
-        FT_Glyph image; /* the glyph image */
-
-        FT_Pos delta; /* delta caused by hinting */
     };
     Vector<Glyph> glyphs;
 
     void ClearString();
-    int32 LoadString(const WideString& str);
-    void Prepare(FT_Vector* advances);
+    int32 LoadString(float32 size, const WideString& str);
+    void Prepare(FT_Face face, FT_Vector* advances);
 
     inline int32 FtRound(int32 val);
     inline int32 FtCeil(int32 val);
 
-    static unsigned long StreamLoad(FT_Stream stream, unsigned long offset, uint8* buffer, unsigned long count);
-    static void StreamClose(FT_Stream stream);
-
+    static Mutex drawStringMutex;
     static const int32 ftToPixelShift; // Int value for shift to convert FT point to pixel
     static const float32 ftToPixelScale; // Float value to convert FT point to pixel
 };
 
 const int32 FTInternalFont::ftToPixelShift = 6;
-const float32 FTInternalFont::ftToPixelScale = 64.f;
+const float32 FTInternalFont::ftToPixelScale = 1.f / 64.f;
+
+////////////////////////////////////////////////////////////////////////////////
+
+namespace FTFontDetails
+{
+unsigned long StreamLoad(FT_Stream stream, unsigned long offset, unsigned char* buffer, unsigned long count)
+{
+    File* is = reinterpret_cast<File*>(stream->descriptor.pointer);
+    if (count == 0)
+        return 0;
+    is->Seek(int32(offset), File::SEEK_FROM_START);
+    return is->Read(buffer, uint32(count));
+}
+
+void StreamClose(FT_Stream stream)
+{
+    File* file = reinterpret_cast<File*>(stream->descriptor.pointer);
+    SafeRelease(file);
+}
+}
+
+////////////////////////////////////////////////////////////////////////////////
 
 FTFont::FTFont(FTInternalFont* _internalFont)
 {
@@ -137,12 +128,6 @@ FTFont* FTFont::Create(const FilePath& path)
     if (!iFont)
     {
         iFont = new FTInternalFont(path);
-        if (!iFont->face)
-        {
-            SafeRelease(iFont);
-            return NULL;
-        }
-
         fontMap[FILEPATH_MAP_KEY(path)] = iFont;
     }
 
@@ -165,13 +150,10 @@ FTFont* FTFont::Clone() const
 {
     FTFont* retFont = new FTFont(internalFont);
     retFont->size = size;
-
     retFont->verticalSpacing = verticalSpacing;
     retFont->ascendScale = ascendScale;
     retFont->descendScale = descendScale;
-
     retFont->fontPath = fontPath;
-
     return retFont;
 }
 
@@ -257,7 +239,7 @@ DAVA::float32 FTFont::GetDescendScale() const
     return descendScale;
 }
 
-//////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
 
 Mutex FTInternalFont::drawStringMutex;
 
@@ -279,61 +261,71 @@ FT_Long FT_MulFix_Wrapper(FT_Long a, FT_Long b)
 
 FTInternalFont::FTInternalFont(const FilePath& path)
     : fontPath(path)
-    , streamFont()
-    , fontFile(NULL)
-    , face(NULL)
 {
-    FilePath pathName(path);
-    pathName.ReplaceDirectory(path.GetDirectory() + (LocalizationSystem::Instance()->GetCurrentLocale() + "/"));
+    ftm = FontManager::Instance()->GetFT();
+    DVASSERT(ftm);
 
-    fontFile = File::Create(pathName, File::READ | File::OPEN);
-    if (!fontFile)
+    FT_Face face = nullptr;
+    FT_Error error = ftm->LookupFace(this, &face);
+    if (error != FT_Err_Ok || face == nullptr)
     {
-        fontFile = File::Create(path, File::READ | File::OPEN);
-        if (!fontFile)
-        {
-            Logger::Error("Failed to open font: %s", path.GetStringValue().c_str());
-            return;
-        }
-    }
-
-    Memset(&streamFont, 0, sizeof(FT_StreamRec));
-    streamFont.descriptor.pointer = static_cast<void*>(fontFile);
-    streamFont.size = static_cast<uint32>(fontFile->GetSize());
-    streamFont.read = &StreamLoad;
-    streamFont.close = &StreamClose;
-
-    FT_Open_Args args = { 0 };
-    args.flags = FT_OPEN_STREAM;
-    args.stream = &streamFont;
-
-    FT_Error error = FT_Open_Face(FontManager::Instance()->GetFTLibrary(), &args, 0, &face);
-    if (error == FT_Err_Unknown_File_Format)
-    {
-        Logger::Error("FTInternalFont::FTInternalFont FT_Err_Unknown_File_Format: %s", fontFile->GetFilename().GetStringValue().c_str());
-    }
-    else if (error)
-    {
-        Logger::Error("FTInternalFont::FTInternalFont cannot create font(no file?): %s", fontFile->GetFilename().GetStringValue().c_str());
+        DVASSERT(false, "Error on lookup FT face");
     }
 }
 
 FTInternalFont::~FTInternalFont()
 {
     ClearString();
-
-    FT_Done_Face(face);
-    SafeRelease(fontFile);
+    ftm->RemoveFace(this);
 }
 
-int32 FTInternalFont::Release()
+FT_Error FTInternalFont::OpenFace(FT_Library library, FT_Face* ftface)
 {
-    // 	if(1 == GetRetainCount())
-    // 	{
-    // 		fontMap.erase(fontPath.GetAbsolutePathname());
-    // 	}
+    FilePath localizedPath(fontPath);
+    localizedPath.ReplaceDirectory(fontPath.GetDirectory() + (LocalizationSystem::Instance()->GetCurrentLocale() + "/"));
 
-    return BaseObject::Release();
+    File* fontFile = File::Create(localizedPath, File::READ | File::OPEN); // try to open localized font
+    if (!fontFile)
+    {
+        fontFile = File::Create(fontPath, File::READ | File::OPEN); // try to open base font
+        if (!fontFile)
+        {
+            Logger::Error("Failed to open font: %s", fontPath.GetStringValue().c_str());
+            return FT_Err_Cannot_Open_Resource;
+        }
+    }
+
+    stream.base = 0;
+    stream.size = static_cast<uint32>(fontFile->GetSize());
+    stream.pos = 0;
+    stream.descriptor.pointer = static_cast<void*>(fontFile);
+    stream.pathname.pointer = 0;
+    stream.read = &FTFontDetails::StreamLoad;
+    stream.close = &FTFontDetails::StreamClose;
+    stream.memory = 0;
+    stream.cursor = 0;
+    stream.limit = 0;
+
+    FT_Open_Args args;
+    args.flags = FT_OPEN_STREAM;
+    args.memory_base = 0;
+    args.memory_size = 0;
+    args.pathname = 0;
+    args.stream = &stream;
+    args.driver = 0;
+    args.num_params = 0;
+    args.params = 0;
+
+    FT_Error error = FT_Open_Face(library, &args, 0, ftface);
+    if (error == FT_Err_Unknown_File_Format)
+    {
+        Logger::Error("FTInternalFont::FTInternalFont FT_Err_Unknown_File_Format: %s", fontFile->GetFilename().GetStringValue().c_str());
+    }
+    else if (error)
+    {
+        Logger::Error("FTInternalFont::FTInternalFont cannot create font: %s", fontFile->GetFilename().GetStringValue().c_str());
+    }
+    return error;
 }
 
 Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void* buffer, int32 bufWidth, int32 bufHeight,
@@ -347,24 +339,9 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void* buff
 {
     drawStringMutex.Lock();
 
-    SetFTCharSize(size);
+    bool drawNondefGlyph = Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DRAW_NONDEF_GLYPH);
 
-    FT_Error error;
-
-    // virtualToPhysicalFactor scaling
-    {
-        FT_Fixed mul = 1 << 16;
-        FT_Matrix matrix;
-        matrix.xx = FT_Fixed(UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalX(float32(mul)));
-        matrix.xy = 0;
-        matrix.yx = 0;
-        matrix.yy = FT_Fixed(UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalY(float32(mul)));
-        FT_Set_Transform(face, &matrix, 0);
-    }
-
-    int32 faceBboxYMin = int32(FT_MulFix_Wrapper(face->bbox.yMin, face->size->metrics.y_scale) * descendScale);
-    int32 faceBboxYMax = int32(FT_MulFix_Wrapper(face->bbox.yMax, face->size->metrics.y_scale) * ascendScale);
-
+    size = UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalY(size); // increase size for high dpi screens
     if (!contentScaleIncluded)
     {
         bufWidth = int32(UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalX(float32(bufWidth)));
@@ -373,21 +350,30 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void* buff
         offsetX = int32(UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalX(float32(offsetX)));
     }
 
+    FT_Size ft_size = nullptr;
+    FT_Error error = ftm->LookupSize(this, size, &ft_size);
+
+    if (error != FT_Err_Ok)
+    {
+        Logger::Error("[FTInternalFont::DrawString] LookupSize error %d", error);
+        return Font::StringMetrics();
+    }
+
+    int32 faceBboxYMin = int32(FT_MulFix_Wrapper(ft_size->face->bbox.yMin, ft_size->metrics.y_scale) * descendScale); // draw offset
+    int32 faceBboxYMax = int32(FT_MulFix_Wrapper(ft_size->face->bbox.yMax, ft_size->metrics.y_scale) * ascendScale); // baseline
+
     FT_Vector pen;
     pen.x = offsetX << ftToPixelShift;
     pen.y = offsetY << ftToPixelShift;
-    pen.y -= FT_Pos(UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalY(float32(faceBboxYMin))); //bring baseline up
+    pen.y -= FT_Pos(faceBboxYMin); //bring baseline up
 
-    uint8* resultBuf = static_cast<uint8*>(buffer);
-
-    int32 countSpace = LoadString(str);
+    int32 countSpace = LoadString(size, str);
     uint32 strLen = uint32(str.length());
     FT_Vector* advances = new FT_Vector[strLen];
-    Prepare(advances);
+    Prepare(ft_size->face, advances);
 
-    float32 bboxSize = std::ceil((faceBboxYMax - faceBboxYMin) / ftToPixelScale);
-    int32 baseSize = int32(std::ceil(UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalX(bboxSize)));
-    int32 multilineOffsetY = baseSize + offsetY * 2;
+    float32 baseSize = (faceBboxYMax - faceBboxYMin) * ftToPixelScale;
+    int32 multilineOffsetY = int32(std::ceil(baseSize)) + offsetY * 2;
 
     int32 justifyOffset = 0;
     int32 fixJustifyOffset = 0;
@@ -399,13 +385,11 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void* buff
     }
 
     Font::StringMetrics metrics;
-    metrics.baseline = int32(std::ceil(UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalX(faceBboxYMax / ftToPixelScale)));
+    metrics.baseline = faceBboxYMax * ftToPixelScale;
     metrics.height = baseSize;
-    metrics.drawRect = Rect2i(0x7fffffff, 0x7fffffff, 0, baseSize); // Setup rect with maximum int32 value for x/y, and zero width
+    metrics.drawRect = Rect2i(0x7fffffff, 0x7fffffff, 0, int32(std::ceil(baseSize))); // Setup rect with maximum int32 value for x/y, and zero width
 
     int32 layoutWidth = 0; // width in FT points
-
-    bool drawNondefGlyph = Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DRAW_NONDEF_GLYPH);
 
     for (uint32 i = 0; i < strLen; ++i)
     {
@@ -433,15 +417,17 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void* buff
                     }
                 }
 
-                error = FT_Glyph_Transform(image, 0, &pen);
+                error = FT_Glyph_Transform(image, nullptr, &pen);
                 if (error == 0)
                 {
                     FT_Glyph_Get_CBox(image, FT_GLYPH_BBOX_PIXELS, &bbox);
-                    error = FT_Glyph_To_Bitmap(&image, FT_RENDER_MODE_NORMAL, 0, 1);
-
-                    skipGlyph = error != 0;
+                    if (realDraw)
+                    {
+                        error = FT_Glyph_To_Bitmap(&image, FT_RENDER_MODE_NORMAL, 0, 1);
+                    }
                 }
             }
+            skipGlyph = error != 0;
         }
 
         if (skipGlyph)
@@ -454,38 +440,45 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void* buff
         }
         else
         {
-            FT_BitmapGlyph bit = FT_BitmapGlyph(image);
-            FT_Bitmap* bitmap = &bit->bitmap;
-
-            int32 left = bit->left;
-            int32 top = multilineOffsetY - bit->top;
-            int32 width = bitmap->width;
-            int32 height = bitmap->rows;
-
-            if (glyph.index == 0)
-            {
-                width = int32(advances[i].x) >> ftToPixelShift;
-                height = 2 * metrics.baseline - metrics.height;
-                left = int32(pen.x) >> ftToPixelShift;
-                top = multilineOffsetY - (int32(pen.y) >> ftToPixelShift) - height;
-            }
-
             if (charSizes)
             {
-                float32 charSize = float32(advances[i].x) / ftToPixelScale; // Convert to pixels
+                float32 charSize = float32(advances[i].x) * ftToPixelScale; // Convert to pixels
                 charSize = UIControlSystem::Instance()->vcs->ConvertPhysicalToVirtualX(charSize); // Convert to virtual space
                 charSizes->push_back(charSize);
             }
 
             layoutWidth += advances[i].x;
+            metrics.drawRect.x = Min(metrics.drawRect.x, int32(bbox.xMin));
+            metrics.drawRect.y = Min(metrics.drawRect.y, multilineOffsetY - int32(bbox.yMax));
+            metrics.drawRect.dx = Max(metrics.drawRect.dx, int32(bbox.xMax));
+            metrics.drawRect.dy = Max(metrics.drawRect.dy, multilineOffsetY - int32(bbox.yMin));
 
-            metrics.drawRect.x = Min(metrics.drawRect.x, left);
-            metrics.drawRect.y = Min(metrics.drawRect.y, top);
-            metrics.drawRect.dx = Max(metrics.drawRect.dx, left + width);
-            metrics.drawRect.dy = Max(metrics.drawRect.dy, top + height);
-
-            if (realDraw && bbox.xMin < bufWidth && bbox.yMin < bufHeight && top >= 0)
+            if (realDraw && bbox.xMin < bufWidth && bbox.yMin < bufHeight)
             {
+                FT_BitmapGlyph bit = FT_BitmapGlyph(image);
+                FT_Bitmap* bitmap = &bit->bitmap;
+
+                int32 left = bit->left;
+                int32 top = multilineOffsetY - bit->top;
+                int32 width = bitmap->width;
+                int32 height = bitmap->rows;
+
+                if (top < 0)
+                {
+                    pen.x += advances[i].x;
+                    pen.y += advances[i].y;
+                    continue;
+                }
+
+                if (glyph.index == 0) // guess bitmap dimensions for empty bitmap
+                {
+                    width = int32(advances[i].x) >> ftToPixelShift;
+                    height = int32(std::ceil(2 * metrics.baseline - metrics.height));
+                    left = int32(pen.x) >> ftToPixelShift;
+                    top = multilineOffsetY - (int32(pen.y) >> ftToPixelShift) - height;
+                }
+
+                uint8* resultBuf = static_cast<uint8*>(buffer);
                 int32 realH = Min(height, bufHeight - top);
                 int32 realW = Min(width, bufWidth - left);
                 int32 ind = top * bufWidth + left;
@@ -551,7 +544,7 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void* buff
     metrics.drawRect.dy += -metrics.drawRect.y + 1;
 
     // Transform width from FT points to pixels
-    float32 totalWidth = float32(layoutWidth) / ftToPixelScale;
+    float32 totalWidth = float32(layoutWidth) * ftToPixelScale;
 
     if (!contentScaleIncluded)
     {
@@ -559,47 +552,38 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void* buff
         metrics.drawRect.y = int32(std::floor(UIControlSystem::Instance()->vcs->ConvertPhysicalToVirtualY(float32(metrics.drawRect.y))));
         metrics.drawRect.dx = int32(std::ceil(UIControlSystem::Instance()->vcs->ConvertPhysicalToVirtualX(float32(metrics.drawRect.dx))));
         metrics.drawRect.dy = int32(std::ceil(UIControlSystem::Instance()->vcs->ConvertPhysicalToVirtualY(float32(metrics.drawRect.dy))));
-        metrics.baseline = int32(std::ceil(UIControlSystem::Instance()->vcs->ConvertPhysicalToVirtualX(float32(metrics.baseline))));
-        metrics.height = int32(std::ceil(UIControlSystem::Instance()->vcs->ConvertPhysicalToVirtualY(float32(metrics.height))));
-        metrics.width = int32(std::ceil(UIControlSystem::Instance()->vcs->ConvertPhysicalToVirtualX(totalWidth)));
+        metrics.baseline = UIControlSystem::Instance()->vcs->ConvertPhysicalToVirtualX(metrics.baseline);
+        metrics.height = UIControlSystem::Instance()->vcs->ConvertPhysicalToVirtualY(metrics.height);
+        metrics.width = UIControlSystem::Instance()->vcs->ConvertPhysicalToVirtualX(totalWidth);
     }
     else
     {
-        metrics.width = int32(std::ceil(totalWidth));
+        metrics.width = totalWidth;
     }
     return metrics;
 }
 
-bool FTInternalFont::IsCharAvaliable(char16 ch) const
+bool FTInternalFont::IsCharAvaliable(char16 ch)
 {
-    return FT_Get_Char_Index(face, ch) != 0;
+    uint32 index = ftm->LookupGlyphIndex(this, ch);
+    return index != 0;
 }
 
-uint32 FTInternalFont::GetFontHeight(float32 size, float32 ascendScale, float32 descendScale) const
+uint32 FTInternalFont::GetFontHeight(float32 size, float32 ascendScale, float32 descendScale)
 {
-    drawStringMutex.Lock();
-
-    SetFTCharSize(size);
-    float32 yMax = FT_MulFix_Wrapper(face->bbox.yMax, face->size->metrics.y_scale) * ascendScale;
-    float32 yMin = FT_MulFix_Wrapper(face->bbox.yMin, face->size->metrics.y_scale) * descendScale;
-    uint32 height = uint32(std::ceil((yMax - yMin) / ftToPixelScale));
-
-    drawStringMutex.Unlock();
-
-    return height;
-}
-
-void FTInternalFont::SetFTCharSize(float32 size) const
-{
-    FT_Error error = FT_Set_Char_Size(face, 0, int32(size * ftToPixelScale), 0, FT_UInt(Font::GetDPI()));
-
-    if (error)
+    size = UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalY(size); // increase size for high dpi screens
+    FT_Size ft_size = nullptr;
+    if (ftm->LookupSize(this, size, &ft_size) == FT_Err_Ok)
     {
-        Logger::Error("FTInternalFont::FT_Set_Char_Size");
+        int32 faceBboxYMin = int32(FT_MulFix_Wrapper(ft_size->face->bbox.yMin, ft_size->metrics.y_scale) * descendScale); // draw offset
+        int32 faceBboxYMax = int32(FT_MulFix_Wrapper(ft_size->face->bbox.yMax, ft_size->metrics.y_scale) * ascendScale); // baseline
+        float32 height = std::ceil((faceBboxYMax - faceBboxYMin) * ftToPixelScale);
+        return uint32(std::ceil(UIControlSystem::Instance()->vcs->ConvertPhysicalToVirtualX(height))); // cover height to virtual coordinates back
     }
+    return 0;
 }
 
-void FTInternalFont::Prepare(FT_Vector* advances)
+void FTInternalFont::Prepare(FT_Face face, FT_Vector* advances)
 {
     FT_Vector* prevAdvance = 0;
     FT_UInt prevIndex = 0;
@@ -611,8 +595,8 @@ void FTInternalFont::Prepare(FT_Vector* advances)
         Glyph& glyph = glyphs[i];
 
         advances[i] = glyph.image->advance;
-        advances[i].x >>= 10;
-        advances[i].y >>= 10;
+        advances[i].x >>= 10; // Translate advances in
+        advances[i].y >>= 10; // 16.16 to 26.6 format
 
         if (prevAdvance)
         {
@@ -624,8 +608,8 @@ void FTInternalFont::Prepare(FT_Vector* advances)
                 // converts only glyph advances without kerning.
                 // It used for mobile platforms with different DPI and scale factor (iOS/Android).
                 // See http://www.freetype.org/freetype2/docs/reference/ft2-base_interface.html#FT_Set_Transform
-                prevAdvance->x += static_cast<FT_Pos>(UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalX(static_cast<float32>(kern.x)));
-                prevAdvance->y += static_cast<FT_Pos>(UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalY(static_cast<float32>(kern.y)));
+                prevAdvance->x += kern.x;
+                prevAdvance->y += kern.y;
                 prevAdvance->x += glyph.delta;
             }
         }
@@ -636,38 +620,16 @@ void FTInternalFont::Prepare(FT_Vector* advances)
 
 void FTInternalFont::ClearString()
 {
-    //TODO: temporary fix for
-    Set<Glyph> clearedGlyphs;
-    clearedGlyphs.insert(glyphs.begin(), glyphs.end());
-    for (Set<Glyph>::iterator it = clearedGlyphs.begin(), endIt = clearedGlyphs.end(); it != endIt; ++it)
-    {
-        if (it->image)
-        {
-            FT_Done_Glyph(it->image);
-        }
-    }
-    clearedGlyphs.clear();
-
-    //	int32 size = glyphs.size();
-    //	for(int32 i = 0; i < size; ++i)
-    //	{
-    //		if(glyphs[i].image)
-    //		{
-    //			FT_Done_Glyph(glyphs[i].image);
-    //		}
-    //	}
-
     glyphs.clear();
 }
 
-int32 FTInternalFont::LoadString(const WideString& str)
+int32 FTInternalFont::LoadString(float32 size, const WideString& str)
 {
     ClearString();
 
     int32 spacesCount = 0;
-    const FT_Pos prevRsbDelta = 0;
-    uint32 size = uint32(str.size());
-    for (uint32 i = 0; i < size; ++i)
+    uint32 count = uint32(str.size());
+    for (uint32 i = 0; i < count; ++i)
     {
         if (L' ' == str[i])
         {
@@ -675,25 +637,13 @@ int32 FTInternalFont::LoadString(const WideString& str)
         }
 
         Glyph glyph;
-        glyph.index = FT_Get_Char_Index(face, str[i]);
-
-        FT_Error loadGlyphError = 0;
-        FT_Error getGlyphError = 0;
-        if (!(loadGlyphError = FT_Load_Glyph(face, glyph.index, FT_LOAD_DEFAULT | FT_LOAD_NO_HINTING)) &&
-            !(getGlyphError = FT_Get_Glyph(face->glyph, &glyph.image)))
-        {
-            if (prevRsbDelta - face->glyph->lsb_delta >= 32)
-                glyph.delta = static_cast<uint32>(-1) << 6;
-            else if (prevRsbDelta - face->glyph->lsb_delta < -32)
-                glyph.delta = 1 << 6;
-            else
-                glyph.delta = 0;
-        }
-        else
+        glyph.index = ftm->LookupGlyphIndex(this, str[i]);
+        FT_Error error = ftm->LookupGlyph(this, size, glyph.index, &glyph.image);
+        if (error != FT_Err_Ok)
         {
 #if defined(__DAVAENGINE_DEBUG__)
-            //            DVASSERT(false); //This situation can be unnormal. Check it
-            Logger::Warning("[FTInternalFont::LoadString] loadError = %d, getGlyphError = %d, str = %s", loadGlyphError, getGlyphError, WStringToString(str).c_str());
+            // DVASSERT(false); //This situation can be unnormal. Check it
+            Logger::Warning("[FTInternalFont::LoadString] LookupGlyph error %d, str = %s", error, UTF8Utils::EncodeToUTF8(str).c_str());
 #endif //__DAVAENGINE_DEBUG__
         }
 
@@ -701,9 +651,9 @@ int32 FTInternalFont::LoadString(const WideString& str)
     }
 
 #if defined(__DAVAENGINE_DEBUG__)
-//    Set<Glyph> tmp;
-//    tmp.insert(glyphs.begin(), glyphs.end());
-//    DVASSERT(tmp.size() == glyphs.size()); //This situation can be unnormal. Check it
+// Set<Glyph> tmp;
+// tmp.insert(glyphs.begin(), glyphs.end());
+// DVASSERT(tmp.size() == glyphs.size()); //This situation can be unnormal. Check it
 #endif //__DAVAENGINE_DEBUG__
 
     return spacesCount;
@@ -717,19 +667,5 @@ int32 FTInternalFont::FtRound(int32 val)
 inline int32 FTInternalFont::FtCeil(int32 val)
 {
     return (((val) + 63) & -64);
-}
-
-unsigned long FTInternalFont::StreamLoad(FT_Stream stream, unsigned long offset, uint8* buffer, unsigned long count)
-{
-    File* is = reinterpret_cast<File*>(stream->descriptor.pointer);
-    if (count == 0)
-        return 0;
-    is->Seek(int32(offset), File::SEEK_FROM_START);
-    return is->Read(buffer, uint32(count));
-}
-
-void FTInternalFont::StreamClose(FT_Stream stream)
-{
-    // Close file stream in destructor
 }
 };

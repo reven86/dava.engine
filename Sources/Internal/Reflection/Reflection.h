@@ -1,18 +1,19 @@
 #pragma once
 
-#include <sstream>
+#include <tuple>
+#include <ostream>
+
 #include "Base/Any.h"
 #include "Base/AnyFn.h"
 #include "Base/Type.h"
-#include "Base/TypeInheritance.h"
 
 #include "Debug/DVAssert.h"
-
-#include "Reflection/ReflectedMeta.h"
-#include "Reflection/ReflectedType.h"
-#include "Reflection/ReflectedTypeDB.h"
-#include "Reflection/ReflectedStructure.h"
 #include "Reflection/ReflectedObject.h"
+
+// #include "Reflection/ReflectedMeta.h"
+// #include "Reflection/ReflectedType.h"
+// #include "Reflection/ReflectedTypeDB.h"
+// #include "Reflection/ReflectedStructure.h"
 
 /** \defgroup reflection Reflection
     TODO: detailed description 
@@ -22,22 +23,47 @@
     \ingroup reflection
     TODO: usage comments
 */
-#define DAVA_REFLECTION(Cls) DAVA_REFLECTION__IMPL(Cls)
+#define DAVA_REFLECTION(Cls) IMPL__DAVA_REFLECTION(Cls)
 
 /**
     \ingroup reflection
     TODO: usage comments
 */
-#define DAVA_VIRTUAL_REFLECTION(Cls, ...) DAVA_VIRTUAL_REFLECTION__IMPL(Cls, ##__VA_ARGS__)
+#define DAVA_VIRTUAL_REFLECTION(Cls, ...) IMPL__DAVA_VIRTUAL_REFLECTION(Cls, ##__VA_ARGS__)
+
+/**
+\ingroup reflection
+TODO: usage comments
+*/
+#define DAVA_VIRTUAL_REFLECTION_IN_PLACE(Cls, ...) IMPL__DAVA_VIRTUAL_REFLECTION_IN_PLACE(Cls, ##__VA_ARGS__)
+
+/**
+\ingroup reflection
+TODO: usage comments
+*/
+#define DAVA_REFLECTION_IMPL(Cls) IMPL__DAVA_REFLECTION_IMPL(Cls)
+
+/**
+\ingroup reflection
+TODO: usage comments
+*/
+#define DAVA_VIRTUAL_REFLECTION_IMPL(Cls) IMPL__DAVA_VIRTUAL_REFLECTION_IMPL(Cls)
 
 /**
     \ingroup reflection
     TODO: usage comments
 */
-#define DAVA_REFLECTION_IMPL(Cls) DAVA_REFLECTION_IMPL__IMPL(Cls)
+#define DAVA_REFLECTION_REGISTER_PERMANENT_NAME(Cls) IMPL__DAVA_REFLECTION_REGISTER_PERMANENT_NAME(Cls)
+
+/**
+    \ingroup reflection
+    TODO: usage comments
+*/
+#define DAVA_REFLECTION_REGISTER_CUSTOM_PERMANENT_NAME(Cls, Name) IMPL__DAVA_REFLECTION_REGISTER_CUSTOM_PERMANENT_NAME(Cls, Name)
 
 namespace DAVA
 {
+class ReflectedMeta;
 class ValueWrapper;
 class StructureWrapper;
 
@@ -56,7 +82,7 @@ class StructureWrapper;
 struct ReflectionBase
 {
     virtual ~ReflectionBase() = default;
-    virtual const ReflectedType* GetReflectedType() const = 0;
+    virtual const ReflectedType* Dava__GetReflectedType() const = 0;
 };
 
 /** 
@@ -95,6 +121,7 @@ public:
 
     Any GetValue() const;
     bool SetValue(const Any& value) const;
+    bool SetValueWithCast(const Any& value) const;
 
     bool HasFields() const;
     Reflection GetField(const Any& name) const;
@@ -115,6 +142,10 @@ public:
     template <typename T>
     static Reflection Create(T* objectPtr, const ReflectedMeta* objectMeta = nullptr);
 
+    static Reflection Create(const Any& any, const ReflectedMeta* objectMeta = nullptr);
+
+    DAVA_DEPRECATED(static Reflection Create(const Reflection& etalon, const Reflection& metaProvider));
+
     //
     // Experimental API for fields add/remove/insert create.
     // Is subject of change!
@@ -126,8 +157,6 @@ public:
     bool InsertField(const Any& beforeKey, const Any& key, const Any& value) const;
     bool RemoveField(const Any& key) const;
     AnyFn GetFieldCreator() const;
-
-    static Reflection Create(const Any& any, const ReflectedMeta* objectMeta = nullptr);
     //
     // <--
     //
@@ -141,12 +170,19 @@ private:
 
 struct Reflection::Field
 {
+    Field() = default;
+    Field(Any&&, Reflection&&, const ReflectedType*);
+
     Any key;
     Reflection ref;
+    const ReflectedType* inheritFrom = nullptr;
 };
 
 struct Reflection::Method
 {
+    Method() = default;
+    Method(String&&, AnyFn&&);
+
     String key;
     AnyFn fn;
 };
@@ -181,11 +217,12 @@ public:
     ValueWrapper(const ValueWrapper&) = delete;
     virtual ~ValueWrapper() = default;
 
-    virtual const Type* GetType() const = 0;
+    virtual const Type* GetType(const ReflectedObject& object) const = 0;
 
     virtual bool IsReadonly(const ReflectedObject& object) const = 0;
     virtual Any GetValue(const ReflectedObject& object) const = 0;
     virtual bool SetValue(const ReflectedObject& object, const Any& value) const = 0;
+    virtual bool SetValueWithCast(const ReflectedObject& object, const Any& value) const = 0;
 
     virtual ReflectedObject GetValueObject(const ReflectedObject& object) const = 0;
 };
@@ -201,6 +238,10 @@ public:
     StructureWrapper() = default;
     StructureWrapper(const StructureWrapper&) = delete;
     virtual ~StructureWrapper() = default;
+
+    virtual void Update()
+    {
+    }
 
     virtual bool HasFields(const ReflectedObject& object, const ValueWrapper* vw) const = 0;
     virtual Reflection GetField(const ReflectedObject& object, const ValueWrapper* vw, const Any& key) const = 0;
@@ -223,9 +264,7 @@ struct StructureWrapperCreator;
 
 } // namespace DAVA
 
+#ifndef __DAVA_Reflection__
 #define __DAVA_Reflection__
-#include "Reflection/Private/Reflection_impl.h"
-#include "Reflection/Private/ReflectedMeta_impl.h"
-#include "Reflection/Private/ReflectedType_impl.h"
-#include "Reflection/Private/ReflectedTypeDB_impl.h"
-#include "Reflection/Private/ReflectedObject_impl.h"
+#endif
+#include "Reflection/Private/Reflection_pre_impl.h"

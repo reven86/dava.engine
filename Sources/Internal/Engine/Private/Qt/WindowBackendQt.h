@@ -33,7 +33,7 @@ public:
     WindowBackend(const WindowBackend&) = delete;
     WindowBackend& operator=(const WindowBackend&) = delete;
 
-    void AcqureContext();
+    void AcquireContext();
     void ReleaseContext();
     void OnApplicationFocusChanged(bool isInFocus);
 
@@ -44,13 +44,13 @@ public:
     void Resize(float32 width, float32 height);
     void Close(bool appIsTerminating);
     void SetTitle(const String& title);
-
+    void SetMinimumSize(Size2f size);
     void SetFullscreen(eFullscreen newMode);
 
     void RunAsyncOnUIThread(const Function<void()>& task);
+    void RunAndWaitOnUIThread(const Function<void()>& task);
 
     void* GetHandle() const;
-    WindowNativeService* GetNativeService() const;
 
     bool IsWindowReadyForRender() const;
     void InitCustomRenderParams(rhi::InitParam& params);
@@ -67,6 +67,7 @@ private:
     void DoResizeWindow(float32 width, float32 height);
     void DoCloseWindow();
     void DoSetTitle(const char8* title);
+    void DoSetMinimumSize(float32 width, float32 height);
     void DoSetFullscreen(eFullscreen newMode);
 
     // RenderWidget::Delegate
@@ -75,7 +76,7 @@ private:
     void OnDestroyed() override;
     void OnFrame() override;
     void OnResized(uint32 width, uint32 height, bool isFullScreen) override;
-    void OnDpiChanged(float32 dpi) override;
+    void OnDpiChanged(float32 dpi_) override;
     void OnVisibilityChanged(bool isVisible) override;
 
     void OnMousePressed(QMouseEvent* e) override;
@@ -101,15 +102,15 @@ private:
 
     // Use QPointer as renderWidget can be deleted outside WindowBackend in embedded mode
     QPointer<RenderWidget> renderWidget;
-    std::unique_ptr<WindowNativeService> nativeService;
 
     bool closeRequestByApp = false;
+    float32 dpi = 96.f;
 
     class QtEventListener;
     QtEventListener* qtEventListener = nullptr;
 
     class OGLContextBinder;
-    friend void AcqureContextImpl();
+    friend void AcquireContextImpl();
     friend void ReleaseContextImpl();
 
     std::unique_ptr<OGLContextBinder> contextBinder;
@@ -118,11 +119,6 @@ private:
 inline void* WindowBackend::GetHandle() const
 {
     return nullptr;
-}
-
-inline WindowNativeService* WindowBackend::GetNativeService() const
-{
-    return nativeService.get();
 }
 
 } // namespace Private

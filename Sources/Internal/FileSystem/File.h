@@ -2,6 +2,7 @@
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
+#include "FileSystem/FilePath.h"
 
 namespace DAVA
 {
@@ -191,6 +192,7 @@ private:
     \returns file instance
     */
     static File* PureCreate(const FilePath& filePath, uint32 attributes);
+    static File* CompressedCreate(const FilePath& filename, uint32 attributes);
     // reads 1 byte from current line in the file and sets it in next char if it is not a line ending char. Returns true if read was successful.
     bool GetNextChar(uint8* nextChar);
 

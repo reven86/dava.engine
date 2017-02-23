@@ -52,7 +52,7 @@ public:
 private:
     int32 currentLod = INVALID_LOD_LAYER;
     bool recursiveUpdate = false;
-    Array<float32, MAX_LOD_LAYERS> distances = Array<float32, MAX_LOD_LAYERS>{ 300.f, 600.f, 900.f, 1000.f }; //cause list initialization for members not implemented in MSVC https://msdn.microsoft.com/en-us/library/dn793970.aspx
+    Array<float32, MAX_LOD_LAYERS> distances = Array<float32, MAX_LOD_LAYERS>{ { 300.f, 600.f, 900.f, 1000.f } }; //cause list initialization for members not implemented in MSVC https://msdn.microsoft.com/en-us/library/dn793970.aspx
 
     friend class LodSystem;
 

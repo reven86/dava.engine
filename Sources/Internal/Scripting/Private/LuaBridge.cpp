@@ -1,6 +1,6 @@
 #include "LuaBridge.h"
 #include "Scripting/LuaException.h"
-#include "Reflection/Reflection.h"
+#include "Reflection/ReflectedTypeDB.h"
 #include "Logger/Logger.h"
 #include "Utils/UTF8Utils.h"
 #include "Utils/StringFormat.h"
@@ -92,7 +92,7 @@ Lua stack changes [-0, +0, v]
 Any* lua_checkdvany(lua_State* L, int32 index)
 {
     Any* pAny = static_cast<Any*>(luaL_checkudata(L, index, AnyTName));
-    DVASSERT_MSG(pAny, "Can't get Any ptr");
+    DVASSERT(pAny, "Can't get Any ptr");
     return pAny;
 }
 
@@ -103,7 +103,7 @@ Lua stack changes [-0, +1, -]
 void lua_pushdvany(lua_State* L, const Any& any)
 {
     void* userdata = lua_newuserdata(L, sizeof(Any));
-    DVASSERT_MSG(userdata, "Can't create Any ptr");
+    DVASSERT(userdata, "Can't create Any ptr");
     new (userdata) Any(any);
     luaL_getmetatable(L, AnyTName);
     lua_setmetatable(L, -2);
@@ -169,7 +169,7 @@ Lua stack changes [-0, +0, v]
 AnyFn* lua_checkdvanyfn(lua_State* L, int32 index)
 {
     AnyFn* pAnyFn = static_cast<AnyFn*>(luaL_checkudata(L, index, AnyFnTName));
-    DVASSERT_MSG(pAnyFn, "Can't get AnyFn ptr");
+    DVASSERT(pAnyFn, "Can't get AnyFn ptr");
     return pAnyFn;
 }
 
@@ -180,7 +180,7 @@ Lua stack changes [-0, +1, -]
 void lua_pushdvanyfn(lua_State* L, const AnyFn& any)
 {
     void* userdata = lua_newuserdata(L, sizeof(AnyFn));
-    DVASSERT_MSG(userdata, "Can't create AnyFn ptr");
+    DVASSERT(userdata, "Can't create AnyFn ptr");
     new (userdata) AnyFn(any);
     luaL_getmetatable(L, AnyFnTName);
     lua_setmetatable(L, -2);
@@ -233,7 +233,7 @@ int32 AnyFn__call(lua_State* L)
     int32 nargs = lua_gettop(L) - 1; // Lower element in stack is AnyFn userdata
     const Vector<const Type*>& argsTypes = self->GetInvokeParams().argsType;
 
-    DVASSERT_MSG(nargs >= 0, "Lua stack corrupted!");
+    DVASSERT(nargs >= 0, "Lua stack corrupted!");
     if (nargs != argsTypes.size())
     {
         return luaL_error(L, "Incorrect number of arguments to invoke AnyFn (need %d, found %d)", argsTypes.size(), nargs);
@@ -348,7 +348,7 @@ Lua stack changes [-0, +0, v]
 Reflection* lua_checkdvreflection(lua_State* L, int32 index)
 {
     Reflection* pRef = static_cast<Reflection*>(luaL_checkudata(L, index, ReflectionTName));
-    DVASSERT_MSG(pRef, "Can't get Reflection ptr");
+    DVASSERT(pRef, "Can't get Reflection ptr");
     return pRef;
 }
 
@@ -359,7 +359,7 @@ Lua stack changes [-0, +1, -]
 void lua_pushdvreflection(lua_State* L, const Reflection& refl)
 {
     void* userdata = lua_newuserdata(L, sizeof(Reflection));
-    DVASSERT_MSG(userdata, "Can't get Reflection ptr");
+    DVASSERT(userdata, "Can't get Reflection ptr");
     new (userdata) Reflection(refl);
     luaL_getmetatable(L, ReflectionTName);
     lua_setmetatable(L, -2);

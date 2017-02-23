@@ -1,11 +1,11 @@
 #include "UITextFieldStb.h"
 
-#include "Engine/EngineTypes.h"
+#include "Engine/Engine.h"
 #include "UI/UITextField.h"
 #include "UI/UIStaticText.h"
 #include "UI/UIControlSystem.h"
 #include "UI/UIEvent.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Input/InputSystem.h"
 #include "Input/KeyboardDevice.h"
@@ -24,13 +24,21 @@ static Vector2 TransformInputPoint(const Vector2& inputPoint, const Vector2& con
     return (inputPoint - controlAbsPosition) / controlScale;
 }
 
+#if defined(__DAVAENGINE_COREV2__)
+TextFieldStbImpl::TextFieldStbImpl(Window* w, UITextField* control)
+#else
 TextFieldStbImpl::TextFieldStbImpl(UITextField* control)
+#endif
     : staticText(new UIStaticText(Rect(Vector2::Zero, control->GetSize())))
     , control(control)
     , stb(new StbTextEditBridge(this))
+#if defined(__DAVAENGINE_COREV2__)
+    , window(w)
+#endif
 {
     stb->SetSingleLineMode(true); // Set default because UITextField is single line by default
-    staticText->SetSpriteAlign(ALIGN_LEFT | ALIGN_BOTTOM);
+    UIControlBackground* bg = staticText->GetOrCreateComponent<UIControlBackground>();
+    bg->SetAlign(ALIGN_LEFT | ALIGN_BOTTOM);
     staticText->SetName("TextFieldStaticText");
     staticText->GetTextBlock()->SetMeasureEnable(true);
     staticText->SetForceBiDiSupportEnabled(true);
@@ -45,10 +53,41 @@ TextFieldStbImpl::~TextFieldStbImpl()
 
 void TextFieldStbImpl::Initialize()
 {
+#if defined(__DAVAENGINE_COREV2__)
+    windowSizeChangedConnection = window->sizeChanged.Connect(this, &TextFieldStbImpl::OnWindowSizeChanged);
+    windowDestroyedConnection = Engine::Instance()->windowDestroyed.Connect(this, &TextFieldStbImpl::OnWindowDestroyed);
+#endif
 }
 
 void TextFieldStbImpl::OwnerIsDying()
 {
+#if defined(__DAVAENGINE_COREV2__)
+    if (window != nullptr)
+    {
+        window->sizeChanged.Disconnect(windowSizeChangedConnection);
+        Engine::Instance()->windowDestroyed.Disconnect(windowDestroyedConnection);
+    }
+#endif
+}
+
+void TextFieldStbImpl::OnWindowSizeChanged(Window* w, Size2f windowSize, Size2f surfaceSize)
+{
+    if (isEditing)
+    {
+        // Set lastCursorPos to some big value that is unlikely to happen
+        // to force cursor draw in right place to cover case when window size
+        // has changed but virtual size stays the same
+        lastCursorPos = uint32(-1);
+        UpdateRect(Rect());
+    }
+}
+
+void TextFieldStbImpl::OnWindowDestroyed(Window* w)
+{
+    OwnerIsDying();
+#if defined(__DAVAENGINE_COREV2__)
+    window = nullptr;
+#endif
 }
 
 void TextFieldStbImpl::SetDelegate(UITextFieldDelegate* d)
@@ -141,7 +180,7 @@ void TextFieldStbImpl::UpdateRect(const Rect&)
 
     if (control == UIControlSystem::Instance()->GetFocusedControl() && isEditing)
     {
-        float32 timeElapsed = SystemTimer::Instance()->FrameDelta();
+        float32 timeElapsed = SystemTimer::GetFrameDelta();
         cursorTime += timeElapsed;
         if (cursorTime >= 0.5f)
         {
@@ -389,7 +428,7 @@ void TextFieldStbImpl::SystemDraw(const UIGeometricData& d)
     UIGeometricData staticGeometric = staticText->GetLocalGeometricData();
     staticGeometric.AddGeometricData(d);
     staticGeometric.position += staticTextOffset * scale;
-    staticText->SystemDraw(staticGeometric);
+    staticText->SystemDraw(staticGeometric, nullptr);
 
     if (showCursor)
     {
@@ -527,9 +566,9 @@ void TextFieldStbImpl::UpdateSelection(uint32 start, uint32 end)
     selectionRects.clear();
     uint32 selStart = std::min(start, end);
     uint32 selEnd = std::max(start, end);
-    if (selStart < selEnd)
+    const TextBox* tb = staticText->GetTextBlock()->GetTextBox();
+    if (selStart < selEnd && selEnd <= tb->GetCharactersCount())
     {
-        const TextBox* tb = staticText->GetTextBlock()->GetTextBox();
         for (uint32 i = selStart; i < selEnd; ++i)
         {
             const TextBox::Character& c = tb->GetCharacter(i);
@@ -557,10 +596,18 @@ void TextFieldStbImpl::UpdateSelection(uint32 start, uint32 end)
 void TextFieldStbImpl::UpdateCursor(uint32 cursorPos, bool insertMode)
 {
     const TextBox* tb = staticText->GetTextBlock()->GetTextBox();
-    const Vector<int32> linesSizes = staticText->GetTextBlock()->GetStringSizes();
 
     Rect r;
     r.dx = DEFAULT_CURSOR_WIDTH;
+
+#if defined(__DAVAENGINE_COREV2__)
+    // Ensure cursor width is not less than 1 physical pixel for properly
+    // drawing when window is very small
+    VirtualCoordinatesSystem* vcs = window->GetUIControlSystem()->vcs;
+    r.dx = vcs->ConvertVirtualToPhysicalX(r.dx);
+    r.dx = std::max(r.dx, 1.f);
+    r.dx = vcs->ConvertPhysicalToVirtualX(r.dx);
+#endif
 
     int32 charsCount = tb->GetCharactersCount();
     if (charsCount > 0)

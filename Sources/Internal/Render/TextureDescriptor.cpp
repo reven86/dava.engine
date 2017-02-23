@@ -10,6 +10,7 @@
 #include "Render/Image/LibDdsHelper.h"
 #include "Utils/Utils.h"
 #include "Utils/CRC32.h"
+#include "Utils/StringFormat.h"
 
 namespace DAVA
 {
@@ -367,6 +368,9 @@ bool TextureDescriptor::Load(const FilePath& filePathname)
     case 12:
         LoadVersion12(file);
         break;
+    case 13:
+        LoadVersion12(file); // same as 12, but with HDR format support, descriptor structure has not been changed
+        break;
     default:
     {
         Logger::Error("[TextureDescriptor::Load] Version %d is not supported", version);
@@ -391,7 +395,7 @@ bool TextureDescriptor::Load(const FilePath& filePathname)
 
 void TextureDescriptor::Save() const
 {
-    DVASSERT_MSG(!pathname.IsEmpty(), "Can use this method only after calling Load()");
+    DVASSERT(!pathname.IsEmpty(), "Can use this method only after calling Load()");
     Save(pathname);
 }
 
@@ -515,7 +519,7 @@ void TextureDescriptor::SaveInternal(File* file, const int32 signature, const eG
     }
     else
     {
-        DVASSERT_MSG(false, Format("Saving for wrong gpu %d was selected", forGPU).c_str());
+        DVASSERT(false, Format("Saving for wrong gpu %d was selected", forGPU).c_str());
     }
 }
 
@@ -931,7 +935,7 @@ const TextureDescriptor::Compression* TextureDescriptor::GetCompressionParams(eG
     return &compression[gpuFamily];
 }
 
-Array<ImageFormat, 5> TextureDescriptor::sourceTextureTypes = { { IMAGE_FORMAT_PNG, IMAGE_FORMAT_TGA, IMAGE_FORMAT_JPEG, IMAGE_FORMAT_DDS, IMAGE_FORMAT_WEBP } };
+Array<ImageFormat, 6> TextureDescriptor::sourceTextureTypes = { { IMAGE_FORMAT_PNG, IMAGE_FORMAT_TGA, IMAGE_FORMAT_JPEG, IMAGE_FORMAT_DDS, IMAGE_FORMAT_WEBP, IMAGE_FORMAT_HDR } };
 Array<ImageFormat, 2> TextureDescriptor::compressedTextureTypes = { { IMAGE_FORMAT_PVR, IMAGE_FORMAT_DDS } };
 
 bool IsFormatSupported(ImageFormat format, const String& extension)
@@ -1008,7 +1012,7 @@ uint32 TextureDescriptor::ReadSourceCRC() const
 
 uint32 TextureDescriptor::GetConvertedCRC(eGPUFamily forGPU) const
 {
-    if (compression[forGPU].format == FORMAT_INVALID)
+    if (forGPU == eGPUFamily::GPU_ORIGIN || compression[forGPU].format == FORMAT_INVALID)
         return 0;
 
     ImageFormat imageFormat = GetImageFormatForGPU(forGPU);

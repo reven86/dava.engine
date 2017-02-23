@@ -1,4 +1,5 @@
 #include "Scene3D/AnimationData.h"
+#include "Utils/StringFormat.h"
 
 namespace DAVA
 {
@@ -57,6 +58,13 @@ SceneNodeAnimationKey AnimationData::Interpolate(float32 t, uint32& startIdxCach
     result.scale.Lerp(key1.scale, key2.scale, tInter);
 
     return result;
+}
+
+SceneNodeAnimationKey AnimationData::GetKeyForFrame(int32 frameIndex) const
+{
+    DVASSERT(frameIndex >= 0 && frameIndex < GetKeyCount());
+
+    return keys[frameIndex];
 }
 
 void AnimationData::SetDuration(float32 _duration)

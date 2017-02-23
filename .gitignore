@@ -2,6 +2,7 @@
 #*.a       # no .a files
 #!lib.a    # but do track lib.a, even though you're ignoring .a files above
 #/TODO     # only ignore the root TODO file, not subdir/TODO
+build
 build/     # ignore all files in the build/ directory
 /build     # ignore all files in the build/ directory
 /build/    # ignore all files in the build/ directory
@@ -46,11 +47,12 @@ fmod.log
 *.user
 /DavaConfig.in
 *.xccheckout
-Projects/UnitTests/android/assets
 
-Projects/UnitTests/android/.settings/*
 .vs
 .tup
+.idea
+.gradle
+.externalNativeBuild
 AppPackages
 
 !/Libs/lib_CMake/win10/arm/Debug
@@ -68,18 +70,32 @@ AppPackages
 !/Libs/lib_CMake/win/x64/NGT/Release
 !/Libs/lib_CMake/win/x64/NGT/Debug
 !/Sources/Internal/Debug
-Projects/TestBed/android/assets/
-Projects/TestBed/android/obj/
-Projects/TestBed/android/bin/
-Projects/TestBed/android/libs/
-Projects/TestBed/android/gen/
-Projects/TestBed/android/.settings/
+
+Programs/AndroidFramework/tmp-src
+Programs/UnitTests/android/assets
+Programs/UnitTests/android/.settings/*
+Programs/TestBed/android/assets/
+Programs/TestBed/android/obj/
+Programs/TestBed/android/bin/
+Programs/TestBed/android/libs/
+Programs/TestBed/android/gen/
+Programs/TestBed/android/.settings/
 global_setting.settings
 .vscode/
-Projects/AndroidFramework/tmp-src
 
 local.properties
 
 # Python scripts cache
 *.pyc
 Doc/Doxygen/doxygen/
+Tools/support/total_commander_plugins/packer_wcx/.cproject
+Tools/support/total_commander_plugins/packer_wcx/.gitignore
+Tools/support/total_commander_plugins/packer_wcx/.project
+Tools/support/total_commander_plugins/packer_wcx/.settings/language.settings.xml
+Tools/support/total_commander_plugins/packer_wcx/.settings/org.eclipse.cdt.managedbuilder.core.prefs
+Programs/support/total_commander_plugins/packer_wcx/.cproject
+Programs/support/total_commander_plugins/packer_wcx/.gitignore
+Programs/support/total_commander_plugins/packer_wcx/.project
+Programs/support/total_commander_plugins/packer_wcx/.settings/language.settings.xml
+Programs/support/total_commander_plugins/packer_wcx/.settings/org.eclipse.cdt.managedbuilder.core.prefs
+*.iml

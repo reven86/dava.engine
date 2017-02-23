@@ -123,6 +123,7 @@ inline T Clamp(T val, T a, T b)
 
 #if defined(__DAVAENGINE_WINDOWS__)
 #define Snprintf _snprintf
+#define vsnprintf _vsnprintf
 #else
 #define Snprintf snprintf
 #endif
@@ -223,5 +224,5 @@ enum class eErrorCode
 #if defined(__OBJC__)
 #define DAVA_FORWARD_DECLARE_OBJC_CLASS(classname) @class classname
 #else
-#define DAVA_FORWARD_DECLARE_OBJC_CLASS(classname) typedef struct objc_object classname;
+#define DAVA_FORWARD_DECLARE_OBJC_CLASS(classname) typedef struct objc_object classname
 #endif

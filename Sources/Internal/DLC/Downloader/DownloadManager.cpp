@@ -7,7 +7,7 @@
 #include "DownloadManager.h"
 #include "Downloader.h"
 
-#include "Engine/EngineModule.h"
+#include "Engine/Engine.h"
 
 #include <atomic>
 
@@ -28,6 +28,7 @@ DownloadManager::DownloadManager(Engine* e)
     : engine(e)
 {
     sigUpdateId = engine->update.Connect(this, &DownloadManager::Update);
+    sigBackgroundUpdateId = engine->backgroundUpdate.Connect(this, &DownloadManager::Update);
 }
 #endif
 
@@ -35,6 +36,7 @@ DownloadManager::~DownloadManager()
 {
 #if defined(__DAVAENGINE_COREV2__)
     engine->update.Disconnect(sigUpdateId);
+    engine->backgroundUpdate.Disconnect(sigBackgroundUpdateId);
 #endif
 
     isThreadStarted = false;
@@ -77,7 +79,7 @@ void DownloadManager::StartProcessingThread()
     DVASSERT(!isThreadStarted);
     DVASSERT(NULL == thisThread);
 
-    thisThread = Thread::Create(Message(this, &DownloadManager::ThreadFunction));
+    thisThread = Thread::Create(MakeFunction(this, &DownloadManager::ThreadFunction));
     isThreadStarted = true;
     thisThread->Start();
 }
@@ -121,7 +123,7 @@ void DownloadManager::Update()
                 StopProcessingThread();
 
             currentTaskMutex.Lock();
-            currentTask = NULL;
+            currentTask = nullptr;
             currentTaskMutex.Unlock();
         }
     }
@@ -236,7 +238,7 @@ void DownloadManager::Cancel(const uint32& taskId)
     }
     else
     {
-        DownloadTaskDescription* pendingTask = NULL;
+        DownloadTaskDescription* pendingTask = nullptr;
         pendingTask = ExtractFromQueue(pendingTaskQueue, taskId);
         if (pendingTask)
         {
@@ -300,7 +302,7 @@ void DownloadManager::Clear(const uint32& taskId)
     }
 }
 
-void DownloadManager::ThreadFunction(BaseObject* caller, void* callerData, void* userData)
+void DownloadManager::ThreadFunction()
 {
     while (isThreadStarted)
     {
@@ -328,7 +330,7 @@ void DownloadManager::ClearAll()
     ClearPending();
     ClearDone();
 
-    DownloadTaskDescription* currentTaskToClear = NULL;
+    DownloadTaskDescription* currentTaskToClear = nullptr;
 
     currentTaskToClear = currentTask;
 
@@ -487,6 +489,17 @@ bool DownloadManager::GetError(const uint32& taskId, DownloadError& error)
     return true;
 }
 
+bool DownloadManager::GetImplError(const uint32& taskId, int32& implError)
+{
+    DownloadTaskDescription* task = GetTaskForId(taskId);
+    if (!task)
+        return false;
+
+    implError = task->implError;
+
+    return true;
+}
+
 bool DownloadManager::GetFileErrno(const uint32& taskId, int32& fileErrno)
 {
     DownloadTaskDescription* task = GetTaskForId(taskId);
@@ -545,7 +558,7 @@ void DownloadManager::ClearQueue(Deque<DownloadTaskDescription*>& queue)
 
 DownloadTaskDescription* DownloadManager::ExtractFromQueue(Deque<DownloadTaskDescription*>& queue, const uint32& taskId)
 {
-    DownloadTaskDescription* extractedTask = NULL;
+    DownloadTaskDescription* extractedTask = nullptr;
 
     if (!queue.empty())
     {
@@ -572,7 +585,7 @@ void DownloadManager::PlaceToQueue(Deque<DownloadTaskDescription*>& queue, Downl
 
 DownloadTaskDescription* DownloadManager::GetTaskForId(const uint32& taskId)
 {
-    DownloadTaskDescription* retPointer = NULL;
+    DownloadTaskDescription* retPointer = nullptr;
 
     if (currentTask && taskId == currentTask->id)
     {
@@ -660,6 +673,7 @@ DownloadError DownloadManager::TryDownload()
     // retrieve remote file size
     currentTask->error = downloader->GetSize(currentTask->url, currentTask->downloadTotal, currentTask->timeout);
     currentTask->fileErrno = downloader->GetFileErrno();
+    currentTask->implError = downloader->GetImplError();
     if (DLE_NO_ERROR != currentTask->error)
     {
         return currentTask->error;
@@ -706,6 +720,7 @@ DownloadError DownloadManager::TryDownload()
                                               currentTask->partsCount,
                                               currentTask->timeout);
     currentTask->fileErrno = downloader->GetFileErrno();
+    currentTask->implError = downloader->GetImplError();
 
     // seems server doesn't supports download resuming. So we need to download whole file.
     if (DLE_COULDNT_RESUME == currentTask->error)
@@ -720,6 +735,7 @@ DownloadError DownloadManager::TryDownload()
                                                       currentTask->partsCount,
                                                       currentTask->timeout);
             currentTask->fileErrno = downloader->GetFileErrno();
+            currentTask->implError = downloader->GetImplError();
         }
     }
 

@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_FILESYSTEM_H__
-#define __DAVAENGINE_FILESYSTEM_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Base/Singleton.h"
@@ -91,6 +90,12 @@ public:
 		\returns current directory, with  executable file
 	 */
     virtual FilePath GetCurrentExecutableDirectory();
+
+    /**
+     \brief Function to retrieve directory, which contain plugins files
+     \returns plugin directory
+     */
+    virtual FilePath GetPluginDirectory();
 
     /**
 		\brief Function to set current working directory
@@ -316,5 +321,3 @@ private:
     friend class File;
 };
 };
-
-#endif // __DAVAENGINE_FILESYSTEM_H__

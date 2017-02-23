@@ -29,11 +29,11 @@ namespace Private
 //
 // iOS window unions several Objective-C classes (UIView subclass,
 // UIViewController subclass, etc) and each of these classes
-// receive some kind of system notfications or events. WindowNativeBridge
+// receives some kind of system notfications or events. WindowNativeBridge
 // combines all window-related logic and processes events from Objective-C classes.
 // Objective-C classes only forward its notifications to WindowNativeBridge.
 //
-// WindowNativeBridge is friend of iOS's WindowBackend
+// WindowNativeBridge is a friend of iOS's WindowBackend
 struct WindowNativeBridge final
 {
     WindowNativeBridge(WindowBackend* windowBackend, const KeyedArchive* engineOptions);
@@ -76,6 +76,7 @@ struct WindowNativeBridge final
     RenderView* renderView = nullptr;
     RenderViewController* renderViewController = nullptr;
     NativeViewPool* nativeViewPool = nullptr;
+    float32 dpi = 0.f;
 
     const KeyedArchive* engineOptions = nullptr;
 };

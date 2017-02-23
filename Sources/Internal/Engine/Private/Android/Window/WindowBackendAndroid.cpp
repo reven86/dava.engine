@@ -5,7 +5,6 @@
 #if defined(__DAVAENGINE_ANDROID__)
 
 #include "Engine/Window.h"
-#include "Engine/Android/WindowNativeServiceAndroid.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 #include "Engine/Private/Android/AndroidBridge.h"
@@ -13,7 +12,7 @@
 #include "Engine/Private/Android/PlatformCoreAndroid.h"
 
 #include "Logger/Logger.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 
 extern "C"
 {
@@ -105,8 +104,7 @@ WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
     : engineBackend(engineBackend)
     , window(window)
     , mainDispatcher(engineBackend->GetDispatcher())
-    , uiDispatcher(MakeFunction(this, &WindowBackend::UIEventHandler))
-    , nativeService(new WindowNativeService(this))
+    , uiDispatcher(MakeFunction(this, &WindowBackend::UIEventHandler), MakeFunction(this, &WindowBackend::TriggerPlatformEvents))
 {
 }
 
@@ -154,9 +152,19 @@ void WindowBackend::SetTitle(const String& title)
     // Android window does not have title
 }
 
+void WindowBackend::SetMinimumSize(Size2f /*size*/)
+{
+    // Minimum size does not apply to android
+}
+
 void WindowBackend::RunAsyncOnUIThread(const Function<void()>& task)
 {
     uiDispatcher.PostEvent(UIDispatcherEvent::CreateFunctorEvent(task));
+}
+
+void WindowBackend::RunAndWaitOnUIThread(const Function<void()>& task)
+{
+    uiDispatcher.SendEvent(UIDispatcherEvent::CreateFunctorEvent(task));
 }
 
 bool WindowBackend::IsWindowReadyForRender() const
@@ -175,7 +183,7 @@ void WindowBackend::TriggerPlatformEvents()
         catch (const JNI::Exception& e)
         {
             Logger::Error("WindowBackend::TriggerPlatformEvents failed: %s", e.what());
-            DVASSERT_MSG(false, e.what());
+            DVASSERT(false, e.what());
         }
     }
 }
@@ -193,7 +201,7 @@ void WindowBackend::DoSetSurfaceScale(const float32 scale)
 
     const float32 surfaceWidth = windowWidth * scale;
     const float32 surfaceHeight = windowHeight * scale;
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, windowWidth, windowHeight, surfaceWidth, surfaceHeight, surfaceScale, eFullscreen::On));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, windowWidth, windowHeight, surfaceWidth, surfaceHeight, surfaceScale, dpi, eFullscreen::On));
 }
 
 jobject WindowBackend::CreateNativeControl(const char8* controlClassName, void* backendPointer)
@@ -266,20 +274,22 @@ void WindowBackend::SurfaceCreated(JNIEnv* env, jobject surfaceViewInstance)
     }
 }
 
-void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, int32 height, int32 surfaceWidth, int32 surfaceHeight, int32 dpi)
+void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, int32 height, int32 surfaceWidth, int32 surfaceHeight, int32 displayDpi)
 {
     {
         ANativeWindow* nativeWindow = ANativeWindow_fromSurface(env, surface);
 
-        MainDispatcherEvent e(MainDispatcherEvent::FUNCTOR);
-        e.functor = [this, nativeWindow]() {
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateFunctorEvent([this, nativeWindow]() {
             ReplaceAndroidNativeWindow(nativeWindow);
-        };
-        mainDispatcher->PostEvent(e);
+        }));
     }
+
+    const float previousWindowWidth = windowWidth;
+    const float previousWindowHeight = windowHeight;
 
     windowWidth = static_cast<float32>(width);
     windowHeight = static_cast<float32>(height);
+    dpi = static_cast<float32>(displayDpi);
 
     if (firstTimeSurfaceChanged)
     {
@@ -294,7 +304,7 @@ void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, in
         catch (const JNI::Exception& e)
         {
             Logger::Error("[WindowBackend] failed to init java bridge: %s", e.what());
-            DVASSERT_MSG(false, e.what());
+            DVASSERT(false, e.what());
         }
 
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, windowWidth, windowHeight, surfaceWidth, surfaceHeight, dpi, eFullscreen::On));
@@ -303,19 +313,29 @@ void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, in
     }
     else
     {
-        // Do not use passed surfaceWidth & surfaceHeight, instead calculate it based on current scale factor
-        // To handle cases when a surface has been recreated with original size (e.g. when switched to another app and returned back)
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, windowWidth, windowHeight, windowWidth * surfaceScale, windowHeight * surfaceScale, surfaceScale, eFullscreen::On));
+        // If surface size has changed, post sizeChanged event
+        // Otherwise we should reset renderer since surface has been recreated
+
+        if (!FLOAT_EQUAL(previousWindowWidth, windowWidth) || !FLOAT_EQUAL(previousWindowHeight, windowHeight))
+        {
+            // Do not use passed surfaceWidth & surfaceHeight, instead calculate it based on current scale factor
+            // To handle cases when a surface has been recreated with original size (e.g. when switched to another app and returned back)
+            mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, windowWidth, windowHeight, windowWidth * surfaceScale, windowHeight * surfaceScale, surfaceScale, dpi, eFullscreen::On));
+        }
+        else
+        {
+            mainDispatcher->PostEvent(MainDispatcherEvent::CreateFunctorEvent([this]() {
+                engineBackend->ResetRenderer(this->window, !this->IsWindowReadyForRender());
+            }));
+        }
     }
 }
 
 void WindowBackend::SurfaceDestroyed()
 {
-    MainDispatcherEvent e(MainDispatcherEvent::FUNCTOR);
-    e.functor = [this]() {
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateFunctorEvent([this]() {
         ReplaceAndroidNativeWindow(nullptr);
-    };
-    mainDispatcher->PostEvent(e);
+    }));
 }
 
 void WindowBackend::ProcessProperties()

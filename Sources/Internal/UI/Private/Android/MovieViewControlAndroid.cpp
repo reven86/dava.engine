@@ -12,7 +12,6 @@
 
 #include "Engine/Engine.h"
 #include "Engine/Window.h"
-#include "Engine/Android/WindowNativeServiceAndroid.h"
 
 extern "C"
 {
@@ -20,8 +19,12 @@ extern "C"
 JNIEXPORT void JNICALL Java_com_dava_engine_DavaMovieView_nativeReleaseWeakPtr(JNIEnv* env, jclass jclazz, jlong backendPointer)
 {
     using DAVA::MovieViewControl;
-    std::weak_ptr<MovieViewControl>* weak = reinterpret_cast<std::weak_ptr<MovieViewControl>*>(static_cast<uintptr_t>(backendPointer));
-    delete weak;
+
+    // Postpone deleting in case some other jobs are posted to main thread
+    DAVA::RunOnMainThreadAsync([backendPointer]() {
+        std::weak_ptr<MovieViewControl>* weak = reinterpret_cast<std::weak_ptr<MovieViewControl>*>(static_cast<uintptr_t>(backendPointer));
+        delete weak;
+    });
 }
 
 } // extern "C"
@@ -51,12 +54,12 @@ void MovieViewControl::Initialize(const Rect& rect)
     catch (const JNI::Exception& e)
     {
         Logger::Error("[MovieViewControl] failed to init java bridge: %s", e.what());
-        DVASSERT_MSG(false, e.what());
+        DVASSERT(false, e.what());
         return;
     }
 
     std::weak_ptr<MovieViewControl>* selfWeakPtr = new std::weak_ptr<MovieViewControl>(shared_from_this());
-    jobject obj = window->GetNativeService()->CreateNativeControl("com.dava.engine.DavaMovieView", selfWeakPtr);
+    jobject obj = PlatformApi::Android::CreateNativeControl(window, "com.dava.engine.DavaMovieView", selfWeakPtr);
     if (obj != nullptr)
     {
         JNIEnv* env = JNI::GetEnv();

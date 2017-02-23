@@ -4,9 +4,10 @@
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
 #include "Base/BaseObject.h"
+#include "Base/GlobalEnum.h"
+#include "Components/UIComponent.h"
 #include "Render/2D/Sprite.h"
 #include "FileSystem/FilePath.h"
-#include "Base/GlobalEnum.h"
 
 namespace DAVA
 {
@@ -25,7 +26,7 @@ class NMaterial;
         with the set of requested rules.
      */
 
-class UIControlBackground : public BaseObject
+class UIControlBackground : public UIBaseComponent<UIComponent::BACKGROUND_COMPONENT>
 {
 public:
     /**
@@ -107,7 +108,7 @@ public:
      */
     UIControlBackground();
 
-    virtual bool IsEqualTo(const UIControlBackground* back) const;
+    UIControlBackground(const UIControlBackground& src);
 
     /**
      \brief Returns Sprite used for draw.
@@ -251,12 +252,7 @@ public:
      \brief Creates the absoulutely identic copy of the background.
      \returns UIControlBackground copy
      */
-    virtual UIControlBackground* Clone();
-    /**
-     \brief Copies all background parameters from the source.
-     \param[in] srcBackground Source background to copy parameters from.
-     */
-    virtual void CopyDataFrom(UIControlBackground* srcBackground);
+    UIControlBackground* Clone() const override;
 
     /**
      \brief Returns final draw color. This color is affected by the parrent color.
@@ -362,7 +358,7 @@ public:
     int32 GetGradientBlendMode() const;
     void SetGradientBlendMode(int32 mode);
 
-    INTROSPECTION_EXTEND(UIControlBackground, BaseObject,
+    INTROSPECTION_EXTEND(UIControlBackground, UIBaseComponent<UIComponent::BACKGROUND_COMPONENT>,
                          PROPERTY("drawType", InspDesc("Draw Type", GlobalEnumMap<eDrawType>::Instance()), GetBgDrawType, SetBgDrawType, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("sprite", "Sprite", GetBgSpritePath, SetSprite, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("frame", "Sprite Frame", GetFrame, SetFrame, I_SAVE | I_VIEW | I_EDIT)
@@ -448,9 +444,9 @@ inline FilePath UIControlBackground::GetMaskSpritePath() const
 inline void UIControlBackground::SetMaskSpriteFromPath(const FilePath& path)
 {
     if (path != "")
-        mask = Sprite::Create(path);
+        mask.Set(Sprite::Create(path));
     else
-        mask = nullptr;
+        mask.Set(nullptr);
 }
 inline FilePath UIControlBackground::GetDetailSpritePath() const
 {
@@ -461,9 +457,9 @@ inline FilePath UIControlBackground::GetDetailSpritePath() const
 inline void UIControlBackground::SetDetailSpriteFromPath(const FilePath& path)
 {
     if (path != "")
-        detail = Sprite::Create(path);
+        detail.Set(Sprite::Create(path));
     else
-        detail = nullptr;
+        detail.Set(nullptr);
 }
 inline FilePath UIControlBackground::GetGradientSpritePath() const
 {
@@ -474,9 +470,9 @@ inline FilePath UIControlBackground::GetGradientSpritePath() const
 inline void UIControlBackground::SetGradientSpriteFromPath(const FilePath& path)
 {
     if (path != "")
-        gradient = Sprite::Create(path);
+        gradient.Set(Sprite::Create(path));
     else
-        gradient = nullptr;
+        gradient.Set(nullptr);
 }
 inline FilePath UIControlBackground::GetContourSpritePath() const
 {
@@ -487,9 +483,9 @@ inline FilePath UIControlBackground::GetContourSpritePath() const
 inline void UIControlBackground::SetContourSpriteFromPath(const FilePath& path)
 {
     if (path != "")
-        contour = Sprite::Create(path);
+        contour.Set(Sprite::Create(path));
     else
-        contour = nullptr;
+        contour.Set(nullptr);
 }
 
 inline int32 UIControlBackground::GetGradientBlendMode() const

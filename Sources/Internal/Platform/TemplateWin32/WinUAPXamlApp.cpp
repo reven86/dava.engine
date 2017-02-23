@@ -10,7 +10,7 @@
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "UI/UIScreenManager.h"
 
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 #include "Platform/TemplateWin32/CorePlatformWinUAP.h"
 #include "Platform/TemplateWin32/WinUAPXamlApp.h"
 #include "Platform/TemplateWin32/DispatcherWinUAP.h"
@@ -34,20 +34,20 @@ namespace DAVA
 {
 namespace
 {
-UIEvent::Device ToDavaDeviceId(::Windows::Devices::Input::PointerDeviceType type)
+eInputDevices ToDavaDeviceId(::Windows::Devices::Input::PointerDeviceType type)
 {
     using ::Windows::Devices::Input::PointerDeviceType;
     switch (type)
     {
     case PointerDeviceType::Mouse:
-        return UIEvent::Device::MOUSE;
+        return eInputDevices::MOUSE;
     case PointerDeviceType::Pen:
-        return UIEvent::Device::PEN;
+        return eInputDevices::PEN;
     case PointerDeviceType::Touch:
-        return UIEvent::Device::TOUCH_SURFACE;
+        return eInputDevices::TOUCH_SURFACE;
     default:
         DVASSERT(false && "can't be!");
-        return UIEvent::Device::UNKNOWN;
+        return eInputDevices::UNKNOWN;
     }
 }
 } // anonymous namespace
@@ -259,16 +259,15 @@ void WinUAPXamlApp::Run(::Windows::ApplicationModel::Activation::LaunchActivated
         EmitPushNotification(args);
     }
 
-    SystemTimer* sysTimer = SystemTimer::Instance();
     while (!quitFlag)
     {
         dispatcher->ProcessTasks();
 
         //  Control FPS
         {
-            static uint64 startTime = sysTimer->AbsoluteMS();
+            static uint64 startTime = SystemTimer::GetMs();
 
-            uint64 elapsedTime = sysTimer->AbsoluteMS() - startTime;
+            uint64 elapsedTime = SystemTimer::GetMs() - startTime;
             int32 fpsLimit = Renderer::GetDesiredFPS();
             if (fpsLimit > 0)
             {
@@ -279,7 +278,7 @@ void WinUAPXamlApp::Run(::Windows::ApplicationModel::Activation::LaunchActivated
                     Thread::Sleep(static_cast<uint32>(sleepMs));
                 }
             }
-            startTime = sysTimer->AbsoluteMS();
+            startTime = SystemTimer::GetMs();
         }
 
         Core::Instance()->SystemProcessFrame();
@@ -427,42 +426,42 @@ void WinUAPXamlApp::UpdateMouseButtonsState(Windows::UI::Input::PointerPointProp
 {
     out.clear();
 
-    if (GetMouseButtonState(UIEvent::MouseButton::LEFT) != pointProperties->IsLeftButtonPressed)
+    if (GetMouseButtonState(eMouseButtons::LEFT) != pointProperties->IsLeftButtonPressed)
     {
         MouseButtonChange change;
-        change.button = UIEvent::MouseButton::LEFT;
+        change.button = eMouseButtons::LEFT;
         change.beginOrEnd = pointProperties->IsLeftButtonPressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
         out.push_back(change);
     }
 
-    if (GetMouseButtonState(UIEvent::MouseButton::RIGHT) != pointProperties->IsRightButtonPressed)
+    if (GetMouseButtonState(eMouseButtons::RIGHT) != pointProperties->IsRightButtonPressed)
     {
         MouseButtonChange change;
-        change.button = UIEvent::MouseButton::RIGHT;
+        change.button = eMouseButtons::RIGHT;
         change.beginOrEnd = pointProperties->IsRightButtonPressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
         out.push_back(change);
     }
 
-    if (GetMouseButtonState(UIEvent::MouseButton::MIDDLE) != pointProperties->IsMiddleButtonPressed)
+    if (GetMouseButtonState(eMouseButtons::MIDDLE) != pointProperties->IsMiddleButtonPressed)
     {
         MouseButtonChange change;
-        change.button = UIEvent::MouseButton::MIDDLE;
+        change.button = eMouseButtons::MIDDLE;
         change.beginOrEnd = pointProperties->IsMiddleButtonPressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
         out.push_back(change);
     }
 
-    if (GetMouseButtonState(UIEvent::MouseButton::EXTENDED1) != pointProperties->IsXButton1Pressed)
+    if (GetMouseButtonState(eMouseButtons::EXTENDED1) != pointProperties->IsXButton1Pressed)
     {
         MouseButtonChange change;
-        change.button = UIEvent::MouseButton::EXTENDED1;
+        change.button = eMouseButtons::EXTENDED1;
         change.beginOrEnd = pointProperties->IsXButton1Pressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
         out.push_back(change);
     }
 
-    if (GetMouseButtonState(UIEvent::MouseButton::EXTENDED2) != pointProperties->IsXButton2Pressed)
+    if (GetMouseButtonState(eMouseButtons::EXTENDED2) != pointProperties->IsXButton2Pressed)
     {
         MouseButtonChange change;
-        change.button = UIEvent::MouseButton::EXTENDED2;
+        change.button = eMouseButtons::EXTENDED2;
         change.beginOrEnd = pointProperties->IsXButton2Pressed ? UIEvent::Phase::BEGAN : UIEvent::Phase::ENDED;
         out.push_back(change);
     }
@@ -576,7 +575,7 @@ void WinUAPXamlApp::OnSwapChainPanelPointerMoved(Platform::Object ^ /*sender*/, 
             {
                 phase = UIEvent::Phase::MOVE;
                 core->RunOnMainThread([this, phase, x, y, type, modifiers]() {
-                    DAVATouchEvent(phase, x, y, static_cast<int32>(UIEvent::MouseButton::NONE), ToDavaDeviceId(type), modifiers);
+                    DAVATouchEvent(phase, x, y, static_cast<int32>(eMouseButtons::NONE), ToDavaDeviceId(type), modifiers);
                 });
             }
             else
@@ -628,28 +627,24 @@ void WinUAPXamlApp::OnSwapChainPanelPointerWheel(Platform::Object ^ /*sender*/, 
     using ::Windows::Devices::Input::PointerDeviceType;
 
     PointerPoint ^ pointerPoint = args->GetCurrentPoint(nullptr);
-    int32 wheelDelta = pointerPoint->Properties->MouseWheelDelta;
+    Vector2 wheelDelta(0.f, pointerPoint->Properties->MouseWheelDelta / static_cast<float32>(WHEEL_DELTA));
+    if (pointerPoint->Properties->IsHorizontalMouseWheel)
+    {
+        std::swap(wheelDelta.x, wheelDelta.y);
+    }
     PointerDeviceType type = pointerPoint->PointerDevice->PointerDeviceType;
     Vector2 physPoint(pointerPoint->Position.X, pointerPoint->Position.Y);
     uint32 modifiers = GetKeyboardModifier();
 
     core->RunOnMainThread([this, wheelDelta, physPoint, type, modifiers]() {
         UIEvent ev;
-        auto delta = wheelDelta / static_cast<float32>(WHEEL_DELTA);
-        KeyboardDevice& keybDev = InputSystem::Instance()->GetKeyboard();
-        if (keybDev.IsKeyPressed(Key::LSHIFT) || keybDev.IsKeyPressed(Key::RSHIFT))
-        {
-            ev.wheelDelta = { delta, 0 };
-        }
-        else
-        {
-            ev.wheelDelta = { 0, delta };
-        }
+        ev.wheelDelta.x = wheelDelta.x;
+        ev.wheelDelta.y = wheelDelta.y;
         ev.modifiers = modifiers;
         ev.phase = UIEvent::Phase::WHEEL;
         ev.device = ToDavaDeviceId(type);
         ev.physPoint = physPoint;
-        ev.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+        ev.timestamp = (SystemTimer::GetMs() / 1000.0);
         UIControlSystem::Instance()->OnInput(&ev);
     });
 }
@@ -701,11 +696,11 @@ void WinUAPXamlApp::OnAcceleratorKeyActivated(Windows::UI::Core::CoreDispatcher 
         auto& keyboard = InputSystem::Instance()->GetKeyboard();
 
         UIEvent uiEvent;
-        uiEvent.device = UIEvent::Device::KEYBOARD;
+        uiEvent.device = eInputDevices::KEYBOARD;
         uiEvent.phase = phase;
         uiEvent.modifiers = modifiers;
         uiEvent.key = keyboard.GetDavaKeyForSystemKey(key);
-        uiEvent.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+        uiEvent.timestamp = (SystemTimer::GetMs() / 1000.0);
         UIControlSystem::Instance()->OnInput(&uiEvent);
 
         switch (uiEvent.phase)
@@ -732,8 +727,8 @@ void WinUAPXamlApp::OnChar(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::
         UIEvent ev;
         DVASSERT(unicodeChar < 0xFFFF); // wchar_t is 16 bit, so keyChar dosnt fit
         ev.keyChar = unicodeChar;
-        ev.device = UIEvent::Device::KEYBOARD;
-        ev.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+        ev.device = eInputDevices::KEYBOARD;
+        ev.timestamp = (SystemTimer::GetMs() / 1000.0);
         ev.modifiers = modifiers;
         if (isRepeat)
         {
@@ -747,10 +742,10 @@ void WinUAPXamlApp::OnChar(Windows::UI::Core::CoreWindow ^ sender, Windows::UI::
     });
 }
 
-void WinUAPXamlApp::SendPressedMouseButtons(float32 x, float32 y, UIEvent::Device device)
+void WinUAPXamlApp::SendPressedMouseButtons(float32 x, float32 y, eInputDevices device)
 {
     uint32 modifiers = GetKeyboardModifier();
-    auto SendDragOnButtonChange = [this, x, y, device, modifiers](UIEvent::MouseButton button) {
+    auto SendDragOnButtonChange = [this, x, y, device, modifiers](eMouseButtons button) {
         if (GetMouseButtonState(button))
         {
             core->RunOnMainThread([this, x, y, button, device, modifiers]() {
@@ -759,11 +754,11 @@ void WinUAPXamlApp::SendPressedMouseButtons(float32 x, float32 y, UIEvent::Devic
         }
     };
 
-    SendDragOnButtonChange(UIEvent::MouseButton::LEFT);
-    SendDragOnButtonChange(UIEvent::MouseButton::RIGHT);
-    SendDragOnButtonChange(UIEvent::MouseButton::MIDDLE);
-    SendDragOnButtonChange(UIEvent::MouseButton::EXTENDED1);
-    SendDragOnButtonChange(UIEvent::MouseButton::EXTENDED2);
+    SendDragOnButtonChange(eMouseButtons::LEFT);
+    SendDragOnButtonChange(eMouseButtons::RIGHT);
+    SendDragOnButtonChange(eMouseButtons::MIDDLE);
+    SendDragOnButtonChange(eMouseButtons::EXTENDED1);
+    SendDragOnButtonChange(eMouseButtons::EXTENDED2);
 }
 
 void WinUAPXamlApp::OnMouseMoved(Windows::Devices::Input::MouseDevice ^ mouseDevice, ::Windows::Devices::Input::MouseEventArgs ^ args)
@@ -780,7 +775,7 @@ void WinUAPXamlApp::OnMouseMoved(Windows::Devices::Input::MouseDevice ^ mouseDev
         for (auto& change : mouseButtonChanges)
         {
             auto fn = [this, window_x, window_y, change, modifiers]() {
-                DAVATouchEvent(change.beginOrEnd, window_x, window_y, static_cast<int32>(change.button), UIEvent::Device::MOUSE, modifiers);
+                DAVATouchEvent(change.beginOrEnd, window_x, window_y, static_cast<int32>(change.button), eInputDevices::MOUSE, modifiers);
             };
             core->RunOnMainThread(fn);
         }
@@ -797,18 +792,18 @@ void WinUAPXamlApp::OnMouseMoved(Windows::Devices::Input::MouseDevice ^ mouseDev
                 phase = UIEvent::Phase::MOVE;
 
                 core->RunOnMainThread([this, phase, dx, dy, modifiers]() {
-                    DAVATouchEvent(phase, dx, dy, static_cast<int32>(UIEvent::MouseButton::NONE), UIEvent::Device::MOUSE, modifiers);
+                    DAVATouchEvent(phase, dx, dy, static_cast<int32>(eMouseButtons::NONE), eInputDevices::MOUSE, modifiers);
                 });
             }
             else
             {
-                SendPressedMouseButtons(dx, dy, UIEvent::Device::MOUSE);
+                SendPressedMouseButtons(dx, dy, eInputDevices::MOUSE);
             }
         }
     }
 }
 
-void WinUAPXamlApp::DAVATouchEvent(UIEvent::Phase phase, float32 x, float32 y, int32 id, UIEvent::Device device, uint32 modifiers)
+void WinUAPXamlApp::DAVATouchEvent(UIEvent::Phase phase, float32 x, float32 y, int32 id, eInputDevices device, uint32 modifiers)
 {
     UIEvent newTouch;
     newTouch.touchId = id;
@@ -819,7 +814,7 @@ void WinUAPXamlApp::DAVATouchEvent(UIEvent::Phase phase, float32 x, float32 y, i
     newTouch.phase = phase;
     newTouch.device = device;
     newTouch.modifiers = modifiers;
-    newTouch.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+    newTouch.timestamp = (SystemTimer::GetMs() / 1000.0);
     UIControlSystem::Instance()->OnInput(&newTouch);
 }
 
@@ -956,7 +951,7 @@ void WinUAPXamlApp::SetTitleName()
     KeyedArchive* options = Core::Instance()->GetOptions();
     if (nullptr != options)
     {
-        WideString title = StringToWString(options->GetString("title", "[set application title using core options property 'title']"));
+        WideString title = UTF8Utils::EncodeToWideString(options->GetString("title", "[set application title using core options property 'title']"));
         ApplicationView::GetForCurrentView()->Title = ref new ::Platform::String(title.c_str());
     }
 }
@@ -1026,15 +1021,12 @@ void WinUAPXamlApp::PrepareScreenSize()
     }
     if (!isPhoneApiDetected)
     {
+        // Need change this property on value by default, because Windows save it from last run.
+        ApplicationView::PreferredLaunchWindowingMode = ApplicationViewWindowingMode::Auto;
         if (!isFull)
         {
             // in units of effective (view) pixels
             ApplicationView::GetForCurrentView()->PreferredLaunchViewSize = Size(static_cast<float32>(windowedMode.width), static_cast<float32>(windowedMode.height));
-            ApplicationView::PreferredLaunchWindowingMode = ApplicationViewWindowingMode::PreferredLaunchViewSize;
-        }
-        else
-        {
-            ApplicationView::PreferredLaunchWindowingMode = ApplicationViewWindowingMode::FullScreen;
         }
         SetFullScreen(isFull);
     }
@@ -1092,9 +1084,9 @@ void WinUAPXamlApp::SendBackKeyEvents()
         ev.keyChar = 0;
         ev.phase = UIEvent::Phase::KEY_DOWN;
         ev.key = Key::BACK;
-        ev.device = UIEvent::Device::KEYBOARD;
+        ev.device = eInputDevices::KEYBOARD;
         ev.modifiers = modifiers;
-        ev.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+        ev.timestamp = (SystemTimer::GetMs() / 1000.0);
 
         UIControlSystem::Instance()->OnInput(&ev);
         InputSystem::Instance()->GetKeyboard().OnKeyPressed(Key::BACK);
@@ -1130,7 +1122,7 @@ Vector2 WinUAPXamlApp::GetWindowMinimumSize() const
 
 const wchar_t* WinUAPXamlApp::xamlTextBoxStyles = LR"(
 <ResourceDictionary
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Style x:Key="dava_custom_textbox" TargetType="TextBox">
         <Setter Property="MinWidth" Value="0" />
@@ -1223,14 +1215,14 @@ const wchar_t* WinUAPXamlApp::xamlTextBoxStyles = LR"(
 
 const wchar_t* WinUAPXamlApp::xamlWebView = LR"(
 <WebView x:Name="xamlWebView" Visibility="Collapsed"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 </WebView>
 )";
 
 const wchar_t* WinUAPXamlApp::xamlTextBox = LR"(
 <TextBox x:Name="xamlTextBox" Visibility="Collapsed"
-    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 </TextBox>
 )";

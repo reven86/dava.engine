@@ -1,9 +1,9 @@
-#if defined(__DAVAENGINE_COREV2__)
-
 #include "Engine/Private/Dispatcher/MainDispatcherEvent.h"
 
+#if defined(__DAVAENGINE_COREV2__)
+
 #include "Debug/DVAssert.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 
 namespace DAVA
 {
@@ -17,7 +17,7 @@ bool MainDispatcherEvent::IsInputEvent(eType type)
 MainDispatcherEvent MainDispatcherEvent::CreateAppTerminateEvent(bool triggeredBySystem)
 {
     MainDispatcherEvent e(APP_TERMINATE);
-    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
+    e.timestamp = SystemTimer::GetMs();
     e.terminateEvent.triggeredBySystem = triggeredBySystem;
     return e;
 }
@@ -25,7 +25,7 @@ MainDispatcherEvent MainDispatcherEvent::CreateAppTerminateEvent(bool triggeredB
 MainDispatcherEvent MainDispatcherEvent::CreateUserCloseRequestEvent(Window* window)
 {
     MainDispatcherEvent e(USER_CLOSE_REQUEST, window);
-    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
+    e.timestamp = SystemTimer::GetMs();
     return e;
 }
 
@@ -53,6 +53,16 @@ MainDispatcherEvent MainDispatcherEvent::CreateGamepadMotionEvent(uint32 deviceI
     return e;
 }
 
+MainDispatcherEvent MainDispatcherEvent::CreateDisplayConfigChangedEvent(DisplayInfo* displayInfo, size_t count)
+{
+    DVASSERT(displayInfo != nullptr && count > 0);
+
+    MainDispatcherEvent e(DISPLAY_CONFIG_CHANGED);
+    e.displayConfigEvent.displayInfo = displayInfo;
+    e.displayConfigEvent.count = count;
+    return e;
+}
+
 MainDispatcherEvent MainDispatcherEvent::CreateGamepadButtonEvent(uint32 deviceId, eType gamepadButtonEventType, uint32 button)
 {
     DVASSERT(gamepadButtonEventType == GAMEPAD_BUTTON_DOWN || gamepadButtonEventType == GAMEPAD_BUTTON_UP);
@@ -68,7 +78,7 @@ MainDispatcherEvent MainDispatcherEvent::CreateGamepadButtonEvent(uint32 deviceI
 MainDispatcherEvent MainDispatcherEvent::CreateWindowCreatedEvent(Window* window, float32 w, float32 h, float32 surfaceW, float32 surfaceH, float32 dpi, eFullscreen fullscreen)
 {
     MainDispatcherEvent e(WINDOW_CREATED, window);
-    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
+    e.timestamp = SystemTimer::GetMs();
     e.sizeEvent.width = w;
     e.sizeEvent.height = h;
     e.sizeEvent.surfaceWidth = surfaceW;
@@ -82,20 +92,20 @@ MainDispatcherEvent MainDispatcherEvent::CreateWindowCreatedEvent(Window* window
 MainDispatcherEvent MainDispatcherEvent::CreateWindowDestroyedEvent(Window* window)
 {
     MainDispatcherEvent e(WINDOW_DESTROYED, window);
-    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
+    e.timestamp = SystemTimer::GetMs();
     return e;
 }
 
-MainDispatcherEvent MainDispatcherEvent::CreateWindowSizeChangedEvent(Window* window, float32 w, float32 h, float32 surfaceW, float32 surfaceH, float32 surfaceScale, eFullscreen fullscreen)
+MainDispatcherEvent MainDispatcherEvent::CreateWindowSizeChangedEvent(Window* window, float32 w, float32 h, float32 surfaceW, float32 surfaceH, float32 surfaceScale, float32 dpi, eFullscreen fullscreen)
 {
     MainDispatcherEvent e(WINDOW_SIZE_CHANGED, window);
-    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
+    e.timestamp = SystemTimer::GetMs();
     e.sizeEvent.width = w;
     e.sizeEvent.height = h;
     e.sizeEvent.surfaceWidth = surfaceW;
     e.sizeEvent.surfaceHeight = surfaceH;
     e.sizeEvent.surfaceScale = surfaceScale;
-    e.sizeEvent.dpi = 0.0f;
+    e.sizeEvent.dpi = dpi;
     e.sizeEvent.fullscreen = fullscreen;
     return e;
 }
@@ -103,7 +113,7 @@ MainDispatcherEvent MainDispatcherEvent::CreateWindowSizeChangedEvent(Window* wi
 MainDispatcherEvent MainDispatcherEvent::CreateWindowFocusChangedEvent(Window* window, bool focusState)
 {
     MainDispatcherEvent e(WINDOW_FOCUS_CHANGED, window);
-    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
+    e.timestamp = SystemTimer::GetMs();
     e.stateEvent.state = focusState;
     return e;
 }
@@ -111,7 +121,7 @@ MainDispatcherEvent MainDispatcherEvent::CreateWindowFocusChangedEvent(Window* w
 MainDispatcherEvent MainDispatcherEvent::CreateWindowVisibilityChangedEvent(Window* window, bool visibilityState)
 {
     MainDispatcherEvent e(WINDOW_VISIBILITY_CHANGED, window);
-    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
+    e.timestamp = SystemTimer::GetMs();
     e.stateEvent.state = visibilityState;
     return e;
 }
@@ -119,8 +129,15 @@ MainDispatcherEvent MainDispatcherEvent::CreateWindowVisibilityChangedEvent(Wind
 MainDispatcherEvent MainDispatcherEvent::CreateWindowDpiChangedEvent(Window* window, float32 dpi)
 {
     MainDispatcherEvent e(WINDOW_DPI_CHANGED, window);
-    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
+    e.timestamp = SystemTimer::GetMs();
     e.dpiEvent.dpi = dpi;
+    return e;
+}
+
+MainDispatcherEvent MainDispatcherEvent::CreateWindowCancelInputEvent(Window* window)
+{
+    MainDispatcherEvent e(WINDOW_CANCEL_INPUT, window);
+    e.timestamp = SystemTimer::GetMs();
     return e;
 }
 
@@ -129,7 +146,7 @@ MainDispatcherEvent MainDispatcherEvent::CreateWindowKeyPressEvent(Window* windo
     DVASSERT(keyEventType == KEY_DOWN || keyEventType == KEY_UP || keyEventType == KEY_CHAR);
 
     MainDispatcherEvent e(keyEventType, window);
-    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
+    e.timestamp = SystemTimer::GetMs();
     e.keyEvent.key = key;
     e.keyEvent.modifierKeys = modifierKeys;
     e.keyEvent.isRepeated = isRepeated;
@@ -142,7 +159,7 @@ MainDispatcherEvent MainDispatcherEvent::CreateWindowMouseClickEvent(Window* win
     DVASSERT(button != eMouseButtons::NONE);
 
     MainDispatcherEvent e(mouseClickEventType, window);
-    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
+    e.timestamp = SystemTimer::GetMs();
     e.mouseEvent.button = button;
     e.mouseEvent.clicks = clicks;
     e.mouseEvent.modifierKeys = modifierKeys;
@@ -157,7 +174,7 @@ MainDispatcherEvent MainDispatcherEvent::CreateWindowMouseClickEvent(Window* win
 MainDispatcherEvent MainDispatcherEvent::CreateWindowMouseMoveEvent(Window* window, float32 x, float32 y, eModifierKeys modifierKeys, bool isRelative)
 {
     MainDispatcherEvent e(MOUSE_MOVE, window);
-    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
+    e.timestamp = SystemTimer::GetMs();
     e.mouseEvent.button = eMouseButtons::NONE;
     e.mouseEvent.clicks = 0;
     e.mouseEvent.modifierKeys = modifierKeys;
@@ -172,7 +189,7 @@ MainDispatcherEvent MainDispatcherEvent::CreateWindowMouseMoveEvent(Window* wind
 MainDispatcherEvent MainDispatcherEvent::CreateWindowMouseWheelEvent(Window* window, float32 x, float32 y, float32 deltaX, float32 deltaY, eModifierKeys modifierKeys, bool isRelative)
 {
     MainDispatcherEvent e(MOUSE_WHEEL, window);
-    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
+    e.timestamp = SystemTimer::GetMs();
     e.mouseEvent.button = eMouseButtons::NONE;
     e.mouseEvent.clicks = 0;
     e.mouseEvent.modifierKeys = modifierKeys;
@@ -189,7 +206,7 @@ MainDispatcherEvent MainDispatcherEvent::CreateWindowTouchEvent(Window* window, 
     DVASSERT(touchEventType == TOUCH_DOWN || touchEventType == TOUCH_UP || touchEventType == TOUCH_MOVE);
 
     MainDispatcherEvent e(touchEventType, window);
-    e.timestamp = SystemTimer::Instance()->FrameStampTimeMS();
+    e.timestamp = SystemTimer::GetMs();
     e.touchEvent.touchId = touchId;
     e.touchEvent.modifierKeys = modifierKeys;
     e.touchEvent.x = x;
@@ -235,7 +252,6 @@ MainDispatcherEvent MainDispatcherEvent::CreateWindowCaptureLostEvent(Window* wi
     MainDispatcherEvent e(WINDOW_CAPTURE_LOST, window);
     return e;
 }
-
 } // namespace Private
 } // namespace DAVA
 

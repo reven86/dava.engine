@@ -1,6 +1,5 @@
 #include "DownloaderCommon.h"
-#include "FileSystem/File.h"
-#include "FileSystem/FileSystem.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {
@@ -16,6 +15,7 @@ DownloadTaskDescription::DownloadTaskDescription(const String& srcUrl,
     , url(srcUrl)
     , storePath(storeToFilePath)
     , fileErrno(0)
+    , implError(0)
     , timeout(_timeout)
     , retriesCount(_retriesCount)
     , retriesLeft(retriesCount)
@@ -42,6 +42,7 @@ DownloadTaskDescription::DownloadTaskDescription(const String& srcUrl,
     : id(0)
     , url(srcUrl)
     , fileErrno(0)
+    , implError(0)
     , timeout(_timeout)
     , retriesCount(_retriesCount)
     , retriesLeft(retriesCount)
@@ -60,7 +61,7 @@ DownloadTaskDescription::DownloadTaskDescription(const String& srcUrl,
 
 DownloadPart::DownloadPart(Downloader* currentDownloader)
     : downloader(currentDownloader)
-    , dataBuffer(0)
+    , dataBuffer(nullptr)
     , downloadSize(0)
     , seekPos(0)
     , progress(0)
@@ -77,23 +78,20 @@ bool DownloadPart::SaveToBuffer(char8* srcBuf, uint32 size)
         progress += size;
         return true;
     }
-    else
-    {
-        Logger::Error("[DownloadPart::SaveToBuffer] Cannot save data.");
-    }
+    Logger::Error("[DownloadPart::SaveToBuffer] Cannot save data.");
     return false;
 }
 
 DataChunkInfo::DataChunkInfo(uint32 size)
-    : buffer(NULL)
+    : buffer(new char8[size])
     , bufferSize(size)
     , progress(0)
 {
-    buffer = new char8[bufferSize];
 }
 
 DataChunkInfo::~DataChunkInfo()
 {
     SafeDeleteArray(buffer);
+    bufferSize = 0;
 }
 }

@@ -1,9 +1,8 @@
 #pragma once
 
+#include "Base/Platform.h"
+
 #if defined(__DAVAENGINE_COREV2__)
-
-#include "Base/BaseTypes.h"
-
 #if defined(__DAVAENGINE_QT__)
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_MACOS__)
@@ -14,7 +13,7 @@
 
 // Implementation of NSApplicationDelegate
 // Forwards all necessary methods to CoreNativeBridge
-@interface AppDelegate : NSObject<NSApplicationDelegate>
+@interface AppDelegate : NSObject<NSApplicationDelegate, NSUserNotificationCenterDelegate>
 {
     DAVA::Private::CoreNativeBridge* bridge;
 }

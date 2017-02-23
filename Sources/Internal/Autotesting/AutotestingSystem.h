@@ -7,11 +7,9 @@
 
 #include "DAVAEngine.h"
 #include "Base/Singleton.h"
-#include "FileSystem/FileSystem.h"
+#include "Time/DateTime.h"
 
 #include "Autotesting/AutotestingSystemLua.h"
-
-#include "Platform/DateTime.h"
 
 namespace DAVA
 {
@@ -97,20 +95,69 @@ public:
         return luaSystem;
     };
 
-    static String ResolvePathToAutomation(const String& automationPath);
+    bool ResolvePathToAutomation();
+    FilePath GetPathTo(const String& path) const;
+
+    // Returns String at 'lineNumber'.
+    // If 'lineNumber' points to empy line next non-empty line is read and 'lineNumber' is adjusted.
+    // If 'lineNumber' points beyond file scope empty line is returned and 'lineNumber' is set to '-1'
+    String GetLuaString(int32& lineNumber) const;
+
+    void OnRecordClickControl(UIControl*);
+    void OnRecordDoubleClickControl(UIControl*);
+    void OnRecordFastSelectControl(UIControl*);
+
+    void OnRecordWaitControlBecomeVisible(UIControl*);
+    void OnRecordWaitControlBecomeEnabled(UIControl*);
+    void OnRecordWaitControlDissapeared(UIControl*);
+
+    void OnRecordSetText(UIControl*, const String&);
+    void OnRecordCheckText(UIControl*);
+
+    void OnRecordIsVisible(UIControl*);
+    void OnRecordIsDisabled(UIControl*);
+
+    void StartRecording();
+    void StopRecording();
+    bool IsRecording() const
+    {
+        return isRecording;
+    }
+
+    void SetTestFinishedCallback(const Function<void()> callback)
+    {
+        testFinishedCallback = callback;
+    }
+    void SetTestErrorCallback(const Function<void(const String&)> callback)
+    {
+        testErrorCallback = callback;
+    }
 
 protected:
     void DrawTouches();
     void OnScreenShotInternal(Texture* texture);
+    void OnWindowSizeChanged(Window*, Size2f windowSize, Size2f surfaceSize);
+
+    void ResetScreenshotTexture(Size2i size);
+
     AutotestingSystemLua* luaSystem;
     //DB
     void ExitApp();
 
+    //Recording
+    String GetControlHierarchy(UIControl*) const;
+    void WriteScriptLine(const String&);
+
 private:
     bool isScreenShotSaving = false;
+    FilePath pathToAutomation;
+
+    Function<void()> testFinishedCallback;
+    Function<void(const String&)> testErrorCallback;
 
 public:
-    uint64 startTimeMS;
+    static const String RecordScriptFileName;
+    float32 startTime = 0.f;
 
     bool isInit;
     bool isRunning;
@@ -159,6 +206,10 @@ public:
     Texture* screenshotTexture = nullptr;
     rhi::HSyncObject screenshotSync;
     bool screenshotRequested = false;
+
+    TrackedObject localTrackedObject;
+
+    bool isRecording = false;
 };
 
 inline bool AutotestingSystem::GetIsScreenShotSaving() const

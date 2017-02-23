@@ -1,14 +1,13 @@
-#if defined(__DAVAENGINE_COREV2__)
-
 #pragma once
 
 #include "Base/BaseTypes.h"
+
+#if defined(__DAVAENGINE_COREV2__)
 
 namespace DAVA
 {
 class Logger;
 class FileSystem;
-class SystemTimer;
 class AllocatorFactory;
 class Random;
 class PerformanceSettings;
@@ -28,10 +27,15 @@ class RenderSystem2D;
 class UIScreenManager;
 class LocalNotificationController;
 
-class IPackManager;
+class DLCManager;
 class AssetsManagerAndroid;
 class ModuleManager;
+class PluginManager;
 class EngineSettings;
+
+class DeviceManager;
+
+class AutotestingSystem;
 
 namespace Net
 {
@@ -56,13 +60,13 @@ public:
     // Subsystems that are always created
     Logger* logger = nullptr;
     FileSystem* fileSystem = nullptr;
-    SystemTimer* systemTimer = nullptr;
     AllocatorFactory* allocatorFactory = nullptr;
     Random* random = nullptr;
     PerformanceSettings* performanceSettings = nullptr;
     VersionInfo* versionInfo = nullptr;
 
     InputSystem* inputSystem = nullptr;
+    // TODO: move UI control system to Window
     UIControlSystem* uiControlSystem = nullptr;
 
     AnimationManager* animationManager = nullptr;
@@ -72,14 +76,20 @@ public:
     LocalNotificationController* localNotificationController = nullptr;
 
     ModuleManager* moduleManager = nullptr;
-    IPackManager* packManager = nullptr;
+    PluginManager* pluginManager = nullptr;
+
+    DLCManager* dlcManager = nullptr;
     Analytics::Core* analyticsCore = nullptr;
 
     EngineSettings* settings = nullptr;
-    
+
 #if defined(__DAVAENGINE_ANDROID__)
     AssetsManagerAndroid* assetsManager = nullptr;
 #endif
+
+    DeviceManager* deviceManager = nullptr;
+
+    AutotestingSystem* autotestingSystem = nullptr;
 };
 
 } // namespace DAVA

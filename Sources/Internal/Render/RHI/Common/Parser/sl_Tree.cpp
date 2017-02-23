@@ -1,5 +1,7 @@
 #include "sl_Tree.h"
 
+#include "Logger/Logger.h"
+
 using DAVA::Logger;
 
 namespace sl

@@ -2,21 +2,15 @@
 #include "TArc/Testing/MockInvoker.h"
 #include "TArc/Core/ControllerModule.h"
 #include "TArc/WindowSubSystem/UI.h"
+#include "TArc/Utils/DebuggerDetection.h"
 
-#include "Engine/Engine.h"
-#include "Engine/NativeService.h"
-#include "UnitTests/UnitTests.h"
-
-#include "Base/Platform.h"
+#include <Engine/Engine.h>
+#include <UnitTests/UnitTests.h>
 
 #include <QTimer>
+#include <QApplication>
+#include <QAbstractEventDispatcher>
 #include <gmock/gmock-spec-builders.h>
-
-#if defined(__DAVAENGINE_MACOS__)
-#include <sys/types.h>
-#include <sys/sysctl.h>
-
-#endif
 
 namespace DAVA
 {
@@ -31,7 +25,7 @@ protected:
     {
     }
 
-    bool CanWindowBeClosedSilently(const WindowKey& key) override
+    bool CanWindowBeClosedSilently(const WindowKey& key, String& requestWindowText) override
     {
         return true;
     }
@@ -58,31 +52,14 @@ protected:
         DataContext::ContextID id = ctxManager->CreateContext(DAVA::Vector<std::unique_ptr<DAVA::TArc::DataNode>>());
         ctxManager->ActivateContext(id);
     }
+
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(TestControllerModule, ControllerModule)
+    {
+        ReflectionRegistrator<TestControllerModule>::Begin()
+        .ConstructorByPointer()
+        .End();
+    }
 };
-
-bool IsDebuggerPresent()
-{
-#if defined(__DAVAENGINE_WIN32__)
-    return ::IsDebuggerPresent();
-#elif defined(__DAVAENGINE_MACOS__)
-    int mib[4];
-    struct kinfo_proc info;
-    size_t size = sizeof(info);
-
-    info.kp_proc.p_flag = 0;
-
-    mib[0] = CTL_KERN;
-    mib[1] = KERN_PROC;
-    mib[2] = KERN_PROC_PID;
-    mib[3] = getpid();
-
-    sysctl(mib, sizeof(mib) / sizeof(*mib), &info, &size, NULL, 0);
-
-    return (info.kp_proc.p_flag & P_TRACED) != 0;
-#else
-    return false;
-#endif
-}
 }
 
 const double TestClass::testTimeLimit = 10.0; // seconds
@@ -90,13 +67,19 @@ const double TestClass::testTimeLimit = 10.0; // seconds
 TestClass::~TestClass()
 {
     DVASSERT(core != nullptr);
-    Engine* e = Engine::Instance();
-    RenderWidget* widget = e->GetNativeService()->GetRenderWidget();
+    RenderWidget* widget = PlatformApi::Qt::GetRenderWidget();
     DVASSERT(widget != nullptr);
     widget->setParent(nullptr); // remove it from Qt hierarchy to avoid Widget deletion.
 
+    QWidget* focusWidget = PlatformApi::Qt::GetApplication()->focusWidget();
+    if (focusWidget != nullptr)
+    {
+        focusWidget->clearFocus();
+    }
+
     coreChanged.Emit(nullptr);
     Core* c = core.release();
+    c->syncSignal.DisconnectAll();
     c->SetInvokeListener(nullptr);
     mockInvoker.reset();
     QTimer::singleShot(0, [c]()
@@ -108,8 +91,25 @@ TestClass::~TestClass()
 
 void TestClass::SetUp(const String& testName)
 {
+    updateForCurrentTestCalled = false;
     if (core == nullptr)
     {
+        using namespace std::chrono;
+        TestInfo::TimePoint startTimePoint = TestInfo::Clock::now();
+        auto timeoutCrashHandler = [startTimePoint]()
+        {
+            double elapsedSeconds = duration_cast<duration<double>>(TestInfo::Clock::now() - startTimePoint).count();
+            if (elapsedSeconds > 10 * 60) // 10 minutes
+            {
+                TEST_VERIFY_WITH_MESSAGE(false, "Timeout fail");
+                std::terminate();
+            }
+        };
+
+        QAbstractEventDispatcher* dispatcher = qApp->eventDispatcher();
+        connections.AddConnection(dispatcher, &QAbstractEventDispatcher::aboutToBlock, timeoutCrashHandler);
+        connections.AddConnection(dispatcher, &QAbstractEventDispatcher::awake, timeoutCrashHandler);
+
         Engine* e = Engine::Instance();
         DVASSERT(e != nullptr);
         DVASSERT(e->IsConsoleMode() == false);
@@ -128,6 +128,7 @@ void TestClass::SetUp(const String& testName)
         Window* w = e->PrimaryWindow();
         DVASSERT(w);
         core->OnWindowCreated(w);
+        core->syncSignal.Connect(this, &TestClass::AfterWrappersSync);
         coreChanged.Emit(core.get());
     }
 
@@ -138,6 +139,7 @@ void TestClass::Update(float32 timeElapsed, const String& testName)
 {
     DVASSERT(core != nullptr);
     core->OnFrame(timeElapsed);
+    updateForCurrentTestCalled = true;
 }
 
 bool TestClass::TestComplete(const String& testName) const
@@ -152,7 +154,7 @@ bool TestClass::TestComplete(const String& testName) const
     using namespace std::chrono;
     double elapsedSeconds = duration_cast<duration<double>>(TestInfo::Clock::now() - iter->startTime).count();
     bool checkTimeLimit = true;
-    checkTimeLimit = !TArcTestClassDetail::IsDebuggerPresent();
+    checkTimeLimit = !IsDebuggerPresent();
     if (checkTimeLimit == true && elapsedSeconds > testTimeLimit)
     {
         TEST_VERIFY(::testing::Mock::VerifyAndClear());
@@ -164,7 +166,7 @@ bool TestClass::TestComplete(const String& testName) const
     {
         TEST_VERIFY(::testing::Mock::VerifyAndClear());
     }
-    return !hasNotSatisfied;
+    return !hasNotSatisfied && updateForCurrentTestCalled;
 }
 
 MockInvoker* TestClass::GetMockInvoker()
@@ -197,7 +199,7 @@ DAVA::TArc::ContextManager* TestClass::GetContextManager()
     return core->GetCoreInterface();
 }
 
-QWidget* TestClass::GetWindow(const WindowKey& wndKey)
+QWidget* TestClass::GetWindow(const WindowKey& wndKey) const
 {
     UIManager* manager = dynamic_cast<UIManager*>(core->GetUI());
     QWidget* wnd = manager->GetWindow(wndKey);
@@ -205,7 +207,7 @@ QWidget* TestClass::GetWindow(const WindowKey& wndKey)
     return wnd;
 }
 
-QList<QWidget*> TestClass::LookupWidget(const WindowKey& wndKey, const QString& objectName)
+QList<QWidget*> TestClass::LookupWidget(const WindowKey& wndKey, const QString& objectName) const
 {
     return GetWindow(wndKey)->findChildren<QWidget*>(objectName);
 }
@@ -215,6 +217,11 @@ void TestClass::CreateTestedModules()
 }
 
 Signal<Core*> TestClass::coreChanged;
+
+// ContextAccessor* TestClass::GetAccessor()
+// {
+//     return core->GetAccessor();
+// }
 
 } // namespace TArc
 } // namespace DAVA

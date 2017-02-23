@@ -10,7 +10,7 @@ template <typename T>
 class ValueWrapperDefault : public ValueWrapper
 {
 public:
-    static const bool isConst = std::is_const<typename std::remove_pointer<T>::type>::value;
+    static const bool isConst = std::is_const<T>::value;
 
     ValueWrapperDefault() = default;
 
@@ -19,7 +19,7 @@ public:
         return isConst || object.IsConst();
     }
 
-    const Type* GetType() const override
+    const Type* GetType(const ReflectedObject& object) const override
     {
         return Type::Instance<T>();
     }
@@ -40,6 +40,16 @@ public:
         {
             T* ptr = object.GetPtr<T>();
             return SetValueInternal(ptr, value);
+        }
+
+        return false;
+    }
+
+    inline bool SetValueWithCast(const ReflectedObject& object, const Any& value) const override
+    {
+        if (value.CanCast<T>())
+        {
+            return SetValue(object, value.Cast<T>());
         }
 
         return false;

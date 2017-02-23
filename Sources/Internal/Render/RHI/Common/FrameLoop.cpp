@@ -11,14 +11,14 @@ namespace rhi
 {
 namespace FrameLoop
 {
-static uint32 currentFrameNumber = 0;
+static DAVA::uint32 currentFrameNumber = 0;
 static DAVA::Vector<CommonImpl::Frame> frames;
-static uint32 frameToBuild = 0;
-static uint32 frameToExecute = 0;
-static uint32 framePoolSize = 0;
+static DAVA::uint32 framePoolSize = 0;
+static DAVA::uint32 frameToBuild = 0;
+static DAVA::uint32 frameToExecute = 0;
 static DAVA::Spinlock frameSync;
 
-void Initialize(uint32 _framePoolSize)
+void Initialize(DAVA::uint32 _framePoolSize)
 {
     framePoolSize = _framePoolSize;
     frames.resize(framePoolSize);
@@ -47,6 +47,7 @@ void RejectFrames()
 void ProcessFrame()
 {
     DVASSERT(framePoolSize);
+
     bool presentResult = true;
     if (NeedRestoreResources())
     {

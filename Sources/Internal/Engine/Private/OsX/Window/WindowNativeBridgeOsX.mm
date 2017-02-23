@@ -6,6 +6,7 @@
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_MACOS__)
 
+#import <AppKit/NSCursor.h>
 #import <AppKit/NSWindow.h>
 #import <AppKit/NSScreen.h>
 
@@ -15,7 +16,7 @@
 #include "Engine/Private/OsX/Window/RenderViewOsX.h"
 #include "Engine/Private/OsX/Window/WindowDelegateOsX.h"
 
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 #include "Logger/Logger.h"
 
 namespace DAVA
@@ -40,17 +41,28 @@ bool WindowNativeBridge::CreateWindow(float32 x, float32 y, float32 width, float
                        NSResizableWindowMask;
     // clang-format on
 
+    // create window
     NSRect viewRect = NSMakeRect(x, y, width, height);
-    windowDelegate = [[WindowDelegate alloc] initWithBridge:this];
-    renderView = [[RenderView alloc] initWithFrame:viewRect andBridge:this];
-
     nswindow = [[NSWindow alloc] initWithContentRect:viewRect
                                            styleMask:style
                                              backing:NSBackingStoreBuffered
                                                defer:NO];
+    // set some window params
     [nswindow setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
-    [nswindow setContentView:renderView];
+    [nswindow setContentMinSize:NSMakeSize(128, 128)];
+
+    // add window delegate
+    windowDelegate = [[WindowDelegate alloc] initWithBridge:this];
     [nswindow setDelegate:windowDelegate];
+
+    // create render view and add it into window
+    renderView = [[RenderView alloc] initWithBridge:this];
+    [nswindow setContentView:renderView];
+
+    // we need to call this hack because native controls
+    // will be drawn below render view (will be invisible).
+    // See hack implementation for more description
+    ForceBackbufferSizeUpdate();
 
     {
         float32 dpi = GetDpi();
@@ -65,7 +77,30 @@ bool WindowNativeBridge::CreateWindow(float32 x, float32 y, float32 width, float
 
 void WindowNativeBridge::ResizeWindow(float32 width, float32 height)
 {
-    [nswindow setContentSize:NSMakeSize(width, height)];
+    NSScreen* screen = [nswindow screen];
+
+    NSRect windowRect = [nswindow frame];
+    NSRect screenRect = [screen visibleFrame];
+
+    float32 dx = (windowRect.size.width - width) / 2.0;
+    float32 dy = (windowRect.size.height - height) / 2.0;
+
+    NSPoint pos = NSMakePoint(windowRect.origin.x + dx, windowRect.origin.y + dy);
+
+    if (pos.x < screenRect.origin.x)
+    {
+        pos.x = screenRect.origin.x;
+    }
+
+    if ((pos.y + height) > (screenRect.origin.y + screenRect.size.height))
+    {
+        pos.y = (screenRect.origin.y + screenRect.size.height) - height;
+    }
+
+    NSSize sz = NSMakeSize(width, height);
+
+    [nswindow setFrameOrigin:pos];
+    [nswindow setContentSize:sz];
 }
 
 void WindowNativeBridge::CloseWindow()
@@ -80,6 +115,12 @@ void WindowNativeBridge::SetTitle(const char8* title)
     [nsTitle release];
 }
 
+void WindowNativeBridge::SetMinimumSize(float32 width, float32 height)
+{
+    NSSize sz = NSMakeSize(width, height);
+    [nswindow setContentMinSize:sz];
+}
+
 void WindowNativeBridge::SetFullscreen(eFullscreen newMode)
 {
     bool isFullscreenRequested = newMode == eFullscreen::On;
@@ -87,6 +128,15 @@ void WindowNativeBridge::SetFullscreen(eFullscreen newMode)
     if (isFullscreen != isFullscreenRequested)
     {
         [nswindow toggleFullScreen:nil];
+
+        if (isFullscreen)
+        {
+            // If we're entering fullscreen we want our app to also become focused
+            // To handle cases when app is being opened with fullscreen mode,
+            // but another app gets focus before our app's window is created,
+            // thus ignoring any input afterwards
+            [[NSApplication sharedApplication] activateIgnoringOtherApps:YES];
+        }
     }
 }
 
@@ -104,20 +154,20 @@ void WindowNativeBridge::ApplicationDidHideUnhide(bool hidden)
 
 void WindowNativeBridge::WindowDidMiniaturize()
 {
-    isMiniaturized = true;
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, false));
+    isVisible = false;
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, isVisible));
 }
 
 void WindowNativeBridge::WindowDidDeminiaturize()
 {
-    isMiniaturized = false;
 }
 
 void WindowNativeBridge::WindowDidBecomeKey()
 {
-    if (isMiniaturized || isAppHidden)
+    if (isAppHidden || !isVisible)
     {
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, true));
+        isVisible = true;
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, isVisible));
     }
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, true));
 }
@@ -137,25 +187,42 @@ void WindowNativeBridge::WindowDidResignKey()
     }
 }
 
-void WindowNativeBridge::WindowDidResize()
+void WindowNativeBridge::HandleSizeChanging(bool dpiChanged)
 {
     CGSize size = [renderView frame].size;
     CGSize surfSize = [renderView convertSizeToBacking:size];
     float32 surfaceScale = [renderView backbufferScale];
     eFullscreen fullscreen = isFullscreen ? eFullscreen::On : eFullscreen::Off;
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, size.width, size.height, surfSize.width, surfSize.height, surfaceScale, fullscreen));
+    float32 dpi = GetDpi();
+
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, size.width, size.height, surfSize.width, surfSize.height, surfaceScale, dpi, fullscreen));
+    if (dpiChanged)
+    {
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowDpiChangedEvent(window, dpi));
+    }
+}
+
+void WindowNativeBridge::WindowDidResize()
+{
+    HandleSizeChanging(false);
+}
+
+void WindowNativeBridge::WindowWillStartLiveResize()
+{
+}
+
+void WindowNativeBridge::WindowDidEndLiveResize()
+{
+    if (!isFullscreenToggling)
+    {
+        ForceBackbufferSizeUpdate();
+    }
 }
 
 void WindowNativeBridge::WindowDidChangeScreen()
 {
-    CGSize size = [renderView frame].size;
-    CGSize surfSize = [renderView convertSizeToBacking:size];
-    float32 surfaceScale = [renderView backbufferScale];
-    float32 dpi = GetDpi();
-    eFullscreen fullscreen = isFullscreen ? eFullscreen::On : eFullscreen::Off;
-
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, size.width, size.height, surfSize.width, surfSize.height, surfaceScale, fullscreen));
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowDpiChangedEvent(window, dpi));
+    ForceBackbufferSizeUpdate();
+    HandleSizeChanging(true);
 }
 
 bool WindowNativeBridge::WindowShouldClose()
@@ -183,11 +250,23 @@ void WindowNativeBridge::WindowWillClose()
 void WindowNativeBridge::WindowWillEnterFullScreen()
 {
     isFullscreen = true;
+    isFullscreenToggling = true;
+}
+
+void WindowNativeBridge::WindowDidEnterFullScreen()
+{
+    isFullscreenToggling = false;
 }
 
 void WindowNativeBridge::WindowWillExitFullScreen()
 {
     isFullscreen = false;
+    isFullscreenToggling = true;
+}
+
+void WindowNativeBridge::WindowDidExitFullScreen()
+{
+    isFullscreenToggling = false;
 }
 
 void WindowNativeBridge::MouseClick(NSEvent* theEvent)
@@ -247,6 +326,16 @@ void WindowNativeBridge::MouseMove(NSEvent* theEvent)
 
 void WindowNativeBridge::MouseWheel(NSEvent* theEvent)
 {
+    static const float32 scrollK = 10.0f;
+
+    NSSize sz = [renderView frame].size;
+    NSPoint pt = theEvent.locationInWindow;
+
+    float32 x = pt.x;
+    float32 y = sz.height - pt.y;
+    float32 wheelDeltaX = [theEvent scrollingDeltaX];
+    float32 wheelDeltaY = [theEvent scrollingDeltaY];
+
     // detect the wheel event device
     // http://stackoverflow.com/questions/13807616/mac-cocoa-how-to-differentiate-if-a-nsscrollwheel-event-is-from-a-mouse-or-trac
     if (NSEventPhaseNone != [theEvent momentumPhase] || NSEventPhaseNone != [theEvent phase])
@@ -257,32 +346,28 @@ void WindowNativeBridge::MouseWheel(NSEvent* theEvent)
     else
     {
         //event.device = DAVA::UIEvent::Device::MOUSE;
+        // Invert scroll directions back because MacOS do it by self when Shift pressed
+        if (([theEvent modifierFlags] & NSShiftKeyMask) != 0)
+        {
+            std::swap(wheelDeltaX, wheelDeltaY);
+        }
     }
 
-    const float32 scrollK = 10.0f;
-
-    NSSize sz = [renderView frame].size;
-    NSPoint pt = theEvent.locationInWindow;
-
-    float32 x = pt.x;
-    float32 y = sz.height - pt.y;
-    float32 deltaX = [theEvent scrollingDeltaX];
-    float32 deltaY = [theEvent scrollingDeltaY];
     if ([theEvent hasPreciseScrollingDeltas] == YES)
     {
         // Touchpad or other precise device send integer values (-3, -1, 0, 1, 40, etc)
-        deltaX /= scrollK;
-        deltaY /= scrollK;
+        wheelDeltaX /= scrollK;
+        wheelDeltaY /= scrollK;
     }
     else
     {
         // Mouse sends float values from 0.1 for one wheel tick
-        deltaX *= scrollK;
-        deltaY *= scrollK;
+        wheelDeltaX *= scrollK;
+        wheelDeltaY *= scrollK;
     }
     eModifierKeys modifierKeys = GetModifierKeys(theEvent);
     bool isRelative = captureMode == eCursorCapture::PINNING;
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseWheelEvent(window, x, y, deltaX, deltaY, modifierKeys, isRelative));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseWheelEvent(window, x, y, wheelDeltaX, wheelDeltaY, modifierKeys, isRelative));
 }
 
 void WindowNativeBridge::KeyEvent(NSEvent* theEvent)
@@ -295,9 +380,7 @@ void WindowNativeBridge::KeyEvent(NSEvent* theEvent)
     MainDispatcherEvent::eType type = isPressed ? MainDispatcherEvent::KEY_DOWN : MainDispatcherEvent::KEY_UP;
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, type, key, modifierKeys, isRepeated));
 
-    // macOS translates some Ctrl key combinations into ASCII control characters.
-    // It seems to me that control character are not wanted by game to handle in character message.
-    if ([theEvent type] == NSKeyDown && (modifierKeys & eModifierKeys::CONTROL) == eModifierKeys::NONE)
+    if ([theEvent type] == NSKeyDown)
     {
         NSString* chars = [theEvent characters];
         NSUInteger n = [chars length];
@@ -420,10 +503,8 @@ eMouseButtons WindowNativeBridge::GetMouseButton(NSEvent* theEvent)
 
 void WindowNativeBridge::MouseEntered(NSEvent* theEvent)
 {
-    if (!mouseVisible)
-    {
-        SetSystemCursorVisible(false);
-    }
+    cursorInside = true;
+    UpdateSystemCursorVisible();
     if (eCursorCapture::PINNING == captureMode)
     {
         SetSystemCursorCapture(true);
@@ -432,10 +513,8 @@ void WindowNativeBridge::MouseEntered(NSEvent* theEvent)
 
 void WindowNativeBridge::MouseExited(NSEvent* theEvent)
 {
-    if (!mouseVisible)
-    {
-        SetSystemCursorVisible(true);
-    }
+    cursorInside = false;
+    UpdateSystemCursorVisible();
     if (eCursorCapture::PINNING == captureMode)
     {
         SetSystemCursorCapture(false);
@@ -466,23 +545,6 @@ void WindowNativeBridge::SetCursorCapture(eCursorCapture mode)
     }
 }
 
-void WindowNativeBridge::SetSystemCursorVisible(bool visible)
-{
-    static bool mouseVisibleState = true;
-    if (mouseVisibleState != visible)
-    {
-        mouseVisibleState = visible;
-        if (visible)
-        {
-            [NSCursor unhide];
-        }
-        else
-        {
-            [NSCursor hide];
-        }
-    }
-}
-
 void WindowNativeBridge::SetSystemCursorCapture(bool capture)
 {
     if (capture)
@@ -505,12 +567,31 @@ void WindowNativeBridge::SetSystemCursorCapture(bool capture)
     }
 }
 
+void WindowNativeBridge::UpdateSystemCursorVisible()
+{
+    static bool mouseVisibleState = true;
+
+    bool visible = !cursorInside || mouseVisible;
+    if (mouseVisibleState != visible)
+    {
+        mouseVisibleState = visible;
+        if (visible)
+        {
+            CGDisplayShowCursor(kCGDirectMainDisplay);
+        }
+        else
+        {
+            CGDisplayHideCursor(kCGDirectMainDisplay);
+        }
+    }
+}
+
 void WindowNativeBridge::SetCursorVisibility(bool visible)
 {
     if (mouseVisible != visible)
     {
         mouseVisible = visible;
-        SetSystemCursorVisible(visible);
+        UpdateSystemCursorVisible();
     }
 }
 
@@ -518,12 +599,21 @@ void WindowNativeBridge::SetSurfaceScale(const float32 scale)
 {
     [renderView setBackbufferScale:scale];
 
-    // Workaround to force change backbuffer size
-    [nswindow setContentView:nil];
-    [nswindow setContentView:renderView];
-    [nswindow makeFirstResponder:renderView];
+    ForceBackbufferSizeUpdate();
+    HandleSizeChanging(false);
+}
 
-    WindowDidResize();
+void WindowNativeBridge::ForceBackbufferSizeUpdate()
+{
+    // Workaround #1: to force change backbuffer size
+    // after resizing or change scaling
+    // Workaround #2: to ensure that native controls
+    // will be added above renderView
+    [nswindow setContentView:nil]; // #1
+    [renderView setWantsLayer:YES]; // #2
+    [nswindow setContentView:renderView]; // #1
+    [renderView setWantsLayer:NO]; // #2
+    [nswindow makeFirstResponder:renderView]; // #1
 }
 
 } // namespace Private

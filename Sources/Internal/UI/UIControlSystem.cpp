@@ -3,7 +3,7 @@
 #include "UI/Styles/UIStyleSheetSystem.h"
 #include "Logger/Logger.h"
 #include "Debug/DVAssert.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 #include "Debug/Replay.h"
 #include "UI/UIControlSystem.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
@@ -11,6 +11,7 @@
 #include "UI/Layouts/UILayoutSystem.h"
 #include "UI/Focus/UIFocusSystem.h"
 #include "UI/Input/UIInputSystem.h"
+#include "UI/Scroll/UIScrollBarLinkSystem.h"
 #include "Render/Renderer.h"
 #include "Render/RenderHelper.h"
 #include "UI/UIScreenshoter.h"
@@ -24,7 +25,7 @@
 #include "Platform/DeviceInfo.h"
 #include "Input/InputSystem.h"
 #include "Debug/ProfilerOverlay.h"
-#include "Engine/EngineModule.h"
+#include "Engine/Engine.h"
 #include "Input/MouseDevice.h"
 
 namespace DAVA
@@ -40,6 +41,7 @@ UIControlSystem::UIControlSystem()
     AddSystem(std::make_unique<UIInputSystem>());
     AddSystem(std::make_unique<UILayoutSystem>());
     AddSystem(std::make_unique<UIStyleSheetSystem>());
+    AddSystem(std::make_unique<UIScrollBarLinkSystem>());
 
     inputSystem = GetSystem<UIInputSystem>();
     layoutSystem = GetSystem<UILayoutSystem>();
@@ -48,7 +50,11 @@ UIControlSystem::UIControlSystem()
 #if defined(__DAVAENGINE_COREV2__)
     vcs = new VirtualCoordinatesSystem();
     vcs->EnableReloadResourceOnResize(true);
+#else
+    vcs = VirtualCoordinatesSystem::Instance();
 #endif
+    vcs->virtualSizeChanged.Connect([](const Size2i&) { TextBlock::ScreenResolutionChanged(); });
+    vcs->physicalSizeChanged.Connect([](const Size2i&) { TextBlock::ScreenResolutionChanged(); });
 
     screenshoter = new UIScreenshoter();
 
@@ -325,7 +331,7 @@ void UIControlSystem::Update()
     updateCounter = 0;
     ProcessScreenLogic();
 
-    float32 timeElapsed = SystemTimer::FrameDelta();
+    float32 timeElapsed = SystemTimer::GetFrameDelta();
 
     for (auto& system : systems)
     {
@@ -363,14 +369,14 @@ void UIControlSystem::Draw()
 
     if (currentScreenTransition)
     {
-        currentScreenTransition->SystemDraw(baseGeometricData);
+        currentScreenTransition->SystemDraw(baseGeometricData, nullptr);
     }
     else if (currentScreen)
     {
-        currentScreen->SystemDraw(baseGeometricData);
+        currentScreen->SystemDraw(baseGeometricData, nullptr);
     }
 
-    popupContainer->SystemDraw(baseGeometricData);
+    popupContainer->SystemDraw(baseGeometricData, nullptr);
 
     if (frameSkip > 0)
     {
@@ -596,7 +602,7 @@ bool UIControlSystem::CheckTimeAndPosition(UIEvent* newEvent)
         Vector2 point = lastClickData.physPoint - newEvent->physPoint;
         
 #if defined(__DAVAENGINE_COREV2__)
-        float32 dpi = Engine::Instance()->PrimaryWindow()->GetDPI();
+        float32 dpi = GetPrimaryWindow()->GetDPI();
         float32 doubleClickPhysSquare = doubleClickInchSquare * (dpi * dpi);
 #endif
 

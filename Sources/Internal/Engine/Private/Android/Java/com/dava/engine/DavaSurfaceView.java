@@ -1,7 +1,10 @@
 package com.dava.engine;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.graphics.PixelFormat;
+import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -10,17 +13,27 @@ import android.view.Surface;
 import android.view.SurfaceView;
 import android.view.SurfaceHolder;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputConnection;
 import android.widget.FrameLayout;
 import android.util.Log;
 import android.util.DisplayMetrics;
 import java.lang.reflect.Constructor;
 
+/**
+    \ingroup engine
+    DavaSurfaceView provides surface where rendering takes place. This class is tightly coupled with C++ `WindowBackend` class.
+
+    `DavaSurfaceView` does:
+        - implements SurfaceHolder.Callback interface and notifies native code about surface state changing,
+        - elementary input handling and forwards input to native code,
+        - manages native controls: creation, position, removal.
+*/
 final class DavaSurfaceView extends SurfaceView
                             implements SurfaceHolder.Callback,
+                                       DavaActivity.ActivityListener,
                                        View.OnTouchListener,
-/* uncomment after multidex enabled
                                        View.OnGenericMotionListener,
-*/
                                        View.OnKeyListener
 {
     protected long windowBackendPointer = 0;
@@ -31,18 +44,17 @@ final class DavaSurfaceView extends SurfaceView
     public static native void nativeSurfaceViewOnSurfaceChanged(long windowBackendPointer, Surface surface, int width, int height, int surfaceWidth, int surfaceHeight, int dpi);
     public static native void nativeSurfaceViewOnSurfaceDestroyed(long windowBackendPointer);
     public static native void nativeSurfaceViewProcessEvents(long windowBackendPointer);
-/* uncomment after multidex enabled
     public static native void nativeSurfaceViewOnMouseEvent(long windowBackendPointer, int action, int buttonId, float x, float y, float deltaX, float deltaY, int modifierKeys);
     public static native void nativeSurfaceViewOnTouchEvent(long windowBackendPointer, int action, int touchId, float x, float y, int modifierKeys);
     public static native void nativeSurfaceViewOnKeyEvent(long windowBackendPointer, int action, int keyCode, int unicodeChar, int modifierKeys, boolean isRepeated);
     public static native void nativeSurfaceViewOnGamepadButton(long windowBackendPointer, int deviceId, int action, int keyCode);
     public static native void nativeSurfaceViewOnGamepadMotion(long windowBackendPointer, int deviceId, int axis, float value);
-*/
     
     public DavaSurfaceView(Context context, long windowBackendPtr)
     {
         super(context);
         getHolder().addCallback(this);
+        getHolder().setFormat(PixelFormat.TRANSLUCENT);
         
         windowBackendPointer = windowBackendPtr;
 
@@ -51,9 +63,9 @@ final class DavaSurfaceView extends SurfaceView
         requestFocus();
         setOnTouchListener(this);
         setOnKeyListener(this);
-/* uncomment after multidex enabled
         setOnGenericMotionListener(this);
-*/
+
+        DavaActivity.instance().registerActivityListener(this);
     }
     
     public Object createNativeControl(String className, long backendPointer)
@@ -101,17 +113,40 @@ final class DavaSurfaceView extends SurfaceView
         nativeSurfaceViewProcessEvents(windowBackendPointer);
     }
     
-    public void handleResume()
+    // DavaActivity.ActivityListener interface
+    @Override public void onCreate(Bundle savedInstanceState) {}
+    @Override public void onStart() {}
+    @Override public void onRestart() {}
+    @Override public void onStop() {}
+    @Override public void onDestroy() {}
+    @Override public void onSaveInstanceState(Bundle outState) {}
+    @Override public void onActivityResult(int requestCode, int resultCode, Intent data) {}
+    @Override public void onNewIntent(Intent intent) {}
+    @Override public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {}
+
+    @Override
+    public InputConnection onCreateInputConnection(EditorInfo outAttrs)
     {
-        setFocusable(true);
+        // To fix keyboard blinking when a DavaTextField looses focus but keyboard isn't hidden yet
+        // (since we wait to close it in case some other field gets focused)
+        outAttrs.imeOptions = DavaTextField.getLastSelectedImeMode();
+        outAttrs.inputType = DavaTextField.getLastSelectedInputType();
+        return super.onCreateInputConnection(outAttrs);
+    }
+
+    @Override
+    public void onResume()
+    {
         setFocusableInTouchMode(true);
+        setFocusable(true);
         requestFocus();
         setOnTouchListener(this);
 
         nativeSurfaceViewOnResume(windowBackendPointer);
     }
 
-    public void handlePause()
+    @Override
+    public void onPause()
     {
         nativeSurfaceViewOnPause(windowBackendPointer);
     }
@@ -126,6 +161,7 @@ final class DavaSurfaceView extends SurfaceView
         return dm.densityDpi; 
     }
 
+    // SurfaceHolder.Callback interaface
     @Override
     public void surfaceCreated(SurfaceHolder holder)
     {
@@ -167,7 +203,7 @@ final class DavaSurfaceView extends SurfaceView
         Log.d(DavaActivity.LOG_TAG, String.format("DavaSurface.surfaceChanged: w=%d, h=%d, surfW=%d, surfH=%d, dpi=%d", w, h, w, h, dpi));
         nativeSurfaceViewOnSurfaceChanged(windowBackendPointer, holder.getSurface(), w, h, w, h, dpi);
         
-        if (DavaActivity.davaMainThread == null)
+        if (!DavaActivity.isNativeThreadRunning())
         {
             // continue initialization of game after creating main window
             DavaActivity.instance().onFinishCreatingMainWindowSurface();
@@ -188,15 +224,11 @@ final class DavaSurfaceView extends SurfaceView
         int source = event.getSource();
         if (source == InputDevice.SOURCE_MOUSE)
         {
-/* uncomment after multidex enabled
             handleMouseEvent(event);
-*/
         }
         else if (source == InputDevice.SOURCE_TOUCHSCREEN)
         {
-/* uncomment after multidex enabled
             handleTouchEvent(event);
-*/
         }
         return true;
     }
@@ -210,28 +242,24 @@ final class DavaSurfaceView extends SurfaceView
 
         // Some SOURCE_GAMEPAD and SOURCE_DPAD events are also SOURCE_KEYBOARD. So first check and process events
         // from gamepad and then from keyboard if not processed.
-        if ((source & (InputDevice.SOURCE_GAMEPAD | InputDevice.SOURCE_DPAD)) != 0)
+        if (((source & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD) ||
+            ((source & InputDevice.SOURCE_DPAD) == InputDevice.SOURCE_DPAD))
         {
-/* uncomment after multidex enabled
             nativeSurfaceViewOnGamepadButton(windowBackendPointer, event.getDeviceId(), action, keyCode);
-*/
             return true;
         }
 
         if ((source & InputDevice.SOURCE_KEYBOARD) == InputDevice.SOURCE_KEYBOARD)
         {
-/* uncomment after multidex enabled
             int modifierKeys = event.getMetaState();
             int unicodeChar = event.getUnicodeChar();
             boolean isRepeated = event.getRepeatCount() > 0;
             nativeSurfaceViewOnKeyEvent(windowBackendPointer, action, keyCode, unicodeChar, modifierKeys, isRepeated);
-*/
             return true;
         }
         return false;
     }
 
-/* uncomment after multidex enabled
     // View.OnGenericMotionListener interface
     @Override
     public boolean onGenericMotion(View v, MotionEvent event)
@@ -249,9 +277,7 @@ final class DavaSurfaceView extends SurfaceView
         }
         return false;
     }
-*/
 
-/* uncomment after multidex enabled
     private void handleGamepadMotionEvent(MotionEvent event)
     {
         int action = event.getActionMasked();
@@ -279,7 +305,14 @@ final class DavaSurfaceView extends SurfaceView
             }
         }
     }
-
+    
+    private int touchIdFromPointerId(int pointerId)
+    {
+    	// Pointer id can be equal to 0 which is used as 'no touch' in InputSystem
+    	// So we should always generate different number
+    	return pointerId + 1;
+    }
+    
     private void handleTouchEvent(MotionEvent event)
     {
         int action = event.getActionMasked();
@@ -293,7 +326,7 @@ final class DavaSurfaceView extends SurfaceView
                 int pointerId = event.getPointerId(i);
                 float x = event.getX(i);
                 float y = event.getY(i);
-                nativeSurfaceViewOnTouchEvent(windowBackendPointer, MotionEvent.ACTION_MOVE, pointerId, x, y, modifierKeys);
+                nativeSurfaceViewOnTouchEvent(windowBackendPointer, MotionEvent.ACTION_MOVE, touchIdFromPointerId(pointerId), x, y, modifierKeys);
             }
             break;
         case MotionEvent.ACTION_UP:
@@ -309,7 +342,7 @@ final class DavaSurfaceView extends SurfaceView
             int pointerId = event.getPointerId(i);
             float x = event.getX(i);
             float y = event.getY(i);
-            nativeSurfaceViewOnTouchEvent(windowBackendPointer, action, pointerId, x, y, modifierKeys);
+            nativeSurfaceViewOnTouchEvent(windowBackendPointer, action, touchIdFromPointerId(pointerId), x, y, modifierKeys);
             break;
         }
         case MotionEvent.ACTION_CANCEL:
@@ -318,7 +351,7 @@ final class DavaSurfaceView extends SurfaceView
                 int pointerId = event.getPointerId(i);
                 float x = event.getX(i);
                 float y = event.getY(i);
-                nativeSurfaceViewOnTouchEvent(windowBackendPointer, MotionEvent.ACTION_UP, pointerId, x, y, modifierKeys);
+                nativeSurfaceViewOnTouchEvent(windowBackendPointer, MotionEvent.ACTION_UP, touchIdFromPointerId(pointerId), x, y, modifierKeys);
             }
             break;
         default:
@@ -337,5 +370,4 @@ final class DavaSurfaceView extends SurfaceView
         int modifierKeys = event.getMetaState();
         nativeSurfaceViewOnMouseEvent(windowBackendPointer, action, buttonState, x, y, deltaX, deltaY, modifierKeys);
     }
-*/
 }

@@ -1,6 +1,6 @@
 #include "UI/UIList.h"
 #include "Debug/DVAssert.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 #include "UI/UIControlSystem.h"
 #include "Base/ObjectFactory.h"
 #include "UI/UIControlHelpers.h"
@@ -33,7 +33,6 @@ UIList::UIList(const Rect& rect /* = Rect()*/, eListOrientation requiredOrientat
     , orientation(requiredOrientation)
     , scrollContainer(NULL)
     , scroll(NULL)
-    , aggregatorPath(FilePath())
 {
     InitAfterYaml();
 }
@@ -128,8 +127,8 @@ UIListDelegate* UIList::GetDelegate()
 
 void UIList::ScrollToElement(int32 index)
 {
-    DVASSERT(delegate)
-    DVASSERT(0 <= index && index < delegate->ElementsCount(this))
+    DVASSERT(delegate);
+    DVASSERT(0 <= index && index < delegate->ElementsCount(this));
     float32 newScrollPos = 0.0f;
     if (orientation == ORIENTATION_HORIZONTAL)
     {
@@ -297,11 +296,11 @@ void UIList::Update(float32 timeElapsed)
         // this code works for scroll through touch screen.
         if (orientation == ORIENTATION_HORIZONTAL)
         {
-            r.x = scroll->GetPosition(d, SystemTimer::FrameDelta(), lockTouch);
+            r.x = scroll->GetPosition(d, SystemTimer::GetFrameDelta(), lockTouch);
         }
         else
         {
-            r.y = scroll->GetPosition(d, SystemTimer::FrameDelta(), lockTouch);
+            r.y = scroll->GetPosition(d, SystemTimer::GetFrameDelta(), lockTouch);
         }
     }
 
@@ -459,15 +458,19 @@ void UIList::Input(UIEvent* currentInput)
 
     if (UIEvent::Phase::WHEEL == currentInput->phase)
     {
-#if defined(__DAVAENGINE_COREV2__)
         if (eInputDevices::MOUSE == currentInput->device)
-#else
-        if (UIEvent::Device::MOUSE == currentInput->device)
-#endif
         {
-            newScroll += currentInput->wheelDelta.y * GetWheelSensitivity();
+            // In horizontal list also work horizontal wheel
+            if (!FLOAT_EQUAL(currentInput->wheelDelta.x, 0.f) && ORIENTATION_HORIZONTAL == orientation)
+            {
+                newScroll += currentInput->wheelDelta.x * GetWheelSensitivity();
+            }
+            else
+            {
+                newScroll += currentInput->wheelDelta.y * GetWheelSensitivity();
+            }
         }
-        else // UIEvent::Phase::TOUCH_PAD
+        else // eInputDevices::TOUCH_PAD
         {
             if (ORIENTATION_HORIZONTAL == orientation)
             {
@@ -717,18 +720,7 @@ void UIList::CopyDataFrom(UIControl* srcControl)
     UIControl::CopyDataFrom(srcControl);
     UIList* t = static_cast<UIList*>(srcControl);
     InitAfterYaml();
-    aggregatorPath = t->aggregatorPath;
     orientation = t->orientation;
-}
-
-const FilePath& UIList::GetAggregatorPath()
-{
-    return aggregatorPath;
-}
-
-void UIList::SetAggregatorPath(const FilePath& aggregatorPath)
-{
-    this->aggregatorPath = aggregatorPath;
 }
 
 float32 UIList::VisibleAreaSize(UIScrollBar* forScrollBar)
@@ -754,10 +746,5 @@ void UIList::OnViewPositionChanged(UIScrollBar* byScrollBar, float32 newPosition
 void UIList::ScrollToPosition(float32 position, float32 timeSec /*= 0.3f*/)
 {
     scroll->ScrollToPosition(-position);
-}
-
-const String UIList::GetDelegateControlPath(const UIControl* rootControl) const
-{
-    return UIControlHelpers::GetControlPath(this, rootControl);
 }
 };

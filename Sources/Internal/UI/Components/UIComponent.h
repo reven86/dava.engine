@@ -18,6 +18,7 @@ public:
         IGNORE_LAYOUT_COMPONENT,
         SIZE_POLICY_COMPONENT,
         ANCHOR_COMPONENT,
+        BACKGROUND_COMPONENT,
         MODAL_INPUT_COMPONENT,
         FOCUS_COMPONENT,
         FOCUS_GROUP_COMPONENT,
@@ -25,6 +26,7 @@ public:
         TAB_ORDER_COMPONENT,
         ACTION_COMPONENT,
         ACTION_BINDING_COMPONENT,
+        SCROLL_BAR_DELEGATE_COMPONENT,
 
         COMPONENT_COUNT
     };
@@ -37,6 +39,7 @@ public:
     UIComponent& operator=(const UIComponent& src);
 
     static UIComponent* CreateByType(uint32 componentType);
+    static RefPtr<UIComponent> SafeCreateByType(uint32 componentType);
     static bool IsMultiple(uint32 componentType);
 
     virtual uint32 GetType() const = 0;
@@ -45,6 +48,8 @@ public:
     UIControl* GetControl() const;
 
     virtual UIComponent* Clone() const = 0;
+
+    RefPtr<UIComponent> SafeClone() const;
 
 private:
     UIControl* control;

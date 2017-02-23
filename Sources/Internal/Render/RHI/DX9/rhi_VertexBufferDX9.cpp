@@ -19,8 +19,8 @@ VertexBufferDX9_t
 public:
     VertexBufferDX9_t();
 
-    bool Create(const VertexBuffer::Descriptor& desc, bool force_immediate = false);
-    void Destroy(bool force_immediate = false);
+    bool Create(const VertexBuffer::Descriptor& desc, bool forceExecute = false);
+    void Destroy(bool forceExecute);
 
     uint32 size = 0;
     IDirect3DVertexBuffer9* buffer = nullptr;
@@ -43,7 +43,7 @@ VertexBufferDX9_t::VertexBufferDX9_t()
 
 //------------------------------------------------------------------------------
 
-bool VertexBufferDX9_t::Create(const VertexBuffer::Descriptor& desc, bool force_immediate)
+bool VertexBufferDX9_t::Create(const VertexBuffer::Descriptor& desc, bool forceExecute)
 {
     DVASSERT(desc.size);
     bool success = false;
@@ -84,7 +84,7 @@ bool VertexBufferDX9_t::Create(const VertexBuffer::Descriptor& desc, bool force_
             cmd_cnt = 1;
         }
 
-        ExecDX9(cmd, cmd_cnt, force_immediate);
+        ExecDX9(cmd, cmd_cnt, forceExecute);
 
         if (SUCCEEDED(cmd[0].retval))
         {
@@ -102,7 +102,7 @@ bool VertexBufferDX9_t::Create(const VertexBuffer::Descriptor& desc, bool force_
 
 //------------------------------------------------------------------------------
 
-void VertexBufferDX9_t::Destroy(bool force_immediate)
+void VertexBufferDX9_t::Destroy(bool forceExecute)
 {
     if (buffer == nullptr)
     {
@@ -111,14 +111,14 @@ void VertexBufferDX9_t::Destroy(bool force_immediate)
     else
     {
         DX9Command cmd[] = { DX9Command::RELEASE, { uint64_t(&buffer) } };
-        ExecDX9(cmd, countof(cmd), force_immediate);
+        ExecDX9(cmd, countof(cmd), forceExecute);
         DVASSERT(cmd[0].retval == 0);
         buffer = nullptr;
     }
 
     if (!RecreatePending() && (mappedData != nullptr))
     {
-        DVASSERT(!isMapped)
+        DVASSERT(!isMapped);
         ::free(mappedData);
         mappedData = nullptr;
         updatePending = false;
@@ -149,11 +149,11 @@ dx9_VertexBuffer_Create(const VertexBuffer::Descriptor& desc)
 //------------------------------------------------------------------------------
 
 static void
-dx9_VertexBuffer_Delete(Handle vb)
+dx9_VertexBuffer_Delete(Handle vb, bool forceExecute)
 {
     VertexBufferDX9_t* self = VertexBufferDX9Pool::Get(vb);
     self->SetRecreatePending(false);
-    self->Destroy();
+    self->Destroy(forceExecute);
     VertexBufferDX9Pool::Free(vb);
 }
 

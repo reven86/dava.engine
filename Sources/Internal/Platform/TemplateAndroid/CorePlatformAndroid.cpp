@@ -16,6 +16,7 @@ extern void FrameworkWillTerminate();
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Engine/Android/JNIBridge.h"
 #include "Platform/TemplateAndroid/CorePlatformAndroid.h"
+#include "Debug/DVAssertDefaultHandlers.h"
 
 namespace DAVA
 {
@@ -47,15 +48,16 @@ Core::eDeviceFamily Core::GetDeviceFamily()
 
 CorePlatformAndroid::CorePlatformAndroid(const String& cmdLine)
 {
+    Assert::SetupDefaultHandlers();
     SetCommandLine(cmdLine);
 }
 
 int Core::Run(int argc, char* argv[], AppHandle handle)
 {
-    // 		CoreWin32Platform * core = new CoreWin32Platform();
-    // 		core->CreateWin32Window(handle);
-    // 		core->Run();
-    // 		core->ReleaseSingletons();
+    //      CoreWin32Platform * core = new CoreWin32Platform();
+    //      core->CreateWin32Window(handle);
+    //      core->Run();
+    //      core->ReleaseSingletons();
     return 0;
 }
 
@@ -206,12 +208,12 @@ void CorePlatformAndroid::OnDestroyActivity()
 
 void CorePlatformAndroid::StartVisible()
 {
-    //		Logger::Debug("[CorePlatformAndroid::StartVisible]");
+    //      Logger::Debug("[CorePlatformAndroid::StartVisible]");
 }
 
 void CorePlatformAndroid::StopVisible()
 {
-    //		Logger::Debug("[CorePlatformAndroid::StopVisible]");
+    //      Logger::Debug("[CorePlatformAndroid::StopVisible]");
 }
 
 void CorePlatformAndroid::StartForeground()
@@ -221,19 +223,22 @@ void CorePlatformAndroid::StartForeground()
     if (wasCreated)
     {
         DAVA::ApplicationCore* core = DAVA::Core::Instance()->GetApplicationCore();
-        if (core)
-        {
-            core->OnResume();
-        }
-        else
+
+        if (!core)
         {
             DAVA::Core::Instance()->SetIsActive(true);
         }
+
         DAVA::Core::Instance()->GoForeground();
         DAVA::Core::Instance()->FocusReceived();
 
         if (!foreground)
             rhi::ResumeRendering();
+
+        if (core)
+        {
+            core->OnResume();
+        }
 
         foreground = true;
     }
@@ -270,10 +275,10 @@ void CorePlatformAndroid::KeyUp(int32 keyCode, uint32 modifiers)
     KeyboardDevice& keyboard = inputSystem->GetKeyboard();
 
     UIEvent keyEvent;
-    keyEvent.device = UIEvent::Device::KEYBOARD;
+    keyEvent.device = eInputDevices::KEYBOARD;
     keyEvent.phase = DAVA::UIEvent::Phase::KEY_UP;
     keyEvent.key = keyboard.GetDavaKeyForSystemKey(keyCode);
-    keyEvent.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+    keyEvent.timestamp = SystemTimer::GetMs() / 1000.0;
     keyEvent.modifiers = modifiers;
 
     inputSystem->ProcessInputEvent(&keyEvent);
@@ -287,10 +292,10 @@ void CorePlatformAndroid::KeyDown(int32 keyCode, uint32 modifiers)
     KeyboardDevice& keyboard = inputSystem->GetKeyboard();
 
     UIEvent keyEvent;
-    keyEvent.device = UIEvent::Device::KEYBOARD;
+    keyEvent.device = eInputDevices::KEYBOARD;
     keyEvent.phase = DAVA::UIEvent::Phase::KEY_DOWN;
     keyEvent.key = keyboard.GetDavaKeyForSystemKey(keyCode);
-    keyEvent.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+    keyEvent.timestamp = SystemTimer::GetMs() / 1000.0;
     keyEvent.modifiers = modifiers;
 
     inputSystem->ProcessInputEvent(&keyEvent);
@@ -323,8 +328,8 @@ void CorePlatformAndroid::OnGamepadElement(int32 elementKey, float32 value, bool
     newEvent.physPoint.x = value;
     newEvent.point.x = value;
     newEvent.phase = DAVA::UIEvent::Phase::JOYSTICK;
-    newEvent.device = DAVA::UIEvent::Device::GAMEPAD;
-    newEvent.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+    newEvent.device = eInputDevices::GAMEPAD;
+    newEvent.timestamp = SystemTimer::GetMs() / 1000.0;
     newEvent.modifiers = modifiers;
 
     gamepadDevice.SystemProcessElement(static_cast<GamepadDevice::eDavaGamepadElement>(davaKey), value);

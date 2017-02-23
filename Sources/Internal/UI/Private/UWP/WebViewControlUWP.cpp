@@ -9,8 +9,7 @@
 #include "Debug/DVAssert.h"
 
 #if defined(__DAVAENGINE_COREV2__)
-#include "Engine/EngineModule.h"
-#include "Engine/WindowNativeService.h"
+#include "Engine/Engine.h"
 #else
 #include "Platform/TemplateWin32/WinUAPXamlApp.h"
 #include "Platform/TemplateWin32/CorePlatformWinUAP.h"
@@ -24,6 +23,7 @@
 #include "Utils/Utils.h"
 #include "Utils/Random.h"
 #include "Utils/Utils.h"
+#include "Utils/StringFormat.h"
 
 #include "UI/UIWebView.h"
 
@@ -156,25 +156,21 @@ WebViewControl::WebViewControl(UIWebView* uiWebView)
 
 WebViewControl::~WebViewControl()
 {
+#if defined(__DAVAENGINE_COREV2__)
+    nativeWebView = nullptr;
+#else
     using ::Windows::UI::Xaml::Controls::WebView;
     if (nativeWebView != nullptr)
     {
         // Compiler complains of capturing nativeWebView data member in lambda
         WebView ^ p = nativeWebView;
-
-#if defined(__DAVAENGINE_COREV2__)
-        WindowNativeService* nservice = window->GetNativeService();
-        window->RunAsyncOnUIThread([p, nservice]() {
-            nservice->RemoveXamlControl(p);
-        });
-#else
         core->RunOnUIThread([p]() {
             // We don't need blocking call here
             static_cast<CorePlatformWinUAP*>(Core::Instance())->XamlApplication()->RemoveUIElement(p);
         });
-#endif
         nativeWebView = nullptr;
     }
+#endif
 }
 
 void WebViewControl::OwnerIsDying()
@@ -184,25 +180,36 @@ void WebViewControl::OwnerIsDying()
     uiWebView = nullptr;
     webViewDelegate = nullptr;
 
-    if (nativeWebView != nullptr)
+#if defined(__DAVAENGINE_COREV2__)
+    if (window != nullptr)
+#endif
     {
-        // Compiler complains of capturing nativeWebView data member in lambda
-        WebView ^ p = nativeWebView;
-        Windows::Foundation::EventRegistrationToken tokenNS = tokenNavigationStarting;
-        Windows::Foundation::EventRegistrationToken tokenNC = tokenNavigationCompleted;
+        if (nativeWebView != nullptr)
+        {
+#if defined(__DAVAENGINE_COREV2__)
+            auto self{ shared_from_this() };
+            window->RunOnUIThreadAsync([this, self]() {
+                nativeWebView->NavigationStarting -= tokenNavigationStarting;
+                nativeWebView->NavigationCompleted -= tokenNavigationCompleted;
+                PlatformApi::Win10::RemoveXamlControl(window, nativeWebView);
+            });
+#else
+            // Compiler complains of capturing nativeWebView data member in lambda
+            WebView ^ p = nativeWebView;
+            Windows::Foundation::EventRegistrationToken tokenNS = tokenNavigationStarting;
+            Windows::Foundation::EventRegistrationToken tokenNC = tokenNavigationCompleted;
+
+            core->RunOnUIThread([p, tokenNS, tokenNC]() {
+                // We don't need blocking call here
+                p->NavigationStarting -= tokenNS;
+                p->NavigationCompleted -= tokenNC;
+            });
+#endif
+        }
 
 #if defined(__DAVAENGINE_COREV2__)
-        WindowNativeService* nservice = window->GetNativeService();
-        window->RunAsyncOnUIThread([p, nservice, tokenNS, tokenNC]() {
-            p->NavigationStarting -= tokenNS;
-            p->NavigationCompleted -= tokenNC;
-        });
-#else
-        core->RunOnUIThread([p, tokenNS, tokenNC]() {
-            // We don't need blocking call here
-            p->NavigationStarting -= tokenNS;
-            p->NavigationCompleted -= tokenNC;
-        });
+        window->sizeChanged.Disconnect(windowSizeChangedConnection);
+        Engine::Instance()->windowDestroyed.Disconnect(windowDestroyedConnection);
 #endif
     }
 }
@@ -215,6 +222,11 @@ void WebViewControl::Initialize(const Rect& rect)
     properties.rectInWindowSpace = VirtualToWindow(rect);
     properties.rectChanged = true;
     properties.anyPropertyChanged = true;
+
+#if defined(__DAVAENGINE_COREV2__)
+    windowSizeChangedConnection = window->sizeChanged.Connect(this, &WebViewControl::OnWindowSizeChanged);
+    windowDestroyedConnection = Engine::Instance()->windowDestroyed.Connect(this, &WebViewControl::OnWindowDestroyed);
+#endif
 }
 
 void WebViewControl::OpenURL(const String& urlToOpen)
@@ -268,12 +280,15 @@ void WebViewControl::SetVisible(bool isVisible, bool /*hierarchic*/)
         { // Immediately hide native control if it has been already created
             auto self{ shared_from_this() };
 #if defined(__DAVAENGINE_COREV2__)
-            window->RunAsyncOnUIThread([this, self]() {
-                if (nativeWebView != nullptr)
-                {
-                    SetNativePositionAndSize(rectInWindowSpace, true);
-                }
-            });
+            if (window != nullptr)
+            {
+                window->RunOnUIThreadAsync([this, self]() {
+                    if (nativeWebView != nullptr)
+                    {
+                        SetNativePositionAndSize(rectInWindowSpace, true);
+                    }
+                });
+            }
 #else
             core->RunOnUIThread([this, self]() {
                 if (nativeWebView != nullptr)
@@ -312,7 +327,7 @@ void WebViewControl::SetRenderToTexture(bool value)
         { // Immediately hide native control if it has been already created
             auto self{ shared_from_this() };
 #if defined(__DAVAENGINE_COREV2__)
-            window->RunAsyncOnUIThread([this, self]() {
+            window->RunOnUIThreadAsync([this, self]() {
                 if (nativeWebView != nullptr)
                 {
                     SetNativePositionAndSize(rectInWindowSpace, true);
@@ -342,7 +357,7 @@ void WebViewControl::Update()
         auto self{ shared_from_this() };
         WebViewProperties props(properties);
 #if defined(__DAVAENGINE_COREV2__)
-        window->RunAsyncOnUIThread([this, self, props]() {
+        window->RunOnUIThreadAsync([this, self, props]() {
             ProcessProperties(props);
         });
 #else
@@ -370,7 +385,7 @@ void WebViewControl::CreateNativeControl()
     nativeWebView->Visibility = Visibility::Visible;
 
 #if defined(__DAVAENGINE_COREV2__)
-    window->GetNativeService()->AddXamlControl(nativeWebView);
+    PlatformApi::Win10::AddXamlControl(window, nativeWebView);
 #else
     core->XamlApplication()->AddUIElement(nativeWebView);
 #endif
@@ -405,14 +420,14 @@ void WebViewControl::OnNavigationStarting(::Windows::UI::Xaml::Controls::WebView
     String url;
     if (args->Uri != nullptr)
     {
-        url = WStringToString(args->Uri->AbsoluteCanonicalUri->Data());
+        url = UTF8Utils::EncodeToUTF8(args->Uri->AbsoluteCanonicalUri->Data());
     }
     Logger::FrameworkDebug("[WebView] OnNavigationStarting: url=%s", url.c_str());
 
     bool redirectedByMouse = false; // For now I don't know how to get redirection method
     IUIWebViewDelegate::eAction whatToDo = IUIWebViewDelegate::PROCESS_IN_WEBVIEW;
 #if defined(__DAVAENGINE_COREV2__)
-    window->GetEngine()->RunAndWaitOnMainThread([this, &whatToDo, &url, redirectedByMouse]() {
+    RunOnMainThread([this, &whatToDo, &url, redirectedByMouse]() {
         if (uiWebView != nullptr && webViewDelegate != nullptr)
         {
             whatToDo = webViewDelegate->URLChanged(uiWebView, url, redirectedByMouse);
@@ -439,7 +454,7 @@ void WebViewControl::OnNavigationCompleted(::Windows::UI::Xaml::Controls::WebVie
     String url;
     if (args->Uri != nullptr)
     {
-        url = WStringToString(args->Uri->AbsoluteCanonicalUri->Data());
+        url = UTF8Utils::EncodeToUTF8(args->Uri->AbsoluteCanonicalUri->Data());
     }
 
     if (args->IsSuccess)
@@ -458,7 +473,7 @@ void WebViewControl::OnNavigationCompleted(::Windows::UI::Xaml::Controls::WebVie
 
     auto self{ shared_from_this() };
 #if defined(__DAVAENGINE_COREV2__)
-    window->GetEngine()->RunAsyncOnMainThread([this, self]() {
+    RunOnMainThreadAsync([this, self]() {
         if (uiWebView != nullptr && webViewDelegate != nullptr)
         {
             webViewDelegate->PageLoaded(uiWebView);
@@ -471,6 +486,21 @@ void WebViewControl::OnNavigationCompleted(::Windows::UI::Xaml::Controls::WebVie
             webViewDelegate->PageLoaded(uiWebView);
         }
     });
+#endif
+}
+
+void WebViewControl::OnWindowSizeChanged(Window* w, Size2f windowSize, Size2f surfaceSize)
+{
+    properties.rectInWindowSpace = VirtualToWindow(properties.rect);
+    properties.rectChanged = true;
+    properties.anyPropertyChanged = true;
+}
+
+void WebViewControl::OnWindowDestroyed(Window* w)
+{
+    OwnerIsDying();
+#if defined(__DAVAENGINE_COREV2__)
+    window = nullptr;
 #endif
 }
 
@@ -521,7 +551,7 @@ void WebViewControl::SetNativePositionAndSize(const Rect& rect, bool offScreen)
     nativeWebView->Width = std::max(0.0f, rect.dx);
     nativeWebView->Height = std::max(0.0f, rect.dy);
 #if defined(__DAVAENGINE_COREV2__)
-    window->GetNativeService()->PositionXamlControl(nativeWebView, rect.x - xOffset, rect.y - yOffset);
+    PlatformApi::Win10::PositionXamlControl(window, nativeWebView, rect.x - xOffset, rect.y - yOffset);
 #else
     core->XamlApplication()->PositionUIElement(nativeWebView, rect.x - xOffset, rect.y - yOffset);
 #endif
@@ -540,7 +570,7 @@ void WebViewControl::NativeNavigateTo(const WebViewProperties& props)
     // clang-format off
     if (WebViewProperties::NAVIGATE_OPEN_URL == props.navigateTo)
     {
-        Uri^ uri = ref new Uri(ref new Platform::String(StringToWString(props.urlOrHtml).c_str()));
+        Uri^ uri = ref new Uri(ref new Platform::String(UTF8Utils::EncodeToWideString(props.urlOrHtml).c_str()));
         nativeWebView->Navigate(uri);
     }
     else if (WebViewProperties::NAVIGATE_LOAD_HTML == props.navigateTo)
@@ -554,7 +584,7 @@ void WebViewControl::NativeNavigateTo(const WebViewProperties& props)
         // as WebViews' backend can remember content id and reuse UriResolver instance
         // for another WebView control
         uint32 generatedContentId = Random::Instance()->Rand();
-        Platform::String^ contentId = ref new Platform::String(StringToWString(Format("%u", generatedContentId)).c_str());
+        Platform::String^ contentId = ref new Platform::String(UTF8Utils::EncodeToWideString(Format("%u", generatedContentId)).c_str());
 
         UriResolver^ resolver = ref new UriResolver(props.urlOrHtml, props.basePath);
         Uri^ uri = nativeWebView->BuildLocalStreamUri(contentId, "/johny23");
@@ -569,7 +599,7 @@ void WebViewControl::NativeExecuteJavaScript(const String& jsScript)
     using ::concurrency::task;
 
     // clang-format off
-    Platform::String^ script = ref new Platform::String(StringToWString(jsScript).c_str());
+    Platform::String^ script = ref new Platform::String(UTF8Utils::EncodeToWideString(jsScript).c_str());
 
     auto args = ref new Platform::Collections::Vector<Platform::String^>();
     args->Append(script);
@@ -578,10 +608,10 @@ void WebViewControl::NativeExecuteJavaScript(const String& jsScript)
     auto self{shared_from_this()};
     create_task(js).then([this, self](Platform::String^ result) {
 #if defined(__DAVAENGINE_COREV2__)
-        window->GetEngine()->RunAsyncOnMainThread([this, self, result]() {
+        RunOnMainThreadAsync([this, self, result]() {
             if (webViewDelegate != nullptr && uiWebView != nullptr)
             {
-                String jsResult = WStringToString(result->Data());
+                String jsResult = UTF8Utils::EncodeToUTF8(result->Data());
                 webViewDelegate->OnExecuteJScript(uiWebView, jsResult);
             }
         });
@@ -589,7 +619,7 @@ void WebViewControl::NativeExecuteJavaScript(const String& jsScript)
         core->RunOnMainThread([this, self, result]() {
             if (webViewDelegate != nullptr && uiWebView != nullptr)
             {
-                String jsResult = WStringToString(result->Data());
+                String jsResult = UTF8Utils::EncodeToUTF8(result->Data());
                 webViewDelegate->OnExecuteJScript(uiWebView, jsResult);
             }
         });
@@ -600,7 +630,7 @@ void WebViewControl::NativeExecuteJavaScript(const String& jsScript)
         } catch (Platform::Exception^ e) {
             // Exception can be thrown if a webpage has not been loaded into the WebView
             HRESULT hr = e->HResult;
-            Logger::Error("[WebView] failed to execute JS: hresult=0x%08X, message=%s", hr, WStringToString(e->Message->Data()).c_str());
+            Logger::Error("[WebView] failed to execute JS: hresult=0x%08X, message=%s", hr, UTF8Utils::EncodeToUTF8(e->Message->Data()).c_str());
         }
     });
     // clang-format on
@@ -608,8 +638,12 @@ void WebViewControl::NativeExecuteJavaScript(const String& jsScript)
 
 Rect WebViewControl::VirtualToWindow(const Rect& srcRect) const
 {
-    VirtualCoordinatesSystem* coordSystem = UIControlSystem::Instance()->vcs;
-    return coordSystem->ConvertVirtualToInput(srcRect);
+#if defined(__DAVAENGINE_COREV2__)
+    VirtualCoordinatesSystem* vcs = window->GetUIControlSystem()->vcs;
+#else
+    VirtualCoordinatesSystem* vcs = UIControlSystem::Instance()->vcs;
+#endif
+    return vcs->ConvertVirtualToInput(srcRect);
 }
 
 void WebViewControl::RenderToTexture()
@@ -643,11 +677,12 @@ void WebViewControl::RenderToTexture()
             if (sprite.Valid())
             {
 #if defined(__DAVAENGINE_COREV2__)
-                window->GetEngine()->RunAsyncOnMainThread([this, self, sprite]()
+                RunOnMainThreadAsync([this, self, sprite]()
                 {
                     if (uiWebView != nullptr)
                     {
-                        uiWebView->SetSprite(sprite.Get(), 0);
+                        UIControlBackground* bg = uiWebView->GetOrCreateComponent<UIControlBackground>();
+                        bg->SetSprite(sprite.Get(), 0);
                     }
                 });
 #else
@@ -655,7 +690,8 @@ void WebViewControl::RenderToTexture()
                 {
                     if (uiWebView != nullptr)
                     {
-                        uiWebView->SetSprite(sprite.Get(), 0);
+                        UIControlBackground* bg = uiWebView->GetOrCreateComponent<UIControlBackground>();
+                        bg->SetSprite(sprite.Get(), 0);
                     }
                 });
 #endif
@@ -701,7 +737,7 @@ void WebViewControl::DeleteCookies(const String& url)
     using namespace ::Windows::Web::Http;
     using namespace ::Windows::Web::Http::Filters;
 
-    Uri ^ uri = ref new Uri(ref new Platform::String(StringToWString(url).c_str()));
+    Uri ^ uri = ref new Uri(ref new Platform::String(UTF8Utils::EncodeToWideString(url).c_str()));
     HttpBaseProtocolFilter httpObj;
     HttpCookieManager ^ cookieManager = httpObj.CookieManager;
     HttpCookieCollection ^ cookies = cookieManager->GetCookies(uri);
@@ -724,18 +760,18 @@ String WebViewControl::GetCookie(const String& url, const String& name) const
 
     String result;
 
-    Uri ^ uri = ref new Uri(ref new Platform::String(StringToWString(url).c_str()));
+    Uri ^ uri = ref new Uri(ref new Platform::String(UTF8Utils::EncodeToWideString(url).c_str()));
     HttpBaseProtocolFilter httpObj;
     HttpCookieCollection ^ cookies = httpObj.CookieManager->GetCookies(uri);
 
-    Platform::String ^ cookieName = ref new Platform::String(StringToWString(name).c_str());
+    Platform::String ^ cookieName = ref new Platform::String(UTF8Utils::EncodeToWideString(name).c_str());
     IIterator<HttpCookie ^> ^ it = cookies->First();
     while (it->HasCurrent)
     {
         HttpCookie ^ cookie = it->Current;
         if (cookie->Name == cookieName)
         {
-            result = WStringToString(cookie->Value->Data());
+            result = UTF8Utils::EncodeToUTF8(cookie->Value->Data());
             break;
         }
         it->MoveNext();
@@ -752,7 +788,7 @@ Map<String, String> WebViewControl::GetCookies(const String& url) const
 
     Map<String, String> result;
 
-    Uri ^ uri = ref new Uri(ref new Platform::String(StringToWString(url).c_str()));
+    Uri ^ uri = ref new Uri(ref new Platform::String(UTF8Utils::EncodeToWideString(url).c_str()));
     HttpBaseProtocolFilter httpObj;
     HttpCookieCollection ^ cookies = httpObj.CookieManager->GetCookies(uri);
 
@@ -760,7 +796,7 @@ Map<String, String> WebViewControl::GetCookies(const String& url) const
     while (it->HasCurrent)
     {
         HttpCookie ^ cookie = it->Current;
-        result.emplace(WStringToString(cookie->Name->Data()), WStringToString(cookie->Value->Data()));
+        result.emplace(UTF8Utils::EncodeToUTF8(cookie->Name->Data()), UTF8Utils::EncodeToUTF8(cookie->Value->Data()));
         it->MoveNext();
     }
     return result;

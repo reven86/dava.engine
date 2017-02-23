@@ -1,5 +1,6 @@
 #include "Scene3D/SceneUtils.h"
 
+#include "Utils/StringFormat.h"
 #include "Render/Highlevel/RenderObject.h"
 #include "Render/Highlevel/RenderBatch.h"
 #include "Render/Highlevel/Mesh.h"
@@ -10,17 +11,22 @@
 #include "Scene3D/Components/TransformComponent.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/Components/RenderComponent.h"
+#include "Logger/Logger.h"
+#include "Base/Map.h"
 
 namespace DAVA
 {
 namespace SceneUtils
 {
-void CombineLods(Scene* scene)
+bool CombineLods(Scene* scene)
 {
+    bool result = true;
     for (auto child : scene->children)
     {
-        CombineEntityLods(child);
+        result = result && CombineEntityLods(child);
     }
+
+    return result;
 }
 
 String LodNameForIndex(const String& pattern, uint32 lodIndex)
@@ -28,7 +34,31 @@ String LodNameForIndex(const String& pattern, uint32 lodIndex)
     return Format(pattern.c_str(), lodIndex);
 }
 
-void CombineEntityLods(Entity* forRootNode)
+bool VerifyNames(const List<Entity*>& lodNodes, const String& lodSubString)
+{
+    bool allNamesAreDifferent = true;
+
+    Map<String, String> validationMap;
+    for (Entity* oneLodNode : lodNodes)
+    {
+        const String lodName(oneLodNode->GetName().c_str());
+        const String nodeWithoutLodsName(lodName, 0, lodName.find(lodSubString));
+
+        if (validationMap.count(nodeWithoutLodsName) != 0)
+        {
+            Logger::Error("Geometry Error: %s will overwrite geometry of %s", lodName.c_str(), validationMap[nodeWithoutLodsName].c_str());
+            allNamesAreDifferent = false;
+        }
+        else
+        {
+            validationMap[nodeWithoutLodsName] = lodName;
+        }
+    }
+
+    return allNamesAreDifferent;
+}
+
+bool CombineEntityLods(Entity* forRootNode)
 {
     const String lodNamePattern("_lod%d");
     const String dummyLodNamePattern("_lod%ddummy");
@@ -40,7 +70,13 @@ void CombineEntityLods(Entity* forRootNode)
     if (!forRootNode->FindNodesByNamePart(lod0, lodNodes))
     {
         // There is no lods.
-        return;
+        return true;
+    }
+
+    //model validation step: we should ignore combination of lods if we found several geometry meshes per lod
+    if (VerifyNames(lodNodes, lod0) == false)
+    {
+        return false;
     }
 
     // ok. We have some nodes with lod 0 in the name. Try to find other lods for same name.
@@ -107,6 +143,8 @@ void CombineEntityLods(Entity* forRootNode)
         DVASSERT(oldParent->GetScene());
         DVASSERT(newNodeWithLods->GetScene());
     }
+
+    return true;
 }
 
 void BakeTransformsUpToFarParent(Entity* parent, Entity* currentNode)

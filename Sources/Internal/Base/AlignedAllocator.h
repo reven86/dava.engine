@@ -13,7 +13,7 @@ void FreeAlignedMemory(void*);
 template <class C, uint32 align, class... Args>
 C* CreateObjectAligned(Args&&... a)
 {
-    auto ptr = AllocateAlignedMemory(sizeof(C), align);
+    auto ptr = AllocateAlignedMemory(static_cast<uint32>(sizeof(C)), align);
     return new (ptr) C(std::forward<Args>(a)...);
 }
 

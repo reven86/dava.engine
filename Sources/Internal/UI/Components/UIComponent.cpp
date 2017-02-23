@@ -14,6 +14,7 @@
 #include "UI/Focus/UITabOrderComponent.h"
 #include "UI/Input/UIActionComponent.h"
 #include "UI/Input/UIActionBindingComponent.h"
+#include "UI/Scroll/UIScrollBarDelegateComponent.h"
 
 namespace DAVA
 {
@@ -40,6 +41,9 @@ UIComponent* UIComponent::CreateByType(uint32 componentType)
 {
     switch (componentType)
     {
+    case BACKGROUND_COMPONENT:
+        return new UIControlBackground();
+
     case LINEAR_LAYOUT_COMPONENT:
         return new UILinearLayoutComponent();
 
@@ -79,14 +83,27 @@ UIComponent* UIComponent::CreateByType(uint32 componentType)
     case ACTION_BINDING_COMPONENT:
         return new UIActionBindingComponent();
 
+    case SCROLL_BAR_DELEGATE_COMPONENT:
+        return new UIScrollBarDelegateComponent();
+
     default:
         DVASSERT(false);
         return nullptr;
     }
 }
 
+RefPtr<UIComponent> UIComponent::SafeCreateByType(uint32 componentType)
+{
+    return RefPtr<UIComponent>(CreateByType(componentType));
+}
+
 bool UIComponent::IsMultiple(uint32 componentType)
 {
     return false;
+}
+
+RefPtr<UIComponent> UIComponent::SafeClone() const
+{
+    return RefPtr<UIComponent>(Clone());
 }
 }

@@ -12,7 +12,6 @@
 
 #include "Engine/Engine.h"
 #include "Engine/Window.h"
-#include "Engine/Android/WindowNativeServiceAndroid.h"
 
 extern "C"
 {
@@ -20,8 +19,12 @@ extern "C"
 JNIEXPORT void JNICALL Java_com_dava_engine_DavaWebView_nativeReleaseWeakPtr(JNIEnv* env, jclass jclazz, jlong backendPointer)
 {
     using DAVA::WebViewControl;
-    std::weak_ptr<WebViewControl>* weak = reinterpret_cast<std::weak_ptr<WebViewControl>*>(static_cast<uintptr_t>(backendPointer));
-    delete weak;
+
+    // Postpone deleting in case some other jobs are posted to main thread
+    DAVA::RunOnMainThreadAsync([backendPointer]() {
+        std::weak_ptr<WebViewControl>* weak = reinterpret_cast<std::weak_ptr<WebViewControl>*>(static_cast<uintptr_t>(backendPointer));
+        delete weak;
+    });
 }
 
 JNIEXPORT jint JNICALL Java_com_dava_engine_DavaWebView_nativeOnUrlChanged(JNIEnv* env, jclass jclazz, jlong backendPointer, jstring url, jboolean isRedirectedByMouseClick)
@@ -84,12 +87,12 @@ void WebViewControl::Initialize(const Rect& rect)
     catch (const JNI::Exception& e)
     {
         Logger::Error("[WebViewControl] failed to init java bridge: %s", e.what());
-        DVASSERT_MSG(false, e.what());
+        DVASSERT(false, e.what());
         return;
     }
 
     std::weak_ptr<WebViewControl>* selfWeakPtr = new std::weak_ptr<WebViewControl>(shared_from_this());
-    jobject obj = window->GetNativeService()->CreateNativeControl("com.dava.engine.DavaWebView", selfWeakPtr);
+    jobject obj = PlatformApi::Android::CreateNativeControl(window, "com.dava.engine.DavaWebView", selfWeakPtr);
     if (obj != nullptr)
     {
         JNIEnv* env = JNI::GetEnv();
@@ -282,7 +285,7 @@ jint WebViewControl::nativeOnUrlChanged(JNIEnv* env, jstring jurl, jboolean jisR
 
     bool isRedirectedByMouseClick = jisRedirectedByMouseClick == JNI_TRUE;
     IUIWebViewDelegate::eAction action = IUIWebViewDelegate::PROCESS_IN_WEBVIEW;
-    window->GetEngine()->RunAndWaitOnMainThread([this, url, isRedirectedByMouseClick, &action]() {
+    RunOnMainThread([this, url, isRedirectedByMouseClick, &action]() {
         action = OnUrlChanged(url, isRedirectedByMouseClick);
     });
 
@@ -291,7 +294,7 @@ jint WebViewControl::nativeOnUrlChanged(JNIEnv* env, jstring jurl, jboolean jisR
 
 void WebViewControl::nativeOnPageLoaded(JNIEnv* env)
 {
-    window->GetEngine()->RunAsyncOnMainThread([this]() {
+    RunOnMainThreadAsync([this]() {
         OnPageLoaded();
     });
 }
@@ -299,7 +302,7 @@ void WebViewControl::nativeOnPageLoaded(JNIEnv* env)
 void WebViewControl::nativeOnExecuteJavaScript(JNIEnv* env, jstring jresult)
 {
     String result = JNI::JavaStringToString(jresult, env);
-    window->GetEngine()->RunAsyncOnMainThread([this, result]() {
+    RunOnMainThreadAsync([this, result]() {
         OnExecuteJavaScript(result);
     });
 }
@@ -444,6 +447,7 @@ String JniWebView::GetCookie(const String& targetUrl, const String& cookieName)
 
     env->DeleteLocalRef(jTargetURL);
     env->DeleteLocalRef(jName);
+    env->DeleteLocalRef(item);
 
     return returnStr;
 }
@@ -464,6 +468,7 @@ Map<String, String> JniWebView::GetCookies(const String& targetUrl)
         {
             jobject item = env->GetObjectArrayElement(jArray, i);
             String cookiesString = JNI::ToString(jstring(item));
+            env->DeleteLocalRef(item);
 
             Vector<String> cookieEntry;
             Split(cookiesString, "=", cookieEntry);
@@ -471,6 +476,8 @@ Map<String, String> JniWebView::GetCookies(const String& targetUrl)
             DVASSERT(1 < cookieEntry.size());
             cookiesMap[cookieEntry[0]] = cookieEntry[1];
         }
+
+        env->DeleteLocalRef(jArray);
     }
 
     env->DeleteLocalRef(jTargetURL);
@@ -568,7 +575,8 @@ void JniWebView::PageLoaded(int id, int* rawPixels, int width, int height)
             Rect rect = webView.GetRect();
             {
                 Sprite* spr = Sprite::CreateFromTexture(tex, 0, 0, width, height, rect.dx, rect.dy);
-                webView.GetBackground()->SetSprite(spr, 0);
+                UIControlBackground* bg = webView.GetOrCreateComponent<UIControlBackground>();
+                bg->SetSprite(spr, 0);
                 SafeRelease(spr);
             }
             SafeRelease(tex);
@@ -577,7 +585,7 @@ void JniWebView::PageLoaded(int id, int* rawPixels, int width, int height)
     else
     {
         // reset sprite to prevent render old sprite under native webveiw
-        webView.SetSprite(nullptr, 0);
+        webView.RemoveComponent(UIComponent::BACKGROUND_COMPONENT);
     }
 }
 

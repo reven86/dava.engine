@@ -7,6 +7,7 @@
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/RenderHelper.h"
 #include "Render/Renderer.h"
+#include "Utils/StringFormat.h"
 
 #include <limits>
 
@@ -20,36 +21,33 @@ UIControlBackground::UIControlBackground()
 {
 }
 
-UIControlBackground* UIControlBackground::Clone()
+UIControlBackground::UIControlBackground(const UIControlBackground& src)
+    : UIBaseComponent(src)
+    , spr(src.spr)
+    , align(src.align)
+    , type(src.type)
+    , spriteModification(src.spriteModification)
+    , leftStretchCap(src.leftStretchCap)
+    , topStretchCap(src.topStretchCap)
+    , colorInheritType(src.colorInheritType)
+    , frame(src.frame)
+    , lastDrawPos(0, 0)
+    , perPixelAccuracyType(src.perPixelAccuracyType)
+    , mask(src.mask)
+    , detail(src.detail)
+    , gradient(src.gradient)
+    , contour(src.contour)
+    , gradientMode(src.gradientMode)
+    , color(src.color)
+    , drawColor(src.drawColor)
+    , material(SafeRetain(src.material))
 {
-    UIControlBackground* cb = new UIControlBackground();
-    cb->CopyDataFrom(this);
-    return cb;
+    SetMargins(src.GetMargins());
 }
 
-void UIControlBackground::CopyDataFrom(UIControlBackground* srcBackground)
+UIControlBackground* UIControlBackground::Clone() const
 {
-    spr = srcBackground->spr;
-    frame = srcBackground->frame;
-    align = srcBackground->align;
-
-    mask = srcBackground->mask;
-    detail = srcBackground->detail;
-    gradient = srcBackground->gradient;
-    contour = srcBackground->contour;
-    gradientMode = srcBackground->gradientMode;
-
-    SetDrawType(srcBackground->type);
-    SetMargins(srcBackground->GetMargins());
-
-    color = srcBackground->color;
-    spriteModification = srcBackground->spriteModification;
-    colorInheritType = srcBackground->colorInheritType;
-    perPixelAccuracyType = srcBackground->perPixelAccuracyType;
-    leftStretchCap = srcBackground->leftStretchCap;
-    topStretchCap = srcBackground->topStretchCap;
-
-    SetMaterial(srcBackground->material);
+    return new UIControlBackground(*this);
 }
 
 UIControlBackground::~UIControlBackground()
@@ -58,23 +56,6 @@ UIControlBackground::~UIControlBackground()
     SafeRelease(material);
     SafeDelete(margins);
     ReleaseDrawData();
-}
-
-bool UIControlBackground::IsEqualTo(const UIControlBackground* back) const
-{
-    if (GetDrawType() != back->GetDrawType() ||
-        Sprite::GetPathString(GetSprite()) != Sprite::GetPathString(back->GetSprite()) ||
-        GetFrame() != back->GetFrame() ||
-        GetAlign() != back->GetAlign() ||
-        GetColor() != back->GetColor() ||
-        GetColorInheritType() != back->GetColorInheritType() ||
-        GetModification() != back->GetModification() ||
-        GetLeftRightStretchCap() != back->GetLeftRightStretchCap() ||
-        GetTopBottomStretchCap() != back->GetTopBottomStretchCap() ||
-        GetPerPixelAccuracyType() != back->GetPerPixelAccuracyType() ||
-        GetMargins() != back->GetMargins())
-        return false;
-    return true;
 }
 
 Sprite* UIControlBackground::GetSprite() const
@@ -120,6 +101,11 @@ void UIControlBackground::SetSprite(Sprite* drawSprite, int32 drawFrame)
 void UIControlBackground::SetSprite(Sprite* drawSprite)
 {
     spr = drawSprite;
+
+    if (GetControl()) //workaround for standalone backgrounds
+    {
+        GetControl()->SetLayoutDirty();
+    }
 }
 
 void UIControlBackground::SetSprite(const FilePath& path)
@@ -151,11 +137,20 @@ void UIControlBackground::SetAlign(int32 drawAlign)
 {
     align = drawAlign;
 }
+
 void UIControlBackground::SetDrawType(UIControlBackground::eDrawType drawType)
 {
     if (type != drawType)
+    {
         ReleaseDrawData();
+    }
+
     type = drawType;
+
+    if (GetControl()) //workaround for standalone backgrounds
+    {
+        GetControl()->SetLayoutDirty();
+    }
 }
 
 void UIControlBackground::SetModification(int32 modification)
@@ -232,7 +227,7 @@ void UIControlBackground::SetParentColor(const Color& parentColor)
     }
     break;
     default:
-        DVASSERT_MSG(false, Format("Unknown colorInheritType: %d", static_cast<int32>(colorInheritType)).c_str());
+        DVASSERT(false, Format("Unknown colorInheritType: %d", static_cast<int32>(colorInheritType)).c_str());
         break;
     }
 }

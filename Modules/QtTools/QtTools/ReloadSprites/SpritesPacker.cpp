@@ -1,10 +1,12 @@
 #include "SpritesPacker.h"
-#include "Render/2D/Sprite.h"
+
+#include <Tools/AssetCache/AssetCacheClient.h>
+
+#include <Render/2D/Sprite.h>
+#include <Logger/Logger.h>
 
 #include <QDir>
 #include <QDirIterator>
-
-#include "AssetCache/AssetCacheClient.h"
 
 using namespace DAVA;
 
