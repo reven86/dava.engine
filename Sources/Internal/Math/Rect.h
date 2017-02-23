@@ -4,7 +4,6 @@
 #include "Vector.h"
 #include "Math/Math2D.h"
 
-#include "Reflection/Reflection.h"
 #include "Base/Any.h"
 
 namespace DAVA
@@ -52,8 +51,6 @@ struct Rect
 
     inline Rect operator+(const Vector2& Point) const;
     inline Rect operator-(const Vector2& Point) const;
-
-    DAVA_REFLECTION(Rect);
 };
 
 inline Rect::Rect()
