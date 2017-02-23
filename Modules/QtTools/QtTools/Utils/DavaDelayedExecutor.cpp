@@ -21,7 +21,7 @@ void DAVADelayedExecutor::OnFrame(DAVA::float32)
 {
     for (auto iter = functionsToExecute.begin(); iter != functionsToExecute.end();)
     {
-        std::pair<DAVA::uint32, DAVA::Function<void()>> &functionPair = *iter;
+        std::pair<DAVA::uint32, DAVA::Function<void()>>& functionPair = *iter;
         if (--functionPair.first == 0)
         {
             functionPair.second();
@@ -33,4 +33,3 @@ void DAVADelayedExecutor::OnFrame(DAVA::float32)
         }
     }
 }
-
