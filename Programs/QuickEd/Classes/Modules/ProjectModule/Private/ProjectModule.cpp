@@ -37,9 +37,8 @@ void ProjectModule::PostInit()
     RegisterOperation(QEGlobal::OpenLastProject.ID, this, &ProjectModule::OpenLastProject);
     RegisterOperation(ProjectModuleTesting::CreateProjectOperation.ID, this, &ProjectModule::CreateProject);
 
-    //we can not invoke operations inside RenderInitialized function
-    //because RenderInitialized invokes inside DAVA frame and main eventLoop can not be continued to prevent another OnFrame call
-    delayedExecutor.DelayedExecute([this]() {
+    //without this kostil project will be open when screen is resized but not rendered
+    delayedExecutor.DelayedExecute(5, [this]() {
         OpenLastProject();
     });
 }

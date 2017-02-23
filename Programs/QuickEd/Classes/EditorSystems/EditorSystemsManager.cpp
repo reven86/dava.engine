@@ -343,6 +343,7 @@ void EditorSystemsManager::ControlWillBeRemoved(ControlNode* nodeToRemove, Contr
                 iter = nodes.erase(iter);
                 found = true;
             }
+            node = node->GetParent();
         }
         ++iter;
     }
