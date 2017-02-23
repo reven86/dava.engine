@@ -12,6 +12,5 @@ public:
 private:
     void OnFrame(DAVA::float32);
 
-    DAVA::List < std::pair<DAVA::uint32 /*framesCount*/, DAVA::Function<void()>>> functionsToExecute;
-
+    DAVA::List<std::pair<DAVA::uint32 /*framesCount*/, DAVA::Function<void()>>> functionsToExecute;
 };
