@@ -99,7 +99,7 @@ Project::Project(MainWindow::ProjectView* view_, const ProjectProperties& proper
             const PluginDescriptor* descriptor = pluginManager->LoadPlugin(pluginPath);
             if (descriptor == nullptr)
             {
-                results.AddResult(Result::RESULT_WARNING, Format("can not load plugin %s", pluginPath));
+                results.AddResult(Result::RESULT_WARNING, Format("can not load plugin %s", pluginPath.GetAbsolutePathname().c_str()));
             }
         }
         view->mainWindow->ShowResultList(QObject::tr("Loading plugins"), results);

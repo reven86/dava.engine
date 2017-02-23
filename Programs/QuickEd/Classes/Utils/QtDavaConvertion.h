@@ -1,8 +1,10 @@
 #pragma once
 
-#include "Base/BaseTypes.h"
-#include "Base/BaseMath.h"
-#include "FileSystem/VariantType.h"
+#include <Base/BaseTypes.h>
+#include <Base/BaseMath.h>
+#include <FileSystem/VariantType.h>
+#include <Base/Introspection.h>
+
 #include "qmetatype.h"
 
 class QString;
