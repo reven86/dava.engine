@@ -1,5 +1,7 @@
 #include "OverdrawTesterSystem.h"
 
+#include <random>
+
 #include "OverdrawTesterComponent.h"
 #include "OverdrawTesterRenderObject.h"
 #include "Scene3D/Entity.h"
@@ -108,7 +110,7 @@ void OverdrawTesterSystem::Process(DAVA::float32 timeElapsed)
 {
     if (finished) return;
 
-    static const float increasePercentTime = 0.02f;
+    static const float increasePercentTime = 0.5f;
     static float32 i = 0;
     i += timeElapsed;
     if (i >= increasePercentTime)
@@ -143,15 +145,21 @@ DAVA::Texture* OverdrawTesterSystem::GenerateTexture(DAVA::Vector4 startColor, D
     static const uint32 height = 2048;
 
     unsigned char* data = new unsigned char[width * height * 4];
+    
+    std::mt19937 rng;
+    rng.seed(std::random_device()());
+    std::uniform_int_distribution<std::mt19937::result_type> dist255(1,255); // distribution in range [1, 6]
+
+    
     uint32 dataIndex = 0;
     for (uint32 i = 0; i < height; i++)
         for (uint32 j = 0; j < width; j++)
         {
             Vector4 finalColor = Lerp(startColor, endColor, static_cast<float>(j) / width);
-            data[dataIndex++] = static_cast<uint8>(finalColor.x);
-            data[dataIndex++] = static_cast<uint8>(finalColor.y);
-            data[dataIndex++] = static_cast<uint8>(finalColor.z);
-            data[dataIndex++] = static_cast<uint8>(finalColor.w);
+            data[dataIndex++] = static_cast<uint8>(dist255(rng));
+            data[dataIndex++] = static_cast<uint8>(dist255(rng));
+            data[dataIndex++] = static_cast<uint8>(dist255(rng));
+            data[dataIndex++] = static_cast<uint8>(20);
         }
     Texture* result = DAVA::Texture::CreateFromData(DAVA::FORMAT_RGBA8888, data, width, height, false);
     delete[] data;
