@@ -1,7 +1,6 @@
 #include "Classes/SceneManager/SceneManagerModule.h"
 #include "Classes/SceneManager/SceneData.h"
 #include "Classes/SceneManager/Private/SceneRenderWidget.h"
-#include "Classes/SceneManager/Private/SceneTabsModel.h"
 #include "Classes/Project/ProjectManagerData.h"
 #include "Classes/Application/REGlobal.h"
 #include "Classes/Qt/TextureBrowser/TextureCache.h"
