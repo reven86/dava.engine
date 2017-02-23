@@ -14,8 +14,10 @@ ImGuiTest::ImGuiTest(TestBed& app)
 
 void ImGuiTest::LoadResources()
 {
-    GetBackground()->SetDrawType(DAVA::UIControlBackground::DRAW_FILL);
-    GetBackground()->SetColor(backColor);
+    DAVA::UIControlBackground* bg = GetOrCreateComponent<DAVA::UIControlBackground>();
+
+    bg->SetDrawType(DAVA::UIControlBackground::DRAW_FILL);
+    bg->SetColor(backColor);
 
     BaseScreen::LoadResources();
 }

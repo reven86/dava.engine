@@ -383,7 +383,7 @@ void AutotestingSystem::Draw()
             desc.transformVirtualToPhysical = true;
 
             RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
-            currentScreen->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData());
+            currentScreen->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData(), nullptr);
             DrawTouches();
             RenderSystem2D::Instance()->FillRect(Rect(0.0f, 0.0f, float32(pScreenSize.dx), float32(pScreenSize.dy)), Color::White, RenderSystem2D::DEFAULT_2D_FILL_ALPHA_MATERIAL);
             RenderSystem2D::Instance()->EndRenderTargetPass();
