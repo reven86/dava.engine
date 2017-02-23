@@ -311,9 +311,6 @@ void ProtoDriver::ClearQueues()
     if (curPacket.data != NULL)
     {
         Channel* ch = GetChannel(curPacket.channelId);
-        auto duration = std::chrono::system_clock::now().time_since_epoch();
-        auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-        Logger::Debug("thread %u (%d): %s", Thread::GetCurrentId(), millis, __FUNCTION__);
         ch->service->OnPacketSent(ch, curPacket.data, curPacket.dataLength);
 
         curPacket.data = NULL;
@@ -322,9 +319,6 @@ void ProtoDriver::ClearQueues()
     {
         Packet& packet = *i;
         Channel* ch = GetChannel(packet.channelId);
-        auto duration = std::chrono::system_clock::now().time_since_epoch();
-        auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-        Logger::Debug("thread %u (%d): %s", Thread::GetCurrentId(), millis, __FUNCTION__);
         ch->service->OnPacketSent(ch, packet.data, packet.dataLength);
     }
     dataQueue.clear();
