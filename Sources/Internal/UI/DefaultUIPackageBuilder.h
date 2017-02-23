@@ -52,6 +52,7 @@ private:
 
     UIPackagesCache* cache;
     BaseObject* currentObject;
+    int32 currentComponentType = -1;
 
     RefPtr<UIPackage> package;
     FilePath currentPackagePath;
