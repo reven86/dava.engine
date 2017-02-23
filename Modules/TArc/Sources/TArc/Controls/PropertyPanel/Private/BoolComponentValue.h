@@ -12,9 +12,9 @@ public:
     BoolComponentValue() = default;
 
 protected:
-    Any GetMultipleValue() const;
-    bool IsValidValueToSet(const Any& newValue, const Any& currentValue) const;
-    ControlProxy* CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor) const;
+    Any GetMultipleValue() const override;
+    bool IsValidValueToSet(const Any& newValue, const Any& currentValue) const override;
+    ControlProxy* CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor) const override;
 
 private:
     Qt::CheckState GetCheckState() const;
