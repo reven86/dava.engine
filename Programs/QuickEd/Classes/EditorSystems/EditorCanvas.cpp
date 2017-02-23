@@ -112,7 +112,7 @@ void EditorCanvas::UpdateContentSize()
             || (data->needCentralizeY && sizeDiff.dy > 0.0f))
         {
             Vector2 newPosition(data->needCentralizeX ? sizeDiff.dx : position.x,
-                data->needCentralizeY ? sizeDiff.dy : position.y);
+                                data->needCentralizeY ? sizeDiff.dy : position.y);
             SetPosition(newPosition);
         }
         else if (data->canvasPosition == EditorCanvasData::invalidPosition)
