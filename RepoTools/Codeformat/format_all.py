@@ -3,8 +3,6 @@
 import fnmatch
 import os
 import subprocess
-import errno
-import sys
 import argparse
 import multiprocessing
 
@@ -13,7 +11,6 @@ parser.add_argument("-t", "--teamcity-notify", help="print list of non-formatted
 args = parser.parse_args()
 
 def process(file):
-    global args;
     if args.teamcity_notify:
         check_format(file)
     else:
@@ -39,7 +36,7 @@ sources = ['../../Sources/Internal', '../../Modules', '../../Programs']
 
 
 def main():
-    pool = multiprocessing.Pool();
+    pool = multiprocessing.Pool()
     fileList = []
     for source in sources:
         for root, dirnames, filenames in os.walk(source):
