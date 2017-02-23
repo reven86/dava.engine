@@ -1,17 +1,18 @@
 #include "Classes/SceneManager/SceneManagerModule.h"
 #include "Classes/SceneManager/SceneData.h"
+#include "Classes/SceneManager/Private/SceneRenderWidget.h"
+#include "Classes/SceneManager/Private/SceneTabsModel.h"
 #include "Classes/Project/ProjectManagerData.h"
 #include "Classes/Application/REGlobal.h"
 #include "Classes/Qt/TextureBrowser/TextureCache.h"
-#include "Classes/Qt/Scene/SceneEditor2.h"
 #include "Classes/Qt/Main/mainwindow.h"
 #include "Classes/Qt/Tools/ExportSceneDialog/ExportSceneDialog.h"
+#include "Classes/Qt/Scene/SceneEditor2.h"
 #include "Classes/Qt/Scene/System/EditorVegetationSystem.h"
 #include "Classes/Qt/Scene/SceneHelper.h"
+#include "Classes/Qt/Settings/SettingsManager.h"
 #include "Classes/Qt/SpritesPacker/SpritesPackerModule.h"
 
-#include "Classes/SceneManager/Private/SceneRenderWidget.h"
-#include "Classes/SceneManager/Private/SceneTabsModel.h"
 #include "Classes/Utils/SceneSaver/SceneSaver.h"
 
 #include "Commands2/Base/RECommandStack.h"
@@ -1275,7 +1276,11 @@ bool SceneManagerModule::SaveSceneImpl(DAVA::RefPtr<SceneEditor2> scene, const D
         return false;
     }
 
-    scene->SaveEmitters(DAVA::MakeFunction(this, &SceneManagerModule::SaveEmitterFallback));
+    if (SettingsManager::GetValue(Settings::Scene_SaveEmitters).AsBool() == true)
+    {
+        scene->SaveEmitters(DAVA::MakeFunction(this, &SceneManagerModule::SaveEmitterFallback));
+    }
+
     DAVA::SceneFileV2::eError ret = scene->SaveScene(pathToSaveScene);
     if (DAVA::SceneFileV2::ERROR_NO_ERROR != ret)
     {

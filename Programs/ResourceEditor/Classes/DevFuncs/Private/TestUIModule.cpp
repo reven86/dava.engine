@@ -9,6 +9,7 @@
 #include <TArc/Controls/DoubleSpinBox.h>
 #include <TArc/Controls/IntSpinBox.h>
 #include <TArc/Controls/LineEdit.h>
+#include <TArc/Controls/PlainTextEdit.h>
 #include <TArc/Controls/FilePathEdit.h>
 #include <TArc/Controls/QtBoxLayouts.h>
 #include <TArc/Utils/ModuleCollection.h>
@@ -199,6 +200,130 @@ struct LineEditTestData : public ReflectionBase
             desr[LineEdit::Fields::IsEnabled] = "isTextEnabled";
             LineEdit* lineEdit = new LineEdit(desr, accessor, Reflection::Create(data), parent);
             lineLayout->addWidget(lineEdit->ToWidgetCast());
+            boxLayout->addLayout(lineLayout);
+
+            {
+                // Read only check box
+                ControlDescriptorBuilder<CheckBox::Fields> descr;
+                descr[CheckBox::Fields::Checked] = "isTextReadOnly";
+                CheckBox* checkBox = new CheckBox(descr, accessor, Reflection::Create(data), parent);
+                boxLayout->addWidget(checkBox->ToWidgetCast());
+            }
+
+            {
+                // Is enabled
+                ControlDescriptorBuilder<CheckBox::Fields> descr;
+                descr[CheckBox::Fields::Checked] = "isTextEnabled";
+                CheckBox* checkBox = new CheckBox(descr, accessor, Reflection::Create(data), parent);
+
+                QVBoxLayout* vbox = new QVBoxLayout(checkBox->ToWidgetCast());
+                boxLayout->addWidget(checkBox->ToWidgetCast());
+            }
+        }
+
+        Result r;
+        r.model = data;
+        r.layout = boxLayout;
+        return r;
+    }
+};
+
+struct PlainTextEditTestData : public ReflectionBase
+{
+    String text = "Text in text edit";
+    String placeHolder = "Enter text";
+    bool isReadOnly = false;
+    bool isEnabled = true;
+
+    String GetText() const
+    {
+        return text;
+    }
+
+    void SetText(const String& t)
+    {
+        text = t;
+    }
+
+    static String GetReadOnlyDescription(const Any& v)
+    {
+        bool value = v.Cast<bool>();
+        return value == true ? "Read only" : "Writable";
+    }
+
+    static String GetEnableDescription(const Any& v)
+    {
+        bool value = v.Cast<bool>();
+        return value == true ? "Enabled" : "Disabled";
+    }
+
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(PlainTextEditTestData, ReflectionBase)
+    {
+        using namespace DAVA::M;
+
+        ReflectionRegistrator<PlainTextEditTestData>::Begin()
+        .Field("readOnlyMetaText", &PlainTextEditTestData::text)[ReadOnly()]
+        .Field("readOnlyText", &PlainTextEditTestData::GetText, nullptr)
+        .Field("text", &PlainTextEditTestData::GetText, &PlainTextEditTestData::SetText)
+        .Field("shortText", &PlainTextEditTestData::GetText, &PlainTextEditTestData::SetText)[M::MaxLength(20)]
+        .Field("isTextReadOnly", &PlainTextEditTestData::isReadOnly)[DAVA::M::ValueDescription(&PlainTextEditTestData::GetReadOnlyDescription)]
+        .Field("isTextEnabled", &PlainTextEditTestData::isEnabled)[DAVA::M::ValueDescription(&PlainTextEditTestData::GetEnableDescription)]
+        .Field("placeholder", &PlainTextEditTestData::placeHolder)
+        .End();
+    }
+
+    static Result Create(TArc::UI* ui, TArc::ContextAccessor* accessor, QWidget* parent)
+    {
+        using namespace DAVA::TArc;
+        PlainTextEditTestData* data = new PlainTextEditTestData();
+        QVBoxLayout* boxLayout = new QVBoxLayout();
+
+        {
+            QHBoxLayout* lineLayout = new QHBoxLayout();
+            lineLayout->addWidget(new QLabel("Meta read only : ", parent));
+
+            ControlDescriptorBuilder<PlainTextEdit::Fields> desr;
+            desr[PlainTextEdit::Fields::Text] = "readOnlyMetaText";
+            PlainTextEdit* textEdit = new PlainTextEdit(desr, accessor, Reflection::Create(data), parent);
+            lineLayout->addWidget(textEdit->ToWidgetCast());
+            boxLayout->addLayout(lineLayout);
+        }
+
+        {
+            QHBoxLayout* lineLayout = new QHBoxLayout();
+            lineLayout->addWidget(new QLabel("Read only : ", parent));
+
+            ControlDescriptorBuilder<PlainTextEdit::Fields> desr;
+            desr[PlainTextEdit::Fields::Text] = "readOnlyText";
+            PlainTextEdit* textEdit = new PlainTextEdit(desr, accessor, Reflection::Create(data), parent);
+            lineLayout->addWidget(textEdit->ToWidgetCast());
+            boxLayout->addLayout(lineLayout);
+        }
+
+        {
+            QHBoxLayout* lineLayout = new QHBoxLayout();
+            lineLayout->addWidget(new QLabel("Short text : ", parent));
+
+            ControlDescriptorBuilder<PlainTextEdit::Fields> desr;
+            desr[PlainTextEdit::Fields::Text] = "shortText";
+            desr[PlainTextEdit::Fields::IsReadOnly] = "isTextReadOnly";
+            desr[PlainTextEdit::Fields::IsEnabled] = "isTextEnabled";
+            PlainTextEdit* textEdit = new PlainTextEdit(desr, accessor, Reflection::Create(data), parent);
+            lineLayout->addWidget(textEdit->ToWidgetCast());
+            boxLayout->addLayout(lineLayout);
+        }
+
+        {
+            QHBoxLayout* lineLayout = new QHBoxLayout();
+            lineLayout->addWidget(new QLabel("Editable : ", parent));
+
+            ControlDescriptorBuilder<PlainTextEdit::Fields> desr;
+            desr[PlainTextEdit::Fields::Text] = "text";
+            desr[PlainTextEdit::Fields::PlaceHolder] = "placeholder";
+            desr[PlainTextEdit::Fields::IsReadOnly] = "isTextReadOnly";
+            desr[PlainTextEdit::Fields::IsEnabled] = "isTextEnabled";
+            PlainTextEdit* textEdit = new PlainTextEdit(desr, accessor, Reflection::Create(data), parent);
+            lineLayout->addWidget(textEdit->ToWidgetCast());
             boxLayout->addLayout(lineLayout);
 
             {
@@ -821,6 +946,7 @@ void TestUIModule::ShowDialog()
     {
       { &CheckBoxTestData::Create, "CheckBox Test" },
       { &LineEditTestData::Create, "LineEdit Test" },
+      { &PlainTextEditTestData::Create, "PlainTextEdit Test" },
       { &ComboBoxTestData::Create, "ComboBox Test" },
       { &ComboBoxCheckableTestData::Create, "ComboBoxCheckable Test" },
       { &IntSpinBoxTestData::Create, "SpinBoxTest" },

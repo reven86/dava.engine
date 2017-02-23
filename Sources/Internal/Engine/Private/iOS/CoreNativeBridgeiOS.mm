@@ -273,6 +273,11 @@ void CoreNativeBridge::DidReceiveRemoteNotification(UIApplication* app, NSDictio
     NotifyListeners(ON_DID_RECEIVE_REMOTE_NOTIFICATION, app, userInfo);
 }
 
+void CoreNativeBridge::DidReceiveRemoteNotificationFetchCompletionHandler(UIApplication* app, NSDictionary* userInfo, void (^completionHandler)(UIBackgroundFetchResult))
+{
+    NotifyListeners(ON_DID_RECEIVE_REMOTE_NOTIFICATION_FETCH_COMPLETION_HANDLER, app, userInfo, nil, completionHandler);
+}
+
 void CoreNativeBridge::DidRegisterForRemoteNotificationsWithDeviceToken(UIApplication* app, NSData* deviceToken)
 {
     NotifyListeners(ON_DID_REGISTER_FOR_REMOTE_NOTIFICATION_WITH_TOKEN, app, deviceToken);
@@ -411,6 +416,12 @@ BOOL CoreNativeBridge::NotifyListeners(eNotificationType type, NSObject* arg1, N
             if ([listener respondsToSelector:@selector(application:didReceiveRemoteNotification:)])
             {
                 [listener application:static_cast<UIApplication*>(arg1) didReceiveRemoteNotification:static_cast<NSDictionary*>(arg2)];
+            }
+            break;
+        case ON_DID_RECEIVE_REMOTE_NOTIFICATION_FETCH_COMPLETION_HANDLER:
+            if ([listener respondsToSelector:@selector(application:didReceiveRemoteNotification:fetchCompletionHandler:)])
+            {
+                [listener application:static_cast<UIApplication*>(arg1) didReceiveRemoteNotification:static_cast<NSDictionary*>(arg2) fetchCompletionHandler:static_cast<void (^)(UIBackgroundFetchResult)>(arg4)];
             }
             break;
         case ON_DID_RECEIVE_LOCAL_NOTIFICATION:

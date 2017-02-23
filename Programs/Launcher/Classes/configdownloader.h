@@ -28,7 +28,10 @@ public:
         LauncherTestInfoURL,
         StringsURL,
         FavoritesURL,
-        AllBuildsURL,
+        AllBuildsCurrentPlatformURL,
+        AllBuildsAndroidURL,
+        AllBuildsIOSURL,
+        AllBuildsUWPURL,
         URLTypesCount
     };
 
