@@ -7,7 +7,7 @@ BaseScreen::BaseScreen()
     , screenID(screensCount++)
 {
     DAVA::UIScreenManager::Instance()->RegisterScreen(screenID, this);
-	GetOrCreateComponent<DAVA::UIControlBackground>();
+    GetOrCreateComponent<DAVA::UIControlBackground>();
 }
 
 bool BaseScreen::SystemInput(DAVA::UIEvent* currentInput)
