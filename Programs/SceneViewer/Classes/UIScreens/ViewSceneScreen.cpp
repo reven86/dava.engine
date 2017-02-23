@@ -364,12 +364,12 @@ void ViewSceneScreen::OnButtonSelectFromExt(DAVA::BaseObject* caller, void* para
         if (storage.type == DeviceInfo::STORAGE_TYPE_PRIMARY_EXTERNAL ||
             storage.type == DeviceInfo::STORAGE_TYPE_SECONDARY_EXTERNAL)
         {
+            menu->SetEnabled(false);
             fileSystemDialog->SetCurrentDir(storage.path);
             fileSystemDialog->Show(this);
             return;
         }
     }
-    menu->SetEnabled(false);
 }
 
 void ViewSceneScreen::OnButtonPerformanceTest(DAVA::BaseObject* caller, void* param, void* callerData)
