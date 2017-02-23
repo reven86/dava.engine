@@ -36,6 +36,7 @@ public:
             anchor->SetHCenterAnchorEnabled(true);
         }
 
+        GetOrCreateComponent<DAVA::UIControlBackground>();
         GetBackground()->SetColor(Color(0.65f, 0.65f, 0.65f, OPACITY));
         GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
 
@@ -133,6 +134,7 @@ QualitySettingsDialog::QualitySettingsDialog(Settings& settings)
     font = FTFont::Create("~res:/Fonts/korinna.ttf");
     font->SetSize(cellHeight / 2.5f);
 
+    GetOrCreateComponent<DAVA::UIControlBackground>();
     GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
     GetBackground()->SetColor(Color(0.6f, 0.6f, 0.6f, QualitySettingsDialogDetails::OPACITY));
 
@@ -170,6 +172,7 @@ QualitySettingsDialog::QualitySettingsDialog(Settings& settings)
         anchor->SetBottomAnchorEnabled(true);
         anchor->SetBottomAnchor(cellHeight);
     }
+    scrollableOptionsList->GetOrCreateComponent<DAVA::UIControlBackground>();
     scrollableOptionsList->GetBackground()->SetColor(Color(0.75f, 0.75f, 0.75f, QualitySettingsDialogDetails::OPACITY));
     scrollableOptionsList->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
     AddControl(scrollableOptionsList);

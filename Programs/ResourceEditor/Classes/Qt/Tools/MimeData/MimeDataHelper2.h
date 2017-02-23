@@ -71,14 +71,9 @@ inline const QString MimeDataHelper2<DAVA::Entity>::GetMimeType()
     return "application/dava.entity";
 }
 template <>
-inline const QString MimeDataHelper2<DAVA::NMaterial>::GetMimeType()
+inline const QString MimeDataHelper2<DAVA::ParticleEmitterInstance>::GetMimeType()
 {
-    return "application/dava.nmaterial";
-}
-template <>
-inline const QString MimeDataHelper2<DAVA::ParticleEmitter>::GetMimeType()
-{
-    return "application/dava.particleemitter";
+    return "application/dava.particleemitterinstance";
 }
 template <>
 inline const QString MimeDataHelper2<DAVA::ParticleLayer>::GetMimeType()
@@ -94,6 +89,7 @@ inline const QString MimeDataHelper2<DAVA::ParticleForce>::GetMimeType()
 template <class T>
 inline const QString MimeDataHelper2<T>::GetMimeType()
 {
+    DVASSERT(false && "calling non-instantiated GetMimeType");
     return QString();
 }
 
