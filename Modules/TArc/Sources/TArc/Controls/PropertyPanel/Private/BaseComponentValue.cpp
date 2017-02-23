@@ -3,76 +3,34 @@
 #include "TArc/Controls/PropertyPanel/StaticEditorDrawer.h"
 
 #include "TArc/DataProcessing/DataWrappersProcessor.h"
+#include "TArc/Utils/ScopedValueGuard.h"
 
+#include <Engine/PlatformApi.h>
 #include <Reflection/ReflectionRegistrator.h>
+#include <Logger/Logger.h>
 
 #include <QStyle>
 #include <QStyleOption>
+#include <QPainter>
+#include <QApplication>
 
 namespace DAVA
 {
 namespace TArc
 {
-StaticEditorProxy::StaticEditorProxy(BaseComponentValue* valueComponent, const StaticEditorDrawer* drawer_)
-    : value(valueComponent)
-    , drawer(drawer_)
-{
-}
-
-uint32 StaticEditorProxy::GetHeight(QStyle* style, const QStyleOptionViewItem& options) const
-{
-    StaticEditorDrawer::Params params;
-    params.options = options;
-    params.style = style;
-    params.value = value->GetValue();
-    params.nodes = &value->nodes;
-    return drawer->GetHeight(params);
-}
-
-void StaticEditorProxy::Draw(QStyle* style, QPainter* painter, const QStyleOptionViewItem& options) const
-{
-    StaticEditorDrawer::Params params;
-    params.options = options;
-    params.style = style;
-    params.value = value->GetValue();
-    params.nodes = &value->nodes;
-    drawer->Draw(painter, params);
-}
-
-InteractiveEditorProxy::InteractiveEditorProxy(BaseComponentValue* valueComponent)
-    : value(valueComponent)
-{
-}
-
-QWidget* InteractiveEditorProxy::AcquireEditorWidget(QWidget* parent, const QStyleOptionViewItem& option)
-{
-    value->UpdateCachedValue();
-    return value->AcquireEditorWidget(parent, option);
-}
-
-void InteractiveEditorProxy::ReleaseEditorWidget(QWidget* editor)
-{
-    value->ReleaseEditorWidget(editor);
-    value->ClearCachedValue();
-}
-
-void InteractiveEditorProxy::CommitData()
-{
-    value->CommitData();
-}
-
-QRect InteractiveEditorProxy::GetEditorRect(QStyle* style, const QStyleOptionViewItem& option)
-{
-    QStyleOptionViewItem opt = option;
-    opt.showDecorationSelected = true;
-    return style->subElementRect(QStyle::SE_ItemViewItemText, &opt, option.widget);
-}
-
-//////////////////////////////////////////////////////////////////////////////
-
 BaseComponentValue::BaseComponentValue()
 {
     thisValue = this;
+}
+
+BaseComponentValue::~BaseComponentValue()
+{
+    if (editorWidget != nullptr)
+    {
+        editorWidget->TearDown();
+        editorWidget->ToWidgetCast()->deleteLater();
+        editorWidget = nullptr;
+    }
 }
 
 void BaseComponentValue::Init(ReflectedPropertyModel* model_)
@@ -80,23 +38,63 @@ void BaseComponentValue::Init(ReflectedPropertyModel* model_)
     model = model_;
 }
 
-StaticEditorProxy BaseComponentValue::GetStaticEditor()
+void BaseComponentValue::Draw(QWidget* parent, QPainter* painter, const QStyleOptionViewItem& opt)
 {
-    return StaticEditorProxy(this, GetStaticEditorDrawer());
+    UpdateEditorGeometry(parent, opt.rect);
+    painter->drawPixmap(opt.rect, editorWidget->ToWidgetCast()->grab());
 }
 
-InteractiveEditorProxy BaseComponentValue::GetInteractiveEditor()
+void BaseComponentValue::UpdateGeometry(QWidget* parent, const QStyleOptionViewItem& opt)
 {
-    return InteractiveEditorProxy(this);
+    UpdateEditorGeometry(parent, opt.rect);
+}
+
+bool BaseComponentValue::HasHeightForWidth(const QWidget* parent) const
+{
+    EnsureEditorCreated(parent);
+    return editorWidget->ToWidgetCast()->hasHeightForWidth();
+}
+
+int BaseComponentValue::GetHeightForWidth(const QWidget* parent, int width) const
+{
+    EnsureEditorCreated(parent);
+    return editorWidget->ToWidgetCast()->heightForWidth(width);
+}
+
+int BaseComponentValue::GetHeight(const QWidget* parent) const
+{
+    EnsureEditorCreated(parent);
+    return editorWidget->ToWidgetCast()->sizeHint().height();
+}
+
+QWidget* BaseComponentValue::AcquireEditorWidget(QWidget* parent, const QStyleOptionViewItem& option)
+{
+    UpdateEditorGeometry(parent, option.rect);
+    return editorWidget->ToWidgetCast();
 }
 
 void BaseComponentValue::ReleaseEditorWidget(QWidget* editor)
 {
-    editor->deleteLater();
+    DVASSERT(editorWidget->ToWidgetCast() == editor);
 }
 
-bool BaseComponentValue::EditorEvent(QEvent* event, const QStyleOptionViewItem& option)
+bool BaseComponentValue::EditorEvent(QWidget* parent, QEvent* event, const QStyleOptionViewItem& option)
 {
+    SCOPED_VALUE_GUARD(bool, isEditorEvent, true, false);
+    UpdateEditorGeometry(parent, option.rect);
+    switch (event->type())
+    {
+    case QEvent::MouseButtonPress:
+    case QEvent::MouseButtonRelease:
+    {
+        QMouseEvent* e = static_cast<QMouseEvent*>(event);
+        QPoint pos = editorWidget->ToWidgetCast()->mapFrom(parent, e->pos());
+        QMouseEvent newEvent(e->type(), pos, e->screenPos(), e->button(), e->buttons(), e->modifiers());
+        return PlatformApi::Qt::GetApplication()->sendEvent(editorWidget->ToWidgetCast(), &newEvent);
+    }
+    default:
+        break;
+    }
     return false;
 }
 
@@ -116,9 +114,32 @@ std::shared_ptr<const PropertyNode> BaseComponentValue::GetPropertyNode(int32 in
     return nodes[static_cast<size_t>(index)];
 }
 
+bool BaseComponentValue::IsReadOnly() const
+{
+    Reflection r = nodes.front()->field.ref;
+    return r.IsReadonly() || r.HasMeta<M::ReadOnly>();
+}
+
+DAVA::Any BaseComponentValue::GetValue() const
+{
+    Any value = nodes.front()->cachedValue;
+    for (const std::shared_ptr<const PropertyNode>& node : nodes)
+    {
+        if (value != node->cachedValue)
+        {
+            return GetMultipleValue();
+        }
+    }
+
+    return value;
+}
+
 void BaseComponentValue::SetValue(const Any& value)
 {
-    cachedValue = value;
+    if (IsValidValueToSet(value, GetValue()))
+    {
+        model->GetExtensionChain<ModifyExtension>()->ModifyPropertyValue(nodes, value);
+    }
 }
 
 void BaseComponentValue::AddPropertyNode(const std::shared_ptr<PropertyNode>& node)
@@ -143,42 +164,35 @@ void BaseComponentValue::RemovePropertyNodes()
     nodes.clear();
 }
 
-std::shared_ptr<ModifyExtension> BaseComponentValue::GetModifyInterface()
+void BaseComponentValue::EnsureEditorCreated(const QWidget* parent) const
 {
-    return model->GetExtensionChain<ModifyExtension>();
-}
-
-void BaseComponentValue::UpdateCachedValue()
-{
-    cachedValue = GetValue();
-}
-
-void BaseComponentValue::ClearCachedValue()
-{
-    cachedValue = Any();
-}
-
-void BaseComponentValue::CommitData()
-{
-    if (IsValidValueToSet(cachedValue, GetValue()))
+    if (editorWidget == nullptr)
     {
-        GetModifyInterface()->ModifyPropertyValue(nodes, cachedValue);
+        editorWidget = CreateEditorWidget(const_cast<QWidget*>(parent),
+                                          Reflection::Create(&const_cast<BaseComponentValue*>(thisValue)),
+                                          &const_cast<ReflectedPropertyModel*>(model)->wrappersProcessor);
+        editorWidget->ForceUpdate();
+    }
+
+    DVASSERT(editorWidget->ToWidgetCast()->parent() == parent);
+}
+
+void BaseComponentValue::UpdateEditorGeometry(const QWidget* parent, const QRect& geometry) const
+{
+    EnsureEditorCreated(parent);
+    QWidget* w = editorWidget->ToWidgetCast();
+    if (w->geometry() != geometry)
+    {
+        w->setGeometry(geometry);
     }
 }
 
-DataWrappersProcessor* BaseComponentValue::GetWrappersProcessor()
-{
-    return &model->wrappersProcessor;
-}
-
-DAVA::Reflection BaseComponentValue::GetReflection()
-{
-    return Reflection::Create(&thisValue);
-}
+const char* BaseComponentValue::readOnlyFieldName = "isReadOnly";
 
 DAVA_VIRTUAL_REFLECTION_IMPL(BaseComponentValue)
 {
     ReflectionRegistrator<BaseComponentValue>::Begin()
+    .Field(readOnlyFieldName, &BaseComponentValue::IsReadOnly, nullptr)
     .End();
 }
 }
