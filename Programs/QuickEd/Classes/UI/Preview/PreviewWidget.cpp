@@ -16,7 +16,6 @@
 #include "Model/ControlProperties/VisibleValueProperty.h"
 
 #include "Modules/DocumentsModule/DocumentData.h"
-#include "Modules/DocumentsModule/Private/CentralWidgetData.h"
 
 #include <TArc/Controls/SceneTabbar.h>
 #include <TArc/Models/SceneTabsModel.h>
@@ -293,23 +292,6 @@ void PreviewWidget::UpdateScrollArea(const DAVA::Vector2& /*size*/)
         Vector2 maxPos = editorCanvas->GetMaximumPos();
         horizontalScrollBar->setRange(minPos.x, maxPos.x);
         verticalScrollBar->setRange(minPos.y, maxPos.y);
-
-        //we can load previous used position only when canvas size is changed
-        //it must be fixed when each of editorsytems will be a separate module with it own data
-        using namespace DAVA::TArc;
-        DataContext* activeContext = accessor->GetActiveContext();
-        if (activeContext != nullptr)
-        {
-            CentralWidgetData* data = activeContext->GetData<CentralWidgetData>();
-            if (data->canvasPosition == CentralWidgetData::invalidPosition)
-            {
-                editorCanvas->SetPosition(editorCanvas->GetMaximumPos() / 2.0f);
-            }
-            else
-            {
-                editorCanvas->SetPosition(data->canvasPosition);
-            }
-        }
     }
 }
 
@@ -318,14 +300,6 @@ void PreviewWidget::OnPositionChanged(const Vector2& position)
     using namespace DAVA::TArc;
     horizontalScrollBar->setSliderPosition(position.x);
     verticalScrollBar->setSliderPosition(position.y);
-
-    DataContext* activeContext = accessor->GetActiveContext();
-    if (activeContext == nullptr)
-    {
-        return;
-    }
-    CentralWidgetData* data = activeContext->GetData<CentralWidgetData>();
-    data->canvasPosition = position;
 }
 
 void PreviewWidget::OnResized(DAVA::uint32 width, DAVA::uint32 height)
@@ -353,7 +327,7 @@ void PreviewWidget::InitFromSystemsManager(EditorSystemsManager* systemsManager_
     connect(focusPreviousChildAction, &QAction::triggered, std::bind(&EditorSystemsManager::FocusPreviousChild, systemsManager));
     connect(selectAllAction, &QAction::triggered, std::bind(&EditorSystemsManager::SelectAll, systemsManager));
 
-    editorCanvas = new EditorCanvas(systemsManager);
+    editorCanvas = new EditorCanvas(systemsManager, accessor);
     editorCanvas->sizeChanged.Connect(this, &PreviewWidget::UpdateScrollArea);
     editorCanvas->positionChanged.Connect(this, &PreviewWidget::OnPositionChanged);
     editorCanvas->nestedControlPositionChanged.Connect(this, &PreviewWidget::OnNestedControlPositionChanged);

@@ -2,7 +2,7 @@
 #include "Modules/LegacySupportModule/Private/Project.h"
 #include "Modules/DocumentsModule/DocumentData.h"
 #include "Modules/DocumentsModule/Private/DocumentsWatcherData.h"
-#include "Modules/DocumentsModule/Private/CentralWidgetData.h"
+#include "Modules/DocumentsModule/Private/EditorCanvasData.h"
 #include "Modules/LegacySupportModule/Private/Document.h"
 
 #include "QECommands/ChangePropertyValueCommand.h"
@@ -575,7 +575,7 @@ DAVA::TArc::DataContext::ContextID DocumentsModule::OpenDocument(const QString& 
         {
             DAVA::Vector<std::unique_ptr<DAVA::TArc::DataNode>> initialData;
             initialData.emplace_back(new DocumentData(package));
-            initialData.emplace_back(new CentralWidgetData());
+            initialData.emplace_back(new EditorCanvasData());
             id = contextManager->CreateContext(std::move(initialData));
         }
     }

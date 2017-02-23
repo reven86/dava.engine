@@ -8,12 +8,16 @@ namespace DAVA
 {
 class Vector2;
 class UIControl;
+namespace TArc
+{
+class ContextAccessor;
+}
 }
 
 class EditorCanvas final : public BaseEditorSystem
 {
 public:
-    EditorCanvas(EditorSystemsManager* parent);
+    EditorCanvas(EditorSystemsManager* parent, DAVA::TArc::ContextAccessor* accessor);
     ~EditorCanvas() override;
 
     bool CanProcessInput(DAVA::UIEvent* currentInput) const override;
@@ -60,5 +64,5 @@ private:
     const DAVA::float32 margin = 50.0f;
     bool isMouseMidButtonPressed = false;
     bool isSpacePressed = false;
-    std::pair<bool, bool> needCentralize = { false, false };
+    DAVA::TArc::ContextAccessor* accessor = nullptr;
 };
