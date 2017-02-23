@@ -22,6 +22,7 @@
 #include <UI/Styles/UIStyleSheetSystem.h>
 #include <UI/UIControlSystem.h>
 #include <Utils/Utils.h>
+#include <Utils/StringFormat.h>
 #include <PluginManager/PluginManager.h>
 
 #include <QDir>
@@ -89,12 +90,19 @@ Project::Project(MainWindow::ProjectView* view_, const ProjectProperties& proper
     FilePath pluginsDirectory = properties.GetPluginsDirectory().absolute;
     if (fileSystem->IsDirectory(pluginsDirectory))
     {
+        ResultList results;
         PluginManager* pluginManager = engineContext->pluginManager;
         Vector<FilePath> loadedPlugins = pluginManager->GetPlugins(pluginsDirectory, PluginManager::Auto);
+
         for (const FilePath& pluginPath : loadedPlugins)
         {
-            pluginManager->LoadPlugin(pluginPath);
+            const PluginDescriptor* descriptor = pluginManager->LoadPlugin(pluginPath);
+            if (descriptor == nullptr)
+            {
+                results.AddResult(Result::RESULT_WARNING, Format("can not load plugin %s", pluginPath));
+            }
         }
+        view->mainWindow->ShowResultList(QObject::tr("Loading plugins"), results);
     }
 
     fileSystemCache->TrackDirectory(uiResourcesPath);

@@ -106,7 +106,7 @@ void ProjectProperties::RefreshAbsolutePaths()
 ProjectProperties ProjectProperties::Default()
 {
     ProjectProperties properties;
-    properties.pluginsDirectory.relative = "./Plugins/";
+    properties.pluginsDirectory.relative = "./QuickEdPlugins/";
     properties.resourceDirectory.relative = "./DataSource/";
     properties.convertedResourceDirectory.relative = "./Data/";
     properties.gfxDirectories.push_back({ ResDir{ FilePath(), String("./Gfx/") }, Size2i(960, 640) });
