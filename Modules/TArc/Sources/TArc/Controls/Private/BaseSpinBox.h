@@ -33,6 +33,7 @@ public:
 protected:
     void UpdateControl(const ControlDescriptor& changedFields) override;
     void SetupSpinBoxBase();
+    void UpdateRange();
 
     void ValueChanged(TEditableType val);
 

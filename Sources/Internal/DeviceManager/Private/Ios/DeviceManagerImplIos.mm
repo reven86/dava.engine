@@ -98,13 +98,22 @@ DeviceManagerImpl::DeviceManagerImpl(DeviceManager* devManager, Private::MainDis
 
 void DeviceManagerImpl::UpdateDisplayConfig()
 {
-    size_t screensCount = [[ ::UIScreen screens] count];
+    NSMutableArray<::UIScreen*>* screens = [[[ ::UIScreen screens] mutableCopy] autorelease];
+    ::UIScreen* mainScreen = [ ::UIScreen mainScreen];
+
+    // https://developer.apple.com/reference/uikit/uiscreen/1617812-screens?language=objc
+    // Apple's documentation clearly says that [UIScreen screens] should contain at least one element - primary display
+    // Despite of that iOS 8.0.2 returns empty array
+    // We manually add mainScreen object to screens array to workaround this
+    if ([screens count] == 0 && mainScreen != nil)
+    {
+        [screens addObject:mainScreen];
+    }
 
     deviceManager->displays.clear();
-    deviceManager->displays.reserve(screensCount);
+    deviceManager->displays.reserve([screens count]);
 
-    ::UIScreen* mainScreen = [ ::UIScreen mainScreen];
-    for (::UIScreen* screen in [ ::UIScreen screens])
+    for (::UIScreen* screen in screens)
     {
         DisplayInfo displayInfo;
 

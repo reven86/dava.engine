@@ -16,7 +16,13 @@ ColumnLayout {
     signal buildStarted();
     Layout.fillWidth: true;
     Layout.fillHeight: true;
-    function loadState(state) {
+    function loadState(stateStr) {
+        var state = {};
+        try {
+            state = JSON.parse(stateStr);
+        } catch(e) {
+            console.log(e.toString());
+        }
         if(state == undefined 
             || state.needClean == undefined
             || state.openInIDE == undefined
@@ -40,7 +46,7 @@ ColumnLayout {
         state.buildRelease = radioButton_buildRelease.checked;
         state.postConfigureEnabled = groupBox_postConfigure.checked
         //make a deep copy
-        return JSON.parse(JSON.stringify(state));
+        return JSON.stringify(state);
     }
     PlatformHelper {
         id: platformHelper

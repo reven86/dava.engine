@@ -64,7 +64,7 @@ protected:
     void InitThumb();
 
     void AttachToSubcontrols();
-    void InitInactiveParts(Sprite* spr);
+    void InitInactiveParts(UIControl* thumb);
 
 public:
     INTROSPECTION_EXTEND(UISlider, UIControl,
