@@ -11,7 +11,6 @@ import multiprocessing
 parser = argparse.ArgumentParser()
 parser.add_argument("-t", "--teamcity-notify", help="print list of non-formatted files in Teamcity format", action="store_true")
 args = parser.parse_args()
-formatOK = True
 
 def process(file):
     global args;
@@ -21,11 +20,9 @@ def process(file):
         format(file)
 
 def check_format(file):
-    global formatOK;
     proc = subprocess.Popen([cwd+'/'+execName, '-output-replacements-xml', '--style=file', file], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = proc.communicate()
     if stdout.find("<replacement ") > -1:
-        formatOK = False
         errorMsg = "##teamcity[message text=\'" + "%s not formatted" % file + "\' errorDetails=\'\' status=\'" + "ERROR" + "\']\n"
         print errorMsg
 
@@ -50,13 +47,7 @@ def main():
                 for filename in fnmatch.filter(filenames, '*.'+ext):
                     fileList.append(os.path.join(root, filename))
     pool.map(process, fileList)
-
-if args.teamcity_notify:
-    if formatOK:
-        print "##teamcity[message text=\'" + "format OK" + "\' errorDetails=\'\' status=\'" + "NORMAL" + "\']\n"
-    else:
-        exit("not all files formatted")
-        
+       
 if __name__ == '__main__':
-    # freeze_support() here if program needs to be frozen
+    multiprocessing.freeze_support() #here if program needs to be frozen
     main()  # execute this only when run directly, not when imported!
