@@ -1143,6 +1143,7 @@ void _DX9_ResetBlock()
     PerfQueryDX9::ReleaseAll();
     QueryBufferDX9::ReleaseAll();
 
+    bool resetNotified = false;
     for (;;)
     {
         HRESULT hr = _D3D9_Device->TestCooperativeLevel();
@@ -1158,21 +1159,23 @@ void _DX9_ResetBlock()
             {
                 break;
             }
-
+            resetNotified = false;
             Logger::Error("[DX9 RESET] Failed to reset device (%08X) : %s", hr, D3D9ErrorText(hr));
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
         }
-        else
+        else if (!resetNotified)
         {
             Logger::Error("[DX9 RESET] Can't reset now (%08X) : %s", hr, D3D9ErrorText(hr));
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            resetNotified = true;
         }
-        //clear buffer
-        DX9_CALL(_D3D9_Device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_RGBA(0, 0, 0, 1), 1.0, 0), "Clear");
-        _D3D9_Device->Present(NULL, NULL, NULL, NULL);
-
-        _DX9_FramesWithRestoreAttempt = 0;
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
+
+    Logger::Info("[DX9 RESET] reset succeeded ...");
+    //clear buffer
+    DX9_CALL(_D3D9_Device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_RGBA(0, 0, 0, 1), 1.0, 0), "Clear");
+    _D3D9_Device->Present(NULL, NULL, NULL, NULL);
+
+    _DX9_FramesWithRestoreAttempt = 0;
 
     TextureDX9::ReCreateAll();
     VertexBufferDX9::ReCreateAll();

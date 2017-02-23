@@ -25,6 +25,35 @@ DAVA_TESTCLASS (ThreadSyncTest)
     AutoResetEvent are;
     ManualResetEvent mre;
 
+    Vector<Thread*> currentThreads;
+
+    DAVA_TEST (ThreadCurrentTest)
+    {
+        // Thread subsystem maintains list of created Thread instances, this list is used
+        // in Thread::Current() method to retrieve Thread instance for current thread.
+        // Note that list is searched by thread id but system can reuse that id for newly created
+        // thread and Thread::Current() can return Thread instance for different thread.
+        // System considers thread is finished and can reuse its id after joining.
+        const size_t N = 50;
+        for (size_t i = 0; i < N; ++i)
+        {
+            Thread* t = Thread::Create([this, i]() {
+                Thread* cur = Thread::Current();
+                Thread* test = currentThreads[i];
+
+                TEST_VERIFY(cur == test);
+            });
+
+            currentThreads.push_back(t);
+            t->Start();
+            t->Join();
+        }
+
+        for (Thread* t : currentThreads)
+            t->Release();
+        currentThreads.clear();
+    }
+
     DAVA_TEST (ThreadJoinableTest)
     {
         RefPtr<Thread> p(Thread::Create([]() {
