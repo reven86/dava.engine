@@ -5,7 +5,7 @@
 #include <TArc/Utils/QtConnections.h>
 #include <TArc/Core/OperationRegistrator.h>
 
-#include <QtTools/Utils/DavaDelayedExecutor.h>
+#include <QtTools/Utils/QtDelayedExecutor.h>
 
 namespace DAVA
 {
@@ -35,7 +35,7 @@ private:
 
     DAVA::TArc::QtConnections connections;
     std::unique_ptr<RecentMenuItems> recentProjects;
-    DAVADelayedExecutor delayedExecutor;
+    QtDelayedExecutor delayedExecutor;
 
     DAVA_VIRTUAL_REFLECTION(ProjectModule, DAVA::TArc::ClientModule);
 };

@@ -225,7 +225,7 @@ protected:
         }
         {
             PropertiesItem item = accessor->CreatePropertiesNode(projectModulePropertiesKey);
-            item.Set(projectsHistoryKey, lastProject);
+            item.Set(lastProjectKey, lastProject);
         }
         TestHelpers::ClearTestFolder();
     }

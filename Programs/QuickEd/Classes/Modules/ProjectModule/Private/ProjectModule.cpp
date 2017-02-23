@@ -38,9 +38,7 @@ void ProjectModule::PostInit()
     RegisterOperation(ProjectModuleTesting::CreateProjectOperation.ID, this, &ProjectModule::CreateProject);
 
     //without this kostil project will be open when screen is resized but not rendered
-    delayedExecutor.DelayedExecute(5, [this]() {
-        OpenLastProject();
-    });
+    delayedExecutor.DelayedExecute(MakeFunction(this, &ProjectModule::OpenLastProject));
 }
 
 void ProjectModule::OnWindowClosed(const DAVA::TArc::WindowKey& key)

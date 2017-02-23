@@ -9,7 +9,7 @@
 #include <TArc/DataProcessing/DataWrapper.h>
 #include <TArc/DataProcessing/DataListener.h>
 
-#include <QtTools/Utils/QtDelayedExecutor.h>
+#include <QtTools/Utils/DavaDelayedExecutor.h>
 
 class Project;
 class Document;
@@ -38,7 +38,7 @@ class LegacySupportModule : public DAVA::TArc::ClientModule, private DAVA::TArc:
     std::unique_ptr<Project> project;
     DAVA::Map<DAVA::TArc::DataContext::ContextID, std::unique_ptr<Document>> documents;
 
-    QtDelayedExecutor delayedExecutor;
+    DAVADelayedExecutor delayedExecutor;
 
     DAVA_VIRTUAL_REFLECTION(LegacySupportModule, DAVA::TArc::ClientModule);
 };
