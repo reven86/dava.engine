@@ -4,6 +4,15 @@ namespace DAVA
 {
 namespace TArc
 {
+namespace BaseSpinBoxDetail
+{
+template <typename T>
+std::pair<const Type*, std::pair<Any, Any>> CreateRangePair()
+{
+    return std::make_pair(Type::Instance<T>(),
+                          std::make_pair(Any(std::numeric_limits<T>::lowest()), Any(std::numeric_limits<T>::max())));
+}
+}
 template <typename TBase, typename TEditableType>
 DAVA::TArc::BaseSpinBox<TBase, TEditableType>::BaseSpinBox(const ControlDescriptor& descriptor, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent)
     : ControlProxy<TBase>(descriptor, wrappersProcessor, model, parent)
@@ -21,29 +30,75 @@ DAVA::TArc::BaseSpinBox<TBase, TEditableType>::BaseSpinBox(const ControlDescript
 }
 
 template <typename TBase, typename TEditableType>
-void DAVA::TArc::BaseSpinBox<TBase, TEditableType>::UpdateControl(const ControlDescriptor& changedFields)
+void DAVA::TArc::BaseSpinBox<TBase, TEditableType>::UpdateRange()
 {
-    auto updateRangeFn = [this](const M::Range* range)
+    using namespace BaseSpinBoxDetail;
+    static Map<const Type*, std::pair<Any, Any>> defaultRangeMap
     {
-        if (range == nullptr)
-        {
-            return;
-        }
-
-        TEditableType minV = range->minValue.Cast<TEditableType>(std::numeric_limits<TEditableType>::min());
-        TEditableType maxV = range->maxValue.Cast<TEditableType>(std::numeric_limits<TEditableType>::max());
-        if (minV != this->minimum() || maxV != this->maximum())
-        {
-            this->setRange(minV, maxV);
-        }
-
-        TEditableType valueStep = range->step.Cast<TEditableType>(1);
-        if (valueStep != this->singleStep())
-        {
-            this->setSingleStep(valueStep);
-        }
+      CreateRangePair<float32>(),
+      CreateRangePair<float64>(),
+      CreateRangePair<int8>(),
+      CreateRangePair<uint8>(),
+      CreateRangePair<int16>(),
+      CreateRangePair<uint16>(),
+      CreateRangePair<int32>(),
+      CreateRangePair<uint32>(),
+      // I don't create int64 and uint64 nodes because the most wide type that supported by QSpinBox is int
     };
 
+    Reflection valueField = this->model.GetField(this->GetFieldName(BaseFields::Value));
+    DVASSERT(valueField.IsValid());
+    const Type* valueType = valueField.GetValueType();
+    if (valueType->IsConst())
+    {
+        return;
+    }
+
+    auto iter = defaultRangeMap.find(valueType);
+
+    TEditableType minV = std::numeric_limits<TEditableType>::lowest();
+    TEditableType maxV = std::numeric_limits<TEditableType>::max();
+    TEditableType valueStep = static_cast<TEditableType>(1);
+
+    if (iter != defaultRangeMap.end()) // we can use any type that can be casted to double or int (Any for example)
+    {
+        minV = iter->second.first.Cast<TEditableType>(std::numeric_limits<TEditableType>::lowest());
+        maxV = iter->second.second.Cast<TEditableType>(std::numeric_limits<TEditableType>::max());
+    }
+
+    const M::Range* rangeMeta = nullptr;
+    FastName rangeFieldName = this->GetFieldName(BaseFields::Range);
+    if (rangeFieldName.IsValid())
+    {
+        rangeMeta = this->template GetFieldValue<const M::Range*>(BaseFields::Range, nullptr);
+    }
+
+    if (rangeMeta == nullptr)
+    {
+        rangeMeta = valueField.GetMeta<M::Range>();
+    }
+
+    if (rangeMeta != nullptr)
+    {
+        minV = rangeMeta->minValue.Cast<TEditableType>(minV);
+        maxV = rangeMeta->maxValue.Cast<TEditableType>(maxV);
+        valueStep = rangeMeta->step.Cast<TEditableType>(valueStep);
+    }
+
+    if (minV != this->minimum() || maxV != this->maximum())
+    {
+        this->setRange(minV, maxV);
+    }
+
+    if (valueStep != this->singleStep())
+    {
+        this->setSingleStep(valueStep);
+    }
+}
+
+template <typename TBase, typename TEditableType>
+void DAVA::TArc::BaseSpinBox<TBase, TEditableType>::UpdateControl(const ControlDescriptor& changedFields)
+{
     bool valueChanged = changedFields.IsChanged(BaseFields::Value);
     bool readOnlychanged = changedFields.IsChanged(BaseFields::IsReadOnly);
     if (valueChanged == true || readOnlychanged == true)
@@ -52,11 +107,6 @@ void DAVA::TArc::BaseSpinBox<TBase, TEditableType>::UpdateControl(const ControlD
         DVASSERT(fieldValue.IsValid());
 
         this->setReadOnly(this->IsValueReadOnly(changedFields, BaseFields::Value, BaseFields::IsReadOnly));
-        if (changedFields.GetName(BaseFields::Range).IsValid() == false)
-        {
-            updateRangeFn(fieldValue.GetMeta<M::Range>());
-        }
-
         if (valueChanged == true)
         {
             DAVA::Any value = fieldValue.GetValue();
@@ -81,10 +131,7 @@ void DAVA::TArc::BaseSpinBox<TBase, TEditableType>::UpdateControl(const ControlD
         this->setEnabled(this->template GetFieldValue<bool>(BaseFields::IsEnabled, true));
     }
 
-    if (changedFields.IsChanged(BaseFields::Range))
-    {
-        updateRangeFn(this->template GetFieldValue<const M::Range*, int>(BaseFields::Range, nullptr));
-    }
+    UpdateRange();
 }
 
 template <typename TBase, typename TEditableType>

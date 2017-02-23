@@ -980,4 +980,10 @@ String FilePath::AsURL() const
 
     return ("file://" + path);
 }
+
+template <>
+bool AnyCompare<FilePath>::IsEqual(const Any& v1, const Any& v2)
+{
+    return v1.Get<FilePath>() == v2.Get<FilePath>();
+}
 }
