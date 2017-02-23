@@ -73,8 +73,12 @@ int DAVAMain(DAVA::Vector<DAVA::String> cmdLine)
       "JobManager",
       "NetCore"
     };
+
+    ScopedPtr<KeyedArchive> options(new KeyedArchive);
+    options->SetBool("separate_net_thread", true);
+
     Engine e;
-    e.Init(eEngineRunMode::CONSOLE_MODE, modules, nullptr);
+    e.Init(eEngineRunMode::CONSOLE_MODE, modules, options);
 
     e.update.Connect([&e](float32)
                      {

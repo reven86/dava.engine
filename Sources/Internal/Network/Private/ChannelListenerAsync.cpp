@@ -1,5 +1,8 @@
 #include "Network/ChannelListenerAsync.h"
 
+#include <Functional/Function.h>
+#include <Network/NetCallbacksHolder.h>
+
 namespace DAVA
 {
 namespace Net

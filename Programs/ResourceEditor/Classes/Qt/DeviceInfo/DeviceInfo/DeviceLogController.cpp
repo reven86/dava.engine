@@ -43,17 +43,11 @@ void DeviceLogController::ShowView()
 
 void DeviceLogController::ChannelOpen()
 {
-    auto duration = std::chrono::system_clock::now().time_since_epoch();
-    auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-    Logger::Debug("thread %u (%d): %s", Thread::GetCurrentId(), millis, __FUNCTION__);
     Output("************* Connection open");
 }
 
 void DeviceLogController::ChannelClosed(const char8* message)
 {
-    auto duration = std::chrono::system_clock::now().time_since_epoch();
-    auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-    Logger::Debug("thread %u (%d): %s", Thread::GetCurrentId(), millis, __FUNCTION__);
     String s("************ Connection closed: ");
     s += message;
     Output(s);
@@ -61,9 +55,6 @@ void DeviceLogController::ChannelClosed(const char8* message)
 
 void DeviceLogController::PacketReceived(const void* packet, size_t length)
 {
-    auto duration = std::chrono::system_clock::now().time_since_epoch();
-    auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-    Logger::Debug("thread %u (%d): %s", Thread::GetCurrentId(), millis, __FUNCTION__);
     String msg(static_cast<const char8*>(packet), length);
     Output(msg);
 }

@@ -41,18 +41,12 @@ void MMNetClient::RequestSnapshot()
 
 void MMNetClient::ChannelOpen()
 {
-    auto duration = std::chrono::system_clock::now().time_since_epoch();
-    auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-    Logger::Debug("thread %u (%d): %s", Thread::GetCurrentId(), millis, __FUNCTION__);
     canRequestSnapshot = true;
     SendPacket(CreateHeaderOnlyPacket(MMNetProto::TYPE_REQUEST_TOKEN, MMNetProto::STATUS_SUCCESS));
 }
 
 void MMNetClient::ChannelClosed(const char8* message)
 {
-    auto duration = std::chrono::system_clock::now().time_since_epoch();
-    auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-    Logger::Debug("thread %u (%d): %s", Thread::GetCurrentId(), millis, __FUNCTION__);
     tokenRequested = false;
 
     packetQueue.clear();
@@ -62,9 +56,6 @@ void MMNetClient::ChannelClosed(const char8* message)
 
 void MMNetClient::PacketReceived(const void* packet, size_t length)
 {
-    auto duration = std::chrono::system_clock::now().time_since_epoch();
-    auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-    Logger::Debug("thread %u (%d): %s", Thread::GetCurrentId(), millis, __FUNCTION__);
     const size_t dataLength = length - sizeof(MMNetProto::PacketHeader);
     const MMNetProto::PacketHeader* header = static_cast<const MMNetProto::PacketHeader*>(packet);
     if (length >= sizeof(MMNetProto::PacketHeader) && header->length == length)
@@ -88,9 +79,6 @@ void MMNetClient::PacketReceived(const void* packet, size_t length)
 
 void MMNetClient::PacketDelivered()
 {
-    auto duration = std::chrono::system_clock::now().time_since_epoch();
-    auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-    Logger::Debug("thread %u (%d): %s", Thread::GetCurrentId(), millis, __FUNCTION__);
     DVASSERT(!packetQueue.empty());
 
     packetQueue.pop_front();

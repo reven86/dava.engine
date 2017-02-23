@@ -125,9 +125,6 @@ void ProtoDriver::OnDisconnected(const char* message)
         if (channels[i].service != NULL && true == channels[i].confirmed)
         {
             channels[i].confirmed = false;
-            auto duration = std::chrono::system_clock::now().time_since_epoch();
-            auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-            Logger::Debug("thread %u (%d): %s", Thread::GetCurrentId(), millis, __FUNCTION__);
             channels[i].service->OnChannelClosed(&channels[i], message);
         }
     }
@@ -188,9 +185,6 @@ void ProtoDriver::OnSendComplete()
         if (curPacket.sentLength == curPacket.dataLength)
         {
             Channel* ch = GetChannel(curPacket.channelId);
-            auto duration = std::chrono::system_clock::now().time_since_epoch();
-            auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-            Logger::Debug("thread %u (%d): %s", Thread::GetCurrentId(), millis, __FUNCTION__);
             ch->service->OnPacketSent(ch, curPacket.data, curPacket.dataLength);
             curPacket.data = NULL;
         }
@@ -228,9 +222,6 @@ bool ProtoDriver::ProcessDataPacket(ProtoDecoder::DecodeResult* result)
     {
         // Send back delivery confirmation
         SendControl(TYPE_DELIVERY_ACK, result->channelId, result->packetId);
-        auto duration = std::chrono::system_clock::now().time_since_epoch();
-        auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-        Logger::Debug("thread %u (%d): %s", Thread::GetCurrentId(), millis, __FUNCTION__);
         ch->service->OnPacketReceived(ch, result->data, result->dataSize);
         return true;
     }
@@ -256,9 +247,6 @@ bool ProtoDriver::ProcessChannelQuery(ProtoDecoder::DecodeResult* result)
             if (ch->service != NULL)
             {
                 ch->confirmed = true;
-                auto duration = std::chrono::system_clock::now().time_since_epoch();
-                auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-                Logger::Debug("thread %u (%d): %s", Thread::GetCurrentId(), millis, __FUNCTION__);
                 ch->service->OnChannelOpen(ch);
             }
             return true;
@@ -276,9 +264,6 @@ bool ProtoDriver::ProcessChannelAllow(ProtoDecoder::DecodeResult* result)
     if (ch != NULL && ch->service != NULL)
     {
         ch->confirmed = true;
-        auto duration = std::chrono::system_clock::now().time_since_epoch();
-        auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-        Logger::Debug("thread %u (%d): %s", Thread::GetCurrentId(), millis, __FUNCTION__);
         ch->service->OnChannelOpen(ch);
         return true;
     }
@@ -294,9 +279,6 @@ bool ProtoDriver::ProcessChannelDeny(ProtoDecoder::DecodeResult* result)
     Channel* ch = GetChannel(result->channelId);
     if (ch != NULL && ch->service != NULL)
     {
-        auto duration = std::chrono::system_clock::now().time_since_epoch();
-        auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-        Logger::Debug("thread %u (%d): %s", Thread::GetCurrentId(), millis, __FUNCTION__);
         ch->service->OnChannelClosed(ch, "Remote service is unavailable");
         return true;
     }
@@ -317,9 +299,6 @@ bool ProtoDriver::ProcessDeliveryAck(ProtoDecoder::DecodeResult* result)
         DVASSERT(pendingId == result->packetId);
         if (pendingId == result->packetId)
         {
-            auto duration = std::chrono::system_clock::now().time_since_epoch();
-            auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-            Logger::Debug("thread %u (%d): %s", Thread::GetCurrentId(), millis, __FUNCTION__);
             ch->service->OnPacketDelivered(ch, pendingId);
             return true;
         }

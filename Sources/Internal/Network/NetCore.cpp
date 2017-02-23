@@ -5,12 +5,10 @@
 #include <Network/Private/NetController.h>
 #include <Network/Private/Announcer.h>
 #include <Network/Private/Discoverer.h>
-
-#include "Engine/Engine.h"
-
-
-#include "Base/BaseTypes.h"
-#include "Platform/DateTime.h"
+#include <Engine/Engine.h>
+#include <Base/BaseTypes.h>
+#include <FileSystem/KeyedArchive.h>
+#include <Concurrency/LockGuard.h>
 
 namespace DAVA
 {
@@ -212,10 +210,6 @@ void NetCore::DestroyAllControllersBlocked()
 #if !defined(DAVA_NETWORK_DISABLE)
     DVASSERT(false == isFinishing && controllersStoppedCallback == nullptr);
 
-    auto duration = std::chrono::system_clock::now().time_since_epoch();
-    auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-    Logger::Debug("thread %u (%d): %s", Thread::GetCurrentId(), millis, __FUNCTION__);
-
     PostAllToDestroy();
 
     while (true)
@@ -228,12 +222,6 @@ void NetCore::DestroyAllControllersBlocked()
             ExecPendingCallbacks();
         else
             Poll();
-    }
-
-    {
-        auto duration = std::chrono::system_clock::now().time_since_epoch();
-        auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-        Logger::Debug("thread %u (%d): %s done", Thread::GetCurrentId(), millis, __FUNCTION__);
     }
 #endif
 }
@@ -249,10 +237,6 @@ void NetCore::RestartAllControllers()
 void NetCore::Finish(bool doBlocked)
 {
 #if !defined(DAVA_NETWORK_DISABLE)
-
-    auto duration = std::chrono::system_clock::now().time_since_epoch();
-    auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-    Logger::Debug("thread %u (%d): %s", Thread::GetCurrentId(), millis, __FUNCTION__);
 
     isFinishing = true;
     bool hasControllersToDestroy = PostAllToDestroy();
@@ -290,12 +274,6 @@ void NetCore::Finish(bool doBlocked)
         {
             loop.Run(IOLoop::RUN_DEFAULT);
         }
-    }
-
-    {
-        auto duration = std::chrono::system_clock::now().time_since_epoch();
-        auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-        Logger::Debug("thread %u (%d): %s run done!", Thread::GetCurrentId(), millis, __FUNCTION__);
     }
 #endif
 }
@@ -336,19 +314,12 @@ void NetCore::DoRestart()
 
 void NetCore::DoDestroy(IController* ctrl)
 {
-    auto duration = std::chrono::system_clock::now().time_since_epoch();
-    auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-    Logger::Debug("thread %u (%d): %s", Thread::GetCurrentId(), millis, __FUNCTION__);
     DVASSERT(ctrl != nullptr);
     ctrl->Stop(Bind(&NetCore::TrackedObjectStopped, this, _1));
 }
 
 void NetCore::AllDestroyed()
 {
-    auto duration = std::chrono::system_clock::now().time_since_epoch();
-    auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-    Logger::Debug("thread %u (%d): %s", Thread::GetCurrentId(), millis, __FUNCTION__);
-
     allStopped = true;
     if (controllersStoppedCallback != nullptr)
     {
@@ -357,9 +328,6 @@ void NetCore::AllDestroyed()
     }
     if (true == isFinishing)
     {
-        auto duration = std::chrono::system_clock::now().time_since_epoch();
-        auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-        Logger::Debug("thread %u (%d): postquit", Thread::GetCurrentId(), millis, __FUNCTION__);
         loop.PostQuit();
     }
 }
@@ -374,18 +342,8 @@ IController* NetCore::GetTrackedObject(TrackId id) const
 
 void NetCore::TrackedObjectStopped(IController* obj)
 {
-    //     auto duration = std::chrono::system_clock::now().time_since_epoch();
-    //     auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-    //     Logger::Debug("thread %u (%d): %s", Thread::GetCurrentId(), millis, __FUNCTION__);
-
     LockGuard<Mutex> lock(dyingObjectsMutex);
-    if (dyingObjects.erase(obj) > 0)
-    {
-        auto duration = std::chrono::system_clock::now().time_since_epoch();
-        auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-        Logger::Debug("thread %u (%d): %s setting destroy = true", Thread::GetCurrentId(), millis, __FUNCTION__);
-    }
-    else
+    if (dyingObjects.erase(obj) == 0)
     {
         DVASSERT(false && "dying object is not found");
     }

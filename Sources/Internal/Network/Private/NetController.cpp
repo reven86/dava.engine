@@ -157,9 +157,6 @@ void NetController::DoStopServers()
 
 void NetController::DoStopClients()
 {
-    auto duration = std::chrono::system_clock::now().time_since_epoch();
-    auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-    Logger::Debug("thread %u (%d): %s", Thread::GetCurrentId(), millis, __FUNCTION__);
     for (List<ClientEntry>::iterator i = clients.begin(), e = clients.end(); i != e; ++i)
     {
         ClientEntry& entry = *i;

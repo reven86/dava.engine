@@ -29,9 +29,6 @@ public:
 
     void ServiceCreatorCall()
     {
-        auto duration = std::chrono::system_clock::now().time_since_epoch();
-        auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-        Logger::Debug("thread %u (%d): %s", Thread::GetCurrentId(), millis, __FUNCTION__);
         targetFnResult = targetFn(serviceId, context);
         cvDone.NotifyAll();
     }
@@ -55,10 +52,6 @@ public:
 
     IChannelListener* ServiceCreatorCall(uint32 serviceId, void* context)
     {
-        auto duration = std::chrono::system_clock::now().time_since_epoch();
-        auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-        Logger::Debug("thread %u (%d): %s", Thread::GetCurrentId(), millis, __FUNCTION__);
-
         if (holder->GetMode() == NetCallbacksHolder::ExecuteImmediately)
         {
             return targetFn(serviceId, context);
@@ -90,9 +83,6 @@ public:
 
     void ServiceDeleterCall()
     {
-        auto duration = std::chrono::system_clock::now().time_since_epoch();
-        auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-        Logger::Debug("thread %u (%d): %s", Thread::GetCurrentId(), millis, __FUNCTION__);
         targetFn(obj, context);
         cvDone.NotifyAll();
     }
@@ -115,10 +105,6 @@ public:
 
     void ServiceDeleterCall(IChannelListener* obj, void* context)
     {
-        auto duration = std::chrono::system_clock::now().time_since_epoch();
-        auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-        Logger::Debug("thread %u (%d): %s", Thread::GetCurrentId(), millis, __FUNCTION__);
-
         if (holder->GetMode() == NetCallbacksHolder::ExecuteImmediately)
         {
             targetFn(obj, context);

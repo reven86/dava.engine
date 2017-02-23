@@ -115,10 +115,6 @@ IChannelListener* DeviceListController::CreateLogger(uint32 serviceId, void* con
     // As network service was created when 'Connect' button has been pressed so here simply return
     // pointer to created service
 
-    auto duration = std::chrono::system_clock::now().time_since_epoch();
-    auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-    Logger::Debug("thread %u (%d): %s", Thread::GetCurrentId(), millis, __FUNCTION__);
-
     // Context holds index of discovered device
     int row = static_cast<int>(reinterpret_cast<intptr_t>(context));
     if (model != NULL && 0 <= row && row < model->rowCount())
@@ -132,9 +128,6 @@ IChannelListener* DeviceListController::CreateLogger(uint32 serviceId, void* con
 
 void DeviceListController::DeleteLogger(IChannelListener*, void* context)
 {
-    auto duration = std::chrono::system_clock::now().time_since_epoch();
-    auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-    Logger::Debug("thread %u (%d): %s", Thread::GetCurrentId(), millis, __FUNCTION__);
     // Service deleter method is called before connector is destroyed
 
     // Context holds index of discovered device
@@ -158,10 +151,6 @@ void DeviceListController::DeleteLogger(IChannelListener*, void* context)
 
 IChannelListener* DeviceListController::CreateMemProfiler(uint32 serviceId, void* context)
 {
-    auto duration = std::chrono::system_clock::now().time_since_epoch();
-    auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-    Logger::Debug("thread %u (%d): %s", Thread::GetCurrentId(), millis, __FUNCTION__);
-
     int row = static_cast<int>(reinterpret_cast<intptr_t>(context));
     if (model != NULL && 0 <= row && row < model->rowCount())
     {
@@ -174,10 +163,6 @@ IChannelListener* DeviceListController::CreateMemProfiler(uint32 serviceId, void
 
 void DeviceListController::DeleteMemProfiler(IChannelListener* obj, void* context)
 {
-    auto duration = std::chrono::system_clock::now().time_since_epoch();
-    auto millis = std::chrono::duration_cast<std::chrono::milliseconds>(duration).count();
-    Logger::Debug("thread %u (%d): %s", Thread::GetCurrentId(), millis, __FUNCTION__);
-
     int row = static_cast<int>(reinterpret_cast<intptr_t>(context));
     if (model != NULL && 0 <= row && row < model->rowCount())
     {
