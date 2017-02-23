@@ -16,13 +16,15 @@ void GPUTest::LoadResources()
         ScopedPtr<UIControl> textureBackground(new UIControl(Rect(10.f, 10.f, 256.f, 128.f)));
         ScopedPtr<Texture> texture(Texture::CreateFromFile("~res:/TestData/GPUTest/Texture/texture.tex"));
         ScopedPtr<Sprite> sprite(Sprite::CreateFromTexture(texture, 0, 0, 128.f, 64.f));
-        textureBackground->SetSprite(sprite, 0);
+        UIControlBackground* textureBackgroundBg = textureBackground->GetOrCreateComponent<UIControlBackground>();
+        textureBackgroundBg->SetSprite(sprite, 0);
         AddControl(textureBackground);
     }
 
     { //create control to display sprite, loaded with default GPU
         ScopedPtr<UIControl> spriteBackground(new UIControl(Rect(276.f, 10.f, 256.f, 128.f)));
         ScopedPtr<Sprite> sprite(Sprite::Create("~res:/TestData/GPUTest/Sprite/texture"));
+        UIControlBackground* spriteBackgroundBg = spriteBackground->GetOrCreateComponent<UIControlBackground>();
         spriteBackground->SetSprite(sprite, 0);
         AddControl(spriteBackground);
     }

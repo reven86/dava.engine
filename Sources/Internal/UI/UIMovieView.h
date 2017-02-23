@@ -25,7 +25,7 @@ public:
     void SetPosition(const Vector2& position) override;
     void SetSize(const Vector2& newSize) override;
 
-    void SystemDraw(const UIGeometricData& geometricData) override;
+    void SystemDraw(const UIGeometricData& geometricData, const DAVA::UIControlBackground* parentBackground) override;
     void Draw(const UIGeometricData& parentGeometricData) override;
     void Update(float32 timeElapsed) override;
 

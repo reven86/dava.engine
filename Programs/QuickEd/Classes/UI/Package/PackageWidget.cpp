@@ -578,9 +578,10 @@ void PackageWidget::OnCopyControlPath()
     QString str;
     for (ControlNode* controlNode : controlNodes)
     {
-        PackageControlsNode* root = controlNode->GetPackage()->GetPackageControlsNode();
+        PackageControlsNode* controlsRoot = controlNode->GetPackage()->GetPackageControlsNode();
+        PackageControlsNode* prototypesRoot = controlNode->GetPackage()->GetPrototypes();
         QString path;
-        for (PackageBaseNode* node = controlNode; node != root; node = node->GetParent())
+        for (PackageBaseNode* node = controlNode; node != controlsRoot && node != prototypesRoot && node != nullptr; node = node->GetParent())
         {
             if (!path.isEmpty())
             {

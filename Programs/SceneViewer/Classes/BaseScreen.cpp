@@ -9,6 +9,7 @@ BaseScreen::BaseScreen()
     , loaded(false)
 {
     UIScreenManager::Instance()->RegisterScreen(screenID, this);
+    GetOrCreateComponent<UIControlBackground>();
 }
 
 bool BaseScreen::SystemInput(UIEvent* currentInput)

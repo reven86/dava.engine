@@ -30,9 +30,10 @@ void WebViewTest::LoadResources()
     AddControl(webView);
 
     bgStubPanel = new UIControl(Rect(10, 10, 400, 200));
-    bgStubPanel->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
-    bgStubPanel->GetBackground()->SetColorInheritType(UIControlBackground::COLOR_IGNORE_PARENT);
-    bgStubPanel->GetBackground()->SetColor(Color(1, 0, 0, 1));
+    UIControlBackground* background = bgStubPanel->GetOrCreateComponent<UIControlBackground>();
+    background->SetDrawType(UIControlBackground::DRAW_FILL);
+    background->SetColorInheritType(UIControlBackground::COLOR_IGNORE_PARENT);
+    background->SetColor(Color(1, 0, 0, 1));
     bgStubPanel->SetVisibilityFlag(false);
     AddControl(bgStubPanel);
 
