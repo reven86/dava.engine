@@ -4,10 +4,12 @@
 
 namespace OverdrawPerformanceTester
 {
+struct FrameData;
+
 class ChartPainterSystem : public DAVA::SceneSystem
 {
 public:
-    ChartPainterSystem(DAVA::Scene* scene, DAVA::Array<DAVA::Vector<ViewSceneScreen::FrameData>, 6>* preformanceData_);
+    ChartPainterSystem(DAVA::Scene* scene);
     ~ChartPainterSystem();
 
     void Process(float32 timeElapsed) override;
@@ -21,8 +23,10 @@ public:
     inline void SetShouldDrawGraph(bool val);
     inline bool GetShouldDrawGraph() const;
 
+    inline void SetPerformanceData(DAVA::Array<DAVA::Vector<FrameData>, 6>* performanceData_);
+
 private:
-    DAVA::Array<DAVA::Vector<ViewSceneScreen::FrameData>, 6>* performanceData;
+    DAVA::Array<DAVA::Vector<FrameData>, 6>* performanceData;
     void DrawLegend(int32 w, int32 h);
     bool shouldDrawGraph = false;
 
@@ -41,6 +45,11 @@ private:
     static const DAVA::float32 frametimeStepCount;
     const DAVA::uint32 textColor;
 };
+
+void ChartPainterSystem::SetPerformanceData(DAVA::Array<DAVA::Vector<FrameData>, 6>* performanceData_)
+{
+    performanceData = performanceData_;
+}
 
 void ChartPainterSystem::SetShouldDrawGraph(bool val)
 {

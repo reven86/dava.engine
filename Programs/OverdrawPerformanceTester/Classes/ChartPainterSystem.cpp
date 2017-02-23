@@ -9,7 +9,7 @@ namespace OverdrawPerformanceTester
 const DAVA::Vector2 ChartPainterSystem::chartOffset(0.1f, 0.1f);
 const DAVA::Color ChartPainterSystem::gridColor(0.4f, 0.4f, 0.4f, 0.4f);
 const DAVA::float32 ChartPainterSystem::chartLen = 0.8f;
-const DAVA::float32 ChartPainterSystem::maxFrametime = 1.0f / 5.0f;
+const DAVA::float32 ChartPainterSystem::maxFrametime = 1.0f;
 const DAVA::float32 ChartPainterSystem::minFrametime = 1.0f / 60.0f;
 const DAVA::float32 ChartPainterSystem::frametimeAxisLen = maxFrametime - minFrametime;
 const DAVA::float32 ChartPainterSystem::maxOverdraw = 1000.0f;
@@ -38,8 +38,8 @@ const DAVA::Array<DAVA::Color, 6> ChartPainterSystem::chartColors =
     { 1.0f, 0.0f, 0.0f, 1.0f}
 } };
 
-ChartPainterSystem::ChartPainterSystem(DAVA::Scene* scene, DAVA::Array<DAVA::Vector<ViewSceneScreen::FrameData>, 6>* preformanceData_)
-    : DAVA::SceneSystem(scene), performanceData(preformanceData_), textColor(rhi::NativeColorRGBA(1.0f, 1.0f, 1.0f, 1.0f))
+ChartPainterSystem::ChartPainterSystem(DAVA::Scene* scene)
+    : DAVA::SceneSystem(scene), performanceData(nullptr), textColor(rhi::NativeColorRGBA(1.0f, 1.0f, 1.0f, 1.0f))
 {
 }
 
@@ -50,7 +50,7 @@ ChartPainterSystem::~ChartPainterSystem()
 
 void ChartPainterSystem::Process(float32 timeElapsed)
 {
-    if (!shouldDrawGraph) return;
+    if (performanceData == nullptr) return;
 
     VirtualCoordinatesSystem* vcs = DAVA::UIControlSystem::Instance()->vcs;
 
@@ -116,7 +116,7 @@ void ChartPainterSystem::DrawCharts(int32 w, int32 h)
     for (int i = 0; i < 6; i++)
     {
         Polygon2 p;
-        for (int j = 0; j < (*performanceData)[i].size(); j++)
+        for (size_t j = 0; j < (*performanceData)[i].size(); j++)
         {
             float32 overdraw = (*performanceData)[i][j].Overdraw;
             float32 fps = static_cast<DAVA::float32>((*performanceData)[i][j].FPS) - minFrametime;

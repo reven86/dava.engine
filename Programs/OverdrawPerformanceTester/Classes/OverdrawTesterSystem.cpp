@@ -13,6 +13,7 @@
 #include "OverdrawTesterRenderObject.h"
 #include "Utils/StringFormat.h"
 #include "Logger/Logger.h"
+#include "Time/SystemTimer.h"
 
 namespace OverdrawPerformanceTester
 {
@@ -43,7 +44,7 @@ const Array<FastName, 4> OverdrawTesterSystem::textureNames =
     FastName("t4")
 } };
 
-OverdrawTesterSystem::OverdrawTesterSystem(DAVA::Scene* scene, DAVA::Function<void()> finishCallback_) 
+OverdrawTesterSystem::OverdrawTesterSystem(DAVA::Scene* scene, DAVA::Function<void(DAVA::Array<DAVA::Vector<FrameData>, 6>*)> finishCallback_)
     : SceneSystem(scene), finishCallback(finishCallback_)
 {
     overdrawMaterial = new NMaterial();
@@ -58,9 +59,13 @@ OverdrawTesterSystem::OverdrawTesterSystem(DAVA::Scene* scene, DAVA::Function<vo
         Vector4(1.0f * 255, 0.0f * 255, 0.0f, 0.2f * 255), Vector4(0.0f * 255, 0.0f * 255, 1.0f * 255, 0.3f * 255)
     } };
 
+
+    std::mt19937 rng;
+    rng.seed(std::random_device()());
+    std::uniform_int_distribution<std::mt19937::result_type> dist255(1, 255);
     for (uint32 i = 0; i < 8; i += 2)
     {
-        textures.push_back(GenerateTexture(colors[i], colors[i + 1]));
+        textures.push_back(GenerateTexture(rng, dist255));
     }
 }
 
@@ -110,19 +115,11 @@ void OverdrawTesterSystem::Process(DAVA::float32 timeElapsed)
 {
     if (finished) return;
 
-    framesCount++;
-    frameTime += timeElapsed;
-    if (frameTime >= 1.0f)
-    {
-        frameTime -= 1.0f;
-        float fps = framesCount;
-        framesCount = 0;
-    }
-
     static float32 i = 0;
     i += timeElapsed;
     if (i >= increasePercentTime)
     {
+        performanceData[textureSampleCount].push_back({ DAVA::SystemTimer::GetRealFrameDelta(), GetCurrentOverdraw() });
         currentStepsCount++;
         i -= increasePercentTime;
     }
@@ -139,7 +136,7 @@ void OverdrawTesterSystem::Process(DAVA::float32 timeElapsed)
         {
             finished = true;
             if (finishCallback)
-                finishCallback();
+                finishCallback(&performanceData);
         }
     }
 
@@ -147,23 +144,18 @@ void OverdrawTesterSystem::Process(DAVA::float32 timeElapsed)
         renderObject->SetCurrentStepsCount(currentStepsCount);
 }
 
-DAVA::Texture* OverdrawTesterSystem::GenerateTexture(DAVA::Vector4 startColor, DAVA::Vector4 endColor)
+DAVA::Texture* OverdrawTesterSystem::GenerateTexture(std::mt19937& rng, std::uniform_int_distribution<std::mt19937::result_type>& dist255)
 {
     static const uint32 width = 2048;
     static const uint32 height = 2048;
 
     unsigned char* data = new unsigned char[width * height * 4];
-    
-    std::mt19937 rng;
-    rng.seed(std::random_device()());
-    std::uniform_int_distribution<std::mt19937::result_type> dist255(1,255); // distribution in range [1, 6]
 
-    
     uint32 dataIndex = 0;
     for (uint32 i = 0; i < height; i++)
         for (uint32 j = 0; j < width; j++)
         {
-            Vector4 finalColor = Lerp(startColor, endColor, static_cast<float>(j) / width);
+//             Vector4 finalColor = Lerp(startColor, endColor, static_cast<float>(j) / width);
             data[dataIndex++] = static_cast<uint8>(dist255(rng));
             data[dataIndex++] = static_cast<uint8>(dist255(rng));
             data[dataIndex++] = static_cast<uint8>(dist255(rng));

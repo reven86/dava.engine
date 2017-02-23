@@ -62,10 +62,15 @@ void ViewSceneScreen::LoadResources()
         scene->AddNode( light_e );
     }
     */
-        testerSystem = new OverdrawPerformanceTester::OverdrawTesterSystem(scene, [this]() { chartPainterSystem->SetShouldDrawGraph(true); });
+        testerSystem = new OverdrawPerformanceTester::OverdrawTesterSystem(scene, 
+            [this](DAVA::Array<DAVA::Vector<OverdrawPerformanceTester::FrameData>, 6>* performanceData)
+            {
+                chartPainterSystem->SetPerformanceData(performanceData);
+            });
+
         scene->AddSystem(testerSystem, MAKE_COMPONENT_MASK(OverdrawPerformanceTester::OverdrawTesterComonent::OVERDRAW_TESTER_COMPONENT), DAVA::Scene::SCENE_SYSTEM_REQUIRE_PROCESS);
 
-        chartPainterSystem = new OverdrawPerformanceTester::ChartPainterSystem(scene, &performanceData);
+        chartPainterSystem = new OverdrawPerformanceTester::ChartPainterSystem(scene);
         scene->AddSystem(chartPainterSystem, 0, DAVA::Scene::SCENE_SYSTEM_REQUIRE_PROCESS);
 
         ScopedPtr<Camera> camera(new Camera());
@@ -156,11 +161,12 @@ void ViewSceneScreen::UnloadResources()
 //     SafeDelete(wasdSystem);
 //     SafeDelete(rotationControllerSystem);
 
+    scene->RemoveSystem(chartPainterSystem);
+    SafeDelete(chartPainterSystem);
+
     scene->RemoveSystem(testerSystem);
     SafeDelete(testerSystem);
 
-    scene->RemoveSystem(chartPainterSystem);
-    SafeDelete(chartPainterSystem);
 
     SafeRelease(scene);
 //     SafeRelease(info);
@@ -272,9 +278,6 @@ void ViewSceneScreen::UpdateInfo(float32 timeElapsed)
     {
         int32 fps = (int32)(frameCounter / framesTime);
         //info->SetText(testerSystem != nullptr ? Format(L"FPS: %d", fps) + testerSystem->GetInfoString() : Format(L"FPS: %d", fps));
-
-        if (testerSystem->GetCurrentSampleCount() < 6)
-            performanceData[testerSystem->GetCurrentSampleCount()].push_back({ 1.0f / fps, testerSystem->GetCurrentOverdraw() });
 
         framesTime -= INFO_UPDATE_TIME;
         frameCounter = 0;

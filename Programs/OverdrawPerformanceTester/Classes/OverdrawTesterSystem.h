@@ -6,6 +6,8 @@
 #include "Base/FastName.h"
 #include "Base/String.h"
 #include "Functional/Function.h"
+#include "FrameData.h"
+#include <random>
 
 namespace DAVA
 {
@@ -21,7 +23,8 @@ class OverdrawTesterRenderObject;
 class OverdrawTesterSystem : public DAVA::SceneSystem
 {
 public:
-    OverdrawTesterSystem(DAVA::Scene* scene, DAVA::Function<void()> finishCallback_);
+
+    OverdrawTesterSystem(DAVA::Scene* scene, DAVA::Function<void(DAVA::Array<DAVA::Vector<FrameData>, 6>*)> finishCallback_);
     ~OverdrawTesterSystem();
 
     void AddEntity(DAVA::Entity* entity) override;
@@ -35,7 +38,7 @@ public:
     inline DAVA::uint32 GetCurrentSampleCount() const;
 
 private:
-    DAVA::Texture* GenerateTexture(DAVA::Vector4 startColor, DAVA::Vector4 endColor);
+    DAVA::Texture* GenerateTexture(std::mt19937& rng, std::uniform_int_distribution<std::mt19937::result_type>& dist255);
     void SetupMaterial(const DAVA::FastName* keyword, const DAVA::FastName* texture);
 
     DAVA::Vector<OverdrawTesterRenderObject*> activeRenderObjects;
@@ -44,7 +47,7 @@ private:
     DAVA::uint32 maxStepsCount = 100;
     DAVA::uint32 textureSampleCount = 0;
     DAVA::float32 overdrawPercent = 10.0f;
-    DAVA::float32 increasePercentTime = 0.05f;
+    DAVA::float32 increasePercentTime = 0.5f;
 
     DAVA::int32 framesCount = 0;
     DAVA::float32 frameTime = 0;
@@ -52,13 +55,14 @@ private:
     DAVA::Vector<DAVA::Texture*> textures;
 
     bool finished = false;
-
-    DAVA::Function<void()> finishCallback;
+    DAVA::Function<void(DAVA::Array<DAVA::Vector<FrameData>, 6>*)> finishCallback;
 
     static const DAVA::Array<DAVA::FastName, 4> keywords;
     static const DAVA::Array<DAVA::FastName, 4> textureNames;
 
     inline void SetIncreasePercentTime(DAVA::float32 time);
+
+    DAVA::Array<DAVA::Vector<FrameData>, 6> performanceData;
 };
 
 DAVA::float32 OverdrawTesterSystem::GetCurrentOverdraw() const
