@@ -355,12 +355,12 @@ void DefaultUIPackageBuilder::ProcessProperty(const InspMember* member, const Va
 
     if (currentObject && value.GetType() != VariantType::TYPE_NONE)
     {
-        if (UIStyleSheetPropertyDataBase::Instance()->IsValidStyleSheetProperty(member->Name()))
+        int32 propertyIndex = UIStyleSheetPropertyDataBase::Instance()->FindStyleSheetPropertyByMember(member);
+        if (propertyIndex >= 0)
         {
             UIControl* control = controlsStack.back()->control.Get();
-            control->SetPropertyLocalFlag(UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyIndex(member->Name()), true);
+            control->SetPropertyLocalFlag(propertyIndex, true);
         }
-
         if (member->Name() == PROPERTY_NAME_TEXT)
             member->SetValue(currentObject, VariantType(LocalizedUtf8String(value.AsString())));
         else

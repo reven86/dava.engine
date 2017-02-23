@@ -418,6 +418,9 @@ ApplicationWindow {
                     buildFolder: rowLayout_buildFolder.path
                     cmakeFolder: rowLayout_cmakeFolder.path
                     property double startTime: 0
+                    Component.onDestruction: { 
+                        settings.outputState = columnLayoutOutput.saveState();
+                    }
                     onCmakeWillBeLaunched: {
                         displayHtmlFormat = true;
                         textArea_processText.text = "";

@@ -76,6 +76,14 @@ using Range = Meta<Metas::Range>;
     \arg \c accuracy has value of DAVA::uint32
 */
 using FloatNumberAccuracy = Meta<Metas::FloatNumberAccuracy>;
+
+/**
+ \ingroup metas
+ Specifies maximum count of characters in text for editing
+ \arg \c length has value of DAVA::uint32
+ */
+using MaxLength = Meta<Metas::MaxLength>;
+
 /**
     \ingroup metas
     Add value validation function to Reflected Field.
@@ -191,6 +199,15 @@ using Group = Meta<Metas::Group>;
     \endcode
 */
 using ValueDescription = Meta<Metas::ValueDescription>;
+
+/**
+    \ingroup metas
+    We think about some types like about base types: Vector2, Vector3, Vector4, Color, Rect etc
+    But in real this types are complex and have fields. For example Vector3 comprises the following fields: X, Y, Z
+    This meta mark field of "BaseType" as "field to edit". As a reaction there will be created separate sub-editor
+    for each field that marked by this meta
+*/
+using SubProperty = Meta<Metas::SubProperty>;
 }
 
 } // namespace DAVA

@@ -13,15 +13,8 @@ bool AnyCompare<T>::IsEqual(const Any&, const Any&)
 }
 
 template <>
-struct AnyCompare<String>
-{
-    static bool IsEqual(const Any& v1, const Any& v2)
-    {
-        const String& s1 = v1.Get<String>();
-        const String& s2 = v2.Get<String>();
-        return s1 == s2;
-    }
-};
+bool AnyCompare<String>::IsEqual(const Any& v1, const Any& v2);
+extern template struct AnyCompare<String>;
 
 template <typename K, typename V, typename Eq>
 struct AnyCompare<Map<K, V, Eq>>
