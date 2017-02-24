@@ -31,6 +31,7 @@ QWidget* FMODEventPropertyDelegate::createEditor(QWidget* parent, const Properti
     lineEdit->setObjectName(QString::fromUtf8("lineEdit"));
     connect(lineEdit, &QLineEdit::editingFinished, this, &FMODEventPropertyDelegate::OnEditingFinished);
     connect(lineEdit, &QLineEdit::textChanged, this, &FMODEventPropertyDelegate::OnTextChanged);
+    connect(lineEdit, &QObject::destroyed, this, &FMODEventPropertyDelegate::StopCurrentPlayingEvent);
     return lineEdit;
 }
 
@@ -89,9 +90,15 @@ void FMODEventPropertyDelegate::playEventClicked()
     const QString& currentEventName = lineEdit->text();
     if (!currentEventName.isEmpty() && IsSoundEventValid(currentEventName))
     {
+        if (currentPlayingEvent != nullptr)
+        {
+            currentPlayingEvent->Stop();
+        }
+
         RefPtr<SoundEvent> event(SoundSystem::Instance()->CreateSoundEventByID(FastName(currentEventName.toStdString()), FastName()));
 
-        event->Trigger();
+        currentPlayingEvent = event;
+        currentPlayingEvent->Trigger();
     }
 }
 
@@ -164,4 +171,12 @@ void FMODEventPropertyDelegate::OnTextChanged(const QString& text)
 bool FMODEventPropertyDelegate::IsSoundEventValid(const QString& eventName)
 {
     return std::find(eventNames.begin(), eventNames.end(), eventName.toStdString()) != eventNames.end();
+}
+
+void FMODEventPropertyDelegate::StopCurrentPlayingEvent()
+{
+    if (currentPlayingEvent != nullptr)
+    {
+        currentPlayingEvent->Stop();
+    }
 }

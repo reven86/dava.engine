@@ -103,13 +103,7 @@ PropertiesTreeItemDelegate::~PropertiesTreeItemDelegate()
 
 QWidget* PropertiesTreeItemDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-    QModelIndex sourceIndex = index;
-    const QAbstractItemModel* model = index.model();
-    const QSortFilterProxyModel* sortModel = dynamic_cast<const QSortFilterProxyModel*>(model);
-    if (sortModel != nullptr)
-    {
-        sourceIndex = sortModel->mapToSource(index);
-    }
+    QModelIndex sourceIndex = GetSourceIndex(index, nullptr);
     AbstractPropertyDelegate* currentDelegate = GetCustomItemDelegateForIndex(sourceIndex);
     if (currentDelegate)
     {
@@ -160,13 +154,7 @@ QWidget* PropertiesTreeItemDelegate::createEditor(QWidget* parent, const QStyleO
 
 void PropertiesTreeItemDelegate::setEditorData(QWidget* editor, const QModelIndex& index) const
 {
-    QModelIndex sourceIndex = index;
-    const QAbstractItemModel* model = index.model();
-    const QSortFilterProxyModel* sortModel = dynamic_cast<const QSortFilterProxyModel*>(model);
-    if (sortModel != nullptr)
-    {
-        sourceIndex = sortModel->mapToSource(index);
-    }
+    QModelIndex sourceIndex = GetSourceIndex(index, nullptr);
 
     AbstractPropertyDelegate* currentDelegate = GetCustomItemDelegateForIndex(sourceIndex);
     if (currentDelegate)
@@ -179,13 +167,7 @@ void PropertiesTreeItemDelegate::setEditorData(QWidget* editor, const QModelInde
 
 void PropertiesTreeItemDelegate::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
 {
-    QModelIndex sourceIndex = index;
-    const QSortFilterProxyModel* sortModel = dynamic_cast<const QSortFilterProxyModel*>(model);
-    if (sortModel != nullptr)
-    {
-        sourceIndex = sortModel->mapToSource(index);
-    }
-
+    QModelIndex sourceIndex = GetSourceIndex(index, model);
     AbstractPropertyDelegate* currentDelegate = GetCustomItemDelegateForIndex(sourceIndex);
     if (currentDelegate)
     {
@@ -273,6 +255,19 @@ void PropertiesTreeItemDelegate::paint(QPainter* painter, const QStyleOptionView
     int right = (option.direction == Qt::LeftToRight) ? option.rect.right() : option.rect.left();
     painter->drawLine(right, option.rect.y(), right, option.rect.bottom());
     painter->restore();
+}
+
+QModelIndex PropertiesTreeItemDelegate::GetSourceIndex(QModelIndex index, QAbstractItemModel* itemModel) const
+{
+    QModelIndex sourceIndex = index;
+    const QAbstractItemModel* model = itemModel ? itemModel : index.model();
+    const QSortFilterProxyModel* sortModel = dynamic_cast<const QSortFilterProxyModel*>(model);
+    if (sortModel != nullptr)
+    {
+        sourceIndex = sortModel->mapToSource(index);
+    }
+
+    return sourceIndex;
 }
 
 PropertyWidget::PropertyWidget(QWidget* parent /*= NULL*/)
