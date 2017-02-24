@@ -388,7 +388,9 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/PluginManager/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Reflection/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Reflection/Private/*.cpp) \
-                     $(wildcard $(LOCAL_PATH)/Reflection/Private/Wrappers/*.cpp))
+                     $(wildcard $(LOCAL_PATH)/Reflection/Private/Wrappers/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/ReflectionDeclaration/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/ReflectionDeclaration/Private/*.cpp))
                      
 include $(BUILD_STATIC_LIBRARY)
 
@@ -431,6 +433,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Render/RHI/GLES2/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene2D/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene3D/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Scene3D/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene3D/Components/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene3D/Components/Controller/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene3D/Components/Waypoint/*.cpp) \

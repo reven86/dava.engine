@@ -22,6 +22,7 @@
 #define K_CMD 0x00100000
 
 #include <stb/stb_textedit.h>
+#include <cwctype>
 
 inline void stb_layoutrow(StbTexteditRow* row, STB_TEXTEDIT_STRING* str, int start_i)
 {
@@ -303,32 +304,39 @@ bool StbTextEditBridge::SendKeyChar(uint32 keyChar, uint32 modifiers)
 #endif
 {
 #if defined(__DAVAENGINE_COREV2__)
-    if ((modifiers & (eModifierKeys::CONTROL | eModifierKeys::COMMAND)) != eModifierKeys::NONE)
+    if ((modifiers & eModifierKeys::COMMAND) != eModifierKeys::NONE)
 #else
-    if ((modifiers & (UIEvent::CONTROL_DOWN | UIEvent::COMMAND_DOWN)))
+    if (modifiers & UIEvent::COMMAND_DOWN)
 #endif
     {
-        // Skip chars with Ctrl or Command modifiers
+        // Skip CMD+char input under MacOS
         return false;
     }
 
-    switch (keyChar)
+    if (keyChar == '\r' || keyChar == '\n')
     {
-    case '\b': // Skip backspace char (processed on SendKey)
-    case '\t': // Disable TAB for now
-        return false;
-    case '\r':
-        keyChar = '\n';
-    case '\n':
         if (IsSingleLineMode())
-            return false;
-    default: // Send printable characters
-        if (GetDelegate()->IsCharAvaliable(static_cast<char16>(keyChar)))
         {
-            return SendRaw(keyChar); // Can modify text
+            // Skip line feed for single line fields
+            return false;
         }
+        // Transform carriage return to line feed
+        keyChar = '\n';
+    }
+    else if (std::iswcntrl(keyChar))
+    {
+        // Skip control characters (\b, \t, ^a, ^c, etc.)
+        // P.S. backspace already processed in SendKey
         return false;
     }
+
+    if (GetDelegate()->IsCharAvaliable(static_cast<char16>(keyChar)))
+    {
+        // Send char only if it is allowed
+        return SendRaw(keyChar); // Can modify text
+    }
+
+    return false;
 }
 
 bool DAVA::StbTextEditBridge::SendRaw(uint32 codePoint)

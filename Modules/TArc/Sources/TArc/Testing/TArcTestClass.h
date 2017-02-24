@@ -4,7 +4,8 @@
 #include "TArc/Testing/MockInvoker.h"
 #include "TArc/Utils/QtConnections.h"
 
-#include "UnitTests/TestClass.h"
+#include <UnitTests/TestClass.h>
+#include <UnitTests/UnitTests.h>
 
 #include <QList>
 #include <QWidget>
@@ -35,6 +36,16 @@ public:
 
     QWidget* GetWindow(const WindowKey& wndKey) const;
     QList<QWidget*> LookupWidget(const WindowKey& wndKey, const QString& objectName) const;
+
+    template <typename T>
+    T* LookupSingleWidget(const WindowKey& wndKey, const QString& objectName) const
+    {
+        QList<QWidget*> w = LookupWidget(wndKey, objectName);
+        TEST_VERIFY(w.size() == 1);
+        T* result = qobject_cast<T*>(w.front());
+        TEST_VERIFY(result != nullptr);
+        return result;
+    }
 
     static Signal<Core*> coreChanged;
 

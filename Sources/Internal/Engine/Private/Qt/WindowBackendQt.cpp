@@ -480,21 +480,15 @@ void WindowBackend::OnKeyPressed(QKeyEvent* qtEvent)
     eModifierKeys modifierKeys = GetModifierKeys();
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, MainDispatcherEvent::KEY_DOWN, key, modifierKeys, isRepeated));
 
-    // Windows and macOs translates some Ctrl key combinations into ASCII control characters.
-    // It seems to me that control character are not wanted by game to handle in character message.
-    // https://msdn.microsoft.com/en-us/library/windows/desktop/gg153546(v=vs.85).aspx
-    if ((modifierKeys & eModifierKeys::CONTROL) == eModifierKeys::NONE)
+    QString text = qtEvent->text();
+    if (!text.isEmpty())
     {
-        QString text = qtEvent->text();
-        if (!text.isEmpty())
+        MainDispatcherEvent e = MainDispatcherEvent::CreateWindowKeyPressEvent(window, MainDispatcherEvent::KEY_CHAR, 0, modifierKeys, isRepeated);
+        for (int i = 0, n = text.size(); i < n; ++i)
         {
-            MainDispatcherEvent e = MainDispatcherEvent::CreateWindowKeyPressEvent(window, MainDispatcherEvent::KEY_CHAR, 0, modifierKeys, isRepeated);
-            for (int i = 0, n = text.size(); i < n; ++i)
-            {
-                QCharRef charRef = text[i];
-                e.keyEvent.key = charRef.unicode();
-                mainDispatcher->PostEvent(e);
-            }
+            QCharRef charRef = text[i];
+            e.keyEvent.key = charRef.unicode();
+            mainDispatcher->PostEvent(e);
         }
     }
 }

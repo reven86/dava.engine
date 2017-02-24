@@ -50,7 +50,11 @@ UIControlSystem::UIControlSystem()
 #if defined(__DAVAENGINE_COREV2__)
     vcs = new VirtualCoordinatesSystem();
     vcs->EnableReloadResourceOnResize(true);
+#else
+    vcs = VirtualCoordinatesSystem::Instance();
 #endif
+    vcs->virtualSizeChanged.Connect([](const Size2i&) { TextBlock::ScreenResolutionChanged(); });
+    vcs->physicalSizeChanged.Connect([](const Size2i&) { TextBlock::ScreenResolutionChanged(); });
 
     screenshoter = new UIScreenshoter();
 
@@ -365,14 +369,14 @@ void UIControlSystem::Draw()
 
     if (currentScreenTransition)
     {
-        currentScreenTransition->SystemDraw(baseGeometricData);
+        currentScreenTransition->SystemDraw(baseGeometricData, nullptr);
     }
     else if (currentScreen)
     {
-        currentScreen->SystemDraw(baseGeometricData);
+        currentScreen->SystemDraw(baseGeometricData, nullptr);
     }
 
-    popupContainer->SystemDraw(baseGeometricData);
+    popupContainer->SystemDraw(baseGeometricData, nullptr);
 
     if (frameSkip > 0)
     {

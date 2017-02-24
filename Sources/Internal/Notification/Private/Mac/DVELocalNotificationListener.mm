@@ -1,17 +1,16 @@
-#import "Notification/Private/Mac/DVELocalNotificationListener.h"
-
 #if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_QT__)
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_MACOS__)
 
-#import <Foundation/Foundation.h>
-
 #include "Engine/Engine.h"
 #include "Engine/PlatformApi.h"
 #include "Engine/Window.h"
-#include "Notification/LocalNotificationController.h"
 #include "Utils/NSStringUtils.h"
+
+#import <Foundation/Foundation.h>
+#import "Notification/Private/Mac/DVELocalNotificationListener.h"
+#import "Notification/LocalNotificationController.h"
 
 @implementation DVELocalNotificationListener
 {

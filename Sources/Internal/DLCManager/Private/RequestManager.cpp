@@ -124,4 +124,15 @@ void RequestManager::Pop()
     }
 }
 
+void RequestManager::Remove(PackRequest* request)
+{
+    DVASSERT(request != nullptr);
+
+    auto it = find(begin(requests), end(requests), request);
+    if (it != end(requests))
+    {
+        requests.erase(it);
+    }
+}
+
 } // end namespace DAVA

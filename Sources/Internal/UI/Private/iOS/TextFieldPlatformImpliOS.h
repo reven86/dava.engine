@@ -78,8 +78,11 @@ private:
     void* TruncateText(void* text, int maxLength);
     void UpdateStaticTexture();
     void UpdateNativeRect(const Rect& virtualRect, int xOffset);
-
+    
 #if defined(__DAVAENGINE_COREV2__)
+    void OnWindowDestroyed(Window* destroyedWindow);
+
+    size_t windowDestroyedSigId;
     Window* window = nullptr;
 #endif
     struct TextFieldObjcBridge;

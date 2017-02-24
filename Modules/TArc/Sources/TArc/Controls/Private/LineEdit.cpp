@@ -24,7 +24,7 @@ LineEdit::LineEdit(const ControlDescriptorBuilder<LineEdit::Fields>& fields, Con
 
 void LineEdit::SetupControl()
 {
-    connections.AddConnection(static_cast<QLineEdit*>(this), &QLineEdit::editingFinished, MakeFunction(this, &LineEdit::EditingFinished));
+    connections.AddConnection(this, &QLineEdit::editingFinished, MakeFunction(this, &LineEdit::EditingFinished));
     TextValidator* validator = new TextValidator(this, this);
     setValidator(validator);
 }
@@ -46,16 +46,7 @@ void LineEdit::UpdateControl(const ControlDescriptor& descriptor)
         DAVA::Reflection fieldValue = model.GetField(descriptor.GetName(Fields::Text));
         DVASSERT(fieldValue.IsValid());
 
-        bool readOnlyFieldValue = false;
-        if (readOnlyChanged)
-        {
-            DAVA::Reflection fieldReadOnly = model.GetField(descriptor.GetName(Fields::IsReadOnly));
-            if (fieldReadOnly.IsValid())
-            {
-                readOnlyFieldValue = fieldReadOnly.GetValue().Cast<bool>();
-            }
-        }
-        setReadOnly(fieldValue.IsReadonly() == true || fieldValue.GetMeta<DAVA::M::ReadOnly>() != nullptr || readOnlyFieldValue == true);
+        setReadOnly(IsValueReadOnly(descriptor, Fields::Text, Fields::IsReadOnly));
 
         if (textChanged)
         {
@@ -65,30 +56,16 @@ void LineEdit::UpdateControl(const ControlDescriptor& descriptor)
 
     if (descriptor.IsChanged(Fields::IsEnabled))
     {
-        DAVA::Reflection fieldEnabled = model.GetField(descriptor.GetName(Fields::IsEnabled));
-        bool isEnabled = true;
-        if (fieldEnabled.IsValid())
-        {
-            isEnabled = fieldEnabled.GetValue().Cast<bool>();
-        }
-
-        setEnabled(isEnabled);
+        setEnabled(GetFieldValue<bool>(Fields::IsEnabled, true));
     }
 
     if (descriptor.IsChanged(Fields::PlaceHolder))
     {
-        DAVA::Reflection fieldPlaceholder = model.GetField(descriptor.GetName(Fields::PlaceHolder));
-        String placeHolder;
-        if (fieldPlaceholder.IsValid())
-        {
-            placeHolder = fieldPlaceholder.GetValue().Cast<String>();
-        }
-
-        setPlaceholderText(QString::fromStdString(placeHolder));
+        setPlaceholderText(QString::fromStdString(GetFieldValue<String>(Fields::PlaceHolder, "")));
     }
 }
 
-M::ValidatorResult LineEdit::Validate(const Any& value) const
+M::ValidationResult LineEdit::Validate(const Any& value) const
 {
     Reflection field = model.GetField(GetFieldName(Fields::Text));
     DVASSERT(field.IsValid());
@@ -99,8 +76,8 @@ M::ValidatorResult LineEdit::Validate(const Any& value) const
         return validator->Validate(value, field.GetValue());
     }
 
-    M::ValidatorResult r;
-    r.state = M::ValidatorResult::eState::Valid;
+    M::ValidationResult r;
+    r.state = M::ValidationResult::eState::Valid;
     return r;
 }
 

@@ -61,7 +61,6 @@ namespace M
     Add hint that indicates ReadOnly policy for some Reflected Field
 */
 using ReadOnly = Meta<Metas::ReadOnly>;
-
 /**
     \ingroup metas
     Add hint that indicates valid range of value
@@ -71,6 +70,19 @@ using ReadOnly = Meta<Metas::ReadOnly>;
     If some of bound couldn't be casted to T, this bound will be equal std::numeric_limits<T>::min\max.
 */
 using Range = Meta<Metas::Range>;
+/**
+    \ingroup metas
+    Specifies count of signs in fraction part of float number for editing
+    \arg \c accuracy has value of DAVA::uint32
+*/
+using FloatNumberAccuracy = Meta<Metas::FloatNumberAccuracy>;
+
+/**
+ \ingroup metas
+ Specifies maximum count of characters in text for editing
+ \arg \c length has value of DAVA::uint32
+ */
+using MaxLength = Meta<Metas::MaxLength>;
 
 /**
     \ingroup metas
@@ -88,7 +100,7 @@ using TValidationFn = Metas::TValidationFn;
     Result of validation function
     To get more information check Metas::ValidationResult documentation
 */
-using ValidatorResult = Metas::ValidationResult;
+using ValidationResult = Metas::ValidationResult;
 
 /**
     \ingroup metas
@@ -187,6 +199,15 @@ using Group = Meta<Metas::Group>;
     \endcode
 */
 using ValueDescription = Meta<Metas::ValueDescription>;
+
+/**
+    \ingroup metas
+    We think about some types like about base types: Vector2, Vector3, Vector4, Color, Rect etc
+    But in real this types are complex and have fields. For example Vector3 comprises the following fields: X, Y, Z
+    This meta mark field of "BaseType" as "field to edit". As a reaction there will be created separate sub-editor
+    for each field that marked by this meta
+*/
+using SubProperty = Meta<Metas::SubProperty>;
 }
 
 } // namespace DAVA

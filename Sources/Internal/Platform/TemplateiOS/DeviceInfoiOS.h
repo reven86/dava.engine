@@ -7,6 +7,9 @@
 
 #include "Platform/DeviceInfoPrivateBase.h"
 
+DAVA_FORWARD_DECLARE_OBJC_CLASS(NSString);
+DAVA_FORWARD_DECLARE_OBJC_CLASS(CTTelephonyNetworkInfo);
+
 namespace DAVA
 {
 class DeviceInfoPrivate : public DeviceInfoPrivateBase
@@ -42,8 +45,8 @@ public:
 #endif
 
 private:
-    struct DeviceInfoObjcBridge;
-    std::unique_ptr<DeviceInfoObjcBridge> bridge;
+    CTTelephonyNetworkInfo* telephonyNetworkInfo = nullptr;
+    NSString* lastCarrierName = nullptr;
 };
 
 }; // namespace DAVA

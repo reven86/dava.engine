@@ -8,6 +8,10 @@
 
 #include "Engine/Engine.h"
 
+#ifdef __DAVAENGINE_AUTOTESTING__
+#include "Autotesting/AutotestingSystem.h"
+#endif
+
 #if defined(__DAVAENGINE_ANDROID__)
 #if defined(__DAVAENGINE_COREV2__)
 #include "UI/Private/Android/TextFieldPlatformImplAndroid.h"
@@ -21,6 +25,7 @@
 #else
 #define DAVA_TEXTFIELD_USE_STB
 #include "UI/UITextFieldStb.h"
+
 namespace DAVA
 {
 class TextFieldPlatformImpl : public TextFieldStbImpl
@@ -115,6 +120,9 @@ void UITextField::StopEdit()
         SetRenderToTexture(true);
         textFieldImpl->CloseKeyboard();
         OnStopEditing();
+#ifdef __DAVAENGINE_AUTOTESTING__
+        AutotestingSystem::Instance()->OnRecordSetText(this, GetUtf8Text());
+#endif
     }
 }
 
@@ -125,7 +133,7 @@ void UITextField::Update(float32 timeElapsed)
 
 void UITextField::OnActive()
 {
-#if defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_COREV2__)
+#if defined(__DAVAENGINE_IPHONE__)
     textFieldImpl->ShowField();
     textFieldImpl->SetVisible(IsVisible());
 #endif
@@ -133,7 +141,7 @@ void UITextField::OnActive()
 
 void UITextField::OnInactive()
 {
-#if defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_COREV2__)
+#if defined(__DAVAENGINE_IPHONE__)
     textFieldImpl->HideField();
 #endif
 }
@@ -670,9 +678,9 @@ void UITextField::SetFontByPresetName(const String& presetName)
     }
 }
 
-void UITextField::SystemDraw(const UIGeometricData& geometricData)
+void UITextField::SystemDraw(const UIGeometricData& geometricData, const UIControlBackground* parentBackground)
 {
-    UIControl::SystemDraw(geometricData);
+    UIControl::SystemDraw(geometricData, parentBackground);
 
     UIGeometricData localData = GetLocalGeometricData();
     localData.AddGeometricData(geometricData);

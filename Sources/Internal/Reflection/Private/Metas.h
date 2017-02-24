@@ -22,9 +22,30 @@ class ReadOnly
 class Range
 {
 public:
-    Range(const Any& minValue, const Any& maxValue);
+    Range(const Any& minValue, const Any& maxValue, const Any& step);
     const Any minValue;
     const Any maxValue;
+    const Any step;
+};
+
+/**
+    Specifies count of signs in fraction part of float number for editing
+*/
+class FloatNumberAccuracy
+{
+public:
+    FloatNumberAccuracy(uint32 accuracy);
+    const uint32 accuracy;
+};
+
+/**
+ Specifies maximum count of characters in text for editing
+ */
+class MaxLength
+{
+public:
+    MaxLength(uint32 length);
+    const uint32 length;
 };
 
 /** Validation result */
@@ -129,8 +150,9 @@ class File
 {
 public:
     /** \arg \c shouldExists defines rule should file exists of not */
-    File(bool shouldExists = true);
+    File(bool shouldExists = true, const String& filters = String());
 
+    const String filters;
     const bool shouldExists;
 };
 
@@ -165,6 +187,16 @@ public:
 
 private:
     TValueDescriptorFn fn;
+};
+
+/**
+    We think about some types like about base types: Vector2, Vector3, Vector4, Color, Rect etc
+    But in real this types are complex and have fields. For example Vector3 comprises the following fields: X, Y, Z
+    This meta mark field of "BaseType" as "field to edit". As a reaction there will be created separate sub-editor
+    for each field that marked by this meta
+*/
+class SubProperty
+{
 };
 
 } // namespace Mates
