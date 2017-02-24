@@ -225,5 +225,3 @@ template <>
 bool AnyCompare<Color>::IsEqual(const Any& v1, const Any& v2);
 extern template struct AnyCompare<Color>;
 };
-
-

@@ -347,7 +347,7 @@ void UIControl::SetBackground(UIControlBackground* newBg)
     {
         if (currentBg != nullptr)
         {
-        RemoveComponent(currentBg);
+            RemoveComponent(currentBg);
         }
 
         if (newBg != nullptr)
