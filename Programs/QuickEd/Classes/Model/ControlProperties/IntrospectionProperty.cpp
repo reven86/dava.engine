@@ -6,8 +6,9 @@
 
 #include "PropertyVisitor.h"
 #include "SubValueProperty.h"
-#include "UI/Styles/UIStyleSheetPropertyDataBase.h"
 #include <Base/BaseMath.h>
+#include <UI/Layouts/UISizePositionComponent.h>
+#include <UI/Styles/UIStyleSheetPropertyDataBase.h>
 #include <UI/UIControl.h>
 
 using namespace DAVA;
@@ -49,11 +50,26 @@ IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject* anObject, const D
     {
         SetDefaultValue(member->Value(object));
     }
+    
+    if (member->Name() == INTROSPECTION_PROPERTY_NAME_SIZE || member->Name() == INTROSPECTION_PROPERTY_NAME_POSITION)
+    {
+        UIControl *control = DynamicTypeCheck<UIControl*>(anObject);
+        sizePositionComponent = control->GetOrCreateComponent<UISizePositionComponent>();
+        VariantType value = member->Value(anObject);
+        if (member->Name() == INTROSPECTION_PROPERTY_NAME_SIZE)
+        {
+            sizePositionComponent->SetSize(value.AsVector2());
+        }
+        else if (member->Name() == INTROSPECTION_PROPERTY_NAME_POSITION)
+        {
+            sizePositionComponent->SetPosition(value.AsVector2());
+        }
+        else
+        {
+            DVASSERT(false);
+        }
 
-    if (sourceProperty != nullptr)
-        sourceValue = sourceProperty->sourceValue;
-    else
-        sourceValue = member->Value(object);
+    }
 }
 
 IntrospectionProperty::~IntrospectionProperty()
@@ -77,26 +93,8 @@ IntrospectionProperty* IntrospectionProperty::Create(UIControl* control, const I
     }
     else
     {
-        IntrospectionProperty* result = new IntrospectionProperty(control, member, sourceProperty, cloneType);
-        ;
-        if (member->Name() == INTROSPECTION_PROPERTY_NAME_SIZE || member->Name() == INTROSPECTION_PROPERTY_NAME_POSITION)
-        {
-            result->flags |= EF_DEPENDS_ON_LAYOUTS;
-        }
-        if (member->Name() == INTROSPECTION_PROPERTY_NAME_CLASSES)
-        {
-            result->flags |= EF_AFFECTS_STYLES;
-        }
-        return result;
+        return new IntrospectionProperty(control, member, sourceProperty, cloneType);
     }
-}
-
-void IntrospectionProperty::Refresh(DAVA::int32 refreshFlags)
-{
-    ValueProperty::Refresh(refreshFlags);
-
-    if ((refreshFlags & REFRESH_DEPENDED_ON_LAYOUT_PROPERTIES) != 0 && (GetFlags() & EF_DEPENDS_ON_LAYOUTS) != 0)
-        ApplyValue(sourceValue);
 }
 
 void IntrospectionProperty::Accept(PropertyVisitor* visitor)
@@ -129,6 +127,21 @@ void IntrospectionProperty::DisableResetFeature()
 
 void IntrospectionProperty::ApplyValue(const DAVA::VariantType& value)
 {
-    sourceValue = value;
     member->SetValue(object, value);
+
+    if (sizePositionComponent.Valid())
+    {
+        if (member->Name() == INTROSPECTION_PROPERTY_NAME_SIZE)
+        {
+            sizePositionComponent->SetSize(value.AsVector2());
+        }
+        else if (member->Name() == INTROSPECTION_PROPERTY_NAME_POSITION)
+        {
+            sizePositionComponent->SetPosition(value.AsVector2());
+        }
+        else
+        {
+            DVASSERT(false);
+        }
+    }
 }

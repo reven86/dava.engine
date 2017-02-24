@@ -1,6 +1,7 @@
 #include "UIComponent.h"
 #include "UI/UIControl.h"
 
+#include "UI/Layouts/UISizePositionComponent.h"
 #include "UI/Layouts/UILinearLayoutComponent.h"
 #include "UI/Layouts/UIFlowLayoutComponent.h"
 #include "UI/Layouts/UIFlowLayoutHintComponent.h"
@@ -41,9 +42,9 @@ UIComponent* UIComponent::CreateByType(uint32 componentType)
 {
     switch (componentType)
     {
-    case BACKGROUND_COMPONENT:
-        return new UIControlBackground();
-
+    case SIZE_POSITION_COMPONENT:
+        return new UISizePositionComponent();
+            
     case LINEAR_LAYOUT_COMPONENT:
         return new UILinearLayoutComponent();
 
@@ -62,6 +63,9 @@ UIComponent* UIComponent::CreateByType(uint32 componentType)
     case ANCHOR_COMPONENT:
         return new UIAnchorComponent();
 
+    case BACKGROUND_COMPONENT:
+        return new UIControlBackground();
+        
     case MODAL_INPUT_COMPONENT:
         return new UIModalInputComponent();
 

@@ -23,8 +23,6 @@ public:
         EF_CAN_RESET = 0x01,
         EF_INHERITED = 0x02,
         EF_CAN_REMOVE = 0x04,
-        EF_AFFECTS_STYLES = 0x08,
-        EF_DEPENDS_ON_LAYOUTS = 0x10,
     };
 
     enum eRefreshFlags
@@ -32,7 +30,6 @@ public:
         REFRESH_DEFAULT_VALUE = 0x01,
         REFRESH_LOCALIZATION = 0x02,
         REFRESH_FONT = 0x04,
-        REFRESH_DEPENDED_ON_LAYOUT_PROPERTIES = 0x08
     };
 
     enum eCloneType

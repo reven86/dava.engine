@@ -2,6 +2,7 @@
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
+#include "Base/IntrospectionBase.h"
 #include "FileSystem/VariantType.h"
 #include "qmetatype.h"
 

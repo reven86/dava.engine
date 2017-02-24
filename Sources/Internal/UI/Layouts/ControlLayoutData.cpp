@@ -3,14 +3,25 @@
 #include "UI/UIControl.h"
 #include "UI/Components/UIComponent.h"
 #include "UI/Layouts/UIIgnoreLayoutComponent.h"
+#include "UI/Layouts/UISizePositionComponent.h"
 
 namespace DAVA
 {
 ControlLayoutData::ControlLayoutData(UIControl* control_)
     : control(control_)
 {
-    position = control->GetPosition() - control->GetPivotPoint();
-    size = control->GetSize();
+    UISizePositionComponent *sizePositionComponent = control->GetComponent<UISizePositionComponent>();
+    
+    if (sizePositionComponent != nullptr)
+    {
+        position = sizePositionComponent->GetPosition() - control->GetPivotPoint();
+        size = sizePositionComponent->GetSize();
+    }
+    else
+    {
+        position = control->GetPosition() - control->GetPivotPoint();
+        size = control->GetSize();
+    }
 }
 
 void ControlLayoutData::ApplyLayoutToControl()

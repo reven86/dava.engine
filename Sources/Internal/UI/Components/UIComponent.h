@@ -12,6 +12,7 @@ class UIComponent : public BaseObject
 public:
     enum eType
     {
+        SIZE_POSITION_COMPONENT,
         LINEAR_LAYOUT_COMPONENT,
         FLOW_LAYOUT_COMPONENT,
         FLOW_LAYOUT_HINT_COMPONENT,

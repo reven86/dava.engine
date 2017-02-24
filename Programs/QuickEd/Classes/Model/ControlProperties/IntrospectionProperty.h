@@ -6,6 +6,7 @@
 namespace DAVA
 {
 class UIControl;
+class UISizePositionComponent;
 }
 
 class IntrospectionProperty : public ValueProperty
@@ -19,7 +20,6 @@ protected:
 public:
     static IntrospectionProperty* Create(DAVA::UIControl* control, const DAVA::InspMember* member, const IntrospectionProperty* sourceProperty, eCloneType cloneType);
 
-    void Refresh(DAVA::int32 refreshFlags) override;
     void Accept(PropertyVisitor* visitor) override;
 
     DAVA::uint32 GetFlags() const override;
@@ -47,9 +47,8 @@ protected:
     DAVA::BaseObject* object;
     const DAVA::InspMember* member;
     DAVA::int32 flags;
-
-private:
-    DAVA::VariantType sourceValue;
+    
+    DAVA::RefPtr<DAVA::UISizePositionComponent> sizePositionComponent;
 };
 
 #endif //__UI_EDITOR_INTROSPECTION_PROPERTY__

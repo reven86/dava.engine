@@ -69,7 +69,7 @@ void QEApplication::Init(const DAVA::EngineContext* engineContext)
     engineContext->logger->SetLogFilename("QuickEd.txt");
 
     UIControlSystem* uiControlSystem = engineContext->uiControlSystem;
-    uiControlSystem->GetLayoutSystem()->SetAutoupdatesEnabled(false);
+    uiControlSystem->GetLayoutSystem()->SetAutoupdatesEnabled(true);
     uiControlSystem->GetSystem<UIScrollBarLinkSystem>()->SetRestoreLinks(true);
 
     UIInputSystem* inputSystem = uiControlSystem->GetInputSystem();

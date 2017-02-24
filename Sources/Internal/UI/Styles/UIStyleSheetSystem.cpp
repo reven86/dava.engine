@@ -192,8 +192,11 @@ void UIStyleSheetSystem::ProcessControl(UIControl* control, int32 distanceFromDi
         control->SetStyledPropertySet(propertiesToApply);
     }
 
-    control->ResetStyleSheetDirty();
-    control->SetStyleSheetInitialized();
+    if (!dryRun)
+    {
+        control->ResetStyleSheetDirty();
+        control->SetStyleSheetInitialized();
+    }
 
     if (recursively)
     {
