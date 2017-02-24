@@ -2,6 +2,7 @@
 
 #include <Engine/Engine.h>
 #include <Engine/EngineSettings.h>
+#include <Render/RHI/rhi_Public.h>
 
 #include <CommandLine/CommandLineParser.h>
 #include <Debug/DVAssertDefaultHandlers.h>
@@ -71,7 +72,7 @@ int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
 #elif defined(__DAVAENGINE_MACOS__)
     appOptions->SetInt32("renderer", rhi::RHI_GLES2);
 #elif defined(__DAVAENGINE_IPHONE__)
-    if (rhi::ApiIsSupported(rhi::RHI_METAL))
+    if (rhi::ApiIsSupported(rhi::Api::RHI_METAL))
     {
         appOptions->SetInt32("renderer", rhi::RHI_METAL);
     }
