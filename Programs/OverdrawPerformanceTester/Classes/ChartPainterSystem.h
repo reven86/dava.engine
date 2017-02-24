@@ -20,7 +20,7 @@ public:
     void DrawCharts(DAVA::int32 w, DAVA::int32 h);
     void FlushDbgText();
 
-    inline void SetPerformanceData(DAVA::Array<DAVA::Vector<FrameData>, 6>* performanceData_);
+    void ProcessPerformanceData(DAVA::Array<DAVA::Vector<FrameData>, 6>* performanceData_);
 
 private:
     void DrawLegend(DAVA::int32 w, DAVA::int32 h);
@@ -46,8 +46,4 @@ private:
     const DAVA::uint32 textColor;
 };
 
-void ChartPainterSystem::SetPerformanceData(DAVA::Array<DAVA::Vector<FrameData>, 6>* performanceData_)
-{
-    performanceData = performanceData_;
-}
 }

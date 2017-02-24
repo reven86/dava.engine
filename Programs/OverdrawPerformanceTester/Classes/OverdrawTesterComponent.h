@@ -32,6 +32,7 @@ public:
 
     inline uint32 GetStepsCount() const;
     inline float32 GetStepOverdraw() const;
+
 private:
     OverdrawTesterRenderObject* renderObject;
     float32 addOverdrawPercent = 10.0f;

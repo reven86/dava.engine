@@ -215,4 +215,22 @@ void ChartPainterSystem::DrawLegend(int32 w, int32 h)
     }
 }
 
+void ChartPainterSystem::ProcessPerformanceData(Array<Vector<FrameData>, 6>* performanceData_)
+{
+    performanceData = performanceData_;
+
+    // Looking for the max element in whole data
+    Array<float32, 6> frametimes;
+    for (int i = 0; i < 6; i++)
+    {
+        Vector<FrameData>& currVector = (*performanceData)[i];
+        frametimes[i] = (*std::max_element(currVector.begin(), currVector.end(),
+            [](const FrameData& f1, const FrameData& f2)
+            {
+                return f1.FPS < f2.FPS;
+            }
+            )).FPS;
+    }
+    float32 maxRealFrametime = *std::max_element(frametimes.begin(), frametimes.end());
+}
 }
