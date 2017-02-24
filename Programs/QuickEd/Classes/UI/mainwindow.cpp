@@ -71,6 +71,16 @@ void MainWindow::SetEditorTitle(const QString& editorTitle_)
     UpdateWindowTitle();
 }
 
+bool MainWindow::event(QEvent* event)
+{
+    if (isInitialized == false && event->type() == QEvent::WindowActivate)
+    {
+        isInitialized = true;
+        initialized.Emit();
+    }
+    return QMainWindow::event(event);
+}
+
 void MainWindow::SetProjectPath(const QString& projectPath_)
 {
     projectPath = projectPath_;

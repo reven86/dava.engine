@@ -28,6 +28,7 @@ class ResultList;
 
 class QCheckBox;
 class QActionGroup;
+class QEvent;
 
 class MainWindow : public QMainWindow, public DAVA::InspBase, public DAVA::TrackedObject
 {
@@ -46,6 +47,7 @@ public:
     ProjectView* GetProjectView() const;
     PackageWidget* GetPackageWidget() const;
     StyleSheetInspectorWidget* GetStyleSheetInspectorWidget() const;
+    DAVA::Signal<> initialized;
 
 signals:
     void EmulationModeChanged(bool emulationMode);
@@ -55,6 +57,8 @@ private slots:
     void OnEditorPreferencesTriggered();
 
 private:
+    bool event(QEvent* event) override;
+
     void SetProjectPath(const QString& projectPath);
 
     void ConnectActions();
@@ -92,6 +96,7 @@ private:
 
     ProjectView* projectView = nullptr;
     DocumentGroupView* documentGroupView = nullptr;
+    bool isInitialized = false;
 
 public:
     INTROSPECTION(MainWindow,

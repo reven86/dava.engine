@@ -37,8 +37,18 @@ void ProjectModule::PostInit()
     RegisterOperation(QEGlobal::OpenLastProject.ID, this, &ProjectModule::OpenLastProject);
     RegisterOperation(ProjectModuleTesting::CreateProjectOperation.ID, this, &ProjectModule::CreateProject);
 
-    //without this kostil project will be open when screen is resized but not rendered
-    delayedExecutor.DelayedExecute(MakeFunction(this, &ProjectModule::OpenLastProject));
+    //wait for window will be activated and uiScreen is resized to mainWindow
+    MainWindow* mainWindow = qobject_cast<MainWindow*>(GetUI()->GetWindow(QEGlobal::windowKey));
+    if (mainWindow != nullptr)
+    {
+        mainWindow->initialized.Connect([this]() {
+            delayedExecutor.DelayedExecute(MakeFunction(this, &ProjectModule::OpenLastProject));
+        });
+    }
+    else
+    {
+        OpenLastProject();
+    }
 }
 
 void ProjectModule::OnWindowClosed(const DAVA::TArc::WindowKey& key)
