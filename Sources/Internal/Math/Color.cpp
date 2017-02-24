@@ -26,10 +26,8 @@ Color MakeGrayScale(const Color& rgb)
 }
 
 template <>
-bool AnyCompare<Color>::IsEqual(const Any& v1, const Any& v2)
+bool AnyCompare<Color>::IsEqual(const DAVA::Any& v1, const DAVA::Any& v2)
 {
-    const Color& c1 = v1.Get<Color>();
-    const Color& c2 = v2.Get<Color>();
-    return c1 == c2;
+    return v1.Get<Color>() == v2.Get<Color>();
 }
 }

@@ -22,26 +22,20 @@ Vector2 Rotate(const Vector2& in, float32 angleRad)
 }
 
 template <>
-bool AnyCompare<Vector2>::IsEqual(const Any& v1, const Any& v2)
+bool AnyCompare<Vector2>::IsEqual(const DAVA::Any& v1, const DAVA::Any& v2)
 {
-    const Vector2& vec1 = v1.Get<Vector2>();
-    const Vector2& vec2 = v2.Get<Vector2>();
-    return vec1 == vec2;
-};
+    return v1.Get<Vector2>() == v2.Get<Vector2>();
+}
 
 template <>
-bool AnyCompare<Vector3>::IsEqual(const Any& v1, const Any& v2)
+bool AnyCompare<Vector3>::IsEqual(const DAVA::Any& v1, const DAVA::Any& v2)
 {
-    const Vector3& vec1 = v1.Get<Vector3>();
-    const Vector3& vec2 = v2.Get<Vector3>();
-    return vec1 == vec2;
-};
+    return v1.Get<Vector3>() == v2.Get<Vector3>();
+}
 
 template <>
-bool AnyCompare<Vector4>::IsEqual(const Any& v1, const Any& v2)
+bool AnyCompare<Vector4>::IsEqual(const DAVA::Any& v1, const DAVA::Any& v2)
 {
-    const Vector4& vec1 = v1.Get<Vector4>();
-    const Vector4& vec2 = v2.Get<Vector4>();
-    return vec1 == vec2;
-};
+    return v1.Get<Vector4>() == v2.Get<Vector4>();
+}
 }
