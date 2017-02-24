@@ -30,16 +30,16 @@ private:
 
     DAVA::float32 maxOverdraw = 1000.0f;
     DAVA::float32 overdrawStepCount = 100.0f;
+    DAVA::float32 maxFrametime = 0.033f;
+    DAVA::float32 frametimeAxisLen = 1.0f;
+    DAVA::float32 frametimeStepCount = 30;
 
     static const DAVA::float32 overdrawStep;
     static const DAVA::Vector2 chartOffset;
     static const DAVA::Color gridColor;
     static const DAVA::float32 chartLen;
-    static const DAVA::float32 maxFrametime;
     static const DAVA::float32 minFrametime;
-    static const DAVA::float32 frametimeAxisLen;
     static const DAVA::float32 frametimeStep;
-    static const DAVA::float32 frametimeStepCount;
     static const DAVA::uint32 modsCount;
     static const DAVA::Array<DAVA::String, 6> legend;
     static const DAVA::Array<DAVA::Color, 6> chartColors;

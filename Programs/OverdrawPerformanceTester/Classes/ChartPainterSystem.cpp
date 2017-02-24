@@ -22,12 +22,9 @@ using DAVA::UIControlSystem;
 const Vector2 ChartPainterSystem::chartOffset(0.1f, 0.1f);
 const Color ChartPainterSystem::gridColor(0.4f, 0.4f, 0.4f, 0.4f);
 const float32 ChartPainterSystem::chartLen = 0.8f;
-const float32 ChartPainterSystem::maxFrametime = 1.0f;
 const float32 ChartPainterSystem::minFrametime = 1.0f / 60.0f;
-const float32 ChartPainterSystem::frametimeAxisLen = maxFrametime - minFrametime;
 const float32 ChartPainterSystem::overdrawStep = 100.0f;
 const float32 ChartPainterSystem::frametimeStep = 0.016f;
-const float32 ChartPainterSystem::frametimeStepCount = frametimeAxisLen / frametimeStep;
 const uint32 ChartPainterSystem::modsCount = 6;
 
 const Array<String, 6> ChartPainterSystem::legend =
@@ -151,6 +148,9 @@ void ChartPainterSystem::DrawCharts(int32 w, int32 h)
         chartsPoly.Clear();
         for (size_t j = 0; j < (*performanceData)[i].size(); j++)
         {
+            if (i == 0 && j == 0) // Skip noise in first frame, when all textures are generated.
+                continue;
+
             float32 overdraw = (*performanceData)[i][j].Overdraw;
             float32 fps = static_cast<float32>((*performanceData)[i][j].FPS) - minFrametime;
 
@@ -219,18 +219,24 @@ void ChartPainterSystem::ProcessPerformanceData(Array<Vector<FrameData>, 6>* per
 {
     performanceData = performanceData_;
 
-    // Looking for the max element in whole data
+    // Looking for the max frametime element in whole data
     Array<float32, 6> frametimes;
     for (int i = 0; i < 6; i++)
     {
         Vector<FrameData>& currVector = (*performanceData)[i];
-        frametimes[i] = (*std::max_element(currVector.begin(), currVector.end(),
+        auto begin = currVector.begin();
+        if (i == 0) // Skip noise in first frame, when all textures are generated.
+            begin++;
+
+        frametimes[i] = (*std::max_element(begin, currVector.end(),
             [](const FrameData& f1, const FrameData& f2)
             {
                 return f1.FPS < f2.FPS;
             }
             )).FPS;
     }
-    float32 maxRealFrametime = *std::max_element(frametimes.begin(), frametimes.end());
+    maxFrametime = *std::max_element(frametimes.begin(), frametimes.end());
+    frametimeAxisLen = maxFrametime - minFrametime;
+    frametimeStepCount = frametimeAxisLen / frametimeStep;
 }
 }
