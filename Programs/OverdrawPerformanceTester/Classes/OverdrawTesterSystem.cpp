@@ -34,6 +34,7 @@ using DAVA::Vector4;
 using DAVA::Scene;
 using DAVA::Function;
 using DAVA::Entity;
+using DAVA::PixelFormat;
 
 const Array<FastName, 4> OverdrawTesterSystem::textureNames =
 { {
@@ -47,6 +48,7 @@ const FastName OverdrawTesterSystem::materialPath("~res:/CustomMaterials/Overdra
 const FastName OverdrawTesterSystem::sampleCountKeyword("SAMPLE_COUNT");
 const FastName OverdrawTesterSystem::dependentReadKeyword("DEPENDENT_READ_TEST");
 const uint32 OverdrawTesterSystem::accumulatedFramesCount = 20;
+const PixelFormat OverdrawTesterSystem::texureFormat = DAVA::FORMAT_RGBA8888;
 
 OverdrawTesterSystem::OverdrawTesterSystem(DAVA::Scene* scene, DAVA::Function<void(DAVA::Array<DAVA::Vector<FrameData>, 6>*)> finishCallback_)
     : SceneSystem(scene), finishCallback(finishCallback_)
@@ -159,9 +161,9 @@ DAVA::Texture* OverdrawTesterSystem::GenerateTexture(std::mt19937& rng, std::uni
             data[dataIndex++] = static_cast<uint8>(dist255(rng));
             data[dataIndex++] = static_cast<uint8>(dist255(rng));
             data[dataIndex++] = static_cast<uint8>(dist255(rng));
-            data[dataIndex++] = static_cast<uint8>(75);
+            data[dataIndex++] = static_cast<uint8>(dist255(rng));
         }
-    Texture* result = DAVA::Texture::CreateFromData(DAVA::FORMAT_RGBA8888, data, width, height, false);
+    Texture* result = DAVA::Texture::CreateFromData(texureFormat, data, width, height, false);
 
     delete[] data;
     return result;
