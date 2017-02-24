@@ -82,13 +82,13 @@ bool AutotestingSystem::ResolvePathToAutomation()
 {
     Logger::Info("AutotestingSystem::ResolvePathToAutomation platform=%s", DeviceInfo::GetPlatformString().c_str());
     pathToAutomation = "~doc:/atpath.txt";
-    if (GetEngineContext()->fileSystem->Exists(pathToAutomation))
+    if (FileSystem::Instance()->Exists(pathToAutomation))
     {
         ScopedPtr<File> file(File::Create(pathToAutomation, File::OPEN | File::READ));
         if (file)
         {
             pathToAutomation = file->ReadLine();
-            if (GetEngineContext()->fileSystem->Exists(pathToAutomation))
+            if (FileSystem::Instance()->Exists(pathToAutomation))
             {
                 Logger::Info("AutotestingSystem::ResolvePathToAutomation resolved path %s", pathToAutomation.GetAbsolutePathname().c_str());
                 return true;
@@ -99,14 +99,14 @@ bool AutotestingSystem::ResolvePathToAutomation()
     // Try to find automation data in Documents
     if (DeviceInfo::GetPlatform() == DeviceInfo::PLATFORM_ANDROID)
     {
-        pathToAutomation = GetEngineContext()->fileSystem->GetPublicDocumentsPath().GetAbsolutePathname() + "/Autotesting/";
+        pathToAutomation = FileSystem::Instance()->GetPublicDocumentsPath().GetAbsolutePathname() + "/Autotesting/";
     }
     else
     {
         pathToAutomation = "~doc:/Autotesting/";
     }
 
-    if (GetEngineContext()->fileSystem->Exists(pathToAutomation))
+    if (FileSystem::Instance()->Exists(pathToAutomation))
     {
         Logger::Info("AutotestingSystem::ResolvePathToAutomation resolved path in documents %s", pathToAutomation.GetAbsolutePathname().c_str());
         return true;
@@ -114,7 +114,7 @@ bool AutotestingSystem::ResolvePathToAutomation()
 
     // If there are no automation data in documents, try to find it in Data
     pathToAutomation = "~res:/Autotesting/";
-    if (GetEngineContext()->fileSystem->Exists(pathToAutomation))
+    if (FileSystem::Instance()->Exists(pathToAutomation))
     {
         Logger::Info("AutotestingSystem::ResolvePathToAutomation resolved in resources %s", pathToAutomation.GetAbsolutePathname().c_str());
         return true;
@@ -148,7 +148,7 @@ void AutotestingSystem::OnAppStarted()
 
     const String testFileLocation = Format("/Tests/%s/%s.lua", groupName.c_str(), testFileName.c_str());
     FilePath testFileStrPath = GetPathTo(testFileLocation);
-    if (!GetEngineContext()->fileSystem->Exists(testFileStrPath))
+    if (!FileSystem::Instance()->Exists(testFileStrPath))
     {
         Logger::Error("AutotestingSystemLua::OnAppStarted: couldn't open %s", testFileLocation.c_str());
         testFileStrPath = "";
@@ -215,7 +215,7 @@ RefPtr<KeyedArchive> AutotestingSystem::GetIdYamlOptions()
 {
     FilePath idYamlStrPath = GetPathTo("/id.yaml");
     RefPtr<KeyedArchive> option(new KeyedArchive());
-    if (!GetEngineContext()->fileSystem->Exists(idYamlStrPath) || !option->LoadFromYamlFile(idYamlStrPath))
+    if (!FileSystem::Instance()->Exists(idYamlStrPath) || !option->LoadFromYamlFile(idYamlStrPath))
     {
         ForceQuit("Couldn't open file " + idYamlStrPath.GetAbsolutePathname());
     }
@@ -255,7 +255,7 @@ void AutotestingSystem::SetUpConnectionToDB()
 {
     FilePath dbConfigStrPath = GetPathTo("/dbConfig.yaml");
     KeyedArchive* option = new KeyedArchive();
-    if (!GetEngineContext()->fileSystem->Exists(dbConfigStrPath) || !option->LoadFromYamlFile(dbConfigStrPath))
+    if (!FileSystem::Instance()->Exists(dbConfigStrPath) || !option->LoadFromYamlFile(dbConfigStrPath))
     {
         ForceQuit("Couldn't open file " + dbConfigStrPath.GetAbsolutePathname());
     }
@@ -383,7 +383,7 @@ void AutotestingSystem::Draw()
             desc.transformVirtualToPhysical = true;
 
             RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
-            currentScreen->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData());
+            currentScreen->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData(), nullptr);
             DrawTouches();
             RenderSystem2D::Instance()->FillRect(Rect(0.0f, 0.0f, float32(pScreenSize.dx), float32(pScreenSize.dy)), Color::White, RenderSystem2D::DEFAULT_2D_FILL_ALPHA_MATERIAL);
             RenderSystem2D::Instance()->EndRenderTargetPass();
@@ -755,7 +755,7 @@ void AutotestingSystem::WriteScriptLine(const String& textLine)
     }
     FilePath scriptPath = pathToAutomation + RecordScriptFileName;
     ScopedPtr<File> recordedActs(nullptr);
-    if (GetEngineContext()->fileSystem->Exists(scriptPath))
+    if (FileSystem::Instance()->Exists(scriptPath))
     {
         recordedActs.reset(File::Create(scriptPath, File::APPEND | File::WRITE));
     }
