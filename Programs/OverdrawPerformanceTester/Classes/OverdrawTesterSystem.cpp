@@ -44,6 +44,7 @@ const Array<FastName, 4> OverdrawTesterSystem::textureNames =
     FastName("t4")
 } };
 
+const uint8 OverdrawTesterSystem::maxTexturesCount = 4;
 const FastName OverdrawTesterSystem::materialPath("~res:/CustomMaterials/OverdrawTester.material");
 const FastName OverdrawTesterSystem::sampleCountKeyword("SAMPLE_COUNT");
 const FastName OverdrawTesterSystem::dependentReadKeyword("DEPENDENT_READ_TEST");
@@ -62,7 +63,7 @@ OverdrawTesterSystem::OverdrawTesterSystem(DAVA::Scene* scene, DAVA::Function<vo
     rng.seed(std::random_device()());
     std::uniform_int_distribution<std::mt19937::result_type> dist255(1, 255);
 
-    for (uint32 i = 0; i < 8; i += 2)
+    for (uint32 i = 0; i < maxTexturesCount; i++)
     {
         textures.push_back(GenerateTexture(rng, dist255));
     }
@@ -110,8 +111,6 @@ void OverdrawTesterSystem::Process(DAVA::float32 timeElapsed)
 {
     if (isFinished) return;
 
-    static float32 time = 0;
-
     static int32 framesDrawn = 0;
     frames[framesDrawn] = DAVA::SystemTimer::GetRealFrameDelta();
     framesDrawn++;
@@ -119,21 +118,19 @@ void OverdrawTesterSystem::Process(DAVA::float32 timeElapsed)
 //     time += timeElapsed;
     if (framesDrawn == accumulatedFramesCount)
     {
-        float32 smoothFrametime = std::accumulate(frames.begin(), frames.end(), 0.0f) / 20.0f;
+        float32 smoothFrametime = std::accumulate(frames.begin(), frames.end(), 0.0f) / frames.size();
         performanceData[textureSampleCount].push_back({ smoothFrametime, GetCurrentOverdraw() });
         currentStepsCount++;
-        time -= increasePercentTime;
         framesDrawn = 0;
     }
 
     if (currentStepsCount > maxStepsCount)
     {
         currentStepsCount = 0;
-        time = 0;
         textureSampleCount++;
-        if (textureSampleCount < 5)
+        if (textureSampleCount < maxTexturesCount + 1)
             SetupMaterial(&textureNames[textureSampleCount - 1]);
-        else if (textureSampleCount == 5)
+        else if (textureSampleCount == maxTexturesCount + 1)
             overdrawMaterial->AddFlag(dependentReadKeyword, 1);
         else
         {
