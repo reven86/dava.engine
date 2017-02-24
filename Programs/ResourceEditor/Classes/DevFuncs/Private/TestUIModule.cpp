@@ -12,6 +12,7 @@
 #include <TArc/Controls/PlainTextEdit.h>
 #include <TArc/Controls/FilePathEdit.h>
 #include <TArc/Controls/QtBoxLayouts.h>
+#include <TArc/Controls/SubPropertiesEditor.h>
 #include <TArc/Utils/ModuleCollection.h>
 #include <TArc/WindowSubSystem/ActionUtils.h>
 #include <TArc/WindowSubSystem/UI.h>
@@ -22,6 +23,9 @@
 #include <Reflection/ReflectionRegistrator.h>
 
 #include <Logger/Logger.h>
+#include <Math/Rect.h>
+#include <Math/AABBox3.h>
+#include <Math/Vector.h>
 #include <Base/GlobalEnum.h>
 #include <Base/Vector.h>
 
@@ -898,6 +902,70 @@ struct FilePathEditTestData : public ReflectionBase
     }
 };
 
+struct SubPropertiesControlTest : public ReflectionBase
+{
+    DAVA::Vector2 v2 = DAVA::Vector2(0.2f, 0.2f);
+    DAVA::Vector3 v3 = DAVA::Vector3(0.3f, 0.3f, 0.3f);
+    DAVA::Vector4 v4 = DAVA::Vector4(0.4f, 0.4f, 0.4f, 0.4f);
+    DAVA::Rect rect = DAVA::Rect(0.1f, 0.123456f, 300.2f, 102.2f);
+    DAVA::AABBox3 box = DAVA::AABBox3(DAVA::Vector3(0.1f, 0.1f, 0.1f), DAVA::Vector3(100.0f, 100.0f, 100.0f));
+
+    static Result Create(TArc::UI* ui, TArc::ContextAccessor* accessor, QWidget* parent)
+    {
+        using namespace DAVA::TArc;
+        SubPropertiesControlTest* data = new SubPropertiesControlTest();
+        QtVBoxLayout* boxLayout = new QtVBoxLayout();
+        Reflection model = Reflection::Create(data);
+
+        {
+            ControlDescriptorBuilder<SubPropertiesEditor::Fields> descr;
+            descr[SubPropertiesEditor::Fields::Value] = "v2";
+            boxLayout->AddWidget(new SubPropertiesEditor(descr, accessor, model));
+        }
+
+        {
+            ControlDescriptorBuilder<SubPropertiesEditor::Fields> descr;
+            descr[SubPropertiesEditor::Fields::Value] = "v3";
+            boxLayout->AddWidget(new SubPropertiesEditor(descr, accessor, model));
+        }
+
+        {
+            ControlDescriptorBuilder<SubPropertiesEditor::Fields> descr;
+            descr[SubPropertiesEditor::Fields::Value] = "v4";
+            boxLayout->AddWidget(new SubPropertiesEditor(descr, accessor, model));
+        }
+
+        {
+            ControlDescriptorBuilder<SubPropertiesEditor::Fields> descr;
+            descr[SubPropertiesEditor::Fields::Value] = "rect";
+            boxLayout->AddWidget(new SubPropertiesEditor(descr, accessor, model));
+        }
+
+        {
+            ControlDescriptorBuilder<SubPropertiesEditor::Fields> descr;
+            descr[SubPropertiesEditor::Fields::Value] = "box";
+            boxLayout->AddWidget(new SubPropertiesEditor(descr, accessor, model));
+        }
+
+        Result r;
+        r.layout = boxLayout;
+        r.model = data;
+
+        return r;
+    }
+
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(SubPropertiesControlTest)
+    {
+        DAVA::ReflectionRegistrator<SubPropertiesControlTest>::Begin()
+        .Field("v2", &SubPropertiesControlTest::v2)[DAVA::M::ReadOnly()]
+        .Field("v3", &SubPropertiesControlTest::v3)
+        .Field("v4", &SubPropertiesControlTest::v4)
+        .Field("rect", &SubPropertiesControlTest::rect)
+        .Field("box", &SubPropertiesControlTest::box)
+        .End();
+    }
+};
+
 struct Node
 {
     TestSpaceCreator creator;
@@ -939,7 +1007,9 @@ void TestUIModule::ShowDialog()
 {
     using namespace TestUIModuleDetails;
     QDialog* dlg = new QDialog();
-    QGridLayout* layout = new QGridLayout(dlg);
+    QHBoxLayout* layout = new QHBoxLayout(dlg);
+    QTabWidget* tabWidget = new QTabWidget(dlg);
+    layout->addWidget(tabWidget);
     dlg->setLayout(layout);
 
     DAVA::Vector<Node> nodes = DAVA::Vector<Node>
@@ -951,7 +1021,8 @@ void TestUIModule::ShowDialog()
       { &ComboBoxCheckableTestData::Create, "ComboBoxCheckable Test" },
       { &IntSpinBoxTestData::Create, "SpinBoxTest" },
       { &DoubleSpinBoxTestData::Create, "Double Spin" },
-      { &FilePathEditTestData::Create, "FilePath" }
+      { &FilePathEditTestData::Create, "FilePath" },
+      { &SubPropertiesControlTest::Create, "SubPropsControl Test" }
     };
 
     DAVA::Vector<DAVA::ReflectionBase*> data;
@@ -969,7 +1040,7 @@ void TestUIModule::ShowDialog()
         data.push_back(r.model);
 
         groupBox->setLayout(r.layout);
-        layout->addWidget(groupBox, currentRow, currentColumn);
+        tabWidget->addTab(groupBox, node.title);
         ++currentColumn;
         if (currentColumn > columnCount)
         {
