@@ -20,8 +20,9 @@ using DAVA::DynamicBufferAllocator::AllocResultVB;
 using DAVA::DynamicBufferAllocator::AllocResultIB;
 using DAVA::Camera;
 
-OverdrawTesterRenderObject::OverdrawTesterRenderObject(float32 addOverdrawPercent_, uint32 maxStepsCount_) 
-    : addOverdrawPercent(addOverdrawPercent_), addOverdrawPercentNormalized(addOverdrawPercent_ * 0.01f)
+OverdrawTesterRenderObject::OverdrawTesterRenderObject(float32 addOverdrawPercent_, uint32 maxStepsCount_)
+    : addOverdrawPercent(addOverdrawPercent_)
+    , addOverdrawPercentNormalized(addOverdrawPercent_ * 0.01f)
 {
     this->AddFlag(RenderObject::ALWAYS_CLIPPING_VISIBLE);
     this->AddFlag(RenderObject::CUSTOM_PREPARE_TO_RENDER);
@@ -100,10 +101,10 @@ DAVA::Array<OverdrawTesterRenderObject::QuadVertex, 6> OverdrawTesterRenderObjec
 {
     return
     { {
-        { { xStart, -1.0f, 1.0f }, { 0.0f, 0.0f } },
-        { { xStart, 1.0f, 1.0f }, { 0.0f, 1.0f } },
-        { { xEnd, 1.0f, 1.0f }, { 1.0f, 1.0f } },
-        { { xEnd, -1.0f, 1.0f }, { 1.0f, 0.0f } }
+    { { xStart, -1.0f, 1.0f }, { 0.0f, 0.0f } },
+    { { xStart, 1.0f, 1.0f }, { 0.0f, 1.0f } },
+    { { xEnd, 1.0f, 1.0f }, { 1.0f, 1.0f } },
+    { { xEnd, -1.0f, 1.0f }, { 1.0f, 0.0f } }
     } };
 }
 
@@ -127,5 +128,4 @@ void OverdrawTesterRenderObject::GenerateIndexBuffer()
     iDesc.initialData = indices.data();
     iBuffer = rhi::CreateIndexBuffer(iDesc);
 }
-
 }

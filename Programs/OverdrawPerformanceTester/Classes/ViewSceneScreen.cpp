@@ -26,11 +26,11 @@ void ViewSceneScreen::LoadResources()
         scene = new Scene();
         scene->LoadScene(GameCore::Instance()->GetScenePath());
 
-        testerSystem = new OverdrawTesterSystem(scene, 
-            [this](DAVA::Array<DAVA::Vector<FrameData>, 6>* performanceData)
-            {
-                chartPainterSystem->ProcessPerformanceData(performanceData);
-            });
+        testerSystem = new OverdrawTesterSystem(scene,
+                                                [this](DAVA::Array<DAVA::Vector<FrameData>, 6>* performanceData)
+                                                {
+                                                    chartPainterSystem->ProcessPerformanceData(performanceData);
+                                                });
 
         scene->AddSystem(testerSystem, MAKE_COMPONENT_MASK(OverdrawTesterComonent::OVERDRAW_TESTER_COMPONENT), Scene::SCENE_SYSTEM_REQUIRE_PROCESS);
 

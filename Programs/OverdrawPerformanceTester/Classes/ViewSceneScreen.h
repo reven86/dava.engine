@@ -18,7 +18,7 @@ protected:
 public:
     virtual void LoadResources();
     virtual void UnloadResources();
-    
+
 protected:
     DAVA::Scene* scene = nullptr;
 

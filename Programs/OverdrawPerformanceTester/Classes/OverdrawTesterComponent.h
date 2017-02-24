@@ -26,7 +26,7 @@ public:
 
     OverdrawTesterComonent();
     ~OverdrawTesterComonent();
-    
+
     inline OverdrawTesterRenderObject* GetRenderObject() const;
     Component* Clone(DAVA::Entity* toEntity) override;
 
@@ -40,7 +40,7 @@ private:
 
 public:
     INTROSPECTION_EXTEND(OverdrawTesterComonent, Component,
-        NULL);
+                         NULL);
 };
 
 OverdrawTesterRenderObject* OverdrawTesterComonent::GetRenderObject() const

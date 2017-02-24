@@ -55,7 +55,7 @@ private:
 
     DAVA::NMaterial* overdrawMaterial;
     DAVA::Array<DAVA::float32, 20> frames;
-    
+
     bool isFinished = false;
 
     static const DAVA::Array<DAVA::FastName, 4> textureNames;

@@ -29,26 +29,28 @@ const uint32 ChartPainterSystem::modsCount = 6;
 
 const Array<String, 6> ChartPainterSystem::legend =
 { {
-    "0 tex",
-    "1 tex",
-    "2 tex",
-    "3 tex",
-    "4 tex",
-    "dep r"
+"0 tex",
+"1 tex",
+"2 tex",
+"3 tex",
+"4 tex",
+"dep r"
 } };
 
 const Array<Color, 6> ChartPainterSystem::chartColors =
 { {
-    { 0.0f, 1.0f, 0.0f, 1.0f},
-    { 1.0f, 1.0f, 0.0f, 1.0f},
-    { 0.0f, 1.0f, 1.0f, 1.0f},
-    { 0.0f, 0.0f, 1.0f, 1.0f},
-    { 1.0f, 0.0f, 1.0f, 1.0f},
-    { 1.0f, 0.0f, 0.0f, 1.0f}
+{ 0.0f, 1.0f, 0.0f, 1.0f },
+{ 1.0f, 1.0f, 0.0f, 1.0f },
+{ 0.0f, 1.0f, 1.0f, 1.0f },
+{ 0.0f, 0.0f, 1.0f, 1.0f },
+{ 1.0f, 0.0f, 1.0f, 1.0f },
+{ 1.0f, 0.0f, 0.0f, 1.0f }
 } };
 
 ChartPainterSystem::ChartPainterSystem(Scene* scene)
-    : SceneSystem(scene), performanceData(nullptr), textColor(rhi::NativeColorRGBA(1.0f, 1.0f, 1.0f, 1.0f))
+    : SceneSystem(scene)
+    , performanceData(nullptr)
+    , textColor(rhi::NativeColorRGBA(1.0f, 1.0f, 1.0f, 1.0f))
 {
     rhi::RenderPassConfig passConfig;
     passConfig.colorBuffer[0].loadAction = rhi::LOADACTION_LOAD;
@@ -74,14 +76,14 @@ void ChartPainterSystem::AddEntity(DAVA::Entity* entity)
     }
 }
 
-
 void ChartPainterSystem::Process(float32 timeElapsed)
 {
-    if (performanceData == nullptr) return;
-    
+    if (performanceData == nullptr)
+        return;
+
     int32 w = UIControlSystem::Instance()->vcs->GetVirtualScreenSize().dx;
     int32 h = UIControlSystem::Instance()->vcs->GetVirtualScreenSize().dy;
-    
+
     DrawLegend(w, h);
 
     DrawGrid(w, h);
@@ -218,7 +220,13 @@ void ChartPainterSystem::DrawLegend(int32 w, int32 h)
 void ChartPainterSystem::ProcessPerformanceData(Array<Vector<FrameData>, 6>* performanceData_)
 {
     performanceData = performanceData_;
+    maxFrametime = GetMaxFrametime(); // use maxFrametime = value; to remove adaptive y axis
+    frametimeAxisLen = maxFrametime - minFrametime;
+    frametimeStepCount = frametimeAxisLen / frametimeStep;
+}
 
+float32 ChartPainterSystem::GetMaxFrametime()
+{
     // Looking for the max frametime element in whole data
     Array<float32, 6> frametimes;
     for (int i = 0; i < 6; i++)
@@ -229,14 +237,13 @@ void ChartPainterSystem::ProcessPerformanceData(Array<Vector<FrameData>, 6>* per
             begin++;
 
         frametimes[i] = (*std::max_element(begin, currVector.end(),
-            [](const FrameData& f1, const FrameData& f2)
-            {
-                return f1.FrameTime < f2.FrameTime;
-            }
-            )).FrameTime;
+                                           [](const FrameData& f1, const FrameData& f2)
+                                           {
+                                               return f1.FrameTime < f2.FrameTime;
+                                           }
+                                           ))
+                        .FrameTime;
     }
-    maxFrametime = *std::max_element(frametimes.begin(), frametimes.end());
-    frametimeAxisLen = maxFrametime - minFrametime;
-    frametimeStepCount = frametimeAxisLen / frametimeStep;
+    return *std::max_element(frametimes.begin(), frametimes.end());
 }
 }

@@ -6,7 +6,6 @@
 
 namespace OverdrawPerformanceTester
 {
-
 OverdrawTesterComonent::OverdrawTesterComonent()
 {
     renderObject = new OverdrawTesterRenderObject(addOverdrawPercent, stepsCount);
@@ -24,5 +23,4 @@ DAVA::Component* OverdrawTesterComonent::Clone(DAVA::Entity* toEntity)
     newComponent->SetEntity(toEntity);
     return newComponent;
 }
-
 }

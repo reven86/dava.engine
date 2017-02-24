@@ -25,7 +25,6 @@ public:
     OverdrawTesterRenderObject(DAVA::float32 addOverdrawPercent_, DAVA::uint32 maxStepsCount_);
     ~OverdrawTesterRenderObject();
 
-
     void PrepareToRender(DAVA::Camera* camera) override;
     void RecalculateWorldBoundingBox() override;
 
@@ -57,7 +56,7 @@ private:
     rhi::HIndexBuffer iBuffer;
 };
 
-DAVA::uint32 OverdrawTesterRenderObject::GetCurrentStepsCount() const 
+DAVA::uint32 OverdrawTesterRenderObject::GetCurrentStepsCount() const
 {
     return currentStepsCount;
 }
@@ -80,5 +79,6 @@ void OverdrawTesterRenderObject::SetDrawMaterial(DAVA::NMaterial* newMat)
 }
 
 void OverdrawTesterRenderObject::RecalcBoundingBox()
-{}
+{
+}
 }

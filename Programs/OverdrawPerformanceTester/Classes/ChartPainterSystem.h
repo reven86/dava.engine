@@ -24,6 +24,7 @@ public:
 
 private:
     void DrawLegend(DAVA::int32 w, DAVA::int32 h);
+    DAVA::float32 GetMaxFrametime();
 
     rhi::RenderPassConfig passConfig;
     DAVA::Array<DAVA::Vector<FrameData>, 6>* performanceData;
@@ -45,5 +46,4 @@ private:
     static const DAVA::Array<DAVA::Color, 6> chartColors;
     const DAVA::uint32 textColor;
 };
-
 }

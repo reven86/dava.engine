@@ -38,10 +38,10 @@ using DAVA::PixelFormat;
 
 const Array<FastName, 4> OverdrawTesterSystem::textureNames =
 { {
-    FastName("t1"),
-    FastName("t2"),
-    FastName("t3"),
-    FastName("t4")
+FastName("t1"),
+FastName("t2"),
+FastName("t3"),
+FastName("t4")
 } };
 
 const uint8 OverdrawTesterSystem::maxTexturesCount = 4;
@@ -52,13 +52,14 @@ const uint32 OverdrawTesterSystem::accumulatedFramesCount = 20;
 const PixelFormat OverdrawTesterSystem::texureFormat = DAVA::FORMAT_RGBA8888;
 
 OverdrawTesterSystem::OverdrawTesterSystem(DAVA::Scene* scene, DAVA::Function<void(DAVA::Array<DAVA::Vector<FrameData>, 6>*)> finishCallback_)
-    : SceneSystem(scene), finishCallback(finishCallback_)
+    : SceneSystem(scene)
+    , finishCallback(finishCallback_)
 {
     overdrawMaterial = new NMaterial();
     overdrawMaterial->SetFXName(materialPath);
     overdrawMaterial->AddFlag(FastName("SAMPLE_COUNT"), 0);
     overdrawMaterial->PreBuildMaterial(DAVA::PASS_FORWARD);
-    
+
     std::mt19937 rng;
     rng.seed(std::random_device()());
     std::uniform_int_distribution<std::mt19937::result_type> dist255(1, 255);
@@ -109,13 +110,14 @@ void OverdrawTesterSystem::RemoveEntity(Entity* entity)
 
 void OverdrawTesterSystem::Process(DAVA::float32 timeElapsed)
 {
-    if (isFinished) return;
+    if (isFinished)
+        return;
 
     static int32 framesDrawn = 0;
     frames[framesDrawn] = DAVA::SystemTimer::GetRealFrameDelta();
     framesDrawn++;
-    
-//     time += timeElapsed;
+
+    //     time += timeElapsed;
     if (framesDrawn == accumulatedFramesCount)
     {
         float32 smoothFrametime = std::accumulate(frames.begin(), frames.end(), 0.0f) / frames.size();
