@@ -7,22 +7,36 @@
 
 using namespace DAVA;
 
-class CriteriaEditor
-: public QWidget
+class EmptyCriteriaEditor
+: public CriteriaEditor
 {
 public:
-    CriteriaEditor(QWidget* parent)
-        : QWidget(parent)
+    using FindFilterBuilder = Function<std::unique_ptr<FindFilter>()>;
+
+    EmptyCriteriaEditor(QWidget* parent, const FindFilterBuilder& findFilterBuilder_)
+        : CriteriaEditor(parent)
+        , findFilterBuilder(findFilterBuilder_)
     {
     }
+
+    std::unique_ptr<FindFilter> BuildFindFilter() override
+    {
+        return findFilterBuilder();
+    }
+
+private:
+    FindFilterBuilder findFilterBuilder;
 };
 
 class StringCriteriaEditor
 : public CriteriaEditor
 {
 public:
-    StringCriteriaEditor(QWidget* parent, const DAVA::Function<std::unique_ptr<FindFilter>(const StringCriteriaEditor*)>& buildFindFilter)
+    using StringFindFilterBuilder = Function<std::unique_ptr<FindFilter>(const StringCriteriaEditor*)>;
+
+    StringCriteriaEditor(QWidget* parent, const StringFindFilterBuilder& findFilterBuilder_)
         : CriteriaEditor(parent)
+        , findFilterBuilder(findFilterBuilder_)
     {
         layout = new QHBoxLayout(this);
 
@@ -48,15 +62,22 @@ public:
         setFocusProxy(value);
     }
 
-    const String& GetString() const
+    String GetString() const
     {
         return value->text().toStdString();
+    }
+
+    std::unique_ptr<FindFilter> BuildFindFilter() override
+    {
+        return findFilterBuilder(this);
     }
 
 private:
     QHBoxLayout* layout = nullptr;
     QComboBox* operationCombobox = nullptr;
     QLineEdit* value = nullptr;
+
+    StringFindFilterBuilder findFilterBuilder;
 };
 
 class AbstractSearchCriteria
@@ -65,7 +86,7 @@ public:
     virtual ~AbstractSearchCriteria() = default;
 
     virtual const char* GetName() = 0;
-    virtual QWidget* CreateEditor(QWidget* parent) = 0;
+    virtual CriteriaEditor* CreateEditor(QWidget* parent) = 0;
 };
 
 class NameSearchCriteria
@@ -77,7 +98,7 @@ public:
         return "Name";
     }
 
-    QWidget* CreateEditor(QWidget* parent) override
+    CriteriaEditor* CreateEditor(QWidget* parent) override
     {
         return new StringCriteriaEditor(parent,
                                         [](const StringCriteriaEditor* editor)
@@ -96,9 +117,13 @@ public:
         return "Has sound";
     }
 
-    QWidget* CreateEditor(QWidget* parent) override
+    CriteriaEditor* CreateEditor(QWidget* parent) override
     {
-        return new QWidget(parent);
+        return new EmptyCriteriaEditor(parent,
+                                       []()
+                                       {
+                                           return std::make_unique<ControlNameFilter>(FastName("sound"));
+                                       });
     }
 };
 
@@ -155,7 +180,14 @@ SearchCriteriaWidget::~SearchCriteriaWidget()
 
 std::shared_ptr<FindFilter> SearchCriteriaWidget::BuildFindFilter() const
 {
-    return nullptr;
+    if (editor)
+    {
+        return editor->BuildFindFilter();
+    }
+    else
+    {
+        return nullptr;
+    }
 }
 
 void SearchCriteriaWidget::OnAddAnotherCriteriaPressed()
@@ -174,7 +206,6 @@ void SearchCriteriaWidget::OnCriteriaSelected(int index)
     delete editor;
 
     editor = criterias[index]->CreateEditor(nullptr);
-    //    editor->setSizePolicy(QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Preferred);
     innerLayout->addWidget(editor);
 
     setFocusProxy(editor);

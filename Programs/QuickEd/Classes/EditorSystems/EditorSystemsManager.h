@@ -120,6 +120,7 @@ public:
 
     void SetEmulationMode(bool emulationMode);
 
+    ControlNode* GetControlNodeByPath(const DAVA::String& path) const;
     ControlNode* GetControlNodeAtPoint(const DAVA::Vector2& point) const;
     DAVA::uint32 GetIndexOfNearestRootControl(const DAVA::Vector2& point) const;
 

@@ -139,6 +139,33 @@ void EditorSystemsManager::SetEmulationMode(bool emulationMode)
     SetDisplayState(emulationMode ? Emulation : previousDisplayState);
 }
 
+ControlNode* EditorSystemsManager::GetControlNodeByPath(const DAVA::String& path) const
+{
+    Vector<String> strPath;
+    Split(path, "/", strPath, false, true);
+
+    for (PackageBaseNode* rootControl : editingRootControls)
+    {
+        ControlNode* controlNode = dynamic_cast<ControlNode*>(rootControl);
+        DVASSERT(nullptr != controlNode);
+
+        for (const String& name : strPath)
+        {
+            if (controlNode == nullptr)
+            {
+                break;
+            }
+
+            controlNode = controlNode->FindByName(name); // FindByName is not recursive here
+        }
+
+        if (controlNode)
+        {
+            return controlNode;
+        }
+    }
+}
+
 ControlNode* EditorSystemsManager::GetControlNodeAtPoint(const DAVA::Vector2& point) const
 {
     if (!KeyboardProxy::IsKeyPressed(KeyboardProxy::KEY_ALT))

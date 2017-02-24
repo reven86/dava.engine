@@ -26,21 +26,31 @@ void SearchCriteriasWidget::OnAddCriteriaClicked()
     QObject::connect(criteria, SIGNAL(RemoveCriteria()), this, SLOT(OnRemoveCriteriaClicked()));
 
     setFocusProxy(criteria);
+
+    filterWidgets.insert(criteria);
 }
 
 void SearchCriteriasWidget::OnRemoveCriteriaClicked()
 {
-    if (ui->criteriasList->count() > 1)
+    if (filterWidgets.size() > 1)
     {
-        QWidget* s = qobject_cast<QWidget*>(QObject::sender());
+        SearchCriteriaWidget* s = qobject_cast<SearchCriteriaWidget*>(QObject::sender());
+
+        filterWidgets.erase(s);
+
         ui->criteriasList->removeWidget(s);
         s->deleteLater();
     }
 }
 
-std::shared_ptr<FindFilter> SearchCriteriasWidget::BuildFindFilter() const
+std::unique_ptr<FindFilter> SearchCriteriasWidget::BuildFindFilter() const
 {
     DAVA::Vector<std::shared_ptr<FindFilter>> filters;
 
-    return std::make_shared<CompositeFilter>(filters);
+    for (SearchCriteriaWidget* const filterWidget : filterWidgets)
+    {
+        filters.push_back(filterWidget->BuildFindFilter());
+    }
+
+    return std::make_unique<CompositeFilter>(filters);
 }

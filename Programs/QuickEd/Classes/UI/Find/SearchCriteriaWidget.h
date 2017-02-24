@@ -16,6 +16,18 @@ namespace Ui
 class SearchCriteriaWidget;
 }
 
+class CriteriaEditor
+: public QWidget
+{
+public:
+    CriteriaEditor(QWidget* parent)
+        : QWidget(parent)
+    {
+    }
+
+    virtual std::unique_ptr<FindFilter> BuildFindFilter() = 0;
+};
+
 class SearchCriteriaWidget : public QWidget
 {
     Q_OBJECT
@@ -42,5 +54,5 @@ private:
 
     QHBoxLayout* innerLayout = nullptr;
 
-    QWidget* editor = nullptr;
+    CriteriaEditor* editor = nullptr;
 };

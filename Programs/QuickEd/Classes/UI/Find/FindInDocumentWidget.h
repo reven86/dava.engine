@@ -8,6 +8,8 @@
 #include <QToolButton>
 
 #include "Base/BaseTypes.h"
+#include "Document/Document.h"
+#include "UI/Find/FindItem.h"
 
 class FindFilter;
 class SearchCriteriasWidget;
@@ -21,7 +23,18 @@ public:
 
     std::shared_ptr<FindFilter> BuildFindFilter() const;
 
+public slots:
+    void OnDocumentChanged(Document* document);
+
+private slots:
+    void OnFindClicked();
+
+    void OnItemFound(FindItem item);
+    void OnProgressChanged(int filesProcessed, int totalFiles);
+    void OnFindFinished();
+
 private:
+    Document* document = nullptr;
     QHBoxLayout* layout = nullptr;
     SearchCriteriasWidget* findFiltersWidget = nullptr;
     QToolButton* findButton = nullptr;

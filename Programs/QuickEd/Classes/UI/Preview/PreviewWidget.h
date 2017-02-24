@@ -135,4 +135,6 @@ private:
 
     //we can show model dialogs only when mouse released, so remember node to change text when mouse will be released
     ControlNode* nodeToChangeTextOnMouseRelease = nullptr;
+
+    //FindContext findContext;
 };

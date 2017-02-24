@@ -22,7 +22,7 @@ String GetPathToControl(const ControlInformation* provider)
     }
     else
     {
-        return pathToParent + DAVA::String(provider->GetName().c_str());
+        return pathToParent + '/' + DAVA::String(provider->GetName().c_str());
     }
 }
 }

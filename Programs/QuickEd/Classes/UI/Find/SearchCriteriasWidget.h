@@ -12,6 +12,8 @@ namespace Ui
 class SearchCriteriasWidget;
 }
 
+class SearchCriteriaWidget;
+
 class SearchCriteriasWidget : public QFrame
 {
     Q_OBJECT
@@ -19,12 +21,14 @@ public:
     SearchCriteriasWidget(QWidget* parent = nullptr);
     ~SearchCriteriasWidget() override;
 
-    std::shared_ptr<FindFilter> BuildFindFilter() const;
+    std::unique_ptr<FindFilter> BuildFindFilter() const;
 
 private slots:
     void OnAddCriteriaClicked();
     void OnRemoveCriteriaClicked();
 
 private:
+    DAVA::Set<SearchCriteriaWidget*> filterWidgets;
+
     std::unique_ptr<Ui::SearchCriteriasWidget> ui;
 };

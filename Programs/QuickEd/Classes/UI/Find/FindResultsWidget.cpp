@@ -47,7 +47,7 @@ void FindResultsWidget::Find(std::unique_ptr<FindFilter>&& filter)
             connect(finder, &Finder::ItemFound, this, &FindResultsWidget::OnItemFound, Qt::QueuedConnection);
             connect(finder, &Finder::Finished, this, &FindResultsWidget::OnFindFinished, Qt::QueuedConnection);
 
-            QtConcurrent::run(QtHelpers::InvokeInAutoreleasePool, [this]() { finder->Process(); });
+            QtConcurrent::run(QtHelpers::InvokeInAutoreleasePool, [this, files]() { finder->Process(files); });
         }
     }
 }
