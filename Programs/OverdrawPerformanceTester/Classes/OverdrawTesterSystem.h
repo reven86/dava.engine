@@ -39,7 +39,7 @@ public:
 
 private:
     DAVA::Texture* GenerateTexture(std::mt19937& rng, std::uniform_int_distribution<std::mt19937::result_type>& dist255);
-    void SetupMaterial(const DAVA::FastName* keyword, const DAVA::FastName* texture);
+    void SetupMaterial(const DAVA::FastName* texture);
 
     DAVA::Vector<OverdrawTesterRenderObject*> activeRenderObjects;
     DAVA::Array<DAVA::Vector<FrameData>, 6> performanceData;
@@ -59,9 +59,10 @@ private:
     bool isFinished = false;
 
     DAVA::Array<DAVA::float32, 20> frames;
-    static const DAVA::Array<DAVA::FastName, 5> keywords;
     static const DAVA::Array<DAVA::FastName, 4> textureNames;
     static const DAVA::FastName materialPath;
+    static const DAVA::FastName sampleCountKeyword;
+    static const DAVA::FastName dependentReadKeyword;
     static const DAVA::uint32 accumulatedFramesCount;
 };
 

@@ -35,15 +35,6 @@ using DAVA::Scene;
 using DAVA::Function;
 using DAVA::Entity;
 
-const Array<FastName, 5> OverdrawTesterSystem::keywords =
-{ {
-    FastName("ONE_TEX"),
-    FastName("TWO_TEX"),
-    FastName("THREE_TEX"),
-    FastName("FOUR_TEX"),
-    FastName("DEPENDENT_READ_TEST")
-} };
-
 const Array<FastName, 4> OverdrawTesterSystem::textureNames =
 { {
     FastName("t1"),
@@ -53,6 +44,8 @@ const Array<FastName, 4> OverdrawTesterSystem::textureNames =
 } };
 
 const FastName OverdrawTesterSystem::materialPath("~res:/CustomMaterials/OverdrawTester.material");
+const FastName OverdrawTesterSystem::sampleCountKeyword("SAMPLE_COUNT");
+const FastName OverdrawTesterSystem::dependentReadKeyword("DEPENDENT_READ_TEST");
 const uint32 OverdrawTesterSystem::accumulatedFramesCount = 20;
 
 OverdrawTesterSystem::OverdrawTesterSystem(DAVA::Scene* scene, DAVA::Function<void(DAVA::Array<DAVA::Vector<FrameData>, 6>*)> finishCallback_)
@@ -60,6 +53,7 @@ OverdrawTesterSystem::OverdrawTesterSystem(DAVA::Scene* scene, DAVA::Function<vo
 {
     overdrawMaterial = new NMaterial();
     overdrawMaterial->SetFXName(materialPath);
+    overdrawMaterial->AddFlag(FastName("SAMPLE_COUNT"), 0);
     overdrawMaterial->PreBuildMaterial(DAVA::PASS_FORWARD);
     
     std::mt19937 rng;
@@ -136,9 +130,9 @@ void OverdrawTesterSystem::Process(DAVA::float32 timeElapsed)
         time = 0;
         textureSampleCount++;
         if (textureSampleCount < 5)
-            SetupMaterial(&keywords[textureSampleCount - 1], &textureNames[textureSampleCount - 1]);
+            SetupMaterial(&textureNames[textureSampleCount - 1]);
         else if (textureSampleCount == 5)
-            overdrawMaterial->AddFlag(keywords[4], 1);
+            overdrawMaterial->AddFlag(dependentReadKeyword, 1);
         else
         {
             isFinished = true;
@@ -165,7 +159,7 @@ DAVA::Texture* OverdrawTesterSystem::GenerateTexture(std::mt19937& rng, std::uni
             data[dataIndex++] = static_cast<uint8>(dist255(rng));
             data[dataIndex++] = static_cast<uint8>(dist255(rng));
             data[dataIndex++] = static_cast<uint8>(dist255(rng));
-            data[dataIndex++] = static_cast<uint8>(20);
+            data[dataIndex++] = static_cast<uint8>(75);
         }
     Texture* result = DAVA::Texture::CreateFromData(DAVA::FORMAT_RGBA8888, data, width, height, false);
 
@@ -173,9 +167,9 @@ DAVA::Texture* OverdrawTesterSystem::GenerateTexture(std::mt19937& rng, std::uni
     return result;
 }
 
-void OverdrawTesterSystem::SetupMaterial(const DAVA::FastName* keyword, const DAVA::FastName* texture)
+void OverdrawTesterSystem::SetupMaterial(const DAVA::FastName* texture)
 {
-    overdrawMaterial->AddFlag(*keyword, 1);
+    overdrawMaterial->SetFlag(sampleCountKeyword, textureSampleCount);
     overdrawMaterial->AddTexture(*texture, textures[textureSampleCount - 1]);
 }
 }

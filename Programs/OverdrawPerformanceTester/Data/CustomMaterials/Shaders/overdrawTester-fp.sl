@@ -10,23 +10,32 @@ fragment_out
     float4  color : SV_TARGET0;
 };
 
-#if ONE_TEX || DEPENDENT_READ_TEST
+#if DEPENDENT_READ_TEST
     uniform sampler2D t1;
-    #if TWO_TEX || DEPENDENT_READ_TEST
+    uniform sampler2D t2;
+    uniform sampler2D t3;
+#else
+    #if SAMPLE_COUNT == 1
+        uniform sampler2D t1;
+    #elif SAMPLE_COUNT == 2
+        uniform sampler2D t1;
         uniform sampler2D t2;
-        #if THREE_TEX || DEPENDENT_READ_TEST
-            uniform sampler2D t3;
-            #if FOUR_TEX && !DEPENDENT_READ_TEST
-                uniform sampler2D t4;
-            #endif
-        #endif
+    #elif SAMPLE_COUNT == 3
+        uniform sampler2D t1;
+        uniform sampler2D t2;
+        uniform sampler2D t3;
+    #elif SAMPLE_COUNT == 4
+        uniform sampler2D t1;
+        uniform sampler2D t2;
+        uniform sampler2D t3;
+        uniform sampler2D t4;
     #endif
 #endif
 
 fragment_out fp_main( fragment_in input )
 {
     fragment_out output;
-    output.color = float4(input.texcoord0 * 0.5f, 0.0f, 0.05f);
+    output.color = float4(input.texcoord0 * 0.5f, 0.0f, 0.3f);
 
     #if DEPENDENT_READ_TEST
         float4 uv = tex2D(t1, input.texcoord0);
@@ -34,17 +43,20 @@ fragment_out fp_main( fragment_in input )
         float4 c2 = tex2D(t3, uv.zw);
         output.color = lerp(c1, c2, 0.5f);
     #else
-        #if ONE_TEX
+        #if SAMPLE_COUNT == 1
             output.color += tex2D(t1, input.texcoord0);
-            #if TWO_TEX
-                output.color += tex2D(t2, input.texcoord0);
-                #if THREE_TEX
-                    output.color += tex2D(t3, input.texcoord0);
-                    #if FOUR_TEX
-                        output.color += tex2D(t4, input.texcoord0);
-                    #endif
-                #endif
-            #endif
+        #elif SAMPLE_COUNT == 2
+            output.color += tex2D(t1, input.texcoord0);
+            output.color += tex2D(t2, input.texcoord0);
+        #elif SAMPLE_COUNT == 3
+            output.color += tex2D(t1, input.texcoord0);
+            output.color += tex2D(t2, input.texcoord0);
+            output.color += tex2D(t3, input.texcoord0);
+        #elif SAMPLE_COUNT == 4
+            output.color += tex2D(t1, input.texcoord0);
+            output.color += tex2D(t2, input.texcoord0);
+            output.color += tex2D(t3, input.texcoord0);
+            output.color += tex2D(t4, input.texcoord0);
         #endif
     #endif
     
