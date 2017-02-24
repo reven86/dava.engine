@@ -684,10 +684,12 @@ void QualitySettingsDialog::ApplyTextureQuality()
         }
     }
 
+    DAVA::eGPUFamily forGPU = DAVA::Texture::GetPrimaryGPUForLoading();
+
     for (auto& entry : textureMap)
     {
         DAVA::Texture* texture = entry.second;
-        texture->ReloadAs(texture->GetSourceFileGPUFamily());
+        texture->ReloadAs(forGPU);
     }
 
     for (DAVA::NMaterial* material : materialList)
@@ -695,7 +697,7 @@ void QualitySettingsDialog::ApplyTextureQuality()
         material->InvalidateTextureBindings();
     }
 
-    DAVA::Sprite::ReloadSprites(DAVA::Texture::GetPrimaryGPUForLoading());
+    DAVA::Sprite::ReloadSprites(forGPU);
 }
 
 void QualitySettingsDialog::ApplyMaterialQuality()
