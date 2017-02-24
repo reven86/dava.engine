@@ -61,7 +61,7 @@ struct Application
     }
 
     AppVersion* GetVersion(const QString& versionID);
-
+    AppVersion* GetVersionByNum(const QString& num);
     void RemoveVersion(const QString& versionID);
 
     static Application LoadFromYamlNode(const YAML::Node* node);

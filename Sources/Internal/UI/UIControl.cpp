@@ -21,6 +21,10 @@
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/Renderer.h"
 
+#ifdef __DAVAENGINE_AUTOTESTING__
+#include "Autotesting/AutotestingSystem.h"
+#endif
+
 #include "Components/UIComponent.h"
 #include "Components/UIControlFamily.h"
 #include "Concurrency/LockGuard.h"
@@ -66,7 +70,6 @@ UIControl::UIControl(const Rect& rect)
     visible = true;
 
     UpdateFamily();
-    GetOrCreateComponent<UIControlBackground>();
     /*
             VB:
             please do not change anymore to false, it no make any sense to make all controls untouchable by default.
@@ -289,13 +292,11 @@ int32 UIControl::GetSpriteAlign() const
 void UIControl::SetSprite(const FilePath& spriteName, int32 spriteFrame)
 {
     GetBackground()->SetSprite(spriteName, spriteFrame);
-    SetLayoutDirty();
 }
 
 void UIControl::SetSprite(Sprite* newSprite, int32 spriteFrame)
 {
     GetBackground()->SetSprite(newSprite, spriteFrame);
-    SetLayoutDirty();
 }
 
 void UIControl::SetSpriteFrame(int32 spriteFrame)
@@ -311,7 +312,6 @@ void UIControl::SetSpriteFrame(const FastName& frameName)
 void UIControl::SetSpriteDrawType(UIControlBackground::eDrawType drawType)
 {
     GetBackground()->SetDrawType(drawType);
-    SetLayoutDirty();
 }
 
 void UIControl::SetSpriteAlign(int32 align)
@@ -319,144 +319,16 @@ void UIControl::SetSpriteAlign(int32 align)
     GetBackground()->SetAlign(align);
 }
 
-void UIControl::SetLeftAlign(float32 align)
-{
-    GetOrCreateComponent<UIAnchorComponent>()->SetLeftAnchor(align);
-}
-
-float32 UIControl::GetLeftAlign() const
-{
-    UIAnchorComponent* anchor = GetComponent<UIAnchorComponent>();
-    return anchor != nullptr ? anchor->GetLeftAnchor() : 0.0f;
-}
-
-void UIControl::SetHCenterAlign(float32 align)
-{
-    GetOrCreateComponent<UIAnchorComponent>()->SetHCenterAnchor(align);
-}
-
-float32 UIControl::GetHCenterAlign() const
-{
-    UIAnchorComponent* anchor = GetComponent<UIAnchorComponent>();
-    return anchor != nullptr ? anchor->GetHCenterAnchor() : 0.0f;
-}
-
-void UIControl::SetRightAlign(float32 align)
-{
-    GetOrCreateComponent<UIAnchorComponent>()->SetRightAnchor(align);
-}
-
-float32 UIControl::GetRightAlign() const
-{
-    UIAnchorComponent* anchor = GetComponent<UIAnchorComponent>();
-    return anchor != nullptr ? anchor->GetRightAnchor() : 0.0f;
-}
-
-void UIControl::SetTopAlign(float32 align)
-{
-    GetOrCreateComponent<UIAnchorComponent>()->SetTopAnchor(align);
-}
-
-float32 UIControl::GetTopAlign() const
-{
-    UIAnchorComponent* anchor = GetComponent<UIAnchorComponent>();
-    return anchor != nullptr ? anchor->GetTopAnchor() : 0.0f;
-}
-
-void UIControl::SetVCenterAlign(float32 align)
-{
-    GetOrCreateComponent<UIAnchorComponent>()->SetVCenterAnchor(align);
-}
-
-float32 UIControl::GetVCenterAlign() const
-{
-    UIAnchorComponent* anchor = GetComponent<UIAnchorComponent>();
-    return anchor != nullptr ? anchor->GetVCenterAnchor() : 0.0f;
-}
-
-void UIControl::SetBottomAlign(float32 align)
-{
-    GetOrCreateComponent<UIAnchorComponent>()->SetBottomAnchor(align);
-}
-
-float32 UIControl::GetBottomAlign() const
-{
-    UIAnchorComponent* anchor = GetComponent<UIAnchorComponent>();
-    return anchor != nullptr ? anchor->GetBottomAnchor() : 0.0f;
-}
-
-void UIControl::SetLeftAlignEnabled(bool isEnabled)
-{
-    GetOrCreateComponent<UIAnchorComponent>()->SetLeftAnchorEnabled(isEnabled);
-}
-
-bool UIControl::GetLeftAlignEnabled() const
-{
-    UIAnchorComponent* anchor = GetComponent<UIAnchorComponent>();
-    return anchor != nullptr ? anchor->IsLeftAnchorEnabled() : false;
-}
-
-void UIControl::SetHCenterAlignEnabled(bool isEnabled)
-{
-    GetOrCreateComponent<UIAnchorComponent>()->SetHCenterAnchorEnabled(isEnabled);
-}
-
-bool UIControl::GetHCenterAlignEnabled() const
-{
-    UIAnchorComponent* anchor = GetComponent<UIAnchorComponent>();
-    return anchor != nullptr ? anchor->IsHCenterAnchorEnabled() : false;
-}
-
-void UIControl::SetRightAlignEnabled(bool isEnabled)
-{
-    GetOrCreateComponent<UIAnchorComponent>()->SetRightAnchorEnabled(isEnabled);
-}
-
-bool UIControl::GetRightAlignEnabled() const
-{
-    UIAnchorComponent* anchor = GetComponent<UIAnchorComponent>();
-    return anchor != nullptr ? anchor->IsRightAnchorEnabled() : false;
-}
-
-void UIControl::SetTopAlignEnabled(bool isEnabled)
-{
-    GetOrCreateComponent<UIAnchorComponent>()->SetTopAnchorEnabled(isEnabled);
-}
-
-bool UIControl::GetTopAlignEnabled() const
-{
-    UIAnchorComponent* anchor = GetComponent<UIAnchorComponent>();
-    return anchor != nullptr ? anchor->IsTopAnchorEnabled() : false;
-}
-
-void UIControl::SetVCenterAlignEnabled(bool isEnabled)
-{
-    GetOrCreateComponent<UIAnchorComponent>()->SetVCenterAnchorEnabled(isEnabled);
-}
-
-bool UIControl::GetVCenterAlignEnabled() const
-{
-    UIAnchorComponent* anchor = GetComponent<UIAnchorComponent>();
-    return anchor != nullptr ? anchor->IsVCenterAnchorEnabled() : false;
-}
-
-void UIControl::SetBottomAlignEnabled(bool isEnabled)
-{
-    GetOrCreateComponent<UIAnchorComponent>()->SetBottomAnchorEnabled(isEnabled);
-}
-
-bool UIControl::GetBottomAlignEnabled() const
-{
-    UIAnchorComponent* anchor = GetComponent<UIAnchorComponent>();
-    return anchor != nullptr ? anchor->IsBottomAnchorEnabled() : false;
-}
-
 void UIControl::SetBackground(UIControlBackground* newBg)
 {
     UIControlBackground* currentBg = GetComponent<UIControlBackground>();
     if (currentBg != newBg)
     {
-        RemoveComponent(currentBg);
+        if (currentBg != nullptr)
+        {
+            RemoveComponent(currentBg);
+        }
+
         if (newBg != nullptr)
         {
             AddComponent(newBg);
@@ -618,18 +490,19 @@ void UIControl::SetScaledRect(const Rect& rect, bool rectInAbsoluteCoordinates /
 
 Vector2 UIControl::GetContentPreferredSize(const Vector2& constraints) const
 {
-    if (GetBackground() != nullptr && GetBackground()->GetSprite() != nullptr)
+    UIControlBackground* bg = GetComponent<UIControlBackground>();
+    if (bg != nullptr && bg->GetSprite() != nullptr)
     {
         if (constraints.dx > 0)
         {
             Vector2 size;
             size.dx = constraints.dx;
-            size.dy = GetBackground()->GetSprite()->GetHeight() * size.dx / GetBackground()->GetSprite()->GetWidth();
+            size.dy = bg->GetSprite()->GetHeight() * size.dx / bg->GetSprite()->GetWidth();
             return size;
         }
         else
         {
-            return GetBackground()->GetSprite()->GetSize();
+            return bg->GetSprite()->GetSize();
         }
     }
     return Vector2(0.0f, 0.0f);
@@ -637,12 +510,13 @@ Vector2 UIControl::GetContentPreferredSize(const Vector2& constraints) const
 
 bool UIControl::IsHeightDependsOnWidth() const
 {
-    if (GetBackground() == nullptr || GetBackground()->GetSprite() == nullptr)
+    UIControlBackground* bg = GetComponent<UIControlBackground>();
+    if (bg == nullptr || bg->GetSprite() == nullptr)
     {
         return false;
     }
 
-    UIControlBackground::eDrawType dt = GetBackground()->GetDrawType();
+    UIControlBackground::eDrawType dt = bg->GetDrawType();
     return dt == UIControlBackground::DRAW_SCALE_PROPORTIONAL || dt == UIControlBackground::DRAW_SCALE_PROPORTIONAL_ONE;
 }
 
@@ -1088,7 +962,7 @@ void UIControl::SystemUpdate(float32 timeElapsed)
     }
 }
 
-void UIControl::SystemDraw(const UIGeometricData& geometricData)
+void UIControl::SystemDraw(const UIGeometricData& geometricData, const UIControlBackground* parentBackground)
 {
     if (!GetVisibilityFlag())
         return;
@@ -1097,7 +971,7 @@ void UIControl::SystemDraw(const UIGeometricData& geometricData)
     UIGeometricData drawData = GetLocalGeometricData();
     drawData.AddGeometricData(geometricData);
 
-    const Color& parentColor = parent && parent->GetBackground() ? parent->GetBackground()->GetDrawColor() : Color::White;
+    const Color& parentColor = parentBackground ? parentBackground->GetDrawColor() : Color::White;
 
     SetParentColor(parentColor);
 
@@ -1111,12 +985,12 @@ void UIControl::SystemDraw(const UIGeometricData& geometricData)
 
     Draw(drawData);
 
+    const UIControlBackground* bg = GetComponent<UIControlBackground>();
+    const UIControlBackground* parentBgForChild = bg ? bg : parentBackground;
     isIteratorCorrupted = false;
-    List<UIControl*>::iterator it = children.begin();
-    List<UIControl*>::iterator itEnd = children.end();
-    for (; it != itEnd; ++it)
+    for (UIControl* child : children)
     {
-        (*it)->SystemDraw(drawData);
+        child->SystemDraw(drawData, parentBgForChild);
         DVASSERT(!isIteratorCorrupted);
     }
 
@@ -1139,9 +1013,10 @@ void UIControl::SystemDraw(const UIGeometricData& geometricData)
 
 void UIControl::SetParentColor(const Color& parentColor)
 {
-    if (GetBackground())
+    UIControlBackground* bg = GetComponent<UIControlBackground>();
+    if (bg)
     {
-        GetBackground()->SetParentColor(parentColor);
+        bg->SetParentColor(parentColor);
     }
 }
 
@@ -1411,6 +1286,10 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
                         eEventType event = isPointInside ? EVENT_TOUCH_UP_INSIDE : EVENT_TOUCH_UP_OUTSIDE;
 
                         Analytics::EmitUIEvent(this, event, currentInput);
+
+#ifdef __DAVAENGINE_AUTOTESTING__
+                        AutotestingSystem::Instance()->OnRecordClickControl(this);
+#endif
                         PerformEventWithData(event, currentInput, currentInput);
 
                         if (isPointInside)
@@ -1575,9 +1454,10 @@ void UIControl::Update(float32 timeElapsed)
 
 void UIControl::Draw(const UIGeometricData& geometricData)
 {
-    if (GetBackground())
+    UIControlBackground* bg = GetComponent<UIControlBackground>();
+    if (bg)
     {
-        GetBackground()->Draw(geometricData);
+        bg->Draw(geometricData);
     }
 }
 
@@ -1989,7 +1869,9 @@ Animation* UIControl::RemoveControlAnimation(int32 track)
 
 Animation* UIControl::ColorAnimation(const Color& finalColor, float32 time, Interpolation::FuncType interpolationFunc, int32 track)
 {
-    LinearAnimation<Color>* animation = new LinearAnimation<Color>(this, &GetBackground()->color, finalColor, time, interpolationFunc);
+    UIControlBackground* bg = GetComponent<UIControlBackground>();
+    DVASSERT(bg);
+    LinearAnimation<Color>* animation = new LinearAnimation<Color>(this, &bg->color, finalColor, time, interpolationFunc);
     animation->Start(track);
     return animation;
 }
@@ -2063,7 +1945,12 @@ void UIControl::OnTouchOutsideFocus()
 
 void UIControl::SetSizeFromBg(bool pivotToCenter)
 {
-    SetSize(GetBackground()->GetSprite()->GetSize());
+    UIControlBackground* bg = GetComponent<UIControlBackground>();
+    DVASSERT(bg);
+    if (bg)
+    {
+        SetSize(bg->GetSprite()->GetSize());
+    }
 
     if (pivotToCenter)
     {

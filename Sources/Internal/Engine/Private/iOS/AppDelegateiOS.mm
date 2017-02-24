@@ -61,6 +61,11 @@ extern CoreNativeBridge* coreNativeBridge;
     bridge->DidReceiveRemoteNotification(application, userInfo);
 }
 
+- (void)application:(UIApplication*)application didReceiveRemoteNotification:(NSDictionary*)userInfo fetchCompletionHandler:(void (^)(UIBackgroundFetchResult result))completionHandler
+{
+    bridge->DidReceiveRemoteNotificationFetchCompletionHandler(application, userInfo, completionHandler);
+}
+
 - (void)application:(UIApplication*)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData*)deviceToken
 {
     bridge->DidRegisterForRemoteNotificationsWithDeviceToken(application, deviceToken);
