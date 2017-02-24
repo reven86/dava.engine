@@ -35,7 +35,7 @@ public:
 private:
     OverdrawTesterRenderObject* renderObject;
     float32 addOverdrawPercent = 10.0f;
-    uint32 stepsCount = 100;
+    uint32 stepsCount = 30;
 
 public:
     INTROSPECTION_EXTEND(OverdrawTesterComonent, Component,

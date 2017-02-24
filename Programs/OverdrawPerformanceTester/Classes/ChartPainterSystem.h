@@ -12,6 +12,8 @@ public:
     ChartPainterSystem(DAVA::Scene* scene);
     ~ChartPainterSystem();
 
+    void AddEntity(DAVA::Entity* entity) override;
+
     void Process(DAVA::float32 timeElapsed) override;
 
     void DrawGrid(DAVA::int32 w, DAVA::int32 h);
@@ -26,16 +28,17 @@ private:
     rhi::RenderPassConfig passConfig;
     DAVA::Array<DAVA::Vector<FrameData>, 6>* performanceData;
 
+    DAVA::float32 maxOverdraw = 1000.0f;
+    DAVA::float32 overdrawStepCount = 100.0f;
+
+    static const DAVA::float32 overdrawStep;
     static const DAVA::Vector2 chartOffset;
     static const DAVA::Color gridColor;
     static const DAVA::float32 chartLen;
     static const DAVA::float32 maxFrametime;
     static const DAVA::float32 minFrametime;
     static const DAVA::float32 frametimeAxisLen;
-    static const DAVA::float32 maxOverdraw;
-    static const DAVA::float32 overdrawStep;
     static const DAVA::float32 frametimeStep;
-    static const DAVA::float32 overdrawStepCount;
     static const DAVA::float32 frametimeStepCount;
     static const DAVA::uint32 modsCount;
     static const DAVA::Array<DAVA::String, 6> legend;

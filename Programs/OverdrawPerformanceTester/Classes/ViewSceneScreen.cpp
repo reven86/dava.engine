@@ -35,7 +35,7 @@ void ViewSceneScreen::LoadResources()
         scene->AddSystem(testerSystem, MAKE_COMPONENT_MASK(OverdrawTesterComonent::OVERDRAW_TESTER_COMPONENT), Scene::SCENE_SYSTEM_REQUIRE_PROCESS);
 
         chartPainterSystem = new ChartPainterSystem(scene);
-        scene->AddSystem(chartPainterSystem, 0, Scene::SCENE_SYSTEM_REQUIRE_PROCESS);
+        scene->AddSystem(chartPainterSystem, MAKE_COMPONENT_MASK(OverdrawTesterComonent::OVERDRAW_TESTER_COMPONENT), Scene::SCENE_SYSTEM_REQUIRE_PROCESS);
 
         ScopedPtr<Camera> camera(new Camera());
 

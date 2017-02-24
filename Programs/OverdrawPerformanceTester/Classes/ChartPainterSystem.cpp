@@ -1,6 +1,7 @@
 #include "ChartPainterSystem.h"
 
 #include "FrameData.h"
+#include "OverdrawTesterComponent.h"
 
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/rhi/dbg_Draw.h"
@@ -24,10 +25,8 @@ const float32 ChartPainterSystem::chartLen = 0.8f;
 const float32 ChartPainterSystem::maxFrametime = 1.0f;
 const float32 ChartPainterSystem::minFrametime = 1.0f / 60.0f;
 const float32 ChartPainterSystem::frametimeAxisLen = maxFrametime - minFrametime;
-const float32 ChartPainterSystem::maxOverdraw = 1000.0f;
 const float32 ChartPainterSystem::overdrawStep = 100.0f;
 const float32 ChartPainterSystem::frametimeStep = 0.016f;
-const float32 ChartPainterSystem::overdrawStepCount = maxOverdraw / overdrawStep;
 const float32 ChartPainterSystem::frametimeStepCount = frametimeAxisLen / frametimeStep;
 const uint32 ChartPainterSystem::modsCount = 6;
 
@@ -67,6 +66,17 @@ ChartPainterSystem::ChartPainterSystem(Scene* scene)
 ChartPainterSystem::~ChartPainterSystem()
 {
 }
+
+void ChartPainterSystem::AddEntity(DAVA::Entity* entity)
+{
+    OverdrawTesterComonent* comp = static_cast<OverdrawTesterComonent*>(entity->GetComponent(OverdrawTesterComonent::OVERDRAW_TESTER_COMPONENT));
+    if (comp != nullptr)
+    {
+        maxOverdraw = comp->GetStepOverdraw() * comp->GetStepsCount();
+        overdrawStepCount = maxOverdraw / overdrawStep;
+    }
+}
+
 
 void ChartPainterSystem::Process(float32 timeElapsed)
 {

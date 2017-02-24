@@ -1,6 +1,7 @@
 #include "OverdrawTesterSystem.h"
 
 #include <random>
+#include <numeric>
 
 #include "OverdrawTesterComponent.h"
 #include "OverdrawTesterRenderObject.h"
@@ -52,6 +53,7 @@ const Array<FastName, 4> OverdrawTesterSystem::textureNames =
 } };
 
 const FastName OverdrawTesterSystem::materialPath("~res:/CustomMaterials/OverdrawTester.material");
+const uint32 OverdrawTesterSystem::accumulatedFramesCount = 20;
 
 OverdrawTesterSystem::OverdrawTesterSystem(DAVA::Scene* scene, DAVA::Function<void(DAVA::Array<DAVA::Vector<FrameData>, 6>*)> finishCallback_)
     : SceneSystem(scene), finishCallback(finishCallback_)
@@ -115,14 +117,17 @@ void OverdrawTesterSystem::Process(DAVA::float32 timeElapsed)
     static float32 time = 0;
 
     static int32 framesDrawn = 0;
+    frames[framesDrawn] = DAVA::SystemTimer::GetRealFrameDelta();
     framesDrawn++;
-
-    time += timeElapsed;
-    if (time >= increasePercentTime)
+    
+//     time += timeElapsed;
+    if (framesDrawn == accumulatedFramesCount)
     {
-        performanceData[textureSampleCount].push_back({ DAVA::SystemTimer::GetRealFrameDelta(), GetCurrentOverdraw() });
+        float32 smoothFrametime = std::accumulate(frames.begin(), frames.end(), 0.0f) / 20.0f;
+        performanceData[textureSampleCount].push_back({ smoothFrametime, GetCurrentOverdraw() });
         currentStepsCount++;
         time -= increasePercentTime;
+        framesDrawn = 0;
     }
 
     if (currentStepsCount > maxStepsCount)

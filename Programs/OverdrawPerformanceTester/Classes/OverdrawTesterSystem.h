@@ -31,8 +31,6 @@ public:
     void AddEntity(DAVA::Entity* entity) override;
     void RemoveEntity(DAVA::Entity* entity) override;
 
-    DAVA::WideString GetInfoString();
-
     virtual void Process(DAVA::float32 timeElapsed) override;
 
     inline DAVA::float32 GetCurrentOverdraw() const;
@@ -60,9 +58,11 @@ private:
     
     bool isFinished = false;
 
+    DAVA::Array<DAVA::float32, 20> frames;
     static const DAVA::Array<DAVA::FastName, 5> keywords;
     static const DAVA::Array<DAVA::FastName, 4> textureNames;
     static const DAVA::FastName materialPath;
+    static const DAVA::uint32 accumulatedFramesCount;
 };
 
 DAVA::float32 OverdrawTesterSystem::GetCurrentOverdraw() const
