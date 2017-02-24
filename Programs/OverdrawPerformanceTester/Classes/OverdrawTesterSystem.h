@@ -52,14 +52,14 @@ private:
     DAVA::uint32 textureSampleCount = 0;
     DAVA::float32 overdrawPercent = 10.0f;
     DAVA::float32 increasePercentTime = 0.05f;
-    DAVA::float32 oneStepFrameCount = 20.0f;
 
     DAVA::NMaterial* overdrawMaterial;
+    DAVA::Array<DAVA::float32, 20> frames;
     
     bool isFinished = false;
 
-    DAVA::Array<DAVA::float32, 20> frames;
     static const DAVA::Array<DAVA::FastName, 4> textureNames;
+    static const DAVA::uint8 maxTexturesCount;
     static const DAVA::FastName materialPath;
     static const DAVA::FastName sampleCountKeyword;
     static const DAVA::FastName dependentReadKeyword;

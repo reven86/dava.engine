@@ -152,7 +152,7 @@ void ChartPainterSystem::DrawCharts(int32 w, int32 h)
                 continue;
 
             float32 overdraw = (*performanceData)[i][j].Overdraw;
-            float32 fps = static_cast<float32>((*performanceData)[i][j].FPS) - minFrametime;
+            float32 fps = static_cast<float32>((*performanceData)[i][j].FrameTime) - minFrametime;
 
             float32 normalizedFps = fps / frametimeAxisLen;
             float32 normalizedOverdraw = overdraw / maxOverdraw;
@@ -231,9 +231,9 @@ void ChartPainterSystem::ProcessPerformanceData(Array<Vector<FrameData>, 6>* per
         frametimes[i] = (*std::max_element(begin, currVector.end(),
             [](const FrameData& f1, const FrameData& f2)
             {
-                return f1.FPS < f2.FPS;
+                return f1.FrameTime < f2.FrameTime;
             }
-            )).FPS;
+            )).FrameTime;
     }
     maxFrametime = *std::max_element(frametimes.begin(), frametimes.end());
     frametimeAxisLen = maxFrametime - minFrametime;
