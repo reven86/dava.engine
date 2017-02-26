@@ -5,9 +5,20 @@
 #include "Scene3D/Scene.h"
 #include "FileSystem/KeyedArchive.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
+#include "Reflection/ReflectionRegistrator.h"
+#include "Reflection/ReflectedMeta.h"
 
 namespace DAVA
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(WindComponent)
+{
+    ReflectionRegistrator<WindComponent>::Begin()
+    .Field("influenceBbox", &WindComponent::GetInfluenceBBox, &WindComponent::SetInfluenceBBox)[M::DisplayName("Influence Bounding Box")]
+    .Field("windForce", &WindComponent::GetWindForce, &WindComponent::SetWindForce)[M::DisplayName("Wind force")]
+    .Field("windSpeed", &WindComponent::GetWindSpeed, &WindComponent::SetWindSpeed)[M::DisplayName("Wind speed")]
+    .End();
+}
+
 WindComponent::WindComponent()
     : influenceBbox(Vector3(), 10000.f)
     , windForce(1.f)

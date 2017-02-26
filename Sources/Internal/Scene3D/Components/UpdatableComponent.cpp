@@ -2,9 +2,18 @@
 #include "Scene3D/Systems/UpdateSystem.h"
 #include "Scene3D/Entity.h"
 #include "Scene3D/Scene.h"
+#include "Reflection/ReflectionRegistrator.h"
+#include "Reflection/ReflectedMeta.h"
 
 namespace DAVA
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(UpdatableComponent)
+{
+    ReflectionRegistrator<UpdatableComponent>::Begin()
+    .Field("updatableObject", &UpdatableComponent::updatableObject)[M::HiddenField()]
+    .End();
+}
+
 UpdatableComponent::UpdatableComponent()
     : updatableObject(0)
 {

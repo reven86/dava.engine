@@ -24,7 +24,10 @@ void DefaultChildCheatorExtension::ExposeChildren(const std::shared_ptr<const Pr
         Vector<Reflection::Field> fields = node->field.ref.GetFields();
         for (Reflection::Field& field : fields)
         {
-            children.push_back(allocator->CreatePropertyNode(std::move(field), PropertyNode::RealProperty));
+            if (field.ref.HasMeta<M::HiddenField>() == false)
+            {
+                children.push_back(allocator->CreatePropertyNode(std::move(field), PropertyNode::RealProperty));
+            }
         }
     }
 

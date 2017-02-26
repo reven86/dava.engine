@@ -102,6 +102,13 @@ bool BaseComponentValue::EditorEvent(QEvent* event, const QStyleOptionViewItem& 
 
 QString BaseComponentValue::GetPropertyName() const
 {
+    const Reflection& r = nodes.front()->field.ref;
+    const M::DisplayName* displayName = r.GetMeta<M::DisplayName>();
+    if (displayName != nullptr)
+    {
+        return QString::fromStdString(displayName->displayName);
+    }
+
     return nodes.front()->field.key.Cast<QString>();
 }
 

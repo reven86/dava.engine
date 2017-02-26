@@ -1,8 +1,7 @@
-#ifndef __DAVAENGINE_ACTION_COMPONENT_H__
-#define __DAVAENGINE_ACTION_COMPONENT_H__
-
+#pragma once
 
 #include "Entity/Component.h"
+#include "Reflection/Reflection.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
 
 namespace DAVA
@@ -63,10 +62,14 @@ public:
         {
         }
 
+        bool operator==(const Action& other) const;
+
         void actualizeDelay();
 
         INTROSPECTION(Action,
                       NULL);
+
+        DAVA_VIRTUAL_REFLECTION(Action, InspBase);
     };
 
 protected:
@@ -135,8 +138,12 @@ private:
             action = srcAction;
         }
 
+        bool operator==(const ActionContainer& container) const;
+
         INTROSPECTION(ActionContainer,
                       NULL);
+
+        //DAVA_VIRTUAL_REFLECTION(ActionContainer, InspBase);
     };
 
     Vector<ActionComponent::ActionContainer> actions;
@@ -147,7 +154,7 @@ public:
     INTROSPECTION_EXTEND(ActionComponent, Component,
                          COLLECTION(actions, "Actions Array", I_VIEW | I_EDIT)
                          );
-};
-};
 
-#endif /* defined(__DAVAENGINE_ACTION_COMPONENT_H__) */
+    DAVA_VIRTUAL_REFLECTION(ActionComponent, Component);
+};
+};

@@ -1,8 +1,16 @@
 #include "Scene3D/Components/UserComponent.h"
 #include "Scene3D/Entity.h"
+#include "Reflection/ReflectionRegistrator.h"
+#include "Reflection/ReflectedMeta.h"
 
 namespace DAVA
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(UserComponent)
+{
+    ReflectionRegistrator<UserComponent>::Begin()
+    .End();
+}
+
 UserComponent::UserComponent()
 {
 }

@@ -4,9 +4,41 @@
 #include "Scene3D/Scene.h"
 #include "Scene3D/SceneFileV2.h"
 #include "Render/Renderer.h"
+#include "Reflection/ReflectionRegistrator.h"
+#include "Reflection/ReflectedMeta.h"
+#include "Base/GlobalEnum.h"
+
+ENUM_DECLARE(DAVA::Camera::eFlags)
+{
+    ENUM_ADD_DESCR(DAVA::Camera::REQUIRE_REBUILD, "Require rebuild");
+    ENUM_ADD_DESCR(DAVA::Camera::REQUIRE_REBUILD_MODEL, "Require rebuild model");
+    ENUM_ADD_DESCR(DAVA::Camera::REQUIRE_REBUILD_PROJECTION, "Require rebuild projection");
+    ENUM_ADD_DESCR(DAVA::Camera::REQUIRE_REBUILD_UNIFORM_PROJ_MODEL, "Require rebuild uniform projection model");
+}
 
 namespace DAVA
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(Camera)
+{
+    ReflectionRegistrator<Camera>::Begin()
+    .Field("aspect", &Camera::GetAspect, &Camera::SetAspect)[M::DisplayName("Aspect")]
+    .Field("znear", &Camera::GetZNear, &Camera::SetZNear)[M::DisplayName("Near plane")]
+    .Field("zfar", &Camera::GetZFar, &Camera::SetZFar)[M::DisplayName("Far plane")]
+    .Field("fovx", &Camera::GetFOV, &Camera::SetFOV)[M::DisplayName("FovX")]
+    .Field("ortho", &Camera::GetIsOrtho, &Camera::SetIsOrtho)[M::DisplayName("Is Ortho")]
+    .Field("orthoWidth", &Camera::GetOrthoWidth, &Camera::SetOrthoWidth)[M::DisplayName("Ortho Width")]
+    .Field("position", &Camera::GetPosition, &Camera::SetPosition)[M::DisplayName("Position")]
+    .Field("target", &Camera::GetTarget, &Camera::SetTarget)[M::DisplayName("Target")]
+    .Field("up", &Camera::GetUp, &Camera::SetUp)[M::DisplayName("Up")]
+    .Field("left", &Camera::GetLeft, &Camera::SetLeft)[M::DisplayName("Left")]
+    .Field("direction", &Camera::direction)[M::DisplayName("Direction")]
+    .Field("flags", &Camera::flags)[M::DisplayName("Flags"), M::FlagsT<DAVA::Camera::eFlags>()]
+    .Field("cameraTransform", &Camera::cameraTransform)[M::DisplayName("Transform")]
+    .Field("viewMatrix", &Camera::viewMatrix)[M::DisplayName("View")]
+    .Field("projMatrix", &Camera::projMatrix)[M::DisplayName("Projection")]
+    .End();
+}
+
 Camera::Camera()
     : orthoWidth(35.f)
 {

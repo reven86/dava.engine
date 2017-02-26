@@ -6,6 +6,33 @@
 
 namespace DAVA
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(PathComponent::Waypoint)
+{
+    ReflectionRegistrator<PathComponent::Waypoint>::Begin()
+    .Field("name", &PathComponent::Waypoint::name)[M::DisplayName("Name")]
+    .Field("waypointPosition", &PathComponent::Waypoint::position)[M::DisplayName("Waypoint position")]
+    .Field("waypointProperties", &PathComponent::Waypoint::properties)[M::DisplayName("Waypoint Properties")]
+    .Field("edge", &PathComponent::Waypoint::edges)[M::DisplayName("Edge")]
+    .End();
+}
+
+DAVA_VIRTUAL_REFLECTION_IMPL(PathComponent::Edge)
+{
+    ReflectionRegistrator<PathComponent::Edge>::Begin()
+    .Field("destinationName", &PathComponent::Edge::GetDestinationName, &PathComponent::Edge::SetDestinationName)[M::ReadOnly(), M::DisplayName("Destination Name")]
+    .Field("destinationPoint", &PathComponent::Edge::GetDestinationPoint, &PathComponent::Edge::SetDestinationPoint)[M::ReadOnly(), M::DisplayName("Destination Point")]
+    .Field("properties", &PathComponent::Edge::properties)[M::DisplayName("Edge Properties")]
+    .End();
+}
+
+DAVA_VIRTUAL_REFLECTION_IMPL(PathComponent)
+{
+    ReflectionRegistrator<PathComponent>::Begin()
+    .Field("name", &PathComponent::name)[M::DisplayName("Name")]
+    .Field("color", &PathComponent::color)[M::DisplayName("Color")]
+    .End();
+}
+
 //== Waypoint ==
 PathComponent::Waypoint::Waypoint()
 {

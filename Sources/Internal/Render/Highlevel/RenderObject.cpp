@@ -1,12 +1,73 @@
 #include "Render/Highlevel/RenderObject.h"
 #include "Base/ObjectFactory.h"
+#include "Base/GlobalEnum.h"
 #include "Debug/DVAssert.h"
 #include "Utils/Utils.h"
 #include "Utils/StringFormat.h"
 #include "Render/Renderer.h"
+#include "Reflection/ReflectionRegistrator.h"
+#include "Reflection/ReflectedMeta.h"
+
+ENUM_DECLARE(DAVA::RenderObject::eType)
+{
+    ENUM_ADD_DESCR(DAVA::RenderObject::eType::TYPE_RENDEROBJECT, "Render Object");
+    ENUM_ADD_DESCR(DAVA::RenderObject::eType::TYPE_MESH, "Mesh");
+    ENUM_ADD_DESCR(DAVA::RenderObject::eType::TYPE_SKINNED_MESH, "Skinned mesh");
+    ENUM_ADD_DESCR(DAVA::RenderObject::eType::TYPE_LANDSCAPE, "Landscape");
+    ENUM_ADD_DESCR(DAVA::RenderObject::eType::TYPE_CUSTOM_DRAW, "Custom draw");
+    ENUM_ADD_DESCR(DAVA::RenderObject::eType::TYPE_SPRITE, "Sprite");
+    ENUM_ADD_DESCR(DAVA::RenderObject::eType::TYPE_PARTICLE_EMITTER, "Particle emitter");
+    ENUM_ADD_DESCR(DAVA::RenderObject::eType::TYPE__DELETED__SKYBOX, "Deleted skybox");
+    ENUM_ADD_DESCR(DAVA::RenderObject::eType::TYPE_VEGETATION, "Vegetation");
+    ENUM_ADD_DESCR(DAVA::RenderObject::eType::TYPE_SPEED_TREE, "Speed tree");
+    ENUM_ADD_DESCR(DAVA::RenderObject::eType::TYPE_BILLBOARD, "Billboard");
+}
+
+ENUM_DECLARE(DAVA::RenderObject::eFlags)
+{
+    ENUM_ADD_DESCR(DAVA::RenderObject::eFlags::VISIBLE, "Visible");
+    ENUM_ADD_DESCR(DAVA::RenderObject::eFlags::ALWAYS_CLIPPING_VISIBLE, "Always clipping visible");
+    ENUM_ADD_DESCR(DAVA::RenderObject::eFlags::VISIBLE_STATIC_OCCLUSION, "Visible static occlusion");
+    ENUM_ADD_DESCR(DAVA::RenderObject::eFlags::TREE_NODE_NEED_UPDATE, "Tree node need update");
+    ENUM_ADD_DESCR(DAVA::RenderObject::eFlags::NEED_UPDATE, "Need update");
+    ENUM_ADD_DESCR(DAVA::RenderObject::eFlags::MARKED_FOR_UPDATE, "Marked for update");
+    ENUM_ADD_DESCR(DAVA::RenderObject::eFlags::CUSTOM_PREPARE_TO_RENDER, "Custom prepare to render");
+    ENUM_ADD_DESCR(DAVA::RenderObject::eFlags::VISIBLE_REFLECTION, "Visible reflection");
+    ENUM_ADD_DESCR(DAVA::RenderObject::eFlags::VISIBLE_REFRACTION, "Visible refraction");
+    ENUM_ADD_DESCR(DAVA::RenderObject::eFlags::VISIBLE_QUALITY, "Visible quality");
+    ENUM_ADD_DESCR(DAVA::RenderObject::eFlags::TRANSFORM_UPDATED, "Transform updated");
+}
 
 namespace DAVA
 {
+//DAVA_VIRTUAL_REFLECTION_IMPL(RenderObject::IndexedRenderBatch)
+//{
+//    ReflectionRegistrator<IndexedRenderBatch>::Begin()
+//        .Field("renderBatch", &IndexedRenderBatch::renderBatch)[M::DisplayName("Render batch")]
+//        .Field("lodIndex", &IndexedRenderBatch::lodIndex)[M::DisplayName("LOD index")]
+//        .Field("switchIndex", &IndexedRenderBatch::switchIndex)[M::DisplayName("Switch index")]
+//        .End();
+//}
+
+DAVA_VIRTUAL_REFLECTION_IMPL(RenderObject)
+{
+    ReflectionRegistrator<RenderObject>::Begin()
+    .Field("type", &RenderObject::type)[M::DisplayName("Type"), M::EnumT<RenderObject::eType>()]
+    .Field("flags", &RenderObject::flags)[M::DisplayName("Flags"), M::FlagsT<RenderObject::eFlags>()]
+    .Field("debugFlags", &RenderObject::debugFlags)[M::DisplayName("Debug flags")]
+    .Field("removeIndex", &RenderObject::removeIndex)[M::HiddenField()]
+    .Field("bbox", &RenderObject::bbox)[M::DisplayName("Bounding box")]
+    .Field("worldBBox", &RenderObject::worldBBox)[M::DisplayName("World Bounding box")]
+    .Field("worldTransform", &RenderObject::worldTransform)[M::DisplayName("World Transform")]
+    .Field("lodIndex", &RenderObject::GetLodIndex, &RenderObject::SetLodIndex)[M::DisplayName("LOD index")]
+    .Field("switchIndex", &RenderObject::GetSwitchIndex, &RenderObject::SetSwitchIndex)[M::DisplayName("Switch index")]
+    .Field("visibleReflection", &RenderObject::GetReflectionVisible, &RenderObject::SetReflectionVisible)[M::DisplayName("Visible reflection")]
+    .Field("visibleRefraction", &RenderObject::GetRefractionVisible, &RenderObject::SetRefractionVisible)[M::DisplayName("Visible refraction")]
+    .Field("renderBatchArray", &RenderObject::renderBatchArray)[M::DisplayName("Render batches")]
+    .Field("activeRenderBatchArray", &RenderObject::activeRenderBatchArray)[M::DisplayName("Active render batches"), M::ReadOnly()]
+    .End();
+}
+
 RenderObject::RenderObject()
 {
     lights[0] = NULL;
@@ -421,5 +482,12 @@ void RenderObject::GetDataNodes(Set<DataNode*>& dataNodes)
 {
     for (IndexedRenderBatch& batch : renderBatchArray)
         batch.renderBatch->GetDataNodes(dataNodes);
+}
+
+bool RenderObject::IndexedRenderBatch::operator==(const IndexedRenderBatch& other) const
+{
+    return renderBatch == other.renderBatch &&
+    lodIndex == other.lodIndex &&
+    switchIndex == other.switchIndex;
 }
 };
