@@ -60,6 +60,9 @@ OverdrawTesterSystem::OverdrawTesterSystem(DAVA::Scene* scene, DAVA::Function<vo
     overdrawMaterial->AddFlag(FastName("SAMPLE_COUNT"), 0);
     overdrawMaterial->PreBuildMaterial(DAVA::PASS_FORWARD);
 
+    if (texureFormat == DAVA::FORMAT_A8)
+        overdrawMaterial->AddFlag(FastName("ALPHA8"), 1);
+
     std::mt19937 rng;
     rng.seed(std::random_device()());
     std::uniform_int_distribution<std::mt19937::result_type> dist255(1, 255);
@@ -117,7 +120,6 @@ void OverdrawTesterSystem::Process(DAVA::float32 timeElapsed)
     frames[framesDrawn] = DAVA::SystemTimer::GetRealFrameDelta();
     framesDrawn++;
 
-    //     time += timeElapsed;
     if (framesDrawn == accumulatedFramesCount)
     {
         float32 smoothFrametime = std::accumulate(frames.begin(), frames.end(), 0.0f) / frames.size();
