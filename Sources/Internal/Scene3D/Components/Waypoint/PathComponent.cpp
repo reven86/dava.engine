@@ -3,25 +3,27 @@
 #include "Scene3D/Entity.h"
 #include "Scene3D/SceneFile/VersionInfo.h"
 #include "Utils/StringFormat.h"
+#include "Reflection/ReflectionRegistrator.h"
+#include "Reflection/ReflectedMeta.h"
 
 namespace DAVA
 {
 DAVA_VIRTUAL_REFLECTION_IMPL(PathComponent::Waypoint)
 {
-    ReflectionRegistrator<PathComponent::Waypoint>::Begin()
-    .Field("name", &PathComponent::Waypoint::name)[M::DisplayName("Name")]
-    .Field("waypointPosition", &PathComponent::Waypoint::position)[M::DisplayName("Waypoint position")]
-    .Field("waypointProperties", &PathComponent::Waypoint::properties)[M::DisplayName("Waypoint Properties")]
-    .Field("edge", &PathComponent::Waypoint::edges)[M::DisplayName("Edge")]
+    ReflectionRegistrator<Waypoint>::Begin()
+    .Field("name", &Waypoint::name)[M::DisplayName("Name")]
+    .Field("waypointPosition", &Waypoint::position)[M::DisplayName("Waypoint position")]
+    .Field("waypointProperties", &Waypoint::properties)[M::DisplayName("Waypoint Properties")]
+    .Field("edge", &Waypoint::edges)[M::DisplayName("Edge")]
     .End();
 }
 
 DAVA_VIRTUAL_REFLECTION_IMPL(PathComponent::Edge)
 {
-    ReflectionRegistrator<PathComponent::Edge>::Begin()
-    .Field("destinationName", &PathComponent::Edge::GetDestinationName, &PathComponent::Edge::SetDestinationName)[M::ReadOnly(), M::DisplayName("Destination Name")]
-    .Field("destinationPoint", &PathComponent::Edge::GetDestinationPoint, &PathComponent::Edge::SetDestinationPoint)[M::ReadOnly(), M::DisplayName("Destination Point")]
-    .Field("properties", &PathComponent::Edge::properties)[M::DisplayName("Edge Properties")]
+    ReflectionRegistrator<Edge>::Begin()
+    .Field("destinationName", &Edge::GetDestinationName, &PathComponent::Edge::SetDestinationName)[M::ReadOnly(), M::DisplayName("Destination Name")]
+    .Field("destinationPoint", &Edge::GetDestinationPoint, &PathComponent::Edge::SetDestinationPoint)[M::ReadOnly(), M::DisplayName("Destination Point")]
+    .Field("properties", &Edge::properties)[M::DisplayName("Edge Properties")]
     .End();
 }
 

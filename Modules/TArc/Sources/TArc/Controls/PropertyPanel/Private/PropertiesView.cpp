@@ -42,7 +42,8 @@ PropertiesView::PropertiesView(ContextAccessor* accessor_, const FieldDescriptor
 
 PropertiesView::~PropertiesView()
 {
-    model->SaveExpanded(accessor->CreatePropertiesNode(settingsNodeName).CreateSubHolder("expandedList"));
+    PropertiesItem item = accessor->CreatePropertiesNode(settingsNodeName).CreateSubHolder("expandedList");
+    model->SaveExpanded(item);
 }
 
 void PropertiesView::RegisterExtension(const std::shared_ptr<ExtensionChain>& extension)
