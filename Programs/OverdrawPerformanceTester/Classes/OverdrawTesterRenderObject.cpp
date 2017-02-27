@@ -101,10 +101,10 @@ DAVA::Array<OverdrawTesterRenderObject::QuadVertex, 6> OverdrawTesterRenderObjec
 {
     return
     { {
-    { { xStart, -1.0f, 1.0f }, { 0.0f, 0.0f } },
-    { { xStart, 1.0f, 1.0f }, { 0.0f, 1.0f } },
-    { { xEnd, 1.0f, 1.0f }, { 1.0f, 1.0f } },
-    { { xEnd, -1.0f, 1.0f }, { 1.0f, 0.0f } }
+    { { xStart, -1.0f, 1.0f }, { xStart * 0.5f + 0.5f, 0.0f } },
+    { { xStart, 1.0f, 1.0f }, { xStart * 0.5f + 0.5f, 1.0f } },
+    { { xEnd, 1.0f, 1.0f }, { xEnd * 0.5f + 0.5f, 1.0f } },
+    { { xEnd, -1.0f, 1.0f }, { xEnd * 0.5f + 0.5f, 0.0f } }
     } };
 }
 
