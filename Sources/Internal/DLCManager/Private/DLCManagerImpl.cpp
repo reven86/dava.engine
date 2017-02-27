@@ -773,7 +773,8 @@ bool DLCManagerImpl::IsPackDownloaded(const String& packName)
 {
     if (!IsInitialized())
     {
-        DAVA_THROW(Exception, "Initialization not finished. Files is scanning now.");
+        Logger::Error("%s", "Initialization not finished. Files is scanning now.");
+        return false;
     }
 
     // check every file in requested pack and all it's dependencies

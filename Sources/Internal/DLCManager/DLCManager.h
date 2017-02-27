@@ -96,7 +96,7 @@ public:
     virtual bool IsRequestingEnabled() const = 0;
 
     /** After initialization finished you can check
-		if specified pack already downloaded. <b>Fire exception if
+		if specified pack already downloaded. <b>return false if
 		initialization not finished!</b>
 	*/
     virtual bool IsPackDownloaded(const String& packName) = 0;
