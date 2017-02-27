@@ -6,7 +6,7 @@
 namespace DAVA
 {
 class UIControl;
-class UISizePositionComponent;
+class UILayoutSourceRectComponent;
 }
 
 class IntrospectionProperty : public ValueProperty
@@ -43,12 +43,13 @@ public:
 protected:
     void ApplyValue(const DAVA::VariantType& value) override;
 
-protected:
     DAVA::BaseObject* object;
     const DAVA::InspMember* member;
     DAVA::int32 flags;
-    
-    DAVA::RefPtr<DAVA::UISizePositionComponent> sizePositionComponent;
+
+private:
+    void SetLayoutSourceRectValue(const DAVA::VariantType& value);
+    DAVA::RefPtr<DAVA::UILayoutSourceRectComponent> sourceRectComponent;
 };
 
 #endif //__UI_EDITOR_INTROSPECTION_PROPERTY__

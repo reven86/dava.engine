@@ -7,7 +7,7 @@
 #include "PropertyVisitor.h"
 #include "SubValueProperty.h"
 #include <Base/BaseMath.h>
-#include <UI/Layouts/UISizePositionComponent.h>
+#include <UI/Layouts/UILayoutSourceRectComponent.h>
 #include <UI/Styles/UIStyleSheetPropertyDataBase.h>
 #include <UI/UIControl.h>
 
@@ -50,25 +50,12 @@ IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject* anObject, const D
     {
         SetDefaultValue(member->Value(object));
     }
-    
+
     if (member->Name() == INTROSPECTION_PROPERTY_NAME_SIZE || member->Name() == INTROSPECTION_PROPERTY_NAME_POSITION)
     {
-        UIControl *control = DynamicTypeCheck<UIControl*>(anObject);
-        sizePositionComponent = control->GetOrCreateComponent<UISizePositionComponent>();
-        VariantType value = member->Value(anObject);
-        if (member->Name() == INTROSPECTION_PROPERTY_NAME_SIZE)
-        {
-            sizePositionComponent->SetSize(value.AsVector2());
-        }
-        else if (member->Name() == INTROSPECTION_PROPERTY_NAME_POSITION)
-        {
-            sizePositionComponent->SetPosition(value.AsVector2());
-        }
-        else
-        {
-            DVASSERT(false);
-        }
-
+        UIControl* control = DynamicTypeCheck<UIControl*>(anObject);
+        sourceRectComponent = control->GetOrCreateComponent<UILayoutSourceRectComponent>();
+        SetLayoutSourceRectValue(member->Value(anObject));
     }
 }
 
@@ -129,19 +116,25 @@ void IntrospectionProperty::ApplyValue(const DAVA::VariantType& value)
 {
     member->SetValue(object, value);
 
-    if (sizePositionComponent.Valid())
+    if (sourceRectComponent.Valid())
     {
-        if (member->Name() == INTROSPECTION_PROPERTY_NAME_SIZE)
-        {
-            sizePositionComponent->SetSize(value.AsVector2());
-        }
-        else if (member->Name() == INTROSPECTION_PROPERTY_NAME_POSITION)
-        {
-            sizePositionComponent->SetPosition(value.AsVector2());
-        }
-        else
-        {
-            DVASSERT(false);
-        }
+        SetLayoutSourceRectValue(value);
+    }
+}
+
+void IntrospectionProperty::SetLayoutSourceRectValue(const DAVA::VariantType& value)
+{
+    DVASSERT(sourceRectComponent.Valid());
+    if (member->Name() == INTROSPECTION_PROPERTY_NAME_SIZE)
+    {
+        sourceRectComponent->SetSize(value.AsVector2());
+    }
+    else if (member->Name() == INTROSPECTION_PROPERTY_NAME_POSITION)
+    {
+        sourceRectComponent->SetPosition(value.AsVector2());
+    }
+    else
+    {
+        DVASSERT(false);
     }
 }

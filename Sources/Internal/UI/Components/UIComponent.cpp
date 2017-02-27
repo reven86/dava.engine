@@ -1,13 +1,13 @@
 #include "UIComponent.h"
 #include "UI/UIControl.h"
 
-#include "UI/Layouts/UISizePositionComponent.h"
 #include "UI/Layouts/UILinearLayoutComponent.h"
 #include "UI/Layouts/UIFlowLayoutComponent.h"
 #include "UI/Layouts/UIFlowLayoutHintComponent.h"
 #include "UI/Layouts/UIIgnoreLayoutComponent.h"
 #include "UI/Layouts/UISizePolicyComponent.h"
 #include "UI/Layouts/UIAnchorComponent.h"
+#include "UI/Layouts/UILayoutSourceRectComponent.h"
 #include "UI/Input/UIModalInputComponent.h"
 #include "UI/Focus/UIFocusComponent.h"
 #include "UI/Focus/UIFocusGroupComponent.h"
@@ -42,9 +42,6 @@ UIComponent* UIComponent::CreateByType(uint32 componentType)
 {
     switch (componentType)
     {
-    case SIZE_POSITION_COMPONENT:
-        return new UISizePositionComponent();
-            
     case LINEAR_LAYOUT_COMPONENT:
         return new UILinearLayoutComponent();
 
@@ -63,9 +60,12 @@ UIComponent* UIComponent::CreateByType(uint32 componentType)
     case ANCHOR_COMPONENT:
         return new UIAnchorComponent();
 
+    case LAYOUT_SOURCE_RECT_COMPONENT:
+        return new UILayoutSourceRectComponent();
+
     case BACKGROUND_COMPONENT:
         return new UIControlBackground();
-        
+
     case MODAL_INPUT_COMPONENT:
         return new UIModalInputComponent();
 

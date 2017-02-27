@@ -195,7 +195,7 @@ QAction* PropertiesWidget::CreateAddComponentAction()
     QMenu* addComponentMenu = new QMenu(this);
     for (int32 i = 0; i < UIComponent::COMPONENT_COUNT; i++)
     {
-        if (i != UIComponent::SIZE_POSITION_COMPONENT)
+        if (i != UIComponent::LAYOUT_SOURCE_RECT_COMPONENT)
         {
             const char* name = GlobalEnumMap<UIComponent::eType>::Instance()->ToString(i);
             QAction* componentAction = new QAction(name, this); // TODO: Localize name

@@ -206,7 +206,7 @@ void PackageNode::RefreshProperty(ControlNode* node, AbstractProperty* property)
     if (property->GetStylePropertyIndex() != -1)
         node->GetControl()->SetPropertyLocalFlag(property->GetStylePropertyIndex(), property->IsOverridden());
     node->GetControl()->SetStyleSheetDirty();
-    
+
     node->GetRootProperty()->RefreshProperty(property, AbstractProperty::REFRESH_DEFAULT_VALUE | AbstractProperty::REFRESH_LOCALIZATION | AbstractProperty::REFRESH_FONT);
 
     RefreshPropertiesInInstances(node, property);

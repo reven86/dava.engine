@@ -3,19 +3,19 @@
 #include "UI/UIControl.h"
 #include "UI/Components/UIComponent.h"
 #include "UI/Layouts/UIIgnoreLayoutComponent.h"
-#include "UI/Layouts/UISizePositionComponent.h"
+#include "UI/Layouts/UILayoutSourceRectComponent.h"
 
 namespace DAVA
 {
 ControlLayoutData::ControlLayoutData(UIControl* control_)
     : control(control_)
 {
-    UISizePositionComponent *sizePositionComponent = control->GetComponent<UISizePositionComponent>();
-    
-    if (sizePositionComponent != nullptr)
+    UILayoutSourceRectComponent* sourceRectComponent = control->GetComponent<UILayoutSourceRectComponent>();
+
+    if (sourceRectComponent != nullptr)
     {
-        position = sizePositionComponent->GetPosition() - control->GetPivotPoint();
-        size = sizePositionComponent->GetSize();
+        position = sourceRectComponent->GetPosition() - control->GetPivotPoint();
+        size = sourceRectComponent->GetSize();
     }
     else
     {
@@ -26,9 +26,15 @@ ControlLayoutData::ControlLayoutData(UIControl* control_)
 
 void ControlLayoutData::ApplyLayoutToControl()
 {
+    UILayoutSourceRectComponent* sourceRectComponent = control->GetComponent<UILayoutSourceRectComponent>();
     if (HasFlag(FLAG_SIZE_CHANGED))
     {
         control->SetSize(size);
+        control->OnSizeChanged();
+    }
+    else if (sourceRectComponent)
+    {
+        control->SetSize(sourceRectComponent->GetSize());
         control->OnSizeChanged();
     }
 
@@ -36,15 +42,24 @@ void ControlLayoutData::ApplyLayoutToControl()
     {
         control->SetPosition(position + control->GetPivotPoint());
     }
+    else if (sourceRectComponent != nullptr)
+    {
+        control->SetPosition(sourceRectComponent->GetPosition() + control->GetPivotPoint());
+    }
 
     control->ResetLayoutDirty();
 }
 
 void ControlLayoutData::ApplyOnlyPositionLayoutToControl()
 {
+    UILayoutSourceRectComponent* sourceRectComponent = control->GetComponent<UILayoutSourceRectComponent>();
     if (HasFlag(FLAG_POSITION_CHANGED))
     {
         control->SetPosition(position + control->GetPivotPoint());
+    }
+    else if (sourceRectComponent != nullptr)
+    {
+        control->SetPosition(sourceRectComponent->GetPosition() + control->GetPivotPoint());
     }
 
     control->ResetLayoutPositionDirty();
