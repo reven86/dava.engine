@@ -21,7 +21,7 @@ public:
 	*/
     void Post(uint32_t count = 1);
     /**
-		Wait till semaphore becomes more then 0 and decrement with 1 it.
+		Wait till semaphore becomes more then 0 and decrement it with 1.
 	*/
     void Wait();
 

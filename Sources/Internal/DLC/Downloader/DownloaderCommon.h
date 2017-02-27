@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
 #include "FileSystem/FilePath.h"
 
@@ -200,7 +199,7 @@ protected:
     ~DataChunkInfo();
 
 public:
-    DataChunkInfo(uint32 size);
+    explicit DataChunkInfo(uint32 size);
 
     char8* buffer;
     uint32 bufferSize;

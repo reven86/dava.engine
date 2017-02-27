@@ -3,6 +3,7 @@
 #include "Time/SystemTimer.h"
 #include "Concurrency/LockGuard.h"
 #include "Logger/Logger.h"
+#include "FileSystem/File.h"
 #include "Debug/DVAssert.h"
 
 namespace DAVA

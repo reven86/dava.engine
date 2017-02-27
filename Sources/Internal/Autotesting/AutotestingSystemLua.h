@@ -139,6 +139,9 @@ public:
     String MakeScreenshot();
     bool GetIsScreenShotSaving() const;
 
+    bool RunScript(const String& luaScript);
+    bool RunScriptFromFile(const FilePath& luaFilePath);
+
 protected:
 #if !defined(SWIG)
     inline void ParsePath(const String& path, Vector<String>& parsedPath) const;
@@ -147,8 +150,6 @@ protected:
     bool LoadScriptFromFile(const FilePath& luaFilePath);
     bool RunScript();
 
-    bool RunScript(const String& luaScript);
-    bool RunScriptFromFile(const FilePath& luaFilePath);
     bool LoadWrappedLuaObjects();
 
     AutotestingSystemLuaDelegate* delegate;
