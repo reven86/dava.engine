@@ -36,7 +36,8 @@ void UIStylesTest::LoadResources()
         actions->GetActionMap().Put(FastName("MORE"), [&]() {
             for (uint32 i = 0; i < 1000; ++i)
             {
-                container->AddControl(proto->Clone());
+                RefPtr<UIControl> c(proto->Clone());
+                container->AddControl(c.Get());
             }
         });
     }
@@ -47,7 +48,8 @@ void UIStylesTest::LoadResources()
 
     for (uint32 i = 0; i < 1000; ++i)
     {
-        container->AddControl(proto->Clone());
+        RefPtr<UIControl> c(proto->Clone());
+        container->AddControl(c.Get());
     }
 
     AddControl(main);
