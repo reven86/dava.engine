@@ -167,9 +167,6 @@ public:
 
     uint8 startClippingPlane = 0;
 
-protected:
-    void UpdateActiveRenderBatches();
-
     struct IndexedRenderBatch : public InspBase
     {
         RenderBatch* renderBatch = nullptr;
@@ -183,8 +180,11 @@ protected:
                       MEMBER(lodIndex, "Lod Index", I_SAVE | I_VIEW)
                       MEMBER(switchIndex, "Switch Index", I_SAVE | I_VIEW));
 
-        //DAVA_VIRTUAL_REFLECTION(IndexedRenderBatch, InspBase);
+        DAVA_VIRTUAL_REFLECTION(IndexedRenderBatch, InspBase);
     };
+
+protected:
+    void UpdateActiveRenderBatches();
 
     static const int32 DEFAULT_RENDEROBJECT_FLAGS = eFlags::VISIBLE | eFlags::VISIBLE_STATIC_OCCLUSION | eFlags::VISIBLE_QUALITY;
     static const uint32 MAX_LIGHT_COUNT = 2;

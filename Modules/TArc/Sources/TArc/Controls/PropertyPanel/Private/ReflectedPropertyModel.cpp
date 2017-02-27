@@ -17,6 +17,7 @@ namespace ReflectedPropertyModelDetail
 std::tuple<const Type*, const ReflectedType*, const ReflectedStructure*> UnpackReflectionTypeInfo(const Reflection& r)
 {
     const Type* t = r.GetValueType();
+    const ReflectedType* refT = r.GetValueObject().GetReflectedType();
     if (t->IsPointer())
     {
         t = t->Deref();
@@ -383,6 +384,10 @@ void ReflectedPropertyModel::SetExpanded(bool expanded, const QModelIndex& index
                 field = const_cast<ReflectedStructure::Field*>(f.get());
                 break;
             }
+        }
+        if (field == nullptr)
+        {
+            return;
         }
         DVASSERT(field != nullptr);
 

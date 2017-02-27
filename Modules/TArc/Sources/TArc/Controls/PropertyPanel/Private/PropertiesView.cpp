@@ -89,12 +89,12 @@ void PropertiesView::OnObjectsChanged(const Any& objects)
 
 void PropertiesView::OnExpanded(const QModelIndex& index)
 {
-    model->SetExpanded(true, index);
+    //model->SetExpanded(true, index);
 }
 
 void PropertiesView::OnCollapsed(const QModelIndex& index)
 {
-    model->SetExpanded(false, index);
+    //model->SetExpanded(false, index);
 }
 
 } // namespace TArc

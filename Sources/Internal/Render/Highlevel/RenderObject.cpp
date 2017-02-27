@@ -40,14 +40,14 @@ ENUM_DECLARE(DAVA::RenderObject::eFlags)
 
 namespace DAVA
 {
-//DAVA_VIRTUAL_REFLECTION_IMPL(RenderObject::IndexedRenderBatch)
-//{
-//    ReflectionRegistrator<IndexedRenderBatch>::Begin()
-//        .Field("renderBatch", &IndexedRenderBatch::renderBatch)[M::DisplayName("Render batch")]
-//        .Field("lodIndex", &IndexedRenderBatch::lodIndex)[M::DisplayName("LOD index")]
-//        .Field("switchIndex", &IndexedRenderBatch::switchIndex)[M::DisplayName("Switch index")]
-//        .End();
-//}
+DAVA_VIRTUAL_REFLECTION_IMPL(RenderObject::IndexedRenderBatch)
+{
+    ReflectionRegistrator<IndexedRenderBatch>::Begin()
+    .Field("renderBatch", &IndexedRenderBatch::renderBatch)[M::DisplayName("Render batch")]
+    .Field("lodIndex", &IndexedRenderBatch::lodIndex)[M::DisplayName("LOD index")]
+    .Field("switchIndex", &IndexedRenderBatch::switchIndex)[M::DisplayName("Switch index")]
+    .End();
+}
 
 DAVA_VIRTUAL_REFLECTION_IMPL(RenderObject)
 {
