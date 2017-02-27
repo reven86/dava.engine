@@ -74,7 +74,7 @@ int DAVAMain(DAVA::Vector<DAVA::String> cmdLine)
       "NetCore"
     };
 
-    ScopedPtr<KeyedArchive> options(new KeyedArchive);
+    KeyedArchive* options = new KeyedArchive; // options will be placed into RefPtr inside of Engine
     options->SetBool("separate_net_thread", true);
 
     Engine e;

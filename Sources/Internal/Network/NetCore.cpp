@@ -1,14 +1,14 @@
-#include <Functional/Function.h>
-#include <Debug/DVAssert.h>
-#include <Network/NetCore.h>
-#include <Network/NetConfig.h>
-#include <Network/Private/NetController.h>
-#include <Network/Private/Announcer.h>
-#include <Network/Private/Discoverer.h>
-#include <Engine/Engine.h>
-#include <Base/BaseTypes.h>
-#include <FileSystem/KeyedArchive.h>
-#include <Concurrency/LockGuard.h>
+#include "Network/NetCore.h"
+#include "Network/NetConfig.h"
+#include "Network/Private/NetController.h"
+#include "Network/Private/Announcer.h"
+#include "Network/Private/Discoverer.h"
+#include "Functional/Function.h"
+#include "Debug/DVAssert.h"
+#include "Engine/Engine.h"
+#include "Base/BaseTypes.h"
+#include "FileSystem/KeyedArchive.h"
+#include "Concurrency/LockGuard.h"
 
 namespace DAVA
 {
@@ -19,9 +19,7 @@ const char8 NetCore::defaultAnnounceMulticastGroup[] = "239.192.100.1";
 #if defined(__DAVAENGINE_COREV2__)
 NetCore::NetCore(Engine* e)
     : engine(e)
-    , loop(true)
     , isFinishing(false)
-    , allStopped(false)
 {
     bool separateThreadDefaultValue = false;
     const KeyedArchive* options = e->GetOptions();
@@ -29,13 +27,18 @@ NetCore::NetCore(Engine* e)
 
     sigUpdateId = e->update.Connect(this, &NetCore::OnEngineUpdate);
 
-    NetCallbacksHolder::Mode mode = (useSeparateThread ? NetCallbacksHolder::AddInQueue : NetCallbacksHolder::ExecuteImmediately);
-    netCallbacksHolder.reset(new NetCallbacksHolder(mode));
+    netEventsDispatcher.reset(new NetEventsDispatcher([](const Function<void()>& fn) { fn(); }));
+    netEventsDispatcher->LinkToCurrentThread();
 
     if (useSeparateThread)
     {
         netThread = Thread::Create([this]() { NetThreadHandler(); });
         netThread->Start();
+    }
+    else
+    {
+        loopHolder.reset(new IOLoop(true));
+        loop = loopHolder.get();
     }
 
 #if defined(__DAVAENGINE_IPHONE__)
@@ -46,10 +49,10 @@ NetCore::NetCore(Engine* e)
 }
 #else
 NetCore::NetCore()
-    : loop(true)
     , isFinishing(false)
-    , allStopped(false)
 {
+    loopHolder->reset(new IOLoop(true));
+    loop = loopHolder.get();
 }
 #endif
 
@@ -62,40 +65,65 @@ NetCore::~NetCore()
 #endif
 #endif
 
-    DVASSERT(true == trackedObjects.empty() && true == dyingObjects.empty());
+    if (isFinishing == false && isFinished == false)
+    {
+        Finish(true);
+    }
+
+    LockGuard<Mutex> lock(trackedObjectsMutex);
+    LockGuard<Mutex> lock2(dyingObjectsMutex);
+
+    DVASSERT(true == trackedObjects.empty());
+    DVASSERT(true == dyingObjects.empty());
+    DVASSERT(true == isFinished);
+    if (netThread)
+    {
+        DVASSERT(netThread->GetState() == Thread::eThreadState::STATE_ENDED);
+    }
 }
 
 void NetCore::NetThreadHandler()
 {
-    loop.Run();
+    std::unique_ptr<IOLoop> loopHolder(new IOLoop(true));
+    loop = loopHolder.get();
+    loop->Run();
 }
 
 void NetCore::OnEngineUpdate(float32)
 {
-    if (useSeparateThread)
-        ExecPendingCallbacks();
-    else
+    DoUpdate();
+}
+
+void NetCore::DoUpdate()
+{
+    ProcessPendingEvents();
+    if (!useSeparateThread)
+    {
         Poll();
+    }
 }
 
-void NetCore::ExecPendingCallbacks()
+void NetCore::ProcessPendingEvents()
 {
-    netCallbacksHolder->ExecPendingCallbacks();
+    if (netEventsDispatcher->HasEvents())
+    {
+        netEventsDispatcher->ProcessEvents();
+    }
 }
 
-NetCallbacksHolder* NetCore::GetNetCallbacksHolder()
+NetEventsDispatcher* NetCore::GetNetCallbacksHolder()
 {
-    return netCallbacksHolder.get();
+    return netEventsDispatcher.get();
 }
 
 NetCore::TrackId NetCore::CreateController(const NetConfig& config, void* context, uint32 readTimeout)
 {
 #if !defined(DAVA_NETWORK_DISABLE)
     DVASSERT(false == isFinishing && true == config.Validate());
-    NetController* ctrl = new NetController(&loop, registrar, context, readTimeout);
+    NetController* ctrl = new NetController(loop, registrar, context, readTimeout);
     if (true == ctrl->ApplyConfig(config))
     {
-        loop.Post(Bind(&NetCore::DoStart, this, ctrl));
+        loop->Post(Bind(&NetCore::DoStart, this, ctrl));
         return ObjectToTrackId(ctrl);
     }
     else
@@ -112,8 +140,8 @@ NetCore::TrackId NetCore::CreateAnnouncer(const Endpoint& endpoint, uint32 sendP
 {
 #if !defined(DAVA_NETWORK_DISABLE)
     DVASSERT(false == isFinishing);
-    Announcer* ctrl = new Announcer(&loop, endpoint, sendPeriod, needDataCallback, tcpEndpoint);
-    loop.Post(Bind(&NetCore::DoStart, this, ctrl));
+    Announcer* ctrl = new Announcer(loop, endpoint, sendPeriod, needDataCallback, tcpEndpoint);
+    loop->Post(Bind(&NetCore::DoStart, this, ctrl));
     return ObjectToTrackId(ctrl);
 #else
     return INVALID_TRACK_ID;
@@ -124,9 +152,9 @@ NetCore::TrackId NetCore::CreateDiscoverer(const Endpoint& endpoint, Function<vo
 {
 #if !defined(DAVA_NETWORK_DISABLE)
     DVASSERT(false == isFinishing);
-    Discoverer* ctrl = new Discoverer(&loop, endpoint, dataReadyCallback);
+    Discoverer* ctrl = new Discoverer(loop, endpoint, dataReadyCallback);
     discovererId = ObjectToTrackId(ctrl);
-    loop.Post(Bind(&NetCore::DoStart, this, ctrl));
+    loop->Post(Bind(&NetCore::DoStart, this, ctrl));
     return discovererId;
 #else
     return INVALID_TRACK_ID;
@@ -142,7 +170,7 @@ void NetCore::DestroyController(TrackId id)
     {
         discovererId = INVALID_TRACK_ID;
     }
-    loop.Post(Bind(&NetCore::DoDestroy, this, GetTrackedObject(id)));
+    loop->Post(Bind(&NetCore::DoDestroy, this, GetTrackedObject(id)));
 #endif
 }
 
@@ -160,7 +188,7 @@ void NetCore::DestroyControllerBlocked(TrackId id)
             LockGuard<Mutex> lock(dyingObjectsMutex);
             auto emplaceRes = dyingObjects.emplace(ctrl);
         }
-        loop.Post(Bind(&NetCore::DoDestroy, this, ctrl));
+        loop->Post(Bind(&NetCore::DoDestroy, this, ctrl));
 
         while (true)
         {
@@ -172,10 +200,7 @@ void NetCore::DestroyControllerBlocked(TrackId id)
                 }
             }
 
-            if (useSeparateThread)
-                ExecPendingCallbacks();
-            else
-                Poll();
+            DoUpdate();
         }
     }
 #endif
@@ -184,11 +209,13 @@ void NetCore::DestroyControllerBlocked(TrackId id)
 bool NetCore::PostAllToDestroy()
 {
     LockGuard<Mutex> lock(dyingObjectsMutex);
+    LockGuard<Mutex> lock2(trackedObjectsMutex);
+
     bool hasControllersToDestroy = !trackedObjects.empty();
     for (IController* ctrl : trackedObjects)
     {
         dyingObjects.emplace(ctrl);
-        loop.Post(Bind(&NetCore::DoDestroy, this, ctrl));
+        loop->Post(Bind(&NetCore::DoDestroy, this, ctrl));
     }
     trackedObjects.clear();
 
@@ -218,10 +245,7 @@ void NetCore::DestroyAllControllersBlocked()
         if (dyingObjects.empty())
             break;
 
-        if (useSeparateThread)
-            ExecPendingCallbacks();
-        else
-            Poll();
+        DoUpdate();
     }
 #endif
 }
@@ -230,7 +254,7 @@ void NetCore::RestartAllControllers()
 {
 #if !defined(DAVA_NETWORK_DISABLE)
     // Restart controllers on mobile devices
-    loop.Post(MakeFunction(this, &NetCore::DoRestart));
+    loop->Post(MakeFunction(this, &NetCore::DoRestart));
 #endif
 }
 
@@ -253,13 +277,14 @@ void NetCore::Finish(bool doBlocked)
                     if (dyingObjects.empty())
                         break;
 
-                    ExecPendingCallbacks();
+                    ProcessPendingEvents();
                 }
                 netThread->Join();
+                Logger::Debug("Joined");
             }
             else
             {
-                loop.Run(IOLoop::RUN_DEFAULT);
+                loop->Run(IOLoop::RUN_DEFAULT);
             }
         }
     }
@@ -269,10 +294,11 @@ void NetCore::Finish(bool doBlocked)
         if (useSeparateThread)
         {
             netThread->Join();
+            Logger::Debug("Joined");
         }
         else
         {
-            loop.Run(IOLoop::RUN_DEFAULT);
+            loop->Run(IOLoop::RUN_DEFAULT);
         }
     }
 #endif
@@ -283,11 +309,12 @@ bool NetCore::TryDiscoverDevice(const Endpoint& endpoint)
 #if !defined(DAVA_NETWORK_DISABLE)
     if (discovererId != INVALID_TRACK_ID)
     {
+        LockGuard<Mutex> lock(trackedObjectsMutex);
         auto it = trackedObjects.find(TrackIdToObject(discovererId));
         if (it != trackedObjects.end())
         {
             // Variable is named in honor of big fan and donater of tanks - Sergey Demidov
-            // And this man assures that cast below is valid, so do not worry,  guys
+            // And this man assures that cast below is valid, so do not worry, guys
             Discoverer* SergeyDemidov = static_cast<Discoverer*>(*it);
             return SergeyDemidov->TryDiscoverDevice(endpoint);
         }
@@ -300,12 +327,14 @@ bool NetCore::TryDiscoverDevice(const Endpoint& endpoint)
 
 void NetCore::DoStart(IController* ctrl)
 {
+    LockGuard<Mutex> lock(trackedObjectsMutex);
     trackedObjects.insert(ctrl);
     ctrl->Start();
 }
 
 void NetCore::DoRestart()
 {
+    LockGuard<Mutex> lock(trackedObjectsMutex);
     for (IController* ctrl : trackedObjects)
     {
         ctrl->Restart();
@@ -320,7 +349,6 @@ void NetCore::DoDestroy(IController* ctrl)
 
 void NetCore::AllDestroyed()
 {
-    allStopped = true;
     if (controllersStoppedCallback != nullptr)
     {
         controllersStoppedCallback();
@@ -328,13 +356,15 @@ void NetCore::AllDestroyed()
     }
     if (true == isFinishing)
     {
-        loop.PostQuit();
+        isFinished = true;
+        loop->PostQuit();
     }
 }
 
-IController* NetCore::GetTrackedObject(TrackId id) const
+IController* NetCore::GetTrackedObject(TrackId id)
 {
-    DVASSERT(trackedObjects.size() != 0);
+    LockGuard<Mutex> lock(trackedObjectsMutex);
+    DVASSERT(trackedObjects.empty() == false);
 
     Set<IController*>::const_iterator i = trackedObjects.find(TrackIdToObject(id));
     return (i != trackedObjects.end()) ? *i : nullptr;
@@ -343,6 +373,8 @@ IController* NetCore::GetTrackedObject(TrackId id) const
 void NetCore::TrackedObjectStopped(IController* obj)
 {
     LockGuard<Mutex> lock(dyingObjectsMutex);
+    LockGuard<Mutex> lock2(trackedObjectsMutex);
+
     if (dyingObjects.erase(obj) == 0)
     {
         DVASSERT(false && "dying object is not found");
@@ -352,6 +384,12 @@ void NetCore::TrackedObjectStopped(IController* obj)
     {
         AllDestroyed();
     }
+}
+
+size_t NetCore::ControllersCount()
+{
+    LockGuard<Mutex> lock(trackedObjectsMutex);
+    return trackedObjects.size();
 }
 
 } // namespace Net

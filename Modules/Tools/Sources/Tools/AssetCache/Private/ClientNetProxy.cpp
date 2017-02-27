@@ -13,7 +13,7 @@ namespace DAVA
 namespace AssetCache
 {
 ClientNetProxy::ClientNetProxy()
-    : addressResolver(Net::NetCore::Instance()->Loop())
+    : addressResolver(Net::NetCore::Instance()->Loop(), Net::NetCore::Instance()->GetNetCallbacksHolder())
 {
     DVASSERT(nullptr != Net::NetCore::Instance());
 }
@@ -23,13 +23,13 @@ ClientNetProxy::~ClientNetProxy()
     Disconnect();
 }
 
-bool ClientNetProxy::Connect(const String& ip, uint16 port)
+void ClientNetProxy::Connect(const String& ip, uint16 port)
 {
     Logger::FrameworkDebug("Connecting to %s:%d", ip.c_str(), port);
     DVASSERT(nullptr == netClient);
     DVASSERT(nullptr == openedChannel);
 
-    return addressResolver.AsyncResolve(ip.c_str(), port, MakeFunction(this, &ClientNetProxy::OnAddressResolved));
+    addressResolver.AsyncResolve(ip.c_str(), port, MakeFunction(this, &ClientNetProxy::OnAddressResolved));
 }
 
 void ClientNetProxy::Disconnect()

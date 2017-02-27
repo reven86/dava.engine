@@ -1,7 +1,5 @@
 #include "Network/ChannelListenerAsync.h"
-
-#include <Functional/Function.h>
-#include <Network/NetCallbacksHolder.h>
+#include "Functional/Function.h"
 
 namespace DAVA
 {
@@ -42,10 +40,10 @@ struct ChannelListenerProxy : public IChannelListener
 
 } // namespace ChannelListenerAsyncDetails
 
-ChannelListenerAsync::ChannelListenerAsync(IChannelListener* listener, NetCallbacksHolder* callbacksHolder)
+ChannelListenerAsync::ChannelListenerAsync(IChannelListener* listener, NetEventsDispatcher* netEventsDispatcher)
     : listenerShared(new ChannelListenerAsyncDetails::ChannelListenerProxy(listener))
     , listenerWeak(listenerShared)
-    , callbacksHolder(callbacksHolder)
+    , netEventsDispatcher(netEventsDispatcher)
 {
 }
 
@@ -53,31 +51,31 @@ void ChannelListenerAsync::OnChannelOpen(IChannel* channel)
 {
     auto fn = MakeFunction(listenerWeak, &IChannelListener::OnChannelOpen);
     auto fnWithParams = Bind(fn, channel);
-    callbacksHolder->AddCallback(fnWithParams);
+    netEventsDispatcher->PostEvent(fnWithParams);
 }
 void ChannelListenerAsync::OnChannelClosed(IChannel* channel, const char8* message)
 {
     auto fn = MakeFunction(listenerWeak, &IChannelListener::OnChannelClosed);
     auto fnWithParams = Bind(fn, channel, message);
-    callbacksHolder->AddCallback(fnWithParams);
+    netEventsDispatcher->PostEvent(fnWithParams);
 }
 void ChannelListenerAsync::OnPacketReceived(IChannel* channel, const void* buffer, size_t length)
 {
     auto fn = MakeFunction(listenerWeak, &IChannelListener::OnPacketReceived);
     auto fnWithParams = Bind(fn, channel, buffer, length);
-    callbacksHolder->AddCallback(fnWithParams);
+    netEventsDispatcher->PostEvent(fnWithParams);
 }
 void ChannelListenerAsync::OnPacketSent(IChannel* channel, const void* buffer, size_t length)
 {
     auto fn = MakeFunction(listenerWeak, &IChannelListener::OnPacketSent);
     auto fnWithParams = Bind(fn, channel, buffer, length);
-    callbacksHolder->AddCallback(fnWithParams);
+    netEventsDispatcher->PostEvent(fnWithParams);
 }
 void ChannelListenerAsync::OnPacketDelivered(IChannel* channel, uint32 packetId)
 {
     auto fn = MakeFunction(listenerWeak, &IChannelListener::OnPacketDelivered);
     auto fnWithParams = Bind(fn, channel, packetId);
-    callbacksHolder->AddCallback(fnWithParams);
+    netEventsDispatcher->PostEvent(fnWithParams);
 }
 }
 }

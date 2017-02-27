@@ -3,9 +3,10 @@
 
 #include <Base/BaseTypes.h>
 #include <Functional/Function.h>
-#include "Network/NetCallbacksHolder.h"
 #include "Logger/Logger.h"
 #include "Concurrency/Thread.h"
+#include "Network/NetEventsDispatcher.h"
+
 #include <chrono>
 
 namespace DAVA
@@ -30,74 +31,40 @@ public:
     void ServiceCreatorCall()
     {
         targetFnResult = targetFn(serviceId, context);
-        cvDone.NotifyAll();
     }
 
     uint32 serviceId = 0;
     void* context = nullptr;
     ServiceCreator targetFn;
     IChannelListener* targetFnResult = nullptr;
-    Mutex cvMutex;
-    ConditionVariable cvDone;
 };
 
 class ServiceCreatorAsync
 {
 public:
-    explicit ServiceCreatorAsync(ServiceCreator targetFn, NetCallbacksHolder* holder)
+    explicit ServiceCreatorAsync(ServiceCreator targetFn, NetEventsDispatcher* dispatcher)
         : targetFn(targetFn)
-        , holder(holder)
+        , dispatcher(dispatcher)
     {
     }
 
     IChannelListener* ServiceCreatorCall(uint32 serviceId, void* context)
     {
-        if (holder->GetMode() == NetCallbacksHolder::ExecuteImmediately)
-        {
-            return targetFn(serviceId, context);
-        }
-        else
-        {
-            std::shared_ptr<ServiceCreatorExecutor> executor(new ServiceCreatorExecutor(targetFn, serviceId, context));
-            std::weak_ptr<ServiceCreatorExecutor> executorWeak = executor;
-            auto fn = MakeFunction(executorWeak, &ServiceCreatorExecutor::ServiceCreatorCall);
-            holder->AddCallback(fn);
-            executor->cvDone.Wait(executor->cvMutex);
-            return executor->targetFnResult;
-        }
+        std::shared_ptr<ServiceCreatorExecutor> executor(new ServiceCreatorExecutor(targetFn, serviceId, context));
+        std::weak_ptr<ServiceCreatorExecutor> executorWeak = executor;
+        auto fn = MakeFunction(executorWeak, &ServiceCreatorExecutor::ServiceCreatorCall);
+        dispatcher->SendEvent(fn);
+        return executor->targetFnResult;
     }
 
     ServiceCreator targetFn;
-    NetCallbacksHolder* holder = nullptr;
-};
-
-class ServiceDeleterExecutor
-{
-public:
-    explicit ServiceDeleterExecutor(ServiceDeleter fn, IChannelListener* obj, void* context)
-        : targetFn(fn)
-        , obj(obj)
-        , context(context)
-    {
-    }
-
-    void ServiceDeleterCall()
-    {
-        targetFn(obj, context);
-        cvDone.NotifyAll();
-    }
-
-    IChannelListener* obj = nullptr;
-    void* context = nullptr;
-    ServiceDeleter targetFn;
-    Mutex cvMutex;
-    ConditionVariable cvDone;
+    NetEventsDispatcher* dispatcher = nullptr;
 };
 
 class ServiceDeleterAsync
 {
 public:
-    explicit ServiceDeleterAsync(ServiceDeleter targetFn, NetCallbacksHolder* holder)
+    explicit ServiceDeleterAsync(ServiceDeleter targetFn, NetEventsDispatcher* holder)
         : targetFn(targetFn)
         , holder(holder)
     {
@@ -105,21 +72,12 @@ public:
 
     void ServiceDeleterCall(IChannelListener* obj, void* context)
     {
-        if (holder->GetMode() == NetCallbacksHolder::ExecuteImmediately)
-        {
-            targetFn(obj, context);
-        }
-        else
-        {
-            std::shared_ptr<ServiceDeleterExecutor> executor(new ServiceDeleterExecutor(targetFn, obj, context));
-            auto fn = MakeFunction(executor, &ServiceDeleterExecutor::ServiceDeleterCall);
-            holder->AddCallback(fn);
-            executor->cvDone.Wait(executor->cvMutex);
-        }
+        auto fn = Bind(targetFn, obj, context);
+        holder->SendEvent(fn);
     }
 
     ServiceDeleter targetFn;
-    NetCallbacksHolder* holder = nullptr;
+    NetEventsDispatcher* holder = nullptr;
 };
 
 class ServiceRegistrar

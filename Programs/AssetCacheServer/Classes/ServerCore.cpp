@@ -105,13 +105,10 @@ bool ServerCore::ConnectRemote()
 
     if (!currentRemoteServer.IsEmpty())
     {
-        bool created = clientProxy.Connect(currentRemoteServer.ip, DAVA::AssetCache::ASSET_SERVER_PORT);
-        if (created)
-        {
-            connectTimer->start();
-            remoteState = RemoteState::CONNECTING;
-            return true;
-        }
+        clientProxy.Connect(currentRemoteServer.ip, DAVA::AssetCache::ASSET_SERVER_PORT);
+        connectTimer->start();
+        remoteState = RemoteState::CONNECTING;
+        return true;
     }
 
     return false;
@@ -218,7 +215,7 @@ void ServerCore::OnRefreshTimer()
     auto netSystem = DAVA::Net::NetCore::Instance();
     if (netSystem)
     {
-        netSystem->ExecPendingCallbacks();
+        netSystem->ProcessPendingEvents();
     }
 }
 

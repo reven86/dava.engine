@@ -40,12 +40,7 @@ AssetCache::Error AssetCacheClient::ConnectSynchronously(const ConnectionParams&
     heavyRequestTimeoutMs = lightRequestTimeoutMs + (100u * 1000u);
     currentTimeoutMs = lightRequestTimeoutMs;
 
-    bool connectCalled = client.Connect(connectionParams.ip, AssetCache::ASSET_SERVER_PORT);
-    if (!connectCalled)
-    {
-        isActive = false;
-        return AssetCache::Error::ADDRESS_RESOLVER_FAILED;
-    }
+    client.Connect(connectionParams.ip, AssetCache::ASSET_SERVER_PORT);
 
     {
         LockGuard<Mutex> guard(connectEstablishLocker);
@@ -405,7 +400,7 @@ bool AssetCacheClient::IsConnected() const
 
 void AssetCacheClient::ExecNetCallbacks()
 {
-    Net::NetCore::Instance()->ExecPendingCallbacks();
+    Net::NetCore::Instance()->ProcessPendingEvents();
 }
 
 AssetCacheClient::ConnectionParams::ConnectionParams()

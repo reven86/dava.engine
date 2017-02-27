@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_NETCORE_H__
-#define __DAVAENGINE_NETCORE_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Functional/Function.h"
@@ -11,10 +10,8 @@
 #include "Network/ServiceRegistrar.h"
 #include "Network/IController.h"
 #include "Network/NetworkCommon.h"
-#include "Network/IChannel.h"
-#include "Network/NetCallbacksHolder.h"
+#include "Network/NetEventsDispatcher.h"
 #include "Concurrency/Thread.h"
-#include "Concurrency/Semaphore.h"
 
 namespace DAVA
 {
@@ -58,10 +55,7 @@ public:
 #endif
     ~NetCore();
 
-    IOLoop* Loop()
-    {
-        return &loop;
-    }
+    IOLoop* Loop() const;
 
     bool RegisterService(uint32 serviceId, ServiceCreator creator, ServiceDeleter deleter, const char8* serviceName = NULL);
     bool UnregisterService(uint32 serviceId);
@@ -79,7 +73,7 @@ public:
 
     void RestartAllControllers();
 
-    size_t ControllersCount() const;
+    size_t ControllersCount();
 
     int32 Run();
 #if defined(__DAVAENGINE_COREV2__)
@@ -97,10 +91,12 @@ public:
 
     static bool IsNetworkEnabled();
 
-    NetCallbacksHolder* GetNetCallbacksHolder();
-    void ExecPendingCallbacks();
+    NetEventsDispatcher* GetNetCallbacksHolder();
+    void ProcessPendingEvents();
 
 private:
+    void DoUpdate();
+
     void NetThreadHandler();
     void DoStart(IController* ctrl);
     void DoRestart();
@@ -108,29 +104,33 @@ private:
     bool PostAllToDestroy();
     void DoDestroy(IController* ctrl);
     void AllDestroyed();
-    IController* GetTrackedObject(TrackId id) const;
+    IController* GetTrackedObject(TrackId id);
     void TrackedObjectStopped(IController* obj);
 
     TrackId ObjectToTrackId(const IController* obj) const;
     IController* TrackIdToObject(TrackId id) const;
 
 private:
-    IOLoop loop; // Heart of NetCore and network library - event loop
+    IOLoop* loop = nullptr; // Heart of NetCore and network library - event loop
+    std::unique_ptr<IOLoop> loopHolder;
     bool useSeparateThread = false;
+
+    Mutex trackedObjectsMutex;
     Set<IController*> trackedObjects; // Running objects
 
     Mutex dyingObjectsMutex;
     Set<IController*> dyingObjects;
+
     ServiceRegistrar registrar; //-V730_NOINIT
     Function<void()> controllersStoppedCallback;
-    bool isFinishing;
-    volatile bool allStopped; // Flag indicating that all controllers are stopped; used in DestroyAllControllersBlocked
+    Atomic<bool> isFinishing = false;
+    Atomic<bool> isFinished = false;
 
 #if !defined(DAVA_NETWORK_DISABLE)
     TrackId discovererId = INVALID_TRACK_ID;
 #endif
     RefPtr<Thread> netThread;
-    std::unique_ptr<NetCallbacksHolder> netCallbacksHolder;
+    std::unique_ptr<NetEventsDispatcher> netEventsDispatcher;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -159,11 +159,6 @@ inline const char8* NetCore::ServiceName(uint32 serviceId) const
     return registrar.Name(serviceId);
 }
 
-inline size_t NetCore::ControllersCount() const
-{
-    return trackedObjects.size();
-}
-
 inline Vector<IfAddress> NetCore::InstalledInterfaces() const
 {
     return IfAddress::GetInstalledInterfaces(false);
@@ -171,18 +166,18 @@ inline Vector<IfAddress> NetCore::InstalledInterfaces() const
 
 inline int32 NetCore::Run()
 {
-    return loop.Run(IOLoop::RUN_DEFAULT);
+    return loop->Run(IOLoop::RUN_DEFAULT);
 }
 
 #if defined(__DAVAENGINE_COREV2__)
 inline void NetCore::Poll(float32 /*frameDelta*/)
 {
-    loop.Run(IOLoop::RUN_NOWAIT);
+    loop->Run(IOLoop::RUN_NOWAIT);
 }
 #else
 inline int32 NetCore::Poll()
 {
-    return loop.Run(IOLoop::RUN_NOWAIT);
+    return loop->Run(IOLoop::RUN_NOWAIT);
 }
 #endif
 
@@ -205,8 +200,10 @@ inline IController* NetCore::TrackIdToObject(TrackId id) const
     return reinterpret_cast<IController*>(id);
 }
 
+inline IOLoop* NetCore::Loop() const
+{
+    return loop;
+}
+
 } // namespace Net
 } // namespace DAVA
-
-
-#endif // __DAVAENGINE_NETCORE_H__

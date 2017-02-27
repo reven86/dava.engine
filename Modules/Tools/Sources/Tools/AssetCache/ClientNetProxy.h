@@ -44,7 +44,7 @@ public:
     void AddListener(ClientNetProxyListener*);
     void RemoveListener(ClientNetProxyListener*);
 
-    bool Connect(const String& ip, uint16 port);
+    void Connect(const String& ip, uint16 port);
     void Disconnect();
 
     bool ChannelIsOpened() const;
