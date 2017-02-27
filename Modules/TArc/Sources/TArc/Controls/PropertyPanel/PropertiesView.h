@@ -5,6 +5,8 @@
 #include "TArc/DataProcessing/Common.h"
 #include "TArc/Utils/QtConnections.h"
 
+#include <Functional/Function.h>
+
 #include <QWidget>
 
 class QTreeView;
@@ -20,6 +22,19 @@ class PropertiesView : public QWidget
 {
     Q_OBJECT
 public:
+    enum UpdatePolicy
+    {
+        FullUpdate,
+        FastUpdate
+    };
+
+    class Updater
+    {
+    public:
+        virtual ~Updater() = default;
+
+        Signal<UpdatePolicy> update;
+    };
     /**
         Create PropertiesView widget with ReflectedModel. As data source for ReflectedMode use value of "objectsField"
         Value of "objectsField" could be casted to Vector<Reflection>

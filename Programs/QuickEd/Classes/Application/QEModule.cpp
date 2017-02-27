@@ -9,9 +9,9 @@
 #include "Render/Renderer.h"
 #include "Render/DynamicBufferAllocator.h"
 #include "Particles/ParticleEmitter.h"
-#include "TArc/WindowSubSystem/Private/UIManager.h"
 #include "TArc/DataProcessing/DataNode.h"
 #include "TArc/Core/ContextAccessor.h"
+#include "TArc/WindowSubSystem/UI.h"
 
 #include "QtTools/Utils/Themes/Themes.h"
 
@@ -103,7 +103,7 @@ void QEModule::PostInit()
     globalContext->CreateData(std::make_unique<TData>());
     TData* globalData = globalContext->GetData<TData>();
 
-    DAVA::TArc::UIManager* ui = static_cast<DAVA::TArc::UIManager*>(GetUI());
+    DAVA::TArc::UI* ui = GetUI();
     EditorCore* editorCore = globalData->editorCore.get();
     MainWindow* mainWindow = editorCore->GetMainWindow();
     mainWindow->InjectRenderWidget(GetContextManager()->GetRenderWidget());

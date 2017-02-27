@@ -199,5 +199,13 @@ class SubProperty
 {
 };
 
+/**
+    Says that value can be changed at some unpredictable moment and 
+    Reflection's client should update value as often as possible
+*/
+class ValueChangeByEngine
+{
+};
+
 } // namespace Mates
 } // namespace DAVA

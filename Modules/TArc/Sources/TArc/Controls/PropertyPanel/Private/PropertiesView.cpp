@@ -29,7 +29,7 @@ PropertiesView::PropertiesView(ContextAccessor* accessor, const FieldDescriptor&
                          model->Update();
                      });
 
-    timer->start();
+    //timer->start();
 }
 
 PropertiesView::~PropertiesView()

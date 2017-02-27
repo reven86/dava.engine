@@ -15,9 +15,7 @@ class WindowKey;
 class ClientModule : public ReflectionBase
 {
 public:
-    virtual ~ClientModule()
-    {
-    }
+    virtual ~ClientModule();
 
 protected:
     virtual void OnContextCreated(DataContext* context)
@@ -50,14 +48,14 @@ protected:
     void InvokeOperation(int operationId, const Args&... args);
 
 private:
-    void Init(CoreInterface* coreInterface, UI* ui);
+    void Init(CoreInterface* coreInterface, std::unique_ptr<UI>&& ui);
 
 private:
     friend class Core;
     friend class ControllerModule;
 
     CoreInterface* coreInterface = nullptr;
-    UI* ui = nullptr;
+    std::unique_ptr<UI> ui;
 
     DAVA_VIRTUAL_REFLECTION_IN_PLACE(ClientModule)
     {
