@@ -8,6 +8,7 @@
 
 #include <QHBoxLayout>
 #include <QTreeView>
+#include <QHeaderView>
 #include <QTimer>
 
 namespace DAVA
@@ -67,7 +68,10 @@ void PropertiesView::SetupUI()
 
     view->setModel(model.get());
     view->setRootIndex(QModelIndex());
-    view->setItemDelegate(new PropertiesViewDelegate(view));
+    view->setItemDelegate(new PropertiesViewDelegate(view, model.get(), this));
+
+    QHeaderView* headerView = view->header();
+    connections.AddConnection(headerView, &QHeaderView::sectionResized, MakeFunction(this, &PropertiesView::OnColumnResized));
 }
 
 void PropertiesView::OnObjectsChanged(const Any& objects)
@@ -85,6 +89,13 @@ void PropertiesView::OnObjectsChanged(const Any& objects)
     {
         view->expand(index);
     }
+}
+
+void PropertiesView::OnColumnResized(int columnIndex, int oldSize, int newSize)
+{
+    PropertiesViewDelegate* d = qobject_cast<PropertiesViewDelegate*>(view->itemDelegate());
+    DVASSERT(d != nullptr);
+    d->UpdateSizeHints(columnIndex, newSize);
 }
 
 void PropertiesView::OnExpanded(const QModelIndex& index)
