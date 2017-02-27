@@ -9,6 +9,8 @@
 #include <Reflection/ReflectionRegistrator.h>
 #include <Logger/Logger.h>
 
+#include <QAbstractItemView>
+#include <QMouseEvent>
 #include <QStyle>
 #include <QStyleOption>
 #include <QPainter>
