@@ -9,6 +9,7 @@
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 
 #import <UIKit/UIScreen.h>
+#import <UIKit/UIDevice.h>
 
 namespace DAVA
 {
@@ -137,9 +138,18 @@ void DeviceManagerImpl::UpdateDisplayConfig()
         {
             DVASSERT(false, "DPI retriving isn't implemented");
 
-            displayInfo.rawDpiX = 160; // temp dpi, must be changed
-            displayInfo.rawDpiY = 160; // temp dpi, must be changed
-            displayInfo.name = "display";
+            if (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad)
+            {
+                displayInfo.rawDpiX = IPAD_3_4_AIR_AIR2_PRO; // default pad dpi, can be changed
+                displayInfo.rawDpiY = IPAD_3_4_AIR_AIR2_PRO; // default pad dpi, can be changed
+                displayInfo.name = "padMainScreen";
+            }
+            else
+            {
+                displayInfo.rawDpiX = eIos::IPHONE_4_5_6_SE_IPAD_MINI2_MINI3; // default phone, can be changed
+                displayInfo.rawDpiY = eIos::IPHONE_4_5_6_SE_IPAD_MINI2_MINI3; // default phone, can be changed
+                displayInfo.name = "phoneMainScreen";
+            }
         }
 
         displayInfo.systemId = reinterpret_cast<uintptr_t>(screen);
