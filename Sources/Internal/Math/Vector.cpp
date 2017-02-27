@@ -20,4 +20,22 @@ Vector2 Rotate(const Vector2& in, float32 angleRad)
     rotateMatrix.BuildRotation(angleRad);
     return in * rotateMatrix;
 }
+
+template <>
+bool AnyCompare<Vector2>::IsEqual(const DAVA::Any& v1, const DAVA::Any& v2)
+{
+    return v1.Get<Vector2>() == v2.Get<Vector2>();
+}
+
+template <>
+bool AnyCompare<Vector3>::IsEqual(const DAVA::Any& v1, const DAVA::Any& v2)
+{
+    return v1.Get<Vector3>() == v2.Get<Vector3>();
+}
+
+template <>
+bool AnyCompare<Vector4>::IsEqual(const DAVA::Any& v1, const DAVA::Any& v2)
+{
+    return v1.Get<Vector4>() == v2.Get<Vector4>();
+}
 }

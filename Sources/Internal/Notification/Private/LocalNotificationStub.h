@@ -50,6 +50,10 @@ LocalNotificationImpl* LocalNotificationImpl::Create(const String& _id)
     return new LocalNotificationStub(_id);
 }
 
+void LocalNotificationImpl::RequestPermissions()
+{
+}
+
 void LocalNotificationStub::PostDelayedNotification(const WideString& title, const WideString& text, int delaySeconds, bool useSound)
 {
 }

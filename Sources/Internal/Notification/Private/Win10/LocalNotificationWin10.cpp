@@ -152,6 +152,10 @@ LocalNotificationImpl* LocalNotificationImpl::Create(const String& _id)
     return new LocalNotificationUAP(_id);
 }
 
+void LocalNotificationImpl::RequestPermissions()
+{
+}
+
 } // namespace DAVA
 
 #endif
