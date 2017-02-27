@@ -9,10 +9,11 @@
 #include <Reflection/ReflectionRegistrator.h>
 #include <Logger/Logger.h>
 
+#include <QApplication>
+#include <QtEvents>
 #include <QStyle>
 #include <QStyleOption>
 #include <QPainter>
-#include <QApplication>
 
 namespace DAVA
 {
