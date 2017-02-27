@@ -1,4 +1,4 @@
-#include "AnyCasts/AnyCasts.h"
+#include "ReflectionDeclaration/Private/AnyCasts.h"
 
 #include "Base/Any.h"
 #include "Base/BaseTypes.h"
@@ -38,12 +38,6 @@ String FastNameToString(const Any& value)
     return String(value.Get<FastName>().c_str());
 }
 
-template <typename From, typename To>
-To StaticCast(const Any& value)
-{
-    return static_cast<To>(value.Get<From>());
-}
-
 template <typename T>
 String IntegralToString(const Any& value)
 {
@@ -68,12 +62,26 @@ void RegisterAnyCasts()
     AnyCast<const char*, FastName>::Register(&CharPointerToFastName);
     AnyCast<FastName, const char*>::Register(&FastNameToCharPointer);
     AnyCast<FastName, String>::Register(&FastNameToString);
-    AnyCast<int32, size_t>::Register(&StaticCast<int32, size_t>);
-    AnyCast<size_t, int32>::Register(&StaticCast<size_t, int32>);
+    AnyCast<int32, size_t>::RegisterDefault();
+    AnyCast<size_t, int32>::RegisterDefault();
     AnyCast<int32, String>::Register(&IntegralToString<int32>);
     AnyCast<size_t, String>::Register(&IntegralToString<size_t>);
     AnyCast<FilePath, String>::Register(&FilePathToString);
     AnyCast<String, FilePath>::Register(&StringToFilePath);
+    AnyCast<float64, float32>::RegisterDefault();
+    AnyCast<float32, float64>::RegisterDefault();
+    AnyCast<uint32, int>::RegisterDefault();
+    AnyCast<int, uint32>::RegisterDefault();
+    AnyCast<uint16, int>::RegisterDefault();
+    AnyCast<int, uint16>::RegisterDefault();
+    AnyCast<uint8, int>::RegisterDefault();
+    AnyCast<int, uint8>::RegisterDefault();
+    AnyCast<int32, int>::RegisterDefault();
+    AnyCast<int, int32>::RegisterDefault();
+    AnyCast<int16, int>::RegisterDefault();
+    AnyCast<int, int16>::RegisterDefault();
+    AnyCast<int8, int>::RegisterDefault();
+    AnyCast<int, int8>::RegisterDefault();
 }
 
 } // namespace DAVA

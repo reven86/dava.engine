@@ -1,15 +1,6 @@
-#ifndef __DAVAENGINE_SEMAPHORE_H__
-#define __DAVAENGINE_SEMAPHORE_H__
+#pragma once
 
-#include "Base/BaseTypes.h"
-#include "Base/Platform.h"
-#include "Debug/DVAssert.h"
-
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
-#include <dispatch/dispatch.h>
-#elif defined(__DAVAENGINE_ANDROID__)
-#include <semaphore.h>
-#endif //PLATFORMS
+#include <cstdint>
 
 namespace DAVA
 {
@@ -17,112 +8,26 @@ namespace DAVA
 class Semaphore
 {
 public:
-    Semaphore(uint32 count = 0);
+    /**
+		The initial count for the semaphore object(0). This value must be greater than or equal to zero.
+	*/
+    Semaphore(uint32_t count = 0U);
+    Semaphore(const Semaphore&) = delete;
+    Semaphore(Semaphore&&) = delete;
     ~Semaphore();
 
-    void Post(uint32 count = 1);
+    /**
+		Increases the count of the specified semaphore object by a specified amount. (default 1)
+	*/
+    void Post(uint32_t count = 1);
+    /**
+		Wait till semaphore becomes more then 0 and decrement it with 1.
+	*/
     void Wait();
 
 protected:
-
-#if defined(__DAVAENGINE_WINDOWS__)
-    HANDLE semaphore;
-#elif defined(__DAVAENGINE_APPLE__)
-    dispatch_semaphore_t semaphore;
-#elif defined(__DAVAENGINE_ANDROID__)
-    sem_t semaphore;
-#endif //PLATFORMS
+    //!< platform dependent semaphore handle
+    uintptr_t semaphore = 0;
 };
 
-#if defined(__DAVAENGINE_WINDOWS__)
-
-// ##########################################################################################################
-// Windows implementation
-// ##########################################################################################################
-
-inline Semaphore::Semaphore(uint32 count)
-{
-#ifdef __DAVAENGINE_WIN32__
-    semaphore = CreateSemaphore(nullptr, count, 0x0FFFFFFF, nullptr);
-#else
-    semaphore = CreateSemaphoreEx(nullptr, count, 0x0FFFFFFF, nullptr, 0, SEMAPHORE_ALL_ACCESS);
-#endif
-    DVASSERT(nullptr != semaphore);
-}
-
-inline Semaphore::~Semaphore()
-{
-    CloseHandle(semaphore);
-}
-
-inline void Semaphore::Post(uint32 count)
-{
-    DVASSERT(count > 0);
-    ReleaseSemaphore(semaphore, count, nullptr);
-}
-
-inline void Semaphore::Wait()
-{
-    WaitForSingleObjectEx(semaphore, INFINITE, FALSE);
-}
-
-#elif defined(__DAVAENGINE_APPLE__)
-
-// ##########################################################################################################
-// MacOS/IOS implementation
-// ##########################################################################################################
-
-inline Semaphore::Semaphore(uint32 count)
-{
-    semaphore = dispatch_semaphore_create(count);
-}
-
-inline Semaphore::~Semaphore()
-{
-    dispatch_release(semaphore);
-}
-
-inline void Semaphore::Post(uint32 count)
-{
-    while (count-- > 0)
-    {
-        dispatch_semaphore_signal(semaphore);
-    }
-}
-
-inline void Semaphore::Wait()
-{
-    dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
-}
-
-#elif defined(__DAVAENGINE_ANDROID__)
-
-// ##########################################################################################################
-// Android implementation
-// ##########################################################################################################
-inline Semaphore::Semaphore(uint32 count)
-{
-    sem_init(&semaphore, 0, count);
-}
-
-inline Semaphore::~Semaphore()
-{
-    sem_destroy(&semaphore);
-}
-
-inline void Semaphore::Post(uint32 count)
-{
-    while (count-- > 0)
-    {
-        sem_post(&semaphore);
-    }
-}
-
-inline void Semaphore::Wait()
-{
-    sem_wait(&semaphore);
-}
-#endif
-};
-
-#endif // __DAVAENGINE_SEMAPHORE_H__
+} // end namespace DAVA

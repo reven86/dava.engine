@@ -1,8 +1,6 @@
 #include "DAVAEngine.h"
 #include "UnitTests/UnitTests.h"
 
-#include "Infrastructure/TextureUtils.h"
-
 // ALL you want to know about UTF8, UTF16, UTF32
 // http://utf8everywhere.org/
 

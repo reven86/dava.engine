@@ -119,5 +119,9 @@ LocalNotificationImpl* LocalNotificationImpl::Create(const String& _id)
 {
     return new LocalNotificationMac(_id);
 }
+
+void LocalNotificationImpl::RequestPermissions()
+{
+}
 }
 #endif // defined(__DAVAENGINE_MACOS__)
