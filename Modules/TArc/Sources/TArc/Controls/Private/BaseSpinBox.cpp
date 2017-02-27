@@ -15,7 +15,7 @@ std::pair<const Type*, std::pair<Any, Any>> CreateRangePair()
 }
 template <typename TBase, typename TEditableType>
 DAVA::TArc::BaseSpinBox<TBase, TEditableType>::BaseSpinBox(const ControlDescriptor& descriptor, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent)
-    : ControlProxy<TBase>(descriptor, wrappersProcessor, model, parent)
+    : ControlProxyImpl<TBase>(descriptor, wrappersProcessor, model, parent)
 {
     static_assert(std::is_base_of<QAbstractSpinBox, TBase>::value, "TBase should be derived from QAbstractSpinBox");
     SetupSpinBoxBase();
@@ -23,7 +23,7 @@ DAVA::TArc::BaseSpinBox<TBase, TEditableType>::BaseSpinBox(const ControlDescript
 
 template <typename TBase, typename TEditableType>
 DAVA::TArc::BaseSpinBox<TBase, TEditableType>::BaseSpinBox(const ControlDescriptor& descriptor, ContextAccessor* accessor, Reflection model, QWidget* parent)
-    : ControlProxy<TBase>(descriptor, accessor, model, parent)
+    : ControlProxyImpl<TBase>(descriptor, accessor, model, parent)
 {
     static_assert(std::is_base_of<QAbstractSpinBox, TBase>::value, "TBase should be derived from QAbstractSpinBox");
     SetupSpinBoxBase();
@@ -337,7 +337,7 @@ TEditableType DAVA::TArc::BaseSpinBox<TBase, TEditableType>::valueFromText(const
 template <typename TBase, typename TEditableType>
 void DAVA::TArc::BaseSpinBox<TBase, TEditableType>::keyPressEvent(QKeyEvent* event)
 {
-    ControlProxy<TBase>::keyPressEvent(event);
+    ControlProxyImpl<TBase>::keyPressEvent(event);
     int key = event->key();
     if (key == Qt::Key_Enter || key == Qt::Key_Return)
     {
@@ -348,14 +348,14 @@ void DAVA::TArc::BaseSpinBox<TBase, TEditableType>::keyPressEvent(QKeyEvent* eve
 template <typename TBase, typename TEditableType>
 void DAVA::TArc::BaseSpinBox<TBase, TEditableType>::focusInEvent(QFocusEvent* event)
 {
-    ControlProxy<TBase>::focusInEvent(event);
+    ControlProxyImpl<TBase>::focusInEvent(event);
     ToEditingState();
 }
 
 template <typename TBase, typename TEditableType>
 void DAVA::TArc::BaseSpinBox<TBase, TEditableType>::focusOutEvent(QFocusEvent* event)
 {
-    ControlProxy<TBase>::focusOutEvent(event);
+    ControlProxyImpl<TBase>::focusOutEvent(event);
     if (stateHistory.top() == ControlState::Editing)
     {
         stateHistory.pop();

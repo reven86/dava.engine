@@ -16,7 +16,7 @@ namespace DAVA
 namespace TArc
 {
 template <typename TBase, typename TEditableType>
-class BaseSpinBox : public ControlProxy<TBase>
+class BaseSpinBox : public ControlProxyImpl<TBase>
 {
 public:
     enum BaseFields : uint32
