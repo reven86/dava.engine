@@ -167,7 +167,7 @@ DAVA::Texture* OverdrawTesterSystem::GenerateTexture(std::mt19937& rng, std::uni
             data[dataIndex++] = static_cast<uint8>(dist255(rng));
         }
     Texture* result;
-    if (generateTexWithMips)
+    if (!generateTexWithMips)
     {
         result = DAVA::Texture::CreateFromData(textureFormat, data, width, height, false);
     }
