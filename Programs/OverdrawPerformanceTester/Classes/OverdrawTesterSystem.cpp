@@ -12,6 +12,7 @@
 #include "Render/Highlevel/RenderSystem.h"
 #include "Render/Highlevel/RenderObject.h"
 #include "Render/Highlevel/RenderPassNames.h"
+#include "Render/Image/Image.h"
 #include "Render/Texture.h"
 #include "Time/SystemTimer.h"
 #include "Utils/StringFormat.h"
@@ -49,7 +50,8 @@ const FastName OverdrawTesterSystem::materialPath("~res:/CustomMaterials/Overdra
 const FastName OverdrawTesterSystem::sampleCountKeyword("SAMPLE_COUNT");
 const FastName OverdrawTesterSystem::dependentReadKeyword("DEPENDENT_READ_TEST");
 const uint32 OverdrawTesterSystem::accumulatedFramesCount = 20;
-const PixelFormat OverdrawTesterSystem::texureFormat = DAVA::FORMAT_RGBA8888;
+const PixelFormat OverdrawTesterSystem::textureFormat = DAVA::FORMAT_RGBA8888;
+const bool OverdrawTesterSystem::generateTexWithMips = false;
 
 OverdrawTesterSystem::OverdrawTesterSystem(DAVA::Scene* scene, DAVA::Function<void(DAVA::Array<DAVA::Vector<FrameData>, 6>*)> finishCallback_)
     : SceneSystem(scene)
@@ -60,7 +62,7 @@ OverdrawTesterSystem::OverdrawTesterSystem(DAVA::Scene* scene, DAVA::Function<vo
     overdrawMaterial->AddFlag(FastName("SAMPLE_COUNT"), 0);
     overdrawMaterial->PreBuildMaterial(DAVA::PASS_FORWARD);
 
-    if (texureFormat == DAVA::FORMAT_A8)
+    if (textureFormat == DAVA::FORMAT_A8)
         overdrawMaterial->AddFlag(FastName("ALPHA8"), 1);
 
     std::mt19937 rng;
@@ -164,7 +166,22 @@ DAVA::Texture* OverdrawTesterSystem::GenerateTexture(std::mt19937& rng, std::uni
             data[dataIndex++] = static_cast<uint8>(dist255(rng));
             data[dataIndex++] = static_cast<uint8>(dist255(rng));
         }
-    Texture* result = DAVA::Texture::CreateFromData(texureFormat, data, width, height, false);
+    Texture* result;
+    if (generateTexWithMips)
+    {
+        result = DAVA::Texture::CreateFromData(textureFormat, data, width, height, false);
+    }
+    else
+    {
+        DAVA::Image* imageOriginal = DAVA::Image::CreateFromData(width, height, textureFormat, data);
+        DAVA::Vector<DAVA::Image*> imageSet = imageOriginal->CreateMipMapsImages();
+
+        result = DAVA::Texture::CreateFromData(imageSet);
+
+        for (auto mip : imageSet)
+            SafeRelease(mip);
+        SafeRelease(imageOriginal);
+    }
 
     delete[] data;
     return result;

@@ -64,7 +64,8 @@ private:
     static const DAVA::FastName sampleCountKeyword;
     static const DAVA::FastName dependentReadKeyword;
     static const DAVA::uint32 accumulatedFramesCount;
-    static const DAVA::PixelFormat texureFormat;
+    static const DAVA::PixelFormat textureFormat;
+    static const bool generateTexWithMips;
 };
 
 DAVA::float32 OverdrawTesterSystem::GetCurrentOverdraw() const
