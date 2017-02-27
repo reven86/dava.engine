@@ -98,22 +98,6 @@ void WindowNativeBridge::UnfocusXamlControl()
 {
     // XAML controls cannot be unfocused programmatically, this is especially useful for text fields
     // So use dummy offscreen control that steals focus
-
-    if (xamlControlThatStealsFocus == nullptr)
-    {
-        // Windows UAP doesn't allow to unfocus UI control programmatically
-        // It only permits to set focus at another control
-        // So create dummy offscreen button that steals focus when there is
-        // a need to unfocus native control, especially useful for text fields
-        xamlControlThatStealsFocus = ref new Windows::UI::Xaml::Controls::Button();
-        xamlControlThatStealsFocus->Content = L"I steal your focus";
-        xamlControlThatStealsFocus->Width = 30;
-        xamlControlThatStealsFocus->Height = 20;
-        xamlControlThatStealsFocus->TabNavigation = ::Windows::UI::Xaml::Input::KeyboardNavigationMode::Cycle;
-        AddXamlControl(xamlControlThatStealsFocus);
-        PositionXamlControl(xamlControlThatStealsFocus, -1000.0f, -1000.0f);
-    }
-
     xamlControlThatStealsFocus->Focus(::Windows::UI::Xaml::FocusState::Pointer);
 }
 
@@ -628,6 +612,18 @@ void WindowNativeBridge::CreateBaseXamlUI()
         AddXamlControl(dummyWebView);
         AddXamlControl(dummyTextBox);
     }
+
+    // Windows UAP doesn't allow to unfocus UI control programmatically
+    // It only permits to set focus at another control
+    // So create dummy offscreen button that steals focus when there is
+    // a need to unfocus native control, especially useful for text fields
+    xamlControlThatStealsFocus = ref new Windows::UI::Xaml::Controls::Button();
+    xamlControlThatStealsFocus->Content = L"I steal your focus";
+    xamlControlThatStealsFocus->Width = 30;
+    xamlControlThatStealsFocus->Height = 20;
+    xamlControlThatStealsFocus->TabNavigation = ::Windows::UI::Xaml::Input::KeyboardNavigationMode::Cycle;
+    AddXamlControl(xamlControlThatStealsFocus);
+    PositionXamlControl(xamlControlThatStealsFocus, -1000.0f, -1000.0f);
 
     xamlWindow->Content = xamlSwapChainPanel;
 }
