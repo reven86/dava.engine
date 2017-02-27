@@ -55,7 +55,7 @@ DAVA_VIRTUAL_REFLECTION_IMPL(RenderObject)
     .Field("type", &RenderObject::type)[M::DisplayName("Type"), M::EnumT<RenderObject::eType>()]
     .Field("flags", &RenderObject::flags)[M::DisplayName("Flags"), M::FlagsT<RenderObject::eFlags>()]
     .Field("debugFlags", &RenderObject::debugFlags)[M::DisplayName("Debug flags")]
-    .Field("removeIndex", &RenderObject::removeIndex)[M::HiddenField()]
+    .Field("removeIndex", &RenderObject::removeIndex)[M::ReadOnly(), M::HiddenField()]
     .Field("bbox", &RenderObject::bbox)[M::DisplayName("Bounding box")]
     .Field("worldBBox", &RenderObject::worldBBox)[M::DisplayName("World Bounding box")]
     .Field("worldTransform", &RenderObject::worldTransform)[M::DisplayName("World Transform")]

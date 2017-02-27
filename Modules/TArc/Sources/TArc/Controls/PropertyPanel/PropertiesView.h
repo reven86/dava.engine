@@ -44,7 +44,7 @@ private:
     ContextAccessor* accessor = nullptr;
     QTreeView* view = nullptr;
     std::unique_ptr<ReflectedPropertyModel> model;
-    String settingsNodeName;
+    const String settingsNodeName;
     QtConnections connections;
 };
 }

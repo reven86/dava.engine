@@ -16,8 +16,8 @@ DAVA_VIRTUAL_REFLECTION_IMPL(RenderBatch)
 {
     ReflectionRegistrator<RenderBatch>::Begin()
     .Field("dataSource", &RenderBatch::dataSource)[M::DisplayName("Data source")]
-    .Field("startIndex", &RenderBatch::startIndex)[M::DisplayName("Start index"), M::HiddenField()]
-    .Field("indexCount", &RenderBatch::indexCount)[M::DisplayName("Index count"), M::HiddenField()]
+    .Field("startIndex", &RenderBatch::startIndex)[M::DisplayName("Start index"), M::ReadOnly(), M::HiddenField()]
+    .Field("indexCount", &RenderBatch::indexCount)[M::DisplayName("Index count"), M::ReadOnly(), M::HiddenField()]
     .Field("aabbbox", &RenderBatch::aabbox)[M::DisplayName("Bounding box")]
     .Field("material", &RenderBatch::material)[M::DisplayName("Material")]
     .Field("sortingKey", &RenderBatch::GetSortingKey, &RenderBatch::SetSortingKey)[M::DisplayName("Sorting key")]

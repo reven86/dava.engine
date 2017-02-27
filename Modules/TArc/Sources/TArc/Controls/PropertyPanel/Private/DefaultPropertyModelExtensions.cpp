@@ -22,7 +22,7 @@ void DefaultChildCheatorExtension::ExposeChildren(const std::shared_ptr<const Pr
 
     if (node->propertyType == PropertyNode::SelfRoot || node->propertyType == PropertyNode::RealProperty)
     {
-        Set<String> groups;
+        UnorderedSet<String> groups;
         ForEachField(node->field.ref, [&](Reflection::Field&& field)
                      {
                          if (field.ref.HasMeta<M::HiddenField>() == false)

@@ -111,7 +111,7 @@ Component* Component::CreateByType(uint32 componentType)
 DAVA_VIRTUAL_REFLECTION_IMPL(Component)
 {
     ReflectionRegistrator<Component>::Begin()
-    .Field("entity", &Component::entity)[M::HiddenField()]
+    .Field("entity", &Component::entity)[M::ReadOnly(), M::HiddenField()]
     .End();
 }
 

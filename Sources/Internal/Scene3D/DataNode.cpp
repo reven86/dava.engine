@@ -9,7 +9,7 @@ namespace DAVA
 DAVA_VIRTUAL_REFLECTION_IMPL(DataNode)
 {
     ReflectionRegistrator<DataNode>::Begin()
-    .Field("id", &DataNode::id)[M::HiddenField()]
+    .Field("id", &DataNode::id)[M::ReadOnly(), M::HiddenField()]
     .End();
 }
 

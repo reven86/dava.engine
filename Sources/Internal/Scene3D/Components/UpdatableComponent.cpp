@@ -10,7 +10,7 @@ namespace DAVA
 DAVA_VIRTUAL_REFLECTION_IMPL(UpdatableComponent)
 {
     ReflectionRegistrator<UpdatableComponent>::Begin()
-    .Field("updatableObject", &UpdatableComponent::updatableObject)[M::HiddenField()]
+    .Field("updatableObject", &UpdatableComponent::updatableObject)[M::ReadOnly(), M::HiddenField()]
     .End();
 }
 

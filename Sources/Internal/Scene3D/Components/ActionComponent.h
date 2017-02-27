@@ -103,19 +103,6 @@ public:
 
     IMPLEMENT_COMPONENT_TYPE(ACTION_COMPONENT);
 
-private:
-    void EvaluateAction(const Action& action);
-
-    void OnActionParticleEffectStart(const Action& action);
-    void OnActionParticleEffectStop(const Action& action);
-    void OnActionAnimationStart(const Action& action);
-    void OnActionAnimationStop(const Action& action);
-    void OnActionSoundStart(const Action& action);
-    void OnActionSoundStop(const Action& action);
-    void OnActionWave(const Action& action);
-
-    Entity* GetTargetEntity(const FastName& name, Entity* parent);
-
     struct ActionContainer : public InspBase
     {
         Action action;
@@ -143,8 +130,21 @@ private:
         INTROSPECTION(ActionContainer,
                       NULL);
 
-        //DAVA_VIRTUAL_REFLECTION(ActionContainer, InspBase);
+        DAVA_VIRTUAL_REFLECTION(ActionContainer, InspBase);
     };
+
+private:
+    void EvaluateAction(const Action& action);
+
+    void OnActionParticleEffectStart(const Action& action);
+    void OnActionParticleEffectStop(const Action& action);
+    void OnActionAnimationStart(const Action& action);
+    void OnActionAnimationStop(const Action& action);
+    void OnActionSoundStart(const Action& action);
+    void OnActionSoundStop(const Action& action);
+    void OnActionWave(const Action& action);
+
+    Entity* GetTargetEntity(const FastName& name, Entity* parent);
 
     Vector<ActionComponent::ActionContainer> actions;
     bool started;

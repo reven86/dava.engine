@@ -55,7 +55,7 @@ public:
     void SetExpanded(bool expanded, const QModelIndex& index);
     QModelIndexList GetExpandedList() const;
 
-    void SaveExpanded(PropertiesItem& propertyRoot);
+    void SaveExpanded(PropertiesItem& propertyRoot) const;
     void LoadExpanded(const PropertiesItem& propertyRoot);
 
 private:

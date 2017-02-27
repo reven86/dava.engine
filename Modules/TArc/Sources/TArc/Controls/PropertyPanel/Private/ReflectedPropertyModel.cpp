@@ -389,7 +389,6 @@ void ReflectedPropertyModel::SetExpanded(bool expanded, const QModelIndex& index
         {
             return;
         }
-        DVASSERT(field != nullptr);
 
         InjectExpandedMeta(field->meta, expanded);
 
@@ -420,7 +419,7 @@ QModelIndexList ReflectedPropertyModel::GetExpandedList() const
     return result;
 }
 
-void ReflectedPropertyModel::SaveExpanded(PropertiesItem& propertyRoot)
+void ReflectedPropertyModel::SaveExpanded(PropertiesItem& propertyRoot) const
 {
     using namespace ReflectedPropertyModelDetail;
     propertyRoot.Set(ExpandedCount, static_cast<int32>(expandedFields.size()));

@@ -21,11 +21,11 @@ DAVA_VIRTUAL_REFLECTION_IMPL(ActionComponent::Action)
     .End();
 }
 
-//DAVA_VIRTUAL_REFLECTION_IMPL(ActionComponent::ActionContainer)
-//{
-//    ReflectionRegistrator<ActionContainer>::Begin()
-//    .End();
-//}
+DAVA_VIRTUAL_REFLECTION_IMPL(ActionComponent::ActionContainer)
+{
+    ReflectionRegistrator<ActionContainer>::Begin()
+    .End();
+}
 
 DAVA_VIRTUAL_REFLECTION_IMPL(ActionComponent)
 {
