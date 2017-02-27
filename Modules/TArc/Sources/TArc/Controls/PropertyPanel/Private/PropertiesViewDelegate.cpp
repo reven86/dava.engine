@@ -86,14 +86,12 @@ QSize PropertiesViewDelegate::sizeHint(const QStyleOptionViewItem& option, const
 QWidget* PropertiesViewDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     BaseComponentValue* valueComponent = GetComponentValue(index);
-    //valueComponent->UpdateCachedValue();
     return valueComponent->AcquireEditorWidget(parent, option);
 }
 
 void PropertiesViewDelegate::destroyEditor(QWidget* editor, const QModelIndex& index) const
 {
     BaseComponentValue* valueComponent = GetComponentValue(index);
-    //valueComponent->ClearCachedValue();
     return valueComponent->ReleaseEditorWidget(editor);
 }
 
@@ -104,8 +102,6 @@ void PropertiesViewDelegate::setEditorData(QWidget* editor, const QModelIndex& i
 
 void PropertiesViewDelegate::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
 {
-    //BaseComponentValue* valueComponent = GetComponentValue(index);
-    //valueComponent->CommitData();
 }
 
 void PropertiesViewDelegate::updateEditorGeometry(QWidget* editor, const QStyleOptionViewItem& option, const QModelIndex& index) const
@@ -132,50 +128,6 @@ bool PropertiesViewDelegate::editorEvent(QEvent* event, QAbstractItemModel* mode
 
 bool PropertiesViewDelegate::helpEvent(QHelpEvent* event, QAbstractItemView* view, const QStyleOptionViewItem& option, const QModelIndex& index)
 {
-    return false;
-}
-
-bool PropertiesViewDelegate::eventFilter(QObject* obj, QEvent* e)
-{
-    /*QWidget* w = qobject_cast<QWidget*>(obj);
-    if (w == nullptr)
-    {
-        return false;
-    }
-    switch (e->type())
-    {
-        case QEvent::KeyRelease:
-        {
-            QKeyEvent* keyEvent = static_cast<QKeyEvent*>(e);
-            switch (keyEvent->key())
-            {
-                case Qt::Key_Return:
-                case Qt::Key_Enter:
-                {
-                    emit commitData(w);
-                    emit closeEditor(w, QAbstractItemDelegate::EditNextItem);
-                    break;
-                }
-                case Qt::Key_Escape:
-                {
-                    emit closeEditor(w, QAbstractItemDelegate::RevertModelCache);
-                    break;
-                }
-                default:
-                    break;
-            }
-        }
-        break;
-        case QEvent::FocusOut:
-        {
-            emit commitData(w);
-            emit closeEditor(w, QAbstractItemDelegate::EditNextItem);
-        }
-        default:
-            break;
-    }
-
-    return false;*/
     return false;
 }
 
