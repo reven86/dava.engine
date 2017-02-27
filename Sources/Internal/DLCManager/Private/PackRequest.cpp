@@ -60,34 +60,12 @@ const String& PackRequest::GetRequestedPackName() const
 
 Vector<String> PackRequest::GetDependencies() const
 {
-    Vector<String> requestNames;
-
-    const PackMetaData& meta = packManagerImpl.GetMeta();
-    const PackMetaData::PackInfo& packInfo = meta.GetPackInfo(requestedPackName);
-    const String& dependencies = packInfo.packDependencies;
-    String delimiter(", ");
-
-    Split(dependencies, delimiter, requestNames);
-
-    // convert every name from string representation of index to packName
-    for (String& pack : requestNames)
+    if (packManagerImpl.IsInitialized())
     {
-        uint32 index = 0;
-        try
-        {
-            unsigned long i = stoul(pack);
-            index = static_cast<uint32>(i);
-        }
-        catch (std::exception& ex)
-        {
-            Logger::Error("bad dependency index for pack: %s, index value: %s, error message: %s", packInfo.packName.c_str(), pack.c_str(), ex.what());
-            DAVA_THROW(Exception, "bad dependency pack index see log");
-        }
-        const PackMetaData::PackInfo& info = meta.GetPackInfo(index);
-        pack = info.packName;
+        const PackMetaData& pack_meta_data = packManagerImpl.GetMeta();
+        return pack_meta_data.GetDependenciesNames(requestedPackName);
     }
-
-    return requestNames;
+    DAVA_THROW(Exception, "Error! Can't get pack dependencies before initialization not finished");
 }
 /** return size of files within this request without dependencies */
 uint64 PackRequest::GetSize() const
@@ -240,10 +218,16 @@ void PackRequest::InitializeFileRequest(const uint32 fileIndex_,
     fileRequest.compressionType = compressionType_;
 }
 
+void PackRequest::DeleteJustDownloadedFileAndStartAgain(FileRequest& fileRequest)
+{
+    fileRequest.downloadedFileSize = 0;
+    FileSystem::Instance()->DeleteFile(fileRequest.localFile);
+    fileRequest.status = LoadingPackFile;
+}
+
 void PackRequest::UpdateFileRequests()
 {
     // TODO refactor method
-
     bool callSignal = false;
 
     for (FileRequest& fileRequest : requests)
@@ -354,7 +338,13 @@ void PackRequest::UpdateFileRequests()
                 {
                     ScopedPtr<File> f(File::Create(fileRequest.localFile, File::WRITE | File::APPEND | File::OPEN));
                     uint32 written = f->Write(&footer, sizeof(footer));
-                    DVASSERT(written == sizeof(footer));
+                    if (written != sizeof(footer))
+                    {
+                        // not enough space
+                        packManagerImpl.noSpaceLeftOnDevice.Emit(fileRequest.localFile.GetAbsolutePathname());
+                        DeleteJustDownloadedFileAndStartAgain(fileRequest);
+                        return;
+                    }
                 }
 
                 DVASSERT(fileRequest.downloadedFileSize == footer.sizeCompressed);
@@ -363,13 +353,13 @@ void PackRequest::UpdateFileRequests()
 
                 fileRequest.status = Ready;
                 callSignal = true;
+
+                packManagerImpl.SetFileIsReady(fileRequest.fileIndex);
             }
             else
             {
-                fileRequest.downloadedFileSize = 0;
                 // try download again
-                FileSystem::Instance()->DeleteFile(fileRequest.localFile);
-                fileRequest.status = LoadingPackFile;
+                DeleteJustDownloadedFileAndStartAgain(fileRequest);
             }
         }
         break;

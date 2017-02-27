@@ -49,7 +49,7 @@ void DLCManagerTest::LoadResources()
 
     packInput = new UITextField(Rect(5, 10, 400, 20));
     packInput->SetFont(font);
-    packInput->SetText(L"group_0");
+    packInput->SetText(L"autogen_shared_765");
     packInput->SetFontSize(14);
     packInput->SetDebugDraw(true);
     packInput->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
@@ -61,7 +61,7 @@ void DLCManagerTest::LoadResources()
 
     packNextInput = new UITextField(Rect(5, 40, 400, 20));
     packNextInput->SetFont(font);
-    packNextInput->SetText(L"group_1");
+    packNextInput->SetText(L"tank_ussr_T-34");
     packNextInput->SetFontSize(14);
     packNextInput->SetDebugDraw(true);
     packNextInput->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
@@ -273,7 +273,14 @@ void DLCManagerTest::OnNetworkReady(bool isReady)
     ss << "nerwork ready = " << boolName;
     Logger::Info("%s", ss.str().c_str());
 
-    packNameLoading->SetText(UTF8Utils::EncodeToWideString("loading: " + ss.str()));
+    packNameLoading->SetUtf8Text("loading: " + ss.str());
+}
+
+void DLCManagerTest::OnInitializeFinished(size_t numDownloaded, size_t numTotalFiles)
+{
+    std::stringstream ss;
+    ss << "initialize finished: num_downloaded = " << numDownloaded << " num_total = " << numTotalFiles << std::endl;
+    packNameLoading->SetUtf8Text(ss.str());
 }
 
 void DLCManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, void* callerData)
@@ -284,6 +291,7 @@ void DLCManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, vo
 
     dm.networkReady.DisconnectAll();
     dm.networkReady.Connect(this, &DLCManagerTest::OnNetworkReady);
+    dm.initializeFinished.Connect(this, &DLCManagerTest::OnInitializeFinished);
 
     dm.Initialize(folderWithDownloadedPacks, urlToServerSuperpack, DLCManager::Hints());
 
@@ -336,6 +344,15 @@ void DLCManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* data
 
     try
     {
+        if (dm.IsInitialized())
+        {
+            if (dm.IsPackDownloaded(packName))
+            {
+                packNameLoading->SetUtf8Text("already downloaded: " + packName);
+                return;
+            }
+        }
+
         packNameLoading->SetUtf8Text("loading: " + packName);
         dm.RequestPack(packName);
     }
@@ -355,11 +372,20 @@ void DLCManagerTest::OnStartNextPackClicked(DAVA::BaseObject* sender, void* data
 
     try
     {
+        if (pm.IsInitialized())
+        {
+            if (pm.IsPackDownloaded(packName))
+            {
+                packNameLoading->SetUtf8Text("already downloaded: " + packName);
+                return;
+            }
+        }
+
         packNameLoading->SetUtf8Text("loading: " + packName);
         const DLCManager::IRequest* p = pm.RequestPack(packName);
         if (!p->IsDownloaded())
         {
-            //pm.SetRequestOrder(p, 0);
+            pm.SetPriorityToRequest(p);
         }
     }
     catch (std::exception& ex)

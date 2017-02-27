@@ -58,8 +58,13 @@ public:
         virtual bool IsDownloaded() const = 0;
     };
 
-    /** you have to subscribe to this signal before call `Initialize` */
+    /** You have to subscribe to this signal before call `Initialize` */
     Signal<bool> networkReady;
+    /** After this signal you you can use ```bool IsPackDownloaded(const String& packName);```
+	    First parameter means number of founded already downloaded files localy.
+		Second patameter means number of total files at server superpack
+		*/
+    Signal<size_t, size_t> initializeFinished;
     /** signal per user request with full size of all depended packs */
     Signal<const IRequest&> requestUpdated;
     /** signal about fail download(or write) file into device, parameter is
@@ -89,6 +94,12 @@ public:
     virtual bool IsInitialized() const = 0;
 
     virtual bool IsRequestingEnabled() const = 0;
+
+    /** After initialization finished you can check
+		if specified pack already downloaded. <b>Fire exception if
+		initialization not finished!</b>
+	*/
+    virtual bool IsPackDownloaded(const String& packName) = 0;
 
     virtual void SetRequestingEnabled(bool value) = 0;
 

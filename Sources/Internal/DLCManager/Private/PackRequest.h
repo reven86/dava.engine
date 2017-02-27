@@ -77,6 +77,8 @@ private:
                                const String& url,
                                const Compressor::Type compressionType_,
                                FileRequest& fileRequest);
+
+    static void DeleteJustDownloadedFileAndStartAgain(FileRequest& fileRequest);
     void UpdateFileRequests();
 
     DLCManagerImpl& packManagerImpl;

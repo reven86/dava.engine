@@ -84,6 +84,8 @@ public:
 
     void Update(float frameDelta);
 
+    bool IsPackDownloaded(const String& packName) override;
+
     const IRequest* RequestPack(const String& requestedPackName) override;
 
     PackRequest* FindRequest(const String& requestedPackName) const;
@@ -121,7 +123,12 @@ public:
     // use only after initialization
     bool IsFileReady(uint32 fileIndex) const
     {
-        return fileIndex < scanFileReady.size() && scanFileReady.test(fileIndex);
+        return fileIndex < scanFileReady.size() && scanFileReady[fileIndex];
+    }
+
+    void SetFileIsReady(uint32 fileIndex)
+    {
+        scanFileReady.at(fileIndex) = true;
     }
 
 private:
@@ -161,7 +168,7 @@ private:
     // fill during scan local pack files, emtpy after finish scan
     Vector<LocalFileInfo> localFiles;
     // every bit mean file exist and size match with meta
-    std::bitset<32000> scanFileReady;
+    Vector<bool> scanFileReady;
     Thread* scanThread = nullptr;
     ScanState scanState{ ScanState::Wait };
     Semaphore metaDataLoadedSem;

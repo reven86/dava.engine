@@ -62,6 +62,37 @@ PackMetaData::PackMetaData(const FilePath& metaDb)
     }
 }
 
+Vector<String> PackMetaData::GetDependenciesNames(const String& requestedPackName) const
+{
+    Vector<String> requestNames;
+
+    const PackInfo& packInfo = GetPackInfo(requestedPackName);
+    const String& dependencies = packInfo.packDependencies;
+    String delimiter(", ");
+
+    Split(dependencies, delimiter, requestNames);
+
+    // convert every name from string representation of index to packName
+    for (String& pack : requestNames)
+    {
+        uint32 index = 0;
+        try
+        {
+            unsigned long i = stoul(pack);
+            index = static_cast<uint32>(i);
+        }
+        catch (std::exception& ex)
+        {
+            Logger::Error("bad dependency index for pack: %s, index value: %s, error message: %s", packInfo.packName.c_str(), pack.c_str(), ex.what());
+            DAVA_THROW(Exception, "bad dependency pack index see log");
+        }
+        const PackInfo& info = GetPackInfo(index);
+        pack = info.packName;
+    }
+
+    return requestNames;
+}
+
 Vector<uint32> PackMetaData::GetFileIndexes(const String& requestedPackName) const
 {
     Vector<uint32> result;

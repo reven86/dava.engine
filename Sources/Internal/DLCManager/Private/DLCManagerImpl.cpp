@@ -154,11 +154,8 @@ bool DLCManagerImpl::IsInitialized() const
 {
     // current inputState can be in differect states becouse of
     // offline mode
-    LockGuard<Mutex> lock(protectDM);
-
-    bool requestManagerCreated = requestManager != nullptr;
-
-    return requestManagerCreated;
+    // for now we always in Main Thread! old // LockGuard<Mutex> lock(protectDM);
+    return nullptr != requestManager;
 }
 
 // start ISync //////////////////////////////////////
@@ -714,6 +711,9 @@ void DLCManagerImpl::LoadPacksDataFromMeta()
 
         meta.reset(new PackMetaData(&buffer[0], buffer.size()));
 
+        size_t numFiles = meta->GetNumTotalFiles();
+        scanFileReady.resize(numFiles);
+
         // now user can do requests for local packs
         requestManager.reset(new RequestManager(*this));
     }
@@ -757,12 +757,45 @@ void DLCManagerImpl::StartDeleyedRequests()
     delayedRequests.clear();
 
     initState = InitState::Ready;
+
+    size_t numDownloaded = std::count(begin(scanFileReady), end(scanFileReady), true);
+
+    initializeFinished.Emit(numDownloaded, meta->GetNumTotalFiles());
 }
 
 void DLCManagerImpl::DeleteLocalMetaFiles()
 {
     FileSystem* fs = FileSystem::Instance();
     fs->DeleteFile(localCacheMeta);
+}
+
+bool DLCManagerImpl::IsPackDownloaded(const String& packName)
+{
+    if (!IsInitialized())
+    {
+        DAVA_THROW(Exception, "Initialization not finished. Files is scanning now.");
+    }
+
+    // check every file in requested pack and all it's dependencies
+    Vector<uint32> packFileIndexes = meta->GetFileIndexes(packName);
+    for (uint32 fileIndex : packFileIndexes)
+    {
+        if (!IsFileReady(fileIndex))
+        {
+            return false;
+        }
+    }
+
+    Vector<String> deps = meta->GetDependenciesNames(packName);
+    for (const String& dependencyPack : deps)
+    {
+        if (!IsPackDownloaded(dependencyPack)) // recursive call
+        {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 const DLCManager::IRequest* DLCManagerImpl::RequestPack(const String& packName)
@@ -848,7 +881,7 @@ void DLCManagerImpl::RemovePack(const String& requestedPackName)
             {
                 const String relFile = GetRelativeFilePath(index);
                 FileSystem::Instance()->DeleteFile(dirToDownloadedPacks + relFile);
-                scanFileReady.reset(index);
+                scanFileReady[index] = false;
             }
         }
     }
@@ -1057,7 +1090,7 @@ void DLCManagerImpl::ThreadScanFunc()
             else
             {
                 size_t fileIndex = std::distance(&pack.filesTable.data.files[0], entry);
-                scanFileReady.set(fileIndex);
+                scanFileReady[fileIndex] = true;
             }
         }
         else
