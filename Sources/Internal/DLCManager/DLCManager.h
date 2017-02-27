@@ -65,7 +65,7 @@ public:
 		Second patameter means number of total files at server superpack
 		*/
     Signal<size_t, size_t> initializeFinished;
-    /** signal per user request with full size of all depended packs */
+    /** signal per user request */
     Signal<const IRequest&> requestUpdated;
     /** signal about fail download(or write) file into device, parameter is
 		full path to file failed create or write.
