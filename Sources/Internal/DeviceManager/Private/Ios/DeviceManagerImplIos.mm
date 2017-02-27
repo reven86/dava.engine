@@ -146,8 +146,8 @@ void DeviceManagerImpl::UpdateDisplayConfig()
             }
             else
             {
-                displayInfo.rawDpiX = eIos::IPHONE_4_5_6_SE_IPAD_MINI2_MINI3; // default phone, can be changed
-                displayInfo.rawDpiY = eIos::IPHONE_4_5_6_SE_IPAD_MINI2_MINI3; // default phone, can be changed
+                displayInfo.rawDpiX = eIos::IPHONE_4_5_6_SE_IPAD_MINI2_MINI3; // default phone dpi, can be changed
+                displayInfo.rawDpiY = eIos::IPHONE_4_5_6_SE_IPAD_MINI2_MINI3; // default phone dpi, can be changed
                 displayInfo.name = "phoneMainScreen";
             }
         }
