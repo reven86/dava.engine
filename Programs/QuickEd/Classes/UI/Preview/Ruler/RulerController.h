@@ -13,7 +13,7 @@ class RulerController : public QObject
 public:
     // Construction/destruction.
     RulerController(QObject* parent = nullptr);
-    ~RulerController() = default;
+    ~RulerController();
 
     // Set the screen view pos and scale.
     void SetScale(float scale);

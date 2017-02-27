@@ -14,6 +14,7 @@
 #include "EditorSystems/EditorCanvas.h"
 #include "Ruler/RulerWidget.h"
 #include "Ruler/RulerController.h"
+#include "UI/Find/FindController.h"
 #include "UI/QtModelPackageCommandExecutor.h"
 #include "UI/Package/PackageMimeData.h"
 #include "Model/PackageHierarchy/PackageNode.h"
@@ -53,6 +54,7 @@ struct SystemsContext : WidgetContext
 PreviewWidget::PreviewWidget(QWidget* parent)
     : QWidget(parent)
     , rulerController(new RulerController(this))
+    , findController(new FindController(this))
     , continuousUpdater(new ContinuousUpdater(MakeFunction(this, &PreviewWidget::NotifySelectionChanged), this, 300))
 {
     qRegisterMetaType<SelectedNodes>("SelectedNodes");
@@ -86,6 +88,8 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     scaleCombo->setInsertPolicy(QComboBox::NoInsert);
     OnScaleChanged(1.0f);
     UpdateScrollArea();
+
+    connect(findInDocumentWidget, &FindInDocumentWidget::OnFindFilterReady, findController, &FindController::FindInDocument);
 }
 
 PreviewWidget::~PreviewWidget()
@@ -211,6 +215,8 @@ void PreviewWidget::OnDocumentChanged(Document* arg)
     }
 
     LoadSystemsContext(arg);
+
+    findController->OnDocumentChanged(arg);
 }
 
 void PreviewWidget::SaveSystemsContextAndClear()

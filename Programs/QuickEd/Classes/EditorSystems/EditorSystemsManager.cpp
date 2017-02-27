@@ -144,19 +144,31 @@ ControlNode* EditorSystemsManager::GetControlNodeByPath(const DAVA::String& path
     Vector<String> strPath;
     Split(path, "/", strPath, false, true);
 
+    if (strPath.empty())
+    {
+        return nullptr;
+    }
+
     for (PackageBaseNode* rootControl : editingRootControls)
     {
         ControlNode* controlNode = dynamic_cast<ControlNode*>(rootControl);
         DVASSERT(nullptr != controlNode);
 
-        for (const String& name : strPath)
+        if (controlNode->GetName() != strPath[0])
+        {
+            continue;
+        }
+
+        for (Vector<String>::const_iterator pathIter = strPath.begin() + 1;
+             pathIter != strPath.end();
+             ++pathIter)
         {
             if (controlNode == nullptr)
             {
                 break;
             }
 
-            controlNode = controlNode->FindByName(name); // FindByName is not recursive here
+            controlNode = controlNode->FindByName(*pathIter); // FindByName is not recursive here
         }
 
         if (controlNode)
@@ -164,6 +176,8 @@ ControlNode* EditorSystemsManager::GetControlNodeByPath(const DAVA::String& path
             return controlNode;
         }
     }
+
+    return nullptr;
 }
 
 ControlNode* EditorSystemsManager::GetControlNodeAtPoint(const DAVA::Vector2& point) const

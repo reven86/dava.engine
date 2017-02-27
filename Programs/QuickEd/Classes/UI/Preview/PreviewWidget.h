@@ -16,6 +16,7 @@ class EditorSystemsManager;
 
 class Document;
 class ControlNode;
+class FindController;
 class PackageBaseNode;
 class RulerController;
 class EditorCanvas;
@@ -118,6 +119,7 @@ private:
 
     SelectionContainer selectionContainer;
     RulerController* rulerController = nullptr;
+    FindController* findController = nullptr;
     QPoint rootControlPos;
     QPoint canvasPos;
 
@@ -136,5 +138,5 @@ private:
     //we can show model dialogs only when mouse released, so remember node to change text when mouse will be released
     ControlNode* nodeToChangeTextOnMouseRelease = nullptr;
 
-    //FindContext findContext;
+    friend class FindController;
 };

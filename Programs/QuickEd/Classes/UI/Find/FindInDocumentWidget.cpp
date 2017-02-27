@@ -1,5 +1,6 @@
 #include "FindInDocumentWidget.h"
 #include "SearchCriteriasWidget.h"
+#include "EditorSystems/EditorSystemsManager.h"
 #include "UI/Find/Finder.h"
 #include "Logger/Logger.h"
 
@@ -38,43 +39,9 @@ std::shared_ptr<FindFilter> FindInDocumentWidget::BuildFindFilter() const
     return findFiltersWidget->BuildFindFilter();
 }
 
-void FindInDocumentWidget::OnDocumentChanged(Document* document_)
-{
-    document = document_;
-}
-
 void FindInDocumentWidget::OnFindClicked()
 {
-    if (document)
-    {
-        std::unique_ptr<FindFilter> filter = findFiltersWidget->BuildFindFilter();
+    std::shared_ptr<FindFilter> filter = findFiltersWidget->BuildFindFilter();
 
-        Finder finder(std::move(filter), nullptr);
-
-        connect(&finder, &Finder::ProgressChanged, this, &FindInDocumentWidget::OnProgressChanged);
-        connect(&finder, &Finder::ItemFound, this, &FindInDocumentWidget::OnItemFound);
-        connect(&finder, &Finder::Finished, this, &FindInDocumentWidget::OnFindFinished);
-
-        finder.Process(document->GetPackage());
-    }
-}
-
-void FindInDocumentWidget::OnItemFound(FindItem item)
-{
-    for (auto c : item.GetControlPaths())
-    {
-        Logger::Debug("%s %s %s",
-                      __FUNCTION__,
-                      item.GetFile().GetStringValue().c_str(),
-                      c.c_str());
-    }
-}
-
-void FindInDocumentWidget::OnProgressChanged(int filesProcessed, int totalFiles)
-{
-}
-
-void FindInDocumentWidget::OnFindFinished()
-{
-    Logger::Debug("%s", __FUNCTION__);
+    emit OnFindFilterReady(filter);
 }

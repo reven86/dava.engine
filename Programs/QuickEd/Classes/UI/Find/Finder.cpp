@@ -7,8 +7,8 @@
 
 using namespace DAVA;
 
-Finder::Finder(std::unique_ptr<FindFilter>&& filter_, const DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>>* prototypes_)
-    : filter(std::move(filter_))
+Finder::Finder(std::shared_ptr<FindFilter> filter_, const DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>>* prototypes_)
+    : filter(filter_)
     , prototypes(prototypes_)
 {
 }

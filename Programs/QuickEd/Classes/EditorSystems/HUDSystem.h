@@ -27,6 +27,8 @@ private:
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OnHighlightNode(const ControlNode* node);
 
+    void OnSearchResultsChanged(const SelectedControls& results);
+
     void OnMagnetLinesChanged(const DAVA::Vector<MagnetLineInfo>& magnetLines);
     void ClearMagnetLines();
 
@@ -46,7 +48,8 @@ private:
     DAVA::Vector2 pressedPoint; //corner of selection rect
     DAVA::Vector2 hoveredPoint;
 
-    DAVA::Map<ControlNode*, std::unique_ptr<HUD>> hudMap;
+    DAVA::Map<ControlNode*, std::unique_ptr<HUD>> selectionHudMap;
+    DAVA::Map<ControlNode*, DAVA::RefPtr<DAVA::UIControl>> searchHudMap;
     DAVA::RefPtr<DAVA::UIControl> selectionRectControl;
     DAVA::Vector<DAVA::RefPtr<DAVA::UIControl>> magnetControls;
     DAVA::Vector<DAVA::RefPtr<DAVA::UIControl>> magnetTargetControls;

@@ -120,6 +120,7 @@ HUDSystem::HUDSystem(EditorSystemsManager* parent)
     systemsManager->selectionChanged.Connect(this, &HUDSystem::OnSelectionChanged);
     systemsManager->magnetLinesChanged.Connect(this, &HUDSystem::OnMagnetLinesChanged);
     systemsManager->packageChanged.Connect(this, &HUDSystem::OnPackageChanged);
+    systemsManager->searchResultsChanged.Connect(this, &HUDSystem::OnSearchResultsChanged);
     systemsManager->GetRootControl()->AddControl(hudControl.Get());
 }
 
@@ -137,7 +138,7 @@ void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const Selected
         ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
         if (nullptr != controlNode)
         {
-            hudMap.erase(controlNode);
+            selectionHudMap.erase(controlNode);
             sortedControlList.erase(controlNode);
         }
     }
@@ -149,7 +150,7 @@ void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const Selected
         {
             if (nullptr != controlNode && nullptr != controlNode->GetControl())
             {
-                hudMap[controlNode] = std::make_unique<HUD>(controlNode, hudControl.Get());
+                selectionHudMap[controlNode] = std::make_unique<HUD>(controlNode, hudControl.Get());
                 sortedControlList.insert(controlNode);
             }
         }
@@ -227,6 +228,34 @@ void HUDSystem::OnHighlightNode(const ControlNode* node)
         UIControl* targetControl = node->GetControl();
         hoveredNodeControl = CreateHUDRect(node);
         hudControl->AddControl(hoveredNodeControl.Get());
+    }
+}
+
+void HUDSystem::OnSearchResultsChanged(const SelectedControls& results)
+{
+    for (auto node : searchHudMap)
+    {
+        node.second->RemoveFromParent();
+    }
+
+    searchHudMap.clear();
+
+    for (auto node : results)
+    {
+        if (nullptr != node->GetControl())
+        {
+            //searchHudMap[node] = std::make_unique<HUD>(node, hudControl.Get());
+            RefPtr<UIControl> highlightControl(new UIControl());
+            UIControlBackground* bg = highlightControl->GetOrCreateComponent<UIControlBackground>();
+            bg->SetDrawType(UIControlBackground::DRAW_FILL);
+            bg->SetDrawColor(Color(1.0f, 1.0f, 1.0f, 0.25f));
+
+            //highlightControl->SetAbsoluteRect(node->GetControl()->GetAbsoluteRect());
+            highlightControl->InitFromGD(node->GetControl()->GetGeometricData());
+
+            searchHudMap[node] = highlightControl;
+            hudControl->AddControl(highlightControl.Get());
+        }
     }
 }
 
@@ -333,8 +362,8 @@ HUDAreaInfo HUDSystem::GetControlArea(const Vector2& pos, eSearchOrder searchOrd
         {
             ControlNode* node = dynamic_cast<ControlNode*>(iter);
             DVASSERT(nullptr != node);
-            auto findIter = hudMap.find(node);
-            DVASSERT(findIter != hudMap.end(), "hud map corrupted");
+            auto findIter = selectionHudMap.find(node);
+            DVASSERT(findIter != selectionHudMap.end(), "hud map corrupted");
             const auto& hud = findIter->second;
             if (hud->container->GetVisibilityFlag())
             {
@@ -371,8 +400,8 @@ void HUDSystem::UpdateAreasVisibility()
     {
         ControlNode* node = dynamic_cast<ControlNode*>(iter);
         DVASSERT(nullptr != node);
-        auto findIter = hudMap.find(node);
-        DVASSERT(findIter != hudMap.end(), "hud map corrupted");
+        auto findIter = selectionHudMap.find(node);
+        DVASSERT(findIter != selectionHudMap.end(), "hud map corrupted");
         const auto& hud = findIter->second;
         for (HUDAreaInfo::eArea area : AreasToHide)
         {

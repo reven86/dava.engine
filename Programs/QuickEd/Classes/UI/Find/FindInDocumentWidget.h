@@ -11,6 +11,7 @@
 #include "Document/Document.h"
 #include "UI/Find/FindItem.h"
 
+class EditorSystemsManager;
 class FindFilter;
 class SearchCriteriasWidget;
 
@@ -23,15 +24,11 @@ public:
 
     std::shared_ptr<FindFilter> BuildFindFilter() const;
 
-public slots:
-    void OnDocumentChanged(Document* document);
+signals:
+    void OnFindFilterReady(std::shared_ptr<FindFilter> filter);
 
 private slots:
     void OnFindClicked();
-
-    void OnItemFound(FindItem item);
-    void OnProgressChanged(int filesProcessed, int totalFiles);
-    void OnFindFinished();
 
 private:
     Document* document = nullptr;
@@ -39,4 +36,5 @@ private:
     SearchCriteriasWidget* findFiltersWidget = nullptr;
     QToolButton* findButton = nullptr;
     QMenu* findButtonsMenu = nullptr;
+    EditorSystemsManager* systemsManager = nullptr;
 };

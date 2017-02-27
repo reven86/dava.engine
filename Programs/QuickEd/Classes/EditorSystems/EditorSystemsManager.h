@@ -70,6 +70,8 @@ class EditorControlsView;
 class SelectionSystem;
 class HUDSystem;
 class EditorCanvas;
+class FindSystem;
+class FindFilter;
 
 class EditorSystemsManager : PackageListener
 {
@@ -147,6 +149,7 @@ public:
     DAVA::Signal<eDisplayState /*currentState*/, eDisplayState /*previousState*/> displayStateChanged;
     //render widget size changed
     DAVA::Signal<DAVA::uint32 /*width*/, DAVA::uint32 /*height*/> viewSizeChanged;
+    DAVA::Signal<const SelectedControls& /*results*/> searchResultsChanged;
 
     //helpers
     DAVA::Vector2 GetMouseDelta() const;

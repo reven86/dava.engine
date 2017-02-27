@@ -4,9 +4,10 @@
 #include "Model/PackageHierarchy/PackageListener.h"
 #include "UI/Find/Finder.h"
 
-class EditorSystemsManager;
+class PreviewWidget;
 class ControlNode;
 class ControlsContainerNode;
+class Document;
 
 namespace DAVA
 {
@@ -20,17 +21,24 @@ struct FindContext
     int32 currentSelection = 0;
 };
 
-class FindSystem : public BaseEditorSystem, PackageListener, public DAVA::InspBase
+class FindController
+: public QObject
+  ,
+  PackageListener
 {
 public:
-    FindSystem(EditorSystemsManager* doc);
-    ~FindSystem() override;
+    FindController(PreviewWidget* previewWidget);
+    ~FindController() override;
 
     void SelectNextFindResult();
     void SelectPrevFindResult();
 
     void FindInDocument(std::shared_ptr<FindFilter> filter);
 
+    void OnDocumentChanged(Document* document);
+
 private:
     FindContext context;
+    Document* document = nullptr;
+    PreviewWidget* previewWidget = nullptr;
 };
