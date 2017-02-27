@@ -16,6 +16,7 @@
 #include "Render/Texture.h"
 #include "Time/SystemTimer.h"
 #include "Utils/StringFormat.h"
+#include "Render/RHI/rhi_Type.h"
 
 namespace OverdrawPerformanceTester
 {
@@ -50,8 +51,8 @@ const FastName OverdrawTesterSystem::materialPath("~res:/CustomMaterials/Overdra
 const FastName OverdrawTesterSystem::sampleCountKeyword("SAMPLE_COUNT");
 const FastName OverdrawTesterSystem::dependentReadKeyword("DEPENDENT_READ_TEST");
 const uint32 OverdrawTesterSystem::accumulatedFramesCount = 20;
-const PixelFormat OverdrawTesterSystem::textureFormat = DAVA::FORMAT_RGBA8888;
-const bool OverdrawTesterSystem::generateTexWithMips = false;
+const PixelFormat OverdrawTesterSystem::textureFormat = DAVA::FORMAT_PVR2;
+const bool OverdrawTesterSystem::generateTexWithMips = true;
 
 OverdrawTesterSystem::OverdrawTesterSystem(DAVA::Scene* scene, DAVA::Function<void(DAVA::Array<DAVA::Vector<FrameData>, 6>*)> finishCallback_)
     : SceneSystem(scene)
@@ -170,17 +171,22 @@ DAVA::Texture* OverdrawTesterSystem::GenerateTexture(std::mt19937& rng, std::uni
     if (!generateTexWithMips)
     {
         result = DAVA::Texture::CreateFromData(textureFormat, data, width, height, false);
+        result->SetMinMagFilter(rhi::TEXFILTER_LINEAR, rhi::TEXFILTER_LINEAR, rhi::TEXMIPFILTER_LINEAR);
     }
     else
     {
-        DAVA::Image* imageOriginal = DAVA::Image::CreateFromData(width, height, textureFormat, data);
-        DAVA::Vector<DAVA::Image*> imageSet = imageOriginal->CreateMipMapsImages();
+        DAVA::Vector<DAVA::Image*> imageSet;
+
+        DVASSERT(!(width & (width - 1)) && "Texture width must be power of two");
+        for (uint32 dim = width; dim >= 1; dim /= 2)
+        {
+            imageSet.push_back(DAVA::Image::CreateFromData(dim, dim, textureFormat, data));
+        }
 
         result = DAVA::Texture::CreateFromData(imageSet);
-
+        result->SetMinMagFilter(rhi::TEXFILTER_LINEAR, rhi::TEXFILTER_LINEAR, rhi::TEXMIPFILTER_LINEAR);
         for (auto mip : imageSet)
             SafeRelease(mip);
-        SafeRelease(imageOriginal);
     }
 
     delete[] data;
