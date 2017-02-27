@@ -39,32 +39,46 @@ fragment_out fp_main( fragment_in input )
 #if ALPHA8
 
     #if DEPENDENT_READ_TEST
-        float4 uv = float4(FP_A8(tex2D(t1, input.texcoord0))) * 0.05f;
-        float4 c1 = float4(FP_A8(tex2D(t2, uv.xy)));
-        float4 c2 = float4(FP_A8(tex2D(t3, uv.zw)));
+        float uvFloatCol = FP_A8(tex2D(t1, input.texcoord0));
+        float4 uv = float4(uvFloatCol, uvFloatCol, uvFloatCol, uvFloatCol) * 0.005f;
+        float c1Float = FP_A8(tex2D(t2, uv.xy));
+        float4 c1 = float4(c1Float, c1Float, c1Float, c1Float);
+        float c2Float = FP_A8(tex2D(t3, uv.zw));
+        float4 c2 = float4(c2Float, c2Float, c2Float, c2Float);
         output.color = lerp(c1, c2, 0.5f);
     #else
         #if SAMPLE_COUNT == 1
-            output.color += float4(FP_A8(tex2D(t1, input.texcoord0)));
+            float c1 = FP_A8(tex2D(t1, input.texcoord0));
+            output.color += float4(c1, c1, c1, c1);
         #elif SAMPLE_COUNT == 2
-            output.color += float4(FP_A8(tex2D(t1, input.texcoord0)));
-            output.color += float4(FP_A8(tex2D(t2, input.texcoord0)));
+            float c1 = FP_A8(tex2D(t1, input.texcoord0));
+            float c2 = FP_A8(tex2D(t2, input.texcoord0));
+            output.color += float4(c1, c1, c1, c1);
+            output.color += float4(c2, c2, c2, c2);
         #elif SAMPLE_COUNT == 3
-            output.color += float4(FP_A8(tex2D(t1, input.texcoord0)));
-            output.color += float4(FP_A8(tex2D(t2, input.texcoord0)));
-            output.color += float4(FP_A8(tex2D(t3, input.texcoord0)));
+            float c1 = FP_A8(tex2D(t1, input.texcoord0));
+            float c2 = FP_A8(tex2D(t2, input.texcoord0));
+            float c3 = FP_A8(tex2D(t3, input.texcoord0));
+            output.color += float4(c1, c1, c1, c1);
+            output.color += float4(c2, c2, c2, c2);
+            output.color += float4(c3, c3, c3, c3);
         #elif SAMPLE_COUNT == 4
-            output.color += float4(FP_A8(tex2D(t1, input.texcoord0)));
-            output.color += float4(FP_A8(tex2D(t2, input.texcoord0)));
-            output.color += float4(FP_A8(tex2D(t3, input.texcoord0)));
-            output.color += float4(FP_A8(tex2D(t4, input.texcoord0)));
+            float c1 = FP_A8(tex2D(t1, input.texcoord0));
+            float c2 = FP_A8(tex2D(t2, input.texcoord0));
+            float c3 = FP_A8(tex2D(t3, input.texcoord0));
+            float c4 = FP_A8(tex2D(t4, input.texcoord0));
+            output.color += float4(c1, c1, c1, c1);
+            output.color += float4(c2, c2, c2, c2);
+            output.color += float4(c3, c3, c3, c3);
+            output.color += float4(c4, c4, c4, c4);
+
         #endif
     #endif
 
 #else // ALPHA8
 
     #if DEPENDENT_READ_TEST
-        float4 uv = tex2D(t1, input.texcoord0) * 0.05f;
+        float4 uv = tex2D(t1, input.texcoord0) * 0.005f;
         float4 c1 = tex2D(t2, uv.xy);
         float4 c2 = tex2D(t3, uv.zw);
         output.color = lerp(c1, c2, 0.5f);
