@@ -11,7 +11,6 @@
 #include "Render/Image/Image.h"
 #include "Render/Texture.h"
 #include "Platform/DeviceInfo.h"
-#include "Time/SystemTimer.h"
 #include "Debug/ProfilerGPU.h"
 #include "Debug/ProfilerOverlay.h"
 #include "VisibilityQueryResults.h"
@@ -25,7 +24,6 @@ namespace //for private variables
 bool initialized = false;
 rhi::Api api;
 int32 desiredFPS = 60;
-float32 globalTime = 0.f;
 
 RenderOptions renderOptions;
 DynamicBindings dynamicBindings;
@@ -163,9 +161,6 @@ void BeginFrame()
 {
     RenderCallbacks::ProcessFrame();
     DynamicBufferAllocator::BeginFrame();
-
-    globalTime = SystemTimer::GetGlobalTime();
-    dynamicBindings.SetDynamicParam(DynamicBindings::PARAM_GLOBAL_TIME, &globalTime, reinterpret_cast<pointer_size>(&globalTime));
 }
 
 void EndFrame()
