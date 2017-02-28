@@ -1,0 +1,99 @@
+#include "TArc/Controls/PropertyPanel/Private/NumberComponentValue.h"
+#include "TArc/Controls/DoubleSpinBox.h"
+#include "TArc/Controls/IntSpinBox.h"
+#include "TArc/Controls/PropertyPanel/Private/ComponentStructureWrapper.h"
+#include "TArc/Controls/PropertyPanel/Private/PropertyPanelMeta.h"
+
+#include <Reflection/ReflectionRegistrator.h>
+
+namespace DAVA
+{
+namespace TArc
+{
+template <typename T>
+bool NumberComponentValue<T>::EditorEvent(QWidget* parent, QEvent* event, const QStyleOptionViewItem& option)
+{
+    return false;
+}
+
+template <typename T>
+Any NumberComponentValue<T>::GetMultipleValue() const
+{
+    return Any();
+}
+
+template <typename T>
+bool NumberComponentValue<T>::IsValidValueToSet(const Any& newValue, const Any& currentValue) const
+{
+    if (newValue.CanCast<T>() == false)
+    {
+        return false;
+    }
+
+    if (currentValue.CanCast<T>() == false)
+    {
+        return true;
+    }
+
+    return newValue.Cast<T>() != currentValue.Cast<T>();
+}
+
+template <typename T>
+ControlProxy* NumberComponentValue<T>::CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor) const
+{
+    const Type* t = Type::Instance<T>();
+    if (t == Type::Instance<float32>() || t == Type::Instance<float64>())
+    {
+        ControlDescriptorBuilder<DoubleSpinBox::Fields> descr;
+        descr[DoubleSpinBox::Fields::Value] = "value";
+        descr[DoubleSpinBox::Fields::IsReadOnly] = readOnlyFieldName;
+        return new DoubleSpinBox(descr, wrappersProcessor, model, parent);
+    }
+    else
+    {
+        ControlDescriptorBuilder<IntSpinBox::Fields> descr;
+        descr[IntSpinBox::Fields::Value] = "value";
+        descr[IntSpinBox::Fields::IsReadOnly] = readOnlyFieldName;
+        return new IntSpinBox(descr, wrappersProcessor, model, parent);
+    }
+}
+
+template <typename T>
+T NumberComponentValue<T>::GetNumberValue() const
+{
+    return GetValue().Cast<T>();
+}
+
+template <typename T>
+void NumberComponentValue<T>::SetNumberValue(T v)
+{
+    SetValue(v);
+}
+
+DAVA_VIRTUAL_TEMPLATE_REFLECTION_IMPL(NumberComponentValue)
+{
+    ReflectionRegistrator<NumberComponentValue<T>>::Begin(CreateComponentStructureWrapper<NumberComponentValue<T>>())
+    .Field("value", &NumberComponentValue<T>::GetNumberValue, &NumberComponentValue<T>::SetNumberValue)[M::ProxyMetaRequire()]
+    .End();
+}
+
+#if __clang__
+_Pragma("clang diagnostic push")
+_Pragma("clang diagnostic ignored \"-Wweak-template-vtables\"")
+#endif
+
+template class NumberComponentValue<float64>;
+template class NumberComponentValue<float32>;
+template class NumberComponentValue<int8>;
+template class NumberComponentValue<uint8>;
+template class NumberComponentValue<int16>;
+template class NumberComponentValue<uint16>;
+template class NumberComponentValue<int32>;
+template class NumberComponentValue<uint32>;
+
+#if __clang__
+_Pragma("clang diagnostic pop")
+#endif
+
+} // namespace TArc
+} // namespace DAVA

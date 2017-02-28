@@ -7,15 +7,26 @@
 #include "TArc/Controls/PropertyPanel/Private/EnumComponentValue.h"
 #include "TArc/Controls/PropertyPanel/Private/FlagsComponentValue.h"
 #include "TArc/Controls/PropertyPanel/Private/IntComponentValue.h"
+#include "TArc/Controls/PropertyPanel/Private/NumberComponentValue.h"
 #include "TArc/Controls/PropertyPanel/Private/EmptyComponentValue.h"
 #include "TArc/Utils/ReflectionHelpers.h"
 
 #include "Debug/DVAssert.h"
+#include "NumberComponentValue.h"
 
 namespace DAVA
 {
 namespace TArc
 {
+namespace DefaultPropertyModelExtensionsDetail
+{
+template <typename T>
+std::unique_ptr<BaseComponentValue> CreateEditorImpl()
+{
+    return std::unique_ptr<BaseComponentValue>(new T());
+}
+}
+
 void DefaultChildCheatorExtension::ExposeChildren(const std::shared_ptr<const PropertyNode>& node, Vector<std::shared_ptr<PropertyNode>>& children) const
 {
     DVASSERT(node->field.ref.IsValid());
@@ -48,14 +59,13 @@ void DefaultChildCheatorExtension::ExposeChildren(const std::shared_ptr<const Pr
     else if (node->propertyType == PropertyNode::GroupProperty)
     {
         String groupName = node->cachedValue.Cast<String>();
-        ForEachField(node->field.ref, [&](Reflection::Field&& field)
-                     {
-                         const M::Group* groupMeta = field.ref.GetMeta<M::Group>();
-                         if (groupMeta != nullptr && groupMeta->groupName == groupName)
-                         {
-                             children.push_back(allocator->CreatePropertyNode(std::move(field)));
-                         }
-                     });
+        ForEachField(node->field.ref, [&](Reflection::Field&& field) {
+            const M::Group* groupMeta = field.ref.GetMeta<M::Group>();
+            if (groupMeta != nullptr && groupMeta->groupName == groupName)
+            {
+                children.push_back(allocator->CreatePropertyNode(std::move(field)));
+            }
+        });
     }
 
     return ChildCreatorExtension::ExposeChildren(node, children);
@@ -126,6 +136,7 @@ ReflectedPropertyItem* DefaultMergeValueExtension::LookUpItem(const std::shared_
 
 std::unique_ptr<BaseComponentValue> DefaultEditorComponentExtension::GetEditor(const std::shared_ptr<const PropertyNode>& node) const
 {
+    using namespace DefaultPropertyModelExtensionsDetail;
     if (node->propertyType == PropertyNode::RealProperty)
     {
         if (node->field.ref.GetMeta<M::Enum>() != nullptr)
@@ -137,22 +148,27 @@ std::unique_ptr<BaseComponentValue> DefaultEditorComponentExtension::GetEditor(c
             return std::make_unique<FlagsComponentValue>();
         }
 
-        const Type* valueType = node->cachedValue.GetType();
-        if (valueType == Type::Instance<String>() ||
-            valueType == Type::Instance<FastName>() ||
-            valueType == Type::Instance<const char*>())
+        static UnorderedMap<const Type*, Function<std::unique_ptr<BaseComponentValue>()>> simpleCreatorsMap =
         {
-            return std::make_unique<TextComponentValue>();
+          std::make_pair(Type::Instance<String>(), &std::make_unique<TextComponentValue>),
+          std::make_pair(Type::Instance<FastName>(), &std::make_unique<TextComponentValue>),
+          std::make_pair(Type::Instance<const char*>(), &std::make_unique<TextComponentValue>),
+          std::make_pair(Type::Instance<bool>(), &std::make_unique<BoolComponentValue>),
+          std::make_pair(Type::Instance<float32>(), &std::make_unique<NumberComponentValue<float32>>),
+          std::make_pair(Type::Instance<float64>(), &std::make_unique<NumberComponentValue<float64>>),
+          std::make_pair(Type::Instance<int8>(), &std::make_unique<NumberComponentValue<int8>>),
+          std::make_pair(Type::Instance<uint8>(), &std::make_unique<NumberComponentValue<uint8>>),
+          std::make_pair(Type::Instance<int16>(), &std::make_unique<NumberComponentValue<int16>>),
+          std::make_pair(Type::Instance<uint16>(), &std::make_unique<NumberComponentValue<uint16>>),
+          std::make_pair(Type::Instance<int32>(), &std::make_unique<NumberComponentValue<int32>>),
+          std::make_pair(Type::Instance<uint32>(), &std::make_unique<NumberComponentValue<uint32>>)
+        };
+
+        auto iter = simpleCreatorsMap.find(node->cachedValue.GetType());
+        if (iter != simpleCreatorsMap.end())
+        {
+            return iter->second();
         }
-        else if (valueType == Type::Instance<bool>())
-        {
-            return std::make_unique<BoolComponentValue>();
-        }
-        /*else if (valueType == Type::Instance<int32>() ||
-                 valueType == Type::Instance<uint32>())
-        {
-            return std::make_unique<IntComponentValue>();
-        }*/
     }
 
     return EditorComponentExtension::GetEditor(node);

@@ -1,68 +1,57 @@
 #include "IntComponentValue.h"
+#include "TArc/Controls/IntSpinBox.h"
+#include "TArc/Controls/PropertyPanel/Private/ComponentStructureWrapper.h"
+#include "TArc/Controls/PropertyPanel/Private/PropertyPanelMeta.h"
 
-#include "Reflection/ReflectionRegistrator.h"
-
-#include <QUrl>
+#include <Reflection/ReflectionRegistrator.h>
 
 namespace DAVA
 {
 namespace TArc
 {
-//double IntComponentValue::GetValue() const
-//{
-//    Any value = nodes.front()->cachedValue;
-//    for (const std::shared_ptr<const PropertyNode>& node : nodes)
-//    {
-//        if (value != node->cachedValue)
-//        {
-//            return 0;
-//        }
-//    }
-//
-//    if (value.CanCast<int32>())
-//        return value.Cast<int32>();
-//
-//    return value.Cast<uint32>();
-//}
-//
-//void IntComponentValue::SetValue(double v)
-//{
-//    Any value = nodes.front()->cachedValue;
-//    if (value.GetType() == Type::Instance<int32>())
-//    {
-//        value = Any(static_cast<int32>(v));
-//    }
-//    else if (value.GetType() == Type::Instance<uint32>())
-//    {
-//        value = Any(static_cast<uint32>(v));
-//    }
-//
-//    GetModifyInterface()->ModifyPropertyValue(nodes, value);
-//}
-//
-//int IntComponentValue::GetMinValue() const
-//{
-//    return std::numeric_limits<int>::min();
-//}
-//
-//int IntComponentValue::GetMaxValue() const
-//{
-//    return std::numeric_limits<int>::max();
-//}
-//
-//bool IntComponentValue::IsReadOnly() const
-//{
-//    return nodes.front()->field.ref.IsReadonly();
-//}
-//
-//DAVA_REFLECTION_IMPL(IntComponentValue)
-//{
-//    ReflectionRegistrator<IntComponentValue>::Begin()
-//    .Field("value", &IntComponentValue::GetValue, &IntComponentValue::SetValue)
-//    .Field("minValue", &IntComponentValue::GetMinValue, nullptr)
-//    .Field("maxValue", &IntComponentValue::GetMaxValue, nullptr)
-//    .Field("readOnly", &IntComponentValue::IsReadOnly, nullptr)
-//    .End();
-//}
+int32 IntComponentValue::GetValue() const
+{
+    return BaseComponentValue::GetValue().Cast<int32>();
+}
+
+void IntComponentValue::SetValue(int32 v)
+{
+    BaseComponentValue::SetValue(v);
+}
+
+DAVA::Any IntComponentValue::GetMultipleValue() const
+{
+    return Any();
+}
+
+bool IntComponentValue::IsValidValueToSet(const Any& newValue, const Any& currentValue) const
+{
+    if (newValue.CanCast<int32>() == false)
+    {
+        return false;
+    }
+
+    if (currentValue.CanCast<int32>() == false)
+    {
+        return true;
+    }
+
+    return newValue.Cast<int32>() != currentValue.Cast<int32>();
+}
+
+ControlProxy* IntComponentValue::CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor) const
+{
+    ControlDescriptorBuilder<IntSpinBox::Fields> descr;
+    descr[IntSpinBox::Fields::Value] = "value";
+    descr[IntSpinBox::Fields::IsReadOnly] = readOnlyFieldName;
+    return new IntSpinBox(descr, wrappersProcessor, model, parent);
+}
+
+DAVA_VIRTUAL_REFLECTION_IMPL(IntComponentValue)
+{
+    ReflectionRegistrator<IntComponentValue>::Begin(CreateComponentStructureWrapper<IntComponentValue>())
+    .Field("value", &IntComponentValue::GetValue, &IntComponentValue::SetValue)[M::ProxyMetaRequire()]
+    .End();
+}
 }
 }

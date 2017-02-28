@@ -107,5 +107,5 @@ DAVA_VIRTUAL_REFLECTION_IMPL(PropertyPanelModule)
 }
 
 #if !defined(DEPLOY_BUILD)
-//DECL_GUI_MODULE(PropertyPanelModule);
+DECL_GUI_MODULE(PropertyPanelModule);
 #endif

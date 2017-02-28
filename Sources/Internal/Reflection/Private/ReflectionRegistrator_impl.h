@@ -12,6 +12,11 @@
     void Cls::Dava__ReflectionRegisterBases() { DAVA::ReflectionRegistratorDetail::BasesRegistrator<Cls, Cls::Cls__BaseTypes>::Register(); } \
     void Cls::Dava__ReflectionInitializerV()
 
+#define IMPL__DAVA_VIRTUAL_TEMPLATE_REFLECTION_IMPL(Cls) \
+    template <typename T> const DAVA::ReflectedType* Cls<T>::Dava__GetReflectedType() const { return DAVA::ReflectionRegistratorDetail::GetByThisPointer(this); } \
+    template <typename T> void Cls<T>::Dava__ReflectionRegisterBases() { DAVA::ReflectionRegistratorDetail::BasesRegistrator<Cls<T>, Cls<T>::Cls__BaseTypes>::Register(); } \
+    template <typename T> void Cls<T>::Dava__ReflectionInitializerV()
+
 #define IMPL__DAVA_VIRTUAL_REFLECTION_IN_PLACE(Cls, ...) \
     template <typename FT__> \
     friend struct DAVA::ReflectionDetail::ReflectionInitializerRunner; \

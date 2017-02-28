@@ -1,17 +1,19 @@
 #pragma once
 
 #include "TArc/Controls/PropertyPanel/BaseComponentValue.h"
-
 #include <Reflection/Reflection.h>
 
 namespace DAVA
 {
 namespace TArc
 {
-class IntComponentValue : public BaseComponentValue
+template <typename T>
+class NumberComponentValue : public BaseComponentValue
 {
 public:
-    IntComponentValue() = default;
+    NumberComponentValue() = default;
+
+    bool EditorEvent(QWidget* parent, QEvent* event, const QStyleOptionViewItem& option) override;
 
 protected:
     Any GetMultipleValue() const override;
@@ -19,11 +21,10 @@ protected:
     ControlProxy* CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor) const override;
 
 private:
-    int32 GetValue() const;
-    void SetValue(int32 v);
+    T GetNumberValue() const;
+    void SetNumberValue(T v);
 
-private:
-    DAVA_VIRTUAL_REFLECTION(IntComponentValue, BaseComponentValue);
+    DAVA_VIRTUAL_REFLECTION(NumberComponentValue<T>, BaseComponentValue);
 };
-}
-}
+} // namespace TArc
+} // namespace DAVA
