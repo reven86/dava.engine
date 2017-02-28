@@ -191,6 +191,7 @@ void WebViewControl::OwnerIsDying()
             window->RunOnUIThreadAsync([this, self]() {
                 nativeWebView->NavigationStarting -= tokenNavigationStarting;
                 nativeWebView->NavigationCompleted -= tokenNavigationCompleted;
+                nativeWebView->UnsupportedUriSchemeIdentified -= tokenUnsupportedUriSchemeIdentified;
                 PlatformApi::Win10::RemoveXamlControl(window, nativeWebView);
             });
 #else
@@ -395,9 +396,7 @@ void WebViewControl::CreateNativeControl()
 void WebViewControl::InstallEventHandlers()
 {
     using ::Windows::Foundation::TypedEventHandler;
-    using ::Windows::UI::Xaml::Controls::WebView;
-    using ::Windows::UI::Xaml::Controls::WebViewNavigationStartingEventArgs;
-    using ::Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs;
+    using namespace ::Windows::UI::Xaml::Controls;
 
     // clang-format off
     std::weak_ptr<WebViewControl> self_weak(shared_from_this());
@@ -410,43 +409,34 @@ void WebViewControl::InstallEventHandlers()
         if (auto self = self_weak.lock())
             OnNavigationCompleted(sender, args);
     });
+    auto unsupportedUriSchemeIdentified = ref new TypedEventHandler<WebView^, WebViewUnsupportedUriSchemeIdentifiedEventArgs^>([this, self_weak](WebView^ sender, WebViewUnsupportedUriSchemeIdentifiedEventArgs^ args) {
+        if (auto self = self_weak.lock())
+            OnUnsupportedUriSchemeIdentified(sender, args);
+    });
     tokenNavigationStarting = nativeWebView->NavigationStarting += navigationStarting;
     tokenNavigationCompleted = nativeWebView->NavigationCompleted += navigationCompleted;
+    tokenUnsupportedUriSchemeIdentified = nativeWebView->UnsupportedUriSchemeIdentified += unsupportedUriSchemeIdentified;
     // clang-format on
 }
 
-void WebViewControl::OnNavigationStarting(::Windows::UI::Xaml::Controls::WebView ^ sender, ::Windows::UI::Xaml::Controls::WebViewNavigationStartingEventArgs ^ args)
+void WebViewControl::OnNavigationStarting(::Windows::UI::Xaml::Controls::WebView ^, ::Windows::UI::Xaml::Controls::WebViewNavigationStartingEventArgs ^ args)
 {
-    String url;
     if (args->Uri != nullptr)
     {
-        url = UTF8Utils::EncodeToUTF8(args->Uri->AbsoluteCanonicalUri->Data());
-    }
-    Logger::FrameworkDebug("[WebView] OnNavigationStarting: url=%s", url.c_str());
-
-    bool redirectedByMouse = false; // For now I don't know how to get redirection method
-    IUIWebViewDelegate::eAction whatToDo = IUIWebViewDelegate::PROCESS_IN_WEBVIEW;
-#if defined(__DAVAENGINE_COREV2__)
-    RunOnMainThread([this, &whatToDo, &url, redirectedByMouse]() {
-        if (uiWebView != nullptr && webViewDelegate != nullptr)
+        IUIWebViewDelegate::eAction whatToDo = HandleUriNavigation(args->Uri);
+        switch (whatToDo)
         {
-            whatToDo = webViewDelegate->URLChanged(uiWebView, url, redirectedByMouse);
+        case IUIWebViewDelegate::NO_PROCESS:
+            args->Cancel = true;
+            break;
+        case IUIWebViewDelegate::PROCESS_IN_SYSTEM_BROWSER:
+            ::Windows::System::Launcher::LaunchUriAsync(args->Uri);
+            args->Cancel = true;
+            break;
+        default:
+            break;
         }
-    });
-#else
-    core->RunOnMainThreadBlocked([this, &whatToDo, &url, redirectedByMouse]() {
-        if (uiWebView != nullptr && webViewDelegate != nullptr)
-        {
-            whatToDo = webViewDelegate->URLChanged(uiWebView, url, redirectedByMouse);
-        }
-    });
-#endif
-
-    if (IUIWebViewDelegate::PROCESS_IN_SYSTEM_BROWSER == whatToDo && args->Uri != nullptr)
-    {
-        ::Windows::System::Launcher::LaunchUriAsync(args->Uri);
     }
-    args->Cancel = whatToDo != IUIWebViewDelegate::PROCESS_IN_WEBVIEW;
 }
 
 void WebViewControl::OnNavigationCompleted(::Windows::UI::Xaml::Controls::WebView ^ sender, ::Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs ^ args)
@@ -456,6 +446,7 @@ void WebViewControl::OnNavigationCompleted(::Windows::UI::Xaml::Controls::WebVie
     {
         url = UTF8Utils::EncodeToUTF8(args->Uri->AbsoluteCanonicalUri->Data());
     }
+    programmaticUrlNavigation = false;
 
     if (args->IsSuccess)
     {
@@ -487,6 +478,34 @@ void WebViewControl::OnNavigationCompleted(::Windows::UI::Xaml::Controls::WebVie
         }
     });
 #endif
+}
+
+void WebViewControl::OnUnsupportedUriSchemeIdentified(::Windows::UI::Xaml::Controls::WebView ^, ::Windows::UI::Xaml::Controls::WebViewUnsupportedUriSchemeIdentifiedEventArgs ^ args)
+{
+    if (args->Uri != nullptr)
+    {
+        IUIWebViewDelegate::eAction whatToDo = HandleUriNavigation(args->Uri);
+        args->Handled = whatToDo == IUIWebViewDelegate::NO_PROCESS;
+        programmaticUrlNavigation = false;
+    }
+}
+
+IUIWebViewDelegate::eAction WebViewControl::HandleUriNavigation(::Windows::Foundation::Uri ^ uri)
+{
+    String url = UTF8Utils::EncodeToUTF8(uri->AbsoluteCanonicalUri->Data());
+    Logger::FrameworkDebug("[WebView] HandleUriNavigation: url=%s", url.c_str());
+
+    bool redirectedByMouse = !programmaticUrlNavigation;
+    IUIWebViewDelegate::eAction whatToDo = IUIWebViewDelegate::PROCESS_IN_WEBVIEW;
+#if defined(__DAVAENGINE_COREV2__)
+    RunOnMainThread([this, &whatToDo, &url, redirectedByMouse]() {
+        if (uiWebView != nullptr && webViewDelegate != nullptr)
+        {
+            whatToDo = webViewDelegate->URLChanged(uiWebView, url, redirectedByMouse);
+        }
+    });
+#endif
+    return whatToDo;
 }
 
 void WebViewControl::OnWindowSizeChanged(Window* w, Size2f windowSize, Size2f surfaceSize)
@@ -566,6 +585,10 @@ void WebViewControl::SetNativeBackgroundTransparency(bool enabled)
 void WebViewControl::NativeNavigateTo(const WebViewProperties& props)
 {
     using ::Windows::Foundation::Uri;
+
+    // WebView does not provide methods to determine whether navigation has occured by user click or
+    // programmatically. So try to guess it myself using programmaticUrlNavigation flag.
+    programmaticUrlNavigation = true;
 
     // clang-format off
     if (WebViewProperties::NAVIGATE_OPEN_URL == props.navigateTo)
