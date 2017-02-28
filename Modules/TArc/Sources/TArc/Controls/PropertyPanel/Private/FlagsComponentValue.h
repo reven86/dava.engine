@@ -1,32 +1,29 @@
 #pragma once
 
-#include "TArc/Controls/PropertyPanel/ProxyComponentValue.h"
-#include "TArc/Controls/PropertyPanel/PropertyModelExtensions.h"
-#include "TArc/Controls/PropertyPanel/DefaultEditorDrawers.h"
-#include "TArc/Controls/PropertyPanel/DefaultValueCompositors.h"
+#include "TArc/Controls/PropertyPanel/BaseComponentValue.h"
 
-#include <Reflection/ReflectedMeta.h>
+#include <Reflection/Reflection.h>
 
 namespace DAVA
 {
 namespace TArc
 {
-class FlagsComponentValue : public ProxyComponentValue<FlagsEditorDrawer, EnumValueCompositor>
+class FlagsComponentValue : public BaseComponentValue
 {
 public:
     FlagsComponentValue() = default;
 
 protected:
-    QWidget* AcquireEditorWidget(QWidget* parent, const QStyleOptionViewItem& option) override;
+    Any GetMultipleValue() const override;
+    bool IsValidValueToSet(const Any& newValue, const Any& currentValue) const override;
+    ControlProxy* CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor) const override;
 
 private:
     Any GetValueAny() const;
     void SetValueAny(const Any& newValue);
 
-    bool IsReadOnly() const;
-
 private:
-    DAVA_VIRTUAL_REFLECTION(FlagsComponentValue, ProxyComponentValue<FlagsEditorDrawer, EnumValueCompositor>);
+    DAVA_VIRTUAL_REFLECTION(FlagsComponentValue, BaseComponentValue);
 };
 }
 }

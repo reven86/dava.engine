@@ -13,7 +13,7 @@ namespace DAVA
 {
 namespace TArc
 {
-class PlainTextEdit final : public ControlProxy<QPlainTextEdit>
+class PlainTextEdit final : public ControlProxyImpl<QPlainTextEdit>
 {
 public:
     enum class Fields : uint32

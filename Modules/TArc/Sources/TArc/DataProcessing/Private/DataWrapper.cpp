@@ -179,6 +179,11 @@ void DataWrapper::Sync(bool notifyListener)
         }
     }
 
+    if (impl->listener == nullptr)
+    {
+        return;
+    }
+
     if (HasData())
     {
         Reflection reflection = GetData();
