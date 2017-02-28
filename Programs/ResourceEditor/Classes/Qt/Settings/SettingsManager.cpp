@@ -1,7 +1,7 @@
 #include "Settings/SettingsManager.h"
 
 #include "Scene/System/EditorMaterialSystem.h"
-#include "TextureCompression/TextureConverter.h"
+#include <Tools/TextureCompression/TextureConverter.h>
 
 #include "Scene/System/CollisionSystem.h"
 
@@ -15,7 +15,7 @@
 #include "FileSystem/VariantType.h"
 #include "Render/RenderBase.h"
 
-#include "AssetCache/AssetCache.h"
+#include <Tools/AssetCache/AssetCache.h>
 
 #define SETTINGS_CONFIG_FILE "~doc:/ResourceEditorOptions.archive"
 
@@ -32,7 +32,6 @@ SettingsManager::~SettingsManager()
 
 void SettingsManager::Init()
 {
-    CreateValue(Settings::General_DesinerName, DAVA::VariantType(DAVA::String("nobody")));
     CreateValue(Settings::General_RecentFilesCount, DAVA::VariantType(static_cast<DAVA::int32>(5)));
     CreateValue(Settings::General_RecentProjectsCount, DAVA::VariantType(static_cast<DAVA::int32>(5)));
     CreateValue(Settings::General_ReloadParticlesOnPojectOpening, DAVA::VariantType(true));

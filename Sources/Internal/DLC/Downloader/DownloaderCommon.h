@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
 #include "FileSystem/FilePath.h"
 
@@ -98,6 +97,7 @@ struct DownloadTaskDescription
     String url;
     FilePath storePath;
     int32 fileErrno;
+    int32 implError;
     int32 timeout;
     int32 retriesCount;
     int32 retriesLeft;
@@ -199,7 +199,7 @@ protected:
     ~DataChunkInfo();
 
 public:
-    DataChunkInfo(uint32 size);
+    explicit DataChunkInfo(uint32 size);
 
     char8* buffer;
     uint32 bufferSize;

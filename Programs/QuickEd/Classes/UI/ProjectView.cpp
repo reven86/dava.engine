@@ -3,8 +3,9 @@
 #include "ui_mainwindow.h"
 #include "Project/Project.h"
 
-
 #include <QComboBox>
+#include <QCheckBox>
+#include <QLabel>
 
 MainWindow::ProjectView::ProjectView(MainWindow* mainWindow_)
     : QObject(mainWindow_)

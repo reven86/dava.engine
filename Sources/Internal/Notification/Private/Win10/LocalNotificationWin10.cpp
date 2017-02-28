@@ -81,7 +81,7 @@ void LocalNotificationUAP::ShowProgress(const WideString& title,
     WideString titleText = title + Format(L" %.02f%%", percentage);
     XmlDocument ^ toastDoc = GenerateToastDeclaration(titleText, text, useSound, nativeNotificationId);
 
-    CreateOrUpdateNotification(toastDoc, nullptr, true);
+    CreateOrUpdateNotification(toastDoc, 0, true);
 }
 
 void LocalNotificationUAP::PostDelayedNotification(const WideString& title,
@@ -93,11 +93,7 @@ void LocalNotificationUAP::PostDelayedNotification(const WideString& title,
 
     XmlDocument ^ toastDoc = GenerateToastDeclaration(title, text, useSound, nativeNotificationId);
 
-    Windows::Globalization::Calendar ^ calendar = ref new Windows::Globalization::Calendar;
-    calendar->AddSeconds(delaySeconds);
-    Windows::Foundation::DateTime dateTime = calendar->GetDateTime();
-
-    CreateOrUpdateNotification(toastDoc, &dateTime);
+    CreateOrUpdateNotification(toastDoc, delaySeconds);
 }
 
 void LocalNotificationUAP::RemoveAllDelayedNotifications()
@@ -111,12 +107,16 @@ void LocalNotificationUAP::RemoveAllDelayedNotifications()
 }
 
 void LocalNotificationUAP::CreateOrUpdateNotification(::Windows::Data::Xml::Dom::XmlDocument ^ notificationDeclaration,
-                                                      const Windows::Foundation::DateTime* startTime,
+                                                      int32 delayInSeconds,
                                                       bool ghostNotification)
 {
     using namespace ::Windows::UI::Notifications;
 
-    if (startTime == nullptr)
+    if (delayInSeconds < 0)
+    {
+        DVASSERT(false, Format("Attempt to create a local notification in the past. Requested delay in seconds = %d. Ignored", delayInSeconds).c_str());
+    }
+    else if (delayInSeconds == 0)
     {
         ToastNotification ^ notif = ref new ToastNotification(notificationDeclaration);
         notif->SuppressPopup = ghostNotification;
@@ -130,7 +130,18 @@ void LocalNotificationUAP::CreateOrUpdateNotification(::Windows::Data::Xml::Dom:
     }
     else
     {
-        ScheduledToastNotification ^ notif = ref new ScheduledToastNotification(notificationDeclaration, *startTime);
+        auto scheduledNotifications = toastNotifier->GetScheduledToastNotifications();
+        if (scheduledNotifications->Size >= 4096)
+        {
+            DVASSERT(false, "UWP forbids scheduling more than 4096 notifications. Ignored");
+            return;
+        }
+
+        Windows::Globalization::Calendar ^ calendar = ref new Windows::Globalization::Calendar;
+        calendar->AddSeconds(delayInSeconds);
+        Windows::Foundation::DateTime deliveryTime = calendar->GetDateTime();
+
+        ScheduledToastNotification ^ notif = ref new ScheduledToastNotification(notificationDeclaration, deliveryTime);
         notif->SuppressPopup = ghostNotification;
         toastNotifier->AddToSchedule(notif);
     }
@@ -139,6 +150,10 @@ void LocalNotificationUAP::CreateOrUpdateNotification(::Windows::Data::Xml::Dom:
 LocalNotificationImpl* LocalNotificationImpl::Create(const String& _id)
 {
     return new LocalNotificationUAP(_id);
+}
+
+void LocalNotificationImpl::RequestPermissions()
+{
 }
 
 } // namespace DAVA

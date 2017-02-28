@@ -375,21 +375,19 @@ String FilePath::GetAbsolutePathname() const
     return absolutePathname;
 }
 
-#ifdef __DAVAENGINE_WINDOWS__
-
+#if defined(__DAVAENGINE_WINDOWS__)
 FilePath::NativeStringType FilePath::GetNativeAbsolutePathname() const
 {
-    return UTF8Utils::EncodeToWideString(GetAbsolutePathname());
+    String str = GetAbsolutePathname();
+    return UTF8Utils::EncodeToWideString(str);
 }
 
 FilePath FilePath::FromNativeString(const NativeStringType& path)
 {
-    String name = UTF8Utils::EncodeToUTF8(path);
-    return FilePath(name);
+    String str = UTF8Utils::EncodeToUTF8(path);
+    return FilePath(str);
 }
-
 #else
-
 FilePath::NativeStringType FilePath::GetNativeAbsolutePathname() const
 {
     return GetAbsolutePathname();
@@ -399,8 +397,7 @@ FilePath FilePath::FromNativeString(const NativeStringType& path)
 {
     return FilePath(path);
 }
-
-#endif // __DAVAENGINE_WINDOWS__
+#endif
 
 String FilePath::ResolveResourcesPath() const
 {
@@ -982,5 +979,11 @@ String FilePath::AsURL() const
 #endif //#if defined(__DAVAENGINE_ANDROID__)
 
     return ("file://" + path);
+}
+
+template <>
+bool AnyCompare<FilePath>::IsEqual(const Any& v1, const Any& v2)
+{
+    return v1.Get<FilePath>() == v2.Get<FilePath>();
 }
 }

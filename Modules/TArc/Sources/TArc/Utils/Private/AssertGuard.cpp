@@ -1,16 +1,17 @@
 #include "TArc/Utils/AssertGuard.h"
 #include "TArc/Utils/ScopedValueGuard.h"
-
-#include "Debug/DVAssert.h"
-#include "Debug/DVAssertDefaultHandlers.h"
-#include "Concurrency/LockGuard.h"
-#include "Concurrency/Thread.h"
+#include "TArc/Utils/DebuggerDetection.h"
 
 #if defined(__DAVAENGINE_MACOS__)
 #include "TArc/Utils/AssertGuardMacOSHack.h"
 #endif
 
-#include "Base/StaticSingleton.h"
+#include <Debug/DVAssert.h>
+#include <Debug/DVAssertDefaultHandlers.h>
+#include <Concurrency/LockGuard.h>
+#include <Concurrency/Thread.h>
+
+#include <Base/StaticSingleton.h>
 
 #include <QApplication>
 #include <QAbstractEventDispatcher>
@@ -85,20 +86,28 @@ public:
         MacOSRunLoopGuard macOSGuard;
 #endif
 
+        Assert::FailBehaviour behaviour = Assert::FailBehaviour::Default;
         switch (mode)
         {
         case eApplicationMode::CONSOLE_MODE:
-            return Assert::DefaultLoggerHandler(assertInfo);
+            behaviour = Assert::DefaultLoggerHandler(assertInfo);
+            break;
         case eApplicationMode::GUI_MODE:
             Assert::DefaultLoggerHandler(assertInfo);
-            return Assert::DefaultDialogBoxHandler(assertInfo);
+            behaviour = Assert::DefaultDialogBoxHandler(assertInfo);
+            break;
         case eApplicationMode::TEST_MODE:
-            return Assert::DefaultLoggerHandler(assertInfo);
+            behaviour = Assert::DefaultLoggerHandler(assertInfo);
+            if (IsDebuggerPresent())
+            {
+                behaviour = Assert::FailBehaviour::Halt;
+            }
+            break;
         default:
             break;
         }
 
-        return Assert::FailBehaviour::Default;
+        return behaviour;
     }
 
     bool IsInsideAssert() const

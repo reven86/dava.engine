@@ -1,9 +1,9 @@
 #include "UI/UIScreen.h"
 #include "UI/UIControlSystem.h"
 #include "Render/RenderHelper.h"
-#include "Platform/SystemTimer.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/RHI/Common/PreProcess.h"
+#include "Time/SystemTimer.h"
 
 namespace DAVA
 {
@@ -45,21 +45,21 @@ void UIScreen::SetFillBorderOrder(UIScreen::eFillBorderOrder fillOrder)
     fillBorderOrder = fillOrder;
 }
 
-void UIScreen::SystemDraw(const UIGeometricData& geometricData)
+void UIScreen::SystemDraw(const UIGeometricData& geometricData, const UIControlBackground* parentBackground)
 {
     if (fillBorderOrder == FILL_BORDER_BEFORE_DRAW)
     {
         FillScreenBorders(geometricData);
-        UIControl::SystemDraw(geometricData);
+        UIControl::SystemDraw(geometricData, parentBackground);
     }
     else if (fillBorderOrder == FILL_BORDER_AFTER_DRAW)
     {
-        UIControl::SystemDraw(geometricData);
+        UIControl::SystemDraw(geometricData, parentBackground);
         FillScreenBorders(geometricData);
     }
     else
     {
-        UIControl::SystemDraw(geometricData);
+        UIControl::SystemDraw(geometricData, parentBackground);
     }
 }
 
@@ -98,7 +98,7 @@ void UIScreen::FillScreenBorders(const UIGeometricData& geometricData)
 void UIScreen::LoadGroup()
 {
     //Logger::FrameworkDebug("load group started");
-    //uint64 loadGroupStart = SystemTimer::Instance()->AbsoluteMS();
+    //uint64 loadGroupStart = SystemTimer::GetMs();
     ShaderPreprocessScope preprocessScope;
 
     if (groupId < 0)
@@ -122,7 +122,7 @@ void UIScreen::LoadGroup()
             }
         }
     }
-    //uint64 loadGroupEnd = SystemTimer::Instance()->AbsoluteMS();
+    //uint64 loadGroupEnd = SystemTimer::GetMs();
     //Logger::FrameworkDebug("load group finished: %lld", loadGroupEnd - loadGroupStart);
 }
 

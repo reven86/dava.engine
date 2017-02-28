@@ -25,9 +25,13 @@ public:
     enum eURLType
     {
         LauncherInfoURL = 0,
+        LauncherTestInfoURL,
         StringsURL,
         FavoritesURL,
-        AllBuildsURL,
+        AllBuildsCurrentPlatformURL,
+        AllBuildsAndroidURL,
+        AllBuildsIOSURL,
+        AllBuildsUWPURL,
         URLTypesCount
     };
 
@@ -37,10 +41,13 @@ public:
     int exec() override;
 
     QString GetURL(eURLType type) const;
-    QString GetDefaultURL(eURLType type) const;
+    QString GetServerHostName() const;
+
+    bool IsTestAPIUsed() const;
+    void SetUseTestAPI(bool use);
 
 public slots:
-    void SetURL(eURLType type, QString url);
+    void SetServerHostName(const QString& url);
 
 private slots:
     void DownloadFinished(QNetworkReply* reply);
@@ -53,6 +60,8 @@ private:
     QNetworkAccessManager* networkManager = nullptr;
     QList<QNetworkReply*> requests;
     bool aborted = false;
+    bool useTestAPI = false;
 
     std::array<QString, URLTypesCount> urls;
+    QString serverHostName;
 };

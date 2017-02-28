@@ -5,7 +5,6 @@
 #include "Base/Any.h"
 #include "Math/Vector.h"
 #include "Math/Ray.h"
-#include "Base/Introspection.h"
 
 namespace DAVA
 {
@@ -107,13 +106,6 @@ public:
 
     float32 GetBoundingSphereRadius() const;
     AABBox3 GetMaxRotationExtentBox(const Vector3& rotationCenter) const;
-
-public:
-    //Dizz: introspection changes
-    //INTROSPECTION(AABBox3,
-    //    MEMBER(min, "Min", INTROSPECTION_SERIALIZABLE | INTROSPECTION_EDITOR)
-    //    MEMBER(max, "Max", INTROSPECTION_SERIALIZABLE | INTROSPECTION_EDITOR)
-    //);
 };
 
 //! \brief construct empty bounding box
@@ -263,13 +255,6 @@ inline Vector3 AABBox3::GetSize() const
 }
 
 template <>
-struct AnyCompare<AABBox3>
-{
-    static bool IsEqual(const DAVA::Any& v1, const DAVA::Any& v2)
-    {
-        const AABBox3& bbox1 = v1.Get<AABBox3>();
-        const AABBox3& bbox2 = v2.Get<AABBox3>();
-        return bbox1 == bbox2;
-    }
-};
+bool AnyCompare<AABBox3>::IsEqual(const DAVA::Any& v1, const DAVA::Any& v2);
+extern template struct AnyCompare<AABBox3>;
 }

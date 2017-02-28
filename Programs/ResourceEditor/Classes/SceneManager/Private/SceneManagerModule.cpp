@@ -1,17 +1,18 @@
 #include "Classes/SceneManager/SceneManagerModule.h"
 #include "Classes/SceneManager/SceneData.h"
+#include "Classes/SceneManager/Private/SceneRenderWidget.h"
+#include "Classes/SceneManager/Private/SceneTabsModel.h"
 #include "Classes/Project/ProjectManagerData.h"
 #include "Classes/Application/REGlobal.h"
 #include "Classes/Qt/TextureBrowser/TextureCache.h"
-#include "Classes/Qt/Scene/SceneEditor2.h"
 #include "Classes/Qt/Main/mainwindow.h"
 #include "Classes/Qt/Tools/ExportSceneDialog/ExportSceneDialog.h"
+#include "Classes/Qt/Scene/SceneEditor2.h"
 #include "Classes/Qt/Scene/System/EditorVegetationSystem.h"
 #include "Classes/Qt/Scene/SceneHelper.h"
+#include "Classes/Qt/Settings/SettingsManager.h"
 #include "Classes/Qt/SpritesPacker/SpritesPackerModule.h"
 
-#include "Classes/SceneManager/Private/SceneRenderWidget.h"
-#include "Classes/SceneManager/Private/SceneTabsModel.h"
 #include "Classes/Utils/SceneSaver/SceneSaver.h"
 
 #include "Commands2/Base/RECommandStack.h"
@@ -53,7 +54,7 @@ public:
         return DAVA::Texture::GetPrimaryGPUForLoading();
     }
 
-    DAVA_VIRTUAL_REFLECTION(TexturesGPUData, DAVA::TArc::DataNode)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(TexturesGPUData, DAVA::TArc::DataNode)
     {
         DAVA::ReflectionRegistrator<TexturesGPUData>::Begin()
         .Field(TEXTURE_GPU_FIELD_NAME, &TexturesGPUData::GetCurrentTexturesGPU, nullptr)
@@ -268,7 +269,7 @@ void SceneManagerModule::CreateModuleControls(DAVA::TArc::UI* ui)
 
     QAction* deleteSelection = new QAction("Delete Selection", engineRenderWidget);
     deleteSelection->setShortcuts(QList<QKeySequence>() << Qt::Key_Delete << Qt::CTRL + Qt::Key_Backspace);
-    deleteSelection->setShortcutContext(Qt::WidgetShortcut);
+    deleteSelection->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     engineRenderWidget->addAction(deleteSelection);
     connections.AddConnection(deleteSelection, &QAction::triggered, DAVA::MakeFunction(this, &SceneManagerModule::DeleteSelection));
 
@@ -618,10 +619,9 @@ void SceneManagerModule::RegisterOperations()
 {
     RegisterOperation(REGlobal::CloseAllScenesOperation.ID, this, &SceneManagerModule::CloseAllScenes);
     RegisterOperation(REGlobal::OpenSceneOperation.ID, this, &SceneManagerModule::OpenSceneByPath);
+    RegisterOperation(REGlobal::AddSceneOperation.ID, this, &SceneManagerModule::AddSceneByPath);
     RegisterOperation(REGlobal::SaveCurrentScene.ID, this, static_cast<void (SceneManagerModule::*)()>(&SceneManagerModule::SaveScene));
     RegisterOperation(REGlobal::ReloadTexturesOperation.ID, this, &SceneManagerModule::ReloadTextures);
-    RegisterOperation(REGlobal::ShowScenePreviewOperation.ID, this, &SceneManagerModule::ShowPreview);
-    RegisterOperation(REGlobal::HideScenePreviewOperation.ID, this, &SceneManagerModule::HidePreview);
 }
 
 void SceneManagerModule::CreateNewScene()
@@ -688,7 +688,6 @@ void SceneManagerModule::OpenSceneByPath(const DAVA::FilePath& scenePath)
         return;
     }
 
-    HidePreview();
     ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
     DVASSERT(data != nullptr);
     DAVA::FilePath projectPath(data->GetProjectPath());
@@ -698,10 +697,9 @@ void SceneManagerModule::OpenSceneByPath(const DAVA::FilePath& scenePath)
         ModalMessageParams params;
         params.buttons = ModalMessageParams::Ok;
         params.title = QStringLiteral("Open scene error");
-        params.message = QString("Can't open scene file outside project path.\n\nScene:\n%1\n\nProject:\n%2").
-                         arg(scenePath.GetAbsolutePathname().c_str())
-                         .
-                         arg(projectPath.GetAbsolutePathname().c_str());
+        params.message = QString("Can't open scene file outside project path.\n\nScene:\n%1\n\nProject:\n%2")
+                         .arg(scenePath.GetAbsolutePathname().c_str())
+                         .arg(projectPath.GetAbsolutePathname().c_str());
 
         GetUI()->ShowModalMessage(REGlobal::MainWindowKey, params);
         return;
@@ -768,6 +766,25 @@ void SceneManagerModule::OpenSceneByPath(const DAVA::FilePath& scenePath)
     initialData.emplace_back(std::move(sceneData));
     DataContext::ContextID newContext = contextManager->CreateContext(std::move(initialData));
     contextManager->ActivateContext(newContext);
+}
+
+void SceneManagerModule::AddSceneByPath(const DAVA::FilePath& scenePath)
+{
+    using namespace DAVA::TArc;
+
+    SceneData* sceneData = GetAccessor()->GetActiveContext()->GetData<SceneData>();
+    if ((sceneData != nullptr) && (scenePath.IsEmpty() == false))
+    {
+        DAVA::RefPtr<SceneEditor2> sceneEditor = sceneData->GetScene();
+
+        UI* ui = GetUI();
+        WaitDialogParams waitDlgParams;
+        waitDlgParams.message = QString("Add object to scene\n%1").arg(scenePath.GetAbsolutePathname().c_str());
+        waitDlgParams.needProgressBar = false;
+        std::unique_ptr<WaitHandle> waitHandle = ui->ShowWaitDialog(REGlobal::MainWindowKey, waitDlgParams);
+
+        sceneEditor->structureSystem->Add(scenePath);
+    }
 }
 
 void SceneManagerModule::SaveScene(bool saveAs)
@@ -981,22 +998,6 @@ void SceneManagerModule::ReloadTextures(DAVA::eGPUFamily gpu)
 
         DAVA::Sprite::ReloadSprites(gpu);
         RestartParticles();
-    }
-}
-
-void SceneManagerModule::ShowPreview(const DAVA::FilePath& scenePath)
-{
-    if (!renderWidget.isNull() && SettingsManager::GetValue(Settings::General_PreviewEnabled).AsBool() == true)
-    {
-        renderWidget->ShowPreview(scenePath);
-    }
-}
-
-void SceneManagerModule::HidePreview()
-{
-    if (!renderWidget.isNull())
-    {
-        renderWidget->HidePreview();
     }
 }
 
@@ -1274,7 +1275,11 @@ bool SceneManagerModule::SaveSceneImpl(DAVA::RefPtr<SceneEditor2> scene, const D
         return false;
     }
 
-    scene->SaveEmitters(DAVA::MakeFunction(this, &SceneManagerModule::SaveEmitterFallback));
+    if (SettingsManager::GetValue(Settings::Scene_SaveEmitters).AsBool() == true)
+    {
+        scene->SaveEmitters(DAVA::MakeFunction(this, &SceneManagerModule::SaveEmitterFallback));
+    }
+
     DAVA::SceneFileV2::eError ret = scene->SaveScene(pathToSaveScene);
     if (DAVA::SceneFileV2::ERROR_NO_ERROR != ret)
     {

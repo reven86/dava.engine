@@ -96,6 +96,11 @@ QString ProcessID(const QString& id)
     QStringList digits = version.split(QRegularExpression("\\D+"), QString::SkipEmptyParts);
     version = digits.join(".");
     QString dateTime = id.right(id.length() - versionLength - index);
+    QString extension(".txt");
+    if (dateTime.endsWith(extension))
+    {
+        dateTime.chop(extension.length());
+    }
     QRegularExpression timeRegex("\\_\\d+\\_\\d+\\_\\d+");
     if (dateTime.indexOf(timeRegex, 0, &match) != -1)
     {
@@ -105,17 +110,6 @@ QString ProcessID(const QString& id)
     }
     QString result = version + dateTime;
     return result;
-}
-
-bool FillAppFields(AppVersion* appVer, const QJsonObject& entry, bool toolset)
-{
-    QString buildType = entry["build_type"].toString();
-    appVer->id = ProcessID(buildType);
-    appVer->url = entry["artifacts"].toString();
-    appVer->buildNum = entry["build_num"].toString();
-    appVer->runPath = toolset ? "" : entry["exe_location"].toString();
-    appVer->isToolSet = toolset;
-    return !appVer->id.isEmpty();
 }
 
 bool ExtractApp(const QString& appName, const QJsonObject& entry, Branch* branch, bool toolset)
@@ -130,12 +124,21 @@ bool ExtractApp(const QString& appName, const QJsonObject& entry, Branch* branch
         branch->applications.append(Application(appName));
         app = &branch->applications.last();
     }
-    QString buildType = entry["build_type"].toString();
-    if (buildType.isEmpty())
+    QString buildNum = entry["build_num"].toString();
+    AppVersion* appVer = nullptr;
+    if (buildNum.isEmpty() == false)
     {
-        return false;
+        appVer = app->GetVersionByNum(buildNum);
     }
-    AppVersion* appVer = app->GetVersion(buildType);
+    if (appVer == nullptr)
+    {
+        QString buildType = entry["build_type"].toString();
+        if (buildType.isEmpty())
+        {
+            return false;
+        }
+        appVer = app->GetVersion(buildType);
+    }
     if (appVer == nullptr)
     {
         app->versions.append(AppVersion());
@@ -178,7 +181,7 @@ bool GetBranches(const QJsonValue& value, QVector<Branch>& branches)
         }
 
         QString appName = entry["build_name"].toString();
-        if (appName.startsWith("toolset", Qt::CaseInsensitive))
+        if (IsToolset(appName))
         {
             for (const QString& toolsetApp : ConfigParser::GetToolsetApplications())
             {
@@ -199,6 +202,51 @@ bool GetBranches(const QJsonValue& value, QVector<Branch>& branches)
 
     return isValid;
 }
+}
+
+bool IsToolset(const QString& appName)
+{
+    return appName.startsWith("toolset", Qt::CaseInsensitive);
+}
+
+bool IsBuildSupported(const QString& url)
+{
+    static QStringList supportedExtensions = {
+        ".zip", ".ipa"
+    };
+
+    for (const QString& ext : supportedExtensions)
+    {
+        if (url.endsWith(ext))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool FillAppFields(AppVersion* appVer, const QJsonObject& entry, bool toolset)
+{
+    QString url = entry["artifacts"].toString();
+    QString buildType = entry["build_type"].toString();
+
+    //remember num to fill it later
+    appVer->buildNum = entry["build_num"].toString();
+    if (url.endsWith(".zip") || buildType.startsWith("Desc"))
+    {
+        appVer->id = ConfigParserDetails::ProcessID(buildType);
+    }
+
+    if (IsBuildSupported(url) == false)
+    {
+        //this is valid situation
+        return true;
+    }
+
+    appVer->url = url;
+    appVer->runPath = toolset ? "" : entry["exe_location"].toString();
+    appVer->isToolSet = toolset;
+    return !appVer->url.isEmpty();
 }
 
 AppVersion AppVersion::LoadFromYamlNode(const YAML::Node* node)
@@ -234,6 +282,18 @@ AppVersion* Application::GetVersion(const QString& versionID)
             return &versions[i];
 
     return 0;
+}
+
+AppVersion* Application::GetVersionByNum(const QString& num)
+{
+    auto iter = std::find_if(versions.begin(), versions.end(), [num](const AppVersion& ver) {
+        return ver.buildNum == num;
+    });
+    if (iter == versions.end())
+    {
+        return nullptr;
+    }
+    return &(*iter);
 }
 
 void Application::RemoveVersion(const QString& versionID)
@@ -514,7 +574,7 @@ QByteArray ConfigParser::Serialize() const
                 const AppVersion* ver = app->GetVersion(k);
                 QString appName = ver->isToolSet ? "ToolSet" : app->id;
                 QJsonObject buildObj = {
-                    { "buildNum", ver->buildNum },
+                    { "build_num", ver->buildNum },
                     { "build_type", ver->id },
                     { "build_name", appName },
                     { "branchName", branch->id },
@@ -699,16 +759,34 @@ Application* ConfigParser::GetApplication(const QString& branchID, const QString
         int appCount = branch->applications.size();
         for (int i = 0; i < appCount; ++i)
             if (branch->applications[i].id == appID)
+            {
                 return &branch->applications[i];
+            }
     }
 
-    return 0;
+    return nullptr;
+}
+
+const Application* ConfigParser::GetApplication(const QString& branchID, const QString& appID) const
+{
+    const Branch* branch = GetBranch(branchID);
+    if (branch != nullptr)
+    {
+        int appCount = branch->applications.size();
+        for (int i = 0; i < appCount; ++i)
+            if (branch->applications[i].id == appID)
+            {
+                return &branch->applications[i];
+            }
+    }
+
+    return nullptr;
 }
 
 AppVersion* ConfigParser::GetAppVersion(const QString& branchID, const QString& appID, const QString& ver)
 {
     Application* app = GetApplication(branchID, appID);
-    if (app)
+    if (app != nullptr)
     {
         int versCount = app->versions.size();
         for (int i = 0; i < versCount; ++i)
@@ -716,7 +794,7 @@ AppVersion* ConfigParser::GetAppVersion(const QString& branchID, const QString& 
                 return &app->versions[i];
     }
 
-    return 0;
+    return nullptr;
 }
 
 QString ConfigParser::GetString(const QString& stringID) const

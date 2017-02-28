@@ -25,6 +25,35 @@ DAVA_TESTCLASS (ThreadSyncTest)
     AutoResetEvent are;
     ManualResetEvent mre;
 
+    Vector<Thread*> currentThreads;
+
+    DAVA_TEST (ThreadCurrentTest)
+    {
+        // Thread subsystem maintains list of created Thread instances, this list is used
+        // in Thread::Current() method to retrieve Thread instance for current thread.
+        // Note that list is searched by thread id but system can reuse that id for newly created
+        // thread and Thread::Current() can return Thread instance for different thread.
+        // System considers thread is finished and can reuse its id after joining.
+        const size_t N = 50;
+        for (size_t i = 0; i < N; ++i)
+        {
+            Thread* t = Thread::Create([this, i]() {
+                Thread* cur = Thread::Current();
+                Thread* test = currentThreads[i];
+
+                TEST_VERIFY(cur == test);
+            });
+
+            currentThreads.push_back(t);
+            t->Start();
+            t->Join();
+        }
+
+        for (Thread* t : currentThreads)
+            t->Release();
+        currentThreads.clear();
+    }
+
     DAVA_TEST (ThreadJoinableTest)
     {
         RefPtr<Thread> p(Thread::Create([]() {
@@ -41,7 +70,7 @@ DAVA_TESTCLASS (ThreadSyncTest)
     DAVA_TEST (ThreadSyncTestFunction)
     {
         cvMutex.Lock();
-        someThread = Thread::Create(Message(this, &ThreadSyncTest::SomeThreadFunc));
+        someThread = Thread::Create(MakeFunction(this, &ThreadSyncTest::SomeThreadFunc));
         someValue = -1;
         someThread->Start();
         cv.Wait(cvMutex);
@@ -57,7 +86,7 @@ DAVA_TESTCLASS (ThreadSyncTest)
     {
         TEST_VERIFY(true == Thread::IsMainThread());
 
-        Thread* infiniteThread = Thread::Create(Message(this, &ThreadSyncTest::InfiniteThreadFunction));
+        Thread* infiniteThread = Thread::Create(MakeFunction(this, &ThreadSyncTest::InfiniteThreadFunction));
 
         TEST_VERIFY(Thread::STATE_CREATED == infiniteThread->GetState());
         infiniteThread->SetName("Infinite test thread");
@@ -74,7 +103,7 @@ DAVA_TESTCLASS (ThreadSyncTest)
         infiniteThread->Join();
         TEST_VERIFY(Thread::STATE_ENDED == infiniteThread->GetState());
 
-        Thread* shortThread = Thread::Create(Message(this, &ThreadSyncTest::ShortThreadFunction));
+        Thread* shortThread = Thread::Create(MakeFunction(this, &ThreadSyncTest::ShortThreadFunction));
         shortThread->Start();
         shortThread->Join();
         TEST_VERIFY(Thread::STATE_ENDED == shortThread->GetState());
@@ -137,7 +166,7 @@ DAVA_TESTCLASS (ThreadSyncTest)
         autoResetValue = 0;
         for (int i = 0; i < autoResetThreadCount; ++i)
         {
-            threads[i] = Thread::Create(Message(this, &ThreadSyncTest::AutoResetEventThreadFunc));
+            threads[i] = Thread::Create(MakeFunction(this, &ThreadSyncTest::AutoResetEventThreadFunc));
             threads[i]->Start();
         }
 
@@ -185,7 +214,7 @@ DAVA_TESTCLASS (ThreadSyncTest)
         }
     }
 
-    void AutoResetEventThreadFunc(BaseObject * caller, void* callerData, void* userData)
+    void AutoResetEventThreadFunc()
     {
         std::random_device rd;
         std::mt19937 gen(rd());
@@ -213,7 +242,7 @@ DAVA_TESTCLASS (ThreadSyncTest)
         manualResetValue = 0;
         for (int i = 0; i < autoResetThreadCount; ++i)
         {
-            threads[i] = Thread::Create(Message(this, &ThreadSyncTest::ManualResetEventThreadFunc));
+            threads[i] = Thread::Create(MakeFunction(this, &ThreadSyncTest::ManualResetEventThreadFunc));
             threads[i]->Start();
         }
 
@@ -240,7 +269,7 @@ DAVA_TESTCLASS (ThreadSyncTest)
         }
     }
 
-    void ManualResetEventThreadFunc(BaseObject * caller, void* callerData, void* userData)
+    void ManualResetEventThreadFunc()
     {
         std::random_device rd;
         std::mt19937 gen(rd());
@@ -262,7 +291,7 @@ DAVA_TESTCLASS (ThreadSyncTest)
         Logger::Info("%f", res);
     }
 
-    void SomeThreadFunc(BaseObject * caller, void* callerData, void* userData)
+    void SomeThreadFunc()
     {
         someValue = 0;
         cvMutex.Lock();
@@ -270,19 +299,19 @@ DAVA_TESTCLASS (ThreadSyncTest)
         cvMutex.Unlock();
     }
 
-    void InfiniteThreadFunction(BaseObject * caller, void* callerData, void* userData)
+    void InfiniteThreadFunction()
     {
-        Thread* thread = static_cast<Thread*>(caller);
+        Thread* thread = Thread::Current();
         while (thread && !thread->IsCancelling())
         {
             Thread::Sleep(200);
         }
     }
 
-    void ShortThreadFunction(BaseObject * caller, void* callerData, void* userData)
+    void ShortThreadFunction()
     {
         uint32 i = 200;
-        Thread* thread = static_cast<Thread*>(caller);
+        Thread* thread = Thread::Current();
         while (thread && i-- > 0)
         {
             Thread::Sleep(1);

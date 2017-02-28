@@ -18,11 +18,15 @@
 #ifdef __DAVAENGINE_IPHONE__
 #include "fmodiphone.h"
 #include "Sound/iOS/musicios.h"
+#elif __DAVAENGINE_ANDROID__
+#include "Engine/Android/JNIBridge.h"
 #endif
+
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
 #include "MemoryManager/MemoryManager.h"
 #include "MemoryManager/MemoryProfiler.h"
 #endif
+
 #define MAX_SOUND_CHANNELS 48
 #define MAX_SOUND_VIRTUAL_CHANNELS 64
 
@@ -62,11 +66,18 @@ static const FastName SEREALIZE_EVENTTYPE_EVENTSYSTEM("eventFromSystem");
 
 Mutex SoundSystem::soundGroupsMutex;
 
+#if defined(__DAVAENGINE_ANDROID__)
+jobject fmodActivityListenerGlobalRef = nullptr;
+Function<void(jobject)> fmodActivityListenerUnregisterMethod = nullptr;
+#endif
+
 #if defined(__DAVAENGINE_COREV2__)
 SoundSystem::SoundSystem(Engine* e)
     : engine(e)
 {
-    sigUpdateId = engine->update.Connect(this, &SoundSystem::Update);
+    onUpdateToken = engine->update.Connect(this, &SoundSystem::OnUpdate);
+    onSuspendToken = engine->suspended.Connect(this, &SoundSystem::OnSuspend);
+    onResumeToken = engine->resumed.Connect(this, &SoundSystem::OnResume);
 #else
 SoundSystem::SoundSystem()
 {
@@ -91,6 +102,21 @@ SoundSystem::SoundSystem()
     FMOD_VERIFY(fmodEventSystem->getSystemObject(&fmodSystem));
 #ifdef __DAVAENGINE_ANDROID__
     FMOD_VERIFY(fmodSystem->setOutput(FMOD_OUTPUTTYPE_AUDIOTRACK));
+
+    JNIEnv* env = JNI::GetEnv();
+
+    // Create instance of FmodActivityListener to handle FMOD Java object
+    // It will register as a listener by itself in a constructor
+    // We remember 'unregister' method to call it in SoundSystem's destructor
+
+    JNI::JavaClass fmodActivityListenerClass("com/dava/engine/FmodActivityListener");
+    fmodActivityListenerUnregisterMethod = fmodActivityListenerClass.GetMethod<void>("unregister");
+
+    jmethodID fmodActivityListenerConstructor = env->GetMethodID(fmodActivityListenerClass, "<init>", "()V");
+    jobject fmodActivityListenerInstance = env->NewObject(fmodActivityListenerClass, fmodActivityListenerConstructor);
+    DAVA_JNI_EXCEPTION_CHECK();
+    fmodActivityListenerGlobalRef = env->NewGlobalRef(fmodActivityListenerInstance);
+    env->DeleteLocalRef(fmodActivityListenerInstance);
 #endif
     FMOD_VERIFY(fmodSystem->setSoftwareChannels(MAX_SOUND_CHANNELS));
 
@@ -123,7 +149,20 @@ SoundSystem::SoundSystem()
 SoundSystem::~SoundSystem()
 {
 #if defined(__DAVAENGINE_COREV2__)
-    engine->update.Disconnect(sigUpdateId);
+    engine->update.Disconnect(onUpdateToken);
+    engine->suspended.Disconnect(onSuspendToken);
+    engine->resumed.Disconnect(onResumeToken);
+
+#if defined(__DAVAENGINE_ANDROID__)
+    if (fmodActivityListenerGlobalRef != nullptr)
+    {
+        JNIEnv* env = JNI::GetEnv();
+
+        fmodActivityListenerUnregisterMethod(fmodActivityListenerGlobalRef);
+        env->DeleteGlobalRef(fmodActivityListenerGlobalRef);
+        fmodActivityListenerGlobalRef = nullptr;
+    }
+#endif
 #endif
 
     if (fmodEventSystem)
@@ -403,7 +442,11 @@ void SoundSystem::UnloadFMODProjects()
     toplevelGroups.clear();
 }
 
+#if defined(__DAVAENGINE_COREV2__)
+void SoundSystem::OnUpdate(float32 timeElapsed)
+#else
 void SoundSystem::Update(float32 timeElapsed)
+#endif
 {
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::SOUND_SYSTEM);
 
@@ -462,7 +505,11 @@ int32 SoundSystem::GetChannelsMax() const
     return softChannels;
 }
 
+#if defined(__DAVAENGINE_COREV2__)
+void SoundSystem::OnSuspend()
+#else
 void SoundSystem::Suspend()
+#endif
 {
 #ifdef __DAVAENGINE_ANDROID__
     //SoundSystem should be suspended by FMODAudioDevice::stop() on JAVA layer.
@@ -471,7 +518,11 @@ void SoundSystem::Suspend()
 #endif
 }
 
+#if defined(__DAVAENGINE_COREV2__)
+void SoundSystem::OnResume()
+#else
 void SoundSystem::Resume()
+#endif
 {
 #ifdef __DAVAENGINE_IPHONE__
     FMOD_IPhone_RestoreAudioSession();

@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include "Base/BaseTypes.h"
+#include "Base/Any.h"
 #include "Math/MathConstants.h"
 
 namespace DAVA
@@ -1160,4 +1161,14 @@ inline Vector4 Normalize(const Vector4& v)
     res.Normalize();
     return res;
 }
+
+template <>
+bool AnyCompare<Vector2>::IsEqual(const DAVA::Any& v1, const DAVA::Any& v2);
+template <>
+bool AnyCompare<Vector3>::IsEqual(const DAVA::Any& v1, const DAVA::Any& v2);
+template <>
+bool AnyCompare<Vector4>::IsEqual(const DAVA::Any& v1, const DAVA::Any& v2);
+extern template struct AnyCompare<Vector2>;
+extern template struct AnyCompare<Vector3>;
+extern template struct AnyCompare<Vector4>;
 };

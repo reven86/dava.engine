@@ -1,11 +1,6 @@
-#ifndef __DATA_DOWNLOADER_H__
-#define __DATA_DOWNLOADER_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
-#include "Concurrency/Thread.h"
-#include "Concurrency/Mutex.h"
-#include "FileSystem/File.h"
-#include "FileSystem/FileSystem.h"
 #include "DownloaderCommon.h"
 #include "Functional/Function.h"
 #include "Concurrency/Spinlock.h"
@@ -22,9 +17,7 @@ class Downloader
 
 public:
     Downloader();
-    virtual ~Downloader()
-    {
-    }
+    virtual ~Downloader() = default;
 
     /* all methods putted into protected section because they should be used only from DownloadManager. */
 protected:
@@ -66,7 +59,7 @@ protected:
                                              uint32* nread) = 0;
 
     /**
-        \brief Interrupt download process. We expects that you will save last data chunk came before 
+        \brief Interrupt download process. We expects that you will save last data chunk came before
      */
     virtual void Interrupt() = 0;
     /**
@@ -102,21 +95,20 @@ protected:
      */
     virtual void SetDownloadSpeedLimit(const uint64 limit) = 0;
 
-    /**
-        \brief return errno occurred during work with destination file
-    */
+    /** Return errno occurred during work with destination file. */
     int32 GetFileErrno() const;
 
-protected:
-    int32 fileErrno;
+    /** Return error specified for downloader implementation. Useful for debugging/tracing download errors. */
+    int32 GetImplError() const;
+
+    int32 fileErrno = 0;
+    int32 implError = 0;
     Function<void(uint64)> notifyProgress;
 
 private:
-    uint64 dataToDownloadLeft;
+    uint64 dataToDownloadLeft = 0;
 
     Spinlock statisticsMutex;
     DownloadStatistics statistics;
 };
 }
-
-#endif

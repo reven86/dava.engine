@@ -11,6 +11,12 @@
 QString GetStringValueFromYamlNode(const YAML::Node* node, QString defaultValue = "");
 QStringList GetArrayValueFromYamlNode(const YAML::Node* node);
 
+struct AppVersion;
+class QJsonObject;
+
+bool FillAppFields(AppVersion* appVer, const QJsonObject& entry, bool toolset);
+bool IsToolset(const QString& appName);
+
 class ConfigParser;
 
 struct AppVersion
@@ -55,7 +61,7 @@ struct Application
     }
 
     AppVersion* GetVersion(const QString& versionID);
-
+    AppVersion* GetVersionByNum(const QString& num);
     void RemoveVersion(const QString& versionID);
 
     static Application LoadFromYamlNode(const YAML::Node* node);
@@ -121,6 +127,7 @@ public:
     Branch* GetBranch(const QString& branch);
     const Branch* GetBranch(const QString& branch) const;
 
+    const Application* GetApplication(const QString& branch, const QString& appID) const;
     Application* GetApplication(const QString& branch, const QString& appID);
 
     AppVersion* GetAppVersion(const QString& branch, const QString& appID, const QString& ver);

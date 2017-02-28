@@ -45,7 +45,7 @@ private:
 
     std::unique_ptr<SelectionSystem> selectionSystem;
 
-    DAVA_VIRTUAL_REFLECTION(SelectionData, DAVA::TArc::DataNode)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(SelectionData, DAVA::TArc::DataNode)
     {
         DAVA::ReflectionRegistrator<SelectionData>::Begin()
         .Field(selectionPropertyName, &SelectionData::GetSelection, nullptr)
@@ -58,13 +58,6 @@ private:
 namespace DAVA
 {
 template <>
-struct AnyCompare<SelectableGroup>
-{
-    static bool IsEqual(const DAVA::Any& v1, const DAVA::Any& v2)
-    {
-        const SelectableGroup& tab1 = v1.Get<SelectableGroup>();
-        const SelectableGroup& tab2 = v2.Get<SelectableGroup>();
-        return tab1 == tab2;
-    }
-};
+bool AnyCompare<SelectableGroup>::IsEqual(const DAVA::Any& v1, const DAVA::Any& v2);
+extern template struct AnyCompare<SelectableGroup>;
 }

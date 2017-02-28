@@ -35,8 +35,6 @@ UIStaticText::UIStaticText(const Rect& rect)
 {
     SetInputEnabled(false, false);
     textBlock = TextBlock::Create(Vector2(rect.dx, rect.dy));
-    GetBackground()->SetAlign(ALIGN_HCENTER | ALIGN_VCENTER);
-    GetBackground()->SetPerPixelAccuracyType(UIControlBackground::PER_PIXEL_ACCURACY_ENABLED);
 
     textBg = new UIControlBackground();
     textBg->SetDrawType(UIControlBackground::DRAW_ALIGNED);
@@ -366,7 +364,7 @@ Animation* UIStaticText::ShadowColorAnimation(const Color& finalColor, float32 t
     return animation;
 }
 
-const Vector<int32>& UIStaticText::GetStringSizes() const
+const Vector<float32>& UIStaticText::GetStringSizes() const
 {
     return textBlock->GetStringSizes();
 }

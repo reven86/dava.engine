@@ -30,7 +30,7 @@ private:
     BeastRunner* beastRunner = false;
     DAVA::Scene* scene = nullptr;
 
-    DAVA_VIRTUAL_REFLECTION(BeastCommandLineTool, CommandLineModule)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(BeastCommandLineTool, CommandLineModule)
     {
         DAVA::ReflectionRegistrator<BeastCommandLineTool>::Begin()
         .ConstructorByPointer<DAVA::Vector<DAVA::String>>()

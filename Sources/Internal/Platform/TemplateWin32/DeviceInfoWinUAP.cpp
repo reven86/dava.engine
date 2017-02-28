@@ -212,25 +212,42 @@ DeviceInfo::NetworkInfo DeviceInfoPrivate::GetNetworkInfo()
 {
     using ::Windows::Networking::Connectivity::NetworkInformation;
     using ::Windows::Networking::Connectivity::ConnectionProfile;
+    using ::Windows::Networking::Connectivity::NetworkAdapter;
 
     DeviceInfo::NetworkInfo networkInfo;
     ConnectionProfile ^ icp = NetworkInformation::GetInternetConnectionProfile();
-    if (icp != nullptr && icp->NetworkAdapter != nullptr)
+    if (icp != nullptr)
     {
-        if (icp->IsWlanConnectionProfile)
+        NetworkAdapter ^ networkAdapter = nullptr;
+
+        // Even though it's not documented, NetworkAdapter property getter can throw an exception
+        try
         {
-            networkInfo.networkType = DeviceInfo::NETWORK_TYPE_WIFI;
+            networkAdapter = icp->NetworkAdapter;
         }
-        else if (icp->IsWwanConnectionProfile)
+        catch (Platform::Exception ^ e)
         {
-            networkInfo.networkType = DeviceInfo::NETWORK_TYPE_CELLULAR;
+            Logger::Error("[DeviceInfo] failed to get NetworkAdapter: hresult=0x%08X, message=%s", e->HResult, UTF8Utils::EncodeToUTF8(e->Message->Data()).c_str());
         }
-        else
+
+        if (networkAdapter != nullptr)
         {
-            // in other case Ethernet
-            networkInfo.networkType = DeviceInfo::NETWORK_TYPE_ETHERNET;
+            if (icp->IsWlanConnectionProfile)
+            {
+                networkInfo.networkType = DeviceInfo::NETWORK_TYPE_WIFI;
+            }
+            else if (icp->IsWwanConnectionProfile)
+            {
+                networkInfo.networkType = DeviceInfo::NETWORK_TYPE_CELLULAR;
+            }
+            else
+            {
+                // in other case Ethernet
+                networkInfo.networkType = DeviceInfo::NETWORK_TYPE_ETHERNET;
+            }
         }
     }
+
     return networkInfo;
 }
 
@@ -330,7 +347,7 @@ List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetStoragesList()
     for (unsigned i = 0; i < removableStorages->Size; ++i)
     {
         Platform::String ^ path = removableStorages->GetAt(i)->Path;
-        storage.path = FilePath::FromNativeString(path->Data());
+        storage.path = UTF8Utils::EncodeToUTF8(path->Data());
         if (FillStorageSpaceInfo(storage))
         {
             result.push_back(storage);

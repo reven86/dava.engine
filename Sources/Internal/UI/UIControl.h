@@ -1,10 +1,11 @@
 #pragma once
 
-#include "Base/BaseTypes.h"
-#include "UI/UIControlBackground.h"
-#include "UI/Styles/UIStyleSheetPropertyDataBase.h"
 #include "Animation/AnimatedObject.h"
 #include "Animation/Interpolation.h"
+#include "Base/BaseTypes.h"
+#include "UI/Styles/UIStyleSheetPropertyDataBase.h"
+#include "UI/UIControlBackground.h"
+#include "UI/UIGeometricData.h"
 
 namespace DAVA
 {
@@ -19,133 +20,6 @@ class UIControlFamily;
 class UIControlPackageContext;
 
 #define CONTROL_TOUCH_AREA 15
-/**
-     \ingroup controlsystem
-     \brief Compound of geometric transformations used to draw control in the screen space.
-     */
-
-class UIGeometricData
-{
-    friend class UIControl;
-
-public:
-    UIGeometricData()
-        : scale(1.0f, 1.0f)
-        , angle(0.0f)
-        , cosA(1.0f)
-        , sinA(0.0f)
-        , calculatedAngle(0.0f)
-    {
-    }
-    Vector2 position;
-    Vector2 size;
-
-    Vector2 pivotPoint;
-    Vector2 scale;
-    float32 angle;
-
-    mutable float32 cosA;
-    mutable float32 sinA;
-
-    void AddGeometricData(const UIGeometricData& data)
-    {
-        position.x = data.position.x - data.pivotPoint.x * data.scale.x + position.x * data.scale.x;
-        position.y = data.position.y - data.pivotPoint.y * data.scale.y + position.y * data.scale.y;
-        if (data.angle != 0)
-        {
-            float tmpX = position.x;
-            position.x = (tmpX - data.position.x) * data.cosA + (data.position.y - position.y) * data.sinA + data.position.x;
-            position.y = (tmpX - data.position.x) * data.sinA + (position.y - data.position.y) * data.cosA + data.position.y;
-        }
-        scale.x *= data.scale.x;
-        scale.y *= data.scale.y;
-        angle += data.angle;
-        if (angle != calculatedAngle)
-        {
-            if (angle != data.angle)
-            {
-                cosA = std::cos(angle);
-                sinA = std::sin(angle);
-            }
-            else
-            {
-                cosA = data.cosA;
-                sinA = data.sinA;
-            }
-            calculatedAngle = angle;
-        }
-
-        unrotatedRect.x = position.x - pivotPoint.x * scale.x;
-        unrotatedRect.y = position.y - pivotPoint.y * scale.y;
-        unrotatedRect.dx = size.x * scale.x;
-        unrotatedRect.dy = size.y * scale.y;
-    }
-
-    DAVA_DEPRECATED(void AddToGeometricData(const UIGeometricData& data))
-    {
-        AddGeometricData(data);
-    }
-
-    void BuildTransformMatrix(Matrix3& transformMatr) const
-    {
-        Matrix3 pivotMatr;
-        pivotMatr.BuildTranslation(-pivotPoint);
-
-        Matrix3 translateMatr;
-        translateMatr.BuildTranslation(position);
-        // well it must be here otherwise there is a bug!
-        if (calculatedAngle != angle)
-        {
-            cosA = std::cos(angle);
-            sinA = std::sin(angle);
-            calculatedAngle = angle;
-        }
-        Matrix3 rotateMatr;
-        rotateMatr.BuildRotation(cosA, sinA);
-
-        Matrix3 scaleMatr;
-        scaleMatr.BuildScale(scale);
-
-        transformMatr = pivotMatr * scaleMatr * rotateMatr * translateMatr;
-    }
-
-    void GetPolygon(Polygon2& polygon) const
-    {
-        polygon.Clear();
-        polygon.points.reserve(4);
-        polygon.AddPoint(Vector2());
-        polygon.AddPoint(Vector2(size.x, 0));
-        polygon.AddPoint(size);
-        polygon.AddPoint(Vector2(0, size.y));
-
-        Matrix3 transformMtx;
-        BuildTransformMatrix(transformMtx);
-        polygon.Transform(transformMtx);
-    }
-
-    const Rect& GetUnrotatedRect() const
-    {
-        return unrotatedRect;
-    }
-
-    Rect GetAABBox() const
-    {
-        Polygon2 polygon;
-        GetPolygon(polygon);
-
-        AABBox2 aabbox;
-        for (int32 i = 0; i < polygon.GetPointCount(); ++i)
-        {
-            aabbox.AddPoint(polygon.GetPoints()[i]);
-        }
-        Rect bboxRect = Rect(aabbox.min, aabbox.max - aabbox.min);
-        return bboxRect;
-    }
-
-private:
-    mutable float32 calculatedAngle;
-    Rect unrotatedRect;
-};
 
 /**
      \ingroup controlsystem
@@ -254,94 +128,69 @@ public:
         You can call this function directly for the controlBackgound.
      \returns Sprite used for draw.
      */
-    virtual Sprite* GetSprite() const;
+    DAVA_DEPRECATED(Sprite* GetSprite() const);
     /**
      \brief Returns Sprite frame used for draw in the current UIControlBackground object.
         You can call this function directly for the controlBackgound.
      \returns Sprite frame used for draw.
      */
-    int32 GetFrame() const;
+    DAVA_DEPRECATED(int32 GetFrame() const);
     /**
      \brief Returns draw type used for draw in the current UIControlBackground object.
         You can call this function directly for the controlBackgound.
      \returns Draw type used for draw.
      */
-    virtual UIControlBackground::eDrawType GetSpriteDrawType() const;
+    DAVA_DEPRECATED(virtual UIControlBackground::eDrawType GetSpriteDrawType() const);
     /**
      \brief Returns Sprite align used for draw in the current UIControlBackground object.
         You can call this function directly for the controlBackgound.
      \returns Sprite eAlign bit mask used for draw.
      */
-    virtual int32 GetSpriteAlign() const;
+    DAVA_DEPRECATED(virtual int32 GetSpriteAlign() const);
     /**
      \brief Sets Sprite for the control UIControlBackground object.
      \param[in] spriteName Sprite path-name.
      \param[in] spriteFrame Sprite frame you want to use for draw.
      */
-    virtual void SetSprite(const FilePath& spriteName, int32 spriteFrame);
+    DAVA_DEPRECATED(virtual void SetSprite(const FilePath& spriteName, int32 spriteFrame));
     /**
      \brief Sets Sprite for the control UIControlBackground object.
      \param[in] newSprite Pointer for a Sprite.
      \param[in] spriteFrame Sprite frame you want to use for draw.
      */
-    virtual void SetSprite(Sprite* newSprite, int32 spriteFrame);
+    DAVA_DEPRECATED(virtual void SetSprite(Sprite* newSprite, int32 spriteFrame));
     /**
      \brief Sets Sprite frame you want to use for draw for the control UIControlBackground object.
      \param[in] spriteFrame Sprite frame.
      */
-    virtual void SetSpriteFrame(int32 spriteFrame);
+    DAVA_DEPRECATED(virtual void SetSpriteFrame(int32 spriteFrame));
     /**
      \brief Sets Sprite frame you want to use for draw for the control UIControlBackground object.
      \param[in] frame Sprite frame name.
      */
-    virtual void SetSpriteFrame(const FastName& frameName);
+    DAVA_DEPRECATED(virtual void SetSpriteFrame(const FastName& frameName));
     /**
      \brief Sets draw type you want to use the control UIControlBackground object.
      \param[in] drawType Draw type to use for drawing.
      */
-    virtual void SetSpriteDrawType(UIControlBackground::eDrawType drawType);
+    DAVA_DEPRECATED(virtual void SetSpriteDrawType(UIControlBackground::eDrawType drawType));
     /**
      \brief Sets Sprite align you want to use for draw for the control UIControlBackground object.
      \param[in] drawAlign Sprite eAlign bit mask.
      */
-    virtual void SetSpriteAlign(int32 align);
+    DAVA_DEPRECATED(virtual void SetSpriteAlign(int32 align));
 
     /**
      \brief Sets background what will be used for draw.
         Background is cloned inside control.
      \param[in] newBg control background you want to use for draw.
      */
-    void SetBackground(UIControlBackground* newBg);
+    DAVA_DEPRECATED(void SetBackground(UIControlBackground* newBg));
     /**
      \brief Returns current background used for draw.
      \returns background used for draw.
      */
-    UIControlBackground* GetBackground() const;
-
-    virtual void SetLeftAlign(float32 align);
-    virtual float32 GetLeftAlign() const;
-    virtual void SetHCenterAlign(float32 align);
-    virtual float32 GetHCenterAlign() const;
-    virtual void SetRightAlign(float32 align);
-    virtual float32 GetRightAlign() const;
-    virtual void SetTopAlign(float32 align);
-    virtual float32 GetTopAlign() const;
-    virtual void SetVCenterAlign(float32 align);
-    virtual float32 GetVCenterAlign() const;
-    virtual void SetBottomAlign(float32 align);
-    virtual float32 GetBottomAlign() const;
-    virtual void SetLeftAlignEnabled(bool isEnabled);
-    virtual bool GetLeftAlignEnabled() const;
-    virtual void SetHCenterAlignEnabled(bool isEnabled);
-    virtual bool GetHCenterAlignEnabled() const;
-    virtual void SetRightAlignEnabled(bool isEnabled);
-    virtual bool GetRightAlignEnabled() const;
-    virtual void SetTopAlignEnabled(bool isEnabled);
-    virtual bool GetTopAlignEnabled() const;
-    virtual void SetVCenterAlignEnabled(bool isEnabled);
-    virtual bool GetVCenterAlignEnabled() const;
-    virtual void SetBottomAlignEnabled(bool isEnabled);
-    virtual bool GetBottomAlignEnabled() const;
+    DAVA_DEPRECATED(UIControlBackground* GetBackground() const);
 
     /**
      \brief Returns untransformed control rect.
@@ -956,7 +805,7 @@ public:
         Can be overriden to adjust draw hierarchy.
      \param[in] geometricData Parent geometric data.
      */
-    virtual void SystemDraw(const UIGeometricData& geometricData); // Internal method used by ControlSystem
+    virtual void SystemDraw(const UIGeometricData& geometricData, const DAVA::UIControlBackground* parentBackground); // Internal method used by ControlSystem
 
     /**
      \brief set parent draw color into control

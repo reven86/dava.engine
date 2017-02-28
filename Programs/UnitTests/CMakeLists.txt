@@ -1,12 +1,13 @@
 cmake_minimum_required (VERSION 3.0)
-set( COVERAGE true )
+if( NOT DAVA_MEGASOLUTION )
+    set( COVERAGE true )
+endif()
+
 project ( UnitTests )
 
-set( DAVA_DISABLE_AUTOTESTS true )
-
-if ( ANDROID )
-    set( DISABLE_MEMORY_PROFILER true )
-endif ()
+set          ( WARNINGS_AS_ERRORS true )
+set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" )
+include      ( CMake-common )
 
 # Enable MemoryManagerTest in UnitTests
 # this variable should be defined in all dependant projects (dava framework, etc)
@@ -14,28 +15,28 @@ if( NOT DAVA_MEGASOLUTION AND NOT DISABLE_MEMORY_PROFILER )
     set ( DAVA_MEMORY_PROFILER 1 )
 endif()
 
-if (DAVA_COREV2)
-    add_definitions(-D__DAVAENGINE_COREV2__)
+# Now unittests is core v2 only
+set (DAVA_COREV2 1)
+dava_add_definitions(-D__DAVAENGINE_COREV2__)
+
+if ( WIN32 OR MACOS )
+    find_package(DavaTools REQUIRED )
 endif()
 
 # Enable LOCALIZATION_DEBUG in UnitTests to verify successful compilation
-add_definitions(-DLOCALIZATION_DEBUG)
+dava_add_definitions(-DLOCALIZATION_DEBUG)
 
-set          ( WARNINGS_AS_ERRORS true )
-set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" )
-include      ( CMake-common )
-
-set ( DAVA_COMPONENTS "Sound" )
+set ( DAVA_COMPONENTS "ALL" DAVA_DISABLE_AUTOTESTS )
 if ( WIN32 AND NOT WINDOWS_UAP )
     list ( APPEND DAVA_COMPONENTS "CEFWebview" )
 endif ()
 
+if (NOT ANDROID)
+    list ( APPEND DAVA_COMPONENTS "SampleModule" )
+endif()
+
 find_package( Steam REQUIRED )
 find_package( DavaFramework REQUIRED COMPONENTS "${DAVA_COMPONENTS}" )
-if ( WIN32 OR MACOS )
-## temporary disabled because DavaTools is not DAVA-module
-#	find_package(DavaTools REQUIRED )
-endif()
 
 include_directories   ( "Classes" )
 
@@ -52,7 +53,7 @@ elseif( WIN32 )
 
 endif()
 
-define_source                  ( SOURCE "Classes" ${PLATFORM_SPECIFIC_FOLDER} )
+define_source                  ( SOURCE "Classes" )
 
 set( STEAM_APPID                Win32Specific/steam_appid.txt )
 set( APP_DATA                   ${CMAKE_CURRENT_LIST_DIR}/Data )
@@ -64,12 +65,10 @@ set( MACOS_PLIST                ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FO
 
 set( ANDROID_PACKAGE            "com.dava.unittests" )
 set( ANDROID_APP_NAME           "UnitTestApp" )
-set( ANDROID_ACTIVITY_APP_NAME  "UnitTests"   )
 
 set( ANDROID_ICO                ${CMAKE_CURRENT_LIST_DIR}/android/ic_launcher-web.png )
 
 set( ADDED_SRC                  ${IOS_ADD_SRC} )
-set( UNIFIED_IGNORE_LIST_IOS    "iOSSpecific" )
 
 
 #uncomment this 2 strings to link libjpeg as additional project.
@@ -80,13 +79,13 @@ if ( WINDOWS_UAP )
     set ( WIN_STORE_MANIFEST_PACKAGE_GUID "49484B77-9BB6-4FBC-9D56-77593EF55C45" )
 endif ()
 
-setup_main_executable()
-if (DAVA_COREV2)
-    if (WIN32)
-        set_property(TARGET UnitTests APPEND_STRING PROPERTY LINK_FLAGS " /ENTRY:wWinMainCRTStartup")
-    endif()
+if (ANDROID)
+    # Libraries and classes to load at startup
+    set (ANDROID_BOOT_MODULES "crystax;c++_shared;fmodex;fmodevent;UnitTests")
+    set (ANDROID_BOOT_CLASSES "com.dava.unittests.UnitTests")
 endif()
 
+setup_main_executable()
 convert_graphics()
 
 if (IOS)

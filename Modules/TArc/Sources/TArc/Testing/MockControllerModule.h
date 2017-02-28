@@ -19,7 +19,7 @@ public:
     MOCK_METHOD1_VIRTUAL(OnWindowClosed, void(const WindowKey& key))
     MOCK_METHOD0_VIRTUAL(PostInit, void())
 
-    DAVA_VIRTUAL_REFLECTION(MockControllerModule, ControllerModule)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(MockControllerModule, ControllerModule)
     {
         ReflectionRegistrator<MockControllerModule>::Begin()
         .ConstructorByPointer()

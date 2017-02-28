@@ -2,6 +2,12 @@
 
 #include "Infrastructure/BaseScreen.h"
 
+namespace DAVA
+{
+class UITextField;
+class UIStaticText;
+}
+
 class TestBed;
 class AnyPerformanceTest : public BaseScreen
 {
@@ -12,12 +18,12 @@ protected:
     void LoadResources() override;
     void UnloadResources() override;
 
-    UITextField* testCount;
-    UIStaticText* resultCreate;
-    UIStaticText* resultGetSet;
+    DAVA::UITextField* testCount;
+    DAVA::UIStaticText* resultCreate;
+    DAVA::UIStaticText* resultGetSet;
 
-    uint64 GetLoopCount();
-    void SetResult(UIStaticText*, uint64 ms);
+    DAVA::uint64 GetLoopCount();
+    void SetResult(DAVA::UIStaticText*, DAVA::uint64 ms);
     void OnCreateTest(DAVA::BaseObject* sender, void* data, void* callerData);
     void OnGetSetTest(DAVA::BaseObject* sender, void* data, void* callerData);
 };

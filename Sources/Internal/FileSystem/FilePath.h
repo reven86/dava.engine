@@ -78,23 +78,23 @@ public:
         */
     String GetAbsolutePathname() const;
 
-#ifdef __DAVAENGINE_WINDOWS__
+#if defined(__DAVAENGINE_WINDOWS__)
     using NativeStringType = WideString;
 #else
     using NativeStringType = String;
-#endif // __DAVAENGINE_WINDOWS__
-
+#endif
     /**
         \brief Function to retrieve pathname
         \returns pathname value in native string type
         */
-    NativeStringType GetNativeAbsolutePathname() const;
+    DAVA_DEPRECATED(NativeStringType GetNativeAbsolutePathname() const);
 
     /**
         \brief Function to create an object from native string
         \returns FilePath object
+		deprecated - always use String with utf8 on all platforms
         */
-    static FilePath FromNativeString(const NativeStringType& path);
+    DAVA_DEPRECATED(static FilePath FromNativeString(const NativeStringType& path));
 
     /**
         \brief Function to retrieve filename from pathname. Filename for path "/Users/Folder/image.png" is "image.png".
@@ -303,13 +303,7 @@ inline FilePath::ePathType FilePath::GetType() const
 }
 
 template <>
-struct AnyCompare<FilePath>
-{
-    static bool IsEqual(const Any& v1, const Any& v2)
-    {
-        const FilePath& filePath1 = v1.Get<FilePath>();
-        const FilePath& filePath2 = v2.Get<FilePath>();
-        return filePath1 == filePath2;
-    }
-};
+bool AnyCompare<FilePath>::IsEqual(const DAVA::Any& v1, const DAVA::Any& v2);
+extern template struct AnyCompare<FilePath>;
+
 } // end namespace DAVA

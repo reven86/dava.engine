@@ -1,5 +1,5 @@
 #include "TArc/Testing/TArcTestCore.h"
-#include "TArc/Testing/Private/Selftests/DeadCodeTrick.h"
+#include "TArc/Testing/Private/DeadCodeTrick.h"
 
 #include "Engine/Engine.h"
 
@@ -248,8 +248,6 @@ void TestCore::OnTestFinished(const DAVA::String& testClassName, const DAVA::Str
 
 void TestCore::OnTestFailed(const String& testClassName, const String& testName, const String& condition, const char* filename, int lineno, const String& userMessage)
 {
-    OnError();
-
     String errorString;
     if (userMessage.empty())
     {
@@ -260,6 +258,7 @@ void TestCore::OnTestFailed(const String& testClassName, const String& testName,
         errorString = Format("%s:%d: %s (%s)", filename, lineno, testName.c_str(), userMessage.c_str());
     }
     Logger::Error("%s", TeamcityTestsOutput::FormatTestFailed(testClassName, testName, condition, errorString).c_str());
+    OnError();
 }
 
 void TestCore::OnTestPartResult(const ::testing::TestPartResult& testPartResult)

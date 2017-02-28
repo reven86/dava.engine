@@ -1,44 +1,44 @@
-#ifndef __DAVAENGINE_FILE_API_HELPER_H__
-#define __DAVAENGINE_FILE_API_HELPER_H__
-
-#include <cstdio>
-#include <sys/types.h>
-#include <sys/stat.h>
+#pragma once
 
 #include "Base/BaseTypes.h"
-#include "Utils/UTF8Utils.h"
 
 namespace DAVA
 {
 namespace FileAPI
 {
+/**
+	fileName - utf8 string
+*/
+FILE* OpenFile(const String& fileName, const String& mode);
 
-#if defined(__DAVAENGINE_WINDOWS__)
+/**
+	close file with double check
+*/
+int32 Close(FILE* f);
+/**
+	fileName - utf8 string
+*/
+int32 RemoveFile(const String& fileName);
+/**
+	oldfileName - utf8 string
+	newFileName - utf8 string
+*/
+int32 RenameFile(const String& oldFileName, const String& newFileName);
 
-#define NativeStringLiteral(x) L##x
+/**
+	fileName - utf8 string
+*/
+bool IsRegularFile(const String& fileName);
 
-const auto OpenFile = ::_wfopen;
-const auto RemoveFile = ::_wremove;
-const auto RenameFile = ::_wrename;
-struct Stat : public _stat
-{
-};
-const auto FileStat = _wstat;
+/**
+	dirName - utf8 string
+*/
+bool IsDirectory(const String& dirName);
 
-#else
-
-#define NativeStringLiteral(x) x
-
-const auto OpenFile = ::fopen;
-const auto RemoveFile = ::remove;
-const auto RenameFile = ::rename;
-struct Stat : public stat
-{
-};
-const auto FileStat = stat;
-
-#endif
+/**
+	fileName - utf8 string
+	return std::numeric_limits<uint64>::max() on error
+*/
+uint64 GetFileSize(const String& fileName);
 }
 }
-
-#endif //  __DAVAENGINE_FILE_API_HELPER_H__

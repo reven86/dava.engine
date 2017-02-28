@@ -1,179 +1,193 @@
-#include "DAVAEngine.h"
 #include "UnitTests/UnitTests.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 
-#include "Platform/TemplateAndroid/JniHelpers.h"
+#include "Base/BaseTypes.h"
+#include "Base/RefPtr.h"
+#include "Concurrency/Thread.h"
+#include "Engine/Engine.h"
+#include "Engine/Android/JNIBridge.h"
+#include "Utils/StringFormat.h"
 
-extern "C" {
-JNIEXPORT void JNICALL Java_com_dava_unittests_UnitTests_nativeCall(JNIEnv* env, jobject classthis, jint callsCount, jboolean releaseRef);
-}
+#include "Logger/Logger.h"
 
 using namespace DAVA;
 
+DAVA_DECLARE_CUSTOM_JNI_TYPE(junitTests, jobject, "Lcom/dava/unittests/UnitTests;");
+DAVA_DECLARE_CUSTOM_JNI_TYPE(jtestObject, jobject, "Lcom/dava/unittests/TestObject;");
+
 namespace
 {
-Function<jboolean(jobject)> out;
-Function<jobject(void)> getObjectFromJava;
+int nativeCallPassCount = 0;
 }
 
-JNIEXPORT void JNICALL Java_com_dava_unittests_UnitTests_nativeCall(JNIEnv* env, jobject classthis, jint callsCount, jboolean releaseRef)
+extern "C"
 {
-    static uint32 i = 0;
-
-    Logger::Error("Call From Pure Java To Native %d", ++i);
-
-    for (uint32 i = 0; i < static_cast<uint32>(callsCount); i++)
-    {
-        // call method and retrieve object from Java
-        jobject jtestobj = getObjectFromJava();
-        out(jtestobj);
-
-        if (JNI_TRUE == releaseRef)
-        {
-            JNI::GetEnv()->DeleteLocalRef(jtestobj);
-        }
-    }
+JNIEXPORT void JNICALL Java_com_dava_unittests_UnitTests_nativeCall(JNIEnv* env, jobject classthis)
+{
+    nativeCallPassCount += 1;
+}
 }
 
 DAVA_TESTCLASS (JNITest)
 {
-    JNI::JavaClass jtest;
-    Function<void(jint, jint, jboolean)> askJavaToCallToC;
-
-    JNI::JavaClass javaNotificationProvider;
-    Function<void(jstring, jstring, jstring, jboolean)> showNotificationText;
-
-    JNITest()
-        : javaNotificationProvider("com/dava/framework/JNINotificationProvider")
-        , jtest("com/dava/unittests/JNITest")
+    void PlayWithJni()
     {
-        showNotificationText = javaNotificationProvider.GetStaticMethod<void, jstring, jstring, jstring, jboolean>("NotifyText");
+        Function<junitTests()> instance;
+        Function<jstring(jobject, jint, jint, jint)> sum;
+        Function<jstringArray(jint, jint)> generateStringArray;
+        Function<jstringArray(jobject, jstringArray)> updateStringArray;
+        Function<void(jobject)> doNativeCall;
 
-        // we suppose that retrieved object is
-        JNI::JavaClass jniTestObject("com/dava/unittests/JNITestObject");
+        Function<jtestObject()> ctor;
+        Function<jtestObject(jint)> ctorWithParam;
+        JNI::Field<jint> field;
+        JNI::StaticField<jlong> staticField;
 
-        out = jniTestObject.GetMethod<jboolean>("Out");
-        askJavaToCallToC = jtest.GetStaticMethod<void, jint, jint, jboolean>("AskForCallsFromJava");
-
-        // Take method to retrive some jobject
-        getObjectFromJava = jtest.GetStaticMethod<jobject>("GetObject");
-    }
-
-    DAVA_TEST (TestFunction)
-    {
-        // try to use Java Class from !Main thread.
-        Thread* someThread = Thread::Create(Message(this, &JNITest::ThreadFunc));
-        someThread->Start();
-        while (someThread->GetState() != Thread::STATE_ENDED)
+        try
         {
-            JobManager::Instance()->Update();
+            // Intentionally limit scope of JavaClass as functions and fields should keep reference to jclass inside
+            JNI::JavaClass unitTestsClass("com/dava/unittests/UnitTests");
+            JNI::JavaClass testObjectClass("com/dava/unittests/TestObject");
+
+            instance = unitTestsClass.GetStaticMethod<junitTests>("instance");
+            generateStringArray = unitTestsClass.GetStaticMethod<jstringArray, jint, jint>("generateStringArray");
+            sum = unitTestsClass.GetMethod<jstring, jint, jint, jint>("sum");
+            updateStringArray = unitTestsClass.GetMethod<jstringArray, jstringArray>("updateStringArray");
+            doNativeCall = unitTestsClass.GetMethod<void>("doNativeCall");
+
+            ctor = testObjectClass.GetConstructor<jtestObject>();
+            ctorWithParam = testObjectClass.GetConstructor<jtestObject, jint>();
+            field = testObjectClass.GetField<jint>("field");
+            staticField = testObjectClass.GetStaticField<jlong>("staticField");
         }
-        someThread->Join();
-        someThread->Release();
-
-        // test that we have no local ref table overflow (512 refs allowed).
-        for (int i = 0; i < 1024; ++i)
+        catch (const JNI::Exception& e)
         {
-            JNI::JavaClass t("com/dava/framework/JNINotificationProvider");
+            TEST_VERIFY_WITH_MESSAGE(false, e.what());
+            return;
         }
 
-        // test calls to Java using JNITest java class
-        JNIEnv* env = JNI::GetEnv();
-
-        // get Function as Static Method for PassString
-        auto passString = jtest.GetStaticMethod<jboolean, jstring>("PassString");
-
-        // prepare data
-        jstring str = JNI::ToJNIString(L"TestString");
-
-        // call Java Method
-        jboolean isPassed = passString(str);
-
-        // release data
-        env->DeleteLocalRef(str);
-        TEST_VERIFY(JNI_TRUE == isPassed);
-
-        // Try to pass String Array.
-        // Get Static Method
-        auto passStringArray = jtest.GetStaticMethod<jint, jstringArray>("PassStringArray");
-
-        jint stringsToPass = 5;
-
-        // Create ObjectsArray for strings
-        JNI::JavaClass stringClass("java/lang/String");
-        jobjectArray stringArray = env->NewObjectArray(stringsToPass, stringClass, NULL);
-
-        // fill array
-        for (uint32 i = 0; i < stringsToPass; ++i)
+        try
         {
-            jstring str = JNI::ToJNIString(L"TestString");
-            env->SetObjectArrayElement(stringArray, i, str);
-            env->DeleteLocalRef(str);
+            const int nstrings = 3;
+            const int startIndex = 10;
+
+            JNIEnv* env = JNI::GetEnv();
+            JNI::LocalRef<junitTests> unitTestJavaObject = instance();
+
+            {
+                // Test simple java call
+                JNI::LocalRef<jstring> js = sum(unitTestJavaObject, 1, 2, 3);
+                String s = JNI::JavaStringToString(js, env);
+                TEST_VERIFY(s == "6");
+            }
+            {
+                // Test arrays
+                JNI::LocalRef<jstringArray> strings = generateStringArray(nstrings, startIndex);
+                for (int i = 0; i < nstrings; ++i)
+                {
+                    JNI::LocalRef<jstring> js = env->GetObjectArrayElement(strings, i);
+                    JNI::CheckJavaException(env, true);
+
+                    String x = Format("%d", i + startIndex);
+                    String s = JNI::JavaStringToString(js, env);
+                    TEST_VERIFY(x == s);
+                }
+
+                strings = updateStringArray(unitTestJavaObject, strings);
+                for (int i = 0; i < nstrings; ++i)
+                {
+                    JNI::LocalRef<jstring> js = env->GetObjectArrayElement(strings, i);
+                    JNI::CheckJavaException(env, true);
+
+                    String x = Format("%d-xray", i + startIndex);
+                    String s = JNI::JavaStringToString(js, env);
+                    TEST_VERIFY(x == s);
+                }
+            }
+            {
+                // Test native calls
+                int n = nativeCallPassCount;
+                doNativeCall(unitTestJavaObject);
+                TEST_VERIFY(nativeCallPassCount == n + 1);
+            }
+
+            {
+                // Test constructors and fields
+                TEST_VERIFY(staticField.Get() == 0);
+                JNI::LocalRef<jtestObject> instance1 = ctor();
+                TEST_VERIFY(staticField.Get() == 1);
+                JNI::LocalRef<jtestObject> instance2 = ctorWithParam(22);
+                TEST_VERIFY(staticField.Get() == 2);
+
+                TEST_VERIFY(field.Get(instance1) == 0);
+                TEST_VERIFY(field.Get(instance2) == 22);
+
+                field.Set(instance1, 111);
+                field.Set(instance2, 333);
+
+                TEST_VERIFY(field.Get(instance1) == 111);
+                TEST_VERIFY(field.Get(instance2) == 333);
+
+                staticField.Set(777);
+                TEST_VERIFY(staticField.Get() == 777);
+                staticField.Set(0);
+            }
         }
-        // Call Static Method
-        jint stringsPassed = passStringArray(stringArray);
-
-        TEST_VERIFY(stringsToPass == stringsPassed);
-
-        env->DeleteLocalRef(stringArray);
-
-        // Try to call dinamic method for object
-        str = JNI::ToJNIString(L"TestString");
-
-        // call method and retrieve object from Java
-        jobject jtestobj = getObjectFromJava();
-
-        //and call dynamic method for object.
-        jboolean outres = out(jtestobj);
-
-        env->DeleteLocalRef(jtestobj);
-
-        TEST_VERIFY(JNI_TRUE == outres);
-
-        env->DeleteLocalRef(str);
+        catch (const JNI::Exception& e)
+        {
+            TEST_VERIFY_WITH_MESSAGE(false, e.what());
+            return;
+        }
     }
 
-    DAVA_TEST (Native_Calls)
+    DAVA_TEST (TestLocalRefDelete)
     {
-        // Call Java_com_dava_unittests_UnitTests_nativeCall from pure Java Activity.
-
-        // 1024 times from java and each time 1 call from native to java - should work
-        askJavaToCallToC(1024, 1, false);
-
-        // 1 call from java and 256 calls from native to java - should work - 512 calls allowed.
-        askJavaToCallToC(1, 256, false);
-
-        // 1 call from java and 1024 calls from native to java - should work - true - release local ref
-        askJavaToCallToC(1, 1024, true);
+        // Test whether local references are automatically deleted.
+        // By default each local JNI frame has local reference table with capacity of 512 elements,
+        // if local reference count exceeds that capacity application crashes with message like this:
+        // "JNI ERROR (app bug): local reference table overflow (max=512)"
+        try
+        {
+            for (int i = 0; i < 1024; ++i)
+            {
+                JNI::JavaClass testObjectClass("java/lang/String");
+                Function<jstring()> ctor = testObjectClass.GetConstructor<jstring>();
+                JNI::LocalRef<jstring> obj = ctor();
+            }
+        }
+        catch (const JNI::Exception& e)
+        {
+            TEST_VERIFY_WITH_MESSAGE(false, e.what());
+            return;
+        }
     }
 
-    void ThreadFunc(BaseObject * caller, void* callerData, void* userData)
+    DAVA_TEST (PlayWithJniFromMainThread)
     {
-        JNI::JavaClass inThreadInitedClass("com/dava/framework/JNINotificationProvider");
+        PlayWithJni();
+    }
 
-        auto showNotificationProgress = javaNotificationProvider.GetStaticMethod<void, jstring, jstring, jstring, int, int, jboolean>("NotifyProgress");
-        auto showNotificationProgressThread = inThreadInitedClass.GetStaticMethod<void, jstring, jstring, jstring, int, int, jboolean>("NotifyProgress");
+    RefPtr<Thread> foreignThread;
+    bool foreignThreadFinished = false;
 
-        jstring jStrTitle = JNI::ToJNIString(L"test");
-        jstring jStrText = JNI::ToJNIString(L"test2");
+    DAVA_TEST (PlayWithJniFromForeignThread)
+    {
+        foreignThread = Thread::Create([this]() {
+            PlayWithJni();
+            RunOnMainThreadAsync([this]() {
+                foreignThreadFinished = true;
+            });
+        });
+        foreignThread->Start();
+    }
 
-        showNotificationText(jStrTitle, jStrTitle, jStrTitle, false);
-        showNotificationProgressThread(jStrTitle, jStrTitle, jStrTitle, 100, 100, false);
-
-        JNI::GetEnv()->DeleteLocalRef(jStrTitle);
-        JNI::GetEnv()->DeleteLocalRef(jStrText);
-
-        JNI::JavaClass jniText("com/dava/framework/JNITextField");
-
-        // call method and retrieve object from Java
-        jobject jtestobj = getObjectFromJava();
-
-        //and call dynamic method for object.
-        jboolean outres = out(jtestobj);
-
-        TEST_VERIFY(JNI_TRUE == outres);
+    bool TestComplete(const String& testName) const override
+    {
+        if (testName == "PlayWithJniFromForeignThread")
+            return foreignThreadFinished;
+        return true;
     }
 };
 
-#endif
+#endif // __DAVAENGINE_ANDROID__

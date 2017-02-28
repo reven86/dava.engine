@@ -51,11 +51,11 @@ Project::Project(MainWindow::ProjectView* view_, const ProjectProperties& proper
     , view(view_)
     , editorFontSystem(new EditorFontSystem(this))
     , editorLocalizationSystem(new EditorLocalizationSystem(this))
-    , documentGroup(new DocumentGroup(this, view->GetDocumentGroupView()))
     , spritesPacker(new SpritesPacker())
     , fileSystemCache(new FileSystemCache(QStringList() << "yaml"))
 {
-    DAVA::FileSystem* fileSystem = DAVA::Engine::Instance()->GetContext()->fileSystem;
+    const EngineContext* engineContext = GetEngineContext();
+    DAVA::FileSystem* fileSystem = engineContext->fileSystem;
     if (fileSystem->IsDirectory(properties.GetAdditionalResourceDirectory().absolute))
     {
         FilePath::AddResourcesFolder(properties.GetAdditionalResourceDirectory().absolute);
@@ -86,6 +86,8 @@ Project::Project(MainWindow::ProjectView* view_, const ProjectProperties& proper
 
     fileSystemCache->TrackDirectory(uiResourcesPath);
     view->SetResourceDirectory(uiResourcesPath);
+
+    documentGroup.reset(new DocumentGroup(this, view->GetDocumentGroupView()));
 
     view->SetProjectActionsEnabled(true);
     view->SetProjectPath(GetProjectPath());
@@ -238,15 +240,16 @@ EditorFontSystem* Project::GetEditorFontSystem() const
 
 void Project::SetRtl(bool isRtl)
 {
-    UIControlSystem::Instance()->SetRtl(isRtl);
+    const EngineContext* engineContext = GetEngineContext();
+    engineContext->uiControlSystem->SetRtl(isRtl);
 
     documentGroup->RtlChanged();
 }
 
 void Project::SetBiDiSupport(bool support)
 {
-    UIControlSystem::Instance()->SetBiDiSupportEnabled(support);
-
+    const EngineContext* engineContext = GetEngineContext();
+    engineContext->uiControlSystem->SetBiDiSupportEnabled(support);
     documentGroup->BiDiSupportChanged();
 }
 
@@ -254,11 +257,12 @@ void Project::SetGlobalStyleClasses(const QString& classesStr)
 {
     Vector<String> tokens;
     Split(classesStr.toStdString(), " ", tokens);
-
-    UIControlSystem::Instance()->GetStyleSheetSystem()->ClearGlobalClasses();
+    const EngineContext* engineContext = GetEngineContext();
+    UIControlSystem* uiControlSystem = engineContext->uiControlSystem;
+    uiControlSystem->GetStyleSheetSystem()->ClearGlobalClasses();
     for (String& token : tokens)
     {
-        UIControlSystem::Instance()->GetStyleSheetSystem()->AddGlobalClass(FastName(token));
+        uiControlSystem->GetStyleSheetSystem()->AddGlobalClass(FastName(token));
     }
 
     documentGroup->GlobalStyleClassesChanged();

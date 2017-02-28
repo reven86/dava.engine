@@ -1,7 +1,13 @@
-#ifndef __TEXTURE_UTILS_H__
-#define __TEXTURE_UTILS_H__
+#pragma once
 
-#include "DAVAEngine.h"
+#include "Base/BaseTypes.h"
+#include "Render/RenderBase.h"
+
+namespace DAVA
+{
+class Image;
+class Sprite;
+}
 
 class TextureUtils
 {
@@ -12,9 +18,5 @@ public:
         DAVA::uint32 bytesCount;
     };
 
-    static DAVA::Sprite* CreateSpriteFromTexture(const DAVA::String& texturePathname);
     static CompareResult CompareImages(const DAVA::Image* first, const DAVA::Image* second, DAVA::PixelFormat format);
-    static DAVA::Image* CreateImageAsRGBA8888(DAVA::Sprite* sprite);
 };
-
-#endif // __TEXTURE_UTILS_H__

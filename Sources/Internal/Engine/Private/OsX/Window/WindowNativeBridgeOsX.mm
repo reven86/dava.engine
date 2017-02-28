@@ -16,7 +16,7 @@
 #include "Engine/Private/OsX/Window/RenderViewOsX.h"
 #include "Engine/Private/OsX/Window/WindowDelegateOsX.h"
 
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 #include "Logger/Logger.h"
 
 namespace DAVA
@@ -41,18 +41,28 @@ bool WindowNativeBridge::CreateWindow(float32 x, float32 y, float32 width, float
                        NSResizableWindowMask;
     // clang-format on
 
+    // create window
     NSRect viewRect = NSMakeRect(x, y, width, height);
-    windowDelegate = [[WindowDelegate alloc] initWithBridge:this];
-    renderView = [[RenderView alloc] initWithFrame:viewRect andBridge:this];
-
     nswindow = [[NSWindow alloc] initWithContentRect:viewRect
                                            styleMask:style
                                              backing:NSBackingStoreBuffered
                                                defer:NO];
+    // set some window params
     [nswindow setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
-    [nswindow setContentView:renderView];
-    [nswindow setDelegate:windowDelegate];
     [nswindow setContentMinSize:NSMakeSize(128, 128)];
+
+    // add window delegate
+    windowDelegate = [[WindowDelegate alloc] initWithBridge:this];
+    [nswindow setDelegate:windowDelegate];
+
+    // create render view and add it into window
+    renderView = [[RenderView alloc] initWithBridge:this];
+    [nswindow setContentView:renderView];
+
+    // we need to call this hack because native controls
+    // will be drawn below render view (will be invisible).
+    // See hack implementation for more description
+    ForceBackbufferSizeUpdate();
 
     {
         float32 dpi = GetDpi();
@@ -67,12 +77,26 @@ bool WindowNativeBridge::CreateWindow(float32 x, float32 y, float32 width, float
 
 void WindowNativeBridge::ResizeWindow(float32 width, float32 height)
 {
-    NSRect r = [nswindow frame];
+    NSScreen* screen = [nswindow screen];
 
-    float32 dx = (r.size.width - width) / 2.0;
-    float32 dy = (r.size.height - height) / 2.0;
+    NSRect windowRect = [nswindow frame];
+    NSRect screenRect = [screen visibleFrame];
 
-    NSPoint pos = NSMakePoint(r.origin.x + dx, r.origin.y + dy);
+    float32 dx = (windowRect.size.width - width) / 2.0;
+    float32 dy = (windowRect.size.height - height) / 2.0;
+
+    NSPoint pos = NSMakePoint(windowRect.origin.x + dx, windowRect.origin.y + dy);
+
+    if (pos.x < screenRect.origin.x)
+    {
+        pos.x = screenRect.origin.x;
+    }
+
+    if ((pos.y + height) > (screenRect.origin.y + screenRect.size.height))
+    {
+        pos.y = (screenRect.origin.y + screenRect.size.height) - height;
+    }
+
     NSSize sz = NSMakeSize(width, height);
 
     [nswindow setFrameOrigin:pos];
@@ -197,6 +221,7 @@ void WindowNativeBridge::WindowDidEndLiveResize()
 
 void WindowNativeBridge::WindowDidChangeScreen()
 {
+    ForceBackbufferSizeUpdate();
     HandleSizeChanging(true);
 }
 
@@ -355,9 +380,7 @@ void WindowNativeBridge::KeyEvent(NSEvent* theEvent)
     MainDispatcherEvent::eType type = isPressed ? MainDispatcherEvent::KEY_DOWN : MainDispatcherEvent::KEY_UP;
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, type, key, modifierKeys, isRepeated));
 
-    // macOS translates some Ctrl key combinations into ASCII control characters.
-    // It seems to me that control character are not wanted by game to handle in character message.
-    if ([theEvent type] == NSKeyDown && (modifierKeys & eModifierKeys::CONTROL) == eModifierKeys::NONE)
+    if ([theEvent type] == NSKeyDown)
     {
         NSString* chars = [theEvent characters];
         NSUInteger n = [chars length];
@@ -577,15 +600,20 @@ void WindowNativeBridge::SetSurfaceScale(const float32 scale)
     [renderView setBackbufferScale:scale];
 
     ForceBackbufferSizeUpdate();
-    WindowDidResize();
+    HandleSizeChanging(false);
 }
 
 void WindowNativeBridge::ForceBackbufferSizeUpdate()
 {
-    // Workaround to force change backbuffer size
-    [nswindow setContentView:nil];
-    [nswindow setContentView:renderView];
-    [nswindow makeFirstResponder:renderView];
+    // Workaround #1: to force change backbuffer size
+    // after resizing or change scaling
+    // Workaround #2: to ensure that native controls
+    // will be added above renderView
+    [nswindow setContentView:nil]; // #1
+    [renderView setWantsLayer:YES]; // #2
+    [nswindow setContentView:renderView]; // #1
+    [renderView setWantsLayer:NO]; // #2
+    [nswindow makeFirstResponder:renderView]; // #1
 }
 
 } // namespace Private

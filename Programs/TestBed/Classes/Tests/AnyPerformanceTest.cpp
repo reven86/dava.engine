@@ -2,6 +2,8 @@
 #include "Tests/AnyPerformanceTest.h"
 #include "UI/Focus/UIFocusComponent.h"
 
+using namespace DAVA;
+
 AnyPerformanceTest::AnyPerformanceTest(TestBed& app)
     : BaseScreen(app, "AnyPerformanceTest")
 {
@@ -9,6 +11,8 @@ AnyPerformanceTest::AnyPerformanceTest(TestBed& app)
 
 void AnyPerformanceTest::LoadResources()
 {
+    using namespace DAVA;
+
     BaseScreen::LoadResources();
 
     ScopedPtr<FTFont> font(FTFont::Create("~res:/Fonts/korinna.ttf"));
@@ -67,33 +71,35 @@ void AnyPerformanceTest::UnloadResources()
     BaseScreen::UnloadResources();
 }
 
-uint64 AnyPerformanceTest::GetLoopCount()
+DAVA::uint64 AnyPerformanceTest::GetLoopCount()
 {
     int res = 0;
 
     auto str = testCount->GetText();
-    sscanf(UTF8Utils::EncodeToUTF8(str).c_str(), "%u", &res);
+    sscanf(DAVA::UTF8Utils::EncodeToUTF8(str).c_str(), "%u", &res);
 
     return res;
 }
 
-void AnyPerformanceTest::SetResult(UIStaticText* st, uint64 ms)
+void AnyPerformanceTest::SetResult(DAVA::UIStaticText* st, DAVA::uint64 ms)
 {
-    st->SetText(Format(L"%u ms", ms));
+    st->SetText(DAVA::Format(L"%u ms", ms));
 }
 
 void AnyPerformanceTest::OnCreateTest(DAVA::BaseObject* sender, void* data, void* callerData)
 {
+    using namespace DAVA;
+
     const Type* type = nullptr;
 
     uint64 sz = GetLoopCount();
-    uint64 startMs = SystemTimer::Instance()->AbsoluteMS();
+    uint64 startMs = SystemTimer::GetMs();
     for (uint64 i = 0; i < sz; ++i)
     {
         Any a(i);
         type = a.GetType();
     }
-    uint64 endMs = SystemTimer::Instance()->AbsoluteMS();
+    uint64 endMs = SystemTimer::GetMs();
 
     Logger::FrameworkDebug("%p", type);
     SetResult(resultCreate, endMs - startMs);
@@ -101,17 +107,19 @@ void AnyPerformanceTest::OnCreateTest(DAVA::BaseObject* sender, void* data, void
 
 void AnyPerformanceTest::OnGetSetTest(DAVA::BaseObject* sender, void* data, void* callerData)
 {
+    using namespace DAVA;
+
     Any a(float32(0));
 
     uint64 sz = GetLoopCount();
-    uint64 startMs = SystemTimer::Instance()->AbsoluteMS();
+    uint64 startMs = SystemTimer::GetMs();
     for (uint64 i = 0; i < sz; ++i)
     {
         float32 v = a.Get<float32>();
         v += static_cast<float32>(i);
         a.Set(v);
     }
-    uint64 endMs = SystemTimer::Instance()->AbsoluteMS();
+    uint64 endMs = SystemTimer::GetMs();
 
     Logger::FrameworkDebug("%f", a.Get<float32>());
     SetResult(resultGetSet, endMs - startMs);

@@ -50,7 +50,7 @@ PackMetaData::PackMetaData(const FilePath& metaDb)
     db << "SELECT name, dependency FROM packs"
     >> [&](std::string name, std::string dependency)
     {
-        packDependencies.push_back(std::tuple<String, String>(name, dependency));
+        packDependencies.push_back(PackInfo{ name, dependency });
     };
 
     // debug check that max index of fileIndex exist in packIndex
@@ -62,14 +62,56 @@ PackMetaData::PackMetaData(const FilePath& metaDb)
     }
 }
 
+Vector<uint32> PackMetaData::GetFileIndexes(const String& requestedPackName) const
+{
+    Vector<uint32> result;
+
+    for (const PackInfo& t : packDependencies)
+    {
+        const String& packName = t.packName;
+        if (packName == requestedPackName)
+        {
+            ptrdiff_t packIndex = std::distance(&packDependencies[0], &t);
+            uint32 pIndex = static_cast<uint32>(packIndex);
+
+            size_t numFilesInThisPack = std::count(begin(packIndexes), end(packIndexes), pIndex);
+            result.reserve(numFilesInThisPack);
+
+            for (const auto& index : packIndexes)
+            {
+                if (index == pIndex)
+                {
+                    ptrdiff_t fileIndex = std::distance(&packIndexes[0], &index);
+                    uint32 fIndex = static_cast<uint32>(fileIndex);
+                    result.push_back(fIndex);
+                }
+            }
+            break;
+        }
+    }
+    return result;
+}
+
 uint32 PackMetaData::GetPackIndexForFile(const uint32 fileIndex) const
 {
     return packIndexes.at(fileIndex);
 }
 
-const std::tuple<String, String>& PackMetaData::GetPackInfo(const uint32 packIndex) const
+const PackMetaData::PackInfo& PackMetaData::GetPackInfo(const uint32 packIndex) const
 {
     return packDependencies.at(packIndex);
+}
+
+const PackMetaData::PackInfo& PackMetaData::GetPackInfo(const String& packName) const
+{
+    for (const auto& packInfo : packDependencies)
+    {
+        if (packInfo.packName == packName)
+        {
+            return packInfo;
+        }
+    }
+    DAVA_THROW(Exception, "no such packName: " + packName);
 }
 
 Vector<uint8> PackMetaData::Serialize() const
@@ -84,10 +126,10 @@ Vector<uint8> PackMetaData::Serialize() const
         std::stringstream ss;
 
         size_t sizePackData = 0;
-        for (const auto& tuple : packDependencies)
+        for (const PackInfo& tuple : packDependencies)
         {
-            const String& packName = std::get<0>(tuple);
-            const String& depend = std::get<1>(tuple);
+            const String& packName = tuple.packName;
+            const String& depend = tuple.packDependencies;
             ss << packName << ' ' << depend << '\n';
         }
 
@@ -245,7 +287,7 @@ void PackMetaData::Deserialize(const void* ptr, size_t size)
         }
         packName = line.substr(0, first_space);
         packDependency = line.substr(first_space + 1);
-        packDependencies.push_back(tuple<String, String>(packName, packDependency));
+        packDependencies.push_back(PackInfo{ packName, packDependency });
     }
 
     // debug check that max index of fileIndex exist in packIndex

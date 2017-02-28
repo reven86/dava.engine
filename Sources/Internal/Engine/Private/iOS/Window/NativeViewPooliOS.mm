@@ -63,7 +63,7 @@
             return;
         }
     }
-    DVASSERT(false, "You try to return view that never been in pool");
+    DVASSERT(false, "You've tried to return a view that has never been in the pool");
 }
 
 @end

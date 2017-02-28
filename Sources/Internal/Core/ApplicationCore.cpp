@@ -3,7 +3,7 @@
 #include "Animation/AnimationManager.h"
 #include "UI/UIControlSystem.h"
 #include "Sound/SoundSystem.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "Notification/LocalNotificationController.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
@@ -38,7 +38,7 @@ void ApplicationCore::Update(float32 timeElapsed)
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::ENGINE_UPDATE)
 
 #ifdef __DAVAENGINE_AUTOTESTING__
-    float32 realFrameDelta = SystemTimer::RealFrameDelta();
+    float32 realFrameDelta = SystemTimer::GetRealFrameDelta();
     AutotestingSystem::Instance()->Update(realFrameDelta);
 #endif
 

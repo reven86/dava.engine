@@ -152,8 +152,8 @@ void VirtualCoordinatesSystem::SetVirtualScreenSize(int32 width, int32 height)
 
 #if defined(__DAVAENGINE_COREV2__)
     ScreenSizeChanged();
-    virtualSizeChanged.Emit(virtualScreenSize);
 #endif
+    virtualSizeChanged.Emit(virtualScreenSize);
 }
 
 void VirtualCoordinatesSystem::SetInputScreenAreaSize(int32 width, int32 height)
