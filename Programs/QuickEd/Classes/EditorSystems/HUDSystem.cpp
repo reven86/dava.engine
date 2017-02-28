@@ -14,6 +14,9 @@
 #include "Model/ControlProperties/RootProperty.h"
 #include "Model/ControlProperties/VisibleValueProperty.h"
 
+#include "UI/Find/ControlNodeInformation.h"
+#include "UI/Find/ControlInformation.h"
+
 using namespace DAVA;
 
 namespace
@@ -40,6 +43,10 @@ RefPtr<ControlContainer> CreateControlContainer(HUDAreaInfo::eArea area)
         return RefPtr<ControlContainer>(new FrameRectControl(area));
     case HUDAreaInfo::FRAME_AREA:
         return RefPtr<ControlContainer>(new FrameControl());
+    case HUDAreaInfo::HIGHLIGHT_AREA:
+        return RefPtr<HighlightControl>(new HighlightControl());
+    case HUDAreaInfo::TEXT_AREA:
+        return RefPtr<TextControl>(new TextControl());
     default:
         DVASSERT(!"unacceptable value of area");
         return RefPtr<ControlContainer>(nullptr);
@@ -48,45 +55,25 @@ RefPtr<ControlContainer> CreateControlContainer(HUDAreaInfo::eArea area)
 
 struct HUDSystem::HUD
 {
-    HUD(ControlNode* node, UIControl* hudControl);
+    HUD(ControlNode* node, UIControl* hudControl, const Vector<HUDAreaInfo::eArea> areas);
     ~HUD();
     ControlNode* node = nullptr;
     UIControl* control = nullptr;
     UIControl* hudControl = nullptr;
     RefPtr<HUDContainer> container;
     Map<HUDAreaInfo::eArea, RefPtr<ControlContainer>> hudControls;
+
+    static std::unique_ptr<HUD> CreateSelectionHUD(ControlNode* node, UIControl* hudControl);
+    static std::unique_ptr<HUD> CreateHighlightHUD(ControlNode* node, UIControl* hudControl);
 };
 
-HUDSystem::HUD::HUD(ControlNode* node_, UIControl* hudControl_)
+HUDSystem::HUD::HUD(ControlNode* node_, UIControl* hudControl_, const Vector<HUDAreaInfo::eArea> areas)
     : node(node_)
     , control(node_->GetControl())
     , hudControl(hudControl_)
     , container(new HUDContainer(node_))
 {
     container->SetName(FastName("Container for HUD controls of node " + node_->GetName()));
-    DAVA::Vector<HUDAreaInfo::eArea> areas;
-    if (node->GetParent() != nullptr && node->GetParent()->GetControl() != nullptr)
-    {
-        areas.reserve(HUDAreaInfo::AREAS_COUNT);
-        for (int area = HUDAreaInfo::AREAS_BEGIN; area != HUDAreaInfo::AREAS_COUNT; ++area)
-        {
-            areas.push_back(static_cast<HUDAreaInfo::eArea>(area));
-        }
-    }
-    else
-    {
-        //custom areas
-        areas = {
-            HUDAreaInfo::TOP_LEFT_AREA,
-            HUDAreaInfo::TOP_CENTER_AREA,
-            HUDAreaInfo::TOP_RIGHT_AREA,
-            HUDAreaInfo::CENTER_LEFT_AREA,
-            HUDAreaInfo::CENTER_RIGHT_AREA,
-            HUDAreaInfo::BOTTOM_LEFT_AREA,
-            HUDAreaInfo::BOTTOM_CENTER_AREA,
-            HUDAreaInfo::BOTTOM_RIGHT_AREA
-        };
-    }
     for (HUDAreaInfo::eArea area : areas)
     {
         RefPtr<ControlContainer> controlContainer(CreateControlContainer(area));
@@ -95,6 +82,42 @@ HUDSystem::HUD::HUD(ControlNode* node_, UIControl* hudControl_)
     }
     hudControl->AddControl(container.Get());
     container->InitFromGD(control->GetGeometricData());
+}
+
+std::unique_ptr<HUDSystem::HUD> HUDSystem::HUD::CreateSelectionHUD(ControlNode* node, UIControl* hudControl)
+{
+    DAVA::Vector<HUDAreaInfo::eArea> areas = {
+        HUDAreaInfo::TOP_LEFT_AREA,
+        HUDAreaInfo::TOP_CENTER_AREA,
+        HUDAreaInfo::TOP_RIGHT_AREA,
+        HUDAreaInfo::CENTER_LEFT_AREA,
+        HUDAreaInfo::CENTER_RIGHT_AREA,
+        HUDAreaInfo::BOTTOM_LEFT_AREA,
+        HUDAreaInfo::BOTTOM_CENTER_AREA,
+        HUDAreaInfo::BOTTOM_RIGHT_AREA
+    };
+
+    if (node->GetParent() != nullptr && node->GetParent()->GetControl() != nullptr)
+    {
+        areas.push_back(HUDAreaInfo::ROTATE_AREA);
+        areas.push_back(HUDAreaInfo::PIVOT_POINT_AREA);
+        areas.push_back(HUDAreaInfo::FRAME_AREA);
+    }
+
+    return std::unique_ptr<HUD>(new HUD(node, hudControl, areas));
+}
+
+std::unique_ptr<HUDSystem::HUD> HUDSystem::HUD::CreateHighlightHUD(ControlNode* node, UIControl* hudControl)
+{
+    std::unique_ptr<HUD> hud(new HUD(node, hudControl, { HUDAreaInfo::HIGHLIGHT_AREA, HUDAreaInfo::TEXT_AREA }));
+
+    ControlNodeInformation controlInfo(node);
+    const String& path = ControlInformationHelpers::GetPathToControl(&controlInfo);
+
+    TextControl* textControl = DynamicTypeCheck<TextControl*>(hud->hudControls[HUDAreaInfo::TEXT_AREA].Get());
+    textControl->SetText(path);
+
+    return hud;
 }
 
 HUDSystem::HUD::~HUD()
@@ -150,7 +173,7 @@ void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const Selected
         {
             if (nullptr != controlNode && nullptr != controlNode->GetControl())
             {
-                selectionHudMap[controlNode] = std::make_unique<HUD>(controlNode, hudControl.Get());
+                selectionHudMap[controlNode] = HUD::CreateSelectionHUD(controlNode, hudControl.Get());
                 sortedControlList.insert(controlNode);
             }
         }
@@ -233,28 +256,13 @@ void HUDSystem::OnHighlightNode(const ControlNode* node)
 
 void HUDSystem::OnSearchResultsChanged(const SelectedControls& results)
 {
-    for (auto node : searchHudMap)
-    {
-        node.second->RemoveFromParent();
-    }
-
     searchHudMap.clear();
 
     for (auto node : results)
     {
         if (nullptr != node->GetControl())
         {
-            //searchHudMap[node] = std::make_unique<HUD>(node, hudControl.Get());
-            RefPtr<UIControl> highlightControl(new UIControl());
-            UIControlBackground* bg = highlightControl->GetOrCreateComponent<UIControlBackground>();
-            bg->SetDrawType(UIControlBackground::DRAW_FILL);
-            bg->SetDrawColor(Color(1.0f, 1.0f, 1.0f, 0.25f));
-
-            //highlightControl->SetAbsoluteRect(node->GetControl()->GetAbsoluteRect());
-            highlightControl->InitFromGD(node->GetControl()->GetGeometricData());
-
-            searchHudMap[node] = highlightControl;
-            hudControl->AddControl(highlightControl.Get());
+            searchHudMap[node] = HUD::CreateHighlightHUD(node, hudControl.Get()); //std::make_unique<HUD>(node, hudControl.Get());
         }
     }
 }

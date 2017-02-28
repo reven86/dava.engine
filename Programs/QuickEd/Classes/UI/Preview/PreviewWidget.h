@@ -61,6 +61,11 @@ public slots:
     void OnDecrementScale();
     void SetActualScale();
 
+    void OnFindInDocument();
+    void OnFindNext();
+    void OnFindPrevious();
+    void OnCancelFind();
+
 private slots:
     void OnScaleChanged(DAVA::float32 scale);
     void OnScaleByComboIndex(int value);
@@ -102,6 +107,7 @@ private:
 
     void OnDragStateChanged(EditorSystemsManager::eDragState dragState, EditorSystemsManager::eDragState previousState);
     void OnPropertyChanged(ControlNode* node, AbstractProperty* property, DAVA::VariantType newValue);
+    void OnEditingRootControlsChanged(const SortedPackageBaseNodeSet& rootControls);
 
     float GetScaleFromWheelEvent(int ticksCount) const;
     float GetNextScale(float currentScale, int ticksCount) const;

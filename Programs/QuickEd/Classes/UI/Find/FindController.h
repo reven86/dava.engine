@@ -21,10 +21,7 @@ struct FindContext
     int32 currentSelection = 0;
 };
 
-class FindController
-: public QObject
-  ,
-  PackageListener
+class FindController : public QObject, public TrackedObject, PackageListener
 {
 public:
     FindController(PreviewWidget* previewWidget);
@@ -37,7 +34,12 @@ public:
 
     void OnDocumentChanged(Document* document);
 
+    void CancelFind();
+
 private:
+    void UpdateHighlight();
+    void MoveSelection(DAVA::int32 step);
+
     FindContext context;
     Document* document = nullptr;
     PreviewWidget* previewWidget = nullptr;

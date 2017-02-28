@@ -25,62 +25,83 @@ FindController::~FindController()
 
 void FindController::SelectNextFindResult()
 {
+    MoveSelection(+1);
 }
 
 void FindController::SelectPrevFindResult()
 {
+    MoveSelection(-1);
 }
 
 void FindController::FindInDocument(std::shared_ptr<FindFilter> filter)
 {
-    context.filter = filter;
-    context.results.clear();
+    if (document)
+    {
+        context.filter = filter;
+        context.results.clear();
 
-    Finder finder(filter, nullptr);
+        Finder finder(filter, nullptr);
 
-    QObject::connect(&finder, &Finder::ItemFound,
-                     [this](const FindItem& item)
-                     {
-                         for (const String& path : item.GetControlPaths())
+        QObject::connect(&finder, &Finder::ItemFound,
+                         [this](const FindItem& item)
                          {
-                             context.results.push_back(path);
-                             Logger::Debug("%s %s",
-                                           __FUNCTION__,
-                                           path.c_str());
-                         }
-                     });
-
-    QObject::connect(&finder, &Finder::Finished,
-                     [this]()
-                     {
-                         Logger::Debug("Finished");
-                         if (!context.results.empty())
-                         {
-                             //previewWidget->systemsManager->HighlightNode(
-                             //    previewWidget->systemsManager->GetControlNodeByPath(context.results[0]));
-
-                             SelectedControls controls;
-
-                             for (const String& path : context.results)
+                             for (const String& path : item.GetControlPaths())
                              {
-                                 if (ControlNode* node = previewWidget->systemsManager->GetControlNodeByPath(path))
-                                 {
-                                     controls.insert(node);
-                                 }
-                                 else
-                                 {
-                                     Logger::Error("%s %s not found", __FUNCTION__, path.c_str());
-                                 }
+                                 context.results.push_back(path);
+                                 Logger::Debug("%s %s",
+                                               __FUNCTION__,
+                                               path.c_str());
                              }
+                         });
 
-                             previewWidget->systemsManager->searchResultsChanged.Emit(controls);
-                         }
-                     });
+        QObject::connect(&finder, &Finder::Finished,
+                         [this]()
+                         {
+                             UpdateHighlight();
+                         });
 
-    finder.Process(document->GetPackage());
+        finder.Process(document->GetPackage());
+    }
 }
 
 void FindController::OnDocumentChanged(Document* document_)
 {
     document = document_;
+}
+
+void FindController::CancelFind()
+{
+    context.results.clear();
+    context.currentSelection = -1;
+
+    UpdateHighlight();
+}
+
+void FindController::UpdateHighlight()
+{
+    SelectedControls controls;
+
+    for (const String& path : context.results)
+    {
+        if (ControlNode* node = previewWidget->systemsManager->GetControlNodeByPath(path))
+        {
+            controls.insert(node);
+        }
+    }
+
+    previewWidget->systemsManager->searchResultsChanged.Emit(controls);
+}
+
+void FindController::MoveSelection(int32 step)
+{
+    if (!context.results.empty())
+    {
+        context.currentSelection += step;
+        context.currentSelection = context.currentSelection % context.results.size();
+
+        if (ControlNode* node = previewWidget->systemsManager->GetControlNodeByPath(context.results[context.currentSelection]))
+        {
+            previewWidget->systemsManager->SelectNode(node);
+        }
+    }
 }

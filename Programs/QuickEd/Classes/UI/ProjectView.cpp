@@ -20,6 +20,8 @@ MainWindow::ProjectView::ProjectView(MainWindow* mainWindow_)
     connect(mainWindow->ui->actionJumpToPrototype, &QAction::triggered, this, &MainWindow::ProjectView::JumpToPrototype);
     connect(mainWindow->ui->actionFindPrototypeInstances, &QAction::triggered, this, &MainWindow::ProjectView::FindPrototypeInstances);
     connect(mainWindow->ui->actionFindInDocument, &QAction::triggered, this, &MainWindow::ProjectView::ShowFindInDocument);
+    connect(mainWindow->ui->actionFindNext, &QAction::triggered, mainWindow->ui->previewWidget, &PreviewWidget::OnFindNext);
+    connect(mainWindow->ui->actionFindPrevious, &QAction::triggered, mainWindow->ui->previewWidget, &PreviewWidget::OnFindPrevious);
     connect(mainWindow->ui->actionCancelFind, &QAction::triggered, this, &MainWindow::ProjectView::CancelFindInDocument);
 
     connect(mainWindow->ui->previewWidget, &PreviewWidget::SelectionChanged, this, &MainWindow::ProjectView::OnSelectionChanged);
@@ -65,6 +67,8 @@ void MainWindow::ProjectView::SetProjectActionsEnabled(bool enabled)
     mainWindow->ui->actionJumpToPrototype->setEnabled(enabled);
     mainWindow->ui->actionFindPrototypeInstances->setEnabled(enabled);
     mainWindow->ui->actionFindInDocument->setEnabled(enabled);
+    mainWindow->ui->actionFindNext->setEnabled(enabled);
+    mainWindow->ui->actionFindPrevious->setEnabled(enabled);
     mainWindow->ui->toolBarPlugins->setEnabled(enabled);
 
     mainWindow->ui->fileSystemDockWidget->setEnabled(enabled);
@@ -190,13 +194,12 @@ void MainWindow::ProjectView::FindControls(std::unique_ptr<FindFilter>&& filter)
 
 void MainWindow::ProjectView::ShowFindInDocument()
 {
-    mainWindow->ui->previewWidget->findInDocumentWidget->show();
-    mainWindow->ui->previewWidget->findInDocumentWidget->setFocus();
+    mainWindow->ui->previewWidget->OnFindInDocument();
 }
 
 void MainWindow::ProjectView::CancelFindInDocument()
 {
-    mainWindow->ui->previewWidget->findInDocumentWidget->hide();
+    mainWindow->ui->previewWidget->OnCancelFind();
 }
 
 void MainWindow::ProjectView::SetResourceDirectory(const QString& path)

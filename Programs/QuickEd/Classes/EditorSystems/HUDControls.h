@@ -92,6 +92,30 @@ private:
     void InitFromGD(const DAVA::UIGeometricData& geometricData) override;
 };
 
+class HighlightControl : public ControlContainer
+{
+public:
+    explicit HighlightControl();
+
+private:
+    ~HighlightControl() = default;
+    void InitFromGD(const DAVA::UIGeometricData& geometricData) override;
+};
+
+class TextControl : public ControlContainer
+{
+public:
+    explicit TextControl();
+
+    void SetText(const DAVA::String& text);
+
+private:
+    ~TextControl() = default;
+    void InitFromGD(const DAVA::UIGeometricData& geometricData) override;
+
+    RefPtr<UIStaticText> text;
+};
+
 void SetupHUDMagnetLineControl(DAVA::UIControl* control);
 void SetupHUDMagnetRectControl(DAVA::UIControl* control);
 

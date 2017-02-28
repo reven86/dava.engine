@@ -356,6 +356,28 @@ void PreviewWidget::SetActualScale()
     }
 }
 
+void PreviewWidget::OnFindInDocument()
+{
+    findInDocumentWidget->show();
+    findInDocumentWidget->setFocus();
+}
+
+void PreviewWidget::OnFindNext()
+{
+    findController->SelectNextFindResult();
+}
+
+void PreviewWidget::OnFindPrevious()
+{
+    findController->SelectPrevFindResult();
+}
+
+void PreviewWidget::OnCancelFind()
+{
+    findInDocumentWidget->hide();
+    findController->CancelFind();
+}
+
 void PreviewWidget::ApplyPosChanges()
 {
     QPoint viewPos = canvasPos + rootControlPos;
@@ -415,6 +437,7 @@ void PreviewWidget::InitEditorSystems()
     systemsManager->selectionChanged.Connect(this, &PreviewWidget::OnSelectionInSystemsChanged);
     systemsManager->propertyChanged.Connect(this, &PreviewWidget::OnPropertyChanged);
     systemsManager->dragStateChanged.Connect(this, &PreviewWidget::OnDragStateChanged);
+    systemsManager->editingRootControlsChanged.Connect(this, &PreviewWidget::OnEditingRootControlsChanged);
 
     connect(focusNextChildAction, &QAction::triggered, std::bind(&EditorSystemsManager::FocusNextChild, systemsManager.get()));
     connect(focusPreviousChildAction, &QAction::triggered, std::bind(&EditorSystemsManager::FocusPreviousChild, systemsManager.get()));
@@ -879,6 +902,11 @@ void PreviewWidget::OnPropertyChanged(ControlNode* node, AbstractProperty* prope
     DVASSERT(!document.isNull());
     QtModelPackageCommandExecutor* commandExecutor = document->GetCommandExecutor();
     commandExecutor->ChangeProperty(node, property, newValue);
+}
+
+void PreviewWidget::OnEditingRootControlsChanged(const SortedPackageBaseNodeSet& rootControls)
+{
+    OnCancelFind();
 }
 
 float PreviewWidget::GetScaleFromWheelEvent(int ticksCount) const

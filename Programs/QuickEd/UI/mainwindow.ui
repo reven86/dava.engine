@@ -153,8 +153,14 @@
     <property name="title">
      <string>Find</string>
     </property>
+    <addaction name="actionFindInDocument"/>
+    <addaction name="actionCancelFind"/>
+    <addaction name="actionFindNext"/>
+    <addaction name="actionFindPrevious"/>
     <addaction name="actionJumpToPrototype"/>
     <addaction name="actionFindPrototypeInstances"/>
+    <addaction name="separator"/>
+    <addaction name="actionFindInProject"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -594,6 +600,22 @@
    </property>
    <property name="shortcut">
     <string>Esc</string>
+   </property>
+  </action>
+  <action name="actionFindNext">
+   <property name="text">
+    <string>Find Next</string>
+   </property>
+   <property name="shortcut">
+    <string>F3</string>
+   </property>
+  </action>
+  <action name="actionFindPrevious">
+   <property name="text">
+    <string>Find Previous</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+F3</string>
    </property>
   </action>
  </widget>

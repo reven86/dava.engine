@@ -30,6 +30,9 @@ signals:
 private slots:
     void OnFindClicked();
 
+protected:
+    bool eventFilter(QObject* obj, QEvent* event) override;
+
 private:
     Document* document = nullptr;
     QHBoxLayout* layout = nullptr;
