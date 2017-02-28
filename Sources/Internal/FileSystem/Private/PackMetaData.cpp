@@ -4,6 +4,8 @@
 #include "Compression/LZ4Compressor.h"
 #include "Base/Exception.h"
 #include "Debug/DVAssert.h"
+#include "Utils/Utils.h"
+#include "Logger/Logger.h"
 
 #include <sqlite_modern_cpp.h>
 
@@ -294,7 +296,10 @@ void PackMetaData::Deserialize(const void* ptr, size_t size)
         DAVA_THROW(Exception, "read metadata error - no compressedBuf");
     }
 
-    DVASSERT(uncompressedSize >= compressedSize);
+    if (uncompressedSize < compressedSize)
+    {
+        Logger::Info("may be better not to compress meta in this case?");
+    }
 
     vector<uint8_t> uncompressedBuf(uncompressedSize);
 

@@ -100,6 +100,11 @@ bool PackRequest::IsDownloaded() const
         return false; // not initialized yet
     }
 
+    if (!packManagerImpl.IsInitialized())
+    {
+        return false;
+    }
+
     bool allReady = true;
     for (const FileRequest& r : requests)
     {
