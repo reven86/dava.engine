@@ -108,7 +108,6 @@ private:
     Vector3 worldScale;
     Vector3 boundingBoxSize;
     Vector3 worldViewObjectCenter;
-    float32 frameGlobalTime;
 
     void ComputeWorldViewMatrixIfRequired();
     void ComputeWorldScaleIfRequired();
