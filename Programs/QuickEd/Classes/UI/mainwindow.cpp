@@ -64,6 +64,11 @@ MainWindow::~MainWindow()
     PreferencesStorage::Instance()->UnregisterPreferences(this);
 }
 
+bool MainWindow::IsInitialized() const
+{
+    return isInitialized;
+}
+
 void MainWindow::SetEditorTitle(const QString& editorTitle_)
 {
     editorTitle = editorTitle_;

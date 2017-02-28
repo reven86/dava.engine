@@ -295,10 +295,11 @@ void EditorSystemsManager::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper,
     Any selectionValue = wrapper.GetFieldValue(DocumentData::selectionPropertyName);
     SelectedNodes selection = selectionValue.Get(SelectedNodes());
 
+    Any packageValue = wrapper.GetFieldValue(DocumentData::packagePropertyName);
+    PackageNode* package = packageValue.Cast<PackageNode*>();
+
     if (fields.empty() || packageChanged)
     {
-        Any packageValue = wrapper.GetFieldValue(DocumentData::packagePropertyName);
-        PackageNode* package = packageValue.Cast<PackageNode*>();
 
         if (selectionChanged == false || selection.empty())
         {
@@ -315,7 +316,12 @@ void EditorSystemsManager::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper,
         //if package was not changed and selection is empty -> do nothing
         if (selection.empty() == false)
         {
-            SortedPackageBaseNodeSet newRootControls = CreateRootControls(selection, package.Get());
+            SortedPackageBaseNodeSet newRootControls = CreateRootControls(selection, package);
+            //TODO: remove this when systems will be separate TArc modules
+            if (newRootControls.empty() && packageChanged)
+            {
+                newRootControls = CreateRootControls(SelectedNodes(), package);
+            }
             //no controls selected, so don't refresh visible content
             if (newRootControls.empty() == false)
             {

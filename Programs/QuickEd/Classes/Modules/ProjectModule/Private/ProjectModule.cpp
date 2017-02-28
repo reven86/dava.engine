@@ -39,7 +39,7 @@ void ProjectModule::PostInit()
 
     //wait for window will be activated and uiScreen is resized to mainWindow
     MainWindow* mainWindow = qobject_cast<MainWindow*>(GetUI()->GetWindow(QEGlobal::windowKey));
-    if (mainWindow != nullptr)
+    if (mainWindow != nullptr && mainWindow->IsInitialized() == false)
     {
         mainWindow->initialized.Connect([this]() {
             delayedExecutor.DelayedExecute(MakeFunction(this, &ProjectModule::OpenLastProject));

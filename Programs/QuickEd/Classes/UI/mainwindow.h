@@ -48,6 +48,7 @@ public:
     PackageWidget* GetPackageWidget() const;
     StyleSheetInspectorWidget* GetStyleSheetInspectorWidget() const;
     DAVA::Signal<> initialized;
+    bool IsInitialized() const;
 
 signals:
     void EmulationModeChanged(bool emulationMode);
