@@ -16,8 +16,6 @@ DAVA_TARC_TESTCLASS(TimerUpdaterTests)
         updater->update.Connect([this](DAVA::TArc::PropertiesView::UpdatePolicy policy)
                                 {
                                     TEST_VERIFY(policy == PropertiesView::FullUpdate);
-                                    DAVA::int32 delta = GetTestDelta();
-                                    TEST_VERIFY(delta > 450 && delta < 1000);
                                     currentTestFinished = true;
                                 });
     }
@@ -30,17 +28,13 @@ DAVA_TARC_TESTCLASS(TimerUpdaterTests)
         updater->update.Connect([this](DAVA::TArc::PropertiesView::UpdatePolicy policy)
                                 {
                                     static DAVA::int32 counter = 1;
-                                    DAVA::int32 delta = GetTestDelta();
                                     if (counter == 5)
                                     {
                                         TEST_VERIFY(policy == PropertiesView::FullUpdate);
-                                        TEST_VERIFY(delta > 450 && delta < 700);
                                     }
                                     else
                                     {
                                         TEST_VERIFY(policy == PropertiesView::FastUpdate);
-                                        DAVA::int32 expectedDelta = 100 * counter;
-                                        TEST_VERIFY(delta > (expectedDelta - 50) && delta < (expectedDelta + 100));
                                     }
                                     if (counter == 6)
                                     {
@@ -49,12 +43,6 @@ DAVA_TARC_TESTCLASS(TimerUpdaterTests)
 
                                     ++counter;
                                 });
-    }
-
-    void SetUp(const DAVA::String& testName) override
-    {
-        startTestTime = DAVA::SystemTimer::GetMs();
-        TestClass::SetUp(testName);
     }
 
     void TearDown(const DAVA::String& testName) override
@@ -68,12 +56,6 @@ DAVA_TARC_TESTCLASS(TimerUpdaterTests)
         return currentTestFinished;
     }
 
-    DAVA::int32 GetTestDelta() const
-    {
-        return DAVA::SystemTimer::GetMs() - startTestTime;
-    }
-
     std::shared_ptr<DAVA::TArc::TimerUpdater> updater;
-    DAVA::int32 startTestTime = 0;
     bool currentTestFinished = false;
 };
