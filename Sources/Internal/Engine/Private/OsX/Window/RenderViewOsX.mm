@@ -82,10 +82,6 @@
     return bitsPerPixel;
 }
 
-- (void)reshape
-{
-}
-
 - (BOOL)isOpaque
 {
     return YES;
