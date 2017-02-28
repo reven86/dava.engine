@@ -3,6 +3,7 @@
 #include "TArc/Controls/PropertyPanel/Private/EmptyComponentValue.h"
 #include "TArc/Controls/PropertyPanel/Private/DefaultPropertyModelExtensions.h"
 #include "TArc/Controls/PropertyPanel/Private/PropertyPanelMeta.h"
+#include "TArc/Controls/PropertyPanel/KeyedArchiveChildCreator.h"
 
 #include <Debug/DVAssert.h>
 #include <Utils/StringFormat.h>
@@ -68,6 +69,7 @@ ReflectedPropertyModel::ReflectedPropertyModel()
     RegisterExtension(std::make_shared<DefaultChildCheatorExtension>());
     RegisterExtension(std::make_shared<DefaultMergeValueExtension>());
     RegisterExtension(std::make_shared<DefaultEditorComponentExtension>());
+    RegisterExtension(std::make_shared<KeyedArchiveChildCreator>());
 
     childCreator.nodeCreated.Connect(this, &ReflectedPropertyModel::ChildAdded);
     childCreator.nodeRemoved.Connect(this, &ReflectedPropertyModel::ChildRemoved);
