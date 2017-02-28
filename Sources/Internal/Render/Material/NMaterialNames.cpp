@@ -180,7 +180,7 @@ const FastName NMaterialFlagName::FLAG_ILLUMINATION_SHADOW_RECEIVER = FastName("
 
 const FastName NMaterialFlagName::FLAG_TEST_OCCLUSION = FastName("TEST_OCCLUSION");
 
-const FastName NMaterialFlagName::FLAG_PARTICLES_DEBUG_SHOW_OVERDRAW = FastName("SHOW_OVERDRAW");
+const FastName NMaterialFlagName::FLAG_PARTICLES_DEBUG_SHOW_HEATMAP = FastName("HEATMAP");
 
 //quality
 const FastName NMaterialQualityName::QUALITY_FLAG_NAME = FastName("Quality");

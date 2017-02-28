@@ -12,7 +12,7 @@ fragment_out
 
 uniform sampler2D particlesRT;
 
-#if SHOW_OVERDRAW
+#if HEATMAP
     uniform sampler2D heatMap;
 #endif
 
@@ -23,7 +23,7 @@ fragment_out fp_main( fragment_in input )
 
     output.color = color;
 
-#if SHOW_OVERDRAW
+#if HEATMAP
     output.color = tex2D(heatMap, float2(color.r, 0));
 #endif
 

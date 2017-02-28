@@ -199,7 +199,7 @@ public:
 
     static const FastName FLAG_TEST_OCCLUSION;
 
-    static const FastName FLAG_PARTICLES_DEBUG_SHOW_OVERDRAW;
+    static const FastName FLAG_PARTICLES_DEBUG_SHOW_HEATMAP;
 
     static bool IsRuntimeFlag(const FastName& flag);
 };

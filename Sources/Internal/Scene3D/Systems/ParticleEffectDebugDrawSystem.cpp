@@ -112,7 +112,7 @@ void ParticleEffectDebugDrawSystem::GenerateQuadMaterials()
         quadHeatMaterial->SetFXName(NMaterialName::DEBUG_DRAW_PARTICLES);
         quadHeatMaterial->AddTexture(NMaterialTextureName::TEXTURE_PARTICLES_HEATMAP, heatTexture);
         quadHeatMaterial->AddTexture(NMaterialTextureName::TEXTURE_PARTICLES_RT, renderPass->GetTexture());
-        quadHeatMaterial->AddFlag(NMaterialFlagName::FLAG_PARTICLES_DEBUG_SHOW_OVERDRAW, 1);
+        quadHeatMaterial->AddFlag(NMaterialFlagName::FLAG_PARTICLES_DEBUG_SHOW_HEATMAP, 1);
         quadHeatMaterial->AddFlag(NMaterialFlagName::FLAG_BLENDING, eBlending::BLENDING_ALPHABLEND);
     }
 }
