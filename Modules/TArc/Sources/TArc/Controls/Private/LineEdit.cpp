@@ -11,13 +11,13 @@ namespace DAVA
 namespace TArc
 {
 LineEdit::LineEdit(const ControlDescriptorBuilder<LineEdit::Fields>& fields, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent)
-    : ControlProxy<QLineEdit>(ControlDescriptor(fields), wrappersProcessor, model, parent)
+    : ControlProxyImpl<QLineEdit>(ControlDescriptor(fields), wrappersProcessor, model, parent)
 {
     SetupControl();
 }
 
 LineEdit::LineEdit(const ControlDescriptorBuilder<LineEdit::Fields>& fields, ContextAccessor* accessor, Reflection model, QWidget* parent)
-    : ControlProxy<QLineEdit>(ControlDescriptor(fields), accessor, model, parent)
+    : ControlProxyImpl<QLineEdit>(ControlDescriptor(fields), accessor, model, parent)
 {
     SetupControl();
 }
