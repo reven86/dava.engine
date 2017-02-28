@@ -1,9 +1,11 @@
 #pragma once
 
-#include "Base/BaseTypes.h"
-#include "Base/BaseMath.h"
-#include "FileSystem/VariantType.h"
-#include "qmetatype.h"
+#include <Base/BaseTypes.h>
+#include <Base/BaseMath.h>
+#include <Base/Introspection.h>
+#include <FileSystem/VariantType.h>
+
+#include <qmetatype.h>
 
 class QString;
 class QColor;

@@ -3,6 +3,7 @@
 #include "TArc/Core/ContextAccessor.h"
 #include "TArc/Core/FieldBinder.h"
 #include "TArc/DataProcessing/Common.h"
+#include "TArc/Utils/QtConnections.h"
 
 #include <QWidget>
 
@@ -32,11 +33,13 @@ public:
 private:
     void SetupUI();
     void OnObjectsChanged(const Any& objects);
+    void OnColumnResized(int columnIndex, int oldSize, int newSize);
 
 private:
     FieldBinder binder;
     QTreeView* view = nullptr;
     std::unique_ptr<ReflectedPropertyModel> model;
+    QtConnections connections;
 };
 }
 }
