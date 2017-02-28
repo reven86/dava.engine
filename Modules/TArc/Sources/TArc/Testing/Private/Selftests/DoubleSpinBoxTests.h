@@ -223,7 +223,7 @@ DAVA_TARC_TESTCLASS(DoubleSpinBoxTests)
         QDoubleSpinBox* box = LookupSingleWidget<QDoubleSpinBox>(wndKey, name);
         DoubleSpinBoxTestModule* module = Holder::moduleInstance;
         TEST_VERIFY(box->value() == module->model.value);
-        TEST_VERIFY(box->text() == QString::number(module->model.value, 'f', box->decimals()));
+        TEST_VERIFY(box->text() == QString::number(module->model.value, 'f'));
         TEST_VERIFY(box->minimum() == 3.0);
         TEST_VERIFY(box->maximum() == 30.0);
         TEST_VERIFY(box->singleStep() == 0.2);
@@ -235,14 +235,14 @@ DAVA_TARC_TESTCLASS(DoubleSpinBoxTests)
             ButtonClick(events, false, box);
         events.simulate(box);
         TEST_VERIFY(box->value() == 3.0); //  but lower bound is 3
-        TEST_VERIFY(QString::number(box->value(), 'f', box->decimals()) == QString::number(module->model.value, 'f', box->decimals()));
+        TEST_VERIFY(QString::number(box->value(), 'f') == QString::number(module->model.value, 'f'));
 
         events.clear();
         ButtonClick(events, true, box);
         events.simulate(box);
 
         TEST_VERIFY(box->value() == 3.2);
-        TEST_VERIFY(QString::number(box->value(), 'f', box->decimals()) == QString::number(module->model.value, 'f', box->decimals()));
+        TEST_VERIFY(QString::number(box->value(), 'f') == QString::number(module->model.value, 'f'));
 
         events.clear();
         events.addKeyClick(Qt::Key_Delete);
@@ -250,7 +250,7 @@ DAVA_TARC_TESTCLASS(DoubleSpinBoxTests)
         events.addKeyClick(Qt::Key_Return);
         events.simulate(box);
         TEST_VERIFY(box->value() == 8.0);
-        TEST_VERIFY(QString::number(box->value(), 'f', box->decimals()) == QString::number(module->model.value, 'f', box->decimals()));
+        TEST_VERIFY(QString::number(box->value(), 'f') == QString::number(module->model.value, 'f'));
 
         events.clear();
         events.addKeyClick(Qt::Key_Delete);
@@ -258,7 +258,7 @@ DAVA_TARC_TESTCLASS(DoubleSpinBoxTests)
         events.addKeyClick(Qt::Key_Return);
         events.simulate(box);
         TEST_VERIFY(box->value() == 24.5);
-        TEST_VERIFY(QString::number(box->value(), 'f', box->decimals()) == QString::number(module->model.value, 'f', box->decimals()));
+        TEST_VERIFY(QString::number(box->value(), 'f') == QString::number(module->model.value, 'f'));
 
         module->model.value = 10.0;
     }

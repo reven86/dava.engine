@@ -13,7 +13,7 @@
 #include "DAVAClassRegistrator.h"
 #include "Analytics/Analytics.h"
 #include "Analytics/LoggingBackend.h"
-#include "AnyCasts/AnyCasts.h"
+#include "ReflectionDeclaration/ReflectionDeclaration.h"
 #include "Autotesting/AutotestingSystem.h"
 #include "Base/AllocatorFactory.h"
 #include "Base/ObjectFactory.h"
@@ -33,6 +33,7 @@
 #include "Job/JobManager.h"
 #include "Input/InputSystem.h"
 #include "Logger/Logger.h"
+#include "MemoryManager/MemoryManager.h"
 #include "ModuleManager/ModuleManager.h"
 #include "Network/NetCore.h"
 #include "Notification/LocalNotificationController.h"
@@ -205,7 +206,7 @@ void EngineBackend::Init(eEngineRunMode engineRunMode, const Vector<String>& mod
     CreateSubsystems(modules);
 
     RegisterDAVAClasses();
-    RegisterAnyCasts();
+    RegisterReflectionForBaseTypes();
 
     isInitialized = true;
 }
@@ -317,6 +318,8 @@ void EngineBackend::OnEngineCleanup()
     dispatcher = nullptr;
     platformCore = nullptr;
 
+    DAVA_MEMORY_PROFILER_FINISH();
+
     Logger::Info("EngineBackend::OnEngineCleanup: leave");
 }
 
@@ -340,6 +343,9 @@ void EngineBackend::OnFrameConsole()
 
     DoEvents();
     engine->update.Emit(frameDelta);
+
+    // Notify memory profiler about new frame
+    DAVA_MEMORY_PROFILER_UPDATE();
 
     globalFrameIndex += 1;
 }
@@ -371,6 +377,9 @@ int32 EngineBackend::OnFrame()
     {
         BackgroundUpdate(frameDelta);
     }
+
+    // Notify memory profiler about new frame
+    DAVA_MEMORY_PROFILER_UPDATE();
 
     globalFrameIndex += 1;
     return Renderer::GetDesiredFPS();
