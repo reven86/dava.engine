@@ -218,7 +218,7 @@ void EditorSystemsManager::OnEditingRootControlsChanged(const SortedPackageBaseN
     engineContext->uiControlSystem->GetInputSystem()->SetCurrentScreen(engineContext->uiControlSystem->GetScreen()); // reset current screen
 
     editingRootControls = rootControls;
-    SetDisplayState(rootControls.size() <= 1 ? Edit : Preview);
+    SetDisplayState(rootControls.size() == 1 ? Edit : Preview);
 }
 
 void EditorSystemsManager::OnActiveHUDAreaChanged(const HUDAreaInfo& areaInfo)
@@ -302,7 +302,13 @@ void EditorSystemsManager::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper,
     {
         if (selectionChanged == false || selection.empty())
         {
-            editingRootControlsChanged.Emit(CreateRootControls(selection, package));
+            SortedPackageBaseNodeSet newRootControls = CreateRootControls(selection, package);
+            //TODO: remove this when systems will be separate TArc modules
+            if (newRootControls.empty() && fields.empty())
+            {
+                newRootControls = CreateRootControls(SelectedNodes(), package);
+            }
+            editingRootControlsChanged.Emit(newRootControls);
         }
         OnPackageDataChanged(packageValue);
         //when document is closed and active document is changed we receive empty fields
