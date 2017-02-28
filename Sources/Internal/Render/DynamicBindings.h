@@ -118,7 +118,6 @@ private:
     void ComputeWorldViewInvTransposeMatrixIfRequired();
     void ComputeLocalBoundingBoxSizeIfRequired();
     void ComputeWorldViewObjectCenterIfRequired();
-    void UpdateGlobalTimeIfRequired();
 
     void ComputeInvWorldMatrixIfRequired();
     void ComputeWorldInvTransposeMatrixIfRequired();
