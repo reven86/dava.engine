@@ -1,12 +1,11 @@
 #pragma once
 
-#include <libuv/uv.h>
-
 #include "Base/BaseTypes.h"
 #include "Base/Platform.h"
 #include "Functional/Function.h"
 #include "Network/Base/Endpoint.h"
 #include "Network/NetEventsDispatcher.h"
+#include <libuv/uv.h>
 
 namespace DAVA
 {
