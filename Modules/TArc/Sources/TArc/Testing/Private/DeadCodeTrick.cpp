@@ -1,6 +1,7 @@
 #include "DeadCodeTrick.h"
 #include "TArc/Testing/Private/Selftests/CheckBoxTest.h"
 #include "TArc/Testing/Private/Selftests/ClientModuleTest.h"
+#include "TArc/Testing/Private/Selftests/ColorPickerButtonTest.h"
 #include "TArc/Testing/Private/Selftests/ComboBoxCheckableTest.h"
 #include "TArc/Testing/Private/Selftests/ComboBoxTest.h"
 #include "TArc/Testing/Private/Selftests/ComponentStructureWrapperTest.h"
