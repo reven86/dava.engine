@@ -11,5 +11,6 @@ FilePathEditTest.h
 IntSpinBoxTests.h
 LineEditTest.h
 PlainTextEditTest.h
+PropertiesViewTimerUpdaterTests.h
 QtWrapLayoutTests.h
 SceneTabbarTest.h

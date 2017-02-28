@@ -3,12 +3,13 @@
 #include "Classes/Selection/SelectionData.h"
 #include "Classes/Application/REGlobal.h"
 
-#include "TArc/Controls/PropertyPanel/PropertiesView.h"
-#include "TArc/WindowSubSystem/UI.h"
-#include "TArc/WindowSubSystem/ActionUtils.h"
-#include "TArc/DataProcessing/DataNode.h"
-#include "TArc/Utils/ModuleCollection.h"
-#include "TArc/Core/FieldBinder.h"
+#include <TArc/Controls/PropertyPanel/PropertiesView.h>
+#include <TArc/Controls/PropertyPanel/TimerUpdater.h>
+#include <TArc/WindowSubSystem/UI.h>
+#include <TArc/WindowSubSystem/ActionUtils.h>
+#include <TArc/DataProcessing/DataNode.h>
+#include <TArc/Utils/ModuleCollection.h>
+#include <TArc/Core/FieldBinder.h>
 
 #include <Scene3D/Entity.h>
 #include <Reflection/Reflection.h>
@@ -28,6 +29,8 @@ class PropertyPanelData : public DAVA::TArc::DataNode
 public:
     DAVA::Vector<DAVA::Entity*> selectedEntities;
     DAVA::Vector<DAVA::Reflection> propertyPanelObjects;
+
+    std::shared_ptr<DAVA::TArc::TimerUpdater> updater;
 
     static const char* selectedEntitiesProperty;
 
@@ -52,6 +55,9 @@ void PropertyPanelModule::PostInit()
     DataContext* ctx = accessor->GetGlobalContext();
     ctx->CreateData(std::make_unique<PropertyPanelData>());
 
+    PropertyPanelData* data = ctx->GetData<PropertyPanelData>();
+    data->updater.reset(new TimerUpdater(1000, 100));
+
     DockPanelInfo panelInfo;
     panelInfo.title = QStringLiteral("New Property Panel");
     panelInfo.actionPlacementInfo = ActionPlacementInfo(CreateMenuPoint(QList<QString>() << "View"
@@ -61,7 +67,7 @@ void PropertyPanelModule::PostInit()
     propertiesDataSourceField.type = DAVA::ReflectedTypeDB::Get<PropertyPanelModuleDetail::PropertyPanelData>();
     propertiesDataSourceField.fieldName = DAVA::FastName(PropertyPanelModuleDetail::PropertyPanelData::selectedEntitiesProperty);
 
-    PropertiesView* view = new PropertiesView(accessor, propertiesDataSourceField);
+    PropertiesView* view = new PropertiesView(accessor, propertiesDataSourceField, std::weak_ptr<PropertiesView::Updater>(data->updater));
     view->RegisterExtension(std::make_shared<REModifyPropertyExtension>(accessor));
     view->RegisterExtension(std::make_shared<EntityChildCreator>());
     ui->AddView(REGlobal::MainWindowKey, PanelKey(panelInfo.title, panelInfo), view);

@@ -14,26 +14,29 @@ namespace DAVA
 {
 namespace TArc
 {
-PropertiesView::PropertiesView(ContextAccessor* accessor, const FieldDescriptor& objectsField)
+PropertiesView::PropertiesView(ContextAccessor* accessor, const FieldDescriptor& objectsField, const std::weak_ptr<Updater>& updater_)
     : binder(accessor)
+    , updater(updater_)
 {
     binder.BindField(objectsField, MakeFunction(this, &PropertiesView::OnObjectsChanged));
     model.reset(new ReflectedPropertyModel());
 
     SetupUI();
 
-    QTimer* timer = new QTimer(this);
-    timer->setInterval(500);
-    QObject::connect(timer, &QTimer::timeout, [this]()
-                     {
-                         model->Update();
-                     });
-
-    //timer->start();
+    std::shared_ptr<Updater> lockedUpdater = updater.lock();
+    if (lockedUpdater != nullptr)
+    {
+        updateConnectionID = lockedUpdater->update.Connect(this, &PropertiesView::Update);
+    }
 }
 
 PropertiesView::~PropertiesView()
 {
+    std::shared_ptr<Updater> lockedUpdater = updater.lock();
+    if (lockedUpdater != nullptr)
+    {
+        lockedUpdater->update.Disconnect(updateConnectionID);
+    }
 }
 
 void PropertiesView::RegisterExtension(const std::shared_ptr<ExtensionChain>& extension)
@@ -82,6 +85,22 @@ void PropertiesView::OnColumnResized(int columnIndex, int oldSize, int newSize)
     PropertiesViewDelegate* d = qobject_cast<PropertiesViewDelegate*>(view->itemDelegate());
     DVASSERT(d != nullptr);
     d->UpdateSizeHints(columnIndex, newSize);
+}
+
+void PropertiesView::Update(UpdatePolicy policy)
+{
+    switch (policy)
+    {
+    case DAVA::TArc::PropertiesView::FullUpdate:
+        model->Update();
+        break;
+    case DAVA::TArc::PropertiesView::FastUpdate:
+        model->UpdateFast();
+        break;
+    default:
+        DVASSERT(false, "Unimplemented update policy have been received");
+        break;
+    }
 }
 }
 }

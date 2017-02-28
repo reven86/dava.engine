@@ -39,7 +39,7 @@ public:
         Create PropertiesView widget with ReflectedModel. As data source for ReflectedMode use value of "objectsField"
         Value of "objectsField" could be casted to Vector<Reflection>
     */
-    PropertiesView(ContextAccessor* accessor, const FieldDescriptor& objectsField);
+    PropertiesView(ContextAccessor* accessor, const FieldDescriptor& objectsField, const std::weak_ptr<Updater>& updater);
     ~PropertiesView();
 
     void RegisterExtension(const std::shared_ptr<ExtensionChain>& extension);
@@ -49,11 +49,14 @@ private:
     void SetupUI();
     void OnObjectsChanged(const Any& objects);
     void OnColumnResized(int columnIndex, int oldSize, int newSize);
+    void Update(UpdatePolicy policy);
 
 private:
     FieldBinder binder;
     QTreeView* view = nullptr;
     std::unique_ptr<ReflectedPropertyModel> model;
+    std::weak_ptr<Updater> updater;
+    SigConnectionID updateConnectionID;
     QtConnections connections;
 };
 }

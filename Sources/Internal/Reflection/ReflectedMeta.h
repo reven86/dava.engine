@@ -213,7 +213,7 @@ using SubProperty = Meta<Metas::SubProperty>;
     Says that value can be changed at some unpredictable moment and
     Reflection's client should update value as often as possible
 */
-using ValueChangeByEngine = Meta<Metas::ValueChangeByEngine>;
+using UpdateOften = Meta<Metas::UpdateOften>;
 }
 
 } // namespace DAVA

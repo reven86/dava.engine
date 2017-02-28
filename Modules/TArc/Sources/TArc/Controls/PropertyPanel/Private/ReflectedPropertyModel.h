@@ -40,6 +40,7 @@ public:
     //////////////////////////////////////
 
     void Update();
+    void UpdateFast();
     void SetObjects(Vector<Reflection> objects);
 
     void RegisterExtension(const std::shared_ptr<ExtensionChain>& extension);
@@ -60,9 +61,12 @@ private:
     QModelIndex MapItem(ReflectedPropertyItem* item) const;
 
     void Update(ReflectedPropertyItem* item);
+    void UpdateFastImpl(ReflectedPropertyItem* item);
 
     template <typename T>
     std::shared_ptr<T> GetExtensionChain() const;
+
+    DataWrappersProcessor* GetWrappersProcessor(const std::shared_ptr<PropertyNode>& node);
 
 private:
     std::unique_ptr<ReflectedPropertyItem> rootItem;
@@ -72,6 +76,7 @@ private:
     Map<const Type*, std::shared_ptr<ExtensionChain>> extensions;
 
     DataWrappersProcessor wrappersProcessor;
+    DataWrappersProcessor fastWrappersProcessor;
 };
 
 template <typename Dst, typename Src>
