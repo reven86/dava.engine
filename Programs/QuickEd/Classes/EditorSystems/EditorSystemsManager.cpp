@@ -300,7 +300,6 @@ void EditorSystemsManager::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper,
 
     if (fields.empty() || packageChanged)
     {
-
         if (selectionChanged == false || selection.empty())
         {
             editingRootControlsChanged.Emit(CreateRootControls(selection, package));
