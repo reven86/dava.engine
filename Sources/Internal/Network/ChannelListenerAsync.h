@@ -7,7 +7,6 @@ namespace DAVA
 {
 namespace Net
 {
-
 class ChannelListenerAsync : public IChannelListener
 {
 public:

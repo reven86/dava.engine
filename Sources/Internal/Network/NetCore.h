@@ -123,8 +123,14 @@ private:
 
     ServiceRegistrar registrar; //-V730_NOINIT
     Function<void()> controllersStoppedCallback;
-    Atomic<bool> isFinishing = false;
-    Atomic<bool> isFinished = false;
+
+    enum State
+    {
+        ACTIVE,
+        FINISHING,
+        FINISHED
+    };
+    Atomic<State> state{ ACTIVE };
 
 #if !defined(DAVA_NETWORK_DISABLE)
     TrackId discovererId = INVALID_TRACK_ID;
