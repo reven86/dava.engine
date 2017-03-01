@@ -53,6 +53,10 @@ private:
 
         uint32 GetGroupIndex();
 
+        virtual ~LoadJob()
+        {
+        }
+
     protected:
         FilePath scenePath;
         String jobText;

@@ -73,7 +73,11 @@ void ProjectProperties::RefreshAbsolutePaths()
 {
     DVASSERT(!projectFile.IsEmpty());
     projectDirectory = projectFile.GetDirectory();
+
     resourceDirectory.absolute = projectDirectory + resourceDirectory.relative;
+    convertedResourceDirectory.absolute = projectDirectory + convertedResourceDirectory.relative;
+    pluginsDirectory.absolute = projectDirectory + pluginsDirectory.relative;
+
     if (additionalResourceDirectory.relative.empty())
     {
         additionalResourceDirectory.absolute = FilePath();
@@ -82,8 +86,6 @@ void ProjectProperties::RefreshAbsolutePaths()
     {
         additionalResourceDirectory.absolute = projectDirectory + additionalResourceDirectory.relative;
     }
-
-    convertedResourceDirectory.absolute = projectDirectory + convertedResourceDirectory.relative;
 
     uiDirectory.absolute = MakeAbsolutePath(uiDirectory.relative);
     fontsDirectory.absolute = MakeAbsolutePath(fontsDirectory.relative);
@@ -104,7 +106,7 @@ void ProjectProperties::RefreshAbsolutePaths()
 ProjectProperties ProjectProperties::Default()
 {
     ProjectProperties properties;
-
+    properties.pluginsDirectory.relative = "./QuickEdPlugins/";
     properties.resourceDirectory.relative = "./DataSource/";
     properties.convertedResourceDirectory.relative = "./Data/";
     properties.gfxDirectories.push_back({ ResDir{ FilePath(), String("./Gfx/") }, Size2i(960, 640) });
@@ -223,6 +225,11 @@ std::tuple<ResultList, ProjectProperties> ProjectProperties::Parse(const DAVA::F
     }
 
     ProjectProperties props = Default();
+    const YamlNode* pluginsDirNode = projectPropertiesNode->Get("PluginsDirectory");
+    if (pluginsDirNode != nullptr)
+    {
+        props.pluginsDirectory.relative = pluginsDirNode->AsString();
+    }
 
     const YamlNode* resourceDirNode = projectPropertiesNode->Get("ResourceDirectory");
     if (resourceDirNode != nullptr)
@@ -369,6 +376,7 @@ RefPtr<YamlNode> ProjectProperties::Emit(const ProjectProperties& props)
 
     YamlNode* propertiesNode(YamlNode::CreateMapNode(false));
     propertiesNode->Add("ResourceDirectory", props.resourceDirectory.relative);
+    propertiesNode->Add("PluginsDirectory", props.pluginsDirectory.relative);
 
     if (!props.additionalResourceDirectory.relative.empty())
     {
@@ -432,4 +440,9 @@ void ProjectProperties::SetProjectFile(const DAVA::FilePath& newProjectFile)
 const DAVA::FilePath& ProjectProperties::GetProjectDirectory() const
 {
     return projectDirectory;
+}
+
+const ProjectProperties::ResDir& ProjectProperties::GetPluginsDirectory() const
+{
+    return pluginsDirectory;
 }
