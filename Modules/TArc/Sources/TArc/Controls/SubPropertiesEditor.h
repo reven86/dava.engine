@@ -9,7 +9,7 @@ namespace DAVA
 {
 namespace TArc
 {
-class SubPropertiesEditor : public ControlProxy<QWidget>
+class SubPropertiesEditor : public ControlProxyImpl<QWidget>
 {
 public:
     enum class Fields : uint32

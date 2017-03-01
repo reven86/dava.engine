@@ -18,7 +18,7 @@ namespace TArc
 {
 QString CreateTextComboCheckable(const Any& value, const EnumMap* enumMap);
 
-class ComboBoxCheckable final : public ControlProxy<QComboBox>
+class ComboBoxCheckable final : public ControlProxyImpl<QComboBox>
 {
 public:
     enum class Fields : uint32
