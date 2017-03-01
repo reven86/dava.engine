@@ -16,6 +16,8 @@ public:
     void BeginBatch(const String& name, uint32 commandsCount = 1);
     void EndBatch();
 
+    bool InBatch() const;
+
     bool IsClean() const;
     void SetClean();
 

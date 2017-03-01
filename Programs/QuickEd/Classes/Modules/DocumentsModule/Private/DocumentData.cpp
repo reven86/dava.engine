@@ -88,7 +88,7 @@ bool DocumentData::IsDocumentExists() const
 
 bool DocumentData::CanClose() const
 {
-    return documentExists;
+    return commandStack->InBatch() == false;
 }
 
 QString DocumentData::GetUndoText() const

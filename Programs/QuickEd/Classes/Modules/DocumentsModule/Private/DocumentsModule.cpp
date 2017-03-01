@@ -195,7 +195,7 @@ void DocumentsModule::OnContextWillBeChanged(DAVA::TArc::DataContext* current, D
         DocumentData* documentData = current->GetData<DocumentData>();
         DVASSERT(nullptr != documentData);
         //check that we do not leave document in non valid state
-        DVASSERT(documentData->package->CanUpdateAll());
+        DVASSERT(documentData->CanClose());
     }
 }
 
@@ -224,7 +224,7 @@ void DocumentsModule::InitCentralWidget()
     RenderWidget* renderWidget = GetContextManager()->GetRenderWidget();
 
     previewWidget = new PreviewWidget(accessor, renderWidget, systemsManager.get());
-    previewWidget->requestCloseTab.Connect([this](uint64 id) { CloseDocument(id); });
+    previewWidget->requestCloseTab.Connect(this, &DocumentsModule::OnRequestCloseTab);
     previewWidget->requestChangeTextInNode.Connect(this, &DocumentsModule::ChangeControlText);
     PanelKey panelKey(QStringLiteral("CentralWidget"), CentralPanelInfo());
     ui->AddView(QEGlobal::windowKey, panelKey, previewWidget);
@@ -314,9 +314,9 @@ void DocumentsModule::CreateDocumentsActions()
 
         FieldDescriptor fieldDescr;
         fieldDescr.type = ReflectedTypeDB::Get<DocumentData>();
-        fieldDescr.fieldName = FastName(DocumentData::packagePropertyName);
+        fieldDescr.fieldName = FastName(DocumentData::canClosePropertyName);
         action->SetStateUpdationFunction(QtAction::Enabled, fieldDescr, [](const Any& fieldValue) -> Any {
-            return fieldValue.CanCast<PackageNode*>() && fieldValue.Cast<PackageNode*>() != nullptr;
+            return fieldValue.CanCast<bool>() && fieldValue.Cast<bool>();
         });
 
         connections.AddConnection(action, &QAction::triggered, Bind(&DocumentsModule::CloseActiveDocument, this));
@@ -724,6 +724,20 @@ void DocumentsModule::ChangeControlText(ControlNode* node)
     }
 }
 
+void DocumentsModule::OnRequestCloseTab(DAVA::uint64 id)
+{
+    using namespace DAVA::TArc;
+    ContextAccessor* accessor = GetAccessor();
+    DataContext* context = accessor->GetContext(id);
+    DVASSERT(nullptr != context);
+    DocumentData* data = context->GetData<DocumentData>();
+    DVASSERT(nullptr != data);
+    if (data->CanClose())
+    {
+        CloseDocument(id);
+    }
+}
+
 void DocumentsModule::CloseActiveDocument()
 {
     using namespace DAVA::TArc;
@@ -744,6 +758,7 @@ void DocumentsModule::CloseDocument(const DAVA::TArc::DataContext::ContextID& id
     DVASSERT(context != nullptr);
     DocumentData* data = context->GetData<DocumentData>();
     DVASSERT(nullptr != data);
+    DVASSERT(data->CanClose());
     if (data->CanSave())
     {
         QString status = data->documentExists ? "modified" : "renamed or removed";
@@ -1086,12 +1101,10 @@ void DocumentsModule::OnDragStateChanged(EditorSystemsManager::eDragState dragSt
     //TODO: move this code to the TransformSystem when systems will be moved to the TArc
     if (dragState == EditorSystemsManager::Transform)
     {
-        documentData->canClose = false;
         documentData->commandStack->BeginBatch("transformations");
     }
     else if (previousState == EditorSystemsManager::Transform)
     {
-        documentData->canClose = true;
         documentData->commandStack->EndBatch();
     }
 }

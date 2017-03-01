@@ -63,7 +63,6 @@ private:
     SelectionContainer selection;
 
     bool documentExists = true;
-    bool canClose = true;
 
     DAVA_VIRTUAL_REFLECTION(DocumentData, DAVA::TArc::DataNode);
 };
