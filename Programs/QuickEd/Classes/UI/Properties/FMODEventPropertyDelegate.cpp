@@ -8,7 +8,6 @@
 #include "PropertiesTreeItemDelegate.h"
 #include "Utils/QtDavaConvertion.h"
 #include "QtTools/FMODSoundBrowser/FMODSoundBrowser.h"
-#include "Project/Project.h"
 
 #include "Engine/Engine.h"
 
