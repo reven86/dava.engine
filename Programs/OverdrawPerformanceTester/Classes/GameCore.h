@@ -25,13 +25,6 @@ public:
     void OnWindowCreated(DAVA::Window* w);
     void OnAppFinished();
 
-    void OnSuspend();
-    void OnResume();
-
-    void BeginFrame();
-    void Draw(DAVA::Window* window);
-    void EndFrame();
-
     void SetScenePath(const DAVA::FilePath& path)
     {
         scenePath = path;
@@ -43,8 +36,6 @@ public:
     };
 
 protected:
-    void CreateDocumentsFolder();
-
     SelectSceneScreen* selectSceneScreen;
     ViewSceneScreen* viewSceneScreen;
 
@@ -54,4 +45,5 @@ private:
     DAVA::Engine& engine;
 
     static GameCore* instance;
+    static const DAVA::String testerScenePath;
 };
