@@ -42,7 +42,7 @@ private:
     {
     public:
         LoadJob(const DAVA::FilePath& scenePath, const String& jobText, uint32 groupIndex);
-        ~LoadJob() = default;
+        virtual ~LoadJob() = default;
 
         virtual void Excecute();
         virtual bool IsFinished();
