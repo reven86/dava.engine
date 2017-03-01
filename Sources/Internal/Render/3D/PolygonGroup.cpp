@@ -15,8 +15,8 @@ DAVA_VIRTUAL_REFLECTION_IMPL(PolygonGroup)
     .Field("indexCount", &PolygonGroup::indexCount)[M::ReadOnly(), M::DisplayName("Index Count")]
     .Field("textureCoordCount", &PolygonGroup::textureCoordCount)[M::ReadOnly(), M::DisplayName("Texture Coord Count")]
     .Field("vertexStride", &PolygonGroup::vertexStride)[M::ReadOnly(), M::DisplayName("Vertex Stride")]
-    .Field("vertexFormat", &PolygonGroup::vertexFormat)[M::ReadOnly(), M::DisplayName("Vertex Format")]
-    .Field("indexFormat", &PolygonGroup::indexFormat)[M::ReadOnly(), M::DisplayName("Index Format")]
+    .Field("vertexFormat", &PolygonGroup::vertexFormat)[M::ReadOnly(), M::DisplayName("Vertex Format"), M::FlagsT<eVertexFormat>()]
+    .Field("indexFormat", &PolygonGroup::indexFormat)[M::ReadOnly(), M::DisplayName("Index Format"), M::EnumT<eIndexFormat>()]
     .End();
 }
 

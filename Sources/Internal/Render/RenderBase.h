@@ -2,6 +2,7 @@
 #define __DAVAENGINE_RENDER_BASE_H__
 
 #include "Base/BaseTypes.h"
+#include "Base/GlobalEnum.h"
 #include "DAVAConfig.h"
 #include "Base/FastName.h"
 #include "Render/RHI/rhi_Type.h"
@@ -285,5 +286,34 @@ uint32 GetVertexLayoutRequiredFormat(const rhi::VertexLayout& layout);
 rhi::CmpFunc GetCmpFuncByName(const String& cmpFuncStr);
 rhi::StencilOperation GetStencilOpByName(const String& stencilOpStr);
 };
+
+ENUM_DECLARE(DAVA::eVertexFormat)
+{
+    ENUM_ADD_DESCR(DAVA::EVF_VERTEX, "Vertex");
+    ENUM_ADD_DESCR(DAVA::EVF_NORMAL, "Normal");
+    ENUM_ADD_DESCR(DAVA::EVF_COLOR, "Color");
+    ENUM_ADD_DESCR(DAVA::EVF_TEXCOORD0, "TexCoord 0");
+    ENUM_ADD_DESCR(DAVA::EVF_TEXCOORD1, "TexCoord 1");
+    ENUM_ADD_DESCR(DAVA::EVF_TEXCOORD2, "TexCoord 2");
+    ENUM_ADD_DESCR(DAVA::EVF_TEXCOORD3, "TexCoord 3");
+    ENUM_ADD_DESCR(DAVA::EVF_TANGENT, "Tangent");
+    ENUM_ADD_DESCR(DAVA::EVF_BINORMAL, "Binormal");
+    ENUM_ADD_DESCR(DAVA::EVF_TIME, "Time");
+    ENUM_ADD_DESCR(DAVA::EVF_PIVOT, "Pivot");
+    ENUM_ADD_DESCR(DAVA::EVF_FLEXIBILITY, "Flexibility");
+    ENUM_ADD_DESCR(DAVA::EVF_ANGLE_SIN_COS, "Angle sin cos");
+    ENUM_ADD_DESCR(DAVA::EVF_JOINTINDEX, "Joint index");
+    ENUM_ADD_DESCR(DAVA::EVF_JOINTWEIGHT, "Joint weight");
+    ENUM_ADD_DESCR(DAVA::EVF_CUBETEXCOORD0, "Cude TexCoord 0");
+    ENUM_ADD_DESCR(DAVA::EVF_CUBETEXCOORD1, "Cude TexCoord 1");
+    ENUM_ADD_DESCR(DAVA::EVF_CUBETEXCOORD2, "Cude TexCoord 2");
+    ENUM_ADD_DESCR(DAVA::EVF_CUBETEXCOORD3, "Cude TexCoord 3");
+}
+
+ENUM_DECLARE(DAVA::eIndexFormat)
+{
+    ENUM_ADD_DESCR(DAVA::EIF_16, "16 bit");
+    ENUM_ADD_DESCR(DAVA::EIF_32, "32 bit");
+}
 
 #endif // __DAVAENGINE_RENDER_BASE_H__
