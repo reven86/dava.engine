@@ -40,7 +40,7 @@ private:
     void ProcessInput(DAVA::UIEvent* currentInput) override;
     void OnDragStateChanged(EditorSystemsManager::eDragState currentState, EditorSystemsManager::eDragState previousState) override;
 
-    void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
+    void OnSelectionChanged(const SelectedNodes& selection);
     void OnActiveAreaChanged(const HUDAreaInfo& areaInfo);
 
     void ProcessKey(DAVA::Key key);
