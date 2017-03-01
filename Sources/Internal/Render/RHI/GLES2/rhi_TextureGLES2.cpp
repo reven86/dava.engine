@@ -20,6 +20,7 @@ struct FramebufferGLES2_t
     unsigned colorLevel[MAX_RENDER_TARGET_COUNT];
     uint32 colorCount = 0;
     Handle depthStencil = InvalidHandle;
+    GLuint depthStencilUID = 0;
     TextureFace face = TextureFace::TEXTURE_FACE_POSITIVE_X;
     uint32_t level = 0;
     GLuint frameBuffer = 0;
@@ -79,7 +80,7 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool forceExecute)
     bool success = false;
     UpdateCreationDesc(desc);
 
-    GLuint glObjects[2] = {};
+    GLuint glObjects[2] = { 0, 0 };
 
     bool is_render_buffer = false;
 
@@ -355,6 +356,7 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool forceExecute)
 void TextureGLES2_t::Destroy(bool forceExecute)
 {
     GLCommand cmd[64] = {};
+    GLint doomed_fbo[64];
     size_t cmd_cnt = 1;
 
     if (isRenderTarget || isRenderBuffer)
@@ -365,9 +367,9 @@ void TextureGLES2_t::Destroy(bool forceExecute)
 
         if ((uid2 != 0) && (uid2 != uid))
         {
-            cmd[1].func = GLCommand::DELETE_RENDERBUFFERS;
-            cmd[1].arg[0] = 1;
-            cmd[1].arg[1] = uint64(&(uid2));
+            cmd[cmd_cnt].func = GLCommand::DELETE_RENDERBUFFERS;
+            cmd[cmd_cnt].arg[0] = 1;
+            cmd[cmd_cnt].arg[1] = uint64(&(uid2));
             ++cmd_cnt;
         }
 
@@ -384,12 +386,16 @@ void TextureGLES2_t::Destroy(bool forceExecute)
                 }
             }
 
+            if (f->depthStencilUID != 0 && (f->depthStencilUID == uid || f->depthStencilUID == uid2))
+                do_delete = true;
+
             if (do_delete)
             {
                 DVASSERT(cmd_cnt <= countof(cmd) - 1);
+                doomed_fbo[cmd_cnt] = f->frameBuffer;
                 cmd[cmd_cnt].func = GLCommand::DELETE_FRAMEBUFFERS;
                 cmd[cmd_cnt].arg[0] = 1;
-                cmd[cmd_cnt].arg[1] = uint64(&(f->frameBuffer));
+                cmd[cmd_cnt].arg[1] = uint64(&(doomed_fbo[cmd_cnt]));
                 ++cmd_cnt;
 
                 f = TextureFBO.erase(f);
@@ -1007,6 +1013,7 @@ unsigned GetFrameBuffer(const Handle* color, const TextureFace* face, const unsi
             memcpy(f.colorFace, face, sizeof(TextureFace) * colorCount);
             memcpy(f.colorLevel, level, sizeof(unsigned) * colorCount);
             f.depthStencil = depthStencil;
+            f.depthStencilUID = (depthStencil != InvalidHandle && depthStencil != DefaultDepthBuffer) ? TextureGLES2Pool::Get(depthStencil)->uid : 0;
             f.frameBuffer = fb;
 
             for (unsigned i = 0; i != colorCount; ++i)
@@ -1027,7 +1034,7 @@ unsigned GetFrameBuffer(const Handle* color, const TextureFace* face, const unsi
             DVASSERT(status == GL_FRAMEBUFFER_COMPLETE);
         }
 
-        GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, 0));
+        GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, _GLES2_Bound_FrameBuffer));
     }
 
     return fb;
