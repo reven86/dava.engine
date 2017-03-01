@@ -300,7 +300,7 @@ void PackRequest::UpdateFileRequests()
                             {
                                 String err = DLC::ToString(downloadError);
                                 Logger::Error("can't download file: %s couse: %s",
-                                              fileRequest.localFile.GetAbsolutePathname(),
+                                              fileRequest.localFile.GetAbsolutePathname().c_str(),
                                               err.c_str());
 
                                 if (DLE_FILE_ERROR == downloadError)
