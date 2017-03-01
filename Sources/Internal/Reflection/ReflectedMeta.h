@@ -199,6 +199,15 @@ using Group = Meta<Metas::Group>;
     \endcode
 */
 using ValueDescription = Meta<Metas::ValueDescription>;
+
+/**
+    \ingroup metas
+    We think about some types like about base types: Vector2, Vector3, Vector4, Color, Rect etc
+    But in real this types are complex and have fields. For example Vector3 comprises the following fields: X, Y, Z
+    This meta mark field of "BaseType" as "field to edit". As a reaction there will be created separate sub-editor
+    for each field that marked by this meta
+*/
+using SubProperty = Meta<Metas::SubProperty>;
 }
 
 } // namespace DAVA

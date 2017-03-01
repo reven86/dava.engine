@@ -22,6 +22,7 @@
 #define K_CMD 0x00100000
 
 #include <stb/stb_textedit.h>
+#include <cwctype>
 
 inline void stb_layoutrow(StbTexteditRow* row, STB_TEXTEDIT_STRING* str, int start_i)
 {
@@ -322,7 +323,7 @@ bool StbTextEditBridge::SendKeyChar(uint32 keyChar, uint32 modifiers)
         // Transform carriage return to line feed
         keyChar = '\n';
     }
-    else if (std::iscntrl(keyChar))
+    else if (std::iswcntrl(keyChar))
     {
         // Skip control characters (\b, \t, ^a, ^c, etc.)
         // P.S. backspace already processed in SendKey
