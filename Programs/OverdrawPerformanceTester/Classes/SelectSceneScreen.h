@@ -12,7 +12,8 @@ protected:
     {
     }
 
-public:
+public:    
+
     SelectSceneScreen();
 
     virtual void LoadResources();
@@ -20,6 +21,7 @@ public:
 
     virtual void OnFileSelected(UIFileSystemDialog* forDialog, const FilePath& pathToFile);
     virtual void OnFileSytemDialogCanceled(UIFileSystemDialog* forDialog);
+    void SetWarningMessage(const WideString&& message);
 
 protected:
     void OnSelectDocumentsPath(BaseObject* caller, void* param, void* callerData);
@@ -32,10 +34,47 @@ protected:
     void LoadSettings();
     void SaveSettings();
 
-    UIStaticText* fileNameText;
-    UIFileSystemDialog* fileSystemDialog;
+private:
+    struct ButtonInfo
+    {
+        WideString caption;
+        int32 tag;
+        Rect rect;
+        union
+        {
+            uint16 resolution;
+            DAVA::PixelFormat pixelFormat;
+        };
+    };
+
+    UIButton* CreateUIButton(const WideString& caption, const Rect& rect, int32 tag, DAVA::Font* font, const DAVA::Message& msg);
+    void OnResolutionButtonClick(BaseObject* sender, void* data, void* callerData);
+    void OnTextureFormatButtonClick(BaseObject* sender, void* data, void* callerData);
+
+    UIStaticText* fileNameText = nullptr;
+    UIFileSystemDialog* fileSystemDialog = nullptr;
+    UIStaticText* overdrawInfoMessage = nullptr;
 
     FilePath scenePath;
+
+    DAVA::UnorderedMap<UIButton*, ButtonInfo> resolutionButtons;
+    DAVA::UnorderedMap<UIButton*, ButtonInfo> texturePixelFormatButtons;
+
+    UITextFieldDelegate* inputDelegate = nullptr;
+
+    static const Array<ButtonInfo, 4> resolutionButtonsInfo;
+    static const Array<ButtonInfo, 5> texturePixelFormatButtonsInfo;
+    static const Color Red;
+    static const Color Green;
+    static const float32 resolutionButtonsXOffset;
+    static const float32 resolutionButtonsYOffset;
+    static const float32 buttonHeight;
+    static const float32 buttonWidth;
+    static const float32 heigthDistanceBetweenButtons;
+    static const float32 texturePixelFormatXOffset;
+    static const float32 texturePixelFormatYOffset; 
+    static const float32 overdrawXOffset;
+    static const float32 overdrawYOffset;
 };
 
 #endif //__SELECT_SCENE_SCREEN_H__

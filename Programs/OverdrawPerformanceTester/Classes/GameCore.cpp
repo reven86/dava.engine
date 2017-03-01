@@ -42,7 +42,7 @@ void GameCore::OnWindowCreated(DAVA::Window* w)
 {
     engine.PrimaryWindow()->draw.Connect(this, &GameCore::Draw);
 
-    w->SetTitleAsync("Scene Viewer");
+    w->SetTitleAsync("Overdraw Performance Tester");
     w->SetSizeAsync({ 1024, 768 });
     w->SetVirtualSize(1024, 768);
 
@@ -86,7 +86,7 @@ void GameCore::OnWindowCreated(DAVA::Window* w)
     //    SetScenePath("~doc:/karelia/karelia_landscape.sc2");
     //    SetScenePath("~doc:/karelia/gates_test.sc2");
     //SetScenePath("~doc:/karelia/objects/k_s01.sc2");
-    UIScreenManager::Instance()->SetFirst(viewSceneScreen->GetScreenID());
+    UIScreenManager::Instance()->SetFirst(selectSceneScreen->GetScreenID());
     //UIScreenManager::Instance()->SetFirst(selectSceneScreen->GetScreenID());
 
     DbgDraw::EnsureInited();

@@ -34,7 +34,6 @@ void BaseScreen::LoadResources()
 {
     if (!loaded)
     {
-        GetBackground()->SetColor(Color(0.f, 0.f, 0.f, 1.f));
         DVASSERT(font == NULL);
         font = FTFont::Create("~res:/Fonts/korinna.ttf");
         font->SetSize(20.f);
