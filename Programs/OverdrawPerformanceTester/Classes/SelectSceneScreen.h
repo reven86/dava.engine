@@ -5,7 +5,7 @@
 
 using namespace DAVA;
 
-class SelectSceneScreen : public BaseScreen, UIFileSystemDialogDelegate
+class SelectSceneScreen : public BaseScreen
 {
 protected:
     virtual ~SelectSceneScreen()
@@ -19,20 +19,8 @@ public:
     virtual void LoadResources();
     virtual void UnloadResources();
 
-    virtual void OnFileSelected(UIFileSystemDialog* forDialog, const FilePath& pathToFile);
-    virtual void OnFileSytemDialogCanceled(UIFileSystemDialog* forDialog);
-    void SetWarningMessage(const WideString&& message);
-
 protected:
-    void OnSelectDocumentsPath(BaseObject* caller, void* param, void* callerData);
-    void OnSelectResourcesPath(BaseObject* caller, void* param, void* callerData);
-    void OnSelectExternalStoragePath(BaseObject* caller, void* param, void* callerData);
-    void OnClearPath(BaseObject* caller, void* param, void* callerData);
     void OnStart(BaseObject* caller, void* param, void* callerData);
-
-    void SetScenePath(const FilePath& path);
-    void LoadSettings();
-    void SaveSettings();
 
 private:
     struct ButtonInfo
@@ -44,7 +32,6 @@ private:
     };
 
     void ReleaseButtons(DAVA::UnorderedMap<UIButton*, ButtonInfo>& buttons);
-    UIButton* CreateUIButton(const WideString& caption, const Rect& rect, int32 tag, DAVA::Font* font, const DAVA::Message& msg);
     void OnResolutionButtonClick(BaseObject* sender, void* data, void* callerData);
     void OnTextureFormatButtonClick(BaseObject* sender, void* data, void* callerData);
     void OnChangeOverdrawButtonClick(BaseObject* sender, void* data, void* callerData);

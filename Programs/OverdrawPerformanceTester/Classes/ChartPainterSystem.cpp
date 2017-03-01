@@ -220,7 +220,8 @@ void ChartPainterSystem::DrawLegend(int32 w, int32 h)
 void ChartPainterSystem::ProcessPerformanceData(Array<Vector<FrameData>, 6>* performanceData_)
 {
     performanceData = performanceData_;
-    maxFrametime = GetMaxFrametime(); // use maxFrametime = value; to remove adaptive y axis
+    // use maxFrametime = GetMaxFrametime(); adaptive y axis
+    maxFrametime = 0.13f;
     frametimeAxisLen = maxFrametime - minFrametime;
     frametimeStepCount = frametimeAxisLen / frametimeStep;
 }

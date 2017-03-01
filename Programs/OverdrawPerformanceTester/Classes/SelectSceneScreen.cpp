@@ -162,95 +162,9 @@ void SelectSceneScreen::ReleaseButtons(DAVA::UnorderedMap<UIButton*, ButtonInfo>
     buttons.clear();
 }
 
-void SelectSceneScreen::OnSelectResourcesPath(BaseObject* caller, void* param, void* callerData)
-{
-    DVASSERT(fileSystemDialog);
-    fileSystemDialog->SetCurrentDir("~res:/3d/");
-
-    fileSystemDialog->Show(this);
-}
-
-void SelectSceneScreen::OnSelectDocumentsPath(BaseObject* caller, void* param, void* callerData)
-{
-    DVASSERT(fileSystemDialog);
-    fileSystemDialog->SetCurrentDir("~doc:/");
-
-    fileSystemDialog->Show(this);
-}
-
-void SelectSceneScreen::OnSelectExternalStoragePath(BaseObject* caller, void* param, void* callerData)
-{
-    DVASSERT(fileSystemDialog);
-
-    auto storageList = DeviceInfo::GetStoragesList();
-    for (const auto& storage : storageList)
-    {
-        if (storage.type == DeviceInfo::STORAGE_TYPE_PRIMARY_EXTERNAL ||
-            storage.type == DeviceInfo::STORAGE_TYPE_SECONDARY_EXTERNAL)
-        {
-            fileSystemDialog->SetCurrentDir(storage.path);
-            fileSystemDialog->Show(this);
-            return;
-        }
-    }
-
-    DVASSERT(false, "No external storages found");
-}
-
-void SelectSceneScreen::OnClearPath(BaseObject* caller, void* param, void* callerData)
-{
-    SetScenePath(FilePath());
-
-    fileNameText->SetText(L"Select scene file");
-}
-
 void SelectSceneScreen::OnStart(BaseObject* caller, void* param, void* callerData)
 {
     SetNextScreen();
-}
-
-void SelectSceneScreen::OnFileSelected(UIFileSystemDialog* forDialog, const FilePath& pathToFile)
-{
-    SetScenePath(pathToFile);
-    fileNameText->SetText(UTF8Utils::EncodeToWideString(scenePath.GetStringValue()));
-}
-
-void SelectSceneScreen::OnFileSytemDialogCanceled(UIFileSystemDialog* forDialog)
-{
-}
-
-void SelectSceneScreen::SetScenePath(const DAVA::FilePath& path)
-{
-    scenePath = path;
-    SaveSettings();
-}
-
-void SelectSceneScreen::LoadSettings()
-{
-    ScopedPtr<KeyedArchive> settings(new KeyedArchive());
-    settings->Load(SETTINGS_PATH);
-    scenePath = settings->GetString("ScenePath", "");
-}
-
-void SelectSceneScreen::SaveSettings()
-{
-    ScopedPtr<KeyedArchive> settings(new KeyedArchive());
-    settings->SetString("ScenePath", scenePath.GetStringValue());
-    settings->Save(SETTINGS_PATH);
-}
-
-DAVA::UIButton* SelectSceneScreen::CreateUIButton(const WideString& caption, const Rect& rect, int32 tag, DAVA::Font* font, const DAVA::Message& msg)
-{
-    UIButton* button = new UIButton(rect);
-    button->SetStateFont(UIControl::STATE_NORMAL, font);
-    button->SetStateFontColor(UIControl::STATE_NORMAL, Color::White);
-    button->SetStateFontColor(UIControl::STATE_PRESSED_INSIDE, Color::White);
-    button->SetStateText(UIControl::STATE_NORMAL, caption);
-    button->SetDebugDraw(true);
-    button->AddEvent(UIButton::EVENT_TOUCH_DOWN, msg);
-    button->SetTag(tag);
-    AddControl(button);
-    return button;
 }
 
 void SelectSceneScreen::OnResolutionButtonClick(BaseObject* sender, void* data, void* callerData)
@@ -296,9 +210,4 @@ void SelectSceneScreen::OnChangeOverdrawButtonClick(BaseObject* sender, void* da
             overdrawCountLabel->SetText(Format(L"%d", TesterConfig::overdrawScreensCount));
         }
     }
-}
-
-void SelectSceneScreen::SetWarningMessage(const WideString&& message)
-{
-    overdrawInfoMessage->SetText(std::forward<const WideString>(message));
 }
