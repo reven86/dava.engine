@@ -473,6 +473,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Notification/Private/Android/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/CommandLine/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Logger/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/PluginManager/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/AnyCasts/Private/*.cpp))
 
 include $(BUILD_STATIC_LIBRARY)

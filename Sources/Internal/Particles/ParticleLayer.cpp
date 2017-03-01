@@ -60,8 +60,6 @@ eBlendMode GetBlendModeByName(const String& blendStr)
 /*end of legacy compatibility code*/
 
 ParticleLayer::ParticleLayer()
-    : sprite(0)
-    , innerEmitter(NULL)
 {
     life = 0;
     lifeVariation = 0;

@@ -216,9 +216,17 @@ void EditorTransformSystem::OnDragStateChanged(EditorSystemsManager::eDragState 
     }
 }
 
-void EditorTransformSystem::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
+void EditorTransformSystem::OnSelectionChanged(const SelectedNodes& selection)
 {
-    SelectionContainer::MergeSelectionToContainer(selected, deselected, selectedControlNodes);
+    selectedControlNodes.clear();
+    for (PackageBaseNode* node : selection)
+    {
+        ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
+        if (controlNode != nullptr)
+        {
+            selectedControlNodes.insert(controlNode);
+        }
+    }
     nodesToMoveInfos.clear();
     for (ControlNode* selectedControl : selectedControlNodes)
     {

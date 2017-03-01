@@ -72,6 +72,8 @@ PackageModel::PackageModel(QObject* parent)
 {
 }
 
+PackageModel::~PackageModel() = default;
+
 void PackageModel::Reset(PackageNode* package_, QtModelPackageCommandExecutor* executor_)
 {
     beginResetModel();
@@ -131,7 +133,7 @@ QModelIndex PackageModel::parent(const QModelIndex& child) const
     if (package != nullptr)
     {
         DVASSERT(nullptr != parent);
-        if (nullptr == parent || parent == package)
+        if (nullptr == parent || parent == package.Get())
         {
             return QModelIndex();
         }
@@ -411,7 +413,7 @@ QMimeData* PackageModel::mimeData(const QModelIndexList& indices) const
     }
 
     YamlPackageSerializer serializer;
-    serializer.SerializePackageNodes(package, mimeData->GetControls(), mimeData->GetStyles());
+    serializer.SerializePackageNodes(package.Get(), mimeData->GetControls(), mimeData->GetStyles());
     String str = serializer.WriteToString();
     mimeData->setText(QString::fromStdString(str));
 
@@ -472,7 +474,7 @@ void PackageModel::OnDropMimeData(const QMimeData* data, Qt::DropAction action, 
             {
                 for (const auto& node : nodes)
                 {
-                    PackageModel_local::SetAbsoulutePosToControlNode(package, node, destControl, *pos);
+                    PackageModel_local::SetAbsoulutePosToControlNode(package.Get(), node, destControl, *pos);
                 }
             }
         }
@@ -511,13 +513,13 @@ void PackageModel::OnDropMimeData(const QMimeData* data, Qt::DropAction action, 
         }
         if (!packages.empty())
         {
-            commandExecutor->AddImportedPackagesIntoPackage(packages, package);
+            commandExecutor->AddImportedPackagesIntoPackage(packages, package.Get());
         }
     }
     else if (destNode && data->hasFormat("text/plain") && data->hasText())
     {
         String string = data->text().toStdString();
-        auto nodes = commandExecutor->Paste(package, destNode, destIndex, string);
+        auto nodes = commandExecutor->Paste(package.Get(), destNode, destIndex, string);
         if (pos != nullptr && destNode != package->GetPackageControlsNode())
         {
             auto destControl = dynamic_cast<ControlNode*>(destNode);
@@ -528,7 +530,7 @@ void PackageModel::OnDropMimeData(const QMimeData* data, Qt::DropAction action, 
                     auto control = dynamic_cast<ControlNode*>(node);
                     if (control != nullptr)
                     {
-                        PackageModel_local::SetAbsoulutePosToControlNode(package, control, destControl, *pos);
+                        PackageModel_local::SetAbsoulutePosToControlNode(package.Get(), control, destControl, *pos);
                     }
                 }
             }
