@@ -13,6 +13,7 @@
 #include <TArc/Controls/FilePathEdit.h>
 #include <TArc/Controls/QtBoxLayouts.h>
 #include <TArc/Controls/SubPropertiesEditor.h>
+#include <TArc/Controls/PropertyPanel/Private/MultiFieldsControl.h>
 #include <TArc/Utils/ModuleCollection.h>
 #include <TArc/WindowSubSystem/ActionUtils.h>
 #include <TArc/WindowSubSystem/UI.h>
@@ -966,6 +967,124 @@ struct SubPropertiesControlTest : public ReflectionBase
     }
 };
 
+struct MultiEditorsControlTest : public ReflectionBase
+{
+    DAVA::Vector3 v3 = DAVA::Vector3(0.3f, 0.3f, 0.3f);
+    Vector<DAVA::TArc::MultiFieldsControl::FieldDescriptor> descriptorList;
+    bool isReadOnly = false;
+    int32 accuracy = 4;
+    int32 accuracy2 = 6;
+    const DAVA::M::Range* rangeX = nullptr;
+    const DAVA::M::Range* rangeY = nullptr;
+    const DAVA::M::Range* rangeZ = nullptr;
+
+    MultiEditorsControlTest()
+        : rangeX(new DAVA::M::Range(0.0f, 1.0f, 0.1))
+        , rangeY(new DAVA::M::Range(-1.0f, 1.0f, 0.2))
+        , rangeZ(new DAVA::M::Range(-0.5f, 0.5f, 0.3))
+    {
+        using namespace DAVA::TArc;
+        {
+            MultiFieldsControl::FieldDescriptor d;
+            d.valueRole = "V3X";
+            d.accuracyRole = "accuracy";
+            d.readOnlyRole = "isReadOnly";
+            d.rangeRole = "RangeX";
+            descriptorList.push_back(d);
+        }
+
+        {
+            MultiFieldsControl::FieldDescriptor d;
+            d.valueRole = "V3Y";
+            d.accuracyRole = "accuracy2";
+            d.readOnlyRole = "isReadOnly";
+            d.rangeRole = "RangeY";
+            descriptorList.push_back(d);
+        }
+
+        {
+            MultiFieldsControl::FieldDescriptor d;
+            d.valueRole = "V3Z";
+            d.accuracyRole = "accuracy";
+            d.readOnlyRole = "isReadOnly";
+            d.rangeRole = "RangeZ";
+            descriptorList.push_back(d);
+        }
+    }
+
+    float32 GetX() const
+    {
+        return v3.x;
+    }
+
+    void SetX(float32 v)
+    {
+        v3.x = v;
+    }
+
+    float32 GetY() const
+    {
+        return v3.y;
+    }
+
+    void SetY(float32 v)
+    {
+        v3.y;
+    }
+
+    float32 GetZ() const
+    {
+        return v3.z;
+    }
+
+    void SetZ(float32 v)
+    {
+        v3.z;
+    }
+
+    static Result Create(TArc::UI* ui, TArc::ContextAccessor* accessor, QWidget* parent)
+    {
+        using namespace DAVA::TArc;
+        MultiEditorsControlTest* data = new MultiEditorsControlTest();
+        QtVBoxLayout* boxLayout = new QtVBoxLayout();
+        Reflection model = Reflection::Create(data);
+
+        {
+            ControlDescriptorBuilder<MultiFieldsControl::Fields> descr;
+            descr[MultiFieldsControl::Fields::FieldsList] = "list";
+            boxLayout->AddWidget(new MultiFieldsControl(descr, accessor, model));
+        }
+
+        {
+            ControlDescriptorBuilder<CheckBox::Fields> descr;
+            descr[CheckBox::Fields::Checked] = "isReadOnly";
+            boxLayout->AddWidget(new CheckBox(descr, accessor, model));
+        }
+
+        Result r;
+        r.layout = boxLayout;
+        r.model = data;
+
+        return r;
+    }
+
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(MultiEditorsControlTest)
+    {
+        DAVA::ReflectionRegistrator<MultiEditorsControlTest>::Begin()
+        .Field("list", &MultiEditorsControlTest::descriptorList)
+        .Field("V3X", &MultiEditorsControlTest::GetX, &MultiEditorsControlTest::SetX)
+        .Field("V3Y", &MultiEditorsControlTest::GetY, &MultiEditorsControlTest::SetY)
+        .Field("V3Z", &MultiEditorsControlTest::GetZ, &MultiEditorsControlTest::SetZ)
+        .Field("accuracy", &MultiEditorsControlTest::accuracy)
+        .Field("accuracy2", &MultiEditorsControlTest::accuracy2)
+        .Field("isReadOnly", &MultiEditorsControlTest::isReadOnly)
+        .Field("RangeX", &MultiEditorsControlTest::rangeX)
+        .Field("RangeY", &MultiEditorsControlTest::rangeY)
+        .Field("RangeZ", &MultiEditorsControlTest::rangeZ)
+        .End();
+    }
+};
+
 struct Node
 {
     TestSpaceCreator creator;
@@ -1022,7 +1141,8 @@ void TestUIModule::ShowDialog()
       { &IntSpinBoxTestData::Create, "SpinBoxTest" },
       { &DoubleSpinBoxTestData::Create, "Double Spin" },
       { &FilePathEditTestData::Create, "FilePath" },
-      { &SubPropertiesControlTest::Create, "SubPropsControl Test" }
+      { &SubPropertiesControlTest::Create, "SubPropsControl Test" },
+      { &MultiEditorsControlTest::Create, "MultiEditorsControl Test" }
     };
 
     DAVA::Vector<DAVA::ReflectionBase*> data;
