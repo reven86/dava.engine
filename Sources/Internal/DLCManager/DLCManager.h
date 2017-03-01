@@ -58,11 +58,11 @@ public:
         virtual bool IsDownloaded() const = 0;
     };
 
-    /** You have to subscribe to this signal before call `Initialize` */
+    /** You have to subscribe to this signal before calling `Initialize` */
     Signal<bool> networkReady;
-    /** After this signal you you can use ```bool IsPackDownloaded(const String& packName);```
-	    First parameter means number of founded already downloaded files localy.
-		Second patameter means number of total files at server superpack
+    /** After this signal you can use ```bool IsPackDownloaded(const String& packName);```
+	    First parameter count number of already downloaded files.
+		Second parameter number of total files in server superpack
 		*/
     Signal<size_t, size_t> initializeFinished;
     /** signal per user request */

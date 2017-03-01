@@ -83,7 +83,7 @@ DAVA_TESTCLASS (DLCManagerTest)
         {
             return downloadOfVirtualPack;
         }
-        return TestClass::TestComplete(testName);
+        return true;
     }
 
     void Update(DAVA::float32 timeElapsed, const DAVA::String& testName) override
@@ -110,8 +110,6 @@ DAVA_TESTCLASS (DLCManagerTest)
                 }
             }
         }
-
-        TestClass::Update(timeElapsed, testName);
     }
 
     DAVA_TEST (TestDownloadOfVirtualPack)

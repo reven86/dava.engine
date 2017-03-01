@@ -64,13 +64,13 @@ PackMetaData::PackMetaData(const FilePath& metaDb)
     }
 }
 
-Vector<String> PackMetaData::GetDependenciesNames(const String& requestedPackName) const
+Vector<String> PackMetaData::GetDependencyNames(const String& requestedPackName) const
 {
     Vector<String> requestNames;
 
     const PackInfo& packInfo = GetPackInfo(requestedPackName);
     const String& dependencies = packInfo.packDependencies;
-    String delimiter(", ");
+    const String delimiter(", ");
 
     Split(dependencies, delimiter, requestNames);
 
@@ -85,8 +85,9 @@ Vector<String> PackMetaData::GetDependenciesNames(const String& requestedPackNam
         }
         catch (std::exception& ex)
         {
-            Logger::Error("bad dependency index for pack: %s, index value: %s, error message: %s", packInfo.packName.c_str(), pack.c_str(), ex.what());
-            DAVA_THROW(Exception, "bad dependency pack index see log");
+            Logger::Error("bad dependency index for pack: %s, index value: %s, error message: %s, skip it",
+                          packInfo.packName.c_str(), pack.c_str(), ex.what());
+            continue;
         }
         const PackInfo& info = GetPackInfo(index);
         pack = info.packName;
@@ -294,11 +295,6 @@ void PackMetaData::Deserialize(const void* ptr, size_t size)
     if (!file)
     {
         DAVA_THROW(Exception, "read metadata error - no compressedBuf");
-    }
-
-    if (uncompressedSize < compressedSize)
-    {
-        Logger::Info("may be better not to compress meta in this case?");
     }
 
     vector<uint8_t> uncompressedBuf(uncompressedSize);

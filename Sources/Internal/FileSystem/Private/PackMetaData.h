@@ -19,21 +19,15 @@ public:
 		*/
     PackMetaData(const void* ptr, std::size_t size);
 
-    Vector<String> GetDependenciesNames(const String& requestedPackName) const;
+    Vector<String> GetDependencyNames(const String& requestedPackName) const;
 
     Vector<uint32> GetFileIndexes(const String& requestedPackName) const;
 
     uint32 GetPackIndexForFile(const uint32 fileIndex) const;
 
-    size_t GetNumTotalFiles() const
-    {
-        return packIndexes.size();
-    }
+    size_t GetTotalFileCount() const;
 
-    size_t GetNumTotalPacks() const
-    {
-        return packDependencies.size();
-    }
+    size_t GetTotalPacksCount() const;
 
     struct PackInfo
     {
@@ -58,5 +52,15 @@ private:
     // packIndex(0-NUM_PACKS) -> packName, dependencies
     Vector<PackInfo> packDependencies;
 };
+
+inline size_t PackMetaData::GetTotalFileCount() const
+{
+    return packIndexes.size();
+}
+
+inline size_t PackMetaData::GetTotalPacksCount() const
+{
+    return packDependencies.size();
+}
 
 } // end namespace DAVA

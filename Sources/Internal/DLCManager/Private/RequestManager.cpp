@@ -97,7 +97,7 @@ void RequestManager::SetPriorityToRequest(PackRequest* request)
     auto it = find(begin(requests), end(requests), request);
     if (it != end(requests))
     {
-        // 1. collect all request not sub request for "request"
+        // 1. collect all requests that are not subrequests of request
         Vector<PackRequest*> removeFromBeg;
         for (PackRequest* r : requests)
         {
@@ -117,12 +117,12 @@ void RequestManager::SetPriorityToRequest(PackRequest* request)
         }
         // 3. find position after "request"
         it = find(begin(requests), end(requests), request);
-        it++;
+        ++it;
         // 4. insert all previously removed request after preserve order
         for (PackRequest* r : removeFromBeg)
         {
             it = requests.insert(it, r);
-            it++;
+            ++it;
         }
     }
 

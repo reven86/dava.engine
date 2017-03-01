@@ -152,9 +152,7 @@ void DLCManagerImpl::Initialize(const FilePath& dirToDownloadPacks_,
 
 bool DLCManagerImpl::IsInitialized() const
 {
-    // current inputState can be in differect states becouse of
-    // offline mode
-    // for now we always in Main Thread! old // LockGuard<Mutex> lock(protectDM);
+    DVASSERT(Thread::IsMainThread());
     return nullptr != requestManager;
 }
 
@@ -656,7 +654,7 @@ void DLCManagerImpl::ParseMeta()
     {
         WriteBufferToFile(buffer, localCacheMeta);
     }
-    catch (std::exception& ex)
+    catch (DAVA::Exception& ex)
     {
         Logger::Error("%s", ex.what());
         noSpaceLeftOnDevice.Emit(localCacheMeta.GetAbsolutePathname());
@@ -711,7 +709,7 @@ void DLCManagerImpl::LoadPacksDataFromMeta()
 
         meta.reset(new PackMetaData(&buffer[0], buffer.size()));
 
-        size_t numFiles = meta->GetNumTotalFiles();
+        size_t numFiles = meta->GetTotalFileCount();
         scanFileReady.resize(numFiles);
 
         // now user can do requests for local packs
@@ -760,7 +758,7 @@ void DLCManagerImpl::StartDeleyedRequests()
 
     size_t numDownloaded = std::count(begin(scanFileReady), end(scanFileReady), true);
 
-    initializeFinished.Emit(numDownloaded, meta->GetNumTotalFiles());
+    initializeFinished.Emit(numDownloaded, meta->GetTotalFileCount());
 }
 
 void DLCManagerImpl::DeleteLocalMetaFiles()
@@ -771,8 +769,11 @@ void DLCManagerImpl::DeleteLocalMetaFiles()
 
 bool DLCManagerImpl::IsPackDownloaded(const String& packName)
 {
+    DVASSERT(Thread::IsMainThread());
+
     if (!IsInitialized())
     {
+        DVASSERT(false && "Initialization not finished. Files is scanning now.");
         Logger::Error("%s", "Initialization not finished. Files is scanning now.");
         return false;
     }
@@ -787,7 +788,7 @@ bool DLCManagerImpl::IsPackDownloaded(const String& packName)
         }
     }
 
-    Vector<String> deps = meta->GetDependenciesNames(packName);
+    Vector<String> deps = meta->GetDependencyNames(packName);
     for (const String& dependencyPack : deps)
     {
         if (!IsPackDownloaded(dependencyPack)) // recursive call
@@ -897,8 +898,6 @@ bool DLCManagerImpl::IsRequestingEnabled() const
 void DLCManagerImpl::SetRequestingEnabled(bool value)
 {
     DVASSERT(Thread::IsMainThread());
-
-    LockGuard<Mutex> lock(protectDM);
 
     if (value)
     {

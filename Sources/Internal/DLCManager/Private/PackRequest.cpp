@@ -27,13 +27,13 @@ PackRequest::PackRequest(DLCManagerImpl& packManager_, const String& pack_, Vect
     SetFileIndexes(move(fileIndexes_));
 }
 
-PackRequest::~PackRequest()
+void PackRequest::CanselCurrentsDownloads()
 {
+    DownloadManager* dm = DownloadManager::Instance();
     for (FileRequest& r : requests)
     {
         if (r.taskId != 0)
         {
-            DownloadManager* dm = DownloadManager::Instance();
             if (dm)
             {
                 dm->Cancel(r.taskId);
@@ -43,14 +43,19 @@ PackRequest::~PackRequest()
     }
 }
 
+PackRequest::~PackRequest()
+{
+    CanselCurrentsDownloads();
+}
+
 void PackRequest::Start()
 {
-    // TODO
+    // just continue call Update
 }
 
 void PackRequest::Stop()
 {
-    // TODO
+    CanselCurrentsDownloads();
 }
 
 const String& PackRequest::GetRequestedPackName() const
@@ -63,7 +68,7 @@ Vector<String> PackRequest::GetDependencies() const
     if (packManagerImpl.IsInitialized())
     {
         const PackMetaData& pack_meta_data = packManagerImpl.GetMeta();
-        return pack_meta_data.GetDependenciesNames(requestedPackName);
+        return pack_meta_data.GetDependencyNames(requestedPackName);
     }
     DAVA_THROW(Exception, "Error! Can't get pack dependencies before initialization not finished");
 }
@@ -121,13 +126,6 @@ void PackRequest::SetFileIndexes(Vector<uint32> fileIndexes_)
 {
     fileIndexes = std::move(fileIndexes_);
     delayedRequest = false;
-
-    if (fileIndexes.empty())
-    {
-        // all files already loaded or empty virtual pack
-        // couse infinite recursion on client
-        // packManagerImpl.requestUpdated.Emit(*this);
-    }
 }
 
 bool PackRequest::IsSubRequest(const PackRequest* other) const

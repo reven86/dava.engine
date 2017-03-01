@@ -15,6 +15,7 @@ class PackRequest : public DLCManager::IRequest
 {
 public:
     PackRequest(DLCManagerImpl& packManager_, const String& packName, Vector<uint32> fileIndexes_);
+    void CanselCurrentsDownloads();
     PackRequest(DLCManagerImpl& packManager_, const String& requestedPackName);
 
     ~PackRequest() override;
@@ -35,7 +36,7 @@ public:
 
     void SetFileIndexes(Vector<uint32> fileIndexes_);
 
-    /** this request depends for other, so other should be downloaded first */
+    /** this request depends on other, so other should be downloaded first */
     bool IsSubRequest(const PackRequest* other) const;
 
 private:
