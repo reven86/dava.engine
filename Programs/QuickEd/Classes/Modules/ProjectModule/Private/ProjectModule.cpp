@@ -9,6 +9,8 @@
 #include <TArc/Utils/ModuleCollection.h>
 
 #include <Engine/PlatformApi.h>
+#include <FileSystem/FileSystem.h>
+#include <PluginManager/PluginManager.h>
 #include <Base/Result.h>
 
 #include <QApplication>
@@ -219,7 +221,8 @@ void ProjectModule::CreateProject(const QString& projectDirPath)
 
 void ProjectModule::OpenProject(const DAVA::String& path)
 {
-    using namespace DAVA::TArc;
+    using namespace DAVA;
+    using namespace TArc;
 
     if (CloseProject() == false)
     {
@@ -227,18 +230,18 @@ void ProjectModule::OpenProject(const DAVA::String& path)
     }
     ContextAccessor* accessor = GetAccessor();
 
-    DAVA::ResultList resultList;
+    ResultList resultList;
     std::unique_ptr<ProjectData> newProjectData = std::make_unique<ProjectData>();
 
     resultList = newProjectData->LoadProject(QString::fromStdString(path));
 
     if (resultList)
     {
-        DAVA::String lastProjectPath = newProjectData->GetProjectFile().GetAbsolutePathname();
+        String lastProjectPath = newProjectData->GetProjectFile().GetAbsolutePathname();
         recentProjects->Add(lastProjectPath);
 
         PropertiesItem propsItem = accessor->CreatePropertiesNode(ProjectModuleDetails::propertiesKey);
-        propsItem.Set(ProjectModuleDetails::lastProjectKey.c_str(), DAVA::Any(lastProjectPath));
+        propsItem.Set(ProjectModuleDetails::lastProjectKey.c_str(), Any(lastProjectPath));
 
         DataContext* globalContext = accessor->GetGlobalContext();
         globalContext->CreateData(std::move(newProjectData));
@@ -274,6 +277,32 @@ void ProjectModule::OpenLastProject()
     if (projectPath.empty() == false)
     {
         OpenProject(projectPath);
+    }
+}
+
+//TODO: move this function to the separate module when bubble messages will be implemented
+void ProjectModule::LoadPlugins(const ProjectData* projectData)
+{
+    using namespace DAVA;
+    using namespace TArc;
+
+    FilePath pluginsDirectory = projectData->GetPluginsDirectory().absolute;
+    const EngineContext* engineContext = GetAccessor()->GetEngineContext();
+    if (engineContext->fileSystem->IsDirectory(pluginsDirectory))
+    {
+        ResultList results;
+        PluginManager* pluginManager = engineContext->pluginManager;
+        Vector<FilePath> loadedPlugins = pluginManager->GetPlugins(pluginsDirectory, PluginManager::Auto);
+
+        for (const FilePath& pluginPath : loadedPlugins)
+        {
+            const PluginDescriptor* descriptor = pluginManager->LoadPlugin(pluginPath);
+            if (descriptor == nullptr)
+            {
+                results.AddResult(Result::RESULT_WARNING, Format("can not load plugin %s", pluginPath.GetAbsolutePathname().c_str()));
+            }
+        }
+        ShowResultList(QObject::tr("Loading plugins"), results);
     }
 }
 

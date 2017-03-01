@@ -11,6 +11,7 @@ namespace DAVA
 {
 class ResultList;
 }
+class ProjectData;
 
 class ProjectModule : public DAVA::TArc::ClientModule
 {
@@ -32,6 +33,7 @@ private:
     void OpenProject(const DAVA::String& path);
     void OpenLastProject();
     void ShowResultList(const QString& title, const DAVA::ResultList& resultList);
+    void LoadPlugins(const ProjectData* projectData);
 
     DAVA::TArc::QtConnections connections;
     std::unique_ptr<RecentMenuItems> recentProjects;

@@ -87,7 +87,12 @@ void ProjectData::RefreshAbsolutePaths()
 {
     DVASSERT(!projectFile.IsEmpty());
     projectDirectory = projectFile.GetDirectory();
+
     resourceDirectory.absolute = projectDirectory + resourceDirectory.relative;
+
+    convertedResourceDirectory.absolute = projectDirectory + convertedResourceDirectory.relative;
+    pluginsDirectory.absolute = projectDirectory + pluginsDirectory.relative;
+
     if (additionalResourceDirectory.relative.empty())
     {
         additionalResourceDirectory.absolute = FilePath();
@@ -96,8 +101,6 @@ void ProjectData::RefreshAbsolutePaths()
     {
         additionalResourceDirectory.absolute = projectDirectory + additionalResourceDirectory.relative;
     }
-
-    convertedResourceDirectory.absolute = projectDirectory + convertedResourceDirectory.relative;
 
     uiDirectory.absolute = MakeAbsolutePath(uiDirectory.relative);
     fontsDirectory.absolute = MakeAbsolutePath(fontsDirectory.relative);
@@ -189,6 +192,12 @@ DAVA::Result ProjectData::CreateNewProjectInfrastructure(const QString& projectF
     QDir projectDir(QFileInfo(projectFilePath).absolutePath());
 
     std::unique_ptr<ProjectData> defaultSettings(new ProjectData());
+
+    QString pluginsDirectory = QString::fromStdString(defaultSettings->GetPluginsDirectory().relative);
+    if (pluginsDirectory.isEmpty() == false && projectDir.mkpath(pluginsDirectory) == false)
+    {
+        return Result(Result::RESULT_ERROR, QObject::tr("Can not create plugins directory %1").arg(pluginsDirectory).toStdString());
+    }
 
     QString resourceDirectory = QString::fromStdString(defaultSettings->GetResourceDirectory().relative);
     if (!projectDir.mkpath(resourceDirectory))
@@ -305,8 +314,8 @@ DAVA::ResultList ProjectData::Parse(const DAVA::FilePath& projectFile, const Yam
 
     ResultList resultList;
 
-    const YamlNode* ProjectDataNode = root->Get("ProjectProperties");
-    if (ProjectDataNode == nullptr)
+    const YamlNode* projectDataNode = root->Get("ProjectProperties");
+    if (projectDataNode == nullptr)
     {
         String message = Format("Wrong project properties in file %s.", projectFile.GetAbsolutePathname().c_str());
         resultList.AddResult(Result::RESULT_ERROR, message);
@@ -314,7 +323,13 @@ DAVA::ResultList ProjectData::Parse(const DAVA::FilePath& projectFile, const Yam
         return resultList;
     }
 
-    const YamlNode* resourceDirNode = ProjectDataNode->Get("ResourceDirectory");
+    const YamlNode* pluginsDirNode = projectDataNode->Get("PluginsDirectory");
+    if (pluginsDirNode != nullptr)
+    {
+        pluginsDirectory.relative = pluginsDirNode->AsString();
+    }
+
+    const YamlNode* resourceDirNode = projectDataNode->Get("ResourceDirectory");
     if (resourceDirNode != nullptr)
     {
         resourceDirectory.relative = resourceDirNode->AsString();
@@ -325,13 +340,13 @@ DAVA::ResultList ProjectData::Parse(const DAVA::FilePath& projectFile, const Yam
         resultList.AddResult(Result::RESULT_WARNING, message);
     }
 
-    const YamlNode* additionalResourceDirNode = ProjectDataNode->Get("AdditionalResourceDirectory");
+    const YamlNode* additionalResourceDirNode = projectDataNode->Get("AdditionalResourceDirectory");
     if (additionalResourceDirNode != nullptr)
     {
         additionalResourceDirectory.relative = additionalResourceDirNode->AsString();
     }
 
-    const YamlNode* convertedResourceDirNode = ProjectDataNode->Get("ConvertedResourceDirectory");
+    const YamlNode* convertedResourceDirNode = projectDataNode->Get("ConvertedResourceDirectory");
     if (convertedResourceDirNode != nullptr)
     {
         convertedResourceDirectory.relative = convertedResourceDirNode->AsString();
@@ -342,7 +357,7 @@ DAVA::ResultList ProjectData::Parse(const DAVA::FilePath& projectFile, const Yam
         resultList.AddResult(Result::RESULT_WARNING, message);
     }
 
-    const YamlNode* gfxDirsNode = ProjectDataNode->Get("GfxDirectories");
+    const YamlNode* gfxDirsNode = projectDataNode->Get("GfxDirectories");
     if (gfxDirsNode != nullptr)
     {
         for (uint32 index = 0; index < gfxDirsNode->GetCount(); ++index)
@@ -364,7 +379,7 @@ DAVA::ResultList ProjectData::Parse(const DAVA::FilePath& projectFile, const Yam
         resultList.AddResult(Result::RESULT_WARNING, message);
     }
 
-    const YamlNode* uiDirNode = ProjectDataNode->Get("UiDirectory");
+    const YamlNode* uiDirNode = projectDataNode->Get("UiDirectory");
     if (uiDirNode != nullptr)
     {
         uiDirectory.relative = uiDirNode->AsString();
@@ -375,7 +390,7 @@ DAVA::ResultList ProjectData::Parse(const DAVA::FilePath& projectFile, const Yam
         resultList.AddResult(Result::RESULT_WARNING, message);
     }
 
-    const YamlNode* fontsDirNode = ProjectDataNode->Get("FontsDirectory");
+    const YamlNode* fontsDirNode = projectDataNode->Get("FontsDirectory");
     if (fontsDirNode != nullptr)
     {
         fontsDirectory.relative = fontsDirNode->AsString();
@@ -386,7 +401,7 @@ DAVA::ResultList ProjectData::Parse(const DAVA::FilePath& projectFile, const Yam
         resultList.AddResult(Result::RESULT_WARNING, message);
     }
 
-    const YamlNode* fontsConfigsDirNode = ProjectDataNode->Get("FontsConfigsDirectory");
+    const YamlNode* fontsConfigsDirNode = projectDataNode->Get("FontsConfigsDirectory");
     if (fontsConfigsDirNode != nullptr)
     {
         fontsConfigsDirectory.relative = fontsConfigsDirNode->AsString();
@@ -397,11 +412,11 @@ DAVA::ResultList ProjectData::Parse(const DAVA::FilePath& projectFile, const Yam
         resultList.AddResult(Result::RESULT_WARNING, message);
     }
 
-    const YamlNode* textsDirNode = ProjectDataNode->Get("TextsDirectory");
+    const YamlNode* textsDirNode = projectDataNode->Get("TextsDirectory");
     if (textsDirNode != nullptr)
     {
         textsDirectory.relative = textsDirNode->AsString();
-        const YamlNode* defaultLanguageNode = ProjectDataNode->Get("DefaultLanguage");
+        const YamlNode* defaultLanguageNode = projectDataNode->Get("DefaultLanguage");
         if (defaultLanguageNode != nullptr)
         {
             defaultLanguage = defaultLanguageNode->AsString();
@@ -413,7 +428,7 @@ DAVA::ResultList ProjectData::Parse(const DAVA::FilePath& projectFile, const Yam
         resultList.AddResult(Result::RESULT_WARNING, message);
     }
 
-    const YamlNode* libraryNode = ProjectDataNode->Get("Library");
+    const YamlNode* libraryNode = projectDataNode->Get("Library");
     if (libraryNode != nullptr)
     {
         for (uint32 i = 0; i < libraryNode->GetCount(); i++)
@@ -422,7 +437,7 @@ DAVA::ResultList ProjectData::Parse(const DAVA::FilePath& projectFile, const Yam
         }
     }
 
-    const YamlNode* prototypesNode = ProjectDataNode->Get("Prototypes");
+    const YamlNode* prototypesNode = projectDataNode->Get("Prototypes");
     if (prototypesNode != nullptr)
     {
         for (uint32 i = 0; i < prototypesNode->GetCount(); i++)
@@ -487,6 +502,7 @@ RefPtr<YamlNode> ProjectData::SerializeToYamlNode() const
 
     YamlNode* propertiesNode(YamlNode::CreateMapNode(false));
     propertiesNode->Add("ResourceDirectory", resourceDirectory.relative);
+    propertiesNode->Add("PluginsDirectory", pluginsDirectory.relative);
 
     if (!additionalResourceDirectory.relative.empty())
     {
@@ -526,6 +542,7 @@ RefPtr<YamlNode> ProjectData::SerializeToYamlNode() const
 
 ProjectData::ProjectData()
 {
+    pluginsDirectory.relative = "./QuickEdPlugins/";
     resourceDirectory.relative = "./DataSource/";
     convertedResourceDirectory.relative = "./Data/";
     gfxDirectories.push_back({ ResDir{ FilePath(), String("./Gfx/") }, Size2i(960, 640) });
@@ -569,6 +586,11 @@ void ProjectData::SetProjectFile(const DAVA::FilePath& newProjectFile)
 const DAVA::FilePath& ProjectData::GetProjectDirectory() const
 {
     return projectDirectory;
+}
+
+const ProjectData::ResDir& ProjectData::GetPluginsDirectory() const
+{
+    return pluginsDirectory;
 }
 
 bool ProjectData::ResDir::operator==(const ProjectData::ResDir& other) const
