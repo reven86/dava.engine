@@ -169,7 +169,6 @@ DAVA::Texture* OverdrawTesterSystem::GenerateTexture(std::mt19937& rng, std::uni
     if (!generateTexWithMips)
     {
         result = DAVA::Texture::CreateFromData(textureFormat, data, textureResolution, textureResolution, false);
-        result->SetMinMagFilter(rhi::TEXFILTER_LINEAR, rhi::TEXFILTER_LINEAR, rhi::TEXMIPFILTER_LINEAR);
     }
     else
     {
@@ -182,11 +181,11 @@ DAVA::Texture* OverdrawTesterSystem::GenerateTexture(std::mt19937& rng, std::uni
         }
 
         result = DAVA::Texture::CreateFromData(imageSet);
-        result->SetMinMagFilter(rhi::TEXFILTER_LINEAR, rhi::TEXFILTER_LINEAR, rhi::TEXMIPFILTER_LINEAR);
         for (auto mip : imageSet)
             SafeRelease(mip);
     }
-
+    result->SetMinMagFilter(rhi::TEXFILTER_LINEAR, rhi::TEXFILTER_LINEAR, rhi::TEXMIPFILTER_LINEAR);
+    result->SetWrapMode(rhi::TEXADDR_WRAP, rhi::TEXADDR_WRAP);
     delete[] data;
     return result;
 }

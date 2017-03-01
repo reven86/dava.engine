@@ -40,12 +40,7 @@ private:
         WideString caption;
         int32 tag;
         Rect rect;
-        union
-        {
-            uint16 resolution;
-            DAVA::PixelFormat pixelFormat;
-            int8 overdrawChangeInfo;
-        };
+        int16 data;
     };
 
     UIButton* CreateUIButton(const WideString& caption, const Rect& rect, int32 tag, DAVA::Font* font, const DAVA::Message& msg);

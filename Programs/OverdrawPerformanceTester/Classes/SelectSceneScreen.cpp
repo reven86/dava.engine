@@ -259,7 +259,7 @@ void SelectSceneScreen::OnResolutionButtonClick(BaseObject* sender, void* data, 
         if (btn.first->GetTag() == pickedButton->GetTag())
         {
             btn.first->SetDebugDrawColor(Green);
-            TesterConfig::textureResolution = btn.second.resolution;
+            TesterConfig::textureResolution = btn.second.data;
         }
         else
             btn.first->SetDebugDrawColor(Red);
@@ -275,7 +275,7 @@ void SelectSceneScreen::OnTextureFormatButtonClick(BaseObject* sender, void* dat
         if (btn.first->GetTag() == pickedButton->GetTag())
         {
             btn.first->SetDebugDrawColor(Green);
-            TesterConfig::pixelFormat = btn.second.pixelFormat;
+            TesterConfig::pixelFormat = static_cast<DAVA::PixelFormat>(btn.second.data);
         }
         else
             btn.first->SetDebugDrawColor(Red);
@@ -290,7 +290,7 @@ void SelectSceneScreen::OnChangeOverdrawButtonClick(BaseObject* sender, void* da
     {
         if (btn.first->GetTag() == pickedButton->GetTag())
         {
-            TesterConfig::overdrawScreensCount = Max(static_cast<uint8>(1), static_cast<uint8>(TesterConfig::overdrawScreensCount + btn.second.overdrawChangeInfo));
+            TesterConfig::overdrawScreensCount = Max(static_cast<uint8>(1), static_cast<uint8>(TesterConfig::overdrawScreensCount + btn.second.data));
             overdrawCountLabel->SetText(Format(L"%d", TesterConfig::overdrawScreensCount));
         }
     }
