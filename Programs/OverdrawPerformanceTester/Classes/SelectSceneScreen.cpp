@@ -142,22 +142,24 @@ void SelectSceneScreen::UnloadResources()
     SafeRelease(fileNameText);
     BaseScreen::UnloadResources();
 
-    for (auto& btn : resolutionButtons)
-        SafeRelease(const_cast<UIButton*>(btn.first));
-    resolutionButtons.clear();
-
-    for (auto& btn : texturePixelFormatButtons)
-        SafeRelease(const_cast<UIButton*>(btn.first));
-    texturePixelFormatButtons.clear();
-
-    for (auto& btn : overdrawButtons)
-        SafeRelease(const_cast<UIButton*>(btn.first));
-    overdrawButtons.clear();
+    ReleaseButtons(resolutionButtons);
+    ReleaseButtons(texturePixelFormatButtons);
+    ReleaseButtons(overdrawButtons);
 
     SafeRelease(overdrawCountLabel);
 
     delete inputDelegate;
     SafeRelease(overdrawInfoMessage);
+}
+
+void SelectSceneScreen::ReleaseButtons(DAVA::UnorderedMap<UIButton*, ButtonInfo>& buttons)
+{
+    for (auto& btn : buttons)
+    {
+        UIButton* buttonToDelete = btn.first;
+        SafeRelease(buttonToDelete);
+    }
+    buttons.clear();
 }
 
 void SelectSceneScreen::OnSelectResourcesPath(BaseObject* caller, void* param, void* callerData)

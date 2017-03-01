@@ -12,7 +12,7 @@ protected:
     {
     }
 
-public:    
+public:
 
     SelectSceneScreen();
 
@@ -43,6 +43,7 @@ private:
         int16 data;
     };
 
+    void ReleaseButtons(DAVA::UnorderedMap<UIButton*, ButtonInfo>& buttons);
     UIButton* CreateUIButton(const WideString& caption, const Rect& rect, int32 tag, DAVA::Font* font, const DAVA::Message& msg);
     void OnResolutionButtonClick(BaseObject* sender, void* data, void* callerData);
     void OnTextureFormatButtonClick(BaseObject* sender, void* data, void* callerData);
