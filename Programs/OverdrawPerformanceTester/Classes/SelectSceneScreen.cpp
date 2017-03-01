@@ -7,36 +7,6 @@
 
 #define SETTINGS_PATH "~doc:/SceneViewerSettings.bin"
 
-namespace
-{
-class InputDelegate : public UITextFieldDelegate
-{
-public:
-    InputDelegate(SelectSceneScreen* _test)
-    {
-        test = _test;
-    }
-
-    void TextFieldOnTextChanged(UITextField* textField, const WideString& newText, const WideString& oldText) override
-    {
-        uint32 res = wcstoul(newText.c_str(), nullptr, 0);
-        if (res == 0)
-        {
-            TesterConfig::overdrawScreensCount = 10;
-            test->SetWarningMessage(L"The number you entered is invalid.\nOnly valid number is integer above 0.\nOverdraw will be set as default value - 10");
-        }
-        else
-        {
-            TesterConfig::overdrawScreensCount = res;
-            test->SetWarningMessage(Format(L"The number of overdraw screens is %d", res));
-        }
-    }
-
-private:
-    SelectSceneScreen* test;
-};
-}
-
 using DAVA::Rect;
 
 const Color SelectSceneScreen::Green(0.0f, 1.0f, 0.0f, 1.0f);
@@ -51,7 +21,6 @@ const float32 SelectSceneScreen::texturePixelFormatYOffset = 100.0f;
 const float32 SelectSceneScreen::overdrawXOffset = 490.0f;
 const float32 SelectSceneScreen::overdrawYOffset = 100.0f;
 
-
 const Array<SelectSceneScreen::ButtonInfo, 4> SelectSceneScreen::resolutionButtonsInfo =
 { {
     { L"2048", 1, Rect(resolutionButtonsXOffset, resolutionButtonsYOffset + buttonHeight * 0 + heigthDistanceBetweenButtons * 0, buttonWidth, buttonHeight), 2048 },
@@ -62,11 +31,17 @@ const Array<SelectSceneScreen::ButtonInfo, 4> SelectSceneScreen::resolutionButto
 
 const Array<SelectSceneScreen::ButtonInfo, 5> SelectSceneScreen::texturePixelFormatButtonsInfo =
 { {
-    { L"RGBA 8888", 1, Rect(texturePixelFormatXOffset, texturePixelFormatYOffset + buttonHeight * 0 + heigthDistanceBetweenButtons * 0, buttonWidth, buttonHeight), 2048 },
-    { L"RGBA 4444", 2, Rect(texturePixelFormatXOffset, texturePixelFormatYOffset + buttonHeight * 1 + heigthDistanceBetweenButtons * 1, buttonWidth, buttonHeight), 1024 },
-    { L"PVR 2", 3, Rect(texturePixelFormatXOffset, texturePixelFormatYOffset + buttonHeight * 2 + heigthDistanceBetweenButtons * 2, buttonWidth, buttonHeight), 512 },
-    { L"PVR 4", 4, Rect(texturePixelFormatXOffset, texturePixelFormatYOffset + buttonHeight * 3 + heigthDistanceBetweenButtons * 3, buttonWidth, buttonHeight), 256 },
-    { L"A8", 5, Rect(texturePixelFormatXOffset, texturePixelFormatYOffset + buttonHeight * 4 + heigthDistanceBetweenButtons * 4, buttonWidth, buttonHeight), 256 }
+    { L"RGBA 8888", 1, Rect(texturePixelFormatXOffset, texturePixelFormatYOffset + buttonHeight * 0 + heigthDistanceBetweenButtons * 0, buttonWidth, buttonHeight), FORMAT_RGBA8888 },
+    { L"RGBA 4444", 2, Rect(texturePixelFormatXOffset, texturePixelFormatYOffset + buttonHeight * 1 + heigthDistanceBetweenButtons * 1, buttonWidth, buttonHeight), FORMAT_RGBA4444 },
+    { L"PVR 2", 3, Rect(texturePixelFormatXOffset, texturePixelFormatYOffset + buttonHeight * 2 + heigthDistanceBetweenButtons * 2, buttonWidth, buttonHeight), FORMAT_PVR2 },
+    { L"PVR 4", 4, Rect(texturePixelFormatXOffset, texturePixelFormatYOffset + buttonHeight * 3 + heigthDistanceBetweenButtons * 3, buttonWidth, buttonHeight), FORMAT_PVR4 },
+    { L"A8", 5, Rect(texturePixelFormatXOffset, texturePixelFormatYOffset + buttonHeight * 4 + heigthDistanceBetweenButtons * 4, buttonWidth, buttonHeight), FORMAT_A8 }
+} };
+
+const Array<SelectSceneScreen::ButtonInfo, 2> SelectSceneScreen::overdrawButtonsInfo =
+{ {
+    { L"-", 1, Rect(overdrawXOffset, overdrawYOffset + buttonHeight, buttonWidth * 1.5f, buttonHeight), -1 },
+    { L"+", 2, Rect(overdrawXOffset + buttonWidth * 1.5f, overdrawYOffset + buttonHeight, buttonWidth * 1.5f, buttonHeight), 1 }
 } };
 
 SelectSceneScreen::SelectSceneScreen()
@@ -74,7 +49,7 @@ SelectSceneScreen::SelectSceneScreen()
     , fileNameText(NULL)
     , fileSystemDialog(NULL)
 {
-    LoadSettings();
+//     LoadSettings();
 }
 
 void SelectSceneScreen::LoadResources()
@@ -90,36 +65,33 @@ void SelectSceneScreen::LoadResources()
     ScopedPtr<UIButton> startButton(CreateButton(Rect(0, 5, screenRect.dx, buttonHeight), L"Start"));
     startButton->SetDebugDraw(true);
     startButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &SelectSceneScreen::OnStart));
-
-    overdrawInfoMessage = new UIStaticText(Rect(overdrawXOffset, overdrawYOffset + buttonHeight, buttonWidth * 3, buttonHeight * 3));
-    overdrawInfoMessage->SetFont(font);
-    overdrawInfoMessage->SetTextColor(Color::White);
-    overdrawInfoMessage->SetText(L"The number of overdraw screens is 10");
-    overdrawInfoMessage->SetTextAlign(ALIGN_HCENTER | ALIGN_VCENTER);
-    overdrawInfoMessage->SetDebugDraw(false);
-    AddControl(overdrawInfoMessage);
-
+    
     ScopedPtr<UIStaticText> overdrawLabel(new UIStaticText(Rect(overdrawXOffset, overdrawYOffset - buttonHeight, buttonWidth * 3.0f, buttonHeight)));
     overdrawLabel->SetFont(font);
     overdrawLabel->SetTextColor(Color::White);
-    overdrawLabel->SetText(L"Overdraw screen count");
+    overdrawLabel->SetText(L"Overdraw screens count");
     overdrawLabel->SetTextAlign(ALIGN_HCENTER | ALIGN_VCENTER);
     overdrawLabel->SetDebugDraw(false);
     AddControl(overdrawLabel);
 
-    ScopedPtr<UITextField> inputText(new UITextField(Rect(overdrawXOffset, overdrawYOffset, buttonWidth * 3, buttonHeight)));
-    inputText->SetFont(font);
-    inputText->SetTextColor(Color::White);
-    inputText->SetText(L"10");
-    inputText->SetDebugDraw(true);
-    inputText->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
-    inputText->SetTextUseRtlAlign(TextBlock::RTL_USE_BY_CONTENT);
-    inputDelegate = new InputDelegate(this);
-    inputText->SetDelegate(inputDelegate);
-    inputText->SetMultiline(true);
-    inputText->GetOrCreateComponent<DAVA::UIFocusComponent>();
-    AddControl(inputText);
+    overdrawCountLabel = new UIStaticText(Rect(overdrawXOffset, overdrawYOffset, buttonWidth * 3.0f, buttonHeight));
+    overdrawCountLabel->SetFont(font);
+    overdrawCountLabel->SetTextColor(Color::White);
+    overdrawCountLabel->SetText(Format(L"%d", TesterConfig::overdrawScreensCount));
+    overdrawCountLabel->SetTextAlign(ALIGN_HCENTER | ALIGN_VCENTER);
+    overdrawCountLabel->SetDebugDraw(true);
+    AddControl(overdrawCountLabel);
 
+    for (size_t i = 0; i < overdrawButtonsInfo.size(); i++)
+    {
+        UIButton* btn = CreateButton(overdrawButtonsInfo[i].rect, overdrawButtonsInfo[i].caption);
+        btn->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &SelectSceneScreen::OnChangeOverdrawButtonClick));
+        btn->SetDebugDraw(true);
+        btn->SetTag(overdrawButtonsInfo[i].tag);
+        AddControl(btn);
+        overdrawButtons[btn] = overdrawButtonsInfo[i];
+    }
+    
     ScopedPtr<UIStaticText> resLabel(new UIStaticText(Rect(resolutionButtonsXOffset, resolutionButtonsYOffset - buttonHeight, buttonWidth, buttonHeight)));
     resLabel->SetFont(font);
     resLabel->SetTextColor(Color::White);
@@ -178,6 +150,12 @@ void SelectSceneScreen::UnloadResources()
         SafeRelease(const_cast<UIButton*>(btn.first));
     texturePixelFormatButtons.clear();
 
+    for (auto& btn : overdrawButtons)
+        SafeRelease(const_cast<UIButton*>(btn.first));
+    overdrawButtons.clear();
+
+    SafeRelease(overdrawCountLabel);
+
     delete inputDelegate;
     SafeRelease(overdrawInfoMessage);
 }
@@ -226,13 +204,6 @@ void SelectSceneScreen::OnClearPath(BaseObject* caller, void* param, void* calle
 
 void SelectSceneScreen::OnStart(BaseObject* caller, void* param, void* callerData)
 {
-    if (scenePath.IsEmpty())
-    {
-        Logger::Error("Scene not selected. Please select scene");
-        return;
-    }
-
-    GameCore::Instance()->SetScenePath(scenePath);
     SetNextScreen();
 }
 
@@ -308,6 +279,20 @@ void SelectSceneScreen::OnTextureFormatButtonClick(BaseObject* sender, void* dat
         }
         else
             btn.first->SetDebugDrawColor(Red);
+    }
+}
+
+void SelectSceneScreen::OnChangeOverdrawButtonClick(BaseObject* sender, void* data, void* callerData)
+{
+    UIButton* pickedButton = DynamicTypeCheck<UIButton*>(sender);
+
+    for (auto& btn : overdrawButtons)
+    {
+        if (btn.first->GetTag() == pickedButton->GetTag())
+        {
+            TesterConfig::overdrawScreensCount = Max(static_cast<uint8>(1), static_cast<uint8>(TesterConfig::overdrawScreensCount + btn.second.overdrawChangeInfo));
+            overdrawCountLabel->SetText(Format(L"%d", TesterConfig::overdrawScreensCount));
+        }
     }
 }
 

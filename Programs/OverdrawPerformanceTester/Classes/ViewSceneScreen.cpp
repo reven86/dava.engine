@@ -1,5 +1,6 @@
 #include "ViewSceneScreen.h"
 
+#include "TesterConfig.h"
 #include "GameCore.h"
 #include "OverdrawTesterComponent.h"
 #include "OverdrawTesterSystem.h"
@@ -26,7 +27,7 @@ void ViewSceneScreen::LoadResources()
         scene = new Scene();
         scene->LoadScene(GameCore::Instance()->GetScenePath());
 
-        testerSystem = new OverdrawTesterSystem(scene,
+        testerSystem = new OverdrawTesterSystem(scene, TesterConfig::pixelFormat, TesterConfig::textureResolution,
                                                 [this](DAVA::Array<DAVA::Vector<FrameData>, 6>* performanceData)
                                                 {
                                                     chartPainterSystem->ProcessPerformanceData(performanceData);
@@ -56,7 +57,7 @@ void ViewSceneScreen::LoadResources()
         cameraEntity->Release();
 
         Entity* overdrawTesterEntity = new Entity();
-        overdrawTesterEntity->AddComponent(new OverdrawPerformanceTester::OverdrawTesterComonent());
+        overdrawTesterEntity->AddComponent(new OverdrawPerformanceTester::OverdrawTesterComonent(TesterConfig::textureResolution, TesterConfig::overdrawScreensCount));
         scene->AddNode(overdrawTesterEntity);
         overdrawTesterEntity->Release();
 
@@ -68,6 +69,10 @@ void ViewSceneScreen::LoadResources()
         ScopedPtr<UI3DView> sceneView(new UI3DView(screenRect));
         sceneView->SetScene(scene);
         AddControl(sceneView);
+
+        auto a = TesterConfig::overdrawScreensCount;
+        auto b = TesterConfig::pixelFormat;
+        auto c = TesterConfig::textureResolution;
     }
 }
 
@@ -82,3 +87,4 @@ void ViewSceneScreen::UnloadResources()
     SafeRelease(scene);
     BaseScreen::UnloadResources();
 }
+

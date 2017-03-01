@@ -25,7 +25,7 @@ class OverdrawTesterRenderObject;
 class OverdrawTesterSystem : public DAVA::SceneSystem
 {
 public:
-    OverdrawTesterSystem(DAVA::Scene* scene, DAVA::Function<void(DAVA::Array<DAVA::Vector<FrameData>, 6>*)> finishCallback_);
+    OverdrawTesterSystem(DAVA::Scene* scene, DAVA::PixelFormat textureFormat_, DAVA::uint16 textureResolution_, DAVA::Function<void(DAVA::Array<DAVA::Vector<FrameData>, 6>*)> finishCallback_);
     ~OverdrawTesterSystem();
 
     void AddEntity(DAVA::Entity* entity) override;
@@ -56,6 +56,9 @@ private:
     DAVA::NMaterial* overdrawMaterial;
     DAVA::Array<DAVA::float32, 20> frames;
 
+    DAVA::PixelFormat textureFormat;
+    DAVA::uint16 textureResolution;
+
     bool isFinished = false;
 
     static const DAVA::Array<DAVA::FastName, 4> textureNames;
@@ -64,7 +67,6 @@ private:
     static const DAVA::FastName sampleCountKeyword;
     static const DAVA::FastName dependentReadKeyword;
     static const DAVA::uint32 accumulatedFramesCount;
-    static const DAVA::PixelFormat textureFormat;
     static const bool generateTexWithMips;
 };
 

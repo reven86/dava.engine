@@ -2,7 +2,7 @@
 
 namespace TesterConfig
 {
-DAVA::uint32 overdrawScreensCount = 10;
 DAVA::uint16 textureResolution = 2048;
+DAVA::uint8 overdrawScreensCount = 10;
 DAVA::PixelFormat pixelFormat = FORMAT_RGBA8888;
 }

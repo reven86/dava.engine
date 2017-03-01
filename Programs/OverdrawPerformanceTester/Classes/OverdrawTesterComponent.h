@@ -24,7 +24,7 @@ public:
     };
     IMPLEMENT_COMPONENT_TYPE(OVERDRAW_TESTER_COMPONENT);
 
-    OverdrawTesterComonent();
+    OverdrawTesterComonent(uint16 textureResolution_, uint8 overdrawScreenCount);
     ~OverdrawTesterComonent();
 
     inline OverdrawTesterRenderObject* GetRenderObject() const;
@@ -35,8 +35,10 @@ public:
 
 private:
     OverdrawTesterRenderObject* renderObject;
-    float32 addOverdrawPercent = 10.0f;
-    uint32 stepsCount = 30;
+    uint32 stepsCount = 10;
+    uint16 textureResolution = 2048;
+
+    static const uint8 addOverdrawPercent;
 
 public:
     INTROSPECTION_EXTEND(OverdrawTesterComonent, Component,

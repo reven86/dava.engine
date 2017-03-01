@@ -5,7 +5,7 @@
 
 namespace TesterConfig
 {
-extern DAVA::uint32 overdrawScreensCount;
 extern DAVA::uint16 textureResolution;
+extern DAVA::uint8 overdrawScreensCount;
 extern DAVA::PixelFormat pixelFormat;
 }

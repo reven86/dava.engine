@@ -22,7 +22,7 @@ public:
         DAVA::Vector2 texcoord;
     };
 
-    OverdrawTesterRenderObject(DAVA::float32 addOverdrawPercent_, DAVA::uint32 maxStepsCount_);
+    OverdrawTesterRenderObject(DAVA::float32 addOverdrawPercent_, DAVA::uint32 maxStepsCount_, DAVA::uint16 textureResolution_);
     ~OverdrawTesterRenderObject();
 
     void PrepareToRender(DAVA::Camera* camera) override;
@@ -44,12 +44,13 @@ private:
     void GenerateIndexBuffer();
 
     DAVA::Vector<QuadVertex> activeVerts;
-    DAVA::uint32 vertexLayoutId;
     DAVA::NMaterial* material = nullptr;
+    DAVA::uint32 vertexLayoutId;
     DAVA::float32 addOverdrawPercent;
     DAVA::float32 addOverdrawPercentNormalized;
     DAVA::uint32 vertexStride;
     DAVA::uint32 currentStepsCount;
+    DAVA::uint16 textureResolution;
 
     DAVA::Vector<DAVA::RenderBatch*> quads;
 

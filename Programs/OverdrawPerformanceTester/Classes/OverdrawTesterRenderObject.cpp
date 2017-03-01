@@ -1,9 +1,10 @@
 #include "OverdrawTesterRenderObject.h"
 
+#include "Base/BaseTypes.h"
 #include "Render/Material/NMaterial.h"
 #include "Render/Highlevel/RenderBatch.h"
 #include "Render/DynamicBufferAllocator.h"
-#include "Base/BaseTypes.h"
+#include "UI/UIControlSystem.h"
 
 namespace OverdrawPerformanceTester
 {
@@ -19,10 +20,12 @@ using DAVA::float32;
 using DAVA::DynamicBufferAllocator::AllocResultVB;
 using DAVA::DynamicBufferAllocator::AllocResultIB;
 using DAVA::Camera;
+using DAVA::Size2i;
 
-OverdrawTesterRenderObject::OverdrawTesterRenderObject(float32 addOverdrawPercent_, uint32 maxStepsCount_)
+OverdrawTesterRenderObject::OverdrawTesterRenderObject(float32 addOverdrawPercent_, uint32 maxStepsCount_, DAVA::uint16 textureResolution_)
     : addOverdrawPercent(addOverdrawPercent_)
     , addOverdrawPercentNormalized(addOverdrawPercent_ * 0.01f)
+    , textureResolution(textureResolution_)
 {
     this->AddFlag(RenderObject::ALWAYS_CLIPPING_VISIBLE);
     this->AddFlag(RenderObject::CUSTOM_PREPARE_TO_RENDER);
@@ -99,12 +102,20 @@ void OverdrawTesterRenderObject::PrepareToRender(DAVA::Camera* camera)
 
 DAVA::Array<OverdrawTesterRenderObject::QuadVertex, 6> OverdrawTesterRenderObject::GetQuadVerts(float32 xStart, float32 xEnd)
 {
+    // Try to keep 2pix - 1tex ratio.
+    Size2i size = DAVA::UIControlSystem::Instance()->vcs->GetPhysicalScreenSize();
+
+    float32 maxX = size.dx * 0.5f / textureResolution;
+    float32 maxY = size.dy * 0.5f / textureResolution;
+
+    float32 uvStart = (xStart * 0.5f + 0.5f) * maxX;
+    float32 uvEnd = (xEnd * 0.5f + 0.5f) * maxX;
     return
     { {
-    { { xStart, -1.0f, 1.0f }, { xStart * 0.5f + 0.5f, 0.0f } },
-    { { xStart, 1.0f, 1.0f }, { xStart * 0.5f + 0.5f, 1.0f } },
-    { { xEnd, 1.0f, 1.0f }, { xEnd * 0.5f + 0.5f, 1.0f } },
-    { { xEnd, -1.0f, 1.0f }, { xEnd * 0.5f + 0.5f, 0.0f } }
+    { { xStart, -1.0f, 1.0f }, { uvStart, 0.0f } },
+    { { xStart, 1.0f, 1.0f }, { uvStart, maxY } },
+    { { xEnd, 1.0f, 1.0f }, { uvEnd, maxY } },
+    { { xEnd, -1.0f, 1.0f }, { uvEnd, 0.0f } }
     } };
 }
 

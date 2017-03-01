@@ -51,11 +51,12 @@ const FastName OverdrawTesterSystem::materialPath("~res:/CustomMaterials/Overdra
 const FastName OverdrawTesterSystem::sampleCountKeyword("SAMPLE_COUNT");
 const FastName OverdrawTesterSystem::dependentReadKeyword("DEPENDENT_READ_TEST");
 const uint32 OverdrawTesterSystem::accumulatedFramesCount = 20;
-const PixelFormat OverdrawTesterSystem::textureFormat = DAVA::FORMAT_PVR2;
 const bool OverdrawTesterSystem::generateTexWithMips = true;
 
-OverdrawTesterSystem::OverdrawTesterSystem(DAVA::Scene* scene, DAVA::Function<void(DAVA::Array<DAVA::Vector<FrameData>, 6>*)> finishCallback_)
+OverdrawTesterSystem::OverdrawTesterSystem(DAVA::Scene* scene, DAVA::PixelFormat textureFormat_, DAVA::uint16 textureResolution_, DAVA::Function<void(DAVA::Array<DAVA::Vector<FrameData>, 6>*)> finishCallback_)
     : SceneSystem(scene)
+    , textureFormat(textureFormat_)
+    , textureResolution(textureResolution_)
     , finishCallback(finishCallback_)
 {
     overdrawMaterial = new NMaterial();
@@ -153,14 +154,11 @@ void OverdrawTesterSystem::Process(DAVA::float32 timeElapsed)
 
 DAVA::Texture* OverdrawTesterSystem::GenerateTexture(std::mt19937& rng, std::uniform_int_distribution<std::mt19937::result_type>& dist255)
 {
-    static const uint32 width = 2048;
-    static const uint32 height = 2048;
-
-    unsigned char* data = new unsigned char[width * height * 4];
+    unsigned char* data = new unsigned char[textureResolution * textureResolution * 4];
 
     uint32 dataIndex = 0;
-    for (uint32 i = 0; i < height; i++)
-        for (uint32 j = 0; j < width; j++)
+    for (uint32 i = 0; i < textureResolution; i++)
+        for (uint32 j = 0; j < textureResolution; j++)
         {
             data[dataIndex++] = static_cast<uint8>(dist255(rng));
             data[dataIndex++] = static_cast<uint8>(dist255(rng));
@@ -170,15 +168,15 @@ DAVA::Texture* OverdrawTesterSystem::GenerateTexture(std::mt19937& rng, std::uni
     Texture* result;
     if (!generateTexWithMips)
     {
-        result = DAVA::Texture::CreateFromData(textureFormat, data, width, height, false);
+        result = DAVA::Texture::CreateFromData(textureFormat, data, textureResolution, textureResolution, false);
         result->SetMinMagFilter(rhi::TEXFILTER_LINEAR, rhi::TEXFILTER_LINEAR, rhi::TEXMIPFILTER_LINEAR);
     }
     else
     {
         DAVA::Vector<DAVA::Image*> imageSet;
 
-        DVASSERT(!(width & (width - 1)) && "Texture width must be power of two");
-        for (uint32 dim = width; dim >= 1; dim /= 2)
+        DVASSERT(!(textureResolution & (textureResolution - 1)) && "Texture width must be power of two");
+        for (uint32 dim = textureResolution; dim >= 1; dim /= 2)
         {
             imageSet.push_back(DAVA::Image::CreateFromData(dim, dim, textureFormat, data));
         }

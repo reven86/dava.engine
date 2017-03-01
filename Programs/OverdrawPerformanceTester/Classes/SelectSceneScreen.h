@@ -44,26 +44,31 @@ private:
         {
             uint16 resolution;
             DAVA::PixelFormat pixelFormat;
+            int8 overdrawChangeInfo;
         };
     };
 
     UIButton* CreateUIButton(const WideString& caption, const Rect& rect, int32 tag, DAVA::Font* font, const DAVA::Message& msg);
     void OnResolutionButtonClick(BaseObject* sender, void* data, void* callerData);
     void OnTextureFormatButtonClick(BaseObject* sender, void* data, void* callerData);
+    void OnChangeOverdrawButtonClick(BaseObject* sender, void* data, void* callerData);
 
     UIStaticText* fileNameText = nullptr;
     UIFileSystemDialog* fileSystemDialog = nullptr;
     UIStaticText* overdrawInfoMessage = nullptr;
+    UIStaticText* overdrawCountLabel = nullptr;
 
     FilePath scenePath;
 
     DAVA::UnorderedMap<UIButton*, ButtonInfo> resolutionButtons;
     DAVA::UnorderedMap<UIButton*, ButtonInfo> texturePixelFormatButtons;
+    DAVA::UnorderedMap<UIButton*, ButtonInfo> overdrawButtons;
 
     UITextFieldDelegate* inputDelegate = nullptr;
 
     static const Array<ButtonInfo, 4> resolutionButtonsInfo;
     static const Array<ButtonInfo, 5> texturePixelFormatButtonsInfo;
+    static const Array<ButtonInfo, 2> overdrawButtonsInfo;
     static const Color Red;
     static const Color Green;
     static const float32 resolutionButtonsXOffset;
