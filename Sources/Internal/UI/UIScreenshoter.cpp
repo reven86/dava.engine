@@ -44,34 +44,34 @@ void UIScreenshoter::OnFrame()
     }
 }
 
-RefPtr<Texture> UIScreenshoter::MakeScreenshot(UIControl* control, const PixelFormat format, bool clearAlpha, bool updateControl)
+RefPtr<Texture> UIScreenshoter::MakeScreenshot(UIControl* control, const PixelFormat format, bool clearAlpha, bool prepareControl)
 {
     const Vector2 size(UIControlSystem::Instance()->vcs->ConvertVirtualToPhysical(control->GetSize()));
     RefPtr<Texture> screenshot(Texture::CreateFBO(static_cast<int32>(size.dx), static_cast<int32>(size.dy), format, true));
 
-    MakeScreenshotInternal(control, screenshot.Get(), nullptr, clearAlpha, updateControl);
+    MakeScreenshotInternal(control, screenshot.Get(), nullptr, clearAlpha, prepareControl);
 
     return screenshot;
 }
 
-RefPtr<Texture> UIScreenshoter::MakeScreenshot(UIControl* control, const PixelFormat format, Function<void(Texture*)> callback, bool clearAlpha, bool updateControl)
+RefPtr<Texture> UIScreenshoter::MakeScreenshot(UIControl* control, const PixelFormat format, Function<void(Texture*)> callback, bool clearAlpha, bool prepareControl)
 {
     const Vector2 size(UIControlSystem::Instance()->vcs->ConvertVirtualToPhysical(control->GetSize()));
     RefPtr<Texture> screenshot(Texture::CreateFBO(static_cast<int32>(size.dx), static_cast<int32>(size.dy), format, true));
 
-    MakeScreenshotInternal(control, screenshot.Get(), callback, clearAlpha, updateControl);
+    MakeScreenshotInternal(control, screenshot.Get(), callback, clearAlpha, prepareControl);
 
     return screenshot;
 }
 
-void UIScreenshoter::MakeScreenshot(UIControl* control, Texture* screenshot, bool clearAlpha, bool updateControl)
+void UIScreenshoter::MakeScreenshot(UIControl* control, Texture* screenshot, bool clearAlpha, bool prepareControl)
 {
-    MakeScreenshotInternal(control, screenshot, nullptr, clearAlpha, updateControl);
+    MakeScreenshotInternal(control, screenshot, nullptr, clearAlpha, prepareControl);
 }
 
-void UIScreenshoter::MakeScreenshot(UIControl* control, Texture* screenshot, Function<void(Texture*)> callback, bool clearAlpha, bool updateControl, const rhi::Viewport& viewport)
+void UIScreenshoter::MakeScreenshot(UIControl* control, Texture* screenshot, Function<void(Texture*)> callback, bool clearAlpha, bool prepareControl, const rhi::Viewport& viewport)
 {
-    MakeScreenshotInternal(control, screenshot, callback, clearAlpha, updateControl, viewport);
+    MakeScreenshotInternal(control, screenshot, callback, clearAlpha, prepareControl, viewport);
 }
 
 void UIScreenshoter::Unsubscribe(Texture* screenshot)
@@ -85,7 +85,7 @@ void UIScreenshoter::Unsubscribe(Texture* screenshot)
     }
 }
 
-void UIScreenshoter::MakeScreenshotInternal(UIControl* control, Texture* screenshot, Function<void(Texture*)> callback, bool clearAlpha, bool updateControl, const rhi::Viewport& viewport)
+void UIScreenshoter::MakeScreenshotInternal(UIControl* control, Texture* screenshot, Function<void(Texture*)> callback, bool clearAlpha, bool prepareControl, const rhi::Viewport& viewport)
 {
     if (control == nullptr)
         return;
@@ -110,12 +110,9 @@ void UIScreenshoter::MakeScreenshotInternal(UIControl* control, Texture* screens
     desc.transformVirtualToPhysical = true;
 
     RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
-    if (updateControl)
+    if (prepareControl)
     {
-        // We need update all slots because we don't known
-        // which slots are used in the control's hierarchy
-        UIControlSystem::Instance()->GetUpdateSystem()->Process(0.f);
-        UIControlSystem::Instance()->UpdateControl(control);
+        PrepareControl(control);
     }
     control->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData(), nullptr);
 
@@ -127,5 +124,11 @@ void UIScreenshoter::MakeScreenshotInternal(UIControl* control, Texture* screens
 
     RenderSystem2D::Instance()->EndRenderTargetPass();
     // End render
+}
+
+void UIScreenshoter::PrepareControl(UIControl* control)
+{
+    control->SystemUpdate(0.f);
+    UIControlSystem::Instance()->UpdateControl(control);
 }
 };

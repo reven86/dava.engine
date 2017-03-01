@@ -982,6 +982,11 @@ private:
     UIControl* parent;
     List<UIControl*> children;
 
+    DAVA_DEPRECATED(bool isUpdated = false);
+    DAVA_DEPRECATED(void SystemUpdate(float32 timeElapsed));
+    // Need for old implementation of SystemUpdate.
+    friend class UIScreenshoter;
+
 public:
     //TODO: store geometric data in UIGeometricData
     Vector2 relativePosition; //!<position in the parent control.
