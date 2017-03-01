@@ -8,11 +8,11 @@
 
 #include "UnitTests/UnitTests.h"
 
-struct Downloader
+struct DownloaderTest
 {
     const DAVA::DLCManager::IRequest* pack = nullptr;
 
-    Downloader()
+    DownloaderTest()
     {
         using namespace DAVA;
         Logger::Info("before init");
@@ -71,7 +71,7 @@ struct Downloader
 
 DAVA_TESTCLASS (DLCManagerTest)
 {
-    Downloader downloader;
+    DownloaderTest downloader;
 
     DAVA::float32 timeLeftToInitAndDownloadPack = 20.0f; // seconds
 
