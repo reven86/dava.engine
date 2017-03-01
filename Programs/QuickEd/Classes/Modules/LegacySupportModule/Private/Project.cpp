@@ -50,16 +50,6 @@ Project::Project(MainWindow::ProjectView* view_, DAVA::TArc::ContextAccessor* ac
     projectDirectory = QString::fromStdString(projectData->GetProjectDirectory().GetStringValue());
     projectName = QString::fromStdString(projectData->GetProjectFile().GetFilename());
 
-    const EngineContext* engineContext = accessor->GetEngineContext();
-    DAVA::FileSystem* fileSystem = engineContext->fileSystem;
-    if (fileSystem->IsDirectory(projectData->GetAdditionalResourceDirectory().absolute))
-    {
-        FilePath::AddResourcesFolder(projectData->GetAdditionalResourceDirectory().absolute);
-    }
-
-    FilePath::AddResourcesFolder(projectData->GetConvertedResourceDirectory().absolute);
-    FilePath::AddResourcesFolder(projectData->GetResourceDirectory().absolute);
-
     if (!projectData->GetFontsConfigsDirectory().absolute.IsEmpty()) //for support legacy empty project
     {
         editorFontSystem->SetDefaultFontsPath(projectData->GetFontsConfigsDirectory().absolute);
@@ -75,6 +65,9 @@ Project::Project(MainWindow::ProjectView* view_, DAVA::TArc::ContextAccessor* ac
     {
         editorLocalizationSystem->SetCurrentLocale(QString::fromStdString(projectData->GetDefaultLanguage()));
     }
+
+    const EngineContext* engineContext = accessor->GetEngineContext();
+    DAVA::FileSystem* fileSystem = engineContext->fileSystem;
 
     FilePath uiDirectory = projectData->GetUiDirectory().absolute;
     DVASSERT(fileSystem->IsDirectory(uiDirectory));

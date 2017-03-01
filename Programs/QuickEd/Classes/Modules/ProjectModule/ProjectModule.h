@@ -33,7 +33,9 @@ private:
     void OpenProject(const DAVA::String& path);
     void OpenLastProject();
     void ShowResultList(const QString& title, const DAVA::ResultList& resultList);
-    void LoadPlugins(const ProjectData* projectData);
+    void LoadPlugins();
+    void RegisterFolders();
+    void UnregisterFolders();
 
     DAVA::TArc::QtConnections connections;
     std::unique_ptr<RecentMenuItems> recentProjects;

@@ -245,6 +245,9 @@ void ProjectModule::OpenProject(const DAVA::String& path)
 
         DataContext* globalContext = accessor->GetGlobalContext();
         globalContext->CreateData(std::move(newProjectData));
+
+        RegisterFolders();
+        LoadPlugins();
     }
     ShowResultList(QObject::tr("Error while loading project"), resultList);
 }
@@ -260,7 +263,11 @@ bool ProjectModule::CloseProject()
     {
         return false;
     }
-    globalContext->DeleteData<ProjectData>();
+    if (globalContext->GetData<ProjectData>() != nullptr)
+    {
+        UnregisterFolders();
+        globalContext->DeleteData<ProjectData>();
+    }
     return true;
 }
 
@@ -281,10 +288,15 @@ void ProjectModule::OpenLastProject()
 }
 
 //TODO: move this function to the separate module when bubble messages will be implemented
-void ProjectModule::LoadPlugins(const ProjectData* projectData)
+void ProjectModule::LoadPlugins()
 {
     using namespace DAVA;
     using namespace TArc;
+
+    ContextAccessor* accessor = GetAccessor();
+    const DataContext* globalContext = accessor->GetGlobalContext();
+    const ProjectData* projectData = globalContext->GetData<ProjectData>();
+    DVASSERT(projectData != nullptr);
 
     FilePath pluginsDirectory = projectData->GetPluginsDirectory().absolute;
     const EngineContext* engineContext = GetAccessor()->GetEngineContext();
@@ -304,6 +316,48 @@ void ProjectModule::LoadPlugins(const ProjectData* projectData)
         }
         ShowResultList(QObject::tr("Loading plugins"), results);
     }
+}
+
+void ProjectModule::RegisterFolders()
+{
+    using namespace DAVA;
+    using namespace TArc;
+
+    ContextAccessor* accessor = GetAccessor();
+    const DataContext* globalContext = accessor->GetGlobalContext();
+    const ProjectData* projectData = globalContext->GetData<ProjectData>();
+    DVASSERT(projectData != nullptr);
+
+    const EngineContext* engineContext = accessor->GetEngineContext();
+    DAVA::FileSystem* fileSystem = engineContext->fileSystem;
+    if (fileSystem->IsDirectory(projectData->GetAdditionalResourceDirectory().absolute))
+    {
+        FilePath::AddResourcesFolder(projectData->GetAdditionalResourceDirectory().absolute);
+    }
+
+    FilePath::AddResourcesFolder(projectData->GetConvertedResourceDirectory().absolute);
+    FilePath::AddResourcesFolder(projectData->GetResourceDirectory().absolute);
+}
+
+void ProjectModule::UnregisterFolders()
+{
+    using namespace DAVA;
+    using namespace TArc;
+
+    ContextAccessor* accessor = GetAccessor();
+    const DataContext* globalContext = accessor->GetGlobalContext();
+    const ProjectData* projectData = globalContext->GetData<ProjectData>();
+    DVASSERT(projectData != nullptr);
+
+    const EngineContext* engineContext = GetAccessor()->GetEngineContext();
+    DAVA::FileSystem* fileSystem = engineContext->fileSystem;
+    if (fileSystem->IsDirectory(projectData->GetAdditionalResourceDirectory().absolute))
+    {
+        FilePath::RemoveResourcesFolder(projectData->GetAdditionalResourceDirectory().absolute);
+    }
+
+    FilePath::RemoveResourcesFolder(projectData->GetConvertedResourceDirectory().absolute);
+    FilePath::RemoveResourcesFolder(projectData->GetResourceDirectory().absolute);
 }
 
 void ProjectModule::ShowResultList(const QString& title, const DAVA::ResultList& resultList)
