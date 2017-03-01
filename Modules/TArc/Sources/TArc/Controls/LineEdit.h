@@ -17,7 +17,7 @@ namespace DAVA
 {
 namespace TArc
 {
-class LineEdit final : public ControlProxy<QLineEdit>, private ValidatorDelegate
+class LineEdit final : public ControlProxyImpl<QLineEdit>, private ValidatorDelegate
 {
 public:
     enum class Fields : uint32

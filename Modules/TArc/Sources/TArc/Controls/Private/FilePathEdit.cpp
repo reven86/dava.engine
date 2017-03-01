@@ -15,7 +15,7 @@ namespace DAVA
 namespace TArc
 {
 FilePathEdit::FilePathEdit(const Params& params, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent)
-    : ControlProxy<QWidget>(ControlDescriptor(params.fields), wrappersProcessor, model, parent)
+    : ControlProxyImpl<QWidget>(ControlDescriptor(params.fields), wrappersProcessor, model, parent)
     , ui(params.ui)
     , wndKey(params.wndKey)
 {
@@ -23,7 +23,7 @@ FilePathEdit::FilePathEdit(const Params& params, DataWrappersProcessor* wrappers
 }
 
 FilePathEdit::FilePathEdit(const Params& params, ContextAccessor* accessor, Reflection model, QWidget* parent)
-    : ControlProxy<QWidget>(ControlDescriptor(params.fields), accessor, model, parent)
+    : ControlProxyImpl<QWidget>(ControlDescriptor(params.fields), accessor, model, parent)
     , ui(params.ui)
     , wndKey(params.wndKey)
 {
