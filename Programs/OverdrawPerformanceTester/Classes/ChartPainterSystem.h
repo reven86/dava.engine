@@ -16,15 +16,15 @@ public:
 
     void Process(DAVA::float32 timeElapsed) override;
 
-    void DrawGrid(DAVA::int32 w, DAVA::int32 h);
-    void DrawCharts(DAVA::int32 w, DAVA::int32 h);
+    void DrawGrid(DAVA::int32 w, DAVA::int32 h) const;
+    void DrawCharts(DAVA::int32 w, DAVA::int32 h) const;
     void FlushDbgText();
 
     void ProcessPerformanceData(DAVA::Array<DAVA::Vector<FrameData>, 6>* performanceData_);
 
 private:
-    void DrawLegend(DAVA::int32 w, DAVA::int32 h);
-    DAVA::float32 GetMaxFrametime();
+    void DrawLegend(DAVA::int32 w, DAVA::int32 h) const;
+    DAVA::float32 GetMaxFrametimeFromData() const;
 
     rhi::RenderPassConfig passConfig;
     DAVA::Array<DAVA::Vector<FrameData>, 6>* performanceData;
@@ -35,13 +35,12 @@ private:
     DAVA::float32 frametimeAxisLen = 1.0f;
     DAVA::float32 frametimeStepCount = 30;
 
-    static const DAVA::float32 overdrawStep;
     static const DAVA::Vector2 chartOffset;
     static const DAVA::Color gridColor;
     static const DAVA::float32 chartLen;
     static const DAVA::float32 minFrametime;
+    static const DAVA::float32 overdrawStep;
     static const DAVA::float32 frametimeStep;
-    static const DAVA::uint32 modsCount;
     static const DAVA::Array<DAVA::String, 6> legend;
     static const DAVA::Array<DAVA::Color, 6> chartColors;
     const DAVA::uint32 textColor;

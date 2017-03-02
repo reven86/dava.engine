@@ -25,7 +25,6 @@ const float32 ChartPainterSystem::chartLen = 0.8f;
 const float32 ChartPainterSystem::minFrametime = 1.0f / 60.0f;
 const float32 ChartPainterSystem::overdrawStep = 100.0f;
 const float32 ChartPainterSystem::frametimeStep = 0.016f;
-const uint32 ChartPainterSystem::modsCount = 6;
 
 #define MODS_COUNT 6
     
@@ -55,7 +54,6 @@ ChartPainterSystem::ChartPainterSystem(Scene* scene, float32 maxFrametime_)
     , maxFrametime(maxFrametime_)
     , textColor(rhi::NativeColorRGBA(1.0f, 1.0f, 1.0f, 1.0f))
 {
-    rhi::RenderPassConfig passConfig;
     passConfig.colorBuffer[0].loadAction = rhi::LOADACTION_LOAD;
     passConfig.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
     passConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_NONE;
@@ -95,7 +93,7 @@ void ChartPainterSystem::Process(float32 timeElapsed)
     FlushDbgText();
 }
 
-void ChartPainterSystem::DrawGrid(int32 w, int32 h)
+void ChartPainterSystem::DrawGrid(int32 w, int32 h) const
 {
     Vector2 origin(chartOffset.x * w, (chartOffset.y + chartLen) * h);
     Vector2 xAxis((chartOffset.x + chartLen) * w, (chartOffset.y + chartLen) * h);
@@ -145,7 +143,7 @@ void ChartPainterSystem::DrawGrid(int32 w, int32 h)
     }
 }
 
-void ChartPainterSystem::DrawCharts(int32 w, int32 h)
+void ChartPainterSystem::DrawCharts(int32 w, int32 h) const
 {
     Polygon2 chartsPoly;
     for (int i = 0; i < MODS_COUNT; i++)
@@ -153,7 +151,7 @@ void ChartPainterSystem::DrawCharts(int32 w, int32 h)
         chartsPoly.Clear();
         for (size_t j = 0; j < (*performanceData)[i].size(); j++)
         {
-            if (i == 0 && j == 0) // Skip noise in first frame, when all textures are generated.
+            if (j == 0) // Skip noise in the first frame.
                 continue;
 
             float32 overdraw = (*performanceData)[i][j].Overdraw;
@@ -194,7 +192,15 @@ void ChartPainterSystem::FlushDbgText()
     rhi::EndRenderPass(pass);
 }
 
-void ChartPainterSystem::DrawLegend(int32 w, int32 h)
+void ChartPainterSystem::ProcessPerformanceData(Array<Vector<FrameData>, 6>* performanceData_)
+{
+    performanceData = performanceData_;
+    // use maxFrametime = GetMaxFrametime(); to get adaptive y axis
+    frametimeAxisLen = maxFrametime - minFrametime;
+    frametimeStepCount = frametimeAxisLen / frametimeStep;
+}
+
+void ChartPainterSystem::DrawLegend(int32 w, int32 h) const
 {
     static const float offsetDivider = 14.0f;
     static const float stepDivider = 7.0f;
@@ -218,15 +224,7 @@ void ChartPainterSystem::DrawLegend(int32 w, int32 h)
     }
 }
 
-void ChartPainterSystem::ProcessPerformanceData(Array<Vector<FrameData>, 6>* performanceData_)
-{
-    performanceData = performanceData_;
-    // use maxFrametime = GetMaxFrametime(); adaptive y axis
-    frametimeAxisLen = maxFrametime - minFrametime;
-    frametimeStepCount = frametimeAxisLen / frametimeStep;
-}
-
-float32 ChartPainterSystem::GetMaxFrametime()
+float32 ChartPainterSystem::GetMaxFrametimeFromData() const
 {
     // Looking for the max frametime element in whole data
     Array<float32, MODS_COUNT> frametimes;
