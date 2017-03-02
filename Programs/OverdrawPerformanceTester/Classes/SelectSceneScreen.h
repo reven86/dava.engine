@@ -35,7 +35,7 @@ private:
     void OnChangeChartHeightButtonClick(BaseObject* sender, void* data, void* callerData);
     
     template <size_t size>
-    void InitializeButtons(const Array<ButtonInfo, size>& buttonsInfo, UnorderedMap<UIButton*, ButtonInfo>& buttonsMap, Message& msg, bool isFirstButtonGreen = true)
+    void InitializeButtons(const Array<ButtonInfo, size>& buttonsInfo, UnorderedMap<UIButton*, ButtonInfo>& buttonsMap, Message&& msg, bool isFirstButtonGreen = true)
     {
         for (size_t i = 0; i < buttonsInfo.size(); i++)
         {
