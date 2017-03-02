@@ -19,7 +19,6 @@
 #include <TArc/WindowSubSystem/QtAction.h>
 #include <TArc/WindowSubSystem/UI.h>
 #include <TArc/WindowSubSystem/ActionUtils.h>
-#include <TArc/Models/SceneTabsModel.h>
 
 #include <QtTools/FileDialogs/FindFileDialog.h>
 #include <QtTools/ProjectInformation/FileSystemCache.h>

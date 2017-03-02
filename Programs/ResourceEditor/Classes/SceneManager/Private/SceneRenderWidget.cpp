@@ -4,7 +4,6 @@
 #include "Classes/Qt/Scene/SceneSignals.h"
 
 #include <TArc/Controls/SceneTabbar.h>
-#include <TArc/Models/SceneTabsModel.h>
 
 #include <UI/Focus/UIFocusComponent.h>
 #include <Engine/Qt/RenderWidget.h>

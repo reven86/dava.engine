@@ -225,10 +225,10 @@ void SceneTabbar::OnCurrentTabChanged(int currentTab)
         QVariant data = tabData(currentTab);
         DVASSERT(data.canConvert<uint64>());
         newActiveTabID = data.value<uint64>();
-    }
 
-    Reflection r = GetTabModel(newActiveTabID, nullptr);
-    modelWrapper.SetFieldValue(ActiveContextFieldName, r.GetValue());
+        Reflection r = GetTabModel(newActiveTabID, nullptr);
+        modelWrapper.SetFieldValue(ActiveContextFieldName, r.GetValue());
+    }
 }
 
 void SceneTabbar::OnCloseTabRequest(int index)

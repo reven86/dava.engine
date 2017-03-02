@@ -11,7 +11,7 @@ DAVA_REFLECTION_IMPL(ContextAccessor)
 {
     ReflectionRegistrator<ContextAccessor>::Begin()
     .Field(ContextsFieldName, &ContextAccessor::GetContexts, nullptr)
-    .Field(ActiveContextFieldName, &ContextAccessor::GetActiveContext, &ContextAccessor::SetActiveContext)
+    .Field(ActiveContextFieldName, static_cast<DataContext* (ContextAccessor::*)()>(&ContextAccessor::GetActiveContext), &ContextAccessor::SetActiveContext)
     .End();
 }
 

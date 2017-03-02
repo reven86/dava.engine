@@ -126,7 +126,7 @@ public:
 
     void ForEachContext(const Function<void(const DataContext&)>& functor) const override
     {
-        for (const std::unique_ptr<DataContext>& context : contexts)
+        for (const DataContext* context : contexts)
         {
             functor(*context);
         }
@@ -232,7 +232,7 @@ protected:
     Engine& engine;
     Core* core;
 
-    DataContext* globalContext;
+    DataContext* globalContext = nullptr;
     Vector<DataContext*> contexts;
     DataContext* activeContext = nullptr;
     DataWrappersProcessor wrappersProcessor;
