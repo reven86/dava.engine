@@ -16,7 +16,7 @@
 #include "Concurrency/LockGuard.h"
 
 #ifdef __DAVAENGINE_IPHONE__
-#include "fmodiphone.h"
+#include <fmod/fmodiphone.h>
 #include "Sound/iOS/musicios.h"
 #elif __DAVAENGINE_ANDROID__
 #include "Engine/Android/JNIBridge.h"

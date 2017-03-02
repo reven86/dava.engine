@@ -13,8 +13,6 @@ set( ERASE_FILES_IOS                 SoundSystemEmpty.cpp )
 
 set( DEFINITIONS                     -DDAVA_FMOD          )
 
-set( INCLUDES                        ${DAVA_THIRD_PARTY_ROOT_PATH}/fmod/include ${DAVA_ENGINE_DIR} ${DAVA_THIRD_PARTY_ROOT_PATH}/include )
-
 set( STATIC_LIBRARIES_IOS            ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libfmodevent_iphoneos.a 
                                      ${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libfmodex_iphoneos.a )
 
