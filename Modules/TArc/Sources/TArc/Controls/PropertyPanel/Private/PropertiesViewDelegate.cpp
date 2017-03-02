@@ -86,12 +86,22 @@ QSize PropertiesViewDelegate::sizeHint(const QStyleOptionViewItem& option, const
 
 QWidget* PropertiesViewDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
+    if (index.isValid() == false)
+    {
+        return nullptr;
+    }
+
     BaseComponentValue* valueComponent = GetComponentValue(index);
     return valueComponent->AcquireEditorWidget(parent, option);
 }
 
 void PropertiesViewDelegate::destroyEditor(QWidget* editor, const QModelIndex& index) const
 {
+    if (index.isValid() == false)
+    {
+        return;
+    }
+
     BaseComponentValue* valueComponent = GetComponentValue(index);
     return valueComponent->ReleaseEditorWidget(editor);
 }

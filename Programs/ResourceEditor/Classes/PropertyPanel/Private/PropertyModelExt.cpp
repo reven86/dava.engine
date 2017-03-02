@@ -11,7 +11,22 @@ REModifyPropertyExtension::REModifyPropertyExtension(DAVA::TArc::ContextAccessor
 {
 }
 
-void REModifyPropertyExtension::ProduceCommand(const DAVA::Vector<DAVA::Reflection::Field>& objects, const DAVA::Any& newValue)
+void REModifyPropertyExtension::ProduceCommand(const DAVA::Reflection::Field& field, const DAVA::Any& newValue)
+{
+    GetScene()->Exec(std::make_unique<SetFieldValueCommand>(field, newValue));
+}
+
+void REModifyPropertyExtension::EndBatch()
+{
+    GetScene()->EndBatch();
+}
+
+void REModifyPropertyExtension::BeginBatch(const DAVA::String& text, DAVA::uint32 commandCount)
+{
+    GetScene()->BeginBatch(text, commandCount);
+}
+
+SceneEditor2* REModifyPropertyExtension::GetScene() const
 {
     using namespace DAVA::TArc;
     DataContext* ctx = accessor->GetActiveContext();
@@ -20,13 +35,7 @@ void REModifyPropertyExtension::ProduceCommand(const DAVA::Vector<DAVA::Reflecti
     SceneData* data = ctx->GetData<SceneData>();
     DVASSERT(data != nullptr);
 
-    DAVA::RefPtr<SceneEditor2> scene = data->GetScene();
-    scene->BeginBatch("Set property value", static_cast<DAVA::uint32>(objects.size()));
-    for (const DAVA::Reflection::Field& field : objects)
-    {
-        scene->Exec(std::make_unique<SetFieldValueCommand>(field, newValue));
-    }
-    scene->EndBatch();
+    return data->GetScene().Get();
 }
 
 void EntityChildCreator::ExposeChildren(const std::shared_ptr<const DAVA::TArc::PropertyNode>& parent, DAVA::Vector<std::shared_ptr<DAVA::TArc::PropertyNode>>& children) const

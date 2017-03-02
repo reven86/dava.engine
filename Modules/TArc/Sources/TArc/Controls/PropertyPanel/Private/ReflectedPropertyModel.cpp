@@ -4,6 +4,7 @@
 #include "TArc/Controls/PropertyPanel/Private/DefaultPropertyModelExtensions.h"
 #include "TArc/Controls/PropertyPanel/Private/PropertyPanelMeta.h"
 #include "TArc/Controls/PropertyPanel/KeyedArchiveChildCreator.h"
+#include "TArc/Controls/PropertyPanel/Private/SubPropertiesExtensions.h"
 
 #include <Debug/DVAssert.h>
 #include <Utils/StringFormat.h>
@@ -57,7 +58,7 @@ const String TypeName = "typeName";
 const String FieldName = "fieldName";
 }
 
-ReflectedPropertyModel::ReflectedPropertyModel()
+ReflectedPropertyModel::ReflectedPropertyModel(UI* ui)
 {
     rootItem.reset(new ReflectedPropertyItem(this, std::make_unique<EmptyComponentValue>()));
 
@@ -67,9 +68,13 @@ ReflectedPropertyModel::ReflectedPropertyModel()
     RegisterExtension(ModifyExtension::CreateDummy());
 
     RegisterExtension(std::make_shared<DefaultChildCheatorExtension>());
-    RegisterExtension(std::make_shared<DefaultMergeValueExtension>());
-    RegisterExtension(std::make_shared<DefaultEditorComponentExtension>());
     RegisterExtension(std::make_shared<KeyedArchiveChildCreator>());
+    RegisterExtension(std::make_shared<SubPropertyValueChildCreator>());
+
+    RegisterExtension(std::make_shared<DefaultMergeValueExtension>());
+
+    RegisterExtension(std::make_shared<DefaultEditorComponentExtension>(ui));
+    RegisterExtension(std::make_shared<SubPropertyEditorCreator>());
 
     childCreator.nodeCreated.Connect(this, &ReflectedPropertyModel::ChildAdded);
     childCreator.nodeRemoved.Connect(this, &ReflectedPropertyModel::ChildRemoved);

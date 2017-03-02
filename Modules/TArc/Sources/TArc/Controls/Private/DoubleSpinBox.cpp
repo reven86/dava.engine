@@ -99,5 +99,16 @@ QValidator::State DoubleSpinBox::TypeSpecificValidate(const QString& input) cons
     return QValidator::Acceptable;
 }
 
+QSize DoubleSpinBox::sizeHint() const
+{
+    QSize s = TBase::sizeHint();
+    if (decimals() > 3)
+    {
+        s.setWidth(s.width() >> 1);
+    }
+
+    return s;
+}
+
 } // namespace TArc
 } // namespace DAVA

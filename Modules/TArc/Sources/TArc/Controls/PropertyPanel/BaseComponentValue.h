@@ -64,6 +64,8 @@ protected:
     Any GetValue() const;
     void SetValue(const Any& value);
 
+    std::shared_ptr<ModifyExtension> GetModifyInterface();
+
     void AddPropertyNode(const std::shared_ptr<PropertyNode>& node);
     void RemovePropertyNode(const std::shared_ptr<PropertyNode>& node);
     void RemovePropertyNodes();

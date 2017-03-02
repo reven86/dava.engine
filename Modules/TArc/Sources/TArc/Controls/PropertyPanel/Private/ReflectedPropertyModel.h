@@ -14,12 +14,13 @@ namespace DAVA
 namespace TArc
 {
 class ReflectedPropertyItem;
+class UI;
 
 class ReflectedPropertyModel : public QAbstractItemModel
 {
     Q_OBJECT
 public:
-    ReflectedPropertyModel();
+    ReflectedPropertyModel(UI* ui);
     ~ReflectedPropertyModel();
 
     //////////////////////////////////////

@@ -21,8 +21,8 @@ protected:
     ControlProxy* CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor) const override;
 
 private:
-    T GetNumberValue() const;
-    void SetNumberValue(T v);
+    Any GetNumberValue() const;
+    void SetNumberValue(Any v);
 
     DAVA_VIRTUAL_REFLECTION(NumberComponentValue<T>, BaseComponentValue);
 };

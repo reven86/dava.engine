@@ -59,15 +59,20 @@ ControlProxy* NumberComponentValue<T>::CreateEditorWidget(QWidget* parent, const
 }
 
 template <typename T>
-T NumberComponentValue<T>::GetNumberValue() const
+Any NumberComponentValue<T>::GetNumberValue() const
 {
-    return GetValue().Cast<T>();
+    Any v = GetValue();
+    if (v.CanCast<T>())
+    {
+        return v.Cast<T>();
+    }
+    return v;
 }
 
 template <typename T>
-void NumberComponentValue<T>::SetNumberValue(T v)
+void NumberComponentValue<T>::SetNumberValue(Any v)
 {
-    SetValue(v);
+    SetValue(v.Cast<T>());
 }
 
 DAVA_VIRTUAL_TEMPLATE_REFLECTION_IMPL(NumberComponentValue)

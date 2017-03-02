@@ -9,10 +9,11 @@
 #include "TArc/Controls/PropertyPanel/Private/IntComponentValue.h"
 #include "TArc/Controls/PropertyPanel/Private/NumberComponentValue.h"
 #include "TArc/Controls/PropertyPanel/Private/EmptyComponentValue.h"
+#include "TArc/Controls/PropertyPanel/Private/NumberComponentValue.h"
+#include "TArc/Controls/PropertyPanel/Private/FilePathComponentValue.h"
 #include "TArc/Utils/ReflectionHelpers.h"
 
-#include "Debug/DVAssert.h"
-#include "NumberComponentValue.h"
+#include <Debug/DVAssert.h>
 
 namespace DAVA
 {
@@ -134,6 +135,11 @@ ReflectedPropertyItem* DefaultMergeValueExtension::LookUpItem(const std::shared_
     return result;
 }
 
+DefaultEditorComponentExtension::DefaultEditorComponentExtension(UI* ui_)
+    : ui(ui_)
+{
+}
+
 std::unique_ptr<BaseComponentValue> DefaultEditorComponentExtension::GetEditor(const std::shared_ptr<const PropertyNode>& node) const
 {
     using namespace DefaultPropertyModelExtensionsDetail;
@@ -164,10 +170,17 @@ std::unique_ptr<BaseComponentValue> DefaultEditorComponentExtension::GetEditor(c
           std::make_pair(Type::Instance<uint32>(), &std::make_unique<NumberComponentValue<uint32>>)
         };
 
-        auto iter = simpleCreatorsMap.find(node->cachedValue.GetType());
+        const Type* valueType = node->cachedValue.GetType()->Decay();
+        auto iter = simpleCreatorsMap.find(valueType);
         if (iter != simpleCreatorsMap.end())
         {
             return iter->second();
+        }
+        else if (valueType == Type::Instance<FilePath>())
+        {
+            FilePathComponentValue::Params p;
+            p.ui = ui;
+            return std::make_unique<FilePathComponentValue>(p);
         }
     }
 

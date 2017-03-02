@@ -163,10 +163,29 @@ public:
 class ModifyExtension : public ExtensionChain
 {
 public:
+    class MultiCommandInterface final
+    {
+    public:
+        MultiCommandInterface(std::shared_ptr<ModifyExtension> ext);
+
+        void ModifyPropertyValue(const std::shared_ptr<PropertyNode>& nodes, const Any& newValue);
+
+    private:
+        std::shared_ptr<ModifyExtension> extension;
+    };
+
     ModifyExtension();
-    void ModifyPropertyValue(Vector<std::shared_ptr<PropertyNode>>& nodes, const Any& newValue);
-    virtual void ProduceCommand(const Vector<Reflection::Field>& objects, const Any& newValue);
+    void ModifyPropertyValue(const Vector<std::shared_ptr<PropertyNode>>& nodes, const Any& newValue);
+    MultiCommandInterface GetMultiCommandInterface(uint32 commandCount);
+
     static std::shared_ptr<ModifyExtension> CreateDummy();
+
+protected:
+    virtual void BeginBatch(const String& text, uint32 commandCount);
+    virtual void ProduceCommand(const Reflection::Field& object, const Any& newValue);
+    virtual void EndBatch();
+
+    struct ModifyExtDeleter;
 };
 } // namespace TArc
 } // namespace DAVA

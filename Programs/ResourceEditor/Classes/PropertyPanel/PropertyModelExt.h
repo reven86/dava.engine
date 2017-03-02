@@ -5,12 +5,18 @@
 
 #include <Base/BaseTypes.h>
 
+class SceneEditor2;
 class REModifyPropertyExtension : public DAVA::TArc::ModifyExtension
 {
 public:
     REModifyPropertyExtension(DAVA::TArc::ContextAccessor* accessor);
 
-    void ProduceCommand(const DAVA::Vector<DAVA::Reflection::Field>& objects, const DAVA::Any& newValue) override;
+protected:
+    void BeginBatch(const DAVA::String& text, DAVA::uint32 commandCount) override;
+    void ProduceCommand(const DAVA::Reflection::Field& object, const DAVA::Any& newValue) override;
+    void EndBatch() override;
+
+    SceneEditor2* GetScene() const;
 
 private:
     DAVA::TArc::ContextAccessor* accessor = nullptr;

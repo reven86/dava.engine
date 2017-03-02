@@ -1,5 +1,5 @@
 #include "TArc/Controls/PropertyPanel/Private/SubPropertiesExtensions.h"
-#include "TArc/Controls/PropertyPanel/BaseComponentValue.h"
+#include "TArc/Controls/PropertyPanel/Private/VectorComponentValue.h"
 
 #include <Math/Vector.h>
 #include <Math/Rect.h>
@@ -13,23 +13,30 @@ namespace TArc
 {
 namespace SubPropertiesExtensionsDetail
 {
-const UnorderedSet<const Type*> subPropertyTypes =
+UnorderedSet<const Type*> subPropertyTypes;
+
+void InitSubPropertyTypes()
 {
-  Type::Instance<Vector2>(),
-  Type::Instance<Vector3>(),
-  Type::Instance<Vector4>(),
-  Type::Instance<Rect>(),
-  Type::Instance<AABBox3>(),
-  Type::Instance<Color>()
-};
+    if (subPropertyTypes.empty())
+    {
+        subPropertyTypes.insert(Type::Instance<Vector2>());
+        subPropertyTypes.insert(Type::Instance<Vector3>());
+        subPropertyTypes.insert(Type::Instance<Vector4>());
+        subPropertyTypes.insert(Type::Instance<Rect>());
+        subPropertyTypes.insert(Type::Instance<AABBox3>());
+        subPropertyTypes.insert(Type::Instance<Color>());
+    }
+}
 }
 
 void SubPropertyValueChildCreator::ExposeChildren(const std::shared_ptr<const PropertyNode>& parent, Vector<std::shared_ptr<PropertyNode>>& children) const
 {
     using namespace SubPropertiesExtensionsDetail;
+    InitSubPropertyTypes();
     if (parent->propertyType == PropertyNode::RealProperty)
     {
-        if (subPropertyTypes.count(parent->field.ref.GetValueType()) > 0)
+        const Type* valueType = parent->field.ref.GetValueType()->Decay();
+        if (subPropertyTypes.count(valueType) > 0)
         {
             return;
         }
@@ -41,8 +48,23 @@ void SubPropertyValueChildCreator::ExposeChildren(const std::shared_ptr<const Pr
 std::unique_ptr<BaseComponentValue> SubPropertyEditorCreator::GetEditor(const std::shared_ptr<const PropertyNode>& node) const
 {
     using namespace SubPropertiesExtensionsDetail;
-    if (subPropertyTypes.count(node->field.ref.GetValueType()) > 0)
+    InitSubPropertyTypes();
+
+    const Type* valueType = node->field.ref.GetValueType()->Decay();
+    if (subPropertyTypes.count(valueType) > 0)
     {
+        if (valueType == Type::Instance<Vector2>())
+        {
+            return std::make_unique<VectorComponentValue<Vector2>>();
+        }
+        else if (valueType == Type::Instance<Vector3>())
+        {
+            return std::make_unique<VectorComponentValue<Vector3>>();
+        }
+        else if (valueType == Type::Instance<Vector4>())
+        {
+            return std::make_unique<VectorComponentValue<Vector4>>();
+        }
     }
 
     return EditorComponentExtension::GetEditor(node);

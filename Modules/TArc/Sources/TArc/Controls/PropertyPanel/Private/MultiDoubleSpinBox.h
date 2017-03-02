@@ -7,7 +7,7 @@ namespace DAVA
 {
 namespace TArc
 {
-class MultiFieldsControl : public ControlProxyImpl<QWidget>
+class MultiDoubleSpinBox : public ControlProxyImpl<QWidget>
 {
     using TBase = ControlProxyImpl<QWidget>;
 
@@ -28,8 +28,8 @@ public:
         FieldCount
     };
 
-    MultiFieldsControl(const ControlDescriptorBuilder<Fields>& fields, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent = nullptr);
-    MultiFieldsControl(const ControlDescriptorBuilder<Fields>& fields, ContextAccessor* accessor, Reflection model, QWidget* parent = nullptr);
+    MultiDoubleSpinBox(const ControlDescriptorBuilder<Fields>& fields, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent = nullptr);
+    MultiDoubleSpinBox(const ControlDescriptorBuilder<Fields>& fields, ContextAccessor* accessor, Reflection model, QWidget* parent = nullptr);
 
 private:
     template <typename T>

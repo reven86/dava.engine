@@ -13,7 +13,7 @@
 #include <TArc/Controls/FilePathEdit.h>
 #include <TArc/Controls/QtBoxLayouts.h>
 #include <TArc/Controls/SubPropertiesEditor.h>
-#include <TArc/Controls/PropertyPanel/Private/MultiFieldsControl.h>
+#include <TArc/Controls/PropertyPanel/Private/MultiDoubleSpinBox.h>
 #include <TArc/Utils/ModuleCollection.h>
 #include <TArc/WindowSubSystem/ActionUtils.h>
 #include <TArc/WindowSubSystem/UI.h>
@@ -970,7 +970,7 @@ struct SubPropertiesControlTest : public ReflectionBase
 struct MultiEditorsControlTest : public ReflectionBase
 {
     DAVA::Vector3 v3 = DAVA::Vector3(0.3f, 0.3f, 0.3f);
-    Vector<DAVA::TArc::MultiFieldsControl::FieldDescriptor> descriptorList;
+    Vector<DAVA::TArc::MultiDoubleSpinBox::FieldDescriptor> descriptorList;
     bool isReadOnly = false;
     int32 accuracy = 4;
     int32 accuracy2 = 6;
@@ -985,7 +985,7 @@ struct MultiEditorsControlTest : public ReflectionBase
     {
         using namespace DAVA::TArc;
         {
-            MultiFieldsControl::FieldDescriptor d;
+            MultiDoubleSpinBox::FieldDescriptor d;
             d.valueRole = "V3X";
             d.accuracyRole = "accuracy";
             d.readOnlyRole = "isReadOnly";
@@ -994,7 +994,7 @@ struct MultiEditorsControlTest : public ReflectionBase
         }
 
         {
-            MultiFieldsControl::FieldDescriptor d;
+            MultiDoubleSpinBox::FieldDescriptor d;
             d.valueRole = "V3Y";
             d.accuracyRole = "accuracy2";
             d.readOnlyRole = "isReadOnly";
@@ -1003,7 +1003,7 @@ struct MultiEditorsControlTest : public ReflectionBase
         }
 
         {
-            MultiFieldsControl::FieldDescriptor d;
+            MultiDoubleSpinBox::FieldDescriptor d;
             d.valueRole = "V3Z";
             d.accuracyRole = "accuracy";
             d.readOnlyRole = "isReadOnly";
@@ -1050,9 +1050,9 @@ struct MultiEditorsControlTest : public ReflectionBase
         Reflection model = Reflection::Create(data);
 
         {
-            ControlDescriptorBuilder<MultiFieldsControl::Fields> descr;
-            descr[MultiFieldsControl::Fields::FieldsList] = "list";
-            boxLayout->AddWidget(new MultiFieldsControl(descr, accessor, model));
+            ControlDescriptorBuilder<MultiDoubleSpinBox::Fields> descr;
+            descr[MultiDoubleSpinBox::Fields::FieldsList] = "list";
+            boxLayout->AddWidget(new MultiDoubleSpinBox(descr, accessor, model));
         }
 
         {

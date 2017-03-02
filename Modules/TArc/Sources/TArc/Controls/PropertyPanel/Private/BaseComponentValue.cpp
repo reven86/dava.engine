@@ -146,8 +146,13 @@ void BaseComponentValue::SetValue(const Any& value)
 {
     if (IsValidValueToSet(value, GetValue()))
     {
-        model->GetExtensionChain<ModifyExtension>()->ModifyPropertyValue(nodes, value);
+        GetModifyInterface()->ModifyPropertyValue(nodes, value);
     }
+}
+
+std::shared_ptr<ModifyExtension> BaseComponentValue::GetModifyInterface()
+{
+    return model->GetExtensionChain<ModifyExtension>();
 }
 
 void BaseComponentValue::AddPropertyNode(const std::shared_ptr<PropertyNode>& node)

@@ -15,13 +15,13 @@ namespace DAVA
 {
 namespace TArc
 {
-PropertiesView::PropertiesView(ContextAccessor* accessor_, const FieldDescriptor& objectsField, const String& settingsNodeName_)
+PropertiesView::PropertiesView(UI* ui, ContextAccessor* accessor_, const FieldDescriptor& objectsField, const String& settingsNodeName_)
     : binder(accessor_)
     , accessor(accessor_)
     , settingsNodeName(settingsNodeName_)
 {
     binder.BindField(objectsField, MakeFunction(this, &PropertiesView::OnObjectsChanged));
-    model.reset(new ReflectedPropertyModel());
+    model.reset(new ReflectedPropertyModel(ui));
 
     SetupUI();
 
@@ -34,7 +34,7 @@ PropertiesView::PropertiesView(ContextAccessor* accessor_, const FieldDescriptor
                          model->Update();
                      });
 
-    // timer->start();
+    //timer->start();
 
     QObject::connect(view, &QTreeView::expanded, this, &PropertiesView::OnExpanded);
     QObject::connect(view, &QTreeView::collapsed, this, &PropertiesView::OnCollapsed);
