@@ -25,9 +25,9 @@ public:
 
     uint32 GetPackIndexForFile(const uint32 fileIndex) const;
 
-    size_t GetTotalFileCount() const;
+    size_t GetFileCount() const;
 
-    size_t GetTotalPacksCount() const;
+    size_t GetPacksCount() const;
 
     struct PackInfo
     {
@@ -53,12 +53,12 @@ private:
     Vector<PackInfo> packDependencies;
 };
 
-inline size_t PackMetaData::GetTotalFileCount() const
+inline size_t PackMetaData::GetFileCount() const
 {
     return packIndexes.size();
 }
 
-inline size_t PackMetaData::GetTotalPacksCount() const
+inline size_t PackMetaData::GetPacksCount() const
 {
     return packDependencies.size();
 }

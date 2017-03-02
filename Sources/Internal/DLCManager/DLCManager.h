@@ -108,7 +108,7 @@ public:
 
     /** Update request queue to first download dependency of selected request
         and then request itself */
-    virtual void SetPriorityToRequest(const IRequest* request) = 0;
+    virtual void SetRequestPriority(const IRequest* request) = 0;
 
     virtual void RemovePack(const String& packName) = 0;
 };

@@ -27,25 +27,25 @@ PackRequest::PackRequest(DLCManagerImpl& packManager_, const String& pack_, Vect
     SetFileIndexes(move(fileIndexes_));
 }
 
-void PackRequest::CanselCurrentsDownloads()
+void PackRequest::CancelCurrentsDownloads()
 {
     DownloadManager* dm = DownloadManager::Instance();
-    for (FileRequest& r : requests)
+    if (dm)
     {
-        if (r.taskId != 0)
+        for (FileRequest& r : requests)
         {
-            if (dm)
+            if (r.taskId != 0)
             {
                 dm->Cancel(r.taskId);
+                r.taskId = 0;
             }
-            r.taskId = 0;
         }
     }
 }
 
 PackRequest::~PackRequest()
 {
-    CanselCurrentsDownloads();
+    CancelCurrentsDownloads();
 }
 
 void PackRequest::Start()
@@ -55,7 +55,7 @@ void PackRequest::Start()
 
 void PackRequest::Stop()
 {
-    CanselCurrentsDownloads();
+    CancelCurrentsDownloads();
 }
 
 const String& PackRequest::GetRequestedPackName() const

@@ -709,7 +709,7 @@ void DLCManagerImpl::LoadPacksDataFromMeta()
 
         meta.reset(new PackMetaData(&buffer[0], buffer.size()));
 
-        size_t numFiles = meta->GetTotalFileCount();
+        size_t numFiles = meta->GetFileCount();
         scanFileReady.resize(numFiles);
 
         // now user can do requests for local packs
@@ -758,7 +758,7 @@ void DLCManagerImpl::StartDeleyedRequests()
 
     size_t numDownloaded = std::count(begin(scanFileReady), end(scanFileReady), true);
 
-    initializeFinished.Emit(numDownloaded, meta->GetTotalFileCount());
+    initializeFinished.Emit(numDownloaded, meta->GetFileCount());
 }
 
 void DLCManagerImpl::DeleteLocalMetaFiles()
@@ -818,7 +818,7 @@ const DLCManager::IRequest* DLCManagerImpl::RequestPack(const String& packName)
     return request;
 }
 
-void DLCManagerImpl::SetPriorityToRequest(const IRequest* request)
+void DLCManagerImpl::SetRequestPriority(const IRequest* request)
 {
     DVASSERT(Thread::IsMainThread());
 

@@ -90,7 +90,7 @@ public:
 
     PackRequest* FindRequest(const String& requestedPackName) const;
 
-    void SetPriorityToRequest(const IRequest* request) override;
+    void SetRequestPriority(const IRequest* request) override;
 
     void RemovePack(const String& packName) override;
 

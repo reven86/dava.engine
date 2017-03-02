@@ -5,6 +5,7 @@
 #include "Base/Exception.h"
 #include "Debug/DVAssert.h"
 #include "Utils/Utils.h"
+#include "Utils/StringFormat.h"
 #include "Logger/Logger.h"
 
 #include <sqlite_modern_cpp.h>
@@ -66,6 +67,7 @@ PackMetaData::PackMetaData(const FilePath& metaDb)
 
 Vector<String> PackMetaData::GetDependencyNames(const String& requestedPackName) const
 {
+    using namespace DAVA;
     Vector<String> requestNames;
 
     const PackInfo& packInfo = GetPackInfo(requestedPackName);
@@ -77,20 +79,20 @@ Vector<String> PackMetaData::GetDependencyNames(const String& requestedPackName)
     // convert every name from string representation of index to packName
     for (String& pack : requestNames)
     {
-        uint32 index = 0;
         try
         {
             unsigned long i = stoul(pack);
-            index = static_cast<uint32>(i);
+            uint32 index = static_cast<uint32>(i);
+            const PackInfo& info = GetPackInfo(index);
+            pack = info.packName;
         }
         catch (std::exception& ex)
         {
-            Logger::Error("bad dependency index for pack: %s, index value: %s, error message: %s, skip it",
-                          packInfo.packName.c_str(), pack.c_str(), ex.what());
-            continue;
+            String str = Format("bad dependency index for pack: %s, index value: %s, error: %s.",
+                                packInfo.packName.c_str(), pack.c_str(), ex.what());
+            Logger::Error("%s", str.c_str());
+            DAVA_THROW(Exception, str);
         }
-        const PackInfo& info = GetPackInfo(index);
-        pack = info.packName;
     }
 
     return requestNames;
