@@ -1,5 +1,5 @@
 #include "TArc/Controls/PropertyPanel/Private/SubPropertiesExtensions.h"
-#include "TArc/Controls/PropertyPanel/Private/VectorComponentValue.h"
+#include "TArc/Controls/PropertyPanel/Private/kDComponentValue.h"
 
 #include <Math/Vector.h>
 #include <Math/Rect.h>
@@ -55,15 +55,27 @@ std::unique_ptr<BaseComponentValue> SubPropertyEditorCreator::GetEditor(const st
     {
         if (valueType == Type::Instance<Vector2>())
         {
-            return std::make_unique<VectorComponentValue<Vector2>>();
+            return std::make_unique<kDComponentValue<Vector2, MultiDoubleSpinBox, float32>>();
         }
         else if (valueType == Type::Instance<Vector3>())
         {
-            return std::make_unique<VectorComponentValue<Vector3>>();
+            return std::make_unique<kDComponentValue<Vector3, MultiDoubleSpinBox, float32>>();
         }
         else if (valueType == Type::Instance<Vector4>())
         {
-            return std::make_unique<VectorComponentValue<Vector4>>();
+            return std::make_unique<kDComponentValue<Vector4, MultiDoubleSpinBox, float32>>();
+        }
+        else if (valueType == Type::Instance<Rect>())
+        {
+            return std::make_unique<kDComponentValue<Rect, MultiDoubleSpinBox, float32>>();
+        }
+        else if (valueType == Type::Instance<Color>())
+        {
+            return std::make_unique<kDComponentValue<Color, MultiDoubleSpinBox, float32>>();
+        }
+        else if (valueType == Type::Instance<AABBox3>())
+        {
+            return std::make_unique<kDComponentValue<AABBox3, MultiDoubleSpinBox, float32>>();
         }
     }
 

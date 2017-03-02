@@ -6,10 +6,8 @@
 #include "TArc/Controls/PropertyPanel/Private/BoolComponentValue.h"
 #include "TArc/Controls/PropertyPanel/Private/EnumComponentValue.h"
 #include "TArc/Controls/PropertyPanel/Private/FlagsComponentValue.h"
-#include "TArc/Controls/PropertyPanel/Private/IntComponentValue.h"
 #include "TArc/Controls/PropertyPanel/Private/NumberComponentValue.h"
 #include "TArc/Controls/PropertyPanel/Private/EmptyComponentValue.h"
-#include "TArc/Controls/PropertyPanel/Private/NumberComponentValue.h"
 #include "TArc/Controls/PropertyPanel/Private/FilePathComponentValue.h"
 #include "TArc/Utils/ReflectionHelpers.h"
 
@@ -19,14 +17,6 @@ namespace DAVA
 {
 namespace TArc
 {
-namespace DefaultPropertyModelExtensionsDetail
-{
-template <typename T>
-std::unique_ptr<BaseComponentValue> CreateEditorImpl()
-{
-    return std::unique_ptr<BaseComponentValue>(new T());
-}
-}
 
 void DefaultChildCheatorExtension::ExposeChildren(const std::shared_ptr<const PropertyNode>& node, Vector<std::shared_ptr<PropertyNode>>& children) const
 {
@@ -142,7 +132,6 @@ DefaultEditorComponentExtension::DefaultEditorComponentExtension(UI* ui_)
 
 std::unique_ptr<BaseComponentValue> DefaultEditorComponentExtension::GetEditor(const std::shared_ptr<const PropertyNode>& node) const
 {
-    using namespace DefaultPropertyModelExtensionsDetail;
     if (node->propertyType == PropertyNode::RealProperty)
     {
         if (node->field.ref.GetMeta<M::Enum>() != nullptr)
