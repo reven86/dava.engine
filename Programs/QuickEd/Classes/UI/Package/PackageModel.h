@@ -22,6 +22,8 @@ class PackageModel : public QAbstractItemModel, PackageListener
 
 public:
     PackageModel(QObject* parent = nullptr);
+    ~PackageModel() override;
+
     void Reset(PackageNode* package, QtModelPackageCommandExecutor* executor);
 
     QModelIndex indexByNode(PackageBaseNode* node) const;
@@ -71,7 +73,7 @@ private: // PackageListener
 
     int GetRowIndex(int row, const QModelIndex& parent) const;
 
-    PackageNode* package = nullptr;
+    DAVA::RefPtr<PackageNode> package;
     QtModelPackageCommandExecutor* commandExecutor = nullptr;
 };
 

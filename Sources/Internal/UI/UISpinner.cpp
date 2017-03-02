@@ -347,7 +347,7 @@ void UISpinner::OnSelectedChanged(bool isSelectedFirst, bool isSelectedLast, boo
     if (isSelectedChanged)
     {
         adapter->DisplaySelectedData(this);
-        PerformEvent(UIControl::EVENT_VALUE_CHANGED);
+        PerformEvent(UIControl::EVENT_VALUE_CHANGED, nullptr);
     }
 }
 

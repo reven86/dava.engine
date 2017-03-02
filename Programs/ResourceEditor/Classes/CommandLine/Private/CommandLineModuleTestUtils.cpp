@@ -1,4 +1,4 @@
-﻿#include "CommandLine/Private/CommandLineModuleTestUtils.h"
+#include "CommandLine/Private/CommandLineModuleTestUtils.h"
 
 #include "Utils/TextureDescriptor/TextureDescriptorUtils.h"
 

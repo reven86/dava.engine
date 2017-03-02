@@ -9,6 +9,7 @@
 #include "UI/Layouts/UIIgnoreLayoutComponent.h"
 #include "UI/Layouts/UISizePolicyComponent.h"
 #include "UI/Layouts/UIAnchorComponent.h"
+#include "UI/Sound/UISoundComponent.h"
 
 namespace DAVA
 {
@@ -23,6 +24,7 @@ UIStyleSheetPropertyDataBase::UIStyleSheetPropertyDataBase()
     , ignoreLayoutGroup("ignoreLayout", UIComponent::IGNORE_LAYOUT_COMPONENT, ReflectedTypeDB::Get<UIIgnoreLayoutComponent>())
     , sizePolicyGroup("sizePolicy", UIComponent::SIZE_POLICY_COMPONENT, ReflectedTypeDB::Get<UISizePolicyComponent>())
     , anchorGroup("anchor", UIComponent::ANCHOR_COMPONENT, ReflectedTypeDB::Get<UIAnchorComponent>())
+    , soundGroup("sound", UIComponent::SOUND_COMPONENT, ReflectedTypeDB::Get<UISoundComponent>())
     , properties({ { UIStyleSheetPropertyDescriptor(&controlGroup, "angle", 0.0f),
                      UIStyleSheetPropertyDescriptor(&controlGroup, "scale", Vector2(1.0f, 1.0f)),
                      UIStyleSheetPropertyDescriptor(&controlGroup, "visible", true),
@@ -96,7 +98,12 @@ UIStyleSheetPropertyDataBase::UIStyleSheetPropertyDataBase()
                      UIStyleSheetPropertyDescriptor(&anchorGroup, "hCenterAnchorEnabled", false),
                      UIStyleSheetPropertyDescriptor(&anchorGroup, "hCenterAnchor", 0.0f),
                      UIStyleSheetPropertyDescriptor(&anchorGroup, "vCenterAnchorEnabled", false),
-                     UIStyleSheetPropertyDescriptor(&anchorGroup, "vCenterAnchor", 0.0f) } })
+                     UIStyleSheetPropertyDescriptor(&anchorGroup, "vCenterAnchor", 0.0f),
+
+                     UIStyleSheetPropertyDescriptor(&soundGroup, "touchDown", FastName()),
+                     UIStyleSheetPropertyDescriptor(&soundGroup, "touchUpInside", FastName()),
+                     UIStyleSheetPropertyDescriptor(&soundGroup, "touchUpOutside", FastName()),
+                     UIStyleSheetPropertyDescriptor(&soundGroup, "valueChanged", FastName()) } })
 {
     UnorderedMap<FastName, FastName> legacyNames;
     legacyNames[FastName("bg-drawType")] = FastName("drawType");

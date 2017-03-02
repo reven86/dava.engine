@@ -1,9 +1,9 @@
 #include "QtModelPackageCommandExecutor.h"
 
-#include "Document/Document.h"
+#include "Modules/LegacySupportModule/Private/Document.h"
 #include "Command/CommandStack.h"
 
-#include "QECommands//ChangePropertyValueCommand.h"
+#include "QECommands/ChangePropertyValueCommand.h"
 #include "QECommands/InsertControlCommand.h"
 #include "QECommands/RemoveControlCommand.h"
 #include "QECommands/InsertImportedPackageCommand.h"
@@ -33,7 +33,7 @@
 #include "Model/YamlPackageSerializer.h"
 #include "Model/QuickEdPackageBuilder.h"
 
-#include "Project/Project.h"
+#include "Modules/ProjectModule/ProjectData.h"
 
 #include "UI/UIControl.h"
 #include "UI/UIPackageLoader.h"
@@ -67,8 +67,8 @@ String FormatNodeNames(const DAVA::Vector<T*>& nodes)
 }
 }
 
-QtModelPackageCommandExecutor::QtModelPackageCommandExecutor(Project* project_, Document* document_)
-    : project(project_)
+QtModelPackageCommandExecutor::QtModelPackageCommandExecutor(ProjectData* projectData_, Document* document_)
+    : projectData(projectData_)
     , document(document_)
     , packageNode(document->GetPackage())
 {
@@ -87,7 +87,7 @@ void QtModelPackageCommandExecutor::AddImportedPackagesIntoPackage(const DAVA::V
         if (package->FindImportedPackage(path) == nullptr && package->GetPath().GetFrameworkPath() != path.GetFrameworkPath())
         {
             QuickEdPackageBuilder builder;
-            if (UIPackageLoader(project->GetPrototypes()).LoadPackage(path, &builder))
+            if (UIPackageLoader(projectData->GetPrototypes()).LoadPackage(path, &builder))
             {
                 RefPtr<PackageNode> importedPackage = builder.BuildPackage();
                 if (package->GetImportedPackagesNode()->CanInsertImportedPackage(importedPackage.Get()))
@@ -145,7 +145,7 @@ void QtModelPackageCommandExecutor::ChangeProperty(ControlNode* node, AbstractPr
 {
     if (!property->IsReadOnly())
     {
-        ExecCommand(std::unique_ptr<Command>(new ChangePropertyValueCommand(packageNode, node, property, value)));
+        ExecCommand(std::unique_ptr<Command>(new ChangePropertyValueCommand(node, property, value)));
     }
 }
 
@@ -153,7 +153,7 @@ void QtModelPackageCommandExecutor::ResetProperty(ControlNode* node, AbstractPro
 {
     if (!property->IsReadOnly())
     {
-        ExecCommand(std::unique_ptr<Command>(new ChangePropertyValueCommand(packageNode, node, property, Any())));
+        ExecCommand(std::unique_ptr<Command>(new ChangePropertyValueCommand(node, property, Any())));
     }
 }
 
@@ -513,7 +513,7 @@ Vector<PackageBaseNode*> QtModelPackageCommandExecutor::Paste(PackageNode* root,
         builder.AddImportedPackage(root->GetImportedPackagesNode()->GetImportedPackage(i));
     }
 
-    if (UIPackageLoader(project->GetPrototypes()).LoadPackage(parser->GetRootNode(), root->GetPath(), &builder))
+    if (UIPackageLoader(projectData->GetPrototypes()).LoadPackage(parser->GetRootNode(), root->GetPath(), &builder))
     {
         const Vector<PackageNode*>& importedPackages = builder.GetImportedPackages();
         const Vector<ControlNode*>& controls = builder.GetRootControls();

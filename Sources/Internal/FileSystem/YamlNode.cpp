@@ -520,6 +520,8 @@ VariantType YamlNode::AsVariantType(const InspMember* insp) const
         return VariantType(AsVector4());
     else if (insp->Type() == MetaInfo::Instance<FilePath>())
         return VariantType(FilePath(AsString()));
+    else if (insp->Type() == MetaInfo::Instance<FastName>())
+        return VariantType(AsFastName());
 
     DVASSERT(false);
     return VariantType();
@@ -950,7 +952,14 @@ bool YamlNode::InitStringFromVariantType(const VariantType& varType)
     break;
     case VariantType::TYPE_FASTNAME:
     {
-        InternalSetString(varType.AsFastName().c_str(), SR_DOUBLE_QUOTED_REPRESENTATION);
+        if (varType.AsFastName().IsValid())
+        {
+            InternalSetString(varType.AsFastName().c_str(), SR_DOUBLE_QUOTED_REPRESENTATION);
+        }
+        else
+        {
+            InternalSetString("", SR_DOUBLE_QUOTED_REPRESENTATION);
+        }
     }
     break;
 

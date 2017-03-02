@@ -1,6 +1,7 @@
 #pragma once
 #include "UI/mainwindow.h"
 
+class Project;
 class Document;
 class LibraryWidget;
 class PropertiesWidget;
@@ -17,8 +18,7 @@ public:
     void SetDocumentActionsEnabled(bool enabled);
 
     void SetProject(Project* project);
-
-    QTabBar* GetTabBar();
+    void SetDocument(Document* document);
     QAction* GetActionRedo();
     QAction* GetActionUndo();
 
@@ -31,5 +31,5 @@ public:
 
 signals:
     void OpenPackageFile(const QString& path);
-    void OnDocumentChanged(Document* document);
+    void DocumentChanged(Document* document);
 };

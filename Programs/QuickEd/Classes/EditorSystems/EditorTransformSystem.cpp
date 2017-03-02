@@ -160,10 +160,12 @@ EditorSystemsManager::eDragState EditorTransformSystem::RequireNewState(DAVA::UI
             return EditorSystemsManager::Transform;
         }
     }
+
     HUDAreaInfo areaInfo = systemsManager->GetCurrentHUDArea();
     if (areaInfo.area != HUDAreaInfo::NO_AREA
         && currentInput->phase == UIEvent::Phase::DRAG
-        && currentInput->mouseButton == eMouseButtons::LEFT)
+        && currentInput->mouseButton == eMouseButtons::LEFT
+        && dragState != EditorSystemsManager::SelectByRect)
     {
         //initialize start mouse position for correct rotation
         previousMousePos = currentInput->point;
@@ -216,9 +218,17 @@ void EditorTransformSystem::OnDragStateChanged(EditorSystemsManager::eDragState 
     }
 }
 
-void EditorTransformSystem::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
+void EditorTransformSystem::OnSelectionChanged(const SelectedNodes& selection)
 {
-    SelectionContainer::MergeSelectionToContainer(selected, deselected, selectedControlNodes);
+    selectedControlNodes.clear();
+    for (PackageBaseNode* node : selection)
+    {
+        ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
+        if (controlNode != nullptr)
+        {
+            selectedControlNodes.insert(controlNode);
+        }
+    }
     nodesToMoveInfos.clear();
     for (ControlNode* selectedControl : selectedControlNodes)
     {
