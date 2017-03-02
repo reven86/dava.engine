@@ -234,8 +234,7 @@ NMaterial* ImportLibrary::CreateMaterialInstance(ColladaPolygonGroupInstance* co
     NMaterial* davaMaterialParent = GetOrCreateMaterialParent(colladaMaterial, isShadow);
 
     NMaterial* material = new NMaterial();
-    static uint32 materialInstanceNo = 0;
-    String name = Format("Instance-%u", materialInstanceNo++);
+    String name = Format("Instance-%u", materialInstanceNumber++);
     material->SetMaterialName(FastName(name));
     material->SetParent(davaMaterialParent);
 

@@ -119,6 +119,14 @@ public:
         }
     }
 
+    void ForEachContext(const Function<void(const DataContext&)>& functor) const override
+    {
+        for (const std::unique_ptr<DataContext>& context : contexts)
+        {
+            functor(*context);
+        }
+    }
+
     uint32 GetContextCount() const override
     {
         return static_cast<uint32>(contexts.size());
@@ -187,6 +195,10 @@ protected:
 
     void ActivateContextImpl(DataContext* context)
     {
+        if (context == activeContext)
+        {
+            return;
+        }
         BeforeContextSwitch(activeContext, context);
         DataContext* oldContext = activeContext;
         activeContext = context;
@@ -772,6 +784,11 @@ const EngineContext* Core::GetEngineContext()
 }
 
 CoreInterface* Core::GetCoreInterface()
+{
+    return impl.get();
+}
+
+const CoreInterface* Core::GetCoreInterface() const
 {
     return impl.get();
 }

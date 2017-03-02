@@ -388,7 +388,9 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/PluginManager/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Reflection/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Reflection/Private/*.cpp) \
-                     $(wildcard $(LOCAL_PATH)/Reflection/Private/Wrappers/*.cpp))
+                     $(wildcard $(LOCAL_PATH)/Reflection/Private/Wrappers/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/ReflectionDeclaration/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/ReflectionDeclaration/Private/*.cpp))
                      
 include $(BUILD_STATIC_LIBRARY)
 
@@ -471,6 +473,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Notification/Private/Android/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/CommandLine/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Logger/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/PluginManager/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/AnyCasts/Private/*.cpp))
 
 include $(BUILD_STATIC_LIBRARY)
