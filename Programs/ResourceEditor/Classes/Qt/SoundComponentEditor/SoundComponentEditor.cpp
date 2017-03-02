@@ -1,8 +1,8 @@
 #include "SoundComponentEditor.h"
-#include "FMODSoundBrowser.h"
 #include "ui_soundcomponenteditor.h"
 #include "Commands2/SoundComponentEditCommands.h"
 
+#include "QtTools/FMODSoundBrowser/FMODSoundBrowser.h"
 #include "QtTools/WidgetHelpers/SharedIcon.h"
 
 #include <QTreeWidget>
@@ -161,16 +161,26 @@ void SoundComponentEditor::OnAddEvent()
 {
     if (component)
     {
-        FMODSoundBrowser* browser = FMODSoundBrowser::Instance();
+        FMODSoundBrowser browser;
 
+        DAVA::SoundEvent* defaultEvent = nullptr;
         if (selectedEventIndex != -1)
         {
-            DAVA::SoundEvent* soundEvent = component->GetSoundEvent(selectedEventIndex);
-            browser->SetCurrentEvent(soundEvent->GetEventName());
+            defaultEvent = component->GetSoundEvent(selectedEventIndex);
         }
-        if (browser->exec() == QDialog::Accepted)
+        else if (component->GetEventsCount() > 0)
         {
-            DAVA::String selectedEventName = browser->GetSelectSoundEvent();
+            defaultEvent = component->GetSoundEvent(component->GetEventsCount() - 1);
+        }
+
+        if (defaultEvent != nullptr)
+        {
+            browser.SetCurrentEvent(defaultEvent->GetEventName());
+        }
+
+        if (browser.exec() == QDialog::Accepted)
+        {
+            DAVA::String selectedEventName = browser.GetSelectSoundEvent();
             DAVA::SoundEvent* sEvent = DAVA::SoundSystem::Instance()->CreateSoundEventByID(DAVA::FastName(selectedEventName), DAVA::FastName("FX"));
 
             scene->Exec(std::unique_ptr<DAVA::Command>(new AddSoundEventCommand(component->GetEntity(), sEvent)));
