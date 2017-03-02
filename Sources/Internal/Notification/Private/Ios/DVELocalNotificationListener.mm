@@ -34,18 +34,7 @@
 - (BOOL)application:(UIApplication*)application didFinishLaunchingWithOptions:(NSDictionary*)launchOptions
 {
     NSString* version = [[UIDevice currentDevice] systemVersion];
-    if ([version compare:@"8.0" options:NSNumericSearch] != NSOrderedAscending)
-    {
-#if defined(__IPHONE_8_0)
-        // https://developer.apple.com/reference/uikit/uiapplication/1622932-registerusernotificationsettings
-        // available 8.0 and later
-        if ([UIApplication instancesRespondToSelector:@selector(registerUserNotificationSettings:)])
-        {
-            [application registerUserNotificationSettings:[UIUserNotificationSettings settingsForTypes:UIUserNotificationTypeAlert | UIUserNotificationTypeBadge | UIUserNotificationTypeSound categories:nil]];
-        }
-#endif
-    }
-    else
+    if ([version compare:@"8.0" options:NSNumericSearch] == NSOrderedAscending)
     {
         UILocalNotification* notification = [launchOptions objectForKey:UIApplicationLaunchOptionsLocalNotificationKey];
         if (notification != nil && [application applicationState] != UIApplicationStateActive)

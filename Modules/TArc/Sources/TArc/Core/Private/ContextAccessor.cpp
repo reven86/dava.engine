@@ -14,5 +14,21 @@ DAVA_REFLECTION_IMPL(ContextAccessor)
     .Field(ActiveContextFieldName, &ContextAccessor::GetActiveContext, &ContextAccessor::SetActiveContext)
     .End();
 }
+
+const DataContext* ContextAccessor::GetGlobalContext() const
+{
+    return const_cast<ContextAccessor*>(this)->GetGlobalContext();
+}
+
+const DataContext* ContextAccessor::GetContext(DataContext::ContextID contextId) const
+{
+    return const_cast<ContextAccessor*>(this)->GetContext(contextId);
+}
+
+const DataContext* ContextAccessor::GetActiveContext() const
+{
+    return const_cast<ContextAccessor*>(this)->GetActiveContext();
+}
+
 } // namespace TArc
 } // namespace DAVA

@@ -1,36 +1,38 @@
 #include "Classes/SceneManager/SceneManagerModule.h"
 #include "Classes/SceneManager/SceneData.h"
+#include "Classes/SceneManager/Private/SceneRenderWidget.h"
 #include "Classes/Project/ProjectManagerData.h"
 #include "Classes/Application/REGlobal.h"
 #include "Classes/Qt/TextureBrowser/TextureCache.h"
-#include "Classes/Qt/Scene/SceneEditor2.h"
 #include "Classes/Qt/Main/mainwindow.h"
 #include "Classes/Qt/Tools/ExportSceneDialog/ExportSceneDialog.h"
+#include "Classes/Qt/Scene/SceneEditor2.h"
 #include "Classes/Qt/Scene/System/EditorVegetationSystem.h"
 #include "Classes/Qt/Scene/SceneHelper.h"
+#include "Classes/Qt/Settings/SettingsManager.h"
 #include "Classes/Qt/SpritesPacker/SpritesPackerModule.h"
-
 #include "Classes/SceneManager/Private/SceneRenderWidget.h"
 #include "Classes/Utils/SceneSaver/SceneSaver.h"
 
 #include "Commands2/Base/RECommandStack.h"
 
-#include "TArc/WindowSubSystem/QtAction.h"
-#include "TArc/WindowSubSystem/UI.h"
-#include "TArc/WindowSubSystem/ActionUtils.h"
+#include <TArc/WindowSubSystem/QtAction.h>
+#include <TArc/WindowSubSystem/UI.h>
+#include <TArc/WindowSubSystem/ActionUtils.h>
+#include <TArc/Models/SceneTabsModel.h>
 
-#include "QtTools/FileDialogs/FindFileDialog.h"
-#include "QtTools/ProjectInformation/FileSystemCache.h"
+#include <QtTools/FileDialogs/FindFileDialog.h>
+#include <QtTools/ProjectInformation/FileSystemCache.h>
 
-#include "Engine/EngineContext.h"
-#include "Reflection/ReflectedType.h"
-#include "Render/Renderer.h"
-#include "Render/DynamicBufferAllocator.h"
-#include "FileSystem/FileSystem.h"
-#include "Functional/Function.h"
-#include "Base/FastName.h"
-#include "Base/Any.h"
-#include "Base/GlobalEnum.h"
+#include <Engine/EngineContext.h>
+#include <Reflection/ReflectedType.h>
+#include <Render/Renderer.h>
+#include <Render/DynamicBufferAllocator.h>
+#include <FileSystem/FileSystem.h>
+#include <Functional/Function.h>
+#include <Base/FastName.h>
+#include <Base/Any.h>
+#include <Base/GlobalEnum.h>
 
 #include <QList>
 #include <QString>
@@ -192,8 +194,7 @@ void SceneManagerModule::PostInit()
         fieldBinder->BindField(fieldDescr, DAVA::MakeFunction(this, &SceneManagerModule::OnProjectPathChanged));
     }
 
-    RecentMenuItems::Params params;
-    params.accessor = accessor;
+    RecentMenuItems::Params params(REGlobal::MainWindowKey, accessor, "Recent scenes");
     params.ui = ui;
     params.menuSubPath << "File";
     params.predicateFieldDescriptor.fieldName = DAVA::FastName(ProjectManagerData::ProjectPathProperty);
@@ -202,12 +203,13 @@ void SceneManagerModule::PostInit()
     {
         return v.CanCast<DAVA::FilePath>() && !v.Cast<DAVA::FilePath>().IsEmpty();
     };
-    params.settingsKeyCount = Settings::General_RecentFilesCount;
-    params.settingsKeyData = Settings::Internal_RecentFiles;
+    params.getMaximumCount = []() {
+        return SettingsManager::GetValue(Settings::General_RecentFilesCount).AsInt32();
+    };
     params.insertionParams.method = InsertionParams::eInsertionMethod::AfterItem;
     params.insertionParams.item = QString("importSeparator");
 
-    recentItems.reset(new RecentMenuItems(params));
+    recentItems.reset(new RecentMenuItems(std::move(params)));
     recentItems->actionTriggered.Connect([this](const DAVA::String& scenePath)
                                          {
                                              OpenSceneByPath(DAVA::FilePath(scenePath));
@@ -235,7 +237,7 @@ void SceneManagerModule::CreateModuleControls(DAVA::TArc::UI* ui)
     engineRenderWidget->addAction(moveToSelection);
     connections.AddConnection(moveToSelection, &QAction::triggered, DAVA::MakeFunction(this, &SceneManagerModule::MoveToSelection));
 
-    DAVA::TArc::PanelKey panelKey(QStringLiteral("SceneTabBar"), DAVA::TArc::CentralPanelInfo());
+    PanelKey panelKey(QStringLiteral("SceneTabBar"), CentralPanelInfo());
     GetUI()->AddView(REGlobal::MainWindowKey, panelKey, renderWidget);
 }
 
@@ -1180,7 +1182,11 @@ bool SceneManagerModule::SaveSceneImpl(DAVA::RefPtr<SceneEditor2> scene, const D
         return false;
     }
 
-    scene->SaveEmitters(DAVA::MakeFunction(this, &SceneManagerModule::SaveEmitterFallback));
+    if (SettingsManager::GetValue(Settings::Scene_SaveEmitters).AsBool() == true)
+    {
+        scene->SaveEmitters(DAVA::MakeFunction(this, &SceneManagerModule::SaveEmitterFallback));
+    }
+
     DAVA::SceneFileV2::eError ret = scene->SaveScene(pathToSaveScene);
     if (DAVA::SceneFileV2::ERROR_NO_ERROR != ret)
     {

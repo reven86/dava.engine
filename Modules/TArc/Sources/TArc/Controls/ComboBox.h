@@ -12,7 +12,7 @@ namespace DAVA
 {
 namespace TArc
 {
-class ComboBox final : public ControlProxy<QComboBox>
+class ComboBox final : public ControlProxyImpl<QComboBox>
 {
 public:
     enum class Fields : uint32

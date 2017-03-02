@@ -135,7 +135,10 @@ DAVA_TARC_TESTCLASS(ClientModuleTest)
         activateContext(undeletedContext);
         TEST_VERIFY(accessor->GetActiveContext() != nullptr);
         TEST_VERIFY(accessor->GetActiveContext()->GetID() == undeletedContext);
-        TEST_VERIFY(accessor->GetContext(newContext)->GetID() == newContext);
+        DataContext* dataContext = accessor->GetContext(newContext);
+        TEST_VERIFY(dataContext->GetID() == newContext);
+        const DataContext* constDataContext = static_cast<const ContextAccessor*>(accessor)->GetContext(newContext);
+        TEST_VERIFY(dataContext == constDataContext);
 
         // activate already active context
         activateContext(undeletedContext);
@@ -205,6 +208,14 @@ DAVA_TARC_TESTCLASS(ClientModuleTest)
         }
 
         TEST_VERIFY(exeptionCatched == true);
+    }
+
+    DAVA_TEST (GetConstAccessorTest)
+    {
+        const DAVA::TArc::ContextAccessor* constAccessor = static_cast<const DAVA::TArc::TestClass*>(this)->GetAccessor();
+        DAVA::TArc::ContextAccessor* accessor = GetAccessor();
+        TEST_VERIFY(constAccessor != nullptr);
+        TEST_VERIFY(constAccessor == accessor);
     }
 
     DAVA_TEST (GetInvalidContextTest)

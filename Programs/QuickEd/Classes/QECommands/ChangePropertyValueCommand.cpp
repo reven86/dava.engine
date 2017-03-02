@@ -7,14 +7,14 @@
 #include <QString>
 using namespace DAVA;
 
-ChangePropertyValueCommand::ChangePropertyValueCommand(PackageNode* root_, ControlNode* node_, AbstractProperty* prop, const VariantType& newVal)
+ChangePropertyValueCommand::ChangePropertyValueCommand(ControlNode* node_, AbstractProperty* prop, const VariantType& newVal)
     : DAVA::Command(DAVA::String("changed property: ") + prop->GetName().c_str())
-    , root(root_)
     , node(node_)
     , property(prop)
     , oldValue(GetValueFromProperty(prop))
     , newValue(newVal)
 {
+    root = node->GetPackage();
 }
 
 void ChangePropertyValueCommand::Redo()
