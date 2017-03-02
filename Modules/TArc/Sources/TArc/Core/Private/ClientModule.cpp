@@ -1,15 +1,12 @@
 #include "TArc/Core/ClientModule.h"
 #include "TArc/Core/Private/CoreInterface.h"
-#include "TArc/WindowSubSystem/UI.h"
 
-#include "Debug/DVAssert.h"
+#include <Debug/DVAssert.h>
 
 namespace DAVA
 {
 namespace TArc
 {
-ClientModule::~ClientModule() = default;
-
 ContextAccessor* ClientModule::GetAccessor()
 {
     DVASSERT(coreInterface != nullptr);
