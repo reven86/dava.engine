@@ -1,16 +1,13 @@
 #include "SelectSceneScreen.h"
 
-#include "UI/Focus/UIFocusComponent.h"
-
 #include "GameCore.h"
 #include "TesterConfig.h"
 
-#define SETTINGS_PATH "~doc:/SceneViewerSettings.bin"
-
 using DAVA::Rect;
 
-const Color SelectSceneScreen::Green(0.0f, 1.0f, 0.0f, 1.0f);
 const Color SelectSceneScreen::Red(1.0f, 0.0f, 0.0f, 1.0f);
+const Color SelectSceneScreen::Green(0.0f, 1.0f, 0.0f, 1.0f);
+
 const float32 SelectSceneScreen::resolutionButtonsXOffset = 10.0f;
 const float32 SelectSceneScreen::resolutionButtonsYOffset = 100.0f;
 const float32 SelectSceneScreen::buttonHeight = 40.0f;
@@ -46,10 +43,7 @@ const Array<SelectSceneScreen::ButtonInfo, 2> SelectSceneScreen::overdrawButtons
 
 SelectSceneScreen::SelectSceneScreen()
     : BaseScreen()
-    , fileNameText(NULL)
-    , fileSystemDialog(NULL)
 {
-//     LoadSettings();
 }
 
 void SelectSceneScreen::LoadResources()
@@ -62,17 +56,11 @@ void SelectSceneScreen::LoadResources()
     screenRect.dy = static_cast<float32>(screenSize.dy);
     SetRect(screenRect);
 
-    ScopedPtr<UIButton> startButton(CreateButton(Rect(0, 5, screenRect.dx, buttonHeight), L"Start"));
+    ScopedPtr<UIButton> startButton(CreateButton(Rect(5, 5, screenRect.dx, buttonHeight), L"Start"));
     startButton->SetDebugDraw(true);
     startButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &SelectSceneScreen::OnStart));
     
-    ScopedPtr<UIStaticText> overdrawLabel(new UIStaticText(Rect(overdrawXOffset, overdrawYOffset - buttonHeight, buttonWidth * 3.0f, buttonHeight)));
-    overdrawLabel->SetFont(font);
-    overdrawLabel->SetTextColor(Color::White);
-    overdrawLabel->SetText(L"Overdraw screens count");
-    overdrawLabel->SetTextAlign(ALIGN_HCENTER | ALIGN_VCENTER);
-    overdrawLabel->SetDebugDraw(false);
-    AddControl(overdrawLabel);
+    CreateLabel({ overdrawXOffset, overdrawYOffset - buttonHeight, buttonWidth * 3.0f, buttonHeight }, L"Overdraw screens count");
 
     overdrawCountLabel = new UIStaticText(Rect(overdrawXOffset, overdrawYOffset, buttonWidth * 3.0f, buttonHeight));
     overdrawCountLabel->SetFont(font);
@@ -82,55 +70,15 @@ void SelectSceneScreen::LoadResources()
     overdrawCountLabel->SetDebugDraw(true);
     AddControl(overdrawCountLabel);
 
-    for (size_t i = 0; i < overdrawButtonsInfo.size(); i++)
-    {
-        UIButton* btn = CreateButton(overdrawButtonsInfo[i].rect, overdrawButtonsInfo[i].caption);
-        btn->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &SelectSceneScreen::OnChangeOverdrawButtonClick));
-        btn->SetDebugDraw(true);
-        btn->SetTag(overdrawButtonsInfo[i].tag);
-        AddControl(btn);
-        overdrawButtons[btn] = overdrawButtonsInfo[i];
-    }
-    
-    ScopedPtr<UIStaticText> resLabel(new UIStaticText(Rect(resolutionButtonsXOffset, resolutionButtonsYOffset - buttonHeight, buttonWidth, buttonHeight)));
-    resLabel->SetFont(font);
-    resLabel->SetTextColor(Color::White);
-    resLabel->SetText(L"Tex resolution");
-    resLabel->SetTextAlign(ALIGN_HCENTER | ALIGN_VCENTER);
-    resLabel->SetDebugDraw(false);
-    AddControl(resLabel);
+    InitializeButtons(overdrawButtonsInfo, overdrawButtons, Message(this, &SelectSceneScreen::OnChangeOverdrawButtonClick), false);
 
-    for (size_t i = 0; i < resolutionButtonsInfo.size(); i++)
-    {
-        UIButton* btn = CreateButton(resolutionButtonsInfo[i].rect, resolutionButtonsInfo[i].caption);
-        btn->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &SelectSceneScreen::OnResolutionButtonClick));
-        if (i == 0)
-            btn->SetDebugDrawColor(Green);
-        btn->SetDebugDraw(true);
-        btn->SetTag(resolutionButtonsInfo[i].tag);
-        AddControl(btn);
-        resolutionButtons[btn] = resolutionButtonsInfo[i];
-    }
+    CreateLabel({ resolutionButtonsXOffset, resolutionButtonsYOffset - buttonHeight, buttonWidth, buttonHeight }, L"Tex resolution");
 
-    ScopedPtr<UIStaticText> formatLabel(new UIStaticText(Rect(texturePixelFormatXOffset, texturePixelFormatYOffset - buttonHeight, buttonWidth, buttonHeight)));
-    formatLabel->SetFont(font);
-    formatLabel->SetTextColor(Color::White);
-    formatLabel->SetText(L"Tex format");
-    formatLabel->SetTextAlign(ALIGN_HCENTER | ALIGN_VCENTER);
-    formatLabel->SetDebugDraw(false);
-    AddControl(formatLabel);
+    InitializeButtons(resolutionButtonsInfo, resolutionButtons, Message(this, &SelectSceneScreen::OnResolutionButtonClick));
 
-    for (size_t i = 0; i < texturePixelFormatButtonsInfo.size(); i++)
-    {
-        UIButton* btn = CreateButton(texturePixelFormatButtonsInfo[i].rect, texturePixelFormatButtonsInfo[i].caption);
-        btn->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &SelectSceneScreen::OnTextureFormatButtonClick));
-        if (i == 0)
-            btn->SetDebugDrawColor(Green);
-        btn->SetDebugDraw(true);
-        btn->SetTag(texturePixelFormatButtonsInfo[i].tag);
-        AddControl(btn);
-        texturePixelFormatButtons[btn] = texturePixelFormatButtonsInfo[i];
-    }
+    CreateLabel({ texturePixelFormatXOffset, texturePixelFormatYOffset - buttonHeight, buttonWidth, buttonHeight }, L"Tex format");
+
+    InitializeButtons(texturePixelFormatButtonsInfo, texturePixelFormatButtons, Message(this, &SelectSceneScreen::OnTextureFormatButtonClick));
 
     AddControl(startButton);
 
@@ -139,7 +87,6 @@ void SelectSceneScreen::LoadResources()
 
 void SelectSceneScreen::UnloadResources()
 {
-    SafeRelease(fileNameText);
     BaseScreen::UnloadResources();
 
     ReleaseButtons(resolutionButtons);
@@ -147,9 +94,17 @@ void SelectSceneScreen::UnloadResources()
     ReleaseButtons(overdrawButtons);
 
     SafeRelease(overdrawCountLabel);
+}
 
-    delete inputDelegate;
-    SafeRelease(overdrawInfoMessage);
+void SelectSceneScreen::CreateLabel(const Rect&& rect, const WideString&& caption)
+{
+    ScopedPtr<UIStaticText> label(new UIStaticText(rect));
+    label->SetFont(font);
+    label->SetTextColor(Color::White);
+    label->SetText(caption);
+    label->SetTextAlign(ALIGN_HCENTER | ALIGN_VCENTER);
+    label->SetDebugDraw(false);
+    AddControl(label);
 }
 
 void SelectSceneScreen::ReleaseButtons(DAVA::UnorderedMap<UIButton*, ButtonInfo>& buttons)
