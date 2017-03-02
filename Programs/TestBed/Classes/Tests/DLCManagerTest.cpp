@@ -385,7 +385,7 @@ void DLCManagerTest::OnStartNextPackClicked(DAVA::BaseObject* sender, void* data
         const DLCManager::IRequest* p = pm.RequestPack(packName);
         if (!p->IsDownloaded())
         {
-            pm.SetPriorityToRequest(p);
+            pm.SetRequestPriority(p);
         }
     }
     catch (std::exception& ex)
