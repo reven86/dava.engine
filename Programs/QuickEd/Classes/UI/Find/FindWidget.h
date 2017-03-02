@@ -46,4 +46,7 @@ private:
 
     Project* project = nullptr;
     Finder* finder = nullptr;
+    
+    DAVA::int32 totalResults = 0;
+    DAVA::int32 totalFilesWithResults = 0;
 };

@@ -32,6 +32,9 @@ FindWidget::~FindWidget() = default;
 
 void FindWidget::Find(std::unique_ptr<FindFilter>&& filter)
 {
+    totalResults = 0;
+    totalFilesWithResults = 0;
+    
     if (finder == nullptr)
     {
         model->removeRows(0, model->rowCount());
@@ -71,8 +74,11 @@ void FindWidget::OnItemFound(FindItem item)
     pathItem->setData(QString::fromStdString(fwPath), PACKAGE_DATA);
     model->appendRow(pathItem);
 
+    totalFilesWithResults++;
+
     for (const String& pathToControl : item.GetControlPaths())
     {
+        totalResults++;
         QStandardItem* controlItem = new QStandardItem(QString::fromStdString(pathToControl));
         controlItem->setEditable(false);
         controlItem->setData(QString::fromStdString(fwPath), PACKAGE_DATA);
@@ -94,7 +100,22 @@ void FindWidget::OnFindFinished()
         finder = nullptr;
     }
 
-    this->setWindowTitle(QString("Find - Finished"));
+    if (totalResults == 0)
+    {
+        this->setWindowTitle(QString("No results").arg(totalResults).arg(totalFilesWithResults));
+    }
+    else if (totalResults == 1)
+    {
+        this->setWindowTitle(QString("%1 result in %2 file").arg(totalResults).arg(totalFilesWithResults));
+    }
+    else if (totalFilesWithResults == 1)
+    {
+        this->setWindowTitle(QString("%1 results in %2 file").arg(totalResults).arg(totalFilesWithResults));
+    }
+    else
+    {
+        this->setWindowTitle(QString("%1 results in %2 files").arg(totalResults).arg(totalFilesWithResults));
+    }
 }
 
 void FindWidget::OnActivated(const QModelIndex& index)
