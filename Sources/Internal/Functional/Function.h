@@ -286,7 +286,7 @@ class HolderWeakObject
 public:
     using Fn = Ret (Cls::*)(ClsArgs...);
 
-    HolderWeakObject(const Fn& _fn, const std::weak_ptr<Obj> _obj)
+    HolderWeakObject(const Fn& _fn, const std::weak_ptr<Obj>& _obj)
         : fn(_fn)
         , obj(_obj)
     {

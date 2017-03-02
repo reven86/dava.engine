@@ -63,21 +63,16 @@ NetCore::~NetCore()
 #endif
 #endif
 
-    if (state == ACTIVE)
-    {
-        Finish(true);
-    }
+    Finish(true);
 
-    LockGuard<Mutex> lock(trackedObjectsMutex);
-    LockGuard<Mutex> lock2(dyingObjectsMutex);
-
-    DVASSERT(true == trackedObjects.empty());
-    DVASSERT(true == dyingObjects.empty());
     DVASSERT(state == FINISHED);
     if (netThread)
     {
         DVASSERT(netThread->GetState() == Thread::eThreadState::STATE_ENDED);
     }
+
+    DVASSERT(true == trackedObjects.empty());
+    DVASSERT(true == dyingObjects.empty());
 }
 
 void NetCore::NetThreadHandler()
@@ -180,7 +175,13 @@ void NetCore::DestroyControllerBlocked(TrackId id)
     IController* ctrl = GetTrackedObject(id);
     DVASSERT(ctrl != nullptr);
 
-    if (trackedObjects.erase(ctrl) > 0)
+    size_t erased = 0;
+    {
+        LockGuard<Mutex> lock(trackedObjectsMutex);
+        erased = trackedObjects.erase(ctrl);
+    }
+
+    if (erased > 0)
     {
         {
             LockGuard<Mutex> lock(dyingObjectsMutex);
@@ -188,20 +189,25 @@ void NetCore::DestroyControllerBlocked(TrackId id)
         }
         loop->Post(Bind(&NetCore::DoDestroy, this, ctrl));
 
-        while (true)
-        {
-            {
-                LockGuard<Mutex> lock(dyingObjectsMutex);
-                if (dyingObjects.find(ctrl) == dyingObjects.end())
-                {
-                    break;
-                }
-            }
-
-            DoUpdate();
-        }
+        WaitForDestroyed(ctrl);
     }
 #endif
+}
+
+void NetCore::WaitForDestroyed(IController* ctrl)
+{
+    while (true)
+    {
+        {
+            LockGuard<Mutex> lock(dyingObjectsMutex);
+            if (dyingObjects.find(ctrl) == dyingObjects.end())
+            {
+                break;
+            }
+        }
+
+        DoUpdate();
+    }
 }
 
 bool NetCore::PostAllToDestroy()
@@ -238,16 +244,22 @@ void NetCore::DestroyAllControllersBlocked()
     DVASSERT(controllersStoppedCallback == nullptr);
 
     PostAllToDestroy();
+    WaitForAllDestroyed();
+#endif
+}
 
+void NetCore::WaitForAllDestroyed()
+{
     while (true)
     {
-        LockGuard<Mutex> lock(dyingObjectsMutex);
-        if (dyingObjects.empty())
-            break;
+        {
+            LockGuard<Mutex> lock(dyingObjectsMutex);
+            if (dyingObjects.empty())
+                break;
+        }
 
         DoUpdate();
     }
-#endif
 }
 
 void NetCore::RestartAllControllers()
@@ -258,47 +270,35 @@ void NetCore::RestartAllControllers()
 #endif
 }
 
-void NetCore::Finish(bool doBlocked)
+void NetCore::Finish(bool waitForFinished)
 {
 #if !defined(DAVA_NETWORK_DISABLE)
 
-    state = FINISHING;
-    bool hasControllersToDestroy = PostAllToDestroy();
-
-    if (hasControllersToDestroy)
+    if (state == ACTIVE)
     {
-        if (doBlocked)
+        state = FINISHING;
+        bool hasControllersToDestroy = PostAllToDestroy();
+
+        if (!hasControllersToDestroy)
         {
+            AllDestroyed();
+        }
+
+        if (waitForFinished)
+        {
+            if (hasControllersToDestroy)
+            {
+                WaitForAllDestroyed();
+            }
+
             if (useSeparateThread)
             {
-                while (true)
-                {
-                    LockGuard<Mutex> lock(dyingObjectsMutex);
-                    if (dyingObjects.empty())
-                        break;
-
-                    ProcessPendingEvents();
-                }
                 netThread->Join();
-                Logger::Debug("Joined");
             }
             else
             {
                 loop->Run(IOLoop::RUN_DEFAULT);
             }
-        }
-    }
-    else
-    {
-        AllDestroyed();
-        if (useSeparateThread)
-        {
-            netThread->Join();
-            Logger::Debug("Joined");
-        }
-        else
-        {
-            loop->Run(IOLoop::RUN_DEFAULT);
         }
     }
 #endif
@@ -386,7 +386,7 @@ void NetCore::TrackedObjectStopped(IController* obj)
     }
 }
 
-size_t NetCore::ControllersCount()
+size_t NetCore::ControllersCount() const
 {
     LockGuard<Mutex> lock(trackedObjectsMutex);
     return trackedObjects.size();

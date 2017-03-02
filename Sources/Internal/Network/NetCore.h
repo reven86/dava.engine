@@ -73,7 +73,7 @@ public:
 
     void RestartAllControllers();
 
-    size_t ControllersCount();
+    size_t ControllersCount() const;
 
     int32 Run();
 #if defined(__DAVAENGINE_COREV2__)
@@ -102,6 +102,8 @@ private:
     void DoRestart();
 
     bool PostAllToDestroy();
+    void WaitForAllDestroyed();
+    void WaitForDestroyed(IController*);
     void DoDestroy(IController* ctrl);
     void AllDestroyed();
     IController* GetTrackedObject(TrackId id);
@@ -115,10 +117,10 @@ private:
     std::unique_ptr<IOLoop> loopHolder;
     bool useSeparateThread = false;
 
-    Mutex trackedObjectsMutex;
+    mutable Mutex trackedObjectsMutex;
     Set<IController*> trackedObjects; // Running objects
 
-    Mutex dyingObjectsMutex;
+    mutable Mutex dyingObjectsMutex;
     Set<IController*> dyingObjects;
 
     ServiceRegistrar registrar; //-V730_NOINIT

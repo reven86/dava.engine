@@ -59,7 +59,7 @@ void AddressResolver::DoAsyncResolve(const char8* address, uint16 port, Resolver
         SafeDelete(handle);
         Logger::Error("[AddressResolver::StartResolving] Can't get addr info: %s", Net::ErrorToString(res));
 
-        auto cbkResolveFailed = Bind(cbk, Endpoint(), -1);
+        auto cbkResolveFailed = Bind(cbk, Endpoint(), res);
         netEventsDispatcher->PostEvent(cbkResolveFailed);
 
         return;
