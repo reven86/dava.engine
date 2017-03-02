@@ -3,7 +3,7 @@
 #include "Base/BaseTypes.h"
 #include "Render/RenderBase.h"
 
-namespace TesterConfig
+namespace OverdrawTestConfig
 {
 extern DAVA::float32 chartHeight;
 extern DAVA::uint16 textureResolution;

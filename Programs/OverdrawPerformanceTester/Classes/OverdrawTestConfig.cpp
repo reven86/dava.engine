@@ -1,6 +1,6 @@
-#include "TesterConfig.h"
+#include "OverdrawTestConfig.h"
 
-namespace TesterConfig
+namespace OverdrawTestConfig
 {
 DAVA::float32 chartHeight = 0.144f;
 DAVA::uint16 textureResolution = 2048;

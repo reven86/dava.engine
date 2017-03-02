@@ -1,7 +1,7 @@
 #include "StartScreen.h"
 
 #include "GameCore.h"
-#include "TesterConfig.h"
+#include "OverdrawTestConfig.h"
 
 using DAVA::Rect;
 
@@ -78,7 +78,7 @@ void StartScreen::LoadResources()
     overdrawCountLabel = new UIStaticText(Rect(overdrawXOffset, overdrawYOffset, buttonWidth * 3.0f, buttonHeight));
     overdrawCountLabel->SetFont(font);
     overdrawCountLabel->SetTextColor(Color::White);
-    overdrawCountLabel->SetText(Format(L"%d", TesterConfig::overdrawScreensCount));
+    overdrawCountLabel->SetText(Format(L"%d", OverdrawTestConfig::overdrawScreensCount));
     overdrawCountLabel->SetTextAlign(ALIGN_HCENTER | ALIGN_VCENTER);
     overdrawCountLabel->SetDebugDraw(true);
     AddControl(overdrawCountLabel);
@@ -88,7 +88,7 @@ void StartScreen::LoadResources()
     chartHeightLabel = new UIStaticText(Rect(overdrawXOffset, chartHeightYOffset, buttonWidth * 3.0f, buttonHeight));
     chartHeightLabel->SetFont(font);
     chartHeightLabel->SetTextColor(Color::White);
-    chartHeightLabel->SetText(Format(L"%.3f", TesterConfig::chartHeight));
+    chartHeightLabel->SetText(Format(L"%.3f", OverdrawTestConfig::chartHeight));
     chartHeightLabel->SetTextAlign(ALIGN_HCENTER | ALIGN_VCENTER);
     chartHeightLabel->SetDebugDraw(true);
     AddControl(chartHeightLabel);
@@ -150,7 +150,7 @@ void StartScreen::OnResolutionButtonClick(BaseObject* sender, void* data, void* 
         if (btn.first->GetTag() == pickedButton->GetTag())
         {
             btn.first->SetDebugDrawColor(Green);
-            TesterConfig::textureResolution = btn.second.data;
+            OverdrawTestConfig::textureResolution = btn.second.data;
         }
         else
             btn.first->SetDebugDrawColor(Red);
@@ -166,7 +166,7 @@ void StartScreen::OnTextureFormatButtonClick(BaseObject* sender, void* data, voi
         if (btn.first->GetTag() == pickedButton->GetTag())
         {
             btn.first->SetDebugDrawColor(Green);
-            TesterConfig::pixelFormat = static_cast<DAVA::PixelFormat>(btn.second.data);
+            OverdrawTestConfig::pixelFormat = static_cast<DAVA::PixelFormat>(btn.second.data);
         }
         else
             btn.first->SetDebugDrawColor(Red);
@@ -181,8 +181,8 @@ void StartScreen::OnChangeOverdrawButtonClick(BaseObject* sender, void* data, vo
     {
         if (btn.first->GetTag() == pickedButton->GetTag())
         {
-            TesterConfig::overdrawScreensCount = Max(static_cast<uint8>(1), static_cast<uint8>(TesterConfig::overdrawScreensCount + btn.second.data));
-            overdrawCountLabel->SetText(Format(L"%d", TesterConfig::overdrawScreensCount));
+            OverdrawTestConfig::overdrawScreensCount = Max(static_cast<uint8>(1), static_cast<uint8>(OverdrawTestConfig::overdrawScreensCount + btn.second.data));
+            overdrawCountLabel->SetText(Format(L"%d", OverdrawTestConfig::overdrawScreensCount));
         }
     }
 }
@@ -195,8 +195,8 @@ void StartScreen::OnChangeChartHeightButtonClick(BaseObject* sender, void* data,
     {
         if (btn.first->GetTag() == pickedButton->GetTag())
         {
-            TesterConfig::chartHeight = Max(minFrametimeThreshold, TesterConfig::chartHeight + btn.second.data * frametimeIncreaseStep);
-            chartHeightLabel->SetText(Format(L"%.3f", TesterConfig::chartHeight));
+            OverdrawTestConfig::chartHeight = Max(minFrametimeThreshold, OverdrawTestConfig::chartHeight + btn.second.data * frametimeIncreaseStep);
+            chartHeightLabel->SetText(Format(L"%.3f", OverdrawTestConfig::chartHeight));
         }
     }
 }

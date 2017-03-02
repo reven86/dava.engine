@@ -1,6 +1,6 @@
 #include "OverdrawTestingScreen.h"
 
-#include "TesterConfig.h"
+#include "OverdrawTestConfig.h"
 #include "GameCore.h"
 #include "OverdrawTesterComponent.h"
 #include "OverdrawTesterSystem.h"
@@ -27,7 +27,7 @@ void OverdrawTestingScreen::LoadResources()
         scene = new Scene();
         scene->LoadScene(GameCore::Instance()->GetScenePath());
 
-        testerSystem = new OverdrawTesterSystem(scene, TesterConfig::pixelFormat, TesterConfig::textureResolution,
+        testerSystem = new OverdrawTesterSystem(scene, OverdrawTestConfig::pixelFormat, OverdrawTestConfig::textureResolution,
                                                 [this](DAVA::Array<DAVA::Vector<FrameData>, 6>* performanceData)
                                                 {
                                                     chartPainterSystem->ProcessPerformanceData(performanceData);
@@ -35,7 +35,7 @@ void OverdrawTestingScreen::LoadResources()
 
         scene->AddSystem(testerSystem, MAKE_COMPONENT_MASK(OverdrawTesterComonent::OVERDRAW_TESTER_COMPONENT), Scene::SCENE_SYSTEM_REQUIRE_PROCESS);
 
-        chartPainterSystem = new ChartPainterSystem(scene, TesterConfig::chartHeight);
+        chartPainterSystem = new ChartPainterSystem(scene, OverdrawTestConfig::chartHeight);
         scene->AddSystem(chartPainterSystem, MAKE_COMPONENT_MASK(OverdrawTesterComonent::OVERDRAW_TESTER_COMPONENT), Scene::SCENE_SYSTEM_REQUIRE_PROCESS);
 
         ScopedPtr<Camera> camera(new Camera());
@@ -58,7 +58,7 @@ void OverdrawTestingScreen::LoadResources()
         cameraEntity->Release();
 
         Entity* overdrawTesterEntity = new Entity();
-        overdrawTesterEntity->AddComponent(new OverdrawPerformanceTester::OverdrawTesterComonent(TesterConfig::textureResolution, TesterConfig::overdrawScreensCount));
+        overdrawTesterEntity->AddComponent(new OverdrawPerformanceTester::OverdrawTesterComonent(OverdrawTestConfig::textureResolution, OverdrawTestConfig::overdrawScreensCount));
         scene->AddNode(overdrawTesterEntity);
         overdrawTesterEntity->Release();
 
@@ -71,9 +71,9 @@ void OverdrawTestingScreen::LoadResources()
         sceneView->SetScene(scene);
         AddControl(sceneView);
 
-        auto a = TesterConfig::overdrawScreensCount;
-        auto b = TesterConfig::pixelFormat;
-        auto c = TesterConfig::textureResolution;
+        auto a = OverdrawTestConfig::overdrawScreensCount;
+        auto b = OverdrawTestConfig::pixelFormat;
+        auto c = OverdrawTestConfig::textureResolution;
     }
 }
 
