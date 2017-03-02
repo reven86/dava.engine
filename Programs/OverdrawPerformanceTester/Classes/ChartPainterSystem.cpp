@@ -47,9 +47,10 @@ const Array<Color, 6> ChartPainterSystem::chartColors =
 { 1.0f, 0.0f, 0.0f, 1.0f }
 } };
 
-ChartPainterSystem::ChartPainterSystem(Scene* scene)
+ChartPainterSystem::ChartPainterSystem(Scene* scene, float32 maxFrametime_)
     : SceneSystem(scene)
     , performanceData(nullptr)
+    , maxFrametime(maxFrametime_)
     , textColor(rhi::NativeColorRGBA(1.0f, 1.0f, 1.0f, 1.0f))
 {
     rhi::RenderPassConfig passConfig;
@@ -221,7 +222,6 @@ void ChartPainterSystem::ProcessPerformanceData(Array<Vector<FrameData>, 6>* per
 {
     performanceData = performanceData_;
     // use maxFrametime = GetMaxFrametime(); adaptive y axis
-    maxFrametime = 0.13f;
     frametimeAxisLen = maxFrametime - minFrametime;
     frametimeStepCount = frametimeAxisLen / frametimeStep;
 }

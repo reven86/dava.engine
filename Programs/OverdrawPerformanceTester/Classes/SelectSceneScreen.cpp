@@ -17,6 +17,9 @@ const float32 SelectSceneScreen::texturePixelFormatXOffset = 250.0f;
 const float32 SelectSceneScreen::texturePixelFormatYOffset = 100.0f;
 const float32 SelectSceneScreen::overdrawXOffset = 490.0f;
 const float32 SelectSceneScreen::overdrawYOffset = 100.0f;
+const float32 SelectSceneScreen::chartHeightYOffset = overdrawYOffset + buttonHeight * 4;
+const float32 SelectSceneScreen::minFrametimeThreshold = 0.033f;
+const float32 SelectSceneScreen::frametimeIncreaseStep = 0.016f;
 
 const Array<SelectSceneScreen::ButtonInfo, 4> SelectSceneScreen::resolutionButtonsInfo =
 { {
@@ -41,6 +44,12 @@ const Array<SelectSceneScreen::ButtonInfo, 2> SelectSceneScreen::overdrawButtons
     { L"+", 2, Rect(overdrawXOffset + buttonWidth * 1.5f, overdrawYOffset + buttonHeight, buttonWidth * 1.5f, buttonHeight), 1 }
 } };
 
+const Array<SelectSceneScreen::ButtonInfo, 2> SelectSceneScreen::chartHeightButtonsInfo =
+{ {
+    { L"-", 1, Rect(overdrawXOffset, chartHeightYOffset + buttonHeight, buttonWidth * 1.5f, buttonHeight), -1 },
+    { L"+", 2, Rect(overdrawXOffset + buttonWidth * 1.5f, chartHeightYOffset + buttonHeight, buttonWidth * 1.5f, buttonHeight), 1 }
+    } };
+
 SelectSceneScreen::SelectSceneScreen()
     : BaseScreen()
 {
@@ -59,9 +68,9 @@ void SelectSceneScreen::LoadResources()
     ScopedPtr<UIButton> startButton(CreateButton(Rect(5, 5, screenRect.dx, buttonHeight), L"Start"));
     startButton->SetDebugDraw(true);
     startButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &SelectSceneScreen::OnStart));
+    AddControl(startButton);
     
     CreateLabel({ overdrawXOffset, overdrawYOffset - buttonHeight, buttonWidth * 3.0f, buttonHeight }, L"Overdraw screens count");
-
     overdrawCountLabel = new UIStaticText(Rect(overdrawXOffset, overdrawYOffset, buttonWidth * 3.0f, buttonHeight));
     overdrawCountLabel->SetFont(font);
     overdrawCountLabel->SetTextColor(Color::White);
@@ -69,18 +78,23 @@ void SelectSceneScreen::LoadResources()
     overdrawCountLabel->SetTextAlign(ALIGN_HCENTER | ALIGN_VCENTER);
     overdrawCountLabel->SetDebugDraw(true);
     AddControl(overdrawCountLabel);
-
     InitializeButtons(overdrawButtonsInfo, overdrawButtons, Message(this, &SelectSceneScreen::OnChangeOverdrawButtonClick), false);
 
-    CreateLabel({ resolutionButtonsXOffset, resolutionButtonsYOffset - buttonHeight, buttonWidth, buttonHeight }, L"Tex resolution");
+    CreateLabel({ overdrawXOffset, chartHeightYOffset - buttonHeight, buttonWidth * 3.0f, buttonHeight }, L"Max frametime");
+    chartHeightLabel = new UIStaticText(Rect(overdrawXOffset, chartHeightYOffset, buttonWidth * 3.0f, buttonHeight));
+    chartHeightLabel->SetFont(font);
+    chartHeightLabel->SetTextColor(Color::White);
+    chartHeightLabel->SetText(Format(L"%.3f", TesterConfig::chartHeight));
+    chartHeightLabel->SetTextAlign(ALIGN_HCENTER | ALIGN_VCENTER);
+    chartHeightLabel->SetDebugDraw(true);
+    AddControl(chartHeightLabel);
+    InitializeButtons(chartHeightButtonsInfo, chartHeightButtons, Message(this, &SelectSceneScreen::OnChangeChartHeightButtonClick), false);
 
+    CreateLabel({ resolutionButtonsXOffset, resolutionButtonsYOffset - buttonHeight, buttonWidth, buttonHeight }, L"Tex resolution");
     InitializeButtons(resolutionButtonsInfo, resolutionButtons, Message(this, &SelectSceneScreen::OnResolutionButtonClick));
 
     CreateLabel({ texturePixelFormatXOffset, texturePixelFormatYOffset - buttonHeight, buttonWidth, buttonHeight }, L"Tex format");
-
     InitializeButtons(texturePixelFormatButtonsInfo, texturePixelFormatButtons, Message(this, &SelectSceneScreen::OnTextureFormatButtonClick));
-
-    AddControl(startButton);
 
     SetDebugDraw(false, false);
 }
@@ -92,8 +106,10 @@ void SelectSceneScreen::UnloadResources()
     ReleaseButtons(resolutionButtons);
     ReleaseButtons(texturePixelFormatButtons);
     ReleaseButtons(overdrawButtons);
+    ReleaseButtons(chartHeightButtons);
 
     SafeRelease(overdrawCountLabel);
+    SafeRelease(chartHeightLabel);
 }
 
 void SelectSceneScreen::CreateLabel(const Rect&& rect, const WideString&& caption)
@@ -163,6 +179,20 @@ void SelectSceneScreen::OnChangeOverdrawButtonClick(BaseObject* sender, void* da
         {
             TesterConfig::overdrawScreensCount = Max(static_cast<uint8>(1), static_cast<uint8>(TesterConfig::overdrawScreensCount + btn.second.data));
             overdrawCountLabel->SetText(Format(L"%d", TesterConfig::overdrawScreensCount));
+        }
+    }
+}
+
+void SelectSceneScreen::OnChangeChartHeightButtonClick(BaseObject* sender, void* data, void* callerData)
+{
+    UIButton* pickedButton = DynamicTypeCheck<UIButton*>(sender);
+
+    for (auto& btn : overdrawButtons)
+    {
+        if (btn.first->GetTag() == pickedButton->GetTag())
+        {
+            TesterConfig::chartHeight = Max(minFrametimeThreshold, TesterConfig::chartHeight + btn.second.data * frametimeIncreaseStep);
+            chartHeightLabel->SetText(Format(L"%.3f", TesterConfig::chartHeight));
         }
     }
 }

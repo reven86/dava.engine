@@ -9,7 +9,7 @@ struct FrameData;
 class ChartPainterSystem : public DAVA::SceneSystem
 {
 public:
-    ChartPainterSystem(DAVA::Scene* scene);
+    ChartPainterSystem(DAVA::Scene* scene, float32 maxFrametime_);
     ~ChartPainterSystem();
 
     void AddEntity(DAVA::Entity* entity) override;

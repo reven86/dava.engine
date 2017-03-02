@@ -32,6 +32,7 @@ private:
     void OnResolutionButtonClick(BaseObject* sender, void* data, void* callerData);
     void OnTextureFormatButtonClick(BaseObject* sender, void* data, void* callerData);
     void OnChangeOverdrawButtonClick(BaseObject* sender, void* data, void* callerData);
+    void OnChangeChartHeightButtonClick(BaseObject* sender, void* data, void* callerData);
     
     template <size_t size>
     void InitializeButtons(const Array<ButtonInfo, size>& buttonsInfo, UnorderedMap<UIButton*, ButtonInfo>& buttonsMap, Message& msg, bool isFirstButtonGreen = true)
@@ -50,10 +51,12 @@ private:
     }
 
     UIStaticText* overdrawCountLabel = nullptr;
+    UIStaticText* chartHeightLabel = nullptr;
     
     UnorderedMap<UIButton*, ButtonInfo> resolutionButtons;
     UnorderedMap<UIButton*, ButtonInfo> texturePixelFormatButtons;
     UnorderedMap<UIButton*, ButtonInfo> overdrawButtons;
+    UnorderedMap<UIButton*, ButtonInfo> chartHeightButtons;
 
     static const Color Red;
     static const Color Green;
@@ -67,9 +70,13 @@ private:
     static const float32 texturePixelFormatYOffset; 
     static const float32 overdrawXOffset;
     static const float32 overdrawYOffset;
+    static const float32 chartHeightYOffset;
+    static const float32 minFrametimeThreshold;
+    static const float32 frametimeIncreaseStep;
 
     static const Array<ButtonInfo, 4> resolutionButtonsInfo;
     static const Array<ButtonInfo, 5> texturePixelFormatButtonsInfo;
     static const Array<ButtonInfo, 2> overdrawButtonsInfo;
+    static const Array<ButtonInfo, 2> chartHeightButtonsInfo;
 };
 
