@@ -452,6 +452,12 @@ IUIWebViewDelegate::eAction WebViewControl::HandleUriNavigation(::Windows::Found
     String url = UTF8Utils::EncodeToUTF8(uri->AbsoluteCanonicalUri->Data());
     Logger::FrameworkDebug("[WebView] HandleUriNavigation: url=%s", url.c_str());
 
+    // Delegate can hide UIWebView control which possesses this native control, but UI thread is blocked.
+    // Also during delegate invokation user can click link multiple times and webview later will follow them.
+    // Try to hide native webview while asking delegate to reduce cases described above.
+    using ::Windows::UI::Xaml::Visibility;
+    nativeWebView->Visibility = Visibility::Collapsed;
+
     bool redirectedByMouse = !programmaticUrlNavigation;
     IUIWebViewDelegate::eAction whatToDo = IUIWebViewDelegate::PROCESS_IN_WEBVIEW;
 #if defined(__DAVAENGINE_COREV2__)
@@ -462,6 +468,8 @@ IUIWebViewDelegate::eAction WebViewControl::HandleUriNavigation(::Windows::Found
         }
     });
 #endif
+
+    nativeWebView->Visibility = Visibility::Visible;
     return whatToDo;
 }
 
