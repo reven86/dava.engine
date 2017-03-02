@@ -52,7 +52,7 @@ uniform sampler2D cursorTexture;
     [material][a] property float inSpecularity            = 1.0;
     [material][a] property float3 metalFresnelReflectance = float3(0.5,0.5,0.5);
     [material][a] property float4 lightPosition0;
-    [material][a] property float3 lightColor0;
+    [material][a] property float3 lightColor0             = float3(1,1,1);
     
     inline float3 FresnelShlickVec3( float NdotL, float3 Cspec )
     {

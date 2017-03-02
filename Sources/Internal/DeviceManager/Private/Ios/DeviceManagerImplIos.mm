@@ -9,24 +9,26 @@
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 
 #import <UIKit/UIScreen.h>
+#import <UIKit/UIDevice.h>
 
 namespace DAVA
 {
 namespace Private
 {
-static const CGFloat defaultIPhoneDpi = 160;
+enum eIosDpi
+{
+    IPHONE_3_IPAD_MINI = 163,
+    IPHONE_4_5_6_SE_IPAD_MINI2_MINI3 = 326,
+    IPAD_1_2 = 132,
+    IPAD_3_4_AIR_AIR2_PRO = 264,
+    IPHONE_6_PLUS = 401,
+    IPHONE_6_PLUS_ZOOM = 461,
+};
+
+static const CGFloat defaultDpi = 160;
+
 float32 DeviceManagerImpl::GetIPhoneMainScreenDpi()
 {
-    enum eIosDpi
-    {
-        IPHONE_3_IPAD_MINI = 163,
-        IPHONE_4_5_6_SE_IPAD_MINI2_MINI3 = 326,
-        IPAD_1_2 = 132,
-        IPAD_3_4_AIR_AIR2_PRO = 264,
-        IPHONE_6_PLUS = 401,
-        IPHONE_6_PLUS_ZOOM = 461,
-    };
-
     struct AppleDevice
     {
         int minSide;
@@ -51,7 +53,7 @@ float32 DeviceManagerImpl::GetIPhoneMainScreenDpi()
     CGSize screenSize = [ ::UIScreen mainScreen].bounds.size;
     CGFloat screenScale = [ ::UIScreen mainScreen].scale;
 
-    float32 dpi = static_cast<float32>(defaultIPhoneDpi * screenScale);
+    float32 dpi = static_cast<float32>(defaultDpi * screenScale);
     CGFloat minSide = std::min(screenSize.width * screenScale, screenSize.height * screenScale);
 
     // find possible device with calculated side
@@ -98,13 +100,22 @@ DeviceManagerImpl::DeviceManagerImpl(DeviceManager* devManager, Private::MainDis
 
 void DeviceManagerImpl::UpdateDisplayConfig()
 {
-    size_t screensCount = [[ ::UIScreen screens] count];
+    NSMutableArray<::UIScreen*>* screens = [[[ ::UIScreen screens] mutableCopy] autorelease];
+    ::UIScreen* mainScreen = [ ::UIScreen mainScreen];
+
+    // https://developer.apple.com/reference/uikit/uiscreen/1617812-screens?language=objc
+    // Apple's documentation clearly says that [UIScreen screens] should contain at least one element - primary display
+    // Despite of that iOS 8.0.2 returns empty array
+    // We manually add mainScreen object to screens array to workaround this
+    if ([screens count] == 0 && mainScreen != nil)
+    {
+        [screens addObject:mainScreen];
+    }
 
     deviceManager->displays.clear();
-    deviceManager->displays.reserve(screensCount);
+    deviceManager->displays.reserve([screens count]);
 
-    ::UIScreen* mainScreen = [ ::UIScreen mainScreen];
-    for (::UIScreen* screen in [ ::UIScreen screens])
+    for (::UIScreen* screen in screens)
     {
         DisplayInfo displayInfo;
 
@@ -128,9 +139,27 @@ void DeviceManagerImpl::UpdateDisplayConfig()
         {
             DVASSERT(false, "DPI retriving isn't implemented");
 
-            displayInfo.rawDpiX = 160; // temp dpi, must be changed
-            displayInfo.rawDpiY = 160; // temp dpi, must be changed
-            displayInfo.name = "display";
+            UIUserInterfaceIdiom idom = [[UIDevice currentDevice] userInterfaceIdiom];
+
+            if (idom == UIUserInterfaceIdiomPad)
+            {
+                displayInfo.rawDpiX = IPAD_3_4_AIR_AIR2_PRO; // default pad dpi, can be changed
+                displayInfo.rawDpiY = IPAD_3_4_AIR_AIR2_PRO; // default pad dpi, can be changed
+                displayInfo.name = "padMainScreen";
+            }
+            else if (idom == UIUserInterfaceIdiomPhone)
+            {
+                displayInfo.rawDpiX = IPHONE_4_5_6_SE_IPAD_MINI2_MINI3; // default phone dpi, can be changed
+                displayInfo.rawDpiY = IPHONE_4_5_6_SE_IPAD_MINI2_MINI3; // default phone dpi, can be changed
+                displayInfo.name = "phoneMainScreen";
+            }
+            else
+            {
+                CGFloat defaultScreenDpi = defaultDpi * [ ::UIScreen mainScreen].scale;
+                displayInfo.rawDpiX = defaultScreenDpi;
+                displayInfo.rawDpiY = defaultScreenDpi;
+                displayInfo.name = "unknownMainScreen";
+            }
         }
 
         displayInfo.systemId = reinterpret_cast<uintptr_t>(screen);

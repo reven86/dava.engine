@@ -1,6 +1,8 @@
 CheckBoxTest.h
 ClientModuleTest.h
+ComboBoxCheckableTest.h
 ComboBoxTest.h
+ComponentStructureWrapperTest.h
 ContextHierarchyTest.h
 DataListenerTest.h
 DoubleSpinBoxTests.h
@@ -8,4 +10,6 @@ FieldBinderTest.h
 FilePathEditTest.h
 IntSpinBoxTests.h
 LineEditTest.h
+PlainTextEditTest.h
+QtWrapLayoutTests.h
 SceneTabbarTest.h

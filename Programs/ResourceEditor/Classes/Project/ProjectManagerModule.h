@@ -1,11 +1,11 @@
 #pragma once
 
-#include "Classes/Qt/Main/RecentMenuItems.h"
-#include "TArc/Core/ClientModule.h"
-#include "TArc/Utils/QtConnections.h"
 #include "Project/ProjectResources.h"
 
-#include "QtTools/Utils/QtDelayedExecutor.h"
+#include <TArc/Models/RecentMenuItems.h>
+#include <TArc/Core/ClientModule.h>
+#include <TArc/Utils/QtConnections.h>
+#include <QtTools/Utils/QtDelayedExecutor.h>
 
 class ProjectManagerData;
 class ProjectManagerModule : public DAVA::TArc::ClientModule
@@ -31,7 +31,7 @@ private:
     ProjectManagerData* GetData();
 
 private:
-    std::unique_ptr<RecentMenuItems> recentProject;
+    std::unique_ptr<RecentMenuItems> recentProjects;
     DAVA::TArc::QtConnections connections;
     QtDelayedExecutor delayedExecutor;
     std::unique_ptr<ProjectResources> projectResources;

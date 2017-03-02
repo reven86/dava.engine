@@ -131,10 +131,13 @@ void TextureScrollArea::setImage(const QImage& image)
     adjustWidgetsPos();
 }
 
-void TextureScrollArea::setColorChannel(int mask)
+void TextureScrollArea::setColorChannel(int mask, ChannelApplyMode mode)
 {
     textureColorMask = mask;
-    applyTextureImageToScenePixmap();
+    if (mode == ApplyNow)
+    {
+        applyTextureImageToScenePixmap();
+    }
 }
 
 float TextureScrollArea::getTextureZoom()
@@ -397,28 +400,24 @@ QImage TextureScrollArea::getImage()
 void TextureScrollArea::setImage(const QList<QImage>& images, int flags)
 {
     currentTextureImage = QImage();
-    currentCompositeImages.clear();
-    currentCompositeImages.resize(images.size());
 
-    for (int i = 0; i < images.size(); ++i)
+    currentCompositeImages.clear();
+    currentCompositeImages.reserve(images.size());
+
+    noImageVisible = true;
+    for (const QImage& image : images)
     {
-        currentCompositeImages[i] = images[i];
+        currentCompositeImages.push_back(image);
+        noImageVisible = noImageVisible && image.isNull();
     }
+    noImageProxy->setVisible(noImageVisible);
 
     compositeImagesFlags = flags;
 
-    applyTextureImageToScenePixmap();
-    applyTextureImageBorder();
-
-    if (isCompositeImage())
+    if (!noImageVisible)
     {
-        noImageVisible = (images.size() == 0);
-        noImageProxy->setVisible(noImageVisible);
-    }
-    else
-    {
-        noImageVisible = currentTextureImage.isNull();
-        noImageProxy->setVisible(noImageVisible);
+        applyTextureImageToScenePixmap();
+        applyTextureImageBorder();
     }
 
     adjustWidgetsPos();

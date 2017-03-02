@@ -1,8 +1,6 @@
 #include "DAVAEngine.h"
 #include "UnitTests/UnitTests.h"
 
-#include "Infrastructure/TextureUtils.h"
-
 #include "Platform/DeviceInfo.h"
 
 using namespace DAVA;

@@ -1,7 +1,12 @@
-#include "Render/PixelFormatDescriptor.h"
+#include "Base/GlobalEnum.h"
+#include "Render/Image/Image.h"
 #include "Render/Image/ImageConvert.h"
-
+#include "Render/Image/ImageSystem.h"
+#include "Render/PixelFormatDescriptor.h"
+#include "Render/RHI/rhi_Public.h"
 #include "UnitTests/UnitTests.h"
+#include "Utils/StringFormat.h"
+
 #include "Infrastructure/TextureUtils.h"
 
 using namespace DAVA;
@@ -152,6 +157,19 @@ DAVA_TESTCLASS (FormatsTest)
         {
             const String formatName = GlobalEnumMap<DAVA::PixelFormat>::Instance()->ToString(requestedFormat);
             const DAVA::FilePath compressedPathname(DAVA::Format("~res:/TestData/FormatsTest/webp/%s.dat", formatName.c_str()));
+            TestImageInfo(compressedPathname, requestedFormat);
+        }
+    }
+
+    DAVA_TEST (TestHDR)
+    {
+        Vector<PixelFormat> suportedFormats;
+        suportedFormats.push_back(FORMAT_RGBA32F);
+
+        for (PixelFormat requestedFormat : suportedFormats)
+        {
+            const String formatName = GlobalEnumMap<DAVA::PixelFormat>::Instance()->ToString(requestedFormat);
+            const DAVA::FilePath compressedPathname(DAVA::Format("~res:/TestData/FormatsTest/hdr/%s.dat", formatName.c_str()));
             TestImageInfo(compressedPathname, requestedFormat);
         }
     }
