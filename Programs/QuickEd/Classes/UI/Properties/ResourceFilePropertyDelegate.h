@@ -4,6 +4,9 @@
 #include "BasePropertyDelegate.h"
 
 class Project;
+#if defined(__DAVAENGINE_MACOS__)
+class MacOSSymLinkRestorer;
+#endif //__DAVAENGINE_MACOS__
 
 class ResourceFilePropertyDelegate : public BasePropertyDelegate
 {
@@ -25,12 +28,17 @@ private slots:
 
 private:
     bool IsPathValid(const QString& path);
+    QString RestoreSymLinkInFilePath(const QString& filePath) const;
+
     QPointer<QLineEdit> lineEdit = nullptr;
     const Project* project = nullptr;
 
     QString resourceExtension;
     QString projectResourceDir;
     QString resourceSubDir;
+#if defined(__DAVAENGINE_MACOS__)
+    std::unique_ptr<MacOSSymLinkRestorer> symLinkRestorer;
+#endif
 };
 
 #endif // __RESOURCE_FILE_PROPERTY_DELEGATE_H__

@@ -49,7 +49,7 @@ protected:
     void PostInit() override
     {
         ContextManager* ctxManager = GetContextManager();
-        DataContext::ContextID id = ctxManager->CreateContext(DAVA::Vector<std::unique_ptr<DAVA::TArc::DataNode>>());
+        DataContext::ContextID id = ctxManager->CreateContext(DAVA::Vector<std::unique_ptr<DataNode>>());
         ctxManager->ActivateContext(id);
     }
 
@@ -179,9 +179,21 @@ DataContext* TestClass::GetActiveContext()
     return core->GetCoreInterface()->GetActiveContext();
 }
 
+const DataContext* TestClass::GetActiveContext() const
+{
+    const Core* corePtr = core.get();
+    return corePtr->GetCoreInterface()->GetActiveContext();
+}
+
 DataContext* TestClass::GetGlobalContext()
 {
     return core->GetCoreInterface()->GetGlobalContext();
+}
+
+const DataContext* TestClass::GetGlobalContext() const
+{
+    const Core* corePtr = core.get();
+    return corePtr->GetCoreInterface()->GetGlobalContext();
 }
 
 DataWrapper TestClass::CreateWrapper(const DAVA::ReflectedType* type)
@@ -189,14 +201,26 @@ DataWrapper TestClass::CreateWrapper(const DAVA::ReflectedType* type)
     return core->GetCoreInterface()->CreateWrapper(type);
 }
 
-DAVA::TArc::ContextAccessor* TestClass::GetAccessor()
+ContextAccessor* TestClass::GetAccessor()
 {
     return core->GetCoreInterface();
 }
 
-DAVA::TArc::ContextManager* TestClass::GetContextManager()
+const ContextAccessor* TestClass::GetAccessor() const
+{
+    const Core* corePtr = core.get();
+    return corePtr->GetCoreInterface();
+}
+
+ContextManager* TestClass::GetContextManager()
 {
     return core->GetCoreInterface();
+}
+
+const ContextManager* TestClass::GetContextManager() const
+{
+    const Core* corePtr = core.get();
+    return corePtr->GetCoreInterface();
 }
 
 QWidget* TestClass::GetWindow(const WindowKey& wndKey) const

@@ -13,7 +13,7 @@ class AbstractProperty;
 class ChangePropertyValueCommand : public DAVA::Command
 {
 public:
-    ChangePropertyValueCommand(PackageNode* _root, ControlNode* _node, AbstractProperty* _property, const DAVA::VariantType& newValue);
+    ChangePropertyValueCommand(ControlNode* _node, AbstractProperty* _property, const DAVA::VariantType& newValue);
     ~ChangePropertyValueCommand() override = default;
 
     void Redo() override;
