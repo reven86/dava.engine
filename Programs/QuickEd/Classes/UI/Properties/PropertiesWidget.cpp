@@ -19,7 +19,7 @@
 #include "PropertiesModel.h"
 #include "UI/Properties/PropertiesTreeItemDelegate.h"
 
-#include "Document/Document.h"
+#include "Modules/LegacySupportModule/Private/Document.h"
 #include "UI/Components/UIComponent.h"
 #include "UI/UIControl.h"
 #include "UI/Styles/UIStyleSheetPropertyDataBase.h"

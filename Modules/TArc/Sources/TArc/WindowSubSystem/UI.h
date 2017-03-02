@@ -145,12 +145,22 @@ struct ModalMessageParams
         Reset = 0x8000
     };
 
+    enum Icon
+    {
+        NoIcon,
+        Information,
+        Warning,
+        Critical,
+        Question
+    };
+
     Q_DECLARE_FLAGS(Buttons, Button);
 
     QString title;
     QString message;
     Buttons buttons = Buttons(Ok | Cancel);
     Button defaultButton = NoButton;
+    Icon icon = NoIcon;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(ModalMessageParams::Buttons);

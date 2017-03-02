@@ -151,8 +151,12 @@ vertex_out vp_main( vertex_in input )
 
 #else
     
-    float4 heightmapSample = tex2D(heightmap, float2(relativePosition + 0.5 / heightmapTextureSize), 0.0);
-    float height = dot(heightmapSample, float4(0.00022888532845, 0.00366216525521, 0.05859464408331, 0.93751430533303));
+    #if HEIGHTMAP_FLOAT_TEXTURE
+        float height = tex2Dlod(heightmap, float2(relativePosition + 0.5 / heightmapTextureSize), 0.0).r;
+    #else	
+        float4 heightmapSample = tex2Dlod(heightmap, float2(relativePosition + 0.5 / heightmapTextureSize), 0.0);
+        float height = dot(heightmapSample, float4(0.00022888532845, 0.00366216525521, 0.05859464408331, 0.93751430533303));
+    #endif
     
 #endif
 
@@ -162,7 +166,7 @@ vertex_out vp_main( vertex_in input )
     output.texCoord = float2(relativePosition.x, 1.0 - relativePosition.y);
      
 #if LANDSCAPE_SPECULAR
-    float4 tangentBasisSample = tex2D(tangentSpace, float2(relativePosition + 0.5 / heightmapTextureSize), 0.0) * 2.0 - 1.0;
+    float4 tangentBasisSample = tex2Dlod(tangentSpace, float2(relativePosition + 0.5 / heightmapTextureSize), 0.0) * 2.0 - 1.0;
     float3 inNormal;
     float3 inTangent;
     inNormal.xy = tangentBasisSample.rg;

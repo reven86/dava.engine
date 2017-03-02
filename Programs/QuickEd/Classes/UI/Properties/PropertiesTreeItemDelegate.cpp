@@ -16,7 +16,6 @@
 #include <QSortFilterProxyModel>
 #include <QAbstractItemModel>
 
-#include "DAVAEngine.h"
 #include "Model/ControlProperties/AbstractProperty.h"
 #include "Utils/QtDavaConvertion.h"
 #include "Vector2PropertyDelegate.h"
@@ -34,7 +33,7 @@
 #include "FontPropertyDelegate.h"
 #include "TablePropertyDelegate.h"
 #include "CompletionsProviderForScrollBar.h"
-#include "Project/Project.h"
+#include "Modules/LegacySupportModule/Private/Project.h"
 
 using namespace DAVA;
 
