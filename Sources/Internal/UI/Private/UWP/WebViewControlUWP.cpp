@@ -453,7 +453,7 @@ IUIWebViewDelegate::eAction WebViewControl::HandleUriNavigation(::Windows::Found
     Logger::FrameworkDebug("[WebView] HandleUriNavigation: url=%s", url.c_str());
 
     // Delegate can hide UIWebView control which possesses this native control, but UI thread is blocked.
-    // Also during delegate invokation user can click link multiple times and webview later will follow them.
+    // Also during delegate invocation user can click link multiple times and webview later will follow them.
     // Try to hide native webview while asking delegate to reduce cases described above.
     using ::Windows::UI::Xaml::Visibility;
     nativeWebView->Visibility = Visibility::Collapsed;
