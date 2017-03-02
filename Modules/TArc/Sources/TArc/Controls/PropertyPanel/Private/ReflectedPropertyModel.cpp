@@ -152,7 +152,7 @@ void ReflectedPropertyModel::UpdateFastImpl(ReflectedPropertyItem* item)
         return;
     }
 
-    if (item->GetPropertyNode(0)->field.ref.HasMeta<M::UpdateOften>())
+    if (item->GetPropertyNode(0)->field.ref.HasMeta<M::FrequentlyChangedValue>())
     {
         Update(item);
     }
@@ -165,7 +165,7 @@ void ReflectedPropertyModel::UpdateFastImpl(ReflectedPropertyItem* item)
 
 DataWrappersProcessor* ReflectedPropertyModel::GetWrappersProcessor(const std::shared_ptr<PropertyNode>& node)
 {
-    if (node->field.ref.HasMeta<M::UpdateOften>())
+    if (node->field.ref.HasMeta<M::FrequentlyChangedValue>())
     {
         return &fastWrappersProcessor;
     }

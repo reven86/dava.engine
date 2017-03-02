@@ -6,10 +6,14 @@ namespace DAVA
 {
 namespace TArc
 {
+const int32 TimerUpdater::DisableFastUpdate = -1;
+
 TimerUpdater::TimerUpdater(int32 fullUpdateMS, int32 fastUpdateMS)
 {
     DVASSERT(fullUpdateMS > fastUpdateMS);
-    if (fastUpdateMS == -1)
+    DVASSERT(fullUpdateMS > 0);
+    DVASSERT(fastUpdateMS != 0);
+    if (fastUpdateMS == DisableFastUpdate)
     {
         fullUpdateTimer.reset(new QTimer());
         fullUpdateTimer->setInterval(fullUpdateMS);

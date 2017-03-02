@@ -11,6 +11,7 @@ namespace TArc
 class TimerUpdater final : public PropertiesView::Updater
 {
 public:
+    static const int32 DisableFastUpdate;
     TimerUpdater(int32 fullUpdateMS, int32 fastUpdateMS);
     ~TimerUpdater();
 
