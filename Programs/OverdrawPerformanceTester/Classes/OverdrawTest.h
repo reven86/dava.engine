@@ -4,15 +4,15 @@
 
 using namespace DAVA;
 
-class StartScreen : public BaseScreen
+class OverdrawTest : public BaseScreen
 {
 public:
-    StartScreen();
+    OverdrawTest();
 
     virtual void LoadResources();
     virtual void UnloadResources();
 
-    virtual ~StartScreen()
+    virtual ~OverdrawTest()
     {
     }
 

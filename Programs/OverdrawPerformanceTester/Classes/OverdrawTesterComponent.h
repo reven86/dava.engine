@@ -24,7 +24,7 @@ public:
     };
     IMPLEMENT_COMPONENT_TYPE(OVERDRAW_TESTER_COMPONENT);
 
-    OverdrawTesterComonent(uint16 textureResolution_, uint8 overdrawScreenCount);
+    OverdrawTesterComonent(DAVA::uint16 textureResolution_, DAVA::uint8 overdrawScreenCount);
     ~OverdrawTesterComonent();
 
     inline OverdrawTesterRenderObject* GetRenderObject() const;
@@ -35,10 +35,10 @@ public:
 
 private:
     OverdrawTesterRenderObject* renderObject;
-    uint32 stepsCount = 10;
-    uint16 textureResolution = 2048;
+    DAVA::uint32 stepsCount = 10;
+    DAVA::uint16 textureResolution = 2048;
 
-    static const uint8 addOverdrawPercent;
+    static const DAVA::uint8 addOverdrawPercent;
 
 public:
     INTROSPECTION_EXTEND(OverdrawTesterComonent, Component,
@@ -50,12 +50,12 @@ OverdrawTesterRenderObject* OverdrawTesterComonent::GetRenderObject() const
     return renderObject;
 }
 
-uint32 OverdrawTesterComonent::GetStepsCount() const
+DAVA::uint32 OverdrawTesterComonent::GetStepsCount() const
 {
     return stepsCount;
 }
 
-float32 OverdrawTesterComonent::GetStepOverdraw() const
+DAVA::float32 OverdrawTesterComonent::GetStepOverdraw() const
 {
     return addOverdrawPercent;
 }

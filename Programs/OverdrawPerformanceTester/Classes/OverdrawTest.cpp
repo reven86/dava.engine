@@ -1,27 +1,27 @@
-#include "StartScreen.h"
+#include "OverdrawTest.h"
 
 #include "GameCore.h"
 #include "OverdrawTestConfig.h"
 
 using DAVA::Rect;
 
-const Color StartScreen::Red(1.0f, 0.0f, 0.0f, 1.0f);
-const Color StartScreen::Green(0.0f, 1.0f, 0.0f, 1.0f);
+const Color OverdrawTest::Red(1.0f, 0.0f, 0.0f, 1.0f);
+const Color OverdrawTest::Green(0.0f, 1.0f, 0.0f, 1.0f);
 
-const float32 StartScreen::resolutionButtonsXOffset = 10.0f;
-const float32 StartScreen::resolutionButtonsYOffset = 100.0f;
-const float32 StartScreen::buttonHeight = 40.0f;
-const float32 StartScreen::buttonWidth = 150.0f;
-const float32 StartScreen::heigthDistanceBetweenButtons = 10.0f;
-const float32 StartScreen::texturePixelFormatXOffset = 250.0f;
-const float32 StartScreen::texturePixelFormatYOffset = 100.0f;
-const float32 StartScreen::overdrawXOffset = 490.0f;
-const float32 StartScreen::overdrawYOffset = 100.0f;
-const float32 StartScreen::chartHeightYOffset = overdrawYOffset + buttonHeight * 4;
-const float32 StartScreen::minFrametimeThreshold = 0.033f;
-const float32 StartScreen::frametimeIncreaseStep = 0.016f;
+const float32 OverdrawTest::resolutionButtonsXOffset = 10.0f;
+const float32 OverdrawTest::resolutionButtonsYOffset = 100.0f;
+const float32 OverdrawTest::buttonHeight = 40.0f;
+const float32 OverdrawTest::buttonWidth = 150.0f;
+const float32 OverdrawTest::heigthDistanceBetweenButtons = 10.0f;
+const float32 OverdrawTest::texturePixelFormatXOffset = 250.0f;
+const float32 OverdrawTest::texturePixelFormatYOffset = 100.0f;
+const float32 OverdrawTest::overdrawXOffset = 490.0f;
+const float32 OverdrawTest::overdrawYOffset = 100.0f;
+const float32 OverdrawTest::chartHeightYOffset = overdrawYOffset + buttonHeight * 4;
+const float32 OverdrawTest::minFrametimeThreshold = 0.033f;
+const float32 OverdrawTest::frametimeIncreaseStep = 0.016f;
 
-const Array<StartScreen::ButtonInfo, 4> StartScreen::resolutionButtonsInfo =
+const Array<OverdrawTest::ButtonInfo, 4> OverdrawTest::resolutionButtonsInfo =
 { {
 { L"2048", 1, Rect(resolutionButtonsXOffset, resolutionButtonsYOffset + buttonHeight * 0 + heigthDistanceBetweenButtons * 0, buttonWidth, buttonHeight), 2048 },
 { L"1024", 2, Rect(resolutionButtonsXOffset, resolutionButtonsYOffset + buttonHeight * 1 + heigthDistanceBetweenButtons * 1, buttonWidth, buttonHeight), 1024 },
@@ -29,7 +29,7 @@ const Array<StartScreen::ButtonInfo, 4> StartScreen::resolutionButtonsInfo =
 { L"256", 4, Rect(resolutionButtonsXOffset, resolutionButtonsYOffset + buttonHeight * 3 + heigthDistanceBetweenButtons * 3, buttonWidth, buttonHeight), 256 }
 } };
 
-const Array<StartScreen::ButtonInfo, 9> StartScreen::texturePixelFormatButtonsInfo =
+const Array<OverdrawTest::ButtonInfo, 9> OverdrawTest::texturePixelFormatButtonsInfo =
 { {
 { L"RGBA 8888", 1, Rect(texturePixelFormatXOffset, texturePixelFormatYOffset + buttonHeight * 0 + heigthDistanceBetweenButtons * 0, buttonWidth, buttonHeight), FORMAT_RGBA8888 },
 { L"RGBA 4444", 2, Rect(texturePixelFormatXOffset, texturePixelFormatYOffset + buttonHeight * 1 + heigthDistanceBetweenButtons * 1, buttonWidth, buttonHeight), FORMAT_RGBA4444 },
@@ -42,24 +42,24 @@ const Array<StartScreen::ButtonInfo, 9> StartScreen::texturePixelFormatButtonsIn
 { L"ETC2_RGBA", 9, Rect(texturePixelFormatXOffset, texturePixelFormatYOffset + buttonHeight * 8 + heigthDistanceBetweenButtons * 8, buttonWidth, buttonHeight), FORMAT_ETC2_RGBA }
 } };
 
-const Array<StartScreen::ButtonInfo, 2> StartScreen::overdrawButtonsInfo =
+const Array<OverdrawTest::ButtonInfo, 2> OverdrawTest::overdrawButtonsInfo =
 { {
 { L"-", 1, Rect(overdrawXOffset, overdrawYOffset + buttonHeight, buttonWidth * 1.5f, buttonHeight), -1 },
 { L"+", 2, Rect(overdrawXOffset + buttonWidth * 1.5f, overdrawYOffset + buttonHeight, buttonWidth * 1.5f, buttonHeight), 1 }
 } };
 
-const Array<StartScreen::ButtonInfo, 2> StartScreen::chartHeightButtonsInfo =
+const Array<OverdrawTest::ButtonInfo, 2> OverdrawTest::chartHeightButtonsInfo =
 { {
 { L"-", 1, Rect(overdrawXOffset, chartHeightYOffset + buttonHeight, buttonWidth * 1.5f, buttonHeight), -1 },
 { L"+", 2, Rect(overdrawXOffset + buttonWidth * 1.5f, chartHeightYOffset + buttonHeight, buttonWidth * 1.5f, buttonHeight), 1 }
 } };
 
-StartScreen::StartScreen()
+OverdrawTest::OverdrawTest()
     : BaseScreen()
 {
 }
 
-void StartScreen::LoadResources()
+void OverdrawTest::LoadResources()
 {
     BaseScreen::LoadResources();
 
@@ -71,7 +71,7 @@ void StartScreen::LoadResources()
 
     ScopedPtr<UIButton> startButton(CreateButton(Rect(5, 5, screenRect.dx, buttonHeight), L"Start"));
     startButton->SetDebugDraw(true);
-    startButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &StartScreen::OnStart));
+    startButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &OverdrawTest::OnStart));
     AddControl(startButton);
 
     CreateLabel({ overdrawXOffset, overdrawYOffset - buttonHeight, buttonWidth * 3.0f, buttonHeight }, L"Overdraw screens count");
@@ -82,7 +82,7 @@ void StartScreen::LoadResources()
     overdrawCountLabel->SetTextAlign(ALIGN_HCENTER | ALIGN_VCENTER);
     overdrawCountLabel->SetDebugDraw(true);
     AddControl(overdrawCountLabel);
-    InitializeButtons(overdrawButtonsInfo, overdrawButtons, Message(this, &StartScreen::OnChangeOverdrawButtonClick), false);
+    InitializeButtons(overdrawButtonsInfo, overdrawButtons, Message(this, &OverdrawTest::OnChangeOverdrawButtonClick), false);
 
     CreateLabel({ overdrawXOffset, chartHeightYOffset - buttonHeight, buttonWidth * 3.0f, buttonHeight }, L"Max frametime");
     chartHeightLabel = new UIStaticText(Rect(overdrawXOffset, chartHeightYOffset, buttonWidth * 3.0f, buttonHeight));
@@ -92,18 +92,18 @@ void StartScreen::LoadResources()
     chartHeightLabel->SetTextAlign(ALIGN_HCENTER | ALIGN_VCENTER);
     chartHeightLabel->SetDebugDraw(true);
     AddControl(chartHeightLabel);
-    InitializeButtons(chartHeightButtonsInfo, chartHeightButtons, Message(this, &StartScreen::OnChangeChartHeightButtonClick), false);
+    InitializeButtons(chartHeightButtonsInfo, chartHeightButtons, Message(this, &OverdrawTest::OnChangeChartHeightButtonClick), false);
 
     CreateLabel({ resolutionButtonsXOffset, resolutionButtonsYOffset - buttonHeight, buttonWidth, buttonHeight }, L"Tex resolution");
-    InitializeButtons(resolutionButtonsInfo, resolutionButtons, Message(this, &StartScreen::OnResolutionButtonClick));
+    InitializeButtons(resolutionButtonsInfo, resolutionButtons, Message(this, &OverdrawTest::OnResolutionButtonClick));
 
     CreateLabel({ texturePixelFormatXOffset, texturePixelFormatYOffset - buttonHeight, buttonWidth, buttonHeight }, L"Tex format");
-    InitializeButtons(texturePixelFormatButtonsInfo, texturePixelFormatButtons, Message(this, &StartScreen::OnTextureFormatButtonClick));
+    InitializeButtons(texturePixelFormatButtonsInfo, texturePixelFormatButtons, Message(this, &OverdrawTest::OnTextureFormatButtonClick));
 
     SetDebugDraw(false, false);
 }
 
-void StartScreen::UnloadResources()
+void OverdrawTest::UnloadResources()
 {
     BaseScreen::UnloadResources();
 
@@ -116,7 +116,7 @@ void StartScreen::UnloadResources()
     SafeRelease(chartHeightLabel);
 }
 
-void StartScreen::CreateLabel(const Rect&& rect, const WideString&& caption)
+void OverdrawTest::CreateLabel(const Rect&& rect, const WideString&& caption)
 {
     ScopedPtr<UIStaticText> label(new UIStaticText(rect));
     label->SetFont(font);
@@ -127,7 +127,7 @@ void StartScreen::CreateLabel(const Rect&& rect, const WideString&& caption)
     AddControl(label);
 }
 
-void StartScreen::ReleaseButtons(DAVA::UnorderedMap<UIButton*, ButtonInfo>& buttons)
+void OverdrawTest::ReleaseButtons(DAVA::UnorderedMap<UIButton*, ButtonInfo>& buttons)
 {
     for (auto& btn : buttons)
     {
@@ -137,12 +137,12 @@ void StartScreen::ReleaseButtons(DAVA::UnorderedMap<UIButton*, ButtonInfo>& butt
     buttons.clear();
 }
 
-void StartScreen::OnStart(BaseObject* caller, void* param, void* callerData)
+void OverdrawTest::OnStart(BaseObject* caller, void* param, void* callerData)
 {
     SetNextScreen();
 }
 
-void StartScreen::OnResolutionButtonClick(BaseObject* sender, void* data, void* callerData)
+void OverdrawTest::OnResolutionButtonClick(BaseObject* sender, void* data, void* callerData)
 {
     UIButton* pickedButton = DynamicTypeCheck<UIButton*>(sender);
     for (auto& btn : resolutionButtons)
@@ -157,7 +157,7 @@ void StartScreen::OnResolutionButtonClick(BaseObject* sender, void* data, void* 
     }
 }
 
-void StartScreen::OnTextureFormatButtonClick(BaseObject* sender, void* data, void* callerData)
+void OverdrawTest::OnTextureFormatButtonClick(BaseObject* sender, void* data, void* callerData)
 {
     UIButton* pickedButton = DynamicTypeCheck<UIButton*>(sender);
 
@@ -173,7 +173,7 @@ void StartScreen::OnTextureFormatButtonClick(BaseObject* sender, void* data, voi
     }
 }
 
-void StartScreen::OnChangeOverdrawButtonClick(BaseObject* sender, void* data, void* callerData)
+void OverdrawTest::OnChangeOverdrawButtonClick(BaseObject* sender, void* data, void* callerData)
 {
     UIButton* pickedButton = DynamicTypeCheck<UIButton*>(sender);
 
@@ -187,7 +187,7 @@ void StartScreen::OnChangeOverdrawButtonClick(BaseObject* sender, void* data, vo
     }
 }
 
-void StartScreen::OnChangeChartHeightButtonClick(BaseObject* sender, void* data, void* callerData)
+void OverdrawTest::OnChangeChartHeightButtonClick(BaseObject* sender, void* data, void* callerData)
 {
     UIButton* pickedButton = DynamicTypeCheck<UIButton*>(sender);
 

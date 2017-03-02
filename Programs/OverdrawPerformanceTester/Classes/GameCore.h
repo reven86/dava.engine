@@ -9,7 +9,7 @@ class Engine;
 class Window;
 }
 
-class StartScreen;
+class OverdrawTest;
 class OverdrawTestingScreen;
 class GameCore
 {
@@ -36,7 +36,7 @@ public:
     };
 
 protected:
-    StartScreen* selectSceneScreen;
+    OverdrawTest* selectSceneScreen;
     OverdrawTestingScreen* viewSceneScreen;
 
     DAVA::FilePath scenePath;

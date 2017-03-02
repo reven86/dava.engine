@@ -6,6 +6,9 @@
 
 namespace OverdrawPerformanceTester
 {
+using DAVA::uint8;
+using DAVA::uint16;
+
 const uint8 OverdrawTesterComonent::addOverdrawPercent = 10;
 
 OverdrawTesterComonent::OverdrawTesterComonent(uint16 textureResolution_, uint8 overdrawScreenCount)

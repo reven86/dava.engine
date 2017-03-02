@@ -1,5 +1,5 @@
 #include "GameCore.h"
-#include "StartScreen.h"
+#include "OverdrawTest.h"
 #include "OverdrawTestingScreen.h"
 
 #include "Debug/DVAssertDefaultHandlers.h"
@@ -44,7 +44,7 @@ void GameCore::OnWindowCreated(DAVA::Window* w)
 
     Renderer::SetDesiredFPS(60);
 
-    selectSceneScreen = new StartScreen();
+    selectSceneScreen = new OverdrawTest();
     viewSceneScreen = new OverdrawTestingScreen();
 
     SetScenePath(testerScenePath);
