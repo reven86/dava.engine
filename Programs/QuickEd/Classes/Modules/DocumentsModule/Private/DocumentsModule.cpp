@@ -316,7 +316,7 @@ void DocumentsModule::CreateDocumentsActions()
         fieldDescr.type = ReflectedTypeDB::Get<DocumentData>();
         fieldDescr.fieldName = FastName(DocumentData::canClosePropertyName);
         action->SetStateUpdationFunction(QtAction::Enabled, fieldDescr, [](const Any& fieldValue) -> Any {
-            return fieldValue.CanCast<bool>() && fieldValue.Cast<bool>();
+            return fieldValue.Cast<bool>(false);
         });
 
         connections.AddConnection(action, &QAction::triggered, Bind(&DocumentsModule::CloseActiveDocument, this));
