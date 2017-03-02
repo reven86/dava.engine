@@ -84,6 +84,9 @@ private:
     ::Windows::UI::Xaml::Controls::Button ^ xamlControlThatStealsFocus = nullptr;
     ::Windows::UI::Xaml::Input::Pointer ^ lastPressedPointer = nullptr;
 
+    // Object for managing screen sleep timeout
+    Windows::System::Display::DisplayRequest ^ displayRequest = ref new Windows::System::Display::DisplayRequest();
+
     // Tokens to unsubscribe from event handlers
     ::Windows::Foundation::EventRegistrationToken tokenActivated;
     ::Windows::Foundation::EventRegistrationToken tokenVisibilityChanged;
