@@ -1,6 +1,6 @@
 #include "GameCore.h"
 #include "StartScreen.h"
-#include "ViewSceneScreen.h"
+#include "OverdrawTestingScreen.h"
 
 #include "Debug/DVAssertDefaultHandlers.h"
 
@@ -45,7 +45,7 @@ void GameCore::OnWindowCreated(DAVA::Window* w)
     Renderer::SetDesiredFPS(60);
 
     selectSceneScreen = new StartScreen();
-    viewSceneScreen = new ViewSceneScreen();
+    viewSceneScreen = new OverdrawTestingScreen();
 
     SetScenePath(testerScenePath);
     UIScreenManager::Instance()->SetFirst(selectSceneScreen->GetScreenID());

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ViewSceneScreen.h"
+#include "OverdrawTestingScreen.h"
 
 namespace OverdrawPerformanceTester
 {

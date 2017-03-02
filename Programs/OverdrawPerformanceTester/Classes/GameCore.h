@@ -10,7 +10,7 @@ class Window;
 }
 
 class StartScreen;
-class ViewSceneScreen;
+class OverdrawTestingScreen;
 class GameCore
 {
 public:
@@ -37,7 +37,7 @@ public:
 
 protected:
     StartScreen* selectSceneScreen;
-    ViewSceneScreen* viewSceneScreen;
+    OverdrawTestingScreen* viewSceneScreen;
 
     DAVA::FilePath scenePath;
 

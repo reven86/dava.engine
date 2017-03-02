@@ -1,4 +1,4 @@
-#include "ViewSceneScreen.h"
+#include "OverdrawTestingScreen.h"
 
 #include "TesterConfig.h"
 #include "GameCore.h"
@@ -18,7 +18,7 @@ using DAVA::Camera;
 using DAVA::float32;
 using DAVA::Vector3;
 
-void ViewSceneScreen::LoadResources()
+void OverdrawTestingScreen::LoadResources()
 {
     if (!loaded)
     {
@@ -77,7 +77,7 @@ void ViewSceneScreen::LoadResources()
     }
 }
 
-void ViewSceneScreen::UnloadResources()
+void OverdrawTestingScreen::UnloadResources()
 {
     scene->RemoveSystem(chartPainterSystem);
     SafeDelete(chartPainterSystem);

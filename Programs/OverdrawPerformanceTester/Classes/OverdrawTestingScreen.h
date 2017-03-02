@@ -8,10 +8,10 @@ class OverdrawTesterSystem;
 class ChartPainterSystem;
 }
 
-class ViewSceneScreen : public BaseScreen
+class OverdrawTestingScreen : public BaseScreen
 {
 protected:
-    virtual ~ViewSceneScreen()
+    virtual ~OverdrawTestingScreen()
     {
     }
 
