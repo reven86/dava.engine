@@ -545,7 +545,7 @@ bool UIList::SystemInput(UIEvent* currentInput)
         {
             if (IsPointInside(currentInput->point))
             {
-                PerformEvent(EVENT_TOUCH_DOWN);
+                PerformEvent(EVENT_TOUCH_DOWN, currentInput);
                 Input(currentInput);
             }
         }
