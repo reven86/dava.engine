@@ -160,10 +160,12 @@ EditorSystemsManager::eDragState EditorTransformSystem::RequireNewState(DAVA::UI
             return EditorSystemsManager::Transform;
         }
     }
+
     HUDAreaInfo areaInfo = systemsManager->GetCurrentHUDArea();
     if (areaInfo.area != HUDAreaInfo::NO_AREA
         && currentInput->phase == UIEvent::Phase::DRAG
-        && currentInput->mouseButton == eMouseButtons::LEFT)
+        && currentInput->mouseButton == eMouseButtons::LEFT
+        && dragState != EditorSystemsManager::SelectByRect)
     {
         //initialize start mouse position for correct rotation
         previousMousePos = currentInput->point;

@@ -305,6 +305,10 @@ void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
 
 void HUDSystem::ProcessCursor(const Vector2& pos, eSearchOrder searchOrder)
 {
+    if (systemsManager->GetDragState() == EditorSystemsManager::SelectByRect)
+    {
+        return;
+    }
     SetNewArea(GetControlArea(pos, searchOrder));
 }
 
