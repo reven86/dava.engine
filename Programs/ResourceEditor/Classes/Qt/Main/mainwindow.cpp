@@ -20,7 +20,6 @@
 #include "Classes/Qt/Scene/Validation/SceneValidationDialog.h"
 #include "Classes/Qt/Settings/SettingsDialog.h"
 #include "Classes/Qt/Settings/SettingsManager.h"
-#include "Classes/Qt/SoundComponentEditor/FMODSoundBrowser.h"
 #include "Classes/Qt/SpritesPacker/SpritesPackerModule.h"
 #include "Classes/Qt/TextureBrowser/TextureBrowser.h"
 #include "Classes/Qt/TextureBrowser/TextureCache.h"
@@ -249,7 +248,6 @@ QtMainWindow::QtMainWindow(DAVA::TArc::UI* tarcUI_, QWidget* parent)
     // create tool windows
     new TextureBrowser(this);
     new MaterialEditor(this);
-    new FMODSoundBrowser(this);
 
     beastWaitDialog = new QtWaitDialog(this);
 

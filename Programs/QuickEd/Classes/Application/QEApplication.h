@@ -1,6 +1,6 @@
 #pragma once
 
-#include "TArc/Core//BaseApplication.h"
+#include <TArc/Core/BaseApplication.h>
 
 namespace DAVA
 {

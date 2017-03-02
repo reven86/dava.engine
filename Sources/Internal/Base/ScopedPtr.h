@@ -10,7 +10,12 @@ class ScopedPtr
 {
 public:
     explicit ScopedPtr(BASE_OBJECT* p);
+    ScopedPtr();
+    ScopedPtr(std::nullptr_t);
+    ScopedPtr(const ScopedPtr&);
+
     ~ScopedPtr();
+
     BASE_OBJECT& operator*() const;
     BASE_OBJECT* operator->() const;
     operator BASE_OBJECT*() const;
@@ -21,18 +26,29 @@ public:
     //protection from 'delete ScopedObject'
     operator void*() const;
 
-    ScopedPtr(const ScopedPtr&);
     const ScopedPtr& operator=(const ScopedPtr&);
     const ScopedPtr& operator=(BASE_OBJECT* p);
 
 private:
-    BASE_OBJECT* object;
+    BASE_OBJECT* object = nullptr;
 };
 
 //implementation
 template <typename BASE_OBJECT>
 ScopedPtr<BASE_OBJECT>::ScopedPtr(BASE_OBJECT* p)
     : object(p)
+{
+}
+
+template <typename BASE_OBJECT>
+ScopedPtr<BASE_OBJECT>::ScopedPtr()
+    : object(nullptr)
+{
+}
+
+template <typename BASE_OBJECT>
+ScopedPtr<BASE_OBJECT>::ScopedPtr(std::nullptr_t)
+    : object(nullptr)
 {
 }
 
