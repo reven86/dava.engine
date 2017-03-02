@@ -629,14 +629,16 @@ public:
     /**
      \brief Send given event to the all subscribed objects.
      \param[in] eventType event type you want to process.
+     \param[in] uiEvent input event that triggered this control event.
      */
-    void PerformEvent(int32 eventType);
+    void PerformEvent(int32 eventType, const UIEvent* uiEvent = nullptr);
     /**
      \brief Send given event with given user data to the all subscribed objects.
      \param[in] eventType event type you want to process.
      \param[in] callerData data you want to send to the all messages.
+     \param[in] uiEvent input event that triggered this control event.
      */
-    void PerformEventWithData(int32 eventType, void* callerData);
+    void PerformEventWithData(int32 eventType, void* callerData, const UIEvent* uiEvent = nullptr);
 
     /**
      \brief Creates the absoulutely identic copy of the control.
