@@ -889,6 +889,51 @@ void DLCManagerImpl::RemovePack(const String& requestedPackName)
     }
 }
 
+DLCManager::Progress DLCManagerImpl::GetProgress() const
+{
+    using namespace DAVA;
+    using namespace PackFormat;
+
+    Progress progress;
+    if (!isProcessingEnabled)
+    {
+        return progress;
+    }
+
+    if (!IsInitialized())
+    {
+        return progress;
+    }
+
+    progress.isRequestingEnabled = true;
+
+    const Vector<PackFile::FilesTableBlock::FilesData::Data>& files = usedPackFile.filesTable.data.files;
+    for (const auto& fileData : files)
+    {
+        // TODO this part we can calculate only once
+        uint64 fullFileSize = fileData.compressedSize + sizeof(LitePack::Footer);
+        progress.total += fullFileSize;
+
+        ptrdiff_t dist = std::distance(&files[0], &fileData);
+        uint32 index = static_cast<uint32>(dist);
+
+        if (scanFileReady.at(index))
+        {
+            progress.alreadyDownloaded += fullFileSize;
+        }
+
+        // is current file is downloadin in requestManager queue?
+        const PackMetaData::PackInfo& packInfo = meta->GetPackInfo(fileData.metaIndex);
+        const PackRequest* request = requestManager->Find(packInfo.packName);
+        if (request != nullptr)
+        {
+            progress.inQueue += fullFileSize;
+        }
+    }
+
+    return progress;
+}
+
 bool DLCManagerImpl::IsRequestingEnabled() const
 {
     DVASSERT(Thread::IsMainThread());

@@ -94,6 +94,8 @@ public:
 
     void RemovePack(const String& packName) override;
 
+    Progress GetProgress() const override;
+
     const FilePath& GetLocalPacksDirectory() const;
 
     const String& GetSuperPackUrl() const;

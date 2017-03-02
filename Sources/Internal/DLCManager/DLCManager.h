@@ -111,6 +111,18 @@ public:
     virtual void SetRequestPriority(const IRequest* request) = 0;
 
     virtual void RemovePack(const String& packName) = 0;
+
+    struct Progress
+    {
+        uint64 total = 0; //!< in bytes
+        uint64 alreadyDownloaded = 0; //!< in bytes
+        uint64 inQueue = 0; //!< in bytes
+        bool isRequestingEnabled = false;
+    };
+
+    /** Calculate statistic about downloading progress
+	*/
+    virtual Progress GetProgress() const = 0;
 };
 
 } // end namespace DAVA
