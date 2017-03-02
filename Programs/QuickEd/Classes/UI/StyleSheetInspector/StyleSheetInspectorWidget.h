@@ -15,6 +15,10 @@ class StyleSheetInspectorWidget;
 }
 
 class Document;
+namespace DAVA
+{
+class Any;
+}
 
 class StyleSheetInspectorWidget : public QDockWidget, PackageListener
 {
@@ -25,7 +29,7 @@ public:
 
 public slots:
     void OnDocumentChanged(Document* context);
-    void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
+    void OnSelectionChanged(const DAVA::Any& selection);
 
 private:
     // PackageListener
