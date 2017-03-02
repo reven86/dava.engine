@@ -12,6 +12,7 @@
 #include "UI/Focus/UIFocusSystem.h"
 #include "UI/Input/UIInputSystem.h"
 #include "UI/Scroll/UIScrollBarLinkSystem.h"
+#include "UI/Sound/UISoundSystem.h"
 #include "Render/Renderer.h"
 #include "Render/RenderHelper.h"
 #include "UI/UIScreenshoter.h"
@@ -42,10 +43,12 @@ UIControlSystem::UIControlSystem()
     AddSystem(std::make_unique<UILayoutSystem>());
     AddSystem(std::make_unique<UIStyleSheetSystem>());
     AddSystem(std::make_unique<UIScrollBarLinkSystem>());
+    AddSystem(std::make_unique<UISoundSystem>());
 
     inputSystem = GetSystem<UIInputSystem>();
     layoutSystem = GetSystem<UILayoutSystem>();
     styleSheetSystem = GetSystem<UIStyleSheetSystem>();
+    soundSystem = GetSystem<UISoundSystem>();
 
 #if defined(__DAVAENGINE_COREV2__)
     vcs = new VirtualCoordinatesSystem();
@@ -105,6 +108,7 @@ UIControlSystem::~UIControlSystem()
         currentScreen = nullptr;
     }
 
+    soundSystem = nullptr;
     inputSystem = nullptr;
     styleSheetSystem = nullptr;
     layoutSystem = nullptr;
@@ -369,14 +373,14 @@ void UIControlSystem::Draw()
 
     if (currentScreenTransition)
     {
-        currentScreenTransition->SystemDraw(baseGeometricData);
+        currentScreenTransition->SystemDraw(baseGeometricData, nullptr);
     }
     else if (currentScreen)
     {
-        currentScreen->SystemDraw(baseGeometricData);
+        currentScreen->SystemDraw(baseGeometricData, nullptr);
     }
 
-    popupContainer->SystemDraw(baseGeometricData);
+    popupContainer->SystemDraw(baseGeometricData, nullptr);
 
     if (frameSkip > 0)
     {
@@ -530,6 +534,11 @@ void UIControlSystem::SetFocusedControl(UIControl* newFocused)
 UIControl* UIControlSystem::GetFocusedControl() const
 {
     return GetFocusSystem()->GetFocusedControl();
+}
+
+void UIControlSystem::ProcessControlEvent(int32 eventType, const UIEvent* uiEvent, UIControl* control)
+{
+    soundSystem->ProcessControlEvent(eventType, uiEvent, control);
 }
 
 const UIGeometricData& UIControlSystem::GetBaseGeometricData() const
@@ -774,6 +783,11 @@ UIInputSystem* UIControlSystem::GetInputSystem() const
 UIFocusSystem* UIControlSystem::GetFocusSystem() const
 {
     return inputSystem->GetFocusSystem();
+}
+
+UISoundSystem* UIControlSystem::GetSoundSystem() const
+{
+    return soundSystem;
 }
 
 UIStyleSheetSystem* UIControlSystem::GetStyleSheetSystem() const

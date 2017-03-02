@@ -80,7 +80,7 @@ void TankUtils::Animate(Entity* tank, const Vector<uint16>& jointIndexes, float3
     Entity* skinnedTank = tank->FindByName(TankUtils::TankNode::SKINNED_TANK);
     Entity* turret = tank->FindByName(TankUtils::TankNode::TURRET);
 
-    SkeletonComponent* skeleton = (SkeletonComponent*)skinnedTank->GetComponent(Component::SKELETON_COMPONENT);
+    SkeletonComponent* skeleton = static_cast<SkeletonComponent*>(skinnedTank->GetComponent(Component::SKELETON_COMPONENT));
 
     const Quaternion& wheelsRotation = Quaternion::MakeRotation(Vector3::UnitX, angle);
     const Quaternion& turrentRotation = Quaternion::MakeRotation(Vector3::UnitZ, angle);

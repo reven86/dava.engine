@@ -25,6 +25,7 @@ public:
     ~PropertiesTreeItemDelegate();
 
     QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+
     void setEditorData(QWidget* editor, const QModelIndex& index) const override;
     void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
 
@@ -38,6 +39,8 @@ public:
 protected:
     void paint(QPainter* painter, const QStyleOptionViewItem& option,
                const QModelIndex& index) const override;
+
+    QModelIndex GetSourceIndex(QModelIndex index, QAbstractItemModel* itemModel) const;
 
     PropertiesContext context;
 

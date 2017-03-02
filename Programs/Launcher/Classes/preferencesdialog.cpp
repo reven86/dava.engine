@@ -136,17 +136,25 @@ void PreferencesDialog::Init(FileManager* fileManager_, ConfigDownloader* config
     lineEdit_serverHostName->setText(configDownloader->GetServerHostName());
     connect(lineEdit_serverHostName, &QLineEdit::textChanged, this, &PreferencesDialog::OnServerHostNameChanged);
 
+    label_currentPlatformBuildsLabel->setText(platformString + QString(" builds URL"));
+
     urlWidgets[ConfigDownloader::LauncherInfoURL] = label_launcherInfoURL;
     urlWidgets[ConfigDownloader::LauncherTestInfoURL] = label_launcherInfoTestURL;
     urlWidgets[ConfigDownloader::StringsURL] = label_launcherMetaInfoURL;
     urlWidgets[ConfigDownloader::FavoritesURL] = label_launcherFavoritesURL;
-    urlWidgets[ConfigDownloader::AllBuildsURL] = label_allBuildsURL;
+    urlWidgets[ConfigDownloader::AllBuildsCurrentPlatformURL] = label_currentPlatformBuildsURL;
+    urlWidgets[ConfigDownloader::AllBuildsIOSURL] = label_androidBuildsURL;
+    urlWidgets[ConfigDownloader::AllBuildsAndroidURL] = label_IOSBuildsURL;
+    urlWidgets[ConfigDownloader::AllBuildsUWPURL] = label_UWPBuildsURL;
 
     copyURLWidgets[ConfigDownloader::LauncherInfoURL] = pushButton_copyLauncherInfoURL;
     copyURLWidgets[ConfigDownloader::LauncherTestInfoURL] = pushButton_copyLauncherTestInfoURL;
     copyURLWidgets[ConfigDownloader::StringsURL] = pushButton_copyMetaInfoURL;
     copyURLWidgets[ConfigDownloader::FavoritesURL] = pushButton_copyFavoritesURL;
-    copyURLWidgets[ConfigDownloader::AllBuildsURL] = pushButton_copyAllBuildsURL;
+    copyURLWidgets[ConfigDownloader::AllBuildsCurrentPlatformURL] = pushButton_copyCurrentPlatformBuildsURL;
+    copyURLWidgets[ConfigDownloader::AllBuildsAndroidURL] = pushButton_copyAndroidBuildsURL;
+    copyURLWidgets[ConfigDownloader::AllBuildsIOSURL] = pushButton_copyIOSBuildsURL;
+    copyURLWidgets[ConfigDownloader::AllBuildsUWPURL] = pushButton_copyUWPBuildsURL;
 
     for (int i = ConfigDownloader::LauncherInfoURL; i < ConfigDownloader::URLTypesCount; ++i)
     {

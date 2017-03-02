@@ -5,7 +5,8 @@
 #if defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_IPHONE__)
 
-#include <Foundation/Foundation.h>
+#import <Foundation/Foundation.h>
+#import <UIKit/UIApplication.h>
 
 #include "Concurrency/Mutex.h"
 #include "Engine/Private/EnginePrivateFwd.h"
@@ -53,6 +54,7 @@ struct CoreNativeBridge final
     void ApplicationDidReceiveMemoryWarning(UIApplication* app);
     void ApplicationDidReceiveLocalNotification(UIApplication* app, UILocalNotification* notification);
     void DidReceiveRemoteNotification(UIApplication* app, NSDictionary* userInfo);
+    void DidReceiveRemoteNotificationFetchCompletionHandler(UIApplication* app, NSDictionary* userInfo, void (^completionHandler)(UIBackgroundFetchResult));
     void DidRegisterForRemoteNotificationsWithDeviceToken(UIApplication* app, NSData* deviceToken);
     void DidFailToRegisterForRemoteNotificationsWithError(UIApplication* app, NSError* error);
     void DidReceiveLocalNotification(UIApplication* app, UILocalNotification* notification);
@@ -78,6 +80,7 @@ struct CoreNativeBridge final
         ON_DID_REGISTER_FOR_REMOTE_NOTIFICATION_WITH_TOKEN,
         ON_DID_FAIL_REGISTER_FOR_REMOTE_NOTIFICATION_WITH_ERROR,
         ON_DID_RECEIVE_REMOTE_NOTIFICATION,
+        ON_DID_RECEIVE_REMOTE_NOTIFICATION_FETCH_COMPLETION_HANDLER,
         ON_DID_RECEIVE_LOCAL_NOTIFICATION,
         ON_HANDLE_ACTION_WITH_IDENTIFIER,
         ON_OPEN_URL

@@ -7,6 +7,11 @@
 #include <QString>
 #include <QCursor>
 
+namespace DAVA
+{
+class RenderWidget;
+}
+
 class CursorSystem final : public BaseEditorSystem
 {
 public:

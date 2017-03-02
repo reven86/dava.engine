@@ -12,7 +12,7 @@ namespace DAVA
 {
 namespace TArc
 {
-class CheckBox final : public ControlProxy<QCheckBox>
+class CheckBox final : public ControlProxyImpl<QCheckBox>
 {
 public:
     enum class Fields : uint32
