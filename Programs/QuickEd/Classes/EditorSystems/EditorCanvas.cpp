@@ -1,17 +1,22 @@
 #include "EditorSystems/EditorCanvas.h"
 #include "EditorSystems/EditorSystemsManager.h"
-#include "Engine/Engine.h"
 
-#include "UI/UIScreenManager.h"
+#include "Modules/DocumentsModule/Private/EditorCanvasData.h"
+
+#include <TArc/Core/ContextAccessor.h>
+#include <TArc/DataProcessing/DataContext.h>
+
+#include <Engine/Engine.h>
+#include <UI/UIScreenManager.h>
 
 using namespace DAVA;
 
-EditorCanvas::EditorCanvas(UIControl* movableControl_, EditorSystemsManager* parent)
+EditorCanvas::EditorCanvas(EditorSystemsManager* parent, DAVA::TArc::ContextAccessor* accessor_)
     : BaseEditorSystem(parent)
-    , movableControl(movableControl_)
+    , accessor(accessor_)
 {
+    movableControl = systemsManager->GetScalableControl();
     systemsManager->contentSizeChanged.Connect(this, &EditorCanvas::OnContentSizeChanged);
-    systemsManager->viewSizeChanged.Connect(this, &EditorCanvas::OnViewSizeChanged);
 }
 
 EditorCanvas::~EditorCanvas() = default;
@@ -82,15 +87,46 @@ Vector2 EditorCanvas::GetMinimumPos() const
 
 Vector2 EditorCanvas::GetMaximumPos() const
 {
-    return size - viewSize;
+    Vector2 maxPos = size - viewSize;
+    Vector2 minPos = GetMinimumPos();
+    return Vector2(Max(maxPos.x, minPos.x), Max(maxPos.y, minPos.y));
 }
 
 void EditorCanvas::UpdateContentSize()
 {
+    using namespace TArc;
+
     Vector2 marginsSize(margin * 2.0f, margin * 2.0f);
     size = contentSize * scale + marginsSize;
-    UpdatePosition();
     sizeChanged.Emit(size);
+
+    Vector2 sizeDiff = (size - viewSize) / 2.0f;
+
+    DataContext* activeContext = accessor->GetActiveContext();
+    if (activeContext != nullptr)
+    {
+        EditorCanvasData* data = activeContext->GetData<EditorCanvasData>();
+
+        //we select big control after small control was selected
+        if ((data->needCentralizeX && sizeDiff.dx > 0.0f)
+            || (data->needCentralizeY && sizeDiff.dy > 0.0f))
+        {
+            Vector2 newPosition(data->needCentralizeX ? sizeDiff.dx : position.x,
+                                data->needCentralizeY ? sizeDiff.dy : position.y);
+            SetPosition(newPosition);
+        }
+        else if (data->canvasPosition == EditorCanvasData::invalidPosition)
+        {
+            SetPosition(GetMaximumPos() / 2.0f);
+        }
+        else
+        {
+            SetPosition(data->canvasPosition);
+        }
+        data->needCentralizeX = size.dx < viewSize.dx;
+        data->needCentralizeY = size.dy < viewSize.dy;
+    }
+    UpdatePosition();
 }
 
 void EditorCanvas::SetScale(float32 arg)
@@ -113,15 +149,25 @@ void EditorCanvas::OnViewSizeChanged(DAVA::uint32 width, DAVA::uint32 height)
 
 void EditorCanvas::SetPosition(const Vector2& position_)
 {
+    using namespace TArc;
     Vector2 minPos = GetMinimumPos();
     Vector2 maxPos = GetMaximumPos();
     Vector2 fixedPos(Clamp(position_.x, minPos.x, maxPos.x),
                      Clamp(position_.y, minPos.y, maxPos.y));
+
     if (fixedPos != position)
     {
         position = fixedPos;
         UpdatePosition();
-        ositionChanged.Emit(position);
+        positionChanged.Emit(position);
+
+        DataContext* activeContext = accessor->GetActiveContext();
+        if (activeContext == nullptr)
+        {
+            return;
+        }
+        EditorCanvasData* data = activeContext->GetData<EditorCanvasData>();
+        data->canvasPosition = position;
     }
 }
 
@@ -138,11 +184,12 @@ void EditorCanvas::UpdatePosition()
     {
         offset.dy = position.y;
     }
-    offset -= Vector2(margin, margin);
-    Vector2 position(-offset.dx, -offset.dy);
-    movableControl->SetPosition(position);
 
-    nestedControlPositionChanged.Emit(position);
+    offset -= Vector2(margin, margin);
+    Vector2 counterPosition(-offset.dx, -offset.dy);
+    movableControl->SetPosition(counterPosition);
+
+    nestedControlPositionChanged.Emit(counterPosition);
 }
 
 bool EditorCanvas::CanProcessInput(DAVA::UIEvent* currentInput) const

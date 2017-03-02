@@ -5,7 +5,6 @@
 #include <FileSystem/FileSystem.h>
 #include <Utils/CRC32.h>
 #include <DLC/Downloader/DownloadManager.h>
-#include <Core/Core.h>
 #include <Concurrency/Thread.h>
 #include <Logger/Logger.h>
 
@@ -44,17 +43,14 @@ DAVA_TESTCLASS (DLCManagerTest)
 
         Logger::Info("clear dirs");
 
+        FileSystem* fileSystem = GetEngineContext()->fileSystem;
         // every time clear directory to download once again
-        FileSystem::Instance()->DeleteDirectory(downloadedPacksDir);
-        FileSystem::Instance()->CreateDirectory(downloadedPacksDir, true);
+        fileSystem->DeleteDirectory(downloadedPacksDir);
+        fileSystem->CreateDirectory(downloadedPacksDir, true);
 
         String superPackUrl("http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz/packs/superpack.dvpk");
 
-#if defined(__DAVAENGINE_COREV2__)
-        DLCManager& dlcManager = *Engine::Instance()->GetContext()->dlcManager;
-#else
-        DLCManager& dlcManager = Core::Instance()->GetPackManager();
-#endif
+        DLCManager& dlcManager = *GetEngineContext()->dlcManager;
 
         FilePath fileInPack("~res:/3d/Fx/Tut_eye.sc2");
 

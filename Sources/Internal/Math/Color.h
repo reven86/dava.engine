@@ -1,7 +1,7 @@
-#ifndef __DAVAENGINE_COLORF_H__
-#define __DAVAENGINE_COLORF_H__
+#pragma once
 
 #include "Vector.h"
+#include "Base/Any.h"
 
 namespace DAVA
 {
@@ -220,7 +220,8 @@ inline Color operator/(float32 _f, const Color& _v)
 Color ClampToUnityRange(Color color);
 
 Color MakeGrayScale(const Color& colorRGB);
-};
 
-
-#endif // __DAVAENGINE_COLORF_H__
+template <>
+bool AnyCompare<Color>::IsEqual(const DAVA::Any& v1, const DAVA::Any& v2);
+extern template struct AnyCompare<Color>;
+}

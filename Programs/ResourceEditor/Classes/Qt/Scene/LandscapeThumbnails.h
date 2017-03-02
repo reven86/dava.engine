@@ -1,7 +1,7 @@
-#ifndef __LANDSCAPE_THUMBNAIL_CREATOR__
-#define __LANDSCAPE_THUMBNAIL_CREATOR__
+#pragma once
 
-#include "Functional/Function.h"
+#include <Functional/Function.h>
+#include <Base/BaseTypes.h>
 
 namespace DAVA
 {
@@ -12,7 +12,10 @@ class Texture;
 namespace LandscapeThumbnails
 {
 using Callback = DAVA::Function<void(DAVA::Landscape*, DAVA::Texture*)>;
-void Create(DAVA::Landscape*, Callback callback);
-};
+using RequestID = DAVA::uint32;
 
-#endif // __LANDSCAPE_THUMBNAIL_CREATOR__
+const RequestID InvalidID = 0;
+
+RequestID Create(DAVA::Landscape*, Callback callback);
+void CancelRequest(RequestID);
+};

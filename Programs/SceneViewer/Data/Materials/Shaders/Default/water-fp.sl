@@ -78,28 +78,28 @@ fragment_out
 //properties
 #if SHADING == SHADING_PERPIXEL
     #if REAL_REFLECTION
-        [material][instance] property float  distortionFallSquareDist;
-        [material][instance] property float  reflectionDistortion;
-        [material][instance] property float  refractionDistortion;
-        [material][instance] property float3 refractionTintColor;
+        [material][instance] property float  distortionFallSquareDist = 1.0;
+        [material][instance] property float  reflectionDistortion     = 0;
+        [material][instance] property float  refractionDistortion     = 0;
+        [material][instance] property float3 refractionTintColor      = float3(1,1,1);
         #if SPECULAR
-            [material][instance] property float  inGlossiness;
-            [material][instance] property float  inSpecularity;
+            [material][instance] property float  inGlossiness         = 0.5;
+            [material][instance] property float  inSpecularity        = 0.5;
             [auto][instance] property float3 lightColor0;            
         #endif
     #endif
 
-    [material][instance] property float3 reflectionTintColor;
-    [material][instance] property float  fresnelBias;
-    [material][instance] property float  fresnelPow;
+    [material][instance] property float3 reflectionTintColor          = float3(1,1,1);
+    [material][instance] property float  fresnelBias                  = 0;
+    [material][instance] property float  fresnelPow                   = 0.0;
     
     #if DEBUG_Z_NORMAL_SCALE && !DEBUG_UNITY_Z_NORMAL
         [material][instance] property float  normal0_z_scale = 1;
         [material][instance] property float  normal1_z_scale = 1;
     #endif
 #elif SHADING == SHADING_PERVERTEX
-    [material][instance] property float3 decalTintColor;
-    [material][instance] property float3 reflectanceColor;
+    [material][instance] property float3 decalTintColor     = float3(0,0,0);
+    [material][instance] property float3 reflectanceColor   = float3(0,0,0);
 #endif
 
 

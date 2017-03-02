@@ -14,34 +14,14 @@ namespace DAVA
 {
 namespace TArc
 {
-namespace ComboBoxDetails
-{
-const M::Enum* GetEnumMeta(const Reflection& fieldValue, const Reflection& fieldEnumerator)
-{
-    const M::Enum* enumMeta = fieldValue.GetMeta<M::Enum>();
-    if (enumMeta != nullptr)
-    {
-        return enumMeta;
-    }
-
-    Any value = fieldEnumerator.GetValue();
-    if (fieldEnumerator.IsValid() && value.CanCast<const M::Enum*>())
-    {
-        return value.Cast<const M::Enum*>();
-    }
-
-    return nullptr;
-}
-}
-
 ComboBox::ComboBox(const ControlDescriptorBuilder<Fields>& fields, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent)
-    : ControlProxy<QComboBox>(ControlDescriptor(fields), wrappersProcessor, model, parent)
+    : ControlProxyImpl<QComboBox>(ControlDescriptor(fields), wrappersProcessor, model, parent)
 {
     SetupControl();
 }
 
 ComboBox::ComboBox(const ControlDescriptorBuilder<Fields>& fields, ContextAccessor* accessor, Reflection model, QWidget* parent)
-    : ControlProxy<QComboBox>(ControlDescriptor(fields), accessor, model, parent)
+    : ControlProxyImpl<QComboBox>(ControlDescriptor(fields), accessor, model, parent)
 {
     SetupControl();
 }
@@ -49,14 +29,20 @@ ComboBox::ComboBox(const ControlDescriptorBuilder<Fields>& fields, ContextAccess
 void ComboBox::SetupControl()
 {
     connections.AddConnection(this, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), MakeFunction(this, &ComboBox::CurrentIndexChanged));
-
-    installEventFilter(this);
 }
 
 void ComboBox::UpdateControl(const ControlDescriptor& changedFields)
 {
     DVASSERT(updateControlProceed == false);
     ScopedValueGuard<bool> guard(updateControlProceed, true);
+
+    bool readOnlyChanged = changedFields.IsChanged(Fields::IsReadOnly);
+    bool valueChanged = changedFields.IsChanged(Fields::Value);
+    if (readOnlyChanged || valueChanged)
+    {
+        bool readOnly = IsValueReadOnly(changedFields, Fields::Value, Fields::IsReadOnly);
+        setEnabled(!readOnly);
+    }
 
     Reflection fieldValue = model.GetField(changedFields.GetName(Fields::Value));
     DVASSERT(fieldValue.IsValid());
@@ -67,8 +53,6 @@ void ComboBox::UpdateControl(const ControlDescriptor& changedFields)
     {
         fieldEnumerator = model.GetField(enumeratorName);
     }
-
-    ProcessReadOnlyState(fieldValue, changedFields);
 
     int countInCombo = count();
     if (countInCombo == 0 || changedFields.IsChanged(Fields::Enumerator))
@@ -82,19 +66,6 @@ void ComboBox::UpdateControl(const ControlDescriptor& changedFields)
     setCurrentIndex(currentIndex);
 }
 
-void ComboBox::ProcessReadOnlyState(const Reflection& fieldValue, const ControlDescriptor& changedFields)
-{
-    bool readOnly = fieldValue.IsReadonly();
-    readOnly |= fieldValue.GetMeta<M::ReadOnly>() != nullptr;
-    if (changedFields.IsChanged(Fields::IsReadOnly) == true)
-    {
-        Reflection readOnlyField = model.GetField(changedFields.GetName(Fields::IsReadOnly));
-        DVASSERT(readOnlyField.IsValid());
-        readOnly |= readOnlyField.GetValue().Cast<bool>();
-    }
-    setEnabled(!readOnly);
-}
-
 void ComboBox::CreateItems(const Reflection& fieldValue, const Reflection& fieldEnumerator)
 {
     QSignalBlocker blockSignals(this);
@@ -104,7 +75,7 @@ void ComboBox::CreateItems(const Reflection& fieldValue, const Reflection& field
         clear();
     }
 
-    const M::Enum* enumMeta = ComboBoxDetails::GetEnumMeta(fieldValue, fieldEnumerator);
+    const M::Enum* enumMeta = fieldValue.GetMeta<M::Enum>();
     if (enumMeta != nullptr)
     {
         const EnumMap* enumMap = enumMeta->GetEnumMap();
@@ -138,14 +109,7 @@ void ComboBox::CreateItems(const Reflection& fieldValue, const Reflection& field
             QVariant dataValue;
             dataValue.setValue(field.key);
 
-            if (fieldDescr.CanCast<QIcon>())
-            {
-                addItem(fieldDescr.Cast<QIcon>(), fieldDescr.Cast<String>().c_str(), dataValue);
-            }
-            else
-            {
-                addItem(fieldDescr.Cast<String>().c_str(), dataValue);
-            }
+            addItem(fieldDescr.Cast<QIcon>(QIcon()), fieldDescr.Cast<String>().c_str(), dataValue);
         }
     }
 }

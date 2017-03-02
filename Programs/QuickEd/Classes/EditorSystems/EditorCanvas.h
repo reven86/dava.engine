@@ -8,12 +8,16 @@ namespace DAVA
 {
 class Vector2;
 class UIControl;
+namespace TArc
+{
+class ContextAccessor;
+}
 }
 
 class EditorCanvas final : public BaseEditorSystem
 {
 public:
-    EditorCanvas(DAVA::UIControl* movableControl, EditorSystemsManager* parent);
+    EditorCanvas(EditorSystemsManager* parent, DAVA::TArc::ContextAccessor* accessor);
     ~EditorCanvas() override;
 
     bool CanProcessInput(DAVA::UIEvent* currentInput) const override;
@@ -36,7 +40,7 @@ public:
     void SetPosition(const DAVA::Vector2& position);
 
     DAVA::Signal<const DAVA::Vector2&> sizeChanged;
-    DAVA::Signal<const DAVA::Vector2&> ositionChanged;
+    DAVA::Signal<const DAVA::Vector2&> positionChanged;
     DAVA::Signal<const DAVA::Vector2&> nestedControlPositionChanged; //control position, excluding margins
     DAVA::Signal<DAVA::float32> scaleChanged;
 
@@ -60,4 +64,5 @@ private:
     const DAVA::float32 margin = 50.0f;
     bool isMouseMidButtonPressed = false;
     bool isSpacePressed = false;
+    DAVA::TArc::ContextAccessor* accessor = nullptr;
 };
