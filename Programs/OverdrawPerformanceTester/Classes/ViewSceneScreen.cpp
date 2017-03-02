@@ -88,4 +88,3 @@ void ViewSceneScreen::UnloadResources()
     SafeRelease(scene);
     BaseScreen::UnloadResources();
 }
-

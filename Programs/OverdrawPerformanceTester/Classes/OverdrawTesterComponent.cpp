@@ -8,7 +8,7 @@ namespace OverdrawPerformanceTester
 {
 const uint8 OverdrawTesterComonent::addOverdrawPercent = 10;
 
-OverdrawTesterComonent::OverdrawTesterComonent(uint16 textureResolution_, uint8 overdrawScreenCount) 
+OverdrawTesterComonent::OverdrawTesterComonent(uint16 textureResolution_, uint8 overdrawScreenCount)
     : textureResolution(textureResolution_)
     , stepsCount(overdrawScreenCount * 100 / addOverdrawPercent)
 {

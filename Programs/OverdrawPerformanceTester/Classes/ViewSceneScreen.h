@@ -24,6 +24,4 @@ protected:
 
     OverdrawPerformanceTester::OverdrawTesterSystem* testerSystem;
     OverdrawPerformanceTester::ChartPainterSystem* chartPainterSystem;
-
-
 };

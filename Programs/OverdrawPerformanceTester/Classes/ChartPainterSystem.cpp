@@ -27,7 +27,7 @@ const float32 ChartPainterSystem::overdrawStep = 100.0f;
 const float32 ChartPainterSystem::frametimeStep = 0.016f;
 
 #define MODS_COUNT 6
-    
+
 const Array<String, MODS_COUNT> ChartPainterSystem::legend =
 { {
 "0 tex",
@@ -215,7 +215,7 @@ void ChartPainterSystem::DrawLegend(int32 w, int32 h) const
     for (int i = 0; i < MODS_COUNT; i++)
     {
         p.Clear();
-        
+
         float32 startX = step * i + initialOffset;
         p.AddPoint({ startX, yPos });
         p.AddPoint({ startX + lineOffset, yPos });

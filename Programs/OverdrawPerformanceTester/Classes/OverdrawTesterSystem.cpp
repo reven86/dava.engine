@@ -13,10 +13,10 @@
 #include "Render/Highlevel/RenderObject.h"
 #include "Render/Highlevel/RenderPassNames.h"
 #include "Render/Image/Image.h"
+#include "Render/RHI/rhi_Type.h"
 #include "Render/Texture.h"
 #include "Time/SystemTimer.h"
 #include "Utils/StringFormat.h"
-#include "Render/RHI/rhi_Type.h"
 
 namespace OverdrawPerformanceTester
 {

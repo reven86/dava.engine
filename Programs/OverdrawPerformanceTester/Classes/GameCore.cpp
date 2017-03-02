@@ -1,5 +1,5 @@
 #include "GameCore.h"
-#include "SelectSceneScreen.h"
+#include "StartScreen.h"
 #include "ViewSceneScreen.h"
 
 #include "Debug/DVAssertDefaultHandlers.h"
@@ -44,7 +44,7 @@ void GameCore::OnWindowCreated(DAVA::Window* w)
 
     Renderer::SetDesiredFPS(60);
 
-    selectSceneScreen = new SelectSceneScreen();
+    selectSceneScreen = new StartScreen();
     viewSceneScreen = new ViewSceneScreen();
 
     SetScenePath(testerScenePath);
@@ -61,7 +61,6 @@ void GameCore::OnAppFinished()
     SafeRelease(viewSceneScreen);
 }
 
-
 GameCore* GameCore::instance = nullptr;
 
 //////////////////////////////////////////////////////////////////////////////////////////////
@@ -75,7 +74,7 @@ KeyedArchive* CreateOptions()
         appOptions->SetInt32("renderer", rhi::RHI_METAL);
     else if (rhi::ApiIsSupported(rhi::RHI_GLES2))
         appOptions->SetInt32("renderer", rhi::RHI_GLES2);
-    
+
     appOptions->SetInt32("rhi_threaded_frame_count", 2);
     appOptions->SetBool("iPhone_autodetectScreenScaleFactor", true);
 

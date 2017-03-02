@@ -9,7 +9,7 @@ class Engine;
 class Window;
 }
 
-class SelectSceneScreen;
+class StartScreen;
 class ViewSceneScreen;
 class GameCore
 {
@@ -36,7 +36,7 @@ public:
     };
 
 protected:
-    SelectSceneScreen* selectSceneScreen;
+    StartScreen* selectSceneScreen;
     ViewSceneScreen* viewSceneScreen;
 
     DAVA::FilePath scenePath;
