@@ -29,13 +29,17 @@ const Array<StartScreen::ButtonInfo, 4> StartScreen::resolutionButtonsInfo =
 { L"256", 4, Rect(resolutionButtonsXOffset, resolutionButtonsYOffset + buttonHeight * 3 + heigthDistanceBetweenButtons * 3, buttonWidth, buttonHeight), 256 }
 } };
 
-const Array<StartScreen::ButtonInfo, 5> StartScreen::texturePixelFormatButtonsInfo =
+const Array<StartScreen::ButtonInfo, 9> StartScreen::texturePixelFormatButtonsInfo =
 { {
 { L"RGBA 8888", 1, Rect(texturePixelFormatXOffset, texturePixelFormatYOffset + buttonHeight * 0 + heigthDistanceBetweenButtons * 0, buttonWidth, buttonHeight), FORMAT_RGBA8888 },
 { L"RGBA 4444", 2, Rect(texturePixelFormatXOffset, texturePixelFormatYOffset + buttonHeight * 1 + heigthDistanceBetweenButtons * 1, buttonWidth, buttonHeight), FORMAT_RGBA4444 },
 { L"PVR 2", 3, Rect(texturePixelFormatXOffset, texturePixelFormatYOffset + buttonHeight * 2 + heigthDistanceBetweenButtons * 2, buttonWidth, buttonHeight), FORMAT_PVR2 },
 { L"PVR 4", 4, Rect(texturePixelFormatXOffset, texturePixelFormatYOffset + buttonHeight * 3 + heigthDistanceBetweenButtons * 3, buttonWidth, buttonHeight), FORMAT_PVR4 },
-{ L"A8", 5, Rect(texturePixelFormatXOffset, texturePixelFormatYOffset + buttonHeight * 4 + heigthDistanceBetweenButtons * 4, buttonWidth, buttonHeight), FORMAT_A8 }
+{ L"A8", 5, Rect(texturePixelFormatXOffset, texturePixelFormatYOffset + buttonHeight * 4 + heigthDistanceBetweenButtons * 4, buttonWidth, buttonHeight), FORMAT_A8 },
+{ L"PVR2_2", 6, Rect(texturePixelFormatXOffset, texturePixelFormatYOffset + buttonHeight * 5 + heigthDistanceBetweenButtons * 5, buttonWidth, buttonHeight), FORMAT_PVR2_2 },
+{ L"PVR4_2", 7, Rect(texturePixelFormatXOffset, texturePixelFormatYOffset + buttonHeight * 6 + heigthDistanceBetweenButtons * 6, buttonWidth, buttonHeight), FORMAT_PVR4_2 },
+{ L"ETC1", 8, Rect(texturePixelFormatXOffset, texturePixelFormatYOffset + buttonHeight * 7 + heigthDistanceBetweenButtons * 7, buttonWidth, buttonHeight), FORMAT_ETC1 },
+{ L"ETC2_RGBA", 9, Rect(texturePixelFormatXOffset, texturePixelFormatYOffset + buttonHeight * 8 + heigthDistanceBetweenButtons * 8, buttonWidth, buttonHeight), FORMAT_ETC2_RGBA }
 } };
 
 const Array<StartScreen::ButtonInfo, 2> StartScreen::overdrawButtonsInfo =

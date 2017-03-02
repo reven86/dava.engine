@@ -4,12 +4,12 @@
 
 #include "FrameData.h"
 
-#include "Entity/SceneSystem.h"
-#include "Math/Vector.h"
 #include "Base/BaseTypes.h"
 #include "Base/FastName.h"
 #include "Base/String.h"
 #include "Functional/Function.h"
+#include "Entity/SceneSystem.h"
+#include "Math/Vector.h"
 
 namespace DAVA
 {
@@ -35,7 +35,6 @@ public:
 
     inline DAVA::float32 GetCurrentOverdraw() const;
     inline DAVA::uint32 GetCurrentSampleCount() const;
-    inline void SetIncreasePercentTime(DAVA::float32 time);
 
 private:
     DAVA::Texture* GenerateTexture(std::mt19937& rng, std::uniform_int_distribution<std::mt19937::result_type>& dist255);
@@ -51,7 +50,6 @@ private:
     DAVA::uint32 maxStepsCount = 100;
     DAVA::uint32 textureSampleCount = 0;
     DAVA::float32 overdrawPercent = 10.0f;
-    DAVA::float32 increasePercentTime = 0.05f;
 
     DAVA::NMaterial* overdrawMaterial;
     DAVA::Array<DAVA::float32, 20> frames;
@@ -78,10 +76,5 @@ DAVA::float32 OverdrawTesterSystem::GetCurrentOverdraw() const
 DAVA::uint32 OverdrawTesterSystem::GetCurrentSampleCount() const
 {
     return textureSampleCount;
-}
-
-void OverdrawTesterSystem::SetIncreasePercentTime(DAVA::float32 time)
-{
-    increasePercentTime = time;
 }
 }

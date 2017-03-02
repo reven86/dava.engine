@@ -27,8 +27,8 @@ OverdrawTesterRenderObject::OverdrawTesterRenderObject(float32 addOverdrawPercen
     , addOverdrawPercentNormalized(addOverdrawPercent_ * 0.01f)
     , textureResolution(textureResolution_)
 {
-    this->AddFlag(RenderObject::ALWAYS_CLIPPING_VISIBLE);
-    this->AddFlag(RenderObject::CUSTOM_PREPARE_TO_RENDER);
+    AddFlag(RenderObject::ALWAYS_CLIPPING_VISIBLE);
+    AddFlag(RenderObject::CUSTOM_PREPARE_TO_RENDER);
 
     rhi::VertexLayout layout;
     layout.AddElement(rhi::VS_POSITION, 0, rhi::VDT_FLOAT, 3);
@@ -44,35 +44,6 @@ OverdrawTesterRenderObject::OverdrawTesterRenderObject(float32 addOverdrawPercen
     }
 
     bbox.AddPoint(Vector3(1.0f, 1.0f, 1.0f));
-}
-
-void OverdrawTesterRenderObject::GenerateQuad(uint32 index, uint32 layoutId)
-{
-    float32 start = addOverdrawPercentNormalized * index;
-    start = start - static_cast<int32>(start);
-    start = start < 0.999f ? start : 0.0f;
-
-    start = start * 2 - 1.0f;
-    float32 end = start + 2.0f * addOverdrawPercentNormalized;
-    end = end < 0.999f ? end : 1.0f;
-
-    auto quad = GetQuadVerts(start, end);
-
-    rhi::VertexBuffer::Descriptor desc;
-    desc.usage = rhi::USAGE_STATICDRAW;
-    desc.size = 4 * sizeof(QuadVertex);
-    desc.initialData = quad.data();
-    rhi::HVertexBuffer vBuffer = rhi::CreateVertexBuffer(desc);
-
-    RenderBatch* renderBatch = new RenderBatch();
-    renderBatch->SetRenderObject(this);
-    renderBatch->vertexLayoutId = layoutId;
-    renderBatch->vertexBuffer = vBuffer;
-    renderBatch->indexBuffer = iBuffer;
-    renderBatch->indexCount = 6;
-    renderBatch->vertexCount = 6;
-
-    quads.push_back(renderBatch);
 }
 
 OverdrawTesterRenderObject::~OverdrawTesterRenderObject()
@@ -100,6 +71,47 @@ void OverdrawTesterRenderObject::PrepareToRender(DAVA::Camera* camera)
         activeRenderBatchArray.push_back(quads[i]);
 }
 
+void OverdrawTesterRenderObject::RecalculateWorldBoundingBox()
+{
+    worldBBox = bbox;
+}
+
+void OverdrawTesterRenderObject::BindDynamicParameters(Camera* camera)
+{
+    DAVA::Renderer::GetDynamicBindings().SetDynamicParam(DAVA::DynamicBindings::PARAM_WORLD, &DAVA::Matrix4::IDENTITY, reinterpret_cast<DAVA::pointer_size>(&DAVA::Matrix4::IDENTITY));
+}
+
+void OverdrawTesterRenderObject::GenerateQuad(uint32 index, uint32 layoutId)
+{
+    static const float32 threshold = 0.999f;
+
+    float32 start = addOverdrawPercentNormalized * index;
+    start = start - static_cast<int32>(start);
+    start = start < threshold ? start : 0.0f;
+
+    start = start * 2 - 1.0f;
+    float32 end = start + 2.0f * addOverdrawPercentNormalized;
+    end = end < threshold ? end : 1.0f;
+
+    auto quad = GetQuadVerts(start, end);
+
+    rhi::VertexBuffer::Descriptor desc;
+    desc.usage = rhi::USAGE_STATICDRAW;
+    desc.size = 4 * sizeof(QuadVertex);
+    desc.initialData = quad.data();
+    rhi::HVertexBuffer vBuffer = rhi::CreateVertexBuffer(desc);
+
+    RenderBatch* renderBatch = new RenderBatch();
+    renderBatch->SetRenderObject(this);
+    renderBatch->vertexLayoutId = layoutId;
+    renderBatch->vertexBuffer = vBuffer;
+    renderBatch->indexBuffer = iBuffer;
+    renderBatch->indexCount = 6;
+    renderBatch->vertexCount = 6;
+
+    quads.push_back(renderBatch);
+}
+
 DAVA::Array<OverdrawTesterRenderObject::QuadVertex, 6> OverdrawTesterRenderObject::GetQuadVerts(float32 xStart, float32 xEnd)
 {
     // Try to keep 2pix - 1tex ratio.
@@ -117,16 +129,6 @@ DAVA::Array<OverdrawTesterRenderObject::QuadVertex, 6> OverdrawTesterRenderObjec
     { { xEnd, 1.0f, 1.0f }, { uvEnd, maxY } },
     { { xEnd, -1.0f, 1.0f }, { uvEnd, 0.0f } }
     } };
-}
-
-void OverdrawTesterRenderObject::RecalculateWorldBoundingBox()
-{
-    worldBBox = bbox;
-}
-
-void OverdrawTesterRenderObject::BindDynamicParameters(Camera* camera)
-{
-    DAVA::Renderer::GetDynamicBindings().SetDynamicParam(DAVA::DynamicBindings::PARAM_WORLD, &DAVA::Matrix4::IDENTITY, reinterpret_cast<DAVA::pointer_size>(&DAVA::Matrix4::IDENTITY));
 }
 
 void OverdrawTesterRenderObject::GenerateIndexBuffer()

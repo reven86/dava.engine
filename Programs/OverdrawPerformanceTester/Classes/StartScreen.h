@@ -74,7 +74,7 @@ private:
     static const float32 frametimeIncreaseStep;
 
     static const Array<ButtonInfo, 4> resolutionButtonsInfo;
-    static const Array<ButtonInfo, 5> texturePixelFormatButtonsInfo;
+    static const Array<ButtonInfo, 9> texturePixelFormatButtonsInfo;
     static const Array<ButtonInfo, 2> overdrawButtonsInfo;
     static const Array<ButtonInfo, 2> chartHeightButtonsInfo;
 };
