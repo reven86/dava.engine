@@ -48,7 +48,7 @@ private:
 
     OverdrawPerformanceTester::OverdrawTesterSystem* testerSystem;
     OverdrawPerformanceTester::ChartPainterSystem* chartPainterSystem;
-    
+
     static const DAVA::float32 buttonWidth;
     static const DAVA::float32 buttonHeight;
     static const DAVA::float32 minFrametimeThreshold;

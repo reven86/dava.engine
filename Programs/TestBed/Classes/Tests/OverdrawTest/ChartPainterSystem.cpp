@@ -22,7 +22,7 @@ using DAVA::DbgDraw;
 using DAVA::RenderSystem2D;
 using DAVA::Array;
 using DAVA::Vector;
-    
+
 const Vector2 ChartPainterSystem::chartOffset(0.1f, 0.1f);
 const Color ChartPainterSystem::gridColor(0.4f, 0.4f, 0.4f, 0.4f);
 const float32 ChartPainterSystem::chartLen = 0.8f;
@@ -124,14 +124,14 @@ void ChartPainterSystem::DrawGrid(int32 w, int32 h) const
         float32 pointY = 1 - (normalizedFps + chartOffset.y);
         int32 pointYInt = static_cast<int32>(pointY * DAVA::Renderer::GetFramebufferHeight());
         pointY *= h;
-        
+
         gridPoly.AddPoint({ chartOffset.x * w, pointY });
         gridPoly.AddPoint({ (chartOffset.x + chartLen) * w, pointY });
-        
+
         DbgDraw::Text2D(static_cast<int32>(0.05f * DAVA::Renderer::GetFramebufferWidth()), pointYInt, textColor, "%.4f", i * frametimeStep + minFrametime);
         RenderSystem2D::Instance()->DrawPolygon(gridPoly, false, gridColor);
     }
-    
+
     for (int32 i = 1; i < overdrawStepCount + 1; i++)
     {
         gridPoly.Clear();
@@ -140,13 +140,14 @@ void ChartPainterSystem::DrawGrid(int32 w, int32 h) const
         float32 pointX = normalizedOverdraw + chartOffset.x;
         int32 pointXInt = static_cast<int32>(pointX * DAVA::Renderer::GetFramebufferWidth());
         pointX *= w;
-        
+
         gridPoly.AddPoint({ pointX, chartOffset.y * h });
         gridPoly.AddPoint({ pointX, (chartOffset.y + chartLen) * h });
-        
+
         DbgDraw::Text2D(pointXInt, static_cast<int32>((chartOffset.y + chartLen) * DAVA::Renderer::GetFramebufferHeight()), textColor, "%.2f", i * overdrawStep);
         RenderSystem2D::Instance()->DrawPolygon(gridPoly, false, gridColor);
-    }}
+    }
+}
 
 void ChartPainterSystem::DrawCharts(int32 w, int32 h) const
 {
@@ -202,7 +203,6 @@ void ChartPainterSystem::ProcessPerformanceData(Array<Vector<FrameData>, 6>* per
     performanceData = performanceData_;
     // use maxFrametime = GetMaxFrametime(); to get adaptive y axis
     UpdateChartParameters();
-
 }
 
 void ChartPainterSystem::UpdateChartParameters()

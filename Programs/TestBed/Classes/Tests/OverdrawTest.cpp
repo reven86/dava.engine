@@ -56,7 +56,8 @@ const Array<OverdrawTest::ButtonInfo, 2> OverdrawTest::chartHeightButtonsInfo =
 } };
 
 OverdrawTest::OverdrawTest(TestBed& app_)
-    : BaseScreen(app_, "OverdrawTest"), app(app_)
+    : BaseScreen(app_, "OverdrawTest")
+    , app(app_)
 {
     testingScreen = new OverdrawTestingScreen(app_);
     UIScreenManager::Instance()->RegisterScreen(testingScreenNumber, testingScreen);

@@ -1,37 +1,35 @@
 #include "OverdrawTestingScreen.h"
 
+#include "ChartPainterSystem.h"
 #include "OverdrawTestConfig.h"
 #include "OverdrawTesterComponent.h"
 #include "OverdrawTesterSystem.h"
-#include "ChartPainterSystem.h"
 #include "Infrastructure/TestBed.h"
 
+#include "Base/Message.h"
+#include "Base/String.h"
+#include "Base/TemplateHelpers.h"
+#include "Render/2D/FTFont.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+#include "Render/Highlevel/Camera.h"
+#include "Scene3D/Scene.h"
+#include "Scene3D/Components/CameraComponent.h"
+#include "Scene3D/Systems/Controller/RotationControllerSystem.h"
+#include "Scene3D/Systems/Controller/WASDControllerSystem.h"
+#include "Math/Color.h"
 #include "UI/UIScreen.h"
 #include "UI/UI3DView.h"
 #include "UI/UIControlSystem.h"
 #include "UI/UIButton.h"
 #include "UI/Layouts/UIAnchorComponent.h"
-#include "Math/Color.h"
-#include "Base/Message.h"
-#include "Base/String.h"
-#include "Base/TemplateHelpers.h"
-
-#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
-#include "Render/2D/FTFont.h"
-
-#include "Scene3D/Scene.h"
-#include "Scene3D/Components/CameraComponent.h"
-#include "Scene3D/Systems/Controller/RotationControllerSystem.h"
-#include "Scene3D/Systems/Controller/WASDControllerSystem.h"
-#include "Render/Highlevel/Camera.h"
 
 using OverdrawPerformanceTester::OverdrawTesterComonent;
 using OverdrawPerformanceTester::OverdrawTesterSystem;
 using OverdrawPerformanceTester::ChartPainterSystem;
 using OverdrawPerformanceTester::FrameData;
 using DAVA::Entity;
-using DAVA::Scene;
 using DAVA::Camera;
+using DAVA::Scene;
 using DAVA::float32;
 using DAVA::Color;
 using DAVA::Vector3;
@@ -56,13 +54,13 @@ const float32 OverdrawTestingScreen::buttonHeight = 40.0f;
 const float32 OverdrawTestingScreen::minFrametimeThreshold = 0.033f;
 const float32 OverdrawTestingScreen::frametimeIncreaseStep = 0.016f;
 
-OverdrawTestingScreen::OverdrawTestingScreen(TestBed& app_) : app(app_)
+OverdrawTestingScreen::OverdrawTestingScreen(TestBed& app_)
+    : app(app_)
 {
 }
 
 void OverdrawTestingScreen::LoadResources()
 {
-
     scene = new Scene();
     scene->LoadScene(FilePath("~res:3d/Maps/overdraw_test/TestingScene.sc2"));
 
@@ -87,7 +85,7 @@ void OverdrawTestingScreen::LoadResources()
     ScopedPtr<Camera> camera(new Camera());
 
     VirtualCoordinatesSystem* vcs = DAVA::UIControlSystem::Instance()->vcs;
-    
+
     float32 aspect = static_cast<float32>(vcs->GetVirtualScreenSize().dy) / static_cast<float32>(vcs->GetVirtualScreenSize().dx);
     camera->SetupPerspective(70.f, aspect, 0.5f, 2500.f);
     camera->SetLeft(Vector3(1, 0, 0));
