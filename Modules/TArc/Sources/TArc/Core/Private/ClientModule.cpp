@@ -7,7 +7,7 @@ namespace DAVA
 {
 namespace TArc
 {
-ContextAccessor* ClientModule::GetAccessor() const
+ContextAccessor* ClientModule::GetAccessor()
 {
     DVASSERT(coreInterface != nullptr);
     return coreInterface;
