@@ -10,6 +10,7 @@
 #include <UI/Layouts/UILayoutSourceRectComponent.h>
 #include <UI/Styles/UIStyleSheetPropertyDataBase.h>
 #include <UI/UIControl.h>
+#include <UI/UIScrollViewContainer.h>
 
 using namespace DAVA;
 
@@ -51,11 +52,15 @@ IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject* anObject, const D
         SetDefaultValue(member->Value(object));
     }
 
-    if (member->Name() == INTROSPECTION_PROPERTY_NAME_SIZE || member->Name() == INTROSPECTION_PROPERTY_NAME_POSITION)
+    bool isSizeProperty = member->Name() == INTROSPECTION_PROPERTY_NAME_SIZE;
+    if (isSizeProperty || member->Name() == INTROSPECTION_PROPERTY_NAME_POSITION)
     {
         UIControl* control = DynamicTypeCheck<UIControl*>(anObject);
-        sourceRectComponent = control->GetOrCreateComponent<UILayoutSourceRectComponent>();
-        SetLayoutSourceRectValue(member->Value(anObject));
+        if (dynamic_cast<UIScrollViewContainer*>(control) == nullptr)
+        {
+            sourceRectComponent = control->GetOrCreateComponent<UILayoutSourceRectComponent>();
+            SetLayoutSourceRectValue(member->Value(anObject));
+        }
     }
 }
 
