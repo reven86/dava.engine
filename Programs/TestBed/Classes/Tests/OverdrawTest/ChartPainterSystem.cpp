@@ -18,7 +18,11 @@ using DAVA::Scene;
 using DAVA::SceneSystem;
 using DAVA::Polygon2;
 using DAVA::UIControlSystem;
-
+using DAVA::DbgDraw;
+using DAVA::RenderSystem2D;
+using DAVA::Array;
+using DAVA::Vector;
+    
 const Vector2 ChartPainterSystem::chartOffset(0.1f, 0.1f);
 const Color ChartPainterSystem::gridColor(0.4f, 0.4f, 0.4f, 0.4f);
 const float32 ChartPainterSystem::chartLen = 0.8f;
@@ -58,11 +62,11 @@ ChartPainterSystem::ChartPainterSystem(Scene* scene, float32 maxFrametime_)
     passConfig.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
     passConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_NONE;
     passConfig.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
-    passConfig.priority = PRIORITY_MAIN_2D - 10;
+    passConfig.priority = DAVA::PRIORITY_MAIN_2D - 10;
     passConfig.viewport.x = 0;
     passConfig.viewport.y = 0;
 
-    DbgDraw::EnsureInited();
+    DAVA::DbgDraw::EnsureInited();
 }
 
 ChartPainterSystem::~ChartPainterSystem()
@@ -118,32 +122,31 @@ void ChartPainterSystem::DrawGrid(int32 w, int32 h) const
         float32 normalizedFps = (i * frametimeStep) / frametimeAxisLen;
         normalizedFps *= chartLen;
         float32 pointY = 1 - (normalizedFps + chartOffset.y);
-        int32 pointYInt = static_cast<int32>(pointY * h);
+        int32 pointYInt = static_cast<int32>(pointY * DAVA::Renderer::GetFramebufferHeight());
         pointY *= h;
-
+        
         gridPoly.AddPoint({ chartOffset.x * w, pointY });
         gridPoly.AddPoint({ (chartOffset.x + chartLen) * w, pointY });
-
-        DbgDraw::Text2D(static_cast<int32>(0.05f * w), pointYInt, textColor, "%.4f", i * frametimeStep + minFrametime);
+        
+        DbgDraw::Text2D(static_cast<int32>(0.05f * DAVA::Renderer::GetFramebufferWidth()), pointYInt, textColor, "%.4f", i * frametimeStep + minFrametime);
         RenderSystem2D::Instance()->DrawPolygon(gridPoly, false, gridColor);
     }
-
+    
     for (int32 i = 1; i < overdrawStepCount + 1; i++)
     {
         gridPoly.Clear();
         float32 normalizedOverdraw = (i * overdrawStep) / maxOverdraw;
         normalizedOverdraw *= chartLen;
         float32 pointX = normalizedOverdraw + chartOffset.x;
-        int32 pointXInt = static_cast<int32>(pointX * w);
+        int32 pointXInt = static_cast<int32>(pointX * DAVA::Renderer::GetFramebufferWidth());
         pointX *= w;
-
+        
         gridPoly.AddPoint({ pointX, chartOffset.y * h });
         gridPoly.AddPoint({ pointX, (chartOffset.y + chartLen) * h });
-
-        DbgDraw::Text2D(pointXInt, static_cast<int32>((chartOffset.y + chartLen) * h), textColor, "%.2f", i * overdrawStep);
+        
+        DbgDraw::Text2D(pointXInt, static_cast<int32>((chartOffset.y + chartLen) * DAVA::Renderer::GetFramebufferHeight()), textColor, "%.2f", i * overdrawStep);
         RenderSystem2D::Instance()->DrawPolygon(gridPoly, false, gridColor);
-    }
-}
+    }}
 
 void ChartPainterSystem::DrawCharts(int32 w, int32 h) const
 {
@@ -178,10 +181,10 @@ void ChartPainterSystem::DrawCharts(int32 w, int32 h) const
 
 void ChartPainterSystem::FlushDbgText()
 {
-    passConfig.viewport.width = Renderer::GetFramebufferWidth();
-    passConfig.viewport.height = Renderer::GetFramebufferHeight();
+    passConfig.viewport.width = DAVA::Renderer::GetFramebufferWidth();
+    passConfig.viewport.height = DAVA::Renderer::GetFramebufferHeight();
 
-    DbgDraw::SetScreenSize(Renderer::GetFramebufferWidth(), Renderer::GetFramebufferHeight());
+    DbgDraw::SetScreenSize(DAVA::Renderer::GetFramebufferWidth(), DAVA::Renderer::GetFramebufferHeight());
 
     rhi::HPacketList packetList;
     rhi::HRenderPass pass = rhi::AllocateRenderPass(passConfig, 1, &packetList);
@@ -210,18 +213,22 @@ void ChartPainterSystem::DrawLegend(int32 w, int32 h) const
     static const float yOffsetMultiplier = 0.05f;
 
     float32 initialOffset = static_cast<float32>(w) / offsetDivider;
+    float32 textInitialOffset = static_cast<float32>(DAVA::Renderer::GetFramebufferWidth()) / offsetDivider;
     float32 step = static_cast<float32>(w) / stepDivider;
+    float32 textStep = static_cast<float32>(DAVA::Renderer::GetFramebufferWidth()) / stepDivider;
     int32 lineOffset = static_cast<int32>(static_cast<float32>(w) / lineOffsetDivider);
-    float32 yPos = yOffsetMultiplier * h;
+    int32 yPos = static_cast<int32>(yOffsetMultiplier * DAVA::Renderer::GetFramebufferHeight());
+    float32 yPosFloat = yOffsetMultiplier * h;
     Polygon2 p;
     for (int i = 0; i < MODS_COUNT; i++)
     {
         p.Clear();
 
-        float32 startX = step * i + initialOffset;
-        p.AddPoint({ startX, yPos });
-        p.AddPoint({ startX + lineOffset, yPos });
-        DbgDraw::Text2D(static_cast<int32>(startX), static_cast<int32>(yPos), textColor, "%s", legend[i].c_str());
+        int32 startX = static_cast<int32>(textStep * i + textInitialOffset);
+        float32 startXFloat = step * i + initialOffset;
+        p.AddPoint({ startXFloat, yPosFloat });
+        p.AddPoint({ startXFloat + lineOffset, yPosFloat });
+        DbgDraw::Text2D(startX, yPos, textColor, "%s", legend[i].c_str());
         RenderSystem2D::Instance()->DrawPolygon(p, false, chartColors[i]);
     }
 }

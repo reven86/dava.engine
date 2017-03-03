@@ -1,6 +1,8 @@
 #pragma once
 
 #include "OverdrawTestingScreen.h"
+#include "Base/BaseTypes.h"
+#include "Entity/SceneSystem.h"
 
 namespace OverdrawPerformanceTester
 {
@@ -9,7 +11,7 @@ struct FrameData;
 class ChartPainterSystem : public DAVA::SceneSystem
 {
 public:
-    ChartPainterSystem(DAVA::Scene* scene, float32 maxFrametime_);
+    ChartPainterSystem(DAVA::Scene* scene, DAVA::float32 maxFrametime_);
     ~ChartPainterSystem();
 
     void AddEntity(DAVA::Entity* entity) override;

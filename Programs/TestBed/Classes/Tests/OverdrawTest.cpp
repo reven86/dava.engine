@@ -1,5 +1,6 @@
 #include "OverdrawTest.h"
 
+#include "OverdrawTest/OverdrawTestingScreen.h"
 #include "OverdrawTest/OverdrawTestConfig.h"
 
 using DAVA::Rect;

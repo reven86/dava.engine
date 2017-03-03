@@ -73,7 +73,6 @@ void OverdrawTestingScreen::LoadResources()
 
     VirtualCoordinatesSystem* vcs = DAVA::UIControlSystem::Instance()->vcs;
     initialVcsSize = vcs->GetVirtualScreenSize();
-    vcs->SetVirtualScreenSize(DAVA::Renderer::GetFramebufferWidth(), DAVA::Renderer::GetFramebufferHeight());
     
     float32 aspect = static_cast<float32>(vcs->GetVirtualScreenSize().dy) / static_cast<float32>(vcs->GetVirtualScreenSize().dx);
     camera->SetupPerspective(70.f, aspect, 0.5f, 2500.f);
