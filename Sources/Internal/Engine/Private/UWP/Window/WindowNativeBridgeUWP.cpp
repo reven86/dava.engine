@@ -535,6 +535,12 @@ void WindowNativeBridge::OnMouseMoved(Windows::Devices::Input::MouseDevice ^ mou
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseMoveEvent(window, x, y, modifierKeys, true));
 }
 
+void WindowNativeBridge::OnKeyboardShowing(Windows::UI::ViewManagement::InputPane ^ sender, Windows::UI::ViewManagement::InputPaneVisibilityEventArgs ^ args)
+{
+    // Notify Windows that we'll handle layout by ourselves
+    args->EnsuredFocusedElementInView = true;
+}
+
 eModifierKeys WindowNativeBridge::GetModifierKeys() const
 {
     using ::Windows::System::VirtualKey;
@@ -625,10 +631,11 @@ void WindowNativeBridge::CreateBaseXamlUI()
     // It only permits to set focus at another control
     // So create dummy offscreen button that steals focus when there is
     // a need to unfocus native control, especially useful for text fields
-    xamlControlThatStealsFocus = ref new Button();
+    xamlControlThatStealsFocus = ref new Windows::UI::Xaml::Controls::Button();
     xamlControlThatStealsFocus->Content = L"I steal your focus";
     xamlControlThatStealsFocus->Width = 30;
     xamlControlThatStealsFocus->Height = 20;
+    xamlControlThatStealsFocus->TabNavigation = ::Windows::UI::Xaml::Input::KeyboardNavigationMode::Cycle;
     AddXamlControl(xamlControlThatStealsFocus);
     PositionXamlControl(xamlControlThatStealsFocus, -1000.0f, -1000.0f);
 
@@ -643,6 +650,7 @@ void WindowNativeBridge::InstallEventHandlers()
     using namespace ::Windows::UI::Xaml;
     using namespace ::Windows::UI::Xaml::Input;
     using namespace ::Windows::UI::Xaml::Controls;
+    using namespace ::Windows::UI::ViewManagement;
 
     CoreWindow ^ coreWindow = xamlWindow->CoreWindow;
 
@@ -658,6 +666,8 @@ void WindowNativeBridge::InstallEventHandlers()
     tokenPointerPressed = xamlSwapChainPanel->PointerPressed += ref new PointerEventHandler(this, &WindowNativeBridge::OnPointerPressed);
     tokenPointerMoved = xamlSwapChainPanel->PointerMoved += ref new PointerEventHandler(this, &WindowNativeBridge::OnPointerMoved);
     tokenPointerWheelChanged = xamlSwapChainPanel->PointerWheelChanged += ref new PointerEventHandler(this, &WindowNativeBridge::OnPointerWheelChanged);
+
+    tokenKeyboardShowing = InputPane::GetForCurrentView()->Showing += ref new TypedEventHandler<InputPane ^, InputPaneVisibilityEventArgs ^>(this, &WindowNativeBridge::OnKeyboardShowing);
 
     // We want to receive a pointer release event even if it already has been handled
     // Since there might be cases when pressed event isn't handled but released event is, even though it's the same pointer
@@ -679,6 +689,8 @@ void WindowNativeBridge::UninstallEventHandlers()
 {
     using ::Windows::UI::Core::CoreWindow;
     using ::Windows::Devices::Input::MouseDevice;
+
+    using namespace ::Windows::UI::ViewManagement;
 
     CoreWindow ^ coreWindow = xamlWindow->CoreWindow;
     MouseDevice ^ mouseDevice = MouseDevice::GetForCurrentView();
@@ -715,6 +727,8 @@ void WindowNativeBridge::UninstallEventHandlers()
     }
 
     mouseDevice->MouseMoved -= tokenMouseMoved;
+
+    InputPane::GetForCurrentView()->Showing -= tokenKeyboardShowing;
 }
 
 ::Platform::String ^ WindowNativeBridge::xamlWorkaroundWebViewProblems = LR"(
