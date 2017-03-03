@@ -3,6 +3,7 @@
 #include "BaseScreen.h"
 
 using namespace DAVA;
+class OverdrawTestingScreen;
 
 class OverdrawTest : public BaseScreen
 {
@@ -12,10 +13,7 @@ public:
     virtual void LoadResources();
     virtual void UnloadResources();
 
-    virtual ~OverdrawTest()
-    {
-        SafeRelease(font);
-    }
+    virtual ~OverdrawTest();
 
 private:
     struct ButtonInfo
@@ -54,6 +52,7 @@ private:
     UIStaticText* overdrawCountLabel = nullptr;
     UIStaticText* chartHeightLabel = nullptr;
     Font* font = nullptr;
+    OverdrawTestingScreen* testingScreen = nullptr;
     TestBed& app;
 
     UnorderedMap<UIButton*, ButtonInfo> resolutionButtons;
@@ -76,6 +75,7 @@ private:
     static const float32 chartHeightYOffset;
     static const float32 minFrametimeThreshold;
     static const float32 frametimeIncreaseStep;
+    static const uint16 testingScreenNumber;
 
     static const Array<ButtonInfo, 4> resolutionButtonsInfo;
     static const Array<ButtonInfo, 9> texturePixelFormatButtonsInfo;

@@ -4,7 +4,16 @@
 #include "OverdrawTesterComponent.h"
 #include "OverdrawTesterSystem.h"
 #include "ChartPainterSystem.h"
+#include "Infrastructure/TestBed.h"
 
+#include "UI/UIScreen.h"
+#include "UI/UI3DView.h"
+#include "UI/UIControlSystem.h"
+
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
+
+#include "Scene3D/Scene.h"
+#include "Scene3D/Components/CameraComponent.h"
 #include "Scene3D/Systems/Controller/RotationControllerSystem.h"
 #include "Scene3D/Systems/Controller/WASDControllerSystem.h"
 #include "Render/Highlevel/Camera.h"
@@ -26,18 +35,18 @@ using DAVA::Size2i;
 using DAVA::Rect;
 using DAVA::ScopedPtr;
 using DAVA::FilePath;
+using DAVA::Rect;
+using DAVA::UIScreen;
 
-OverdrawTestingScreen::OverdrawTestingScreen(TestBed& app_, const DAVA::String& screenName) 
-    : BaseScreen(app_, "Overdraw Testing Screen"), app(app_)
+OverdrawTestingScreen::OverdrawTestingScreen(TestBed& app_) : app(app_)
 {
 }
 
 void OverdrawTestingScreen::LoadResources()
 {
-    BaseScreen::LoadResources();
 
     scene = new Scene();
-    scene->LoadScene(FilePath("~res:/3d/Maps/TestingScene.sc2"));
+    scene->LoadScene(FilePath("~res:3d/Maps/overdraw_test/TestingScene.sc2"));
 
     testerSystem = new OverdrawTesterSystem(scene, OverdrawTestConfig::pixelFormat, OverdrawTestConfig::textureResolution,
                                             [this](DAVA::Array<DAVA::Vector<FrameData>, 6>* performanceData)
@@ -53,7 +62,8 @@ void OverdrawTestingScreen::LoadResources()
     ScopedPtr<Camera> camera(new Camera());
 
     VirtualCoordinatesSystem* vcs = DAVA::UIControlSystem::Instance()->vcs;
-    vcs->SetVirtualScreenSize(DAVA::Renderer::GetFramebufferWidth(), DAVA::Renderer::GetFramebufferHeight());
+    //vcs->SetVirtualScreenSize(DAVA::Renderer::GetFramebufferWidth(), DAVA::Renderer::GetFramebufferHeight());
+    
     float32 aspect = static_cast<float32>(vcs->GetVirtualScreenSize().dy) / static_cast<float32>(vcs->GetVirtualScreenSize().dx);
     camera->SetupPerspective(70.f, aspect, 0.5f, 2500.f);
     camera->SetLeft(Vector3(1, 0, 0));
@@ -86,6 +96,9 @@ void OverdrawTestingScreen::LoadResources()
 
 void OverdrawTestingScreen::UnloadResources()
 {
+    RemoveAllControls();
+    UIScreen::UnloadResources();
+
     scene->RemoveSystem(chartPainterSystem);
     SafeDelete(chartPainterSystem);
 
@@ -93,5 +106,4 @@ void OverdrawTestingScreen::UnloadResources()
     SafeDelete(testerSystem);
 
     SafeRelease(scene);
-    BaseScreen::UnloadResources();
 }

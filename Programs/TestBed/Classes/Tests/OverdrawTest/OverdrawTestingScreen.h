@@ -1,6 +1,13 @@
 #pragma once
 
-#include "BaseScreen.h"
+#include "UI/UIScreen.h"
+
+class TestBed;
+
+namespace DAVA
+{
+class Scene;
+}
 
 namespace OverdrawPerformanceTester
 {
@@ -8,15 +15,15 @@ class OverdrawTesterSystem;
 class ChartPainterSystem;
 }
 
-class OverdrawTestingScreen : public BaseScreen
+class OverdrawTestingScreen : public DAVA::UIScreen
 {
 protected:
-    OverdrawTestingScreen(TestBed& app_, const DAVA::String& screenName);
     virtual ~OverdrawTestingScreen()
     {
     }
 
 public:
+    OverdrawTestingScreen(TestBed& app_);
     virtual void LoadResources();
     virtual void UnloadResources();
 

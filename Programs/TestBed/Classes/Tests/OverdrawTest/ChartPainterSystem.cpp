@@ -61,6 +61,8 @@ ChartPainterSystem::ChartPainterSystem(Scene* scene, float32 maxFrametime_)
     passConfig.priority = PRIORITY_MAIN_2D - 10;
     passConfig.viewport.x = 0;
     passConfig.viewport.y = 0;
+
+    DbgDraw::EnsureInited();
 }
 
 ChartPainterSystem::~ChartPainterSystem()

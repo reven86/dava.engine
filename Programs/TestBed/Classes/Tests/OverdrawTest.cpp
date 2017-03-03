@@ -19,6 +19,7 @@ const float32 OverdrawTest::overdrawYOffset = 100.0f;
 const float32 OverdrawTest::chartHeightYOffset = overdrawYOffset + buttonHeight * 4;
 const float32 OverdrawTest::minFrametimeThreshold = 0.033f;
 const float32 OverdrawTest::frametimeIncreaseStep = 0.016f;
+const uint16 OverdrawTest::testingScreenNumber = 1024; // Screen index must be above tests number. 1024 looks good.
 
 const Array<OverdrawTest::ButtonInfo, 4> OverdrawTest::resolutionButtonsInfo =
 { {
@@ -56,6 +57,14 @@ const Array<OverdrawTest::ButtonInfo, 2> OverdrawTest::chartHeightButtonsInfo =
 OverdrawTest::OverdrawTest(TestBed& app_)
     : BaseScreen(app_, "OverdrawTest"), app(app_)
 {
+    testingScreen = new OverdrawTestingScreen(app_);
+    UIScreenManager::Instance()->RegisterScreen(testingScreenNumber, testingScreen);
+}
+
+OverdrawTest::~OverdrawTest()
+{
+    SafeRelease(testingScreen);
+    SafeRelease(font);
 }
 
 void OverdrawTest::LoadResources()
@@ -143,7 +152,8 @@ void OverdrawTest::ReleaseButtons(DAVA::UnorderedMap<UIButton*, ButtonInfo>& but
 
 void OverdrawTest::OnStart(BaseObject* caller, void* param, void* callerData)
 {
-    UIScreenManager::Instance()->SetScreen(GetScreenId() + 1);
+    UIScreenManager::Instance()->SetScreen(testingScreenNumber);
+    //UIScreenManager::Instance()->SetScreen(GetScreenId() + 1);
     //SetNextScreen();
 }
 
