@@ -43,20 +43,21 @@ void ProjectManagerModule::PostInit()
     CreateActions();
     RegisterOperations();
 
-    RecentMenuItems::Params params;
-    params.accessor = accessor;
+    RecentMenuItems::Params params(REGlobal::MainWindowKey, accessor, "Recent projects");
     params.ui = GetUI();
-    params.settingsKeyCount = Settings::General_RecentProjectsCount;
-    params.settingsKeyData = Settings::Internal_RecentProjects;
+    params.getMaximumCount = []() {
+        return SettingsManager::GetValue(Settings::General_RecentProjectsCount).AsInt32();
+    };
+
     params.menuSubPath << "File"
                        << "Recent Projects";
     params.insertionParams.method = InsertionParams::eInsertionMethod::BeforeItem;
 
-    recentProject.reset(new RecentMenuItems(params));
-    recentProject->actionTriggered.Connect([this](const DAVA::String& projectPath)
-                                           {
-                                               OpenProjectByPath(DAVA::FilePath(projectPath));
-                                           });
+    recentProjects.reset(new RecentMenuItems(std::move(params)));
+    recentProjects->actionTriggered.Connect([this](const DAVA::String& projectPath)
+                                            {
+                                                OpenProjectByPath(DAVA::FilePath(projectPath));
+                                            });
 }
 
 void ProjectManagerModule::CreateActions()
@@ -194,7 +195,7 @@ void ProjectManagerModule::OpenProjectImpl(const DAVA::FilePath& incomePath)
 
     propsItem.Set(Settings::Internal_LastProjectPath.c_str(), DAVA::Any(data->projectPath));
 
-    recentProject->Add(incomePath.GetAbsolutePathname());
+    recentProjects->Add(incomePath.GetAbsolutePathname());
 }
 
 void ProjectManagerModule::OpenLastProject()

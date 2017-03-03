@@ -393,6 +393,7 @@ private:
     Matrix4 lastCustomWorldMatrix;
     bool lastUsedCustomWorldMatrix = false;
     uint32 lastCustomMatrixSematic = 0;
+    float32 globalTime = 0.f;
 
     uint32 VBO_STRIDE[MAX_TEXTURE_STREAMS_COUNT + 1];
     uint32 vertexLayouts2d[MAX_TEXTURE_STREAMS_COUNT + 1];

@@ -16,7 +16,7 @@ public StaticSingleton<UIStyleSheetPropertyDataBase>
 {
 public:
     virtual ~UIStyleSheetPropertyDataBase();
-    static const int32 STYLE_SHEET_PROPERTY_COUNT = 66;
+    static const int32 STYLE_SHEET_PROPERTY_COUNT = 70;
 
     UIStyleSheetPropertyDataBase();
 
@@ -42,6 +42,7 @@ private:
     UIStyleSheetPropertyGroup ignoreLayoutGroup;
     UIStyleSheetPropertyGroup sizePolicyGroup;
     UIStyleSheetPropertyGroup anchorGroup;
+    UIStyleSheetPropertyGroup soundGroup;
 
     Array<UIStyleSheetPropertyDescriptor, STYLE_SHEET_PROPERTY_COUNT> properties; // have to be after groups declaration
 

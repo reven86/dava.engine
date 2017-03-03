@@ -36,6 +36,12 @@ struct WindowNativeBridge final
     WindowNativeBridge(WindowBackend* windowBackend);
     ~WindowNativeBridge();
 
+    enum class SizeChangingReason
+    {
+        WindowSurfaceChanged,
+        WindowDpiChanged
+    };
+
     bool CreateWindow(float32 x, float32 y, float32 width, float32 height);
     void ResizeWindow(float32 width, float32 height);
     void CloseWindow();
@@ -45,7 +51,7 @@ struct WindowNativeBridge final
     float32 GetDpi();
 
     void TriggerPlatformEvents();
-    void HandleSizeChanging(bool dpiChanged);
+    void HandleSizeChanging(SizeChangingReason reason);
 
     void ApplicationDidHideUnhide(bool hidden);
 
@@ -54,15 +60,11 @@ struct WindowNativeBridge final
     void WindowDidBecomeKey();
     void WindowDidResignKey();
     void WindowDidResize();
-    void WindowWillStartLiveResize();
-    void WindowDidEndLiveResize();
     void WindowDidChangeScreen();
     bool WindowShouldClose();
     void WindowWillClose();
     void WindowWillEnterFullScreen();
-    void WindowDidEnterFullScreen();
     void WindowWillExitFullScreen();
-    void WindowDidExitFullScreen();
 
     void MouseClick(NSEvent* theEvent);
     void MouseMove(NSEvent* theEvent);
@@ -81,8 +83,6 @@ struct WindowNativeBridge final
     static eMouseButtons GetMouseButton(NSEvent* theEvent);
 
     void SetSurfaceScale(const float32 scale);
-    void ForceBackbufferSizeUpdate();
-
     //////////////////////////////////////////////////////////////////////////
 
     WindowBackend* windowBackend = nullptr;
@@ -96,7 +96,6 @@ struct WindowNativeBridge final
     bool isAppHidden = false;
     bool isMiniaturized = false;
     bool isFullscreen;
-    bool isFullscreenToggling = false;
     bool isVisible = false;
 
     uint32 lastModifierFlags = 0; // Saved NSEvent.modifierFlags to detect Shift, Alt presses
@@ -104,6 +103,8 @@ struct WindowNativeBridge final
 private:
     void SetSystemCursorCapture(bool capture);
     void UpdateSystemCursorVisible();
+
+    float32 surfaceScale = 1.0f;
 
     eCursorCapture captureMode = eCursorCapture::OFF;
     // bug when cursor in hide state (could not be hide)

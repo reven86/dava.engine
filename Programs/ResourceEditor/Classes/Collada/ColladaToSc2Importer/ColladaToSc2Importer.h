@@ -3,6 +3,7 @@
 
 #include "Collada/ColladaToSc2Importer/ImportLibrary.h"
 #include "Collada/ColladaErrorCodes.h"
+#include "Collada/ImportParams.h"
 
 namespace DAVA
 {
@@ -13,6 +14,7 @@ class ImportLibrary;
 class ColladaToSc2Importer
 {
 public:
+    ColladaToSc2Importer(std::unique_ptr<DAEConverter::ImportParams>&& params);
     eColladaErrorCodes SaveSC2(ColladaScene* colladaScene, const FilePath& scenePath);
 
 private:
@@ -26,6 +28,7 @@ private:
     Mesh* GetMeshFromCollada(ColladaMeshInstance* mesh, const bool isShadow);
 
     ImportLibrary library;
+    std::unique_ptr<DAEConverter::ImportParams> params;
 };
 };
 

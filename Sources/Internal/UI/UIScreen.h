@@ -58,7 +58,7 @@ public:
     virtual void RemoveFromGroup();
 
     virtual int32 GetGroupId();
-    virtual void SystemDraw(const UIGeometricData& geometricData); // Internal method used by ControlSystem
+    virtual void SystemDraw(const UIGeometricData& geometricData, const DAVA::UIControlBackground* parentBackground); // Internal method used by ControlSystem
 
     virtual void SystemScreenSizeChanged(const Rect& newFullScreenSize);
 

@@ -16,7 +16,7 @@ namespace DAVA
 namespace TArc
 {
 template <typename TBase, typename TEditableType>
-class BaseSpinBox : public ControlProxy<TBase>
+class BaseSpinBox : public ControlProxyImpl<TBase>
 {
 public:
     enum BaseFields : uint32
@@ -33,6 +33,7 @@ public:
 protected:
     void UpdateControl(const ControlDescriptor& changedFields) override;
     void SetupSpinBoxBase();
+    void UpdateRange();
 
     void ValueChanged(TEditableType val);
 
