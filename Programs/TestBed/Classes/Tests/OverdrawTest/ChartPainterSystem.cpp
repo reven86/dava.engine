@@ -201,6 +201,12 @@ void ChartPainterSystem::ProcessPerformanceData(Array<Vector<FrameData>, 6>* per
 {
     performanceData = performanceData_;
     // use maxFrametime = GetMaxFrametime(); to get adaptive y axis
+    UpdateChartParameters();
+
+}
+
+void ChartPainterSystem::UpdateChartParameters()
+{
     frametimeAxisLen = maxFrametime - minFrametime;
     frametimeStepCount = frametimeAxisLen / frametimeStep;
 }

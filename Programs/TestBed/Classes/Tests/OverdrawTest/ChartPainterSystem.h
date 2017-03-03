@@ -24,6 +24,11 @@ public:
 
     void ProcessPerformanceData(DAVA::Array<DAVA::Vector<FrameData>, 6>* performanceData_);
 
+    void UpdateChartParameters();
+
+    inline void SetMaxFrametime(DAVA::float32 frametime);
+    inline DAVA::float32 GetMaxFrametime() const;
+
 private:
     void DrawLegend(DAVA::int32 w, DAVA::int32 h) const;
     DAVA::float32 GetMaxFrametimeFromData() const;
@@ -47,4 +52,15 @@ private:
     static const DAVA::Array<DAVA::Color, 6> chartColors;
     const DAVA::uint32 textColor;
 };
+
+void ChartPainterSystem::SetMaxFrametime(DAVA::float32 frametime)
+{
+    maxFrametime = frametime;
+    UpdateChartParameters();
+}
+
+DAVA::float32 ChartPainterSystem::GetMaxFrametime() const
+{
+    return maxFrametime;
+}
 }

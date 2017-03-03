@@ -65,7 +65,6 @@ OverdrawTest::OverdrawTest(TestBed& app_)
 OverdrawTest::~OverdrawTest()
 {
     SafeRelease(testingScreen);
-    SafeRelease(font);
 }
 
 void OverdrawTest::LoadResources()
@@ -128,6 +127,8 @@ void OverdrawTest::UnloadResources()
 
     SafeRelease(overdrawCountLabel);
     SafeRelease(chartHeightLabel);
+
+    SafeRelease(font);
 }
 
 void OverdrawTest::CreateLabel(const Rect&& rect, const WideString&& caption)
@@ -154,8 +155,6 @@ void OverdrawTest::ReleaseButtons(DAVA::UnorderedMap<UIButton*, ButtonInfo>& but
 void OverdrawTest::OnStart(BaseObject* caller, void* param, void* callerData)
 {
     UIScreenManager::Instance()->SetScreen(testingScreenNumber);
-    //UIScreenManager::Instance()->SetScreen(GetScreenId() + 1);
-    //SetNextScreen();
 }
 
 void OverdrawTest::OnResolutionButtonClick(BaseObject* sender, void* data, void* callerData)
