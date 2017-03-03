@@ -138,7 +138,7 @@ vertex_out
 #if VERTEX_LIT || PIXEL_LIT /*|| (VERTEX_FOG && FOG_ATMOSPHERE)*/
 [auto][a] property float4x4 worldViewInvTransposeMatrix;
 #if DISTANCE_ATTENUATION
-[material][a] property float lightIntensity0; 
+[material][a] property float lightIntensity0 = 1.0; 
 #endif
 #endif
 #if VERTEX_LIT || PIXEL_LIT || (VERTEX_FOG && FOG_ATMOSPHERE)
@@ -161,8 +161,8 @@ vertex_out
 #include "vp-fog-props.slh"
 
 #if ( MATERIAL_LIGHTMAP  && VIEW_DIFFUSE ) && !SETUP_LIGHTMAP
-[material][a] property float2 uvOffset;
-[material][a] property float2 uvScale;
+[material][a] property float2 uvOffset = float2(0,0);
+[material][a] property float2 uvScale = float2(0,0);
 #endif
 
 #if WIND_ANIMATION
@@ -174,7 +174,7 @@ vertex_out
 [auto][a] property float4x4 projMatrix;
 
     #if CUT_LEAF
-        [material][a] property float cutDistance;
+        [material][a] property float cutDistance = 1.0;
     #endif
 
     #if !SPHERICAL_LIT  //legacy for old tree lighting
@@ -209,18 +209,18 @@ vertex_out
 
 #if TILED_DECAL_MASK
 [material][a] property float2 decalTileCoordOffset = float2(0,0);
-[material][a] property float2 decalTileCoordScale;
+[material][a] property float2 decalTileCoordScale = float2(0,0);
 #endif
 
 #if MATERIAL_DETAIL
-[material][a] property float2 detailTileCoordScale;
+[material][a] property float2 detailTileCoordScale = float2(1.0,1.0);
 #endif
 
 #if TEXTURE0_SHIFT_ENABLED
-[material][a] property float2 texture0Shift;
+[material][a] property float2 texture0Shift = float2(0,0);
 #endif 
 #if TEXTURE0_ANIMATION_SHIFT
-[material][a] property float2 tex0ShiftPerSecond;
+[material][a] property float2 tex0ShiftPerSecond = float2(0,0);
 #endif
 
 #if VERTEX_FOG 
@@ -233,18 +233,9 @@ vertex_out
 #endif
 
 #if FLOWMAP
-[material][a] property float flowAnimSpeed;
-[material][a] property float flowAnimOffset;
+[material][a] property float flowAnimSpeed = 0;
+[material][a] property float flowAnimOffset = 0;
 #endif
-
-// prototypes, to shut up Metal shader-compiler
-/*
-float  FresnelShlick( float NdotL, float Cspec );
-float3 FresnelShlickVec3( float NdotL, float3 Cspec );
-float3 JointTransformTangent( float3 inVec, float4 jointQuaternion );
-float4 Wave( float time, float4 pos, float2 uv );
-*/
-
 
 inline float
 FresnelShlick( float NdotL, float Cspec )
@@ -637,7 +628,8 @@ vertex_out vp_main( vertex_in input )
 
     #endif // !CUT_LEAF
 
-    output.varVertexColor = float4(sphericalLightFactor * 2.0, 1.0);
+    output.varVertexColor.xyz = half3(sphericalLightFactor * 2.0);
+    output.varVertexColor.w = half(1.0);    
 
     #undef A0     
     #undef A1     
@@ -665,7 +657,7 @@ vertex_out vp_main( vertex_in input )
 
         
     #if TEXTURE0_ANIMATION_SHIFT
-        output.varTexCoord0 += tex0ShiftPerSecond * globalTime;
+        output.varTexCoord0 += frac(tex0ShiftPerSecond * globalTime);
     #endif
 
 #endif
