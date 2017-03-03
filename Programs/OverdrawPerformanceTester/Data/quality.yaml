@@ -28,7 +28,7 @@ textures:
    minsize: 64
   
 msaa:
- default: "MSAA_4X"
+ default: "NONE"
  qualities:
   - 
    quality: "MSAA_4X"
