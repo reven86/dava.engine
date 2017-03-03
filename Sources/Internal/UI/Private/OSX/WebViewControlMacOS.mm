@@ -22,11 +22,12 @@
 #import "Engine/Mac/PlatformApi.h"
 
 // Subclassing from WebView to make workaround:
-// Webview should be hidden while window is resizing
+// Webview should change its size while window is resizing
 // (if not, it looks pretty bad for the user)
 @interface MacWebView : WebView
 {
-    NSPoint origin;
+    NSSize origSuperviewSize;
+    NSRect origRect;
 }
 @end
 
@@ -36,22 +37,57 @@
     self = [super initWithFrame:frame];
     return self;
 }
+
 - (void)viewWillStartLiveResize
 {
-    // Instead of really hidding webview we are moving it
-    // far away from the visible screen because we are not
-    // controlling its visible state directly - there are some
-    // cases when webview is hidden (e.m. by user or by steam overlay)
-    // during window resizing so it should stay hidden after resizing
-    // is compleat
+    [super viewWillStartLiveResize];
 
-    origin = [self frame].origin;
-    [self setFrameOrigin:NSMakePoint(10000, 10000)];
+    // We will change WebView size proportionally to its super view size.
+    [self startProportionalResize];
 }
+
 - (void)viewDidEndLiveResize
 {
-    [self setFrameOrigin:origin];
+    [super viewDidEndLiveResize];
+    [self applyProportionalResize:[[self superview] frame].size];
 }
+
+- (void)resizeWithOldSuperviewSize:(NSSize)oldSize;
+{
+    [super resizeWithOldSuperviewSize:oldSize];
+    [self applyProportionalResize:oldSize];
+}
+
+- (void)startProportionalResize
+{
+    // Remember currect superview size and WebView size to be able
+    // to calculate proportional factor later.
+    origSuperviewSize = [[self superview] frame].size;
+    origRect = [self frame];
+}
+
+- (void)applyProportionalResize:(NSSize)oldSize
+{
+    if (origSuperviewSize.width > 0 && origSuperviewSize.height > 0)
+    {
+        // calculate proportional scale factor
+        CGFloat changeScaleX = oldSize.width / origSuperviewSize.width;
+        CGFloat changeScaleY = oldSize.height / origSuperviewSize.height;
+
+        // tune position
+        NSPoint newPos;
+        newPos.x = origRect.origin.x * changeScaleX;
+        newPos.y = origRect.origin.y * changeScaleY;
+        [self setFrameOrigin:newPos];
+
+        // tune size
+        NSSize newSize;
+        newSize.width = origRect.size.width * changeScaleX;
+        newSize.height = origRect.size.height * changeScaleY;
+        [self setFrameSize:newSize];
+    }
+}
+
 @end
 
 // A delegate is needed to block the context menu. Note - this delegate
@@ -241,6 +277,7 @@ WebViewControl::WebViewControl(UIWebView* uiWebView)
     [bridge->webView setUIDelegate:bridge->controlUIDelegate];
     [bridge->webView setPolicyDelegate:bridge->policyDelegate];
     [bridge->webView setFrameLoadDelegate:bridge->policyDelegate];
+    [bridge->webView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
 
     [bridge->policyDelegate setWebViewControl:this];
     [bridge->policyDelegate setUiWebViewControl:&uiWebViewControl];
@@ -248,6 +285,7 @@ WebViewControl::WebViewControl(UIWebView* uiWebView)
 #if defined(__DAVAENGINE_COREV2__)
     PlatformApi::Mac::AddNSView(window, bridge->webView);
 
+    windowDestroyedConnection = Engine::Instance()->windowDestroyed.Connect(this, &WebViewControl::OnWindowDestroyed);
     windowVisibilityChangedConnection = window->visibilityChanged.Connect(this, &WebViewControl::OnWindowVisibilityChanged);
 #else
     NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
@@ -271,7 +309,11 @@ WebViewControl::~WebViewControl()
 #endif
 
 #if defined(__DAVAENGINE_COREV2__)
-    window->visibilityChanged.Disconnect(windowVisibilityChangedConnection);
+    if (nullptr != window)
+    {
+        window->visibilityChanged.Disconnect(windowVisibilityChangedConnection);
+        Engine::Instance()->windowDestroyed.Disconnect(windowDestroyedConnection);
+    }
 #else
     CoreMacOSPlatformBase* xcore = static_cast<CoreMacOSPlatformBase*>(Core::Instance());
     xcore->signalAppMinimizedRestored.Disconnect(appMinimizedRestoredConnectionId);
@@ -281,7 +323,10 @@ WebViewControl::~WebViewControl()
     bridge->bitmapImageRep = nullptr;
 
 #if defined(__DAVAENGINE_COREV2__)
-    PlatformApi::Mac::RemoveNSView(window, bridge->webView);
+    if (nullptr != window)
+    {
+        PlatformApi::Mac::RemoveNSView(window, bridge->webView);
+    }
 #else
     [bridge->webView removeFromSuperview];
 #endif
@@ -546,6 +591,14 @@ void WebViewControl::SetNativeVisible(bool visible)
 }
 
 #if defined(__DAVAENGINE_COREV2__)
+void WebViewControl::OnWindowDestroyed(Window* w)
+{
+    if (window == w)
+    {
+        window = nullptr;
+    }
+}
+
 void WebViewControl::OnWindowVisibilityChanged(Window* w, bool visible)
 {
     if (visible && isVisible)

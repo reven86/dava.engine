@@ -395,6 +395,8 @@ void WindowNativeBridge::OnPointerPressed(::Platform::Object ^ sender, ::Windows
 
     lastPressedPointer = arg->Pointer;
 
+    pressedPointerIds.push_back(lastPressedPointer->PointerId);
+
     PointerPoint ^ pointerPoint = arg->GetCurrentPoint(nullptr);
     PointerPointProperties ^ prop = pointerPoint->Properties;
     PointerDeviceType deviceType = pointerPoint->PointerDevice->PointerDeviceType;
@@ -423,28 +425,40 @@ void WindowNativeBridge::OnPointerReleased(::Platform::Object ^ sender, ::Window
 
     lastPressedPointer = nullptr;
 
-    PointerPoint ^ pointerPoint = arg->GetCurrentPoint(nullptr);
-    PointerPointProperties ^ prop = pointerPoint->Properties;
-    PointerDeviceType deviceType = pointerPoint->PointerDevice->PointerDeviceType;
+    // Check if we had according PointerPressed event
+    auto matchingPressedPointerIdPos = std::find(pressedPointerIds.begin(), pressedPointerIds.end(), arg->Pointer->PointerId);
+    if (matchingPressedPointerIdPos != pressedPointerIds.end())
+    {
+        pressedPointerIds.erase(matchingPressedPointerIdPos);
 
-    eModifierKeys modifierKeys = GetModifierKeys();
-    float32 x = pointerPoint->Position.X;
-    float32 y = pointerPoint->Position.Y;
-    if (deviceType == PointerDeviceType::Mouse)
-    {
-        bool isPressed = false;
-        eMouseButtons button = GetMouseButtonState(prop->PointerUpdateKind, &isPressed);
-        bool isRelative = (captureMode == eCursorCapture::PINNING);
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, MainDispatcherEvent::MOUSE_BUTTON_UP, button, x, y, 1, modifierKeys, isRelative));
-    }
-    else if (deviceType == PointerDeviceType::Touch)
-    {
-        uint32 touchId = pointerPoint->PointerId;
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowTouchEvent(window, MainDispatcherEvent::TOUCH_UP, touchId, x, y, modifierKeys));
+        PointerPoint ^ pointerPoint = arg->GetCurrentPoint(nullptr);
+        PointerPointProperties ^ prop = pointerPoint->Properties;
+        PointerDeviceType deviceType = pointerPoint->PointerDevice->PointerDeviceType;
+
+        eModifierKeys modifierKeys = GetModifierKeys();
+        float32 x = pointerPoint->Position.X;
+        float32 y = pointerPoint->Position.Y;
+        if (deviceType == PointerDeviceType::Mouse)
+        {
+            bool isPressed = false;
+            eMouseButtons button = GetMouseButtonState(prop->PointerUpdateKind, &isPressed);
+            bool isRelative = (captureMode == eCursorCapture::PINNING);
+            mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseClickEvent(window, MainDispatcherEvent::MOUSE_BUTTON_UP, button, x, y, 1, modifierKeys, isRelative));
+        }
+        else if (deviceType == PointerDeviceType::Touch)
+        {
+            uint32 touchId = pointerPoint->PointerId;
+            mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowTouchEvent(window, MainDispatcherEvent::TOUCH_UP, touchId, x, y, modifierKeys));
+        }
     }
 }
 
 void WindowNativeBridge::OnPointerCaptureLost(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg)
+{
+    OnPointerReleased(sender, arg);
+}
+
+void WindowNativeBridge::OnPointerCancelled(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg)
 {
     OnPointerReleased(sender, arg);
 }
@@ -642,10 +656,23 @@ void WindowNativeBridge::InstallEventHandlers()
     tokenCompositionScaleChanged = xamlSwapChainPanel->CompositionScaleChanged += ref new TypedEventHandler<SwapChainPanel ^, Object ^>(this, &WindowNativeBridge::OnCompositionScaleChanged);
 
     tokenPointerPressed = xamlSwapChainPanel->PointerPressed += ref new PointerEventHandler(this, &WindowNativeBridge::OnPointerPressed);
-    tokenPointerReleased = xamlSwapChainPanel->PointerReleased += ref new PointerEventHandler(this, &WindowNativeBridge::OnPointerReleased);
-    tokenPointerCaptureLost = xamlSwapChainPanel->PointerCaptureLost += ref new PointerEventHandler(this, &WindowNativeBridge::OnPointerCaptureLost);
     tokenPointerMoved = xamlSwapChainPanel->PointerMoved += ref new PointerEventHandler(this, &WindowNativeBridge::OnPointerMoved);
     tokenPointerWheelChanged = xamlSwapChainPanel->PointerWheelChanged += ref new PointerEventHandler(this, &WindowNativeBridge::OnPointerWheelChanged);
+
+    // We want to receive a pointer release event even if it already has been handled
+    // Since there might be cases when pressed event isn't handled but released event is, even though it's the same pointer
+    // In this case we still want to send TOUCH_DOWN event to make sure TOUCH_UP & TOUCH_DOWN always come in pairs
+
+    // We also should handle PointerReleasedEvent, PointerCaptureLostEvent, PointerCanceledEvent since any of them can be sent for according PointerPressedEvent
+
+    pointerReleasedHandler = ref new PointerEventHandler(this, &WindowNativeBridge::OnPointerReleased);
+    xamlSwapChainPanel->AddHandler(xamlSwapChainPanel->PointerReleasedEvent, pointerReleasedHandler, true);
+
+    pointerCaptureLostHandler = ref new PointerEventHandler(this, &WindowNativeBridge::OnPointerCaptureLost);
+    xamlSwapChainPanel->AddHandler(xamlSwapChainPanel->PointerCaptureLostEvent, pointerCaptureLostHandler, true);
+
+    pointerCancelledHandler = ref new PointerEventHandler(this, &WindowNativeBridge::OnPointerCancelled);
+    xamlSwapChainPanel->AddHandler(xamlSwapChainPanel->PointerCanceledEvent, pointerCancelledHandler, true);
 }
 
 void WindowNativeBridge::UninstallEventHandlers()
@@ -666,10 +693,26 @@ void WindowNativeBridge::UninstallEventHandlers()
     xamlSwapChainPanel->CompositionScaleChanged -= tokenCompositionScaleChanged;
 
     xamlSwapChainPanel->PointerPressed -= tokenPointerPressed;
-    xamlSwapChainPanel->PointerReleased -= tokenPointerReleased;
-    xamlSwapChainPanel->PointerCaptureLost -= tokenPointerCaptureLost;
     xamlSwapChainPanel->PointerMoved -= tokenPointerMoved;
     xamlSwapChainPanel->PointerWheelChanged -= tokenPointerWheelChanged;
+
+    if (pointerReleasedHandler != nullptr)
+    {
+        xamlSwapChainPanel->RemoveHandler(xamlSwapChainPanel->PointerReleasedEvent, pointerReleasedHandler);
+        pointerReleasedHandler = nullptr;
+    }
+
+    if (pointerCaptureLostHandler != nullptr)
+    {
+        xamlSwapChainPanel->RemoveHandler(xamlSwapChainPanel->PointerCaptureLostEvent, pointerCaptureLostHandler);
+        pointerCaptureLostHandler = nullptr;
+    }
+
+    if (pointerCancelledHandler != nullptr)
+    {
+        xamlSwapChainPanel->RemoveHandler(xamlSwapChainPanel->PointerCanceledEvent, pointerCancelledHandler);
+        pointerCancelledHandler = nullptr;
+    }
 
     mouseDevice->MouseMoved -= tokenMouseMoved;
 }
