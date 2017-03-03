@@ -46,10 +46,10 @@ private:
     void LoadStyleSheets(const YamlNode* styleSheetsNode, AbstractUIPackageBuilder* builder);
     void LoadControl(const YamlNode* node, AbstractUIPackageBuilder::eControlPlace controlPlace, AbstractUIPackageBuilder* builder);
 
-    void LoadControlPropertiesFromYamlNode(UIControl* control, const InspInfo* typeInfo, const YamlNode* node, AbstractUIPackageBuilder* builder);
+    void LoadControlPropertiesFromYamlNode(const InspInfo* typeInfo, const YamlNode* node, AbstractUIPackageBuilder* builder);
 
-    void LoadComponentPropertiesFromYamlNode(UIControl* control, const YamlNode* node, AbstractUIPackageBuilder* builder);
-    void ProcessLegacyAligns(UIControl* control, const YamlNode* node, AbstractUIPackageBuilder* builder);
+    void LoadComponentPropertiesFromYamlNode(const YamlNode* node, AbstractUIPackageBuilder* builder);
+    void ProcessLegacyAligns(const YamlNode* node, AbstractUIPackageBuilder* builder);
     Vector<ComponentNode> ExtractComponentNodes(const YamlNode* node);
 
     virtual VariantType ReadVariantTypeFromYamlNode(const InspMember* member, const YamlNode* node, const DAVA::String& propertyName);

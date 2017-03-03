@@ -300,6 +300,8 @@ void UIPackageLoader::LoadStyleSheets(const YamlNode* styleSheetsNode, AbstractU
 void UIPackageLoader::LoadControl(const YamlNode* node, AbstractUIPackageBuilder::eControlPlace controlPlace, AbstractUIPackageBuilder* builder)
 {
     UIControl* control = nullptr;
+    InspInfo* typeInfo = nullptr;
+
     const YamlNode* pathNode = node->Get("path");
     const YamlNode* prototypeNode = node->Get("prototype");
     const YamlNode* classNode = node->Get("class");
@@ -344,14 +346,14 @@ void UIPackageLoader::LoadControl(const YamlNode* node, AbstractUIPackageBuilder
         builder->BeginUnknownControl(controlName, node);
     }
 
-    if (control != nullptr)
+    if (typeInfo != nullptr)
     {
-        LoadControlPropertiesFromYamlNode(control, control->GetTypeInfo(), node, builder);
-        LoadComponentPropertiesFromYamlNode(control, node, builder);
+        LoadControlPropertiesFromYamlNode(typeInfo, node, builder);
+        LoadComponentPropertiesFromYamlNode(node, builder);
 
         if (version <= VERSION_WITH_LEGACY_ALIGNS)
         {
-            ProcessLegacyAligns(control, node, builder);
+            ProcessLegacyAligns(node, builder);
         }
     }
 
@@ -376,7 +378,7 @@ void UIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl* control, cons
 {
     const InspInfo* baseInfo = typeInfo->BaseInfo();
     if (baseInfo)
-        LoadControlPropertiesFromYamlNode(control, baseInfo, node, builder);
+        LoadControlPropertiesFromYamlNode(baseInfo, node, builder);
 
     builder->BeginControlPropertiesSection(typeInfo->Name().c_str());
     for (int32 i = 0; i < typeInfo->MembersCount(); i++)
@@ -391,7 +393,7 @@ void UIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl* control, cons
     builder->EndControlPropertiesSection();
 }
 
-void UIPackageLoader::LoadComponentPropertiesFromYamlNode(UIControl* control, const YamlNode* node, AbstractUIPackageBuilder* builder)
+void UIPackageLoader::LoadComponentPropertiesFromYamlNode(const YamlNode* node, AbstractUIPackageBuilder* builder)
 {
     Vector<ComponentNode> components = ExtractComponentNodes(node);
     for (ComponentNode& nodeDescr : components)
@@ -453,7 +455,7 @@ void UIPackageLoader::LoadComponentPropertiesFromYamlNode(UIControl* control, co
     }
 }
 
-void UIPackageLoader::ProcessLegacyAligns(UIControl* control, const YamlNode* node, AbstractUIPackageBuilder* builder)
+void UIPackageLoader::ProcessLegacyAligns(const YamlNode* node, AbstractUIPackageBuilder* builder)
 {
     bool hasAnchorProperties = false;
     for (const auto& it : legacyAlignsMap)

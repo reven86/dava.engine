@@ -48,6 +48,7 @@ private:
 
     std::shared_ptr<StaticPackageInformation> packageInformation;
     DAVA::Vector<Description> stack;
+    DAVA::Function<void(const DAVA::InspMember* member, const DAVA::VariantType& value)> propertyProcessor;
 
     PackageInformationCache* cache = nullptr;
 };

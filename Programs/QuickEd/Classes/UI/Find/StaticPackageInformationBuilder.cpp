@@ -180,12 +180,17 @@ void StaticPackageInformationBuilder::EndControl(eControlPlace controlPlace)
 
 void StaticPackageInformationBuilder::BeginControlPropertiesSection(const DAVA::String& name)
 {
-    // do nothing
+    std::shared_ptr<StaticControlInformation> ptr = stack.back().controlInformation;
+
+    propertyProcessor = [ptr](const DAVA::InspMember* member, const DAVA::VariantType& value)
+    {
+        ptr->SetControlProperty(member, value);
+    };
 }
 
 void StaticPackageInformationBuilder::EndControlPropertiesSection()
 {
-    // do nothing
+    propertyProcessor = nullptr;
 }
 
 DAVA::UIComponent* StaticPackageInformationBuilder::BeginComponentPropertiesSection(DAVA::uint32 componentType, DAVA::uint32 componentIndex)
@@ -194,16 +199,22 @@ DAVA::UIComponent* StaticPackageInformationBuilder::BeginComponentPropertiesSect
 
     ptr->AddComponent(static_cast<UIComponent::eType>(componentType));
 
+    propertyProcessor = [ptr, componentType, componentIndex](const DAVA::InspMember* member, const DAVA::VariantType& value)
+    {
+        ptr->SetComponentProperty(static_cast<UIComponent::eType>(componentType), componentIndex, member, value);
+    };
+
     return nullptr;
 }
 
 void StaticPackageInformationBuilder::EndComponentPropertiesSection()
 {
-    // do nothing
+    propertyProcessor = nullptr;
 }
 
 void StaticPackageInformationBuilder::ProcessProperty(const DAVA::InspMember* member, const DAVA::VariantType& value)
 {
+    propertyProcessor(member, value);
 }
 
 std::shared_ptr<StaticPackageInformation> StaticPackageInformationBuilder::GetPackage() const

@@ -44,7 +44,16 @@ String StaticControlInformation::GetPrototypePackagePath() const
 
 bool StaticControlInformation::HasComponent(UIComponent::eType componentType) const
 {
-    return components.test(componentType);
+    const UnorderedMap<UIComponent::eType, int32>::const_iterator iter = componentCount.find(componentType);
+
+    if (iter != componentCount.end())
+    {
+        return iter->second > 0;
+    }
+    else
+    {
+        return false;
+    }
 }
 
 void StaticControlInformation::VisitParent(const Function<void(const ControlInformation*)>& visitor) const
@@ -93,7 +102,18 @@ std::shared_ptr<StaticControlInformation> StaticControlInformation::FindChildByN
     return std::shared_ptr<StaticControlInformation>();
 }
 
-void StaticControlInformation::AddComponent(DAVA::UIComponent::eType componentType)
+void StaticControlInformation::AddComponent(UIComponent::eType componentType)
 {
-    components.set(componentType);
+    ++componentCount[componentType];
+}
+
+void StaticControlInformation::SetControlProperty(const InspMember* member, const VariantType& value)
+{
+    controlProperties[member->Name()] = value;
+}
+
+void StaticControlInformation::SetComponentProperty(UIComponent::eType componentType, int32 componentIndex, const InspMember* member, const VariantType& value)
+{
+    const ComponentPropertyId id = std::make_tuple(componentType, componentIndex, member->Name());
+    componentProperties[id] = value;
 }
