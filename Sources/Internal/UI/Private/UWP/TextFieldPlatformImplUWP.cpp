@@ -1269,16 +1269,11 @@ void TextFieldPlatformImpl::RenderToTexture(bool moveOffScreenOnCompletion)
     auto renderTask = create_task(renderTarget->RenderAsync(nativeControlHolder)).then([this, self, renderTarget]() { return renderTarget->GetPixelsAsync(); }).then([this, self, renderTarget, moveOffScreenOnCompletion](IBuffer ^ renderBuffer) {
         uint32 imageWidth = renderTarget->PixelWidth;
         uint32 imageHeight = renderTarget->PixelHeight;
-        size_t streamSize = static_cast<size_t>(renderBuffer->Length);
-        DataReader^ reader = DataReader::FromBuffer(renderBuffer);
 
-        size_t index = 0;
-        Vector<uint8> buf(streamSize, 0);
-        while (reader->UnconsumedBufferLength > 0)
-        {
-            buf[index] = reader->ReadByte();
-            index += 1;
-        }
+        DataReader^ reader = DataReader::FromBuffer(renderBuffer);
+        Platform::Array<uint8>^ inStream = ref new Platform::Array<uint8>(reader->UnconsumedBufferLength);
+        reader->ReadBytes(inStream);
+        Vector<uint8> buf(inStream->begin(), inStream->end());
 
 #if defined(__DAVAENGINE_COREV2__)
         RunOnMainThreadAsync([this, self, moveOffScreenOnCompletion, buf=std::move(buf), imageWidth, imageHeight]() mutable {

@@ -41,5 +41,10 @@
 			<type>2</type>
 			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Engine/Private/Android/Java/com</locationURI>
 		</link>
+		<link>
+			<name>src_core_v2_notif/com</name>
+			<type>2</type>
+			<locationURI>PARENT-2-PROJECT_LOC/Sources/Internal/Notification/Private/Android/Java/com</locationURI>
+		</link>
 	</linkedResources>
 </projectDescription>

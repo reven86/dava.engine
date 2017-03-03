@@ -1,4 +1,5 @@
 #include "Base/Result.h"
+#include "Debug/DVAssert.h"
 
 using namespace DAVA;
 
@@ -43,14 +44,19 @@ ResultList::ResultList(Result&& result)
 }
 
 ResultList::ResultList(ResultList&& resultList)
+    : allOk(resultList.allOk)
+    , results(std::move(resultList.results))
 {
-    AddResultList(std::move(resultList));
 }
 
 ResultList& ResultList::operator=(ResultList&& resultList)
 {
-    results.clear();
-    return AddResultList(resultList);
+    if (this != &resultList)
+    {
+        allOk = resultList.allOk;
+        results = std::move(resultList.results);
+    }
+    return *this;
 }
 
 ResultList& ResultList::operator<<(const Result& result)
@@ -91,18 +97,16 @@ ResultList& ResultList::AddResultList(const ResultList& resultList)
 
 ResultList& ResultList::AddResultList(ResultList&& resultList)
 {
-    if (this != &resultList)
+    DVASSERT(this != &resultList);
+    allOk &= resultList.allOk;
+    if (results.empty())
     {
-        allOk &= resultList.allOk;
-        if (results.empty())
-        {
-            results = std::move(resultList.results);
-        }
-        else
-        {
-            std::move(std::begin(resultList.results), std::end(resultList.results), std::back_inserter(results));
-            resultList.results.clear();
-        }
+        results = std::move(resultList.results);
+    }
+    else
+    {
+        std::move(std::begin(resultList.results), std::end(resultList.results), std::back_inserter(results));
+        resultList.results.clear();
     }
     return *this;
 }

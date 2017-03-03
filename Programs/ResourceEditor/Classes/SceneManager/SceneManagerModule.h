@@ -1,13 +1,13 @@
 #pragma once
 
-#include "Base/BaseTypes.h"
+#include "SceneManager/Private/SceneRenderWidget.h"
 
-#include "TArc/Core/ControllerModule.h"
-#include "TArc/Core/FieldBinder.h"
-#include "TArc/Utils/QtConnections.h"
+#include <TArc/Core/ControllerModule.h>
+#include <TArc/Core/FieldBinder.h>
+#include <TArc/Utils/QtConnections.h>
+#include <TArc/Models/RecentMenuItems.h>
 
-#include "Classes/SceneManager/Private/SceneRenderWidget.h"
-#include "Classes/Qt/Main/RecentMenuItems.h"
+#include <Base/BaseTypes.h>
 
 namespace DAVA
 {
