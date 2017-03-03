@@ -154,7 +154,6 @@
      <string>Find</string>
     </property>
     <addaction name="actionFindInDocument"/>
-    <addaction name="actionCancelFind"/>
     <addaction name="actionFindNext"/>
     <addaction name="actionFindPrevious"/>
     <addaction name="actionJumpToPrototype"/>
@@ -592,14 +591,6 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+F</string>
-   </property>
-  </action>
-  <action name="actionCancelFind">
-   <property name="text">
-    <string>Cancel Find</string>
-   </property>
-   <property name="shortcut">
-    <string>Esc</string>
    </property>
   </action>
   <action name="actionFindNext">

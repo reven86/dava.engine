@@ -161,7 +161,7 @@ void DefaultUIPackageBuilder::ProcessStyleSheet(const Vector<UIStyleSheetSelecto
     }
 }
 
-UIControl* DefaultUIPackageBuilder::BeginControlWithClass(const FastName& controlName, const String& className)
+DefaultUIPackageBuilder::UIControlWithTypeInfo DefaultUIPackageBuilder::BeginControlWithClass(const FastName& controlName, const String& className)
 {
     RefPtr<UIControl> control(ObjectFactory::Instance()->New<UIControl>(className));
 
@@ -186,7 +186,7 @@ UIControl* DefaultUIPackageBuilder::BeginControlWithClass(const FastName& contro
     return control.Get();
 }
 
-UIControl* DefaultUIPackageBuilder::BeginControlWithCustomClass(const FastName& controlName, const String& customClassName, const String& className)
+DefaultUIPackageBuilder::UIControlWithTypeInfo DefaultUIPackageBuilder::BeginControlWithCustomClass(const FastName& controlName, const String& customClassName, const String& className)
 {
     RefPtr<UIControl> control(ObjectFactory::Instance()->New<UIControl>(customClassName));
 
@@ -214,7 +214,7 @@ UIControl* DefaultUIPackageBuilder::BeginControlWithCustomClass(const FastName& 
     return control.Get();
 }
 
-UIControl* DefaultUIPackageBuilder::BeginControlWithPrototype(const FastName& controlName, const String& packageName, const FastName& prototypeName, const String* customClassName, AbstractUIPackageLoader* loader)
+DefaultUIPackageBuilder::UIControlWithTypeInfo DefaultUIPackageBuilder::BeginControlWithPrototype(const FastName& controlName, const String& packageName, const FastName& prototypeName, const String* customClassName, AbstractUIPackageLoader* loader)
 {
     UIControl* prototype = nullptr;
 
@@ -260,7 +260,7 @@ UIControl* DefaultUIPackageBuilder::BeginControlWithPrototype(const FastName& co
     return control.Get();
 }
 
-UIControl* DefaultUIPackageBuilder::BeginControlWithPath(const String& pathName)
+DefaultUIPackageBuilder::UIControlWithTypeInfo DefaultUIPackageBuilder::BeginControlWithPath(const String& pathName)
 {
     UIControl* control = nullptr;
     if (!controlsStack.empty())
@@ -273,11 +273,11 @@ UIControl* DefaultUIPackageBuilder::BeginControlWithPath(const String& pathName)
     return control;
 }
 
-UIControl* DefaultUIPackageBuilder::BeginUnknownControl(const FastName& controlName, const YamlNode* node)
+DefaultUIPackageBuilder::UIControlWithTypeInfo DefaultUIPackageBuilder::BeginUnknownControl(const FastName& controlName, const YamlNode* node)
 {
     DVASSERT(false);
     controlsStack.push_back(new ControlDescr(nullptr, false));
-    return nullptr;
+    return UIControlWithTypeInfo();
 }
 
 void DefaultUIPackageBuilder::EndControl(eControlPlace controlPlace)
@@ -330,7 +330,7 @@ void DefaultUIPackageBuilder::EndControlPropertiesSection()
     currentObject = nullptr;
 }
 
-UIComponent* DefaultUIPackageBuilder::BeginComponentPropertiesSection(uint32 componentType, uint32 componentIndex)
+const InspInfo* DefaultUIPackageBuilder::BeginComponentPropertiesSection(uint32 componentType, uint32 componentIndex)
 {
     UIControl* control = controlsStack.back()->control.Get();
     UIComponent* component = control->GetComponent(componentType, componentIndex);
@@ -341,7 +341,7 @@ UIComponent* DefaultUIPackageBuilder::BeginComponentPropertiesSection(uint32 com
         component->Release();
     }
     currentObject = component;
-    return component;
+    return component->GetTypeInfo();
 }
 
 void DefaultUIPackageBuilder::EndComponentPropertiesSection()

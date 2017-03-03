@@ -5,6 +5,7 @@ using namespace DAVA;
 struct StaticPackageInformationBuilder::Description
 {
     std::shared_ptr<StaticControlInformation> controlInformation;
+
     bool addToParent = false;
 
     Description(const std::shared_ptr<StaticControlInformation>& controlInformation_, bool addToParent_)
@@ -65,19 +66,19 @@ void StaticPackageInformationBuilder::ProcessStyleSheet(const DAVA::Vector<DAVA:
     // do nothing
 }
 
-DAVA::UIControl* StaticPackageInformationBuilder::BeginControlWithClass(const FastName& controlName, const DAVA::String& className)
+AbstractUIPackageBuilder::UIControlWithTypeInfo StaticPackageInformationBuilder::BeginControlWithClass(const FastName& controlName, const DAVA::String& className)
 {
     stack.emplace_back(Description(std::make_shared<StaticControlInformation>(controlName), true));
-    return nullptr;
+    return UIControlWithTypeInfo(UIControl::TypeInfo());
 }
 
-DAVA::UIControl* StaticPackageInformationBuilder::BeginControlWithCustomClass(const FastName& controlName, const DAVA::String& customClassName, const DAVA::String& className)
+AbstractUIPackageBuilder::UIControlWithTypeInfo StaticPackageInformationBuilder::BeginControlWithCustomClass(const FastName& controlName, const DAVA::String& customClassName, const DAVA::String& className)
 {
     stack.emplace_back(Description(std::make_shared<StaticControlInformation>(controlName), true));
-    return nullptr;
+    return UIControlWithTypeInfo(UIControl::TypeInfo());
 }
 
-DAVA::UIControl* StaticPackageInformationBuilder::BeginControlWithPrototype(const FastName& controlName, const DAVA::String& packageName, const DAVA::FastName& prototypeName, const DAVA::String* customClassName, DAVA::AbstractUIPackageLoader* loader)
+AbstractUIPackageBuilder::UIControlWithTypeInfo StaticPackageInformationBuilder::BeginControlWithPrototype(const FastName& controlName, const DAVA::String& packageName, const DAVA::FastName& prototypeName, const DAVA::String* customClassName, DAVA::AbstractUIPackageLoader* loader)
 {
     std::shared_ptr<StaticPackageInformation> prototypePackage;
     std::shared_ptr<StaticControlInformation> prototype;
@@ -110,10 +111,10 @@ DAVA::UIControl* StaticPackageInformationBuilder::BeginControlWithPrototype(cons
     DVASSERT(prototype.get() != nullptr);
 
     stack.emplace_back(Description(std::make_shared<StaticControlInformation>(*prototype, controlName, prototypePackage, FastName(prototypeName)), true));
-    return nullptr;
+    return UIControlWithTypeInfo(UIControl::TypeInfo());
 }
 
-DAVA::UIControl* StaticPackageInformationBuilder::BeginControlWithPath(const DAVA::String& pathName)
+AbstractUIPackageBuilder::UIControlWithTypeInfo StaticPackageInformationBuilder::BeginControlWithPath(const DAVA::String& pathName)
 {
     if (!stack.empty())
     {
@@ -139,13 +140,13 @@ DAVA::UIControl* StaticPackageInformationBuilder::BeginControlWithPath(const DAV
         DVASSERT(false);
     }
 
-    return nullptr; // do nothing
+    return UIControlWithTypeInfo(UIControl::TypeInfo());
 }
 
-DAVA::UIControl* StaticPackageInformationBuilder::BeginUnknownControl(const FastName& controlName, const DAVA::YamlNode* node)
+AbstractUIPackageBuilder::UIControlWithTypeInfo StaticPackageInformationBuilder::BeginUnknownControl(const FastName& controlName, const DAVA::YamlNode* node)
 {
     stack.emplace_back(Description(std::make_shared<StaticControlInformation>(controlName), true));
-    return nullptr; // do nothing
+    return UIControlWithTypeInfo(UIControl::TypeInfo());
 }
 
 void StaticPackageInformationBuilder::EndControl(eControlPlace controlPlace)
@@ -193,7 +194,7 @@ void StaticPackageInformationBuilder::EndControlPropertiesSection()
     propertyProcessor = nullptr;
 }
 
-DAVA::UIComponent* StaticPackageInformationBuilder::BeginComponentPropertiesSection(DAVA::uint32 componentType, DAVA::uint32 componentIndex)
+const DAVA::InspInfo* StaticPackageInformationBuilder::BeginComponentPropertiesSection(DAVA::uint32 componentType, DAVA::uint32 componentIndex)
 {
     std::shared_ptr<StaticControlInformation> ptr = stack.back().controlInformation;
 
@@ -204,7 +205,9 @@ DAVA::UIComponent* StaticPackageInformationBuilder::BeginComponentPropertiesSect
         ptr->SetComponentProperty(static_cast<UIComponent::eType>(componentType), componentIndex, member, value);
     };
 
-    return nullptr;
+    RefPtr<UIComponent> component = UIComponent::SafeCreateByType(componentType); // this will be gone with new reflection system
+
+    return component->GetTypeInfo();
 }
 
 void StaticPackageInformationBuilder::EndComponentPropertiesSection()

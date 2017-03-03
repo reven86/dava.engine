@@ -911,15 +911,18 @@ void PreviewWidget::OnEditingRootControlsChanged(const SortedPackageBaseNodeSet&
 {
     OnCancelFind();
 
-    Vector<ControlNode*> controls;
-    for (const auto& r : rootControls)
+    if (document)
     {
-        if (ControlNode* control = dynamic_cast<ControlNode*>(r))
+        Vector<ControlNode*> controls;
+        for (const auto& r : rootControls)
         {
-            controls.push_back(control);
+            if (ControlNode* control = dynamic_cast<ControlNode*>(r))
+            {
+                controls.push_back(control);
+            }
         }
+        findController->SetFindScope(document->GetPackageFilePath(), controls);
     }
-    findController->SetFindScope(document->GetPackageFilePath(), controls);
 }
 
 float PreviewWidget::GetScaleFromWheelEvent(int ticksCount) const

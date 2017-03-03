@@ -299,8 +299,7 @@ void UIPackageLoader::LoadStyleSheets(const YamlNode* styleSheetsNode, AbstractU
 
 void UIPackageLoader::LoadControl(const YamlNode* node, AbstractUIPackageBuilder::eControlPlace controlPlace, AbstractUIPackageBuilder* builder)
 {
-    UIControl* control = nullptr;
-    InspInfo* typeInfo = nullptr;
+    AbstractUIPackageBuilder::UIControlWithTypeInfo control;
 
     const YamlNode* pathNode = node->Get("path");
     const YamlNode* prototypeNode = node->Get("prototype");
@@ -346,9 +345,9 @@ void UIPackageLoader::LoadControl(const YamlNode* node, AbstractUIPackageBuilder
         builder->BeginUnknownControl(controlName, node);
     }
 
-    if (typeInfo != nullptr)
+    if (control.GetTypeInfo() != nullptr)
     {
-        LoadControlPropertiesFromYamlNode(typeInfo, node, builder);
+        LoadControlPropertiesFromYamlNode(control.GetTypeInfo(), node, builder);
         LoadComponentPropertiesFromYamlNode(node, builder);
 
         if (version <= VERSION_WITH_LEGACY_ALIGNS)
@@ -366,15 +365,15 @@ void UIPackageLoader::LoadControl(const YamlNode* node, AbstractUIPackageBuilder
             LoadControl(childrenNode->Get(i), AbstractUIPackageBuilder::TO_PREVIOUS_CONTROL, builder);
     }
 
-    if (control != nullptr)
+    if (control.GetControl() != nullptr)
     {
-        control->LoadFromYamlNodeCompleted();
+        control.GetControl()->LoadFromYamlNodeCompleted();
     }
 
     builder->EndControl(controlPlace);
 }
 
-void UIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl* control, const InspInfo* typeInfo, const YamlNode* node, AbstractUIPackageBuilder* builder)
+void UIPackageLoader::LoadControlPropertiesFromYamlNode(const InspInfo* typeInfo, const YamlNode* node, AbstractUIPackageBuilder* builder)
 {
     const InspInfo* baseInfo = typeInfo->BaseInfo();
     if (baseInfo)
@@ -398,13 +397,12 @@ void UIPackageLoader::LoadComponentPropertiesFromYamlNode(const YamlNode* node, 
     Vector<ComponentNode> components = ExtractComponentNodes(node);
     for (ComponentNode& nodeDescr : components)
     {
-        UIComponent* component = builder->BeginComponentPropertiesSection(nodeDescr.type, nodeDescr.index);
-        if (component)
+        const InspInfo* componentType = builder->BeginComponentPropertiesSection(nodeDescr.type, nodeDescr.index);
+        if (componentType)
         {
-            const InspInfo* insp = component->GetTypeInfo();
-            for (int32 j = 0; j < insp->MembersCount(); j++)
+            for (int32 j = 0; j < componentType->MembersCount(); j++)
             {
-                const InspMember* member = insp->Member(j);
+                const InspMember* member = componentType->Member(j);
                 VariantType res;
                 if (nodeDescr.type == UIComponent::LINEAR_LAYOUT_COMPONENT && version <= LAST_VERSION_WITH_LINEAR_LAYOUT_LEGACY_ORIENTATION)
                 {
@@ -469,13 +467,12 @@ void UIPackageLoader::ProcessLegacyAligns(const YamlNode* node, AbstractUIPackag
 
     if (hasAnchorProperties)
     {
-        UIComponent* component = builder->BeginComponentPropertiesSection(UIComponent::ANCHOR_COMPONENT, 0);
-        if (component)
+        const InspInfo* componentType = builder->BeginComponentPropertiesSection(UIComponent::ANCHOR_COMPONENT, 0);
+        if (componentType)
         {
-            const InspInfo* insp = component->GetTypeInfo();
-            for (int32 j = 0; j < insp->MembersCount(); j++)
+            for (int32 j = 0; j < componentType->MembersCount(); j++)
             {
-                const InspMember* member = insp->Member(j);
+                const InspMember* member = componentType->Member(j);
                 VariantType res = ReadVariantTypeFromYamlNode(member, node, legacyAlignsMap[String(member->Name().c_str())]);
                 builder->ProcessProperty(member, res);
             }
