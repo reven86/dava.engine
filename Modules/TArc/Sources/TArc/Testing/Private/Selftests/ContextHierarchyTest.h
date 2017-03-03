@@ -96,5 +96,19 @@ DAVA_TARC_TESTCLASS(ContextHierarchyTest)
         TEST_VERIFY(globalContext->GetData<SharedData>() == nullptr);
         TEST_VERIFY(activeContext->GetData<SharedData>() == nullptr);
     }
+
+    DAVA_TEST (ConstDataContextTest)
+    {
+        using namespace DAVA::TArc;
+        DataContext* ctx = GetGlobalContext();
+        const DataContext* constCtx = static_cast<const DAVA::TArc::TestClass*>(this)->GetGlobalContext();
+        TEST_VERIFY(ctx != nullptr);
+        TEST_VERIFY(constCtx == ctx);
+
+        DataContext* activeCtx = GetActiveContext();
+        const DataContext* constActiveCtx = static_cast<const DAVA::TArc::TestClass*>(this)->GetActiveContext();
+        TEST_VERIFY(activeCtx != nullptr);
+        TEST_VERIFY(constActiveCtx == activeCtx);
+    }
 }
 ;

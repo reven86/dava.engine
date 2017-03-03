@@ -149,7 +149,7 @@ struct ParticleLayer : public BaseObject
     float32 scaleVelocityBase;
     float32 scaleVelocityFactor;
 
-    ParticleEmitter* innerEmitter;
+    ParticleEmitter* innerEmitter = nullptr;
     FilePath innerEmitterPath;
 
 private:

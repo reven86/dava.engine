@@ -20,34 +20,6 @@ MaterialsTest::MaterialsTest(const TestParams& testParams)
 {
 }
 
-MaterialsTest::~MaterialsTest()
-{
-    for (NMaterial* material : materials)
-    {
-        SafeRelease(material);
-    }
-
-    for (Entity* child : planes)
-    {
-        SafeRelease(child);
-    }
-
-    for (Entity* child : spoPlanes)
-    {
-        SafeRelease(child);
-    }
-
-    for (Entity* child : skinnedPlanes)
-    {
-        SafeRelease(child);
-    }
-
-    for (Entity* child : lightmapMaterialPlanes)
-    {
-        SafeRelease(child);
-    }
-}
-
 void MaterialsTest::LoadResources()
 {
     BaseTest::LoadResources();
@@ -88,6 +60,41 @@ void MaterialsTest::LoadResources()
     Entity* camera = materialsScene->FindByName(CAMERA_ENTITY);
     CameraComponent* cameraComponent = static_cast<CameraComponent*>(camera->GetComponent(Component::CAMERA_COMPONENT));
     GetScene()->SetCurrentCamera(cameraComponent->GetCamera());
+}
+
+void MaterialsTest::UnloadResources()
+{
+    for (NMaterial* material : materials)
+    {
+        SafeRelease(material);
+    }
+    materials.clear();
+
+    for (Entity* child : planes)
+    {
+        SafeRelease(child);
+    }
+    planes.clear();
+
+    for (Entity* child : spoPlanes)
+    {
+        SafeRelease(child);
+    }
+    spoPlanes.clear();
+
+    for (Entity* child : skinnedPlanes)
+    {
+        SafeRelease(child);
+    }
+    skinnedPlanes.clear();
+
+    for (Entity* child : lightmapMaterialPlanes)
+    {
+        SafeRelease(child);
+    }
+    lightmapMaterialPlanes.clear();
+
+    BaseTest::UnloadResources();
 }
 
 void MaterialsTest::BeginFrame()

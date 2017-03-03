@@ -1,17 +1,17 @@
 #include "Classes/SceneManager/Private/SceneRenderWidget.h"
-#include "Classes/SceneManager/Private/SceneTabsModel.h"
 #include "Classes/SceneManager/SceneData.h"
 
 #include "Classes/Qt/Scene/SceneSignals.h"
 
-#include "TArc/Controls/SceneTabbar.h"
+#include <TArc/Controls/SceneTabbar.h>
+#include <TArc/Models/SceneTabsModel.h>
 
-#include "UI/Focus/UIFocusComponent.h"
-#include "Engine/Qt/RenderWidget.h"
-#include "Engine/EngineContext.h"
-#include "Reflection/ReflectedType.h"
-#include "Functional/Function.h"
-#include "Base/StaticSingleton.h"
+#include <UI/Focus/UIFocusComponent.h>
+#include <Engine/Qt/RenderWidget.h>
+#include <Engine/EngineContext.h>
+#include <Reflection/ReflectedType.h>
+#include <Functional/Function.h>
+#include <Base/StaticSingleton.h>
 
 #include <QVBoxLayout>
 

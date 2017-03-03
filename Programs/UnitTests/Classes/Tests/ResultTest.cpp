@@ -8,16 +8,16 @@ DAVA_TESTCLASS (ResultTest)
     DAVA_TEST (GetResultFunction)
     {
         TEST_VERIFY(GetResultFunction(Result::RESULT_SUCCESS));
-        TEST_VERIFY(!GetResultFunction(Result::RESULT_FAILURE));
+        TEST_VERIFY(GetResultFunction(Result::RESULT_WARNING));
         TEST_VERIFY(!GetResultFunction(Result::RESULT_ERROR));
 
         TEST_VERIFY(GetResultFunction(Result::RESULT_SUCCESS).IsSuccess());
-        TEST_VERIFY(!GetResultFunction(Result::RESULT_FAILURE).IsSuccess());
+        TEST_VERIFY(GetResultFunction(Result::RESULT_WARNING).IsSuccess());
         TEST_VERIFY(!GetResultFunction(Result::RESULT_ERROR).IsSuccess());
 
         Deque<Result> results;
         results.emplace_back(Result::RESULT_SUCCESS, "this is ");
-        results.emplace_back(Result::RESULT_FAILURE, "result ");
+        results.emplace_back(Result::RESULT_WARNING, "result ");
         results.emplace_back(Result::RESULT_ERROR, "test.");
         ResultList resultList;
         for (const auto& result : results)

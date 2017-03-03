@@ -57,7 +57,9 @@ private:
 
 #if defined(__DAVAENGINE_COREV2__)
     void OnWindowVisibilityChanged(Window* w, bool visible);
+    void OnWindowDestroyed(Window* w);
     size_t windowVisibilityChangedConnection = 0;
+    size_t windowDestroyedConnection = 0;
 #else
     void OnAppMinimizedRestored(bool minimized);
     SigConnectionID appMinimizedRestoredConnectionId;

@@ -1,7 +1,6 @@
 #include "Classes/SceneManager/SceneManagerModule.h"
 #include "Classes/SceneManager/SceneData.h"
 #include "Classes/SceneManager/Private/SceneRenderWidget.h"
-#include "Classes/SceneManager/Private/SceneTabsModel.h"
 #include "Classes/Project/ProjectManagerData.h"
 #include "Classes/Application/REGlobal.h"
 #include "Classes/Qt/TextureBrowser/TextureCache.h"
@@ -17,22 +16,23 @@
 
 #include "Commands2/Base/RECommandStack.h"
 
-#include "TArc/WindowSubSystem/QtAction.h"
-#include "TArc/WindowSubSystem/UI.h"
-#include "TArc/WindowSubSystem/ActionUtils.h"
+#include <TArc/WindowSubSystem/QtAction.h>
+#include <TArc/WindowSubSystem/UI.h>
+#include <TArc/WindowSubSystem/ActionUtils.h>
+#include <TArc/Models/SceneTabsModel.h>
 
-#include "QtTools/FileDialogs/FindFileDialog.h"
-#include "QtTools/ProjectInformation/FileSystemCache.h"
+#include <QtTools/FileDialogs/FindFileDialog.h>
+#include <QtTools/ProjectInformation/FileSystemCache.h>
 
-#include "Engine/EngineContext.h"
-#include "Reflection/ReflectedType.h"
-#include "Render/Renderer.h"
-#include "Render/DynamicBufferAllocator.h"
-#include "FileSystem/FileSystem.h"
-#include "Functional/Function.h"
-#include "Base/FastName.h"
-#include "Base/Any.h"
-#include "Base/GlobalEnum.h"
+#include <Engine/EngineContext.h>
+#include <Reflection/ReflectedType.h>
+#include <Render/Renderer.h>
+#include <Render/DynamicBufferAllocator.h>
+#include <FileSystem/FileSystem.h>
+#include <Functional/Function.h>
+#include <Base/FastName.h>
+#include <Base/Any.h>
+#include <Base/GlobalEnum.h>
 
 #include <QList>
 #include <QString>
@@ -237,8 +237,7 @@ void SceneManagerModule::PostInit()
         fieldBinder->BindField(fieldDescr, DAVA::MakeFunction(this, &SceneManagerModule::OnProjectPathChanged));
     }
 
-    RecentMenuItems::Params params;
-    params.accessor = accessor;
+    RecentMenuItems::Params params(REGlobal::MainWindowKey, accessor, "Recent scenes");
     params.ui = ui;
     params.menuSubPath << "File";
     params.predicateFieldDescriptor.fieldName = DAVA::FastName(ProjectManagerData::ProjectPathProperty);
@@ -247,12 +246,13 @@ void SceneManagerModule::PostInit()
     {
         return v.CanCast<DAVA::FilePath>() && !v.Cast<DAVA::FilePath>().IsEmpty();
     };
-    params.settingsKeyCount = Settings::General_RecentFilesCount;
-    params.settingsKeyData = Settings::Internal_RecentFiles;
+    params.getMaximumCount = []() {
+        return SettingsManager::GetValue(Settings::General_RecentFilesCount).AsInt32();
+    };
     params.insertionParams.method = InsertionParams::eInsertionMethod::AfterItem;
     params.insertionParams.item = QString("importSeparator");
 
-    recentItems.reset(new RecentMenuItems(params));
+    recentItems.reset(new RecentMenuItems(std::move(params)));
     recentItems->actionTriggered.Connect([this](const DAVA::String& scenePath)
                                          {
                                              OpenSceneByPath(DAVA::FilePath(scenePath));
@@ -1160,7 +1160,7 @@ void SceneManagerModule::UpdateTabTitle(DAVA::uint64 contextID)
     }
 
     SceneTabsModel* tabsModel = accessor->GetGlobalContext()->GetData<SceneTabsModel>();
-    DVASSERT(tabsModel->tabs.count(contextID) > 0);
+    DVASSERT(tabsModel->tabs.find(contextID) != tabsModel->tabs.end());
     TabDescriptor& tabDescr = tabsModel->tabs[contextID];
     tabDescr.tabTitle = tabName;
     tabDescr.tabTooltip = tabTooltip;
