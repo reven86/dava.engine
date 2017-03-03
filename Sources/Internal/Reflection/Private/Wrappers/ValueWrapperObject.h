@@ -20,19 +20,16 @@ public:
 
     const Type* GetType(const ReflectedObject& object) const override
     {
-        if (object.IsConst())
-        {
-            return Type::Instance<const void*>();
-        }
-        else
-        {
-            return Type::Instance<void*>();
-        }
+        const Type* objType = object.GetReflectedType()->GetType();
+        return (nullptr != objType) ? objType->Pointer() : nullptr;
     }
 
     Any GetValue(const ReflectedObject& object) const override
     {
-        return Any(object.GetVoidPtr());
+        Any ret;
+        void* objPtr = object.GetVoidPtr();
+        ret.LoadData(&objPtr, GetType(object));
+        return ret;
     }
 
     bool SetValue(const ReflectedObject& object, const Any& value) const override
