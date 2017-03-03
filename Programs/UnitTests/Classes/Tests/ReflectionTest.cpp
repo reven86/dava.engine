@@ -731,7 +731,7 @@ DAVA_TESTCLASS (ReflectionTest)
         std::ostringstream dumpOutput;
         r.Dump(dumpOutput);
 
-        Logger::Info(dumpOutput.str().c_str());
+        DAVA::Logger::Info(dumpOutput.str().c_str());
 
         delete s;
     }
