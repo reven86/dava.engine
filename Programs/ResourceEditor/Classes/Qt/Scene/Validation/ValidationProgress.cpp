@@ -12,7 +12,7 @@ void ValidationProgress::Started(const DAVA::String& title)
 void ValidationProgress::Alerted(const DAVA::String& msg)
 {
     DVASSERT(consumer != nullptr);
-    result = DAVA::Result::RESULT_FAILURE;
+    result = DAVA::Result::RESULT_ERROR;
     consumer->ValidationAlert(msg);
 }
 

@@ -251,6 +251,8 @@ protected:
     uint32 systemsMask;
     uint32 maxEntityIDCounter;
 
+    float32 sceneGlobalTime = 0.f;
+
     Vector<Camera*> cameras;
 
     NMaterial* sceneGlobalMaterial;

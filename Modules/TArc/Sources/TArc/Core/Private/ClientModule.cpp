@@ -13,6 +13,12 @@ ContextAccessor* ClientModule::GetAccessor() const
     return coreInterface;
 }
 
+const ContextAccessor* ClientModule::GetAccessor() const
+{
+    DVASSERT(coreInterface != nullptr);
+    return coreInterface;
+}
+
 UI* ClientModule::GetUI()
 {
     DVASSERT(ui != nullptr);

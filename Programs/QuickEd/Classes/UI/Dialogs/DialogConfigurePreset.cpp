@@ -1,16 +1,58 @@
 #include "DialogConfigurePreset.h"
 
-#include "Render/2D/FTFont.h"
-#include "Helpers/ResourcesManageHelper.h"
-#include "FileSystem/LocalizationSystem.h"
-#include "Engine/Engine.h"
-
-#include "Project/EditorFontSystem.h"
+#include "Modules/ProjectModule/Private/EditorFontSystem.h"
 #include "ui_DialogConfigurePreset.h"
+
+#include <Render/2D/FTFont.h>
+#include <FileSystem/LocalizationSystem.h>
+#include <Engine/Engine.h>
+
 #include <QFileInfo>
 #include <QMessageBox>
+#include <QDir>
 
 using namespace DAVA;
+
+namespace DialogConfigurePresetDetails
+{
+// True type fonts resource folder path
+const String FONTS_RES_PATH("~res:/Fonts/");
+// Graphics fonts definition resource folder path
+const String GRAPHICS_FONTS_RES_PATH("~res:/Fonts/");
+
+const QStringList& GetFontsFileExtensionFilter()
+{
+    static const QStringList filter(QStringList() << "*.ttf"
+                                                  << "*.otf"
+                                                  << "*.fon"
+                                                  << "*.fnt"
+                                                  << "*.def"
+                                                  << "*.df");
+    return filter;
+}
+
+QString GetFontRelativePath(const QString& resourceFileName, bool graphicsFont)
+{
+    QString fontPath = graphicsFont ? QString::fromStdString(FilePath(GRAPHICS_FONTS_RES_PATH).GetAbsolutePathname()) :
+                                      QString::fromStdString(FilePath(FONTS_RES_PATH).GetAbsolutePathname());
+    fontPath += resourceFileName;
+
+    return fontPath;
+}
+
+QStringList GetFontsList()
+{
+    QStringList filesNamesList;
+    // Get true type fonts
+    // Get absoulute path
+    QString fontsPath = QString::fromStdString(FilePath(FONTS_RES_PATH).GetAbsolutePathname());
+    QDir dir(fontsPath);
+    // Get the list of files in fonts directory - both true type fonts and graphics fonts
+    filesNamesList = dir.entryList(DialogConfigurePresetDetails::GetFontsFileExtensionFilter(), QDir::Files);
+    fontsPath.clear();
+    return filesNamesList;
+}
+}
 
 DialogConfigurePreset::DialogConfigurePreset(EditorFontSystem* editorFontSystem_, const QString& originalPresetName_, QWidget* parent)
     : QDialog(parent)
@@ -23,7 +65,7 @@ DialogConfigurePreset::DialogConfigurePreset(EditorFontSystem* editorFontSystem_
     ui->pushButton_resetLocale->setToolTip(tr("Reset font for locale"));
 
     ui->lineEdit_currentFontPresetName->setText(originalPresetName);
-    QStringList fontsList = ResourcesManageHelper::GetFontsList();
+    QStringList fontsList = DialogConfigurePresetDetails::GetFontsList();
     ui->comboBox_defaultFont->addItems(fontsList);
     ui->comboBox_localizedFont->addItems(fontsList);
 
@@ -137,7 +179,7 @@ void DialogConfigurePreset::UpdateLocalizedFontWidgets()
 
 void DialogConfigurePreset::SetFont(const QString& fontType, const int fontSize, const QString& locale)
 {
-    QString fontPath = ResourcesManageHelper::GetFontRelativePath(fontType);
+    QString fontPath = DialogConfigurePresetDetails::GetFontRelativePath(fontType, false);
     Font* font = FTFont::Create(fontPath.toStdString());
     if (nullptr == font)
     {

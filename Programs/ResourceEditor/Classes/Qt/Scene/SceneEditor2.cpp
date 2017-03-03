@@ -17,7 +17,6 @@
 #include "QtTools/Utils/RenderContextGuard.h"
 
 #include "Classes/Qt/Scene/System/GridSystem.h"
-#include "Classes/Qt/Scene/System/OwnersSignatureSystem.h"
 #include "Classes/Qt/Scene/System/CameraSystem.h"
 #include "Classes/Qt/Scene/System/CollisionSystem.h"
 #include "Classes/Qt/Scene/System/HoodSystem.h"
@@ -142,9 +141,6 @@ SceneEditor2::SceneEditor2()
 
     beastSystem = new BeastSystem(this);
     AddSystem(beastSystem, 0);
-
-    DAVA::SceneSystem* ownersSignatureSystem = new OwnersSignatureSystem(this);
-    AddSystem(ownersSignatureSystem, 0);
 
     staticOcclusionBuildSystem = new DAVA::StaticOcclusionBuildSystem(this);
     AddSystem(staticOcclusionBuildSystem, MAKE_COMPONENT_MASK(DAVA::Component::STATIC_OCCLUSION_COMPONENT) | MAKE_COMPONENT_MASK(DAVA::Component::TRANSFORM_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS, renderUpdateSystem);
