@@ -32,6 +32,7 @@ public:
     // you can call SetListener(nullptr) to remove active listener
     void SetListener(DataListener* listener);
     void SetFieldValue(const Any& fieldKey, const Any& value);
+    Any GetFieldValue(const Any& fieldKey) const;
 
     template <typename T>
     DataEditor<T> CreateEditor();

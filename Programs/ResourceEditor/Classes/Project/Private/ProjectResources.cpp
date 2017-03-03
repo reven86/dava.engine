@@ -141,6 +141,9 @@ void ProjectResources::UnloadProject()
 
     if (!data->projectPath.IsEmpty())
     {
+        const DAVA::EngineContext* engineCtx = accessor->GetEngineContext();
+        engineCtx->soundSystem->UnloadFMODProjects();
+
         DAVA::FilePath::RemoveResourcesFolder(data->GetDataPath());
         DAVA::FilePath::RemoveResourcesFolder(data->GetDataSourcePath());
         data->projectPath = "";
