@@ -67,9 +67,9 @@ public:
     Signal<size_t, size_t> initializeFinished;
     /** signal per user request */
     Signal<const IRequest&> requestUpdated;
-    /** signal about fail download(or write) file into device, parameter is
+    /** signal about fail download(create intermediate folder, file or write file) into device, parameter is
 		full path to file failed create or write.
-		Immediately after signal DLCManager requesting disabled
+		DLCManager requesting disabled before signal.
 		*/
     Signal<const String&> noSpaceLeftOnDevice;
 

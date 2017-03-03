@@ -80,6 +80,7 @@ private:
                                FileRequest& fileRequest);
 
     static void DeleteJustDownloadedFileAndStartAgain(FileRequest& fileRequest);
+    void DisableRequestingAndFireSignalNoSpaceLeft(PackRequest::FileRequest& fileRequest);
     void UpdateFileRequests();
 
     DLCManagerImpl& packManagerImpl;

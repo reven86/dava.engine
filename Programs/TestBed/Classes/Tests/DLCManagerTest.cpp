@@ -49,7 +49,7 @@ void DLCManagerTest::LoadResources()
 
     packInput = new UITextField(Rect(5, 10, 400, 20));
     packInput->SetFont(font);
-    packInput->SetText(L"autogen_shared_765");
+    packInput->SetText(L"0");
     packInput->SetFontSize(14);
     packInput->SetDebugDraw(true);
     packInput->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
@@ -61,7 +61,7 @@ void DLCManagerTest::LoadResources()
 
     packNextInput = new UITextField(Rect(5, 40, 400, 20));
     packNextInput->SetFont(font);
-    packNextInput->SetText(L"tank_ussr_T-34");
+    packNextInput->SetText(L"1");
     packNextInput->SetFontSize(14);
     packNextInput->SetDebugDraw(true);
     packNextInput->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
@@ -111,6 +111,15 @@ void DLCManagerTest::LoadResources()
     packNameLoading->SetDebugDraw(true);
     packNameLoading->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
     AddControl(packNameLoading);
+
+    logPring = new UIStaticText(Rect(540, 530, 500, 200));
+    logPring->SetFont(font);
+    logPring->SetTextColor(Color::White);
+    logPring->SetMultiline(true);
+    logPring->SetUtf8Text("");
+    logPring->SetDebugDraw(true);
+    logPring->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
+    AddControl(logPring);
 
     redControl = new UIControl(Rect(5, 360, 500, 10));
     redControl->SetDebugDrawColor(Color(1.f, 0.f, 0.f, 1.f));
@@ -227,6 +236,7 @@ void DLCManagerTest::UnloadResources()
     SafeRelease(loadPack);
     SafeRelease(startServerButton);
     SafeRelease(stopServerButton);
+    SafeRelease(logPring);
     SafeRelease(packNameLoading);
     SafeRelease(redControl);
     SafeRelease(greenControl);
@@ -239,6 +249,12 @@ void DLCManagerTest::UnloadResources()
     SafeRelease(lsDirFromPacks);
 
     BaseScreen::UnloadResources();
+}
+
+void DLCManagerTest::OnNoSpaceOnDevice(const String& filePath)
+{
+    String t = logPring->GetUtf8Text();
+    logPring->SetUtf8Text(t + '\n' + filePath);
 }
 
 void DLCManagerTest::OnRequestUpdated(const DAVA::DLCManager::IRequest& request)
@@ -339,6 +355,7 @@ void DLCManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* data
 
     dm.requestUpdated.DisconnectAll();
     dm.requestUpdated.Connect(this, &DLCManagerTest::OnRequestUpdated);
+    dm.noSpaceLeftOnDevice.Connect(this, &DLCManagerTest::OnNoSpaceOnDevice);
 
     String packName = packInput->GetUtf8Text();
 
@@ -459,18 +476,16 @@ void DLCManagerTest::OnCheckFileClicked(DAVA::BaseObject* sender, void* data, vo
 
 void DLCManagerTest::OnListInDvpkClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
-    WideString text = dirToListFiles->GetText();
-    FilePath path(text);
+    DLCManager& pm = *engine.GetContext()->dlcManager;
 
-    ScopedPtr<FileList> fileList(new FileList(path));
+    DLCManager::Progress progress = pm.GetProgress();
 
     StringStream ss;
 
-    for (uint32 i = 0; i < fileList->GetCount(); ++i)
-    {
-        const FilePath& nextPath = fileList->GetPathname(i);
-        ss << nextPath.GetStringValue() << '\n';
-    }
+    ss << "progress: requestingEnabled=" << progress.isRequestingEnabled
+       << " total=" << progress.total << " inQueue=" << progress.inQueue
+       << " alreadyDownloaded=" << progress.alreadyDownloaded;
 
-    packNameLoading->SetUtf8Text(ss.str());
+    String t = logPring->GetUtf8Text();
+    logPring->SetUtf8Text(t + '\n' + ss.str());
 }

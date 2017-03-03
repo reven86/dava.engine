@@ -228,6 +228,13 @@ void PackRequest::DeleteJustDownloadedFileAndStartAgain(FileRequest& fileRequest
     fileRequest.status = LoadingPackFile;
 }
 
+void PackRequest::DisableRequestingAndFireSignalNoSpaceLeft(PackRequest::FileRequest& fileRequest)
+{
+    Logger::Error("No space on device!!! Can't create or write file: %s disable DLCManager requesting", fileRequest.localFile.GetAbsolutePathname().c_str());
+    packManagerImpl.SetRequestingEnabled(false);
+    packManagerImpl.noSpaceLeftOnDevice.Emit(fileRequest.localFile.GetAbsolutePathname().c_str());
+}
+
 void PackRequest::UpdateFileRequests()
 {
     // TODO refactor method
@@ -264,8 +271,31 @@ void PackRequest::UpdateFileRequests()
             DownloadManager* dm = DownloadManager::Instance();
             if (fileRequest.taskId == 0)
             {
-                FileSystem::Instance()->DeleteFile(fileRequest.localFile); // just in case (hash not match, size not match...)
-                fileRequest.taskId = dm->DownloadRange(fileRequest.url, fileRequest.localFile, fileRequest.startLoadingPos, fileRequest.sizeOfCompressedFile);
+                if (fileRequest.sizeOfCompressedFile == 0)
+                {
+                    // just create empty file, and go to next state
+                    FileSystem::eCreateDirectoryResult dirCreate = FileSystem::Instance()->CreateDirectory(fileRequest.localFile.GetDirectory());
+                    if (dirCreate == FileSystem::DIRECTORY_CANT_CREATE)
+                    {
+                        DisableRequestingAndFireSignalNoSpaceLeft(fileRequest);
+                        return;
+                    }
+                    ScopedPtr<File> f(File::Create(fileRequest.localFile, File::CREATE | File::WRITE));
+                    if (!f)
+                    {
+                        DisableRequestingAndFireSignalNoSpaceLeft(fileRequest);
+                        return;
+                    }
+                    f->Truncate(0);
+                    fileRequest.taskId = 0;
+                    fileRequest.status = CheckHash;
+                    callSignal = true;
+                }
+                else
+                {
+                    FileSystem::Instance()->DeleteFile(fileRequest.localFile); // just in case (hash not match, size not match...)
+                    fileRequest.taskId = dm->DownloadRange(fileRequest.url, fileRequest.localFile, fileRequest.startLoadingPos, fileRequest.sizeOfCompressedFile);
+                }
             }
             else
             {
@@ -305,8 +335,7 @@ void PackRequest::UpdateFileRequests()
 
                                 if (DLE_FILE_ERROR == downloadError)
                                 {
-                                    packManagerImpl.noSpaceLeftOnDevice.Emit(fileRequest.localFile.GetAbsolutePathname());
-                                    packManagerImpl.SetRequestingEnabled(false);
+                                    DisableRequestingAndFireSignalNoSpaceLeft(fileRequest);
                                     return;
                                 }
                             }
@@ -344,8 +373,7 @@ void PackRequest::UpdateFileRequests()
                     if (written != sizeof(footer))
                     {
                         // not enough space
-                        packManagerImpl.noSpaceLeftOnDevice.Emit(fileRequest.localFile.GetAbsolutePathname());
-                        DeleteJustDownloadedFileAndStartAgain(fileRequest);
+                        DisableRequestingAndFireSignalNoSpaceLeft(fileRequest);
                         return;
                     }
                 }
