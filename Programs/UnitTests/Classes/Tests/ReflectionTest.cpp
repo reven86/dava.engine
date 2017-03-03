@@ -718,4 +718,21 @@ DAVA_TESTCLASS (ReflectionTest)
         anyByValueRef.Dump(dumpOutput);
         DAVA::Logger::Info("%s", dumpOutput.str().c_str());
     }
+
+    DAVA_TEST (ReflectionObject)
+    {
+        SimpleStruct* s = new SimpleStruct();
+
+        DAVA::Reflection r = DAVA::Reflection::Create(ReflectedObject(s));
+
+        TEST_VERIFY(r.IsValid());
+        TEST_VERIFY(r.GetValue().Get<void*>() == s);
+
+        std::ostringstream dumpOutput;
+        r.Dump(dumpOutput);
+
+        Logger::Info(dumpOutput.str().c_str());
+
+        delete s;
+    }
 };
