@@ -14,13 +14,15 @@ namespace DAVA
 namespace TArc
 {
 class ReflectedPropertyItem;
+class ContextAccessor;
+class OperationInvoker;
 class UI;
 
 class ReflectedPropertyModel : public QAbstractItemModel
 {
     Q_OBJECT
 public:
-    ReflectedPropertyModel(UI* ui);
+    ReflectedPropertyModel(ContextAccessor* accessor, OperationInvoker* invoker, UI* ui);
     ~ReflectedPropertyModel();
 
     //////////////////////////////////////
@@ -95,6 +97,10 @@ private:
     };
 
     Vector<ExpandedFieldDescriptor> expandedFields;
+
+    ContextAccessor* accessor = nullptr;
+    OperationInvoker* invoker = nullptr;
+    UI* ui = nullptr;
 };
 
 template <typename Dst, typename Src>

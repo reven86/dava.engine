@@ -30,12 +30,22 @@ FastName CharPointerToFastName(const Any& value)
 
 const char* FastNameToCharPointer(const Any& value)
 {
-    return value.Get<FastName>().c_str();
+    const FastName& v = value.Get<FastName>();
+    if (v.IsValid() == false)
+    {
+        return nullptr;
+    }
+    return v.c_str();
 }
 
 String FastNameToString(const Any& value)
 {
-    return String(value.Get<FastName>().c_str());
+    const FastName& v = value.Get<FastName>();
+    if (v.IsValid() == false)
+    {
+        return String();
+    }
+    return String(v.c_str());
 }
 
 template <typename T>

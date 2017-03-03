@@ -2,7 +2,7 @@
 #include "TArc/Controls/DoubleSpinBox.h"
 #include "TArc/Controls/IntSpinBox.h"
 #include "TArc/Controls/PropertyPanel/Private/ComponentStructureWrapper.h"
-#include "TArc/Controls/PropertyPanel/Private/PropertyPanelMeta.h"
+#include "TArc/Controls/PropertyPanel/PropertyPanelMeta.h"
 
 #include <Reflection/ReflectionRegistrator.h>
 
@@ -10,11 +10,6 @@ namespace DAVA
 {
 namespace TArc
 {
-template <typename T>
-bool NumberComponentValue<T>::EditorEvent(QWidget* parent, QEvent* event, const QStyleOptionViewItem& option)
-{
-    return false;
-}
 
 template <typename T>
 Any NumberComponentValue<T>::GetMultipleValue() const

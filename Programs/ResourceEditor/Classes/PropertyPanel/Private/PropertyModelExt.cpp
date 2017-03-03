@@ -16,6 +16,11 @@ void REModifyPropertyExtension::ProduceCommand(const DAVA::Reflection::Field& fi
     GetScene()->Exec(std::make_unique<SetFieldValueCommand>(field, newValue));
 }
 
+void REModifyPropertyExtension::Exec(std::unique_ptr<DAVA::Command>&& command)
+{
+    GetScene()->Exec(std::move(command));
+}
+
 void REModifyPropertyExtension::EndBatch()
 {
     GetScene()->EndBatch();

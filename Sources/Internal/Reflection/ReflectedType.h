@@ -83,6 +83,7 @@ public:
 
     /** Return registered structure for that type. */
     const ReflectedStructure* GetStrucutre() const;
+    ReflectedStructure* GetStructure();
 
     /** Return registered structure for that type. */
     const StructureWrapper* GetStrucutreWrapper() const;

@@ -1,7 +1,7 @@
 #include "TArc/Controls/PropertyPanel/Private/EnumComponentValue.h"
 #include "TArc/Controls/ComboBox.h"
+#include "TArc/Controls/PropertyPanel/PropertyPanelMeta.h"
 #include "TArc/Controls/PropertyPanel/Private/ComponentStructureWrapper.h"
-#include "TArc/Controls/PropertyPanel/Private/PropertyPanelMeta.h"
 
 #include <Reflection/ReflectionRegistrator.h>
 

@@ -2,6 +2,7 @@
 
 #include "PropertyModelExtensions.h"
 #include "TArc/Controls/ControlProxy.h"
+#include "TArc/Utils/QtConnections.h"
 
 #include "Reflection/Reflection.h"
 #include "Base/BaseTypes.h"
@@ -34,8 +35,6 @@ public:
     virtual ~BaseComponentValue();
 
     void Init(ReflectedPropertyModel* model);
-
-    virtual bool EditorEvent(QWidget* parent, QEvent* event, const QStyleOptionViewItem& option);
 
     void Draw(QWidget* parent, QPainter* painter, const QStyleOptionViewItem& opt);
     void UpdateGeometry(QWidget* parent, const QStyleOptionViewItem& opt);
@@ -70,16 +69,22 @@ protected:
     void RemovePropertyNode(const std::shared_ptr<PropertyNode>& node);
     void RemovePropertyNodes();
 
-    mutable ControlProxy* editorWidget = nullptr;
+    ControlProxy* editorWidget = nullptr;
     Vector<std::shared_ptr<PropertyNode>> nodes;
 
 private:
     void EnsureEditorCreated(const QWidget* parent) const;
+    void EnsureEditorCreated(QWidget* parent);
     void UpdateEditorGeometry(const QWidget* parent, const QRect& geometry) const;
+
+    void OnButtonClicked(int32 index);
 
     ReflectedPropertyModel* model = nullptr;
     BaseComponentValue* thisValue = nullptr;
     bool isEditorEvent = false;
+    QWidget* realWidget = nullptr;
+
+    QtConnections connections;
 
     DAVA_VIRTUAL_REFLECTION(BaseComponentValue);
 };

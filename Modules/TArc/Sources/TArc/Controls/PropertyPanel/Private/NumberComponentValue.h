@@ -13,8 +13,6 @@ class NumberComponentValue : public BaseComponentValue
 public:
     NumberComponentValue() = default;
 
-    bool EditorEvent(QWidget* parent, QEvent* event, const QStyleOptionViewItem& option) override;
-
 protected:
     Any GetMultipleValue() const override;
     bool IsValidValueToSet(const Any& newValue, const Any& currentValue) const override;

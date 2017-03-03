@@ -14,6 +14,7 @@ public:
 protected:
     void BeginBatch(const DAVA::String& text, DAVA::uint32 commandCount) override;
     void ProduceCommand(const DAVA::Reflection::Field& object, const DAVA::Any& newValue) override;
+    void Exec(std::unique_ptr<DAVA::Command>&& command) override;
     void EndBatch() override;
 
     SceneEditor2* GetScene() const;

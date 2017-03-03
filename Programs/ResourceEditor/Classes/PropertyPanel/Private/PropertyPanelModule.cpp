@@ -56,12 +56,15 @@ void PropertyPanelModule::PostInit()
     panelInfo.title = QStringLiteral("New Property Panel");
     panelInfo.actionPlacementInfo = ActionPlacementInfo(CreateMenuPoint(QList<QString>() << "View"
                                                                                          << "Dock"));
+    PropertiesView::Params params;
+    params.accessor = accessor;
+    params.invoker = GetInvoker();
+    params.ui = ui;
+    params.objectsField.type = DAVA::ReflectedTypeDB::Get<PropertyPanelModuleDetail::PropertyPanelData>();
+    params.objectsField.fieldName = DAVA::FastName(PropertyPanelModuleDetail::PropertyPanelData::selectedEntitiesProperty);
+    params.settingsNodeName = "PropertyPanel";
 
-    FieldDescriptor propertiesDataSourceField;
-    propertiesDataSourceField.type = DAVA::ReflectedTypeDB::Get<PropertyPanelModuleDetail::PropertyPanelData>();
-    propertiesDataSourceField.fieldName = DAVA::FastName(PropertyPanelModuleDetail::PropertyPanelData::selectedEntitiesProperty);
-
-    PropertiesView* view = new PropertiesView(ui, accessor, propertiesDataSourceField, "PropertyPanel");
+    PropertiesView* view = new PropertiesView(params);
     view->RegisterExtension(std::make_shared<REModifyPropertyExtension>(accessor));
     view->RegisterExtension(std::make_shared<EntityChildCreator>());
     ui->AddView(REGlobal::MainWindowKey, PanelKey(panelInfo.title, panelInfo), view);

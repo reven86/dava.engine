@@ -128,13 +128,7 @@ void PropertiesViewDelegate::updateEditorGeometry(QWidget* editor, const QStyleO
 
 bool PropertiesViewDelegate::editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index)
 {
-    if (index.column() == 0)
-    {
-        return false;
-    }
-
-    BaseComponentValue* valueComponent = GetComponentValue(index);
-    return valueComponent->EditorEvent(view->viewport(), event, option);
+    return false;
 }
 
 bool PropertiesViewDelegate::helpEvent(QHelpEvent* event, QAbstractItemView* view, const QStyleOptionViewItem& option, const QModelIndex& index)

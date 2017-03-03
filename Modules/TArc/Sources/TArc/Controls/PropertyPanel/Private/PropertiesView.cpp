@@ -15,17 +15,16 @@ namespace DAVA
 {
 namespace TArc
 {
-PropertiesView::PropertiesView(UI* ui, ContextAccessor* accessor_, const FieldDescriptor& objectsField, const String& settingsNodeName_)
-    : binder(accessor_)
-    , accessor(accessor_)
-    , settingsNodeName(settingsNodeName_)
+PropertiesView::PropertiesView(const Params& params_)
+    : binder(params_.accessor)
+    , params(params_)
 {
-    binder.BindField(objectsField, MakeFunction(this, &PropertiesView::OnObjectsChanged));
-    model.reset(new ReflectedPropertyModel(ui));
+    binder.BindField(params.objectsField, MakeFunction(this, &PropertiesView::OnObjectsChanged));
+    model.reset(new ReflectedPropertyModel(params.accessor, params.invoker, params.ui));
 
     SetupUI();
 
-    model->LoadExpanded(accessor->CreatePropertiesNode(settingsNodeName).CreateSubHolder("expandedList"));
+    model->LoadExpanded(params.accessor->CreatePropertiesNode(params.settingsNodeName).CreateSubHolder("expandedList"));
 
     QTimer* timer = new QTimer(this);
     timer->setInterval(500);
@@ -42,7 +41,7 @@ PropertiesView::PropertiesView(UI* ui, ContextAccessor* accessor_, const FieldDe
 
 PropertiesView::~PropertiesView()
 {
-    PropertiesItem viewSettings = accessor->CreatePropertiesNode(settingsNodeName);
+    PropertiesItem viewSettings = params.accessor->CreatePropertiesNode(params.settingsNodeName);
     PropertiesItem item = viewSettings.CreateSubHolder("expandedList");
     model->SaveExpanded(item);
 }

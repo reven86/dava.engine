@@ -2,7 +2,7 @@
 #include "TArc/Controls/PropertyPanel/Private/ReflectedPropertyItem.h"
 #include "TArc/Controls/PropertyPanel/Private/EmptyComponentValue.h"
 #include "TArc/Controls/PropertyPanel/Private/DefaultPropertyModelExtensions.h"
-#include "TArc/Controls/PropertyPanel/Private/PropertyPanelMeta.h"
+#include "TArc/Controls/PropertyPanel/PropertyPanelMeta.h"
 #include "TArc/Controls/PropertyPanel/KeyedArchiveChildCreator.h"
 #include "TArc/Controls/PropertyPanel/Private/SubPropertiesExtensions.h"
 
@@ -58,7 +58,10 @@ const String TypeName = "typeName";
 const String FieldName = "fieldName";
 }
 
-ReflectedPropertyModel::ReflectedPropertyModel(UI* ui)
+ReflectedPropertyModel::ReflectedPropertyModel(ContextAccessor* accessor_, OperationInvoker* invoker_, UI* ui_)
+    : accessor(accessor_)
+    , invoker(invoker_)
+    , ui(ui_)
 {
     rootItem.reset(new ReflectedPropertyItem(this, std::make_unique<EmptyComponentValue>()));
 
@@ -239,6 +242,11 @@ void ReflectedPropertyModel::ChildAdded(std::shared_ptr<const PropertyNode> pare
     {
         std::unique_ptr<BaseComponentValue> valueComponent = GetExtensionChain<EditorComponentExtension>()->GetEditor(node);
         valueComponent->Init(this);
+
+        const M::CommandProducerHolder* commandProducer = node->field.ref.GetMeta<M::CommandProducerHolder>();
+        if (commandProducer != nullptr)
+        {
+        }
 
         QModelIndex parentIndex = MapItem(parentItem);
 

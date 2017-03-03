@@ -21,6 +21,11 @@ inline const ReflectedStructure* ReflectedType::GetStrucutre() const
     return structure.get();
 }
 
+inline ReflectedStructure* ReflectedType::GetStructure()
+{
+    return structure.get();
+}
+
 inline const StructureWrapper* ReflectedType::GetStrucutreWrapper() const
 {
     return structureWrapper.get();

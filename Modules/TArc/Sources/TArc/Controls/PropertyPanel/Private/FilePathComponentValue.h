@@ -22,11 +22,6 @@ public:
     };
     FilePathComponentValue(const Params& params);
 
-    bool EditorEvent(QWidget* parent, QEvent* event, const QStyleOptionViewItem& option)
-    {
-        return false;
-    }
-
 protected:
     Any GetMultipleValue() const override;
     bool IsValidValueToSet(const Any& newValue, const Any& currentValue) const override;

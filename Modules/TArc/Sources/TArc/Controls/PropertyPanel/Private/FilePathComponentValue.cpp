@@ -1,6 +1,6 @@
 #include "TArc/Controls/PropertyPanel/Private/FilePathComponentValue.h"
 #include "TArc/Controls/PropertyPanel/Private/ComponentStructureWrapper.h"
-#include "TArc/Controls/PropertyPanel/Private/PropertyPanelMeta.h"
+#include "TArc/Controls/PropertyPanel/PropertyPanelMeta.h"
 #include "TArc/Controls/FilePathEdit.h"
 
 #include <Reflection/ReflectionRegistrator.h>

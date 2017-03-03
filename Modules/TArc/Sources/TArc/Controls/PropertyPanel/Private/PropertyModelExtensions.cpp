@@ -44,6 +44,10 @@ public:
     {
     }
 
+    void Exec(std::unique_ptr<Command>&&)
+    {
+    }
+
     void EndBatch()
     {
     }
@@ -151,6 +155,12 @@ ModifyExtension::MultiCommandInterface ModifyExtension::GetMultiCommandInterface
     return MultiCommandInterface(std::shared_ptr<ModifyExtension>(this, ModifyExtDeleter()));
 }
 
+ModifyExtension::MultiCommandInterface ModifyExtension::GetMultiCommandInterface(const String& description, uint32 commandCount)
+{
+    BeginBatch(description, commandCount);
+    return MultiCommandInterface(std::shared_ptr<ModifyExtension>(this, ModifyExtDeleter()));
+}
+
 void ModifyExtension::BeginBatch(const String& text, uint32 commandCount)
 {
     GetNext<ModifyExtension>()->BeginBatch(text, commandCount);
@@ -159,6 +169,11 @@ void ModifyExtension::BeginBatch(const String& text, uint32 commandCount)
 void ModifyExtension::ProduceCommand(const Reflection::Field& object, const Any& newValue)
 {
     GetNext<ModifyExtension>()->ProduceCommand(object, newValue);
+}
+
+void ModifyExtension::Exec(std::unique_ptr<Command>&& command)
+{
+    GetNext<ModifyExtension>()->Exec(std::move(command));
 }
 
 void ModifyExtension::EndBatch()
@@ -187,6 +202,11 @@ void ModifyExtension::MultiCommandInterface::ModifyPropertyValue(const std::shar
     {
         node->cachedValue = Any();
     }
+}
+
+void ModifyExtension::MultiCommandInterface::Exec(std::unique_ptr<DAVA::Command>&& command)
+{
+    extension->Exec(std::move(command));
 }
 
 } // namespace TArc
