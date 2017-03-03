@@ -227,10 +227,8 @@ void RenderHelper::Present(rhi::HPacketList packetList, const Matrix4* viewMatri
 
         case COMMAND_DRAW_POLYGON:
         {
-            DVASSERT(command.extraParams.size() >= 4);
-            const uint32 pointCount = static_cast<uint32>((command.extraParams.size() - 4) / 3);
-
-            const Vector3* const polygonPoints = reinterpret_cast<const Vector3*>(command.extraParams.data() + 4);
+            const uint32 pointCount = static_cast<uint32>(command.extraParams.size() / 3);
+            const Vector3* const polygonPoints = reinterpret_cast<const Vector3*>(command.extraParams.data());
             for (uint32 i = 0; i < pointCount; ++i)
             {
                 commandVBufferPtr[i].position = polygonPoints[i];
@@ -357,7 +355,7 @@ void RenderHelper::GetRequestedVertexCount(const DrawCommand& command, uint32& v
 
     case COMMAND_DRAW_POLYGON:
     {
-        vertexCount = static_cast<uint32>((command.extraParams.size() - 4) / 3);
+        vertexCount = static_cast<uint32>(command.extraParams.size() / 3);
         indexCount = isSolidDraw ? (vertexCount - 2) * 3 : (vertexCount - 1) * 2;
     }
     break;
@@ -433,10 +431,14 @@ void RenderHelper::DrawLine(const Vector3& pt1, const Vector3& pt2, const Color&
 }
 void RenderHelper::DrawPolygon(const Polygon3& polygon, const Color& color, eDrawType drawType)
 {
-    Vector<float32> args(4 + polygon.pointCount * 3);
-    Memcpy(args.data(), color.color, sizeof(Color));
-    Memcpy(args.data() + 4, polygon.points.data(), sizeof(Vector3) * polygon.pointCount);
-    QueueCommand(DrawCommand(COMMAND_DRAW_POLYGON, drawType, std::forward<Vector<float32>&&>(args)));
+    DrawCommand drawCommand(COMMAND_DRAW_POLYGON);
+    drawCommand.drawType = drawType;
+
+    drawCommand.extraParams.resize(polygon.pointCount * 3);
+    Memcpy(drawCommand.extraParams.data(), polygon.points.data(), sizeof(Vector3) * polygon.pointCount);
+    Memcpy(drawCommand.params, color.color, sizeof(Color));
+
+    QueueCommand(drawCommand);
 }
 void RenderHelper::DrawAABox(const AABBox3& box, const Color& color, eDrawType drawType)
 {
