@@ -18,6 +18,7 @@
 #import "Engine/Private/iOS/Window/RenderViewiOS.h"
 #import "Engine/Private/iOS/Window/RenderViewControlleriOS.h"
 #import "Engine/Private/iOS/Window/NativeViewPooliOS.h"
+#import "Engine/Private/iOS/Window/VisibleFrameObserver.h"
 #import "DeviceManager/Private/Ios/DeviceManagerImplIos.h"
 
 namespace DAVA
@@ -60,6 +61,8 @@ bool WindowNativeBridge::CreateWindow()
     nativeViewPool = [[NativeViewPool alloc] init];
 
     [uiwindow setRootViewController:renderViewController];
+
+    visibleFrameObserver = [[VisibleFrameObserver alloc] initWithBridge:this];
 
     CGRect viewRect = [renderView bounds];
     dpi = Private::DeviceManagerImpl::GetIPhoneMainScreenDpi();

@@ -1,6 +1,8 @@
 #include "Tests/FontTest.h"
 
 #include "UI/Focus/UIFocusComponent.h"
+#include "Engine/Engine.h"
+#include "Engine/Window.h"
 
 using namespace DAVA;
 
@@ -36,6 +38,9 @@ enum Tags
 FontTest::FontTest(TestBed& app)
     : BaseScreen(app, "FontTest")
 {
+    GetPrimaryWindow()->visibleFrameChanged.Connect([](Window*, const Rect& r) {
+        Logger::Debug("visibleFrameChanged %f,%f %f,%f", r.x, r.y, r.dx, r.dy);
+    });
 }
 
 void FontTest::LoadResources()

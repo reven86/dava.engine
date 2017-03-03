@@ -295,6 +295,7 @@ public:
     Signal<Window*, Size2f /* windowSize*/, Size2f /* surfaceSize */> sizeChanged; //<! Emitted when window client ares size or surface size has changed.
     Signal<Window*, float32> update; //!< Emitted on each frame if window is visible.
     Signal<Window*> draw; //!< Emited after `update` signal after `UIControlSystem::Draw`
+    Signal<Window*, Rect /*visibleFrameRect*/> visibleFrameChanged; //!< Emitted when window visible frame changed (showed virtual keyboard over window).
 
 private:
     /// Get pointer to WindowBackend which may be used by PlatformCore
@@ -317,6 +318,7 @@ private:
     void HandleSizeChanged(const Private::MainDispatcherEvent& e);
     void HandleDpiChanged(const Private::MainDispatcherEvent& e);
     void HandleCancelInput(const Private::MainDispatcherEvent& e);
+    void HandleVisibleFrameChanged(const Private::MainDispatcherEvent& e);
     void HandleFocusChanged(const Private::MainDispatcherEvent& e);
     void HandleVisibilityChanged(const Private::MainDispatcherEvent& e);
     void HandleMouseClick(const Private::MainDispatcherEvent& e);
