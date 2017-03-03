@@ -41,6 +41,7 @@
 #include "Tests/DeviceManagerTest.h"
 #include "Tests/SoundTest.h"
 #include "Tests/AnyPerformanceTest.h"
+#include "Tests/OverdrawTest.h"
 //$UNITTEST_INCLUDE
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
@@ -294,6 +295,7 @@ void TestBed::OnError()
 
 void TestBed::RegisterTests()
 {
+    new OverdrawTest(*this);
     new CoreV2Test(*this);
 #if defined(__DAVAENGINE_WINDOWS__)
     new DeviceManagerTest(*this);
