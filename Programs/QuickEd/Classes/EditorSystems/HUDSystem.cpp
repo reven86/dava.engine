@@ -43,10 +43,6 @@ RefPtr<ControlContainer> CreateControlContainer(HUDAreaInfo::eArea area)
         return RefPtr<ControlContainer>(new FrameRectControl(area));
     case HUDAreaInfo::FRAME_AREA:
         return RefPtr<ControlContainer>(new FrameControl());
-    case HUDAreaInfo::HIGHLIGHT_AREA:
-        return RefPtr<HighlightControl>(new HighlightControl());
-    case HUDAreaInfo::TEXT_AREA:
-        return RefPtr<TextControl>(new TextControl());
     default:
         DVASSERT(!"unacceptable value of area");
         return RefPtr<ControlContainer>(nullptr);
@@ -64,7 +60,6 @@ struct HUDSystem::HUD
     Map<HUDAreaInfo::eArea, RefPtr<ControlContainer>> hudControls;
 
     static std::unique_ptr<HUD> CreateSelectionHUD(ControlNode* node, UIControl* hudControl);
-    static std::unique_ptr<HUD> CreateHighlightHUD(ControlNode* node, UIControl* hudControl);
 };
 
 HUDSystem::HUD::HUD(ControlNode* node_, UIControl* hudControl_, const Vector<HUDAreaInfo::eArea> areas)
@@ -107,19 +102,6 @@ std::unique_ptr<HUDSystem::HUD> HUDSystem::HUD::CreateSelectionHUD(ControlNode* 
     return std::unique_ptr<HUD>(new HUD(node, hudControl, areas));
 }
 
-std::unique_ptr<HUDSystem::HUD> HUDSystem::HUD::CreateHighlightHUD(ControlNode* node, UIControl* hudControl)
-{
-    std::unique_ptr<HUD> hud(new HUD(node, hudControl, { HUDAreaInfo::HIGHLIGHT_AREA, HUDAreaInfo::TEXT_AREA }));
-
-    ControlNodeInformation controlInfo(node);
-    const String& path = ControlInformationHelpers::GetPathToControl(&controlInfo);
-
-    TextControl* textControl = DynamicTypeCheck<TextControl*>(hud->hudControls[HUDAreaInfo::TEXT_AREA].Get());
-    textControl->SetText(path);
-
-    return hud;
-}
-
 HUDSystem::HUD::~HUD()
 {
     hudControl->RemoveControl(container.Get());
@@ -143,7 +125,6 @@ HUDSystem::HUDSystem(EditorSystemsManager* parent)
     systemsManager->selectionChanged.Connect(this, &HUDSystem::OnSelectionChanged);
     systemsManager->magnetLinesChanged.Connect(this, &HUDSystem::OnMagnetLinesChanged);
     systemsManager->packageChanged.Connect(this, &HUDSystem::OnPackageChanged);
-    systemsManager->searchResultsChanged.Connect(this, &HUDSystem::OnSearchResultsChanged);
     systemsManager->GetRootControl()->AddControl(hudControl.Get());
 }
 
@@ -251,19 +232,6 @@ void HUDSystem::OnHighlightNode(const ControlNode* node)
         UIControl* targetControl = node->GetControl();
         hoveredNodeControl = CreateHUDRect(node);
         hudControl->AddControl(hoveredNodeControl.Get());
-    }
-}
-
-void HUDSystem::OnSearchResultsChanged(const SelectedControls& results)
-{
-    searchHudMap.clear();
-
-    for (auto node : results)
-    {
-        if (nullptr != node->GetControl())
-        {
-            searchHudMap[node] = HUD::CreateHighlightHUD(node, hudControl.Get()); //std::make_unique<HUD>(node, hudControl.Get());
-        }
     }
 }
 

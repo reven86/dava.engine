@@ -89,7 +89,11 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     OnScaleChanged(1.0f);
     UpdateScrollArea();
 
-    connect(findInDocumentWidget, &FindInDocumentWidget::OnFindFilterReady, findController, &FindController::FindInDocument);
+    connect(findInDocumentWidget, &FindInDocumentWidget::OnFindFilterReady, findController, &FindController::SetFilter);
+    connect(findInDocumentWidget, &FindInDocumentWidget::OnFindNext, findController, &FindController::SelectNextFindResult);
+    connect(findInDocumentWidget, &FindInDocumentWidget::OnFindAll, findController, &FindController::FindAll);
+
+    findInDocumentWidget->hide();
 }
 
 PreviewWidget::~PreviewWidget()
@@ -215,8 +219,6 @@ void PreviewWidget::OnDocumentChanged(Document* arg)
     }
 
     LoadSystemsContext(arg);
-
-    findController->OnDocumentChanged(arg);
 }
 
 void PreviewWidget::SaveSystemsContextAndClear()
@@ -358,6 +360,7 @@ void PreviewWidget::SetActualScale()
 
 void PreviewWidget::OnFindInDocument()
 {
+    findInDocumentWidget->Reset();
     findInDocumentWidget->show();
     findInDocumentWidget->setFocus();
 }
@@ -907,6 +910,16 @@ void PreviewWidget::OnPropertyChanged(ControlNode* node, AbstractProperty* prope
 void PreviewWidget::OnEditingRootControlsChanged(const SortedPackageBaseNodeSet& rootControls)
 {
     OnCancelFind();
+
+    Vector<ControlNode*> controls;
+    for (const auto& r : rootControls)
+    {
+        if (ControlNode* control = dynamic_cast<ControlNode*>(r))
+        {
+            controls.push_back(control);
+        }
+    }
+    findController->SetFindScope(document->GetPackageFilePath(), controls);
 }
 
 float PreviewWidget::GetScaleFromWheelEvent(int ticksCount) const

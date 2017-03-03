@@ -39,6 +39,8 @@ public:
 
     void InjectRenderWidget(DAVA::RenderWidget* renderWidget);
 
+    FindController* findController = nullptr;
+
 signals:
     void DeleteRequested();
     void ImportRequested();
@@ -125,7 +127,6 @@ private:
 
     SelectionContainer selectionContainer;
     RulerController* rulerController = nullptr;
-    FindController* findController = nullptr;
     QPoint rootControlPos;
     QPoint canvasPos;
 
@@ -143,6 +144,4 @@ private:
 
     //we can show model dialogs only when mouse released, so remember node to change text when mouse will be released
     ControlNode* nodeToChangeTextOnMouseRelease = nullptr;
-
-    friend class FindController;
 };

@@ -19,6 +19,7 @@
 #include "UI/Package/PackageModel.h"
 #include "UI/ProjectView.h"
 #include "UI/DocumentGroupView.h"
+#include "UI/Find/FindController.h"
 
 #include "ui_mainwindow.h"
 
@@ -71,6 +72,8 @@ MainWindow::MainWindow(QWidget* parent)
     connect(ui->packageWidget, &PackageWidget::SelectedNodesChanged, ui->previewWidget, &PreviewWidget::OnSelectionChanged);
 
     connect(ui->packageWidget, &PackageWidget::CurrentIndexChanged, ui->propertiesWidget, &PropertiesWidget::UpdateModel);
+
+    connect(ui->previewWidget->findController, &FindController::ShowFindResults, ui->findResultsWidget, &FindResultsWidget::SetFindResults);
 
     connect(loggerOutput, &LoggerOutputObject::OutputReady, this, &MainWindow::OnLogOutput, Qt::DirectConnection);
 

@@ -17,6 +17,7 @@ public:
     ~Finder() override;
 
     void Process(const QStringList& files);
+    void Process(const DAVA::FilePath& packagePath, const ControlNode* control);
     void Process(const PackageNode* package);
     void Stop();
 
@@ -28,6 +29,7 @@ signals:
 private:
     static void CollectControls(FindItem& currentItem, const FindFilter& filter, const ControlInformation* control);
 
+    void ProcessControl(const DAVA::FilePath& packagePath, FindItem& currentItem, const ControlInformation* control);
     void ProcessPackage(FindItem& currentItem, const PackageInformation* package);
 
     std::shared_ptr<FindFilter> filter;

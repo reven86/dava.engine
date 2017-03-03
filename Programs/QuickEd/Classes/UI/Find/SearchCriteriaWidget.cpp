@@ -40,24 +40,26 @@ public:
     {
         layout = new QHBoxLayout(this);
 
-        operationCombobox = new QComboBox();
+        matchesLabel = new QLabel(this);
+        matchesLabel->setText(tr("matches"));
 
-        operationCombobox->addItem(tr("matches"));
-        operationCombobox->addItem(tr("contains"));
-        operationCombobox->addItem(tr("begins with"));
-        operationCombobox->addItem(tr("ends with"));
-        operationCombobox->addItem(tr("is"));
-        operationCombobox->addItem(tr("is not"));
-        operationCombobox->setSizeAdjustPolicy(QComboBox::SizeAdjustPolicy::AdjustToContents);
+        caseSensitive = new QCheckBox();
+        caseSensitive->setText(tr("case sensitive"));
+        caseSensitive->setChecked(false);
 
         value = new QLineEdit();
 
-        layout->addWidget(operationCombobox);
+        layout->addWidget(matchesLabel);
         layout->addSpacing(10);
         layout->addWidget(value);
+        layout->addStretch();
+        layout->addWidget(caseSensitive);
 
         layout->setMargin(0);
         layout->setSpacing(0);
+
+        QObject::connect(value, SIGNAL(textChanged(const QString&)), this, SIGNAL(CriteriaChanged()));
+        QObject::connect(caseSensitive, SIGNAL(stateChanged(int)), this, SIGNAL(CriteriaChanged()));
 
         setFocusProxy(value);
     }
@@ -67,6 +69,11 @@ public:
         return value->text().toStdString();
     }
 
+    bool IsCaseSensitive() const
+    {
+        return caseSensitive->isChecked();
+    }
+
     std::unique_ptr<FindFilter> BuildFindFilter() override
     {
         return findFilterBuilder(this);
@@ -74,10 +81,58 @@ public:
 
 private:
     QHBoxLayout* layout = nullptr;
-    QComboBox* operationCombobox = nullptr;
+    QLabel* matchesLabel = nullptr;
     QLineEdit* value = nullptr;
+    QCheckBox* caseSensitive = nullptr;
 
     StringFindFilterBuilder findFilterBuilder;
+};
+
+class EnumCriteriaEditor
+: public CriteriaEditor
+{
+public:
+    using EnumFindFilterBuilder = Function<std::unique_ptr<FindFilter>(const EnumCriteriaEditor*)>;
+
+    EnumCriteriaEditor(QWidget* parent, const EnumMap* editedEnum, const EnumFindFilterBuilder& findFilterBuilder_)
+        : CriteriaEditor(parent)
+        , findFilterBuilder(findFilterBuilder_)
+    {
+        layout = new QHBoxLayout(this);
+
+        enumCombobox = new QComboBox();
+
+        for (int32 enumIndex = 0; enumIndex < editedEnum->GetCount(); ++enumIndex)
+        {
+            enumCombobox->addItem(editedEnum->ToString(enumIndex));
+        }
+
+        layout->addWidget(enumCombobox);
+        layout->addStretch();
+
+        layout->setMargin(0);
+        layout->setSpacing(0);
+
+        QObject::connect(enumCombobox, SIGNAL(currentIndexChanged(int)), this, SIGNAL(CriteriaChanged()));
+
+        setFocusProxy(enumCombobox);
+    }
+
+    int32 GetValue() const
+    {
+        return enumCombobox->currentIndex();
+    }
+
+    std::unique_ptr<FindFilter> BuildFindFilter() override
+    {
+        return findFilterBuilder(this);
+    }
+
+private:
+    QHBoxLayout* layout = nullptr;
+    QComboBox* enumCombobox = nullptr;
+
+    EnumFindFilterBuilder findFilterBuilder;
 };
 
 class AbstractSearchCriteria
@@ -103,33 +158,34 @@ public:
         return new StringCriteriaEditor(parent,
                                         [](const StringCriteriaEditor* editor)
                                         {
-                                            return std::make_unique<ControlNameFilter>(FastName(editor->GetString()));
+                                            return std::make_unique<ControlNameFilter>(editor->GetString(), editor->IsCaseSensitive());
                                         });
     }
 };
 
-class HasSoundSearchCriteria
+class HasComponentSearchCriteria
 : public AbstractSearchCriteria
 {
 public:
     const char* GetName() override
     {
-        return "Has sound";
+        return "Has component";
     }
 
     CriteriaEditor* CreateEditor(QWidget* parent) override
     {
-        return new EmptyCriteriaEditor(parent,
-                                       []()
-                                       {
-                                           return std::make_unique<ControlNameFilter>(FastName("sound"));
-                                       });
+        return new EnumCriteriaEditor(parent,
+                                      GlobalEnumMap<UIComponent::eType>::Instance(),
+                                      [](const EnumCriteriaEditor* editor)
+                                      {
+                                          return std::make_unique<HasComponentFilter>(static_cast<UIComponent::eType>(editor->GetValue()));
+                                      });
     }
 };
 
 const Vector<std::shared_ptr<AbstractSearchCriteria>> criterias
 { std::make_shared<NameSearchCriteria>(),
-  std::make_shared<HasSoundSearchCriteria>() };
+  std::make_shared<HasComponentSearchCriteria>() };
 
 SearchCriteriaWidget::SearchCriteriaWidget(QWidget* parent)
     : QWidget(parent)
@@ -164,11 +220,10 @@ SearchCriteriaWidget::SearchCriteriaWidget(QWidget* parent)
     layout->addWidget(criteria);
     layout->addSpacing(10);
     layout->addLayout(innerLayout);
+    layout->addSpacing(10);
 
-    layout->addStretch();
-
-    QObject::connect(addCriteriaButton, SIGNAL(clicked()), this, SLOT(OnAddAnotherCriteriaPressed()));
-    QObject::connect(removeCriteriaButton, SIGNAL(clicked()), this, SLOT(OnRemoveCriteriaPressed()));
+    QObject::connect(addCriteriaButton, SIGNAL(clicked()), this, SIGNAL(AddAnotherCriteria()));
+    QObject::connect(removeCriteriaButton, SIGNAL(clicked()), this, SIGNAL(RemoveCriteria()));
     QObject::connect(criteria, SIGNAL(currentIndexChanged(int)), this, SLOT(OnCriteriaSelected(int)));
 
     OnCriteriaSelected(0);
@@ -190,16 +245,6 @@ std::shared_ptr<FindFilter> SearchCriteriaWidget::BuildFindFilter() const
     }
 }
 
-void SearchCriteriaWidget::OnAddAnotherCriteriaPressed()
-{
-    emit AddAnotherCriteria();
-}
-
-void SearchCriteriaWidget::OnRemoveCriteriaPressed()
-{
-    emit RemoveCriteria();
-}
-
 void SearchCriteriaWidget::OnCriteriaSelected(int index)
 {
     innerLayout->removeWidget(editor);
@@ -207,6 +252,9 @@ void SearchCriteriaWidget::OnCriteriaSelected(int index)
 
     editor = criterias[index]->CreateEditor(nullptr);
     innerLayout->addWidget(editor);
+    QObject::connect(editor, SIGNAL(CriteriaChanged()), this, SIGNAL(CriteriaChanged()));
 
     setFocusProxy(editor);
+
+    emit CriteriaChanged();
 }

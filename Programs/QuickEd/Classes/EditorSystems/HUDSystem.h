@@ -27,8 +27,6 @@ private:
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OnHighlightNode(const ControlNode* node);
 
-    void OnSearchResultsChanged(const SelectedControls& results);
-
     void OnMagnetLinesChanged(const DAVA::Vector<MagnetLineInfo>& magnetLines);
     void ClearMagnetLines();
 

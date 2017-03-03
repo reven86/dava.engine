@@ -42,6 +42,11 @@ String StaticControlInformation::GetPrototypePackagePath() const
     return prototypePackage->GetPath();
 }
 
+bool StaticControlInformation::HasComponent(UIComponent::eType componentType) const
+{
+    return components.test(componentType);
+}
+
 void StaticControlInformation::VisitParent(const Function<void(const ControlInformation*)>& visitor) const
 {
     visitor(parent);
@@ -86,4 +91,9 @@ std::shared_ptr<StaticControlInformation> StaticControlInformation::FindChildByN
     }
 
     return std::shared_ptr<StaticControlInformation>();
+}
+
+void StaticControlInformation::AddComponent(DAVA::UIComponent::eType componentType)
+{
+    components.set(componentType);
 }

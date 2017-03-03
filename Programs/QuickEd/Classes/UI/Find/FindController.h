@@ -18,28 +18,35 @@ struct FindContext
 {
     std::shared_ptr<FindFilter> filter;
     DAVA::Vector<DAVA::String> results;
-    int32 currentSelection = 0;
+    DAVA::Vector<FindItem> resultsRaw;
+    DAVA::int32 currentSelection = 0;
 };
 
-class FindController : public QObject, public TrackedObject, PackageListener
+class FindController : public QObject, public DAVA::TrackedObject, PackageListener
 {
+    Q_OBJECT
 public:
     FindController(PreviewWidget* previewWidget);
     ~FindController() override;
 
     void SelectNextFindResult();
     void SelectPrevFindResult();
+    void FindAll();
 
-    void FindInDocument(std::shared_ptr<FindFilter> filter);
-
-    void OnDocumentChanged(Document* document);
+    void SetFilter(std::shared_ptr<FindFilter> filter);
 
     void CancelFind();
 
+    void SetFindScope(const DAVA::FilePath& packagePath, const DAVA::Vector<ControlNode*>& rootControls);
+
+signals:
+    void ShowFindResults(const DAVA::Vector<FindItem>& results);
+
 private:
-    void UpdateHighlight();
     void MoveSelection(DAVA::int32 step);
 
+    DAVA::FilePath packagePath;
+    DAVA::Vector<ControlNode*> rootControls;
     FindContext context;
     Document* document = nullptr;
     PreviewWidget* previewWidget = nullptr;

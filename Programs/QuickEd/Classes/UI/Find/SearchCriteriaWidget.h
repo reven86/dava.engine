@@ -19,6 +19,7 @@ class SearchCriteriaWidget;
 class CriteriaEditor
 : public QWidget
 {
+    Q_OBJECT
 public:
     CriteriaEditor(QWidget* parent)
         : QWidget(parent)
@@ -26,6 +27,9 @@ public:
     }
 
     virtual std::unique_ptr<FindFilter> BuildFindFilter() = 0;
+
+signals:
+    void CriteriaChanged();
 };
 
 class SearchCriteriaWidget : public QWidget
@@ -40,10 +44,9 @@ public:
 signals:
     void AddAnotherCriteria();
     void RemoveCriteria();
+    void CriteriaChanged();
 
 private slots:
-    void OnAddAnotherCriteriaPressed();
-    void OnRemoveCriteriaPressed();
     void OnCriteriaSelected(int index);
 
 private:

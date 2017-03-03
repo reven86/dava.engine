@@ -24,20 +24,30 @@ public:
 
     std::shared_ptr<FindFilter> BuildFindFilter() const;
 
+    void Reset();
+
 signals:
     void OnFindFilterReady(std::shared_ptr<FindFilter> filter);
+    void OnFindNext();
+    void OnFindAll();
 
 private slots:
     void OnFindClicked();
+    void OnFindAllClicked();
+    void OnCriteriasChanged();
 
 protected:
-    bool eventFilter(QObject* obj, QEvent* event) override;
+    bool event(QEvent* event) override;
 
 private:
+    Q_SLOT void OnShown();
+    void EmitFilterChanges();
+
     Document* document = nullptr;
     QHBoxLayout* layout = nullptr;
     SearchCriteriasWidget* findFiltersWidget = nullptr;
     QToolButton* findButton = nullptr;
-    QMenu* findButtonsMenu = nullptr;
-    EditorSystemsManager* systemsManager = nullptr;
+    QToolButton* findAllButton = nullptr;
+
+    bool hasChanges = true;
 };

@@ -33,63 +33,51 @@ void FindController::SelectPrevFindResult()
     MoveSelection(-1);
 }
 
-void FindController::FindInDocument(std::shared_ptr<FindFilter> filter)
+void FindController::FindAll()
 {
-    if (document)
-    {
-        context.filter = filter;
-        context.results.clear();
-
-        Finder finder(filter, nullptr);
-
-        QObject::connect(&finder, &Finder::ItemFound,
-                         [this](const FindItem& item)
-                         {
-                             for (const String& path : item.GetControlPaths())
-                             {
-                                 context.results.push_back(path);
-                                 Logger::Debug("%s %s",
-                                               __FUNCTION__,
-                                               path.c_str());
-                             }
-                         });
-
-        QObject::connect(&finder, &Finder::Finished,
-                         [this]()
-                         {
-                             UpdateHighlight();
-                         });
-
-        finder.Process(document->GetPackage());
-    }
+    emit ShowFindResults(context.resultsRaw);
 }
 
-void FindController::OnDocumentChanged(Document* document_)
+void FindController::SetFilter(std::shared_ptr<FindFilter> filter)
 {
-    document = document_;
+    context.filter = filter;
+    context.results.clear();
+    context.resultsRaw.clear();
+    context.currentSelection = 0;
+
+    Finder finder(filter, nullptr);
+
+    QObject::connect(&finder, &Finder::ItemFound,
+                     [this](const FindItem& item)
+                     {
+                         for (const String& path : item.GetControlPaths())
+                         {
+                             context.results.push_back(path);
+                             Logger::Debug("%s %s",
+                                           __FUNCTION__,
+                                           path.c_str());
+                         }
+
+                         context.resultsRaw.push_back(item);
+                     });
+
+    for (const ControlNode* control : rootControls)
+    {
+        finder.Process(packagePath, control);
+    }
 }
 
 void FindController::CancelFind()
 {
     context.results.clear();
-    context.currentSelection = -1;
-
-    UpdateHighlight();
+    context.resultsRaw.clear();
+    context.currentSelection = 0;
 }
 
-void FindController::UpdateHighlight()
+void FindController::SetFindScope(const DAVA::FilePath& packagePath_, const DAVA::Vector<ControlNode*>& rootControls_)
 {
-    SelectedControls controls;
-
-    for (const String& path : context.results)
-    {
-        if (ControlNode* node = previewWidget->systemsManager->GetControlNodeByPath(path))
-        {
-            controls.insert(node);
-        }
-    }
-
-    previewWidget->systemsManager->searchResultsChanged.Emit(controls);
+    packagePath = packagePath_;
+    rootControls = rootControls_;
 }
 
 void FindController::MoveSelection(int32 step)
@@ -97,11 +85,16 @@ void FindController::MoveSelection(int32 step)
     if (!context.results.empty())
     {
         context.currentSelection += step;
-        context.currentSelection = context.currentSelection % context.results.size();
 
-        if (ControlNode* node = previewWidget->systemsManager->GetControlNodeByPath(context.results[context.currentSelection]))
+        if (context.currentSelection < 0)
         {
-            previewWidget->systemsManager->SelectNode(node);
+            context.currentSelection = static_cast<int32>(context.results.size() - 1);
         }
+        else if (context.currentSelection >= context.results.size())
+        {
+            context.currentSelection = 0;
+        }
+
+        previewWidget->SelectControl(context.results[context.currentSelection]);
     }
 }

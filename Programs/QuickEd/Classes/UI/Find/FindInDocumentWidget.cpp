@@ -1,6 +1,5 @@
 #include "FindInDocumentWidget.h"
 #include "SearchCriteriasWidget.h"
-#include "EditorSystems/EditorSystemsManager.h"
 #include "UI/Find/Finder.h"
 #include "Logger/Logger.h"
 
@@ -20,12 +19,18 @@ FindInDocumentWidget::FindInDocumentWidget(QWidget* parent)
     findFiltersWidget = new SearchCriteriasWidget();
 
     findButton = new QToolButton();
-    findButton->setText("Find");
+    findButton->setText(tr("Find"));
+
+    findAllButton = new QToolButton();
+    findAllButton->setText(tr("Find All"));
 
     QObject::connect(findButton, SIGNAL(clicked()), this, SLOT(OnFindClicked()));
+    QObject::connect(findAllButton, SIGNAL(clicked()), this, SLOT(OnFindAllClicked()));
+    QObject::connect(findFiltersWidget, SIGNAL(CriteriasChanged()), this, SLOT(OnCriteriasChanged()));
 
     layout->addWidget(findFiltersWidget);
     layout->addWidget(findButton);
+    layout->addWidget(findAllButton);
 
     setFocusProxy(findFiltersWidget);
 }
@@ -39,31 +44,58 @@ std::shared_ptr<FindFilter> FindInDocumentWidget::BuildFindFilter() const
     return findFiltersWidget->BuildFindFilter();
 }
 
-void FindInDocumentWidget::OnFindClicked()
+void FindInDocumentWidget::Reset()
 {
-    std::shared_ptr<FindFilter> filter = findFiltersWidget->BuildFindFilter();
-
-    emit OnFindFilterReady(filter);
+    findFiltersWidget->Reset();
 }
 
-bool FindInDocumentWidget::eventFilter(QObject* obj, QEvent* event)
+void FindInDocumentWidget::OnFindClicked()
+{
+    EmitFilterChanges();
+
+    emit OnFindNext();
+}
+
+void FindInDocumentWidget::OnFindAllClicked()
+{
+    EmitFilterChanges();
+
+    emit OnFindAll();
+}
+
+void FindInDocumentWidget::OnCriteriasChanged()
+{
+    hasChanges = true;
+}
+
+bool FindInDocumentWidget::event(QEvent* event)
 {
     if (event->type() == QEvent::KeyPress)
     {
-        QKeyEvent* key = static_cast<QKeyEvent*>(event);
-        if ((key->key() == Qt::Key_Enter) || (key->key() == Qt::Key_Return))
+        QKeyEvent* ke = static_cast<QKeyEvent*>(event);
+        if (ke->key() == Qt::Key_Enter || ke->key() == Qt::Key_Return)
         {
             OnFindClicked();
+            return true;
         }
-        else
-        {
-            return QObject::eventFilter(obj, event);
-        }
-        return true;
     }
-    else
+
+    return QWidget::event(event);
+}
+
+void FindInDocumentWidget::OnShown()
+{
+    findFiltersWidget->Reset();
+}
+
+void FindInDocumentWidget::EmitFilterChanges()
+{
+    if (hasChanges)
     {
-        return QObject::eventFilter(obj, event);
+        std::shared_ptr<FindFilter> filter = findFiltersWidget->BuildFindFilter();
+
+        emit OnFindFilterReady(filter);
+
+        hasChanges = false;
     }
-    return false;
 }

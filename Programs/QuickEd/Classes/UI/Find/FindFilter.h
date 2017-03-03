@@ -1,7 +1,10 @@
 #pragma once
 
-#include "FileSystem/FilePath.h"
 #include "Base/FastName.h"
+#include "FileSystem/FilePath.h"
+#include "UI/Components/UIComponent.h"
+
+#include <QRegExp>
 
 class PackageInformation;
 class ControlInformation;
@@ -46,12 +49,25 @@ private:
 class ControlNameFilter : public FindFilter
 {
 public:
-    ControlNameFilter(const DAVA::FastName& expectedName);
+    ControlNameFilter(const DAVA::String& pattern, bool caseSensitive);
     ~ControlNameFilter();
 
     bool CanAcceptPackage(const PackageInformation* package) const override;
     bool CanAcceptControl(const ControlInformation* control) const override;
 
 private:
-    DAVA::FastName expectedName;
+    QRegExp regExp;
+};
+
+class HasComponentFilter : public FindFilter
+{
+public:
+    HasComponentFilter(DAVA::UIComponent::eType componentType);
+    ~HasComponentFilter();
+
+    bool CanAcceptPackage(const PackageInformation* package) const override;
+    bool CanAcceptControl(const ControlInformation* control) const override;
+
+private:
+    DAVA::UIComponent::eType requiredComponentType;
 };

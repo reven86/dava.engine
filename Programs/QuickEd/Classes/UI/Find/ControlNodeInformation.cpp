@@ -1,5 +1,6 @@
 #include "ControlNodeInformation.h"
 #include "Model/PackageHierarchy/PackageNode.h"
+#include "UI/UIControl.h"
 
 using namespace DAVA;
 
@@ -39,6 +40,11 @@ String ControlNodeInformation::GetPrototypePackagePath() const
     {
         return String();
     }
+}
+
+bool ControlNodeInformation::HasComponent(UIComponent::eType componentType) const
+{
+    return controlNode->GetControl()->GetComponentCount(componentType) > 0;
 }
 
 void ControlNodeInformation::VisitParent(const Function<void(const ControlInformation*)>& visitor) const

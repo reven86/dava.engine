@@ -262,46 +262,6 @@ void RotateControl::InitFromGD(const UIGeometricData& gd)
     SetRect(rect);
 }
 
-HighlightControl::HighlightControl()
-    : ControlContainer(HUDAreaInfo::HIGHLIGHT_AREA)
-{
-    SetName(FastName("highlight control"));
-    UIControlBackground* background = GetOrCreateComponent<UIControlBackground>();
-    background->SetDrawType(UIControlBackground::DRAW_FILL);
-    background->SetColor(Color(1.0f, 1.0f, 1.0f, 0.2f));
-}
-
-void HighlightControl::InitFromGD(const DAVA::UIGeometricData& gd)
-{
-    SetRect(Rect(Vector2(0.0f, 0.0f), gd.size * gd.scale));
-}
-
-TextControl::TextControl()
-    : ControlContainer(HUDAreaInfo::TEXT_AREA)
-    , text(new UIStaticText())
-{
-    SetName(FastName("highlight control"));
-
-    text->SetFontByPresetName("Font_18_bold");
-    text->SetTextColorInheritType(UIControlBackground::COLOR_IGNORE_PARENT);
-
-    UISizePolicyComponent* sizePolicyComponent = text->GetOrCreateComponent<UISizePolicyComponent>();
-    sizePolicyComponent->SetHorizontalPolicy(UISizePolicyComponent::PERCENT_OF_CONTENT);
-    sizePolicyComponent->SetVerticalPolicy(UISizePolicyComponent::PERCENT_OF_CONTENT);
-
-    AddControl(text.Get());
-}
-
-void TextControl::SetText(const DAVA::String& aText)
-{
-    text->SetUtf8Text(aText);
-}
-
-void TextControl::InitFromGD(const DAVA::UIGeometricData& gd)
-{
-    SetRect(Rect(Vector2(0.0f, 0.0f), gd.size * gd.scale));
-}
-
 void SetupHUDMagnetLineControl(UIControl* control)
 {
     UIControlBackground* background = control->GetOrCreateComponent<UIControlBackground>();

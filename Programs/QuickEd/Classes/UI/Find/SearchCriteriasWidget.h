@@ -23,11 +23,18 @@ public:
 
     std::unique_ptr<FindFilter> BuildFindFilter() const;
 
+    void Reset();
+
+signals:
+    void CriteriasChanged();
+
 private slots:
     void OnAddCriteriaClicked();
     void OnRemoveCriteriaClicked();
 
 private:
+    void RemoveCriteriaWidget(SearchCriteriaWidget* widget);
+
     DAVA::Set<SearchCriteriaWidget*> filterWidgets;
 
     std::unique_ptr<Ui::SearchCriteriasWidget> ui;

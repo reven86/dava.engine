@@ -75,8 +75,8 @@ bool CompositeFilter::CanAcceptControl(const ControlInformation* control) const
                        });
 }
 
-ControlNameFilter::ControlNameFilter(const DAVA::FastName& expectedName_)
-    : expectedName(expectedName_)
+ControlNameFilter::ControlNameFilter(const DAVA::String& pattern, bool caseSensitive)
+    : regExp(pattern.c_str(), caseSensitive ? Qt::CaseSensitive : Qt::CaseInsensitive)
 {
 }
 
@@ -91,5 +91,24 @@ bool ControlNameFilter::CanAcceptPackage(const PackageInformation* package) cons
 
 bool ControlNameFilter::CanAcceptControl(const ControlInformation* control) const
 {
-    return control->GetName() == expectedName;
+    return regExp.exactMatch(control->GetName().c_str());
+}
+
+HasComponentFilter::HasComponentFilter(UIComponent::eType componentType)
+    : requiredComponentType(componentType)
+{
+}
+
+HasComponentFilter::~HasComponentFilter()
+{
+}
+
+bool HasComponentFilter::CanAcceptPackage(const PackageInformation* package) const
+{
+    return true;
+}
+
+bool HasComponentFilter::CanAcceptControl(const ControlInformation* control) const
+{
+    return control->HasComponent(requiredComponentType);
 }

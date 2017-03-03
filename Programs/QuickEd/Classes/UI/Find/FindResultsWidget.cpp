@@ -52,6 +52,23 @@ void FindResultsWidget::Find(std::unique_ptr<FindFilter>&& filter)
     }
 }
 
+void FindResultsWidget::SetFindResults(const DAVA::Vector<FindItem>& results)
+{
+    if (finder == nullptr)
+    {
+        model->removeRows(0, model->rowCount());
+        setVisible(true);
+        raise();
+
+        for (const FindItem& result : results)
+        {
+            OnItemFound(result);
+        }
+
+        OnFindFinished();
+    }
+}
+
 void FindResultsWidget::OnProjectChanged(Project* project_)
 {
     if (finder)

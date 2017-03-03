@@ -33,8 +33,6 @@ struct HUDAreaInfo
         BOTTOM_RIGHT_AREA,
         PIVOT_POINT_AREA,
         FRAME_AREA,
-        HIGHLIGHT_AREA,
-        TEXT_AREA,
         NO_AREA,
         CORNERS_BEGIN = TOP_LEFT_AREA,
         CORNERS_COUNT = PIVOT_POINT_AREA - TOP_LEFT_AREA + CORNERS_BEGIN,
@@ -124,7 +122,6 @@ public:
 
     void SetEmulationMode(bool emulationMode);
 
-    ControlNode* GetControlNodeByPath(const DAVA::String& path) const;
     ControlNode* GetControlNodeAtPoint(const DAVA::Vector2& point) const;
     DAVA::uint32 GetIndexOfNearestRootControl(const DAVA::Vector2& point) const;
 
@@ -151,7 +148,6 @@ public:
     DAVA::Signal<eDisplayState /*currentState*/, eDisplayState /*previousState*/> displayStateChanged;
     //render widget size changed
     DAVA::Signal<DAVA::uint32 /*width*/, DAVA::uint32 /*height*/> viewSizeChanged;
-    DAVA::Signal<const SelectedControls& /*results*/> searchResultsChanged;
 
     //helpers
     DAVA::Vector2 GetMouseDelta() const;

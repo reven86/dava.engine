@@ -21,6 +21,7 @@ public:
     ~FindResultsWidget() override;
 
     void Find(std::unique_ptr<FindFilter>&& filter);
+    Q_SLOT void SetFindResults(const DAVA::Vector<FindItem>& results);
 
 public slots:
     void OnProjectChanged(Project* project);

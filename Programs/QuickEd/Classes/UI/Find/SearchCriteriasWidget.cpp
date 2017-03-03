@@ -12,10 +12,23 @@ SearchCriteriasWidget::SearchCriteriasWidget(QWidget* parent)
 {
     ui->setupUi(this);
 
-    OnAddCriteriaClicked();
+    Reset();
 }
 
 SearchCriteriasWidget::~SearchCriteriasWidget() = default;
+
+void SearchCriteriasWidget::Reset()
+{
+    Set<SearchCriteriaWidget*>::iterator iter = filterWidgets.begin();
+    while (iter != filterWidgets.end())
+    {
+        RemoveCriteriaWidget(*iter);
+
+        iter = filterWidgets.begin();
+    }
+
+    OnAddCriteriaClicked();
+}
 
 void SearchCriteriasWidget::OnAddCriteriaClicked()
 {
@@ -24,23 +37,32 @@ void SearchCriteriasWidget::OnAddCriteriaClicked()
 
     QObject::connect(criteria, SIGNAL(AddAnotherCriteria()), this, SLOT(OnAddCriteriaClicked()));
     QObject::connect(criteria, SIGNAL(RemoveCriteria()), this, SLOT(OnRemoveCriteriaClicked()));
+    QObject::connect(criteria, SIGNAL(CriteriaChanged()), this, SIGNAL(CriteriasChanged()));
 
     setFocusProxy(criteria);
 
     filterWidgets.insert(criteria);
+
+    emit CriteriasChanged();
 }
 
 void SearchCriteriasWidget::OnRemoveCriteriaClicked()
 {
     if (filterWidgets.size() > 1)
     {
-        SearchCriteriaWidget* s = qobject_cast<SearchCriteriaWidget*>(QObject::sender());
+        SearchCriteriaWidget* widget = qobject_cast<SearchCriteriaWidget*>(QObject::sender());
 
-        filterWidgets.erase(s);
+        RemoveCriteriaWidget(widget);
 
-        ui->criteriasList->removeWidget(s);
-        s->deleteLater();
+        emit CriteriasChanged();
     }
+}
+
+void SearchCriteriasWidget::RemoveCriteriaWidget(SearchCriteriaWidget* widget)
+{
+    filterWidgets.erase(widget);
+    ui->criteriasList->removeWidget(widget);
+    widget->deleteLater();
 }
 
 std::unique_ptr<FindFilter> SearchCriteriasWidget::BuildFindFilter() const

@@ -190,7 +190,11 @@ void StaticPackageInformationBuilder::EndControlPropertiesSection()
 
 DAVA::UIComponent* StaticPackageInformationBuilder::BeginComponentPropertiesSection(DAVA::uint32 componentType, DAVA::uint32 componentIndex)
 {
-    return nullptr; // do nothing
+    std::shared_ptr<StaticControlInformation> ptr = stack.back().controlInformation;
+
+    ptr->AddComponent(static_cast<UIComponent::eType>(componentType));
+
+    return nullptr;
 }
 
 void StaticPackageInformationBuilder::EndComponentPropertiesSection()
