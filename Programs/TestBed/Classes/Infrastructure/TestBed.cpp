@@ -295,13 +295,13 @@ void TestBed::OnError()
 
 void TestBed::RegisterTests()
 {
-    new OverdrawTest(*this);
     new CoreV2Test(*this);
 #if defined(__DAVAENGINE_WINDOWS__)
     new DeviceManagerTest(*this);
 #endif
     new DeviceInfoTest(*this);
     new DlcTest(*this);
+    new OverdrawTest(*this);
     new UIScrollViewTest(*this);
     new NotificationScreen(*this);
     new SpeedLoadImagesTest(*this);

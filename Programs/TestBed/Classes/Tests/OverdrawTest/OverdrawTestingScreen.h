@@ -1,12 +1,14 @@
 #pragma once
 
 #include "UI/UIScreen.h"
+#include "Base/BaseTypes.h"
 
 class TestBed;
 
 namespace DAVA
 {
 class Scene;
+class UIButton;
 }
 
 namespace OverdrawPerformanceTester
@@ -26,8 +28,11 @@ public:
     OverdrawTestingScreen(TestBed& app_);
     virtual void LoadResources();
     virtual void UnloadResources();
+    void OnExitButton(DAVA::BaseObject* obj, void* data, void* callerData);
 
-protected:
+private:
+    DAVA::UIButton* exitButton = nullptr;
+    DAVA::Size2i initialVcsSize = {};
     DAVA::Scene* scene = nullptr;
     TestBed& app;
 
