@@ -211,6 +211,7 @@ void DocumentsModule::InitEditorSystems()
     systemsManager.reset(new EditorSystemsManager(GetAccessor()));
     systemsManager->dragStateChanged.Connect(this, &DocumentsModule::OnDragStateChanged);
     systemsManager->propertyChanged.Connect(this, &DocumentsModule::OnPropertyChanged);
+    systemsManager->editingRootControlsChanged.Connect(this, &DocumentsModule::OnEditingRootControlsChanged);
 }
 
 void DocumentsModule::InitCentralWidget()
@@ -1105,6 +1106,20 @@ void DocumentsModule::OnPropertyChanged(ControlNode* node, AbstractProperty* pro
     DocumentData* data = activeContext->GetData<DocumentData>();
     DVASSERT(nullptr != data);
     data->commandStack->Exec(std::make_unique<ChangePropertyValueCommand>(node, property, newValue));
+}
+
+void DocumentsModule::OnEditingRootControlsChanged(const SortedControlNodeSet& rootControls)
+{
+    using namespace DAVA::TArc;
+    ContextAccessor* accessor = GetAccessor();
+    DataContext* activeContext = accessor->GetActiveContext();
+    if (activeContext == nullptr)
+    {
+        return;
+    }
+    DocumentData* data = activeContext->GetData<DocumentData>();
+
+    data->editedRootControls = rootControls;
 }
 
 DECL_GUI_MODULE(DocumentsModule);

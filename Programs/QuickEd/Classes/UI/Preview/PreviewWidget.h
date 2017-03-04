@@ -114,7 +114,7 @@ private:
     void OnDrop(QDropEvent* event) override;
     void OnKeyPressed(QKeyEvent* event) override;
 
-    void OnEditingRootControlsChanged(const SortedPackageBaseNodeSet& rootControls);
+    void OnEditingRootControlsChanged(const SortedControlNodeSet& rootControls);
 
     float GetScaleFromWheelEvent(int ticksCount) const;
     float GetNextScale(float currentScale, int ticksCount) const;

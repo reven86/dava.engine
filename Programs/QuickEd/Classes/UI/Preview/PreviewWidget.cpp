@@ -805,17 +805,14 @@ void PreviewWidget::OnKeyPressed(QKeyEvent* event)
     }
 }
 
-void PreviewWidget::OnEditingRootControlsChanged(const SortedPackageBaseNodeSet& rootControls)
+void PreviewWidget::OnEditingRootControlsChanged(const SortedControlNodeSet& rootControls)
 {
     OnCancelFind();
 
     Vector<ControlNode*> controls;
     for (const auto& r : rootControls)
     {
-        if (ControlNode* control = dynamic_cast<ControlNode*>(r))
-        {
-            controls.push_back(control);
-        }
+        controls.push_back(r);
     }
     //findController->SetFindScope(document ? document->GetPackageFilePath() : "", controls);
 }

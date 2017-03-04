@@ -17,6 +17,7 @@ DAVA_VIRTUAL_REFLECTION_IMPL(DocumentData)
     .Field(redoTextPropertyName, &DocumentData::GetRedoText, nullptr)
     .Field(canClosePropertyName, &DocumentData::CanClose, nullptr)
     .Field(selectionPropertyName, &DocumentData::GetSelectedNodes, &DocumentData::SetSelectedNodes)
+    .Field(editedRootControlsPropertyName, &DocumentData::GetEditedRootControls, &DocumentData::SetEditedRootControls)
     .End();
 }
 
@@ -43,9 +44,19 @@ const SelectedNodes& DocumentData::GetSelectedNodes() const
     return selection.selectedNodes;
 }
 
+const SortedControlNodeSet& DocumentData::GetEditedRootControls() const
+{
+    return editedRootControls;
+}
+
 void DocumentData::SetSelectedNodes(const SelectedNodes& nodes)
 {
     selection.selectedNodes = nodes;
+}
+
+void DocumentData::SetEditedRootControls(const SortedControlNodeSet& controls)
+{
+    editedRootControls = controls;
 }
 
 QString DocumentData::GetName() const
@@ -116,3 +127,4 @@ const char* DocumentData::undoTextPropertyName = "undo text";
 const char* DocumentData::redoTextPropertyName = "redo text";
 const char* DocumentData::canClosePropertyName = "can close";
 const char* DocumentData::selectionPropertyName = "selection";
+const char* DocumentData::editedRootControlsPropertyName = "edited root controls";

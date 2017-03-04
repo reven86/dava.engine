@@ -212,7 +212,7 @@ void EditorSystemsManager::SetDisplayState(eDisplayState newDisplayState)
     displayStateChanged.Emit(displayState, previousDisplayState);
 }
 
-void EditorSystemsManager::OnEditingRootControlsChanged(const SortedPackageBaseNodeSet& rootControls)
+void EditorSystemsManager::OnEditingRootControlsChanged(const SortedControlNodeSet& rootControls)
 {
     const EngineContext* engineContext = GetEngineContext();
     engineContext->uiControlSystem->GetInputSystem()->SetCurrentScreen(engineContext->uiControlSystem->GetScreen()); // reset current screen
@@ -258,9 +258,9 @@ void EditorSystemsManager::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper,
     bool selectionChanged = std::find(fields.begin(), fields.end(), String(DocumentData::selectionPropertyName)) != fields.end();
     bool packageChanged = std::find(fields.begin(), fields.end(), String(DocumentData::packagePropertyName)) != fields.end();
 
-    Function<SortedPackageBaseNodeSet(const SelectedNodes&, const PackageNode*)> CreateRootControls = [](const SelectedNodes& selection, const PackageNode* package)
+    Function<SortedControlNodeSet(const SelectedNodes&, const PackageNode*)> CreateRootControls = [](const SelectedNodes& selection, const PackageNode* package)
     {
-        SortedPackageBaseNodeSet newRootControls(CompareByLCA);
+        SortedControlNodeSet newRootControls(CompareByLCA);
         if (selection.empty())
         {
             PackageControlsNode* controlsNode = package->GetPackageControlsNode();
@@ -285,7 +285,9 @@ void EditorSystemsManager::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper,
                 }
                 if (nullptr != root)
                 {
-                    newRootControls.insert(root);
+                    ControlNode* rootControl = dynamic_cast<ControlNode*>(root);
+                    DVASSERT(rootControl != nullptr);
+                    newRootControls.insert(rootControl);
                 }
             }
             return newRootControls;
@@ -302,7 +304,7 @@ void EditorSystemsManager::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper,
     {
         if (selectionChanged == false || selection.empty())
         {
-            SortedPackageBaseNodeSet newRootControls = CreateRootControls(selection, package);
+            SortedControlNodeSet newRootControls = CreateRootControls(selection, package);
             //TODO: remove this when systems will be separate TArc modules
             if (newRootControls.empty() && fields.empty())
             {
@@ -321,7 +323,7 @@ void EditorSystemsManager::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper,
         //if package was not changed and selection is empty -> do nothing
         if (selection.empty() == false)
         {
-            SortedPackageBaseNodeSet newRootControls = CreateRootControls(selection, package);
+            SortedControlNodeSet newRootControls = CreateRootControls(selection, package);
             //TODO: remove this when systems will be separate TArc modules
             if (newRootControls.empty() && packageChanged)
             {
