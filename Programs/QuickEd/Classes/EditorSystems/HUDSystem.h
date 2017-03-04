@@ -24,7 +24,7 @@ private:
     void OnDragStateChanged(EditorSystemsManager::eDragState currentState, EditorSystemsManager::eDragState previousState) override;
     void OnDisplayStateChanged(EditorSystemsManager::eDisplayState currentState, EditorSystemsManager::eDisplayState previousState) override;
 
-    void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
+    void OnSelectionChanged(const SelectedNodes& selection);
     void OnHighlightNode(const ControlNode* node);
 
     void OnMagnetLinesChanged(const DAVA::Vector<MagnetLineInfo>& magnetLines);
@@ -52,6 +52,5 @@ private:
     DAVA::Vector<DAVA::RefPtr<DAVA::UIControl>> magnetControls;
     DAVA::Vector<DAVA::RefPtr<DAVA::UIControl>> magnetTargetControls;
     SortedPackageBaseNodeSet sortedControlList;
-    SelectionContainer selectionContainer;
     DAVA::RefPtr<DAVA::UIControl> hoveredNodeControl;
 };

@@ -10,12 +10,12 @@ namespace DAVA
 namespace TArc
 {
 PlainTextEdit::PlainTextEdit(const ControlDescriptorBuilder<PlainTextEdit::Fields>& fields, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent)
-    : ControlProxy<QPlainTextEdit>(ControlDescriptor(fields), wrappersProcessor, model, parent)
+    : ControlProxyImpl<QPlainTextEdit>(ControlDescriptor(fields), wrappersProcessor, model, parent)
 {
 }
 
 PlainTextEdit::PlainTextEdit(const ControlDescriptorBuilder<PlainTextEdit::Fields>& fields, ContextAccessor* accessor, Reflection model, QWidget* parent)
-    : ControlProxy<QPlainTextEdit>(ControlDescriptor(fields), accessor, model, parent)
+    : ControlProxyImpl<QPlainTextEdit>(ControlDescriptor(fields), accessor, model, parent)
 {
 }
 

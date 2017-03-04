@@ -23,6 +23,10 @@ public:
     void Find(std::unique_ptr<FindFilter>&& filter);
     Q_SLOT void SetFindResults(const DAVA::Vector<FindItem>& results);
 
+signals:
+    void JumpToControl(const DAVA::FilePath& packagePath, const DAVA::String& controlName);
+    void JumpToPackage(const DAVA::FilePath& packagePath);
+
 public slots:
     void OnProjectChanged(Project* project);
 

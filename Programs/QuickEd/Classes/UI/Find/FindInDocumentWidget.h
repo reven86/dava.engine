@@ -8,7 +8,6 @@
 #include <QToolButton>
 
 #include "Base/BaseTypes.h"
-#include "Document/Document.h"
 #include "UI/Find/FindItem.h"
 
 class EditorSystemsManager;

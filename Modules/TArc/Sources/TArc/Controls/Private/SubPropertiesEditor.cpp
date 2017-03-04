@@ -1,3 +1,4 @@
+
 #include "TArc/Controls/SubPropertiesEditor.h"
 #include "TArc/Controls/DoubleSpinBox.h"
 #include "TArc/Controls/IntSpinBox.h"
@@ -24,13 +25,13 @@ TControl* CreateControl(typename TControl::Fields role, const String& fieldName,
 }
 
 SubPropertiesEditor::SubPropertiesEditor(const ControlDescriptorBuilder<Fields>& fields, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent)
-    : ControlProxy<QWidget>(fields, wrappersProcessor, model, parent)
+    : ControlProxyImpl<QWidget>(fields, wrappersProcessor, model, parent)
 {
     SetupControl(wrappersProcessor);
 }
 
 SubPropertiesEditor::SubPropertiesEditor(const ControlDescriptorBuilder<Fields>& fields, ContextAccessor* accessor, Reflection model, QWidget* parent)
-    : ControlProxy<QWidget>(fields, accessor, model, parent)
+    : ControlProxyImpl<QWidget>(fields, accessor, model, parent)
 {
     SetupControl(accessor);
 }

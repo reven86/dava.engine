@@ -122,6 +122,7 @@ HUDSystem::HUDSystem(EditorSystemsManager* parent)
     , sortedControlList(CompareByLCA)
 {
     hudControl->SetName(FastName("hudControl"));
+    systemsManager->highlightNode.Connect(this, &HUDSystem::OnHighlightNode);
     systemsManager->selectionChanged.Connect(this, &HUDSystem::OnSelectionChanged);
     systemsManager->magnetLinesChanged.Connect(this, &HUDSystem::OnMagnetLinesChanged);
     systemsManager->packageChanged.Connect(this, &HUDSystem::OnPackageChanged);
@@ -134,20 +135,12 @@ HUDSystem::~HUDSystem()
     systemsManager->GetRootControl()->RemoveControl(hudControl.Get());
 }
 
-void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
+void HUDSystem::OnSelectionChanged(const SelectedNodes& selection)
 {
-    selectionContainer.MergeSelection(selected, deselected);
-    for (auto node : deselected)
-    {
-        ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
-        if (nullptr != controlNode)
-        {
-            selectionHudMap.erase(controlNode);
-            sortedControlList.erase(controlNode);
-        }
-    }
+    sortedControlList.clear();
+    selectionHudMap.clear();
 
-    for (auto node : selected)
+    for (auto node : selection)
     {
         ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
         if (controlNode != nullptr)
@@ -168,7 +161,7 @@ void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const Selected
 
 void HUDSystem::ProcessInput(UIEvent* currentInput)
 {
-    bool findPivot = selectionContainer.selectedNodes.size() == 1 && IsKeyPressed(KeyboardProxy::KEY_CTRL) && IsKeyPressed(KeyboardProxy::KEY_ALT);
+    bool findPivot = selectionHudMap.size() == 1 && IsKeyPressed(KeyboardProxy::KEY_CTRL) && IsKeyPressed(KeyboardProxy::KEY_ALT);
     eSearchOrder searchOrder = findPivot ? SEARCH_BACKWARD : SEARCH_FORWARD;
     hoveredPoint = currentInput->point;
     UIEvent::Phase phase = currentInput->phase;
@@ -317,6 +310,10 @@ void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
 
 void HUDSystem::ProcessCursor(const Vector2& pos, eSearchOrder searchOrder)
 {
+    if (systemsManager->GetDragState() == EditorSystemsManager::SelectByRect)
+    {
+        return;
+    }
     SetNewArea(GetControlArea(pos, searchOrder));
 }
 

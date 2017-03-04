@@ -10,6 +10,11 @@
 #include <QStack>
 #include <QPointer>
 
+namespace DAVA
+{
+class Any;
+}
+
 class Document;
 class ControlNode;
 class StyleSheetNode;
@@ -30,13 +35,14 @@ public:
     PackageModel* GetPackageModel() const;
     using ExpandedIndexes = QModelIndexList;
 
+    void OnSelectionChanged(const DAVA::Any& selection);
+
 signals:
-    void SelectedNodesChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
+    void SelectedNodesChanged(const SelectedNodes& selection);
     void CurrentIndexChanged(PackageBaseNode* node);
 
 public slots:
     void OnDocumentChanged(Document* context);
-    void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OnCopy();
     void OnPaste();
     void OnCut();
@@ -58,7 +64,7 @@ private slots:
     void OnCurrentIndexChanged(const QModelIndex& index, const QModelIndex& previous);
 
 private:
-    void SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected);
+    void SetSelectedNodes(const SelectedNodes& selection);
     void CollectExpandedIndexes(PackageBaseNode* node);
     void MoveNodeUpDown(bool up);
     void MoveNodeImpl(PackageBaseNode* node, PackageBaseNode* dest, DAVA::uint32 destIndex);
@@ -79,7 +85,7 @@ private:
     ExpandedIndexes GetExpandedIndexes() const;
     void RestoreExpandedIndexes(const ExpandedIndexes& indexes);
 
-    QPointer<Document> document;
+    Document* document = nullptr;
     QAction* importPackageAction = nullptr;
     QAction* copyAction = nullptr;
     QAction* pasteAction = nullptr;

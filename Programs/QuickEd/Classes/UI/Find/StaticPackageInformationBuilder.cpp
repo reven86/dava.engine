@@ -1,5 +1,7 @@
 #include "StaticPackageInformationBuilder.h"
 #include "Utils/Utils.h"
+#include "UI/UIControl.h"
+
 using namespace DAVA;
 
 struct StaticPackageInformationBuilder::Description

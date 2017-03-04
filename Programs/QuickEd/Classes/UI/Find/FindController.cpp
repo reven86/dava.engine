@@ -1,5 +1,4 @@
 #include "UI/Find/FindController.h"
-#include "Document/Document.h"
 #include "UI/Find/Finder.h"
 #include "UI/UIEvent.h"
 #include "UI/UIControl.h"
@@ -95,6 +94,6 @@ void FindController::MoveSelection(int32 step)
             context.currentSelection = 0;
         }
 
-        previewWidget->SelectControl(context.results[context.currentSelection]);
+        //previewWidget->SelectControl(context.results[context.currentSelection]);
     }
 }

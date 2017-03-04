@@ -6,9 +6,10 @@
 
 #include "Render/Renderer.h"
 #include "Render/DynamicBufferAllocator.h"
-
 #include "Render/ShaderCache.h"
 #include "Render/VisibilityQueryResults.h"
+
+#include "Time/SystemTimer.h"
 
 #include "Debug/ProfilerGPU.h"
 #include "Debug/ProfilerMarkerNames.h"
@@ -184,6 +185,8 @@ void RenderSystem2D::BeginFrame()
     }
 
     Setup2DMatrices();
+
+    globalTime = SystemTimer::GetFrameTimestamp();
 }
 
 void RenderSystem2D::EndFrame()
@@ -624,6 +627,7 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
         }
         Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_PROJ, &projMatrix, static_cast<pointer_size>(projMatrixSemantic));
         Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_VIEW, &viewMatrix, static_cast<pointer_size>(viewMatrixSemantic));
+        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_GLOBAL_TIME, &globalTime, reinterpret_cast<pointer_size>(&globalTime));
 
         if (currentClip.dx > 0.f && currentClip.dy > 0.f)
         {
