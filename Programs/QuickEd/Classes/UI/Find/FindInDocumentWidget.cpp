@@ -1,11 +1,6 @@
 #include "FindInDocumentWidget.h"
 #include "SearchCriteriasWidget.h"
-#include "UI/Find/Finder.h"
 #include "Logger/Logger.h"
-
-#include <QCheckBox>
-#include <QTextEdit>
-#include <QMenu>
 
 using namespace DAVA;
 

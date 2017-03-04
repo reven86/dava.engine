@@ -1,19 +1,10 @@
 #pragma once
 
 #include <QDialog>
-#include <QVBoxLayout>
-#include <QLabel>
-#include <QWidget>
-#include <QPointer>
-#include <QPushButton>
-#include <QScrollArea>
 
-#include "Base/BaseTypes.h"
-#include "UI/Find/FindItem.h"
+#include <Base/BaseTypes.h>
 
-class EditorSystemsManager;
 class FindFilter;
-class SearchCriteriasWidget;
 
 namespace Ui
 {

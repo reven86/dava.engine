@@ -1,6 +1,5 @@
 #include "FindInProjectDialog.h"
 #include "SearchCriteriasWidget.h"
-#include "UI/Find/Finder.h"
 #include "Logger/Logger.h"
 
 #include "ui_FindInProjectDialog.h"

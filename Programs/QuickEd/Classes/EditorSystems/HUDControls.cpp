@@ -1,5 +1,4 @@
 #include "UI/Layouts/UIAnchorComponent.h"
-#include "UI/Layouts/UISizePolicyComponent.h"
 #include "EditorSystems/HUDControls.h"
 #include "Model/ControlProperties/RootProperty.h"
 #include "Model/ControlProperties/VisibleValueProperty.h"

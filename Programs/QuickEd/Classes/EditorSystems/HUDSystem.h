@@ -47,7 +47,6 @@ private:
     DAVA::Vector2 hoveredPoint;
 
     DAVA::Map<ControlNode*, std::unique_ptr<HUD>> selectionHudMap;
-    DAVA::Map<ControlNode*, std::unique_ptr<HUD>> searchHudMap;
     DAVA::RefPtr<DAVA::UIControl> selectionRectControl;
     DAVA::Vector<DAVA::RefPtr<DAVA::UIControl>> magnetControls;
     DAVA::Vector<DAVA::RefPtr<DAVA::UIControl>> magnetTargetControls;

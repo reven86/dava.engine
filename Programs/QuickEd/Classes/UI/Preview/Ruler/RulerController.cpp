@@ -9,11 +9,6 @@ RulerController::RulerController(QObject* parent)
     SetupInitialRulerSettings(verticalRulerSettings);
 }
 
-RulerController::~RulerController()
-{
-    DAVA::Logger::Debug("%s", __FUNCTION__);
-}
-
 void RulerController::SetupInitialRulerSettings(RulerSettings& settings)
 {
     static const int defaultSmallTicksDelta = 10;

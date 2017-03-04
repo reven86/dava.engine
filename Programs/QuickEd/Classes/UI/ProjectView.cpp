@@ -25,8 +25,8 @@ MainWindow::ProjectView::ProjectView(MainWindow* mainWindow_)
     mainWindow->ui->packageWidget->treeView->addAction(mainWindow->ui->actionJumpToPrototype);
     mainWindow->ui->packageWidget->treeView->addAction(mainWindow->ui->actionFindPrototypeInstances);
 
-    /*connect(mainWindow->ui->findWidget, &FindWidget::JumpToControl, this, &MainWindow::ProjectView::JumpToControl);
-    connect(mainWindow->ui->findWidget, &FindWidget::JumpToPackage, this, &MainWindow::ProjectView::JumpToPackage);*/
+    connect(mainWindow->ui->findResultsWidget, &FindResultsWidget::JumpToControl, this, &MainWindow::ProjectView::JumpToControl);
+    connect(mainWindow->ui->findResultsWidget, &FindResultsWidget::JumpToPackage, this, &MainWindow::ProjectView::JumpToPackage);
 }
 
 void MainWindow::ProjectView::SetLanguages(const QStringList& availableLangsCodes, const QString& currentLangCode)

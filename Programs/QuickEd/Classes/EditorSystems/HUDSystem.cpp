@@ -14,9 +14,6 @@
 #include "Model/ControlProperties/RootProperty.h"
 #include "Model/ControlProperties/VisibleValueProperty.h"
 
-#include "UI/Find/ControlNodeInformation.h"
-#include "UI/Find/ControlInformation.h"
-
 using namespace DAVA;
 
 namespace
