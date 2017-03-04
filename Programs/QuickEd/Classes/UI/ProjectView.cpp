@@ -20,13 +20,8 @@ MainWindow::ProjectView::ProjectView(MainWindow* mainWindow_)
     connect(mainWindow->ui->actionFindPrevious, &QAction::triggered, mainWindow->ui->previewWidget, &PreviewWidget::OnFindPrevious);*/
     connect(mainWindow->ui->actionFindInProject, &QAction::triggered, this, &MainWindow::ProjectView::FindInProject);
 
-    connect(this, &MainWindow::ProjectView::ProjectChanged, mainWindow->ui->findResultsWidget, &FindResultsWidget::OnProjectChanged);
-
     mainWindow->ui->packageWidget->treeView->addAction(mainWindow->ui->actionJumpToPrototype);
     mainWindow->ui->packageWidget->treeView->addAction(mainWindow->ui->actionFindPrototypeInstances);
-
-    connect(mainWindow->ui->findResultsWidget, &FindResultsWidget::JumpToControl, this, &MainWindow::ProjectView::JumpToControl);
-    connect(mainWindow->ui->findResultsWidget, &FindResultsWidget::JumpToPackage, this, &MainWindow::ProjectView::JumpToPackage);
 }
 
 void MainWindow::ProjectView::SetLanguages(const QStringList& availableLangsCodes, const QString& currentLangCode)
@@ -170,11 +165,6 @@ void MainWindow::ProjectView::OnCurrentLanguageChanged(int newLanguageIndex)
 void MainWindow::ProjectView::SelectFile(const QString& filePath)
 {
     mainWindow->ui->fileSystemDockWidget->SelectFile(filePath);
-}
-
-void MainWindow::ProjectView::FindControls(std::unique_ptr<FindFilter>&& filter)
-{
-    mainWindow->ui->findResultsWidget->Find(std::move(filter));
 }
 
 void MainWindow::ProjectView::ShowFindInDocument()

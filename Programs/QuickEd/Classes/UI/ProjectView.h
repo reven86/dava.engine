@@ -19,7 +19,6 @@ public:
 
     void SetResourceDirectory(const QString& path);
     void SelectFile(const QString& filePath);
-    void FindControls(std::unique_ptr<FindFilter>&& filter);
 
     void ShowFindInDocument();
     void CancelFindInDocument();
@@ -41,9 +40,6 @@ signals:
     void FindPrototypeInstances();
     void FindInProject();
     void ProjectChanged(Project* project);
-
-    void JumpToControl(const DAVA::FilePath& packagePath, const DAVA::String& controlName);
-    void JumpToPackage(const DAVA::FilePath& packagePath);
 
 public slots:
     void OnProjectChanged(Project* project);

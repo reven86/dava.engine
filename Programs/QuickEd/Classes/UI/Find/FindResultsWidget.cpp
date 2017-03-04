@@ -1,7 +1,7 @@
 #include "FindResultsWidget.h"
 
 #include "Modules/LegacySupportModule/Private/Document.h"
-#include "Modules/LegacySupportModule/Private/Project.h"
+#include "Modules/ProjectModule/ProjectData.h"
 #include "UI/Find/Finder.h"
 
 #include <QtTools/ProjectInformation/FileSystemCache.h>
@@ -16,7 +16,7 @@
 using namespace DAVA;
 
 FindResultsWidget::FindResultsWidget(QWidget* parent)
-    : QDockWidget(parent)
+    : QWidget(parent)
 {
     qRegisterMetaType<FindItem>("FindItem");
 
@@ -30,25 +30,22 @@ FindResultsWidget::FindResultsWidget(QWidget* parent)
 
 FindResultsWidget::~FindResultsWidget() = default;
 
-void FindResultsWidget::Find(std::unique_ptr<FindFilter>&& filter)
+void FindResultsWidget::Find(std::shared_ptr<FindFilter> filter, ProjectData* projectData, const QStringList& files)
 {
     if (finder == nullptr)
     {
-        model->removeRows(0, model->rowCount());
+        ClearResults();
+
         setVisible(true);
         raise();
 
-        if (project != nullptr)
-        {
-            QStringList files = project->GetFileSystemCache()->GetFiles("yaml");
-            finder = new Finder(std::move(filter), &(project->GetPrototypes()));
+        finder = new Finder(std::move(filter), &(projectData->GetPrototypes()));
 
-            connect(finder, &Finder::ProgressChanged, this, &FindResultsWidget::OnProgressChanged, Qt::QueuedConnection);
-            connect(finder, &Finder::ItemFound, this, &FindResultsWidget::OnItemFound, Qt::QueuedConnection);
-            connect(finder, &Finder::Finished, this, &FindResultsWidget::OnFindFinished, Qt::QueuedConnection);
+        connect(finder, &Finder::ProgressChanged, this, &FindResultsWidget::OnProgressChanged, Qt::QueuedConnection);
+        connect(finder, &Finder::ItemFound, this, &FindResultsWidget::OnItemFound, Qt::QueuedConnection);
+        connect(finder, &Finder::Finished, this, &FindResultsWidget::OnFindFinished, Qt::QueuedConnection);
 
-            QtConcurrent::run(QtHelpers::InvokeInAutoreleasePool, [this, files]() { finder->Process(files); });
-        }
+        QtConcurrent::run(QtHelpers::InvokeInAutoreleasePool, [this, files]() { finder->Process(files); });
     }
 }
 
@@ -56,7 +53,8 @@ void FindResultsWidget::SetFindResults(const DAVA::Vector<FindItem>& results)
 {
     if (finder == nullptr)
     {
-        model->removeRows(0, model->rowCount());
+        ClearResults();
+
         setVisible(true);
         raise();
 
@@ -69,14 +67,16 @@ void FindResultsWidget::SetFindResults(const DAVA::Vector<FindItem>& results)
     }
 }
 
-void FindResultsWidget::OnProjectChanged(Project* project_)
+void FindResultsWidget::StopFind()
 {
     if (finder)
     {
         finder->Stop();
     }
+}
 
-    project = project_;
+void FindResultsWidget::ClearResults()
+{
     model->removeRows(0, model->rowCount());
 }
 
@@ -116,18 +116,15 @@ void FindResultsWidget::OnFindFinished()
 
 void FindResultsWidget::OnActivated(const QModelIndex& index)
 {
-    if (project)
+    QString path = index.data(PACKAGE_DATA).toString();
+    if (index.data(CONTROL_DATA).isValid())
     {
-        QString path = index.data(PACKAGE_DATA).toString();
-        if (index.data(CONTROL_DATA).isValid())
-        {
-            QString control = index.data(CONTROL_DATA).toString();
-            emit JumpToControl(FilePath(path.toStdString()), control.toStdString());
-        }
-        else
-        {
-            emit JumpToPackage(FilePath(path.toStdString()));
-        }
+        QString control = index.data(CONTROL_DATA).toString();
+        emit JumpToControl(FilePath(path.toStdString()), control.toStdString());
+    }
+    else
+    {
+        emit JumpToPackage(FilePath(path.toStdString()));
     }
 }
 
@@ -146,5 +143,5 @@ bool FindResultsWidget::eventFilter(QObject* obj, QEvent* event)
         }
     }
 
-    return QDockWidget::eventFilter(obj, event);
+    return QWidget::eventFilter(obj, event);
 }

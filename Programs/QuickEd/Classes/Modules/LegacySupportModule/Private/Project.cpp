@@ -256,13 +256,3 @@ void Project::OnFontPresetChanged()
                                  data->RefreshAllControlProperties();
                              });
 }
-
-const FileSystemCache* Project::GetFileSystemCache() const
-{
-    using namespace DAVA::TArc;
-    DataContext* globalContext = accessor->GetGlobalContext();
-    DVASSERT(nullptr != globalContext);
-    const FileSystemCacheData* fileSystemCacheData = globalContext->GetData<FileSystemCacheData>();
-    DVASSERT(nullptr != fileSystemCacheData);
-    return fileSystemCacheData->GetFileSystemCache();
-}

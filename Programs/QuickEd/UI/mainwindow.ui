@@ -226,14 +226,6 @@
     <number>2</number>
    </attribute>
   </widget>
-  <widget class="FindResultsWidget" name="findResultsWidget">
-   <property name="windowTitle">
-    <string>Find</string>
-   </property>
-   <attribute name="dockWidgetArea">
-    <number>8</number>
-   </attribute>
-  </widget>
   <action name="actionExit">
    <property name="text">
     <string>&amp;Exit</string>
@@ -384,12 +376,6 @@
    <class>StyleSheetInspectorWidget</class>
    <extends>QDockWidget</extends>
    <header>UI/StyleSheetInspector/StyleSheetInspectorWidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>FindResultsWidget</class>
-   <extends>QDockWidget</extends>
-   <header>UI/Find/FindResultsWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

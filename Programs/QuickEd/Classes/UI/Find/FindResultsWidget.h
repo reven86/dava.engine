@@ -1,6 +1,6 @@
 #pragma once
 
-#include <QDockWidget>
+#include <QWidget>
 #include <QPointer>
 #include <QStandardItemModel>
 #include "ui_FindResultsWidget.h"
@@ -10,25 +10,26 @@
 #include "Base/BaseTypes.h"
 
 class Document;
-class Project;
+class ProjectData;
+class FileSystemCache;
 class Finder;
 
-class FindResultsWidget : public QDockWidget
+class FindResultsWidget : public QWidget
 {
     Q_OBJECT
 public:
     FindResultsWidget(QWidget* parent = nullptr);
     ~FindResultsWidget() override;
 
-    void Find(std::unique_ptr<FindFilter>&& filter);
+    void Find(std::shared_ptr<FindFilter> filter, ProjectData* projectData, const QStringList& files);
     Q_SLOT void SetFindResults(const DAVA::Vector<FindItem>& results);
+
+    void StopFind();
+    void ClearResults();
 
 signals:
     void JumpToControl(const DAVA::FilePath& packagePath, const DAVA::String& controlName);
     void JumpToPackage(const DAVA::FilePath& packagePath);
-
-public slots:
-    void OnProjectChanged(Project* project);
 
 private slots:
     void OnItemFound(FindItem item);
@@ -49,6 +50,5 @@ private:
     std::unique_ptr<FindFilter> filter;
     QStandardItemModel* model = nullptr;
 
-    Project* project = nullptr;
     Finder* finder = nullptr;
 };

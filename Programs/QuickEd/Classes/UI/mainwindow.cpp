@@ -121,7 +121,6 @@ void MainWindow::SetupViewMenu()
                             << ui->packageWidget->toggleViewAction()
                             << ui->libraryWidget->toggleViewAction()
                             << ui->styleSheetInspectorWidget->toggleViewAction()
-                            << ui->findResultsWidget->toggleViewAction()
                             << ui->mainToolbar->toggleViewAction()
                             << ui->toolBarGlobal->toggleViewAction();
 

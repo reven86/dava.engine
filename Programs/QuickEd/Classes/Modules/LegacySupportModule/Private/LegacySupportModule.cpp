@@ -163,8 +163,6 @@ void LegacySupportModule::InitMainWindow()
     MainWindow* mainWindow = new MainWindow();
     MainWindow::ProjectView* projectView = mainWindow->GetProjectView();
 
-    connections.AddConnection(projectView, &MainWindow::ProjectView::JumpToControl, MakeFunction(this, &LegacySupportModule::JumpToControl));
-    connections.AddConnection(projectView, &MainWindow::ProjectView::JumpToPackage, MakeFunction(this, &LegacySupportModule::JumpToPackage));
     connections.AddConnection(projectView, &MainWindow::ProjectView::JumpToPrototype, MakeFunction(this, &LegacySupportModule::OnJumpToPrototype));
     connections.AddConnection(projectView, &MainWindow::ProjectView::FindPrototypeInstances, MakeFunction(this, &LegacySupportModule::OnFindPrototypeInstances));
     connections.AddConnection(projectView, &MainWindow::ProjectView::FindInProject, MakeFunction(this, &LegacySupportModule::OnFindInProject));
@@ -232,7 +230,8 @@ void LegacySupportModule::OnFindPrototypeInstances()
             MainWindow* mainWindow = qobject_cast<MainWindow*>(window);
             MainWindow::ProjectView* view = mainWindow->GetProjectView();
 
-            view->FindControls(std::make_unique<PrototypeUsagesFilter>(path.GetFrameworkPath(), FastName(name)));
+            std::shared_ptr<FindFilter> filter = std::make_shared<PrototypeUsagesFilter>(path.GetFrameworkPath(), FastName(name));
+            InvokeOperation(QEGlobal::FindInProject.ID, filter);
         }
     }
 }
@@ -246,7 +245,7 @@ void LegacySupportModule::OnFindInProject()
         MainWindow* mainWindow = qobject_cast<MainWindow*>(window);
         MainWindow::ProjectView* view = mainWindow->GetProjectView();
 
-        view->FindControls(findInProjectDialog.BuildFindFilter());
+        InvokeOperation(QEGlobal::FindInProject.ID, std::shared_ptr<FindFilter>(findInProjectDialog.BuildFindFilter()));
     }
 }
 
