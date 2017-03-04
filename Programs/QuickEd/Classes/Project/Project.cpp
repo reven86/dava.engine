@@ -9,6 +9,7 @@
 #include "Project/EditorLocalizationSystem.h"
 #include "UI/ProjectView.h"
 #include "UI/Find/FindFilter.h"
+#include "UI/Find/FindInProjectDialog.h"
 
 #include "QtTools/ReloadSprites/SpritesPacker.h"
 #include "QtTools/ProjectInformation/FileSystemCache.h"
@@ -104,6 +105,7 @@ Project::Project(MainWindow::ProjectView* view_, const ProjectProperties& proper
     connect(view, &MainWindow::ProjectView::FindFileInProject, this, &Project::OnFindFileInProject);
     connect(view, &MainWindow::ProjectView::JumpToPrototype, this, &Project::OnJumpToPrototype);
     connect(view, &MainWindow::ProjectView::FindPrototypeInstances, this, &Project::OnFindPrototypeInstances);
+    connect(view, &MainWindow::ProjectView::FindInProject, this, &Project::OnFindInProject);
     connect(view, &MainWindow::ProjectView::SelectionChanged, this, &Project::OnSelectionChanged);
 
     connect(this, &Project::CurrentLanguageChanged, view, &MainWindow::ProjectView::SetCurrentLanguage);
@@ -392,6 +394,15 @@ void Project::OnFindPrototypeInstances()
 
             view->FindControls(std::make_unique<PrototypeUsagesFilter>(path.GetFrameworkPath(), FastName(name)));
         }
+    }
+}
+
+void Project::OnFindInProject()
+{
+    FindInProjectDialog* findInProjectDialog = new FindInProjectDialog();
+    if (findInProjectDialog->exec() == QDialog::Accepted)
+    {
+        view->FindControls(findInProjectDialog->BuildFindFilter());
     }
 }
 

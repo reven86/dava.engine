@@ -26,6 +26,7 @@ public:
 
     void ShowFindInDocument();
     void CancelFindInDocument();
+    void ShowFindInProject();
 
     void ExecDialogReloadSprites(SpritesPacker* packer);
 
@@ -44,6 +45,7 @@ signals:
     void FindFileInProject();
     void JumpToPrototype();
     void FindPrototypeInstances();
+    void FindInProject();
     void SelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void ProjectChanged(Project* project);
 

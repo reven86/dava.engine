@@ -30,6 +30,7 @@ signals:
     void OnFindFilterReady(std::shared_ptr<FindFilter> filter);
     void OnFindNext();
     void OnFindAll();
+    void OnCancelFind();
 
 private slots:
     void OnFindClicked();
@@ -40,7 +41,6 @@ protected:
     bool event(QEvent* event) override;
 
 private:
-    Q_SLOT void OnShown();
     void EmitFilterChanges();
 
     Document* document = nullptr;

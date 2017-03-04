@@ -92,6 +92,7 @@ PreviewWidget::PreviewWidget(QWidget* parent)
     connect(findInDocumentWidget, &FindInDocumentWidget::OnFindFilterReady, findController, &FindController::SetFilter);
     connect(findInDocumentWidget, &FindInDocumentWidget::OnFindNext, findController, &FindController::SelectNextFindResult);
     connect(findInDocumentWidget, &FindInDocumentWidget::OnFindAll, findController, &FindController::FindAll);
+    connect(findInDocumentWidget, &FindInDocumentWidget::OnCancelFind, this, &PreviewWidget::OnCancelFind);
 
     findInDocumentWidget->hide();
 }
@@ -911,18 +912,15 @@ void PreviewWidget::OnEditingRootControlsChanged(const SortedPackageBaseNodeSet&
 {
     OnCancelFind();
 
-    if (document)
+    Vector<ControlNode*> controls;
+    for (const auto& r : rootControls)
     {
-        Vector<ControlNode*> controls;
-        for (const auto& r : rootControls)
+        if (ControlNode* control = dynamic_cast<ControlNode*>(r))
         {
-            if (ControlNode* control = dynamic_cast<ControlNode*>(r))
-            {
-                controls.push_back(control);
-            }
+            controls.push_back(control);
         }
-        findController->SetFindScope(document->GetPackageFilePath(), controls);
     }
+    findController->SetFindScope(document ? document->GetPackageFilePath() : "", controls);
 }
 
 float PreviewWidget::GetScaleFromWheelEvent(int ticksCount) const

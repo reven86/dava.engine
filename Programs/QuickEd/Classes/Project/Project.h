@@ -84,6 +84,7 @@ private:
     void OnFindFileInProject();
     void OnJumpToPrototype();
     void OnFindPrototypeInstances();
+    void OnFindInProject();
     void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
 
     ProjectProperties properties;

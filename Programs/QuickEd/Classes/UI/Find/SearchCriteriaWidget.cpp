@@ -53,6 +53,7 @@ public:
         layout->addSpacing(10);
         layout->addWidget(value);
         layout->addStretch();
+        layout->addSpacing(10);
         layout->addWidget(caseSensitive);
 
         layout->setMargin(0);

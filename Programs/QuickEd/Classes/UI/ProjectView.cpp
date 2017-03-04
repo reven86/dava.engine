@@ -22,6 +22,7 @@ MainWindow::ProjectView::ProjectView(MainWindow* mainWindow_)
     connect(mainWindow->ui->actionFindInDocument, &QAction::triggered, this, &MainWindow::ProjectView::ShowFindInDocument);
     connect(mainWindow->ui->actionFindNext, &QAction::triggered, mainWindow->ui->previewWidget, &PreviewWidget::OnFindNext);
     connect(mainWindow->ui->actionFindPrevious, &QAction::triggered, mainWindow->ui->previewWidget, &PreviewWidget::OnFindPrevious);
+    connect(mainWindow->ui->actionFindInProject, &QAction::triggered, this, &MainWindow::ProjectView::FindInProject);
 
     connect(mainWindow->ui->previewWidget, &PreviewWidget::SelectionChanged, this, &MainWindow::ProjectView::OnSelectionChanged);
 

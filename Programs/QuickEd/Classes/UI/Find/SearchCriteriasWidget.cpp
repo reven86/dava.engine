@@ -12,6 +12,7 @@ SearchCriteriasWidget::SearchCriteriasWidget(QWidget* parent)
 {
     ui->setupUi(this);
 
+    ui->criteriasList->setAlignment(Qt::AlignTop);
     Reset();
 }
 

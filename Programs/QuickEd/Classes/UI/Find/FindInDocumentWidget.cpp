@@ -78,14 +78,13 @@ bool FindInDocumentWidget::event(QEvent* event)
             OnFindClicked();
             return true;
         }
+        else if (ke->key() == Qt::Key_Escape)
+        {
+            emit OnCancelFind();
+        }
     }
 
     return QWidget::event(event);
-}
-
-void FindInDocumentWidget::OnShown()
-{
-    findFiltersWidget->Reset();
 }
 
 void FindInDocumentWidget::EmitFilterChanges()
