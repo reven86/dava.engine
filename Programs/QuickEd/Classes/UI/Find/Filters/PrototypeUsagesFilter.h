@@ -1,7 +1,8 @@
 #pragma once
 
-#include "UI/Find/Filters/FindFilter.h"
 #include <Base/BaseTypes.h>
+#include <Base/FastName.h>
+#include "UI/Find/Filters/FindFilter.h"
 
 class PrototypeUsagesFilter : public FindFilter
 {

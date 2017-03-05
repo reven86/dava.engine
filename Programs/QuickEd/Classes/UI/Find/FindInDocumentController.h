@@ -15,7 +15,6 @@ class FindInDocumentController : public QObject, public DAVA::TArc::DataListener
     Q_OBJECT
 public:
     FindInDocumentController(DocumentsModule* documentsModule, MainWindow* mainWindow, FindInDocumentWidget* findInDocumentWidget);
-    ~FindInDocumentController() override;
 
 private slots:
     void ShowFindInDocumentWidget();

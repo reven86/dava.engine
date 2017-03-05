@@ -1,4 +1,5 @@
 #include "UI/Find/Widgets/FindInDocumentWidget.h"
+#include "UI/Find/Filters/FindFilter.h"
 #include "UI/Find/Widgets/CompositeFindFilterWidget.h"
 
 #include <QKeyEvent>
@@ -16,7 +17,7 @@ FindInDocumentWidget::FindInDocumentWidget(QWidget* parent)
 
     menu = new QMenu(this);
     findAction = new QAction(tr("Find"), this);
-    findAllAction = new QAction(tr("Find all"), this);
+    findAllAction = new QAction(tr("Find All"), this);
     menu->addAction(findAction);
     menu->addAction(findAllAction);
 

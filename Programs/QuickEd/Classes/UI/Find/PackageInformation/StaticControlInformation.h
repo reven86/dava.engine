@@ -22,7 +22,7 @@ public:
     void VisitChildren(const DAVA::Function<void(const ControlInformation*)>& visitor) const override;
 
     // for now returns a value ONLY if it is set explicitly
-    VariantType GetControlPropertyValue(const InspMember* member) const override;
+    DAVA::VariantType GetControlPropertyValue(const DAVA::InspMember* member) const override;
 
     StaticControlInformation* GetParent() const;
     void SetParent(StaticControlInformation* parent);

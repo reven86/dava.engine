@@ -14,7 +14,6 @@ class FindFilterWidget : public QWidget
     Q_OBJECT
 public:
     FindFilterWidget(QWidget* parent = nullptr);
-    ~FindFilterWidget() override;
 
     std::shared_ptr<FindFilter> BuildFindFilter() const;
 

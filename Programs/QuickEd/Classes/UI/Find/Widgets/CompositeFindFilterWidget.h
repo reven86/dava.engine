@@ -3,6 +3,7 @@
 #include <Base/BaseTypes.h>
 #include <QFrame>
 
+class FindFilter;
 class FindFilterWidget;
 
 namespace Ui

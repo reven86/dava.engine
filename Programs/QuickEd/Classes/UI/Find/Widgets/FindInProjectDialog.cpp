@@ -1,6 +1,6 @@
 #include "UI/Find/Widgets/FindInProjectDialog.h"
+#include "UI/Find/Filters/FindFilter.h"
 #include "UI/Find/Widgets/CompositeFindFilterWidget.h"
-#include "Logger/Logger.h"
 
 #include "ui_FindInProjectDialog.h"
 
@@ -16,9 +16,7 @@ FindInProjectDialog::FindInProjectDialog(QWidget* parent)
     QObject::connect(ui->cancelButton, SIGNAL(clicked()), this, SLOT(reject()));
 }
 
-FindInProjectDialog::~FindInProjectDialog()
-{
-}
+FindInProjectDialog::~FindInProjectDialog() = default;
 
 std::unique_ptr<FindFilter> FindInProjectDialog::BuildFindFilter() const
 {

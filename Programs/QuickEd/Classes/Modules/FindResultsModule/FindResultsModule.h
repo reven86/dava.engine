@@ -1,9 +1,14 @@
 #pragma once
 
+#include <Base/BaseTypes.h>
 #include <TArc/Core/ClientModule.h>
+#include <TArc/DataProcessing/DataListener.h>
 #include <TArc/Utils/QtConnections.h>
 
+#include <memory>
+
 class FindResultsWidget;
+class FindFilter;
 class LogWidget;
 class LoggerOutputObject;
 

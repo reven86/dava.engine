@@ -4,6 +4,7 @@
 #include "UI/Find/Filters/HasComponentFilter.h"
 #include "UI/Find/Filters/HasClassFilter.h"
 #include "UI/Find/Filters/NegationFilter.h"
+#include "UI/Find/Widgets/EmptyFindFilterEditor.h"
 #include "UI/Find/Widgets/EnumFindFilterEditor.h"
 #include "UI/Find/Widgets/RegExpStringFindFilterEditor.h"
 #include "UI/Find/Widgets/StringFindFilterEditor.h"
@@ -156,10 +157,6 @@ FindFilterWidget::FindFilterWidget(QWidget* parent)
     QObject::connect(negationButton, SIGNAL(toggled(bool)), this, SIGNAL(FilterChanged()));
 
     FilterSelected(0);
-}
-
-FindFilterWidget::~FindFilterWidget()
-{
 }
 
 std::shared_ptr<FindFilter> FindFilterWidget::BuildFindFilter() const

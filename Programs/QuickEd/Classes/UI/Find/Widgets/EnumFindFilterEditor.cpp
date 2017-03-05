@@ -1,4 +1,5 @@
 #include "UI/Find/Widgets/EnumFindFilterEditor.h"
+#include "UI/Find/Filters/FindFilter.h"
 
 using namespace DAVA;
 

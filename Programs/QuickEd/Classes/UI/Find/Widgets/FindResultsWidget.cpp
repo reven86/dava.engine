@@ -22,6 +22,7 @@ FindResultsWidget::FindResultsWidget(QWidget* parent)
     ui.treeView->setModel(model);
     connect(ui.treeView, &QTreeView::activated, this, &FindResultsWidget::OnActivated);
     ui.treeView->installEventFilter(this);
+    ui.status->setVisible(false);
 }
 
 FindResultsWidget::~FindResultsWidget() = default;
@@ -76,7 +77,8 @@ void FindResultsWidget::OnItemFound(FindItem item)
 
 void FindResultsWidget::OnProgressChanged(int filesProcessed, int totalFiles)
 {
-    this->setWindowTitle(QString("Find - %1%").arg(filesProcessed * 100 / totalFiles));
+    ui.status->setVisible(true);
+    ui.status->setText(QString("Find - %1%").arg(filesProcessed * 100 / totalFiles));
 }
 
 void FindResultsWidget::OnFindFinished()
@@ -87,7 +89,8 @@ void FindResultsWidget::OnFindFinished()
         finder = nullptr;
     }
 
-    this->setWindowTitle(QString("Find - Finished"));
+    ui.status->setText(QString("Find - Finished"));
+    ui.status->setVisible(false);
 }
 
 void FindResultsWidget::OnActivated(const QModelIndex& index)

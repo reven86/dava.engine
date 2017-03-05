@@ -29,10 +29,6 @@ FindInDocumentController::FindInDocumentController(DocumentsModule* documentsMod
     documentDataWrapper.SetListener(this);
 }
 
-FindInDocumentController::~FindInDocumentController()
-{
-}
-
 void FindInDocumentController::ShowFindInDocumentWidget()
 {
     TArc::ContextAccessor* accessor = documentsModule->GetAccessor();
