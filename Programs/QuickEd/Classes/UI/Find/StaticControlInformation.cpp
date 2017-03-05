@@ -18,6 +18,9 @@ StaticControlInformation::StaticControlInformation(const StaticControlInformatio
     : name(name_)
     , prototypePackage(prototypePackage_)
     , prototype(prototype_)
+    , componentCount(other.componentCount)
+    , controlProperties(other.controlProperties)
+    , componentProperties(other.componentProperties)
 {
     for (const std::shared_ptr<StaticControlInformation>& otherChild : other.children)
     {

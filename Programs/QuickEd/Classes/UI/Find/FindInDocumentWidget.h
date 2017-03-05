@@ -23,11 +23,13 @@ public:
 signals:
     void OnFindFilterReady(std::shared_ptr<FindFilter> filter);
     void OnFindNext();
+    void OnFindPrevious();
     void OnFindAll();
-    void OnCancelFind();
+    void OnStopFind();
 
 private slots:
-    void OnFindClicked();
+    void OnFindNextClicked();
+    void OnFindPreviousClicked();
     void OnFindAllClicked();
     void OnCriteriasChanged();
 
@@ -37,7 +39,6 @@ protected:
 private:
     void EmitFilterChanges();
 
-    Document* document = nullptr;
     QHBoxLayout* layout = nullptr;
     SearchCriteriasWidget* findFiltersWidget = nullptr;
     QToolButton* findButton = nullptr;

@@ -21,7 +21,6 @@ class EditorSystemsManager;
 class WidgetsData;
 
 class ControlNode;
-class FindController;
 class PackageBaseNode;
 class RulerController;
 class EditorCanvas;
@@ -51,7 +50,7 @@ public:
 
     void InjectRenderWidget(DAVA::RenderWidget* renderWidget);
 
-    FindController* findController = nullptr;
+    FindInDocumentWidget* GetFindInDocumentWidget();
 
     DAVA::Signal<DAVA::uint64> requestCloseTab;
     DAVA::Signal<ControlNode*> requestChangeTextInNode;
@@ -72,11 +71,6 @@ public slots:
     void OnIncrementScale();
     void OnDecrementScale();
     void SetActualScale();
-
-    void OnFindInDocument();
-    void OnFindNext();
-    void OnFindPrevious();
-    void OnCancelFind();
 
 private slots:
     void OnScaleChanged(DAVA::float32 scale);
@@ -113,8 +107,6 @@ private:
     void OnDragLeaved(QDragLeaveEvent* event) override;
     void OnDrop(QDropEvent* event) override;
     void OnKeyPressed(QKeyEvent* event) override;
-
-    void OnEditingRootControlsChanged(const SortedControlNodeSet& rootControls);
 
     float GetScaleFromWheelEvent(int ticksCount) const;
     float GetNextScale(float currentScale, int ticksCount) const;

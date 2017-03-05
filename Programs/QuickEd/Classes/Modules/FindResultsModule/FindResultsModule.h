@@ -18,6 +18,7 @@ class FindResultsModule : public DAVA::TArc::ClientModule, public DAVA::TArc::Da
     void RegisterOperations();
 
     void FindInProject(std::shared_ptr<FindFilter> filter);
+    void FindInDocument(std::shared_ptr<FindFilter> filter);
 
     void OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields) override;
 

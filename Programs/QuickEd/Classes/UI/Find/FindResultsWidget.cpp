@@ -1,10 +1,8 @@
 #include "FindResultsWidget.h"
 
-#include "Modules/LegacySupportModule/Private/Document.h"
+#include "Modules/DocumentsModule/DocumentData.h"
 #include "Modules/ProjectModule/ProjectData.h"
 #include "UI/Find/Finder.h"
-
-#include <QtTools/ProjectInformation/FileSystemCache.h>
 
 #include <QtHelpers/HelperFunctions.h>
 
@@ -49,7 +47,7 @@ void FindResultsWidget::Find(std::shared_ptr<FindFilter> filter, ProjectData* pr
     }
 }
 
-void FindResultsWidget::SetFindResults(const DAVA::Vector<FindItem>& results)
+void FindResultsWidget::Find(std::shared_ptr<FindFilter> filter, ProjectData* projectData, DocumentData* documentData)
 {
     if (finder == nullptr)
     {
@@ -58,12 +56,14 @@ void FindResultsWidget::SetFindResults(const DAVA::Vector<FindItem>& results)
         setVisible(true);
         raise();
 
-        for (const FindItem& result : results)
-        {
-            OnItemFound(result);
-        }
+        finder = new Finder(std::move(filter), &(projectData->GetPrototypes()));
 
-        OnFindFinished();
+        connect(finder, &Finder::ProgressChanged, this, &FindResultsWidget::OnProgressChanged, Qt::QueuedConnection);
+        connect(finder, &Finder::ItemFound, this, &FindResultsWidget::OnItemFound, Qt::QueuedConnection);
+        connect(finder, &Finder::Finished, this, &FindResultsWidget::OnFindFinished, Qt::QueuedConnection);
+
+        const PackageNode* package = documentData->GetPackageNode();
+        finder->Process(package);
     }
 }
 

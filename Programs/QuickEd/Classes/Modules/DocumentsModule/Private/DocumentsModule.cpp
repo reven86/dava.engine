@@ -18,6 +18,7 @@
 
 #include "Application/QEGlobal.h"
 
+#include "UI/Find/FindInDocumentController.h"
 #include "UI/mainwindow.h"
 #include "UI/DocumentGroupView.h"
 #include "UI/ProjectView.h"
@@ -240,6 +241,8 @@ void DocumentsModule::InitCentralWidget()
     QObject::connect(previewWidget, &PreviewWidget::CutRequested, mainWindow->GetPackageWidget(), &PackageWidget::OnCut);
     QObject::connect(previewWidget, &PreviewWidget::CopyRequested, mainWindow->GetPackageWidget(), &PackageWidget::OnCopy);
     QObject::connect(previewWidget, &PreviewWidget::PasteRequested, mainWindow->GetPackageWidget(), &PackageWidget::OnPaste);
+
+    findInDocumentController.reset(new FindInDocumentController(this, mainWindow, previewWidget->GetFindInDocumentWidget()));
 }
 
 void DocumentsModule::InitWatcher()

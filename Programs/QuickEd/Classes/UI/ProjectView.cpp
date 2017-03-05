@@ -15,9 +15,6 @@ MainWindow::ProjectView::ProjectView(MainWindow* mainWindow_)
 
     connect(mainWindow->ui->actionJumpToPrototype, &QAction::triggered, this, &MainWindow::ProjectView::JumpToPrototype);
     connect(mainWindow->ui->actionFindPrototypeInstances, &QAction::triggered, this, &MainWindow::ProjectView::FindPrototypeInstances);
-    connect(mainWindow->ui->actionFindInDocument, &QAction::triggered, this, &MainWindow::ProjectView::ShowFindInDocument);
-    /*connect(mainWindow->ui->actionFindNext, &QAction::triggered, mainWindow->ui->previewWidget, &PreviewWidget::OnFindNext);
-    connect(mainWindow->ui->actionFindPrevious, &QAction::triggered, mainWindow->ui->previewWidget, &PreviewWidget::OnFindPrevious);*/
     connect(mainWindow->ui->actionFindInProject, &QAction::triggered, this, &MainWindow::ProjectView::FindInProject);
 
     mainWindow->ui->packageWidget->treeView->addAction(mainWindow->ui->actionJumpToPrototype);
@@ -165,16 +162,6 @@ void MainWindow::ProjectView::OnCurrentLanguageChanged(int newLanguageIndex)
 void MainWindow::ProjectView::SelectFile(const QString& filePath)
 {
     mainWindow->ui->fileSystemDockWidget->SelectFile(filePath);
-}
-
-void MainWindow::ProjectView::ShowFindInDocument()
-{
-    //mainWindow->ui->previewWidget->OnFindInDocument();
-}
-
-void MainWindow::ProjectView::CancelFindInDocument()
-{
-    //mainWindow->ui->previewWidget->OnCancelFind();
 }
 
 void MainWindow::ProjectView::SetResourceDirectory(const QString& path)

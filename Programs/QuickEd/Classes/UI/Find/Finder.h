@@ -3,9 +3,11 @@
 #include "Base/BaseTypes.h"
 #include "FindFilter.h"
 #include "FindItem.h"
+#include "Model/PackageHierarchy/PackageBaseNode.h"
 
 #include <QObject>
 
+class ControlNode;
 class PackageNode;
 
 class Finder : public QObject
@@ -17,8 +19,8 @@ public:
     ~Finder() override;
 
     void Process(const QStringList& files);
-    void Process(const DAVA::FilePath& packagePath, const ControlNode* control);
     void Process(const PackageNode* package);
+    void Process(const PackageNode* package, const SortedControlNodeSet& controlNodesToProcess);
     void Stop();
 
 signals:
@@ -29,7 +31,6 @@ signals:
 private:
     static void CollectControls(FindItem& currentItem, const FindFilter& filter, const ControlInformation* control);
 
-    void ProcessControl(const DAVA::FilePath& packagePath, FindItem& currentItem, const ControlInformation* control);
     void ProcessPackage(FindItem& currentItem, const PackageInformation* package);
 
     std::shared_ptr<FindFilter> filter;

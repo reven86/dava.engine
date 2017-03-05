@@ -219,7 +219,10 @@ void StaticPackageInformationBuilder::EndComponentPropertiesSection()
 
 void StaticPackageInformationBuilder::ProcessProperty(const DAVA::InspMember* member, const DAVA::VariantType& value)
 {
-    propertyProcessor(member, value);
+    if (value.GetType() != VariantType::TYPE_NONE)
+    {
+        propertyProcessor(member, value);
+    }
 }
 
 std::shared_ptr<StaticPackageInformation> StaticPackageInformationBuilder::GetPackage() const

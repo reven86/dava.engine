@@ -17,6 +17,7 @@ class FieldBinder;
 }
 }
 
+class FindInDocumentController;
 class PreviewWidget;
 class EditorSystemsManager;
 class PackageNode;
@@ -99,6 +100,9 @@ private:
     std::unique_ptr<EditorSystemsManager> systemsManager;
     DAVA::TArc::QtConnections connections;
     std::unique_ptr<DAVA::TArc::FieldBinder> fieldBinder;
+
+    friend class FindInDocumentController;
+    std::unique_ptr<FindInDocumentController> findInDocumentController;
 
     QtDelayedExecutor delayedExecutor;
 

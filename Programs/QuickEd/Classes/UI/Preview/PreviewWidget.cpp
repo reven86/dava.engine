@@ -7,7 +7,6 @@
 
 #include "Ruler/RulerWidget.h"
 #include "Ruler/RulerController.h"
-#include "UI/Find/FindController.h"
 #include "UI/Find/FindInDocumentWidget.h"
 #include "UI/QtModelPackageCommandExecutor.h"
 #include "UI/Package/PackageMimeData.h"
@@ -58,7 +57,6 @@ PreviewWidget::PreviewWidget(DAVA::TArc::ContextAccessor* accessor_, DAVA::Rende
     : QFrame()
     , accessor(accessor_)
     , rulerController(new RulerController(this))
-    , findController(new FindController(this))
 {
     qRegisterMetaType<SelectedNodes>("SelectedNodes");
     percentages << 0.25f << 0.33f << 0.50f << 0.67f << 0.75f << 0.90f
@@ -94,13 +92,6 @@ PreviewWidget::PreviewWidget(DAVA::TArc::ContextAccessor* accessor_, DAVA::Rende
     OnScaleChanged(1.0f);
     editorCanvas->SetScale(1.0f);
     UpdateScrollArea();
-
-    connect(findInDocumentWidget, &FindInDocumentWidget::OnFindFilterReady, findController, &FindController::SetFilter);
-    connect(findInDocumentWidget, &FindInDocumentWidget::OnFindNext, findController, &FindController::SelectNextFindResult);
-    connect(findInDocumentWidget, &FindInDocumentWidget::OnFindAll, findController, &FindController::FindAll);
-    connect(findInDocumentWidget, &FindInDocumentWidget::OnCancelFind, this, &PreviewWidget::OnCancelFind);
-
-    findInDocumentWidget->hide();
 }
 
 PreviewWidget::~PreviewWidget() = default;
@@ -126,6 +117,11 @@ void PreviewWidget::InjectRenderWidget(DAVA::RenderWidget* renderWidget_)
     renderWidget->resized.Connect(this, &PreviewWidget::OnResized);
 
     renderWidget->SetClientDelegate(this);
+}
+
+FindInDocumentWidget* PreviewWidget::GetFindInDocumentWidget()
+{
+    return findInDocumentWidget;
 }
 
 void PreviewWidget::CreateActions()
@@ -275,29 +271,6 @@ void PreviewWidget::SetActualScale()
     }
 }
 
-void PreviewWidget::OnFindInDocument()
-{
-    findInDocumentWidget->Reset();
-    findInDocumentWidget->show();
-    findInDocumentWidget->setFocus();
-}
-
-void PreviewWidget::OnFindNext()
-{
-    findController->SelectNextFindResult();
-}
-
-void PreviewWidget::OnFindPrevious()
-{
-    findController->SelectPrevFindResult();
-}
-
-void PreviewWidget::OnCancelFind()
-{
-    findInDocumentWidget->hide();
-    findController->CancelFind();
-}
-
 void PreviewWidget::ApplyPosChanges()
 {
     QPoint viewPos = canvasPos + rootControlPos;
@@ -355,7 +328,6 @@ void PreviewWidget::InitFromSystemsManager(EditorSystemsManager* systemsManager_
     systemsManager = systemsManager_;
 
     systemsManager->rootControlPositionChanged.Connect(this, &PreviewWidget::OnRootControlPositionChanged);
-    systemsManager->editingRootControlsChanged.Connect(this, &PreviewWidget::OnEditingRootControlsChanged);
 
     connect(focusNextChildAction, &QAction::triggered, std::bind(&EditorSystemsManager::FocusNextChild, systemsManager));
     connect(focusPreviousChildAction, &QAction::triggered, std::bind(&EditorSystemsManager::FocusPreviousChild, systemsManager));
@@ -803,18 +775,6 @@ void PreviewWidget::OnKeyPressed(QKeyEvent* event)
             }
         }
     }
-}
-
-void PreviewWidget::OnEditingRootControlsChanged(const SortedControlNodeSet& rootControls)
-{
-    OnCancelFind();
-
-    Vector<ControlNode*> controls;
-    for (const auto& r : rootControls)
-    {
-        controls.push_back(r);
-    }
-    //findController->SetFindScope(document ? document->GetPackageFilePath() : "", controls);
 }
 
 float PreviewWidget::GetScaleFromWheelEvent(int ticksCount) const

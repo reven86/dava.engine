@@ -9,7 +9,7 @@
 #include "UI/Find/FindFilter.h"
 #include "Base/BaseTypes.h"
 
-class Document;
+class DocumentData;
 class ProjectData;
 class FileSystemCache;
 class Finder;
@@ -22,7 +22,7 @@ public:
     ~FindResultsWidget() override;
 
     void Find(std::shared_ptr<FindFilter> filter, ProjectData* projectData, const QStringList& files);
-    Q_SLOT void SetFindResults(const DAVA::Vector<FindItem>& results);
+    void Find(std::shared_ptr<FindFilter> filter, ProjectData* projectData, DocumentData* documentData);
 
     void StopFind();
     void ClearResults();

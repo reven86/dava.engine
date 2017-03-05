@@ -30,4 +30,7 @@ DECLARE_OPERATION_ID(SelectControl);
 
 //Find controls in project using provided filter and dump them to results widget
 DECLARE_OPERATION_ID(FindInProject);
+
+//Find controls in current document using provided filter and dump them to results widget
+DECLARE_OPERATION_ID(FindInDocument);
 }

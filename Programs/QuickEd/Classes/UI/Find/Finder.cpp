@@ -50,22 +50,37 @@ void Finder::Process(const QStringList& files)
     emit Finished();
 }
 
-void Finder::Process(const DAVA::FilePath& packagePath, const ControlNode* control)
-{
-    FindItem currentItem;
-
-    ControlNodeInformation controlInfo(control);
-    ProcessControl(packagePath, currentItem, &controlInfo);
-
-    emit Finished();
-}
-
 void Finder::Process(const PackageNode* package)
 {
     FindItem currentItem;
 
     PackageNodeInformation packageInfo(package);
     ProcessPackage(currentItem, &packageInfo);
+
+    emit Finished();
+}
+
+void Finder::Process(const PackageNode* package, const SortedControlNodeSet& controlNodesToProcess)
+{
+    FindItem currentItem;
+
+    PackageNodeInformation packageInfo(package);
+
+    if (filter->CanAcceptPackage(&packageInfo))
+    {
+        currentItem = FindItem(packageInfo.GetPath());
+
+        for (const ControlNode* controlNode : controlNodesToProcess)
+        {
+            ControlNodeInformation controlInfo(controlNode);
+            CollectControls(currentItem, *filter, &controlInfo);
+        }
+
+        if (!currentItem.GetControlPaths().empty())
+        {
+            emit ItemFound(currentItem);
+        }
+    }
 
     emit Finished();
 }
@@ -88,18 +103,6 @@ void Finder::CollectControls(FindItem& currentItem, const FindFilter& filter, co
     {
         CollectControls(currentItem, filter, child);
     });
-}
-
-void Finder::ProcessControl(const DAVA::FilePath& packagePath, FindItem& currentItem, const ControlInformation* control)
-{
-    currentItem = FindItem(packagePath);
-
-    CollectControls(currentItem, *filter, control);
-
-    if (!currentItem.GetControlPaths().empty())
-    {
-        emit ItemFound(currentItem);
-    }
 }
 
 void Finder::ProcessPackage(FindItem& currentItem, const PackageInformation* package)

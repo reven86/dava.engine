@@ -2,6 +2,8 @@
 #include "SearchCriteriasWidget.h"
 #include "Logger/Logger.h"
 
+#include <QKeyEvent>
+
 using namespace DAVA;
 
 FindInDocumentWidget::FindInDocumentWidget(QWidget* parent)
@@ -44,11 +46,18 @@ void FindInDocumentWidget::Reset()
     findFiltersWidget->Reset();
 }
 
-void FindInDocumentWidget::OnFindClicked()
+void FindInDocumentWidget::OnFindNextClicked()
 {
     EmitFilterChanges();
 
     emit OnFindNext();
+}
+
+void FindInDocumentWidget::OnFindPreviousClicked()
+{
+    EmitFilterChanges();
+
+    emit OnFindPrevious();
 }
 
 void FindInDocumentWidget::OnFindAllClicked()
@@ -70,12 +79,27 @@ bool FindInDocumentWidget::event(QEvent* event)
         QKeyEvent* ke = static_cast<QKeyEvent*>(event);
         if (ke->key() == Qt::Key_Enter || ke->key() == Qt::Key_Return)
         {
-            OnFindClicked();
+            if (ke->modifiers() & Qt::ControlModifier)
+            {
+                OnFindAllClicked();
+            }
+            else
+            {
+                if (ke->modifiers() & Qt::ShiftModifier)
+                {
+                    OnFindPreviousClicked();
+                }
+                else
+                {
+                    OnFindNextClicked();
+                }
+            }
             return true;
         }
         else if (ke->key() == Qt::Key_Escape)
         {
-            emit OnCancelFind();
+            emit OnStopFind();
+            return true;
         }
     }
 
