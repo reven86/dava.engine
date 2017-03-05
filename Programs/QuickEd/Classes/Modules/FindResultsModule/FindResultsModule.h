@@ -9,8 +9,6 @@
 
 class FindResultsWidget;
 class FindFilter;
-class LogWidget;
-class LoggerOutputObject;
 
 class FindResultsModule : public DAVA::TArc::ClientModule, public DAVA::TArc::DataListener
 {

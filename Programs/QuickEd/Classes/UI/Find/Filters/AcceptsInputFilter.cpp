@@ -3,7 +3,6 @@
 #include "UI/Find/PackageInformation/PackageInformation.h"
 
 #include <UI/UIControl.h>
-#include <Utils/Utils.h>
 
 using namespace DAVA;
 

@@ -65,7 +65,7 @@ void FindInDocumentController::SetFilter(std::shared_ptr<FindFilter> filter)
 {
     context.filter = filter;
     context.results.clear();
-    context.currentSelection = 0;
+    context.currentSelection = -1;
 
     Finder finder(filter, nullptr);
 
@@ -125,6 +125,6 @@ void FindInDocumentController::OnDataChanged(const DAVA::TArc::DataWrapper& wrap
         HideFindInDocumentWidget();
 
         context.results.clear();
-        context.currentSelection = 0;
+        context.currentSelection = -1;
     }
 }

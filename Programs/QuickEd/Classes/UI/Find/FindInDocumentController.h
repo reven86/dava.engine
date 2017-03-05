@@ -32,7 +32,7 @@ private:
     {
         std::shared_ptr<FindFilter> filter;
         DAVA::Vector<DAVA::String> results;
-        DAVA::int32 currentSelection = 0;
+        DAVA::int32 currentSelection = -1;
     };
 
     void MoveSelection(DAVA::int32 step);

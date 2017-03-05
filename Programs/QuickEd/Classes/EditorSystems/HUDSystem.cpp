@@ -48,7 +48,7 @@ RefPtr<ControlContainer> CreateControlContainer(HUDAreaInfo::eArea area)
 
 struct HUDSystem::HUD
 {
-    HUD(ControlNode* node, UIControl* hudControl, const Vector<HUDAreaInfo::eArea> areas);
+    HUD(ControlNode* node, UIControl* hudControl, const Vector<HUDAreaInfo::eArea>& areas);
     ~HUD();
     ControlNode* node = nullptr;
     UIControl* control = nullptr;
@@ -59,7 +59,7 @@ struct HUDSystem::HUD
     static std::unique_ptr<HUD> CreateSelectionHUD(ControlNode* node, UIControl* hudControl);
 };
 
-HUDSystem::HUD::HUD(ControlNode* node_, UIControl* hudControl_, const Vector<HUDAreaInfo::eArea> areas)
+HUDSystem::HUD::HUD(ControlNode* node_, UIControl* hudControl_, const Vector<HUDAreaInfo::eArea>& areas)
     : node(node_)
     , control(node_->GetControl())
     , hudControl(hudControl_)

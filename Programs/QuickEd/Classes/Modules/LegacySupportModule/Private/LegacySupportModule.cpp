@@ -241,10 +241,6 @@ void LegacySupportModule::OnFindInProject()
     FindInProjectDialog findInProjectDialog;
     if (findInProjectDialog.exec() == QDialog::Accepted)
     {
-        QWidget* window = GetUI()->GetWindow(QEGlobal::windowKey);
-        MainWindow* mainWindow = qobject_cast<MainWindow*>(window);
-        MainWindow::ProjectView* view = mainWindow->GetProjectView();
-
         InvokeOperation(QEGlobal::FindInProject.ID, std::shared_ptr<FindFilter>(findInProjectDialog.BuildFindFilter()));
     }
 }
