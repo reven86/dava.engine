@@ -1,10 +1,9 @@
 #include "UI/Find/FindInDocumentController.h"
-#include "UI/Find/FindInDocumentWidget.h"
-#include "UI/Find/Finder.h"
+#include "UI/Find/Finder/Finder.h"
+#include "UI/Find/Widgets/FindInDocumentWidget.h"
 #include "UI/mainwindow.h"
 #include "Modules/DocumentsModule/DocumentData.h"
 #include "Modules/DocumentsModule/DocumentsModule.h"
-#include "Logger/Logger.h"
 
 using namespace DAVA;
 
@@ -123,8 +122,7 @@ void FindInDocumentController::MoveSelection(int32 step)
 
 void FindInDocumentController::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields)
 {
-    const bool editedRootControlsChanged =
-    std::find(fields.begin(), fields.end(), String(DocumentData::editedRootControlsPropertyName)) != fields.end();
+    const bool editedRootControlsChanged = std::find(fields.begin(), fields.end(), String(DocumentData::editedRootControlsPropertyName)) != fields.end();
 
     if (editedRootControlsChanged)
     {

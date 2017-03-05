@@ -12,7 +12,6 @@
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 #include "UI/ProjectView.h"
 #include "UI/DocumentGroupView.h"
-#include "UI/Find/FindFilter.h"
 
 #include <TArc/Core/ContextAccessor.h>
 #include <TArc/Core/OperationInvoker.h>

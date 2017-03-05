@@ -19,7 +19,7 @@
      <property name="widgetResizable">
       <bool>true</bool>
      </property>
-     <widget class="SearchCriteriasWidget" name="searchCriterias">
+     <widget class="CompositeFindFilterWidget" name="filtersList">
       <property name="geometry">
        <rect>
         <x>0</x>
@@ -66,9 +66,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>SearchCriteriasWidget</class>
+   <class>CompositeFindFilterWidget</class>
    <extends>QWidget</extends>
-   <header>UI/Find/SearchCriteriasWidget.h</header>
+   <header>UI/Find/Widgets/CompositeFindFilterWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

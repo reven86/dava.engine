@@ -1,5 +1,6 @@
 #include "Modules/FindResultsModule/FindResultsModule.h"
 #include "Application/QEGlobal.h"
+#include "UI/Find/Widgets/FindResultsWidget.h"
 
 #include <TArc/WindowSubSystem/UI.h>
 #include <TArc/Utils/ModuleCollection.h>

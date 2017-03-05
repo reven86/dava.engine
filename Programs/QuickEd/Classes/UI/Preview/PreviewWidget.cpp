@@ -7,9 +7,9 @@
 
 #include "Ruler/RulerWidget.h"
 #include "Ruler/RulerController.h"
-#include "UI/Find/FindInDocumentWidget.h"
-#include "UI/QtModelPackageCommandExecutor.h"
+#include "UI/Find/Widgets/FindInDocumentWidget.h"
 #include "UI/Package/PackageMimeData.h"
+#include "UI/QtModelPackageCommandExecutor.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 #include "Model/PackageHierarchy/PackageBaseNode.h"

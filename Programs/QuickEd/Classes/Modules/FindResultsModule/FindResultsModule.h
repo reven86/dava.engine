@@ -3,8 +3,7 @@
 #include <TArc/Core/ClientModule.h>
 #include <TArc/Utils/QtConnections.h>
 
-#include "UI/Find/FindResultsWidget.h"
-
+class FindResultsWidget;
 class LogWidget;
 class LoggerOutputObject;
 

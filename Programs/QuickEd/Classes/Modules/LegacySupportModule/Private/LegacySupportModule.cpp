@@ -12,8 +12,8 @@
 #include "UI/ProjectView.h"
 #include "UI/Package/PackageWidget.h"
 #include "UI/DocumentGroupView.h"
-#include "UI/Find/FindFilter.h"
-#include "UI/Find/FindInProjectDialog.h"
+#include "UI/Find/Filters/PrototypeUsagesFilter.h"
+#include "UI/Find/Widgets/FindInProjectDialog.h"
 #include "UI/StyleSheetInspector/StyleSheetInspectorWidget.h"
 
 #include <TArc/Core/ContextAccessor.h>
