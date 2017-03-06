@@ -116,7 +116,6 @@ if( NOT DAVA_MEGASOLUTION )
 
     message( "============================Convert resources ============================"  )
 
-    execute_process( COMMAND python ${DAVA_SCRIPTS_FILES_PATH}/convert_graphics.py --pathDataSource=${CMAKE_CURRENT_LIST_DIR}/DataSource --pathDava=${DAVA_ROOT_DIR})
     execute_process( COMMAND python convert_everything.py --gpu ${GPU_PARAM} WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/DataSource )
     execute_process( COMMAND python create_file_structure.py WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/DataSource )
 

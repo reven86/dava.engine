@@ -38,6 +38,8 @@ protected:
 
     virtual void PostInit() = 0;
     ContextAccessor* GetAccessor();
+    const ContextAccessor* GetAccessor() const;
+
     UI* GetUI();
 
     template <typename Ret, typename Cls, typename... Args>

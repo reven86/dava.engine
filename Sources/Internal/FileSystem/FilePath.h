@@ -303,13 +303,7 @@ inline FilePath::ePathType FilePath::GetType() const
 }
 
 template <>
-struct AnyCompare<FilePath>
-{
-    static bool IsEqual(const Any& v1, const Any& v2)
-    {
-        const FilePath& filePath1 = v1.Get<FilePath>();
-        const FilePath& filePath2 = v2.Get<FilePath>();
-        return filePath1 == filePath2;
-    }
-};
+bool AnyCompare<FilePath>::IsEqual(const DAVA::Any& v1, const DAVA::Any& v2);
+extern template struct AnyCompare<FilePath>;
+
 } // end namespace DAVA

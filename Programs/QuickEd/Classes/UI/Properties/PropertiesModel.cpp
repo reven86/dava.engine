@@ -1,11 +1,6 @@
 #include "PropertiesModel.h"
 
-#include "QtTools/Utils/Utils.h"
-
-#include <QFont>
-#include <QVector2D>
-#include <QVector4D>
-#include "Document/Document.h"
+#include "Modules/LegacySupportModule/Private/Document.h"
 #include "Ui/QtModelPackageCommandExecutor.h"
 
 #include "Model/ControlProperties/AbstractProperty.h"
@@ -20,40 +15,64 @@
 #include "QECommands/ChangePropertyValueCommand.h"
 #include "UI/QtModelPackageCommandExecutor.h"
 
-#include "UI/UIControl.h"
 
-#include "QtTools/Updaters/ContinuousUpdater.h"
-#include "QtTools/Utils/Themes/Themes.h"
-#include "QtTools/Utils/Utils.h"
+#include <QtTools/Utils/Themes/Themes.h>
+#include <QtTools/Utils/Utils.h>
+
+#include <UI/UIControl.h>
+
+#include <QFont>
+#include <QVector2D>
+#include <QVector4D>
 
 using namespace DAVA;
 
 PropertiesModel::PropertiesModel(QObject* parent)
     : QAbstractItemModel(parent)
-    , continuousUpdater(new ContinuousUpdater(MakeFunction(this, &PropertiesModel::UpdateAllChangedProperties), this, 500))
+    , propertiesUpdater(MakeFunction(this, &PropertiesModel::UpdateAllChangedProperties), 500)
+    , nodeUpdater(MakeFunction(this, &PropertiesModel::ResetInternal), 300)
 {
 }
 
 PropertiesModel::~PropertiesModel()
 {
     CleanUp();
-    continuousUpdater->Stop();
+    propertiesUpdater.Abort();
+    nodeUpdater.Abort();
 }
 
 void PropertiesModel::Reset(PackageBaseNode* node_, QtModelPackageCommandExecutor* commandExecutor_)
 {
-    continuousUpdater->Stop();
+    nodeToReset = node_;
+    //to make better performance when we selecting all controls by mouse rect
+    //update current item using continuousUpdater
+    //but if new item came from another document or this item is nullptr - we need to refresh model immediately
+    bool canDelay = nodeToReset != nullptr && (commandExecutor == nullptr || commandExecutor == commandExecutor_);
+
+    commandExecutor = commandExecutor_;
+    if (canDelay)
+    {
+        nodeUpdater.Update();
+    }
+    else
+    {
+        nodeUpdater.Stop();
+    }
+}
+
+void PropertiesModel::ResetInternal()
+{
+    propertiesUpdater.Abort();
     beginResetModel();
     CleanUp();
-    commandExecutor = commandExecutor_;
-    controlNode = dynamic_cast<ControlNode*>(node_);
+    controlNode = dynamic_cast<ControlNode*>(nodeToReset);
     if (nullptr != controlNode)
     {
         controlNode->GetRootProperty()->AddListener(this);
         rootProperty = controlNode->GetRootProperty();
     }
 
-    styleSheet = dynamic_cast<StyleSheetNode*>(node_);
+    styleSheet = dynamic_cast<StyleSheetNode*>(nodeToReset);
     if (nullptr != styleSheet)
     {
         styleSheet->GetRootProperty()->AddListener(this);
@@ -304,7 +323,7 @@ void PropertiesModel::UpdateAllChangedProperties()
 void PropertiesModel::PropertyChanged(AbstractProperty* property)
 {
     changedProperties.insert(RefPtr<AbstractProperty>::ConstructWithRetain(property));
-    continuousUpdater->Update();
+    propertiesUpdater.Update();
 }
 
 void PropertiesModel::UpdateProperty(AbstractProperty* property)
@@ -497,7 +516,14 @@ QString PropertiesModel::makeQVariant(const AbstractProperty* property) const
         return UnescapeString(WideStringToQString(val.AsWideString()));
 
     case VariantType::TYPE_FASTNAME:
-        return StringToQString(val.AsFastName().c_str());
+        if (val.AsFastName().IsValid())
+        {
+            return StringToQString(val.AsFastName().c_str());
+        }
+        else
+        {
+            return "";
+        }
 
     case VariantType::TYPE_VECTOR2:
         return StringToQString(Format("%g; %g", val.AsVector2().x, val.AsVector2().y));
@@ -586,7 +612,11 @@ void PropertiesModel::initVariantType(VariantType& var, const QVariant& val) con
     //        case VariantType::TYPE_MATRIX2:
     //        case VariantType::TYPE_MATRIX3:
     //        case VariantType::TYPE_MATRIX4:
-    //        case VariantType::TYPE_FASTNAME:
+    case VariantType::TYPE_FASTNAME:
+    {
+        var.SetFastName(FastName(val.toString().toStdString()));
+    }
+    break;
     //        case VariantType::TYPE_AABBOX3:
     //        case VariantType::TYPE_FILEPATH:
     default:

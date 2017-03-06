@@ -9,7 +9,6 @@ class Settings
 public:
     static const char Delimiter;
 
-    static const DAVA::FastName General_DesinerName;
     static const DAVA::FastName General_RecentFilesCount;
     static const DAVA::FastName General_RecentProjectsCount;
     static const DAVA::FastName General_ReloadParticlesOnPojectOpening;
