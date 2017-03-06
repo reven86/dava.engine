@@ -11,6 +11,7 @@
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/OsX/Window/WindowBackendOsX.h"
 #include "Engine/Private/OsX/CoreNativeBridgeOsX.h"
+#include "Utils/StringFormat.h"
 
 namespace DAVA
 {
@@ -42,6 +43,33 @@ void PlatformCore::PrepareToQuit()
 void PlatformCore::Quit()
 {
     bridge->Quit();
+}
+
+void PlatformCore::SetScreenTimeoutEnabled(bool enabled)
+{
+    engineBackend->GetPrimaryWindow()->RunOnUIThreadAsync([this, enabled]() {
+        const bool timeoutEnabledNow = (screenTimeoutAssertionId == kIOPMNullAssertionID);
+        if (timeoutEnabledNow == enabled)
+        {
+            return;
+        }
+
+        IOReturn result;
+        if (enabled)
+        {
+            result = IOPMAssertionRelease(screenTimeoutAssertionId);
+            screenTimeoutAssertionId = kIOPMNullAssertionID;
+        }
+        else
+        {
+            result = IOPMAssertionCreateWithName(kIOPMAssertionTypeNoDisplaySleep,
+                                                 kIOPMAssertionLevelOn,
+                                                 CFSTR("Dava Engine application is running"),
+                                                 &screenTimeoutAssertionId);
+        }
+
+        DVASSERT(result == kIOReturnSuccess, Format("IOPMAssertion api failed in PlatformCore::SetScreenTimeoutEnabled(%s)", enabled ? "true" : "false").c_str());
+    });
 }
 
 int32 PlatformCore::OnFrame()
