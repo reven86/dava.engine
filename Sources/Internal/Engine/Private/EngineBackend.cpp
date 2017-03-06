@@ -285,12 +285,6 @@ void EngineBackend::OnGameLoopStopped()
 
     DVASSERT(justCreatedWindows.empty());
 
-    for (Window* w : dyingWindows)
-    {
-        delete w;
-    }
-    dyingWindows.clear();
-
     engine->gameLoopStopped.Emit();
     rhi::ShaderSourceCache::Save("~doc:/ShaderSource.bin");
 
@@ -307,6 +301,13 @@ void EngineBackend::OnEngineCleanup()
         ImGui::Uninitialize();
 
     DestroySubsystems();
+
+    for (Window* w : dyingWindows)
+    {
+        delete w;
+    }
+    dyingWindows.clear();
+    primaryWindow = nullptr;
 
     if (Renderer::IsInitialized())
         Renderer::Uninitialize();
@@ -456,11 +457,6 @@ void EngineBackend::OnWindowDestroyed(Window* window)
     size_t nerased = aliveWindows.erase(window);
     DVASSERT(nerased == 1);
     dyingWindows.insert(window);
-
-    if (window->IsPrimary())
-    {
-        primaryWindow = nullptr;
-    }
 
     if (aliveWindows.empty())
     { // No alive windows left, exit application
