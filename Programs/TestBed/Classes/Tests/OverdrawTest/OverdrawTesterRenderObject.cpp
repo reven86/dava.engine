@@ -112,7 +112,7 @@ void OverdrawTesterRenderObject::GenerateQuad(uint32 index, uint32 layoutId)
     quads.push_back(renderBatch);
 }
 
-DAVA::Array<OverdrawTesterRenderObject::QuadVertex, 4> OverdrawTesterRenderObject::GetQuadVerts(float32 xStart, float32 xEnd)
+DAVA::Vector<OverdrawTesterRenderObject::QuadVertex> OverdrawTesterRenderObject::GetQuadVerts(float32 xStart, float32 xEnd)
 {
     // Try to keep 2pix - 1tex ratio.
     Size2i size = DAVA::UIControlSystem::Instance()->vcs->GetPhysicalScreenSize();

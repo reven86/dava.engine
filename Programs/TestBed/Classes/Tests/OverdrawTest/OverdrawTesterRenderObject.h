@@ -16,12 +16,6 @@ namespace OverdrawPerformanceTester
 class OverdrawTesterRenderObject : public DAVA::RenderObject
 {
 public:
-    struct QuadVertex
-    {
-        DAVA::Vector3 position;
-        DAVA::Vector2 texcoord;
-    };
-
     OverdrawTesterRenderObject(DAVA::float32 addOverdrawPercent_, DAVA::uint32 maxStepsCount_, DAVA::uint16 textureResolution_);
     ~OverdrawTesterRenderObject();
 
@@ -39,8 +33,14 @@ public:
     void RecalcBoundingBox() override;
 
 private:
+    struct QuadVertex
+    {
+        DAVA::Vector3 position;
+        DAVA::Vector2 texcoord;
+    };
+
     void GenerateQuad(DAVA::uint32 index, DAVA::uint32 layoutId);
-    DAVA::Array<OverdrawTesterRenderObject::QuadVertex, 4> GetQuadVerts(DAVA::float32 xStart, DAVA::float32 xEnd);
+    DAVA::Vector<OverdrawTesterRenderObject::QuadVertex> GetQuadVerts(DAVA::float32 xStart, DAVA::float32 xEnd);
     void GenerateIndexBuffer();
 
     DAVA::Vector<QuadVertex> activeVerts;
