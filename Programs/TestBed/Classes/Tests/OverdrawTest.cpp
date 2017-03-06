@@ -3,8 +3,6 @@
 #include "OverdrawTest/OverdrawTestingScreen.h"
 #include "OverdrawTest/OverdrawTestConfig.h"
 
-using DAVA::Rect;
-
 const float32 OverdrawTest::resolutionButtonsXOffset = 10.0f;
 const float32 OverdrawTest::resolutionButtonsYOffset = 100.0f;
 const float32 OverdrawTest::buttonHeight = 40.0f;
@@ -21,35 +19,35 @@ const uint16 OverdrawTest::testingScreenNumber = 1024; // Screen index must be a
 
 const Array<OverdrawTest::ButtonInfo, 4> OverdrawTest::resolutionButtonsInfo =
 { {
-{ L"2048", 1, Rect(resolutionButtonsXOffset, resolutionButtonsYOffset + buttonHeight * 0 + heigthDistanceBetweenButtons * 0, buttonWidth, buttonHeight), 2048 },
-{ L"1024", 2, Rect(resolutionButtonsXOffset, resolutionButtonsYOffset + buttonHeight * 1 + heigthDistanceBetweenButtons * 1, buttonWidth, buttonHeight), 1024 },
-{ L"512", 3, Rect(resolutionButtonsXOffset, resolutionButtonsYOffset + buttonHeight * 2 + heigthDistanceBetweenButtons * 2, buttonWidth, buttonHeight), 512 },
-{ L"256", 4, Rect(resolutionButtonsXOffset, resolutionButtonsYOffset + buttonHeight * 3 + heigthDistanceBetweenButtons * 3, buttonWidth, buttonHeight), 256 }
+{ L"2048", 1, DAVA::Rect(resolutionButtonsXOffset, resolutionButtonsYOffset + buttonHeight * 0 + heigthDistanceBetweenButtons * 0, buttonWidth, buttonHeight), 2048 },
+{ L"1024", 2, DAVA::Rect(resolutionButtonsXOffset, resolutionButtonsYOffset + buttonHeight * 1 + heigthDistanceBetweenButtons * 1, buttonWidth, buttonHeight), 1024 },
+{ L"512", 3, DAVA::Rect(resolutionButtonsXOffset, resolutionButtonsYOffset + buttonHeight * 2 + heigthDistanceBetweenButtons * 2, buttonWidth, buttonHeight), 512 },
+{ L"256", 4, DAVA::Rect(resolutionButtonsXOffset, resolutionButtonsYOffset + buttonHeight * 3 + heigthDistanceBetweenButtons * 3, buttonWidth, buttonHeight), 256 }
 } };
 
 const Array<OverdrawTest::ButtonInfo, 9> OverdrawTest::texturePixelFormatButtonsInfo =
 { {
-{ L"RGBA 8888", 1, Rect(texturePixelFormatXOffset, texturePixelFormatYOffset + buttonHeight * 0 + heigthDistanceBetweenButtons * 0, buttonWidth, buttonHeight), FORMAT_RGBA8888 },
-{ L"RGBA 4444", 2, Rect(texturePixelFormatXOffset, texturePixelFormatYOffset + buttonHeight * 1 + heigthDistanceBetweenButtons * 1, buttonWidth, buttonHeight), FORMAT_RGBA4444 },
-{ L"PVR 2", 3, Rect(texturePixelFormatXOffset, texturePixelFormatYOffset + buttonHeight * 2 + heigthDistanceBetweenButtons * 2, buttonWidth, buttonHeight), FORMAT_PVR2 },
-{ L"PVR 4", 4, Rect(texturePixelFormatXOffset, texturePixelFormatYOffset + buttonHeight * 3 + heigthDistanceBetweenButtons * 3, buttonWidth, buttonHeight), FORMAT_PVR4 },
-{ L"A8", 5, Rect(texturePixelFormatXOffset, texturePixelFormatYOffset + buttonHeight * 4 + heigthDistanceBetweenButtons * 4, buttonWidth, buttonHeight), FORMAT_A8 },
-{ L"PVR2_2", 6, Rect(texturePixelFormatXOffset, texturePixelFormatYOffset + buttonHeight * 5 + heigthDistanceBetweenButtons * 5, buttonWidth, buttonHeight), FORMAT_PVR2_2 },
-{ L"PVR4_2", 7, Rect(texturePixelFormatXOffset, texturePixelFormatYOffset + buttonHeight * 6 + heigthDistanceBetweenButtons * 6, buttonWidth, buttonHeight), FORMAT_PVR4_2 },
-{ L"ETC1", 8, Rect(texturePixelFormatXOffset, texturePixelFormatYOffset + buttonHeight * 7 + heigthDistanceBetweenButtons * 7, buttonWidth, buttonHeight), FORMAT_ETC1 },
-{ L"ETC2_RGBA", 9, Rect(texturePixelFormatXOffset, texturePixelFormatYOffset + buttonHeight * 8 + heigthDistanceBetweenButtons * 8, buttonWidth, buttonHeight), FORMAT_ETC2_RGBA }
+{ L"RGBA 8888", 1, DAVA::Rect(texturePixelFormatXOffset, texturePixelFormatYOffset + buttonHeight * 0 + heigthDistanceBetweenButtons * 0, buttonWidth, buttonHeight), FORMAT_RGBA8888 },
+{ L"RGBA 4444", 2, DAVA::Rect(texturePixelFormatXOffset, texturePixelFormatYOffset + buttonHeight * 1 + heigthDistanceBetweenButtons * 1, buttonWidth, buttonHeight), FORMAT_RGBA4444 },
+{ L"PVR 2", 3, DAVA::Rect(texturePixelFormatXOffset, texturePixelFormatYOffset + buttonHeight * 2 + heigthDistanceBetweenButtons * 2, buttonWidth, buttonHeight), FORMAT_PVR2 },
+{ L"PVR 4", 4, DAVA::Rect(texturePixelFormatXOffset, texturePixelFormatYOffset + buttonHeight * 3 + heigthDistanceBetweenButtons * 3, buttonWidth, buttonHeight), FORMAT_PVR4 },
+{ L"A8", 5, DAVA::Rect(texturePixelFormatXOffset, texturePixelFormatYOffset + buttonHeight * 4 + heigthDistanceBetweenButtons * 4, buttonWidth, buttonHeight), FORMAT_A8 },
+{ L"PVR2_2", 6, DAVA::Rect(texturePixelFormatXOffset, texturePixelFormatYOffset + buttonHeight * 5 + heigthDistanceBetweenButtons * 5, buttonWidth, buttonHeight), FORMAT_PVR2_2 },
+{ L"PVR4_2", 7, DAVA::Rect(texturePixelFormatXOffset, texturePixelFormatYOffset + buttonHeight * 6 + heigthDistanceBetweenButtons * 6, buttonWidth, buttonHeight), FORMAT_PVR4_2 },
+{ L"ETC1", 8, DAVA::Rect(texturePixelFormatXOffset, texturePixelFormatYOffset + buttonHeight * 7 + heigthDistanceBetweenButtons * 7, buttonWidth, buttonHeight), FORMAT_ETC1 },
+{ L"ETC2_RGBA", 9, DAVA::Rect(texturePixelFormatXOffset, texturePixelFormatYOffset + buttonHeight * 8 + heigthDistanceBetweenButtons * 8, buttonWidth, buttonHeight), FORMAT_ETC2_RGBA }
 } };
 
 const Array<OverdrawTest::ButtonInfo, 2> OverdrawTest::overdrawButtonsInfo =
 { {
-{ L"-", 1, Rect(overdrawXOffset, overdrawYOffset + buttonHeight, buttonWidth * 1.5f, buttonHeight), -1 },
-{ L"+", 2, Rect(overdrawXOffset + buttonWidth * 1.5f, overdrawYOffset + buttonHeight, buttonWidth * 1.5f, buttonHeight), 1 }
+{ L"-", 1, DAVA::Rect(overdrawXOffset, overdrawYOffset + buttonHeight, buttonWidth * 1.5f, buttonHeight), -1 },
+{ L"+", 2, DAVA::Rect(overdrawXOffset + buttonWidth * 1.5f, overdrawYOffset + buttonHeight, buttonWidth * 1.5f, buttonHeight), 1 }
 } };
 
 const Array<OverdrawTest::ButtonInfo, 2> OverdrawTest::chartHeightButtonsInfo =
 { {
-{ L"-", 1, Rect(overdrawXOffset, chartHeightYOffset + buttonHeight, buttonWidth * 1.5f, buttonHeight), -1 },
-{ L"+", 2, Rect(overdrawXOffset + buttonWidth * 1.5f, chartHeightYOffset + buttonHeight, buttonWidth * 1.5f, buttonHeight), 1 }
+{ L"-", 1, DAVA::Rect(overdrawXOffset, chartHeightYOffset + buttonHeight, buttonWidth * 1.5f, buttonHeight), -1 },
+{ L"+", 2, DAVA::Rect(overdrawXOffset + buttonWidth * 1.5f, chartHeightYOffset + buttonHeight, buttonWidth * 1.5f, buttonHeight), 1 }
 } };
 
 OverdrawTest::OverdrawTest(TestBed& app_)
@@ -74,19 +72,19 @@ void OverdrawTest::LoadResources()
         font = FTFont::Create("~res:/Fonts/korinna.ttf");
         font->SetSize(20.f);
     }
-    Rect screenRect = GetRect();
+    DAVA::Rect screenRect = GetRect();
     Size2i screenSize = DAVA::UIControlSystem::Instance()->vcs->GetVirtualScreenSize();
     screenRect.dx = static_cast<float32>(screenSize.dx);
     screenRect.dy = static_cast<float32>(screenSize.dy);
     SetRect(screenRect);
 
-    ScopedPtr<UIButton> startButton(CreateButton(Rect(5, 5, screenRect.dx, buttonHeight), L"Start"));
+    ScopedPtr<UIButton> startButton(CreateButton(DAVA::Rect(5, 5, screenRect.dx, buttonHeight), L"Start"));
     startButton->SetDebugDraw(true);
     startButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &OverdrawTest::OnStart));
     AddControl(startButton);
 
     CreateLabel({ overdrawXOffset, overdrawYOffset - buttonHeight, buttonWidth * 3.0f, buttonHeight }, L"Overdraw screens count");
-    overdrawCountLabel = new UIStaticText(Rect(overdrawXOffset, overdrawYOffset, buttonWidth * 3.0f, buttonHeight));
+    overdrawCountLabel = new UIStaticText(DAVA::Rect(overdrawXOffset, overdrawYOffset, buttonWidth * 3.0f, buttonHeight));
     overdrawCountLabel->SetFont(font);
     overdrawCountLabel->SetTextColor(Color::White);
     overdrawCountLabel->SetText(Format(L"%d", OverdrawTestConfig::overdrawScreensCount));
@@ -96,7 +94,7 @@ void OverdrawTest::LoadResources()
     InitializeButtons(overdrawButtonsInfo, overdrawButtons, Message(this, &OverdrawTest::OnChangeOverdrawButtonClick), false);
 
     CreateLabel({ overdrawXOffset, chartHeightYOffset - buttonHeight, buttonWidth * 3.0f, buttonHeight }, L"Max frametime");
-    chartHeightLabel = new UIStaticText(Rect(overdrawXOffset, chartHeightYOffset, buttonWidth * 3.0f, buttonHeight));
+    chartHeightLabel = new UIStaticText(DAVA::Rect(overdrawXOffset, chartHeightYOffset, buttonWidth * 3.0f, buttonHeight));
     chartHeightLabel->SetFont(font);
     chartHeightLabel->SetTextColor(Color::White);
     chartHeightLabel->SetText(Format(L"%.3f", OverdrawTestConfig::chartHeight));
@@ -129,7 +127,7 @@ void OverdrawTest::UnloadResources()
     SafeRelease(font);
 }
 
-void OverdrawTest::CreateLabel(const Rect&& rect, const WideString&& caption)
+void OverdrawTest::CreateLabel(const DAVA::Rect&& rect, const WideString&& caption)
 {
     ScopedPtr<UIStaticText> label(new UIStaticText(rect));
     label->SetFont(font);
@@ -214,7 +212,7 @@ void OverdrawTest::OnChangeChartHeightButtonClick(BaseObject* sender, void* data
     }
 }
 
-DAVA::UIButton* OverdrawTest::CreateButton(const Rect& rect, const WideString& text)
+DAVA::UIButton* OverdrawTest::CreateButton(const DAVA::Rect& rect, const WideString& text)
 {
     if (font == nullptr)
     {
