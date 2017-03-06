@@ -1,6 +1,8 @@
 #ifndef __STRING_CONSTANTS_H__
 #define __STRING_CONSTANTS_H__
 
+#include <Base/FastName.h>
+
 namespace ResourceEditor
 {
 // Node names

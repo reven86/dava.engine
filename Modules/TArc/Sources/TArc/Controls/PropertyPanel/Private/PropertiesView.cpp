@@ -93,7 +93,7 @@ PropertiesView::PropertiesView(const Params& params_)
                          model->Update();
                      });
 
-    //timer->start();
+    timer->start();
 
     QObject::connect(view, &QTreeView::expanded, this, &PropertiesView::OnExpanded);
     QObject::connect(view, &QTreeView::collapsed, this, &PropertiesView::OnCollapsed);

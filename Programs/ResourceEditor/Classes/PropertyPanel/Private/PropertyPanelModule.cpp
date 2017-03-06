@@ -4,16 +4,17 @@
 #include "Classes/Selection/SelectionData.h"
 #include "Classes/Application/REGlobal.h"
 
-#include "TArc/Controls/PropertyPanel/PropertiesView.h"
-#include "TArc/WindowSubSystem/UI.h"
-#include "TArc/WindowSubSystem/ActionUtils.h"
-#include "TArc/DataProcessing/DataNode.h"
-#include "TArc/Utils/ModuleCollection.h"
-#include "TArc/Core/FieldBinder.h"
+#include <TArc/Controls/PropertyPanel/PropertiesView.h>
+#include <TArc/WindowSubSystem/UI.h>
+#include <TArc/WindowSubSystem/ActionUtils.h>
+#include <TArc/DataProcessing/DataNode.h>
+#include <TArc/Utils/ModuleCollection.h>
+#include <TArc/Core/FieldBinder.h>
 
 #include <Scene3D/Entity.h>
 #include <Reflection/Reflection.h>
 #include <Reflection/ReflectionRegistrator.h>
+#include <Reflection/ReflectedObject.h>
 #include <Base/FastName.h>
 #include <Base/BaseTypes.h>
 
@@ -27,7 +28,6 @@ namespace PropertyPanelModuleDetail
 class PropertyPanelData : public DAVA::TArc::DataNode
 {
 public:
-    DAVA::Vector<DAVA::Entity*> selectedEntities;
     DAVA::Vector<DAVA::Reflection> propertyPanelObjects;
 
     static const char* selectedEntitiesProperty;
@@ -85,8 +85,6 @@ void PropertyPanelModule::SceneSelectionChanged(const DAVA::Any& newSelection)
 
     DataContext* ctx = GetAccessor()->GetGlobalContext();
     PropertyPanelModuleDetail::PropertyPanelData* data = ctx->GetData<PropertyPanelModuleDetail::PropertyPanelData>();
-    data->selectedEntities.clear();
-    data->selectedEntities.shrink_to_fit();
     data->propertyPanelObjects.clear();
 
     if (newSelection.CanGet<SelectableGroup>())
@@ -94,12 +92,7 @@ void PropertyPanelModule::SceneSelectionChanged(const DAVA::Any& newSelection)
         const SelectableGroup& group = newSelection.Get<SelectableGroup>();
         for (auto entity : group.ObjectsOfType<DAVA::Entity>())
         {
-            data->selectedEntities.push_back(entity);
-        }
-
-        for (size_t i = 0; i < data->selectedEntities.size(); ++i)
-        {
-            data->propertyPanelObjects.push_back(DAVA::Reflection::Create(&data->selectedEntities[i]));
+            data->propertyPanelObjects.push_back(DAVA::Reflection::Create(DAVA::ReflectedObject(entity)));
         }
     }
 }
