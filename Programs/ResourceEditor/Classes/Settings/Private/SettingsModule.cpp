@@ -36,6 +36,10 @@ void SettingsModule::PostInit()
     GetUI()->AddAction(REGlobal::MainWindowKey, menuPlacement, settingsAction);
 
     connections.AddConnection(settingsAction, &QAction::triggered, DAVA::MakeFunction(this, &SettingsModule::ShowSettings));
+
+    { //apply settings
+        SettingsModuleDetail::ApplyColorPickerSettins(GetAccessor());
+    }
 }
 
 void SettingsModule::ShowSettings()
