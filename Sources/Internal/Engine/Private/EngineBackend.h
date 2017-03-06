@@ -85,6 +85,8 @@ public:
     // Proxy method that calls SystemTimer::Adjust to prevent many friends to SystemTimer
     static void AdjustSystemTimer(int64 adjustMicro);
 
+    void SetScreenTimeoutEnabled(bool enabled);
+
 private:
     void RunConsole();
 

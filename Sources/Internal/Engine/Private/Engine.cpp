@@ -120,6 +120,11 @@ bool Engine::IsSuspended() const
     return engineBackend->IsSuspended();
 }
 
+void Engine::SetScreenTimeoutEnabled(bool enabled)
+{
+    engineBackend->SetScreenTimeoutEnabled(enabled);
+}
+
 } // namespace DAVA
 
 #endif // __DAVAENGINE_COREV2__

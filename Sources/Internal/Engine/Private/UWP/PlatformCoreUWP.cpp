@@ -95,6 +95,29 @@ void PlatformCore::Quit()
     quitGameThread = true;
 }
 
+void PlatformCore::SetScreenTimeoutEnabled(bool enabled)
+{
+    engineBackend->GetPrimaryWindow()->RunOnUIThreadAsync([this, enabled]() {
+        // If user wants to disable screen timeout and display request is already active - do nothing
+        // If user wants to enable screen timeout and display request is not active - do nothing
+        if ((displayRequestActive && !enabled) || (!displayRequestActive && enabled))
+        {
+            return;
+        }
+
+        if (enabled)
+        {
+            displayRequest->RequestRelease();
+            displayRequestActive = false;
+        }
+        else
+        {
+            displayRequest->RequestActive();
+            displayRequestActive = true;
+        }
+    });
+}
+
 void PlatformCore::OnLaunchedOrActivated(::Windows::ApplicationModel::Activation::IActivatedEventArgs ^ args)
 {
     using namespace ::Windows::ApplicationModel::Activation;

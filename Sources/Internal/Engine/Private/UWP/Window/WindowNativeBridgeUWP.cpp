@@ -260,15 +260,6 @@ void WindowNativeBridge::OnActivated(Windows::UI::Core::CoreWindow ^ coreWindow,
 
 void WindowNativeBridge::OnVisibilityChanged(Windows::UI::Core::CoreWindow ^ coreWindow, Windows::UI::Core::VisibilityChangedEventArgs ^ arg)
 {
-    if (arg->Visible)
-    {
-        displayRequest->RequestActive();
-    }
-    else
-    {
-        displayRequest->RequestRelease();
-    }
-
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, arg->Visible));
 }
 

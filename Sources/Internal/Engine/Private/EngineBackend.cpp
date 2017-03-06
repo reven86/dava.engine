@@ -991,6 +991,11 @@ void EngineBackend::AdjustSystemTimer(int64 adjustMicro)
     SystemTimer::Adjust(adjustMicro);
 }
 
+void EngineBackend::SetScreenTimeoutEnabled(bool enabled)
+{
+    platformCore->SetScreenTimeoutEnabled(enabled);
+}
+
 } // namespace Private
 } // namespace DAVA
 
