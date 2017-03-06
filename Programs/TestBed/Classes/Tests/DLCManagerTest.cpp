@@ -251,10 +251,11 @@ void DLCManagerTest::UnloadResources()
     BaseScreen::UnloadResources();
 }
 
-void DLCManagerTest::OnNoSpaceOnDevice(const String& filePath)
+void DLCManagerTest::WriteErrorOnDevice(const String& filePath, int32 errnoVal)
 {
-    String t = logPring->GetUtf8Text();
-    logPring->SetUtf8Text(t + '\n' + filePath);
+    StringStream ss(logPring->GetUtf8Text());
+    ss << filePath << std::endl;
+    logPring->SetUtf8Text(ss.str());
 }
 
 void DLCManagerTest::OnRequestUpdated(const DAVA::DLCManager::IRequest& request)
@@ -355,7 +356,7 @@ void DLCManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* data
 
     dm.requestUpdated.DisconnectAll();
     dm.requestUpdated.Connect(this, &DLCManagerTest::OnRequestUpdated);
-    dm.noSpaceLeftOnDevice.Connect(this, &DLCManagerTest::OnNoSpaceOnDevice);
+    dm.cantWriteToDisk.Connect(this, &DLCManagerTest::WriteErrorOnDevice);
 
     String packName = packInput->GetUtf8Text();
 

@@ -68,10 +68,11 @@ public:
     /** signal per user request */
     Signal<const IRequest&> requestUpdated;
     /** signal about fail download(create intermediate folder, file or write file) into device, parameter is
-		full path to file failed create or write.
+		full path to file failed create or write. Second parameter is errno value (example: ENOSPC - No space left on device (POSIX.1).)
 		DLCManager requesting disabled before signal.
+		If you resive this signal first check availible space on device.
 		*/
-    Signal<const String&> noSpaceLeftOnDevice;
+    Signal<const String&, int32> cantWriteToDisk;
 
     struct Hints
     {

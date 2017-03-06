@@ -232,7 +232,7 @@ void PackRequest::DisableRequestingAndFireSignalNoSpaceLeft(PackRequest::FileReq
 {
     Logger::Error("No space on device!!! Can't create or write file: %s disable DLCManager requesting", fileRequest.localFile.GetAbsolutePathname().c_str());
     packManagerImpl.SetRequestingEnabled(false);
-    packManagerImpl.noSpaceLeftOnDevice.Emit(fileRequest.localFile.GetAbsolutePathname().c_str());
+    packManagerImpl.cantWriteToDisk.Emit(fileRequest.localFile.GetAbsolutePathname().c_str(), errno);
 }
 
 void PackRequest::UpdateFileRequests()

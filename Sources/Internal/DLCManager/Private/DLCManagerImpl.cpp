@@ -657,7 +657,7 @@ void DLCManagerImpl::ParseMeta()
     catch (DAVA::Exception& ex)
     {
         Logger::Error("%s", ex.what());
-        noSpaceLeftOnDevice.Emit(localCacheMeta.GetAbsolutePathname());
+        cantWriteToDisk.Emit(localCacheMeta.GetAbsolutePathname(), errno);
         RetryInit();
         return;
     }
