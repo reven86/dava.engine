@@ -723,7 +723,7 @@ DAVA_TESTCLASS (ReflectionTest)
     {
         SimpleStruct* s = new SimpleStruct();
 
-        DAVA::Reflection r = DAVA::Reflection::Create(ReflectedObject(s));
+        DAVA::Reflection r = DAVA::Reflection::Create(DAVA::ReflectedObject(s));
 
         TEST_VERIFY(r.IsValid());
         TEST_VERIFY(r.GetValue().Get<void*>() == s);
