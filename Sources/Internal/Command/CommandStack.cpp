@@ -98,11 +98,6 @@ void CommandStack::EndBatch()
     }
 }
 
-bool CommandStack::InBatch() const
-{
-    return commandBatch != nullptr;
-}
-
 bool CommandStack::IsClean() const
 {
     return isClean;
