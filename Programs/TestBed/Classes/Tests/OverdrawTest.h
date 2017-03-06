@@ -35,21 +35,9 @@ private:
     void OnChangeChartHeightButtonClick(BaseObject* sender, void* data, void* callerData);
     UIButton* CreateButton(const Rect& rect, const WideString& text);
 
-    template <size_t size>
-    void InitializeButtons(const Array<ButtonInfo, size>& buttonsInfo, UnorderedMap<UIButton*, ButtonInfo>& buttonsMap, Message&& msg, bool isFirstButtonGreen = true)
-    {
-        for (size_t i = 0; i < buttonsInfo.size(); i++)
-        {
-            UIButton* btn = CreateButton(buttonsInfo[i].rect, buttonsInfo[i].caption);
-            btn->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, msg);
-            if (isFirstButtonGreen && i == 0)
-                btn->SetDebugDrawColor(Color::Green);
-            btn->SetDebugDraw(true);
-            btn->SetTag(buttonsInfo[i].tag);
-            AddControl(btn);
-            buttonsMap[btn] = buttonsInfo[i];
-        }
-    }
+    template <std::size_t arrSize>
+    void InitializeButtons(const Array<ButtonInfo, arrSize>& buttonsInfo, UnorderedMap<UIButton*, ButtonInfo>& buttonsMap, Message&& msg,
+        bool isFirstButtonGreen = true);
 
     UIStaticText* overdrawCountLabel = nullptr;
     UIStaticText* chartHeightLabel = nullptr;
@@ -81,4 +69,20 @@ private:
     static const Array<ButtonInfo, 2> overdrawButtonsInfo;
     static const Array<ButtonInfo, 2> chartHeightButtonsInfo;
 };
+
+template <std::size_t arrSize>
+inline void OverdrawTest::InitializeButtons(const Array<ButtonInfo, arrSize>& buttonsInfo, UnorderedMap<UIButton*, ButtonInfo>& buttonsMap, Message&& msg, bool isFirstButtonGreen)
+{
+    for (size_t i = 0; i < buttonsInfo.size(); i++)
+    {
+        UIButton* btn = CreateButton(buttonsInfo[i].rect, buttonsInfo[i].caption);
+        btn->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, msg);
+        if (isFirstButtonGreen && i == 0)
+            btn->SetDebugDrawColor(Color::Green);
+        btn->SetDebugDraw(true);
+        btn->SetTag(buttonsInfo[i].tag);
+        AddControl(btn);
+        buttonsMap[btn] = buttonsInfo[i];
+    }
+}
 }
