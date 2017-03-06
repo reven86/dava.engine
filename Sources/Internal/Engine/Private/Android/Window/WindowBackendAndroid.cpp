@@ -94,6 +94,13 @@ JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewOnG
     wbackend->OnGamepadMotion(deviceId, axis, value);
 }
 
+JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewOnVisibleFrameChanged(JNIEnv* env, jclass jclazz, jlong windowBackendPointer, jint x, jint y, jint w, jint h)
+{
+    using DAVA::Private::WindowBackend;
+    WindowBackend* wbackend = reinterpret_cast<WindowBackend*>(static_cast<uintptr_t>(windowBackendPointer));
+    wbackend->OnVisibleFrameChanged(x, y, w, h);
+}
+
 } // extern "C"
 
 namespace DAVA
@@ -443,6 +450,11 @@ void WindowBackend::OnGamepadButton(int32 deviceId, int32 action, int32 keyCode)
 void WindowBackend::OnGamepadMotion(int32 deviceId, int32 axis, float32 value)
 {
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateGamepadMotionEvent(deviceId, axis, value));
+}
+
+void WindowBackend::OnVisibleFrameChanged(int32 x, int32 y, int32 width, int32 height)
+{
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibleFrameChangedEvent(window, x, y, width, height));
 }
 
 std::bitset<WindowBackend::MOUSE_BUTTON_COUNT> WindowBackend::GetMouseButtonState(int32 nativeButtonState)

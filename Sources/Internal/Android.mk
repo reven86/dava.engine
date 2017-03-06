@@ -167,6 +167,9 @@ DV_LOCAL_CPPFLAGS += -Wno-sign-compare
 DV_LOCAL_CPPFLAGS += -Wno-format-nonliteral
 
 # TODO fix next warnings first
+DV_LOCAL_CPPFLAGS += -Wno-expansion-to-defined
+DV_LOCAL_CPPFLAGS += -Wno-comma
+DV_LOCAL_CPPFLAGS += -Wno-undefined-func-template
 DV_LOCAL_CPPFLAGS += -Wno-cast-align
 DV_LOCAL_CPPFLAGS += -Wno-conversion
 DV_LOCAL_CPPFLAGS += -Wno-unreachable-code
@@ -474,7 +477,6 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Notification/Private/Android/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/CommandLine/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Logger/*.cpp) \
-                     $(wildcard $(LOCAL_PATH)/PluginManager/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/AnyCasts/Private/*.cpp))
 
 include $(BUILD_STATIC_LIBRARY)

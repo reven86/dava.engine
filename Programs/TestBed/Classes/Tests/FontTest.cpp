@@ -25,6 +25,16 @@ public:
         staticText->SetText(newText);
     }
 
+    virtual void OnKeyboardShown(const Rect& keyboardRect)
+    {
+        Logger::Debug("OnKeyboardShown %f,%f %f,%f", keyboardRect.x, keyboardRect.y, keyboardRect.dx, keyboardRect.dy);
+    }
+
+    virtual void OnKeyboardHidden()
+    {
+        Logger::Debug("OnKeyboardHidden");
+    }
+
 private:
     UIStaticText* staticText;
 };

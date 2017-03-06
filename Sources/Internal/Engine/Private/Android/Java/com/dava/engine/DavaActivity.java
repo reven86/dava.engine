@@ -136,6 +136,7 @@ public final class DavaActivity extends Activity
     protected DavaCommandHandler commandHandler = new DavaCommandHandler();
     protected DavaKeyboardState keyboardState = new DavaKeyboardState();
     protected DavaGamepadManager gamepadManager = new DavaGamepadManager();
+    protected DavaGlobalLayoutState globalLayoutState = new DavaGlobalLayoutState();
 
     // List of class instances created during bootstrap (using meta-tag in AndroidManifest)
     protected LinkedList<Object> bootstrapObjects = new LinkedList<Object>();
@@ -288,6 +289,7 @@ public final class DavaActivity extends Activity
         layout.addView(primarySurfaceView);
 
         registerActivityListener(gamepadManager);
+        registerActivityListener(globalLayoutState);
         registerActivityListener(keyboardState);
     }
     
