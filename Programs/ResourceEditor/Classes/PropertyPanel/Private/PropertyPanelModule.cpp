@@ -1,5 +1,7 @@
 #include "Classes/PropertyPanel/PropertyPanelModule.h"
 #include "Classes/PropertyPanel/PropertyModelExt.h"
+#include "Classes/PropertyPanel/Private/QualityEditorCreator.h"
+#include "Classes/PropertyPanel/Private/FilePathEditorCreator.h"
 #include "Classes/Selection/SelectionData.h"
 #include "Classes/Application/REGlobal.h"
 
@@ -67,6 +69,8 @@ void PropertyPanelModule::PostInit()
     PropertiesView* view = new PropertiesView(params);
     view->RegisterExtension(std::make_shared<REModifyPropertyExtension>(accessor));
     view->RegisterExtension(std::make_shared<EntityChildCreator>());
+    view->RegisterExtension(std::make_shared<QualityComboboxCreator>());
+    view->RegisterExtension(std::make_shared<FilePathEditorCreator>(accessor, ui));
     ui->AddView(REGlobal::MainWindowKey, PanelKey(panelInfo.title, panelInfo), view);
 
     // Bind to current selection changed
