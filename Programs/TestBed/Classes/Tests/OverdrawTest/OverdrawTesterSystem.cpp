@@ -181,7 +181,7 @@ DAVA::Texture* OverdrawTesterSystem::GenerateTexture(std::mt19937& rng, std::uni
         }
 
         result = DAVA::Texture::CreateFromData(imageSet);
-        for (auto mip : imageSet)
+        for (DAVA::Image* mip : imageSet)
             SafeRelease(mip);
     }
     result->SetMinMagFilter(rhi::TEXFILTER_LINEAR, rhi::TEXFILTER_LINEAR, rhi::TEXMIPFILTER_LINEAR);

@@ -48,7 +48,7 @@ OverdrawTesterRenderObject::OverdrawTesterRenderObject(float32 addOverdrawPercen
 
 OverdrawTesterRenderObject::~OverdrawTesterRenderObject()
 {
-    for (auto batch : quads)
+    for (DAVA::RenderBatch* batch : quads)
     {
         if (batch->vertexBuffer.IsValid())
             rhi::DeleteVertexBuffer(batch->vertexBuffer);
