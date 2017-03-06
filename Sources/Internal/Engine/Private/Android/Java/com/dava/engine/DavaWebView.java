@@ -460,7 +460,7 @@ final class DavaWebView
                     Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                     DavaActivity.instance().startActivity(intent);
                 } catch (Exception e) {
-                    Log.e("DAVA", String.format("[WebView] failed to open '%s' in browser: %s", url, e.toString());
+                    Log.e(DavaActivity.LOG_TAG, String.format("[WebView] failed to open '%s' in browser: %s", url, e.toString()));
                 }
                 return true;
             case eAction.NO_PROCESS:
