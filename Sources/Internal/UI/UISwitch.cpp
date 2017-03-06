@@ -245,7 +245,7 @@ void UISwitch::InternalSetIsLeftSelected(bool aIsLeftSelected, bool changeVisual
             ChangeVisualState();
         }
 
-        PerformEventWithData(EVENT_VALUE_CHANGED, inputEvent);
+        PerformEventWithData(EVENT_VALUE_CHANGED, inputEvent, inputEvent);
     }
 }
 

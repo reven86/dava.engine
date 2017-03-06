@@ -55,6 +55,15 @@ static Vector<std::pair<QMessageBox::StandardButton, ModalMessageParams::Button>
   std::make_pair(QMessageBox::Reset, ModalMessageParams::Reset)
 };
 
+static Vector<std::pair<QMessageBox::Icon, ModalMessageParams::Icon>> iconsConvertor =
+{
+  std::make_pair(QMessageBox::NoIcon, ModalMessageParams::NoIcon),
+  std::make_pair(QMessageBox::Information, ModalMessageParams::Information),
+  std::make_pair(QMessageBox::Warning, ModalMessageParams::Warning),
+  std::make_pair(QMessageBox::Critical, ModalMessageParams::Critical),
+  std::make_pair(QMessageBox::Question, ModalMessageParams::Question),
+};
+
 QMessageBox::StandardButton Convert(const ModalMessageParams::Button& button)
 {
     using ButtonNode = std::pair<QMessageBox::StandardButton, ModalMessageParams::Button>;
@@ -94,6 +103,28 @@ ModalMessageParams::Button Convert(const QMessageBox::StandardButton& button)
                              });
 
     DVASSERT(iter != buttonsConvertor.end());
+    return iter->second;
+}
+
+QMessageBox::Icon Convert(const ModalMessageParams::Icon& icon)
+{
+    using IconNode = std::pair<QMessageBox::Icon, ModalMessageParams::Icon>;
+    auto iter = std::find_if(iconsConvertor.begin(), iconsConvertor.end(), [icon](const IconNode& node)
+                             {
+                                 return node.second == icon;
+                             });
+    DVASSERT(iter != iconsConvertor.end());
+    return iter->first;
+}
+
+ModalMessageParams::Icon Convert(const QMessageBox::Icon& icon)
+{
+    using IconNode = std::pair<QMessageBox::Icon, ModalMessageParams::Icon>;
+    auto iter = std::find_if(iconsConvertor.begin(), iconsConvertor.end(), [icon](const IconNode& node)
+                             {
+                                 return node.first == icon;
+                             });
+    DVASSERT(iter != iconsConvertor.end());
     return iter->second;
 }
 
@@ -709,7 +740,7 @@ QString UIManager::GetSaveFileName(const WindowKey& windowKey, const FileDialogP
     QString filePath = QFileDialog::getSaveFileName(windowInfo.window, params.title, dir, params.filters);
     if (!filePath.isEmpty())
     {
-        impl->propertiesHolder.Set(UIManagerDetail::FILE_DIR_KEY, QFileInfo(filePath).absoluteDir());
+        impl->propertiesHolder.Set(UIManagerDetail::FILE_DIR_KEY, QFileInfo(filePath).absoluteFilePath());
     }
     return filePath;
 }
@@ -731,7 +762,7 @@ QString UIManager::GetOpenFileName(const WindowKey& windowKey, const FileDialogP
     QString filePath = QFileDialog::getOpenFileName(parent, params.title, dir, params.filters);
     if (!filePath.isEmpty())
     {
-        impl->propertiesHolder.Set(UIManagerDetail::FILE_DIR_KEY, QFileInfo(filePath).absoluteDir());
+        impl->propertiesHolder.Set(UIManagerDetail::FILE_DIR_KEY, QFileInfo(filePath).absoluteFilePath());
     }
     return filePath;
 }
@@ -758,9 +789,15 @@ ModalMessageParams::Button UIManager::ShowModalMessage(const WindowKey& windowKe
 {
     using namespace UIManagerDetail;
     MainWindowInfo& windowInfo = impl->FindOrCreateWindow(windowKey);
+    QMessageBox msgBox(windowInfo.window);
+    msgBox.setWindowTitle(params.title);
+    msgBox.setText(params.message);
+    msgBox.setStandardButtons(Convert(params.buttons));
+    msgBox.setDefaultButton(Convert(params.defaultButton));
+    msgBox.setIcon(Convert(params.icon));
 
-    QMessageBox::StandardButton resultButton = QMessageBox::information(windowInfo.window, params.title, params.message,
-                                                                        Convert(params.buttons), Convert(params.defaultButton));
+    int ret = msgBox.exec();
+    QMessageBox::StandardButton resultButton = static_cast<QMessageBox::StandardButton>(ret);
     return Convert(resultButton);
 }
 

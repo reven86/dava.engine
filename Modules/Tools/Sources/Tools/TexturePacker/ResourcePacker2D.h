@@ -33,6 +33,8 @@ public:
     bool IsRunning() const;
 
     void SetCacheClient(AssetCacheClient* cacheClient, const String& comment);
+    bool IsUsingCache() const;
+
     void SetTexturePostfix(const String& postfix);
 
     void PackResources(const Vector<eGPUFamily>& forGPUs);
@@ -45,8 +47,6 @@ private:
 
     bool ReadMD5FromFile(const FilePath& md5file, MD5::MD5Digest& digest) const;
     void WriteMD5ToFile(const FilePath& md5file, const MD5::MD5Digest& digest) const;
-
-    bool IsUsingCache() const;
 
     uint32 GetMaxTextureSize() const;
     Vector<String> FetchFlags(const FilePath& flagsPathname);

@@ -49,7 +49,7 @@ private:
     void ControlWillBeRemoved(ControlNode* node, ControlsContainerNode* from) override;
     void ImportedPackageWasAdded(PackageNode* node, ImportedPackagesNode* to, int index) override;
     void ImportedPackageWillBeRemoved(PackageNode* node, ImportedPackagesNode* from) override;
-    PackageNode* package = nullptr;
+    DAVA::RefPtr<PackageNode> package;
 
     DAVA::Vector<PackageNode*> libraryPackages;
     DAVA::Vector<QStandardItem*> libraryRootItems;

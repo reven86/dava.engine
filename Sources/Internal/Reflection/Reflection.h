@@ -148,6 +148,8 @@ public:
     template <typename T>
     static Reflection Create(T* objectPtr, const ReflectedMeta* objectMeta = nullptr);
 
+    static Reflection Create(const ReflectedObject& object, const ReflectedMeta* objectMeta = nullptr);
+
     static Reflection Create(const Any& any, const ReflectedMeta* objectMeta = nullptr);
 
     DAVA_DEPRECATED(static Reflection Create(const Reflection& etalon, const Reflection& metaProvider));
