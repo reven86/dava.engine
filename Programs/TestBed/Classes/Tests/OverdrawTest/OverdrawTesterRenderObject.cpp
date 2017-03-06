@@ -83,7 +83,7 @@ void OverdrawTesterRenderObject::BindDynamicParameters(Camera* camera)
 
 void OverdrawTesterRenderObject::GenerateQuad(uint32 index, uint32 layoutId)
 {
-    static const float32 threshold = 0.999f;
+    static const float32 threshold = 0.999f; // This threshold prevent quad from drawing in positions like 0.9999-1.9999 except 0-0.1, and force last quad right edge to be drawn at 1.0.
 
     float32 start = addOverdrawPercentNormalized * index;
     start = start - static_cast<int32>(start);
