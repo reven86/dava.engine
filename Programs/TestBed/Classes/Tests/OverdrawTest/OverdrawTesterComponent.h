@@ -15,7 +15,7 @@ using DAVA::float32;
 
 class OverdrawTesterRenderObject;
 
-class OverdrawTesterComonent : public DAVA::Component
+class OverdrawTesterComponent : public DAVA::Component
 {
 public:
     enum eType
@@ -24,8 +24,8 @@ public:
     };
     IMPLEMENT_COMPONENT_TYPE(OVERDRAW_TESTER_COMPONENT);
 
-    OverdrawTesterComonent(DAVA::uint16 textureResolution_, DAVA::uint8 overdrawScreenCount);
-    ~OverdrawTesterComonent();
+    OverdrawTesterComponent(DAVA::uint16 textureResolution_, DAVA::uint8 overdrawScreenCount);
+    ~OverdrawTesterComponent();
 
     inline OverdrawTesterRenderObject* GetRenderObject() const;
     Component* Clone(DAVA::Entity* toEntity) override;
@@ -41,21 +41,21 @@ private:
     static const DAVA::uint8 addOverdrawPercent;
 
 public:
-    INTROSPECTION_EXTEND(OverdrawTesterComonent, Component,
+    INTROSPECTION_EXTEND(OverdrawTesterComponent, Component,
                          NULL);
 };
 
-OverdrawTesterRenderObject* OverdrawTesterComonent::GetRenderObject() const
+OverdrawTesterRenderObject* OverdrawTesterComponent::GetRenderObject() const
 {
     return renderObject;
 }
 
-DAVA::uint32 OverdrawTesterComonent::GetStepsCount() const
+DAVA::uint32 OverdrawTesterComponent::GetStepsCount() const
 {
     return stepsCount;
 }
 
-DAVA::float32 OverdrawTesterComonent::GetStepOverdraw() const
+DAVA::float32 OverdrawTesterComponent::GetStepOverdraw() const
 {
     return addOverdrawPercent;
 }

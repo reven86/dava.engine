@@ -52,7 +52,7 @@ private:
     DAVA::uint32 textureSampleCount = 0;
     DAVA::float32 overdrawPercent = 10.0f;
 
-    DAVA::NMaterial* overdrawMaterial;
+    DAVA::NMaterial* overdrawMaterial = nullptr;
     DAVA::Array<DAVA::float32, 20> frames;
 
     DAVA::PixelFormat textureFormat;

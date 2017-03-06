@@ -54,7 +54,6 @@ const Array<Color, MODS_COUNT> ChartPainterSystem::chartColors =
 
 ChartPainterSystem::ChartPainterSystem(Scene* scene, float32 maxFrametime_)
     : SceneSystem(scene)
-    , performanceData(nullptr)
     , maxFrametime(maxFrametime_)
     , textColor(rhi::NativeColorRGBA(1.0f, 1.0f, 1.0f, 1.0f))
 {
@@ -69,13 +68,9 @@ ChartPainterSystem::ChartPainterSystem(Scene* scene, float32 maxFrametime_)
     DAVA::DbgDraw::EnsureInited();
 }
 
-ChartPainterSystem::~ChartPainterSystem()
-{
-}
-
 void ChartPainterSystem::AddEntity(DAVA::Entity* entity)
 {
-    OverdrawTesterComonent* comp = static_cast<OverdrawTesterComonent*>(entity->GetComponent(OverdrawTesterComonent::OVERDRAW_TESTER_COMPONENT));
+    OverdrawTesterComponent* comp = static_cast<OverdrawTesterComponent*>(entity->GetComponent(OverdrawTesterComponent::OVERDRAW_TESTER_COMPONENT));
     if (comp != nullptr)
     {
         maxOverdraw = comp->GetStepOverdraw() * comp->GetStepsCount();
@@ -250,7 +245,7 @@ float32 ChartPainterSystem::GetMaxFrametimeFromData() const
         if (i == 0) // Skip noise in first frame, when all textures are generated.
             begin++;
 
-        frametimes[i] = (*std::max_element(begin, currVector.end(),
+        frametimes[i] = (*std::max_element(currVector.begin(), currVector.end(),
                                            [](const FrameData& f1, const FrameData& f2)
                                            {
                                                return f1.FrameTime < f2.FrameTime;

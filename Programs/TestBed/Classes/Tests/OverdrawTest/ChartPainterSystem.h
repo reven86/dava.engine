@@ -12,7 +12,6 @@ class ChartPainterSystem : public DAVA::SceneSystem
 {
 public:
     ChartPainterSystem(DAVA::Scene* scene, DAVA::float32 maxFrametime_);
-    ~ChartPainterSystem();
 
     void AddEntity(DAVA::Entity* entity) override;
 
@@ -34,7 +33,7 @@ private:
     DAVA::float32 GetMaxFrametimeFromData() const;
 
     rhi::RenderPassConfig passConfig;
-    DAVA::Array<DAVA::Vector<FrameData>, 6>* performanceData;
+    DAVA::Array<DAVA::Vector<FrameData>, 6>* performanceData = nullptr;
 
     DAVA::float32 maxOverdraw = 1000.0f;
     DAVA::float32 overdrawStepCount = 100.0f;

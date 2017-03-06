@@ -9,9 +9,9 @@ namespace OverdrawPerformanceTester
 using DAVA::uint8;
 using DAVA::uint16;
 
-const uint8 OverdrawTesterComonent::addOverdrawPercent = 10;
+const uint8 OverdrawTesterComponent::addOverdrawPercent = 10;
 
-OverdrawTesterComonent::OverdrawTesterComonent(uint16 textureResolution_, uint8 overdrawScreenCount)
+OverdrawTesterComponent::OverdrawTesterComponent(uint16 textureResolution_, uint8 overdrawScreenCount)
     : textureResolution(textureResolution_)
     , stepsCount(overdrawScreenCount * 100 / addOverdrawPercent)
 {
@@ -19,14 +19,14 @@ OverdrawTesterComonent::OverdrawTesterComonent(uint16 textureResolution_, uint8 
     renderObject->SetWorldTransformPtr(&DAVA::Matrix4::IDENTITY);
 }
 
-OverdrawTesterComonent::~OverdrawTesterComonent()
+OverdrawTesterComponent::~OverdrawTesterComponent()
 {
     SafeRelease(renderObject);
 }
 
-DAVA::Component* OverdrawTesterComonent::Clone(DAVA::Entity* toEntity)
+DAVA::Component* OverdrawTesterComponent::Clone(DAVA::Entity* toEntity)
 {
-    OverdrawTesterComonent* newComponent = new OverdrawTesterComonent(textureResolution, (stepsCount * addOverdrawPercent) / 100);
+    OverdrawTesterComponent* newComponent = new OverdrawTesterComponent(textureResolution, (stepsCount * addOverdrawPercent) / 100);
     newComponent->SetEntity(toEntity);
     return newComponent;
 }

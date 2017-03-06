@@ -30,13 +30,13 @@ public:
 
     void BindDynamicParameters(DAVA::Camera* camera) override;
 
-    inline DAVA::uint32 GetCurrentStepsCount() const;
-    inline void SetCurrentStepsCount(DAVA::uint32 newCount);
+    DAVA::uint32 GetCurrentStepsCount() const;
+    void SetCurrentStepsCount(DAVA::uint32 newCount);
 
-    inline DAVA::NMaterial* GetDrawMaterial() const;
-    inline void SetDrawMaterial(DAVA::NMaterial* newMat);
+    DAVA::NMaterial* GetDrawMaterial() const;
+    void SetDrawMaterial(DAVA::NMaterial* newMat);
 
-    inline void RecalcBoundingBox() override;
+    void RecalcBoundingBox() override;
 
 private:
     void GenerateQuad(DAVA::uint32 index, DAVA::uint32 layoutId);
@@ -45,11 +45,12 @@ private:
 
     DAVA::Vector<QuadVertex> activeVerts;
     DAVA::NMaterial* material = nullptr;
-    DAVA::uint32 vertexLayoutId;
+    DAVA::uint32 vertexLayoutId = 0;
+    DAVA::uint32 vertexStride = 0;
+    DAVA::uint32 currentStepsCount = 0;
+
     DAVA::float32 addOverdrawPercent;
     DAVA::float32 addOverdrawPercentNormalized;
-    DAVA::uint32 vertexStride;
-    DAVA::uint32 currentStepsCount;
     DAVA::uint16 textureResolution;
 
     DAVA::Vector<DAVA::RenderBatch*> quads;
@@ -57,29 +58,29 @@ private:
     rhi::HIndexBuffer iBuffer;
 };
 
-DAVA::uint32 OverdrawTesterRenderObject::GetCurrentStepsCount() const
+inline DAVA::uint32 OverdrawTesterRenderObject::GetCurrentStepsCount() const
 {
     return currentStepsCount;
 }
 
-void OverdrawTesterRenderObject::SetCurrentStepsCount(DAVA::uint32 newCount)
+inline void OverdrawTesterRenderObject::SetCurrentStepsCount(DAVA::uint32 newCount)
 {
     currentStepsCount = newCount;
 }
 
-DAVA::NMaterial* OverdrawTesterRenderObject::GetDrawMaterial() const
+inline DAVA::NMaterial* OverdrawTesterRenderObject::GetDrawMaterial() const
 {
     return material;
 }
 
-void OverdrawTesterRenderObject::SetDrawMaterial(DAVA::NMaterial* newMat)
+inline void OverdrawTesterRenderObject::SetDrawMaterial(DAVA::NMaterial* newMat)
 {
     material = newMat;
     for (auto batch : quads)
         batch->SetMaterial(material);
 }
 
-void OverdrawTesterRenderObject::RecalcBoundingBox()
+inline void OverdrawTesterRenderObject::RecalcBoundingBox()
 {
 }
 }

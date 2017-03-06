@@ -23,7 +23,7 @@
 #include "UI/UIButton.h"
 #include "UI/Layouts/UIAnchorComponent.h"
 
-using OverdrawPerformanceTester::OverdrawTesterComonent;
+using OverdrawPerformanceTester::OverdrawTesterComponent;
 using OverdrawPerformanceTester::OverdrawTesterSystem;
 using OverdrawPerformanceTester::ChartPainterSystem;
 using OverdrawPerformanceTester::FrameData;
@@ -77,10 +77,10 @@ void OverdrawTestingScreen::LoadResources()
                                                 AddButtons();
                                             });
 
-    scene->AddSystem(testerSystem, MAKE_COMPONENT_MASK(OverdrawTesterComonent::OVERDRAW_TESTER_COMPONENT), Scene::SCENE_SYSTEM_REQUIRE_PROCESS);
+    scene->AddSystem(testerSystem, MAKE_COMPONENT_MASK(OverdrawTesterComponent::OVERDRAW_TESTER_COMPONENT), Scene::SCENE_SYSTEM_REQUIRE_PROCESS);
 
     chartPainterSystem = new ChartPainterSystem(scene, OverdrawTestConfig::chartHeight);
-    scene->AddSystem(chartPainterSystem, MAKE_COMPONENT_MASK(OverdrawTesterComonent::OVERDRAW_TESTER_COMPONENT), Scene::SCENE_SYSTEM_REQUIRE_PROCESS);
+    scene->AddSystem(chartPainterSystem, MAKE_COMPONENT_MASK(OverdrawTesterComponent::OVERDRAW_TESTER_COMPONENT), Scene::SCENE_SYSTEM_REQUIRE_PROCESS);
 
     ScopedPtr<Camera> camera(new Camera());
 
@@ -102,7 +102,7 @@ void OverdrawTestingScreen::LoadResources()
     cameraEntity->Release();
 
     Entity* overdrawTesterEntity = new Entity();
-    overdrawTesterEntity->AddComponent(new OverdrawPerformanceTester::OverdrawTesterComonent(OverdrawTestConfig::textureResolution, OverdrawTestConfig::overdrawScreensCount));
+    overdrawTesterEntity->AddComponent(new OverdrawPerformanceTester::OverdrawTesterComponent(OverdrawTestConfig::textureResolution, OverdrawTestConfig::overdrawScreensCount));
     scene->AddNode(overdrawTesterEntity);
     overdrawTesterEntity->Release();
 

@@ -22,20 +22,15 @@ class ChartPainterSystem;
 
 class OverdrawTestingScreen : public DAVA::UIScreen
 {
-protected:
-    virtual ~OverdrawTestingScreen()
-    {
-    }
-
 public:
     OverdrawTestingScreen(TestBed& app_);
-    virtual void LoadResources();
-    virtual void UnloadResources();
-    void OnExitButton(DAVA::BaseObject* obj, void* data, void* callerData);
+    void LoadResources() override;
+    void UnloadResources() override;
 
 private:
     void AddButtons();
     void OnChangeChartHeightButtonClick(BaseObject* sender, void* data, void* callerData);
+    void OnExitButton(DAVA::BaseObject* obj, void* data, void* callerData);
     DAVA::UIButton* CreateButton(const DAVA::Rect&& rect, const DAVA::Message&& msg, const DAVA::WideString&& caption, const DAVA::int32 tag);
 
     DAVA::UIButton* exitButton = nullptr;
