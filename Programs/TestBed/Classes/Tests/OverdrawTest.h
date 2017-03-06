@@ -2,11 +2,12 @@
 
 #include "BaseScreen.h"
 
-class OverdrawTestingScreen;
-
 namespace OverdrawPerformanceTester
 {
+class OverdrawTestingScreen;
+
 using namespace DAVA;
+
 class OverdrawTest : public BaseScreen
 {
 public:
@@ -43,7 +44,6 @@ private:
     UIStaticText* chartHeightLabel = nullptr;
     Font* font = nullptr;
     OverdrawTestingScreen* testingScreen = nullptr;
-    TestBed& app;
 
     UnorderedMap<UIButton*, ButtonInfo> resolutionButtons;
     UnorderedMap<UIButton*, ButtonInfo> texturePixelFormatButtons;
