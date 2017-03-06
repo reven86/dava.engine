@@ -39,7 +39,6 @@ protected:
 
     void OnContextCreated(DAVA::TArc::DataContext* context) override;
     void OnContextDeleted(DAVA::TArc::DataContext* context) override;
-    void OnContextWillBeChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* newOne) override;
     void OnContextWasChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* oldOne) override;
 
 private:
@@ -61,9 +60,8 @@ private:
     DAVA::TArc::DataContext::ContextID OpenDocument(const QString& path);
     DAVA::RefPtr<PackageNode> CreatePackage(const QString& path);
 
-    void OnRequestCloseTab(DAVA::uint64 id);
     void CloseActiveDocument();
-    void CloseDocument(const DAVA::TArc::DataContext::ContextID& id);
+    void CloseDocument(DAVA::uint64 id);
     void CloseAllDocuments();
     void DeleteAllDocuments();
     void CloseDocuments(const DAVA::Set<DAVA::TArc::DataContext::ContextID>& ids);
