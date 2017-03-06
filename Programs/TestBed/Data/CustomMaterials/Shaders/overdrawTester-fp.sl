@@ -40,7 +40,7 @@ fragment_out fp_main( fragment_in input )
 
     #if DEPENDENT_READ_TEST
         float uvFloatCol = FP_A8(tex2D(t1, input.texcoord0));
-        float4 uv = float4(uvFloatCol, uvFloatCol, uvFloatCol, uvFloatCol) * 0.005f;
+        float4 uv = float4(uvFloatCol, uvFloatCol, uvFloatCol, uvFloatCol) * 0.00390625f; // 0.00390625 is 8.0 texels in 2048 texture. 
         float c1Float = FP_A8(tex2D(t2, uv.xy));
         float4 c1 = float4(c1Float, c1Float, c1Float, c1Float);
         float c2Float = FP_A8(tex2D(t3, uv.zw));

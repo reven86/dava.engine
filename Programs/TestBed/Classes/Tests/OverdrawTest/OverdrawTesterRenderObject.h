@@ -40,7 +40,7 @@ public:
 
 private:
     void GenerateQuad(DAVA::uint32 index, DAVA::uint32 layoutId);
-    DAVA::Array<OverdrawTesterRenderObject::QuadVertex, 6> GetQuadVerts(DAVA::float32 xStart, DAVA::float32 xEnd);
+    DAVA::Array<OverdrawTesterRenderObject::QuadVertex, 4> GetQuadVerts(DAVA::float32 xStart, DAVA::float32 xEnd);
     void GenerateIndexBuffer();
 
     DAVA::Vector<QuadVertex> activeVerts;
