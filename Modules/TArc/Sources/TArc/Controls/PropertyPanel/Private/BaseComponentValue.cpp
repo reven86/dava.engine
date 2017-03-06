@@ -107,6 +107,14 @@ std::shared_ptr<const PropertyNode> BaseComponentValue::GetPropertyNode(int32 in
     return nodes[static_cast<size_t>(index)];
 }
 
+void BaseComponentValue::HideEditor()
+{
+    if (realWidget != nullptr)
+    {
+        realWidget->hide();
+    }
+}
+
 bool BaseComponentValue::IsReadOnly() const
 {
     Reflection r = nodes.front()->field.ref;

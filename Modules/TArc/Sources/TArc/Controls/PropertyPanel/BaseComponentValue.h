@@ -49,6 +49,8 @@ public:
     int32 GetPropertiesNodeCount() const;
     std::shared_ptr<const PropertyNode> GetPropertyNode(int32 index) const;
 
+    void HideEditor();
+
     virtual bool IsReadOnly() const;
     static const char* readOnlyFieldName;
 

@@ -198,6 +198,19 @@ void ReflectedPropertyModel::Update(ReflectedPropertyItem* item)
     }
 }
 
+void ReflectedPropertyModel::HideEditor(ReflectedPropertyItem* item)
+{
+    if (item->value != nullptr)
+    {
+        item->value->HideEditor();
+    }
+
+    for (int32 i = 0; i < item->GetChildCount(); ++i)
+    {
+        HideEditor(item->GetChild(i));
+    }
+}
+
 void ReflectedPropertyModel::SetObjects(Vector<Reflection> objects)
 {
     wrappersProcessor.Shoutdown();
@@ -487,6 +500,11 @@ void ReflectedPropertyModel::LoadExpanded(const PropertiesItem& propertyRoot)
             }
         }
     }
+}
+
+void ReflectedPropertyModel::HideEditors()
+{
+    HideEditor(rootItem.get());
 }
 
 void ReflectedPropertyModel::GetExpandedListImpl(QModelIndexList& list, ReflectedPropertyItem* item) const

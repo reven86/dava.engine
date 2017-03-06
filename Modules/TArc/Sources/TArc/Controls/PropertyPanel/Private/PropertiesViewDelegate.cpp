@@ -37,6 +37,7 @@ PropertiesViewDelegate::PropertiesViewDelegate(QAbstractItemView* view_, Reflect
 void PropertiesViewDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     QStyleOptionViewItem opt = option;
+    AdjustEditorRect(opt);
     PropertiesViewDelegateDetail::InitStyleOptions(opt);
 
     BaseComponentValue* valueComponent = GetComponentValue(index);
@@ -45,10 +46,13 @@ void PropertiesViewDelegate::paint(QPainter* painter, const QStyleOptionViewItem
     {
         QStyle* style = option.widget->style();
         opt.text = valueComponent->GetPropertyName();
+        opt.features |= QStyleOptionViewItem::HasDisplay;
         style->drawControl(QStyle::CE_ItemViewItem, &opt, painter, opt.widget);
     }
     else
     {
+        QStyle* style = option.widget->style();
+        style->drawControl(QStyle::CE_ItemViewItem, &opt, painter, opt.widget);
         valueComponent->Draw(view->viewport(), painter, opt);
     }
 }
@@ -81,6 +85,7 @@ QSize PropertiesViewDelegate::sizeHint(const QStyleOptionViewItem& option, const
         }
     }
 
+    sizeHint.rheight() += 2;
     return sizeHint;
 }
 
@@ -91,8 +96,10 @@ QWidget* PropertiesViewDelegate::createEditor(QWidget* parent, const QStyleOptio
         return nullptr;
     }
 
+    QStyleOptionViewItem opt = option;
+    AdjustEditorRect(opt);
     BaseComponentValue* valueComponent = GetComponentValue(index);
-    return valueComponent->AcquireEditorWidget(parent, option);
+    return valueComponent->AcquireEditorWidget(parent, opt);
 }
 
 void PropertiesViewDelegate::destroyEditor(QWidget* editor, const QModelIndex& index) const
@@ -122,8 +129,10 @@ void PropertiesViewDelegate::updateEditorGeometry(QWidget* editor, const QStyleO
         return;
     }
 
+    QStyleOptionViewItem opt = option;
+    AdjustEditorRect(opt);
     BaseComponentValue* valueComponent = GetComponentValue(index);
-    valueComponent->UpdateGeometry(view->viewport(), option);
+    valueComponent->UpdateGeometry(view->viewport(), opt);
 }
 
 bool PropertiesViewDelegate::editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index)
@@ -140,6 +149,11 @@ BaseComponentValue* PropertiesViewDelegate::GetComponentValue(const QModelIndex&
 {
     DVASSERT(index.isValid());
     return model->GetComponentValue(index);
+}
+
+void PropertiesViewDelegate::AdjustEditorRect(QStyleOptionViewItem& opt) const
+{
+    opt.rect.setHeight(opt.rect.height() - 2);
 }
 
 void PropertiesViewDelegate::UpdateSizeHints(int section, int newWidth)

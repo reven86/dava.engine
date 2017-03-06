@@ -61,6 +61,8 @@ public:
     void SaveExpanded(PropertiesItem& propertyRoot) const;
     void LoadExpanded(const PropertiesItem& propertyRoot);
 
+    void HideEditors();
+
 private:
     friend class BaseComponentValue;
     void ChildAdded(std::shared_ptr<const PropertyNode> parent, std::shared_ptr<PropertyNode> node, int32 childPosition);
@@ -70,6 +72,7 @@ private:
     QModelIndex MapItem(ReflectedPropertyItem* item) const;
 
     void Update(ReflectedPropertyItem* item);
+    void HideEditor(ReflectedPropertyItem* item);
 
     template <typename T>
     std::shared_ptr<T> GetExtensionChain() const;
