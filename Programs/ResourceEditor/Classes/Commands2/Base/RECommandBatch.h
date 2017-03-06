@@ -2,10 +2,9 @@
 
 #include "Base/BaseTypes.h"
 #include "Command/CommandBatch.h"
-#include "Commands2/Base/RECommandIDHandler.h"
 
 class RECommand;
-class RECommandBatch final : public DAVA::CommandBatch, public RECommandIDHandler
+class RECommandBatch final : public DAVA::CommandBatch
 {
 public:
     RECommandBatch(const DAVA::String& description, DAVA::uint32 commandsCount);
@@ -14,5 +13,5 @@ public:
 
     RECommand* GetCommand(DAVA::uint32 index) const;
 
-    bool MatchCommandID(DAVA::uint32 commandID) const override;
+    bool MatchCommandID(DAVA::uint32 commandID) const;
 };

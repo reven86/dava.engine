@@ -1,10 +1,11 @@
 #pragma once
 
 #include "Command/Command.h"
+#include "Command/Private/CommandsHolder.h"
 
 namespace DAVA
 {
-class CommandBatch : public Command
+class CommandBatch : public Command, public CommandsHolder
 {
 public:
     /**
@@ -30,42 +31,11 @@ public:
     void AddAndRedo(std::unique_ptr<Command>&& command);
 
     /**
-    \brief Moves command to the batch.
-    */
-    void Add(std::unique_ptr<Command>&& command);
-
-    /**
-    \brief Returns whether the batch is empty (i.e. whether its size is 0)
-    \returns true if batch size is 0, false otherwise.
-    */
-    bool IsEmpty() const;
-
-    /**
-    \brief Returns the number of commands in the batch.
-    \returns The number of commands in the batch.
-    */
-    uint32 Size() const;
-
-    /**
     \brief Works the same as Command::IsClean
     \returns true if empty or contain only clean commands
     */
     bool IsClean() const override;
-
-protected:
-    using CommandsContainer = Vector<std::unique_ptr<Command>>;
-    CommandsContainer commandList;
 };
-
-inline bool CommandBatch::IsEmpty() const
-{
-    return commandList.empty();
-}
-
-inline uint32 CommandBatch::Size() const
-{
-    return static_cast<uint32>(commandList.size());
-}
 
 bool IsCommandBatch(const Command* command);
 } //namespace DAVA

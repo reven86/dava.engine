@@ -1,26 +1,21 @@
-#ifndef __QUICKED_ADD_REMOVE_STYLE_PROPERTY_COMMAND_H__
-#define __QUICKED_ADD_REMOVE_STYLE_PROPERTY_COMMAND_H__
+#pragma once
 
-#include "Command/Command.h"
+#include "QECommands/Private/QEPackageCommand.h"
 
-class PackageNode;
 class StyleSheetNode;
 class StyleSheetProperty;
 
-class AddRemoveStylePropertyCommand : public DAVA::Command
+class AddRemoveStylePropertyCommand : public QEPackageCommand
 {
 public:
-    AddRemoveStylePropertyCommand(PackageNode* root, StyleSheetNode* node, StyleSheetProperty* property, bool add);
-    virtual ~AddRemoveStylePropertyCommand();
+    AddRemoveStylePropertyCommand(PackageNode* package, StyleSheetNode* node, StyleSheetProperty* property, bool add);
+    ~AddRemoveStylePropertyCommand() override;
 
     void Redo() override;
     void Undo() override;
 
 private:
-    PackageNode* root;
-    StyleSheetNode* node;
-    StyleSheetProperty* property;
-    bool add;
+    StyleSheetNode* node = nullptr;
+    StyleSheetProperty* property = nullptr;
+    const bool add;
 };
-
-#endif // __QUICKED_ADD_REMOVE_STYLE_PROPERTY_COMMAND_H__

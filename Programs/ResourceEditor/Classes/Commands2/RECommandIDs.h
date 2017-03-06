@@ -2,9 +2,8 @@
 
 #include "Base/BaseTypes.h"
 
-enum CommandID : DAVA::uint32
+enum CommandID : DAVA::int32
 {
-    CMDID_BATCH,
     CMDID_TRANSFORM,
 
     CMDID_ENTITY_ADD,

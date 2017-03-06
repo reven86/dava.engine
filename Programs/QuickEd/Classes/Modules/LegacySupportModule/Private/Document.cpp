@@ -50,7 +50,7 @@ DAVA::CommandStack* Document::GetCommandStack() const
     const DocumentData* data = dataContext->GetData<DocumentData>();
     DVASSERT(nullptr != data);
 
-    return data->GetCommandStack();
+    return const_cast<DAVA::CommandStack*>(data->GetCommandStack());
 }
 
 PackageNode* Document::GetPackage() const

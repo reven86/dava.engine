@@ -1,27 +1,22 @@
-#ifndef __QUICKED_INSERT_REMOVE_STYLE_COMMAND_H__
-#define __QUICKED_INSERT_REMOVE_STYLE_COMMAND_H__
+#pragma once
 
-#include "Command/Command.h"
+#include "QECommands/Private/QEPackageCommand.h"
 
-class PackageNode;
 class StyleSheetNode;
 class StyleSheetsNode;
 
-class InsertRemoveStyleCommand : public DAVA::Command
+class InsertRemoveStyleCommand : public QEPackageCommand
 {
 public:
-    InsertRemoveStyleCommand(PackageNode* _root, StyleSheetNode* _node, StyleSheetsNode* _dest, int _index, bool insert);
-    virtual ~InsertRemoveStyleCommand();
+    InsertRemoveStyleCommand(PackageNode* package, StyleSheetNode* node, StyleSheetsNode* dest, int index, bool insert);
+    ~InsertRemoveStyleCommand() override;
 
     void Redo() override;
     void Undo() override;
 
 private:
-    PackageNode* root;
-    StyleSheetNode* node;
-    StyleSheetsNode* dest;
-    int index;
-    bool insert;
+    StyleSheetNode* node = nullptr;
+    StyleSheetsNode* dest = nullptr;
+    const int index;
+    const bool insert;
 };
-
-#endif // __QUICKED_INSERT_REMOVE_STYLE_COMMAND_H__

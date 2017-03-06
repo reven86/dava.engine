@@ -422,7 +422,7 @@ void SceneCollisionSystem::ProcessCommand(const RECommandNotificationObject& com
             const CreatePlaneLODCommand* createPlaneLODCommand = static_cast<const CreatePlaneLODCommand*>(command);
             UpdateCollisionObject(Selectable(createPlaneLODCommand->GetEntity()));
         }
-        else if (command->MatchCommandIDs({ CMDID_LOD_DELETE }))
+        else if (command->MatchCommandID(CMDID_LOD_DELETE))
         {
             const DeleteLODCommand* deleteLODCommand = static_cast<const DeleteLODCommand*>(command);
             UpdateCollisionObject(Selectable(deleteLODCommand->GetEntity()));

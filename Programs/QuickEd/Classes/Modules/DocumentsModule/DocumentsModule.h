@@ -91,7 +91,6 @@ private:
     DAVA::TArc::DataContext::ContextID GetContextByPath(const QString& path) const;
 
     void OnDragStateChanged(EditorSystemsManager::eDragState dragState, EditorSystemsManager::eDragState previousState);
-    void OnPropertyChanged(ControlNode* node, AbstractProperty* property, DAVA::VariantType newValue);
 
     PreviewWidget* previewWidget = nullptr;
     std::unique_ptr<EditorSystemsManager> systemsManager;

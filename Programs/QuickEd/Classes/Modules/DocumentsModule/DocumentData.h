@@ -13,9 +13,11 @@
 
 namespace DAVA
 {
+class Command;
 class CommandStack;
 }
 class PackageNode;
+class QEPackageCommand;
 
 class DocumentData : public DAVA::TArc::DataNode
 {
@@ -24,7 +26,12 @@ public:
     ~DocumentData() override;
 
     const PackageNode* GetPackageNode() const;
-    DAVA_DEPRECATED(DAVA::CommandStack* GetCommandStack() const;)
+    const DAVA::CommandStack* GetCommandStack() const;
+
+    template <typename T, typename... Arguments>
+    std::unique_ptr<T> CreateQECommand(Arguments&&... args) const;
+
+    void ExecCommand(std::unique_ptr<DAVA::Command>&& command);
 
     const SelectedNodes& GetSelectedNodes() const;
 
@@ -40,7 +47,7 @@ public:
 
     bool IsDocumentExists() const;
 
-    DAVA_DEPRECATED(void RefreshLayout();)
+    DAVA_DEPRECATED(void RefreshLayout());
     DAVA_DEPRECATED(void RefreshAllControlProperties());
 
     static const char* packagePropertyName;
@@ -64,3 +71,10 @@ private:
 
     DAVA_VIRTUAL_REFLECTION(DocumentData, DAVA::TArc::DataNode);
 };
+
+template <typename T, typename... Arguments>
+std::unique_ptr<T> DocumentData::CreateQECommand(Arguments&&... args) const
+{
+    static_assert(std::is_base_of<QEPackageCommand, T>::value, "T must be a class derived from QECommand!");
+    return std::make_unique<T>(package.Get(), std::forward<Arguments>(args)...);
+}

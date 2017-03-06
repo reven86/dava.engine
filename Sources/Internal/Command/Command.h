@@ -2,6 +2,7 @@
 
 #include "Base/BaseTypes.h"
 #include "Command/ICommand.h"
+#include "Command/CommandIDs.h"
 
 namespace DAVA
 {
@@ -13,13 +14,19 @@ public:
     \param[in] id derived class ID, like CMDID_BATCH.
     \param[in] text command text description to be displayed in widgets / network packets / log texts.
     */
-    Command(const String& description = "");
+    Command(int32 commandID, const String& description = "");
 
     /**
-    \brief Returns command's text description.
-    \returns command's text description.
+    \brief Returns command text description.
+    \returns String command text description.
     */
     const String& GetDescription() const;
+
+    /**
+    \brief Returns command id.
+    \returns int32 command id.
+     */
+    int32 GetID() const;
 
     /**
     \brief Some commands passed to stack can make Redo and Undo, but do not change any files so do not change save state.
@@ -29,6 +36,11 @@ public:
     virtual bool IsClean() const;
 
 private:
+    //this function is not a part of public API and can be called only by CommandsHolder class
+    virtual bool MergeWith(const Command* command);
+    friend class CommandsHolder;
+
+    const int32 id = INVALID_COMMAND_ID;
     const String description;
 };
 
@@ -37,8 +49,18 @@ inline const String& Command::GetDescription() const
     return description;
 }
 
+inline int32 Command::GetID() const
+{
+    return id;
+}
+
 inline bool Command::IsClean() const
 {
     return false;
 }
+
+inline bool Command::MergeWith(const Command* command)
+{
+    return false;
 }
+} //namespace DAVA

@@ -1,26 +1,21 @@
-#ifndef __QUICKED_REMOVE_CONTROL_COMMAND_H__
-#define __QUICKED_REMOVE_CONTROL_COMMAND_H__
+#pragma once
 
-#include "Command/Command.h"
+#include "QECommands/Private/QEPackageCommand.h"
 
-class PackageNode;
 class ControlNode;
 class ControlsContainerNode;
 
-class RemoveControlCommand : public DAVA::Command
+class RemoveControlCommand : public QEPackageCommand
 {
 public:
-    RemoveControlCommand(PackageNode* _root, ControlNode* _node, ControlsContainerNode* _from, int _index);
-    virtual ~RemoveControlCommand();
+    RemoveControlCommand(PackageNode* package, ControlNode* node, ControlsContainerNode* from, int index);
+    ~RemoveControlCommand() override;
 
     void Redo() override;
     void Undo() override;
 
 private:
-    PackageNode* root;
-    ControlNode* node;
-    ControlsContainerNode* from;
-    int index;
+    ControlNode* node = nullptr;
+    ControlsContainerNode* from = nullptr;
+    const int index;
 };
-
-#endif // __QUICKED_REMOVE_CONTROL_COMMAND_H__
