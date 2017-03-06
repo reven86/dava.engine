@@ -5,19 +5,19 @@
 
 namespace OverdrawPerformanceTester
 {
-const float32 OverdrawTest::resolutionButtonsXOffset = 10.0f;
-const float32 OverdrawTest::resolutionButtonsYOffset = 100.0f;
-const float32 OverdrawTest::buttonHeight = 40.0f;
-const float32 OverdrawTest::buttonWidth = 150.0f;
-const float32 OverdrawTest::heigthDistanceBetweenButtons = 10.0f;
-const float32 OverdrawTest::texturePixelFormatXOffset = 250.0f;
-const float32 OverdrawTest::texturePixelFormatYOffset = 100.0f;
-const float32 OverdrawTest::overdrawXOffset = 490.0f;
-const float32 OverdrawTest::overdrawYOffset = 100.0f;
-const float32 OverdrawTest::chartHeightYOffset = overdrawYOffset + buttonHeight * 4;
-const float32 OverdrawTest::minFrametimeThreshold = 0.033f;
-const float32 OverdrawTest::frametimeIncreaseStep = 0.016f;
-const uint16 OverdrawTest::testingScreenNumber = 1024; // Screen index must be above tests number. 1024 looks good.
+const float32 resolutionButtonsXOffset = 10.0f;
+const float32 resolutionButtonsYOffset = 100.0f;
+const float32 buttonHeight = 40.0f;
+const float32 buttonWidth = 150.0f;
+const float32 heigthDistanceBetweenButtons = 10.0f;
+const float32 texturePixelFormatXOffset = 250.0f;
+const float32 texturePixelFormatYOffset = 100.0f;
+const float32 overdrawXOffset = 490.0f;
+const float32 overdrawYOffset = 100.0f;
+const float32 chartHeightYOffset = overdrawYOffset + buttonHeight * 4;
+const float32 minFrametimeThreshold = 0.033f;
+const float32 frametimeIncreaseStep = 0.016f;
+const uint16 testingScreenNumber = 1024; // Screen index must be above tests number. 1024 looks good.
 
 const Array<OverdrawTest::ButtonInfo, 4> OverdrawTest::resolutionButtonsInfo =
 { {

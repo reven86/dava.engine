@@ -73,11 +73,11 @@ void OverdrawTestingScreen::LoadResources()
     }
 
     testerSystem = new OverdrawTesterSystem(scene, OverdrawTestConfig::pixelFormat, OverdrawTestConfig::textureResolution,
-        [this](DAVA::Array<DAVA::Vector<FrameData>, 6>* performanceData)
-    {
-        chartPainterSystem->ProcessPerformanceData(performanceData);
-        AddButtons();
-    });
+                                            [this](DAVA::Array<DAVA::Vector<FrameData>, 6>* performanceData)
+                                            {
+                                                chartPainterSystem->ProcessPerformanceData(performanceData);
+                                                AddButtons();
+                                            });
 
     scene->AddSystem(testerSystem, MAKE_COMPONENT_MASK(OverdrawTesterComponent::OVERDRAW_TESTER_COMPONENT), Scene::SCENE_SYSTEM_REQUIRE_PROCESS);
 
