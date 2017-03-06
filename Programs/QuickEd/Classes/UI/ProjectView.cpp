@@ -53,6 +53,7 @@ void MainWindow::ProjectView::SetProjectActionsEnabled(bool enabled)
 {
     mainWindow->ui->actionJumpToPrototype->setEnabled(enabled);
     mainWindow->ui->actionFindPrototypeInstances->setEnabled(enabled);
+    mainWindow->ui->actionFindInProject->setEnabled(enabled);
     mainWindow->ui->actionFindInDocument->setEnabled(enabled);
     mainWindow->ui->actionFindNext->setEnabled(enabled);
     mainWindow->ui->actionFindPrevious->setEnabled(enabled);

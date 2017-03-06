@@ -2,6 +2,7 @@
 #include "UI/Find/Filters/FindFilter.h"
 #include "UI/Find/Widgets/CompositeFindFilterWidget.h"
 
+#include <QtTools/WidgetHelpers/SharedIcon.h>
 #include <QKeyEvent>
 
 using namespace DAVA;
@@ -15,22 +16,28 @@ FindInDocumentWidget::FindInDocumentWidget(QWidget* parent)
 
     findFiltersWidget = new CompositeFindFilterWidget(this);
 
-    menu = new QMenu(this);
-    findAction = new QAction(tr("Find"), this);
-    findAllAction = new QAction(tr("Find All"), this);
-    menu->addAction(findAction);
-    menu->addAction(findAllAction);
+    findNextButton = new QToolButton(this);
+    findNextButton->setArrowType(Qt::RightArrow);
+    findPreviousButton = new QToolButton(this);
+    findPreviousButton->setArrowType(Qt::LeftArrow);
+    findAllButton = new QToolButton(this);
+    findAllButton->setText(tr("Find All"));
+    stopFindButton = new QToolButton(this);
+    stopFindButton->setIcon(SharedIcon(":/QtTools/Icons/close-16.png"));
 
-    findButton = new QToolButton(this);
-    findButton->setMenu(menu);
-    findButton->setDefaultAction(findAction);
-
-    QObject::connect(findAction, SIGNAL(triggered()), this, SLOT(OnFindNextClicked()));
-    QObject::connect(findAllAction, SIGNAL(triggered()), this, SLOT(OnFindAllClicked()));
+    QObject::connect(findNextButton, SIGNAL(pressed()), this, SLOT(OnFindNextClicked()));
+    QObject::connect(findPreviousButton, SIGNAL(pressed()), this, SLOT(OnFindPreviousClicked()));
+    QObject::connect(findAllButton, SIGNAL(pressed()), this, SLOT(OnFindAllClicked()));
+    QObject::connect(stopFindButton, SIGNAL(pressed()), this, SIGNAL(OnStopFind()));
     QObject::connect(findFiltersWidget, SIGNAL(FiltersChanged()), this, SLOT(OnFiltersChanged()));
 
     layout->addWidget(findFiltersWidget);
-    layout->addWidget(findButton);
+    layout->addWidget(findPreviousButton);
+    layout->addWidget(findNextButton);
+    layout->addSpacing(10);
+    layout->addWidget(findAllButton);
+    layout->addSpacing(10);
+    layout->addWidget(stopFindButton);
 
     setFocusProxy(findFiltersWidget);
 }

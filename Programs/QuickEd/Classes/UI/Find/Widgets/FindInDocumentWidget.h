@@ -41,10 +41,10 @@ private:
 
     QHBoxLayout* layout = nullptr;
     CompositeFindFilterWidget* findFiltersWidget = nullptr;
-    QToolButton* findButton = nullptr;
-    QMenu* menu = nullptr;
-    QAction* findAction = nullptr;
-    QAction* findAllAction = nullptr;
+    QToolButton* findNextButton = nullptr;
+    QToolButton* findPreviousButton = nullptr;
+    QToolButton* findAllButton = nullptr;
+    QToolButton* stopFindButton = nullptr;
 
     bool hasChanges = true;
 };
