@@ -58,7 +58,7 @@ bool CheckStateToBool(const Any& value)
 
 Color QColorToColorAny(const Any& value)
 {
-    return QColorToColorAny(value.Get<QColor>());
+    return QColorToColor(value.Get<QColor>());
 }
 
 QColor ColorToQColorAny(const Any& value)

@@ -16,12 +16,12 @@ namespace SettingsModuleDetail
 {
 void ApplyColorPickerSettins(DAVA::TArc::ContextAccessor* contextAccessor)
 {
-    const String PROPERTIES_KEY = "ColorPickerDialogProperties";
-    const String MULTIPLIER_KEY = "CPD_maxMultiplier";
+    const DAVA::String PROPERTIES_KEY = "ColorPickerDialogProperties";
+    const DAVA::String MULTIPLIER_KEY = "CPD_maxMultiplier";
 
     DAVA::TArc::PropertiesItem propsItem = contextAccessor->CreatePropertiesNode(PROPERTIES_KEY);
 
-    float32 maxMul = SettingsManager::Instance()->GetValue(Settings::General_ColorMultiplyMax).AsFloat();
+    DAVA::float32 maxMul = SettingsManager::Instance()->GetValue(Settings::General_ColorMultiplyMax).AsFloat();
     propsItem.Set(MULTIPLIER_KEY, maxMul);
 }
 }

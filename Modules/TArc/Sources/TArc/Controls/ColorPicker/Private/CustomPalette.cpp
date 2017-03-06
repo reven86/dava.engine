@@ -13,7 +13,6 @@ namespace DAVA
 {
 namespace TArc
 {
-
 CustomPalette::CustomPalette(QWidget* parent)
     : QWidget(parent)
     , nRows(6)
