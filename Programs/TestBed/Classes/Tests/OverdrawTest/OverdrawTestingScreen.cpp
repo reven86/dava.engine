@@ -23,6 +23,8 @@
 #include "UI/UIButton.h"
 #include "UI/Layouts/UIAnchorComponent.h"
 
+namespace OverdrawPerformanceTester
+{
 using OverdrawPerformanceTester::OverdrawTesterComponent;
 using OverdrawPerformanceTester::OverdrawTesterSystem;
 using OverdrawPerformanceTester::ChartPainterSystem;
@@ -71,11 +73,11 @@ void OverdrawTestingScreen::LoadResources()
     }
 
     testerSystem = new OverdrawTesterSystem(scene, OverdrawTestConfig::pixelFormat, OverdrawTestConfig::textureResolution,
-                                            [this](DAVA::Array<DAVA::Vector<FrameData>, 6>* performanceData)
-                                            {
-                                                chartPainterSystem->ProcessPerformanceData(performanceData);
-                                                AddButtons();
-                                            });
+        [this](DAVA::Array<DAVA::Vector<FrameData>, 6>* performanceData)
+    {
+        chartPainterSystem->ProcessPerformanceData(performanceData);
+        AddButtons();
+    });
 
     scene->AddSystem(testerSystem, MAKE_COMPONENT_MASK(OverdrawTesterComponent::OVERDRAW_TESTER_COMPONENT), Scene::SCENE_SYSTEM_REQUIRE_PROCESS);
 
@@ -175,4 +177,5 @@ UIButton* OverdrawTestingScreen::CreateButton(const Rect&& rect, const Message&&
     button->SetTag(tag);
     AddControl(button);
     return button;
+}
 }

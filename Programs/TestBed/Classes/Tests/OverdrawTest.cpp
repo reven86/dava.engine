@@ -3,6 +3,8 @@
 #include "OverdrawTest/OverdrawTestingScreen.h"
 #include "OverdrawTest/OverdrawTestConfig.h"
 
+namespace OverdrawPerformanceTester
+{
 const float32 OverdrawTest::resolutionButtonsXOffset = 10.0f;
 const float32 OverdrawTest::resolutionButtonsYOffset = 100.0f;
 const float32 OverdrawTest::buttonHeight = 40.0f;
@@ -228,4 +230,5 @@ DAVA::UIButton* OverdrawTest::CreateButton(const DAVA::Rect& rect, const WideStr
     button->SetStateFontColor(UIControl::STATE_PRESSED_INSIDE, Color(0.7f, 0.7f, 0.7f, 1.f));
 
     return button;
+}
 }

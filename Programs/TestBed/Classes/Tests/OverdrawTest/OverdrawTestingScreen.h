@@ -18,7 +18,6 @@ namespace OverdrawPerformanceTester
 {
 class OverdrawTesterSystem;
 class ChartPainterSystem;
-}
 
 class OverdrawTestingScreen : public DAVA::UIScreen
 {
@@ -49,3 +48,4 @@ private:
     static const DAVA::float32 minFrametimeThreshold;
     static const DAVA::float32 frametimeIncreaseStep;
 };
+}

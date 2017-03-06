@@ -1,6 +1,6 @@
 #include "ChartPainterSystem.h"
 
-#include "FrameData.h"
+#include "OverdrawTestConfig.h"
 #include "OverdrawTesterComponent.h"
 
 #include "Render/2D/Systems/RenderSystem2D.h"

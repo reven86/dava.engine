@@ -301,7 +301,7 @@ void TestBed::RegisterTests()
 #endif
     new DeviceInfoTest(*this);
     new DlcTest(*this);
-    new OverdrawTest(*this);
+    new OverdrawPerformanceTester::OverdrawTest(*this);
     new UIScrollViewTest(*this);
     new NotificationScreen(*this);
     new SpeedLoadImagesTest(*this);

@@ -2,7 +2,7 @@
 
 #include <random>
 
-#include "FrameData.h"
+#include "OverdrawTestConfig.h"
 
 #include "Base/BaseTypes.h"
 #include "Base/FastName.h"

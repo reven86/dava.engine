@@ -2,9 +2,11 @@
 
 #include "BaseScreen.h"
 
-using namespace DAVA;
 class OverdrawTestingScreen;
 
+namespace OverdrawPerformanceTester
+{
+using namespace DAVA;
 class OverdrawTest : public BaseScreen
 {
 public:
@@ -79,3 +81,4 @@ private:
     static const Array<ButtonInfo, 2> overdrawButtonsInfo;
     static const Array<ButtonInfo, 2> chartHeightButtonsInfo;
 };
+}
