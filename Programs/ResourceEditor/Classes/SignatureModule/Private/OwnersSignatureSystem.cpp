@@ -1,7 +1,10 @@
 #include "Classes/SignatureModule/Private/OwnersSignatureSystem.h"
 #include "Classes/StringConstants.h"
 
+#include <Scene3D/Components/ComponentHelpers.h>
 #include <Scene3D/Systems/EventSystem.h>
+#include <Scene3D/Scene.h>
+
 #include <Utils/StringFormat.h>
 
 OwnersSignatureSystem::OwnersSignatureSystem(DAVA::Scene* scene, const DAVA::String& userName)

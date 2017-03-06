@@ -4,6 +4,8 @@
 #include "Classes/SceneManager/SceneData.h"
 #include "Classes/Qt/Scene/SceneEditor2.h"
 
+#include <TArc/Utils/ModuleCollection.h>
+
 #include <Reflection/ReflectionRegistrator.h>
 
 namespace SignatureModuleDetail

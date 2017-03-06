@@ -10,6 +10,8 @@
 
 #include "FileSystem/FilePath.h"
 
+#include "Utils/StringFormat.h"
+
 namespace DAVA
 {
 const char* StringToCharPointer(const Any& value)
