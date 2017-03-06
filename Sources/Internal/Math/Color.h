@@ -26,6 +26,8 @@ public:
     static const Color Transparent;
     static const Color Clear;
     static const Color Black;
+    static const Color Red;
+    static const Color Green;
 
     union
     {

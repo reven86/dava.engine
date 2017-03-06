@@ -5,9 +5,6 @@
 
 using DAVA::Rect;
 
-const Color OverdrawTest::Red(1.0f, 0.0f, 0.0f, 1.0f);
-const Color OverdrawTest::Green(0.0f, 1.0f, 0.0f, 1.0f);
-
 const float32 OverdrawTest::resolutionButtonsXOffset = 10.0f;
 const float32 OverdrawTest::resolutionButtonsYOffset = 100.0f;
 const float32 OverdrawTest::buttonHeight = 40.0f;
@@ -165,11 +162,11 @@ void OverdrawTest::OnResolutionButtonClick(BaseObject* sender, void* data, void*
     {
         if (btn.first->GetTag() == pickedButton->GetTag())
         {
-            btn.first->SetDebugDrawColor(Green);
+            btn.first->SetDebugDrawColor(Color::Green);
             OverdrawTestConfig::textureResolution = btn.second.data;
         }
         else
-            btn.first->SetDebugDrawColor(Red);
+            btn.first->SetDebugDrawColor(Color::Red);
     }
 }
 
@@ -181,11 +178,11 @@ void OverdrawTest::OnTextureFormatButtonClick(BaseObject* sender, void* data, vo
     {
         if (btn.first->GetTag() == pickedButton->GetTag())
         {
-            btn.first->SetDebugDrawColor(Green);
+            btn.first->SetDebugDrawColor(Color::Green);
             OverdrawTestConfig::pixelFormat = static_cast<DAVA::PixelFormat>(btn.second.data);
         }
         else
-            btn.first->SetDebugDrawColor(Red);
+            btn.first->SetDebugDrawColor(Color::Red);
     }
 }
 

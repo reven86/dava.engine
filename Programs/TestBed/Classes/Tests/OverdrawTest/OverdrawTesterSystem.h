@@ -59,14 +59,6 @@ private:
     DAVA::uint16 textureResolution;
 
     bool isFinished = false;
-
-    static const DAVA::Array<DAVA::FastName, 4> textureNames;
-    static const DAVA::uint8 maxTexturesCount;
-    static const DAVA::FastName materialPath;
-    static const DAVA::FastName sampleCountKeyword;
-    static const DAVA::FastName dependentReadKeyword;
-    static const DAVA::uint32 accumulatedFramesCount;
-    static const bool generateTexWithMips;
 };
 
 DAVA::float32 OverdrawTesterSystem::GetCurrentOverdraw() const

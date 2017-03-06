@@ -60,7 +60,7 @@ OverdrawTesterRenderObject::~OverdrawTesterRenderObject()
         rhi::DeleteIndexBuffer(iBuffer);
 }
 
-void OverdrawTesterRenderObject::PrepareToRender(DAVA::Camera* camera)
+void OverdrawTesterRenderObject::PrepareToRender(Camera* camera)
 {
     activeRenderBatchArray.clear();
     if (material == nullptr || currentStepsCount == 0)

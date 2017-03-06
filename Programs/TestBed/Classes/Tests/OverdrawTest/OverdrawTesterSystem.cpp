@@ -38,7 +38,7 @@ using DAVA::Function;
 using DAVA::Entity;
 using DAVA::PixelFormat;
 
-const Array<FastName, 4> OverdrawTesterSystem::textureNames =
+const Array<FastName, 4> textureNames =
 { {
 FastName("t1"),
 FastName("t2"),
@@ -46,12 +46,12 @@ FastName("t3"),
 FastName("t4")
 } };
 
-const uint8 OverdrawTesterSystem::maxTexturesCount = 4;
-const FastName OverdrawTesterSystem::materialPath("~res:/CustomMaterials/OverdrawTester.material");
-const FastName OverdrawTesterSystem::sampleCountKeyword("SAMPLE_COUNT");
-const FastName OverdrawTesterSystem::dependentReadKeyword("DEPENDENT_READ_TEST");
-const uint32 OverdrawTesterSystem::accumulatedFramesCount = 20;
-const bool OverdrawTesterSystem::generateTexWithMips = true;
+const uint8 maxTexturesCount = 4;
+const FastName materialPath("~res:/CustomMaterials/OverdrawTester.material");
+const FastName sampleCountKeyword("SAMPLE_COUNT");
+const FastName dependentReadKeyword("DEPENDENT_READ_TEST");
+const uint32 accumulatedFramesCount = 20;
+const bool generateTexWithMips = true;
 
 OverdrawTesterSystem::OverdrawTesterSystem(DAVA::Scene* scene, DAVA::PixelFormat textureFormat_, DAVA::uint16 textureResolution_, DAVA::Function<void(DAVA::Array<DAVA::Vector<FrameData>, 6>*)> finishCallback_)
     : SceneSystem(scene)

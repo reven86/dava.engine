@@ -41,7 +41,7 @@ private:
             UIButton* btn = CreateButton(buttonsInfo[i].rect, buttonsInfo[i].caption);
             btn->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, msg);
             if (isFirstButtonGreen && i == 0)
-                btn->SetDebugDrawColor(Green);
+                btn->SetDebugDrawColor(Color::Green);
             btn->SetDebugDraw(true);
             btn->SetTag(buttonsInfo[i].tag);
             AddControl(btn);
@@ -59,9 +59,6 @@ private:
     UnorderedMap<UIButton*, ButtonInfo> texturePixelFormatButtons;
     UnorderedMap<UIButton*, ButtonInfo> overdrawButtons;
     UnorderedMap<UIButton*, ButtonInfo> chartHeightButtons;
-
-    static const Color Red;
-    static const Color Green;
 
     static const float32 resolutionButtonsXOffset;
     static const float32 resolutionButtonsYOffset;
