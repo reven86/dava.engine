@@ -1,10 +1,15 @@
 #pragma once
 
-enum eDAVACommandIDs : DAVA::int32
+namespace DAVA
 {
-    INVALID_COMMAND_ID = -1,
+using CommandID = DAVA::uint32;
+
+enum eDAVACommandIDs : CommandID
+{
+    INVALID_COMMAND_ID = 0,
     COMMAND_BATCH,
     PROPERTY_VALUE_COMMAND,
     COLLECTION_ITEM_VALUE_COMMAND,
-    DAVA_COMMAND_IDS_COUNT
+    COMMAND_IDS_COUNT
 };
+} //namespace DAVA

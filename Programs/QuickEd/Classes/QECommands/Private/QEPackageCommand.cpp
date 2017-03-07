@@ -3,11 +3,6 @@
 
 QEPackageCommand::QEPackageCommand(PackageNode* package_, DAVA::int32 commandID, const DAVA::String& description)
     : DAVA::Command(commandID, description)
-    , package(SafeRetain(package_))
+    , package(DAVA::RefPtr<PackageNode>::ConstructWithRetain(package_))
 {
-}
-
-QEPackageCommand::~QEPackageCommand()
-{
-    SafeRelease(package);
 }

@@ -2,9 +2,9 @@
 
 #include <Command/CommandIDs.h>
 
-enum CommandID : DAVA::int32
+enum CommandID : DAVA::CommandID
 {
-    CMDID_TRANSFORM = DAVA_COMMAND_IDS_COUNT,
+    CMDID_TRANSFORM = DAVA::COMMAND_IDS_COUNT,
 
     CMDID_ENTITY_ADD,
     CMDID_ENTITY_REMOVE,

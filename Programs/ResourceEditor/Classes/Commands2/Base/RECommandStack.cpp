@@ -29,7 +29,7 @@ void RECommandStack::SetChanged()
     CommandStack::EmitCleanChanged(false);
 }
 
-void RECommandStack::RemoveCommands(DAVA::uint32 commandId)
+void RECommandStack::RemoveCommands(DAVA::CommandID commandId)
 {
     for (DAVA::int32 index = static_cast<DAVA::int32>(commands.size() - 1); index >= 0; --index)
     {
@@ -60,7 +60,7 @@ void RECommandStack::Activate()
     canRedoChanged.Emit(CanRedo());
 }
 
-bool RECommandStack::IsUncleanCommandExists(DAVA::uint32 commandId) const
+bool RECommandStack::IsUncleanCommandExists(DAVA::CommandID commandId) const
 {
     DAVA::uint32 size = static_cast<DAVA::uint32>(commands.size());
     for (DAVA::uint32 index = std::max(cleanIndex, 0); index < size; ++index)

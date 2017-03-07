@@ -32,7 +32,7 @@ void CommandBatch::Add(std::unique_ptr<Command>&& command)
     if (commands.empty() == false)
     {
         DAVA::Command* lastCommand = commands.back().get();
-        const int32 id = lastCommand->GetID();
+        const CommandID id = lastCommand->GetID();
         DVASSERT(id != COMMAND_BATCH, "we can not store batch inside another batch");
         if (id == command->GetID())
         {

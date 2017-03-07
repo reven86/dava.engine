@@ -23,14 +23,14 @@ RECommand* RECommandBatch::GetCommand(DAVA::uint32 index) const
     return nullptr;
 }
 
-void RECommandBatch::RemoveCommands(DAVA::uint32 commandId)
+void RECommandBatch::RemoveCommands(DAVA::CommandID commandId)
 {
     auto it = std::remove_if(commands.begin(), commands.end(), [commandId](const std::unique_ptr<DAVA::Command>& cmd)
                              {
                                  const DAVA::Command* commandPtr = cmd.get();
                                  if (IsCommandBatch(commandPtr))
                                  {
-                                     return (commandId == COMMAND_BATCH);
+                                     return (commandId == DAVA::COMMAND_BATCH);
                                  }
                                  return static_cast<const RECommand*>(commandPtr)->GetID() == commandId;
                              });
@@ -47,7 +47,7 @@ void RECommandBatch::RemoveCommands(DAVA::uint32 commandId)
     }
 }
 
-bool RECommandBatch::MatchCommandID(DAVA::uint32 commandId) const
+bool RECommandBatch::MatchCommandID(DAVA::CommandID commandId) const
 {
     DAVA::uint32 size = static_cast<DAVA::uint32>(commands.size());
     for (DAVA::uint32 index = 0; index < size; ++index)

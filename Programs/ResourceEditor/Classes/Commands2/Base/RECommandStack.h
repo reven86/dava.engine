@@ -12,11 +12,11 @@ public:
 
     void Clear();
     void SetChanged();
-    void RemoveCommands(DAVA::uint32 commandId);
+    void RemoveCommands(DAVA::CommandID commandId);
 
     void Activate();
 
-    bool IsUncleanCommandExists(DAVA::uint32 commandId) const;
+    bool IsUncleanCommandExists(DAVA::CommandID commandId) const;
 
 private:
     DAVA::CommandBatch* CreateCommmandBatch(const DAVA::String& name, DAVA::uint32 commandsCount) const override;

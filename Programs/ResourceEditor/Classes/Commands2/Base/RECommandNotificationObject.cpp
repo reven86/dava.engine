@@ -2,7 +2,7 @@
 
 namespace RECommandNotificationObjectDetail
 {
-bool MatchID(const RECommandNotificationObject* object, DAVA::int32 id)
+bool MatchID(const RECommandNotificationObject* object, DAVA::CommandID id)
 {
     return (object->batch != nullptr) ? object->batch->MatchCommandID(id) : object->command->MatchCommandID(id);
 }
@@ -28,7 +28,7 @@ void RECommandNotificationObject::ExecuteForAllCommands(const DAVA::Function<voi
     }
 }
 
-bool RECommandNotificationObject::MatchCommandID(DAVA::uint32 commandID) const
+bool RECommandNotificationObject::MatchCommandID(DAVA::CommandID commandID) const
 {
     if (IsEmpty())
         return false;
@@ -36,7 +36,7 @@ bool RECommandNotificationObject::MatchCommandID(DAVA::uint32 commandID) const
     return RECommandNotificationObjectDetail::MatchID(this, commandID);
 }
 
-bool RECommandNotificationObject::MatchCommandIDs(const DAVA::Vector<DAVA::uint32>& commandIDVector) const
+bool RECommandNotificationObject::MatchCommandIDs(const DAVA::Vector<DAVA::CommandID>& commandIDVector) const
 {
     if (IsEmpty())
         return false;

@@ -2,7 +2,7 @@
 
 namespace DAVA
 {
-Command::Command(int32 commandID, const String& description_)
+Command::Command(CommandID commandID, const String& description_)
     : id(commandID)
     , description(description_)
 {

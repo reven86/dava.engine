@@ -14,7 +14,7 @@ public:
     \param[in] id derived class ID, like CMDID_BATCH.
     \param[in] text command text description to be displayed in widgets / network packets / log texts.
     */
-    Command(int32 commandID, const String& description = "");
+    Command(CommandID commandID, const String& description = "");
 
     /**
     \brief Returns command text description.
@@ -26,7 +26,7 @@ public:
     \brief Returns command id.
     \returns int32 command id.
      */
-    int32 GetID() const;
+    CommandID GetID() const;
 
     /**
     \brief Some commands passed to stack can make Redo and Undo, but do not change any files so do not change save state.
@@ -40,7 +40,7 @@ private:
     virtual bool MergeWith(const Command* command);
     friend class CommandBatch;
 
-    const int32 id = INVALID_COMMAND_ID;
+    const CommandID id = INVALID_COMMAND_ID;
     const String description;
 };
 
@@ -49,7 +49,7 @@ inline const String& Command::GetDescription() const
     return description;
 }
 
-inline int32 Command::GetID() const
+inline CommandID Command::GetID() const
 {
     return id;
 }
