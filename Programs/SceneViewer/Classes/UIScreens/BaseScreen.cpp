@@ -28,9 +28,9 @@ void BaseScreen::LoadResources()
     GetBackground()->SetColor(DAVA::Color(0.f, 0.f, 0.f, 1.f));
     DVASSERT(!font);
     DVASSERT(!fontSmall);
-    font = DAVA::FTFont::Create("~res:/Fonts/korinna.ttf");
+    font = DAVA::FTFont::Create("~res:/SceneViewer/Fonts/korinna.ttf");
     font->SetSize(20.f);
-    fontSmall = DAVA::FTFont::Create("~res:/Fonts/korinna.ttf");
+    fontSmall = DAVA::FTFont::Create("~res:/SceneViewer/Fonts/korinna.ttf");
     fontSmall->SetSize(15.f);
 }
 

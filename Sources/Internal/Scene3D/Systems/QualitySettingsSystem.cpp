@@ -26,7 +26,7 @@ rhi::AntialiasingType AANameToType(const FastName& name);
 
 QualitySettingsSystem::QualitySettingsSystem()
 {
-    Load("~res:/quality.yaml");
+    Load("~res:/SceneViewer/quality.yaml");
 
     EnableOption(QUALITY_OPTION_VEGETATION_ANIMATION, true);
     EnableOption(QUALITY_OPTION_STENCIL_SHADOW, true);

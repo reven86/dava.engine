@@ -131,7 +131,7 @@ QualitySettingsDialog::QualitySettingsDialog(Settings& settings)
 
     cellHeight = screenSize.dy / 20.0f;
 
-    font = FTFont::Create("~res:/Fonts/korinna.ttf");
+    font = FTFont::Create("~res:/SceneViewer/Fonts/korinna.ttf");
     font->SetSize(cellHeight / 2.5f);
 
     GetOrCreateComponent<DAVA::UIControlBackground>();

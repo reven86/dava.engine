@@ -247,7 +247,7 @@ void ViewSceneScreen::AddMenuControl()
 void ViewSceneScreen::AddFileDialogControl()
 {
     DVASSERT(!fileSystemDialog);
-    fileSystemDialog = new DAVA::UIFileSystemDialog("~res:/Fonts/korinna.ttf");
+    fileSystemDialog = new DAVA::UIFileSystemDialog("~res:/SceneViewer/Fonts/korinna.ttf");
     fileSystemDialog->SetDelegate(this);
     fileSystemDialog->SetExtensionFilter(".sc2");
     fileSystemDialog->SetOperationType(DAVA::UIFileSystemDialog::OPERATION_LOAD);
@@ -262,7 +262,7 @@ void ViewSceneScreen::AddJoypadControl()
 {
     DVASSERT(!moveJoyPAD);
     moveJoyPAD = new DAVA::UIJoypad(DAVA::Rect(10, GetRect().dy - 210.f, 200.f, 200.f));
-    DAVA::ScopedPtr<DAVA::Sprite> stickSprite(DAVA::Sprite::CreateFromSourceFile("~res:/UI/Joypad.png", true));
+    DAVA::ScopedPtr<DAVA::Sprite> stickSprite(DAVA::Sprite::CreateFromSourceFile("~res:/SceneViewer/UI/Joypad.png", true));
     moveJoyPAD->SetStickSprite(stickSprite, 0);
     AddControl(moveJoyPAD);
 }
