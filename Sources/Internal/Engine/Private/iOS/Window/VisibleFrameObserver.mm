@@ -33,19 +33,19 @@
 - (void)keyboardFrameDidChange:(NSNotification*)notification
 {
     // Convert renverView frame to window coordinates, frame is in superview's coordinates
-    CGRect renderFrame = [bridge->uiwindow convertRect:bridge->renderView.frame fromView:bridge->renderView];
     CGRect keyboardFrame = [[notification.userInfo objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
-    CGRect topFrame = CGRectMake(renderFrame.origin.x, renderFrame.origin.y, renderFrame.size.width, keyboardFrame.origin.y - renderFrame.origin.y);
-    CGRect bottomFrame = CGRectMake(renderFrame.origin.x, keyboardFrame.origin.y + keyboardFrame.size.height, renderFrame.size.width, renderFrame.size.height - (keyboardFrame.origin.y + keyboardFrame.size.height));
+    CGRect visibleFrame = [bridge->uiwindow convertRect:bridge->renderView.frame fromView:bridge->renderView];
 
-    CGRect visibleFrame;
-    if (topFrame.size.width * topFrame.size.height > bottomFrame.size.width * bottomFrame.size.height)
+    float32 topHeight = keyboardFrame.origin.y - visibleFrame.origin.y;
+    float32 bottomHeight = visibleFrame.size.height - (keyboardFrame.origin.y + keyboardFrame.size.height);
+    if (topHeight > bottomHeight)
     {
-        visibleFrame = topFrame;
+        visibleFrame.size.height = topHeight;
     }
     else
     {
-        visibleFrame = bottomFrame;
+        visibleFrame.origin.y = keyboardFrame.origin.y + keyboardFrame.size.height;
+        visibleFrame.size.height = bottomHeight;
     }
 
     // Now this might be rotated, so convert it back

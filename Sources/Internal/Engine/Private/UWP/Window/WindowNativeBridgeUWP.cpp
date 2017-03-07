@@ -539,6 +539,30 @@ void WindowNativeBridge::OnKeyboardShowing(Windows::UI::ViewManagement::InputPan
 {
     // Notify Windows that we'll handle layout by ourselves
     args->EnsuredFocusedElementInView = true;
+
+    const ::Windows::Foundation::Rect& srcRect = args->OccludedRect;
+    Rect keyboardFrame(srcRect.X, srcRect.Y, srcRect.Width, srcRect.Height);
+    Rect visualFrame(0.f, 0.f, float32(xamlSwapChainPanel->ActualWidth), float32(xamlSwapChainPanel->ActualHeight));
+
+    float32 topHeight = keyboardFrame.y - visualFrame.y;
+    float32 bottomHeight = visualFrame.dy - (keyboardFrame.y + keyboardFrame.dy);
+    if (topHeight > bottomHeight)
+    {
+        visualFrame.dy = topHeight;
+    }
+    else
+    {
+        visualFrame.y = keyboardFrame.y + keyboardFrame.dy;
+        visualFrame.dy = bottomHeight;
+    }
+
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibleFrameChangedEvent(window, visualFrame.x, visualFrame.y, visualFrame.dx, visualFrame.dy));
+}
+
+void WindowNativeBridge::OnKeyboardHiding(Windows::UI::ViewManagement::InputPane ^ sender, Windows::UI::ViewManagement::InputPaneVisibilityEventArgs ^ args)
+{
+    Rect visualFrame(0.f, 0.f, float32(xamlSwapChainPanel->ActualWidth), float32(xamlSwapChainPanel->ActualHeight));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibleFrameChangedEvent(window, visualFrame.x, visualFrame.y, visualFrame.dx, visualFrame.dy));
 }
 
 eModifierKeys WindowNativeBridge::GetModifierKeys() const
@@ -668,6 +692,7 @@ void WindowNativeBridge::InstallEventHandlers()
     tokenPointerWheelChanged = xamlSwapChainPanel->PointerWheelChanged += ref new PointerEventHandler(this, &WindowNativeBridge::OnPointerWheelChanged);
 
     tokenKeyboardShowing = InputPane::GetForCurrentView()->Showing += ref new TypedEventHandler<InputPane ^, InputPaneVisibilityEventArgs ^>(this, &WindowNativeBridge::OnKeyboardShowing);
+    tokenKeyboardHiding = InputPane::GetForCurrentView()->Hiding += ref new TypedEventHandler<InputPane ^, InputPaneVisibilityEventArgs ^>(this, &WindowNativeBridge::OnKeyboardHiding);
 
     // We want to receive a pointer release event even if it already has been handled
     // Since there might be cases when pressed event isn't handled but released event is, even though it's the same pointer
@@ -729,6 +754,7 @@ void WindowNativeBridge::UninstallEventHandlers()
     mouseDevice->MouseMoved -= tokenMouseMoved;
 
     InputPane::GetForCurrentView()->Showing -= tokenKeyboardShowing;
+    InputPane::GetForCurrentView()->Hiding -= tokenKeyboardHiding;
 }
 
 ::Platform::String ^ WindowNativeBridge::xamlWorkaroundWebViewProblems = LR"(
