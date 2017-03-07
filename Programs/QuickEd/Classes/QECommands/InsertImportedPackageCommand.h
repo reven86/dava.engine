@@ -17,4 +17,3 @@ private:
     PackageNode* importedPackage = nullptr;
     const int index;
 };
-
