@@ -126,7 +126,7 @@ void OverdrawTesterSystem::Process(DAVA::float32 timeElapsed)
 
     if (framesDrawn == accumulatedFramesCount)
     {
-        float32 smoothFrametime = std::accumulate(frames.begin(), frames.end(), 0.0f) / frames.size();
+        float32 smoothFrametime = std::accumulate(frames.begin(), frames.end(), 0.0f) / static_cast<float32>(frames.size());
         performanceData[textureSampleCount].push_back({ smoothFrametime, GetCurrentOverdraw() });
         currentStepsCount++;
         framesDrawn = 0;
