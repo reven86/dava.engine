@@ -242,10 +242,9 @@ float32 ChartPainterSystem::GetMaxFrametimeFromData() const
     {
         Vector<FrameData>& currVector = (*performanceData)[i];
         auto begin = currVector.begin();
-        if (i == 0) // Skip noise in first frame, when all textures are generated.
-            begin++;
+        begin++; // Skip noise in first frame.
 
-        frametimes[i] = (*std::max_element(currVector.begin(), currVector.end(),
+        frametimes[i] = (*std::max_element(begin, currVector.end(),
                                            [](const FrameData& f1, const FrameData& f2)
                                            {
                                                return f1.FrameTime < f2.FrameTime;
