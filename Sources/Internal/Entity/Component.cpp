@@ -32,6 +32,8 @@
 
 #include "Base/ObjectFactory.h"
 #include "Scene3D/Systems/GlobalEventSystem.h"
+#include "Reflection/ReflectionRegistrator.h"
+#include "Reflection/ReflectedMeta.h"
 
 namespace DAVA
 {
@@ -104,6 +106,13 @@ Component* Component::CreateByType(uint32 componentType)
         DVASSERT(0);
         return 0;
     }
+}
+
+DAVA_VIRTUAL_REFLECTION_IMPL(Component)
+{
+    ReflectionRegistrator<Component>::Begin()
+    .Field("entity", &Component::entity)[M::ReadOnly(), M::HiddenField()]
+    .End();
 }
 
 Component::~Component()

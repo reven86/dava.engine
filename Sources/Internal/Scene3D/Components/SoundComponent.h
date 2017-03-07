@@ -1,7 +1,7 @@
-#ifndef __DAVAENGINE_SCENE3D_SOUND_COMPONENT_H__
-#define __DAVAENGINE_SCENE3D_SOUND_COMPONENT_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
+#include "Reflection/Reflection.h"
 #include "Entity/Component.h"
 #include "Scene3D/Entity.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
@@ -13,12 +13,9 @@ class SoundComponent;
 struct SoundComponentElement : public InspBase
 {
     SoundComponentElement(SoundEvent* _soundEvent, uint32 _flags, const Vector3& _localDirection)
-        :
-        soundEvent(_soundEvent)
-        ,
-        localDirection(_localDirection)
-        ,
-        flags(_flags)
+        : soundEvent(_soundEvent)
+        , localDirection(_localDirection)
+        , flags(_flags)
     {
     }
 
@@ -26,7 +23,10 @@ struct SoundComponentElement : public InspBase
     Vector3 localDirection;
     uint32 flags;
 
+    bool operator==(const SoundComponentElement& other) const;
+
     INTROSPECTION(SoundComponentElement, NULL);
+    DAVA_VIRTUAL_REFLECTION(SoundComponentElement, InspBase);
 };
 
 class SoundComponent : public Component
@@ -72,6 +72,8 @@ public:
     INTROSPECTION_EXTEND(SoundComponent, Component,
                          COLLECTION(events, "events", I_SAVE | I_VIEW | I_EDIT)
                          );
+
+    DAVA_VIRTUAL_REFLECTION(SoundComponent, Component);
 };
 
 //Inline
@@ -97,6 +99,4 @@ inline const Vector3& SoundComponent::GetLocalDirection(uint32 index) const
     DVASSERT(index < static_cast<uint32>(events.size()));
     return events[index].localDirection;
 }
-};
-
-#endif
+}

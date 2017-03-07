@@ -6,8 +6,20 @@
 #include "Scene3D/Systems/EventSystem.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 
+#include "Reflection/ReflectionRegistrator.h"
+#include "Reflection/ReflectedMeta.h"
+
 namespace DAVA
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(AnimationComponent)
+{
+    ReflectionRegistrator<AnimationComponent>::Begin()
+    .Field("repeatsCount", &AnimationComponent::repeatsCount)[M::DisplayName("Repeats Count")]
+    .Field("isPlaying", &AnimationComponent::GetIsPlaying, &AnimationComponent::SetIsPlaying)[M::DisplayName("Is Playing")]
+    .Field("animationTimeScale", &AnimationComponent::animationTimeScale)[M::DisplayName("Animation Time Scale")]
+    .End();
+}
+
 AnimationComponent::AnimationComponent()
     : animation(NULL)
     , time(0.0f)

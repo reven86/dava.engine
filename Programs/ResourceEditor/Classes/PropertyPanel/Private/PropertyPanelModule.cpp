@@ -61,7 +61,7 @@ void PropertyPanelModule::PostInit()
     propertiesDataSourceField.type = DAVA::ReflectedTypeDB::Get<PropertyPanelModuleDetail::PropertyPanelData>();
     propertiesDataSourceField.fieldName = DAVA::FastName(PropertyPanelModuleDetail::PropertyPanelData::selectedEntitiesProperty);
 
-    PropertiesView* view = new PropertiesView(accessor, propertiesDataSourceField);
+    PropertiesView* view = new PropertiesView(accessor, propertiesDataSourceField, "PropertyPanel");
     view->RegisterExtension(std::make_shared<REModifyPropertyExtension>(accessor));
     view->RegisterExtension(std::make_shared<EntityChildCreator>());
     ui->AddView(REGlobal::MainWindowKey, PanelKey(panelInfo.title, panelInfo), view);

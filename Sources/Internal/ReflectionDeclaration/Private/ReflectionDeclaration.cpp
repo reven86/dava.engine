@@ -1,7 +1,49 @@
 #include "ReflectionDeclaration/ReflectionDeclaration.h"
 #include "ReflectionDeclaration/Private/AnyCasts.h"
 
+#include "Reflection/Reflection.h"
 #include "Reflection/ReflectionRegistrator.h"
+
+#include "Scene3D/Entity.h"
+#include "Scene3D/Components/Controller/RotationControllerComponent.h"
+#include "Scene3D/Components/VisibilityCheckComponent.h"
+#include "Scene3D/Components/Controller/SnapToLandscapeControllerComponent.h"
+#include "Scene3D/Components/Controller/WASDControllerComponent.h"
+#include "Scene3D/Components/Waypoint/EdgeComponent.h"
+#include "Scene3D/Components/Waypoint/PathComponent.h"
+#include "Scene3D/Components/Waypoint/WaypointComponent.h"
+#include "Scene3D/Components/ActionComponent.h"
+#include "Scene3D/Components/AnimationComponent.h"
+#include "Scene3D/Components/BulletComponent.h"
+#include "Scene3D/Components/CameraComponent.h"
+#include "Scene3D/Components/CustomPropertiesComponent.h"
+#include "Scene3D/Components/DebugRenderComponent.h"
+#include "Scene3D/Components/LightComponent.h"
+#include "Scene3D/Components/ParticleEffectComponent.h"
+#include "Scene3D/Components/QualitySettingsComponent.h"
+#include "Scene3D/Components/RenderComponent.h"
+#include "Scene3D/Components/SkeletonComponent.h"
+#include "Scene3D/Components/SoundComponent.h"
+#include "Scene3D/Components/SpeedTreeComponent.h"
+#include "Scene3D/Components/StaticOcclusionComponent.h"
+#include "Scene3D/Components/SwitchComponent.h"
+#include "Scene3D/Components/TransformComponent.h"
+#include "Scene3D/Components/UpdatableComponent.h"
+#include "Scene3D/Components/UserComponent.h"
+#include "Scene3D/Components/WaveComponent.h"
+#include "Scene3D/Components/WindComponent.h"
+#include "Scene3D/Lod/LodComponent.h"
+#include "Entity/Component.h"
+#include "Render/3D/PolygonGroup.h"
+#include "Render/Highlevel/LandscapeSubdivision.h"
+#include "Render/Highlevel/RenderObject.h"
+#include "Render/Highlevel/RenderBatch.h"
+#include "Render/Highlevel/Vegetation/VegetationRenderObject.h"
+#include "Render/Highlevel/BillboardRenderObject.h"
+#include "Render/Highlevel/Heightmap.h"
+#include "Render/Highlevel/Landscape.h"
+#include "Render/Highlevel/Light.h"
+#include "Render/Highlevel/SpeedTreeObject.h"
 #include "Math/Vector.h"
 #include "Math/Rect.h"
 #include "Math/AABBox3.h"
@@ -131,6 +173,59 @@ void RegisterColor()
     .End();
 }
 
+void RegisterPermanentNames()
+{
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(Component);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(RotationControllerComponent);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(SnapToLandscapeControllerComponent);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(WASDControllerComponent);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(EdgeComponent);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(PathComponent);
+    DAVA_REFLECTION_REGISTER_CUSTOM_PERMANENT_NAME(PathComponent::Waypoint, "Waypoint");
+    DAVA_REFLECTION_REGISTER_CUSTOM_PERMANENT_NAME(PathComponent::Edge, "Edge");
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(WaypointComponent);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(ActionComponent);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(AnimationComponent);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(BulletComponent);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(CameraComponent);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(CustomPropertiesComponent);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(DebugRenderComponent);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(LightComponent);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(ParticleEffectComponent);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(QualitySettingsComponent);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(RenderComponent);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(SkeletonComponent);
+    DAVA_REFLECTION_REGISTER_CUSTOM_PERMANENT_NAME(SkeletonComponent::JointConfig, "JointConfig");
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(SoundComponent);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(SoundComponentElement);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(SpeedTreeComponent);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(StaticOcclusionDataComponent);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(StaticOcclusionComponent);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(StaticOcclusionDebugDrawComponent);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(SwitchComponent);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(TransformComponent);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UpdatableComponent);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UserComponent);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(VisibilityCheckComponent);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(WaveComponent);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(WindComponent);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(LodComponent);
+    DAVA_REFLECTION_REGISTER_CUSTOM_PERMANENT_NAME(ActionComponent::Action, "Action");
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(PolygonGroup);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(RenderObject);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(RenderObject::IndexedRenderBatch);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(LandscapeSubdivision);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(LandscapeSubdivision::SubdivisionMetrics);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(RenderBatch);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(VegetationRenderObject);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(BillboardRenderObject);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(Heightmap);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(Landscape);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(Light);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(SpeedTreeObject);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(Entity);
+}
+
 void RegisterReflectionForBaseTypes()
 {
     RegisterAnyCasts();
@@ -141,5 +236,7 @@ void RegisterReflectionForBaseTypes()
     RegisterRect();
     RegisterAABBox3();
     RegisterColor();
+
+    RegisterPermanentNames();
 }
 } // namespace DAVA

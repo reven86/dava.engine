@@ -1,8 +1,7 @@
-#ifndef __DAVAENGINE_SCENE3D_QUALITYSETTINGS_COMPONENT_H__
-#define __DAVAENGINE_SCENE3D_QUALITYSETTINGS_COMPONENT_H__
-
+#pragma once
 #include "Base/BaseTypes.h"
 #include "Base/FastName.h"
+#include "Reflection/Reflection.h"
 
 #include "Entity/Component.h"
 #include "Scene3D/Entity.h"
@@ -50,9 +49,8 @@ public:
                          PROPERTY("modelType", "Model Type", GetModelType, SetModelType, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("requiredGroup", "Required Group", GetRequiredGroup, SetRequiredGroup, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("requiredQuality", "Required Quality", GetRequiredQuality, SetRequiredQuality, I_SAVE | I_VIEW | I_EDIT)
-
                          );
-};
-};
 
-#endif //__DAVAENGINE_SCENE3D_QUALITYSETTINGS_COMPONENT_H__
+    DAVA_VIRTUAL_REFLECTION(QualitySettingsComponent, Component);
+};
+}

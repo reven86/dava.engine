@@ -1,8 +1,8 @@
-#ifndef __DAVAENGINE_SPEEDTREE_OBJECT_H__
-#define __DAVAENGINE_SPEEDTREE_OBJECT_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
+#include "Reflection/Reflection.h"
 #include "Render/Highlevel/Mesh.h"
 
 namespace DAVA
@@ -51,8 +51,8 @@ public:
                          PROPERTY("lightSmoothing", "Light Smoothing", GetLightSmoothing, SetLightSmoothing, I_SAVE | I_EDIT | I_VIEW)
                          );
 
+    DAVA_VIRTUAL_REFLECTION(SpeedTreeObject, RenderObject);
+
     friend class SpeedTreeUpdateSystem;
 };
-};
-
-#endif // __DAVAENGINE_SPEEDTREE_OBJECT_H__
+}
