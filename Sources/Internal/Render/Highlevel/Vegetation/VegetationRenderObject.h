@@ -1,14 +1,14 @@
-#ifndef __DAVAENGINE_VEGETATIONRENDEROBJECT_H__
-#define __DAVAENGINE_VEGETATIONRENDEROBJECT_H__
+#pragma once
 
 #include <memory>
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
 #include "Base/FastName.h"
-#include "Render/RenderBase.h"
 #include "Base/BaseMath.h"
 #include "Base/AbstractQuadTree.h"
+#include "Reflection/Reflection.h"
+#include "Render/RenderBase.h"
 #include "Render/Image/Image.h"
 
 #include "Render/3D/PolygonGroup.h"
@@ -210,8 +210,6 @@ private:
     uint16 halfHeight;
     float32 heightmapSize;
 
-    //Vector<float32> shaderScaleDensityUniforms;
-
     VegetationRenderData* renderData;
 
     AbstractQuadTree<VegetationSpatialData> quadTree;
@@ -273,6 +271,8 @@ public:
                          PROPERTY("animationSpring", "Animation Spring", GetLayersAnimationSpring, SetLayersAnimationSpring, I_SAVE | I_EDIT | I_VIEW)
                          PROPERTY("animationDrag", "Animation Drag", GetLayerAnimationDragCoefficient, SetLayerAnimationDragCoefficient, I_SAVE | I_EDIT | I_VIEW)
                          );
+
+    DAVA_VIRTUAL_REFLECTION(VegetationRenderObject, RenderObject);
 
     friend class FoliageSystem;
 };
@@ -613,6 +613,4 @@ inline const Vector4& VegetationRenderObject::GetLayerAnimationDragCoefficient()
 {
     return layersAnimationDrag;
 }
-};
-
-#endif
+}

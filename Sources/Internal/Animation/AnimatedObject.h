@@ -1,9 +1,9 @@
-#ifndef __DAVAENGINE_ANIMATEDOBJECT_H__
-#define __DAVAENGINE_ANIMATEDOBJECT_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
 #include "Base/Message.h"
+#include "Reflection/Reflection.h"
 #include "FileSystem/YamlParser.h"
 
 namespace DAVA
@@ -21,6 +21,8 @@ class Animation;
  */
 class AnimatedObject : public BaseObject
 {
+    DAVA_VIRTUAL_REFLECTION(AnimatedObject, BaseObject);
+
 protected:
     virtual ~AnimatedObject();
 
@@ -76,6 +78,4 @@ private:
 	
 	friend class Animation;*/
 };
-};
-
-#endif // __DAVAENGINE_INTERPOLATION_H__
+}

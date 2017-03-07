@@ -29,6 +29,9 @@
 #include "Engine/Engine.h"
 #include "Engine/EngineSettings.h"
 
+#include "Reflection/ReflectionRegistrator.h"
+#include "Reflection/ReflectedMeta.h"
+
 #include "Concurrency/Mutex.h"
 #include "Concurrency/LockGuard.h"
 #include "Logger/Logger.h"
@@ -39,6 +42,20 @@
 
 namespace DAVA
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(Landscape)
+{
+    ReflectionRegistrator<Landscape>::Begin()
+    .Field("heightmapPath", &Landscape::GetHeightmapPathname, &Landscape::SetHeightmapPathname)[M::DisplayName("Height Map Path")]
+    .Field("size", &Landscape::GetLandscapeSize, static_cast<void (Landscape::*)(float32)>(&Landscape::SetLandscapeSize))[M::DisplayName("Size")]
+    .Field("height", &Landscape::GetLandscapeHeight, &Landscape::SetLandscapeHeight)[M::DisplayName("Height")]
+    .Field("userMorphing", &Landscape::IsUseMorphing, &Landscape::SetUseMorphing)[M::DisplayName("Use morphing")]
+    .Field("isDrawWired", &Landscape::IsDrawWired, &Landscape::SetDrawWired)[M::DisplayName("Is draw wired")]
+    .Field("debugDrawMorphing", &Landscape::IsDrawMorphing, &Landscape::SetDrawMorphing)[M::DisplayName("Debug draw morphing")]
+    .Field("debugDrawMetrics", &Landscape::debugDrawMetrics)[M::DisplayName("Debug draw metrics")]
+    .Field("subdivision", &Landscape::subdivision)[M::DisplayName("Subdivision")]
+    .End();
+}
+
 const FastName Landscape::PARAM_TEXTURE_TILING("textureTiling");
 const FastName Landscape::PARAM_TILE_COLOR0("tileColor0");
 const FastName Landscape::PARAM_TILE_COLOR1("tileColor1");
