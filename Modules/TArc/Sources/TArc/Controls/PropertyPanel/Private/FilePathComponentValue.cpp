@@ -36,9 +36,6 @@ ControlProxy* FilePathComponentValue::CreateEditorWidget(QWidget* parent, const 
     p.wndKey = params.wndKey;
     p.fields[FilePathEdit::Fields::Value] = "value";
     p.fields[FilePathEdit::Fields::IsReadOnly] = readOnlyFieldName;
-    p.fields[FilePathEdit::Fields::DialogTitle] = "dlgTitle";
-    p.fields[FilePathEdit::Fields::Filters] = "filters";
-    p.fields[FilePathEdit::Fields::RootDirectory] = "roorDir";
     return new FilePathEdit(p, wrappersProcessor, model, parent);
 }
 
@@ -52,28 +49,10 @@ void FilePathComponentValue::SetFilePath(const Any& v)
     SetValue(v);
 }
 
-const String& FilePathComponentValue::GetDialogTitle() const
-{
-    return params.dialogTitle;
-}
-
-const String& FilePathComponentValue::GetFilters() const
-{
-    return params.filters;
-}
-
-const DAVA::FilePath& FilePathComponentValue::GetRootDir() const
-{
-    return params.rootDir;
-}
-
 DAVA_VIRTUAL_REFLECTION_IMPL(FilePathComponentValue)
 {
     ReflectionRegistrator<FilePathComponentValue>::Begin(CreateComponentStructureWrapper<FilePathComponentValue>())
     .Field("value", &FilePathComponentValue::GetFilePath, &FilePathComponentValue::SetFilePath)[M::ProxyMetaRequire()]
-    .Field("dlgTitle", &FilePathComponentValue::GetDialogTitle, nullptr)
-    .Field("filters", &FilePathComponentValue::GetFilters, nullptr)
-    .Field("roorDir", &FilePathComponentValue::GetRootDir, nullptr)
     .End();
 }
 

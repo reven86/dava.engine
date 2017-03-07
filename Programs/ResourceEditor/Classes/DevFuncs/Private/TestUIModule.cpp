@@ -809,11 +809,6 @@ struct FilePathEditTestData : public ReflectionBase
         path = t;
     }
 
-    String GetFilters() const
-    {
-        return "Materials (*.material)";
-    }
-
     DAVA_VIRTUAL_REFLECTION_IN_PLACE(FilePathEditTestData, ReflectionBase)
     {
         using namespace DAVA;
@@ -821,12 +816,10 @@ struct FilePathEditTestData : public ReflectionBase
         ReflectionRegistrator<FilePathEditTestData>::Begin()
         .Field("readOnlyMetaText", &FilePathEditTestData::path)[M::ReadOnly()]
         .Field("readOnlyText", &FilePathEditTestData::GetText, nullptr)
-        .Field("path", &FilePathEditTestData::GetText, &FilePathEditTestData::SetText)[M::File(true, "Materials (*.material);;Meta (*.meta)")]
-        .Field("filters", &FilePathEditTestData::GetFilters, nullptr)
+        .Field("path", &FilePathEditTestData::GetText, &FilePathEditTestData::SetText)[M::File("Materials (*.material);;Meta (*.meta)")]
         .Field("isTextReadOnly", &FilePathEditTestData::isReadOnly)
         .Field("isTextEnabled", &FilePathEditTestData::isEnabled)
         .Field("placeholder", &FilePathEditTestData::placeHolder)
-        .Field("rootDir", &FilePathEditTestData::root)
         .End();
     }
 
@@ -871,9 +864,6 @@ struct FilePathEditTestData : public ReflectionBase
             p.fields[FilePathEdit::Fields::PlaceHolder] = "placeholder";
             p.fields[FilePathEdit::Fields::IsReadOnly] = "isTextReadOnly";
             p.fields[FilePathEdit::Fields::IsEnabled] = "isTextEnabled";
-            p.fields[FilePathEdit::Fields::DialogTitle] = "placeholder";
-            p.fields[FilePathEdit::Fields::RootDirectory] = "rootDir";
-            //p.fields[FilePathEdit::Fields::Filters] = "filters";
             lineLayout->AddWidget(new FilePathEdit(p, accessor, Reflection::Create(data), parent));
             boxLayout->addLayout(lineLayout);
 

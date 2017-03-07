@@ -49,9 +49,9 @@ public:
     DAVA_VIRTUAL_REFLECTION_IN_PLACE(TestData)
     {
         ReflectionRegistrator<TestData>::Begin()
-        .Field("readOnlyValue", &TestData::GetValue, nullptr)[DAVA::M::File(true, "Material (*.material)")]
-        .Field("readOnlyMetaValue", &TestData::GetValue, &TestData::SetValue)[DAVA::M::ReadOnly(), DAVA::M::File(true, "Material (*.material)")]
-        .Field("value", &TestData::GetValue, &TestData::SetValue)[DAVA::M::File(true, "Material (*.material)")]
+        .Field("readOnlyValue", &TestData::GetValue, nullptr)[DAVA::M::File("Material (*.material)", "Open Material")]
+        .Field("readOnlyMetaValue", &TestData::GetValue, &TestData::SetValue)[DAVA::M::ReadOnly(), DAVA::M::File("Material (*.material)", "Open Material")]
+        .Field("value", &TestData::GetValue, &TestData::SetValue)[DAVA::M::File("Material (*.material)")]
         .Field("isReadOnly", &TestData::isReadOnly)
         .Field("isEnabled", &TestData::isEnabled)
         .End();

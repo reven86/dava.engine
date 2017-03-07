@@ -14,9 +14,6 @@ class FilePathComponentValue : public BaseComponentValue
 public:
     struct Params
     {
-        String dialogTitle = "Open File";
-        String filters = "";
-        FilePath rootDir = "";
         UI* ui = nullptr;
         WindowKey wndKey = WindowKey(FastName(""));
     };
@@ -30,10 +27,6 @@ protected:
 private:
     Any GetFilePath() const;
     void SetFilePath(const Any& v);
-
-    const String& GetDialogTitle() const;
-    const String& GetFilters() const;
-    const FilePath& GetRootDir() const;
 
     Params params;
 
