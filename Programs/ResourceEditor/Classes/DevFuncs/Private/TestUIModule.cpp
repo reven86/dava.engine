@@ -14,6 +14,7 @@
 #include <TArc/Controls/QtBoxLayouts.h>
 #include <TArc/Controls/SubPropertiesEditor.h>
 #include <TArc/Controls/ColorPicker/ColorPickerButton.h>
+#include <TArc/Controls/Label.h>
 #include <TArc/Utils/ModuleCollection.h>
 #include <TArc/WindowSubSystem/ActionUtils.h>
 #include <TArc/WindowSubSystem/UI.h>
@@ -27,6 +28,9 @@
 #include <Math/Rect.h>
 #include <Math/AABBox3.h>
 #include <Math/Vector.h>
+#include <Math/Matrix2.h>
+#include <Math/Matrix3.h>
+#include <Math/Matrix4.h>
 #include <Base/GlobalEnum.h>
 #include <Base/Vector.h>
 
@@ -36,6 +40,7 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QVBoxLayout>
+#include <QString>
 
 namespace TestUIModuleDetails
 {
@@ -1074,7 +1079,123 @@ struct ColorButtonTestData : public ReflectionBase
                 descr[CheckBox::Fields::Checked] = "readOnly";
                 lineLayout->AddWidget(new CheckBox(descr, accessor, Reflection::Create(data), parent));
             }
+            boxLayout->addLayout(lineLayout);
+        }
 
+        Result r;
+        r.model = data;
+        r.layout = boxLayout;
+        return r;
+    }
+};
+
+struct LabelTestData : public ReflectionBase
+{
+    String testString = "Test String";
+    QString testQString = "Test QString";
+    Matrix2 matrix2;
+    Matrix3 matrix3;
+    Matrix4 matrix4;
+
+    const String& GetString() const
+    {
+        return testString;
+    }
+
+    const QString& GetQString() const
+    {
+        return testQString;
+    }
+
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(LabelTestData, ReflectionBase)
+    {
+        using namespace DAVA;
+
+        ReflectionRegistrator<LabelTestData>::Begin()
+        .Field("string", &LabelTestData::testString)
+        .Field("qstring", &LabelTestData::testQString)
+        .Field("getString", &LabelTestData::GetString, nullptr)
+        .Field("getQString", &LabelTestData::GetQString, nullptr)
+        .Field("matrix2", &LabelTestData::matrix2)
+        .Field("matrix3", &LabelTestData::matrix3)
+        .Field("matrix4", &LabelTestData::matrix4)
+        .End();
+    }
+
+    static Result Create(TArc::UI* ui, TArc::ContextAccessor* accessor, QWidget* parent)
+    {
+        using namespace DAVA::TArc;
+
+        LabelTestData* data = new LabelTestData();
+        QVBoxLayout* boxLayout = new QVBoxLayout();
+
+        {
+            QtHBoxLayout* lineLayout = new QtHBoxLayout();
+            lineLayout->addWidget(new QLabel("String : ", parent));
+
+            ControlDescriptorBuilder<Label::Fields> desr;
+            desr[Label::Fields::Text] = "string";
+            lineLayout->AddWidget(new Label(desr, accessor, Reflection::Create(data), parent));
+            boxLayout->addLayout(lineLayout);
+        }
+
+        {
+            QtHBoxLayout* lineLayout = new QtHBoxLayout();
+            lineLayout->addWidget(new QLabel("QString : ", parent));
+
+            ControlDescriptorBuilder<Label::Fields> desr;
+            desr[Label::Fields::Text] = "qstring";
+            lineLayout->AddWidget(new Label(desr, accessor, Reflection::Create(data), parent));
+            boxLayout->addLayout(lineLayout);
+        }
+
+        {
+            QtHBoxLayout* lineLayout = new QtHBoxLayout();
+            lineLayout->addWidget(new QLabel("GetString : ", parent));
+
+            ControlDescriptorBuilder<Label::Fields> desr;
+            desr[Label::Fields::Text] = "getString";
+            lineLayout->AddWidget(new Label(desr, accessor, Reflection::Create(data), parent));
+            boxLayout->addLayout(lineLayout);
+        }
+
+        {
+            QtHBoxLayout* lineLayout = new QtHBoxLayout();
+            lineLayout->addWidget(new QLabel("GetQString : ", parent));
+
+            ControlDescriptorBuilder<Label::Fields> desr;
+            desr[Label::Fields::Text] = "getQString";
+            lineLayout->AddWidget(new Label(desr, accessor, Reflection::Create(data), parent));
+            boxLayout->addLayout(lineLayout);
+        }
+
+        {
+            QtHBoxLayout* lineLayout = new QtHBoxLayout();
+            lineLayout->addWidget(new QLabel("Matrix2 : ", parent));
+
+            ControlDescriptorBuilder<Label::Fields> desr;
+            desr[Label::Fields::Text] = "matrix2";
+            lineLayout->AddWidget(new Label(desr, accessor, Reflection::Create(data), parent));
+            boxLayout->addLayout(lineLayout);
+        }
+
+        {
+            QtHBoxLayout* lineLayout = new QtHBoxLayout();
+            lineLayout->addWidget(new QLabel("Matrix3 : ", parent));
+
+            ControlDescriptorBuilder<Label::Fields> desr;
+            desr[Label::Fields::Text] = "matrix3";
+            lineLayout->AddWidget(new Label(desr, accessor, Reflection::Create(data), parent));
+            boxLayout->addLayout(lineLayout);
+        }
+
+        {
+            QtHBoxLayout* lineLayout = new QtHBoxLayout();
+            lineLayout->addWidget(new QLabel("Matrix4 : ", parent));
+
+            ControlDescriptorBuilder<Label::Fields> desr;
+            desr[Label::Fields::Text] = "matrix4";
+            lineLayout->AddWidget(new Label(desr, accessor, Reflection::Create(data), parent));
             boxLayout->addLayout(lineLayout);
         }
 
@@ -1142,7 +1263,8 @@ void TestUIModule::ShowDialog()
       { &DoubleSpinBoxTestData::Create, "Double Spin" },
       { &FilePathEditTestData::Create, "FilePath" },
       { &SubPropertiesControlTest::Create, "SubPropsControl Test" },
-      { &ColorButtonTestData::Create, "ColorButton Test" }
+      { &ColorButtonTestData::Create, "ColorButton Test" },
+      { &LabelTestData::Create, "Label Test" }
     };
 
     DAVA::Vector<DAVA::ReflectionBase*> data;
