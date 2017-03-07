@@ -45,7 +45,11 @@ void BaseTest::UnloadResources()
 {
     sceneCustomDeltaComponent = nullptr;
     SafeRelease(scene);
+
+    RemoveControl(sceneView);
     SafeRelease(sceneView);
+
+    uiRoot->RemoveAllControls();
 }
 
 void BaseTest::CreateUI()

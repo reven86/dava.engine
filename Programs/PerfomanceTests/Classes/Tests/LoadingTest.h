@@ -13,7 +13,6 @@ public:
     static const String TEST_NAME;
 
     LoadingTest(const TestParams& testParams);
-    ~LoadingTest();
 
     void OnStart() override;
     void OnFinish() override;
@@ -43,6 +42,7 @@ private:
     {
     public:
         LoadJob(const DAVA::FilePath& scenePath, const String& jobText, uint32 groupIndex);
+        virtual ~LoadJob() = default;
 
         virtual void Excecute();
         virtual bool IsFinished();
@@ -52,10 +52,6 @@ private:
         const String& GetJobText();
 
         uint32 GetGroupIndex();
-
-        virtual ~LoadJob()
-        {
-        }
 
     protected:
         FilePath scenePath;
@@ -69,7 +65,7 @@ private:
     {
     public:
         LoadThreadJob(const DAVA::FilePath& scenePath, const String& jobText, uint32 groupIndex);
-        ~LoadThreadJob();
+        virtual ~LoadThreadJob();
 
         void Excecute() override;
         bool IsFinished() override;
