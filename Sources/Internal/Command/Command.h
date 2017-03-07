@@ -36,9 +36,9 @@ public:
     virtual bool IsClean() const;
 
 private:
-    //this function is not a part of public API and can be called only by CommandsHolder class
+    //this function is not a part of public API and can be called only by CommandBatch
     virtual bool MergeWith(const Command* command);
-    friend class CommandsHolder;
+    friend class CommandBatch;
 
     const int32 id = INVALID_COMMAND_ID;
     const String description;

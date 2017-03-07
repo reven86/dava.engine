@@ -690,11 +690,11 @@ void DocumentsModule::ChangeControlText(ControlNode* node)
         UIStaticText::eMultiline multilineType = static_cast<UIStaticText::eMultiline>(multilineProperty->GetValue().AsInt32());
         if (inputText.contains('\n') && multilineType == UIStaticText::MULTILINE_DISABLED)
         {
-            std::unique_ptr<ChangePropertyValueCommand> command = data->CreateQECommand<ChangePropertyValueCommand>();
+            std::unique_ptr<ChangePropertyValueCommand> command = data->CreateCommand<ChangePropertyValueCommand>();
             command->AddNodePropertyValue(node, multilineProperty, VariantType(UIStaticText::MULTILINE_ENABLED));
             data->ExecCommand(std::move(command));
         }
-        std::unique_ptr<ChangePropertyValueCommand> command = data->CreateQECommand<ChangePropertyValueCommand>();
+        std::unique_ptr<ChangePropertyValueCommand> command = data->CreateCommand<ChangePropertyValueCommand>();
         command->AddNodePropertyValue(node, textProperty, VariantType(inputText.toStdString()));
         data->ExecCommand(std::move(command));
         stack->EndBatch();

@@ -12,8 +12,10 @@
 #include "QECommands/RemoveComponentCommand.h"
 #include "QECommands/AttachComponentPrototypeSectionCommand.h"
 #include "QECommands/InsertRemoveStyleCommand.h"
-#include "QECommands/AddRemoveStylePropertyCommand.h"
-#include "QECommands/AddRemoveStyleSelectorCommand.h"
+#include "QECommands/RemoveStylePropertyCommand.h"
+#include "QECommands/RemoveStyleSelectorCommand.h"
+#include "QECommands/AddStylePropertyCommand.h"
+#include "QECommands/AddStyleSelectorCommand.h"
 
 #include "QECommands/ChangeStylePropertyCommand.h"
 
@@ -198,7 +200,7 @@ void QtModelPackageCommandExecutor::AddStyleProperty(StyleSheetNode* node, uint3
     {
         UIStyleSheetProperty prop(propertyIndex, UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(propertyIndex).defaultValue);
         ScopedPtr<StyleSheetProperty> property(new StyleSheetProperty(prop));
-        ExecCommand(std::unique_ptr<Command>(new AddRemoveStylePropertyCommand(packageNode, node, property, true)));
+        ExecCommand(std::unique_ptr<Command>(new AddStylePropertyCommand(packageNode, node, property)));
     }
 }
 
@@ -209,7 +211,7 @@ void QtModelPackageCommandExecutor::RemoveStyleProperty(StyleSheetNode* node, DA
         StyleSheetProperty* property = node->GetRootProperty()->FindPropertyByPropertyIndex(propertyIndex);
         if (property)
         {
-            ExecCommand(std::unique_ptr<Command>(new AddRemoveStylePropertyCommand(packageNode, node, property, false)));
+            ExecCommand(std::unique_ptr<Command>(new RemoveStylePropertyCommand(packageNode, node, property)));
         }
     }
 }
@@ -222,7 +224,7 @@ void QtModelPackageCommandExecutor::AddStyleSelector(StyleSheetNode* node)
         UIStyleSheetSourceInfo sourceInfo(document->GetPackageFilePath());
 
         ScopedPtr<StyleSheetSelectorProperty> property(new StyleSheetSelectorProperty(chain, sourceInfo));
-        ExecCommand(std::unique_ptr<Command>(new AddRemoveStyleSelectorCommand(packageNode, node, property, true)));
+        ExecCommand(std::unique_ptr<Command>(new AddStyleSelectorCommand(packageNode, node, property)));
     }
 }
 
@@ -232,7 +234,7 @@ void QtModelPackageCommandExecutor::RemoveStyleSelector(StyleSheetNode* node, DA
     {
         UIStyleSheetSelectorChain chain;
         StyleSheetSelectorProperty* property = node->GetRootProperty()->GetSelectorAtIndex(selectorIndex);
-        ExecCommand(std::unique_ptr<Command>(new AddRemoveStyleSelectorCommand(packageNode, node, property, false)));
+        ExecCommand(std::unique_ptr<Command>(new AddStyleSelectorCommand(packageNode, node, property)));
     }
 }
 

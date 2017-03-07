@@ -383,7 +383,7 @@ void EditorTransformSystem::MoveAllSelectedControls(Vector2 delta, bool canAdjus
     DataContext* activeContext = accessor->GetActiveContext();
     DVASSERT(activeContext != nullptr);
     DocumentData* data = activeContext->GetData<DocumentData>();
-    std::unique_ptr<ChangePropertyValueCommand> command = data->CreateQECommand<ChangePropertyValueCommand>();
+    std::unique_ptr<ChangePropertyValueCommand> command = data->CreateCommand<ChangePropertyValueCommand>();
     DVASSERT(propertiesToChange.empty() == false);
     for (const EditorTransformSystemDetail::ChangePropertyAction& changePropertyAction : propertiesToChange)
     {
@@ -614,7 +614,7 @@ void EditorTransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool ra
     TArc::DataContext* activeContext = accessor->GetActiveContext();
     DVASSERT(activeContext != nullptr);
     DocumentData* data = activeContext->GetData<DocumentData>();
-    std::unique_ptr<ResizeCommand> command = data->CreateQECommand<ResizeCommand>();
+    std::unique_ptr<ResizeCommand> command = data->CreateCommand<ResizeCommand>();
     VariantType sizeValue(finalSize);
 
     Vector2 originalPosition = positionProperty->GetValue().AsVector2();
@@ -780,7 +780,7 @@ void EditorTransformSystem::MovePivot(Vector2 delta)
     TArc::DataContext* activeContext = accessor->GetActiveContext();
     DVASSERT(activeContext != nullptr);
     DocumentData* data = activeContext->GetData<DocumentData>();
-    std::unique_ptr<ChangePivotCommand> command = data->CreateQECommand<ChangePivotCommand>();
+    std::unique_ptr<ChangePivotCommand> command = data->CreateCommand<ChangePivotCommand>();
     command->AddNodePropertyValue(activeControlNode,
                                   pivotProperty,
                                   VariantType(pivot),
@@ -898,7 +898,7 @@ bool EditorTransformSystem::RotateControl(const Vector2& pos)
     TArc::DataContext* activeContext = accessor->GetActiveContext();
     DVASSERT(activeContext != nullptr);
     DocumentData* data = activeContext->GetData<DocumentData>();
-    std::unique_ptr<ChangePropertyValueCommand> command = data->CreateQECommand<ChangePropertyValueCommand>();
+    std::unique_ptr<ChangePropertyValueCommand> command = data->CreateCommand<ChangePropertyValueCommand>();
     command->AddNodePropertyValue(activeControlNode, angleProperty, VariantType(finalAngle));
     data->ExecCommand(std::move(command));
 
@@ -1020,7 +1020,7 @@ void EditorTransformSystem::ClampAngle()
     TArc::DataContext* activeContext = accessor->GetActiveContext();
     DVASSERT(activeContext != nullptr);
     DocumentData* data = activeContext->GetData<DocumentData>();
-    std::unique_ptr<ChangePropertyValueCommand> command = data->CreateQECommand<ChangePropertyValueCommand>();
+    std::unique_ptr<ChangePropertyValueCommand> command = data->CreateCommand<ChangePropertyValueCommand>();
     command->AddNodePropertyValue(activeControlNode, angleProperty, VariantType(angle));
     data->ExecCommand(std::move(command));
 }

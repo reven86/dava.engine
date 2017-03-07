@@ -29,7 +29,7 @@ public:
     const DAVA::CommandStack* GetCommandStack() const;
 
     template <typename T, typename... Arguments>
-    std::unique_ptr<T> CreateQECommand(Arguments&&... args) const;
+    std::unique_ptr<T> CreateCommand(Arguments&&... args) const;
 
     void ExecCommand(std::unique_ptr<DAVA::Command>&& command);
 
@@ -73,7 +73,7 @@ private:
 };
 
 template <typename T, typename... Arguments>
-std::unique_ptr<T> DocumentData::CreateQECommand(Arguments&&... args) const
+std::unique_ptr<T> DocumentData::CreateCommand(Arguments&&... args) const
 {
     static_assert(std::is_base_of<QEPackageCommand, T>::value, "T must be a class derived from QECommand!");
     return std::make_unique<T>(package.Get(), std::forward<Arguments>(args)...);

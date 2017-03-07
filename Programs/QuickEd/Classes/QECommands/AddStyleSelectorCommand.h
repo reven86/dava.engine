@@ -6,11 +6,11 @@
 class StyleSheetNode;
 class StyleSheetSelectorProperty;
 
-class AddRemoveStyleSelectorCommand : public QEPackageCommand
+class AddStyleSelectorCommand : public QEPackageCommand
 {
 public:
-    AddRemoveStyleSelectorCommand(PackageNode* package, StyleSheetNode* node, StyleSheetSelectorProperty* property, bool add);
-    ~AddRemoveStyleSelectorCommand() override;
+    AddStyleSelectorCommand(PackageNode* package, StyleSheetNode* node, StyleSheetSelectorProperty* property);
+    ~AddStyleSelectorCommand() override;
 
     void Redo() override;
     void Undo() override;
@@ -18,6 +18,5 @@ public:
 private:
     StyleSheetNode* node = nullptr;
     StyleSheetSelectorProperty* property = nullptr;
-    const bool add;
     int index = -1;
 };
