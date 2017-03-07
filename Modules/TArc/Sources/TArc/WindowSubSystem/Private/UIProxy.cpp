@@ -26,6 +26,7 @@ UIProxy::UIProxy(ClientModule* module_, UI* globalUI_)
     : module(module_)
     , globalUI(globalUI_)
 {
+    globalUI->lastWaitDialogWasClosed.Connect(&lastWaitDialogWasClosed, &Signal<>::Emit);
 }
 
 void UIProxy::AddView(const WindowKey& windowKey, const PanelKey& panelKey, QWidget* widget)
@@ -48,55 +49,46 @@ void UIProxy::RemoveAction(const WindowKey& windowKey, const ActionPlacementInfo
 
 void UIProxy::ShowMessage(const WindowKey& windowKey, const QString& message, uint32 duration /*= 0*/)
 {
-    Guard g(this);
     globalUI->ShowMessage(windowKey, message, duration);
 }
 
 void UIProxy::ClearMessage(const WindowKey& windowKey)
 {
-    Guard g(this);
     globalUI->ClearMessage(windowKey);
 }
 
 ModalMessageParams::Button UIProxy::ShowModalMessage(const WindowKey& windowKey, const ModalMessageParams& params)
 {
-    Guard g(this);
     return globalUI->ShowModalMessage(windowKey, params);
 }
 
 QString UIProxy::GetOpenFileName(const WindowKey& windowKey, const FileDialogParams& params)
 {
-    Guard g(this);
     return globalUI->GetOpenFileName(windowKey, params);
 }
 
 QString UIProxy::GetSaveFileName(const WindowKey& windowKey, const FileDialogParams& params)
 {
-    Guard g(this);
     return globalUI->GetSaveFileName(windowKey, params);
 }
 
 QString UIProxy::GetExistingDirectory(const WindowKey& windowKey, const DirectoryDialogParams& params)
 {
-    Guard g(this);
     return globalUI->GetExistingDirectory(windowKey, params);
 }
 
 std::unique_ptr<WaitHandle> UIProxy::ShowWaitDialog(const WindowKey& windowKey, const WaitDialogParams& params)
 {
-    Guard g(this);
     return globalUI->ShowWaitDialog(windowKey, params);
 }
 
 bool UIProxy::HasActiveWaitDalogues() const
 {
-    Guard g(const_cast<UIProxy*>(this));
     return globalUI->HasActiveWaitDalogues();
 }
 
 QWidget* UIProxy::GetWindow(const WindowKey& windowKey)
 {
-    Guard g(this);
     return globalUI->GetWindow(windowKey);
 }
 
