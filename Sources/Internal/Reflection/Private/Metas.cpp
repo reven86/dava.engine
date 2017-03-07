@@ -39,6 +39,11 @@ ValidationResult Validator::Validate(const Any& value, const Any& prevValue) con
     return fn(value, prevValue);
 }
 
+ValueEnumeratorField::ValueEnumeratorField(const String& fieldName_)
+    : fieldName(fieldName_)
+{
+}
+
 File::File(const String& filters_, const String& dlgTitle_)
     : filters(filters_)
     , dlgTitle(dlgTitle_)
