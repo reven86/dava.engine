@@ -95,7 +95,7 @@ void PlatformCore::Quit()
 
 void PlatformCore::SetScreenTimeoutEnabled(bool enabled)
 {
-    androidBridge->SetScreenTimeoutEnabled(enabled);   
+    androidBridge->SetScreenTimeoutEnabled(enabled);
 }
 
 WindowBackend* PlatformCore::ActivityOnCreate()

@@ -23,9 +23,9 @@ public:
     void Run();
     void PrepareToQuit();
     void Quit();
-    
+
     void SetScreenTimeoutEnabled(bool enabled);
-    
+
     int32 OnFrame();
 
     // Signals for distribution UIApplicationDelegate's notifications:

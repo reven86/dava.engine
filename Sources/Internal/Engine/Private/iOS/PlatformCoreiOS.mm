@@ -43,7 +43,7 @@ void PlatformCore::Quit()
 
     std::exit(engineBackend->GetExitCode());
 }
-    
+
 void PlatformCore::SetScreenTimeoutEnabled(bool enabled)
 {
     engineBackend->GetPrimaryWindow()->RunOnUIThreadAsync([this, enabled]() {
