@@ -416,7 +416,6 @@ void DLCManagerTest::OnStartStopLocalServerClicked(DAVA::BaseObject* sender, voi
 {
     if (sender == startServerButton)
     {
-        if (gpuArchitecture == "dx11")
         {
 #ifdef __DAVAENGINE_MACOS__
             String macExec = "open -a /usr/bin/osascript --args -e 'tell application \"Terminal\" to do script \"";
@@ -442,7 +441,6 @@ void DLCManagerTest::OnStartStopLocalServerClicked(DAVA::BaseObject* sender, voi
     }
     else if (sender == stopServerButton)
     {
-        if (gpuArchitecture == "dx11")
         {
 #ifdef __DAVAENGINE_MACOS__
             String cdAndPyCommand = "cd " + FilePath("~res:/").GetAbsolutePathname() + "..; python scripts/stop_local_http_server.py";
