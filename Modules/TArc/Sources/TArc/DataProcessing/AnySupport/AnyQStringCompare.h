@@ -1,7 +1,6 @@
 #pragma once
 
 #include <Base/Any.h>
-
 #include <QString>
 
 namespace DAVA
@@ -11,9 +10,7 @@ struct AnyCompare<QString>
 {
     static bool IsEqual(const Any& v1, const Any& v2)
     {
-        const QString& s1 = v1.Get<QString>();
-        const QString& s2 = v2.Get<QString>();
-        return s1 == s2;
+        return v1.Get<QString>() == v2.Get<QString>();
     }
 };
 }
