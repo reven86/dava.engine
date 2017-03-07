@@ -81,6 +81,7 @@ private:
     HUDAreaInfo::eArea activeArea = HUDAreaInfo::NO_AREA;
     ControlNode* activeControlNode = nullptr;
     DAVA::Vector2 extraDelta;
+    DAVA::Map<const ControlNode*, DAVA::Vector2> extraDeltaToMoveControls;
     //this variable is used for rotation only
     DAVA::Vector2 previousMousePos;
     SelectedControls selectedControlNodes;

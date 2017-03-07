@@ -108,11 +108,11 @@ struct ChangePropertyAction
     DAVA::VariantType value;
 };
 
-//when we get request to add a value (5; 10) to position it transforms to:
-//for angle -45 : 45 returns (5; 10)
-//for angle 45 : (90 + 45) returns (10; -5)
-//for angle (90 + 45) : (180 + 45) returns (-5; -10)
-//for angle (180 + 45) : (360 - 45) returns (-10; 5);
+//when we get request to add a value (x; y) to position it transforms to:
+//for angle -45 : 45 returns (x; y)
+//for angle 45 : (90 + 45) returns (y; -x)
+//for angle (90 + 45) : (180 + 45) returns (-x; -y)
+//for angle (180 + 45) : (360 - 45) returns (-y; x);
 
 Vector2 RotateVectorForMove(const Vector2& delta, float32 angle)
 {
@@ -261,6 +261,7 @@ void EditorTransformSystem::OnDragStateChanged(EditorSystemsManager::eDragState 
     if (dragState == EditorSystemsManager::Transform)
     {
         extraDelta.SetZero();
+        extraDeltaToMoveControls.clear();
     }
 }
 
@@ -366,10 +367,10 @@ void EditorTransformSystem::MoveAllSelectedControlsByKeyboard(DAVA::Vector2 delt
         ControlNode* node = nodeToMove->node;
         const UIGeometricData* gd = nodeToMove->parentGD;
         float32 angle = gd->angle;
-        float32 cos = std::cos(angle);
-        Vector2 deltaPosition = EditorTransformSystemDetail::RotateVectorForMove(delta, angle);
         AbstractProperty* property = nodeToMove->positionProperty;
         Vector2 originalPosition = property->GetValue().AsVector2();
+
+        Vector2 deltaPosition = EditorTransformSystemDetail::RotateVectorForMove(delta, angle);
         Vector2 finalPosition(originalPosition + deltaPosition);
         propertiesToChange.emplace_back(node, property, VariantType(finalPosition));
     }
@@ -391,8 +392,6 @@ void EditorTransformSystem::MoveAllSelectedControlsByMouse(Vector2 delta, bool c
 
     Vector<EditorTransformSystemDetail::ChangePropertyAction> propertiesToChange;
     Vector<MagnetLineInfo> magnets;
-    //at furst we need to magnet control under cursor or unmagnet it
-    ControlNode* activeNode = activeControlNode;
     if (canAdjust)
     {
         //find hovered node alias in nodesToMoveInfos
@@ -409,39 +408,47 @@ void EditorTransformSystem::MoveAllSelectedControlsByMouse(Vector2 delta, bool c
                                      return activeControlNodeHierarchy.find(target) != activeControlNodeHierarchy.end();
                                  });
         DVASSERT(iter != nodesToMoveInfos.end());
-        const auto& nodeToMoveInfo = iter->get();
-        const auto& gd = nodeToMoveInfo->parentGD;
-        const auto& node = nodeToMoveInfo->node;
-        activeNode = node;
-        const auto& positionProperty = nodeToMoveInfo->positionProperty;
+        const MoveInfo* nodeToMoveInfo = iter->get();
+        const UIGeometricData* gd = nodeToMoveInfo->parentGD;
+        ControlNode* node = nodeToMoveInfo->node;
+        AbstractProperty* positionProperty = nodeToMoveInfo->positionProperty;
 
         Vector2 scaledDelta = delta / gd->scale;
         Vector2 deltaPosition(::Rotate(scaledDelta, -gd->angle));
-        Vector2 adjustedPosition(deltaPosition);
-        adjustedPosition += extraDelta;
+
+        deltaPosition += extraDelta;
         extraDelta.SetZero();
-        adjustedPosition = AdjustMoveToNearestBorder(adjustedPosition, magnets, gd, node->GetControl());
-        AbstractProperty* property = positionProperty;
-        Vector2 originalPosition = property->GetValue().AsVector2();
-        Vector2 finalPosition(originalPosition + adjustedPosition);
-        propertiesToChange.emplace_back(node, property, VariantType(finalPosition));
-        delta = ::Rotate(adjustedPosition, gd->angle);
+        extraDelta = AdjustMoveToNearestBorder(deltaPosition, magnets, gd, node->GetControl());
+
+        Vector2 originalPosition = positionProperty->GetValue().AsVector2();
+        Vector2 finalPosition(originalPosition + deltaPosition);
+        Vector2 clampedFinalPosition(std::floor(finalPosition.x), std::floor(finalPosition.y));
+        extraDelta += (finalPosition - clampedFinalPosition);
+
+        propertiesToChange.emplace_back(node, positionProperty, VariantType(clampedFinalPosition));
+        delta = ::Rotate(deltaPosition, gd->angle);
         delta *= gd->scale;
     }
     for (auto& nodeToMove : nodesToMoveInfos)
     {
         ControlNode* node = nodeToMove->node;
-        if (canAdjust && node == activeNode)
+        if (canAdjust && node == activeControlNode)
         {
             continue; //we already move it in this function
         }
         const UIGeometricData* gd = nodeToMove->parentGD;
+        AbstractProperty* property = nodeToMove->positionProperty;
+
         Vector2 scaledDelta = delta / gd->scale;
         Vector2 deltaPosition(::Rotate(scaledDelta, -gd->angle));
-        AbstractProperty* property = nodeToMove->positionProperty;
+
         Vector2 originalPosition = property->GetValue().AsVector2();
-        Vector2 finalPosition(originalPosition + deltaPosition);
-        propertiesToChange.emplace_back(node, property, VariantType(finalPosition));
+        DAVA::Vector2& activeExtraDelta = extraDeltaToMoveControls[node];
+        Vector2 finalPosition(originalPosition + deltaPosition + activeExtraDelta);
+        Vector2 clampedFinalPosition(std::floor(finalPosition.x), std::floor(finalPosition.y));
+        activeExtraDelta = (finalPosition - clampedFinalPosition);
+
+        propertiesToChange.emplace_back(node, property, VariantType(clampedFinalPosition));
     }
     systemsManager->magnetLinesChanged.Emit(magnets);
 
