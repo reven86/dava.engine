@@ -30,9 +30,9 @@ const float32 ChartPainterSystem::minFrametime = 1.0f / 60.0f;
 const float32 ChartPainterSystem::overdrawStep = 100.0f;
 const float32 ChartPainterSystem::frametimeStep = 0.016f;
 
-#define MODS_COUNT 6
+const DAVA::uint32 modsCount = 6;
 
-const Array<String, MODS_COUNT> ChartPainterSystem::legend =
+const Array<String, modsCount> ChartPainterSystem::legend =
 { {
 "0 tex",
 "1 tex",
@@ -42,7 +42,7 @@ const Array<String, MODS_COUNT> ChartPainterSystem::legend =
 "dep r"
 } };
 
-const Array<Color, MODS_COUNT> ChartPainterSystem::chartColors =
+const Array<Color, modsCount> ChartPainterSystem::chartColors =
 { {
 { 0.0f, 1.0f, 0.0f, 1.0f },
 { 1.0f, 1.0f, 0.0f, 1.0f },
@@ -147,7 +147,7 @@ void ChartPainterSystem::DrawGrid(int32 w, int32 h) const
 void ChartPainterSystem::DrawCharts(int32 w, int32 h) const
 {
     Polygon2 chartsPoly;
-    for (int i = 0; i < MODS_COUNT; i++)
+    for (int i = 0; i < modsCount; i++)
     {
         chartsPoly.Clear();
         for (size_t j = 0; j < (*performanceData)[i].size(); j++)
@@ -221,7 +221,7 @@ void ChartPainterSystem::DrawLegend(int32 w, int32 h) const
     int32 yPos = static_cast<int32>(yOffsetMultiplier * DAVA::Renderer::GetFramebufferHeight());
     float32 yPosFloat = yOffsetMultiplier * h;
     Polygon2 p;
-    for (int i = 0; i < MODS_COUNT; i++)
+    for (int i = 0; i < modsCount; i++)
     {
         p.Clear();
 
@@ -237,8 +237,8 @@ void ChartPainterSystem::DrawLegend(int32 w, int32 h) const
 float32 ChartPainterSystem::GetMaxFrametimeFromData() const
 {
     // Looking for the max frametime element in whole data
-    Array<float32, MODS_COUNT> frametimes;
-    for (int i = 0; i < MODS_COUNT; i++)
+    Array<float32, modsCount> frametimes;
+    for (int i = 0; i < modsCount; i++)
     {
         Vector<FrameData>& currVector = (*performanceData)[i];
         auto begin = currVector.begin();
