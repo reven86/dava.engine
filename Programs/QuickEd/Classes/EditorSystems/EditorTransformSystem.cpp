@@ -107,6 +107,41 @@ struct ChangePropertyAction
     AbstractProperty* property = nullptr;
     DAVA::VariantType value;
 };
+
+//when we get request to add a value (5; 10) to position it transforms to:
+//for angle -45 : 45 returns (5; 10)
+//for angle 45 : (90 + 45) returns (10; -5)
+//for angle (90 + 45) : (180 + 45) returns (-5; -10)
+//for angle (180 + 45) : (360 - 45) returns (-10; 5);
+
+Vector2 RotateVectorForMove(const Vector2& delta, float32 angle)
+{
+    static const float32 positiveCos = std::cos(PI_025);
+    static const float32 negativeCos = std::cos(PI + PI_025);
+
+    float32 cos = std::cos(angle);
+    Vector2 deltaPosition;
+    if (cos > positiveCos)
+    {
+        return delta;
+    }
+    else if (cos < negativeCos)
+    {
+        return Vector2(-delta.dx, -delta.dy);
+    }
+    else
+    {
+        float32 sin = std::sin(angle);
+        if (sin > 0)
+        {
+            return Vector2(delta.dy, -delta.dx);
+        }
+        else
+        {
+            return Vector2(-delta.dy, delta.dx);
+        }
+    }
+}
 }
 
 EditorTransformSystem::EditorTransformSystem(EditorSystemsManager* parent, TArc::ContextAccessor* accessor_)
@@ -278,7 +313,7 @@ void EditorTransformSystem::ProcessKey(Key key)
         }
         if (!deltaPos.IsZero())
         {
-            MoveAllSelectedControls(deltaPos, false);
+            MoveAllSelectedControlsByKeyboard(deltaPos);
         }
     }
 }
@@ -289,7 +324,7 @@ void EditorTransformSystem::ProcessDrag(const Vector2& pos)
     switch (activeArea)
     {
     case HUDAreaInfo::FRAME_AREA:
-        MoveAllSelectedControls(delta, !IsShiftPressed());
+        MoveAllSelectedControlsByMouse(delta, !IsShiftPressed());
         break;
     case HUDAreaInfo::TOP_LEFT_AREA:
     case HUDAreaInfo::TOP_CENTER_AREA:
@@ -320,7 +355,37 @@ void EditorTransformSystem::ProcessDrag(const Vector2& pos)
     }
 }
 
-void EditorTransformSystem::MoveAllSelectedControls(Vector2 delta, bool canAdjust)
+void EditorTransformSystem::MoveAllSelectedControlsByKeyboard(DAVA::Vector2 delta)
+{
+    using namespace TArc;
+
+    DVASSERT(delta.dx == 0.0f || delta.dy == 0.0f);
+    Vector<EditorTransformSystemDetail::ChangePropertyAction> propertiesToChange;
+    for (auto& nodeToMove : nodesToMoveInfos)
+    {
+        ControlNode* node = nodeToMove->node;
+        const UIGeometricData* gd = nodeToMove->parentGD;
+        float32 angle = gd->angle;
+        float32 cos = std::cos(angle);
+        Vector2 deltaPosition = EditorTransformSystemDetail::RotateVectorForMove(delta, angle);
+        AbstractProperty* property = nodeToMove->positionProperty;
+        Vector2 originalPosition = property->GetValue().AsVector2();
+        Vector2 finalPosition(originalPosition + deltaPosition);
+        propertiesToChange.emplace_back(node, property, VariantType(finalPosition));
+    }
+    DataContext* activeContext = accessor->GetActiveContext();
+    DVASSERT(activeContext != nullptr);
+    DocumentData* data = activeContext->GetData<DocumentData>();
+    std::unique_ptr<ChangePropertyValueCommand> command = data->CreateCommand<ChangePropertyValueCommand>();
+    DVASSERT(propertiesToChange.empty() == false);
+    for (const EditorTransformSystemDetail::ChangePropertyAction& changePropertyAction : propertiesToChange)
+    {
+        command->AddNodePropertyValue(changePropertyAction.node, changePropertyAction.property, changePropertyAction.value);
+    }
+    data->ExecCommand(std::move(command));
+}
+
+void EditorTransformSystem::MoveAllSelectedControlsByMouse(Vector2 delta, bool canAdjust)
 {
     using namespace DAVA::TArc;
 
