@@ -57,6 +57,8 @@ struct AndroidBridge final
 
     void GameThread();
 
+    void SetScreenTimeoutEnabled(bool enabled);
+
     JavaVM* javaVM = nullptr;
     jobject classLoader = nullptr; // Cached instance of ClassLoader
     jmethodID methodClassLoader_loadClass = nullptr; // ClassLoader.loadClass method
@@ -65,6 +67,7 @@ struct AndroidBridge final
     jobject activity = nullptr; // Reference to DavaActivity instance
     jmethodID methodDavaActivity_postFinish = nullptr; // DavaActivity.postFinish method
     jmethodID methodDavaActivity_hideSplashView = nullptr; // DavaActivity.hideSplashView method
+    jmethodID methodDavaActivity_setScreenTimeoutEnabled = nullptr; // DavaActivity.setScreenTimeoutEnabled method
     EngineBackend* engineBackend = nullptr;
     PlatformCore* core = nullptr;
 

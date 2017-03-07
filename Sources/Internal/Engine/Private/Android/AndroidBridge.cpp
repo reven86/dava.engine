@@ -108,6 +108,9 @@ void AndroidBridge::InitializeJNI(JNIEnv* env)
         methodDavaActivity_hideSplashView = env->GetMethodID(jclassDavaActivity, "hideSplashView", "()V");
         JNI::CheckJavaException(env, true);
 
+        methodDavaActivity_setScreenTimeoutEnabled = env->GetMethodID(jclassDavaActivity, "setScreenTimeoutEnabled", "(Z)V");
+        JNI::CheckJavaException(env, true);
+
         // Get java.lang.Class<com.dava.engine.DavaActivity>
         jclass jclassClass = env->GetObjectClass(jclassDavaActivity);
         JNI::CheckJavaException(env, true);
@@ -151,6 +154,20 @@ void AndroidBridge::HideSplashView()
     catch (const JNI::Exception& e)
     {
         ANDROID_LOG_ERROR("hideSplashView call failed: %s", e.what());
+    }
+}
+
+void AndroidBridge::SetScreenTimeoutEnabled(bool enabled)
+{
+    try
+    {
+        JNIEnv* env = GetEnv();
+        env->CallVoidMethod(androidBridge->activity, androidBridge->methodDavaActivity_setScreenTimeoutEnabled, enabled ? JNI_TRUE : JNI_FALSE);
+        JNI::CheckJavaException(env, true);
+    }
+    catch (const JNI::Exception& e)
+    {
+        ANDROID_LOG_ERROR("setScreenTimeoutEnabled call failed: %s", e.what());
     }
 }
 

@@ -9,35 +9,6 @@ import android.content.ActivityNotFoundException;
 import java.util.UUID;
 
 public class JNIUtils {
-	private static boolean isEnabledSleepTimer = true;
-	
-	public static void DisableSleepTimer() {
-		isEnabledSleepTimer = false;
-		Activity activity = JNIActivity.GetActivity();
-		activity.runOnUiThread(new Runnable() {
-			@Override
-			public void run() {
-				JNIActivity.GetActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-			}
-		});
-	}
-	
-	public static void EnableSleepTimer() {
-		isEnabledSleepTimer = true;
-		Activity activity = JNIActivity.GetActivity();
-		activity.runOnUiThread(new Runnable() {
-			@Override
-			public void run() {
-				JNIActivity.GetActivity().getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-			}
-		});
-	}
-
-	protected static void keepScreenOnOnResume() {
-		if (!isEnabledSleepTimer)
-			JNIActivity.GetActivity().getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-	}
-
 	public static void OpenURL(final String url) {
 		final JNIActivity activity = JNIActivity.GetActivity();
 		activity.runOnUiThread(new Runnable() {
