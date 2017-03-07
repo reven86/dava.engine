@@ -13,5 +13,4 @@ struct AnyCompare<QString>
         return v1.Get<QString>() == v2.Get<QString>();
     }
 };
-
 }

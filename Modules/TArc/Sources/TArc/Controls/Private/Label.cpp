@@ -42,6 +42,7 @@ void Label::UpdateControl(const ControlDescriptor& descriptor)
         }
         else
         {
+            DVASSERT(false);
             stringValue = QString("ALARM!!! Cast from %1 to String is not registered").arg(value.GetType()->GetName());
         }
 
