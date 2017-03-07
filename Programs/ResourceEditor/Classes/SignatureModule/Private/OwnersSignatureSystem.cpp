@@ -7,6 +7,8 @@
 #include <Utils/StringFormat.h>
 #include <Time/DateTime.h>
 
+#include <time.h>
+
 OwnersSignatureSystem::OwnersSignatureSystem(DAVA::Scene* scene, const DAVA::String& userName)
     : SceneSystem(scene)
     , currentUserName(userName)
