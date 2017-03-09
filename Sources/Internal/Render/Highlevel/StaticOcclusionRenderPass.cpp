@@ -149,7 +149,7 @@ void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem* renderSystem, C
             {
                 terrainBatches.push_back(batch);
             }
-            else if (objectType != RenderObject::TYPE_PARTICLE_EMTITTER)
+            else if (objectType != RenderObject::TYPE_PARTICLE_EMITTER)
             {
                 bool shouldEnableDepthWrite = ShouldEnableDepthWriteForRenderObject(renderObject);
                 auto option = shouldEnableDepthWrite ? Option_DepthWriteEnabled : Option_DepthWriteDisabled;

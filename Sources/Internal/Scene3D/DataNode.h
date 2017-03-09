@@ -1,9 +1,9 @@
-#ifndef __DAVAENGINE_DATANODE_H__
-#define __DAVAENGINE_DATANODE_H__
+#pragma once
 
 #include "Base/BaseObject.h"
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
+#include "Reflection/Reflection.h"
 #include "Render/RenderBase.h"
 #include "Scene3D/Entity.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
@@ -46,7 +46,7 @@ public:
     INTROSPECTION_EXTEND(DataNode, BaseObject,
                          MEMBER(id, "Id", I_SAVE)
                          )
-};
-};
 
-#endif // __DAVAENGINE_DATANODE_H__
+    DAVA_VIRTUAL_REFLECTION(DataNode, BaseObject);
+};
+}

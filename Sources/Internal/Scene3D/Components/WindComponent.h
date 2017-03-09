@@ -1,7 +1,7 @@
-#ifndef __DAVAENGINE_SCENE3D_WIND_COMPONENT_H__
-#define __DAVAENGINE_SCENE3D_WIND_COMPONENT_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
+#include "Reflection/Reflection.h"
 #include "Entity/Component.h"
 #include "Scene3D/Entity.h"
 
@@ -44,6 +44,8 @@ public:
                          PROPERTY("windForce", "windForce", GetWindForce, SetWindForce, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("windSpeed", "windSpeed", GetWindSpeed, SetWindSpeed, I_SAVE | I_VIEW | I_EDIT)
                          );
+
+    DAVA_VIRTUAL_REFLECTION(WindComponent, Component);
 };
 
 inline const AABBox3& WindComponent::GetInfluenceBBox() const
@@ -75,6 +77,4 @@ inline void WindComponent::SetWindSpeed(const float32& speed)
 {
     windSpeed = speed;
 }
-};
-
-#endif
+}

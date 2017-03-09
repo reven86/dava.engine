@@ -8,6 +8,7 @@
 #include "Reflection/ReflectionRegistrator.h"
 
 #include <QAction>
+#include <thread>
 
 void CrashProduceModule::PostInit()
 {
@@ -32,6 +33,16 @@ void CrashProduceModule::PostInit()
                               });
 
     ui->AddAction(REGlobal::MainWindowKey, placementInfo, sequencalsAssert);
+
+    QAction* threadAssertAction = new QAction("Generate Assert From Thread", nullptr);
+    connections.AddConnection(threadAssertAction, &QAction::triggered, []()
+                              {
+                                  std::thread t([]() {
+                                      DVASSERT(0, "Assert from foreign thread");
+                                  });
+                                  t.detach();
+                              });
+    ui->AddAction(REGlobal::MainWindowKey, placementInfo, threadAssertAction);
 
     QAction* dumpAction = new QAction("Generate dump", nullptr);
     connections.AddConnection(dumpAction, &QAction::triggered, []()

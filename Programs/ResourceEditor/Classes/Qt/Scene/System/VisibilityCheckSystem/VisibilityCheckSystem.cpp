@@ -326,7 +326,7 @@ bool VisibilityCheckSystem::ShouldDrawRenderObject(DAVA::RenderObject* object)
         return true;
 
     if ((type == DAVA::RenderObject::TYPE_SPEED_TREE) || (type == DAVA::RenderObject::TYPE_SPRITE) ||
-        (type == DAVA::RenderObject::TYPE_VEGETATION) || (type == DAVA::RenderObject::TYPE_PARTICLE_EMTITTER))
+        (type == DAVA::RenderObject::TYPE_VEGETATION) || (type == DAVA::RenderObject::TYPE_PARTICLE_EMITTER))
     {
         return false;
     }

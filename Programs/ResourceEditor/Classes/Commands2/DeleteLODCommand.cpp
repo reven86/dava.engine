@@ -16,7 +16,7 @@ DeleteLODCommand::DeleteLODCommand(DAVA::LodComponent* lod, DAVA::int32 lodIndex
     DAVA::RenderObject* ro = DAVA::GetRenderObject(entity);
 
     DVASSERT(ro);
-    DVASSERT(ro->GetType() != DAVA::RenderObject::TYPE_PARTICLE_EMTITTER);
+    DVASSERT(ro->GetType() != DAVA::RenderObject::TYPE_PARTICLE_EMITTER);
 
     //save renderBatches
     DAVA::int32 count = (DAVA::int32)ro->GetRenderBatchCount();
