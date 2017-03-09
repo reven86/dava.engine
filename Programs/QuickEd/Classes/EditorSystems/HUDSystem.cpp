@@ -1,18 +1,20 @@
 #include <numeric>
 #include "HUDSystem.h"
 
-#include "UI/UIControl.h"
-#include "UI/UIEvent.h"
-#include "Base/BaseTypes.h"
-
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
+#include "Model/ControlProperties/RootProperty.h"
+#include "Model/ControlProperties/VisibleValueProperty.h"
 
 #include "EditorSystems/HUDControls.h"
 #include "EditorSystems/KeyboardProxy.h"
-#include "Model/ControlProperties/RootProperty.h"
-#include "Model/ControlProperties/VisibleValueProperty.h"
+
+#include <Base/BaseTypes.h>
+#include <UI/UIControl.h>
+#include <UI/UIEvent.h>
+#include <Preferences/PreferencesRegistrator.h>
+#include <Preferences/PreferencesStorage.h>
 
 using namespace DAVA;
 
@@ -20,6 +22,11 @@ namespace
 {
 const Array<HUDAreaInfo::eArea, 2> AreasToHide = { { HUDAreaInfo::PIVOT_POINT_AREA, HUDAreaInfo::ROTATE_AREA } };
 }
+
+REGISTER_PREFERENCES_ON_START(HUDSystem,
+    PREF_ARG("showPivot", false),
+    PREF_ARG("showRotate", false)
+    )
 
 RefPtr<ControlContainer> CreateControlContainer(HUDAreaInfo::eArea area)
 {
@@ -48,7 +55,7 @@ RefPtr<ControlContainer> CreateControlContainer(HUDAreaInfo::eArea area)
 
 struct HUDSystem::HUD
 {
-    HUD(ControlNode* node, UIControl* hudControl);
+    HUD(ControlNode* node, HUDSystem* hudSystem);
     ~HUD();
     ControlNode* node = nullptr;
     UIControl* control = nullptr;
@@ -57,10 +64,10 @@ struct HUDSystem::HUD
     Map<HUDAreaInfo::eArea, RefPtr<ControlContainer>> hudControls;
 };
 
-HUDSystem::HUD::HUD(ControlNode* node_, UIControl* hudControl_)
+HUDSystem::HUD::HUD(ControlNode* node_, HUDSystem* hudSystem)
     : node(node_)
     , control(node_->GetControl())
-    , hudControl(hudControl_)
+    , hudControl(hudSystem->hudControl.Get())
     , container(new HUDContainer(node_))
 {
     container->SetName(FastName("Container for HUD controls of node " + node_->GetName()));
@@ -70,12 +77,17 @@ HUDSystem::HUD::HUD(ControlNode* node_, UIControl* hudControl_)
         areas.reserve(HUDAreaInfo::AREAS_COUNT);
         for (int area = HUDAreaInfo::AREAS_BEGIN; area != HUDAreaInfo::AREAS_COUNT; ++area)
         {
+            if ((hudSystem->showPivot == false && area == HUDAreaInfo::PIVOT_POINT_AREA) ||
+                (hudSystem->showRotate == false && area == HUDAreaInfo::ROTATE_AREA))
+            {
+                continue;
+            }
             areas.push_back(static_cast<HUDAreaInfo::eArea>(area));
         }
     }
     else
     {
-        //custom areas
+        //custom areas for root control
         areas = {
             HUDAreaInfo::TOP_LEFT_AREA,
             HUDAreaInfo::TOP_CENTER_AREA,
@@ -122,12 +134,16 @@ HUDSystem::HUDSystem(EditorSystemsManager* parent)
     systemsManager->magnetLinesChanged.Connect(this, &HUDSystem::OnMagnetLinesChanged);
     systemsManager->packageChanged.Connect(this, &HUDSystem::OnPackageChanged);
     systemsManager->GetRootControl()->AddControl(hudControl.Get());
+
+    PreferencesStorage::Instance()->RegisterPreferences(this);
 }
 
 HUDSystem::~HUDSystem()
 {
     DVASSERT(systemsManager->GetDragState() != EditorSystemsManager::SelectByRect);
     systemsManager->GetRootControl()->RemoveControl(hudControl.Get());
+
+    PreferencesStorage::Instance()->UnregisterPreferences(this);
 }
 
 void HUDSystem::OnSelectionChanged(const SelectedNodes& selection)
@@ -142,7 +158,7 @@ void HUDSystem::OnSelectionChanged(const SelectedNodes& selection)
         {
             if (nullptr != controlNode && nullptr != controlNode->GetControl())
             {
-                hudMap[controlNode] = std::make_unique<HUD>(controlNode, hudControl.Get());
+                hudMap[controlNode] = std::make_unique<HUD>(controlNode, this);
                 sortedControlList.insert(controlNode);
             }
         }
