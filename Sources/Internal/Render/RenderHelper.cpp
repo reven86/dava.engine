@@ -436,7 +436,11 @@ void RenderHelper::DrawPolygon(const Polygon3& polygon, const Color& color, eDra
 
     drawCommand.extraParams.resize(polygon.pointCount * 3);
     Memcpy(drawCommand.extraParams.data(), polygon.points.data(), sizeof(Vector3) * polygon.pointCount);
-    Memcpy(drawCommand.params, color.color, sizeof(Color));
+
+    drawCommand.params[0] = color.r;
+    drawCommand.params[1] = color.g;
+    drawCommand.params[2] = color.b;
+    drawCommand.params[3] = color.a;
 
     QueueCommand(drawCommand);
 }
