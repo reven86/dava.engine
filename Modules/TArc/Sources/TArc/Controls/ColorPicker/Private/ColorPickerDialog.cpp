@@ -308,11 +308,11 @@ void ColorPickerDialog::LoadSettings()
 
     PropertiesItem propsItem = contextAccessor->CreatePropertiesNode(ColorPickerDialogDetail::PROPERTIES_KEY);
     //TODO: need to restore geometry and position
-    //    QByteArray geometryData = propsItem.Get<QByteArray>(ColorPickerDialogDetail::GEOMETRY_KEY);
-    //    if(geometryData.isEmpty() == false)
-    //    {
-    //        restoreGeometry(geometryData);
-    //    }
+    QByteArray geometryData = propsItem.Get<QByteArray>(ColorPickerDialogDetail::GEOMETRY_KEY);
+    if (geometryData.isEmpty() == false)
+    {
+        restoreGeometry(geometryData);
+    }
 
     float32 maxMultiplier = propsItem.Get<float32>(ColorPickerDialogDetail::MULTIPLIER_KEY, 2.0f);
     rgbam->SetMaxMultiplierValue(maxMultiplier);
