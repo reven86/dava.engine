@@ -20,19 +20,19 @@ DAVA_TESTCLASS (FileListTest)
 
     FileListTest()
     {
-        FileSystem::Instance()->DeleteDirectory("~doc:/TestData/FileListTest/", true);
-        FileSystem::Instance()->DeleteDirectory("~doc:/TestData/FileListTestWindowsExtension/", true);
+        FileSystem::Instance()->DeleteDirectory("~doc:/UnitTests/TestData/FileListTest/", true);
+        FileSystem::Instance()->DeleteDirectory("~doc:/UnitTests/TestData/FileListTestWindowsExtension/", true);
 
-        FileSystem::Instance()->RecursiveCopy("~res:/TestData/FileListTest/", "~doc:/TestData/FileListTest/");
+        FileSystem::Instance()->RecursiveCopy("~res:/TestData/FileListTest/", "~doc:/UnitTests/TestData/FileListTest/");
     #if defined(__DAVAENGINE_WINDOWS__)
-        FileSystem::Instance()->RecursiveCopy("~res:/TestData/FileListTestWindowsExtension/", "~doc:/TestData/FileListTestWindowsExtension/");
+        FileSystem::Instance()->RecursiveCopy("~res:/TestData/FileListTestWindowsExtension/", "~doc:/UnitTests/TestData/FileListTestWindowsExtension/");
     #endif
     }
 
     ~FileListTest()
     {
-        FileSystem::Instance()->DeleteDirectory("~doc:/TestData/FileListTest/", true);
-        FileSystem::Instance()->DeleteDirectory("~doc:/TestData/FileListTestWindowsExtension/", true);
+        FileSystem::Instance()->DeleteDirectory("~doc:/UnitTests/TestData/FileListTest/", true);
+        FileSystem::Instance()->DeleteDirectory("~doc:/UnitTests/TestData/FileListTestWindowsExtension/", true);
     }
 
     DAVA_TEST (ResTestFunction)
@@ -163,7 +163,7 @@ DAVA_TESTCLASS (FileListTest)
     {
         FileSystem* fs = FileSystem::Instance();
         const String fileContent = "Hello :)";
-        const FilePath extPath = "~doc:/TestData/FileListTestWindowsExtension/";
+        const FilePath extPath = "~doc:/UnitTests/TestData/FileListTestWindowsExtension/";
 
         //extract cyrillic path from file
         String cyrillicPathString;
@@ -225,7 +225,7 @@ DAVA_TESTCLASS (FileListTest)
 
     DAVA_TEST (DocTestFunction)
     {
-        ScopedPtr<FileList> fileList(new FileList("~doc:/TestData/FileListTest/"));
+        ScopedPtr<FileList> fileList(new FileList("~doc:/UnitTests/TestData/FileListTest/"));
 
         TEST_VERIFY(fileList->GetDirectoryCount() == 3);
         TEST_VERIFY(fileList->GetFileCount() == 0);
@@ -242,7 +242,7 @@ DAVA_TESTCLASS (FileListTest)
 
             if (filename == "Folder1")
             {
-                TEST_VERIFY(pathname == "~doc:/TestData/FileListTest/Folder1/");
+                TEST_VERIFY(pathname == "~doc:/UnitTests/TestData/FileListTest/Folder1/");
                 TEST_VERIFY(files->GetFileCount() == 3);
 
                 for (uint32 ifi = 0; ifi < files->GetCount(); ++ifi)
@@ -255,15 +255,15 @@ DAVA_TESTCLASS (FileListTest)
 
                     if (f == "file1")
                     {
-                        TEST_VERIFY(p == "~doc:/TestData/FileListTest/Folder1/file1");
+                        TEST_VERIFY(p == "~doc:/UnitTests/TestData/FileListTest/Folder1/file1");
                     }
                     else if (f == "file2.txt")
                     {
-                        TEST_VERIFY(p == "~doc:/TestData/FileListTest/Folder1/file2.txt");
+                        TEST_VERIFY(p == "~doc:/UnitTests/TestData/FileListTest/Folder1/file2.txt");
                     }
                     else if (f == "file3.doc")
                     {
-                        TEST_VERIFY(p == "~doc:/TestData/FileListTest/Folder1/file3.doc");
+                        TEST_VERIFY(p == "~doc:/UnitTests/TestData/FileListTest/Folder1/file3.doc");
                     }
                     else
                     {
@@ -273,7 +273,7 @@ DAVA_TESTCLASS (FileListTest)
             }
             else if (filename == "Folder2")
             {
-                TEST_VERIFY(pathname == "~doc:/TestData/FileListTest/Folder2/");
+                TEST_VERIFY(pathname == "~doc:/UnitTests/TestData/FileListTest/Folder2/");
                 TEST_VERIFY(files->GetFileCount() == 6);
                 for (uint32 ifi = 0; ifi < files->GetCount(); ++ifi)
                 {
@@ -285,27 +285,27 @@ DAVA_TESTCLASS (FileListTest)
 
                     if (f == "file1")
                     {
-                        TEST_VERIFY(p == "~doc:/TestData/FileListTest/Folder2/file1");
+                        TEST_VERIFY(p == "~doc:/UnitTests/TestData/FileListTest/Folder2/file1");
                     }
                     else if (f == "file1.txt")
                     {
-                        TEST_VERIFY(p == "~doc:/TestData/FileListTest/Folder2/file1.txt");
+                        TEST_VERIFY(p == "~doc:/UnitTests/TestData/FileListTest/Folder2/file1.txt");
                     }
                     else if (f == "file2")
                     {
-                        TEST_VERIFY(p == "~doc:/TestData/FileListTest/Folder2/file2");
+                        TEST_VERIFY(p == "~doc:/UnitTests/TestData/FileListTest/Folder2/file2");
                     }
                     else if (f == "file2.txt")
                     {
-                        TEST_VERIFY(p == "~doc:/TestData/FileListTest/Folder2/file2.txt");
+                        TEST_VERIFY(p == "~doc:/UnitTests/TestData/FileListTest/Folder2/file2.txt");
                     }
                     else if (f == "file3")
                     {
-                        TEST_VERIFY(p == "~doc:/TestData/FileListTest/Folder2/file3");
+                        TEST_VERIFY(p == "~doc:/UnitTests/TestData/FileListTest/Folder2/file3");
                     }
                     else if (f == "file3.doc")
                     {
-                        TEST_VERIFY(p == "~doc:/TestData/FileListTest/Folder2/file3.doc");
+                        TEST_VERIFY(p == "~doc:/UnitTests/TestData/FileListTest/Folder2/file3.doc");
                     }
                     else
                     {
@@ -315,7 +315,7 @@ DAVA_TESTCLASS (FileListTest)
             }
             else if (filename == "Folder3")
             {
-                TEST_VERIFY(pathname == "~doc:/TestData/FileListTest/Folder3/");
+                TEST_VERIFY(pathname == "~doc:/UnitTests/TestData/FileListTest/Folder3/");
                 TEST_VERIFY(files->GetFileCount() == 2);
                 for (uint32 ifi = 0; ifi < files->GetCount(); ++ifi)
                 {
@@ -327,11 +327,11 @@ DAVA_TESTCLASS (FileListTest)
 
                     if (f == "file1")
                     {
-                        TEST_VERIFY(p == "~doc:/TestData/FileListTest/Folder3/file1");
+                        TEST_VERIFY(p == "~doc:/UnitTests/TestData/FileListTest/Folder3/file1");
                     }
                     else if (f == "file3.doc")
                     {
-                        TEST_VERIFY(p == "~doc:/TestData/FileListTest/Folder3/file3.doc");
+                        TEST_VERIFY(p == "~doc:/UnitTests/TestData/FileListTest/Folder3/file3.doc");
                     }
                     else
                     {
@@ -349,7 +349,7 @@ DAVA_TESTCLASS (FileListTest)
     DAVA_TEST (HiddenFileTest)
     {
 #if defined(__DAVAENGINE_WIN32__)
-        FilePath file1 = FilePath("~doc:/TestData/FileListTest/Folder1/file1");
+        FilePath file1 = FilePath("~doc:/UnitTests/TestData/FileListTest/Folder1/file1");
         auto file1str = file1.GetAbsolutePathname();
         auto attrs = GetFileAttributesA(file1str.c_str());
 
@@ -358,7 +358,7 @@ DAVA_TESTCLASS (FileListTest)
             SetFileAttributesA(file1str.c_str(), attrs ^ FILE_ATTRIBUTE_HIDDEN);
         }
 
-        ScopedPtr<FileList> files(new FileList("~doc:/TestData/FileListTest/Folder1/"));
+        ScopedPtr<FileList> files(new FileList("~doc:/UnitTests/TestData/FileListTest/Folder1/"));
         TEST_VERIFY(files->GetFileCount() == 3);
         auto i = GetIndex(files, "file1");
         TEST_VERIFY(i < files->GetCount());
@@ -366,7 +366,7 @@ DAVA_TESTCLASS (FileListTest)
 
         SetFileAttributesA(file1str.c_str(), attrs | FILE_ATTRIBUTE_HIDDEN);
 
-        files = new FileList("~doc:/TestData/FileListTest/Folder1/");
+        files = new FileList("~doc:/UnitTests/TestData/FileListTest/Folder1/");
         TEST_VERIFY(files->GetFileCount() == 3);
         i = GetIndex(files, "file1");
         TEST_VERIFY(i < files->GetCount());
@@ -394,7 +394,7 @@ DAVA_TESTCLASS (FileListTest)
     DAVA_TEST (HiddenDirTest)
     {
 #if defined(__DAVAENGINE_WIN32__)
-        FilePath dir1 = FilePath("~doc:/TestData/FileListTest/Folder1/");
+        FilePath dir1 = FilePath("~doc:/UnitTests/TestData/FileListTest/Folder1/");
         auto dir1str = dir1.GetAbsolutePathname();
         auto attrs = GetFileAttributesA(dir1str.c_str());
 
@@ -403,7 +403,7 @@ DAVA_TESTCLASS (FileListTest)
             SetFileAttributesA(dir1str.c_str(), attrs ^ FILE_ATTRIBUTE_HIDDEN);
         }
 
-        ScopedPtr<FileList> files(new FileList("~doc:/TestData/FileListTest/"));
+        ScopedPtr<FileList> files(new FileList("~doc:/UnitTests/TestData/FileListTest/"));
         TEST_VERIFY(files->GetDirectoryCount() == 3);
         auto i = GetIndex(files, "Folder1");
         TEST_VERIFY(i < files->GetCount());
@@ -411,7 +411,7 @@ DAVA_TESTCLASS (FileListTest)
 
         SetFileAttributesA(dir1str.c_str(), attrs | FILE_ATTRIBUTE_HIDDEN);
 
-        files = new FileList("~doc:/TestData/FileListTest/");
+        files = new FileList("~doc:/UnitTests/TestData/FileListTest/");
         TEST_VERIFY(files->GetDirectoryCount() == 3);
         i = GetIndex(files, "Folder1");
         TEST_VERIFY(i < files->GetCount());
@@ -421,9 +421,9 @@ DAVA_TESTCLASS (FileListTest)
 
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
 
-        FilePath folder1hidden = "~doc:/TestData/FileListTest/.Folder1/";
+        FilePath folder1hidden = "~doc:/UnitTests/TestData/FileListTest/.Folder1/";
         TEST_VERIFY(FileSystem::Instance()->CreateDirectory(folder1hidden, true));
-        ScopedPtr<FileList> files(new FileList("~doc:/TestData/FileListTest/"));
+        ScopedPtr<FileList> files(new FileList("~doc:/UnitTests/TestData/FileListTest/"));
         TEST_VERIFY(files->GetDirectoryCount() == 4);
         for (auto i = 0; i < files->GetCount(); ++i)
         {
