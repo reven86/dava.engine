@@ -20,7 +20,6 @@ protected:
 private:
     Any GetValueAny() const;
     void SetValueAny(const Any& newValue);
-    Any GetEnumeratorValue() const;
 
 private:
     DAVA_VIRTUAL_REFLECTION(EnumComponentValue, BaseComponentValue);

@@ -173,12 +173,6 @@ using FlagsT = Meta<Metas::FlagsT<T>, Metas::Flags>;
 
 /**
     \ingroup metas
-    Defines field of object that should be used to get allowed values for field that marked by this one
-*/
-using ValueEnumeratorField = Meta<Metas::ValueEnumeratorField>;
-
-/**
-    \ingroup metas
     Add hint that indicate value of Reflected Field as File.
     \arg \c shouldExists has type of bool
 */

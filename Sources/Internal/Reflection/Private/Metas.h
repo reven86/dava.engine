@@ -157,15 +157,6 @@ inline const EnumMap* FlagsT<T>::GetFlagsMap() const
     return GlobalEnumMap<T>::Instance();
 }
 
-/** Defines field of object that should be used to get allowed values for field that marked by this one */
-class ValueEnumeratorField
-{
-public:
-    ValueEnumeratorField(const String& fieldName);
-
-    const String fieldName;
-};
-
 /** Defines that value of Reflected Field should be File */
 class File
 {

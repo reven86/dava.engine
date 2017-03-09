@@ -5,77 +5,14 @@
 
 namespace DAVA
 {
-namespace QualitySettingsComponentDetail
-{
-UnorderedMap<FastName, FastName> GetModelTypes(QualitySettingsComponent* component)
-{
-    static UnorderedMap<FastName, FastName> modelTypes;
-    if (modelTypes.empty() == true)
-    {
-        modelTypes.emplace(FastName(), FastName("Undefined"));
-
-        QualitySettingsSystem* inst = QualitySettingsSystem::Instance();
-        for (int32 i = 0; i < inst->GetOptionsCount(); ++i)
-        {
-            FastName optionName = inst->GetOptionName(i);
-            modelTypes.emplace(optionName, optionName);
-        }
-    }
-
-    return modelTypes;
-}
-
-UnorderedMap<FastName, FastName> GetRequiredGroups(QualitySettingsComponent* component)
-{
-    static UnorderedMap<FastName, FastName> requiredGroups;
-    if (requiredGroups.empty() == true)
-    {
-        requiredGroups.emplace(FastName(), FastName("Undefined"));
-
-        QualitySettingsSystem* inst = QualitySettingsSystem::Instance();
-        for (int32 i = 0; i < inst->GetMaterialQualityGroupCount(); ++i)
-        {
-            FastName groupName = inst->GetMaterialQualityGroupName(i);
-            requiredGroups.emplace(groupName, groupName);
-        }
-    }
-
-    return requiredGroups;
-}
-
-UnorderedMap<FastName, FastName> GetRequiredQualities(QualitySettingsComponent* component)
-{
-    static UnorderedMap<FastName, UnorderedMap<FastName, FastName>> requiredQualities;
-    if (requiredQualities.empty() == true)
-    {
-        QualitySettingsSystem* inst = QualitySettingsSystem::Instance();
-        for (int32 i = 0; i < inst->GetMaterialQualityGroupCount(); ++i)
-        {
-            FastName groupName = inst->GetMaterialQualityGroupName(i);
-            UnorderedMap<FastName, FastName>& quality = requiredQualities[groupName];
-            quality.emplace(FastName(), FastName("Undefined"));
-            for (int32 i = 0; i < inst->GetMaterialQualityCount(groupName); ++i)
-            {
-                FastName qualityName = inst->GetMaterialQualityName(groupName, i);
-                quality.emplace(qualityName, qualityName);
-            }
-        }
-    }
-
-    return requiredQualities[component->GetRequiredGroup()];
-}
-}
 
 DAVA_VIRTUAL_REFLECTION_IMPL(QualitySettingsComponent)
 {
     ReflectionRegistrator<QualitySettingsComponent>::Begin()
     .Field("filterByType", &QualitySettingsComponent::GetFilterByType, &QualitySettingsComponent::SetFilterByType)[M::DisplayName("Filter By Type")]
-    .Field("modelType", &QualitySettingsComponent::GetModelType, &QualitySettingsComponent::SetModelType)[M::DisplayName("Model Type"), M::ValueEnumeratorField("modelTypes")]
-    .Field("modelTypes", &QualitySettingsComponentDetail::GetModelTypes, nullptr)[M::HiddenField()]
-    .Field("requiredGroup", &QualitySettingsComponent::GetRequiredGroup, &QualitySettingsComponent::SetRequiredGroup)[M::DisplayName("Required Group"), M::ValueEnumeratorField("requiredGroups")]
-    .Field("requiredGroups", &QualitySettingsComponentDetail::GetRequiredGroups, nullptr)[M::HiddenField()]
-    .Field("requiredQuality", &QualitySettingsComponent::GetRequiredQuality, &QualitySettingsComponent::SetRequiredQuality)[M::DisplayName("Required Quality"), M::ValueEnumeratorField("requiredQualities")]
-    .Field("requiredQualities", &QualitySettingsComponentDetail::GetRequiredQualities, nullptr)[M::HiddenField()]
+    .Field("modelType", &QualitySettingsComponent::GetModelType, &QualitySettingsComponent::SetModelType)[M::DisplayName("Model Type")]
+    .Field("requiredGroup", &QualitySettingsComponent::GetRequiredGroup, &QualitySettingsComponent::SetRequiredGroup)[M::DisplayName("Required Group")]
+    .Field("requiredQuality", &QualitySettingsComponent::GetRequiredQuality, &QualitySettingsComponent::SetRequiredQuality)[M::DisplayName("Required Quality")]
     .End();
 }
 

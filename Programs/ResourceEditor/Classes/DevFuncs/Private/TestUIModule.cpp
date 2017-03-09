@@ -1253,7 +1253,7 @@ void TestUIModule::ShowDialog()
       { &DoubleSpinBoxTestData::Create, "Double Spin" },
       { &FilePathEditTestData::Create, "FilePath" },
       { &SubPropertiesControlTest::Create, "SubPropsControl Test" },
-      { &MultiEditorsControlTest::Create, "MultiEditorsControl Test" }
+      { &MultiEditorsControlTest::Create, "MultiEditorsControl Test" },
       { &LabelTestData::Create, "Label Test" }
     };
 
