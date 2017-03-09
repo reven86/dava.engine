@@ -54,13 +54,6 @@ public:
 	 */
     Animation* FindPlayingAnimation(int32 track = -1);
 
-    /**
-		\brief Called when all animations for object are finished. Reimplement this function for specific needs
-	*/
-    virtual void OnAllAnimationsFinished()
-    {
-    }
-
 private:
     //AnimationsStorage * animationsStorage;
 

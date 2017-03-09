@@ -31,11 +31,11 @@ DAVA_VIRTUAL_REFLECTION_IMPL(Camera)
     .Field("target", &Camera::GetTarget, &Camera::SetTarget)[M::DisplayName("Target")]
     .Field("up", &Camera::GetUp, &Camera::SetUp)[M::DisplayName("Up")]
     .Field("left", &Camera::GetLeft, &Camera::SetLeft)[M::DisplayName("Left")]
-    .Field("direction", &Camera::direction)[M::DisplayName("Direction")]
-    .Field("flags", &Camera::flags)[M::DisplayName("Flags"), M::FlagsT<DAVA::Camera::eFlags>()]
-    .Field("cameraTransform", &Camera::cameraTransform)[M::DisplayName("Transform")]
-    .Field("viewMatrix", &Camera::viewMatrix)[M::DisplayName("View")]
-    .Field("projMatrix", &Camera::projMatrix)[M::DisplayName("Projection")]
+    .Field("direction", &Camera::direction)[M::ReadOnly(), M::DisplayName("Direction")]
+    .Field("flags", &Camera::flags)[M::ReadOnly(), M::DisplayName("Flags"), M::FlagsT<DAVA::Camera::eFlags>()]
+    .Field("cameraTransform", &Camera::cameraTransform)[M::ReadOnly(), M::DisplayName("Transform")]
+    .Field("viewMatrix", &Camera::viewMatrix)[M::ReadOnly(), M::DisplayName("View")]
+    .Field("projMatrix", &Camera::projMatrix)[M::ReadOnly(), M::DisplayName("Projection")]
     .End();
 }
 

@@ -43,12 +43,15 @@ void PlatformCore::Run()
     QTimer timer;
     QObject::connect(&timer, &QTimer::timeout, [&]()
                      {
-                         DVASSERT(primaryWindowBackend != nullptr);
-                         primaryWindowBackend->Update();
+                         if (!EngineBackend::showingModalMessageBox)
+                         {
+                             DVASSERT(primaryWindowBackend != nullptr);
+                             primaryWindowBackend->Update();
+                         }
                      });
 
     // First of all we should init primaryWindowBackend, because in OnGameLoopStarted client code will try to get RenderWidget trough this pointer
-    primaryWindowBackend = engineBackend.GetPrimaryWindow()->GetBackend();
+    primaryWindowBackend = EngineBackend::GetWindowBackend(engineBackend.GetPrimaryWindow());
     engineBackend.OnGameLoopStarted();
     applicationFocusChanged.Connect(primaryWindowBackend, &WindowBackend::OnApplicationFocusChanged);
     if (engineBackend.IsStandaloneGUIMode())

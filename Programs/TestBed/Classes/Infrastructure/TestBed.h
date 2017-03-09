@@ -89,8 +89,7 @@ private:
 
     bool loggerInUse = false;
     
-#if defined(__DAVAENGINE_QT__)
-// TODO: plarform defines
+#if defined(__DAVAENGINE_MACOS__)
 #elif defined(__DAVAENGINE_WIN_UAP__)
     std::unique_ptr<NativeDelegateWin10> nativeDelegate;
 #else
