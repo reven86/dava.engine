@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_STATIC_OCCLUSION_COMPONENT_H__
-#define __DAVAENGINE_STATIC_OCCLUSION_COMPONENT_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Entity/Component.h"
@@ -10,6 +9,7 @@
 #include "Scene3D/Systems/GlobalEventSystem.h"
 #include "Base/BaseMath.h"
 #include "Render/Highlevel/StaticOcclusion.h"
+#include "Reflection/Reflection.h"
 
 namespace DAVA
 {
@@ -39,6 +39,8 @@ public:
     INTROSPECTION_EXTEND(StaticOcclusionDataComponent, Component,
                          PROPERTY("Size in kBytes", "Size of occlusion information in kBytes", GetDataSize, SetDataSize, I_VIEW | I_EDIT)
                          );
+
+    DAVA_VIRTUAL_REFLECTION(StaticOcclusionDataComponent, Component);
 };
 
 class StaticOcclusionComponent : public Component
@@ -97,6 +99,8 @@ public:
                          PROPERTY("Occlusion Pixel Threshold", "Occlusion Pixel Threshold", GetOcclusionPixelThreshold, SetOcclusionPixelThreshold, I_VIEW | I_EDIT)
                          PROPERTY("Occlusion Pixel Threshold For Speedtree", "Occlusion Pixel Threshold For Speedtree", GetOcclusionPixelThresholdForSpeedtree, SetOcclusionPixelThresholdForSpeedtree, I_VIEW | I_EDIT)
                          );
+
+    DAVA_VIRTUAL_REFLECTION(StaticOcclusionComponent, Component);
 };
 
 class StaticOcclusionDebugDrawComponent : public Component
@@ -128,6 +132,8 @@ public:
     INTROSPECTION_EXTEND(StaticOcclusionDebugDrawComponent, Component,
                          NULL
                          );
+
+    DAVA_VIRTUAL_REFLECTION(StaticOcclusionDebugDrawComponent, Component);
 };
 
 //
@@ -229,4 +235,3 @@ inline uint32 StaticOcclusionComponent::GetOcclusionPixelThresholdForSpeedtree()
     return occlusionPixelThresholdForSpeedtree;
 }
 }
-#endif //__DAVAENGINE_SWITCH_COMPONENT_H__

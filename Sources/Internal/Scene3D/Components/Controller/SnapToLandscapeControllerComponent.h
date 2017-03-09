@@ -1,8 +1,8 @@
-#ifndef __DAVAENGINE_SNAPTOLANDSCAPE_CONTROLLER_COMPONENT_H__
-#define __DAVAENGINE_SNAPTOLANDSCAPE_CONTROLLER_COMPONENT_H__
+#pragma once
 
 #include "Entity/Component.h"
 #include "Scene3D/Entity.h"
+#include "Reflection/Reflection.h"
 
 namespace DAVA
 {
@@ -27,12 +27,12 @@ public:
     INTROSPECTION_EXTEND(SnapToLandscapeControllerComponent, Component,
                          PROPERTY("heightOnLandscape", "Height On Landscape", GetHeightOnLandscape, SetHeightOnLandscape, I_VIEW | I_EDIT | I_SAVE)
                          );
+
+    DAVA_VIRTUAL_REFLECTION(SnapToLandscapeControllerComponent, Component);
 };
 
 inline float32 SnapToLandscapeControllerComponent::GetHeightOnLandscape() const
 {
     return heightOnLandscape;
 }
-};
-
-#endif //__DAVAENGINE_SNAPTOLANDSCAPE_CONTROLLER_COMPONENT_H__
+}

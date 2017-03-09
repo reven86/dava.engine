@@ -14,6 +14,10 @@ protected:
     void Update(DAVA::float32 timeElapsed) override;
 
 private:
+    void ShowMessageBoxFromMainThread();
+    void ShowMessageBoxFromUIThread();
+    void ShowMessageBoxFromOtherThreads();
+
     DAVA::float32 timeOut = 0.f;
     DAVA::RefPtr<DAVA::UIStaticText> countdownText;
 };
