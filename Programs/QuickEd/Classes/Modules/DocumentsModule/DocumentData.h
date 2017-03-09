@@ -17,7 +17,6 @@ class Command;
 class CommandStack;
 }
 class PackageNode;
-class QEPackageCommand;
 
 class DocumentData : public DAVA::TArc::DataNode
 {
@@ -76,6 +75,5 @@ private:
 template <typename T, typename... Arguments>
 std::unique_ptr<T> DocumentData::CreateCommand(Arguments&&... args) const
 {
-    static_assert(std::is_base_of<QEPackageCommand, T>::value, "T must be a class derived from QECommand!");
     return std::make_unique<T>(package.Get(), std::forward<Arguments>(args)...);
 }
