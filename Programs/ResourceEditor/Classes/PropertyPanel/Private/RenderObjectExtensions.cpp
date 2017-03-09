@@ -1,6 +1,9 @@
 #include "Classes/PropertyPanel/RenderObjectExtensions.h"
 #include "Classes/Commands2/ConvertToBillboardCommand.h"
 #include "Classes/Commands2/CloneLastBatchCommand.h"
+#include "Classes/Commands2/ConvertToShadowCommand.h"
+#include "Classes/Commands2/RebuildTangentSpaceCommand.h"
+#include "Classes/Commands2/DeleteRenderBatchCommand.h"
 #include "Classes/Selection/SelectionData.h"
 #include "Classes/Selection/SelectableGroup.h"
 #include "Classes/Deprecated/SceneValidator.h"
@@ -98,7 +101,7 @@ class FixLodsAndSwitches : public DAVA::M::CommandProducer
 public:
     bool IsApplyable(const DAVA::Reflection& field) const override;
     Info GetInfo() const override;
-    bool OnlyForSingleSelection() const;
+    bool OnlyForSingleSelection() const override;
     std::unique_ptr<DAVA::Command> CreateCommand(const DAVA::Reflection& field, const Params& params) const override;
 };
 
@@ -129,6 +132,203 @@ std::unique_ptr<DAVA::Command> FixLodsAndSwitches::CreateCommand(const DAVA::Ref
     RenderObject* renderObject = *field.GetValueObject().GetPtr<RenderObject*>();
     return std::make_unique<CloneLastBatchCommand>(renderObject);
 }
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                     Remove render batch                                                   //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class RemoveRenderBatch : public DAVA::M::CommandProducer
+{
+public:
+    bool IsApplyable(const DAVA::Reflection& field) const override;
+    Info GetInfo() const override;
+    bool OnlyForSingleSelection() const override;
+    void CreateCache(DAVA::TArc::ContextAccessor* accessor) override;
+    void ClearCache() override;
+    std::unique_ptr<DAVA::Command> CreateCommand(const DAVA::Reflection& field, const Params& params) const override;
+
+private:
+    DAVA::UnorderedMap<DAVA::RenderBatch*, std::tuple<DAVA::Entity*, DAVA::uint32>> cache;
+};
+
+bool RemoveRenderBatch::IsApplyable(const DAVA::Reflection& field) const
+{
+    return true;
+}
+
+DAVA::M::CommandProducer::Info RemoveRenderBatch::GetInfo() const
+{
+    Info info;
+    info.icon = SharedIcon(":/QtIcons/remove.png");
+    info.tooltip = QStringLiteral("Delete render batch");
+    info.description = "Render batch deletion";
+    return info;
+}
+
+bool RemoveRenderBatch::OnlyForSingleSelection() const
+{
+    return true;
+}
+
+void RemoveRenderBatch::CreateCache(DAVA::TArc::ContextAccessor* accessor)
+{
+    using namespace DAVA;
+
+    DAVA::TArc::DataContext* ctx = accessor->GetActiveContext();
+    DVASSERT(ctx != nullptr);
+    SelectionData* data = ctx->GetData<SelectionData>();
+    SelectableGroup selection = data->GetMutableSelection();
+    for (Selectable& obj : selection.GetMutableContent())
+    {
+        DAVA::Entity* entity = obj.AsEntity();
+        if (entity != nullptr)
+        {
+            RenderComponent* component = GetRenderComponent(entity);
+            if (component != nullptr)
+            {
+                RenderObject* renderObject = component->GetRenderObject();
+                for (uint32 i = 0; i < renderObject->GetRenderBatchCount(); ++i)
+                {
+                    cache.emplace(renderObject->GetRenderBatch(i), std::make_tuple(entity, i));
+                }
+            }
+        }
+    }
+}
+
+void RemoveRenderBatch::ClearCache()
+{
+    cache.clear();
+}
+
+std::unique_ptr<DAVA::Command> RemoveRenderBatch::CreateCommand(const DAVA::Reflection& field, const Params& params) const
+{
+    DAVA::RenderBatch* batch = *field.GetValueObject().GetPtr<DAVA::RenderBatch*>();
+    auto iter = cache.find(batch);
+    DVASSERT(iter != cache.end());
+    return std::unique_ptr<DAVA::Command>(new DeleteRenderBatchCommand(std::get<0>(iter->second), batch->GetRenderObject(), std::get<1>(iter->second)));
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                    Convert to shadow                                                      //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class ConvertToShadow : public DAVA::M::CommandProducer
+{
+public:
+    bool IsApplyable(const DAVA::Reflection& field) const override;
+    Info GetInfo() const override;
+    bool OnlyForSingleSelection() const override;
+    void CreateCache(DAVA::TArc::ContextAccessor* accessor) override;
+    void ClearCache() override;
+    std::unique_ptr<DAVA::Command> CreateCommand(const DAVA::Reflection& field, const Params& params) const override;
+
+private:
+    DAVA::UnorderedMap<DAVA::RenderBatch*, DAVA::Entity*> cache;
+};
+
+bool ConvertToShadow::IsApplyable(const DAVA::Reflection& field) const
+{
+    DAVA::RenderBatch* batch = *field.GetValueObject().GetPtr<DAVA::RenderBatch*>();
+    return ConvertToShadowCommand::CanConvertBatchToShadow(batch);
+}
+
+DAVA::M::CommandProducer::Info ConvertToShadow::GetInfo() const
+{
+    Info info;
+    info.icon = SharedIcon(":/QtIcons/shadow.png");
+    info.tooltip = QStringLiteral("Convert To ShadowVolume");
+    info.description = "ConvertToShadow batch";
+    return info;
+}
+
+bool ConvertToShadow::OnlyForSingleSelection() const
+{
+    return true;
+}
+
+void ConvertToShadow::CreateCache(DAVA::TArc::ContextAccessor* accessor)
+{
+    using namespace DAVA;
+
+    DAVA::TArc::DataContext* ctx = accessor->GetActiveContext();
+    DVASSERT(ctx != nullptr);
+    SelectionData* data = ctx->GetData<SelectionData>();
+    SelectableGroup selection = data->GetMutableSelection();
+    for (Selectable& obj : selection.GetMutableContent())
+    {
+        DAVA::Entity* entity = obj.AsEntity();
+        if (entity != nullptr)
+        {
+            RenderComponent* component = GetRenderComponent(entity);
+            if (component != nullptr)
+            {
+                RenderObject* renderObject = component->GetRenderObject();
+                for (uint32 i = 0; i < renderObject->GetRenderBatchCount(); ++i)
+                {
+                    cache.emplace(renderObject->GetRenderBatch(i), entity);
+                }
+            }
+        }
+    }
+}
+
+void ConvertToShadow::ClearCache()
+{
+    cache.clear();
+}
+
+std::unique_ptr<DAVA::Command> ConvertToShadow::CreateCommand(const DAVA::Reflection& field, const Params& params) const
+{
+    DAVA::RenderBatch* batch = *field.GetValueObject().GetPtr<DAVA::RenderBatch*>();
+    auto iter = cache.find(batch);
+    DVASSERT(iter != cache.end());
+    return std::unique_ptr<DAVA::Command>(new ConvertToShadowCommand(iter->second, batch));
+}
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                                     Rebuild tangent                                                       //
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+class RebuildTangentSpace : public DAVA::M::CommandProducer
+{
+public:
+    bool IsApplyable(const DAVA::Reflection& field) const override;
+    Info GetInfo() const override;
+    bool OnlyForSingleSelection() const override;
+    std::unique_ptr<DAVA::Command> CreateCommand(const DAVA::Reflection& field, const Params& params) const override;
+
+private:
+    DAVA::UnorderedMap<DAVA::RenderBatch*, DAVA::Entity*> cache;
+};
+
+bool RebuildTangentSpace::IsApplyable(const DAVA::Reflection& field) const
+{
+    DAVA::RenderBatch* batch = *field.GetValueObject().GetPtr<DAVA::RenderBatch*>();
+    DAVA::PolygonGroup* group = batch->GetPolygonGroup();
+    bool isRebuildTsEnabled = true;
+    const DAVA::int32 requiredVertexFormat = (DAVA::EVF_TEXCOORD0 | DAVA::EVF_NORMAL);
+    isRebuildTsEnabled &= (group->GetPrimitiveType() == rhi::PRIMITIVE_TRIANGLELIST);
+    isRebuildTsEnabled &= ((group->GetFormat() & requiredVertexFormat) == requiredVertexFormat);
+
+    return isRebuildTsEnabled;
+}
+
+DAVA::M::CommandProducer::Info RebuildTangentSpace::GetInfo() const
+{
+    Info info;
+    info.icon = SharedIcon(":/QtIcons/external.png");
+    info.tooltip = QStringLiteral("Rebuild tangent space");
+    info.description = "ConvertToShadow batch";
+    return info;
+}
+
+bool RebuildTangentSpace::OnlyForSingleSelection() const
+{
+    return true;
+}
+
+std::unique_ptr<DAVA::Command> RebuildTangentSpace::CreateCommand(const DAVA::Reflection& field, const Params& params) const
+{
+    DAVA::RenderBatch* batch = *field.GetValueObject().GetPtr<DAVA::RenderBatch*>();
+    return std::unique_ptr<DAVA::Command>(new RebuildTangentSpaceCommand(batch, true));
+}
 }
 
 DAVA::M::CommandProducerHolder CreateRenderObjectCommandProducer()
@@ -138,5 +338,16 @@ DAVA::M::CommandProducerHolder CreateRenderObjectCommandProducer()
     DAVA::M::CommandProducerHolder holder;
     holder.AddCommandProducer(std::make_shared<BillboardCommandProducer>());
     holder.AddCommandProducer(std::make_shared<FixLodsAndSwitches>());
+    return holder;
+}
+
+DAVA::M::CommandProducerHolder CreateRenderBatchCommandProducer()
+{
+    using namespace RenderObjectExtensionsDetail;
+
+    DAVA::M::CommandProducerHolder holder;
+    holder.AddCommandProducer(std::make_shared<RemoveRenderBatch>());
+    holder.AddCommandProducer(std::make_shared<ConvertToShadow>());
+    holder.AddCommandProducer(std::make_shared<RebuildTangentSpace>());
     return holder;
 }

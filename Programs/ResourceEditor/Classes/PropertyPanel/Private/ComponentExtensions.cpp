@@ -116,7 +116,7 @@ public:
         using namespace TArc;
 
         Component* component = *field.GetValueObject().GetPtr<Component*>();
-        SoundComponent* actionComponent = DynamicTypeCheck<SoundComponent*>(component);
+        SoundComponent* soundComponent = DynamicTypeCheck<SoundComponent*>(component);
         Entity* entity = component->GetEntity();
 
         DataContext* ctx = params.accessor->GetActiveContext();
@@ -125,6 +125,42 @@ public:
         SoundComponentEditor editor(ctx->GetData<SceneData>()->GetScene().Get(), params.ui->GetWindow(REGlobal::MainWindowKey));
         editor.SetEditableEntity(entity);
         editor.exec();
+
+        return std::unique_ptr<DAVA::Command>();
+    }
+};
+
+class TriggerWaveProducer : public DAVA::M::CommandProducer
+{
+public:
+    bool IsApplyable(const DAVA::Reflection& field) const override
+    {
+        return true;
+    }
+
+    bool OnlyForSingleSelection() const override
+    {
+        return true;
+    }
+
+    Info GetInfo() const override
+    {
+        Info info;
+        info.icon = SharedIcon(":/QtIcons/clone.png");
+        info.tooltip = "Trigger Wave";
+        info.description = "";
+
+        return info;
+    }
+
+    std::unique_ptr<DAVA::Command> CreateCommand(const DAVA::Reflection& field, const Params& params) const override
+    {
+        using namespace DAVA;
+        using namespace TArc;
+
+        Component* component = *field.GetValueObject().GetPtr<Component*>();
+        WaveComponent* waveComponent = DynamicTypeCheck<WaveComponent*>(component);
+        waveComponent->Trigger();
 
         return std::unique_ptr<DAVA::Command>();
     }
@@ -144,4 +180,9 @@ std::shared_ptr<DAVA::M::CommandProducer> CreateActionsEditProducer()
 std::shared_ptr<DAVA::M::CommandProducer> CreateSoundsEditProducer()
 {
     return std::shared_ptr<DAVA::M::CommandProducer>(new ComponentExtensionsDetail::SoundsEditProducer());
+}
+
+std::shared_ptr<DAVA::M::CommandProducer> CreateWaveTriggerProducer()
+{
+    return std::shared_ptr<DAVA::M::CommandProducer>(new ComponentExtensionsDetail::TriggerWaveProducer());
 }

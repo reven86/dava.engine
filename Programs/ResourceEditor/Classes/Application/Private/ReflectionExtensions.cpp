@@ -66,6 +66,7 @@ void EmplaceFieldMeta(const String& fieldName, Meta<TMeta, TIndex>&& meta)
 void RegisterRenderComponentExtensions()
 {
     EmplaceTypeMeta<RenderObject>(CreateRenderObjectCommandProducer());
+    EmplaceTypeMeta<RenderBatch>(CreateRenderBatchCommandProducer());
 }
 
 void RegisterNMaterialExtensions()
@@ -116,6 +117,10 @@ void RegComponentsExtensions()
         else if (derived.type == soundComponent)
         {
             holder.AddCommandProducer(CreateSoundsEditProducer());
+        }
+        else if (derived.type == waveComponent)
+        {
+            holder.AddCommandProducer(CreateWaveTriggerProducer());
         }
 
         EmplaceTypeMeta(refType, std::move(holder));
