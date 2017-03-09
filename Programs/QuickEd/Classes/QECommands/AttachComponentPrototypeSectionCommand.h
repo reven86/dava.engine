@@ -9,13 +9,12 @@ class AttachComponentPrototypeSectionCommand : public QEPackageCommand
 {
 public:
     AttachComponentPrototypeSectionCommand(PackageNode* package, ControlNode* node, ComponentPropertiesSection* destSection, ComponentPropertiesSection* prototypeSection);
-    ~AttachComponentPrototypeSectionCommand() override;
 
     void Redo() override;
     void Undo() override;
 
 private:
-    ControlNode* node = nullptr;
-    ComponentPropertiesSection* destSection = nullptr;
-    ComponentPropertiesSection* prototypeSection = nullptr;
+    DAVA::RefPtr<ControlNode> node;
+    DAVA::RefPtr<ComponentPropertiesSection> destSection;
+    DAVA::RefPtr<ComponentPropertiesSection> prototypeSection;
 };

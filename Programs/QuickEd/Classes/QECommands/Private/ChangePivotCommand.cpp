@@ -32,8 +32,8 @@ void ChangePivotCommand::Redo()
 {
     for (const Item& item : items)
     {
-        package->SetControlProperty(item.node, item.pivotProperty, item.pivotNewValue);
-        package->SetControlProperty(item.node, item.positionProperty, item.positionNewValue);
+        package->SetControlProperty(item.node.Get(), item.pivotProperty.Get(), item.pivotNewValue);
+        package->SetControlProperty(item.node.Get(), item.positionProperty.Get(), item.positionNewValue);
     }
 }
 
@@ -43,20 +43,20 @@ void ChangePivotCommand::Undo()
     {
         if (item.pivotOldValue.GetType() == DAVA::VariantType::TYPE_NONE)
         {
-            package->ResetControlProperty(item.node, item.pivotProperty);
+            package->ResetControlProperty(item.node.Get(), item.pivotProperty.Get());
         }
         else
         {
-            package->SetControlProperty(item.node, item.pivotProperty, item.pivotOldValue);
+            package->SetControlProperty(item.node.Get(), item.pivotProperty.Get(), item.pivotOldValue);
         }
 
         if (item.pivotOldValue.GetType() == DAVA::VariantType::TYPE_NONE)
         {
-            package->ResetControlProperty(item.node, item.positionProperty);
+            package->ResetControlProperty(item.node.Get(), item.positionProperty.Get());
         }
         else
         {
-            package->SetControlProperty(item.node, item.positionProperty, item.positionOldValue);
+            package->SetControlProperty(item.node.Get(), item.positionProperty.Get(), item.positionOldValue);
         }
     }
 }
@@ -95,12 +95,12 @@ bool ChangePivotCommand::MergeWith(const DAVA::Command* command)
 }
 
 ChangePivotCommand::Item::Item(ControlNode* node_, AbstractProperty* pivotProperty_, const DAVA::VariantType& pivotValue, AbstractProperty* positionProperty_, const DAVA::VariantType& positionValue)
-    : node(node_)
-    , pivotProperty(pivotProperty_)
+    : node(DAVA::RefPtr<ControlNode>::ConstructWithRetain(node_))
+    , pivotProperty(DAVA::RefPtr<AbstractProperty>::ConstructWithRetain(pivotProperty_))
     , pivotNewValue(pivotValue)
-    , pivotOldValue(ChangePivotCommandDetails::GetValueFromProperty(pivotProperty))
-    , positionProperty(positionProperty_)
+    , pivotOldValue(ChangePivotCommandDetails::GetValueFromProperty(pivotProperty_))
+    , positionProperty(DAVA::RefPtr<AbstractProperty>::ConstructWithRetain(positionProperty_))
     , positionNewValue(pivotValue)
-    , positionOldValue(ChangePivotCommandDetails::GetValueFromProperty(positionProperty))
+    , positionOldValue(ChangePivotCommandDetails::GetValueFromProperty(positionProperty_))
 {
 }

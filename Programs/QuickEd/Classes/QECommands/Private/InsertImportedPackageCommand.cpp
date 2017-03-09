@@ -7,23 +7,18 @@
 using namespace DAVA;
 
 InsertImportedPackageCommand::InsertImportedPackageCommand(PackageNode* package, PackageNode* importedPackage_, int index_)
-    : QEPackageCommand(package, INSERT_IMPORTED_PACKAGE_COMMAND, "InsertImportedPackage")
-    , importedPackage(SafeRetain(importedPackage_))
+    : QEPackageCommand(package, INSERT_IMPORTED_PACKAGE_COMMAND, "Insert Imported Package")
+    , importedPackage(RefPtr<PackageNode>::ConstructWithRetain(importedPackage_))
     , index(index_)
 {
 }
 
-InsertImportedPackageCommand::~InsertImportedPackageCommand()
-{
-    SafeRelease(importedPackage);
-}
-
 void InsertImportedPackageCommand::Redo()
 {
-    package->InsertImportedPackage(importedPackage, index);
+    package->InsertImportedPackage(importedPackage.Get(), index);
 }
 
 void InsertImportedPackageCommand::Undo()
 {
-    package->RemoveImportedPackage(importedPackage);
+    package->RemoveImportedPackage(importedPackage.Get());
 }

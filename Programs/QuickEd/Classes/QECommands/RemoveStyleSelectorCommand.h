@@ -10,13 +10,12 @@ class RemoveStyleSelectorCommand : public QEPackageCommand
 {
 public:
     RemoveStyleSelectorCommand(PackageNode* package, StyleSheetNode* node, StyleSheetSelectorProperty* property);
-    ~RemoveStyleSelectorCommand() override;
 
     void Redo() override;
     void Undo() override;
 
 private:
-    StyleSheetNode* node = nullptr;
-    StyleSheetSelectorProperty* property = nullptr;
+    DAVA::RefPtr<StyleSheetNode> node;
+    DAVA::RefPtr<StyleSheetSelectorProperty> property;
     int index = -1;
 };

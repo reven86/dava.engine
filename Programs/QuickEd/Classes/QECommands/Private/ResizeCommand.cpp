@@ -32,8 +32,8 @@ void ResizeCommand::Redo()
 {
     for (const Item& item : items)
     {
-        package->SetControlProperty(item.node, item.sizeProperty, item.sizeNewValue);
-        package->SetControlProperty(item.node, item.pivotProperty, item.pivotNewValue);
+        package->SetControlProperty(item.node.Get(), item.sizeProperty.Get(), item.sizeNewValue);
+        package->SetControlProperty(item.node.Get(), item.pivotProperty.Get(), item.pivotNewValue);
     }
 }
 
@@ -43,20 +43,20 @@ void ResizeCommand::Undo()
     {
         if (item.sizeOldValue.GetType() == DAVA::VariantType::TYPE_NONE)
         {
-            package->ResetControlProperty(item.node, item.sizeProperty);
+            package->ResetControlProperty(item.node.Get(), item.sizeProperty.Get());
         }
         else
         {
-            package->SetControlProperty(item.node, item.sizeProperty, item.sizeOldValue);
+            package->SetControlProperty(item.node.Get(), item.sizeProperty.Get(), item.sizeOldValue);
         }
 
         if (item.pivotOldValue.GetType() == DAVA::VariantType::TYPE_NONE)
         {
-            package->ResetControlProperty(item.node, item.pivotProperty);
+            package->ResetControlProperty(item.node.Get(), item.pivotProperty.Get());
         }
         else
         {
-            package->SetControlProperty(item.node, item.pivotProperty, item.pivotOldValue);
+            package->SetControlProperty(item.node.Get(), item.pivotProperty.Get(), item.pivotOldValue);
         }
     }
 }
@@ -95,12 +95,12 @@ bool ResizeCommand::MergeWith(const DAVA::Command* command)
 }
 
 ResizeCommand::Item::Item(ControlNode* node_, AbstractProperty* sizeProperty_, const DAVA::VariantType& sizeValue, AbstractProperty* pivotProperty_, const DAVA::VariantType& pivotValue)
-    : node(node_)
-    , sizeProperty(sizeProperty_)
+    : node(DAVA::RefPtr<ControlNode>::ConstructWithRetain(node_))
+    , sizeProperty(DAVA::RefPtr<AbstractProperty>::ConstructWithRetain(sizeProperty_))
     , sizeNewValue(sizeValue)
-    , sizeOldValue(ResizeCommandDetails::GetValueFromProperty(sizeProperty))
-    , pivotProperty(pivotProperty_)
+    , sizeOldValue(ResizeCommandDetails::GetValueFromProperty(sizeProperty_))
+    , pivotProperty(DAVA::RefPtr<AbstractProperty>::ConstructWithRetain(pivotProperty_))
     , pivotNewValue(pivotValue)
-    , pivotOldValue(ResizeCommandDetails::GetValueFromProperty(pivotProperty))
+    , pivotOldValue(ResizeCommandDetails::GetValueFromProperty(pivotProperty_))
 {
 }

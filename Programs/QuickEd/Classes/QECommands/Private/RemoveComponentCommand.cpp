@@ -9,24 +9,18 @@
 using namespace DAVA;
 
 RemoveComponentCommand::RemoveComponentCommand(PackageNode* package, ControlNode* node_, ComponentPropertiesSection* section_)
-    : QEPackageCommand(package, REMOVE_COMPONENT_COMMAND, "RemoveComponent")
-    , node(SafeRetain(node_))
-    , componentSection(SafeRetain(section_))
+    : QEPackageCommand(package, REMOVE_COMPONENT_COMMAND, "Remove Component")
+    , node(RefPtr<ControlNode>::ConstructWithRetain(node_))
+    , componentSection(RefPtr<ComponentPropertiesSection>::ConstructWithRetain(section_))
 {
-}
-
-RemoveComponentCommand::~RemoveComponentCommand()
-{
-    SafeRelease(node);
-    SafeRelease(componentSection);
 }
 
 void RemoveComponentCommand::Redo()
 {
-    package->RemoveComponent(node, componentSection);
+    package->RemoveComponent(node.Get(), componentSection.Get());
 }
 
 void RemoveComponentCommand::Undo()
 {
-    package->AddComponent(node, componentSection);
+    package->AddComponent(node.Get(), componentSection.Get());
 }

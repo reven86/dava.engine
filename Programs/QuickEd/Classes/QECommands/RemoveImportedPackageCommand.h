@@ -9,12 +9,11 @@ class RemoveImportedPackageCommand : public QEPackageCommand
 {
 public:
     RemoveImportedPackageCommand(PackageNode* package, PackageNode* importedPackage);
-    ~RemoveImportedPackageCommand() override;
 
     void Redo() override;
     void Undo() override;
 
 private:
-    PackageNode* importedPackage = nullptr;
+    DAVA::RefPtr<PackageNode> importedPackage;
     int index = -1;
 };

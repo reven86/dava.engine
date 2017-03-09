@@ -9,12 +9,11 @@ class RemoveComponentCommand : public QEPackageCommand
 {
 public:
     RemoveComponentCommand(PackageNode* package, ControlNode* node, ComponentPropertiesSection* section);
-    ~RemoveComponentCommand() override;
 
     void Redo() override;
     void Undo() override;
 
 private:
-    ControlNode* node = nullptr;
-    ComponentPropertiesSection* componentSection = nullptr;
+    DAVA::RefPtr<ControlNode> node;
+    DAVA::RefPtr<ComponentPropertiesSection> componentSection;
 };

@@ -6,10 +6,10 @@ using CommandID = DAVA::uint32;
 
 enum eDAVACommandIDs : CommandID
 {
-    INVALID_COMMAND_ID = 0,
-    COMMAND_BATCH,
+    INVALID_COMMAND = 0,
+    BATCH_COMMAND,
     PROPERTY_VALUE_COMMAND,
     COLLECTION_ITEM_VALUE_COMMAND,
-    COMMAND_IDS_COUNT
+    USER_COMMAND
 };
 } //namespace DAVA

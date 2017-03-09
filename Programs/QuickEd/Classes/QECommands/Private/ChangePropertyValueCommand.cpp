@@ -26,15 +26,6 @@ ChangePropertyValueCommand::ChangePropertyValueCommand(PackageNode* package, Con
     AddNodePropertyValue(node, property, newValue);
 }
 
-ChangePropertyValueCommand::~ChangePropertyValueCommand()
-{
-    for (Item& item : items)
-    {
-        SafeRelease(item.node);
-        SafeRelease(item.property);
-    }
-}
-
 void ChangePropertyValueCommand::AddNodePropertyValue(ControlNode* node, AbstractProperty* property, const DAVA::VariantType& newValue)
 {
     DVASSERT(node != nullptr);
@@ -46,7 +37,7 @@ void ChangePropertyValueCommand::Redo()
 {
     for (const Item& item : items)
     {
-        ApplyProperty(item.node, item.property, item.newValue);
+        ApplyProperty(item.node.Get(), item.property.Get(), item.newValue);
     }
 }
 
@@ -54,7 +45,7 @@ void ChangePropertyValueCommand::Undo()
 {
     for (const Item& item : items)
     {
-        ApplyProperty(item.node, item.property, item.oldValue);
+        ApplyProperty(item.node.Get(), item.property.Get(), item.oldValue);
     }
 }
 
@@ -102,9 +93,9 @@ bool ChangePropertyValueCommand::MergeWith(const DAVA::Command* command)
 }
 
 ChangePropertyValueCommand::Item::Item(ControlNode* node_, AbstractProperty* property_, const DAVA::VariantType& newValue_)
-    : node(SafeRetain(node_))
-    , property(SafeRetain(property_))
+    : node(DAVA::RefPtr<ControlNode>::ConstructWithRetain(node_))
+    , property(DAVA::RefPtr<AbstractProperty>::ConstructWithRetain(property_))
     , newValue(newValue_)
-    , oldValue(ChangePropertyValueCommandDetails::GetValueFromProperty(property))
+    , oldValue(ChangePropertyValueCommandDetails::GetValueFromProperty(property_))
 {
 }

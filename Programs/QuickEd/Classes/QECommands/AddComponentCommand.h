@@ -10,12 +10,10 @@ class AddComponentCommand : public QEPackageCommand
 public:
     AddComponentCommand(PackageNode* package, ControlNode* node, ComponentPropertiesSection* section);
 
-    ~AddComponentCommand() override;
-
     void Redo() override;
     void Undo() override;
 
 private:
-    ControlNode* node = nullptr;
-    ComponentPropertiesSection* section = nullptr;
+    DAVA::RefPtr<ControlNode> node;
+    DAVA::RefPtr<ComponentPropertiesSection> section;
 };

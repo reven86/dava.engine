@@ -7,25 +7,19 @@
 
 ChangeStylePropertyCommand::ChangeStylePropertyCommand(PackageNode* package, StyleSheetNode* node_, AbstractProperty* property_, const DAVA::VariantType& newValue_)
     : QEPackageCommand(package, CHANGE_STYLE_PROPERTY_COMMAND, DAVA::String("change ") + property_->GetName().c_str())
-    , node(SafeRetain(node_))
-    , property(SafeRetain(property_))
+    , node(DAVA::RefPtr<StyleSheetNode>::ConstructWithRetain(node_))
+    , property(DAVA::RefPtr<AbstractProperty>::ConstructWithRetain(property_))
     , newValue(newValue_)
 {
     oldValue = property->GetValue();
 }
 
-ChangeStylePropertyCommand::~ChangeStylePropertyCommand()
-{
-    SafeRelease(node);
-    SafeRelease(property);
-}
-
 void ChangeStylePropertyCommand::Redo()
 {
-    package->SetStyleProperty(node, property, newValue);
+    package->SetStyleProperty(node.Get(), property.Get(), newValue);
 }
 
 void ChangeStylePropertyCommand::Undo()
 {
-    package->SetStyleProperty(node, property, oldValue);
+    package->SetStyleProperty(node.Get(), property.Get(), oldValue);
 }

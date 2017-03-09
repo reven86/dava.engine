@@ -9,13 +9,12 @@ class InsertControlCommand : public QEPackageCommand
 {
 public:
     InsertControlCommand(PackageNode* package, ControlNode* node, ControlsContainerNode* dest, int index);
-    ~InsertControlCommand() override;
 
     void Redo() override;
     void Undo() override;
 
 private:
-    ControlNode* node = nullptr;
-    ControlsContainerNode* dest = nullptr;
+    DAVA::RefPtr<ControlNode> node;
+    DAVA::RefPtr<ControlsContainerNode> dest;
     const int index;
 };

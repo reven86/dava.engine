@@ -13,8 +13,6 @@ public:
     ChangePivotCommand(PackageNode* package);
     void AddNodePropertyValue(ControlNode* node, AbstractProperty* pivotProperty, const DAVA::VariantType& pivotValue, AbstractProperty* positionProperty, const DAVA::VariantType& positionValue);
 
-    ~ChangePivotCommand() override = default;
-
     void Redo() override;
     void Undo() override;
 
@@ -24,12 +22,12 @@ private:
     struct Item
     {
         Item(ControlNode* node, AbstractProperty* sizeProperty, const DAVA::VariantType& sizeValue, AbstractProperty* pivotProperty, const DAVA::VariantType& pivotValue);
-        ControlNode* node = nullptr;
-        AbstractProperty* pivotProperty = nullptr;
+        DAVA::RefPtr<ControlNode> node;
+        DAVA::RefPtr<AbstractProperty> pivotProperty;
         DAVA::VariantType pivotNewValue;
         DAVA::VariantType pivotOldValue;
 
-        AbstractProperty* positionProperty = nullptr;
+        DAVA::RefPtr<AbstractProperty> positionProperty;
         DAVA::VariantType positionNewValue;
         DAVA::VariantType positionOldValue;
     };

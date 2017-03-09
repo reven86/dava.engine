@@ -10,24 +10,18 @@
 using namespace DAVA;
 
 RemoveStylePropertyCommand::RemoveStylePropertyCommand(PackageNode* package, StyleSheetNode* node_, StyleSheetProperty* property_)
-    : QEPackageCommand(package, ADD_REMOVE_STYLE_PROPERTY_COMMAND, "AddRemoveStyleProperty")
-    , node(SafeRetain(node_))
-    , property(SafeRetain(property_))
+    : QEPackageCommand(package, REMOVE_STYLE_PROPERTY_COMMAND, "Remove Style Property")
+    , node(RefPtr<StyleSheetNode>::ConstructWithRetain(node_))
+    , property(RefPtr<StyleSheetProperty>::ConstructWithRetain(property_))
 {
-}
-
-RemoveStylePropertyCommand::~RemoveStylePropertyCommand()
-{
-    SafeRelease(node);
-    SafeRelease(property);
 }
 
 void RemoveStylePropertyCommand::Redo()
 {
-    package->RemoveStyleProperty(node, property);
+    package->RemoveStyleProperty(node.Get(), property.Get());
 }
 
 void RemoveStylePropertyCommand::Undo()
 {
-    package->AddStyleProperty(node, property);
+    package->AddStyleProperty(node.Get(), property.Get());
 }

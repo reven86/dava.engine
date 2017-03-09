@@ -10,14 +10,13 @@ class ChangeStylePropertyCommand : public QEPackageCommand
 {
 public:
     ChangeStylePropertyCommand(PackageNode* package, StyleSheetNode* node, AbstractProperty* property, const DAVA::VariantType& newValue);
-    ~ChangeStylePropertyCommand() override;
 
     void Redo() override;
     void Undo() override;
 
 private:
-    StyleSheetNode* node = nullptr;
-    AbstractProperty* property = nullptr;
+    DAVA::RefPtr<StyleSheetNode> node;
+    DAVA::RefPtr<AbstractProperty> property;
     DAVA::VariantType oldValue;
     DAVA::VariantType newValue;
 };

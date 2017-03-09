@@ -9,26 +9,20 @@
 using namespace DAVA;
 
 AttachComponentPrototypeSectionCommand::AttachComponentPrototypeSectionCommand(PackageNode* package, ControlNode* node_, ComponentPropertiesSection* destSection_, ComponentPropertiesSection* prototypeSection_)
-    : QEPackageCommand(package, ATTACH_COMPONENT_PROTOTYPE_SECTION_COMMAND, "AttachComponentPrototypeSection")
-    , node(SafeRetain(node_))
-    , destSection(SafeRetain(destSection_))
-    , prototypeSection(SafeRetain(prototypeSection_))
+    : QEPackageCommand(package, ATTACH_COMPONENT_PROTOTYPE_SECTION_COMMAND, "Attach Component Prototype Section")
+    , node(RefPtr<ControlNode>::ConstructWithRetain(node_))
+    , destSection(RefPtr<ComponentPropertiesSection>::ConstructWithRetain(destSection_))
+    , prototypeSection(RefPtr<ComponentPropertiesSection>::ConstructWithRetain(prototypeSection_))
 {
 }
 
-AttachComponentPrototypeSectionCommand::~AttachComponentPrototypeSectionCommand()
-{
-    SafeRelease(node);
-    SafeRelease(destSection);
-    SafeRelease(prototypeSection);
-}
 
 void AttachComponentPrototypeSectionCommand::Redo()
 {
-    package->AttachPrototypeComponent(node, destSection, prototypeSection);
+    package->AttachPrototypeComponent(node.Get(), destSection.Get(), prototypeSection.Get());
 }
 
 void AttachComponentPrototypeSectionCommand::Undo()
 {
-    package->DetachPrototypeComponent(node, destSection, prototypeSection);
+    package->DetachPrototypeComponent(node.Get(), destSection.Get(), prototypeSection.Get());
 }

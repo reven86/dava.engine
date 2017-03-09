@@ -40,7 +40,7 @@ private:
     virtual bool MergeWith(const Command* command);
     friend class CommandBatch;
 
-    const CommandID id = INVALID_COMMAND_ID;
+    const CommandID id = INVALID_COMMAND;
     const String description;
 };
 

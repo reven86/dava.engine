@@ -10,23 +10,17 @@ using namespace DAVA;
 
 AddComponentCommand::AddComponentCommand(PackageNode* package, ControlNode* node_, ComponentPropertiesSection* section_)
     : QEPackageCommand(package, ADD_COMPONENT_COMMAND, "Add component")
-    , node(SafeRetain(node_))
-    , section(SafeRetain(section_))
+    , node(RefPtr<ControlNode>::ConstructWithRetain(node_))
+    , section(RefPtr<ComponentPropertiesSection>::ConstructWithRetain(section_))
 {
-}
-
-AddComponentCommand::~AddComponentCommand()
-{
-    SafeRelease(node);
-    SafeRelease(section);
 }
 
 void AddComponentCommand::Redo()
 {
-    package->AddComponent(node, section);
+    package->AddComponent(node.Get(), section.Get());
 }
 
 void AddComponentCommand::Undo()
 {
-    package->RemoveComponent(node, section);
+    package->RemoveComponent(node.Get(), section.Get());
 }

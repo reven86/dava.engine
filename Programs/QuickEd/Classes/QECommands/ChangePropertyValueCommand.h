@@ -12,7 +12,6 @@ class ChangePropertyValueCommand : public QEPackageCommand
 public:
     ChangePropertyValueCommand(PackageNode* package);
     ChangePropertyValueCommand(PackageNode* package, ControlNode* node, AbstractProperty* property, const DAVA::VariantType& newValue);
-    ~ChangePropertyValueCommand() override;
 
     void AddNodePropertyValue(ControlNode* node, AbstractProperty* property, const DAVA::VariantType& newValue);
 
@@ -27,8 +26,8 @@ private:
     struct Item
     {
         Item(ControlNode* node, AbstractProperty* property, const DAVA::VariantType& newValue);
-        ControlNode* node = nullptr;
-        AbstractProperty* property = nullptr;
+        DAVA::RefPtr<ControlNode> node;
+        DAVA::RefPtr<AbstractProperty> property;
         DAVA::VariantType newValue;
         DAVA::VariantType oldValue;
     };

@@ -11,26 +11,20 @@
 using namespace DAVA;
 
 AddStyleSelectorCommand::AddStyleSelectorCommand(PackageNode* package, StyleSheetNode* node_, StyleSheetSelectorProperty* property_)
-    : QEPackageCommand(package, ADD_REMOVE_STYLE_SELECTOR_COMMAND, "AddRemoveStyleSelector")
-    , node(SafeRetain(node_))
-    , property(SafeRetain(property_))
+    : QEPackageCommand(package, ADD_STYLE_SELECTOR_COMMAND, "Add Style Selector")
+    , node(RefPtr<StyleSheetNode>::ConstructWithRetain(node_))
+    , property(RefPtr<StyleSheetSelectorProperty>::ConstructWithRetain(property_))
     , index(-1)
 {
     index = node->GetRootProperty()->GetSelectors()->GetCount();
     DVASSERT(index != -1);
 }
 
-AddStyleSelectorCommand::~AddStyleSelectorCommand()
-{
-    SafeRelease(node);
-    SafeRelease(property);
-}
-
 void AddStyleSelectorCommand::Redo()
 {
     if (index != -1)
     {
-        package->InsertSelector(node, property, index);
+        package->InsertSelector(node.Get(), property.Get(), index);
     }
 }
 
@@ -38,6 +32,6 @@ void AddStyleSelectorCommand::Undo()
 {
     if (index != -1)
     {
-        package->RemoveSelector(node, property);
+        package->RemoveSelector(node.Get(), property.Get());
     }
 }

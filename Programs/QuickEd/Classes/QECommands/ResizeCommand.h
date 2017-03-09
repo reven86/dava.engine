@@ -13,8 +13,6 @@ public:
     ResizeCommand(PackageNode* package);
     void AddNodePropertyValue(ControlNode* node, AbstractProperty* sizeProperty, const DAVA::VariantType& sizeValue, AbstractProperty* pivotProperty, const DAVA::VariantType& pivotValue);
 
-    ~ResizeCommand() override = default;
-
     void Redo() override;
     void Undo() override;
 
@@ -24,12 +22,12 @@ private:
     struct Item
     {
         Item(ControlNode* node, AbstractProperty* sizeProperty, const DAVA::VariantType& sizeValue, AbstractProperty* pivotProperty, const DAVA::VariantType& pivotValue);
-        ControlNode* node = nullptr;
-        AbstractProperty* sizeProperty = nullptr;
+        DAVA::RefPtr<ControlNode> node;
+        DAVA::RefPtr<AbstractProperty> sizeProperty;
         DAVA::VariantType sizeNewValue;
         DAVA::VariantType sizeOldValue;
 
-        AbstractProperty* pivotProperty = nullptr;
+        DAVA::RefPtr<AbstractProperty> pivotProperty;
         DAVA::VariantType pivotNewValue;
         DAVA::VariantType pivotOldValue;
     };

@@ -8,25 +8,19 @@
 using namespace DAVA;
 
 RemoveControlCommand::RemoveControlCommand(PackageNode* package, ControlNode* node_, ControlsContainerNode* from_, int index_)
-    : QEPackageCommand(package, REMOVE_CONTROL_COMMAND, "RemoveControl")
-    , node(SafeRetain(node_))
-    , from(SafeRetain(from_))
+    : QEPackageCommand(package, REMOVE_CONTROL_COMMAND, "Remove Control")
+    , node(RefPtr<ControlNode>::ConstructWithRetain(node_))
+    , from(RefPtr<ControlsContainerNode>::ConstructWithRetain(from_))
     , index(index_)
 {
 }
 
-RemoveControlCommand::~RemoveControlCommand()
-{
-    SafeRelease(node);
-    SafeRelease(from);
-}
-
 void RemoveControlCommand::Redo()
 {
-    package->RemoveControl(node, from);
+    package->RemoveControl(node.Get(), from.Get());
 }
 
 void RemoveControlCommand::Undo()
 {
-    package->InsertControl(node, from, index);
+    package->InsertControl(node.Get(), from.Get(), index);
 }

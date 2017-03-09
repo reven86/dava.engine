@@ -30,7 +30,7 @@ void RECommandBatch::RemoveCommands(DAVA::CommandID commandId)
                                  const DAVA::Command* commandPtr = cmd.get();
                                  if (IsCommandBatch(commandPtr))
                                  {
-                                     return (commandId == DAVA::COMMAND_BATCH);
+                                     return (commandId == DAVA::BATCH_COMMAND);
                                  }
                                  return static_cast<const RECommand*>(commandPtr)->GetID() == commandId;
                              });

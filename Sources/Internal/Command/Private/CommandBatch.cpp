@@ -5,14 +5,14 @@
 namespace DAVA
 {
 CommandBatch::CommandBatch(const String& description, uint32 commandsCount)
-    : Command(COMMAND_BATCH, description)
+    : Command(BATCH_COMMAND, description)
 {
     commands.reserve(commandsCount);
 }
 
 void CommandBatch::Redo()
 {
-    for (CommandsContainer::iterator it = commands.begin(), end = commands.end(); it != end; ++it)
+    for (auto it = commands.begin(), end = commands.end(); it != end; ++it)
     {
         (*it)->Redo();
     }
@@ -20,7 +20,7 @@ void CommandBatch::Redo()
 
 void CommandBatch::Undo()
 {
-    for (CommandsContainer::reverse_iterator it = commands.rbegin(), end = commands.rend(); it != end; ++it)
+    for (auto it = commands.rbegin(), end = commands.rend(); it != end; ++it)
     {
         (*it)->Undo();
     }
@@ -33,7 +33,7 @@ void CommandBatch::Add(std::unique_ptr<Command>&& command)
     {
         DAVA::Command* lastCommand = commands.back().get();
         const CommandID id = lastCommand->GetID();
-        DVASSERT(id != COMMAND_BATCH, "we can not store batch inside another batch");
+        DVASSERT(id != BATCH_COMMAND, "we can not store batch inside another batch");
         if (id == command->GetID())
         {
             if (lastCommand->MergeWith(command.get()))

@@ -10,13 +10,12 @@ class AddStyleSelectorCommand : public QEPackageCommand
 {
 public:
     AddStyleSelectorCommand(PackageNode* package, StyleSheetNode* node, StyleSheetSelectorProperty* property);
-    ~AddStyleSelectorCommand() override;
 
     void Redo() override;
     void Undo() override;
 
 private:
-    StyleSheetNode* node = nullptr;
-    StyleSheetSelectorProperty* property = nullptr;
+    DAVA::RefPtr<StyleSheetNode> node;
+    DAVA::RefPtr<StyleSheetSelectorProperty> property;
     int index = -1;
 };

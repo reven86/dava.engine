@@ -9,12 +9,11 @@ class RemoveStylePropertyCommand : public QEPackageCommand
 {
 public:
     RemoveStylePropertyCommand(PackageNode* package, StyleSheetNode* node, StyleSheetProperty* property);
-    ~RemoveStylePropertyCommand() override;
 
     void Redo() override;
     void Undo() override;
 
 private:
-    StyleSheetNode* node = nullptr;
-    StyleSheetProperty* property = nullptr;
+    DAVA::RefPtr<StyleSheetNode> node;
+    DAVA::RefPtr<StyleSheetProperty> property;
 };

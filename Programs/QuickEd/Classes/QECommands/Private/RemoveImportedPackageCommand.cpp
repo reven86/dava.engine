@@ -8,24 +8,19 @@
 using namespace DAVA;
 
 RemoveImportedPackageCommand::RemoveImportedPackageCommand(PackageNode* package, PackageNode* importedPackage_)
-    : QEPackageCommand(package, REMOVE_IMPORTED_PACKAGE_COMMAND, "RemoveImportedPackage")
-    , importedPackage(SafeRetain(importedPackage_))
+    : QEPackageCommand(package, REMOVE_IMPORTED_PACKAGE_COMMAND, "Remove Imported Package")
+    , importedPackage(RefPtr<PackageNode>::ConstructWithRetain(importedPackage_))
     , index(0)
 {
-    index = package->GetImportedPackagesNode()->GetIndex(importedPackage);
-}
-
-RemoveImportedPackageCommand::~RemoveImportedPackageCommand()
-{
-    SafeRelease(importedPackage);
+    index = package->GetImportedPackagesNode()->GetIndex(importedPackage.Get());
 }
 
 void RemoveImportedPackageCommand::Redo()
 {
-    package->RemoveImportedPackage(importedPackage);
+    package->RemoveImportedPackage(importedPackage.Get());
 }
 
 void RemoveImportedPackageCommand::Undo()
 {
-    package->InsertImportedPackage(importedPackage, index);
+    package->InsertImportedPackage(importedPackage.Get(), index);
 }
