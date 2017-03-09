@@ -1,6 +1,7 @@
 #include "TArc/Controls/PropertyPanel/PropertiesView.h"
 #include "TArc/Controls/PropertyPanel/Private/ReflectedPropertyModel.h"
 #include "TArc/Controls/PropertyPanel/Private/PropertiesViewDelegate.h"
+#include "TArc/Core/ContextAccessor.h"
 
 #include <Reflection/Reflection.h>
 #include <Base/BaseTypes.h>
@@ -14,13 +15,17 @@ namespace DAVA
 {
 namespace TArc
 {
-PropertiesView::PropertiesView(ContextAccessor* accessor, const FieldDescriptor& objectsField)
-    : binder(accessor)
+PropertiesView::PropertiesView(ContextAccessor* accessor_, const FieldDescriptor& objectsField, const String& settingsNodeName_)
+    : binder(accessor_)
+    , accessor(accessor_)
+    , settingsNodeName(settingsNodeName_)
 {
     binder.BindField(objectsField, MakeFunction(this, &PropertiesView::OnObjectsChanged));
     model.reset(new ReflectedPropertyModel());
 
     SetupUI();
+
+    model->LoadExpanded(accessor->CreatePropertiesNode(settingsNodeName).CreateSubHolder("expandedList"));
 
     QTimer* timer = new QTimer(this);
     timer->setInterval(500);
@@ -29,11 +34,16 @@ PropertiesView::PropertiesView(ContextAccessor* accessor, const FieldDescriptor&
                          model->Update();
                      });
 
-    timer->start();
+    // timer->start();
+
+    QObject::connect(view, &QTreeView::expanded, this, &PropertiesView::OnExpanded);
+    QObject::connect(view, &QTreeView::collapsed, this, &PropertiesView::OnCollapsed);
 }
 
 PropertiesView::~PropertiesView()
 {
+    PropertiesItem item = accessor->CreatePropertiesNode(settingsNodeName).CreateSubHolder("expandedList");
+    model->SaveExpanded(item);
 }
 
 void PropertiesView::RegisterExtension(const std::shared_ptr<ExtensionChain>& extension)
@@ -75,6 +85,11 @@ void PropertiesView::OnObjectsChanged(const Any& objects)
 
     DVASSERT(objects.CanCast<Vector<Reflection>>());
     model->SetObjects(objects.Cast<Vector<Reflection>>());
+    QModelIndexList expandedLIst = model->GetExpandedList();
+    foreach (const QModelIndex& index, expandedLIst)
+    {
+        view->expand(index);
+    }
 }
 
 void PropertiesView::OnColumnResized(int columnIndex, int oldSize, int newSize)
@@ -83,5 +98,16 @@ void PropertiesView::OnColumnResized(int columnIndex, int oldSize, int newSize)
     DVASSERT(d != nullptr);
     d->UpdateSizeHints(columnIndex, newSize);
 }
+
+void PropertiesView::OnExpanded(const QModelIndex& index)
+{
+    //model->SetExpanded(true, index);
 }
+
+void PropertiesView::OnCollapsed(const QModelIndex& index)
+{
+    //model->SetExpanded(false, index);
 }
+
+} // namespace TArc
+} // namespace DAVA

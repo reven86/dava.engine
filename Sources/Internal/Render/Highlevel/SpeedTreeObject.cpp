@@ -3,9 +3,18 @@
 #include "Utils/Utils.h"
 #include "Render/Renderer.h"
 #include "Render/Highlevel/RenderPassNames.h"
+#include "Reflection/ReflectionRegistrator.h"
+#include "Reflection/ReflectedMeta.h"
 
 namespace DAVA
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(SpeedTreeObject)
+{
+    ReflectionRegistrator<SpeedTreeObject>::Begin()
+    .Field("lightSmoothing", &SpeedTreeObject::GetLightSmoothing, &SpeedTreeObject::SetLightSmoothing)[M::DisplayName("Light Smoothing")]
+    .End();
+}
+
 const FastName SpeedTreeObject::FLAG_WIND_ANIMATION("WIND_ANIMATION");
 
 SpeedTreeObject::SpeedTreeObject()

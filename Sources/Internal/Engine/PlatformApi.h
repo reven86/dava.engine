@@ -63,6 +63,7 @@ struct XamlApplicationListener
     virtual ~XamlApplicationListener() = default;
     virtual void OnLaunched(::Windows::ApplicationModel::Activation::LaunchActivatedEventArgs ^ args) {}
     virtual void OnActivated(::Windows::ApplicationModel::Activation::IActivatedEventArgs^ args) {}
+    virtual void OnSuspending() {}
     // clang-format on
 };
 
