@@ -185,7 +185,12 @@ void WindowBackend::SetCursorInCenter()
 
 void WindowBackend::ProcessPlatformEvents()
 {
-    uiDispatcher.ProcessEvents();
+    // Prevent processing UI dispatcher events to exclude cases when WM_TRIGGER_EVENTS is delivered
+    // when modal dialog is open as Dispatcher::ProcessEvents is not reentrant now
+    if (!EngineBackend::showingModalMessageBox)
+    {
+        uiDispatcher.ProcessEvents();
+    }
 }
 
 void WindowBackend::SetSurfaceScaleAsync(const float32 scale)
@@ -911,6 +916,7 @@ LRESULT WindowBackend::OnCreate()
     RECT rc;
     ::GetClientRect(hwnd, &rc);
 
+    uiDispatcher.LinkToCurrentThread();
     hcurCursor = defaultCursor;
 
     // If new pointer input is available then do not handle legacy WM_TOUCH message

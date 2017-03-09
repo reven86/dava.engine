@@ -3,9 +3,18 @@
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Render/Highlevel/RenderObject.h"
 #include "Utils/StringFormat.h"
+#include "Reflection/ReflectionRegistrator.h"
+#include "Reflection/ReflectedMeta.h"
 
 namespace DAVA
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(LodComponent)
+{
+    ReflectionRegistrator<LodComponent>::Begin()
+    .Field("currentLod", &LodComponent::currentLod)[M::ReadOnly(), M::DisplayName("Current LOD")]
+    .End();
+}
+
 const float32 LodComponent::INVALID_DISTANCE = -1.f;
 const float32 LodComponent::MIN_LOD_DISTANCE = 0.f;
 const float32 LodComponent::MAX_LOD_DISTANCE = 1000.f;

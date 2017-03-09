@@ -1,9 +1,9 @@
-#ifndef __DAVAENGINE_CAMERA_COMPONENT_H__
-#define __DAVAENGINE_CAMERA_COMPONENT_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Entity/Component.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
+#include "Reflection/Reflection.h"
 
 namespace DAVA
 {
@@ -33,7 +33,7 @@ public:
     INTROSPECTION_EXTEND(CameraComponent, Component,
                          PROPERTY("camera", "Camera", GetCamera, SetCamera, I_SAVE | I_VIEW | I_EDIT)
                          );
-};
-};
 
-#endif //__DAVAENGINE_CAMERA_COMPONENT_H__
+    DAVA_VIRTUAL_REFLECTION(CameraComponent);
+};
+}

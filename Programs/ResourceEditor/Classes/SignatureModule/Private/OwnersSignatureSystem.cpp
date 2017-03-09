@@ -2,8 +2,8 @@
 #include "Classes/StringConstants.h"
 
 #include <Scene3D/Components/ComponentHelpers.h>
-#include <Scene3D/Scene.h>
 #include <Scene3D/Systems/EventSystem.h>
+#include <Scene3D/Scene.h>
 #include <Utils/StringFormat.h>
 #include <Time/DateTime.h>
 

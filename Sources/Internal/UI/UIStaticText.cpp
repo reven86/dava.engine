@@ -339,17 +339,6 @@ const WideString& UIStaticText::GetText() const
     return textBlock->GetText();
 }
 
-void UIStaticText::SetMargins(const UIControlBackground::UIMargins* margins)
-{
-    textBg->SetMargins(margins);
-    shadowBg->SetMargins(margins);
-}
-
-const UIControlBackground::UIMargins* UIStaticText::GetMargins() const
-{
-    return textBg->GetMargins();
-}
-
 Animation* UIStaticText::TextColorAnimation(const Color& finalColor, float32 time, Interpolation::FuncType interpolationFunc /*= Interpolation::LINEAR*/, int32 track /*= 0*/)
 {
     LinearAnimation<Color>* animation = new LinearAnimation<Color>(this, &textBg->color, finalColor, time, interpolationFunc);
@@ -408,14 +397,6 @@ void UIStaticText::PrepareSprite()
 Rect UIStaticText::CalculateTextBlockRect(const UIGeometricData& geometricData) const
 {
     Rect resultRect(geometricData.position, geometricData.size);
-    const UIControlBackground::UIMargins* margins = textBg->GetMargins();
-    if (margins)
-    {
-        resultRect.x += margins->left;
-        resultRect.y += margins->top;
-        resultRect.dx -= (margins->right + margins->left);
-        resultRect.dy -= (margins->bottom + margins->top);
-    }
     return resultRect;
 }
 
@@ -489,18 +470,6 @@ void UIStaticText::SetMultilineType(int32 multilineType)
         DVASSERT(false);
         break;
     }
-}
-
-DAVA::Vector4 UIStaticText::GetMarginsAsVector4() const
-{
-    auto* margins = GetMargins();
-    return (margins != nullptr) ? margins->AsVector4() : Vector4();
-}
-
-void UIStaticText::SetMarginsAsVector4(const Vector4& vMargins)
-{
-    UIControlBackground::UIMargins newMargins(vMargins);
-    SetMargins(&newMargins);
 }
 
 #if defined(LOCALIZATION_DEBUG)

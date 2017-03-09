@@ -23,6 +23,8 @@
         <file>Icons/light-uparrow.png</file>
         <file>Icons/light-leftarrow.png</file>
         <file>Icons/light-rightarrow.png</file>
+        <file>Icons/sound.png</file>
+        <file>Icons/sound_group.png</file>
         <file>LightTheme.qss</file>
         <file>DarkTheme.qss</file>
     </qresource>

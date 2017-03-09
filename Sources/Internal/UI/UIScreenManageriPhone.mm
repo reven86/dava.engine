@@ -189,36 +189,23 @@ void UIScreenManager::StartGLAnimation()
     [view performSelector:@selector(startAnimation)];
 }
 
+#if !defined(__DAVAENGINE_COREV2__)
 void UIScreenManager::BlockDrawing()
 {
-#if defined(__DAVAENGINE_COREV2__)
-    drawBlocked = true;
-#else
     Screen& glController = screens[glControllerId];
     UIViewController* controller = (UIViewController*)glController.value;
     RenderView* view = (RenderView*)controller.view;
     [view performSelector:@selector(blockDrawing)];
-#endif // __DAVAENGINE_COREV2__
 }
 
 void UIScreenManager::UnblockDrawing()
 {
-#if defined(__DAVAENGINE_COREV2__)
-    drawBlocked = false;
-#else
     Screen& glController = screens[glControllerId];
     UIViewController* controller = (UIViewController*)glController.value;
     RenderView* view = (RenderView*)controller.view;
     [view performSelector:@selector(unblockDrawing)];
-#endif // __DAVAENGINE_COREV2__
 }
-    
-#if defined(__DAVAENGINE_COREV2__)
-bool UIScreenManager::IsDrawBlocked()
-{
-    return drawBlocked;
-}
-#endif // __DAVAENGINE_COREV2__
+#endif // !__DAVAENGINE_COREV2__
 }
 
 #endif // #if defined(__DAVAENGINE_IPHONE__)
