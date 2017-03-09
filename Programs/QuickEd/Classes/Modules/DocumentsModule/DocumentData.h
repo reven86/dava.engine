@@ -26,7 +26,6 @@ public:
     ~DocumentData() override;
 
     const PackageNode* GetPackageNode() const;
-    const DAVA::CommandStack* GetCommandStack() const;
 
     template <typename T, typename... Arguments>
     std::unique_ptr<T> CreateCommand(Arguments&&... args) const;
@@ -49,6 +48,8 @@ public:
 
     DAVA_DEPRECATED(void RefreshLayout());
     DAVA_DEPRECATED(void RefreshAllControlProperties());
+    //TODO: remove it when class Document will be removed
+    DAVA_DEPRECATED(DAVA::CommandStack* GetCommandStack());
 
     static const char* packagePropertyName;
     static const char* canSavePropertyName;

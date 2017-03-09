@@ -27,7 +27,7 @@ DocumentData::DocumentData(const DAVA::RefPtr<PackageNode>& package_)
 
 DocumentData::~DocumentData() = default;
 
-const DAVA::CommandStack* DocumentData::GetCommandStack() const
+DAVA::CommandStack* DocumentData::GetCommandStack()
 {
     return commandStack.get();
 }

@@ -77,8 +77,6 @@ private:
     void ChangeProperty();
     void Resize();
 
-    void Exec(std::unique_ptr<DAVA::Command>&& command);
-
     HUDAreaInfo::eArea activeArea = HUDAreaInfo::NO_AREA;
     ControlNode* activeControlNode = nullptr;
     DAVA::Vector2 extraDelta;

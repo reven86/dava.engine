@@ -322,7 +322,7 @@ void EditorTransformSystem::ProcessDrag(const Vector2& pos)
 
 void EditorTransformSystem::MoveAllSelectedControls(Vector2 delta, bool canAdjust)
 {
-    using namespace TArc;
+    using namespace DAVA::TArc;
 
     Vector<EditorTransformSystemDetail::ChangePropertyAction> propertiesToChange;
     Vector<MagnetLineInfo> magnets;
@@ -610,11 +610,6 @@ void EditorTransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool ra
 
     Vector2 originalSize = sizeProperty->GetValue().AsVector2();
     Vector2 finalSize(originalSize + adjustedSize);
-
-    TArc::DataContext* activeContext = accessor->GetActiveContext();
-    DVASSERT(activeContext != nullptr);
-    DocumentData* data = activeContext->GetData<DocumentData>();
-    std::unique_ptr<ResizeCommand> command = data->CreateCommand<ResizeCommand>();
     VariantType sizeValue(finalSize);
 
     Vector2 originalPosition = positionProperty->GetValue().AsVector2();
@@ -624,6 +619,11 @@ void EditorTransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool ra
         finalPosition += deltaPosition;
     }
     VariantType positionValue(finalPosition);
+
+    TArc::DataContext* activeContext = accessor->GetActiveContext();
+    DVASSERT(activeContext != nullptr);
+    DocumentData* data = activeContext->GetData<DocumentData>();
+    std::unique_ptr<ResizeCommand> command = data->CreateCommand<ResizeCommand>();
 
     command->AddNodePropertyValue(activeControlNode,
                                   sizeProperty,
@@ -1028,9 +1028,4 @@ void EditorTransformSystem::ClampAngle()
 bool EditorTransformSystem::IsShiftPressed() const
 {
     return IsKeyPressed(KeyboardProxy::KEY_SHIFT) ^ (shiftInverted);
-}
-
-void EditorTransformSystem::Exec(std::unique_ptr<DAVA::Command>&& command)
-{
-    TArc::DataContext* context = accessor->GetActiveContext();
 }

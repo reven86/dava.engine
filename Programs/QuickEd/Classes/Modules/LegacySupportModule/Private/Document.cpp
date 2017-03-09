@@ -45,12 +45,12 @@ const DAVA::FilePath& Document::GetPackageFilePath() const
 DAVA::CommandStack* Document::GetCommandStack() const
 {
     using namespace DAVA::TArc;
-    const DataContext* dataContext = accessor->GetContext(contextId);
+    DataContext* dataContext = accessor->GetContext(contextId);
     DVASSERT(nullptr != dataContext);
-    const DocumentData* data = dataContext->GetData<DocumentData>();
+    DocumentData* data = dataContext->GetData<DocumentData>();
     DVASSERT(nullptr != data);
 
-    return const_cast<DAVA::CommandStack*>(data->GetCommandStack());
+    return data->GetCommandStack();
 }
 
 PackageNode* Document::GetPackage() const
