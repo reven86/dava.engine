@@ -88,6 +88,9 @@ public:
     /** Check whether window is primary */
     bool IsPrimary() const;
 
+    /** Check whether window has alive native window */
+    bool IsAlive() const;
+
     /**
         Check whether window is visible.
 
@@ -297,9 +300,6 @@ public:
     Signal<Window*> draw; //!< Emited after `update` signal after `UIControlSystem::Draw`
 
 private:
-    /// Get pointer to WindowBackend which may be used by PlatformCore
-    Private::WindowBackend* GetBackend() const;
-
     /// Initialize platform specific render params, e.g. acquire/release context functions for Qt platform
     void InitCustomRenderParams(rhi::InitParam& params);
     void Update(float32 frameDelta);
@@ -341,6 +341,7 @@ private:
     UIControlSystem* uiControlSystem = nullptr;
 
     bool isPrimary = false;
+    bool isAlive = false;
     bool isVisible = false;
     bool hasFocus = false;
     bool sizeEventsMerged = false; // Flag indicating that all size events are merged on current frame
@@ -363,6 +364,11 @@ private:
 inline bool Window::IsPrimary() const
 {
     return isPrimary;
+}
+
+inline bool Window::IsAlive() const
+{
+    return isAlive;
 }
 
 inline bool Window::IsVisible() const
@@ -403,11 +409,6 @@ inline UIControlSystem* Window::GetUIControlSystem() const
 inline eFullscreen Window::GetFullscreen() const
 {
     return fullscreenMode;
-}
-
-inline Private::WindowBackend* Window::GetBackend() const
-{
-    return windowBackend.get();
 }
 
 } // namespace DAVA

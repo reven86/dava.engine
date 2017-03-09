@@ -16,6 +16,8 @@
 
 #import "UIAlertView_Modal.h"
 
+#if !defined(__DAVAENGINE_COREV2__)
+
 NSInteger returnButtonIndex = -1;
 
 @implementation UIAlertView (Modal)
@@ -48,3 +50,5 @@ NSInteger returnButtonIndex = -1;
 }
 
 @end
+
+#endif //!defined(__DAVAENGINE_COREV2__)
