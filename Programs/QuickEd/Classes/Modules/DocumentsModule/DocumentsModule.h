@@ -39,7 +39,6 @@ protected:
 
     void OnContextCreated(DAVA::TArc::DataContext* context) override;
     void OnContextDeleted(DAVA::TArc::DataContext* context) override;
-    void OnContextWillBeChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* newOne) override;
 
 private:
     void InitEditorSystems();
@@ -61,7 +60,7 @@ private:
     DAVA::RefPtr<PackageNode> CreatePackage(const QString& path);
 
     void CloseActiveDocument();
-    void CloseDocument(const DAVA::TArc::DataContext::ContextID& id);
+    void CloseDocument(DAVA::uint64 id);
     void CloseAllDocuments();
     void DeleteAllDocuments();
     void CloseDocuments(const DAVA::Set<DAVA::TArc::DataContext::ContextID>& ids);

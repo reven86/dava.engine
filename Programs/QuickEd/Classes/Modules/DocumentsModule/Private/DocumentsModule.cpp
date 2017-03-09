@@ -43,10 +43,12 @@
 #include <Render/DynamicBufferAllocator.h>
 #include <Particles/ParticleEmitter.h>
 #include <Engine/PlatformApi.h>
+#include <Engine/Qt/RenderWidget.h>
 
 #include <QAction>
 #include <QApplication>
 #include <QFileSystemWatcher>
+#include <QMouseEvent>
 
 DAVA_VIRTUAL_REFLECTION_IMPL(DocumentsModule)
 {
@@ -159,17 +161,6 @@ void DocumentsModule::OnContextDeleted(DAVA::TArc::DataContext* context)
     watcherData->Unwatch(path);
 }
 
-void DocumentsModule::OnContextWillBeChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* newOne)
-{
-    if (current != nullptr)
-    {
-        DocumentData* documentData = current->GetData<DocumentData>();
-        DVASSERT(nullptr != documentData);
-        //check that we do not leave document in non valid state
-        DVASSERT(documentData->package->CanUpdateAll());
-    }
-}
-
 void DocumentsModule::InitEditorSystems()
 {
     DVASSERT(nullptr == systemsManager);
@@ -189,7 +180,7 @@ void DocumentsModule::InitCentralWidget()
     RenderWidget* renderWidget = GetContextManager()->GetRenderWidget();
 
     previewWidget = new PreviewWidget(accessor, renderWidget, systemsManager.get());
-    previewWidget->requestCloseTab.Connect([this](uint64 id) { CloseDocument(id); });
+    previewWidget->requestCloseTab.Connect(this, &DocumentsModule::CloseDocument);
     previewWidget->requestChangeTextInNode.Connect(this, &DocumentsModule::ChangeControlText);
     PanelKey panelKey(QStringLiteral("CentralWidget"), CentralPanelInfo());
     ui->AddView(QEGlobal::windowKey, panelKey, previewWidget);
@@ -270,23 +261,6 @@ void DocumentsModule::CreateDocumentsActions()
         placementInfo.AddPlacementPoint(CreateMenuPoint(fileMenuName, { InsertionParams::eInsertionMethod::AfterItem, saveDocumentActionName }));
         placementInfo.AddPlacementPoint(CreateToolbarPoint(toolBarName, { InsertionParams::eInsertionMethod::AfterItem, saveDocumentActionName }));
 
-        ui->AddAction(QEGlobal::windowKey, placementInfo, action);
-    }
-
-    //action close document
-    {
-        QtAction* action = new QtAction(accessor, closeDocumentActionName);
-
-        FieldDescriptor fieldDescr;
-        fieldDescr.type = ReflectedTypeDB::Get<DocumentData>();
-        fieldDescr.fieldName = FastName(DocumentData::packagePropertyName);
-        action->SetStateUpdationFunction(QtAction::Enabled, fieldDescr, [](const Any& fieldValue) -> Any {
-            return fieldValue.CanCast<PackageNode*>() && fieldValue.Cast<PackageNode*>() != nullptr;
-        });
-
-        connections.AddConnection(action, &QAction::triggered, Bind(&DocumentsModule::CloseActiveDocument, this));
-        ActionPlacementInfo placementInfo;
-        placementInfo.AddPlacementPoint(CreateMenuPoint(fileMenuName, { InsertionParams::eInsertionMethod::AfterItem, saveAllDocumentsActionName }));
         ui->AddAction(QEGlobal::windowKey, placementInfo, action);
     }
 
@@ -663,9 +637,10 @@ void DocumentsModule::CloseActiveDocument()
     CloseDocument(active->GetID());
 }
 
-void DocumentsModule::CloseDocument(const DAVA::TArc::DataContext::ContextID& id)
+void DocumentsModule::CloseDocument(DAVA::uint64 id)
 {
-    using namespace DAVA::TArc;
+    using namespace DAVA;
+    using namespace TArc;
 
     ContextAccessor* accessor = GetAccessor();
     ContextManager* contextManager = GetContextManager();
@@ -1016,12 +991,10 @@ void DocumentsModule::OnDragStateChanged(EditorSystemsManager::eDragState dragSt
     //TODO: move this code to the TransformSystem when systems will be moved to the TArc
     if (dragState == EditorSystemsManager::Transform)
     {
-        documentData->canClose = false;
         documentData->commandStack->BeginBatch("transformations");
     }
     else if (previousState == EditorSystemsManager::Transform)
     {
-        documentData->canClose = true;
         documentData->commandStack->EndBatch();
     }
 }
