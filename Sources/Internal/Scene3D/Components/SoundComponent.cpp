@@ -10,9 +10,30 @@
 #include "Scene3D/Systems/GlobalEventSystem.h"
 #include "Scene3D/Systems/SoundUpdateSystem.h"
 #include "Utils/Utils.h"
+#include "Reflection/ReflectionRegistrator.h"
+#include "Reflection/ReflectedMeta.h"
 
 namespace DAVA
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(SoundComponentElement)
+{
+    ReflectionRegistrator<SoundComponentElement>::Begin()
+    .End();
+}
+
+bool SoundComponentElement::operator==(const SoundComponentElement& other) const
+{
+    return soundEvent == other.soundEvent &&
+    localDirection == other.localDirection &&
+    flags == other.flags;
+}
+
+DAVA_VIRTUAL_REFLECTION_IMPL(SoundComponent)
+{
+    ReflectionRegistrator<SoundComponent>::Begin()
+    .Field("events", &SoundComponent::events)[M::DisplayName("Events")]
+    .End();
+}
 
 #ifdef DAVA_FMOD
 

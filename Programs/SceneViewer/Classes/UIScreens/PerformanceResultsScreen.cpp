@@ -2,6 +2,7 @@
 #include "SceneViewerApp.h"
 
 #include <Math/Polygon2.h>
+#include <UI/Layouts/UIAnchorComponent.h>
 
 namespace PerformanceResultsScreenDetails
 {
@@ -76,26 +77,36 @@ void PerformanceResultsScreen::AddBackgroundMap()
     using namespace PerformanceResultsScreenDetails;
     using namespace DAVA;
 
-    ScopedPtr<UIControlBackground> panoramaBackground(new UIControlBackground());
+    RefPtr<UIControl> panoramaContol(new UIControl());
+    panoramaContol->SetName("Panorama");
+
+    UIControlBackground* panoramaBackground = panoramaContol->GetOrCreateComponent<UIControlBackground>();
     ScopedPtr<Sprite> sprite(Sprite::CreateFromImage(data.gridTestResult.panoramaImage));
     panoramaBackground->SetSprite(sprite);
     panoramaBackground->SetDrawType(UIControlBackground::DRAW_STRETCH_BOTH);
     panoramaBackground->SetAlign(eAlign::ALIGN_LEFT | eAlign::ALIGN_TOP);
 
-    UIControlBackground::UIMargins panoramaMargins;
-    panoramaMargins.left = panoramaRect.x;
-    panoramaMargins.top = panoramaRect.y;
-    panoramaMargins.bottom = GetSize().dy - panoramaRect.y - panoramaRect.dy;
-    panoramaMargins.right = GetSize().dx - panoramaRect.x - panoramaRect.dx;
-    panoramaBackground->SetMargins(&panoramaMargins);
+    UIAnchorComponent* panoramaAnchor = panoramaContol->GetOrCreateComponent<UIAnchorComponent>();
+    panoramaAnchor->SetLeftAnchor(panoramaRect.x);
+    panoramaAnchor->SetTopAnchor(panoramaRect.y);
+    panoramaAnchor->SetBottomAnchor(GetSize().dy - panoramaRect.y - panoramaRect.dy);
+    panoramaAnchor->SetRightAnchor(GetSize().dx - panoramaRect.x - panoramaRect.dx);
 
-    SetBackground(panoramaBackground);
+    panoramaAnchor->SetLeftAnchorEnabled(true);
+    panoramaAnchor->SetTopAnchorEnabled(true);
+    panoramaAnchor->SetBottomAnchorEnabled(true);
+    panoramaAnchor->SetRightAnchorEnabled(true);
+
+    AddControl(panoramaContol.Get());
 }
 
 void PerformanceResultsScreen::RemoveBackgroundMap()
 {
-    DAVA::ScopedPtr<DAVA::UIControlBackground> emptyBack(new DAVA::UIControlBackground);
-    SetBackground(emptyBack);
+    using namespace DAVA;
+
+    UIControl* panoramaContol = FindByPath("Panorama");
+    UIControlBackground* panoramaBackground = panoramaContol->GetComponent<UIControlBackground>();
+    panoramaBackground->SetSprite(nullptr);
 }
 
 void PerformanceResultsScreen::AddSectors()
@@ -165,6 +176,7 @@ void PerformanceResultsScreen::AddColorBoxes()
         text = new UIStaticText(textRect);
         text->SetFont(fontSmall);
         text->SetTextColor(Color::White);
+        text->SetTextColorInheritType(UIControlBackground::COLOR_IGNORE_PARENT);
         text->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
         AddControl(text);
     };
@@ -203,6 +215,7 @@ void PerformanceResultsScreen::AddResultsText()
     fpsResultsText = new UIStaticText(Rect(infoColumnRect.x, INFO_FPS_RESULTS_Y0, infoColumnRect.dx, 200.f));
     fpsResultsText->SetFont(font);
     fpsResultsText->SetTextColor(Color::White);
+    fpsResultsText->SetTextColorInheritType(UIControlBackground::COLOR_IGNORE_PARENT);
     fpsResultsText->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
     fpsResultsText->SetMultiline(true);
     fpsResultsText->SetText(Format(L"Average FPS: %.1f\nMin FPS: %.1f\nMax FPS: %.1f", data.gridTestResult.avgFPS, data.gridTestResult.minFPS, data.gridTestResult.maxFPS));
@@ -244,6 +257,7 @@ void PerformanceResultsScreen::AddPreviewControls()
     previewFpsText = new UIStaticText(fpsRect);
     previewFpsText->SetFont(font);
     previewFpsText->SetTextColor(Color::White);
+    previewFpsText->SetTextColorInheritType(UIControlBackground::COLOR_IGNORE_PARENT);
     previewFpsText->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
     AddControl(previewFpsText);
 

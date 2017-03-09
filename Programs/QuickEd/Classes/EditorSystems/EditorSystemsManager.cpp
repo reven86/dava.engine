@@ -218,7 +218,15 @@ void EditorSystemsManager::OnEditingRootControlsChanged(const SortedPackageBaseN
     engineContext->uiControlSystem->GetInputSystem()->SetCurrentScreen(engineContext->uiControlSystem->GetScreen()); // reset current screen
 
     editingRootControls = rootControls;
-    SetDisplayState(rootControls.size() == 1 ? Edit : Preview);
+    eDisplayState state = rootControls.size() == 1 ? Edit : Preview;
+    if (displayState == Emulation)
+    {
+        previousDisplayState = state;
+    }
+    else
+    {
+        SetDisplayState(state);
+    }
 }
 
 void EditorSystemsManager::OnActiveHUDAreaChanged(const HUDAreaInfo& areaInfo)

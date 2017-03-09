@@ -2,7 +2,8 @@
 
 #include "SoundStream.h"
 #include "Sound/FMODUtils.h"
-#include "fmod.h"
+
+#include <fmod/fmod.h>
 
 namespace DAVA
 {

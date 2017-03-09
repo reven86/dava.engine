@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_HEIGHT_MAP_H__
-#define __DAVAENGINE_HEIGHT_MAP_H__
+#pragma once
 
 #include "Base/BaseObject.h"
 #include "FileSystem/FilePath.h"
@@ -56,6 +55,8 @@ public:
                          MEMBER(size, "Size", I_VIEW)
                          MEMBER(tileSize, "Tile Size", I_VIEW)
                          );
+
+    DAVA_VIRTUAL_REFLECTION(Heightmap, BaseObject);
 };
 inline uint16 Heightmap::GetHeightClamp(uint16 x, uint16 y) const
 {
@@ -102,6 +103,4 @@ inline const String& Heightmap::FileExtension()
 {
     return FILE_EXTENSION;
 }
-};
-
-#endif //__DAVAENGINE_HEIGHT_MAP_H__
+}

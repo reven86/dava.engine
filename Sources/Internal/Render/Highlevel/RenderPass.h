@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_SCENE3D_RENDER_PASS_H__
-#define __DAVAENGINE_SCENE3D_RENDER_PASS_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Base/FastName.h"
@@ -153,7 +152,4 @@ private:
     void InitReflectionRefraction();
     void PrepareReflectionRefractionTextures(RenderSystem* renderSystem);
 };
-
-} // ns
-
-#endif /* __DAVAENGINE_SCENE3D_RENDERLAYER_H__ */
+}

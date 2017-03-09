@@ -103,7 +103,7 @@ if ( WINDOWS_UAP )
     #turning on openssl_WinRT lib on Windows Store
     set( DAVA_THIRD_PARTY_INCLUDES_PATH "${DAVA_THIRD_PARTY_INCLUDES_PATH}" 
                                         "${DAVA_THIRD_PARTY_ROOT_PATH}/openssl/include/uwp"
-                                        "${DAVA_THIRD_PARTY_ROOT_PATH}/fmod_uap/include" )
+    )
   
     #Deprecated since cmake 3.4, added for backwards compatibility
     set ( CMAKE_VS_TARGET_PLATFORM_VERSION ${WINDOWS_UAP_TARGET_PLATFORM_VERSION} )

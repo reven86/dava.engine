@@ -1,6 +1,8 @@
 #include "Render/Highlevel/Heightmap.h"
 #include "Render/Image/Image.h"
 #include "Render/Image/ImageSystem.h"
+#include "Reflection/ReflectionRegistrator.h"
+#include "Reflection/ReflectedMeta.h"
 #include "FileSystem/File.h"
 #include "FileSystem/FileSystem.h"
 #include "Utils/Utils.h"
@@ -8,6 +10,14 @@
 
 namespace DAVA
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(Heightmap)
+{
+    ReflectionRegistrator<Heightmap>::Begin()
+    .Field("size", &Heightmap::size)[M::ReadOnly(), M::DisplayName("Size")]
+    .Field("tileSize", &Heightmap::tileSize)[M::ReadOnly(), M::DisplayName("Tile size")]
+    .End();
+}
+
 String Heightmap::FILE_EXTENSION(".heightmap");
 
 Heightmap::Heightmap(int32 size)

@@ -1,15 +1,15 @@
-#ifndef __PARTICLE_EFFECT_COMPONENT_H__
-#define __PARTICLE_EFFECT_COMPONENT_H__
+#pragma once
 
-#include "Base/BaseTypes.h"
 #include "Entity/Component.h"
 #include "Scene3D/Entity.h"
-#include "Base/BaseObject.h"
-#include "Base/Message.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
 #include "Particles/ParticleGroup.h"
 #include "Particles/ParticleRenderObject.h"
 #include "Particles/ParticleEmitterInstance.h"
+#include "Reflection/Reflection.h"
+#include "Base/BaseObject.h"
+#include "Base/BaseTypes.h"
+#include "Base/Message.h"
 
 namespace DAVA
 {
@@ -149,6 +149,8 @@ public:
                          PROPERTY("visibleReflection", "Visible Reflection", GetReflectionVisible, SetReflectionVisible, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("visibleRefraction", "Visible Refraction", GetRefractionVisible, SetRefractionVisible, I_SAVE | I_VIEW | I_EDIT)
                          );
+
+    DAVA_VIRTUAL_REFLECTION(ParticleEffectComponent, Component);
 };
 
 ParticleEffectComponent::eState ParticleEffectComponent::GetAnimationState() const
@@ -161,5 +163,3 @@ ParticleRenderObject* ParticleEffectComponent::GetRenderObject() const
     return effectRenderObject;
 }
 }
-
-#endif //__PARTICLE_EFFECT_COMPONENT_H__
