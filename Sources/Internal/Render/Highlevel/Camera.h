@@ -1,9 +1,9 @@
-#ifndef __DAVA_CAMERA_H__
-#define __DAVA_CAMERA_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
 #include "Base/BaseObject.h"
+#include "Reflection/Reflection.h"
 #include "Render/Highlevel/Frustum.h"
 
 namespace DAVA
@@ -323,8 +323,7 @@ public:
     /// for camera math and use composition to merge math and rendering scene node.
     void CopyMathOnly(const Camera& c);
 
-protected:
-    enum
+    enum eFlags
     {
         REQUIRE_REBUILD = 1,
         REQUIRE_REBUILD_MODEL = 1 << 1,
@@ -332,6 +331,7 @@ protected:
         REQUIRE_REBUILD_UNIFORM_PROJ_MODEL = 1 << 3
     };
 
+protected:
     //    virtual SceneNode* CopyDataTo(SceneNode *dstNode);
     float32 xmin, xmax, ymin, ymax, znear, zfar, aspect;
     float32 fovX;
@@ -395,8 +395,7 @@ public:
                          MEMBER(viewMatrix, "View Matrix", I_SAVE | I_VIEW)
                          MEMBER(projMatrix, "Proj Matrix", I_SAVE | I_VIEW)
                          );
+
+    DAVA_VIRTUAL_REFLECTION(Camera, BaseObject);
 };
-
-} // ns
-
-#endif
+}

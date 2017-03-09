@@ -4,7 +4,6 @@
 #include "EditorSystems/SelectionContainer.h"
 
 #include <TArc/DataProcessing/DataNode.h>
-#include <TArc/DataProcessing/AnySupport/AnyQStringCompare.h>
 
 #include <Base/BaseTypes.h>
 #include <Base/RefPtr.h>

@@ -17,12 +17,32 @@
 #include "Render/Highlevel/RenderPassNames.h"
 #include "Render/RenderCallbacks.h"
 
+#include "Reflection/ReflectionRegistrator.h"
+#include "Reflection/ReflectedMeta.h"
 #include "FileSystem/FileSystem.h"
 
 #include "Logger/Logger.h"
 
 namespace DAVA
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(VegetationRenderObject)
+{
+    ReflectionRegistrator<VegetationRenderObject>::Begin()
+    .Field("density", &VegetationRenderObject::GetLayerClusterLimit, &VegetationRenderObject::SetLayerClusterLimit)[M::DisplayName("Base density")]
+    .Field("scaleVariation", &VegetationRenderObject::GetScaleVariation, &VegetationRenderObject::SetScaleVariation)[M::DisplayName("Scale variation")]
+    .Field("rotationVariation", &VegetationRenderObject::GetRotationVariation, &VegetationRenderObject::SetRotationVariation)[M::DisplayName("Rotation variation")]
+    .Field("lightmap", &VegetationRenderObject::GetLightmapPath, &VegetationRenderObject::SetLightmapAndGenerateDensityMap)[M::DisplayName("Lightmap")]
+    .Field("lodRanges", &VegetationRenderObject::GetLodRange, &VegetationRenderObject::SetLodRange)[M::DisplayName("Lod ranges")]
+    .Field("visibilityDistance", &VegetationRenderObject::GetVisibilityDistance, &VegetationRenderObject::SetVisibilityDistance)[M::DisplayName("Visibility distances")]
+    .Field("maxVisibleQuads", &VegetationRenderObject::GetMaxVisibleQuads, &VegetationRenderObject::SetMaxVisibleQuads)[M::DisplayName("Max visible quads")]
+    .Field("customGeometry", &VegetationRenderObject::GetCustomGeometryPath, &VegetationRenderObject::SetCustomGeometryPath)[M::DisplayName("Custom geometry")]
+    .Field("cameraBias", &VegetationRenderObject::GetCameraBias, &VegetationRenderObject::SetCameraBias)[M::DisplayName("Camera Bias")]
+    .Field("animationAmplitude", &VegetationRenderObject::GetLayersAnimationAmplitude, &VegetationRenderObject::SetLayersAnimationAmplitude)[M::DisplayName("Animation Amplitude")]
+    .Field("animationSpring", &VegetationRenderObject::GetLayersAnimationSpring, &VegetationRenderObject::SetLayersAnimationSpring)[M::DisplayName("Animation Spring")]
+    .Field("animationDrag", &VegetationRenderObject::GetLayerAnimationDragCoefficient, &VegetationRenderObject::SetLayerAnimationDragCoefficient)[M::DisplayName("Animation Drag")]
+    .End();
+}
+
 static const uint32 MAX_CLUSTER_TYPES = 4;
 static const uint32 MAX_DENSITY_LEVELS = 16;
 //static const float32 CLUSTER_SCALE_NORMALIZATION_VALUE = 15.0f;
