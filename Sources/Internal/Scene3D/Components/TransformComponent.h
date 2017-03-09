@@ -1,7 +1,7 @@
-#ifndef __DAVAENGINE_TRANSFORM_COMPONENT_H__
-#define __DAVAENGINE_TRANSFORM_COMPONENT_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
+#include "Reflection/Reflection.h"
 #include "Scene3D/Systems/TransformSystem.h"
 #include "Entity/Component.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
@@ -41,6 +41,8 @@ public:
                          MEMBER(worldMatrix, "World Transform", I_SAVE | I_VIEW)
                          MEMBER(parentMatrix, "Parent Matrix", I_SAVE)
                          )
+
+    DAVA_VIRTUAL_REFLECTION(TransformComponent, Component);
 };
 
 const Matrix4& TransformComponent::GetWorldTransform()
@@ -57,6 +59,4 @@ Matrix4* TransformComponent::GetWorldTransformPtr()
 {
     return &worldMatrix;
 }
-};
-
-#endif //__DAVAENGINE_TRANSFORM_COMPONENT_H__
+}

@@ -38,10 +38,11 @@ void PlatformCore::PrepareToQuit()
 
 void PlatformCore::Quit()
 {
+    int exitCode = engineBackend->GetExitCode();
     engineBackend->OnGameLoopStopped();
     engineBackend->OnEngineCleanup();
 
-    std::exit(engineBackend->GetExitCode());
+    std::exit(exitCode);
 }
 
 int32 PlatformCore::OnFrame()

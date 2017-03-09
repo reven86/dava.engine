@@ -230,12 +230,18 @@ void UIControl::SetName(const String& name_)
 
 void UIControl::SetName(const FastName& name_)
 {
-    if (name != name_)
+    if (name == name_)
     {
-        SetStyleSheetDirty();
+        return;
     }
 
+#if defined(__DAVAENGINE_DEBUG__)
+    DVASSERT(UIControlHelpers::IsControlNameValid(name_.c_str()));
+#endif
+
     name = name_;
+
+    SetStyleSheetDirty();
 }
 
 void UIControl::SetTag(int32 _tag)
@@ -1874,11 +1880,6 @@ Animation* UIControl::ColorAnimation(const Color& finalColor, float32 time, Inte
     LinearAnimation<Color>* animation = new LinearAnimation<Color>(this, &bg->color, finalColor, time, interpolationFunc);
     animation->Start(track);
     return animation;
-}
-
-void UIControl::OnAllAnimationsFinished()
-{
-    PerformEvent(UIControl::EVENT_ALL_ANIMATIONS_FINISHED, nullptr);
 }
 
 void UIControl::SetDebugDraw(bool _debugDrawEnabled, bool hierarchic /* = false*/)
