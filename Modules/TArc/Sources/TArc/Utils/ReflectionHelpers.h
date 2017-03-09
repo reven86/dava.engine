@@ -11,13 +11,13 @@ namespace TArc
 {
 void ForEachField(const Reflection& r, const Function<void(Reflection::Field&& field)>& fn);
 
-const ReflectedType* GetReflectedType(const Reflection& r);
-const ReflectedType* GetReflectedType(const Any& value);
+const ReflectedType* GetValueReflectedType(const Reflection& r);
+const ReflectedType* GetValueReflectedType(const Any& value);
 
 template <typename T>
 const T* GetTypeMeta(const Any& value)
 {
-    const ReflectedType* type = GetReflectedType(value);
+    const ReflectedType* type = GetValueReflectedType(value);
     if (type == nullptr)
     {
         return nullptr;

@@ -271,7 +271,19 @@ void BaseComponentValue::CreateButtons(QLayout* layout, const M::CommandProducer
 void BaseComponentValue::OnFieldButtonClicked(int32 index)
 {
     const M::CommandProducerHolder* holder = nodes.front()->field.ref.GetMeta<M::CommandProducerHolder>();
+    CallButtonAction(holder, index);
+}
+
+void BaseComponentValue::OnTypeButtonClicked(int32 index)
+{
+    const M::CommandProducerHolder* holder = GetTypeMeta<M::CommandProducerHolder>(nodes.front()->cachedValue);
     DVASSERT(holder);
+    CallButtonAction(holder, index);
+}
+
+void BaseComponentValue::CallButtonAction(const M::CommandProducerHolder* holder, int32 index)
+{
+    DVASSERT(holder != nullptr);
     const Vector<std::shared_ptr<M::CommandProducer>>& producers = holder->GetCommandProducers();
     DVASSERT(index < static_cast<size_t>(producers.size()));
 
@@ -292,10 +304,6 @@ void BaseComponentValue::OnFieldButtonClicked(int32 index)
         }
     }
     producer->ClearCache();
-}
-
-void BaseComponentValue::OnTypeButtonClicked(int32 index)
-{
 }
 
 const char* BaseComponentValue::readOnlyFieldName = "isReadOnly";

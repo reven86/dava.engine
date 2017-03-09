@@ -85,6 +85,7 @@ private:
 
     void OnFieldButtonClicked(int32 index);
     void OnTypeButtonClicked(int32 index);
+    void CallButtonAction(const M::CommandProducerHolder* holder, int32 index);
 
     ReflectedPropertyModel* model = nullptr;
     BaseComponentValue* thisValue = nullptr;

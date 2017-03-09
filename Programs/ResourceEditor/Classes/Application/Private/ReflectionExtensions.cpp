@@ -2,7 +2,9 @@
 #include "Classes/PropertyPanel/RenderObjectExtensions.h"
 #include "Classes/PropertyPanel/NMaterialExtensions.h"
 #include "Classes/PropertyPanel/FilePathExtensions.h"
+#include "Classes/PropertyPanel/ComponentExtensions.h"
 
+#include <Entity/Component.h>
 #include <Scene3D/Components/RenderComponent.h>
 #include <Render/Highlevel/RenderBatch.h>
 #include <Render/Highlevel/Landscape.h>
@@ -14,12 +16,9 @@ namespace ReflectoinExtensionsDetail
 {
 using namespace DAVA;
 
-template <typename T, typename TMeta, typename TIndex>
-void EmplaceTypeMeta(Meta<TMeta, TIndex>&& meta)
+template <typename TMeta, typename TIndex>
+void EmplaceTypeMeta(ReflectedType* type, Meta<TMeta, TIndex>&& meta)
 {
-    ReflectedType* type = const_cast<ReflectedType*>(ReflectedTypeDB::Get<T>());
-    DVASSERT(type != nullptr);
-
     ReflectedStructure* structure = type->GetStructure();
     DVASSERT(structure != nullptr);
 
@@ -29,6 +28,15 @@ void EmplaceTypeMeta(Meta<TMeta, TIndex>&& meta)
     }
 
     structure->meta->Emplace(std::move(meta));
+}
+
+template <typename T, typename TMeta, typename TIndex>
+void EmplaceTypeMeta(Meta<TMeta, TIndex>&& meta)
+{
+    ReflectedType* type = const_cast<ReflectedType*>(ReflectedTypeDB::Get<T>());
+    DVASSERT(type != nullptr);
+
+    EmplaceTypeMeta(type, std::move(meta));
 }
 
 template <typename T, typename TMeta, typename TIndex>
@@ -77,11 +85,49 @@ void RegFilePathExt(DAVA::TArc::ContextAccessor* accessor)
     EmplaceFieldMeta<VegetationRenderObject>("customGeometry", CreateSceneFileMeta(accessor));
 }
 
+void RegComponentsExtensions()
+{
+    using namespace DAVA;
+    const Type* transformComponent = Type::Instance<TransformComponent>();
+    const Type* actionComponent = Type::Instance<ActionComponent>();
+    const Type* soundComponent = Type::Instance<SoundComponent>();
+    const Type* waveComponent = Type::Instance<WaveComponent>();
+    const Type* componentType = Type::Instance<Component>();
+    const Vector<TypeInheritance::Info> derivedTypes = componentType->GetInheritance()->GetDerivedTypes();
+    for (const TypeInheritance::Info& derived : derivedTypes)
+    {
+        if (derived.type == transformComponent)
+        {
+            continue;
+        }
+
+        ReflectedType* refType = const_cast<ReflectedType*>(ReflectedTypeDB::GetByType(derived.type));
+        if (refType == nullptr)
+        {
+            DVASSERT(false, "We has component that derived from DAVA::Component, but without created ReflectedType");
+        }
+
+        M::CommandProducerHolder holder;
+        holder.AddCommandProducer(CreateRemoveComponentProducer());
+        if (derived.type == actionComponent)
+        {
+            holder.AddCommandProducer(CreateActionsEditProducer());
+        }
+        else if (derived.type == soundComponent)
+        {
+            holder.AddCommandProducer(CreateSoundsEditProducer());
+        }
+
+        EmplaceTypeMeta(refType, std::move(holder));
+    }
+}
+
 void RegisterReflectionExtensions(DAVA::TArc::ContextAccessor* accessor)
 {
     RegisterRenderComponentExtensions();
     RegisterNMaterialExtensions();
     RegFilePathExt(accessor);
+    RegComponentsExtensions();
 }
 } // namespace ReflectoinExtensionsDetail
 

@@ -1,7 +1,6 @@
 #include "TArc/Utils/ReflectionHelpers.h"
 #include <Reflection/Reflection.h>
-
-#include <algorithm>
+#include <Reflection/ReflectedTypeDB.h>
 
 namespace DAVA
 {
@@ -16,9 +15,9 @@ void ForEachField(const Reflection& r, const Function<void(Reflection::Field&& f
     }
 }
 
-const DAVA::ReflectedType* GetReflectedType(const Reflection& r)
+const DAVA::ReflectedType* GetValueReflectedType(const Reflection& r)
 {
-    const ReflectedType* type = GetReflectedType(r.GetValue());
+    const ReflectedType* type = GetValueReflectedType(r.GetValue());
     if (type != nullptr)
     {
         return type;
@@ -27,14 +26,15 @@ const DAVA::ReflectedType* GetReflectedType(const Reflection& r)
     return r.GetValueObject().GetReflectedType();
 }
 
-const DAVA::ReflectedType* GetReflectedType(const Any& value)
+const DAVA::ReflectedType* GetValueReflectedType(const Any& value)
 {
-    if (value.CanCast<ReflectionBase*>())
+    const Type* type = value.GetType();
+    if (type->IsPointer() && value.CanCast<ReflectionBase*>())
     {
         return value.Cast<ReflectionBase*>()->Dava__GetReflectedType();
     }
 
-    return nullptr;
+    return ReflectedTypeDB::GetByType(type);
 }
 
 } // namespace TArc
