@@ -1,6 +1,9 @@
-#import "Engine/Private/iOS/Window/VisibleFrameObserver.h"
+#include "Engine/Private/Dispatcher/MainDispatcher.h"
+#include "Engine/Private/iOS/Window/WindowNativeBridgeiOS.h"
 
-#include "Engine/Private/iOS/Window/WindowBackendiOS.h"
+#import "Engine/Private/iOS/Window/VisibleFrameObserver.h"
+#import "Engine/Private/iOS/Window/RenderViewiOS.h"
+#import <UIKit/UIKit.h>
 
 @implementation VisibleFrameObserver
 
