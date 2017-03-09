@@ -19,6 +19,8 @@
 #include <TArc/WindowSubSystem/ActionUtils.h>
 #include <TArc/WindowSubSystem/UI.h>
 
+#include <TArc/Qt/QtString.h>
+
 #include <QtTools/WidgetHelpers/SharedIcon.h>
 
 #include <Reflection/ReflectedMeta.h>
@@ -40,7 +42,6 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QVBoxLayout>
-#include <QString>
 
 namespace TestUIModuleDetails
 {

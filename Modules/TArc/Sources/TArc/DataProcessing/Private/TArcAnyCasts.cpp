@@ -1,5 +1,4 @@
 #include "TArc/DataProcessing/TArcAnyCasts.h"
-#include "TArc/DataProcessing/AnySupport/AnyQStringCompare.h"
 
 #include <QtTools/Utils/Utils.h>
 
