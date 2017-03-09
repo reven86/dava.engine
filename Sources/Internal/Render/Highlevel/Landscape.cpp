@@ -365,7 +365,6 @@ void Landscape::PrepareMaterial(NMaterial* material)
     material->AddFlag(NMaterialFlagName::FLAG_LANDSCAPE_USE_INSTANCING, (renderMode == RENDERMODE_NO_INSTANCING) ? 0 : 1);
     material->AddFlag(NMaterialFlagName::FLAG_LANDSCAPE_LOD_MORPHING, (renderMode == RENDERMODE_INSTANCING_MORPHING) ? 1 : 0);
     material->AddFlag(NMaterialFlagName::FLAG_LANDSCAPE_MORPHING_COLOR, debugDrawMorphing ? 1 : 0);
-    material->AddFlag(NMaterialFlagName::FLAG_LANDSCAPE_SPECULAR, isRequireTangentBasis ? 1 : 0);
     material->AddFlag(NMaterialFlagName::FLAG_HEIGHTMAP_FLOAT_TEXTURE, floatHeightTexture ? 1 : 0);
 }
 

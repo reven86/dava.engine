@@ -97,7 +97,7 @@ fragment_out fp_main( fragment_in input )
 
     float3 normal = float3(0.0, 0.0, 1.0); //fetch from normalmap here
 
-    float3 normalizedHalf = normalize(input.varHalfVec.xyz));
+    float3 normalizedHalf = normalize(input.varHalfVec.xyz);
             
     float NdotL = max (dot (normal, input.varToLightVec.xyz), 0.0);
     float NdotH = max (dot (normal, normalizedHalf), 0.0);
