@@ -102,7 +102,6 @@ public:
         EVENT_FOCUS_SET = 6, //!<Trigger when control becomes focused
         EVENT_FOCUS_LOST = 7, //!<Trigger when control losts focus
         EVENT_TOUCH_UP_OUTSIDE = 8, //!<Trigger when mouse pressure or touch processed by the control is released outside of the control.
-        EVENT_ALL_ANIMATIONS_FINISHED = 9, //!<Trigger when all animations associated with control are ended.
         EVENTS_COUNT
     };
 
@@ -630,14 +629,16 @@ public:
     /**
      \brief Send given event to the all subscribed objects.
      \param[in] eventType event type you want to process.
+     \param[in] uiEvent input event that triggered this control event.
      */
-    void PerformEvent(int32 eventType);
+    void PerformEvent(int32 eventType, const UIEvent* uiEvent = nullptr);
     /**
      \brief Send given event with given user data to the all subscribed objects.
      \param[in] eventType event type you want to process.
      \param[in] callerData data you want to send to the all messages.
+     \param[in] uiEvent input event that triggered this control event.
      */
-    void PerformEventWithData(int32 eventType, void* callerData);
+    void PerformEventWithData(int32 eventType, void* callerData, const UIEvent* uiEvent = nullptr);
 
     /**
      \brief Creates the absoulutely identic copy of the control.
@@ -962,8 +963,6 @@ public:
     virtual void OnFocused();
 
     virtual void OnTouchOutsideFocus();
-
-    void OnAllAnimationsFinished() override;
 
     /// sets rect to match background sprite, also moves pivot point to center
     void SetSizeFromBg(bool pivotToCenter = true);

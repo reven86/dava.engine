@@ -34,6 +34,6 @@ private:
     DAVA::List<std::unique_ptr<BackgroundController>> gridControls;
 
     DAVA::Set<PackageBaseNode*> rootControls;
-    PackageNode* package = nullptr;
+    DAVA::RefPtr<PackageNode> package;
     DAVA::UIControl* canvasParent = nullptr;
 };
