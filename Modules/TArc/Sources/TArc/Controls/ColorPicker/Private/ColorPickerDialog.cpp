@@ -304,51 +304,84 @@ void ColorPickerDialog::keyPressEvent(QKeyEvent* e)
 void ColorPickerDialog::LoadSettings()
 {
     DVASSERT(contextAccessor != nullptr);
-    DVASSERT(rgbam != nullptr);
 
     PropertiesItem propsItem = contextAccessor->CreatePropertiesNode(ColorPickerDialogDetail::PROPERTIES_KEY);
-    //TODO: need to restore geometry and position
-    QByteArray geometryData = propsItem.Get<QByteArray>(ColorPickerDialogDetail::GEOMETRY_KEY);
-    if (geometryData.isEmpty() == false)
+
     {
-        restoreGeometry(geometryData);
+        QByteArray geometryData = propsItem.Get<QByteArray>(ColorPickerDialogDetail::GEOMETRY_KEY);
+        QDataStream geometryStream(&geometryData, QIODevice::ReadOnly);
+
+        if (geometryData.size() / sizeof(int) == 4)
+        {
+            int x = 0;
+            int y = 0;
+            int w = 0;
+            int h = 0;
+            geometryStream >> x;
+            geometryStream >> y;
+            geometryStream >> w;
+            geometryStream >> h;
+
+            QRect loadedGeometry(x, y, w, h);
+            setGeometry(loadedGeometry);
+            move(loadedGeometry.topLeft());
+        }
     }
 
+    {
+        QByteArray paletteData = propsItem.Get<QByteArray>(ColorPickerDialogDetail::PALETTE_KEY);
+        QDataStream paletteStream(&paletteData, QIODevice::ReadOnly);
+
+        int32 n = paletteData.size() / sizeof(uint32);
+        CustomPalette::Colors colors(n);
+        for (int i = 0; i < n; i++)
+        {
+            uint32 c = 0;
+            paletteStream >> c;
+            colors[i] = QColor::fromRgba(c);
+        }
+
+        ui->customPalette->SetColors(colors);
+    }
+
+    DVASSERT(rgbam != nullptr);
     float32 maxMultiplier = propsItem.Get<float32>(ColorPickerDialogDetail::MULTIPLIER_KEY, 2.0f);
     rgbam->SetMaxMultiplierValue(maxMultiplier);
-
-    QByteArray paletteData = propsItem.Get<QByteArray>(ColorPickerDialogDetail::PALETTE_KEY);
-    QDataStream paletteStream(&paletteData, QIODevice::ReadOnly);
-
-    int32 n = paletteData.size() / sizeof(uint32);
-    CustomPalette::Colors colors(n);
-    for (int i = 0; i < n; i++)
-    {
-        uint32 c = 0;
-        paletteStream >> c;
-        colors[i] = QColor::fromRgba(c);
-    }
-
-    ui->customPalette->SetColors(colors);
 }
 
 void ColorPickerDialog::SaveSettings()
 {
     DVASSERT(contextAccessor != nullptr);
-    DVASSERT(rgbam != nullptr);
-
-    QByteArray paletteData;
-    QDataStream paletteStream(&paletteData, QIODevice::WriteOnly);
-
-    const CustomPalette::Colors& colors = ui->customPalette->GetColors();
-    for (int i = 0; i < colors.size(); i++)
-    {
-        paletteStream << colors[i].rgba();
-    }
 
     PropertiesItem propsItem = contextAccessor->CreatePropertiesNode(ColorPickerDialogDetail::PROPERTIES_KEY);
-    propsItem.Set(ColorPickerDialogDetail::PALETTE_KEY, Any(paletteData));
-    propsItem.Set(ColorPickerDialogDetail::GEOMETRY_KEY, saveGeometry());
+
+    { //save palette
+        QByteArray paletteData;
+        QDataStream paletteStream(&paletteData, QIODevice::WriteOnly);
+
+        const CustomPalette::Colors& colors = ui->customPalette->GetColors();
+        for (int i = 0; i < colors.size(); i++)
+        {
+            paletteStream << colors[i].rgba();
+        }
+
+        propsItem.Set(ColorPickerDialogDetail::PALETTE_KEY, Any(paletteData));
+    }
+
+    {
+        QByteArray geometryData;
+        QDataStream geometryStream(&geometryData, QIODevice::WriteOnly);
+
+        QRect savedGeometry = geometry();
+        geometryStream << savedGeometry.x();
+        geometryStream << savedGeometry.y();
+        geometryStream << savedGeometry.width();
+        geometryStream << savedGeometry.height();
+
+        propsItem.Set(ColorPickerDialogDetail::GEOMETRY_KEY, Any(geometryData));
+    }
+
+    DVASSERT(rgbam != nullptr);
     propsItem.Set(ColorPickerDialogDetail::MULTIPLIER_KEY, static_cast<float32>(rgbam->GetMaxMultiplierValue()));
 }
 }
