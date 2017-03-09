@@ -10,11 +10,17 @@ class Command : public ICommand
 {
 public:
     /**
+     \brief Creates instance of a command base class.
+     \param[in] text command text description to be displayed in widgets / network packets / log texts.
+     */
+    Command(const String& description = String());
+
+    /**
     \brief Creates instance of a command base class.
     \param[in] id derived class ID, like CMDID_BATCH.
     \param[in] text command text description to be displayed in widgets / network packets / log texts.
     */
-    Command(CommandID commandID, const String& description = "");
+    Command(CommandID commandID, const String& description = String());
 
     /**
     \brief Returns command text description.

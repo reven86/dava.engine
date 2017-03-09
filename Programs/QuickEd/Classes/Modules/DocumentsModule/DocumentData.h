@@ -82,6 +82,6 @@ std::unique_ptr<T> DocumentData::CreateCommand(Arguments&&... args) const
 template <typename T, typename... Arguments>
 void DocumentData::ExecCommand(Arguments&&... args)
 {
-    std::unique_ptr<Command> command = CreateCommand<T>(std::forward<Arguments>(args)...);
+    std::unique_ptr<DAVA::Command> command = CreateCommand<T>(std::forward<Arguments>(args)...);
     ExecCommand(std::move(command));
 }
