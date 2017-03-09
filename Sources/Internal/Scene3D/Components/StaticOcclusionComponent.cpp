@@ -3,9 +3,35 @@
 #include "Scene3D/Systems/EventSystem.h"
 #include "Scene3D/Systems/GlobalEventSystem.h"
 #include "Render/Highlevel/RenderObject.h"
+#include "Reflection/ReflectionRegistrator.h"
+#include "Reflection/ReflectedMeta.h"
 
 namespace DAVA
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(StaticOcclusionDataComponent)
+{
+    ReflectionRegistrator<StaticOcclusionDataComponent>::Begin()
+    .Field("sizeInKBytes", &StaticOcclusionDataComponent::GetDataSize, &StaticOcclusionDataComponent::SetDataSize)[M::ReadOnly(), M::DisplayName("Size in kBytes")]
+    .End();
+}
+
+DAVA_VIRTUAL_REFLECTION_IMPL(StaticOcclusionComponent)
+{
+    ReflectionRegistrator<StaticOcclusionComponent>::Begin()
+    .Field("bbox", &StaticOcclusionComponent::GetBoundingBox, &StaticOcclusionComponent::SetSubdivisionsX)[M::DisplayName("Bounding Box")]
+    .Field("subdivX", &StaticOcclusionComponent::GetSubdivisionsX, &StaticOcclusionComponent::SetSubdivisionsY)[M::DisplayName("Subdivisions X")]
+    .Field("subdivY", &StaticOcclusionComponent::GetSubdivisionsY, &StaticOcclusionComponent::SetSubdivisionsZ)[M::DisplayName("Subdivisions Y")]
+    .Field("subdivZ", &StaticOcclusionComponent::GetSubdivisionsZ, &StaticOcclusionComponent::SetSubdivisionsZ)[M::DisplayName("Subdivisions Z")]
+    .Field("placeOnLandScape", &StaticOcclusionComponent::GetPlaceOnLandscape, &StaticOcclusionComponent::SetPlaceOnLandscape)[M::DisplayName("Place on Landscape")]
+    .End();
+}
+
+DAVA_VIRTUAL_REFLECTION_IMPL(StaticOcclusionDebugDrawComponent)
+{
+    ReflectionRegistrator<StaticOcclusionDebugDrawComponent>::Begin()
+    .End();
+}
+
 StaticOcclusionComponent::StaticOcclusionComponent()
 {
     xSubdivisions = 2;

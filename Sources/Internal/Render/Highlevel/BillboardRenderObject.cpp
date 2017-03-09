@@ -1,7 +1,16 @@
 #include "Render/Highlevel/BillboardRenderObject.h"
+#include "Reflection/ReflectionRegistrator.h"
+#include "Reflection/ReflectedMeta.h"
 
 namespace DAVA
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(BillboardRenderObject)
+{
+    ReflectionRegistrator<BillboardRenderObject>::Begin()
+    .Field("type", &BillboardRenderObject::billboardType)[M::DisplayName("Billboard Type"), M::EnumT<BillboardRenderObject::BillboardType>()]
+    .End();
+}
+
 BillboardRenderObject::BillboardRenderObject()
 {
     type = RenderObject::eType::TYPE_BILLBOARD;

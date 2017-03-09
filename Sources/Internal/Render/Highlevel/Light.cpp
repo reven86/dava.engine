@@ -2,11 +2,35 @@
 #include "Render/RenderHelper.h"
 #include "Scene3D/Scene.h"
 #include "Render/Highlevel/RenderSystem.h"
+#include "Reflection/ReflectionRegistrator.h"
+#include "Reflection/ReflectedMeta.h"
 
 #include "Engine/Engine.h"
+#include "Base/GlobalEnum.h"
+
+ENUM_DECLARE(DAVA::Light::eFlags)
+{
+    ENUM_ADD_DESCR(DAVA::Light::IS_DYNAMIC, "Is dynamic");
+    ENUM_ADD_DESCR(DAVA::Light::CAST_SHADOW, "Cast shadow");
+}
 
 namespace DAVA
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(Light)
+{
+    ReflectionRegistrator<Light>::Begin()
+    .Field("position", &Light::position)[M::ReadOnly(), M::DisplayName("Position")]
+    .Field("direction", &Light::direction)[M::ReadOnly(), M::DisplayName("Direction")]
+    .Field("type", &Light::type)[M::DisplayName("Type"), M::EnumT<Light::eType>()]
+    .Field("isDynamic", &Light::IsDynamic, &Light::SetDynamic)[M::DisplayName("Is dynamic")]
+    .Field("position", &Light::position)[M::ReadOnly(), M::DisplayName("Position")]
+    .Field("ambientColor", &Light::ambientColor)[M::DisplayName("Ambient color")]
+    .Field("diffuseColor", &Light::diffuseColor)[M::DisplayName("Diffuse color")]
+    .Field("intensity", &Light::intensity)[M::DisplayName("Intensity")]
+    .Field("flags", &Light::flags)[M::DisplayName("Flags"), M::FlagsT<Light::eFlags>()]
+    .End();
+}
+
 Light::Light()
     : BaseObject()
     , flags(IS_DYNAMIC | CAST_SHADOW)

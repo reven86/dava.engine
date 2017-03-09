@@ -9,7 +9,7 @@ namespace DAVA
 {
 namespace DVAssertMessage
 {
-// Modality type,
+// Modality type
 enum eModalType
 {
     // Try to show non-modal assert message on the platforms where it is applicable.
@@ -19,12 +19,17 @@ enum eModalType
     ALWAYS_MODAL
 };
 
+#if defined(__DAVAENGINE_COREV2__)
+DAVA_DEPRECATED(bool ShowMessage(eModalType modalType, const char8* text, ...));
+#else
+
 void SetShowInnerOverride(const Function<bool(eModalType, const char8*)>& fn);
 bool ShowMessage(eModalType modalType, const char8* text, ...);
 bool IsHidden();
 
 // return true if user click Break
 bool InnerShow(eModalType modalType, const char* content);
+#endif
 };
 };
 

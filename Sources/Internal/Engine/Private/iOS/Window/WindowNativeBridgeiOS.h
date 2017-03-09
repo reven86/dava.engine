@@ -18,6 +18,7 @@
 @class RenderViewController;
 @class NativeViewPool;
 @class VisibleFrameObserver;
+@class ObjectiveCInteropWindow;
 
 namespace DAVA
 {
@@ -78,6 +79,7 @@ struct WindowNativeBridge final
     RenderViewController* renderViewController = nullptr;
     NativeViewPool* nativeViewPool = nullptr;
     VisibleFrameObserver* visibleFrameObserver = nullptr;
+    ObjectiveCInteropWindow* objcInterop = nullptr;
     float32 dpi = 0.f;
 
     const KeyedArchive* engineOptions = nullptr;

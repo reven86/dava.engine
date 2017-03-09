@@ -22,8 +22,10 @@ private:
 
     void OnFontSelectClick(BaseObject* sender, void* data, void* callerData);
     void OnFontSizeClick(BaseObject* sender, void* data, void* callerData);
+    void UpdateFontSizeText();
 
     UIStaticText* previewText;
+    UIStaticText* sizeText;
     UITextField* inputText;
     UITextFieldDelegate* inputDelegate;
 };

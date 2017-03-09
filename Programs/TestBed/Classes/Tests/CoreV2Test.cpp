@@ -1,8 +1,8 @@
 #include "Tests/CoreV2Test.h"
 #include "Infrastructure/TestBed.h"
 
-#include "Engine/Engine.h"
-#include "Logger/Logger.h"
+#include <Engine/Engine.h>
+#include <Logger/Logger.h>
 
 using namespace DAVA;
 

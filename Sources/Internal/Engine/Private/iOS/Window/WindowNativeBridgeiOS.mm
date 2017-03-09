@@ -21,6 +21,36 @@
 #import "Engine/Private/iOS/Window/VisibleFrameObserver.h"
 #import "DeviceManager/Private/Ios/DeviceManagerImplIos.h"
 
+// Objective-C class used for interoperation between Objective-C and C++.
+@interface ObjectiveCInteropWindow : NSObject
+{
+    DAVA::Private::WindowNativeBridge* bridge;
+}
+
+- (id)init:(DAVA::Private::WindowNativeBridge*)windowBridge;
+- (void)processPlatformEvents;
+
+@end
+
+@implementation ObjectiveCInteropWindow
+
+- (id)init:(DAVA::Private::WindowNativeBridge*)windowBridge
+{
+    self = [super init];
+    if (self != nil)
+    {
+        bridge = windowBridge;
+    }
+    return self;
+}
+
+- (void)processPlatformEvents
+{
+    bridge->windowBackend->ProcessPlatformEvents();
+}
+
+@end
+
 namespace DAVA
 {
 namespace Private
@@ -31,9 +61,13 @@ WindowNativeBridge::WindowNativeBridge(WindowBackend* windowBackend, const Keyed
     , mainDispatcher(windowBackend->mainDispatcher)
     , engineOptions(options)
 {
+    objcInterop = [[ObjectiveCInteropWindow alloc] init:this];
 }
 
-WindowNativeBridge::~WindowNativeBridge() = default;
+WindowNativeBridge::~WindowNativeBridge()
+{
+    [objcInterop release];
+}
 
 void* WindowNativeBridge::GetHandle() const
 {
@@ -42,6 +76,8 @@ void* WindowNativeBridge::GetHandle() const
 
 bool WindowNativeBridge::CreateWindow()
 {
+    windowBackend->uiDispatcher.LinkToCurrentThread();
+
     ::UIScreen* screen = [ ::UIScreen mainScreen];
     CGRect rect = [screen bounds];
     CGFloat scale = [screen scale];
@@ -73,9 +109,11 @@ bool WindowNativeBridge::CreateWindow()
 
 void WindowNativeBridge::TriggerPlatformEvents()
 {
-    dispatch_async(dispatch_get_main_queue(), [this]() {
-        windowBackend->ProcessPlatformEvents();
-    });
+    // Use performSelectorOnMainThread instead of dispatch_async as modal dialog does not respond if
+    // it is shown inside UIDispatcher handler
+    [objcInterop performSelectorOnMainThread:@selector(processPlatformEvents)
+                                  withObject:nil
+                               waitUntilDone:NO];
 }
 
 void WindowNativeBridge::ApplicationDidBecomeOrResignActive(bool becomeActive)
