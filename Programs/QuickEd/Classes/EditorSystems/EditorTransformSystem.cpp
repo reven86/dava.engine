@@ -418,7 +418,7 @@ void EditorTransformSystem::MoveAllSelectedControlsByMouse(Vector2 delta, bool c
 
         deltaPosition += extraDelta;
         extraDelta.SetZero();
-        extraDelta = AdjustMoveToNearestBorder(deltaPosition, magnets, gd, node->GetControl());
+        deltaPosition = AdjustMoveToNearestBorder(deltaPosition, magnets, gd, node->GetControl());
 
         Vector2 originalPosition = positionProperty->GetValue().AsVector2();
         Vector2 finalPosition(originalPosition + deltaPosition);
@@ -426,7 +426,7 @@ void EditorTransformSystem::MoveAllSelectedControlsByMouse(Vector2 delta, bool c
         extraDelta += (finalPosition - clampedFinalPosition);
 
         propertiesToChange.emplace_back(node, positionProperty, VariantType(clampedFinalPosition));
-        delta = ::Rotate(deltaPosition, gd->angle);
+        delta = ::Rotate(clampedFinalPosition - originalPosition, gd->angle);
         delta *= gd->scale;
     }
     for (auto& nodeToMove : nodesToMoveInfos)
@@ -682,6 +682,12 @@ void EditorTransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool ra
 
     Vector2 originalSize = sizeProperty->GetValue().AsVector2();
     Vector2 finalSize(originalSize + adjustedSize);
+    if (deltaPosition.IsZero())
+    {
+        Vector2 clampedFinalSize(std::floor(finalSize.x), std::floor(finalSize.y));
+        extraDelta += (finalSize - clampedFinalSize);
+        finalSize = clampedFinalSize;
+    }
     VariantType sizeValue(finalSize);
 
     Vector2 originalPosition = positionProperty->GetValue().AsVector2();
