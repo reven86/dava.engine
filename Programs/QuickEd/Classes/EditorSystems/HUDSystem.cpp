@@ -24,9 +24,9 @@ const Array<HUDAreaInfo::eArea, 2> AreasToHide = { { HUDAreaInfo::PIVOT_POINT_AR
 }
 
 REGISTER_PREFERENCES_ON_START(HUDSystem,
-    PREF_ARG("showPivot", false),
-    PREF_ARG("showRotate", false)
-    )
+                              PREF_ARG("showPivot", false),
+                              PREF_ARG("showRotate", false)
+                              )
 
 RefPtr<ControlContainer> CreateControlContainer(HUDAreaInfo::eArea area)
 {

@@ -60,7 +60,7 @@ private:
 
 public:
     INTROSPECTION(HUDSystem,
-        MEMBER(showPivot, "Control Transformations/Can transform pivot", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
-        MEMBER(showRotate, "Control Transformations/Can rotate control", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
-        )
+                  MEMBER(showPivot, "Control Transformations/Can transform pivot", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
+                  MEMBER(showRotate, "Control Transformations/Can rotate control", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
+                  )
 };
