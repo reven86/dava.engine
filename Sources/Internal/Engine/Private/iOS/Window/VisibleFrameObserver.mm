@@ -1,8 +1,12 @@
+#if defined(__DAVAENGINE_COREV2__)
+#if defined(__DAVAENGINE_IPHONE__)
+
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
 #include "Engine/Private/iOS/Window/WindowNativeBridgeiOS.h"
 
 #import "Engine/Private/iOS/Window/VisibleFrameObserver.h"
 #import "Engine/Private/iOS/Window/RenderViewiOS.h"
+
 #import <UIKit/UIKit.h>
 
 @implementation VisibleFrameObserver
@@ -62,3 +66,6 @@
     bridge->mainDispatcher->PostEvent(DAVA::Private::MainDispatcherEvent::CreateWindowVisibleFrameChangedEvent(bridge->window, visibleFrame.origin.x, visibleFrame.origin.y, visibleFrame.size.width, visibleFrame.size.height));
 }
 @end
+
+#endif // __DAVAENGINE_IPHONE__
+#endif // __DAVAENGINE_COREV2__
