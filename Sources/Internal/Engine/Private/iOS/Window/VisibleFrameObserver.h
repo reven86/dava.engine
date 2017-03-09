@@ -1,6 +1,7 @@
 #pragma once
 
-#import <UIKit/UIKit.h>
+#import <Foundation/NSObject.h>
+#import <Foundation/NSNotification.h>
 
 namespace DAVA
 {

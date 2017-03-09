@@ -1,8 +1,8 @@
 #include "Tests/FontTest.h"
 
-#include "UI/Focus/UIFocusComponent.h"
-#include "Engine/Engine.h"
-#include "Engine/Window.h"
+#include <UI/Focus/UIFocusComponent.h>
+#include <Engine/Engine.h>
+#include <Engine/Window.h>
 
 using namespace DAVA;
 
@@ -25,12 +25,12 @@ public:
         staticText->SetText(newText);
     }
 
-    virtual void OnKeyboardShown(const Rect& keyboardRect)
+    void OnKeyboardShown(const Rect& keyboardRect) override
     {
         Logger::Debug("OnKeyboardShown %f,%f %f,%f", keyboardRect.x, keyboardRect.y, keyboardRect.dx, keyboardRect.dy);
     }
 
-    virtual void OnKeyboardHidden()
+    void OnKeyboardHidden() override
     {
         Logger::Debug("OnKeyboardHidden");
     }

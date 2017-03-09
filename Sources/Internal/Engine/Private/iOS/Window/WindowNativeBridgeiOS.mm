@@ -62,10 +62,12 @@ WindowNativeBridge::WindowNativeBridge(WindowBackend* windowBackend, const Keyed
     , engineOptions(options)
 {
     objcInterop = [[ObjectiveCInteropWindow alloc] init:this];
+    visibleFrameObserver = [[VisibleFrameObserver alloc] initWithBridge:this];
 }
 
 WindowNativeBridge::~WindowNativeBridge()
 {
+    [visibleFrameObserver release];
     [objcInterop release];
 }
 
@@ -97,8 +99,6 @@ bool WindowNativeBridge::CreateWindow()
     nativeViewPool = [[NativeViewPool alloc] init];
 
     [uiwindow setRootViewController:renderViewController];
-
-    visibleFrameObserver = [[VisibleFrameObserver alloc] initWithBridge:this];
 
     CGRect viewRect = [renderView bounds];
     dpi = Private::DeviceManagerImpl::GetIPhoneMainScreenDpi();

@@ -10,14 +10,13 @@
     if (self != nil)
     {
         bridge = nativeBridge;
+
+        NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
+        [center addObserver:self
+                   selector:@selector(keyboardFrameDidChange:)
+                       name:UIKeyboardDidChangeFrameNotification
+                     object:nil];
     }
-
-    NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
-    [center addObserver:self
-               selector:@selector(keyboardFrameDidChange:)
-                   name:UIKeyboardDidChangeFrameNotification
-                 object:nil];
-
     return self;
 }
 
@@ -32,12 +31,18 @@
 
 - (void)keyboardFrameDidChange:(NSNotification*)notification
 {
+    if (bridge->uiwindow == nil || bridge->renderView == nil)
+    {
+        // Skip notification if window not initialized yet
+        return;
+    }
+
     // Convert renverView frame to window coordinates, frame is in superview's coordinates
     CGRect keyboardFrame = [[notification.userInfo objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
     CGRect visibleFrame = [bridge->uiwindow convertRect:bridge->renderView.frame fromView:bridge->renderView];
 
-    float32 topHeight = keyboardFrame.origin.y - visibleFrame.origin.y;
-    float32 bottomHeight = visibleFrame.size.height - (keyboardFrame.origin.y + keyboardFrame.size.height);
+    CGFloat topHeight = keyboardFrame.origin.y - visibleFrame.origin.y;
+    CGFloat bottomHeight = visibleFrame.size.height - (keyboardFrame.origin.y + keyboardFrame.size.height);
     if (topHeight > bottomHeight)
     {
         visibleFrame.size.height = topHeight;
@@ -51,8 +56,6 @@
     // Now this might be rotated, so convert it back
     visibleFrame = [bridge->renderView convertRect:visibleFrame toView:bridge->uiwindow];
 
-    // Recalculate to virtual coordinates
-    DAVA::Rect r(visibleFrame.origin.x, visibleFrame.origin.y, visibleFrame.size.width, visibleFrame.size.height);
-    bridge->mainDispatcher->PostEvent(DAVA::Private::MainDispatcherEvent::CreateWindowVisibleFrameChangedEvent(bridge->window, r.x, r.y, r.dx, r.dy));
+    bridge->mainDispatcher->PostEvent(DAVA::Private::MainDispatcherEvent::CreateWindowVisibleFrameChangedEvent(bridge->window, visibleFrame.origin.x, visibleFrame.origin.y, visibleFrame.size.width, visibleFrame.size.height));
 }
 @end
