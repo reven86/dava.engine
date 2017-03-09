@@ -118,15 +118,36 @@ macro( processing_mix_data )
     get_filename_component( MIX_APP_DIR ${MIX_APP_DIR} ABSOLUTE )
 
     foreach( ITEM ${MIX_APP_DATA} )
-        string( REGEX REPLACE " " "" ITEM ${ITEM} )
-        string( REGEX REPLACE "=" ";" ITEM ${ITEM} )
-        list(GET ITEM 0 GROUP_PATH )
-        list(GET ITEM 1 DATA_PATH )
-        get_filename_component( DATA_PATH ${DATA_PATH} ABSOLUTE )
-        execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${MIX_APP_DIR}/${GROUP_PATH} )
-        if( NOT ARG_NOT_DATA_COPY )
-            execute_process( COMMAND ${CMAKE_COMMAND} -E copy_directory ${DATA_PATH} ${MIX_APP_DIR}/${GROUP_PATH} )
+
+        string(FIND ${ITEM} "=>" SYMBOL_FOUND)
+        if (${SYMBOL_FOUND} MATCHES -1)
+            string( REGEX REPLACE " " "" ITEM ${ITEM} )
+            string( REGEX REPLACE "=" ";" ITEM ${ITEM} )
+            list(GET ITEM 0 GROUP_PATH )
+            list(GET ITEM 1 DATA_PATH )
+
+            get_filename_component( DATA_PATH ${DATA_PATH} ABSOLUTE )
+            execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${MIX_APP_DIR}/${GROUP_PATH} )
+            if( NOT ARG_NOT_DATA_COPY )
+                execute_process( COMMAND ${CMAKE_COMMAND} -E copy_directory ${DATA_PATH} ${MIX_APP_DIR}/${GROUP_PATH} )
+            endif()
+
+        else()
+            string( REGEX REPLACE " " "" ITEM ${ITEM} )
+            string( REGEX REPLACE "=>" ";" ITEM ${ITEM} )
+            list(GET ITEM 0 FILE_PATH )
+            list(GET ITEM 1 DATA_PATH )
+
+            if( NOT ARG_NOT_DATA_COPY )
+                get_filename_component(FILE_NAME ${FILE_PATH} NAME)
+
+                execute_process( COMMAND ${CMAKE_COMMAND} -E rename ${MIX_APP_DIR}/${FILE_PATH} ${MIX_APP_DIR}/${DATA_PATH}/${FILE_NAME} )
+            endif()
+
         endif()
+
+
+
     endforeach()
 
     if( NOT DEPLOY )
