@@ -46,6 +46,8 @@ int DAVAMain(Vector<String> cmdline)
 {
     Assert::AddHandler(Assert::DefaultLoggerHandler);
 
+    DAVA::FilePath::AddResourcesFolder(DAVA::FilePath("~res:/UnitTests/").GetRelativePathname());
+
     KeyedArchive* appOptions = new KeyedArchive();
     appOptions->SetInt32("rhi_threaded_frame_count", 2);
 #if defined(__DAVAENGINE_QT__)

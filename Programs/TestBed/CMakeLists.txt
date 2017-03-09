@@ -63,7 +63,8 @@ file ( GLOB_RECURSE XIB_LIST "${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLD
 
 define_source ( SOURCE    "Classes" )
 
-set( APP_DATA                   ${CMAKE_CURRENT_LIST_DIR}/Data )
+set( MIX_APP_DATA                 "Data = ${DAVA_ROOT_DIR}/Programs/Data" 
+                                  "Data/${PROJECT_NAME} = ${CMAKE_CURRENT_LIST_DIR}/Data" )
 
 if (MACOS OR WIN32)
     set( APP_DATA  ${APP_DATA} "scripts")

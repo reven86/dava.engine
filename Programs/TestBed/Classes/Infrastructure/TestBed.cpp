@@ -63,6 +63,8 @@ int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
 
     Assert::SetupDefaultHandlers();
 
+    DAVA::FilePath::AddResourcesFolder(DAVA::FilePath("~res:/TestBed/").GetRelativePathname());
+
     KeyedArchive* appOptions = new KeyedArchive();
     appOptions->SetInt32("bpp", 32);
     appOptions->SetInt32("rhi_threaded_frame_count", 2);
