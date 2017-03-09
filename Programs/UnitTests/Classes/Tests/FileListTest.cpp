@@ -374,10 +374,10 @@ DAVA_TESTCLASS (FileListTest)
 
         SetFileAttributesA(file1str.c_str(), attrs);
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-        FilePath file1 = "~doc:/TestData/FileListTest/Folder1/file1";
-        FilePath file1hidden = "~doc:/TestData/FileListTest/Folder1/.file1";
+        FilePath file1 = "~doc:/UnitTests/TestData/FileListTest/Folder1/file1";
+        FilePath file1hidden = "~doc:/UnitTests/TestData/FileListTest/Folder1/.file1";
         TEST_VERIFY(FileSystem::Instance()->CopyFile(file1, file1hidden, true));
-        ScopedPtr<FileList> files(new FileList("~doc:/TestData/FileListTest/Folder1/"));
+        ScopedPtr<FileList> files(new FileList("~doc:/UnitTests/TestData/FileListTest/Folder1/"));
         TEST_VERIFY(files->GetFileCount() == 4);
         for (auto i = 0; i < files->GetCount(); ++i)
         {
