@@ -1,15 +1,17 @@
 #pragma once
 
-#include "PropertyModelExtensions.h"
+#include "TArc/Controls/PropertyPanel/PropertyModelExtensions.h"
+#include "TArc/Controls/PropertyPanel/PropertyPanelMeta.h"
 #include "TArc/Controls/ControlProxy.h"
 #include "TArc/Utils/QtConnections.h"
 
-#include "Reflection/Reflection.h"
-#include "Base/BaseTypes.h"
+#include <Reflection/Reflection.h>
+#include <Base/BaseTypes.h>
 
 #include <QString>
 #include <QRect>
 
+class QLayout;
 class QWidget;
 class QStyleOptionViewItem;
 class QModelIndex;
@@ -79,7 +81,10 @@ private:
     void EnsureEditorCreated(QWidget* parent);
     void UpdateEditorGeometry(const QWidget* parent, const QRect& geometry) const;
 
-    void OnButtonClicked(int32 index);
+    void CreateButtons(QLayout* layout, const M::CommandProducerHolder* holder, bool isTypeButtons);
+
+    void OnFieldButtonClicked(int32 index);
+    void OnTypeButtonClicked(int32 index);
 
     ReflectedPropertyModel* model = nullptr;
     BaseComponentValue* thisValue = nullptr;

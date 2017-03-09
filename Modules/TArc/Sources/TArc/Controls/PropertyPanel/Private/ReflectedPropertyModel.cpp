@@ -29,7 +29,7 @@ std::tuple<const Type*, const ReflectedType*, const ReflectedStructure*> UnpackR
     const ReflectedStructure* structure = nullptr;
     if (reflectedType != nullptr)
     {
-        structure = reflectedType->GetStrucutre();
+        structure = reflectedType->GetStructure();
     }
 
     return std::make_tuple(t, reflectedType, structure);
@@ -483,7 +483,7 @@ void ReflectedPropertyModel::LoadExpanded(const PropertiesItem& propertyRoot)
     {
         const ReflectedType* type = ReflectedTypeDB::GetByPermanentName(desc.typePermanentName);
         DVASSERT(type != nullptr);
-        ReflectedStructure* structure = const_cast<ReflectedStructure*>(type->GetStrucutre());
+        ReflectedStructure* structure = const_cast<ReflectedStructure*>(type->GetStructure());
         DVASSERT(structure != nullptr);
         if (desc.fieldName.empty())
         {

@@ -15,7 +15,24 @@ namespace ReflectoinExtensionsDetail
 using namespace DAVA;
 
 template <typename T, typename TMeta, typename TIndex>
-void EmplaceMeta(const String& fieldName, Meta<TMeta, TIndex>&& meta)
+void EmplaceTypeMeta(Meta<TMeta, TIndex>&& meta)
+{
+    ReflectedType* type = const_cast<ReflectedType*>(ReflectedTypeDB::Get<T>());
+    DVASSERT(type != nullptr);
+
+    ReflectedStructure* structure = type->GetStructure();
+    DVASSERT(structure != nullptr);
+
+    if (structure->meta == nullptr)
+    {
+        structure->meta.reset(new ReflectedMeta());
+    }
+
+    structure->meta->Emplace(std::move(meta));
+}
+
+template <typename T, typename TMeta, typename TIndex>
+void EmplaceFieldMeta(const String& fieldName, Meta<TMeta, TIndex>&& meta)
 {
     ReflectedType* type = const_cast<ReflectedType*>(ReflectedTypeDB::Get<T>());
     DVASSERT(type != nullptr);
@@ -40,24 +57,24 @@ void EmplaceMeta(const String& fieldName, Meta<TMeta, TIndex>&& meta)
 
 void RegisterRenderComponentExtensions()
 {
-    EmplaceMeta<RenderComponent>("renderObject", CreateRenderObjectCommandProducer());
+    EmplaceTypeMeta<RenderObject>(CreateRenderObjectCommandProducer());
 }
 
 void RegisterNMaterialExtensions()
 {
-    EmplaceMeta<RenderBatch>("material", CreateNMaterialCommandProducer());
+    EmplaceFieldMeta<RenderBatch>("material", CreateNMaterialCommandProducer());
 }
 
 void RegFilePathExt(DAVA::TArc::ContextAccessor* accessor)
 {
     using namespace DAVA;
     // HeightMap
-    EmplaceMeta<Landscape>("heightmapPath", CreateHeightMapValidator(accessor));
-    EmplaceMeta<Landscape>("heightmapPath", CreateHeightMapFileMeta(accessor));
-    EmplaceMeta<VegetationRenderObject>("lightmap", CreateTextureValidator(accessor));
-    EmplaceMeta<VegetationRenderObject>("lightmap", CreateTextureFileMeta(accessor));
-    EmplaceMeta<VegetationRenderObject>("customGeometry", CreateSceneValidator(accessor));
-    EmplaceMeta<VegetationRenderObject>("customGeometry", CreateSceneFileMeta(accessor));
+    EmplaceFieldMeta<Landscape>("heightmapPath", CreateHeightMapValidator(accessor));
+    EmplaceFieldMeta<Landscape>("heightmapPath", CreateHeightMapFileMeta(accessor));
+    EmplaceFieldMeta<VegetationRenderObject>("lightmap", CreateTextureValidator(accessor));
+    EmplaceFieldMeta<VegetationRenderObject>("lightmap", CreateTextureFileMeta(accessor));
+    EmplaceFieldMeta<VegetationRenderObject>("customGeometry", CreateSceneValidator(accessor));
+    EmplaceFieldMeta<VegetationRenderObject>("customGeometry", CreateSceneFileMeta(accessor));
 }
 
 void RegisterReflectionExtensions(DAVA::TArc::ContextAccessor* accessor)

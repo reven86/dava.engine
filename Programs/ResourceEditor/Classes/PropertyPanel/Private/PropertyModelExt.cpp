@@ -62,7 +62,8 @@ void EntityChildCreator::ExposeChildren(const std::shared_ptr<const DAVA::TArc::
                                      {
                                          if (!field.ref.HasMeta<M::HiddenField>())
                                          {
-                                             DAVA::Reflection::Field f(Any(field.key), Reflection(field.ref), nullptr);
+                                             Any value = field.ref.GetValue();
+                                             DAVA::Reflection::Field f(GetReflectedType(field.ref)->GetPermanentName(), Reflection(field.ref), nullptr);
                                              children.push_back(allocator->CreatePropertyNode(std::move(f), PropertyNode::RealProperty));
                                          }
                                      });

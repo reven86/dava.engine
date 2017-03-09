@@ -26,6 +26,8 @@ Any EnumComponentValue::GetEnumeratorValue() const
     {
         return Any();
     }
+
+    return Any();
 }
 
 Any EnumComponentValue::GetValueAny() const
@@ -68,7 +70,7 @@ DAVA_VIRTUAL_REFLECTION_IMPL(EnumComponentValue)
 {
     ReflectionRegistrator<EnumComponentValue>::Begin(CreateComponentStructureWrapper<EnumComponentValue>())
     .Field("value", &EnumComponentValue::GetValueAny, &EnumComponentValue::SetValueAny)[M::ProxyMetaRequire()]
-    .Field("enumerator", &EnumComponentValue::GetEnumeratorValue, nullptr)
+    //.Field("enumerator", &EnumComponentValue::GetEnumeratorValue, nullptr)
     .End();
 }
 } //TArc

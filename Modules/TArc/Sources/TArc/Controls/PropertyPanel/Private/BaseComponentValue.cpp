@@ -6,6 +6,7 @@
 
 #include "TArc/DataProcessing/DataWrappersProcessor.h"
 #include "TArc/Utils/ScopedValueGuard.h"
+#include "TArc/Utils/ReflectionHelpers.h"
 
 #include <Engine/PlatformApi.h>
 #include <Reflection/ReflectionRegistrator.h>
@@ -189,47 +190,15 @@ void BaseComponentValue::EnsureEditorCreated(QWidget* parent)
     editorWidget->ForceUpdate();
     realWidget = editorWidget->ToWidgetCast();
 
-    const M::CommandProducerHolder* producer = nodes.front()->field.ref.GetMeta<M::CommandProducerHolder>();
-    if (producer != nullptr)
+    const M::CommandProducerHolder* typeProducer = GetTypeMeta<M::CommandProducerHolder>(nodes.front()->cachedValue);
+    const M::CommandProducerHolder* fieldProducer = nodes.front()->field.ref.GetMeta<M::CommandProducerHolder>();
+    if (fieldProducer != nullptr || typeProducer != nullptr)
     {
         QWidget* boxWidget = new QWidget(parent);
         QtHBoxLayout* layout = new QtHBoxLayout(boxWidget);
 
-        const Vector<std::shared_ptr<M::CommandProducer>>& commands = producer->GetCommandProducers();
-        for (size_t i = 0; i < commands.size(); ++i)
-        {
-            bool createButton = false;
-            const std::shared_ptr<M::CommandProducer>& cmd = commands[i];
-            for (const std::shared_ptr<PropertyNode>& node : nodes)
-            {
-                if (cmd->IsApplyable(node->field.ref))
-                {
-                    createButton = true;
-                    break;
-                }
-            }
-
-            if (createButton == true)
-            {
-                M::CommandProducer::Info info = cmd->GetInfo();
-                QToolButton* button = new QToolButton(boxWidget);
-                button->setIcon(info.icon);
-                button->setToolTip(info.tooltip);
-                button->setIconSize(QSize(12, 12));
-                button->setAutoRaise(true);
-                if (cmd->OnlyForSingleSelection() && nodes.size() > 1)
-                {
-                    button->setEnabled(false);
-                }
-
-                connections.AddConnection(button, &QToolButton::clicked, [this, i]()
-                                          {
-                                              OnButtonClicked(static_cast<int32>(i));
-                                          });
-
-                layout->addWidget(button);
-            }
-        }
+        CreateButtons(layout, typeProducer, true);
+        CreateButtons(layout, fieldProducer, false);
 
         layout->addWidget(realWidget);
         realWidget = boxWidget;
@@ -245,7 +214,61 @@ void BaseComponentValue::UpdateEditorGeometry(const QWidget* parent, const QRect
     }
 }
 
-void BaseComponentValue::OnButtonClicked(int32 index)
+void BaseComponentValue::CreateButtons(QLayout* layout, const M::CommandProducerHolder* holder, bool isTypeButtons)
+{
+    if (holder == nullptr)
+    {
+        return;
+    }
+
+    const Vector<std::shared_ptr<M::CommandProducer>>& commands = holder->GetCommandProducers();
+    for (size_t i = 0; i < commands.size(); ++i)
+    {
+        bool createButton = false;
+        const std::shared_ptr<M::CommandProducer>& cmd = commands[i];
+        for (const std::shared_ptr<PropertyNode>& node : nodes)
+        {
+            if (cmd->IsApplyable(node->field.ref))
+            {
+                createButton = true;
+                break;
+            }
+        }
+
+        if (createButton == true)
+        {
+            M::CommandProducer::Info info = cmd->GetInfo();
+            QToolButton* button = new QToolButton(layout->widget());
+            button->setIcon(info.icon);
+            button->setToolTip(info.tooltip);
+            button->setIconSize(QSize(12, 12));
+            button->setAutoRaise(true);
+            if (cmd->OnlyForSingleSelection() && nodes.size() > 1)
+            {
+                button->setEnabled(false);
+            }
+
+            if (isTypeButtons == true)
+            {
+                connections.AddConnection(button, &QToolButton::clicked, [this, i]()
+                                          {
+                                              OnTypeButtonClicked(static_cast<int32>(i));
+                                          });
+            }
+            else
+            {
+                connections.AddConnection(button, &QToolButton::clicked, [this, i]()
+                                          {
+                                              OnFieldButtonClicked(static_cast<int32>(i));
+                                          });
+            }
+
+            layout->addWidget(button);
+        }
+    }
+}
+
+void BaseComponentValue::OnFieldButtonClicked(int32 index)
 {
     const M::CommandProducerHolder* holder = nodes.front()->field.ref.GetMeta<M::CommandProducerHolder>();
     DVASSERT(holder);
@@ -269,6 +292,10 @@ void BaseComponentValue::OnButtonClicked(int32 index)
         }
     }
     producer->ClearCache();
+}
+
+void BaseComponentValue::OnTypeButtonClicked(int32 index)
+{
 }
 
 const char* BaseComponentValue::readOnlyFieldName = "isReadOnly";
