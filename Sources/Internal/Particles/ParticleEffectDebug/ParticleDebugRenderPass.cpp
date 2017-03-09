@@ -96,7 +96,7 @@ void ParticleDebugRenderPass::PrepareParticlesVisibilityArray(Camera* camera, Re
                                          {
                                              // Remove obj if obj is not a particle or if showOnlySelected flag is set
                                              // if obj is not a particle or it is particle but not in selection set
-                                             bool isParticle = obj->GetType() == RenderObject::TYPE_PARTICLE_EMTITTER;
+                                             bool isParticle = obj->GetType() == RenderObject::TYPE_PARTICLE_EMITTER;
                                              bool inSet = drawOnlySelected ? selectedParticles->count(obj) > 0 : true;
 
                                              return !(isParticle && inSet);

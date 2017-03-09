@@ -21,7 +21,7 @@ ParticleRenderObject::ParticleRenderObject(ParticleEffectData* effect)
     layout.AddElement(rhi::VS_TEXCOORD, 3, rhi::VDT_FLOAT, 1);
     frameBlendVertexLayoutId = rhi::VertexLayout::UniqueId(layout);
 
-    type = RenderObject::TYPE_PARTICLE_EMTITTER;
+    type = RenderObject::TYPE_PARTICLE_EMITTER;
 }
 
 ParticleRenderObject::~ParticleRenderObject()
