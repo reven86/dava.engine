@@ -146,7 +146,7 @@ public:
     std::unique_ptr<DAVA::Command> CreateCommand(const DAVA::Reflection& field, const Params& params) const override;
 
 private:
-    DAVA::UnorderedMap<DAVA::RenderBatch*, std::tuple<DAVA::Entity*, DAVA::uint32>> cache;
+    DAVA::UnorderedMap<DAVA::RenderBatch*, std::pair<DAVA::Entity*, DAVA::uint32>> cache;
 };
 
 bool RemoveRenderBatch::IsApplyable(const DAVA::Reflection& field) const
@@ -187,7 +187,7 @@ void RemoveRenderBatch::CreateCache(DAVA::TArc::ContextAccessor* accessor)
                 RenderObject* renderObject = component->GetRenderObject();
                 for (uint32 i = 0; i < renderObject->GetRenderBatchCount(); ++i)
                 {
-                    cache.emplace(renderObject->GetRenderBatch(i), std::make_tuple(entity, i));
+                    cache.emplace(renderObject->GetRenderBatch(i), std::make_pair(entity, i));
                 }
             }
         }
@@ -204,7 +204,7 @@ std::unique_ptr<DAVA::Command> RemoveRenderBatch::CreateCommand(const DAVA::Refl
     DAVA::RenderBatch* batch = *field.GetValueObject().GetPtr<DAVA::RenderBatch*>();
     auto iter = cache.find(batch);
     DVASSERT(iter != cache.end());
-    return std::unique_ptr<DAVA::Command>(new DeleteRenderBatchCommand(std::get<0>(iter->second), batch->GetRenderObject(), std::get<1>(iter->second)));
+    return std::make_unique<DeleteRenderBatchCommand>(iter->second.first, batch->GetRenderObject(), iter->second.second);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -280,7 +280,7 @@ std::unique_ptr<DAVA::Command> ConvertToShadow::CreateCommand(const DAVA::Reflec
     DAVA::RenderBatch* batch = *field.GetValueObject().GetPtr<DAVA::RenderBatch*>();
     auto iter = cache.find(batch);
     DVASSERT(iter != cache.end());
-    return std::unique_ptr<DAVA::Command>(new ConvertToShadowCommand(iter->second, batch));
+    return std::make_unique<ConvertToShadowCommand>(iter->second, batch);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -327,7 +327,7 @@ bool RebuildTangentSpace::OnlyForSingleSelection() const
 std::unique_ptr<DAVA::Command> RebuildTangentSpace::CreateCommand(const DAVA::Reflection& field, const Params& params) const
 {
     DAVA::RenderBatch* batch = *field.GetValueObject().GetPtr<DAVA::RenderBatch*>();
-    return std::unique_ptr<DAVA::Command>(new RebuildTangentSpaceCommand(batch, true));
+    return std::make_unique<RebuildTangentSpaceCommand>(batch, true);
 }
 }
 

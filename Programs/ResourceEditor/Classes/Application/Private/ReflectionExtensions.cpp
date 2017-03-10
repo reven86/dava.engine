@@ -6,8 +6,13 @@
 
 #include <Entity/Component.h>
 #include <Scene3D/Components/RenderComponent.h>
+#include <Scene3D/Components/ActionComponent.h>
+#include <Scene3D/Components/SoundComponent.h>
+#include <Scene3D/Components/WaveComponent.h>
+#include <Scene3D/Components/TransformComponent.h>
 #include <Render/Highlevel/RenderBatch.h>
 #include <Render/Highlevel/Landscape.h>
+#include <Render/Highlevel/Vegetation/VegetationRenderObject.h>
 #include <Reflection/ReflectedType.h>
 #include <Reflection/ReflectedStructure.h>
 #include <Reflection/ReflectedTypeDB.h>
