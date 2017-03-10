@@ -163,6 +163,7 @@ class File
 {
 public:
     File(const String& filters, const String& dlgTitle = String("Open File"));
+    virtual ~File() = default;
 
     virtual String GetDefaultPath() const;
     virtual String GetRootDirectory() const;
