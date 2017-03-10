@@ -21,12 +21,18 @@ DAVA_TESTCLASS (FileListTest)
     FileListTest()
     {
         FileSystem::Instance()->DeleteDirectory("~doc:/TestData/FileListTest/", true);
-        FileSystem::Instance()->RecursiveCopy("~res:/TestData/FileListTest/", "~doc:/TestData/FileListTest/");
-
-    #if defined(__DAVAENGINE_WINDOWS__)
         FileSystem::Instance()->DeleteDirectory("~doc:/TestData/FileListTestWindowsExtension/", true);
+
+        FileSystem::Instance()->RecursiveCopy("~res:/TestData/FileListTest/", "~doc:/TestData/FileListTest/");
+    #if defined(__DAVAENGINE_WINDOWS__)
         FileSystem::Instance()->RecursiveCopy("~res:/TestData/FileListTestWindowsExtension/", "~doc:/TestData/FileListTestWindowsExtension/");
     #endif
+    }
+
+    ~FileListTest()
+    {
+        FileSystem::Instance()->DeleteDirectory("~doc:/TestData/FileListTest/", true);
+        FileSystem::Instance()->DeleteDirectory("~doc:/TestData/FileListTestWindowsExtension/", true);
     }
 
     DAVA_TEST (ResTestFunction)
