@@ -6,6 +6,14 @@
 
 namespace DAVA
 {
+namespace CommandBatchDetails
+{
+bool AreCommandTypesEqual(const Command& left, const Command& right)
+{
+    return typeid(left) == typeid(right);
+}
+}
+
 CommandBatch::CommandBatch(const String& description, uint32 commandsCount)
     : Command(description)
 {
@@ -34,7 +42,7 @@ void CommandBatch::Add(std::unique_ptr<Command>&& command)
     if (commandList.empty() == false)
     {
         DAVA::Command* lastCommand = commandList.back().get();
-        if (typeid(*lastCommand) == typeid(*command.get()))
+        if (CommandBatchDetails::AreCommandTypesEqual(*lastCommand, *command.get()))
         {
             if (lastCommand->MergeWith(command.get()))
             {
