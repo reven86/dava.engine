@@ -1,13 +1,21 @@
 #include "TArc/DataProcessing/DataContext.h"
+#include "TArc/Utils/CommonFieldNames.h"
 
-#include "Reflection/Reflection.h"
-#include "Utils/StringFormat.h"
-#include "Debug/DVAssert.h"
+#include <Reflection/ReflectionRegistrator.h>
+#include <Utils/StringFormat.h>
+#include <Debug/DVAssert.h>
 
 namespace DAVA
 {
 namespace TArc
 {
+DAVA_REFLECTION_IMPL(DataContext)
+{
+    ReflectionRegistrator<DataContext>::Begin()
+    .Field(ContextIDFieldName, &DataContext::GetID, nullptr)
+    .End();
+}
+
 DataContext::DataContext(DataContext* parentContext_)
     : parentContext(parentContext_)
 {
