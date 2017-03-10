@@ -166,9 +166,6 @@ DV_LOCAL_CPPFLAGS += -Wno-sign-compare
 DV_LOCAL_CPPFLAGS += -Wno-format-nonliteral
 
 # TODO fix next warnings first
-DV_LOCAL_CPPFLAGS += -Wno-expansion-to-defined
-DV_LOCAL_CPPFLAGS += -Wno-comma
-DV_LOCAL_CPPFLAGS += -Wno-undefined-func-template
 DV_LOCAL_CPPFLAGS += -Wno-cast-align
 DV_LOCAL_CPPFLAGS += -Wno-conversion
 DV_LOCAL_CPPFLAGS += -Wno-unreachable-code
