@@ -46,12 +46,25 @@ public:
         filePath = path;
     }
 
+    static DAVA::M::ValidationResult ValidatePath(const DAVA::Any& newValue, const DAVA::Any& oldValue)
+    {
+        DAVA::M::ValidationResult result;
+        result.state = DAVA::M::ValidationResult::eState::Valid;
+        DAVA::FilePath path = newValue.Cast<DAVA::FilePath>();
+        if (path.Exists() == false)
+        {
+            result.state = DAVA::M::ValidationResult::eState::Invalid;
+        }
+
+        return result;
+    }
+
     DAVA_VIRTUAL_REFLECTION_IN_PLACE(TestData)
     {
         ReflectionRegistrator<TestData>::Begin()
         .Field("readOnlyValue", &TestData::GetValue, nullptr)[DAVA::M::File("Material (*.material)", "Open Material")]
         .Field("readOnlyMetaValue", &TestData::GetValue, &TestData::SetValue)[DAVA::M::ReadOnly(), DAVA::M::File("Material (*.material)", "Open Material")]
-        .Field("value", &TestData::GetValue, &TestData::SetValue)[DAVA::M::File("Material (*.material)")]
+        .Field("value", &TestData::GetValue, &TestData::SetValue)[DAVA::M::File("Material (*.material)"), DAVA::M::Validator(&TestData::ValidatePath)]
         .Field("isReadOnly", &TestData::isReadOnly)
         .Field("isEnabled", &TestData::isEnabled)
         .End();
