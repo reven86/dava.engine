@@ -9,12 +9,12 @@ namespace DAVA
 CommandBatch::CommandBatch(const String& description, uint32 commandsCount)
     : Command(description)
 {
-    commands.reserve(commandsCount);
+    commandList.reserve(commandsCount);
 }
 
 void CommandBatch::Redo()
 {
-    for (auto it = commands.begin(), end = commands.end(); it != end; ++it)
+    for (auto it = commandList.begin(), end = commandList.end(); it != end; ++it)
     {
         (*it)->Redo();
     }
@@ -22,7 +22,7 @@ void CommandBatch::Redo()
 
 void CommandBatch::Undo()
 {
-    for (auto it = commands.rbegin(), end = commands.rend(); it != end; ++it)
+    for (auto it = commandList.rbegin(), end = commandList.rend(); it != end; ++it)
     {
         (*it)->Undo();
     }
@@ -31,9 +31,9 @@ void CommandBatch::Undo()
 void CommandBatch::Add(std::unique_ptr<Command>&& command)
 {
     DVASSERT(command);
-    if (commands.empty() == false)
+    if (commandList.empty() == false)
     {
-        DAVA::Command* lastCommand = commands.back().get();
+        DAVA::Command* lastCommand = commandList.back().get();
         typeid(*lastCommand) == typeid(*command.get());
         {
             if (lastCommand->MergeWith(command.get()))
@@ -42,7 +42,7 @@ void CommandBatch::Add(std::unique_ptr<Command>&& command)
             }
         }
     }
-    commands.push_back(std::move(command));
+    commandList.push_back(std::move(command));
 }
 
 void CommandBatch::AddAndRedo(std::unique_ptr<Command>&& command)
@@ -56,9 +56,9 @@ void CommandBatch::AddAndRedo(std::unique_ptr<Command>&& command)
 
 bool CommandBatch::IsClean() const
 {
-    return std::find_if(commands.begin(), commands.end(), [](const std::unique_ptr<Command>& command) {
+    return std::find_if(commandList.begin(), commandList.end(), [](const std::unique_ptr<Command>& command) {
                return command->IsClean() == false;
-           }) == commands.end();
+           }) == commandList.end();
 }
 
 bool IsCommandBatch(const Command* command)

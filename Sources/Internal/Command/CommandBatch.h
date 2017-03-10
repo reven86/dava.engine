@@ -54,17 +54,17 @@ public:
 
 protected:
     using CommandsContainer = Vector<std::unique_ptr<Command>>;
-    CommandsContainer commands;
+    CommandsContainer commandList;
 };
 
 inline bool CommandBatch::IsEmpty() const
 {
-    return commands.empty();
+    return commandList.empty();
 }
 
 inline uint32 CommandBatch::Size() const
 {
-    return static_cast<uint32>(commands.size());
+    return static_cast<uint32>(commandList.size());
 }
 
 bool IsCommandBatch(const Command* command);
