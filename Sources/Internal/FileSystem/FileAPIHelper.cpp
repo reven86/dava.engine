@@ -74,9 +74,9 @@ static void LogError(int32 errnoCode, const String& fileName, const char* functi
         break;
     default:
         // Should never be reached.
-        Logger::Error("Unexpected error: %s: errno: %d for path: %s",
+        Logger::Error("Unexpected error in func: %s: errno: %s for path: %s",
                       functionName,
-                      errnoCode,
+                      strerror(errnoCode),
                       fileName.c_str());
     }
 }
