@@ -34,7 +34,7 @@ void CommandBatch::Add(std::unique_ptr<Command>&& command)
     if (commandList.empty() == false)
     {
         DAVA::Command* lastCommand = commandList.back().get();
-        typeid(*lastCommand) == typeid(*command.get());
+        if (typeid(*lastCommand) == typeid(*command.get()))
         {
             if (lastCommand->MergeWith(command.get()))
             {

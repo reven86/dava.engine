@@ -44,7 +44,7 @@ class TestCommandMerge : public DAVA::Command
 {
 public:
     TestCommandMerge()
-        : DAVA::Command(DAVA::USER_COMMAND)
+        : DAVA::Command()
     {
     }
 
@@ -60,7 +60,7 @@ public:
 
     bool MergeWith(const DAVA::Command* another) override
     {
-        DVASSERT(another->GetID() == GetID());
+        DVASSERT(dynamic_cast<const TestCommandMerge*>(another) != nullptr);
         return true;
     }
 
