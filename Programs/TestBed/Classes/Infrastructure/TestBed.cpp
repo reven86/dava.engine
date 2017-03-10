@@ -63,7 +63,8 @@ int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
 
     Assert::SetupDefaultHandlers();
 
-    DAVA::FilePath::AddResourcesFolder(DAVA::FilePath("~res:/TestBed/").GetRelativePathname());
+    DAVA::FilePath dataPath = "~res:/TestBed/";
+    DAVA::FilePath::AddResourcesFolder(dataPath.GetAbsolutePathname());
 
     KeyedArchive* appOptions = new KeyedArchive();
     appOptions->SetInt32("bpp", 32);

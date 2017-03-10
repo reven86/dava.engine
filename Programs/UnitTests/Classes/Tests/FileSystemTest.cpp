@@ -13,7 +13,7 @@ DAVA_TESTCLASS (FileSystemTest)
     FileSystemTest()
     {
         FileSystem::Instance()->DeleteDirectory("~doc:/TestData/FileSystemTest/", true);
-        bool dataPrepared = FileSystem::Instance()->RecursiveCopy("~res:/UnitTests/TestData/FileSystemTest/", "~doc:/TestData/FileSystemTest/");
+        bool dataPrepared = FileSystem::Instance()->RecursiveCopy("~res:/TestData/FileSystemTest/", "~doc:/TestData/FileSystemTest/");
         DVASSERT(dataPrepared);
     }
 
@@ -34,7 +34,7 @@ DAVA_TESTCLASS (FileSystemTest)
 
     DAVA_TEST (ResTestFunction)
     {
-        ScopedPtr<FileList> fileList(new FileList("~res:/UnitTests/TestData/FileSystemTest/"));
+        ScopedPtr<FileList> fileList(new FileList("~res:/TestData/FileSystemTest/"));
 
         TEST_VERIFY(fileList->GetDirectoryCount() == 4);
         TEST_VERIFY(fileList->GetFileCount() == 0);
@@ -51,7 +51,7 @@ DAVA_TESTCLASS (FileSystemTest)
 
             if (filename == "Folder1")
             {
-                TEST_VERIFY(pathname == "~res:/UnitTests/TestData/FileSystemTest/Folder1/");
+                TEST_VERIFY(pathname == "~res:/TestData/FileSystemTest/Folder1/");
                 TEST_VERIFY(files->GetFileCount() == 3);
 
                 for (uint32 ifi = 0; ifi < files->GetCount(); ++ifi)
@@ -70,20 +70,20 @@ DAVA_TESTCLASS (FileSystemTest)
 
                     if (filename == "file1.zip")
                     {
-                        TEST_VERIFY(pathname == "~res:/UnitTests/TestData/FileSystemTest/Folder1/file1.zip");
-                        TEST_VERIFY(file->GetFilename() == "~res:/UnitTests/TestData/FileSystemTest/Folder1/file1.zip");
+                        TEST_VERIFY(pathname == "~res:/TestData/FileSystemTest/Folder1/file1.zip");
+                        TEST_VERIFY(file->GetFilename() == "~res:/TestData/FileSystemTest/Folder1/file1.zip");
                         TEST_VERIFY(file->GetSize() == 31749);
                     }
                     else if (filename == "file2.zip")
                     {
-                        TEST_VERIFY(pathname == "~res:/UnitTests/TestData/FileSystemTest/Folder1/file2.zip");
-                        TEST_VERIFY(file->GetFilename() == "~res:/UnitTests/TestData/FileSystemTest/Folder1/file2.zip");
+                        TEST_VERIFY(pathname == "~res:/TestData/FileSystemTest/Folder1/file2.zip");
+                        TEST_VERIFY(file->GetFilename() == "~res:/TestData/FileSystemTest/Folder1/file2.zip");
                         TEST_VERIFY(file->GetSize() == 22388);
                     }
                     else if (filename == "file3.doc")
                     {
-                        TEST_VERIFY(pathname == "~res:/UnitTests/TestData/FileSystemTest/Folder1/file3.doc");
-                        TEST_VERIFY(file->GetFilename() == "~res:/UnitTests/TestData/FileSystemTest/Folder1/file3.doc");
+                        TEST_VERIFY(pathname == "~res:/TestData/FileSystemTest/Folder1/file3.doc");
+                        TEST_VERIFY(file->GetFilename() == "~res:/TestData/FileSystemTest/Folder1/file3.doc");
                         TEST_VERIFY(file->GetSize() == 37479);
                     }
                     else
@@ -236,7 +236,7 @@ DAVA_TESTCLASS (FileSystemTest)
 
     DAVA_TEST (FileOperationsTestFunction)
     {
-        FilePath fileInAssets = "~res:/UnitTests/TestData/FileSystemTest/FileTest/test.yaml";
+        FilePath fileInAssets = "~res:/TestData/FileSystemTest/FileTest/test.yaml";
         FilePath cpyDir = "~doc:/FileSystemTest/FileTest/";
         FilePath copyTo = cpyDir + "test.yaml";
 

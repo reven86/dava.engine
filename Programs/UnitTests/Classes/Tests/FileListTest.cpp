@@ -23,9 +23,9 @@ DAVA_TESTCLASS (FileListTest)
         FileSystem::Instance()->DeleteDirectory("~doc:/TestData/FileListTest/", true);
         FileSystem::Instance()->DeleteDirectory("~doc:/TestData/FileListTestWindowsExtension/", true);
 
-        FileSystem::Instance()->RecursiveCopy("~res:/UnitTests/TestData/FileListTest/", "~doc:/TestData/FileListTest/");
+        FileSystem::Instance()->RecursiveCopy("~res:/TestData/FileListTest/", "~doc:/TestData/FileListTest/");
     #if defined(__DAVAENGINE_WINDOWS__)
-        FileSystem::Instance()->RecursiveCopy("~res:/UnitTests/TestData/FileListTestWindowsExtension/", "~doc:/TestData/FileListTestWindowsExtension/");
+        FileSystem::Instance()->RecursiveCopy("~res:/TestData/FileListTestWindowsExtension/", "~doc:/TestData/FileListTestWindowsExtension/");
     #endif
     }
 
@@ -37,7 +37,7 @@ DAVA_TESTCLASS (FileListTest)
 
     DAVA_TEST (ResTestFunction)
     {
-        ScopedPtr<FileList> fileList(new FileList("~res:/UnitTests/TestData/FileListTest/"));
+        ScopedPtr<FileList> fileList(new FileList("~res:/TestData/FileListTest/"));
 
         TEST_VERIFY(fileList->GetDirectoryCount() == 3);
         TEST_VERIFY(fileList->GetFileCount() == 0);
@@ -54,7 +54,7 @@ DAVA_TESTCLASS (FileListTest)
 
             if (filename == "Folder1")
             {
-                TEST_VERIFY(pathname == "~res:/UnitTests/TestData/FileListTest/Folder1/");
+                TEST_VERIFY(pathname == "~res:/TestData/FileListTest/Folder1/");
                 TEST_VERIFY(files->GetFileCount() == 3);
 
                 for (uint32 ifi = 0; ifi < files->GetCount(); ++ifi)
@@ -67,15 +67,15 @@ DAVA_TESTCLASS (FileListTest)
 
                     if (f == "file1")
                     {
-                        TEST_VERIFY(p == "~res:/UnitTests/TestData/FileListTest/Folder1/file1");
+                        TEST_VERIFY(p == "~res:/TestData/FileListTest/Folder1/file1");
                     }
                     else if (f == "file2.txt")
                     {
-                        TEST_VERIFY(p == "~res:/UnitTests/TestData/FileListTest/Folder1/file2.txt");
+                        TEST_VERIFY(p == "~res:/TestData/FileListTest/Folder1/file2.txt");
                     }
                     else if (f == "file3.doc")
                     {
-                        TEST_VERIFY(p == "~res:/UnitTests/TestData/FileListTest/Folder1/file3.doc");
+                        TEST_VERIFY(p == "~res:/TestData/FileListTest/Folder1/file3.doc");
                     }
                     else
                     {
@@ -85,7 +85,7 @@ DAVA_TESTCLASS (FileListTest)
             }
             else if (filename == "Folder2")
             {
-                TEST_VERIFY(pathname == "~res:/UnitTests/TestData/FileListTest/Folder2/");
+                TEST_VERIFY(pathname == "~res:/TestData/FileListTest/Folder2/");
                 TEST_VERIFY(files->GetFileCount() == 6);
                 for (uint32 ifi = 0; ifi < files->GetCount(); ++ifi)
                 {
@@ -97,27 +97,27 @@ DAVA_TESTCLASS (FileListTest)
 
                     if (f == "file1")
                     {
-                        TEST_VERIFY(p == "~res:/UnitTests/TestData/FileListTest/Folder2/file1");
+                        TEST_VERIFY(p == "~res:/TestData/FileListTest/Folder2/file1");
                     }
                     else if (f == "file1.txt")
                     {
-                        TEST_VERIFY(p == "~res:/UnitTests/TestData/FileListTest/Folder2/file1.txt");
+                        TEST_VERIFY(p == "~res:/TestData/FileListTest/Folder2/file1.txt");
                     }
                     else if (f == "file2")
                     {
-                        TEST_VERIFY(p == "~res:/UnitTests/TestData/FileListTest/Folder2/file2");
+                        TEST_VERIFY(p == "~res:/TestData/FileListTest/Folder2/file2");
                     }
                     else if (f == "file2.txt")
                     {
-                        TEST_VERIFY(p == "~res:/UnitTests/TestData/FileListTest/Folder2/file2.txt");
+                        TEST_VERIFY(p == "~res:/TestData/FileListTest/Folder2/file2.txt");
                     }
                     else if (f == "file3")
                     {
-                        TEST_VERIFY(p == "~res:/UnitTests/TestData/FileListTest/Folder2/file3");
+                        TEST_VERIFY(p == "~res:/TestData/FileListTest/Folder2/file3");
                     }
                     else if (f == "file3.doc")
                     {
-                        TEST_VERIFY(p == "~res:/UnitTests/TestData/FileListTest/Folder2/file3.doc");
+                        TEST_VERIFY(p == "~res:/TestData/FileListTest/Folder2/file3.doc");
                     }
                     else
                     {
@@ -127,7 +127,7 @@ DAVA_TESTCLASS (FileListTest)
             }
             else if (filename == "Folder3")
             {
-                TEST_VERIFY(pathname == "~res:/UnitTests/TestData/FileListTest/Folder3/");
+                TEST_VERIFY(pathname == "~res:/TestData/FileListTest/Folder3/");
                 TEST_VERIFY(files->GetFileCount() == 2);
                 for (uint32 ifi = 0; ifi < files->GetCount(); ++ifi)
                 {
@@ -139,11 +139,11 @@ DAVA_TESTCLASS (FileListTest)
 
                     if (f == "file1")
                     {
-                        TEST_VERIFY(p == "~res:/UnitTests/TestData/FileListTest/Folder3/file1");
+                        TEST_VERIFY(p == "~res:/TestData/FileListTest/Folder3/file1");
                     }
                     else if (f == "file3.doc")
                     {
-                        TEST_VERIFY(p == "~res:/UnitTests/TestData/FileListTest/Folder3/file3.doc");
+                        TEST_VERIFY(p == "~res:/TestData/FileListTest/Folder3/file3.doc");
                     }
                     else
                     {

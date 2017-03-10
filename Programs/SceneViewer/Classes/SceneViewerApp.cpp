@@ -24,7 +24,8 @@ SceneViewerApp::SceneViewerApp(DAVA::Engine& engine)
     engine.beginFrame.Connect(this, &SceneViewerApp::BeginFrame);
     engine.endFrame.Connect(this, &SceneViewerApp::EndFrame);
 
-    DAVA::FilePath::AddResourcesFolder(DAVA::FilePath("~res:/SceneViewer/").GetRelativePathname());
+    DAVA::FilePath dataPath = "~res:/SceneViewer/";
+    DAVA::FilePath::AddResourcesFolder(dataPath.GetAbsolutePathname());
 
     DAVA::QualitySettingsSystem::Instance()->SetKeepUnusedEntities(true);
     DAVA::QualitySettingsSystem::Instance()->SetMetalPreview(true);
