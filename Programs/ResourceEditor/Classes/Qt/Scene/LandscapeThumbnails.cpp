@@ -145,8 +145,7 @@ RequestID Create(DAVA::Landscape* landscape, LandscapeThumbnails::Callback handl
     Texture* texture = Texture::CreateFBO(TEXTURE_TILE_FULL_SIZE, TEXTURE_TILE_FULL_SIZE, FORMAT_RGBA8888);
     {
         DAVA::Vector<FastName> flagsToDisable{ NMaterialFlagName::FLAG_VERTEXFOG,
-                                               NMaterialFlagName::FLAG_LANDSCAPE_USE_INSTANCING,
-                                               NMaterialFlagName::FLAG_LANDSCAPE_SPECULAR
+                                               NMaterialFlagName::FLAG_LANDSCAPE_USE_INSTANCING
         };
 
         DAVA::LockGuard<DAVA::Mutex> lock(requests.mutex);

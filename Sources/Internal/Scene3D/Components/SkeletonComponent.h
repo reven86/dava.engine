@@ -1,7 +1,8 @@
 #ifndef __DAVAENGINE_SKELETON_COMPONENT_H__
-#define __DAVAENGINE_SKELETON_COMPONENT_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
+#include "Reflection/Reflection.h"
 #include "Entity/Component.h"
 #include "Debug/DVAssert.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
@@ -46,6 +47,8 @@ public:
         float32 scale;
         AABBox3 bbox;
 
+        bool operator==(const JointConfig& other) const;
+
         INTROSPECTION(JointConfig,
                       MEMBER(name, "Name", I_SAVE | I_VIEW | I_EDIT)
                       MEMBER(position, "Position", I_SAVE | I_VIEW | I_EDIT)
@@ -53,6 +56,8 @@ public:
                       MEMBER(scale, "Scale", I_SAVE | I_VIEW | I_EDIT)
                       MEMBER(bbox, "Bounding box", I_SAVE | I_VIEW | I_EDIT)
                       );
+
+        DAVA_VIRTUAL_REFLECTION(JointConfig, InspBase);
     };
 
     void RebuildFromConfig();
@@ -109,6 +114,8 @@ public:
     INTROSPECTION_EXTEND(SkeletonComponent, Component,
                          COLLECTION(configJoints, "Root Joints", I_SAVE | I_VIEW | I_EDIT)
                          );
+
+    DAVA_VIRTUAL_REFLECTION(SkeletonComponent, Component);
 };
 
 inline void SkeletonComponent::SetJointPosition(uint16 jointId, const Vector3& position)

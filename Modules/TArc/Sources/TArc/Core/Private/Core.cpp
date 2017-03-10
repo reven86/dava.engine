@@ -54,6 +54,7 @@ public:
     ~Impl()
     {
         DVASSERT(contexts.empty());
+        DVASSERT(globalContext == nullptr);
     }
 
     virtual void AddModule(ConsoleModule* module)
@@ -86,8 +87,12 @@ public:
     virtual void OnLoopStopped()
     {
         wrappersProcessor.Shoutdown();
+        for (DataContext* context : contexts)
+        {
+            SafeDelete(context);
+        }
         contexts.clear();
-        globalContext.reset();
+        SafeDelete(globalContext);
     }
 
     virtual void OnFrame(DAVA::float32 delta)
@@ -114,7 +119,7 @@ public:
 
     void ForEachContext(const Function<void(DataContext&)>& functor) override
     {
-        for (std::unique_ptr<DataContext>& context : contexts)
+        for (DataContext* context : contexts)
         {
             functor(*context);
         }
@@ -122,7 +127,7 @@ public:
 
     void ForEachContext(const Function<void(const DataContext&)>& functor) const override
     {
-        for (const std::unique_ptr<DataContext>& context : contexts)
+        for (const DataContext* context : contexts)
         {
             functor(*context);
         }
@@ -135,12 +140,12 @@ public:
 
     DataContext* GetGlobalContext() override
     {
-        return globalContext.get();
+        return globalContext;
     }
 
     DataContext* GetContext(DataContext::ContextID contextID) override
     {
-        auto iter = std::find_if(contexts.begin(), contexts.end(), [contextID](const std::unique_ptr<DataContext>& context)
+        auto iter = std::find_if(contexts.begin(), contexts.end(), [contextID](const DataContext* context)
                                  {
                                      return context->GetID() == contextID;
                                  });
@@ -150,7 +155,7 @@ public:
             return nullptr;
         }
 
-        return iter->get();
+        return *iter;
     }
 
     DataContext* GetActiveContext() override
@@ -160,12 +165,12 @@ public:
 
     DataWrapper CreateWrapper(const ReflectedType* type) override
     {
-        return wrappersProcessor.CreateWrapper(type, activeContext != nullptr ? activeContext : globalContext.get());
+        return wrappersProcessor.CreateWrapper(type, activeContext != nullptr ? activeContext : globalContext);
     }
 
     DataWrapper CreateWrapper(const DataWrapper::DataAccessor& accessor) override
     {
-        return wrappersProcessor.CreateWrapper(accessor, activeContext != nullptr ? activeContext : globalContext.get());
+        return wrappersProcessor.CreateWrapper(accessor, activeContext != nullptr ? activeContext : globalContext);
     }
 
     PropertiesItem CreatePropertiesNode(const String& nodeName) override
@@ -194,6 +199,16 @@ protected:
     {
     }
 
+    const Vector<DataContext*>& GetContexts() const override
+    {
+        return contexts;
+    }
+
+    void SetActiveContext(DataContext* ctx) override
+    {
+        ActivateContext(ctx->GetID());
+    }
+
     void ActivateContextImpl(DataContext* context)
     {
         if (context == activeContext)
@@ -203,7 +218,7 @@ protected:
         BeforeContextSwitch(activeContext, context);
         DataContext* oldContext = activeContext;
         activeContext = context;
-        wrappersProcessor.SetContext(activeContext != nullptr ? activeContext : globalContext.get());
+        wrappersProcessor.SetContext(activeContext != nullptr ? activeContext : globalContext);
         AfterContextSwitch(activeContext, oldContext);
         SyncWrappers();
     }
@@ -218,8 +233,8 @@ protected:
     Engine& engine;
     Core* core;
 
-    std::unique_ptr<DataContext> globalContext;
-    Vector<std::unique_ptr<DataContext>> contexts;
+    DataContext* globalContext = nullptr;
+    Vector<DataContext*> contexts;
     DataContext* activeContext = nullptr;
     DataWrappersProcessor wrappersProcessor;
     bool isInFrame = false;
@@ -306,7 +321,7 @@ public:
 
         Texture::SetGPULoadingOrder({ GPU_ORIGIN });
 
-        ActivateContextImpl(globalContext.get());
+        ActivateContextImpl(globalContext);
         for (std::unique_ptr<ConsoleModule>& module : modules)
         {
             module->Init(this);
@@ -488,17 +503,16 @@ public:
 
         ActivateContextImpl(nullptr);
         controllerModule = nullptr;
-        for (std::unique_ptr<DataContext>& context : contexts)
+        for (DataContext* context : contexts)
         {
             for (std::unique_ptr<ClientModule>& module : modules)
             {
-                module->OnContextDeleted(context.get());
+                module->OnContextDeleted(context);
             }
         }
 
         modules.clear();
         uiManager.reset();
-
         Impl::OnLoopStopped();
     }
 
@@ -521,8 +535,8 @@ public:
 
     DataContext::ContextID CreateContext(Vector<std::unique_ptr<DataNode>>&& initialData) override
     {
-        contexts.push_back(std::make_unique<DataContext>(globalContext.get()));
-        DataContext* context = contexts.back().get();
+        contexts.push_back(new DataContext(globalContext));
+        DataContext* context = contexts.back();
 
         for (std::unique_ptr<DataNode>& data : initialData)
         {
@@ -540,7 +554,7 @@ public:
 
     void DeleteContext(DataContext::ContextID contextID) override
     {
-        auto iter = std::find_if(contexts.begin(), contexts.end(), [contextID](const std::unique_ptr<DataContext>& context)
+        auto iter = std::find_if(contexts.begin(), contexts.end(), [contextID](const DataContext* context)
                                  {
                                      return context->GetID() == contextID;
                                  });
@@ -557,7 +571,7 @@ public:
 
         for (std::unique_ptr<ClientModule>& module : modules)
         {
-            module->OnContextDeleted(iter->get());
+            module->OnContextDeleted(*iter);
         }
 
         contexts.erase(iter);
@@ -581,7 +595,7 @@ public:
             return;
         }
 
-        auto iter = std::find_if(contexts.begin(), contexts.end(), [contextID](const std::unique_ptr<DataContext>& context)
+        auto iter = std::find_if(contexts.begin(), contexts.end(), [contextID](const DataContext* context)
                                  {
                                      return context->GetID() == contextID;
                                  });
@@ -591,7 +605,7 @@ public:
             throw std::runtime_error(Format("ActivateContext failed for contextID : %d", contextID));
         }
 
-        ActivateContextImpl((*iter).get());
+        ActivateContextImpl(*iter);
     }
 
     RenderWidget* GetRenderWidget() const override

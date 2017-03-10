@@ -2,6 +2,7 @@
 
 #include "TArc/Controls/PropertyPanel/Private/ChildCreator.h"
 #include "TArc/DataProcessing/DataWrappersProcessor.h"
+#include "TArc/DataProcessing/PropertiesHolder.h"
 
 #include "Base/BaseTypes.h"
 #include "Base/Any.h"
@@ -52,6 +53,12 @@ public:
         wrappersProcessor.Sync();
     }
 
+    void SetExpanded(bool expanded, const QModelIndex& index);
+    QModelIndexList GetExpandedList() const;
+
+    void SaveExpanded(PropertiesItem& propertyRoot) const;
+    void LoadExpanded(const PropertiesItem& propertyRoot);
+
 private:
     friend class BaseComponentValue;
     void ChildAdded(std::shared_ptr<const PropertyNode> parent, std::shared_ptr<PropertyNode> node, int32 childPosition);
@@ -67,6 +74,7 @@ private:
     std::shared_ptr<T> GetExtensionChain() const;
 
     DataWrappersProcessor* GetWrappersProcessor(const std::shared_ptr<PropertyNode>& node);
+    void GetExpandedListImpl(QModelIndexList& list, ReflectedPropertyItem* item) const;
 
 private:
     std::unique_ptr<ReflectedPropertyItem> rootItem;
@@ -77,6 +85,19 @@ private:
 
     DataWrappersProcessor wrappersProcessor;
     DataWrappersProcessor fastWrappersProcessor;
+
+    struct ExpandedFieldDescriptor
+    {
+        String typePermanentName;
+        String fieldName;
+
+        bool operator==(const ExpandedFieldDescriptor& other) const
+        {
+            return typePermanentName == other.typePermanentName && fieldName == other.fieldName;
+        }
+    };
+
+    Vector<ExpandedFieldDescriptor> expandedFields;
 };
 
 template <typename Dst, typename Src>

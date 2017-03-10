@@ -1,7 +1,7 @@
-#ifndef __DAVAENGINE_SCENE3D_RENDER_COMPONENT_H__
-#define __DAVAENGINE_SCENE3D_RENDER_COMPONENT_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
+#include "Reflection/Reflection.h"
 #include "Entity/Component.h"
 #include "Render/Highlevel/RenderObject.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
@@ -34,7 +34,7 @@ public:
     INTROSPECTION_EXTEND(RenderComponent, Component,
                          MEMBER(renderObject, "renderObject", I_SAVE | I_VIEW | I_EDIT)
                          );
-};
-};
 
-#endif //__DAVAENGINE_SCENE3D_RENDER_COMPONENT_H__
+    DAVA_VIRTUAL_REFLECTION(RenderComponent, Component);
+};
+}

@@ -14,6 +14,18 @@ class ReadOnly
 {
 };
 
+/** Mark field as invisible in property panel */
+class HiddenField
+{
+};
+
+class DisplayName
+{
+public:
+    DisplayName(const String& displayName);
+    const String displayName;
+};
+
 /**
     Defines valid range of value
     Control will try to cast minValue and maxValue to control specific type T

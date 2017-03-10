@@ -1,9 +1,9 @@
-#ifndef __DAVAENGINE_LANDSCAPE_NODE_H__
-#define __DAVAENGINE_LANDSCAPE_NODE_H__
+#pragma once
 
 #include "Base/BaseObject.h"
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
+#include "Reflection/Reflection.h"
 #include "Render/RenderBase.h"
 #include "Render/Highlevel/RenderObject.h"
 #include "FileSystem/FilePath.h"
@@ -302,6 +302,8 @@ public:
                          MEMBER(debugDrawMetrics, "debugDrawMetrics", I_VIEW | I_EDIT)
                          MEMBER(subdivision, "subdivision", I_VIEW | I_EDIT)
                          );
+
+    DAVA_VIRTUAL_REFLECTION(Landscape, RenderObject);
 };
 
 // Inline functions
@@ -319,6 +321,4 @@ inline Landscape::RenderMode Landscape::GetRenderMode() const
 {
     return renderMode;
 }
-};
-
-#endif // __DAVAENGINE_LANDSCAPE_NODE_H__
+}

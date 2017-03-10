@@ -17,6 +17,7 @@ namespace TArc
 {
 class ReflectedPropertyModel;
 class ExtensionChain;
+class ContextAccessor;
 
 class PropertiesView : public QWidget
 {
@@ -39,7 +40,7 @@ public:
         Create PropertiesView widget with ReflectedModel. As data source for ReflectedMode use value of "objectsField"
         Value of "objectsField" could be casted to Vector<Reflection>
     */
-    PropertiesView(ContextAccessor* accessor, const FieldDescriptor& objectsField, const std::weak_ptr<Updater>& updater);
+    PropertiesView(ContextAccessor* accessor, const FieldDescriptor& objectsField, const std::weak_ptr<Updater>& updater, const String& settingsNodeName);
     ~PropertiesView();
 
     void RegisterExtension(const std::shared_ptr<ExtensionChain>& extension);
@@ -51,12 +52,17 @@ private:
     void OnColumnResized(int columnIndex, int oldSize, int newSize);
     void Update(UpdatePolicy policy);
 
+    void OnExpanded(const QModelIndex& index);
+    void OnCollapsed(const QModelIndex& index);
+
 private:
     FieldBinder binder;
+    ContextAccessor* accessor = nullptr;
     QTreeView* view = nullptr;
     std::unique_ptr<ReflectedPropertyModel> model;
     std::weak_ptr<Updater> updater;
     SigConnectionID updateConnectionID;
+    const String settingsNodeName;
     QtConnections connections;
 };
 }

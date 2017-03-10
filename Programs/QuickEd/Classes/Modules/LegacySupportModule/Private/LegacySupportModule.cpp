@@ -17,7 +17,7 @@
 
 #include <TArc/Core/ContextAccessor.h>
 
-#include <QTTools/Utils/Themes/Themes.h>
+#include <QtTools/Utils/Themes/Themes.h>
 
 #include <Tools/version.h>
 #include <DAVAVersion.h>

@@ -61,6 +61,17 @@ namespace M
     Add hint that indicates ReadOnly policy for some Reflected Field
 */
 using ReadOnly = Meta<Metas::ReadOnly>;
+
+/**
+    \ingroup
+    Mark field as invisible in property panel
+*/
+using HiddenField = Meta<Metas::HiddenField>;
+/**
+    \ingroup
+    Name of property that should be shown for user instead of field name
+*/
+using DisplayName = Meta<Metas::DisplayName>;
 /**
     \ingroup metas
     Add hint that indicates valid range of value
