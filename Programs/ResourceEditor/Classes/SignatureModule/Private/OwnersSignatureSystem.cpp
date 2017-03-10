@@ -5,8 +5,7 @@
 #include <Scene3D/Systems/EventSystem.h>
 #include <Scene3D/Scene.h>
 #include <Utils/StringFormat.h>
-
-#include <time.h>
+#include <Time/DateTime.h>
 
 OwnersSignatureSystem::OwnersSignatureSystem(DAVA::Scene* scene, const DAVA::String& userName)
     : SceneSystem(scene)
@@ -43,17 +42,15 @@ void OwnersSignatureSystem::UpdateOwner(DAVA::Entity* entity)
         return;
     }
 
-    DAVA::KeyedArchive* properties = GetCustomPropertiesArchieve(entity);
+    DAVA::KeyedArchive* properties = DAVA::GetCustomPropertiesArchieve(entity);
     if (nullptr != properties)
     {
         properties->SetString(ResourceEditor::SCENE_NODE_DESIGNER_NAME_PROPERTY_NAME, currentUserName);
 
-        time_t now = time(0);
-        tm* utcTime = localtime(&now);
-
+        DAVA::DateTime now = DAVA::DateTime::Now();
         DAVA::String timeString = DAVA::Format("%04d.%02d.%02d_%02d_%02d_%02d",
-                                               utcTime->tm_year + 1900, utcTime->tm_mon + 1, utcTime->tm_mday,
-                                               utcTime->tm_hour, utcTime->tm_min, utcTime->tm_sec);
+                                               now.GetYear(), now.GetMonth() + 1, now.GetDay(),
+                                               now.GetHour(), now.GetMinute(), now.GetSecond());
 
         properties->SetString(ResourceEditor::SCENE_NODE_MODIFICATION_DATA_PROPERTY_NAME, timeString);
     }
