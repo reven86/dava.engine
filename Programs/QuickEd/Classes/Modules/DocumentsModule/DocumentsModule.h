@@ -39,7 +39,6 @@ protected:
 
     void OnContextCreated(DAVA::TArc::DataContext* context) override;
     void OnContextDeleted(DAVA::TArc::DataContext* context) override;
-    void OnContextWasChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* oldOne) override;
 
 private:
     void InitEditorSystems();
@@ -74,9 +73,6 @@ private:
     void SaveDocument(const DAVA::TArc::DataContext::ContextID& contextID);
     void SaveAllDocuments();
     void SaveCurrentDocument();
-
-    void OnActiveTabChanged(const DAVA::Any& contextID);
-    void OnCanSaveChanged(const DAVA::Any& canSave);
 
     void SelectControl(const QString& documentPath, const QString& controlPath);
 

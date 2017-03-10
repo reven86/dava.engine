@@ -52,6 +52,7 @@ int BaseApplication::RunImpl()
         e.Init(eEngineRunMode::GUI_EMBEDDED, initInfo.modules, initInfo.options.Get());
         RegisterAnyCasts();
         RegisterEditorAnyCasts();
+        RegisterReflectionExtensions();
 
         const EngineContext* engineContext = e.GetContext();
         DVASSERT(engineContext);
@@ -66,6 +67,7 @@ int BaseApplication::RunImpl()
         e.Init(initInfo.runMode, initInfo.modules, initInfo.options.Get());
         RegisterAnyCasts();
         RegisterEditorAnyCasts();
+        RegisterReflectionExtensions();
 
         Core core(e);
         Init(&core);
@@ -85,6 +87,10 @@ void BaseApplication::Init(Core* tarcCore)
 }
 
 void BaseApplication::RegisterEditorAnyCasts()
+{
+}
+
+void BaseApplication::RegisterReflectionExtensions()
 {
 }
 
