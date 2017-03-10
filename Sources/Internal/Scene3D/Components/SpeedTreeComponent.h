@@ -1,7 +1,7 @@
-#ifndef __DAVAENGINE_SCENE3D_SPEEDTREE_COMPONENT_H__
-#define __DAVAENGINE_SCENE3D_SPEEDTREE_COMPONENT_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
+#include "Reflection/Reflection.h"
 #include "Entity/Component.h"
 #include "Scene3D/Entity.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
@@ -63,6 +63,8 @@ public:
                          PROPERTY("maxAnimatedLOD", "maxAnimatedLOD", GetMaxAnimatedLOD, SetMaxAnimatedLOD, I_SAVE | I_VIEW | I_EDIT)
                          );
 
+    DAVA_VIRTUAL_REFLECTION(SpeedTreeComponent, Component);
+
     friend class SpeedTreeUpdateSystem;
 };
 
@@ -120,6 +122,4 @@ inline void SpeedTreeComponent::SetLeafsOscillationSpeed(const float32& speed)
 {
     leafsOscillationSpeed = speed;
 }
-};
-
-#endif
+}

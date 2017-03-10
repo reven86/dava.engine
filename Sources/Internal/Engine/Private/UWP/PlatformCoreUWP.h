@@ -36,6 +36,7 @@ public:
 
     static bool IsPhoneContractPresent();
     static void EnableHighResolutionTimer(bool enable);
+    static ::Windows::UI::Core::CoreDispatcher ^ GetCoreDispatcher();
 
     void RegisterXamlApplicationListener(PlatformApi::Win10::XamlApplicationListener* listener);
     void UnregisterXamlApplicationListener(PlatformApi::Win10::XamlApplicationListener* listener);
@@ -47,6 +48,7 @@ private:
     {
         ON_LAUNCHED,
         ON_ACTIVATED,
+        ON_SUSPENDING,
     };
     void NotifyListeners(eNotificationType type, ::Platform::Object ^ arg1);
 
@@ -62,11 +64,17 @@ private:
     ::Windows::ApplicationModel::Activation::IActivatedEventArgs ^ savedActivatedEventArgs = nullptr;
 
     static bool isPhoneContractPresent;
+    static ::Windows::UI::Core::CoreDispatcher ^ coreDispatcher;
 };
 
 inline bool PlatformCore::IsPhoneContractPresent()
 {
     return isPhoneContractPresent;
+}
+
+inline ::Windows::UI::Core::CoreDispatcher ^ PlatformCore::GetCoreDispatcher()
+{
+    return coreDispatcher;
 }
 
 } // namespace Private

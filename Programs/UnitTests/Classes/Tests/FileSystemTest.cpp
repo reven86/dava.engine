@@ -17,6 +17,11 @@ DAVA_TESTCLASS (FileSystemTest)
         DVASSERT(dataPrepared);
     }
 
+    ~FileSystemTest()
+    {
+        FileSystem::Instance()->DeleteDirectory("~doc:/TestData/FileSystemTest/", true);
+    }
+
     void SetUp(const String&)override
     {
         FileSystem::Instance()->CreateDirectory(tempDir);

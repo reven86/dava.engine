@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_STATIC_OCCLUSION_COMPONENT_H__
-#define __DAVAENGINE_STATIC_OCCLUSION_COMPONENT_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Entity/Component.h"
@@ -10,6 +9,7 @@
 #include "Scene3D/Systems/GlobalEventSystem.h"
 #include "Base/BaseMath.h"
 #include "Render/Highlevel/StaticOcclusion.h"
+#include "Reflection/Reflection.h"
 
 namespace DAVA
 {
@@ -39,6 +39,8 @@ public:
     INTROSPECTION_EXTEND(StaticOcclusionDataComponent, Component,
                          PROPERTY("Size in kBytes", "Size of occlusion information in kBytes", GetDataSize, SetDataSize, I_VIEW | I_EDIT)
                          );
+
+    DAVA_VIRTUAL_REFLECTION(StaticOcclusionDataComponent, Component);
 };
 
 class StaticOcclusionComponent : public Component
@@ -89,6 +91,8 @@ public:
                          PROPERTY("Subdivisions Z", "Number of subdivisions on Z axis", GetSubdivisionsZ, SetSubdivisionsZ, I_VIEW | I_EDIT)
                          PROPERTY("Place on Landscape", "Place lowest occlusion cubes at landscape height", GetPlaceOnLandscape, SetPlaceOnLandscape, I_VIEW | I_EDIT)
                          );
+
+    DAVA_VIRTUAL_REFLECTION(StaticOcclusionComponent, Component);
 };
 
 class StaticOcclusionDebugDrawComponent : public Component
@@ -120,6 +124,8 @@ public:
     INTROSPECTION_EXTEND(StaticOcclusionDebugDrawComponent, Component,
                          NULL
                          );
+
+    DAVA_VIRTUAL_REFLECTION(StaticOcclusionDebugDrawComponent, Component);
 };
 
 //
@@ -201,4 +207,3 @@ inline const float32* StaticOcclusionComponent::GetCellHeightOffsets() const
     return placeOnLandscape ? &cellHeightOffset.front() : NULL;
 }
 }
-#endif //__DAVAENGINE_SWITCH_COMPONENT_H__

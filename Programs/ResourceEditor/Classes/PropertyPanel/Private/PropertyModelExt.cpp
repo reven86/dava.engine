@@ -2,6 +2,8 @@
 #include "Classes/SceneManager/SceneData.h"
 #include "Classes/Commands2/SetFieldValueCommand.h"
 
+#include <TArc/Utils/ReflectionHelpers.h>
+
 #include <Reflection/Reflection.h>
 
 REModifyPropertyExtension::REModifyPropertyExtension(DAVA::TArc::ContextAccessor* accessor_)
@@ -42,25 +44,26 @@ void EntityChildCreator::ExposeChildren(const std::shared_ptr<const DAVA::TArc::
             DAVA::Reflection componentsField = f.ref.GetField("Components");
             DVASSERT(componentsField.IsValid());
 
-            DAVA::Vector<DAVA::Reflection::Field> fields = componentsField.GetFields();
-            for (DAVA::Reflection::Field& field : fields)
-            {
-                DAVA::Reflection::Field f(Any(field.key), Reflection(field.ref), nullptr);
-                children.push_back(allocator->CreatePropertyNode(std::move(f), PropertyNode::RealProperty));
-            }
+            DAVA::TArc::ForEachField(componentsField, [this, &children](Reflection::Field&& field)
+                                     {
+                                         if (!field.ref.HasMeta<M::HiddenField>())
+                                         {
+                                             DAVA::Reflection::Field f(Any(field.key), Reflection(field.ref), nullptr);
+                                             children.push_back(allocator->CreatePropertyNode(std::move(f), PropertyNode::RealProperty));
+                                         }
+                                     });
         }
     }
     else if (parent->propertyType == PropertyNode::GroupProperty &&
              parent->cachedValue.GetType() == DAVA::Type::Instance<DAVA::Entity*>())
     {
-        DAVA::Vector<DAVA::Reflection::Field> fields = parent->field.ref.GetFields();
-        for (DAVA::Reflection::Field& field : fields)
-        {
-            if (field.ref.GetValueType() != DAVA::Type::Instance<DAVA::Vector<DAVA::Component*>>())
-            {
-                children.push_back(allocator->CreatePropertyNode(std::move(field), PropertyNode::RealProperty));
-            }
-        }
+        DAVA::TArc::ForEachField(parent->field.ref, [this, &children](Reflection::Field&& field)
+                                 {
+                                     if (field.ref.GetValueType() != DAVA::Type::Instance<DAVA::Vector<DAVA::Component*>>() && field.ref.HasMeta<M::HiddenField>() == false)
+                                     {
+                                         children.push_back(allocator->CreatePropertyNode(std::move(field), PropertyNode::RealProperty));
+                                     }
+                                 });
     }
     else
     {

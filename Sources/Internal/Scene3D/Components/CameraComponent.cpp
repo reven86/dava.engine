@@ -3,9 +3,18 @@
 #include "Scene3D/Entity.h"
 #include "Scene3D/Scene.h"
 #include "Scene3D/Systems/EventSystem.h"
+#include "Reflection/ReflectionRegistrator.h"
+#include "Reflection/ReflectedMeta.h"
 
 namespace DAVA
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(CameraComponent)
+{
+    ReflectionRegistrator<CameraComponent>::Begin()
+    .Field("camera", &CameraComponent::GetCamera, &CameraComponent::SetCamera)[M::DisplayName("Camera")]
+    .End();
+}
+
 CameraComponent::CameraComponent(Camera* _camera)
 {
     camera = SafeRetain(_camera);
