@@ -68,57 +68,26 @@ void SelectionSystem::ProcessInput(UIEvent* currentInput)
 
 void SelectionSystem::OnSelectByRect(const Rect& rect)
 {
-    SelectedNodes areaNodes;
-    //find only visible children of root controls
-    auto findPredicate = [rect](const ControlNode* node) {
-        PackageBaseNode* parent = node->GetParent();
-        if (parent != nullptr && parent->GetControl() != nullptr)
-        {
-            parent = parent->GetParent();
-            if (parent != nullptr)
-            {
-                if (parent->GetControl() == nullptr)
-                {
-                    const UIControl* control = node->GetControl();
-                    DVASSERT(nullptr != control);
-                    return control->GetVisibilityFlag() && rect.RectContains(control->GetGeometricData().GetAABBox());
-                }
-            }
-        }
-        return false;
-    };
-
-    auto stopPredicate = [](const ControlNode* node) -> bool {
-        const UIControl* control = node->GetControl();
-        DVASSERT(nullptr != control);
-        if (control->GetVisibilityFlag() == false)
-        {
-            return true;
-        }
-        PackageBaseNode* parent = node->GetParent();
-        if (parent != nullptr && parent->GetControl() != nullptr)
-        {
-            parent = parent->GetParent();
-            if (parent != nullptr)
-            {
-                return parent->GetControl() == nullptr;
-            }
-        }
-        return false;
-    };
     SelectedNodes newSelection;
     if (IsKeyPressed(KeyboardProxy::KEY_SHIFT))
     {
         newSelection = selectionContainer.selectedNodes;
     }
-    systemsManager->CollectControlNodes(std::inserter(areaNodes, areaNodes.end()), findPredicate, stopPredicate);
-    if (!areaNodes.empty())
+
+    for (const PackageBaseNode* node : systemsManager->GetEditingRootControls())
     {
-        for (PackageBaseNode* node : areaNodes)
+        for (int i = 0, count = node->GetCount(); i < count; ++i)
         {
-            newSelection.insert(node);
+            PackageBaseNode* child = node->Get(i);
+            UIControl* control = child->GetControl();
+            DVASSERT(nullptr != control);
+            if (control->GetVisibilityFlag() && rect.RectContains(control->GetGeometricData().GetAABBox()))
+            {
+                newSelection.insert(node->Get(i));
+            }
         }
     }
+
     SelectNodes(newSelection);
 }
 
@@ -131,23 +100,17 @@ void SelectionSystem::SelectAllControls()
 {
     SelectedNodes selected;
     //find only children of root controls
-    auto findPredicate = [](const ControlNode* node) {
-        PackageBaseNode* parent = node->GetParent();
-        if (parent != nullptr && parent->GetControl() != nullptr)
+    for (const PackageBaseNode* node : systemsManager->GetEditingRootControls())
+    {
+        for (int i = 0, count = node->GetCount(); i < count; ++i)
         {
-            parent = parent->GetParent();
-            if (parent != nullptr )
-            {
-                return parent->GetControl() == nullptr;
-            }
+            selected.insert(node->Get(i));
         }
-        return false;
-    };
-
-    //when we find control under root - we must stop searching
-    auto stopPredicate = findPredicate;
-    systemsManager->CollectControlNodes(std::inserter(selected, selected.end()), findPredicate, stopPredicate);
-    SelectNodes(selected);
+    }
+    if (selected.empty() == false)
+    {
+        SelectNodes(selected);
+    }
 }
 
 void SelectionSystem::FocusNextChild()
