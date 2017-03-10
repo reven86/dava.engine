@@ -1,5 +1,4 @@
 #include "QECommands/AddStylePropertyCommand.h"
-#include "QECommands/QECommandIDs.h"
 
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/StyleSheetNode.h"
@@ -10,7 +9,7 @@
 using namespace DAVA;
 
 AddStylePropertyCommand::AddStylePropertyCommand(PackageNode* package, StyleSheetNode* node_, StyleSheetProperty* property_)
-    : QEPackageCommand(package, ADD_STYLE_PROPERTY_COMMAND, "Add Style Property")
+    : QEPackageCommand(package, "Add Style Property")
     , node(RefPtr<StyleSheetNode>::ConstructWithRetain(node_))
     , property(RefPtr<StyleSheetProperty>::ConstructWithRetain(property_))
 {

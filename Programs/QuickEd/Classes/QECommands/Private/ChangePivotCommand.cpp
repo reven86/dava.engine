@@ -1,5 +1,4 @@
 #include "QECommands/ChangePivotCommand.h"
-#include "QECommands/QECommandIDs.h"
 
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
@@ -16,7 +15,7 @@ DAVA::VariantType GetValueFromProperty(AbstractProperty* property)
 }
 
 ChangePivotCommand::ChangePivotCommand(PackageNode* package)
-    : QEPackageCommand(package, CHANGE_PIVOT_COMMAND, DAVA::Format("Change pivot"))
+    : QEPackageCommand(package, DAVA::Format("Change pivot"))
 {
 }
 
@@ -63,8 +62,7 @@ void ChangePivotCommand::Undo()
 
 bool ChangePivotCommand::MergeWith(const DAVA::Command* command)
 {
-    DVASSERT(GetID() == command->GetID());
-    const ChangePivotCommand* other = static_cast<const ChangePivotCommand*>(command);
+    const ChangePivotCommand* other = DAVA::DynamicTypeCheck<const ChangePivotCommand*>(command);
     DVASSERT(other != nullptr);
     if (package != other->package)
     {

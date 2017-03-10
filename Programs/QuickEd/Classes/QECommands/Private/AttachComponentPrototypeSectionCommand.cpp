@@ -1,5 +1,4 @@
 #include "QECommands/AttachComponentPrototypeSectionCommand.h"
-#include "QECommands/QECommandIDs.h"
 
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
@@ -9,7 +8,7 @@
 using namespace DAVA;
 
 AttachComponentPrototypeSectionCommand::AttachComponentPrototypeSectionCommand(PackageNode* package, ControlNode* node_, ComponentPropertiesSection* destSection_, ComponentPropertiesSection* prototypeSection_)
-    : QEPackageCommand(package, ATTACH_COMPONENT_PROTOTYPE_SECTION_COMMAND, "Attach Component Prototype Section")
+    : QEPackageCommand(package, "Attach Component Prototype Section")
     , node(RefPtr<ControlNode>::ConstructWithRetain(node_))
     , destSection(RefPtr<ComponentPropertiesSection>::ConstructWithRetain(destSection_))
     , prototypeSection(RefPtr<ComponentPropertiesSection>::ConstructWithRetain(prototypeSection_))

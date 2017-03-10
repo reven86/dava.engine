@@ -1,5 +1,4 @@
 #include "QECommands/RemoveComponentCommand.h"
-#include "QECommands/QECommandIDs.h"
 
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
@@ -9,7 +8,7 @@
 using namespace DAVA;
 
 RemoveComponentCommand::RemoveComponentCommand(PackageNode* package, ControlNode* node_, ComponentPropertiesSection* section_)
-    : QEPackageCommand(package, REMOVE_COMPONENT_COMMAND, "Remove Component")
+    : QEPackageCommand(package, "Remove Component")
     , node(RefPtr<ControlNode>::ConstructWithRetain(node_))
     , componentSection(RefPtr<ComponentPropertiesSection>::ConstructWithRetain(section_))
 {

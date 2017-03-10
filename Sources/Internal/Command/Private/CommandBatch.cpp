@@ -2,10 +2,12 @@
 
 #include "Debug/DVAssert.h"
 
+#include <typeinfo>
+
 namespace DAVA
 {
 CommandBatch::CommandBatch(const String& description, uint32 commandsCount)
-    : Command(BATCH_COMMAND, description)
+    : Command(description)
 {
     commands.reserve(commandsCount);
 }
@@ -32,9 +34,7 @@ void CommandBatch::Add(std::unique_ptr<Command>&& command)
     if (commands.empty() == false)
     {
         DAVA::Command* lastCommand = commands.back().get();
-        const CommandID id = lastCommand->GetID();
-        DVASSERT(id != BATCH_COMMAND, "we can not store batch inside another batch");
-        if (id == command->GetID())
+        typeid(*lastCommand) == typeid(*command.get());
         {
             if (lastCommand->MergeWith(command.get()))
             {

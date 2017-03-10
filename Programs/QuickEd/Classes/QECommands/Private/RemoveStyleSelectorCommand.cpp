@@ -1,5 +1,4 @@
 #include "QECommands/RemoveStyleSelectorCommand.h"
-#include "QECommands/QECommandIDs.h"
 
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/StyleSheetNode.h"
@@ -11,7 +10,7 @@
 using namespace DAVA;
 
 RemoveStyleSelectorCommand::RemoveStyleSelectorCommand(PackageNode* package, StyleSheetNode* node_, StyleSheetSelectorProperty* property_)
-    : QEPackageCommand(package, REMOVE_STYLE_SELECTOR_COMMAND, "Remove Style Selector")
+    : QEPackageCommand(package, "Remove Style Selector")
     , node(RefPtr<StyleSheetNode>::ConstructWithRetain(node_))
     , property(RefPtr<StyleSheetSelectorProperty>::ConstructWithRetain(property_))
     , index(-1)

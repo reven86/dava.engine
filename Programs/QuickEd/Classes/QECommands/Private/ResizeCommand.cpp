@@ -1,5 +1,4 @@
 #include "QECommands/ResizeCommand.h"
-#include "QECommands/QECommandIDs.h"
 
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
@@ -16,7 +15,7 @@ DAVA::VariantType GetValueFromProperty(AbstractProperty* property)
 }
 
 ResizeCommand::ResizeCommand(PackageNode* package)
-    : QEPackageCommand(package, RESIZE_COMMAND, DAVA::Format("Resize"))
+    : QEPackageCommand(package, DAVA::Format("Resize"))
 {
 }
 
@@ -63,8 +62,7 @@ void ResizeCommand::Undo()
 
 bool ResizeCommand::MergeWith(const DAVA::Command* command)
 {
-    DVASSERT(GetID() == command->GetID());
-    const ResizeCommand* other = static_cast<const ResizeCommand*>(command);
+    const ResizeCommand* other = DAVA::DynamicTypeCheck<const ResizeCommand*>(command);
     DVASSERT(other != nullptr);
     if (package != other->package)
     {

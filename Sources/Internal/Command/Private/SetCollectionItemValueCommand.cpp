@@ -1,5 +1,4 @@
 #include "Command/SetCollectionItemValueCommand.h"
-#include "Command/CommandIDs.h"
 
 #include "Base/Introspection.h"
 #include "Base/IntrospectionCollection.h"
@@ -60,7 +59,7 @@ private:
 
 SetCollectionItemValueCommand::SetCollectionItemValueCommand(const ObjectHandle& object_, const InspColl* collection_,
                                                              const VariantType& key_, const VariantType& newValue_)
-    : Command(COLLECTION_ITEM_VALUE_COMMAND)
+    : Command()
     , object(object_)
     , collection(collection_)
     , key(key_)

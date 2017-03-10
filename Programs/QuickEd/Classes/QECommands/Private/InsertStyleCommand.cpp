@@ -1,5 +1,4 @@
 #include "QECommands/InsertStyleCommand.h"
-#include "QECommands/QECommandIDs.h"
 
 #include "Model/PackageHierarchy/StyleSheetNode.h"
 #include "Model/PackageHierarchy/StyleSheetsNode.h"
@@ -8,7 +7,7 @@
 using namespace DAVA;
 
 InsertStyleCommand::InsertStyleCommand(PackageNode* package, StyleSheetNode* node_, StyleSheetsNode* dest_, int index_)
-    : QEPackageCommand(package, INSERT_STYLE_COMMAND, "Insert Style")
+    : QEPackageCommand(package, "Insert Style")
     , node(RefPtr<StyleSheetNode>::ConstructWithRetain(node_))
     , dest(RefPtr<StyleSheetsNode>::ConstructWithRetain(dest_))
     , index(index_)

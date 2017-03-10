@@ -1,5 +1,4 @@
 #include "QECommands/RemoveImportedPackageCommand.h"
-#include "QECommands/QECommandIDs.h"
 
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
@@ -8,7 +7,7 @@
 using namespace DAVA;
 
 RemoveImportedPackageCommand::RemoveImportedPackageCommand(PackageNode* package, PackageNode* importedPackage_)
-    : QEPackageCommand(package, REMOVE_IMPORTED_PACKAGE_COMMAND, "Remove Imported Package")
+    : QEPackageCommand(package, "Remove Imported Package")
     , importedPackage(RefPtr<PackageNode>::ConstructWithRetain(importedPackage_))
     , index(0)
 {

@@ -1,5 +1,4 @@
 #include "QECommands/InsertControlCommand.h"
-#include "QECommands/QECommandIDs.h"
 
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
@@ -8,7 +7,7 @@
 using namespace DAVA;
 
 InsertControlCommand::InsertControlCommand(PackageNode* package, ControlNode* node_, ControlsContainerNode* dest_, int index_)
-    : QEPackageCommand(package, INSERT_CONTROL_COMMAND, "Insert Control")
+    : QEPackageCommand(package, "Insert Control")
     , node(RefPtr<ControlNode>::ConstructWithRetain(node_))
     , dest(RefPtr<ControlsContainerNode>::ConstructWithRetain(dest_))
     , index(index_)

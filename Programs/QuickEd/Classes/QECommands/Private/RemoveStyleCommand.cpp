@@ -1,5 +1,4 @@
 #include "QECommands/RemoveStyleCommand.h"
-#include "QECommands/QECommandIDs.h"
 
 #include "Model/PackageHierarchy/StyleSheetNode.h"
 #include "Model/PackageHierarchy/StyleSheetsNode.h"
@@ -8,7 +7,7 @@
 using namespace DAVA;
 
 RemoveStyleCommand::RemoveStyleCommand(PackageNode* package, StyleSheetNode* node_, StyleSheetsNode* dest_, int index_)
-    : QEPackageCommand(package, REMOVE_STYLE_COMMAND, "Remove Style")
+    : QEPackageCommand(package, "Remove Style")
     , node(RefPtr<StyleSheetNode>::ConstructWithRetain(node_))
     , dest(RefPtr<StyleSheetsNode>::ConstructWithRetain(dest_))
     , index(index_)

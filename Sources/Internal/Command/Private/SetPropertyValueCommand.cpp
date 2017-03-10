@@ -1,12 +1,11 @@
 #include "Command/SetPropertyValueCommand.h"
-#include "Command/CommandIDs.h"
 
 #include "Base/Introspection.h"
 
 namespace DAVA
 {
 SetPropertyValueCommand::SetPropertyValueCommand(const ObjectHandle& object_, const InspMember* property_, VariantType newValue_)
-    : Command(PROPERTY_VALUE_COMMAND)
+    : Command()
     , object(object_)
     , property(property_)
     , newValue(newValue_)

@@ -1,5 +1,4 @@
 #include "QECommands/InsertImportedPackageCommand.h"
-#include "QECommands/QECommandIDs.h"
 
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
@@ -7,7 +6,7 @@
 using namespace DAVA;
 
 InsertImportedPackageCommand::InsertImportedPackageCommand(PackageNode* package, PackageNode* importedPackage_, int index_)
-    : QEPackageCommand(package, INSERT_IMPORTED_PACKAGE_COMMAND, "Insert Imported Package")
+    : QEPackageCommand(package, "Insert Imported Package")
     , importedPackage(RefPtr<PackageNode>::ConstructWithRetain(importedPackage_))
     , index(index_)
 {

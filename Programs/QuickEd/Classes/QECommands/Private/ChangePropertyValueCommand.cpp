@@ -1,5 +1,4 @@
 #include "QECommands/ChangePropertyValueCommand.h"
-#include "QECommands/QECommandIDs.h"
 
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
@@ -16,12 +15,12 @@ DAVA::VariantType GetValueFromProperty(AbstractProperty* property)
 }
 
 ChangePropertyValueCommand::ChangePropertyValueCommand(PackageNode* package)
-    : QEPackageCommand(package, CHANGE_PROPERTY_VALUE_COMMAND, "Change property")
+    : QEPackageCommand(package, "Change property")
 {
 }
 
 ChangePropertyValueCommand::ChangePropertyValueCommand(PackageNode* package, ControlNode* node, AbstractProperty* property, const DAVA::VariantType& newValue)
-    : QEPackageCommand(package, CHANGE_PROPERTY_VALUE_COMMAND, DAVA::Format("Change property: %s", property->GetName().c_str()))
+    : QEPackageCommand(package, DAVA::Format("Change property: %s", property->GetName().c_str()))
 {
     AddNodePropertyValue(node, property, newValue);
 }
@@ -63,8 +62,7 @@ void ChangePropertyValueCommand::ApplyProperty(ControlNode* node, AbstractProper
 
 bool ChangePropertyValueCommand::MergeWith(const DAVA::Command* command)
 {
-    DVASSERT(GetID() == command->GetID());
-    const ChangePropertyValueCommand* other = static_cast<const ChangePropertyValueCommand*>(command);
+    const ChangePropertyValueCommand* other = DAVA::DynamicTypeCheck<const ChangePropertyValueCommand*>(command);
     DVASSERT(other != nullptr);
     if (package != other->package)
     {

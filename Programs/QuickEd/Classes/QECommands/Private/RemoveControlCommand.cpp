@@ -1,5 +1,4 @@
 #include "QECommands/RemoveControlCommand.h"
-#include "QECommands/QECommandIDs.h"
 
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
@@ -8,7 +7,7 @@
 using namespace DAVA;
 
 RemoveControlCommand::RemoveControlCommand(PackageNode* package, ControlNode* node_, ControlsContainerNode* from_, int index_)
-    : QEPackageCommand(package, REMOVE_CONTROL_COMMAND, "Remove Control")
+    : QEPackageCommand(package, "Remove Control")
     , node(RefPtr<ControlNode>::ConstructWithRetain(node_))
     , from(RefPtr<ControlsContainerNode>::ConstructWithRetain(from_))
     , index(index_)
