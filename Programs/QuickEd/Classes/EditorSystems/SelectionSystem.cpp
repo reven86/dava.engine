@@ -81,7 +81,7 @@ void SelectionSystem::OnSelectByRect(const Rect& rect)
             PackageBaseNode* child = node->Get(i);
             UIControl* control = child->GetControl();
             DVASSERT(nullptr != control);
-            if (control->GetVisibilityFlag() && rect.RectContains(control->GetGeometricData().GetAABBox()))
+            if (control->IsVisible() && rect.RectContains(control->GetGeometricData().GetAABBox()))
             {
                 newSelection.insert(node->Get(i));
             }
