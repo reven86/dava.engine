@@ -356,7 +356,7 @@ void Window::HandleSizeChanged(const Private::MainDispatcherEvent& e)
 // Window resizing during battle loading may lead to crash as sprite
 // reloading is not ready for multiple threads.
 // TODO: do something with sprite reloading
-#if !defined(__DAVAENGINE_MACOS__)
+#if !defined(__DAVAENGINE_MACOS__) && !defined(__DAVAENGINE_WINDOWS__)
                 Sprite::ValidateForSize();
 #endif
             }
