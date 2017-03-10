@@ -60,7 +60,8 @@ public:
 
     /** You have to subscribe to this signal before calling `Initialize` */
     Signal<bool> networkReady;
-    /** After this signal you can use ```bool IsPackDownloaded(const String& packName);```
+    /** Tells that dlcmanager is fully initialized.
+	    After this signal you can use ```bool IsPackDownloaded(const String& packName);```
 	    First parameter count number of already downloaded files.
 		Second parameter number of total files in server superpack
 		*/
