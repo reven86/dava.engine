@@ -200,6 +200,11 @@ void EditorSystemsManager::SelectNode(ControlNode* node)
     selectionSystemPtr->SelectNode(node);
 }
 
+SortedPackageBaseNodeSet EditorSystemsManager::GetEditingRootControls() const
+{
+    return editingRootControls;
+}
+
 void EditorSystemsManager::SetDisplayState(eDisplayState newDisplayState)
 {
     if (displayState == newDisplayState)
