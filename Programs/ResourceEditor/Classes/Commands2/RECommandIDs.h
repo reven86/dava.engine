@@ -1,10 +1,11 @@
 #pragma once
 
-#include <Command/CommandIDs.h>
+#include "Base/BaseTypes.h"
 
-enum CommandID : DAVA::CommandID
+enum CommandID : DAVA::uint32
 {
-    CMDID_TRANSFORM = DAVA::USER_COMMAND,
+    CMDID_BATCH,
+    CMDID_TRANSFORM,
 
     CMDID_ENTITY_ADD,
     CMDID_ENTITY_REMOVE,

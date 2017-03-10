@@ -1,10 +1,14 @@
 #include "Commands2/Base/RECommandNotificationObject.h"
+#include "Commands2/Base/RECommandIDHandler.h"
 
 namespace RECommandNotificationObjectDetail
 {
-bool MatchID(const RECommandNotificationObject* object, DAVA::CommandID id)
+const RECommandIDHandler* GetIDHandler(const RECommandNotificationObject* object)
 {
-    return (object->batch != nullptr) ? object->batch->MatchCommandID(id) : object->command->MatchCommandID(id);
+    const RECommandIDHandler* batchHandler = object->batch;
+    const RECommandIDHandler* commandHandler = object->command;
+
+    return (batchHandler != nullptr) ? batchHandler : commandHandler;
 }
 }
 
@@ -28,19 +32,20 @@ void RECommandNotificationObject::ExecuteForAllCommands(const DAVA::Function<voi
     }
 }
 
-bool RECommandNotificationObject::MatchCommandID(DAVA::CommandID commandID) const
+bool RECommandNotificationObject::MatchCommandID(DAVA::uint32 commandID) const
 {
     if (IsEmpty())
         return false;
 
-    return RECommandNotificationObjectDetail::MatchID(this, commandID);
+    const RECommandIDHandler* idHandler = RECommandNotificationObjectDetail::GetIDHandler(this);
+    return idHandler->MatchCommandID(commandID);
 }
 
-bool RECommandNotificationObject::MatchCommandIDs(const DAVA::Vector<DAVA::CommandID>& commandIDVector) const
+bool RECommandNotificationObject::MatchCommandIDs(const DAVA::Vector<DAVA::uint32>& commandIDVector) const
 {
     if (IsEmpty())
         return false;
 
-    auto functor = [this](DAVA::uint32 id) { return MatchCommandID(id); };
-    return std::find_if(commandIDVector.begin(), commandIDVector.end(), functor) != commandIDVector.end();
+    const RECommandIDHandler* idHandler = RECommandNotificationObjectDetail::GetIDHandler(this);
+    return idHandler->MatchCommandIDs(commandIDVector);
 }

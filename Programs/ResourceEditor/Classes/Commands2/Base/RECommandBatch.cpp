@@ -8,35 +8,36 @@
 
 RECommandBatch::RECommandBatch(const DAVA::String& description, DAVA::uint32 commandsCount)
     : CommandBatch(description, commandsCount)
+    , RECommandIDHandler(CMDID_BATCH)
 {
 }
 
 RECommand* RECommandBatch::GetCommand(DAVA::uint32 index) const
 {
-    if (index < static_cast<DAVA::uint32>(commands.size()))
+    if (index < static_cast<DAVA::uint32>(commandList.size()))
     {
-        DAVA::Command* command = commands.at(index).get();
+        DAVA::Command* command = commandList.at(index).get();
         return DAVA::DynamicTypeCheck<RECommand*>(command);
     }
 
-    DVASSERT(false, DAVA::Format("command at index %u, in batch with size %u not found", index, static_cast<DAVA::uint32>(commands.size())).c_str());
+    DVASSERT(false, DAVA::Format("command at index %u, in batch with size %u not found", index, static_cast<DAVA::uint32>(commandList.size())).c_str());
     return nullptr;
 }
 
-void RECommandBatch::RemoveCommands(DAVA::CommandID commandId)
+void RECommandBatch::RemoveCommands(DAVA::uint32 commandId)
 {
-    auto it = std::remove_if(commands.begin(), commands.end(), [commandId](const std::unique_ptr<DAVA::Command>& cmd)
+    auto it = std::remove_if(commandList.begin(), commandList.end(), [commandId](const std::unique_ptr<DAVA::Command>& cmd)
                              {
                                  const DAVA::Command* commandPtr = cmd.get();
                                  if (IsCommandBatch(commandPtr))
                                  {
-                                     return (commandId == DAVA::BATCH_COMMAND);
+                                     return (commandId == CMDID_BATCH);
                                  }
                                  return static_cast<const RECommand*>(commandPtr)->GetID() == commandId;
                              });
-    commands.erase(it, commands.end());
+    commandList.erase(it, commandList.end());
 
-    for (const std::unique_ptr<DAVA::Command>& command : commands)
+    for (const std::unique_ptr<DAVA::Command>& command : commandList)
     {
         DAVA::Command* commandPtr = command.get();
         if (IsCommandBatch(commandPtr))
@@ -47,12 +48,12 @@ void RECommandBatch::RemoveCommands(DAVA::CommandID commandId)
     }
 }
 
-bool RECommandBatch::MatchCommandID(DAVA::CommandID commandId) const
+bool RECommandBatch::MatchCommandID(DAVA::uint32 commandId) const
 {
-    DAVA::uint32 size = static_cast<DAVA::uint32>(commands.size());
+    DAVA::uint32 size = static_cast<DAVA::uint32>(commandList.size());
     for (DAVA::uint32 index = 0; index < size; ++index)
     {
-        const DAVA::Command* commandPtr = commands.at(index).get();
+        const DAVA::Command* commandPtr = commandList.at(index).get();
         if (IsCommandBatch(commandPtr))
         {
             const RECommandBatch* reCommandBatch = static_cast<const RECommandBatch*>(static_cast<const DAVA::CommandBatch*>(commandPtr));
