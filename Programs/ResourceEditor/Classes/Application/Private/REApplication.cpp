@@ -222,3 +222,8 @@ void REApplication::RegisterEditorAnyCasts()
     DAVA::AnyCast<ComboBoxTestDataDescr, DAVA::String>::Register(&ComboBoxTestDataDescrToString);
     DAVA::AnyCast<ComboBoxTestDataDescr, QIcon>::Register(&ComboBoxTestDataDescrToQIcon);
 }
+
+void REApplication::RegisterReflectionExtensions()
+{
+    ::RegisterReflectionExtensions();
+}

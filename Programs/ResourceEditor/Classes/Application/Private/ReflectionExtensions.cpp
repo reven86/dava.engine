@@ -132,12 +132,46 @@ void RegComponentsExtensions()
     }
 }
 
+String GetSceneName(DAVA::TArc::DataContext* ctx)
+{
+    SceneData* data = ctx->GetData<SceneData>();
+    DVASSERT(data != nullptr);
+    return data->GetScenePath().GetBasename();
+}
+
+String GetScenePath(DAVA::TArc::DataContext* ctx)
+{
+    SceneData* data = ctx->GetData<SceneData>();
+    DVASSERT(data != nullptr);
+    return data->GetScenePath().GetAbsolutePathname();
+}
+
+bool IsSceneChanged(DAVA::TArc::DataContext* ctx)
+{
+    SceneData* data = ctx->GetData<SceneData>();
+    DVASSERT(data != nullptr);
+    return data->GetScene()->IsChanged();
+}
+}
+
+void RegisterDataContextExtensions()
+{
+    using namespace ReflectionExtensionsDetail;
+    using namespace DAVA::TArc;
+    DAVA::ReflectionRegistrator<DAVA::TArc::DataContext>::Begin()
+    .Field(ContextNameFieldName, &GetSceneName, nullptr)
+    .Field(ContextToolTipFieldName, &GetScenePath, nullptr)
+    .Field(IsContextModifiedFieldName, &IsSceneChanged, nullptr)
+    .End();
+}
+
 void RegisterReflectionExtensions(DAVA::TArc::ContextAccessor* accessor)
 {
     RegisterRenderComponentExtensions();
     RegisterNMaterialExtensions();
     RegFilePathExt(accessor);
     RegComponentsExtensions();
+    RegisterDataContextExtensions();
 }
 } // namespace ReflectoinExtensionsDetail
 
