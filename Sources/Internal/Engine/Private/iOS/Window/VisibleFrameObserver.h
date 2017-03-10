@@ -4,7 +4,8 @@
 #if defined(__DAVAENGINE_IPHONE__)
 
 #import <Foundation/NSObject.h>
-#import <Foundation/NSNotification.h>
+
+@class NSNotification;
 
 namespace DAVA
 {
