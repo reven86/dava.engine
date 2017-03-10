@@ -351,11 +351,16 @@ void Window::HandleSizeChanged(const Private::MainDispatcherEvent& e)
             // call reloadig sprites/fonts from this point ((
             if (uiControlSystem->vcs->GetReloadResourceOnResize())
             {
-// Disable sprite reloading on macos
+// Disable sprite reloading on macos and windows
 // Game uses separate thread for loading battle and its resources.
 // Window resizing during battle loading may lead to crash as sprite
 // reloading is not ready for multiple threads.
 // TODO: do something with sprite reloading
+//
+// !!! At the moment this is a huge architectural problem,
+// that we do not know how to solve.
+// More detail can be found in DF-13044
+//
 #if !defined(__DAVAENGINE_MACOS__) && !defined(__DAVAENGINE_WINDOWS__)
                 Sprite::ValidateForSize();
 #endif
