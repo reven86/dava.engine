@@ -16,7 +16,7 @@ namespace DAVA
 namespace TArc
 {
 PropertiesView::PropertiesView(ContextAccessor* accessor_, const FieldDescriptor& objectsField, const std::weak_ptr<Updater>& updater_, const String& settingsNodeName_)
-    : binder(accessor)
+    : binder(accessor_)
     , accessor(accessor_)
     , updater(updater_)
     , settingsNodeName(settingsNodeName_)
