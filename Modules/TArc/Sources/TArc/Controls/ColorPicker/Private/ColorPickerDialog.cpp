@@ -311,18 +311,10 @@ void ColorPickerDialog::LoadSettings()
         QByteArray geometryData = propsItem.Get<QByteArray>(ColorPickerDialogDetail::GEOMETRY_KEY);
         QDataStream geometryStream(&geometryData, QIODevice::ReadOnly);
 
-        if (geometryData.size() / sizeof(int) == 4)
+        QRect loadedGeometry;
+        geometryStream >> loadedGeometry;
+        if (loadedGeometry.isValid())
         {
-            int x = 0;
-            int y = 0;
-            int w = 0;
-            int h = 0;
-            geometryStream >> x;
-            geometryStream >> y;
-            geometryStream >> w;
-            geometryStream >> h;
-
-            QRect loadedGeometry(x, y, w, h);
             setGeometry(loadedGeometry);
             move(loadedGeometry.topLeft());
         }
@@ -371,13 +363,7 @@ void ColorPickerDialog::SaveSettings()
     {
         QByteArray geometryData;
         QDataStream geometryStream(&geometryData, QIODevice::WriteOnly);
-
-        QRect savedGeometry = geometry();
-        geometryStream << savedGeometry.x();
-        geometryStream << savedGeometry.y();
-        geometryStream << savedGeometry.width();
-        geometryStream << savedGeometry.height();
-
+        geometryStream << geometry();
         propsItem.Set(ColorPickerDialogDetail::GEOMETRY_KEY, Any(geometryData));
     }
 
