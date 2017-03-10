@@ -1,8 +1,12 @@
 #include "Classes/Application/ReflectionExtensions.h"
+#include "Classes/SceneManager/SceneData.h"
 #include "Classes/PropertyPanel/RenderObjectExtensions.h"
 #include "Classes/PropertyPanel/NMaterialExtensions.h"
 #include "Classes/PropertyPanel/FilePathExtensions.h"
 #include "Classes/PropertyPanel/ComponentExtensions.h"
+
+#include <TArc/DataProcessing/DataContext.h>
+#include <TArc/Utils/CommonFieldNames.h>
 
 #include <Entity/Component.h>
 #include <Scene3D/Components/RenderComponent.h>
@@ -16,6 +20,7 @@
 #include <Reflection/ReflectedType.h>
 #include <Reflection/ReflectedStructure.h>
 #include <Reflection/ReflectedTypeDB.h>
+#include <Reflection/ReflectionRegistrator.h>
 
 namespace ReflectoinExtensionsDetail
 {
@@ -81,7 +86,6 @@ void RegisterNMaterialExtensions()
 
 void RegFilePathExt(DAVA::TArc::ContextAccessor* accessor)
 {
-    using namespace DAVA;
     // HeightMap
     EmplaceFieldMeta<Landscape>("heightmapPath", CreateHeightMapValidator(accessor));
     EmplaceFieldMeta<Landscape>("heightmapPath", CreateHeightMapFileMeta(accessor));
@@ -93,7 +97,6 @@ void RegFilePathExt(DAVA::TArc::ContextAccessor* accessor)
 
 void RegComponentsExtensions()
 {
-    using namespace DAVA;
     const Type* transformComponent = Type::Instance<TransformComponent>();
     const Type* actionComponent = Type::Instance<ActionComponent>();
     const Type* soundComponent = Type::Instance<SoundComponent>();
@@ -152,13 +155,11 @@ bool IsSceneChanged(DAVA::TArc::DataContext* ctx)
     DVASSERT(data != nullptr);
     return data->GetScene()->IsChanged();
 }
-}
 
 void RegisterDataContextExtensions()
 {
-    using namespace ReflectionExtensionsDetail;
     using namespace DAVA::TArc;
-    DAVA::ReflectionRegistrator<DAVA::TArc::DataContext>::Begin()
+    ReflectionRegistrator<DataContext>::Begin()
     .Field(ContextNameFieldName, &GetSceneName, nullptr)
     .Field(ContextToolTipFieldName, &GetScenePath, nullptr)
     .Field(IsContextModifiedFieldName, &IsSceneChanged, nullptr)

@@ -101,6 +101,7 @@ class Validator
 {
 public:
     Validator(const TValidationFn& fn);
+    virtual ~Validator() = default;
 
     /**
         Validate value
