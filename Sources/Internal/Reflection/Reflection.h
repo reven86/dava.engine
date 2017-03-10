@@ -56,6 +56,12 @@ TODO: usage comments
 #define DAVA_VIRTUAL_TEMPLATE_REFLECTION_IMPL(Cls) IMPL__DAVA_VIRTUAL_TEMPLATE_REFLECTION_IMPL(Cls)
 
 /**
+ \ingroup reflection
+ TODO: usage comments
+ */
+#define DAVA_VIRTUAL_TEMPLATE_SPECIALIZATION_REFLECTION_IMPL(Cls) IMPL__DAVA_VIRTUAL_TEMPLATE_SPECIALIZATION_REFLECTION_IMPL(Cls)
+
+/**
     \ingroup reflection
     TODO: usage comments
 */

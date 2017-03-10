@@ -1024,7 +1024,7 @@ struct MultiEditorsControlTest : public ReflectionBase
 
     void SetY(float32 v)
     {
-        v3.y;
+        v3.y = v;
     }
 
     float32 GetZ() const
@@ -1034,7 +1034,7 @@ struct MultiEditorsControlTest : public ReflectionBase
 
     void SetZ(float32 v)
     {
-        v3.z;
+        v3.z = v;
     }
 
     static Result Create(TArc::UI* ui, TArc::ContextAccessor* accessor, QWidget* parent)

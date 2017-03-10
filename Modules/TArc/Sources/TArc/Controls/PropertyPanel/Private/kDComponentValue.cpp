@@ -34,7 +34,7 @@ bool kDComponentValue<T, TEditor, TComponent>::IsValidValueToSet(const Any& newV
 template <typename T, typename TEditor, typename TComponent>
 ControlProxy* kDComponentValue<T, TEditor, TComponent>::CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor) const
 {
-    ControlDescriptorBuilder<TEditor::Fields> descr;
+    ControlDescriptorBuilder<typename TEditor::Fields> descr;
     descr[TEditor::Fields::FieldsList] = "fieldsList";
     return new TEditor(descr, wrappersProcessor, model, parent);
 }
@@ -134,7 +134,7 @@ int32 kDComponentValue<T, TEditor, TComponent>::GetAccuracy() const
 {
     if (!nodes.empty())
     {
-        const M::FloatNumberAccuracy* accuracy = nodes.front()->field.ref.GetMeta<M::FloatNumberAccuracy>();
+        const M::FloatNumberAccuracy* accuracy = nodes.front()->field.ref.template GetMeta<M::FloatNumberAccuracy>();
         if (accuracy != nullptr)
         {
             return accuracy->accuracy;
@@ -181,7 +181,7 @@ const M::Range* kDComponentValue<T, TEditor, TComponent>::Get6AxisRange() const
 }
 
 using Vector2ComponentValue = kDComponentValue<Vector2, MultiDoubleSpinBox, float32>;
-DAVA_VIRTUAL_REFLECTION_IMPL(Vector2ComponentValue)
+DAVA_VIRTUAL_TEMPLATE_SPECIALIZATION_REFLECTION_IMPL(Vector2ComponentValue)
 {
     ReflectionRegistrator<Vector2ComponentValue>::Begin()
     .Field("fieldsList", &Vector2ComponentValue::fields)
@@ -194,7 +194,7 @@ DAVA_VIRTUAL_REFLECTION_IMPL(Vector2ComponentValue)
 }
 
 using Vector3ComponentValue = kDComponentValue<Vector3, MultiDoubleSpinBox, float32>;
-DAVA_VIRTUAL_REFLECTION_IMPL(Vector3ComponentValue)
+DAVA_VIRTUAL_TEMPLATE_SPECIALIZATION_REFLECTION_IMPL(Vector3ComponentValue)
 {
     ReflectionRegistrator<Vector3ComponentValue>::Begin()
     .Field("fieldsList", &Vector3ComponentValue::fields)
@@ -209,7 +209,7 @@ DAVA_VIRTUAL_REFLECTION_IMPL(Vector3ComponentValue)
 }
 
 using Vector4ComponentValue = kDComponentValue<Vector4, MultiDoubleSpinBox, float32>;
-DAVA_VIRTUAL_REFLECTION_IMPL(Vector4ComponentValue)
+DAVA_VIRTUAL_TEMPLATE_SPECIALIZATION_REFLECTION_IMPL(Vector4ComponentValue)
 {
     ReflectionRegistrator<Vector4ComponentValue>::Begin()
     .Field("fieldsList", &Vector4ComponentValue::fields)
@@ -226,7 +226,7 @@ DAVA_VIRTUAL_REFLECTION_IMPL(Vector4ComponentValue)
 }
 
 using RectComponentValue = kDComponentValue<Rect, MultiDoubleSpinBox, float32>;
-DAVA_VIRTUAL_REFLECTION_IMPL(RectComponentValue)
+DAVA_VIRTUAL_TEMPLATE_SPECIALIZATION_REFLECTION_IMPL(RectComponentValue)
 {
     ReflectionRegistrator<RectComponentValue>::Begin()
     .Field("fieldsList", &RectComponentValue::fields)
@@ -243,7 +243,7 @@ DAVA_VIRTUAL_REFLECTION_IMPL(RectComponentValue)
 }
 
 using ColorComponentValue = kDComponentValue<Color, MultiDoubleSpinBox, float32>;
-DAVA_VIRTUAL_REFLECTION_IMPL(ColorComponentValue)
+DAVA_VIRTUAL_TEMPLATE_SPECIALIZATION_REFLECTION_IMPL(ColorComponentValue)
 {
     ReflectionRegistrator<ColorComponentValue>::Begin()
     .Field("fieldsList", &ColorComponentValue::fields)
@@ -260,7 +260,7 @@ DAVA_VIRTUAL_REFLECTION_IMPL(ColorComponentValue)
 }
 
 using AABBox3ComponentValue = kDComponentValue<AABBox3, MultiDoubleSpinBox, float32>;
-DAVA_VIRTUAL_REFLECTION_IMPL(AABBox3ComponentValue)
+DAVA_VIRTUAL_TEMPLATE_SPECIALIZATION_REFLECTION_IMPL(AABBox3ComponentValue)
 {
     ReflectionRegistrator<AABBox3ComponentValue>::Begin()
     .Field("fieldsList", &AABBox3ComponentValue::fields)

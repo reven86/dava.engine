@@ -2,6 +2,7 @@
 
 #include <Reflection/Reflection.h>
 #include <Reflection/ReflectedType.h>
+#include <Reflection/ReflectedMeta.h>
 #include <Reflection/ReflectedStructure.h>
 #include <Functional/Function.h>
 
