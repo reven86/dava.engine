@@ -42,7 +42,7 @@ public:
         }
     }
 
-    DAVA::FilePath GetProjectPath() const
+    const DAVA::FilePath& GetProjectPath() const
     {
         return projectPath;
     }
@@ -52,7 +52,7 @@ public:
         return ProjectManagerData::GetDataSource3DPath(projectPath);
     }
 
-    DAVA::FilePath GetScenePath() const
+    const DAVA::FilePath& GetScenePath() const
     {
         return scenePath;
     }

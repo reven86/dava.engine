@@ -65,7 +65,7 @@ Any NumberComponentValue<T>::GetNumberValue() const
 }
 
 template <typename T>
-void NumberComponentValue<T>::SetNumberValue(Any v)
+void NumberComponentValue<T>::SetNumberValue(const Any& v)
 {
     SetValue(v.Cast<T>());
 }

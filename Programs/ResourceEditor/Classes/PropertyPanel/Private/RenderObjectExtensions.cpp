@@ -66,14 +66,10 @@ void BillboardCommandProducer::CreateCache(DAVA::TArc::ContextAccessor* accessor
         DAVA::Entity* entity = obj.AsEntity();
         if (entity != nullptr)
         {
-            RenderComponent* component = GetRenderComponent(entity);
-            if (component != nullptr)
+            RenderObject* renderObject = GetRenderObject(entity);
+            if (renderObject != nullptr)
             {
-                RenderObject* renderObject = component->GetRenderObject();
-                if (renderObject != nullptr)
-                {
-                    cache.emplace(renderObject, entity);
-                }
+                cache.emplace(renderObject, entity);
             }
         }
     }
@@ -181,10 +177,9 @@ void RemoveRenderBatch::CreateCache(DAVA::TArc::ContextAccessor* accessor)
         DAVA::Entity* entity = obj.AsEntity();
         if (entity != nullptr)
         {
-            RenderComponent* component = GetRenderComponent(entity);
-            if (component != nullptr)
+            RenderObject* renderObject = GetRenderObject(entity);
+            if (renderObject != nullptr)
             {
-                RenderObject* renderObject = component->GetRenderObject();
                 for (uint32 i = 0; i < renderObject->GetRenderBatchCount(); ++i)
                 {
                     cache.emplace(renderObject->GetRenderBatch(i), std::make_pair(entity, i));
@@ -257,10 +252,9 @@ void ConvertToShadow::CreateCache(DAVA::TArc::ContextAccessor* accessor)
         DAVA::Entity* entity = obj.AsEntity();
         if (entity != nullptr)
         {
-            RenderComponent* component = GetRenderComponent(entity);
-            if (component != nullptr)
+            RenderObject* renderObject = GetRenderObject(entity);
+            if (renderObject != nullptr)
             {
-                RenderObject* renderObject = component->GetRenderObject();
                 for (uint32 i = 0; i < renderObject->GetRenderBatchCount(); ++i)
                 {
                     cache.emplace(renderObject->GetRenderBatch(i), entity);

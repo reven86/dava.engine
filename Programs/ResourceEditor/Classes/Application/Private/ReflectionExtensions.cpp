@@ -84,7 +84,7 @@ void RegisterNMaterialExtensions()
     EmplaceFieldMeta<RenderBatch>("material", CreateNMaterialCommandProducer());
 }
 
-void RegFilePathExt(DAVA::TArc::ContextAccessor* accessor)
+void RegisterFilePathExtensions(DAVA::TArc::ContextAccessor* accessor)
 {
     // HeightMap
     EmplaceFieldMeta<Landscape>("heightmapPath", CreateHeightMapValidator(accessor));
@@ -95,7 +95,7 @@ void RegFilePathExt(DAVA::TArc::ContextAccessor* accessor)
     EmplaceFieldMeta<VegetationRenderObject>("customGeometry", CreateSceneFileMeta(accessor));
 }
 
-void RegComponentsExtensions()
+void RegisterComponentsExtensions()
 {
     const Type* transformComponent = Type::Instance<TransformComponent>();
     const Type* actionComponent = Type::Instance<ActionComponent>();
@@ -170,8 +170,8 @@ void RegisterReflectionExtensions(DAVA::TArc::ContextAccessor* accessor)
 {
     RegisterRenderComponentExtensions();
     RegisterNMaterialExtensions();
-    RegFilePathExt(accessor);
-    RegComponentsExtensions();
+    RegisterFilePathExtensions(accessor);
+    RegisterComponentsExtensions();
     RegisterDataContextExtensions();
 }
 } // namespace ReflectoinExtensionsDetail
