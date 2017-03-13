@@ -125,7 +125,8 @@ public:
     // use only after initialization
     bool IsFileReady(uint32 fileIndex) const
     {
-        return fileIndex < scanFileReady.size() && scanFileReady[fileIndex];
+        DVASSERT(fileIndex < scanFileReady.size());
+        return scanFileReady[fileIndex];
     }
 
     void SetFileIsReady(uint32 fileIndex)

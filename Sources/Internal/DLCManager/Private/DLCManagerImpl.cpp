@@ -908,24 +908,21 @@ DLCManager::Progress DLCManagerImpl::GetProgress() const
     progress.isRequestingEnabled = true;
 
     const Vector<PackFile::FilesTableBlock::FilesData::Data>& files = usedPackFile.filesTable.data.files;
-    for (const auto& fileData : files)
+    const size_t size = files.size();
+    for (size_t indexOfFile = 0; indexOfFile < size; ++indexOfFile)
     {
-        // TODO this part we can calculate only once
+        const auto& fileData = files[indexOfFile];
         uint64 fullFileSize = fileData.compressedSize + sizeof(LitePack::Footer);
         progress.total += fullFileSize;
 
-        ptrdiff_t dist = std::distance(&files[0], &fileData);
-        uint32 index = static_cast<uint32>(dist);
-
-        if (scanFileReady.at(index))
+        if (IsFileReady(indexOfFile))
         {
             progress.alreadyDownloaded += fullFileSize;
         }
 
         // is current file is downloadin in requestManager queue?
         const PackMetaData::PackInfo& packInfo = meta->GetPackInfo(fileData.metaIndex);
-        const PackRequest* request = requestManager->Find(packInfo.packName);
-        if (request != nullptr)
+        if (requestManager->IsInQueue(packInfo.packName))
         {
             progress.inQueue += fullFileSize;
         }

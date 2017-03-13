@@ -17,6 +17,7 @@ public:
     void Update();
     bool Empty() const;
     size_t GetNumRequests() const;
+    bool IsInQueue(const String& packName) const;
     PackRequest* Find(const String& requestedPackName) const;
     PackRequest* Top() const;
     void Push(PackRequest*);
@@ -27,5 +28,13 @@ public:
 private:
     DLCManager& packManager;
     Vector<PackRequest*> requests;
+    // optimization to get to know for constant time if request in RequestManager
+    UnorderedSet<String> requestNames;
 };
+
+inline bool RequestManager::IsInQueue(const String& packName) const
+{
+    return requestNames.find(packName) != end(requestNames);
+}
+
 } // end namespace DAVA

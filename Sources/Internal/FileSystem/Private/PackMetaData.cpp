@@ -147,6 +147,8 @@ const PackMetaData::PackInfo& PackMetaData::GetPackInfo(const String& packName) 
             return packInfo;
         }
     }
+    Logger::Error("error: can't find packName: %s", packName.c_str());
+    DVASSERT(false, "debug packName value");
     DAVA_THROW(Exception, "no such packName: " + packName);
 }
 

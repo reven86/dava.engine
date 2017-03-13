@@ -21,7 +21,7 @@ public:
     ~PackRequest() override;
 
     void Start();
-    void Update();
+    bool Update();
     void Stop();
 
     const String& GetRequestedPackName() const override;
@@ -81,7 +81,7 @@ private:
 
     static void DeleteJustDownloadedFileAndStartAgain(FileRequest& fileRequest);
     void DisableRequestingAndFireSignalNoSpaceLeft(PackRequest::FileRequest& fileRequest);
-    void UpdateFileRequests();
+    bool UpdateFileRequests();
 
     DLCManagerImpl& packManagerImpl;
 

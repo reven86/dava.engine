@@ -179,10 +179,12 @@ void PackRequest::InitializeFileRequests()
     }
 }
 
-void PackRequest::Update()
+bool PackRequest::Update()
 {
     DVASSERT(Thread::IsMainThread());
     DVASSERT(packManagerImpl.IsInitialized());
+
+    bool needFireUpdateSignal = false;
 
     if (numOfDownloadedFile < fileIndexes.size())
     {
@@ -193,9 +195,11 @@ void PackRequest::Update()
 
         if (!IsDownloaded())
         {
-            UpdateFileRequests();
+            needFireUpdateSignal = UpdateFileRequests();
         }
     }
+
+    return needFireUpdateSignal;
 }
 
 void PackRequest::InitializeFileRequest(const uint32 fileIndex_,
@@ -235,7 +239,7 @@ void PackRequest::DisableRequestingAndFireSignalNoSpaceLeft(PackRequest::FileReq
     packManagerImpl.cantWriteToDisk.Emit(fileRequest.localFile.GetAbsolutePathname().c_str(), errno);
 }
 
-void PackRequest::UpdateFileRequests()
+bool PackRequest::UpdateFileRequests()
 {
     // TODO refactor method
     bool callSignal = false;
@@ -278,13 +282,13 @@ void PackRequest::UpdateFileRequests()
                     if (dirCreate == FileSystem::DIRECTORY_CANT_CREATE)
                     {
                         DisableRequestingAndFireSignalNoSpaceLeft(fileRequest);
-                        return;
+                        return false;
                     }
                     ScopedPtr<File> f(File::Create(fileRequest.localFile, File::CREATE | File::WRITE));
                     if (!f)
                     {
                         DisableRequestingAndFireSignalNoSpaceLeft(fileRequest);
-                        return;
+                        return false;
                     }
                     f->Truncate(0);
                     fileRequest.taskId = 0;
@@ -336,7 +340,7 @@ void PackRequest::UpdateFileRequests()
                                 if (DLE_FILE_ERROR == downloadError)
                                 {
                                     DisableRequestingAndFireSignalNoSpaceLeft(fileRequest);
-                                    return;
+                                    return false;
                                 }
                             }
                         }
@@ -374,7 +378,7 @@ void PackRequest::UpdateFileRequests()
                     {
                         // not enough space
                         DisableRequestingAndFireSignalNoSpaceLeft(fileRequest);
-                        return;
+                        return false;
                     }
                 }
 
@@ -402,10 +406,7 @@ void PackRequest::UpdateFileRequests()
     } // end for requests
 
     // call signal only once during update
-    if (callSignal)
-    {
-        packManagerImpl.requestUpdated.Emit(*this);
-    }
+    return callSignal;
 }
 
 } // end namespace DAVA

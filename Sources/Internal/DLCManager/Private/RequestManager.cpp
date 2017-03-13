@@ -30,10 +30,16 @@ void RequestManager::Update()
     if (!Empty())
     {
         PackRequest* request = Top();
-        request->Update();
+        bool callSignal = request->Update();
+
         if (request->IsDownloaded())
         {
             Pop();
+        }
+
+        if (callSignal)
+        {
+            packManager.requestUpdated.Emit(*request);
         }
     }
 }
@@ -81,6 +87,10 @@ void RequestManager::Push(PackRequest* request_)
     }
 
     requests.push_back(request_);
+
+    requestNames.insert(request_->GetRequestedPackName());
+
+    DVASSERT(requests.size() == requestNames.size());
 }
 
 void RequestManager::SetPriorityToRequest(PackRequest* request)
@@ -138,7 +148,13 @@ void RequestManager::Pop()
 {
     if (!requests.empty())
     {
-        requests.erase(begin(requests));
+        auto it = begin(requests);
+        auto nameIt = requestNames.find((*it)->GetRequestedPackName());
+
+        requestNames.erase(nameIt);
+        requests.erase(it);
+
+        DVASSERT(requests.size() == requestNames.size());
     }
 }
 
@@ -149,7 +165,12 @@ void RequestManager::Remove(PackRequest* request)
     auto it = find(begin(requests), end(requests), request);
     if (it != end(requests))
     {
+        auto nameIt = requestNames.find((*it)->GetRequestedPackName());
+
+        requestNames.erase(nameIt);
         requests.erase(it);
+
+        DVASSERT(requests.size() == requestNames.size());
     }
 }
 
