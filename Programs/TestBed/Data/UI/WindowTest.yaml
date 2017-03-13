@@ -96,16 +96,48 @@ Controls:
             children:
             -   class: "UIControl"
                 name: "InfoPanel"
-                size: [374.000000, 96.000000]
+                size: [374.000000, 158.000000]
                 components:
                     LinearLayout:
                         orientation: "TopDown"
+                        spacing: 10.000000
                     SizePolicy:
                         horizontalPolicy: "PercentOfParent"
                         verticalPolicy: "PercentOfChildrenSum"
                     Anchor:
                         topAnchorEnabled: true
                 children:
+                -   class: "UIControl"
+                    name: "InputPanel"
+                    position: [0.000000, 0.000000]
+                    size: [374.000000, 32.000000]
+                    components:
+                        LinearLayout: {}
+                        SizePolicy:
+                            horizontalPolicy: "PercentOfParent"
+                            verticalPolicy: "PercentOfMaxChild"
+                    children:
+                    -   class: "UIStaticText"
+                        name: "Label"
+                        position: [0.000000, 0.000000]
+                        size: [192.000000, 32.000000]
+                        text: "Text field with options: "
+                        font: "Korinna_18"
+                        components:
+                            SizePolicy:
+                                horizontalPolicy: "PercentOfContent"
+                    -   class: "UITextField"
+                        name: "TextField1"
+                        size: [182.000000, 32.000000]
+                        debugDraw: true
+                        text: "select me"
+                        font: "Korinna_18"
+                        autoCorrectionType: "AUTO_CORRECTION_TYPE_YES"
+                        spellCheckingType: "SPELL_CHECKING_TYPE_YES"
+                        components:
+                            SizePolicy:
+                                horizontalPolicy: "PercentOfParent"
+                            Focus: {}
                 -   class: "UIControl"
                     name: "InputPanel"
                     size: [374.000000, 32.000000]
@@ -116,20 +148,23 @@ Controls:
                             verticalPolicy: "PercentOfMaxChild"
                     children:
                     -   class: "UIStaticText"
-                        name: "Label2"
+                        name: "Label"
                         position: [0.000000, 0.000000]
-                        size: [87.000000, 32.000000]
-                        text: "Text field: "
+                        size: [188.000000, 32.000000]
+                        text: "Text field w/o options: "
                         font: "Korinna_18"
                         components:
                             SizePolicy:
                                 horizontalPolicy: "PercentOfContent"
                     -   class: "UITextField"
-                        name: "TextField"
-                        size: [287.000000, 32.000000]
+                        name: "TextField2"
+                        size: [186.000000, 32.000000]
                         debugDraw: true
                         text: "select me"
                         font: "Korinna_18"
+                        autoCorrectionType: "AUTO_CORRECTION_TYPE_NO"
+                        spellCheckingType: "SPELL_CHECKING_TYPE_NO"
+                        keyboardType: "KEYBOARD_TYPE_NUMBER_PAD"
                         components:
                             SizePolicy:
                                 horizontalPolicy: "PercentOfParent"

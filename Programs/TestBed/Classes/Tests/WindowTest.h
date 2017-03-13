@@ -25,7 +25,8 @@ private:
     DAVA::RefPtr<DAVA::UIControl> visibleFrame;
     DAVA::RefPtr<DAVA::UIStaticText> visibleFrameRectText;
     DAVA::RefPtr<DAVA::UIStaticText> keyboardFrameRectText;
-    DAVA::RefPtr<DAVA::UITextField> textField;
+    DAVA::RefPtr<DAVA::UITextField> textField1;
+    DAVA::RefPtr<DAVA::UITextField> textField2;
     DAVA::SigConnectionID visibleFrameChangedId = 0;
     TextFieldDelegate* tfDelegate = nullptr;
 };

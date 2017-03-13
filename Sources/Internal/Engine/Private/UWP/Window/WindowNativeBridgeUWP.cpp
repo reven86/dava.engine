@@ -539,30 +539,12 @@ void WindowNativeBridge::OnKeyboardShowing(Windows::UI::ViewManagement::InputPan
 {
     // Notify Windows that we'll handle layout by ourselves
     args->EnsuredFocusedElementInView = true;
-
-    const ::Windows::Foundation::Rect& srcRect = args->OccludedRect;
-    Rect keyboardFrame(srcRect.X, srcRect.Y, srcRect.Width, srcRect.Height);
-    Rect visualFrame(0.f, 0.f, float32(xamlSwapChainPanel->ActualWidth), float32(xamlSwapChainPanel->ActualHeight));
-
-    float32 topHeight = keyboardFrame.y - visualFrame.y;
-    float32 bottomHeight = visualFrame.dy - (keyboardFrame.y + keyboardFrame.dy);
-    if (topHeight > bottomHeight)
-    {
-        visualFrame.dy = topHeight;
-    }
-    else
-    {
-        visualFrame.y = keyboardFrame.y + keyboardFrame.dy;
-        visualFrame.dy = bottomHeight;
-    }
-
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibleFrameChangedEvent(window, visualFrame.x, visualFrame.y, visualFrame.dx, visualFrame.dy));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibleFrameChangedEvent(window, 0.f, 0.f, float32(xamlSwapChainPanel->ActualWidth), float32(args->OccludedRect.Y)));
 }
 
 void WindowNativeBridge::OnKeyboardHiding(Windows::UI::ViewManagement::InputPane ^ sender, Windows::UI::ViewManagement::InputPaneVisibilityEventArgs ^ args)
 {
-    Rect visualFrame(0.f, 0.f, float32(xamlSwapChainPanel->ActualWidth), float32(xamlSwapChainPanel->ActualHeight));
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibleFrameChangedEvent(window, visualFrame.x, visualFrame.y, visualFrame.dx, visualFrame.dy));
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibleFrameChangedEvent(window, 0.f, 0.f, float32(xamlSwapChainPanel->ActualWidth), float32(xamlSwapChainPanel->ActualHeight)));
 }
 
 eModifierKeys WindowNativeBridge::GetModifierKeys() const

@@ -47,12 +47,14 @@ void WindowTest::LoadResources()
     visibleFrame = main->FindByPath("**/VisibleFrame");
     visibleFrameRectText = main->FindByPath<UIStaticText*>("**/VisibleFrameRectText");
     keyboardFrameRectText = main->FindByPath<UIStaticText*>("**/KeyboardFrameRectText");
-    textField = main->FindByPath<UITextField*>("**/TextField");
+    textField1 = main->FindByPath<UITextField*>("**/TextField1");
+    textField2 = main->FindByPath<UITextField*>("**/TextField2");
 
     tfDelegate = new TextFieldDelegate([this](const Rect& r) {
         UpdateKeyboardFrameSize(r);
     });
-    textField->SetDelegate(tfDelegate);
+    textField1->SetDelegate(tfDelegate);
+    textField2->SetDelegate(tfDelegate);
 
     visibleFrameChangedId = GetPrimaryWindow()->visibleFrameChanged.Connect([this](Window*, const Rect& r) {
         Rect converted = UIControlSystem::Instance()->vcs->ConvertInputToVirtual(r);
@@ -66,7 +68,8 @@ void WindowTest::UnloadResources()
 {
     BaseScreen::UnloadResources();
 
-    textField->SetDelegate(nullptr);
+    textField1->SetDelegate(nullptr);
+    textField2->SetDelegate(nullptr);
     SafeDelete(tfDelegate);
 
     GetPrimaryWindow()->visibleFrameChanged.Disconnect(visibleFrameChangedId);
