@@ -1,8 +1,8 @@
-#ifndef __DAVAENGINE_SCENE3D_RENDERBATCHARRAY_H__
-#define __DAVAENGINE_SCENE3D_RENDERBATCHARRAY_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Base/FastName.h"
+#include "Reflection/Reflection.h"
 #include "Render/Highlevel/RenderBatch.h"
 
 namespace DAVA
@@ -66,7 +66,4 @@ inline RenderBatch* RenderBatchArray::Get(uint32 index) const
 {
     return renderBatchArray[index];
 }
-
-} // ns
-
-#endif /* __DAVAENGINE_SCENE3D_RENDERBATCHARRAY_H__ */
+}

@@ -46,6 +46,12 @@ public:
     */
     uint32 Size() const;
 
+    /**
+    \brief Works the same as Command::IsClean
+    \returns true if empty or contain only clean commands
+    */
+    bool IsClean() const override;
+
 protected:
     using CommandsContainer = Vector<std::unique_ptr<Command>>;
     CommandsContainer commandList;
@@ -62,4 +68,4 @@ inline uint32 CommandBatch::Size() const
 }
 
 bool IsCommandBatch(const Command* command);
-}
+} //namespace DAVA

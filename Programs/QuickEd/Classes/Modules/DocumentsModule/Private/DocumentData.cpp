@@ -15,7 +15,6 @@ DAVA_VIRTUAL_REFLECTION_IMPL(DocumentData)
     .Field(canRedoPropertyName, &DocumentData::CanRedo, nullptr)
     .Field(undoTextPropertyName, &DocumentData::GetUndoText, nullptr)
     .Field(redoTextPropertyName, &DocumentData::GetRedoText, nullptr)
-    .Field(canClosePropertyName, &DocumentData::CanClose, nullptr)
     .Field(selectionPropertyName, &DocumentData::GetSelectedNodes, &DocumentData::SetSelectedNodes)
     .End();
 }
@@ -86,11 +85,6 @@ bool DocumentData::IsDocumentExists() const
     return documentExists;
 }
 
-bool DocumentData::CanClose() const
-{
-    return documentExists;
-}
-
 QString DocumentData::GetUndoText() const
 {
     const DAVA::Command* command = commandStack->GetUndoCommand();
@@ -114,5 +108,4 @@ const char* DocumentData::canUndoPropertyName = "can undo";
 const char* DocumentData::canRedoPropertyName = "can redo";
 const char* DocumentData::undoTextPropertyName = "undo text";
 const char* DocumentData::redoTextPropertyName = "redo text";
-const char* DocumentData::canClosePropertyName = "can close";
 const char* DocumentData::selectionPropertyName = "selection";

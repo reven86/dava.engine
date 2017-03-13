@@ -1,8 +1,8 @@
-#ifndef __DAVAENGINE_CUSTOM_PROPERTIES_COMPONENT_H__
-#define __DAVAENGINE_CUSTOM_PROPERTIES_COMPONENT_H__
+#pragma once
 
 #include "Entity/Component.h"
 #include "FileSystem/KeyedArchive.h"
+#include "Reflection/Reflection.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
 
 namespace DAVA
@@ -31,6 +31,8 @@ public:
                          MEMBER(properties, "Custom properties", I_SAVE | I_VIEW | I_EDIT)
                          );
 
+    DAVA_VIRTUAL_REFLECTION(CustomPropertiesComponent, Component);
+
 private:
     CustomPropertiesComponent(const KeyedArchive& srcProperties);
 
@@ -38,5 +40,3 @@ private:
     KeyedArchive* properties;
 };
 };
-
-#endif /* defined(__DAVAENGINE_CUSTOM_PROPERTIES_COMPONENT_H__) */
