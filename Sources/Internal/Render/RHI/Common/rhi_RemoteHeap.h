@@ -260,10 +260,11 @@ SimpleRemoteHeap<MaxBlockCount>::_commit_block(unsigned size, unsigned align)
     Block* block = nullptr;
     unsigned sz = L_ALIGNED_SIZE(size, align);
 
-    if (_unused + sz <= _base + _total_size)
+    if ((_unused + sz <= _base + _total_size) && (_block.size() < MaxBlockCount))
     {
-        Block b;
+        _block.emplace_back();
 
+        Block& b = _block.back();
         b.base = _unused;
         b.size = sz;
         b.align = align;
@@ -271,10 +272,8 @@ SimpleRemoteHeap<MaxBlockCount>::_commit_block(unsigned size, unsigned align)
         b.usr_sz = size;
         b.slack = 0;
         b.flags = 0;
-        {
-            _block.push_back(b);
-            block = &(_block[_block.size() - 1]);
-        }
+        block = &b;
+
         _unused += sz;
     }
 
