@@ -4,6 +4,7 @@
 #include <Reflection/ReflectedType.h>
 #include <Reflection/ReflectedMeta.h>
 #include <Reflection/ReflectedStructure.h>
+#include <Reflection/ReflectedTypeDB.h>
 #include <Functional/Function.h>
 
 namespace DAVA
