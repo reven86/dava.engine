@@ -13,4 +13,3 @@ LabelTest.h
 LineEditTest.h
 PlainTextEditTest.h
 QtWrapLayoutTests.h
-SceneTabbarTest.h
