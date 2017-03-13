@@ -3,13 +3,11 @@
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "EditorSystems/SelectionContainer.h"
 
-#include <TArc/DataProcessing/DataNode.h>
-#include <TArc/DataProcessing/AnySupport/AnyQStringCompare.h>
+#include <TArc/Qt/QtString.h>
 
 #include <Base/BaseTypes.h>
 #include <Base/RefPtr.h>
 
-#include <QString>
 
 namespace DAVA
 {
