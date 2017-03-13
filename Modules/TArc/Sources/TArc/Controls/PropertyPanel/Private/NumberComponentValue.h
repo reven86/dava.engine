@@ -20,7 +20,7 @@ protected:
 
 private:
     Any GetNumberValue() const;
-    void SetNumberValue(Any v);
+    void SetNumberValue(const Any& v);
 
     DAVA_VIRTUAL_REFLECTION(NumberComponentValue<T>, BaseComponentValue);
 };

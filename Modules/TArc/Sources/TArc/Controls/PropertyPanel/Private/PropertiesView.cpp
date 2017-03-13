@@ -51,7 +51,7 @@ protected:
             {
                 int sz = hdr->sectionSize(0);
                 QScrollBar* scroll = horizontalScrollBar();
-                if (scroll != NULL)
+                if (scroll != nullptr)
                 {
                     sz -= scroll->value();
                 }

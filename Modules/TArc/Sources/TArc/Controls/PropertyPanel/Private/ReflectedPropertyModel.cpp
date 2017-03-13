@@ -256,11 +256,6 @@ void ReflectedPropertyModel::ChildAdded(std::shared_ptr<const PropertyNode> pare
         std::unique_ptr<BaseComponentValue> valueComponent = GetExtensionChain<EditorComponentExtension>()->GetEditor(node);
         valueComponent->Init(this);
 
-        const M::CommandProducerHolder* commandProducer = node->field.ref.GetMeta<M::CommandProducerHolder>();
-        if (commandProducer != nullptr)
-        {
-        }
-
         QModelIndex parentIndex = MapItem(parentItem);
 
         beginInsertRows(parentIndex, childPosition, childPosition);

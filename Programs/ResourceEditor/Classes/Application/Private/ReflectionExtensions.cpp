@@ -7,6 +7,7 @@
 
 #include <TArc/DataProcessing/DataContext.h>
 #include <TArc/Utils/CommonFieldNames.h>
+#include <TArc/Utils/ReflectionHelpers.h>
 
 #include <Entity/Component.h>
 #include <Scene3D/Components/RenderComponent.h>
@@ -25,53 +26,7 @@
 namespace ReflectoinExtensionsDetail
 {
 using namespace DAVA;
-
-template <typename TMeta, typename TIndex>
-void EmplaceTypeMeta(ReflectedType* type, Meta<TMeta, TIndex>&& meta)
-{
-    ReflectedStructure* structure = type->GetStructure();
-    DVASSERT(structure != nullptr);
-
-    if (structure->meta == nullptr)
-    {
-        structure->meta.reset(new ReflectedMeta());
-    }
-
-    structure->meta->Emplace(std::move(meta));
-}
-
-template <typename T, typename TMeta, typename TIndex>
-void EmplaceTypeMeta(Meta<TMeta, TIndex>&& meta)
-{
-    ReflectedType* type = const_cast<ReflectedType*>(ReflectedTypeDB::Get<T>());
-    DVASSERT(type != nullptr);
-
-    EmplaceTypeMeta(type, std::move(meta));
-}
-
-template <typename T, typename TMeta, typename TIndex>
-void EmplaceFieldMeta(const String& fieldName, Meta<TMeta, TIndex>&& meta)
-{
-    ReflectedType* type = const_cast<ReflectedType*>(ReflectedTypeDB::Get<T>());
-    DVASSERT(type != nullptr);
-
-    ReflectedStructure* structure = type->GetStructure();
-    DVASSERT(structure != nullptr);
-
-    for (std::unique_ptr<ReflectedStructure::Field>& field : structure->fields)
-    {
-        if (field->name == fieldName)
-        {
-            if (field->meta == nullptr)
-            {
-                field->meta.reset(new ReflectedMeta());
-            }
-
-            field->meta->Emplace(std::move(meta));
-            break;
-        }
-    }
-}
+using namespace DAVA::TArc;
 
 void RegisterRenderComponentExtensions()
 {
@@ -84,7 +39,7 @@ void RegisterNMaterialExtensions()
     EmplaceFieldMeta<RenderBatch>("material", CreateNMaterialCommandProducer());
 }
 
-void RegFilePathExt(DAVA::TArc::ContextAccessor* accessor)
+void RegisterFilePathExtensions(DAVA::TArc::ContextAccessor* accessor)
 {
     // HeightMap
     EmplaceFieldMeta<Landscape>("heightmapPath", CreateHeightMapValidator(accessor));
@@ -95,7 +50,7 @@ void RegFilePathExt(DAVA::TArc::ContextAccessor* accessor)
     EmplaceFieldMeta<VegetationRenderObject>("customGeometry", CreateSceneFileMeta(accessor));
 }
 
-void RegComponentsExtensions()
+void RegisterComponentsExtensions()
 {
     const Type* transformComponent = Type::Instance<TransformComponent>();
     const Type* actionComponent = Type::Instance<ActionComponent>();
@@ -170,8 +125,8 @@ void RegisterReflectionExtensions(DAVA::TArc::ContextAccessor* accessor)
 {
     RegisterRenderComponentExtensions();
     RegisterNMaterialExtensions();
-    RegFilePathExt(accessor);
-    RegComponentsExtensions();
+    RegisterFilePathExtensions(accessor);
+    RegisterComponentsExtensions();
     RegisterDataContextExtensions();
 }
 } // namespace ReflectoinExtensionsDetail

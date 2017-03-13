@@ -23,7 +23,7 @@ void KeyedArchiveChildCreator::ExposeChildren(const std::shared_ptr<const Proper
         }
         else
         {
-            Logger::Debug("Can't find \"objectMap\" field in KeyedArchive");
+            Logger::FrameworkDebug("Can't find \"objectMap\" field in KeyedArchive");
         }
 
         return;
