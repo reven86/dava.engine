@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
+#include "Reflection/Reflection.h"
 #include "Entity/Component.h"
 #include "Debug/DVAssert.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
@@ -60,6 +61,8 @@ public:
     INTROSPECTION_EXTEND(LodComponent, Component,
                          MEMBER(currentLod, "Current Lod", I_VIEW)
                          )
+
+    DAVA_VIRTUAL_REFLECTION(LodComponent, Component);
 };
 
 REGISTER_CLASS(LodComponent);

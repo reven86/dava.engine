@@ -437,14 +437,14 @@ DAVA_TESTCLASS (FunctionBindSignalTest)
             testSignal.Emit(10);
             TEST_VERIFY(objA->v1 == 10);
 
-            SignalConnection connA2 = testSignal.ConnectDetached([objA, &check_v](int v) {
+            Token connA2 = testSignal.ConnectDetached([objA, &check_v](int v) {
                 objA->Slot2(v);
                 check_v = v;
             });
 
             // connA2 wont be automatically tracked
             // we should add it manually
-            connA2.Track(objA);
+            testSignal.Track(connA2, objA);
 
             int emitValue_1 = 20;
             testSignal.Emit(emitValue_1);
@@ -462,14 +462,14 @@ DAVA_TESTCLASS (FunctionBindSignalTest)
 
         {
             TestObjB objB;
-            SignalConnection connB1 = testSignal.Connect(&objB, &TestObjB::Slot1);
+            Token connB1 = testSignal.Connect(&objB, &TestObjB::Slot1);
             testSignal.Emit(10);
 
             TEST_VERIFY(objB.v1 == 10);
 
             // TestObjB isn't derived from TrackedObject, so we
             // should disconnect it manually
-            connB1.Disconnect(); // <-- if we don't do this there can be crash,
+            testSignal.Disconnect(connB1); // <-- if we don't do this there can be crash,
             // when user invokes Emmit after objB becomes out of scope
         }
 

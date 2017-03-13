@@ -6,6 +6,11 @@ namespace DAVA
 {
 namespace Metas
 {
+DisplayName::DisplayName(const String& displayName_)
+    : displayName(displayName_)
+{
+}
+
 Range::Range(const Any& minValue_, const Any& maxValue_, const Any& step_)
     : minValue(minValue_)
     , maxValue(maxValue_)
@@ -15,6 +20,11 @@ Range::Range(const Any& minValue_, const Any& maxValue_, const Any& step_)
 
 FloatNumberAccuracy::FloatNumberAccuracy(uint32 accuracy_)
     : accuracy(accuracy_)
+{
+}
+
+MaxLength::MaxLength(uint32 length_)
+    : length(length_)
 {
 }
 

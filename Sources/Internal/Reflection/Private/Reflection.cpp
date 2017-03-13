@@ -369,6 +369,17 @@ void Reflection::Dump(std::ostream& out, size_t maxlevel) const
     ReflectedTypeDBDetail::Dumper::Dump(out, Reflection::Field(Any("this"), Reflection(*this), nullptr), 0, maxlevel);
 }
 
+Reflection Reflection::Create(const ReflectedObject& object, const ReflectedMeta* objectMeta)
+{
+    if (object.IsValid())
+    {
+        static ValueWrapperObject objectValueWrapper;
+        return Reflection(object, &objectValueWrapper, nullptr, objectMeta);
+    }
+
+    return Reflection();
+}
+
 Reflection Reflection::Create(const Any& any, const ReflectedMeta* objectMeta)
 {
     static ValueWrapperDirect vw;
@@ -398,6 +409,11 @@ Reflection Reflection::Create(const Any& any, const ReflectedMeta* objectMeta)
     }
 
     return Reflection();
+}
+
+Reflection Reflection::Create(const Reflection& etalon, const Reflection& metaProvider)
+{
+    return Reflection(etalon.object, etalon.valueWrapper, etalon.structureWrapper, metaProvider.meta);
 }
 
 Reflection::Field::Field(Any&& key_, Reflection&& ref_, const ReflectedType* inheritFrom_)

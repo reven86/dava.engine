@@ -1854,12 +1854,15 @@ void ShaderSource::Dump() const
 
 //==============================================================================
 
+//version increment history:
+//5 is for new shader language
+//6 is after fixing Add/Update problem
+const uint32 ShaderSourceCache::FormatVersion = 6;
+
 Mutex shaderSourceEntryMutex;
 std::vector<ShaderSourceCache::entry_t> ShaderSourceCache::Entry;
-const uint32 ShaderSourceCache::FormatVersion = 5;
 
-const ShaderSource*
-ShaderSourceCache::Get(FastName uid, uint32 srcHash)
+const ShaderSource* ShaderSourceCache::Get(FastName uid, uint32 srcHash)
 {
     LockGuard<Mutex> guard(shaderSourceEntryMutex);
 
@@ -1882,8 +1885,7 @@ ShaderSourceCache::Get(FastName uid, uint32 srcHash)
 }
 
 //------------------------------------------------------------------------------
-const ShaderSource*
-ShaderSourceCache::Add(const char* filename, FastName uid, ProgType progType, const char* srcText, const std::vector<std::string>& defines)
+const ShaderSource* ShaderSourceCache::Add(const char* filename, FastName uid, ProgType progType, const char* srcText, const std::vector<std::string>& defines)
 {
     ShaderSource* src = new ShaderSource(filename);
 
@@ -1891,14 +1893,31 @@ ShaderSourceCache::Add(const char* filename, FastName uid, ProgType progType, co
     {
         LockGuard<Mutex> guard(shaderSourceEntryMutex);
 
-        entry_t e;
+        uint32 api = HostApi();
+        uint32 srcHash = DAVA::HashValue_N(srcText, unsigned(strlen(srcText)));
 
-        e.uid = uid;
-        e.api = HostApi();
-        e.srcHash = DAVA::HashValue_N(srcText, unsigned(strlen(srcText)));
-        e.src = src;
+        bool doAdd = true;
+        for (std::vector<entry_t>::iterator e = Entry.begin(), e_end = Entry.end(); e != e_end; ++e)
+        {
+            if ((e->uid == uid) && (e->api == api))
+            {
+                e->src = src;
+                e->srcHash = srcHash;
+                doAdd = false;
+                break;
+            }
+        }
 
-        Entry.push_back(e);
+        if (doAdd)
+        {
+            entry_t e;
+            e.uid = uid;
+            e.api = api;
+            e.srcHash = srcHash;
+            e.src = src;
+
+            Entry.push_back(e);
+        }
     }
     else
     {

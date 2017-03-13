@@ -222,9 +222,9 @@ String ColladaDocument::GetTextureName(const FilePath& scenePath, ColladaTexture
     return texPathname.GetRelativePathname(scenePath);
 }
 
-eColladaErrorCodes ColladaDocument::SaveSC2(const FilePath& scenePath) const
+eColladaErrorCodes ColladaDocument::SaveSC2(const FilePath& scenePath, std::unique_ptr<DAEConverter::ImportParams>&& params) const
 {
-    ColladaToSc2Importer importer;
+    ColladaToSc2Importer importer(std::move(params));
     return importer.SaveSC2(colladaScene, scenePath);
 }
 };

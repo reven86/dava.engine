@@ -228,18 +228,6 @@ public:
     */
     virtual void SetStateTextMultilineBySymbol(int32 state, bool value);
     /**
-     \brief Sets background margins for the requested states.
-     \param[in] state state text bit mask to set value for.
-     \param[in] margins the margins.
-     */
-    virtual void SetStateMargins(int32 state, const UIControlBackground::UIMargins* margins);
-    /**
-     \brief Sets text margins for the requested states.
-     \param[in] state state text bit mask to set value for.
-     \param[in] margins the margins.
-     */
-    virtual void SetStateTextMargins(int32 state, const UIControlBackground::UIMargins* margins);
-    /**
      \brief Sets text control what will be used for the requested states.
         UIStaticText is cloned inside button.
      \param[in] state state bit mask to set value for.
@@ -249,7 +237,7 @@ public:
 
     void Input(UIEvent* currentInput) override;
 
-    void SystemDraw(const UIGeometricData& geometricData) override; // Internal method used by ControlSystem
+    void SystemDraw(const UIGeometricData& geometricData, const DAVA::UIControlBackground* parentBackground) override; // Internal method used by ControlSystem
     void Draw(const UIGeometricData& geometricData) override;
 
     void SetParentColor(const Color& parentColor) override;

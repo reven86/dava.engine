@@ -1,7 +1,7 @@
-#ifndef __VISIBILITYCHECKCOMPONENT_H__
-#define __VISIBILITYCHECKCOMPONENT_H__
+#pragma once
 
 #include "Math/Color.h"
+#include "Reflection/Reflection.h"
 #include "Entity/Component.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
 
@@ -85,7 +85,7 @@ public:
                          PROPERTY("Normalize Color", "If enabled scales overlay's color to match current color.", ShouldNormalizeColor, SetShouldNormalizeColor, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("Place on Landscape", "Snaps each point to landscape", ShouldPlaceOnLandscape, SetShouldPlaceOnLandscape, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("Height Above the Landscape", "Distance from landscape to each point", GetHeightAboveLandscape, SetHeightAboveLandscape, I_SAVE | I_VIEW | I_EDIT))
+
+    DAVA_VIRTUAL_REFLECTION(VisibilityCheckComponent, Component);
 };
 }
-
-#endif

@@ -5,8 +5,10 @@
 #include "TArc/Controls/PropertyPanel/Private/TextComponentValue.h"
 #include "TArc/Controls/PropertyPanel/Private/BoolComponentValue.h"
 #include "TArc/Controls/PropertyPanel/Private/EnumComponentValue.h"
+#include "TArc/Controls/PropertyPanel/Private/FlagsComponentValue.h"
 #include "TArc/Controls/PropertyPanel/Private/IntComponentValue.h"
 #include "TArc/Controls/PropertyPanel/Private/EmptyComponentValue.h"
+#include "TArc/Utils/ReflectionHelpers.h"
 
 #include "Debug/DVAssert.h"
 
@@ -20,11 +22,40 @@ void DefaultChildCheatorExtension::ExposeChildren(const std::shared_ptr<const Pr
 
     if (node->propertyType == PropertyNode::SelfRoot || node->propertyType == PropertyNode::RealProperty)
     {
-        Vector<Reflection::Field> fields = node->field.ref.GetFields();
-        for (Reflection::Field& field : fields)
-        {
-            children.push_back(allocator->CreatePropertyNode(std::move(field), PropertyNode::RealProperty));
-        }
+        UnorderedSet<String> groups;
+        ForEachField(node->field.ref, [&](Reflection::Field&& field)
+                     {
+                         if (field.ref.HasMeta<M::HiddenField>() == false)
+                         {
+                             const M::Group* groupMeta = field.ref.GetMeta<M::Group>();
+                             if (groupMeta == nullptr)
+                             {
+                                 children.push_back(allocator->CreatePropertyNode(std::move(field)));
+                             }
+                             else
+                             {
+                                 if (groups.count(groupMeta->groupName) == 0)
+                                 {
+                                     Reflection::Field groupField = node->field;
+                                     groupField.key = groupMeta->groupName;
+                                     children.push_back(allocator->CreatePropertyNode(std::move(groupField), PropertyNode::GroupProperty, groupMeta->groupName));
+                                     groups.insert(groupMeta->groupName);
+                                 }
+                             }
+                         }
+                     });
+    }
+    else if (node->propertyType == PropertyNode::GroupProperty)
+    {
+        String groupName = node->cachedValue.Cast<String>();
+        ForEachField(node->field.ref, [&](Reflection::Field&& field)
+                     {
+                         const M::Group* groupMeta = field.ref.GetMeta<M::Group>();
+                         if (groupMeta != nullptr && groupMeta->groupName == groupName)
+                         {
+                             children.push_back(allocator->CreatePropertyNode(std::move(field)));
+                         }
+                     });
     }
 
     return ChildCreatorExtension::ExposeChildren(node, children);
@@ -36,6 +67,7 @@ public:
     DefaultAllocator();
     ~DefaultAllocator() override = default;
     std::shared_ptr<PropertyNode> CreatePropertyNode(Reflection::Field&& reflection, int32_t type = PropertyNode::RealProperty) override;
+    std::shared_ptr<PropertyNode> CreatePropertyNode(Reflection::Field&& reflection, int32_t type, const Any& value) override;
 
 private:
     ObjectsPool<PropertyNode, SingleThreadStrategy> pool;
@@ -48,13 +80,18 @@ DefaultAllocator::DefaultAllocator()
 
 std::shared_ptr<PropertyNode> DefaultAllocator::CreatePropertyNode(Reflection::Field&& field, int32_t type)
 {
+    if (field.ref.IsValid())
+        return CreatePropertyNode(std::move(field), type, field.ref.GetValue());
+
+    return CreatePropertyNode(std::move(field), type, Any());
+}
+
+std::shared_ptr<PropertyNode> DefaultAllocator::CreatePropertyNode(Reflection::Field&& field, int32_t type, const Any& value)
+{
     std::shared_ptr<PropertyNode> result = pool.RequestObject();
     result->propertyType = type;
     result->field = std::move(field);
-    if (result->field.ref.IsValid())
-    {
-        result->cachedValue = result->field.ref.GetValue();
-    }
+    result->cachedValue = value;
 
     return result;
 }
@@ -89,28 +126,34 @@ ReflectedPropertyItem* DefaultMergeValueExtension::LookUpItem(const std::shared_
 
 std::unique_ptr<BaseComponentValue> DefaultEditorComponentExtension::GetEditor(const std::shared_ptr<const PropertyNode>& node) const
 {
-    const M::Enum* enumMeta = node->field.ref.GetMeta<M::Enum>();
-    if (enumMeta != nullptr)
+    if (node->propertyType == PropertyNode::RealProperty)
     {
-        return std::make_unique<EnumComponentValue>();
-    }
+        if (node->field.ref.GetMeta<M::Enum>() != nullptr)
+        {
+            return std::make_unique<EnumComponentValue>();
+        }
+        else if (node->field.ref.GetMeta<M::Flags>() != nullptr)
+        {
+            return std::make_unique<FlagsComponentValue>();
+        }
 
-    const Type* valueType = node->cachedValue.GetType();
-    if (valueType == Type::Instance<String>() ||
-        valueType == Type::Instance<FastName>() ||
-        valueType == Type::Instance<const char*>())
-    {
-        return std::make_unique<TextComponentValue>();
+        const Type* valueType = node->cachedValue.GetType();
+        if (valueType == Type::Instance<String>() ||
+            valueType == Type::Instance<FastName>() ||
+            valueType == Type::Instance<const char*>())
+        {
+            return std::make_unique<TextComponentValue>();
+        }
+        else if (valueType == Type::Instance<bool>())
+        {
+            return std::make_unique<BoolComponentValue>();
+        }
+        /*else if (valueType == Type::Instance<int32>() ||
+                 valueType == Type::Instance<uint32>())
+        {
+            return std::make_unique<IntComponentValue>();
+        }*/
     }
-    else if (valueType == Type::Instance<bool>())
-    {
-        return std::make_unique<BoolComponentValue>();
-    }
-    /*else if (valueType == Type::Instance<int32>() ||
-             valueType == Type::Instance<uint32>())
-    {
-        return std::make_unique<IntComponentValue>();
-    }*/
 
     return EditorComponentExtension::GetEditor(node);
 }

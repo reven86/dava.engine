@@ -56,6 +56,7 @@ private:
 
 #if defined(__DAVAENGINE_COREV2__)
     void OnWindowVisibilityChanged(Window* w, bool visible);
+    void OnWindowDestroyed(Window* w);
 #else
     void OnAppMinimizedRestored(bool minimized);
 #endif

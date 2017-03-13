@@ -1,13 +1,19 @@
-#ifndef __DATA_CURL_DOWNLOADER_H__
-#define __DATA_CURL_DOWNLOADER_H__
+#pragma once
 
 #include "Downloader.h"
-#include "curl/curl.h"
 #include "Time/RawTimer.h"
+
+extern "C"
+{
+typedef void CURL;
+typedef void CURLM;
+}
 
 namespace DAVA
 {
-class CurlDownloader : public Downloader
+class Thread;
+
+class CurlDownloader final : public Downloader
 {
 public:
     CurlDownloader();
@@ -18,11 +24,6 @@ protected:
         \brief Interrupts current download.
      */
     void Interrupt() override;
-    /**
-        \brief Init an easy handle for use it later for any Curl operation. Setups all common paramaters.
-        Returns a pointer to CURL easy handle. NULL if there was an init error.
-     */
-    CURL* CurlSimpleInit();
     /**
      \brief Get content size in bytes for remote Url.
      \param[in] url - destination fie Url
@@ -76,21 +77,6 @@ private:
      */
     static size_t CurlDataRecvHandler(void* ptr, size_t size, size_t nmemb, void* part);
     /**
-        \brief Convert Curl easy interface error to Download error
-        \param[in] status - Curl easy interface operation status status
-     */
-    DownloadError CurlStatusToDownloadStatus(CURLcode status) const;
-    /**
-       \brief Convert Curl multi interface error to Download error
-       \param[in] curMultiCode - Curl multi interface operation status
-     */
-    DownloadError CurlmCodeToDownloadError(CURLMcode curlMultiCode) const;
-    /**
-        \brief Convert HTTP code to Download error
-        \param[in] code HTTP code
-     */
-    DownloadError HttpCodeToDownloadError(long code) const;
-    /**
         \brief Create one of easy handles to download content. Returns a pointer to new created curl easy handle
         \param[in] part - pointer to download part which contains data for current download thread
      */
@@ -106,11 +92,6 @@ private:
      */
     DownloadError SetupDownload(uint64 seek, uint32 size);
     /**
-        \brief Do a prepared download. Do nothing and returnes DLE_NO_ERROR if there is no easy handles.
-        \param[in] multiHandle - pointer to Curl multi interface handle
-     */
-    CURLMcode Perform();
-    /**
         \brief Cleanup all used Curl resurces when they are not needed anymore
      */
     void CleanupDownload();
@@ -119,30 +100,7 @@ private:
         \param[in] handle - Curl easy handle to set options
      */
     void SetTimeout(CURL* easyHandle);
-    /**
-        \brief Handle download results and return generalized result
-     */
-    DownloadError HandleDownloadResults(CURLM* multiHandle);
-    /**
-        \brief Returns actual error state for given easy handle with it's ststus
-        \param[in] easyHandle - Curl easy handle to set options
-        \param[in] status - status of current easyHandle
-     */
-    DownloadError ErrorForEasyHandle(CURL* easyHandle, CURLcode status) const;
-    /**
-        \brief Take more importand error from all download results. Returns DLE_NO_ERROR if there is no errors or all is fine.
-        \param[in] errorList - a lis of DownloadErrors to take the more important
-     */
-    DownloadError TakeMostImportantReturnValue(const Vector<DownloadError>& errorList) const;
 
-private:
-    struct ErrorWithPriority
-    {
-        DownloadError error;
-        char8 priority;
-    };
-
-private:
     static bool isCURLInit;
     bool isDownloadInterrupting;
     uint8 currentDownloadPartsCount;
@@ -157,13 +115,11 @@ private:
     uint64 sizeToDownload;
     uint64 downloadSpeedLimit;
 
-    static ErrorWithPriority errorsByPriority[];
-
     DownloadError saveResult;
     DataChunkInfo* chunkInfo;
     Mutex chunksMutex;
     List<DataChunkInfo*> chunksToSave;
-    Thread* saveThread;
+    Thread* saveThread = nullptr;
     const uint8 allowedBuffersInMemory;
 
     const uint32 maxChunkSize;
@@ -172,5 +128,3 @@ private:
     bool isRangeRequestSent = false;
 };
 }
-
-#endif

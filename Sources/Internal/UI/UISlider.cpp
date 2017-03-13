@@ -33,6 +33,7 @@ void UISlider::InitThumb()
 {
     thumbButton = new UIControl(Rect(0, 0, 40.f, 40.f));
     thumbButton->SetName(UISLIDER_THUMB_SPRITE_CONTROL_NAME);
+    thumbButton->GetOrCreateComponent<UIControlBackground>();
     AddControl(thumbButton);
 
     thumbButton->SetInputEnabled(false);
@@ -42,14 +43,15 @@ void UISlider::InitThumb()
     SetValue(currentValue);
 }
 
-void UISlider::InitInactiveParts(Sprite* spr)
+void UISlider::InitInactiveParts(UIControl* thumb)
 {
-    if (NULL == spr)
+    UIControlBackground* bg = thumb->GetComponent<UIControlBackground>();
+    if (bg == nullptr || bg->GetSprite() == nullptr)
     {
         return;
     }
 
-    leftInactivePart = rightInactivePart = static_cast<int32>((spr->GetWidth() / 2.0f));
+    leftInactivePart = rightInactivePart = static_cast<int32>((bg->GetSprite()->GetWidth() / 2.0f));
 }
 
 void UISlider::SetThumb(UIControl* newThumb)
@@ -101,7 +103,7 @@ void UISlider::SetValue(float32 value)
 
     if (needSendEvent)
     {
-        PerformEvent(EVENT_VALUE_CHANGED);
+        PerformEvent(EVENT_VALUE_CHANGED, nullptr);
     }
 }
 
@@ -202,13 +204,13 @@ void UISlider::Input(UIEvent* currentInput)
     {
         if (oldVal != currentValue)
         {
-            PerformEventWithData(EVENT_VALUE_CHANGED, currentInput);
+            PerformEventWithData(EVENT_VALUE_CHANGED, currentInput, currentInput);
         }
     }
     else if (currentInput->phase == UIEvent::Phase::ENDED)
     {
         /* if not continuos always perform event because last move position almost always the same as end pos */
-        PerformEventWithData(EVENT_VALUE_CHANGED, currentInput);
+        PerformEventWithData(EVENT_VALUE_CHANGED, currentInput, currentInput);
     }
 
     RecalcButtonPos();
@@ -264,7 +266,7 @@ void UISlider::AttachToSubcontrols()
         thumbButton->Retain();
     }
 
-    InitInactiveParts(thumbButton->GetBackground()->GetSprite());
+    InitInactiveParts(thumbButton);
 }
 
 } // ns

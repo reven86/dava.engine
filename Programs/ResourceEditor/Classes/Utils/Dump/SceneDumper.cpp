@@ -165,7 +165,20 @@ void SceneDumper::DumpRenderObject(DAVA::RenderObject* renderObject, DAVA::Set<D
             {
                 Vector<FilePath> compressedTexureNames;
                 descriptor->CreateLoadPathnamesForGPU(descriptor->gpu, compressedTexureNames);
-                links.insert(compressedTexureNames.begin(), compressedTexureNames.end());
+
+                if (compressedTexureNames.empty() == false)
+                {
+                    if (descriptor->IsCubeMap() && (TextureDescriptor::IsCompressedTextureExtension(compressedTexureNames[0].GetExtension()) == false))
+                    {
+                        Vector<FilePath> faceNames;
+                        descriptor->GetFacePathnames(faceNames);
+                        links.insert(faceNames.cbegin(), faceNames.cend());
+                    }
+                    else
+                    {
+                        links.insert(compressedTexureNames.begin(), compressedTexureNames.end());
+                    }
+                }
             }
             else
             {

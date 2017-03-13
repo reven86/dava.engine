@@ -1,5 +1,4 @@
-#ifndef CONFIGSTORAGE_H
-#define CONFIGSTORAGE_H
+#pragma once
 
 #include <QObject>
 #include <QString>
@@ -15,6 +14,3 @@ public:
 private:
     QString configFilePath;
 };
-
-
-#endif // CONFIGSTORAGE_H

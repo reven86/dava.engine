@@ -5,6 +5,8 @@
 #include "FileSystem/Private/PackFormatSpec.h"
 #include "FileSystem/Private/PackMetaData.h"
 #include "Concurrency/Mutex.h"
+#include "Concurrency/Semaphore.h"
+#include "Concurrency/Thread.h"
 
 #ifdef __DAVAENGINE_COREV2__
 #include "Engine/Engine.h"
@@ -28,9 +30,12 @@ public:
         UnpakingDB, //!< unpack DB from zip
         DeleteDownloadedPacksIfNotMatchHash, //!< go throw all local packs and unmount it if hash not match then delete
         LoadingPacksDataFromLocalMeta, //!< open local DB and build pack index for all packs
+        WaitScanThreadToFinish, //!< wait till finish scaning of downloaded .dvpl files
         MoveDeleyedRequestsToQueue, //!< mount all local packs downloaded and not mounted later
         Ready, //!< starting from this state client can call any method, second initialize will work too
-        Offline //!< server not accessible, retry initialization after Hints::retryConnectMilliseconds
+        Offline, //!< server not accessible, retry initialization after Hints::retryConnectMilliseconds
+
+        State_COUNT
     };
 
     static const String& ToString(InitState state);
@@ -44,19 +49,19 @@ public:
         UnpackingDBFailed,
         DeleteDownloadedPackFailed,
         LoadingPacksDataFailed,
-        MountingDownloadedPackFailed
+        MountingDownloadedPackFailed,
+
+        Error_COUNT
     };
 
     static const String& ToString(InitError state);
-
 #ifdef __DAVAENGINE_COREV2__
     explicit DLCManagerImpl(Engine* engine_);
-    ~DLCManagerImpl();
     Engine& engine;
 #else
-    DLCManagerImpl() = default;
-    ~DLCManagerImpl() = default;
+    DLCManagerImpl() = default; // TODO remove it later (fix for client UnitTests)
 #endif
+    ~DLCManagerImpl();
 
     void Initialize(const FilePath& dirToDownloadPacks_,
                     const String& urlToServerSuperpack_,
@@ -84,6 +89,8 @@ public:
 
     void SetRequestOrder(const IRequest* request, uint32 orderIndex) override;
 
+    void RemovePack(const String& packName) override;
+
     const FilePath& GetLocalPacksDirectory() const;
 
     const String& GetSuperPackUrl() const;
@@ -110,6 +117,12 @@ public:
         return usedPackFile;
     }
 
+    // use only after initialization
+    bool IsFileReady(uint32 fileIndex) const
+    {
+        return fileIndex < scanFileReady.size() && scanFileReady.test(fileIndex);
+    }
+
 private:
     // initialization state functions
     void AskFooter();
@@ -123,6 +136,7 @@ private:
     void StoreAllMountedPackNames();
     void DeleteOldPacks();
     void LoadPacksDataFromMeta();
+    void WaitScanThreadToFinish();
     void StartDeleyedRequests();
     // helper functions
     void DeleteLocalMetaFiles();
@@ -130,13 +144,40 @@ private:
     PackRequest* AddDeleyedRequest(const String& requestedPackName);
     PackRequest* CreateNewRequest(const String& requestedPackName);
 
-    mutable Mutex protectPM;
+    enum class ScanState : uint32
+    {
+        Wait,
+        Starting,
+        Done
+    };
+    // info to scan local pack files
+    struct LocalFileInfo
+    {
+        String relativeName;
+        uint32 compressedSize = 0;
+        uint32 crc32Hash = 0;
+    };
+    // fill during scan local pack files, emtpy after finish scan
+    Vector<LocalFileInfo> localFiles;
+    // every bit mean file exist and size match with meta
+    std::bitset<32000> scanFileReady;
+    Thread* scanThread = nullptr;
+    ScanState scanState{ ScanState::Wait };
+    Semaphore metaDataLoadedSem;
+
+    void StartScanDownloadedFiles();
+    void ThreadScanFunc();
+    void ScanFiles(const FilePath& dir, Vector<LocalFileInfo>& files);
+    void RecursiveScan(const FilePath& baseDir, const FilePath& dir, Vector<LocalFileInfo>& files);
+
+    mutable Mutex protectDM;
 
     FilePath localCacheMeta;
     FilePath localCacheFileTable;
     FilePath dirToDownloadedPacks;
     String urlToSuperPack;
     bool isProcessingEnabled = false;
+    bool isNetworkReadyLastState = false;
     std::unique_ptr<RequestManager> requestManager;
     std::unique_ptr<PackMetaData> meta;
 
@@ -150,7 +191,8 @@ private:
     PackFormat::PackFile usedPackFile; // current superpack info
     Vector<uint8> buffer; // tmp buff
     String uncompressedFileNames;
-    Vector<uint32> startFileNameIndexes;
+    UnorderedMap<String, const PackFormat::FileTableEntry*> mapFileData;
+    Vector<uint32> startFileNameIndexesInUncompressedNames;
     // first - relative file name in archive, second - file properties
     // DO I NEED IT? UnorderedMap<String, const PackFormat::FileTableEntry*> initFileData;
     // DO I NEED IN? Vector<ResourceArchive::FileInfo> initfilesInfo;

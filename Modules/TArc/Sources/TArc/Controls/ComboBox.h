@@ -12,7 +12,7 @@ namespace DAVA
 {
 namespace TArc
 {
-class ComboBox final : public ControlProxy<QComboBox>
+class ComboBox final : public ControlProxyImpl<QComboBox>
 {
 public:
     enum class Fields : uint32
@@ -31,8 +31,6 @@ private:
 
     void SetupControl();
     void UpdateControl(const ControlDescriptor& changedfields) override;
-
-    void ProcessReadOnlyState(const Reflection& fieldValue, const ControlDescriptor& changedfields);
 
     void CreateItems(const Reflection& fieldValue, const Reflection& fieldEnumerator);
     int SelectCurrentItem(const Reflection& fieldValue, const Reflection& fieldEnumerator);

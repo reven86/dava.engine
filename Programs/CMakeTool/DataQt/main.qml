@@ -1,7 +1,7 @@
-import QtQuick 2.2
-import QtQuick.Controls 1.3
+import QtQuick 2.6
+import QtQuick.Controls 1.5
 import QtQuick.Dialogs 1.2
-import QtQuick.Layouts 1.0
+import QtQuick.Layouts 1.3
 import Cpp.Utils 1.0
 import Qt.labs.settings 1.0
 import "UIComponents"
@@ -15,20 +15,61 @@ ApplicationWindow {
     property int historyVersion: 4
     property string davaFolderName: "dava.framework";
     objectName: "applicationWindow"
-    minimumHeight: wrapper.Layout.minimumHeight + splitView.anchors.margins * 2 + wrapper.spacing * 4
-    minimumWidth: wrapper.width + splitView.anchors.margins * 2 + 1
-    menuBar: MenuBar {
-        Menu {
-            title: "CMake Tool"
-            MenuItem {
-                text: "Show help"
-                shortcut: StandardKey.HelpContents
-                onTriggered: help.Show();
+    minimumHeight: wrapper.Layout.minimumHeight + splitView.margins * 4 + wrapper.spacing * 4
+    minimumWidth: wrapper.Layout.minimumWidth + splitView.anchors.margins * 2 + 50
+    //on os x minimum height changes several times during program launch and changed values not linear
+    PlatformHelper {
+        id: platformHelper
+    }
+    function normalizeHeight() {
+        if(applicationWindow.height < applicationWindow.minimumHeight) {
+            applicationWindow.height = applicationWindow.minimumHeight
+        }
+    }
+    function normalizeWidth() {
+        if(applicationWindow.width < applicationWindow.minimumWidth) {
+            applicationWindow.width = applicationWindow.minimumWidth
+        }
+    }
+    Timer {
+        id: geometryTimer
+        repeat: false
+        interval: 200
+        onTriggered: {
+            normalizeHeight();
+            normalizeWidth();
+        }
+    }
+    onMinimumHeightChanged: {
+        if(platformHelper.CurrentPlatform() == PlatformHelper.Windows ) {
+            normalizeHeight();
+        } else {
+            geometryTimer.restart();
+        }
+    }
+
+    onMinimumWidthChanged: {
+        if(platformHelper.CurrentPlatform() == PlatformHelper.Windows ) {
+            normalizeWidth();
+        } else {
+            geometryTimer.restart();
+        }    
+    }
+    toolBar: ToolBar {
+        RowLayout {
+            anchors.fill: parent
+            ToolButton {
+                tooltip: qsTr("Preferences")
+                iconSource: "qrc:///Icons/settings.png"
+                onClicked: preferencesDialog.show();
             }
-            MenuItem {
-                text: "Preferences"
-                shortcut: StandardKey.Preferences
-                onTriggered: preferencesDialog.open();
+            ToolButton {
+                tooltip: qsTr("Show help")
+                iconSource: "qrc:///Icons/help.png"
+                onClicked: help.Show();
+            }
+            Item {
+                Layout.fillWidth: true
             }
         }
     }
@@ -43,9 +84,16 @@ ApplicationWindow {
         property alias y: applicationWindow.y
         property alias width: applicationWindow.width
         property alias height: applicationWindow.height
+        
+        property alias prefWidth: preferencesDialog.width
+        property alias prefHeight: preferencesDialog.height
+        property alias prefX: preferencesDialog.x
+        property alias prefY: preferencesDialog.y
+        
         property string historyStr;
         property var lastUsedSourceFolder;
         Component.onDestruction: {
+            outputState = columnLayoutOutput.saveState();
             function compare(left, right) {
                 return left.source.localeCompare(right.source);
             }
@@ -54,11 +102,12 @@ ApplicationWindow {
             historyVersion = applicationWindow.historyVersion;
         }
         property int historyVersion: -1
-        property var generateBuildFolderName: false
+        property bool buildToTheSourceFolder: true
+        property string customBuildFolder;
+        property var outputState;
     }
     property var history;
     function applyProjectSettings(buildSettings) {
-        columnLayoutOutput.needClean = buildSettings.needClean;
         rowLayout_buildFolder.path = buildSettings.buildFolder;
         rowLayout_cmakeFolder.path = buildSettings.cmakePath;
         rowLayout_davaFolder.path = buildSettings.davaPath;
@@ -72,8 +121,14 @@ ApplicationWindow {
         if(settings.historyVersion === historyVersion) {
             history = JSON.parse(settings.historyStr);
         }
-
+        for(var i = history.length - 1; i >= 0; --i) {
+            var source = history[i].source;
+            if(!fileSystemHelper.IsDirExists(source)) {
+                history.splice(i, 1);
+            }
+        }
         for(var i = 0, length = history.length; i < length; ++i) {
+            var source = history[i].source;
             rowLayout_sourceFolder.item.addString(history[i].source)
         }
     }
@@ -93,7 +148,6 @@ ApplicationWindow {
         
         var newItem = {};
         newItem.source = source
-        newItem.needClean = columnLayoutOutput.needClean
         newItem.buildFolder = rowLayout_buildFolder.path
         newItem.cmakePath = rowLayout_cmakeFolder.path
         newItem.davaPath = rowLayout_davaFolder.path
@@ -134,25 +188,10 @@ ApplicationWindow {
         id: help;
     }
     
-    Dialog {
+    PreferencesDialog {
         id: preferencesDialog
         visible: false
-        title: "CMakeTool preferences dialog"
-        standardButtons: StandardButton.Save | StandardButton.Cancel
-        onAccepted: {   
-            settings.generateBuildFolderName = checkBox_generateBuildFolderName.checked
-        }
-        onVisibleChanged: { 
-            if(visible) {
-                checkBox_generateBuildFolderName.checked = settings.generateBuildFolderName
-            }
-        }
-        Column {
-            CheckBox {
-                id: checkBox_generateBuildFolderName
-                text: "generate build folder name"
-            }
-        }
+        settings: settings
     }
 
     property var configuration; //main JS object, contained in config file
@@ -196,6 +235,7 @@ ApplicationWindow {
         try {
             configuration = JSON.parse(configStorage.GetJSONTextFromConfigFile());
             mutableContent.processConfiguration(configuration);
+            columnLayoutOutput.loadState(settings.outputState);
             loadHistory();
             var lastSource = settings.lastUsedSourceFolder;
             for(var i = 0, length = history.length; i < length; ++i) {
@@ -230,7 +270,8 @@ ApplicationWindow {
     SplitView {
         id: splitView;
         anchors.fill: parent
-        anchors.margins: 10
+        property int margins: 10
+        anchors.margins: margins
         objectName: "splitView"
 
         Item {
@@ -243,7 +284,7 @@ ApplicationWindow {
             ColumnLayout {
                 id: wrapper
                 anchors.fill: parent
-
+                anchors.rightMargin: splitView.margins
                 RowLayoutPath {
                     id: rowLayout_sourceFolder
                     labelText: qsTr("Source folder");
@@ -259,9 +300,16 @@ ApplicationWindow {
                                     onCurrentProjectChaged(i);
                                 }
                             }
-                            if(!found && settings.generateBuildFolderName)
-                            {
-                                rowLayout_buildFolder.path = text + "/_build";
+                            if (!found) {
+                                if (settings.buildToTheSourceFolder) {
+                                    rowLayout_buildFolder.path = text + "/_build";
+                                } else {
+                                    var array = text.split(/[\\\/]+/g);
+                                    if(array.length > 0) {
+                                        var path = settings.customBuildFolder + "/" + array[array.length - 1] + "/_build";
+                                        rowLayout_buildFolder.path = fileSystemHelper.NormalizePath(path);
+                                    }
+                                }
                             }
                         }
                     }
@@ -342,10 +390,12 @@ ApplicationWindow {
                         updateOutputString()
 
                     }
-                    Layout.fillHeight: true
                     Layout.fillWidth: true
                 }
-
+                Item {
+                    id: spacer
+                    height: 20
+                }
                 RowLayout {
                     Label {
                         id: label_customOptions
@@ -364,6 +414,13 @@ ApplicationWindow {
                 ColumnLayoutOutput {
                     id: columnLayoutOutput
                     Layout.fillWidth: true
+                    processWrapper: processWrapper
+                    buildFolder: rowLayout_buildFolder.path
+                    cmakeFolder: rowLayout_cmakeFolder.path
+                    property double startTime: 0
+                    Component.onDestruction: { 
+                        settings.outputState = columnLayoutOutput.saveState();
+                    }
                     onCmakeWillBeLaunched: {
                         displayHtmlFormat = true;
                         textArea_processText.text = "";
@@ -378,6 +435,22 @@ ApplicationWindow {
                         displayHtmlFormat = false;
                         textArea_processText.text = ""
                     }
+                    Connections {
+                        target: processWrapper
+                        onConfigureStarted: {
+                            columnLayoutOutput.startTime = new Date().getTime();
+                            textArea_processText.append("start time: " + Qt.formatTime(new Date(),"hh:mm:zzz"));
+                        }
+                        onConfigureFinished: {
+                            textArea_processText.append("end configure time: " + Qt.formatTime(new Date(),"hh:mm:zzz"))
+                            var diff =  new Date().getTime() - columnLayoutOutput.startTime;
+                            var ms = diff % 1000;
+                            var s = Math.floor((diff / 1000) % 60);
+                            var m = Math.floor((diff / 1000 / 60) % 60);
+                            var h = Math.floor(diff / 1000 / 60 / 60);
+                            textArea_processText.append("total configure time: " + (h != 0 ? (h + ":") : "") + m + ":" + s + ":" + ms);
+                        }
+                    }
                 }
             }
         }
@@ -389,10 +462,10 @@ ApplicationWindow {
 
             Connections {
                 target: processWrapper
-                onProcessStateChanged: textArea_processText.append(displayHtmlFormat
+                onProcessStateTextChanged: textArea_processText.append(displayHtmlFormat
                                                                    ? "<font color=\"DarkGreen\">" + text + "</font>"
                                                                    : "****new process state: " + text + " ****");
-                onProcessErrorChanged: textArea_processText.append(displayHtmlFormat
+                onProcessErrorTextChanged: textArea_processText.append(displayHtmlFormat
                                                                    ? "<font color=\"DarkRed\">" + text + "</font>"
                                                                    : "****process error occurred!: " + text + " ****");
                 onProcessStandardOutput: {

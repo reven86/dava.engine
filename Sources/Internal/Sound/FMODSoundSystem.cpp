@@ -16,7 +16,7 @@
 #include "Concurrency/LockGuard.h"
 
 #ifdef __DAVAENGINE_IPHONE__
-#include "fmodiphone.h"
+#include <fmod/fmodiphone.h>
 #include "Sound/iOS/musicios.h"
 #elif __DAVAENGINE_ANDROID__
 #include "Engine/Android/JNIBridge.h"
@@ -100,6 +100,13 @@ SoundSystem::SoundSystem()
 
     FMOD_VERIFY(FMOD::EventSystem_Create(&fmodEventSystem));
     FMOD_VERIFY(fmodEventSystem->getSystemObject(&fmodSystem));
+
+    {
+        unsigned int version = 0;
+        fmodSystem->getVersion(&version);
+        Logger::Info("FMOD version %X", version);
+    }
+    
 #ifdef __DAVAENGINE_ANDROID__
     FMOD_VERIFY(fmodSystem->setOutput(FMOD_OUTPUTTYPE_AUDIOTRACK));
 

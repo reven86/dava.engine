@@ -1,8 +1,9 @@
 #include "ColladaConvert.h"
 #include "ColladaDocument.h"
 #include "Collada/ColladaToSc2Importer/ColladaToSc2Importer.h"
+#include "Classes/Collada/ImportParams.h"
 
-eColladaErrorCodes ConvertDaeToSc2(const DAVA::FilePath& pathToFile)
+eColladaErrorCodes ConvertDaeToSc2(const DAVA::FilePath& pathToFile, std::unique_ptr<DAEConverter::ImportParams>&& importParams)
 {
     FCollada::Initialize();
 
@@ -17,7 +18,7 @@ eColladaErrorCodes ConvertDaeToSc2(const DAVA::FilePath& pathToFile)
 
     DAVA::FilePath pathSc2 = DAVA::FilePath::CreateWithNewExtension(pathToFile, ".sc2");
 
-    eColladaErrorCodes ret = colladaDocument.SaveSC2(pathSc2);
+    eColladaErrorCodes ret = colladaDocument.SaveSC2(pathSc2, std::move(importParams));
     colladaDocument.Close();
 
     FCollada::Release();

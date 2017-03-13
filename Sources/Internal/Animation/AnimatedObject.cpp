@@ -1,8 +1,15 @@
 #include "Animation/AnimatedObject.h"
 #include "Animation/AnimationManager.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(AnimatedObject)
+{
+    ReflectionRegistrator<AnimatedObject>::Begin()
+    .End();
+}
+
 AnimatedObject::AnimatedObject()
 //	: animationsStorage(0)
 {

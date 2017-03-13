@@ -73,6 +73,7 @@ public:
 
     DAVA_DEPRECATED(const EngineContext* GetEngineContext());
     DAVA_DEPRECATED(CoreInterface* GetCoreInterface());
+    DAVA_DEPRECATED(const CoreInterface* GetCoreInterface() const);
     DAVA_DEPRECATED(UI* GetUI());
 
 private:

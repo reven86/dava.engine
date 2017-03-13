@@ -1,6 +1,7 @@
 #pragma once
 
 #include "PropertyModelExtensions.h"
+#include "TArc/Controls/ControlProxy.h"
 
 #include "Reflection/Reflection.h"
 #include "Base/BaseTypes.h"
@@ -26,80 +27,57 @@ class StaticEditorDrawer;
 class BaseComponentValue;
 struct PropertyNode;
 
-class StaticEditorProxy final
-{
-public:
-    StaticEditorProxy(BaseComponentValue* valueComponent, const StaticEditorDrawer* drawer);
-
-    uint32 GetHeight(QStyle* style, const QStyleOptionViewItem& options) const;
-    void Draw(QStyle* style, QPainter* painter, const QStyleOptionViewItem& options) const;
-
-private:
-    BaseComponentValue* value = nullptr;
-    const StaticEditorDrawer* drawer = nullptr;
-};
-
-class InteractiveEditorProxy final
-{
-public:
-    InteractiveEditorProxy(BaseComponentValue* valueComponent);
-
-    QWidget* AcquireEditorWidget(QWidget* parent, const QStyleOptionViewItem& option);
-    void ReleaseEditorWidget(QWidget* editor);
-    QRect GetEditorRect(QStyle* style, const QStyleOptionViewItem& option);
-
-    void CommitData();
-
-private:
-    BaseComponentValue* value = nullptr;
-};
-
 class BaseComponentValue : public ReflectionBase
 {
 public:
     BaseComponentValue();
+    virtual ~BaseComponentValue();
 
     void Init(ReflectedPropertyModel* model);
 
-    StaticEditorProxy GetStaticEditor();
-    InteractiveEditorProxy GetInteractiveEditor();
-    virtual bool EditorEvent(QEvent* event, const QStyleOptionViewItem& option);
+    virtual bool EditorEvent(QWidget* parent, QEvent* event, const QStyleOptionViewItem& option);
+
+    void Draw(QWidget* parent, QPainter* painter, const QStyleOptionViewItem& opt);
+    void UpdateGeometry(QWidget* parent, const QStyleOptionViewItem& opt);
+    bool HasHeightForWidth(const QWidget* parent) const;
+    int GetHeightForWidth(const QWidget* parent, int width) const;
+    int GetHeight(const QWidget* parent) const;
+
+    QWidget* AcquireEditorWidget(QWidget* parent, const QStyleOptionViewItem& option);
+    void ReleaseEditorWidget(QWidget* editor);
 
     QString GetPropertyName() const;
     int32 GetPropertiesNodeCount() const;
     std::shared_ptr<const PropertyNode> GetPropertyNode(int32 index) const;
 
+    virtual bool IsReadOnly() const;
+    static const char* readOnlyFieldName;
+
 protected:
-    virtual Any GetValue() const = 0;
+    friend class ComponentStructureWrapper;
+    friend class ReflectedPropertyItem;
+
+    virtual Any GetMultipleValue() const = 0;
     virtual bool IsValidValueToSet(const Any& newValue, const Any& currentValue) const = 0;
+    virtual ControlProxy* CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor) const = 0;
+
+    Any GetValue() const;
     void SetValue(const Any& value);
-    virtual const StaticEditorDrawer* GetStaticEditorDrawer() const = 0;
-    virtual QWidget* AcquireEditorWidget(QWidget* parent, const QStyleOptionViewItem& option) = 0;
-    virtual void ReleaseEditorWidget(QWidget* editor);
 
     void AddPropertyNode(const std::shared_ptr<PropertyNode>& node);
     void RemovePropertyNode(const std::shared_ptr<PropertyNode>& node);
     void RemovePropertyNodes();
 
+    mutable ControlProxy* editorWidget = nullptr;
     Vector<std::shared_ptr<PropertyNode>> nodes;
-    DataWrappersProcessor* GetWrappersProcessor();
-    Reflection GetReflection();
 
 private:
-    std::shared_ptr<ModifyExtension> GetModifyInterface();
-
-    void UpdateCachedValue();
-    void ClearCachedValue();
-    void CommitData();
-
-private:
-    friend class ReflectedPropertyItem;
-    friend class InteractiveEditorProxy;
-    friend class StaticEditorProxy;
+    void EnsureEditorCreated(const QWidget* parent) const;
+    void UpdateEditorGeometry(const QWidget* parent, const QRect& geometry) const;
 
     ReflectedPropertyModel* model = nullptr;
     BaseComponentValue* thisValue = nullptr;
-    Any cachedValue;
+    bool isEditorEvent = false;
 
     DAVA_VIRTUAL_REFLECTION(BaseComponentValue);
 };

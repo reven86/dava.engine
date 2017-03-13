@@ -1,6 +1,6 @@
 #pragma once
 
-#include "TArc/Core//BaseApplication.h"
+#include <TArc/Core/BaseApplication.h>
 
 namespace DAVA
 {
@@ -22,9 +22,9 @@ protected:
     EngineInitInfo GetInitInfo() const override;
     void CreateModules(DAVA::TArc::Core* tarcCore) const override;
 
+    void RegisterReflectionExtensions() override;
+
 private:
-    void CreateGUIModules(DAVA::TArc::Core* tarcCore) const;
-    void CreateConsoleModules(DAVA::TArc::Core* tarcCore) const;
     void Init(const DAVA::EngineContext* engineContext) override;
     void Cleanup() override;
 

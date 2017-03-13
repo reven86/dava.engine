@@ -40,7 +40,11 @@ void BaseTest::LoadResources()
 void BaseTest::UnloadResources()
 {
     SafeRelease(scene);
+
+    RemoveControl(sceneView);
     SafeRelease(sceneView);
+
+    uiRoot->RemoveAllControls();
 }
 
 void BaseTest::CreateUI()

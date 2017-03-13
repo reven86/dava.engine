@@ -23,7 +23,7 @@ public:
 
 private:
     void CreateOrUpdateNotification(Windows::Data::Xml::Dom::XmlDocument ^ notificationDeclaration,
-                                    const Windows::Foundation::DateTime* startTime = nullptr,
+                                    int32 delayInSeconds = 0,
                                     bool ghostNotification = false);
 
     Windows::UI::Notifications::ToastNotifier ^ toastNotifier;

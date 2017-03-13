@@ -12,6 +12,11 @@ const FastName UIControlHelpers::WILDCARD_ROOT("^");
 const FastName UIControlHelpers::WILDCARD_MATCHES_ONE_LEVEL("*");
 const FastName UIControlHelpers::WILDCARD_MATCHES_ZERO_OR_MORE_LEVEL("**");
 
+namespace UIControlHelpersDetails
+{
+static const String RESERVED_CHARS(".^*/");
+}
+
 String UIControlHelpers::GetControlPath(const UIControl* control, const UIControl* rootControl /*= NULL*/)
 {
     if (!control)
@@ -236,6 +241,11 @@ void UIControlHelpers::ScrollToControlWithAnimation(DAVA::UIControl* control, fl
     {
         ScrollToRect(parent, control->GetRect(), animationTime, toTopLeftForBigControls);
     }
+}
+
+bool UIControlHelpers::IsControlNameValid(const String& controlName)
+{
+    return (controlName.find_first_of(UIControlHelpersDetails::RESERVED_CHARS) == String::npos);
 }
 
 void UIControlHelpers::ScrollToRect(DAVA::UIControl* control, const Rect& rect, float32 animationTime, bool toTopLeftForBigControls)
