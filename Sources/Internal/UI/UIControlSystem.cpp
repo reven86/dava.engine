@@ -71,8 +71,8 @@ UIControlSystem::UIControlSystem()
     // calculate default radius
     if (DeviceInfo::IsHIDConnected(DeviceInfo::eHIDType::HID_TOUCH_TYPE))
     {
-        //half an inch
-        defaultDoubleClickRadiusSquared = DPIHelper::GetScreenDPI() / 4.f;
+        // quarter of an inch
+        defaultDoubleClickRadiusSquared = DPIHelper::GetScreenDPI() * 0.25f;
         if (DeviceInfo::GetScreenInfo().scale != 0.f)
         {
             // to look the same on all devices
@@ -88,7 +88,7 @@ UIControlSystem::UIControlSystem()
     doubleClickRadiusSquared = defaultDoubleClickRadiusSquared;
     doubleClickPhysSquare = defaultDoubleClickRadiusSquared;
 #else
-    SetDoubleTapSettings(0.5f, 0.5f);
+    SetDoubleTapSettings(0.5f, 0.25f);
 #endif
 
     ui3DViewCount = 0;

@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_SCENE3D_RENDERLAYER_H__
-#define __DAVAENGINE_SCENE3D_RENDERLAYER_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Base/FastName.h"
@@ -68,7 +67,4 @@ inline uint32 RenderLayer::GetSortingFlags() const
 {
     return sortFlags;
 }
-
-} // ns
-
-#endif /* __DAVAENGINE_SCENE3D_RENDERLAYER_H__ */
+}

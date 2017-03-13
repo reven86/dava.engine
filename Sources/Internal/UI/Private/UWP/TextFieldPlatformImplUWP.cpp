@@ -235,7 +235,6 @@ void TextFieldPlatformImpl::OwnerIsDying()
             auto self{ shared_from_this() };
             window->RunOnUIThreadAsync([this, self]() {
                 InputPane::GetForCurrentView()->Showing -= tokenKeyboardShowing;
-                InputPane::GetForCurrentView()->Hiding -= tokenKeyboardHiding;
                 PlatformApi::Win10::RemoveXamlControl(window, nativeControlHolder);
             });
         }
@@ -659,16 +658,11 @@ void TextFieldPlatformImpl::InstallKeyboardEventHandlers()
     using ::Windows::UI::ViewManagement::InputPaneVisibilityEventArgs;
 
     std::weak_ptr<TextFieldPlatformImpl> self_weak(shared_from_this());
-    auto keyboardHiding = ref new TypedEventHandler<InputPane ^, InputPaneVisibilityEventArgs ^>([this, self_weak](InputPane ^, InputPaneVisibilityEventArgs ^ args) {
-        if (auto self = self_weak.lock())
-            OnKeyboardHiding(args);
-    });
     auto keyboardShowing = ref new TypedEventHandler<InputPane ^, InputPaneVisibilityEventArgs ^>([this, self_weak](InputPane ^, InputPaneVisibilityEventArgs ^ args) {
         if (auto self = self_weak.lock())
             OnKeyboardShowing(args);
     });
     tokenKeyboardShowing = InputPane::GetForCurrentView()->Showing += keyboardShowing;
-    tokenKeyboardHiding = InputPane::GetForCurrentView()->Hiding += keyboardHiding;
 }
 
 void TextFieldPlatformImpl::OnKeyDown(::Windows::UI::Xaml::Input::KeyRoutedEventArgs ^ args)
@@ -882,17 +876,9 @@ void TextFieldPlatformImpl::OnLayoutUpdated()
     }
 }
 
-void TextFieldPlatformImpl::OnKeyboardHiding(::Windows::UI::ViewManagement::InputPaneVisibilityEventArgs ^ args)
-{
-    args->EnsuredFocusedElementInView = true;
-}
-
 void TextFieldPlatformImpl::OnKeyboardShowing(::Windows::UI::ViewManagement::InputPaneVisibilityEventArgs ^ args)
 {
     using ::Windows::UI::ViewManagement::InputPane;
-
-    // Tell keyboard that application will position native controls by itself
-    args->EnsuredFocusedElementInView = true;
 
     if (HasFocus())
     {
@@ -1283,16 +1269,11 @@ void TextFieldPlatformImpl::RenderToTexture(bool moveOffScreenOnCompletion)
     auto renderTask = create_task(renderTarget->RenderAsync(nativeControlHolder)).then([this, self, renderTarget]() { return renderTarget->GetPixelsAsync(); }).then([this, self, renderTarget, moveOffScreenOnCompletion](IBuffer ^ renderBuffer) {
         uint32 imageWidth = renderTarget->PixelWidth;
         uint32 imageHeight = renderTarget->PixelHeight;
-        size_t streamSize = static_cast<size_t>(renderBuffer->Length);
-        DataReader^ reader = DataReader::FromBuffer(renderBuffer);
 
-        size_t index = 0;
-        Vector<uint8> buf(streamSize, 0);
-        while (reader->UnconsumedBufferLength > 0)
-        {
-            buf[index] = reader->ReadByte();
-            index += 1;
-        }
+        DataReader^ reader = DataReader::FromBuffer(renderBuffer);
+        Platform::Array<uint8>^ inStream = ref new Platform::Array<uint8>(reader->UnconsumedBufferLength);
+        reader->ReadBytes(inStream);
+        Vector<uint8> buf(inStream->begin(), inStream->end());
 
 #if defined(__DAVAENGINE_COREV2__)
         RunOnMainThreadAsync([this, self, moveOffScreenOnCompletion, buf=std::move(buf), imageWidth, imageHeight]() mutable {

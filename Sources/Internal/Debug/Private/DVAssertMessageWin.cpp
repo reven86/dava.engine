@@ -1,4 +1,7 @@
 #include "Base/Platform.h"
+
+#if !defined(__DAVAENGINE_COREV2__)
+
 #include "Utils/UTF8Utils.h"
 
 #if defined(__DAVAENGINE_WIN32__)
@@ -193,3 +196,4 @@ bool DVAssertMessage::InnerShow(eModalType /*modalType*/, const char* content)
 } // namespace DAVA
 
 #endif // defined (__DAVAENGINE_WIN_UAP__)
+#endif // !defined(__DAVAENGINE_COREV2__)

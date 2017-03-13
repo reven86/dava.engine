@@ -286,6 +286,7 @@ void Window::HandleWindowCreated(const Private::MainDispatcherEvent& e)
 {
     Logger::Info("Window::HandleWindowCreated: enter");
 
+    isAlive = true;
     MergeSizeChangedEvents(e);
     sizeEventsMerged = true;
 
@@ -313,6 +314,7 @@ void Window::HandleWindowDestroyed(const Private::MainDispatcherEvent& e)
     uiControlSystem = nullptr;
 
     engineBackend->DeinitRender(this);
+    isAlive = false;
 
     Logger::Info("Window::HandleWindowDestroyed: leave");
 }

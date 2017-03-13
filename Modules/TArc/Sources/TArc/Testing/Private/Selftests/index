@@ -9,7 +9,7 @@ DoubleSpinBoxTests.h
 FieldBinderTest.h
 FilePathEditTest.h
 IntSpinBoxTests.h
+LabelTest.h
 LineEditTest.h
 PlainTextEditTest.h
 QtWrapLayoutTests.h
-SceneTabbarTest.h

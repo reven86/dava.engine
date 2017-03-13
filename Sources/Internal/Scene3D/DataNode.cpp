@@ -1,9 +1,18 @@
 #include "Scene3D/DataNode.h"
 #include "FileSystem/KeyedArchive.h"
 #include "Scene3D/SceneFileV2.h"
+#include "Reflection/ReflectionRegistrator.h"
+#include "Reflection/ReflectedMeta.h"
 
 namespace DAVA
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(DataNode)
+{
+    ReflectionRegistrator<DataNode>::Begin()
+    .Field("id", &DataNode::id)[M::ReadOnly(), M::HiddenField()]
+    .End();
+}
+
 DataNode::DataNode()
     : id(INVALID_ID)
     , isRuntime(false)

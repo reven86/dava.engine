@@ -28,6 +28,7 @@ UIStyleSheetPropertyDataBase::UIStyleSheetPropertyDataBase()
 
     , properties({ { UIStyleSheetPropertyDescriptor(&controlGroup, FastName("angle"), VariantType(0.0f)),
                      UIStyleSheetPropertyDescriptor(&controlGroup, FastName("scale"), VariantType(Vector2(1.0f, 1.0f))),
+                     UIStyleSheetPropertyDescriptor(&controlGroup, FastName("pivot"), VariantType(Vector2(0.0f, 0.0f))),
                      UIStyleSheetPropertyDescriptor(&controlGroup, FastName("visible"), VariantType(true)),
                      UIStyleSheetPropertyDescriptor(&controlGroup, FastName("noInput"), VariantType(false)),
                      UIStyleSheetPropertyDescriptor(&controlGroup, FastName("exclusiveInput"), VariantType(false)),
