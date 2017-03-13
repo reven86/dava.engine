@@ -42,7 +42,9 @@ protected:
         painter->drawLine(options.rect.bottomLeft(), options.rect.bottomRight());
 
         // draw vertical line
-        if (!(options.state & QStyle::State_Selected))
+        bool isSelected = options.state & QStyle::State_Selected;
+        bool isSpanned = isFirstColumnSpanned(index.row(), index.parent());
+        if (isSelected == false && isSpanned == false)
         {
             QHeaderView* hdr = header();
             if (hdr != nullptr && hdr->count() > 1)
@@ -132,6 +134,7 @@ void PropertiesView::SetupUI()
     view->setModel(model.get());
     view->setRootIndex(QModelIndex());
     view->setItemDelegate(new PropertiesViewDelegate(view, model.get(), this));
+    view->setAlternatingRowColors(true);
 
     QHeaderView* headerView = view->header();
     connections.AddConnection(headerView, &QHeaderView::sectionResized, MakeFunction(this, &PropertiesView::OnColumnResized));

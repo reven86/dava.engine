@@ -1,5 +1,6 @@
 #include "Classes/PropertyPanel/PropertyPanelModule.h"
 #include "Classes/PropertyPanel/PropertyModelExt.h"
+#include "Classes/PropertyPanel/QualitySettingsComponentExt.h"
 #include "Classes/Selection/SelectionData.h"
 #include "Classes/Application/REGlobal.h"
 
@@ -67,6 +68,8 @@ void PropertyPanelModule::PostInit()
     PropertiesView* view = new PropertiesView(params);
     view->RegisterExtension(std::make_shared<REModifyPropertyExtension>(accessor));
     view->RegisterExtension(std::make_shared<EntityChildCreator>());
+    view->RegisterExtension(std::make_shared<QualitySettingsChildCreator>());
+    view->RegisterExtension(std::make_shared<QualitySettingsEditorCreator>());
     ui->AddView(REGlobal::MainWindowKey, PanelKey(panelInfo.title, panelInfo), view);
 
     // Bind to current selection changed
@@ -103,5 +106,5 @@ DAVA_VIRTUAL_REFLECTION_IMPL(PropertyPanelModule)
 }
 
 #if !defined(DEPLOY_BUILD)
-//DECL_GUI_MODULE(PropertyPanelModule);
+DECL_GUI_MODULE(PropertyPanelModule);
 #endif
