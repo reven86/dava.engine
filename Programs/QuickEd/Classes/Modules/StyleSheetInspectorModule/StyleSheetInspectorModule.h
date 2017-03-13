@@ -19,7 +19,6 @@ class StyleSheetInspectorModule : public DAVA::TArc::ClientModule, public Packag
 {
 public:
     StyleSheetInspectorModule();
-    ~StyleSheetInspectorModule() override;
 
 private:
     void PostInit() override;

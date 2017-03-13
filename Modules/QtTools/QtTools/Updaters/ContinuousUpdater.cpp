@@ -2,22 +2,38 @@
 
 #include <QTimer>
 
-ContinuousUpdater::ContinuousUpdater(Updater updater_, int updateInterval)
-    : updater(updater_)
-    , timer(new QTimer(nullptr))
+ContinuousUpdater::ContinuousUpdater(int updaterInterval)
+    : timer(new QTimer(nullptr))
 {
     timer->setSingleShot(true);
-    timer->setInterval(updateInterval);
-
+    timer->setInterval(updaterInterval);
+    
     QObject::connect(timer.get(), &QTimer::timeout, [this]() { OnTimer(); });
 }
 
 ContinuousUpdater::~ContinuousUpdater() = default;
 
+void ContinuousUpdater::SetUpdater(const Updater& updater_)
+{
+    updater = updater_;
+}
+
+void ContinuousUpdater::SetStopper(const Stopper& stopper_)
+{
+    stopper = stopper_;
+}
+
 void ContinuousUpdater::Update()
 {
     needUpdate = true;
 
+    if(stopper)
+    {
+        if(stopper())
+        {
+            Stop();
+        }
+    }
     if (!timer->isActive())
     {
         delayedExecutor.DelayedExecute(DAVA::MakeFunction(this, &ContinuousUpdater::OnTimer));
@@ -41,6 +57,7 @@ void ContinuousUpdater::OnTimer()
 {
     if (needUpdate)
     {
+        DVASSERT(updater, "updater is not set");
         updater();
         needUpdate = false;
         timer->start();

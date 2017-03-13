@@ -28,13 +28,12 @@ DAVA_VIRTUAL_REFLECTION_IMPL(StyleSheetInspectorModule)
 }
 
 StyleSheetInspectorModule::StyleSheetInspectorModule()
-    : updater(DAVA::MakeFunction(this, &StyleSheetInspectorModule::Update), 300)
+    : updater(300)
 {
-}
-
-StyleSheetInspectorModule::~StyleSheetInspectorModule()
-{
-    updater.Abort();
+    using namespace DAVA;
+    updater.SetUpdater(DAVA::MakeFunction(this, &StyleSheetInspectorModule::Update));
+    updater.SetStopper([this]() { return currentControl == nullptr; }
+                       );
 }
 
 void StyleSheetInspectorModule::PostInit()
@@ -98,6 +97,7 @@ void StyleSheetInspectorModule::StyleSheetsWereRebuilt()
 
 void StyleSheetInspectorModule::OnSelectionChanged(const DAVA::Any& selectionValue)
 {
+    currentControl = nullptr;
     SelectedNodes selection = selectionValue.Cast<SelectedNodes>(SelectedNodes());
     for (const PackageBaseNode* node : selection)
     {

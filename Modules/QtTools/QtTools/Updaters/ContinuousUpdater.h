@@ -8,9 +8,13 @@ class ContinuousUpdater
 {
 public:
     using Updater = DAVA::Function<void()>;
+    using Stopper = DAVA::Function<bool()>;
 
-    ContinuousUpdater(Updater updater, int updateInterval = 0);
+    ContinuousUpdater(int updateInterval);
     ~ContinuousUpdater();
+    
+    void SetUpdater(const Updater& updater);
+    void SetStopper(const Stopper& stopper);
 
     void Update();
     void Stop(); //sync method to stop timer and call Update
@@ -20,6 +24,7 @@ public:
 
 private:
     Updater updater;
+    Stopper stopper;
     std::unique_ptr<QTimer> timer;
     QtDelayedExecutor delayedExecutor;
     bool needUpdate = false;
