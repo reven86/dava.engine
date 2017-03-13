@@ -200,7 +200,7 @@ void EditorSystemsManager::SelectNode(ControlNode* node)
     selectionSystemPtr->SelectNode(node);
 }
 
-SortedPackageBaseNodeSet EditorSystemsManager::GetEditingRootControls() const
+const SortedPackageBaseNodeSet& EditorSystemsManager::GetEditingRootControls() const
 {
     return editingRootControls;
 }
