@@ -467,11 +467,7 @@ FilePath& FilePath::operator+=(const String& path)
 
 bool FilePath::operator==(const FilePath& path) const
 {
-#if defined(__DAVAENGINE_ANDROID__) && defined(USE_LOCAL_RESOURCES)
-    return GetAbsolutePathname() == path.GetAbsolutePathname();
-#else
     return absolutePathname == path.absolutePathname;
-#endif
 }
 
 bool FilePath::operator!=(const FilePath& path) const
