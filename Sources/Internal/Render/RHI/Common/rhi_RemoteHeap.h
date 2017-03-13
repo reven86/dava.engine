@@ -138,8 +138,8 @@ template <unsigned MaxBlockCount>
 inline void
 SimpleRemoteHeap<MaxBlockCount>::initialize(void* base, unsigned size, unsigned align)
 {
-    _base = (uint8_t*)base;
-    _unused = (uint8_t*)base;
+    _base = reinterpret_cast<uint8_t*>(base);
+    _unused = reinterpret_cast<uint8_t*>(base);
     _total_size = size;
     _block_align = align;
 }
@@ -227,7 +227,7 @@ template <unsigned MaxBlockCount>
 inline void
 SimpleRemoteHeap<MaxBlockCount>::free(void* mem)
 {
-    uint8_t* usr_ptr = (uint8_t*)mem;
+    uint8_t* usr_ptr = reinterpret_cast<uint8_t*>(mem);
     DVASSERT(usr_ptr >= _base);
     DVASSERT(usr_ptr < _base + _total_size);
 
@@ -268,7 +268,7 @@ SimpleRemoteHeap<MaxBlockCount>::_commit_block(unsigned size, unsigned align)
         b.base = _unused;
         b.size = sz;
         b.align = align;
-        b.usr_ptr = (uint8_t*)((((uint64_t)b.base) + (uint64_t(align) - 1)) & (~(uint64_t(align) - 1)));
+        b.usr_ptr = reinterpret_cast<uint8_t*>((((uint64_t)b.base) + (uint64_t(align) - 1)) & (~(uint64_t(align) - 1)));
         b.usr_sz = size;
         b.slack = 0;
         b.flags = 0;
@@ -311,8 +311,7 @@ SimpleRemoteHeap<MaxBlockCount>::_find_free_block(unsigned size, unsigned align,
             *wasted_slack = min_slack;
     }
 
-    return (block != _block.end()) ? &(_block[block - _block.begin()]) : nullptr; // fucking STL
-    //    return block;
+    return (block != _block.end()) ? &(_block[block - _block.begin()]) : nullptr;
 }
 
 //------------------------------------------------------------------------------
