@@ -1,5 +1,6 @@
 #include "Application/QEApplication.h"
 #include "Modules/LegacySupportModule/LegacySupportModule.h"
+#include "Modules/PackageListenerModule/PackageListenerModule.h"
 #include "Classes/Application/ReflectionExtensions.h"
 
 #include <TArc/Core/Core.h>
@@ -118,6 +119,7 @@ void QEApplication::CreateModules(DAVA::TArc::Core* tarcCore) const
 {
     Q_INIT_RESOURCE(QtToolsResources);
     tarcCore->CreateModule<LegacySupportModule>();
+    tarcCore->CreateModule<PackageListenerModule>();
     for (const DAVA::ReflectedType* type : DAVA::TArc::ModuleCollection::Instance()->GetGuiModules())
     {
         tarcCore->CreateModule(type);

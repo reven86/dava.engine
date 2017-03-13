@@ -9,14 +9,6 @@
 
 #include <QtTools/Utils/QtDelayedExecutor.h>
 
-namespace DAVA
-{
-namespace TArc
-{
-class FieldBinder;
-}
-}
-
 class PreviewWidget;
 class EditorSystemsManager;
 class PackageNode;
@@ -92,7 +84,6 @@ private:
     PreviewWidget* previewWidget = nullptr;
     std::unique_ptr<EditorSystemsManager> systemsManager;
     DAVA::TArc::QtConnections connections;
-    std::unique_ptr<DAVA::TArc::FieldBinder> fieldBinder;
 
     QtDelayedExecutor delayedExecutor;
 

@@ -13,7 +13,6 @@
 #include "UI/Package/PackageWidget.h"
 #include "UI/DocumentGroupView.h"
 #include "UI/Find/FindFilter.h"
-#include "UI/StyleSheetInspector/StyleSheetInspectorWidget.h"
 
 #include <TArc/Core/ContextAccessor.h>
 #include <TArc/WindowSubSystem/Private/UIManager.h>
@@ -94,11 +93,9 @@ void LegacySupportModule::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, 
             document = iter->second.get();
         }
         PackageWidget* packageWidget = mainWindow->GetPackageWidget();
-        StyleSheetInspectorWidget* ssInspectorWidget = mainWindow->GetStyleSheetInspectorWidget();
         if (wrapper.HasData() == false)
         {
             packageWidget->OnSelectionChanged(Any());
-            ssInspectorWidget->OnSelectionChanged(Any());
             DVASSERT(document == nullptr);
             documentGroupView->SetDocument(document);
         }
@@ -109,7 +106,6 @@ void LegacySupportModule::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, 
             documentGroupView->SetDocument(document);
             Any selectionValue = wrapper.GetFieldValue(DocumentData::selectionPropertyName);
             packageWidget->OnSelectionChanged(selectionValue);
-            ssInspectorWidget->OnSelectionChanged(selectionValue);
         }
         else
         {
@@ -122,15 +118,15 @@ void LegacySupportModule::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, 
                 bool documentWasChanged = false;
                 if (packageWasChanged)
                 {
-                    DocumentData* documentData = activeContext->GetData<DocumentData>();
-                    if (documentData->GetPackageNode() != document->GetPackage())
+                    const DocumentData* documentData = activeContext->GetData<DocumentData>();
+                    const PackageNode* package = documentData->GetPackageNode();
+                    if (package != document->GetPackage())
                     {
                         document = new Document(accessor, contextID);
                         documentWasChanged = true;
                     }
 
                     packageWidget->OnSelectionChanged(Any());
-                    ssInspectorWidget->OnSelectionChanged(Any());
                     documentGroupView->SetDocument(document);
                     if (documentWasChanged)
                     {
@@ -140,7 +136,6 @@ void LegacySupportModule::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, 
 
                 Any selectionValue = wrapper.GetFieldValue(DocumentData::selectionPropertyName);
                 packageWidget->OnSelectionChanged(selectionValue);
-                ssInspectorWidget->OnSelectionChanged(selectionValue);
             }
         }
     }
@@ -241,14 +236,6 @@ void LegacySupportModule::OnSelectionInPackageChanged(const SelectedNodes& selec
     using namespace DAVA;
     using namespace TArc;
     documentDataWrapper.SetFieldValue(DocumentData::selectionPropertyName, selection);
-    //document data wrapper will not emit "selectionChanged" back. Call "selection changed" for another widgets manually
-    ContextAccessor* accessor = GetAccessor();
-    DataContext* globalContext = accessor->GetGlobalContext();
-    QWidget* window = GetUI()->GetWindow(QEGlobal::windowKey);
-    MainWindow* mainWindow = qobject_cast<MainWindow*>(window);
-    DVASSERT(mainWindow != nullptr);
-    StyleSheetInspectorWidget* ssInspectorWidget = mainWindow->GetStyleSheetInspectorWidget();
-    ssInspectorWidget->OnSelectionChanged(selection);
 }
 
 void LegacySupportModule::OnJumpToPrototype()
