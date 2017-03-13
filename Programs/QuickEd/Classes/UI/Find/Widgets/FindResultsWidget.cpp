@@ -7,6 +7,7 @@
 #include <QtHelpers/HelperFunctions.h>
 
 #include <QtConcurrent>
+#include <QDockWidget>
 #include <QKeyEvent>
 
 using namespace DAVA;
@@ -91,6 +92,11 @@ void FindResultsWidget::OnFindFinished()
 
     ui.status->setText(QString("Find - Finished"));
     ui.status->setVisible(false);
+
+    if (model->rowCount() == 1)
+    {
+        ui.treeView->setExpanded(model->index(0, 0), true);
+    }
 }
 
 void FindResultsWidget::OnActivated(const QModelIndex& index)
@@ -114,7 +120,6 @@ void FindResultsWidget::Find(std::shared_ptr<FindFilter> filter, const ProjectDa
         ClearResults();
 
         setVisible(true);
-        raise();
 
         finder = new Finder(std::move(filter), &(projectData->GetPrototypes()));
 

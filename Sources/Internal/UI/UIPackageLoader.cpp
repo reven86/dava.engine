@@ -299,7 +299,7 @@ void UIPackageLoader::LoadStyleSheets(const YamlNode* styleSheetsNode, AbstractU
 
 void UIPackageLoader::LoadControl(const YamlNode* node, AbstractUIPackageBuilder::eControlPlace controlPlace, AbstractUIPackageBuilder* builder)
 {
-    AbstractUIPackageBuilder::UIControlWithTypeInfo control;
+    const InspInfo* controlIntrospection = nullptr;
 
     const YamlNode* pathNode = node->Get("path");
     const YamlNode* prototypeNode = node->Get("prototype");
@@ -316,7 +316,7 @@ void UIPackageLoader::LoadControl(const YamlNode* node, AbstractUIPackageBuilder
 
     if (pathNode)
     {
-        control = builder->BeginControlWithPath(pathNode->AsString());
+        controlIntrospection = builder->BeginControlWithPath(pathNode->AsString());
     }
     else if (prototypeNode)
     {
@@ -330,24 +330,24 @@ void UIPackageLoader::LoadControl(const YamlNode* node, AbstractUIPackageBuilder
             packageName = prototypeName.substr(0, pos);
             prototypeName = prototypeName.substr(pos + 1, prototypeName.length() - pos - 1);
         }
-        control = builder->BeginControlWithPrototype(controlName, packageName, FastName(prototypeName), customClass, this);
+        controlIntrospection = builder->BeginControlWithPrototype(controlName, packageName, FastName(prototypeName), customClass, this);
     }
     else if (classNode)
     {
         const YamlNode* customClassNode = node->Get("customClass");
         if (customClassNode)
-            control = builder->BeginControlWithCustomClass(controlName, customClassNode->AsString(), classNode->AsString());
+            controlIntrospection = builder->BeginControlWithCustomClass(controlName, customClassNode->AsString(), classNode->AsString());
         else
-            control = builder->BeginControlWithClass(controlName, classNode->AsString());
+            controlIntrospection = builder->BeginControlWithClass(controlName, classNode->AsString());
     }
     else
     {
         builder->BeginUnknownControl(controlName, node);
     }
 
-    if (control.GetTypeInfo() != nullptr)
+    if (controlIntrospection != nullptr)
     {
-        LoadControlPropertiesFromYamlNode(control.GetTypeInfo(), node, builder);
+        LoadControlPropertiesFromYamlNode(controlIntrospection, node, builder);
         LoadComponentPropertiesFromYamlNode(node, builder);
 
         if (version <= VERSION_WITH_LEGACY_ALIGNS)
@@ -363,11 +363,6 @@ void UIPackageLoader::LoadControl(const YamlNode* node, AbstractUIPackageBuilder
         uint32 count = childrenNode->GetCount();
         for (uint32 i = 0; i < count; i++)
             LoadControl(childrenNode->Get(i), AbstractUIPackageBuilder::TO_PREVIOUS_CONTROL, builder);
-    }
-
-    if (control.GetControl() != nullptr)
-    {
-        control.GetControl()->LoadFromYamlNodeCompleted();
     }
 
     builder->EndControl(controlPlace);

@@ -161,7 +161,7 @@ void DefaultUIPackageBuilder::ProcessStyleSheet(const Vector<UIStyleSheetSelecto
     }
 }
 
-DefaultUIPackageBuilder::UIControlWithTypeInfo DefaultUIPackageBuilder::BeginControlWithClass(const FastName& controlName, const String& className)
+const InspInfo* DefaultUIPackageBuilder::BeginControlWithClass(const FastName& controlName, const String& className)
 {
     RefPtr<UIControl> control(ObjectFactory::Instance()->New<UIControl>(className));
 
@@ -183,10 +183,11 @@ DefaultUIPackageBuilder::UIControlWithTypeInfo DefaultUIPackageBuilder::BeginCon
     }
 
     controlsStack.push_back(new ControlDescr(control.Get(), true));
-    return control.Get();
+
+    return control->GetTypeInfo();
 }
 
-DefaultUIPackageBuilder::UIControlWithTypeInfo DefaultUIPackageBuilder::BeginControlWithCustomClass(const FastName& controlName, const String& customClassName, const String& className)
+const InspInfo* DefaultUIPackageBuilder::BeginControlWithCustomClass(const FastName& controlName, const String& customClassName, const String& className)
 {
     RefPtr<UIControl> control(ObjectFactory::Instance()->New<UIControl>(customClassName));
 
@@ -211,10 +212,11 @@ DefaultUIPackageBuilder::UIControlWithTypeInfo DefaultUIPackageBuilder::BeginCon
     DVASSERT(control.Valid());
 
     controlsStack.push_back(new ControlDescr(control.Get(), true));
-    return control.Get();
+
+    return control->GetTypeInfo();
 }
 
-DefaultUIPackageBuilder::UIControlWithTypeInfo DefaultUIPackageBuilder::BeginControlWithPrototype(const FastName& controlName, const String& packageName, const FastName& prototypeName, const String* customClassName, AbstractUIPackageLoader* loader)
+const InspInfo* DefaultUIPackageBuilder::BeginControlWithPrototype(const FastName& controlName, const String& packageName, const FastName& prototypeName, const String* customClassName, AbstractUIPackageLoader* loader)
 {
     UIControl* prototype = nullptr;
 
@@ -257,10 +259,10 @@ DefaultUIPackageBuilder::UIControlWithTypeInfo DefaultUIPackageBuilder::BeginCon
     control->SetPackageContext(nullptr);
 
     controlsStack.push_back(new ControlDescr(control.Get(), true));
-    return control.Get();
+    return control->GetTypeInfo();
 }
 
-DefaultUIPackageBuilder::UIControlWithTypeInfo DefaultUIPackageBuilder::BeginControlWithPath(const String& pathName)
+const InspInfo* DefaultUIPackageBuilder::BeginControlWithPath(const String& pathName)
 {
     UIControl* control = nullptr;
     if (!controlsStack.empty())
@@ -270,27 +272,29 @@ DefaultUIPackageBuilder::UIControlWithTypeInfo DefaultUIPackageBuilder::BeginCon
 
     DVASSERT(control);
     controlsStack.push_back(new ControlDescr(control, false));
-    return control;
+
+    return control->GetTypeInfo();
 }
 
-DefaultUIPackageBuilder::UIControlWithTypeInfo DefaultUIPackageBuilder::BeginUnknownControl(const FastName& controlName, const YamlNode* node)
+const InspInfo* DefaultUIPackageBuilder::BeginUnknownControl(const FastName& controlName, const YamlNode* node)
 {
     DVASSERT(false);
     controlsStack.push_back(new ControlDescr(nullptr, false));
-    return UIControlWithTypeInfo();
+    return nullptr;
 }
 
 void DefaultUIPackageBuilder::EndControl(eControlPlace controlPlace)
 {
     ControlDescr* lastDescr = controlsStack.back();
     controlsStack.pop_back();
+    UIControl* control = nullptr;
     if (lastDescr->addToParent)
     {
         switch (controlPlace)
         {
         case TO_PROTOTYPES:
         {
-            UIControl* control = lastDescr->control.Get();
+            control = lastDescr->control.Get();
             UIControlSystem::Instance()->GetLayoutSystem()->ManualApplyLayout(control);
             package->AddPrototype(control);
             break;
@@ -298,7 +302,7 @@ void DefaultUIPackageBuilder::EndControl(eControlPlace controlPlace)
 
         case TO_CONTROLS:
         {
-            UIControl* control = lastDescr->control.Get();
+            control = lastDescr->control.Get();
             UIControlSystem::Instance()->GetLayoutSystem()->ManualApplyLayout(control);
             package->AddControl(control);
             break;
@@ -307,7 +311,7 @@ void DefaultUIPackageBuilder::EndControl(eControlPlace controlPlace)
         case TO_PREVIOUS_CONTROL:
         {
             DVASSERT(!controlsStack.empty());
-            UIControl* control = controlsStack.back()->control.Get();
+            control = controlsStack.back()->control.Get();
             control->AddControl(lastDescr->control.Get());
             break;
         }
@@ -317,6 +321,8 @@ void DefaultUIPackageBuilder::EndControl(eControlPlace controlPlace)
             break;
         }
     }
+    DVASSERT(control != nullptr);
+    control->LoadFromYamlNodeCompleted();
     SafeDelete(lastDescr);
 }
 

@@ -73,6 +73,12 @@ void FindResultsModule::FindInProject(std::shared_ptr<FindFilter> filter)
     if (projectData != nullptr)
     {
         findResultsWidget->Find(filter, projectData, fileSystemCacheData->GetFiles("yaml"));
+
+        // we need it in TArc
+        if (QDockWidget* dock = qobject_cast<QDockWidget*>(findResultsWidget->parent()))
+        {
+            dock->raise();
+        }
     }
 }
 
@@ -89,6 +95,12 @@ void FindResultsModule::FindInDocument(std::shared_ptr<FindFilter> filter)
         DocumentData* documentData = activeContext->GetData<DocumentData>();
 
         findResultsWidget->Find(filter, projectData, documentData);
+
+        // we need it in TArc
+        if (QDockWidget* dock = qobject_cast<QDockWidget*>(findResultsWidget->parent()))
+        {
+            dock->raise();
+        }
     }
 }
 

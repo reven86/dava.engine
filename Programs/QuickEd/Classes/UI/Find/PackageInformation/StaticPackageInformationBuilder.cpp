@@ -85,19 +85,20 @@ void StaticPackageInformationBuilder::ProcessStyleSheet(const DAVA::Vector<DAVA:
     // do nothing
 }
 
-AbstractUIPackageBuilder::UIControlWithTypeInfo StaticPackageInformationBuilder::BeginControlWithClass(const FastName& controlName, const DAVA::String& className)
+const InspInfo* StaticPackageInformationBuilder::BeginControlWithClass(const FastName& controlName, const DAVA::String& className)
 {
     stack.emplace_back(Description(std::make_shared<StaticControlInformation>(controlName), true));
-    return UIControlWithTypeInfo(UIControl::TypeInfo());
+    return UIControl::TypeInfo();
 }
 
-AbstractUIPackageBuilder::UIControlWithTypeInfo StaticPackageInformationBuilder::BeginControlWithCustomClass(const FastName& controlName, const DAVA::String& customClassName, const DAVA::String& className)
+const InspInfo* StaticPackageInformationBuilder::BeginControlWithCustomClass(const FastName& controlName, const DAVA::String& customClassName, const DAVA::String& className)
 {
     stack.emplace_back(Description(std::make_shared<StaticControlInformation>(controlName), true));
-    return UIControlWithTypeInfo(UIControl::TypeInfo());
+
+    return UIControl::TypeInfo();
 }
 
-AbstractUIPackageBuilder::UIControlWithTypeInfo StaticPackageInformationBuilder::BeginControlWithPrototype(const FastName& controlName, const DAVA::String& packageName, const DAVA::FastName& prototypeName, const DAVA::String* customClassName, DAVA::AbstractUIPackageLoader* loader)
+const InspInfo* StaticPackageInformationBuilder::BeginControlWithPrototype(const FastName& controlName, const DAVA::String& packageName, const DAVA::FastName& prototypeName, const DAVA::String* customClassName, DAVA::AbstractUIPackageLoader* loader)
 {
     std::shared_ptr<StaticPackageInformation> prototypePackage;
     std::shared_ptr<StaticControlInformation> prototype;
@@ -130,10 +131,10 @@ AbstractUIPackageBuilder::UIControlWithTypeInfo StaticPackageInformationBuilder:
     DVASSERT(prototype.get() != nullptr);
 
     stack.emplace_back(Description(std::make_shared<StaticControlInformation>(*prototype, controlName, prototypePackage, FastName(prototypeName)), true));
-    return UIControlWithTypeInfo(UIControl::TypeInfo());
+    return UIControl::TypeInfo();
 }
 
-AbstractUIPackageBuilder::UIControlWithTypeInfo StaticPackageInformationBuilder::BeginControlWithPath(const DAVA::String& pathName)
+const InspInfo* StaticPackageInformationBuilder::BeginControlWithPath(const DAVA::String& pathName)
 {
     if (!stack.empty())
     {
@@ -159,13 +160,13 @@ AbstractUIPackageBuilder::UIControlWithTypeInfo StaticPackageInformationBuilder:
         DVASSERT(false);
     }
 
-    return UIControlWithTypeInfo(UIControl::TypeInfo());
+    return UIControl::TypeInfo();
 }
 
-AbstractUIPackageBuilder::UIControlWithTypeInfo StaticPackageInformationBuilder::BeginUnknownControl(const FastName& controlName, const DAVA::YamlNode* node)
+const InspInfo* StaticPackageInformationBuilder::BeginUnknownControl(const FastName& controlName, const DAVA::YamlNode* node)
 {
     stack.emplace_back(Description(std::make_shared<StaticControlInformation>(controlName), true));
-    return UIControlWithTypeInfo(UIControl::TypeInfo());
+    return UIControl::TypeInfo();
 }
 
 void StaticPackageInformationBuilder::EndControl(eControlPlace controlPlace)

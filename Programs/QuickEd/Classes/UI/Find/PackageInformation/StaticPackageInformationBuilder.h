@@ -30,11 +30,11 @@ public:
     bool ProcessImportedPackage(const DAVA::String& packagePath, DAVA::AbstractUIPackageLoader* loader) override;
     void ProcessStyleSheet(const DAVA::Vector<DAVA::UIStyleSheetSelectorChain>& selectorChains, const DAVA::Vector<DAVA::UIStyleSheetProperty>& properties) override;
 
-    UIControlWithTypeInfo BeginControlWithClass(const DAVA::FastName& controlName, const DAVA::String& className) override;
-    UIControlWithTypeInfo BeginControlWithCustomClass(const DAVA::FastName& controlName, const DAVA::String& customClassName, const DAVA::String& className) override;
-    UIControlWithTypeInfo BeginControlWithPrototype(const DAVA::FastName& controlName, const DAVA::String& packageName, const DAVA::FastName& prototypeName, const DAVA::String* customClassName, DAVA::AbstractUIPackageLoader* loader) override;
-    UIControlWithTypeInfo BeginControlWithPath(const DAVA::String& pathName) override;
-    UIControlWithTypeInfo BeginUnknownControl(const DAVA::FastName& controlName, const DAVA::YamlNode* node) override;
+    const DAVA::InspInfo* BeginControlWithClass(const DAVA::FastName& controlName, const DAVA::String& className) override;
+    const DAVA::InspInfo* BeginControlWithCustomClass(const DAVA::FastName& controlName, const DAVA::String& customClassName, const DAVA::String& className) override;
+    const DAVA::InspInfo* BeginControlWithPrototype(const DAVA::FastName& controlName, const DAVA::String& packageName, const DAVA::FastName& prototypeName, const DAVA::String* customClassName, DAVA::AbstractUIPackageLoader* loader) override;
+    const DAVA::InspInfo* BeginControlWithPath(const DAVA::String& pathName) override;
+    const DAVA::InspInfo* BeginUnknownControl(const DAVA::FastName& controlName, const DAVA::YamlNode* node) override;
     void EndControl(eControlPlace controlPlace) override;
 
     void BeginControlPropertiesSection(const DAVA::String& name) override;

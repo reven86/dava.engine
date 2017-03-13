@@ -24,11 +24,11 @@ public:
     virtual bool ProcessImportedPackage(const String& packagePath, AbstractUIPackageLoader* loader) override;
     virtual void ProcessStyleSheet(const Vector<UIStyleSheetSelectorChain>& selectorChains, const Vector<UIStyleSheetProperty>& properties) override;
 
-    virtual UIControlWithTypeInfo BeginControlWithClass(const FastName& controlName, const String& className) override;
-    virtual UIControlWithTypeInfo BeginControlWithCustomClass(const FastName& controlName, const String& customClassName, const String& className) override;
-    virtual UIControlWithTypeInfo BeginControlWithPrototype(const FastName& controlName, const String& packageName, const FastName& prototypeName, const String* customClassName, AbstractUIPackageLoader* loader) override;
-    virtual UIControlWithTypeInfo BeginControlWithPath(const String& pathName) override;
-    virtual UIControlWithTypeInfo BeginUnknownControl(const FastName& controlName, const YamlNode* node) override;
+    virtual const InspInfo* BeginControlWithClass(const FastName& controlName, const String& className) override;
+    virtual const InspInfo* BeginControlWithCustomClass(const FastName& controlName, const String& customClassName, const String& className) override;
+    virtual const InspInfo* BeginControlWithPrototype(const FastName& controlName, const String& packageName, const FastName& prototypeName, const String* customClassName, AbstractUIPackageLoader* loader) override;
+    virtual const InspInfo* BeginControlWithPath(const String& pathName) override;
+    virtual const InspInfo* BeginUnknownControl(const FastName& controlName, const YamlNode* node) override;
     virtual void EndControl(eControlPlace controlPlace) override;
 
     virtual void BeginControlPropertiesSection(const String& name) override;

@@ -97,7 +97,7 @@ void QuickEdPackageBuilder::ProcessStyleSheet(const DAVA::Vector<DAVA::UIStyleSh
     styleSheets.push_back(node);
 }
 
-QuickEdPackageBuilder::UIControlWithTypeInfo QuickEdPackageBuilder::BeginControlWithClass(const FastName& controlName, const String& className)
+const InspInfo* QuickEdPackageBuilder::BeginControlWithClass(const FastName& controlName, const String& className)
 {
     RefPtr<UIControl> control(ObjectFactory::Instance()->New<UIControl>(className));
     if (control.Valid())
@@ -115,10 +115,13 @@ QuickEdPackageBuilder::UIControlWithTypeInfo QuickEdPackageBuilder::BeginControl
 
     controlsStack.push_back(ControlDescr(ControlNode::CreateFromControl(control.Get()), true));
 
-    return control.Get();
+    if (control != nullptr)
+        return control->GetTypeInfo();
+    else
+        return nullptr;
 }
 
-QuickEdPackageBuilder::UIControlWithTypeInfo QuickEdPackageBuilder::BeginControlWithCustomClass(const FastName& controlName, const String& customClassName, const String& className)
+const InspInfo* QuickEdPackageBuilder::BeginControlWithCustomClass(const FastName& controlName, const String& customClassName, const String& className)
 {
     RefPtr<UIControl> control(ObjectFactory::Instance()->New<UIControl>(className));
 
@@ -139,10 +142,13 @@ QuickEdPackageBuilder::UIControlWithTypeInfo QuickEdPackageBuilder::BeginControl
     node->GetRootProperty()->GetCustomClassProperty()->SetValue(VariantType(customClassName));
     controlsStack.push_back(ControlDescr(node, true));
 
-    return control.Get();
+    if (control != nullptr)
+        return control->GetTypeInfo();
+    else
+        return nullptr;
 }
 
-QuickEdPackageBuilder::UIControlWithTypeInfo QuickEdPackageBuilder::BeginControlWithPrototype(const FastName& controlName, const String& packageName, const FastName& prototypeFastName, const String* customClassName, AbstractUIPackageLoader* loader)
+const InspInfo* QuickEdPackageBuilder::BeginControlWithPrototype(const FastName& controlName, const String& packageName, const FastName& prototypeFastName, const String* customClassName, AbstractUIPackageLoader* loader)
 {
     ControlNode* prototypeNode = nullptr;
     String prototypeName(prototypeFastName.c_str());
@@ -184,10 +190,10 @@ QuickEdPackageBuilder::UIControlWithTypeInfo QuickEdPackageBuilder::BeginControl
     }
     controlsStack.push_back(ControlDescr(node, true));
 
-    return node->GetControl();
+    return node->GetControl()->GetTypeInfo();
 }
 
-QuickEdPackageBuilder::UIControlWithTypeInfo QuickEdPackageBuilder::BeginControlWithPath(const String& pathName)
+const InspInfo* QuickEdPackageBuilder::BeginControlWithPath(const String& pathName)
 {
     ControlNode* control = nullptr;
     if (!controlsStack.empty())
@@ -205,16 +211,16 @@ QuickEdPackageBuilder::UIControlWithTypeInfo QuickEdPackageBuilder::BeginControl
 
     controlsStack.push_back(ControlDescr(SafeRetain(control), false));
 
-    if (!control)
-        return UIControlWithTypeInfo();
-
-    return control->GetControl();
+    if (control != nullptr)
+        return control->GetControl()->GetTypeInfo();
+    else
+        return nullptr;
 }
 
-QuickEdPackageBuilder::UIControlWithTypeInfo QuickEdPackageBuilder::BeginUnknownControl(const FastName& controlName, const YamlNode* node)
+const InspInfo* QuickEdPackageBuilder::BeginUnknownControl(const FastName& controlName, const YamlNode* node)
 {
     DVASSERT(false);
-    return UIControlWithTypeInfo();
+    return nullptr;
 }
 
 void QuickEdPackageBuilder::EndControl(eControlPlace controlPlace)
@@ -245,6 +251,9 @@ void QuickEdPackageBuilder::EndControl(eControlPlace controlPlace)
             break;
         }
     }
+
+    lastControl->GetControl()->LoadFromYamlNodeCompleted();
+
     SafeRelease(lastControl);
 }
 

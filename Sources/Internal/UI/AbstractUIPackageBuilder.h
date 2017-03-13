@@ -27,21 +27,6 @@ public:
 class AbstractUIPackageBuilder
 {
 public:
-    class UIControlWithTypeInfo
-    {
-    public:
-        UIControlWithTypeInfo() = default;
-        UIControlWithTypeInfo(UIControl* control_);
-        UIControlWithTypeInfo(const InspInfo* typeInfo);
-
-        UIControl* GetControl() const;
-        const InspInfo* GetTypeInfo() const;
-
-    private:
-        UIControl* control = nullptr;
-        const InspInfo* typeInfo = nullptr;
-    };
-
     enum eControlPlace
     {
         TO_PROTOTYPES,
@@ -58,11 +43,11 @@ public:
     virtual bool ProcessImportedPackage(const String& packagePath, AbstractUIPackageLoader* loader) = 0;
     virtual void ProcessStyleSheet(const Vector<UIStyleSheetSelectorChain>& selectorChains, const Vector<UIStyleSheetProperty>& properties) = 0;
 
-    virtual UIControlWithTypeInfo BeginControlWithClass(const FastName& controlName, const String& className) = 0;
-    virtual UIControlWithTypeInfo BeginControlWithCustomClass(const FastName& controlName, const String& customClassName, const String& className) = 0;
-    virtual UIControlWithTypeInfo BeginControlWithPrototype(const FastName& controlName, const String& packageName, const FastName& prototypeName, const String* customClassName, AbstractUIPackageLoader* loader) = 0;
-    virtual UIControlWithTypeInfo BeginControlWithPath(const String& pathName) = 0;
-    virtual UIControlWithTypeInfo BeginUnknownControl(const FastName& controlName, const YamlNode* node) = 0;
+    virtual const InspInfo* BeginControlWithClass(const FastName& controlName, const String& className) = 0;
+    virtual const InspInfo* BeginControlWithCustomClass(const FastName& controlName, const String& customClassName, const String& className) = 0;
+    virtual const InspInfo* BeginControlWithPrototype(const FastName& controlName, const String& packageName, const FastName& prototypeName, const String* customClassName, AbstractUIPackageLoader* loader) = 0;
+    virtual const InspInfo* BeginControlWithPath(const String& pathName) = 0;
+    virtual const InspInfo* BeginUnknownControl(const FastName& controlName, const YamlNode* node) = 0;
     virtual void EndControl(eControlPlace controlPlace) = 0;
 
     virtual void BeginControlPropertiesSection(const String& name) = 0;
