@@ -29,17 +29,41 @@ void RequestManager::Update()
 {
     if (!Empty())
     {
+        Vector<PackRequest*> nextDependentPacks;
+
         PackRequest* request = Top();
         bool callSignal = request->Update();
 
         if (request->IsDownloaded())
         {
             Pop();
+            if (!Empty())
+            {
+                PackRequest* next = Top();
+                while (next->IsDownloaded())
+                {
+                    nextDependentPacks.push_back(next);
+                    Pop();
+                    if (!Empty() && Top()->IsDownloaded())
+                    {
+                        next = Top();
+                    }
+                    else
+                    {
+                        next = nullptr;
+                        break;
+                    }
+                }
+            }
         }
 
         if (callSignal)
         {
             packManager.requestUpdated.Emit(*request);
+            for (PackRequest* r : nextDependentPacks)
+            {
+                packManager.requestUpdated.Emit(*r);
+            }
         }
     }
 }

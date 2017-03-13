@@ -919,12 +919,14 @@ DLCManager::Progress DLCManagerImpl::GetProgress() const
         {
             progress.alreadyDownloaded += fullFileSize;
         }
-
-        // is current file is downloadin in requestManager queue?
-        const PackMetaData::PackInfo& packInfo = meta->GetPackInfo(fileData.metaIndex);
-        if (requestManager->IsInQueue(packInfo.packName))
+        else
         {
-            progress.inQueue += fullFileSize;
+            // is current file is downloading in requestManager queue?
+            const PackMetaData::PackInfo& packInfo = meta->GetPackInfo(fileData.metaIndex);
+            if (requestManager->IsInQueue(packInfo.packName))
+            {
+                progress.inQueue += fullFileSize;
+            }
         }
     }
 
