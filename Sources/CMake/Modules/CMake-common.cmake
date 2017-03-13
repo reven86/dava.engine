@@ -170,9 +170,7 @@ macro( processing_mix_data )
         endforeach()
     endif()
 
-    if( ANDROID )
-        execute_process( COMMAND python ${DAVA_SCRIPTS_FILES_PATH}/create_file_structure.py ${MIX_APP_DIR}/Data ${MIX_APP_DIR}/Data/fileSystem.yaml )
-    endif()
+
 
 endmacro ()
 
