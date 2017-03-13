@@ -48,6 +48,42 @@
 #include "Math/Rect.h"
 #include "Math/AABBox3.h"
 #include "Math/Color.h"
+#include "UI/TheoraPlayer.h"
+#include "UI/UI3DView.h"
+#include "UI/UIButton.h"
+#include "UI/UIControl.h"
+#include "UI/UIControl.h"
+#include "UI/UIJoypad.h"
+#include "UI/UIList.h"
+#include "UI/UIListCell.h"
+#include "UI/UIMovieView.h"
+#include "UI/UIParticles.h"
+#include "UI/UIScrollBar.h"
+#include "UI/UIScrollView.h"
+#include "UI/UIScrollViewContainer.h"
+#include "UI/UISlider.h"
+#include "UI/UISpinner.h"
+#include "UI/UIStaticText.h"
+#include "UI/UISwitch.h"
+#include "UI/UITextField.h"
+#include "UI/UIWebView.h"
+#include "UI/Components/UIComponent.h"
+#include "UI/Focus/UIFocusComponent.h"
+#include "UI/Focus/UIFocusGroupComponent.h"
+#include "UI/Focus/UINavigationComponent.h"
+#include "UI/Focus/UITabOrderComponent.h"
+#include "UI/Input/UIActionBindingComponent.h"
+#include "UI/Input/UIActionComponent.h"
+#include "UI/Input/UIModalInputComponent.h"
+#include "UI/Layouts/UIAnchorComponent.h"
+#include "UI/Layouts/UIFlowLayoutComponent.h"
+#include "UI/Layouts/UIFlowLayoutHintComponent.h"
+#include "UI/Layouts/UIIgnoreLayoutComponent.h"
+#include "UI/Layouts/UILinearLayoutComponent.h"
+#include "UI/Layouts/UISizePolicyComponent.h"
+#include "UI/Scroll/UIScrollBarDelegateComponent.h"
+#include "UI/Sound/UISoundComponent.h"
+#include "UI/Sound/UISoundValueFilterComponent.h"
 
 namespace DAVA
 {
@@ -175,6 +211,7 @@ void RegisterColor()
 
 void RegisterPermanentNames()
 {
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(BaseObject);
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(Component);
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(RotationControllerComponent);
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(SnapToLandscapeControllerComponent);
@@ -224,6 +261,47 @@ void RegisterPermanentNames()
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(Light);
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(SpeedTreeObject);
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(Entity);
+    DAVA_REFLECTION_REGISTER_CUSTOM_PERMANENT_NAME(PartilceEmitterLoadProxy, "ParticleEmitter3D");
+
+// UI controls
+#if !defined(__DAVAENGINE_ANDROID__)
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(TheoraPlayer);
+#endif
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UI3DView);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UIButton);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UIControl);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UIJoypad);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UIList);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UIListCell);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UIMovieView);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UIParticles);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UIScrollBar);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UIScrollView);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UIScrollViewContainer);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UISlider);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UISpinner);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UIStaticText);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UISwitch);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UITextField);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UIWebView);
+    // UI components
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UIActionBindingComponent);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UIActionComponent);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UIAnchorComponent);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UIComponent);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UIFlowLayoutComponent);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UIFlowLayoutHintComponent);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UIFocusComponent);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UIFocusGroupComponent);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UIIgnoreLayoutComponent);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UILinearLayoutComponent);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UIModalInputComponent);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UINavigationComponent);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UIScrollBarDelegateComponent);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UISizePolicyComponent);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UISoundComponent);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UISoundValueFilterComponent);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UITabOrderComponent);
 }
 
 void RegisterReflectionForBaseTypes()
