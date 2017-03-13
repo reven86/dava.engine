@@ -21,6 +21,7 @@ void CommandStack::ExecInternal(std::unique_ptr<Command>&& command, bool isSingl
     {
         DVASSERT(isSingleCommand == true);
         commandBatch->AddAndRedo(std::move(command));
+        UpdateCleanState();
     }
     else
     {
@@ -165,6 +166,11 @@ const Command* CommandStack::GetRedoCommand() const
 
 void CommandStack::UpdateCleanState()
 {
+    if (commandBatch != nullptr)
+    {
+        EmitCleanChanged(commandBatch->IsClean());
+        return;
+    }
     if (cleanIndex == currentIndex)
     {
         EmitCleanChanged(true);

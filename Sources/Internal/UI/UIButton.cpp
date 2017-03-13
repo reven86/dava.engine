@@ -399,30 +399,6 @@ void UIButton::SetStateTextMultilineBySymbol(int32 state, bool value)
     }
 }
 
-void UIButton::SetStateMargins(int32 state, const UIControlBackground::UIMargins* margins)
-{
-    for (int i = 0; i < DRAW_STATE_COUNT && state; i++)
-    {
-        if (state & 0x01)
-        {
-            GetOrCreateBackground(static_cast<eButtonDrawState>(i))->SetMargins(margins);
-        }
-        state >>= 1;
-    }
-}
-
-void UIButton::SetStateTextMargins(int32 state, const UIControlBackground::UIMargins* margins)
-{
-    for (int i = 0; i < DRAW_STATE_COUNT && state; i++)
-    {
-        if (state & 0x01)
-        {
-            GetOrCreateTextBlock(static_cast<eButtonDrawState>(i))->SetMargins(margins);
-        }
-        state >>= 1;
-    }
-}
-
 void UIButton::SetStateTextControl(int32 state, UIStaticText* textControl)
 {
     for (int i = 0; i < DRAW_STATE_COUNT && state; i++)

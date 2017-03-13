@@ -31,7 +31,6 @@
 #include <TArc/WindowSubSystem/UI.h>
 #include <TArc/WindowSubSystem/ActionUtils.h>
 #include <TArc/WindowSubSystem/QtAction.h>
-#include <TArc/Models/SceneTabsModel.h>
 #include <TArc/Utils/ModuleCollection.h>
 #include <TArc/Core/FieldBinder.h>
 
@@ -44,10 +43,12 @@
 #include <Render/DynamicBufferAllocator.h>
 #include <Particles/ParticleEmitter.h>
 #include <Engine/PlatformApi.h>
+#include <Engine/Qt/RenderWidget.h>
 
 #include <QAction>
 #include <QApplication>
 #include <QFileSystemWatcher>
+#include <QMouseEvent>
 
 DAVA_VIRTUAL_REFLECTION_IMPL(DocumentsModule)
 {
@@ -125,21 +126,6 @@ void DocumentsModule::PostInit()
     CreateDocumentsActions();
     CreateUndoRedoActions();
     CreateViewActions();
-
-    //bind canSave to draw "*" in tabBar
-    {
-        FieldDescriptor descriptor;
-        descriptor.type = ReflectedTypeDB::Get<DocumentData>();
-        descriptor.fieldName = FastName(DocumentData::canSavePropertyName);
-        fieldBinder->BindField(descriptor, MakeFunction(this, &DocumentsModule::OnCanSaveChanged));
-    }
-    //bind active tab to change context
-    {
-        FieldDescriptor descriptor;
-        descriptor.type = ReflectedTypeDB::Get<SceneTabsModel>();
-        descriptor.fieldName = FastName(SceneTabbar::activeTabPropertyName);
-        fieldBinder->BindField(descriptor, MakeFunction(this, &DocumentsModule::OnActiveTabChanged));
-    }
 }
 
 void DocumentsModule::OnWindowClosed(const DAVA::TArc::WindowKey& key)
@@ -157,17 +143,8 @@ void DocumentsModule::OnWindowClosed(const DAVA::TArc::WindowKey& key)
 void DocumentsModule::OnContextCreated(DAVA::TArc::DataContext* context)
 {
     using namespace DAVA::TArc;
-    SceneTabsModel* tabsModel = GetAccessor()->GetGlobalContext()->GetData<SceneTabsModel>();
-    DVASSERT(tabsModel != nullptr);
     DocumentData* data = context->GetData<DocumentData>();
     DVASSERT(nullptr != data);
-
-    TabDescriptor descriptor;
-    descriptor.tabTitle = data->GetName().toStdString();
-    descriptor.tabTooltip = data->GetPackageAbsolutePath().toStdString();
-
-    auto emplaceResult = tabsModel->tabs.emplace(context->GetID(), descriptor);
-    DVASSERT(emplaceResult.second, "emplace new tab failed");
     QString path = data->GetPackageAbsolutePath();
     DataContext* globalContext = GetAccessor()->GetGlobalContext();
     DocumentsWatcherData* watcherData = globalContext->GetData<DocumentsWatcherData>();
@@ -177,32 +154,11 @@ void DocumentsModule::OnContextCreated(DAVA::TArc::DataContext* context)
 void DocumentsModule::OnContextDeleted(DAVA::TArc::DataContext* context)
 {
     using namespace DAVA::TArc;
-    SceneTabsModel* tabsModel = GetAccessor()->GetGlobalContext()->GetData<SceneTabsModel>();
-    DVASSERT(tabsModel != nullptr);
-    tabsModel->tabs.erase(context->GetID());
-
     DocumentData* data = context->GetData<DocumentData>();
     QString path = data->GetPackageAbsolutePath();
     DataContext* globalContext = GetAccessor()->GetGlobalContext();
     DocumentsWatcherData* watcherData = globalContext->GetData<DocumentsWatcherData>();
     watcherData->Unwatch(path);
-}
-
-void DocumentsModule::OnContextWillBeChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* newOne)
-{
-    if (current != nullptr)
-    {
-        DocumentData* documentData = current->GetData<DocumentData>();
-        DVASSERT(nullptr != documentData);
-        //check that we do not leave document in non valid state
-        DVASSERT(documentData->package->CanUpdateAll());
-    }
-}
-
-void DocumentsModule::OnContextWasChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* oldOne)
-{
-    SceneTabsModel* tabsModel = GetAccessor()->GetGlobalContext()->GetData<SceneTabsModel>();
-    tabsModel->activeContexID = current->GetID();
 }
 
 void DocumentsModule::InitEditorSystems()
@@ -224,7 +180,7 @@ void DocumentsModule::InitCentralWidget()
     RenderWidget* renderWidget = GetContextManager()->GetRenderWidget();
 
     previewWidget = new PreviewWidget(accessor, renderWidget, systemsManager.get());
-    previewWidget->requestCloseTab.Connect([this](uint64 id) { CloseDocument(id); });
+    previewWidget->requestCloseTab.Connect(this, &DocumentsModule::CloseDocument);
     previewWidget->requestChangeTextInNode.Connect(this, &DocumentsModule::ChangeControlText);
     PanelKey panelKey(QStringLiteral("CentralWidget"), CentralPanelInfo());
     ui->AddView(QEGlobal::windowKey, panelKey, previewWidget);
@@ -305,23 +261,6 @@ void DocumentsModule::CreateDocumentsActions()
         placementInfo.AddPlacementPoint(CreateMenuPoint(fileMenuName, { InsertionParams::eInsertionMethod::AfterItem, saveDocumentActionName }));
         placementInfo.AddPlacementPoint(CreateToolbarPoint(toolBarName, { InsertionParams::eInsertionMethod::AfterItem, saveDocumentActionName }));
 
-        ui->AddAction(QEGlobal::windowKey, placementInfo, action);
-    }
-
-    //action close document
-    {
-        QtAction* action = new QtAction(accessor, closeDocumentActionName);
-
-        FieldDescriptor fieldDescr;
-        fieldDescr.type = ReflectedTypeDB::Get<DocumentData>();
-        fieldDescr.fieldName = FastName(DocumentData::packagePropertyName);
-        action->SetStateUpdationFunction(QtAction::Enabled, fieldDescr, [](const Any& fieldValue) -> Any {
-            return fieldValue.CanCast<PackageNode*>() && fieldValue.Cast<PackageNode*>() != nullptr;
-        });
-
-        connections.AddConnection(action, &QAction::triggered, Bind(&DocumentsModule::CloseActiveDocument, this));
-        ActionPlacementInfo placementInfo;
-        placementInfo.AddPlacementPoint(CreateMenuPoint(fileMenuName, { InsertionParams::eInsertionMethod::AfterItem, saveAllDocumentsActionName }));
         ui->AddAction(QEGlobal::windowKey, placementInfo, action);
     }
 
@@ -622,41 +561,6 @@ DAVA::RefPtr<PackageNode> DocumentsModule::CreatePackage(const QString& path)
     return RefPtr<PackageNode>();
 }
 
-void DocumentsModule::OnActiveTabChanged(const DAVA::Any& contextID)
-{
-    using namespace DAVA::TArc;
-    ContextManager* contextManager = GetContextManager();
-    DataContext::ContextID newContextID = DataContext::Empty;
-    if (contextID.CanCast<DAVA::uint64>())
-    {
-        newContextID = static_cast<DataContext::ContextID>(contextID.Cast<DAVA::uint64>());
-    }
-    contextManager->ActivateContext(newContextID);
-}
-
-void DocumentsModule::OnCanSaveChanged(const DAVA::Any& canSave)
-{
-    using namespace DAVA;
-    using namespace TArc;
-
-    ContextAccessor* accessor = GetAccessor();
-    DataContext* activeContext = accessor->GetActiveContext();
-    if (activeContext == nullptr)
-    {
-        return;
-    }
-
-    DataContext::ContextID id = activeContext->GetID();
-    DocumentData* data = activeContext->GetData<DocumentData>();
-    DVASSERT(nullptr != data);
-
-    SceneTabsModel* tabsModel = accessor->GetGlobalContext()->GetData<SceneTabsModel>();
-    DVASSERT(tabsModel->tabs.find(id) != tabsModel->tabs.end());
-    TabDescriptor& descriptor = tabsModel->tabs[id];
-    QString newTitle = data->GetName() + (data->CanSave() ? "*" : "");
-    descriptor.tabTitle = newTitle.toStdString();
-}
-
 void DocumentsModule::SelectControl(const QString& documentPath, const QString& controlPath)
 {
     using namespace DAVA;
@@ -733,9 +637,10 @@ void DocumentsModule::CloseActiveDocument()
     CloseDocument(active->GetID());
 }
 
-void DocumentsModule::CloseDocument(const DAVA::TArc::DataContext::ContextID& id)
+void DocumentsModule::CloseDocument(DAVA::uint64 id)
 {
-    using namespace DAVA::TArc;
+    using namespace DAVA;
+    using namespace TArc;
 
     ContextAccessor* accessor = GetAccessor();
     ContextManager* contextManager = GetContextManager();
@@ -1086,12 +991,10 @@ void DocumentsModule::OnDragStateChanged(EditorSystemsManager::eDragState dragSt
     //TODO: move this code to the TransformSystem when systems will be moved to the TArc
     if (dragState == EditorSystemsManager::Transform)
     {
-        documentData->canClose = false;
         documentData->commandStack->BeginBatch("transformations");
     }
     else if (previousState == EditorSystemsManager::Transform)
     {
-        documentData->canClose = true;
         documentData->commandStack->EndBatch();
     }
 }

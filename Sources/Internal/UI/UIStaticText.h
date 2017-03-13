@@ -34,7 +34,7 @@ public:
         MULTILINE_ENABLED,
         MULTILINE_ENABLED_BY_SYMBOL
     };
-    
+
 #if defined(LOCALIZATION_DEBUG)
     static const Color HIGHLIGHT_COLORS[];
     enum DebugHighliteColor
@@ -76,9 +76,6 @@ public:
     void SetMultiline(bool isMultilineEnabled, bool bySymbol = false);
     bool GetMultiline() const;
     bool GetMultilineBySymbol() const;
-
-    void SetMargins(const UIControlBackground::UIMargins* margins);
-    const UIControlBackground::UIMargins* GetMargins() const;
 
     void SetFittingOption(int32 fittingType); //may be FITTING_ENLARGE, FITTING_REDUCE, FITTING_ENLARGE | FITTING_REDUCE
     int32 GetFittingOption() const;
@@ -168,8 +165,6 @@ public:
     int32 GetMultilineType() const;
     void SetMultilineType(int32 multilineType);
 
-    Vector4 GetMarginsAsVector4() const;
-    void SetMarginsAsVector4(const Vector4& margins);
 };
 };
 

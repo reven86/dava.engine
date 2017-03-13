@@ -27,6 +27,7 @@ UIStyleSheetPropertyDataBase::UIStyleSheetPropertyDataBase()
     , soundGroup("sound", UIComponent::SOUND_COMPONENT, ReflectedTypeDB::Get<UISoundComponent>())
     , properties({ { UIStyleSheetPropertyDescriptor(&controlGroup, "angle", 0.0f),
                      UIStyleSheetPropertyDescriptor(&controlGroup, "scale", Vector2(1.0f, 1.0f)),
+                     UIStyleSheetPropertyDescriptor(&controlGroup, "pivot", Vector2(0.0f, 0.0f)),
                      UIStyleSheetPropertyDescriptor(&controlGroup, "visible", true),
                      UIStyleSheetPropertyDescriptor(&controlGroup, "noInput", false),
                      UIStyleSheetPropertyDescriptor(&controlGroup, "exclusiveInput", false),
