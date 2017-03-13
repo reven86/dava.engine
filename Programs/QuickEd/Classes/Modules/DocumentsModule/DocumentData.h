@@ -3,6 +3,7 @@
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "EditorSystems/SelectionContainer.h"
 
+#include <TArc/DataProcessing/DataNode.h>
 #include <TArc/Qt/QtString.h>
 
 #include <Base/BaseTypes.h>

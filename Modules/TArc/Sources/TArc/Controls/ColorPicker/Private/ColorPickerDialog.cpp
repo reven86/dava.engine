@@ -308,11 +308,7 @@ void ColorPickerDialog::LoadSettings()
     PropertiesItem propsItem = contextAccessor->CreatePropertiesNode(ColorPickerDialogDetail::PROPERTIES_KEY);
 
     {
-        QByteArray geometryData = propsItem.Get<QByteArray>(ColorPickerDialogDetail::GEOMETRY_KEY);
-        QDataStream geometryStream(&geometryData, QIODevice::ReadOnly);
-
-        QRect loadedGeometry;
-        geometryStream >> loadedGeometry;
+        QRect loadedGeometry = propsItem.Get<QRect>(ColorPickerDialogDetail::GEOMETRY_KEY);
         if (loadedGeometry.isValid())
         {
             setGeometry(loadedGeometry);
@@ -373,10 +369,7 @@ void ColorPickerDialog::SaveSettings()
     }
 
     {
-        QByteArray geometryData;
-        QDataStream geometryStream(&geometryData, QIODevice::WriteOnly);
-        geometryStream << geometry();
-        propsItem.Set(ColorPickerDialogDetail::GEOMETRY_KEY, Any(geometryData));
+        propsItem.Set(ColorPickerDialogDetail::GEOMETRY_KEY, Any(geometry()));
     }
 
     DVASSERT(rgbam != nullptr);
