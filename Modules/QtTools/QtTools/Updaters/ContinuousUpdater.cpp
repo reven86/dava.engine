@@ -1,5 +1,7 @@
 #include "ContinuousUpdater.h"
 
+#include <Debug/DVAssert.h>
+
 #include <QTimer>
 
 ContinuousUpdater::ContinuousUpdater(int updaterInterval)
