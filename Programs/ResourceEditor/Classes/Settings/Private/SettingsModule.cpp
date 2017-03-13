@@ -12,17 +12,44 @@
 #include <TArc/WindowSubSystem/QtAction.h>
 #include <TArc/Utils/ModuleCollection.h>
 
+#include <FileSystem/VariantType.h>
+
+#include <QByteArray>
+#include <QColor>
+#include <QVector>
+
 namespace SettingsModuleDetail
 {
 void ApplyColorPickerSettins(DAVA::TArc::ContextAccessor* contextAccessor)
 {
-    const DAVA::String PROPERTIES_KEY = "ColorPickerDialogProperties";
-    const DAVA::String MULTIPLIER_KEY = "CPD_maxMultiplier";
+    DAVA::TArc::PropertiesItem propsItem = contextAccessor->CreatePropertiesNode("ColorPickerDialogProperties");
 
-    DAVA::TArc::PropertiesItem propsItem = contextAccessor->CreatePropertiesNode(PROPERTIES_KEY);
+    { // color multiplier
+        DAVA::float32 maxMul = SettingsManager::Instance()->GetValue(Settings::General_ColorMultiplyMax).AsFloat();
+        propsItem.Set("CPD_maxMultiplier", maxMul);
+    }
 
-    DAVA::float32 maxMul = SettingsManager::Instance()->GetValue(Settings::General_ColorMultiplyMax).AsFloat();
-    propsItem.Set(MULTIPLIER_KEY, maxMul);
+    { //palette
+        const DAVA::String PALETTE_KEY = "CPD_palette";
+        QByteArray savedPaletteData = propsItem.Get<QByteArray>(PALETTE_KEY);
+        if (savedPaletteData.size() == 0)
+        {
+            DAVA::VariantType v = SettingsManager::Instance()->GetValue(Settings::Internal_CustomPalette);
+            DAVA::int32 vSize = v.AsByteArraySize();
+            DAVA::int32 n = vSize / sizeof(DAVA::int32);
+            const DAVA::uint32* a = reinterpret_cast<const DAVA::uint32*>(v.AsByteArray());
+
+            QByteArray paletteData;
+            QDataStream paletteStream(&paletteData, QIODevice::WriteOnly);
+
+            for (int i = 0; i < n; i++)
+            {
+                paletteStream << a[i];
+            }
+
+            propsItem.Set(PALETTE_KEY, Any(paletteData));
+        }
+    }
 }
 }
 

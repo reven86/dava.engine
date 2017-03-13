@@ -324,16 +324,28 @@ void ColorPickerDialog::LoadSettings()
         QByteArray paletteData = propsItem.Get<QByteArray>(ColorPickerDialogDetail::PALETTE_KEY);
         QDataStream paletteStream(&paletteData, QIODevice::ReadOnly);
 
-        int32 n = paletteData.size() / sizeof(uint32);
-        CustomPalette::Colors colors(n);
-        for (int i = 0; i < n; i++)
-        {
-            uint32 c = 0;
-            paletteStream >> c;
-            colors[i] = QColor::fromRgba(c);
+        if (paletteData.size() != 0)
+        { // load saved colors
+            int32 n = paletteData.size() / sizeof(uint32);
+            CustomPalette::Colors colors(n);
+            for (int i = 0; i < n; i++)
+            {
+                uint32 c = 0;
+                paletteStream >> c;
+                colors[i] = QColor::fromRgba(c);
+            }
+            ui->customPalette->SetColors(colors);
         }
-
-        ui->customPalette->SetColors(colors);
+        else
+        { // load default colors
+            const DAVA::int32 n = Qt::darkYellow - Qt::black + 1;
+            CustomPalette::Colors colors(n);
+            for (int i = 0; i < n; i++)
+            {
+                colors[i] = QColor(Qt::GlobalColor(i + Qt::black));
+            }
+            ui->customPalette->SetColors(colors);
+        }
     }
 
     DVASSERT(rgbam != nullptr);
