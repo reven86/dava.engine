@@ -25,16 +25,6 @@ public:
         staticText->SetText(newText);
     }
 
-    void OnKeyboardShown(const Rect& keyboardRect) override
-    {
-        Logger::Debug("OnKeyboardShown %f,%f %f,%f", keyboardRect.x, keyboardRect.y, keyboardRect.dx, keyboardRect.dy);
-    }
-
-    void OnKeyboardHidden() override
-    {
-        Logger::Debug("OnKeyboardHidden");
-    }
-
 private:
     UIStaticText* staticText;
 };
@@ -48,9 +38,6 @@ enum Tags
 FontTest::FontTest(TestBed& app)
     : BaseScreen(app, "FontTest")
 {
-    GetPrimaryWindow()->visibleFrameChanged.Connect([](Window*, const Rect& r) {
-        Logger::Debug("visibleFrameChanged %f,%f %f,%f", r.x, r.y, r.dx, r.dy);
-    });
 }
 
 void FontTest::LoadResources()

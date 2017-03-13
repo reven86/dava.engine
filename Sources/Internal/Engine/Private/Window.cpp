@@ -462,7 +462,6 @@ void Window::HandleCancelInput(const Private::MainDispatcherEvent& e)
 void Window::HandleVisibleFrameChanged(const Private::MainDispatcherEvent& e)
 {
     Rect visibleRect(e.visibleFrameEvent.x, e.visibleFrameEvent.y, e.visibleFrameEvent.width, e.visibleFrameEvent.height);
-    visibleRect = uiControlSystem->vcs->ConvertInputToVirtual(visibleRect);
     visibleFrameChanged.Emit(this, visibleRect);
 }
 
