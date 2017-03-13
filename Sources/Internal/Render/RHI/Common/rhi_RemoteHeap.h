@@ -268,7 +268,7 @@ SimpleRemoteHeap<MaxBlockCount>::_commit_block(unsigned size, unsigned align)
         b.base = _unused;
         b.size = sz;
         b.align = align;
-        b.usr_ptr = reinterpret_cast<uint8_t*>(((uint64_t(b.base) + (uint64_t(align) - 1)) & (~(uint64_t(align) - 1)));
+        b.usr_ptr = reinterpret_cast<uint8_t*>((reinterpret_cast<uint64_t>(b.base) + (uint64_t(align) - 1)) & (~(uint64_t(align) - 1)));
         b.usr_sz = size;
         b.slack = 0;
         b.flags = 0;
