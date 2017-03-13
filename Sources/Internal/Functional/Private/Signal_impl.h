@@ -23,12 +23,18 @@ struct TrackedObjectCaster<T, true>
         return static_cast<TrackedObject*>(obj);
     }
 };
+
+template <typename T>
+TrackedObject* GetTrackedObject(T* obj)
+{
+    return TrackedObjectCaster<T, std::is_base_of<TrackedObject, T>::value>::Cast(obj);
+}
 } // namespace SignalDetail
 
 template <typename... Args>
 Signal<Args...>::Signal()
 {
-    mediumBackPos = connections.end();
+    connectionsMediumPos = connections.end();
 }
 
 template <typename... Args>
@@ -39,30 +45,66 @@ Signal<Args...>::~Signal()
 
 template <typename... Args>
 template <typename Fn>
-inline SignalConnection Signal<Args...>::ConnectDetached(const Fn& fn, Group group)
+inline Token Signal<Args...>::ConnectDetached(const Fn& fn, Group group)
 {
-    return AddSlot<void>(nullptr, ConnectionFn(fn), group);
+    Token token = SignalTokenProvider::Generate();
+
+    Signal::Connection c;
+    c.fn = ConnectionFn(fn);
+    c.object = nullptr;
+    c.token = token;
+    c.tracked = nullptr;
+    AddSlot(std::move(c), group);
+
+    return token;
 }
 
 template <typename... Args>
 template <typename Obj, typename Fn>
-inline SignalConnection Signal<Args...>::Connect(Obj* obj, const Fn& fn, Group group)
+inline Token Signal<Args...>::Connect(Obj* obj, const Fn& fn, Group group)
 {
-    return AddSlot(obj, ConnectionFn(fn), group);
+    Token token = SignalTokenProvider::Generate();
+
+    Signal::Connection c;
+    c.fn = ConnectionFn(fn);
+    c.object = obj;
+    c.token = token;
+    c.tracked = SignalDetail::GetTrackedObject(obj);
+    AddSlot(std::move(c), group);
+
+    return token;
 }
 
 template <typename... Args>
 template <typename Obj, typename Cls>
-inline SignalConnection Signal<Args...>::Connect(Obj* obj, void (Cls::*const& fn)(Args...), Group group)
+inline Token Signal<Args...>::Connect(Obj* obj, void (Cls::*const& fn)(Args...), Group group)
 {
-    return AddSlot(obj, ConnectionFn(obj, fn), group);
+    Token token = SignalTokenProvider::Generate();
+
+    Signal::Connection c;
+    c.fn = ConnectionFn(obj, fn);
+    c.object = obj;
+    c.token = token;
+    c.tracked = SignalDetail::GetTrackedObject(obj);
+    AddSlot(std::move(c), group);
+
+    return token;
 }
 
 template <typename... Args>
 template <typename Obj, typename Cls>
-inline SignalConnection Signal<Args...>::Connect(Obj* obj, void (Cls::*const& fn)(Args...) const, Group group)
+inline Token Signal<Args...>::Connect(Obj* obj, void (Cls::*const& fn)(Args...) const, Group group)
 {
-    return AddSlot(obj, ConnectionFn(obj, fn), group);
+    Token token = SignalTokenProvider::Generate();
+
+    Signal::Connection c;
+    c.fn = ConnectionFn(obj, fn);
+    c.object = obj;
+    c.token = token;
+    c.tracked = SignalDetail::GetTrackedObject(obj);
+    AddSlot(std::move(c), group);
+
+    return token;
 }
 
 template <typename... Args>
@@ -72,17 +114,8 @@ void Signal<Args...>::OnTrackedObjectDestroyed(TrackedObject* obj)
 }
 
 template <typename... Args>
-template <typename Obj>
-SignalConnection Signal<Args...>::AddSlot(Obj* obj, ConnectionFn&& fn, Group group)
+void Signal<Args...>::AddSlot(Connection&& c, Group group)
 {
-    Token token = SignalTokenProvider::Generate();
-
-    Signal::Connection c;
-    c.token = token;
-    c.fn = std::move(fn);
-    c.object = obj;
-    c.tracked = SignalDetail::TrackedObjectCaster<Obj, std::is_base_of<TrackedObject, Obj>::value>::Cast(obj);
-
     if (nullptr != c.tracked)
     {
         Watch(c.tracked);
@@ -93,31 +126,29 @@ SignalConnection Signal<Args...>::AddSlot(Obj* obj, ConnectionFn&& fn, Group gro
     if (Group::High == group)
     {
         // for High priority just place it front
-        connections.emplace_front(std::move(c));
+        connections.push_front(std::move(c));
     }
     else if (Group::Medium == group)
     {
         // for Medium insert in special tracked position
-        connections.insert(mediumBackPos, std::move(c));
+        connections.insert(connectionsMediumPos, std::move(c));
     }
     else
     {
         // for Low priority just place it back
-        connections.emplace_back(std::move(c));
+        connections.push_back(std::move(c));
 
         // set new position for medium priority
         // it should be less than first low
-        if (mediumBackPos == connections.end())
+        if (connectionsMediumPos == connections.end())
         {
-            mediumBackPos--;
+            connectionsMediumPos--;
         }
     }
-
-    return SignalConnection(this, token);
 }
 
 template <typename... Args>
-void Signal<Args...>::RemSlot(Connection& c)
+void Signal<Args...>::RemoveSlot(Connection& c)
 {
     if (!c.flags.test(Connection::Deleted))
     {
@@ -141,7 +172,7 @@ void Signal<Args...>::Disconnect(Token token)
     {
         if (c.token == token)
         {
-            RemSlot(c);
+            RemoveSlot(c);
             break;
         }
     }
@@ -156,7 +187,7 @@ void Signal<Args...>::Disconnect(void* obj)
     {
         if (c.object == obj || c.tracked == obj)
         {
-            RemSlot(c);
+            RemoveSlot(c);
         }
     }
 }
@@ -166,7 +197,7 @@ void Signal<Args...>::DisconnectAll()
 {
     for (auto& c : connections)
     {
-        RemSlot(c);
+        RemoveSlot(c);
     }
 }
 
@@ -234,51 +265,26 @@ bool Signal<Args...>::IsBlocked(Token token) const
 template <typename... Args>
 void Signal<Args...>::Emit(Args... args)
 {
-    connections.remove_if([](const Connection& c) { return c.flags.test(Connection::Deleted); });
+    bool hasDeletedSlots = false;
 
     for (auto& c : connections)
     {
-        if (!c.flags.test(Connection::Blocked))
+        if (!c.flags.test(Connection::Deleted))
         {
-            c.fn(args...);
+            if (!c.flags.test(Connection::Blocked))
+            {
+                c.fn(args...);
+            }
+        }
+        else
+        {
+            hasDeletedSlots = true;
         }
     }
+
+    if (hasDeletedSlots)
+    {
+        connections.remove_if([](const Connection& c) { return c.flags.test(Connection::Deleted); });
+    }
 }
-
-inline SignalConnection::SignalConnection(SignalBase* signal_, Token token_)
-    : signal(signal_)
-    , token(token_)
-{
-}
-
-inline SignalConnection::SignalConnection(SignalConnection&& sc)
-    : signal(sc.signal)
-    , token(sc.token)
-{
-    sc.token.Reset();
-    sc.signal = nullptr;
-}
-
-inline void SignalConnection::Disconnect() const
-{
-    DVASSERT(token.IsValid());
-    DVASSERT(nullptr != signal);
-
-    signal->Disconnect(token);
-    token.Reset();
-}
-
-inline void SignalConnection::Track(TrackedObject* object) const
-{
-    DVASSERT(token.IsValid());
-    DVASSERT(nullptr != signal);
-
-    signal->Track(token, object);
-}
-
-inline SignalConnection::operator Token() const
-{
-    return token;
-}
-
 } // namespace DAVA

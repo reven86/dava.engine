@@ -10,15 +10,13 @@
 
 namespace DAVA
 {
-struct SignalConnection;
-
 /**
     \ingroup functional
-    Signal represent callback with multiple targets. Signal is connected to some set of slots, 
+    Signal represents callback with multiple targets. Signal is connected to some set of slots, 
     which are callback receivers (also called event targets or subscribers), which are called
     when the signal is "emitted."
 
-    Signals and slots can bee managed - can track connections and are capable of automatically 
+    Signals and slots can be managed - can track connections and are capable of automatically 
     disconnecting signal/slot connections when either is destroyed. This enables the user 
     to make signal/slot connections without expending a great effort to manage the lifetimes
     of those connections with regard to the lifetimes of all objects involved. 
@@ -88,6 +86,10 @@ struct SignalConnection;
     }
     \endcode
 
+    One should know, that each Connect(...) fucntion returns an unique slot identifier - Token. It can be used
+    to control slot was that created by oppropriate Connect() call. See "Disconnecting Slots" or "Blocking Slots" for
+    examples.
+
 
     ### Ordering Slots
 
@@ -120,7 +122,6 @@ struct SignalConnection;
     which precedes group Signal::Group::Low where the `World::foo` method resides. The `group` parameter is optional,
     Signal::Group::Medium will be used by default. 
 
-
     ### Disconnecting Slots
 
     Slots aren't expected to exist indefinitely after they are connected. Often slots are only used to receive a few events
@@ -136,13 +137,20 @@ struct SignalConnection;
         DAVA::Signal<void ()> sig;
 
         sig.Connect(hello, &Hello::foo);
+
         sig.Connect(world, &World::foo);
 
-        // Call all of the slots - Hello::foo and World::foo
+        // connect to global function `void goo()`
+        Token gooToken = sig.Connect(&goo);
+
+        // Call all of the slots - Hello::foo, World::foo and goo
         sig.Emit();
 
         // disconnect all slots that were connected with &hello object
         sig.Disconnect(&hello);
+
+        // Disconnect slot, that is identifyed by `token`
+        sig.Disconnect(gooToken);
 
         // Call all of the remaining slots - World::foo
         sig.Emit();
@@ -155,7 +163,7 @@ struct SignalConnection;
 
     ### Blocking Slots
 
-    Slots can be temporarily "blocked", meaning that they will be ignored when the signal is emited but have not
+    Slots can be temporarily "blocked", meaning that they will be ignored when the signal is emited but has not
     been permanently disconnected. This is typically used to prevent infinite recursion in cases where otherwise
     running a slot would cause the signal it is connected to to be invoked again. 
     Here is an example of blocking/unblocking slots:
@@ -179,7 +187,8 @@ struct SignalConnection;
     ### Automatic Connection Management
 
     Signals can automatically track the lifetime of objects involved in signal/slot connections, including automatic
-    disconnection of slots when objects involved in the slot call are destroyed. 
+    disconnection of slots when objects involved in the slot call are destroyed. Let's consider a typical example
+    when thing go wrong:
     
     \code
     struct Hello
@@ -192,12 +201,13 @@ struct SignalConnection;
 
         sig.Emit(); // OK
         delete hello;
-        sig.Emit(); // segmentation fault, `sig` don't know that `h` object was destroyed
+        sig.Emit(); // <-- segmentation fault, `sig` don't know that `hello` object was destroyed
     }
     \endcode 
 
-    However, with Signal one may track any object which is inherited from special class - TrackedObject.
-    A slot will automatically disconnect when any of its tracked objects expire.
+    However, there is an easy way to avoid such issues. With Signal one may track any object which is 
+    inherited from special class - TrackedObject. A slot will automatically disconnect when any of its
+    tracked objects expire.
 
     \code
     struct Hello : public TrackedObject
@@ -217,7 +227,7 @@ struct SignalConnection;
     {
         World world; // isn't derived from TrackedObject
 
-        TrackedObject* to;
+        TrackedObject* to = new TrackedObject();
 
         sig.Connect(to, [](){ std::cout << "Lambda"; });
         sig.Connect(&world, &World::foo).Track(to);
@@ -253,18 +263,28 @@ public:
     /** 
         Connect this signal to the incoming object `obj` and callback function `fn` - the slot. 
         If `obj` points to TrackedObject than connection will be managed - it will be automatically
-        disconnected if this signal or object `obj` is destroyd. Optional parameter `group` can be
+        disconnected if this signal or object `obj` is destroyed. Optional parameter `group` can be
         used to associate slot with the given group (see Emit() for more info about groups).
 
         Incoming `obj` is not a part of the callback. It is only used to link connection
         with specified object to be able to track connection lifetime or disconnect from this
         signal with Signal::Disconnect(void* obj) method.
 
-        Return a SignalConnection object that references the newly-created connection between 
-        the signal and the slot.
+        Return a Token that identify the newly-created connection to the specified slot `fn`.
     */
     template <typename Obj, typename Fn>
-    SignalConnection Connect(Obj* obj, const Fn& fn, Group group = Group::Medium);
+    Token Connect(Obj* obj, const Fn& fn, Group group = Group::Medium);
+
+    /**
+        Connect this signal to the incoming object `obj` and callback function `fn` - the slot.
+        If `obj` points to TrackedObject than connection will be managed - it will be automatically
+        disconnected if this signal or object `obj` is destroyed. Optional parameter `group` can be
+        used to associate slot with the given group (see Emit() for more info about groups).
+
+        Return a Token that identify the newly-created connection to the specified slot `fn`.
+    */
+    template <typename Obj, typename Cls>
+    Token Connect(Obj* obj, void (Cls::*const& fn)(Args...), Group group = Group::Medium);
 
     /**
         Connect this signal to the incoming object `obj` and callback function `fn` - the slot.
@@ -272,38 +292,22 @@ public:
         disconnected if this signal or object `obj` is destroyd. Optional parameter `group` can be
         used to associate slot with the given group (see Emit() for more info about groups).
 
-        Return a SignalConnection object that references the newly-created connection between
-        the signal and the slot.
+        Return a Token that identify the newly-created connection to the specified slot `fn`.
     */
     template <typename Obj, typename Cls>
-    SignalConnection Connect(Obj* obj, void (Cls::*const& fn)(Args...), Group group = Group::Medium);
-
-    /**
-        Connect this signal to the incoming object `obj` and callback function `fn` - the slot.
-        If `obj` points to TrackedObject than connection will be managed - it will be automatically
-        disconnected if this signal or object `obj` is destroyd. Optional parameter `group` can be
-        used to associate slot with the given group (see Emit() for more info about groups).
-
-        Return a SignalConnection object that references the newly-created connection between
-        the signal and the slot.
-    */
-    template <typename Obj, typename Cls>
-    SignalConnection Connect(Obj* obj, void (Cls::*const& fn)(Args...) const, Group group = Group::Medium);
+    Token Connect(Obj* obj, void (Cls::*const& fn)(Args...) const, Group group = Group::Medium);
 
     /**
         Connects this signal to the incoming callback function `fn` - the slot. Optional parameter `group`
         can be used to associate slot with the given group (see Emit() for more info about groups).
 
-        The connection isn't linked to any object (it is detached) so the only way break this
-        connection is to use returned SignalConnection object:
-        * use his method SignalConnection::Disconnect
-        * or invoke Signal::Disconnect(Token) with SignalConnection::token. 
+        The connection isn't linked to any object (it is detached) so the only way to break this
+        connection is to call Signal::Disconnect(Token) method, passing returned token into it.
 
-        Return a SignalConnection object that references the newly-created connection between
-        the signal and the slot.
+        Return a Token that identify the newly-created connection to the specified slot `fn`.
     */
     template <typename Fn>
-    SignalConnection ConnectDetached(const Fn& fn, Group group = Group::Medium);
+    Token ConnectDetached(const Fn& fn, Group group = Group::Medium);
 
     /** Disconnects any slot that is linked to the specified object `obj`. */
     void Disconnect(void* obj);
@@ -322,7 +326,7 @@ public:
 
     /**
         Sets connection slot with specified token `token` to be temporarily "blocked".
-        Blocked slot means that it will be ignored when the signal is emited but have not been permanently
+        Blocked slot means that it will be ignored when the signal is emited but has not been permanently
         disconnected. This is typically used to prevent infinite recursion in cases where otherwise running
         a slot would cause the signal it is connected to to be invoked again.
 
@@ -332,7 +336,7 @@ public:
 
     /**
         Sets every connection that is linked with specified object `obj` to be temporarily "blocked".
-        Blocked slot means that it will be ignored when the signal is emited but have not been permanently
+        Blocked slot means that it will be ignored when the signal is emited but has not been permanently
         disconnected. This is typically used to prevent infinite recursion in cases where otherwise running
         a slot would cause the signal it is connected to to be invoked again.
 
@@ -359,15 +363,15 @@ public:
 private:
     using ConnectionFn = Function<void(Args...)>;
 
+    /** Internal strucute that contains info about connected slot */
     struct Connection
     {
-        Token token;
-        ConnectionFn fn;
+        void* object; //< object that is used with Connect(...) call
+        Token token; //< connection unique token
+        TrackedObject* tracked; //< TrackedObject, that is try-casted from `object`
+        ConnectionFn fn; //< slot function
 
-        void* object;
-        TrackedObject* tracked;
-
-        std::bitset<3> flags;
+        std::bitset<2> flags;
 
         enum Flags
         {
@@ -376,42 +380,15 @@ private:
         };
     };
 
+    using ConnectionIt = typename List<Connection>::iterator;
+
     List<Connection> connections;
-    typename List<Connection>::iterator mediumBackPos;
+    ConnectionIt connectionsMediumPos;
 
-    template <typename Obj>
-    SignalConnection AddSlot(Obj* obj, ConnectionFn&& fn, Group group);
-
-    void RemSlot(Connection& slot);
+    void AddSlot(Connection&& slot, Group group);
+    void RemoveSlot(Connection& slot);
 
     void OnTrackedObjectDestroyed(TrackedObject* object) override;
-};
-
-/**
-    \ingroup functional
-    The SignalConnection class represents a connection between a Signal and a Slot. 
-    It is a lightweight object that has the ability to disconnect the signal and slot
-    or set it to be tracked with given TrackedObject.
-*/
-struct SignalConnection final
-{
-    SignalConnection(SignalBase*, Token);
-    SignalConnection(SignalConnection&&);
-    SignalConnection(const SignalConnection&) = delete;
-    SignalConnection& operator=(const SignalConnection&) = delete;
-
-    /** Disconnect this connection. */
-    void Disconnect() const;
-
-    /** Set this connection to be tracked with given TrackedObject. */
-    void Track(TrackedObject*) const;
-
-    /** Cast to Token. Returned connection Token can be use later to disconnect corresponding slot from signal. */
-    operator Token() const;
-
-private:
-    mutable Token token;
-    SignalBase* signal;
 };
 
 } // namespace DAVA
