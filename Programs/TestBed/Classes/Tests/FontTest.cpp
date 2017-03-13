@@ -111,12 +111,19 @@ void FontTest::LoadResources()
     button->SetTag(Font::TYPE_GRAPHIC);
     AddControl(button);
 
-    label = new UIStaticText(Rect(420, 70, 200, 20));
+    label = new UIStaticText(Rect(420, 70, 100, 20));
     label->SetFont(uiFont);
     label->SetTextColor(Color::White);
     label->SetText(L"Font size:");
     label->SetTextAlign(ALIGN_TOP | ALIGN_LEFT);
     AddControl(label);
+
+    sizeText = new UIStaticText(Rect(520, 70, 100, 20));
+    sizeText->SetFont(uiFont);
+    sizeText->SetTextColor(Color::White);
+    sizeText->SetText(L"00");
+    sizeText->SetTextAlign(ALIGN_TOP | ALIGN_LEFT);
+    AddControl(sizeText);
 
     button = new UIButton(Rect(420, 100, 100, 20));
     button->SetStateFont(0xFF, uiFont);
@@ -133,6 +140,8 @@ void FontTest::LoadResources()
     button->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FontTest::OnFontSizeClick));
     button->SetTag(DECREASE_SIZE_TAG);
     AddControl(button);
+
+    UpdateFontSizeText();
 }
 
 void FontTest::UnloadResources()
@@ -144,6 +153,7 @@ void FontTest::UnloadResources()
     SafeDelete(inputDelegate);
     SafeRelease(inputText);
     SafeRelease(previewText);
+    SafeRelease(sizeText);
 }
 
 void FontTest::OnFontSelectClick(BaseObject* sender, void* data, void* callerData)
@@ -164,19 +174,29 @@ void FontTest::OnFontSelectClick(BaseObject* sender, void* data, void* callerDat
         inputText->SetFont(graphicFont);
         break;
     }
+    UpdateFontSizeText();
 }
 
 void FontTest::OnFontSizeClick(BaseObject* sender, void* data, void* callerData)
 {
     UIButton* btn = DynamicTypeCheck<UIButton*>(sender);
     Font* font = previewText->GetFont();
+    float32 size = font->GetSize();
     switch (btn->GetTag())
     {
     case INCREASE_SIZE_TAG:
-        font->SetSize(font->GetSize() + 1);
+        size += 1.f;
         break;
     case DECREASE_SIZE_TAG:
-        font->SetSize(font->GetSize() - 1);
+        size -= 1.f;
         break;
     }
+    font->SetSize(size);
+    previewText->SetFontSize(size);
+    UpdateFontSizeText();
+}
+
+void FontTest::UpdateFontSizeText()
+{
+    sizeText->SetUtf8Text(std::to_string(previewText->GetFontSize()));
 }

@@ -1,6 +1,7 @@
 #include "Classes/Application/REApplication.h"
 #include "Classes/Application/REModule.h"
 #include "Classes/Application/REGlobal.h"
+#include "Classes/Application/ReflectionExtensions.h"
 #include "Classes/Project/ProjectManagerModule.h"
 #include "Classes/SceneManager/SceneManagerModule.h"
 #include "Classes/Application/LaunchModule.h"
@@ -222,4 +223,9 @@ void REApplication::RegisterEditorAnyCasts()
 
     DAVA::AnyCast<ComboBoxTestDataDescr, DAVA::String>::Register(&ComboBoxTestDataDescrToString);
     DAVA::AnyCast<ComboBoxTestDataDescr, QIcon>::Register(&ComboBoxTestDataDescrToQIcon);
+}
+
+void REApplication::RegisterReflectionExtensions()
+{
+    ::RegisterReflectionExtensions();
 }

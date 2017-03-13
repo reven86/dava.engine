@@ -1,7 +1,8 @@
 #include "TArc/Controls/SceneTabbar.h"
+#include "TArc/Utils/CommonFieldNames.h"
 
-#include "Debug/DVAssert.h"
-#include "Base/BaseTypes.h"
+#include <Debug/DVAssert.h>
+#include <Base/BaseTypes.h>
 
 #include <QVariant>
 #include <QShortcut>
@@ -10,8 +11,9 @@ namespace DAVA
 {
 namespace TArc
 {
-SceneTabbar::SceneTabbar(ContextAccessor* accessor, Reflection model_, QWidget* parent /* = nullptr */)
+SceneTabbar::SceneTabbar(ContextAccessor* accessor_, Reflection model_, QWidget* parent /* = nullptr */)
     : QTabBar(parent)
+    , accessor(accessor_)
     , model(model_)
 {
     DataWrapper::DataAccessor accessorFn(this, &SceneTabbar::GetSceneTabsModel);
@@ -28,61 +30,105 @@ SceneTabbar::SceneTabbar(ContextAccessor* accessor, Reflection model_, QWidget* 
 
 void SceneTabbar::OnDataChanged(const DataWrapper& wrapper, const Vector<Any>& fields)
 {
-    DVASSERT(wrapper.HasData());
-    bool tabsPropertyChanged = fields.empty();
-    bool activeTabPropertyChanged = fields.empty();
-    for (const Any& fieldName : fields)
+    if (wrapper == modelWrapper)
     {
-        if (fieldName.CanCast<String>())
+        DVASSERT(wrapper.HasData());
+        bool tabsPropertyChanged = fields.empty();
+        bool activeTabPropertyChanged = fields.empty();
+        for (const Any& fieldName : fields)
         {
-            String name = fieldName.Cast<String>();
-            if (name == tabsPropertyName)
+            if (fieldName.CanCast<String>())
             {
-                tabsPropertyChanged = true;
-            }
+                String name = fieldName.Cast<String>();
+                if (name == ContextsFieldName)
+                {
+                    tabsPropertyChanged = true;
+                }
 
-            if (name == activeTabPropertyName)
-            {
-                activeTabPropertyChanged = true;
+                if (name == ActiveContextFieldName)
+                {
+                    activeTabPropertyChanged = true;
+                }
             }
         }
-    }
 
-    if (tabsPropertyChanged)
-    {
-        OnTabsCollectionChanged();
-    }
+        if (tabsPropertyChanged)
+        {
+            OnTabsCollectionChanged();
+        }
 
-    if (activeTabPropertyChanged)
+        if (activeTabPropertyChanged)
+        {
+            OnActiveTabChanged();
+        }
+    }
+    else
     {
-        OnActiveTabChanged();
+        uint64 id = GetIDByWrapper(wrapper);
+        int tabIndex = GetTabIndexByID(id);
+        Reflection ref = GetTabModel(id, nullptr);
+        if (ref.IsValid()) // can be invalid if tab was just closed
+        {
+            Reflection title = ref.GetField(ContextNameFieldName);
+            DVASSERT(title.IsValid());
+            QString titleText = QString::fromStdString(title.GetValue().Cast<String>());
+
+            Reflection isChangedField = ref.GetField(IsContextModifiedFieldName);
+            DVASSERT(isChangedField.IsValid());
+            bool isChanged = isChangedField.GetValue().Cast<bool>();
+
+            if (isChanged == true)
+            {
+                titleText += "*";
+            }
+            setTabText(tabIndex, titleText);
+
+            QString tooltipText;
+            Reflection tooltip = ref.GetField(ContextToolTipFieldName);
+            if (tooltip.IsValid())
+            {
+                Any tooltipValue = tooltip.GetValue();
+                DVASSERT(tooltipValue.CanCast<String>());
+                tooltipText = QString::fromStdString(tooltipValue.Cast<String>());
+                setTabToolTip(tabIndex, tooltipText);
+            }
+        }
     }
 }
 
 void SceneTabbar::OnActiveTabChanged()
 {
-    Reflection ref = model.GetField(Any(activeTabPropertyName));
+    Reflection ref = model.GetField(ActiveContextFieldName);
     DVASSERT(ref.IsValid());
-    Any value = ref.GetValue();
-    DVASSERT(value.CanCast<uint64>());
-    uint64 id = value.Cast<uint64>();
-
+    Reflection idField = ref.GetField(ContextIDFieldName);
+    if (idField.IsValid()) // can be invalid when active context == nullptr
     {
-        QVariant data = tabData(currentIndex());
-        if (data.canConvert<uint64>() && data.value<uint64>() == id)
-            return;
-    }
+        setEnabled(true);
+        Any value = idField.GetValue();
+        DVASSERT(value.CanCast<uint64>());
+        uint64 id = value.Cast<uint64>();
 
-    int tabCount = count();
-    for (int i = 0; i < tabCount; ++i)
-    {
-        QVariant data = tabData(i);
-        DVASSERT(data.canConvert<uint64>());
-        if (data.value<uint64>() == id)
         {
-            setCurrentIndex(i);
-            return;
+            QVariant data = tabData(currentIndex());
+            if (data.canConvert<uint64>() && data.value<uint64>() == id)
+                return;
         }
+
+        int tabCount = count();
+        for (int i = 0; i < tabCount; ++i)
+        {
+            QVariant data = tabData(i);
+            DVASSERT(data.canConvert<uint64>());
+            if (data.value<uint64>() == id)
+            {
+                setCurrentIndex(i);
+                return;
+            }
+        }
+    }
+    else
+    {
+        setEnabled(false);
     }
 }
 
@@ -101,40 +147,28 @@ void SceneTabbar::OnTabsCollectionChanged()
             existsIds.emplace(data.value<uint64>(), i);
         }
 
-        Reflection ref = model.GetField(tabsPropertyName);
+        Reflection ref = model.GetField(ContextsFieldName);
         Vector<Reflection::Field> fields = ref.GetFields();
         setEnabled(!fields.empty());
 
         for (const Reflection::Field& field : fields)
         {
-            DVASSERT(field.key.CanCast<uint64>());
-            uint64 id = field.key.Cast<uint64>();
-            Reflection title = field.ref.GetField(tabTitlePropertyName);
-            DVASSERT(title.IsValid());
-            Any titleValue = title.GetValue();
-            DVASSERT(titleValue.CanCast<String>());
-            QString titleText = QString::fromStdString(titleValue.Cast<String>());
+            Reflection idField = field.ref.GetField(ContextIDFieldName);
+            DVASSERT(idField.IsValid());
+            uint64 tabID = idField.GetValue().Cast<uint64>();
 
-            QString tooltipText;
-            Reflection tooltip = field.ref.GetField(tabTooltipPropertyName);
-            if (tooltip.IsValid())
+            if (existsIds.count(tabID) == 0)
             {
-                Any tooltipValue = tooltip.GetValue();
-                DVASSERT(tooltipValue.CanCast<String>());
-                tooltipText = QString::fromStdString(tooltipValue.Cast<String>());
-            }
-
-            if (existsIds.count(id) == 0)
-            {
-                int index = addTab(titleText);
-                setTabToolTip(index, tooltipText);
-                setTabData(index, QVariant::fromValue<uint64>(id));
+                int index = addTab("");
+                setTabData(index, tabID);
+                DataWrapper::DataAccessor fn(Bind(&SceneTabbar::GetTabModel, this, tabID, _1));
+                DataWrapper tabWrapper = accessor->CreateWrapper(fn);
+                tabWrapper.SetListener(this);
+                tabWrappers.emplace(tabID, tabWrapper);
             }
             else
             {
-                setTabText(existsIds[id], titleText);
-                setTabToolTip(existsIds[id], tooltipText);
-                existsIds.erase(id);
+                existsIds.erase(tabID);
             }
         }
 
@@ -146,6 +180,10 @@ void SceneTabbar::OnTabsCollectionChanged()
             {
                 if (tabData(i).value<uint64>() == node.first)
                 {
+                    auto iter = tabWrappers.find(node.first);
+                    DVASSERT(iter != tabWrappers.end());
+                    iter->second.SetListener(nullptr);
+                    tabWrappers.erase(iter);
                     removeTab(i);
                     break;
                 }
@@ -159,9 +197,24 @@ void SceneTabbar::OnTabsCollectionChanged()
     }
 }
 
-DAVA::Reflection SceneTabbar::GetSceneTabsModel(const DataContext* /*context*/)
+Reflection SceneTabbar::GetSceneTabsModel(const DataContext* /*context*/)
 {
     return model;
+}
+
+Reflection SceneTabbar::GetTabModel(uint64 id, const DataContext* /*context*/)
+{
+    Reflection tabsField = model.GetField(ContextsFieldName);
+    Vector<Reflection::Field> fields = tabsField.GetFields();
+    for (const Reflection::Field& field : fields)
+    {
+        if (field.ref.GetField(ContextIDFieldName).GetValue().Cast<uint64>() == id)
+        {
+            return field.ref;
+        }
+    }
+
+    return Reflection();
 }
 
 void SceneTabbar::OnCurrentTabChanged(int currentTab)
@@ -172,9 +225,10 @@ void SceneTabbar::OnCurrentTabChanged(int currentTab)
         QVariant data = tabData(currentTab);
         DVASSERT(data.canConvert<uint64>());
         newActiveTabID = data.value<uint64>();
-    }
 
-    modelWrapper.SetFieldValue(activeTabPropertyName, newActiveTabID);
+        Reflection r = GetTabModel(newActiveTabID, nullptr);
+        modelWrapper.SetFieldValue(ActiveContextFieldName, r.GetValue());
+    }
 }
 
 void SceneTabbar::OnCloseTabRequest(int index)
@@ -194,10 +248,33 @@ void SceneTabbar::OnCloseCurrentTab()
     }
 }
 
-const char* SceneTabbar::activeTabPropertyName = "ActiveTabID";
-const char* SceneTabbar::tabsPropertyName = "Tabs";
-const char* SceneTabbar::tabTitlePropertyName = "Title";
-const char* SceneTabbar::tabTooltipPropertyName = "Tooltip";
+uint64 SceneTabbar::GetIDByWrapper(const DataWrapper& wrapper) const
+{
+    for (const auto& iter : tabWrappers)
+    {
+        if (iter.second == wrapper)
+        {
+            return iter.first;
+        }
+    }
+
+    DVASSERT(false);
+    return static_cast<uint64>(-1);
+}
+
+int SceneTabbar::GetTabIndexByID(uint64 id) const
+{
+    for (int i = 0; i < count(); ++i)
+    {
+        if (tabData(i).value<uint64>() == id)
+        {
+            return i;
+        }
+    }
+
+    DVASSERT(false);
+    return -1;
+}
 
 } // namespace TArc
 } // namespace DAVA

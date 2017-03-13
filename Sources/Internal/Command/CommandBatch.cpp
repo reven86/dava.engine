@@ -41,8 +41,15 @@ void CommandBatch::Add(std::unique_ptr<Command>&& command)
     commandList.emplace_back(std::move(command));
 }
 
+bool CommandBatch::IsClean() const
+{
+    return std::find_if(commandList.begin(), commandList.end(), [](const std::unique_ptr<Command>& command) {
+               return command->IsClean() == false;
+           }) == commandList.end();
+}
+
 bool IsCommandBatch(const Command* command)
 {
     return dynamic_cast<const CommandBatch*>(command) != nullptr;
 }
-}
+} //namespace DAVA

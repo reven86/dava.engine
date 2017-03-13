@@ -34,6 +34,7 @@ protected:
     virtual void Init(const EngineContext* engineContext);
     virtual void Init(Core* tarcCore);
     virtual void RegisterEditorAnyCasts();
+    virtual void RegisterReflectionExtensions();
     virtual void Cleanup();
 
     virtual bool AllowMultipleInstances() const;
