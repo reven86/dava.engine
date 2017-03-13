@@ -20,8 +20,8 @@
 
         NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
         [center addObserver:self
-                   selector:@selector(keyboardFrameDidChange:)
-                       name:UIKeyboardDidChangeFrameNotification
+                   selector:@selector(keyboardWillShow:)
+                       name:UIKeyboardWillShowNotification
                      object:nil];
     }
     return self;
@@ -31,12 +31,12 @@
 {
     NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
     [center removeObserver:self
-                      name:UIKeyboardDidChangeFrameNotification
+                      name:UIKeyboardWillShowNotification
                     object:nil];
     [super dealloc];
 }
 
-- (void)keyboardFrameDidChange:(NSNotification*)notification
+- (void)updateVisibleFrame:(const CGRect*)keyboardFrame
 {
     if (bridge->uiwindow == nil || bridge->renderView == nil)
     {
@@ -45,26 +45,53 @@
     }
 
     // Convert renverView frame to window coordinates, frame is in superview's coordinates
-    CGRect keyboardFrame = [[notification.userInfo objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
     CGRect visibleFrame = [bridge->uiwindow convertRect:bridge->renderView.frame fromView:bridge->renderView];
-
-    CGFloat topHeight = keyboardFrame.origin.y - visibleFrame.origin.y;
-    CGFloat bottomHeight = visibleFrame.size.height - (keyboardFrame.origin.y + keyboardFrame.size.height);
-    if (topHeight > bottomHeight)
+    if (keyboardFrame != nil)
     {
-        visibleFrame.size.height = topHeight;
+        visibleFrame.size.height = keyboardFrame->origin.y - visibleFrame.origin.y;
     }
-    else
-    {
-        visibleFrame.origin.y = keyboardFrame.origin.y + keyboardFrame.size.height;
-        visibleFrame.size.height = bottomHeight;
-    }
-
     // Now this might be rotated, so convert it back
     visibleFrame = [bridge->renderView convertRect:visibleFrame toView:bridge->uiwindow];
 
     bridge->mainDispatcher->PostEvent(DAVA::Private::MainDispatcherEvent::CreateWindowVisibleFrameChangedEvent(bridge->window, visibleFrame.origin.x, visibleFrame.origin.y, visibleFrame.size.width, visibleFrame.size.height));
 }
+
+- (void)keyboardFrameDidChange:(NSNotification*)notification
+{
+    CGRect keyboardFrame = [[notification.userInfo objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
+    [self updateVisibleFrame:&keyboardFrame];
+}
+
+- (void)keyboardWillShow:(NSNotification*)notification
+{
+    CGRect keyboardFrame = [[notification.userInfo objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
+    [self updateVisibleFrame:&keyboardFrame];
+
+    NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
+    [center addObserver:self
+               selector:@selector(keyboardFrameDidChange:)
+                   name:UIKeyboardDidChangeFrameNotification
+                 object:nil];
+    [center addObserver:self
+               selector:@selector(keyboardWillHide:)
+                   name:UIKeyboardWillHideNotification
+                 object:nil];
+}
+
+- (void)keyboardWillHide:(NSNotification*)notification
+{
+    CGRect keyboardFrame = [[notification.userInfo objectForKey:UIKeyboardFrameEndUserInfoKey] CGRectValue];
+    [self updateVisibleFrame:nil];
+
+    NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
+    [center removeObserver:self
+                      name:UIKeyboardDidChangeFrameNotification
+                    object:nil];
+    [center removeObserver:self
+                      name:UIKeyboardWillHideNotification
+                    object:nil];
+}
+
 @end
 
 #endif // __DAVAENGINE_IPHONE__
