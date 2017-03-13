@@ -40,7 +40,6 @@ public:
     QString GetRedoText() const;
 
     bool IsDocumentExists() const;
-    bool CanClose() const;
 
     DAVA_DEPRECATED(void RefreshLayout();)
     DAVA_DEPRECATED(void RefreshAllControlProperties());
@@ -51,7 +50,6 @@ public:
     static const char* canRedoPropertyName;
     static const char* undoTextPropertyName;
     static const char* redoTextPropertyName;
-    static const char* canClosePropertyName;
     static const char* selectionPropertyName;
     static const char* editedRootControlsPropertyName;
 
@@ -67,7 +65,6 @@ private:
     SortedControlNodeSet editedRootControls;
 
     bool documentExists = true;
-    bool canClose = true;
 
     DAVA_VIRTUAL_REFLECTION(DocumentData, DAVA::TArc::DataNode);
 };

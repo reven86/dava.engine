@@ -86,7 +86,7 @@ private slots:
     void OnResized(DAVA::uint32 width, DAVA::uint32 height);
 
 private:
-    void InitUI(DAVA::TArc::ContextAccessor* accessor);
+    void InitUI();
     void ShowMenu(const QMouseEvent* mouseEvent);
     bool AddSelectionMenuSection(QMenu* parentMenu, const QPoint& pos);
     bool CanChangeTextInControl(const ControlNode* node) const;
@@ -112,7 +112,6 @@ private:
     float GetNextScale(float currentScale, int ticksCount) const;
     float GetPreviousScale(float currentScale, int ticksCount) const;
 
-    void UpdateDragScreenState();
     float GetScaleFromComboboxText() const;
 
     DAVA::TArc::ContextAccessor* accessor = nullptr;

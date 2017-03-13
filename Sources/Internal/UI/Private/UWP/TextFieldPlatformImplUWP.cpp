@@ -235,7 +235,6 @@ void TextFieldPlatformImpl::OwnerIsDying()
             auto self{ shared_from_this() };
             window->RunOnUIThreadAsync([this, self]() {
                 InputPane::GetForCurrentView()->Showing -= tokenKeyboardShowing;
-                InputPane::GetForCurrentView()->Hiding -= tokenKeyboardHiding;
                 PlatformApi::Win10::RemoveXamlControl(window, nativeControlHolder);
             });
         }
@@ -659,16 +658,11 @@ void TextFieldPlatformImpl::InstallKeyboardEventHandlers()
     using ::Windows::UI::ViewManagement::InputPaneVisibilityEventArgs;
 
     std::weak_ptr<TextFieldPlatformImpl> self_weak(shared_from_this());
-    auto keyboardHiding = ref new TypedEventHandler<InputPane ^, InputPaneVisibilityEventArgs ^>([this, self_weak](InputPane ^, InputPaneVisibilityEventArgs ^ args) {
-        if (auto self = self_weak.lock())
-            OnKeyboardHiding(args);
-    });
     auto keyboardShowing = ref new TypedEventHandler<InputPane ^, InputPaneVisibilityEventArgs ^>([this, self_weak](InputPane ^, InputPaneVisibilityEventArgs ^ args) {
         if (auto self = self_weak.lock())
             OnKeyboardShowing(args);
     });
     tokenKeyboardShowing = InputPane::GetForCurrentView()->Showing += keyboardShowing;
-    tokenKeyboardHiding = InputPane::GetForCurrentView()->Hiding += keyboardHiding;
 }
 
 void TextFieldPlatformImpl::OnKeyDown(::Windows::UI::Xaml::Input::KeyRoutedEventArgs ^ args)
@@ -882,17 +876,9 @@ void TextFieldPlatformImpl::OnLayoutUpdated()
     }
 }
 
-void TextFieldPlatformImpl::OnKeyboardHiding(::Windows::UI::ViewManagement::InputPaneVisibilityEventArgs ^ args)
-{
-    args->EnsuredFocusedElementInView = true;
-}
-
 void TextFieldPlatformImpl::OnKeyboardShowing(::Windows::UI::ViewManagement::InputPaneVisibilityEventArgs ^ args)
 {
     using ::Windows::UI::ViewManagement::InputPane;
-
-    // Tell keyboard that application will position native controls by itself
-    args->EnsuredFocusedElementInView = true;
 
     if (HasFocus())
     {

@@ -9,9 +9,10 @@
 #include "Sound/SoundSystem.h"
 #include "FileSystem/StreamBuffer.h"
 #include "Sound/FMODUtils.h"
-#include "fmod.h"
 #include "Concurrency/ConditionVariable.h"
 #include "Concurrency/Mutex.h"
+
+#include <fmod/fmod.h>
 
 namespace AV
 {

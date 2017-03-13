@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Neon/NeonMath.h"
+#include "Base/Any.h"
 #include "Math/Matrix3.h"
 #include "Debug/DVAssert.h"
 
@@ -739,5 +740,9 @@ inline bool Matrix4::operator!=(const Matrix4& _m) const
 {
     return !Matrix4::operator==(_m);
 }
+
+template <>
+bool AnyCompare<Matrix4>::IsEqual(const DAVA::Any& v1, const DAVA::Any& v2);
+extern template struct AnyCompare<Matrix4>;
 
 }; // end of namespace DAVA
