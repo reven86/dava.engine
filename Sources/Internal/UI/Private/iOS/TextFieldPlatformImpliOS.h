@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
+#include "Base/Token.h"
 
 #if defined(__DAVAENGINE_IPHONE__)
 
@@ -82,7 +83,7 @@ private:
 #if defined(__DAVAENGINE_COREV2__)
     void OnWindowDestroyed(Window* destroyedWindow);
 
-    size_t windowDestroyedSigId;
+    Token windowDestroyedToken;
     Window* window = nullptr;
 #endif
     struct TextFieldObjcBridge;
