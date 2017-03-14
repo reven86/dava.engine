@@ -2,6 +2,7 @@
 #define __DAVAENGINE_RENDER_BASE_H__
 
 #include "Base/BaseTypes.h"
+#include "Base/GlobalEnum.h"
 #include "DAVAConfig.h"
 #include "Base/FastName.h"
 #include "Render/RHI/rhi_Type.h"

@@ -6,6 +6,11 @@ namespace DAVA
 {
 namespace Metas
 {
+DisplayName::DisplayName(const String& displayName_)
+    : displayName(displayName_)
+{
+}
+
 Range::Range(const Any& minValue_, const Any& maxValue_, const Any& step_)
     : minValue(minValue_)
     , maxValue(maxValue_)

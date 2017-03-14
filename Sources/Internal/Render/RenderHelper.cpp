@@ -96,11 +96,7 @@ RenderHelper::RenderHelper()
     for (NMaterial* material : materials)
         material->PreBuildMaterial(PASS_FORWARD);
 
-    drawLineCommand.params.resize(10);
-    drawIcosahedronCommand.params.resize(8);
-    drawArrowCommand.params.resize(10);
-    drawCircleCommand.params.resize(12);
-    drawBoxCommand.params.resize(16);
+    Clear();
 }
 
 void RenderHelper::InvalidateMaterials()
@@ -115,64 +111,52 @@ RenderHelper::~RenderHelper()
         SafeRelease(materials[i]);
 }
 
-bool RenderHelper::PreparePacket(rhi::Packet& packet, NMaterial* material, const std::pair<uint32, uint32>& buffersCount, ColoredVertex** vBufferDataPtr, uint16** iBufferDataPtr)
-{
-    if (!material->PreBuildMaterial(PASS_FORWARD))
-    {
-        return false;
-    }
-
-    material->BindParams(packet);
-    packet.vertexStreamCount = 1;
-    packet.vertexLayoutUID = coloredVertexLayoutUID;
-
-    if (buffersCount.first)
-    {
-        DynamicBufferAllocator::AllocResultVB vb = DynamicBufferAllocator::AllocateVertexBuffer(sizeof(ColoredVertex), buffersCount.first);
-        DVASSERT(vb.allocatedVertices == buffersCount.first);
-        *vBufferDataPtr = reinterpret_cast<ColoredVertex*>(vb.data);
-        packet.vertexStream[0] = vb.buffer;
-        packet.vertexCount = vb.allocatedVertices;
-        packet.baseVertex = vb.baseVertex;
-    }
-
-    if (buffersCount.second)
-    {
-        DynamicBufferAllocator::AllocResultIB ib = DynamicBufferAllocator::AllocateIndexBuffer(buffersCount.second);
-        DVASSERT(ib.allocatedindices == buffersCount.second);
-        *iBufferDataPtr = ib.data;
-        packet.indexBuffer = ib.buffer;
-        packet.startIndex = ib.baseIndex;
-    }
-
-    return true;
-}
-
-RenderHelper::RenderStruct RenderHelper::AllocateRenderStruct(rhi::HPacketList packetList)
+RenderHelper::RenderStruct RenderHelper::AllocateRenderStruct(eDrawType drawType)
 {
     RenderHelper::RenderStruct result;
-    result.packetList = packetList;
 
-    for (int32 i = 0; i < DRAW_TYPE_COUNT; ++i)
+    result.valid = materials[drawType]->PreBuildMaterial(PASS_FORWARD);
+    if (!result.valid)
+        return result;
+
+    materials[drawType]->BindParams(result.packet);
+
+    result.packet.primitiveType = (drawType & FLAG_DRAW_SOLID) ? rhi::PRIMITIVE_TRIANGLELIST : rhi::PRIMITIVE_LINELIST;
+
+    result.packet.vertexStreamCount = 1;
+    result.packet.vertexLayoutUID = coloredVertexLayoutUID;
+    if (vBuffersElemCount[drawType])
     {
-        result.valid &= PreparePacket(result.packet[i], materials[i], buffersElemCount[i], &result.vBufferPtr[i], &result.iBufferPtr[i]);
+        DynamicBufferAllocator::AllocResultVB vb = DynamicBufferAllocator::AllocateVertexBuffer(sizeof(ColoredVertex), vBuffersElemCount[drawType]);
+        result.vBufferSize = vb.allocatedVertices;
+
+        result.vBufferPtr = reinterpret_cast<ColoredVertex*>(vb.data);
+        result.packet.vertexStream[0] = vb.buffer;
+        result.packet.vertexCount = result.vBufferSize;
+        result.packet.baseVertex = vb.baseVertex;
+
+        vBuffersElemCount[drawType] -= result.vBufferSize;
     }
 
-    result.packet[DRAW_WIRE_DEPTH].primitiveType = rhi::PRIMITIVE_LINELIST;
-    result.packet[DRAW_WIRE_NO_DEPTH].primitiveType = rhi::PRIMITIVE_LINELIST;
-    result.packet[DRAW_SOLID_DEPTH].primitiveType = rhi::PRIMITIVE_TRIANGLELIST;
-    result.packet[DRAW_SOLID_NO_DEPTH].primitiveType = rhi::PRIMITIVE_TRIANGLELIST;
+    if (iBuffersElemCount[drawType])
+    {
+        DynamicBufferAllocator::AllocResultIB ib = DynamicBufferAllocator::AllocateIndexBuffer(iBuffersElemCount[drawType]);
+        result.iBufferSize = ib.allocatedindices;
+
+        result.iBufferPtr = ib.data;
+        result.packet.indexBuffer = ib.buffer;
+        result.packet.startIndex = ib.baseIndex;
+
+        iBuffersElemCount[drawType] -= result.iBufferSize;
+    }
 
     return result;
 }
 
-void RenderHelper::CommitRenderStruct(const RenderHelper::RenderStruct& rs)
+void RenderHelper::CommitRenderStruct(rhi::HPacketList packetList, const RenderStruct& rs)
 {
-    for (int32 i = 0; i < DRAW_TYPE_COUNT; ++i)
-    {
-        if (rs.packet[i].primitiveCount)
-            rhi::AddPacket(rs.packetList, rs.packet[i]);
-    }
+    if (rs.packet.primitiveCount)
+        rhi::AddPacket(packetList, rs.packet);
 }
 
 void RenderHelper::Present(rhi::HPacketList packetList, const Matrix4* viewMatrix, const Matrix4* projectionMatrix)
@@ -186,27 +170,42 @@ void RenderHelper::Present(rhi::HPacketList packetList, const Matrix4* viewMatri
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_VIEW, viewMatrix, reinterpret_cast<pointer_size>(viewMatrix));
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_PROJ, projectionMatrix, reinterpret_cast<pointer_size>(projectionMatrix));
 
-    RenderStruct currentRenderStruct = AllocateRenderStruct(packetList);
-    if (!currentRenderStruct.valid)
-    {
-        return;
-    }
+    RenderStruct renderStructs[DRAW_TYPE_COUNT];
+    for (uint32 i = 0; i < uint32(DRAW_TYPE_COUNT); ++i)
+        renderStructs[i] = AllocateRenderStruct(eDrawType(i));
 
-    for (const DrawCommand& command : commandQueue)
+    DrawCommand* commands = commandQueue.data();
+    uint32 commandsCount = uint32(commandQueue.size());
+    for (uint32 c = 0; c < commandsCount; ++c)
     {
+        const DrawCommand& command = commands[c];
+        RenderStruct& currentRenderStruct = renderStructs[command.drawType];
+
+        if (!currentRenderStruct.valid)
+            continue;
+
         uint32 vertexCount = 0;
         uint32 indexCount = 0;
         GetRequestedVertexCount(command, vertexCount, indexCount);
 
-        if (currentRenderStruct.vBufferOffset[command.drawType] + indexCount >= std::numeric_limits<uint16>::max())
+        if (currentRenderStruct.vBufferSize < vertexCount || currentRenderStruct.iBufferSize < indexCount)
         {
-            CommitRenderStruct(currentRenderStruct);
-            currentRenderStruct = AllocateRenderStruct(packetList);
+            vBuffersElemCount[command.drawType] += currentRenderStruct.vBufferSize;
+            iBuffersElemCount[command.drawType] += currentRenderStruct.iBufferSize;
+
+            CommitRenderStruct(packetList, currentRenderStruct);
+            currentRenderStruct = AllocateRenderStruct(command.drawType);
         }
 
-        ColoredVertex* commandVBufferPtr = currentRenderStruct.vBufferPtr[command.drawType];
-        uint16* commandIBufferPtr = currentRenderStruct.iBufferPtr[command.drawType];
-        uint32 commandVBufferOffset = currentRenderStruct.vBufferOffset[command.drawType];
+        if (currentRenderStruct.vBufferOffset + indexCount >= std::numeric_limits<uint16>::max())
+        {
+            CommitRenderStruct(packetList, currentRenderStruct);
+            currentRenderStruct = AllocateRenderStruct(command.drawType);
+        }
+
+        ColoredVertex* commandVBufferPtr = currentRenderStruct.vBufferPtr;
+        uint16* commandIBufferPtr = currentRenderStruct.iBufferPtr;
+        uint32 commandVBufferOffset = currentRenderStruct.vBufferOffset;
         bool isWireDraw = (command.drawType & FLAG_DRAW_SOLID) == 0;
 
         uint32 nativePrimitiveColor = rhi::NativeColorRGBA(command.params[0], command.params[1], command.params[2], command.params[3]);
@@ -228,9 +227,8 @@ void RenderHelper::Present(rhi::HPacketList packetList, const Matrix4* viewMatri
 
         case COMMAND_DRAW_POLYGON:
         {
-            const uint32 pointCount = static_cast<uint32>((command.params.size() - 4) / 3);
-
-            const Vector3* const polygonPoints = reinterpret_cast<const Vector3*>(command.params.data() + 4);
+            const uint32 pointCount = static_cast<uint32>(command.extraParams.size() / 3);
+            const Vector3* const polygonPoints = reinterpret_cast<const Vector3*>(command.extraParams.data());
             for (uint32 i = 0; i < pointCount; ++i)
             {
                 commandVBufferPtr[i].position = polygonPoints[i];
@@ -243,7 +241,7 @@ void RenderHelper::Present(rhi::HPacketList packetList, const Matrix4* viewMatri
 
         case COMMAND_DRAW_BOX:
         {
-            const Vector3 basePoint(command.params.data() + 4), xAxis(command.params.data() + 7), yAxis(command.params.data() + 10), zAxis(command.params.data() + 13);
+            const Vector3 basePoint(command.params + 4), xAxis(command.params + 7), yAxis(command.params + 10), zAxis(command.params + 13);
             FillBoxVBuffer(commandVBufferPtr, basePoint, xAxis, yAxis, zAxis, nativePrimitiveColor);
             FillIndeciesFromArray(commandIBufferPtr, commandVBufferOffset, isWireDraw ? gWireBoxIndexes.data() : gSolidBoxIndexes.data(), indexCount);
         }
@@ -251,7 +249,7 @@ void RenderHelper::Present(rhi::HPacketList packetList, const Matrix4* viewMatri
 
         case COMMAND_DRAW_BOX_CORNERS:
         {
-            const Vector3 basePoint(command.params.data() + 4), xAxis(command.params.data() + 7), yAxis(command.params.data() + 10), zAxis(command.params.data() + 13);
+            const Vector3 basePoint(command.params + 4), xAxis(command.params + 7), yAxis(command.params + 10), zAxis(command.params + 13);
             FillBoxCornersVBuffer(commandVBufferPtr, basePoint, xAxis, yAxis, zAxis, nativePrimitiveColor);
             FillIndeciesFromArray(commandIBufferPtr, commandVBufferOffset, isWireDraw ? gWireBoxCornersIndexes.data() : gSolidBoxCornersIndexes.data(), indexCount);
         }
@@ -260,7 +258,7 @@ void RenderHelper::Present(rhi::HPacketList packetList, const Matrix4* viewMatri
         case COMMAND_DRAW_CIRCLE:
         {
             const uint32 pointCount = static_cast<uint32>(command.params[11]);
-            const Vector3 center(command.params.data() + 4), direction(command.params.data() + 7);
+            const Vector3 center(command.params + 4), direction(command.params + 7);
             const float32 radius = command.params[10];
             FillCircleVBuffer(commandVBufferPtr, center, direction, radius, pointCount, nativePrimitiveColor);
 
@@ -288,8 +286,8 @@ void RenderHelper::Present(rhi::HPacketList packetList, const Matrix4* viewMatri
 
         case COMMAND_DRAW_ARROW:
         {
-            const Vector3 from(command.params.data() + 4);
-            const Vector3 to(command.params.data() + 7);
+            const Vector3 from(command.params + 4);
+            const Vector3 to(command.params + 7);
             FillArrowVBuffer(commandVBufferPtr, from, to, nativePrimitiveColor);
             FillIndeciesFromArray(commandIBufferPtr, commandVBufferOffset, isWireDraw ? gWireArrowIndexes.data() : gSolidArrowIndexes.data(), indexCount);
         }
@@ -299,26 +297,31 @@ void RenderHelper::Present(rhi::HPacketList packetList, const Matrix4* viewMatri
             break;
         }
 
-        buffersElemCount[command.drawType].first -= vertexCount;
-        buffersElemCount[command.drawType].second -= indexCount;
+        DVASSERT(currentRenderStruct.vBufferSize >= vertexCount);
+        DVASSERT(currentRenderStruct.iBufferSize >= indexCount);
 
-        currentRenderStruct.vBufferPtr[command.drawType] += vertexCount;
-        currentRenderStruct.iBufferPtr[command.drawType] += indexCount;
-        currentRenderStruct.vBufferOffset[command.drawType] += vertexCount;
-        currentRenderStruct.packet[command.drawType].primitiveCount += isWireDraw ? indexCount / 2 : indexCount / 3;
+        currentRenderStruct.vBufferSize -= vertexCount;
+        currentRenderStruct.iBufferSize -= indexCount;
+
+        currentRenderStruct.vBufferPtr += vertexCount;
+        currentRenderStruct.iBufferPtr += indexCount;
+        currentRenderStruct.vBufferOffset += vertexCount;
+
+        currentRenderStruct.packet.primitiveCount += indexCount / ((command.drawType & FLAG_DRAW_SOLID) ? 3 : 2);
     }
 
-    CommitRenderStruct(currentRenderStruct);
+    for (uint32 i = 0; i < uint32(DRAW_TYPE_COUNT); ++i)
+    {
+        CommitRenderStruct(packetList, renderStructs[i]);
+        DVASSERT(vBuffersElemCount[i] == 0 && iBuffersElemCount[i] == 0);
+    }
 }
 
 void RenderHelper::Clear()
 {
     commandQueue.clear();
-    for (int32 i = 0; i < DRAW_TYPE_COUNT; ++i)
-    {
-        buffersElemCount[i].first = 0;
-        buffersElemCount[i].second = 0;
-    }
+    Memset(vBuffersElemCount, 0, sizeof(vBuffersElemCount));
+    Memset(iBuffersElemCount, 0, sizeof(iBuffersElemCount));
 }
 
 bool RenderHelper::IsEmpty()
@@ -331,10 +334,10 @@ void RenderHelper::QueueCommand(const DrawCommand& command)
     commandQueue.emplace_back(command);
 
     uint32 vertexCount = 0, indexCount = 0;
-    GetRequestedVertexCount(commandQueue.back(), vertexCount, indexCount);
+    GetRequestedVertexCount(command, vertexCount, indexCount);
 
-    buffersElemCount[commandQueue.back().drawType].first += vertexCount;
-    buffersElemCount[commandQueue.back().drawType].second += indexCount;
+    vBuffersElemCount[command.drawType] += vertexCount;
+    iBuffersElemCount[command.drawType] += indexCount;
 }
 
 void RenderHelper::GetRequestedVertexCount(const DrawCommand& command, uint32& vertexCount, uint32& indexCount)
@@ -352,7 +355,7 @@ void RenderHelper::GetRequestedVertexCount(const DrawCommand& command, uint32& v
 
     case COMMAND_DRAW_POLYGON:
     {
-        vertexCount = static_cast<uint32>((command.params.size() - 4) / 3);
+        vertexCount = static_cast<uint32>(command.extraParams.size() / 3);
         indexCount = isSolidDraw ? (vertexCount - 2) * 3 : (vertexCount - 1) * 2;
     }
     break;
@@ -428,10 +431,18 @@ void RenderHelper::DrawLine(const Vector3& pt1, const Vector3& pt2, const Color&
 }
 void RenderHelper::DrawPolygon(const Polygon3& polygon, const Color& color, eDrawType drawType)
 {
-    Vector<float32> args(4 + polygon.pointCount * 3);
-    Memcpy(args.data(), color.color, sizeof(Color));
-    Memcpy(args.data() + 4, polygon.points.data(), sizeof(Vector3) * polygon.pointCount);
-    QueueCommand(DrawCommand(COMMAND_DRAW_POLYGON, drawType, std::forward<Vector<float32>&&>(args)));
+    DrawCommand drawCommand(COMMAND_DRAW_POLYGON);
+    drawCommand.drawType = drawType;
+
+    drawCommand.extraParams.resize(polygon.pointCount * 3);
+    Memcpy(drawCommand.extraParams.data(), polygon.points.data(), sizeof(Vector3) * polygon.pointCount);
+
+    drawCommand.params[0] = color.r;
+    drawCommand.params[1] = color.g;
+    drawCommand.params[2] = color.b;
+    drawCommand.params[3] = color.a;
+
+    QueueCommand(drawCommand);
 }
 void RenderHelper::DrawAABox(const AABBox3& box, const Color& color, eDrawType drawType)
 {

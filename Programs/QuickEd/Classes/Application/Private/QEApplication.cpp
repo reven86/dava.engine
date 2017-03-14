@@ -1,5 +1,6 @@
 #include "Application/QEApplication.h"
 #include "Modules/LegacySupportModule/LegacySupportModule.h"
+#include "Classes/Application/ReflectionExtensions.h"
 
 #include <TArc/Core/Core.h>
 #include <TArc/Utils/ModuleCollection.h>
@@ -121,4 +122,9 @@ void QEApplication::CreateModules(DAVA::TArc::Core* tarcCore) const
     {
         tarcCore->CreateModule(type);
     }
+}
+
+void QEApplication::RegisterReflectionExtensions()
+{
+    ::RegisterReflectionExtensions();
 }

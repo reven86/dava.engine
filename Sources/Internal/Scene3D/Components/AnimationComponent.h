@@ -1,11 +1,11 @@
-#ifndef __DAVAENGINE_ANIMATION_COMPONENT_H__
-#define __DAVAENGINE_ANIMATION_COMPONENT_H__
+#pragma once
 
-#include "Base/BaseTypes.h"
 #include "Scene3D/Systems/AnimationSystem.h"
-#include "Entity/Component.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
+#include "Entity/Component.h"
+#include "Reflection/Reflection.h"
 #include "Base/Message.h"
+#include "Base/BaseTypes.h"
 #include "Functional/Function.h"
 
 namespace DAVA
@@ -77,6 +77,8 @@ public:
                          PROPERTY("isPlaying", "isPlaying", GetIsPlaying, SetIsPlaying, I_SAVE | I_EDIT | I_VIEW)
                          MEMBER(animationTimeScale, "animationTimeScale", I_VIEW | I_EDIT | I_SAVE)
                          );
+
+    DAVA_VIRTUAL_REFLECTION(AnimationComponent, Component);
 };
 
 inline AnimationData* AnimationComponent::GetAnimation() const
@@ -84,5 +86,3 @@ inline AnimationData* AnimationComponent::GetAnimation() const
     return animation;
 }
 };
-
-#endif //__DAVAENGINE_ANIMATION_COMPONENT_H__

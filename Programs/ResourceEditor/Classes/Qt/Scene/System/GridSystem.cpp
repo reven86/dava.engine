@@ -1,5 +1,5 @@
 #include "Scene/System/GridSystem.h"
-#include "Qt/Settings/SettingsManager.h"
+#include "Classes/Settings/SettingsManager.h"
 
 // framework
 #include "Render/RenderHelper.h"

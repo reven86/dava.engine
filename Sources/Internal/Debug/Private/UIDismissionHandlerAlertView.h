@@ -1,3 +1,5 @@
+#if !defined(__DAVAENGINE_COREV2__)
+
 #import <Foundation/Foundation.h>
 
 typedef void (^AlertDismissedHandler)(NSInteger selectedIndex, BOOL didCancel);
@@ -18,3 +20,5 @@ typedef void (^AlertDismissedHandler)(NSInteger selectedIndex, BOOL didCancel);
 - (void)dismiss:(BOOL)isAnimated;
 
 @end
+
+#endif //!defined(__DAVAENGINE_COREV2__)

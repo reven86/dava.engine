@@ -25,6 +25,7 @@ namespace DAVA
 namespace Private
 {
 bool PlatformCore::isPhoneContractPresent = false;
+::Windows::UI::Core::CoreDispatcher ^ PlatformCore::coreDispatcher = nullptr;
 
 PlatformCore::PlatformCore(EngineBackend* engineBackend_)
     : engineBackend(engineBackend_)
@@ -120,10 +121,17 @@ void PlatformCore::SetScreenTimeoutEnabled(bool enabled)
 
 void PlatformCore::OnLaunchedOrActivated(::Windows::ApplicationModel::Activation::IActivatedEventArgs ^ args)
 {
+    using ::Windows::UI::Core::CoreDispatcher;
+    using ::Windows::UI::Core::CoreWindow;
     using namespace ::Windows::ApplicationModel::Activation;
 
     // Force DeviceInfo instantiation for early initialization (due to static nature of DeviceInfo)
     Logger::FrameworkDebug("%s", DeviceInfo::GetPlatformString().c_str());
+
+    if (coreDispatcher == nullptr)
+    {
+        coreDispatcher = CoreWindow::GetForCurrentThread()->Dispatcher;
+    }
 
     if (args->Kind == ActivationKind::Launch)
     {
@@ -160,12 +168,13 @@ void PlatformCore::OnWindowCreated(::Windows::UI::Xaml::Window ^ xamlWindow)
     {
         primaryWindow = engineBackend->InitializePrimaryWindow();
     }
-    WindowBackend* windowBackend = primaryWindow->GetBackend();
+    WindowBackend* windowBackend = EngineBackend::GetWindowBackend(primaryWindow);
     windowBackend->BindXamlWindow(xamlWindow);
 }
 
 void PlatformCore::OnSuspending()
 {
+    NotifyListeners(ON_SUSPENDING, nullptr);
     dispatcher->SendEvent(MainDispatcherEvent(MainDispatcherEvent::APP_SUSPENDED)); // Blocking call !!!
 }
 
@@ -274,6 +283,9 @@ void PlatformCore::NotifyListeners(eNotificationType type, ::Platform::Object ^ 
             break;
         case ON_ACTIVATED:
             l->OnActivated(static_cast<IActivatedEventArgs ^>(arg1));
+            break;
+        case ON_SUSPENDING:
+            l->OnSuspending();
             break;
         default:
             break;

@@ -96,6 +96,7 @@ void RunOnUIThread(const Function<void()>& task)
 namespace Private
 {
 EngineBackend* EngineBackend::instance = nullptr;
+bool EngineBackend::showingModalMessageBox = false;
 
 EngineBackend* EngineBackend::Instance()
 {
@@ -284,12 +285,6 @@ void EngineBackend::OnGameLoopStopped()
 
     DVASSERT(justCreatedWindows.empty());
 
-    for (Window* w : dyingWindows)
-    {
-        delete w;
-    }
-    dyingWindows.clear();
-
     engine->gameLoopStopped.Emit();
     rhi::ShaderSourceCache::Save("~doc:/ShaderSource.bin");
 
@@ -306,6 +301,13 @@ void EngineBackend::OnEngineCleanup()
         ImGui::Uninitialize();
 
     DestroySubsystems();
+
+    for (Window* w : dyingWindows)
+    {
+        delete w;
+    }
+    dyingWindows.clear();
+    primaryWindow = nullptr;
 
     if (Renderer::IsInitialized())
         Renderer::Uninitialize();
@@ -456,11 +458,6 @@ void EngineBackend::OnWindowDestroyed(Window* window)
     DVASSERT(nerased == 1);
     dyingWindows.insert(window);
 
-    if (window->IsPrimary())
-    {
-        primaryWindow = nullptr;
-    }
-
     if (aliveWindows.empty())
     { // No alive windows left, exit application
         platformCore->Quit();
@@ -553,7 +550,7 @@ void EngineBackend::HandleAppTerminate(const MainDispatcherEvent& e)
             ++it;
 
             // Directly call Close for WindowBackend to tell important information that application is terminating
-            w->GetBackend()->Close(true);
+            GetWindowBackend(w)->Close(true);
         }
     }
     else if (!appIsTerminating)

@@ -19,6 +19,7 @@
 #undef DELETE
 #undef CopyFile
 #undef DeleteFile
+#undef MessageBox
 #undef CreateDirectory
 #undef MoveFile
 
