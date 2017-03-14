@@ -360,4 +360,8 @@ inline void RenderObject::SetRefractionVisible(bool visible)
     else
         flags &= ~VISIBLE_REFRACTION;
 }
+
+template <>
+bool AnyCompare<RenderObject::IndexedRenderBatch>::IsEqual(const DAVA::Any& v1, const DAVA::Any& v2);
+extern template struct AnyCompare<Color>;
 }

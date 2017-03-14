@@ -31,13 +31,11 @@ private:
 
     size_t GetGroupIndex() const;
     void SetGroupIndex(size_t index);
+    bool IsGroupReadOnly() const;
 
     size_t GetQualityIndex() const;
     void SetQualityIndex(size_t index);
-    bool IsGroupQualityReadOnly() const;
-
-    QString GetGroupTitle() const;
-    QString GetQualityTitle() const;
+    bool IsQualityReadOnly() const;
 
     const DAVA::Vector<DAVA::FastName>& GetFilters() const;
     const DAVA::Vector<DAVA::FastName>& GetGroups() const;

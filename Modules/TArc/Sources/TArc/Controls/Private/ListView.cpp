@@ -31,22 +31,6 @@ public:
         return QVariant();
     }
 
-    QVariant headerData(int section, Qt::Orientation orientation, int role /* = Qt::DisplayRole */)
-    {
-        if (orientation != Qt::Horizontal || role != Qt::DisplayRole)
-        {
-            return QVariant();
-        }
-
-        DVASSERT(section == 0);
-        if (title.isEmpty())
-        {
-            return QVariant();
-        }
-
-        return title;
-    }
-
     Qt::ItemFlags flags(const QModelIndex& index) const override
     {
         return Qt::ItemIsSelectable | Qt::ItemNeverHasChildren | Qt::ItemIsEnabled;
@@ -63,7 +47,6 @@ public:
     }
 
     Vector<std::pair<Any, Any>> values;
-    QString title;
 };
 }
 
@@ -109,7 +92,7 @@ void ListView::UpdateControl(const ControlDescriptor& fields)
         m->values.reserve(fields.size());
         for (const Reflection::Field& f : fields)
         {
-            m->values.push_back(std::make_pair(f.key, f.ref.GetValue()));
+            m->values.emplace_back(f.key, f.ref.GetValue());
         }
 
         m->EndReset();
@@ -129,12 +112,6 @@ void ListView::UpdateControl(const ControlDescriptor& fields)
                 break;
             }
         }
-    }
-
-    if (fields.IsChanged(Fields::Title))
-    {
-        m->title = GetFieldValue(Fields::Title, QString(""));
-        m->headerDataChanged(Qt::Horizontal, 0, 0);
     }
 
     setEnabled(!IsValueReadOnly(fields, Fields::CurrentValue, Fields::IsReadOnly));

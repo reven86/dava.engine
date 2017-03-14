@@ -28,52 +28,70 @@ public:
         layout->setSpacing(0);
         layout->setMargin(0);
 
-        QtHBoxLayout* filterLayout = new QtHBoxLayout();
-        filterLayout->setSpacing(2);
-        filterLayout->setContentsMargins(0, 2, 0, 2);
-        filterLayout->addWidget(new QLabel("Filter by Type", this));
+        {
+            QtHBoxLayout* filterLayout = new QtHBoxLayout();
+            filterLayout->setSpacing(2);
+            filterLayout->setContentsMargins(0, 2, 0, 2);
+            filterLayout->addWidget(new QLabel("Filter by Type", this));
 
-        ControlDescriptorBuilder<CheckBox::Fields> filterCheckBoxDescr;
-        filterCheckBoxDescr[CheckBox::Fields::Checked] = "filterByType";
-        filterCheckBoxDescr[CheckBox::Fields::IsReadOnly] = BaseComponentValue::readOnlyFieldName;
-        CheckBox* filterByTypeEditor = new CheckBox(filterCheckBoxDescr, wrappersProcessor, model, this);
-        filterLayout->AddWidget(filterByTypeEditor);
-        subControls.push_back(filterByTypeEditor);
+            ControlDescriptorBuilder<CheckBox::Fields> filterCheckBoxDescr;
+            filterCheckBoxDescr[CheckBox::Fields::Checked] = "filterByType";
+            filterCheckBoxDescr[CheckBox::Fields::IsReadOnly] = BaseComponentValue::readOnlyFieldName;
+            CheckBox* filterByTypeEditor = new CheckBox(filterCheckBoxDescr, wrappersProcessor, model, this);
+            filterLayout->AddWidget(filterByTypeEditor);
+            subControls.push_back(filterByTypeEditor);
 
-        ControlDescriptorBuilder<ComboBox::Fields> modelTypesDescr;
-        modelTypesDescr[ComboBox::Fields::Value] = "modelType";
-        modelTypesDescr[ComboBox::Fields::IsReadOnly] = "isModelTypeReadOnly";
-        modelTypesDescr[ComboBox::Fields::Enumerator] = "modelTypes";
-        ComboBox* modelTypeEditor = new ComboBox(modelTypesDescr, wrappersProcessor, model, this);
-        QSizePolicy policy = modelTypeEditor->ToWidgetCast()->sizePolicy();
-        policy.setHorizontalPolicy(QSizePolicy::Expanding);
-        modelTypeEditor->ToWidgetCast()->setSizePolicy(policy);
-        filterLayout->AddWidget(modelTypeEditor);
-        subControls.push_back(modelTypeEditor);
+            ControlDescriptorBuilder<ComboBox::Fields> modelTypesDescr;
+            modelTypesDescr[ComboBox::Fields::Value] = "modelType";
+            modelTypesDescr[ComboBox::Fields::IsReadOnly] = "isModelTypeReadOnly";
+            modelTypesDescr[ComboBox::Fields::Enumerator] = "modelTypes";
+            ComboBox* modelTypeEditor = new ComboBox(modelTypesDescr, wrappersProcessor, model, this);
+            QSizePolicy policy = modelTypeEditor->ToWidgetCast()->sizePolicy();
+            policy.setHorizontalPolicy(QSizePolicy::Expanding);
+            modelTypeEditor->ToWidgetCast()->setSizePolicy(policy);
+            filterLayout->AddWidget(modelTypeEditor);
+            subControls.push_back(modelTypeEditor);
 
-        layout->addLayout(filterLayout);
+            layout->addLayout(filterLayout);
+        }
 
-        QSplitter* splitter = new QSplitter(this);
-        layout->addWidget(splitter);
+        QtHBoxLayout* groupQualityLayout = new QtHBoxLayout();
+        groupQualityLayout->setSpacing(2);
+        groupQualityLayout->setContentsMargins(0, 2, 0, 2);
 
-        ControlDescriptorBuilder<ListView::Fields> groupDescr;
-        groupDescr[ListView::Fields::CurrentValue] = "group";
-        groupDescr[ListView::Fields::ValueList] = "groups";
-        groupDescr[ListView::Fields::Title] = "groupTitle";
-        groupDescr[ListView::Fields::IsReadOnly] = "isGroupQualityReadOnly";
-        ListView* groups = new ListView(groupDescr, wrappersProcessor, model, splitter);
-        subControls.push_back(groups);
+        {
+            QtVBoxLayout* groupLayout = new QtVBoxLayout();
+            groupLayout->setSpacing(1);
 
-        ControlDescriptorBuilder<ListView::Fields> qualityDescr;
-        qualityDescr[ListView::Fields::CurrentValue] = "quality";
-        qualityDescr[ListView::Fields::ValueList] = "qualities";
-        qualityDescr[ListView::Fields::Title] = "qualityTitle";
-        qualityDescr[ListView::Fields::IsReadOnly] = "isGroupQualityReadOnly";
-        ListView* qualities = new ListView(qualityDescr, wrappersProcessor, model, splitter);
-        subControls.push_back(qualities);
+            groupLayout->addWidget(new QLabel("Group", this), 0, Qt::AlignHCenter);
+            ControlDescriptorBuilder<ComboBox::Fields> groupDescr;
+            groupDescr[ComboBox::Fields::Value] = "group";
+            groupDescr[ComboBox::Fields::Enumerator] = "groups";
+            groupDescr[ComboBox::Fields::IsReadOnly] = "isGroupReadOnly";
+            ComboBox* groupComboBox = new ComboBox(groupDescr, wrappersProcessor, model, this);
+            groupLayout->AddWidget(groupComboBox, 1);
+            subControls.push_back(groupComboBox);
 
-        splitter->addWidget(groups->ToWidgetCast());
-        splitter->addWidget(qualities->ToWidgetCast());
+            groupQualityLayout->addLayout(groupLayout);
+        }
+
+        {
+            QtVBoxLayout* qualityLayout = new QtVBoxLayout();
+            qualityLayout->setSpacing(1);
+
+            qualityLayout->addWidget(new QLabel("Quality", this), 0, Qt::AlignHCenter);
+            ControlDescriptorBuilder<ComboBox::Fields> qualityDescr;
+            qualityDescr[ComboBox::Fields::Value] = "quality";
+            qualityDescr[ComboBox::Fields::Enumerator] = "qualities";
+            qualityDescr[ComboBox::Fields::IsReadOnly] = "isQualityReadOnly";
+            ComboBox* qualityComboBox = new ComboBox(qualityDescr, wrappersProcessor, model, this);
+            qualityLayout->AddWidget(qualityComboBox, 1);
+            subControls.push_back(qualityComboBox);
+
+            groupQualityLayout->addLayout(qualityLayout);
+        }
+
+        layout->addLayout(groupQualityLayout);
     }
 
     void ForceUpdate() override
@@ -436,21 +454,17 @@ void QualityGroupComponentValue::SetQualityIndex(size_t index)
     editorWidget->ForceUpdate();
 }
 
-bool QualityGroupComponentValue::IsGroupQualityReadOnly() const
+bool QualityGroupComponentValue::IsGroupReadOnly() const
 {
     bool isReadOnly = IsReadOnly();
     Qt::CheckState filterByType = IsFilterByType().Cast<Qt::CheckState>();
-    return isReadOnly || filterByType == Qt::Checked;
+    return isReadOnly || filterByType != Qt::Unchecked;
 }
 
-QString QualityGroupComponentValue::GetGroupTitle() const
+bool QualityGroupComponentValue::IsQualityReadOnly() const
 {
-    return QStringLiteral("Group");
-}
-
-QString QualityGroupComponentValue::GetQualityTitle() const
-{
-    return QStringLiteral("Quality");
+    size_t groupIndex = GetGroupIndex();
+    return groupIndex == 0 || IsGroupReadOnly() == true;
 }
 
 const DAVA::Vector<DAVA::FastName>& QualityGroupComponentValue::GetFilters() const
@@ -504,12 +518,11 @@ DAVA_VIRTUAL_REFLECTION_IMPL(QualityGroupComponentValue)
     .Field("modelType", &QualityGroupComponentValue::GetModelTypeIndex, &QualityGroupComponentValue::SetModelTypeIndex)
     .Field("isModelTypeReadOnly", &QualityGroupComponentValue::IsModelTypeReadOnly, nullptr)
     .Field("group", &QualityGroupComponentValue::GetGroupIndex, &QualityGroupComponentValue::SetGroupIndex)
+    .Field("isGroupReadOnly", &QualityGroupComponentValue::IsGroupReadOnly, nullptr)
     .Field("quality", &QualityGroupComponentValue::GetQualityIndex, &QualityGroupComponentValue::SetQualityIndex)
-    .Field("isGroupQualityReadOnly", &QualityGroupComponentValue::IsGroupQualityReadOnly, nullptr)
+    .Field("isQualityReadOnly", &QualityGroupComponentValue::IsQualityReadOnly, nullptr)
     .Field("modelTypes", &QualityGroupComponentValue::GetFilters, nullptr)
     .Field("groups", &QualityGroupComponentValue::GetGroups, nullptr)
     .Field("qualities", &QualityGroupComponentValue::GetQualities, nullptr)
-    .Field("groupTitle", &QualityGroupComponentValue::GetGroupTitle, nullptr)
-    .Field("qualityTitle", &QualityGroupComponentValue::GetQualityTitle, nullptr)
     .End();
 }

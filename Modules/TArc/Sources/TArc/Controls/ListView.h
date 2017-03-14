@@ -20,7 +20,6 @@ public:
         CurrentValue,
         ValueList,
         IsReadOnly,
-        Title,
         FieldCount
     };
 
