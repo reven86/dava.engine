@@ -14,6 +14,7 @@
 #include "TArc/Testing/Private/Selftests/LineEditTest.h"
 #include "TArc/Testing/Private/Selftests/PlainTextEditTest.h"
 #include "TArc/Testing/Private/Selftests/QtWrapLayoutTests.h"
+#include "TArc/Testing/Private/Selftests/ReflectionPathTreeTests.h"
 
 namespace DAVA
 {

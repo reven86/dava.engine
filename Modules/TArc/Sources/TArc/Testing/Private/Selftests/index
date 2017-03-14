@@ -13,3 +13,4 @@ LabelTest.h
 LineEditTest.h
 PlainTextEditTest.h
 QtWrapLayoutTests.h
+ReflectionPathTreeTests.h

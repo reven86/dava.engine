@@ -38,6 +38,8 @@ public:
     ContextManager* GetContextManager();
     const ContextManager* GetContextManager() const;
 
+    PropertiesItem CreatePropertiesItem(const String& name) const;
+
     template <typename... Args>
     void InvokeOperation(int operationId, const Args&... args);
 

@@ -223,6 +223,11 @@ const ContextManager* TestClass::GetContextManager() const
     return corePtr->GetCoreInterface();
 }
 
+PropertiesItem TestClass::CreatePropertiesItem(const String& name) const
+{
+    return core->GetCoreInterface()->CreatePropertiesNode(name);
+}
+
 QWidget* TestClass::GetWindow(const WindowKey& wndKey) const
 {
     UIManager* manager = dynamic_cast<UIManager*>(core->GetUI());
