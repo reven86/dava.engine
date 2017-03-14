@@ -6,6 +6,8 @@
 #include "TArc/Controls/Label.h"
 #include "TArc/Controls/QtBoxLayouts.h"
 
+#include "TArc/Qt/QtString.h"
+
 #include <Base/Any.h>
 #include <Base/BaseTypes.h>
 #include <Math/Matrix2.h>
@@ -40,7 +42,7 @@ String M3ToString(const Matrix3& matrix)
 
 String M4ToString(const Matrix4& matrix)
 {
-    return Format("[%f, %f, %f]\n[%f, %f, %f]\n[%f, %f, %f]",
+    return Format("[%f, %f, %f, %f]\n[%f, %f, %f, %f]\n[%f, %f, %f, %f]\n[%f, %f, %f, %f]",
                   matrix._data[0][0], matrix._data[0][1], matrix._data[0][2], matrix._data[0][3],
                   matrix._data[1][0], matrix._data[1][1], matrix._data[1][2], matrix._data[1][3],
                   matrix._data[2][0], matrix._data[2][1], matrix._data[2][2], matrix._data[2][3],
@@ -51,6 +53,8 @@ String M4ToString(const Matrix4& matrix)
 struct LabelDataSource
 {
     String text = "test String";
+    QString qtext = "test QString";
+
     const String& GetText() const
     {
         return text;
@@ -66,6 +70,7 @@ struct LabelDataSource
     {
         ReflectionRegistrator<LabelDataSource>::Begin()
         .Field("text", &LabelDataSource::text)
+        .Field("qtext", &LabelDataSource::qtext)
         .Field("getText", &LabelDataSource::GetText, nullptr)
         .Field("multi", &LabelDataSource::multipleValues)
         .Field("m2", &LabelDataSource::m2)
@@ -102,6 +107,7 @@ public:
         };
 
         createLabel("text");
+        createLabel("qtext");
         createLabel("getText");
         createLabel("multi");
         createLabel("m2");
@@ -149,6 +155,9 @@ DAVA_TARC_TESTCLASS(LabelTest)
 
         QLabel* label = GetLabel("text");
         TEST_VERIFY(label->text() == "test String");
+
+        label = GetLabel("qtext");
+        TEST_VERIFY(label->text() == "test QString");
 
         label = GetLabel("getText");
         TEST_VERIFY(label->text() == "test String");
