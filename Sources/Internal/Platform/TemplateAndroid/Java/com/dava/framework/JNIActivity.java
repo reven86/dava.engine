@@ -446,6 +446,7 @@ public abstract class JNIActivity extends Activity implements JNIAccelerometer.J
         // if we connect gamepad after start game and do not 
         // receive even onInputDeviceAdded double check gamepad axis
         UpdateGamepadAxises();
+        JNIUtils.keepScreenOnOnResume();
         
         JNITextField.RelinkNativeControls();
         JNIWebView.RelinkNativeControls();
