@@ -31,7 +31,6 @@
 #include <TArc/WindowSubSystem/UI.h>
 #include <TArc/WindowSubSystem/ActionUtils.h>
 #include <TArc/WindowSubSystem/QtAction.h>
-#include <TArc/Models/SceneTabsModel.h>
 #include <TArc/Utils/ModuleCollection.h>
 #include <TArc/Core/FieldBinder.h>
 
@@ -127,21 +126,6 @@ void DocumentsModule::PostInit()
     CreateDocumentsActions();
     CreateUndoRedoActions();
     CreateViewActions();
-
-    //bind canSave to draw "*" in tabBar
-    {
-        FieldDescriptor descriptor;
-        descriptor.type = ReflectedTypeDB::Get<DocumentData>();
-        descriptor.fieldName = FastName(DocumentData::canSavePropertyName);
-        fieldBinder->BindField(descriptor, MakeFunction(this, &DocumentsModule::OnCanSaveChanged));
-    }
-    //bind active tab to change context
-    {
-        FieldDescriptor descriptor;
-        descriptor.type = ReflectedTypeDB::Get<SceneTabsModel>();
-        descriptor.fieldName = FastName(SceneTabbar::activeTabPropertyName);
-        fieldBinder->BindField(descriptor, MakeFunction(this, &DocumentsModule::OnActiveTabChanged));
-    }
 }
 
 void DocumentsModule::OnWindowClosed(const DAVA::TArc::WindowKey& key)
@@ -159,17 +143,8 @@ void DocumentsModule::OnWindowClosed(const DAVA::TArc::WindowKey& key)
 void DocumentsModule::OnContextCreated(DAVA::TArc::DataContext* context)
 {
     using namespace DAVA::TArc;
-    SceneTabsModel* tabsModel = GetAccessor()->GetGlobalContext()->GetData<SceneTabsModel>();
-    DVASSERT(tabsModel != nullptr);
     DocumentData* data = context->GetData<DocumentData>();
     DVASSERT(nullptr != data);
-
-    TabDescriptor descriptor;
-    descriptor.tabTitle = data->GetName().toStdString();
-    descriptor.tabTooltip = data->GetPackageAbsolutePath().toStdString();
-
-    auto emplaceResult = tabsModel->tabs.emplace(context->GetID(), descriptor);
-    DVASSERT(emplaceResult.second, "emplace new tab failed");
     QString path = data->GetPackageAbsolutePath();
     DataContext* globalContext = GetAccessor()->GetGlobalContext();
     DocumentsWatcherData* watcherData = globalContext->GetData<DocumentsWatcherData>();
@@ -179,21 +154,11 @@ void DocumentsModule::OnContextCreated(DAVA::TArc::DataContext* context)
 void DocumentsModule::OnContextDeleted(DAVA::TArc::DataContext* context)
 {
     using namespace DAVA::TArc;
-    SceneTabsModel* tabsModel = GetAccessor()->GetGlobalContext()->GetData<SceneTabsModel>();
-    DVASSERT(tabsModel != nullptr);
-    tabsModel->tabs.erase(context->GetID());
-
     DocumentData* data = context->GetData<DocumentData>();
     QString path = data->GetPackageAbsolutePath();
     DataContext* globalContext = GetAccessor()->GetGlobalContext();
     DocumentsWatcherData* watcherData = globalContext->GetData<DocumentsWatcherData>();
     watcherData->Unwatch(path);
-}
-
-void DocumentsModule::OnContextWasChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* oldOne)
-{
-    SceneTabsModel* tabsModel = GetAccessor()->GetGlobalContext()->GetData<SceneTabsModel>();
-    tabsModel->activeContexID = current->GetID();
 }
 
 void DocumentsModule::InitEditorSystems()
@@ -594,41 +559,6 @@ DAVA::RefPtr<PackageNode> DocumentsModule::CreatePackage(const QString& path)
         });
     }
     return RefPtr<PackageNode>();
-}
-
-void DocumentsModule::OnActiveTabChanged(const DAVA::Any& contextID)
-{
-    using namespace DAVA::TArc;
-    ContextManager* contextManager = GetContextManager();
-    DataContext::ContextID newContextID = DataContext::Empty;
-    if (contextID.CanCast<DAVA::uint64>())
-    {
-        newContextID = static_cast<DataContext::ContextID>(contextID.Cast<DAVA::uint64>());
-    }
-    contextManager->ActivateContext(newContextID);
-}
-
-void DocumentsModule::OnCanSaveChanged(const DAVA::Any& canSave)
-{
-    using namespace DAVA;
-    using namespace TArc;
-
-    ContextAccessor* accessor = GetAccessor();
-    DataContext* activeContext = accessor->GetActiveContext();
-    if (activeContext == nullptr)
-    {
-        return;
-    }
-
-    DataContext::ContextID id = activeContext->GetID();
-    DocumentData* data = activeContext->GetData<DocumentData>();
-    DVASSERT(nullptr != data);
-
-    SceneTabsModel* tabsModel = accessor->GetGlobalContext()->GetData<SceneTabsModel>();
-    DVASSERT(tabsModel->tabs.find(id) != tabsModel->tabs.end());
-    TabDescriptor& descriptor = tabsModel->tabs[id];
-    QString newTitle = data->GetName() + (data->CanSave() ? "*" : "");
-    descriptor.tabTitle = newTitle.toStdString();
 }
 
 void DocumentsModule::SelectControl(const QString& documentPath, const QString& controlPath)

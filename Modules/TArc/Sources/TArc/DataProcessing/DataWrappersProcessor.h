@@ -22,6 +22,7 @@ public:
 
 private:
     Vector<DataWrapper> wrappers;
+    Vector<DataWrapper> justCreatedWrappers;
     bool recursiveSyncGuard = false;
 };
 }
