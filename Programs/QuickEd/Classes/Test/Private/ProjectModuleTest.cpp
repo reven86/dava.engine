@@ -31,6 +31,8 @@ DAVA_TARC_TESTCLASS(ProjectManagerTests)
         using namespace TArc;
         using namespace ::testing;
 
+        TestHelpers::ClearTestFolder();
+
         InvokeOperation(QEGlobal::OpenLastProject.ID);
         ContextAccessor* accessor = GetAccessor();
         DataContext* globalContext = accessor->GetGlobalContext();
@@ -49,10 +51,10 @@ DAVA_TARC_TESTCLASS(ProjectManagerTests)
 
         ContextAccessor* accessor = GetAccessor();
 
-        CreateTestProjectFolder();
+        CreateFolder(projectPath);
 
-        String projectPath = GetTestProjectPath().GetAbsolutePathname();
-        InvokeOperation(ProjectModuleTesting::CreateProjectOperation.ID, QString::fromStdString(projectPath));
+        String projectPathStr = projectPath.GetAbsolutePathname();
+        InvokeOperation(ProjectModuleTesting::CreateProjectOperation.ID, QString::fromStdString(projectPathStr));
 
         DataContext* globalContext = accessor->GetGlobalContext();
         ProjectData* projectData = globalContext->GetData<ProjectData>();
@@ -152,8 +154,7 @@ DAVA_TARC_TESTCLASS(ProjectManagerTests)
     const QString closeProjectActionName = "Close project";
     const QString fileMenuName = "File";
 
-    const DAVA::FilePath firstFakeProjectPath = DAVA::FilePath("~doc:/Test/ProjectManagerTest1/");
-
+    const DAVA::FilePath projectPath = TestHelpers::GetTestPath() + "ProjectModuleTest";
     DAVA::TArc::DataWrapper wrapper;
     DAVA::TArc::MockListener listener;
 };

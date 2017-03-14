@@ -56,10 +56,11 @@ DAVA_TARC_TESTCLASS(StyleSheetInspectorModuleTest)
 
         ContextAccessor* accessor = GetAccessor();
         TEST_VERIFY(accessor->GetContextCount() == 0);
-        CreateTestProjectFolder();
 
-        String projectPath = GetTestProjectPath().GetAbsolutePathname();
-        InvokeOperation(ProjectModuleTesting::CreateProjectOperation.ID, QString::fromStdString(projectPath));
+        CreateFolder(projectPath);
+
+        String projectPathStr = projectPath.GetAbsolutePathname();
+        InvokeOperation(ProjectModuleTesting::CreateProjectOperation.ID, QString::fromStdString(projectPathStr));
 
         DataContext* globalContext = accessor->GetGlobalContext();
         ProjectData* projectData = globalContext->GetData<ProjectData>();
@@ -95,6 +96,8 @@ DAVA_TARC_TESTCLASS(StyleSheetInspectorModuleTest)
     }
 
     MOCK_METHOD0_VIRTUAL(AfterWrappersSync, void());
+
+    DAVA::FilePath projectPath = TestHelpers::GetTestPath() + "StyleSheetInspectorModuleTest";
 };
 
 namespace StyleSheetInspectorModuleTestDetails
@@ -140,7 +143,7 @@ protected:
         CreateDocumentFile(path);
 
         QuickEdPackageBuilder builder;
-        UIPackageLoader packageLoader({});
+        UIPackageLoader packageLoader;
         TEST_VERIFY(packageLoader.LoadPackage(path, &builder));
 
         RefPtr<PackageNode> package = builder.BuildPackage();

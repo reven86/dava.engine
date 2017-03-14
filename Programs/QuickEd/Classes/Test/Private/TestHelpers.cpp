@@ -10,15 +10,12 @@
 #include <QMenuBar>
 #include <QMenu>
 
-void TestHelpers::CreateTestProjectFolder(const DAVA::String& folderName)
+void TestHelpers::CreateFolder(const DAVA::FilePath& folderName)
 {
-    ClearTestFolder(); // to be sure that we have no any data at project folder that could stay in case of crash or stopping of debugging
-
     const DAVA::EngineContext* context = DAVA::GetEngineContext();
     DAVA::FileSystem* fs = context->fileSystem;
 
-    DAVA::FilePath folder(GetTestProjectPath(folderName));
-    fs->CreateDirectory(folder, true);
+    fs->CreateDirectory(folderName, true);
 }
 
 void TestHelpers::ClearTestFolder()
@@ -36,11 +33,6 @@ void TestHelpers::ClearTestFolder()
 DAVA::FilePath TestHelpers::GetTestPath()
 {
     return DAVA::FilePath("~doc:/Test/");
-}
-
-DAVA::FilePath TestHelpers::GetTestProjectPath(const DAVA::String& folderName)
-{
-    return DAVA::FilePath("~doc:/Test/" + folderName + "/");
 }
 
 QAction* TestHelpers::FindActionInMenus(QWidget* window, const QString& menuName, const QString& actionNname)
