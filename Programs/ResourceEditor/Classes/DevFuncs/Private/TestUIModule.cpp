@@ -13,10 +13,13 @@
 #include <TArc/Controls/FilePathEdit.h>
 #include <TArc/Controls/QtBoxLayouts.h>
 #include <TArc/Controls/SubPropertiesEditor.h>
+#include <TArc/Controls/ColorPicker/ColorPickerButton.h>
 #include <TArc/Controls/Label.h>
 #include <TArc/Utils/ModuleCollection.h>
 #include <TArc/WindowSubSystem/ActionUtils.h>
 #include <TArc/WindowSubSystem/UI.h>
+
+#include <TArc/Qt/QtString.h>
 
 #include <QtTools/WidgetHelpers/SharedIcon.h>
 
@@ -39,7 +42,6 @@
 #include <QHBoxLayout>
 #include <QLabel>
 #include <QVBoxLayout>
-#include <QString>
 
 namespace TestUIModuleDetails
 {
@@ -971,6 +973,123 @@ struct SubPropertiesControlTest : public ReflectionBase
     }
 };
 
+struct ColorButtonTestData : public ReflectionBase
+{
+    Color GetColorInverted() const
+    {
+        Color c = Color::White - color;
+        c.a = 1.0f;
+        return c;
+    }
+
+    void SetColor(const Color& c)
+    {
+        color = c;
+    }
+
+    Color color = Color(1.0f, 0.0f, 0.0f, 1.0f);
+    bool readOnly = false;
+
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(ColorButtonTestData, ReflectionBase)
+    {
+        ReflectionRegistrator<ColorButtonTestData>::Begin()
+        .Field("color", &ColorButtonTestData::color)
+        .Field("colorReadOnly", &ColorButtonTestData::color)[DAVA::M::ReadOnly()]
+        .Field("colorMethod", &ColorButtonTestData::GetColorInverted, &ColorButtonTestData::SetColor)
+        .Field("colorMethodReadOnly", &ColorButtonTestData::GetColorInverted, nullptr)
+        .Field("readOnly", &ColorButtonTestData::readOnly)
+        .End();
+    }
+
+    static Result Create(TArc::UI* ui, TArc::ContextAccessor* accessor, QWidget* parent)
+    {
+        using namespace DAVA::TArc;
+
+        ColorButtonTestData* data = new ColorButtonTestData();
+        QtVBoxLayout* boxLayout = new QtVBoxLayout();
+
+        {
+            QtHBoxLayout* lineLayout = new QtHBoxLayout();
+            lineLayout->addWidget(new QLabel("Color: ", parent));
+
+            ColorPickerButton::Params params;
+            params.ui = ui;
+            params.wndKey = REGlobal::MainWindowKey;
+            params.accessor = accessor;
+            params.fields[ColorPickerButton::Fields::Color] = "color";
+            lineLayout->AddWidget(new ColorPickerButton(params, accessor, Reflection::Create(data), parent));
+            boxLayout->addLayout(lineLayout);
+        }
+
+        {
+            QtHBoxLayout* lineLayout = new QtHBoxLayout();
+            lineLayout->addWidget(new QLabel("ColorReadOnlyMeta: ", parent));
+
+            ColorPickerButton::Params params;
+            params.ui = ui;
+            params.wndKey = REGlobal::MainWindowKey;
+            params.accessor = accessor;
+            params.fields[ColorPickerButton::Fields::Color] = "colorReadOnly";
+            lineLayout->AddWidget(new ColorPickerButton(params, accessor, Reflection::Create(data), parent));
+            boxLayout->addLayout(lineLayout);
+        }
+
+        {
+            QtHBoxLayout* lineLayout = new QtHBoxLayout();
+            lineLayout->addWidget(new QLabel("Color Method: ", parent));
+
+            ColorPickerButton::Params params;
+            params.ui = ui;
+            params.wndKey = REGlobal::MainWindowKey;
+            params.accessor = accessor;
+            params.fields[ColorPickerButton::Fields::Color] = "colorMethod";
+            lineLayout->AddWidget(new ColorPickerButton(params, accessor, Reflection::Create(data), parent));
+            boxLayout->addLayout(lineLayout);
+        }
+
+        {
+            QtHBoxLayout* lineLayout = new QtHBoxLayout();
+            lineLayout->addWidget(new QLabel("Color Method ReadOnly: ", parent));
+
+            ColorPickerButton::Params params;
+            params.ui = ui;
+            params.wndKey = REGlobal::MainWindowKey;
+            params.accessor = accessor;
+            params.fields[ColorPickerButton::Fields::Color] = "colorMethodReadOnly";
+            lineLayout->AddWidget(new ColorPickerButton(params, accessor, Reflection::Create(data), parent));
+            boxLayout->addLayout(lineLayout);
+        }
+
+        {
+            QtHBoxLayout* lineLayout = new QtHBoxLayout();
+            lineLayout->addWidget(new QLabel("Color ReadOnly value: ", parent));
+
+            {
+                ColorPickerButton::Params params;
+                params.ui = ui;
+                params.wndKey = REGlobal::MainWindowKey;
+                params.accessor = accessor;
+                params.fields[ColorPickerButton::Fields::Color] = "color";
+                params.fields[ColorPickerButton::Fields::IsReadOnly] = "readOnly";
+                lineLayout->AddWidget(new ColorPickerButton(params, accessor, Reflection::Create(data), parent));
+            }
+
+            {
+                //add read only check box
+                ControlDescriptorBuilder<CheckBox::Fields> descr;
+                descr[CheckBox::Fields::Checked] = "readOnly";
+                lineLayout->AddWidget(new CheckBox(descr, accessor, Reflection::Create(data), parent));
+            }
+            boxLayout->addLayout(lineLayout);
+        }
+
+        Result r;
+        r.model = data;
+        r.layout = boxLayout;
+        return r;
+    }
+};
+
 struct LabelTestData : public ReflectionBase
 {
     String testString = "Test String";
@@ -1007,6 +1126,7 @@ struct LabelTestData : public ReflectionBase
     static Result Create(TArc::UI* ui, TArc::ContextAccessor* accessor, QWidget* parent)
     {
         using namespace DAVA::TArc;
+
         LabelTestData* data = new LabelTestData();
         QVBoxLayout* boxLayout = new QVBoxLayout();
 
@@ -1144,6 +1264,7 @@ void TestUIModule::ShowDialog()
       { &DoubleSpinBoxTestData::Create, "Double Spin" },
       { &FilePathEditTestData::Create, "FilePath" },
       { &SubPropertiesControlTest::Create, "SubPropsControl Test" },
+      { &ColorButtonTestData::Create, "ColorButton Test" },
       { &LabelTestData::Create, "Label Test" }
     };
 

@@ -76,7 +76,7 @@ bool KeyedArchive::Load(File* archive)
                 SafeDelete(value);
                 return false;
             }
-
+            DeleteKey(key.AsString());
             objectMap[key.AsString()] = value;
         }
         return true;
@@ -115,7 +115,7 @@ bool KeyedArchive::Load(File* archive)
             SafeDelete(value);
             return false;
         }
-
+        DeleteKey(key.AsString());
         objectMap[key.AsString()] = value;
     }
     return true;

@@ -356,16 +356,17 @@ DAVA_TARC_TESTCLASS(CheckBoxTest)
 
     bool TestComplete(const DAVA::String& testName) const override
     {
+        bool testCompleted = true;
         if (testName == "WritableTest")
         {
             QList<QWidget*> widgets = LookupWidget(CheckBoxTestDetails::wndKey, QString("CheckBox_writable"));
             TEST_VERIFY(widgets.size() == 1);
             QWidget* w = widgets.front();
             QCheckBox* checkBox = qobject_cast<QCheckBox*>(w);
-            return checkBox->text() == QStringLiteral("Visible");
+            testCompleted = (checkBox->text() == QStringLiteral("Visible"));
         }
 
-        return TestClass::TestComplete(testName);
+        return TestClass::TestComplete(testName) && testCompleted;
     }
 
     DAVA::int32 writableTestUpdateCount = 0;
