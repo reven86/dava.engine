@@ -2,7 +2,7 @@
 #include "Classes/Modules/DocumentsModule/DocumentData.h"
 
 #include <TArc/DataProcessing/DataContext.h>
-#include <TArc/DataProcessing/AnySupport/AnyQStringCompare.h>
+#include <TArc/Qt/QtString.h>
 #include <TArc/Utils/CommonFieldNames.h>
 
 #include <Reflection/ReflectionRegistrator.h>
