@@ -392,6 +392,22 @@ ConfigParser* ApplicationManager::GetLocalConfig()
     return &localConfig;
 }
 
+QString FixLocalAppPath_kostil(QString runPath)
+{
+    if (QFile::exists(runPath) == false)
+    {
+        //Standalone ResourceEditor kostil
+        //BA-manager not support different executable paths
+        QString newString = "Programs/ResourceEditor/ResourceEditor.exe";
+        QString oldString = "Tools/ResourceEditor/ResourceEditor.exe";
+        if (runPath.endsWith(newString))
+        {
+            runPath.replace(newString, oldString);
+        }
+    }
+    return runPath;
+}
+
 QString ApplicationManager::ExtractApplicationRunPath(const QString& branchID, const QString& appID, const QString& versionID)
 {
     AppVersion* version = localConfig.GetAppVersion(branchID, appID, versionID);
@@ -402,6 +418,8 @@ QString ApplicationManager::ExtractApplicationRunPath(const QString& branchID, c
     QString runPath = GetApplicationDirectory(branchID, appID, version->isToolSet);
     QString localAppPath = GetLocalAppPath(version, appID);
     runPath += localAppPath;
+
+    FixLocalAppPath_kostil(runPath);
     if (!QFile::exists(runPath))
     {
         ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_PATH, tr("application not found\n%1").arg(runPath));
