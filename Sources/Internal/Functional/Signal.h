@@ -307,12 +307,12 @@ public:
         Return a Token that identify the newly-created connection to the specified slot `fn`.
     */
     template <typename Fn>
-    Token ConnectDetached(const Fn& fn, Group group = Group::Medium);
+    Token Connect(const Fn& fn, Group group = Group::Medium);
 
     /** Disconnects any slot that is linked to the specified object `obj`. */
     void Disconnect(void* obj);
 
-    /** Disconnects slot with specified connection token `token` (token can be obtained from SignalConnection object). */
+    /** Disconnects slot with specified connection token `token`. */
     void Disconnect(Token token) override;
 
     /** Disconnects all slots connected to the signal. */

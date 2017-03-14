@@ -45,7 +45,7 @@ Signal<Args...>::~Signal()
 
 template <typename... Args>
 template <typename Fn>
-inline Token Signal<Args...>::ConnectDetached(const Fn& fn, Group group)
+inline Token Signal<Args...>::Connect(const Fn& fn, Group group)
 {
     Token token = SignalTokenProvider::Generate();
 
