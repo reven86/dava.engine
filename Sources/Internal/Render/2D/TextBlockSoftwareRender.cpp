@@ -38,6 +38,7 @@ TextBlockRender* TextBlockSoftwareRender::Clone()
 void TextBlockSoftwareRender::Prepare()
 {
     TextBlockRender::Prepare();
+    SafeRelease(currentTexture);
 
     uint32 width = Max(textBlock->cacheDx, 1);
     uint32 height = Max(textBlock->cacheDy, 1);
@@ -88,7 +89,6 @@ void TextBlockSoftwareRender::Prepare()
         }
     }
 
-    SafeRelease(currentTexture);
     currentTexture = Texture::CreateTextFromData(FORMAT_A8, buffer.data(), width, height, false, addInfo.c_str());
     sprite = Sprite::CreateFromTexture(currentTexture, 0, 0, textBlock->cacheFinalSize.dx, textBlock->cacheFinalSize.dy);
 }
