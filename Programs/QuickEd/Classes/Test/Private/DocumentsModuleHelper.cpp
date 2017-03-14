@@ -7,15 +7,15 @@
 DAVA_VIRTUAL_REFLECTION_IMPL(TestHelpers::SampleData)
 {
     DAVA::ReflectionRegistrator<TestHelpers::SampleData>::Begin()
-        .ConstructorByPointer()
-        .End();
+    .ConstructorByPointer()
+    .End();
 }
 
 DAVA_VIRTUAL_REFLECTION_IMPL(TestHelpers::DocumentsModuleHelper)
 {
     DAVA::ReflectionRegistrator<TestHelpers::DocumentsModuleHelper>::Begin()
-        .ConstructorByPointer()
-        .End();
+    .ConstructorByPointer()
+    .End();
 }
 
 namespace TestHelpers
@@ -28,17 +28,14 @@ void DocumentsModuleHelper::PostInit()
 
 void DocumentsModuleHelper::OnContextCreated(DAVA::TArc::DataContext* context)
 {
-
 }
 
 void DocumentsModuleHelper::OnContextDeleted(DAVA::TArc::DataContext* context)
 {
-
 }
 
 void DocumentsModuleHelper::OnRenderSystemInitialized(DAVA::Window* w)
 {
-
 }
 
 bool DocumentsModuleHelper::CanWindowBeClosedSilently(const DAVA::TArc::WindowKey& key, DAVA::String& requestWindowText)
@@ -48,12 +45,10 @@ bool DocumentsModuleHelper::CanWindowBeClosedSilently(const DAVA::TArc::WindowKe
 
 void DocumentsModuleHelper::SaveOnWindowClose(const DAVA::TArc::WindowKey& key)
 {
-
 }
 
 void DocumentsModuleHelper::RestoreOnWindowClose(const DAVA::TArc::WindowKey& key)
 {
-
 }
 
 void DocumentsModuleHelper::CloseAllDocuments()
@@ -64,9 +59,9 @@ void DocumentsModuleHelper::CloseAllDocuments()
     Vector<DataContext::ContextID> contexts;
     ContextAccessor* accessor = GetAccessor();
     accessor->ForEachContext([&contexts](DataContext& ctx)
-    {
-        contexts.push_back(ctx.GetID());
-    });
+                             {
+                                 contexts.push_back(ctx.GetID());
+                             });
 
     ContextManager* contextManager = GetContextManager();
     for (DataContext::ContextID id : contexts)

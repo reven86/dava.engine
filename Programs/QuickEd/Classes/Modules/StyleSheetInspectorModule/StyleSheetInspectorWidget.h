@@ -36,4 +36,3 @@ private:
     ContinuousUpdater updater;
     std::unique_ptr<DAVA::TArc::FieldBinder> selectionFieldBinder;
 };
-

@@ -74,7 +74,7 @@ DAVA_TARC_TESTCLASS(ProjectManagerTests)
 
         QAction* action = FindActionInMenus(GetWindow(QEGlobal::windowKey), fileMenuName, closeProjectActionName);
         action->triggered();
-        
+
         ContextAccessor* accessor = GetAccessor();
         ProjectData* data = accessor->GetGlobalContext()->GetData<ProjectData>();
         TEST_VERIFY(data == nullptr);

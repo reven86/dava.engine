@@ -34,6 +34,7 @@ void ContinuousUpdater::Update()
         if (stopper())
         {
             Stop();
+            return;
         }
     }
     if (!timer->isActive())

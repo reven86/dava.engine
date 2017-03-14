@@ -47,7 +47,7 @@ DAVA_TARC_TESTCLASS(StyleSheetInspectorModuleTest)
     DECLARE_TESTED_MODULE(StyleSheetInspectorModule)
     END_TESTED_MODULES();
 
-    DAVA_TEST(SelectAndCheck)
+    DAVA_TEST (SelectAndCheck)
     {
         using namespace DAVA;
         using namespace TArc;
@@ -67,12 +67,12 @@ DAVA_TARC_TESTCLASS(StyleSheetInspectorModuleTest)
         TEST_VERIFY(projectData->GetUiDirectory().absolute.IsEmpty() == false);
         TEST_VERIFY(projectData->GetProjectDirectory().IsEmpty() == false);
 
-        FilePath documentPath = GetTestProjectPath() + "/DataSource/UI/test.yaml";
+        FilePath documentPath(projectPath + "/DataSource/UI/test.yaml");
         InvokeOperation(QEGlobal::SelectControl.ID, documentPath, GetContextManager());
         TEST_VERIFY(accessor->GetContextCount() == 1);
 
         EXPECT_CALL(*this, AfterWrappersSync())
-            .WillOnce(Invoke(this, &StyleSheetInspectorModuleTest::CheckSSWidget));
+        .WillOnce(Invoke(this, &StyleSheetInspectorModuleTest::CheckSSWidget));
     }
 
     void CheckSSWidget()
@@ -109,7 +109,7 @@ protected:
 
         RegisterOperation(QEGlobal::SelectControl.ID, this, &LocalMockModule::CreateAndSelectMock);
     }
-    
+
     void CreateAndSelectMock(const DAVA::FilePath& path, DAVA::TArc::ContextManager* contextManager)
     {
         using namespace DAVA;

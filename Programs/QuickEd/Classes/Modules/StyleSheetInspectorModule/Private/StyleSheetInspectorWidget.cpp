@@ -107,8 +107,8 @@ void StyleSheetInspectorWidget::Update()
     std::tuple<int32, int32> prevStyleSheetPriority{ -1, -1 };
 
     for (auto styleSheetIter = debugData.styleSheets.rbegin();
-        styleSheetIter != debugData.styleSheets.rend();
-        ++styleSheetIter)
+         styleSheetIter != debugData.styleSheets.rend();
+         ++styleSheetIter)
     {
         const UIStyleSheet* ss = styleSheetIter->GetStyleSheet();
 
@@ -121,9 +121,9 @@ void StyleSheetInspectorWidget::Update()
         }
 
         const String& selector = Format("%s (score %i / %i)",
-            ss->GetSelectorChain().ToString().c_str(),
-            ss->GetScore(),
-            styleSheetIter->GetPriority());
+                                        ss->GetSelectorChain().ToString().c_str(),
+                                        ss->GetScore(),
+                                        styleSheetIter->GetPriority());
 
         QListWidgetItem* styleSheetItem = new QListWidgetItem(selector.c_str());
         styleSheetItem->setFont(boldFont);
@@ -137,11 +137,11 @@ void StyleSheetInspectorWidget::Update()
         for (const UIStyleSheetProperty& prop : propertyTable->GetProperties())
         {
             const UIStyleSheetPropertyDescriptor& descr =
-                UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(prop.propertyIndex);
+            UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(prop.propertyIndex);
 
             String propertyStr = Format("  %s = %s",
-                descr.GetFullName().c_str(),
-                VariantToQString(prop.value, descr.memberInfo).toUtf8().data());
+                                        descr.GetFullName().c_str(),
+                                        VariantToQString(prop.value, descr.memberInfo).toUtf8().data());
 
             QListWidgetItem* styleSheetPropertyItem = new QListWidgetItem(propertyStr.c_str());
 

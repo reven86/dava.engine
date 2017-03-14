@@ -24,6 +24,7 @@ void PackageListenerProxy::RemoveListener(PackageListener* listener)
     if (std::find(listeners.begin(), listeners.end(), listener) == listeners.end())
     {
         DVASSERT(false, "can not remove not-added listener from packageListenerProxy");
+        return;
     }
     listeners.remove(listener);
 }

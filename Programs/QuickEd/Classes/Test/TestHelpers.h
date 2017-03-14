@@ -8,10 +8,10 @@ class QWidget;
 
 namespace TestHelpers
 {
-void CreateTestProjectFolder();
+void CreateTestProjectFolder(const String& testName);
 void ClearTestFolder();
 DAVA::FilePath GetTestPath();
-DAVA::FilePath GetTestProjectPath();
+DAVA::FilePath GetTestProjectPath(const String& testName);
 
 QAction* FindActionInMenus(QWidget* window, const QString& menuName, const QString& actionNname);
 } //nemspace TestHelpers

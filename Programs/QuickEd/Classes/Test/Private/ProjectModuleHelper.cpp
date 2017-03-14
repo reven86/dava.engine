@@ -4,8 +4,8 @@
 DAVA_VIRTUAL_REFLECTION_IMPL(TestHelpers::ProjectModuleHelper)
 {
     DAVA::ReflectionRegistrator<TestHelpers::ProjectModuleHelper>::Begin()
-        .ConstructorByPointer()
-        .End();
+    .ConstructorByPointer()
+    .End();
 }
 
 namespace TestHelpers
