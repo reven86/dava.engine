@@ -946,13 +946,21 @@ bool WindowBackend::OnClose()
 
 bool WindowBackend::OnSysCommand(int sysCommand)
 {
-    return
-		// Ignore 'Move' and 'Size' commands from system menu as handling them takes more efforts than brings profit.
-		// Window still can be moved and sized by mouse.
-		// Also prevent system menu from showing triggered by keyboard (Alt+Space).
-		(sysCommand == SC_MOVE || sysCommand == SC_SIZE || sysCommand == SC_KEYMENU) ||
-		// If screen timeout is disabled, do not show screen saver
-		(sysCommand == SC_SCREENSAVE && !engineBackend->GetPlatformCore()->IsScreenTimeoutEnabled());
+    // Ignore 'Move' and 'Size' commands from system menu as handling them takes more efforts than brings profit.
+    // Window still can be moved and sized by mouse.
+    // Also prevent system menu from showing triggered by keyboard (Alt+Space).
+    if (sysCommand == SC_MOVE || sysCommand == SC_SIZE || sysCommand == SC_KEYMENU)
+    {
+        return true;
+    }
+
+    // If screen timeout is disabled, do not show screen saver
+    if (sysCommand == SC_SCREENSAVE && !engineBackend->GetPlatformCore()->IsScreenTimeoutEnabled())
+    {
+        return true;
+    }
+
+    return false;
 }
 
 LRESULT WindowBackend::OnDestroy()

@@ -142,12 +142,12 @@ void PlatformCore::SetScreenTimeoutEnabled(bool enabled)
         SetThreadExecutionState(ES_DISPLAY_REQUIRED | ES_SYSTEM_REQUIRED | ES_CONTINUOUS);
     }
 
-	screenTimeoutEnabled = enabled;
+    screenTimeoutEnabled = enabled;
 }
 
 bool PlatformCore::IsScreenTimeoutEnabled() const
 {
-	return screenTimeoutEnabled;
+    return screenTimeoutEnabled;
 }
 
 void PlatformCore::EnableHighResolutionTimer(bool enable)

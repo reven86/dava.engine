@@ -62,9 +62,9 @@ void PlatformCore::SetScreenTimeoutEnabled(bool enabled)
     else
     {
         result = IOPMAssertionCreateWithName(kIOPMAssertionTypeNoDisplaySleep,
-                                                kIOPMAssertionLevelOn,
-                                                CFSTR("Dava Engine application is running"),
-                                                &screenTimeoutAssertionId);
+                                             kIOPMAssertionLevelOn,
+                                             CFSTR("Dava Engine application is running"),
+                                             &screenTimeoutAssertionId);
     }
 
     DVASSERT(result == kIOReturnSuccess, Format("IOPMAssertion api failed in PlatformCore::SetScreenTimeoutEnabled(%s)", enabled ? "true" : "false").c_str());
