@@ -47,29 +47,27 @@ void PlatformCore::Quit()
 
 void PlatformCore::SetScreenTimeoutEnabled(bool enabled)
 {
-    engineBackend->GetPrimaryWindow()->RunOnUIThreadAsync([this, enabled]() {
-        const bool timeoutEnabledNow = (screenTimeoutAssertionId == kIOPMNullAssertionID);
-        if (timeoutEnabledNow == enabled)
-        {
-            return;
-        }
+    const bool timeoutEnabledNow = (screenTimeoutAssertionId == kIOPMNullAssertionID);
+    if (timeoutEnabledNow == enabled)
+    {
+        return;
+    }
 
-        IOReturn result;
-        if (enabled)
-        {
-            result = IOPMAssertionRelease(screenTimeoutAssertionId);
-            screenTimeoutAssertionId = kIOPMNullAssertionID;
-        }
-        else
-        {
-            result = IOPMAssertionCreateWithName(kIOPMAssertionTypeNoDisplaySleep,
-                                                 kIOPMAssertionLevelOn,
-                                                 CFSTR("Dava Engine application is running"),
-                                                 &screenTimeoutAssertionId);
-        }
+    IOReturn result;
+    if (enabled)
+    {
+        result = IOPMAssertionRelease(screenTimeoutAssertionId);
+        screenTimeoutAssertionId = kIOPMNullAssertionID;
+    }
+    else
+    {
+        result = IOPMAssertionCreateWithName(kIOPMAssertionTypeNoDisplaySleep,
+                                                kIOPMAssertionLevelOn,
+                                                CFSTR("Dava Engine application is running"),
+                                                &screenTimeoutAssertionId);
+    }
 
-        DVASSERT(result == kIOReturnSuccess, Format("IOPMAssertion api failed in PlatformCore::SetScreenTimeoutEnabled(%s)", enabled ? "true" : "false").c_str());
-    });
+    DVASSERT(result == kIOReturnSuccess, Format("IOPMAssertion api failed in PlatformCore::SetScreenTimeoutEnabled(%s)", enabled ? "true" : "false").c_str());
 }
 
 int32 PlatformCore::OnFrame()

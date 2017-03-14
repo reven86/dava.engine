@@ -46,10 +46,8 @@ void PlatformCore::Quit()
 
 void PlatformCore::SetScreenTimeoutEnabled(bool enabled)
 {
-    engineBackend->GetPrimaryWindow()->RunOnUIThreadAsync([this, enabled]() {
-        const BOOL idleTimerDisabled = enabled ? NO : YES;
-        [UIApplication sharedApplication].idleTimerDisabled = idleTimerDisabled;
-    });
+    const BOOL idleTimerDisabled = enabled ? NO : YES;
+    [UIApplication sharedApplication].idleTimerDisabled = idleTimerDisabled;
 }
 
 int32 PlatformCore::OnFrame()
