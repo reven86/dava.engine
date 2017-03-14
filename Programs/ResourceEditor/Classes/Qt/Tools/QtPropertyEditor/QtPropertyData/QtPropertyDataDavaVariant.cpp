@@ -3,8 +3,11 @@
 #include "Main/QtUtils.h"
 #include "QtPropertyDataDavaVariant.h"
 #include "Tools/QtPropertyEditor/QtPropertyWidgets/FlagSelectorCombo.h"
-#include "Tools/ColorPicker/ColorPicker.h"
 #include "Tools/Widgets/MultilineEditor.h"
+
+#include "Classes/Application/REGlobal.h"
+
+#include <TArc/Controls/ColorPicker/ColorPickerDialog.h>
 
 #include "QtTools/FileDialogs/FileDialog.h"
 #include "QtTools/WidgetHelpers/SharedIcon.h"
@@ -1114,17 +1117,17 @@ void QtPropertyDataDavaVariant::ColorOWPressed()
 {
     const DAVA::Color oldColor = curVariantValue.AsColor();
 
-    ColorPicker cp(GetOWViewport());
+    DAVA::TArc::ColorPickerDialog cp(REGlobal::GetAccessor(), GetOWViewport());
     cp.SetDavaColor(oldColor);
 
-    QPointer<ColorPicker> colorPickerPointer(&cp);
+    QPointer<DAVA::TArc::ColorPickerDialog> colorPickerPointer(&cp);
     auto colorChangingCallFn = [this, colorPickerPointer]() {
         if (colorPickerPointer != nullptr)
             OnColorChanging(colorPickerPointer.data());
     };
 
-    connections.AddConnection(&cp, &ColorPicker::changing, colorChangingCallFn);
-    connections.AddConnection(&cp, &ColorPicker::changed, colorChangingCallFn);
+    connections.AddConnection(&cp, &DAVA::TArc::ColorPickerDialog::changing, colorChangingCallFn);
+    connections.AddConnection(&cp, &DAVA::TArc::ColorPickerDialog::changed, colorChangingCallFn);
 
     const bool result = cp.Exec();
     const DAVA::Color newColor = cp.GetDavaColor();
@@ -1143,7 +1146,7 @@ void QtPropertyDataDavaVariant::ColorOWPressed()
     UpdateColorButtonIcon();
 }
 
-void QtPropertyDataDavaVariant::OnColorChanging(ColorPicker* colorPicker)
+void QtPropertyDataDavaVariant::OnColorChanging(DAVA::TArc::ColorPickerDialog* colorPicker)
 {
     DVASSERT(colorPicker != nullptr);
     const DAVA::Color newColor = colorPicker->GetDavaColor();
