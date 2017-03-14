@@ -5,8 +5,8 @@
 DAVA_VIRTUAL_REFLECTION_IMPL(PackageListenerModule)
 {
     DAVA::ReflectionRegistrator<PackageListenerModule>::Begin()
-        .ConstructorByPointer()
-        .End();
+    .ConstructorByPointer()
+    .End();
 }
 
 void PackageListenerModule::PostInit()

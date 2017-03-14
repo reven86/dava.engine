@@ -3,6 +3,8 @@
 #include "Modules/LegacySupportModule/Private/Project.h"
 
 #include "Test/TestHelpers.h"
+#include "Test/ProjectModuleHelper.h"
+#include "Test/DocumentsModuleHelper.h"
 
 #include "Application/QEGlobal.h"
 
@@ -15,15 +17,11 @@
 #include <QWidget>
 #include <QAction>
 
-namespace PMT
-{
-class DocumentsManagerMockModule;
-}
-
 DAVA_TARC_TESTCLASS(ProjectManagerTests)
 {
     BEGIN_TESTED_MODULES()
-    DECLARE_TESTED_MODULE(PMT::DocumentsManagerMockModule)
+    DECLARE_TESTED_MODULE(TestHelpers::ProjectModuleHelper)
+    DECLARE_TESTED_MODULE(TestHelpers::DocumentsModuleHelper)
     DECLARE_TESTED_MODULE(ProjectModule)
     END_TESTED_MODULES()
 
@@ -45,18 +43,15 @@ DAVA_TARC_TESTCLASS(ProjectManagerTests)
         using namespace DAVA;
         using namespace TArc;
         using namespace ::testing;
+        using namespace TestHelpers;
 
-        EXPECT_CALL(*GetMockInvoker(), Invoke(QEGlobal::CloseAllDocuments.ID))
-        .WillOnce(Invoke([this](int id)
-                         {
-                             DeleteAllContexts();
-                         }));
+        EXPECT_CALL(*GetMockInvoker(), Invoke(QEGlobal::CloseAllDocuments.ID));
 
         ContextAccessor* accessor = GetAccessor();
 
-        TestHelpers::CreateTestProjectFolder();
+        CreateTestProjectFolder();
 
-        String projectPath = TestHelpers::GetTestProjectPath().GetAbsolutePathname();
+        String projectPath = GetTestProjectPath().GetAbsolutePathname();
         InvokeOperation(ProjectModuleTesting::CreateProjectOperation.ID, QString::fromStdString(projectPath));
 
         DataContext* globalContext = accessor->GetGlobalContext();
@@ -71,28 +66,19 @@ DAVA_TARC_TESTCLASS(ProjectManagerTests)
         using namespace DAVA;
         using namespace TArc;
         using namespace ::testing;
+        using namespace TestHelpers;
 
-        CreateDummyContext();
+        InvokeOperation(CreateDummyContextOperation.ID);
 
-        wrapper = GetAccessor()->CreateWrapper(DAVA::ReflectedTypeDB::Get<ProjectData>());
-        wrapper.SetListener(&listener);
+        EXPECT_CALL(*GetMockInvoker(), Invoke(QEGlobal::CloseAllDocuments.ID));
 
-        EXPECT_CALL(*GetMockInvoker(), Invoke(QEGlobal::CloseAllDocuments.ID))
-        .WillOnce(Invoke([this](int id)
-                         {
-                             DeleteAllContexts();
-                         }));
-        EXPECT_CALL(listener, OnDataChanged(wrapper, _))
-        .WillOnce(Invoke([this](const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields)
-                         {
-                             TEST_VERIFY(wrapper.HasData() == false);
-                             ProjectData* data = GetAccessor()->GetGlobalContext()->GetData<ProjectData>();
-                             TEST_VERIFY(data == nullptr);
-                             TEST_VERIFY(GetAccessor()->GetContextCount() == 0);
-                         }));
-
-        QAction* action = TestHelpers::FindActionInMenus(GetWindow(QEGlobal::windowKey), fileMenuName, closeProjectActionName);
+        QAction* action = FindActionInMenus(GetWindow(QEGlobal::windowKey), fileMenuName, closeProjectActionName);
         action->triggered();
+        
+        ContextAccessor* accessor = GetAccessor();
+        ProjectData* data = accessor->GetGlobalContext()->GetData<ProjectData>();
+        TEST_VERIFY(data == nullptr);
+        TEST_VERIFY(accessor->GetContextCount() == 0);
     }
 
     DAVA_TEST (OpenLastProject)
@@ -100,6 +86,9 @@ DAVA_TARC_TESTCLASS(ProjectManagerTests)
         using namespace DAVA;
         using namespace TArc;
         using namespace ::testing;
+
+        wrapper = GetAccessor()->CreateWrapper(DAVA::ReflectedTypeDB::Get<ProjectData>());
+        wrapper.SetListener(&listener);
 
         EXPECT_CALL(listener, OnDataChanged(wrapper, _))
         .WillOnce(Invoke([this](const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields)
@@ -119,23 +108,26 @@ DAVA_TARC_TESTCLASS(ProjectManagerTests)
         using namespace DAVA;
         using namespace TArc;
         using namespace ::testing;
+        using namespace TestHelpers;
 
-        CreateDummyContext();
+        InvokeOperation(CreateDummyContextOperation.ID);
+        ContextAccessor* accessor = GetAccessor();
+        DataContext* activeContext = accessor->GetActiveContext();
+        TEST_VERIFY(activeContext != nullptr);
+        SampleData* data = activeContext->GetData<SampleData>();
+        data->canClose = false;
 
         EXPECT_CALL(*GetMockInvoker(), Invoke(QEGlobal::CloseAllDocuments.ID));
 
-        QAction* action = TestHelpers::FindActionInMenus(GetWindow(QEGlobal::windowKey), fileMenuName, closeProjectActionName);
+        QAction* action = FindActionInMenus(GetWindow(QEGlobal::windowKey), fileMenuName, closeProjectActionName);
         action->triggered();
 
-        ContextAccessor* accessor = GetAccessor();
         DataContext* globalContext = accessor->GetGlobalContext();
         ProjectData* projectData = globalContext->GetData<ProjectData>();
         TEST_VERIFY(projectData != nullptr);
         TEST_VERIFY(projectData->GetUiDirectory().absolute.IsEmpty() == false);
         TEST_VERIFY(projectData->GetProjectDirectory().IsEmpty() == false);
-
-        //remove context or project will never be closed
-        DeleteAllContexts();
+        data->canClose = true;
     }
 
     DAVA_TEST (CloseWindowTest)
@@ -143,6 +135,7 @@ DAVA_TARC_TESTCLASS(ProjectManagerTests)
         using namespace ::testing;
 
         EXPECT_CALL(*GetMockInvoker(), Invoke(QEGlobal::CloseAllDocuments.ID));
+
         EXPECT_CALL(listener, OnDataChanged(wrapper, _))
         .WillOnce(Invoke([this](const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields)
                          {
@@ -163,95 +156,4 @@ DAVA_TARC_TESTCLASS(ProjectManagerTests)
 
     DAVA::TArc::DataWrapper wrapper;
     DAVA::TArc::MockListener listener;
-
-    void DeleteAllContexts()
-    {
-        using namespace DAVA;
-        using namespace TArc;
-        Vector<DataContext::ContextID> contexts;
-        GetAccessor()->ForEachContext([&contexts](DataContext& ctx)
-                                      {
-                                          contexts.push_back(ctx.GetID());
-                                      });
-
-        ContextManager* mng = GetContextManager();
-        for (DataContext::ContextID id : contexts)
-        {
-            mng->DeleteContext(id);
-        }
-    };
-
-    void CreateDummyContext()
-    {
-        //create test context to make sure project will close it
-        DAVA::TArc::ContextManager* manager = GetContextManager();
-        DAVA::Vector<std::unique_ptr<DAVA::TArc::DataNode>> dummy;
-        manager->CreateContext(std::move(dummy));
-    }
 };
-
-namespace PMT
-{
-class DocumentsManagerMockModule : public DAVA::TArc::ClientModule
-{
-protected:
-    void PostInit() override
-    {
-        using namespace DAVA;
-        using namespace TArc;
-
-        RegisterOperation(QEGlobal::CloseAllDocuments.ID, this, &DocumentsManagerMockModule::CloseAllDocumentsMock);
-
-        ContextAccessor* accessor = GetAccessor();
-        {
-            PropertiesItem item = accessor->CreatePropertiesNode(projectsHistoryKey);
-            projectsHistory = item.Get<Vector<String>>(recentItemsKey);
-            item.Set(recentItemsKey, Vector<String>());
-        }
-        {
-            PropertiesItem item = accessor->CreatePropertiesNode(projectModulePropertiesKey);
-            lastProject = item.Get<String>(lastProjectKey);
-            item.Set(lastProjectKey, String());
-        }
-    }
-
-    ~DocumentsManagerMockModule() override
-    {
-        using namespace DAVA::TArc;
-        ContextAccessor* accessor = GetAccessor();
-        {
-            PropertiesItem item = accessor->CreatePropertiesNode(projectsHistoryKey);
-            item.Set(recentItemsKey, projectsHistory);
-        }
-        {
-            PropertiesItem item = accessor->CreatePropertiesNode(projectModulePropertiesKey);
-            item.Set(lastProjectKey, lastProject);
-        }
-        TestHelpers::ClearTestFolder();
-    }
-
-    void CloseAllDocumentsMock()
-    {
-    }
-
-    //last project properties names
-    const DAVA::String projectModulePropertiesKey = "ProjectModuleProperties";
-    const DAVA::String lastProjectKey = "Last project";
-
-    //recent items properties names
-    const DAVA::String projectsHistoryKey = "Projects history";
-    const DAVA::String recentItemsKey = "recent items";
-
-    DAVA::Vector<DAVA::String> projectsHistory;
-    DAVA::String lastProject;
-
-    DAVA_VIRTUAL_REFLECTION(DocumentsManagerMockModule, DAVA::TArc::ClientModule);
-};
-
-DAVA_VIRTUAL_REFLECTION_IMPL(DocumentsManagerMockModule)
-{
-    DAVA::ReflectionRegistrator<DocumentsManagerMockModule>::Begin()
-    .ConstructorByPointer()
-    .End();
-}
-}

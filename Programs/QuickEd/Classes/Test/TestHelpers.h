@@ -14,4 +14,4 @@ DAVA::FilePath GetTestPath();
 DAVA::FilePath GetTestProjectPath();
 
 QAction* FindActionInMenus(QWidget* window, const QString& menuName, const QString& actionNname);
-};
+} //nemspace TestHelpers

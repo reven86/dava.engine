@@ -7,7 +7,7 @@
 class PackageListenerProxy : public DAVA::TArc::DataNode, public PackageListener
 {
 public:
-    void AddListener(PackageListener *listener);
+    void AddListener(PackageListener* listener);
     void RemoveListener(PackageListener* listener);
 
 private:
@@ -42,4 +42,3 @@ private:
 
     DAVA_VIRTUAL_REFLECTION(PackageListenerProxy, DAVA::TArc::DataNode);
 };
-

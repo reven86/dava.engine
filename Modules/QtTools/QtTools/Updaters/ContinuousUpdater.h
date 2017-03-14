@@ -12,7 +12,7 @@ public:
 
     ContinuousUpdater(int updateInterval);
     ~ContinuousUpdater();
-    
+
     void SetUpdater(const Updater& updater);
     void SetStopper(const Stopper& stopper);
 

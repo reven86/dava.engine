@@ -5,11 +5,11 @@
 DAVA_VIRTUAL_REFLECTION_IMPL(PackageListenerProxy)
 {
     DAVA::ReflectionRegistrator<PackageListenerProxy>::Begin()
-        .ConstructorByPointer()
-        .End();
+    .ConstructorByPointer()
+    .End();
 }
 
-void PackageListenerProxy::AddListener(PackageListener *listener)
+void PackageListenerProxy::AddListener(PackageListener* listener)
 {
     if (std::find(listeners.begin(), listeners.end(), listener) != listeners.end())
     {
