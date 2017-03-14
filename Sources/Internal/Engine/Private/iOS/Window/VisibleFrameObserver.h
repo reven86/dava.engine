@@ -22,7 +22,6 @@ class WindowNativeBridge;
 
 - (id)initWithBridge:(DAVA::Private::WindowNativeBridge*)nativeBridge;
 - (void)dealloc;
-- (void)keyboardFrameDidChange:(NSNotification*)notification;
 
 @end
 
