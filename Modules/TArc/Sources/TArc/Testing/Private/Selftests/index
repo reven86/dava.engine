@@ -1,5 +1,6 @@
 CheckBoxTest.h
 ClientModuleTest.h
+ColorPickerButtonTest.h
 ComboBoxCheckableTest.h
 ComboBoxTest.h
 ComponentStructureWrapperTest.h
