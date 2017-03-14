@@ -323,6 +323,7 @@ void DefaultUIPackageBuilder::EndControl(eControlPlace controlPlace)
 
 void DefaultUIPackageBuilder::BeginControlPropertiesSection(const String& name)
 {
+    DVASSERT(currentComponentType == nullptr);
     currentObject = controlsStack.back()->control.Get();
 }
 
@@ -342,11 +343,13 @@ UIComponent* DefaultUIPackageBuilder::BeginComponentPropertiesSection(const Type
         component->Release();
     }
     currentObject = component;
+    currentComponentType = componentType;
     return component;
 }
 
 void DefaultUIPackageBuilder::EndComponentPropertiesSection()
 {
+    currentComponentType = nullptr;
     currentObject = nullptr;
 }
 
@@ -356,13 +359,13 @@ void DefaultUIPackageBuilder::ProcessProperty(const Reflection::Field& field, co
 
     if (currentObject && !value.IsEmpty())
     {
-        FastName name(field.key.Get<String>());
-        if (UIStyleSheetPropertyDataBase::Instance()->IsValidStyleSheetProperty(name))
+        FastName name = field.key.Cast<FastName>();
+        int32 propertyIndex = UIStyleSheetPropertyDataBase::Instance()->FindStyleSheetProperty(currentComponentType, name);
+        if (propertyIndex >= 0)
         {
             UIControl* control = controlsStack.back()->control.Get();
-            control->SetPropertyLocalFlag(UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyIndex(name), true);
+            control->SetPropertyLocalFlag(propertyIndex, true);
         }
-
         if (name == PROPERTY_NAME_TEXT)
         {
             field.ref.SetValueWithCast(Any(LocalizedUtf8String(value.Cast<String>())));

@@ -1,18 +1,14 @@
 #include "TArc/Controls/PropertyPanel/Private/ComponentStructureWrapper.h"
-
-#include <Base/Type.h>
-#include <Base/TypeInheritance.h>
-#include <Reflection/Reflection.h>
-#include <Reflection/ReflectedType.h>
-#include <Reflection/ReflectionRegistrator.h>
-#include <Reflection/ReflectedStructure.h>
-#include <Reflection/ReflectedObject.h>
-#include <Reflection/Private/ReflectedObject_impl.h>
-#include <Reflection/Private/Wrappers/StructureWrapperClass.h>
-
 #include "TArc/Controls/PropertyPanel/Private/PropertyPanelMeta.h"
 #include "TArc/Controls/PropertyPanel/Private/PropertyPanelMeta.h"
 #include "TArc/Controls/PropertyPanel/BaseComponentValue.h"
+
+#include <Reflection/Reflection.h>
+#include <Reflection/ReflectedStructure.h>
+#include <Reflection/ReflectedTypeDB.h>
+#include <Reflection/Private/Wrappers/StructureWrapperClass.h>
+#include <Base/Type.h>
+#include <Base/TypeInheritance.h>
 
 namespace DAVA
 {

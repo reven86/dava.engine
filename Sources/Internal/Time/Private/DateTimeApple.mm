@@ -64,6 +64,9 @@ static WideString GetLocalizedDateOrTime(NSDateFormatterStyle timeStyle,
 
     std::string result = [date_str cStringUsingEncoding:[NSString defaultCStringEncoding]];
 
+    [dateFormatter release];
+    [locale release];
+
     return UTF8Utils::EncodeToWideString(result);
 }
 

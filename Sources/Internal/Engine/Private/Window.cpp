@@ -286,6 +286,7 @@ void Window::HandleWindowCreated(const Private::MainDispatcherEvent& e)
 {
     Logger::Info("Window::HandleWindowCreated: enter");
 
+    isAlive = true;
     MergeSizeChangedEvents(e);
     sizeEventsMerged = true;
 
@@ -313,6 +314,7 @@ void Window::HandleWindowDestroyed(const Private::MainDispatcherEvent& e)
     uiControlSystem = nullptr;
 
     engineBackend->DeinitRender(this);
+    isAlive = false;
 
     Logger::Info("Window::HandleWindowDestroyed: leave");
 }
@@ -349,7 +351,14 @@ void Window::HandleSizeChanged(const Private::MainDispatcherEvent& e)
             // call reloadig sprites/fonts from this point ((
             if (uiControlSystem->vcs->GetReloadResourceOnResize())
             {
+// Disable sprite reloading on macos
+// Game uses separate thread for loading battle and its resources.
+// Window resizing during battle loading may lead to crash as sprite
+// reloading is not ready for multiple threads.
+// TODO: do something with sprite reloading
+#if !defined(__DAVAENGINE_MACOS__)
                 Sprite::ValidateForSize();
+#endif
             }
         }
     }

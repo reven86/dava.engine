@@ -9,7 +9,8 @@
 #include "UI/Layouts/UIIgnoreLayoutComponent.h"
 #include "UI/Layouts/UISizePolicyComponent.h"
 #include "UI/Layouts/UIAnchorComponent.h"
-#include "Reflection/ReflectionRegistrator.h"
+#include "UI/Sound/UISoundComponent.h"
+#include "Reflection/ReflectedTypeDB.h"
 
 namespace DAVA
 {
@@ -24,8 +25,10 @@ UIStyleSheetPropertyDataBase::UIStyleSheetPropertyDataBase()
     , ignoreLayoutGroup("ignoreLayout", Type::Instance<UIIgnoreLayoutComponent>(), ReflectedTypeDB::Get<UIIgnoreLayoutComponent>())
     , sizePolicyGroup("sizePolicy", Type::Instance<UISizePolicyComponent>(), ReflectedTypeDB::Get<UISizePolicyComponent>())
     , anchorGroup("anchor", Type::Instance<UIAnchorComponent>(), ReflectedTypeDB::Get<UIAnchorComponent>())
+    , soundGroup("sound", Type::Instance<UISoundComponent>(), ReflectedTypeDB::Get<UISoundComponent>())
     , properties({ { UIStyleSheetPropertyDescriptor(&controlGroup, "angle", 0.0f),
                      UIStyleSheetPropertyDescriptor(&controlGroup, "scale", Vector2(1.0f, 1.0f)),
+                     UIStyleSheetPropertyDescriptor(&controlGroup, "pivot", Vector2(0.0f, 0.0f)),
                      UIStyleSheetPropertyDescriptor(&controlGroup, "visible", true),
                      UIStyleSheetPropertyDescriptor(&controlGroup, "noInput", false),
                      UIStyleSheetPropertyDescriptor(&controlGroup, "exclusiveInput", false),
@@ -97,7 +100,12 @@ UIStyleSheetPropertyDataBase::UIStyleSheetPropertyDataBase()
                      UIStyleSheetPropertyDescriptor(&anchorGroup, "hCenterAnchorEnabled", false),
                      UIStyleSheetPropertyDescriptor(&anchorGroup, "hCenterAnchor", 0.0f),
                      UIStyleSheetPropertyDescriptor(&anchorGroup, "vCenterAnchorEnabled", false),
-                     UIStyleSheetPropertyDescriptor(&anchorGroup, "vCenterAnchor", 0.0f) } })
+                     UIStyleSheetPropertyDescriptor(&anchorGroup, "vCenterAnchor", 0.0f),
+
+                     UIStyleSheetPropertyDescriptor(&soundGroup, "touchDown", FastName()),
+                     UIStyleSheetPropertyDescriptor(&soundGroup, "touchUpInside", FastName()),
+                     UIStyleSheetPropertyDescriptor(&soundGroup, "touchUpOutside", FastName()),
+                     UIStyleSheetPropertyDescriptor(&soundGroup, "valueChanged", FastName()) } })
 {
     UnorderedMap<FastName, FastName> legacyNames;
     legacyNames[FastName("bg-drawType")] = FastName("drawType");

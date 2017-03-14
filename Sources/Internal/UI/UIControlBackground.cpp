@@ -19,40 +19,21 @@ DAVA_VIRTUAL_REFLECTION_IMPL(UIControlBackground)
     ReflectionRegistrator<UIControlBackground>::Begin()
     .ConstructorByPointer()
     .DestructorByPointer([](UIControlBackground* o) { o->Release(); })
-    .Field("drawType", &UIControlBackground::GetBgDrawType, &UIControlBackground::SetBgDrawType) // TODO: make enum
-    [
-    M::EnumT<eDrawType>()
-    ]
+    .Field("drawType", &UIControlBackground::GetBgDrawType, &UIControlBackground::SetBgDrawType)[M::EnumT<eDrawType>()]
     .Field<FilePath (UIControlBackground::*)() const, void (UIControlBackground::*)(const FilePath&)>("sprite", &UIControlBackground::GetBgSpritePath, &UIControlBackground::SetSprite)
     .Field<int32 (UIControlBackground::*)() const, void (UIControlBackground::*)(int32)>("frame", &UIControlBackground::GetFrame, &UIControlBackground::SetFrame)
     .Field("mask", &UIControlBackground::GetMaskSpritePath, &UIControlBackground::SetMaskSpriteFromPath)
     .Field("detail", &UIControlBackground::GetDetailSpritePath, &UIControlBackground::SetDetailSpriteFromPath)
     .Field("gradient", &UIControlBackground::GetGradientSpritePath, &UIControlBackground::SetGradientSpriteFromPath)
     .Field("contour", &UIControlBackground::GetContourSpritePath, &UIControlBackground::SetContourSpriteFromPath)
-    .Field("spriteModification", &UIControlBackground::GetModification, &UIControlBackground::SetModification) // TODO: make enum
-    [
-    M::FlagsT<eSpriteModification>()
-    ]
-    .Field("gradientMode", &UIControlBackground::GetGradientBlendMode, &UIControlBackground::SetGradientBlendMode) // TODO: make enum
-    [
-    M::EnumT<eGradientBlendMode>()
-    ]
+    .Field("spriteModification", &UIControlBackground::GetModification, &UIControlBackground::SetModification)[M::FlagsT<eSpriteModification>()]
+    .Field("gradientMode", &UIControlBackground::GetGradientBlendMode, &UIControlBackground::SetGradientBlendMode)[M::EnumT<eGradientBlendMode>()]
     .Field("color", &UIControlBackground::GetColor, &UIControlBackground::SetColor)
-    .Field("colorInherit", &UIControlBackground::GetBgColorInherit, &UIControlBackground::SetBgColorInherit) // TODO: make enum
-    [
-    M::EnumT<eColorInheritType>()
-    ]
-    .Field("perPixelAccuracy", &UIControlBackground::GetBgPerPixelAccuracy, &UIControlBackground::SetBgPerPixelAccuracy) // TODO: make enum
-    [
-    M::EnumT<ePerPixelAccuracyType>()
-    ]
-    .Field("align", &UIControlBackground::GetAlign, &UIControlBackground::SetAlign) // TODO: make enum
-    [
-    M::FlagsT<eAlign>()
-    ]
+    .Field("colorInherit", &UIControlBackground::GetBgColorInherit, &UIControlBackground::SetBgColorInherit)[M::EnumT<eColorInheritType>()]
+    .Field("perPixelAccuracy", &UIControlBackground::GetBgPerPixelAccuracy, &UIControlBackground::SetBgPerPixelAccuracy)[M::EnumT<ePerPixelAccuracyType>()]
+    .Field("align", &UIControlBackground::GetAlign, &UIControlBackground::SetAlign)[M::FlagsT<eAlign>()]
     .Field("leftRightStretchCap", &UIControlBackground::GetLeftRightStretchCap, &UIControlBackground::SetLeftRightStretchCap)
     .Field("topBottomStretchCap", &UIControlBackground::GetTopBottomStretchCap, &UIControlBackground::SetTopBottomStretchCap)
-    .Field("margins", &UIControlBackground::GetMarginsAsVector4, &UIControlBackground::SetMarginsAsVector4)
     .End();
 }
 
@@ -85,7 +66,6 @@ UIControlBackground::UIControlBackground(const UIControlBackground& src)
     , drawColor(src.drawColor)
     , material(SafeRetain(src.material))
 {
-    SetMargins(src.GetMargins());
 }
 
 UIControlBackground* UIControlBackground::Clone() const
@@ -97,25 +77,7 @@ UIControlBackground::~UIControlBackground()
 {
     spr = nullptr;
     SafeRelease(material);
-    SafeDelete(margins);
     ReleaseDrawData();
-}
-
-bool UIControlBackground::IsEqualTo(const UIControlBackground* back) const
-{
-    if (GetDrawType() != back->GetDrawType() ||
-        Sprite::GetPathString(GetSprite()) != Sprite::GetPathString(back->GetSprite()) ||
-        GetFrame() != back->GetFrame() ||
-        GetAlign() != back->GetAlign() ||
-        GetColor() != back->GetColor() ||
-        GetColorInheritType() != back->GetColorInheritType() ||
-        GetModification() != back->GetModification() ||
-        GetLeftRightStretchCap() != back->GetLeftRightStretchCap() ||
-        GetTopBottomStretchCap() != back->GetTopBottomStretchCap() ||
-        GetPerPixelAccuracyType() != back->GetPerPixelAccuracyType() ||
-        GetMargins() != back->GetMargins())
-        return false;
-    return true;
 }
 
 Sprite* UIControlBackground::GetSprite() const
@@ -161,6 +123,11 @@ void UIControlBackground::SetSprite(Sprite* drawSprite, int32 drawFrame)
 void UIControlBackground::SetSprite(Sprite* drawSprite)
 {
     spr = drawSprite;
+
+    if (GetControl()) //workaround for standalone backgrounds
+    {
+        GetControl()->SetLayoutDirty();
+    }
 }
 
 void UIControlBackground::SetSprite(const FilePath& path)
@@ -192,11 +159,20 @@ void UIControlBackground::SetAlign(int32 drawAlign)
 {
     align = drawAlign;
 }
+
 void UIControlBackground::SetDrawType(UIControlBackground::eDrawType drawType)
 {
     if (type != drawType)
+    {
         ReleaseDrawData();
+    }
+
     type = drawType;
+
+    if (GetControl()) //workaround for standalone backgrounds
+    {
+        GetControl()->SetLayoutDirty();
+    }
 }
 
 void UIControlBackground::SetModification(int32 modification)
@@ -282,11 +258,6 @@ void UIControlBackground::Draw(const UIGeometricData& parentGeometricData)
 {
     UIGeometricData geometricData;
     geometricData.size = parentGeometricData.size;
-    if (margins)
-    {
-        geometricData.position = Vector2(margins->left, margins->top);
-        geometricData.size += Vector2(-(margins->right + margins->left), -(margins->bottom + margins->top));
-    }
 
     geometricData.AddGeometricData(parentGeometricData);
     Rect drawRect = geometricData.GetUnrotatedRect();
@@ -591,32 +562,5 @@ void UIControlBackground::SetMaterial(NMaterial* _material)
 inline NMaterial* UIControlBackground::GetMaterial() const
 {
     return material;
-}
-
-void UIControlBackground::SetMargins(const UIMargins* uiMargins)
-{
-    if (!uiMargins || uiMargins->empty())
-    {
-        SafeDelete(margins);
-        return;
-    }
-
-    if (!margins)
-    {
-        margins = new UIControlBackground::UIMargins();
-    }
-
-    *margins = *uiMargins;
-}
-
-Vector4 UIControlBackground::GetMarginsAsVector4() const
-{
-    return (margins != nullptr) ? margins->AsVector4() : Vector4();
-}
-
-void UIControlBackground::SetMarginsAsVector4(const Vector4& m)
-{
-    UIControlBackground::UIMargins newMargins(m);
-    SetMargins(&newMargins);
 }
 };

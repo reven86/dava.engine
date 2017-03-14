@@ -1,5 +1,5 @@
 Header:
-    version: "4"
+    version: "10"
 Controls:
 -   class: "UIControl"
     name: "MainFrame"
@@ -67,3 +67,51 @@ Controls:
             Anchor:
                 rightAnchorEnabled: true
                 rightAnchor: 20.000000
+    -   class: "UIStaticText"
+        name: "msgbox_mainthread"
+        position: [20.000000, 131.000000]
+        size: [399.000000, 32.000000]
+        noInput: false
+        debugDraw: true
+        text: "Show message box from main thread"
+        font: "Korinna_18"
+        components:
+            Anchor:
+                leftAnchorEnabled: true
+                leftAnchor: 20.000000
+                rightAnchorEnabled: true
+                rightAnchor: 60.000000
+            Action:
+                action: "MSGBOX_MAINTHREAD"
+    -   class: "UIStaticText"
+        name: "msgbox_uithread"
+        position: [20.000000, 168.000000]
+        size: [399.000000, 32.000000]
+        noInput: false
+        debugDraw: true
+        text: "Show message box from UI thread"
+        font: "Korinna_18"
+        components:
+            Anchor:
+                leftAnchorEnabled: true
+                leftAnchor: 20.000000
+                rightAnchorEnabled: true
+                rightAnchor: 60.000000
+            Action:
+                action: "MSGBOX_UITHREAD"
+    -   class: "UIStaticText"
+        name: "msgbox_otherthreads"
+        position: [20.000000, 205.000000]
+        size: [399.000000, 32.000000]
+        noInput: false
+        debugDraw: true
+        text: "Show message box from multiple threads"
+        font: "Korinna_18"
+        components:
+            Anchor:
+                leftAnchorEnabled: true
+                leftAnchor: 20.000000
+                rightAnchorEnabled: true
+                rightAnchor: 60.000000
+            Action:
+                action: "MSGBOX_OTHERTHREADS"

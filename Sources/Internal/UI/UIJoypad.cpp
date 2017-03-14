@@ -31,7 +31,8 @@ UIJoypad::UIJoypad(const Rect& rect)
 
     RefPtr<UIControl> stickCtrl(new UIControl(Rect(0.0f, 0.0f, 10.0f, 10.0f)));
     stickCtrl->SetName(UIJOYPAD_STICK_NAME);
-    stickCtrl->GetBackground()->SetAlign(ALIGN_HCENTER | ALIGN_VCENTER);
+    UIControlBackground* stickCtrlBg = stickCtrl->GetOrCreateComponent<UIControlBackground>();
+    stickCtrlBg->SetAlign(ALIGN_HCENTER | ALIGN_VCENTER);
     stickCtrl->SetInputEnabled(false);
     stickCtrl->SetPivot(Vector2(0.5f, 0.5f));
     stickCtrl->SetPosition(GetSize() / 2.0f);

@@ -74,45 +74,9 @@ public:
     /**
      \brief Constructor.
      */
-    struct UIMargins
-    {
-        UIMargins()
-            :
-            top(0.0f)
-            , right(0.0f)
-            , bottom(0.0f)
-            , left(0.0f)
-        {
-        }
-
-        UIMargins(const Vector4& value)
-        {
-            left = value.x;
-            top = value.y;
-            right = value.z;
-            bottom = value.w;
-        }
-
-        inline bool operator==(const UIMargins& value) const;
-        inline bool operator!=(const UIMargins& value) const;
-        inline bool empty() const;
-
-        inline Vector4 AsVector4() const;
-
-        float32 top;
-        float32 right;
-        float32 bottom;
-        float32 left;
-    };
-
-    /**
-     \brief Constructor.
-     */
     UIControlBackground();
 
     UIControlBackground(const UIControlBackground& src);
-
-    virtual bool IsEqualTo(const UIControlBackground* back) const;
 
     /**
      \brief Returns Sprite used for draw.
@@ -282,17 +246,6 @@ public:
     // WTF? Probably we should move it to protected to avoid problems in future?
     Color color; //!<Control color. By default is Color(1,1,1,1).
 
-    /**
-     \brief Sets the margins for drawing background. Positive values means inner
-     offset, negative ones - outer.
-     */
-    void SetMargins(const UIMargins* uiMargins);
-
-    /**
-     \brief Returns the margins for drawing background. Can be NULL.
-     */
-    inline const UIMargins* GetMargins() const;
-
     void SetMaterial(NMaterial* material);
     NMaterial* GetMaterial() const;
 
@@ -321,8 +274,6 @@ private:
     StretchDrawData* stretchData = nullptr;
     TiledMultilayerData* tiledMultulayerData = nullptr;
 
-    UIMargins* margins = nullptr;
-
 public:
     void ReleaseDrawData(); // Delete all spec draw data
 #if defined(LOCALIZATION_DEBUG)
@@ -347,8 +298,6 @@ public:
     void SetBgColorInherit(int32 type);
     int32 GetBgPerPixelAccuracy() const;
     void SetBgPerPixelAccuracy(int32 type);
-    Vector4 GetMarginsAsVector4() const;
-    void SetMarginsAsVector4(const Vector4& margins);
 
     FilePath GetMaskSpritePath() const;
     void SetMaskSpriteFromPath(const FilePath& path);
@@ -372,33 +321,6 @@ inline void UIControlBackground::SetColor(const Color& _color)
 inline const Color& UIControlBackground::GetColor() const
 {
     return color;
-}
-
-inline const UIControlBackground::UIMargins* UIControlBackground::GetMargins() const
-{
-    return margins;
-}
-
-inline bool UIControlBackground::UIMargins::operator==(const UIControlBackground::UIMargins& value) const
-{
-    return FLOAT_EQUAL(left, value.left) && FLOAT_EQUAL(top, value.top) &&
-    FLOAT_EQUAL(right, value.right) && FLOAT_EQUAL(bottom, value.bottom);
-}
-
-inline bool UIControlBackground::UIMargins::operator!=(const UIControlBackground::UIMargins& value) const
-{
-    return !UIControlBackground::UIMargins::operator==(value);
-}
-
-inline bool UIControlBackground::UIMargins::empty() const
-{
-    return FLOAT_EQUAL(left, 0.0f) && FLOAT_EQUAL(top, 0.0f) &&
-    FLOAT_EQUAL(right, 0.0f) && FLOAT_EQUAL(bottom, 0.0f);
-}
-
-inline Vector4 UIControlBackground::UIMargins::AsVector4() const
-{
-    return Vector4(left, top, right, bottom);
 }
 
 inline int32 UIControlBackground::GetBgDrawType() const

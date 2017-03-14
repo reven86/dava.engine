@@ -8,6 +8,10 @@
 #include "Engine/Engine.h"
 #include "Reflection/ReflectionRegistrator.h"
 
+#ifdef __DAVAENGINE_AUTOTESTING__
+#include "Autotesting/AutotestingSystem.h"
+#endif
+
 #if defined(__DAVAENGINE_ANDROID__)
 #if defined(__DAVAENGINE_COREV2__)
 #include "UI/Private/Android/TextFieldPlatformImplAndroid.h"
@@ -53,50 +57,20 @@ DAVA_VIRTUAL_REFLECTION_IMPL(UITextField)
     .Field("selectioncolor", &UITextField::GetSelectionColor, &UITextField::SetSelectionColor) // TODO: camel style
     .Field("shadowoffset", &UITextField::GetShadowOffset, &UITextField::SetShadowOffset) // TODO: camel style
     .Field("shadowcolor", &UITextField::GetShadowColor, &UITextField::SetShadowColor) // TODO: camel style
-    .Field("textalign", &UITextField::GetTextAlign, &UITextField::SetTextAlign) // TODO: make enum // TODO: camel style
-    [
-    M::FlagsT<eAlign>()
-    ]
-    .Field("textUseRtlAlign", &UITextField::GetTextUseRtlAlign, &UITextField::SetTextUseRtlAlign)
-    [
-    M::EnumT<TextBlock::eUseRtlAlign>()
-    ]
+    .Field("textalign", &UITextField::GetTextAlign, &UITextField::SetTextAlign)[M::FlagsT<eAlign>()] // TODO: camel style
+    .Field("textUseRtlAlign", &UITextField::GetTextUseRtlAlign, &UITextField::SetTextUseRtlAlign)[M::EnumT<TextBlock::eUseRtlAlign>()]
     .Field("maxLength", &UITextField::GetMaxLength, &UITextField::SetMaxLength)
     .Field("isPassword", &UITextField::IsPassword, &UITextField::SetIsPassword)
     .Field("isMultiline", &UITextField::IsMultiline, &UITextField::SetMultiline)
-    .Field("autoCapitalizationType", &UITextField::GetAutoCapitalizationType, &UITextField::SetAutoCapitalizationType) // TODO: make enum
-    [
-    M::EnumT<eAutoCapitalizationType>()
-    ]
-    .Field("autoCorrectionType", &UITextField::GetAutoCorrectionType, &UITextField::SetAutoCorrectionType) // TODO: make enum
-    [
-    M::EnumT<eAutoCorrectionType>()
-    ]
-    .Field("spellCheckingType", &UITextField::GetSpellCheckingType, &UITextField::SetSpellCheckingType) // TODO: make enum
-    [
-    M::EnumT<eSpellCheckingType>()
-    ]
-    .Field("keyboardAppearanceType", &UITextField::GetKeyboardAppearanceType, &UITextField::SetKeyboardAppearanceType) // TODO: make enum
-    [
-    M::EnumT<eKeyboardAppearanceType>()
-    ]
-    .Field("keyboardType", &UITextField::GetKeyboardType, &UITextField::SetKeyboardType) // TODO: make enum
-    [
-    M::EnumT<eKeyboardType>()
-    ]
-    .Field("returnKeyType", &UITextField::GetReturnKeyType, &UITextField::SetReturnKeyType) // TODO: make enum
-    [
-    M::EnumT<eReturnKeyType>()
-    ]
+    .Field("autoCapitalizationType", &UITextField::GetAutoCapitalizationType, &UITextField::SetAutoCapitalizationType)[M::EnumT<eAutoCapitalizationType>()]
+    .Field("autoCorrectionType", &UITextField::GetAutoCorrectionType, &UITextField::SetAutoCorrectionType)[M::EnumT<eAutoCorrectionType>()]
+    .Field("spellCheckingType", &UITextField::GetSpellCheckingType, &UITextField::SetSpellCheckingType)[M::EnumT<eSpellCheckingType>()]
+    .Field("keyboardAppearanceType", &UITextField::GetKeyboardAppearanceType, &UITextField::SetKeyboardAppearanceType)[M::EnumT<eKeyboardAppearanceType>()]
+    .Field("keyboardType", &UITextField::GetKeyboardType, &UITextField::SetKeyboardType)[M::EnumT<eKeyboardType>()]
+    .Field("returnKeyType", &UITextField::GetReturnKeyType, &UITextField::SetReturnKeyType)[M::EnumT<eReturnKeyType>()]
     .Field("enableReturnKeyAutomatically", &UITextField::IsEnableReturnKeyAutomatically, &UITextField::SetEnableReturnKeyAutomatically)
-    .Field("startEditPolicy", &UITextField::GetStartEditPolicy, &UITextField::SetStartEditPolicy)
-    [
-    M::EnumT<eStartEditPolicy>()
-    ]
-    .Field("stopEditPolicy", &UITextField::GetStopEditPolicy, &UITextField::SetStopEditPolicy)
-    [
-    M::EnumT<eStopEditPolicy>()
-    ]
+    .Field("startEditPolicy", &UITextField::GetStartEditPolicy, &UITextField::SetStartEditPolicy)[M::EnumT<eStartEditPolicy>()]
+    .Field("stopEditPolicy", &UITextField::GetStopEditPolicy, &UITextField::SetStopEditPolicy)[M::EnumT<eStopEditPolicy>()]
     .End();
 }
 
@@ -174,6 +148,9 @@ void UITextField::StopEdit()
         SetRenderToTexture(true);
         textFieldImpl->CloseKeyboard();
         OnStopEditing();
+#ifdef __DAVAENGINE_AUTOTESTING__
+        AutotestingSystem::Instance()->OnRecordSetText(this, GetUtf8Text());
+#endif
     }
 }
 
@@ -482,7 +459,6 @@ void UITextField::CopyDataFrom(UIControl* srcControl)
 #if defined(DAVA_TEXTFIELD_USE_STB)
     textFieldImpl->CopyDataFrom(t->textFieldImpl.get());
 #endif
-    isPassword = t->isPassword;
     cursorBlinkingTime = t->cursorBlinkingTime;
     SetText(t->GetText());
     SetRect(t->GetRect());
@@ -496,6 +472,10 @@ void UITextField::CopyDataFrom(UIControl* srcControl)
     SetEnableReturnKeyAutomatically(t->IsEnableReturnKeyAutomatically());
     SetTextUseRtlAlign(t->GetTextUseRtlAlign());
     SetMaxLength(t->GetMaxLength());
+    SetIsPassword(t->IsPassword());
+    SetTextColor(t->GetTextColor());
+    SetTextAlign(t->GetTextAlign());
+    SetRenderToTexture(t->IsRenderToTexture());
 }
 
 void UITextField::SetIsPassword(bool isPassword_)
@@ -729,9 +709,9 @@ void UITextField::SetFontByPresetName(const String& presetName)
     }
 }
 
-void UITextField::SystemDraw(const UIGeometricData& geometricData)
+void UITextField::SystemDraw(const UIGeometricData& geometricData, const UIControlBackground* parentBackground)
 {
-    UIControl::SystemDraw(geometricData);
+    UIControl::SystemDraw(geometricData, parentBackground);
 
     UIGeometricData localData = GetLocalGeometricData();
     localData.AddGeometricData(geometricData);

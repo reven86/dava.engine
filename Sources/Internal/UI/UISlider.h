@@ -67,7 +67,7 @@ protected:
     void InitThumb();
 
     void AttachToSubcontrols();
-    void InitInactiveParts(Sprite* spr);
+    void InitInactiveParts(UIControl* thumb);
 
 public:
 private:

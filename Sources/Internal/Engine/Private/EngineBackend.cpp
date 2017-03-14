@@ -13,7 +13,7 @@
 #include "DAVAClassRegistrator.h"
 #include "Analytics/Analytics.h"
 #include "Analytics/LoggingBackend.h"
-#include "AnyCasts/AnyCasts.h"
+#include "ReflectionDeclaration/ReflectionDeclaration.h"
 #include "Autotesting/AutotestingSystem.h"
 #include "Base/AllocatorFactory.h"
 #include "Base/ObjectFactory.h"
@@ -33,6 +33,7 @@
 #include "Job/JobManager.h"
 #include "Input/InputSystem.h"
 #include "Logger/Logger.h"
+#include "MemoryManager/MemoryManager.h"
 #include "ModuleManager/ModuleManager.h"
 #include "Network/NetCore.h"
 #include "Notification/LocalNotificationController.h"
@@ -96,6 +97,7 @@ void RunOnUIThread(const Function<void()>& task)
 namespace Private
 {
 EngineBackend* EngineBackend::instance = nullptr;
+bool EngineBackend::showingModalMessageBox = false;
 
 EngineBackend* EngineBackend::Instance()
 {
@@ -124,7 +126,7 @@ EngineBackend::EngineBackend(const Vector<String>& cmdargs)
     context->logger = new Logger;
     context->componentManager = new ComponentManager();
     RegisterDAVAClasses();
-    RegisterAnyCasts();
+    RegisterReflectionForBaseTypes();
     context->settings = new EngineSettings();
     context->fileSystem = new FileSystem;
     FilePath::InitializeBundleName();
@@ -284,12 +286,6 @@ void EngineBackend::OnGameLoopStopped()
 
     DVASSERT(justCreatedWindows.empty());
 
-    for (Window* w : dyingWindows)
-    {
-        delete w;
-    }
-    dyingWindows.clear();
-
     engine->gameLoopStopped.Emit();
     rhi::ShaderSourceCache::Save("~doc:/ShaderSource.bin");
 
@@ -307,15 +303,21 @@ void EngineBackend::OnEngineCleanup()
 
     DestroySubsystems();
 
+    for (Window* w : dyingWindows)
+    {
+        delete w;
+    }
+    dyingWindows.clear();
+    primaryWindow = nullptr;
+
     if (Renderer::IsInitialized())
         Renderer::Uninitialize();
 
-    delete context;
-    delete dispatcher;
-    delete platformCore;
-    context = nullptr;
-    dispatcher = nullptr;
-    platformCore = nullptr;
+    SafeDelete(context);
+    SafeDelete(dispatcher);
+    SafeDelete(platformCore);
+
+    DAVA_MEMORY_PROFILER_FINISH();
 
     Logger::Info("EngineBackend::OnEngineCleanup: leave");
 }
@@ -340,6 +342,9 @@ void EngineBackend::OnFrameConsole()
 
     DoEvents();
     engine->update.Emit(frameDelta);
+
+    // Notify memory profiler about new frame
+    DAVA_MEMORY_PROFILER_UPDATE();
 
     globalFrameIndex += 1;
 }
@@ -371,6 +376,9 @@ int32 EngineBackend::OnFrame()
     {
         BackgroundUpdate(frameDelta);
     }
+
+    // Notify memory profiler about new frame
+    DAVA_MEMORY_PROFILER_UPDATE();
 
     globalFrameIndex += 1;
     return Renderer::GetDesiredFPS();
@@ -447,11 +455,6 @@ void EngineBackend::OnWindowDestroyed(Window* window)
     size_t nerased = aliveWindows.erase(window);
     DVASSERT(nerased == 1);
     dyingWindows.insert(window);
-
-    if (window->IsPrimary())
-    {
-        primaryWindow = nullptr;
-    }
 
     if (aliveWindows.empty())
     { // No alive windows left, exit application
@@ -545,7 +548,7 @@ void EngineBackend::HandleAppTerminate(const MainDispatcherEvent& e)
             ++it;
 
             // Directly call Close for WindowBackend to tell important information that application is terminating
-            w->GetBackend()->Close(true);
+            GetWindowBackend(w)->Close(true);
         }
     }
     else if (!appIsTerminating)

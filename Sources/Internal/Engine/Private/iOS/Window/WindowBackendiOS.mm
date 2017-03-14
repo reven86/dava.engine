@@ -19,7 +19,7 @@ WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
     : engineBackend(engineBackend)
     , window(window)
     , mainDispatcher(engineBackend->GetDispatcher())
-    , uiDispatcher(MakeFunction(this, &WindowBackend::UIEventHandler))
+    , uiDispatcher(MakeFunction(this, &WindowBackend::UIEventHandler), MakeFunction(this, &WindowBackend::TriggerPlatformEvents))
     , bridge(new WindowNativeBridge(this, engineBackend->GetOptions()))
 {
 }
@@ -65,7 +65,7 @@ void WindowBackend::Close(bool appIsTerminating)
     {
         // If application is terminating then send event as if window has been destroyed.
         // Engine ensures that Close with appIsTerminating with true value is always called on termination.
-        mainDispatcher->SendEvent(MainDispatcherEvent::CreateWindowDestroyedEvent(window));
+        mainDispatcher->SendEvent(MainDispatcherEvent::CreateWindowDestroyedEvent(window), MainDispatcher::eSendPolicy::IMMEDIATE_EXECUTION);
     }
 }
 
@@ -101,7 +101,10 @@ bool WindowBackend::IsWindowReadyForRender() const
 
 void WindowBackend::TriggerPlatformEvents()
 {
-    bridge->TriggerPlatformEvents();
+    if (uiDispatcher.HasEvents())
+    {
+        bridge->TriggerPlatformEvents();
+    }
 }
 
 void WindowBackend::ProcessPlatformEvents()

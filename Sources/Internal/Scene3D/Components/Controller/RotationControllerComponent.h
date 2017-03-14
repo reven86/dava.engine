@@ -1,8 +1,8 @@
-#ifndef __DAVAENGINE_ROTATION_CONTROLLER_COMPONENT_H__
-#define __DAVAENGINE_ROTATION_CONTROLLER_COMPONENT_H__
+#pragma once
 
 #include "Entity/Component.h"
 #include "Scene3D/Entity.h"
+#include "Reflection/Reflection.h"
 
 namespace DAVA
 {
@@ -17,7 +17,7 @@ public:
     INTROSPECTION_EXTEND(RotationControllerComponent, Component,
                          NULL
                          );
-};
-};
 
-#endif //__DAVAENGINE_ROTATION_CONTROLLER_COMPONENT_H__
+    DAVA_VIRTUAL_REFLECTION(RotationControllerComponent, Component);
+};
+};

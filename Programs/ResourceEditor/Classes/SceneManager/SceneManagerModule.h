@@ -1,13 +1,13 @@
 #pragma once
 
-#include "Base/BaseTypes.h"
+#include "SceneManager/Private/SceneRenderWidget.h"
 
-#include "TArc/Core/ControllerModule.h"
-#include "TArc/Core/FieldBinder.h"
-#include "TArc/Utils/QtConnections.h"
+#include <TArc/Core/ControllerModule.h>
+#include <TArc/Core/FieldBinder.h>
+#include <TArc/Utils/QtConnections.h>
+#include <TArc/Models/RecentMenuItems.h>
 
-#include "Classes/SceneManager/Private/SceneRenderWidget.h"
-#include "Classes/Qt/Main/RecentMenuItems.h"
+#include <Base/BaseTypes.h>
 
 namespace DAVA
 {
@@ -31,8 +31,6 @@ protected:
     void SaveOnWindowClose(const DAVA::TArc::WindowKey& key) override;
     void RestoreOnWindowClose(const DAVA::TArc::WindowKey& key) override;
 
-    void OnContextCreated(DAVA::TArc::DataContext* context) override;
-    void OnContextDeleted(DAVA::TArc::DataContext* context) override;
     void OnContextWillBeChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* newOne) override;
     void OnContextWasChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* oldOne) override;
     void OnWindowClosed(const DAVA::TArc::WindowKey& key) override;
@@ -58,8 +56,6 @@ private:
     void ReloadTextures(DAVA::eGPUFamily gpu);
 
     /// Fields value handlers
-    void OnActiveTabChanged(const DAVA::Any& contextID);
-    void OnScenePathChanged(const DAVA::Any& scenePath);
     void OnProjectPathChanged(const DAVA::Any& projectPath);
 
     /// IWidgetDelegate
@@ -69,7 +65,6 @@ private:
     void OnDrop(QObject* target, QDropEvent* event) override;
 
     /// Helpers
-    void UpdateTabTitle(DAVA::uint64 contextID);
     bool CanCloseScene(SceneData* data);
     DAVA::RefPtr<SceneEditor2> OpenSceneImpl(const DAVA::FilePath& scenePath);
 

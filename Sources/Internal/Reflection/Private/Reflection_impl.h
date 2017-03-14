@@ -6,6 +6,7 @@
 
 #include "Reflection/Private/Reflection_pre_impl.h"
 #include "Reflection/Private/Wrappers/ValueWrapperDefault.h"
+#include "Reflection/Private/Wrappers/ValueWrapperObject.h"
 
 namespace DAVA
 {
@@ -66,6 +67,7 @@ Reflection Reflection::Create(T* objectPtr, const ReflectedMeta* objectMeta)
 
     return Reflection();
 }
+
 template <>
 struct AnyCompare<Reflection>
 {

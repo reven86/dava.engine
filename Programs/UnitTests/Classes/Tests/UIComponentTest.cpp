@@ -12,13 +12,18 @@ class TestUIComponent : public UIBaseComponent<TestUIComponent>
 
 DAVA_TESTCLASS (UIComponentTest)
 {
-    std::unique_ptr<ComponentManager> globalCM;
-    std::unique_ptr<ComponentManager> localCM;
+    ComponentManager* globalCM;
+    ComponentManager* localCM;
 
     UIComponentTest::UIComponentTest()
     {
-        globalCM.reset(GetEngineContext()->componentManager);
-        localCM.reset(new ComponentManager());
+        globalCM = GetEngineContext()->componentManager;
+        localCM = new ComponentManager();
+    }
+
+    UIComponentTest::~UIComponentTest()
+    {
+        SafeDelete(localCM);
     }
 
     DAVA_TEST (ComponentManagerTest)

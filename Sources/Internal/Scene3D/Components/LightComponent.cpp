@@ -1,9 +1,22 @@
 #include "Scene3D/Components/LightComponent.h"
 #include "Scene3D/Scene.h"
 #include "Render/Highlevel/RenderSystem.h"
+#include "Reflection/ReflectionRegistrator.h"
+#include "Reflection/ReflectedMeta.h"
 
 namespace DAVA
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(LightComponent)
+{
+    ReflectionRegistrator<LightComponent>::Begin()
+    .Field("isDynamic", &LightComponent::IsDynamic, &LightComponent::SetDynamic)[M::DisplayName("Is Dynamic")]
+    .Field("lightType", &LightComponent::GetLightType, &LightComponent::SetLightType)[M::DisplayName("Type"), M::EnumT<Light::eType>()]
+    .Field("ambientColor", &LightComponent::GetAmbientColor, &LightComponent::SetAmbientColor)[M::DisplayName("Ambient Color")]
+    .Field("color", &LightComponent::GetDiffuseColor, &LightComponent::SetDiffuseColor)[M::DisplayName("Diffuse Color")]
+    .Field("intensity", &LightComponent::GetIntensity, &LightComponent::SetIntensity)[M::DisplayName("Intensity")]
+    .End();
+}
+
 LightComponent::LightComponent(Light* _light)
 {
     light = SafeRetain(_light);

@@ -26,13 +26,14 @@ UIButton::UIButton(const Rect& rect)
     , selectedTextBlock(NULL)
     , oldControlState(0)
 {
+    UIControlBackground* bg = GetOrCreateComponent<UIControlBackground>();
     for (int32 i = 0; i < DRAW_STATE_COUNT; i++)
     {
         stateBacks[i] = NULL;
         stateTexts[i] = NULL;
     }
 
-    stateBacks[DRAW_STATE_UNPRESSED] = SafeRetain(GetBackground());
+    stateBacks[DRAW_STATE_UNPRESSED] = SafeRetain(bg);
 
     SetExclusiveInput(true, false);
     SetInputEnabled(true, false);
@@ -398,30 +399,6 @@ void UIButton::SetStateTextMultilineBySymbol(int32 state, bool value)
     }
 }
 
-void UIButton::SetStateMargins(int32 state, const UIControlBackground::UIMargins* margins)
-{
-    for (int i = 0; i < DRAW_STATE_COUNT && state; i++)
-    {
-        if (state & 0x01)
-        {
-            GetOrCreateBackground(static_cast<eButtonDrawState>(i))->SetMargins(margins);
-        }
-        state >>= 1;
-    }
-}
-
-void UIButton::SetStateTextMargins(int32 state, const UIControlBackground::UIMargins* margins)
-{
-    for (int i = 0; i < DRAW_STATE_COUNT && state; i++)
-    {
-        if (state & 0x01)
-        {
-            GetOrCreateTextBlock(static_cast<eButtonDrawState>(i))->SetMargins(margins);
-        }
-        state >>= 1;
-    }
-}
-
 void UIButton::SetStateTextControl(int32 state, UIStaticText* textControl)
 {
     for (int i = 0; i < DRAW_STATE_COUNT && state; i++)
@@ -445,7 +422,7 @@ void UIButton::Input(UIEvent* currentInput)
     currentInput->SetInputHandledType(UIEvent::INPUT_HANDLED_SOFT); // Drag is not handled - see please DF-2508.
 }
 
-void UIButton::SystemDraw(const UIGeometricData& geometricData)
+void UIButton::SystemDraw(const UIGeometricData& geometricData, const UIControlBackground* parentBackground)
 {
     if (oldControlState != controlState)
     {
@@ -454,7 +431,7 @@ void UIButton::SystemDraw(const UIGeometricData& geometricData)
         UIControl::SetBackground(GetActualBackgroundForState(controlState));
     }
 
-    UIControl::SystemDraw(geometricData);
+    UIControl::SystemDraw(geometricData, parentBackground);
 }
 
 void UIButton::Draw(const UIGeometricData& geometricData)
@@ -470,7 +447,7 @@ void UIButton::Draw(const UIGeometricData& geometricData)
 void UIButton::SetParentColor(const Color& parentColor)
 {
     UIControl::SetParentColor(parentColor);
-    if (selectedTextBlock)
+    if (selectedTextBlock && GetBackground())
         selectedTextBlock->SetParentColor(GetBackground()->GetDrawColor());
 }
 

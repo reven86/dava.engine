@@ -12,7 +12,7 @@ For example:
 DAVA_REFLECTION_REGISTER_CUSTOM_PERMANENT_NAME(UIFlowLayoutComponent, "FlowLayout");
 GetEngineContext()->componentManager->RegisterComponent<UILinearLayoutComponent>();
 \endcode
-Base engine UIComponents are registered in DAVAClassRegistrator.cpp.
+Base engine UIComponents are registered in ReflectionDeclaration.cpp
 
 After registration, UIComponent can be created through UIComponent::CreateByType(const Type* componentType).
 

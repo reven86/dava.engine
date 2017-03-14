@@ -15,7 +15,7 @@ namespace DAVA
 {
 namespace TArc
 {
-class FilePathEdit : public ControlProxy<QWidget>, private ValidatorDelegate
+class FilePathEdit : public ControlProxyImpl<QWidget>, private ValidatorDelegate
 {
 public:
     enum class Fields : uint32

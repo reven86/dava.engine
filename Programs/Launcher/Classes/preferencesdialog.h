@@ -16,9 +16,10 @@ public:
     static void ShowPreferencesDialog(FileManager* fileManager, ConfigDownloader* configDownloader, ConfigRefresher* configRefresher, QWidget* parent = nullptr);
 
 private slots:
-    void OnButtonResetURLClicked();
+    void OnButtonCopyURLClicked();
     void OnButtonChooseFilesPathClicked();
     void ProcessSaveButtonEnabled();
+    void OnServerHostNameChanged(const QString& name);
 
 private:
     PreferencesDialog(QWidget* parent = nullptr);
@@ -29,8 +30,8 @@ private:
     ConfigDownloader* configDownloader = nullptr;
     ConfigRefresher* configRefresher = nullptr;
 
-    QMap<ConfigDownloader::eURLType, QLineEdit*> urlWidgets;
-    QMap<ConfigDownloader::eURLType, QPushButton*> resetUrlWidgets;
+    QMap<ConfigDownloader::eURLType, QLabel*> urlWidgets;
+    QMap<ConfigDownloader::eURLType, QPushButton*> copyURLWidgets;
 };
 
 void SavePreferences(FileManager* fileManager, ConfigDownloader* configDownloader, BAManagerClient* commandListener, ConfigRefresher* configRefresher);

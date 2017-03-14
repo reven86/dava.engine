@@ -2,6 +2,7 @@
 #define __DAVAENGINE_RENDER_BASE_H__
 
 #include "Base/BaseTypes.h"
+#include "Base/GlobalEnum.h"
 #include "DAVAConfig.h"
 #include "Base/FastName.h"
 #include "Render/RHI/rhi_Type.h"
@@ -47,6 +48,7 @@ enum ImageFormat : uint8
     IMAGE_FORMAT_TGA,
     IMAGE_FORMAT_WEBP,
     IMAGE_FORMAT_PSD,
+    IMAGE_FORMAT_HDR,
     IMAGE_FORMAT_COUNT,
     IMAGE_FORMAT_UNKNOWN = 127
 };
