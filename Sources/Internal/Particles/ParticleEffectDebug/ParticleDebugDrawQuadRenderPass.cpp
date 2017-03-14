@@ -33,10 +33,9 @@ void ParticleDebugDrawQuadRenderPass::Draw(DAVA::RenderSystem* renderSystem)
 {
     Camera* cam = renderSystem->GetDrawCamera();
     SetupCameraParams(cam, cam);
-    passConfig.viewport.x = 0;
-    passConfig.viewport.y = 0;
-    passConfig.viewport.width = Renderer::GetFramebufferWidth();
-    passConfig.viewport.height = Renderer::GetFramebufferHeight();
+
+    passConfig = renderSystem->GetMainPassConfig();
+    passConfig.colorBuffer[0].loadAction = rhi::LOADACTION_LOAD;
 
     if (quadMaterial->PreBuildMaterial(passName)
         && quadHeatMaterial->PreBuildMaterial(passName)
