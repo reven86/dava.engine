@@ -23,6 +23,7 @@ class EngineBackend final
 {
 public:
     static EngineBackend* Instance();
+    static bool showingModalMessageBox;
 
     static WindowBackend* GetWindowBackend(Window* w);
 
@@ -125,7 +126,7 @@ private:
     Set<Window*> aliveWindows; // Windows which have native windows and take part in update cycle
     Set<Window*> dyingWindows; // Windows which will be deleted soon; native window may be already destroyed
 
-    // Applciation-supplied functor which is invoked when user is trying to close window or application
+    // Application-supplied functor which is invoked when user is trying to close window or application
     Function<bool(Window*)> closeRequestHandler;
 
     eEngineRunMode runMode = eEngineRunMode::GUI_STANDALONE;

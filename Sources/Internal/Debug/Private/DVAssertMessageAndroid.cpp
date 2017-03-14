@@ -1,5 +1,6 @@
 #include "Debug/DVAssertMessage.h"
 
+#if !defined(__DAVAENGINE_COREV2__)
 #if defined(__DAVAENGINE_ANDROID__)
 
 #include "Engine/Android/JNIBridge.h"
@@ -28,3 +29,4 @@ bool InnerShow(eModalType modalType, const char* message)
 } // namespace DAVA
 
 #endif
+#endif // !defined(__DAVAENGINE_COREV2__)

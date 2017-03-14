@@ -11,7 +11,7 @@
 #include <QDebug>
 #include <QSignalBlocker>
 
-#include "Qt/Settings/SettingsManager.h"
+#include "Classes/Settings/SettingsManager.h"
 #include "Deprecated/SceneValidator.h"
 #include "Main/QTUtils.h"
 #include "Scene/SceneEditor2.h"

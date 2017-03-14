@@ -1,4 +1,7 @@
 #import "UIDismissionHandlerAlertView.h"
+
+#if !defined(__DAVAENGINE_COREV2__)
+
 #import <UIKit/UIKit.h>
 
 @interface UIDismissionHandlerAlertView ()<UIAlertViewDelegate>
@@ -76,3 +79,5 @@
 }
 
 @end
+
+#endif // !defined(__DAVAENGINE_COREV2__)

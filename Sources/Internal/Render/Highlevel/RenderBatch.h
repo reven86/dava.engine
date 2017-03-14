@@ -1,11 +1,10 @@
-#ifndef __DAVAENGINE_SCENE3D_RENDER_BATCH_H__
-#define __DAVAENGINE_SCENE3D_RENDER_BATCH_H__
-
+#pragma once
 #include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
 #include "Base/FastName.h"
 #include "Render/RenderBase.h"
 #include "Base/BaseMath.h"
+#include "Reflection/Reflection.h"
 
 #include "Render/3D/PolygonGroup.h"
 #include "Render/Highlevel/RenderObject.h"
@@ -107,6 +106,8 @@ public:
                          MEMBER(material, "Material", I_VIEW | I_EDIT)
 
                          PROPERTY("sortingKey", "Key for the sorting inside render layer", GetSortingKey, SetSortingKey, I_SAVE | I_VIEW | I_EDIT));
+
+    DAVA_VIRTUAL_REFLECTION(RenderBatch, BaseObject);
 };
 
 inline PolygonGroup* RenderBatch::GetPolygonGroup()
@@ -175,7 +176,4 @@ inline void RenderBatch::BindGeometryData(rhi::Packet& packet)
         packet.startIndex = startIndex;
     }
 }
-
-} //
-
-#endif /* __DAVAENGINE_SCENE3D_RENDER_BATCH_H__ */
+}

@@ -18,7 +18,6 @@
 #include "Modules/DocumentsModule/DocumentData.h"
 
 #include <TArc/Controls/SceneTabbar.h>
-#include <TArc/Models/SceneTabsModel.h>
 #include <TArc/Core/ContextAccessor.h>
 #include <TArc/DataProcessing/DataContext.h>
 
@@ -63,7 +62,7 @@ PreviewWidget::PreviewWidget(DAVA::TArc::ContextAccessor* accessor_, DAVA::Rende
                 << 2.50f << 3.00f << 4.00f << 5.00f << 6.00f << 7.00f << 8.00f;
     InjectRenderWidget(renderWidget);
 
-    InitUI(accessor);
+    InitUI();
 
     InitFromSystemsManager(systemsManager);
 
@@ -392,14 +391,12 @@ void PreviewWidget::OnHScrollbarActionTriggered(int /*action*/)
     }
 }
 
-void PreviewWidget::InitUI(DAVA::TArc::ContextAccessor* accessor)
+void PreviewWidget::InitUI()
 {
     gridLayout = new QGridLayout(this);
 
     DAVA::TArc::DataContext* ctx = accessor->GetGlobalContext();
-    ctx->CreateData(std::make_unique<SceneTabsModel>());
-    DAVA::Reflection reflection = DAVA::Reflection::Create(ctx->GetData<SceneTabsModel>());
-    DAVA::TArc::SceneTabbar* tabBar = new DAVA::TArc::SceneTabbar(accessor, reflection, this);
+    DAVA::TArc::SceneTabbar* tabBar = new DAVA::TArc::SceneTabbar(accessor, DAVA::Reflection::Create(&accessor), this);
     tabBar->closeTab.Connect(&requestCloseTab, &DAVA::Signal<DAVA::uint64>::Emit);
 
     tabBar->setElideMode(Qt::ElideNone);

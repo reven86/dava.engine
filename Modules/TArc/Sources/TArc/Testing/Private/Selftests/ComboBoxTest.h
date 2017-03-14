@@ -7,8 +7,6 @@
 #include "TArc/Controls/QtBoxLayouts.h"
 #include "TArc/Utils/QtConnections.h"
 
-#include <QtTools/Utils/QtDelayedExecutor.h>
-
 #include <Base/Any.h>
 #include <Base/BaseTypes.h>
 #include <Base/FastName.h>
@@ -334,15 +332,17 @@ DAVA_TARC_TESTCLASS(ComboBoxTest)
 
     bool TestComplete(const DAVA::String& testName) const override
     {
+        bool testCompleted = true;
+
         if (testName == "ShouldBeFirst_ComboTest")
         {
-            return (currentTest == static_cast<int>(comboTestData.size()));
+            testCompleted = (currentTest == static_cast<int>(comboTestData.size()));
         }
         else if (testName == "ShouldBeSecond_ComboTest")
         {
-            return (currentTest == static_cast<int>(comboTestData.size()));
+            testCompleted = (currentTest == static_cast<int>(comboTestData.size()));
         }
-        return true;
+        return TestClass::TestComplete(testName) && testCompleted;
     }
 
     MOCK_METHOD0_VIRTUAL(AfterWrappersSync, void());

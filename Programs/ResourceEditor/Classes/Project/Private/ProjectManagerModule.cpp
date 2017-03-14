@@ -3,9 +3,9 @@
 #include "Classes/Project/ProjectResources.h"
 
 #include "Classes/Application/REGlobal.h"
-#include "Classes/Qt/Settings/Settings.h"
+#include "Classes/Settings/Settings.h"
+#include "Classes/Settings/SettingsManager.h"
 #include "Classes/Qt/SpritesPacker/SpritesPackerModule.h"
-#include "Classes/Qt/Settings/SettingsManager.h"
 #include "Deprecated/EditorConfig.h"
 
 #include "TArc/WindowSubSystem/ActionUtils.h"

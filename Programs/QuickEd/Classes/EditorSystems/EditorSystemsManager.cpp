@@ -200,6 +200,11 @@ void EditorSystemsManager::SelectNode(ControlNode* node)
     selectionSystemPtr->SelectNode(node);
 }
 
+const SortedPackageBaseNodeSet& EditorSystemsManager::GetEditingRootControls() const
+{
+    return editingRootControls;
+}
+
 void EditorSystemsManager::SetDisplayState(eDisplayState newDisplayState)
 {
     if (displayState == newDisplayState)
@@ -218,7 +223,15 @@ void EditorSystemsManager::OnEditingRootControlsChanged(const SortedPackageBaseN
     engineContext->uiControlSystem->GetInputSystem()->SetCurrentScreen(engineContext->uiControlSystem->GetScreen()); // reset current screen
 
     editingRootControls = rootControls;
-    SetDisplayState(rootControls.size() == 1 ? Edit : Preview);
+    eDisplayState state = rootControls.size() == 1 ? Edit : Preview;
+    if (displayState == Emulation)
+    {
+        previousDisplayState = state;
+    }
+    else
+    {
+        SetDisplayState(state);
+    }
 }
 
 void EditorSystemsManager::OnActiveHUDAreaChanged(const HUDAreaInfo& areaInfo)
@@ -233,6 +246,7 @@ void EditorSystemsManager::OnPackageChanged(PackageNode* package_)
         package->RemoveListener(this);
     }
     magnetLinesChanged.Emit({});
+    SetDragState(NoDrag);
     ClearHighlight();
 
     package = package_;
