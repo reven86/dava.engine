@@ -325,7 +325,7 @@ public:
         Set value indicating if screen timeout is enabled.
         If value is `true`, screens will dim some time after last user interaction (if it's enabled in system settings),
         otherwise screens will stay active even if there's no input.
-        Default value is `true`.
+        By default, timeout is enabled.
     */
     void SetScreenTimeoutEnabled(bool enabled);
 
