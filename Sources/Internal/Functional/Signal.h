@@ -27,9 +27,9 @@ namespace DAVA
 
     ### Hello World
 
-    The following example writes "Hello, World!" using signals and slots. First, we create a signal sig,
-    a signal that takes no arguments. Next, we connect the HelloWorld::foo function to the signal using the
-    Signal::Connect() method. Finally, use the signal sig like a function to call the slots, which in 
+    The following example writes "Hello, World!" using signals and slots. First, we create a signal `sig`,
+    a signal that takes no arguments. Next, we connect the `HelloWorld::foo` function to the signal using the
+    Signal::Connect() method. Finally, use the signal `sig` like a function to call the slots, which in 
     turns invokes HelloWorld::operator() to print "Hello, World!".
 
     \code
@@ -86,8 +86,8 @@ namespace DAVA
     }
     \endcode
 
-    One should know, that each Connect(...) fucntion returns an unique slot identifier - Token. It can be used
-    to control slot was that created by oppropriate Connect() call. See "Disconnecting Slots" or "Blocking Slots" for
+    One should know, that each Connect(...) function returns an unique slot identifier - Token. It can be used
+    to control slot was that created by appropriate Connect() call. See "Disconnecting Slots" or "Blocking Slots" for
     examples.
 
 
@@ -149,7 +149,7 @@ namespace DAVA
         // disconnect all slots that were connected with &hello object
         sig.Disconnect(&hello);
 
-        // Disconnect slot, that is identifyed by `token`
+        // Disconnect slot, that is identified by `token`
         sig.Disconnect(gooToken);
 
         // Call all of the remaining slots - World::foo
@@ -165,7 +165,7 @@ namespace DAVA
 
     Slots can be temporarily "blocked", meaning that they will be ignored when the signal is emited but has not
     been permanently disconnected. This is typically used to prevent infinite recursion in cases where otherwise
-    running a slot would cause the signal it is connected to to be invoked again. 
+    running a slot would cause the signal it is connected to be invoked again. 
     Here is an example of blocking/unblocking slots:
 
     \code
@@ -217,7 +217,7 @@ namespace DAVA
     \code
     sig.Emit(); // OK, Prints "Hello"
     delete hello;   // automatically disconnect from all signals
-    sig.Emit(); // OK, Prints nothig 
+    sig.Emit(); // OK, Prints nothing 
     \endcode
 
     Also one may use TrackedObject that isn't part of the slot.
@@ -236,7 +236,7 @@ namespace DAVA
 
         delete to; // All connection tracked by `to` disconnect
 
-        sig.Emit(); // OK, Prints nothig 
+        sig.Emit(); // OK, Prints nothing 
     }
     \endcode
 */
@@ -289,7 +289,7 @@ public:
     /**
         Connect this signal to the incoming object `obj` and callback function `fn` - the slot.
         If `obj` points to TrackedObject than connection will be managed - it will be automatically
-        disconnected if this signal or object `obj` is destroyd. Optional parameter `group` can be
+        disconnected if this signal or object `obj` is destroyed. Optional parameter `group` can be
         used to associate slot with the given group (see Emit() for more info about groups).
 
         Return a Token that identify the newly-created connection to the specified slot `fn`.
@@ -326,9 +326,9 @@ public:
 
     /**
         Sets connection slot with specified token `token` to be temporarily "blocked".
-        Blocked slot means that it will be ignored when the signal is emited but has not been permanently
+        Blocked slot means that it will be ignored when the signal is emitted but has not been permanently
         disconnected. This is typically used to prevent infinite recursion in cases where otherwise running
-        a slot would cause the signal it is connected to to be invoked again.
+        a slot would cause the signal it is connected to be invoked again.
 
         By default every newly created connection is unblocked.
     */
@@ -336,9 +336,9 @@ public:
 
     /**
         Sets every connection that is linked with specified object `obj` to be temporarily "blocked".
-        Blocked slot means that it will be ignored when the signal is emited but has not been permanently
+        Blocked slot means that it will be ignored when the signal is emitted but has not been permanently
         disconnected. This is typically used to prevent infinite recursion in cases where otherwise running
-        a slot would cause the signal it is connected to to be invoked again.
+        a slot would cause the signal it is connected to be invoked again.
 
         By default every newly created connection is unblocked.
     */
@@ -351,7 +351,7 @@ public:
         Invokes the sequence of calls to the slots connected to signal *this. Every slot will be invoked
         with the given set of parameters `args...`. 
 
-        The order of invokation depends on slot connection group:
+        The order of invocation depends on slot connection group:
         1. Signal::Group::High, while order within the group is not defined
         2. Signal::Group::Medium, while order within the group corresponds to the connection order
         3. Signal::Group::Low, while order within the group corresponds to the connection order
@@ -363,7 +363,7 @@ public:
 private:
     using ConnectionFn = Function<void(Args...)>;
 
-    /** Internal strucute that contains info about connected slot */
+    /** Internal structure that contains info about connected slot */
     struct Connection
     {
         void* object; //< object that is used with Connect(...) call
