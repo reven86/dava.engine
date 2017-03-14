@@ -26,7 +26,7 @@ public:
     const PackageNode* GetPackageNode() const;
 
     void ExecCommand(std::unique_ptr<DAVA::Command>&& command);
-    void BeginBatch(const DAVA::String& batchName, DAVA::uint32 commandsCount = 0);
+    void BeginBatch(const DAVA::String& batchName, DAVA::uint32 commandsCount = 1);
     void EndBatch();
     template <typename T, typename... Arguments>
     std::unique_ptr<T> CreateCommand(Arguments&&... args) const;
