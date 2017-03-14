@@ -600,7 +600,7 @@ void DocumentsModule::ChangeControlText(ControlNode* node)
     DVASSERT(staticText != nullptr);
 
     RootProperty* rootProperty = node->GetRootProperty();
-    AbstractProperty* textProperty = rootProperty->FindPropertyByName("Text");
+    AbstractProperty* textProperty = rootProperty->FindPropertyByName("text");
     DVASSERT(textProperty != nullptr);
 
     String text = textProperty->GetValue().Cast<String>();
@@ -616,14 +616,14 @@ void DocumentsModule::ChangeControlText(ControlNode* node)
         DocumentData* data = activeContext->GetData<DocumentData>();
         CommandStack* stack = data->commandStack.get();
         stack->BeginBatch("change text by user");
-        AbstractProperty* multilineProperty = rootProperty->FindPropertyByName("Multi Line");
+        AbstractProperty* multilineProperty = rootProperty->FindPropertyByName("multiline");
         DVASSERT(multilineProperty != nullptr);
         UIStaticText::eMultiline multilineType = multilineProperty->GetValue().Cast<UIStaticText::eMultiline>();
         if (inputText.contains('\n') && multilineType == UIStaticText::MULTILINE_DISABLED)
         {
-            stack->Exec(std::make_unique<ChangePropertyValueCommand>(node, multilineProperty, VariantType(UIStaticText::MULTILINE_ENABLED)));
+            stack->Exec(std::make_unique<ChangePropertyValueCommand>(node, multilineProperty, UIStaticText::MULTILINE_ENABLED));
         }
-        stack->Exec(std::make_unique<ChangePropertyValueCommand>(node, textProperty, VariantType(inputText.toStdString())));
+        stack->Exec(std::make_unique<ChangePropertyValueCommand>(node, textProperty, inputText.toStdString()));
         stack->EndBatch();
     }
 }
