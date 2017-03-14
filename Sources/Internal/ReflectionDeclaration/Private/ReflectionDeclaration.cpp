@@ -322,6 +322,8 @@ void RegisterPermanentNames()
     GetEngineContext()->componentManager->RegisterComponent<UIActionComponent>();
     GetEngineContext()->componentManager->RegisterComponent<UIActionBindingComponent>();
     GetEngineContext()->componentManager->RegisterComponent<UIScrollBarDelegateComponent>();
+    GetEngineContext()->componentManager->RegisterComponent<UISoundComponent>();
+    GetEngineContext()->componentManager->RegisterComponent<UISoundValueFilterComponent>();
 }
 
 void RegisterReflectionForBaseTypes()
