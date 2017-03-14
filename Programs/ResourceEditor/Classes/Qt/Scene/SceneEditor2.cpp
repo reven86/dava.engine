@@ -283,7 +283,7 @@ void SceneEditor2::AddSystem(DAVA::SceneSystem* sceneSystem, DAVA::uint64 compon
     }
 }
 
-void SceneEditor2::RemoveSystem(DAVA::ScenшеeSystem* sceneSystem)
+void SceneEditor2::RemoveSystem(DAVA::SceneSystem* sceneSystem)
 {
     EditorSceneSystem* editorSystem = dynamic_cast<EditorSceneSystem*>(sceneSystem);
     if (editorSystem != nullptr)
