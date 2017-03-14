@@ -216,11 +216,11 @@ int DAVAMain(Vector<String> cmdLine)
     };
     e.Init(eEngineRunMode::CONSOLE_MODE, modules, nullptr);
 
-    e.update.ConnectDetached([&e](float32)
-                             {
-                                 Process(e);
-                                 e.QuitAsync(0);
-                             });
+    e.update.Connect([&e](float32)
+                     {
+                         Process(e);
+                         e.QuitAsync(0);
+                     });
 
     return e.Run();
 }

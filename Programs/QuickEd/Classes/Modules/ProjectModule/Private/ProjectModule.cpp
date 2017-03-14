@@ -43,7 +43,7 @@ void ProjectModule::PostInit()
     MainWindow* mainWindow = qobject_cast<MainWindow*>(GetUI()->GetWindow(QEGlobal::windowKey));
     if (mainWindow != nullptr && mainWindow->IsInitialized() == false)
     {
-        mainWindow->initialized.ConnectDetached([this]() {
+        mainWindow->initialized.Connect([this]() {
             delayedExecutor.DelayedExecute(MakeFunction(this, &ProjectModule::OpenLastProject));
         });
     }
@@ -140,7 +140,7 @@ void ProjectModule::CreateActions()
         params.menuSubPath << fileMenuName << recentProjectsActionName;
         params.insertionParams.method = InsertionParams::eInsertionMethod::BeforeItem;
         recentProjects.reset(new RecentMenuItems(std::move(params)));
-        recentProjects->actionTriggered.ConnectDetached([this](const DAVA::String& projectPath) {
+        recentProjects->actionTriggered.Connect([this](const DAVA::String& projectPath) {
             OpenProject(projectPath);
         });
     }

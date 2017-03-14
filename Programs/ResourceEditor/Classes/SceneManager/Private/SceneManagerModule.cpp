@@ -208,10 +208,10 @@ void SceneManagerModule::PostInit()
     params.insertionParams.item = QString("importSeparator");
 
     recentItems.reset(new RecentMenuItems(std::move(params)));
-    recentItems->actionTriggered.ConnectDetached([this](const DAVA::String& scenePath)
-                                                 {
-                                                     OpenSceneByPath(DAVA::FilePath(scenePath));
-                                                 });
+    recentItems->actionTriggered.Connect([this](const DAVA::String& scenePath)
+                                         {
+                                             OpenSceneByPath(DAVA::FilePath(scenePath));
+                                         });
 }
 
 void SceneManagerModule::CreateModuleControls(DAVA::TArc::UI* ui)

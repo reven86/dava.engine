@@ -179,7 +179,7 @@ void UWPRunner::ProcessBundlePackage()
 {
     FilePath package = options.mainPackage;
     bundleHelper.reset(new AppxBundleHelper(package));
-    cleanNeeded.ConnectDetached([this] { bundleHelper.reset(); });
+    cleanNeeded.Connect([this] { bundleHelper.reset(); });
 
     //try to extract package for specified architecture
     if (!options.architecture.empty())

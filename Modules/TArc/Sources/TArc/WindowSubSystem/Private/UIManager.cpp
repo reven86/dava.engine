@@ -695,14 +695,14 @@ std::unique_ptr<WaitHandle> UIManager::ShowWaitDialog(const WindowKey& windowKey
     UIManagerDetail::MainWindowInfo& windowInfo = impl->FindOrCreateWindow(windowKey);
     std::unique_ptr<WaitDialog> dlg = std::make_unique<WaitDialog>(params, windowInfo.window);
     impl->activeWaitDialogues.insert(dlg.get());
-    dlg->beforeDestroy.ConnectDetached([this](WaitHandle* waitHandle)
-                                       {
-                                           impl->activeWaitDialogues.erase(waitHandle);
-                                           if (impl->activeWaitDialogues.empty())
-                                           {
-                                               lastWaitDialogWasClosed.Emit();
-                                           }
-                                       });
+    dlg->beforeDestroy.Connect([this](WaitHandle* waitHandle)
+                               {
+                                   impl->activeWaitDialogues.erase(waitHandle);
+                                   if (impl->activeWaitDialogues.empty())
+                                   {
+                                       lastWaitDialogWasClosed.Emit();
+                                   }
+                               });
     dlg->Show();
     return std::move(dlg);
 }

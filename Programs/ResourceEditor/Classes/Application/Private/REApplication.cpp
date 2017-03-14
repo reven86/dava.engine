@@ -143,7 +143,7 @@ void REApplication::Init(const DAVA::EngineContext* engineContext)
 
     if (IsTestEnvironment())
     {
-        DAVA::TArc::TestClass::coreChanged.ConnectDetached(&REGlobal::InitTArcCore);
+        DAVA::TArc::TestClass::coreChanged.Connect(&REGlobal::InitTArcCore);
     }
 }
 

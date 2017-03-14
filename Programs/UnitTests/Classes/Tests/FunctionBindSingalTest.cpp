@@ -437,7 +437,7 @@ DAVA_TESTCLASS (FunctionBindSignalTest)
             testSignal.Emit(10);
             TEST_VERIFY(objA->v1 == 10);
 
-            Token connA2 = testSignal.ConnectDetached([objA, &check_v](int v) {
+            Token connA2 = testSignal.Connect([objA, &check_v](int v) {
                 objA->Slot2(v);
                 check_v = v;
             });
@@ -530,8 +530,8 @@ DAVA_TESTCLASS (FunctionBindSignalTest)
             Signal<int&, std::weak_ptr<int>> sig;
 
             // connect twice to the same slot
-            sig.ConnectDetached(test_weakptr);
-            sig.ConnectDetached(test_weakptr);
+            sig.Connect(test_weakptr);
+            sig.Connect(test_weakptr);
 
             int res = 0;
 

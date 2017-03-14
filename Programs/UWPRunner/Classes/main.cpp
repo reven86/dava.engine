@@ -36,11 +36,11 @@ int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
     Engine e;
     e.Init(eEngineRunMode::CONSOLE_MODE, { "NetCore" }, nullptr);
 
-    e.update.ConnectDetached([&e](float32)
-                             {
-                                 int result = Process(e);
-                                 e.QuitAsync(result);
-                             });
+    e.update.Connect([&e](float32)
+                     {
+                         int result = Process(e);
+                         e.QuitAsync(result);
+                     });
 
     return e.Run();
 }
