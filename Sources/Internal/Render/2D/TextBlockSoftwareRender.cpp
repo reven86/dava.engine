@@ -3,6 +3,7 @@
 #include "Render/RenderCallbacks.h"
 #include "UI/UIControlSystem.h"
 #include "Core/Core.h"
+#include "Logger/Logger.h"
 #include "Utils/UTF8Utils.h"
 
 namespace DAVA
