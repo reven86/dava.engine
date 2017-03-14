@@ -370,6 +370,14 @@ bool RenderWidget::RenderWidgetImpl::event(QEvent* e)
         clientDelegate->OnNativeGuesture(gestureEvent);
     }
 
+    if (e->type() == QEvent::WindowActivate)
+    {
+        if (IsInitialized() == false)
+        {
+            ActivateRendering();
+        }
+    }
+
     return QQuickWidget::event(e);
 }
 
@@ -428,11 +436,6 @@ RenderWidget::~RenderWidget() = default;
 void RenderWidget::SetClientDelegate(RenderWidget::IClientDelegate* delegate)
 {
     impl->SetClientDelegate(delegate);
-}
-
-void RenderWidget::ActivateRendering()
-{
-    impl->ActivateRendering();
 }
 
 bool RenderWidget::IsInitialized() const
