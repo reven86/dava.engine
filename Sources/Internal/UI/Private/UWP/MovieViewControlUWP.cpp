@@ -78,8 +78,8 @@ void MovieViewControl::OwnerIsDying()
             });
         }
 
-        window->sizeChanged.Disconnect(windowSizeChangedConnection);
-        Engine::Instance()->windowDestroyed.Disconnect(windowDestroyedConnection);
+        window->sizeChanged.Disconnect(this);
+        Engine::Instance()->windowDestroyed.Disconnect(this);
     }
 #endif
 }
@@ -89,8 +89,8 @@ void MovieViewControl::Initialize(const Rect& rect)
     properties.createNew = true;
 
 #if defined(__DAVAENGINE_COREV2__)
-    windowSizeChangedConnection = window->sizeChanged.Connect(this, &MovieViewControl::OnWindowSizeChanged);
-    windowDestroyedConnection = Engine::Instance()->windowDestroyed.Connect(this, &MovieViewControl::OnWindowDestroyed);
+    window->sizeChanged.Connect(this, &MovieViewControl::OnWindowSizeChanged);
+    Engine::Instance()->windowDestroyed.Connect(this, &MovieViewControl::OnWindowDestroyed);
 #endif
 }
 
