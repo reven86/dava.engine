@@ -111,7 +111,11 @@ macro( processing_mix_data )
 
         set( MIX_APP_DIR ${DEPLOY_DIR_DATA} )     
     else()
-        set( MIX_APP_DIR ${CMAKE_BINARY_DIR}/MixResources )
+
+        if( NOT MIX_APP_DIR )
+            set( MIX_APP_DIR ${CMAKE_CURRENT_BINARY_DIR}/MixResources )
+        endif()
+
         set( DAVA_DEBUGGER_WORKING_DIRECTORY ${MIX_APP_DIR} )
     endif()
     
@@ -170,7 +174,9 @@ macro( processing_mix_data )
         endforeach()
     endif()
 
-
+    if( NOT ARG_NOT_DATA_COPY )
+        reset_property ( MIX_APP_DATA )
+    endif()
 
 endmacro ()
 
@@ -651,9 +657,10 @@ endmacro()
 
 #
 
-function (reset_property KEY_PROP )
-    SET_PROPERTY(GLOBAL PROPERTY ${KEY_PROP} )
-endfunction()
+macro (reset_property KEY_PROP )
+    set( ${KEY_PROP} )
+    SET_PROPERTY(GLOBAL PROPERTY ${KEY_PROP}  )
+endmacro()
 
 macro( load_property  )
     cmake_parse_arguments (ARG "" "" "PROPERTY_LIST" ${ARGN})
