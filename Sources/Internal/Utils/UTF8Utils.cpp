@@ -1,3 +1,4 @@
+#include "Base/Exception.h"
 #include "Utils/UTF8Utils.h"
 #include "Debug/DVAssert.h"
 
@@ -15,14 +16,30 @@ void UTF8Utils::EncodeToWideString(const uint8* string, size_t size, WideString&
     DVASSERT(nullptr != string);
     result.clear();
     result.reserve(size); // minimum they will be same
-    utf8::utf8to16(string, string + size, std::back_inserter(result));
+
+    try
+    {
+        utf8::utf8to16(string, string + size, std::back_inserter(result));
+    }
+    catch (const utf8::exception& ex)
+    {
+        DAVA_THROW(Exception, ex.what());
+    }
 };
 
 String UTF8Utils::EncodeToUTF8(const WideString& wstring)
 {
     String result;
     result.reserve(wstring.size()); // minimum they will be same
-    utf8::utf16to8(wstring.begin(), wstring.end(), std::back_inserter(result));
+
+    try
+    {
+        utf8::utf16to8(wstring.begin(), wstring.end(), std::back_inserter(result));
+    }
+    catch (const utf8::exception& ex)
+    {
+        DAVA_THROW(Exception, ex.what());
+    }
     return result;
 };
 
@@ -35,14 +52,31 @@ void UTF8Utils::EncodeToWideString(const uint8* string, size_type size, WideStri
     DVASSERT(nullptr != string);
     result.clear();
     result.reserve(size); // minimum they will be same
-    utf8::utf8to32(string, string + size, std::back_inserter(result));
+
+    try
+    {
+        utf8::utf8to32(string, string + size, std::back_inserter(result));
+    }
+    catch (const utf8::exception& ex)
+    {
+        DAVA_THROW(Exception, ex.what());
+    }
 };
 
 String UTF8Utils::EncodeToUTF8(const WideString& wstring)
 {
     String result;
     result.reserve(wstring.size()); // minimum they will be same
-    utf8::utf32to8(wstring.begin(), wstring.end(), std::back_inserter(result));
+
+    try
+    {
+        utf8::utf32to8(wstring.begin(), wstring.end(), std::back_inserter(result));
+    }
+    catch (const utf8::exception&)
+    {
+        DAVA_THROW(Exception, ex.what());
+    }
+
     return result;
 };
 #endif
