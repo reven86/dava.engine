@@ -110,16 +110,23 @@ bool PackRequest::IsDownloaded() const
         return false;
     }
 
-    bool allReady = true;
     for (const FileRequest& r : requests)
     {
         if (r.status != Ready)
         {
-            allReady = false;
-            break;
+            return false;
         }
     }
-    return allReady;
+
+    if (packManagerImpl.IsInQueue(this))
+    {
+        if (!packManagerImpl.IsTop(this))
+        {
+            return false; // wait for dependencies to download first
+        }
+    }
+
+    return true;
 }
 
 void PackRequest::SetFileIndexes(Vector<uint32> fileIndexes_)
@@ -244,6 +251,8 @@ bool PackRequest::UpdateFileRequests()
     // TODO refactor method
     bool callSignal = false;
 
+    FileSystem* fs = FileSystem::Instance();
+
     for (FileRequest& fileRequest : requests)
     {
         switch (fileRequest.status)
@@ -257,7 +266,7 @@ bool PackRequest::UpdateFileRequests()
             {
                 fileRequest.status = Ready;
                 uint64 fileSize = 0;
-                if (FileSystem::Instance()->GetFileSize(fileRequest.localFile, fileSize))
+                if (fs->GetFileSize(fileRequest.localFile, fileSize))
                 {
                     DVASSERT(fileSize == fileRequest.sizeOfCompressedFile + sizeof(PackFormat::LitePack::Footer));
                     fileRequest.downloadedFileSize = fileSize;
@@ -278,7 +287,8 @@ bool PackRequest::UpdateFileRequests()
                 if (fileRequest.sizeOfCompressedFile == 0)
                 {
                     // just create empty file, and go to next state
-                    FileSystem::eCreateDirectoryResult dirCreate = FileSystem::Instance()->CreateDirectory(fileRequest.localFile.GetDirectory());
+                    FilePath dirPath = fileRequest.localFile.GetDirectory();
+                    FileSystem::eCreateDirectoryResult dirCreate = fs->CreateDirectory(dirPath, true);
                     if (dirCreate == FileSystem::DIRECTORY_CANT_CREATE)
                     {
                         DisableRequestingAndFireSignalNoSpaceLeft(fileRequest);
@@ -297,7 +307,7 @@ bool PackRequest::UpdateFileRequests()
                 }
                 else
                 {
-                    FileSystem::Instance()->DeleteFile(fileRequest.localFile); // just in case (hash not match, size not match...)
+                    fs->DeleteFile(fileRequest.localFile); // just in case (hash not match, size not match...)
                     fileRequest.taskId = dm->DownloadRange(fileRequest.url, fileRequest.localFile, fileRequest.startLoadingPos, fileRequest.sizeOfCompressedFile);
                 }
             }

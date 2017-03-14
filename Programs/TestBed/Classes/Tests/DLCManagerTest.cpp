@@ -254,8 +254,9 @@ void DLCManagerTest::UnloadResources()
 void DLCManagerTest::WriteErrorOnDevice(const String& filePath, int32 errnoVal)
 {
     StringStream ss(logPring->GetUtf8Text());
-    ss << filePath << std::endl;
+    ss << "Error: can't write file: " << filePath << " errno: " << strerror(errnoVal) << std::endl;
     logPring->SetUtf8Text(ss.str());
+    DVASSERT(false);
 }
 
 void DLCManagerTest::OnRequestUpdated(const DAVA::DLCManager::IRequest& request)
@@ -336,14 +337,8 @@ void DLCManagerTest::OnListPacksClicked(DAVA::BaseObject* sender, void* data, vo
 {
     DLCManager& dm = *engine.GetContext()->dlcManager;
     std::stringstream ss;
-
-    // TODO do I need list loaded packs?
-
     String s = ss.str();
-    if (!s.empty())
-    {
-        s = s.substr(0, s.size() - 2);
-    }
+
     packNameLoading->SetText(UTF8Utils::EncodeToWideString(s));
 }
 

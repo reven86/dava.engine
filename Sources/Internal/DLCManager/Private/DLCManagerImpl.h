@@ -100,39 +100,24 @@ public:
 
     const String& GetSuperPackUrl() const;
 
-    uint32 GetServerFooterCrc32() const
-    {
-        return initFooterOnServer.infoCrc32;
-    }
+    uint32 GetServerFooterCrc32() const;
 
     String GetRelativeFilePath(uint32 fileIndex);
 
-    const Hints& GetHints() const
-    {
-        return hints;
-    }
+    const Hints& GetHints() const;
 
-    const PackMetaData& GetMeta() const
-    {
-        return *meta;
-    }
+    const PackMetaData& GetMeta() const;
 
-    const PackFormat::PackFile& GetPack() const
-    {
-        return usedPackFile;
-    }
+    const PackFormat::PackFile& GetPack() const;
 
     // use only after initialization
-    bool IsFileReady(uint32 fileIndex) const
-    {
-        DVASSERT(fileIndex < scanFileReady.size());
-        return scanFileReady[fileIndex];
-    }
+    bool IsFileReady(uint32 fileIndex) const;
 
-    void SetFileIsReady(uint32 fileIndex)
-    {
-        scanFileReady.at(fileIndex) = true;
-    }
+    void SetFileIsReady(uint32 fileIndex);
+
+    bool IsInQueue(const PackRequest* request) const;
+
+    bool IsTop(const PackRequest* request) const;
 
 private:
     // initialization state functions
@@ -204,9 +189,6 @@ private:
     String uncompressedFileNames;
     UnorderedMap<String, const PackFormat::FileTableEntry*> mapFileData;
     Vector<uint32> startFileNameIndexesInUncompressedNames;
-    // first - relative file name in archive, second - file properties
-    // DO I NEED IT? UnorderedMap<String, const PackFormat::FileTableEntry*> initFileData;
-    // DO I NEED IN? Vector<ResourceArchive::FileInfo> initfilesInfo;
     uint32 downloadTaskId = 0;
     uint64 fullSizeServerData = 0;
 
@@ -215,5 +197,52 @@ private:
     float32 timeWaitingNextInitializationAttempt = 0;
     uint32 retryCount = 0; // count every initialization error during session
 };
+
+inline uint32 DLCManagerImpl::GetServerFooterCrc32() const
+{
+    return initFooterOnServer.infoCrc32;
+}
+
+inline const DLCManagerImpl::Hints& DLCManagerImpl::GetHints() const
+{
+    return hints;
+}
+
+inline const PackMetaData& DLCManagerImpl::GetMeta() const
+{
+    return *meta;
+}
+
+inline const PackFormat::PackFile& DLCManagerImpl::GetPack() const
+{
+    return usedPackFile;
+}
+
+inline bool DLCManagerImpl::IsFileReady(uint32 fileIndex) const
+{
+    DVASSERT(fileIndex < scanFileReady.size());
+    return scanFileReady[fileIndex];
+}
+
+inline void DLCManagerImpl::SetFileIsReady(uint32 fileIndex)
+{
+    scanFileReady.at(fileIndex) = true;
+}
+
+inline bool DLCManagerImpl::IsInQueue(const PackRequest* request) const
+{
+    DVASSERT(request != nullptr);
+    return requestManager->IsInQueue(request->GetRequestedPackName());
+}
+
+inline bool DLCManagerImpl::IsTop(const PackRequest* request) const
+{
+    DVASSERT(request != nullptr);
+    if (!requestManager->Empty())
+    {
+        return request == requestManager->Top();
+    }
+    return false;
+}
 
 } // end namespace DAVA
