@@ -32,9 +32,12 @@ public:
     void Quit();
 
     void SetScreenTimeoutEnabled(bool enabled);
+	bool IsScreenTimeoutEnabled() const;
 
 private:
     EngineBackend& engineBackend;
+
+	bool screenTimeoutEnabled = true;
 
     static HINSTANCE hinstance;
 };
