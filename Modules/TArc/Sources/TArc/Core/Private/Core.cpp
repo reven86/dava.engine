@@ -107,10 +107,15 @@ public:
         {
             isInFrame = false;
         };
-        delayedExecutor.DelayedExecute([this]()
-                                       {
-                                           SyncWrappers();
-                                       });
+
+        if (syncRequested == false)
+        {
+            syncRequested = true;
+            delayedExecutor.DelayedExecute([this]()
+                                           {
+                                               SyncWrappers();
+                                           });
+        }
     }
 
     virtual void OnWindowCreated(DAVA::Window* w)
@@ -225,6 +230,8 @@ protected:
 
     void SyncWrappers()
     {
+        syncRequested = false;
+
         wrappersProcessor.Sync();
         core->syncSignal.Emit();
     }
@@ -241,6 +248,7 @@ protected:
 
     std::unique_ptr<PropertiesHolder> propertiesHolder;
     QtDelayedExecutor delayedExecutor;
+    bool syncRequested = false;
 };
 
 class Core::ConsoleImpl : public Core::Impl

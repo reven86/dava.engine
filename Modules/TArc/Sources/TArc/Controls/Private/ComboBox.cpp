@@ -1,4 +1,3 @@
-
 #include "TArc/Controls/ComboBox.h"
 #include "TArc/Utils/ScopedValueGuard.h"
 #include "TArc/DataProcessing/AnyQMetaType.h"
