@@ -2,7 +2,7 @@
 #include "Classes/Library/Private/ControlsFactory.h"
 #include "Classes/Library/Private/ScenePreviewControl.h"
 
-#include "Classes/Qt/Settings/SettingsManager.h"
+#include "Classes/Settings/SettingsManager.h"
 
 ScenePreviewDialog::ScenePreviewDialog()
     : ExtendedDialog()
