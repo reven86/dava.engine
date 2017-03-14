@@ -82,15 +82,15 @@ DeviceInfoPrivate::DeviceInfoPrivate()
         // MSDN says SystemProductName can be empty, so we have to check it
         if (!deviceInfo.SystemProductName->IsEmpty())
         {
-            // MSDN recomends to use deviceInfo.SystemSku and use deviceInfo.SystemProductName
+            // MSDN recommends to use deviceInfo.SystemSku and use deviceInfo.SystemProductName
             // only in case when SystemSku is empty.
             //
-            // In good cases deviceInfo.SystemSku is somethis like "XIAOMITEST MI4", while
+            // In good cases deviceInfo.SystemSku is something like "XIAOMITEST MI4", while
             // deviceInfo.SystemManufacturer = "XIAOMITEST" and deviceInfo.SystemProductName = "MI4".
-            // But in real life this SystemSku field can contain some unpredictable infonmation,
+            // But in real life this SystemSku field can contain some unpredictable information,
             // e.g. "To be filled by O.E.M." or "<FF><FF><FF>...".
             //
-            // So we prefere to use deviceInfo.SystemProductName instead of recomended deviceInfo.SystemSku
+            // So we prefer to use deviceInfo.SystemProductName instead of recommended deviceInfo.SystemSku
             modelName = UTF8Utils::EncodeToUTF8(deviceInfo.SystemProductName->Data());
         }
 
@@ -688,4 +688,4 @@ bool DeviceInfoPrivate::IsEnabled(NativeHIDType type)
 }
 }
 
-#endif // defined(__DAVAENGINE_WIN_UAP__)
+#endif // __DAVAENGINE_WIN_UAP__
