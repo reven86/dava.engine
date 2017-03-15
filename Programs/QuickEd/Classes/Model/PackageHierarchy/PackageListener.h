@@ -1,5 +1,4 @@
-#ifndef __QUICKED_PACKAGE_LISTENER_H__
-#define __QUICKED_PACKAGE_LISTENER_H__
+#pragma once
 
 class PackageNode;
 class ControlNode;
@@ -14,6 +13,9 @@ class PackageListener
 {
 public:
     virtual ~PackageListener() = 0;
+
+    virtual void PackageNodeWasChanged(PackageNode* node){};
+
     virtual void ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property){};
     virtual void StylePropertyWasChanged(StyleSheetNode* node, AbstractProperty* property){};
 
@@ -41,5 +43,3 @@ public:
 inline PackageListener::~PackageListener()
 {
 }
-
-#endif // __QUICKED_PACKAGE_LISTENER_H__

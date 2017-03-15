@@ -1,6 +1,7 @@
 #pragma once
 
 #include <TArc/Core/ClientModule.h>
+#include <TArc/Core/FieldBinder.h>
 
 namespace DAVA
 {
@@ -13,9 +14,11 @@ class DataContext;
 class PackageListenerModule : public DAVA::TArc::ClientModule
 {
     void PostInit() override;
+    void OnWindowClosed(const DAVA::TArc::WindowKey& key);
 
-    void OnContextWillBeChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* newOne) override;
-    void OnContextWasChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* oldOne) override;
+    void OnPackageChanged(const DAVA::Any& package);
+
+    std::unique_ptr<DAVA::TArc::FieldBinder> fieldBinder;
 
     DAVA_VIRTUAL_REFLECTION(PackageListenerModule, DAVA::TArc::ClientModule);
 };

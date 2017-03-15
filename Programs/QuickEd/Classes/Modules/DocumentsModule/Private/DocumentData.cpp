@@ -9,7 +9,7 @@
 DAVA_VIRTUAL_REFLECTION_IMPL(DocumentData)
 {
     DAVA::ReflectionRegistrator<DocumentData>::Begin()
-    .Field(packagePropertyName, static_cast<const PackageNode* (DocumentData::*)() const>(&DocumentData::GetPackageNode), nullptr)
+    .Field(packagePropertyName, &DocumentData::GetPackageNode, nullptr)
     .Field(canSavePropertyName, &DocumentData::CanSave, nullptr)
     .Field(canUndoPropertyName, &DocumentData::CanUndo, nullptr)
     .Field(canRedoPropertyName, &DocumentData::CanRedo, nullptr)
@@ -33,11 +33,6 @@ DAVA::CommandStack* DocumentData::GetCommandStack() const
 }
 
 const PackageNode* DocumentData::GetPackageNode() const
-{
-    return package.Get();
-}
-
-PackageNode* DocumentData::GetPackageNode()
 {
     return package.Get();
 }

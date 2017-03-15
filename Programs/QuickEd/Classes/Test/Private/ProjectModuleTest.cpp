@@ -2,9 +2,9 @@
 #include "Modules/ProjectModule/ProjectData.h"
 #include "Modules/LegacySupportModule/Private/Project.h"
 
-#include "Test/TestHelpers.h"
-#include "Test/ProjectModuleHelper.h"
-#include "Test/DocumentsModuleHelper.h"
+#include "Test/Private/TestHelpers.h"
+#include "Test/Private/ProjectModuleHelper.h"
+#include "Test/Private/DocumentsModuleHelper.h"
 
 #include "Application/QEGlobal.h"
 
@@ -51,7 +51,7 @@ DAVA_TARC_TESTCLASS(ProjectManagerTests)
 
         ContextAccessor* accessor = GetAccessor();
 
-        CreateFolder(projectPath);
+        CreateProjectFolder(projectPath);
 
         String projectPathStr = projectPath.GetAbsolutePathname();
         InvokeOperation(ProjectModuleTesting::CreateProjectOperation.ID, QString::fromStdString(projectPathStr));

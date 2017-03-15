@@ -8,7 +8,7 @@ class QWidget;
 
 namespace TestHelpers
 {
-void CreateFolder(const DAVA::FilePath& folder);
+void CreateProjectFolder(const DAVA::FilePath& folder);
 void ClearTestFolder();
 DAVA::FilePath GetTestPath();
 

@@ -1,25 +1,25 @@
-#include "Test/DocumentsModuleHelper.h"
+#include "Test/Private//DocumentsModuleHelper.h"
 
 #include "Application/QEGlobal.h"
 
 #include <Debug/DVAssert.h>
 
-DAVA_VIRTUAL_REFLECTION_IMPL(TestHelpers::SampleData)
-{
-    DAVA::ReflectionRegistrator<TestHelpers::SampleData>::Begin()
-    .ConstructorByPointer()
-    .End();
-}
-
-DAVA_VIRTUAL_REFLECTION_IMPL(TestHelpers::DocumentsModuleHelper)
-{
-    DAVA::ReflectionRegistrator<TestHelpers::DocumentsModuleHelper>::Begin()
-    .ConstructorByPointer()
-    .End();
-}
-
 namespace TestHelpers
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(SampleData)
+{
+    DAVA::ReflectionRegistrator<SampleData>::Begin()
+    .ConstructorByPointer()
+    .End();
+}
+
+DAVA_VIRTUAL_REFLECTION_IMPL(DocumentsModuleHelper)
+{
+    DAVA::ReflectionRegistrator<DocumentsModuleHelper>::Begin()
+    .ConstructorByPointer()
+    .End();
+}
+
 void DocumentsModuleHelper::PostInit()
 {
     RegisterOperation(QEGlobal::CloseAllDocuments.ID, this, &DocumentsModuleHelper::CloseAllDocuments);

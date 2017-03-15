@@ -1,15 +1,15 @@
-#include "Test/ProjectModuleHelper.h"
-#include "Test/TestHelpers.h"
+#include "Test/Private/ProjectModuleHelper.h"
+#include "Test/Private/TestHelpers.h"
 
-DAVA_VIRTUAL_REFLECTION_IMPL(TestHelpers::ProjectModuleHelper)
+namespace TestHelpers
 {
-    DAVA::ReflectionRegistrator<TestHelpers::ProjectModuleHelper>::Begin()
+DAVA_VIRTUAL_REFLECTION_IMPL(ProjectModuleHelper)
+{
+    DAVA::ReflectionRegistrator<ProjectModuleHelper>::Begin()
     .ConstructorByPointer()
     .End();
 }
 
-namespace TestHelpers
-{
 void ProjectModuleHelper::PostInit()
 {
     using namespace DAVA;

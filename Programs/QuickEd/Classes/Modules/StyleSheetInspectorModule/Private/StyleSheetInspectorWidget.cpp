@@ -52,12 +52,12 @@ void StyleSheetInspectorWidget::InitFieldBinder(DAVA::TArc::ContextAccessor* acc
     selectionFieldBinder->BindField(fieldDescr, MakeFunction(this, &StyleSheetInspectorWidget::OnSelectionChanged));
 }
 
-void StyleSheetInspectorWidget::ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property)
+void StyleSheetInspectorWidget::ControlPropertyWasChanged(ControlNode* /*node*/, AbstractProperty* /*property*/)
 {
     updater.Update();
 }
 
-void StyleSheetInspectorWidget::StylePropertyWasChanged(StyleSheetNode* node, AbstractProperty* property)
+void StyleSheetInspectorWidget::StylePropertyWasChanged(StyleSheetNode* /*node*/, AbstractProperty* /*property*/)
 {
     updater.Update();
 }
@@ -94,7 +94,6 @@ void StyleSheetInspectorWidget::Update()
     }
 
     UIStyleSheetProcessDebugData debugData;
-
     UIControlSystem::Instance()->GetStyleSheetSystem()->DebugControl(currentControl.Get(), &debugData);
 
     QFont boldFont;

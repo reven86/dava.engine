@@ -12,9 +12,9 @@
 #include "Model/QuickEdPackageBuilder.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 
-#include "Test/TestHelpers.h"
-#include "Test/ProjectModuleHelper.h"
-#include "Test/DocumentsModuleHelper.h"
+#include "Test/Private/TestHelpers.h"
+#include "Test/Private/ProjectModuleHelper.h"
+#include "Test/Private/DocumentsModuleHelper.h"
 
 #include "Application/QEGlobal.h"
 
@@ -57,7 +57,7 @@ DAVA_TARC_TESTCLASS(StyleSheetInspectorModuleTest)
         ContextAccessor* accessor = GetAccessor();
         TEST_VERIFY(accessor->GetContextCount() == 0);
 
-        CreateFolder(projectPath);
+        CreateProjectFolder(projectPath);
 
         String projectPathStr = projectPath.GetAbsolutePathname();
         InvokeOperation(ProjectModuleTesting::CreateProjectOperation.ID, QString::fromStdString(projectPathStr));

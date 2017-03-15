@@ -42,6 +42,14 @@ void PackageListenerProxy::SetPackage(PackageNode* node)
     }
 }
 
+void PackageListenerProxy::PackageNodeWasChanged(PackageNode* node)
+{
+    for (PackageListener* listener : listeners)
+    {
+        listener->PackageNodeWasChanged(node);
+    }
+}
+
 void PackageListenerProxy::ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property)
 {
     for (PackageListener* listener : listeners)

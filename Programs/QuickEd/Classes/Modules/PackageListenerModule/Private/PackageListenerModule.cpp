@@ -11,32 +11,38 @@ DAVA_VIRTUAL_REFLECTION_IMPL(PackageListenerModule)
 
 void PackageListenerModule::PostInit()
 {
+    using namespace DAVA;
     using namespace DAVA::TArc;
     ContextAccessor* accessor = GetAccessor();
     DataContext* globalContext = accessor->GetGlobalContext();
     globalContext->CreateData(std::make_unique<PackageListenerProxy>());
+
+    fieldBinder.reset(new FieldBinder(accessor));
+    FieldDescriptor fieldDescr;
+    fieldDescr.type = ReflectedTypeDB::Get<DocumentData>();
+    fieldDescr.fieldName = FastName(DocumentData::packagePropertyName);
+    fieldBinder->BindField(fieldDescr, MakeFunction(this, &PackageListenerModule::OnPackageChanged));
 }
 
-void PackageListenerModule::OnContextWillBeChanged(DAVA::TArc::DataContext* /*current*/, DAVA::TArc::DataContext* /*newOne*/)
+void PackageListenerModule::OnWindowClosed(const DAVA::TArc::WindowKey& key)
 {
     using namespace DAVA::TArc;
     ContextAccessor* accessor = GetAccessor();
     DataContext* globalContext = accessor->GetGlobalContext();
     PackageListenerProxy* proxy = globalContext->GetData<PackageListenerProxy>();
-    proxy->SetPackage(nullptr);
+    proxy->listeners.clear();
 }
 
-void PackageListenerModule::OnContextWasChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* /*oldOne*/)
+void PackageListenerModule::OnPackageChanged(const DAVA::Any& package)
 {
     using namespace DAVA::TArc;
     ContextAccessor* accessor = GetAccessor();
     DataContext* globalContext = accessor->GetGlobalContext();
     PackageListenerProxy* proxy = globalContext->GetData<PackageListenerProxy>();
-    if (current != nullptr)
+
+    if (package.CanGet<PackageNode*>())
     {
-        DocumentData* documentData = current->GetData<DocumentData>();
-        DVASSERT(nullptr != documentData);
-        proxy->SetPackage(documentData->GetPackageNode());
+        proxy->SetPackage(package.Get<PackageNode*>());
     }
     else
     {

@@ -1,4 +1,4 @@
-#include "Test/TestHelpers.h"
+#include "Test/Private/TestHelpers.h"
 
 #include <Engine/Engine.h>
 #include <FileSystem/FileSystem.h>
@@ -10,8 +10,9 @@
 #include <QMenuBar>
 #include <QMenu>
 
-void TestHelpers::CreateFolder(const DAVA::FilePath& folderName)
+void TestHelpers::CreateProjectFolder(const DAVA::FilePath& folderName)
 {
+    ClearTestFolder(); // to be sure that we have no any data at project folder that could stay in case of crash or stopping of debugging
     const DAVA::EngineContext* context = DAVA::GetEngineContext();
     DAVA::FileSystem* fs = context->fileSystem;
 

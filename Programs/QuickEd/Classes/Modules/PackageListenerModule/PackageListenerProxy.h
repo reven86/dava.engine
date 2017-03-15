@@ -14,6 +14,8 @@ private:
     friend class PackageListenerModule;
     void SetPackage(PackageNode* node);
 
+    void PackageNodeWasChanged(PackageNode* node) override;
+
     void ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property) override;
     void StylePropertyWasChanged(StyleSheetNode* node, AbstractProperty* property) override;
 
@@ -37,6 +39,7 @@ private:
 
     void StyleSheetsWereRebuilt() override;
 
+    friend class PackageListenerModule;
     PackageNode* package = nullptr;
     DAVA::List<PackageListener*> listeners;
 
