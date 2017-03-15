@@ -5,6 +5,8 @@
 #include "TArc/DataProcessing/Common.h"
 #include "TArc/Utils/QtConnections.h"
 
+#include <Functional/Function.h>
+
 #include <QWidget>
 
 class QTreeView;
@@ -23,6 +25,19 @@ class PropertiesView : public QWidget
 {
     Q_OBJECT
 public:
+    enum UpdatePolicy
+    {
+        FullUpdate,
+        FastUpdate
+    };
+
+    class Updater
+    {
+    public:
+        virtual ~Updater() = default;
+
+        Signal<UpdatePolicy> update;
+    };
     /**
         Create PropertiesView widget with ReflectedModel. As data source for ReflectedMode use value of "objectsField"
         Value of "objectsField" could be casted to Vector<Reflection>
@@ -34,6 +49,7 @@ public:
         UI* ui = nullptr;
         FieldDescriptor objectsField;
         String settingsNodeName;
+        std::weak_ptr<Updater> updater;
     };
 
     PropertiesView(const Params& params);
@@ -46,6 +62,7 @@ private:
     void SetupUI();
     void OnObjectsChanged(const Any& objects);
     void OnColumnResized(int columnIndex, int oldSize, int newSize);
+    void Update(UpdatePolicy policy);
 
     void OnExpanded(const QModelIndex& index);
     void OnCollapsed(const QModelIndex& index);
@@ -55,6 +72,7 @@ private:
     Params params;
     QTreeView* view = nullptr;
     std::unique_ptr<ReflectedPropertyModel> model;
+    SigConnectionID updateConnectionID;
     QtConnections connections;
 };
 }

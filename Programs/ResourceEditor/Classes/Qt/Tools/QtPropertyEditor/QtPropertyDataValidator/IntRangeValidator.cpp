@@ -1,5 +1,5 @@
 #include "IntRangeValidator.h"
-#include "Qt/Settings/SettingsManager.h"
+#include "Classes/Settings/SettingsManager.h"
 
 IntRangeValidator::IntRangeValidator(int minValue, int maxValue)
 {

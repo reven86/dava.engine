@@ -10,7 +10,6 @@ namespace DAVA
 {
 namespace TArc
 {
-
 template <typename T>
 Any NumberComponentValue<T>::GetMultipleValue() const
 {

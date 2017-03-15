@@ -44,6 +44,7 @@ public:
     //////////////////////////////////////
 
     void Update();
+    void UpdateFast();
     void SetObjects(Vector<Reflection> objects);
 
     void RegisterExtension(const std::shared_ptr<ExtensionChain>& extension);
@@ -72,11 +73,13 @@ private:
     QModelIndex MapItem(ReflectedPropertyItem* item) const;
 
     void Update(ReflectedPropertyItem* item);
+    void UpdateFastImpl(ReflectedPropertyItem* item);
     void HideEditor(ReflectedPropertyItem* item);
 
     template <typename T>
     std::shared_ptr<T> GetExtensionChain() const;
 
+    DataWrappersProcessor* GetWrappersProcessor(const std::shared_ptr<PropertyNode>& node);
     void GetExpandedListImpl(QModelIndexList& list, ReflectedPropertyItem* item) const;
 
 private:
@@ -87,6 +90,7 @@ private:
     Map<const Type*, std::shared_ptr<ExtensionChain>> extensions;
 
     DataWrappersProcessor wrappersProcessor;
+    DataWrappersProcessor fastWrappersProcessor;
 
     struct ExpandedFieldDescriptor
     {

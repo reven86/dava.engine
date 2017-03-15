@@ -2,8 +2,8 @@
 #include "Classes/Project/ProjectManagerData.h"
 #include "Classes/Application/LaunchModule.h"
 #include "Classes/Application/REGlobal.h"
-#include "Classes/Qt/Settings/Settings.h"
-#include "Classes/Qt/Settings/SettingsManager.h"
+#include "Classes/Settings/Settings.h"
+#include "Classes/Settings/SettingsManager.h"
 
 #include "Classes/CommandLine/Private/CommandLineModuleTestUtils.h"
 

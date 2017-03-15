@@ -62,7 +62,7 @@ void REModule::PostInit()
     globalContext->CreateData(std::make_unique<TData>(GetUI()));
     TData* globalData = globalContext->GetData<TData>();
 
-    DAVA::TArc::UIManager* ui = static_cast<DAVA::TArc::UIManager*>(GetUI());
+    DAVA::TArc::UI* ui = GetUI();
     ui->InjectWindow(REGlobal::MainWindowKey, globalData->mainWindow);
     globalData->mainWindow->AfterInjectInit();
     globalData->mainWindow->EnableGlobalTimeout(true);
