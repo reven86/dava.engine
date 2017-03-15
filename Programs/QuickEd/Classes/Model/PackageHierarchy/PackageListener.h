@@ -14,7 +14,7 @@ class PackageListener
 public:
     virtual ~PackageListener() = 0;
 
-    virtual void PackageNodeWasChanged(PackageNode* node){};
+    virtual void ActivePackageNodeWasChanged(PackageNode* node){};
 
     virtual void ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property){};
     virtual void StylePropertyWasChanged(StyleSheetNode* node, AbstractProperty* property){};

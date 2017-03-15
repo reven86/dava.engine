@@ -42,11 +42,11 @@ void PackageListenerProxy::SetPackage(PackageNode* node)
     }
 }
 
-void PackageListenerProxy::PackageNodeWasChanged(PackageNode* node)
+void PackageListenerProxy::ActivePackageNodeWasChanged(PackageNode* node)
 {
     for (PackageListener* listener : listeners)
     {
-        listener->PackageNodeWasChanged(node);
+        listener->ActivePackageNodeWasChanged(node);
     }
 }
 
