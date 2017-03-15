@@ -25,10 +25,6 @@ fragment_in
         float2 varTexCoord1 : TEXCOORD1;
     #endif
 
-    #if MATERIAL_DETAIL
-        float2 varTexCoord1 : TEXCOORD1;
-    #endif
-
     #if TILED_DECAL_MASK
         float2 varDecalTileTexCoord : TEXCOORD2;
     #endif

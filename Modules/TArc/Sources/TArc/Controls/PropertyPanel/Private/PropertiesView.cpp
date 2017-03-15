@@ -15,9 +15,10 @@ namespace DAVA
 {
 namespace TArc
 {
-PropertiesView::PropertiesView(ContextAccessor* accessor_, const FieldDescriptor& objectsField, const String& settingsNodeName_)
+PropertiesView::PropertiesView(ContextAccessor* accessor_, const FieldDescriptor& objectsField, const std::weak_ptr<Updater>& updater_, const String& settingsNodeName_)
     : binder(accessor_)
     , accessor(accessor_)
+    , updater(updater_)
     , settingsNodeName(settingsNodeName_)
 {
     binder.BindField(objectsField, MakeFunction(this, &PropertiesView::OnObjectsChanged));
@@ -25,23 +26,24 @@ PropertiesView::PropertiesView(ContextAccessor* accessor_, const FieldDescriptor
 
     SetupUI();
 
+    std::shared_ptr<Updater> lockedUpdater = updater.lock();
+    if (lockedUpdater != nullptr)
+    {
+        updateConnectionID = lockedUpdater->update.Connect(this, &PropertiesView::Update);
+    }
+
     model->LoadExpanded(accessor->CreatePropertiesNode(settingsNodeName).CreateSubHolder("expandedList"));
-
-    QTimer* timer = new QTimer(this);
-    timer->setInterval(500);
-    QObject::connect(timer, &QTimer::timeout, [this]()
-                     {
-                         model->Update();
-                     });
-
-    // timer->start();
-
     QObject::connect(view, &QTreeView::expanded, this, &PropertiesView::OnExpanded);
     QObject::connect(view, &QTreeView::collapsed, this, &PropertiesView::OnCollapsed);
 }
 
 PropertiesView::~PropertiesView()
 {
+    std::shared_ptr<Updater> lockedUpdater = updater.lock();
+    if (lockedUpdater != nullptr)
+    {
+        lockedUpdater->update.Disconnect(updateConnectionID);
+    }
     PropertiesItem item = accessor->CreatePropertiesNode(settingsNodeName).CreateSubHolder("expandedList");
     model->SaveExpanded(item);
 }
@@ -97,6 +99,22 @@ void PropertiesView::OnColumnResized(int columnIndex, int oldSize, int newSize)
     PropertiesViewDelegate* d = qobject_cast<PropertiesViewDelegate*>(view->itemDelegate());
     DVASSERT(d != nullptr);
     d->UpdateSizeHints(columnIndex, newSize);
+}
+
+void PropertiesView::Update(UpdatePolicy policy)
+{
+    switch (policy)
+    {
+    case DAVA::TArc::PropertiesView::FullUpdate:
+        model->Update();
+        break;
+    case DAVA::TArc::PropertiesView::FastUpdate:
+        model->UpdateFast();
+        break;
+    default:
+        DVASSERT(false, "Unimplemented update policy have been received");
+        break;
+    }
 }
 
 void PropertiesView::OnExpanded(const QModelIndex& index)

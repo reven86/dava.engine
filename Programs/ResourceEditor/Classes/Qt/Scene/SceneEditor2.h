@@ -175,6 +175,7 @@ protected:
     DAVA::RenderStats renderStats;
 
     DAVA::Vector<EditorSceneSystem*> editorSystems;
+    DAVA::Vector<EditorSceneSystem*> landscapeEditorSystems;
     DAVA::Vector<DAVA::Entity*> editorEntities;
 
     void EditorCommandProcess(const RECommandNotificationObject& commandNotification);
