@@ -75,6 +75,7 @@ private:
     void OnActiveFocusItemChanged();
     void OnSceneGraphInvalidated();
     void OnClientDelegateDestroyed();
+    void OnBeforeSyncronizing();
 
 private:
     IWindowDelegate* widgetDelegate = nullptr;
@@ -83,6 +84,8 @@ private:
 
     bool isClosing = false;
     bool isInPaint = false;
+
+    bool isSynchronized = false;
 
     std::unique_ptr<RenderWidgetDetails::QtScreenParams> screenParams;
 };
@@ -104,11 +107,12 @@ RenderWidget::RenderWidgetImpl::RenderWidgetImpl(RenderWidget::IWindowDelegate* 
     window->setColor(QColor(76, 76, 76, 255));
     connect(window, &QQuickWindow::sceneGraphInvalidated, this, &RenderWidgetImpl::OnSceneGraphInvalidated, Qt::DirectConnection);
     connect(window, &QQuickWindow::activeFocusItemChanged, this, &RenderWidgetImpl::OnActiveFocusItemChanged, Qt::DirectConnection);
+
+    connect(window, &QQuickWindow::beforeSynchronizing, this, &RenderWidgetImpl::OnBeforeSyncronizing, Qt::DirectConnection);
 }
 
 void RenderWidget::RenderWidgetImpl::OnCreated()
 {
-    QObject::disconnect(quickWindow(), &QQuickWindow::beforeSynchronizing, this, &RenderWidgetImpl::OnCreated);
     setProperty(initializedPropertyName, true);
 
     widgetDelegate->OnCreated();
@@ -169,7 +173,6 @@ void RenderWidget::RenderWidgetImpl::OnFrame()
 void RenderWidget::RenderWidgetImpl::ActivateRendering()
 {
     QQuickWindow* w = quickWindow();
-    connect(w, &QQuickWindow::beforeSynchronizing, this, &RenderWidgetImpl::OnCreated, Qt::DirectConnection);
     connect(w, &QQuickWindow::beforeRendering, this, &RenderWidgetImpl::OnFrame, Qt::DirectConnection);
     w->setClearBeforeRendering(false);
 }
@@ -374,7 +377,9 @@ bool RenderWidget::RenderWidgetImpl::event(QEvent* e)
     {
         if (IsInitialized() == false)
         {
+            DVASSERT(isSynchronized);
             ActivateRendering();
+            OnCreated();
         }
     }
 
@@ -413,6 +418,12 @@ bool RenderWidget::RenderWidgetImpl::eventFilter(QObject* object, QEvent* e)
 void RenderWidget::RenderWidgetImpl::OnClientDelegateDestroyed()
 {
     clientDelegate = nullptr;
+}
+
+void RenderWidget::RenderWidgetImpl::OnBeforeSyncronizing()
+{
+    isSynchronized = true;
+    disconnect(quickWindow(), &QQuickWindow::beforeSynchronizing, this, &RenderWidgetImpl::OnBeforeSyncronizing);
 }
 
 /////////////////////////////////////////////////////////////////////////////////
