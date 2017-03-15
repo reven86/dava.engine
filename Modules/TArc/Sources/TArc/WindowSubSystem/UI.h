@@ -14,11 +14,13 @@
 
 class QWidget;
 class QAction;
+class QMainWindow;
 
 namespace DAVA
 {
 namespace TArc
 {
+class ClientModule;
 class QtReflectionBridge;
 class WindowKey
 {
@@ -190,6 +192,11 @@ public:
     Signal<> lastWaitDialogWasClosed;
 
     DAVA_DEPRECATED(virtual QWidget* GetWindow(const WindowKey& windowKey) = 0);
+    DAVA_DEPRECATED(virtual void InjectWindow(const WindowKey& windowKey, QMainWindow* window) = 0);
+
+protected:
+    friend class UIProxy;
+    virtual void SetCurrentModule(ClientModule* module) = 0;
 };
 } // namespace TArc
 } // namespace DAVA
