@@ -7,8 +7,6 @@
 #include "TArc/Controls/QtBoxLayouts.h"
 #include "TArc/Utils/QtConnections.h"
 
-#include <QtTools/Utils/QtDelayedExecutor.h>
-
 #include <Base/Any.h>
 #include <Base/BaseTypes.h>
 #include <Base/FastName.h>

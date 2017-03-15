@@ -4,7 +4,7 @@
 #include "Tools/MimeDataHelper/MimeDataHelper.h"
 #include "Tools/SelectPathWidget/SelectEntityPathWidget.h"
 #include "Main/mainwindow.h"
-#include "Qt/Settings/SettingsManager.h"
+#include "Classes/Settings/SettingsManager.h"
 #include "Qt/Main/QtUtils.h"
 #include "QtTools/ConsoleWidget/PointerSerializer.h"
 #include "Classes/Commands2/EntityAddCommand.h"

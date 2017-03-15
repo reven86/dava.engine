@@ -1,13 +1,14 @@
 #pragma once
 
 #include "TArc/Core/Private/CoreInterface.h"
-#include "Reflection/ReflectionRegistrator.h"
+#include "TArc/WindowSubSystem/UI.h"
+
+#include <Reflection/ReflectionRegistrator.h>
 
 namespace DAVA
 {
 namespace TArc
 {
-class UI;
 class DataContext;
 class ContextAccessor;
 class WindowKey;
@@ -15,9 +16,7 @@ class WindowKey;
 class ClientModule : public ReflectionBase
 {
 public:
-    virtual ~ClientModule()
-    {
-    }
+    virtual ~ClientModule() = default;
 
 protected:
     virtual void OnContextCreated(DataContext* context)
@@ -52,14 +51,14 @@ protected:
     void InvokeOperation(int operationId, const Args&... args);
 
 private:
-    void Init(CoreInterface* coreInterface, UI* ui);
+    void Init(CoreInterface* coreInterface, std::unique_ptr<UI>&& ui);
 
 private:
     friend class Core;
     friend class ControllerModule;
 
     CoreInterface* coreInterface = nullptr;
-    UI* ui = nullptr;
+    std::unique_ptr<UI> ui;
 
     DAVA_VIRTUAL_REFLECTION_IN_PLACE(ClientModule)
     {

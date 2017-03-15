@@ -1,5 +1,5 @@
 #include "FloatRangeValidator.h"
-#include "Qt/Settings/SettingsManager.h"
+#include "Classes/Settings/SettingsManager.h"
 
 FloatRangeValidator::FloatRangeValidator(float minValue, float maxValue)
 {
