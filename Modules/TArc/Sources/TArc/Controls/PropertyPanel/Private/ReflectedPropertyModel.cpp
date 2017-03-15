@@ -5,6 +5,8 @@
 #include "TArc/Controls/PropertyPanel/Private/PropertyPanelMeta.h"
 
 #include <Debug/DVAssert.h>
+#include <Logger/Logger.h>
+#include <Time/SystemTimer.h>
 #include <Utils/StringFormat.h>
 #include <Utils/Utils.h>
 
@@ -167,11 +169,11 @@ QModelIndex ReflectedPropertyModel::parent(const QModelIndex& index) const
 
 void ReflectedPropertyModel::Update()
 {
-    //std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
+    int64 start = SystemTimer::GetMs();
     Update(rootItem.get());
-    //double duration = std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::high_resolution_clock::now() - start).count();
-    //NGT_TRACE_MSG("update duration : %f seconds\n", duration);
+    fastWrappersProcessor.Sync();
     wrappersProcessor.Sync();
+    Logger::Debug(" === ReflectedPropertyModel::Update : %d ===", static_cast<int32>(SystemTimer::GetMs() - start));
 }
 
 void ReflectedPropertyModel::Update(ReflectedPropertyItem* item)
@@ -186,6 +188,43 @@ void ReflectedPropertyModel::Update(ReflectedPropertyItem* item)
     {
         Update(child.get());
     }
+
+    fastWrappersProcessor.Sync();
+}
+
+void ReflectedPropertyModel::UpdateFastImpl(ReflectedPropertyItem* item)
+{
+    if (item->GetPropertyNodesCount() == 0)
+    {
+        return;
+    }
+
+    if (item->GetPropertyNode(0)->field.ref.HasMeta<M::FrequentlyChangedValue>())
+    {
+        Update(item);
+    }
+
+    for (int32 i = 0; i < item->GetChildCount(); ++i)
+    {
+        UpdateFastImpl(item->GetChild(i));
+    }
+}
+
+DataWrappersProcessor* ReflectedPropertyModel::GetWrappersProcessor(const std::shared_ptr<PropertyNode>& node)
+{
+    if (node->field.ref.HasMeta<M::FrequentlyChangedValue>())
+    {
+        return &fastWrappersProcessor;
+    }
+
+    return &wrappersProcessor;
+}
+
+void ReflectedPropertyModel::UpdateFast()
+{
+    int64 start = SystemTimer::GetMs();
+    UpdateFastImpl(rootItem.get());
+    Logger::Debug(" === ReflectedPropertyModel::UpdateFast : %d ===", static_cast<int32>(SystemTimer::GetMs() - start));
 }
 
 void ReflectedPropertyModel::SetObjects(Vector<Reflection> objects)
