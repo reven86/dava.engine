@@ -47,6 +47,7 @@ private:
     void OnObjectsChanged(const Any& objects);
     void OnColumnResized(int columnIndex, int oldSize, int newSize);
 
+    void UpdateExpanded();
     void OnExpanded(const QModelIndex& index);
     void OnCollapsed(const QModelIndex& index);
 
@@ -56,6 +57,7 @@ private:
     QTreeView* view = nullptr;
     std::unique_ptr<ReflectedPropertyModel> model;
     QtConnections connections;
+    bool isExpandUpdate = false;
 };
 }
 }

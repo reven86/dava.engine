@@ -1,6 +1,7 @@
 #pragma once
 
 #include "TArc/Controls/PropertyPanel/Private/ChildCreator.h"
+#include "TArc/Controls/PropertyPanel/Private/ReflectionPathTree.h"
 #include "TArc/DataProcessing/DataWrappersProcessor.h"
 #include "TArc/DataProcessing/PropertiesHolder.h"
 
@@ -87,19 +88,7 @@ private:
     Map<const Type*, std::shared_ptr<ExtensionChain>> extensions;
 
     DataWrappersProcessor wrappersProcessor;
-
-    struct ExpandedFieldDescriptor
-    {
-        String typePermanentName;
-        String fieldName;
-
-        bool operator==(const ExpandedFieldDescriptor& other) const
-        {
-            return typePermanentName == other.typePermanentName && fieldName == other.fieldName;
-        }
-    };
-
-    Vector<ExpandedFieldDescriptor> expandedFields;
+    ReflectionPathTree expandedItems;
 
     ContextAccessor* accessor = nullptr;
     OperationInvoker* invoker = nullptr;

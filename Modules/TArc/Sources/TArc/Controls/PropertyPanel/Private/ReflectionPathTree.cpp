@@ -96,7 +96,7 @@ void ReflectionPathTree::RemoveLeaf(List<FastName>&& leafPath)
     PopRoot();
 }
 
-bool ReflectionPathTree::PushRoot(const FastName& newRootName)
+bool ReflectionPathTree::PushRoot(const FastName& newRootName) const
 {
     std::shared_ptr<Node> rootNode = root.top();
     auto iter = std::find_if(rootNode->children.begin(), rootNode->children.end(), [&newRootName](const std::shared_ptr<Node>& node)
@@ -113,12 +113,12 @@ bool ReflectionPathTree::PushRoot(const FastName& newRootName)
     return true;
 }
 
-void ReflectionPathTree::PushRoot(std::shared_ptr<Node> newRoot)
+void ReflectionPathTree::PushRoot(std::shared_ptr<Node> newRoot) const
 {
     root.push(newRoot);
 }
 
-bool ReflectionPathTree::HasChildInCurrentRoot(const FastName& childName)
+bool ReflectionPathTree::HasChildInCurrentRoot(const FastName& childName) const
 {
     std::shared_ptr<Node> rootNode = root.top();
     auto iter = std::find_if(rootNode->children.begin(), rootNode->children.end(), [&childName](const std::shared_ptr<Node>& node)
@@ -129,7 +129,7 @@ bool ReflectionPathTree::HasChildInCurrentRoot(const FastName& childName)
     return iter != rootNode->children.end() && (*iter)->flags[Removed] == false;
 }
 
-void ReflectionPathTree::PopRoot()
+void ReflectionPathTree::PopRoot() const
 {
     root.pop();
     DVASSERT(root.empty() == false);
@@ -158,7 +158,7 @@ void ReflectionPathTree::Save(PropertiesItem& settingsNode) const
 
 void ReflectionPathTree::Load(const PropertiesItem& settingsNode, std::shared_ptr<ReflectionPathTree::Node> node)
 {
-    node->name = FastName(settingsNode.Get("nodeName", String("")));
+    node->name = FastName(settingsNode.Get("nodeName", String(node->name.c_str())));
     node->flags = Bitset<FlagsCount>(static_cast<uint32>(settingsNode.Get<int32>("flags", 0)));
 
     int32 childCount = settingsNode.Get<int32>("childCount", 0);

@@ -2,6 +2,7 @@
 #include "TArc/Controls/PropertyPanel/Private/ReflectedPropertyModel.h"
 #include "TArc/Controls/PropertyPanel/Private/PropertiesViewDelegate.h"
 #include "TArc/Core/ContextAccessor.h"
+#include "TArc/Utils/ScopedValueGuard.h"
 
 #include <Reflection/Reflection.h>
 #include <Base/BaseTypes.h>
@@ -86,13 +87,14 @@ PropertiesView::PropertiesView(const Params& params_)
     int columnWidth = viewItem.Get(PropertiesViewDetail::SeparatorPositionKey, view->columnWidth(0));
     view->setColumnWidth(0, columnWidth);
 
-    model->LoadExpanded(viewItem.CreateSubHolder("expandedList"));
+    model->LoadExpanded(viewItem.CreateSubHolder("expandedItems"));
 
     QTimer* timer = new QTimer(this);
     timer->setInterval(500);
     QObject::connect(timer, &QTimer::timeout, [this]()
                      {
                          model->Update();
+                         UpdateExpanded();
                      });
 
     timer->start();
@@ -106,7 +108,7 @@ PropertiesView::~PropertiesView()
     PropertiesItem viewSettings = params.accessor->CreatePropertiesNode(params.settingsNodeName);
     viewSettings.Set(PropertiesViewDetail::SeparatorPositionKey, view->columnWidth(0));
 
-    PropertiesItem item = viewSettings.CreateSubHolder("expandedList");
+    PropertiesItem item = viewSettings.CreateSubHolder("expandedItems");
     model->SaveExpanded(item);
 }
 
@@ -150,11 +152,7 @@ void PropertiesView::OnObjectsChanged(const Any& objects)
 
     DVASSERT(objects.CanCast<Vector<Reflection>>());
     model->SetObjects(objects.Cast<Vector<Reflection>>());
-    QModelIndexList expandedLIst = model->GetExpandedList();
-    foreach (const QModelIndex& index, expandedLIst)
-    {
-        view->expand(index);
-    }
+    UpdateExpanded();
 }
 
 void PropertiesView::OnColumnResized(int columnIndex, int oldSize, int newSize)
@@ -164,15 +162,27 @@ void PropertiesView::OnColumnResized(int columnIndex, int oldSize, int newSize)
     d->UpdateSizeHints(columnIndex, newSize);
 }
 
+void PropertiesView::UpdateExpanded()
+{
+    ScopedValueGuard<bool> guard(isExpandUpdate, true);
+    QModelIndexList expandedList = model->GetExpandedList();
+    foreach (const QModelIndex& index, expandedList)
+    {
+        view->expand(index);
+    }
+}
+
 void PropertiesView::OnExpanded(const QModelIndex& index)
 {
-    //model->SetExpanded(true, index);
+    SCOPED_VALUE_GUARD(bool, isExpandUpdate, true, void());
+    model->SetExpanded(true, index);
     model->HideEditors();
 }
 
 void PropertiesView::OnCollapsed(const QModelIndex& index)
 {
-    //model->SetExpanded(false, index);
+    SCOPED_VALUE_GUARD(bool, isExpandUpdate, true, void());
+    model->SetExpanded(false, index);
     model->HideEditors();
 }
 

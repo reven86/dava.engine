@@ -18,9 +18,9 @@ public:
     void AddLeaf(List<FastName>&& leafPath);
     void RemoveLeaf(List<FastName>&& leafPath);
 
-    bool PushRoot(const FastName& newRootName);
-    bool HasChildInCurrentRoot(const FastName& childName);
-    void PopRoot();
+    bool PushRoot(const FastName& newRootName) const;
+    bool HasChildInCurrentRoot(const FastName& childName) const;
+    void PopRoot() const;
 
     void Load(const PropertiesItem& settingsNode);
     void Save(PropertiesItem& settingsNode) const;
@@ -46,11 +46,11 @@ private:
 
     void Load(const PropertiesItem& settingsNode, std::shared_ptr<Node> node);
     void Save(PropertiesItem& settingsNode, std::shared_ptr<Node> node) const;
-    void PushRoot(std::shared_ptr<Node> newRoot);
+    void PushRoot(std::shared_ptr<Node> newRoot) const;
 
     std::shared_ptr<Node> CreateNode(const FastName& name);
 
-    Stack<std::shared_ptr<Node>> root;
+    mutable Stack<std::shared_ptr<Node>> root;
     ObjectsPool<Node, SingleThreadStrategy> objectsPool;
 };
 } // namespace TArc
