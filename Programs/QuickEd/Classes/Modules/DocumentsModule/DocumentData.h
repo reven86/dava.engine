@@ -9,7 +9,6 @@
 #include <Base/BaseTypes.h>
 #include <Base/RefPtr.h>
 
-
 namespace DAVA
 {
 class Command;
