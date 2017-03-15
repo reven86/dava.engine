@@ -236,7 +236,7 @@ void UIPackageLoader::LoadStyleSheets(const YamlNode* styleSheetsNode, AbstractU
                 {
                     uint32 index = propertyDB->GetStyleSheetPropertyIndex(propertyName);
                     const UIStyleSheetPropertyDescriptor& propertyDescr = propertyDB->GetStyleSheetPropertyByIndex(index);
-                    if (propertyDescr.field_s != nullptr)
+                    if (propertyDescr.field != nullptr)
                     {
                         const YamlNode* propertyNode = properties->Get(propertyIndex);
                         const YamlNode* valueNode = propertyNode;
@@ -245,7 +245,7 @@ void UIPackageLoader::LoadStyleSheets(const YamlNode* styleSheetsNode, AbstractU
 
                         if (valueNode)
                         {
-                            Any value(valueNode->AsAny(propertyDescr.field_s));
+                            Any value(valueNode->AsAny(propertyDescr.field));
 
                             UIStyleSheetProperty property{ index, value };
 

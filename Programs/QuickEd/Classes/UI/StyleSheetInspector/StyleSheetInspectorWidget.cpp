@@ -126,7 +126,7 @@ void StyleSheetInspectorWidget::Update()
 
                 String propertyStr = Format("  %s = %s",
                                             descr.GetFullName().c_str(),
-                                            AnyToQString(prop.value, descr.field_s).toUtf8().data());
+                                            AnyToQString(prop.value, descr.field).toUtf8().data());
 
                 QListWidgetItem* styleSheetPropertyItem = new QListWidgetItem(propertyStr.c_str());
 
