@@ -91,7 +91,7 @@ String Matrix3ToString(const Any& value)
 String Matrix4ToString(const Any& value)
 {
     Matrix4 matrix = value.Get<Matrix4>();
-    return Format("[%f, %f, %f]\n[%f, %f, %f]\n[%f, %f, %f]",
+    return Format("[%f, %f, %f, %f]\n[%f, %f, %f, %f]\n[%f, %f, %f, %f]\n[%f, %f, %f, %f]",
                   matrix._data[0][0], matrix._data[0][1], matrix._data[0][2], matrix._data[0][3],
                   matrix._data[1][0], matrix._data[1][1], matrix._data[1][2], matrix._data[1][3],
                   matrix._data[2][0], matrix._data[2][1], matrix._data[2][2], matrix._data[2][3],

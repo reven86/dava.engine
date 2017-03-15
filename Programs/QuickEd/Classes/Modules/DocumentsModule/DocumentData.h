@@ -4,11 +4,10 @@
 #include "EditorSystems/SelectionContainer.h"
 
 #include <TArc/DataProcessing/DataNode.h>
+#include <TArc/Qt/QtString.h>
 
 #include <Base/BaseTypes.h>
 #include <Base/RefPtr.h>
-
-#include <QString>
 
 namespace DAVA
 {

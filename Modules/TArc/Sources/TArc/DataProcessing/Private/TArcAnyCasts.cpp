@@ -1,11 +1,13 @@
 #include "TArc/DataProcessing/TArcAnyCasts.h"
-#include "TArc/DataProcessing/AnySupport/AnyQStringCompare.h"
+
+#include <QtTools/Utils/Utils.h>
 
 #include <Base/Any.h>
 #include <Base/FastName.h>
 
 #include <QString>
 #include <Qt>
+#include <QIcon>
 
 namespace DAVA
 {
@@ -54,6 +56,26 @@ bool CheckStateToBool(const Any& value)
     return value.Get<Qt::CheckState>() == Qt::Checked;
 }
 
+Color QColorToColorAny(const Any& value)
+{
+    return QColorToColor(value.Get<QColor>());
+}
+
+QColor ColorToQColorAny(const Any& value)
+{
+    return ColorToQColor(value.Get<Color>());
+}
+
+QIcon ColorToQIcon(const Any& value)
+{
+    return CreateIconFromColor(ColorToQColorAny(value));
+}
+
+QIcon QColorToQIcon(const Any& value)
+{
+    return CreateIconFromColor(value.Get<QColor>());
+}
+
 void RegisterAnyCasts()
 {
     AnyCast<String, QString>::Register(&StringToQString);
@@ -74,6 +96,11 @@ void RegisterAnyCasts()
     AnyCast<float64, QString>::Register(&IntegralToQString<float64>);
     AnyCast<bool, Qt::CheckState>::Register(&BoolToCheckState);
     AnyCast<Qt::CheckState, bool>::Register(&CheckStateToBool);
+
+    AnyCast<QColor, Color>::Register(&QColorToColorAny);
+    AnyCast<Color, QColor>::Register(&ColorToQColorAny);
+    AnyCast<Color, QIcon>::Register(&ColorToQIcon);
+    AnyCast<QColor, QIcon>::Register(&QColorToQIcon);
 }
 
 } // namespace TArc
