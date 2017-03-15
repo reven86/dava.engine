@@ -392,6 +392,7 @@ ConfigParser* ApplicationManager::GetLocalConfig()
     return &localConfig;
 }
 
+#ifdef Q_OS_WIN
 QString FixLocalAppPath_kostil(QString runPath)
 {
     if (QFile::exists(runPath) == false)
@@ -407,6 +408,7 @@ QString FixLocalAppPath_kostil(QString runPath)
     }
     return runPath;
 }
+#endif //Q_OS_WIN
 
 QString ApplicationManager::ExtractApplicationRunPath(const QString& branchID, const QString& appID, const QString& versionID)
 {
@@ -418,8 +420,9 @@ QString ApplicationManager::ExtractApplicationRunPath(const QString& branchID, c
     QString runPath = GetApplicationDirectory(branchID, appID, version->isToolSet);
     QString localAppPath = GetLocalAppPath(version, appID);
     runPath += localAppPath;
-
+#ifdef Q_OS_WIN
     FixLocalAppPath_kostil(runPath);
+#endif //Q_OS_WIN
     if (!QFile::exists(runPath))
     {
         ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_PATH, tr("application not found\n%1").arg(runPath));
