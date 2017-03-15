@@ -39,7 +39,6 @@ private:
 
     void StyleSheetsWereRebuilt() override;
 
-    friend class PackageListenerModule;
     PackageNode* package = nullptr;
     DAVA::List<PackageListener*> listeners;
 

@@ -19,10 +19,11 @@ class StyleSheetInspectorWidget : public QListWidget, public PackageListener
 {
 public:
     StyleSheetInspectorWidget(DAVA::TArc::ContextAccessor* accessor);
+    ~StyleSheetInspectorWidget() override;
 
 private:
-    void AddListener(DAVA::TArc::ContextAccessor* accessor);
-    void InitFieldBinder(DAVA::TArc::ContextAccessor* accessor);
+    void AddListener();
+    void InitFieldBinder();
 
     void ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property) override;
     void StylePropertyWasChanged(StyleSheetNode* node, AbstractProperty* property) override;
@@ -32,6 +33,7 @@ private:
 
     void Update();
 
+    DAVA::TArc::ContextAccessor* accessor = nullptr;
     DAVA::RefPtr<DAVA::UIControl> currentControl;
     ContinuousUpdater updater;
     std::unique_ptr<DAVA::TArc::FieldBinder> selectionFieldBinder;

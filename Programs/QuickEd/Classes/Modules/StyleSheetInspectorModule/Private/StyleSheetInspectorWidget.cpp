@@ -17,8 +17,9 @@
 #include <Utils/StringFormat.h>
 #include <Base/Any.h>
 
-StyleSheetInspectorWidget::StyleSheetInspectorWidget(DAVA::TArc::ContextAccessor* accessor)
+StyleSheetInspectorWidget::StyleSheetInspectorWidget(DAVA::TArc::ContextAccessor* accessor_)
     : QListWidget(nullptr)
+    , accessor(accessor_)
     , updater(300)
 {
     updater.SetUpdater(DAVA::MakeFunction(this, &StyleSheetInspectorWidget::Update));
@@ -26,11 +27,23 @@ StyleSheetInspectorWidget::StyleSheetInspectorWidget(DAVA::TArc::ContextAccessor
         return currentControl.Valid();
     });
 
-    AddListener(accessor);
-    InitFieldBinder(accessor);
+    AddListener();
+    InitFieldBinder();
 }
 
-void StyleSheetInspectorWidget::AddListener(DAVA::TArc::ContextAccessor* accessor)
+StyleSheetInspectorWidget::~StyleSheetInspectorWidget()
+{
+    using namespace DAVA::TArc;
+
+    DataContext* globalContext = accessor->GetGlobalContext();
+    PackageListenerProxy* proxy = globalContext->GetData<PackageListenerProxy>();
+    if (proxy != nullptr)
+    {
+        proxy->RemoveListener(this);
+    }
+}
+
+void StyleSheetInspectorWidget::AddListener()
 {
     using namespace DAVA::TArc;
 
@@ -40,7 +53,7 @@ void StyleSheetInspectorWidget::AddListener(DAVA::TArc::ContextAccessor* accesso
     proxy->AddListener(this);
 }
 
-void StyleSheetInspectorWidget::InitFieldBinder(DAVA::TArc::ContextAccessor* accessor)
+void StyleSheetInspectorWidget::InitFieldBinder()
 {
     using namespace DAVA;
     using namespace DAVA::TArc;

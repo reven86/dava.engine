@@ -14,7 +14,6 @@ class DataContext;
 class PackageListenerModule : public DAVA::TArc::ClientModule
 {
     void PostInit() override;
-    void OnWindowClosed(const DAVA::TArc::WindowKey& key);
 
     void OnPackageChanged(const DAVA::Any& package);
 

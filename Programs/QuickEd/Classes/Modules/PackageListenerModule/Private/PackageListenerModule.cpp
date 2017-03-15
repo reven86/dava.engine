@@ -24,15 +24,6 @@ void PackageListenerModule::PostInit()
     fieldBinder->BindField(fieldDescr, MakeFunction(this, &PackageListenerModule::OnPackageChanged));
 }
 
-void PackageListenerModule::OnWindowClosed(const DAVA::TArc::WindowKey& key)
-{
-    using namespace DAVA::TArc;
-    ContextAccessor* accessor = GetAccessor();
-    DataContext* globalContext = accessor->GetGlobalContext();
-    PackageListenerProxy* proxy = globalContext->GetData<PackageListenerProxy>();
-    proxy->listeners.clear();
-}
-
 void PackageListenerModule::OnPackageChanged(const DAVA::Any& package)
 {
     using namespace DAVA::TArc;
