@@ -138,6 +138,8 @@ public:
     void ClearSelection();
     void SelectNode(ControlNode* node);
 
+    const SortedControlNodeSet& GetEditingRootControls() const;
+
     DAVA::UIControl* GetRootControl() const;
     DAVA::UIControl* GetScalableControl() const;
 

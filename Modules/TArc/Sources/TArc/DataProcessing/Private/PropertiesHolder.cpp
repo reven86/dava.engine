@@ -13,6 +13,8 @@
 #include <QFileInfo>
 #include <QDir>
 #include <QFile>
+#include <QRect>
+#include <QDataStream>
 
 namespace DAVA
 {
@@ -204,6 +206,15 @@ QJsonValue PropertiesItem::Impl::ToValue(const QByteArray& value)
 }
 
 template <>
+QJsonValue PropertiesItem::Impl::ToValue(const QRect& value)
+{
+    QByteArray rectData;
+    QDataStream rectStream(&rectData, QIODevice::WriteOnly);
+    rectStream << value;
+    return ToValue(rectData);
+}
+
+template <>
 QJsonValue PropertiesItem::Impl::ToValue(const DAVA::FilePath& value)
 {
     return QJsonValue(QString::fromStdString(value.GetAbsolutePathname()));
@@ -244,6 +255,21 @@ QByteArray PropertiesItem::Impl::FromValue(const QJsonValue& value, const QByteA
     {
         return defaultValue;
     }
+}
+
+template <>
+QRect PropertiesItem::Impl::FromValue(const QJsonValue& value, const QRect& defaultValue)
+{
+    QByteArray defaultData;
+    QDataStream defaultStream(&defaultData, QIODevice::WriteOnly);
+    defaultStream << defaultValue;
+
+    QByteArray loadedData = FromValue(value, defaultData);
+    QDataStream loadedStream(&loadedData, QIODevice::ReadOnly);
+
+    QRect rect;
+    loadedStream >> rect;
+    return rect;
 }
 
 template <>
@@ -442,6 +468,7 @@ PropertiesItem::PropertiesItem(const PropertiesItem& parent, const String& name)
     METHOD(value, type, float32, key) \
     METHOD(value, type, float64, key) \
     METHOD(value, type, QString, key) \
+    METHOD(value, type, QRect, key) \
     METHOD(value, type, QByteArray, key) \
     METHOD(value, type, DAVA::FilePath, key) \
     METHOD(value, type, DAVA::String, key) \

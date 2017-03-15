@@ -4,7 +4,7 @@
 #include "Qt/TextureBrowser/TextureConvertor.h"
 #include "Qt/TextureBrowser/TextureCache.h"
 #include "Qt/Main/QtUtils.h"
-#include "Qt/Settings/SettingsManager.h"
+#include "Classes/Settings/SettingsManager.h"
 
 #include "Classes/Application/REGlobal.h"
 #include "Classes/Selection/SelectionData.h"

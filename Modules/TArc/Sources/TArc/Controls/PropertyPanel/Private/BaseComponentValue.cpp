@@ -176,9 +176,10 @@ void BaseComponentValue::EnsureEditorCreated(const QWidget* parent) const
 {
     if (editorWidget == nullptr)
     {
+        BaseComponentValue* nonConstThis = const_cast<BaseComponentValue*>(this);
         editorWidget = CreateEditorWidget(const_cast<QWidget*>(parent),
-                                          Reflection::Create(&const_cast<BaseComponentValue*>(this)->thisValue),
-                                          &const_cast<ReflectedPropertyModel*>(model)->wrappersProcessor);
+                                          Reflection::Create(&nonConstThis->thisValue),
+                                          nonConstThis->model->GetWrappersProcessor(nodes.front()));
         editorWidget->ForceUpdate();
     }
 

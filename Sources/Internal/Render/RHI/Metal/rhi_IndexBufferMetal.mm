@@ -6,7 +6,6 @@
 #include "Logger/Logger.h"
 
 #include "_metal.h"
-#include "mem_RemoteHeap.h"
 #include "mem_BufferAllocator.h"
 
 using DAVA::Logger;

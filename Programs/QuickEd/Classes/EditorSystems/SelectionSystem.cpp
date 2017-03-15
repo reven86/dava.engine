@@ -68,30 +68,26 @@ void SelectionSystem::ProcessInput(UIEvent* currentInput)
 
 void SelectionSystem::OnSelectByRect(const Rect& rect)
 {
-    Set<ControlNode*> areaNodes;
-    auto predicate = [rect](const ControlNode* node) -> bool {
-        const UIControl* control = node->GetControl();
-        DVASSERT(nullptr != control);
-        return control->GetVisibilityFlag() && rect.RectContains(control->GetGeometricData().GetAABBox());
-    };
-    auto stopPredicate = [](const ControlNode* node) -> bool {
-        const UIControl* control = node->GetControl();
-        DVASSERT(nullptr != control);
-        return !control->GetVisibilityFlag();
-    };
     SelectedNodes newSelection;
     if (IsKeyPressed(KeyboardProxy::KEY_SHIFT))
     {
         newSelection = selectionContainer.selectedNodes;
     }
-    systemsManager->CollectControlNodes(std::inserter(areaNodes, areaNodes.end()), predicate, stopPredicate);
-    if (!areaNodes.empty())
+
+    for (const PackageBaseNode* node : systemsManager->GetEditingRootControls())
     {
-        for (ControlNode* node : areaNodes)
+        for (int i = 0, count = node->GetCount(); i < count; ++i)
         {
-            newSelection.insert(node);
+            PackageBaseNode* child = node->Get(i);
+            UIControl* control = child->GetControl();
+            DVASSERT(nullptr != control);
+            if (control->IsVisible() && rect.RectContains(control->GetGeometricData().GetAABBox()))
+            {
+                newSelection.insert(node->Get(i));
+            }
         }
     }
+
     SelectNodes(newSelection);
 }
 
@@ -103,8 +99,18 @@ void SelectionSystem::ClearSelection()
 void SelectionSystem::SelectAllControls()
 {
     SelectedNodes selected;
-    systemsManager->CollectControlNodes(std::inserter(selected, selected.end()), [](const ControlNode*) { return true; });
-    SelectNodes(selected);
+    //find only children of root controls
+    for (const PackageBaseNode* node : systemsManager->GetEditingRootControls())
+    {
+        for (int i = 0, count = node->GetCount(); i < count; ++i)
+        {
+            selected.insert(node->Get(i));
+        }
+    }
+    if (selected.empty() == false)
+    {
+        SelectNodes(selected);
+    }
 }
 
 void SelectionSystem::FocusNextChild()
