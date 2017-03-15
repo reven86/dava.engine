@@ -50,7 +50,7 @@ private:
 
     Ui::FindResultsWidget ui;
     std::unique_ptr<FindFilter> filter;
-    QStandardItemModel* model = nullptr;
+    QStandardItemModel model;
 
     Finder* finder = nullptr;
 };

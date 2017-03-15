@@ -33,7 +33,7 @@ void FindInDocumentController::ShowFindInDocumentWidget()
 {
     TArc::ContextAccessor* accessor = documentsModule->GetAccessor();
     TArc::DataContext* activeContext = accessor->GetActiveContext();
-    if (activeContext)
+    if (activeContext != nullptr)
     {
         findInDocumentWidget->Reset();
         findInDocumentWidget->show();
@@ -80,7 +80,7 @@ void FindInDocumentController::SetFilter(std::shared_ptr<FindFilter> filter)
 
     TArc::ContextAccessor* accessor = documentsModule->GetAccessor();
     TArc::DataContext* activeContext = accessor->GetActiveContext();
-    if (activeContext)
+    if (activeContext != nullptr)
     {
         DocumentData* data = activeContext->GetData<DocumentData>();
 

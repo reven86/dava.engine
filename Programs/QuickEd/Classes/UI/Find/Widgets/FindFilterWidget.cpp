@@ -161,7 +161,7 @@ FindFilterWidget::FindFilterWidget(QWidget* parent)
 
 std::shared_ptr<FindFilter> FindFilterWidget::BuildFindFilter() const
 {
-    if (editor)
+    if (editor != nullptr)
     {
         std::shared_ptr<FindFilter> filter = editor->BuildFindFilter();
         if (negationButton->isChecked())

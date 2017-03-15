@@ -7,6 +7,7 @@
 
 #include <TArc/WindowSubSystem/UI.h>
 #include <TArc/Utils/ModuleCollection.h>
+#include <QDockWidget>
 
 using namespace DAVA;
 

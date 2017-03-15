@@ -56,7 +56,7 @@ void StaticPackageInformationBuilder::EndPackage()
 bool StaticPackageInformationBuilder::ProcessImportedPackage(const DAVA::String& packagePathStr, DAVA::AbstractUIPackageLoader* loader)
 {
     std::shared_ptr<StaticPackageInformation> pack = cache->Find(packagePathStr);
-    if (pack)
+    if (pack != nullptr)
     {
         packageInformation->AddImportedPackage(pack);
         return true;

@@ -19,8 +19,7 @@ FindResultsWidget::FindResultsWidget(QWidget* parent)
 
     ui.setupUi(this);
 
-    model = new QStandardItemModel();
-    ui.treeView->setModel(model);
+    ui.treeView->setModel(&model);
     connect(ui.treeView, &QTreeView::activated, this, &FindResultsWidget::OnActivated);
     ui.treeView->installEventFilter(this);
     ui.status->setVisible(false);
@@ -47,7 +46,7 @@ void FindResultsWidget::Find(std::shared_ptr<FindFilter> filter, const ProjectDa
 
 void FindResultsWidget::StopFind()
 {
-    if (finder)
+    if (finder != nullptr)
     {
         finder->Stop();
     }
@@ -55,7 +54,7 @@ void FindResultsWidget::StopFind()
 
 void FindResultsWidget::ClearResults()
 {
-    model->removeRows(0, model->rowCount());
+    model.removeRows(0, model.rowCount());
 }
 
 void FindResultsWidget::OnItemFound(FindItem item)
@@ -64,7 +63,7 @@ void FindResultsWidget::OnItemFound(FindItem item)
     QStandardItem* pathItem = new QStandardItem(fwPath.c_str());
     pathItem->setEditable(false);
     pathItem->setData(QString::fromStdString(fwPath), PACKAGE_DATA);
-    model->appendRow(pathItem);
+    model.appendRow(pathItem);
 
     for (const String& pathToControl : item.GetControlPaths())
     {
@@ -84,7 +83,7 @@ void FindResultsWidget::OnProgressChanged(int filesProcessed, int totalFiles)
 
 void FindResultsWidget::OnFindFinished()
 {
-    if (finder)
+    if (finder != nullptr)
     {
         finder->deleteLater();
         finder = nullptr;
@@ -93,9 +92,9 @@ void FindResultsWidget::OnFindFinished()
     ui.status->setText(QString("Find - Finished"));
     ui.status->setVisible(false);
 
-    if (model->rowCount() == 1)
+    if (model.rowCount() == 1)
     {
-        ui.treeView->setExpanded(model->index(0, 0), true);
+        ui.treeView->setExpanded(model.index(0, 0), true);
     }
 }
 

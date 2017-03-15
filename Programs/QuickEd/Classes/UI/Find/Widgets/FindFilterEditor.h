@@ -11,10 +11,7 @@ class FindFilterEditor
 {
     Q_OBJECT
 public:
-    FindFilterEditor(QWidget* parent)
-        : QWidget(parent)
-    {
-    }
+    FindFilterEditor(QWidget* parent);
 
     virtual std::unique_ptr<FindFilter> BuildFindFilter() = 0;
 
