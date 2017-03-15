@@ -228,7 +228,7 @@ PropertiesItem TestClass::CreatePropertiesItem(const String& name) const
 
 QWidget* TestClass::GetWindow(const WindowKey& wndKey) const
 {
-    UIManager* manager = dynamic_cast<UIManager*>(core->GetUI());
+    UI* manager = core->GetUI();
     QWidget* wnd = manager->GetWindow(wndKey);
 
     return wnd;

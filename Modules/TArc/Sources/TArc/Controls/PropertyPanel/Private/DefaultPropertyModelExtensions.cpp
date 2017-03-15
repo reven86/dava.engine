@@ -17,7 +17,6 @@ namespace DAVA
 {
 namespace TArc
 {
-
 void DefaultChildCheatorExtension::ExposeChildren(const std::shared_ptr<const PropertyNode>& node, Vector<std::shared_ptr<PropertyNode>>& children) const
 {
     DVASSERT(node->field.ref.IsValid());

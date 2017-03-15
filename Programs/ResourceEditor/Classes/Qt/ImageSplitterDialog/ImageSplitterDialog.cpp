@@ -7,7 +7,7 @@
 
 #include "Tools/PathDescriptor/PathDescriptor.h"
 
-#include "Classes/Qt/Settings/SettingsManager.h"
+#include "Classes/Settings/SettingsManager.h"
 #include "Classes/Application/REGlobal.h"
 #include "Classes/Project/ProjectManagerData.h"
 #include "QtTools/FileDialogs/FileDialog.h"

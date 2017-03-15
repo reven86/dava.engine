@@ -5,7 +5,6 @@
 
 namespace DAVA
 {
-
 DAVA_VIRTUAL_REFLECTION_IMPL(QualitySettingsComponent)
 {
     ReflectionRegistrator<QualitySettingsComponent>::Begin()

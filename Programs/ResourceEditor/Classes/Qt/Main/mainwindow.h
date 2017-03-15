@@ -126,7 +126,6 @@ public slots:
     void On2DSpriteDialog();
     void OnAddEntityFromSceneTree();
 
-    void OnShowSettings();
     void OnOpenHelp();
 
     void OnSaveHeightmapToImage();
@@ -202,7 +201,6 @@ private slots:
     void UnmodalDialogFinished(int);
 
     void DebugVersionInfo();
-    void DebugColorPicker();
     void DebugDeviceList();
     void OnConsoleItemClicked(const QString& data);
 

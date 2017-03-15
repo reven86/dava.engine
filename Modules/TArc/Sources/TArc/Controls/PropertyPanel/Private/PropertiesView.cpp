@@ -83,28 +83,29 @@ PropertiesView::PropertiesView(const Params& params_)
 
     SetupUI();
 
+    std::shared_ptr<Updater> lockedUpdater = params.updater.lock();
+    if (lockedUpdater != nullptr)
+    {
+        updateConnectionID = lockedUpdater->update.Connect(this, &PropertiesView::Update);
+    }
+
     PropertiesItem viewItem = params.accessor->CreatePropertiesNode(params.settingsNodeName);
     int columnWidth = viewItem.Get(PropertiesViewDetail::SeparatorPositionKey, view->columnWidth(0));
     view->setColumnWidth(0, columnWidth);
 
     model->LoadExpanded(viewItem.CreateSubHolder("expandedItems"));
-
-    QTimer* timer = new QTimer(this);
-    timer->setInterval(500);
-    QObject::connect(timer, &QTimer::timeout, [this]()
-                     {
-                         model->Update();
-                         UpdateExpanded();
-                     });
-
-    timer->start();
-
     QObject::connect(view, &QTreeView::expanded, this, &PropertiesView::OnExpanded);
     QObject::connect(view, &QTreeView::collapsed, this, &PropertiesView::OnCollapsed);
 }
 
 PropertiesView::~PropertiesView()
 {
+    std::shared_ptr<Updater> lockedUpdater = params.updater.lock();
+    if (lockedUpdater != nullptr)
+    {
+        lockedUpdater->update.Disconnect(updateConnectionID);
+    }
+
     PropertiesItem viewSettings = params.accessor->CreatePropertiesNode(params.settingsNodeName);
     viewSettings.Set(PropertiesViewDetail::SeparatorPositionKey, view->columnWidth(0));
 
@@ -160,6 +161,22 @@ void PropertiesView::OnColumnResized(int columnIndex, int oldSize, int newSize)
     PropertiesViewDelegate* d = qobject_cast<PropertiesViewDelegate*>(view->itemDelegate());
     DVASSERT(d != nullptr);
     d->UpdateSizeHints(columnIndex, newSize);
+}
+
+void PropertiesView::Update(UpdatePolicy policy)
+{
+    switch (policy)
+    {
+    case DAVA::TArc::PropertiesView::FullUpdate:
+        model->Update();
+        break;
+    case DAVA::TArc::PropertiesView::FastUpdate:
+        model->UpdateFast();
+        break;
+    default:
+        DVASSERT(false, "Unimplemented update policy have been received");
+        break;
+    }
 }
 
 void PropertiesView::UpdateExpanded()
