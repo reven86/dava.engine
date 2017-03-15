@@ -5,6 +5,8 @@
 #include "TArc/Utils/DebuggerDetection.h"
 
 #include <Engine/Engine.h>
+#include <Engine/EngineContext.h>
+#include <FileSystem/FileSystem.h>
 #include <UnitTests/UnitTests.h>
 
 #include <QTimer>
@@ -77,6 +79,14 @@ TestClass::~TestClass()
         focusWidget->clearFocus();
     }
 
+    const EngineContext* ctx = GetEngineContext();
+    FilePath tmpDirectory = ctx->fileSystem->GetTempDirectoryPath() + "/SelfTestFolder/";
+    if (ctx->fileSystem->Exists(tmpDirectory))
+    {
+        ctx->fileSystem->DeleteDirectory(tmpDirectory, true);
+    }
+    ctx->fileSystem->SetCurrentDocumentsDirectory(documentsPath);
+
     coreChanged.Emit(nullptr);
     Core* c = core.release();
     c->syncSignal.DisconnectAll();
@@ -94,6 +104,19 @@ void TestClass::Init()
     updateForCurrentTestCalled = false;
     if (core == nullptr)
     {
+        const EngineContext* ctx = GetEngineContext();
+        documentsPath = ctx->fileSystem->GetCurrentDocumentsDirectory();
+        FilePath tmpDirectory = ctx->fileSystem->GetTempDirectoryPath() + "/SelfTestFolder/";
+        if (ctx->fileSystem->Exists(tmpDirectory))
+        {
+            ctx->fileSystem->DeleteDirectory(tmpDirectory, true);
+        }
+
+        ctx->fileSystem->CreateDirectory(tmpDirectory, true);
+        ctx->fileSystem->SetCurrentDocumentsDirectory(tmpDirectory);
+
+        WriteInitialSettings();
+
         using namespace std::chrono;
         TestInfo::TimePoint startTimePoint = TestInfo::Clock::now();
         auto timeoutCrashHandler = [startTimePoint]()

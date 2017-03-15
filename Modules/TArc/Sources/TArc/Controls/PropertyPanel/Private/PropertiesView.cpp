@@ -131,6 +131,7 @@ void PropertiesView::SetupUI()
     setLayout(layout);
 
     view = new PropertiesViewDetail::PropertiesTreeView(this);
+    view->setObjectName(QString("%1_propertiesview").arg(QString::fromStdString(params.settingsNodeName)));
     view->setEditTriggers(QAbstractItemView::CurrentChanged | QAbstractItemView::SelectedClicked | QAbstractItemView::EditKeyPressed);
     layout->addWidget(view);
 
@@ -194,6 +195,12 @@ void PropertiesView::OnExpanded(const QModelIndex& index)
     SCOPED_VALUE_GUARD(bool, isExpandUpdate, true, void());
     model->SetExpanded(true, index);
     model->HideEditors();
+
+    QModelIndexList expandedList = model->GetExpandedChildren(index);
+    foreach (const QModelIndex& index, expandedList)
+    {
+        view->expand(index);
+    }
 }
 
 void PropertiesView::OnCollapsed(const QModelIndex& index)

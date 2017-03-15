@@ -390,6 +390,32 @@ QModelIndexList ReflectedPropertyModel::GetExpandedList() const
     return result;
 }
 
+QModelIndexList ReflectedPropertyModel::GetExpandedChildren(const QModelIndex& index) const
+{
+    List<FastName> reflectedPath;
+    QModelIndex currentIndex = index;
+    while (currentIndex.isValid())
+    {
+        ReflectedPropertyItem* item = MapItem(currentIndex);
+        reflectedPath.push_front(FastName(item->GetPropertyName().toStdString()));
+        currentIndex = currentIndex.parent();
+    }
+
+    for (const FastName& name : reflectedPath)
+    {
+        bool result = expandedItems.PushRoot(name);
+        DVASSERT(result);
+    }
+    QModelIndexList result;
+    GetExpandedListImpl(result, MapItem(index));
+    for (size_t i = 0; i < reflectedPath.size(); ++i)
+    {
+        expandedItems.PopRoot();
+    }
+
+    return result;
+}
+
 void ReflectedPropertyModel::SaveExpanded(PropertiesItem& propertyRoot) const
 {
     expandedItems.Save(propertyRoot);

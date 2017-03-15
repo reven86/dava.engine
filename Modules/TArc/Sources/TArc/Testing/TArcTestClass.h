@@ -27,6 +27,9 @@ public:
     void DirectUpdate(float32 timeElapsed, const String& testName);
     bool DirectTestComplete(const String& testName) const;
 
+    virtual void WriteInitialSettings()
+    {
+    }
     virtual void CreateTestedModules();
 
     MockInvoker* GetMockInvoker();
@@ -69,6 +72,7 @@ protected:
     std::unique_ptr<MockInvoker> mockInvoker;
     QtConnections connections;
     bool updateForCurrentTestCalled = false;
+    DAVA::FilePath documentsPath;
 };
 
 template <typename... Args>
