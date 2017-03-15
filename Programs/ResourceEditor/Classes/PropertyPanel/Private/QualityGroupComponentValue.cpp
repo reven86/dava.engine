@@ -4,13 +4,15 @@
 #include <TArc/Controls/ControlProxy.h>
 #include <TArc/Controls/QtBoxLayouts.h>
 #include <TArc/Controls/ListView.h>
+#include <TArc/Controls/CheckBox.h>
+#include <TArc/Controls/ComboBox.h>
+
 #include <Scene3D/Systems/QualitySettingsSystem.h>
+#include <Scene3D/Components/QualitySettingsComponent.h>
 
 #include <QWidget>
 #include <QSplitter>
 #include <QLabel>
-#include "TArc/Controls/CheckBox.h"
-#include "TArc/Controls/ComboBox.h"
 
 namespace QualityGroupComponentValueDetail
 {

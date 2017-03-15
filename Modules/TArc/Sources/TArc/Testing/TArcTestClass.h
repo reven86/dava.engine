@@ -4,6 +4,8 @@
 #include "TArc/Testing/MockInvoker.h"
 #include "TArc/Utils/QtConnections.h"
 
+#include <QtTools/Utils/QtDelayedExecutor.h>
+
 #include <UnitTests/TestClass.h>
 #include <UnitTests/UnitTests.h>
 
@@ -21,9 +23,9 @@ class TestClass : public UnitTests::TestClass
 public:
     ~TestClass();
 
-    void SetUp(const String& testName) override;
-    void Update(float32 timeElapsed, const String& testName) override;
-    bool TestComplete(const String& testName) const override;
+    void Init();
+    void DirectUpdate(float32 timeElapsed, const String& testName);
+    bool DirectTestComplete(const String& testName) const;
 
     virtual void CreateTestedModules();
 
@@ -74,6 +76,45 @@ inline void TestClass::InvokeOperation(int operationId, const Args&... args)
 {
     core->GetCoreInterface()->Invoke(operationId, args...);
 }
+
+class TestClassHolder final : public UnitTests::TestClass
+{
+public:
+    TestClassHolder(std::unique_ptr<DAVA::TArc::TestClass>&& testClass);
+
+    void SetUp(const String& testName) override;
+    void TearDown(const String& testName) override;
+    void Update(float32 timeElapsed, const String& testName) override;
+    bool TestComplete(const String& testName) const override;
+    UnitTests::TestCoverageInfo FilesCoveredByTests() const override;
+
+    const String& TestName(size_t index) const override;
+    size_t TestCount() const override;
+    void RunTest(size_t index) override;
+
+private:
+    void AddCall(const Function<void()>& call) const;
+    void AddCallImpl(const Function<void()>& call);
+    void ProcessCalls() const;
+    void ProcessCallsImpl();
+
+private:
+    std::unique_ptr<DAVA::TArc::TestClass> testClass;
+    bool pendingEventProcess = false;
+    Vector<Function<void()>> callsQueue;
+    QtDelayedExecutor executor;
+    bool currentTestFinished = false;
+};
+
+template <typename T>
+class TestClassHolderFactory : public DAVA::UnitTests::TestClassFactoryBase
+{
+public:
+    DAVA::UnitTests::TestClass* CreateTestClass()
+    {
+        return new DAVA::TArc::TestClassHolder(std::make_unique<T>());
+    }
+};
 
 } // namespace TArc
 } // namespace DAVA

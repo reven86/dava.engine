@@ -4,7 +4,7 @@
 
 #include "Engine/PlatformApi.h"
 
-#include <QAbstractItemView>
+#include <QTreeView>
 #include <QApplication>
 #include <QtEvents>
 #include <QtGlobal>
