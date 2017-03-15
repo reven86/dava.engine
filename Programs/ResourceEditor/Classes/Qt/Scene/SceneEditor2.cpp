@@ -270,6 +270,10 @@ void SceneEditor2::AddSystem(DAVA::SceneSystem* sceneSystem, DAVA::uint64 compon
     if (editorSystem != nullptr)
     {
         editorSystems.push_back(editorSystem);
+        if (dynamic_cast<LandscapeEditorSystem*>(sceneSystem) != nullptr)
+        {
+            landscapeEditorSystems.push_back(editorSystem);
+        }
     }
 }
 
@@ -279,6 +283,10 @@ void SceneEditor2::RemoveSystem(DAVA::SceneSystem* sceneSystem)
     if (editorSystem != nullptr)
     {
         DAVA::FindAndRemoveExchangingWithLast(editorSystems, editorSystem);
+        if (dynamic_cast<LandscapeEditorSystem*>(sceneSystem) != nullptr)
+        {
+            DAVA::FindAndRemoveExchangingWithLast(landscapeEditorSystems, editorSystem);
+        }
     }
 
     Scene::RemoveSystem(sceneSystem);
@@ -524,6 +532,13 @@ void SceneEditor2::Draw()
     if (isHUDVisible)
     {
         for (EditorSceneSystem* system : editorSystems)
+        {
+            system->Draw();
+        }
+    }
+    else
+    {
+        for (EditorSceneSystem* system : landscapeEditorSystems)
         {
             system->Draw();
         }
