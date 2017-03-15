@@ -28,7 +28,7 @@ private:
     void OnCheckFileClicked(DAVA::BaseObject* sender, void* data, void* callerData);
     void OnListInDvpkClicked(DAVA::BaseObject* sender, void* data, void* callerData);
 
-    void WriteErrorOnDevice(const String& filePath, int32 errVal);
+    void WriteErrorOnDevice(const DAVA::String& filePath, DAVA::int32 errVal);
     void OnRequestUpdated(const DAVA::DLCManager::IRequest& request);
     void OnNetworkReady(bool isReady);
     void OnInitializeFinished(size_t numDownloaded, size_t numTotalFiles);
@@ -37,7 +37,8 @@ private:
 
     DAVA::FilePath folderWithDownloadedPacks = "~doc:/DLCManagerTest/packs/";
     // TODO quick and dirty way to test download on all platforms, in future replace with local http server
-    DAVA::String urlToServerSuperpack = "http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz/superpack_for_unittests.dvpk";
+    DAVA::String urlToServerSuperpack = "http://127.0.0.1:8080/superpack_for_unittests.dvpk";
+    //"http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz/superpack_for_unittests.dvpk";
     //"http://127.0.0.1:2424/superpack.dvpk";
 
     DAVA::UIStaticText* packNameLoading = nullptr;

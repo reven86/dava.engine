@@ -5,6 +5,7 @@
 #include <FileSystem/DynamicMemoryFile.h>
 #include <DLCManager/DLCManager.h>
 #include <UI/Focus/UIFocusComponent.h>
+#include <EmbeddedWebServer.h>
 
 using namespace DAVA;
 
@@ -411,40 +412,41 @@ void DLCManagerTest::OnStartStopLocalServerClicked(DAVA::BaseObject* sender, voi
 {
     if (sender == startServerButton)
     {
+        FileSystem* fs = FileSystem::Instance();
+
+        FilePath resPath("~res:/TestData/PackManagerTest/superpack_for_unittests.dvpk");
+        FilePath docPath("~doc:/DLCManagerTest/superpack_for_unittests.dvpk");
+
+        fs->CopyFile(resPath, docPath, true);
+
+        docPath = docPath.GetDirectory();
+
+        String absPath = docPath.GetAbsolutePathname();
+
+        const char* docRoot = absPath.c_str();
+        const char* ports = "8080";
+        try
         {
-#ifdef __DAVAENGINE_MACOS__
-            String macExec = "open -a /usr/bin/osascript --args -e 'tell application \"Terminal\" to do script \"";
-            String cdCommand = "cd " + FilePath("~res:/").GetAbsolutePathname() + "..; ";
-            String serverCommand = "python scripts/start_local_http_server.py";
-            String cdAndPyCommand = cdCommand + serverCommand;
-            macExec += cdAndPyCommand + "\"'";
-            int result = std::system(macExec.c_str());
-            if (result != 0)
-            {
-                Logger::Debug("start local server return: %d, return code: %d, stop sig: %d",
-                              result, WEXITSTATUS(result), WSTOPSIG(result));
-                auto fs = FileSystem::Instance();
-                Logger::Debug("CWD: %s", fs->GetCurrentWorkingDirectory().GetAbsolutePathname().c_str());
-                Logger::Debug("APP_DIR: %s", fs->GetCurrentExecutableDirectory().GetAbsolutePathname().c_str());
-                Logger::Debug("DATA_DIR: %s", FilePath("~res:/").GetAbsolutePathname().c_str());
-                Logger::Debug("COMMAND: %s", macExec.c_str());
-            }
-#elif defined(__DAVAENGINE_WIN32__)
-            std::system("python scripts/start_local_http_server.py");
-#endif
+            StartEmbeddedWebServer(docRoot, ports);
+        }
+        catch (std::exception& ex)
+        {
+            StringStream ss(logPring->GetUtf8Text());
+            ss << "Error: " << ex.what() << std::endl;
+            logPring->SetUtf8Text(ss.str());
         }
     }
     else if (sender == stopServerButton)
     {
+        try
         {
-#ifdef __DAVAENGINE_MACOS__
-            String cdAndPyCommand = "cd " + FilePath("~res:/").GetAbsolutePathname() + "..; python scripts/stop_local_http_server.py";
-            std::system(cdAndPyCommand.c_str());
-            String closeTerminalCommand = "osascript -e 'tell application \"Terminal\" to quit'";
-            std::system(closeTerminalCommand.c_str());
-#elif defined(__DAVAENGINE_WIN32__)
-            std::system("python scripts/stop_local_http_server.py");
-#endif
+            StopEmbeddedWebServer();
+        }
+        catch (std::exception& ex)
+        {
+            StringStream ss(logPring->GetUtf8Text());
+            ss << "Error: " << ex.what() << std::endl;
+            logPring->SetUtf8Text(ss.str());
         }
     }
 }
