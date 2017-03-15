@@ -85,7 +85,7 @@ void QtModelPackageCommandExecutor::AddImportedPackagesIntoPackage(const DAVA::V
         if (package->FindImportedPackage(path) == nullptr && package->GetPath().GetFrameworkPath() != path.GetFrameworkPath())
         {
             QuickEdPackageBuilder builder;
-            
+
             ProjectData* projectData = GetProjectData();
             if (UIPackageLoader(projectData->GetPrototypes()).LoadPackage(path, &builder))
             {

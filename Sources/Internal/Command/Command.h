@@ -5,7 +5,6 @@
 
 namespace DAVA
 {
-
 class Command : public ICommand
 {
 public:

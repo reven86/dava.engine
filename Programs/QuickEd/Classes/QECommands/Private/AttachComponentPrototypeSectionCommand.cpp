@@ -15,7 +15,6 @@ AttachComponentPrototypeSectionCommand::AttachComponentPrototypeSectionCommand(P
 {
 }
 
-
 void AttachComponentPrototypeSectionCommand::Redo()
 {
     package->AttachPrototypeComponent(node.Get(), destSection.Get(), prototypeSection.Get());
