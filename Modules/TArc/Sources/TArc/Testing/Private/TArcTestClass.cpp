@@ -250,6 +250,11 @@ TestClassHolder::TestClassHolder(std::unique_ptr<DAVA::TArc::TestClass>&& testCl
 {
 }
 
+void TestClassHolder::InitTimeStampForTest(const String& testName)
+{
+    testClass->InitTimeStampForTest(testName);
+}
+
 void TestClassHolder::SetUp(const String& testName)
 {
     currentTestFinished = false;
@@ -263,10 +268,7 @@ void TestClassHolder::SetUp(const String& testName)
 void TestClassHolder::TearDown(const String& testName)
 {
     DVASSERT(currentTestFinished == true);
-    AddCall([this, testName]()
-            {
-                testClass->TearDown(testName);
-            });
+    testClass->TearDown(testName);
 }
 
 void TestClassHolder::Update(float32 timeElapsed, const String& testName)
@@ -338,8 +340,8 @@ void TestClassHolder::AddCallImpl(const Function<void()>& call)
     callsQueue.push_back(call);
     if (pendingEventProcess == false)
     {
-        executor.DelayedExecute(MakeFunction(this, &TestClassHolder::ProcessCallsImpl));
         pendingEventProcess = true;
+        executor.DelayedExecute(MakeFunction(this, &TestClassHolder::ProcessCallsImpl));
     }
 }
 
@@ -351,16 +353,19 @@ void TestClassHolder::ProcessCalls() const
 void TestClassHolder::ProcessCallsImpl()
 {
     DVASSERT(pendingEventProcess == true);
-    for (const DAVA::Function<void()>& fn : callsQueue)
+    Vector<DAVA::Function<void()>> queue = callsQueue;
+    callsQueue.clear();
+    pendingEventProcess = false;
+
+    for (const DAVA::Function<void()>& fn : queue)
     {
         fn();
         if (currentTestFinished == true)
         {
+            callsQueue.clear();
             break;
         }
     }
-    callsQueue.clear();
-    pendingEventProcess = false;
 }
 
 } // namespace TArc

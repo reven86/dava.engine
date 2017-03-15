@@ -82,6 +82,7 @@ class TestClassHolder final : public UnitTests::TestClass
 public:
     TestClassHolder(std::unique_ptr<DAVA::TArc::TestClass>&& testClass);
 
+    void InitTimeStampForTest(const String& testName) override;
     void SetUp(const String& testName) override;
     void TearDown(const String& testName) override;
     void Update(float32 timeElapsed, const String& testName) override;

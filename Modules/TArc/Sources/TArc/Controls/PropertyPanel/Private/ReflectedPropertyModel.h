@@ -91,6 +91,7 @@ private:
     Map<const Type*, std::shared_ptr<ExtensionChain>> extensions;
 
     DataWrappersProcessor wrappersProcessor;
+    DataWrappersProcessor fastWrappersProcessor;
     ReflectionPathTree expandedItems;
 
     ContextAccessor* accessor = nullptr;
