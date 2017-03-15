@@ -1,7 +1,7 @@
 #include "TArc/Core/ClientModule.h"
 #include "TArc/Core/Private/CoreInterface.h"
 
-#include "Debug/DVAssert.h"
+#include <Debug/DVAssert.h>
 
 namespace DAVA
 {
@@ -22,7 +22,7 @@ const ContextAccessor* ClientModule::GetAccessor() const
 UI* ClientModule::GetUI()
 {
     DVASSERT(ui != nullptr);
-    return ui;
+    return ui.get();
 }
 
 OperationInvoker* ClientModule::GetInvoker()
@@ -31,12 +31,12 @@ OperationInvoker* ClientModule::GetInvoker()
     return coreInterface;
 }
 
-void ClientModule::Init(CoreInterface* coreInterface_, UI* ui_)
+void ClientModule::Init(CoreInterface* coreInterface_, std::unique_ptr<UI>&& ui_)
 {
     DVASSERT(coreInterface == nullptr);
     DVASSERT(ui == nullptr);
     coreInterface = coreInterface_;
-    ui = ui_;
+    ui = std::move(ui_);
 }
 } // namespace TArc
 } // namespace DAVA

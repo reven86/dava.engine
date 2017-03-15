@@ -4,6 +4,7 @@
 #include "Classes/Application/REGlobal.h"
 
 #include <TArc/Controls/PropertyPanel/PropertiesView.h>
+#include <TArc/Controls/PropertyPanel/TimerUpdater.h>
 #include <TArc/WindowSubSystem/UI.h>
 #include <TArc/WindowSubSystem/ActionUtils.h>
 #include <TArc/DataProcessing/DataNode.h>
@@ -29,6 +30,8 @@ class PropertyPanelData : public DAVA::TArc::DataNode
 public:
     DAVA::Vector<DAVA::Reflection> propertyPanelObjects;
 
+    std::shared_ptr<DAVA::TArc::TimerUpdater> updater;
+
     static const char* selectedEntitiesProperty;
 
     DAVA_VIRTUAL_REFLECTION_IN_PLACE(PropertyPanelData, DAVA::TArc::DataNode)
@@ -52,6 +55,9 @@ void PropertyPanelModule::PostInit()
     DataContext* ctx = accessor->GetGlobalContext();
     ctx->CreateData(std::make_unique<PropertyPanelData>());
 
+    PropertyPanelData* data = ctx->GetData<PropertyPanelData>();
+    data->updater.reset(new TimerUpdater(1000, 100));
+
     DockPanelInfo panelInfo;
     panelInfo.title = QStringLiteral("New Property Panel");
     panelInfo.actionPlacementInfo = ActionPlacementInfo(CreateMenuPoint(QList<QString>() << "View"
@@ -63,8 +69,10 @@ void PropertyPanelModule::PostInit()
     params.objectsField.type = DAVA::ReflectedTypeDB::Get<PropertyPanelModuleDetail::PropertyPanelData>();
     params.objectsField.fieldName = DAVA::FastName(PropertyPanelModuleDetail::PropertyPanelData::selectedEntitiesProperty);
     params.settingsNodeName = "PropertyPanel";
+    params.updater = std::weak_ptr<PropertiesView::Updater>(data->updater);
 
     PropertiesView* view = new PropertiesView(params);
+
     view->RegisterExtension(std::make_shared<REModifyPropertyExtension>(accessor));
     view->RegisterExtension(std::make_shared<EntityChildCreator>());
     ui->AddView(REGlobal::MainWindowKey, PanelKey(panelInfo.title, panelInfo), view);
