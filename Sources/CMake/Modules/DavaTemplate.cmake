@@ -30,6 +30,7 @@
 #set( FILE_TREE_CHECK_FOLDERS    )
 #set( DEFINITIONS                )
 #set( DEFINITIONS_${DAVA_PLATFORM_CURENT} )
+#set( EXTERNAL_TEST_FOLDERS      )
 #
 
 # Only interpret ``if()`` arguments as variables or keywords when unquoted.
@@ -378,6 +379,17 @@ generated_unity_sources( PROJECT_SOURCE_FILES   IGNORE_LIST ${UNIFIED_IGNORE_LIS
 
                                                )
 
+###
+set( TEST_FILES_CONTAINER )
+foreach( TEST_FOLDER ${EXTERNAL_TEST_FOLDERS} )
+    file( GLOB_RECURSE TEST_FILES "${TEST_FOLDER}/*.unittest.h" "${TEST_FOLDER}/*.unittest.cpp" )
+    list( APPEND PROJECT_SOURCE_FILES ${TEST_FILES} )
+    source_group( "EXTERNAL_TEST" FILES ${TEST_FILES} )
+    set_source_files_properties( ${ITEM_LIST_SOURCE} PROPERTIES HEADER_FILE_ONLY FALSE )
+endforeach()
+
+
+###
 if( ANDROID )
     set( POSTFIX 0  )
     set( COUNTER 0 )
