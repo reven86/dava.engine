@@ -50,6 +50,18 @@ TODO: usage comments
 #define DAVA_VIRTUAL_REFLECTION_IMPL(Cls) IMPL__DAVA_VIRTUAL_REFLECTION_IMPL(Cls)
 
 /**
+\ingroup reflection
+TODO: usage comments
+*/
+#define DAVA_VIRTUAL_TEMPLATE_REFLECTION_IMPL(Cls) IMPL__DAVA_VIRTUAL_TEMPLATE_REFLECTION_IMPL(Cls)
+
+/**
+ \ingroup reflection
+ TODO: usage comments
+ */
+#define DAVA_VIRTUAL_TEMPLATE_SPECIALIZATION_REFLECTION_IMPL(Cls) IMPL__DAVA_VIRTUAL_TEMPLATE_SPECIALIZATION_REFLECTION_IMPL(Cls)
+
+/**
     \ingroup reflection
     TODO: usage comments
 */
@@ -141,6 +153,8 @@ public:
 
     template <typename T>
     static Reflection Create(T* objectPtr, const ReflectedMeta* objectMeta = nullptr);
+
+    static Reflection Create(const ReflectedObject& object, const ReflectedMeta* objectMeta = nullptr);
 
     static Reflection Create(const Any& any, const ReflectedMeta* objectMeta = nullptr);
 

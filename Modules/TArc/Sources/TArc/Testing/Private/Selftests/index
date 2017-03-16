@@ -1,5 +1,6 @@
 CheckBoxTest.h
 ClientModuleTest.h
+ColorPickerButtonTest.h
 ComboBoxCheckableTest.h
 ComboBoxTest.h
 ComponentStructureWrapperTest.h
@@ -9,7 +10,8 @@ DoubleSpinBoxTests.h
 FieldBinderTest.h
 FilePathEditTest.h
 IntSpinBoxTests.h
+LabelTest.h
 LineEditTest.h
 PlainTextEditTest.h
+PropertiesViewTimerUpdaterTests.h
 QtWrapLayoutTests.h
-SceneTabbarTest.h

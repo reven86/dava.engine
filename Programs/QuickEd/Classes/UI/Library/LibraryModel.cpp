@@ -204,7 +204,7 @@ QMimeData* LibraryModel::mimeData(const QModelIndexList& indexes) const
 
                 YamlPackageSerializer serializer;
 
-                serializer.SerializePackageNodes(package, controls, styles);
+                serializer.SerializePackageNodes(package.Get(), controls, styles);
                 String str = serializer.WriteToString();
                 data->setText(QString::fromStdString(str));
 

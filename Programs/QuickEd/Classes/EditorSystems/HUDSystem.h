@@ -1,10 +1,12 @@
 #pragma once
 
-#include "Math/Vector.h"
 #include "EditorSystems/BaseEditorSystem.h"
 #include "EditorSystems/EditorSystemsManager.h"
 
-class HUDSystem final : public BaseEditorSystem
+#include <Base/Introspection.h>
+#include <Math/Vector.h>
+
+class HUDSystem : public DAVA::InspBase, public BaseEditorSystem
 {
 public:
     HUDSystem(EditorSystemsManager* parent);
@@ -24,7 +26,7 @@ private:
     void OnDragStateChanged(EditorSystemsManager::eDragState currentState, EditorSystemsManager::eDragState previousState) override;
     void OnDisplayStateChanged(EditorSystemsManager::eDisplayState currentState, EditorSystemsManager::eDisplayState previousState) override;
 
-    void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
+    void OnSelectionChanged(const SelectedNodes& selection);
     void OnHighlightNode(const ControlNode* node);
 
     void OnMagnetLinesChanged(const DAVA::Vector<MagnetLineInfo>& magnetLines);
@@ -51,6 +53,14 @@ private:
     DAVA::Vector<DAVA::RefPtr<DAVA::UIControl>> magnetControls;
     DAVA::Vector<DAVA::RefPtr<DAVA::UIControl>> magnetTargetControls;
     SortedPackageBaseNodeSet sortedControlList;
-    SelectionContainer selectionContainer;
     DAVA::RefPtr<DAVA::UIControl> hoveredNodeControl;
+
+    bool showPivot;
+    bool showRotate;
+
+public:
+    INTROSPECTION(HUDSystem,
+                  MEMBER(showPivot, "Control Transformations/Can transform pivot", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
+                  MEMBER(showRotate, "Control Transformations/Can rotate control", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
+                  )
 };

@@ -32,6 +32,7 @@ public:
     // you can call SetListener(nullptr) to remove active listener
     void SetListener(DataListener* listener);
     void SetFieldValue(const Any& fieldKey, const Any& value);
+    Any GetFieldValue(const Any& fieldKey) const;
 
     template <typename T>
     DataEditor<T> CreateEditor();
@@ -57,7 +58,7 @@ private:
 
     void UpdateCachedValue(int32 id, const Any& value);
     void Sync(bool notifyListener);
-    void SyncByFieldKey(const Any& fieldKey);
+    void SyncByFieldKey(const Any& fieldKey, const Any& v);
     void SyncWithEditor(const Reflection& etalonData);
     void NotifyListener(bool sendNotify, const Vector<Any>& fields = Vector<Any>());
     Reflection GetData() const;

@@ -5,7 +5,7 @@
 #include "Scene/System/CameraSystem.h"
 #include "Scene/System/CollisionSystem.h"
 #include "Scene/System/HoodSystem.h"
-#include "Qt/Settings/SettingsManager.h"
+#include "Classes/Settings/SettingsManager.h"
 
 // framework
 #include "Scene3D/Components/CameraComponent.h"
@@ -28,7 +28,7 @@
 #include "../StringConstants.h"
 
 #include "../../Main/QtUtils.h"
-#include "Qt/Settings/SettingsManager.h"
+#include "Classes/Settings/SettingsManager.h"
 
 #include "Classes/Selection/Selection.h"
 

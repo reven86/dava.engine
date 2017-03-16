@@ -90,10 +90,6 @@ LoadingTest::LoadingTest(const TestParams& _testParams)
 {
 }
 
-LoadingTest::~LoadingTest()
-{
-}
-
 void LoadingTest::LoadResources()
 {
     ScopedPtr<Font> font12(FTFont::Create("~res:/Fonts/korinna.ttf"));

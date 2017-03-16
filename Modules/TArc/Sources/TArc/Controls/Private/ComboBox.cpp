@@ -1,4 +1,3 @@
-
 #include "TArc/Controls/ComboBox.h"
 #include "TArc/Utils/ScopedValueGuard.h"
 #include "TArc/DataProcessing/AnyQMetaType.h"
@@ -15,13 +14,13 @@ namespace DAVA
 namespace TArc
 {
 ComboBox::ComboBox(const ControlDescriptorBuilder<Fields>& fields, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent)
-    : ControlProxy<QComboBox>(ControlDescriptor(fields), wrappersProcessor, model, parent)
+    : ControlProxyImpl<QComboBox>(ControlDescriptor(fields), wrappersProcessor, model, parent)
 {
     SetupControl();
 }
 
 ComboBox::ComboBox(const ControlDescriptorBuilder<Fields>& fields, ContextAccessor* accessor, Reflection model, QWidget* parent)
-    : ControlProxy<QComboBox>(ControlDescriptor(fields), accessor, model, parent)
+    : ControlProxyImpl<QComboBox>(ControlDescriptor(fields), accessor, model, parent)
 {
     SetupControl();
 }
@@ -124,6 +123,11 @@ int ComboBox::SelectCurrentItem(const Reflection& fieldValue, const Reflection& 
         {
             Any iAny = itemData(i).value<Any>();
             if (value == iAny)
+            {
+                return i;
+            }
+            else if (iAny.CanCast<int>() && value.CanCast<int>() &&
+                     iAny.Cast<int>() == value.Cast<int>())
             {
                 return i;
             }

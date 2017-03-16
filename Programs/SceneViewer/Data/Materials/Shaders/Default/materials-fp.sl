@@ -114,7 +114,7 @@ fragment_out
 #endif
 
 #if MATERIAL_TEXTURE && ALPHATEST && ALPHATESTVALUE
-    [material][a] property float alphatestThreshold;
+    [material][a] property float alphatestThreshold           = 0.0;
 #endif
 
 #if PIXEL_LIT
@@ -147,11 +147,11 @@ fragment_out
 
 
 #if FLATCOLOR
-    [material][a] property float4 flatColor;
+    [material][a] property float4 flatColor = float4(0,0,0,0);
 #endif
 
 #if SETUP_LIGHTMAP && (MATERIAL_DECAL || MATERIAL_LIGHTMAP)
-    [material][a] property float lightmapSize;
+    [material][a] property float lightmapSize = 1.0;
 #endif
 
 inline float 
@@ -269,7 +269,7 @@ fragment_out fp_main( fragment_in input )
             bool isXodd;
             bool isYodd;            
             
-            if(fract(floor(input.varTexCoord1.x*lightmapSize)/2.0) == 0.0)
+            if(frac(floor(input.varTexCoord1.x*lightmapSize)/2.0) == 0.0)
             {
                 isXodd = true;
             }
@@ -278,7 +278,7 @@ fragment_out fp_main( fragment_in input )
                 isXodd = false;
             }
             
-            if(fract(floor(input.varTexCoord1.y*lightmapSize)/2.0) == 0.0)
+            if(frac(floor(input.varTexCoord1.y*lightmapSize)/2.0) == 0.0)
             {
                 isYodd = true;
             }
@@ -454,7 +454,7 @@ fragment_out fp_main( fragment_in input )
                 #if FAST_METAL
                     float geometricFactor = 1.0;
                 #else
-                    float geometricFactor = 1.0 / LdotH * LdotH;
+                    float geometricFactor = 1.0;// / LdotH * LdotH; //once upon a time it was written wrong, just keep it for history
                 #endif
 
                 ColorType specular = specularNormalized * geometricFactor * fresnelOut;

@@ -15,7 +15,7 @@ namespace DAVA
 {
 namespace TArc
 {
-class FilePathEdit : public ControlProxy<QWidget>, private ValidatorDelegate
+class FilePathEdit : public ControlProxyImpl<QWidget>, private ValidatorDelegate
 {
 public:
     enum class Fields : uint32
@@ -24,9 +24,6 @@ public:
         PlaceHolder,
         IsReadOnly,
         IsEnabled,
-        Filters,
-        DialogTitle,
-        RootDirectory,
         FieldCount
     };
 
@@ -47,11 +44,13 @@ private:
     void EditingFinished();
     void ButtonClicked();
 
-    M::ValidationResult FixUp(const Any& value) const override;
     M::ValidationResult Validate(const Any& value) const override;
     void ShowHint(const QString& message) override;
 
-    void ExtractMetaInfo(bool& isFile, bool& shouldExists, QString& filters) const;
+    bool IsFile() const;
+    FileDialogParams GetFileDialogParams() const;
+
+    void ProcessValidationResult(M::ValidationResult& validationResult, FilePath& path);
 
 private:
     UI* ui = nullptr;

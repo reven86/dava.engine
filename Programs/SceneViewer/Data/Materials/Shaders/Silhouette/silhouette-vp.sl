@@ -26,8 +26,8 @@ vertex_out
 [auto][jrot] property float4 jointQuaternions[MAX_JOINTS] : "bigarray" ;
 #endif
 
-[material][a] property float silhouetteScale;
-[material][a] property float silhouetteExponent;
+[material][a] property float silhouetteScale = 1.0;
+[material][a] property float silhouetteExponent = 0;
 
 
 vertex_out vp_main( vertex_in input )

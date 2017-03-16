@@ -1,19 +1,22 @@
 #include "UI/StyleSheetInspector/StyleSheetInspectorWidget.h"
-#include "Document/Document.h"
-#include "Model/PackageHierarchy/PackageNode.h"
-#include "UI/Styles/UIStyleSheet.h"
-#include "UI/Styles/UIStyleSheetSystem.h"
-#include "UI/UIControlSystem.h"
-#include "Utils/QtDavaConvertion.h"
-#include "Utils/StringFormat.h"
-
 #include "ui_StyleSheetInspectorWidget.h"
+
+#include "Modules/LegacySupportModule/Private/Document.h"
+#include "Model/PackageHierarchy/PackageNode.h"
+#include "Utils/QtDavaConvertion.h"
+
+#include <UI/Styles/UIStyleSheet.h>
+#include <UI/Styles/UIStyleSheetSystem.h>
+#include <UI/UIControlSystem.h>
+#include <Utils/StringFormat.h>
+#include <Base/Any.h>
 
 using namespace DAVA;
 
 StyleSheetInspectorWidget::StyleSheetInspectorWidget(QWidget* parent /* = nullptr*/)
     : QDockWidget(parent)
     , ui(new Ui::StyleSheetInspectorWidget())
+    , updater(MakeFunction(this, &StyleSheetInspectorWidget::Update), 300)
 {
     ui->setupUi(this);
 }
@@ -38,9 +41,10 @@ void StyleSheetInspectorWidget::OnDocumentChanged(Document* context)
     Update();
 }
 
-void StyleSheetInspectorWidget::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
+void StyleSheetInspectorWidget::OnSelectionChanged(const DAVA::Any& selectionValue)
 {
-    for (const PackageBaseNode* node : selected)
+    SelectedNodes selection = selectionValue.Cast<SelectedNodes>(SelectedNodes());
+    for (const PackageBaseNode* node : selection)
     {
         const ControlNode* controlNode = dynamic_cast<const ControlNode*>(node);
         if (nullptr != controlNode && nullptr != controlNode->GetControl())
@@ -56,7 +60,7 @@ void StyleSheetInspectorWidget::OnSelectionChanged(const SelectedNodes& selected
 
 void StyleSheetInspectorWidget::ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property)
 {
-    Update();
+    updater.Update();
 }
 
 void StyleSheetInspectorWidget::StylePropertyWasChanged(StyleSheetNode* node, AbstractProperty* property)

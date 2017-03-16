@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_STATIC_OCCLUSION_COMPONENT_H__
-#define __DAVAENGINE_STATIC_OCCLUSION_COMPONENT_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Entity/Component.h"
@@ -10,6 +9,7 @@
 #include "Scene3D/Systems/GlobalEventSystem.h"
 #include "Base/BaseMath.h"
 #include "Render/Highlevel/StaticOcclusion.h"
+#include "Reflection/Reflection.h"
 
 namespace DAVA
 {
@@ -39,6 +39,8 @@ public:
     INTROSPECTION_EXTEND(StaticOcclusionDataComponent, Component,
                          PROPERTY("Size in kBytes", "Size of occlusion information in kBytes", GetDataSize, SetDataSize, I_VIEW | I_EDIT)
                          );
+
+    DAVA_VIRTUAL_REFLECTION(StaticOcclusionDataComponent, Component);
 };
 
 class StaticOcclusionComponent : public Component
@@ -62,11 +64,15 @@ public:
     inline void SetSubdivisionsY(uint32 _sizeY);
     inline void SetSubdivisionsZ(uint32 _sizeZ);
     inline void SetPlaceOnLandscape(bool place);
+    inline void SetOcclusionPixelThreshold(uint32 pixelThreshold);
+    inline void SetOcclusionPixelThresholdForSpeedtree(uint32 pixelThreshold);
 
     inline uint32 GetSubdivisionsX() const;
     inline uint32 GetSubdivisionsY() const;
     inline uint32 GetSubdivisionsZ() const;
     inline bool GetPlaceOnLandscape() const;
+    inline uint32 GetOcclusionPixelThreshold() const;
+    inline uint32 GetOcclusionPixelThresholdForSpeedtree() const;
     inline const float32* GetCellHeightOffsets() const;
 
     //Vector<Vector3> renderPositions;
@@ -76,6 +82,8 @@ private:
     uint32 xSubdivisions;
     uint32 ySubdivisions;
     uint32 zSubdivisions;
+    uint32 occlusionPixelThreshold;
+    uint32 occlusionPixelThresholdForSpeedtree;
     bool placeOnLandscape;
     Vector<float32> cellHeightOffset; //x*y
 
@@ -88,7 +96,11 @@ public:
                          PROPERTY("Subdivisions Y", "Number of subdivisions on Y axis", GetSubdivisionsY, SetSubdivisionsY, I_VIEW | I_EDIT)
                          PROPERTY("Subdivisions Z", "Number of subdivisions on Z axis", GetSubdivisionsZ, SetSubdivisionsZ, I_VIEW | I_EDIT)
                          PROPERTY("Place on Landscape", "Place lowest occlusion cubes at landscape height", GetPlaceOnLandscape, SetPlaceOnLandscape, I_VIEW | I_EDIT)
+                         PROPERTY("Occlusion Pixel Threshold", "Occlusion Pixel Threshold", GetOcclusionPixelThreshold, SetOcclusionPixelThreshold, I_VIEW | I_EDIT)
+                         PROPERTY("Occlusion Pixel Threshold For Speedtree", "Occlusion Pixel Threshold For Speedtree", GetOcclusionPixelThresholdForSpeedtree, SetOcclusionPixelThresholdForSpeedtree, I_VIEW | I_EDIT)
                          );
+
+    DAVA_VIRTUAL_REFLECTION(StaticOcclusionComponent, Component);
 };
 
 class StaticOcclusionDebugDrawComponent : public Component
@@ -120,6 +132,8 @@ public:
     INTROSPECTION_EXTEND(StaticOcclusionDebugDrawComponent, Component,
                          NULL
                          );
+
+    DAVA_VIRTUAL_REFLECTION(StaticOcclusionDebugDrawComponent, Component);
 };
 
 //
@@ -200,5 +214,24 @@ inline const float32* StaticOcclusionComponent::GetCellHeightOffsets() const
 {
     return placeOnLandscape ? &cellHeightOffset.front() : NULL;
 }
+
+inline void StaticOcclusionComponent::SetOcclusionPixelThreshold(uint32 pixelThreshold)
+{
+    occlusionPixelThreshold = pixelThreshold;
 }
-#endif //__DAVAENGINE_SWITCH_COMPONENT_H__
+
+inline void StaticOcclusionComponent::SetOcclusionPixelThresholdForSpeedtree(uint32 pixelThreshold)
+{
+    occlusionPixelThresholdForSpeedtree = pixelThreshold;
+}
+
+inline uint32 StaticOcclusionComponent::GetOcclusionPixelThreshold() const
+{
+    return occlusionPixelThreshold;
+}
+
+inline uint32 StaticOcclusionComponent::GetOcclusionPixelThresholdForSpeedtree() const
+{
+    return occlusionPixelThresholdForSpeedtree;
+}
+}

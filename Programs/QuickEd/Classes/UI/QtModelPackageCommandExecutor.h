@@ -1,21 +1,26 @@
-#ifndef __QUICKED_QT_MODEL_PACKAGE_COMMAND_EXECUTOR_H__
-#define __QUICKED_QT_MODEL_PACKAGE_COMMAND_EXECUTOR_H__
+#pragma once
 
-#include "Base/BaseObject.h"
-#include "Base/Result.h"
 #include "EditorSystems/EditorSystemsManager.h"
 
-#include "Command/Command.h"
+#include <TArc/DataProcessing/DataContext.h>
+
+#include <Command/Command.h>
+#include <Base/BaseObject.h>
+#include <Base/Result.h>
 
 #include <QString>
 
 namespace DAVA
 {
 class CommandStack;
+namespace TArc
+{
+class ContextAccessor;
+}
 }
 
-class Document;
-class Project;
+class DocumentData;
+class ProjectData;
 class PackageBaseNode;
 
 class ControlNode;
@@ -30,8 +35,7 @@ class ComponentPropertiesSection;
 class QtModelPackageCommandExecutor
 {
 public:
-    QtModelPackageCommandExecutor(Project* project, Document* document);
-    virtual ~QtModelPackageCommandExecutor();
+    QtModelPackageCommandExecutor(DAVA::TArc::ContextAccessor* accessor, DAVA::TArc::DataContext::ContextID contextId);
 
     void AddImportedPackagesIntoPackage(const DAVA::Vector<DAVA::FilePath> packagePaths, PackageNode* package);
     void RemoveImportedPackagesFromPackage(const DAVA::Vector<PackageNode*>& importedPackage, PackageNode* package);
@@ -62,9 +66,6 @@ public:
     void Remove(const DAVA::Vector<ControlNode*>& controls, const DAVA::Vector<StyleSheetNode*>& styles);
     DAVA::Vector<PackageBaseNode*> Paste(PackageNode* root, PackageBaseNode* dest, DAVA::int32 destIndex, const DAVA::String& data);
 
-    void BeginMacro(const QString& name);
-    void EndMacro();
-
 private:
     void AddImportedPackageIntoPackageImpl(PackageNode* importedPackage, PackageNode* package);
     void InsertControlImpl(ControlNode* control, ControlsContainerNode* dest, DAVA::int32 destIndex);
@@ -74,14 +75,9 @@ private:
     void RemoveComponentImpl(ControlNode* node, ComponentPropertiesSection* section);
     bool IsNodeInHierarchy(const PackageBaseNode* node) const;
     static bool IsControlNodesHasSameParentControlNode(const ControlNode* n1, const ControlNode* n2);
+    DocumentData* GetDocumentData() const;
+    ProjectData* GetProjectData() const;
 
-    DAVA::CommandStack* GetCommandStack() const;
-    void ExecCommand(std::unique_ptr<DAVA::Command>&& cmd);
-
-private:
-    Project* project = nullptr;
-    Document* document = nullptr;
-    PackageNode* packageNode = nullptr;
+    DAVA::TArc::ContextAccessor* accessor = nullptr;
+    const DAVA::TArc::DataContext::ContextID contextId;
 };
-
-#endif // __QUICKED_QT_MODEL_PACKAGE_COMMAND_EXECUTOR_H__

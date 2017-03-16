@@ -17,7 +17,6 @@
 #include "QtTools/Utils/RenderContextGuard.h"
 
 #include "Classes/Qt/Scene/System/GridSystem.h"
-#include "Classes/Qt/Scene/System/OwnersSignatureSystem.h"
 #include "Classes/Qt/Scene/System/CameraSystem.h"
 #include "Classes/Qt/Scene/System/CollisionSystem.h"
 #include "Classes/Qt/Scene/System/HoodSystem.h"
@@ -142,9 +141,6 @@ SceneEditor2::SceneEditor2()
 
     beastSystem = new BeastSystem(this);
     AddSystem(beastSystem, 0);
-
-    DAVA::SceneSystem* ownersSignatureSystem = new OwnersSignatureSystem(this);
-    AddSystem(ownersSignatureSystem, 0);
 
     staticOcclusionBuildSystem = new DAVA::StaticOcclusionBuildSystem(this);
     AddSystem(staticOcclusionBuildSystem, MAKE_COMPONENT_MASK(DAVA::Component::STATIC_OCCLUSION_COMPONENT) | MAKE_COMPONENT_MASK(DAVA::Component::TRANSFORM_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS, renderUpdateSystem);
@@ -280,6 +276,10 @@ void SceneEditor2::AddSystem(DAVA::SceneSystem* sceneSystem, DAVA::uint64 compon
     if (editorSystem != nullptr)
     {
         editorSystems.push_back(editorSystem);
+        if (dynamic_cast<LandscapeEditorSystem*>(sceneSystem) != nullptr)
+        {
+            landscapeEditorSystems.push_back(editorSystem);
+        }
     }
 }
 
@@ -289,6 +289,10 @@ void SceneEditor2::RemoveSystem(DAVA::SceneSystem* sceneSystem)
     if (editorSystem != nullptr)
     {
         DAVA::FindAndRemoveExchangingWithLast(editorSystems, editorSystem);
+        if (dynamic_cast<LandscapeEditorSystem*>(sceneSystem) != nullptr)
+        {
+            DAVA::FindAndRemoveExchangingWithLast(landscapeEditorSystems, editorSystem);
+        }
     }
 
     Scene::RemoveSystem(sceneSystem);
@@ -534,6 +538,13 @@ void SceneEditor2::Draw()
     if (isHUDVisible)
     {
         for (EditorSceneSystem* system : editorSystems)
+        {
+            system->Draw();
+        }
+    }
+    else
+    {
+        for (EditorSceneSystem* system : landscapeEditorSystems)
         {
             system->Draw();
         }

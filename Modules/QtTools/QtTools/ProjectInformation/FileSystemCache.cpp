@@ -259,7 +259,7 @@ std::tuple<QStringList, QSet<QFileInfo>> FileSystemCache::Impl::CollectFilesAndD
 bool FileSystemCache::Impl::ForceRemovePaths(const QStringList& directories)
 {
     QStringList directoriesToRemove = directories;
-    do
+    while (!directoriesToRemove.empty())
     {
         int countToRemove = directoriesToRemove.size();
         directoriesToRemove = watcher->removePaths(directoriesToRemove);
@@ -269,7 +269,7 @@ bool FileSystemCache::Impl::ForceRemovePaths(const QStringList& directories)
         {
             return false;
         }
-    } while (!directoriesToRemove.empty());
+    }
 
     return true;
 }

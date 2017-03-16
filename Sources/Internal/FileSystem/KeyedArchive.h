@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_KEYED_ARCHIVE_H__
-#define __DAVAENGINE_KEYED_ARCHIVE_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
@@ -13,6 +12,7 @@
 #include "Math/Matrix4.h"
 #include "Math/Math2D.h"
 #include "Math/Color.h"
+#include "Reflection/Reflection.h"
 
 namespace DAVA
 {
@@ -469,7 +469,9 @@ private:
     UnderlyingMap objectMap;
 
 public:
-    INTROSPECTION_EXTEND(KeyedArchive, BaseObject, NULL)
+    INTROSPECTION_EXTEND(KeyedArchive, BaseObject, NULL);
+
+    DAVA_VIRTUAL_REFLECTION(KeyedArchive, BaseObject);
 };
 
 // Implementation
@@ -499,5 +501,3 @@ void KeyedArchive::SetByteArrayAsType(const String& key, const T& value)
     SetByteArray(key, reinterpret_cast<const uint8*>(&value), sizeof(T));
 }
 };
-
-#endif // __DAVAENGINE_KEYED_ARCHIVE_H__

@@ -34,6 +34,8 @@ public:
     void Clear();
     void Update();
 
+    void RequestPermissions();
+
     LocalNotification* const GetNotificationById(const String& id);
     void OnNotificationPressed(const String& id);
 

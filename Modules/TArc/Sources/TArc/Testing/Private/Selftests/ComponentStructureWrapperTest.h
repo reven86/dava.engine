@@ -2,10 +2,11 @@
 #include "TArc/Testing/TArcUnitTests.h"
 #include "TArc/Testing/MockDefine.h"
 
+#include "TArc/Controls/EmptyWidget.h"
 #include "TArc/Controls/PropertyPanel/PropertyModelExtensions.h"
 #include "TArc/Controls/PropertyPanel/BaseComponentValue.h"
 #include "TArc/Controls/PropertyPanel/Private/ComponentStructureWrapper.h"
-#include "TArc/Controls/PropertyPanel/Private/PropertyPanelMeta.h"
+#include "TArc/Controls/PropertyPanel/PropertyPanelMeta.h"
 #include "TArc/Controls/PropertyPanel/StaticEditorDrawer.h"
 
 #include <Reflection/ReflectedMeta.h>
@@ -52,7 +53,7 @@ public:
 
 protected:
     DAVA::float32 y;
-    DAVA::Any GetValue() const override
+    DAVA::Any GetMultipleValue() const override
     {
         return DAVA::Any();
     }
@@ -62,14 +63,10 @@ protected:
         return true;
     }
 
-    const DAVA::TArc::StaticEditorDrawer* GetStaticEditorDrawer() const override
+    DAVA::TArc::ControlProxy* CreateEditorWidget(QWidget* parent, const DAVA::Reflection& model, DAVA::TArc::DataWrappersProcessor* wrappersProcessor) const override
     {
-        return nullptr;
-    }
-
-    QWidget* AcquireEditorWidget(QWidget* parent, const QStyleOptionViewItem& option) override
-    {
-        return nullptr;
+        DAVA::TArc::ControlDescriptorBuilder<DAVA::TArc::EmptyWidget::Fields> descr;
+        return new DAVA::TArc::EmptyWidget(descr, wrappersProcessor, model, parent);
     }
 
     DAVA_VIRTUAL_REFLECTION_IN_PLACE(DummyComponentValue, DAVA::TArc::BaseComponentValue)
@@ -127,10 +124,11 @@ DAVA_TARC_TESTCLASS(ComponentStructureWrapperTest)
         propNode->propertyType = DAVA::TArc::PropertyNode::RealProperty;
         propNode->cachedValue = propNode->field.ref.GetValue();
 
-        DummyComponentValue value;
-        value.Add(propNode);
+        std::unique_ptr<DummyComponentValue> value(new DummyComponentValue());
+        DummyComponentValue* v = value.get();
+        v->Add(propNode);
 
-        DAVA::Reflection valueR = DAVA::Reflection::Create(&value);
+        DAVA::Reflection valueR = DAVA::Reflection::Create(&v);
         CheckValueField(valueR.GetField("value"));
         CheckNoMetaField(valueR.GetField("notProxyField"));
 

@@ -1,5 +1,5 @@
 #include "RegExpValidator.h"
-#include "Qt/Settings/SettingsManager.h"
+#include "Classes/Settings/SettingsManager.h"
 
 RegExpValidator::RegExpValidator(const QString& value)
 {

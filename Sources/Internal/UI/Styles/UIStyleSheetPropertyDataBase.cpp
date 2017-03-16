@@ -9,6 +9,7 @@
 #include "UI/Layouts/UIIgnoreLayoutComponent.h"
 #include "UI/Layouts/UISizePolicyComponent.h"
 #include "UI/Layouts/UIAnchorComponent.h"
+#include "UI/Sound/UISoundComponent.h"
 
 namespace DAVA
 {
@@ -23,9 +24,11 @@ UIStyleSheetPropertyDataBase::UIStyleSheetPropertyDataBase()
     , ignoreLayoutGroup("ignoreLayout", ePropertyOwner::COMPONENT, UIComponent::IGNORE_LAYOUT_COMPONENT, UIIgnoreLayoutComponent::TypeInfo())
     , sizePolicyGroup("sizePolicy", ePropertyOwner::COMPONENT, UIComponent::SIZE_POLICY_COMPONENT, UISizePolicyComponent::TypeInfo())
     , anchorGroup("anchor", ePropertyOwner::COMPONENT, UIComponent::ANCHOR_COMPONENT, UIAnchorComponent::TypeInfo())
+    , soundGroup("sound", ePropertyOwner::COMPONENT, UIComponent::SOUND_COMPONENT, UISoundComponent::TypeInfo())
 
     , properties({ { UIStyleSheetPropertyDescriptor(&controlGroup, FastName("angle"), VariantType(0.0f)),
                      UIStyleSheetPropertyDescriptor(&controlGroup, FastName("scale"), VariantType(Vector2(1.0f, 1.0f))),
+                     UIStyleSheetPropertyDescriptor(&controlGroup, FastName("pivot"), VariantType(Vector2(0.0f, 0.0f))),
                      UIStyleSheetPropertyDescriptor(&controlGroup, FastName("visible"), VariantType(true)),
                      UIStyleSheetPropertyDescriptor(&controlGroup, FastName("noInput"), VariantType(false)),
                      UIStyleSheetPropertyDescriptor(&controlGroup, FastName("exclusiveInput"), VariantType(false)),
@@ -97,7 +100,12 @@ UIStyleSheetPropertyDataBase::UIStyleSheetPropertyDataBase()
                      UIStyleSheetPropertyDescriptor(&anchorGroup, FastName("hCenterAnchorEnabled"), VariantType(false)),
                      UIStyleSheetPropertyDescriptor(&anchorGroup, FastName("hCenterAnchor"), VariantType(0.0f)),
                      UIStyleSheetPropertyDescriptor(&anchorGroup, FastName("vCenterAnchorEnabled"), VariantType(false)),
-                     UIStyleSheetPropertyDescriptor(&anchorGroup, FastName("vCenterAnchor"), VariantType(0.0f)) } })
+                     UIStyleSheetPropertyDescriptor(&anchorGroup, FastName("vCenterAnchor"), VariantType(0.0f)),
+
+                     UIStyleSheetPropertyDescriptor(&soundGroup, FastName("touchDown"), VariantType(FastName())),
+                     UIStyleSheetPropertyDescriptor(&soundGroup, FastName("touchUpInside"), VariantType(FastName())),
+                     UIStyleSheetPropertyDescriptor(&soundGroup, FastName("touchUpOutside"), VariantType(FastName())),
+                     UIStyleSheetPropertyDescriptor(&soundGroup, FastName("valueChanged"), VariantType(FastName())) } })
 {
     UnorderedMap<FastName, FastName> legacyNames;
     legacyNames[FastName("bg-drawType")] = FastName("drawType");

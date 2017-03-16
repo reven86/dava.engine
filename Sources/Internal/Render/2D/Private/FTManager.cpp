@@ -71,7 +71,7 @@ FT_Error FTManager::LookupSize(FaceID* faceId, float32 size, FT_Size* ftsize)
     {
       static_cast<FTC_FaceID>(faceId),
       0,
-      static_cast<FT_UInt>(size * 64.f),
+      static_cast<FT_UInt>(size * 64.f) & -64, // 'floor' size value (it is better solution that 'round' inside FT)
       0,
       0,
       FT_UInt(Font::GetDPI())
@@ -85,7 +85,7 @@ FT_Error FTManager::LookupGlyph(FaceID* faceId, float32 size, uint32 glyphIndex,
     {
       static_cast<FTC_FaceID>(faceId),
       0,
-      static_cast<FT_UInt>(size * 64.f),
+      static_cast<FT_UInt>(size * 64.f) & -64, // 'floor' size value (it is better solution that 'round' inside FT)
       0,
       0,
       FT_UInt(Font::GetDPI())

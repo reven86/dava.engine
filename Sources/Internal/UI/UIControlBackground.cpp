@@ -42,7 +42,6 @@ UIControlBackground::UIControlBackground(const UIControlBackground& src)
     , drawColor(src.drawColor)
     , material(SafeRetain(src.material))
 {
-    SetMargins(src.GetMargins());
 }
 
 UIControlBackground* UIControlBackground::Clone() const
@@ -54,7 +53,6 @@ UIControlBackground::~UIControlBackground()
 {
     spr = nullptr;
     SafeRelease(material);
-    SafeDelete(margins);
     ReleaseDrawData();
 }
 
@@ -236,11 +234,6 @@ void UIControlBackground::Draw(const UIGeometricData& parentGeometricData)
 {
     UIGeometricData geometricData;
     geometricData.size = parentGeometricData.size;
-    if (margins)
-    {
-        geometricData.position = Vector2(margins->left, margins->top);
-        geometricData.size += Vector2(-(margins->right + margins->left), -(margins->bottom + margins->top));
-    }
 
     geometricData.AddGeometricData(parentGeometricData);
     Rect drawRect = geometricData.GetUnrotatedRect();
@@ -545,32 +538,5 @@ void UIControlBackground::SetMaterial(NMaterial* _material)
 inline NMaterial* UIControlBackground::GetMaterial() const
 {
     return material;
-}
-
-void UIControlBackground::SetMargins(const UIMargins* uiMargins)
-{
-    if (!uiMargins || uiMargins->empty())
-    {
-        SafeDelete(margins);
-        return;
-    }
-
-    if (!margins)
-    {
-        margins = new UIControlBackground::UIMargins();
-    }
-
-    *margins = *uiMargins;
-}
-
-Vector4 UIControlBackground::GetMarginsAsVector4() const
-{
-    return (margins != nullptr) ? margins->AsVector4() : Vector4();
-}
-
-void UIControlBackground::SetMarginsAsVector4(const Vector4& m)
-{
-    UIControlBackground::UIMargins newMargins(m);
-    SetMargins(&newMargins);
 }
 };

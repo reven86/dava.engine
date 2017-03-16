@@ -11,6 +11,11 @@ const SelectableGroup& SelectionData::GetSelection() const
     return selectionSystem->GetSelection();
 }
 
+SelectableGroup SelectionData::GetMutableSelection() const
+{
+    return selectionSystem->GetSelection();
+}
+
 void SelectionData::SetSelection(SelectableGroup& newSelection)
 {
     DVASSERT(selectionSystem);
@@ -77,4 +82,13 @@ const DAVA::AABBox3& SelectionData::GetSelectionBox() const
 {
     DVASSERT(selectionSystem);
     return selectionSystem->GetSelectionBox();
+}
+
+namespace DAVA
+{
+template <>
+bool AnyCompare<SelectableGroup>::IsEqual(const DAVA::Any& v1, const DAVA::Any& v2)
+{
+    return v1.Get<SelectableGroup>() == v2.Get<SelectableGroup>();
+}
 }

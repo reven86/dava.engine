@@ -12,12 +12,17 @@ namespace DAVA
 {
 class UIGeometricData;
 class UIControl;
+class Command;
+namespace TArc
+{
+class ContextAccessor;
+}
 }
 
 class EditorTransformSystem : public DAVA::InspBase, public BaseEditorSystem
 {
 public:
-    explicit EditorTransformSystem(EditorSystemsManager* parent);
+    explicit EditorTransformSystem(EditorSystemsManager* parent, DAVA::TArc::ContextAccessor* accessor);
     ~EditorTransformSystem() override;
 
     static DAVA::Vector2 GetMinimumSize();
@@ -40,7 +45,7 @@ private:
     void ProcessInput(DAVA::UIEvent* currentInput) override;
     void OnDragStateChanged(EditorSystemsManager::eDragState currentState, EditorSystemsManager::eDragState previousState) override;
 
-    void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
+    void OnSelectionChanged(const SelectedNodes& selection);
     void OnActiveAreaChanged(const HUDAreaInfo& areaInfo);
 
     void ProcessKey(DAVA::Key key);
@@ -69,6 +74,9 @@ private:
     void ExtractMatchedLines(DAVA::Vector<MagnetLineInfo>& magnets, const DAVA::Vector<MagnetLine>& magnetLines, const DAVA::UIControl* control, DAVA::Vector2::eAxis axis);
     bool IsShiftPressed() const;
 
+    void ChangeProperty();
+    void Resize();
+
     HUDAreaInfo::eArea activeArea = HUDAreaInfo::NO_AREA;
     ControlNode* activeControlNode = nullptr;
     DAVA::Vector2 extraDelta;
@@ -95,6 +103,8 @@ private:
     DAVA::Vector2 shareOfSizeToMagnetPivot;
     DAVA::float32 angleSegment;
     bool shiftInverted;
+
+    DAVA::TArc::ContextAccessor* accessor = nullptr;
 
 public:
     INTROSPECTION(EditorTransformSystem,
