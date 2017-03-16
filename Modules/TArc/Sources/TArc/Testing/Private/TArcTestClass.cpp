@@ -79,23 +79,24 @@ TestClass::~TestClass()
         focusWidget->clearFocus();
     }
 
-    const EngineContext* ctx = GetEngineContext();
-    FilePath tmpDirectory = ctx->fileSystem->GetTempDirectoryPath() + "/SelfTestFolder/";
-    if (ctx->fileSystem->Exists(tmpDirectory))
-    {
-        ctx->fileSystem->DeleteDirectory(tmpDirectory, true);
-    }
-    ctx->fileSystem->SetCurrentDocumentsDirectory(documentsPath);
-
+    FilePath prevDocPath = documentsPath;
     coreChanged.Emit(nullptr);
     Core* c = core.release();
     c->syncSignal.DisconnectAll();
     c->SetInvokeListener(nullptr);
     mockInvoker.reset();
-    QTimer::singleShot(0, [c]()
+    QTimer::singleShot(0, [c, prevDocPath]()
                        {
                            c->OnLoopStopped();
                            delete c;
+
+                           const EngineContext* ctx = GetEngineContext();
+                           FilePath tmpDirectory = ctx->fileSystem->GetCurrentDocumentsDirectory();
+                           if (ctx->fileSystem->Exists(tmpDirectory))
+                           {
+                               ctx->fileSystem->DeleteDirectory(tmpDirectory, true);
+                           }
+                           ctx->fileSystem->SetCurrentDocumentsDirectory(prevDocPath);
                        });
 }
 
