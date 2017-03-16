@@ -1635,7 +1635,7 @@ static int alloc_vprintf2(char **buf, const char *fmt, va_list ap) {
   *buf = NULL;
   while (len == -1) {
     if (*buf) free(*buf);
-    *buf = malloc(size *= 4);
+    *buf = (char*)malloc(size *= 4);
     if (!*buf) break;
     va_copy(ap_copy, ap);
     len = vsnprintf(*buf, size, fmt, ap_copy);
