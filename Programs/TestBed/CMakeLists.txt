@@ -38,7 +38,7 @@ endif()
 dava_add_definitions(-DLOCALIZATION_DEBUG)
 
 
-if( MACOS OR WIN32 )
+if( NOT WINDOWS_UAP AND ( MACOS OR WIN32 ) )
     add_plugin( SamplePlugin "${DAVA_MODULES_DIR}/SamplePlugin" COMPONENTS  ${DAVA_COMPONENTS} )
 endif()
 
@@ -65,7 +65,8 @@ file ( GLOB_RECURSE XIB_LIST "${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLD
 
 define_source ( SOURCE    "Classes" )
 
-set( APP_DATA                   ${CMAKE_CURRENT_LIST_DIR}/Data )
+set( MIX_APP_DATA                 "Data = ${DAVA_ROOT_DIR}/Programs/Data" 
+                                  "Data = ${CMAKE_CURRENT_LIST_DIR}/Data" )
 
 if (MACOS OR WIN32)
     set( APP_DATA  ${APP_DATA} "scripts")
