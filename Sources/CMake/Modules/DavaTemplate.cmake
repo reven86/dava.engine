@@ -380,12 +380,16 @@ generated_unity_sources( PROJECT_SOURCE_FILES   IGNORE_LIST ${UNIFIED_IGNORE_LIS
                                                )
 
 ###
-set( TEST_FILES_CONTAINER )
 foreach( TEST_FOLDER ${EXTERNAL_TEST_FOLDERS} )
-    file( GLOB_RECURSE TEST_FILES "${TEST_FOLDER}/*.unittest.h" "${TEST_FOLDER}/*.unittest.cpp" )
+    file( GLOB_RECURSE TEST_FILES "${TEST_FOLDER}/*.unittest"  )
     list( APPEND PROJECT_SOURCE_FILES ${TEST_FILES} )
     source_group( "EXTERNAL_TEST" FILES ${TEST_FILES} )
-    set_source_files_properties( ${ITEM_LIST_SOURCE} PROPERTIES HEADER_FILE_ONLY FALSE )
+
+    set_source_files_properties(${TEST_FILES} PROPERTIES
+      HEADER_FILE_ONLY FALSE
+      KEEP_EXTENSION TRUE
+      LANGUAGE CXX
+    )
 endforeach()
 
 
@@ -399,7 +403,7 @@ if( ANDROID )
     foreach( ITEM ${PROJECT_SOURCE_FILES} )
         get_filename_component( ITEM_EXT ${ITEM} EXT )
 
-        if( ${ITEM_EXT} STREQUAL ".cpp" )
+        if( ${ITEM_EXT} STREQUAL ".cpp" OR ${ITEM_EXT} STREQUAL ".unittest" )
             list( APPEND SRC_LIST  ${ITEM} )
             math( EXPR COUNTER "${COUNTER} + 1" )
 

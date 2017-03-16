@@ -244,8 +244,6 @@ macro (define_source)
 
             foreach ( ITEM_LIST_SOURCE ${LIST_SOURCE} )
                 get_filename_component( ITEM_EXT ${ITEM_LIST_SOURCE} EXT )
-                get_filename_component( ITEM_NAME ${ITEM_LIST_SOURCE} NAME )
-
                 set( IGNORE_FLAG )
                 
                 foreach( IGNORE_MASK ${ARG_IGNORE_ITEMS} )
@@ -254,10 +252,6 @@ macro (define_source)
                         break()
                     endif()
                 endforeach()
-
-                if( ${ITEM_NAME} MATCHES ".unittest" )
-                    set( IGNORE_FLAG true )
-                endif()
                 
                 if( NOT IGNORE_FLAG AND ITEM_EXT)
                     foreach( EXT CPP HPP )
