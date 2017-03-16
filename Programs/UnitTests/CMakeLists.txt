@@ -56,7 +56,9 @@ endif()
 define_source                  ( SOURCE "Classes" )
 
 set( STEAM_APPID                Win32Specific/steam_appid.txt )
-set( APP_DATA                   ${CMAKE_CURRENT_LIST_DIR}/Data )
+
+set( MIX_APP_DATA                 "Data = ${DAVA_ROOT_DIR}/Programs/Data" 
+                                  "Data = ${CMAKE_CURRENT_LIST_DIR}/Data" )
 
 set( IOS_PLISTT                 ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/UnitTests-Info.plist )
 
