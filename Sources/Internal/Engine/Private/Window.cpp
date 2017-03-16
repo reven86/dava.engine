@@ -271,6 +271,9 @@ void Window::EventHandler(const Private::MainDispatcherEvent& e)
     case MainDispatcherEvent::WINDOW_CANCEL_INPUT:
         HandleCancelInput(e);
         break;
+    case MainDispatcherEvent::WINDOW_VISIBLE_FRAME_CHANGED:
+        HandleVisibleFrameChanged(e);
+        break;
     default:
         break;
     }
@@ -351,12 +354,17 @@ void Window::HandleSizeChanged(const Private::MainDispatcherEvent& e)
             // call reloadig sprites/fonts from this point ((
             if (uiControlSystem->vcs->GetReloadResourceOnResize())
             {
-// Disable sprite reloading on macos
+// Disable sprite reloading on macos and windows
 // Game uses separate thread for loading battle and its resources.
 // Window resizing during battle loading may lead to crash as sprite
 // reloading is not ready for multiple threads.
 // TODO: do something with sprite reloading
-#if !defined(__DAVAENGINE_MACOS__)
+//
+// !!! At the moment this is a huge architectural problem,
+// that we do not know how to solve.
+// More detail can be found in DF-13044
+//
+#if !defined(__DAVAENGINE_MACOS__) && !defined(__DAVAENGINE_WINDOWS__)
                 Sprite::ValidateForSize();
 #endif
             }
@@ -454,6 +462,12 @@ void Window::HandleCancelInput(const Private::MainDispatcherEvent& e)
 {
     uiControlSystem->CancelAllInputs();
     inputSystem->GetKeyboard().ClearAllKeys();
+}
+
+void Window::HandleVisibleFrameChanged(const Private::MainDispatcherEvent& e)
+{
+    Rect visibleRect(e.visibleFrameEvent.x, e.visibleFrameEvent.y, e.visibleFrameEvent.width, e.visibleFrameEvent.height);
+    visibleFrameChanged.Emit(this, visibleRect);
 }
 
 void Window::HandleFocusChanged(const Private::MainDispatcherEvent& e)

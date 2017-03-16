@@ -47,7 +47,7 @@ void ApplyColorPickerSettins(DAVA::TArc::ContextAccessor* contextAccessor)
                 paletteStream << a[i];
             }
 
-            propsItem.Set(PALETTE_KEY, Any(paletteData));
+            propsItem.Set(PALETTE_KEY, DAVA::Any(paletteData));
         }
     }
 }

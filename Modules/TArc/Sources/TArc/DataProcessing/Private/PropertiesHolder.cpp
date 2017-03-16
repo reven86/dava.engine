@@ -13,6 +13,8 @@
 #include <QFileInfo>
 #include <QDir>
 #include <QFile>
+#include <QRect>
+#include <QDataStream>
 
 namespace DAVA
 {

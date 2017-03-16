@@ -2,9 +2,13 @@
 #include "TArc/Controls/PropertyPanel/Private/ReflectedPropertyItem.h"
 #include "TArc/Controls/PropertyPanel/Private/EmptyComponentValue.h"
 #include "TArc/Controls/PropertyPanel/Private/DefaultPropertyModelExtensions.h"
-#include "TArc/Controls/PropertyPanel/Private/PropertyPanelMeta.h"
+#include "TArc/Controls/PropertyPanel/PropertyPanelMeta.h"
+#include "TArc/Controls/PropertyPanel/KeyedArchiveChildCreator.h"
+#include "TArc/Controls/PropertyPanel/Private/SubPropertiesExtensions.h"
 
 #include <Debug/DVAssert.h>
+#include <Logger/Logger.h>
+#include <Time/SystemTimer.h>
 #include <Utils/StringFormat.h>
 #include <Utils/Utils.h>
 
@@ -27,7 +31,7 @@ std::tuple<const Type*, const ReflectedType*, const ReflectedStructure*> UnpackR
     const ReflectedStructure* structure = nullptr;
     if (reflectedType != nullptr)
     {
-        structure = reflectedType->GetStrucutre();
+        structure = reflectedType->GetStructure();
     }
 
     return std::make_tuple(t, reflectedType, structure);
@@ -56,7 +60,10 @@ const String TypeName = "typeName";
 const String FieldName = "fieldName";
 }
 
-ReflectedPropertyModel::ReflectedPropertyModel()
+ReflectedPropertyModel::ReflectedPropertyModel(ContextAccessor* accessor_, OperationInvoker* invoker_, UI* ui_)
+    : accessor(accessor_)
+    , invoker(invoker_)
+    , ui(ui_)
 {
     rootItem.reset(new ReflectedPropertyItem(this, std::make_unique<EmptyComponentValue>()));
 
@@ -66,8 +73,13 @@ ReflectedPropertyModel::ReflectedPropertyModel()
     RegisterExtension(ModifyExtension::CreateDummy());
 
     RegisterExtension(std::make_shared<DefaultChildCheatorExtension>());
+    RegisterExtension(std::make_shared<KeyedArchiveChildCreator>());
+    RegisterExtension(std::make_shared<SubPropertyValueChildCreator>());
+
     RegisterExtension(std::make_shared<DefaultMergeValueExtension>());
-    RegisterExtension(std::make_shared<DefaultEditorComponentExtension>());
+
+    RegisterExtension(std::make_shared<DefaultEditorComponentExtension>(ui));
+    RegisterExtension(std::make_shared<SubPropertyEditorCreator>());
 
     childCreator.nodeCreated.Connect(this, &ReflectedPropertyModel::ChildAdded);
     childCreator.nodeRemoved.Connect(this, &ReflectedPropertyModel::ChildRemoved);
@@ -122,7 +134,7 @@ QVariant ReflectedPropertyModel::headerData(int section, Qt::Orientation orienta
 Qt::ItemFlags ReflectedPropertyModel::flags(const QModelIndex& index) const
 {
     DVASSERT(index.isValid());
-    Qt::ItemFlags flags = Qt::ItemIsSelectable | Qt::ItemIsEnabled;
+    Qt::ItemFlags flags = Qt::ItemFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
     if (index.column() == 1)
     {
         ReflectedPropertyItem* item = MapItem(index);
@@ -167,11 +179,11 @@ QModelIndex ReflectedPropertyModel::parent(const QModelIndex& index) const
 
 void ReflectedPropertyModel::Update()
 {
-    //std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
+    int64 start = SystemTimer::GetMs();
     Update(rootItem.get());
-    //double duration = std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::high_resolution_clock::now() - start).count();
-    //NGT_TRACE_MSG("update duration : %f seconds\n", duration);
+    fastWrappersProcessor.Sync();
     wrappersProcessor.Sync();
+    Logger::Debug(" === ReflectedPropertyModel::Update : %d ===", static_cast<int32>(SystemTimer::GetMs() - start));
 }
 
 void ReflectedPropertyModel::Update(ReflectedPropertyItem* item)
@@ -185,6 +197,56 @@ void ReflectedPropertyModel::Update(ReflectedPropertyItem* item)
     for (const std::unique_ptr<ReflectedPropertyItem>& child : item->children)
     {
         Update(child.get());
+    }
+
+    fastWrappersProcessor.Sync();
+}
+
+void ReflectedPropertyModel::UpdateFastImpl(ReflectedPropertyItem* item)
+{
+    if (item->GetPropertyNodesCount() == 0)
+    {
+        return;
+    }
+
+    if (item->GetPropertyNode(0)->field.ref.HasMeta<M::FrequentlyChangedValue>())
+    {
+        Update(item);
+    }
+
+    for (int32 i = 0; i < item->GetChildCount(); ++i)
+    {
+        UpdateFastImpl(item->GetChild(i));
+    }
+}
+
+DataWrappersProcessor* ReflectedPropertyModel::GetWrappersProcessor(const std::shared_ptr<PropertyNode>& node)
+{
+    if (node->field.ref.HasMeta<M::FrequentlyChangedValue>())
+    {
+        return &fastWrappersProcessor;
+    }
+
+    return &wrappersProcessor;
+}
+
+void ReflectedPropertyModel::UpdateFast()
+{
+    int64 start = SystemTimer::GetMs();
+    UpdateFastImpl(rootItem.get());
+    Logger::Debug(" === ReflectedPropertyModel::UpdateFast : %d ===", static_cast<int32>(SystemTimer::GetMs() - start));
+}
+
+void ReflectedPropertyModel::HideEditor(ReflectedPropertyItem* item)
+{
+    if (item->value != nullptr)
+    {
+        item->value->HideEditor();
+    }
+
+    for (int32 i = 0; i < item->GetChildCount(); ++i)
+    {
+        HideEditor(item->GetChild(i));
     }
 }
 
@@ -455,7 +517,7 @@ void ReflectedPropertyModel::LoadExpanded(const PropertiesItem& propertyRoot)
     {
         const ReflectedType* type = ReflectedTypeDB::GetByPermanentName(desc.typePermanentName);
         DVASSERT(type != nullptr);
-        ReflectedStructure* structure = const_cast<ReflectedStructure*>(type->GetStrucutre());
+        ReflectedStructure* structure = const_cast<ReflectedStructure*>(type->GetStructure());
         DVASSERT(structure != nullptr);
         if (desc.fieldName.empty())
         {
@@ -472,6 +534,11 @@ void ReflectedPropertyModel::LoadExpanded(const PropertiesItem& propertyRoot)
             }
         }
     }
+}
+
+void ReflectedPropertyModel::HideEditors()
+{
+    HideEditor(rootItem.get());
 }
 
 void ReflectedPropertyModel::GetExpandedListImpl(QModelIndexList& list, ReflectedPropertyItem* item) const

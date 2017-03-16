@@ -3,7 +3,7 @@
 
 #if !(TARGET_IPHONE_SIMULATOR == 1)
 
-#include "mem_RemoteHeap.h"
+#include "../Common/rhi_RemoteHeap.h"
 #include "_metal.h"
 #include <string>
 
