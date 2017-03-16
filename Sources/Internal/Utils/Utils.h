@@ -45,7 +45,7 @@ void Swap(T& v1, T& v2);
  \brief Function to compare strings case-insensitive
  \param[in] ext1 - first string
  \param[in] ext2 - second string
- \param[out] result of comparision
+ \param[out] result of comparison
  */
 int32 CompareCaseInsensitive(const String& str1, const String& str2);
 

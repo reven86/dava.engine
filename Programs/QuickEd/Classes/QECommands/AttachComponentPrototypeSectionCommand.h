@@ -1,26 +1,20 @@
-#ifndef __QUICKED_ATTACH_PROTOTYPE_COMPONENT_SECTION_COMMAND_H__
-#define __QUICKED_ATTACH_PROTOTYPE_COMPONENT_SECTION_COMMAND_H__
+#pragma once
 
-#include "Command/Command.h"
+#include "QECommands/Private/QEPackageCommand.h"
 
-class PackageNode;
 class ControlNode;
 class ComponentPropertiesSection;
 
-class AttachComponentPrototypeSectionCommand : public DAVA::Command
+class AttachComponentPrototypeSectionCommand : public QEPackageCommand
 {
 public:
-    AttachComponentPrototypeSectionCommand(PackageNode* root, ControlNode* node, ComponentPropertiesSection* destSection, ComponentPropertiesSection* prototypeSection);
-    virtual ~AttachComponentPrototypeSectionCommand();
+    AttachComponentPrototypeSectionCommand(PackageNode* package, ControlNode* node, ComponentPropertiesSection* destSection, ComponentPropertiesSection* prototypeSection);
 
     void Redo() override;
     void Undo() override;
 
 private:
-    PackageNode* root;
-    ControlNode* node;
-    ComponentPropertiesSection* destSection;
-    ComponentPropertiesSection* prototypeSection;
+    DAVA::RefPtr<ControlNode> node;
+    DAVA::RefPtr<ComponentPropertiesSection> destSection;
+    DAVA::RefPtr<ComponentPropertiesSection> prototypeSection;
 };
-
-#endif // __QUICKED_ATTACH_PROTOTYPE_COMPONENT_SECTION_COMMAND_H__

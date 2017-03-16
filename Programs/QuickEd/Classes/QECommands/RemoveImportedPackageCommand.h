@@ -1,24 +1,19 @@
-#ifndef __QUICKED_REMOVE_IMPORTED_PACKAGE_COMMAND_H__
-#define __QUICKED_REMOVE_IMPORTED_PACKAGE_COMMAND_H__
+#pragma once
 
-#include "Command/Command.h"
+#include "QECommands/Private/QEPackageCommand.h"
 
 class PackageNode;
 class PackageControlsNode;
 
-class RemoveImportedPackageCommand : public DAVA::Command
+class RemoveImportedPackageCommand : public QEPackageCommand
 {
 public:
-    RemoveImportedPackageCommand(PackageNode* aRoot, PackageNode* anImportedPackage);
-    virtual ~RemoveImportedPackageCommand();
+    RemoveImportedPackageCommand(PackageNode* package, PackageNode* importedPackage);
 
     void Redo() override;
     void Undo() override;
 
 private:
-    PackageNode* root;
-    PackageNode* importedPackage;
-    int index;
+    DAVA::RefPtr<PackageNode> importedPackage;
+    int index = -1;
 };
-
-#endif // __QUICKED_REMOVE_IMPORTED_PACKAGE_COMMAND_H__

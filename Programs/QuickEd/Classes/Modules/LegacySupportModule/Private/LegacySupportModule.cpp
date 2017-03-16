@@ -16,7 +16,6 @@
 #include "UI/StyleSheetInspector/StyleSheetInspectorWidget.h"
 
 #include <TArc/Core/ContextAccessor.h>
-#include <TArc/WindowSubSystem/Private/UIManager.h>
 
 #include <QtTools/Utils/Themes/Themes.h>
 
@@ -179,8 +178,7 @@ void LegacySupportModule::InitMainWindow()
     QString title = QString(editorTitle).arg(DAVAENGINE_VERSION).arg(APPLICATION_BUILD_VERSION).arg(bit);
     mainWindow->SetEditorTitle(title);
 
-    UIManager* ui = static_cast<UIManager*>(GetUI());
-    ui->InjectWindow(QEGlobal::windowKey, mainWindow);
+    GetUI()->InjectWindow(QEGlobal::windowKey, mainWindow);
     ContextAccessor* accessor = GetAccessor();
     DataContext* globalContext = accessor->GetGlobalContext();
 }
