@@ -111,9 +111,9 @@ public:
     const PackFormat::PackFile& GetPack() const;
 
     // use only after initialization
-    bool IsFileReady(uint32 fileIndex) const;
+    bool IsFileReady(size_t fileIndex) const;
 
-    void SetFileIsReady(uint32 fileIndex);
+    void SetFileIsReady(size_t fileIndex);
 
     bool IsInQueue(const PackRequest* request) const;
 
@@ -218,13 +218,13 @@ inline const PackFormat::PackFile& DLCManagerImpl::GetPack() const
     return usedPackFile;
 }
 
-inline bool DLCManagerImpl::IsFileReady(uint32 fileIndex) const
+inline bool DLCManagerImpl::IsFileReady(size_t fileIndex) const
 {
     DVASSERT(fileIndex < scanFileReady.size());
     return scanFileReady[fileIndex];
 }
 
-inline void DLCManagerImpl::SetFileIsReady(uint32 fileIndex)
+inline void DLCManagerImpl::SetFileIsReady(size_t fileIndex)
 {
     scanFileReady.at(fileIndex) = true;
 }
