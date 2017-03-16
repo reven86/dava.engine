@@ -361,6 +361,20 @@ if( MIX_APP_DATA )
 
 endif()
 
+
+###
+foreach( TEST_FOLDER ${EXTERNAL_TEST_FOLDERS} )
+    file( GLOB_RECURSE TEST_FILES "${TEST_FOLDER}/*.unittest"  )
+    list( APPEND PROJECT_SOURCE_FILES ${TEST_FILES} )
+    source_group( "EXTERNAL_TEST" FILES ${TEST_FILES} )
+
+    set_source_files_properties(${TEST_FILES} PROPERTIES
+      HEADER_FILE_ONLY FALSE
+      KEEP_EXTENSION TRUE
+      LANGUAGE CXX
+    )
+endforeach()
+
 ###
 
 list( APPEND PROJECT_SOURCE_FILES ${ADDED_SRC} ${PLATFORM_ADDED_SRC} )
@@ -378,20 +392,6 @@ generated_unity_sources( PROJECT_SOURCE_FILES   IGNORE_LIST ${UNIFIED_IGNORE_LIS
                                                 CUSTOM_PACK_7     ${UNIFIED_CUSTOM_PACK_7}
 
                                                )
-
-###
-foreach( TEST_FOLDER ${EXTERNAL_TEST_FOLDERS} )
-    file( GLOB_RECURSE TEST_FILES "${TEST_FOLDER}/*.unittest"  )
-    list( APPEND PROJECT_SOURCE_FILES ${TEST_FILES} )
-    source_group( "EXTERNAL_TEST" FILES ${TEST_FILES} )
-
-    set_source_files_properties(${TEST_FILES} PROPERTIES
-      HEADER_FILE_ONLY FALSE
-      KEEP_EXTENSION TRUE
-      LANGUAGE CXX
-    )
-endforeach()
-
 
 ###
 if( ANDROID )
