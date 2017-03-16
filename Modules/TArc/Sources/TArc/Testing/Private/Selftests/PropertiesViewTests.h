@@ -87,7 +87,7 @@ public:
 
 class TestModule : public DAVA::TArc::ClientModule
 {
-    void PostInit()
+    void PostInit() override
     {
         using namespace DAVA::TArc;
 
