@@ -91,7 +91,7 @@ QVariant ReflectedPropertyModel::headerData(int section, Qt::Orientation orienta
 Qt::ItemFlags ReflectedPropertyModel::flags(const QModelIndex& index) const
 {
     DVASSERT(index.isValid());
-    Qt::ItemFlags flags = Qt::ItemIsSelectable | Qt::ItemIsEnabled;
+    Qt::ItemFlags flags = Qt::ItemFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
     if (index.column() == 1)
     {
         ReflectedPropertyItem* item = MapItem(index);
