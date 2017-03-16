@@ -1,4 +1,4 @@
-#include "SetPropertyValueCommand.h"
+#include "Command/SetPropertyValueCommand.h"
 
 #include "Base/Introspection.h"
 

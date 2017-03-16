@@ -1,4 +1,4 @@
-#include "SetCollectionItemValueCommand.h"
+#include "Command/SetCollectionItemValueCommand.h"
 
 #include "Base/Introspection.h"
 #include "Base/IntrospectionCollection.h"

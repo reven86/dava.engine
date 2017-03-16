@@ -4,10 +4,20 @@
 #include "EditorSystems/EditorTransformSystem.h"
 #include "EditorSystems/EditorSystemsManager.h"
 #include "EditorSystems/KeyboardProxy.h"
-#include "UI/UIEvent.h"
-#include "UI/UIControl.h"
+
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/ControlProperties/RootProperty.h"
+
+#include "Modules/DocumentsModule/DocumentData.h"
+
+#include "QECommands/ChangePropertyValueCommand.h"
+#include "QECommands/ResizeCommand.h"
+#include "QECommands/ChangePivotCommand.h"
+
+#include <TArc/Core/ContextAccessor.h>
+
+#include <UI/UIEvent.h>
+#include <UI/UIControl.h>
 
 using namespace DAVA;
 
@@ -99,8 +109,9 @@ struct ChangePropertyAction
 };
 }
 
-EditorTransformSystem::EditorTransformSystem(EditorSystemsManager* parent)
+EditorTransformSystem::EditorTransformSystem(EditorSystemsManager* parent, TArc::ContextAccessor* accessor_)
     : BaseEditorSystem(parent)
+    , accessor(accessor_)
 {
     systemsManager->activeAreaChanged.Connect(this, &EditorTransformSystem::OnActiveAreaChanged);
     systemsManager->selectionChanged.Connect(this, &EditorTransformSystem::OnSelectionChanged);
@@ -311,6 +322,8 @@ void EditorTransformSystem::ProcessDrag(const Vector2& pos)
 
 void EditorTransformSystem::MoveAllSelectedControls(Vector2 delta, bool canAdjust)
 {
+    using namespace DAVA::TArc;
+
     Vector<EditorTransformSystemDetail::ChangePropertyAction> propertiesToChange;
     Vector<MagnetLineInfo> magnets;
     //at furst we need to magnet control under cursor or unmagnet it
@@ -365,11 +378,18 @@ void EditorTransformSystem::MoveAllSelectedControls(Vector2 delta, bool canAdjus
         Vector2 finalPosition(originalPosition + deltaPosition);
         propertiesToChange.emplace_back(node, property, VariantType(finalPosition));
     }
+    systemsManager->magnetLinesChanged.Emit(magnets);
+
+    DataContext* activeContext = accessor->GetActiveContext();
+    DVASSERT(activeContext != nullptr);
+    DocumentData* data = activeContext->GetData<DocumentData>();
+    std::unique_ptr<ChangePropertyValueCommand> command = data->CreateCommand<ChangePropertyValueCommand>();
+    DVASSERT(propertiesToChange.empty() == false);
     for (const EditorTransformSystemDetail::ChangePropertyAction& changePropertyAction : propertiesToChange)
     {
-        systemsManager->propertyChanged.Emit(changePropertyAction.node, changePropertyAction.property, changePropertyAction.value);
+        command->AddNodePropertyValue(changePropertyAction.node, changePropertyAction.property, changePropertyAction.value);
     }
-    systemsManager->magnetLinesChanged.Emit(magnets);
+    data->ExecCommand(std::move(command));
 }
 
 Vector<EditorTransformSystem::MagnetLine> EditorTransformSystem::CreateMagnetPairs(const Rect& box, const UIGeometricData* parentGD, const Vector<UIControl*>& neighbours, Vector2::eAxis axis)
@@ -588,21 +608,30 @@ void EditorTransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool ra
     deltaPosition *= control->GetScale();
     deltaPosition = ::Rotate(deltaPosition, control->GetAngle());
 
-    Vector<EditorTransformSystemDetail::ChangePropertyAction> propertiesToChange;
-
-    if (activeControlNode->GetParent() != nullptr)
-    {
-        Vector2 originalPosition = positionProperty->GetValue().AsVector2();
-        propertiesToChange.emplace_back(activeControlNode, positionProperty, VariantType(originalPosition + deltaPosition));
-    }
     Vector2 originalSize = sizeProperty->GetValue().AsVector2();
     Vector2 finalSize(originalSize + adjustedSize);
-    propertiesToChange.emplace_back(activeControlNode, sizeProperty, VariantType(finalSize));
+    VariantType sizeValue(finalSize);
 
-    for (const EditorTransformSystemDetail::ChangePropertyAction& changePropertyAction : propertiesToChange)
+    Vector2 originalPosition = positionProperty->GetValue().AsVector2();
+    Vector2 finalPosition = originalPosition;
+    if (activeControlNode->GetParent() != nullptr && activeControlNode->GetParent()->GetControl() != nullptr)
     {
-        systemsManager->propertyChanged.Emit(changePropertyAction.node, changePropertyAction.property, changePropertyAction.value);
+        finalPosition += deltaPosition;
     }
+    VariantType positionValue(finalPosition);
+
+    TArc::DataContext* activeContext = accessor->GetActiveContext();
+    DVASSERT(activeContext != nullptr);
+    DocumentData* data = activeContext->GetData<DocumentData>();
+    std::unique_ptr<ResizeCommand> command = data->CreateCommand<ResizeCommand>();
+
+    command->AddNodePropertyValue(activeControlNode,
+                                  sizeProperty,
+                                  sizeValue,
+                                  positionProperty,
+                                  positionValue);
+
+    data->ExecCommand(std::move(command));
 }
 
 Vector2 EditorTransformSystem::AdjustResizeToMinimumSize(Vector2 deltaSize)
@@ -742,18 +771,22 @@ void EditorTransformSystem::MovePivot(Vector2 delta)
 {
     Vector<EditorTransformSystemDetail::ChangePropertyAction> propertiesToChange;
     Vector2 pivot = AdjustPivotToNearestArea(delta);
-    propertiesToChange.emplace_back(activeControlNode, pivotProperty, VariantType(pivot));
 
     Vector2 scaledDelta(delta / parentGeometricData.scale);
     Vector2 rotatedDeltaPosition(::Rotate(scaledDelta, -parentGeometricData.angle));
     Vector2 originalPos(positionProperty->GetValue().AsVector2());
     Vector2 finalPosition(originalPos + rotatedDeltaPosition);
-    propertiesToChange.emplace_back(activeControlNode, positionProperty, VariantType(finalPosition));
 
-    for (const EditorTransformSystemDetail::ChangePropertyAction& changePropertyAction : propertiesToChange)
-    {
-        systemsManager->propertyChanged.Emit(changePropertyAction.node, changePropertyAction.property, changePropertyAction.value);
-    }
+    TArc::DataContext* activeContext = accessor->GetActiveContext();
+    DVASSERT(activeContext != nullptr);
+    DocumentData* data = activeContext->GetData<DocumentData>();
+    std::unique_ptr<ChangePivotCommand> command = data->CreateCommand<ChangePivotCommand>();
+    command->AddNodePropertyValue(activeControlNode,
+                                  pivotProperty,
+                                  VariantType(pivot),
+                                  positionProperty,
+                                  VariantType(finalPosition));
+    data->ExecCommand(std::move(command));
 }
 
 namespace
@@ -861,7 +894,14 @@ bool EditorTransformSystem::RotateControl(const Vector2& pos)
     float32 originalAngle = angleProperty->GetValue().AsFloat();
 
     float32 finalAngle = AdjustRotateToFixedAngle(deltaAngle, originalAngle);
-    systemsManager->propertyChanged.Emit(activeControlNode, angleProperty, VariantType(finalAngle));
+
+    TArc::DataContext* activeContext = accessor->GetActiveContext();
+    DVASSERT(activeContext != nullptr);
+    DocumentData* data = activeContext->GetData<DocumentData>();
+    std::unique_ptr<ChangePropertyValueCommand> command = data->CreateCommand<ChangePropertyValueCommand>();
+    command->AddNodePropertyValue(activeControlNode, angleProperty, VariantType(finalAngle));
+    data->ExecCommand(std::move(command));
+
     previousMousePos = pos;
     return true;
 }
@@ -976,7 +1016,13 @@ void EditorTransformSystem::ClampAngle()
         angle += angle > 0.0f ? EditorTransformSystemDetail::TRANSFORM_EPSILON : -EditorTransformSystemDetail::TRANSFORM_EPSILON;
         angle = static_cast<int32>(angle) % 360;
     }
-    systemsManager->propertyChanged.Emit(activeControlNode, angleProperty, VariantType(angle));
+
+    TArc::DataContext* activeContext = accessor->GetActiveContext();
+    DVASSERT(activeContext != nullptr);
+    DocumentData* data = activeContext->GetData<DocumentData>();
+    std::unique_ptr<ChangePropertyValueCommand> command = data->CreateCommand<ChangePropertyValueCommand>();
+    command->AddNodePropertyValue(activeControlNode, angleProperty, VariantType(angle));
+    data->ExecCommand(std::move(command));
 }
 
 bool EditorTransformSystem::IsShiftPressed() const
