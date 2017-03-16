@@ -92,6 +92,13 @@ void MultilineTest::LoadResources()
     textField2->SetTextAlign(ALIGN_RIGHT | ALIGN_TOP);
     AddControl(textField2);
 
+    RefPtr<UITextField> textField3(new UITextField(Rect(5, 150, 400, 60)));
+    textField3->SetFont(font);
+    textField3->SetText(L"field w/o options");
+    textField3->SetDebugDraw(true);
+    textField3->GetOrCreateComponent<UIFocusComponent>();
+    AddControl(textField3.Get());
+
     textFieldMulti = new UITextField(Rect(450, 10, 400, 120));
     textFieldMulti->GetOrCreateComponent<UIFocusComponent>();
     textFieldMulti->SetFont(font);

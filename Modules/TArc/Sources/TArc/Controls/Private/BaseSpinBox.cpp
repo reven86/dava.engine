@@ -161,6 +161,7 @@ void DAVA::TArc::BaseSpinBox<TBase, TEditableType>::ValueChanged(TEditableType v
             {
                 ToValidState();
                 this->wrapper.SetFieldValue(this->GetFieldName(BaseFields::Value), val);
+                UpdateRange();
                 if (this->hasFocus() == true)
                 {
                     ToEditingState();
