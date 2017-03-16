@@ -365,14 +365,25 @@ endif()
 ###
 foreach( TEST_FOLDER ${EXTERNAL_TEST_FOLDERS} )
     file( GLOB_RECURSE TEST_FILES "${TEST_FOLDER}/*.unittest"  )
-    list( APPEND PROJECT_SOURCE_FILES ${TEST_FILES} )
-    source_group( "EXTERNAL_TEST" FILES ${TEST_FILES} )
 
-    set_source_files_properties(${TEST_FILES} PROPERTIES
-      HEADER_FILE_ONLY FALSE
-      KEEP_EXTENSION TRUE
-      LANGUAGE CXX
-    )
+    if( ANDROID )#Fucking android
+        foreach( FILE ${TEST_FILES} )
+            get_filename_component( FILE_NAME ${FILE} NAME )
+            set( OUT_FILE ${CMAKE_CURRENT_BINARY_DIR}/EXTERNAL_TEST/${FILE_NAME}.cpp )
+            configure_file( ${FILE}  ${OUT_FILE} COPYONLY)
+            list( APPEND PROJECT_SOURCE_FILES ${OUT_FILE} )
+        endforeach()
+    else()
+        list( APPEND PROJECT_SOURCE_FILES ${TEST_FILES} )
+        source_group( "EXTERNAL_TEST" FILES ${TEST_FILES} )
+
+        set_source_files_properties(${TEST_FILES} PROPERTIES
+          HEADER_FILE_ONLY FALSE
+          KEEP_EXTENSION TRUE
+          LANGUAGE CXX
+        )
+    endif()
+
 endforeach()
 
 ###
@@ -403,7 +414,7 @@ if( ANDROID )
     foreach( ITEM ${PROJECT_SOURCE_FILES} )
         get_filename_component( ITEM_EXT ${ITEM} EXT )
 
-        if( ${ITEM_EXT} STREQUAL ".cpp" OR ${ITEM_EXT} STREQUAL ".unittest" )
+        if( ${ITEM_EXT} STREQUAL ".cpp" )
             list( APPEND SRC_LIST  ${ITEM} )
             math( EXPR COUNTER "${COUNTER} + 1" )
 
