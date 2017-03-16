@@ -5,6 +5,7 @@
 #include <Concurrency/Thread.h>
 #include <Logger/Logger.h>
 #include <Engine/Engine.h>
+#include <EmbeddedWebServer.h>
 
 #include "UnitTests/UnitTests.h"
 
@@ -26,15 +27,35 @@ struct DownloaderTest
         fs->DeleteDirectory(downloadedPacksDir);
         fs->CreateDirectory(downloadedPacksDir, true);
 
-        String superPackUrl("http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz/superpack_for_unittests.dvpk");
-        // "http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz/superpack_for_unittests.dvpk"
-        // "http://127.0.0.1/superpack_for_unittests.dvpk"
+        FilePath destPath = downloadedPacksDir + "superpack_for_unittests.dvpk";
+        FilePath srcPath = "~res:/superpack_for_unittests.dvpk";
+        if (!fs->IsFile(srcPath))
+        {
+            Logger::Error("no super pack file!");
+            TEST_VERIFY(false);
+        }
+
+        if (!fs->CopyFile(srcPath, destPath, true))
+        {
+            Logger::Error("can't copy super pack for unittest from res:/");
+            TEST_VERIFY(false);
+            return;
+        }
+
+        try
+        {
+            StartEmbeddedWebServer(downloadedPacksDir.GetAbsolutePathname().c_str(), "8080");
+        }
+        catch (std::exception& ex)
+        {
+            Logger::Error("%s", ex.what());
+            TEST_VERIFY(false);
+            return;
+        }
+
+        String superPackUrl("http://127.0.0.1:8080/superpack_for_unittests.dvpk");
 
         DLCManager& dlcManager = *GetEngineContext()->dlcManager;
-
-        FilePath fileFromPack(downloadedPacksDir + "/3d/Fx/Tut_eye.sc2");
-
-        fs->DeleteFile(fileFromPack);
 
         Logger::Info("init dlcManager");
 
@@ -96,6 +117,7 @@ DAVA_TESTCLASS (DLCManagerTest)
                 {
                     downloadOfVirtualPack = true;
                     TEST_VERIFY(true);
+                    DAVA::StopEmbeddedWebServer();
                 }
             }
             if (!downloadOfVirtualPack)
@@ -106,7 +128,9 @@ DAVA_TESTCLASS (DLCManagerTest)
                     downloader.IsInitialized();
                     downloader.IsDownloaded();
                     DAVA::Logger::Info("can't download pack with DLCManager");
-                    downloadOfVirtualPack = true;
+                    TEST_VERIFY(false);
+                    downloadOfVirtualPack = true; // just go to next test
+                    DAVA::StopEmbeddedWebServer();
                 }
             }
         }

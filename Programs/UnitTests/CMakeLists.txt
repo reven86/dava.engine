@@ -37,7 +37,7 @@ endif()
 
 find_package( Steam REQUIRED )
 find_package( DavaFramework REQUIRED COMPONENTS "${DAVA_COMPONENTS}" )
-find_package( EmbededdWebServer REQUIRED )
+find_package( EmbeddedWebServer REQUIRED )
 
 include_directories   ( "Classes" )
 
