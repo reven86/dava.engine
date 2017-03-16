@@ -6,7 +6,6 @@ namespace DAVA
 {
 namespace Net
 {
-
 ChannelListenerAsync::ChannelListenerAsync(std::weak_ptr<IChannelListener> listenerWeak, NetEventsDispatcher* netEventsDispatcher)
     : netEventsDispatcher(netEventsDispatcher)
     , targetObjectWeak(listenerWeak)
@@ -57,6 +56,5 @@ void ChannelListenerAsync::OnPacketDelivered(IChannel* channel, uint32 packetId)
     Function<void()> msg(callerWithParams);
     netEventsDispatcher->PostEvent(msg);
 }
-
 }
 }

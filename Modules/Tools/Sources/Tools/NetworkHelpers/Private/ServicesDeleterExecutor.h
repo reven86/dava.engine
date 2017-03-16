@@ -7,11 +7,10 @@ namespace DAVA
 {
 namespace Net
 {
-
 class ServiceDeleterExecutor
 {
 public:
-    ServiceDeleterExecutor(ServiceDeleter serviceDeleter) 
+    ServiceDeleterExecutor(ServiceDeleter serviceDeleter)
         : serviceDeleter(serviceDeleter)
     {
     }
@@ -19,9 +18,9 @@ public:
     {
         serviceDeleter(obj, context);
     }
+
 private:
     ServiceDeleter serviceDeleter;
 };
-
 }
 }

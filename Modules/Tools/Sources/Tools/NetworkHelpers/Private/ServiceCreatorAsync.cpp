@@ -5,7 +5,6 @@ namespace DAVA
 {
 namespace Net
 {
-
 ServiceCreatorAsync::ServiceCreatorAsync(ServiceCreator serviceCreator, NetEventsDispatcher* dispatcher)
     : dispatcher(dispatcher)
     , serviceCreatorExecutor(new ServiceCreatorExecutor(serviceCreator))
@@ -24,6 +23,5 @@ IChannelListener* ServiceCreatorAsync::ServiceCreatorCall(uint32 serviceId, void
     std::shared_ptr<ServiceCreatorExecutor> executor = targetObjectWeak.lock();
     return (executor ? executor->targetFnResult : nullptr);
 }
-
 }
 }

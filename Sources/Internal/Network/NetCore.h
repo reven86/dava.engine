@@ -124,7 +124,6 @@ public:
 #endif
     void Finish(bool runOutLoop = false);
 
-
     bool TryDiscoverDevice(const Endpoint& endpoint);
 
     Vector<IfAddress> InstalledInterfaces() const;
@@ -165,7 +164,7 @@ private:
     ServiceRegistrar registrar; //-V730_NOINIT
     Function<void()> controllersStoppedCallback;
 
-    enum class State
+    enum State
     {
         ACTIVE,
         FINISHING,

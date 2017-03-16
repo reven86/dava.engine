@@ -5,10 +5,9 @@ namespace DAVA
 {
 namespace Net
 {
-
 ServiceDeleterAsync::ServiceDeleterAsync(ServiceDeleter serviceDeleter, NetEventsDispatcher* dispatcher)
-: serviceDeleterExecutor(new ServiceDeleterExecutor(serviceDeleter))
-, dispatcher(dispatcher)
+    : serviceDeleterExecutor(new ServiceDeleterExecutor(serviceDeleter))
+    , dispatcher(dispatcher)
 {
 }
 
@@ -21,6 +20,5 @@ void ServiceDeleterAsync::ServiceDeleterCall(IChannelListener* obj, void* contex
     Function<void()> msg(callerWithParams);
     dispatcher->SendEvent(msg);
 }
-
 }
 }

@@ -7,7 +7,6 @@ namespace DAVA
 {
 namespace Net
 {
-
 class ServiceCreatorExecutor
 {
 public:
@@ -24,6 +23,5 @@ public:
     ServiceCreator serviceCreator;
     IChannelListener* targetFnResult = nullptr;
 };
-
 }
 }

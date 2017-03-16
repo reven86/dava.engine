@@ -7,7 +7,6 @@ namespace DAVA
 {
 namespace Net
 {
-
 /**
     ChannelListenerAsync is proxy class that passes IChannelListener callbacks to any other thread.
     

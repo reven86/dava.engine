@@ -55,6 +55,5 @@ private:
     std::shared_ptr<ServiceDeleterExecutor> serviceDeleterExecutor;
     NetEventsDispatcher* dispatcher = nullptr;
 };
-
 }
 }
