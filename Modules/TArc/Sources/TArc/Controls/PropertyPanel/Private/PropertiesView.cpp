@@ -178,6 +178,8 @@ void PropertiesView::Update(UpdatePolicy policy)
         DVASSERT(false, "Unimplemented update policy have been received");
         break;
     }
+
+    UpdateExpanded();
 }
 
 void PropertiesView::UpdateExpanded()
