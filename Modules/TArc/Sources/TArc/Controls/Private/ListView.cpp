@@ -33,7 +33,7 @@ public:
 
     Qt::ItemFlags flags(const QModelIndex& index) const override
     {
-        return Qt::ItemIsSelectable | Qt::ItemNeverHasChildren | Qt::ItemIsEnabled;
+        return Qt::ItemFlags(Qt::ItemIsSelectable | Qt::ItemNeverHasChildren | Qt::ItemIsEnabled);
     }
 
     void BeginReset()
