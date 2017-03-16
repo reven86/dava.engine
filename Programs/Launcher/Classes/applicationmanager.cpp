@@ -393,7 +393,7 @@ ConfigParser* ApplicationManager::GetLocalConfig()
 }
 
 #ifdef Q_OS_WIN
-void FixLocalAppPath_kostil(QString &runPath)
+void FixLocalAppPath_kostil(QString& runPath)
 {
     if (QFile::exists(runPath) == false)
     {
