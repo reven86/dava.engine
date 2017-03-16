@@ -495,6 +495,17 @@ struct UIManager::Impl : public QObject
         return iter->second;
     }
 
+    UIManagerDetail::MainWindowInfo* FindWindow(const WindowKey& key)
+    {
+        auto iter = windows.find(key);
+        if (iter == windows.end())
+        {
+            return nullptr;
+        }
+
+        return &iter->second;
+    }
+
     void InitNewWindow(const WindowKey& windowKey, QMainWindow* window)
     {
         window->installEventFilter(this);
@@ -750,14 +761,19 @@ QString UIManager::GetSaveFileName(const WindowKey& windowKey, const FileDialogP
 
 QString UIManager::GetOpenFileName(const WindowKey& windowKey, const FileDialogParams& params)
 {
-    UIManagerDetail::MainWindowInfo& windowInfo = impl->FindOrCreateWindow(windowKey);
+    UIManagerDetail::MainWindowInfo* windowInfo = impl->FindWindow(windowKey);
+    QWidget* parent = nullptr;
+    if (windowInfo != nullptr)
+    {
+        parent = windowInfo->window;
+    }
 
     QString dir = params.dir;
     if (dir.isEmpty())
     {
         dir = impl->propertiesHolder.Get<QString>(UIManagerDetail::FILE_DIR_KEY, dir);
     }
-    QString filePath = QFileDialog::getOpenFileName(windowInfo.window, params.title, dir, params.filters);
+    QString filePath = QFileDialog::getOpenFileName(parent, params.title, dir, params.filters);
     if (!filePath.isEmpty())
     {
         impl->propertiesHolder.Set(UIManagerDetail::FILE_DIR_KEY, QFileInfo(filePath).absoluteFilePath());

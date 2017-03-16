@@ -40,6 +40,7 @@ protected:
     const ContextAccessor* GetAccessor() const;
 
     UI* GetUI();
+    OperationInvoker* GetInvoker();
 
     template <typename Ret, typename Cls, typename... Args>
     void RegisterOperation(int operationID, Cls* object, Ret (Cls::*fn)(Args...) const);

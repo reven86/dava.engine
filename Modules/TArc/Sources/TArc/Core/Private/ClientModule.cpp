@@ -25,6 +25,12 @@ UI* ClientModule::GetUI()
     return ui.get();
 }
 
+OperationInvoker* ClientModule::GetInvoker()
+{
+    DVASSERT(coreInterface != nullptr);
+    return coreInterface;
+}
+
 void ClientModule::Init(CoreInterface* coreInterface_, std::unique_ptr<UI>&& ui_)
 {
     DVASSERT(coreInterface == nullptr);
