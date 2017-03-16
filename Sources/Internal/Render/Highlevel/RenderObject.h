@@ -363,5 +363,5 @@ inline void RenderObject::SetRefractionVisible(bool visible)
 
 template <>
 bool AnyCompare<RenderObject::IndexedRenderBatch>::IsEqual(const DAVA::Any& v1, const DAVA::Any& v2);
-extern template struct AnyCompare<Color>;
+extern template struct AnyCompare<RenderObject::IndexedRenderBatch>;
 }

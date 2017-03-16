@@ -6,6 +6,7 @@
 #include <TArc/Controls/ListView.h>
 #include <TArc/Controls/CheckBox.h>
 #include <TArc/Controls/ComboBox.h>
+#include <TArc/Controls/CommonStrings.h>
 
 #include <Scene3D/Systems/QualitySettingsSystem.h>
 #include <Scene3D/Components/QualitySettingsComponent.h>
@@ -16,9 +17,6 @@
 
 namespace QualityGroupComponentValueDetail
 {
-const DAVA::FastName differentValue = DAVA::FastName("< different values >");
-const DAVA::FastName undefinedValue = DAVA::FastName("Undefined");
-
 class Control : private QWidget, public DAVA::TArc::ControlProxy
 {
 public:
@@ -131,31 +129,34 @@ QualityGroupComponentValue::QualityGroupComponentValue()
 
     int32 filterCount = system->GetOptionsCount();
     modelTypes.reserve(filterCount + 1);
-    modelTypesWithDeifferent.reserve(filterCount + 2);
+    modelTypesWithDifferent.reserve(filterCount + 2);
+
+    DAVA::FastName multiValue(DAVA::TArc::MultipleValuesString);
+    DAVA::FastName undefinedValue(DAVA::TArc::UndefinedString);
 
     modelTypes.push_back(undefinedValue);
-    modelTypesWithDeifferent.push_back(differentValue);
-    modelTypesWithDeifferent.push_back(undefinedValue);
+    modelTypesWithDifferent.push_back(multiValue);
+    modelTypesWithDifferent.push_back(undefinedValue);
 
     for (int32 i = 0; i < filterCount; ++i)
     {
         FastName modelFilterName = system->GetOptionName(i);
         modelTypes.push_back(modelFilterName);
-        modelTypesWithDeifferent.push_back(modelFilterName);
+        modelTypesWithDifferent.push_back(modelFilterName);
     }
 
     size_t groupCount = system->GetMaterialQualityGroupCount();
     groups.reserve(groupCount + 1);
     groupsWithDifferent.reserve(groupCount + 2);
 
-    groupsWithDifferent.push_back(differentValue);
+    groupsWithDifferent.push_back(multiValue);
     groupsWithDifferent.push_back(undefinedValue);
     groups.push_back(undefinedValue);
 
     using TQualityNode = std::pair<Vector<FastName>, Vector<FastName>>;
-    TQualityNode& differentValueNode = qualities[differentValue];
-    differentValueNode.first.push_back(differentValue);
-    differentValueNode.second.push_back(differentValue);
+    TQualityNode& differentValueNode = qualities[multiValue];
+    differentValueNode.first.push_back(multiValue);
+    differentValueNode.second.push_back(multiValue);
 
     TQualityNode& undefinedNode = qualities[undefinedValue];
     undefinedNode.first.push_back(undefinedValue);
@@ -169,7 +170,7 @@ QualityGroupComponentValue::QualityGroupComponentValue()
 
         TQualityNode& node = qualities[groupName];
         node.first.push_back(undefinedValue);
-        node.second.push_back(differentValue);
+        node.second.push_back(multiValue);
         node.second.push_back(undefinedValue);
 
         for (size_t quality = 0; quality < system->GetMaterialQualityCount(groupName); ++quality)
@@ -286,8 +287,8 @@ void QualityGroupComponentValue::SetModelTypeIndex(size_t index)
     }
     else
     {
-        DVASSERT(index < modelTypesWithDeifferent.size());
-        newModelType = modelTypesWithDeifferent[index];
+        DVASSERT(index < modelTypesWithDifferent.size());
+        newModelType = modelTypesWithDifferent[index];
     }
 
     ModifyExtension::MultiCommandInterface cmdInterface = GetModifyInterface()->GetMultiCommandInterface("Quality Group change", static_cast<DAVA::uint32>(nodes.size()));
@@ -471,18 +472,18 @@ bool QualityGroupComponentValue::IsQualityReadOnly() const
 
 const DAVA::Vector<DAVA::FastName>& QualityGroupComponentValue::GetFilters() const
 {
-    if (isDifferentModelTypes == false)
-        return modelTypes;
+    if (isDifferentModelTypes == true)
+        return modelTypesWithDifferent;
     else
-        return modelTypesWithDeifferent;
+        return modelTypes;
 }
 
 const DAVA::Vector<DAVA::FastName>& QualityGroupComponentValue::GetGroups() const
 {
-    if (isDifferentGroups == false)
-        return groups;
-    else
+    if (isDifferentGroups == true)
         return groupsWithDifferent;
+    else
+        return groups;
 }
 
 const DAVA::Vector<DAVA::FastName>& QualityGroupComponentValue::GetQualities() const
@@ -493,23 +494,23 @@ const DAVA::Vector<DAVA::FastName>& QualityGroupComponentValue::GetQualities() c
     DAVA::FastName group = qualityComponent->GetRequiredGroup();
     if (isDifferentGroups == true)
     {
-        group = differentValue;
+        group = DAVA::FastName(DAVA::TArc::MultipleValuesString);
     }
     else if (group.IsValid() == false)
     {
-        group = undefinedValue;
+        group = DAVA::FastName(DAVA::TArc::UndefinedString);
     }
 
     auto iter = qualities.find(group);
     DVASSERT(iter != qualities.end());
 
-    if (isDifferentQualities == false)
+    if (isDifferentQualities == true)
     {
-        return iter->second.first;
+        return iter->second.second;
     }
     else
     {
-        return iter->second.second;
+        return iter->second.first;
     }
 }
 

@@ -42,7 +42,7 @@ private:
     const DAVA::Vector<DAVA::FastName>& GetQualities() const;
 
     DAVA::Vector<DAVA::FastName> modelTypes;
-    DAVA::Vector<DAVA::FastName> modelTypesWithDeifferent;
+    DAVA::Vector<DAVA::FastName> modelTypesWithDifferent;
     DAVA::Vector<DAVA::FastName> groups;
     DAVA::Vector<DAVA::FastName> groupsWithDifferent;
     DAVA::UnorderedMap<DAVA::FastName, std::pair<DAVA::Vector<DAVA::FastName>, DAVA::Vector<DAVA::FastName>>> qualities;
