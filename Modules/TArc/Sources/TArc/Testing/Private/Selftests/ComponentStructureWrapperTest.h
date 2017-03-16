@@ -6,7 +6,7 @@
 #include "TArc/Controls/PropertyPanel/PropertyModelExtensions.h"
 #include "TArc/Controls/PropertyPanel/BaseComponentValue.h"
 #include "TArc/Controls/PropertyPanel/Private/ComponentStructureWrapper.h"
-#include "TArc/Controls/PropertyPanel/Private/PropertyPanelMeta.h"
+#include "TArc/Controls/PropertyPanel/PropertyPanelMeta.h"
 #include "TArc/Controls/PropertyPanel/StaticEditorDrawer.h"
 
 #include <Reflection/ReflectedMeta.h>
@@ -124,10 +124,11 @@ DAVA_TARC_TESTCLASS(ComponentStructureWrapperTest)
         propNode->propertyType = DAVA::TArc::PropertyNode::RealProperty;
         propNode->cachedValue = propNode->field.ref.GetValue();
 
-        DummyComponentValue value;
-        value.Add(propNode);
+        std::unique_ptr<DummyComponentValue> value(new DummyComponentValue());
+        DummyComponentValue* v = value.get();
+        v->Add(propNode);
 
-        DAVA::Reflection valueR = DAVA::Reflection::Create(&value);
+        DAVA::Reflection valueR = DAVA::Reflection::Create(&v);
         CheckValueField(valueR.GetField("value"));
         CheckNoMetaField(valueR.GetField("notProxyField"));
 

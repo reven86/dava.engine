@@ -306,7 +306,7 @@ void UIStyleSheetSystem::DoForAllPropertyInstances(UIControl* control, uint32 pr
     if (descr.group->componentType == Type::Instance<UIControl>())
     {
         Reflection cRef = Reflection::Create(&control);
-        Reflection fRef = cRef.GetField(descr.field_s->name);
+        Reflection fRef = cRef.GetField(descr.field->name);
         if (fRef.IsValid())
         {
             action(control, fRef);
@@ -317,7 +317,7 @@ void UIStyleSheetSystem::DoForAllPropertyInstances(UIControl* control, uint32 pr
         if (UIComponent* component = control->GetComponent(descr.group->componentType))
         {
             Reflection cRef = Reflection::Create(&component);
-            Reflection fRef = cRef.GetField(descr.field_s->name);
+            Reflection fRef = cRef.GetField(descr.field->name);
             if (fRef.IsValid())
             {
                 action(control, fRef);

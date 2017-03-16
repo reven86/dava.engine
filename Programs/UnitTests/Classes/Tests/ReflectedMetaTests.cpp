@@ -35,7 +35,7 @@ public:
 
     DAVA_REFLECTION(TestClass)
     {
-        DAVA::ReflectionRegistrator<TestClass>::Begin()[DAVA::M::File(false)]
+        DAVA::ReflectionRegistrator<TestClass>::Begin()[DAVA::M::File("All (*.*)")]
         .Field("x", &TestClass::x)[DAVA::M::ReadOnly(), DAVA::M::Range(10, 20, 1)]
         .Field("y", &TestClass::y)[DAVA::M::Validator(&ValidateY), DAVA::M::Group("geometry")]
         .Field("enum", &TestClass::e)[DAVA::M::EnumT<TestEnum>()]
@@ -59,7 +59,6 @@ DAVA_TESTCLASS (ReflectedMetaTest)
 
         const DAVA::M::File* f = r.GetMeta<DAVA::M::File>();
         TEST_VERIFY(f != nullptr);
-        TEST_VERIFY(f->shouldExists == false);
 
         DAVA::Reflection fieldX = r.GetField("x");
         TEST_VERIFY(fieldX.IsValid());

@@ -1,14 +1,17 @@
 #pragma once
 
-#include "PropertyModelExtensions.h"
+#include "TArc/Controls/PropertyPanel/PropertyModelExtensions.h"
+#include "TArc/Controls/PropertyPanel/PropertyPanelMeta.h"
 #include "TArc/Controls/ControlProxy.h"
+#include "TArc/Utils/QtConnections.h"
 
-#include "Reflection/Reflection.h"
-#include "Base/BaseTypes.h"
+#include <Reflection/Reflection.h>
+#include <Base/BaseTypes.h>
 
 #include <QString>
 #include <QRect>
 
+class QLayout;
 class QWidget;
 class QStyleOptionViewItem;
 class QModelIndex;
@@ -35,8 +38,6 @@ public:
 
     void Init(ReflectedPropertyModel* model);
 
-    virtual bool EditorEvent(QWidget* parent, QEvent* event, const QStyleOptionViewItem& option);
-
     void Draw(QWidget* parent, QPainter* painter, const QStyleOptionViewItem& opt);
     void UpdateGeometry(QWidget* parent, const QStyleOptionViewItem& opt);
     bool HasHeightForWidth(const QWidget* parent) const;
@@ -49,6 +50,8 @@ public:
     QString GetPropertyName() const;
     int32 GetPropertiesNodeCount() const;
     std::shared_ptr<const PropertyNode> GetPropertyNode(int32 index) const;
+
+    void HideEditor();
 
     virtual bool IsReadOnly() const;
     static const char* readOnlyFieldName;
@@ -64,20 +67,32 @@ protected:
     Any GetValue() const;
     void SetValue(const Any& value);
 
+    std::shared_ptr<ModifyExtension> GetModifyInterface();
+
     void AddPropertyNode(const std::shared_ptr<PropertyNode>& node);
     void RemovePropertyNode(const std::shared_ptr<PropertyNode>& node);
     void RemovePropertyNodes();
 
-    mutable ControlProxy* editorWidget = nullptr;
+    ControlProxy* editorWidget = nullptr;
     Vector<std::shared_ptr<PropertyNode>> nodes;
 
 private:
     void EnsureEditorCreated(const QWidget* parent) const;
+    void EnsureEditorCreated(QWidget* parent);
     void UpdateEditorGeometry(const QWidget* parent, const QRect& geometry) const;
+
+    void CreateButtons(QLayout* layout, const M::CommandProducerHolder* holder, bool isTypeButtons);
+
+    void OnFieldButtonClicked(int32 index);
+    void OnTypeButtonClicked(int32 index);
+    void CallButtonAction(const M::CommandProducerHolder* holder, int32 index);
 
     ReflectedPropertyModel* model = nullptr;
     BaseComponentValue* thisValue = nullptr;
     bool isEditorEvent = false;
+    QWidget* realWidget = nullptr;
+
+    QtConnections connections;
 
     DAVA_VIRTUAL_REFLECTION(BaseComponentValue);
 };

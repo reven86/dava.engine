@@ -1,6 +1,5 @@
 #include "TArc/Controls/PropertyPanel/Private/ComponentStructureWrapper.h"
-#include "TArc/Controls/PropertyPanel/Private/PropertyPanelMeta.h"
-#include "TArc/Controls/PropertyPanel/Private/PropertyPanelMeta.h"
+#include "TArc/Controls/PropertyPanel/PropertyPanelMeta.h"
 #include "TArc/Controls/PropertyPanel/BaseComponentValue.h"
 
 #include <Reflection/Reflection.h>
