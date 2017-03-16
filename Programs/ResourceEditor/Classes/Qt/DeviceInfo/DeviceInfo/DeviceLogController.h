@@ -1,25 +1,26 @@
-#ifndef __DEVICELOGCONTROLLER_H__
-#define __DEVICELOGCONTROLLER_H__
+#pragma once
 
 #include <QObject>
 #include <QPointer>
 
+#include <Tools/NetworkHelpers/ChannelListenerAsync.h>
+
 #include <Network/PeerDesription.h>
 #include <Network/NetService.h>
 #include <Network/IChannel.h>
-#include <Network/ChannelListenerAsync.h>
 
 class LogWidget;
 
-class DeviceLogController : public QObject
-                            ,
-                            public DAVA::Net::NetService
+class DeviceLogController : public QObject,
+                            public DAVA::Net::NetService,
+                            public std::enable_shared_from_this<DAVA::Net::NetService>
 {
     Q_OBJECT
 
 public:
     explicit DeviceLogController(const DAVA::Net::PeerDescription& peerDescr, QWidget* parentWidget, QObject* parent = NULL);
     ~DeviceLogController();
+    void Init();
 
     void ShowView();
 
@@ -29,7 +30,7 @@ public:
 
     DAVA::Net::IChannelListener* GetAsyncChannelListener()
     {
-        return &channelListenerAsync;
+        return channelListenerAsync.get();
     }
 
 private:
@@ -39,7 +40,5 @@ private:
     QPointer<LogWidget> view;
     QPointer<QWidget> parentWidget;
     DAVA::Net::PeerDescription peer;
-    DAVA::Net::ChannelListenerAsync channelListenerAsync;
+    std::unique_ptr<DAVA::Net::ChannelListenerAsync> channelListenerAsync;
 };
-
-#endif // __DEVICELOGCONTROLLER_H__

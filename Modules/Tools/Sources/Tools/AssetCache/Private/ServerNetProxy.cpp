@@ -24,7 +24,7 @@ void ServerNetProxy::Listen(uint16 port)
     listenPort = port;
     DVASSERT(!netServer);
 
-    netServer.reset(new Connection(Net::SERVER_ROLE, Net::Endpoint(listenPort), this, Net::TRANSPORT_TCP, CLIENT_PING_TIMEOUT_MS));
+    netServer = Connection::MakeConnection(Net::SERVER_ROLE, Net::Endpoint(listenPort), this, Net::TRANSPORT_TCP, CLIENT_PING_TIMEOUT_MS);
 }
 
 void ServerNetProxy::Disconnect()

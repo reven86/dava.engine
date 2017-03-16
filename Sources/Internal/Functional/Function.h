@@ -277,38 +277,6 @@ protected:
     Fn fn;
     std::shared_ptr<Obj> obj;
 };
-
-template <typename Obj, typename Ret, typename Cls, typename... ClsArgs>
-class HolderWeakObject
-{
-    static_assert(std::is_base_of<Cls, Obj>::value, "Specified class doesn't match class method");
-
-public:
-    using Fn = Ret (Cls::*)(ClsArgs...);
-
-    HolderWeakObject(const Fn& _fn, const std::weak_ptr<Obj>& _obj)
-        : fn(_fn)
-        , obj(_obj)
-    {
-    }
-
-    static Ret invokeWeak(const Closure& c, typename std::conditional<is_best_argument_type<ClsArgs>::value, ClsArgs, ClsArgs&&>::type... args)
-    {
-        HolderWeakObject* holder = c.GetTrivialHolder<HolderWeakObject>();
-        auto objSharedPtr = holder->obj.lock();
-        if (objSharedPtr)
-        {
-            return (static_cast<Cls*>(objSharedPtr.get())->*holder->fn)(std::forward<ClsArgs>(args)...);
-        }
-        else
-            return Ret();
-    }
-
-protected:
-    Fn fn;
-    std::weak_ptr<Obj> obj;
-};
-
 } // namespace Fn11
 
 template <typename Fn>
@@ -389,16 +357,6 @@ public:
         // always use BindShared
         closure.template BindSharedHolder<Holder, Fn>(reinterpret_cast<Fn>(fn), obj);
         invoker = &Holder::invokeShared;
-    }
-
-    template <typename Obj, typename Cls, typename... ClsArgs>
-    Function(const std::weak_ptr<Obj>& obj, Ret (Cls::*const& fn)(ClsArgs...))
-    {
-        using Holder = Fn11::HolderWeakObject<Obj, Ret, Cls, ClsArgs...>;
-        using Fn = Ret (Cls::*)(ClsArgs...);
-
-        closure.template BindTrivialHolder<Holder, Fn>(fn, obj);
-        invoker = &Holder::invokeWeak;
     }
 
     Function(const Function& fn)
@@ -592,12 +550,6 @@ Function<Ret(Args...)> MakeFunction(const std::shared_ptr<Obj>& obj, Ret (Cls::*
 
 template <typename Obj, typename Cls, typename Ret, typename... Args>
 Function<Ret(Args...)> MakeFunction(const std::shared_ptr<Obj>& obj, Ret (Cls::*const& fn)(Args...) const)
-{
-    return Function<Ret(Args...)>(obj, fn);
-}
-
-template <typename Obj, typename Cls, typename Ret, typename... Args>
-Function<Ret(Args...)> MakeFunction(const std::weak_ptr<Obj>& obj, Ret (Cls::*const& fn)(Args...))
 {
     return Function<Ret(Args...)>(obj, fn);
 }

@@ -20,6 +20,46 @@ namespace Net
 {
 class NetConfig;
 
+/** NetCore is a main object for using DAVA Engine network functionality
+
+    NetCore is a DAVA Engine module, thus it will be created by Engine if it is passed in modules list
+    NetCore can run network logic in a separate thread. To do that, option "separate_net_thread = true"
+    should be passed to Engine.
+
+    Example:
+
+        Vector<String> modules = { "NetCore" };
+
+        KeyedArchive* options = new KeyedArchive;
+        options->SetBool("separate_net_thread", true);
+
+        Engine e;
+        e.Init(eEngineRunMode::CONSOLE_MODE, modules, options);
+        e.Run();
+
+    If NetCore is running it separate thread, all callbacks from network will be invoked it that network thread.
+    In that case, it is recommended to perform processing as soon as possible to prevent freeze of network.
+    Optionally, user could use proxy classes that pass callbacks from network thread using NetEventsDispatcher.
+    NetCore assumes that user may use NetEventsDispatcher so it regularly checks dispatcher and executes callbacks from it.
+
+    Typical use of NetCore functionality:
+
+        ServiceCreator myServiceCreatorCb = MakeFunction(this, &MyClass::Creator);
+        ServiceDeleter myServiceDeleterCb = MakeFunction(this, &MyClass::Deleter);
+        NetCore::Instance()->RegisterService(MY_SERVICE_ID, myServiceCreatorCb, myServiceDeleterCb);
+
+        Net::NetConfig config(role);
+        config.AddTransport(transport, endpoint);
+        config.AddService(MY_SERVICE_ID);
+        auto controllerId = NetCore::Instance()->CreateController(config, this);
+
+        ....
+
+        NetCore::Instance()->DestoryController(controllerId);
+
+    Note that DAVA network functionality can be used without NetCore.
+    In that case, user should create and manage its own IOLoop, ServiceRegistrar objects.
+*/
 class NetCore : public Singleton<NetCore>
 {
 public:
@@ -66,10 +106,11 @@ public:
     TrackId CreateController(const NetConfig& config, void* context = nullptr, uint32 readTimeout = DEFAULT_READ_TIMEOUT);
     TrackId CreateAnnouncer(const Endpoint& endpoint, uint32 sendPeriod, Function<size_t(size_t, void*)> needDataCallback, const Endpoint& tcpEndpoint = Endpoint(DEFAULT_TCP_ANNOUNCE_PORT));
     TrackId CreateDiscoverer(const Endpoint& endpoint, Function<void(size_t, const void*, const Endpoint&)> dataReadyCallback);
+
     void DestroyController(TrackId id);
-    void DestroyControllerBlocked(TrackId id);
+    DAVA_DEPRECATED(void DestroyControllerBlocked(TrackId id)); // blocked functions are deprecated for use
     void DestroyAllControllers(Function<void()> callback);
-    void DestroyAllControllersBlocked();
+    DAVA_DEPRECATED(void DestroyAllControllersBlocked()); // blocked functions are deprecated for use
 
     void RestartAllControllers();
 
@@ -83,7 +124,6 @@ public:
 #endif
     void Finish(bool runOutLoop = false);
 
-    void OnEngineUpdate(float32 frameDelta = 0.0f);
 
     bool TryDiscoverDevice(const Endpoint& endpoint);
 
@@ -91,11 +131,11 @@ public:
 
     static bool IsNetworkEnabled();
 
-    NetEventsDispatcher* GetNetCallbacksHolder();
+    NetEventsDispatcher* GetNetEventsDispatcher();
     void ProcessPendingEvents();
 
 private:
-    void DoUpdate();
+    void DoUpdate(float32 frameDelta = 0.0f);
 
     void NetThreadHandler();
     void DoStart(IController* ctrl);
@@ -114,7 +154,6 @@ private:
 
 private:
     IOLoop* loop = nullptr; // Heart of NetCore and network library - event loop
-    std::unique_ptr<IOLoop> loopHolder;
     bool useSeparateThread = false;
 
     mutable Mutex trackedObjectsMutex;
@@ -126,13 +165,13 @@ private:
     ServiceRegistrar registrar; //-V730_NOINIT
     Function<void()> controllersStoppedCallback;
 
-    enum State
+    enum class State
     {
         ACTIVE,
         FINISHING,
         FINISHED
     };
-    Atomic<State> state{ ACTIVE };
+    Atomic<State> state{ State::ACTIVE };
 
 #if !defined(DAVA_NETWORK_DISABLE)
     TrackId discovererId = INVALID_TRACK_ID;

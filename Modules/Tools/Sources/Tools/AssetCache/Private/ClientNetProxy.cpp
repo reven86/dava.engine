@@ -13,7 +13,7 @@ namespace DAVA
 namespace AssetCache
 {
 ClientNetProxy::ClientNetProxy()
-    : addressResolver(Net::NetCore::Instance()->Loop(), Net::NetCore::Instance()->GetNetCallbacksHolder())
+    : addressResolver(Net::NetCore::Instance()->Loop(), Net::NetCore::Instance()->GetNetEventsDispatcher())
 {
     DVASSERT(nullptr != Net::NetCore::Instance());
 }
@@ -48,7 +48,7 @@ void ClientNetProxy::OnAddressResolved(const Net::Endpoint& endpoint, int32 stat
 
     if (0 == status)
     {
-        netClient.reset(new Connection(Net::CLIENT_ROLE, endpoint, this));
+        netClient = Connection::MakeConnection(Net::CLIENT_ROLE, endpoint, this);
     }
     else
     {

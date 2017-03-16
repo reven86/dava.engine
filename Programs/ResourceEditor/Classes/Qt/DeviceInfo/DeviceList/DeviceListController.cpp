@@ -23,10 +23,10 @@ using namespace DAVA::Net;
 DeviceListController::DeviceListController(QObject* parent)
     : QObject(parent)
     , model(NULL)
-    , loggerServiceCreatorAsync(MakeFunction(this, &DeviceListController::CreateLogger), NetCore::Instance()->GetNetCallbacksHolder())
-    , profilerServiceCreatorAsync(MakeFunction(this, &DeviceListController::CreateMemProfiler), NetCore::Instance()->GetNetCallbacksHolder())
-    , loggerServiceDeleterAsync(MakeFunction(this, &DeviceListController::DeleteLogger), NetCore::Instance()->GetNetCallbacksHolder())
-    , profilerServiceDeleterAsync(MakeFunction(this, &DeviceListController::DeleteMemProfiler), NetCore::Instance()->GetNetCallbacksHolder())
+    , loggerServiceCreatorAsync(MakeFunction(this, &DeviceListController::CreateLogger), NetCore::Instance()->GetNetEventsDispatcher())
+    , profilerServiceCreatorAsync(MakeFunction(this, &DeviceListController::CreateMemProfiler), NetCore::Instance()->GetNetEventsDispatcher())
+    , loggerServiceDeleterAsync(MakeFunction(this, &DeviceListController::DeleteLogger), NetCore::Instance()->GetNetEventsDispatcher())
+    , profilerServiceDeleterAsync(MakeFunction(this, &DeviceListController::DeleteMemProfiler), NetCore::Instance()->GetNetEventsDispatcher())
 {
     model = new QStandardItemModel(this);
 
@@ -141,7 +141,7 @@ void DeviceListController::DeleteLogger(IChannelListener*, void* context)
         if (item != NULL)
         {
             DeviceServices services = index.data(ROLE_PEER_SERVICES).value<DeviceServices>();
-            SafeDelete(services.log);
+            services.log.reset();
 
             QVariant v;
             v.setValue(services);
@@ -157,7 +157,7 @@ IChannelListener* DeviceListController::CreateMemProfiler(uint32 serviceId, void
     {
         QModelIndex index = model->index(row, 0);
         DeviceServices services = index.data(ROLE_PEER_SERVICES).value<DeviceServices>();
-        return services.memprof->NetObject();
+        return services.memprof->GetAsyncChannelListener();
     }
     return NULL;
 }
@@ -173,7 +173,7 @@ void DeviceListController::DeleteMemProfiler(IChannelListener* obj, void* contex
         if (item != NULL)
         {
             DeviceServices services = index.data(ROLE_PEER_SERVICES).value<DeviceServices>();
-            SafeDelete(services.memprof);
+            services.memprof.reset();
 
             QVariant v;
             v.setValue(services);
@@ -219,12 +219,13 @@ void DeviceListController::ConnectDeviceInternal(QModelIndex& index, size_t ifIn
             auto iterService = std::find(servIds.begin(), servIds.end(), NetCore::SERVICE_LOG);
             if (iterService != servIds.end())
             {
-                services.log = new DeviceLogController(peer, view, this);
+                services.log.reset(new DeviceLogController(peer, view, this));
+                services.log->Init();
             }
             iterService = std::find(servIds.begin(), servIds.end(), NetCore::SERVICE_MEMPROF);
             if (iterService != servIds.end())
             {
-                services.memprof = new MemProfController(peer, view, this);
+                services.memprof.reset(new MemProfController(peer, view, this));
             }
 
             QVariant v;
@@ -326,11 +327,11 @@ void DeviceListController::OnShowLogButtonPressed()
         if (trackId != NetCore::INVALID_TRACK_ID)
         {
             DeviceServices services = index.data(ROLE_PEER_SERVICES).value<DeviceServices>();
-            if (services.log != nullptr)
+            if (services.log)
             {
                 services.log->ShowView();
             }
-            if (services.memprof != nullptr)
+            if (services.memprof)
             {
                 services.memprof->ShowView();
             }

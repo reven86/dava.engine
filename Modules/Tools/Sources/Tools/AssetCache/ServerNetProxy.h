@@ -63,7 +63,7 @@ public:
 
 private:
     uint16 listenPort = 0;
-    std::unique_ptr<Connection> netServer;
+    std::shared_ptr<Connection> netServer;
     ServerNetProxyListener* listener = nullptr;
 };
 

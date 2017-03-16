@@ -1,14 +1,14 @@
-#ifndef __MEMPROFCONTROLLER_H__
-#define __MEMPROFCONTROLLER_H__
+#pragma once
 
 #include <QObject>
 #include <QPointer>
 
-#include "FileSystem/FilePath.h"
-#include "Network/PeerDesription.h"
-#include "Network/IChannel.h"
-#include "Network/ChannelListenerAsync.h"
-#include "MemoryManager/MemoryManagerTypes.h"
+#include <Tools/NetworkHelpers/ChannelListenerAsync.h>
+
+#include <FileSystem/FilePath.h>
+#include <Network/PeerDesription.h>
+#include <Network/IChannel.h>
+#include <MemoryManager/MemoryManagerTypes.h>
 
 namespace DAVA
 {
@@ -42,7 +42,7 @@ public:
 
     void ShowView();
 
-    DAVA::Net::IChannelListener* NetObject();
+    DAVA::Net::IChannelListener* GetAsyncChannelListener();
 
     int Mode() const;
     bool IsFileLoaded() const;
@@ -80,9 +80,9 @@ private:
     DAVA::uint32 snapshotRecvSize = 0;
 
     DAVA::Net::PeerDescription profiledPeer;
-    std::unique_ptr<DAVA::Net::MMNetClient> netClient;
-    std::unique_ptr<ProfilingSession> profilingSession;
+    std::shared_ptr<DAVA::Net::MMNetClient> netClient;
     DAVA::Net::ChannelListenerAsync channelListenerAsync;
+    std::unique_ptr<ProfilingSession> profilingSession;
 };
 
 //////////////////////////////////////////////////////////////////////////
@@ -90,5 +90,3 @@ inline int MemProfController::Mode() const
 {
     return mode;
 }
-
-#endif // __MEMPROFCONTROLLER_H__

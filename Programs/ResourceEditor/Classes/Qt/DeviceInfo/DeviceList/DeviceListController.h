@@ -1,14 +1,14 @@
-#ifndef __DEVICELISTCONTROLLER_H__
-#define __DEVICELISTCONTROLLER_H__
+#pragma once
 
 #include <QObject>
 #include <QPointer>
 #include <vector>
 
+#include <Tools/NetworkHelpers/ServiceCreatorAsync.h>
+#include <Tools/NetworkHelpers/ServiceDeleterAsync.h>
+
 #include <Network/NetCore.h>
 #include <Network/Base/Endpoint.h>
-#include <Network/ServiceRegistrar.h>
-
 #include <Network/PeerDesription.h>
 
 class QStandardItemModel;
@@ -22,14 +22,8 @@ class MemProfController;
 // For now only one service - log receiver
 struct DeviceServices
 {
-    DeviceServices()
-        : log(nullptr)
-        , memprof(nullptr)
-    {
-    }
-
-    DeviceLogController* log;
-    MemProfController* memprof;
+    std::shared_ptr<DeviceLogController> log;
+    std::shared_ptr<MemProfController> memprof;
 };
 
 // Register types for use with QVariant
@@ -95,7 +89,3 @@ private:
 private:
     static QStandardItem* CreateDeviceItem(const DAVA::Net::Endpoint& endp, const DAVA::Net::PeerDescription& peerDescr);
 };
-
-
-
-#endif // __DEVICELISTCONTROLLER_H__

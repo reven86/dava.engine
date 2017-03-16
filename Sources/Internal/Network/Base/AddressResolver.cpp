@@ -34,10 +34,11 @@ void AddressResolver::DoAsyncResolve(const char8* address, uint16 port, Resolver
     DVASSERT(handle == nullptr);
     DVASSERT(cbk != nullptr);
 
-    LockGuard<Mutex> lock(handleMutex);
-
-    handle = new uv_getaddrinfo_t;
-    handle->data = this;
+    {
+        LockGuard<Mutex> lock(handleMutex);
+        handle = new uv_getaddrinfo_t;
+        handle->data = this;
+    }
 
     struct addrinfo hints;
     hints.ai_family = PF_INET;
@@ -56,8 +57,12 @@ void AddressResolver::DoAsyncResolve(const char8* address, uint16 port, Resolver
     }
     else
     {
-        SafeDelete(handle);
-        Logger::Error("[AddressResolver::StartResolving] Can't get addr info: %s", Net::ErrorToString(res));
+        {
+            LockGuard<Mutex> lock(handleMutex);
+            SafeDelete(handle);
+        }
+
+        Logger::Error("Can't get addr info: %s", Net::ErrorToString(res));
 
         auto cbkResolveFailed = Bind(cbk, Endpoint(), res);
         netEventsDispatcher->PostEvent(cbkResolveFailed);

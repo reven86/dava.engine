@@ -31,12 +31,21 @@ bool SendArchieve(Net::IChannel* channel, KeyedArchive* archieve)
     return channel->Send(packedData, packedSize, 0, &packedId);
 }
 
+std::shared_ptr<Connection> Connection::MakeConnection(Net::eNetworkRole role, const Net::Endpoint& endpoint, Net::IChannelListener* listener, Net::eTransportType transport, uint32 timeoutMs)
+{
+    std::shared_ptr<Connection> connection(new Connection(role, endpoint, listener, transport, timeoutMs));
+    bool res = connection->Connect(role, transport, timeoutMs);
+    if (!res)
+    {
+        connection.reset();
+    }
+    return connection;
+}
+
 Connection::Connection(Net::eNetworkRole _role, const Net::Endpoint& _endpoint, Net::IChannelListener* _listener, Net::eTransportType transport, uint32 timeoutMs)
     : endpoint(_endpoint)
     , listener(_listener)
-    , channelListenerAsync(this, Net::NetCore::Instance()->GetNetCallbacksHolder())
 {
-    Connect(_role, transport, timeoutMs);
 }
 
 Connection::~Connection()
@@ -50,6 +59,8 @@ Connection::~Connection()
 
 bool Connection::Connect(Net::eNetworkRole role, Net::eTransportType transport, uint32 timeoutMs)
 {
+    channelListenerAsync.reset(new Net::ChannelListenerAsync(shared_from_this(), Net::NetCore::Instance()->GetNetEventsDispatcher()));
+
     const auto serviceID = NET_SERVICE_ID;
 
     bool isRegistered = Net::NetCore::Instance()->IsServiceRegistered(serviceID);
@@ -66,7 +77,7 @@ bool Connection::Connect(Net::eNetworkRole role, Net::eTransportType transport, 
         config.AddTransport(transport, endpoint);
         config.AddService(serviceID);
 
-        controllerId = Net::NetCore::Instance()->CreateController(config, &channelListenerAsync, timeoutMs);
+        controllerId = Net::NetCore::Instance()->CreateController(config, channelListenerAsync.get(), timeoutMs);
         if (Net::NetCore::INVALID_TRACK_ID != controllerId)
         {
             return true;

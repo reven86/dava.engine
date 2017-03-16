@@ -12,13 +12,17 @@ DeviceLogController::DeviceLogController(const DAVA::Net::PeerDescription& peerD
     : QObject(parent)
     , parentWidget(_parentWidget)
     , peer(peerDescr)
-    , channelListenerAsync(this, NetCore::Instance()->GetNetCallbacksHolder())
 {
     ShowView();
 }
 
 DeviceLogController::~DeviceLogController()
 {
+}
+
+void DeviceLogController::Init()
+{
+    channelListenerAsync.reset(new ChannelListenerAsync(shared_from_this(), NetCore::Instance()->GetNetEventsDispatcher()));
 }
 
 void DeviceLogController::ShowView()
