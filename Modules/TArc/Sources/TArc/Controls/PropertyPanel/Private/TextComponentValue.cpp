@@ -1,7 +1,7 @@
 #include "TextComponentValue.h"
 #include "TArc/Controls/LineEdit.h"
 #include "TArc/Controls/PropertyPanel/Private/ComponentStructureWrapper.h"
-#include "TArc/Controls/PropertyPanel/Private/PropertyPanelMeta.h"
+#include "TArc/Controls/PropertyPanel/PropertyPanelMeta.h"
 
 #include <Reflection/ReflectionRegistrator.h>
 #include <Reflection/ReflectedMeta.h>
@@ -39,11 +39,6 @@ ControlProxy* TextComponentValue::CreateEditorWidget(QWidget* parent, const Refl
     descr[LineEdit::Fields::Text] = "text";
     descr[LineEdit::Fields::IsReadOnly] = readOnlyFieldName;
     return new LineEdit(descr, wrappersProcessor, model, parent);
-}
-
-bool TextComponentValue::EditorEvent(QWidget* parent, QEvent* event, const QStyleOptionViewItem& option)
-{
-    return false;
 }
 
 DAVA_VIRTUAL_REFLECTION_IMPL(TextComponentValue)

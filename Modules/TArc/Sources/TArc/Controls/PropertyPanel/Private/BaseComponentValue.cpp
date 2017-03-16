@@ -1,9 +1,12 @@
 #include "TArc/Controls/PropertyPanel/BaseComponentValue.h"
 #include "TArc/Controls/PropertyPanel/Private/ReflectedPropertyModel.h"
 #include "TArc/Controls/PropertyPanel/StaticEditorDrawer.h"
+#include "TArc/Controls/PropertyPanel/PropertyPanelMeta.h"
+#include "TArc/Controls/QtBoxLayouts.h"
 
 #include "TArc/DataProcessing/DataWrappersProcessor.h"
 #include "TArc/Utils/ScopedValueGuard.h"
+#include "TArc/Utils/ReflectionHelpers.h"
 
 #include <Engine/PlatformApi.h>
 #include <Reflection/ReflectionRegistrator.h>
@@ -14,6 +17,7 @@
 #include <QStyle>
 #include <QStyleOption>
 #include <QPainter>
+#include <QToolButton>
 
 namespace DAVA
 {
@@ -29,8 +33,10 @@ BaseComponentValue::~BaseComponentValue()
     if (editorWidget != nullptr)
     {
         editorWidget->TearDown();
-        editorWidget->ToWidgetCast()->deleteLater();
         editorWidget = nullptr;
+
+        realWidget->deleteLater();
+        realWidget = nullptr;
     }
 }
 
@@ -42,7 +48,7 @@ void BaseComponentValue::Init(ReflectedPropertyModel* model_)
 void BaseComponentValue::Draw(QWidget* parent, QPainter* painter, const QStyleOptionViewItem& opt)
 {
     UpdateEditorGeometry(parent, opt.rect);
-    painter->drawPixmap(opt.rect, editorWidget->ToWidgetCast()->grab());
+    realWidget->show();
 }
 
 void BaseComponentValue::UpdateGeometry(QWidget* parent, const QStyleOptionViewItem& opt)
@@ -53,50 +59,30 @@ void BaseComponentValue::UpdateGeometry(QWidget* parent, const QStyleOptionViewI
 bool BaseComponentValue::HasHeightForWidth(const QWidget* parent) const
 {
     EnsureEditorCreated(parent);
-    return editorWidget->ToWidgetCast()->hasHeightForWidth();
+    return realWidget->hasHeightForWidth();
 }
 
 int BaseComponentValue::GetHeightForWidth(const QWidget* parent, int width) const
 {
     EnsureEditorCreated(parent);
-    return editorWidget->ToWidgetCast()->heightForWidth(width);
+    return realWidget->heightForWidth(width);
 }
 
 int BaseComponentValue::GetHeight(const QWidget* parent) const
 {
     EnsureEditorCreated(parent);
-    return editorWidget->ToWidgetCast()->sizeHint().height();
+    return realWidget->sizeHint().height();
 }
 
 QWidget* BaseComponentValue::AcquireEditorWidget(QWidget* parent, const QStyleOptionViewItem& option)
 {
     UpdateEditorGeometry(parent, option.rect);
-    return editorWidget->ToWidgetCast();
+    return realWidget;
 }
 
 void BaseComponentValue::ReleaseEditorWidget(QWidget* editor)
 {
-    DVASSERT(editorWidget->ToWidgetCast() == editor);
-}
-
-bool BaseComponentValue::EditorEvent(QWidget* parent, QEvent* event, const QStyleOptionViewItem& option)
-{
-    SCOPED_VALUE_GUARD(bool, isEditorEvent, true, false);
-    UpdateEditorGeometry(parent, option.rect);
-    switch (event->type())
-    {
-    case QEvent::MouseButtonPress:
-    case QEvent::MouseButtonRelease:
-    {
-        QMouseEvent* e = static_cast<QMouseEvent*>(event);
-        QPoint pos = editorWidget->ToWidgetCast()->mapFrom(parent, e->pos());
-        QMouseEvent newEvent(e->type(), pos, e->screenPos(), e->button(), e->buttons(), e->modifiers());
-        return PlatformApi::Qt::GetApplication()->sendEvent(editorWidget->ToWidgetCast(), &newEvent);
-    }
-    default:
-        break;
-    }
-    return false;
+    DVASSERT(realWidget == editor);
 }
 
 QString BaseComponentValue::GetPropertyName() const
@@ -120,6 +106,14 @@ std::shared_ptr<const PropertyNode> BaseComponentValue::GetPropertyNode(int32 in
 {
     DVASSERT(static_cast<size_t>(index) < nodes.size());
     return nodes[static_cast<size_t>(index)];
+}
+
+void BaseComponentValue::HideEditor()
+{
+    if (realWidget != nullptr)
+    {
+        realWidget->hide();
+    }
 }
 
 bool BaseComponentValue::IsReadOnly() const
@@ -146,8 +140,13 @@ void BaseComponentValue::SetValue(const Any& value)
 {
     if (IsValidValueToSet(value, GetValue()))
     {
-        model->GetExtensionChain<ModifyExtension>()->ModifyPropertyValue(nodes, value);
+        GetModifyInterface()->ModifyPropertyValue(nodes, value);
     }
+}
+
+std::shared_ptr<ModifyExtension> BaseComponentValue::GetModifyInterface()
+{
+    return model->GetExtensionChain<ModifyExtension>();
 }
 
 void BaseComponentValue::AddPropertyNode(const std::shared_ptr<PropertyNode>& node)
@@ -176,24 +175,135 @@ void BaseComponentValue::EnsureEditorCreated(const QWidget* parent) const
 {
     if (editorWidget == nullptr)
     {
+        DVASSERT(nodes.empty() == false);
+        QWidget* p = const_cast<QWidget*>(parent);
         BaseComponentValue* nonConstThis = const_cast<BaseComponentValue*>(this);
-        editorWidget = CreateEditorWidget(const_cast<QWidget*>(parent),
-                                          Reflection::Create(&nonConstThis->thisValue),
-                                          nonConstThis->model->GetWrappersProcessor(nodes.front()));
-        editorWidget->ForceUpdate();
+        nonConstThis->EnsureEditorCreated(p);
     }
 
-    DVASSERT(editorWidget->ToWidgetCast()->parent() == parent);
+    DVASSERT(realWidget->parent() == parent);
+}
+
+void BaseComponentValue::EnsureEditorCreated(QWidget* parent)
+{
+    editorWidget = CreateEditorWidget(parent, Reflection::Create(&thisValue), &model->wrappersProcessor);
+    editorWidget->ForceUpdate();
+    realWidget = editorWidget->ToWidgetCast();
+
+    const M::CommandProducerHolder* typeProducer = GetTypeMeta<M::CommandProducerHolder>(nodes.front()->cachedValue);
+    const M::CommandProducerHolder* fieldProducer = nodes.front()->field.ref.GetMeta<M::CommandProducerHolder>();
+    if (fieldProducer != nullptr || typeProducer != nullptr)
+    {
+        QWidget* boxWidget = new QWidget(parent);
+        QtHBoxLayout* layout = new QtHBoxLayout(boxWidget);
+
+        CreateButtons(layout, typeProducer, true);
+        CreateButtons(layout, fieldProducer, false);
+
+        layout->addWidget(realWidget);
+        realWidget = boxWidget;
+    }
 }
 
 void BaseComponentValue::UpdateEditorGeometry(const QWidget* parent, const QRect& geometry) const
 {
     EnsureEditorCreated(parent);
-    QWidget* w = editorWidget->ToWidgetCast();
-    if (w->geometry() != geometry)
+    if (realWidget->geometry() != geometry)
     {
-        w->setGeometry(geometry);
+        realWidget->setGeometry(geometry);
     }
+}
+
+void BaseComponentValue::CreateButtons(QLayout* layout, const M::CommandProducerHolder* holder, bool isTypeButtons)
+{
+    if (holder == nullptr)
+    {
+        return;
+    }
+
+    const Vector<std::shared_ptr<M::CommandProducer>>& commands = holder->GetCommandProducers();
+    for (size_t i = 0; i < commands.size(); ++i)
+    {
+        bool createButton = false;
+        const std::shared_ptr<M::CommandProducer>& cmd = commands[i];
+        for (const std::shared_ptr<PropertyNode>& node : nodes)
+        {
+            if (cmd->IsApplyable(node->field.ref))
+            {
+                createButton = true;
+                break;
+            }
+        }
+
+        if (createButton == true)
+        {
+            M::CommandProducer::Info info = cmd->GetInfo();
+            QToolButton* button = new QToolButton(layout->widget());
+            button->setIcon(info.icon);
+            button->setToolTip(info.tooltip);
+            button->setIconSize(QSize(12, 12));
+            button->setAutoRaise(true);
+            if (cmd->OnlyForSingleSelection() && nodes.size() > 1)
+            {
+                button->setEnabled(false);
+            }
+
+            if (isTypeButtons == true)
+            {
+                connections.AddConnection(button, &QToolButton::clicked, [this, i]()
+                                          {
+                                              OnTypeButtonClicked(static_cast<int32>(i));
+                                          });
+            }
+            else
+            {
+                connections.AddConnection(button, &QToolButton::clicked, [this, i]()
+                                          {
+                                              OnFieldButtonClicked(static_cast<int32>(i));
+                                          });
+            }
+
+            layout->addWidget(button);
+        }
+    }
+}
+
+void BaseComponentValue::OnFieldButtonClicked(int32 index)
+{
+    const M::CommandProducerHolder* holder = nodes.front()->field.ref.GetMeta<M::CommandProducerHolder>();
+    CallButtonAction(holder, index);
+}
+
+void BaseComponentValue::OnTypeButtonClicked(int32 index)
+{
+    const M::CommandProducerHolder* holder = GetTypeMeta<M::CommandProducerHolder>(nodes.front()->cachedValue);
+    DVASSERT(holder);
+    CallButtonAction(holder, index);
+}
+
+void BaseComponentValue::CallButtonAction(const M::CommandProducerHolder* holder, int32 index)
+{
+    DVASSERT(holder != nullptr);
+    const Vector<std::shared_ptr<M::CommandProducer>>& producers = holder->GetCommandProducers();
+    DVASSERT(index < static_cast<size_t>(producers.size()));
+
+    std::shared_ptr<M::CommandProducer> producer = producers[index];
+    M::CommandProducer::Info info = producer->GetInfo();
+    producer->CreateCache(model->accessor);
+
+    ModifyExtension::MultiCommandInterface cmdInterface = GetModifyInterface()->GetMultiCommandInterface(info.description, static_cast<uint32>(nodes.size()));
+    for (std::shared_ptr<PropertyNode>& node : nodes)
+    {
+        if (producer->IsApplyable(node->field.ref))
+        {
+            M::CommandProducer::Params params;
+            params.accessor = model->accessor;
+            params.invoker = model->invoker;
+            params.ui = model->ui;
+            cmdInterface.Exec(producer->CreateCommand(node->field.ref, params));
+        }
+    }
+    producer->ClearCache();
 }
 
 const char* BaseComponentValue::readOnlyFieldName = "isReadOnly";
