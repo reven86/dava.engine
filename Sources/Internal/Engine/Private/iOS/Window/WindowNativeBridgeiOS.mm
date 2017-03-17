@@ -18,6 +18,7 @@
 #import "Engine/Private/iOS/Window/RenderViewiOS.h"
 #import "Engine/Private/iOS/Window/RenderViewControlleriOS.h"
 #import "Engine/Private/iOS/Window/NativeViewPooliOS.h"
+#import "Engine/Private/iOS/Window/VisibleFrameObserver.h"
 #import "DeviceManager/Private/Ios/DeviceManagerImplIos.h"
 
 // Objective-C class used for interoperation between Objective-C and C++.
@@ -61,10 +62,12 @@ WindowNativeBridge::WindowNativeBridge(WindowBackend* windowBackend, const Keyed
     , engineOptions(options)
 {
     objcInterop = [[ObjectiveCInteropWindow alloc] init:this];
+    visibleFrameObserver = [[VisibleFrameObserver alloc] initWithBridge:this];
 }
 
 WindowNativeBridge::~WindowNativeBridge()
 {
+    [visibleFrameObserver release];
     [objcInterop release];
 }
 

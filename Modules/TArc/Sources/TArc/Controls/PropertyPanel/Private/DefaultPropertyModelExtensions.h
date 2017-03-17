@@ -7,6 +7,7 @@ namespace DAVA
 {
 namespace TArc
 {
+class UI;
 class DefaultChildCheatorExtension : public ChildCreatorExtension
 {
 public:
@@ -22,7 +23,11 @@ public:
 class DefaultEditorComponentExtension : public EditorComponentExtension
 {
 public:
+    DefaultEditorComponentExtension(UI* ui);
     std::unique_ptr<BaseComponentValue> GetEditor(const std::shared_ptr<const PropertyNode>& node) const override;
+
+private:
+    UI* ui = nullptr;
 };
 
 std::shared_ptr<IChildAllocator> CreateDefaultAllocator();

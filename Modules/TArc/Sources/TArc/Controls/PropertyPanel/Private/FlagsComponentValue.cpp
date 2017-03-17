@@ -1,5 +1,5 @@
 #include "TArc/Controls/PropertyPanel/Private/FlagsComponentValue.h"
-#include "TArc/Controls/PropertyPanel/Private/PropertyPanelMeta.h"
+#include "TArc/Controls/PropertyPanel/PropertyPanelMeta.h"
 #include "TArc/Controls/PropertyPanel/Private/ComponentStructureWrapper.h"
 #include "TArc/Controls/ComboBoxCheckable.h"
 

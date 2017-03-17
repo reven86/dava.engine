@@ -16,7 +16,12 @@ inline const String& ReflectedType::GetPermanentName() const
     return permanentName;
 }
 
-inline const ReflectedStructure* ReflectedType::GetStrucutre() const
+inline const ReflectedStructure* ReflectedType::GetStructure() const
+{
+    return structure.get();
+}
+
+inline ReflectedStructure* ReflectedType::GetStructure()
 {
     return structure.get();
 }

@@ -39,6 +39,8 @@ StaticOcclusionComponent::StaticOcclusionComponent()
     zSubdivisions = 2;
     boundingBox = AABBox3(Vector3(0.0f, 0.0f, 0.0f), Vector3(20.0f, 20.0f, 20.0f));
     placeOnLandscape = false;
+    occlusionPixelThreshold = 0;
+    occlusionPixelThresholdForSpeedtree = 0;
 }
 
 Component* StaticOcclusionComponent::Clone(Entity* toEntity)
@@ -51,6 +53,8 @@ Component* StaticOcclusionComponent::Clone(Entity* toEntity)
     newComponent->SetBoundingBox(boundingBox);
     newComponent->SetPlaceOnLandscape(placeOnLandscape);
     newComponent->cellHeightOffset = cellHeightOffset;
+    newComponent->SetOcclusionPixelThreshold(occlusionPixelThreshold);
+    newComponent->SetOcclusionPixelThresholdForSpeedtree(occlusionPixelThresholdForSpeedtree);
     return newComponent;
 }
 
@@ -65,6 +69,8 @@ void StaticOcclusionComponent::Serialize(KeyedArchive* archive, SerializationCon
         archive->SetUInt32("soc.ysub", ySubdivisions);
         archive->SetUInt32("soc.zsub", zSubdivisions);
         archive->SetBool("soc.placeOnLandscape", placeOnLandscape);
+        archive->SetUInt32("soc.occlusionPixelThreshold", occlusionPixelThreshold);
+        archive->SetUInt32("soc.occlusionPixelThresholdForSpeedtree", occlusionPixelThresholdForSpeedtree);
         if (placeOnLandscape)
             archive->SetByteArray("soc.cellHeightOffset", reinterpret_cast<uint8*>(&cellHeightOffset.front()), xSubdivisions * ySubdivisions * sizeof(float32));
     }
@@ -78,6 +84,8 @@ void StaticOcclusionComponent::Deserialize(KeyedArchive* archive, SerializationC
         xSubdivisions = archive->GetUInt32("soc.xsub", 1);
         ySubdivisions = archive->GetUInt32("soc.ysub", 1);
         zSubdivisions = archive->GetUInt32("soc.zsub", 1);
+        occlusionPixelThreshold = archive->GetUInt32("soc.occlusionPixelThreshold", 0);
+        occlusionPixelThresholdForSpeedtree = archive->GetUInt32("soc.occlusionPixelThresholdForSpeedtree", 0);
         placeOnLandscape = archive->GetBool("soc.placeOnLandscape", false);
         if (placeOnLandscape)
         {
