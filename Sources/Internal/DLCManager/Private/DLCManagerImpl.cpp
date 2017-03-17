@@ -13,6 +13,7 @@
 #include "Concurrency/LockGuard.h"
 #include "Time/SystemTimer.h"
 #include "Engine/Engine.h"
+#include <Debug/Backtrace.h>
 
 namespace DAVA
 {
@@ -777,24 +778,36 @@ bool DLCManagerImpl::IsPackDownloaded(const String& packName)
         Logger::Error("%s", "Initialization not finished. Files is scanning now.");
         return false;
     }
-
-    // check every file in requested pack and all it's dependencies
-    Vector<uint32> packFileIndexes = meta->GetFileIndexes(packName);
-    for (uint32 fileIndex : packFileIndexes)
+    // client wants only assert on bad pack name or dependency name
+    try
     {
-        if (!IsFileReady(fileIndex))
+        // check every file in requested pack and all it's dependencies
+        Vector<uint32> packFileIndexes = meta->GetFileIndexes(packName);
+        for (uint32 fileIndex : packFileIndexes)
         {
-            return false;
+            if (!IsFileReady(fileIndex))
+            {
+                return false;
+            }
+        }
+
+        Vector<String> deps = meta->GetDependencyNames(packName);
+        for (const String& dependencyPack : deps)
+        {
+            if (!IsPackDownloaded(dependencyPack)) // recursive call
+            {
+                return false;
+            }
         }
     }
-
-    Vector<String> deps = meta->GetDependencyNames(packName);
-    for (const String& dependencyPack : deps)
+    catch (DAVA::Exception& e)
     {
-        if (!IsPackDownloaded(dependencyPack)) // recursive call
-        {
-            return false;
-        }
+        StringStream ss;
+        ss << "Exception at `" << e.file << "`: " << e.line << std::endl;
+        ss << Debug::GetBacktraceString(e.callstack) << std::endl;
+        Logger::PlatformLog(Logger::LEVEL_ERROR, ss.str().c_str());
+        DVASSERT(false && "check out log file");
+        return false;
     }
 
     return true;
