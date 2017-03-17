@@ -1,3 +1,7 @@
+// I want all settings and build options to set in code
+// to keep CMakeLists.txt as simple as posible,
+// so include directly mongoose.c in current cpp file.
+
 #define _CRT_SECURE_NO_WARNINGS 1
 
 #include "EmbeddedWebServer.h"
@@ -9,7 +13,16 @@
 #include "mongoose.h"
 extern "C"
 {
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wold-style-cast"
+#endif
+
 #include "mongoose.c"
+
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
 }
 
 namespace DAVA
