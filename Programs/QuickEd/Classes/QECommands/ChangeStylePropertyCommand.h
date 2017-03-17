@@ -1,29 +1,22 @@
-#ifndef __QUICKED_CHANGE_STYLE_PROPERTY_COMMAND_H__
-#define __QUICKED_CHANGE_STYLE_PROPERTY_COMMAND_H__
+#pragma once
 
-#include "Command/Command.h"
+#include "QECommands/Private/QEPackageCommand.h"
+#include <FileSystem/VariantType.h>
 
-#include <Base/Any.h>
-
-class PackageNode;
 class StyleSheetNode;
 class AbstractProperty;
 
-class ChangeStylePropertyCommand : public DAVA::Command
+class ChangeStylePropertyCommand : public QEPackageCommand
 {
 public:
-    ChangeStylePropertyCommand(PackageNode* root, StyleSheetNode* node, AbstractProperty* property, const DAVA::Any& newValue);
-    virtual ~ChangeStylePropertyCommand();
+    ChangeStylePropertyCommand(PackageNode* package, StyleSheetNode* node, AbstractProperty* property, const DAVA::Any& newValue);
 
     void Redo() override;
     void Undo() override;
 
 private:
-    PackageNode* root;
-    StyleSheetNode* node;
-    AbstractProperty* property;
+    DAVA::RefPtr<StyleSheetNode> node;
+    DAVA::RefPtr<AbstractProperty> property;
     DAVA::Any oldValue;
     DAVA::Any newValue;
 };
-
-#endif // __QUICKED_CHANGE_STYLE_PROPERTY_COMMAND_H__
