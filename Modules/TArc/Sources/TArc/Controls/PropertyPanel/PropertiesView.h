@@ -73,7 +73,6 @@ private:
     Params params;
     QTreeView* view = nullptr;
     std::unique_ptr<ReflectedPropertyModel> model;
-    SigConnectionID updateConnectionID;
     QtConnections connections;
     bool isExpandUpdate = false;
 };
