@@ -35,7 +35,7 @@ void StructureWrapperClass::FillCache(const ReflectedType* reflectedType)
 void StructureWrapperClass::FillCacheEntries(const ReflectedType* reflectedType)
 {
     const ReflectedType* inheritType = nullptr;
-    if (reflectedType != rootType)
+    //if (reflectedType != rootType)
     {
         inheritType = reflectedType;
     }
