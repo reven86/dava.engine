@@ -72,7 +72,7 @@ String UTF8Utils::EncodeToUTF8(const WideString& wstring)
     {
         utf8::utf32to8(wstring.begin(), wstring.end(), std::back_inserter(result));
     }
-    catch (const utf8::exception&)
+    catch (const utf8::exception& ex)
     {
         DAVA_THROW(Exception, ex.what());
     }
