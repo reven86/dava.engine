@@ -9,7 +9,6 @@ namespace DAVA
 {
 namespace TArc
 {
-
 Any FilePathComponentValue::GetMultipleValue() const
 {
     return Any();
