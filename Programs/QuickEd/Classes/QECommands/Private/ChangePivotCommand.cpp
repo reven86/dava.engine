@@ -49,7 +49,7 @@ void ChangePivotCommand::Undo()
             package->SetControlProperty(item.node.Get(), item.pivotProperty.Get(), item.pivotOldValue);
         }
 
-        if (item.pivotOldValue.GetType() == DAVA::VariantType::TYPE_NONE)
+        if (item.positionOldValue.GetType() == DAVA::VariantType::TYPE_NONE)
         {
             package->ResetControlProperty(item.node.Get(), item.positionProperty.Get());
         }
