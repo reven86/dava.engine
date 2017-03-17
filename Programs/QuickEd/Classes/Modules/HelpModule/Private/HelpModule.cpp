@@ -1,4 +1,5 @@
 #include "Modules/HelpModule/HelpModule.h"
+#include "Application/QEGlobal.h"
 
 #include <TArc/WindowSubSystem/QtAction.h>
 #include <TArc/WindowSubSystem/ActionUtils.h>
@@ -32,10 +33,12 @@ void HelpModule::CreateActions()
     using namespace DAVA::TArc;
 
     QAction* action = new QAction(QIcon(":/Icons/help.png"), "QuickEd Help", nullptr);
+    action->setShortcut(Qt::Key_F1);
     connections.AddConnection(action, &QAction::triggered, DAVA::Bind(&HelpModule::OnShowHelp, this));
 
     ActionPlacementInfo placementInfo;
-    placementInfo.AddPlacementPoint(CreateMenuPoint("Help", { InsertionParams::eInsertionMethod::AfterItem }));
+    placementInfo.AddPlacementPoint(CreateMenuPoint("Help", { InsertionParams::eInsertionMethod::BeforeItem }));
+    GetUI()->AddAction(QEGlobal::windowKey, placementInfo, action);
 }
 
 void HelpModule::UnpackHelp()
