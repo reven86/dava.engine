@@ -98,7 +98,7 @@ ChangePivotCommand::Item::Item(ControlNode* node_, AbstractProperty* pivotProper
     , pivotNewValue(pivotValue)
     , pivotOldValue(ChangePivotCommandDetails::GetValueFromProperty(pivotProperty_))
     , positionProperty(DAVA::RefPtr<AbstractProperty>::ConstructWithRetain(positionProperty_))
-    , positionNewValue(pivotValue)
+    , positionNewValue(positionValue)
     , positionOldValue(ChangePivotCommandDetails::GetValueFromProperty(positionProperty_))
 {
 }
