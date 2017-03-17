@@ -1,16 +1,16 @@
-#include "Test/Private/ProjectModuleHelper.h"
+#include "Test/Private/ProjectSettingsGuard.h"
 #include "Test/Private/TestHelpers.h"
 
 namespace TestHelpers
 {
-DAVA_VIRTUAL_REFLECTION_IMPL(ProjectModuleHelper)
+DAVA_VIRTUAL_REFLECTION_IMPL(ProjectSettingsGuard)
 {
-    DAVA::ReflectionRegistrator<ProjectModuleHelper>::Begin()
+    DAVA::ReflectionRegistrator<ProjectSettingsGuard>::Begin()
     .ConstructorByPointer()
     .End();
 }
 
-void ProjectModuleHelper::PostInit()
+void ProjectSettingsGuard::PostInit()
 {
     using namespace DAVA;
     using namespace TArc;
@@ -28,7 +28,7 @@ void ProjectModuleHelper::PostInit()
     }
 }
 
-ProjectModuleHelper::~ProjectModuleHelper()
+ProjectSettingsGuard::~ProjectSettingsGuard()
 {
     using namespace DAVA::TArc;
     ContextAccessor* accessor = GetAccessor();

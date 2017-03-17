@@ -1,4 +1,4 @@
-#include "Test/Private//DocumentsModuleHelper.h"
+#include "Test/Private/MockDocumentsModule.h"
 
 #include "Application/QEGlobal.h"
 
@@ -6,52 +6,52 @@
 
 namespace TestHelpers
 {
-DAVA_VIRTUAL_REFLECTION_IMPL(SampleData)
+DAVA_VIRTUAL_REFLECTION_IMPL(MockData)
 {
-    DAVA::ReflectionRegistrator<SampleData>::Begin()
+    DAVA::ReflectionRegistrator<MockData>::Begin()
     .ConstructorByPointer()
     .End();
 }
 
-DAVA_VIRTUAL_REFLECTION_IMPL(DocumentsModuleHelper)
+DAVA_VIRTUAL_REFLECTION_IMPL(MockDocumentsModule)
 {
-    DAVA::ReflectionRegistrator<DocumentsModuleHelper>::Begin()
+    DAVA::ReflectionRegistrator<MockDocumentsModule>::Begin()
     .ConstructorByPointer()
     .End();
 }
 
-void DocumentsModuleHelper::PostInit()
+void MockDocumentsModule::PostInit()
 {
-    RegisterOperation(QEGlobal::CloseAllDocuments.ID, this, &DocumentsModuleHelper::CloseAllDocuments);
-    RegisterOperation(CreateDummyContextOperation.ID, this, &DocumentsModuleHelper::CreateDummyContext);
+    RegisterOperation(QEGlobal::CloseAllDocuments.ID, this, &MockDocumentsModule::CloseAllDocuments);
+    RegisterOperation(CreateDummyContextOperation.ID, this, &MockDocumentsModule::CreateDummyContext);
 }
 
-void DocumentsModuleHelper::OnContextCreated(DAVA::TArc::DataContext* context)
-{
-}
-
-void DocumentsModuleHelper::OnContextDeleted(DAVA::TArc::DataContext* context)
+void MockDocumentsModule::OnContextCreated(DAVA::TArc::DataContext* context)
 {
 }
 
-void DocumentsModuleHelper::OnRenderSystemInitialized(DAVA::Window* w)
+void MockDocumentsModule::OnContextDeleted(DAVA::TArc::DataContext* context)
 {
 }
 
-bool DocumentsModuleHelper::CanWindowBeClosedSilently(const DAVA::TArc::WindowKey& key, DAVA::String& requestWindowText)
+void MockDocumentsModule::OnRenderSystemInitialized(DAVA::Window* w)
+{
+}
+
+bool MockDocumentsModule::CanWindowBeClosedSilently(const DAVA::TArc::WindowKey& key, DAVA::String& requestWindowText)
 {
     return true;
 }
 
-void DocumentsModuleHelper::SaveOnWindowClose(const DAVA::TArc::WindowKey& key)
+void MockDocumentsModule::SaveOnWindowClose(const DAVA::TArc::WindowKey& key)
 {
 }
 
-void DocumentsModuleHelper::RestoreOnWindowClose(const DAVA::TArc::WindowKey& key)
+void MockDocumentsModule::RestoreOnWindowClose(const DAVA::TArc::WindowKey& key)
 {
 }
 
-void DocumentsModuleHelper::CloseAllDocuments()
+void MockDocumentsModule::CloseAllDocuments()
 {
     using namespace DAVA;
     using namespace DAVA::TArc;
@@ -68,7 +68,7 @@ void DocumentsModuleHelper::CloseAllDocuments()
     {
         DataContext* context = accessor->GetContext(id);
         DVASSERT(context != nullptr);
-        SampleData* data = context->GetData<SampleData>();
+        MockData* data = context->GetData<MockData>();
         if (data != nullptr && data->canClose)
         {
             contextManager->DeleteContext(id);
@@ -76,13 +76,13 @@ void DocumentsModuleHelper::CloseAllDocuments()
     }
 }
 
-void DocumentsModuleHelper::CreateDummyContext()
+void MockDocumentsModule::CreateDummyContext()
 {
     using namespace DAVA;
     using namespace DAVA::TArc;
 
     Vector<std::unique_ptr<DataNode>> dummy;
-    dummy.emplace_back(new SampleData());
+    dummy.emplace_back(new MockData());
 
     ContextManager* manager = GetContextManager();
     DataContext::ContextID id = manager->CreateContext(std::move(dummy));

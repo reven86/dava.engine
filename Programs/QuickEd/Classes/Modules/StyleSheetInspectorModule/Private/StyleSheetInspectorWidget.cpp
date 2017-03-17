@@ -1,10 +1,10 @@
 #include "Modules/StyleSheetInspectorModule/StyleSheetInspectorWidget.h"
 #include "Modules/DocumentsModule/DocumentData.h"
-#include "Modules/PackageListenerModule/PackageListenerProxy.h"
 
 #include "Model/PackageHierarchy/ControlNode.h"
 
 #include "Utils/QtDavaConvertion.h"
+#include "Utils/PackageListenerProxy.h"
 
 #include <TArc/Core/ContextAccessor.h>
 
@@ -21,37 +21,17 @@ StyleSheetInspectorWidget::StyleSheetInspectorWidget(DAVA::TArc::ContextAccessor
     : QListWidget(nullptr)
     , accessor(accessor_)
     , updater(300)
+    , packageListenerProxy(this, accessor)
 {
     updater.SetUpdater(DAVA::MakeFunction(this, &StyleSheetInspectorWidget::Update));
     updater.SetStopper([this]() {
         return currentControl.Valid();
     });
 
-    AddListener();
     InitFieldBinder();
 }
 
-StyleSheetInspectorWidget::~StyleSheetInspectorWidget()
-{
-    using namespace DAVA::TArc;
-
-    DataContext* globalContext = accessor->GetGlobalContext();
-    PackageListenerProxy* proxy = globalContext->GetData<PackageListenerProxy>();
-    if (proxy != nullptr)
-    {
-        proxy->RemoveListener(this);
-    }
-}
-
-void StyleSheetInspectorWidget::AddListener()
-{
-    using namespace DAVA::TArc;
-
-    DataContext* globalContext = accessor->GetGlobalContext();
-    PackageListenerProxy* proxy = globalContext->GetData<PackageListenerProxy>();
-    DVASSERT(proxy != nullptr);
-    proxy->AddListener(this);
-}
+StyleSheetInspectorWidget::~StyleSheetInspectorWidget() = default;
 
 void StyleSheetInspectorWidget::InitFieldBinder()
 {

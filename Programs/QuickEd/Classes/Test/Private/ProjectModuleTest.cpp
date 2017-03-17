@@ -3,8 +3,8 @@
 #include "Modules/LegacySupportModule/Private/Project.h"
 
 #include "Test/Private/TestHelpers.h"
-#include "Test/Private/ProjectModuleHelper.h"
-#include "Test/Private/DocumentsModuleHelper.h"
+#include "Test/Private/ProjectSettingsGuard.h"
+#include "Test/Private/MockDocumentsModule.h"
 
 #include "Application/QEGlobal.h"
 
@@ -20,8 +20,8 @@
 DAVA_TARC_TESTCLASS(ProjectManagerTests)
 {
     BEGIN_TESTED_MODULES()
-    DECLARE_TESTED_MODULE(TestHelpers::ProjectModuleHelper)
-    DECLARE_TESTED_MODULE(TestHelpers::DocumentsModuleHelper)
+    DECLARE_TESTED_MODULE(TestHelpers::ProjectSettingsGuard)
+    DECLARE_TESTED_MODULE(TestHelpers::MockDocumentsModule)
     DECLARE_TESTED_MODULE(ProjectModule)
     END_TESTED_MODULES()
 
@@ -116,7 +116,7 @@ DAVA_TARC_TESTCLASS(ProjectManagerTests)
         ContextAccessor* accessor = GetAccessor();
         DataContext* activeContext = accessor->GetActiveContext();
         TEST_VERIFY(activeContext != nullptr);
-        SampleData* data = activeContext->GetData<SampleData>();
+        MockData* data = activeContext->GetData<MockData>();
         data->canClose = false;
 
         EXPECT_CALL(*GetMockInvoker(), Invoke(QEGlobal::CloseAllDocuments.ID));

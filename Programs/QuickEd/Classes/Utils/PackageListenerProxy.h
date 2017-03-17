@@ -1,18 +1,25 @@
 #pragma once
 
 #include "Model/PackageHierarchy/PackageListener.h"
+#include <memory>
 
-#include <TArc/DataProcessing/DataNode.h>
+namespace DAVA
+{
+class Any;
+namespace TArc
+{
+class ContextAccessor;
+class FieldBinder;
+}
+}
 
-class PackageListenerProxy : public DAVA::TArc::DataNode, public PackageListener
+class PackageListenerProxy : public PackageListener
 {
 public:
-    void AddListener(PackageListener* listener);
-    void RemoveListener(PackageListener* listener);
+    PackageListenerProxy(PackageListener* listener, DAVA::TArc::ContextAccessor* accessor);
 
 private:
-    friend class PackageListenerModule;
-    void SetPackage(PackageNode* node);
+    void OnPackageChanged(const DAVA::Any& package);
 
     void ActivePackageNodeWasChanged(PackageNode* node) override;
 
@@ -40,7 +47,6 @@ private:
     void StyleSheetsWereRebuilt() override;
 
     PackageNode* package = nullptr;
-    DAVA::List<PackageListener*> listeners;
-
-    DAVA_VIRTUAL_REFLECTION(PackageListenerProxy, DAVA::TArc::DataNode);
+    PackageListener* listener;
+    std::unique_ptr<DAVA::TArc::FieldBinder> fieldBinder;
 };

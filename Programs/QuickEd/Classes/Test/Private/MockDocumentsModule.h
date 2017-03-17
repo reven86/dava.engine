@@ -5,7 +5,7 @@
 
 namespace TestHelpers
 {
-class DocumentsModuleHelper : public DAVA::TArc::ControllerModule
+class MockDocumentsModule : public DAVA::TArc::ControllerModule
 {
     void PostInit() override;
     void OnContextCreated(DAVA::TArc::DataContext* context) override;
@@ -19,16 +19,16 @@ class DocumentsModuleHelper : public DAVA::TArc::ControllerModule
     void CloseAllDocuments();
     void CreateDummyContext();
 
-    DAVA_VIRTUAL_REFLECTION(DocumentsModuleHelper, DAVA::TArc::ControllerModule);
+    DAVA_VIRTUAL_REFLECTION(MockDocumentsModule, DAVA::TArc::ControllerModule);
 };
 
 DECLARE_OPERATION_ID(CreateDummyContextOperation);
 
-class SampleData : public DAVA::TArc::DataNode
+class MockData : public DAVA::TArc::DataNode
 {
 public:
     bool canClose = true;
 
-    DAVA_VIRTUAL_REFLECTION(SampleData, DAVA::TArc::DataNode);
+    DAVA_VIRTUAL_REFLECTION(MockData, DAVA::TArc::DataNode);
 };
 } //namespace TestHelpers

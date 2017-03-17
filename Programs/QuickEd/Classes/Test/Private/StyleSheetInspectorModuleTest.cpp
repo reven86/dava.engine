@@ -3,7 +3,6 @@
 
 #include "Modules/StyleSheetInspectorModule/StyleSheetInspectorModule.h"
 #include "Modules/StyleSheetInspectorModule/StyleSheetInspectorWidget.h"
-#include "Modules/PackageListenerModule/PackageListenerModule.h"
 #include "Modules/ProjectModule/ProjectModule.h"
 #include "Modules/ProjectModule/ProjectData.h"
 #include "Modules/DocumentsModule/DocumentsModule.h"
@@ -12,9 +11,11 @@
 #include "Model/QuickEdPackageBuilder.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 
+#include "Utils/PackageListenerProxy.h"
+
 #include "Test/Private/TestHelpers.h"
-#include "Test/Private/ProjectModuleHelper.h"
-#include "Test/Private/DocumentsModuleHelper.h"
+#include "Test/Private/ProjectSettingsGuard.h"
+#include "Test/Private/MockDocumentsModule.h"
 
 #include "Application/QEGlobal.h"
 
@@ -39,11 +40,10 @@ class LocalMockModule;
 DAVA_TARC_TESTCLASS(StyleSheetInspectorModuleTest)
 {
     BEGIN_TESTED_MODULES();
-    DECLARE_TESTED_MODULE(TestHelpers::ProjectModuleHelper);
-    DECLARE_TESTED_MODULE(TestHelpers::DocumentsModuleHelper);
+    DECLARE_TESTED_MODULE(TestHelpers::ProjectSettingsGuard);
+    DECLARE_TESTED_MODULE(TestHelpers::MockDocumentsModule);
     DECLARE_TESTED_MODULE(StyleSheetInspectorModuleTestDetails::LocalMockModule)
     DECLARE_TESTED_MODULE(ProjectModule);
-    DECLARE_TESTED_MODULE(PackageListenerModule);
     DECLARE_TESTED_MODULE(StyleSheetInspectorModule)
     END_TESTED_MODULES();
 

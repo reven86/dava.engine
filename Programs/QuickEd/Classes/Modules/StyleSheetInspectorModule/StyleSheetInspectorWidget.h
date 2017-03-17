@@ -2,6 +2,8 @@
 
 #include "Model/PackageHierarchy/PackageListener.h"
 
+#include "Utils/PackageListenerProxy.h"
+
 #include <TArc/Core/FieldBinder.h>
 
 #include <QtTools/Updaters/ContinuousUpdater.h>
@@ -37,4 +39,5 @@ private:
     DAVA::RefPtr<DAVA::UIControl> currentControl;
     ContinuousUpdater updater;
     std::unique_ptr<DAVA::TArc::FieldBinder> selectionFieldBinder;
+    PackageListenerProxy packageListenerProxy;
 };
