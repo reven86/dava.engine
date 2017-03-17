@@ -232,7 +232,7 @@ bool FillAppFields(AppVersion* appVer, const QJsonObject& entry, bool toolset)
 
     //remember num to fill it later
     appVer->buildNum = entry["build_num"].toString();
-    if (url.endsWith(".zip") || buildType.startsWith("Desc"))
+    if (appVer->id.isEmpty() || url.endsWith(".zip") || buildType.startsWith("Desc"))
     {
         appVer->id = ConfigParserDetails::ProcessID(buildType);
     }
