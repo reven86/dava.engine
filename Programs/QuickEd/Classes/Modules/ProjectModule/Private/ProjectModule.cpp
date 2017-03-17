@@ -39,18 +39,7 @@ void ProjectModule::PostInit()
     RegisterOperation(QEGlobal::OpenLastProject.ID, this, &ProjectModule::OpenLastProject);
     RegisterOperation(ProjectModuleTesting::CreateProjectOperation.ID, this, &ProjectModule::CreateProject);
 
-    //wait for window will be activated and uiScreen is resized to mainWindow
-    MainWindow* mainWindow = qobject_cast<MainWindow*>(GetUI()->GetWindow(QEGlobal::windowKey));
-    if (mainWindow != nullptr && mainWindow->IsInitialized() == false)
-    {
-        mainWindow->initialized.Connect([this]() {
-            delayedExecutor.DelayedExecute(MakeFunction(this, &ProjectModule::OpenLastProject));
-        });
-    }
-    else
-    {
-        OpenLastProject();
-    }
+    delayedExecutor.DelayedExecute(MakeFunction(this, &ProjectModule::OpenLastProject));
 }
 
 void ProjectModule::OnWindowClosed(const DAVA::TArc::WindowKey& key)

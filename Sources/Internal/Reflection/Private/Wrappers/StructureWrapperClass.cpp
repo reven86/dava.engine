@@ -40,7 +40,7 @@ void StructureWrapperClass::FillCacheEntries(const ReflectedType* reflectedType)
         inheritType = reflectedType;
     }
 
-    const ReflectedStructure* structure = reflectedType->GetStrucutre();
+    const ReflectedStructure* structure = reflectedType->GetStructure();
     if (nullptr != structure)
     {
         for (auto& f : structure->fields)
