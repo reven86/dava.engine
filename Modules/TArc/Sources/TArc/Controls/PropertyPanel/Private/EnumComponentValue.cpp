@@ -1,7 +1,7 @@
 #include "TArc/Controls/PropertyPanel/Private/EnumComponentValue.h"
 #include "TArc/Controls/ComboBox.h"
+#include "TArc/Controls/PropertyPanel/PropertyPanelMeta.h"
 #include "TArc/Controls/PropertyPanel/Private/ComponentStructureWrapper.h"
-#include "TArc/Controls/PropertyPanel/Private/PropertyPanelMeta.h"
 
 #include <Reflection/ReflectionRegistrator.h>
 
@@ -42,6 +42,7 @@ ControlProxy* EnumComponentValue::CreateEditorWidget(QWidget* parent, const Refl
     ControlDescriptorBuilder<ComboBox::Fields> descr;
     descr[ComboBox::Fields::Value] = "value";
     descr[ComboBox::Fields::IsReadOnly] = readOnlyFieldName;
+
     return new ComboBox(descr, wrappersProcessor, model, parent);
 }
 

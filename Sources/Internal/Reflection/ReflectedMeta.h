@@ -221,6 +221,12 @@ using ValueDescription = Meta<Metas::ValueDescription>;
     for each field that marked by this meta
 */
 using SubProperty = Meta<Metas::SubProperty>;
+
+/**
+    Says that value can be changed at some unpredictable moment and
+    Reflection's client should update value as often as possible
+*/
+using FrequentlyChangedValue = Meta<Metas::FrequentlyChangedValue>;
 }
 
 } // namespace DAVA

@@ -9,15 +9,14 @@ class Command : public ICommand
 {
 public:
     /**
-    \brief Creates instance of a command base class.
-    \param[in] id derived class ID, like CMDID_BATCH.
-    \param[in] text command text description to be displayed in widgets / network packets / log texts.
-    */
-    Command(const String& description = "");
+     \brief Creates instance of a command base class.
+     \param[in] text command text description to be displayed in widgets / network packets / log texts.
+     */
+    Command(const String& description = String());
 
     /**
-    \brief Returns command's text description.
-    \returns command's text description.
+    \brief Returns command text description.
+    \returns String command text description.
     */
     const String& GetDescription() const;
 
@@ -29,6 +28,10 @@ public:
     virtual bool IsClean() const;
 
 private:
+    //this function is not a part of public API and can be called only by CommandBatch
+    virtual bool MergeWith(const Command* command);
+    friend class CommandBatch;
+
     const String description;
 };
 
@@ -41,4 +44,9 @@ inline bool Command::IsClean() const
 {
     return false;
 }
+
+inline bool Command::MergeWith(const Command* command)
+{
+    return false;
 }
+} //namespace DAVA

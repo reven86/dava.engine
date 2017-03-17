@@ -66,6 +66,7 @@ private:
     void OnMouseMoved(Windows::Devices::Input::MouseDevice ^ mouseDevice, ::Windows::Devices::Input::MouseEventArgs ^ args);
 
     void OnKeyboardShowing(Windows::UI::ViewManagement::InputPane ^ sender, Windows::UI::ViewManagement::InputPaneVisibilityEventArgs ^ args);
+    void OnKeyboardHiding(Windows::UI::ViewManagement::InputPane ^ sender, Windows::UI::ViewManagement::InputPaneVisibilityEventArgs ^ args);
 
     eModifierKeys GetModifierKeys() const;
     static eMouseButtons GetMouseButtonState(::Windows::UI::Input::PointerUpdateKind buttonUpdateKind, bool* isPressed);
@@ -102,6 +103,7 @@ private:
     ::Windows::Foundation::EventRegistrationToken tokenPointerWheelChanged;
     ::Windows::Foundation::EventRegistrationToken tokenMouseMoved;
     ::Windows::Foundation::EventRegistrationToken tokenKeyboardShowing;
+    ::Windows::Foundation::EventRegistrationToken tokenKeyboardHiding;
     ::Windows::UI::Xaml::Input::PointerEventHandler ^ pointerReleasedHandler;
     ::Windows::UI::Xaml::Input::PointerEventHandler ^ pointerCaptureLostHandler;
     ::Windows::UI::Xaml::Input::PointerEventHandler ^ pointerCancelledHandler;

@@ -158,9 +158,10 @@ protected:
         DVASSERT(fieldValue.IsValid());
 
         bool readOnlyFieldValue = false;
-        if (descriptor.IsChanged(readOnlyRole))
+        FastName readOnlyFieldName = descriptor.GetName(readOnlyRole);
+        if (readOnlyFieldName.IsValid())
         {
-            DAVA::Reflection fieldReadOnly = model.GetField(descriptor.GetName(readOnlyRole));
+            DAVA::Reflection fieldReadOnly = model.GetField(readOnlyFieldName);
             if (fieldReadOnly.IsValid())
             {
                 readOnlyFieldValue = fieldReadOnly.GetValue().Cast<bool>();

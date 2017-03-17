@@ -1,4 +1,5 @@
 #include "TArc/Controls/Label.h"
+#include "TArc/Controls/CommonStrings.h"
 
 #include <Base/FastName.h>
 #include <Reflection/ReflectedMeta.h>
@@ -30,7 +31,7 @@ void Label::UpdateControl(const ControlDescriptor& descriptor)
         Any value = fieldValue.GetValue();
         if (value.IsEmpty() == true)
         {
-            stringValue = "<multiple values>";
+            stringValue = QString(MultipleValuesString);
         }
         else if (value.CanCast<QString>())
         {

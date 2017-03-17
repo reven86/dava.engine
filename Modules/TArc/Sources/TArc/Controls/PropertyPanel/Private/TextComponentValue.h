@@ -20,8 +20,6 @@ protected:
     bool IsValidValueToSet(const Any& newValue, const Any& currentValue) const override;
     ControlProxy* CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor) const override;
 
-    bool EditorEvent(QWidget* parent, QEvent* event, const QStyleOptionViewItem& option) override;
-
 private:
     String GetText() const;
     void SetText(const String& text);

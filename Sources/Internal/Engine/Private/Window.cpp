@@ -271,6 +271,9 @@ void Window::EventHandler(const Private::MainDispatcherEvent& e)
     case MainDispatcherEvent::WINDOW_CANCEL_INPUT:
         HandleCancelInput(e);
         break;
+    case MainDispatcherEvent::WINDOW_VISIBLE_FRAME_CHANGED:
+        HandleVisibleFrameChanged(e);
+        break;
     default:
         break;
     }
@@ -459,6 +462,12 @@ void Window::HandleCancelInput(const Private::MainDispatcherEvent& e)
 {
     uiControlSystem->CancelAllInputs();
     inputSystem->GetKeyboard().ClearAllKeys();
+}
+
+void Window::HandleVisibleFrameChanged(const Private::MainDispatcherEvent& e)
+{
+    Rect visibleRect(e.visibleFrameEvent.x, e.visibleFrameEvent.y, e.visibleFrameEvent.width, e.visibleFrameEvent.height);
+    visibleFrameChanged.Emit(this, visibleRect);
 }
 
 void Window::HandleFocusChanged(const Private::MainDispatcherEvent& e)

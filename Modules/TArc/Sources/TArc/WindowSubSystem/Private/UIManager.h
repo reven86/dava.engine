@@ -41,7 +41,11 @@ public:
     bool HasActiveWaitDalogues() const override;
     DAVA_DEPRECATED(QWidget* GetWindow(const WindowKey& windowKey) override);
 
-    void InjectWindow(const WindowKey& windowKey, QMainWindow* window);
+    DAVA_DEPRECATED(void InjectWindow(const WindowKey& windowKey, QMainWindow* window) override);
+    void ModuleDestroyed(ClientModule* module);
+
+protected:
+    void SetCurrentModule(ClientModule* module) override;
 
 private:
     struct Impl;
