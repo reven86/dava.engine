@@ -109,7 +109,9 @@ fp_main( fragment_in input )
     float actualDistance = input.distanceToOrigin;
     float sampledDistance = DecodeFloat(tex2D(fixedFrameDistances, reprojectedUVW.xy));
     float visibleInProjection = 1.0 - float(abs(actualDistance / sampledDistance - 1.0) > MAGIC_TRESHOLD_2);
-    float insideProjection = float(all(clamp(reprojectedUVW, float3(0.0), float3(1.0)) == reprojectedUVW));
+
+    float3 rpClamped = clamp(reprojectedUVW, float3(0.0), float3(1.0));
+    float insideProjection = float((rpClamped.x == reprojectedUVW.x) && (rpClamped.y == reprojectedUVW.y) && (rpClamped.z == reprojectedUVW.z));
 
     output.color = lerp(currentColor, sampledColor, insideProjection * visibleInProjection);
 
