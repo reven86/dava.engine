@@ -19,7 +19,7 @@
 // THE SOFTWARE.
 
 #ifndef MONGOOSE_HEADER_INCLUDED
-#define  MONGOOSE_HEADER_INCLUDED
+#define MONGOOSE_HEADER_INCLUDED
 
 #include <stdio.h>
 #include <stddef.h>
@@ -28,102 +28,103 @@
 extern "C" {
 #endif // __cplusplus
 
-struct mg_context;     // Handle for the HTTP service itself
-struct mg_connection;  // Handle for the individual connection
-
+struct mg_context; // Handle for the HTTP service itself
+struct mg_connection; // Handle for the individual connection
 
 // This structure contains information about the HTTP request.
-struct mg_request_info {
-  const char *request_method; // "GET", "POST", etc
-  const char *uri;            // URL-decoded URI
-  const char *http_version;   // E.g. "1.0", "1.1"
-  const char *query_string;   // URL part after '?', not including '?', or NULL
-  const char *remote_user;    // Authenticated user, or NULL if no auth used
-  long remote_ip;             // Client's IP address
-  int remote_port;            // Client's port
-  int is_ssl;                 // 1 if SSL-ed, 0 if not
-  void *user_data;            // User data pointer passed to mg_start()
-  void *conn_data;            // Connection-specific user data
+struct mg_request_info
+{
+    const char* request_method; // "GET", "POST", etc
+    const char* uri; // URL-decoded URI
+    const char* http_version; // E.g. "1.0", "1.1"
+    const char* query_string; // URL part after '?', not including '?', or NULL
+    const char* remote_user; // Authenticated user, or NULL if no auth used
+    long remote_ip; // Client's IP address
+    int remote_port; // Client's port
+    int is_ssl; // 1 if SSL-ed, 0 if not
+    void* user_data; // User data pointer passed to mg_start()
+    void* conn_data; // Connection-specific user data
 
-  int num_headers;            // Number of HTTP headers
-  struct mg_header {
-    const char *name;         // HTTP header name
-    const char *value;        // HTTP header value
-  } http_headers[64];         // Maximum 64 headers
+    int num_headers; // Number of HTTP headers
+    struct mg_header
+    {
+        const char* name; // HTTP header name
+        const char* value; // HTTP header value
+    } http_headers[64]; // Maximum 64 headers
 };
-
 
 // This structure needs to be passed to mg_start(), to let mongoose know
 // which callbacks to invoke. For detailed description, see
 // https://github.com/valenok/mongoose/blob/master/UserManual.md
-struct mg_callbacks {
-  // Called when mongoose has received new HTTP request.
-  // If callback returns non-zero,
-  // callback must process the request by sending valid HTTP headers and body,
-  // and mongoose will not do any further processing.
-  // If callback returns 0, mongoose processes the request itself. In this case,
-  // callback must not send any data to the client.
-  int  (*begin_request)(struct mg_connection *);
+struct mg_callbacks
+{
+    // Called when mongoose has received new HTTP request.
+    // If callback returns non-zero,
+    // callback must process the request by sending valid HTTP headers and body,
+    // and mongoose will not do any further processing.
+    // If callback returns 0, mongoose processes the request itself. In this case,
+    // callback must not send any data to the client.
+    int (*begin_request)(struct mg_connection*);
 
-  // Called when mongoose has finished processing request.
-  void (*end_request)(const struct mg_connection *, int reply_status_code);
+    // Called when mongoose has finished processing request.
+    void (*end_request)(const struct mg_connection*, int reply_status_code);
 
-  // Called when mongoose is about to log a message. If callback returns
-  // non-zero, mongoose does not log anything.
-  int  (*log_message)(const struct mg_connection *, const char *message);
+    // Called when mongoose is about to log a message. If callback returns
+    // non-zero, mongoose does not log anything.
+    int (*log_message)(const struct mg_connection*, const char* message);
 
-  // Called when mongoose initializes SSL library.
-  int  (*init_ssl)(void *ssl_context, void *user_data);
+    // Called when mongoose initializes SSL library.
+    int (*init_ssl)(void* ssl_context, void* user_data);
 
-  // Called when websocket request is received, before websocket handshake.
-  // If callback returns 0, mongoose proceeds with handshake, otherwise
-  // cinnection is closed immediately.
-  int (*websocket_connect)(const struct mg_connection *);
+    // Called when websocket request is received, before websocket handshake.
+    // If callback returns 0, mongoose proceeds with handshake, otherwise
+    // cinnection is closed immediately.
+    int (*websocket_connect)(const struct mg_connection*);
 
-  // Called when websocket handshake is successfully completed, and
-  // connection is ready for data exchange.
-  void (*websocket_ready)(struct mg_connection *);
+    // Called when websocket handshake is successfully completed, and
+    // connection is ready for data exchange.
+    void (*websocket_ready)(struct mg_connection*);
 
-  // Called when data frame has been received from the client.
-  // Parameters:
-  //    bits: first byte of the websocket frame, see websocket RFC at
-  //          http://tools.ietf.org/html/rfc6455, section 5.2
-  //    data, data_len: payload, with mask (if any) already applied.
-  // Return value:
-  //    non-0: keep this websocket connection opened.
-  //    0:     close this websocket connection.
-  int  (*websocket_data)(struct mg_connection *, int bits,
-                         char *data, size_t data_len);
+    // Called when data frame has been received from the client.
+    // Parameters:
+    //    bits: first byte of the websocket frame, see websocket RFC at
+    //          http://tools.ietf.org/html/rfc6455, section 5.2
+    //    data, data_len: payload, with mask (if any) already applied.
+    // Return value:
+    //    non-0: keep this websocket connection opened.
+    //    0:     close this websocket connection.
+    int (*websocket_data)(struct mg_connection*, int bits,
+                          char* data, size_t data_len);
 
-  // Called when mongoose tries to open a file. Used to intercept file open
-  // calls, and serve file data from memory instead.
-  // Parameters:
-  //    path:     Full path to the file to open.
-  //    data_len: Placeholder for the file size, if file is served from memory.
-  // Return value:
-  //    NULL: do not serve file from memory, proceed with normal file open.
-  //    non-NULL: pointer to the file contents in memory. data_len must be
-  //              initilized with the size of the memory block.
-  const char * (*open_file)(const struct mg_connection *,
-                             const char *path, size_t *data_len);
+    // Called when mongoose tries to open a file. Used to intercept file open
+    // calls, and serve file data from memory instead.
+    // Parameters:
+    //    path:     Full path to the file to open.
+    //    data_len: Placeholder for the file size, if file is served from memory.
+    // Return value:
+    //    NULL: do not serve file from memory, proceed with normal file open.
+    //    non-NULL: pointer to the file contents in memory. data_len must be
+    //              initilized with the size of the memory block.
+    const char* (*open_file)(const struct mg_connection*,
+                             const char* path, size_t* data_len);
 
-  // Called when mongoose is about to serve Lua server page (.lp file), if
-  // Lua support is enabled.
-  // Parameters:
-  //   lua_context: "lua_State *" pointer.
-  void (*init_lua)(struct mg_connection *, void *lua_context);
+    // Called when mongoose is about to serve Lua server page (.lp file), if
+    // Lua support is enabled.
+    // Parameters:
+    //   lua_context: "lua_State *" pointer.
+    void (*init_lua)(struct mg_connection*, void* lua_context);
 
-  // Called when mongoose has uploaded a file to a temporary directory as a
-  // result of mg_upload() call.
-  // Parameters:
-  //    file_file: full path name to the uploaded file.
-  void (*upload)(struct mg_connection *, const char *file_name);
+    // Called when mongoose has uploaded a file to a temporary directory as a
+    // result of mg_upload() call.
+    // Parameters:
+    //    file_file: full path name to the uploaded file.
+    void (*upload)(struct mg_connection*, const char* file_name);
 
-  // Called when mongoose is about to send HTTP error to the client.
-  // Implementing this callback allows to create custom error pages.
-  // Parameters:
-  //   status: HTTP error status code.
-  int  (*http_error)(struct mg_connection *, int status);
+    // Called when mongoose is about to send HTTP error to the client.
+    // Implementing this callback allows to create custom error pages.
+    // Parameters:
+    //   status: HTTP error status code.
+    int (*http_error)(struct mg_connection*, int status);
 };
 
 // Start web server.
@@ -151,18 +152,16 @@ struct mg_callbacks {
 //
 // Return:
 //   web server context, or NULL on error.
-struct mg_context *mg_start(const struct mg_callbacks *callbacks,
-                            void *user_data,
-                            const char **configuration_options);
-
+struct mg_context* mg_start(const struct mg_callbacks* callbacks,
+                            void* user_data,
+                            const char** configuration_options);
 
 // Stop the web server.
 //
 // Must be called last, when an application wants to stop the web server and
 // release all associated resources. This function blocks until all Mongoose
 // threads are stopped. Context pointer becomes invalid.
-void mg_stop(struct mg_context *);
-
+void mg_stop(struct mg_context*);
 
 // Get the value of particular configuration parameter.
 // The value returned is read-only. Mongoose does not allow changing
@@ -170,15 +169,13 @@ void mg_stop(struct mg_context *);
 // If given parameter name is not valid, NULL is returned. For valid
 // names, return value is guaranteed to be non-NULL. If parameter is not
 // set, zero-length string is returned.
-const char *mg_get_option(const struct mg_context *ctx, const char *name);
-
+const char* mg_get_option(const struct mg_context* ctx, const char* name);
 
 // Return array of strings that represent valid configuration options.
 // For each option, option name and default value is returned, i.e. the
 // number of entries in the array equals to number_of_options x 2.
 // Array is NULL terminated.
-const char **mg_get_valid_option_names(void);
-
+const char** mg_get_valid_option_names(void);
 
 // Add, edit or delete the entry in the passwords file.
 //
@@ -192,23 +189,20 @@ const char **mg_get_valid_option_names(void);
 //
 // Return:
 //   1 on success, 0 on error.
-int mg_modify_passwords_file(const char *passwords_file_name,
-                             const char *domain,
-                             const char *user,
-                             const char *password);
-
+int mg_modify_passwords_file(const char* passwords_file_name,
+                             const char* domain,
+                             const char* user,
+                             const char* password);
 
 // Return information associated with the request.
-struct mg_request_info *mg_get_request_info(struct mg_connection *);
-
+struct mg_request_info* mg_get_request_info(struct mg_connection*);
 
 // Send data to the client.
 // Return:
 //  0   when the connection has been closed
 //  -1  on error
 //  >0  number of bytes written on success
-int mg_write(struct mg_connection *, const void *buf, size_t len);
-
+int mg_write(struct mg_connection*, const void* buf, size_t len);
 
 // Send data to a websocket client wrapped in a websocket frame.
 // It is unsafe to read/write to this connection from another thread.
@@ -219,18 +213,18 @@ int mg_write(struct mg_connection *, const void *buf, size_t len);
 //  -1  on error
 //  >0  number of bytes written on success
 int mg_websocket_write(struct mg_connection* conn, int opcode,
-                       const char *data, size_t data_len);
+                       const char* data, size_t data_len);
 
 // Opcodes, from http://tools.ietf.org/html/rfc6455
-enum {
-  WEBSOCKET_OPCODE_CONTINUATION = 0x0,
-  WEBSOCKET_OPCODE_TEXT = 0x1,
-  WEBSOCKET_OPCODE_BINARY = 0x2,
-  WEBSOCKET_OPCODE_CONNECTION_CLOSE = 0x8,
-  WEBSOCKET_OPCODE_PING = 0x9,
-  WEBSOCKET_OPCODE_PONG = 0xa
+enum
+{
+    WEBSOCKET_OPCODE_CONTINUATION = 0x0,
+    WEBSOCKET_OPCODE_TEXT = 0x1,
+    WEBSOCKET_OPCODE_BINARY = 0x2,
+    WEBSOCKET_OPCODE_CONNECTION_CLOSE = 0x8,
+    WEBSOCKET_OPCODE_PING = 0x9,
+    WEBSOCKET_OPCODE_PONG = 0xa
 };
-
 
 // Macros for enabling compiler-specific checks for printf-like arguments.
 #undef PRINTF_FORMAT_STRING
@@ -254,29 +248,25 @@ enum {
 // Send data to the client using printf() semantics.
 //
 // Works exactly like mg_write(), but allows to do message formatting.
-int mg_printf(struct mg_connection *,
-              PRINTF_FORMAT_STRING(const char *fmt), ...) PRINTF_ARGS(2, 3);
-
+int mg_printf(struct mg_connection*,
+              PRINTF_FORMAT_STRING(const char* fmt), ...) PRINTF_ARGS(2, 3);
 
 // Send contents of the entire file together with HTTP headers.
-void mg_send_file(struct mg_connection *conn, const char *path);
-
+void mg_send_file(struct mg_connection* conn, const char* path);
 
 // Read data from the remote end, return number of bytes read.
 // Return:
 //   0     connection has been closed by peer. No more data could be read.
 //   < 0   read error. No more data could be read from the connection.
 //   > 0   number of bytes read into the buffer.
-int mg_read(struct mg_connection *, void *buf, size_t len);
-
+int mg_read(struct mg_connection*, void* buf, size_t len);
 
 // Get the value of particular HTTP header.
 //
 // This is a helper function. It traverses request_info->http_headers array,
 // and if the header is present in the array, returns its value. If it is
 // not present, NULL is returned.
-const char *mg_get_header(const struct mg_connection *, const char *name);
-
+const char* mg_get_header(const struct mg_connection*, const char* name);
 
 // Get a value of particular form variable.
 //
@@ -297,8 +287,8 @@ const char *mg_get_header(const struct mg_connection *, const char *name);
 //
 // Destination buffer is guaranteed to be '\0' - terminated if it is not
 // NULL or zero length.
-int mg_get_var(const char *data, size_t data_len,
-               const char *var_name, char *dst, size_t dst_len);
+int mg_get_var(const char* data, size_t data_len,
+               const char* var_name, char* dst, size_t dst_len);
 
 // Fetch value of certain cookie variable into the destination buffer.
 //
@@ -313,9 +303,8 @@ int mg_get_var(const char *data, size_t data_len,
 //          parameter is not found).
 //      -2 (destination buffer is NULL, zero length or too small to hold the
 //          value).
-int mg_get_cookie(const char *cookie, const char *var_name,
-                  char *buf, size_t buf_len);
-
+int mg_get_cookie(const char* cookie, const char* var_name,
+                  char* buf, size_t buf_len);
 
 // Download data from the remote web server.
 //   host: host name to connect to, e.g. "foo.com", or "10.12.40.1".
@@ -331,35 +320,30 @@ int mg_get_cookie(const char *cookie, const char *var_name,
 //   struct mg_connection *conn;
 //   conn = mg_download("google.com", 80, 0, ebuf, sizeof(ebuf),
 //                      "%s", "GET / HTTP/1.0\r\nHost: google.com\r\n\r\n");
-struct mg_connection *mg_download(const char *host, int port, int use_ssl,
-                                  char *error_buffer, size_t error_buffer_size,
-                                  PRINTF_FORMAT_STRING(const char *request_fmt),
+struct mg_connection* mg_download(const char* host, int port, int use_ssl,
+                                  char* error_buffer, size_t error_buffer_size,
+                                  PRINTF_FORMAT_STRING(const char* request_fmt),
                                   ...) PRINTF_ARGS(6, 7);
 
-
 // Close the connection opened by mg_download().
-void mg_close_connection(struct mg_connection *conn);
-
+void mg_close_connection(struct mg_connection* conn);
 
 // File upload functionality. Each uploaded file gets saved into a temporary
 // file and MG_UPLOAD event is sent.
 // Return number of uploaded files.
-int mg_upload(struct mg_connection *conn, const char *destination_dir);
-
+int mg_upload(struct mg_connection* conn, const char* destination_dir);
 
 // Convenience function -- create detached thread.
 // Return: 0 on success, non-0 on error.
-typedef void * (*mg_thread_func_t)(void *);
-int mg_start_thread(mg_thread_func_t f, void *p);
-
+typedef void* (*mg_thread_func_t)(void*);
+int mg_start_thread(mg_thread_func_t f, void* p);
 
 // Return builtin mime type for the given file name.
 // For unrecognized extensions, "text/plain" is returned.
-const char *mg_get_builtin_mime_type(const char *file_name);
-
+const char* mg_get_builtin_mime_type(const char* file_name);
 
 // Return Mongoose version.
-const char *mg_version(void);
+const char* mg_version(void);
 
 // URL-decode input buffer into destination buffer.
 // 0-terminate the destination buffer.
@@ -367,7 +351,7 @@ const char *mg_version(void);
 // uses '+' as character for space, see RFC 1866 section 8.2.1
 // http://ftp.ics.uci.edu/pub/ietf/html/rfc1866.txt
 // Return: length of the decoded data, or -1 if dst buffer is too small.
-int mg_url_decode(const char *src, int src_len, char *dst,
+int mg_url_decode(const char* src, int src_len, char* dst,
                   int dst_len, int is_form_url_encoded);
 
 // MD5 hash given strings.
@@ -376,7 +360,7 @@ int mg_url_decode(const char *src, int src_len, char *dst,
 // MD5 hash. Example:
 //   char buf[33];
 //   mg_md5(buf, "aa", "bb", NULL);
-char *mg_md5(char buf[33], ...);
+char* mg_md5(char buf[33], ...);
 
 
 #ifdef __cplusplus
