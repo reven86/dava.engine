@@ -594,14 +594,6 @@ void WindowBackend::Update()
     }
 }
 
-void WindowBackend::ActivateRendering()
-{
-    if (renderWidget != nullptr)
-    {
-        renderWidget->ActivateRendering();
-    }
-}
-
 DAVA::RenderWidget* WindowBackend::GetRenderWidget()
 {
     if (renderWidget == nullptr)

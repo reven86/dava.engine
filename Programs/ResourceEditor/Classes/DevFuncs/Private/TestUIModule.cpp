@@ -13,6 +13,7 @@
 #include <TArc/Controls/FilePathEdit.h>
 #include <TArc/Controls/QtBoxLayouts.h>
 #include <TArc/Controls/SubPropertiesEditor.h>
+#include <TArc/Controls/PropertyPanel/Private/MultiDoubleSpinBox.h>
 #include <TArc/Controls/ColorPicker/ColorPickerButton.h>
 #include <TArc/Controls/Label.h>
 #include <TArc/Utils/ModuleCollection.h>
@@ -815,11 +816,6 @@ struct FilePathEditTestData : public ReflectionBase
         path = t;
     }
 
-    String GetFilters() const
-    {
-        return "Materials (*.material)";
-    }
-
     DAVA_VIRTUAL_REFLECTION_IN_PLACE(FilePathEditTestData, ReflectionBase)
     {
         using namespace DAVA;
@@ -827,12 +823,10 @@ struct FilePathEditTestData : public ReflectionBase
         ReflectionRegistrator<FilePathEditTestData>::Begin()
         .Field("readOnlyMetaText", &FilePathEditTestData::path)[M::ReadOnly()]
         .Field("readOnlyText", &FilePathEditTestData::GetText, nullptr)
-        .Field("path", &FilePathEditTestData::GetText, &FilePathEditTestData::SetText)[M::File(true, "Materials (*.material);;Meta (*.meta)")]
-        .Field("filters", &FilePathEditTestData::GetFilters, nullptr)
+        .Field("path", &FilePathEditTestData::GetText, &FilePathEditTestData::SetText)[M::File("Materials (*.material);;Meta (*.meta)")]
         .Field("isTextReadOnly", &FilePathEditTestData::isReadOnly)
         .Field("isTextEnabled", &FilePathEditTestData::isEnabled)
         .Field("placeholder", &FilePathEditTestData::placeHolder)
-        .Field("rootDir", &FilePathEditTestData::root)
         .End();
     }
 
@@ -877,9 +871,6 @@ struct FilePathEditTestData : public ReflectionBase
             p.fields[FilePathEdit::Fields::PlaceHolder] = "placeholder";
             p.fields[FilePathEdit::Fields::IsReadOnly] = "isTextReadOnly";
             p.fields[FilePathEdit::Fields::IsEnabled] = "isTextEnabled";
-            p.fields[FilePathEdit::Fields::DialogTitle] = "placeholder";
-            p.fields[FilePathEdit::Fields::RootDirectory] = "rootDir";
-            //p.fields[FilePathEdit::Fields::Filters] = "filters";
             lineLayout->AddWidget(new FilePathEdit(p, accessor, Reflection::Create(data), parent));
             boxLayout->addLayout(lineLayout);
 
@@ -1090,6 +1081,124 @@ struct ColorButtonTestData : public ReflectionBase
     }
 };
 
+struct MultiEditorsControlTest : public ReflectionBase
+{
+    DAVA::Vector3 v3 = DAVA::Vector3(0.3f, 0.3f, 0.3f);
+    Vector<DAVA::TArc::MultiDoubleSpinBox::FieldDescriptor> descriptorList;
+    bool isReadOnly = false;
+    int32 accuracy = 4;
+    int32 accuracy2 = 6;
+    const DAVA::M::Range* rangeX = nullptr;
+    const DAVA::M::Range* rangeY = nullptr;
+    const DAVA::M::Range* rangeZ = nullptr;
+
+    MultiEditorsControlTest()
+        : rangeX(new DAVA::M::Range(0.0f, 1.0f, 0.1))
+        , rangeY(new DAVA::M::Range(-1.0f, 1.0f, 0.2))
+        , rangeZ(new DAVA::M::Range(-0.5f, 0.5f, 0.3))
+    {
+        using namespace DAVA::TArc;
+        {
+            MultiDoubleSpinBox::FieldDescriptor d;
+            d.valueRole = "V3X";
+            d.accuracyRole = "accuracy";
+            d.readOnlyRole = "isReadOnly";
+            d.rangeRole = "RangeX";
+            descriptorList.push_back(d);
+        }
+
+        {
+            MultiDoubleSpinBox::FieldDescriptor d;
+            d.valueRole = "V3Y";
+            d.accuracyRole = "accuracy2";
+            d.readOnlyRole = "isReadOnly";
+            d.rangeRole = "RangeY";
+            descriptorList.push_back(d);
+        }
+
+        {
+            MultiDoubleSpinBox::FieldDescriptor d;
+            d.valueRole = "V3Z";
+            d.accuracyRole = "accuracy";
+            d.readOnlyRole = "isReadOnly";
+            d.rangeRole = "RangeZ";
+            descriptorList.push_back(d);
+        }
+    }
+
+    float32 GetX() const
+    {
+        return v3.x;
+    }
+
+    void SetX(float32 v)
+    {
+        v3.x = v;
+    }
+
+    float32 GetY() const
+    {
+        return v3.y;
+    }
+
+    void SetY(float32 v)
+    {
+        v3.y = v;
+    }
+
+    float32 GetZ() const
+    {
+        return v3.z;
+    }
+
+    void SetZ(float32 v)
+    {
+        v3.z = v;
+    }
+
+    static Result Create(TArc::UI* ui, TArc::ContextAccessor* accessor, QWidget* parent)
+    {
+        using namespace DAVA::TArc;
+        MultiEditorsControlTest* data = new MultiEditorsControlTest();
+        QtVBoxLayout* boxLayout = new QtVBoxLayout();
+        Reflection model = Reflection::Create(data);
+
+        {
+            ControlDescriptorBuilder<MultiDoubleSpinBox::Fields> descr;
+            descr[MultiDoubleSpinBox::Fields::FieldsList] = "list";
+            boxLayout->AddWidget(new MultiDoubleSpinBox(descr, accessor, model));
+        }
+
+        {
+            ControlDescriptorBuilder<CheckBox::Fields> descr;
+            descr[CheckBox::Fields::Checked] = "isReadOnly";
+            boxLayout->AddWidget(new CheckBox(descr, accessor, model));
+        }
+
+        Result r;
+        r.layout = boxLayout;
+        r.model = data;
+
+        return r;
+    }
+
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(MultiEditorsControlTest)
+    {
+        DAVA::ReflectionRegistrator<MultiEditorsControlTest>::Begin()
+        .Field("list", &MultiEditorsControlTest::descriptorList)
+        .Field("V3X", &MultiEditorsControlTest::GetX, &MultiEditorsControlTest::SetX)
+        .Field("V3Y", &MultiEditorsControlTest::GetY, &MultiEditorsControlTest::SetY)
+        .Field("V3Z", &MultiEditorsControlTest::GetZ, &MultiEditorsControlTest::SetZ)
+        .Field("accuracy", &MultiEditorsControlTest::accuracy)
+        .Field("accuracy2", &MultiEditorsControlTest::accuracy2)
+        .Field("isReadOnly", &MultiEditorsControlTest::isReadOnly)
+        .Field("RangeX", &MultiEditorsControlTest::rangeX)
+        .Field("RangeY", &MultiEditorsControlTest::rangeY)
+        .Field("RangeZ", &MultiEditorsControlTest::rangeZ)
+        .End();
+    }
+};
+
 struct LabelTestData : public ReflectionBase
 {
     String testString = "Test String";
@@ -1264,6 +1373,7 @@ void TestUIModule::ShowDialog()
       { &DoubleSpinBoxTestData::Create, "Double Spin" },
       { &FilePathEditTestData::Create, "FilePath" },
       { &SubPropertiesControlTest::Create, "SubPropsControl Test" },
+      { &MultiEditorsControlTest::Create, "MultiEditorsControl Test" },
       { &ColorButtonTestData::Create, "ColorButton Test" },
       { &LabelTestData::Create, "Label Test" }
     };

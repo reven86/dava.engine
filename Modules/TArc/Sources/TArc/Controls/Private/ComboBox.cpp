@@ -126,6 +126,11 @@ int ComboBox::SelectCurrentItem(const Reflection& fieldValue, const Reflection& 
             {
                 return i;
             }
+            else if (iAny.CanCast<int>() && value.CanCast<int>() &&
+                     iAny.Cast<int>() == value.Cast<int>())
+            {
+                return i;
+            }
         }
     }
 

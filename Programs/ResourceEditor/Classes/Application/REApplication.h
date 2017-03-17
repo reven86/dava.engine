@@ -42,7 +42,6 @@ private:
     void Cleanup() override;
 
     void RegisterEditorAnyCasts() override;
-    void RegisterReflectionExtensions() override;
 
     bool AllowMultipleInstances() const override;
     QString GetInstanceKey() const override;

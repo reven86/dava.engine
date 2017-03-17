@@ -1,8 +1,9 @@
 #include "UnitTests/UnitTests.h"
 
-#include "Command/Command.h"
-#include "Command/CommandBatch.h"
-#include "Command/CommandStack.h"
+#include <Command/Command.h>
+#include <Command/CommandBatch.h>
+#include <Command/CommandStack.h>
+#include <Debug/DVAssert.h>
 
 class TestCommand : public DAVA::Command
 {
@@ -22,8 +23,8 @@ public:
         ++undoCounter;
     }
 
-    DAVA::int32 redoCounter = 0;
-    DAVA::int32 undoCounter = 0;
+    DAVA::uint32 redoCounter = 0;
+    DAVA::uint32 undoCounter = 0;
 };
 
 class TestCommandClean : public TestCommand
@@ -38,6 +39,37 @@ public:
         return true;
     }
 };
+
+class TestCommandMerge : public DAVA::Command
+{
+public:
+    TestCommandMerge()
+        : DAVA::Command()
+    {
+    }
+
+    void Redo() override
+    {
+        ++redoCounter;
+    }
+
+    void Undo() override
+    {
+        ++undoCounter;
+    }
+
+    bool MergeWith(const DAVA::Command* another) override
+    {
+        DVASSERT(dynamic_cast<const TestCommandMerge*>(another) != nullptr);
+        return true;
+    }
+
+    static DAVA::uint32 redoCounter;
+    static DAVA::uint32 undoCounter;
+};
+
+DAVA::uint32 TestCommandMerge::redoCounter = 0;
+DAVA::uint32 TestCommandMerge::undoCounter = 0;
 
 DAVA_TESTCLASS (CommandsTest)
 {
@@ -288,5 +320,24 @@ DAVA_TESTCLASS (CommandsTest)
         TEST_VERIFY(stack.IsClean() == false);
         TEST_VERIFY(stack.CanUndo() == true);
         TEST_VERIFY(stack.CanRedo() == false);
+    }
+
+    DAVA_TEST (CommandBatchMergeTest)
+    {
+        DAVA::CommandStack stack;
+        stack.BeginBatch("RootBatch", 1);
+        stack.Exec(std::make_unique<TestCommandMerge>());
+        stack.Exec(std::make_unique<TestCommandMerge>());
+        stack.EndBatch();
+        TEST_VERIFY(TestCommandMerge::redoCounter == 2);
+        TEST_VERIFY(stack.IsClean() == false);
+
+        stack.Undo();
+        TEST_VERIFY(TestCommandMerge::undoCounter == 1);
+        TEST_VERIFY(stack.IsClean());
+
+        stack.Redo();
+        TEST_VERIFY(TestCommandMerge::redoCounter == 3);
+        TEST_VERIFY(stack.IsClean() == false);
     }
 };

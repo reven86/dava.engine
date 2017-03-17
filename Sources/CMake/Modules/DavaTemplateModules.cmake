@@ -11,6 +11,7 @@ EXTERNAL_MODULES_${DAVA_PLATFORM_CURENT}
 MODULE_INITIALIZATION_CODE
 MODULE_INITIALIZATION_NAMESPACE
 MODULE_MANAGER_TEMPLATE
+MODULE_CONTAINER_MODE
 #
 SRC_FOLDERS             
 ERASE_FOLDERS              
@@ -392,7 +393,7 @@ macro( setup_main_module )
         #"hack - find first call"
         get_property( MAIN_MODULES_FIND_FIRST_CALL_LIST GLOBAL PROPERTY MAIN_MODULES_FIND_FIRST_CALL_LIST )
 
-        if( NOT MAIN_MODULES_FIND_FIRST_CALL_LIST )            
+        if( NOT MAIN_MODULES_FIND_FIRST_CALL_LIST AND MODULE_CONTAINER_MODE )            
             modules_tree_info_execute()
             generated_initialization_module_code()
     		set( ROOT_NAME_MODULE ${NAME_MODULE} )
