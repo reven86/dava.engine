@@ -153,7 +153,9 @@ void ReflectedPropertyModel::Update()
     Update(rootItem.get());
     fastWrappersProcessor.Sync();
     wrappersProcessor.Sync();
+#if defined(REPORT_UPDATE_TIME)
     Logger::Debug(" === ReflectedPropertyModel::Update : %d ===", static_cast<int32>(SystemTimer::GetMs() - start));
+#endif
 }
 
 void ReflectedPropertyModel::Update(ReflectedPropertyItem* item)
@@ -204,7 +206,9 @@ void ReflectedPropertyModel::UpdateFast()
 {
     int64 start = SystemTimer::GetMs();
     UpdateFastImpl(rootItem.get());
+#if defined(REPORT_UPDATE_TIME)
     Logger::Debug(" === ReflectedPropertyModel::UpdateFast : %d ===", static_cast<int32>(SystemTimer::GetMs() - start));
+#endif
 }
 
 void ReflectedPropertyModel::HideEditor(ReflectedPropertyItem* item)

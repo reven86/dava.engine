@@ -82,6 +82,11 @@ void PropertiesViewDelegate::paint(QPainter* painter, const QStyleOptionViewItem
 
 QSize PropertiesViewDelegate::sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
+    if (index.isValid() == false)
+    {
+        return QSize();
+    }
+
     QStyleOptionViewItem opt = option;
     QStyle* style = opt.widget->style();
     BaseComponentValue* valueComponent = GetComponentValue(index);

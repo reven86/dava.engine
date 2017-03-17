@@ -37,6 +37,7 @@ private:
     struct Node
     {
         Node() = default;
+        void TearDown();
 
         FastName name;
         Bitset<FlagsCount> flags;
