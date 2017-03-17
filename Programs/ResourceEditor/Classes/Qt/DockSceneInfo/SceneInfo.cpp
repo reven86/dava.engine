@@ -1,6 +1,6 @@
 #include "DAVAEngine.h"
 #include "DockSceneInfo/SceneInfo.h"
-#include "Qt/Settings/SettingsManager.h"
+#include "Classes/Settings/SettingsManager.h"
 #include "Qt/Main/QtUtils.h"
 #include "Qt/Scene/SceneSignals.h"
 #include "Qt/Scene/SceneEditor2.h"

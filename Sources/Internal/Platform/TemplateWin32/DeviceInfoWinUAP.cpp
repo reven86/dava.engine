@@ -69,12 +69,37 @@ DeviceInfoPrivate::DeviceInfoPrivate()
     version = versionStream.str();
     platformString = UTF8Utils::EncodeToUTF8(versionInfo->DeviceFamily->Data());
 
-    try
+    // get device Manufacturer/ProductName/Name
     {
         EasClientDeviceInformation deviceInfo;
-        manufacturer = UTF8Utils::EncodeToUTF8(deviceInfo.SystemManufacturer->Data());
-        modelName = UTF8Utils::EncodeToUTF8(deviceInfo.SystemSku->Data());
+
+        // MSDN says SystemManufacturer can be empty, so we have to check it
+        if (!deviceInfo.SystemManufacturer->IsEmpty())
+        {
+            manufacturer = UTF8Utils::EncodeToUTF8(deviceInfo.SystemManufacturer->Data());
+        }
+
+        // MSDN says SystemProductName can be empty, so we have to check it
+        if (!deviceInfo.SystemProductName->IsEmpty())
+        {
+            // MSDN recommends to use deviceInfo.SystemSku and use deviceInfo.SystemProductName
+            // only in case when SystemSku is empty.
+            //
+            // In good cases deviceInfo.SystemSku is something like "XIAOMITEST MI4", while
+            // deviceInfo.SystemManufacturer = "XIAOMITEST" and deviceInfo.SystemProductName = "MI4".
+            // But in real life this SystemSku field can contain some unpredictable information,
+            // e.g. "To be filled by O.E.M." or "<FF><FF><FF>...".
+            //
+            // So we prefer to use deviceInfo.SystemProductName instead of recommended deviceInfo.SystemSku
+            modelName = UTF8Utils::EncodeToUTF8(deviceInfo.SystemProductName->Data());
+        }
+
+        // MSDN says deviceInfo.FriendlyName shouldn't be empty
         deviceName = WideString(deviceInfo.FriendlyName->Data());
+    }
+
+    try
+    {
         uDID = UTF8Utils::EncodeToUTF8(AdvertisingManager::AdvertisingId->Data());
     }
     catch (Platform::Exception ^ e)
@@ -663,4 +688,4 @@ bool DeviceInfoPrivate::IsEnabled(NativeHIDType type)
 }
 }
 
-#endif // defined(__DAVAENGINE_WIN_UAP__)
+#endif // __DAVAENGINE_WIN_UAP__

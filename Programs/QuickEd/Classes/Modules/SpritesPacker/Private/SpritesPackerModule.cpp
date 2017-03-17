@@ -7,7 +7,6 @@
 #include <TArc/DataProcessing/DataContext.h>
 #include <TArc/WindowSubSystem/QtAction.h>
 #include <TArc/WindowSubSystem/ActionUtils.h>
-#include <TArc/WindowSubSystem/Private/UIManager.h>
 #include <TArc/Utils/ModuleCollection.h>
 
 #include <QtTools/ReloadSprites/SpritesPacker.h>
@@ -165,8 +164,7 @@ void SpritesPackerModule::OnReloadSprites()
         spritesPacker->AddTask(gfxDirectory, gfxOutDirectory);
     }
 
-    UIManager* uiManager = static_cast<UIManager*>(GetUI());
-    DialogReloadSprites dialogReloadSprites(spritesPacker, uiManager->GetWindow(QEGlobal::windowKey));
+    DialogReloadSprites dialogReloadSprites(spritesPacker, GetUI()->GetWindow(QEGlobal::windowKey));
     dialogReloadSprites.exec();
 }
 

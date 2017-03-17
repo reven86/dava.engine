@@ -68,6 +68,12 @@ DAVA_VIRTUAL_REFLECTION_IMPL(RenderObject)
     .End();
 }
 
+template <>
+bool AnyCompare<RenderObject::IndexedRenderBatch>::IsEqual(const DAVA::Any& v1, const DAVA::Any& v2)
+{
+    return v1.Get<RenderObject::IndexedRenderBatch>() == v2.Get<RenderObject::IndexedRenderBatch>();
+}
+
 RenderObject::RenderObject()
 {
     lights[0] = NULL;

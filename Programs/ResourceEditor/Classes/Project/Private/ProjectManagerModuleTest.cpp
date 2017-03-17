@@ -2,8 +2,8 @@
 #include "Classes/Project/ProjectManagerData.h"
 #include "Classes/Application/LaunchModule.h"
 #include "Classes/Application/REGlobal.h"
-#include "Classes/Qt/Settings/Settings.h"
-#include "Classes/Qt/Settings/SettingsManager.h"
+#include "Classes/Settings/Settings.h"
+#include "Classes/Settings/SettingsManager.h"
 
 #include "Classes/CommandLine/Private/CommandLineModuleTestUtils.h"
 
@@ -23,6 +23,8 @@
 namespace PMT
 {
 const DAVA::String projectModulePropertiesKey = "ProjectManagerProperties";
+const DAVA::String testFolder = DAVA::String("~doc:/Test/");
+const DAVA::String firstFakeProjectPath = DAVA::String("~doc:/Test/ProjectManagerTest1/");
 
 class SceneManagerMockModule : public DAVA::TArc::ClientModule
 {
@@ -52,6 +54,17 @@ protected:
 
         laspOpenedPathInSettings = SettingsManager::GetValue(Settings::Internal_LastProjectPath).AsFilePath();
         SettingsManager::SetValue(Settings::Internal_LastProjectPath, VariantType(FilePath()));
+
+        // prepare test environment
+        {
+            CommandLineModuleTestUtils::CreateTestFolder(testFolder);
+        }
+
+        {
+            CommandLineModuleTestUtils::CreateProjectInfrastructure(firstFakeProjectPath);
+            DAVA::TArc::PropertiesItem propsItem = GetAccessor()->CreatePropertiesNode(PMT::projectModulePropertiesKey);
+            propsItem.Set(Settings::Internal_LastProjectPath.c_str(), firstFakeProjectPath);
+        }
     }
 
     ~SceneManagerMockModule() override
@@ -68,6 +81,8 @@ protected:
 
         PropertiesItem item = accessor->CreatePropertiesNode(projectsHistoryKey);
         item.Set(recentItemsKey, projectsHistory);
+
+        CommandLineModuleTestUtils::ClearTestFolder(testFolder);
     }
 
     void CreateNewSceneMock()
@@ -98,52 +113,45 @@ protected:
 
 DAVA_TARC_TESTCLASS(ProjectManagerTests)
 {
-    const DAVA::FilePath testFolder = DAVA::FilePath("~doc:/Test/");
-    const DAVA::FilePath firstFakeProjectPath = DAVA::FilePath("~doc:/Test/ProjectManagerTest1/");
-
     DAVA::TArc::DataWrapper wrapper;
     DAVA::TArc::MockListener listener;
-
-    ~ProjectManagerTests()
-    {
-        CommandLineModuleTestUtils::ClearTestFolder(testFolder);
-    }
 
     DAVA_TEST (LaunchAppTest)
     {
         using namespace ::testing;
-        // prepare test environment
-        {
-            CommandLineModuleTestUtils::CreateTestFolder(testFolder);
-        }
-
-        {
-            CommandLineModuleTestUtils::CreateProjectInfrastructure(firstFakeProjectPath);
-            DAVA::TArc::PropertiesItem propsItem = GetAccessor()->CreatePropertiesNode(PMT::projectModulePropertiesKey);
-            propsItem.Set(Settings::Internal_LastProjectPath.c_str(), firstFakeProjectPath);
-        }
-
         wrapper = GetAccessor()->CreateWrapper(DAVA::ReflectedTypeDB::Get<ProjectManagerData>());
         wrapper.SetListener(&listener);
+        if (wrapper.HasData() == false)
+        {
+            InSequence sequence;
+            EXPECT_CALL(*GetMockInvoker(), Invoke(static_cast<int>(REGlobal::OpenLastProjectOperation.ID)));
+            EXPECT_CALL(*GetMockInvoker(), Invoke(static_cast<int>(REGlobal::CreateNewSceneOperation.ID)));
+            EXPECT_CALL(listener, OnDataChanged(_, _))
+            .WillOnce(Invoke([this](const DAVA::TArc::DataWrapper& w, const DAVA::Vector<DAVA::Any>& fields)
+                             {
+                                 TEST_VERIFY(w.HasData());
+                                 TEST_VERIFY(wrapper == w);
+                                 TEST_VERIFY(fields.empty());
 
-        InSequence sequence;
-        EXPECT_CALL(*GetMockInvoker(), Invoke(static_cast<int>(REGlobal::OpenLastProjectOperation.ID)));
-        EXPECT_CALL(*GetMockInvoker(), Invoke(static_cast<int>(REGlobal::CreateNewSceneOperation.ID)));
-        EXPECT_CALL(listener, OnDataChanged(_, _))
-        .WillOnce(Invoke([this](const DAVA::TArc::DataWrapper& w, const DAVA::Vector<DAVA::Any>& fields)
-                         {
-                             TEST_VERIFY(w.HasData());
-                             TEST_VERIFY(wrapper == w);
-                             TEST_VERIFY(fields.empty());
+                                 ProjectManagerData* data = GetAccessor()->GetGlobalContext()->GetData<ProjectManagerData>();
+                                 TEST_VERIFY(data != nullptr);
+                                 TEST_VERIFY(data->IsOpened() == true);
 
-                             ProjectManagerData* data = GetAccessor()->GetGlobalContext()->GetData<ProjectManagerData>();
-                             TEST_VERIFY(data != nullptr);
-                             TEST_VERIFY(data->IsOpened() == true);
+                                 DAVA::FilePath path = data->GetProjectPath();
 
-                             DAVA::FilePath path = data->GetProjectPath();
+                                 TEST_VERIFY(path == PMT::firstFakeProjectPath);
+                             }));
+        }
+        else
+        {
+            ProjectManagerData* data = GetAccessor()->GetGlobalContext()->GetData<ProjectManagerData>();
+            TEST_VERIFY(data != nullptr);
+            TEST_VERIFY(data->IsOpened() == true);
 
-                             TEST_VERIFY(path == firstFakeProjectPath);
-                         }));
+            DAVA::FilePath path = data->GetProjectPath();
+
+            TEST_VERIFY(path == PMT::firstFakeProjectPath);
+        }
     }
 
     DAVA_TEST (CloseProject)

@@ -20,6 +20,7 @@ public:
     static const char* selectionAllowedPropertyName;
 
     const SelectableGroup& GetSelection() const;
+    SelectableGroup GetMutableSelection() const;
     void SetSelection(SelectableGroup& newSelection);
 
     const DAVA::AABBox3& GetSelectionBox() const;

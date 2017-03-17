@@ -36,12 +36,22 @@ FastName CharPointerToFastName(const Any& value)
 
 const char* FastNameToCharPointer(const Any& value)
 {
-    return value.Get<FastName>().c_str();
+    const FastName& v = value.Get<FastName>();
+    if (v.IsValid() == false)
+    {
+        return nullptr;
+    }
+    return v.c_str();
 }
 
 String FastNameToString(const Any& value)
 {
-    return String(value.Get<FastName>().c_str());
+    const FastName& v = value.Get<FastName>();
+    if (v.IsValid() == false)
+    {
+        return String();
+    }
+    return String(v.c_str());
 }
 
 template <typename T>
@@ -81,7 +91,7 @@ String Matrix3ToString(const Any& value)
 String Matrix4ToString(const Any& value)
 {
     Matrix4 matrix = value.Get<Matrix4>();
-    return Format("[%f, %f, %f]\n[%f, %f, %f]\n[%f, %f, %f]",
+    return Format("[%f, %f, %f, %f]\n[%f, %f, %f, %f]\n[%f, %f, %f, %f]\n[%f, %f, %f, %f]",
                   matrix._data[0][0], matrix._data[0][1], matrix._data[0][2], matrix._data[0][3],
                   matrix._data[1][0], matrix._data[1][1], matrix._data[1][2], matrix._data[1][3],
                   matrix._data[2][0], matrix._data[2][1], matrix._data[2][2], matrix._data[2][3],

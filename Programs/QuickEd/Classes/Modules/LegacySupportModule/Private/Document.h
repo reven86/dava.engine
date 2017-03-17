@@ -33,7 +33,6 @@ public:
     ~Document();
 
     const DAVA::FilePath& GetPackageFilePath() const;
-    DAVA::CommandStack* GetCommandStack() const;
     PackageNode* GetPackage() const;
     QtModelPackageCommandExecutor* GetCommandExecutor() const;
 
@@ -42,7 +41,7 @@ public:
 
 private:
     DAVA::TArc::ContextAccessor* accessor = nullptr;
-    DAVA::TArc::DataContext::ContextID contextId;
+    const DAVA::TArc::DataContext::ContextID contextId;
 
     std::unique_ptr<QtModelPackageCommandExecutor> commandExecutor;
     DAVA::UnorderedMap<void*, WidgetContext*> contexts;

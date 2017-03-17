@@ -23,7 +23,6 @@ public:
     PropertiesItem CreateSubHolder(const String& name) const;
 
     void SaveToFile();
-    void SetDirectory(const FilePath& dirPath);
 
 private:
     struct Impl;

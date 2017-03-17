@@ -1,7 +1,7 @@
 #include "CubemapEditor/CubemapEditorDialog.h"
 #include "CubemapEditor/ClickableQLabel.h"
 #include "CubemapEditor/CubemapUtils.h"
-#include "Qt/Settings/SettingsManager.h"
+#include "Classes/Settings/SettingsManager.h"
 #include "Qt/Main/QtUtils.h"
 #include "Classes/Application/REGlobal.h"
 #include "Classes/Project/ProjectManagerData.h"
