@@ -142,6 +142,20 @@ Vector2 RotateVectorForMove(const Vector2& delta, float32 angle)
         }
     }
 }
+
+void ClampProperty(Vector2& propertyValue, Vector2& extraDelta)
+{
+    Vector2 clampedValue(std::floor(propertyValue.x), std::floor(propertyValue.y));
+    extraDelta += (propertyValue - clampedValue);
+    propertyValue = clampedValue;
+}
+
+void ClampProperty(float32& propertyValue, float32& extraDelta)
+{
+    float32 clampedValue(std::floor(propertyValue));
+    extraDelta += (propertyValue - clampedValue);
+    propertyValue = clampedValue;
+}
 }
 
 EditorTransformSystem::EditorTransformSystem(EditorSystemsManager* parent, TArc::ContextAccessor* accessor_)
@@ -422,11 +436,10 @@ void EditorTransformSystem::MoveAllSelectedControlsByMouse(Vector2 delta, bool c
 
         Vector2 originalPosition = positionProperty->GetValue().AsVector2();
         Vector2 finalPosition(originalPosition + deltaPosition);
-        Vector2 clampedFinalPosition(std::floor(finalPosition.x), std::floor(finalPosition.y));
-        extraDelta += (finalPosition - clampedFinalPosition);
+        EditorTransformSystemDetail::ClampProperty(finalPosition, extraDelta);
 
-        propertiesToChange.emplace_back(node, positionProperty, VariantType(clampedFinalPosition));
-        delta = ::Rotate(clampedFinalPosition - originalPosition, gd->angle);
+        propertiesToChange.emplace_back(node, positionProperty, VariantType(finalPosition));
+        delta = ::Rotate(finalPosition - originalPosition, gd->angle);
         delta *= gd->scale;
     }
     for (auto& nodeToMove : nodesToMoveInfos)
@@ -445,10 +458,9 @@ void EditorTransformSystem::MoveAllSelectedControlsByMouse(Vector2 delta, bool c
         Vector2 originalPosition = property->GetValue().AsVector2();
         DAVA::Vector2& activeExtraDelta = extraDeltaToMoveControls[node];
         Vector2 finalPosition(originalPosition + deltaPosition + activeExtraDelta);
-        Vector2 clampedFinalPosition(std::floor(finalPosition.x), std::floor(finalPosition.y));
-        activeExtraDelta = (finalPosition - clampedFinalPosition);
+        EditorTransformSystemDetail::ClampProperty(finalPosition, activeExtraDelta);
 
-        propertiesToChange.emplace_back(node, property, VariantType(clampedFinalPosition));
+        propertiesToChange.emplace_back(node, property, VariantType(finalPosition));
     }
     systemsManager->magnetLinesChanged.Emit(magnets);
 
@@ -667,6 +679,9 @@ void EditorTransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool ra
     extraDelta.SetZero();
 
     Vector2 adjustedSize = AdjustResizeToBorderAndToMinimum(deltaSize, transformPoint, directions);
+
+    EditorTransformSystemDetail::ClampProperty(adjustedSize, extraDelta);
+
     //adjust delta position to new delta size
     for (int32 axisInt = Vector2::AXIS_X; axisInt < Vector2::AXIS_COUNT; ++axisInt)
     {
@@ -682,12 +697,6 @@ void EditorTransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool ra
 
     Vector2 originalSize = sizeProperty->GetValue().AsVector2();
     Vector2 finalSize(originalSize + adjustedSize);
-    if (deltaPosition.IsZero())
-    {
-        Vector2 clampedFinalSize(std::floor(finalSize.x), std::floor(finalSize.y));
-        extraDelta += (finalSize - clampedFinalSize);
-        finalSize = clampedFinalSize;
-    }
     VariantType sizeValue(finalSize);
 
     Vector2 originalPosition = positionProperty->GetValue().AsVector2();
@@ -696,6 +705,7 @@ void EditorTransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool ra
     {
         finalPosition += deltaPosition;
     }
+
     VariantType positionValue(finalPosition);
 
     TArc::DataContext* activeContext = accessor->GetActiveContext();
@@ -1004,6 +1014,10 @@ float32 EditorTransformSystem::AdjustRotateToFixedAngle(float32 deltaAngle, floa
         }
         extraDelta.dx = finalAngle - nearestTargetAngle;
         return nearestTargetAngle;
+    }
+    else
+    {
+        EditorTransformSystemDetail::ClampProperty(finalAngle, extraDelta.dx);
     }
     return finalAngle;
 }
