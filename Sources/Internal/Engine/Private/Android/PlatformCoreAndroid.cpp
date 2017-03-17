@@ -63,6 +63,7 @@ void PlatformCore::Run()
     AndroidBridge::HideSplashView();
     engineBackend->OnGameLoopStarted();
 
+    JNIEnv* env = AndroidBridge::GetEnv();
     while (!quitGameThread)
     {
         int64 frameBeginTime = SystemTimer::GetMs();
@@ -73,13 +74,13 @@ void PlatformCore::Run()
         // its local reference.
         //
         // Note, engine user is still responsible for freeing local references created by him.
-        AndroidBridge::GetEnv()->PushLocalFrame(JniLocalRefsMinCount);
+        env->PushLocalFrame(JniLocalRefsMinCount);
 
         // Now engine frame can be executed
         int32 fps = engineBackend->OnFrame();
 
         // Pop off the current local reference frame and free references.
-        AndroidBridge::GetEnv()->PopLocalFrame(nullptr);
+        env->PopLocalFrame(nullptr);
 
         int64 frameEndTime = SystemTimer::GetMs();
         int32 frameDuration = static_cast<int32>(frameEndTime - frameBeginTime);
