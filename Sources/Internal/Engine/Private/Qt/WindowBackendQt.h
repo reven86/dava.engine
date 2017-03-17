@@ -38,7 +38,6 @@ public:
     void OnApplicationFocusChanged(bool isInFocus);
 
     void Update();
-    void ActivateRendering();
     RenderWidget* GetRenderWidget();
 
     void Resize(float32 width, float32 height);

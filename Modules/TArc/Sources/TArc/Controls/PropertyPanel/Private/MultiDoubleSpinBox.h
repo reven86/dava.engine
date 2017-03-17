@@ -35,9 +35,12 @@ private:
     template <typename T>
     void SetupControl(T* accessor);
 
-    void UpdateControl(const ControlDescriptor& descriptor) override
-    {
-    }
+    void ForceUpdate() override;
+    void TearDown() override;
+
+    void UpdateControl(const ControlDescriptor& descriptor) override;
+
+    Vector<ControlProxy*> subControls;
 };
 } // namespace TArc
 } // namespace DAVA

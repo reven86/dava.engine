@@ -122,6 +122,11 @@ bool BaseComponentValue::IsReadOnly() const
     return r.IsReadonly() || r.HasMeta<M::ReadOnly>();
 }
 
+bool BaseComponentValue::IsSpannedControl() const
+{
+    return false;
+}
+
 DAVA::Any BaseComponentValue::GetValue() const
 {
     Any value = nodes.front()->cachedValue;
@@ -192,15 +197,16 @@ void BaseComponentValue::EnsureEditorCreated(QWidget* parent)
 
     const M::CommandProducerHolder* typeProducer = GetTypeMeta<M::CommandProducerHolder>(nodes.front()->cachedValue);
     const M::CommandProducerHolder* fieldProducer = nodes.front()->field.ref.GetMeta<M::CommandProducerHolder>();
-    if (fieldProducer != nullptr || typeProducer != nullptr)
+    bool realProperty = nodes.front()->propertyType == PropertyNode::RealProperty;
+    if (realProperty == true && (fieldProducer != nullptr || typeProducer != nullptr))
     {
         QWidget* boxWidget = new QWidget(parent);
         QtHBoxLayout* layout = new QtHBoxLayout(boxWidget);
 
+        layout->addWidget(realWidget);
         CreateButtons(layout, typeProducer, true);
         CreateButtons(layout, fieldProducer, false);
 
-        layout->addWidget(realWidget);
         realWidget = boxWidget;
     }
 }

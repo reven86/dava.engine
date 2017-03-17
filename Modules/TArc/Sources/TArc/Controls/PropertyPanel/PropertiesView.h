@@ -64,6 +64,7 @@ private:
     void OnColumnResized(int columnIndex, int oldSize, int newSize);
     void Update(UpdatePolicy policy);
 
+    void UpdateExpanded();
     void OnExpanded(const QModelIndex& index);
     void OnCollapsed(const QModelIndex& index);
 
@@ -74,6 +75,7 @@ private:
     std::unique_ptr<ReflectedPropertyModel> model;
     SigConnectionID updateConnectionID;
     QtConnections connections;
+    bool isExpandUpdate = false;
 };
 }
 }

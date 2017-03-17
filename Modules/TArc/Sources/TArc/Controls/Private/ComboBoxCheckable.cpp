@@ -1,4 +1,5 @@
 #include "TArc/Controls/ComboBoxCheckable.h"
+#include "TArc/Controls/CommonStrings.h"
 #include "TArc/Utils/ScopedValueGuard.h"
 #include "TArc/DataProcessing/AnyQMetaType.h"
 
@@ -46,7 +47,7 @@ QString CreateTextComboCheckable(const Any& value, const EnumMap* enumMap)
     QString result;
     if (value.IsEmpty() == true)
     {
-        result = "<multiple values>";
+        result = QString(MultipleValuesString);
     }
     else if (enumMap != nullptr)
     {
