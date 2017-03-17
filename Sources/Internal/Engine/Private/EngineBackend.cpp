@@ -683,7 +683,7 @@ void EngineBackend::InitRenderer(Window* w)
     Renderer::Initialize(renderer, rendererParams);
     context->renderSystem2D->Init();
 
-    if (options->GetBool("init_imgui"))
+    if (options->GetBool("init_imgui", true))
         ImGui::Initialize();
 }
 

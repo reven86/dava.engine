@@ -4,6 +4,8 @@
 #include "Base/Type.h"
 #endif
 
+#include "Base/List.h"
+
 namespace DAVA
 {
 namespace TypeDetail
@@ -25,8 +27,6 @@ struct TypeSize<const void>
 {
     static const size_t size = 0;
 };
-
-static std::list<Type**> allTypes;
 
 template <typename T>
 struct TypeHolder
@@ -58,6 +58,40 @@ Type* const* GetTypeIfTrue(std::true_type)
 {
     return TypeHolder<T>::InstancePointer();
 }
+
+struct TypeDB
+{
+    struct Stats
+    {
+        size_t typesCount = 0;
+        size_t typesMemory = 0;
+        size_t typeInheritanceCount = 0;
+        size_t typeInheritanceInfoCount = 0;
+        size_t typeInheritanceMemory = 0;
+        size_t typeDBMemory = 0;
+        size_t totalMemory = 0;
+    };
+
+    using DB = List<Type**>;
+
+    static DB* GetLocalDB();
+    static void AddType(Type**);
+    static Stats GetStats();
+
+    // TODO:
+    // implement sync with plugin DB
+    // ...
+    //
+    // something like:
+    //
+    // enum class RemoteDBType
+    // {
+    //    MASTER,
+    //    SLAVE
+    // };
+    // static void SetRemoteDB(DB*, RemoteDBType);
+    // static DB* GetRemoteDB();
+};
 
 } // namespace TypeDetails
 
@@ -183,7 +217,7 @@ Type* Type::Init()
     auto condPointer = std::integral_constant<bool, needPointer>();
     type.pointerType = TypeDetail::GetTypeIfTrue<PointerU>(condPointer);
 
-    //TypeDetail::allTypes.push_back(TypeDetail::TypeHolder<T>::InstancePointer());
+    TypeDetail::TypeDB::AddType(TypeDetail::TypeHolder<T>::InstancePointer());
 
     return &type;
 }

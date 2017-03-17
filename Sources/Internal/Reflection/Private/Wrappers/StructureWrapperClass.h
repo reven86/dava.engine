@@ -10,6 +10,8 @@ namespace DAVA
 {
 class StructureWrapperClass final : public StructureWrapperDefault
 {
+    friend class ReflectedTypeDB; // friend for stast calculation
+
 public:
     StructureWrapperClass(const Type* type);
 

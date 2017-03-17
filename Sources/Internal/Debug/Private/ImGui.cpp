@@ -18,6 +18,7 @@
 namespace ImGuiImplDetails
 {
 static bool initialized = false;
+static bool visible = false;
 
 static rhi::HPipelineState pipelineStatePC, pipelineStatePTC;
 static rhi::HConstBuffer constBufferPC, constBufferPTC;
@@ -495,7 +496,7 @@ bool OnInput(UIEvent* input)
         break;
     }
 
-    return false;
+    return (io.WantCaptureMouse || io.WantCaptureKeyboard || io.WantTextInput);
 }
 
 void Uninitialize()

@@ -20,6 +20,8 @@ struct Meta : public T
 class Type;
 class ReflectedMeta final
 {
+    friend class ReflectedTypeDB; // friend for stast calculation
+
 public:
     ReflectedMeta() = default;
 

@@ -4,6 +4,7 @@
 #include "Reflection/Reflection.h"
 #include "Reflection/ReflectionRegistrator.h"
 
+#include "Engine/Engine.h"
 #include "Scene3D/Entity.h"
 #include "Scene3D/Components/Controller/RotationControllerComponent.h"
 #include "Scene3D/Components/VisibilityCheckComponent.h"
@@ -48,6 +49,9 @@
 #include "Math/Rect.h"
 #include "Math/AABBox3.h"
 #include "Math/Color.h"
+
+#include "Debug/Private/ImGui.h"
+#include "Utils/StringFormat.h"
 
 namespace DAVA
 {
@@ -226,6 +230,68 @@ void RegisterPermanentNames()
     DAVA_REFLECTION_REGISTER_PERMANENT_NAME(Entity);
 }
 
+void ProvideReflectionDebugInfo()
+{
+    GetPrimaryWindow()->update.Connect([](Window*, float32) {
+        if (ImGui::IsInitialized())
+        {
+            static int updateFrame = 0;
+            static TypeDetail::TypeDB::Stats typeStats;
+            static ReflectedTypeDB::Stats reflectionStats;
+
+            if (updateFrame > 0)
+            {
+                updateFrame--;
+            }
+            else
+            {
+                updateFrame = 120; // once per 120 frames
+                typeStats = TypeDetail::TypeDB::GetStats();
+                reflectionStats = ReflectedTypeDB::GetStats();
+            }
+
+            auto addRow = [](const char* name, const char* format, size_t value)
+            {
+                ImGui::Text(name);
+                ImGui::NextColumn();
+                ImGui::Text(Format(format, value).c_str());
+                ImGui::NextColumn();
+            };
+
+            ImGui::Begin("Reflection stats");
+            ImGui::Columns(2, nullptr, true);
+
+            addRow("typesCount", "%u", typeStats.typesCount);
+            addRow("typesMemory", "%u bytes", typeStats.typesMemory);
+            addRow("typeInheritanceCount", "%u", typeStats.typeInheritanceCount);
+            addRow("typeInheritanceInfoCount", "%u", typeStats.typeInheritanceInfoCount);
+            addRow("typeInheritanceMemory", "%u bytes", typeStats.typeInheritanceMemory);
+            addRow("typeDBMemory", "%u bytes", typeStats.typeDBMemory);
+
+            addRow("reflectedTypeCount", "%u", reflectionStats.reflectedTypeCount);
+            addRow("reflectedTypeMemory", "%u", reflectionStats.reflectedTypeMemory);
+            addRow("reflectedTypeDBMemory", "%u bytes", reflectionStats.reflectedTypeDBMemory);
+            addRow("reflectedStructCount", "%u", reflectionStats.reflectedStructCount);
+            addRow("reflectedStructWrapperCount", "%u", reflectionStats.reflectedStructWrapperCount);
+            addRow("reflectedStructWrapperClassCount", "%u", reflectionStats.reflectedStructWrapperClassCount);
+            addRow("reflectedStructWrapperClassMemory", "%u bytes", reflectionStats.reflectedStructWrapperClassMemory);
+            addRow("reflectedStructFieldsCount", "%u", reflectionStats.reflectedStructFieldsCount);
+            addRow("reflectedStructMethodsCount", "%u", reflectionStats.reflectedStructMethodsCount);
+            addRow("reflectedStructEnumsCount", "%u", reflectionStats.reflectedStructEnumsCount);
+            addRow("reflectedStructCtorsCount", "%u", reflectionStats.reflectedStructCtorsCount);
+            addRow("reflectedStructDtorsCount", "%u", reflectionStats.reflectedStructDtorsCount);
+            addRow("reflectedStructMetasCount", "%u", reflectionStats.reflectedStructMetasCount);
+            addRow("reflectedStructMetaMCount", "%u", reflectionStats.reflectedStructMetaMCount);
+            addRow("reflectedStructMemory", "%u bytes", reflectionStats.reflectedStructMemory);
+
+            addRow("total", "%u bytes", typeStats.totalMemory + reflectionStats.totalMemory);
+
+            ImGui::Columns();
+            ImGui::End();
+        }
+    });
+}
+
 void RegisterReflectionForBaseTypes()
 {
     RegisterAnyCasts();
@@ -238,5 +304,9 @@ void RegisterReflectionForBaseTypes()
     RegisterColor();
 
     RegisterPermanentNames();
+
+#ifdef __DAVAENGINE_DEBUG__
+    ProvideReflectionDebugInfo();
+#endif
 }
 } // namespace DAVA
