@@ -9,10 +9,6 @@ namespace DAVA
 {
 namespace TArc
 {
-FilePathComponentValue::FilePathComponentValue(const Params& params_)
-    : params(params_)
-{
-}
 
 Any FilePathComponentValue::GetMultipleValue() const
 {
@@ -32,8 +28,8 @@ bool FilePathComponentValue::IsValidValueToSet(const Any& newValue, const Any& c
 ControlProxy* FilePathComponentValue::CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor) const
 {
     FilePathEdit::Params p;
-    p.ui = params.ui;
-    p.wndKey = params.wndKey;
+    p.ui = GetUI();
+    p.wndKey = GetWindowKey();
     p.fields[FilePathEdit::Fields::Value] = "value";
     p.fields[FilePathEdit::Fields::IsReadOnly] = readOnlyFieldName;
     return new FilePathEdit(p, wrappersProcessor, model, parent);

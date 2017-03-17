@@ -4,6 +4,7 @@
 #include "TArc/Core/FieldBinder.h"
 #include "TArc/DataProcessing/Common.h"
 #include "TArc/Utils/QtConnections.h"
+#include "TArc/WindowSubSystem/UI.h"
 
 #include <Functional/Function.h>
 
@@ -44,6 +45,12 @@ public:
     */
     struct Params
     {
+        Params(const WindowKey& key)
+            : wndKey(key)
+        {
+        }
+
+        WindowKey wndKey;
         ContextAccessor* accessor = nullptr;
         OperationInvoker* invoker = nullptr;
         UI* ui = nullptr;

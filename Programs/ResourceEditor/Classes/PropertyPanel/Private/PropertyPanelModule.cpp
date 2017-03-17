@@ -63,7 +63,7 @@ void PropertyPanelModule::PostInit()
     panelInfo.title = QStringLiteral("New Property Panel");
     panelInfo.actionPlacementInfo = ActionPlacementInfo(CreateMenuPoint(QList<QString>() << "View"
                                                                                          << "Dock"));
-    PropertiesView::Params params;
+    PropertiesView::Params params(REGlobal::MainWindowKey);
     params.accessor = accessor;
     params.invoker = GetInvoker();
     params.ui = ui;
@@ -76,6 +76,7 @@ void PropertyPanelModule::PostInit()
 
     view->RegisterExtension(std::make_shared<REModifyPropertyExtension>(accessor));
     view->RegisterExtension(std::make_shared<EntityChildCreator>());
+    view->RegisterExtension(std::make_shared<AddComponentEditorCreator>());
     view->RegisterExtension(std::make_shared<QualitySettingsChildCreator>());
     view->RegisterExtension(std::make_shared<QualitySettingsEditorCreator>());
     ui->AddView(REGlobal::MainWindowKey, PanelKey(panelInfo.title, panelInfo), view);

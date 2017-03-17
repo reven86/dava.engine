@@ -27,7 +27,7 @@ void InitStyleOptions(QStyleOptionViewItem& options)
 }
 }
 
-PropertiesViewDelegate::PropertiesViewDelegate(QAbstractItemView* view_, ReflectedPropertyModel* model_, QObject* parent)
+PropertiesViewDelegate::PropertiesViewDelegate(QTreeView* view_, ReflectedPropertyModel* model_, QObject* parent)
     : QAbstractItemDelegate(parent)
     , model(model_)
     , view(view_)
@@ -77,7 +77,7 @@ QSize PropertiesViewDelegate::sizeHint(const QStyleOptionViewItem& option, const
         QWidget* viewport = view->viewport();
         if (valueComponent->HasHeightForWidth(viewport))
         {
-            int height = valueComponent->GetHeightForWidth(viewport, opt.rect.width());
+            int height = valueComponent->GetHeightForWidth(viewport, view->columnWidth(1));
             heightForWidthItems[QPersistentModelIndex(index)] = height;
             sizeHint.setHeight(height);
         }
@@ -160,7 +160,7 @@ void PropertiesViewDelegate::AdjustEditorRect(QStyleOptionViewItem& opt) const
     opt.rect.setHeight(opt.rect.height() - 2);
 }
 
-void PropertiesViewDelegate::UpdateSizeHints(int section, int newWidth)
+bool PropertiesViewDelegate::UpdateSizeHints(int section, int newWidth)
 {
     {
         auto iter = heightForWidthItems.begin();
@@ -177,6 +177,7 @@ void PropertiesViewDelegate::UpdateSizeHints(int section, int newWidth)
         }
     }
 
+    int sectionWidth = view->columnWidth(1);
     QList<QModelIndex> sizeHintChangedIndexes;
     QWidget* viewportWidgte = view->viewport();
     for (auto iter = heightForWidthItems.begin(); iter != heightForWidthItems.end(); ++iter)
@@ -184,7 +185,7 @@ void PropertiesViewDelegate::UpdateSizeHints(int section, int newWidth)
         QPersistentModelIndex index = iter.key();
         BaseComponentValue* value = GetComponentValue(index);
         DVASSERT(value->HasHeightForWidth(viewportWidgte));
-        int heightForWidth = value->GetHeightForWidth(viewportWidgte, newWidth);
+        int heightForWidth = value->GetHeightForWidth(viewportWidgte, sectionWidth);
         if (iter.value() != heightForWidth)
         {
             iter.value() = heightForWidth;
@@ -196,14 +197,15 @@ void PropertiesViewDelegate::UpdateSizeHints(int section, int newWidth)
     {
         emit sizeHintChanged(index);
     }
+
+    return sizeHintChangedIndexes.isEmpty() == false;
 }
 
 void PropertiesViewDelegate::UpdateSpanning(const QModelIndex& index, bool isSpanned) const
 {
-    QTreeView* treeView = qobject_cast<QTreeView*>(view);
-    if (treeView->isFirstColumnSpanned(index.row(), index.parent()) != isSpanned)
+    if (view->isFirstColumnSpanned(index.row(), index.parent()) != isSpanned)
     {
-        treeView->setFirstColumnSpanned(index.row(), index.parent(), isSpanned);
+        view->setFirstColumnSpanned(index.row(), index.parent(), isSpanned);
     }
 }
 

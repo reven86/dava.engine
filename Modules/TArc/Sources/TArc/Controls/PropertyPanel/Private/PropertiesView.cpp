@@ -79,7 +79,7 @@ PropertiesView::PropertiesView(const Params& params_)
     , params(params_)
 {
     binder.BindField(params.objectsField, MakeFunction(this, &PropertiesView::OnObjectsChanged));
-    model.reset(new ReflectedPropertyModel(params.accessor, params.invoker, params.ui));
+    model.reset(new ReflectedPropertyModel(params.wndKey, params.accessor, params.invoker, params.ui));
 
     SetupUI();
 
@@ -161,7 +161,10 @@ void PropertiesView::OnColumnResized(int columnIndex, int oldSize, int newSize)
 {
     PropertiesViewDelegate* d = qobject_cast<PropertiesViewDelegate*>(view->itemDelegate());
     DVASSERT(d != nullptr);
-    d->UpdateSizeHints(columnIndex, newSize);
+    if (d->UpdateSizeHints(columnIndex, newSize) == true)
+    {
+        model->HideEditors();
+    }
 }
 
 void PropertiesView::Update(UpdatePolicy policy)
@@ -178,6 +181,8 @@ void PropertiesView::Update(UpdatePolicy policy)
         DVASSERT(false, "Unimplemented update policy have been received");
         break;
     }
+
+    UpdateExpanded();
 }
 
 void PropertiesView::UpdateExpanded()

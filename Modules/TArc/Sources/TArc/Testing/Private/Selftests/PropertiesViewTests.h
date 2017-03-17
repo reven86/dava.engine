@@ -94,7 +94,7 @@ class TestModule : public DAVA::TArc::ClientModule
         DataContext* ctx = GetAccessor()->GetGlobalContext();
         ctx->CreateData(std::make_unique<PropertiesViewTestsDetail::SelectionData>());
 
-        PropertiesView::Params params;
+        PropertiesView::Params params(PropertiesViewTestsDetail::wnd);
         params.accessor = GetAccessor();
         params.invoker = GetInvoker();
         params.ui = GetUI();

@@ -16,8 +16,9 @@ namespace DAVA
 {
 namespace TArc
 {
-ReflectedPropertyModel::ReflectedPropertyModel(ContextAccessor* accessor_, OperationInvoker* invoker_, UI* ui_)
-    : accessor(accessor_)
+ReflectedPropertyModel::ReflectedPropertyModel(WindowKey wndKey_, ContextAccessor* accessor_, OperationInvoker* invoker_, UI* ui_)
+    : wndKey(wndKey_)
+    , accessor(accessor_)
     , invoker(invoker_)
     , ui(ui_)
     , expandedItems(FastName("Root"))
@@ -54,7 +55,12 @@ ReflectedPropertyModel::~ReflectedPropertyModel()
 
 int ReflectedPropertyModel::rowCount(const QModelIndex& parent) const
 {
-    return MapItem(parent)->GetChildCount();
+    ReflectedPropertyItem* item = MapItem(parent);
+    if (item == nullptr)
+    {
+        return 0;
+    }
+    return item->GetChildCount();
 }
 
 int ReflectedPropertyModel::columnCount(const QModelIndex& parent) const
@@ -66,7 +72,11 @@ QVariant ReflectedPropertyModel::data(const QModelIndex& index, int role) const
 {
     if (role == Qt::DisplayRole)
     {
-        return MapItem(index)->GetPropertyName();
+        ReflectedPropertyItem* item = MapItem(index);
+        if (item != nullptr)
+        {
+            return item->GetPropertyName();
+        }
     }
 
     return QVariant();
@@ -95,10 +105,13 @@ Qt::ItemFlags ReflectedPropertyModel::flags(const QModelIndex& index) const
     if (index.column() == 1)
     {
         ReflectedPropertyItem* item = MapItem(index);
-        std::shared_ptr<const PropertyNode> node = item->GetPropertyNode(0);
-        if (!node->field.ref.IsReadonly())
+        if (item != nullptr)
         {
-            flags |= Qt::ItemIsEditable;
+            std::shared_ptr<const PropertyNode> node = item->GetPropertyNode(0);
+            if (!node->field.ref.IsReadonly())
+            {
+                flags |= Qt::ItemIsEditable;
+            }
         }
     }
 
@@ -110,7 +123,7 @@ QModelIndex ReflectedPropertyModel::index(int row, int column, const QModelIndex
     if (parent.isValid())
     {
         ReflectedPropertyItem* item = MapItem(parent);
-        if (row < item->GetChildCount())
+        if (item != nullptr && row < item->GetChildCount())
             return createIndex(row, column, item);
 
         return QModelIndex();
@@ -358,7 +371,11 @@ void ReflectedPropertyModel::UnregisterExtension(const std::shared_ptr<Extension
 DAVA::TArc::BaseComponentValue* ReflectedPropertyModel::GetComponentValue(const QModelIndex& index) const
 {
     ReflectedPropertyItem* item = MapItem(index);
-    DVASSERT(item != nullptr);
+    if (item == nullptr)
+    {
+        return nullptr;
+    }
+
     return item->value.get();
 }
 

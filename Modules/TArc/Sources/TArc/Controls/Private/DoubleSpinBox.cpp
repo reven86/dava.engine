@@ -110,5 +110,16 @@ QSize DoubleSpinBox::sizeHint() const
     return s;
 }
 
+QSize DoubleSpinBox::minimumSizeHint() const
+{
+    QSize s = TBase::minimumSizeHint();
+    if (decimals() > 3)
+    {
+        s.setWidth(s.width() >> 1);
+    }
+
+    return s;
+}
+
 } // namespace TArc
 } // namespace DAVA
