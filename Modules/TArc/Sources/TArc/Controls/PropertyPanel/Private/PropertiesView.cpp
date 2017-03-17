@@ -138,7 +138,6 @@ void PropertiesView::SetupUI()
     view->setModel(model.get());
     view->setRootIndex(QModelIndex());
     view->setItemDelegate(new PropertiesViewDelegate(view, model.get(), this));
-    view->setAlternatingRowColors(true);
 
     QHeaderView* headerView = view->header();
     connections.AddConnection(headerView, &QHeaderView::sectionResized, MakeFunction(this, &PropertiesView::OnColumnResized));

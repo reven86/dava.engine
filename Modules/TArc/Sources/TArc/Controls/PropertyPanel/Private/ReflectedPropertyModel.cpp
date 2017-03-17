@@ -371,11 +371,7 @@ void ReflectedPropertyModel::UnregisterExtension(const std::shared_ptr<Extension
 DAVA::TArc::BaseComponentValue* ReflectedPropertyModel::GetComponentValue(const QModelIndex& index) const
 {
     ReflectedPropertyItem* item = MapItem(index);
-    if (item == nullptr)
-    {
-        return nullptr;
-    }
-
+    DVASSERT(item != nullptr);
     return item->value.get();
 }
 

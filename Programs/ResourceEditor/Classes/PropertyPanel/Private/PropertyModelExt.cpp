@@ -5,6 +5,7 @@
 #include "Classes/PropertyPanel/PropertyPanelCommon.h"
 
 #include <TArc/Controls/PropertyPanel/PropertyPanelMeta.h>
+#include <TArc/Controls/PropertyPanel/PropertyModelExtensions.h>
 #include <TArc/Controls/ComboBox.h>
 #include "TArc/Controls/Widget.h"
 #include <TArc/Controls/CommonStrings.h>
@@ -13,6 +14,7 @@
 
 #include <QtTools/WidgetHelpers/SharedIcon.h>
 
+#include <Engine/PlatformApi.h>
 #include <Scene3D/Entity.h>
 #include <Entity/Component.h>
 #include <Reflection/Reflection.h>
@@ -24,6 +26,8 @@
 
 #include <QToolButton>
 #include <QHBoxLayout>
+#include <QApplication>
+#include <QStyle>
 
 namespace PropertyModelExtDetails
 {
@@ -122,6 +126,8 @@ protected:
     {
         Widget* w = new Widget(parent);
         QHBoxLayout* layout = new QHBoxLayout();
+        layout->setMargin(0);
+        layout->setSpacing(2);
         w->SetLayout(layout);
 
         ComponentCreatorComponentValue* nonConstThis = const_cast<ComponentCreatorComponentValue*>(this);
@@ -300,11 +306,27 @@ void EntityChildCreator::ExposeChildren(const std::shared_ptr<const DAVA::TArc::
     }
 }
 
-std::unique_ptr<DAVA::TArc::BaseComponentValue> AddComponentEditorCreator::GetEditor(const std::shared_ptr<const DAVA::TArc::PropertyNode>& node) const
+std::unique_ptr<DAVA::TArc::BaseComponentValue> EntityEditorCreator::GetEditor(const std::shared_ptr<const DAVA::TArc::PropertyNode>& node) const
 {
     if (node->propertyType == PropertyPanel::AddComponentProperty)
     {
         return std::make_unique<PropertyModelExtDetails::ComponentCreatorComponentValue>();
+    }
+
+    const DAVA::Type* valueType = node->cachedValue.GetType();
+    static const DAVA::Type* componentType = DAVA::Type::Instance<DAVA::Component*>();
+    static const DAVA::Type* entityType = DAVA::Type::Instance<DAVA::Entity*>();
+
+    if ((node->propertyType == DAVA::TArc::PropertyNode::GroupProperty && valueType == entityType)
+        || node->cachedValue.GetType() == DAVA::Type::Instance<DAVA::Component*>())
+    {
+        std::unique_ptr<DAVA::TArc::BaseComponentValue> editor = EditorComponentExtension::GetEditor(node);
+        DAVA::TArc::BaseComponentValue::Style style;
+        style.fontBold = true;
+        style.fontColor = QColor(Qt::black);
+        style.bgColor = QApplication::palette().alternateBase().color();
+        editor->SetStyle(style);
+        return std::move(editor);
     }
 
     return EditorComponentExtension::GetEditor(node);

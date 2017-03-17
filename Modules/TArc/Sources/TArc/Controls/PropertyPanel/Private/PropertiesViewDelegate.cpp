@@ -20,10 +20,30 @@ void FixFont(QFont& font)
     font.setFamily(font.family());
 }
 
-void InitStyleOptions(QStyleOptionViewItem& options)
+void InitStyleOptions(QStyleOptionViewItem& options, BaseComponentValue* componentValue)
 {
     FixFont(options.font);
     options.fontMetrics = QFontMetrics(options.font);
+    const BaseComponentValue::Style& style = componentValue->GetStyle();
+    if (style.fontBold.IsEmpty() == false)
+    {
+        options.font.setBold(style.fontBold.Cast<bool>());
+    }
+
+    if (style.fontItalic.IsEmpty() == false)
+    {
+        options.font.setItalic(style.fontItalic.Cast<bool>());
+    }
+
+    if (style.bgColor.IsEmpty() == false)
+    {
+        options.backgroundBrush = style.bgColor.Cast<QColor>();
+    }
+
+    if (style.fontColor.IsEmpty() == false)
+    {
+        options.palette.setBrush(QPalette::Text, QBrush(style.fontColor.Cast<QColor>()));
+    }
 }
 }
 
@@ -37,10 +57,9 @@ PropertiesViewDelegate::PropertiesViewDelegate(QTreeView* view_, ReflectedProper
 void PropertiesViewDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
     QStyleOptionViewItem opt = option;
-    AdjustEditorRect(opt);
-    PropertiesViewDelegateDetail::InitStyleOptions(opt);
-
     BaseComponentValue* valueComponent = GetComponentValue(index);
+    PropertiesViewDelegateDetail::InitStyleOptions(opt, valueComponent);
+
     DVASSERT(valueComponent != nullptr);
     bool isSpanned = valueComponent->IsSpannedControl();
     UpdateSpanning(index, isSpanned);
@@ -55,6 +74,8 @@ void PropertiesViewDelegate::paint(QPainter* painter, const QStyleOptionViewItem
     {
         QStyle* style = option.widget->style();
         style->drawControl(QStyle::CE_ItemViewItem, &opt, painter, opt.widget);
+
+        AdjustEditorRect(opt);
         valueComponent->Draw(view->viewport(), painter, opt);
     }
 }

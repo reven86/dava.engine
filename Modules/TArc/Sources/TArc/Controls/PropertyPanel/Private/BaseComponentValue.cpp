@@ -127,6 +127,16 @@ bool BaseComponentValue::IsSpannedControl() const
     return false;
 }
 
+const BaseComponentValue::Style& BaseComponentValue::GetStyle() const
+{
+    return style;
+}
+
+void BaseComponentValue::SetStyle(const Style& style_)
+{
+    style = style_;
+}
+
 DAVA::Any BaseComponentValue::GetValue() const
 {
     Any value = nodes.front()->cachedValue;

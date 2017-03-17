@@ -76,7 +76,7 @@ void PropertyPanelModule::PostInit()
 
     view->RegisterExtension(std::make_shared<REModifyPropertyExtension>(accessor));
     view->RegisterExtension(std::make_shared<EntityChildCreator>());
-    view->RegisterExtension(std::make_shared<AddComponentEditorCreator>());
+    view->RegisterExtension(std::make_shared<EntityEditorCreator>());
     view->RegisterExtension(std::make_shared<QualitySettingsChildCreator>());
     view->RegisterExtension(std::make_shared<QualitySettingsEditorCreator>());
     ui->AddView(REGlobal::MainWindowKey, PanelKey(panelInfo.title, panelInfo), view);
