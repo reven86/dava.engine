@@ -222,7 +222,7 @@ String GetFrameSymbol(void* frame, bool demangle)
         // Include SO name
         if (dlinfo.dli_fname != nullptr)
         {
-            const char* moduleName = rindex(dlinfo.dli_fname, '/');
+            const char* moduleName = strrchr(dlinfo.dli_fname, '/');
             result = moduleName != nullptr ? (moduleName + 1) : dlinfo.dli_fname;
             result += '!';
         }

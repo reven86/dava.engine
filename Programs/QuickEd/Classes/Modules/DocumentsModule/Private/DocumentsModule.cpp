@@ -166,7 +166,6 @@ void DocumentsModule::InitEditorSystems()
     DVASSERT(nullptr == systemsManager);
     systemsManager.reset(new EditorSystemsManager(GetAccessor()));
     systemsManager->dragStateChanged.Connect(this, &DocumentsModule::OnDragStateChanged);
-    systemsManager->propertyChanged.Connect(this, &DocumentsModule::OnPropertyChanged);
 }
 
 void DocumentsModule::InitCentralWidget()
@@ -621,9 +620,13 @@ void DocumentsModule::ChangeControlText(ControlNode* node)
         UIStaticText::eMultiline multilineType = multilineProperty->GetValue().Cast<UIStaticText::eMultiline>();
         if (inputText.contains('\n') && multilineType == UIStaticText::MULTILINE_DISABLED)
         {
-            stack->Exec(std::make_unique<ChangePropertyValueCommand>(node, multilineProperty, UIStaticText::MULTILINE_ENABLED));
+            std::unique_ptr<ChangePropertyValueCommand> command = data->CreateCommand<ChangePropertyValueCommand>();
+            command->AddNodePropertyValue(node, multilineProperty, VariantType(UIStaticText::MULTILINE_ENABLED));
+            data->ExecCommand(std::move(command));
         }
-        stack->Exec(std::make_unique<ChangePropertyValueCommand>(node, textProperty, inputText.toStdString()));
+        std::unique_ptr<ChangePropertyValueCommand> command = data->CreateCommand<ChangePropertyValueCommand>();
+        command->AddNodePropertyValue(node, textProperty, VariantType(inputText.toStdString()));
+        data->ExecCommand(std::move(command));
         stack->EndBatch();
     }
 }
@@ -997,17 +1000,6 @@ void DocumentsModule::OnDragStateChanged(EditorSystemsManager::eDragState dragSt
     {
         documentData->commandStack->EndBatch();
     }
-}
-
-void DocumentsModule::OnPropertyChanged(ControlNode* node, AbstractProperty* property, const DAVA::Any& newValue)
-{
-    using namespace DAVA::TArc;
-    ContextAccessor* accessor = GetAccessor();
-    DataContext* activeContext = accessor->GetActiveContext();
-    DVASSERT(activeContext != nullptr);
-    DocumentData* data = activeContext->GetData<DocumentData>();
-    DVASSERT(nullptr != data);
-    data->commandStack->Exec(std::make_unique<ChangePropertyValueCommand>(node, property, newValue));
 }
 
 DECL_GUI_MODULE(DocumentsModule);

@@ -69,6 +69,7 @@ public:
     void OnKeyEvent(int32 action, int32 keyCode, int32 unicodeChar, int32 nativeModifierKeys, bool isRepeated);
     void OnGamepadButton(int32 deviceId, int32 action, int32 keyCode);
     void OnGamepadMotion(int32 deviceId, int32 axis, float32 value);
+    void OnVisibleFrameChanged(int32 x, int32 y, int32 width, int32 height);
 
 private:
     // Shortcut for eMouseButtons::COUNT

@@ -1,10 +1,13 @@
 #pragma once
 
-#include "Base/BaseTypes.h"
-#include "Base/RefPtr.h"
 #include "EditorSystems/SelectionContainer.h"
-#include "UI/UIControl.h"
 #include "Model/PackageHierarchy/PackageListener.h"
+
+#include <Base/BaseTypes.h>
+#include <Base/RefPtr.h>
+#include <UI/UIControl.h>
+
+#include <QtTools/Updaters/ContinuousUpdater.h>
 
 #include <memory>
 #include <QDockWidget>
@@ -41,5 +44,6 @@ private:
 
     std::unique_ptr<Ui::StyleSheetInspectorWidget> ui;
     DAVA::RefPtr<DAVA::UIControl> currentControl;
+    ContinuousUpdater updater;
     PackageNode* packageNode = nullptr;
 };

@@ -16,6 +16,7 @@ using namespace DAVA;
 StyleSheetInspectorWidget::StyleSheetInspectorWidget(QWidget* parent /* = nullptr*/)
     : QDockWidget(parent)
     , ui(new Ui::StyleSheetInspectorWidget())
+    , updater(MakeFunction(this, &StyleSheetInspectorWidget::Update), 300)
 {
     ui->setupUi(this);
 }
@@ -59,7 +60,7 @@ void StyleSheetInspectorWidget::OnSelectionChanged(const DAVA::Any& selectionVal
 
 void StyleSheetInspectorWidget::ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property)
 {
-    Update();
+    updater.Update();
 }
 
 void StyleSheetInspectorWidget::StylePropertyWasChanged(StyleSheetNode* node, AbstractProperty* property)
