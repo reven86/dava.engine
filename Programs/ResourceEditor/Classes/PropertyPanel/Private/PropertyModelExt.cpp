@@ -39,6 +39,8 @@ struct ComponentCreator : public StaticSingleton<ComponentCreator>
     const ReflectedType* componentType = nullptr;
 };
 
+const char* chooseComponentTypeString = "Choose component type";
+
 struct TypeInitializer : public StaticSingleton<ComponentCreator>
 {
     using TypePair = std::pair<String, const ReflectedType*>;
@@ -71,7 +73,7 @@ struct TypeInitializer : public StaticSingleton<ComponentCreator>
                                                 return v.Get<TypePair>().first;
                                             });
 
-        types.emplace(String(UndefinedString), nullptr);
+        types.emplace(String(chooseComponentTypeString), nullptr);
 
         InitDerivedTypes(Type::Instance<DAVA::Component>());
     }
@@ -154,7 +156,7 @@ private:
         if (type == nullptr)
         {
             toolButton->setEnabled(false);
-            return TypeInitializer::TypePair(String(UndefinedString), nullptr);
+            return TypeInitializer::TypePair(String(chooseComponentTypeString), nullptr);
         }
 
         toolButton->setEnabled(true);
@@ -175,7 +177,8 @@ private:
 
     void AddComponent()
     {
-        const ReflectedType* componentType = ComponentCreator::Instance()->componentType;
+        ComponentCreator* componentCreator = ComponentCreator::Instance();
+        const ReflectedType* componentType = componentCreator->componentType;
         DVASSERT(componentType != nullptr);
 
         String description = Format("Add component: %s", componentType->GetPermanentName().c_str());
@@ -188,6 +191,8 @@ private:
 
             cmdInterface.Exec(std::make_unique<AddComponentCommand>(entity, component));
         }
+
+        componentCreator->componentType = nullptr;
     }
 
     DAVA_VIRTUAL_REFLECTION_IN_PLACE(ComponentCreatorComponentValue, DAVA::TArc::BaseComponentValue)
@@ -310,7 +315,14 @@ std::unique_ptr<DAVA::TArc::BaseComponentValue> EntityEditorCreator::GetEditor(c
 {
     if (node->propertyType == PropertyPanel::AddComponentProperty)
     {
-        return std::make_unique<PropertyModelExtDetails::ComponentCreatorComponentValue>();
+        std::unique_ptr<DAVA::TArc::BaseComponentValue> editor = std::make_unique<PropertyModelExtDetails::ComponentCreatorComponentValue>();
+        DAVA::TArc::BaseComponentValue::Style style;
+        style.fontBold = true;
+        style.fontItalic = true;
+        style.fontColor = QColor(Qt::black);
+        style.bgColor = QApplication::palette().alternateBase().color();
+        editor->SetStyle(style);
+        return std::move(editor);
     }
 
     const DAVA::Type* valueType = node->cachedValue.GetType();

@@ -108,7 +108,6 @@ QSize PropertiesViewDelegate::sizeHint(const QStyleOptionViewItem& option, const
         }
     }
 
-    sizeHint.rheight() += 2;
     return sizeHint;
 }
 
@@ -178,6 +177,7 @@ BaseComponentValue* PropertiesViewDelegate::GetComponentValue(const QModelIndex&
 
 void PropertiesViewDelegate::AdjustEditorRect(QStyleOptionViewItem& opt) const
 {
+    opt.rect.setTop(opt.rect.top() + 2);
     opt.rect.setHeight(opt.rect.height() - 2);
 }
 
