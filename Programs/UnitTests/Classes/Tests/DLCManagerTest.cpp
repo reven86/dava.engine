@@ -9,6 +9,8 @@
 
 #include "UnitTests/UnitTests.h"
 
+#ifndef __DAVAENGINE_WIN_UAP__
+
 struct DownloaderTest
 {
     const DAVA::DLCManager::IRequest* pack = nullptr;
@@ -140,3 +142,5 @@ DAVA_TESTCLASS (DLCManagerTest)
     {
     }
 };
+
+#endif // __DAVAENGINE_WIN_UAP__
