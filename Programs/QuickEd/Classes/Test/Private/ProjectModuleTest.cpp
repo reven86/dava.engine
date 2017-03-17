@@ -51,6 +51,7 @@ DAVA_TARC_TESTCLASS(ProjectManagerTests)
 
         ContextAccessor* accessor = GetAccessor();
 
+        FilePath projectPath = TestHelpers::GetTestPath() + "ProjectModuleTest";
         CreateProjectFolder(projectPath);
 
         String projectPathStr = projectPath.GetAbsolutePathname();
@@ -154,7 +155,6 @@ DAVA_TARC_TESTCLASS(ProjectManagerTests)
     const QString closeProjectActionName = "Close project";
     const QString fileMenuName = "File";
 
-    const DAVA::FilePath projectPath = TestHelpers::GetTestPath() + "ProjectModuleTest";
     DAVA::TArc::DataWrapper wrapper;
     DAVA::TArc::MockListener listener;
 };

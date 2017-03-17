@@ -57,6 +57,8 @@ DAVA_TARC_TESTCLASS(StyleSheetInspectorModuleTest)
         ContextAccessor* accessor = GetAccessor();
         TEST_VERIFY(accessor->GetContextCount() == 0);
 
+        DAVA::FilePath projectPath = TestHelpers::GetTestPath() + "StyleSheetInspectorModuleTest";
+
         CreateProjectFolder(projectPath);
 
         String projectPathStr = projectPath.GetAbsolutePathname();
@@ -96,8 +98,6 @@ DAVA_TARC_TESTCLASS(StyleSheetInspectorModuleTest)
     }
 
     MOCK_METHOD0_VIRTUAL(AfterWrappersSync, void());
-
-    DAVA::FilePath projectPath = TestHelpers::GetTestPath() + "StyleSheetInspectorModuleTest";
 };
 
 namespace StyleSheetInspectorModuleTestDetails
