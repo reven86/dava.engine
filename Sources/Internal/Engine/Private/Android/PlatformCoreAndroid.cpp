@@ -58,7 +58,7 @@ void PlatformCore::Run()
 {
     // Minimum JNI local references count that can be created during one frame.
     // From docs: VM automatically ensures that at least 16 local references can be created
-    static const JniLocalRefsMinCount = 16;
+    static const jint JniLocalRefsMinCount = 16;
 
     AndroidBridge::HideSplashView();
     engineBackend->OnGameLoopStarted();
