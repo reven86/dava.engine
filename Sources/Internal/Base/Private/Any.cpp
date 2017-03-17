@@ -2,6 +2,13 @@
 
 namespace DAVA
 {
+Any Any::ReinterpretCast(const Type* type) const
+{
+    Any ret(*this);
+    ret.type = type;
+    return ret;
+}
+
 bool Any::LoadData(void* data, const Type* type_)
 {
     type = type_;

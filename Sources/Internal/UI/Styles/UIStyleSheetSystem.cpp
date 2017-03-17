@@ -17,10 +17,10 @@ const int32 PROPERTY_ANIMATION_GROUP_OFFSET = 100000;
 
 struct ImmediatePropertySetter
 {
-    void operator()(UIControl* control, const Reflection& ref) const
+    void operator()(UIControl* control, ReflectedObject obj, const ValueWrapper* vw) const
     {
         control->StopAnimations(PROPERTY_ANIMATION_GROUP_OFFSET + propertyIndex);
-        ref.SetValueWithCast(value);
+        vw->SetValue(obj, value);
     }
 
     uint32 propertyIndex;
@@ -30,7 +30,7 @@ struct ImmediatePropertySetter
 struct AnimatedPropertySetter
 {
     template <typename T>
-    void Animate(UIControl* control, const Reflection& ref, const T& startValue, const T& endValue) const
+    void Animate(UIControl* control, ReflectedObject obj, const ValueWrapper* vw, const T& startValue, const T& endValue) const
     {
         const int32 track = PROPERTY_ANIMATION_GROUP_OFFSET + propertyIndex;
         LinearPropertyAnimation<T>* currentAnimation = DynamicTypeCheck<LinearPropertyAnimation<T>*>(AnimationManager::Instance()->FindPlayingAnimation(control, track));
@@ -40,38 +40,47 @@ struct AnimatedPropertySetter
             if (currentAnimation)
                 control->StopAnimations(track);
 
-            if (ref.GetValue() != value)
+            if (vw->GetValue(obj) != value)
             {
-                (new LinearPropertyAnimation<T>(control, ref, startValue, endValue, time, transitionFunction))->Start(track);
+                (new LinearPropertyAnimation<T>(control, Reflection(std::move(obj), vw, nullptr, nullptr), startValue, endValue, time, transitionFunction))->Start(track);
             }
         }
     }
 
-    void operator()(UIControl* control, const Reflection& ref) const
+    void operator()(UIControl* control, ReflectedObject obj, const ValueWrapper* vw) const
     {
-        if (value.CanGet<Vector2>() && ref.GetValue().CanGet<Vector2>())
+        const Any& refValue = vw->GetValue(obj);
+        const Type* valueType = value.GetType()->Decay();
+        if (valueType == refValue.GetType()->Decay())
         {
-            Animate<Vector2>(control, ref, ref.GetValue().Get<Vector2>(), value.Get<Vector2>());
-        }
-        else if (value.CanGet<Vector3>() && ref.GetValue().CanGet<Vector3>())
-        {
-            Animate<Vector3>(control, ref, ref.GetValue().Get<Vector3>(), value.Get<Vector3>());
-        }
-        else if (value.CanGet<Vector4>() && ref.GetValue().CanGet<Vector4>())
-        {
-            Animate<Vector4>(control, ref, ref.GetValue().Get<Vector4>(), value.Get<Vector4>());
-        }
-        else if (value.CanGet<float32>() && ref.GetValue().CanGet<float32>())
-        {
-            Animate<float32>(control, ref, ref.GetValue().Get<float32>(), value.Get<float32>());
-        }
-        else if (value.CanGet<Color>() && ref.GetValue().CanGet<Color>())
-        {
-            Animate<Color>(control, ref, ref.GetValue().Get<Color>(), value.Get<Color>());
+            if (valueType == Type::Instance<Vector2>())
+            {
+                Animate<Vector2>(control, std::move(obj), vw, refValue.Get<Vector2>(), value.Get<Vector2>());
+            }
+            else if (valueType == Type::Instance<Vector3>())
+            {
+                Animate<Vector3>(control, std::move(obj), vw, refValue.Get<Vector3>(), value.Get<Vector3>());
+            }
+            else if (valueType == Type::Instance<Vector4>())
+            {
+                Animate<Vector4>(control, std::move(obj), vw, refValue.Get<Vector4>(), value.Get<Vector4>());
+            }
+            else if (valueType == Type::Instance<float32>())
+            {
+                Animate<float32>(control, std::move(obj), vw, refValue.Get<float32>(), value.Get<float32>());
+            }
+            else if (valueType == Type::Instance<Color>())
+            {
+                Animate<Color>(control, std::move(obj), vw, refValue.Get<Color>(), value.Get<Color>());
+            }
+            else
+            {
+                DVASSERT(false, "Non-animatable property");
+            }
         }
         else
         {
-            DVASSERT(false, "Non-animatable property");
+            DVASSERT(false, "Different types");
         }
     }
 
@@ -305,23 +314,13 @@ void UIStyleSheetSystem::DoForAllPropertyInstances(UIControl* control, uint32 pr
 
     if (descr.group->componentType == -1)
     {
-        Reflection cRef = Reflection::Create(&control);
-        Reflection fRef = cRef.GetField(descr.field->name);
-        if (fRef.IsValid())
-        {
-            action(control, fRef);
-        }
+        action(control, std::move(ReflectedObject(control)), descr.field->valueWrapper.get());
     }
     else
     {
         if (UIComponent* component = control->GetComponent(descr.group->componentType))
         {
-            Reflection cRef = Reflection::Create(&component);
-            Reflection fRef = cRef.GetField(descr.field->name);
-            if (fRef.IsValid())
-            {
-                action(control, fRef);
-            }
+            action(control, std::move(ReflectedObject(component)), descr.field->valueWrapper.get());
         }
         else
         {

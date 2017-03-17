@@ -539,7 +539,7 @@ Any YamlNode::AsAny(const ReflectedStructure::Field* field) const
         {
             if (emeta->GetEnumMap()->ToValue(AsString().c_str(), val))
             {
-                return Any(val);
+                return Any(val).ReinterpretCast(type);
             }
         }
         DVASSERT(false);
@@ -562,7 +562,7 @@ Any YamlNode::AsAny(const ReflectedStructure::Field* field) const
                 DVASSERT(false);
             }
         }
-        return Any(val);
+        return Any(val).ReinterpretCast(type);
     }
     else if (type == Type::Instance<bool>()->Decay())
         return Any(AsBool());
