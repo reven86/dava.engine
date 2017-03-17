@@ -2,6 +2,7 @@
 #include "TArc/Controls/PropertyPanel/Private/ReflectedPropertyModel.h"
 #include "TArc/Controls/PropertyPanel/Private/PropertiesViewDelegate.h"
 #include "TArc/Core/ContextAccessor.h"
+#include "TArc/Utils/ScopedValueGuard.h"
 
 #include <Reflection/Reflection.h>
 #include <Base/BaseTypes.h>
@@ -42,7 +43,9 @@ protected:
         painter->drawLine(options.rect.bottomLeft(), options.rect.bottomRight());
 
         // draw vertical line
-        if (!(options.state & QStyle::State_Selected))
+        bool isSelected = options.state & QStyle::State_Selected;
+        bool isSpanned = isFirstColumnSpanned(index.row(), index.parent());
+        if (isSelected == false && isSpanned == false)
         {
             QHeaderView* hdr = header();
             if (hdr != nullptr && hdr->count() > 1)
@@ -90,7 +93,7 @@ PropertiesView::PropertiesView(const Params& params_)
     int columnWidth = viewItem.Get(PropertiesViewDetail::SeparatorPositionKey, view->columnWidth(0));
     view->setColumnWidth(0, columnWidth);
 
-    model->LoadExpanded(viewItem.CreateSubHolder("expandedList"));
+    model->LoadExpanded(viewItem.CreateSubHolder("expandedItems"));
     QObject::connect(view, &QTreeView::expanded, this, &PropertiesView::OnExpanded);
     QObject::connect(view, &QTreeView::collapsed, this, &PropertiesView::OnCollapsed);
 }
@@ -106,7 +109,7 @@ PropertiesView::~PropertiesView()
     PropertiesItem viewSettings = params.accessor->CreatePropertiesNode(params.settingsNodeName);
     viewSettings.Set(PropertiesViewDetail::SeparatorPositionKey, view->columnWidth(0));
 
-    PropertiesItem item = viewSettings.CreateSubHolder("expandedList");
+    PropertiesItem item = viewSettings.CreateSubHolder("expandedItems");
     model->SaveExpanded(item);
 }
 
@@ -128,12 +131,14 @@ void PropertiesView::SetupUI()
     setLayout(layout);
 
     view = new PropertiesViewDetail::PropertiesTreeView(this);
+    view->setObjectName(QString("%1_propertiesview").arg(QString::fromStdString(params.settingsNodeName)));
     view->setEditTriggers(QAbstractItemView::CurrentChanged | QAbstractItemView::SelectedClicked | QAbstractItemView::EditKeyPressed);
     layout->addWidget(view);
 
     view->setModel(model.get());
     view->setRootIndex(QModelIndex());
     view->setItemDelegate(new PropertiesViewDelegate(view, model.get(), this));
+    view->setAlternatingRowColors(true);
 
     QHeaderView* headerView = view->header();
     connections.AddConnection(headerView, &QHeaderView::sectionResized, MakeFunction(this, &PropertiesView::OnColumnResized));
@@ -149,11 +154,7 @@ void PropertiesView::OnObjectsChanged(const Any& objects)
 
     DVASSERT(objects.CanCast<Vector<Reflection>>());
     model->SetObjects(objects.Cast<Vector<Reflection>>());
-    QModelIndexList expandedLIst = model->GetExpandedList();
-    foreach (const QModelIndex& index, expandedLIst)
-    {
-        view->expand(index);
-    }
+    UpdateExpanded();
 }
 
 void PropertiesView::OnColumnResized(int columnIndex, int oldSize, int newSize)
@@ -177,17 +178,37 @@ void PropertiesView::Update(UpdatePolicy policy)
         DVASSERT(false, "Unimplemented update policy have been received");
         break;
     }
+
+    UpdateExpanded();
+}
+
+void PropertiesView::UpdateExpanded()
+{
+    ScopedValueGuard<bool> guard(isExpandUpdate, true);
+    QModelIndexList expandedList = model->GetExpandedList();
+    foreach (const QModelIndex& index, expandedList)
+    {
+        view->expand(index);
+    }
 }
 
 void PropertiesView::OnExpanded(const QModelIndex& index)
 {
-    //model->SetExpanded(true, index);
+    SCOPED_VALUE_GUARD(bool, isExpandUpdate, true, void());
+    model->SetExpanded(true, index);
     model->HideEditors();
+
+    QModelIndexList expandedList = model->GetExpandedChildren(index);
+    foreach (const QModelIndex& index, expandedList)
+    {
+        view->expand(index);
+    }
 }
 
 void PropertiesView::OnCollapsed(const QModelIndex& index)
 {
-    //model->SetExpanded(false, index);
+    SCOPED_VALUE_GUARD(bool, isExpandUpdate, true, void());
+    model->SetExpanded(false, index);
     model->HideEditors();
 }
 

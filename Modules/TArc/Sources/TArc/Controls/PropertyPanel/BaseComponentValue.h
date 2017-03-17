@@ -54,6 +54,8 @@ public:
     void HideEditor();
 
     virtual bool IsReadOnly() const;
+    virtual bool IsSpannedControl() const;
+
     static const char* readOnlyFieldName;
 
 protected:

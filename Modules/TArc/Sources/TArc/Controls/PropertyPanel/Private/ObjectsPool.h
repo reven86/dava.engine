@@ -92,27 +92,27 @@ private:
     TLockStrategy lockStrategy;
 };
 
-SingleThreadStrategy::SingleThreadStrategy()
+inline SingleThreadStrategy::SingleThreadStrategy()
     : threadAffinity(Thread::GetCurrentId())
 {
 }
 
-void SingleThreadStrategy::Lock()
+inline void SingleThreadStrategy::Lock()
 {
     DVASSERT(threadAffinity == Thread::GetCurrentId());
 }
 
-void SingleThreadStrategy::Unlock()
+inline void SingleThreadStrategy::Unlock()
 {
     DVASSERT(threadAffinity == Thread::GetCurrentId());
 }
 
-void MultiThreadStrategy::Lock()
+inline void MultiThreadStrategy::Lock()
 {
     mutex.Lock();
 }
 
-void MultiThreadStrategy::Unlock()
+inline void MultiThreadStrategy::Unlock()
 {
     mutex.Unlock();
 }
