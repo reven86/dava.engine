@@ -367,10 +367,14 @@ void RenderWidget::RenderWidgetImpl::keyReleaseEvent(QKeyEvent* e)
 
 bool RenderWidget::RenderWidgetImpl::event(QEvent* e)
 {
-    if (e->type() == QEvent::NativeGesture && clientDelegate != nullptr)
+    if (e->type() == QEvent::NativeGesture)
     {
         QNativeGestureEvent* gestureEvent = static_cast<QNativeGestureEvent*>(e);
-        clientDelegate->OnNativeGuesture(gestureEvent);
+        widgetDelegate->OnNativeGuesture(gestureEvent);
+        if (clientDelegate != nullptr)
+        {
+            clientDelegate->OnNativeGuesture(gestureEvent);
+        }
     }
 
     if (e->type() == QEvent::WindowActivate)

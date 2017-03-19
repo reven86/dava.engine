@@ -84,6 +84,8 @@ private:
     void OnDragMoved(QDragMoveEvent* e) override;
     void OnMouseDBClick(QMouseEvent* e) override;
     void OnWheel(QWheelEvent* e) override;
+    void OnNativeGuesture(QNativeGestureEvent* e) override;
+
     void OnKeyPressed(QKeyEvent* e) override;
     void OnKeyReleased(QKeyEvent* e) override;
 

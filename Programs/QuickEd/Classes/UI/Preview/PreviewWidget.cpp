@@ -57,9 +57,7 @@ PreviewWidget::PreviewWidget(DAVA::TArc::ContextAccessor* accessor_, DAVA::Rende
     , rulerController(new RulerController(this))
 {
     qRegisterMetaType<SelectedNodes>("SelectedNodes");
-    percentages << 0.25f << 0.33f << 0.50f << 0.67f << 0.75f << 0.90f
-                << 1.00f << 1.10f << 1.25f << 1.50f << 1.75f << 2.00f
-                << 2.50f << 3.00f << 4.00f << 5.00f << 6.00f << 7.00f << 8.00f;
+
     InjectRenderWidget(renderWidget);
 
     InitUI();
@@ -73,9 +71,9 @@ PreviewWidget::PreviewWidget(DAVA::TArc::ContextAccessor* accessor_, DAVA::Rende
     connect(rulerController, &RulerController::VerticalRulerMarkPositionChanged, verticalRuler, &RulerWidget::OnMarkerPositionChanged);
 
     // Setup the Scale Combo.
-    for (auto percentage : percentages)
+    for (DAVA::float32 scale : editorCanvas->GetPredefinedScales())
     {
-        scaleCombo->addItem(ScaleStringFromReal(percentage));
+        scaleCombo->addItem(ScaleStringFromReal(scale));
     }
 
     connect(scaleCombo, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &PreviewWidget::OnScaleByComboIndex);
@@ -206,54 +204,14 @@ void PreviewWidget::OnEmulationModeChanged(bool emulationMode)
 
 void PreviewWidget::OnIncrementScale()
 {
-    int nextIndex = -1;
-    float actualScale = GetScaleFromComboboxText();
-    if (actualScale >= percentages.last())
-    {
-        return;
-    }
-    if (percentages.contains(actualScale))
-    {
-        int currentIndex = scaleCombo->currentIndex();
-        DVASSERT(currentIndex < scaleCombo->count() - 1);
-        nextIndex = currentIndex + 1;
-    }
-    else
-    {
-        QList<float>::iterator iter = std::upper_bound(percentages.begin(), percentages.end(), actualScale);
-        nextIndex = std::distance(percentages.begin(), iter);
-    }
-    DVASSERT(nextIndex >= 0 && nextIndex < percentages.size());
-    if (editorCanvas != nullptr)
-    {
-        editorCanvas->SetScale(percentages.at(nextIndex));
-    }
+    float32 nextScale = editorCanvas->GetNextScale(1);
+    editorCanvas->SetScale(nextScale);
 }
 
 void PreviewWidget::OnDecrementScale()
 {
-    int nextIndex = -1;
-    float actualScale = GetScaleFromComboboxText();
-    if (actualScale <= percentages.first())
-    {
-        return;
-    }
-    if (percentages.contains(actualScale))
-    {
-        int currentIndex = scaleCombo->currentIndex();
-        DVASSERT(currentIndex > 0);
-        nextIndex = currentIndex - 1;
-    }
-    else
-    {
-        QList<float>::iterator iter = std::lower_bound(percentages.begin(), percentages.end(), actualScale);
-        nextIndex = std::distance(percentages.begin(), iter) - 1; //lower bound returns first largest element, but we need smaller;
-    }
-    DVASSERT(nextIndex >= 0 && nextIndex < percentages.size());
-    if (editorCanvas != nullptr)
-    {
-        editorCanvas->SetScale(percentages.at(nextIndex));
-    }
+    float32 nextScale = editorCanvas->GetPreviousScale(1);
+    editorCanvas->SetScale(nextScale);
 }
 
 void PreviewWidget::SetActualScale()
@@ -340,10 +298,12 @@ void PreviewWidget::InitFromSystemsManager(EditorSystemsManager* systemsManager_
 void PreviewWidget::OnScaleChanged(float32 scale)
 {
     bool wasBlocked = scaleCombo->blockSignals(true);
-    int scaleIndex = percentages.indexOf(scale);
-    if (scaleIndex != -1)
+    Vector<float32> scales = editorCanvas->GetPredefinedScales();
+    auto iter = std::find(scales.begin(), scales.end(), scale);
+    if (iter != scales.end())
     {
-        scaleCombo->setCurrentIndex(scaleIndex);
+        int index = std::distance(scales.begin(), iter);
+        scaleCombo->setCurrentIndex(index);
     }
     scaleCombo->lineEdit()->setText(ScaleStringFromReal(scale));
     scaleCombo->blockSignals(wasBlocked);
@@ -355,7 +315,7 @@ void PreviewWidget::OnScaleChanged(float32 scale)
 void PreviewWidget::OnScaleByComboIndex(int index)
 {
     DVASSERT(index >= 0);
-    float scale = static_cast<float>(percentages.at(index));
+    float scale = static_cast<float>(editorCanvas->GetPredefinedScales().at(index));
     if (editorCanvas != nullptr)
     {
         editorCanvas->SetScale(scale);
@@ -512,74 +472,6 @@ bool PreviewWidget::CanChangeTextInControl(const ControlNode* node) const
 
     UIStaticText* staticText = dynamic_cast<UIStaticText*>(control);
     return staticText != nullptr;
-}
-
-void PreviewWidget::OnWheel(QWheelEvent* event)
-{
-    if (accessor->GetActiveContext() == nullptr)
-    {
-        return;
-    }
-    bool shouldZoom = QApplication::keyboardModifiers().testFlag(Qt::ControlModifier)
-#if defined(Q_OS_WIN)
-    ;
-#elif defined(Q_OS_MAC)
-    && event->source() == Qt::MouseEventNotSynthesized;
-#else
-#error "wrong platform"
-#endif //platform
-    if (shouldZoom)
-    {
-        //resize view
-        int tickSize = 120;
-        int ticksCount = event->angleDelta().y() / tickSize;
-        if (ticksCount == 0)
-        {
-            return;
-        }
-        float scale = GetScaleFromWheelEvent(ticksCount);
-        QPoint pos = event->pos();
-        editorCanvas->AdjustScale(scale, Vector2(pos.x(), pos.y()));
-    }
-    else
-    {
-#if defined(Q_OS_WIN)
-        QPoint delta = event->angleDelta();
-#else //Q_OS_MAC
-        QPoint delta = event->pixelDelta();
-#endif //platform
-        //scroll view up and down
-        static const float wheelDelta = 0.002f;
-        Vector2 position = editorCanvas->GetPosition();
-        Vector2 additionalPos((delta.x() * horizontalScrollBar->pageStep()) * wheelDelta,
-                              (delta.y() * verticalScrollBar->pageStep()) * wheelDelta);
-        editorCanvas->SetPosition(position - additionalPos);
-    }
-}
-
-void PreviewWidget::OnNativeGuesture(QNativeGestureEvent* event)
-{
-    if (accessor->GetActiveContext() == nullptr)
-    {
-        return;
-    }
-    const float normalScale = 1.0f;
-    const float expandedScale = 1.5f;
-    float scale = editorCanvas->GetScale();
-    QPoint qtPos = event->pos();
-    Vector2 pos(qtPos.x(), qtPos.y());
-    switch (event->gestureType())
-    {
-    case Qt::ZoomNativeGesture:
-        editorCanvas->AdjustScale(scale + event->value(), pos);
-        break;
-    case Qt::SmartZoomNativeGesture:
-        //event->value() returns 1.0f or 0.0f
-        editorCanvas->AdjustScale((event->value() == 0.0f ? normalScale : expandedScale), pos);
-        break;
-    default:
-        break;
-    }
 }
 
 void PreviewWidget::OnMouseReleased(QMouseEvent* event)
@@ -760,45 +652,4 @@ void PreviewWidget::OnKeyPressed(QKeyEvent* event)
             }
         }
     }
-}
-
-float PreviewWidget::GetScaleFromWheelEvent(int ticksCount) const
-{
-    float scale = editorCanvas->GetScale();
-    if (ticksCount > 0)
-    {
-        scale = GetNextScale(scale, ticksCount);
-    }
-    else if (ticksCount < 0)
-    {
-        scale = GetPreviousScale(scale, ticksCount);
-    }
-    return scale;
-}
-
-float PreviewWidget::GetNextScale(float currentScale, int ticksCount) const
-{
-    auto iter = std::upper_bound(percentages.begin(), percentages.end(), currentScale);
-    if (iter == percentages.end())
-    {
-        return currentScale;
-    }
-    ticksCount--;
-    int distance = std::distance(iter, percentages.end());
-    ticksCount = std::min(distance, ticksCount);
-    std::advance(iter, ticksCount);
-    return iter != percentages.end() ? *iter : percentages.last();
-}
-
-float PreviewWidget::GetPreviousScale(float currentScale, int ticksCount) const
-{
-    auto iter = std::lower_bound(percentages.begin(), percentages.end(), currentScale);
-    if (iter == percentages.end())
-    {
-        return currentScale;
-    }
-    int distance = std::distance(iter, percentages.begin());
-    ticksCount = std::max(ticksCount, distance);
-    std::advance(iter, ticksCount);
-    return *iter;
 }

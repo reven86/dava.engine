@@ -609,6 +609,9 @@ void Window::HandleTrackpadGesture(const Private::MainDispatcherEvent& e)
     uie.modifiers = e.trackpadGestureEvent.modifierKeys;
     uie.device = eInputDevices::TOUCH_PAD;
     uie.phase = UIEvent::Phase::GESTURE;
+    uie.physPoint = Vector2(e.trackpadGestureEvent.x, e.trackpadGestureEvent.y);
+    uie.gesture.type = static_cast<UIEvent::Gesture::eGestureType>(e.trackpadGestureEvent.type);
+    uie.gesture.smartMagnification = static_cast<UIEvent::Gesture::eSmartMagnification>(e.trackpadGestureEvent.smartMagnification);
     uie.gesture.magnification = e.trackpadGestureEvent.magnification;
     uie.gesture.rotation = e.trackpadGestureEvent.rotation;
     uie.gesture.dx = e.trackpadGestureEvent.deltaX;

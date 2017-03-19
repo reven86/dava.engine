@@ -1,3 +1,4 @@
+
 #include "EditorSystems/EditorCanvas.h"
 #include "EditorSystems/EditorSystemsManager.h"
 
@@ -17,6 +18,10 @@ EditorCanvas::EditorCanvas(EditorSystemsManager* parent, DAVA::TArc::ContextAcce
 {
     movableControl = systemsManager->GetScalableControl();
     systemsManager->contentSizeChanged.Connect(this, &EditorCanvas::OnContentSizeChanged);
+
+    predefinedScales = { 0.25f, 0.33f, 0.50f, 0.67f, 0.75f,
+                         0.90f, 1.00f, 1.10f, 1.25f, 1.50f, 1.75f, 2.00f,
+                         2.50f, 3.00f, 4.00f, 5.00f, 6.00f, 7.00f, 8.00f };
 }
 
 EditorCanvas::~EditorCanvas() = default;
@@ -171,6 +176,11 @@ void EditorCanvas::SetPosition(const Vector2& position_)
     }
 }
 
+const Vector<float32>& EditorCanvas::GetPredefinedScales() const
+{
+    return predefinedScales;
+}
+
 void EditorCanvas::UpdatePosition()
 {
     DVASSERT(nullptr != movableControl);
@@ -192,17 +202,75 @@ void EditorCanvas::UpdatePosition()
     nestedControlPositionChanged.Emit(counterPosition);
 }
 
-bool EditorCanvas::CanProcessInput(DAVA::UIEvent* currentInput) const
+bool EditorCanvas::CanProcessInput(UIEvent* currentInput) const
 {
-    return systemsManager->GetDragState() == EditorSystemsManager::DragScreen
-    && currentInput->device == eInputDevices::MOUSE
-    && (currentInput->mouseButton == eMouseButtons::LEFT || currentInput->mouseButton == eMouseButtons::MIDDLE);
+    if (currentInput->device != eInputDevices::TOUCH_PAD && currentInput->device != eInputDevices::MOUSE)
+    {
+        return false;
+    }
+    if (currentInput->phase == UIEvent::Phase::WHEEL || currentInput->phase == UIEvent::Phase::GESTURE)
+    {
+        return true;
+    }
+    return (systemsManager->GetDragState() == EditorSystemsManager::DragScreen &&
+            (currentInput->mouseButton == eMouseButtons::LEFT || currentInput->mouseButton == eMouseButtons::MIDDLE));
 }
 
 void EditorCanvas::ProcessInput(UIEvent* currentInput)
 {
-    Vector2 delta = systemsManager->GetMouseDelta();
-    SetPosition(position - delta);
+    if (accessor->GetActiveContext() == nullptr)
+    {
+        return;
+    }
+    if (currentInput->device == eInputDevices::TOUCH_PAD)
+    {
+        if (currentInput->phase == UIEvent::Phase::GESTURE)
+        {
+            const UIEvent::Gesture& gesture = currentInput->gesture;
+            switch (gesture.type)
+            {
+            case UIEvent::Gesture::eGestureType::SWIPE:
+                SetPosition(GetPosition() - Vector2(gesture.dx, gesture.dy));
+                break;
+            case UIEvent::Gesture::eGestureType::MAGNIFICATION:
+                AdjustScale(scale + gesture.magnification, currentInput->physPoint);
+                break;
+            case UIEvent::Gesture::eGestureType::SMART_MAGNIFICATION:
+            {
+                float32 normalScale = 1.0f;
+                float32 expandedScale = 1.5;
+                float32 newScale = gesture.smartMagnification == UIEvent::Gesture::eSmartMagnification::MAGNIFY_IN ? expandedScale : normalScale;
+                AdjustScale(newScale, currentInput->physPoint);
+            }
+            break;
+            default:
+                break;
+            }
+        }
+    }
+    else if (currentInput->device == eInputDevices::MOUSE)
+    {
+        if (currentInput->phase == UIEvent::Phase::WHEEL)
+        {
+            if ((currentInput->modifiers & (eModifierKeys::CONTROL | eModifierKeys::COMMAND)) != eModifierKeys::NONE)
+            {
+                float scale = GetScaleFromWheelEvent(currentInput->wheelDelta.y);
+                AdjustScale(scale, currentInput->physPoint);
+            }
+            else
+            {
+                Vector2 position = GetPosition();
+                Vector2 additionalPos(currentInput->wheelDelta.x, currentInput->wheelDelta.y);
+                additionalPos *= GetViewSize();
+                SetPosition(position + additionalPos);
+            }
+        }
+        else
+        {
+            Vector2 delta = systemsManager->GetMouseDelta();
+            SetPosition(position - delta);
+        }
+    }
 }
 
 EditorSystemsManager::eDragState EditorCanvas::RequireNewState(UIEvent* currentInput)
@@ -245,4 +313,44 @@ void EditorCanvas::OnContentSizeChanged(const DAVA::Vector2& size)
 {
     contentSize = size;
     UpdateContentSize();
+}
+
+float32 EditorCanvas::GetScaleFromWheelEvent(int32 ticksCount) const
+{
+    if (ticksCount > 0)
+    {
+        return GetNextScale(ticksCount);
+    }
+    else if (ticksCount < 0)
+    {
+        return GetPreviousScale(ticksCount);
+    }
+    return scale;
+}
+
+float32 EditorCanvas::GetNextScale(int32 ticksCount) const
+{
+    auto iter = std::upper_bound(predefinedScales.begin(), predefinedScales.end(), scale);
+    if (iter == predefinedScales.end())
+    {
+        return scale;
+    }
+    ticksCount--;
+    int32 distance = std::distance(iter, predefinedScales.end());
+    ticksCount = std::min(distance, ticksCount);
+    std::advance(iter, ticksCount);
+    return iter != predefinedScales.end() ? *iter : predefinedScales.back();
+}
+
+float32 EditorCanvas::GetPreviousScale(int32 ticksCount) const
+{
+    auto iter = std::lower_bound(predefinedScales.begin(), predefinedScales.end(), scale);
+    if (iter == predefinedScales.end())
+    {
+        return scale;
+    }
+    int32 distance = std::distance(iter, predefinedScales.begin());
+    ticksCount = std::max(ticksCount, distance);
+    std::advance(iter, ticksCount);
+    return *iter;
 }
