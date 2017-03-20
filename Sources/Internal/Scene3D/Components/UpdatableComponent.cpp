@@ -9,7 +9,8 @@ namespace DAVA
 {
 DAVA_VIRTUAL_REFLECTION_IMPL(UpdatableComponent)
 {
-    ReflectionRegistrator<UpdatableComponent>::Begin()
+    ReflectionRegistrator<UpdatableComponent>::Begin()[M::CantBeCreatedManualyComponent()]
+    .ConstructorByPointer()
     .Field("updatableObject", &UpdatableComponent::updatableObject)[M::ReadOnly(), M::HiddenField()]
     .End();
 }

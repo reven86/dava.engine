@@ -30,6 +30,7 @@
 #set( FILE_TREE_CHECK_FOLDERS    )
 #set( DEFINITIONS                )
 #set( DEFINITIONS_${DAVA_PLATFORM_CURENT} )
+#set( EXTERNAL_TEST_FOLDERS      )
 #
 
 # Only interpret ``if()`` arguments as variables or keywords when unquoted.
@@ -360,6 +361,31 @@ if( MIX_APP_DATA )
 
 endif()
 
+
+###
+foreach( TEST_FOLDER ${EXTERNAL_TEST_FOLDERS} )
+    file( GLOB_RECURSE TEST_FILES "${TEST_FOLDER}/*.unittest"  )
+
+    if( ANDROID )#Fucking android
+        foreach( FILE ${TEST_FILES} )
+            get_filename_component( FILE_NAME ${FILE} NAME )
+            set( OUT_FILE ${CMAKE_CURRENT_BINARY_DIR}/EXTERNAL_TEST/${FILE_NAME}.cpp )
+            configure_file( ${FILE}  ${OUT_FILE} COPYONLY)
+            list( APPEND PROJECT_SOURCE_FILES ${OUT_FILE} )
+        endforeach()
+    else()
+        list( APPEND PROJECT_SOURCE_FILES ${TEST_FILES} )
+        source_group( "EXTERNAL_TEST" FILES ${TEST_FILES} )
+
+        set_source_files_properties(${TEST_FILES} PROPERTIES
+          HEADER_FILE_ONLY FALSE
+          KEEP_EXTENSION TRUE
+          LANGUAGE CXX
+        )
+    endif()
+
+endforeach()
+
 ###
 
 list( APPEND PROJECT_SOURCE_FILES ${ADDED_SRC} ${PLATFORM_ADDED_SRC} )
@@ -378,6 +404,7 @@ generated_unity_sources( PROJECT_SOURCE_FILES   IGNORE_LIST ${UNIFIED_IGNORE_LIS
 
                                                )
 
+###
 if( ANDROID )
     set( POSTFIX 0  )
     set( COUNTER 0 )

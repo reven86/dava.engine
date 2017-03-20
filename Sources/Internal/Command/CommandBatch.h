@@ -25,31 +25,31 @@ public:
     void Undo() override;
 
     /**
+     \brief Moves command to the batch.
+     */
+    void Add(std::unique_ptr<Command>&& command);
+
+    /**
     \brief Moves command to the batch and calls Redo to the moved command.
     */
     void AddAndRedo(std::unique_ptr<Command>&& command);
 
     /**
-    \brief Moves command to the batch.
-    */
-    void Add(std::unique_ptr<Command>&& command);
-
-    /**
-    \brief Returns whether the batch is empty (i.e. whether its size is 0)
-    \returns true if batch size is 0, false otherwise.
-    */
+     \brief Returns whether the batch is empty (i.e. whether its size is 0)
+     \returns true if batch size is 0, false otherwise.
+     */
     bool IsEmpty() const;
 
     /**
-    \brief Returns the number of commands in the batch.
-    \returns The number of commands in the batch.
-    */
+     \brief Returns the number of commands in the batch.
+     \returns The number of commands in the batch.
+     */
     uint32 Size() const;
 
     /**
-    \brief Works the same as Command::IsClean
-    \returns true if empty or contain only clean commands
-    */
+     \brief Works the same as Command::IsClean
+     \returns true if empty or contain only clean commands
+     */
     bool IsClean() const override;
 
 protected:

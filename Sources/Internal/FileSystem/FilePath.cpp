@@ -472,7 +472,7 @@ bool FilePath::operator==(const FilePath& path) const
 
 bool FilePath::operator!=(const FilePath& path) const
 {
-    return absolutePathname != path.absolutePathname;
+    return !(*this == path);
 }
 
 bool FilePath::IsDirectoryPathname() const

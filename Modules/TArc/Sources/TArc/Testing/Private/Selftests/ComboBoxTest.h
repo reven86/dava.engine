@@ -342,7 +342,7 @@ DAVA_TARC_TESTCLASS(ComboBoxTest)
         {
             testCompleted = (currentTest == static_cast<int>(comboTestData.size()));
         }
-        return TestClass::TestComplete(testName) && testCompleted;
+        return testCompleted;
     }
 
     MOCK_METHOD0_VIRTUAL(AfterWrappersSync, void());

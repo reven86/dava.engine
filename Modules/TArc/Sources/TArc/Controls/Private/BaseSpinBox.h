@@ -2,6 +2,7 @@
 
 #include "TArc/Controls/ControlProxy.h"
 #include "TArc/Controls/Private/ValidationUtils.h"
+#include "TArc/Controls/CommonStrings.h"
 #include "TArc/Utils/QtConnections.h"
 
 #include <QDoubleSpinBox>
@@ -31,6 +32,7 @@ public:
     BaseSpinBox(const ControlDescriptor& descriptor, ContextAccessor* accessor, Reflection model, QWidget* parent);
 
 protected:
+    bool event(QEvent* e) override;
     void UpdateControl(const ControlDescriptor& changedFields) override;
     void SetupSpinBoxBase();
     void UpdateRange();
@@ -51,7 +53,7 @@ protected:
 
 protected:
     QtConnections connections;
-    QString noValueString = QStringLiteral("<multiple values>");
+    QString noValueString = QString(MultipleValuesString);
 
     enum class ControlState
     {

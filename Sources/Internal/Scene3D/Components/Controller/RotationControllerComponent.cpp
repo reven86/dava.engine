@@ -15,6 +15,7 @@ Component* RotationControllerComponent::Clone(Entity* toEntity)
 DAVA_VIRTUAL_REFLECTION_IMPL(RotationControllerComponent)
 {
     ReflectionRegistrator<RotationControllerComponent>::Begin()
+    .ConstructorByPointer()
     .End();
 }
 };

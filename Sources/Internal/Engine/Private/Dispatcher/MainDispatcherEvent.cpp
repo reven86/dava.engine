@@ -141,6 +141,16 @@ MainDispatcherEvent MainDispatcherEvent::CreateWindowCancelInputEvent(Window* wi
     return e;
 }
 
+MainDispatcherEvent MainDispatcherEvent::CreateWindowVisibleFrameChangedEvent(Window* window, float32 x, float32 y, float32 width, float32 height)
+{
+    MainDispatcherEvent e(WINDOW_VISIBLE_FRAME_CHANGED, window);
+    e.visibleFrameEvent.x = x;
+    e.visibleFrameEvent.y = y;
+    e.visibleFrameEvent.width = width;
+    e.visibleFrameEvent.height = height;
+    return e;
+}
+
 MainDispatcherEvent MainDispatcherEvent::CreateWindowKeyPressEvent(Window* window, eType keyEventType, uint32 key, eModifierKeys modifierKeys, bool isRepeated)
 {
     DVASSERT(keyEventType == KEY_DOWN || keyEventType == KEY_UP || keyEventType == KEY_CHAR);

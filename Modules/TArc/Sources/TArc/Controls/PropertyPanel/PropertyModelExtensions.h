@@ -1,9 +1,10 @@
 #pragma once
 
-#include "Reflection/Reflection.h"
-#include "Base/BaseTypes.h"
-#include "Base/Type.h"
-#include "Base/Any.h"
+#include <Reflection/Reflection.h>
+#include <Command/Command.h>
+#include <Base/BaseTypes.h>
+#include <Base/Type.h>
+#include <Base/Any.h>
 
 #include <memory>
 
@@ -163,10 +164,33 @@ public:
 class ModifyExtension : public ExtensionChain
 {
 public:
+    class MultiCommandInterface final
+    {
+    public:
+        MultiCommandInterface(std::shared_ptr<ModifyExtension> ext);
+
+        void ProduceCommand(const Reflection::Field& object, const Any& newValue);
+        void ModifyPropertyValue(const std::shared_ptr<PropertyNode>& nodes, const Any& newValue);
+        void Exec(std::unique_ptr<Command>&& command);
+
+    private:
+        std::shared_ptr<ModifyExtension> extension;
+    };
+
     ModifyExtension();
-    void ModifyPropertyValue(Vector<std::shared_ptr<PropertyNode>>& nodes, const Any& newValue);
-    virtual void ProduceCommand(const Vector<Reflection::Field>& objects, const Any& newValue);
+    void ModifyPropertyValue(const Vector<std::shared_ptr<PropertyNode>>& nodes, const Any& newValue);
+    MultiCommandInterface GetMultiCommandInterface(const String& description, uint32 commandCount);
+    MultiCommandInterface GetMultiCommandInterface(uint32 commandCount);
+
     static std::shared_ptr<ModifyExtension> CreateDummy();
+
+protected:
+    virtual void BeginBatch(const String& text, uint32 commandCount);
+    virtual void ProduceCommand(const Reflection::Field& object, const Any& newValue);
+    virtual void Exec(std::unique_ptr<Command>&& command);
+    virtual void EndBatch();
+
+    struct ModifyExtDeleter;
 };
 } // namespace TArc
 } // namespace DAVA

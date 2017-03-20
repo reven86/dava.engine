@@ -24,9 +24,17 @@ public:
 
 protected:
     void UpdateControl(const ControlDescriptor& descriptor) override;
+    void OnDataChanged(const DataWrapper& wrapper, const Vector<Any>& fields) override;
 
     template <typename T>
     void SetupControl(T* accessor);
+
+    Reflection GetCopyModel(const DataContext* ctx);
+
+private:
+    Any valueCopy;
+    Reflection copyModel;
+    DataWrapper copyModelWrapper;
 };
 
 } // namespace TArc
