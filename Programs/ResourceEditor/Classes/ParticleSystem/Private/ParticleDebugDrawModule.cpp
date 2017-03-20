@@ -82,21 +82,21 @@ void ParticleDebugDrawModule::PostInit()
         ControlDescriptorBuilder<CheckBox::Fields> fields;
         fields[CheckBox::Fields::IsReadOnly] = "readOnly";
         fields[CheckBox::Fields::Checked] = "isEnabledProperty";
-        layout->AddWidget(new CheckBox(fields, accessor, DAVA::Reflection::Create(this), w));
+        layout->AddWidget(new CheckBox(fields, accessor, DAVA::Reflection::Create(DAVA::ReflectedObject(this)), w));
     }
 
     {
         ControlDescriptorBuilder<ComboBox::Fields> fields;
         fields[ComboBox::Fields::IsReadOnly] = "readOnly";
         fields[ComboBox::Fields::Value] = "drawModeProperty";
-        layout->AddWidget(new ComboBox(fields, accessor, DAVA::Reflection::Create(this), w));
+        layout->AddWidget(new ComboBox(fields, accessor, DAVA::Reflection::Create(DAVA::ReflectedObject(this)), w));
     }
 
     {
         ControlDescriptorBuilder<CheckBox::Fields> fields;
         fields[CheckBox::Fields::IsReadOnly] = "readOnly";
         fields[CheckBox::Fields::Checked] = "drawSelectedProperty";
-        layout->AddWidget(new CheckBox(fields, accessor, DAVA::Reflection::Create(this), w));
+        layout->AddWidget(new CheckBox(fields, accessor, DAVA::Reflection::Create(DAVA::ReflectedObject(this)), w));
     }
 
     QAction* action = new QAction(nullptr);
