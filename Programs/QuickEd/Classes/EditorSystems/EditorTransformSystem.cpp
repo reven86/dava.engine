@@ -87,17 +87,15 @@ const float32 TRANSFORM_EPSILON = 0.0005f;
 
 struct ChangePropertyAction
 {
-    ChangePropertyAction(ControlNode* node_, AbstractProperty* property_, const DAVA::VariantType& value_, DAVA::VariantType sourceValue_)
+    ChangePropertyAction(ControlNode* node_, AbstractProperty* property_, const DAVA::VariantType& value_)
         : node(node_)
         , property(property_)
         , value(value_)
-        , sourceValue(value_)
     {
     }
     ControlNode* node = nullptr;
     AbstractProperty* property = nullptr;
     DAVA::VariantType value;
-    DAVA::VariantType sourceValue;
 };
 }
 
@@ -338,7 +336,7 @@ void EditorTransformSystem::MoveAllSelectedControls(Vector2 delta, bool canAdjus
         AbstractProperty* property = positionProperty;
         Vector2 originalPosition = property->GetValue().AsVector2();
         Vector2 finalPosition(originalPosition + adjustedPosition);
-        propertiesToChange.emplace_back(node, property, VariantType(finalPosition), originalPosition);
+        propertiesToChange.emplace_back(node, property, VariantType(finalPosition));
         delta = ::Rotate(adjustedPosition, gd->angle);
         delta *= gd->scale;
     }
@@ -359,7 +357,7 @@ void EditorTransformSystem::MoveAllSelectedControls(Vector2 delta, bool canAdjus
     }
     for (const EditorTransformSystemDetail::ChangePropertyAction& changePropertyAction : propertiesToChange)
     {
-        systemsManager->propertyChanged.Emit(changePropertyAction.node, changePropertyAction.property, changePropertyAction.value, changePropertyAction.sourceValue);
+        systemsManager->propertyChanged.Emit(changePropertyAction.node, changePropertyAction.property, changePropertyAction.value);
     }
     systemsManager->magnetLinesChanged.Emit(magnets);
 }
@@ -593,7 +591,7 @@ void EditorTransformSystem::ResizeControl(Vector2 delta, bool withPivot, bool ra
 
     for (const EditorTransformSystemDetail::ChangePropertyAction& changePropertyAction : propertiesToChange)
     {
-        systemsManager->propertyChanged.Emit(changePropertyAction.node, changePropertyAction.property, changePropertyAction.value, changePropertyAction.sourceValue);
+        systemsManager->propertyChanged.Emit(changePropertyAction.node, changePropertyAction.property, changePropertyAction.value);
     }
 }
 
@@ -744,7 +742,7 @@ void EditorTransformSystem::MovePivot(Vector2 delta)
 
     for (const EditorTransformSystemDetail::ChangePropertyAction& changePropertyAction : propertiesToChange)
     {
-        systemsManager->propertyChanged.Emit(changePropertyAction.node, changePropertyAction.property, changePropertyAction.value, changePropertyAction.sourceValue);
+        systemsManager->propertyChanged.Emit(changePropertyAction.node, changePropertyAction.property, changePropertyAction.value);
     }
 }
 
@@ -853,7 +851,7 @@ bool EditorTransformSystem::RotateControl(const Vector2& pos)
     float32 originalAngle = angleProperty->GetValue().AsFloat();
 
     float32 finalAngle = AdjustRotateToFixedAngle(deltaAngle, originalAngle);
-    systemsManager->propertyChanged.Emit(activeControlNode, angleProperty, VariantType(finalAngle), VariantType(originalAngle));
+    systemsManager->propertyChanged.Emit(activeControlNode, angleProperty, VariantType(finalAngle));
     previousMousePos = pos;
     return true;
 }
@@ -962,14 +960,13 @@ void EditorTransformSystem::UpdateNeighboursToMove()
 
 void EditorTransformSystem::ClampAngle()
 {
-    float32 sourceAngle = angleProperty->GetValue().AsFloat();
-    float32 angle = sourceAngle;
+    float32 angle = angleProperty->GetValue().AsFloat();
     if (fabs(angle) > 360)
     {
         angle += angle > 0.0f ? EditorTransformSystemDetail::TRANSFORM_EPSILON : -EditorTransformSystemDetail::TRANSFORM_EPSILON;
         angle = static_cast<int32>(angle) % 360;
     }
-    systemsManager->propertyChanged.Emit(activeControlNode, angleProperty, VariantType(angle), VariantType(sourceAngle));
+    systemsManager->propertyChanged.Emit(activeControlNode, angleProperty, VariantType(angle));
 }
 
 bool EditorTransformSystem::IsShiftPressed() const

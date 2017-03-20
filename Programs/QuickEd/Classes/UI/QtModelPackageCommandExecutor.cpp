@@ -149,14 +149,6 @@ void QtModelPackageCommandExecutor::ChangeProperty(ControlNode* node, AbstractPr
     }
 }
 
-void QtModelPackageCommandExecutor::ChangeProperty(ControlNode* node, AbstractProperty* property, const VariantType& value, const VariantType& oldValue)
-{
-    if (!property->IsReadOnly())
-    {
-        ExecCommand(std::unique_ptr<Command>(new ChangePropertyValueCommand(packageNode, node, property, value, oldValue)));
-    }
-}
-
 void QtModelPackageCommandExecutor::ResetProperty(ControlNode* node, AbstractProperty* property)
 {
     if (!property->IsReadOnly())

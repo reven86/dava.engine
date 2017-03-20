@@ -56,8 +56,7 @@ IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject* anObject, const D
     if (isSizeProperty || member->Name() == INTROSPECTION_PROPERTY_NAME_POSITION)
     {
         UIControl* control = DynamicTypeCheck<UIControl*>(anObject);
-        if (dynamic_cast<UIScrollViewContainer*>(control) == nullptr && control->GetName() != FastName("buttonToggle") &&
-            control->GetName() != FastName("thumbSpriteControl"))
+        if (dynamic_cast<UIScrollViewContainer*>(control) == nullptr)
         {
             sourceRectComponent = control->GetOrCreateComponent<UILayoutSourceRectComponent>();
             SetLayoutSourceRectValue(member->Value(anObject));
@@ -116,11 +115,6 @@ const DAVA::InspMember* IntrospectionProperty::GetMember() const
 void IntrospectionProperty::DisableResetFeature()
 {
     flags &= ~EF_CAN_RESET;
-}
-
-DAVA::UILayoutSourceRectComponent *IntrospectionProperty::GetLayoutSourceRectComponent() const
-{
-    return sourceRectComponent.Get();
 }
 
 void IntrospectionProperty::ApplyValue(const DAVA::VariantType& value)

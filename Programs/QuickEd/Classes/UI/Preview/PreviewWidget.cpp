@@ -868,11 +868,11 @@ void PreviewWidget::OnDragStateChanged(EditorSystemsManager::eDragState dragStat
     }
 }
 
-void PreviewWidget::OnPropertyChanged(ControlNode* node, AbstractProperty* property, VariantType newValue, DAVA::VariantType sourceValue)
+void PreviewWidget::OnPropertyChanged(ControlNode* node, AbstractProperty* property, VariantType newValue)
 {
     DVASSERT(!document.isNull());
     QtModelPackageCommandExecutor* commandExecutor = document->GetCommandExecutor();
-    commandExecutor->ChangeProperty(node, property, newValue, sourceValue);
+    commandExecutor->ChangeProperty(node, property, newValue);
 }
 
 float PreviewWidget::GetScaleFromWheelEvent(int ticksCount) const
