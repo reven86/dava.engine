@@ -5,7 +5,9 @@
 #include "UIControls/Menu.h"
 #include "Quality/QualitySettingsDialog.h"
 
+#ifdef WITH_SCENE_PERFORMANCE_TESTS
 #include <GridTest.h>
+#endif
 
 #include <UI/UIList.h>
 #include <Scene3D/Systems/Controller/RotationControllerSystem.h>
@@ -15,7 +17,9 @@
 class ViewSceneScreen
 : public BaseScreen,
   public DAVA::UIFileSystemDialogDelegate,
+#ifdef WITH_SCENE_PERFORMANCE_TESTS
   public GridTestListener,
+#endif
   public QualitySettingsDialogDelegate
 {
 public:
@@ -40,8 +44,10 @@ private:
     // QualitySettingsDialogInvoker
     void OnQualitySettingsEditDone() override;
 
+#ifdef WITH_SCENE_PERFORMANCE_TESTS
     // GridTestListener
     void OnGridTestStateChanged() override;
+#endif
 
     void AddMenuControl();
     void AddFileDialogControl();
@@ -97,5 +103,7 @@ private:
 
     DAVA::FpsMeter fpsMeter;
 
+#ifdef WITH_SCENE_PERFORMANCE_TESTS
     GridTest gridTest;
+#endif
 };

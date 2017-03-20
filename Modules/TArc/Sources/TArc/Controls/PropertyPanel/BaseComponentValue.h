@@ -4,6 +4,7 @@
 #include "TArc/Controls/PropertyPanel/PropertyPanelMeta.h"
 #include "TArc/Controls/ControlProxy.h"
 #include "TArc/Utils/QtConnections.h"
+#include "TArc/WindowSubSystem/UI.h"
 
 #include <Reflection/Reflection.h>
 #include <Base/BaseTypes.h>
@@ -33,6 +34,14 @@ struct PropertyNode;
 class BaseComponentValue : public ReflectionBase
 {
 public:
+    struct Style
+    {
+        Any bgColor; // Cast<QColor> should be defined
+        Any fontColor; // Cast<QColor> should be defined
+        Any fontBold; // Cast<bool> should be defined
+        Any fontItalic; // Cast<bool> should be defined
+    };
+
     BaseComponentValue();
     virtual ~BaseComponentValue();
 
@@ -56,6 +65,9 @@ public:
     virtual bool IsReadOnly() const;
     virtual bool IsSpannedControl() const;
 
+    const Style& GetStyle() const;
+    void SetStyle(const Style& style);
+
     static const char* readOnlyFieldName;
 
 protected:
@@ -78,6 +90,10 @@ protected:
     ControlProxy* editorWidget = nullptr;
     Vector<std::shared_ptr<PropertyNode>> nodes;
 
+    ContextAccessor* GetAccessor() const;
+    UI* GetUI() const;
+    const WindowKey& GetWindowKey() const;
+
 private:
     void EnsureEditorCreated(const QWidget* parent) const;
     void EnsureEditorCreated(QWidget* parent);
@@ -93,6 +109,7 @@ private:
     BaseComponentValue* thisValue = nullptr;
     bool isEditorEvent = false;
     QWidget* realWidget = nullptr;
+    Style style;
 
     QtConnections connections;
 
