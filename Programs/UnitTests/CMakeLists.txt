@@ -19,22 +19,21 @@ endif()
 set (DAVA_COREV2 1)
 dava_add_definitions(-D__DAVAENGINE_COREV2__)
 
-if ( WIN32 OR MACOS )
-    find_package(DavaTools REQUIRED )
-endif()
-
 # Enable LOCALIZATION_DEBUG in UnitTests to verify successful compilation
 dava_add_definitions(-DLOCALIZATION_DEBUG)
 
-set ( DAVA_COMPONENTS "ALL" DAVA_DISABLE_AUTOTESTS )
-if ( WIN32 AND NOT WINDOWS_UAP )
+set ( DAVA_COMPONENTS "ALL" "SampleModule" "DAVA_DISABLE_AUTOTESTS" )
+if ( WIN32 AND NOT WIN_UAP AND NOT DAVA_PLATFORM_QT)
     list ( APPEND DAVA_COMPONENTS "CEFWebview" )
 endif ()
 
-if (NOT ANDROID)
-    list ( APPEND DAVA_COMPONENTS "SampleModule" )
+if( NOT WINDOWS_UAP AND ( MACOS OR WIN32 ) )
+    add_plugin( SamplePlugin "${DAVA_MODULES_DIR}/SamplePlugin" COMPONENTS  ${DAVA_COMPONENTS} )
 endif()
 
+if ( WIN32 OR MACOS )
+    find_package(DavaTools REQUIRED )
+endif()
 find_package( Steam REQUIRED )
 find_package( DavaFramework REQUIRED COMPONENTS "${DAVA_COMPONENTS}" )
 
