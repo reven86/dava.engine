@@ -39,6 +39,8 @@ public:
     const DAVA::InspMember* GetMember() const;
 
     void DisableResetFeature();
+    
+    DAVA::UILayoutSourceRectComponent *GetLayoutSourceRectComponent() const;
 
 protected:
     void ApplyValue(const DAVA::VariantType& value) override;

@@ -4,17 +4,25 @@
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/ControlProperties/AbstractProperty.h"
 
+#include <UI/Layouts/UILayoutSourceRectComponent.h>
 #include <QString>
+
 using namespace DAVA;
 
-ChangePropertyValueCommand::ChangePropertyValueCommand(PackageNode* root_, ControlNode* node_, AbstractProperty* prop, const VariantType& newVal)
-    : DAVA::Command(DAVA::String("changed property: ") + prop->GetName().c_str())
+ChangePropertyValueCommand::ChangePropertyValueCommand(PackageNode* root_, ControlNode* node_, AbstractProperty* property_, const VariantType& newValue_)
+    : ChangePropertyValueCommand(root_, node_, property_, newValue_, GetValueFromProperty(property_))
+{
+}
+
+ChangePropertyValueCommand::ChangePropertyValueCommand(PackageNode* root_, ControlNode* node_, AbstractProperty* property_, const DAVA::VariantType& newValue_, const DAVA::VariantType& oldValue_)
+    : DAVA::Command(DAVA::String("changed property: ") + property_->GetName().c_str())
     , root(root_)
     , node(node_)
-    , property(prop)
-    , oldValue(GetValueFromProperty(prop))
-    , newValue(newVal)
+    , property(property_)
+    , oldValue(oldValue_)
+    , newValue(newValue_)
 {
+    
 }
 
 void ChangePropertyValueCommand::Redo()
