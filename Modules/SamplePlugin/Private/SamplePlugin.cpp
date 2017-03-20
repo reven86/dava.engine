@@ -7,6 +7,11 @@
 
 using namespace DAVA;
 
+int DAVAMain(Vector<String> cmdline)
+{
+    return 0;
+}
+
 class SamplePluginUIComponent : public UIBaseComponent<SamplePluginUIComponent>
 {
     DAVA_VIRTUAL_REFLECTION(SampleModuleUIComponent, UIComponent);
