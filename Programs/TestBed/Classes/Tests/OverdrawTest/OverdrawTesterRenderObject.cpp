@@ -1,6 +1,8 @@
 #include "OverdrawTesterRenderObject.h"
 
 #include "Base/BaseTypes.h"
+#include "Functional/Function.h"
+#include "Render/RenderCallbacks.h"
 #include "Render/Material/NMaterial.h"
 #include "Render/Highlevel/RenderBatch.h"
 #include "Render/DynamicBufferAllocator.h"
