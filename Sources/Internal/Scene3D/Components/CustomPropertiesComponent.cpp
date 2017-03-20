@@ -4,10 +4,22 @@
 #include "Scene3D/SceneFileV2.h"
 #include "Scene3D/Systems/EventSystem.h"
 #include "Scene3D/Systems/GlobalEventSystem.h"
+
+#include "Reflection/ReflectionRegistrator.h"
+#include "Reflection/ReflectedMeta.h"
+
 #include "FileSystem/FileSystem.h"
 
 namespace DAVA
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(CustomPropertiesComponent)
+{
+    ReflectionRegistrator<CustomPropertiesComponent>::Begin()[M::CantBeCreatedManualyComponent()]
+    .ConstructorByPointer()
+    .Field("properties", &CustomPropertiesComponent::properties)[M::DisplayName("Custom properties")]
+    .End();
+}
+
 CustomPropertiesComponent::CustomPropertiesComponent()
 {
     properties = new KeyedArchive();

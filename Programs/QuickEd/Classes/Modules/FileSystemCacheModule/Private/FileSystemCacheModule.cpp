@@ -44,7 +44,6 @@ void FileSystemCacheModule::OnWindowClosed(const DAVA::TArc::WindowKey& key)
     ContextAccessor* accessor = GetAccessor();
     DataContext* globalContext = accessor->GetGlobalContext();
     globalContext->DeleteData<FileSystemCache>();
-    projectUiPathFieldBinder = nullptr;
 }
 
 void FileSystemCacheModule::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields)

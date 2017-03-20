@@ -1,7 +1,8 @@
 #include "TextComponentValue.h"
 #include "TArc/Controls/LineEdit.h"
 #include "TArc/Controls/PropertyPanel/Private/ComponentStructureWrapper.h"
-#include "TArc/Controls/PropertyPanel/Private/PropertyPanelMeta.h"
+#include "TArc/Controls/PropertyPanel/PropertyPanelMeta.h"
+#include "TArc/Controls/CommonStrings.h"
 
 #include <Reflection/ReflectionRegistrator.h>
 #include <Reflection/ReflectedMeta.h>
@@ -12,7 +13,7 @@ namespace TArc
 {
 Any TextComponentValue::GetMultipleValue() const
 {
-    static Any multValue(String("< multiple values >"));
+    static Any multValue = String(MultipleValuesString);
     return multValue;
 }
 
@@ -39,11 +40,6 @@ ControlProxy* TextComponentValue::CreateEditorWidget(QWidget* parent, const Refl
     descr[LineEdit::Fields::Text] = "text";
     descr[LineEdit::Fields::IsReadOnly] = readOnlyFieldName;
     return new LineEdit(descr, wrappersProcessor, model, parent);
-}
-
-bool TextComponentValue::EditorEvent(QWidget* parent, QEvent* event, const QStyleOptionViewItem& option)
-{
-    return false;
 }
 
 DAVA_VIRTUAL_REFLECTION_IMPL(TextComponentValue)

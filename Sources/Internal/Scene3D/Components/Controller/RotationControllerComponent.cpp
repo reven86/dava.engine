@@ -1,5 +1,7 @@
 #include "RotationControllerComponent.h"
 
+#include "Reflection/ReflectionRegistrator.h"
+
 namespace DAVA
 {
 Component* RotationControllerComponent::Clone(Entity* toEntity)
@@ -8,5 +10,12 @@ Component* RotationControllerComponent::Clone(Entity* toEntity)
     component->SetEntity(toEntity);
 
     return component;
+}
+
+DAVA_VIRTUAL_REFLECTION_IMPL(RotationControllerComponent)
+{
+    ReflectionRegistrator<RotationControllerComponent>::Begin()
+    .ConstructorByPointer()
+    .End();
 }
 };

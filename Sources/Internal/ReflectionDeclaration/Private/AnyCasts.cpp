@@ -4,7 +4,13 @@
 #include "Base/BaseTypes.h"
 #include "Base/FastName.h"
 
+#include "Math/Matrix2.h"
+#include "Math/Matrix3.h"
+#include "Math/Matrix4.h"
+
 #include "FileSystem/FilePath.h"
+
+#include "Utils/StringFormat.h"
 
 namespace DAVA
 {
@@ -30,12 +36,22 @@ FastName CharPointerToFastName(const Any& value)
 
 const char* FastNameToCharPointer(const Any& value)
 {
-    return value.Get<FastName>().c_str();
+    const FastName& v = value.Get<FastName>();
+    if (v.IsValid() == false)
+    {
+        return nullptr;
+    }
+    return v.c_str();
 }
 
 String FastNameToString(const Any& value)
 {
-    return String(value.Get<FastName>().c_str());
+    const FastName& v = value.Get<FastName>();
+    if (v.IsValid() == false)
+    {
+        return String();
+    }
+    return String(v.c_str());
 }
 
 template <typename T>
@@ -52,6 +68,35 @@ String FilePathToString(const Any& value)
 FilePath StringToFilePath(const Any& value)
 {
     return FilePath(value.Get<String>());
+}
+
+String Matrix2ToString(const Any& value)
+{
+    Matrix2 matrix = value.Get<Matrix2>();
+    return Format("[%f, %f]\n[%f, %f]",
+                  matrix._data[0][0], matrix._data[0][1],
+                  matrix._data[1][0], matrix._data[1][1]);
+}
+
+String Matrix3ToString(const Any& value)
+{
+    Matrix3 matrix = value.Get<Matrix3>();
+    return Format("[%f, %f, %f]\n[%f, %f, %f]\n[%f, %f, %f]",
+                  matrix._data[0][0], matrix._data[0][1], matrix._data[0][2],
+                  matrix._data[1][0], matrix._data[1][1], matrix._data[1][2],
+                  matrix._data[2][0], matrix._data[2][1], matrix._data[2][2]
+                  );
+}
+
+String Matrix4ToString(const Any& value)
+{
+    Matrix4 matrix = value.Get<Matrix4>();
+    return Format("[%f, %f, %f, %f]\n[%f, %f, %f, %f]\n[%f, %f, %f, %f]\n[%f, %f, %f, %f]",
+                  matrix._data[0][0], matrix._data[0][1], matrix._data[0][2], matrix._data[0][3],
+                  matrix._data[1][0], matrix._data[1][1], matrix._data[1][2], matrix._data[1][3],
+                  matrix._data[2][0], matrix._data[2][1], matrix._data[2][2], matrix._data[2][3],
+                  matrix._data[3][0], matrix._data[3][1], matrix._data[3][2], matrix._data[3][3]
+                  );
 }
 
 void RegisterAnyCasts()
@@ -82,6 +127,10 @@ void RegisterAnyCasts()
     AnyCast<int, int16>::RegisterDefault();
     AnyCast<int8, int>::RegisterDefault();
     AnyCast<int, int8>::RegisterDefault();
+
+    AnyCast<Matrix2, String>::Register(&Matrix2ToString);
+    AnyCast<Matrix3, String>::Register(&Matrix3ToString);
+    AnyCast<Matrix4, String>::Register(&Matrix4ToString);
 }
 
 } // namespace DAVA

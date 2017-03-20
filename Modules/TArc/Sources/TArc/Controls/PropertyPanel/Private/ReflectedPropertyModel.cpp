@@ -2,14 +2,26 @@
 #include "TArc/Controls/PropertyPanel/Private/ReflectedPropertyItem.h"
 #include "TArc/Controls/PropertyPanel/Private/EmptyComponentValue.h"
 #include "TArc/Controls/PropertyPanel/Private/DefaultPropertyModelExtensions.h"
+#include "TArc/Controls/PropertyPanel/PropertyPanelMeta.h"
+#include "TArc/Controls/PropertyPanel/KeyedArchiveChildCreator.h"
+#include "TArc/Controls/PropertyPanel/Private/SubPropertiesExtensions.h"
 
 #include <Debug/DVAssert.h>
+#include <Logger/Logger.h>
+#include <Time/SystemTimer.h>
+#include <Utils/StringFormat.h>
+#include <Utils/Utils.h>
 
 namespace DAVA
 {
 namespace TArc
 {
-ReflectedPropertyModel::ReflectedPropertyModel()
+ReflectedPropertyModel::ReflectedPropertyModel(WindowKey wndKey_, ContextAccessor* accessor_, OperationInvoker* invoker_, UI* ui_)
+    : wndKey(wndKey_)
+    , accessor(accessor_)
+    , invoker(invoker_)
+    , ui(ui_)
+    , expandedItems(FastName("Root"))
 {
     rootItem.reset(new ReflectedPropertyItem(this, std::make_unique<EmptyComponentValue>()));
 
@@ -19,8 +31,13 @@ ReflectedPropertyModel::ReflectedPropertyModel()
     RegisterExtension(ModifyExtension::CreateDummy());
 
     RegisterExtension(std::make_shared<DefaultChildCheatorExtension>());
+    RegisterExtension(std::make_shared<KeyedArchiveChildCreator>());
+    RegisterExtension(std::make_shared<SubPropertyValueChildCreator>());
+
     RegisterExtension(std::make_shared<DefaultMergeValueExtension>());
-    RegisterExtension(std::make_shared<DefaultEditorComponentExtension>());
+
+    RegisterExtension(std::make_shared<DefaultEditorComponentExtension>(ui));
+    RegisterExtension(std::make_shared<SubPropertyEditorCreator>());
 
     childCreator.nodeCreated.Connect(this, &ReflectedPropertyModel::ChildAdded);
     childCreator.nodeRemoved.Connect(this, &ReflectedPropertyModel::ChildRemoved);
@@ -38,7 +55,12 @@ ReflectedPropertyModel::~ReflectedPropertyModel()
 
 int ReflectedPropertyModel::rowCount(const QModelIndex& parent) const
 {
-    return MapItem(parent)->GetChildCount();
+    ReflectedPropertyItem* item = MapItem(parent);
+    if (item == nullptr)
+    {
+        return 0;
+    }
+    return item->GetChildCount();
 }
 
 int ReflectedPropertyModel::columnCount(const QModelIndex& parent) const
@@ -50,7 +72,11 @@ QVariant ReflectedPropertyModel::data(const QModelIndex& index, int role) const
 {
     if (role == Qt::DisplayRole)
     {
-        return MapItem(index)->GetPropertyName();
+        ReflectedPropertyItem* item = MapItem(index);
+        if (item != nullptr)
+        {
+            return item->GetPropertyName();
+        }
     }
 
     return QVariant();
@@ -75,14 +101,17 @@ QVariant ReflectedPropertyModel::headerData(int section, Qt::Orientation orienta
 Qt::ItemFlags ReflectedPropertyModel::flags(const QModelIndex& index) const
 {
     DVASSERT(index.isValid());
-    Qt::ItemFlags flags = Qt::ItemIsSelectable | Qt::ItemIsEnabled;
+    Qt::ItemFlags flags = Qt::ItemFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
     if (index.column() == 1)
     {
         ReflectedPropertyItem* item = MapItem(index);
-        std::shared_ptr<const PropertyNode> node = item->GetPropertyNode(0);
-        if (!node->field.ref.IsReadonly())
+        if (item != nullptr)
         {
-            flags |= Qt::ItemIsEditable;
+            std::shared_ptr<const PropertyNode> node = item->GetPropertyNode(0);
+            if (!node->field.ref.IsReadonly())
+            {
+                flags |= Qt::ItemIsEditable;
+            }
         }
     }
 
@@ -94,24 +123,24 @@ QModelIndex ReflectedPropertyModel::index(int row, int column, const QModelIndex
     if (parent.isValid())
     {
         ReflectedPropertyItem* item = MapItem(parent);
-        if (row < item->GetChildCount())
+        if (item != nullptr && row < item->GetChildCount())
             return createIndex(row, column, item);
 
         return QModelIndex();
     }
 
-    return createIndex(row, column, nullptr);
+    return createIndex(row, column, rootItem.get());
 }
 
 QModelIndex ReflectedPropertyModel::parent(const QModelIndex& index) const
 {
     DVASSERT(index.isValid());
     ReflectedPropertyItem* item = reinterpret_cast<ReflectedPropertyItem*>(index.internalPointer());
-    if (item == nullptr)
+    if (item == nullptr || item == rootItem.get())
     {
         return QModelIndex();
     }
-    return createIndex(0, 0, item->parent);
+    return createIndex(item->position, 0, item->parent);
 }
 
 //////////////////////////////////////
@@ -120,11 +149,13 @@ QModelIndex ReflectedPropertyModel::parent(const QModelIndex& index) const
 
 void ReflectedPropertyModel::Update()
 {
-    //std::chrono::high_resolution_clock::time_point start = std::chrono::high_resolution_clock::now();
+    int64 start = SystemTimer::GetMs();
     Update(rootItem.get());
-    //double duration = std::chrono::duration_cast<std::chrono::duration<double>>(std::chrono::high_resolution_clock::now() - start).count();
-    //NGT_TRACE_MSG("update duration : %f seconds\n", duration);
+    fastWrappersProcessor.Sync();
     wrappersProcessor.Sync();
+#if defined(REPORT_UPDATE_TIME)
+    Logger::Debug(" === ReflectedPropertyModel::Update : %d ===", static_cast<int32>(SystemTimer::GetMs() - start));
+#endif
 }
 
 void ReflectedPropertyModel::Update(ReflectedPropertyItem* item)
@@ -138,6 +169,58 @@ void ReflectedPropertyModel::Update(ReflectedPropertyItem* item)
     for (const std::unique_ptr<ReflectedPropertyItem>& child : item->children)
     {
         Update(child.get());
+    }
+
+    fastWrappersProcessor.Sync();
+}
+
+void ReflectedPropertyModel::UpdateFastImpl(ReflectedPropertyItem* item)
+{
+    if (item->GetPropertyNodesCount() == 0)
+    {
+        return;
+    }
+
+    if (item->GetPropertyNode(0)->field.ref.HasMeta<M::FrequentlyChangedValue>())
+    {
+        Update(item);
+    }
+
+    for (int32 i = 0; i < item->GetChildCount(); ++i)
+    {
+        UpdateFastImpl(item->GetChild(i));
+    }
+}
+
+DataWrappersProcessor* ReflectedPropertyModel::GetWrappersProcessor(const std::shared_ptr<PropertyNode>& node)
+{
+    if (node->field.ref.HasMeta<M::FrequentlyChangedValue>())
+    {
+        return &fastWrappersProcessor;
+    }
+
+    return &wrappersProcessor;
+}
+
+void ReflectedPropertyModel::UpdateFast()
+{
+    int64 start = SystemTimer::GetMs();
+    UpdateFastImpl(rootItem.get());
+#if defined(REPORT_UPDATE_TIME)
+    Logger::Debug(" === ReflectedPropertyModel::UpdateFast : %d ===", static_cast<int32>(SystemTimer::GetMs() - start));
+#endif
+}
+
+void ReflectedPropertyModel::HideEditor(ReflectedPropertyItem* item)
+{
+    if (item->value != nullptr)
+    {
+        item->value->HideEditor();
+    }
+
+    for (int32 i = 0; i < item->GetChildCount(); ++i)
+    {
+        HideEditor(item->GetChild(i));
     }
 }
 
@@ -294,6 +377,92 @@ DAVA::TArc::BaseComponentValue* ReflectedPropertyModel::GetComponentValue(const 
     ReflectedPropertyItem* item = MapItem(index);
     DVASSERT(item != nullptr);
     return item->value.get();
+}
+
+void ReflectedPropertyModel::SetExpanded(bool expanded, const QModelIndex& index)
+{
+    List<FastName> reflectedPath;
+    QModelIndex currentIndex = index;
+    while (currentIndex.isValid())
+    {
+        ReflectedPropertyItem* item = MapItem(currentIndex);
+        reflectedPath.push_front(FastName(item->GetPropertyName().toStdString()));
+        currentIndex = currentIndex.parent();
+    }
+
+    if (expanded == true)
+    {
+        expandedItems.AddLeaf(std::move(reflectedPath));
+    }
+    else
+    {
+        expandedItems.RemoveLeaf(std::move(reflectedPath));
+    }
+}
+
+QModelIndexList ReflectedPropertyModel::GetExpandedList() const
+{
+    QModelIndexList result;
+    GetExpandedListImpl(result, rootItem.get());
+    return result;
+}
+
+QModelIndexList ReflectedPropertyModel::GetExpandedChildren(const QModelIndex& index) const
+{
+    List<FastName> reflectedPath;
+    QModelIndex currentIndex = index;
+    while (currentIndex.isValid())
+    {
+        ReflectedPropertyItem* item = MapItem(currentIndex);
+        reflectedPath.push_front(FastName(item->GetPropertyName().toStdString()));
+        currentIndex = currentIndex.parent();
+    }
+
+    for (const FastName& name : reflectedPath)
+    {
+        bool result = expandedItems.PushRoot(name);
+        DVASSERT(result);
+    }
+    QModelIndexList result;
+    GetExpandedListImpl(result, MapItem(index));
+    for (size_t i = 0; i < reflectedPath.size(); ++i)
+    {
+        expandedItems.PopRoot();
+    }
+
+    return result;
+}
+
+void ReflectedPropertyModel::SaveExpanded(PropertiesItem& propertyRoot) const
+{
+    expandedItems.Save(propertyRoot);
+}
+
+void ReflectedPropertyModel::LoadExpanded(const PropertiesItem& propertyRoot)
+{
+    expandedItems.Load(propertyRoot);
+}
+
+void ReflectedPropertyModel::HideEditors()
+{
+    HideEditor(rootItem.get());
+}
+
+void ReflectedPropertyModel::GetExpandedListImpl(QModelIndexList& list, ReflectedPropertyItem* item) const
+{
+    int32 childCount = item->GetChildCount();
+    for (int32 i = 0; i < childCount; ++i)
+    {
+        ReflectedPropertyItem* child = item->GetChild(i);
+        FastName propertyName = FastName(child->GetPropertyName().toStdString());
+        if (expandedItems.HasChildInCurrentRoot(propertyName))
+        {
+            list << MapItem(child);
+            expandedItems.PushRoot(propertyName);
+            GetExpandedListImpl(list, child);
+            expandedItems.PopRoot();
+        }
+    }
 }
 
 } // namespace TArc

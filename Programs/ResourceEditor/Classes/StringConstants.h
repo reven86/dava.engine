@@ -1,5 +1,8 @@
-#ifndef __STRING_CONSTANTS_H__
-#define __STRING_CONSTANTS_H__
+#pragma once
+
+#include <Base/FastName.h>
+
+#include <Base/FastName.h>
 
 namespace ResourceEditor
 {
@@ -170,5 +173,3 @@ static const DAVA::String ADD_SWITCH_NODE_DIALOG_NO_RENDER_OBJECTS = "Error: ent
 static const DAVA::String ADD_SWITCH_NODE_DIALOG_DENY_SRC_SWITCH = "Error: entities should not contain switch components";
 static const DAVA::String SCENE_TREE_WRONG_REF_TO_OWNER = "Wrong reference(s) to owner: ";
 }
-
-#endif //#ifndef __STRING_CONSTANTS_H__

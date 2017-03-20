@@ -232,7 +232,6 @@
     <addaction name="actionImageSplitter"/>
     <addaction name="actionHeightmap_Delta_Tool"/>
     <addaction name="separator"/>
-    <addaction name="actionShowSettings"/>
    </widget>
    <widget class="QMenu" name="View">
     <property name="title">
@@ -634,7 +633,7 @@
           <x>0</x>
           <y>0</y>
           <width>256</width>
-          <height>98</height>
+          <height>76</height>
          </rect>
         </property>
        </widget>
@@ -744,7 +743,7 @@
           <x>0</x>
           <y>0</y>
           <width>256</width>
-          <height>98</height>
+          <height>76</height>
          </rect>
         </property>
        </widget>
@@ -870,15 +869,6 @@
    </property>
    <property name="visible">
     <bool>false</bool>
-   </property>
-  </action>
-  <action name="actionShowSettings">
-   <property name="icon">
-    <iconset resource="Resources.qrc">
-     <normaloff>:/QtIcons/settings.png</normaloff>:/QtIcons/settings.png</iconset>
-   </property>
-   <property name="text">
-    <string>Settings...</string>
    </property>
   </action>
   <action name="actionSwitchNode">

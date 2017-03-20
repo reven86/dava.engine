@@ -1,5 +1,7 @@
 #include "Debug/DVAssertMessage.h"
 
+#if !defined(__DAVAENGINE_COREV2__)
+
 #if defined(__DAVAENGINE_MACOS__) 
 #import <Foundation/Foundation.h>
 #include <AppKit/NSAlert.h>
@@ -83,3 +85,4 @@ bool DAVA::DVAssertMessage::InnerShow(eModalType modalType, const char* content)
 #endif
     return breakExecution;
 }
+#endif // !defined(__DAVAENGINE_COREV2__)

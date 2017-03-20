@@ -1,7 +1,10 @@
 #pragma once
 
 #include "TArc/Controls/PropertyPanel/Private/ChildCreator.h"
+#include "TArc/Controls/PropertyPanel/Private/ReflectionPathTree.h"
 #include "TArc/DataProcessing/DataWrappersProcessor.h"
+#include "TArc/DataProcessing/PropertiesHolder.h"
+#include "TArc/WindowSubSystem/UI.h"
 
 #include "Base/BaseTypes.h"
 #include "Base/Any.h"
@@ -13,12 +16,15 @@ namespace DAVA
 namespace TArc
 {
 class ReflectedPropertyItem;
+class ContextAccessor;
+class OperationInvoker;
+class UI;
 
 class ReflectedPropertyModel : public QAbstractItemModel
 {
     Q_OBJECT
 public:
-    ReflectedPropertyModel();
+    ReflectedPropertyModel(WindowKey wndKey, ContextAccessor* accessor, OperationInvoker* invoker, UI* ui);
     ~ReflectedPropertyModel();
 
     //////////////////////////////////////
@@ -40,6 +46,7 @@ public:
     //////////////////////////////////////
 
     void Update();
+    void UpdateFast();
     void SetObjects(Vector<Reflection> objects);
 
     void RegisterExtension(const std::shared_ptr<ExtensionChain>& extension);
@@ -51,6 +58,15 @@ public:
         wrappersProcessor.Sync();
     }
 
+    void SetExpanded(bool expanded, const QModelIndex& index);
+    QModelIndexList GetExpandedList() const;
+    QModelIndexList GetExpandedChildren(const QModelIndex& index) const;
+
+    void SaveExpanded(PropertiesItem& propertyRoot) const;
+    void LoadExpanded(const PropertiesItem& propertyRoot);
+
+    void HideEditors();
+
 private:
     friend class BaseComponentValue;
     void ChildAdded(std::shared_ptr<const PropertyNode> parent, std::shared_ptr<PropertyNode> node, int32 childPosition);
@@ -60,9 +76,14 @@ private:
     QModelIndex MapItem(ReflectedPropertyItem* item) const;
 
     void Update(ReflectedPropertyItem* item);
+    void UpdateFastImpl(ReflectedPropertyItem* item);
+    void HideEditor(ReflectedPropertyItem* item);
 
     template <typename T>
     std::shared_ptr<T> GetExtensionChain() const;
+
+    DataWrappersProcessor* GetWrappersProcessor(const std::shared_ptr<PropertyNode>& node);
+    void GetExpandedListImpl(QModelIndexList& list, ReflectedPropertyItem* item) const;
 
 private:
     std::unique_ptr<ReflectedPropertyItem> rootItem;
@@ -72,6 +93,13 @@ private:
     Map<const Type*, std::shared_ptr<ExtensionChain>> extensions;
 
     DataWrappersProcessor wrappersProcessor;
+    DataWrappersProcessor fastWrappersProcessor;
+    ReflectionPathTree expandedItems;
+
+    WindowKey wndKey;
+    ContextAccessor* accessor = nullptr;
+    OperationInvoker* invoker = nullptr;
+    UI* ui = nullptr;
 };
 
 template <typename Dst, typename Src>
