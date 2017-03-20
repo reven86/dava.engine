@@ -735,4 +735,17 @@ DAVA_TESTCLASS (ReflectionTest)
 
         delete s;
     }
+
+    DAVA_TEST (ReflectionVirtualCollection)
+    {
+        DAVA::Vector<A*> v;
+        v.push_back(new D());
+
+        DAVA::Reflection r = DAVA::Reflection::Create(&v);
+        DAVA::Reflection cr = r.GetField(0);
+        Any val = cr.GetValue();
+
+        const ReflectedType* res = ReflectedTypeDB::GetByPointer(val.Get<void*>(), val.GetType());
+        TEST_VERIFY(res->GetType() == Type::Instance<D>());
+    }
 };

@@ -59,6 +59,23 @@ Type* const* GetTypeIfTrue(std::true_type)
     return TypeHolder<T>::InstancePointer();
 }
 
+template <typename T>
+Type::SeedCastOP GetCastIfSeed(std::true_type)
+{
+    static auto op = [](const void* ptr) -> const Type::Seed*
+    {
+        const T* tptr = static_cast<const T*>(ptr);
+        return static_cast<const Type::Seed*>(tptr);
+    };
+    return static_cast<Type::SeedCastOP>(op);
+}
+
+template <typename T>
+Type::SeedCastOP GetCastIfSeed(std::false_type)
+{
+    return nullptr;
+}
+
 struct TypeDB
 {
     struct Stats
@@ -95,6 +112,10 @@ struct TypeDB
 
 } // namespace TypeDetails
 
+struct Type::Seed
+{
+};
+
 inline size_t Type::GetSize() const
 {
     return size;
@@ -122,42 +143,47 @@ inline unsigned long Type::GetTypeFlags() const
 
 inline bool Type::IsConst() const
 {
-    return flags.test(static_cast<size_t>(TypeFlag::isConst));
+    return flags.test(static_cast<size_t>(eTypeFlag::isConst));
 }
 
 inline bool Type::IsPointer() const
 {
-    return flags.test(static_cast<size_t>(TypeFlag::isPointer));
+    return flags.test(static_cast<size_t>(eTypeFlag::isPointer));
 }
 
 inline bool Type::IsReference() const
 {
-    return flags.test(static_cast<size_t>(TypeFlag::isReference));
+    return flags.test(static_cast<size_t>(eTypeFlag::isReference));
 }
 
 inline bool Type::IsFundamental() const
 {
-    return flags.test(static_cast<size_t>(TypeFlag::isFundamental));
+    return flags.test(static_cast<size_t>(eTypeFlag::isFundamental));
 }
 
 inline bool Type::IsTrivial() const
 {
-    return flags.test(static_cast<size_t>(TypeFlag::isTrivial));
+    return flags.test(static_cast<size_t>(eTypeFlag::isTrivial));
 }
 
 inline bool Type::IsIntegral() const
 {
-    return flags.test(static_cast<size_t>(TypeFlag::isIntegral));
+    return flags.test(static_cast<size_t>(eTypeFlag::isIntegral));
 }
 
 inline bool Type::IsFloatingPoint() const
 {
-    return flags.test(static_cast<size_t>(TypeFlag::isFloatingPoint));
+    return flags.test(static_cast<size_t>(eTypeFlag::isFloatingPoint));
 }
 
 inline bool Type::IsEnum() const
 {
-    return flags.test(static_cast<size_t>(TypeFlag::isEnum));
+    return flags.test(static_cast<size_t>(eTypeFlag::isEnum));
+}
+
+inline Type::SeedCastOP Type::GetSeedCastOP() const
+{
+    return seedCastOP;
 }
 
 inline const Type* Type::Decay() const
@@ -192,6 +218,7 @@ Type* Type::Init()
     static const bool needDeref = (!std::is_same<T, DerefU>::value);
     static const bool needDecay = (!std::is_same<T, DecayU>::value);
     static const bool needPointer = (!std::is_pointer<T>::value);
+    static const bool needSeed = (std::is_base_of<Type::Seed, T>::value || std::is_same<Type::Seed, T>::value);
 
     type.size = TypeDetail::TypeSize<T>::size;
     type.name = typeid(T).name();
@@ -207,6 +234,9 @@ Type* Type::Init()
     type.flags.set(isIntegral, std::is_integral<T>::value);
     type.flags.set(isFloatingPoint, std::is_floating_point<T>::value);
     type.flags.set(isEnum, std::is_enum<T>::value);
+
+    auto condSeed = std::integral_constant<bool, needSeed>();
+    type.seedCastOP = TypeDetail::GetCastIfSeed<T>(condSeed);
 
     auto condDeref = std::integral_constant<bool, needDeref>();
     type.derefType = TypeDetail::GetTypeIfTrue<DerefU>(condDeref);

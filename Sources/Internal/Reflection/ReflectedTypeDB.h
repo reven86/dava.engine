@@ -50,6 +50,7 @@ public:
 
     template <typename T>
     static const ReflectedType* GetByPointer(const T* ptr);
+    static const ReflectedType* GetByPointer(const void* ptr, const Type* type);
 
     static const ReflectedType* GetByType(const Type* type);
     static const ReflectedType* GetByTypeName(const String& rttiName);

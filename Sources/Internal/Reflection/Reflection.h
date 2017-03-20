@@ -91,7 +91,7 @@ class StructureWrapper;
     };
     \endcode
 */
-struct ReflectionBase
+struct ReflectionBase : Type::Seed
 {
     virtual ~ReflectionBase() = default;
     virtual const ReflectedType* Dava__GetReflectedType() const = 0;
