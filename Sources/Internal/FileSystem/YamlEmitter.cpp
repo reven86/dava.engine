@@ -86,7 +86,7 @@ bool YamlEmitter::SaveToYamlFile(const FilePath& outFileName, const YamlNode* no
     ScopedPtr<File> outFile(File::Create(outFileName, attr));
     if (!outFile)
     {
-        Logger::Error("[YamlEmitter::Emit] Can't create file: %s for output %s", outFileName.GetStringValue().c_str(), strerror(errno));
+        Logger::Warning("[YamlEmitter::Emit] Can't create file: %s for output %s", outFileName.GetStringValue().c_str(), strerror(errno));
         return false;
     }
 

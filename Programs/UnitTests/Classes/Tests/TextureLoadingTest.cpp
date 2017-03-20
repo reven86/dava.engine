@@ -30,17 +30,17 @@ struct TextureData
     PixelFormat pixelFormat = PixelFormat::FORMAT_INVALID;
 };
 
-class ErrorsCounter : public LoggerOutput
+class WarningsCounter : public LoggerOutput
 {
 public:
     void Output(Logger::eLogLevel ll, const char8* text) override
     {
-        if (ll == Logger::LEVEL_ERROR)
+        if (ll == Logger::LEVEL_WARNING)
         {
-            ++errorsCount;
+            ++warningsCount;
         }
     }
-    uint32 errorsCount = 0;
+    uint32 warningsCount = 0;
 };
 
 bool Prepare(const Map<const eGPUFamily, TextureData>& textureData, const Vector<eGPUFamily>& gpuForRealTextures)
@@ -98,7 +98,7 @@ DAVA_TESTCLASS (TextureLoadingTest)
     {
         const Vector<eGPUFamily> originalGPULoadingOrder = Texture::GetGPULoadingOrder();
 
-        TLTestDetails::ErrorsCounter counter;
+        TLTestDetails::WarningsCounter counter;
         Logger::AddCustomOutput(&counter);
         SCOPE_EXIT
         {
@@ -122,7 +122,7 @@ DAVA_TESTCLASS (TextureLoadingTest)
             TEST_VERIFY(texture->GetWidth() == textureData.width);
             TEST_VERIFY(texture->GetHeight() == textureData.height);
 
-            TEST_VERIFY(counter.errorsCount == 0);
+            TEST_VERIFY(counter.warningsCount == 0);
         }
 
         { // create and release texture for single GPU
@@ -133,8 +133,8 @@ DAVA_TESTCLASS (TextureLoadingTest)
             TEST_VERIFY(texture->GetWidth() == 16); //pink width
             TEST_VERIFY(texture->GetHeight() == 16); //ping height
 
-            TEST_VERIFY(counter.errorsCount != 0);
-            counter.errorsCount = 0;
+            TEST_VERIFY(counter.warningsCount != 0);
+            counter.warningsCount = 0;
         }
 
         { // create and release texture for single GPU
@@ -146,7 +146,7 @@ DAVA_TESTCLASS (TextureLoadingTest)
             TEST_VERIFY(texture->GetWidth() == textureData.width);
             TEST_VERIFY(texture->GetHeight() == textureData.height);
 
-            TEST_VERIFY(counter.errorsCount == 0);
+            TEST_VERIFY(counter.warningsCount == 0);
         }
 
         TEST_VERIFY(TLTestDetails::Clean());

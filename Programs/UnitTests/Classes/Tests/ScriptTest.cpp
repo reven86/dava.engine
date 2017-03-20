@@ -99,7 +99,6 @@ DAVA_TESTCLASS (ScriptTest)
         const DAVA::String script = R"script(
 -- DV functions
 DV.Debug("Debug msg")
-DV.Info("Info msg")
 )script";
 
         TEST_VERIFY(s.ExecStringSafe(script) >= 0);
