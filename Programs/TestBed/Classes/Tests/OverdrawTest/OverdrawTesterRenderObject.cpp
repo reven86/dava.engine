@@ -52,7 +52,7 @@ OverdrawTesterRenderObject::OverdrawTesterRenderObject(float32 addOverdrawPercen
 
     bbox.AddPoint(Vector3(1.0f, 1.0f, 1.0f));
 
-    RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(this, &OverdrawTesterRenderObject::Restore));
+    DAVA::RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(this, &OverdrawTesterRenderObject::Restore));
 }
 
 OverdrawTesterRenderObject::~OverdrawTesterRenderObject()
@@ -68,7 +68,7 @@ OverdrawTesterRenderObject::~OverdrawTesterRenderObject()
     if (iBuffer.IsValid())
         rhi::DeleteIndexBuffer(iBuffer);
 
-    RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(this, &OverdrawTesterRenderObject::Restore));
+    DAVA::RenderCallbacks::UnRegisterResourceRestoreCallback(MakeFunction(this, &OverdrawTesterRenderObject::Restore));
 }
 
 void OverdrawTesterRenderObject::PrepareToRender(Camera* camera)

@@ -39,7 +39,9 @@ public:
 
 private:
     DAVA::Texture* GenerateTexture(std::mt19937& rng, std::uniform_int_distribution<std::mt19937::result_type>& dist255);
+    void GenerateTextureData(std::mt19937& rng, std::uniform_int_distribution<std::mt19937::result_type>& dist255, unsigned char* data);
     void SetupMaterial(const DAVA::FastName* texture);
+    void Restore();
 
     DAVA::Vector<OverdrawTesterRenderObject*> activeRenderObjects;
     DAVA::Array<DAVA::Vector<FrameData>, 6> performanceData;

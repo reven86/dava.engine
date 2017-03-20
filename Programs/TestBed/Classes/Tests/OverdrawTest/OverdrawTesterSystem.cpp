@@ -7,8 +7,10 @@
 #include "OverdrawTesterRenderObject.h"
 
 #include "Base/String.h"
+#include "Functional/Function.h"
 #include "Scene3D/Entity.h"
 #include "Scene3D/Scene.h"
+#include "Render/RenderCallbacks.h"
 #include "Render/Highlevel/RenderSystem.h"
 #include "Render/Highlevel/RenderObject.h"
 #include "Render/Highlevel/RenderPassNames.h"
@@ -75,6 +77,7 @@ OverdrawTesterSystem::OverdrawTesterSystem(DAVA::Scene* scene, DAVA::PixelFormat
     {
         textures.push_back(GenerateTexture(rng, dist255));
     }
+    DAVA::RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(this, &OverdrawTesterSystem::Restore));
 }
 
 OverdrawTesterSystem::~OverdrawTesterSystem()
@@ -85,6 +88,7 @@ OverdrawTesterSystem::~OverdrawTesterSystem()
         SafeRelease(tex);
     }
     textures.clear();
+    DAVA::RenderCallbacks::UnRegisterResourceRestoreCallback(MakeFunction(this, &OverdrawTesterSystem::Restore));
 }
 
 void OverdrawTesterSystem::AddEntity(DAVA::Entity* entity)
@@ -155,16 +159,8 @@ void OverdrawTesterSystem::Process(DAVA::float32 timeElapsed)
 DAVA::Texture* OverdrawTesterSystem::GenerateTexture(std::mt19937& rng, std::uniform_int_distribution<std::mt19937::result_type>& dist255)
 {
     unsigned char* data = new unsigned char[textureResolution * textureResolution * 4];
+    GenerateTextureData(rng, dist255, data);
 
-    uint32 dataIndex = 0;
-    for (uint32 i = 0; i < textureResolution; i++)
-        for (uint32 j = 0; j < textureResolution; j++)
-        {
-            data[dataIndex++] = static_cast<uint8>(dist255(rng));
-            data[dataIndex++] = static_cast<uint8>(dist255(rng));
-            data[dataIndex++] = static_cast<uint8>(dist255(rng));
-            data[dataIndex++] = static_cast<uint8>(dist255(rng));
-        }
     Texture* result;
     if (!generateTexWithMips)
     {
@@ -190,9 +186,37 @@ DAVA::Texture* OverdrawTesterSystem::GenerateTexture(std::mt19937& rng, std::uni
     return result;
 }
 
+void OverdrawTesterSystem::GenerateTextureData(std::mt19937& rng, std::uniform_int_distribution<std::mt19937::result_type>& dist255, unsigned char* data)
+{
+    uint32 dataIndex = 0;
+    for (uint32 i = 0; i < textureResolution; i++)
+        for (uint32 j = 0; j < textureResolution; j++)
+        {
+            data[dataIndex++] = static_cast<uint8>(dist255(rng));
+            data[dataIndex++] = static_cast<uint8>(dist255(rng));
+            data[dataIndex++] = static_cast<uint8>(dist255(rng));
+            data[dataIndex++] = static_cast<uint8>(dist255(rng));
+        }
+}
+
 void OverdrawTesterSystem::SetupMaterial(const DAVA::FastName* texture)
 {
     overdrawMaterial->SetFlag(sampleCountKeyword, textureSampleCount);
     overdrawMaterial->AddTexture(*texture, textures[textureSampleCount - 1]);
+}
+
+void OverdrawTesterSystem::Restore()
+{
+    std::mt19937 rng;
+    rng.seed(std::random_device()());
+    std::uniform_int_distribution<std::mt19937::result_type> dist255(1, 255);
+
+    unsigned char* data = new unsigned char[textureResolution * textureResolution * 4];
+    for (DAVA::Texture* texure : textures)
+    {
+        GenerateTextureData(rng, dist255, data);
+        rhi::UpdateTexture(texure->handle, data, 0);
+    }
+    delete[] data;
 }
 }
