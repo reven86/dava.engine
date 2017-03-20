@@ -1,7 +1,9 @@
 #pragma once
 
-#include "ModuleManager/IModule.h"
-#include "ModuleManager/ModuleManager.h"
+#include <ModuleManager/IModule.h>
+#include <ModuleManager/ModuleManager.h>
+#include <Reflection/Reflection.h>
+#include <UI/Components/UIComponent.h>
 
 #include "Base/Singleton.h"
 #include "Base/BaseTypes.h"
@@ -9,6 +11,16 @@
 namespace DAVA
 {
 class ModuleManager;
+
+class SampleModuleUIComponent : public UIBaseComponent<SampleModuleUIComponent>
+{
+    DAVA_VIRTUAL_REFLECTION(SampleModuleUIComponent, UIComponent);
+
+    UIComponent* Clone() const override
+    {
+        return new SampleModuleUIComponent(*this);
+    }
+};
 
 class SampleModule : public IModule
 {

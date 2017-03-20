@@ -2,21 +2,10 @@
 
 #include <Engine/Engine.h>
 #include <Entity/ComponentManager.h>
-#include <UI/Components/UIComponent.h>
 #include <Reflection/ReflectionRegistrator.h>
 
 namespace DAVA
 {
-
-class SampleModuleUIComponent : public UIBaseComponent<SampleModuleUIComponent>
-{
-    DAVA_VIRTUAL_REFLECTION(SampleModuleUIComponent, UIComponent);
-
-    UIComponent* Clone() const override
-    {
-        return new SampleModuleUIComponent(*this);
-    }
-};
 
 DAVA_VIRTUAL_REFLECTION_IMPL(SampleModuleUIComponent)
 {

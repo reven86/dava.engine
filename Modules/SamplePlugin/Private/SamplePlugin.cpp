@@ -1,7 +1,32 @@
-#include "PluginManager/Plugin.h"
-#include "ModuleManager/IModule.h"
+#include <PluginManager/Plugin.h>
+#include <ModuleManager/IModule.h>
+#include <Reflection/ReflectionRegistrator.h>
+#include <UI/Components/UIComponent.h>
+#include <Engine/Engine.h>
+#include <Entity/ComponentManager.h>
 
-class SamplePlugin : public DAVA::IModule
+using namespace DAVA;
+
+class SamplePluginUIComponent : public UIBaseComponent<SamplePluginUIComponent>
+{
+    DAVA_VIRTUAL_REFLECTION(SampleModuleUIComponent, UIComponent);
+
+    UIComponent* Clone() const override
+    {
+        return new SamplePluginUIComponent(*this);
+    }
+};
+
+
+DAVA_VIRTUAL_REFLECTION_IMPL(SamplePluginUIComponent)
+{
+    ReflectionRegistrator<SamplePluginUIComponent>::Begin()
+        .ConstructorByPointer()
+        .DestructorByPointer([] (SamplePluginUIComponent* o) { o->Release(); })
+        .End();
+}
+
+class SamplePlugin : public IModule
 {
 public:
     enum eStatus
@@ -11,10 +36,16 @@ public:
         ES_SHUTDOWN
     };
 
-    SamplePlugin(DAVA::Engine* engine)
+    SamplePlugin(Engine* engine)
         : IModule(engine)
     {
         statusList.emplace_back(eStatus::ES_UNKNOWN);
+
+        DAVA_REFLECTION_REGISTER_PERMANENT_NAME(SamplePluginUIComponent);
+        engine->GetContext()->componentManager->RegisterComponent<SamplePluginUIComponent>();
+
+        UIComponent* c = UIComponent::CreateByType(Type::Instance<SamplePluginUIComponent>());
+        c->Release();
     }
 
     ~SamplePlugin()
@@ -32,7 +63,7 @@ public:
     }
 
 private:
-    DAVA::Vector<eStatus> statusList;
+    Vector<eStatus> statusList;
 };
 
 EXPORT_PLUGIN(SamplePlugin)
