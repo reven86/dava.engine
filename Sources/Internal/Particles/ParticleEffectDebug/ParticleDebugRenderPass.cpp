@@ -1,7 +1,9 @@
 #include "Particles/ParticleEffectDebug/ParticleDebugRenderPass.h"
 
+#include "Functional/Function.h"
 #include "Render/RHI/rhi_Type.h"
 #include "Render/RHI/rhi_Public.h"
+#include "Render/RenderCallbacks.h"
 #include "Render/ShaderCache.h"
 
 #include "Debug/ProfilerCPU.h"

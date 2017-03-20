@@ -3,6 +3,8 @@
 #include "Particles/ParticleEffectDebug/ParticleDebugRenderPass.h"
 #include "Particles/ParticleEffectDebug/ParticleDebugDrawQuadRenderPass.h"
 
+#include "Functional/Function.h"
+#include "Render/RenderCallbacks.h"
 #include "Render/Highlevel/RenderSystem.h"
 #include "Render/RenderCallbacks.h"
 
