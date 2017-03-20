@@ -8,7 +8,8 @@ namespace DAVA
 {
 DAVA_VIRTUAL_REFLECTION_IMPL(BulletComponent)
 {
-    ReflectionRegistrator<BulletComponent>::Begin()
+    ReflectionRegistrator<BulletComponent>::Begin()[M::CantBeCreatedManualyComponent()]
+    .ConstructorByPointer()
     .Field("bulletObject", &BulletComponent::GetBulletObject, &BulletComponent::SetBulletObject)[M::DisplayName("Bullet Objec")]
     .End();
 }

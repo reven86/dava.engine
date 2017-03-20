@@ -14,6 +14,7 @@ namespace DAVA
 DAVA_VIRTUAL_REFLECTION_IMPL(WaveComponent)
 {
     ReflectionRegistrator<WaveComponent>::Begin()
+    .ConstructorByPointer()
     .Field("amplitude", &WaveComponent::GetWaveAmplitude, &WaveComponent::SetWaveAmplitude)[M::DisplayName("Amplitude")]
     .Field("lenght", &WaveComponent::GetWaveLenght, &WaveComponent::SetWaveLenght)[M::DisplayName("Lenght")]
     .Field("speed", &WaveComponent::GetWaveSpeed, &WaveComponent::SetWaveSpeed)[M::DisplayName("Speed")]

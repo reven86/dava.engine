@@ -30,6 +30,7 @@ DAVA_VIRTUAL_REFLECTION_IMPL(ActionComponent::ActionContainer)
 DAVA_VIRTUAL_REFLECTION_IMPL(ActionComponent)
 {
     ReflectionRegistrator<ActionComponent>::Begin()
+    .ConstructorByPointer()
     .Field("actions", &ActionComponent::actions)[M::DisplayName("Actions Array")]
     .End();
 }
