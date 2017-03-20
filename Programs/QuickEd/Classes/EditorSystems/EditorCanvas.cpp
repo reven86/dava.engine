@@ -243,7 +243,8 @@ void EditorCanvas::ProcessInput(UIEvent* currentInput)
         {
             if ((currentInput->modifiers & (eModifierKeys::CONTROL | eModifierKeys::COMMAND)) != eModifierKeys::NONE)
             {
-                float scale = GetScaleFromWheelEvent(currentInput->wheelDelta.y);
+                int32 ticksCount = static_cast<int32>(currentInput->wheelDelta.y);
+                float scale = GetScaleFromWheelEvent(ticksCount);
                 AdjustScale(scale, currentInput->physPoint);
             }
             else
@@ -327,7 +328,7 @@ float32 EditorCanvas::GetNextScale(int32 ticksCount) const
         return scale;
     }
     ticksCount--;
-    int32 distance = std::distance(iter, predefinedScales.end());
+    int32 distance = static_cast<int32>(std::distance(iter, predefinedScales.end()));
     ticksCount = std::min(distance, ticksCount);
     std::advance(iter, ticksCount);
     return iter != predefinedScales.end() ? *iter : predefinedScales.back();
@@ -340,7 +341,7 @@ float32 EditorCanvas::GetPreviousScale(int32 ticksCount) const
     {
         return scale;
     }
-    int32 distance = std::distance(iter, predefinedScales.begin());
+    int32 distance = static_cast<int32>(std::distance(iter, predefinedScales.begin()));
     ticksCount = std::max(ticksCount, distance);
     std::advance(iter, ticksCount);
     return *iter;
