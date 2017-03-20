@@ -10,7 +10,8 @@ namespace DAVA
 {
 DAVA_VIRTUAL_REFLECTION_IMPL(CameraComponent)
 {
-    ReflectionRegistrator<CameraComponent>::Begin()
+    ReflectionRegistrator<CameraComponent>::Begin()[M::CantBeCreatedManualyComponent()]
+    .ConstructorByPointer()
     .Field("camera", &CameraComponent::GetCamera, &CameraComponent::SetCamera)[M::DisplayName("Camera")]
     .End();
 }

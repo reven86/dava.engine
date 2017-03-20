@@ -12,6 +12,7 @@ REGISTER_CLASS(VisibilityCheckComponent)
 DAVA_VIRTUAL_REFLECTION_IMPL(VisibilityCheckComponent)
 {
     ReflectionRegistrator<VisibilityCheckComponent>::Begin()
+    .ConstructorByPointer()
     .Field("enabled", &VisibilityCheckComponent::IsEnabled, &VisibilityCheckComponent::SetEnabled)[M::DisplayName("Enabled")]
     .Field("radius", &VisibilityCheckComponent::GetRadius, &VisibilityCheckComponent::SetRadius)[M::DisplayName("Radius")]
     .Field("distanceBetweenPoints", &VisibilityCheckComponent::GetDistanceBetweenPoints, &VisibilityCheckComponent::SetDistanceBetweenPoints)[M::DisplayName("Distance Between Points")]

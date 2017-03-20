@@ -58,7 +58,6 @@ DAVA_VIRTUAL_REFLECTION_IMPL(RenderObject)
     .Field("removeIndex", &RenderObject::removeIndex)[M::ReadOnly(), M::HiddenField()]
     .Field("bbox", &RenderObject::bbox)[M::DisplayName("Bounding box")]
     .Field("worldBBox", &RenderObject::worldBBox)[M::DisplayName("World Bounding box")]
-    .Field("worldTransform", &RenderObject::worldTransform)[M::DisplayName("World Transform")]
     .Field("lodIndex", &RenderObject::GetLodIndex, &RenderObject::SetLodIndex)[M::DisplayName("LOD index")]
     .Field("switchIndex", &RenderObject::GetSwitchIndex, &RenderObject::SetSwitchIndex)[M::DisplayName("Switch index")]
     .Field("visibleReflection", &RenderObject::GetReflectionVisible, &RenderObject::SetReflectionVisible)[M::DisplayName("Visible reflection")]
