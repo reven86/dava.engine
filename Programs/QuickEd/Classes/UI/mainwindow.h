@@ -51,9 +51,6 @@ public:
 
 signals:
     void EmulationModeChanged(bool emulationMode);
-    void FindInDocument();
-    void FindNext();
-    void FindPrevious();
 
 private slots:
     void OnPixelizationStateChanged(bool isPixelized);

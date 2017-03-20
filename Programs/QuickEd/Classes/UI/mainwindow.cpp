@@ -84,10 +84,6 @@ void MainWindow::ConnectActions()
 
     connect(ui->actionPixelized, &QAction::triggered, this, &MainWindow::OnPixelizationStateChanged);
     connect(ui->actionPreferences, &QAction::triggered, this, &MainWindow::OnEditorPreferencesTriggered);
-
-    connect(ui->actionFindInDocument, &QAction::triggered, this, &MainWindow::FindInDocument);
-    connect(ui->actionFindNext, &QAction::triggered, this, &MainWindow::FindNext);
-    connect(ui->actionFindPrevious, &QAction::triggered, this, &MainWindow::FindPrevious);
 }
 
 void MainWindow::InitEmulationMode()

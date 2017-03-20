@@ -15,7 +15,6 @@ MainWindow::ProjectView::ProjectView(MainWindow* mainWindow_)
 
     connect(mainWindow->ui->actionJumpToPrototype, &QAction::triggered, this, &MainWindow::ProjectView::JumpToPrototype);
     connect(mainWindow->ui->actionFindPrototypeInstances, &QAction::triggered, this, &MainWindow::ProjectView::FindPrototypeInstances);
-    connect(mainWindow->ui->actionFindInProject, &QAction::triggered, this, &MainWindow::ProjectView::FindInProject);
 
     mainWindow->ui->packageWidget->treeView->addAction(mainWindow->ui->actionJumpToPrototype);
     mainWindow->ui->packageWidget->treeView->addAction(mainWindow->ui->actionFindPrototypeInstances);
@@ -53,10 +52,6 @@ void MainWindow::ProjectView::SetProjectActionsEnabled(bool enabled)
 {
     mainWindow->ui->actionJumpToPrototype->setEnabled(enabled);
     mainWindow->ui->actionFindPrototypeInstances->setEnabled(enabled);
-    mainWindow->ui->actionFindInProject->setEnabled(enabled);
-    mainWindow->ui->actionFindInDocument->setEnabled(enabled);
-    mainWindow->ui->actionFindNext->setEnabled(enabled);
-    mainWindow->ui->actionFindPrevious->setEnabled(enabled);
     mainWindow->ui->toolBarGlobal->setEnabled(enabled);
 
     mainWindow->ui->fileSystemDockWidget->setEnabled(enabled);

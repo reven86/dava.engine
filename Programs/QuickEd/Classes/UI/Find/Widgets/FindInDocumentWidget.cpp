@@ -21,15 +21,9 @@ FindInDocumentWidget::FindInDocumentWidget(QWidget* parent)
     findPreviousButton = new QToolButton(this);
     findPreviousButton->setArrowType(Qt::LeftArrow);
     findAllButton = new QToolButton(this);
-    findAllButton->setText(tr("Find All"));
     stopFindButton = new QToolButton(this);
-    stopFindButton->setIcon(SharedIcon(":/QtTools/Icons/close-16.png"));
 
-    QObject::connect(findNextButton, SIGNAL(pressed()), this, SLOT(OnFindNextClicked()));
-    QObject::connect(findPreviousButton, SIGNAL(pressed()), this, SLOT(OnFindPreviousClicked()));
-    QObject::connect(findAllButton, SIGNAL(pressed()), this, SLOT(OnFindAllClicked()));
-    QObject::connect(stopFindButton, SIGNAL(pressed()), this, SIGNAL(OnStopFind()));
-    QObject::connect(findFiltersWidget, SIGNAL(FiltersChanged()), this, SLOT(OnFiltersChanged()));
+    connect(findFiltersWidget, SIGNAL(FiltersChanged()), this, SLOT(OnFiltersChanged()));
 
     layout->addWidget(findFiltersWidget);
     layout->addWidget(findPreviousButton);
@@ -40,6 +34,36 @@ FindInDocumentWidget::FindInDocumentWidget(QWidget* parent)
     layout->addWidget(stopFindButton);
 
     setFocusProxy(findFiltersWidget);
+
+    QAction* stopFindAction = new QAction(tr("Stop Find"), this);
+    stopFindAction->setShortcut(Qt::Key_Escape);
+    stopFindAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    stopFindAction->setIcon(SharedIcon(":/QtTools/Icons/close-16.png"));
+    connect(stopFindAction, SIGNAL(triggered()), this, SIGNAL(OnStopFind()));
+    stopFindButton->setDefaultAction(stopFindAction);
+
+    QAction* findNextAction = new QAction(tr("Find Next"), this);
+    findNextAction->setShortcuts({ Qt::Key_Return, Qt::Key_Enter });
+    findNextAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    connect(findNextAction, SIGNAL(triggered()), this, SLOT(OnFindNextClicked()));
+    findNextButton->setDefaultAction(findNextAction);
+
+    QAction* findPreviousAction = new QAction(tr("Find Previous"), this);
+    findPreviousAction->setShortcuts({ Qt::SHIFT + Qt::Key_Return, Qt::SHIFT + Qt::Key_Enter });
+    findPreviousAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    connect(findPreviousAction, SIGNAL(triggered()), this, SLOT(OnFindPreviousClicked()));
+    findPreviousButton->setDefaultAction(findPreviousAction);
+
+    QAction* findAllAction = new QAction(tr("Find All"), this);
+    findAllAction->setShortcuts({ Qt::CTRL + Qt::Key_Return, Qt::CTRL + Qt::Key_Enter });
+    findAllAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    connect(findAllAction, SIGNAL(triggered()), this, SLOT(OnFindAllClicked()));
+    findAllButton->setDefaultAction(findAllAction);
+
+    addAction(stopFindAction);
+    addAction(findNextAction);
+    addAction(findPreviousAction);
+    addAction(findAllAction);
 }
 
 std::shared_ptr<FindFilter> FindInDocumentWidget::BuildFindFilter() const
@@ -76,40 +100,6 @@ void FindInDocumentWidget::OnFindAllClicked()
 void FindInDocumentWidget::OnFiltersChanged()
 {
     hasChanges = true;
-}
-
-bool FindInDocumentWidget::event(QEvent* event)
-{
-    if (event->type() == QEvent::KeyPress)
-    {
-        QKeyEvent* ke = static_cast<QKeyEvent*>(event);
-        if (ke->key() == Qt::Key_Enter || ke->key() == Qt::Key_Return)
-        {
-            if (ke->modifiers() & Qt::ControlModifier)
-            {
-                OnFindAllClicked();
-            }
-            else
-            {
-                if (ke->modifiers() & Qt::ShiftModifier)
-                {
-                    OnFindPreviousClicked();
-                }
-                else
-                {
-                    OnFindNextClicked();
-                }
-            }
-            return true;
-        }
-        else if (ke->key() == Qt::Key_Escape)
-        {
-            emit OnStopFind();
-            return true;
-        }
-    }
-
-    return QWidget::event(event);
 }
 
 void FindInDocumentWidget::EmitFilterChanges()

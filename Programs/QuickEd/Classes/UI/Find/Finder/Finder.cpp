@@ -14,9 +14,7 @@ Finder::Finder(std::shared_ptr<FindFilter> filter_, const DAVA::Map<DAVA::String
 {
 }
 
-Finder::~Finder()
-{
-}
+Finder::~Finder() = default;
 
 void Finder::Process(const QStringList& files)
 {

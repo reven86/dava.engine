@@ -1,8 +1,7 @@
 #pragma once
 
 #include <Base/BaseTypes.h>
-#include <TArc/DataProcessing/DataListener.h>
-#include <TArc/DataProcessing/DataWrapper.h>
+#include <TArc/Core/FieldBinder.h>
 #include <QObject>
 
 class DocumentsModule;
@@ -10,7 +9,7 @@ class FindInDocumentWidget;
 class FindFilter;
 class MainWindow;
 
-class FindInDocumentController : public QObject, public DAVA::TArc::DataListener
+class FindInDocumentController : public QObject
 {
     Q_OBJECT
 public:
@@ -37,11 +36,11 @@ private:
 
     void MoveSelection(DAVA::int32 step);
 
-    void OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields) override;
+    void OnEditedRootControlsChanged(const DAVA::Any& value);
 
     DocumentsModule* documentsModule = nullptr;
     FindContext context;
     FindInDocumentWidget* findInDocumentWidget = nullptr;
 
-    DAVA::TArc::DataWrapper documentDataWrapper;
+    std::unique_ptr<DAVA::TArc::FieldBinder> editedRootControlsFieldBinder;
 };

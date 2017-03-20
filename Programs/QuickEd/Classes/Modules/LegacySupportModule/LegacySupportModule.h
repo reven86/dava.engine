@@ -27,7 +27,6 @@ class LegacySupportModule : public DAVA::TArc::ClientModule, private DAVA::TArc:
     void JumpToPackage(const DAVA::FilePath& packagePath);
     void OnJumpToPrototype();
     void OnFindPrototypeInstances();
-    void OnFindInProject();
 
     void OnSelectionInPackageChanged(const SelectedNodes& nodes);
 

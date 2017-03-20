@@ -20,8 +20,6 @@ public:
     void SetResourceDirectory(const QString& path);
     void SelectFile(const QString& filePath);
 
-    void ShowFindInProject();
-
     void SetProjectActionsEnabled(bool enable);
 
     DocumentGroupView* GetDocumentGroupView();

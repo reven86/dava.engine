@@ -13,7 +13,6 @@
 #include "UI/Package/PackageWidget.h"
 #include "UI/DocumentGroupView.h"
 #include "UI/Find/Filters/PrototypeUsagesFilter.h"
-#include "UI/Find/Widgets/FindInProjectDialog.h"
 #include "UI/StyleSheetInspector/StyleSheetInspectorWidget.h"
 
 #include <TArc/Core/ContextAccessor.h>
@@ -164,7 +163,6 @@ void LegacySupportModule::InitMainWindow()
 
     connections.AddConnection(projectView, &MainWindow::ProjectView::JumpToPrototype, MakeFunction(this, &LegacySupportModule::OnJumpToPrototype));
     connections.AddConnection(projectView, &MainWindow::ProjectView::FindPrototypeInstances, MakeFunction(this, &LegacySupportModule::OnFindPrototypeInstances));
-    connections.AddConnection(projectView, &MainWindow::ProjectView::FindInProject, MakeFunction(this, &LegacySupportModule::OnFindInProject));
 
     MainWindow::DocumentGroupView* documentGroupView = projectView->GetDocumentGroupView();
     connections.AddConnection(documentGroupView, &MainWindow::DocumentGroupView::OpenPackageFile, [this](const QString& path) {
@@ -231,15 +229,6 @@ void LegacySupportModule::OnFindPrototypeInstances()
             std::shared_ptr<FindFilter> filter = std::make_shared<PrototypeUsagesFilter>(path.GetFrameworkPath(), FastName(name));
             InvokeOperation(QEGlobal::FindInProject.ID, filter);
         }
-    }
-}
-
-void LegacySupportModule::OnFindInProject()
-{
-    FindInProjectDialog findInProjectDialog;
-    if (findInProjectDialog.exec() == QDialog::Accepted)
-    {
-        InvokeOperation(QEGlobal::FindInProject.ID, std::shared_ptr<FindFilter>(findInProjectDialog.BuildFindFilter()));
     }
 }
 

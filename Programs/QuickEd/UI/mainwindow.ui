@@ -123,13 +123,8 @@
     <property name="title">
      <string>Find</string>
     </property>
-    <addaction name="actionFindInDocument"/>
-    <addaction name="actionFindNext"/>
-    <addaction name="actionFindPrevious"/>
     <addaction name="actionJumpToPrototype"/>
     <addaction name="actionFindPrototypeInstances"/>
-    <addaction name="separator"/>
-    <addaction name="actionFindInProject"/>
    </widget>
    <addaction name="File"/>
    <addaction name="Edit"/>
@@ -289,44 +284,6 @@
   <action name="actionFindPrototypeInstances">
    <property name="text">
     <string>Find Prototype Instances</string>
-   </property>
-  </action>
-  <action name="actionFindInDocument">
-   <property name="text">
-    <string>Find...</string>
-   </property>
-   <property name="toolTip">
-    <string>Find...</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+F</string>
-   </property>
-  </action>
-  <action name="actionFindInProject">
-   <property name="text">
-    <string>Find in Project...</string>
-   </property>
-   <property name="toolTip">
-    <string>Find in Project...</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+Shift+F</string>
-   </property>
-  </action>
-  <action name="actionFindNext">
-   <property name="text">
-    <string>Find Next</string>
-   </property>
-   <property name="shortcut">
-    <string>F3</string>
-   </property>
-  </action>
-  <action name="actionFindPrevious">
-   <property name="text">
-    <string>Find Previous</string>
-   </property>
-   <property name="shortcut">
-    <string>Shift+F3</string>
    </property>
   </action>
  </widget>

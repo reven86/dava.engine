@@ -33,9 +33,6 @@ private slots:
     void OnFindAllClicked();
     void OnFiltersChanged();
 
-protected:
-    bool event(QEvent* event) override;
-
 private:
     void EmitFilterChanges();
 
