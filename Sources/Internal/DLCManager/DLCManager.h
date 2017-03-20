@@ -81,7 +81,7 @@ public:
                             const String& urlToServerSuperpack,
                             const Hints& hints) = 0;
     /**
-	 Stop all operations and free all resources. Usefull during unit tests.
+	 Stop all operations and free all resources. Useful during unit tests.
 	*/
     virtual void Deinitialize() = 0;
 
