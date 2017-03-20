@@ -5,6 +5,7 @@
 #include "TArc/Core/ClientModule.h"
 #include "TArc/Controls/IntSpinBox.h"
 #include "TArc/Controls/QtBoxLayouts.h"
+#include "TArc/Controls/CommonStrings.h"
 #include "TArc/Utils/QtConnections.h"
 #include "TArc/Testing/Private/TestModuleHolder.h"
 
@@ -391,7 +392,7 @@ DAVA_TARC_TESTCLASS(IntSpinBoxTests)
 
     DAVA_TEST (NoValueTest)
     {
-        NoValueTest("SpinBox_noValue", "SpinBox_value", "<multiple values>");
+        NoValueTest("SpinBox_noValue", "SpinBox_value", QString(DAVA::TArc::MultipleValuesString));
     }
 
     DAVA_TEST (NoValueHintTest)

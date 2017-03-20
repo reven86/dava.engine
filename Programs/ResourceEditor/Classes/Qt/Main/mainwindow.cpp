@@ -18,14 +18,12 @@
 #include "Classes/Qt/Scene/System/VisibilityCheckSystem/VisibilityCheckSystem.h"
 #include "Classes/Qt/Scene/System/EditorVegetationSystem.h"
 #include "Classes/Qt/Scene/Validation/SceneValidationDialog.h"
-#include "Classes/Qt/Settings/SettingsDialog.h"
-#include "Classes/Qt/Settings/SettingsManager.h"
+#include "Classes/Settings/SettingsManager.h"
 #include "Classes/Qt/SpritesPacker/SpritesPackerModule.h"
 #include "Classes/Qt/TextureBrowser/TextureBrowser.h"
 #include "Classes/Qt/TextureBrowser/TextureCache.h"
 #include "Classes/Qt/Tools/AddSwitchEntityDialog/AddSwitchEntityDialog.h"
 #include "Classes/Qt/Tools/BaseAddEntityDialog/BaseAddEntityDialog.h"
-#include "Classes/Qt/Tools/ColorPicker/ColorPicker.h"
 #include "Classes/Qt/Tools/DeveloperTools/DeveloperTools.h"
 #include "Classes/Qt/Tools/HangingObjectsHeight/HangingObjectsHeight.h"
 #include "Classes/Qt/Tools/HeightDeltaTool/HeightDeltaTool.h"
@@ -73,7 +71,7 @@
 
 #include <Tools/TextureCompression/TextureConverter.h>
 
-#include "TArc/WindowSubSystem/Private/WaitDialog.h"
+#include <TArc/WindowSubSystem/Private/WaitDialog.h>
 
 #include "QtTools/ConsoleWidget/LogWidget.h"
 #include "QtTools/ConsoleWidget/LogModel.h"
@@ -641,8 +639,6 @@ void QtMainWindow::SetupActions()
     QObject::connect(ui->actionAddWind, SIGNAL(triggered()), this, SLOT(OnAddWindEntity()));
     QObject::connect(ui->actionAddVegetation, SIGNAL(triggered()), this, SLOT(OnAddVegetation()));
     QObject::connect(ui->actionAddPath, SIGNAL(triggered()), this, SLOT(OnAddPathEntity()));
-
-    QObject::connect(ui->actionShowSettings, SIGNAL(triggered()), this, SLOT(OnShowSettings()));
 
     QObject::connect(ui->actionSaveHeightmapToPNG, SIGNAL(triggered()), this, SLOT(OnSaveHeightmapToImage()));
     QObject::connect(ui->actionSaveTiledTexture, SIGNAL(triggered()), this, SLOT(OnSaveTiledTexture()));
@@ -1396,12 +1392,6 @@ void QtMainWindow::On2DSpriteDialog()
 void QtMainWindow::OnAddEntityFromSceneTree()
 {
     ui->menuAdd->exec(QCursor::pos());
-}
-
-void QtMainWindow::OnShowSettings()
-{
-    SettingsDialog t(this);
-    t.exec();
 }
 
 void QtMainWindow::OnOpenHelp()
@@ -2278,13 +2268,6 @@ void QtMainWindow::DebugVersionInfo()
     }
 
     versionInfoWidget->show();
-}
-
-void QtMainWindow::DebugColorPicker()
-{
-    ColorPicker* cp = new ColorPicker(this);
-
-    cp->Exec();
 }
 
 void QtMainWindow::DebugDeviceList()

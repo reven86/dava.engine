@@ -15,7 +15,6 @@ DAVA_VIRTUAL_REFLECTION_IMPL(DocumentData)
     .Field(canRedoPropertyName, &DocumentData::CanRedo, nullptr)
     .Field(undoTextPropertyName, &DocumentData::GetUndoText, nullptr)
     .Field(redoTextPropertyName, &DocumentData::GetRedoText, nullptr)
-    .Field(canClosePropertyName, &DocumentData::CanClose, nullptr)
     .Field(selectionPropertyName, &DocumentData::GetSelectedNodes, &DocumentData::SetSelectedNodes)
     .End();
 }
@@ -28,9 +27,19 @@ DocumentData::DocumentData(const DAVA::RefPtr<PackageNode>& package_)
 
 DocumentData::~DocumentData() = default;
 
-DAVA::CommandStack* DocumentData::GetCommandStack() const
+void DocumentData::ExecCommand(std::unique_ptr<DAVA::Command>&& command)
 {
-    return commandStack.get();
+    commandStack->Exec(std::move(command));
+}
+
+void DocumentData::BeginBatch(const DAVA::String& batchName, DAVA::uint32 commandsCount)
+{
+    commandStack->BeginBatch(batchName, commandsCount);
+}
+
+void DocumentData::EndBatch()
+{
+    commandStack->EndBatch();
 }
 
 const PackageNode* DocumentData::GetPackageNode() const
@@ -57,6 +66,11 @@ QString DocumentData::GetName() const
 QString DocumentData::GetPackageAbsolutePath() const
 {
     return QString::fromStdString(package->GetPath().GetAbsolutePathname());
+}
+
+DAVA::FilePath DocumentData::GetPackagePath() const
+{
+    return package->GetPath();
 }
 
 bool DocumentData::CanSave() const
@@ -86,11 +100,6 @@ bool DocumentData::IsDocumentExists() const
     return documentExists;
 }
 
-bool DocumentData::CanClose() const
-{
-    return documentExists;
-}
-
 QString DocumentData::GetUndoText() const
 {
     const DAVA::Command* command = commandStack->GetUndoCommand();
@@ -114,5 +123,4 @@ const char* DocumentData::canUndoPropertyName = "can undo";
 const char* DocumentData::canRedoPropertyName = "can redo";
 const char* DocumentData::undoTextPropertyName = "undo text";
 const char* DocumentData::redoTextPropertyName = "redo text";
-const char* DocumentData::canClosePropertyName = "can close";
 const char* DocumentData::selectionPropertyName = "selection";

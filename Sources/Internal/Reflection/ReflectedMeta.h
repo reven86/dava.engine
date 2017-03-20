@@ -61,6 +61,17 @@ namespace M
     Add hint that indicates ReadOnly policy for some Reflected Field
 */
 using ReadOnly = Meta<Metas::ReadOnly>;
+
+/**
+    \ingroup
+    Mark field as invisible in property panel
+*/
+using HiddenField = Meta<Metas::HiddenField>;
+/**
+    \ingroup
+    Name of property that should be shown for user instead of field name
+*/
+using DisplayName = Meta<Metas::DisplayName>;
 /**
     \ingroup metas
     Add hint that indicates valid range of value
@@ -208,6 +219,12 @@ using ValueDescription = Meta<Metas::ValueDescription>;
     for each field that marked by this meta
 */
 using SubProperty = Meta<Metas::SubProperty>;
+
+/**
+    Says that value can be changed at some unpredictable moment and
+    Reflection's client should update value as often as possible
+*/
+using FrequentlyChangedValue = Meta<Metas::FrequentlyChangedValue>;
 }
 
 } // namespace DAVA

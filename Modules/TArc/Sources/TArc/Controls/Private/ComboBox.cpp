@@ -1,4 +1,3 @@
-
 #include "TArc/Controls/ComboBox.h"
 #include "TArc/Utils/ScopedValueGuard.h"
 #include "TArc/DataProcessing/AnyQMetaType.h"
@@ -124,6 +123,11 @@ int ComboBox::SelectCurrentItem(const Reflection& fieldValue, const Reflection& 
         {
             Any iAny = itemData(i).value<Any>();
             if (value == iAny)
+            {
+                return i;
+            }
+            else if (iAny.CanCast<int>() && value.CanCast<int>() &&
+                     iAny.Cast<int>() == value.Cast<int>())
             {
                 return i;
             }

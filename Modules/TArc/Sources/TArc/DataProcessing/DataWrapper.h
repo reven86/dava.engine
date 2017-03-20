@@ -58,7 +58,7 @@ private:
 
     void UpdateCachedValue(int32 id, const Any& value);
     void Sync(bool notifyListener);
-    void SyncByFieldKey(const Any& fieldKey);
+    void SyncByFieldKey(const Any& fieldKey, const Any& v);
     void SyncWithEditor(const Reflection& etalonData);
     void NotifyListener(bool sendNotify, const Vector<Any>& fields = Vector<Any>());
     Reflection GetData() const;

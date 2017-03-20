@@ -292,4 +292,10 @@ void Matrix4::Decomposition(Vector3& position, Vector3& scale, Quaternion& rot) 
     }
     rot.Construct(unscaled);
 }
+
+template <>
+bool AnyCompare<Matrix4>::IsEqual(const DAVA::Any& v1, const DAVA::Any& v2)
+{
+    return v1.Get<Matrix4>() == v2.Get<Matrix4>();
+}
 };

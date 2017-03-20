@@ -181,7 +181,7 @@ void StaticOcclusionBuildSystem::StartBuildOcclusion()
     if (nullptr == staticOcclusion)
         staticOcclusion = new StaticOcclusion();
 
-    staticOcclusion->StartBuildOcclusion(&data, GetScene()->GetRenderSystem(), landscape);
+    staticOcclusion->StartBuildOcclusion(&data, GetScene()->GetRenderSystem(), landscape, occlusionComponent->GetOcclusionPixelThreshold(), occlusionComponent->GetOcclusionPixelThresholdForSpeedtree());
 }
 
 void StaticOcclusionBuildSystem::FinishBuildOcclusion()

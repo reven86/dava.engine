@@ -43,12 +43,15 @@ void PlatformCore::Run()
     QTimer timer;
     QObject::connect(&timer, &QTimer::timeout, [&]()
                      {
-                         DVASSERT(primaryWindowBackend != nullptr);
-                         primaryWindowBackend->Update();
+                         if (!EngineBackend::showingModalMessageBox)
+                         {
+                             DVASSERT(primaryWindowBackend != nullptr);
+                             primaryWindowBackend->Update();
+                         }
                      });
 
     // First of all we should init primaryWindowBackend, because in OnGameLoopStarted client code will try to get RenderWidget trough this pointer
-    primaryWindowBackend = engineBackend.GetPrimaryWindow()->GetBackend();
+    primaryWindowBackend = EngineBackend::GetWindowBackend(engineBackend.GetPrimaryWindow());
     engineBackend.OnGameLoopStarted();
     applicationFocusChanged.Connect(primaryWindowBackend, &WindowBackend::OnApplicationFocusChanged);
     if (engineBackend.IsStandaloneGUIMode())
@@ -57,9 +60,6 @@ void PlatformCore::Run()
         RenderWidget* widget = GetRenderWidget();
         widget->show();
     }
-    // After OnGameLoopStarted, and client code injected RenderWidget into MainWindow and shown it we can activate rendering
-    // We can't activate rendering before RenderWidget was shown, because it will produce DAVA::OnFrame on showing e.g. in OnGameLoopStarted handler
-    primaryWindowBackend->ActivateRendering();
 
     timer.start(16.0);
 

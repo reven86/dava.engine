@@ -1,18 +1,21 @@
 #include "Classes/PropertyPanel/PropertyPanelModule.h"
 #include "Classes/PropertyPanel/PropertyModelExt.h"
+#include "Classes/PropertyPanel/QualitySettingsComponentExt.h"
 #include "Classes/Selection/SelectionData.h"
 #include "Classes/Application/REGlobal.h"
 
-#include "TArc/Controls/PropertyPanel/PropertiesView.h"
-#include "TArc/WindowSubSystem/UI.h"
-#include "TArc/WindowSubSystem/ActionUtils.h"
-#include "TArc/DataProcessing/DataNode.h"
-#include "TArc/Utils/ModuleCollection.h"
-#include "TArc/Core/FieldBinder.h"
+#include <TArc/Controls/PropertyPanel/PropertiesView.h>
+#include <TArc/Controls/PropertyPanel/TimerUpdater.h>
+#include <TArc/WindowSubSystem/UI.h>
+#include <TArc/WindowSubSystem/ActionUtils.h>
+#include <TArc/DataProcessing/DataNode.h>
+#include <TArc/Utils/ModuleCollection.h>
+#include <TArc/Core/FieldBinder.h>
 
 #include <Scene3D/Entity.h>
 #include <Reflection/Reflection.h>
 #include <Reflection/ReflectionRegistrator.h>
+#include <Reflection/ReflectedObject.h>
 #include <Base/FastName.h>
 #include <Base/BaseTypes.h>
 
@@ -26,8 +29,9 @@ namespace PropertyPanelModuleDetail
 class PropertyPanelData : public DAVA::TArc::DataNode
 {
 public:
-    DAVA::Vector<DAVA::Entity*> selectedEntities;
     DAVA::Vector<DAVA::Reflection> propertyPanelObjects;
+
+    std::shared_ptr<DAVA::TArc::TimerUpdater> updater;
 
     static const char* selectedEntitiesProperty;
 
@@ -52,18 +56,28 @@ void PropertyPanelModule::PostInit()
     DataContext* ctx = accessor->GetGlobalContext();
     ctx->CreateData(std::make_unique<PropertyPanelData>());
 
+    PropertyPanelData* data = ctx->GetData<PropertyPanelData>();
+    data->updater.reset(new TimerUpdater(1000, 100));
+
     DockPanelInfo panelInfo;
     panelInfo.title = QStringLiteral("New Property Panel");
     panelInfo.actionPlacementInfo = ActionPlacementInfo(CreateMenuPoint(QList<QString>() << "View"
                                                                                          << "Dock"));
+    PropertiesView::Params params;
+    params.accessor = accessor;
+    params.invoker = GetInvoker();
+    params.ui = ui;
+    params.objectsField.type = DAVA::ReflectedTypeDB::Get<PropertyPanelModuleDetail::PropertyPanelData>();
+    params.objectsField.fieldName = DAVA::FastName(PropertyPanelModuleDetail::PropertyPanelData::selectedEntitiesProperty);
+    params.settingsNodeName = "PropertyPanel";
+    params.updater = std::weak_ptr<PropertiesView::Updater>(data->updater);
 
-    FieldDescriptor propertiesDataSourceField;
-    propertiesDataSourceField.type = DAVA::ReflectedTypeDB::Get<PropertyPanelModuleDetail::PropertyPanelData>();
-    propertiesDataSourceField.fieldName = DAVA::FastName(PropertyPanelModuleDetail::PropertyPanelData::selectedEntitiesProperty);
+    PropertiesView* view = new PropertiesView(params);
 
-    PropertiesView* view = new PropertiesView(accessor, propertiesDataSourceField);
     view->RegisterExtension(std::make_shared<REModifyPropertyExtension>(accessor));
     view->RegisterExtension(std::make_shared<EntityChildCreator>());
+    view->RegisterExtension(std::make_shared<QualitySettingsChildCreator>());
+    view->RegisterExtension(std::make_shared<QualitySettingsEditorCreator>());
     ui->AddView(REGlobal::MainWindowKey, PanelKey(panelInfo.title, panelInfo), view);
 
     // Bind to current selection changed
@@ -80,8 +94,6 @@ void PropertyPanelModule::SceneSelectionChanged(const DAVA::Any& newSelection)
 
     DataContext* ctx = GetAccessor()->GetGlobalContext();
     PropertyPanelModuleDetail::PropertyPanelData* data = ctx->GetData<PropertyPanelModuleDetail::PropertyPanelData>();
-    data->selectedEntities.clear();
-    data->selectedEntities.shrink_to_fit();
     data->propertyPanelObjects.clear();
 
     if (newSelection.CanGet<SelectableGroup>())
@@ -89,12 +101,7 @@ void PropertyPanelModule::SceneSelectionChanged(const DAVA::Any& newSelection)
         const SelectableGroup& group = newSelection.Get<SelectableGroup>();
         for (auto entity : group.ObjectsOfType<DAVA::Entity>())
         {
-            data->selectedEntities.push_back(entity);
-        }
-
-        for (size_t i = 0; i < data->selectedEntities.size(); ++i)
-        {
-            data->propertyPanelObjects.push_back(DAVA::Reflection::Create(&data->selectedEntities[i]));
+            data->propertyPanelObjects.push_back(DAVA::Reflection::Create(DAVA::ReflectedObject(entity)));
         }
     }
 }
@@ -107,5 +114,5 @@ DAVA_VIRTUAL_REFLECTION_IMPL(PropertyPanelModule)
 }
 
 #if !defined(DEPLOY_BUILD)
-//DECL_GUI_MODULE(PropertyPanelModule);
+DECL_GUI_MODULE(PropertyPanelModule);
 #endif

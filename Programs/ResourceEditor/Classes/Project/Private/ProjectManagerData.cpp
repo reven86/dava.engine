@@ -42,6 +42,11 @@ DAVA::FilePath ProjectManagerData::GetDataSourcePath() const
 
 DAVA::FilePath ProjectManagerData::GetDataSource3DPath() const
 {
+    return GetDataSource3DPath(projectPath);
+}
+
+DAVA::FilePath ProjectManagerData::GetDataSource3DPath(const DAVA::FilePath& projectPath)
+{
     return projectPath + ProjectManagerDataDetails::DATASOURCE_3D_PATH;
 }
 

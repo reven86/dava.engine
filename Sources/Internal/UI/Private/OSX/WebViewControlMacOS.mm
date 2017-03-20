@@ -28,6 +28,7 @@
 {
     NSSize origSuperviewSize;
     NSRect origRect;
+    bool inProportionalResize;
 }
 @end
 
@@ -35,6 +36,7 @@
 - (id)initWithFrame:(NSRect)frame
 {
     self = [super initWithFrame:frame];
+    [self stopProportionalResize];
     return self;
 }
 
@@ -42,18 +44,27 @@
 {
     [super viewWillStartLiveResize];
 
-    // We will change WebView size proportionally to its super view size.
+    // Enable WebView size change proportionally
+    // to its super view size.
     [self startProportionalResize];
 }
 
 - (void)viewDidEndLiveResize
 {
     [super viewDidEndLiveResize];
+
+    // Final apply new WebView size that is
+    // proportional to its super view size
     [self applyProportionalResize:[[self superview] frame].size];
+
+    // Now we can disable proportional resize
+    inProportionalResize = false;
 }
 
 - (void)resizeWithOldSuperviewSize:(NSSize)oldSize;
 {
+    // live superview resizing oldSize comes here
+    // allowing us to apply proportional resize
     [super resizeWithOldSuperviewSize:oldSize];
     [self applyProportionalResize:oldSize];
 }
@@ -64,27 +75,36 @@
     // to calculate proportional factor later.
     origSuperviewSize = [[self superview] frame].size;
     origRect = [self frame];
+    inProportionalResize = true;
+}
+
+- (void)stopProportionalResize
+{
+    inProportionalResize = false;
 }
 
 - (void)applyProportionalResize:(NSSize)oldSize
 {
-    if (origSuperviewSize.width > 0 && origSuperviewSize.height > 0)
+    if (inProportionalResize)
     {
-        // calculate proportional scale factor
-        CGFloat changeScaleX = oldSize.width / origSuperviewSize.width;
-        CGFloat changeScaleY = oldSize.height / origSuperviewSize.height;
+        if (origSuperviewSize.width > 0 && origSuperviewSize.height > 0)
+        {
+            // calculate proportional scale factor
+            CGFloat changeScaleX = oldSize.width / origSuperviewSize.width;
+            CGFloat changeScaleY = oldSize.height / origSuperviewSize.height;
 
-        // tune position
-        NSPoint newPos;
-        newPos.x = origRect.origin.x * changeScaleX;
-        newPos.y = origRect.origin.y * changeScaleY;
-        [self setFrameOrigin:newPos];
+            // tune position
+            NSPoint newPos;
+            newPos.x = origRect.origin.x * changeScaleX;
+            newPos.y = origRect.origin.y * changeScaleY;
+            [self setFrameOrigin:newPos];
 
-        // tune size
-        NSSize newSize;
-        newSize.width = origRect.size.width * changeScaleX;
-        newSize.height = origRect.size.height * changeScaleY;
-        [self setFrameSize:newSize];
+            // tune size
+            NSSize newSize;
+            newSize.width = origRect.size.width * changeScaleX;
+            newSize.height = origRect.size.height * changeScaleY;
+            [self setFrameSize:newSize];
+        }
     }
 }
 

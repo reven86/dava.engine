@@ -24,6 +24,7 @@ set(STATIC_LIBRARIES_WIN64_RELEASE "${libsPath}/win/x64/Release/gmock.lib")
 set(STATIC_LIBRARIES_WIN64_DEBUG "${libsPath}/win/x64/Debug/gmock.lib")
 
 set(QT_RES_FILES "Sources/TArc/Controls/*.qrc")
+set(QT_UI_FILES "Sources/TArc/Controls/ColorPicker/Private/Resources/*.ui")
 
 set(FIND_PACKAGE QT5)
 set(EXCLUDE_FROM_ALL 1)

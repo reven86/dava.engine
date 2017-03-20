@@ -14,6 +14,18 @@ class ReadOnly
 {
 };
 
+/** Mark field as invisible in property panel */
+class HiddenField
+{
+};
+
+class DisplayName
+{
+public:
+    DisplayName(const String& displayName);
+    const String displayName;
+};
+
 /**
     Defines valid range of value
     Control will try to cast minValue and maxValue to control specific type T
@@ -89,13 +101,14 @@ class Validator
 {
 public:
     Validator(const TValidationFn& fn);
+    virtual ~Validator() = default;
 
     /**
         Validate value
         \arg \c value Inputted value by user
         \arg \c current value of Reflected Field
     */
-    ValidationResult Validate(const Any& value, const Any& prevValue) const;
+    virtual ValidationResult Validate(const Any& value, const Any& prevValue) const;
 
 private:
     TValidationFn fn;
@@ -149,21 +162,19 @@ inline const EnumMap* FlagsT<T>::GetFlagsMap() const
 class File
 {
 public:
-    /** \arg \c shouldExists defines rule should file exists of not */
-    File(bool shouldExists = true, const String& filters = String());
+    File(const String& filters, const String& dlgTitle = String("Open File"));
+    virtual ~File() = default;
+
+    virtual String GetDefaultPath() const;
+    virtual String GetRootDirectory() const;
 
     const String filters;
-    const bool shouldExists;
+    const String dlgTitle;
 };
 
 /** Defines that value of Reflected Field should be Directory */
 class Directory
 {
-public:
-    /** \arg \c shouldExists defines rule should directory exists of not */
-    Directory(bool shouldExists = true);
-
-    const bool shouldExists;
 };
 
 /** Defines logical group of set of Reflected Fields under the same name */
@@ -196,6 +207,14 @@ private:
     for each field that marked by this meta
 */
 class SubProperty
+{
+};
+
+/**
+    Says that value can be changed at some unpredictable moment and 
+    Reflection's client should update value as often as possible
+*/
+class FrequentlyChangedValue
 {
 };
 

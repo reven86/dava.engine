@@ -138,6 +138,8 @@ public:
     void ClearSelection();
     void SelectNode(ControlNode* node);
 
+    const SortedPackageBaseNodeSet& GetEditingRootControls() const;
+
     DAVA::UIControl* GetRootControl() const;
     DAVA::UIControl* GetScalableControl() const;
 
@@ -172,7 +174,6 @@ private:
     void OnPackageChanged(PackageNode* node);
     void ControlWillBeRemoved(ControlNode* node, ControlsContainerNode* from) override;
     void ControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int index) override;
-    void OnTransformStateChanged(bool inTransformState);
     void InitDAVAScreen();
 
     void OnDragStateChanged(eDragState currentState, eDragState previousState);
