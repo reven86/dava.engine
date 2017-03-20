@@ -10,7 +10,8 @@ namespace DAVA
 {
 DAVA_VIRTUAL_REFLECTION_IMPL(StaticOcclusionDataComponent)
 {
-    ReflectionRegistrator<StaticOcclusionDataComponent>::Begin()
+    ReflectionRegistrator<StaticOcclusionDataComponent>::Begin()[M::CantBeCreatedManualyComponent()]
+    .ConstructorByPointer()
     .Field("sizeInKBytes", &StaticOcclusionDataComponent::GetDataSize, &StaticOcclusionDataComponent::SetDataSize)[M::ReadOnly(), M::DisplayName("Size in kBytes")]
     .End();
 }
@@ -18,6 +19,7 @@ DAVA_VIRTUAL_REFLECTION_IMPL(StaticOcclusionDataComponent)
 DAVA_VIRTUAL_REFLECTION_IMPL(StaticOcclusionComponent)
 {
     ReflectionRegistrator<StaticOcclusionComponent>::Begin()
+    .ConstructorByPointer()
     .Field("bbox", &StaticOcclusionComponent::GetBoundingBox, &StaticOcclusionComponent::SetSubdivisionsX)[M::DisplayName("Bounding Box")]
     .Field("subdivX", &StaticOcclusionComponent::GetSubdivisionsX, &StaticOcclusionComponent::SetSubdivisionsY)[M::DisplayName("Subdivisions X")]
     .Field("subdivY", &StaticOcclusionComponent::GetSubdivisionsY, &StaticOcclusionComponent::SetSubdivisionsZ)[M::DisplayName("Subdivisions Y")]
@@ -28,7 +30,8 @@ DAVA_VIRTUAL_REFLECTION_IMPL(StaticOcclusionComponent)
 
 DAVA_VIRTUAL_REFLECTION_IMPL(StaticOcclusionDebugDrawComponent)
 {
-    ReflectionRegistrator<StaticOcclusionDebugDrawComponent>::Begin()
+    ReflectionRegistrator<StaticOcclusionDebugDrawComponent>::Begin()[M::CantBeCreatedManualyComponent()]
+    .ConstructorByPointer()
     .End();
 }
 

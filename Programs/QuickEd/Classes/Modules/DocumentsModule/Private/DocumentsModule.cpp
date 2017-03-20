@@ -33,7 +33,6 @@
 #include <TArc/WindowSubSystem/ActionUtils.h>
 #include <TArc/WindowSubSystem/QtAction.h>
 #include <TArc/Utils/ModuleCollection.h>
-#include <TArc/Core/FieldBinder.h>
 
 #include <QtTools/InputDialogs/MultilineTextInputDialog.h>
 
@@ -116,8 +115,6 @@ void DocumentsModule::PostInit()
 {
     using namespace DAVA;
     using namespace TArc;
-
-    fieldBinder.reset(new FieldBinder(GetAccessor()));
 
     InitWatcher();
     InitEditorSystems();

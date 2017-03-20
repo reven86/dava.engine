@@ -79,7 +79,7 @@ PropertiesView::PropertiesView(const Params& params_)
     , params(params_)
 {
     binder.BindField(params.objectsField, MakeFunction(this, &PropertiesView::OnObjectsChanged));
-    model.reset(new ReflectedPropertyModel(params.accessor, params.invoker, params.ui));
+    model.reset(new ReflectedPropertyModel(params.wndKey, params.accessor, params.invoker, params.ui));
 
     SetupUI();
 
@@ -138,7 +138,6 @@ void PropertiesView::SetupUI()
     view->setModel(model.get());
     view->setRootIndex(QModelIndex());
     view->setItemDelegate(new PropertiesViewDelegate(view, model.get(), this));
-    view->setAlternatingRowColors(true);
 
     QHeaderView* headerView = view->header();
     connections.AddConnection(headerView, &QHeaderView::sectionResized, MakeFunction(this, &PropertiesView::OnColumnResized));
@@ -161,7 +160,10 @@ void PropertiesView::OnColumnResized(int columnIndex, int oldSize, int newSize)
 {
     PropertiesViewDelegate* d = qobject_cast<PropertiesViewDelegate*>(view->itemDelegate());
     DVASSERT(d != nullptr);
-    d->UpdateSizeHints(columnIndex, newSize);
+    if (d->UpdateSizeHints(columnIndex, newSize) == true)
+    {
+        model->HideEditors();
+    }
 }
 
 void PropertiesView::Update(UpdatePolicy policy)

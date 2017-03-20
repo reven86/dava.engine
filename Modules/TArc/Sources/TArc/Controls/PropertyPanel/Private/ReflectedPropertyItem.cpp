@@ -44,7 +44,7 @@ QString ReflectedPropertyItem::GetPropertyName() const
 ReflectedPropertyItem* ReflectedPropertyItem::CreateChild(std::unique_ptr<BaseComponentValue>&& value, int32 childPosition)
 {
     int32 position = static_cast<int32>(children.size());
-    if (childPosition == position)
+    if (position < childPosition)
     {
         children.emplace_back(new ReflectedPropertyItem(model, this, position, std::move(value)));
         return children.back().get();
@@ -69,8 +69,9 @@ int32 ReflectedPropertyItem::GetChildCount() const
 
 ReflectedPropertyItem* ReflectedPropertyItem::GetChild(int32 index) const
 {
-    DVASSERT(index < GetChildCount());
-    return children[index].get();
+    if (index < children.size())
+        return children[index].get();
+    return nullptr;
 }
 
 void ReflectedPropertyItem::RemoveChild(int32 index)

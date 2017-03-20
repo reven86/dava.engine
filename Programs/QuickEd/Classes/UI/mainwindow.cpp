@@ -103,7 +103,6 @@ void MainWindow::SetupViewMenu()
                             << ui->fileSystemDockWidget->toggleViewAction()
                             << ui->packageWidget->toggleViewAction()
                             << ui->libraryWidget->toggleViewAction()
-                            << ui->styleSheetInspectorWidget->toggleViewAction()
                             << ui->mainToolbar->toggleViewAction()
                             << ui->toolBarGlobal->toggleViewAction();
 
@@ -191,11 +190,6 @@ MainWindow::ProjectView* MainWindow::GetProjectView() const
 PackageWidget* MainWindow::GetPackageWidget() const
 {
     return ui->packageWidget;
-}
-
-StyleSheetInspectorWidget* MainWindow::GetStyleSheetInspectorWidget() const
-{
-    return ui->styleSheetInspectorWidget;
 }
 
 void MainWindow::OnPreferencesPropertyChanged(const InspMember* member, const VariantType& value)

@@ -218,5 +218,10 @@ class FrequentlyChangedValue
 {
 };
 
+/** Type that derived from Component and marked by this Meta couldn't be created in PropertyPanel */
+class CantBeCreatedManualyComponent
+{
+};
+
 } // namespace Mates
 } // namespace DAVA

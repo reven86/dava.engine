@@ -4,6 +4,8 @@
 #include <QPersistentModelIndex>
 #include <QHash>
 
+class QTreeView;
+
 namespace DAVA
 {
 namespace TArc
@@ -14,7 +16,7 @@ class PropertiesViewDelegate : public QAbstractItemDelegate
 {
     Q_OBJECT
 public:
-    PropertiesViewDelegate(QAbstractItemView* view, ReflectedPropertyModel* model, QObject* parent);
+    PropertiesViewDelegate(QTreeView* view, ReflectedPropertyModel* model, QObject* parent);
 
     void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     QSize sizeHint(const QStyleOptionViewItem& option, const QModelIndex& index) const override;
@@ -26,7 +28,7 @@ public:
     bool editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index) override;
     bool helpEvent(QHelpEvent* event, QAbstractItemView* view, const QStyleOptionViewItem& option, const QModelIndex& index) override;
 
-    void UpdateSizeHints(int section, int newWidth);
+    bool UpdateSizeHints(int section, int newWidth);
 
 private:
     BaseComponentValue* GetComponentValue(const QModelIndex& index) const;
@@ -35,7 +37,7 @@ private:
 
 private:
     ReflectedPropertyModel* model = nullptr;
-    QAbstractItemView* view = nullptr;
+    QTreeView* view = nullptr;
     mutable QHash<QPersistentModelIndex, int> heightForWidthItems;
 };
 }

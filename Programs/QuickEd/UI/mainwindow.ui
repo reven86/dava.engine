@@ -212,14 +212,6 @@
     <bool>false</bool>
    </attribute>
   </widget>
-  <widget class="StyleSheetInspectorWidget" name="styleSheetInspectorWidget">
-   <property name="windowTitle">
-    <string>Style Sheet Inspector</string>
-   </property>
-   <attribute name="dockWidgetArea">
-    <number>2</number>
-   </attribute>
-  </widget>
   <action name="actionExit">
    <property name="text">
     <string>&amp;Exit</string>
@@ -311,12 +303,6 @@
    <class>FileSystemDockWidget</class>
    <extends>QDockWidget</extends>
    <header>UI/FileSystemView/FileSystemDockWidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>StyleSheetInspectorWidget</class>
-   <extends>QDockWidget</extends>
-   <header>UI/StyleSheetInspector/StyleSheetInspectorWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

@@ -9,14 +9,6 @@
 
 #include <QtTools/Utils/QtDelayedExecutor.h>
 
-namespace DAVA
-{
-namespace TArc
-{
-class FieldBinder;
-}
-}
-
 class FindInDocumentController;
 class PreviewWidget;
 class EditorSystemsManager;
@@ -93,7 +85,6 @@ private:
     PreviewWidget* previewWidget = nullptr;
     std::unique_ptr<EditorSystemsManager> systemsManager;
     DAVA::TArc::QtConnections connections;
-    std::unique_ptr<DAVA::TArc::FieldBinder> fieldBinder;
 
     friend class FindInDocumentController;
     std::unique_ptr<FindInDocumentController> findInDocumentController;
