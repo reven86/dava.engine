@@ -468,10 +468,10 @@ void WindowBackend::OnWheel(QWheelEvent* qtEvent)
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseWheelEvent(window, x, y, deltaX, deltaY, modifierKeys, false));
 }
 
-void WindowBackend::OnNativeGuesture(QNativeGestureEvent* qtEvent)
+void WindowBackend::OnNativeGesture(QNativeGestureEvent* qtEvent)
 {
     eModifierKeys modifierKeys = GetModifierKeys();
-    //local coordinates not work on OS X - https://bugreports.qt.io/browse/QTBUG-59595
+    //local coordinates don't work on OS X - https://bugreports.qt.io/browse/QTBUG-59595
     QPoint localPos = renderWidget->mapFromGlobal(qtEvent->globalPos());
 
     float32 x = static_cast<float32>(localPos.x());

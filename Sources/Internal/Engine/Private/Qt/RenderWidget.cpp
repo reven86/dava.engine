@@ -370,10 +370,10 @@ bool RenderWidget::RenderWidgetImpl::event(QEvent* e)
     if (e->type() == QEvent::NativeGesture)
     {
         QNativeGestureEvent* gestureEvent = static_cast<QNativeGestureEvent*>(e);
-        widgetDelegate->OnNativeGuesture(gestureEvent);
+        widgetDelegate->OnNativeGesture(gestureEvent);
         if (clientDelegate != nullptr)
         {
-            clientDelegate->OnNativeGuesture(gestureEvent);
+            clientDelegate->OnNativeGesture(gestureEvent);
         }
     }
 
