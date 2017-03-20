@@ -70,7 +70,7 @@ Vector<String> PackRequest::GetDependencies() const
         const PackMetaData& pack_meta_data = packManagerImpl.GetMeta();
         return pack_meta_data.GetDependencyNames(requestedPackName);
     }
-    DAVA_THROW(Exception, "Error! Can't get pack dependencies before initialization not finished");
+    DAVA_THROW(Exception, "Error! Can't get pack dependencies before initialization is finished");
 }
 /** return size of files within this request without dependencies */
 uint64 PackRequest::GetSize() const

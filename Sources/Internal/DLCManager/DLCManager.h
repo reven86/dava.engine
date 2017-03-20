@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Functional/Signal.h"
 #include "FileSystem/FilePath.h"
+#include "Functional/Signal.h"
 
 namespace DAVA
 {
@@ -60,18 +60,20 @@ public:
 
     /** You have to subscribe to this signal before calling `Initialize` */
     Signal<bool> networkReady;
-    /** Tells that dlcmanager is fully initialized.
-	    After this signal you can use ```bool IsPackDownloaded(const String& packName);```
+    /** Tells that dlcmanager is initialized.
 	    First parameter count number of already downloaded files.
-		Second parameter number of total files in server superpack
+	    Second parameter number of total files in server superpack.
+	    After this signal you can use ```bool IsPackDownloaded(const String& packName);```
 		*/
     Signal<size_t, size_t> initializeFinished;
     /** signal per user request */
     Signal<const IRequest&> requestUpdated;
-    /** signal about fail download(create intermediate folder, file or write file) into device, parameter is
-		full path to file failed create or write. Second parameter is errno value (example: ENOSPC - No space left on device (POSIX.1).)
+    /** Signals about failed download, into device, first parameter is a full
+	    path to the file which couldn't be created or written,
+		second parameter is an error code
+		(example: ENOSPC - No space left on device (POSIX.1).)
 		DLCManager requesting disabled before signal.
-		If you resive this signal first check availible space on device.
+		If you receive this signal first check availible space on device.
 		*/
     Signal<const String&, int32> cantWriteToDisk;
 
@@ -82,12 +84,11 @@ public:
         uint32 maxFilesToDownload = 22000; //!< arond 22000 files now we have in build
     };
 
-    /**
-     Start complex initialization process. You can call it again if need.
+    /** Start complex initialization process. You can call it again if need.
 
-     You also should subscribe to all signals especially state changes
-     before you call Initialize.
-     At least subscribe to `networkReady` signal
+        You also should subscribe to all signals especially state changes
+        before you call Initialize.
+        At least subscribe to `networkReady` signal
     */
     virtual void Initialize(const FilePath& dirToDownloadPacks,
                             const String& urlToServerSuperpack,
@@ -97,10 +98,7 @@ public:
 
     virtual bool IsRequestingEnabled() const = 0;
 
-    /** After initialization finished you can check
-		if specified pack already downloaded. <b>return false if
-		initialization not finished!</b>
-	*/
+    /** Return true if pack is already downloaded. */
     virtual bool IsPackDownloaded(const String& packName) = 0;
 
     virtual void SetRequestingEnabled(bool value) = 0;
@@ -122,8 +120,7 @@ public:
         bool isRequestingEnabled = false;
     };
 
-    /** Calculate statistic about downloading progress
-	*/
+    /** Calculate statistic about downloading progress */
     virtual Progress GetProgress() const = 0;
 };
 
