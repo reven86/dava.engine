@@ -32,6 +32,7 @@ public:
     BaseSpinBox(const ControlDescriptor& descriptor, ContextAccessor* accessor, Reflection model, QWidget* parent);
 
 protected:
+    bool event(QEvent* e) override;
     void UpdateControl(const ControlDescriptor& changedFields) override;
     void SetupSpinBoxBase();
     void UpdateRange();

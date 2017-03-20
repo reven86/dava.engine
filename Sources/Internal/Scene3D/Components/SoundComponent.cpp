@@ -31,6 +31,7 @@ bool SoundComponentElement::operator==(const SoundComponentElement& other) const
 DAVA_VIRTUAL_REFLECTION_IMPL(SoundComponent)
 {
     ReflectionRegistrator<SoundComponent>::Begin()
+    .ConstructorByPointer()
     .Field("events", &SoundComponent::events)[M::DisplayName("Events")]
     .End();
 }
