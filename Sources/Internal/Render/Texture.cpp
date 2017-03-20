@@ -13,7 +13,7 @@
 #include "Render/RenderHelper.h"
 #include "Render/RenderCallbacks.h"
 
-#if defined(__DAVAENGINE_IPHONE__) 
+#if defined(__DAVAENGINE_IPHONE__)
 #include <CoreGraphics/CoreGraphics.h>
 #include <CoreFoundation/CoreFoundation.h>
 #elif defined(__DAVAENGINE_MACOS__)
@@ -655,7 +655,7 @@ void Texture::FlushDataToRenderer(Vector<Image*>* images)
     {
         singleTextureSet = rhi::HTextureSet(rhi::InvalidHandle);
     }
-    
+
 #else
 
     handle = rhi::CreateTexture(descriptor);
@@ -751,8 +751,8 @@ Texture* Texture::PureCreate(const FilePath& pathName, const FastName& group)
 
     if (texture == nullptr)
     {
-        Logger::Error("[Texture::PureCreate] Cannot create texture. Descriptor: %s, GPU: %s",
-                      descriptor->pathname.GetAbsolutePathname().c_str(), GlobalEnumMap<eGPUFamily>::Instance()->ToString(GetPrimaryGPUForLoading()));
+        Logger::Warning("[Texture::PureCreate] Cannot create texture. Descriptor: %s, GPU: %s",
+                        descriptor->pathname.GetAbsolutePathname().c_str(), GlobalEnumMap<eGPUFamily>::Instance()->ToString(GetPrimaryGPUForLoading()));
     }
 
     delete descriptor;

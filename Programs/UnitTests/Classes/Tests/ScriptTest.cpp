@@ -99,7 +99,7 @@ DAVA_TESTCLASS (ScriptTest)
         const DAVA::String script = R"script(
 -- DV functions
 DV.Debug("Debug msg")
-DV.Error("Error msg")
+DV.Info("Info msg")
 )script";
 
         TEST_VERIFY(s.ExecStringSafe(script) >= 0);
@@ -131,7 +131,7 @@ function fields_valid(context)
     assert(boolVal == true, "Test fail! context.boolVal " .. tostring(boolVal) .. " != true")
     local stringVal = context.stringVal
     assert(stringVal == "Demo string", "Test fail! context.stringVal '" .. stringVal .. "' != 'Demo string'")
-        
+
     -- Get global value
     intVal = GlobRef.intVal
     assert(intVal == 5, "Test fail! context.intVal " .. intVal .. " != 5")
@@ -153,7 +153,7 @@ function fields_valid(context)
 
     context.stringVal = "New demo string"
     assert(context.stringVal == "New demo string", "Test fail! context.stringVal '" .. context.stringVal .. "' != 'New demo string'")
-    
+
     -- Test complex type DAVA::Color as userdata
     --subClass.colorVal = context.colorVal
     --assert(subClass.colorVal == context.colorVal, "Test fail! subClass.colorVal (" ..  tostring(subClass.colorVal) .. ") != context.colorVal (" .. tostring(context.colorVal) .. ")")
