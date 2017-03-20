@@ -36,6 +36,13 @@ public:
     static const FastName PASS_DEBUG_DRAW_PARTICLES;
 
 private:
+    void Restore();
+    void DrawBatches(Camera* camera);
+    void PrepareParticlesVisibilityArray(Camera* camera, RenderSystem* renderSystem);
+    void PrepareParticlesBatchesArray(const Vector<RenderObject*> objectsArray, Camera* camera);
+    void MakePacket(Camera* camera);
+    NMaterial* SelectMaterial(RenderBatch* batch);
+
     Texture* debugTexture;
     NMaterial* wireframeMaterial;
     NMaterial* overdrawMaterial;
@@ -44,11 +51,5 @@ private:
     UnorderedSet<RenderObject*>* selectedParticles;
     const eParticleDebugDrawMode& drawMode;
     const bool& drawOnlySelected;
-
-    void DrawBatches(Camera* camera);
-    void PrepareParticlesVisibilityArray(Camera* camera, RenderSystem* renderSystem);
-    void PrepareParticlesBatchesArray(const Vector<RenderObject*> objectsArray, Camera* camera);
-    void MakePacket(Camera* camera);
-    NMaterial* SelectMaterial(RenderBatch* batch);
 };
 }

@@ -1,11 +1,23 @@
 #include "Particles/ParticleEffectDebug/ParticleDebugDrawQuadRenderPass.h"
 
+#include "Functional/Function.h"
+#include "Render/RenderCallbacks.h"
 #include "Render/RHI/rhi_Type.h"
 #include "Render/RHI/rhi_Public.h"
 
 namespace DAVA
 {
 const FastName ParticleDebugDrawQuadRenderPass::PASS_DEBUG_DRAW_QUAD("ForwardPass");
+const int ParticleDebugDrawQuadRenderPass::vertsCount = 6;
+const Array<ParticleDebugDrawQuadRenderPass::VertexPT, 6> ParticleDebugDrawQuadRenderPass::quad =
+{ {
+{ Vector3(-1.0f, -1.0f, 0.0f), Vector2(0.0f, 1.0f) },
+{ Vector3(1.0f, -1.0f, 0.0f), Vector2(1.0f, 1.0f) },
+{ Vector3(-1.0f, 1.0f, 0.0f), Vector2(0.0f, 0.0f) },
+{ Vector3(-1.0f, 1.0f, 0.0f), Vector2(0.0f, 0.0f) },
+{ Vector3(1.0f, -1.0f, 0.0f), Vector2(1.0f, 1.0f) },
+{ Vector3(1.0f, 1.0f, 0.0f), Vector2(1.0f, 0.0f) }
+} };
 
 ParticleDebugDrawQuadRenderPass::ParticleDebugDrawQuadRenderPass(ParticleDebugQuadRenderPassConfig config)
     : RenderPass(config.name)
@@ -21,12 +33,14 @@ ParticleDebugDrawQuadRenderPass::ParticleDebugDrawQuadRenderPass(ParticleDebugQu
 
     SetRenderTargetProperties(passConfig.viewport.width, passConfig.viewport.height, DAVA::PixelFormat::FORMAT_RGBA8888);
     PrepareRenderData();
+    RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(this, &ParticleDebugDrawQuadRenderPass::Restore));
 }
 
 ParticleDebugDrawQuadRenderPass::~ParticleDebugDrawQuadRenderPass()
 {
     if (quadBuffer.IsValid())
         rhi::DeleteVertexBuffer(quadBuffer);
+    RenderCallbacks::UnRegisterResourceRestoreCallback(MakeFunction(this, &ParticleDebugDrawQuadRenderPass::Restore));
 }
 
 void ParticleDebugDrawQuadRenderPass::Draw(DAVA::RenderSystem* renderSystem)
@@ -53,17 +67,6 @@ void ParticleDebugDrawQuadRenderPass::Draw(DAVA::RenderSystem* renderSystem)
 
 void ParticleDebugDrawQuadRenderPass::PrepareRenderData()
 {
-    static const int vertsCount = 6;
-    static const Array<ParticleDebugDrawQuadRenderPass::VertexPT, vertsCount> quad =
-    { {
-    { Vector3(-1.0f, -1.0f, 0.0f), Vector2(0.0f, 1.0f) },
-    { Vector3(1.0f, -1.0f, 0.0f), Vector2(1.0f, 1.0f) },
-    { Vector3(-1.0f, 1.0f, 0.0f), Vector2(0.0f, 0.0f) },
-    { Vector3(-1.0f, 1.0f, 0.0f), Vector2(0.0f, 0.0f) },
-    { Vector3(1.0f, -1.0f, 0.0f), Vector2(1.0f, 1.0f) },
-    { Vector3(1.0f, 1.0f, 0.0f), Vector2(1.0f, 0.0f) }
-    } };
-
     rhi::VertexBuffer::Descriptor vDesc = {};
     vDesc.size = sizeof(VertexPT) * vertsCount;
     vDesc.initialData = quad.data();
@@ -80,5 +83,11 @@ void ParticleDebugDrawQuadRenderPass::PrepareRenderData()
 
     quadPacket.primitiveType = rhi::PRIMITIVE_TRIANGLELIST;
     quadPacket.primitiveCount = 2;
+}
+
+void ParticleDebugDrawQuadRenderPass::Restore()
+{
+    if (rhi::NeedRestoreVertexBuffer(quadBuffer))
+        rhi::UpdateVertexBuffer(quadBuffer, quad.data(), 0, sizeof(VertexPT) * vertsCount);
 }
 }

@@ -66,6 +66,7 @@ public:
     static const FastName DEBUG_DRAW_ALPHABLEND;
     static const FastName DEBUG_DRAW_WIREFRAME;
     static const FastName DEBUG_DRAW_PARTICLES;
+    static const FastName DEBUG_DRAW_PARTICLES_NO_DEPTH;
 
     static const FastName WATER_ALL_QUALITIES;
 };

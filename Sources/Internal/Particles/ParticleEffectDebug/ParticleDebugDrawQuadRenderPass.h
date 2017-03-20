@@ -38,6 +38,7 @@ private:
         Vector2 uv;
     };
     void PrepareRenderData();
+    void Restore();
 
     DAVA::NMaterial* quadMaterial;
     DAVA::NMaterial* quadHeatMaterial;
@@ -45,5 +46,8 @@ private:
     const eParticleDebugDrawMode& drawMode;
     rhi::HVertexBuffer quadBuffer;
     rhi::Packet quadPacket;
+
+    static const int vertsCount;
+    static const Array<ParticleDebugDrawQuadRenderPass::VertexPT, 6> quad;
 };
 }

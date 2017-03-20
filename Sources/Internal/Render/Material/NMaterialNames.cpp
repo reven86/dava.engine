@@ -59,6 +59,7 @@ const FastName NMaterialName::DEBUG_DRAW_OPAQUE = FastName("~res:/Materials/Debu
 const FastName NMaterialName::DEBUG_DRAW_ALPHABLEND = FastName("~res:/Materials/DebugDraw/Debug.Alphablend.material");
 const FastName NMaterialName::DEBUG_DRAW_WIREFRAME = FastName("~res:/Materials/DebugDraw/Wireframe.material");
 const FastName NMaterialName::DEBUG_DRAW_PARTICLES = FastName("~res:/Materials/DebugDraw/Debug.Particles.material");
+const FastName NMaterialName::DEBUG_DRAW_PARTICLES_NO_DEPTH = FastName("~res:/Materials/DebugDraw/Debug.Particles.NoDepth.material");
 
 const FastName NMaterialName::WATER_ALL_QUALITIES = FastName("~res:/Materials/WaterAllQualities.material");
 

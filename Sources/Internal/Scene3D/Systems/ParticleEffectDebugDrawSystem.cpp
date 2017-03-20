@@ -4,11 +4,19 @@
 #include "Particles/ParticleEffectDebug/ParticleDebugDrawQuadRenderPass.h"
 
 #include "Render/Highlevel/RenderSystem.h"
+#include "Render/RenderCallbacks.h"
 
 #include "Scene3D/Scene.h"
 
 namespace DAVA
 {
+namespace
+{
+static const int32 heatmapWidth = 32;
+static const int32 heatmapHeight = 1;
+static const size_t heatmapDataSize = heatmapWidth * heatmapHeight * 4;
+}
+
 ParticleEffectDebugDrawSystem::ParticleEffectDebugDrawSystem(Scene* scene)
     : SceneSystem(scene)
 {
@@ -37,6 +45,8 @@ ParticleEffectDebugDrawSystem::ParticleEffectDebugDrawSystem(Scene* scene)
         materials.push_back(quadMaterial);
         materials.push_back(quadHeatMaterial);
     }
+
+    RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(this, &ParticleEffectDebugDrawSystem::Restore));
 }
 
 ParticleEffectDebugDrawSystem::~ParticleEffectDebugDrawSystem()
@@ -54,14 +64,15 @@ ParticleEffectDebugDrawSystem::~ParticleEffectDebugDrawSystem()
     SafeRelease(quadHeatMaterial);
 
     SafeRelease(heatTexture);
+    RenderCallbacks::UnRegisterResourceRestoreCallback(MakeFunction(this, &ParticleEffectDebugDrawSystem::Restore));
 }
 
 void ParticleEffectDebugDrawSystem::Draw()
 {
     DVASSERT(renderPass != nullptr && drawQuadPass != nullptr);
 
-    renderPass->Draw(renderSystem);
-    drawQuadPass->Draw(renderSystem);
+    renderPass->Draw(GetScene()->GetRenderSystem());
+    drawQuadPass->Draw(GetScene()->GetRenderSystem());
 }
 
 void ParticleEffectDebugDrawSystem::GenerateDebugMaterials()
@@ -78,7 +89,7 @@ void ParticleEffectDebugDrawSystem::GenerateDebugMaterials()
     if (overdrawMaterial == nullptr)
     {
         overdrawMaterial = new NMaterial();
-        overdrawMaterial->SetFXName(NMaterialName::PARTICLES);
+        overdrawMaterial->SetFXName(NMaterialName::DEBUG_DRAW_PARTICLES_NO_DEPTH);
         overdrawMaterial->AddFlag(FastName("PARTICLE_DEBUG_SHOW_OVERDRAW"), true);
         overdrawMaterial->AddFlag(NMaterialFlagName::FLAG_BLENDING, eBlending::BLENDING_ADDITIVE);
     }
@@ -88,7 +99,7 @@ void ParticleEffectDebugDrawSystem::GenerateDebugMaterials()
         Color debugShowAlphaColor(0.0f, 0.0f, 1.0f, 0.4f);
 
         showAlphaMaterial = new NMaterial();
-        showAlphaMaterial->SetFXName(NMaterialName::PARTICLES);
+        showAlphaMaterial->SetFXName(NMaterialName::DEBUG_DRAW_PARTICLES_NO_DEPTH);
         showAlphaMaterial->AddFlag(FastName("PARTICLE_DEBUG_SHOW_ALPHA"), true);
         showAlphaMaterial->AddFlag(NMaterialFlagName::FLAG_BLENDING, eBlending::BLENDING_ALPHABLEND);
         showAlphaMaterial->AddProperty(FastName("particleAlphaThreshold"), &alphaThreshold, rhi::ShaderProp::TYPE_FLOAT1);
@@ -119,20 +130,11 @@ void ParticleEffectDebugDrawSystem::GenerateQuadMaterials()
 
 DAVA::Texture* ParticleEffectDebugDrawSystem::GenerateHeatTexture() const
 {
-    static const int32 width = 32;
-    static const int32 height = 1;
-    static const size_t dataSize = width * height * 4;
+    unsigned char* data = new unsigned char[heatmapDataSize];
 
-    unsigned char* data = new unsigned char[dataSize];
-    for (size_t i = 0; i < dataSize; i += 4)
-    {
-        Vector4 color = LerpColors(static_cast<float32>(i) / (4 * width));
-        data[i] = static_cast<uint8>(color.x);
-        data[i + 1] = static_cast<uint8>(color.y);
-        data[i + 2] = static_cast<uint8>(color.z);
-        data[i + 3] = static_cast<uint8>(color.w);
-    }
-    Texture* texture = Texture::CreateFromData(FORMAT_RGBA8888, data, width, height, false);
+    GenerateHeatTextureData(data, heatmapDataSize, heatmapWidth);
+
+    Texture* texture = Texture::CreateFromData(FORMAT_RGBA8888, data, heatmapWidth, heatmapHeight, false);
 
     delete[] data;
 
@@ -178,5 +180,27 @@ void ParticleEffectDebugDrawSystem::SetAlphaThreshold(float32 threshold)
     threshold = Clamp(threshold, 0.0f, 1.0f);
     if (showAlphaMaterial != nullptr)
         showAlphaMaterial->SetPropertyValue(FastName("particleAlphaThreshold"), &threshold);
+}
+
+void ParticleEffectDebugDrawSystem::Restore()
+{
+    unsigned char* data = new unsigned char[heatmapDataSize];
+
+    GenerateHeatTextureData(data, heatmapDataSize, heatmapWidth);
+    rhi::UpdateTexture(static_cast<rhi::HTexture>(heatTexture->handle), data, 0);
+
+    delete[] data;
+}
+
+void ParticleEffectDebugDrawSystem::GenerateHeatTextureData(unsigned char* data, size_t dataSize, int32 width, int32 height /*= 1*/) const
+{
+    for (size_t i = 0; i < dataSize; i += 4)
+    {
+        Vector4 color = LerpColors(static_cast<float32>(i) / (4 * width));
+        data[i] = static_cast<uint8>(color.x);
+        data[i + 1] = static_cast<uint8>(color.y);
+        data[i + 2] = static_cast<uint8>(color.z);
+        data[i + 3] = static_cast<uint8>(color.w);
+    }
 }
 }

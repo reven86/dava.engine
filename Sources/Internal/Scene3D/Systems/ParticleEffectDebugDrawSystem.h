@@ -58,6 +58,9 @@ private:
         }
     };
 
+    void Restore();
+    void GenerateHeatTextureData(unsigned char* data, size_t dataSize, int32 width, int32 height = 1) const;
+
     UnorderedSet<RenderObject*> selectedParticles;
     ParticleDebugRenderPass* renderPass = nullptr;
     ParticleDebugDrawQuadRenderPass* drawQuadPass = nullptr;

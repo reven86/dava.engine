@@ -21,8 +21,6 @@ ParticleDebugRenderPass::ParticleDebugRenderPass(ParticleDebugRenderPassConfig c
     , drawMode(config.drawMode)
     , drawOnlySelected(config.drawOnlySelected)
 {
-    passConfig.priority = DAVA::PRIORITY_MAIN_3D;
-
     static const int width = 1024;
     static const int height = 1024;
     debugTexture = Texture::CreateFBO(width, height, PixelFormat::FORMAT_RGBA8888);
@@ -35,11 +33,17 @@ ParticleDebugRenderPass::ParticleDebugRenderPass(ParticleDebugRenderPassConfig c
     passConfig.colorBuffer[0].clearColor[1] = 0.0f;
     passConfig.colorBuffer[0].clearColor[2] = 0.0f;
     passConfig.colorBuffer[0].clearColor[3] = 0.0f;
-    SetViewport(Rect(0, 0, static_cast<float32>(height), static_cast<float32>(width)));
+    passConfig.depthStencilBuffer.texture = rhi::InvalidHandle;
+    passConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_NONE; // By default it will be set to Clear, and api will try to use backbuffer depth despite of InvalidHandle in texture.
+    passConfig.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
+    SetViewport(Rect(0, 0, static_cast<float32>(width), static_cast<float32>(height)));
+
+    RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(this, &ParticleDebugRenderPass::Restore));
 }
 
 ParticleDebugRenderPass::~ParticleDebugRenderPass()
 {
+    RenderCallbacks::UnRegisterResourceRestoreCallback(MakeFunction(this, &ParticleDebugRenderPass::Restore));
     SafeRelease(debugTexture);
 }
 
@@ -60,6 +64,12 @@ void ParticleDebugRenderPass::Draw(DAVA::RenderSystem* renderSystem)
 Texture* ParticleDebugRenderPass::GetTexture() const
 {
     return debugTexture;
+}
+
+void ParticleDebugRenderPass::Restore()
+{
+    if (rhi::NeedRestoreTexture(debugTexture->handle))
+        rhi::UpdateTexture(debugTexture->handle, nullptr, 0);
 }
 
 void ParticleDebugRenderPass::DrawBatches(Camera* camera)
