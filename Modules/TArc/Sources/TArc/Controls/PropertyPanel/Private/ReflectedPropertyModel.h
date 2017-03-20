@@ -4,6 +4,7 @@
 #include "TArc/Controls/PropertyPanel/Private/ReflectionPathTree.h"
 #include "TArc/DataProcessing/DataWrappersProcessor.h"
 #include "TArc/DataProcessing/PropertiesHolder.h"
+#include "TArc/WindowSubSystem/UI.h"
 
 #include "Base/BaseTypes.h"
 #include "Base/Any.h"
@@ -23,7 +24,7 @@ class ReflectedPropertyModel : public QAbstractItemModel
 {
     Q_OBJECT
 public:
-    ReflectedPropertyModel(ContextAccessor* accessor, OperationInvoker* invoker, UI* ui);
+    ReflectedPropertyModel(WindowKey wndKey, ContextAccessor* accessor, OperationInvoker* invoker, UI* ui);
     ~ReflectedPropertyModel();
 
     //////////////////////////////////////
@@ -95,6 +96,7 @@ private:
     DataWrappersProcessor fastWrappersProcessor;
     ReflectionPathTree expandedItems;
 
+    WindowKey wndKey;
     ContextAccessor* accessor = nullptr;
     OperationInvoker* invoker = nullptr;
     UI* ui = nullptr;

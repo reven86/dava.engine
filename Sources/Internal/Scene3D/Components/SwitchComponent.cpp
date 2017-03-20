@@ -9,7 +9,8 @@ namespace DAVA
 {
 DAVA_VIRTUAL_REFLECTION_IMPL(SwitchComponent)
 {
-    ReflectionRegistrator<SwitchComponent>::Begin()
+    ReflectionRegistrator<SwitchComponent>::Begin()[M::CantBeCreatedManualyComponent()]
+    .ConstructorByPointer()
     .Field("newSwitchIndex", &SwitchComponent::GetSwitchIndex, &SwitchComponent::SetSwitchIndex)[M::DisplayName("Switch index")]
     .End();
 }
