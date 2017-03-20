@@ -28,9 +28,19 @@ DocumentData::DocumentData(const DAVA::RefPtr<PackageNode>& package_)
 
 DocumentData::~DocumentData() = default;
 
-DAVA::CommandStack* DocumentData::GetCommandStack() const
+void DocumentData::ExecCommand(std::unique_ptr<DAVA::Command>&& command)
 {
-    return commandStack.get();
+    commandStack->Exec(std::move(command));
+}
+
+void DocumentData::BeginBatch(const DAVA::String& batchName, DAVA::uint32 commandsCount)
+{
+    commandStack->BeginBatch(batchName, commandsCount);
+}
+
+void DocumentData::EndBatch()
+{
+    commandStack->EndBatch();
 }
 
 const PackageNode* DocumentData::GetPackageNode() const
@@ -67,6 +77,11 @@ QString DocumentData::GetName() const
 QString DocumentData::GetPackageAbsolutePath() const
 {
     return QString::fromStdString(package->GetPath().GetAbsolutePathname());
+}
+
+DAVA::FilePath DocumentData::GetPackagePath() const
+{
+    return package->GetPath();
 }
 
 bool DocumentData::CanSave() const

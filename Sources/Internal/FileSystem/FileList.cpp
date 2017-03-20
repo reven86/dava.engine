@@ -147,9 +147,8 @@ FileList::FileList(const FilePath& filepath, bool includeHidden)
             {
                 continue; // just skip. faster work less bugs
             }
-            String fullPath = dirPath + fileOrDirName;
-            entry.path = fullPath;
             entry.name = fileOrDirName;
+            entry.path = path + entry.name;
 
             if (ent->d_type != DT_DIR && ent->d_type != DT_REG)
             {
@@ -164,6 +163,7 @@ FileList::FileList(const FilePath& filepath, bool includeHidden)
             if (!entry.isDirectory)
             {
                 struct stat st;
+                String fullPath = dirPath + fileOrDirName;
                 if (stat(fullPath.c_str(), &st) == 0)
                 {
                     entry.size = st.st_size;

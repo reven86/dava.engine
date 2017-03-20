@@ -285,9 +285,9 @@ Reflection::Reflection(const ReflectedObject& object_, const ValueWrapper* vw, c
             structureWrapper = reflectedType->GetStrucutreWrapper();
         }
 
-        if (nullptr == meta && nullptr != reflectedType->GetStrucutre())
+        if (nullptr == meta && nullptr != reflectedType->GetStructure())
         {
-            meta = reflectedType->GetStrucutre()->meta.get();
+            meta = reflectedType->GetStructure()->meta.get();
         }
     }
 

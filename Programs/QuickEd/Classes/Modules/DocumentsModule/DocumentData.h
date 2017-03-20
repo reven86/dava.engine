@@ -11,6 +11,7 @@
 
 namespace DAVA
 {
+class Command;
 class CommandStack;
 }
 class PackageNode;
@@ -22,13 +23,21 @@ public:
     ~DocumentData() override;
 
     const PackageNode* GetPackageNode() const;
-    DAVA_DEPRECATED(DAVA::CommandStack* GetCommandStack() const;)
+
+    void ExecCommand(std::unique_ptr<DAVA::Command>&& command);
+    void BeginBatch(const DAVA::String& batchName, DAVA::uint32 commandsCount = 1);
+    void EndBatch();
+    template <typename T, typename... Arguments>
+    std::unique_ptr<T> CreateCommand(Arguments&&... args) const;
+    template <typename T, typename... Arguments>
+    void ExecCommand(Arguments&&... args);
 
     const SelectedNodes& GetSelectedNodes() const;
     const SortedControlNodeSet& GetEditedRootControls() const;
 
     QString GetName() const;
     QString GetPackageAbsolutePath() const;
+    DAVA::FilePath GetPackagePath() const;
 
     bool CanSave() const;
     bool CanUndo() const;
@@ -39,7 +48,7 @@ public:
 
     bool IsDocumentExists() const;
 
-    DAVA_DEPRECATED(void RefreshLayout();)
+    DAVA_DEPRECATED(void RefreshLayout());
     DAVA_DEPRECATED(void RefreshAllControlProperties());
 
     static const char* packagePropertyName;
@@ -66,3 +75,16 @@ private:
 
     DAVA_VIRTUAL_REFLECTION(DocumentData, DAVA::TArc::DataNode);
 };
+
+template <typename T, typename... Arguments>
+std::unique_ptr<T> DocumentData::CreateCommand(Arguments&&... args) const
+{
+    return std::make_unique<T>(package.Get(), std::forward<Arguments>(args)...);
+}
+
+template <typename T, typename... Arguments>
+void DocumentData::ExecCommand(Arguments&&... args)
+{
+    std::unique_ptr<DAVA::Command> command = CreateCommand<T>(std::forward<Arguments>(args)...);
+    ExecCommand(std::move(command));
+}

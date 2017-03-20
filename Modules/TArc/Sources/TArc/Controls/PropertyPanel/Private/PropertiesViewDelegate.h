@@ -30,6 +30,8 @@ public:
 
 private:
     BaseComponentValue* GetComponentValue(const QModelIndex& index) const;
+    void AdjustEditorRect(QStyleOptionViewItem& opt) const;
+    void UpdateSpanning(const QModelIndex& index, bool isSpanned) const;
 
 private:
     ReflectedPropertyModel* model = nullptr;

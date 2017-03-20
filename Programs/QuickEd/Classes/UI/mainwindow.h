@@ -48,7 +48,6 @@ public:
     PackageWidget* GetPackageWidget() const;
     StyleSheetInspectorWidget* GetStyleSheetInspectorWidget() const;
     DAVA::Signal<> initialized;
-    bool IsInitialized() const;
 
 signals:
     void EmulationModeChanged(bool emulationMode);
@@ -61,8 +60,6 @@ private slots:
     void OnEditorPreferencesTriggered();
 
 private:
-    bool event(QEvent* event) override;
-
     void SetProjectPath(const QString& projectPath);
 
     void ConnectActions();
@@ -100,7 +97,6 @@ private:
 
     ProjectView* projectView = nullptr;
     DocumentGroupView* documentGroupView = nullptr;
-    bool isInitialized = false;
 
 public:
     INTROSPECTION(MainWindow,

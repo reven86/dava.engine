@@ -105,14 +105,13 @@
     <addaction name="separator"/>
     <addaction name="actionPreferences"/>
    </widget>
-   <widget class="QMenu" name="menuHelp">
+   <widget class="QMenu" name="Help">
     <property name="contextMenuPolicy">
      <enum>Qt::ActionsContextMenu</enum>
     </property>
     <property name="title">
      <string>&amp;Help</string>
     </property>
-    <addaction name="actionHelp"/>
    </widget>
    <widget class="QMenu" name="Edit">
     <property name="title">
@@ -137,7 +136,7 @@
    <addaction name="View"/>
    <addaction name="Find"/>
    <addaction name="Tools"/>
-   <addaction name="menuHelp"/>
+   <addaction name="Help"/>
   </widget>
   <widget class="QToolBar" name="mainToolbar">
    <property name="windowTitle">
@@ -232,21 +231,6 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Q</string>
-   </property>
-   <property name="shortcutContext">
-    <enum>Qt::ApplicationShortcut</enum>
-   </property>
-  </action>
-  <action name="actionHelp">
-   <property name="icon">
-    <iconset resource="../DataQt/icons.qrc">
-     <normaloff>:/Icons/help.png</normaloff>:/Icons/help.png</iconset>
-   </property>
-   <property name="text">
-    <string>QuickEd Help</string>
-   </property>
-   <property name="shortcut">
-    <string>F1</string>
    </property>
    <property name="shortcutContext">
     <enum>Qt::ApplicationShortcut</enum>

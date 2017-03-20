@@ -1,6 +1,7 @@
 #pragma once
 
 #include "TArc/Controls/PropertyPanel/Private/ChildCreator.h"
+#include "TArc/Controls/PropertyPanel/Private/ReflectionPathTree.h"
 #include "TArc/DataProcessing/DataWrappersProcessor.h"
 #include "TArc/DataProcessing/PropertiesHolder.h"
 
@@ -14,12 +15,15 @@ namespace DAVA
 namespace TArc
 {
 class ReflectedPropertyItem;
+class ContextAccessor;
+class OperationInvoker;
+class UI;
 
 class ReflectedPropertyModel : public QAbstractItemModel
 {
     Q_OBJECT
 public:
-    ReflectedPropertyModel();
+    ReflectedPropertyModel(ContextAccessor* accessor, OperationInvoker* invoker, UI* ui);
     ~ReflectedPropertyModel();
 
     //////////////////////////////////////
@@ -55,9 +59,12 @@ public:
 
     void SetExpanded(bool expanded, const QModelIndex& index);
     QModelIndexList GetExpandedList() const;
+    QModelIndexList GetExpandedChildren(const QModelIndex& index) const;
 
     void SaveExpanded(PropertiesItem& propertyRoot) const;
     void LoadExpanded(const PropertiesItem& propertyRoot);
+
+    void HideEditors();
 
 private:
     friend class BaseComponentValue;
@@ -69,6 +76,7 @@ private:
 
     void Update(ReflectedPropertyItem* item);
     void UpdateFastImpl(ReflectedPropertyItem* item);
+    void HideEditor(ReflectedPropertyItem* item);
 
     template <typename T>
     std::shared_ptr<T> GetExtensionChain() const;
@@ -85,19 +93,11 @@ private:
 
     DataWrappersProcessor wrappersProcessor;
     DataWrappersProcessor fastWrappersProcessor;
+    ReflectionPathTree expandedItems;
 
-    struct ExpandedFieldDescriptor
-    {
-        String typePermanentName;
-        String fieldName;
-
-        bool operator==(const ExpandedFieldDescriptor& other) const
-        {
-            return typePermanentName == other.typePermanentName && fieldName == other.fieldName;
-        }
-    };
-
-    Vector<ExpandedFieldDescriptor> expandedFields;
+    ContextAccessor* accessor = nullptr;
+    OperationInvoker* invoker = nullptr;
+    UI* ui = nullptr;
 };
 
 template <typename Dst, typename Src>

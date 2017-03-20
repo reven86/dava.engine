@@ -41,6 +41,7 @@
 #include "Tests/DeviceManagerTest.h"
 #include "Tests/SoundTest.h"
 #include "Tests/AnyPerformanceTest.h"
+#include "Tests/WindowTest.h"
 //$UNITTEST_INCLUDE
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
@@ -333,6 +334,7 @@ void TestBed::RegisterTests()
 
 #endif
 
+    new WindowTest(*this);
     //$UNITTEST_CTOR
 }
 
