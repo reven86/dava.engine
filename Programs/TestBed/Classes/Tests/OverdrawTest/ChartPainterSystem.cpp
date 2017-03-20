@@ -20,7 +20,6 @@ using DAVA::Polygon2;
 using DAVA::UIControlSystem;
 using DAVA::DbgDraw;
 using DAVA::RenderSystem2D;
-using DAVA::Array;
 using DAVA::Vector;
 
 const Vector2 ChartPainterSystem::chartOffset(0.1f, 0.1f);

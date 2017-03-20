@@ -40,8 +40,9 @@ private:
     };
 
     void GenerateQuad(DAVA::uint32 index, DAVA::uint32 layoutId);
-    DAVA::Vector<OverdrawTesterRenderObject::QuadVertex> GetQuadVerts(DAVA::float32 xStart, DAVA::float32 xEnd);
+    DAVA::Vector<OverdrawTesterRenderObject::QuadVertex> GetQuadVerts(DAVA::uint32 index);
     void GenerateIndexBuffer();
+    void Restore();
 
     DAVA::Vector<QuadVertex> activeVerts;
     DAVA::NMaterial* material = nullptr;

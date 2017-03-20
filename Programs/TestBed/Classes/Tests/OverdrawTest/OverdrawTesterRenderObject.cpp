@@ -4,6 +4,8 @@
 #include "Render/Material/NMaterial.h"
 #include "Render/Highlevel/RenderBatch.h"
 #include "Render/DynamicBufferAllocator.h"
+#include "Render/RenderCallbacks.h"
+#include "Functional/Function.h"
 #include "UI/UIControlSystem.h"
 
 namespace OverdrawPerformanceTester
@@ -21,6 +23,11 @@ using DAVA::DynamicBufferAllocator::AllocResultVB;
 using DAVA::DynamicBufferAllocator::AllocResultIB;
 using DAVA::Camera;
 using DAVA::Size2i;
+
+namespace
+{
+DAVA::Array<uint16, 6> indices = { 0, 3, 1, 1, 3, 2 };
+}
 
 OverdrawTesterRenderObject::OverdrawTesterRenderObject(float32 addOverdrawPercent_, uint32 maxStepsCount_, uint16 textureResolution_)
     : addOverdrawPercent(addOverdrawPercent_)
@@ -44,6 +51,8 @@ OverdrawTesterRenderObject::OverdrawTesterRenderObject(float32 addOverdrawPercen
     }
 
     bbox.AddPoint(Vector3(1.0f, 1.0f, 1.0f));
+
+    RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(this, &OverdrawTesterRenderObject::Restore));
 }
 
 OverdrawTesterRenderObject::~OverdrawTesterRenderObject()
@@ -58,6 +67,8 @@ OverdrawTesterRenderObject::~OverdrawTesterRenderObject()
 
     if (iBuffer.IsValid())
         rhi::DeleteIndexBuffer(iBuffer);
+
+    RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(this, &OverdrawTesterRenderObject::Restore));
 }
 
 void OverdrawTesterRenderObject::PrepareToRender(Camera* camera)
@@ -83,17 +94,7 @@ void OverdrawTesterRenderObject::BindDynamicParameters(Camera* camera)
 
 void OverdrawTesterRenderObject::GenerateQuad(uint32 index, uint32 layoutId)
 {
-    static const float32 threshold = 0.999f; // This threshold prevent quad from drawing in positions like 0.9999-1.9999 except 0-0.1, and force last quad right edge to be drawn at 1.0.
-
-    float32 start = addOverdrawPercentNormalized * index;
-    start = start - static_cast<int32>(start);
-    start = start < threshold ? start : 0.0f;
-
-    start = start * 2 - 1.0f;
-    float32 end = start + 2.0f * addOverdrawPercentNormalized;
-    end = end < threshold ? end : 1.0f;
-
-    auto quad = GetQuadVerts(start, end);
+    auto quad = GetQuadVerts(index);
 
     rhi::VertexBuffer::Descriptor desc;
     desc.usage = rhi::USAGE_STATICDRAW;
@@ -112,8 +113,18 @@ void OverdrawTesterRenderObject::GenerateQuad(uint32 index, uint32 layoutId)
     quads.push_back(renderBatch);
 }
 
-DAVA::Vector<OverdrawTesterRenderObject::QuadVertex> OverdrawTesterRenderObject::GetQuadVerts(float32 xStart, float32 xEnd)
+DAVA::Vector<OverdrawTesterRenderObject::QuadVertex> OverdrawTesterRenderObject::GetQuadVerts(uint32 index)
 {
+    static const float32 threshold = 0.999f; // This threshold prevent quad from drawing in positions like 0.9999-1.9999 except 0-0.1, and force last quad right edge to be drawn at 1.0.
+
+    float32 xStart = addOverdrawPercentNormalized * index;
+    xStart = xStart - static_cast<int32>(xStart);
+    xStart = xStart < threshold ? xStart : 0.0f;
+
+    xStart = xStart * 2 - 1.0f;
+    float32 xEnd = xStart + 2.0f * addOverdrawPercentNormalized;
+    xEnd = xEnd < threshold ? xEnd : 1.0f;
+
     // Try to keep 2pix - 1tex ratio.
     Size2i size = DAVA::UIControlSystem::Instance()->vcs->GetPhysicalScreenSize();
 
@@ -133,12 +144,22 @@ DAVA::Vector<OverdrawTesterRenderObject::QuadVertex> OverdrawTesterRenderObject:
 
 void OverdrawTesterRenderObject::GenerateIndexBuffer()
 {
-    DAVA::Array<uint16, 6> indices = { 0, 3, 1, 1, 3, 2 };
     rhi::IndexBuffer::Descriptor iDesc;
     iDesc.indexSize = rhi::INDEX_SIZE_16BIT;
     iDesc.size = 6 * sizeof(uint16);
     iDesc.usage = rhi::USAGE_STATICDRAW;
     iDesc.initialData = indices.data();
     iBuffer = rhi::CreateIndexBuffer(iDesc);
+}
+
+void OverdrawTesterRenderObject::Restore()
+{
+    if (rhi::NeedRestoreIndexBuffer(iBuffer))
+        rhi::UpdateIndexBuffer(iBuffer, indices.data(), 0, static_cast<DAVA::uint32>(indices.size() * sizeof(uint16)));
+    for (int i = 0; i < quads.size(); i++)
+    {
+        if (rhi::NeedRestoreVertexBuffer(quads[i]->vertexBuffer))
+            rhi::UpdateVertexBuffer(quads[i]->vertexBuffer, GetQuadVerts(i).data(), 0, static_cast<DAVA::uint32>(4 * sizeof(QuadVertex)));
+    }
 }
 }
