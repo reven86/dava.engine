@@ -24,8 +24,7 @@ FindInDocumentController::FindInDocumentController(DocumentsModule* documentsMod
     packageFieldDescr.type = ReflectedTypeDB::Get<DocumentData>();
     packageFieldDescr.fieldName = FastName(DocumentData::packagePropertyName);
 
-    const auto updater =
-    [](const Any& fieldValue) -> Any {
+    const auto updater = [](const Any& fieldValue) -> Any {
         return fieldValue.CanCast<PackageNode*>() && fieldValue.Cast<PackageNode*>() != nullptr;
     };
 

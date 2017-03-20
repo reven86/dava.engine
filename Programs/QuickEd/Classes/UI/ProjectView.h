@@ -34,7 +34,6 @@ signals:
     void FindFileInProject();
     void JumpToPrototype();
     void FindPrototypeInstances();
-    void FindInProject();
     void ProjectChanged(Project* project);
 
 public slots:

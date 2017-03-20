@@ -31,7 +31,7 @@ void FindInProjectModule::PostInit()
 
     const auto updater =
     [](const Any& fieldValue) -> Any {
-        return fieldValue.CanCast<FilePath>() && !fieldValue.Cast<FilePath>().IsEmpty();
+        return !fieldValue.Cast<FilePath>(FilePath()).IsEmpty();
     };
 
     TArc::QtAction* findInProjectAction = new TArc::QtAction(accessor, QObject::tr("Find in Project..."), nullptr);
