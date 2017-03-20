@@ -11,6 +11,7 @@ namespace DAVA
 DAVA_VIRTUAL_REFLECTION_IMPL(LodComponent)
 {
     ReflectionRegistrator<LodComponent>::Begin()
+    .ConstructorByPointer()
     .Field("currentLod", &LodComponent::currentLod)[M::ReadOnly(), M::DisplayName("Current LOD")]
     .End();
 }
