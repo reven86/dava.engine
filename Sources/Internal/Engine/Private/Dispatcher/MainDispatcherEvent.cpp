@@ -227,25 +227,7 @@ MainDispatcherEvent MainDispatcherEvent::CreateWindowTouchEvent(Window* window, 
 MainDispatcherEvent MainDispatcherEvent::CreateWindowMagnificationGestureEvent(Window* window, float32 x, float32 y, float32 magnification, eModifierKeys modifierKeys)
 {
     MainDispatcherEvent e(TRACKPAD_GESTURE, window);
-    e.trackpadGestureEvent.type = TrackpadGestureEvent::eGestureType::MAGNIFICATION;
     e.trackpadGestureEvent.magnification = magnification;
-    e.trackpadGestureEvent.rotation = 0.0f;
-    e.trackpadGestureEvent.deltaX = 0.0f;
-    e.trackpadGestureEvent.deltaY = 0.0f;
-    e.trackpadGestureEvent.x = x;
-    e.trackpadGestureEvent.y = y;
-    e.trackpadGestureEvent.modifierKeys = modifierKeys;
-    return e;
-}
-
-MainDispatcherEvent MainDispatcherEvent::CreateWindowSmartMagnificationGuestureEvent(Window* window, float32 x, float32 y, bool smartMagnification, eModifierKeys modifierKeys)
-{
-    MainDispatcherEvent e(TRACKPAD_GESTURE, window);
-    e.trackpadGestureEvent.type = TrackpadGestureEvent::eGestureType::SMART_MAGNIFICATION;
-    e.trackpadGestureEvent.smartMagnification = smartMagnification ?
-    TrackpadGestureEvent::eSmartMagnification::MAGNIFY_IN :
-    TrackpadGestureEvent::eSmartMagnification::MAGNIFY_OUT;
-    e.trackpadGestureEvent.magnification = 0.0f;
     e.trackpadGestureEvent.rotation = 0.0f;
     e.trackpadGestureEvent.deltaX = 0.0f;
     e.trackpadGestureEvent.deltaY = 0.0f;
@@ -258,7 +240,6 @@ MainDispatcherEvent MainDispatcherEvent::CreateWindowSmartMagnificationGuestureE
 MainDispatcherEvent MainDispatcherEvent::CreateWindowRotationGestureEvent(Window* window, float32 rotation, eModifierKeys modifierKeys)
 {
     MainDispatcherEvent e(TRACKPAD_GESTURE, window);
-    e.trackpadGestureEvent.type = TrackpadGestureEvent::eGestureType::ROTATION;
     e.trackpadGestureEvent.magnification = 0.0f;
     e.trackpadGestureEvent.rotation = rotation;
     e.trackpadGestureEvent.deltaX = 0.0f;
@@ -272,7 +253,6 @@ MainDispatcherEvent MainDispatcherEvent::CreateWindowRotationGestureEvent(Window
 MainDispatcherEvent MainDispatcherEvent::CreateWindowSwipeGestureEvent(Window* window, float32 deltaX, float32 deltaY, eModifierKeys modifierKeys)
 {
     MainDispatcherEvent e(TRACKPAD_GESTURE, window);
-    e.trackpadGestureEvent.type = TrackpadGestureEvent::eGestureType::SWIPE;
     e.trackpadGestureEvent.magnification = 0.0f;
     e.trackpadGestureEvent.rotation = 0.0f;
     e.trackpadGestureEvent.deltaX = deltaX;

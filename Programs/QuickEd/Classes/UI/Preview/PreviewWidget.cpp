@@ -298,7 +298,7 @@ void PreviewWidget::InitFromSystemsManager(EditorSystemsManager* systemsManager_
 void PreviewWidget::OnScaleChanged(float32 scale)
 {
     bool wasBlocked = scaleCombo->blockSignals(true);
-    Vector<float32> scales = editorCanvas->GetPredefinedScales();
+    const Vector<float32>& scales = editorCanvas->GetPredefinedScales();
     auto iter = std::find(scales.begin(), scales.end(), scale);
     if (iter != scales.end())
     {
@@ -315,10 +315,11 @@ void PreviewWidget::OnScaleChanged(float32 scale)
 void PreviewWidget::OnScaleByComboIndex(int index)
 {
     DVASSERT(index >= 0);
-    float scale = static_cast<float>(editorCanvas->GetPredefinedScales().at(index));
+    const Vector<float32> scales = editorCanvas->GetPredefinedScales();
+    DVASSERT(index < scales.size());
     if (editorCanvas != nullptr)
     {
-        editorCanvas->SetScale(scale);
+        editorCanvas->SetScale(scales.at(index));
     }
 }
 

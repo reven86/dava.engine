@@ -227,24 +227,13 @@ void EditorCanvas::ProcessInput(UIEvent* currentInput)
         if (currentInput->phase == UIEvent::Phase::GESTURE)
         {
             const UIEvent::Gesture& gesture = currentInput->gesture;
-            switch (gesture.type)
+            if (gesture.dx != 0.0f || gesture.dy != 0.0f)
             {
-            case UIEvent::Gesture::eGestureType::SWIPE:
                 SetPosition(GetPosition() - Vector2(gesture.dx, gesture.dy));
-                break;
-            case UIEvent::Gesture::eGestureType::MAGNIFICATION:
-                AdjustScale(scale + gesture.magnification, currentInput->physPoint);
-                break;
-            case UIEvent::Gesture::eGestureType::SMART_MAGNIFICATION:
-            {
-                float32 normalScale = 1.0f;
-                float32 expandedScale = 1.5;
-                float32 newScale = gesture.smartMagnification == UIEvent::Gesture::eSmartMagnification::MAGNIFY_IN ? expandedScale : normalScale;
-                AdjustScale(newScale, currentInput->physPoint);
             }
-            break;
-            default:
-                break;
+            else if (gesture.magnification != 0.0f)
+            {
+                AdjustScale(scale + gesture.magnification, currentInput->physPoint);
             }
         }
     }
@@ -262,7 +251,9 @@ void EditorCanvas::ProcessInput(UIEvent* currentInput)
                 Vector2 position = GetPosition();
                 Vector2 additionalPos(currentInput->wheelDelta.x, currentInput->wheelDelta.y);
                 additionalPos *= GetViewSize();
-                SetPosition(position + additionalPos);
+                //custom delimiter to scroll widget by little chunks of visible area
+                static const float wheelDelta = 0.002f;
+                SetPosition(position + additionalPos * wheelDelta);
             }
         }
         else

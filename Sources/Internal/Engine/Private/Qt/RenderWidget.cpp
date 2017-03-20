@@ -377,7 +377,7 @@ bool RenderWidget::RenderWidgetImpl::event(QEvent* e)
         }
     }
 
-    if (e->type() == QEvent::WindowActivate)
+    else if (e->type() == QEvent::WindowActivate)
     {
         if (IsInitialized() == false)
         {

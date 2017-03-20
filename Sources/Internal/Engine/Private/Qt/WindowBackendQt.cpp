@@ -471,7 +471,7 @@ void WindowBackend::OnWheel(QWheelEvent* qtEvent)
 void WindowBackend::OnNativeGuesture(QNativeGestureEvent* qtEvent)
 {
     eModifierKeys modifierKeys = GetModifierKeys();
-    //local coordinates not work on OS X
+    //local coordinates not work on OS X - https://bugreports.qt.io/browse/QTBUG-59595
     QPoint localPos = renderWidget->mapFromGlobal(qtEvent->globalPos());
 
     float32 x = static_cast<float32>(localPos.x());
@@ -483,9 +483,6 @@ void WindowBackend::OnNativeGuesture(QNativeGestureEvent* qtEvent)
         break;
     case Qt::ZoomNativeGesture:
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMagnificationGestureEvent(window, x, y, qtEvent->value(), modifierKeys));
-        break;
-    case Qt::SmartZoomNativeGesture:
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSmartMagnificationGuestureEvent(window, x, y, qtEvent->value(), modifierKeys));
         break;
     default:
         break;

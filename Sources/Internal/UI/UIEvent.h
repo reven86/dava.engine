@@ -101,28 +101,10 @@ public:
 
     struct Gesture
     {
-        enum class eGestureType
-        {
-            SWIPE,
-            MAGNIFICATION,
-            SMART_MAGNIFICATION,
-            ROTATION
-        };
-
-        enum class eSmartMagnification
-        {
-            MAGNIFY_IN,
-            MAGNIFY_OUT
-        };
-
-        eGestureType type;
-        eSmartMagnification smartMagnification;
         float32 magnification; // delta -1..1
         float32 rotation; // delta angle in degrees -cw +ccw
         float32 dx; // -1..1 (-1 left)
         float32 dy; // -1..1 (-1 top)
-        float32 x;
-        float32 y;
     };
 
     union {
