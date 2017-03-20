@@ -17,7 +17,16 @@ extern "C" {
 #pragma clang diagnostic ignored "-Wold-style-cast"
 #endif
 
+#ifdef _MSC_VER
+#pragma warning(push)
+#pragma warning(disable : 4244 4267)
+#endif
+
 #include "mongoose.c"
+
+#ifdef _MSC_VER
+#pragma warning(pop)
+#endif
 
 #ifdef __clang__
 #pragma clang diagnostic pop
