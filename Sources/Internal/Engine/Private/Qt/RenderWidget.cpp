@@ -376,7 +376,6 @@ bool RenderWidget::RenderWidgetImpl::event(QEvent* e)
             clientDelegate->OnNativeGesture(gestureEvent);
         }
     }
-
     else if (e->type() == QEvent::WindowActivate)
     {
         if (IsInitialized() == false)

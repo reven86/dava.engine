@@ -316,7 +316,7 @@ void PreviewWidget::OnScaleByComboIndex(int index)
 {
     DVASSERT(index >= 0);
     const Vector<float32> scales = editorCanvas->GetPredefinedScales();
-    DVASSERT(index < scales.size());
+    DVASSERT(index < static_cast<int>(scales.size()));
     if (editorCanvas != nullptr)
     {
         editorCanvas->SetScale(scales.at(index));

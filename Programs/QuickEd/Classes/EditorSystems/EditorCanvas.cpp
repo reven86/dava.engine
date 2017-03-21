@@ -204,7 +204,7 @@ void EditorCanvas::UpdatePosition()
 
 bool EditorCanvas::CanProcessInput(UIEvent* currentInput) const
 {
-    if (currentInput->device != eInputDevices::TOUCH_PAD && currentInput->device != eInputDevices::MOUSE)
+    if ((currentInput->device & eInputDevices::CLASS_POINTER) == eInputDevices::UNKNOWN)
     {
         return false;
     }
