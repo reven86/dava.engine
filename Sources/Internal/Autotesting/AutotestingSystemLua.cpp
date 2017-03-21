@@ -437,6 +437,13 @@ UIControl* AutotestingSystemLua::FindControl(const String& path, UIControl* srcC
         return nullptr;
     }
 
+    String zeroOrMoreLevelsWildcard = "**";
+
+    if (controlPath[0] == zeroOrMoreLevelsWildcard)
+    {
+        return srcControl->FindByPath(path);
+    }
+
     UIControl* control = FindControl(srcControl, controlPath[0]);
     for (uint32 i = 1; i < controlPath.size(); ++i)
     {
@@ -456,13 +463,12 @@ UIControl* AutotestingSystemLua::FindControl(UIControl* srcControl, const String
         return nullptr;
     }
 
-    if (srcControl->GetName().c_str() == controlName)
-        return srcControl;
-
     int32 index = atoi(controlName.c_str());
+    // not number
     if (Format("%d", index) != controlName)
     {
-        // not number
+        if (srcControl->GetName().c_str() == controlName)
+            return srcControl;
         return srcControl->FindByName(controlName);
     }
     // number
