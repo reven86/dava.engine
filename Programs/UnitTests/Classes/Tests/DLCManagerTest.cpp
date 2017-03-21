@@ -113,6 +113,7 @@ DAVA_TESTCLASS (DLCManagerTest)
     {
         if (testName == "TestDownloadOfVirtualPack")
         {
+            DAVA::DLCManager& dlcManager = *DAVA::GetEngineContext()->dlcManager;
             if (downloader.IsInitialized())
             {
                 if (downloader.IsDownloaded())
@@ -120,6 +121,7 @@ DAVA_TESTCLASS (DLCManagerTest)
                     downloadOfVirtualPack = true;
                     TEST_VERIFY(true);
                     DAVA::StopEmbeddedWebServer();
+                    dlcManager.Deinitialize();
                 }
             }
             if (!downloadOfVirtualPack)
@@ -133,6 +135,7 @@ DAVA_TESTCLASS (DLCManagerTest)
                     TEST_VERIFY(false);
                     downloadOfVirtualPack = true; // just go to next test
                     DAVA::StopEmbeddedWebServer();
+                    dlcManager.Deinitialize();
                 }
             }
         }

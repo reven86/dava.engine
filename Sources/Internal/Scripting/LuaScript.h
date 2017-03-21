@@ -59,8 +59,8 @@ public:
     int32 ExecStringSafe(const String& script);
 
     /**
-    Run `fName(...)` function with arguments and return number of results in 
-    the stack. 
+    Run `fName(...)` function with arguments and return number of results in
+    the stack.
     Throw LuaException on error.
     */
     template <typename... T>
@@ -76,7 +76,7 @@ public:
 
     /**
     Return value at specified index on the stack as Any with specified type.
-    Acceptable index is in range [1, stack size] or [-stack size, -1]. 
+    Acceptable index is in range [1, stack size] or [-stack size, -1].
     After process all results you **must** `Pop` them.
     Throw LuaException or error.
     */
@@ -109,7 +109,7 @@ public:
     bool GetResultSafe(int32 index, Any& any) const;
 
     /**
-    Pop n-results from the stack or clear stack if specified `n` bigger than 
+    Pop n-results from the stack or clear stack if specified `n` bigger than
     size of the stack.
     */
     void Pop(int32 n);
@@ -182,7 +182,7 @@ inline int32 LuaScript::ExecFunctionSafe(const String& fName, T&&... args)
     }
     catch (const LuaException& e)
     {
-        DAVA::Logger::Error(Format("LuaException: %s", e.what()).c_str());
+        DAVA::Logger::Info(Format("LuaException: %s", e.what()).c_str());
         return -1;
     }
 }
