@@ -62,7 +62,8 @@ private:
     bool RotateControl(const DAVA::Vector2& pos);
     DAVA::float32 AdjustRotateToFixedAngle(DAVA::float32 deltaAngle, DAVA::float32 originalAngle);
 
-    void MoveAllSelectedControls(DAVA::Vector2 delta, bool canAdjust);
+    void MoveAllSelectedControlsByMouse(DAVA::Vector2 delta, bool canAdjust);
+    void MoveAllSelectedControlsByKeyboard(DAVA::Vector2 delta);
     DAVA::Vector2 AdjustMoveToNearestBorder(DAVA::Vector2 delta, DAVA::Vector<MagnetLineInfo>& magnetLines, const DAVA::UIGeometricData* parentGD, const DAVA::UIControl* control);
 
     void CorrectNodesToMove();
@@ -80,6 +81,7 @@ private:
     HUDAreaInfo::eArea activeArea = HUDAreaInfo::NO_AREA;
     ControlNode* activeControlNode = nullptr;
     DAVA::Vector2 extraDelta;
+    DAVA::Map<const ControlNode*, DAVA::Vector2> extraDeltaToMoveControls;
     //this variable is used for rotation only
     DAVA::Vector2 previousMousePos;
     SelectedControls selectedControlNodes;

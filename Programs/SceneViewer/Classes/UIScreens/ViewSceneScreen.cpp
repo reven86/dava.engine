@@ -21,7 +21,9 @@ ViewSceneScreen::ViewSceneScreen(SceneViewerData& data)
     , scenePath(data.scenePath)
     , scene(data.scene)
     , fpsMeter(ViewSceneScreenDetails::INFO_UPDATE_INTERVAL_SEC)
+#ifdef WITH_SCENE_PERFORMANCE_TESTS
     , gridTest(data.engine, this)
+#endif
 {
     GetOrCreateComponent<DAVA::UIUpdateComponent>();
 }
@@ -75,7 +77,9 @@ void ViewSceneScreen::PlaceSceneAtScreen()
             menu->BringAtFront();
             qualitySettingsMenuItem->SetEnabled(true);
             reloadShadersMenuItem->SetEnabled(true);
+#ifdef WITH_SCENE_PERFORMANCE_TESTS
             performanceTestMenuItem->SetEnabled(true);
+#endif
         }
 
         if (moveJoyPAD)
@@ -376,11 +380,13 @@ void ViewSceneScreen::OnButtonSelectFromExt(DAVA::BaseObject* caller, void* para
 
 void ViewSceneScreen::OnButtonPerformanceTest(DAVA::BaseObject* caller, void* param, void* callerData)
 {
+#ifdef WITH_SCENE_PERFORMANCE_TESTS
     if (scene && gridTest.GetState() == GridTest::StateFinished && gridTest.Start(sceneView) == true)
     {
         menu->Show(false);
         RemoveControl(moveJoyPAD);
     }
+#endif
 }
 
 void ViewSceneScreen::OnButtonQualitySettings(DAVA::BaseObject* caller, void* param, void* callerData)
@@ -505,6 +511,7 @@ void ViewSceneScreen::UpdateInfo(DAVA::float32 timeElapsed)
     }
 }
 
+#ifdef WITH_SCENE_PERFORMANCE_TESTS
 void ViewSceneScreen::OnGridTestStateChanged()
 {
     if (gridTest.GetState() == GridTest::StateFinished)
@@ -513,6 +520,7 @@ void ViewSceneScreen::OnGridTestStateChanged()
         SetNextScreen();
     }
 }
+#endif
 
 // void ViewSceneScreen::DidAppear()
 // {

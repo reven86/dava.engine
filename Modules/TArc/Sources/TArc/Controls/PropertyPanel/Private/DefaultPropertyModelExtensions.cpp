@@ -9,9 +9,13 @@
 #include "TArc/Controls/PropertyPanel/Private/NumberComponentValue.h"
 #include "TArc/Controls/PropertyPanel/Private/EmptyComponentValue.h"
 #include "TArc/Controls/PropertyPanel/Private/FilePathComponentValue.h"
+#include "TArc/Controls/PropertyPanel/Private/MatrixComponentValue.h"
 #include "TArc/Utils/ReflectionHelpers.h"
 
 #include <Debug/DVAssert.h>
+#include <Math/Matrix2.h>
+#include <Math/Matrix3.h>
+#include <Math/Matrix4.h>
 
 namespace DAVA
 {
@@ -155,7 +159,10 @@ std::unique_ptr<BaseComponentValue> DefaultEditorComponentExtension::GetEditor(c
           std::make_pair(Type::Instance<int16>(), &std::make_unique<NumberComponentValue<int16>>),
           std::make_pair(Type::Instance<uint16>(), &std::make_unique<NumberComponentValue<uint16>>),
           std::make_pair(Type::Instance<int32>(), &std::make_unique<NumberComponentValue<int32>>),
-          std::make_pair(Type::Instance<uint32>(), &std::make_unique<NumberComponentValue<uint32>>)
+          std::make_pair(Type::Instance<uint32>(), &std::make_unique<NumberComponentValue<uint32>>),
+          std::make_pair(Type::Instance<Matrix2>(), &std::make_unique<MatrixComponentValue>),
+          std::make_pair(Type::Instance<Matrix3>(), &std::make_unique<MatrixComponentValue>),
+          std::make_pair(Type::Instance<Matrix4>(), &std::make_unique<MatrixComponentValue>),
         };
 
         const Type* valueType = node->cachedValue.GetType()->Decay();
@@ -166,9 +173,7 @@ std::unique_ptr<BaseComponentValue> DefaultEditorComponentExtension::GetEditor(c
         }
         else if (valueType == Type::Instance<FilePath>())
         {
-            FilePathComponentValue::Params p;
-            p.ui = ui;
-            return std::make_unique<FilePathComponentValue>(p);
+            return std::make_unique<FilePathComponentValue>();
         }
     }
 

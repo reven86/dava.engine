@@ -32,7 +32,6 @@
 #include <TArc/WindowSubSystem/ActionUtils.h>
 #include <TArc/WindowSubSystem/QtAction.h>
 #include <TArc/Utils/ModuleCollection.h>
-#include <TArc/Core/FieldBinder.h>
 
 #include <QtTools/InputDialogs/MultilineTextInputDialog.h>
 
@@ -116,8 +115,6 @@ void DocumentsModule::PostInit()
     using namespace DAVA;
     using namespace TArc;
 
-    fieldBinder.reset(new FieldBinder(GetAccessor()));
-
     InitWatcher();
     InitEditorSystems();
     InitCentralWidget();
@@ -181,6 +178,8 @@ void DocumentsModule::InitCentralWidget()
     previewWidget = new PreviewWidget(accessor, renderWidget, systemsManager.get());
     previewWidget->requestCloseTab.Connect(this, &DocumentsModule::CloseDocument);
     previewWidget->requestChangeTextInNode.Connect(this, &DocumentsModule::ChangeControlText);
+    connections.AddConnection(previewWidget, &PreviewWidget::OpenPackageFile, MakeFunction(this, &DocumentsModule::OpenDocument));
+
     PanelKey panelKey(QStringLiteral("CentralWidget"), CentralPanelInfo());
     ui->AddView(QEGlobal::windowKey, panelKey, previewWidget);
 
