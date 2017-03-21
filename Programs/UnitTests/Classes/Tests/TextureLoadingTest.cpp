@@ -30,17 +30,17 @@ struct TextureData
     PixelFormat pixelFormat = PixelFormat::FORMAT_INVALID;
 };
 
-class WarningsCounter : public LoggerOutput
+class ErrorsCounter : public LoggerOutput
 {
 public:
     void Output(Logger::eLogLevel ll, const char8* text) override
     {
-        if (ll == Logger::LEVEL_WARNING)
+        if (ll == Logger::LEVEL_ERROR)
         {
-            ++warningsCount;
+            ++errorsCount;
         }
     }
-    uint32 warningsCount = 0;
+    uint32 errorsCount = 0;
 };
 
 bool Prepare(const Map<const eGPUFamily, TextureData>& textureData, const Vector<eGPUFamily>& gpuForRealTextures)
@@ -98,7 +98,7 @@ DAVA_TESTCLASS (TextureLoadingTest)
     {
         const Vector<eGPUFamily> originalGPULoadingOrder = Texture::GetGPULoadingOrder();
 
-        TLTestDetails::WarningsCounter counter;
+        TLTestDetails::ErrorsCounter counter;
         Logger::AddCustomOutput(&counter);
         SCOPE_EXIT
         {
@@ -122,7 +122,7 @@ DAVA_TESTCLASS (TextureLoadingTest)
             TEST_VERIFY(texture->GetWidth() == textureData.width);
             TEST_VERIFY(texture->GetHeight() == textureData.height);
 
-            TEST_VERIFY(counter.warningsCount == 0);
+            TEST_VERIFY(counter.errorsCount == 0);
         }
 
         { // create and release texture for single GPU
@@ -134,7 +134,7 @@ DAVA_TESTCLASS (TextureLoadingTest)
             TEST_VERIFY(texture->GetWidth() == textureData.width);
             TEST_VERIFY(texture->GetHeight() == textureData.height);
 
-            TEST_VERIFY(counter.warningsCount == 0);
+            TEST_VERIFY(counter.errorsCount == 0);
         }
 
         TEST_VERIFY(TLTestDetails::Clean());
