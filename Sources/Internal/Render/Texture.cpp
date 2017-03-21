@@ -751,8 +751,8 @@ Texture* Texture::PureCreate(const FilePath& pathName, const FastName& group)
 
     if (texture == nullptr)
     {
-        Logger::Warning("[Texture::PureCreate] Cannot create texture. Descriptor: %s, GPU: %s",
-                        descriptor->pathname.GetAbsolutePathname().c_str(), GlobalEnumMap<eGPUFamily>::Instance()->ToString(GetPrimaryGPUForLoading()));
+        Logger::Error("[Texture::PureCreate] Cannot create texture. Descriptor: %s, GPU: %s",
+                      descriptor->pathname.GetAbsolutePathname().c_str(), GlobalEnumMap<eGPUFamily>::Instance()->ToString(GetPrimaryGPUForLoading()));
     }
 
     delete descriptor;
