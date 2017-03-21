@@ -418,13 +418,20 @@ macro( setup_main_module )
             get_property( DEFINITIONS_PROP GLOBAL PROPERTY DEFINITIONS )
             get_property( DEFINITIONS_PROP_${DAVA_PLATFORM_CURENT} GLOBAL PROPERTY DEFINITIONS_${DAVA_PLATFORM_CURENT} )
 
+            if( COVERAGE AND MACOS )
+                set( COVERAGE_STRING "COVERAGE" )
+            else()
+                set( COVERAGE_STRING  )                
+            endif()
+
             set( MODULE_CACHE   ${ORIGINAL_NAME_MODULE}
                                 #${MODULE_COMPONENTS} 
                                 ${DEFINITIONS} 
                                 ${DEFINITIONS_${DAVA_PLATFORM_CURENT}}  
                                 ${GLOBAL_DEFINITIONS_PROP}
                                 ${DEFINITIONS_PROP} 
-                                ${DEFINITIONS_PROP_${DAVA_PLATFORM_CURENT}} )
+                                ${DEFINITIONS_PROP_${DAVA_PLATFORM_CURENT}} 
+                                ${COVERAGE_STRING} )
 
             list( REMOVE_DUPLICATES MODULE_CACHE )
             list( SORT MODULE_CACHE )
@@ -605,10 +612,10 @@ macro( setup_main_module )
 
         set_project_files_properties( "${ALL_SRC}" )
 
-        if( COVERAGE AND TARGET_FOLDERS_${PROJECT_NAME} AND  NOT ( ${MODULE_TYPE} STREQUAL "INLINE" ) )
+        if( COVERAGE AND TARGET_FOLDERS_${PROJECT_NAME} AND  NOT ( ${MODULE_TYPE} STREQUAL "INLINE" ) AND MACOS )
             string(REPLACE ";" " " TARGET_FOLDERS_${PROJECT_NAME} "${TARGET_FOLDERS_${PROJECT_NAME}}" )
             string(REPLACE "\"" "" TARGET_FOLDERS_${PROJECT_NAME} "${TARGET_FOLDERS_${PROJECT_NAME}}" )
-            list( APPEND DEFINITIONS -DTARGET_FOLDERS_${PROJECT_NAME}="${TARGET_FOLDERS_${PROJECT_NAME}}" )
+            list( APPEND DEFINITIONS -DTARGET_FOLDERS_${ORIGINAL_NAME_MODULE}="${TARGET_FOLDERS_${PROJECT_NAME}}" )
         endif()
 
         #"SAVE PROPERTY"
@@ -709,7 +716,6 @@ macro( setup_main_module )
                 if( CREATE_NEW_MODULE )
                     add_library( ${NAME_MODULE} STATIC  ${ALL_SRC} ${ALL_SRC_HEADER_FILE_ONLY} )
                 endif()
-
                 append_property( TARGET_MODULES_LIST ${NAME_MODULE} )  
 
             elseif( ${MODULE_TYPE} STREQUAL "PLUGIN" )
@@ -793,6 +799,11 @@ macro( setup_main_module )
 
             if( CREATE_NEW_MODULE )
 
+                if( COVERAGE AND MACOS )
+                    set_target_properties(${NAME_MODULE} PROPERTIES XCODE_ATTRIBUTE_GCC_GENERATE_TEST_COVERAGE_FILES YES )
+                    set_target_properties(${NAME_MODULE} PROPERTIES XCODE_ATTRIBUTE_GCC_INSTRUMENT_PROGRAM_FLOW_ARCS YES )
+                endif()
+
                 if( WIN32 )
                     grab_libs(LIST_SHARED_LIBRARIES_DEBUG   "${STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG}"   EXCLUDE_LIBS ADDITIONAL_DEBUG_LIBS)
                     grab_libs(LIST_SHARED_LIBRARIES_RELEASE "${STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE}" EXCLUDE_LIBS ADDITIONAL_RELEASE_LIBS)
@@ -821,7 +832,7 @@ macro( setup_main_module )
                     link_with_qt5(${PROJECT_NAME})
                 endif()
 
-                if( MACOS AND COVERAGE AND NOT DAVA_MEGASOLUTION )
+                if( COVERAGE AND MACOS )
                     add_definitions( -DTEST_COVERAGE )
                     add_definitions( -DDAVA_FOLDERS="${DAVA_FOLDERS}" )
                     add_definitions( -DDAVA_UNITY_FOLDER="${CMAKE_BINARY_DIR}/unity_pack" )

@@ -72,7 +72,7 @@ load_property( PROPERTY_LIST
         
     list( APPEND DEFINITIONS ${GLOBAL_DEFINITIONS} )
 
-if( COVERAGE )
+if( COVERAGE AND MACOS )
     string(REPLACE ";" " " TARGET_FOLDERS_${PROJECT_NAME} "${TARGET_FOLDERS_${PROJECT_NAME}}" )
     string(REPLACE "\"" "" TARGET_FOLDERS_${PROJECT_NAME} "${TARGET_FOLDERS_${PROJECT_NAME}}" )
     list( APPEND DEFINITIONS -DTARGET_FOLDERS_${PROJECT_NAME}="${TARGET_FOLDERS_${PROJECT_NAME}}" )
@@ -628,6 +628,11 @@ elseif( MACOS )
 
     set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS " -Wl,-dead_strip")
 
+    if( COVERAGE AND MACOS )
+        set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_GCC_GENERATE_TEST_COVERAGE_FILES YES )
+        set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_GCC_INSTRUMENT_PROGRAM_FLOW_ARCS YES )
+    endif()
+                
     if( DAVA_FOUND )
         set(LD_RUNPATHES "${ADDED_LD_RUNPATHES} @executable_path/ @executable_path/../Resources @executable_path/../Libs @executable_path/../Frameworks @executable_path/Libs")
         if( NOT DEPLOY )
