@@ -55,6 +55,8 @@ struct JSONObject
     List<JSONObject*> children;
 #endif //__DAVAENGINE_DEBUG__
 
+    virtual void Sync() = 0;
+
     QString name;
     QJsonObject jsonObject;
     JSONObject* parent = nullptr;
@@ -84,7 +86,7 @@ struct PropertiesItem::Impl : public PropertiesHolderDetails::JSONObject
     template <typename T, typename std::enable_if<!std::is_pointer<T>::value, int>::type = 0>
     QJsonValue ToValue(const T& value);
 
-    void Sync();
+    void Sync() override;
 };
 
 struct PropertiesHolder::Impl : public PropertiesHolderDetails::JSONObject
@@ -96,6 +98,8 @@ struct PropertiesHolder::Impl : public PropertiesHolderDetails::JSONObject
 
     void LoadFromFile();
     void SaveToFile();
+
+    void Sync() override;
 
     QFileInfo storagePath;
 };
@@ -245,17 +249,16 @@ void PropertiesHolder::Impl::SaveToFile()
     }
 }
 
+void PropertiesHolder::Impl::Sync()
+{
+    SaveToFile();
+}
+
 void PropertiesItem::Impl::Sync()
 {
+    DVASSERT(parent != nullptr);
     parent->jsonObject[name] = jsonObject;
-    if (parent->parent != nullptr)
-    {
-        static_cast<PropertiesItem::Impl*>(parent)->Sync();
-    }
-    else
-    {
-        static_cast<PropertiesHolder::Impl*>(parent)->SaveToFile();
-    }
+    parent->Sync();
 }
 
 PropertiesHolder::PropertiesHolder(const String& projectName, const FilePath& directory)
