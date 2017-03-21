@@ -81,7 +81,9 @@ void SceneViewerApp::OnWindowCreated(DAVA::Window* w)
     //const FXDescriptor& res = FXCache::GetFXDescriptor(FastName("~res:/Materials/Silhouette.material"), flags);
 
     viewSceneScreen = new ViewSceneScreen(data);
+#ifdef WITH_SCENE_PERFORMANCE_TESTS
     performanceResultsScreen = new PerformanceResultsScreen(data);
+#endif
 
     //SetScenePath( "~doc:/GB/Cromwell-test.sc2" );
     //    SetScenePath("~doc:/effect.sc2");
@@ -111,7 +113,9 @@ void SceneViewerApp::OnAppFinished()
     DAVA::DbgDraw::Uninitialize();
 
     SafeRelease(viewSceneScreen);
+#ifdef WITH_SCENE_PERFORMANCE_TESTS
     SafeRelease(performanceResultsScreen);
+#endif
 }
 
 void SceneViewerApp::OnSuspend()

@@ -7,7 +7,8 @@ namespace DAVA
 {
 DAVA_VIRTUAL_REFLECTION_IMPL(RenderComponent)
 {
-    ReflectionRegistrator<RenderComponent>::Begin()
+    ReflectionRegistrator<RenderComponent>::Begin()[M::CantBeCreatedManualyComponent()]
+    .ConstructorByPointer()
     .Field("renderObject", &RenderComponent::renderObject)[M::DisplayName("Render Object")]
     .End();
 }

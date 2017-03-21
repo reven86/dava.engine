@@ -13,5 +13,7 @@ IntSpinBoxTests.h
 LabelTest.h
 LineEditTest.h
 PlainTextEditTest.h
+PropertiesViewTests.h
 PropertiesViewTimerUpdaterTests.h
 QtWrapLayoutTests.h
+ReflectionPathTreeTests.h

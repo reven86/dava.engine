@@ -8,7 +8,8 @@ namespace DAVA
 {
 DAVA_VIRTUAL_REFLECTION_IMPL(WaypointComponent)
 {
-    ReflectionRegistrator<WaypointComponent>::Begin()
+    ReflectionRegistrator<WaypointComponent>::Begin()[M::CantBeCreatedManualyComponent()]
+    .ConstructorByPointer()
     .Field("pathName", &WaypointComponent::pathName)[M::ReadOnly(), M::DisplayName("Path Name")]
     .Field("properties", &WaypointComponent::properties)[M::DisplayName("Waypoint properties")]
     .End();

@@ -1,5 +1,7 @@
 #pragma once
 
+#ifdef WITH_SCENE_PERFORMANCE_TESTS
+
 #include "SceneViewerApp.h"
 #include "BaseScreen.h"
 #include "UIControls/Sector.h"
@@ -71,3 +73,4 @@ private:
     DAVA::ScopedPtr<DAVA::UI3DView> preview;
     DAVA::ScopedPtr<DAVA::UIButton> backButton;
 };
+#endif

@@ -12,12 +12,7 @@ namespace TArc
 class FilePathComponentValue : public BaseComponentValue
 {
 public:
-    struct Params
-    {
-        UI* ui = nullptr;
-        WindowKey wndKey = WindowKey(FastName(""));
-    };
-    FilePathComponentValue(const Params& params);
+    FilePathComponentValue() = default;
 
 protected:
     Any GetMultipleValue() const override;
@@ -27,8 +22,6 @@ protected:
 private:
     Any GetFilePath() const;
     void SetFilePath(const Any& v);
-
-    Params params;
 
     DAVA_VIRTUAL_REFLECTION(FilePathComponentValue, BaseComponentValue);
 };

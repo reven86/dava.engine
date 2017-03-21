@@ -37,6 +37,9 @@ private:
     void Set5Axis(const Any& v);
     void Set6Axis(const Any& v);
 
+    Any GetFullValue() const;
+    void SetFillValue(const Any& v);
+
     int32 GetAccuracy() const;
     const M::Range* Get1AxisRange() const;
     const M::Range* Get2AxisRange() const;

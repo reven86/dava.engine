@@ -11,6 +11,7 @@ namespace DAVA
 DAVA_VIRTUAL_REFLECTION_IMPL(SnapToLandscapeControllerComponent)
 {
     ReflectionRegistrator<SnapToLandscapeControllerComponent>::Begin()
+    .ConstructorByPointer()
     .Field("heightOnLandscape", &SnapToLandscapeControllerComponent::GetHeightOnLandscape, &SnapToLandscapeControllerComponent::SetHeightOnLandscape)[M::DisplayName("Height On Landscape")]
     .End();
 }
