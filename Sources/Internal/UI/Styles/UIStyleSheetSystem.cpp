@@ -17,10 +17,10 @@ const int32 PROPERTY_ANIMATION_GROUP_OFFSET = 100000;
 
 struct ImmediatePropertySetter
 {
-    void operator()(UIControl* control, ReflectedObject obj, const ValueWrapper* vw) const
+    void operator()(UIControl* control, const Reflection& ref) const
     {
         control->StopAnimations(PROPERTY_ANIMATION_GROUP_OFFSET + propertyIndex);
-        vw->SetValue(obj, value);
+        ref.SetValue(value);
     }
 
     uint32 propertyIndex;
@@ -30,7 +30,7 @@ struct ImmediatePropertySetter
 struct AnimatedPropertySetter
 {
     template <typename T>
-    void Animate(UIControl* control, ReflectedObject obj, const ValueWrapper* vw, const T& startValue, const T& endValue) const
+    void Animate(UIControl* control, const Reflection& ref, const T& startValue, const T& endValue) const
     {
         const int32 track = PROPERTY_ANIMATION_GROUP_OFFSET + propertyIndex;
         LinearPropertyAnimation<T>* currentAnimation = DynamicTypeCheck<LinearPropertyAnimation<T>*>(AnimationManager::Instance()->FindPlayingAnimation(control, track));
@@ -40,38 +40,38 @@ struct AnimatedPropertySetter
             if (currentAnimation)
                 control->StopAnimations(track);
 
-            if (vw->GetValue(obj) != value)
+            if (ref.GetValue() != value)
             {
-                (new LinearPropertyAnimation<T>(control, Reflection(std::move(obj), vw, nullptr, nullptr), startValue, endValue, time, transitionFunction))->Start(track);
+                (new LinearPropertyAnimation<T>(control, ref, startValue, endValue, time, transitionFunction))->Start(track);
             }
         }
     }
 
-    void operator()(UIControl* control, ReflectedObject obj, const ValueWrapper* vw) const
+    void operator()(UIControl* control, const Reflection& ref) const
     {
-        const Any& refValue = vw->GetValue(obj);
+        const Any& refValue = ref.GetValue();
         const Type* valueType = value.GetType()->Decay();
         if (valueType == refValue.GetType()->Decay())
         {
             if (valueType == Type::Instance<Vector2>())
             {
-                Animate<Vector2>(control, std::move(obj), vw, refValue.Get<Vector2>(), value.Get<Vector2>());
+                Animate<Vector2>(control, ref, refValue.Get<Vector2>(), value.Get<Vector2>());
             }
             else if (valueType == Type::Instance<Vector3>())
             {
-                Animate<Vector3>(control, std::move(obj), vw, refValue.Get<Vector3>(), value.Get<Vector3>());
+                Animate<Vector3>(control, ref, refValue.Get<Vector3>(), value.Get<Vector3>());
             }
             else if (valueType == Type::Instance<Vector4>())
             {
-                Animate<Vector4>(control, std::move(obj), vw, refValue.Get<Vector4>(), value.Get<Vector4>());
+                Animate<Vector4>(control, ref, refValue.Get<Vector4>(), value.Get<Vector4>());
             }
             else if (valueType == Type::Instance<float32>())
             {
-                Animate<float32>(control, std::move(obj), vw, refValue.Get<float32>(), value.Get<float32>());
+                Animate<float32>(control, ref, refValue.Get<float32>(), value.Get<float32>());
             }
             else if (valueType == Type::Instance<Color>())
             {
-                Animate<Color>(control, std::move(obj), vw, refValue.Get<Color>(), value.Get<Color>());
+                Animate<Color>(control, ref, refValue.Get<Color>(), value.Get<Color>());
             }
             else
             {
@@ -314,13 +314,23 @@ void UIStyleSheetSystem::DoForAllPropertyInstances(UIControl* control, uint32 pr
 
     if (descr.group->componentType == -1)
     {
-        action(control, std::move(ReflectedObject(control)), descr.field->valueWrapper.get());
+        Reflection ref = Reflection::Create(ReflectedObject(control));
+        ref = ref.GetField(descr.field->name);
+        if (ref.IsValid())
+        {
+            action(control, ref);
+        }
     }
     else
     {
         if (UIComponent* component = control->GetComponent(descr.group->componentType))
         {
-            action(control, std::move(ReflectedObject(component)), descr.field->valueWrapper.get());
+            Reflection ref = Reflection::Create(ReflectedObject(component));
+            ref = ref.GetField(descr.field->name);
+            if (ref.IsValid())
+            {
+                action(control, ref);
+            }
         }
         else
         {
