@@ -26,7 +26,7 @@ void ApplyRole(ControlDescriptorBuilder<TEnum>& descriptor, TEnum role, const St
 }
 
 template <typename T>
-QWidget* CreatedEditor(const Reflection& r, const MultiDoubleSpinBox::FieldDescriptor& fieldDescr, QWidget* parent, T* accessor, const Reflection& model)
+QWidget* CreatedEditor(const Reflection& r, const MultiDoubleSpinBox::FieldDescriptor& fieldDescr, QWidget* parent, T* accessor, const Reflection& model, Vector<ControlProxy*>& subControls)
 {
     QWidget* result = new QWidget(parent);
     QtHBoxLayout* layout = new QtHBoxLayout(result);
@@ -42,6 +42,7 @@ QWidget* CreatedEditor(const Reflection& r, const MultiDoubleSpinBox::FieldDescr
     ApplyRole(descr, DoubleSpinBox::Fields::IsReadOnly, fieldDescr.readOnlyRole);
     ApplyRole(descr, DoubleSpinBox::Fields::Accuracy, fieldDescr.accuracyRole);
     DoubleSpinBox* spinBox = new DoubleSpinBox(descr, accessor, model, result);
+    subControls.push_back(spinBox);
     layout->AddWidget(spinBox);
 
     QWidget* editor = spinBox->ToWidgetCast();
@@ -90,8 +91,32 @@ void MultiDoubleSpinBox::SetupControl(T* accessor)
 
         Reflection editableField = model.GetField(fieldDescr.valueRole);
         DVASSERT(editableField.IsValid());
-        layout->addWidget(MultiFieldsControlDetails::CreatedEditor(editableField, fieldDescr, this, accessor, model));
+        layout->addWidget(MultiFieldsControlDetails::CreatedEditor(editableField, fieldDescr, this, accessor, model, subControls));
     }
+}
+
+void MultiDoubleSpinBox::ForceUpdate()
+{
+    for_each(subControls.begin(), subControls.end(), [](ControlProxy* proxy)
+             {
+                 proxy->ForceUpdate();
+             });
+
+    TBase::ForceUpdate();
+}
+
+void MultiDoubleSpinBox::TearDown()
+{
+    for_each(subControls.begin(), subControls.end(), [](ControlProxy* proxy)
+             {
+                 proxy->TearDown();
+             });
+
+    TBase::TearDown();
+}
+
+void MultiDoubleSpinBox::UpdateControl(const ControlDescriptor& descriptor)
+{
 }
 
 bool MultiDoubleSpinBox::FieldDescriptor::operator==(const FieldDescriptor& other) const

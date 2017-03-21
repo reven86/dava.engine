@@ -16,54 +16,12 @@ namespace DAVA
 {
 namespace TArc
 {
-namespace ReflectedPropertyModelDetail
-{
-std::tuple<const Type*, const ReflectedType*, const ReflectedStructure*> UnpackReflectionTypeInfo(const Reflection& r)
-{
-    const Type* t = r.GetValueType();
-    const ReflectedType* refT = r.GetValueObject().GetReflectedType();
-    if (t->IsPointer())
-    {
-        t = t->Deref();
-    }
-
-    const ReflectedType* reflectedType = ReflectedTypeDB::GetByType(t);
-    const ReflectedStructure* structure = nullptr;
-    if (reflectedType != nullptr)
-    {
-        structure = reflectedType->GetStructure();
-    }
-
-    return std::make_tuple(t, reflectedType, structure);
-}
-
-void InjectExpandedMeta(std::unique_ptr<ReflectedMeta>& meta, bool isExpanded)
-{
-    if (meta == nullptr)
-    {
-        meta.reset(new ReflectedMeta());
-    }
-
-    const M::FieldExpanded* expanded = meta->GetMeta<M::FieldExpanded>();
-    if (expanded == nullptr)
-    {
-        meta->Emplace(M::FieldExpanded());
-        expanded = meta->GetMeta<M::FieldExpanded>();
-    }
-
-    const_cast<M::FieldExpanded*>(expanded)->isExpanded = isExpanded;
-};
-
-const String ExpandedCount = "expandedCount";
-const String ExpandedItem = "expandedItem";
-const String TypeName = "typeName";
-const String FieldName = "fieldName";
-}
-
-ReflectedPropertyModel::ReflectedPropertyModel(ContextAccessor* accessor_, OperationInvoker* invoker_, UI* ui_)
-    : accessor(accessor_)
+ReflectedPropertyModel::ReflectedPropertyModel(WindowKey wndKey_, ContextAccessor* accessor_, OperationInvoker* invoker_, UI* ui_)
+    : wndKey(wndKey_)
+    , accessor(accessor_)
     , invoker(invoker_)
     , ui(ui_)
+    , expandedItems(FastName("Root"))
 {
     rootItem.reset(new ReflectedPropertyItem(this, std::make_unique<EmptyComponentValue>()));
 
@@ -97,7 +55,12 @@ ReflectedPropertyModel::~ReflectedPropertyModel()
 
 int ReflectedPropertyModel::rowCount(const QModelIndex& parent) const
 {
-    return MapItem(parent)->GetChildCount();
+    ReflectedPropertyItem* item = MapItem(parent);
+    if (item == nullptr)
+    {
+        return 0;
+    }
+    return item->GetChildCount();
 }
 
 int ReflectedPropertyModel::columnCount(const QModelIndex& parent) const
@@ -109,7 +72,11 @@ QVariant ReflectedPropertyModel::data(const QModelIndex& index, int role) const
 {
     if (role == Qt::DisplayRole)
     {
-        return MapItem(index)->GetPropertyName();
+        ReflectedPropertyItem* item = MapItem(index);
+        if (item != nullptr)
+        {
+            return item->GetPropertyName();
+        }
     }
 
     return QVariant();
@@ -138,10 +105,13 @@ Qt::ItemFlags ReflectedPropertyModel::flags(const QModelIndex& index) const
     if (index.column() == 1)
     {
         ReflectedPropertyItem* item = MapItem(index);
-        std::shared_ptr<const PropertyNode> node = item->GetPropertyNode(0);
-        if (!node->field.ref.IsReadonly())
+        if (item != nullptr)
         {
-            flags |= Qt::ItemIsEditable;
+            std::shared_ptr<const PropertyNode> node = item->GetPropertyNode(0);
+            if (!node->field.ref.IsReadonly())
+            {
+                flags |= Qt::ItemIsEditable;
+            }
         }
     }
 
@@ -153,7 +123,7 @@ QModelIndex ReflectedPropertyModel::index(int row, int column, const QModelIndex
     if (parent.isValid())
     {
         ReflectedPropertyItem* item = MapItem(parent);
-        if (row < item->GetChildCount())
+        if (item != nullptr && row < item->GetChildCount())
             return createIndex(row, column, item);
 
         return QModelIndex();
@@ -183,7 +153,9 @@ void ReflectedPropertyModel::Update()
     Update(rootItem.get());
     fastWrappersProcessor.Sync();
     wrappersProcessor.Sync();
+#if defined(REPORT_UPDATE_TIME)
     Logger::Debug(" === ReflectedPropertyModel::Update : %d ===", static_cast<int32>(SystemTimer::GetMs() - start));
+#endif
 }
 
 void ReflectedPropertyModel::Update(ReflectedPropertyItem* item)
@@ -234,7 +206,9 @@ void ReflectedPropertyModel::UpdateFast()
 {
     int64 start = SystemTimer::GetMs();
     UpdateFastImpl(rootItem.get());
+#if defined(REPORT_UPDATE_TIME)
     Logger::Debug(" === ReflectedPropertyModel::UpdateFast : %d ===", static_cast<int32>(SystemTimer::GetMs() - start));
+#endif
 }
 
 void ReflectedPropertyModel::HideEditor(ReflectedPropertyItem* item)
@@ -407,70 +381,22 @@ DAVA::TArc::BaseComponentValue* ReflectedPropertyModel::GetComponentValue(const 
 
 void ReflectedPropertyModel::SetExpanded(bool expanded, const QModelIndex& index)
 {
-    using namespace ReflectedPropertyModelDetail;
-
-    ReflectedPropertyItem* item = MapItem(index);
-    DVASSERT(item);
-    DVASSERT(item->GetPropertyNodesCount() > 0);
-    std::shared_ptr<const PropertyNode> node = item->GetPropertyNode(0);
-    ExpandedFieldDescriptor descr;
-
-    QModelIndex parentIndex = index.parent();
-    if (!parentIndex.isValid())
+    List<FastName> reflectedPath;
+    QModelIndex currentIndex = index;
+    while (currentIndex.isValid())
     {
-        const Type* type = nullptr;
-        const ReflectedType* refType = nullptr;
-        const ReflectedStructure* structure = nullptr;
-        std::tie(type, refType, structure) = UnpackReflectionTypeInfo(node->field.ref);
-        InjectExpandedMeta(const_cast<ReflectedStructure*>(structure)->meta, expanded);
-
-        descr.typePermanentName = refType->GetPermanentName();
-    }
-    else
-    {
-        ReflectedPropertyItem* parentItem = MapItem(parentIndex);
-        DVASSERT(parentItem->GetPropertyNodesCount() > 0);
-        std::shared_ptr<const PropertyNode> parentNode = parentItem->GetPropertyNode(0);
-
-        const Type* type = nullptr;
-        const ReflectedType* refType = nullptr;
-        const ReflectedStructure* structure = nullptr;
-        std::tie(type, refType, structure) = UnpackReflectionTypeInfo(parentNode->field.ref);
-        DVASSERT(structure != nullptr);
-
-        ReflectedStructure::Field* field = nullptr;
-        for (const std::unique_ptr<ReflectedStructure::Field>& f : structure->fields)
-        {
-            if (f->name == node->field.key.Cast<String>(String()))
-            {
-                field = const_cast<ReflectedStructure::Field*>(f.get());
-                break;
-            }
-        }
-        if (field == nullptr)
-        {
-            return;
-        }
-
-        InjectExpandedMeta(field->meta, expanded);
-
-        descr.typePermanentName = refType->GetPermanentName();
-        descr.fieldName = field->name;
+        ReflectedPropertyItem* item = MapItem(currentIndex);
+        reflectedPath.push_front(FastName(item->GetPropertyName().toStdString()));
+        currentIndex = currentIndex.parent();
     }
 
-    DVASSERT(!descr.typePermanentName.empty());
-    auto iter = std::find(expandedFields.begin(), expandedFields.end(), descr);
     if (expanded == true)
     {
-        if (iter == expandedFields.end())
-        {
-            expandedFields.push_back(descr);
-        }
+        expandedItems.AddLeaf(std::move(reflectedPath));
     }
     else
     {
-        DVASSERT(iter != expandedFields.end());
-        RemoveExchangingWithLast(expandedFields, std::distance(expandedFields.begin(), iter));
+        expandedItems.RemoveLeaf(std::move(reflectedPath));
     }
 }
 
@@ -481,59 +407,40 @@ QModelIndexList ReflectedPropertyModel::GetExpandedList() const
     return result;
 }
 
+QModelIndexList ReflectedPropertyModel::GetExpandedChildren(const QModelIndex& index) const
+{
+    List<FastName> reflectedPath;
+    QModelIndex currentIndex = index;
+    while (currentIndex.isValid())
+    {
+        ReflectedPropertyItem* item = MapItem(currentIndex);
+        reflectedPath.push_front(FastName(item->GetPropertyName().toStdString()));
+        currentIndex = currentIndex.parent();
+    }
+
+    for (const FastName& name : reflectedPath)
+    {
+        bool result = expandedItems.PushRoot(name);
+        DVASSERT(result);
+    }
+    QModelIndexList result;
+    GetExpandedListImpl(result, MapItem(index));
+    for (size_t i = 0; i < reflectedPath.size(); ++i)
+    {
+        expandedItems.PopRoot();
+    }
+
+    return result;
+}
+
 void ReflectedPropertyModel::SaveExpanded(PropertiesItem& propertyRoot) const
 {
-    using namespace ReflectedPropertyModelDetail;
-    propertyRoot.Set(ExpandedCount, static_cast<int32>(expandedFields.size()));
-    int32 counter = 0;
-    for (const ExpandedFieldDescriptor& descr : expandedFields)
-    {
-        String key = Format("%s_%d", ExpandedItem.c_str(), counter++);
-        PropertiesItem expandedItem = propertyRoot.CreateSubHolder(key);
-        expandedItem.Set(TypeName, QString::fromStdString(descr.typePermanentName));
-        expandedItem.Set(FieldName, QString::fromStdString(descr.fieldName));
-    }
+    expandedItems.Save(propertyRoot);
 }
 
 void ReflectedPropertyModel::LoadExpanded(const PropertiesItem& propertyRoot)
 {
-    using namespace ReflectedPropertyModelDetail;
-
-    int32 count = propertyRoot.Get(ExpandedCount, 0);
-    expandedFields.reserve(count);
-    for (int32 i = 0; i < count; ++i)
-    {
-        String key = Format("%s_%d", ExpandedItem.c_str(), i);
-        PropertiesItem expandedItem = propertyRoot.CreateSubHolder(key);
-        ExpandedFieldDescriptor descr;
-        descr.typePermanentName = expandedItem.Get(TypeName, QString()).toStdString();
-        DVASSERT(!descr.typePermanentName.empty());
-        descr.fieldName = expandedItem.Get(FieldName, QString()).toStdString();
-
-        expandedFields.push_back(descr);
-    }
-
-    for (const ExpandedFieldDescriptor& desc : expandedFields)
-    {
-        const ReflectedType* type = ReflectedTypeDB::GetByPermanentName(desc.typePermanentName);
-        DVASSERT(type != nullptr);
-        ReflectedStructure* structure = const_cast<ReflectedStructure*>(type->GetStructure());
-        DVASSERT(structure != nullptr);
-        if (desc.fieldName.empty())
-        {
-            InjectExpandedMeta(structure->meta, true);
-        }
-        else
-        {
-            for (std::unique_ptr<ReflectedStructure::Field>& f : structure->fields)
-            {
-                if (f->name == desc.fieldName)
-                {
-                    InjectExpandedMeta(f->meta, true);
-                }
-            }
-        }
-    }
+    expandedItems.Load(propertyRoot);
 }
 
 void ReflectedPropertyModel::HideEditors()
@@ -543,41 +450,18 @@ void ReflectedPropertyModel::HideEditors()
 
 void ReflectedPropertyModel::GetExpandedListImpl(QModelIndexList& list, ReflectedPropertyItem* item) const
 {
-    using namespace ReflectedPropertyModelDetail;
-    QModelIndex index = MapItem(item);
-    if (index.isValid())
-    {
-        DVASSERT(item->GetPropertyNodesCount() > 0);
-        std::shared_ptr<const PropertyNode> node = item->GetPropertyNode(0);
-        const M::FieldExpanded* fieldExpand = node->field.ref.GetMeta<M::FieldExpanded>();
-        if (fieldExpand != nullptr)
-        {
-            if (fieldExpand->isExpanded == true)
-            {
-                list << index;
-            }
-        }
-        else
-        {
-            const Type* type = nullptr;
-            const ReflectedType* refType = nullptr;
-            const ReflectedStructure* structure = nullptr;
-            std::tie(type, refType, structure) = UnpackReflectionTypeInfo(node->field.ref);
-            if (structure != nullptr && structure->meta != nullptr)
-            {
-                const M::FieldExpanded* expandedMeta = structure->meta->GetMeta<M::FieldExpanded>();
-                if (expandedMeta != nullptr && expandedMeta->isExpanded == true)
-                {
-                    list << index;
-                }
-            }
-        }
-    }
-
     int32 childCount = item->GetChildCount();
     for (int32 i = 0; i < childCount; ++i)
     {
-        GetExpandedListImpl(list, item->GetChild(i));
+        ReflectedPropertyItem* child = item->GetChild(i);
+        FastName propertyName = FastName(child->GetPropertyName().toStdString());
+        if (expandedItems.HasChildInCurrentRoot(propertyName))
+        {
+            list << MapItem(child);
+            expandedItems.PushRoot(propertyName);
+            GetExpandedListImpl(list, child);
+            expandedItems.PopRoot();
+        }
     }
 }
 

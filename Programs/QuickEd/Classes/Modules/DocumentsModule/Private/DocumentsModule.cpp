@@ -32,7 +32,6 @@
 #include <TArc/WindowSubSystem/ActionUtils.h>
 #include <TArc/WindowSubSystem/QtAction.h>
 #include <TArc/Utils/ModuleCollection.h>
-#include <TArc/Core/FieldBinder.h>
 
 #include <QtTools/InputDialogs/MultilineTextInputDialog.h>
 
@@ -116,8 +115,6 @@ void DocumentsModule::PostInit()
     using namespace DAVA;
     using namespace TArc;
 
-    fieldBinder.reset(new FieldBinder(GetAccessor()));
-
     InitWatcher();
     InitEditorSystems();
     InitCentralWidget();
@@ -166,7 +163,6 @@ void DocumentsModule::InitEditorSystems()
     DVASSERT(nullptr == systemsManager);
     systemsManager.reset(new EditorSystemsManager(GetAccessor()));
     systemsManager->dragStateChanged.Connect(this, &DocumentsModule::OnDragStateChanged);
-    systemsManager->propertyChanged.Connect(this, &DocumentsModule::OnPropertyChanged);
 }
 
 void DocumentsModule::InitCentralWidget()
@@ -182,6 +178,8 @@ void DocumentsModule::InitCentralWidget()
     previewWidget = new PreviewWidget(accessor, renderWidget, systemsManager.get());
     previewWidget->requestCloseTab.Connect(this, &DocumentsModule::CloseDocument);
     previewWidget->requestChangeTextInNode.Connect(this, &DocumentsModule::ChangeControlText);
+    connections.AddConnection(previewWidget, &PreviewWidget::OpenPackageFile, MakeFunction(this, &DocumentsModule::OpenDocument));
+
     PanelKey panelKey(QStringLiteral("CentralWidget"), CentralPanelInfo());
     ui->AddView(QEGlobal::windowKey, panelKey, previewWidget);
 
@@ -621,9 +619,13 @@ void DocumentsModule::ChangeControlText(ControlNode* node)
         UIStaticText::eMultiline multilineType = static_cast<UIStaticText::eMultiline>(multilineProperty->GetValue().AsInt32());
         if (inputText.contains('\n') && multilineType == UIStaticText::MULTILINE_DISABLED)
         {
-            stack->Exec(std::make_unique<ChangePropertyValueCommand>(node, multilineProperty, VariantType(UIStaticText::MULTILINE_ENABLED)));
+            std::unique_ptr<ChangePropertyValueCommand> command = data->CreateCommand<ChangePropertyValueCommand>();
+            command->AddNodePropertyValue(node, multilineProperty, VariantType(UIStaticText::MULTILINE_ENABLED));
+            data->ExecCommand(std::move(command));
         }
-        stack->Exec(std::make_unique<ChangePropertyValueCommand>(node, textProperty, VariantType(inputText.toStdString())));
+        std::unique_ptr<ChangePropertyValueCommand> command = data->CreateCommand<ChangePropertyValueCommand>();
+        command->AddNodePropertyValue(node, textProperty, VariantType(inputText.toStdString()));
+        data->ExecCommand(std::move(command));
         stack->EndBatch();
     }
 }
@@ -997,17 +999,6 @@ void DocumentsModule::OnDragStateChanged(EditorSystemsManager::eDragState dragSt
     {
         documentData->commandStack->EndBatch();
     }
-}
-
-void DocumentsModule::OnPropertyChanged(ControlNode* node, AbstractProperty* property, DAVA::VariantType newValue)
-{
-    using namespace DAVA::TArc;
-    ContextAccessor* accessor = GetAccessor();
-    DataContext* activeContext = accessor->GetActiveContext();
-    DVASSERT(activeContext != nullptr);
-    DocumentData* data = activeContext->GetData<DocumentData>();
-    DVASSERT(nullptr != data);
-    data->commandStack->Exec(std::make_unique<ChangePropertyValueCommand>(node, property, newValue));
 }
 
 DECL_GUI_MODULE(DocumentsModule);

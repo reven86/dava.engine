@@ -9,14 +9,6 @@
 
 #include <QtTools/Utils/QtDelayedExecutor.h>
 
-namespace DAVA
-{
-namespace TArc
-{
-class FieldBinder;
-}
-}
-
 class PreviewWidget;
 class EditorSystemsManager;
 class PackageNode;
@@ -87,12 +79,10 @@ private:
     DAVA::TArc::DataContext::ContextID GetContextByPath(const QString& path) const;
 
     void OnDragStateChanged(EditorSystemsManager::eDragState dragState, EditorSystemsManager::eDragState previousState);
-    void OnPropertyChanged(ControlNode* node, AbstractProperty* property, DAVA::VariantType newValue);
 
     PreviewWidget* previewWidget = nullptr;
     std::unique_ptr<EditorSystemsManager> systemsManager;
     DAVA::TArc::QtConnections connections;
-    std::unique_ptr<DAVA::TArc::FieldBinder> fieldBinder;
 
     QtDelayedExecutor delayedExecutor;
 

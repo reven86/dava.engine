@@ -20,7 +20,7 @@ Document::Document(DAVA::TArc::ContextAccessor* accessor_, DAVA::TArc::DataConte
 
     DataContext* globalContext = accessor->GetGlobalContext();
     ProjectData* projectData = globalContext->GetData<ProjectData>();
-    commandExecutor.reset(new QtModelPackageCommandExecutor(projectData, this));
+    commandExecutor.reset(new QtModelPackageCommandExecutor(accessor, contextId));
 }
 
 Document::~Document()
@@ -40,17 +40,6 @@ const DAVA::FilePath& Document::GetPackageFilePath() const
     DVASSERT(nullptr != data);
     const PackageNode* package = data->GetPackageNode();
     return package->GetPath();
-}
-
-DAVA::CommandStack* Document::GetCommandStack() const
-{
-    using namespace DAVA::TArc;
-    const DataContext* dataContext = accessor->GetContext(contextId);
-    DVASSERT(nullptr != dataContext);
-    const DocumentData* data = dataContext->GetData<DocumentData>();
-    DVASSERT(nullptr != data);
-
-    return data->GetCommandStack();
 }
 
 PackageNode* Document::GetPackage() const
