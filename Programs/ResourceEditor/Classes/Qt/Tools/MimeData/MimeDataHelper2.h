@@ -1,5 +1,4 @@
-#ifndef __MIMEDATA_HELPER2_H__
-#define __MIMEDATA_HELPER2_H__
+#pragma once
 
 #include "DAVAEngine.h"
 #include <QMimeData>
@@ -86,12 +85,15 @@ inline const QString MimeDataHelper2<DAVA::ParticleForce>::GetMimeType()
     return "application/dava.particleforce";
 }
 
+template <>
+inline const QString MimeDataHelper2<DAVA::NMaterial>::GetMimeType()
+{
+    return "application/dava.nmaterial";
+}
+
 template <class T>
 inline const QString MimeDataHelper2<T>::GetMimeType()
 {
     DVASSERT(false && "calling non-instantiated GetMimeType");
     return QString();
 }
-
-
-#endif //#ifndef __MIMEDATA_HELPER2_H__

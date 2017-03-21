@@ -127,6 +127,16 @@ bool BaseComponentValue::IsSpannedControl() const
     return false;
 }
 
+const BaseComponentValue::Style& BaseComponentValue::GetStyle() const
+{
+    return style;
+}
+
+void BaseComponentValue::SetStyle(const Style& style_)
+{
+    style = style_;
+}
+
 DAVA::Any BaseComponentValue::GetValue() const
 {
     Any value = nodes.front()->cachedValue;
@@ -176,6 +186,21 @@ void BaseComponentValue::RemovePropertyNodes()
     nodes.clear();
 }
 
+ContextAccessor* BaseComponentValue::GetAccessor() const
+{
+    return model->accessor;
+}
+
+UI* BaseComponentValue::GetUI() const
+{
+    return model->ui;
+}
+
+const WindowKey& BaseComponentValue::GetWindowKey() const
+{
+    return model->wndKey;
+}
+
 void BaseComponentValue::EnsureEditorCreated(const QWidget* parent) const
 {
     if (editorWidget == nullptr)
@@ -202,10 +227,12 @@ void BaseComponentValue::EnsureEditorCreated(QWidget* parent)
     {
         QWidget* boxWidget = new QWidget(parent);
         QtHBoxLayout* layout = new QtHBoxLayout(boxWidget);
+        layout->setMargin(0);
+        layout->setSpacing(1);
 
-        layout->addWidget(realWidget);
         CreateButtons(layout, typeProducer, true);
         CreateButtons(layout, fieldProducer, false);
+        layout->addWidget(realWidget);
 
         realWidget = boxWidget;
     }

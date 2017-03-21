@@ -13,7 +13,8 @@ namespace DAVA
 {
 DAVA_VIRTUAL_REFLECTION_IMPL(AnimationComponent)
 {
-    ReflectionRegistrator<AnimationComponent>::Begin()
+    ReflectionRegistrator<AnimationComponent>::Begin()[M::CantBeCreatedManualyComponent()]
+    .ConstructorByPointer()
     .Field("repeatsCount", &AnimationComponent::repeatsCount)[M::DisplayName("Repeats Count")]
     .Field("isPlaying", &AnimationComponent::GetIsPlaying, &AnimationComponent::SetIsPlaying)[M::DisplayName("Is Playing")]
     .Field("animationTimeScale", &AnimationComponent::animationTimeScale)[M::DisplayName("Animation Time Scale")]

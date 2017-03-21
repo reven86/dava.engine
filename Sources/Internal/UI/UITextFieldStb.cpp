@@ -204,16 +204,16 @@ void TextFieldStbImpl::UpdateRect(const Rect&)
     staticText->SetText(control->GetVisibleText(), UIStaticText::NO_REQUIRED_SIZE);
     needRedraw = false;
 
-    if (isEditing)
+    if (lastCursorPos != stb->GetCursorPosition())
     {
-        if (lastCursorPos != stb->GetCursorPosition())
-        {
-            lastCursorPos = stb->GetCursorPosition();
+        lastCursorPos = stb->GetCursorPosition();
 
-            UpdateCursor(lastCursorPos, stb->IsInsertMode());
-            UpdateOffset(cursorRect + staticTextOffset);
-            // Fix cursor position for multiline if end of some line contains many
-            // spaces over control size (same behavior in MS Word)
+        UpdateCursor(lastCursorPos, stb->IsInsertMode());
+        UpdateOffset(cursorRect + staticTextOffset);
+        // Fix cursor position for multiline if end of some line contains many
+        // spaces over control size (same behavior in MS Word)
+        if (isEditing)
+        {
             if (!stb->IsSingleLineMode())
             {
                 const Vector2& controlSize = control->GetSize();
@@ -232,13 +232,13 @@ void TextFieldStbImpl::UpdateRect(const Rect&)
             cursorTime = 0.f;
             showCursor = true;
         }
+    }
 
-        if (lastSelStart != stb->GetSelectionStart() || lastSelEnd != stb->GetSelectionEnd())
-        {
-            lastSelStart = stb->GetSelectionStart();
-            lastSelEnd = stb->GetSelectionEnd();
-            UpdateSelection(lastSelStart, lastSelEnd);
-        }
+    if (lastSelStart != stb->GetSelectionStart() || lastSelEnd != stb->GetSelectionEnd())
+    {
+        lastSelStart = stb->GetSelectionStart();
+        lastSelEnd = stb->GetSelectionEnd();
+        UpdateSelection(lastSelStart, lastSelEnd);
     }
 }
 

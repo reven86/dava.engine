@@ -45,7 +45,6 @@ public:
 
     ProjectView* GetProjectView() const;
     PackageWidget* GetPackageWidget() const;
-    StyleSheetInspectorWidget* GetStyleSheetInspectorWidget() const;
     DAVA::Signal<> initialized;
 
 signals:

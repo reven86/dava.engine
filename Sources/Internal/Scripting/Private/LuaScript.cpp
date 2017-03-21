@@ -29,7 +29,7 @@ DAVA::int32 panichandler(lua_State* L)
 {
     std::ostringstream os;
     DAVA::LuaBridge::DumpStack(L, os);
-    DAVA::Logger::Error("PANIC: unhandled error during Lua call:\n%s\n%s", lua_tostring(L, -1), os.str().c_str());
+    DAVA::Logger::Debug("PANIC: unhandled error during Lua call:\n%s\n%s", lua_tostring(L, -1), os.str().c_str());
     return 0;
 }
 
@@ -37,7 +37,7 @@ DAVA::int32 errorhandler(lua_State* L)
 {
     std::ostringstream os;
     DAVA::LuaBridge::DumpStack(L, os);
-    DAVA::Logger::Error(os.str().c_str());
+    DAVA::Logger::Info(os.str().c_str());
     DAVA_THROW(DAVA::LuaException, LUA_ERRRUN, DAVA::LuaBridge::PopString(L));
 }
 
@@ -116,7 +116,7 @@ int32 LuaScript::ExecStringSafe(const String& script)
     }
     catch (const LuaException& e)
     {
-        Logger::Error("LuaException: %s", e.what());
+        Logger::Info("LuaException: %s", e.what());
         return -1;
     }
 }
@@ -135,7 +135,7 @@ bool LuaScript::GetResultSafe(int32 index, Any& any, const Type* preferredType /
     }
     catch (const LuaException& e)
     {
-        Logger::Error("LuaException: %s", e.what());
+        Logger::Info("LuaException: %s", e.what());
         return false;
     }
 }
