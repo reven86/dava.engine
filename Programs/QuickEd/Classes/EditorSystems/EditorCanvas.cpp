@@ -253,8 +253,14 @@ void EditorCanvas::ProcessInput(UIEvent* currentInput)
                 Vector2 additionalPos(currentInput->wheelDelta.x, currentInput->wheelDelta.y);
                 additionalPos *= GetViewSize();
                 //custom delimiter to scroll widget by little chunks of visible area
+#if defined(__DAVAENGINE_MACOS__)
+                //on the OS X platform wheelDelta depend on scrolling speed
                 static const float wheelDelta = 0.002f;
-                SetPosition(position + additionalPos * wheelDelta);
+#elif defined(__DAVAENGINE_WIN32__)
+                static const float wheelDelta = 0.1f;
+#endif //platform
+                Vector2 newPosition = position - additionalPos * wheelDelta;
+                SetPosition(newPosition);
             }
         }
         else

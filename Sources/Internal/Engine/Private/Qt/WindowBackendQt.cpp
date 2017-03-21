@@ -453,7 +453,8 @@ void WindowBackend::OnWheel(QWheelEvent* qtEvent)
     }
     else
     {
-        QPointF delta = QPointF(qtEvent->angleDelta()) / 180.0f;
+        //most mouse types work in steps of 15 degrees, in which case the delta value is a multiple of 120
+        QPointF delta = QPointF(qtEvent->angleDelta()) / 120.0f;
         deltaX = delta.x();
         deltaY = delta.y();
     }
