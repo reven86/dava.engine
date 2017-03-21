@@ -6,63 +6,82 @@
 
 #include <float.h>
 
-using namespace DAVA;
+struct TestLangsData
+{
+    DAVA::String langId;
+};
 
-static const Vector<String> files = {
-    "weird_characters",
-    "de",
-    "en",
-    "es",
-    "it",
-    "ru"
+static const DAVA::Vector<TestLangsData> files = {
+    TestLangsData{ "weird_characters" },
+    TestLangsData{ "de" },
+    TestLangsData{ "en" },
+    TestLangsData{ "es" },
+    TestLangsData{ "it" },
+    TestLangsData{ "ru" }
 };
 
 DAVA_TESTCLASS (LocalizationTest)
 {
-    FilePath srcDir;
-    FilePath cpyDir;
+    DAVA::FilePath srcDir;
+    DAVA::FilePath cpyDir;
 
     LocalizationTest()
     {
+        using namespace DAVA;
         srcDir = "~res:/TestData/LocalizationTest/";
         cpyDir = FileSystem::Instance()->GetCurrentDocumentsDirectory() + "LocalizationTest/";
 
         FileSystem::Instance()->DeleteDirectory(cpyDir);
-        FileSystem::Instance()->CreateDirectory(cpyDir);
+        FileSystem::eCreateDirectoryResult createDone = FileSystem::Instance()->CreateDirectory(cpyDir, true);
+        TEST_VERIFY(createDone != FileSystem::DIRECTORY_CANT_CREATE);
     }
 
     ~LocalizationTest()
     {
-        FileSystem::Instance()->DeleteDirectory(cpyDir);
+        using namespace DAVA;
+        FileSystem::Instance()->DeleteDirectory(cpyDir, true);
+
+        // Return back default locale. Let other tests work nice.
+        LocalizationSystem* localizationSystem = LocalizationSystem::Instance();
+        localizationSystem->InitWithDirectory("~res:/Strings/");
     }
 
     DAVA_TEST (LocaleTest)
     {
-        String locale = LocalizationSystem::Instance()->GetDeviceLocale();
+        using namespace DAVA;
 
+        LocalizationSystem* localizationSystem = LocalizationSystem::Instance();
+
+        String locale = localizationSystem->GetDeviceLocale();
         Logger::FrameworkDebug("Current locale is %s", locale.c_str());
+
+        localizationSystem->Cleanup();
 
         for (size_t i = 0; i < files.size(); ++i)
         {
-            FilePath srcFile = srcDir + (files[i] + ".yaml");
-            FilePath cpyFile = cpyDir + (files[i] + ".yaml");
+            const String& currentLangId = files[i].langId;
+            FilePath srcFile = srcDir + (currentLangId + ".yaml");
+            FilePath cpyFile = cpyDir + (currentLangId + ".yaml");
 
-            FileSystem::Instance()->CopyFile(srcFile, cpyFile);
+            bool copyDone = FileSystem::Instance()->CopyFile(srcFile, cpyFile, true);
+            TEST_VERIFY(copyDone);
 
-            LocalizationSystem* localizationSystem = LocalizationSystem::Instance();
-
-            localizationSystem->SetCurrentLocale(files[i]);
             localizationSystem->InitWithDirectory(cpyDir);
 
-            localizationSystem->SaveLocalizedStrings();
+            bool setLocaleDone = localizationSystem->SetCurrentLocale(currentLangId);
+            TEST_VERIFY(setLocaleDone);
+
+            bool saveDone = localizationSystem->SaveLocalizedStrings();
+            TEST_VERIFY(saveDone);
 
             localizationSystem->Cleanup();
-            TEST_VERIFY_WITH_MESSAGE(FileSystem::Instance()->CompareTextFiles(srcFile, cpyFile), Format("Localization test: %s", files[i].c_str()));
+            TEST_VERIFY_WITH_MESSAGE(FileSystem::Instance()->CompareTextFiles(srcFile, cpyFile), Format("Localization test: %s", files[i].langId.c_str()));
         }
     }
 
     DAVA_TEST (BiDiTest)
     {
+        using namespace DAVA;
         BiDiHelper helper;
         TextLayout layout(true);
 
