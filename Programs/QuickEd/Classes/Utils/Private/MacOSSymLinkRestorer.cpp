@@ -1,4 +1,4 @@
-#include "MacOSSymLinkRestorer.h"
+#include "Utils/MacOSSymLinkRestorer.h"
 
 #include <QDirIterator>
 
