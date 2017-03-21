@@ -1,9 +1,7 @@
 #include "Particles/ParticleEffectDebug/ParticleDebugRenderPass.h"
 
-#include "Functional/Function.h"
 #include "Render/RHI/rhi_Type.h"
 #include "Render/RHI/rhi_Public.h"
-#include "Render/RenderCallbacks.h"
 #include "Render/ShaderCache.h"
 
 #include "Debug/ProfilerCPU.h"
@@ -39,13 +37,10 @@ ParticleDebugRenderPass::ParticleDebugRenderPass(ParticleDebugRenderPassConfig c
     passConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_NONE; // By default it will be set to Clear, and api will try to use backbuffer depth despite of InvalidHandle in texture.
     passConfig.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
     SetViewport(Rect(0, 0, static_cast<float32>(width), static_cast<float32>(height)));
-
-    RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(this, &ParticleDebugRenderPass::Restore));
 }
 
 ParticleDebugRenderPass::~ParticleDebugRenderPass()
 {
-    RenderCallbacks::UnRegisterResourceRestoreCallback(MakeFunction(this, &ParticleDebugRenderPass::Restore));
     SafeRelease(debugTexture);
 }
 
@@ -66,12 +61,6 @@ void ParticleDebugRenderPass::Draw(DAVA::RenderSystem* renderSystem)
 Texture* ParticleDebugRenderPass::GetTexture() const
 {
     return debugTexture;
-}
-
-void ParticleDebugRenderPass::Restore()
-{
-    if (rhi::NeedRestoreTexture(debugTexture->handle))
-        rhi::UpdateTexture(debugTexture->handle, nullptr, 0);
 }
 
 void ParticleDebugRenderPass::DrawBatches(Camera* camera)
