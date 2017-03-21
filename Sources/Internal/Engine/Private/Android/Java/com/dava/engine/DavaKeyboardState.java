@@ -70,7 +70,7 @@ class DavaKeyboardState extends DavaActivity.ActivityListenerImpl
     @Override
     public void onVisibleFrameChanged(Rect visibleFrame)
     {
-        int viewHeight = DavaActivity.instance().globalLayoutState.getRootFrame().height();
+        int viewHeight = DavaActivity.instance().getWindow().getDecorView().getHeight();
         int heightThreshold = viewHeight / 4;  
         int dy = viewHeight - visibleFrame.height();
 
