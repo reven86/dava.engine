@@ -6,6 +6,7 @@ namespace DAVA
 DAVA_VIRTUAL_REFLECTION_IMPL(WASDControllerComponent)
 {
     ReflectionRegistrator<WASDControllerComponent>::Begin()
+    .ConstructorByPointer()
     .End();
 }
 

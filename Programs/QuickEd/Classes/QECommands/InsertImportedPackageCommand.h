@@ -1,24 +1,18 @@
-#ifndef __QUICKED_INSERT_IMPORTED_PACKAGE_COMMAND_H__
-#define __QUICKED_INSERT_IMPORTED_PACKAGE_COMMAND_H__
+#pragma once
 
-#include "Command/Command.h"
+#include "QECommands/Private/QEPackageCommand.h"
 
-class PackageNode;
 class PackageControlsNode;
 
-class InsertImportedPackageCommand : public DAVA::Command
+class InsertImportedPackageCommand : public QEPackageCommand
 {
 public:
-    InsertImportedPackageCommand(PackageNode* aRoot, PackageNode* anImportedPackage, int anIndex);
-    virtual ~InsertImportedPackageCommand();
+    InsertImportedPackageCommand(PackageNode* package, PackageNode* importedPackage, int index);
 
     void Redo() override;
     void Undo() override;
 
 private:
-    PackageNode* root;
-    PackageNode* importedPackage;
-    int index;
+    DAVA::RefPtr<PackageNode> importedPackage;
+    const int index;
 };
-
-#endif // __QUICKED_INSERT_IMPORTED_PACKAGE_COMMAND_H__

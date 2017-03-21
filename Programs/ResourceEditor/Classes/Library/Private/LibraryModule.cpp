@@ -5,8 +5,8 @@
 #include "Classes/Application/REGlobal.h"
 #include "Classes/Qt/Actions/DAEConverter.h"
 
-#include "Classes/Qt/Settings/Settings.h"
-#include "Classes/Qt/Settings/SettingsManager.h"
+#include "Classes/Settings/SettingsManager.h"
+#include "Classes/Settings/Settings.h"
 
 #include <TArc/Utils/ModuleCollection.h>
 #include <TArc/Core/FieldBinder.h>

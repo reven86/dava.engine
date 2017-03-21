@@ -6,6 +6,7 @@
 
 #include "TArc/DataProcessing/PropertiesHolder.h"
 #include "TArc/WindowSubSystem/Private/UIManager.h"
+#include "TArc/WindowSubSystem/Private/UIProxy.h"
 #include "TArc/Utils/AssertGuard.h"
 #include "TArc/Utils/RhiEmptyFrame.h"
 #include "TArc/Utils/Private/CrashDumpHandler.h"
@@ -106,10 +107,15 @@ public:
         {
             isInFrame = false;
         };
-        delayedExecutor.DelayedExecute([this]()
-                                       {
-                                           SyncWrappers();
-                                       });
+
+        if (syncRequested == false)
+        {
+            syncRequested = true;
+            delayedExecutor.DelayedExecute([this]()
+                                           {
+                                               SyncWrappers();
+                                           });
+        }
     }
 
     virtual void OnWindowCreated(DAVA::Window* w)
@@ -224,6 +230,8 @@ protected:
 
     void SyncWrappers()
     {
+        syncRequested = false;
+
         wrappersProcessor.Sync();
         core->syncSignal.Emit();
     }
@@ -240,6 +248,7 @@ protected:
 
     std::unique_ptr<PropertiesHolder> propertiesHolder;
     QtDelayedExecutor delayedExecutor;
+    bool syncRequested = false;
 };
 
 class Core::ConsoleImpl : public Core::Impl
@@ -474,7 +483,7 @@ public:
         DVASSERT(controllerModule != nullptr, "Controller Module hasn't been registered");
         for (std::unique_ptr<ClientModule>& module : modules)
         {
-            module->Init(this, uiManager.get());
+            module->Init(this, std::make_unique<UIProxy>(module.get(), uiManager.get()));
         }
 
         for (std::unique_ptr<ClientModule>& module : modules)
@@ -495,6 +504,11 @@ public:
 
     void OnLoopStopped() override
     {
+        for (std::unique_ptr<ClientModule>& module : modules)
+        {
+            uiManager->ModuleDestroyed(module.get());
+        }
+
         ActivateContextImpl(nullptr);
         controllerModule = nullptr;
         for (DataContext* context : contexts)
@@ -504,6 +518,7 @@ public:
                 module->OnContextDeleted(context);
             }
         }
+
         modules.clear();
         uiManager.reset();
         Impl::OnLoopStopped();
@@ -566,7 +581,7 @@ public:
         {
             module->OnContextDeleted(*iter);
         }
-
+        SafeDelete(*iter);
         contexts.erase(iter);
     }
 

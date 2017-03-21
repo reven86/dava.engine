@@ -1,5 +1,6 @@
 <RCC>
     <qresource prefix="/TArc">
       <file>Resources/openfile.png</file>
+      <file>ColorPicker/Private/Resources/dropper.png</file>
     </qresource>
 </RCC>

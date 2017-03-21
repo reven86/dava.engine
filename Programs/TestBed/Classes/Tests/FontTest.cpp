@@ -1,6 +1,8 @@
 #include "Tests/FontTest.h"
 
-#include "UI/Focus/UIFocusComponent.h"
+#include <UI/Focus/UIFocusComponent.h>
+#include <Engine/Engine.h>
+#include <Engine/Window.h>
 
 using namespace DAVA;
 

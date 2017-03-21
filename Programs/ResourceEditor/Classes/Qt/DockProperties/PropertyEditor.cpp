@@ -39,7 +39,7 @@
 #include "Classes/Selection/Selection.h"
 #include "Classes/Selection/SelectionData.h"
 
-#include "Qt/Settings/SettingsManager.h"
+#include "Classes/Settings/SettingsManager.h"
 #include "PropertyEditorStateHelper.h"
 
 #include "ActionComponentEditor.h"
