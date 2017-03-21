@@ -31,22 +31,31 @@ struct JSONObject
     {
         if (parent != nullptr)
         {
+            jsonObject = parent->jsonObject[name].toObject();
+
+#if defined(__DAVAENGINE_DEBUG__)
             auto iter = std::find_if(parent->children.begin(), parent->children.end(), [this](const JSONObject* child) {
                 return child->name == name;
             });
             DVASSERT(iter == parent->children.end());
             parent->children.push_back(this);
-            jsonObject = parent->jsonObject[name].toObject();
+#endif //__DAVAENGINE_DEBUG__
         }
     }
 
+#if defined(__DAVAENGINE_DEBUG__)
     ~JSONObject()
     {
         DVASSERT(children.empty());
+        if (parent != nullptr)
+        {
+            parent->children.remove(this);
+        }
     }
+    List<JSONObject*> children;
+#endif //__DAVAENGINE_DEBUG__
 
     QString name;
-    List<JSONObject*> children;
     QJsonObject jsonObject;
     JSONObject* parent = nullptr;
 };
@@ -112,7 +121,6 @@ PropertiesItem::Impl::Impl(JSONObject* parent, const String& name_)
 PropertiesItem::Impl::~Impl()
 {
     DVASSERT(parent != nullptr);
-    parent->children.remove(this);
 }
 
 PropertiesHolder::Impl::~Impl()
