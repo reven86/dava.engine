@@ -4,7 +4,6 @@
 #include "Classes/Qt/Scene/SceneSignals.h"
 
 #include <TArc/Controls/SceneTabbar.h>
-#include <TArc/Models/SceneTabsModel.h>
 
 #include <UI/Focus/UIFocusComponent.h>
 #include <Engine/Qt/RenderWidget.h>
@@ -24,10 +23,7 @@ SceneRenderWidget::SceneRenderWidget(DAVA::TArc::ContextAccessor* accessor_, DAV
     activeSceneWrapper = accessor->CreateWrapper(DAVA::ReflectedTypeDB::Get<SceneData>());
     activeSceneWrapper.SetListener(this);
 
-    DataContext* ctx = accessor->GetGlobalContext();
-    ctx->CreateData(std::make_unique<SceneTabsModel>());
-
-    SceneTabbar* tabBar = new SceneTabbar(accessor, DAVA::Reflection::Create(ctx->GetData<SceneTabsModel>()), this);
+    SceneTabbar* tabBar = new SceneTabbar(accessor, DAVA::Reflection::Create(&accessor), this);
     tabBar->setAcceptDrops(true);
     tabBar->setFocusPolicy(Qt::StrongFocus);
     tabBar->setTabsClosable(true);

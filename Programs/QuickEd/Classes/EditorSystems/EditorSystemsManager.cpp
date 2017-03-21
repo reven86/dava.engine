@@ -241,6 +241,7 @@ void EditorSystemsManager::OnPackageChanged(PackageNode* package_)
         package->RemoveListener(this);
     }
     magnetLinesChanged.Emit({});
+    SetDragState(NoDrag);
     ClearHighlight();
 
     package = package_;
