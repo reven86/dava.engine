@@ -2,10 +2,14 @@
 #include "TArc/Controls/PropertyPanel/Private/kDComponentValueTraits.h"
 #include "TArc/Controls/PropertyPanel/Private/MultiDoubleSpinBox.h"
 #include "TArc/Controls/PropertyPanel/PropertyModelExtensions.h"
+#include "TArc/Controls/Widget.h"
+#include "TArc/Controls/ColorPicker/ColorPickerButton.h"
 
 #include <Reflection/ReflectionRegistrator.h>
 #include <Math/Vector.h>
 #include <Base/BaseTypes.h>
+
+#include <QHBoxLayout>
 
 namespace DAVA
 {
@@ -28,12 +32,45 @@ Any kDComponentValue<T, TEditor, TComponent>::GetMultipleValue() const
 template <typename T, typename TEditor, typename TComponent>
 bool kDComponentValue<T, TEditor, TComponent>::IsValidValueToSet(const Any& newValue, const Any& currentValue) const
 {
-    return false;
+    DVASSERT(Type::Instance<T>() == Type::Instance<Color>());
+    if (newValue.IsEmpty())
+    {
+        return false;
+    }
+
+    return newValue != currentValue;
 }
 
 template <typename T, typename TEditor, typename TComponent>
 ControlProxy* kDComponentValue<T, TEditor, TComponent>::CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor) const
 {
+    if (Type::Instance<T>() == Type::Instance<Color>())
+    {
+        Widget* w = new Widget(parent);
+        QHBoxLayout* layout = new QHBoxLayout();
+        layout->setSpacing(2);
+        layout->setMargin(0);
+        w->SetLayout(layout);
+
+        {
+            ColorPickerButton::Params params;
+            params.accessor = GetAccessor();
+            params.ui = GetUI();
+            params.wndKey = GetWindowKey();
+            params.fields[ColorPickerButton::Fields::Color] = "value";
+            params.fields[ColorPickerButton::Fields::IsReadOnly] = readOnlyFieldName;
+            w->AddControl(new ColorPickerButton(params, wrappersProcessor, model, w->ToWidgetCast()));
+        }
+
+        {
+            ControlDescriptorBuilder<typename TEditor::Fields> descr;
+            descr[TEditor::Fields::FieldsList] = "fieldsList";
+            w->AddControl(new TEditor(descr, wrappersProcessor, model, w->ToWidgetCast()));
+        }
+
+        return w;
+    }
+
     ControlDescriptorBuilder<typename TEditor::Fields> descr;
     descr[TEditor::Fields::FieldsList] = "fieldsList";
     return new TEditor(descr, wrappersProcessor, model, parent);
@@ -127,6 +164,18 @@ void kDComponentValue<T, TEditor, TComponent>::Set6Axis(const Any& v)
     using namespace KDComponentValueTraits;
     ModifyExtension::MultiCommandInterface cmdInterface = GetModifyInterface()->GetMultiCommandInterface(static_cast<uint32>(nodes.size()));
     SetNodesAxisValue<T, TComponent, 5>(nodes, v.Cast<TComponent>(), cmdInterface);
+}
+
+template <typename T, typename TEditor, typename TComponent>
+Any kDComponentValue<T, TEditor, TComponent>::GetFullValue() const
+{
+    return GetValue();
+}
+
+template <typename T, typename TEditor, typename TComponent>
+void kDComponentValue<T, TEditor, TComponent>::SetFillValue(const Any& v)
+{
+    SetValue(v);
 }
 
 template <typename T, typename TEditor, typename TComponent>
@@ -251,6 +300,7 @@ DAVA_VIRTUAL_TEMPLATE_SPECIALIZATION_REFLECTION_IMPL(ColorComponentValue)
     .Field("G", &ColorComponentValue::Get2Axis, &ColorComponentValue::Set2Axis)
     .Field("B", &ColorComponentValue::Get3Axis, &ColorComponentValue::Set3Axis)
     .Field("A", &ColorComponentValue::Get4Axis, &ColorComponentValue::Set4Axis)
+    .Field("value", &ColorComponentValue::GetFullValue, &ColorComponentValue::SetFillValue)
     .Field("accuracy", &ColorComponentValue::GetAccuracy, nullptr)
     .Field("rRange", &ColorComponentValue::Get1AxisRange, nullptr)
     .Field("gRange", &ColorComponentValue::Get2AxisRange, nullptr)

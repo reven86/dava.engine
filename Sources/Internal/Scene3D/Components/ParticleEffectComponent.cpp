@@ -15,7 +15,8 @@ namespace DAVA
 {
 DAVA_VIRTUAL_REFLECTION_IMPL(ParticleEffectComponent)
 {
-    ReflectionRegistrator<ParticleEffectComponent>::Begin()
+    ReflectionRegistrator<ParticleEffectComponent>::Begin()[M::CantBeCreatedManualyComponent()]
+    .ConstructorByPointer()
     .Field("repeatsCount", &ParticleEffectComponent::repeatsCount)[M::DisplayName("Repeats Count")]
     .Field("stopWhenEmpty", &ParticleEffectComponent::stopWhenEmpty)[M::DisplayName("Stop When Empty")]
     .Field("effectDuration", &ParticleEffectComponent::effectDuration)[M::DisplayName("Duration")]

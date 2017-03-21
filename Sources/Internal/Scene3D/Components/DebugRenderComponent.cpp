@@ -22,7 +22,8 @@ namespace DAVA
 {
 DAVA_VIRTUAL_REFLECTION_IMPL(DebugRenderComponent)
 {
-    ReflectionRegistrator<DebugRenderComponent>::Begin()
+    ReflectionRegistrator<DebugRenderComponent>::Begin()[M::CantBeCreatedManualyComponent()]
+    .ConstructorByPointer()
     .Field("debugFlags", &DebugRenderComponent::GetDebugFlags, &DebugRenderComponent::SetDebugFlags)[M::DisplayName("Debug Flags"), M::FlagsT<eDebugDrawFlags>()]
     .End();
 }

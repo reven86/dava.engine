@@ -581,7 +581,7 @@ public:
         {
             module->OnContextDeleted(*iter);
         }
-
+        SafeDelete(*iter);
         contexts.erase(iter);
     }
 
