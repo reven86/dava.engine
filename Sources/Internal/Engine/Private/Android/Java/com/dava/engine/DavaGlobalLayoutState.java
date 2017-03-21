@@ -22,7 +22,7 @@ public class DavaGlobalLayoutState extends DavaActivity.ActivityListenerImpl imp
     private View contentView = null;
     private FrameLayout layout = null;
     private Rect visibleFrame = new Rect();
-    private List<GlobalLayoutListener> listeners = new LinkedList<>();
+    private List<GlobalLayoutListener> listeners = new LinkedList<GlobalLayoutListener>();
 
     @Override
     public void onResume()
