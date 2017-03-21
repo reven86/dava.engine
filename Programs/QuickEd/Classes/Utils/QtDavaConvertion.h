@@ -27,7 +27,6 @@ QString QColorToHex(const QColor& color);
 DAVA::Vector2 QVector2DToVector2(const QVector2D& vector);
 QVector2D Vector2ToQVector2D(const DAVA::Vector2& vector);
 
-QString VariantToQString(const DAVA::VariantType& val, const DAVA::InspMember* memberInfo);
 QString AnyToQString(const DAVA::Any& val, const DAVA::ReflectedStructure::Field* field);
 DAVA::String AnyToString(const DAVA::Any& any);
 

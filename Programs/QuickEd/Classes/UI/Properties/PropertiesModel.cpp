@@ -29,9 +29,11 @@ using namespace DAVA;
 
 PropertiesModel::PropertiesModel(QObject* parent)
     : QAbstractItemModel(parent)
-    , propertiesUpdater(MakeFunction(this, &PropertiesModel::UpdateAllChangedProperties), 500)
-    , nodeUpdater(MakeFunction(this, &PropertiesModel::ResetInternal), 300)
+    , propertiesUpdater(500)
+    , nodeUpdater(300)
 {
+    propertiesUpdater.SetUpdater(MakeFunction(this, &PropertiesModel::UpdateAllChangedProperties));
+    nodeUpdater.SetUpdater(MakeFunction(this, &PropertiesModel::ResetInternal));
 }
 
 PropertiesModel::~PropertiesModel()

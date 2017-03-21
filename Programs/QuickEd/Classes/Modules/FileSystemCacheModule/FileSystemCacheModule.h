@@ -1,7 +1,6 @@
 #pragma once
 
 #include <TArc/Core/ClientModule.h>
-#include <TArc/Core/FieldBinder.h>
 #include <TArc/DataProcessing/DataWrapper.h>
 #include <TArc/DataProcessing/DataListener.h>
 
@@ -16,7 +15,6 @@ class FileSystemCacheModule : public DAVA::TArc::ClientModule, public DAVA::TArc
     void CreateActions();
     void FastOpenDocument();
 
-    std::unique_ptr<DAVA::TArc::FieldBinder> projectUiPathFieldBinder;
     DAVA::TArc::QtConnections connections;
     DAVA::TArc::DataWrapper projectDataWrapper;
 

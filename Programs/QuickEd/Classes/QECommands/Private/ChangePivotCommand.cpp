@@ -49,7 +49,7 @@ void ChangePivotCommand::Undo()
             package->SetControlProperty(item.node.Get(), item.pivotProperty.Get(), item.pivotOldValue);
         }
 
-        if (item.pivotOldValue.IsEmpty())
+        if (item.positionOldValue.IsEmpty())
         {
             package->ResetControlProperty(item.node.Get(), item.positionProperty.Get());
         }
@@ -98,7 +98,7 @@ ChangePivotCommand::Item::Item(ControlNode* node_, AbstractProperty* pivotProper
     , pivotNewValue(pivotValue)
     , pivotOldValue(ChangePivotCommandDetails::GetValueFromProperty(pivotProperty_))
     , positionProperty(DAVA::RefPtr<AbstractProperty>::ConstructWithRetain(positionProperty_))
-    , positionNewValue(pivotValue)
+    , positionNewValue(positionValue)
     , positionOldValue(ChangePivotCommandDetails::GetValueFromProperty(positionProperty_))
 {
 }
