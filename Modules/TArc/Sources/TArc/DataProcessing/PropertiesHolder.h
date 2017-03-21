@@ -24,8 +24,9 @@ public:
 
     void SaveToFile();
 
-private:
     struct Impl;
+
+private:
     std::unique_ptr<Impl> impl;
 };
 
