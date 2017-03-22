@@ -164,7 +164,6 @@ public:
 
     int32 GetMultilineType() const;
     void SetMultilineType(int32 multilineType);
-
 };
 };
 
