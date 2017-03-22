@@ -11,134 +11,67 @@
 
 #ifndef __DAVAENGINE_WIN_UAP__
 
-struct DownloaderTest
+struct FSMTest02
 {
-    const DAVA::DLCManager::IRequest* pack = nullptr;
-
-    DownloaderTest()
+    enum State
     {
-        using namespace DAVA;
-        Logger::Info("before init");
+        WaitInitializationFinished,
+        WaitSecondConnectAttempt
+    };
+    State state = WaitInitializationFinished;
+    DAVA::float32 time = 0.0f;
 
-        FilePath downloadedPacksDir("~doc:/UnitTests/DLCManagerTest/packs/");
-
-        Logger::Info("clear dirs");
-
-        FileSystem* fs = GetEngineContext()->fileSystem;
-        // every time clear directory to download once again
-        fs->DeleteDirectory(downloadedPacksDir);
-        fs->CreateDirectory(downloadedPacksDir, true);
-
-        FilePath destPath = downloadedPacksDir + "superpack_for_unittests.dvpk";
-        FilePath srcPath = "~res:/superpack_for_unittests.dvpk";
-        if (!fs->IsFile(srcPath))
-        {
-            Logger::Error("no super pack file!");
-            TEST_VERIFY(false);
-        }
-
-        if (!fs->CopyFile(srcPath, destPath, true))
-        {
-            Logger::Error("can't copy super pack for unittest from res:/");
-            TEST_VERIFY(false);
-            return;
-        }
-
-        try
-        {
-            StartEmbeddedWebServer(downloadedPacksDir.GetAbsolutePathname().c_str(), "8080");
-        }
-        catch (std::exception& ex)
-        {
-            Logger::Error("%s", ex.what());
-            TEST_VERIFY(false);
-            return;
-        }
-
-        String superPackUrl("http://127.0.0.1:8080/superpack_for_unittests.dvpk");
-
-        DLCManager& dlcManager = *GetEngineContext()->dlcManager;
-
-        Logger::Info("init dlcManager");
-
-        dlcManager.Initialize(downloadedPacksDir, superPackUrl, DLCManager::Hints());
-
-        Logger::Info("create game client");
-
-        dlcManager.SetRequestingEnabled(true);
-
-        String packName = "0";
-
-        Logger::Info("before request pack");
-
-        pack = dlcManager.RequestPack(packName);
-        TEST_VERIFY(pack != nullptr);
-    }
-
-    static bool IsInitialized()
+    bool Update(DAVA::float32 dt)
     {
-        using namespace DAVA;
-        DLCManager& dlcManager = *GetEngineContext()->dlcManager;
-        return dlcManager.IsInitialized();
-    }
+        DAVA::DLCManager& dlcManager = *DAVA::GetEngineContext()->dlcManager;
 
-    bool IsDownloaded() const
-    {
-        if (pack != nullptr)
+        time += dt;
+
+        switch (state)
         {
-            return pack->IsDownloaded();
+        case WaitInitializationFinished:
+        {
+            if (dlcManager.IsInitialized())
+            {
+                state = WaitSecondConnectAttempt;
+                return false;
+            }
         }
-        return false;
+        break;
+        case WaitSecondConnectAttempt:
+        {
+            // TODO how to check second connect Attemp?
+        }
+        break;
+        }
+
+        return time > 20.0f; // timeout
     }
 };
 
 DAVA_TESTCLASS (DLCManagerFullTest)
 {
-    DownloaderTest downloader;
-
-    DAVA::float32 timeLeftToInitAndDownloadPack = 20.0f; // seconds
-
-    bool downloadOfVirtualPack = false;
+    FSMTest02 fsm02;
+    bool TestAfterInitStopServer02_done = false;
 
     bool TestComplete(const DAVA::String& testName) const override
     {
-        if (testName == "TestDownloadOfVirtualPack")
+        if (testName == "TestAfterInitStopServer02")
         {
-            return downloadOfVirtualPack;
+            return TestAfterInitStopServer02_done;
         }
         return true;
     }
 
     void Update(DAVA::float32 timeElapsed, const DAVA::String& testName) override
     {
-        if (testName == "TestDownloadOfVirtualPack")
+        if (testName == "TestAfterInitStopServer02")
         {
-            if (downloader.IsInitialized())
-            {
-                if (downloader.IsDownloaded())
-                {
-                    downloadOfVirtualPack = true;
-                    TEST_VERIFY(true);
-                    DAVA::StopEmbeddedWebServer();
-                }
-            }
-            if (!downloadOfVirtualPack)
-            {
-                timeLeftToInitAndDownloadPack -= timeElapsed;
-                if (timeLeftToInitAndDownloadPack < 0.f)
-                {
-                    downloader.IsInitialized();
-                    downloader.IsDownloaded();
-                    DAVA::Logger::Info("can't download pack with DLCManager");
-                    TEST_VERIFY(false);
-                    downloadOfVirtualPack = true; // just go to next test
-                    DAVA::StopEmbeddedWebServer();
-                }
-            }
+            TestAfterInitStopServer02_done = fsm02.Update(timeElapsed);
         }
     }
 
-    DAVA_TEST (TestInitializeDLCPack)
+    DAVA_TEST (TestInitializeBadFolder01)
     {
         using namespace DAVA;
 
@@ -148,7 +81,7 @@ DAVA_TESTCLASS (DLCManagerFullTest)
 
         try
         {
-            dlcManager.Initialize("C:/Windows", "http://127.0.0.1:8080/superpack_for_unittests.dvpk", DLCManager::Hints());
+            dlcManager.Initialize("C:/Windows/", "http://127.0.0.1:8080/superpack_for_unittests.dvpk", DLCManager::Hints());
         }
         catch (Exception& ex)
         {
@@ -157,9 +90,37 @@ DAVA_TESTCLASS (DLCManagerFullTest)
         }
 
         TEST_VERIFY(getException && "can't write or no such folder exception missing");
+
+        dlcManager.Deinitialize();
     }
 
-    DAVA_TEST (TestDownloadOfVirtualPack)
+    DAVA_TEST (TestAfterInitStopServer02)
+    {
+        using namespace DAVA;
+
+        DLCManager& dlcManager = *GetEngineContext()->dlcManager;
+
+        FilePath res("~res:/");
+
+        if (!StartEmbeddedWebServer(res.GetAbsolutePathname().c_str(), "8080"))
+        {
+            TEST_VERIFY(false && "can't start embedded web server");
+        }
+
+        dlcManager.Initialize("~doc:/UnitTests/DLCManagerTest/packs/",
+                              "http://127.0.0.1:8080/superpack_for_unittests.dvpk",
+                              DLCManager::Hints());
+    }
+
+    DAVA_TEST (TestServerDownDuringDownload03)
+    {
+    }
+
+    DAVA_TEST (TestAddRequestAfterDisableRequesting04)
+    {
+    }
+
+    DAVA_TEST (TestContinueDownloadingAfterEnableRequesting05)
     {
     }
 };
