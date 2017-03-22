@@ -6,8 +6,6 @@
 
 #include "EmbeddedWebServer.h"
 
-#include <stdexcept>
-
 #ifndef __DAVAENGINE_WIN_UAP__
 
 #include "mongoose.h"
@@ -37,28 +35,27 @@ namespace DAVA
 {
 struct mg_context* ctxEmbeddedWebServer = nullptr;
 
-static int LogMessage(const struct mg_connection* conn, const char* message)
+static int LogMessage(const struct mg_connection* /*conn*/, const char* message)
 {
-    (void)conn;
     fprintf(stderr, "%s\n", message);
     return 0;
 }
 
-void StartEmbeddedWebServer(const char* documentRoot, const char* listeningPorts)
+bool StartEmbeddedWebServer(const char* documentRoot, const char* listeningPorts)
 {
     if (ctxEmbeddedWebServer != nullptr)
     {
-        throw std::runtime_error("second attemp to start embedded web server");
+		return false;
     }
 
     if (documentRoot == nullptr)
     {
-        documentRoot = ".";
+		return false;
     }
 
     if (listeningPorts == nullptr)
     {
-        listeningPorts = "80,443s";
+		return false;
     }
     const char* options[] = {
         "document_root", documentRoot, // "/var/www"
@@ -74,19 +71,19 @@ void StartEmbeddedWebServer(const char* documentRoot, const char* listeningPorts
 
     if (ctxEmbeddedWebServer == nullptr)
     {
-        throw std::runtime_error("can't start mongoose");
+		return false;
     }
+
+	return true;
 }
 
 void StopEmbeddedWebServer()
 {
-    if (ctxEmbeddedWebServer == nullptr)
+    if (ctxEmbeddedWebServer != nullptr)
     {
-        throw std::runtime_error("nothing to stop");
+		mg_stop(ctxEmbeddedWebServer);
+		ctxEmbeddedWebServer = nullptr;
     }
-
-    mg_stop(ctxEmbeddedWebServer);
-    ctxEmbeddedWebServer = nullptr;
 }
 }
 #else
