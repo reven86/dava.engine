@@ -2,6 +2,7 @@ if ( SCENE_PERFORMANCE_TESTS_FOUND )
     return ()
 endif ()
 set ( SCENE_PERFORMANCE_TESTS_FOUND 1 )
+add_definitions(-DWITH_SCENE_PERFORMANCE_TESTS)
 
 include (GlobalVariables)
 append_property( DAVA_COMPONENTS  "ScenePerformanceTests" )

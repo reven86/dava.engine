@@ -156,7 +156,7 @@ void BaseSpinBox<TBase, TEditableType>::SetupSpinBoxBase()
     connections.AddConnection(this, static_cast<void (TBase::*)(TEditableType)>(&TBase::valueChanged), DAVA::MakeFunction(this, &BaseSpinBox<TBase, TEditableType>::ValueChanged));
     ToValidState();
 
-    setFocusPolicy(Qt::StrongFocus);
+    this->setFocusPolicy(Qt::StrongFocus);
 }
 
 template <typename TBase, typename TEditableType>
