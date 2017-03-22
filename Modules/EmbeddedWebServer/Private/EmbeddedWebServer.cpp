@@ -45,17 +45,17 @@ bool StartEmbeddedWebServer(const char* documentRoot, const char* listeningPorts
 {
     if (ctxEmbeddedWebServer != nullptr)
     {
-		return false;
+        return false;
     }
 
     if (documentRoot == nullptr)
     {
-		return false;
+        return false;
     }
 
     if (listeningPorts == nullptr)
     {
-		return false;
+        return false;
     }
     const char* options[] = {
         "document_root", documentRoot, // "/var/www"
@@ -71,18 +71,18 @@ bool StartEmbeddedWebServer(const char* documentRoot, const char* listeningPorts
 
     if (ctxEmbeddedWebServer == nullptr)
     {
-		return false;
+        return false;
     }
 
-	return true;
+    return true;
 }
 
 void StopEmbeddedWebServer()
 {
     if (ctxEmbeddedWebServer != nullptr)
     {
-		mg_stop(ctxEmbeddedWebServer);
-		ctxEmbeddedWebServer = nullptr;
+        mg_stop(ctxEmbeddedWebServer);
+        ctxEmbeddedWebServer = nullptr;
     }
 }
 }
@@ -91,8 +91,8 @@ namespace DAVA
 {
 bool StartEmbeddedWebServer(const char*, const char*)
 {
-	// not supported platform
-	return false;
+    // not supported platform
+    return false;
 }
 
 void StopEmbeddedWebServer()
