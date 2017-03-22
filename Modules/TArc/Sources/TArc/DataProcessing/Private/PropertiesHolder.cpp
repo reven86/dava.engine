@@ -341,9 +341,14 @@ void PropertiesHolder::Impl::LoadFromFile()
     }
     QString filePath = storagePath.absoluteFilePath();
     QFile file(filePath);
+    if (file.exists() == false)
+    {
+        return;
+    }
+
     if (!file.open(QFile::ReadOnly))
     {
-        Logger::Error("Can not open file %s", filePath.toUtf8().data());
+        Logger::Error("Can not open file %s for read", filePath.toUtf8().data());
         return;
     }
     QByteArray fileContent = file.readAll();
@@ -372,7 +377,7 @@ void PropertiesHolder::Impl::SaveToFile()
     QFile file(filePath);
     if (!file.open(QFile::WriteOnly | QFile::Truncate))
     {
-        Logger::Error("Can not open file %s", filePath.toUtf8().data());
+        Logger::Error("Can not open file %s for write", filePath.toUtf8().data());
         return;
     }
     QJsonDocument document(jsonObject);

@@ -53,11 +53,13 @@ set( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR} )
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR} )
 
 ## other
-set( DEFINITIONS           )
+set( DEFINITIONS            )
 
-set( DEPLOY_DIR            ${CMAKE_BINARY_DIR}/app_other )
-set( DEPLOY_DIR_EXECUTABLE )
-set( QT_POST_DEPLOY        )
+set( DEPLOY_DIR             ${CMAKE_BINARY_DIR}/app_other )
+set( MIX_APP_DIR            )
+set( DEPLOY_DIR_EXECUTABLE  )
+set( QT_POST_DEPLOY         )
+
 reset_property ( MIX_APP_DATA )
 
     if ( NOT ONLY_CONTENT_TOOLS )
@@ -70,7 +72,6 @@ reset_property ( MIX_APP_DATA )
         if ( WIN32 )
             add_tool ( UWPRunner CUSTOM_DEPLOY_DIR ${DEPLOY_DIR} )
         endif ()
-        processing_mix_data()
     endif ()
 
 ## tools
@@ -92,6 +93,7 @@ set( DEPLOY_DIR             ${DEPLOY_DIR_${DAVA_PLATFORM_CURENT}})
 set( DEPLOY_DIR_LIBS        ${DEPLOY_DIR_LIBS_${DAVA_PLATFORM_CURENT}})
 set( DEPLOY_DIR_DATA        ${DEPLOY_DIR_DATA_${DAVA_PLATFORM_CURENT}})
 set( DEPLOY_DIR_EXECUTABLE  ${DEPLOY_DIR_EXECUTABLE_${DAVA_PLATFORM_CURENT}})
+set( MIX_APP_DIR            ${CMAKE_BINARY_DIR}/MixResources )
 
 
 reset_property ( MIX_APP_DATA )

@@ -366,7 +366,7 @@ DAVA_TARC_TESTCLASS(CheckBoxTest)
             testCompleted = (checkBox->text() == QStringLiteral("Visible"));
         }
 
-        return TestClass::TestComplete(testName) && testCompleted;
+        return testCompleted;
     }
 
     DAVA::int32 writableTestUpdateCount = 0;

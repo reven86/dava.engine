@@ -91,7 +91,6 @@ private:
     RenderWidget(IWindowDelegate* widgetDelegate, uint32 width, uint32 height);
     ~RenderWidget();
 
-    void ActivateRendering();
     bool IsInitialized() const;
     QQuickWindow* GetQQuickWindow();
 

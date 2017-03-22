@@ -13,7 +13,7 @@
 #include "Render/RenderHelper.h"
 #include "Render/RenderCallbacks.h"
 
-#if defined(__DAVAENGINE_IPHONE__) 
+#if defined(__DAVAENGINE_IPHONE__)
 #include <CoreGraphics/CoreGraphics.h>
 #include <CoreFoundation/CoreFoundation.h>
 #elif defined(__DAVAENGINE_MACOS__)
@@ -655,7 +655,7 @@ void Texture::FlushDataToRenderer(Vector<Image*>* images)
     {
         singleTextureSet = rhi::HTextureSet(rhi::InvalidHandle);
     }
-    
+
 #else
 
     handle = rhi::CreateTexture(descriptor);
