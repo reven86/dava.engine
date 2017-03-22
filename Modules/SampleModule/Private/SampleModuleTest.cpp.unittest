@@ -53,6 +53,8 @@ DAVA_TESTCLASS (SampleModuleTest)
 
 		const ReflectedType* refType = ReflectedTypeDB::GetByPermanentName("SamplePluginUIComponent");
 		const Type* type = refType->GetType();
+		UIComponent* c = UIComponent::CreateByType(type);
+        c->Release();
     }
 };
 
