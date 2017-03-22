@@ -161,7 +161,7 @@ void OverdrawTesterRenderObject::Restore()
     for (size_t i = 0; i < quads.size(); i++)
     {
         if (rhi::NeedRestoreVertexBuffer(quads[i]->vertexBuffer))
-            rhi::UpdateVertexBuffer(quads[i]->vertexBuffer, GetQuadVerts(i).data(), 0, static_cast<DAVA::uint32>(4 * sizeof(QuadVertex)));
+            rhi::UpdateVertexBuffer(quads[i]->vertexBuffer, GetQuadVerts(static_cast<DAVA::uint32>(i)).data(), 0, static_cast<DAVA::uint32>(4 * sizeof(QuadVertex)));
     }
 }
 }
