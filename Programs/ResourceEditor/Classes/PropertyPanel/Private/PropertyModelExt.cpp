@@ -26,8 +26,7 @@
 
 #include <QToolButton>
 #include <QHBoxLayout>
-#include <QApplication>
-#include <QStyle>
+#include <QPalette>
 
 namespace PropertyModelExtDetails
 {
@@ -275,7 +274,7 @@ void EntityChildCreator::ExposeChildren(const std::shared_ptr<const DAVA::TArc::
         children.push_back(allocator->CreatePropertyNode(std::move(f), PropertyNode::GroupProperty));
 
         {
-            DAVA::Reflection componentsField = f.ref.GetField("Components");
+            DAVA::Reflection componentsField = f.ref.GetField(DAVA::Entity::componentFieldString);
             DVASSERT(componentsField.IsValid());
 
             DAVA::TArc::ForEachField(componentsField, [this, &children](Reflection::Field&& field)
@@ -319,8 +318,8 @@ std::unique_ptr<DAVA::TArc::BaseComponentValue> EntityEditorCreator::GetEditor(c
         DAVA::TArc::BaseComponentValue::Style style;
         style.fontBold = true;
         style.fontItalic = true;
-        style.fontColor = QColor(Qt::black);
-        style.bgColor = QApplication::palette().alternateBase().color();
+        style.fontColor = QPalette::ButtonText;
+        style.bgColor = QPalette::AlternateBase;
         editor->SetStyle(style);
         return std::move(editor);
     }
@@ -335,8 +334,8 @@ std::unique_ptr<DAVA::TArc::BaseComponentValue> EntityEditorCreator::GetEditor(c
         std::unique_ptr<DAVA::TArc::BaseComponentValue> editor = EditorComponentExtension::GetEditor(node);
         DAVA::TArc::BaseComponentValue::Style style;
         style.fontBold = true;
-        style.fontColor = QColor(Qt::black);
-        style.bgColor = QApplication::palette().alternateBase().color();
+        style.fontColor = QPalette::ButtonText;
+        style.bgColor = QPalette::AlternateBase;
         editor->SetStyle(style);
         return std::move(editor);
     }

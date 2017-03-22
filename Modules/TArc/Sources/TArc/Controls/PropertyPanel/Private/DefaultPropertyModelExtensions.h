@@ -1,7 +1,8 @@
 #pragma once
 
 #include "TArc/Controls/PropertyPanel/PropertyModelExtensions.h"
-#include "Base/BaseTypes.h"
+#include "TArc/Controls/PropertyPanel/Private/ReflectionPathTree.h"
+#include <Base/BaseTypes.h>
 
 namespace DAVA
 {

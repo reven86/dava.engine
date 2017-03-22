@@ -24,6 +24,7 @@ public:
         SelfRoot = 0,
         RealProperty,
         GroupProperty,
+        FavoritesProperty,
         VirtualProperty, // reserve some range for generic types. I don't know now what types it will be,
         // but reserve some values is good idea in my opinion
         DomainSpecificProperty = 255

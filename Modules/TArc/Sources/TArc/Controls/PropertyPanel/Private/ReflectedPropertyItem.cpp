@@ -31,7 +31,7 @@ int32 ReflectedPropertyItem::GetPropertyNodesCount() const
     return value->GetPropertiesNodeCount();
 }
 
-std::shared_ptr<const PropertyNode> ReflectedPropertyItem::GetPropertyNode(int32 index) const
+std::shared_ptr<PropertyNode> ReflectedPropertyItem::GetPropertyNode(int32 index) const
 {
     return value->GetPropertyNode(index);
 }
@@ -39,6 +39,31 @@ std::shared_ptr<const PropertyNode> ReflectedPropertyItem::GetPropertyNode(int32
 QString ReflectedPropertyItem::GetPropertyName() const
 {
     return value->GetPropertyName();
+}
+
+FastName ReflectedPropertyItem::GetName() const
+{
+    return value->GetName();
+}
+
+bool ReflectedPropertyItem::IsFavorite() const
+{
+    return isFavorite;
+}
+
+void ReflectedPropertyItem::SetFavorite(bool isFavorite_)
+{
+    isFavorite = isFavorite_;
+}
+
+bool ReflectedPropertyItem::IsFavorited() const
+{
+    return isFavorited;
+}
+
+void ReflectedPropertyItem::SetFavorited(bool isFavorited_)
+{
+    isFavorited = isFavorited_;
 }
 
 ReflectedPropertyItem* ReflectedPropertyItem::CreateChild(std::unique_ptr<BaseComponentValue>&& value, int32 childPosition)

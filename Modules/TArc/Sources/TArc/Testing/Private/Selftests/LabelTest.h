@@ -104,7 +104,7 @@ public:
             descr[Label::Fields::Text] = fieldName.c_str();
             Label* label = new Label(descr, GetAccessor(), refModel);
             label->SetObjectName(QString::fromStdString("Label_" + fieldName));
-            layout->AddWidget(label);
+            layout->AddControl(label);
         };
 
         createLabel("text");

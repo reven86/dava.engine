@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Base/BaseTypes.h"
+#include <Base/BaseTypes.h>
+#include <Base/FastName.h>
 
 #include <QString>
 #include <memory>
@@ -24,9 +25,16 @@ public:
     ReflectedPropertyItem& operator=(ReflectedPropertyItem&& other) = delete;
 
     int32 GetPropertyNodesCount() const;
-    std::shared_ptr<const PropertyNode> GetPropertyNode(int32 index) const;
+    std::shared_ptr<PropertyNode> GetPropertyNode(int32 index) const;
 
     QString GetPropertyName() const;
+    FastName GetName() const;
+
+    bool IsFavorite() const;
+    void SetFavorite(bool isFavorite);
+
+    bool IsFavorited() const;
+    void SetFavorited(bool isFavorited);
 
 private:
     friend class ReflectedPropertyModel;
@@ -49,6 +57,9 @@ private:
     int32 position = 0;
     Vector<std::unique_ptr<ReflectedPropertyItem>> children;
     std::unique_ptr<BaseComponentValue> value;
+
+    bool isFavorite = false;
+    bool isFavorited = false;
 };
 } // namespace TArc
 } // namespace DAVA
