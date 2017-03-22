@@ -147,8 +147,13 @@ macro( modules_tree_info_execute )
         set( CUSTOM_VALUE_2 -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE} )
     endif()
 
-    execute_process( COMMAND ${CMAKE_COMMAND} -G${CMAKE_GENERATOR} ${TMP_CMAKE_MODULE_INFO}  -DMODULES_TREE_INFO=true -D${DAVA_PLATFORM_CURENT}=true ${CUSTOM_VALUE} ${CUSTOM_VALUE_2}
+    if( QT_VERSION )
+        set( CUSTOM_VALUE_3 -DQT_VERSION=${QT_VERSION} )
+    endif()
+
+    execute_process( COMMAND ${CMAKE_COMMAND} -G${CMAKE_GENERATOR} ${TMP_CMAKE_MODULE_INFO} -DMODULES_TREE_INFO=true -D${DAVA_PLATFORM_CURENT}=true ${CUSTOM_VALUE} ${CUSTOM_VALUE_2} ${CUSTOM_VALUE_3}
                      WORKING_DIRECTORY ${TMP_CMAKE_MODULE_INFO_BUILD} )
+
 
     include( ${TMP_CMAKE_MODULE_INFO}/ModulesInfo.cmake )
 
@@ -206,6 +211,11 @@ macro( modules_tree_info )
             set(  ${VALUE} ${${VALUE}_DIR_NAME} )
         endforeach()
     endif()
+
+    foreach( NAME ${FIND_PACKAGE} ${FIND_PACKAGE${DAVA_PLATFORM_CURENT}} )
+        find_package( ${NAME} COMPONENTS ${ROOT_MODULE_COMPONENTS} )
+    endforeach()
+
 endmacro()
 #
 macro( generated_initialization_module_code )
@@ -722,6 +732,12 @@ macro( setup_main_module )
 
                 if( WIN32 )
                     set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/DEBUG" )
+                    set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS "/NODEFAULTLIB:libcmt.lib /NODEFAULTLIB:libcmtd.lib" )
+
+                    # Generate debug info also in release builds
+                    set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/DEBUG /SUBSYSTEM:WINDOWS" )
+                    set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELWITHDEBINFO "/DEBUG /SUBSYSTEM:WINDOWS" )
+
                 endif()
 
                 set_target_properties( ${NAME_MODULE} PROPERTIES
