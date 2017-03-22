@@ -44,13 +44,9 @@ struct DownloaderTest
             return;
         }
 
-        try
+        if (!StartEmbeddedWebServer(downloadedPacksDir.GetAbsolutePathname().c_str(), "8080"))
         {
-            StartEmbeddedWebServer(downloadedPacksDir.GetAbsolutePathname().c_str(), "8080");
-        }
-        catch (std::exception& ex)
-        {
-            Logger::Error("%s", ex.what());
+            Logger::Error("can't start embedded web server");
             TEST_VERIFY(false);
             return;
         }
