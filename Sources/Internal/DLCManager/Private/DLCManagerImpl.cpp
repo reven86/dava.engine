@@ -81,10 +81,8 @@ DLCManagerImpl::DLCManagerImpl(Engine* engine_)
 }
 #endif
 
-DLCManagerImpl::~DLCManagerImpl()
+void DLCManagerImpl::ClearResouces()
 {
-    DVASSERT(Thread::IsMainThread());
-
     if (scanThread)
     {
         scanThread->Cancel();
@@ -104,10 +102,44 @@ DLCManagerImpl::~DLCManagerImpl()
         delete request;
     }
 
+    requests.clear();
+
     for (auto request : delayedRequests)
     {
         delete request;
     }
+
+    initState = InitState::Starting;
+    initError = InitError::AllGood;
+
+    delayedRequests.clear();
+    meta.reset();
+
+    buffer.clear();
+    uncompressedFileNames.clear();
+    mapFileData.clear();
+    startFileNameIndexesInUncompressedNames.clear();
+
+    if (downloadTaskId != 0)
+    {
+        DownloadManager* dm = DownloadManager::Instance();
+        if (dm != nullptr)
+        {
+            dm->Cancel(downloadTaskId);
+            downloadTaskId = 0;
+        }
+    }
+    fullSizeServerData = 0;
+
+    timeWaitingNextInitializationAttempt = 0;
+    retryCount = 0;
+}
+
+DLCManagerImpl::~DLCManagerImpl()
+{
+    DVASSERT(Thread::IsMainThread());
+
+    ClearResouces();
 }
 
 void DLCManagerImpl::Initialize(const FilePath& dirToDownloadPacks_,
@@ -147,6 +179,18 @@ void DLCManagerImpl::Initialize(const FilePath& dirToDownloadPacks_,
     initState = InitState::LoadingRequestAskFooter;
 
     StartScanDownloadedFiles(); // safe to call several times, only first will work
+}
+
+void DLCManagerImpl::Deinitialize()
+{
+    DVASSERT(Thread::IsMainThread());
+
+    if (IsInitialized())
+    {
+        SetRequestingEnabled(false);
+    }
+
+    ClearResouces();
 }
 
 bool DLCManagerImpl::IsInitialized() const
@@ -424,7 +468,7 @@ void DLCManagerImpl::AskFooter()
                 {
                     initError = InitError::LoadingRequestFailed;
                     initErrorMsg = "failed get superpack size on server, download error: " + DLC::ToString(error) + " " + std::to_string(retryCount);
-                    Logger::Error("%s", initErrorMsg.c_str());
+                    Logger::Info("%s", initErrorMsg.c_str());
                 }
             }
         }
@@ -709,7 +753,7 @@ void DLCManagerImpl::LoadPacksDataFromMeta()
     }
     catch (std::exception& ex)
     {
-        Logger::Error("can't load pack data from meta: %s", ex.what());
+        Logger::Info("can't load pack data from meta: %s", ex.what());
         FileSystem::Instance()->DeleteFile(localCacheMeta);
         RetryInit();
         return;
@@ -955,7 +999,7 @@ void DLCManagerImpl::RecursiveScan(const FilePath& baseDir, const FilePath& dir,
                 FILE* f = FileAPI::OpenFile(path.GetAbsolutePathname(), "rb");
                 if (f == nullptr)
                 {
-                    Logger::Error("can't open file %s during scan", path.GetAbsolutePathname().c_str());
+                    Logger::Info("can't open file %s during scan", path.GetAbsolutePathname().c_str());
                 }
                 else
                 {
@@ -970,12 +1014,12 @@ void DLCManagerImpl::RecursiveScan(const FilePath& baseDir, const FilePath& dir,
                         }
                         else
                         {
-                            Logger::Error("can't read footer in file: %s", path.GetAbsolutePathname().c_str());
+                            Logger::Info("can't read footer in file: %s", path.GetAbsolutePathname().c_str());
                         }
                     }
                     else
                     {
-                        Logger::Error("can't seek to dvpl footer in file: %s", path.GetAbsolutePathname().c_str());
+                        Logger::Info("can't seek to dvpl footer in file: %s", path.GetAbsolutePathname().c_str());
                     }
                     FileAPI::Close(f);
                 }

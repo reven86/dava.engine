@@ -85,6 +85,7 @@ DAVA_TESTCLASS (DLCManagerTest)
             if (!dlcManager.IsInitialized())
             {
                 Logger::Info("can't initialize dlcManager(remember on build agents network disabled)");
+                dlcManager.Deinitialize();
                 return;
             }
 
@@ -117,6 +118,7 @@ DAVA_TESTCLASS (DLCManagerTest)
             // disable test for now - on local server newer packs
             if (pack == nullptr || !pack->IsDownloaded())
             {
+                dlcManager.Deinitialize();
                 return;
             }
 
@@ -144,5 +146,7 @@ DAVA_TESTCLASS (DLCManagerTest)
             Logger::Error("DLCManagerTest failed: %s", ex.what());
             TEST_VERIFY(false);
         }
+
+        dlcManager.Deinitialize();
     }
 };

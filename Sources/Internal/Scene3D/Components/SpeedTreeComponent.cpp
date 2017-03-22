@@ -9,7 +9,8 @@ namespace DAVA
 {
 DAVA_VIRTUAL_REFLECTION_IMPL(SpeedTreeComponent)
 {
-    ReflectionRegistrator<SpeedTreeComponent>::Begin()
+    ReflectionRegistrator<SpeedTreeComponent>::Begin()[M::CantBeCreatedManualyComponent()]
+    .ConstructorByPointer()
     .Field("trunkOscillationAmplitude", &SpeedTreeComponent::GetTrunkOscillationAmplitude, &SpeedTreeComponent::SetTrunkOscillationAmplitude)[M::DisplayName("Oscillation Amplitude"), M::Group("Trunk")]
     .Field("trunkOscillationSpring", &SpeedTreeComponent::GetTrunkOscillationSpring, &SpeedTreeComponent::SetTrunkOscillationSpring)[M::DisplayName("Oscillation Spring"), M::Group("Trunk")]
     .Field("trunkOscillationDamping", &SpeedTreeComponent::GetTrunkOscillationDamping, &SpeedTreeComponent::SetTrunkOscillationDamping)[M::DisplayName("Oscillation Damping"), M::Group("Trunk")]

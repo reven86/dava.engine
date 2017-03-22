@@ -6,6 +6,7 @@ namespace PropertyPanel
 {
 enum eREPropertyType
 {
-    GroupQualityProperty = DAVA::TArc::PropertyNode::DomainSpecificProperty
+    GroupQualityProperty = DAVA::TArc::PropertyNode::DomainSpecificProperty,
+    AddComponentProperty
 };
 } // namespace PropertyPanel

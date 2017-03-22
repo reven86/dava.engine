@@ -12,7 +12,8 @@ namespace DAVA
 {
 DAVA_VIRTUAL_REFLECTION_IMPL(WindComponent)
 {
-    ReflectionRegistrator<WindComponent>::Begin()
+    ReflectionRegistrator<WindComponent>::Begin()[M::CantBeCreatedManualyComponent()]
+    .ConstructorByPointer()
     .Field("influenceBbox", &WindComponent::GetInfluenceBBox, &WindComponent::SetInfluenceBBox)[M::DisplayName("Influence Bounding Box")]
     .Field("windForce", &WindComponent::GetWindForce, &WindComponent::SetWindForce)[M::DisplayName("Wind force")]
     .Field("windSpeed", &WindComponent::GetWindSpeed, &WindComponent::SetWindSpeed)[M::DisplayName("Wind speed")]
