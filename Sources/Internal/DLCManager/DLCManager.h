@@ -121,7 +121,7 @@ public:
         uint64 total = 0; //!< in bytes
         uint64 alreadyDownloaded = 0; //!< in bytes
         uint64 inQueue = 0; //!< in bytes
-        bool isRequestingEnabled = false;
+        bool isRequestingEnabled = false; //!< current state of requesting
     };
 
     /** Calculate statistic about downloading progress */
