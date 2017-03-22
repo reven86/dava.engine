@@ -46,11 +46,9 @@ private:
 
     DAVA::Vector<QuadVertex> activeVerts;
     DAVA::NMaterial* material = nullptr;
-    DAVA::uint32 vertexLayoutId = 0;
     DAVA::uint32 vertexStride = 0;
     DAVA::uint32 currentStepsCount = 0;
 
-    DAVA::float32 addOverdrawPercent;
     DAVA::float32 addOverdrawPercentNormalized;
     DAVA::uint16 textureResolution;
 

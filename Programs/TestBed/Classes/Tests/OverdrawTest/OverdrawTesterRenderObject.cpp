@@ -32,8 +32,7 @@ DAVA::Array<uint16, 6> indices = { 0, 3, 1, 1, 3, 2 };
 }
 
 OverdrawTesterRenderObject::OverdrawTesterRenderObject(float32 addOverdrawPercent_, uint32 maxStepsCount_, uint16 textureResolution_)
-    : addOverdrawPercent(addOverdrawPercent_)
-    , addOverdrawPercentNormalized(addOverdrawPercent_ * 0.01f)
+    : addOverdrawPercentNormalized(addOverdrawPercent_ * 0.01f)
     , textureResolution(textureResolution_)
 {
     AddFlag(RenderObject::ALWAYS_CLIPPING_VISIBLE);
