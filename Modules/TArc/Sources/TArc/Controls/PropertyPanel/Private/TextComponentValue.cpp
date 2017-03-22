@@ -2,6 +2,7 @@
 #include "TArc/Controls/LineEdit.h"
 #include "TArc/Controls/PropertyPanel/Private/ComponentStructureWrapper.h"
 #include "TArc/Controls/PropertyPanel/PropertyPanelMeta.h"
+#include "TArc/Controls/CommonStrings.h"
 
 #include <Reflection/ReflectionRegistrator.h>
 #include <Reflection/ReflectedMeta.h>
@@ -12,7 +13,7 @@ namespace TArc
 {
 Any TextComponentValue::GetMultipleValue() const
 {
-    static Any multValue(String("< multiple values >"));
+    static Any multValue = String(MultipleValuesString);
     return multValue;
 }
 

@@ -1,8 +1,10 @@
 #pragma once
 
 #include "TArc/Controls/PropertyPanel/Private/ChildCreator.h"
+#include "TArc/Controls/PropertyPanel/Private/ReflectionPathTree.h"
 #include "TArc/DataProcessing/DataWrappersProcessor.h"
 #include "TArc/DataProcessing/PropertiesHolder.h"
+#include "TArc/WindowSubSystem/UI.h"
 
 #include "Base/BaseTypes.h"
 #include "Base/Any.h"
@@ -22,7 +24,7 @@ class ReflectedPropertyModel : public QAbstractItemModel
 {
     Q_OBJECT
 public:
-    ReflectedPropertyModel(ContextAccessor* accessor, OperationInvoker* invoker, UI* ui);
+    ReflectedPropertyModel(WindowKey wndKey, ContextAccessor* accessor, OperationInvoker* invoker, UI* ui);
     ~ReflectedPropertyModel();
 
     //////////////////////////////////////
@@ -58,6 +60,7 @@ public:
 
     void SetExpanded(bool expanded, const QModelIndex& index);
     QModelIndexList GetExpandedList() const;
+    QModelIndexList GetExpandedChildren(const QModelIndex& index) const;
 
     void SaveExpanded(PropertiesItem& propertyRoot) const;
     void LoadExpanded(const PropertiesItem& propertyRoot);
@@ -91,20 +94,9 @@ private:
 
     DataWrappersProcessor wrappersProcessor;
     DataWrappersProcessor fastWrappersProcessor;
+    ReflectionPathTree expandedItems;
 
-    struct ExpandedFieldDescriptor
-    {
-        String typePermanentName;
-        String fieldName;
-
-        bool operator==(const ExpandedFieldDescriptor& other) const
-        {
-            return typePermanentName == other.typePermanentName && fieldName == other.fieldName;
-        }
-    };
-
-    Vector<ExpandedFieldDescriptor> expandedFields;
-
+    WindowKey wndKey;
     ContextAccessor* accessor = nullptr;
     OperationInvoker* invoker = nullptr;
     UI* ui = nullptr;

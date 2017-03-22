@@ -209,5 +209,10 @@ void ModifyExtension::MultiCommandInterface::Exec(std::unique_ptr<DAVA::Command>
     extension->Exec(std::move(command));
 }
 
+void ModifyExtension::MultiCommandInterface::ProduceCommand(const Reflection::Field& object, const Any& newValue)
+{
+    extension->ProduceCommand(object, newValue);
+}
+
 } // namespace TArc
 } // namespace DAVA

@@ -23,6 +23,7 @@ DAVA_VIRTUAL_REFLECTION_IMPL(SkeletonComponent::JointConfig)
 DAVA_VIRTUAL_REFLECTION_IMPL(SkeletonComponent)
 {
     ReflectionRegistrator<SkeletonComponent>::Begin()
+    .ConstructorByPointer()
     .Field("configJoints", &SkeletonComponent::configJoints)[M::DisplayName("Root Joints")]
     .End();
 }

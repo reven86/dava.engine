@@ -225,6 +225,9 @@ using SubProperty = Meta<Metas::SubProperty>;
     Reflection's client should update value as often as possible
 */
 using FrequentlyChangedValue = Meta<Metas::FrequentlyChangedValue>;
+
+/** Type that derived from Component and marked by this Meta couldn't be created in PropertyPanel */
+using CantBeCreatedManualyComponent = Meta<Metas::CantBeCreatedManualyComponent>;
 }
 
 } // namespace DAVA

@@ -58,7 +58,6 @@ DAVA_VIRTUAL_REFLECTION_IMPL(RenderObject)
     .Field("removeIndex", &RenderObject::removeIndex)[M::ReadOnly(), M::HiddenField()]
     .Field("bbox", &RenderObject::bbox)[M::DisplayName("Bounding box")]
     .Field("worldBBox", &RenderObject::worldBBox)[M::DisplayName("World Bounding box")]
-    .Field("worldTransform", &RenderObject::worldTransform)[M::DisplayName("World Transform")]
     .Field("lodIndex", &RenderObject::GetLodIndex, &RenderObject::SetLodIndex)[M::DisplayName("LOD index")]
     .Field("switchIndex", &RenderObject::GetSwitchIndex, &RenderObject::SetSwitchIndex)[M::DisplayName("Switch index")]
     .Field("visibleReflection", &RenderObject::GetReflectionVisible, &RenderObject::SetReflectionVisible)[M::DisplayName("Visible reflection")]
@@ -66,6 +65,12 @@ DAVA_VIRTUAL_REFLECTION_IMPL(RenderObject)
     .Field("renderBatchArray", &RenderObject::renderBatchArray)[M::DisplayName("Render batches")]
     .Field("activeRenderBatchArray", &RenderObject::activeRenderBatchArray)[M::DisplayName("Active render batches"), M::ReadOnly()]
     .End();
+}
+
+template <>
+bool AnyCompare<RenderObject::IndexedRenderBatch>::IsEqual(const DAVA::Any& v1, const DAVA::Any& v2)
+{
+    return v1.Get<RenderObject::IndexedRenderBatch>() == v2.Get<RenderObject::IndexedRenderBatch>();
 }
 
 RenderObject::RenderObject()

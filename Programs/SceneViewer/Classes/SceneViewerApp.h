@@ -2,7 +2,9 @@
 
 #include "Settings.h"
 
+#ifdef WITH_SCENE_PERFORMANCE_TESTS
 #include <GridTest.h>
+#endif
 
 #include <DAVAEngine.h>
 #include <Base/ScopedPtr.h>
@@ -26,7 +28,9 @@ struct SceneViewerData
     DAVA::float32 screenAspect;
     DAVA::FilePath scenePath;
     DAVA::ScopedPtr<DAVA::Scene> scene;
+#ifdef WITH_SCENE_PERFORMANCE_TESTS
     GridTestResult gridTestResult;
+#endif
 };
 
 class SceneViewerApp final

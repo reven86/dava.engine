@@ -64,26 +64,11 @@ MainWindow::~MainWindow()
     PreferencesStorage::Instance()->UnregisterPreferences(this);
 }
 
-bool MainWindow::IsInitialized() const
-{
-    return isInitialized;
-}
-
 void MainWindow::SetEditorTitle(const QString& editorTitle_)
 {
     editorTitle = editorTitle_;
 
     UpdateWindowTitle();
-}
-
-bool MainWindow::event(QEvent* event)
-{
-    if (isInitialized == false && event->type() == QEvent::WindowActivate)
-    {
-        isInitialized = true;
-        initialized.Emit();
-    }
-    return QMainWindow::event(event);
 }
 
 void MainWindow::SetProjectPath(const QString& projectPath_)
@@ -118,7 +103,6 @@ void MainWindow::SetupViewMenu()
                             << ui->fileSystemDockWidget->toggleViewAction()
                             << ui->packageWidget->toggleViewAction()
                             << ui->libraryWidget->toggleViewAction()
-                            << ui->styleSheetInspectorWidget->toggleViewAction()
                             << ui->findWidget->toggleViewAction()
                             << ui->mainToolbar->toggleViewAction()
                             << ui->toolBarGlobal->toggleViewAction();
@@ -207,11 +191,6 @@ MainWindow::ProjectView* MainWindow::GetProjectView() const
 PackageWidget* MainWindow::GetPackageWidget() const
 {
     return ui->packageWidget;
-}
-
-StyleSheetInspectorWidget* MainWindow::GetStyleSheetInspectorWidget() const
-{
-    return ui->styleSheetInspectorWidget;
 }
 
 void MainWindow::OnPreferencesPropertyChanged(const InspMember* member, const VariantType& value)

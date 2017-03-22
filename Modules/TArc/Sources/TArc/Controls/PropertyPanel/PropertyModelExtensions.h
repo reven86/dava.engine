@@ -169,6 +169,7 @@ public:
     public:
         MultiCommandInterface(std::shared_ptr<ModifyExtension> ext);
 
+        void ProduceCommand(const Reflection::Field& object, const Any& newValue);
         void ModifyPropertyValue(const std::shared_ptr<PropertyNode>& nodes, const Any& newValue);
         void Exec(std::unique_ptr<Command>&& command);
 
