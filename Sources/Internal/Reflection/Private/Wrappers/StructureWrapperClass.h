@@ -18,8 +18,10 @@ public:
     void Update() override;
 
     bool HasFields(const ReflectedObject& object, const ValueWrapper* vw) const override;
+    size_t GetFieldsCount(const ReflectedObject& object, const ValueWrapper* vw) const override;
     Reflection GetField(const ReflectedObject& object, const ValueWrapper* vw, const Any& key) const override;
     Vector<Reflection::Field> GetFields(const ReflectedObject& object, const ValueWrapper* vw) const override;
+    Vector<Reflection::Field> GetFields(const ReflectedObject& obj, const ValueWrapper* vw, size_t first, size_t count) const override;
 
     bool HasMethods(const ReflectedObject& object, const ValueWrapper* vw) const override;
     AnyFn GetMethod(const ReflectedObject& object, const ValueWrapper* vw, const Any& key) const override;

@@ -6,6 +6,8 @@ namespace DAVA
 StructureWrapperClass::StructureWrapperClass(const Type* type_)
     : rootType(ReflectedTypeDB::GetByType(type_))
 {
+    caps.hasRangeAccess = true;
+
     FillCache(rootType);
 }
 
@@ -66,6 +68,11 @@ bool StructureWrapperClass::HasFields(const ReflectedObject& object, const Value
     return !fieldsCache.empty();
 }
 
+size_t StructureWrapperClass::GetFieldsCount(const ReflectedObject& object, const ValueWrapper* vw) const
+{
+    return fieldsCache.size();
+}
+
 Reflection StructureWrapperClass::GetField(const ReflectedObject& object, const ValueWrapper* vw, const Any& key) const
 {
     if (!fieldsCache.empty())
@@ -104,6 +111,28 @@ Vector<Reflection::Field> StructureWrapperClass::GetFields(const ReflectedObject
         Reflection ref(vw->GetValueObject(object), field->valueWrapper.get(), nullptr, field->meta.get());
 
         ret.emplace_back(std::move(key), std::move(ref), fieldEntry.inheritFrom);
+    }
+
+    return ret;
+}
+
+Vector<Reflection::Field> StructureWrapperClass::GetFields(const ReflectedObject& object, const ValueWrapper* vw, size_t first, size_t count) const
+{
+    Vector<Reflection::Field> ret;
+
+    DVASSERT(first < fieldsCache.size());
+    DVASSERT(first + count <= fieldsCache.size());
+
+    size_t n = first + count;
+    ret.reserve(n);
+    for (size_t i = 0; i < n; ++i)
+    {
+        const ReflectedStructure::Field* field = fieldsCache[i].field;
+
+        Any key(field->name);
+        Reflection ref(vw->GetValueObject(object), field->valueWrapper.get(), nullptr, field->meta.get());
+
+        ret.emplace_back(std::move(key), std::move(ref), fieldsCache[i].inheritFrom);
     }
 
     return ret;

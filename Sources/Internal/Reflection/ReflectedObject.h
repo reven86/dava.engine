@@ -33,6 +33,7 @@ public:
 
 protected:
     void* ptr = nullptr;
+
     const ReflectedType* reflectedType = nullptr;
     bool isConst = false;
 

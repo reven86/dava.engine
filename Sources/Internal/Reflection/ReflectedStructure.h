@@ -1,6 +1,8 @@
 #pragma once
 
-#include "Base/BaseTypes.h"
+#include "Base/String.h"
+#include "Base/Vector.h"
+#include <memory>
 
 namespace DAVA
 {
