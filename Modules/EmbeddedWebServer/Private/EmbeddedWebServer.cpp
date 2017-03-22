@@ -89,14 +89,14 @@ void StopEmbeddedWebServer()
 #else
 namespace DAVA
 {
-void StartEmbeddedWebServer(const char*, const char*)
+bool StartEmbeddedWebServer(const char*, const char*)
 {
-    throw std::runtime_error("not implemented on Win10 UAP");
+	// not supported platform
+	return false;
 }
 
 void StopEmbeddedWebServer()
 {
-    throw std::runtime_error("not implemented on Win10 UAP");
 }
 }
 #endif // !__DAVAE
