@@ -126,18 +126,6 @@ DAVA_TESTCLASS (TextureLoadingTest)
         }
 
         { // create and release texture for single GPU
-            Texture::SetGPULoadingOrder({ eGPUFamily::GPU_POWERVR_ANDROID });
-
-            ScopedPtr<Texture> texture(Texture::CreateFromFile(TLTestDetails::texturePathname));
-            TEST_VERIFY(texture->IsPinkPlaceholder() == true);
-            TEST_VERIFY(texture->GetWidth() == 16); //pink width
-            TEST_VERIFY(texture->GetHeight() == 16); //ping height
-
-            TEST_VERIFY(counter.errorsCount != 0);
-            counter.errorsCount = 0;
-        }
-
-        { // create and release texture for single GPU
             Texture::SetGPULoadingOrder({ eGPUFamily::GPU_POWERVR_ANDROID, eGPUFamily::GPU_POWERVR_IOS });
 
             const TLTestDetails::TextureData& textureData = testData.at(eGPUFamily::GPU_POWERVR_IOS);
