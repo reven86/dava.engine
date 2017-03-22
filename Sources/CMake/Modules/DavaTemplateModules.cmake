@@ -147,7 +147,7 @@ macro( modules_tree_info_execute )
         set( CUSTOM_VALUE_2 -DCMAKE_TOOLCHAIN_FILE=${CMAKE_TOOLCHAIN_FILE} )
     endif()
 
-    execute_process( COMMAND ${CMAKE_COMMAND} -G${CMAKE_GENERATOR} ${TMP_CMAKE_MODULE_INFO}  -DMODULES_TREE_INFO=true -D${DAVA_PLATFORM_CURENT}=true ${CUSTOM_VALUE} ${CUSTOM_VALUE_2}
+    execute_process( COMMAND ${CMAKE_COMMAND} -G${CMAKE_GENERATOR} ${TMP_CMAKE_MODULE_INFO} -DMODULES_TREE_INFO=true -D${DAVA_PLATFORM_CURENT}=true ${CUSTOM_VALUE} ${CUSTOM_VALUE_2}
                      WORKING_DIRECTORY ${TMP_CMAKE_MODULE_INFO_BUILD} )
 
     include( ${TMP_CMAKE_MODULE_INFO}/ModulesInfo.cmake )
@@ -206,6 +206,11 @@ macro( modules_tree_info )
             set(  ${VALUE} ${${VALUE}_DIR_NAME} )
         endforeach()
     endif()
+
+    foreach( NAME ${FIND_PACKAGE} ${FIND_PACKAGE${DAVA_PLATFORM_CURENT}} )
+        find_package( ${NAME} COMPONENTS ${MODULE_COMPONENTS} )
+    endforeach()
+
 endmacro()
 #
 macro( generated_initialization_module_code )
@@ -396,14 +401,11 @@ macro( setup_main_module )
         if( NOT MAIN_MODULES_FIND_FIRST_CALL_LIST AND MODULE_CONTAINER_MODE )            
             modules_tree_info_execute()
             generated_initialization_module_code()
-    		set( ROOT_NAME_MODULE ${NAME_MODULE} )
-            set( ROOT_MODULE_COMPONENTS ${MODULE_COMPONENTS} )
         endif()
 
         list( APPEND MAIN_MODULES_FIND_FIRST_CALL_LIST "call" )
         set_property(GLOBAL PROPERTY MAIN_MODULES_FIND_FIRST_CALL_LIST ${MAIN_MODULES_FIND_FIRST_CALL_LIST} ) 
     endif()
-
 
 
     if ( INIT AND NOT MODULES_TREE_INFO )
@@ -510,7 +512,8 @@ macro( setup_main_module )
 
         #"FIND PACKAGE"
         foreach( NAME ${FIND_PACKAGE} ${FIND_PACKAGE${DAVA_PLATFORM_CURENT}} )
-            find_package( ${NAME} COMPONENTS ${ROOT_MODULE_COMPONENTS} )
+            find_package( ${NAME} COMPONENTS ${MODULE_COMPONENTS} )
+
             if (PACKAGE_${NAME}_INCLUDES)
                 foreach( PACKAGE_INCLUDE ${PACKAGE_${NAME}_INCLUDES} )
                     include_directories(${${PACKAGE_INCLUDE}})
@@ -611,12 +614,6 @@ macro( setup_main_module )
         list( APPEND ALL_SRC_HEADER_FILE_ONLY  ${PROJECT_HEADER_FILE_ONLY} )
 
         set_project_files_properties( "${ALL_SRC}" )
-
-        if( COVERAGE AND TARGET_FOLDERS_${PROJECT_NAME} AND  NOT ( ${MODULE_TYPE} STREQUAL "INLINE" ) AND MACOS )
-            string(REPLACE ";" " " TARGET_FOLDERS_${PROJECT_NAME} "${TARGET_FOLDERS_${PROJECT_NAME}}" )
-            string(REPLACE "\"" "" TARGET_FOLDERS_${PROJECT_NAME} "${TARGET_FOLDERS_${PROJECT_NAME}}" )
-            list( APPEND DEFINITIONS -DTARGET_FOLDERS_${ORIGINAL_NAME_MODULE}="${TARGET_FOLDERS_${PROJECT_NAME}}" )
-        endif()
 
         #"SAVE PROPERTY"
         save_property( PROPERTY_LIST 
@@ -799,10 +796,6 @@ macro( setup_main_module )
 
             if( CREATE_NEW_MODULE )
 
-                if( COVERAGE AND MACOS )
-                    set_target_properties(${NAME_MODULE} PROPERTIES XCODE_ATTRIBUTE_GCC_GENERATE_TEST_COVERAGE_FILES YES )
-                    set_target_properties(${NAME_MODULE} PROPERTIES XCODE_ATTRIBUTE_GCC_INSTRUMENT_PROGRAM_FLOW_ARCS YES )
-                endif()
 
                 if( WIN32 )
                     grab_libs(LIST_SHARED_LIBRARIES_DEBUG   "${STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG}"   EXCLUDE_LIBS ADDITIONAL_DEBUG_LIBS)
@@ -833,9 +826,21 @@ macro( setup_main_module )
                 endif()
 
                 if( COVERAGE AND MACOS )
+
+                    string(REPLACE ";" " " TARGET_FOLDERS_${PROJECT_NAME} "${TARGET_FOLDERS_${PROJECT_NAME}}" )
+                    string(REPLACE "\"" "" TARGET_FOLDERS_${PROJECT_NAME} "${TARGET_FOLDERS_${PROJECT_NAME}}" )
+
                     add_definitions( -DTEST_COVERAGE )
                     add_definitions( -DDAVA_FOLDERS="${DAVA_FOLDERS}" )
                     add_definitions( -DDAVA_UNITY_FOLDER="${CMAKE_BINARY_DIR}/unity_pack" )
+
+                    list( APPEND EXECUTE_DEFINITIONS -DTARGET_FOLDERS_${ORIGINAL_NAME_MODULE}="${TARGET_FOLDERS_${PROJECT_NAME}}" )
+
+                    append_property( EXECUTE_DEFINITIONS_${NAME_MODULE} "${EXECUTE_DEFINITIONS}" )
+
+                    set_target_properties(${NAME_MODULE} PROPERTIES XCODE_ATTRIBUTE_GCC_GENERATE_TEST_COVERAGE_FILES YES )
+                    set_target_properties(${NAME_MODULE} PROPERTIES XCODE_ATTRIBUTE_GCC_INSTRUMENT_PROGRAM_FLOW_ARCS YES )
+
                 endif()   
 
                 if ( WINDOWS_UAP )
