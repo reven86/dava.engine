@@ -4,13 +4,14 @@
 #include "Reflection/Reflection.h"
 #endif
 
+#include "Base/FastName.h"
 #include "Reflection/Private/Wrappers/StructureWrapperDefault.h"
 
 namespace DAVA
 {
 class StructureWrapperClass final : public StructureWrapperDefault
 {
-    friend class ReflectedTypeDB; // friend for stast calculation
+    friend class ReflectedTypeDB; // friend for stats calculation
 
 public:
     StructureWrapperClass(const Type* type);
@@ -42,8 +43,8 @@ private:
     const ReflectedType* rootType;
     Vector<CachedFieldEntry> fieldsCache;
     Vector<CachedMethodEntry> methodsCache;
-    UnorderedMap<String, size_t> fieldsNameIndexes;
-    UnorderedMap<String, size_t> methodsNameIndexes;
+    UnorderedMap<FastName, size_t> fieldsNameIndexes;
+    UnorderedMap<FastName, size_t> methodsNameIndexes;
 
     void FillCache(const ReflectedType* type);
     void FillCacheEntries(const ReflectedType* type);

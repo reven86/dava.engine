@@ -77,14 +77,8 @@ Reflection StructureWrapperClass::GetField(const ReflectedObject& object, const 
 {
     if (!fieldsCache.empty())
     {
-        String name = key.Cast<String>(String());
-#if !defined(__DAVAENGINE_COREV2__)
-        if (name.empty())
-        {
-            name = key.Cast<const char*>();
-        }
-#endif
-        if (!name.empty())
+        FastName name = key.Cast<FastName>(FastName());
+        if (name.IsValid())
         {
             auto it = fieldsNameIndexes.find(name);
             if (it != fieldsNameIndexes.end())
@@ -145,8 +139,8 @@ bool StructureWrapperClass::HasMethods(const ReflectedObject& object, const Valu
 
 AnyFn StructureWrapperClass::GetMethod(const ReflectedObject& object, const ValueWrapper* vw, const Any& key) const
 {
-    String name = key.Cast<String>(String());
-    if (!name.empty())
+    FastName name = key.Cast<FastName>(FastName());
+    if (name.IsValid())
     {
         void* this_ = vw->GetValueObject(object).GetVoidPtr();
 
@@ -170,10 +164,8 @@ Vector<Reflection::Method> StructureWrapperClass::GetMethods(const ReflectedObje
     {
         const ReflectedStructure::Method* method = methodEntry.method;
 
-        String key(method->name);
         AnyFn fn = method->fn.BindThis(this_);
-
-        ret.emplace_back(std::move(key), std::move(fn));
+        ret.emplace_back(method->name, std::move(fn));
     }
 
     return ret;

@@ -107,11 +107,15 @@ public:
             if (first < sz)
             {
                 size_t n = std::min(first + count, sz);
+                size_t i = first;
 
                 ret.reserve(n);
-                for (size_t i = first; i < n; ++i)
+
+                auto it = std::next(c->begin(), first);
+                auto end = std::next(it, n);
+                for (; it != end; ++it)
                 {
-                    V* v = &(*c)[i];
+                    V* v = &(*it);
                     ret.emplace_back(Any(i++), Reflection::Create(v), nullptr);
                 }
             }

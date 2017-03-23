@@ -232,7 +232,7 @@ struct Dumper
                 // print hierarchy
                 PrintHierarhy(methodline, level + 1, hierarchyColWidth);
                 methodline << "{} ";
-                methodline << method.key << "(";
+                methodline << method.key.c_str() << "(";
 
                 for (size_t i = 0; i < params.argsType.size(); ++i)
                 {
@@ -423,7 +423,7 @@ Reflection::Field::Field(Any&& key_, Reflection&& ref_, const ReflectedType* inh
 {
 }
 
-Reflection::Method::Method(String&& key_, AnyFn&& fn_)
+Reflection::Method::Method(FastName key_, AnyFn&& fn_)
     : key(key_)
     , fn(fn_)
 {

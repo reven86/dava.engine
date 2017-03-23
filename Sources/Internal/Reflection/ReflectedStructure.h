@@ -2,6 +2,7 @@
 
 #include "Base/String.h"
 #include "Base/Vector.h"
+#include "Base/FastName.h"
 #include <memory>
 
 namespace DAVA
@@ -20,23 +21,21 @@ class ReflectedStructure final
 public:
     struct Field
     {
-        String name;
+        FastName name;
         std::unique_ptr<ValueWrapper> valueWrapper;
         std::unique_ptr<ReflectedMeta> meta;
-
-        const ReflectedType* reflectedType;
     };
 
     struct Method
     {
-        String name;
+        FastName name;
         AnyFn fn;
         std::unique_ptr<ReflectedMeta> meta;
     };
 
     struct Enum
     {
-        String name;
+        FastName name;
         std::unique_ptr<EnumWrapper> enumWrapper;
     };
 

@@ -6,6 +6,7 @@
 #include "Base/Any.h"
 #include "Base/AnyFn.h"
 #include "Base/Type.h"
+#include "Base/FastName.h"
 
 #include "Debug/DVAssert.h"
 #include "Reflection/ReflectedObject.h"
@@ -116,7 +117,7 @@ class Reflection final
 {
 public:
     struct Field;
-    struct StructureCaps;
+    struct FieldCaps;
     struct Method;
 
     enum class CtorPolicy;
@@ -166,7 +167,7 @@ public:
     //
     // -->
     //
-    const StructureCaps& GetFieldsCaps() const;
+    const FieldCaps& GetFieldsCaps() const;
     bool AddField(const Any& key, const Any& value) const;
     bool InsertField(const Any& beforeKey, const Any& key, const Any& value) const;
     bool RemoveField(const Any& key) const;
@@ -195,9 +196,9 @@ struct Reflection::Field
 struct Reflection::Method
 {
     Method() = default;
-    Method(String&&, AnyFn&&);
+    Method(FastName, AnyFn&&);
 
-    String key;
+    FastName key;
     AnyFn fn;
 };
 
@@ -207,7 +208,7 @@ struct Reflection::Method
 //
 // -->
 //
-struct Reflection::StructureCaps
+struct Reflection::FieldCaps
 {
     bool canAddField = false;
     bool canInsertField = false;
@@ -260,7 +261,7 @@ public:
     virtual Vector<Reflection::Field> GetFields(const ReflectedObject& object, const ValueWrapper* vw) const = 0;
     virtual Vector<Reflection::Field> GetFields(const ReflectedObject& object, const ValueWrapper* vw, size_t first, size_t count) const = 0;
 
-    virtual const Reflection::StructureCaps& GetFieldsCaps(const ReflectedObject& object, const ValueWrapper* vw) const = 0;
+    virtual const Reflection::FieldCaps& GetFieldsCaps(const ReflectedObject& object, const ValueWrapper* vw) const = 0;
 
     virtual bool HasMethods(const ReflectedObject& object, const ValueWrapper* vw) const = 0;
     virtual AnyFn GetMethod(const ReflectedObject& object, const ValueWrapper* vw, const Any& key) const = 0;

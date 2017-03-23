@@ -747,5 +747,37 @@ DAVA_TESTCLASS (ReflectionTest)
 
         const ReflectedType* res = ReflectedTypeDB::GetByPointer(val.Get<void*>(), val.GetType());
         TEST_VERIFY(res->GetType() == Type::Instance<D>());
+
+        delete v.back();
+    }
+
+    DAVA_TEST (ReflectionByFieldName)
+    {
+        DAVA::Logger::Info("Begin ReflectionByFieldName:");
+
+        FastName fieldname("a");
+
+        for (size_t k = 0; k < 10; ++k)
+        {
+            size_t res = 0;
+
+            D* d = new D();
+            DAVA::Reflection r = DAVA::Reflection::Create(d);
+
+            int64 begin = DAVA::SystemTimer::GetMs();
+            for (size_t i = 0; i < 10000000; ++i)
+            {
+                DAVA::Reflection f = r.GetField(fieldname);
+                res += f.GetValue().Get<int>();
+            }
+            int64 time = DAVA::SystemTimer::GetMs() - begin;
+            DAVA::Logger::Info("%lld ms, res = %u", time, res);
+
+            delete d;
+
+            DAVA::Thread::Sleep(10);
+        }
+
+        DAVA::Logger::Info("Done!");
     }
 };
