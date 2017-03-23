@@ -1,5 +1,6 @@
 #include "Tests/UIMovieTest.h"
 #include "Engine/Engine.h"
+#include "UI/Update/UIUpdateComponent.h"
 
 namespace
 {
@@ -9,6 +10,7 @@ FilePath path = "~res://TestData/MovieTest/bunny.m4v";
 UIMovieTest::UIMovieTest(TestBed& app)
     : BaseScreen(app, "UIMovieTest")
 {
+    GetOrCreateComponent<UIUpdateComponent>();
 }
 
 void UIMovieTest::LoadResources()
