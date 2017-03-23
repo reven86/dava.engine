@@ -92,7 +92,6 @@ private:
     QtDelayedExecutor delayedExecutor;
 
     ProjectView* projectView = nullptr;
-    DocumentGroupView* documentGroupView = nullptr;
 
 public:
     INTROSPECTION(MainWindow,

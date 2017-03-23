@@ -10,7 +10,6 @@
 #include "UI/mainwindow.h"
 #include "UI/ProjectView.h"
 #include "UI/Package/PackageWidget.h"
-#include "UI/DocumentGroupView.h"
 #include "UI/Find/FindFilter.h"
 
 #include <TArc/Core/ContextAccessor.h>
@@ -80,7 +79,6 @@ void LegacySupportModule::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, 
     }
     else if (wrapper == documentDataWrapper)
     {
-        MainWindow::DocumentGroupView* documentGroupView = projectView->GetDocumentGroupView();
         DataContext* activeContext = accessor->GetActiveContext();
         Document* document = nullptr;
         DataContext::ContextID contextID = activeContext->GetID();
@@ -95,6 +93,7 @@ void LegacySupportModule::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, 
         {
             packageWidget->OnSelectionChanged(Any());
             DVASSERT(document == nullptr);
+            packageWidget->OnDocumentChanged(document);
             documentGroupView->SetDocument(document);
         }
 
@@ -125,7 +124,7 @@ void LegacySupportModule::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, 
                     }
 
                     packageWidget->OnSelectionChanged(Any());
-                    documentGroupView->SetDocument(document);
+                    packageWidget->OnDocumentChanged(document);
                     if (documentWasChanged)
                     {
                         documents[contextID].reset(document);

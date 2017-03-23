@@ -17,7 +17,6 @@
 #include "QtTools/Utils/Themes/Themes.h"
 #include "UI/Package/PackageModel.h"
 #include "UI/ProjectView.h"
-#include "UI/DocumentGroupView.h"
 
 #include <Base/Result.h>
 
@@ -46,7 +45,6 @@ MainWindow::MainWindow(QWidget* parent)
     SetupViewMenu();
 
     projectView = new ProjectView(this);
-    documentGroupView = new DocumentGroupView(this);
 
     InitEmulationMode();
     ConnectActions();

@@ -18,7 +18,6 @@
 #include "Application/QEGlobal.h"
 
 #include "UI/mainwindow.h"
-#include "UI/DocumentGroupView.h"
 #include "UI/ProjectView.h"
 #include "UI/Preview/PreviewWidget.h"
 #include "UI/Package/PackageWidget.h"

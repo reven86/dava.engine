@@ -11,7 +11,6 @@
 #include "Sound/SoundSystem.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 #include "UI/ProjectView.h"
-#include "UI/DocumentGroupView.h"
 #include "UI/Find/FindFilter.h"
 
 #include <TArc/Core/ContextAccessor.h>
@@ -80,7 +79,6 @@ Project::Project(MainWindow::ProjectView* view_, DAVA::TArc::ContextAccessor* ac
     view->SetProjectPath(GetProjectPath());
     view->SetLanguages(GetAvailableLanguages(), GetCurrentLanguage());
     view->OnProjectChanged(this);
-    view->GetDocumentGroupView()->SetProject(this);
 
     connections.AddConnection(editorLocalizationSystem.get(), &EditorLocalizationSystem::CurrentLocaleChanged, MakeFunction(view, &MainWindow::ProjectView::SetCurrentLanguage));
     connections.AddConnection(editorFontSystem.get(), &EditorFontSystem::FontPresetChanged, MakeFunction(this, &Project::OnFontPresetChanged));
@@ -106,7 +104,6 @@ Project::~Project()
     view->SetResourceDirectory(QString());
 
     view->OnProjectChanged(nullptr);
-    view->GetDocumentGroupView()->SetProject(nullptr);
 
     editorLocalizationSystem->Cleanup();
     editorFontSystem->ClearAllFonts();
