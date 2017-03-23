@@ -226,6 +226,19 @@ const InspInfo* QuickEdPackageBuilder::BeginUnknownControl(const FastName& contr
 void QuickEdPackageBuilder::EndControl(eControlPlace controlPlace)
 {
     ControlNode* lastControl = SafeRetain(controlsStack.back().node);
+
+    // the following code handles cases when component was created by control himself (UIParticles creates UIUpdateComponent for example)
+    for (uint32 componentType = 0; componentType < UIComponent::COMPONENT_COUNT; ++componentType)
+    {
+        const ComponentPropertiesSection* section = lastControl->GetRootProperty()->FindComponentPropertiesSection(componentType, 0);
+
+        if (section == nullptr && lastControl->GetControl()->GetComponentCount(componentType) > 0)
+        {
+            BeginComponentPropertiesSection(componentType, 0);
+            EndComponentPropertiesSection();
+        }
+    }
+
     bool addToParent = controlsStack.back().addToParent;
     controlsStack.pop_back();
 
