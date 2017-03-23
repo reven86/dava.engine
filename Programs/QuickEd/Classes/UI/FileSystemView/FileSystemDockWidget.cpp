@@ -1,15 +1,18 @@
 #include "FileSystemDockWidget.h"
+#include "ui_FileSystemDockWidget.h"
+
+#include "Application/QEGlobal.h"
 
 #include "UI/FileSystemView/ValidatedTextInputDialog.h"
 #include "UI/FileSystemView/FileSystemModel.h"
 #include "Modules/LegacySupportModule/Private/Project.h"
 
-#include "QtTools/FileDialogs/FileDialog.h"
-#include "QtTools/Utils/Utils.h"
-#include "QtHelpers/HelperFunctions.h"
+#include <QtTools/FileDialogs/FileDialog.h>
+#include <QtTools/Utils/Utils.h>
+#include <QtHelpers/HelperFunctions.h>
 
-#include "Debug/DVAssert.h"
-#include "Logger/Logger.h"
+#include <Debug/DVAssert.h>
+#include <Logger/Logger.h>
 
 #include <QClipboard>
 #include <QMimeData>
@@ -22,8 +25,6 @@
 #include <QLineEdit>
 #include <QPushButton>
 #include <QDirIterator>
-
-#include "ui_FileSystemDockWidget.h"
 
 FileSystemDockWidget::FileSystemDockWidget(QWidget* parent)
     : QDockWidget(parent)
@@ -199,7 +200,7 @@ void FileSystemDockWidget::onDoubleClicked(const QModelIndex& index)
 {
     if (!model->isDir(index))
     {
-        emit OpenPackageFile(model->filePath(index));
+        QEGlobal::GetInvoker()->Invoke(QEGlobal::OpenDocumentByPath.ID, model->filePath(index));
     }
 }
 
@@ -322,7 +323,7 @@ void FileSystemDockWidget::OnOpenFile()
     {
         if (!model->isDir(index))
         {
-            emit OpenPackageFile(model->filePath(index));
+            QEGlobal::GetInvoker()->Invoke(QEGlobal::OpenDocumentByPath.ID, model->filePath(index));
         }
     }
 }

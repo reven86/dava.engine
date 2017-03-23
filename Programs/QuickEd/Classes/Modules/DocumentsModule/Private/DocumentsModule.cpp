@@ -3,7 +3,6 @@
 #include "Modules/DocumentsModule/DocumentData.h"
 #include "Modules/DocumentsModule/Private/DocumentsWatcherData.h"
 #include "Modules/DocumentsModule/Private/EditorCanvasData.h"
-#include "Modules/LegacySupportModule/Private/Document.h"
 
 #include "QECommands/ChangePropertyValueCommand.h"
 

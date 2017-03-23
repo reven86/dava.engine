@@ -1,4 +1,6 @@
 #include "Application/QEApplication.h"
+#include "Application/QEGlobal.h"
+
 #include "Modules/LegacySupportModule/LegacySupportModule.h"
 #include "Classes/Application/ReflectionExtensions.h"
 
@@ -96,6 +98,7 @@ void QEApplication::Init(const DAVA::EngineContext* engineContext)
 
 void QEApplication::Cleanup()
 {
+    QEGlobal::InitTArcCore(nullptr);
     cmdLine.clear();
 }
 
@@ -117,6 +120,9 @@ QString QEApplication::GetInstanceKey() const
 void QEApplication::CreateModules(DAVA::TArc::Core* tarcCore) const
 {
     Q_INIT_RESOURCE(QtToolsResources);
+
+    QEGlobal::InitTArcCore(tarcCore);
+
     tarcCore->CreateModule<LegacySupportModule>();
     for (const DAVA::ReflectedType* type : DAVA::TArc::ModuleCollection::Instance()->GetGuiModules())
     {

@@ -42,7 +42,7 @@ void DocumentData::EndBatch()
     commandStack->EndBatch();
 }
 
-const PackageNode* DocumentData::GetPackageNode() const
+PackageNode* DocumentData::GetPackageNode() const
 {
     return package.Get();
 }

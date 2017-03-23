@@ -1,7 +1,8 @@
 #include "PropertiesModel.h"
 
-#include "Modules/LegacySupportModule/Private/Document.h"
-#include "Ui/QtModelPackageCommandExecutor.h"
+#include "Application/QEGlobal.h"
+
+#include "Modules/DocumentsModule/DocumentData.h"
 
 #include "Model/ControlProperties/AbstractProperty.h"
 #include "Model/ControlProperties/RootProperty.h"
@@ -13,12 +14,14 @@
 #include "Utils/QtDavaConvertion.h"
 #include "Utils/StringFormat.h"
 #include "QECommands/ChangePropertyValueCommand.h"
-#include "UI/QtModelPackageCommandExecutor.h"
+#include "QECommands/ChangeStylePropertyCommand.h"
 
+#include <TArc/Core/FieldBinder.h>
 
 #include <QtTools/Utils/Themes/Themes.h>
 #include <QtTools/Utils/Utils.h>
 
+#include <Reflection/ReflectedTypeDB.h>
 #include <UI/UIControl.h>
 
 #include <QFont>
@@ -32,8 +35,17 @@ PropertiesModel::PropertiesModel(QObject* parent)
     , propertiesUpdater(500)
     , nodeUpdater(300)
 {
+    using namespace TArc;
+
     propertiesUpdater.SetUpdater(MakeFunction(this, &PropertiesModel::UpdateAllChangedProperties));
     nodeUpdater.SetUpdater(MakeFunction(this, &PropertiesModel::ResetInternal));
+    nodeUpdater.SetStopper([this]() { return nodeToReset == nullptr; });
+
+    fieldBinder.reset(new FieldBinder(QEGlobal::GetAccessor()));
+    FieldDescriptor fieldDescr;
+    fieldDescr.type = ReflectedTypeDB::Get<DocumentData>();
+    fieldDescr.fieldName = FastName(DocumentData::packagePropertyName);
+    fieldBinder->BindField(fieldDescr, MakeFunction(this, &PropertiesModel::OnPackageChanged));
 }
 
 PropertiesModel::~PropertiesModel()
@@ -43,23 +55,11 @@ PropertiesModel::~PropertiesModel()
     nodeUpdater.Abort();
 }
 
-void PropertiesModel::Reset(PackageBaseNode* node_, QtModelPackageCommandExecutor* commandExecutor_)
+void PropertiesModel::Reset(PackageBaseNode* node_)
 {
     nodeToReset = node_;
-    //to make better performance when we selecting all controls by mouse rect
-    //update current item using continuousUpdater
-    //but if new item came from another document or this item is nullptr - we need to refresh model immediately
-    bool canDelay = nodeToReset != nullptr && (commandExecutor == nullptr || commandExecutor == commandExecutor_);
 
-    commandExecutor = commandExecutor_;
-    if (canDelay)
-    {
-        nodeUpdater.Update();
-    }
-    else
-    {
-        nodeUpdater.Stop();
-    }
+    nodeUpdater.Update();
 }
 
 void PropertiesModel::ResetInternal()
@@ -406,37 +406,33 @@ void PropertiesModel::StyleSelectorWasRemoved(StyleSheetSelectorsSection* sectio
 
 void PropertiesModel::ChangeProperty(AbstractProperty* property, const VariantType& value)
 {
-    DVASSERT(nullptr != commandExecutor);
-    if (nullptr != commandExecutor)
+    DocumentData* documentData = QEGlobal::GetActiveDataNode<DocumentData>();
+    DVASSERT(documentData != nullptr);
+    if (nullptr != controlNode)
     {
-        if (nullptr != controlNode)
-        {
-            commandExecutor->ChangeProperty(controlNode, property, value);
-        }
-        else if (styleSheet)
-        {
-            commandExecutor->ChangeProperty(styleSheet, property, value);
-        }
-        else
-        {
-            DVASSERT(false);
-        }
+        documentData->ExecCommand<ChangePropertyValueCommand>(controlNode, property, value);
+    }
+    else if (styleSheet)
+    {
+        documentData->ExecCommand<ChangeStylePropertyCommand>(styleSheet, property, value);
+    }
+    else
+    {
+        DVASSERT(false);
     }
 }
 
 void PropertiesModel::ResetProperty(AbstractProperty* property)
 {
-    DVASSERT(nullptr != commandExecutor);
-    if (nullptr != commandExecutor)
+    DocumentData* documentData = QEGlobal::GetActiveDataNode<DocumentData>();
+    DVASSERT(documentData != nullptr);
+    if (nullptr != controlNode)
     {
-        if (nullptr != controlNode)
-        {
-            commandExecutor->ResetProperty(controlNode, property);
-        }
-        else
-        {
-            DVASSERT(false);
-        }
+        documentData->ExecCommand<ChangePropertyValueCommand>(controlNode, property, VariantType());
+    }
+    else
+    {
+        DVASSERT(false);
     }
 }
 
@@ -640,4 +636,9 @@ void PropertiesModel::CleanUp()
     controlNode = nullptr;
     styleSheet = nullptr;
     rootProperty = nullptr;
+}
+
+void PropertiesModel::OnPackageChanged(const DAVA::Any& package)
+{
+    nodeUpdater.Abort();
 }

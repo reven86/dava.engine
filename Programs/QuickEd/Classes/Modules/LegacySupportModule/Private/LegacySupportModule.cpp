@@ -1,5 +1,4 @@
 #include "Modules/LegacySupportModule/LegacySupportModule.h"
-#include "Modules/LegacySupportModule/Private/Document.h"
 #include "Modules/DocumentsModule/DocumentData.h"
 #include "Modules/ProjectModule/ProjectData.h"
 #include "Modules/LegacySupportModule/Private/Project.h"

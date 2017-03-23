@@ -26,9 +26,6 @@ public:
     void SetResourceDirectory(const QString& path);
     void SelectFile(const QString& filePath);
 
-signals:
-    void OpenPackageFile(const QString& path);
-
 private slots:
     void onDoubleClicked(const QModelIndex& index);
     void setFilterFixedString(const QString& filterStr);

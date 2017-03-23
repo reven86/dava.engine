@@ -1,8 +1,16 @@
 #include "LibraryWidget.h"
-#include "Modules/LegacySupportModule/Private/Document.h"
 #include "LibraryModel.h"
 
-#include "UI/UIControl.h"
+#include "Application/QEGlobal.h"
+
+#include "Modules/DocumentsModule/DocumentData.h"
+#include "Modules/ProjectModule/ProjectData.h"
+
+#include <TArc/Core/FieldBinder.h>
+
+#include <Base/Any.h>
+#include <Reflection/ReflectedTypeDB.h>
+#include <UI/UIControl.h>
 
 LibraryWidget::LibraryWidget(QWidget* parent)
     : QDockWidget(parent)
@@ -10,24 +18,68 @@ LibraryWidget::LibraryWidget(QWidget* parent)
 {
     setupUi(this);
     treeView->setModel(libraryModel);
+
+    BindFields();
 }
 
-void LibraryWidget::OnDocumentChanged(Document* document)
+LibraryWidget::~LibraryWidget() = default;
+
+void LibraryWidget::OnPackageChanged(const DAVA::Any& packageValue)
 {
-    if (document != nullptr)
+    PackageNode* package = nullptr;
+    if (packageValue.CanGet<PackageNode*>())
     {
-        libraryModel->SetPackageNode(document->GetPackage());
+        package = packageValue.Get<PackageNode*>();
     }
-    else
-    {
-        libraryModel->SetPackageNode(nullptr);
-    }
+
+    treeView->setEnabled(package != nullptr);
+
+    libraryModel->SetPackageNode(package);
 
     treeView->expandAll();
     treeView->collapse(libraryModel->GetDefaultControlsModelIndex());
 }
 
-void LibraryWidget::SetProjectLibraries(const DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>>& prototypes, const DAVA::Vector<DAVA::FilePath>& libraryPackages)
+void LibraryWidget::OnProjectPathChanged(const DAVA::Any& projectPath)
 {
-    libraryModel->SetProjectLibraries(prototypes, libraryPackages);
+    using namespace DAVA;
+    using namespace DAVA::TArc;
+
+    if (projectPath.Cast<FilePath>(FilePath()).IsEmpty())
+    {
+        libraryModel->SetProjectLibraries(DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>>(), DAVA::Vector<DAVA::FilePath>());
+    }
+    else
+    {
+        ProjectData* projectData = QEGlobal::GetDataNode<ProjectData>();
+        DVASSERT(projectData != nullptr);
+        DAVA::Vector<DAVA::FilePath> libraryPackages;
+        for (const auto& resDir : projectData->GetLibraryPackages())
+        {
+            libraryPackages.push_back(resDir.absolute);
+        }
+        libraryModel->SetProjectLibraries(projectData->GetPrototypes(), libraryPackages);
+    }
+
+}
+
+void LibraryWidget::BindFields()
+{
+    using namespace DAVA;
+    using namespace DAVA::TArc;
+
+    fieldBinder.reset(new FieldBinder(QEGlobal::GetAccessor()));
+
+    {
+        FieldDescriptor fieldDescr;
+        fieldDescr.type = ReflectedTypeDB::Get<DocumentData>();
+        fieldDescr.fieldName = FastName(DocumentData::packagePropertyName);
+        fieldBinder->BindField(fieldDescr, MakeFunction(this, &LibraryWidget::OnPackageChanged));
+    }
+    {
+        FieldDescriptor fieldDescr;
+        fieldDescr.type = ReflectedTypeDB::Get<ProjectData>();
+        fieldDescr.fieldName = FastName(ProjectData::projectPathPropertyName);
+        fieldBinder->BindField(fieldDescr, MakeFunction(this, &LibraryWidget::OnProjectPathChanged));
+    }
 }

@@ -1,31 +1,33 @@
-#ifndef __QUICKED_PROPERTIES_WIDGET_H__
-#define __QUICKED_PROPERTIES_WIDGET_H__
+#pragma once
 
 #include <QDockWidget>
 #include "Base/BaseTypes.h"
 #include "ui_PropertiesWidget.h"
 #include "EditorSystems/SelectionContainer.h"
 
-class ControlNode;
-class Document;
-class PackageBaseNode;
+namespace DAVA
+{
+namespace TArc
+{
+class FieldBinder;
+}
+}
+
 class Project;
+class PackageNode;
+class PackageBaseNode;
 class PropertiesModel;
 class PropertiesTreeItemDelegate;
-class QtModelPackageCommandExecutor;
-class StyleSheetNode;
 
 class PropertiesWidget : public QDockWidget, public Ui::PropertiesWidget
 {
     Q_OBJECT
 public:
     PropertiesWidget(QWidget* parent = nullptr);
-
     void SetProject(const Project* project);
 
 public slots:
     void UpdateModel(PackageBaseNode* node);
-    void OnDocumentChanged(Document* doc);
 
     void OnAddComponent(QAction* action);
     void OnAddStyleProperty(QAction* action);
@@ -52,6 +54,10 @@ private:
 
     void ApplyExpanding();
 
+    void OnPackageChanged(const DAVA::Any& package);
+
+    void BindFields();
+
     QAction* addComponentAction = nullptr;
     QAction* addStylePropertyAction = nullptr;
     QAction* addStyleSelectorAction = nullptr;
@@ -65,8 +71,8 @@ private:
     SelectionContainer selectionContainer;
 
     DAVA::String lastTopIndexPath;
-    QtModelPackageCommandExecutor* commandExecutor = nullptr;
     PackageBaseNode* selectedNode = nullptr; //node used to build model
+
+    std::unique_ptr<DAVA::TArc::FieldBinder> fieldBinder;
 };
 
-#endif //__QUICKED_PROPERTIES_WIDGET_H__
