@@ -2,29 +2,29 @@
 
 #include <Network/ServiceRegistrar.h>
 #include <Network/IChannel.h>
-#include <Network/NetEventsDispatcher.h>
+#include <Network/NetCore.h>
 #include "Tools/NetworkHelpers/Private/ServicesCreatorExecutor.h"
 
 namespace DAVA
 {
 namespace Net
 {
-/** ServiceCreatorAsync allows to pass call of ServiceCreator functor in another thread
+/** ServiceCreatorDispatched allows to pass call of ServiceCreator functor in another thread
 
-    ServiceDeleterAsync works in same manner.
+    ServiceDeleterDispatched works in same manner.
     
     Example:
 
-    NetEventsDispatcher dispatcher; // supposed that event will be placed in network thread and dispatched in user logic thread
+    Dispatcher<Function<void()>> dispatcher; // supposed that event will be placed in network thread and dispatched in user logic thread
 
     class A
     {
     public:
-        A() : serviceCreatorAsync(MakeFunction(this, &A::Creator), dispatcher) {}
+        A() : serviceCreatorDispatched(MakeFunction(this, &A::Creator), dispatcher) {}
 
         void InitNetwork()
         {
-            ServiceCreator creator = MakeFunction(&serviceCreatorAsync, &ServiceCreatorAsync::ServiceCreatorCall);
+            ServiceCreator creator = MakeFunction(&serviceCreatorDispatched, &ServiceCreatorDispatched::ServiceCreatorCall);
             ServiceDeleter deleter = MakeFunction(this, &A::Deleter); // old way: deleter will be invoked and executed in network thread
             Net::NetCore::Instance()->RegisterService(myServiceID, creator, deleter);
             ....
@@ -42,17 +42,17 @@ namespace Net
         }
 
     private:
-        ServiceCreatorAsync serviceCreatorAsync;
+        ServiceCreatorDispatched serviceCreatorDispatched;
     }
 */
-class ServiceCreatorAsync
+class ServiceCreatorDispatched
 {
 public:
-    explicit ServiceCreatorAsync(ServiceCreator serviceCreator, NetEventsDispatcher* dispatcher);
+    explicit ServiceCreatorDispatched(ServiceCreator serviceCreator, Dispatcher<Function<void()>>* dispatcher);
     IChannelListener* ServiceCreatorCall(uint32 serviceId, void* context);
 
 private:
-    NetEventsDispatcher* dispatcher = nullptr;
+    Dispatcher<Function<void()>>* dispatcher = nullptr;
     std::shared_ptr<ServiceCreatorExecutor> serviceCreatorExecutor;
 };
 }

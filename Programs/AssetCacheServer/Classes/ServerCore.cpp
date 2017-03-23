@@ -8,6 +8,8 @@
 
 ServerCore::ServerCore()
     : httpServer(DAVA::Net::NetCore::Instance()->Loop())
+    , serverProxy(DAVA::Net::NetCore::Instance()->GetNetEventsDispatcher())
+    , clientProxy(DAVA::Net::NetCore::Instance()->GetNetEventsDispatcher())
     , dataBase(*this)
     , state(State::STOPPED)
     , remoteState(RemoteState::STOPPED)
@@ -211,12 +213,7 @@ ServerCore::CompareResult ServerCore::CompareWithRemoteList(const DAVA::List<Rem
 void ServerCore::OnRefreshTimer()
 {
     serverLogics.Update();
-
-    auto netSystem = DAVA::Net::NetCore::Instance();
-    if (netSystem)
-    {
-        netSystem->ProcessPendingEvents();
-    }
+    DAVA::Net::NetCore::Instance()->Update();
 }
 
 void ServerCore::OnConnectTimeout()

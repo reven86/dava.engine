@@ -3,6 +3,8 @@
 #include "Tools/AssetCache/CachedItemValue.h"
 #include "Tools/AssetCache/CachePacket.h"
 
+#include "Tools/NetworkHelpers/ResolverCallbackDispatched.h"
+
 #include <FileSystem/KeyedArchive.h>
 #include <Debug/DVAssert.h>
 #include <Logger/Logger.h>
@@ -12,8 +14,9 @@ namespace DAVA
 {
 namespace AssetCache
 {
-ClientNetProxy::ClientNetProxy()
-    : addressResolver(Net::NetCore::Instance()->Loop(), Net::NetCore::Instance()->GetNetEventsDispatcher())
+ClientNetProxy::ClientNetProxy(Dispatcher<Function<void()>>* dispatcher)
+    : dispatcher(dispatcher)
+    , addressResolver(Net::NetCore::Instance()->Loop())
 {
     DVASSERT(nullptr != Net::NetCore::Instance());
 }
@@ -29,7 +32,8 @@ void ClientNetProxy::Connect(const String& ip, uint16 port)
     DVASSERT(nullptr == netClient);
     DVASSERT(nullptr == openedChannel);
 
-    addressResolver.AsyncResolve(ip.c_str(), port, MakeFunction(this, &ClientNetProxy::OnAddressResolved));
+    Net::ResolverCallbackDispatched resolverCallbackDispatched(dispatcher, MakeFunction(this, &ClientNetProxy::OnAddressResolved));
+    addressResolver.AsyncResolve(ip.c_str(), port, resolverCallbackDispatched);
 }
 
 void ClientNetProxy::Disconnect()
@@ -48,7 +52,7 @@ void ClientNetProxy::OnAddressResolved(const Net::Endpoint& endpoint, int32 stat
 
     if (0 == status)
     {
-        netClient = Connection::MakeConnection(Net::CLIENT_ROLE, endpoint, this);
+        netClient = Connection::MakeConnection(dispatcher, Net::CLIENT_ROLE, endpoint, this);
     }
     else
     {

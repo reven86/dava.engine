@@ -22,7 +22,7 @@ DeviceLogController::~DeviceLogController()
 
 void DeviceLogController::Init()
 {
-    channelListenerAsync.reset(new ChannelListenerAsync(shared_from_this(), NetCore::Instance()->GetNetEventsDispatcher()));
+    channelListenerDispatched.reset(new ChannelListenerDispatched(shared_from_this(), NetCore::Instance()->GetNetEventsDispatcher()));
 }
 
 void DeviceLogController::ShowView()

@@ -1,18 +1,18 @@
-#include "Tools/NetworkHelpers/ChannelListenerAsync.h"
-#include <Utils/SafeMemberFnCaller.h>
+#include "Tools/NetworkHelpers/ChannelListenerDispatched.h"
+#include "Tools/NetworkHelpers/SafeMemberFnCaller.h"
 #include <Functional/Function.h>
 
 namespace DAVA
 {
 namespace Net
 {
-ChannelListenerAsync::ChannelListenerAsync(std::weak_ptr<IChannelListener> listenerWeak, NetEventsDispatcher* netEventsDispatcher)
+ChannelListenerDispatched::ChannelListenerDispatched(std::weak_ptr<IChannelListener> listenerWeak, Dispatcher<Function<void()>>* netEventsDispatcher)
     : netEventsDispatcher(netEventsDispatcher)
     , targetObjectWeak(listenerWeak)
 {
 }
 
-void ChannelListenerAsync::OnChannelOpen(IChannel* channel)
+void ChannelListenerDispatched::OnChannelOpen(IChannel* channel)
 {
     Function<void(IChannelListener*)> targetFn(Bind(&IChannelListener::OnChannelOpen, std::placeholders::_1, channel));
     auto targetFnCaller = &SafeMemberFnCaller<IChannelListener>;
@@ -21,7 +21,7 @@ void ChannelListenerAsync::OnChannelOpen(IChannel* channel)
     netEventsDispatcher->PostEvent(msg);
 }
 
-void ChannelListenerAsync::OnChannelClosed(IChannel* channel, const char8* message)
+void ChannelListenerDispatched::OnChannelClosed(IChannel* channel, const char8* message)
 {
     Function<void(IChannelListener*)> targetFn(Bind(&IChannelListener::OnChannelClosed, std::placeholders::_1, channel, message));
     auto targetFnCaller = &SafeMemberFnCaller<IChannelListener>;
@@ -30,7 +30,7 @@ void ChannelListenerAsync::OnChannelClosed(IChannel* channel, const char8* messa
     netEventsDispatcher->PostEvent(msg);
 }
 
-void ChannelListenerAsync::OnPacketReceived(IChannel* channel, const void* buffer, size_t length)
+void ChannelListenerDispatched::OnPacketReceived(IChannel* channel, const void* buffer, size_t length)
 {
     Function<void(IChannelListener*)> targetFn(Bind(&IChannelListener::OnPacketReceived, std::placeholders::_1, channel, buffer, length));
     auto targetFnCaller = &SafeMemberFnCaller<IChannelListener>;
@@ -39,7 +39,7 @@ void ChannelListenerAsync::OnPacketReceived(IChannel* channel, const void* buffe
     netEventsDispatcher->PostEvent(msg);
 }
 
-void ChannelListenerAsync::OnPacketSent(IChannel* channel, const void* buffer, size_t length)
+void ChannelListenerDispatched::OnPacketSent(IChannel* channel, const void* buffer, size_t length)
 {
     Function<void(IChannelListener*)> targetFn(Bind(&IChannelListener::OnPacketSent, std::placeholders::_1, channel, buffer, length));
     auto targetFnCaller = &SafeMemberFnCaller<IChannelListener>;
@@ -48,7 +48,7 @@ void ChannelListenerAsync::OnPacketSent(IChannel* channel, const void* buffer, s
     netEventsDispatcher->PostEvent(msg);
 }
 
-void ChannelListenerAsync::OnPacketDelivered(IChannel* channel, uint32 packetId)
+void ChannelListenerDispatched::OnPacketDelivered(IChannel* channel, uint32 packetId)
 {
     Function<void(IChannelListener*)> targetFn(Bind(&IChannelListener::OnPacketDelivered, std::placeholders::_1, channel, packetId));
     auto targetFnCaller = &SafeMemberFnCaller<IChannelListener>;

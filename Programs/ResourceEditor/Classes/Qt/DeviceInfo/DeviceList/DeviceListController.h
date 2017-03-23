@@ -4,8 +4,8 @@
 #include <QPointer>
 #include <vector>
 
-#include <Tools/NetworkHelpers/ServiceCreatorAsync.h>
-#include <Tools/NetworkHelpers/ServiceDeleterAsync.h>
+#include <Tools/NetworkHelpers/ServiceCreatorDispatched.h>
+#include <Tools/NetworkHelpers/ServiceDeleterDispatched.h>
 
 #include <Network/NetCore.h>
 #include <Network/Base/Endpoint.h>
@@ -80,11 +80,11 @@ private:
     QPointer<QStandardItemModel> model;
     QPointer<DeviceListWidget> view;
 
-    DAVA::Net::ServiceCreatorAsync loggerServiceCreatorAsync;
-    DAVA::Net::ServiceDeleterAsync loggerServiceDeleterAsync;
+    DAVA::Net::ServiceCreatorDispatched loggerServiceCreatorAsync;
+    DAVA::Net::ServiceDeleterDispatched loggerServiceDeleterAsync;
 
-    DAVA::Net::ServiceCreatorAsync profilerServiceCreatorAsync;
-    DAVA::Net::ServiceDeleterAsync profilerServiceDeleterAsync;
+    DAVA::Net::ServiceCreatorDispatched profilerServiceCreatorAsync;
+    DAVA::Net::ServiceDeleterDispatched profilerServiceDeleterAsync;
 
 private:
     static QStandardItem* CreateDeviceItem(const DAVA::Net::Endpoint& endp, const DAVA::Net::PeerDescription& peerDescr);

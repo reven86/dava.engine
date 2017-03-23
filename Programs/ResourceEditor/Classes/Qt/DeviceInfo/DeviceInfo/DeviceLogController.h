@@ -3,7 +3,7 @@
 #include <QObject>
 #include <QPointer>
 
-#include <Tools/NetworkHelpers/ChannelListenerAsync.h>
+#include <Tools/NetworkHelpers/ChannelListenerDispatched.h>
 
 #include <Network/PeerDesription.h>
 #include <Network/NetService.h>
@@ -30,7 +30,7 @@ public:
 
     DAVA::Net::IChannelListener* GetAsyncChannelListener()
     {
-        return channelListenerAsync.get();
+        return channelListenerDispatched.get();
     }
 
 private:
@@ -40,5 +40,5 @@ private:
     QPointer<LogWidget> view;
     QPointer<QWidget> parentWidget;
     DAVA::Net::PeerDescription peer;
-    std::unique_ptr<DAVA::Net::ChannelListenerAsync> channelListenerAsync;
+    std::unique_ptr<DAVA::Net::ChannelListenerDispatched> channelListenerDispatched;
 };

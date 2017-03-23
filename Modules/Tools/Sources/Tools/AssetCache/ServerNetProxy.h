@@ -32,7 +32,7 @@ public:
 class ServerNetProxy final : public Net::IChannelListener
 {
 public:
-    ServerNetProxy() = default;
+    ServerNetProxy(Dispatcher<Function<void()>>*);
     ~ServerNetProxy();
 
     void SetListener(ServerNetProxyListener* delegate);
@@ -62,6 +62,7 @@ public:
     void OnPacketDelivered(Net::IChannel* channel, uint32 packetId) override{};
 
 private:
+    Dispatcher<Function<void()>>* dispatcher = nullptr;
     uint16 listenPort = 0;
     std::shared_ptr<Connection> netServer;
     ServerNetProxyListener* listener = nullptr;

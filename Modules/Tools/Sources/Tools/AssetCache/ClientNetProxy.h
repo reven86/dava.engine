@@ -37,7 +37,7 @@ public:
 class ClientNetProxy : public DAVA::Net::IChannelListener
 {
 public:
-    ClientNetProxy();
+    ClientNetProxy(Dispatcher<Function<void()>>*);
     ~ClientNetProxy();
 
     void AddListener(ClientNetProxyListener*);
@@ -75,7 +75,9 @@ public:
     void StateChanged();
 
 private:
+    Dispatcher<Function<void()>>* dispatcher = nullptr;
     Net::AddressResolver addressResolver;
+
     std::shared_ptr<Connection> netClient;
     DAVA::Net::IChannel* openedChannel = nullptr;
 

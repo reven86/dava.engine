@@ -1,17 +1,17 @@
-#include "Tools/NetworkHelpers/ServiceDeleterAsync.h"
-#include <Utils/SafeMemberFnCaller.h>
+#include "Tools/NetworkHelpers/ServiceDeleterDispatched.h"
+#include "Tools/NetworkHelpers/SafeMemberFnCaller.h"
 
 namespace DAVA
 {
 namespace Net
 {
-ServiceDeleterAsync::ServiceDeleterAsync(ServiceDeleter serviceDeleter, NetEventsDispatcher* dispatcher)
+ServiceDeleterDispatched::ServiceDeleterDispatched(ServiceDeleter serviceDeleter, Dispatcher<Function<void()>>* dispatcher)
     : serviceDeleterExecutor(new ServiceDeleterExecutor(serviceDeleter))
     , dispatcher(dispatcher)
 {
 }
 
-void ServiceDeleterAsync::ServiceDeleterCall(IChannelListener* obj, void* context)
+void ServiceDeleterDispatched::ServiceDeleterCall(IChannelListener* obj, void* context)
 {
     std::weak_ptr<ServiceDeleterExecutor> targetObjectWeak(serviceDeleterExecutor);
     Function<void(ServiceDeleterExecutor*)> targetFn(Bind(&ServiceDeleterExecutor::ServiceDeleterCall, std::placeholders::_1, obj, context));

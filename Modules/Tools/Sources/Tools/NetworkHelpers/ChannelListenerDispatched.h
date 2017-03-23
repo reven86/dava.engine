@@ -1,18 +1,18 @@
 #pragma once
 
 #include <Network/IChannel.h>
-#include <Network/NetEventsDispatcher.h>
+#include <Network/NetCore.h>
 
 namespace DAVA
 {
 namespace Net
 {
 /**
-    ChannelListenerAsync is proxy class that passes IChannelListener callbacks to any other thread.
+    ChannelListenerDispatched is proxy class that passes IChannelListener callbacks to any other thread.
     
-    ChannelListenerAsync uses NetEventsDispatcher for passing callbacks.
-    ChannelListenerAsync guarantees that callback will not be called if at the moment of executing
-    of that callback ChannelListenerAsync object is no more existing.
+    ChannelListenerDispatched uses Dispatcher<Function<void()>> for passing callbacks.
+    ChannelListenerDispatched guarantees that callback will not be called if at the moment of executing
+    of that callback ChannelListenerDispatched object is no more existing.
 
     Makes sense when running network in separate thread and willing to execute IChannelListener callbacks in other thread:
     in main thread, user thread etc.
@@ -29,16 +29,16 @@ namespace Net
         }
     }
 
-    NetEventsDispatcher dispatcher;
+    Dispatcher<Function<void()>> dispatcher;
     std::shared_ptr<IChannelListener> a(new A);
-    ChannelListenerAsync proxy(weak_ptr<IChannelListener>(a), dispatcher);
+    ChannelListenerDispatched proxy(weak_ptr<IChannelListener>(a), dispatcher);
 
     // say this function will be called when connection is established.
     // Nework will then be using IChannelListener* pointer to invoke callbacks
     // on each network event.
     IChannelListener* ServiceCreate(uint32 serviceId, void* context)
     {
-        return &proxy; // there we are passing pointer to ChannelListenerAsync object to network code.
+        return &proxy; // there we are passing pointer to ChannelListenerDispatched object to network code.
     }
 
     // somewhere in net thread
@@ -56,10 +56,10 @@ namespace Net
     }
     }
 */
-class ChannelListenerAsync : public IChannelListener
+class ChannelListenerDispatched : public IChannelListener
 {
 public:
-    explicit ChannelListenerAsync(std::weak_ptr<IChannelListener> targetChannelListener, NetEventsDispatcher* netEventsDispatcher);
+    explicit ChannelListenerDispatched(std::weak_ptr<IChannelListener> targetChannelListener, Dispatcher<Function<void()>>* netEventsDispatcher);
 
     void OnChannelOpen(IChannel* channel) override;
     void OnChannelClosed(IChannel* channel, const char8* message) override;
@@ -68,7 +68,7 @@ public:
     void OnPacketDelivered(IChannel* channel, uint32 packetId) override;
 
 private:
-    NetEventsDispatcher* netEventsDispatcher = nullptr;
+    Dispatcher<Function<void()>>* netEventsDispatcher = nullptr;
     std::weak_ptr<IChannelListener> targetObjectWeak;
 };
 }

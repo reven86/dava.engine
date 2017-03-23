@@ -26,7 +26,7 @@ MemProfController::MemProfController(const DAVA::Net::PeerDescription& peerDescr
     , profiledPeer(peerDescr)
     , netClient(new MMNetClient)
     , profilingSession(new ProfilingSession)
-    , channelListenerAsync(netClient, NetCore::Instance()->GetNetEventsDispatcher())
+    , channelListenerDispatched(netClient, NetCore::Instance()->GetNetEventsDispatcher())
 {
     ShowView();
     netClient->InstallCallbacks(MakeFunction(this, &MemProfController::NetConnEstablished),
@@ -42,7 +42,7 @@ MemProfController::MemProfController(const DAVA::FilePath& srcDir, QWidget* pare
     , parentWidget(parentWidget_)
     , netClient(new MMNetClient)
     , profilingSession(new ProfilingSession)
-    , channelListenerAsync(netClient, NetCore::Instance()->GetNetEventsDispatcher())
+    , channelListenerDispatched(netClient, NetCore::Instance()->GetNetEventsDispatcher())
 {
     if (profilingSession->LoadFromFile(srcDir))
     {
@@ -106,7 +106,7 @@ void MemProfController::ShowView()
 
 DAVA::Net::IChannelListener* MemProfController::GetAsyncChannelListener()
 {
-    return &channelListenerAsync;
+    return &channelListenerDispatched;
 }
 
 bool MemProfController::IsFileLoaded() const

@@ -1,17 +1,17 @@
-#include "Tools/NetworkHelpers/ServiceCreatorAsync.h"
-#include <Utils/SafeMemberFnCaller.h>
+#include "Tools/NetworkHelpers/ServiceCreatorDispatched.h"
+#include "Tools/NetworkHelpers/SafeMemberFnCaller.h"
 
 namespace DAVA
 {
 namespace Net
 {
-ServiceCreatorAsync::ServiceCreatorAsync(ServiceCreator serviceCreator, NetEventsDispatcher* dispatcher)
+ServiceCreatorDispatched::ServiceCreatorDispatched(ServiceCreator serviceCreator, Dispatcher<Function<void()>>* dispatcher)
     : dispatcher(dispatcher)
     , serviceCreatorExecutor(new ServiceCreatorExecutor(serviceCreator))
 {
 }
 
-IChannelListener* ServiceCreatorAsync::ServiceCreatorCall(uint32 serviceId, void* context)
+IChannelListener* ServiceCreatorDispatched::ServiceCreatorCall(uint32 serviceId, void* context)
 {
     std::weak_ptr<ServiceCreatorExecutor> targetObjectWeak(serviceCreatorExecutor);
     Function<void(ServiceCreatorExecutor*)> targetFn(Bind(&ServiceCreatorExecutor::ServiceCreatorCall, std::placeholders::_1, serviceId, context));

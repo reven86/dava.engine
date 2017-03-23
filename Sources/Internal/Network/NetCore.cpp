@@ -24,9 +24,9 @@ NetCore::NetCore(Engine* e)
     const KeyedArchive* options = e->GetOptions();
     useSeparateThread = options->GetBool("separate_net_thread", separateThreadDefaultValue);
 
-    sigUpdateId = e->update.Connect(this, &NetCore::DoUpdate);
+    sigUpdateId = e->update.Connect(this, &NetCore::Update);
 
-    netEventsDispatcher.reset(new NetEventsDispatcher([](const Function<void()>& fn) { fn(); }));
+    netEventsDispatcher.reset(new Dispatcher<Function<void()>>([](const Function<void()>& fn) { fn(); }));
     netEventsDispatcher->LinkToCurrentThread();
 
     if (useSeparateThread)
@@ -85,7 +85,7 @@ void NetCore::NetThreadHandler()
     SafeDelete(loop);
 }
 
-void NetCore::DoUpdate(float32)
+void NetCore::Update(float32)
 {
     ProcessPendingEvents();
     if (!useSeparateThread)
@@ -102,7 +102,7 @@ void NetCore::ProcessPendingEvents()
     }
 }
 
-NetEventsDispatcher* NetCore::GetNetEventsDispatcher()
+Dispatcher<Function<void()>>* NetCore::GetNetEventsDispatcher()
 {
     return netEventsDispatcher.get();
 }
@@ -204,7 +204,7 @@ void NetCore::WaitForDestroyed(IController* ctrl)
             }
         }
 
-        DoUpdate();
+        Update();
     }
 }
 
@@ -256,7 +256,7 @@ void NetCore::WaitForAllDestroyed()
                 break;
         }
 
-        DoUpdate();
+        Update();
     }
 }
 

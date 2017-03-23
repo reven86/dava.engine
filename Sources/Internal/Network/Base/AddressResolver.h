@@ -4,7 +4,7 @@
 #include "Base/Platform.h"
 #include "Functional/Function.h"
 #include "Network/Base/Endpoint.h"
-#include "Network/NetEventsDispatcher.h"
+#include "Network/NetCore.h"
 #include <libuv/uv.h>
 
 namespace DAVA
@@ -19,7 +19,7 @@ public:
     using ResolverCallbackFn = Function<void(const Endpoint&, int32)>;
 
 public:
-    explicit AddressResolver(IOLoop* loop, NetEventsDispatcher* netEventsDispatcher);
+    explicit AddressResolver(IOLoop* loop);
     ~AddressResolver();
 
     void AsyncResolve(const char8* address, uint16 port, ResolverCallbackFn cbk);
@@ -34,7 +34,6 @@ private:
 
 private:
     IOLoop* loop = nullptr;
-    NetEventsDispatcher* netEventsDispatcher = nullptr;
     Mutex handleMutex;
     uv_getaddrinfo_t* handle = nullptr;
     ResolverCallbackFn resolverCallbackFn = nullptr;

@@ -2,30 +2,30 @@
 
 #include <Network/ServiceRegistrar.h>
 #include <Network/IChannel.h>
-#include <Network/NetEventsDispatcher.h>
+#include <Network/NetCore.h>
 #include "Tools/NetworkHelpers/Private/ServicesDeleterExecutor.h"
 
 namespace DAVA
 {
 namespace Net
 {
-/** ServiceDeleterAsync allows to pass call of ServiceDeleter functor in another thread
+/** ServiceDeleterDispatched allows to pass call of ServiceDeleter functor in another thread
 
-    ServiceCreatorAsync works in same manner.
+    ServiceCreatorDispatched works in same manner.
 
     Example:
 
-    NetEventsDispatcher dispatcher; // supposed that event will be placed in network thread and dispatched in user logic thread
+    Dispatcher<Function<void()>> dispatcher; // supposed that event will be placed in network thread and dispatched in user logic thread
 
     class A
     {
     public:
-        A() : serviceDeleterAsync(MakeFunction(this, &A::Deleter), dispatcher) {}
+        A() : serviceDeleterDispatched(MakeFunction(this, &A::Deleter), dispatcher) {}
 
         void InitNetwork()
         {
         ServiceCreator creator = MakeFunction(this, &A::Creator); // old way: creator will be invoked and executed in network thread
-        ServiceDeleter deleter = MakeFunction(&serviceDeleterAsync, &ServiceDeleterAsync::ServiceDeleterCall);
+        ServiceDeleter deleter = MakeFunction(&serviceDeleterDispatched, &ServiceDeleterDispatched::ServiceDeleterCall);
         Net::NetCore::Instance()->RegisterService(myServiceID, creator, deleter);
         ....
         ....
@@ -42,18 +42,18 @@ namespace Net
         }
 
     private:
-        ServiceDeleterAsync serviceDeleterAsync;
+        ServiceDeleterDispatched serviceDeleterDispatched;
     }
 */
-class ServiceDeleterAsync
+class ServiceDeleterDispatched
 {
 public:
-    explicit ServiceDeleterAsync(ServiceDeleter serviceDeleter, NetEventsDispatcher* dispatcher);
+    explicit ServiceDeleterDispatched(ServiceDeleter serviceDeleter, Dispatcher<Function<void()>>* dispatcher);
     void ServiceDeleterCall(IChannelListener* obj, void* context);
 
 private:
     std::shared_ptr<ServiceDeleterExecutor> serviceDeleterExecutor;
-    NetEventsDispatcher* dispatcher = nullptr;
+    Dispatcher<Function<void()>>* dispatcher = nullptr;
 };
 }
 }

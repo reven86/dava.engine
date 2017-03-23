@@ -31,9 +31,15 @@ bool SendArchieve(Net::IChannel* channel, KeyedArchive* archieve)
     return channel->Send(packedData, packedSize, 0, &packedId);
 }
 
-std::shared_ptr<Connection> Connection::MakeConnection(Net::eNetworkRole role, const Net::Endpoint& endpoint, Net::IChannelListener* listener, Net::eTransportType transport, uint32 timeoutMs)
+std::shared_ptr<Connection> Connection::MakeConnection(
+Dispatcher<Function<void()>>* dispatcher,
+Net::eNetworkRole role,
+const Net::Endpoint& endpoint,
+Net::IChannelListener* listener,
+Net::eTransportType transport,
+uint32 timeoutMs)
 {
-    std::shared_ptr<Connection> connection(new Connection(role, endpoint, listener, transport, timeoutMs));
+    std::shared_ptr<Connection> connection(new Connection(dispatcher, role, endpoint, listener, transport, timeoutMs));
     bool res = connection->Connect(role, transport, timeoutMs);
     if (!res)
     {
@@ -42,8 +48,9 @@ std::shared_ptr<Connection> Connection::MakeConnection(Net::eNetworkRole role, c
     return connection;
 }
 
-Connection::Connection(Net::eNetworkRole _role, const Net::Endpoint& _endpoint, Net::IChannelListener* _listener, Net::eTransportType transport, uint32 timeoutMs)
-    : endpoint(_endpoint)
+Connection::Connection(Dispatcher<Function<void()>>* dispatcher, Net::eNetworkRole _role, const Net::Endpoint& _endpoint, Net::IChannelListener* _listener, Net::eTransportType transport, uint32 timeoutMs)
+    : dispatcher(dispatcher)
+    , endpoint(_endpoint)
     , listener(_listener)
 {
 }
@@ -59,7 +66,7 @@ Connection::~Connection()
 
 bool Connection::Connect(Net::eNetworkRole role, Net::eTransportType transport, uint32 timeoutMs)
 {
-    channelListenerAsync.reset(new Net::ChannelListenerAsync(shared_from_this(), Net::NetCore::Instance()->GetNetEventsDispatcher()));
+    channelListenerDispatched.reset(new Net::ChannelListenerDispatched(shared_from_this(), dispatcher));
 
     const auto serviceID = NET_SERVICE_ID;
 
@@ -77,7 +84,7 @@ bool Connection::Connect(Net::eNetworkRole role, Net::eTransportType transport, 
         config.AddTransport(transport, endpoint);
         config.AddService(serviceID);
 
-        controllerId = Net::NetCore::Instance()->CreateController(config, channelListenerAsync.get(), timeoutMs);
+        controllerId = Net::NetCore::Instance()->CreateController(config, channelListenerDispatched.get(), timeoutMs);
         if (Net::NetCore::INVALID_TRACK_ID != controllerId)
         {
             return true;

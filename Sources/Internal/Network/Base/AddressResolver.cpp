@@ -9,12 +9,10 @@ namespace DAVA
 {
 namespace Net
 {
-AddressResolver::AddressResolver(IOLoop* _loop, NetEventsDispatcher* netEventsDispatcher)
+AddressResolver::AddressResolver(IOLoop* _loop)
     : loop(_loop)
-    , netEventsDispatcher(netEventsDispatcher)
 {
     DVASSERT(nullptr != loop);
-    DVASSERT(netEventsDispatcher != nullptr);
 }
 
 AddressResolver::~AddressResolver()
@@ -63,10 +61,7 @@ void AddressResolver::DoAsyncResolve(const char8* address, uint16 port, Resolver
         }
 
         Logger::Error("Can't get addr info: %s", Net::ErrorToString(res));
-
-        auto cbkResolveFailed = Bind(cbk, Endpoint(), res);
-        netEventsDispatcher->PostEvent(cbkResolveFailed);
-
+        resolverCallbackFn(Endpoint(), res);
         return;
     }
 #endif
@@ -121,8 +116,7 @@ void AddressResolver::GotAddrInfo(int status, struct addrinfo* response)
         endpoint = Endpoint(response->ai_addr);
     }
 
-    auto cbk = Bind(resolverCallbackFn, endpoint, status);
-    netEventsDispatcher->PostEvent(cbk);
+    resolverCallbackFn(endpoint, status);
 }
 
 } // end of namespace Net

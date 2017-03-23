@@ -3,7 +3,7 @@
 #include <QObject>
 #include <QPointer>
 
-#include <Tools/NetworkHelpers/ChannelListenerAsync.h>
+#include <Tools/NetworkHelpers/ChannelListenerDispatched.h>
 
 #include <FileSystem/FilePath.h>
 #include <Network/PeerDesription.h>
@@ -81,7 +81,7 @@ private:
 
     DAVA::Net::PeerDescription profiledPeer;
     std::shared_ptr<DAVA::Net::MMNetClient> netClient;
-    DAVA::Net::ChannelListenerAsync channelListenerAsync;
+    DAVA::Net::ChannelListenerDispatched channelListenerDispatched;
     std::unique_ptr<ProfilingSession> profilingSession;
 };
 

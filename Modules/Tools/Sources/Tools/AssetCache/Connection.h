@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Tools/NetworkHelpers/ChannelListenerAsync.h"
+#include "Tools/NetworkHelpers/ChannelListenerDispatched.h"
 
 #include <Network/Base/Endpoint.h>
 #include <Network/NetworkCommon.h>
@@ -23,6 +23,7 @@ class Connection final : public Net::IChannelListener, public std::enable_shared
 {
 public:
     static std::shared_ptr<Connection> MakeConnection(
+    Dispatcher<Function<void()>>* dispatcher,
     Net::eNetworkRole role,
     const Net::Endpoint& endpoint,
     Net::IChannelListener* listener,
@@ -41,7 +42,7 @@ public:
     void OnPacketDelivered(Net::IChannel* channel, uint32 packetId) override;
 
 private:
-    Connection(Net::eNetworkRole role, const Net::Endpoint& endpoint, Net::IChannelListener* listener, Net::eTransportType transport, uint32 timeoutMs);
+    Connection(Dispatcher<Function<void()>>* dispatcher, Net::eNetworkRole role, const Net::Endpoint& endpoint, Net::IChannelListener* listener, Net::eTransportType transport, uint32 timeoutMs);
     bool Connect(Net::eNetworkRole _role, Net::eTransportType transport, uint32 timeoutMs);
     void DisconnectBlocked();
 
@@ -49,11 +50,13 @@ private:
     static void Delete(Net::IChannelListener* obj, void* context);
 
 private:
+    Dispatcher<Function<void()>>* dispatcher = nullptr;
+
     Net::Endpoint endpoint;
     Net::NetCore::TrackId controllerId = Net::NetCore::INVALID_TRACK_ID;
 
     Net::IChannelListener* listener = nullptr;
-    std::unique_ptr<Net::ChannelListenerAsync> channelListenerAsync;
+    std::unique_ptr<Net::ChannelListenerDispatched> channelListenerDispatched;
 };
 
 inline const Net::Endpoint& Connection::GetEndpoint() const

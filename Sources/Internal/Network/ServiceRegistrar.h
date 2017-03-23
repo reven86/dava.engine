@@ -2,7 +2,6 @@
 
 #include "Base/BaseTypes.h"
 #include "Functional/Function.h"
-#include "Network/NetEventsDispatcher.h"
 
 namespace DAVA
 {

@@ -31,8 +31,8 @@ DeviceListController::DeviceListController(QObject* parent)
     model = new QStandardItemModel(this);
 
     // Register network service for recieving logs from device
-    NetCore::Instance()->RegisterService(NetCore::SERVICE_LOG, MakeFunction(&loggerServiceCreatorAsync, &ServiceCreatorAsync::ServiceCreatorCall), MakeFunction(&loggerServiceDeleterAsync, &ServiceDeleterAsync::ServiceDeleterCall), "Logger");
-    NetCore::Instance()->RegisterService(NetCore::SERVICE_MEMPROF, MakeFunction(&profilerServiceCreatorAsync, &ServiceCreatorAsync::ServiceCreatorCall), MakeFunction(&profilerServiceDeleterAsync, &ServiceDeleterAsync::ServiceDeleterCall), "Memory profiler");
+    NetCore::Instance()->RegisterService(NetCore::SERVICE_LOG, MakeFunction(&loggerServiceCreatorAsync, &ServiceCreatorDispatched::ServiceCreatorCall), MakeFunction(&loggerServiceDeleterAsync, &ServiceDeleterDispatched::ServiceDeleterCall), "Logger");
+    NetCore::Instance()->RegisterService(NetCore::SERVICE_MEMPROF, MakeFunction(&profilerServiceCreatorAsync, &ServiceCreatorDispatched::ServiceCreatorCall), MakeFunction(&profilerServiceDeleterAsync, &ServiceDeleterDispatched::ServiceDeleterCall), "Memory profiler");
 
     // Create controller for discovering remote devices
     DAVA::Net::Endpoint endpoint(NetCore::defaultAnnounceMulticastGroup, NetCore::DEFAULT_UDP_ANNOUNCE_PORT);

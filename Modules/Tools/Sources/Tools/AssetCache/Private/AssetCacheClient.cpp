@@ -21,8 +21,11 @@ InspInfoRegistrator inspInfoRegistrator(AssetCacheClient::ConnectionParams::Type
 };
 
 AssetCacheClient::AssetCacheClient()
-    : isActive(false)
+    : dispatcher([](const Function<void()>& fn) { fn(); })
+    , client(&dispatcher)
+    , isActive(false)
 {
+    dispatcher.LinkToCurrentThread();
     client.AddListener(this);
 }
 
@@ -48,7 +51,7 @@ AssetCache::Error AssetCacheClient::ConnectSynchronously(const ConnectionParams&
         uint64 startTime = SystemTimer::GetMs();
         while (client.ChannelIsOpened() == false)
         {
-            ExecNetCallbacks();
+            ProcessNetwork();
             if (!isActive)
             {
                 return AssetCache::Error::CANNOT_CONNECT;
@@ -210,7 +213,7 @@ AssetCache::Error AssetCacheClient::WaitRequest(uint64 timeoutMs)
 
     while (currentRequest.recieved == false)
     {
-        ExecNetCallbacks();
+        ProcessNetwork();
 
         {
             LockGuard<Mutex> guard(requestLocker);
@@ -229,7 +232,7 @@ AssetCache::Error AssetCacheClient::WaitRequest(uint64 timeoutMs)
     {
         while (currentRequest.processingRequest)
         {
-            ExecNetCallbacks();
+            ProcessNetwork();
             LockGuard<Mutex> guard(requestLocker);
             currentRequest = request;
         }
@@ -398,9 +401,12 @@ bool AssetCacheClient::IsConnected() const
     return client.ChannelIsOpened();
 }
 
-void AssetCacheClient::ExecNetCallbacks()
+void AssetCacheClient::ProcessNetwork()
 {
-    Net::NetCore::Instance()->ProcessPendingEvents();
+    if (dispatcher.HasEvents())
+    {
+        dispatcher.ProcessEvents();
+    }
 }
 
 AssetCacheClient::ConnectionParams::ConnectionParams()

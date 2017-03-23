@@ -15,6 +15,11 @@ namespace AssetCache
 // timeout of waiting for response from client.
 const uint32 CLIENT_PING_TIMEOUT_MS = 1 * 1000;
 
+ServerNetProxy::ServerNetProxy(Dispatcher<Function<void()>>* dispatcher)
+    : dispatcher(dispatcher)
+{
+}
+
 ServerNetProxy::~ServerNetProxy()
 {
 }
@@ -24,7 +29,7 @@ void ServerNetProxy::Listen(uint16 port)
     listenPort = port;
     DVASSERT(!netServer);
 
-    netServer = Connection::MakeConnection(Net::SERVER_ROLE, Net::Endpoint(listenPort), this, Net::TRANSPORT_TCP, CLIENT_PING_TIMEOUT_MS);
+    netServer = Connection::MakeConnection(dispatcher, Net::SERVER_ROLE, Net::Endpoint(listenPort), this, Net::TRANSPORT_TCP, CLIENT_PING_TIMEOUT_MS);
 }
 
 void ServerNetProxy::Disconnect()
