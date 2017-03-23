@@ -1,4 +1,5 @@
 #include "Tests/WebViewTest.h"
+#include "UI/Update/UIUpdateComponent.h"
 
 using namespace DAVA;
 
@@ -16,6 +17,7 @@ WebViewTest::WebViewTest(TestBed& app)
     , bgStubPanel(nullptr)
     , updateWait(false)
 {
+    GetOrCreateComponent<UIUpdateComponent>();
 }
 
 void WebViewTest::LoadResources()
