@@ -99,7 +99,7 @@ void ErrorDialogOutput::Output(DAVA::Logger::eLogLevel ll, const DAVA::char8* te
 
     if (isJobStarted == false)
     {
-        DVASSERT(waitDialogConnectionToken.IsValid());
+        DVASSERT(!waitDialogConnectionToken.IsValid());
 
         isJobStarted = true;
         DelayedExecute(DAVA::MakeFunction(this, &ErrorDialogOutput::ShowErrorDialog));
@@ -112,7 +112,7 @@ void ErrorDialogOutput::ShowErrorDialog()
 
     if (globalOperations->IsWaitDialogVisible())
     {
-        DVASSERT(waitDialogConnectionToken.IsValid());
+        DVASSERT(!waitDialogConnectionToken.IsValid());
         waitDialogConnectionToken = globalOperations->waitDialogClosed.Connect(this, &ErrorDialogOutput::ShowErrorDialog);
         return;
     }
