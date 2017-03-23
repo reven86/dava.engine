@@ -34,6 +34,7 @@ struct FSMTest02
             if (dlcManager.IsInitialized())
             {
                 state = WaitSecondConnectAttempt;
+                DAVA::StopEmbeddedWebServer();
                 return false;
             }
         }
@@ -41,8 +42,20 @@ struct FSMTest02
         case WaitSecondConnectAttempt:
         {
             // TODO how to check second connect Attemp?
+            TEST_VERIFY(dlcManager.IsInitialized());
+
+            TEST_VERIFY(dlcManager.IsRequestingEnabled());
+
+            auto progress = dlcManager.GetProgress();
+            TEST_VERIFY(progress.alreadyDownloaded <= progress.total);
         }
         break;
+        }
+
+        if (time > 20.0f)
+        {
+            TEST_VERIFY(false && "time out wait second connection")
+            return true;
         }
 
         return time > 20.0f; // timeout
