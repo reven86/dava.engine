@@ -340,6 +340,8 @@ ENUM_DECLARE(UIComponent::eType)
     ENUM_ADD_DESCR(UIComponent::SCROLL_BAR_DELEGATE_COMPONENT, "ScrollBarDelegate");
     ENUM_ADD_DESCR(UIComponent::SOUND_COMPONENT, "Sound");
     ENUM_ADD_DESCR(UIComponent::SOUND_VALUE_FILTER_COMPONENT, "SoundValueFilter");
+    ENUM_ADD_DESCR(UIComponent::UPDATE_COMPONENT, "Update");
+    ENUM_ADD_DESCR(UIComponent::CUSTOM_UPDATE_DELTA_COMPONENT, "CustomDeltaUpdate");
 };
 
 ENUM_DECLARE(UISizePolicyComponent::eSizePolicy)
