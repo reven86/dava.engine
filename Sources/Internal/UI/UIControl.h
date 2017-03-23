@@ -872,6 +872,7 @@ public:
     virtual void InputCancelled(UIEvent* currentInput);
     /**
 	 \brief Calls on every frame with frame delata time parameter.
+            Works only with added UIUpdateComponent!
             Should be overriden to implement perframe functionality.
             Default realization is empty.
 	 \param[in] timeElapsed Current frame time delta.
