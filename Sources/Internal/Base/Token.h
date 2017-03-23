@@ -12,6 +12,7 @@ struct Token final
     bool IsValid() const;
 
     operator bool() const;
+    bool operator==(const Token&) const;
     bool operator<(const Token&) const;
 
 private:

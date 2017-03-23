@@ -427,6 +427,36 @@ DAVA_TESTCLASS (FunctionBindSignalTest)
         Signal<int> testSignal;
 
         {
+            TestObjA* obj = new TestObjA();
+
+            Token t1;
+            Token t2;
+            Token tinvalid;
+
+            TEST_VERIFY(!t1.IsValid());
+            TEST_VERIFY(!t1);
+            TEST_VERIFY(t1 == t2);
+
+            t1 = testSignal.Connect(obj, &TestObjA::Slot1);
+            t2 = testSignal.Connect(obj, &TestObjA::Slot1);
+
+            TEST_VERIFY(t1.IsValid());
+            TEST_VERIFY(t1);
+
+            TEST_VERIFY(t2.IsValid());
+            TEST_VERIFY(t2);
+
+            TEST_VERIFY(t1 != t2);
+
+            t1.Reset();
+            TEST_VERIFY(!t1.IsValid());
+            TEST_VERIFY(t1 == tinvalid);
+
+            testSignal.Disconnect(obj);
+            delete obj;
+        }
+
+        {
             TestObjA* objA = new TestObjA();
             int check_v = 0;
 

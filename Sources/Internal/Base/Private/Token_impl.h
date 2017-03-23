@@ -28,6 +28,11 @@ inline Token::operator bool() const
     return IsValid();
 }
 
+inline bool Token::operator==(const Token& t) const
+{
+    return t.tid == tid;
+}
+
 inline bool Token::operator<(const Token& t) const
 {
     return t.tid < tid;
