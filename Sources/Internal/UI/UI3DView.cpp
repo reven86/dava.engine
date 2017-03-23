@@ -9,6 +9,7 @@
 #include "Scene3D/Systems/Controller/RotationControllerSystem.h"
 #include "Scene3D/Systems/Controller/SnapToLandscapeControllerSystem.h"
 #include "Scene3D/Systems/Controller/WASDControllerSystem.h"
+#include "UI/Update/UIUpdateComponent.h"
 
 namespace DAVA
 {
@@ -20,6 +21,7 @@ UI3DView::UI3DView(const Rect& rect)
     , fbScaleFactor(1.f)
     , fbRenderSize()
 {
+    GetOrCreateComponent<UIUpdateComponent>();
 }
 
 UI3DView::~UI3DView()
@@ -247,6 +249,7 @@ void UI3DView::PrepareFrameBuffer()
 
 void UI3DView::OnVisible()
 {
+    UIControl::OnVisible();
     if (!registeredInUIControlSystem)
     {
         registeredInUIControlSystem = true;
@@ -261,5 +264,6 @@ void UI3DView::OnInvisible()
         registeredInUIControlSystem = false;
         UIControlSystem::Instance()->UI3DViewRemoved();
     }
+    UIControl::OnInvisible();
 }
 }

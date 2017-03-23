@@ -373,7 +373,10 @@ void EditorTransformSystem::ProcessDrag(const Vector2& pos)
 void EditorTransformSystem::MoveAllSelectedControlsByKeyboard(DAVA::Vector2 delta)
 {
     using namespace TArc;
-
+    if (nodesToMoveInfos.empty())
+    {
+        return;
+    }
     DVASSERT(delta.dx == 0.0f || delta.dy == 0.0f);
     Vector<EditorTransformSystemDetail::ChangePropertyAction> propertiesToChange;
     for (auto& nodeToMove : nodesToMoveInfos)
