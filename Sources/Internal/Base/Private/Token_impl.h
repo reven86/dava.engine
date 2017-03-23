@@ -33,6 +33,11 @@ inline bool Token::operator==(const Token& t) const
     return t.tid == tid;
 }
 
+inline bool Token::operator!=(const Token& t) const
+{
+    return t.tid != tid;
+}
+
 inline bool Token::operator<(const Token& t) const
 {
     return t.tid < tid;
