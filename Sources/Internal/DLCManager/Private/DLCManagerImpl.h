@@ -139,6 +139,8 @@ private:
     // helper functions
     void DeleteLocalMetaFiles();
     void ContinueInitialization(float frameDelta);
+
+    void SwapRequestsAndPointers(PackRequest* request, PackRequest* newRequest);
     PackRequest* AddDeleyedRequest(const String& requestedPackName);
     PackRequest* CreateNewRequest(const String& requestedPackName);
 

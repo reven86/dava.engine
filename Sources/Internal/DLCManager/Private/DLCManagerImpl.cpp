@@ -771,6 +771,19 @@ void DLCManagerImpl::LoadPacksDataFromMeta()
     initState = InitState::WaitScanThreadToFinish;
 }
 
+void DLCManagerImpl::SwapRequestsAndPointers(PackRequest* request, PackRequest* newRequest)
+{
+    requestManager->Remove(newRequest);
+
+    request->Swap(*newRequest);
+    delete newRequest;
+    auto it = find(begin(requests), end(requests), newRequest);
+    DVASSERT(it != end(requests));
+    *it = request;
+
+    requestManager->Push(request);
+}
+
 void DLCManagerImpl::StartDeleyedRequests()
 {
     //Logger::FrameworkDebug("pack manager mount_downloaded_packs");
@@ -785,17 +798,37 @@ void DLCManagerImpl::StartDeleyedRequests()
         scanThread = nullptr;
     }
 
-    for (auto request : delayedRequests)
+    // I want to create new requests then move its constent to old
+    // to save pointers for users, if user store pointer to IRequest
+    Vector<PackRequest*> tmpRequests;
+    delayedRequests.swap(tmpRequests);
+    // first remove old request pointers from requestManager
+    for (auto request : tmpRequests)
     {
-        const String& packName = request->GetRequestedPackName();
-        Vector<uint32> fileIndexes = meta->GetFileIndexes(packName);
-        request->SetFileIndexes(std::move(fileIndexes));
-
-        requests.push_back(request);
-        requestManager->Push(request);
+        requestManager->Remove(request);
     }
 
-    delayedRequests.clear();
+    for (auto request : tmpRequests)
+    {
+        const String& requestedPackName = request->GetRequestedPackName();
+        PackRequest* r = FindRequest(requestedPackName);
+
+        if (r == nullptr)
+        {
+            PackRequest* newRequest = CreateNewRequest(requestedPackName);
+            DVASSERT(newRequest != request);
+            DVASSERT(newRequest != nullptr);
+
+            SwapRequestsAndPointers(request, newRequest);
+        }
+        else
+        {
+            DVASSERT(r != request);
+            // if we come here, it means one of previous requests
+            // create it's dependencies and this is it
+            SwapRequestsAndPointers(request, r);
+        }
+    }
 
     initState = InitState::Ready;
 
