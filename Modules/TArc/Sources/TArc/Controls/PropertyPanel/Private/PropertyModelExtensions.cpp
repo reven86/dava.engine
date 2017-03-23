@@ -66,6 +66,8 @@ bool PropertyNode::operator!=(const PropertyNode& other) const
     field.key != field.key;
 }
 
+const int32 PropertyNode::InvalidSortKey = std::numeric_limits<int32>::max();
+
 ChildCreatorExtension::ChildCreatorExtension()
     : ExtensionChain(Type::Instance<ChildCreatorExtension>())
 {

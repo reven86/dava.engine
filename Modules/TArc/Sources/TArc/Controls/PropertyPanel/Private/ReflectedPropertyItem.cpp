@@ -66,9 +66,9 @@ void ReflectedPropertyItem::SetFavorited(bool isFavorited_)
     isFavorited = isFavorited_;
 }
 
-ReflectedPropertyItem* ReflectedPropertyItem::CreateChild(std::unique_ptr<BaseComponentValue>&& value, int32 childPosition, size_t sortKey)
+ReflectedPropertyItem* ReflectedPropertyItem::CreateChild(std::unique_ptr<BaseComponentValue>&& value, int32 childPosition, int32 sortKey)
 {
-    if (sortKey != static_cast<size_t>(-1))
+    if (sortKey != PropertyNode::InvalidSortKey)
     {
         for (size_t i = 0; i < children.size(); ++i)
         {

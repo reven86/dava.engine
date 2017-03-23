@@ -794,7 +794,7 @@ void ReflectedPropertyModel::RefreshFavoritesRoot()
         style.fontColor = QPalette::ButtonText;
         emptyComponentValue->SetStyle(style);
         emptyComponentValue->Init(this);
-        favoritesRoot = rootItem->CreateChild(std::move(emptyComponentValue), 0, 0);
+        favoritesRoot = rootItem->CreateChild(std::move(emptyComponentValue), 0, -2);
         favoritesRoot->SetFavorite(true);
 
         std::shared_ptr<PropertyNode> favoriteNode = std::make_shared<PropertyNode>();
@@ -928,7 +928,8 @@ ReflectedPropertyItem* ReflectedPropertyModel::CreateDeepCopy(ReflectedPropertyI
 {
     std::unique_ptr<BaseComponentValue> valueComponent = GetExtensionChain<EditorComponentExtension>()->GetEditor(itemToCopy->GetPropertyNode(0));
     valueComponent->Init(this);
-    ReflectedPropertyItem* copyItem = copyParent->CreateChild(std::move(valueComponent), static_cast<int32>(positionInParent), positionInParent);
+    int32 pos = static_cast<int32>(positionInParent);
+    ReflectedPropertyItem* copyItem = copyParent->CreateChild(std::move(valueComponent), pos, pos);
     for (int32 i = 0; i < itemToCopy->GetPropertyNodesCount(); ++i)
     {
         copyItem->AddPropertyNode(itemToCopy->GetPropertyNode(i));

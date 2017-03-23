@@ -40,7 +40,9 @@ public:
     int32 propertyType = Invalid; // it can be value from PropertyType or any value that you set in your extension
     Reflection::Field field;
     Any cachedValue;
-    size_t sortKey = static_cast<size_t>(-1);
+
+    static const int32 InvalidSortKey;
+    int32 sortKey = InvalidSortKey;
 };
 
 class IChildAllocator

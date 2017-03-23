@@ -96,7 +96,7 @@ std::shared_ptr<PropertyNode> DefaultAllocator::CreatePropertyNode(Reflection::F
     result->propertyType = type;
     result->field = std::move(field);
     result->cachedValue = value;
-    result->sortKey = static_cast<size_t>(-1);
+    result->sortKey = PropertyNode::InvalidSortKey;
 
     return result;
 }
