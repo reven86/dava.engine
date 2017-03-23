@@ -564,25 +564,35 @@ Any YamlNode::AsAny(const ReflectedStructure::Field* field) const
         }
         return Any(val).ReinterpretCast(type);
     }
-    else if (type == Type::Instance<bool>()->Decay())
+    else if (type == Type::Instance<bool>())
         return Any(AsBool());
-    else if (type == Type::Instance<int32>()->Decay())
+    else if (type == Type::Instance<int32>())
         return Any(AsInt32());
-    else if (type == Type::Instance<uint32>()->Decay())
+    else if (type == Type::Instance<uint32>())
         return Any(AsUInt32());
-    else if (type == Type::Instance<String>()->Decay())
-        return Any(AsString());
-    else if (type == Type::Instance<WideString>()->Decay())
-        return Any(AsWString());
-    else if (type == Type::Instance<float32>()->Decay())
+    else if (type == Type::Instance<int64>())
+        return Any(AsInt64());
+    else if (type == Type::Instance<uint64>())
+        return Any(AsUInt64());
+    else if (type == Type::Instance<float32>())
         return Any(AsFloat());
-    else if (type == Type::Instance<Vector2>()->Decay())
+    else if (type == Type::Instance<FastName>())
+        return Any(AsFastName());
+    else if (type == Type::Instance<String>())
+        return Any(AsString());
+    else if (type == Type::Instance<WideString>())
+        return Any(AsWString());
+    else if (type == Type::Instance<Vector2>())
         return Any(AsVector2());
-    else if (type == Type::Instance<Color>()->Decay())
-        return Any(AsColor());
-    else if (type == Type::Instance<Vector4>()->Decay())
+    else if (type == Type::Instance<Vector3>())
+        return Any(AsVector3());
+    else if (type == Type::Instance<Vector4>())
         return Any(AsVector4());
-    else if (type == Type::Instance<FilePath>()->Decay())
+    else if (type == Type::Instance<Color>())
+        return Any(AsColor());
+    else if (type == Type::Instance<Rect>())
+        return Any(AsRect());
+    else if (type == Type::Instance<FilePath>())
         return Any(FilePath(AsString()));
 
     DVASSERT(false);
@@ -626,25 +636,35 @@ Any YamlNode::AsAny(const Reflection& ref) const
         }
         return Any(val);
     }
-    else if (type == Type::Instance<bool>()->Decay())
+    else if (type == Type::Instance<bool>())
         return Any(AsBool());
-    else if (type == Type::Instance<int32>()->Decay())
+    else if (type == Type::Instance<int32>())
         return Any(AsInt32());
-    else if (type == Type::Instance<uint32>()->Decay())
+    else if (type == Type::Instance<uint32>())
         return Any(AsUInt32());
-    else if (type == Type::Instance<String>()->Decay())
-        return Any(AsString());
-    else if (type == Type::Instance<WideString>()->Decay())
-        return Any(AsWString());
-    else if (type == Type::Instance<float32>()->Decay())
+    else if (type == Type::Instance<int64>())
+        return Any(AsInt64());
+    else if (type == Type::Instance<uint64>())
+        return Any(AsUInt64());
+    else if (type == Type::Instance<float32>())
         return Any(AsFloat());
-    else if (type == Type::Instance<Vector2>()->Decay())
+    else if (type == Type::Instance<FastName>())
+        return Any(AsFastName());
+    else if (type == Type::Instance<String>())
+        return Any(AsString());
+    else if (type == Type::Instance<WideString>())
+        return Any(AsWString());
+    else if (type == Type::Instance<Vector2>())
         return Any(AsVector2());
-    else if (type == Type::Instance<Color>()->Decay())
-        return Any(AsColor());
-    else if (type == Type::Instance<Vector4>()->Decay())
+    else if (type == Type::Instance<Vector3>())
+        return Any(AsVector3());
+    else if (type == Type::Instance<Vector4>())
         return Any(AsVector4());
-    else if (type == Type::Instance<FilePath>()->Decay())
+    else if (type == Type::Instance<Color>())
+        return Any(AsColor());
+    else if (type == Type::Instance<Rect>())
+        return Any(AsRect());
+    else if (type == Type::Instance<FilePath>())
         return Any(FilePath(AsString()));
 
     DVASSERT(false);
