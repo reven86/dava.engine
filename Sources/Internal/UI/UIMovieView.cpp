@@ -1,4 +1,5 @@
 #include "UI/UIMovieView.h"
+#include "UI/UIControlSystem.h"
 
 #include "Engine/Engine.h"
 
@@ -25,6 +26,7 @@
 #endif
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Reflection/ReflectionRegistrator.h"
+#include "UI/Update/UIUpdateComponent.h"
 
 namespace DAVA
 {
@@ -46,6 +48,7 @@ UIMovieView::UIMovieView(const Rect& rect)
 {
     movieViewControl->Initialize(rect);
     UpdateControlRect();
+    GetOrCreateComponent<UIUpdateComponent>();
 }
 
 UIMovieView::~UIMovieView()

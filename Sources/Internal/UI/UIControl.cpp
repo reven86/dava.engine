@@ -85,6 +85,7 @@ UIControl::UIControl(const Rect& rect)
     , styleSheetInitialized(false)
     , layoutDirty(true)
     , layoutPositionDirty(true)
+    , isInputProcessed(false)
     , layoutOrderDirty(true)
     , family(nullptr)
     , parentWithContext(nullptr)
@@ -92,7 +93,7 @@ UIControl::UIControl(const Rect& rect)
     StartControlTracking(this);
 
     parent = NULL;
-    prevControlState = controlState = STATE_NORMAL;
+    controlState = STATE_NORMAL;
     visible = true;
 
     UpdateFamily();
@@ -298,7 +299,21 @@ UIControl* UIControl::FindByPath(const String& path)
 
 void UIControl::SetState(int32 state)
 {
-    controlState = state;
+    if (controlState != state)
+    {
+        controlState = state;
+        SetStyleSheetDirty();
+    }
+}
+
+void UIControl::AddState(int32 state)
+{
+    SetState(controlState | state);
+}
+
+void UIControl::RemoveState(int32 state)
+{
+    SetState(controlState & ~state);
 }
 
 Sprite* UIControl::GetSprite() const
@@ -619,14 +634,14 @@ void UIControl::SetDisabled(bool isDisabled, bool hierarchic /* = true*/)
 {
     if (isDisabled)
     {
-        controlState |= STATE_DISABLED;
+        AddState(STATE_DISABLED);
 
         // Cancel all inputs because of DF-2943.
         UIControlSystem::Instance()->CancelInputs(this);
     }
     else
     {
-        controlState &= ~STATE_DISABLED;
+        RemoveState(STATE_DISABLED);
     }
 
     if (hierarchic)
@@ -648,11 +663,11 @@ void UIControl::SetSelected(bool isSelected, bool hierarchic /* = true*/)
 {
     if (isSelected)
     {
-        controlState |= STATE_SELECTED;
+        AddState(STATE_SELECTED);
     }
     else
     {
-        controlState &= ~STATE_SELECTED;
+        RemoveState(STATE_SELECTED);
     }
 
     if (hierarchic)
@@ -680,7 +695,7 @@ void UIControl::AddControl(UIControl* control)
     control->Retain();
     control->RemoveFromParent();
 
-    control->isUpdated = false;
+    control->isInputProcessed = false;
     control->SetParent(this);
     children.push_back(control);
 
@@ -955,24 +970,17 @@ bool UIControl::IsVisible() const
 
 void UIControl::SystemUpdate(float32 timeElapsed)
 {
-    UIControlSystem::Instance()->updateCounter++;
-    Update(timeElapsed);
+    if ((GetAvailableComponentFlags() & MAKE_COMPONENT_MASK(UIComponent::UPDATE_COMPONENT)) != 0)
+    {
+        Update(timeElapsed);
+    }
+
     isUpdated = true;
     List<UIControl*>::iterator it = children.begin();
     for (; it != children.end(); ++it)
     {
         (*it)->isUpdated = false;
     }
-
-    if ((IsVisible() || styledProperties.test(UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetVisiblePropertyIndex()))
-        && (styleSheetDirty || (prevControlState != controlState)))
-    {
-        UIControlSystem::Instance()->GetStyleSheetSystem()->ProcessControl(this);
-        prevControlState = controlState;
-    }
-
-    UILayoutSystem* layoutSystem = UIControlSystem::Instance()->GetLayoutSystem();
-    layoutSystem->ProcessControl(this);
 
     it = children.begin();
     isIteratorCorrupted = false;
@@ -1204,8 +1212,8 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
         {
             if (multiInput || !currentInputID)
             {
-                controlState |= STATE_PRESSED_INSIDE;
-                controlState &= ~STATE_NORMAL;
+                AddState(STATE_PRESSED_INSIDE);
+                RemoveState(STATE_NORMAL);
                 ++touchesInside;
                 ++totalTouches;
                 currentInput->controlState = UIEvent::CONTROL_STATE_INSIDE;
@@ -1257,11 +1265,12 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
                             ++touchesInside;
                             if (touchesInside > 0)
                             {
-                                controlState |= STATE_PRESSED_INSIDE;
-                                controlState &= ~STATE_PRESSED_OUTSIDE;
+                                AddState(STATE_PRESSED_INSIDE
 #if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
-                                controlState |= STATE_HOVER;
+                                         | STATE_HOVER
 #endif
+                                         );
+                                RemoveState(STATE_PRESSED_OUTSIDE);
                             }
                         }
                     }
@@ -1273,8 +1282,8 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
                             --touchesInside;
                             if (touchesInside == 0)
                             {
-                                controlState |= STATE_PRESSED_OUTSIDE;
-                                controlState &= ~STATE_PRESSED_INSIDE;
+                                AddState(STATE_PRESSED_OUTSIDE);
+                                RemoveState(STATE_PRESSED_INSIDE);
                             }
                         }
                     }
@@ -1305,7 +1314,7 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
 #if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
                         if (totalTouches == 0)
                         {
-                            controlState |= STATE_HOVER;
+                            AddState(STATE_HOVER);
                         }
 #endif
                     }
@@ -1329,9 +1338,8 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
                             UIControlSystem::Instance()->GetInputSystem()->PerformActionOnControl(this);
                         }
 
-                        controlState &= ~STATE_PRESSED_INSIDE;
-                        controlState &= ~STATE_PRESSED_OUTSIDE;
-                        controlState |= STATE_NORMAL;
+                        AddState(STATE_NORMAL);
+                        RemoveState(STATE_PRESSED_INSIDE | STATE_PRESSED_OUTSIDE);
                         if (UIControlSystem::Instance()->GetExclusiveInputLocker() == this)
                         {
                             UIControlSystem::Instance()->SetExclusiveInputLocker(nullptr, -1);
@@ -1339,11 +1347,12 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
                     }
                     else if (touchesInside <= 0)
                     {
-                        controlState |= STATE_PRESSED_OUTSIDE;
-                        controlState &= ~STATE_PRESSED_INSIDE;
+                        AddState(STATE_PRESSED_OUTSIDE);
+                        RemoveState(STATE_PRESSED_INSIDE
 #if !defined(__DAVAENGINE_IPHONE__) && !defined(__DAVAENGINE_ANDROID__)
-                        controlState &= ~STATE_HOVER;
+                                    | STATE_HOVER
 #endif
+                                    );
                     }
                 }
             }
@@ -1367,7 +1376,7 @@ bool UIControl::SystemProcessInput(UIEvent* currentInput)
 bool UIControl::SystemInput(UIEvent* currentInput)
 {
     UIControlSystem::Instance()->inputCounter++;
-    isUpdated = true;
+    isInputProcessed = true;
 
     if (!GetVisibilityFlag())
         return false;
@@ -1384,7 +1393,7 @@ bool UIControl::SystemInput(UIEvent* currentInput)
         }
 
         std::for_each(begin(children), end(children), [](UIControl* c) {
-            c->isUpdated = false;
+            c->isInputProcessed = false;
         });
 
         List<UIControl*>::reverse_iterator it = children.rbegin();
@@ -1393,7 +1402,7 @@ bool UIControl::SystemInput(UIEvent* currentInput)
         {
             isIteratorCorrupted = false;
             UIControl* current = *it;
-            if (!current->isUpdated)
+            if (!current->isInputProcessed)
             {
                 current->Retain();
                 if (current->inputProcessorsCount > 0)
@@ -1430,9 +1439,8 @@ void UIControl::SystemInputCancelled(UIEvent* currentInput)
 
     if (touchesInside == 0)
     {
-        controlState &= ~STATE_PRESSED_INSIDE;
-        controlState &= ~STATE_PRESSED_OUTSIDE;
-        controlState |= STATE_NORMAL;
+        RemoveState(STATE_PRESSED_INSIDE | STATE_PRESSED_OUTSIDE);
+        AddState(STATE_NORMAL);
         if (UIControlSystem::Instance()->GetExclusiveInputLocker() == this)
         {
             UIControlSystem::Instance()->SetExclusiveInputLocker(NULL, -1);
@@ -1451,7 +1459,7 @@ void UIControl::SystemInputCancelled(UIEvent* currentInput)
 
 void UIControl::SystemDidSetHovered()
 {
-    controlState |= STATE_HOVER;
+    AddState(STATE_HOVER);
     PerformEventWithData(EVENT_HOVERED_SET, NULL);
     DidSetHovered();
 }
@@ -1459,7 +1467,7 @@ void UIControl::SystemDidSetHovered()
 void UIControl::SystemDidRemoveHovered()
 {
     PerformEventWithData(EVENT_HOVERED_REMOVED, NULL);
-    controlState &= ~STATE_HOVER;
+    RemoveState(STATE_HOVER);
     DidRemoveHovered();
 }
 
@@ -2340,6 +2348,7 @@ bool UIControl::IsStyleSheetDirty() const
 void UIControl::SetStyleSheetDirty()
 {
     styleSheetDirty = true;
+    UIControlSystem::Instance()->GetStyleSheetSystem()->SetDirty();
 }
 
 void UIControl::ResetStyleSheetDirty()
@@ -2347,14 +2356,10 @@ void UIControl::ResetStyleSheetDirty()
     styleSheetDirty = false;
 }
 
-bool UIControl::IsLayoutDirty() const
-{
-    return layoutDirty;
-}
-
 void UIControl::SetLayoutDirty()
 {
     layoutDirty = true;
+    UIControlSystem::Instance()->GetLayoutSystem()->SetDirty();
 }
 
 void UIControl::ResetLayoutDirty()
@@ -2364,24 +2369,15 @@ void UIControl::ResetLayoutDirty()
     layoutOrderDirty = false;
 }
 
-bool UIControl::IsLayoutPositionDirty() const
-{
-    return layoutPositionDirty;
-}
-
 void UIControl::SetLayoutPositionDirty()
 {
     layoutPositionDirty = true;
+    UIControlSystem::Instance()->GetLayoutSystem()->SetDirty();
 }
 
 void UIControl::ResetLayoutPositionDirty()
 {
     layoutPositionDirty = false;
-}
-
-bool UIControl::IsLayoutOrderDirty() const
-{
-    return layoutOrderDirty;
 }
 
 void UIControl::SetLayoutOrderDirty()

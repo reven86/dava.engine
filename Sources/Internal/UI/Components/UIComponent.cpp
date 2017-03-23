@@ -17,6 +17,9 @@
 #include "UI/Scroll/UIScrollBarDelegateComponent.h"
 #include "UI/Sound/UISoundComponent.h"
 #include "UI/Sound/UISoundValueFilterComponent.h"
+#include "UI/Update/UIUpdateComponent.h"
+#include "UI/Update/UICustomUpdateDeltaComponent.h"
+#include "Utils/StringFormat.h"
 
 namespace DAVA
 {
@@ -101,8 +104,14 @@ UIComponent* UIComponent::CreateByType(uint32 componentType)
     case SOUND_VALUE_FILTER_COMPONENT:
         return new UISoundValueFilterComponent();
 
+    case UPDATE_COMPONENT:
+        return new UIUpdateComponent();
+
+    case CUSTOM_UPDATE_DELTA_COMPONENT:
+        return new UICustomUpdateDeltaComponent();
+
     default:
-        DVASSERT(false);
+        DVASSERT(false, Format("Can't create component with type %d", componentType).c_str());
         return nullptr;
     }
 }

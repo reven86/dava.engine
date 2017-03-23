@@ -5,6 +5,8 @@
 #include "Scene3D/Systems/ParticleEffectSystem.h"
 #include "Render/Highlevel/RenderPassNames.h"
 #include "Reflection/ReflectionRegistrator.h"
+#include "UI/UIControlSystem.h"
+#include "UI/Update/UIUpdateComponent.h"
 
 namespace DAVA
 {
@@ -38,6 +40,7 @@ UIParticles::UIParticles(const Rect& rect)
         defaultCamera->RebuildCameraFromValues();
         defaultCamera->RebuildViewMatrix();
     }
+    GetOrCreateComponent<UIUpdateComponent>();
 }
 
 UIParticles::~UIParticles()

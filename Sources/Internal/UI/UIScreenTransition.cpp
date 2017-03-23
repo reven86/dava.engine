@@ -11,6 +11,7 @@
 #include "UI/UIScreenshoter.h"
 #include "Logger/Logger.h"
 #include "Reflection/ReflectionRegistrator.h"
+#include "UI/Update/UIUpdateComponent.h"
 
 namespace DAVA
 {
@@ -26,6 +27,7 @@ UIScreenTransition::UIScreenTransition()
 {
     interpolationFunc = Interpolation::GetFunction(Interpolation::EASY_IN_EASY_OUT);
     SetFillBorderOrder(UIScreen::FILL_BORDER_AFTER_DRAW);
+    GetOrCreateComponent<UIUpdateComponent>();
 }
 
 UIScreenTransition::~UIScreenTransition()

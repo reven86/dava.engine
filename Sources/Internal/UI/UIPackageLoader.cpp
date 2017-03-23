@@ -402,8 +402,10 @@ void UIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl* control, cons
 void UIPackageLoader::LoadComponentPropertiesFromYamlNode(UIControl* control, const YamlNode* node, AbstractUIPackageBuilder* builder)
 {
     Vector<ComponentNode> components = ExtractComponentNodes(node);
+    Vector<bool> processedComponents(UIComponent::COMPONENT_COUNT, false);
     for (ComponentNode& nodeDescr : components)
     {
+        processedComponents[nodeDescr.type] = true;
         UIComponent* component = builder->BeginComponentPropertiesSection(nodeDescr.type, nodeDescr.index);
         if (component)
         {
@@ -459,6 +461,14 @@ void UIPackageLoader::LoadComponentPropertiesFromYamlNode(UIControl* control, co
         }
 
         builder->EndComponentPropertiesSection();
+    }
+    for (uint32 i = 0; i < UIComponent::COMPONENT_COUNT; ++i)
+    {
+        if (!processedComponents[i] && control->GetComponentCount(i) > 0)
+        {
+            builder->BeginComponentPropertiesSection(i, 0);
+            builder->EndComponentPropertiesSection();
+        }
     }
 }
 
