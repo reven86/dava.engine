@@ -26,6 +26,8 @@ namespace TArc
 namespace PropertiesViewDetail
 {
 const char* SeparatorPositionKey = "SeparatorPosition";
+const int ToolBarHeight = 34;
+const int FavoritesStarSpaceWidth = 20;
 
 class PropertiesHeaderView : public QHeaderView
 {
@@ -38,7 +40,7 @@ public:
     void SetFavoritesEditMode(bool isActive)
     {
         isInFavoritesEdit = isActive;
-        setOffset(isInFavoritesEdit == true ? -20 : 0);
+        setOffset(isInFavoritesEdit == true ? -FavoritesStarSpaceWidth : 0);
     }
 
 protected:
@@ -126,15 +128,9 @@ protected:
         if (isInFavoritesEdit == true)
         {
             bool isFavotire = propertiesModel->IsFavorite(index);
-            QRect iconRect = QRect(options.rect.x(), options.rect.y(), 20, options.rect.height());
-            if (isFavotire == true)
-            {
-                SharedIcon(":/QtIcons/star.png").paint(painter, iconRect);
-            }
-            else
-            {
-                SharedIcon(":/QtIcons/star_empty.png").paint(painter, iconRect);
-            }
+            QRect iconRect = QRect(options.rect.x(), options.rect.y(), PropertiesViewDetail::FavoritesStarSpaceWidth, options.rect.height());
+            const char* iconPath = isFavotire == true ? ":/QtIcons/star.png" : ":/QtIcons/star_empty.png";
+            SharedIcon(iconPath).paint(painter, iconRect);
         }
     }
 
@@ -239,7 +235,7 @@ void PropertiesView::SetupUI()
     setLayout(layout);
 
     QToolBar* toolBar = new QToolBar(this);
-    toolBar->setFixedHeight(34);
+    toolBar->setFixedHeight(PropertiesViewDetail::ToolBarHeight);
     layout->addWidget(toolBar);
 
     view = new PropertiesTreeView(this);

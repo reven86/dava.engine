@@ -40,6 +40,7 @@ public:
     int32 propertyType = Invalid; // it can be value from PropertyType or any value that you set in your extension
     Reflection::Field field;
     Any cachedValue;
+    size_t sortKey = static_cast<size_t>(-1);
 };
 
 class IChildAllocator
@@ -139,19 +140,6 @@ public:
 
 protected:
     std::shared_ptr<IChildAllocator> allocator;
-};
-
-// This extension should implements custom rules of search ReflectedPropertyItem for some value.
-// As ReflectedPropertyItem is real item that user will see, in multi selection case we should make decision in which
-// ReflectedPropertyItem add current property.
-// Limitation - node.propertyInstance should be equal of item.property()
-// If your extension return nullptr, ReflectedPropertyModel will create new ReflectedPropertyItem for that.
-class MergeValuesExtension : public ExtensionChain
-{
-public:
-    MergeValuesExtension();
-    virtual ReflectedPropertyItem* LookUpItem(const std::shared_ptr<const PropertyNode>& node, const Vector<std::unique_ptr<ReflectedPropertyItem>>& items) const;
-    static std::shared_ptr<MergeValuesExtension> CreateDummy();
 };
 
 class EditorComponentExtension : public ExtensionChain

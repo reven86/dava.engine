@@ -90,6 +90,7 @@ private:
 
     template <typename T>
     std::shared_ptr<T> GetExtensionChain() const;
+    ReflectedPropertyItem* LookUpItem(const std::shared_ptr<PropertyNode>& node, const Vector<std::unique_ptr<ReflectedPropertyItem>>& children);
 
     DataWrappersProcessor* GetWrappersProcessor(const std::shared_ptr<PropertyNode>& node);
     void GetExpandedListImpl(QModelIndexList& list, ReflectedPropertyItem* item) const;
@@ -100,7 +101,7 @@ private:
 
 private:
     std::unique_ptr<ReflectedPropertyItem> rootItem;
-    ReflectedPropertyItem* favoritesItem = nullptr;
+    ReflectedPropertyItem* favoritesRoot = nullptr;
     UnorderedMap<std::shared_ptr<const PropertyNode>, ReflectedPropertyItem*> nodeToItem;
     UnorderedMap<ReflectedPropertyItem*, ReflectedPropertyItem*> favoriteToItem;
     UnorderedMap<ReflectedPropertyItem*, ReflectedPropertyItem*> itemToFavorite;
@@ -111,14 +112,14 @@ private:
     DataWrappersProcessor wrappersProcessor;
     DataWrappersProcessor fastWrappersProcessor;
     ReflectionPathTree expandedItems;
-    Vector<Vector<FastName>> favorites;
+    Vector<Vector<FastName>> favoritedPathes;
 
     WindowKey wndKey;
     ContextAccessor* accessor = nullptr;
     OperationInvoker* invoker = nullptr;
     UI* ui = nullptr;
 
-    bool isFavoriteOnly = false;
+    bool showFavoriteOnly = false;
     class InsertGuard;
     class RemoveGuard;
 };

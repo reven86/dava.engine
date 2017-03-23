@@ -40,6 +40,7 @@ private:
     friend class ReflectedPropertyModel;
     ReflectedPropertyItem(ReflectedPropertyModel* model, std::unique_ptr<BaseComponentValue>&& value);
     ReflectedPropertyItem(ReflectedPropertyModel* model, ReflectedPropertyItem* parent, int32 position, std::unique_ptr<BaseComponentValue>&& value);
+    ReflectedPropertyItem* CreateChild(std::unique_ptr<BaseComponentValue>&& value, int32 childPosition, size_t sortKey);
     ReflectedPropertyItem* CreateChild(std::unique_ptr<BaseComponentValue>&& value, int32 childPosition);
 
     int32 GetChildCount() const;
@@ -57,6 +58,7 @@ private:
     int32 position = 0;
     Vector<std::unique_ptr<ReflectedPropertyItem>> children;
     std::unique_ptr<BaseComponentValue> value;
+    size_t sortKey = static_cast<size_t>(-1);
 
     bool isFavorite = false;
     bool isFavorited = false;

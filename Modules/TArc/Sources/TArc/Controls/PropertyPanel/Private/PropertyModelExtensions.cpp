@@ -15,15 +15,6 @@ public:
     }
 };
 
-class DummyMerger : public MergeValuesExtension
-{
-public:
-    ReflectedPropertyItem* LookUpItem(const std::shared_ptr<const PropertyNode>& node, const Vector<std::unique_ptr<ReflectedPropertyItem>>& items) const override
-    {
-        return nullptr;
-    }
-};
-
 class DummyEditorComponent : public EditorComponentExtension
 {
 public:
@@ -93,21 +84,6 @@ std::shared_ptr<ChildCreatorExtension> ChildCreatorExtension::CreateDummy()
 void ChildCreatorExtension::SetAllocator(std::shared_ptr<IChildAllocator> allocator_)
 {
     allocator = allocator_;
-}
-
-MergeValuesExtension::MergeValuesExtension()
-    : ExtensionChain(Type::Instance<MergeValuesExtension>())
-{
-}
-
-ReflectedPropertyItem* MergeValuesExtension::LookUpItem(const std::shared_ptr<const PropertyNode>& node, const Vector<std::unique_ptr<ReflectedPropertyItem>>& items) const
-{
-    return GetNext<MergeValuesExtension>()->LookUpItem(node, items);
-}
-
-std::shared_ptr<MergeValuesExtension> MergeValuesExtension::CreateDummy()
-{
-    return std::make_shared<PMEDetails::DummyMerger>();
 }
 
 EditorComponentExtension::EditorComponentExtension()

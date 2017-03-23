@@ -271,7 +271,9 @@ void EntityChildCreator::ExposeChildren(const std::shared_ptr<const DAVA::TArc::
         parent->cachedValue.GetType() == DAVA::Type::Instance<DAVA::Entity*>())
     {
         DAVA::Reflection::Field f(Any("Entity"), Reflection(parent->field.ref), nullptr);
-        children.push_back(allocator->CreatePropertyNode(std::move(f), PropertyNode::GroupProperty));
+        std::shared_ptr<PropertyNode> entityNode = allocator->CreatePropertyNode(std::move(f), PropertyNode::GroupProperty);
+        entityNode->sortKey = 1; // zero sort key is for favorites root
+        children.push_back(entityNode);
 
         {
             DAVA::Reflection componentsField = f.ref.GetField(DAVA::Entity::componentFieldString);
@@ -283,14 +285,20 @@ void EntityChildCreator::ExposeChildren(const std::shared_ptr<const DAVA::TArc::
                                          {
                                              Any value = field.ref.GetValue();
                                              DAVA::Reflection::Field f(GetValueReflectedType(field.ref)->GetPermanentName(), Reflection(field.ref), nullptr);
-                                             children.push_back(allocator->CreatePropertyNode(std::move(f), PropertyNode::RealProperty));
+                                             std::shared_ptr<PropertyNode> node = allocator->CreatePropertyNode(std::move(f), PropertyNode::RealProperty);
+                                             DVASSERT(value.CanGet<Component*>());
+                                             Component* component = value.Get<Component*>();
+                                             node->sortKey = static_cast<size_t>(component->GetType() + 2);
+                                             children.push_back(node);
                                          }
                                      });
 
             Reflection::Field addComponentField;
             addComponentField.key = "Add Component";
             addComponentField.ref = parent->field.ref;
-            children.push_back(allocator->CreatePropertyNode(std::move(addComponentField), PropertyPanel::AddComponentProperty));
+            std::shared_ptr<PropertyNode> addComponentNode = allocator->CreatePropertyNode(std::move(addComponentField), PropertyPanel::AddComponentProperty);
+            addComponentNode->sortKey = static_cast<size_t>(-1) - 1;
+            children.push_back(addComponentNode);
         }
     }
     else if (parent->propertyType == PropertyNode::GroupProperty &&

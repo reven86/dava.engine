@@ -66,6 +66,26 @@ void ReflectedPropertyItem::SetFavorited(bool isFavorited_)
     isFavorited = isFavorited_;
 }
 
+ReflectedPropertyItem* ReflectedPropertyItem::CreateChild(std::unique_ptr<BaseComponentValue>&& value, int32 childPosition, size_t sortKey)
+{
+    if (sortKey != static_cast<size_t>(-1))
+    {
+        for (size_t i = 0; i < children.size(); ++i)
+        {
+            ReflectedPropertyItem* child = children[i].get();
+            if (sortKey < child->sortKey)
+            {
+                childPosition = static_cast<int32>(i);
+                break;
+            }
+        }
+    }
+
+    ReflectedPropertyItem* item = CreateChild(std::move(value), childPosition);
+    item->sortKey = sortKey;
+    return item;
+}
+
 ReflectedPropertyItem* ReflectedPropertyItem::CreateChild(std::unique_ptr<BaseComponentValue>&& value, int32 childPosition)
 {
     int32 position = static_cast<int32>(children.size());

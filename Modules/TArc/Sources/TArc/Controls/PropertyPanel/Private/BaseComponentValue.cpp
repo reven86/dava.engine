@@ -99,7 +99,7 @@ QString BaseComponentValue::GetPropertyName() const
 
 FastName BaseComponentValue::GetName() const
 {
-    return nodes.front()->field.key.Cast<FastName>();
+    return nodes.front()->field.key.Cast<FastName>(FastName(""));
 }
 
 int32 BaseComponentValue::GetPropertiesNodeCount() const
