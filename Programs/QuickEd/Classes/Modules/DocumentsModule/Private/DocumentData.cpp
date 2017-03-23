@@ -126,6 +126,7 @@ void DocumentData::RefreshLayout()
 void DocumentData::RefreshAllControlProperties()
 {
     package->GetPackageControlsNode()->RefreshControlProperties();
+    package->GetPrototypes()->RefreshControlProperties();
 }
 
 const char* DocumentData::packagePropertyName = "package";
