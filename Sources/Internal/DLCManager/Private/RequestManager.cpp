@@ -21,7 +21,7 @@ void RequestManager::Stop()
     PackRequest* request = Top();
     if (request != nullptr)
     {
-        request->Start();
+        request->Stop();
     }
 }
 
