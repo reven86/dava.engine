@@ -141,7 +141,7 @@ private:
     void ContinueInitialization(float frameDelta);
 
     void SwapRequestsAndPointers(PackRequest* request, PackRequest* newRequest);
-    PackRequest* AddDeleyedRequest(const String& requestedPackName);
+    PackRequest* AddDaleyedRequest(const String& requestedPackName);
     PackRequest* CreateNewRequest(const String& requestedPackName);
 
     void ClearResouces();

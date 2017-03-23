@@ -366,7 +366,7 @@ void DLCManagerImpl::ContinueInitialization(float frameDelta)
     }
 }
 
-PackRequest* DLCManagerImpl::AddDeleyedRequest(const String& requestedPackName)
+PackRequest* DLCManagerImpl::AddDaleyedRequest(const String& requestedPackName)
 {
     for (auto* request : delayedRequests)
     {
@@ -777,8 +777,10 @@ void DLCManagerImpl::SwapRequestsAndPointers(PackRequest* request, PackRequest* 
 
     request->Swap(*newRequest);
     delete newRequest;
+    // find old pointer and change it to correct one
     auto it = find(begin(requests), end(requests), newRequest);
     DVASSERT(it != end(requests));
+    // change old pointer (just deleted) to correct one
     *it = request;
 
     requestManager->Push(request);
@@ -894,7 +896,7 @@ const DLCManager::IRequest* DLCManagerImpl::RequestPack(const String& packName)
 
     if (!IsInitialized())
     {
-        PackRequest* request = AddDeleyedRequest(packName);
+        PackRequest* request = AddDaleyedRequest(packName);
         return request;
     }
 
