@@ -62,11 +62,6 @@ void MainWindow::ProjectView::SetProjectActionsEnabled(bool enabled)
     mainWindow->ui->fileSystemDockWidget->setEnabled(enabled);
 }
 
-MainWindow::DocumentGroupView* MainWindow::ProjectView::GetDocumentGroupView()
-{
-    return mainWindow->documentGroupView;
-}
-
 void MainWindow::ProjectView::InitPluginsToolBar()
 {
     InitLanguageBox();

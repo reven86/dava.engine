@@ -1,9 +1,11 @@
-#ifndef __UI_EDITOR_UI_PACKAGE_WIDGET__
-#define __UI_EDITOR_UI_PACKAGE_WIDGET__
+#pragma once
+
+#include "ui_PackageWidget.h"
 
 #include "EditorSystems/SelectionContainer.h"
-#include "Base/BaseTypes.h"
-#include "ui_PackageWidget.h"
+
+#include <Base/BaseTypes.h>
+
 #include <QWidget>
 #include <QDockWidget>
 #include <QModelIndex>
@@ -15,7 +17,7 @@ namespace DAVA
 class Any;
 }
 
-class Document;
+struct PackageContext;
 class ControlNode;
 class StyleSheetNode;
 class PackageNode;
@@ -37,13 +39,13 @@ public:
     using ExpandedIndexes = QModelIndexList;
 
     void OnSelectionChanged(const DAVA::Any& selection);
+    void OnPackageChanged(PackageContext* context, PackageNode* node);
 
 signals:
     void SelectedNodesChanged(const SelectedNodes& selection);
-    void CurrentIndexChanged(PackageBaseNode* node);
+    void CurrentIndexChanged(PackageBaseNode* package);
 
 public slots:
-    void OnDocumentChanged(Document* context);
     void OnCopy();
     void OnPaste();
     void OnCut();
@@ -72,9 +74,9 @@ private:
     QAction* CreateAction(const QString& name, void (PackageWidget::*callback)(void), const QKeySequence& sequence = QKeySequence());
     void CreateActions();
     void PlaceActions();
+    void RefreshActions();
     void LoadContext();
     void SaveContext();
-    void RefreshActions();
 
     void DeselectNodeImpl(PackageBaseNode* node);
     void SelectNodeImpl(PackageBaseNode* node);
@@ -86,7 +88,6 @@ private:
     ExpandedIndexes GetExpandedIndexes() const;
     void RestoreExpandedIndexes(const ExpandedIndexes& indexes);
 
-    Document* document = nullptr;
     QAction* importPackageAction = nullptr;
     QAction* copyAction = nullptr;
     QAction* pasteAction = nullptr;
@@ -109,6 +110,11 @@ private:
     //source indexes
     std::list<QPersistentModelIndex> currentIndexes;
     bool lastFilterTextEmpty = true;
+    PackageContext* currentContext = nullptr;
 };
 
-#endif // __UI_EDITOR_UI_PACKAGE_WIDGET__
+struct PackageContext
+{
+    PackageWidget::ExpandedIndexes expandedIndexes;
+    QString filterString;
+};

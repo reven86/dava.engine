@@ -1,10 +1,18 @@
-#ifndef __QUICKED_PACKAGE_MODEL_H__
-#define __QUICKED_PACKAGE_MODEL_H__
+#pragma once
+
+#include "EditorSystems/SelectionContainer.h"
+#include "Model/PackageHierarchy/PackageListener.h"
 
 #include <QAbstractItemModel>
 #include <QMimeData>
-#include "EditorSystems/SelectionContainer.h"
-#include "Model/PackageHierarchy/PackageListener.h"
+
+namespace DAVA
+{
+namespace TArc
+{
+class ContextAccessor;
+}
+}
 
 class AbstractProperty;
 class PackageNode;
@@ -21,10 +29,10 @@ class PackageModel : public QAbstractItemModel, PackageListener
     Q_OBJECT
 
 public:
-    PackageModel(QObject* parent = nullptr);
+    PackageModel(DAVA::TArc::ContextAccessor* accessor, QObject* parent = nullptr);
     ~PackageModel() override;
 
-    void Reset(PackageNode* package, QtModelPackageCommandExecutor* executor);
+    void Reset(PackageNode* package);
 
     QModelIndex indexByNode(PackageBaseNode* node) const;
 
@@ -74,7 +82,5 @@ private: // PackageListener
     int GetRowIndex(int row, const QModelIndex& parent) const;
 
     DAVA::RefPtr<PackageNode> package;
-    QtModelPackageCommandExecutor* commandExecutor = nullptr;
+    DAVA::TArc::ContextAccessor* accessor = nullptr;
 };
-
-#endif // __QUICKED_PACKAGE_MODEL_H__

@@ -1,5 +1,6 @@
 #pragma once
 
+#include "UI/Package/PackageWidget.h"
 #include "Modules/LegacySupportModule/Private/Project.h"
 #include "EditorSystems/SelectionContainer.h"
 
@@ -10,14 +11,12 @@
 #include <TArc/DataProcessing/DataListener.h>
 
 class Project;
-class Document;
 
 class LegacySupportModule : public DAVA::TArc::ClientModule, private DAVA::TArc::DataListener
 {
     void PostInit() override;
     void OnWindowClosed(const DAVA::TArc::WindowKey& key) override;
     void OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields) override;
-    void OnContextCreated(DAVA::TArc::DataContext* context) override;
 
     void InitMainWindow();
 
@@ -34,7 +33,7 @@ class LegacySupportModule : public DAVA::TArc::ClientModule, private DAVA::TArc:
     DAVA::TArc::DataWrapper projectDataWrapper;
     DAVA::TArc::DataWrapper documentDataWrapper;
     std::unique_ptr<Project> project;
-    DAVA::Map<DAVA::TArc::DataContext::ContextID, std::unique_ptr<Document>> documents;
+    DAVA::Map<PackageNode*, PackageContext> packageWidgetContexts;
 
     DAVA_VIRTUAL_REFLECTION(LegacySupportModule, DAVA::TArc::ClientModule);
 };

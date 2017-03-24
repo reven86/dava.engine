@@ -13,10 +13,6 @@
 namespace DAVA
 {
 class InspInfo;
-namespace TArc
-{
-class FieldBinder;
-}
 }
 
 class AbstractProperty;
@@ -87,8 +83,6 @@ protected:
     void initVariantType(DAVA::VariantType& var, const QVariant& val) const;
     void CleanUp();
 
-    void OnPackageChanged(const DAVA::Any& package);
-
     PackageBaseNode* nodeToReset = nullptr;
     ControlNode* controlNode = nullptr;
     StyleSheetNode* styleSheet = nullptr;
@@ -96,6 +90,4 @@ protected:
     DAVA::Set<DAVA::RefPtr<AbstractProperty>> changedProperties;
     ContinuousUpdater propertiesUpdater;
     ContinuousUpdater nodeUpdater;
-
-    std::unique_ptr<DAVA::TArc::FieldBinder> fieldBinder;
 };

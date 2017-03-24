@@ -1,6 +1,9 @@
 #pragma once
 
 #include "Model/PackageHierarchy/PackageListener.h"
+
+#include <Base/RefPtr.h>
+
 #include <memory>
 
 namespace DAVA
@@ -46,7 +49,7 @@ private:
 
     void StyleSheetsWereRebuilt() override;
 
-    PackageNode* package = nullptr;
+    DAVA::RefPtr<PackageNode> package = nullptr;
     PackageListener* listener;
     std::unique_ptr<DAVA::TArc::FieldBinder> fieldBinder;
 };

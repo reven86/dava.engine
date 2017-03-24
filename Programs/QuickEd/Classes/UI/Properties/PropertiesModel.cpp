@@ -16,8 +16,6 @@
 #include "QECommands/ChangePropertyValueCommand.h"
 #include "QECommands/ChangeStylePropertyCommand.h"
 
-#include <TArc/Core/FieldBinder.h>
-
 #include <QtTools/Utils/Themes/Themes.h>
 #include <QtTools/Utils/Utils.h>
 
@@ -35,17 +33,9 @@ PropertiesModel::PropertiesModel(QObject* parent)
     , propertiesUpdater(500)
     , nodeUpdater(300)
 {
-    using namespace TArc;
-
     propertiesUpdater.SetUpdater(MakeFunction(this, &PropertiesModel::UpdateAllChangedProperties));
     nodeUpdater.SetUpdater(MakeFunction(this, &PropertiesModel::ResetInternal));
     nodeUpdater.SetStopper([this]() { return nodeToReset == nullptr; });
-
-    fieldBinder.reset(new FieldBinder(QEGlobal::GetAccessor()));
-    FieldDescriptor fieldDescr;
-    fieldDescr.type = ReflectedTypeDB::Get<DocumentData>();
-    fieldDescr.fieldName = FastName(DocumentData::packagePropertyName);
-    fieldBinder->BindField(fieldDescr, MakeFunction(this, &PropertiesModel::OnPackageChanged));
 }
 
 PropertiesModel::~PropertiesModel()
@@ -636,9 +626,4 @@ void PropertiesModel::CleanUp()
     controlNode = nullptr;
     styleSheet = nullptr;
     rootProperty = nullptr;
-}
-
-void PropertiesModel::OnPackageChanged(const DAVA::Any& package)
-{
-    nodeUpdater.Abort();
 }
