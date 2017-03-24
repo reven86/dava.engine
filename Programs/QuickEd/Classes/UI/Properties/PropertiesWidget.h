@@ -24,6 +24,8 @@ class PropertiesWidget : public QDockWidget, public Ui::PropertiesWidget
     Q_OBJECT
 public:
     PropertiesWidget(QWidget* parent = nullptr);
+    ~PropertiesWidget();
+
     void SetProject(const Project* project);
 
 public slots:

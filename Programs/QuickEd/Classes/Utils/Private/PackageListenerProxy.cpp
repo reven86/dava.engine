@@ -21,6 +21,8 @@ PackageListenerProxy::PackageListenerProxy(PackageListener* listener_, DAVA::TAr
     fieldBinder->BindField(fieldDescr, MakeFunction(this, &PackageListenerProxy::OnPackageChanged));
 }
 
+PackageListenerProxy::~PackageListenerProxy() = default;
+
 void PackageListenerProxy::OnPackageChanged(const DAVA::Any& packageValue)
 {
     if (package)

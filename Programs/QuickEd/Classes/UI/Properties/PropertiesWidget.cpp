@@ -76,6 +76,8 @@ PropertiesWidget::PropertiesWidget(QWidget* parent)
     UpdateModel(nullptr);
 }
 
+PropertiesWidget::~PropertiesWidget() = default;
+
 void PropertiesWidget::SetProject(const Project* project)
 {
     propertiesItemsDelegate->SetProject(project);
