@@ -161,7 +161,7 @@ macro( generated_unity_sources SOURCE_FILES )
                 endforeach()
                 string(REPLACE ";" "\n" HEADERS_LIST "${HEADERS_LIST}" )            
                 math( EXPR index_pack "${index} + ${PACK_IDX}" )
-                set ( ${PTYPE}_NAME ${CMAKE_BINARY_DIR}/unity_pack/${PROJECT_NAME}_${index_pack}_${PTYPE}.${${PTYPE}_PACK_EXP} )
+                set ( ${PTYPE}_NAME ${CMAKE_CURRENT_BINARY_DIR}/unity_pack/${PROJECT_NAME}_${index_pack}_${PTYPE}.${${PTYPE}_PACK_EXP} )
                 
                 list( APPEND ${PTYPE}_PACK_LIST ${${PTYPE}_NAME} )
                 file( WRITE ${${PTYPE}_NAME} ${HEADERS_LIST})
