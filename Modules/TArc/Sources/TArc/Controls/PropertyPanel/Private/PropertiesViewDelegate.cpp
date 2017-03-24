@@ -37,12 +37,14 @@ void InitStyleOptions(QStyleOptionViewItem& options, BaseComponentValue* compone
 
     if (style.bgColor.IsEmpty() == false)
     {
-        options.backgroundBrush = style.bgColor.Cast<QColor>();
+        QPalette::ColorRole role = style.bgColor.Cast<QPalette::ColorRole>(QPalette::Base);
+        options.backgroundBrush = options.palette.brush(role);
     }
 
     if (style.fontColor.IsEmpty() == false)
     {
-        options.palette.setBrush(QPalette::Text, QBrush(style.fontColor.Cast<QColor>()));
+        QPalette::ColorRole role = style.fontColor.Cast<QPalette::ColorRole>(QPalette::Text);
+        options.palette.setBrush(QPalette::Text, options.palette.brush(role));
     }
 }
 }
@@ -182,8 +184,8 @@ BaseComponentValue* PropertiesViewDelegate::GetComponentValue(const QModelIndex&
 
 void PropertiesViewDelegate::AdjustEditorRect(QStyleOptionViewItem& opt) const
 {
-    opt.rect.setTop(opt.rect.top() + 2);
-    opt.rect.setHeight(opt.rect.height() - 2);
+    opt.rect.setTop(opt.rect.top() + 1);
+    opt.rect.setHeight(opt.rect.height() - 1);
 }
 
 bool PropertiesViewDelegate::UpdateSizeHints(int section, int newWidth)
