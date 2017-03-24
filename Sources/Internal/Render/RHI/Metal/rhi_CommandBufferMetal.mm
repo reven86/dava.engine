@@ -423,7 +423,6 @@ void SetRenderPassAttachments(MTLRenderPassDescriptor* desc, const RenderPassCon
 {
     bool usingMSAA = cfg.UsingMSAA();
 
-    DVASSERT(!usingMSAA);
     for (unsigned i = 0; i != countof(cfg.colorBuffer); ++i)
     {
         switch (cfg.colorBuffer[i].loadAction)
@@ -439,7 +438,7 @@ void SetRenderPassAttachments(MTLRenderPassDescriptor* desc, const RenderPassCon
         }
 
         desc.colorAttachments[i].storeAction = usingMSAA ? MTLStoreActionMultisampleResolve : MTLStoreActionStore;
-        ;
+
         desc.colorAttachments[i].clearColor = MTLClearColorMake(cfg.colorBuffer[i].clearColor[0], cfg.colorBuffer[i].clearColor[1], cfg.colorBuffer[i].clearColor[2], cfg.colorBuffer[i].clearColor[3]);
 
         if (cfg.colorBuffer[i].texture != InvalidHandle)
@@ -456,7 +455,19 @@ void SetRenderPassAttachments(MTLRenderPassDescriptor* desc, const RenderPassCon
         }
         else
         {
-            desc.colorAttachments[i].texture = _Metal_currentDrawable.texture;
+            if (usingMSAA)
+            {
+                if (i == 0)
+                {
+                    DVASSERT(cfg.colorBuffer[i].multisampleTexture != InvalidHandle);
+                    TextureMetal::SetAsRenderTarget(cfg.colorBuffer[i].multisampleTexture, desc);
+                    desc.colorAttachments[0].resolveTexture = _Metal_currentDrawable.texture;
+                }
+            }
+            else
+            {
+                desc.colorAttachments[i].texture = _Metal_currentDrawable.texture;
+            }
         }
 
         if (cfg.colorBuffer[i].texture == InvalidHandle)
