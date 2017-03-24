@@ -779,10 +779,12 @@ void MaterialEditor::commandExecuted(SceneEditor2* scene, const RECommandNotific
         materialPropertiesUpdater->Update();
     }
 
-    if (commandNotification.MatchCommandIDs({ CMDID_MATERIAL_CHANGE_CURRENT_CONFIG,
-                                              CMDID_MATERIAL_CREATE_CONFIG,
-                                              CMDID_MATERIAL_REMOVE_CONFIG,
-                                              CMDID_MATERIAL_APPLY_PRESET }))
+    if (commandNotification.MatchCommandIDs({
+        CMDID_MATERIAL_CHANGE_CURRENT_CONFIG,
+        CMDID_MATERIAL_CREATE_CONFIG,
+        CMDID_MATERIAL_REMOVE_CONFIG,
+        CMDID_MATERIAL_APPLY_PRESET
+        }))
     {
         RefreshMaterialProperties();
     }
