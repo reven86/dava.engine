@@ -14,14 +14,13 @@ void ReflectedTypeDB::RegisterDBType(ReflectedType* r)
     typeNameToReflectedTypeMap[String(r->type->GetName())] = r;
 }
 
-const ReflectedType* ReflectedTypeDB::GetByPointer(const void* ptr, const Type* type)
+const ReflectedType* ReflectedTypeDB::GetByPointer(const void* ptr, const Type* derefType)
 {
     DVASSERT(nullptr != ptr);
-    DVASSERT(nullptr != type);
-    DVASSERT(type->IsPointer());
+    DVASSERT(nullptr != derefType);
+    DVASSERT(!derefType->IsPointer());
 
-    type = type->Deref();
-    Type::SeedCastOP seedOP = type->GetSeedCastOP();
+    Type::SeedCastOP seedOP = derefType->GetSeedCastOP();
 
     if (nullptr != seedOP)
     {

@@ -77,8 +77,8 @@ Reflection StructureWrapperClass::GetField(const ReflectedObject& object, const 
 {
     if (!fieldsCache.empty())
     {
-        FastName name = key.Cast<FastName>(FastName());
-        if (name.IsValid())
+        ReflectedStructure::Key name = key.Cast<ReflectedStructure::Key>(ReflectedStructure::Key());
+        if (!name.empty())
         {
             auto it = fieldsNameIndexes.find(name);
             if (it != fieldsNameIndexes.end())
@@ -144,10 +144,14 @@ AnyFn StructureWrapperClass::GetMethod(const ReflectedObject& object, const Valu
     {
         void* this_ = vw->GetValueObject(object).GetVoidPtr();
 
-        auto it = methodsNameIndexes.find(name);
-        if (it != methodsNameIndexes.end())
+        ReflectedStructure::Key name = key.Cast<ReflectedStructure::Key>(ReflectedStructure::Key());
+        if (!name.empty())
         {
-            return methodsCache[it->second].method->fn.BindThis(this_);
+            auto it = methodsNameIndexes.find(name);
+            if (it != methodsNameIndexes.end())
+            {
+                return methodsCache[it->second].method->fn.BindThis(this_);
+            }
         }
     }
     return AnyFn();

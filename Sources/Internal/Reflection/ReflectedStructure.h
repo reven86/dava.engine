@@ -19,23 +19,25 @@ class DtorWrapper;
 class ReflectedStructure final
 {
 public:
+    using Key = FastName;
+
     struct Field
     {
-        FastName name;
+        Key name;
         std::unique_ptr<ValueWrapper> valueWrapper;
         std::unique_ptr<ReflectedMeta> meta;
     };
 
     struct Method
     {
-        FastName name;
+        Key name;
         AnyFn fn;
         std::unique_ptr<ReflectedMeta> meta;
     };
 
     struct Enum
     {
-        FastName name;
+        Key name;
         std::unique_ptr<EnumWrapper> enumWrapper;
     };
 

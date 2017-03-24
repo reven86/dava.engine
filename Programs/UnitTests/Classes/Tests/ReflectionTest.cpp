@@ -700,23 +700,35 @@ DAVA_TESTCLASS (ReflectionTest)
 
     DAVA_TEST (ReflectionAny)
     {
-        const DAVA::ReflectedType* rtype = DAVA::ReflectedTypeDB::Get<SimpleStruct>();
+        {
+            DAVA::String str = "Test Hello";
+            DAVA::Any anyStr(str);
+            DAVA::Reflection r = DAVA::Reflection::Create(anyStr);
+            TEST_VERIFY(r.GetValue().Get<String>() == str);
+        }
 
-        DAVA::Any anyByPtr = rtype->CreateObject(DAVA::ReflectedType::CreatePolicy::ByPointer);
-        DAVA::Any anyByValue = rtype->CreateObject(DAVA::ReflectedType::CreatePolicy::ByValue);
+        // reflect Any, create with Reflection::Ctor
+        {
+            const DAVA::ReflectedType* rtype = DAVA::ReflectedTypeDB::Get<SimpleStruct>();
 
-        DAVA::Reflection anyByPtrRef = DAVA::Reflection::Create(anyByPtr);
-        DAVA::Reflection anyByValueRef = DAVA::Reflection::Create(anyByValue);
+            DAVA::Any anyByPtr = rtype->CreateObject(DAVA::ReflectedType::CreatePolicy::ByPointer);
+            DAVA::Any anyByValue = rtype->CreateObject(DAVA::ReflectedType::CreatePolicy::ByValue);
 
-        std::ostringstream dumpOutput;
+            DAVA::Reflection anyByPtrRef = DAVA::Reflection::Create(anyByPtr);
+            DAVA::Reflection anyByValueRef = DAVA::Reflection::Create(anyByValue);
 
-        anyByPtrRef.Dump(dumpOutput);
-        DAVA::Logger::Info("%s", dumpOutput.str().c_str());
+            std::ostringstream dumpOutput;
 
-        dumpOutput.clear();
+            anyByPtrRef.Dump(dumpOutput);
+            DAVA::Logger::Info("%s", dumpOutput.str().c_str());
 
-        anyByValueRef.Dump(dumpOutput);
-        DAVA::Logger::Info("%s", dumpOutput.str().c_str());
+            dumpOutput.clear();
+
+            anyByValueRef.Dump(dumpOutput);
+            DAVA::Logger::Info("%s", dumpOutput.str().c_str());
+
+            rtype->Destroy(std::move(anyByPtr));
+        }
     }
 
     DAVA_TEST (ReflectionObject)
@@ -745,7 +757,7 @@ DAVA_TESTCLASS (ReflectionTest)
         DAVA::Reflection cr = r.GetField(0);
         Any val = cr.GetValue();
 
-        const ReflectedType* res = ReflectedTypeDB::GetByPointer(val.Get<void*>(), val.GetType());
+        const ReflectedType* res = ReflectedTypeDB::GetByPointer(val.Get<void*>(), val.GetType()->Deref());
         TEST_VERIFY(res->GetType() == Type::Instance<D>());
 
         delete v.back();
@@ -755,25 +767,24 @@ DAVA_TESTCLASS (ReflectionTest)
     {
         DAVA::Logger::Info("Begin ReflectionByFieldName:");
 
-        FastName fieldname("a");
-
+        FastName fieldname("StaticCustomPtrConstFn");
         for (size_t k = 0; k < 10; ++k)
         {
             size_t res = 0;
 
-            D* d = new D();
-            DAVA::Reflection r = DAVA::Reflection::Create(d);
+            ReflectionTestClass* rtc = new ReflectionTestClass();
+            DAVA::Reflection r = DAVA::Reflection::Create(rtc);
 
             int64 begin = DAVA::SystemTimer::GetMs();
             for (size_t i = 0; i < 10000000; ++i)
             {
                 DAVA::Reflection f = r.GetField(fieldname);
-                res += f.GetValue().Get<int>();
+                res += f.GetValue().Get<const SimpleStruct*>()->a;
             }
             int64 time = DAVA::SystemTimer::GetMs() - begin;
             DAVA::Logger::Info("%lld ms, res = %u", time, res);
 
-            delete d;
+            delete rtc;
 
             DAVA::Thread::Sleep(10);
         }

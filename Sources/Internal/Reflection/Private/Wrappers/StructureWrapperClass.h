@@ -43,8 +43,8 @@ private:
     const ReflectedType* rootType;
     Vector<CachedFieldEntry> fieldsCache;
     Vector<CachedMethodEntry> methodsCache;
-    UnorderedMap<FastName, size_t> fieldsNameIndexes;
-    UnorderedMap<FastName, size_t> methodsNameIndexes;
+    UnorderedMap<ReflectedStructure::Key, size_t> fieldsNameIndexes;
+    UnorderedMap<ReflectedStructure::Key, size_t> methodsNameIndexes;
 
     void FillCache(const ReflectedType* type);
     void FillCacheEntries(const ReflectedType* type);

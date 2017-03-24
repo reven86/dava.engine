@@ -146,11 +146,10 @@ public:
 
     void Dump(std::ostream& out, size_t deep = 0) const;
 
-    template <typename Meta>
-    bool HasMeta() const;
+    template <typename T>
+    const T* GetMeta() const;
 
-    template <typename Meta>
-    const Meta* GetMeta() const;
+    const void* GetMeta(const Type* metaType) const;
 
     template <typename T>
     static Reflection Create(T* objectPtr, const ReflectedMeta* objectMeta = nullptr);
@@ -196,9 +195,9 @@ struct Reflection::Field
 struct Reflection::Method
 {
     Method() = default;
-    Method(FastName, AnyFn&&);
+    Method(Any key, AnyFn&&);
 
-    FastName key;
+    Any key;
     AnyFn fn;
 };
 

@@ -11,8 +11,12 @@ namespace DAVA
 {
 inline ReflectedObject::ReflectedObject(void* ptr_, const ReflectedType* rtype_)
     : ptr(ptr_)
-    , reflectedType(ReflectedTypeDB::GetByPointer(ptr_, rtype_->GetType()->Pointer()))
+    , reflectedType(ReflectedTypeDB::GetByPointer(ptr_, rtype_->GetType()))
 {
+    if (nullptr == reflectedType)
+    {
+        reflectedType = rtype_;
+    }
 }
 
 template <typename T>

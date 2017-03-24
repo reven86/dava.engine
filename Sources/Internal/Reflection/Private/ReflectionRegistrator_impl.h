@@ -424,7 +424,7 @@ ReflectionRegistrator<C>& ReflectionRegistrator<C>::DestructorByPointer(void (*f
 template <typename C>
 ReflectionRegistrator<C>& ReflectionRegistrator<C>::AddField(const char* name, ReflectedStructure::Field* f)
 {
-    f->name = FastName(name);
+    f->name = ReflectedStructure::Key(name);
     lastMeta = &f->meta;
     structure->fields.emplace_back(f);
 
@@ -456,7 +456,7 @@ template <typename GetF, typename SetF>
 ReflectionRegistrator<C>& ReflectionRegistrator<C>::Field(const char* name, GetF getter, SetF setter)
 {
     ReflectedStructure::Field* f = ReflectionRegistratorDetail::RFCreator<C, GetF, SetF>::Create(getter, setter);
-    f->name = FastName(name);
+    f->name = ReflectedStructure::Key(name);
 
     lastMeta = &f->meta;
     structure->fields.emplace_back(f);
@@ -469,7 +469,7 @@ template <typename F>
 ReflectionRegistrator<C>& ReflectionRegistrator<C>::Method(const char* name, const F& fn)
 {
     ReflectedStructure::Method* m = new ReflectedStructure::Method();
-    m->name = FastName(name);
+    m->name = ReflectedStructure::Key(name);
     m->fn = AnyFn(fn);
 
     lastMeta = &m->meta;

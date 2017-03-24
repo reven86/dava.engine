@@ -34,10 +34,9 @@ public:
     ReflectedMeta(Meta<T, IndexT>&& meta);
 
     template <typename T>
-    bool HasMeta() const;
-
-    template <typename T>
     const T* GetMeta() const;
+
+    const void* GetMeta(const Type* metaType) const;
 
     template <typename T, typename IndexT>
     void Emplace(Meta<T, IndexT>&& meta);

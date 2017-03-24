@@ -5,60 +5,26 @@
 
 namespace DAVA
 {
-FastName::FastName()
-    : index(-1)
-{
-    // make sure FastNameDB exists
-    FastNameDB::Instance();
-
-#ifdef __DAVAENGINE_DEBUG__
-    debug_str_ptr = nullptr;
-#endif
-}
-
-FastName::FastName(const String& name)
-    : index(-1)
-{
-    Init(name.c_str());
-}
-
-FastName::FastName(const char* name)
-    : index(-1)
-{
-    Init(name);
-}
-
-FastName::FastName(const FastName& _name)
-{
-    index = _name.index;
-    
-#ifdef __DAVAENGINE_DEBUG__
-    debug_str_ptr = _name.debug_str_ptr;
-#endif
-
-    if (-1 != index)
-    {
-        AddRef(index);
-    }
-}
-
-FastName::~FastName()
-{
-    if (-1 != index)
-    {
-        RemRef(index);
-    }
-}
+FastNameDB* FastName::db;
 
 void FastName::Init(const char* name)
 {
+    static FastNameDB ddb;
+    static bool initialized = false;
+
+    if (!initialized)
+    {
+        db = &ddb;
+        initialized = true;
+    }
+
     DVASSERT(nullptr != name);
 
-    FastNameDB* db = FastNameDB::Instance();
-    LockGuard<Mutex> guard(FastNameDB::Instance()->dbMutex);
+    //FastNameDB* db = FastNameDB::Instance();
+    LockGuard<FastNameDB::DBMutexT> guard(db->dbMutex);
 
     // search if that name is already in hash
-    if (db->namesHash.count(name))
+    if (db->namesHash.find(name) != db->namesHash.end())
     {
         // already exist, so we just need to set the same index to this object
         index = db->namesHash[name];
@@ -92,20 +58,17 @@ void FastName::Init(const char* name)
         db->namesRefCounts[index] = 1;
 
         // add name and its index into hash
-        db->namesHash.insert(nameCopy, index);
+        db->namesHash.insert({ nameCopy, index });
     }
 
     DVASSERT(index != -1);
-#ifdef __DAVAENGINE_DEBUG__
-    debug_str_ptr = c_str();
-#endif
 }
 
 void FastName::AddRef(int32 i) const
 {
-    LockGuard<Mutex> guard(FastNameDB::Instance()->dbMutex);
+    LockGuard<FastNameDB::DBMutexT> guard(db->dbMutex);
 
-    FastNameDB* db = FastNameDB::Instance();
+    //FastNameDB* db = FastNameDB::Instance();
     DVASSERT(i >= -1 && i < static_cast<int32>(db->namesTable.size()));
     if (i >= 0)
     {
@@ -115,9 +78,8 @@ void FastName::AddRef(int32 i) const
 
 void FastName::RemRef(int32 i) const
 {
-    LockGuard<Mutex> guard(FastNameDB::Instance()->dbMutex);
+    LockGuard<FastNameDB::DBMutexT> guard(db->dbMutex);
 
-    FastNameDB* db = FastNameDB::Instance();
     DVASSERT(i >= -1 && i < static_cast<int32>(db->namesTable.size()));
     if (i >= 0)
     {

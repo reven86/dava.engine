@@ -4,7 +4,8 @@
 
 #include "Reflection/Reflection.h"
 #include "Reflection/ReflectedTypeDB.h"
-#include "Reflection/Private/Wrappers/ValueWrapperDirect.h"
+#include "Reflection/Private/Wrappers/ValueWrapperAny.h"
+#include "Reflection/Private/Wrappers/ValueWrapperObject.h"
 #include "Reflection/Private/Wrappers/StructureWrapperDefault.h"
 
 namespace DAVA
@@ -232,7 +233,8 @@ struct Dumper
                 // print hierarchy
                 PrintHierarhy(methodline, level + 1, hierarchyColWidth);
                 methodline << "{} ";
-                methodline << method.key.c_str() << "(";
+                DumpAny(methodline, method.key);
+                methodline << "(";
 
                 for (size_t i = 0; i < params.argsType.size(); ++i)
                 {
@@ -259,6 +261,7 @@ const Dumper::PrintersTable Dumper::valuePrinters = {
     { Type::Instance<float32>(), [](std::ostringstream& out, const Any& any) { out << any.Get<float32>(); } },
     { Type::Instance<float64>(), [](std::ostringstream& out, const Any& any) { out << any.Get<float64>(); } },
     { Type::Instance<String>(), [](std::ostringstream& out, const Any& any) { out << any.Get<String>().c_str(); } },
+    { Type::Instance<FastName>(), [](std::ostringstream& out, const Any& any) { out << any.Get<FastName>().c_str(); } },
     { Type::Instance<size_t>(), [](std::ostringstream& out, const Any& any) { out << any.Get<size_t>(); } },
     { Type::Instance<void>(), [](std::ostringstream& out, const Any& any) { out << "???"; } }
 };
@@ -284,22 +287,7 @@ Reflection::Reflection(const ReflectedObject& object_, const ValueWrapper* vw, c
         {
             structureWrapper = reflectedType->GetStrucutreWrapper();
         }
-
-        if (nullptr == meta && nullptr != reflectedType->GetStructure())
-        {
-            meta = reflectedType->GetStructure()->meta.get();
-        }
     }
-
-    /*
-    if (nullptr != objectMeta)
-    {
-        if (objectMeta->HasMeta<StructureWrapper>())
-        {
-            structureWrapper = objectMeta->GetMeta<StructureWrapper>();
-        }
-    }
-    */
 
     // in still no structureWrapper use empty one
     if (nullptr == structureWrapper)
@@ -369,12 +357,37 @@ void Reflection::Dump(std::ostream& out, size_t maxlevel) const
     ReflectedTypeDBDetail::Dumper::Dump(out, Reflection::Field(Any("this"), Reflection(*this), nullptr), 0, maxlevel);
 }
 
+const void* Reflection::GetMeta(const Type* metaType) const
+{
+    const void* ret = nullptr;
+
+    if (nullptr != meta)
+    {
+        ret = meta->GetMeta(metaType);
+    }
+
+    if (nullptr == ret)
+    {
+        const ReflectedType* reflectedType = valueWrapper->GetValueObject(object).GetReflectedType();
+        if (nullptr != reflectedType)
+        {
+            const ReflectedStructure* s = reflectedType->GetStructure();
+            if (nullptr != s)
+            {
+                ret = s->meta->GetMeta(metaType);
+            }
+        }
+    }
+
+    return ret;
+}
+
 Reflection Reflection::Create(const ReflectedObject& object, const ReflectedMeta* objectMeta)
 {
     if (object.IsValid())
     {
-        static ValueWrapperObject objectValueWrapper;
-        return Reflection(object, &objectValueWrapper, nullptr, objectMeta);
+        static ValueWrapperObject valueWrapperObject;
+        return Reflection(object, &valueWrapperObject, nullptr, objectMeta);
     }
 
     return Reflection();
@@ -382,7 +395,7 @@ Reflection Reflection::Create(const ReflectedObject& object, const ReflectedMeta
 
 Reflection Reflection::Create(const Any& any, const ReflectedMeta* objectMeta)
 {
-    static ValueWrapperDirect vw;
+    static ValueWrapperAny valueWrapperAny;
 
     if (!any.IsEmpty())
     {
@@ -393,18 +406,12 @@ Reflection Reflection::Create(const Any& any, const ReflectedMeta* objectMeta)
             if (nullptr != objectType)
             {
                 ReflectedObject object(any.Get<void*>(), objectType);
-                return Reflection(object, &vw, nullptr, objectMeta);
+                return Reflection::Create(object, objectMeta);
             }
         }
         else
         {
-            const ReflectedType* objectType = ReflectedTypeDB::GetByType(any.GetType());
-
-            if (nullptr != objectType)
-            {
-                ReflectedObject object(const_cast<void*>(any.GetData()), objectType);
-                return Reflection(object, &vw, nullptr, objectMeta);
-            }
+            return Reflection(ReflectedObject(&any), &valueWrapperAny, nullptr, objectMeta);
         }
     }
 
@@ -423,7 +430,7 @@ Reflection::Field::Field(Any&& key_, Reflection&& ref_, const ReflectedType* inh
 {
 }
 
-Reflection::Method::Method(FastName key_, AnyFn&& fn_)
+Reflection::Method::Method(Any key_, AnyFn&& fn_)
     : key(key_)
     , fn(fn_)
 {
