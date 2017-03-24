@@ -75,4 +75,3 @@ private:
 
     std::unique_ptr<DAVA::TArc::FieldBinder> fieldBinder;
 };
-

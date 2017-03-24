@@ -60,7 +60,6 @@ void LibraryWidget::OnProjectPathChanged(const DAVA::Any& projectPath)
         }
         libraryModel->SetProjectLibraries(projectData->GetPrototypes(), libraryPackages);
     }
-
 }
 
 void LibraryWidget::BindFields()
