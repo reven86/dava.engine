@@ -93,7 +93,7 @@ public:
             params.fields[FilePathEdit::Fields::Value] = "readOnlyValue";
             FilePathEdit* edit = new FilePathEdit(params, GetAccessor(), model);
             edit->SetObjectName("FilePathEdit_readOnlyValue");
-            layout->AddWidget(edit);
+            layout->AddControl(edit);
         }
 
         {
@@ -103,7 +103,7 @@ public:
             params.fields[FilePathEdit::Fields::Value] = "readOnlyMetaValue";
             FilePathEdit* edit = new FilePathEdit(params, GetAccessor(), model);
             edit->SetObjectName("FilePathEdit_readOnlyMetaValue");
-            layout->AddWidget(edit);
+            layout->AddControl(edit);
         }
 
         {
@@ -113,7 +113,7 @@ public:
             params.fields[FilePathEdit::Fields::Value] = "value";
             FilePathEdit* edit = new FilePathEdit(params, GetAccessor(), model);
             edit->SetObjectName("FilePathEdit_value");
-            layout->AddWidget(edit);
+            layout->AddControl(edit);
         }
 
         {
@@ -125,7 +125,7 @@ public:
             params.fields[FilePathEdit::Fields::IsReadOnly] = "isReadOnly";
             FilePathEdit* edit = new FilePathEdit(params, GetAccessor(), model);
             edit->SetObjectName("FilePathEdit_final");
-            layout->AddWidget(edit);
+            layout->AddControl(edit);
         }
 
         GetUI()->AddView(wndKey, PanelKey(QStringLiteral("FilePathEditPanel"), CentralPanelInfo()), centralWidget);

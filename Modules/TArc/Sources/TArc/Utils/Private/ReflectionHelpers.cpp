@@ -28,10 +28,19 @@ const DAVA::ReflectedType* GetValueReflectedType(const Reflection& r)
 
 const DAVA::ReflectedType* GetValueReflectedType(const Any& value)
 {
+    if (value.IsEmpty() == true)
+    {
+        return nullptr;
+    }
+
     const Type* type = value.GetType();
     if (type->IsPointer() && value.CanCast<ReflectionBase*>())
     {
-        return value.Cast<ReflectionBase*>()->Dava__GetReflectedType();
+        ReflectionBase* base = value.Cast<ReflectionBase*>();
+        if (base != nullptr)
+        {
+            return base->Dava__GetReflectedType();
+        }
     }
 
     return ReflectedTypeDB::GetByType(type);
