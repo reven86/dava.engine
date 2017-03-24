@@ -132,7 +132,7 @@ public:
             descriptor[ComboBox::Fields::Value] = "valueMeta";
             ComboBox* comboBox = new ComboBox(descriptor, GetAccessor(), reflectedModel);
             comboBox->SetObjectName("ComboBoxMeta");
-            layout->AddWidget(comboBox);
+            layout->AddControl(comboBox);
         }
 
         {
@@ -141,7 +141,7 @@ public:
             descriptor[ComboBox::Fields::Enumerator] = "enumeratorUnorderedMap";
             ComboBox* comboBox = new ComboBox(descriptor, GetAccessor(), reflectedModel);
             comboBox->SetObjectName("ComboBoxUnorderedMap");
-            layout->AddWidget(comboBox);
+            layout->AddControl(comboBox);
         }
 
         {
@@ -150,7 +150,7 @@ public:
             descriptor[ComboBox::Fields::Enumerator] = "enumeratorOrderedMap";
             ComboBox* comboBox = new ComboBox(descriptor, GetAccessor(), reflectedModel);
             comboBox->SetObjectName("ComboBoxOrderedMap");
-            layout->AddWidget(comboBox);
+            layout->AddControl(comboBox);
         }
 
         {
@@ -159,7 +159,7 @@ public:
             descriptor[ComboBox::Fields::Enumerator] = "enumeratorVector";
             ComboBox* comboBox = new ComboBox(descriptor, GetAccessor(), reflectedModel);
             comboBox->SetObjectName("ComboBoxVector");
-            layout->AddWidget(comboBox);
+            layout->AddControl(comboBox);
         }
 
         {
@@ -168,7 +168,7 @@ public:
             descriptor[ComboBox::Fields::Enumerator] = "enumeratorSet";
             ComboBox* comboBox = new ComboBox(descriptor, GetAccessor(), reflectedModel);
             comboBox->SetObjectName("ComboBoxSet");
-            layout->AddWidget(comboBox);
+            layout->AddControl(comboBox);
         }
 
         DAVA::TArc::PanelKey panelKey("ComboBoxTest", DAVA::TArc::CentralPanelInfo());
