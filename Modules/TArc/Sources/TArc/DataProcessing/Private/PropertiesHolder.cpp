@@ -171,40 +171,13 @@ QJsonValue ToValue(const T& value)
 {
     DVASSERT(false, "unsupported type: pointer");
     return QJsonValue();
-    QJsonValue PropertiesItem::Impl::ToValue(const Vector<FastName>& value)
-    {
-        QStringList stringList;
-        std::transform(value.begin(), value.end(), std::back_inserter(stringList), [](const FastName& string)
-                       {
-                           return QString(string.c_str());
-                       });
-        return stringList.join(PropertiesHolderDetails::stringListDelimiter);
 }
+
 template <typename T, typename std::enable_if<!std::is_pointer<T>::value, int>::type>
 QJsonValue ToValue(const T& value)
 {
     DVASSERT(false, "conversion between QJsonValue and T is not declared");
     return QJsonValue();
-}
-
-template <>
-Vector<FastName> PropertiesItem::Impl::FromValue(const QJsonValue& value, const Vector<FastName>& defaultValue)
-{
-    if (value.isString())
-    {
-        Vector<FastName> retVal;
-        QString stringValue = value.toString();
-        QStringList stringList = stringValue.split(PropertiesHolderDetails::stringListDelimiter, QString::SkipEmptyParts);
-        std::transform(stringList.begin(), stringList.end(), std::back_inserter(retVal), [](const QString& string)
-                       {
-                           return FastName(string.toStdString());
-                       });
-        return retVal;
-    }
-    else
-    {
-        return defaultValue;
-    }
 }
 
 void PropertiesHolder::Impl::SetDirectory(const FilePath& dirPath)
