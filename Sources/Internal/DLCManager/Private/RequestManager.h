@@ -25,6 +25,8 @@ public:
     void SetPriorityToRequest(PackRequest* request);
     void Remove(PackRequest* request);
 
+    void SwapPointers(PackRequest* newPointer, PackRequest* oldInvalidPointer);
+
 private:
     DLCManager& packManager;
     Vector<PackRequest*> requests;

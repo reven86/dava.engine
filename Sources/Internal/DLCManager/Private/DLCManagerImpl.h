@@ -135,13 +135,14 @@ private:
     void DeleteOldPacks();
     void LoadPacksDataFromMeta();
     void WaitScanThreadToFinish();
-    void StartDeleyedRequests();
+    void StartDelayedRequests();
     // helper functions
     void DeleteLocalMetaFiles();
     void ContinueInitialization(float frameDelta);
 
-    void SwapRequestsAndPointers(PackRequest* request, PackRequest* newRequest);
-    PackRequest* AddDaleyedRequest(const String& requestedPackName);
+    void SwapRequestAndUpdatePointers(PackRequest* request, PackRequest* newRequest);
+    void SwapPointers(PackRequest* userRequestObject, PackRequest* newRequestObject);
+    PackRequest* AddDelayedRequest(const String& requestedPackName);
     PackRequest* CreateNewRequest(const String& requestedPackName);
 
     void ClearResouces();

@@ -27,14 +27,16 @@ PackRequest::PackRequest(DLCManagerImpl& packManager_, const String& pack_, Vect
     SetFileIndexes(move(fileIndexes_));
 }
 
-void PackRequest::Swap(PackRequest& other)
+PackRequest& PackRequest::operator=(PackRequest&& other)
 {
-    std::swap(packManagerImpl, other.packManagerImpl);
-    requests.swap(other.requests);
-    fileIndexes.swap(other.fileIndexes);
-    requestedPackName.swap(other.requestedPackName);
-    std::swap(numOfDownloadedFile, other.numOfDownloadedFile);
-    std::swap(delayedRequest, other.delayedRequest);
+    packManagerImpl = std::move(other.packManagerImpl);
+    requests = std::move(other.requests);
+    fileIndexes = std::move(other.fileIndexes);
+    requestedPackName = std::move(other.requestedPackName);
+    numOfDownloadedFile = std::move(other.numOfDownloadedFile);
+    delayedRequest = std::move(other.delayedRequest);
+
+    return *this;
 }
 
 void PackRequest::CancelCurrentsDownloads()

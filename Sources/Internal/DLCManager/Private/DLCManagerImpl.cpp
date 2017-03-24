@@ -338,7 +338,7 @@ void DLCManagerImpl::ContinueInitialization(float frameDelta)
     }
     else if (InitState::MoveDeleyedRequestsToQueue == initState)
     {
-        StartDeleyedRequests();
+        StartDelayedRequests();
     }
     else if (InitState::Ready == initState)
     {
@@ -366,7 +366,7 @@ void DLCManagerImpl::ContinueInitialization(float frameDelta)
     }
 }
 
-PackRequest* DLCManagerImpl::AddDaleyedRequest(const String& requestedPackName)
+PackRequest* DLCManagerImpl::AddDelayedRequest(const String& requestedPackName)
 {
     for (auto* request : delayedRequests)
     {
@@ -771,22 +771,29 @@ void DLCManagerImpl::LoadPacksDataFromMeta()
     initState = InitState::WaitScanThreadToFinish;
 }
 
-void DLCManagerImpl::SwapRequestsAndPointers(PackRequest* request, PackRequest* newRequest)
+void DLCManagerImpl::SwapPointers(PackRequest* userRequestObject, PackRequest* invalidPointer)
 {
-    requestManager->Remove(newRequest);
-
-    request->Swap(*newRequest);
-    delete newRequest;
-    // find old pointer and change it to correct one
-    auto it = find(begin(requests), end(requests), newRequest);
+    auto it = find(begin(requests), end(requests), invalidPointer);
     DVASSERT(it != end(requests));
     // change old pointer (just deleted) to correct one
-    *it = request;
-
-    requestManager->Push(request);
+    *it = userRequestObject;
 }
 
-void DLCManagerImpl::StartDeleyedRequests()
+void DLCManagerImpl::SwapRequestAndUpdatePointers(PackRequest* userRequestObject, PackRequest* newRequestObject)
+{
+    // We want to give user same pointer, so we need move(swap) old object
+    // with new object value
+    *userRequestObject = std::move(*newRequestObject);
+    delete newRequestObject; // now this pointer is invalid!
+    PackRequest* invalidPointer = newRequestObject;
+    // so we have to update all referencies to new swaped pointer value
+    // find new pointer and change it to correct one
+    SwapPointers(userRequestObject, invalidPointer);
+
+    requestManager->SwapPointers(userRequestObject, invalidPointer);
+}
+
+void DLCManagerImpl::StartDelayedRequests()
 {
     //Logger::FrameworkDebug("pack manager mount_downloaded_packs");
     if (scanThread != nullptr)
@@ -821,14 +828,14 @@ void DLCManagerImpl::StartDeleyedRequests()
             DVASSERT(newRequest != request);
             DVASSERT(newRequest != nullptr);
 
-            SwapRequestsAndPointers(request, newRequest);
+            SwapRequestAndUpdatePointers(request, newRequest);
         }
         else
         {
             DVASSERT(r != request);
             // if we come here, it means one of previous requests
             // create it's dependencies and this is it
-            SwapRequestsAndPointers(request, r);
+            SwapRequestAndUpdatePointers(request, r);
         }
     }
 
@@ -896,7 +903,7 @@ const DLCManager::IRequest* DLCManagerImpl::RequestPack(const String& packName)
 
     if (!IsInitialized())
     {
-        PackRequest* request = AddDaleyedRequest(packName);
+        PackRequest* request = AddDelayedRequest(packName);
         return request;
     }
 

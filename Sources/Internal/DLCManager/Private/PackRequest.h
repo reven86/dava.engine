@@ -41,7 +41,7 @@ public:
 
     bool IsDelayed() const;
 
-    void Swap(PackRequest& other);
+    PackRequest& operator=(PackRequest&& other);
 
 private:
     void InitializeFileRequests();
