@@ -54,7 +54,7 @@ DAVA_TARC_TESTCLASS(QtWrapLayoutTests)
             DAVA::TArc::ControlDescriptorBuilder<DAVA::TArc::LineEdit::Fields> descriptor;
             descriptor[DAVA::TArc::LineEdit::Fields::Text] = "text";
             DAVA::TArc::LineEdit* lineEdit = new DAVA::TArc::LineEdit(descriptor, GetAccessor(), r);
-            box->AddWidget(lineEdit);
+            box->AddControl(lineEdit);
             box->setObjectName("boxX");
 
             layout->AddLayout(box);
@@ -68,7 +68,7 @@ DAVA_TARC_TESTCLASS(QtWrapLayoutTests)
             DAVA::TArc::ControlDescriptorBuilder<DAVA::TArc::LineEdit::Fields> descriptor;
             descriptor[DAVA::TArc::LineEdit::Fields::Text] = "text";
             DAVA::TArc::LineEdit* lineEdit = new DAVA::TArc::LineEdit(descriptor, GetAccessor(), r);
-            box->AddWidget(lineEdit);
+            box->AddControl(lineEdit);
             box->setObjectName("boxY");
 
             layout->AddLayout(box);
@@ -82,7 +82,7 @@ DAVA_TARC_TESTCLASS(QtWrapLayoutTests)
             DAVA::TArc::ControlDescriptorBuilder<DAVA::TArc::LineEdit::Fields> descriptor;
             descriptor[DAVA::TArc::LineEdit::Fields::Text] = "text";
             DAVA::TArc::LineEdit* lineEdit = new DAVA::TArc::LineEdit(descriptor, GetAccessor(), r);
-            box->AddWidget(lineEdit);
+            box->AddControl(lineEdit);
             box->setObjectName("boxZ");
 
             layout->AddLayout(box);
@@ -96,7 +96,7 @@ DAVA_TARC_TESTCLASS(QtWrapLayoutTests)
             DAVA::TArc::ControlDescriptorBuilder<DAVA::TArc::LineEdit::Fields> descriptor;
             descriptor[DAVA::TArc::LineEdit::Fields::Text] = "text";
             DAVA::TArc::LineEdit* lineEdit = new DAVA::TArc::LineEdit(descriptor, GetAccessor(), r);
-            box->AddWidget(lineEdit);
+            box->AddControl(lineEdit);
             box->setObjectName("boxW");
 
             layout->AddLayout(box);

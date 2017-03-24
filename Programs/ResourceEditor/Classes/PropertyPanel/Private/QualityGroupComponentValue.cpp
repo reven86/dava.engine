@@ -38,7 +38,7 @@ public:
             filterCheckBoxDescr[CheckBox::Fields::Checked] = "filterByType";
             filterCheckBoxDescr[CheckBox::Fields::IsReadOnly] = BaseComponentValue::readOnlyFieldName;
             CheckBox* filterByTypeEditor = new CheckBox(filterCheckBoxDescr, wrappersProcessor, model, this);
-            filterLayout->AddWidget(filterByTypeEditor);
+            filterLayout->AddControl(filterByTypeEditor);
             subControls.push_back(filterByTypeEditor);
 
             ControlDescriptorBuilder<ComboBox::Fields> modelTypesDescr;
@@ -49,7 +49,7 @@ public:
             QSizePolicy policy = modelTypeEditor->ToWidgetCast()->sizePolicy();
             policy.setHorizontalPolicy(QSizePolicy::Expanding);
             modelTypeEditor->ToWidgetCast()->setSizePolicy(policy);
-            filterLayout->AddWidget(modelTypeEditor);
+            filterLayout->AddControl(modelTypeEditor);
             subControls.push_back(modelTypeEditor);
 
             layout->addLayout(filterLayout);
@@ -69,7 +69,7 @@ public:
             groupDescr[ComboBox::Fields::Enumerator] = "groups";
             groupDescr[ComboBox::Fields::IsReadOnly] = "isGroupReadOnly";
             ComboBox* groupComboBox = new ComboBox(groupDescr, wrappersProcessor, model, this);
-            groupLayout->AddWidget(groupComboBox, 1);
+            groupLayout->AddControl(groupComboBox, 1);
             subControls.push_back(groupComboBox);
 
             groupQualityLayout->addLayout(groupLayout);
@@ -85,7 +85,7 @@ public:
             qualityDescr[ComboBox::Fields::Enumerator] = "qualities";
             qualityDescr[ComboBox::Fields::IsReadOnly] = "isQualityReadOnly";
             ComboBox* qualityComboBox = new ComboBox(qualityDescr, wrappersProcessor, model, this);
-            qualityLayout->AddWidget(qualityComboBox, 1);
+            qualityLayout->AddControl(qualityComboBox, 1);
             subControls.push_back(qualityComboBox);
 
             groupQualityLayout->addLayout(qualityLayout);
