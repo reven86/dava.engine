@@ -28,7 +28,7 @@ class NetConfig;
     should be passed to Engine.
 
     Example:
-
+        \code
         Vector<String> modules = { "NetCore" };
 
         KeyedArchive* options = new KeyedArchive;
@@ -37,6 +37,7 @@ class NetConfig;
         Engine e;
         e.Init(eEngineRunMode::CONSOLE_MODE, modules, options);
         e.Run();
+        \endcode
 
     If NetCore is running it separate thread, all callbacks from network will be invoked it that network thread.
     In that case, it is recommended to perform processing as soon as possible to prevent freeze of network.
@@ -45,6 +46,7 @@ class NetConfig;
 
     Typical use of NetCore functionality:
 
+        \code
         ServiceCreator myServiceCreatorCb = MakeFunction(this, &MyClass::Creator);
         ServiceDeleter myServiceDeleterCb = MakeFunction(this, &MyClass::Deleter);
         NetCore::Instance()->RegisterService(MY_SERVICE_ID, myServiceCreatorCb, myServiceDeleterCb);
@@ -57,9 +59,55 @@ class NetConfig;
         ....
 
         NetCore::Instance()->DestoryController(controllerId);
+        \endcode
 
     Note that DAVA network functionality can be used without NetCore.
     In that case, user should create and manage its own IOLoop, ServiceRegistrar objects.
+
+
+
+    Dispatcher<Function(void)> that is retrieved by GetNetEventsDispatcher()
+    is intended to pass events from network thread to any other thread.
+
+    Using this dispatcher makes sense only when running network on a separate thread.
+    In this case, there might be cases when user wants to get callback that is invoked
+    in network thread to be executed on user logic thread (e.g. on main thread).
+
+    For example:
+
+    \code
+    Dispatcher<Function<void()>>* dispatcher = NetCore::Instance()->GetNetEventsDispatcher();
+
+    class A
+    {
+        // say this function is called in network thread
+        // but we want to process this callback in main thread
+        void OnChannelOpen_Network()
+        {
+        Function<void()> f = MakeFunction(&A::OnChannelOpen_UserLogic);
+        dispatcher->PostEvent(f);
+        }
+
+        // must be called in main thread
+        void OnChannelOpen_UserLogic()
+        {
+            // user logic code
+        }
+    }
+
+    // in main thread
+    void OnUpdate()
+    {
+        // processing events accumulated by dispatcher
+        if (dispatcher->HasEvents())
+        {
+            dispatcher->ProcessEvents(); // there callback on OnChannelOpen_UserLogic will be called
+        }
+    }
+    \endcode
+
+    Note that its own instances of Dispatcher<Function(void)> could be used.
+    In that case, user should dispatch events from it on its own.
 */
 class NetCore : public Singleton<NetCore>
 {
@@ -131,46 +179,6 @@ public:
 
     static bool IsNetworkEnabled();
 
-    /** Dispatcher is intended to pass events from network thread to any other thread.
-
-    Using this dispatcher makes sense only when running network on a separate thread.
-    In this case, there might be cases when user wants to get callback that is invoked
-    in network thread to be executed on user logic thread (for ex. on main thread).
-
-    For example:
-
-    Dispatcher<Function<void()>>* dispatcher = NetCore::Instance()->GetNetEventsDispatcher();
-
-    class A
-    {
-    // say this function is called in network thread
-    // but we want to process this callback in main thread
-    void OnChannelOpen_Network()
-    {
-    Function<void()> f = MakeFunction(&A::OnChannelOpen_UserLogic);
-    dispatcher->PostEvent(f);
-    }
-
-    // must be called in main thread
-    void OnChannelOpen_UserLogic()
-    {
-    // user logic code
-    }
-    }
-
-    // in main thread
-    void OnUpdate()
-    {
-    // processing events accumulated by dispatcher
-    if (dispatcher->HasEvents())
-    {
-        dispatcher->ProcessEvents(); // there callback on OnChannelOpen_UserLogic will be called
-    }
-    }
-
-    Note that its own instances of Dispatcher<Function(void)> could be used.
-    In that case, user should dispatch events from it on its own.
-    */
     Dispatcher<Function<void()>>* GetNetEventsDispatcher();
 
     void Update(float32 frameDelta = 0.0f);

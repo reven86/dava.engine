@@ -19,6 +19,7 @@ namespace Net
 
     Example:
 
+    \code
     // say A is a class that wants to use network and to process callbacks from net
     class A : public IChannelListener
     {
@@ -49,12 +50,13 @@ namespace Net
     // somewhere in user thread
     void OnUpdate()
     {
-    // processing events accumulated by dispatcher
-    if (dispatcher->HasEvents())
-    {
-        dispatcher->ProcessEvents(); // there callback to A::OnChannelOpen
+        // processing events accumulated by dispatcher
+        if (dispatcher->HasEvents())
+        {
+            dispatcher->ProcessEvents(); // there callback to A::OnChannelOpen
+        }
     }
-    }
+    \endcode
 */
 class ChannelListenerDispatched : public IChannelListener
 {

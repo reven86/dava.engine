@@ -15,6 +15,7 @@ namespace Net
     
     Example:
 
+    \code
     Dispatcher<Function<void()>> dispatcher; // supposed that event will be placed in network thread and dispatched in user logic thread
 
     class A
@@ -44,6 +45,7 @@ namespace Net
     private:
         ServiceCreatorDispatched serviceCreatorDispatched;
     }
+    \endcode
 */
 class ServiceCreatorDispatched
 {

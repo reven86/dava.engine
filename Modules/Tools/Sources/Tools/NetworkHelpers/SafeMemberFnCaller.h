@@ -10,6 +10,7 @@ namespace DAVA
 
     Usage:
 
+    \code
     class A
     {
         void F(int);
@@ -20,7 +21,7 @@ namespace DAVA
     ....
     ....
     SafeMemberFnCaller(fn, wptr); // inside of it A::F will be called if A is still alive
-
+    \endcode
 */
 template <typename T>
 void SafeMemberFnCaller(Function<void(T*)> memberFn, std::weak_ptr<T> objectWeak)

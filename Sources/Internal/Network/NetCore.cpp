@@ -183,7 +183,7 @@ void NetCore::DestroyControllerBlocked(TrackId id)
     {
         {
             LockGuard<Mutex> lock(dyingObjectsMutex);
-            auto emplaceRes = dyingObjects.emplace(ctrl);
+            dyingObjects.emplace(ctrl);
         }
         loop->Post(Bind(&NetCore::DoDestroy, this, ctrl));
 
