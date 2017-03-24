@@ -1,9 +1,10 @@
 #include "TArc/DataProcessing/PropertiesHolder.h"
-#include "FileSystem/FilePath.h"
-#include "Logger/Logger.h"
-#include "Debug/DVAssert.h"
 
+#include <FileSystem/FilePath.h>
+#include <Logger/Logger.h>
+#include <Debug/DVAssert.h>
 #include <Utils/StringFormat.h>
+#include <Base/FastName.h>
 
 #include <QVariant>
 #include <QJsonDocument>
@@ -170,13 +171,40 @@ QJsonValue ToValue(const T& value)
 {
     DVASSERT(false, "unsupported type: pointer");
     return QJsonValue();
+    QJsonValue PropertiesItem::Impl::ToValue(const Vector<FastName>& value)
+    {
+        QStringList stringList;
+        std::transform(value.begin(), value.end(), std::back_inserter(stringList), [](const FastName& string)
+                       {
+                           return QString(string.c_str());
+                       });
+        return stringList.join(PropertiesHolderDetails::stringListDelimiter);
 }
-
 template <typename T, typename std::enable_if<!std::is_pointer<T>::value, int>::type>
 QJsonValue ToValue(const T& value)
 {
     DVASSERT(false, "conversion between QJsonValue and T is not declared");
     return QJsonValue();
+}
+
+template <>
+Vector<FastName> PropertiesItem::Impl::FromValue(const QJsonValue& value, const Vector<FastName>& defaultValue)
+{
+    if (value.isString())
+    {
+        Vector<FastName> retVal;
+        QString stringValue = value.toString();
+        QStringList stringList = stringValue.split(PropertiesHolderDetails::stringListDelimiter, QString::SkipEmptyParts);
+        std::transform(stringList.begin(), stringList.end(), std::back_inserter(retVal), [](const QString& string)
+                       {
+                           return FastName(string.toStdString());
+                       });
+        return retVal;
+    }
+    else
+    {
+        return defaultValue;
+    }
 }
 
 void PropertiesHolder::Impl::SetDirectory(const FilePath& dirPath)
@@ -309,7 +337,7 @@ PropertiesItem::PropertiesItem(const PropertiesItem& parent, const String& name)
         { \
             impl->Set(key, value.Get<T>()); \
         } \
-        catch (const DAVA::Exception& exception) \
+        catch (const Exception& exception) \
         { \
             Logger::Debug("PropertiesHolder::Save: can not get type %s with message %s", type->GetName(), exception.what()); \
         } \
@@ -325,7 +353,7 @@ PropertiesItem::PropertiesItem(const PropertiesItem& parent, const String& name)
         { \
             retVal = Any(impl->Get(key, value.Get<T>())); \
         } \
-        catch (const DAVA::Exception& exception) \
+        catch (const Exception& exception) \
         { \
             Logger::Debug("PropertiesHolder::Load: can not get type %s with message %s", type->GetName(), exception.what()); \
         } \
@@ -343,9 +371,10 @@ PropertiesItem::PropertiesItem(const PropertiesItem& parent, const String& name)
     METHOD(value, type, QString, key) \
     METHOD(value, type, QRect, key) \
     METHOD(value, type, QByteArray, key) \
-    METHOD(value, type, DAVA::FilePath, key) \
-    METHOD(value, type, DAVA::String, key) \
-    METHOD(value, type, DAVA::Vector<DAVA::String>, key) \
+    METHOD(value, type, FilePath, key) \
+    METHOD(value, type, String, key) \
+    METHOD(value, type, Vector<String>, key) \
+    METHOD(value, type, Vector<FastName>, key) \
     ENUM_CAP
 
 void PropertiesItem::Set(const String& key, const Any& value)

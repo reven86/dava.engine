@@ -5,12 +5,15 @@
 #include <Job/JobManager.h>
 #include <Logger/Logger.h>
 #include <UI/Input/UIActionBindingComponent.h>
+#include <UI/Input/UIActionBindingComponent.h>
+#include <UI/Update/UIUpdateComponent.h>
 
 const static DAVA::float32 DEFAULT_TIMEOUT = 3.f;
 
 AssertTest::AssertTest(TestBed& app)
     : BaseScreen(app, "AssertTest")
 {
+    GetOrCreateComponent<DAVA::UIUpdateComponent>();
 }
 
 void AssertTest::LoadResources()
@@ -53,6 +56,7 @@ void AssertTest::UnloadResources()
 
 void AssertTest::Update(DAVA::float32 timeElapsed)
 {
+    BaseScreen::Update(timeElapsed);
     if (timeOut > 0.f)
     {
         timeOut -= timeElapsed;

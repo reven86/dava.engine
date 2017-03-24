@@ -68,6 +68,8 @@ public:
                     const String& urlToServerSuperpack_,
                     const Hints& hints_) override;
 
+    void Deinitialize() override;
+
     void RetryInit();
 
     bool IsInitialized() const override;
@@ -144,6 +146,8 @@ private:
     void ContinueInitialization(float frameDelta);
     PackRequest* AddDeleyedRequest(const String& requestedPackName);
     PackRequest* CreateNewRequest(const String& requestedPackName);
+
+    void ClearResouces();
 
     enum class ScanState : uint32
     {
