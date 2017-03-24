@@ -9,7 +9,6 @@
 
 #include "UI/mainwindow.h"
 #include "UI/ProjectView.h"
-#include "UI/Package/PackageWidget.h"
 #include "UI/Find/FindFilter.h"
 
 #include <TArc/Core/ContextAccessor.h>
