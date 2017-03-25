@@ -94,9 +94,7 @@ void DLCManagerImpl::ClearResouces()
         scanThread->Release();
         scanThread = nullptr;
     }
-#ifdef __DAVAENGINE_COREV2__
-    engine.update.Disconnect(sigConnectionUpdate);
-#endif
+
     for (auto request : requests)
     {
         delete request;
@@ -114,6 +112,7 @@ void DLCManagerImpl::ClearResouces()
 
     delayedRequests.clear();
     meta.reset();
+    requestManager.reset();
 
     buffer.clear();
     uncompressedFileNames.clear();
@@ -139,6 +138,10 @@ DLCManagerImpl::~DLCManagerImpl()
 {
     DVASSERT(Thread::IsMainThread());
 
+#ifdef __DAVAENGINE_COREV2__
+    engine.update.Disconnect(sigConnectionUpdate);
+#endif
+
     ClearResouces();
 }
 
@@ -159,7 +162,13 @@ void DLCManagerImpl::Initialize(const FilePath& dirToDownloadPacks_,
         if (FileSystem::DIRECTORY_CANT_CREATE == fs->CreateDirectory(dirToDownloadedPacks, true))
         {
             String err = "can't create directory for packs: " + dirToDownloadedPacks.GetStringValue();
-            Logger::Error("%s", err.c_str());
+            DAVA_THROW(DAVA::Exception, err);
+        }
+
+        ScopedPtr<File> f(File::Create(dirToDownloadPacks_ + "tmp.file", File::WRITE | File::CREATE));
+        if (!f)
+        {
+            String err = "can't write into directory: " + dirToDownloadedPacks.GetStringValue();
             DAVA_THROW(DAVA::Exception, err);
         }
 
@@ -179,6 +188,8 @@ void DLCManagerImpl::Initialize(const FilePath& dirToDownloadPacks_,
     initState = InitState::LoadingRequestAskFooter;
 
     StartScanDownloadedFiles(); // safe to call several times, only first will work
+
+    SetRequestingEnabled(true);
 }
 
 void DLCManagerImpl::Deinitialize()
@@ -196,7 +207,7 @@ void DLCManagerImpl::Deinitialize()
 bool DLCManagerImpl::IsInitialized() const
 {
     DVASSERT(Thread::IsMainThread());
-    return nullptr != requestManager;
+    return nullptr != requestManager && delayedRequests.empty();
 }
 
 // start ISync //////////////////////////////////////

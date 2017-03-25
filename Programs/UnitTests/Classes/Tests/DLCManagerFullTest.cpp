@@ -11,15 +11,21 @@
 
 #ifndef __DAVAENGINE_WIN_UAP__
 
+const DAVA::FilePath documentRootDir("~res:/");
+const char* const localPort = "8080";
+
 struct FSMTest02
 {
     enum State
     {
         WaitInitializationFinished,
-        WaitSecondConnectAttempt
+        WaitSecondConnectAttempt,
+        WaitDownloadAllFourPacks,
     };
     State state = WaitInitializationFinished;
     DAVA::float32 time = 0.0f;
+    DAVA::float32 waitSecondConnect = 3.0f;
+    DAVA::DLCManager::Progress progressAfterInit;
 
     bool Update(DAVA::float32 dt)
     {
@@ -35,6 +41,7 @@ struct FSMTest02
             {
                 state = WaitSecondConnectAttempt;
                 DAVA::StopEmbeddedWebServer();
+                progressAfterInit = dlcManager.GetProgress();
                 return false;
             }
         }
@@ -46,19 +53,56 @@ struct FSMTest02
 
             TEST_VERIFY(dlcManager.IsRequestingEnabled());
 
-            auto progress = dlcManager.GetProgress();
-            TEST_VERIFY(progress.alreadyDownloaded <= progress.total);
+            auto currentProgress = dlcManager.GetProgress();
+            TEST_VERIFY(currentProgress.alreadyDownloaded <= currentProgress.total);
+            TEST_VERIFY(currentProgress.inQueue == progressAfterInit.inQueue);
+
+            waitSecondConnect -= dt;
+            if (waitSecondConnect <= 0.f)
+            {
+                if (!DAVA::StartEmbeddedWebServer(documentRootDir.GetAbsolutePathname().c_str(), localPort))
+                {
+                    TEST_VERIFY(false && "can't start server");
+                }
+                state = WaitDownloadAllFourPacks;
+                return false;
+            }
+        }
+        break;
+        case WaitDownloadAllFourPacks:
+        {
+            auto currentProgress = dlcManager.GetProgress();
+            TEST_VERIFY(currentProgress.alreadyDownloaded <= currentProgress.total);
+            TEST_VERIFY(currentProgress.inQueue <= progressAfterInit.inQueue);
+            progressAfterInit = currentProgress;
+
+            if (currentProgress.inQueue == 0)
+            {
+                auto r0 = dlcManager.RequestPack("0");
+                TEST_VERIFY(r0->IsDownloaded());
+                auto r1 = dlcManager.RequestPack("1");
+                TEST_VERIFY(r1->IsDownloaded());
+                auto r2 = dlcManager.RequestPack("2");
+                TEST_VERIFY(r2->IsDownloaded());
+                auto r3 = dlcManager.RequestPack("3");
+                TEST_VERIFY(r3->IsDownloaded());
+
+                // now stop server for next tests
+                dlcManager.Deinitialize();
+                DAVA::StopEmbeddedWebServer();
+                return true;
+            }
         }
         break;
         }
 
-        if (time > 20.0f)
+        if (time > 30.0f) // timeout
         {
             TEST_VERIFY(false && "time out wait second connection")
             return true;
         }
 
-        return time > 20.0f; // timeout
+        return false;
     }
 };
 
@@ -113,16 +157,27 @@ DAVA_TESTCLASS (DLCManagerFullTest)
 
         DLCManager& dlcManager = *GetEngineContext()->dlcManager;
 
-        FilePath res("~res:/");
+        const DLCManager::IRequest* r = dlcManager.RequestPack("1"); // pack "1" have one dependent pack "0"
+        TEST_VERIFY(r != nullptr);
 
-        if (!StartEmbeddedWebServer(res.GetAbsolutePathname().c_str(), "8080"))
+        if (!StartEmbeddedWebServer(documentRootDir.GetAbsolutePathname().c_str(), localPort))
         {
             TEST_VERIFY(false && "can't start embedded web server");
+            return;
         }
 
-        dlcManager.Initialize("~doc:/UnitTests/DLCManagerTest/packs/",
+        auto hints = DLCManager::Hints();
+        hints.retryConnectMilliseconds = 3000;
+
+        FilePath packDir("~doc:/UnitTests/DLCManagerTest/packs/");
+        FileSystem::Instance()->DeleteDirectory(packDir, true);
+
+        dlcManager.Initialize(packDir,
                               "http://127.0.0.1:8080/superpack_for_unittests.dvpk",
-                              DLCManager::Hints());
+                              hints);
+
+        auto request = dlcManager.RequestPack("3"); // pack "3" depends on "0, 1, 2" packs
+        TEST_VERIFY(request != nullptr);
     }
 
     DAVA_TEST (TestServerDownDuringDownload03)

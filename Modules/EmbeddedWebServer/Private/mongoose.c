@@ -5350,9 +5350,11 @@ static void free_context(struct mg_context *ctx) {
 void mg_stop(struct mg_context *ctx) {
   ctx->stop_flag = 1;
 
+  unsigned int count = 0;
   // Wait until mg_fini() stops
-  while (ctx->stop_flag != 2) {
+  while (ctx->stop_flag != 2 || count < 200) {
     (void) mg_sleep(10);
+	++count;
   }
   free_context(ctx);
 
