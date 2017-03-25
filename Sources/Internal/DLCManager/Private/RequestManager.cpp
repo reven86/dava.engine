@@ -198,4 +198,19 @@ void RequestManager::Remove(PackRequest* request)
     }
 }
 
+void RequestManager::SwapPointers(PackRequest* newPointer, PackRequest* oldInvalidPointer)
+{
+    DVASSERT(newPointer != nullptr);
+    DVASSERT(oldInvalidPointer != nullptr);
+    DVASSERT(newPointer != oldInvalidPointer);
+
+    auto it = find(begin(requests), end(requests), oldInvalidPointer);
+    DVASSERT(it != end(requests));
+    // update old pointer value in 'requests'
+    *it = newPointer;
+
+    auto nameIt = requestNames.find(newPointer->GetRequestedPackName());
+    DVASSERT(nameIt != end(requestNames));
+}
+
 } // end namespace DAVA

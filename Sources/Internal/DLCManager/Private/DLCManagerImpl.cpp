@@ -338,7 +338,7 @@ void DLCManagerImpl::ContinueInitialization(float frameDelta)
     }
     else if (InitState::MoveDeleyedRequestsToQueue == initState)
     {
-        StartDeleyedRequests();
+        StartDelayedRequests();
     }
     else if (InitState::Ready == initState)
     {
@@ -366,7 +366,7 @@ void DLCManagerImpl::ContinueInitialization(float frameDelta)
     }
 }
 
-PackRequest* DLCManagerImpl::AddDeleyedRequest(const String& requestedPackName)
+PackRequest* DLCManagerImpl::AddDelayedRequest(const String& requestedPackName)
 {
     for (auto* request : delayedRequests)
     {
@@ -771,7 +771,29 @@ void DLCManagerImpl::LoadPacksDataFromMeta()
     initState = InitState::WaitScanThreadToFinish;
 }
 
-void DLCManagerImpl::StartDeleyedRequests()
+void DLCManagerImpl::SwapPointers(PackRequest* userRequestObject, PackRequest* invalidPointer)
+{
+    auto it = find(begin(requests), end(requests), invalidPointer);
+    DVASSERT(it != end(requests));
+    // change old pointer (just deleted) to correct one
+    *it = userRequestObject;
+}
+
+void DLCManagerImpl::SwapRequestAndUpdatePointers(PackRequest* userRequestObject, PackRequest* newRequestObject)
+{
+    // We want to give user same pointer, so we need move(swap) old object
+    // with new object value
+    *userRequestObject = std::move(*newRequestObject);
+    delete newRequestObject; // now this pointer is invalid!
+    PackRequest* invalidPointer = newRequestObject;
+    // so we have to update all referencies to new swaped pointer value
+    // find new pointer and change it to correct one
+    SwapPointers(userRequestObject, invalidPointer);
+
+    requestManager->SwapPointers(userRequestObject, invalidPointer);
+}
+
+void DLCManagerImpl::StartDelayedRequests()
 {
     //Logger::FrameworkDebug("pack manager mount_downloaded_packs");
     if (scanThread != nullptr)
@@ -785,17 +807,37 @@ void DLCManagerImpl::StartDeleyedRequests()
         scanThread = nullptr;
     }
 
-    for (auto request : delayedRequests)
+    // I want to create new requests then move its constent to old
+    // to save pointers for users, if user store pointer to IRequest
+    Vector<PackRequest*> tmpRequests;
+    delayedRequests.swap(tmpRequests);
+    // first remove old request pointers from requestManager
+    for (auto request : tmpRequests)
     {
-        const String& packName = request->GetRequestedPackName();
-        Vector<uint32> fileIndexes = meta->GetFileIndexes(packName);
-        request->SetFileIndexes(std::move(fileIndexes));
-
-        requests.push_back(request);
-        requestManager->Push(request);
+        requestManager->Remove(request);
     }
 
-    delayedRequests.clear();
+    for (auto request : tmpRequests)
+    {
+        const String& requestedPackName = request->GetRequestedPackName();
+        PackRequest* r = FindRequest(requestedPackName);
+
+        if (r == nullptr)
+        {
+            PackRequest* newRequest = CreateNewRequest(requestedPackName);
+            DVASSERT(newRequest != request);
+            DVASSERT(newRequest != nullptr);
+
+            SwapRequestAndUpdatePointers(request, newRequest);
+        }
+        else
+        {
+            DVASSERT(r != request);
+            // if we come here, it means one of previous requests
+            // create it's dependencies and this is it
+            SwapRequestAndUpdatePointers(request, r);
+        }
+    }
 
     initState = InitState::Ready;
 
@@ -861,7 +903,7 @@ const DLCManager::IRequest* DLCManagerImpl::RequestPack(const String& packName)
 
     if (!IsInitialized())
     {
-        PackRequest* request = AddDeleyedRequest(packName);
+        PackRequest* request = AddDelayedRequest(packName);
         return request;
     }
 

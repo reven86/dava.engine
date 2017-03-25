@@ -13,18 +13,30 @@
 namespace DAVA
 {
 PackRequest::PackRequest(DLCManagerImpl& packManager_, const String& pack_)
-    : packManagerImpl(packManager_)
+    : packManagerImpl(&packManager_)
     , requestedPackName(pack_)
     , delayedRequest(true)
 {
 }
 
 PackRequest::PackRequest(DLCManagerImpl& packManager_, const String& pack_, Vector<uint32> fileIndexes_)
-    : packManagerImpl(packManager_)
+    : packManagerImpl(&packManager_)
     , requestedPackName(pack_)
     , delayedRequest(false)
 {
     SetFileIndexes(move(fileIndexes_));
+}
+
+PackRequest& PackRequest::operator=(PackRequest&& other)
+{
+    packManagerImpl = std::move(other.packManagerImpl);
+    requests = std::move(other.requests);
+    fileIndexes = std::move(other.fileIndexes);
+    requestedPackName = std::move(other.requestedPackName);
+    numOfDownloadedFile = std::move(other.numOfDownloadedFile);
+    delayedRequest = std::move(other.delayedRequest);
+
+    return *this;
 }
 
 void PackRequest::CancelCurrentsDownloads()
@@ -46,6 +58,12 @@ void PackRequest::CancelCurrentsDownloads()
 PackRequest::~PackRequest()
 {
     CancelCurrentsDownloads();
+    packManagerImpl = nullptr;
+    requests.clear();
+    fileIndexes.clear();
+    requestedPackName.clear();
+    numOfDownloadedFile = 0;
+    delayedRequest = false;
 }
 
 void PackRequest::Start()
@@ -65,9 +83,9 @@ const String& PackRequest::GetRequestedPackName() const
 
 Vector<String> PackRequest::GetDependencies() const
 {
-    if (packManagerImpl.IsInitialized())
+    if (packManagerImpl->IsInitialized())
     {
-        const PackMetaData& pack_meta_data = packManagerImpl.GetMeta();
+        const PackMetaData& pack_meta_data = packManagerImpl->GetMeta();
         return pack_meta_data.GetDependencyNames(requestedPackName);
     }
     DAVA_THROW(Exception, "Error! Can't get pack dependencies before initialization is finished");
@@ -76,7 +94,7 @@ Vector<String> PackRequest::GetDependencies() const
 uint64 PackRequest::GetSize() const
 {
     uint64 allFilesSize = 0;
-    const auto& files = packManagerImpl.GetPack().filesTable.data.files;
+    const auto& files = packManagerImpl->GetPack().filesTable.data.files;
     for (uint32 fileIndex : fileIndexes)
     {
         const auto& fileInfo = files.at(fileIndex);
@@ -105,7 +123,7 @@ bool PackRequest::IsDownloaded() const
         return false; // not initialized yet
     }
 
-    if (!packManagerImpl.IsInitialized())
+    if (!packManagerImpl->IsInitialized())
     {
         return false;
     }
@@ -118,9 +136,9 @@ bool PackRequest::IsDownloaded() const
         }
     }
 
-    if (packManagerImpl.IsInQueue(this))
+    if (packManagerImpl->IsInQueue(this))
     {
-        if (!packManagerImpl.IsTop(this))
+        if (!packManagerImpl->IsTop(this))
         {
             return false; // wait for dependencies to download first
         }
@@ -140,7 +158,7 @@ bool PackRequest::IsSubRequest(const PackRequest* other) const
     Vector<String> dep = GetDependencies();
     for (const String& s : dep)
     {
-        PackRequest* r = packManagerImpl.FindRequest(s);
+        PackRequest* r = packManagerImpl->FindRequest(s);
         if (r != nullptr)
         {
             if (r == other)
@@ -167,9 +185,9 @@ void PackRequest::InitializeFileRequests()
         for (size_t requestIndex = 0; requestIndex < requests.size(); ++requestIndex)
         {
             uint32 fileIndex = fileIndexes.at(requestIndex);
-            const auto& fileInfo = packManagerImpl.GetPack().filesTable.data.files.at(fileIndex);
-            String relativePath = packManagerImpl.GetRelativeFilePath(fileIndex);
-            FilePath localPath = packManagerImpl.GetLocalPacksDirectory() + relativePath;
+            const auto& fileInfo = packManagerImpl->GetPack().filesTable.data.files.at(fileIndex);
+            String relativePath = packManagerImpl->GetRelativeFilePath(fileIndex);
+            FilePath localPath = packManagerImpl->GetLocalPacksDirectory() + relativePath;
 
             FileRequest& request = requests.at(requestIndex);
 
@@ -179,7 +197,7 @@ void PackRequest::InitializeFileRequests()
                                   fileInfo.startPosition,
                                   fileInfo.compressedSize,
                                   fileInfo.originalSize,
-                                  packManagerImpl.GetSuperPackUrl(),
+                                  packManagerImpl->GetSuperPackUrl(),
                                   fileInfo.type,
                                   request);
         }
@@ -189,7 +207,7 @@ void PackRequest::InitializeFileRequests()
 bool PackRequest::Update()
 {
     DVASSERT(Thread::IsMainThread());
-    DVASSERT(packManagerImpl.IsInitialized());
+    DVASSERT(packManagerImpl->IsInitialized());
 
     bool needFireUpdateSignal = false;
 
@@ -242,8 +260,8 @@ void PackRequest::DeleteJustDownloadedFileAndStartAgain(FileRequest& fileRequest
 void PackRequest::DisableRequestingAndFireSignalNoSpaceLeft(PackRequest::FileRequest& fileRequest)
 {
     Logger::Error("No space on device!!! Can't create or write file: %s disable DLCManager requesting", fileRequest.localFile.GetAbsolutePathname().c_str());
-    packManagerImpl.SetRequestingEnabled(false);
-    packManagerImpl.cantWriteToDisk.Emit(fileRequest.localFile.GetAbsolutePathname().c_str(), errno);
+    packManagerImpl->SetRequestingEnabled(false);
+    packManagerImpl->cantWriteToDisk.Emit(fileRequest.localFile.GetAbsolutePathname().c_str(), errno);
 }
 
 bool PackRequest::UpdateFileRequests()
@@ -262,7 +280,7 @@ bool PackRequest::UpdateFileRequests()
             break;
         case CheckLocalFile:
         {
-            if (packManagerImpl.IsFileReady(fileRequest.fileIndex))
+            if (packManagerImpl->IsFileReady(fileRequest.fileIndex))
             {
                 fileRequest.status = Ready;
                 uint64 fileSize = 0;
@@ -399,7 +417,7 @@ bool PackRequest::UpdateFileRequests()
                 fileRequest.status = Ready;
                 callSignal = true;
 
-                packManagerImpl.SetFileIsReady(fileRequest.fileIndex);
+                packManagerImpl->SetFileIsReady(fileRequest.fileIndex);
             }
             else
             {

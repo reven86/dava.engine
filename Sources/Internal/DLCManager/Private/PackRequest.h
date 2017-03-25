@@ -39,6 +39,10 @@ public:
     /** this request depends on other, so other should be downloaded first */
     bool IsSubRequest(const PackRequest* other) const;
 
+    bool IsDelayed() const;
+
+    PackRequest& operator=(PackRequest&& other);
+
 private:
     void InitializeFileRequests();
 
@@ -83,7 +87,7 @@ private:
     void DisableRequestingAndFireSignalNoSpaceLeft(PackRequest::FileRequest& fileRequest);
     bool UpdateFileRequests();
 
-    DLCManagerImpl& packManagerImpl;
+    DLCManagerImpl* packManagerImpl = nullptr;
 
     Vector<FileRequest> requests;
     Vector<uint32> fileIndexes;
@@ -95,5 +99,10 @@ private:
     // else fileIndexes maybe empty and wait initialization
     bool delayedRequest = true;
 };
+
+inline bool PackRequest::IsDelayed() const
+{
+    return delayedRequest;
+}
 
 } // end namespace DAVA
