@@ -15,6 +15,10 @@
 namespace DAVA
 {
 class Any;
+namespace TArc
+{
+class ContextAccessor;
+}
 }
 
 struct PackageContext;
@@ -34,6 +38,8 @@ class PackageWidget : public QDockWidget, public Ui::PackageWidget
 public:
     explicit PackageWidget(QWidget* parent = 0);
     ~PackageWidget();
+
+    void SetAccessor(DAVA::TArc::ContextAccessor* accessor);
 
     PackageModel* GetPackageModel() const;
     using ExpandedIndexes = QModelIndexList;
@@ -111,6 +117,8 @@ private:
     std::list<QPersistentModelIndex> currentIndexes;
     bool lastFilterTextEmpty = true;
     PackageContext* currentContext = nullptr;
+
+    DAVA::TArc::ContextAccessor* accessor = nullptr;
 };
 
 struct PackageContext

@@ -3,19 +3,6 @@
 #include <TArc/Core/OperationRegistrator.h>
 #include <TArc/WindowSubSystem/UI.h>
 
-#include <TArc/DataProcessing/DataWrapper.h>
-#include <TArc/Core/OperationInvoker.h>
-#include <TArc/Core/ContextAccessor.h>
-
-namespace DAVA
-{
-namespace TArc
-{
-class Core;
-class DataContext;
-}
-}
-
 namespace QEGlobal
 {
 extern DAVA::TArc::WindowKey windowKey;
@@ -40,34 +27,4 @@ DECLARE_OPERATION_ID(SelectFile);
 //Select control by document name and control name
 //If document was not open - opens it and than select control
 DECLARE_OPERATION_ID(SelectControl);
-
-//TEMP FUNCTIONS
-void InitTArcCore(DAVA::TArc::Core* core);
-
-DAVA::TArc::DataContext* GetGlobalContext();
-DAVA::TArc::DataContext* GetActiveContext();
-
-DAVA::TArc::OperationInvoker* GetInvoker();
-DAVA::TArc::ContextAccessor* GetAccessor();
-
-DAVA::TArc::DataWrapper CreateDataWrapper(const DAVA::ReflectedType* type);
-DAVA::TArc::ModalMessageParams::Button ShowModalMessage(const DAVA::TArc::ModalMessageParams& params);
-
-template <typename T>
-T* GetDataNode()
-{
-    DAVA::TArc::DataContext* ctx = GetGlobalContext();
-    if (ctx == nullptr)
-        return nullptr;
-    return ctx->GetData<T>();
-}
-
-template <typename T>
-T* GetActiveDataNode()
-{
-    DAVA::TArc::DataContext* ctx = GetActiveContext();
-    if (ctx == nullptr)
-        return nullptr;
-    return ctx->GetData<T>();
-}
 }

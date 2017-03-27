@@ -29,8 +29,10 @@ class PackageModel : public QAbstractItemModel, PackageListener
     Q_OBJECT
 
 public:
-    PackageModel(DAVA::TArc::ContextAccessor* accessor, QObject* parent = nullptr);
+    PackageModel(QObject* parent = nullptr);
     ~PackageModel() override;
+
+    void SetAccessor(DAVA::TArc::ContextAccessor* accessor);
 
     void Reset(PackageNode* package);
 

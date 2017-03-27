@@ -1,7 +1,5 @@
 #include "PropertiesModel.h"
 
-#include "Application/QEGlobal.h"
-
 #include "Modules/DocumentsModule/DocumentData.h"
 
 #include "Model/ControlProperties/AbstractProperty.h"
@@ -15,6 +13,9 @@
 #include "Utils/StringFormat.h"
 #include "QECommands/ChangePropertyValueCommand.h"
 #include "QECommands/ChangeStylePropertyCommand.h"
+
+#include <TArc/Core/ContextAccessor.h>
+#include <TArc/DataProcessing/DataContext.h>
 
 #include <QtTools/Utils/Themes/Themes.h>
 #include <QtTools/Utils/Utils.h>
@@ -43,6 +44,11 @@ PropertiesModel::~PropertiesModel()
     CleanUp();
     propertiesUpdater.Abort();
     nodeUpdater.Abort();
+}
+
+void PropertiesModel::SetAccessor(DAVA::TArc::ContextAccessor* accessor_)
+{
+    accessor = accessor_;
 }
 
 void PropertiesModel::Reset(PackageBaseNode* node_)
@@ -396,8 +402,11 @@ void PropertiesModel::StyleSelectorWasRemoved(StyleSheetSelectorsSection* sectio
 
 void PropertiesModel::ChangeProperty(AbstractProperty* property, const VariantType& value)
 {
-    DocumentData* documentData = QEGlobal::GetActiveDataNode<DocumentData>();
+    DAVA::TArc::DataContext* activeContext = accessor->GetActiveContext();
+    DVASSERT(activeContext != nullptr);
+    DocumentData* documentData = activeContext->GetData<DocumentData>();
     DVASSERT(documentData != nullptr);
+
     if (nullptr != controlNode)
     {
         documentData->ExecCommand<ChangePropertyValueCommand>(controlNode, property, value);
@@ -414,8 +423,11 @@ void PropertiesModel::ChangeProperty(AbstractProperty* property, const VariantTy
 
 void PropertiesModel::ResetProperty(AbstractProperty* property)
 {
-    DocumentData* documentData = QEGlobal::GetActiveDataNode<DocumentData>();
+    DAVA::TArc::DataContext* activeContext = accessor->GetActiveContext();
+    DVASSERT(activeContext != nullptr);
+    DocumentData* documentData = activeContext->GetData<DocumentData>();
     DVASSERT(documentData != nullptr);
+
     if (nullptr != controlNode)
     {
         documentData->ExecCommand<ChangePropertyValueCommand>(controlNode, property, VariantType());

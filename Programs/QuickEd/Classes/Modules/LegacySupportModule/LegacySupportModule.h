@@ -20,8 +20,6 @@ class LegacySupportModule : public DAVA::TArc::ClientModule, private DAVA::TArc:
 
     void InitMainWindow();
 
-    void RegisterOperations();
-
     void JumpToControl(const DAVA::FilePath& packagePath, const DAVA::String& controlName);
     void JumpToPackage(const DAVA::FilePath& packagePath);
     void OnJumpToPrototype();

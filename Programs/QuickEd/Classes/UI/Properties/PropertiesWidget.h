@@ -10,6 +10,7 @@ namespace DAVA
 namespace TArc
 {
 class FieldBinder;
+class ContextAccessor;
 }
 }
 
@@ -25,6 +26,8 @@ class PropertiesWidget : public QDockWidget, public Ui::PropertiesWidget
 public:
     PropertiesWidget(QWidget* parent = nullptr);
     ~PropertiesWidget();
+
+    void SetAccessor(DAVA::TArc::ContextAccessor* accessor);
 
     void SetProject(const Project* project);
 
@@ -76,4 +79,6 @@ private:
     PackageBaseNode* selectedNode = nullptr; //node used to build model
 
     std::unique_ptr<DAVA::TArc::FieldBinder> fieldBinder;
+
+    DAVA::TArc::ContextAccessor* accessor = nullptr;
 };

@@ -16,6 +16,7 @@ namespace DAVA
 namespace TArc
 {
 class FieldBinder;
+class ContextAccessor;
 }
 }
 
@@ -25,7 +26,9 @@ class LibraryWidget : public QDockWidget, public Ui::LibraryWidget
 
 public:
     LibraryWidget(QWidget* parent = nullptr);
-    ~LibraryWidget();
+    ~LibraryWidget() override;
+
+    void SetAccessor(DAVA::TArc::ContextAccessor* accessor);
 
 private:
     void OnPackageChanged(const DAVA::Any& package);
@@ -35,4 +38,5 @@ private:
 
     LibraryModel* libraryModel = nullptr;
     std::unique_ptr<DAVA::TArc::FieldBinder> fieldBinder;
+    DAVA::TArc::ContextAccessor* accessor = nullptr;
 };

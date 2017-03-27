@@ -3,7 +3,6 @@
 
 #include "Render/Texture.h"
 
-#include "UI/FileSystemView/FileSystemDockWidget.h"
 #include "Utils/QtDavaConvertion.h"
 #include "QtTools/Utils/Utils.h"
 
@@ -32,7 +31,7 @@ REGISTER_PREFERENCES_ON_START(MainWindow,
 
 Q_DECLARE_METATYPE(const InspMember*);
 
-MainWindow::MainWindow(QWidget* parent)
+MainWindow::MainWindow(DAVA::TArc::ContextAccessor* accessor, QWidget* parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow())
 #if defined(__DAVAENGINE_MACOS__)
@@ -40,6 +39,10 @@ MainWindow::MainWindow(QWidget* parent)
 #endif //__DAVAENGINE_MACOS__
 {
     ui->setupUi(this);
+    ui->libraryWidget->SetAccessor(accessor);
+    ui->propertiesWidget->SetAccessor(accessor);
+    ui->packageWidget->SetAccessor(accessor);
+
     setWindowIcon(QIcon(":/icon.ico"));
     DebugTools::ConnectToUI(ui.get());
     SetupViewMenu();
@@ -97,7 +100,6 @@ void MainWindow::SetupViewMenu()
     // Setup the common menu actions.
     QList<QAction*> dockWidgetToggleActions;
     dockWidgetToggleActions << ui->propertiesWidget->toggleViewAction()
-                            << ui->fileSystemDockWidget->toggleViewAction()
                             << ui->packageWidget->toggleViewAction()
                             << ui->libraryWidget->toggleViewAction()
                             << ui->findWidget->toggleViewAction()

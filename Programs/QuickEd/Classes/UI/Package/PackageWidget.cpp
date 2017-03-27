@@ -1,7 +1,5 @@
 #include <QClipboard>
 
-#include "Application/QEGlobal.h"
-
 #include "PackageWidget.h"
 #include "PackageModel.h"
 
@@ -20,6 +18,8 @@
 #include "Modules/DocumentsModule/DocumentData.h"
 #include "UI/Package/FilteredPackageModel.h"
 #include "UI/Package/PackageModel.h"
+
+#include <TArc/Core/ContextAccessor.h>
 
 #include <QtTools/FileDialogs/FileDialog.h>
 
@@ -136,7 +136,7 @@ PackageWidget::PackageWidget(QWidget* parent)
 {
     setupUi(this);
     filterLine->setEnabled(false);
-    packageModel = new PackageModel(QEGlobal::GetAccessor(), this);
+    packageModel = new PackageModel(this);
     filteredPackageModel = new FilteredPackageModel(this);
 
     filteredPackageModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
@@ -153,6 +153,12 @@ PackageWidget::PackageWidget(QWidget* parent)
     connect(filterLine, &QLineEdit::textChanged, this, &PackageWidget::OnFilterTextChanged);
     CreateActions();
     PlaceActions();
+}
+
+void PackageWidget::SetAccessor(DAVA::TArc::ContextAccessor* accessor_)
+{
+    accessor = accessor_;
+    packageModel->SetAccessor(accessor);
 }
 
 PackageWidget::~PackageWidget()
@@ -181,7 +187,7 @@ void PackageWidget::OnPackageChanged(PackageContext* context, PackageNode* packa
 
     treeView->setColumnWidth(0, treeView->size().width());
     treeView->setUpdatesEnabled(isUpdatesEnabled);
-    filterLine->setEnabled(QEGlobal::GetActiveContext() != nullptr);
+    filterLine->setEnabled(accessor->GetActiveContext() != nullptr);
 }
 
 QAction* PackageWidget::CreateAction(const QString& name, void (PackageWidget::*callback)(void), const QKeySequence& keySequence)
@@ -366,7 +372,9 @@ void PackageWidget::CopyNodesToClipboard(const Vector<ControlNode*>& controls, c
     {
         YamlPackageSerializer serializer;
 
-        DocumentData* documentData = QEGlobal::GetActiveDataNode<DocumentData>();
+        DAVA::TArc::DataContext* activeContext = accessor->GetActiveContext();
+        DVASSERT(activeContext != nullptr);
+        DocumentData* documentData = activeContext->GetData<DocumentData>();
         DVASSERT(documentData != nullptr);
         PackageNode* package = documentData->GetPackageNode();
 
@@ -434,7 +442,9 @@ void PackageWidget::OnImport()
     {
         return;
     }
-    DocumentData* documentData = QEGlobal::GetActiveDataNode<DocumentData>();
+    DAVA::TArc::DataContext* activeContext = accessor->GetActiveContext();
+    DVASSERT(activeContext != nullptr);
+    DocumentData* documentData = activeContext->GetData<DocumentData>();
     DVASSERT(documentData != nullptr);
     QStringList fileNames = FileDialog::getOpenFileNames(qApp->activeWindow(),
                                                          tr("Select one or move files to import"),
@@ -451,7 +461,7 @@ void PackageWidget::OnImport()
         packages.push_back(FilePath(fileName.toStdString()));
     }
     DVASSERT(!packages.empty());
-    QtModelPackageCommandExecutor commandExecutor(QEGlobal::GetAccessor());
+    QtModelPackageCommandExecutor commandExecutor(accessor);
     commandExecutor.AddImportedPackagesIntoPackage(packages, documentData->GetPackageNode());
 }
 
@@ -481,10 +491,12 @@ void PackageWidget::OnPaste()
         if (!baseNode->IsReadOnly())
         {
             String string = clipboard->mimeData()->text().toStdString();
-            DocumentData* documentData = QEGlobal::GetActiveDataNode<DocumentData>();
+            DAVA::TArc::DataContext* activeContext = accessor->GetActiveContext();
+            DVASSERT(activeContext != nullptr);
+            DocumentData* documentData = activeContext->GetData<DocumentData>();
             DVASSERT(nullptr != documentData);
             PackageNode* package = documentData->GetPackageNode();
-            QtModelPackageCommandExecutor executor(QEGlobal::GetAccessor());
+            QtModelPackageCommandExecutor executor(accessor);
             executor.Paste(package, baseNode, baseNode->GetCount(), string);
         }
     }
@@ -500,17 +512,17 @@ void PackageWidget::OnCut()
 
     CopyNodesToClipboard(controls, styles);
 
-    QtModelPackageCommandExecutor executor(QEGlobal::GetAccessor());
+    QtModelPackageCommandExecutor executor(accessor);
     executor.Remove(controls, styles);
 }
 
 void PackageWidget::OnDelete()
 {
-    if (QEGlobal::GetActiveContext() == nullptr)
+    if (accessor->GetActiveContext() == nullptr)
     {
         return;
     }
-    QtModelPackageCommandExecutor executor(QEGlobal::GetAccessor());
+    QtModelPackageCommandExecutor executor(accessor);
 
     Vector<ControlNode*> controls;
     CollectSelectedControls(controls, false, true);
@@ -526,8 +538,12 @@ void PackageWidget::OnDelete()
     {
         Vector<PackageNode*> packages;
         CollectSelectedImportedPackages(packages, false, true);
-        DocumentData* documentData = QEGlobal::GetActiveDataNode<DocumentData>();
+
+        DAVA::TArc::DataContext* activeContext = accessor->GetActiveContext();
+        DVASSERT(activeContext != nullptr);
+        DocumentData* documentData = activeContext->GetData<DocumentData>();
         DVASSERT(nullptr != documentData);
+
         PackageNode* package = documentData->GetPackageNode();
         executor.RemoveImportedPackagesFromPackage(packages, package);
     }
@@ -546,11 +562,13 @@ void PackageWidget::OnAddStyle()
     selectorChains.push_back(UIStyleSheetSelectorChain("?"));
     const DAVA::Vector<DAVA::UIStyleSheetProperty> properties;
 
-    DocumentData* documentData = QEGlobal::GetActiveDataNode<DocumentData>();
+    DAVA::TArc::DataContext* activeContext = accessor->GetActiveContext();
+    DVASSERT(activeContext != nullptr);
+    DocumentData* documentData = activeContext->GetData<DocumentData>();
     DVASSERT(documentData != nullptr);
     ScopedPtr<StyleSheetNode> style(new StyleSheetNode(UIStyleSheetSourceInfo(documentData->GetPackagePath()), selectorChains, properties));
     PackageNode* package = documentData->GetPackageNode();
-    QtModelPackageCommandExecutor commandExecutor(QEGlobal::GetAccessor());
+    QtModelPackageCommandExecutor commandExecutor(accessor);
     StyleSheetsNode* styleSheets = package->GetStyleSheets();
     commandExecutor.InsertStyle(style, styleSheets, styleSheets->GetCount());
 }
@@ -651,7 +669,7 @@ void PackageWidget::OnMoveRight()
 
 void PackageWidget::MoveNodeImpl(PackageBaseNode* node, PackageBaseNode* dest, DAVA::uint32 destIndex)
 {
-    QtModelPackageCommandExecutor executor(QEGlobal::GetAccessor());
+    QtModelPackageCommandExecutor executor(accessor);
     if (dynamic_cast<ControlNode*>(node) != nullptr)
     {
         DAVA::Vector<ControlNode*> nodes = { static_cast<ControlNode*>(node) };

@@ -75,13 +75,17 @@ void SetAbsoulutePosToControlNode(PackageNode* package, ControlNode* node, Contr
 }
 } //PackageModel_local
 
-PackageModel::PackageModel(DAVA::TArc::ContextAccessor* accessor_, QObject* parent)
+PackageModel::PackageModel(QObject* parent)
     : QAbstractItemModel(parent)
-    , accessor(accessor_)
 {
 }
 
 PackageModel::~PackageModel() = default;
+
+void PackageModel::SetAccessor(DAVA::TArc::ContextAccessor* accessor_)
+{
+    accessor = accessor_;
+}
 
 void PackageModel::Reset(PackageNode* package_)
 {

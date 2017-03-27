@@ -41,7 +41,6 @@ void LegacySupportModule::PostInit()
     documentDataWrapper.SetListener(this);
 
     InitMainWindow();
-    RegisterOperations();
 }
 
 void LegacySupportModule::OnWindowClosed(const DAVA::TArc::WindowKey& key)
@@ -79,6 +78,7 @@ void LegacySupportModule::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, 
     }
     else if (wrapper == documentDataWrapper)
     {
+        //move this code to the PackageModule https://jira.wargaming.net/browse/DF-12887
         if (wrapper.HasData() == false)
         {
             packageWidget->OnSelectionChanged(Any());
@@ -142,7 +142,7 @@ void LegacySupportModule::InitMainWindow()
     using namespace DAVA;
     using namespace TArc;
 
-    MainWindow* mainWindow = new MainWindow();
+    MainWindow* mainWindow = new MainWindow(GetAccessor());
     MainWindow::ProjectView* projectView = mainWindow->GetProjectView();
 
     connections.AddConnection(projectView, &MainWindow::ProjectView::JumpToControl, MakeFunction(this, &LegacySupportModule::JumpToControl));
@@ -160,20 +160,6 @@ void LegacySupportModule::InitMainWindow()
     GetUI()->InjectWindow(QEGlobal::windowKey, mainWindow);
     ContextAccessor* accessor = GetAccessor();
     DataContext* globalContext = accessor->GetGlobalContext();
-}
-
-void LegacySupportModule::RegisterOperations()
-{
-    using namespace DAVA;
-    using namespace TArc;
-    ContextAccessor* accessor = GetAccessor();
-    DataContext* globalContext = accessor->GetGlobalContext();
-
-    QWidget* window = GetUI()->GetWindow(QEGlobal::windowKey);
-    MainWindow* mainWindow = qobject_cast<MainWindow*>(window);
-    DVASSERT(nullptr != mainWindow);
-    MainWindow::ProjectView* view = mainWindow->GetProjectView();
-    RegisterOperation(QEGlobal::SelectFile.ID, view, &MainWindow::ProjectView::SelectFile);
 }
 
 void LegacySupportModule::OnFindPrototypeInstances()

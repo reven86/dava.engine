@@ -2,8 +2,6 @@
 #include "ui_PropertiesWidget.h"
 #include "PropertiesModel.h"
 
-#include "Application/QEGlobal.h"
-
 #include "Modules/DocumentsModule/DocumentData.h"
 #include "Modules/LegacySupportModule/Private/Project.h"
 
@@ -78,6 +76,11 @@ PropertiesWidget::PropertiesWidget(QWidget* parent)
 
 PropertiesWidget::~PropertiesWidget() = default;
 
+void PropertiesWidget::SetAccessor(DAVA::TArc::ContextAccessor* accessor_)
+{
+    accessor = accessor_;
+}
+
 void PropertiesWidget::SetProject(const Project* project)
 {
     propertiesItemsDelegate->SetProject(project);
@@ -85,8 +88,8 @@ void PropertiesWidget::SetProject(const Project* project)
 
 void PropertiesWidget::OnAddComponent(QAction* action)
 {
-    QtModelPackageCommandExecutor executor(QEGlobal::GetAccessor());
-    DVASSERT(QEGlobal::GetActiveContext() != nullptr);
+    QtModelPackageCommandExecutor executor(accessor);
+    DVASSERT(accessor->GetActiveContext() != nullptr);
     const RootProperty* rootProperty = DAVA::DynamicTypeCheck<const RootProperty*>(propertiesModel->GetRootProperty());
 
     uint32 componentType = action->data().toUInt();
@@ -108,8 +111,8 @@ void PropertiesWidget::OnAddComponent(QAction* action)
 
 void PropertiesWidget::OnRemove()
 {
-    QtModelPackageCommandExecutor executor(QEGlobal::GetAccessor());
-    DVASSERT(QEGlobal::GetActiveContext() != nullptr);
+    QtModelPackageCommandExecutor executor(accessor);
+    DVASSERT(accessor->GetActiveContext() != nullptr);
 
     QModelIndexList indices = treeView->selectionModel()->selectedIndexes();
     if (!indices.empty())
@@ -151,8 +154,8 @@ void PropertiesWidget::OnRemove()
 
 void PropertiesWidget::OnAddStyleProperty(QAction* action)
 {
-    QtModelPackageCommandExecutor executor(QEGlobal::GetAccessor());
-    DVASSERT(QEGlobal::GetActiveContext() != nullptr);
+    QtModelPackageCommandExecutor executor(accessor);
+    DVASSERT(accessor->GetActiveContext() != nullptr);
 
     uint32 propertyIndex = action->data().toUInt();
     if (propertyIndex < UIStyleSheetPropertyDataBase::STYLE_SHEET_PROPERTY_COUNT)
@@ -167,8 +170,8 @@ void PropertiesWidget::OnAddStyleProperty(QAction* action)
 
 void PropertiesWidget::OnAddStyleSelector()
 {
-    QtModelPackageCommandExecutor executor(QEGlobal::GetAccessor());
-    DVASSERT(QEGlobal::GetActiveContext() != nullptr);
+    QtModelPackageCommandExecutor executor(accessor);
+    DVASSERT(accessor->GetActiveContext() != nullptr);
     executor.AddStyleSelector(DynamicTypeCheck<StyleSheetNode*>(selectedNode));
 }
 
@@ -349,7 +352,7 @@ void PropertiesWidget::BindFields()
     using namespace DAVA;
     using namespace DAVA::TArc;
 
-    fieldBinder.reset(new FieldBinder(QEGlobal::GetAccessor()));
+    fieldBinder.reset(new FieldBinder(accessor));
 
     {
         FieldDescriptor fieldDescr;

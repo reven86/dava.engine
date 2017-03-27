@@ -24,6 +24,10 @@ class StyleSheetInspectorWidget;
 namespace DAVA
 {
 class ResultList;
+namespace TArc
+{
+class ContextAccessor;
+}
 }
 
 class QCheckBox;
@@ -38,7 +42,7 @@ public:
     class ProjectView;
     class DocumentGroupView;
 
-    explicit MainWindow(QWidget* parent = nullptr);
+    explicit MainWindow(DAVA::TArc::ContextAccessor* accessor, QWidget* parent = nullptr);
 
     ~MainWindow() override;
 
@@ -46,7 +50,6 @@ public:
 
     ProjectView* GetProjectView() const;
     PackageWidget* GetPackageWidget() const;
-    DAVA::Signal<> initialized;
 
 signals:
     void EmulationModeChanged(bool emulationMode);

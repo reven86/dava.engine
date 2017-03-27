@@ -13,6 +13,10 @@
 namespace DAVA
 {
 class InspInfo;
+namespace TArc
+{
+class ContextAccessor;
+}
 }
 
 class AbstractProperty;
@@ -30,8 +34,12 @@ public:
     {
         ResetRole = Qt::UserRole + 1
     };
+
     PropertiesModel(QObject* parent = nullptr);
-    virtual ~PropertiesModel();
+    ~PropertiesModel() override;
+
+    void SetAccessor(DAVA::TArc::ContextAccessor* accessor);
+
     void Reset(PackageBaseNode* node_);
 
     QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
@@ -90,4 +98,6 @@ protected:
     DAVA::Set<DAVA::RefPtr<AbstractProperty>> changedProperties;
     ContinuousUpdater propertiesUpdater;
     ContinuousUpdater nodeUpdater;
+
+    DAVA::TArc::ContextAccessor* accessor = nullptr;
 };

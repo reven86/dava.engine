@@ -17,8 +17,6 @@ public:
     void SetLanguages(const QStringList& availableLangsCodes, const QString& currentLangCode);
     void SetCurrentLanguage(const QString& currentLang);
 
-    void SetResourceDirectory(const QString& path);
-    void SelectFile(const QString& filePath);
     void FindControls(std::unique_ptr<FindFilter>&& filter);
 
     void SetProjectActionsEnabled(bool enable);

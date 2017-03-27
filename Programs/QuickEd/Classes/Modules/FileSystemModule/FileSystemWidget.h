@@ -1,30 +1,37 @@
 #pragma once
 
-#include <QDockWidget>
+#include <Functional/Signal.h>
+
+#include <QWidget>
 #include <QModelIndex>
-#include <QPersistentModelIndex>
 #include <memory>
 
-namespace Ui
+class QLineEdit;
+class QTreeView;
+class QFileSystemModel;
+class QItemSelection;
+
+namespace DAVA
 {
-class FileSystemDockWidget;
+class Any;
+namespace TArc
+{
+class ContextAccessor;
+class FieldBinder;
+}
 }
 
-class QFileSystemModel;
-class QInputDialog;
-class QItemSelection;
-class QMouseEvent;
-
-class FileSystemDockWidget : public QDockWidget
+class FileSystemWidget : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit FileSystemDockWidget(QWidget* parent = nullptr);
-    ~FileSystemDockWidget();
+    explicit FileSystemWidget(DAVA::TArc::ContextAccessor* accessor, QWidget* parent = nullptr);
+    ~FileSystemWidget();
 
-    void SetResourceDirectory(const QString& path);
     void SelectFile(const QString& filePath);
+
+    DAVA::Signal<const QString&> openFile;
 
 private slots:
     void onDoubleClicked(const QModelIndex& index);
@@ -44,6 +51,12 @@ private:
     bool CanDelete(const QModelIndex& index) const;
     void UpdateActionsWithShortcutsState(const QModelIndexList& modelIndexes);
 
+    void InitUI();
+    void BindFields();
+    void SetResourceDirectory(const QString& path);
+
+    void OnProjectPathChanged(const DAVA::Any& projectPath);
+
     enum ePathType
     {
         AnyPath,
@@ -51,7 +64,6 @@ private:
     };
     QString GetPathByCurrentPos(ePathType pathType);
 
-    std::unique_ptr<Ui::FileSystemDockWidget> ui;
     QFileSystemModel* model = nullptr;
     QAction* newFolderAction = nullptr;
     QAction* newFileAction = nullptr;
@@ -62,4 +74,10 @@ private:
     QAction* copyInternalPathToFileAction = nullptr;
 
     QPoint menuInvokePos = QPoint(-1, -1);
+
+    QLineEdit* filterLine = nullptr;
+    QTreeView* treeView = nullptr;
+
+    std::unique_ptr<DAVA::TArc::FieldBinder> fieldBinder;
+    DAVA::TArc::ContextAccessor* accessor = nullptr;
 };

@@ -1,5 +1,6 @@
-#include "FileSystemModel.h"
+#include "Modules/FileSystemModule/FileSystemModel.h"
 #include "Modules/LegacySupportModule/Private/Project.h"
+
 #include <QRegularExpression>
 
 FileSystemModel::FileSystemModel(QObject* parent)

@@ -58,8 +58,6 @@ void MainWindow::ProjectView::SetProjectActionsEnabled(bool enabled)
     mainWindow->ui->actionJumpToPrototype->setEnabled(enabled);
     mainWindow->ui->actionFindPrototypeInstances->setEnabled(enabled);
     mainWindow->ui->toolBarGlobal->setEnabled(enabled);
-
-    mainWindow->ui->fileSystemDockWidget->setEnabled(enabled);
 }
 
 void MainWindow::ProjectView::InitPluginsToolBar()
@@ -155,19 +153,9 @@ void MainWindow::ProjectView::OnCurrentLanguageChanged(int newLanguageIndex)
     emit CurrentLanguageChanged(langCode);
 }
 
-void MainWindow::ProjectView::SelectFile(const QString& filePath)
-{
-    mainWindow->ui->fileSystemDockWidget->SelectFile(filePath);
-}
-
 void MainWindow::ProjectView::FindControls(std::unique_ptr<FindFilter>&& filter)
 {
     mainWindow->ui->findWidget->Find(std::move(filter));
-}
-
-void MainWindow::ProjectView::SetResourceDirectory(const QString& path)
-{
-    mainWindow->ui->fileSystemDockWidget->SetResourceDirectory(path);
 }
 
 QString MainWindow::ProjectView::ConvertLangCodeToString(const QString& langCode)

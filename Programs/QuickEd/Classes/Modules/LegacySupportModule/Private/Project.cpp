@@ -66,14 +66,6 @@ Project::Project(MainWindow::ProjectView* view_, DAVA::TArc::ContextAccessor* ac
         editorLocalizationSystem->SetCurrentLocale(QString::fromStdString(projectData->GetDefaultLanguage()));
     }
 
-    const EngineContext* engineContext = accessor->GetEngineContext();
-    DAVA::FileSystem* fileSystem = engineContext->fileSystem;
-
-    FilePath uiDirectory = projectData->GetUiDirectory().absolute;
-    DVASSERT(fileSystem->IsDirectory(uiDirectory));
-    uiResourcesPath = QString::fromStdString(uiDirectory.GetStringValue());
-
-    view->SetResourceDirectory(uiResourcesPath);
 
     view->SetProjectActionsEnabled(true);
     view->SetProjectPath(GetProjectPath());
@@ -89,6 +81,7 @@ Project::Project(MainWindow::ProjectView* view_, DAVA::TArc::ContextAccessor* ac
     connections.AddConnection(view, &MainWindow::ProjectView::GlobalStyleClassesChanged, MakeFunction(this, &Project::SetGlobalStyleClasses));
 
     QualitySettingsSystem::Instance()->Load("~res:/quality.yaml");
+    const EngineContext* engineContext = accessor->GetEngineContext();
     engineContext->soundSystem->InitFromQualitySettings();
 }
 
@@ -100,8 +93,6 @@ Project::~Project()
     view->SetLanguages(QStringList(), QString());
     view->SetProjectPath(QString());
     view->SetProjectActionsEnabled(false);
-
-    view->SetResourceDirectory(QString());
 
     view->OnProjectChanged(nullptr);
 

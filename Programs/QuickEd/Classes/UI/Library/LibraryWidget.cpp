@@ -1,8 +1,6 @@
 #include "LibraryWidget.h"
 #include "LibraryModel.h"
 
-#include "Application/QEGlobal.h"
-
 #include "Modules/DocumentsModule/DocumentData.h"
 #include "Modules/ProjectModule/ProjectData.h"
 
@@ -18,11 +16,15 @@ LibraryWidget::LibraryWidget(QWidget* parent)
 {
     setupUi(this);
     treeView->setModel(libraryModel);
-
-    BindFields();
 }
 
 LibraryWidget::~LibraryWidget() = default;
+
+void LibraryWidget::SetAccessor(DAVA::TArc::ContextAccessor* accessor_)
+{
+    accessor = accessor_;
+    BindFields();
+}
 
 void LibraryWidget::OnPackageChanged(const DAVA::Any& packageValue)
 {
@@ -51,7 +53,8 @@ void LibraryWidget::OnProjectPathChanged(const DAVA::Any& projectPath)
     }
     else
     {
-        ProjectData* projectData = QEGlobal::GetDataNode<ProjectData>();
+        DataContext* globalContext = accessor->GetGlobalContext();
+        ProjectData* projectData = globalContext->GetData<ProjectData>();
         DVASSERT(projectData != nullptr);
         DAVA::Vector<DAVA::FilePath> libraryPackages;
         for (const auto& resDir : projectData->GetLibraryPackages())
@@ -67,7 +70,7 @@ void LibraryWidget::BindFields()
     using namespace DAVA;
     using namespace DAVA::TArc;
 
-    fieldBinder.reset(new FieldBinder(QEGlobal::GetAccessor()));
+    fieldBinder.reset(new FieldBinder(accessor));
 
     {
         FieldDescriptor fieldDescr;
