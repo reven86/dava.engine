@@ -96,7 +96,6 @@ void ChildCreator::RemoveNode(const std::shared_ptr<PropertyNode>& parent)
     }
     nodeRemoved.Emit(parent);
     propertiesIndex.erase(iter);
-    DVASSERT(parent.unique());
 }
 
 void ChildCreator::Clear()

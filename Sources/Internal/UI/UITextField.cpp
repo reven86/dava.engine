@@ -5,6 +5,7 @@
 #include "Render/2D/FontManager.h"
 #include "Utils/UTF8Utils.h"
 #include "Logger/Logger.h"
+#include "UI/Update/UIUpdateComponent.h"
 
 #include "Engine/Engine.h"
 
@@ -61,6 +62,7 @@ UITextField::UITextField(const Rect& rect)
     textFieldImpl->SetVisible(false);
 
     SetupDefaults();
+    GetOrCreateComponent<UIUpdateComponent>();
 }
 
 void UITextField::SetupDefaults()
