@@ -16,7 +16,7 @@ bool MatrixComponentValue::IsValidValueToSet(const Any& newValue, const Any& cur
     return false;
 }
 
-ControlProxy* MatrixComponentValue::CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor) const
+ControlProxy* MatrixComponentValue::CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor)
 {
     ControlDescriptorBuilder<Label::Fields> descr;
     descr[Label::Fields::Text] = "value";

@@ -21,7 +21,7 @@ namespace DAVA
 {
 namespace TArc
 {
-void DefaultChildCheatorExtension::ExposeChildren(const std::shared_ptr<const PropertyNode>& node, Vector<std::shared_ptr<PropertyNode>>& children) const
+void DefaultChildCheatorExtension::ExposeChildren(const std::shared_ptr<PropertyNode>& node, Vector<std::shared_ptr<PropertyNode>>& children) const
 {
     DVASSERT(node->field.ref.IsValid());
 
@@ -35,7 +35,7 @@ void DefaultChildCheatorExtension::ExposeChildren(const std::shared_ptr<const Pr
                              const M::Group* groupMeta = field.ref.GetMeta<M::Group>();
                              if (groupMeta == nullptr)
                              {
-                                 children.push_back(allocator->CreatePropertyNode(std::move(field)));
+                                 children.push_back(allocator->CreatePropertyNode(node, std::move(field)));
                              }
                              else
                              {
@@ -43,7 +43,7 @@ void DefaultChildCheatorExtension::ExposeChildren(const std::shared_ptr<const Pr
                                  {
                                      Reflection::Field groupField = node->field;
                                      groupField.key = groupMeta->groupName;
-                                     children.push_back(allocator->CreatePropertyNode(std::move(groupField), PropertyNode::GroupProperty, groupMeta->groupName));
+                                     children.push_back(allocator->CreatePropertyNode(node, std::move(groupField), PropertyNode::GroupProperty, groupMeta->groupName));
                                      groups.insert(groupMeta->groupName);
                                  }
                              }
@@ -57,7 +57,7 @@ void DefaultChildCheatorExtension::ExposeChildren(const std::shared_ptr<const Pr
             const M::Group* groupMeta = field.ref.GetMeta<M::Group>();
             if (groupMeta != nullptr && groupMeta->groupName == groupName)
             {
-                children.push_back(allocator->CreatePropertyNode(std::move(field)));
+                children.push_back(allocator->CreatePropertyNode(node, std::move(field)));
             }
         });
     }
@@ -70,8 +70,8 @@ class DefaultAllocator : public IChildAllocator
 public:
     DefaultAllocator();
     ~DefaultAllocator() override = default;
-    std::shared_ptr<PropertyNode> CreatePropertyNode(Reflection::Field&& reflection, int32_t type = PropertyNode::RealProperty) override;
-    std::shared_ptr<PropertyNode> CreatePropertyNode(Reflection::Field&& reflection, int32_t type, const Any& value) override;
+    std::shared_ptr<PropertyNode> CreatePropertyNode(const std::shared_ptr<PropertyNode>& parent, Reflection::Field&& reflection, int32_t type = PropertyNode::RealProperty) override;
+    std::shared_ptr<PropertyNode> CreatePropertyNode(const std::shared_ptr<PropertyNode>& parent, Reflection::Field&& reflection, int32_t type, const Any& value) override;
 
 private:
     ObjectsPool<PropertyNode, SingleThreadStrategy> pool;
@@ -82,20 +82,21 @@ DefaultAllocator::DefaultAllocator()
 {
 }
 
-std::shared_ptr<PropertyNode> DefaultAllocator::CreatePropertyNode(Reflection::Field&& field, int32_t type)
+std::shared_ptr<PropertyNode> DefaultAllocator::CreatePropertyNode(const std::shared_ptr<PropertyNode>& parent, Reflection::Field&& field, int32_t type)
 {
     if (field.ref.IsValid())
-        return CreatePropertyNode(std::move(field), type, field.ref.GetValue());
+        return CreatePropertyNode(parent, std::move(field), type, field.ref.GetValue());
 
-    return CreatePropertyNode(std::move(field), type, Any());
+    return CreatePropertyNode(parent, std::move(field), type, Any());
 }
 
-std::shared_ptr<PropertyNode> DefaultAllocator::CreatePropertyNode(Reflection::Field&& field, int32_t type, const Any& value)
+std::shared_ptr<PropertyNode> DefaultAllocator::CreatePropertyNode(const std::shared_ptr<PropertyNode>& parent, Reflection::Field&& field, int32_t type, const Any& value)
 {
     std::shared_ptr<PropertyNode> result = pool.RequestObject();
     result->propertyType = type;
     result->field = std::move(field);
     result->cachedValue = value;
+    result->parent = parent;
     result->sortKey = PropertyNode::InvalidSortKey;
 
     return result;
@@ -126,9 +127,9 @@ std::unique_ptr<BaseComponentValue> DefaultEditorComponentExtension::GetEditor(c
 
         static UnorderedMap<const Type*, Function<std::unique_ptr<BaseComponentValue>()>> simpleCreatorsMap =
         {
-          std::make_pair(Type::Instance<String>(), &std::make_unique<TextComponentValue>),
+          std::make_pair(Type::Instance<String>(), &std::make_unique<MultiLineTextComponentValue>),
+          std::make_pair(Type::Instance<WideString>(), &std::make_unique<MultiLineTextComponentValue>),
           std::make_pair(Type::Instance<FastName>(), &std::make_unique<TextComponentValue>),
-          std::make_pair(Type::Instance<const char*>(), &std::make_unique<TextComponentValue>),
           std::make_pair(Type::Instance<bool>(), &std::make_unique<BoolComponentValue>),
           std::make_pair(Type::Instance<float32>(), &std::make_unique<NumberComponentValue<float32>>),
           std::make_pair(Type::Instance<float64>(), &std::make_unique<NumberComponentValue<float64>>),
@@ -141,6 +142,7 @@ std::unique_ptr<BaseComponentValue> DefaultEditorComponentExtension::GetEditor(c
           std::make_pair(Type::Instance<Matrix2>(), &std::make_unique<MatrixComponentValue>),
           std::make_pair(Type::Instance<Matrix3>(), &std::make_unique<MatrixComponentValue>),
           std::make_pair(Type::Instance<Matrix4>(), &std::make_unique<MatrixComponentValue>),
+          std::make_pair(Type::Instance<FilePath>(), &std::make_unique<FilePathComponentValue>),
         };
 
         const Type* valueType = node->cachedValue.GetType()->Decay();
@@ -148,10 +150,6 @@ std::unique_ptr<BaseComponentValue> DefaultEditorComponentExtension::GetEditor(c
         if (iter != simpleCreatorsMap.end())
         {
             return iter->second();
-        }
-        else if (valueType == Type::Instance<FilePath>())
-        {
-            return std::make_unique<FilePathComponentValue>();
         }
     }
 

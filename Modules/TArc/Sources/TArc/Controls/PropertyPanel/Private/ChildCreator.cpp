@@ -26,7 +26,7 @@ std::shared_ptr<PropertyNode> ChildCreator::CreateRoot(Reflection::Field&& refle
     return rootNode;
 }
 
-void ChildCreator::UpdateSubTree(const std::shared_ptr<const PropertyNode>& parent)
+void ChildCreator::UpdateSubTree(const std::shared_ptr<PropertyNode>& parent)
 {
     DVASSERT(parent != nullptr);
     Vector<std::shared_ptr<PropertyNode>> children;

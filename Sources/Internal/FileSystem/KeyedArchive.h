@@ -22,6 +22,8 @@ namespace DAVA
  */
 class YamlNode;
 
+VariantType PrepareValueForKeyedArchive(const Any& v, VariantType::eVariantType resultType);
+
 class KeyedArchive : public BaseObject
 {
 protected:
@@ -466,6 +468,7 @@ public:
     static const char* GenKeyFromIndex(uint32 index);
 
 private:
+    friend class KeyedArchiveStructureWrapper;
     UnderlyingMap objectMap;
 
 public:

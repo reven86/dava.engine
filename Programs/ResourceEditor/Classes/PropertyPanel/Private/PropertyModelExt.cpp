@@ -1,6 +1,7 @@
 #include "Classes/PropertyPanel/PropertyModelExt.h"
 #include "Classes/SceneManager/SceneData.h"
 #include "Classes/Commands2/SetFieldValueCommand.h"
+#include <Commands2/KeyedArchiveCommand.h>
 #include "Classes/Commands2/AddComponentCommand.h"
 #include "Classes/PropertyPanel/PropertyPanelCommon.h"
 
@@ -17,6 +18,7 @@
 #include <Engine/PlatformApi.h>
 #include <Scene3D/Entity.h>
 #include <Entity/Component.h>
+#include <FileSystem/KeyedArchive.h>
 #include <Reflection/Reflection.h>
 #include <Reflection/ReflectedTypeDB.h>
 #include "Reflection/ReflectedMeta.h"
@@ -123,7 +125,7 @@ protected:
         return false;
     }
 
-    ControlProxy* CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor) const override
+    ControlProxy* CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor) override
     {
         Widget* w = new Widget(parent);
         QHBoxLayout* layout = new QHBoxLayout();
@@ -230,6 +232,29 @@ void REModifyPropertyExtension::ProduceCommand(const DAVA::Reflection::Field& fi
     GetScene()->Exec(std::make_unique<SetFieldValueCommand>(field, newValue));
 }
 
+void REModifyPropertyExtension::ProduceCommand(const std::shared_ptr<DAVA::TArc::PropertyNode>& node, const DAVA::Any& newValue)
+{
+    std::shared_ptr<DAVA::TArc::PropertyNode> parent = node->parent.lock();
+    DVASSERT(parent != nullptr);
+
+    if (parent->cachedValue.CanCast<DAVA::KeyedArchive*>())
+    {
+        DAVA::String key = node->field.key.Cast<DAVA::String>();
+        DAVA::KeyedArchive* archive = parent->cachedValue.Cast<DAVA::KeyedArchive*>();
+        DVASSERT(archive->Count(key) > 0);
+        DAVA::VariantType* currentValue = archive->GetVariant(key);
+        DVASSERT(currentValue != nullptr);
+
+        DAVA::VariantType value = DAVA::PrepareValueForKeyedArchive(newValue, currentValue->GetType());
+        DVASSERT(value.GetType() != DAVA::VariantType::TYPE_NONE);
+        GetScene()->Exec(std::make_unique<KeyeadArchiveSetValueCommand>(archive, node->field.key.Cast<DAVA::String>(), value));
+    }
+    else
+    {
+        ProduceCommand(node->field, newValue);
+    }
+}
+
 void REModifyPropertyExtension::Exec(std::unique_ptr<DAVA::Command>&& command)
 {
     GetScene()->Exec(std::move(command));
@@ -257,7 +282,7 @@ SceneEditor2* REModifyPropertyExtension::GetScene() const
     return data->GetScene().Get();
 }
 
-void EntityChildCreator::ExposeChildren(const std::shared_ptr<const DAVA::TArc::PropertyNode>& parent, DAVA::Vector<std::shared_ptr<DAVA::TArc::PropertyNode>>& children) const
+void EntityChildCreator::ExposeChildren(const std::shared_ptr<DAVA::TArc::PropertyNode>& parent, DAVA::Vector<std::shared_ptr<DAVA::TArc::PropertyNode>>& children) const
 {
     using namespace DAVA;
     using namespace DAVA::TArc;
@@ -271,7 +296,7 @@ void EntityChildCreator::ExposeChildren(const std::shared_ptr<const DAVA::TArc::
         parent->cachedValue.GetType() == DAVA::Type::Instance<DAVA::Entity*>())
     {
         DAVA::Reflection::Field f(Any("Entity"), Reflection(parent->field.ref), nullptr);
-        std::shared_ptr<PropertyNode> entityNode = allocator->CreatePropertyNode(std::move(f), PropertyNode::GroupProperty);
+        std::shared_ptr<PropertyNode> entityNode = allocator->CreatePropertyNode(parent, std::move(f), PropertyNode::GroupProperty);
         entityNode->sortKey = -1; // zero sort key is for favorites root
         children.push_back(entityNode);
 
@@ -279,13 +304,13 @@ void EntityChildCreator::ExposeChildren(const std::shared_ptr<const DAVA::TArc::
             DAVA::Reflection componentsField = f.ref.GetField(DAVA::Entity::componentFieldString);
             DVASSERT(componentsField.IsValid());
 
-            DAVA::TArc::ForEachField(componentsField, [this, &children](Reflection::Field&& field)
+            DAVA::TArc::ForEachField(componentsField, [&](Reflection::Field&& field)
                                      {
                                          if (!field.ref.HasMeta<M::HiddenField>())
                                          {
                                              Any value = field.ref.GetValue();
                                              DAVA::Reflection::Field f(GetValueReflectedType(field.ref)->GetPermanentName(), Reflection(field.ref), nullptr);
-                                             std::shared_ptr<PropertyNode> node = allocator->CreatePropertyNode(std::move(f), PropertyNode::RealProperty);
+                                             std::shared_ptr<PropertyNode> node = allocator->CreatePropertyNode(parent, std::move(f), PropertyNode::RealProperty);
                                              DVASSERT(value.CanGet<Component*>());
                                              Component* component = value.Get<Component*>();
                                              node->sortKey = static_cast<size_t>(component->GetType());
@@ -296,7 +321,7 @@ void EntityChildCreator::ExposeChildren(const std::shared_ptr<const DAVA::TArc::
             Reflection::Field addComponentField;
             addComponentField.key = "Add Component";
             addComponentField.ref = parent->field.ref;
-            std::shared_ptr<PropertyNode> addComponentNode = allocator->CreatePropertyNode(std::move(addComponentField), PropertyPanel::AddComponentProperty);
+            std::shared_ptr<PropertyNode> addComponentNode = allocator->CreatePropertyNode(parent, std::move(addComponentField), PropertyPanel::AddComponentProperty);
             addComponentNode->sortKey = DAVA::TArc::PropertyNode::InvalidSortKey - 1;
             children.push_back(addComponentNode);
         }
@@ -304,11 +329,11 @@ void EntityChildCreator::ExposeChildren(const std::shared_ptr<const DAVA::TArc::
     else if (parent->propertyType == PropertyNode::GroupProperty &&
              parent->cachedValue.GetType() == DAVA::Type::Instance<DAVA::Entity*>())
     {
-        DAVA::TArc::ForEachField(parent->field.ref, [this, &children](Reflection::Field&& field)
+        DAVA::TArc::ForEachField(parent->field.ref, [&](Reflection::Field&& field)
                                  {
                                      if (field.ref.GetValueType() != DAVA::Type::Instance<DAVA::Vector<DAVA::Component*>>() && field.ref.HasMeta<M::HiddenField>() == false)
                                      {
-                                         children.push_back(allocator->CreatePropertyNode(std::move(field), PropertyNode::RealProperty));
+                                         children.push_back(allocator->CreatePropertyNode(parent, std::move(field), PropertyNode::RealProperty));
                                      }
                                  });
     }

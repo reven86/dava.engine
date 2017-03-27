@@ -33,7 +33,7 @@ bool NumberComponentValue<T>::IsValidValueToSet(const Any& newValue, const Any& 
 }
 
 template <typename T>
-ControlProxy* NumberComponentValue<T>::CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor) const
+ControlProxy* NumberComponentValue<T>::CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor)
 {
     const Type* t = Type::Instance<T>();
     if (t == Type::Instance<float32>() || t == Type::Instance<float64>())

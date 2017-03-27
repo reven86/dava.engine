@@ -78,7 +78,7 @@ protected:
 
     virtual Any GetMultipleValue() const = 0;
     virtual bool IsValidValueToSet(const Any& newValue, const Any& currentValue) const = 0;
-    virtual ControlProxy* CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor) const = 0;
+    virtual ControlProxy* CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor) = 0;
 
     Any GetValue() const;
     void SetValue(const Any& value);
@@ -91,10 +91,12 @@ protected:
 
     ControlProxy* editorWidget = nullptr;
     Vector<std::shared_ptr<PropertyNode>> nodes;
+    QWidget* realWidget = nullptr;
 
     ContextAccessor* GetAccessor() const;
     UI* GetUI() const;
     const WindowKey& GetWindowKey() const;
+    DataWrappersProcessor* GetDataProcessor() const;
 
 private:
     void EnsureEditorCreated(const QWidget* parent) const;
@@ -110,7 +112,6 @@ private:
     ReflectedPropertyModel* model = nullptr;
     BaseComponentValue* thisValue = nullptr;
     bool isEditorEvent = false;
-    QWidget* realWidget = nullptr;
     Style style;
 
     QtConnections connections;

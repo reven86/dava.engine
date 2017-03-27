@@ -10,7 +10,7 @@ namespace PMEDetails
 class DummyChildCreator : public ChildCreatorExtension
 {
 public:
-    void ExposeChildren(const std::shared_ptr<const PropertyNode>&, Vector<std::shared_ptr<PropertyNode>>&) const override
+    void ExposeChildren(const std::shared_ptr<PropertyNode>&, Vector<std::shared_ptr<PropertyNode>>&) const override
     {
     }
 };
@@ -31,6 +31,10 @@ public:
     {
     }
 
+    void ProduceCommand(const std::shared_ptr<PropertyNode>& node, const Any& newValue)
+    {
+    }
+
     void ProduceCommand(const Reflection::Field& object, const Any& newValue)
     {
     }
@@ -47,7 +51,7 @@ public:
 
 std::shared_ptr<PropertyNode> MakeRootNode(IChildAllocator* allocator, DAVA::Reflection::Field&& field)
 {
-    return allocator->CreatePropertyNode(std::move(field), PropertyNode::SelfRoot);
+    return allocator->CreatePropertyNode(nullptr, std::move(field), PropertyNode::SelfRoot);
 }
 
 bool PropertyNode::operator==(const PropertyNode& other) const
@@ -73,7 +77,7 @@ ChildCreatorExtension::ChildCreatorExtension()
 {
 }
 
-void ChildCreatorExtension::ExposeChildren(const std::shared_ptr<const PropertyNode>& node, Vector<std::shared_ptr<PropertyNode>>& children) const
+void ChildCreatorExtension::ExposeChildren(const std::shared_ptr<PropertyNode>& node, Vector<std::shared_ptr<PropertyNode>>& children) const
 {
     GetNext<ChildCreatorExtension>()->ExposeChildren(node, children);
 }
@@ -144,6 +148,11 @@ void ModifyExtension::BeginBatch(const String& text, uint32 commandCount)
     GetNext<ModifyExtension>()->BeginBatch(text, commandCount);
 }
 
+void ModifyExtension::ProduceCommand(const std::shared_ptr<PropertyNode>& node, const Any& newValue)
+{
+    GetNext<ModifyExtension>()->ProduceCommand(node, newValue);
+}
+
 void ModifyExtension::ProduceCommand(const Reflection::Field& object, const Any& newValue)
 {
     GetNext<ModifyExtension>()->ProduceCommand(object, newValue);
@@ -171,7 +180,7 @@ ModifyExtension::MultiCommandInterface::MultiCommandInterface(std::shared_ptr<Mo
 
 void ModifyExtension::MultiCommandInterface::ModifyPropertyValue(const std::shared_ptr<PropertyNode>& node, const Any& newValue)
 {
-    extension->ProduceCommand(node->field, newValue);
+    extension->ProduceCommand(node, newValue);
     if (node->field.ref.IsValid())
     {
         node->cachedValue = node->field.ref.GetValue();

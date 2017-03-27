@@ -145,7 +145,6 @@ void PropertiesViewDelegate::destroyEditor(QWidget* editor, const QModelIndex& i
 
 void PropertiesViewDelegate::setEditorData(QWidget* editor, const QModelIndex& index) const
 {
-    model->SyncWrapper();
 }
 
 void PropertiesViewDelegate::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const

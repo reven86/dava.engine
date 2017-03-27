@@ -1,6 +1,7 @@
 #include "TArc/Controls/PropertyPanel/Private/BoolComponentValue.h"
 #include "TArc/Controls/CheckBox.h"
 #include "TArc/Controls/PropertyPanel/PropertyModelExtensions.h"
+#include "TArc/Controls/CommonStrings.h"
 
 #include <Reflection/ReflectionRegistrator.h>
 #include <Reflection/ReflectedMeta.h>
@@ -31,7 +32,7 @@ bool BoolComponentValue::IsValidValueToSet(const Any& newValue, const Any& curre
     return newCheckedState != Qt::PartiallyChecked && newCheckedState != currentCheckedState;
 }
 
-ControlProxy* BoolComponentValue::CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor) const
+ControlProxy* BoolComponentValue::CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor)
 {
     ControlDescriptorBuilder<CheckBox::Fields> descr;
     descr[CheckBox::Fields::Checked] = "bool";
@@ -50,7 +51,7 @@ String BoolComponentValue::GetTextHint() const
         Qt::CheckState state = GetValue().Cast<Qt::CheckState>();
         if (state == Qt::PartiallyChecked)
         {
-            result = "< multiple values >";
+            result = MultipleValuesString;
         }
         else
         {

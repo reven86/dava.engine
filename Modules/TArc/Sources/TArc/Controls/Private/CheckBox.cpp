@@ -77,14 +77,23 @@ void CheckBox::StateChanged(int newState)
 
     if (newState != Qt::PartiallyChecked)
     {
+        Any currentValue = GetFieldValue(Fields::Checked, Any());
         setTristate(false);
         if (dataType == eContainedDataType::TYPE_CHECK_STATE)
         {
-            wrapper.SetFieldValue(GetFieldName(Fields::Checked), Any(checkState()));
+            Any newValue = Any(checkState());
+            if (currentValue != newValue)
+            {
+                wrapper.SetFieldValue(GetFieldName(Fields::Checked), newValue);
+            }
         }
         else if (dataType == eContainedDataType::TYPE_BOOL)
         {
-            wrapper.SetFieldValue(GetFieldName(Fields::Checked), Any(checkState() == Qt::Checked));
+            Any newValue = Any(checkState());
+            if (currentValue != newValue)
+            {
+                wrapper.SetFieldValue(GetFieldName(Fields::Checked), newValue);
+            }
         }
         else
         {

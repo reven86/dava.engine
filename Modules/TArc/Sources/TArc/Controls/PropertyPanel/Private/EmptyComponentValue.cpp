@@ -20,7 +20,7 @@ bool EmptyComponentValue::IsValidValueToSet(const Any& newValue, const Any& curr
     return false;
 }
 
-ControlProxy* EmptyComponentValue::CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor) const
+ControlProxy* EmptyComponentValue::CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor)
 {
     ControlDescriptorBuilder<EmptyWidget::Fields> descr;
     return new EmptyWidget(descr, wrappersProcessor, model, parent);

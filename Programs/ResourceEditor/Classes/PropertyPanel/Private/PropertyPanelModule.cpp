@@ -1,6 +1,7 @@
 #include "Classes/PropertyPanel/PropertyPanelModule.h"
 #include "Classes/PropertyPanel/PropertyModelExt.h"
 #include "Classes/PropertyPanel/QualitySettingsComponentExt.h"
+#include "Classes/PropertyPanel/KeyedArchiveExtensions.h"
 #include "Classes/Selection/SelectionData.h"
 #include "Classes/Application/REGlobal.h"
 
@@ -105,6 +106,8 @@ void PropertyPanelModule::PostInit()
     view->RegisterExtension(std::make_shared<EntityEditorCreator>());
     view->RegisterExtension(std::make_shared<QualitySettingsChildCreator>());
     view->RegisterExtension(std::make_shared<QualitySettingsEditorCreator>());
+    view->RegisterExtension(std::make_shared<KeyedArchiveChildCreator>());
+    view->RegisterExtension(std::make_shared<KeyedArchiveEditorCreator>(accessor));
     ui->AddView(REGlobal::MainWindowKey, PanelKey(panelInfo.title, panelInfo), view);
 }
 

@@ -24,7 +24,7 @@ bool FilePathComponentValue::IsValidValueToSet(const Any& newValue, const Any& c
     return newValue.Cast<FilePath>() != currentValue.Cast<FilePath>();
 }
 
-ControlProxy* FilePathComponentValue::CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor) const
+ControlProxy* FilePathComponentValue::CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor)
 {
     FilePathEdit::Params p;
     p.ui = GetUI();

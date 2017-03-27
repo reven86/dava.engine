@@ -11,6 +11,7 @@
 #include "FileSystem/FilePath.h"
 
 #include "Utils/StringFormat.h"
+#include "Utils/UTF8Utils.h"
 
 namespace DAVA
 {
@@ -32,6 +33,16 @@ String CharPointerToString(const Any& value)
 FastName CharPointerToFastName(const Any& value)
 {
     return FastName(value.Get<const char*>());
+}
+
+WideString StringToWideString(const Any& value)
+{
+    return UTF8Utils::EncodeToWideString(value.Get<String>());
+}
+
+String WideStringToString(const Any& value)
+{
+    return UTF8Utils::EncodeToUTF8(value.Cast<WideString>());
 }
 
 const char* FastNameToCharPointer(const Any& value)
@@ -107,6 +118,8 @@ String Matrix4ToString(const Any& value)
 
 void RegisterAnyCasts()
 {
+    AnyCast<String, WideString>::Register(&StringToWideString);
+    AnyCast<WideString, String>::Register(&WideStringToString);
     AnyCast<String, const char*>::Register(&StringToCharPointer);
     AnyCast<String, FastName>::Register(&StringToFastName);
     AnyCast<const char*, String>::Register(&CharPointerToString);

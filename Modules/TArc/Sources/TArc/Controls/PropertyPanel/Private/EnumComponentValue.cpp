@@ -26,9 +26,14 @@ Any EnumComponentValue::GetMultipleValue() const
 
 bool EnumComponentValue::IsValidValueToSet(const Any& newValue, const Any& currentValue) const
 {
-    if (newValue.IsEmpty() || currentValue.IsEmpty())
+    if (newValue.IsEmpty())
     {
         return false;
+    }
+
+    if (currentValue.IsEmpty())
+    {
+        return true;
     }
 
     int newIntValue = newValue.Cast<int>();
@@ -37,7 +42,7 @@ bool EnumComponentValue::IsValidValueToSet(const Any& newValue, const Any& curre
     return newIntValue != currentIntValue;
 }
 
-ControlProxy* EnumComponentValue::CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor) const
+ControlProxy* EnumComponentValue::CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor)
 {
     ControlDescriptorBuilder<ComboBox::Fields> descr;
     descr[ComboBox::Fields::Value] = "value";

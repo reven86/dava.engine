@@ -16,7 +16,7 @@ public:
     ~ChildCreator();
 
     std::shared_ptr<PropertyNode> CreateRoot(Reflection::Field&& reflectedRoot);
-    void UpdateSubTree(const std::shared_ptr<const PropertyNode>& parent);
+    void UpdateSubTree(const std::shared_ptr<PropertyNode>& parent);
     void RemoveNode(const std::shared_ptr<PropertyNode>& parent);
     void Clear();
 

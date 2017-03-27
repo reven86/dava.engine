@@ -159,6 +159,7 @@ public:
     static Reflection Create(const Any& any, const ReflectedMeta* objectMeta = nullptr);
 
     DAVA_DEPRECATED(static Reflection Create(const Reflection& etalon, const Reflection& metaProvider));
+    DAVA_DEPRECATED(static Reflection Create(const Reflection& etalon, const ReflectedMeta* objectMeta));
 
     //
     // Experimental API for fields add/remove/insert create.

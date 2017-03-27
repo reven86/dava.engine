@@ -206,6 +206,11 @@ const WindowKey& BaseComponentValue::GetWindowKey() const
     return model->wndKey;
 }
 
+DAVA::TArc::DataWrappersProcessor* BaseComponentValue::GetDataProcessor() const
+{
+    return model->GetWrappersProcessor(nodes.front());
+}
+
 void BaseComponentValue::EnsureEditorCreated(const QWidget* parent) const
 {
     if (editorWidget == nullptr)
@@ -221,7 +226,7 @@ void BaseComponentValue::EnsureEditorCreated(const QWidget* parent) const
 
 void BaseComponentValue::EnsureEditorCreated(QWidget* parent)
 {
-    editorWidget = CreateEditorWidget(parent, Reflection::Create(&thisValue), &model->wrappersProcessor);
+    editorWidget = CreateEditorWidget(parent, Reflection::Create(&thisValue), GetDataProcessor());
     editorWidget->ForceUpdate();
     realWidget = editorWidget->ToWidgetCast();
 
@@ -266,7 +271,7 @@ void BaseComponentValue::CreateButtons(QLayout* layout, const M::CommandProducer
         const std::shared_ptr<M::CommandProducer>& cmd = commands[i];
         for (const std::shared_ptr<PropertyNode>& node : nodes)
         {
-            if (cmd->IsApplyable(node->field.ref))
+            if (cmd->IsApplyable(node))
             {
                 createButton = true;
                 break;
@@ -332,13 +337,13 @@ void BaseComponentValue::CallButtonAction(const M::CommandProducerHolder* holder
     ModifyExtension::MultiCommandInterface cmdInterface = GetModifyInterface()->GetMultiCommandInterface(info.description, static_cast<uint32>(nodes.size()));
     for (std::shared_ptr<PropertyNode>& node : nodes)
     {
-        if (producer->IsApplyable(node->field.ref))
+        if (producer->IsApplyable(node))
         {
             M::CommandProducer::Params params;
             params.accessor = model->accessor;
             params.invoker = model->invoker;
             params.ui = model->ui;
-            cmdInterface.Exec(producer->CreateCommand(node->field.ref, params));
+            cmdInterface.Exec(producer->CreateCommand(node, params));
         }
     }
     producer->ClearCache();

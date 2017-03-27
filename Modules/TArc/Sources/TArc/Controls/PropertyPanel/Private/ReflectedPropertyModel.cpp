@@ -3,7 +3,6 @@
 #include "TArc/Controls/PropertyPanel/Private/EmptyComponentValue.h"
 #include "TArc/Controls/PropertyPanel/Private/DefaultPropertyModelExtensions.h"
 #include "TArc/Controls/PropertyPanel/PropertyPanelMeta.h"
-#include "TArc/Controls/PropertyPanel/KeyedArchiveChildCreator.h"
 #include "TArc/Controls/PropertyPanel/Private/SubPropertiesExtensions.h"
 
 #include <Engine/PlatformApi.h>
@@ -15,6 +14,8 @@
 #include <Utils/Utils.h>
 
 #include <QPalette>
+
+#define REPORT_UPDATE_TIME
 
 namespace DAVA
 {
@@ -112,7 +113,6 @@ ReflectedPropertyModel::ReflectedPropertyModel(WindowKey wndKey_, ContextAccesso
     RegisterExtension(ModifyExtension::CreateDummy());
 
     RegisterExtension(std::make_shared<DefaultChildCheatorExtension>());
-    RegisterExtension(std::make_shared<KeyedArchiveChildCreator>());
     RegisterExtension(std::make_shared<SubPropertyValueChildCreator>());
 
     RegisterExtension(std::make_shared<DefaultEditorComponentExtension>(ui));
@@ -241,7 +241,7 @@ void ReflectedPropertyModel::Update()
     fastWrappersProcessor.Sync();
     wrappersProcessor.Sync();
 #if defined(REPORT_UPDATE_TIME)
-    Logger::Debug(" === ReflectedPropertyModel::Update : %d ===", static_cast<int32>(SystemTimer::GetMs() - start));
+    Logger::Debug(" === ReflectedPropertyModel::Update : %d for %d objects ===", static_cast<int32>(SystemTimer::GetMs() - start), rootItem->GetPropertyNodesCount());
 #endif
 
     RefreshFavoritesRoot();
@@ -948,13 +948,13 @@ ReflectedPropertyItem* ReflectedPropertyModel::LookUpItem(const std::shared_ptr<
     DVASSERT(node->field.ref.IsValid());
 
     ReflectedPropertyItem* result = nullptr;
-    const ReflectedType* valueType = node->field.ref.GetValueObject().GetReflectedType();
+    const Type* valueType = node->field.ref.GetValueType();
 
     for (const std::unique_ptr<ReflectedPropertyItem>& item : items)
     {
         DVASSERT(item->GetPropertyNodesCount() > 0);
         std::shared_ptr<const PropertyNode> etalonNode = item->GetPropertyNode(0);
-        const ReflectedType* etalonItemType = node->field.ref.GetValueObject().GetReflectedType();
+        const Type* etalonItemType = etalonNode->field.ref.GetValueType();
 
         if (valueType == etalonItemType && etalonNode->field.key == node->field.key)
         {

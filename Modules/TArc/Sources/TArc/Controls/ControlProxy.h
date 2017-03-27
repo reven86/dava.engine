@@ -44,7 +44,7 @@ public:
 
     ~ControlProxyImpl() override
     {
-        wrapper.SetListener(nullptr);
+        TearDown();
     }
 
     void SetObjectName(const QString& objName)

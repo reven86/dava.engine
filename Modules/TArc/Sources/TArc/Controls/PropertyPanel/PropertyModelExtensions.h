@@ -40,6 +40,7 @@ public:
     int32 propertyType = Invalid; // it can be value from PropertyType or any value that you set in your extension
     Reflection::Field field;
     Any cachedValue;
+    std::weak_ptr<PropertyNode> parent;
 
     static const int32 InvalidSortKey;
     int32 sortKey = InvalidSortKey;
@@ -49,8 +50,8 @@ class IChildAllocator
 {
 public:
     virtual ~IChildAllocator() = default;
-    virtual std::shared_ptr<PropertyNode> CreatePropertyNode(Reflection::Field&& reflection, int32_t type = PropertyNode::RealProperty) = 0;
-    virtual std::shared_ptr<PropertyNode> CreatePropertyNode(Reflection::Field&& reflection, int32_t type, const Any& value) = 0;
+    virtual std::shared_ptr<PropertyNode> CreatePropertyNode(const std::shared_ptr<PropertyNode>& parent, Reflection::Field&& reflection, int32_t type = PropertyNode::RealProperty) = 0;
+    virtual std::shared_ptr<PropertyNode> CreatePropertyNode(const std::shared_ptr<PropertyNode>& parent, Reflection::Field&& reflection, int32_t type, const Any& value) = 0;
 };
 
 std::shared_ptr<PropertyNode> MakeRootNode(IChildAllocator* allocator, DAVA::Reflection::Field&& field);
@@ -135,7 +136,7 @@ class ChildCreatorExtension : public ExtensionChain
 {
 public:
     ChildCreatorExtension();
-    virtual void ExposeChildren(const std::shared_ptr<const PropertyNode>& parent, Vector<std::shared_ptr<PropertyNode>>& children) const;
+    virtual void ExposeChildren(const std::shared_ptr<PropertyNode>& parent, Vector<std::shared_ptr<PropertyNode>>& children) const;
     static std::shared_ptr<ChildCreatorExtension> CreateDummy();
 
     void SetAllocator(std::shared_ptr<IChildAllocator> allocator);
@@ -161,7 +162,7 @@ public:
         MultiCommandInterface(std::shared_ptr<ModifyExtension> ext);
 
         void ProduceCommand(const Reflection::Field& object, const Any& newValue);
-        void ModifyPropertyValue(const std::shared_ptr<PropertyNode>& nodes, const Any& newValue);
+        void ModifyPropertyValue(const std::shared_ptr<PropertyNode>& node, const Any& newValue);
         void Exec(std::unique_ptr<Command>&& command);
 
     private:
@@ -177,6 +178,7 @@ public:
 
 protected:
     virtual void BeginBatch(const String& text, uint32 commandCount);
+    virtual void ProduceCommand(const std::shared_ptr<PropertyNode>& node, const Any& newValue);
     virtual void ProduceCommand(const Reflection::Field& object, const Any& newValue);
     virtual void Exec(std::unique_ptr<Command>&& command);
     virtual void EndBatch();

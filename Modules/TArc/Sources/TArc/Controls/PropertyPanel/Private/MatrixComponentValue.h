@@ -14,7 +14,7 @@ public:
 protected:
     Any GetMultipleValue() const override;
     bool IsValidValueToSet(const Any& newValue, const Any& currentValue) const override;
-    ControlProxy* CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor) const override;
+    ControlProxy* CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor) override;
 
     String GetTextValue() const;
 

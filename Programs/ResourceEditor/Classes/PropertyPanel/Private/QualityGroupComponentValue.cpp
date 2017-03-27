@@ -192,7 +192,7 @@ bool QualityGroupComponentValue::IsValidValueToSet(const DAVA::Any& newValue, co
     return false;
 }
 
-DAVA::TArc::ControlProxy* QualityGroupComponentValue::CreateEditorWidget(QWidget* parent, const DAVA::Reflection& model, DAVA::TArc::DataWrappersProcessor* wrappersProcessor) const
+DAVA::TArc::ControlProxy* QualityGroupComponentValue::CreateEditorWidget(QWidget* parent, const DAVA::Reflection& model, DAVA::TArc::DataWrappersProcessor* wrappersProcessor)
 {
     return new QualityGroupComponentValueDetail::Control(parent, model, wrappersProcessor);
 }

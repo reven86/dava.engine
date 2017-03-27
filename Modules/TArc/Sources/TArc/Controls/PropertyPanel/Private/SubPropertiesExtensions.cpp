@@ -29,7 +29,7 @@ void InitSubPropertyTypes()
 }
 }
 
-void SubPropertyValueChildCreator::ExposeChildren(const std::shared_ptr<const PropertyNode>& parent, Vector<std::shared_ptr<PropertyNode>>& children) const
+void SubPropertyValueChildCreator::ExposeChildren(const std::shared_ptr<PropertyNode>& parent, Vector<std::shared_ptr<PropertyNode>>& children) const
 {
     using namespace SubPropertiesExtensionsDetail;
     InitSubPropertyTypes();
