@@ -15,7 +15,7 @@
 
 #include <QPalette>
 
-#define REPORT_UPDATE_TIME
+//#define REPORT_UPDATE_TIME
 
 namespace DAVA
 {
