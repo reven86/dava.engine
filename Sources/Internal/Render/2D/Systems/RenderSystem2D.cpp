@@ -394,10 +394,11 @@ void RenderSystem2D::IntersectClipRect(const Rect& rect)
 {
     if (currentClip.dx < 0 || currentClip.dy < 0)
     {
+        VirtualCoordinatesSystem* vcs = UIControlSystem::Instance()->vcs;
         const RenderTargetPassDescriptor& descr = GetActiveTargetDescriptor();
         Rect screen(0.0f, 0.0f,
-                    static_cast<float32>(descr.width == 0 ? UIControlSystem::Instance()->vcs->GetVirtualScreenSize().dx : descr.width),
-                    static_cast<float32>(descr.height == 0 ? UIControlSystem::Instance()->vcs->GetVirtualScreenSize().dy : descr.height));
+                    (descr.width == 0 ? vcs->GetVirtualScreenSize().dx : vcs->ConvertPhysicalToVirtualX(float32(descr.width))),
+                    (descr.height == 0 ? vcs->GetVirtualScreenSize().dy : vcs->ConvertPhysicalToVirtualY(float32(descr.height))));
         Rect res = screen.Intersection(rect);
         SetClip(res);
     }
