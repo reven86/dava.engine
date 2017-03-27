@@ -60,15 +60,15 @@ public:
     };
 
     /**
-	   You have to subscribe to this signal before calling `Initialize` it helps
+	   You have to subscribe to this signal before calling `Initialize`, it helps
 	   to know whether connection to server works or connection lost.
-	   Note: after fail to download from server next attempt will be in every `Hints::retryConnectMilliseconds`.
+	   Note: if download attempt is failed, DLC Manager will retry every `Hints::retryConnectMilliseconds` ms.
 	   */
     Signal<bool> networkReady;
     /**
 	    Tells that dlcmanager is initialized.
 	    First parameter is a number of already downloaded files.
-	    Second parameter is a number of total files in server superpack.
+	    Second parameter is total number of files in server superpack.
 	    After this signal you can use ```bool IsPackDownloaded(const String& packName);```
 		*/
     Signal<size_t, size_t> initializeFinished;
