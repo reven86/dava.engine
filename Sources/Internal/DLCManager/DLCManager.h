@@ -16,13 +16,14 @@ namespace DAVA
  example:
  ```
  DLCManager& pm = *engine.GetContext()->dlcManager;
- // if init failed we will know about it
+ // if initialize failed we will know about it
  pm.networkReady.Connect(this, &DLCManagerTest::OnNetworkReady);
 
  FilePath folderWithDownloadedPacks = "~doc:/FolderForPacks/";
  String urlToServerSuperpack = "http://server.net/superpack.3.7.0.mali.dvpk";
  DLCManager::Hints hints;
  hints.retryConnectMilliseconds = 1000; // retry connect every second
+ hints.maxFilesToDownload = 22456; // help download manager to reserve memory better
 
  pm.Initialize(folderWithDownloadedPacks, urlToServerSuperpack, hints);
 
@@ -58,37 +59,45 @@ public:
         virtual bool IsDownloaded() const = 0;
     };
 
-    /** You have to subscribe to this signal before calling `Initialize` */
+    /**
+	   You have to subscribe to this signal before calling `Initialize`, it helps
+	   to know whether connection to server works or connection lost.
+	   Note: if download attempt is failed, DLC Manager will retry every `Hints::retryConnectMilliseconds` ms.
+	   */
     Signal<bool> networkReady;
-    /** Tells that dlcmanager is initialized.
-	    First parameter count number of already downloaded files.
-	    Second parameter number of total files in server superpack.
+    /**
+	    Tells that dlcmanager is initialized.
+	    First parameter is a number of already downloaded files.
+	    Second parameter is total number of files in server superpack.
 	    After this signal you can use ```bool IsPackDownloaded(const String& packName);```
 		*/
     Signal<size_t, size_t> initializeFinished;
     /** signal per user request */
     Signal<const IRequest&> requestUpdated;
-    /** Signals about failed download, into device, first parameter is a full
-	    path to the file which couldn't be created or written,
+    /**
+	    Tells that some file error occurred during downloading process.
+	    First parameter is a full path to the file which couldn't be created or written,
 		second parameter is an error code
 		(example: ENOSPC - No space left on device (POSIX.1).)
 		DLCManager requesting disabled before signal.
-		If you receive this signal first check availible space on device.
+		If you receive this signal first check available space on device.
 		*/
-    Signal<const String&, int32> cantWriteToDisk;
+    Signal<const String&, int32> fileErrorOccured;
 
+    /**
+	    User fills hints to internal implementation.
+		Used for initialization.
+	*/
     struct Hints
     {
-        uint32 retryConnectMilliseconds = 5000; //!< try to reconnect to server if `Offline` state
-        uint32 checkLocalFileExistPerUpdate = 100; //!< how many file to check per Update call
-        uint32 maxFilesToDownload = 22000; //!< arond 22000 files now we have in build
+        uint32 retryConnectMilliseconds = 5000; //!< try to reconnect to server if `Offline` state default every 5 seconds
+        uint32 maxFilesToDownload = 22000; //!< user should fill this value default value average files count in Data
     };
 
     /** Start complex initialization process. You can call it again if need.
 
-        You also should subscribe to all signals especially state changes
-        before you call Initialize.
-        At least subscribe to `networkReady` signal
+		If you want to know what is going on during initialization you
+		have to subscribe to any signals you want before call `Initialize(..)`
     */
     virtual void Initialize(const FilePath& dirToDownloadPacks,
                             const String& urlToServerSuperpack,

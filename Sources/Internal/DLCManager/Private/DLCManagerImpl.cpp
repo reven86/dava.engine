@@ -150,6 +150,13 @@ void DLCManagerImpl::Initialize(const FilePath& dirToDownloadPacks_,
                                 const Hints& hints_)
 {
     DVASSERT(Thread::IsMainThread());
+
+    Logger::Info("DLCManager::Initialize(\ndirToDownloadPacks:%s, \nurlToServerSuperpack:%s, \nretryConnectMilliseconds:%d, \nmaxFilesToDownload: %d",
+                 dirToDownloadPacks_.GetAbsolutePathname().c_str(),
+                 urlToServerSuperpack_.c_str(),
+                 hints_.retryConnectMilliseconds,
+                 hints_.maxFilesToDownload);
+
     // TODO check if signal asyncConnectStateChanged has any subscriber
 
     if (!IsInitialized())
@@ -711,7 +718,7 @@ void DLCManagerImpl::ParseMeta()
     catch (DAVA::Exception& ex)
     {
         Logger::Error("%s", ex.what());
-        cantWriteToDisk.Emit(localCacheMeta.GetAbsolutePathname(), errno);
+        fileErrorOccured.Emit(localCacheMeta.GetAbsolutePathname(), errno);
         RetryInit();
         return;
     }

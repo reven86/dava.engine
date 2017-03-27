@@ -352,7 +352,7 @@ void DLCManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* data
 
     dm.requestUpdated.DisconnectAll();
     dm.requestUpdated.Connect(this, &DLCManagerTest::OnRequestUpdated);
-    dm.cantWriteToDisk.Connect(this, &DLCManagerTest::WriteErrorOnDevice);
+    dm.fileErrorOccured.Connect(this, &DLCManagerTest::WriteErrorOnDevice);
 
     String packName = packInput->GetUtf8Text();
 
