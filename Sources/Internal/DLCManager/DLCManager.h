@@ -96,9 +96,8 @@ public:
 
     /** Start complex initialization process. You can call it again if need.
 
-        You also should subscribe to all signals especially state changes
-        before you call Initialize.
-        At least subscribe to `networkReady` signal
+		If you want to know what is going on during initialization you
+		have to subscribe to any signals you want before call `Initialize(..)`
     */
     virtual void Initialize(const FilePath& dirToDownloadPacks,
                             const String& urlToServerSuperpack,
