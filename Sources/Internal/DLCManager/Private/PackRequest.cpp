@@ -259,9 +259,10 @@ void PackRequest::DeleteJustDownloadedFileAndStartAgain(FileRequest& fileRequest
 
 void PackRequest::DisableRequestingAndFireSignalNoSpaceLeft(PackRequest::FileRequest& fileRequest)
 {
+    int32 errnoValue = errno; // save in local variable if other error happen
     Logger::Error("No space on device!!! Can't create or write file: %s disable DLCManager requesting", fileRequest.localFile.GetAbsolutePathname().c_str());
     packManagerImpl->SetRequestingEnabled(false);
-    packManagerImpl->cantWriteToDisk.Emit(fileRequest.localFile.GetAbsolutePathname().c_str(), errno);
+    packManagerImpl->fileErrorOccured.Emit(fileRequest.localFile.GetAbsolutePathname().c_str(), errnoValue);
 }
 
 bool PackRequest::UpdateFileRequests()
