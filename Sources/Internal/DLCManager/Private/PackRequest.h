@@ -15,12 +15,13 @@ class PackRequest : public DLCManager::IRequest
 {
 public:
     PackRequest(DLCManagerImpl& packManager_, const String& packName, Vector<uint32> fileIndexes_);
+    void CancelCurrentsDownloads();
     PackRequest(DLCManagerImpl& packManager_, const String& requestedPackName);
 
     ~PackRequest() override;
 
     void Start();
-    void Update();
+    bool Update();
     void Stop();
 
     const String& GetRequestedPackName() const override;
@@ -34,6 +35,13 @@ public:
     bool IsDownloaded() const override;
 
     void SetFileIndexes(Vector<uint32> fileIndexes_);
+
+    /** this request depends on other, so other should be downloaded first */
+    bool IsSubRequest(const PackRequest* other) const;
+
+    bool IsDelayed() const;
+
+    PackRequest& operator=(PackRequest&& other);
 
 private:
     void InitializeFileRequests();
@@ -74,9 +82,12 @@ private:
                                const String& url,
                                const Compressor::Type compressionType_,
                                FileRequest& fileRequest);
-    void UpdateFileRequests();
 
-    DLCManagerImpl& packManagerImpl;
+    static void DeleteJustDownloadedFileAndStartAgain(FileRequest& fileRequest);
+    void DisableRequestingAndFireSignalNoSpaceLeft(PackRequest::FileRequest& fileRequest);
+    bool UpdateFileRequests();
+
+    DLCManagerImpl* packManagerImpl = nullptr;
 
     Vector<FileRequest> requests;
     Vector<uint32> fileIndexes;
@@ -88,5 +99,10 @@ private:
     // else fileIndexes maybe empty and wait initialization
     bool delayedRequest = true;
 };
+
+inline bool PackRequest::IsDelayed() const
+{
+    return delayedRequest;
+}
 
 } // end namespace DAVA
