@@ -65,9 +65,10 @@ public:
 	   Note: after fail to download from server next attemp will be in every `Hints::retryConnectMilliseconds`.
 	   */
     Signal<bool> networkReady;
-    /** Tells that dlcmanager is initialized.
-	    First parameter count number of already downloaded files.
-	    Second parameter number of total files in server superpack.
+    /**
+	    Tells that dlcmanager is initialized.
+	    First parameter is a number of already downloaded files.
+	    Second parameter is a number of total files in server superpack.
 	    After this signal you can use ```bool IsPackDownloaded(const String& packName);```
 		*/
     Signal<size_t, size_t> initializeFinished;
