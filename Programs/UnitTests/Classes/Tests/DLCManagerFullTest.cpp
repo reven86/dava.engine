@@ -25,6 +25,7 @@ struct FSMTest02
     State state = WaitInitializationFinished;
     DAVA::float32 time = 0.0f;
     DAVA::float32 waitSecondConnect = 3.0f;
+    const DAVA::float32 timeout = 40.f;
     DAVA::DLCManager::Progress progressAfterInit;
 
     bool Update(DAVA::float32 dt)
@@ -96,8 +97,10 @@ struct FSMTest02
         break;
         }
 
-        if (time > 30.0f) // timeout
+        if (time > timeout)
         {
+            auto prog = dlcManager.GetProgress();
+            DAVA::Logger::Error("timeout: total: %llu in_queue: %llu downloaded: %lld", prog.total, prog.inQueue, prog.alreadyDownloaded);
             TEST_VERIFY(false && "time out wait second connection")
             return true;
         }
