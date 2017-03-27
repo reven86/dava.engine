@@ -16,7 +16,7 @@ namespace DAVA
  example:
  ```
  DLCManager& pm = *engine.GetContext()->dlcManager;
- // if init failed we will know about it
+ // if initialize failed we will know about it
  pm.networkReady.Connect(this, &DLCManagerTest::OnNetworkReady);
 
  FilePath folderWithDownloadedPacks = "~doc:/FolderForPacks/";
@@ -61,8 +61,8 @@ public:
 
     /**
 	   You have to subscribe to this signal before calling `Initialize` it helps
-	   to know wherether connection to server works or connection lost.
-	   Note: after fail to download from server next attemp will be in every `Hints::retryConnectMilliseconds`.
+	   to know whether connection to server works or connection lost.
+	   Note: after fail to download from server next attempt will be in every `Hints::retryConnectMilliseconds`.
 	   */
     Signal<bool> networkReady;
     /**
@@ -80,7 +80,7 @@ public:
 		second parameter is an error code
 		(example: ENOSPC - No space left on device (POSIX.1).)
 		DLCManager requesting disabled before signal.
-		If you receive this signal first check availible space on device.
+		If you receive this signal first check available space on device.
 		*/
     Signal<const String&, int32> fileErrorOccured;
 
@@ -91,7 +91,7 @@ public:
     struct Hints
     {
         uint32 retryConnectMilliseconds = 5000; //!< try to reconnect to server if `Offline` state default every 5 seconds
-        uint32 maxFilesToDownload = 22000; //!< user should fill this value default value avarage files count in Data
+        uint32 maxFilesToDownload = 22000; //!< user should fill this value default value average files count in Data
     };
 
     /** Start complex initialization process. You can call it again if need.
