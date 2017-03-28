@@ -278,21 +278,21 @@ Reflection::Reflection(const ReflectedObject& object_, const ValueWrapper* vw, c
     , structureWrapper(sw)
     , meta(meta_)
 {
-    // try to get structureWrapper from object reflected type
-    const ReflectedType* reflectedType = valueWrapper->GetValueObject(object).GetReflectedType();
-    if (nullptr != reflectedType)
+    if (nullptr == structureWrapper)
     {
-        if (nullptr == structureWrapper)
+        // try to get structureWrapper from object reflected type
+        const ReflectedType* reflectedType = valueWrapper->GetValueObject(object).GetReflectedType();
+        if (nullptr != reflectedType)
         {
             structureWrapper = reflectedType->GetStrucutreWrapper();
         }
-    }
 
-    // in still no structureWrapper use empty one
-    if (nullptr == structureWrapper)
-    {
-        static StructureWrapperDefault emptyStructureWrapper;
-        structureWrapper = &emptyStructureWrapper;
+        // if still no structureWrapper use empty one
+        if (nullptr == structureWrapper)
+        {
+            static StructureWrapperDefault emptyStructureWrapper;
+            structureWrapper = &emptyStructureWrapper;
+        }
     }
 }
 
@@ -365,19 +365,6 @@ const void* Reflection::GetMeta(const Type* metaType) const
         ret = meta->GetMeta(metaType);
     }
 
-    if (nullptr == ret)
-    {
-        const ReflectedType* reflectedType = valueWrapper->GetValueObject(object).GetReflectedType();
-        if (nullptr != reflectedType)
-        {
-            const ReflectedStructure* s = reflectedType->GetStructure();
-            if (nullptr != s)
-            {
-                ret = s->meta->GetMeta(metaType);
-            }
-        }
-    }
-
     return ret;
 }
 
@@ -435,6 +422,8 @@ Reflection::Method::Method(Any key_, AnyFn&& fn_)
 {
 }
 
+// For future usage.
+// Function shows imGui dialog with Reflection memory statistics.
 #if 0
 void ProvideReflectionDebugInfo()
 {
