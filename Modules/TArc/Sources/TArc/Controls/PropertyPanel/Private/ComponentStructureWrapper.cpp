@@ -28,7 +28,7 @@ bool ComponentStructureWrapper::HasFields(const ReflectedObject& object, const V
 Reflection ComponentStructureWrapper::GetField(const ReflectedObject& obj, const ValueWrapper* vw, const Any& key) const
 {
     const Type* objType = obj.GetReflectedType()->GetType();
-    const Type* componentType = Type::Instance<BaseComponentValue*>();
+    const Type* componentType = Type::Instance<BaseComponentValue>();
     Reflection field = classWrapper->GetField(obj, vw, key);
     if (nullptr != field.GetMeta<M::ProxyMetaRequire>() && TypeInheritance::CanCast(objType, componentType))
     {
@@ -51,7 +51,7 @@ size_t ComponentStructureWrapper::GetFieldsCount(const ReflectedObject& object, 
 Vector<Reflection::Field> ComponentStructureWrapper::GetFields(const ReflectedObject& obj, const ValueWrapper* vw) const
 {
     const Type* objType = obj.GetReflectedType()->GetType();
-    const Type* componentType = Type::Instance<BaseComponentValue*>();
+    const Type* componentType = Type::Instance<BaseComponentValue>();
     Vector<Reflection::Field> fields = classWrapper->GetFields(obj, vw);
     if (TypeInheritance::CanCast(objType, componentType))
     {
