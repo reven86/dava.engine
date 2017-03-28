@@ -27,7 +27,10 @@ void FastName::Init(const char* name)
     {
         // already exist, so we just need to set the same index to this object
         index = db->namesHash[name];
+
+#ifdef __DAVAENGINE_DEBUG__
         str = db->namesTable[index];
+#endif
     }
     else
     {

@@ -76,7 +76,10 @@ private:
     void Init(const char* name);
 
     int index = -1;
+    
+#ifdef __DAVAENGINE_DEBUG__
     const char* str = nullptr;
+#endif
 };
 
 inline FastName::FastName(const String& name)
@@ -141,7 +144,14 @@ inline bool FastName::IsValid() const
 
 inline const char* FastName::c_str() const
 {
-    return str;
+    DVASSERT(index >= -1 && index < static_cast<int>(db->namesTable.size()));
+
+    if (index >= 0)
+    {
+        return db->namesTable[index];
+    }
+
+    return nullptr;
 }
 
 template <>
