@@ -94,7 +94,10 @@ inline T* ReflectedObject::GetPtr() const // <-- GetPtrWithCast
     void* tmp = nullptr;
     bool canCast = TypeInheritance::DownCast(reflectedType->GetType(), Type::Instance<T>(), ptr, &tmp);
 
+#ifdef __DAVAENGINE_DEBUG__
     DVASSERT(canCast);
+#endif
+
     return static_cast<T*>(tmp);
 }
 
