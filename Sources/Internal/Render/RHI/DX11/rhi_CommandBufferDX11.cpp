@@ -242,10 +242,13 @@ void CommandBufferDX11_t::Begin(ID3D11DeviceContext* inContext)
     }
     else if (passCfg.depthStencilBuffer.texture != rhi::InvalidHandle)
     {
-        if (passCfg.UsingMSAA())
-            TextureDX11::SetDepthStencil(passCfg.depthStencilBuffer.multisampleTexture, &ds_view);
-        else
-            TextureDX11::SetDepthStencil(passCfg.depthStencilBuffer.texture, &ds_view);
+        TextureDX11::SetDepthStencil(passCfg.depthStencilBuffer.texture, &ds_view);
+    }
+
+    if (passCfg.UsingMSAA())
+    {
+        DVASSERT(passCfg.depthStencilBuffer.multisampleTexture != InvalidHandle);
+        TextureDX11::SetDepthStencil(passCfg.depthStencilBuffer.multisampleTexture, &ds_view);
     }
 
     for (unsigned i = 0; i != countof(passCfg.colorBuffer); ++i)
@@ -263,7 +266,11 @@ void CommandBufferDX11_t::Begin(ID3D11DeviceContext* inContext)
         {
             if (i == 0)
             {
-                rt_view[0] = dx11.renderTargetView.Get();
+                if (passCfg.UsingMSAA())
+                    TextureDX11::SetRenderTarget(passCfg.colorBuffer[i].multisampleTexture, passCfg.colorBuffer[i].textureLevel, passCfg.colorBuffer[i].textureFace, inContext, rt_view + i);
+                else
+                    rt_view[0] = dx11.renderTargetView.Get();
+
                 rt_count = 1;
             }
 
