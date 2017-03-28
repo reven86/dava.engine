@@ -451,6 +451,11 @@ void RenderSystem2D::SetSpriteClipping(bool clipping)
     spriteClipping = clipping;
 }
 
+bool RenderSystem2D::GetSpriteClipping() const
+{
+    return spriteClipping;
+}
+
 bool RenderSystem2D::IsPreparedSpriteOnScreen(Sprite::DrawState* drawState)
 {
     Rect clipRect = currentClip;
