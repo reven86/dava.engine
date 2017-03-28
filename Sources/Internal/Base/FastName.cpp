@@ -27,10 +27,6 @@ void FastName::Init(const char* name)
     {
         // already exist, so we just need to set the same index to this object
         index = db->namesHash[name];
-
-#ifdef __DAVAENGINE_DEBUG__
-        str = db->namesTable[index];
-#endif
     }
     else
     {
@@ -44,7 +40,6 @@ void FastName::Init(const char* name)
 
         // index will be a new row in names table
         index = static_cast<int32>(db->namesTable.size());
-        str = nameCopy;
 
         db->namesTable.resize(index + 1);
         db->namesTable[index] = nameCopy;
@@ -52,6 +47,10 @@ void FastName::Init(const char* name)
     }
 
     DVASSERT(index != -1);
+
+#ifdef __DAVAENGINE_DEBUG__
+    debug_str = c_str();
+#endif
 }
 
 template <>

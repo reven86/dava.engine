@@ -78,7 +78,7 @@ private:
     int index = -1;
     
 #ifdef __DAVAENGINE_DEBUG__
-    const char* str = nullptr;
+    const char* debug_str = nullptr;
 #endif
 };
 
