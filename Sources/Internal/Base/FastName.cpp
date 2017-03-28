@@ -41,8 +41,7 @@ void FastName::Init(const char* name)
         // index will be a new row in names table
         index = static_cast<int32>(db->namesTable.size());
 
-        db->namesTable.resize(index + 1);
-        db->namesTable[index] = nameCopy;
+        db->namesTable.push_back(nameCopy);
         db->namesHash.emplace(nameCopy, index);
     }
 

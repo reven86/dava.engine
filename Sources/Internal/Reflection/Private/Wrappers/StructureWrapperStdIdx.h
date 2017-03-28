@@ -44,15 +44,15 @@ public:
 
     bool HasFields(const ReflectedObject& object, const ValueWrapper* vw) const override
     {
-        if (!caps.hasRangeAccess)
-            return 0;
-
         C* c = vw->GetValueObject(object).GetPtr<C>();
         return (c->size() > 0);
     }
 
     size_t GetFieldsCount(const ReflectedObject& object, const ValueWrapper* vw) const override
     {
+        if (!caps.hasRangeAccess)
+            return 0;
+
         C* c = vw->GetValueObject(object).GetPtr<C>();
         return c->size();
     }
