@@ -66,7 +66,6 @@ Project::Project(MainWindow::ProjectView* view_, DAVA::TArc::ContextAccessor* ac
         editorLocalizationSystem->SetCurrentLocale(QString::fromStdString(projectData->GetDefaultLanguage()));
     }
 
-
     view->SetProjectActionsEnabled(true);
     view->SetProjectPath(GetProjectPath());
     view->SetLanguages(GetAvailableLanguages(), GetCurrentLanguage());
