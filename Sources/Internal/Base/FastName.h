@@ -54,7 +54,7 @@ class FastName
     static FastNameDB* db;
 
 public:
-    inline FastName() = default;
+    FastName();
     explicit FastName(const char* name);
     explicit FastName(const String& name);
 
@@ -81,6 +81,8 @@ private:
     const char* debug_str = nullptr;
 #endif
 };
+
+inline FastName::FastName() = default;
 
 inline FastName::FastName(const String& name)
 {
