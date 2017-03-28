@@ -1,8 +1,8 @@
-#ifndef __DAVAENGINE_LIGHT_NODE_H__
-#define __DAVAENGINE_LIGHT_NODE_H__
+#pragma once
 
 #include "Base/BaseObject.h"
 #include "Base/BaseMath.h"
+#include "Reflection/Reflection.h"
 #include "Render/RenderBase.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
 
@@ -26,7 +26,7 @@ public:
         TYPE_COUNT
     };
 
-    enum
+    enum eFlags
     {
         IS_DYNAMIC = 1 << 0,
         CAST_SHADOW = 1 << 1,
@@ -101,7 +101,7 @@ public:
                          MEMBER(intensity, "Intensity", I_SAVE | I_VIEW | I_EDIT)
                          MEMBER(flags, "Flags", I_SAVE | I_VIEW | I_EDIT)
                          )
-};
-};
 
-#endif //__DAVAENGINE_LIGHT_NODE_H__
+    DAVA_VIRTUAL_REFLECTION(Light, BaseObject);
+};
+};

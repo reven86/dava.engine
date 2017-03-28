@@ -6,7 +6,8 @@
 #include "TArc/DataProcessing/DataWrapper.h"
 #include "TArc/DataProcessing/PropertiesHolder.h"
 
-#include "Functional/Function.h"
+#include <Functional/Function.h>
+#include <Reflection/Reflection.h>
 
 namespace DAVA
 {
@@ -38,6 +39,12 @@ public:
     virtual PropertiesItem CreatePropertiesNode(const String& nodeName) = 0;
 
     virtual const EngineContext* GetEngineContext() = 0;
+
+private:
+    virtual const Vector<DataContext*>& GetContexts() const = 0;
+    virtual void SetActiveContext(DataContext* ctx) = 0;
+
+    DAVA_REFLECTION(ContextAccessor);
 };
 } // namespace TArc
 } // namespace DAVA

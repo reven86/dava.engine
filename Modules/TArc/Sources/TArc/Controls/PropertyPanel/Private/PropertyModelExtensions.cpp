@@ -15,15 +15,6 @@ public:
     }
 };
 
-class DummyMerger : public MergeValuesExtension
-{
-public:
-    ReflectedPropertyItem* LookUpItem(const std::shared_ptr<const PropertyNode>& node, const Vector<std::unique_ptr<ReflectedPropertyItem>>& items) const override
-    {
-        return nullptr;
-    }
-};
-
 class DummyEditorComponent : public EditorComponentExtension
 {
 public:
@@ -36,7 +27,19 @@ public:
 class DummyModifyExtension : public ModifyExtension
 {
 public:
-    void ProduceCommand(const Vector<Reflection::Field>&, const Any&) override
+    void BeginBatch(const String& text, uint32 commandCount)
+    {
+    }
+
+    void ProduceCommand(const Reflection::Field& object, const Any& newValue)
+    {
+    }
+
+    void Exec(std::unique_ptr<Command>&&)
+    {
+    }
+
+    void EndBatch()
     {
     }
 };
@@ -63,6 +66,8 @@ bool PropertyNode::operator!=(const PropertyNode& other) const
     field.key != field.key;
 }
 
+const int32 PropertyNode::InvalidSortKey = std::numeric_limits<int32>::max();
+
 ChildCreatorExtension::ChildCreatorExtension()
     : ExtensionChain(Type::Instance<ChildCreatorExtension>())
 {
@@ -83,21 +88,6 @@ void ChildCreatorExtension::SetAllocator(std::shared_ptr<IChildAllocator> alloca
     allocator = allocator_;
 }
 
-MergeValuesExtension::MergeValuesExtension()
-    : ExtensionChain(Type::Instance<MergeValuesExtension>())
-{
-}
-
-ReflectedPropertyItem* MergeValuesExtension::LookUpItem(const std::shared_ptr<const PropertyNode>& node, const Vector<std::unique_ptr<ReflectedPropertyItem>>& items) const
-{
-    return GetNext<MergeValuesExtension>()->LookUpItem(node, items);
-}
-
-std::shared_ptr<MergeValuesExtension> MergeValuesExtension::CreateDummy()
-{
-    return std::make_shared<PMEDetails::DummyMerger>();
-}
-
 EditorComponentExtension::EditorComponentExtension()
     : ExtensionChain(Type::Instance<EditorComponentExtension>())
 {
@@ -113,42 +103,93 @@ std::shared_ptr<EditorComponentExtension> EditorComponentExtension::CreateDummy(
     return std::make_shared<PMEDetails::DummyEditorComponent>();
 }
 
+struct ModifyExtension::ModifyExtDeleter
+{
+    ModifyExtDeleter() = default;
+
+    void operator()(ModifyExtension* ext) const
+    {
+        ext->EndBatch();
+    }
+};
+
 ModifyExtension::ModifyExtension()
     : ExtensionChain(Type::Instance<ModifyExtension>())
 {
 }
 
-void ModifyExtension::ModifyPropertyValue(Vector<std::shared_ptr<PropertyNode>>& nodes, const Any& newValue)
+void ModifyExtension::ModifyPropertyValue(const Vector<std::shared_ptr<PropertyNode>>& nodes, const Any& newValue)
 {
-    Vector<Reflection::Field> reflections;
-    for (std::shared_ptr<PropertyNode>& node : nodes)
+    MultiCommandInterface modif = GetMultiCommandInterface(static_cast<uint32>(nodes.size()));
+    for (std::shared_ptr<PropertyNode> node : nodes)
     {
-        reflections.push_back(node->field);
-    }
-
-    ProduceCommand(reflections, newValue);
-
-    for (std::shared_ptr<PropertyNode>& node : nodes)
-    {
-        if (node->field.ref.IsValid())
-        {
-            node->cachedValue = node->field.ref.GetValue();
-        }
-        else
-        {
-            node->cachedValue = Any();
-        }
+        modif.ModifyPropertyValue(node, newValue);
     }
 }
 
-void ModifyExtension::ProduceCommand(const Vector<Reflection::Field>& objects, const Any& newValue)
+ModifyExtension::MultiCommandInterface ModifyExtension::GetMultiCommandInterface(uint32 commandCount)
 {
-    GetNext<ModifyExtension>()->ProduceCommand(objects, newValue);
+    BeginBatch("Set property value", commandCount);
+    return MultiCommandInterface(std::shared_ptr<ModifyExtension>(this, ModifyExtDeleter()));
+}
+
+ModifyExtension::MultiCommandInterface ModifyExtension::GetMultiCommandInterface(const String& description, uint32 commandCount)
+{
+    BeginBatch(description, commandCount);
+    return MultiCommandInterface(std::shared_ptr<ModifyExtension>(this, ModifyExtDeleter()));
+}
+
+void ModifyExtension::BeginBatch(const String& text, uint32 commandCount)
+{
+    GetNext<ModifyExtension>()->BeginBatch(text, commandCount);
+}
+
+void ModifyExtension::ProduceCommand(const Reflection::Field& object, const Any& newValue)
+{
+    GetNext<ModifyExtension>()->ProduceCommand(object, newValue);
+}
+
+void ModifyExtension::Exec(std::unique_ptr<Command>&& command)
+{
+    GetNext<ModifyExtension>()->Exec(std::move(command));
+}
+
+void ModifyExtension::EndBatch()
+{
+    GetNext<ModifyExtension>()->EndBatch();
 }
 
 std::shared_ptr<ModifyExtension> ModifyExtension::CreateDummy()
 {
     return std::make_shared<PMEDetails::DummyModifyExtension>();
+}
+
+ModifyExtension::MultiCommandInterface::MultiCommandInterface(std::shared_ptr<ModifyExtension> ext)
+    : extension(ext)
+{
+}
+
+void ModifyExtension::MultiCommandInterface::ModifyPropertyValue(const std::shared_ptr<PropertyNode>& node, const Any& newValue)
+{
+    extension->ProduceCommand(node->field, newValue);
+    if (node->field.ref.IsValid())
+    {
+        node->cachedValue = node->field.ref.GetValue();
+    }
+    else
+    {
+        node->cachedValue = Any();
+    }
+}
+
+void ModifyExtension::MultiCommandInterface::Exec(std::unique_ptr<DAVA::Command>&& command)
+{
+    extension->Exec(std::move(command));
+}
+
+void ModifyExtension::MultiCommandInterface::ProduceCommand(const Reflection::Field& object, const Any& newValue)
+{
+    extension->ProduceCommand(object, newValue);
 }
 
 } // namespace TArc

@@ -4,16 +4,28 @@
 #include "UI/UIScrollView.h"
 #include "Utils/Utils.h"
 
+namespace UIControlHelpersDetails
+{
+static const DAVA::String PATH_SEPARATOR("/");
+static const DAVA::FastName WILDCARD_PARENT("..");
+static const DAVA::FastName WILDCARD_CURRENT(".");
+static const DAVA::FastName WILDCARD_ROOT("^");
+static const DAVA::FastName WILDCARD_MATCHES_ONE_LEVEL("*");
+static const DAVA::FastName WILDCARD_MATCHES_ZERO_OR_MORE_LEVEL("**");
+static const DAVA::Set<DAVA::FastName> RESERVED_NAMES = {
+    WILDCARD_PARENT,
+    WILDCARD_CURRENT,
+    WILDCARD_ROOT,
+    WILDCARD_MATCHES_ONE_LEVEL,
+    WILDCARD_MATCHES_ZERO_OR_MORE_LEVEL
+};
+}
+
 namespace DAVA
 {
-const FastName UIControlHelpers::WILDCARD_PARENT("..");
-const FastName UIControlHelpers::WILDCARD_CURRENT(".");
-const FastName UIControlHelpers::WILDCARD_ROOT("^");
-const FastName UIControlHelpers::WILDCARD_MATCHES_ONE_LEVEL("*");
-const FastName UIControlHelpers::WILDCARD_MATCHES_ZERO_OR_MORE_LEVEL("**");
-
 String UIControlHelpers::GetControlPath(const UIControl* control, const UIControl* rootControl /*= NULL*/)
 {
+    using namespace UIControlHelpersDetails;
     if (!control)
         return "";
 
@@ -24,7 +36,7 @@ String UIControlHelpers::GetControlPath(const UIControl* control, const UIContro
         if (!controlIter)
             return "";
 
-        controlPath = String(controlIter->GetName().c_str()) + "/" + controlPath;
+        controlPath = String(controlIter->GetName().c_str()) + PATH_SEPARATOR + controlPath;
 
         controlIter = controlIter->GetParent();
     } while (controlIter != rootControl);
@@ -34,6 +46,7 @@ String UIControlHelpers::GetControlPath(const UIControl* control, const UIContro
 
 String UIControlHelpers::GetPathToOtherControl(const UIControl* src, const UIControl* dst)
 {
+    using namespace UIControlHelpersDetails;
     const UIControl* commonParent = src;
 
     const UIControl* p2 = dst;
@@ -56,14 +69,11 @@ String UIControlHelpers::GetPathToOtherControl(const UIControl* src, const UICon
         String str;
         while (p != commonParent)
         {
-            if (str.empty())
+            if (!str.empty())
             {
-                str += "..";
+                str += PATH_SEPARATOR;
             }
-            else
-            {
-                str += "/..";
-            }
+            str += WILDCARD_PARENT.c_str();
             p = p->GetParent();
         }
 
@@ -77,7 +87,7 @@ String UIControlHelpers::GetPathToOtherControl(const UIControl* src, const UICon
             }
             else
             {
-                str2 = String(p->GetName().c_str()) + "/" + str2;
+                str2 = String(p->GetName().c_str()) + PATH_SEPARATOR + str2;
             }
             p = p->GetParent();
         }
@@ -90,7 +100,7 @@ String UIControlHelpers::GetPathToOtherControl(const UIControl* src, const UICon
         {
             return str2;
         }
-        return str + "/" + str2;
+        return str + PATH_SEPARATOR + str2;
     }
     else
     {
@@ -134,8 +144,9 @@ const UIControl* UIControlHelpers::FindControlByPath(const String& controlPath, 
 
 const UIControl* UIControlHelpers::FindControlByPathImpl(const String& controlPath, const UIControl* rootControl)
 {
+    using namespace UIControlHelpersDetails;
     Vector<String> strPath;
-    Split(controlPath, "/", strPath, false, true);
+    Split(controlPath, PATH_SEPARATOR, strPath, false, true);
 
     Vector<FastName> path;
     path.reserve(strPath.size());
@@ -149,6 +160,8 @@ const UIControl* UIControlHelpers::FindControlByPathImpl(const String& controlPa
 
 const UIControl* UIControlHelpers::FindControlByPathImpl(Vector<FastName>::const_iterator begin, Vector<FastName>::const_iterator end, const UIControl* rootControl)
 {
+    using namespace UIControlHelpersDetails;
+
     const UIControl* control = rootControl;
 
     for (auto it = begin; it != end; ++it)
@@ -236,6 +249,16 @@ void UIControlHelpers::ScrollToControlWithAnimation(DAVA::UIControl* control, fl
     {
         ScrollToRect(parent, control->GetRect(), animationTime, toTopLeftForBigControls);
     }
+}
+
+bool UIControlHelpers::IsControlNameValid(const FastName& controlName)
+{
+    using namespace UIControlHelpersDetails;
+
+    if (RESERVED_NAMES.count(controlName) > 0)
+        return false;
+
+    return (String(controlName.c_str()).find_first_of(PATH_SEPARATOR) == String::npos);
 }
 
 void UIControlHelpers::ScrollToRect(DAVA::UIControl* control, const Rect& rect, float32 animationTime, bool toTopLeftForBigControls)

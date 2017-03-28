@@ -6,6 +6,11 @@ namespace DAVA
 {
 namespace Metas
 {
+DisplayName::DisplayName(const String& displayName_)
+    : displayName(displayName_)
+{
+}
+
 Range::Range(const Any& minValue_, const Any& maxValue_, const Any& step_)
     : minValue(minValue_)
     , maxValue(maxValue_)
@@ -34,15 +39,20 @@ ValidationResult Validator::Validate(const Any& value, const Any& prevValue) con
     return fn(value, prevValue);
 }
 
-File::File(bool shouldExists_, const String& filters_)
-    : shouldExists(shouldExists_)
-    , filters(filters_)
+File::File(const String& filters_, const String& dlgTitle_)
+    : filters(filters_)
+    , dlgTitle(dlgTitle_)
 {
 }
 
-Directory::Directory(bool shouldExists_)
-    : shouldExists(shouldExists_)
+String File::GetDefaultPath() const
 {
+    return "";
+}
+
+String File::GetRootDirectory() const
+{
+    return "";
 }
 
 Group::Group(const char* groupName_)

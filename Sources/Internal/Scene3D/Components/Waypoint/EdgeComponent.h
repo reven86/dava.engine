@@ -1,7 +1,7 @@
-#ifndef __DAVAENGINE_EDGE_COMPONENT_H__
-#define __DAVAENGINE_EDGE_COMPONENT_H__
+#pragma once
 
 #include "Entity/Component.h"
+#include "Reflection/Reflection.h"
 #include "Base/Introspection.h"
 
 namespace DAVA
@@ -49,6 +49,8 @@ public:
                          PROPERTY("nextEntityName", "Next Entity Name", GetNextEntityName, SetNextEntityName, I_VIEW)
                          PROPERTY("nextEntityTag", "Next Entity Tag", GetNextEntityTag, SetNextEntityTag, I_VIEW)
                          );
+
+    DAVA_VIRTUAL_REFLECTION(EdgeComponent, Component);
 };
 
 inline Entity* EdgeComponent::GetNextEntity() const
@@ -61,4 +63,3 @@ inline KeyedArchive* EdgeComponent::GetProperties() const
     return properties;
 }
 }
-#endif //__DAVAENGINE_EDGE_COMPONENT_H__

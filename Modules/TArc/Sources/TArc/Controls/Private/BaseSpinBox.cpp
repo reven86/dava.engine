@@ -1,5 +1,7 @@
 #include "TArc/Controls/Private/BaseSpinBox.h"
 
+#include <QtEvents>
+
 namespace DAVA
 {
 namespace TArc
@@ -14,7 +16,7 @@ std::pair<const Type*, std::pair<Any, Any>> CreateRangePair()
 }
 }
 template <typename TBase, typename TEditableType>
-DAVA::TArc::BaseSpinBox<TBase, TEditableType>::BaseSpinBox(const ControlDescriptor& descriptor, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent)
+BaseSpinBox<TBase, TEditableType>::BaseSpinBox(const ControlDescriptor& descriptor, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent)
     : ControlProxyImpl<TBase>(descriptor, wrappersProcessor, model, parent)
 {
     static_assert(std::is_base_of<QAbstractSpinBox, TBase>::value, "TBase should be derived from QAbstractSpinBox");
@@ -22,7 +24,7 @@ DAVA::TArc::BaseSpinBox<TBase, TEditableType>::BaseSpinBox(const ControlDescript
 }
 
 template <typename TBase, typename TEditableType>
-DAVA::TArc::BaseSpinBox<TBase, TEditableType>::BaseSpinBox(const ControlDescriptor& descriptor, ContextAccessor* accessor, Reflection model, QWidget* parent)
+BaseSpinBox<TBase, TEditableType>::BaseSpinBox(const ControlDescriptor& descriptor, ContextAccessor* accessor, Reflection model, QWidget* parent)
     : ControlProxyImpl<TBase>(descriptor, accessor, model, parent)
 {
     static_assert(std::is_base_of<QAbstractSpinBox, TBase>::value, "TBase should be derived from QAbstractSpinBox");
@@ -30,7 +32,21 @@ DAVA::TArc::BaseSpinBox<TBase, TEditableType>::BaseSpinBox(const ControlDescript
 }
 
 template <typename TBase, typename TEditableType>
-void DAVA::TArc::BaseSpinBox<TBase, TEditableType>::UpdateRange()
+bool BaseSpinBox<TBase, TEditableType>::event(QEvent* e)
+{
+    if (e->type() == QEvent::Wheel)
+    {
+        if (this->hasFocus() == false)
+        {
+            return false;
+        }
+    }
+
+    return ControlProxyImpl<TBase>::event(e);
+}
+
+template <typename TBase, typename TEditableType>
+void BaseSpinBox<TBase, TEditableType>::UpdateRange()
 {
     using namespace BaseSpinBoxDetail;
     static Map<const Type*, std::pair<Any, Any>> defaultRangeMap
@@ -97,8 +113,9 @@ void DAVA::TArc::BaseSpinBox<TBase, TEditableType>::UpdateRange()
 }
 
 template <typename TBase, typename TEditableType>
-void DAVA::TArc::BaseSpinBox<TBase, TEditableType>::UpdateControl(const ControlDescriptor& changedFields)
+void BaseSpinBox<TBase, TEditableType>::UpdateControl(const ControlDescriptor& changedFields)
 {
+    UpdateRange();
     bool valueChanged = changedFields.IsChanged(BaseFields::Value);
     bool readOnlychanged = changedFields.IsChanged(BaseFields::IsReadOnly);
     if (valueChanged == true || readOnlychanged == true)
@@ -130,20 +147,20 @@ void DAVA::TArc::BaseSpinBox<TBase, TEditableType>::UpdateControl(const ControlD
     {
         this->setEnabled(this->template GetFieldValue<bool>(BaseFields::IsEnabled, true));
     }
-
-    UpdateRange();
 }
 
 template <typename TBase, typename TEditableType>
-void DAVA::TArc::BaseSpinBox<TBase, TEditableType>::SetupSpinBoxBase()
+void BaseSpinBox<TBase, TEditableType>::SetupSpinBoxBase()
 {
     this->setKeyboardTracking(false);
     connections.AddConnection(this, static_cast<void (TBase::*)(TEditableType)>(&TBase::valueChanged), DAVA::MakeFunction(this, &BaseSpinBox<TBase, TEditableType>::ValueChanged));
     ToValidState();
+
+    this->setFocusPolicy(Qt::StrongFocus);
 }
 
 template <typename TBase, typename TEditableType>
-void DAVA::TArc::BaseSpinBox<TBase, TEditableType>::ValueChanged(TEditableType val)
+void BaseSpinBox<TBase, TEditableType>::ValueChanged(TEditableType val)
 {
     if (this->isReadOnly() == true || this->isEnabled() == false)
     {
@@ -161,6 +178,7 @@ void DAVA::TArc::BaseSpinBox<TBase, TEditableType>::ValueChanged(TEditableType v
             {
                 ToValidState();
                 this->wrapper.SetFieldValue(this->GetFieldName(BaseFields::Value), val);
+                UpdateRange();
                 if (this->hasFocus() == true)
                 {
                     ToEditingState();
@@ -171,7 +189,7 @@ void DAVA::TArc::BaseSpinBox<TBase, TEditableType>::ValueChanged(TEditableType v
 }
 
 template <typename TBase, typename TEditableType>
-void DAVA::TArc::BaseSpinBox<TBase, TEditableType>::ToEditingState()
+void BaseSpinBox<TBase, TEditableType>::ToEditingState()
 {
     DVASSERT(this->hasFocus() == true);
     DVASSERT(stateHistory.top() != ControlState::Editing);
@@ -190,7 +208,7 @@ void DAVA::TArc::BaseSpinBox<TBase, TEditableType>::ToEditingState()
 }
 
 template <typename TBase, typename TEditableType>
-void DAVA::TArc::BaseSpinBox<TBase, TEditableType>::ToInvalidState()
+void BaseSpinBox<TBase, TEditableType>::ToInvalidState()
 {
     stateHistory = Stack<ControlState>();
     stateHistory.push(ControlState::InvalidValue);
@@ -199,7 +217,7 @@ void DAVA::TArc::BaseSpinBox<TBase, TEditableType>::ToInvalidState()
 }
 
 template <typename TBase, typename TEditableType>
-void DAVA::TArc::BaseSpinBox<TBase, TEditableType>::ToValidState()
+void BaseSpinBox<TBase, TEditableType>::ToValidState()
 {
     stateHistory = Stack<ControlState>();
     stateHistory.push(ControlState::ValidValue);
@@ -207,7 +225,7 @@ void DAVA::TArc::BaseSpinBox<TBase, TEditableType>::ToValidState()
 }
 
 template <typename TBase, typename TEditableType>
-void DAVA::TArc::BaseSpinBox<TBase, TEditableType>::fixup(QString& str) const
+void BaseSpinBox<TBase, TEditableType>::fixup(QString& str) const
 {
     TEditableType v;
     if (FromText(str, v))
@@ -221,7 +239,7 @@ void DAVA::TArc::BaseSpinBox<TBase, TEditableType>::fixup(QString& str) const
 }
 
 template <typename TBase, typename TEditableType>
-QValidator::State DAVA::TArc::BaseSpinBox<TBase, TEditableType>::validate(QString& input, int& /*pos*/) const
+QValidator::State BaseSpinBox<TBase, TEditableType>::validate(QString& input, int& /*pos*/) const
 {
     ControlState currentState = stateHistory.top();
     if (currentState == ControlState::InvalidValue || currentState == ControlState::ValidValue)
@@ -281,7 +299,7 @@ QValidator::State DAVA::TArc::BaseSpinBox<TBase, TEditableType>::validate(QStrin
 }
 
 template <typename TBase, typename TEditableType>
-QString DAVA::TArc::BaseSpinBox<TBase, TEditableType>::textFromValue(TEditableType val) const
+QString BaseSpinBox<TBase, TEditableType>::textFromValue(TEditableType val) const
 {
     QString result;
     switch (stateHistory.top())
@@ -322,7 +340,7 @@ QString DAVA::TArc::BaseSpinBox<TBase, TEditableType>::textFromValue(TEditableTy
 }
 
 template <typename TBase, typename TEditableType>
-TEditableType DAVA::TArc::BaseSpinBox<TBase, TEditableType>::valueFromText(const QString& text) const
+TEditableType BaseSpinBox<TBase, TEditableType>::valueFromText(const QString& text) const
 {
     if (stateHistory.top() == ControlState::InvalidValue)
     {
@@ -335,7 +353,7 @@ TEditableType DAVA::TArc::BaseSpinBox<TBase, TEditableType>::valueFromText(const
 }
 
 template <typename TBase, typename TEditableType>
-void DAVA::TArc::BaseSpinBox<TBase, TEditableType>::keyPressEvent(QKeyEvent* event)
+void BaseSpinBox<TBase, TEditableType>::keyPressEvent(QKeyEvent* event)
 {
     ControlProxyImpl<TBase>::keyPressEvent(event);
     int key = event->key();
@@ -346,14 +364,14 @@ void DAVA::TArc::BaseSpinBox<TBase, TEditableType>::keyPressEvent(QKeyEvent* eve
 }
 
 template <typename TBase, typename TEditableType>
-void DAVA::TArc::BaseSpinBox<TBase, TEditableType>::focusInEvent(QFocusEvent* event)
+void BaseSpinBox<TBase, TEditableType>::focusInEvent(QFocusEvent* event)
 {
     ControlProxyImpl<TBase>::focusInEvent(event);
     ToEditingState();
 }
 
 template <typename TBase, typename TEditableType>
-void DAVA::TArc::BaseSpinBox<TBase, TEditableType>::focusOutEvent(QFocusEvent* event)
+void BaseSpinBox<TBase, TEditableType>::focusOutEvent(QFocusEvent* event)
 {
     ControlProxyImpl<TBase>::focusOutEvent(event);
     if (stateHistory.top() == ControlState::Editing)

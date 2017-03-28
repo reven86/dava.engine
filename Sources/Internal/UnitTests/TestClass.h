@@ -27,7 +27,7 @@ public:
     TestClass() = default;
     virtual ~TestClass() = default;
 
-    void InitTimeStampForTest(const String& testName);
+    virtual void InitTimeStampForTest(const String& testName);
 
     virtual void SetUp(const String& testName);
     virtual void TearDown(const String& testName);
@@ -35,9 +35,9 @@ public:
     virtual bool TestComplete(const String& testName) const;
     virtual TestCoverageInfo FilesCoveredByTests() const;
 
-    const String& TestName(size_t index) const;
-    size_t TestCount() const;
-    void RunTest(size_t index);
+    virtual const String& TestName(size_t index) const;
+    virtual size_t TestCount() const;
+    virtual void RunTest(size_t index);
 
     void RegisterTest(const char* name, void (*testFunc)(TestClass*));
 

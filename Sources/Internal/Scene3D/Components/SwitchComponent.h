@@ -1,7 +1,7 @@
-#ifndef __DAVAENGINE_SWITCH_COMPONENT_H__
-#define __DAVAENGINE_SWITCH_COMPONENT_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
+#include "Reflection/Reflection.h"
 #include "Entity/Component.h"
 #include "Debug/DVAssert.h"
 #include "Base/Introspection.h"
@@ -36,6 +36,6 @@ public:
     INTROSPECTION_EXTEND(SwitchComponent, Component,
                          PROPERTY("newSwitchIndex", "Switch index", GetSwitchIndex, SetSwitchIndex, I_VIEW | I_EDIT)
                          );
+    DAVA_VIRTUAL_REFLECTION(SwitchComponent, Component);
 };
 }
-#endif //__DAVAENGINE_SWITCH_COMPONENT_H__

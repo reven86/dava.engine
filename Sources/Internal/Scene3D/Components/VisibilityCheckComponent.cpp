@@ -1,11 +1,31 @@
 #include "VisibilityCheckComponent.h"
 #include "Scene3D/Entity.h"
 #include "Render/Texture.h"
+#include "Reflection/ReflectionRegistrator.h"
+#include "Reflection/ReflectedMeta.h"
 #include "Utils/Random.h"
 
-using namespace DAVA;
-
+namespace DAVA
+{
 REGISTER_CLASS(VisibilityCheckComponent)
+
+DAVA_VIRTUAL_REFLECTION_IMPL(VisibilityCheckComponent)
+{
+    ReflectionRegistrator<VisibilityCheckComponent>::Begin()
+    .ConstructorByPointer()
+    .Field("enabled", &VisibilityCheckComponent::IsEnabled, &VisibilityCheckComponent::SetEnabled)[M::DisplayName("Enabled")]
+    .Field("radius", &VisibilityCheckComponent::GetRadius, &VisibilityCheckComponent::SetRadius)[M::DisplayName("Radius")]
+    .Field("distanceBetweenPoints", &VisibilityCheckComponent::GetDistanceBetweenPoints, &VisibilityCheckComponent::SetDistanceBetweenPoints)[M::DisplayName("Distance Between Points")]
+    .Field("maximumDistance", &VisibilityCheckComponent::GetMaximumDistance, &VisibilityCheckComponent::SetMaximumDistance)[M::DisplayName("Maximum Distance")]
+    .Field("upAngle", &VisibilityCheckComponent::GetUpAngle, &VisibilityCheckComponent::SetUpAngle)[M::DisplayName("Up Angle")]
+    .Field("downAngle", &VisibilityCheckComponent::GetDownAngle, &VisibilityCheckComponent::SetDownAngle)[M::DisplayName("Down Angle")]
+    .Field("verticalVariance", &VisibilityCheckComponent::GetVerticalVariance, &VisibilityCheckComponent::SetVerticalVariance)[M::DisplayName("Vertical Variance")]
+    .Field("color", &VisibilityCheckComponent::GetColor, &VisibilityCheckComponent::SetColor)[M::DisplayName("Color")]
+    .Field("normalizedColor", &VisibilityCheckComponent::ShouldNormalizeColor, &VisibilityCheckComponent::SetShouldNormalizeColor)[M::DisplayName("Normalize Color")]
+    .Field("placeOnLandscape", &VisibilityCheckComponent::ShouldPlaceOnLandscape, &VisibilityCheckComponent::SetShouldPlaceOnLandscape)[M::DisplayName("Place on Landscape")]
+    .Field("heightAboveLandscape", &VisibilityCheckComponent::GetHeightAboveLandscape, &VisibilityCheckComponent::SetHeightAboveLandscape)[M::DisplayName("Height Above the Landscape")]
+    .End();
+}
 
 VisibilityCheckComponent::VisibilityCheckComponent()
 {
@@ -210,4 +230,5 @@ void VisibilityCheckComponent::Deserialize(DAVA::KeyedArchive* archive, DAVA::Se
     shouldPlaceOnLandscape = archive->GetBool("vsc.shouldPlaceOnLandscape");
     shouldRebuildPointSet = true;
     Invalidate();
+}
 }

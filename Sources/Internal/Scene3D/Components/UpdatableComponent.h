@@ -1,7 +1,7 @@
-#ifndef __DAVAENGINE_UPDATABLE_COMPONENT_H__
-#define __DAVAENGINE_UPDATABLE_COMPONENT_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
+#include "Reflection/Reflection.h"
 #include "Entity/Component.h"
 
 namespace DAVA
@@ -57,7 +57,7 @@ public:
     INTROSPECTION_EXTEND(UpdatableComponent, Component,
                          MEMBER(updatableObject, "Updatable Object", I_SAVE)
                          );
+
+    DAVA_VIRTUAL_REFLECTION(UpdatableComponent, Component);
 };
 }
-
-#endif //__DAVAENGINE_UPDATABLE_COMPONENT_H__

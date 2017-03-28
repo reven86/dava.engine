@@ -9,14 +9,6 @@
 
 #include <QtTools/Utils/QtDelayedExecutor.h>
 
-namespace DAVA
-{
-namespace TArc
-{
-class FieldBinder;
-}
-}
-
 class PreviewWidget;
 class EditorSystemsManager;
 class PackageNode;
@@ -39,8 +31,6 @@ protected:
 
     void OnContextCreated(DAVA::TArc::DataContext* context) override;
     void OnContextDeleted(DAVA::TArc::DataContext* context) override;
-    void OnContextWillBeChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* newOne) override;
-    void OnContextWasChanged(DAVA::TArc::DataContext* current, DAVA::TArc::DataContext* oldOne) override;
 
 private:
     void InitEditorSystems();
@@ -62,7 +52,7 @@ private:
     DAVA::RefPtr<PackageNode> CreatePackage(const QString& path);
 
     void CloseActiveDocument();
-    void CloseDocument(const DAVA::TArc::DataContext::ContextID& id);
+    void CloseDocument(DAVA::uint64 id);
     void CloseAllDocuments();
     void DeleteAllDocuments();
     void CloseDocuments(const DAVA::Set<DAVA::TArc::DataContext::ContextID>& ids);
@@ -75,9 +65,6 @@ private:
     void SaveDocument(const DAVA::TArc::DataContext::ContextID& contextID);
     void SaveAllDocuments();
     void SaveCurrentDocument();
-
-    void OnActiveTabChanged(const DAVA::Any& contextID);
-    void OnCanSaveChanged(const DAVA::Any& canSave);
 
     void SelectControl(const QString& documentPath, const QString& controlPath);
 
@@ -92,12 +79,10 @@ private:
     DAVA::TArc::DataContext::ContextID GetContextByPath(const QString& path) const;
 
     void OnDragStateChanged(EditorSystemsManager::eDragState dragState, EditorSystemsManager::eDragState previousState);
-    void OnPropertyChanged(ControlNode* node, AbstractProperty* property, DAVA::VariantType newValue);
 
     PreviewWidget* previewWidget = nullptr;
     std::unique_ptr<EditorSystemsManager> systemsManager;
     DAVA::TArc::QtConnections connections;
-    std::unique_ptr<DAVA::TArc::FieldBinder> fieldBinder;
 
     QtDelayedExecutor delayedExecutor;
 
