@@ -103,5 +103,5 @@ inline const Vector3& SoundComponent::GetLocalDirection(uint32 index) const
 
 template <>
 bool AnyCompare<SoundComponentElement>::IsEqual(const Any& v1, const Any& v2);
-extern template AnyCompare<SoundComponentElement>;
+extern template struct AnyCompare<SoundComponentElement>;
 }
