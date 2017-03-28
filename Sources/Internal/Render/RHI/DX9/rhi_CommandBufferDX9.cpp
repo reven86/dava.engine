@@ -512,29 +512,32 @@ void CommandBufferDX9_t::Execute()
                 _D3D9_TargetCount = 0;
                 for (unsigned i = 0; i != countof(passCfg.colorBuffer); ++i)
                 {
-                    if (passCfg.colorBuffer[i].texture != rhi::InvalidHandle)
+                    if (passCfg.colorBuffer[i].texture != rhi::InvalidHandle || passCfg.UsingMSAA())
                     {
                         if (i == 0)
                         {
                             DVASSERT(_D3D9_BackBuf == nullptr);
                             _D3D9_Device->GetRenderTarget(0, &_D3D9_BackBuf);
+
+                            if (passCfg.UsingMSAA())
+                                TextureDX9::SetAsRenderTarget(passCfg.colorBuffer[i].multisampleTexture, i);
                         }
 
-                        if (passCfg.UsingMSAA())
-                            TextureDX9::SetAsRenderTarget(passCfg.colorBuffer[i].multisampleTexture, i);
-                        else
+                        if (!passCfg.UsingMSAA())
                             TextureDX9::SetAsRenderTarget(passCfg.colorBuffer[i].texture, i);
                         ++_D3D9_TargetCount;
                     }
-                    else
+
+                    if (passCfg.colorBuffer[i].texture == rhi::InvalidHandle && i == 0)
                     {
-                        if (i == 0)
-                            _D3D9_TargetCount = 1;
+                        _D3D9_TargetCount = 1;
                         break;
                     }
                 }
 
-                if (passCfg.depthStencilBuffer.texture != rhi::InvalidHandle && passCfg.depthStencilBuffer.texture != rhi::DefaultDepthBuffer)
+                if ((passCfg.depthStencilBuffer.texture != rhi::InvalidHandle && passCfg.depthStencilBuffer.texture != rhi::DefaultDepthBuffer)
+                    || passCfg.UsingMSAA()
+                    )
                 {
                     DVASSERT(_D3D9_DepthBuf == nullptr);
                     _D3D9_Device->GetDepthStencilSurface(&_D3D9_DepthBuf);
