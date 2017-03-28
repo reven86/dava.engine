@@ -278,21 +278,30 @@ Reflection::Reflection(const ReflectedObject& object_, const ValueWrapper* vw, c
     , structureWrapper(sw)
     , meta(meta_)
 {
-    if (nullptr == structureWrapper)
+    // try to get structureWrapper from object reflected type
+    const ReflectedType* reflectedType = valueWrapper->GetValueObject(object).GetReflectedType();
+    if (nullptr != reflectedType)
     {
-        // try to get structureWrapper from object reflected type
-        const ReflectedType* reflectedType = valueWrapper->GetValueObject(object).GetReflectedType();
-        if (nullptr != reflectedType)
+        if (nullptr == structureWrapper)
         {
             structureWrapper = reflectedType->GetStrucutreWrapper();
         }
 
-        // if still no structureWrapper use empty one
-        if (nullptr == structureWrapper)
+        if (nullptr == meta)
         {
-            static StructureWrapperDefault emptyStructureWrapper;
-            structureWrapper = &emptyStructureWrapper;
+            const ReflectedStructure* rs = reflectedType->GetStructure();
+            if (nullptr != rs)
+            {
+                meta = rs->meta.get();
+            }
         }
+    }
+
+    // if still no structureWrapper use empty one
+    if (nullptr == structureWrapper)
+    {
+        static StructureWrapperDefault emptyStructureWrapper;
+        structureWrapper = &emptyStructureWrapper;
     }
 }
 
