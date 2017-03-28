@@ -699,6 +699,8 @@ endmacro()
 macro ( add_content_win_uap_single CONTENT_DIR )
 
     #get all files from it and add to SRC
+    set( CONTENT_LIST)
+    set( CONTENT_LIST_TMP)
     file ( GLOB_RECURSE CONTENT_LIST_TMP "${CONTENT_DIR}/*")
     
     #check svn dir (it happens)
