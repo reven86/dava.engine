@@ -31,6 +31,8 @@ public:
     static const DAVA::FastName General_LODEditor_InactiveColor;
     static const DAVA::FastName General_LODEditor_FitSliders;
 
+    static const DAVA::FastName General_ParticleEditor_ParticleDebugAlphaTheshold;
+
     static const DAVA::FastName General_HeighMaskTool_Color0;
     static const DAVA::FastName General_HeighMaskTool_Color1;
 
