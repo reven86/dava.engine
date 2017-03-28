@@ -5,6 +5,7 @@
 #include <FileSystem/DynamicMemoryFile.h>
 #include <DLCManager/DLCManager.h>
 #include <UI/Focus/UIFocusComponent.h>
+#include <EmbeddedWebServer.h>
 
 using namespace DAVA;
 
@@ -49,7 +50,7 @@ void DLCManagerTest::LoadResources()
 
     packInput = new UITextField(Rect(5, 10, 400, 20));
     packInput->SetFont(font);
-    packInput->SetText(L"group_0");
+    packInput->SetText(L"0");
     packInput->SetFontSize(14);
     packInput->SetDebugDraw(true);
     packInput->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
@@ -61,7 +62,7 @@ void DLCManagerTest::LoadResources()
 
     packNextInput = new UITextField(Rect(5, 40, 400, 20));
     packNextInput->SetFont(font);
-    packNextInput->SetText(L"group_1");
+    packNextInput->SetText(L"1");
     packNextInput->SetFontSize(14);
     packNextInput->SetDebugDraw(true);
     packNextInput->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
@@ -111,6 +112,15 @@ void DLCManagerTest::LoadResources()
     packNameLoading->SetDebugDraw(true);
     packNameLoading->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
     AddControl(packNameLoading);
+
+    logPring = new UIStaticText(Rect(540, 530, 500, 200));
+    logPring->SetFont(font);
+    logPring->SetTextColor(Color::White);
+    logPring->SetMultiline(true);
+    logPring->SetUtf8Text("");
+    logPring->SetDebugDraw(true);
+    logPring->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
+    AddControl(logPring);
 
     redControl = new UIControl(Rect(5, 360, 500, 10));
     redControl->SetDebugDrawColor(Color(1.f, 0.f, 0.f, 1.f));
@@ -227,6 +237,7 @@ void DLCManagerTest::UnloadResources()
     SafeRelease(loadPack);
     SafeRelease(startServerButton);
     SafeRelease(stopServerButton);
+    SafeRelease(logPring);
     SafeRelease(packNameLoading);
     SafeRelease(redControl);
     SafeRelease(greenControl);
@@ -239,6 +250,14 @@ void DLCManagerTest::UnloadResources()
     SafeRelease(lsDirFromPacks);
 
     BaseScreen::UnloadResources();
+}
+
+void DLCManagerTest::WriteErrorOnDevice(const String& filePath, int32 errnoVal)
+{
+    StringStream ss(logPring->GetUtf8Text());
+    ss << "Error: can't write file: " << filePath << " errno: " << strerror(errnoVal) << std::endl;
+    logPring->SetUtf8Text(ss.str());
+    DVASSERT(false);
 }
 
 void DLCManagerTest::OnRequestUpdated(const DAVA::DLCManager::IRequest& request)
@@ -273,7 +292,14 @@ void DLCManagerTest::OnNetworkReady(bool isReady)
     ss << "nerwork ready = " << boolName;
     Logger::Info("%s", ss.str().c_str());
 
-    packNameLoading->SetText(UTF8Utils::EncodeToWideString("loading: " + ss.str()));
+    packNameLoading->SetUtf8Text("loading: " + ss.str());
+}
+
+void DLCManagerTest::OnInitializeFinished(size_t numDownloaded, size_t numTotalFiles)
+{
+    std::stringstream ss;
+    ss << "initialize finished: num_downloaded = " << numDownloaded << " num_total = " << numTotalFiles << std::endl;
+    packNameLoading->SetUtf8Text(ss.str());
 }
 
 void DLCManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, void* callerData)
@@ -284,6 +310,7 @@ void DLCManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, vo
 
     dm.networkReady.DisconnectAll();
     dm.networkReady.Connect(this, &DLCManagerTest::OnNetworkReady);
+    dm.initializeFinished.Connect(this, &DLCManagerTest::OnInitializeFinished);
 
     dm.Initialize(folderWithDownloadedPacks, urlToServerSuperpack, DLCManager::Hints());
 
@@ -311,14 +338,8 @@ void DLCManagerTest::OnListPacksClicked(DAVA::BaseObject* sender, void* data, vo
 {
     DLCManager& dm = *engine.GetContext()->dlcManager;
     std::stringstream ss;
-
-    // TODO do I need list loaded packs?
-
     String s = ss.str();
-    if (!s.empty())
-    {
-        s = s.substr(0, s.size() - 2);
-    }
+
     packNameLoading->SetText(UTF8Utils::EncodeToWideString(s));
 }
 
@@ -331,11 +352,21 @@ void DLCManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* data
 
     dm.requestUpdated.DisconnectAll();
     dm.requestUpdated.Connect(this, &DLCManagerTest::OnRequestUpdated);
+    dm.fileErrorOccured.Connect(this, &DLCManagerTest::WriteErrorOnDevice);
 
     String packName = packInput->GetUtf8Text();
 
     try
     {
+        if (dm.IsInitialized())
+        {
+            if (dm.IsPackDownloaded(packName))
+            {
+                packNameLoading->SetUtf8Text("already downloaded: " + packName);
+                return;
+            }
+        }
+
         packNameLoading->SetUtf8Text("loading: " + packName);
         dm.RequestPack(packName);
     }
@@ -355,11 +386,20 @@ void DLCManagerTest::OnStartNextPackClicked(DAVA::BaseObject* sender, void* data
 
     try
     {
+        if (pm.IsInitialized())
+        {
+            if (pm.IsPackDownloaded(packName))
+            {
+                packNameLoading->SetUtf8Text("already downloaded: " + packName);
+                return;
+            }
+        }
+
         packNameLoading->SetUtf8Text("loading: " + packName);
         const DLCManager::IRequest* p = pm.RequestPack(packName);
         if (!p->IsDownloaded())
         {
-            //pm.SetRequestOrder(p, 0);
+            pm.SetRequestPriority(p);
         }
     }
     catch (std::exception& ex)
@@ -372,42 +412,41 @@ void DLCManagerTest::OnStartStopLocalServerClicked(DAVA::BaseObject* sender, voi
 {
     if (sender == startServerButton)
     {
-        if (gpuArchitecture == "dx11")
+        FileSystem* fs = FileSystem::Instance();
+
+        FilePath resPath("~res:/TestData/PackManagerTest/superpack_for_unittests.dvpk");
+        FilePath docPath("~doc:/DLCManagerTest/superpack_for_unittests.dvpk");
+
+        fs->CopyFile(resPath, docPath, true);
+
+        docPath = docPath.GetDirectory();
+
+        String absPath = docPath.GetAbsolutePathname();
+
+        const char* docRoot = absPath.c_str();
+        const char* ports = "8080";
+        try
         {
-#ifdef __DAVAENGINE_MACOS__
-            String macExec = "open -a /usr/bin/osascript --args -e 'tell application \"Terminal\" to do script \"";
-            String cdCommand = "cd " + FilePath("~res:/").GetAbsolutePathname() + "..; ";
-            String serverCommand = "python scripts/start_local_http_server.py";
-            String cdAndPyCommand = cdCommand + serverCommand;
-            macExec += cdAndPyCommand + "\"'";
-            int result = std::system(macExec.c_str());
-            if (result != 0)
-            {
-                Logger::Debug("start local server return: %d, return code: %d, stop sig: %d",
-                              result, WEXITSTATUS(result), WSTOPSIG(result));
-                auto fs = FileSystem::Instance();
-                Logger::Debug("CWD: %s", fs->GetCurrentWorkingDirectory().GetAbsolutePathname().c_str());
-                Logger::Debug("APP_DIR: %s", fs->GetCurrentExecutableDirectory().GetAbsolutePathname().c_str());
-                Logger::Debug("DATA_DIR: %s", FilePath("~res:/").GetAbsolutePathname().c_str());
-                Logger::Debug("COMMAND: %s", macExec.c_str());
-            }
-#elif defined(__DAVAENGINE_WIN32__)
-            std::system("python scripts/start_local_http_server.py");
-#endif
+            StartEmbeddedWebServer(docRoot, ports);
+        }
+        catch (std::exception& ex)
+        {
+            StringStream ss(logPring->GetUtf8Text());
+            ss << "Error: " << ex.what() << std::endl;
+            logPring->SetUtf8Text(ss.str());
         }
     }
     else if (sender == stopServerButton)
     {
-        if (gpuArchitecture == "dx11")
+        try
         {
-#ifdef __DAVAENGINE_MACOS__
-            String cdAndPyCommand = "cd " + FilePath("~res:/").GetAbsolutePathname() + "..; python scripts/stop_local_http_server.py";
-            std::system(cdAndPyCommand.c_str());
-            String closeTerminalCommand = "osascript -e 'tell application \"Terminal\" to quit'";
-            std::system(closeTerminalCommand.c_str());
-#elif defined(__DAVAENGINE_WIN32__)
-            std::system("python scripts/stop_local_http_server.py");
-#endif
+            StopEmbeddedWebServer();
+        }
+        catch (std::exception& ex)
+        {
+            StringStream ss(logPring->GetUtf8Text());
+            ss << "Error: " << ex.what() << std::endl;
+            logPring->SetUtf8Text(ss.str());
         }
     }
 }
@@ -433,18 +472,16 @@ void DLCManagerTest::OnCheckFileClicked(DAVA::BaseObject* sender, void* data, vo
 
 void DLCManagerTest::OnListInDvpkClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
-    WideString text = dirToListFiles->GetText();
-    FilePath path(text);
+    DLCManager& pm = *engine.GetContext()->dlcManager;
 
-    ScopedPtr<FileList> fileList(new FileList(path));
+    DLCManager::Progress progress = pm.GetProgress();
 
     StringStream ss;
 
-    for (uint32 i = 0; i < fileList->GetCount(); ++i)
-    {
-        const FilePath& nextPath = fileList->GetPathname(i);
-        ss << nextPath.GetStringValue() << '\n';
-    }
+    ss << "progress: requestingEnabled=" << progress.isRequestingEnabled
+       << " total=" << progress.total << " inQueue=" << progress.inQueue
+       << " alreadyDownloaded=" << progress.alreadyDownloaded;
 
-    packNameLoading->SetUtf8Text(ss.str());
+    String t = logPring->GetUtf8Text();
+    logPring->SetUtf8Text(t + '\n' + ss.str());
 }

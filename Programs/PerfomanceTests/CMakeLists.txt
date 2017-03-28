@@ -88,7 +88,7 @@ if( NOT DAVA_MEGASOLUTION )
     endif()
 
     if( NOT RES_EDITOR_PATH )
-        message( "Error !!!: Please set the correct path to Resource editor in file DavaConfig.in"  )
+        message( "Error !!!: Please set the correct path 'RES_EDITOR_PATH' to Resource editor in file DavaConfig.in"  )
         message( " " )
         exit()
     endif()
