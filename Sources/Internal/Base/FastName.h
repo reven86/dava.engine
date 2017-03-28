@@ -9,7 +9,8 @@ namespace DAVA
 {
 struct FastNameDB
 {
-    using DBMutexT = Spinlock;
+    using MutexT = Spinlock;
+    using CharT = char;
 
     FastNameDB()
         : namesHash(8192 * 2)
@@ -41,12 +42,11 @@ struct FastNameDB
         }
     };
 
-    Vector<const char*> namesTable;
-    Vector<int> namesRefCounts;
-    Vector<int> namesEmptyIndexes;
-    UnorderedMap<const char*, int, FastNameDBHash, FastNameDBEqualTo> namesHash;
+    Vector<const CharT*> namesTable;
+    UnorderedMap<const CharT*, int, FastNameDBHash, FastNameDBEqualTo> namesHash;
 
-    DBMutexT dbMutex;
+    MutexT mutex;
+    size_t sizeOfNames = 0;
 };
 
 class FastName
@@ -54,13 +54,11 @@ class FastName
     static FastNameDB* db;
 
 public:
-    FastName() = default;
+    inline FastName() = default;
     explicit FastName(const char* name);
     explicit FastName(const String& name);
 
     const char* c_str() const;
-
-    //inline FastName& operator=(const FastName& _name);
 
     bool operator<(const FastName& _name) const;
     bool operator==(const FastName& _name) const;
@@ -71,16 +69,14 @@ public:
     size_t find(const String& str, size_t pos = 0) const;
     size_t find(const FastName& fn, size_t pos = 0) const;
 
-    //inline const char* operator*() const;
     int Index() const;
     bool IsValid() const;
 
 private:
     void Init(const char* name);
-    void AddRef(int32 i) const;
-    void RemRef(int32 i) const;
 
     int index = -1;
+    const char* str = nullptr;
 };
 
 inline FastName::FastName(const String& name)
@@ -133,13 +129,6 @@ inline size_t FastName::find(const FastName& fn, size_t pos) const
     return find(fn.c_str(), pos);
 }
 
-/*
-inline const char* FastName::operator*() const
-{
-    return c_str();
-}
-*/
-
 inline int FastName::Index() const
 {
     return index;
@@ -152,13 +141,7 @@ inline bool FastName::IsValid() const
 
 inline const char* FastName::c_str() const
 {
-    DVASSERT(index >= -1 && index < static_cast<int>(db->namesTable.size()));
-    if (index >= 0)
-    {
-        return db->namesTable[index];
-    }
-
-    return nullptr;
+    return str;
 }
 
 template <>
