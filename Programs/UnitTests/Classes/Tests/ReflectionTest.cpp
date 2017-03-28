@@ -1,10 +1,12 @@
 #include <iostream>
+#include <Base/Platform.h>
+#include <Base/Result.h>
+#include <Logger/Logger.h>
+#include <Time/SystemTimer.h>
+#include <Concurrency/Thread.h>
+#include <Reflection/ReflectionRegistrator.h>
 
-#include "Base/Platform.h"
-#include "Base/Result.h"
 #include "UnitTests/UnitTests.h"
-#include "Logger/Logger.h"
-#include "Reflection/ReflectionRegistrator.h"
 
 struct SimpleStruct
 {
@@ -704,7 +706,7 @@ DAVA_TESTCLASS (ReflectionTest)
             DAVA::String str = "Test Hello";
             DAVA::Any anyStr(str);
             DAVA::Reflection r = DAVA::Reflection::Create(anyStr);
-            TEST_VERIFY(r.GetValue().Get<String>() == str);
+            TEST_VERIFY(r.GetValue().Get<DAVA::String>() == str);
         }
 
         // reflect Any, create with Reflection::Ctor
@@ -755,19 +757,22 @@ DAVA_TESTCLASS (ReflectionTest)
 
         DAVA::Reflection r = DAVA::Reflection::Create(&v);
         DAVA::Reflection cr = r.GetField(0);
-        Any val = cr.GetValue();
+        DAVA::Any val = cr.GetValue();
 
-        const ReflectedType* res = ReflectedTypeDB::GetByPointer(val.Get<void*>(), val.GetType()->Deref());
-        TEST_VERIFY(res->GetType() == Type::Instance<D>());
+        const DAVA::ReflectedType* res = DAVA::ReflectedTypeDB::GetByPointer(val.Get<void*>(), val.GetType()->Deref());
+        TEST_VERIFY(res->GetType() == DAVA::Type::Instance<D>());
 
         delete v.back();
     }
 
     DAVA_TEST (ReflectionByFieldName)
     {
+// used only for manual performance testing
+// change to `#if 1` to run this test
+#if 0 
         DAVA::Logger::Info("Begin ReflectionByFieldName:");
 
-        FastName fieldname("StaticCustomPtrConstFn");
+        DAVA::FastName fieldname("StaticCustomPtrConstFn");
         for (size_t k = 0; k < 10; ++k)
         {
             size_t res = 0;
@@ -775,13 +780,13 @@ DAVA_TESTCLASS (ReflectionTest)
             ReflectionTestClass* rtc = new ReflectionTestClass();
             DAVA::Reflection r = DAVA::Reflection::Create(rtc);
 
-            int64 begin = DAVA::SystemTimer::GetMs();
+            DAVA::int64 begin = DAVA::SystemTimer::GetMs();
             for (size_t i = 0; i < 10000000; ++i)
             {
                 DAVA::Reflection f = r.GetField(fieldname);
                 res += f.GetValue().Get<const SimpleStruct*>()->a;
             }
-            int64 time = DAVA::SystemTimer::GetMs() - begin;
+            DAVA::int64 time = DAVA::SystemTimer::GetMs() - begin;
             DAVA::Logger::Info("%lld ms, res = %u", time, res);
 
             delete rtc;
@@ -790,5 +795,6 @@ DAVA_TESTCLASS (ReflectionTest)
         }
 
         DAVA::Logger::Info("Done!");
+#endif
     }
 };

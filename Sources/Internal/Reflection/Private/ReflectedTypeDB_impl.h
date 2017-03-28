@@ -75,9 +75,13 @@ const ReflectedType* ReflectedTypeDB::Get()
 template <typename T>
 const ReflectedType* ReflectedTypeDB::GetByPointer(const T* ptr)
 {
-    DVASSERT(nullptr != ptr);
+    const ReflectedType* ret = nullptr;
 
-    const ReflectedType* ret = ReflectedTypeDBDetail::GetVirtualReflectedType(ptr);
+    if (nullptr != ptr)
+    {
+        ret = ReflectedTypeDBDetail::GetVirtualReflectedType(ptr);
+    }
+
     if (nullptr == ret)
     {
         ret = ReflectedTypeDB::Edit<T>();

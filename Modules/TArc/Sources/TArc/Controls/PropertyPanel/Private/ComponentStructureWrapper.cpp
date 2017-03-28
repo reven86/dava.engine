@@ -30,7 +30,7 @@ Reflection ComponentStructureWrapper::GetField(const ReflectedObject& obj, const
     const Type* objType = obj.GetReflectedType()->GetType();
     const Type* componentType = Type::Instance<BaseComponentValue*>();
     Reflection field = classWrapper->GetField(obj, vw, key);
-    if (field.HasMeta<M::ProxyMetaRequire>() && TypeInheritance::CanCast(objType, componentType))
+    if (nullptr != field.GetMeta<M::ProxyMetaRequire>() && TypeInheritance::CanCast(objType, componentType))
     {
         BaseComponentValue* componentValue = obj.GetPtr<BaseComponentValue>();
         if (!componentValue->nodes.empty())
@@ -41,6 +41,11 @@ Reflection ComponentStructureWrapper::GetField(const ReflectedObject& obj, const
     }
 
     return field;
+}
+
+size_t ComponentStructureWrapper::GetFieldsCount(const ReflectedObject& object, const ValueWrapper* vw) const
+{
+    return 0;
 }
 
 Vector<Reflection::Field> ComponentStructureWrapper::GetFields(const ReflectedObject& obj, const ValueWrapper* vw) const
@@ -56,7 +61,7 @@ Vector<Reflection::Field> ComponentStructureWrapper::GetFields(const ReflectedOb
             const Reflection& metaProvider = componentValue->nodes.front()->field.ref;
             for (Reflection::Field& f : fields)
             {
-                if (f.ref.HasMeta<M::ProxyMetaRequire>())
+                if (nullptr != f.ref.GetMeta<M::ProxyMetaRequire>())
                 {
                     f.ref = Reflection::Create(f.ref, metaProvider);
                 }
@@ -65,6 +70,11 @@ Vector<Reflection::Field> ComponentStructureWrapper::GetFields(const ReflectedOb
     }
 
     return fields;
+}
+
+Vector<Reflection::Field> ComponentStructureWrapper::GetFields(const ReflectedObject& object, const ValueWrapper* vw, size_t, size_t) const
+{
+    return Vector<Reflection::Field>();
 }
 
 bool ComponentStructureWrapper::HasMethods(const ReflectedObject& object, const ValueWrapper* vw) const

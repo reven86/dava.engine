@@ -1,4 +1,5 @@
 #include "RenderCallbacks.h"
+#include "Concurrency/Mutex.h"
 #include "Concurrency/LockGuard.h"
 #include "Utils/Utils.h"
 

@@ -2,6 +2,7 @@
 #define __DAVAENGINE_UI_COMPONENT_H__
 
 #include "Base/BaseObject.h"
+#include "Math/Math2D.h"
 
 namespace DAVA
 {
