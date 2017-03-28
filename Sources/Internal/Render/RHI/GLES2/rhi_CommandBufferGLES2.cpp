@@ -593,13 +593,23 @@ void CommandBufferGLES2_t::Execute()
                     {
                         if (i == 0)
                         {
-                            GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, _GLES2_Default_FrameBuffer));
-                            _GLES2_Bound_FrameBuffer = _GLES2_Default_FrameBuffer;
-                            def_viewport[2] = _GLES2_DefaultFrameBuffer_Width;
-                            def_viewport[3] = _GLES2_DefaultFrameBuffer_Height;
-                            rt_count = 1;
-                            apply_fb = false;
-                            do_clear = true;
+                            if (passCfg.UsingMSAA())
+                            {
+                                DVASSERT(passCfg.colorBuffer[i].multisampleTexture != InvalidHandle);
+                                rt[0] = passCfg.colorBuffer[i].multisampleTexture;
+                                rt_count = 1;
+                                apply_fb = true;
+                            }
+                            else
+                            {
+                                GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, _GLES2_Default_FrameBuffer));
+                                _GLES2_Bound_FrameBuffer = _GLES2_Default_FrameBuffer;
+                                def_viewport[2] = _GLES2_DefaultFrameBuffer_Width;
+                                def_viewport[3] = _GLES2_DefaultFrameBuffer_Height;
+                                rt_count = 1;
+                                apply_fb = false;
+                                do_clear = true;
+                            }
                         }
                         break;
                     }
