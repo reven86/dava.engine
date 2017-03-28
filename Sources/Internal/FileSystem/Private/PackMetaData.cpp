@@ -4,6 +4,9 @@
 #include "Compression/LZ4Compressor.h"
 #include "Base/Exception.h"
 #include "Debug/DVAssert.h"
+#include "Utils/Utils.h"
+#include "Utils/StringFormat.h"
+#include "Logger/Logger.h"
 
 #include <sqlite_modern_cpp.h>
 
@@ -62,6 +65,39 @@ PackMetaData::PackMetaData(const FilePath& metaDb)
     }
 }
 
+Vector<String> PackMetaData::GetDependencyNames(const String& requestedPackName) const
+{
+    using namespace DAVA;
+    Vector<String> requestNames;
+
+    const PackInfo& packInfo = GetPackInfo(requestedPackName);
+    const String& dependencies = packInfo.packDependencies;
+    const String delimiter(", ");
+
+    Split(dependencies, delimiter, requestNames);
+
+    // convert every name from string representation of index to packName
+    for (String& pack : requestNames)
+    {
+        try
+        {
+            unsigned long i = stoul(pack);
+            uint32 index = static_cast<uint32>(i);
+            const PackInfo& info = GetPackInfo(index);
+            pack = info.packName;
+        }
+        catch (std::exception& ex)
+        {
+            String str = Format("bad dependency index for pack: %s, index value: %s, error: %s.",
+                                packInfo.packName.c_str(), pack.c_str(), ex.what());
+            Logger::Error("%s", str.c_str());
+            DAVA_THROW(Exception, str);
+        }
+    }
+
+    return requestNames;
+}
+
 Vector<uint32> PackMetaData::GetFileIndexes(const String& requestedPackName) const
 {
     Vector<uint32> result;
@@ -111,6 +147,8 @@ const PackMetaData::PackInfo& PackMetaData::GetPackInfo(const String& packName) 
             return packInfo;
         }
     }
+    Logger::Error("error: can't find packName: %s", packName.c_str());
+    DVASSERT(false, "debug packName value");
     DAVA_THROW(Exception, "no such packName: " + packName);
 }
 
@@ -262,8 +300,6 @@ void PackMetaData::Deserialize(const void* ptr, size_t size)
     {
         DAVA_THROW(Exception, "read metadata error - no compressedBuf");
     }
-
-    DVASSERT(uncompressedSize >= compressedSize);
 
     vector<uint8_t> uncompressedBuf(uncompressedSize);
 
