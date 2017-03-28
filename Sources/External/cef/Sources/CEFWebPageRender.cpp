@@ -1,6 +1,6 @@
 #include "CEFWebPageRender.h"
 #include "Platform/DeviceInfo.h"
-#include "Render/RenderCallbacks.h"
+#include "Render/Renderer.h"
 #include "Render/TextureDescriptor.h"
 #include "Time/SystemTimer.h"
 #include "UI/UIControlSystem.h"
@@ -35,8 +35,7 @@ CEFWebPageRender::CEFWebPageRender(Window* w, float32 k)
 {
     ConnectToSignals();
 
-    auto restoreFunc = MakeFunction(this, &CEFWebPageRender::RestoreTexture);
-    RenderCallbacks::RegisterResourceRestoreCallback(std::move(restoreFunc));
+    Renderer::GetSignals().needRestoreResources.Connect(this, &CEFWebPageRender::RestoreTexture);
 
     contentBackground->SetDrawType(UIControlBackground::DRAW_STRETCH_BOTH);
     contentBackground->SetColor(Color::White);
@@ -48,8 +47,7 @@ CEFWebPageRender::CEFWebPageRender()
 {
     ConnectToSignals();
 
-    auto restoreFunc = MakeFunction(this, &CEFWebPageRender::RestoreTexture);
-    RenderCallbacks::RegisterResourceRestoreCallback(std::move(restoreFunc));
+    Renderer::GetSignals().needRestoreResources.Connect(this, &CEFWebPageRender::RestoreTexture);
 
     contentBackground->SetDrawType(UIControlBackground::DRAW_STRETCH_BOTH);
     contentBackground->SetColor(Color::White);
@@ -61,8 +59,7 @@ CEFWebPageRender::~CEFWebPageRender()
 {
     DisconnectFromSignals();
 
-    auto restoreFunc = MakeFunction(this, &CEFWebPageRender::RestoreTexture);
-    RenderCallbacks::UnRegisterResourceRestoreCallback(std::move(restoreFunc));
+    Renderer::GetSignals().needRestoreResources.Disconnect(this);
 
     ShutDown();
 }

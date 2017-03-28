@@ -10,6 +10,7 @@
 #include "Render/RenderCallbacks.h"
 #include "Render/Image/Image.h"
 #include "Render/Texture.h"
+#include "Concurrency/Mutex.h"
 #include "Platform/DeviceInfo.h"
 #include "Debug/ProfilerGPU.h"
 #include "Debug/ProfilerOverlay.h"
@@ -17,9 +18,7 @@
 
 namespace DAVA
 {
-namespace Renderer
-{
-namespace //for private variables
+namespace RendererDetails
 {
 bool initialized = false;
 rhi::Api api;
@@ -31,10 +30,35 @@ RuntimeTextures runtimeTextures;
 RenderStats stats;
 
 rhi::ResetParam resetParams;
+
+RenderSignals signals;
+Mutex restoreMutex;
+Mutex postRestoreMutex;
+bool restoreInProgress = false;
+
+void ProcessSignals()
+{
+    if (rhi::NeedRestoreResources())
+    {
+        restoreInProgress = true;
+        LockGuard<Mutex> lock(restoreMutex);
+        signals.needRestoreResources.Emit();
+    }
+    else if (restoreInProgress)
+    {
+        LockGuard<Mutex> lock(postRestoreMutex);
+        signals.restoreResoucesCompleted.Emit();
+        restoreInProgress = false;
+    }
+}
 }
 
+namespace Renderer
+{
 void Initialize(rhi::Api _api, rhi::InitParam& params)
 {
+    using namespace RendererDetails;
+
     DVASSERT(!initialized);
 
     api = _api;
@@ -68,103 +92,106 @@ void Initialize(rhi::Api _api, rhi::InitParam& params)
 
 void Uninitialize()
 {
-    DVASSERT(initialized);
+    DVASSERT(RendererDetails::initialized);
 
     VisibilityQueryResults::Cleanup();
     FXCache::Uninitialize();
     ShaderDescriptorCache::Uninitialize();
     rhi::ShaderCache::Unitialize();
     rhi::Uninitialize();
-    initialized = false;
+    RendererDetails::initialized = false;
 }
 
 bool IsInitialized()
 {
-    return initialized;
+    return RendererDetails::initialized;
 }
 
 void Reset(const rhi::ResetParam& params)
 {
-    resetParams = params;
+    RendererDetails::resetParams = params;
 
     rhi::Reset(params);
 }
 
-bool IsDeviceLost()
-{
-    DVASSERT(initialized);
-    return false;
-}
-
 rhi::Api GetAPI()
 {
-    DVASSERT(initialized);
-    return api;
+    DVASSERT(RendererDetails::initialized);
+    return RendererDetails::api;
 }
 
 int32 GetDesiredFPS()
 {
-    return desiredFPS;
+    return RendererDetails::desiredFPS;
 }
 
 void SetDesiredFPS(int32 fps)
 {
-    desiredFPS = fps;
+    RendererDetails::desiredFPS = fps;
 }
 
 void SetVSyncEnabled(bool enable)
 {
-    if (resetParams.vsyncEnabled != enable)
+    if (RendererDetails::resetParams.vsyncEnabled != enable)
     {
-        resetParams.vsyncEnabled = enable;
-        rhi::Reset(resetParams);
+        RendererDetails::resetParams.vsyncEnabled = enable;
+        rhi::Reset(RendererDetails::resetParams);
     }
 }
 
 bool IsVSyncEnabled()
 {
-    return resetParams.vsyncEnabled;
+    return RendererDetails::resetParams.vsyncEnabled;
 }
 
 RenderOptions* GetOptions()
 {
-    DVASSERT(initialized);
-    return &renderOptions;
+    DVASSERT(RendererDetails::initialized);
+    return &RendererDetails::renderOptions;
 }
 
 DynamicBindings& GetDynamicBindings()
 {
-    return dynamicBindings;
+    return RendererDetails::dynamicBindings;
 }
 
 RuntimeTextures& GetRuntimeTextures()
 {
-    return runtimeTextures;
+    return RendererDetails::runtimeTextures;
 }
 
 RenderStats& GetRenderStats()
 {
-    return stats;
+    return RendererDetails::stats;
+}
+
+RenderSignals& GetSignals()
+{
+    return RendererDetails::signals;
 }
 
 int32 GetFramebufferWidth()
 {
-    return static_cast<int32>(resetParams.width);
+    return static_cast<int32>(RendererDetails::resetParams.width);
 }
 
 int32 GetFramebufferHeight()
 {
-    return static_cast<int32>(resetParams.height);
+    return static_cast<int32>(RendererDetails::resetParams.height);
 }
 
 void BeginFrame()
 {
+    RendererDetails::ProcessSignals();
     RenderCallbacks::ProcessFrame();
+
     DynamicBufferAllocator::BeginFrame();
 }
 
 void EndFrame()
 {
+    using namespace RendererDetails;
+
     VisibilityQueryResults::EndFrame();
     DynamicBufferAllocator::EndFrame();
 
@@ -198,7 +225,8 @@ void EndFrame()
     stats.primitiveTriangleStripCount = StatSet::StatValue(rhi::stat_DTS);
     stats.primitiveLineListCount = StatSet::StatValue(rhi::stat_DLL);
 }
-}
+
+} //ns Renderer
 
 void RenderStats::Reset()
 {
@@ -229,4 +257,5 @@ void RenderStats::Reset()
 
     visibilityQueryResults.clear();
 }
-}
+
+} //ns DAVA

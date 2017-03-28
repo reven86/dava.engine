@@ -15,7 +15,7 @@
 
 #include "Render/Highlevel/Vegetation/VegetationGeometry.h"
 #include "Render/Highlevel/RenderPassNames.h"
-#include "Render/RenderCallbacks.h"
+#include "Render/Renderer.h"
 
 #include "Reflection/ReflectionRegistrator.h"
 #include "Reflection/ReflectedMeta.h"
@@ -142,7 +142,7 @@ VegetationRenderObject::VegetationRenderObject()
     maxVisibleQuads = MAX_RENDER_CELLS;
     lodRanges = LOD_RANGES_SCALE;
     ResetVisibilityDistance();
-    RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(this, &VegetationRenderObject::RestoreRenderData));
+    Renderer::GetSignals().needRestoreResources.Connect(this, &VegetationRenderObject::RestoreRenderData);
 }
 
 VegetationRenderObject::~VegetationRenderObject()
@@ -158,7 +158,7 @@ VegetationRenderObject::~VegetationRenderObject()
 
     SafeRelease(heightmap);
     SafeRelease(heightmapTexture);
-    RenderCallbacks::UnRegisterResourceRestoreCallback(MakeFunction(this, &VegetationRenderObject::RestoreRenderData));
+    Renderer::GetSignals().needRestoreResources.Disconnect(this);
 }
 
 RenderBatch* VegetationRenderObject::CreateRenderBatch()
