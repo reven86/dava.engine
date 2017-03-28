@@ -1,13 +1,19 @@
 #include "Logger/Logger.h"
-#include "Base/Platform.h"
 
 #if defined(__DAVAENGINE_WINDOWS__)
+
+#include "Base/Platform.h"
+
 namespace DAVA
 {
 void Logger::PlatformLog(eLogLevel ll, const char8* text)
 {
     ::OutputDebugStringA(text);
 
+// TODO:
+// Check if such logs can be seen from windows 10 arm device.
+// Use ETW page on device portal to check it.
+#if 0 
 #if defined(__DAVAENGINE_WIN_UAP__)
     {
         static Windows::Foundation::Diagnostics::LoggingChannel ^ lc = ref new Windows::Foundation::Diagnostics::LoggingChannel("DAVALogProvider", nullptr);
@@ -39,6 +45,7 @@ void Logger::PlatformLog(eLogLevel ll, const char8* text)
         WideString wtext = UTF8Utils::EncodeToWideString(text);
         lc->LogMessage(ref new Platform::String(wtext.c_str()), lv);
     }
+#endif
 #endif
 }
 }

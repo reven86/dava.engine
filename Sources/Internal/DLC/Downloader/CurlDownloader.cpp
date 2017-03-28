@@ -2,7 +2,6 @@
 #include "Logger/Logger.h"
 #include "FileSystem/File.h"
 #include "Concurrency/Thread.h"
-#include "Concurrency/Mutex.h"
 
 #include <curl/curl.h>
 

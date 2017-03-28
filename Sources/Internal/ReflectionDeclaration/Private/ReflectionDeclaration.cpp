@@ -4,7 +4,6 @@
 #include "Reflection/Reflection.h"
 #include "Reflection/ReflectionRegistrator.h"
 
-#include "Engine/Engine.h"
 #include "Scene3D/Entity.h"
 #include "Scene3D/Components/Controller/RotationControllerComponent.h"
 #include "Scene3D/Components/VisibilityCheckComponent.h"
@@ -49,9 +48,6 @@
 #include "Math/Rect.h"
 #include "Math/AABBox3.h"
 #include "Math/Color.h"
-
-#include "Debug/Private/ImGui.h"
-#include "Utils/StringFormat.h"
 
 namespace DAVA
 {

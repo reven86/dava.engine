@@ -18,7 +18,6 @@
 namespace ImGuiImplDetails
 {
 static bool initialized = false;
-static bool visible = false;
 
 static rhi::HPipelineState pipelineStatePC, pipelineStatePTC;
 static rhi::HConstBuffer constBufferPC, constBufferPTC;
