@@ -1,5 +1,4 @@
 #include "Renderer.h"
-#include "Render/PixelFormatDescriptor.h"
 #include "Render/RHI/rhi_ShaderCache.h"
 #include "Render/RHI/Common/dbg_StatSet.h"
 #include "Render/RHI/Common/rhi_Private.h"
@@ -7,6 +6,7 @@
 #include "Render/Material/FXCache.h"
 #include "Render/DynamicBufferAllocator.h"
 #include "Render/GPUFamilyDescriptor.h"
+#include "Render/PixelFormatDescriptor.h"
 #include "Render/RenderCallbacks.h"
 #include "Render/Image/Image.h"
 #include "Render/Texture.h"
