@@ -74,7 +74,7 @@ private:
         isTrivial,
         isIntegral,
         isFloatingPoint,
-        isEnum,
+        isEnum
     };
 
     size_t size = 0;

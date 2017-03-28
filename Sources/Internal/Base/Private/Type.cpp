@@ -42,18 +42,15 @@ TypeDB::Stats TypeDB::GetStats()
         }
     }
 
-    stats.typeInheritanceMemory =
-    stats.typeInheritanceCount * sizeof(TypeInheritance) +
-    stats.typeInheritanceInfoCount * sizeof(TypeInheritance::Info);
+    stats.typeInheritanceMemory = stats.typeInheritanceCount * sizeof(TypeInheritance);
+    stats.typeInheritanceMemory += stats.typeInheritanceInfoCount * sizeof(TypeInheritance::Info);
 
-    stats.typeDBMemory =
-    sizeof(TypeDB::DB) +
-    localDB->size() * sizeof(DB::value_type);
+    stats.typeDBMemory = sizeof(TypeDB::DB);
+    stats.typeDBMemory += localDB->size() * sizeof(DB::value_type);
 
-    stats.totalMemory =
-    stats.typesMemory +
-    stats.typeInheritanceMemory +
-    stats.typeDBMemory;
+    stats.totalMemory = stats.typesMemory;
+    stats.totalMemory += stats.typeInheritanceMemory;
+    stats.totalMemory += stats.typeDBMemory;
 
     return stats;
 }
