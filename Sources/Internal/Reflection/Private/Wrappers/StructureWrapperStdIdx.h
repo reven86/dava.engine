@@ -106,7 +106,7 @@ public:
 
             if (first < sz)
             {
-                size_t n = std::min(first + count, sz);
+                size_t n = std::min(count, sz - first);
                 size_t i = first;
 
                 ret.reserve(n);

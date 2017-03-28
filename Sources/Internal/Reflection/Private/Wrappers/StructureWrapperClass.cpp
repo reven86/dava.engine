@@ -114,19 +114,25 @@ Vector<Reflection::Field> StructureWrapperClass::GetFields(const ReflectedObject
 {
     Vector<Reflection::Field> ret;
 
-    DVASSERT(first < fieldsCache.size());
-    DVASSERT(first + count <= fieldsCache.size());
+    size_t sz = fieldsCache.size();
 
-    size_t n = first + count;
-    ret.reserve(n);
-    for (size_t i = 0; i < n; ++i)
+    DVASSERT(first < sz);
+    DVASSERT(first + count <= sz);
+
+    if (first < sz)
     {
-        const ReflectedStructure::Field* field = fieldsCache[i].field;
+        size_t n = std::min(count, sz - first);
 
-        Any key(field->name);
-        Reflection ref(vw->GetValueObject(object), field->valueWrapper.get(), nullptr, field->meta.get());
+        ret.reserve(n);
+        for (size_t i = first; i < (first + n); ++i)
+        {
+            const ReflectedStructure::Field* field = fieldsCache[i].field;
 
-        ret.emplace_back(std::move(key), std::move(ref), fieldsCache[i].inheritFrom);
+            Any key(field->name);
+            Reflection ref(vw->GetValueObject(object), field->valueWrapper.get(), nullptr, field->meta.get());
+
+            ret.emplace_back(std::move(key), std::move(ref), fieldsCache[i].inheritFrom);
+        }
     }
 
     return ret;

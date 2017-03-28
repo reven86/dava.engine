@@ -64,7 +64,12 @@ inline bool ReflectedObject::IsConst() const
     return isConst;
 }
 
-/*
+#if 0
+
+// This is performance optimal GetPtr() implementation but it wouldn't
+// work for classes with multiple inheritance or with virtual inheritance,
+// so we are forced now to use other GetPtr implementation that is making
+// appropriate pointer cast
 template <typename T>
 inline T* ReflectedObject::GetPtr() const
 {
@@ -73,7 +78,8 @@ inline T* ReflectedObject::GetPtr() const
 
     return static_cast<T*>(ptr);
 }
-*/
+
+#else
 
 template <typename T>
 inline T* ReflectedObject::GetPtr() const // <-- GetPtrWithCast
@@ -91,6 +97,8 @@ inline T* ReflectedObject::GetPtr() const // <-- GetPtrWithCast
     DVASSERT(canCast);
     return static_cast<T*>(tmp);
 }
+
+#endif
 
 inline void* ReflectedObject::GetVoidPtr() const
 {
