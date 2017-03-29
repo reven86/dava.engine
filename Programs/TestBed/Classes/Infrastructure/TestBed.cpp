@@ -42,6 +42,7 @@
 #include "Tests/SoundTest.h"
 #include "Tests/AnyPerformanceTest.h"
 #include "Tests/WindowTest.h"
+#include "Tests/RichTextTest.h"
 //$UNITTEST_INCLUDE
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
@@ -335,6 +336,7 @@ void TestBed::RegisterTests()
 #endif
 
     new WindowTest(*this);
+    new RichTextTest(*this);
     //$UNITTEST_CTOR
 }
 

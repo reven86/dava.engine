@@ -342,6 +342,7 @@ ENUM_DECLARE(UIComponent::eType)
     ENUM_ADD_DESCR(UIComponent::SOUND_VALUE_FILTER_COMPONENT, "SoundValueFilter");
     ENUM_ADD_DESCR(UIComponent::UPDATE_COMPONENT, "Update");
     ENUM_ADD_DESCR(UIComponent::CUSTOM_UPDATE_DELTA_COMPONENT, "CustomDeltaUpdate");
+    ENUM_ADD_DESCR(UIComponent::RICH_CONTENT_COMPONENT, "RichContent");
 };
 
 ENUM_DECLARE(UISizePolicyComponent::eSizePolicy)
