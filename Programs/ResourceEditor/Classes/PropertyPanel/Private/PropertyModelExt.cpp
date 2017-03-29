@@ -1,27 +1,27 @@
 #include "Classes/PropertyPanel/PropertyModelExt.h"
 #include "Classes/SceneManager/SceneData.h"
 #include "Classes/Commands2/SetFieldValueCommand.h"
-#include <Commands2/KeyedArchiveCommand.h>
+#include "Classes/Commands2/KeyedArchiveCommand.h"
 #include "Classes/Commands2/AddComponentCommand.h"
 #include "Classes/PropertyPanel/PropertyPanelCommon.h"
 
 #include <TArc/Controls/PropertyPanel/PropertyPanelMeta.h>
 #include <TArc/Controls/PropertyPanel/PropertyModelExtensions.h>
 #include <TArc/Controls/ComboBox.h>
-#include "TArc/Controls/Widget.h"
+#include <TArc/Controls/Widget.h>
 #include <TArc/Controls/CommonStrings.h>
 #include <TArc/Utils/ReflectionHelpers.h>
 #include <TArc/Utils/QtConnections.h>
 
 #include <QtTools/WidgetHelpers/SharedIcon.h>
 
-#include <Engine/PlatformApi.h>
 #include <Scene3D/Entity.h>
 #include <Entity/Component.h>
 #include <FileSystem/KeyedArchive.h>
 #include <Reflection/Reflection.h>
 #include <Reflection/ReflectedTypeDB.h>
-#include "Reflection/ReflectedMeta.h"
+#include <Reflection/ReflectedMeta.h>
+#include <Engine/PlatformApi.h>
 #include <Functional/Function.h>
 #include <Base/Any.h>
 #include <Base/StaticSingleton.h>
@@ -136,7 +136,7 @@ protected:
         ComponentCreatorComponentValue* nonConstThis = const_cast<ComponentCreatorComponentValue*>(this);
         nonConstThis->toolButton = new QToolButton(w->ToWidgetCast());
         nonConstThis->toolButton->setIcon(SharedIcon(":/QtIcons/addcomponent.png"));
-        nonConstThis->toolButton->setIconSize(QSize(12, 12));
+        nonConstThis->toolButton->setIconSize(toolButtonIconSize);
         nonConstThis->toolButton->setToolTip(QStringLiteral("Add component"));
         nonConstThis->toolButton->setAutoRaise(true);
         layout->addWidget(nonConstThis->toolButton.data());
@@ -241,13 +241,17 @@ void REModifyPropertyExtension::ProduceCommand(const std::shared_ptr<DAVA::TArc:
     {
         DAVA::String key = node->field.key.Cast<DAVA::String>();
         DAVA::KeyedArchive* archive = parent->cachedValue.Cast<DAVA::KeyedArchive*>();
-        DVASSERT(archive->Count(key) > 0);
-        DAVA::VariantType* currentValue = archive->GetVariant(key);
-        DVASSERT(currentValue != nullptr);
+        DVASSERT(archive != nullptr);
+        if (archive != nullptr)
+        {
+            DVASSERT(archive->Count(key) > 0);
+            DAVA::VariantType* currentValue = archive->GetVariant(key);
+            DVASSERT(currentValue != nullptr);
 
-        DAVA::VariantType value = DAVA::PrepareValueForKeyedArchive(newValue, currentValue->GetType());
-        DVASSERT(value.GetType() != DAVA::VariantType::TYPE_NONE);
-        GetScene()->Exec(std::make_unique<KeyeadArchiveSetValueCommand>(archive, node->field.key.Cast<DAVA::String>(), value));
+            DAVA::VariantType value = DAVA::PrepareValueForKeyedArchive(newValue, currentValue->GetType());
+            DVASSERT(value.GetType() != DAVA::VariantType::TYPE_NONE);
+            GetScene()->Exec(std::make_unique<KeyeadArchiveSetValueCommand>(archive, node->field.key.Cast<DAVA::String>(), value));
+        }
     }
     else
     {

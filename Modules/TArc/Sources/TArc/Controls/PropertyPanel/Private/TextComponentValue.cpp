@@ -122,7 +122,7 @@ DAVA::TArc::ControlProxy* MultiLineTextComponentValue::CreateEditorWidget(QWidge
 
     QToolButton* button = new QToolButton(w->ToWidgetCast());
     button->setIcon(SharedIcon(":/QtIcons/pencil.png"));
-    button->setIconSize(QSize(12, 12));
+    button->setIconSize(toolButtonIconSize);
     button->setAutoRaise(true);
     connections.AddConnection(button, &QToolButton::clicked, MakeFunction(this, &MultiLineTextComponentValue::OpenMultiLineEdit));
     layout->addWidget(button);

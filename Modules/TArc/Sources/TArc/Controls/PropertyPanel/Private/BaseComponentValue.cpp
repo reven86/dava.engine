@@ -1,6 +1,5 @@
 #include "TArc/Controls/PropertyPanel/BaseComponentValue.h"
 #include "TArc/Controls/PropertyPanel/Private/ReflectedPropertyModel.h"
-#include "TArc/Controls/PropertyPanel/StaticEditorDrawer.h"
 #include "TArc/Controls/PropertyPanel/PropertyPanelMeta.h"
 #include "TArc/Controls/QtBoxLayouts.h"
 
@@ -284,7 +283,7 @@ void BaseComponentValue::CreateButtons(QLayout* layout, const M::CommandProducer
             QToolButton* button = new QToolButton(layout->widget());
             button->setIcon(info.icon);
             button->setToolTip(info.tooltip);
-            button->setIconSize(QSize(12, 12));
+            button->setIconSize(toolButtonIconSize);
             button->setAutoRaise(true);
             if (cmd->OnlyForSingleSelection() && nodes.size() > 1)
             {
@@ -348,6 +347,8 @@ void BaseComponentValue::CallButtonAction(const M::CommandProducerHolder* holder
     }
     producer->ClearCache();
 }
+
+QSize BaseComponentValue::toolButtonIconSize = QSize(12, 12);
 
 const char* BaseComponentValue::readOnlyFieldName = "isReadOnly";
 

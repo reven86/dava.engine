@@ -70,6 +70,8 @@ public:
     const Style& GetStyle() const;
     void SetStyle(const Style& style);
 
+    static QSize toolButtonIconSize;
+
     static const char* readOnlyFieldName;
 
 protected:

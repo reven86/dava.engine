@@ -14,7 +14,7 @@ class AddKeyedArchiveItemWidget;
 class KeyedArchiveEditor : public DAVA::TArc::BaseComponentValue
 {
 public:
-    ~KeyedArchiveEditor();
+    ~KeyedArchiveEditor() override;
 
 protected:
     DAVA::Any GetMultipleValue() const override;

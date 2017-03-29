@@ -174,6 +174,8 @@ private:
             case DAVA::VariantType::TYPE_UINT8:
             case DAVA::VariantType::TYPE_INT16:
             case DAVA::VariantType::TYPE_UINT16:
+            case DAVA::VariantType::TYPE_INT64:
+            case DAVA::VariantType::TYPE_UINT64:
                 ignoreType = true;
             default:
                 break;
@@ -188,7 +190,7 @@ private:
         }
     }
 
-    DAVA::String GetKey() const
+    const DAVA::String& GetKey() const
     {
         return key;
     }
@@ -294,7 +296,7 @@ DAVA::TArc::ControlProxy* KeyedArchiveEditor::CreateEditorWidget(QWidget* parent
     layout->setMargin(0);
     QToolButton* button = new QToolButton();
     button->setIcon(SharedIcon(":/QtIcons/keyplus.png"));
-    button->setIconSize(QSize(12, 12));
+    button->setIconSize(toolButtonIconSize);
     button->setAutoRaise(true);
 
     connections.AddConnection(button, &QToolButton::clicked, MakeFunction(this, &KeyedArchiveEditor::OnButtonClicked));
