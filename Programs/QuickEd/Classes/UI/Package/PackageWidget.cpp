@@ -393,45 +393,25 @@ void PackageWidget::OnSelectionChangedFromView(const QItemSelection& proxySelect
         return;
     }
 
-    for (const auto& index : proxySelected.indexes())
-    {
-        QModelIndex srcIndex = filteredPackageModel->mapToSource(index);
-        currentIndexes.emplace_back(srcIndex);
-    }
-
-    for (const auto& index : proxyDeselected.indexes())
-    {
-        QModelIndex srcIndex = filteredPackageModel->mapToSource(index);
-        DVASSERT(!currentIndexes.empty());
-        for (const QModelIndex& currIndex : currentIndexes)
-        {
-            if (currIndex == srcIndex)
-            {
-                currentIndexes.remove(currIndex);
-                break;
-            }
-        }
-    }
-
     SelectedNodes selected;
     SelectedNodes deselected;
 
     QItemSelection selectedIndexes = filteredPackageModel->mapSelectionToSource(proxySelected);
     QItemSelection deselectedIndexes = filteredPackageModel->mapSelectionToSource(proxyDeselected);
 
-    for (const auto& index : selectedIndexes.indexes())
-    {
-        selected.insert(static_cast<PackageBaseNode*>(index.internalPointer()));
-    }
+    SelectedNodes selection = selectionContainer.selectedNodes;
     for (const auto& index : deselectedIndexes.indexes())
     {
-        deselected.insert(static_cast<PackageBaseNode*>(index.internalPointer()));
+        selection.erase(static_cast<PackageBaseNode*>(index.internalPointer()));
+    }
+    for (const auto& index : selectedIndexes.indexes())
+    {
+        selection.insert(static_cast<PackageBaseNode*>(index.internalPointer()));
     }
 
-    selectionContainer.MergeSelection(selected, deselected);
+    SetSelectedNodes(selection);
 
-    RefreshActions();
-    emit SelectedNodesChanged(selectionContainer.selectedNodes);
+    emit SelectedNodesChanged(selection);
 }
 
 void PackageWidget::OnImport()
