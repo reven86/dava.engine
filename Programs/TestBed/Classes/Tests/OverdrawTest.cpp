@@ -8,11 +8,11 @@ namespace OverdrawPerformanceTester
 const float32 resolutionButtonsXOffset = 10.0f;
 const float32 resolutionButtonsYOffset = 100.0f;
 const float32 buttonHeight = 40.0f;
-const float32 buttonWidth = 150.0f;
+const float32 buttonWidth = 120.0f;
 const float32 heigthDistanceBetweenButtons = 10.0f;
-const float32 texturePixelFormatXOffset = 250.0f;
+const float32 texturePixelFormatXOffset = 150.0f;
 const float32 texturePixelFormatYOffset = 100.0f;
-const float32 overdrawXOffset = 490.0f;
+const float32 overdrawXOffset = 290.0f;
 const float32 overdrawYOffset = 100.0f;
 const float32 chartHeightYOffset = overdrawYOffset + buttonHeight * 4;
 const float32 minFrametimeThreshold = 0.033f;
@@ -71,7 +71,7 @@ void OverdrawTest::LoadResources()
     if (font == nullptr)
     {
         font = FTFont::Create("~res:/Fonts/korinna.ttf");
-        font->SetSize(20.f);
+        font->SetSize(17.f);
     }
     DAVA::Rect screenRect = GetRect();
     Size2i screenSize = DAVA::UIControlSystem::Instance()->vcs->GetVirtualScreenSize();
@@ -218,7 +218,7 @@ DAVA::UIButton* OverdrawTest::CreateButton(const DAVA::Rect& rect, const WideStr
     if (font == nullptr)
     {
         font = FTFont::Create("~res:/Fonts/korinna.ttf");
-        font->SetSize(20.f);
+        font->SetSize(17.f);
     }
 
     UIButton* button = new UIButton(rect);

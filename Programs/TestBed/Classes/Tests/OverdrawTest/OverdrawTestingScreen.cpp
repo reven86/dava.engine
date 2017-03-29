@@ -51,7 +51,7 @@ using DAVA::Message;
 using DAVA::FTFont;
 using DAVA::WideString;
 
-const float32 OverdrawTestingScreen::buttonWidth = 150.0f;
+const float32 OverdrawTestingScreen::buttonWidth = 100.0f;
 const float32 OverdrawTestingScreen::buttonHeight = 40.0f;
 const float32 OverdrawTestingScreen::minFrametimeThreshold = 0.033f;
 const float32 OverdrawTestingScreen::frametimeIncreaseStep = 0.016f;
