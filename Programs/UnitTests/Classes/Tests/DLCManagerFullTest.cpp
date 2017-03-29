@@ -131,11 +131,11 @@ struct FSMTest02
 
 DAVA_TESTCLASS (DLCManagerFullTest)
 {
-    BEGIN_FILES_COVERED_BY_TESTS()
-    DECLARE_COVERED_FILES("DLCManagerImpl.cpp")
-    DECLARE_COVERED_FILES("PackRequest.cpp")
-    DECLARE_COVERED_FILES("RequestManager.cpp")
-    END_FILES_COVERED_BY_TESTS()
+    //BEGIN_FILES_COVERED_BY_TESTS()
+    //DECLARE_COVERED_FILES("DLCManagerImpl.cpp")
+    //DECLARE_COVERED_FILES("PackRequest.cpp")
+    //DECLARE_COVERED_FILES("RequestManager.cpp")
+    //END_FILES_COVERED_BY_TESTS()
 
     FSMTest02 fsm02;
     bool TestAfterInitStopServer02_done = false;
