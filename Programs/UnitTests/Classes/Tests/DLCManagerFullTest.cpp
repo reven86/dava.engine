@@ -112,7 +112,8 @@ struct FSMTest02
             DAVA::Logger::Error("timeout: total: %llu in_queue: %llu downloaded: %lld", prog.total, prog.inQueue, prog.alreadyDownloaded);
             DAVA::Logger::Error("begin-------dlcManager.log---------content");
 
-            std::ifstream dlcLogFile(DAVA::DLCManager::Hints().logFilePath);
+            DAVA::FilePath logPath(DAVA::DLCManager::Hints().logFilePath);
+            std::ifstream dlcLogFile(logPath.GetAbsolutePathname().c_str());
             DAVA::String str;
             while (std::getline(dlcLogFile, str))
             {
