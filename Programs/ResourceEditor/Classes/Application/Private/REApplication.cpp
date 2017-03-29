@@ -4,6 +4,8 @@
 #include "Classes/Application/ReflectionExtensions.h"
 #include "Classes/Project/ProjectManagerModule.h"
 #include "Classes/SceneManager/SceneManagerModule.h"
+#include "Classes/Application/LaunchModule.h"
+
 #include <RemoteTool/RemoteToolModule.h>
 
 #include <Tools/TextureCompression/PVRConverter.h>
@@ -191,6 +193,8 @@ void REApplication::CreateGUIModules(DAVA::TArc::Core* tarcCore) const
     {
         tarcCore->CreateModule(type);
     }
+
+    tarcCore->CreateModule<LaunchModule>();
 }
 
 void REApplication::CreateConsoleModules(DAVA::TArc::Core* tarcCore) const

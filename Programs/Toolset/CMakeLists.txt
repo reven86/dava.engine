@@ -33,6 +33,7 @@ macro ( add_tool TARGET_NAME )
 endmacro ()
 
 ############
+set( UNITY_BUILD_OLD_VALUE ${UNITY_BUILD} )
 
 set( JOIN_PROJECT_NAME 1 )
 set( DAVA_MEGASOLUTION      1 )
@@ -63,11 +64,15 @@ set( QT_POST_DEPLOY         )
 reset_property ( MIX_APP_DATA )
 
     if ( NOT ONLY_CONTENT_TOOLS )
-        add_tool     ( Launcher        CUSTOM_DEPLOY_DIR ${DEPLOY_DIR} DEPLOY_DEFINE "-DDAVA_MACOS_DATA_PATH=\"/../Data/\"" )
+         
+        set( UNITY_BUILD false )
         add_tool     ( UnitTests       ROOT_DIR "${DAVA_ROOT_DIR}/Programs/UnitTests"       CUSTOM_DEPLOY_DIR ${DEPLOY_DIR} )
+        set( UNITY_BUILD ${UNITY_BUILD_OLD_VALUE} )
+
         add_tool     ( TestBed         ROOT_DIR "${DAVA_ROOT_DIR}/Programs/TestBed"         CUSTOM_DEPLOY_DIR ${DEPLOY_DIR} )
         add_tool     ( SceneViewer     ROOT_DIR "${DAVA_ROOT_DIR}/Programs/SceneViewer"     CUSTOM_DEPLOY_DIR ${DEPLOY_DIR} )
         add_tool     ( PerfomanceTests ROOT_DIR "${DAVA_ROOT_DIR}/Programs/PerfomanceTests" CUSTOM_DEPLOY_DIR ${DEPLOY_DIR} )
+        add_tool     ( Launcher        CUSTOM_DEPLOY_DIR ${DEPLOY_DIR} DEPLOY_DEFINE "-DDAVA_MACOS_DATA_PATH=\"/../Data/\"" )
 
         if ( WIN32 )
             add_tool ( UWPRunner CUSTOM_DEPLOY_DIR ${DEPLOY_DIR} )

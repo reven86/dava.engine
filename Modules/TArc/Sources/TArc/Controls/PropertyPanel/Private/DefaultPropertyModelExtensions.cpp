@@ -9,9 +9,13 @@
 #include "TArc/Controls/PropertyPanel/Private/NumberComponentValue.h"
 #include "TArc/Controls/PropertyPanel/Private/EmptyComponentValue.h"
 #include "TArc/Controls/PropertyPanel/Private/FilePathComponentValue.h"
+#include "TArc/Controls/PropertyPanel/Private/MatrixComponentValue.h"
 #include "TArc/Utils/ReflectionHelpers.h"
 
 #include <Debug/DVAssert.h>
+#include <Math/Matrix2.h>
+#include <Math/Matrix3.h>
+#include <Math/Matrix4.h>
 
 namespace DAVA
 {
@@ -92,6 +96,7 @@ std::shared_ptr<PropertyNode> DefaultAllocator::CreatePropertyNode(Reflection::F
     result->propertyType = type;
     result->field = std::move(field);
     result->cachedValue = value;
+    result->sortKey = PropertyNode::InvalidSortKey;
 
     return result;
 }
@@ -99,29 +104,6 @@ std::shared_ptr<PropertyNode> DefaultAllocator::CreatePropertyNode(Reflection::F
 std::shared_ptr<IChildAllocator> CreateDefaultAllocator()
 {
     return std::make_shared<DefaultAllocator>();
-}
-
-ReflectedPropertyItem* DefaultMergeValueExtension::LookUpItem(const std::shared_ptr<const PropertyNode>& node, const Vector<std::unique_ptr<ReflectedPropertyItem>>& items) const
-{
-    DVASSERT(node->field.ref.IsValid());
-
-    ReflectedPropertyItem* result = nullptr;
-    const ReflectedType* valueType = node->field.ref.GetValueObject().GetReflectedType();
-
-    for (const std::unique_ptr<ReflectedPropertyItem>& item : items)
-    {
-        DVASSERT(item->GetPropertyNodesCount() > 0);
-        std::shared_ptr<const PropertyNode> etalonNode = item->GetPropertyNode(0);
-        const ReflectedType* etalonItemType = etalonNode->field.ref.GetValueObject().GetReflectedType();
-
-        if (valueType == etalonItemType && etalonNode->field.key == node->field.key)
-        {
-            result = item.get();
-            break;
-        }
-    }
-
-    return result;
 }
 
 DefaultEditorComponentExtension::DefaultEditorComponentExtension(UI* ui_)
@@ -155,7 +137,10 @@ std::unique_ptr<BaseComponentValue> DefaultEditorComponentExtension::GetEditor(c
           std::make_pair(Type::Instance<int16>(), &std::make_unique<NumberComponentValue<int16>>),
           std::make_pair(Type::Instance<uint16>(), &std::make_unique<NumberComponentValue<uint16>>),
           std::make_pair(Type::Instance<int32>(), &std::make_unique<NumberComponentValue<int32>>),
-          std::make_pair(Type::Instance<uint32>(), &std::make_unique<NumberComponentValue<uint32>>)
+          std::make_pair(Type::Instance<uint32>(), &std::make_unique<NumberComponentValue<uint32>>),
+          std::make_pair(Type::Instance<Matrix2>(), &std::make_unique<MatrixComponentValue>),
+          std::make_pair(Type::Instance<Matrix3>(), &std::make_unique<MatrixComponentValue>),
+          std::make_pair(Type::Instance<Matrix4>(), &std::make_unique<MatrixComponentValue>),
         };
 
         const Type* valueType = node->cachedValue.GetType()->Decay();
@@ -166,9 +151,7 @@ std::unique_ptr<BaseComponentValue> DefaultEditorComponentExtension::GetEditor(c
         }
         else if (valueType == Type::Instance<FilePath>())
         {
-            FilePathComponentValue::Params p;
-            p.ui = ui;
-            return std::make_unique<FilePathComponentValue>(p);
+            return std::make_unique<FilePathComponentValue>();
         }
     }
 

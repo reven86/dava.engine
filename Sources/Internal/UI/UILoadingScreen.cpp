@@ -1,6 +1,7 @@
 #include "UI/UILoadingScreen.h"
 #include "UI/UIControlSystem.h"
 #include "UI/UIScreenManager.h"
+#include "UI/Update/UIUpdateComponent.h"
 #include "Debug/Replay.h"
 #include "Job/JobManager.h"
 #include "Concurrency/Thread.h"
@@ -9,6 +10,11 @@
 namespace DAVA
 {
 static const uint32 LOADING_THREAD_STACK_SIZE = 1024 * 1024; // 1 mb
+
+UILoadingScreen::UILoadingScreen()
+{
+    GetOrCreateComponent<UIUpdateComponent>();
+}
 
 UILoadingScreen::~UILoadingScreen()
 {

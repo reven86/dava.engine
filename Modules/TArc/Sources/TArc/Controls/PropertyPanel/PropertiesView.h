@@ -4,7 +4,9 @@
 #include "TArc/Core/FieldBinder.h"
 #include "TArc/DataProcessing/Common.h"
 #include "TArc/Utils/QtConnections.h"
+#include "TArc/WindowSubSystem/UI.h"
 
+#include <Reflection/Reflection.h>
 #include <Functional/Function.h>
 
 #include <QWidget>
@@ -25,6 +27,12 @@ class PropertiesView : public QWidget
 {
     Q_OBJECT
 public:
+    enum eViewMode
+    {
+        VIEW_MODE_NORMAL,
+        VIEW_MODE_FAVORITES_ONLY
+    };
+
     enum UpdatePolicy
     {
         FullUpdate,
@@ -44,6 +52,12 @@ public:
     */
     struct Params
     {
+        Params(const WindowKey& key)
+            : wndKey(key)
+        {
+        }
+
+        WindowKey wndKey;
         ContextAccessor* accessor = nullptr;
         OperationInvoker* invoker = nullptr;
         UI* ui = nullptr;
@@ -67,15 +81,22 @@ private:
     void UpdateExpanded();
     void OnExpanded(const QModelIndex& index);
     void OnCollapsed(const QModelIndex& index);
+    void OnFavoritesEditChanged(bool isChecked);
+
+    eViewMode GetViewMode() const;
+    void SetViewMode(eViewMode mode);
 
 private:
     FieldBinder binder;
     Params params;
-    QTreeView* view = nullptr;
+    class PropertiesTreeView;
+    PropertiesTreeView* view = nullptr;
     std::unique_ptr<ReflectedPropertyModel> model;
     SigConnectionID updateConnectionID;
     QtConnections connections;
     bool isExpandUpdate = false;
+
+    DAVA_REFLECTION(PropertiesView);
 };
 }
 }

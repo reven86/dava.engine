@@ -102,7 +102,7 @@ public:
             descr[LineEdit::Fields::Text] = "text";
             LineEdit* edit = new LineEdit(descr, GetAccessor(), Reflection::Create(&model));
             edit->SetObjectName("LineEdit");
-            layout->AddWidget(edit);
+            layout->AddControl(edit);
         }
 
         Reflection refModel = Reflection::Create(&dataSource);
@@ -111,7 +111,7 @@ public:
             descr[LineEdit::Fields::Text] = "readOnlyTextMeta";
             LineEdit* edit = new LineEdit(descr, GetAccessor(), refModel);
             edit->SetObjectName("LineEdit_readOnlyMeta");
-            layout->AddWidget(edit);
+            layout->AddControl(edit);
         }
 
         {
@@ -119,7 +119,7 @@ public:
             descr[LineEdit::Fields::Text] = "readOnlyText";
             LineEdit* edit = new LineEdit(descr, GetAccessor(), refModel);
             edit->SetObjectName("LineEdit_readOnlyText");
-            layout->AddWidget(edit);
+            layout->AddControl(edit);
         }
 
         {
@@ -130,7 +130,7 @@ public:
             descr[LineEdit::Fields::IsEnabled] = "isEnabled";
             LineEdit* edit = new LineEdit(descr, GetAccessor(), refModel);
             edit->SetObjectName("LineEdit_text");
-            layout->AddWidget(edit);
+            layout->AddControl(edit);
         }
 
         {
@@ -138,7 +138,7 @@ public:
             descr[LineEdit::Fields::Text] = "invalidateText";
             LineEdit* edit = new LineEdit(descr, GetAccessor(), refModel);
             edit->SetObjectName("LineEdit_invalidate");
-            layout->AddWidget(edit);
+            layout->AddControl(edit);
         }
 
         {
@@ -146,7 +146,7 @@ public:
             descr[LineEdit::Fields::Text] = "fixUpText";
             LineEdit* edit = new LineEdit(descr, GetAccessor(), refModel);
             edit->SetObjectName("LineEdit_fixup");
-            layout->AddWidget(edit);
+            layout->AddControl(edit);
         }
 
         PanelKey key("LineEditPanel", CentralPanelInfo());

@@ -1,18 +1,23 @@
 #include "TArc/Controls/PropertyPanel/PropertiesView.h"
 #include "TArc/Controls/PropertyPanel/Private/ReflectedPropertyModel.h"
 #include "TArc/Controls/PropertyPanel/Private/PropertiesViewDelegate.h"
+#include "TArc/Controls/ComboBox.h"
 #include "TArc/Core/ContextAccessor.h"
 #include "TArc/Utils/ScopedValueGuard.h"
+
+#include <QtTools/WidgetHelpers/SharedIcon.h>
 
 #include <Reflection/Reflection.h>
 #include <Base/BaseTypes.h>
 
-#include <QHBoxLayout>
+#include <QVBoxLayout>
 #include <QTreeView>
 #include <QScrollBar>
 #include <QHeaderView>
 #include <QTimer>
 #include <QPainter>
+#include <QToolBar>
+#include <QtWidgets/private/qheaderview_p.h>
 
 namespace DAVA
 {
@@ -21,13 +26,64 @@ namespace TArc
 namespace PropertiesViewDetail
 {
 const char* SeparatorPositionKey = "SeparatorPosition";
+const int ToolBarHeight = 34;
+const int FavoritesStarSpaceWidth = 20;
 
-class PropertiesTreeView : public QTreeView
+class PropertiesHeaderView : public QHeaderView
+{
+public:
+    PropertiesHeaderView(Qt::Orientation orientation, QWidget* parent)
+        : QHeaderView(orientation, parent)
+    {
+    }
+
+    void SetFavoritesEditMode(bool isActive)
+    {
+        isInFavoritesEdit = isActive;
+        setOffset(isInFavoritesEdit == true ? -FavoritesStarSpaceWidth : 0);
+    }
+
+protected:
+    void paintSection(QPainter* painter, const QRect& rect, int logicalIndex) const override
+    {
+        QRect r = rect;
+        if (isInFavoritesEdit == true && logicalIndex == 0)
+        {
+            r.setX(0);
+        }
+
+        QHeaderView::paintSection(painter, r, logicalIndex);
+    }
+
+private:
+    bool isInFavoritesEdit = false;
+};
+
+} // namespace PropertiesViewDetail
+
+class PropertiesView::PropertiesTreeView : public QTreeView
 {
 public:
     PropertiesTreeView(QWidget* parent)
         : QTreeView(parent)
     {
+        headerView = new PropertiesViewDetail::PropertiesHeaderView(Qt::Horizontal, this);
+        setHeader(headerView);
+        headerView->setStretchLastSection(true);
+    }
+
+    void setModel(QAbstractItemModel* model) override
+    {
+        QTreeView::setModel(model);
+        propertiesModel = qobject_cast<ReflectedPropertyModel*>(model);
+    }
+
+    void SetFavoritesEditMode(bool inEditMode)
+    {
+        isInFavoritesEdit = inEditMode;
+        headerView->SetFavoritesEditMode(inEditMode);
+        viewport()->update();
+        headerView->update();
     }
 
 protected:
@@ -47,10 +103,9 @@ protected:
         bool isSpanned = isFirstColumnSpanned(index.row(), index.parent());
         if (isSelected == false && isSpanned == false)
         {
-            QHeaderView* hdr = header();
-            if (hdr != nullptr && hdr->count() > 1)
+            if (headerView != nullptr && headerView->count() > 1)
             {
-                int sz = hdr->sectionSize(0);
+                int sz = headerView->sectionSize(0) - headerView->offset();
                 QScrollBar* scroll = horizontalScrollBar();
                 if (scroll != nullptr)
                 {
@@ -69,17 +124,65 @@ protected:
         }
 
         painter->restore();
+
+        if (isInFavoritesEdit == true)
+        {
+            bool isFavotire = propertiesModel->IsFavorite(index);
+            QRect iconRect = QRect(options.rect.x(), options.rect.y(), PropertiesViewDetail::FavoritesStarSpaceWidth, options.rect.height());
+            const char* iconPath = isFavotire == true ? ":/QtIcons/star.png" : ":/QtIcons/star_empty.png";
+            SharedIcon(iconPath).paint(painter, iconRect);
+        }
     }
+
+    void mouseReleaseEvent(QMouseEvent* event) override
+    {
+        if (isInFavoritesEdit)
+        {
+            QPoint normalizedEventPos = event->pos();
+            normalizedEventPos.rx() += -headerView->offset();
+            QModelIndex index = indexAt(normalizedEventPos);
+
+            if (index.isValid() && index.column() == 0)
+            {
+                QRect rect = visualRect(index);
+                rect.setX(0);
+                rect.setWidth(-headerView->offset());
+
+                if (rect.contains(event->pos()))
+                {
+                    if (propertiesModel->IsFavorite(index))
+                    {
+                        propertiesModel->RemoveFavorite(index);
+                    }
+                    else
+                    {
+                        propertiesModel->AddFavorite(index);
+                    }
+                }
+            }
+        }
+        QTreeView::mouseReleaseEvent(event);
+    }
+
+private:
+    PropertiesViewDetail::PropertiesHeaderView* headerView = nullptr;
+    bool isInFavoritesEdit = false;
+    ReflectedPropertyModel* propertiesModel = nullptr;
 };
 
-} // namespace PropertiesViewDetail
+DAVA_REFLECTION_IMPL(PropertiesView)
+{
+    ReflectionRegistrator<PropertiesView>::Begin()
+    .Field("viewMode", &PropertiesView::GetViewMode, &PropertiesView::SetViewMode)[M::EnumT<eViewMode>()]
+    .End();
+}
 
 PropertiesView::PropertiesView(const Params& params_)
     : binder(params_.accessor)
     , params(params_)
 {
     binder.BindField(params.objectsField, MakeFunction(this, &PropertiesView::OnObjectsChanged));
-    model.reset(new ReflectedPropertyModel(params.accessor, params.invoker, params.ui));
+    model.reset(new ReflectedPropertyModel(params.wndKey, params.accessor, params.invoker, params.ui));
 
     SetupUI();
 
@@ -93,7 +196,7 @@ PropertiesView::PropertiesView(const Params& params_)
     int columnWidth = viewItem.Get(PropertiesViewDetail::SeparatorPositionKey, view->columnWidth(0));
     view->setColumnWidth(0, columnWidth);
 
-    model->LoadExpanded(viewItem.CreateSubHolder("expandedItems"));
+    model->LoadState(viewItem);
     QObject::connect(view, &QTreeView::expanded, this, &PropertiesView::OnExpanded);
     QObject::connect(view, &QTreeView::collapsed, this, &PropertiesView::OnCollapsed);
 }
@@ -109,8 +212,7 @@ PropertiesView::~PropertiesView()
     PropertiesItem viewSettings = params.accessor->CreatePropertiesNode(params.settingsNodeName);
     viewSettings.Set(PropertiesViewDetail::SeparatorPositionKey, view->columnWidth(0));
 
-    PropertiesItem item = viewSettings.CreateSubHolder("expandedItems");
-    model->SaveExpanded(item);
+    model->SaveState(viewSettings);
 }
 
 void PropertiesView::RegisterExtension(const std::shared_ptr<ExtensionChain>& extension)
@@ -125,12 +227,18 @@ void PropertiesView::UnregisterExtension(const std::shared_ptr<ExtensionChain>& 
 
 void PropertiesView::SetupUI()
 {
-    QHBoxLayout* layout = new QHBoxLayout(this);
+    // Main layout setup.
+    // Toolbar + TreeView
+    QVBoxLayout* layout = new QVBoxLayout(this);
     layout->setMargin(0);
     layout->setSpacing(0);
     setLayout(layout);
 
-    view = new PropertiesViewDetail::PropertiesTreeView(this);
+    QToolBar* toolBar = new QToolBar(this);
+    toolBar->setFixedHeight(PropertiesViewDetail::ToolBarHeight);
+    layout->addWidget(toolBar);
+
+    view = new PropertiesTreeView(this);
     view->setObjectName(QString("%1_propertiesview").arg(QString::fromStdString(params.settingsNodeName)));
     view->setEditTriggers(QAbstractItemView::CurrentChanged | QAbstractItemView::SelectedClicked | QAbstractItemView::EditKeyPressed);
     layout->addWidget(view);
@@ -138,7 +246,20 @@ void PropertiesView::SetupUI()
     view->setModel(model.get());
     view->setRootIndex(QModelIndex());
     view->setItemDelegate(new PropertiesViewDelegate(view, model.get(), this));
-    view->setAlternatingRowColors(true);
+
+    // Toolbar setup
+    QAction* favoriteModeAction = new QAction(toolBar);
+    favoriteModeAction->setCheckable(true);
+    QIcon icon;
+    icon.addFile(QStringLiteral(":/QtIcons/star.png"), QSize(), QIcon::Normal, QIcon::Off);
+    favoriteModeAction->setIcon(icon);
+    toolBar->addAction(favoriteModeAction);
+    connections.AddConnection(favoriteModeAction, &QAction::toggled, MakeFunction(this, &PropertiesView::OnFavoritesEditChanged));
+
+    ControlDescriptorBuilder<ComboBox::Fields> descr;
+    descr[ComboBox::Fields::Value] = "viewMode";
+    ComboBox* comboBox = new ComboBox(descr, params.accessor, Reflection::Create(ReflectedObject(this)), toolBar);
+    toolBar->addWidget(comboBox->ToWidgetCast());
 
     QHeaderView* headerView = view->header();
     connections.AddConnection(headerView, &QHeaderView::sectionResized, MakeFunction(this, &PropertiesView::OnColumnResized));
@@ -161,7 +282,10 @@ void PropertiesView::OnColumnResized(int columnIndex, int oldSize, int newSize)
 {
     PropertiesViewDelegate* d = qobject_cast<PropertiesViewDelegate*>(view->itemDelegate());
     DVASSERT(d != nullptr);
-    d->UpdateSizeHints(columnIndex, newSize);
+    if (d->UpdateSizeHints(columnIndex, newSize) == true)
+    {
+        model->HideEditors();
+    }
 }
 
 void PropertiesView::Update(UpdatePolicy policy)
@@ -212,5 +336,28 @@ void PropertiesView::OnCollapsed(const QModelIndex& index)
     model->HideEditors();
 }
 
+void PropertiesView::OnFavoritesEditChanged(bool isChecked)
+{
+    view->SetFavoritesEditMode(isChecked);
+}
+
+PropertiesView::eViewMode PropertiesView::GetViewMode() const
+{
+    return model->IsFavoriteOnly() == true ? VIEW_MODE_FAVORITES_ONLY : VIEW_MODE_NORMAL;
+}
+
+void PropertiesView::SetViewMode(PropertiesView::eViewMode mode)
+{
+    model->SetFavoriteOnly(mode == VIEW_MODE_FAVORITES_ONLY);
+    model->HideEditors();
+    UpdateExpanded();
+}
+
 } // namespace TArc
 } // namespace DAVA
+
+ENUM_DECLARE(DAVA::TArc::PropertiesView::eViewMode)
+{
+    ENUM_ADD_DESCR(DAVA::TArc::PropertiesView::eViewMode::VIEW_MODE_NORMAL, "Normal");
+    ENUM_ADD_DESCR(DAVA::TArc::PropertiesView::eViewMode::VIEW_MODE_FAVORITES_ONLY, "Favorites only");
+}

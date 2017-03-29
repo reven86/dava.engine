@@ -100,18 +100,20 @@ fp_main( fragment_in input )
 
     float cx = float(int(vp.x) / 4);
     float cy = float(int(vp.y) / 4);
-    vec4 checkboard = vec4(0.25 * mod(cx + mod(cy, 2.0), 2.0));
+    float4 checkboard = float4(0.25 * fmod(cx + fmod(cy, 2.0), 2.0));
 
     float3 reprojectedUVW = 0.5 + 0.5 * input.reprojectedCoords.xyz / input.reprojectedCoords.w;
     float4 sampledColor = tex2D(fixedFrame, reprojectedUVW.xy);
-    float4 currentColor = mix(checkboard, tex2D(currentFrame, vpCoords), currentFrameCompleteness);
+    float4 currentColor = lerp(checkboard, tex2D(currentFrame, vpCoords), currentFrameCompleteness);
 
     float actualDistance = input.distanceToOrigin;
     float sampledDistance = DecodeFloat(tex2D(fixedFrameDistances, reprojectedUVW.xy));
     float visibleInProjection = 1.0 - float(abs(actualDistance / sampledDistance - 1.0) > MAGIC_TRESHOLD_2);
-    float insideProjection = float(all(equal(reprojectedUVW, clamp(reprojectedUVW, float3(0.0), float3(1.0)))));
 
-    output.color = mix(currentColor, sampledColor, insideProjection * visibleInProjection);
+    float3 rpClamped = clamp(reprojectedUVW, float3(0.0), float3(1.0));
+    float insideProjection = float((rpClamped.x == reprojectedUVW.x) && (rpClamped.y == reprojectedUVW.y) && (rpClamped.z == reprojectedUVW.z));
+
+    output.color = lerp(currentColor, sampledColor, insideProjection * visibleInProjection);
 
 #else
 #   error Undefined

@@ -8,7 +8,8 @@ namespace DAVA
 {
 DAVA_VIRTUAL_REFLECTION_IMPL(LightComponent)
 {
-    ReflectionRegistrator<LightComponent>::Begin()
+    ReflectionRegistrator<LightComponent>::Begin()[M::CantBeCreatedManualyComponent()]
+    .ConstructorByPointer()
     .Field("isDynamic", &LightComponent::IsDynamic, &LightComponent::SetDynamic)[M::DisplayName("Is Dynamic")]
     .Field("lightType", &LightComponent::GetLightType, &LightComponent::SetLightType)[M::DisplayName("Type"), M::EnumT<Light::eType>()]
     .Field("ambientColor", &LightComponent::GetAmbientColor, &LightComponent::SetAmbientColor)[M::DisplayName("Ambient Color")]

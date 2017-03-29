@@ -97,12 +97,17 @@ QString BaseComponentValue::GetPropertyName() const
     return nodes.front()->field.key.Cast<QString>();
 }
 
+FastName BaseComponentValue::GetName() const
+{
+    return nodes.front()->field.key.Cast<FastName>(FastName(""));
+}
+
 int32 BaseComponentValue::GetPropertiesNodeCount() const
 {
     return static_cast<int32>(nodes.size());
 }
 
-std::shared_ptr<const PropertyNode> BaseComponentValue::GetPropertyNode(int32 index) const
+std::shared_ptr<PropertyNode> BaseComponentValue::GetPropertyNode(int32 index) const
 {
     DVASSERT(static_cast<size_t>(index) < nodes.size());
     return nodes[static_cast<size_t>(index)];
@@ -125,6 +130,16 @@ bool BaseComponentValue::IsReadOnly() const
 bool BaseComponentValue::IsSpannedControl() const
 {
     return false;
+}
+
+const BaseComponentValue::Style& BaseComponentValue::GetStyle() const
+{
+    return style;
+}
+
+void BaseComponentValue::SetStyle(const Style& style_)
+{
+    style = style_;
 }
 
 DAVA::Any BaseComponentValue::GetValue() const
@@ -176,6 +191,21 @@ void BaseComponentValue::RemovePropertyNodes()
     nodes.clear();
 }
 
+ContextAccessor* BaseComponentValue::GetAccessor() const
+{
+    return model->accessor;
+}
+
+UI* BaseComponentValue::GetUI() const
+{
+    return model->ui;
+}
+
+const WindowKey& BaseComponentValue::GetWindowKey() const
+{
+    return model->wndKey;
+}
+
 void BaseComponentValue::EnsureEditorCreated(const QWidget* parent) const
 {
     if (editorWidget == nullptr)
@@ -202,10 +232,12 @@ void BaseComponentValue::EnsureEditorCreated(QWidget* parent)
     {
         QWidget* boxWidget = new QWidget(parent);
         QtHBoxLayout* layout = new QtHBoxLayout(boxWidget);
+        layout->setMargin(0);
+        layout->setSpacing(1);
 
-        layout->addWidget(realWidget);
         CreateButtons(layout, typeProducer, true);
         CreateButtons(layout, fieldProducer, false);
+        layout->addWidget(realWidget);
 
         realWidget = boxWidget;
     }
