@@ -156,19 +156,20 @@ void DLCManagerImpl::Initialize(const FilePath& dirToDownloadPacks_,
 {
     DVASSERT(Thread::IsMainThread());
 
+    FilePath logPath(hints_.logFilePath);
+    String fullLogPath = logPath.GetAbsolutePathname();
+
     Logger::Info("DLCManager::Initialize(\ndirToDownloadPacks:%s, "
-                 "\nurlToServerSuperpack:%s, logFilePath:%s, "
+                 "\nurlToServerSuperpack:%s, \nlogFilePath:%s, "
                  "\nretryConnectMilliseconds:%d, \nmaxFilesToDownload: %d",
                  dirToDownloadPacks_.GetAbsolutePathname().c_str(),
                  urlToServerSuperpack_.c_str(),
-                 hints_.logFilePath,
+                 fullLogPath.c_str(),
                  hints_.retryConnectMilliseconds,
                  hints_.maxFilesToDownload);
 
     if (!log.is_open())
     {
-        FilePath logPath(hints_.logFilePath);
-        String fullLogPath = logPath.GetAbsolutePathname();
         log.open(fullLogPath.c_str(), std::ios::trunc);
         if (!log)
         {

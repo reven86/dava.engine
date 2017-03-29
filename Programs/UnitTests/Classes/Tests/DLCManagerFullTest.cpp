@@ -13,7 +13,7 @@
 
 #ifndef __DAVAENGINE_WIN_UAP__
 
-const DAVA::FilePath documentRootDir("~res:/");
+DAVA::FilePath documentRootDir;
 const char* const localPort = "8080";
 
 struct FSMTest02
@@ -32,8 +32,12 @@ struct FSMTest02
 
     void Cleanup(DAVA::DLCManager& dlcManager)
     {
+        using namespace DAVA;
+        Logger::Info("%s Deinitialize()", __FUNCTION__);
         dlcManager.Deinitialize();
-        DAVA::StopEmbeddedWebServer();
+        Logger::Info("%s StopEmbeddedWebServer()", __FUNCTION__);
+        StopEmbeddedWebServer();
+        Logger::Info("%s done", __FUNCTION__);
     }
 
     bool Update(DAVA::float32 dt)
@@ -193,10 +197,31 @@ DAVA_TESTCLASS (DLCManagerFullTest)
     {
         using namespace DAVA;
 
+        documentRootDir = "~doc:/";
+
+        Logger::Info("First part of TestAfterInitStopServer02 started");
+
         DLCManager& dlcManager = *GetEngineContext()->dlcManager;
 
         const DLCManager::IRequest* r = dlcManager.RequestPack("1"); // pack "1" have one dependent pack "0"
         TEST_VERIFY(r != nullptr);
+
+        FileSystem* fs = FileSystem::Instance();
+
+        FilePath destPath = documentRootDir + "superpack_for_unittests.dvpk";
+        FilePath srcPath = "~res:/superpack_for_unittests.dvpk";
+        if (!fs->IsFile(srcPath))
+        {
+            Logger::Error("no super pack file!");
+            TEST_VERIFY(false);
+        }
+
+        if (!fs->CopyFile(srcPath, destPath, true))
+        {
+            Logger::Error("can't copy super pack for unittest from res:/");
+            TEST_VERIFY(false);
+            return;
+        }
 
         if (!StartEmbeddedWebServer(documentRootDir.GetAbsolutePathname().c_str(), localPort))
         {
@@ -215,6 +240,7 @@ DAVA_TESTCLASS (DLCManagerFullTest)
             dlcManager.Initialize(packDir,
                                   "http://127.0.0.1:8080/superpack_for_unittests.dvpk",
                                   hints);
+            Logger::Info("Initialize called no exception");
         }
         catch (std::exception& ex)
         {
@@ -225,6 +251,7 @@ DAVA_TESTCLASS (DLCManagerFullTest)
         auto request = dlcManager.RequestPack("3"); // pack "3" depends on "0, 1, 2" packs
         TEST_VERIFY(request != nullptr);
         TEST_VERIFY(dlcManager.IsRequestingEnabled());
+        Logger::Info("First part of TestAfterInitStopServer02 finished");
     }
 };
 
