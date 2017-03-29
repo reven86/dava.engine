@@ -1,3 +1,5 @@
+#include <fstream>
+
 #include <DLCManager/DLCManager.h>
 #include <FileSystem/File.h>
 #include <FileSystem/FileSystem.h>
@@ -28,6 +30,12 @@ struct FSMTest02
     const DAVA::float32 timeout = 40.f;
     DAVA::DLCManager::Progress progressAfterInit;
 
+    void Cleanup(DAVA::DLCManager& dlcManager)
+    {
+        dlcManager.Deinitialize();
+        DAVA::StopEmbeddedWebServer();
+    }
+
     bool Update(DAVA::float32 dt)
     {
         DAVA::DLCManager& dlcManager = *DAVA::GetEngineContext()->dlcManager;
@@ -49,7 +57,7 @@ struct FSMTest02
         break;
         case WaitSecondConnectAttempt:
         {
-            // TODO how to check second connect Attemp?
+            // TODO how to check second connect attempt?
             TEST_VERIFY(dlcManager.IsInitialized());
 
             TEST_VERIFY(dlcManager.IsRequestingEnabled());
@@ -89,8 +97,7 @@ struct FSMTest02
                 TEST_VERIFY(r3->IsDownloaded());
 
                 // now stop server for next tests
-                dlcManager.Deinitialize();
-                DAVA::StopEmbeddedWebServer();
+                Cleanup(dlcManager);
                 return true;
             }
         }
@@ -100,8 +107,21 @@ struct FSMTest02
         if (time > timeout)
         {
             auto prog = dlcManager.GetProgress();
+            Cleanup(dlcManager);
+
             DAVA::Logger::Error("timeout: total: %llu in_queue: %llu downloaded: %lld", prog.total, prog.inQueue, prog.alreadyDownloaded);
-            TEST_VERIFY(false && "time out wait second connection")
+            DAVA::Logger::Error("begin-------dlcManager.log---------content");
+
+            std::ifstream dlcLogFile(DAVA::DLCManager::Hints().logFilePath);
+            DAVA::String str;
+            while (std::getline(dlcLogFile, str))
+            {
+                DAVA::Logger::Error("%s", str.c_str());
+            }
+
+            DAVA::Logger::Error("end-------dlcManager.log---------content");
+
+            TEST_VERIFY(false && "time out wait second connection");
             return true;
         }
 
@@ -111,6 +131,12 @@ struct FSMTest02
 
 DAVA_TESTCLASS (DLCManagerFullTest)
 {
+    BEGIN_FILES_COVERED_BY_TESTS()
+    DECLARE_COVERED_FILES("DLCManagerImpl.cpp")
+    DECLARE_COVERED_FILES("PackRequest.cpp")
+    DECLARE_COVERED_FILES("RequestManager.cpp")
+    END_FILES_COVERED_BY_TESTS()
+
     FSMTest02 fsm02;
     bool TestAfterInitStopServer02_done = false;
 
@@ -175,24 +201,21 @@ DAVA_TESTCLASS (DLCManagerFullTest)
         FilePath packDir("~doc:/UnitTests/DLCManagerTest/packs/");
         FileSystem::Instance()->DeleteDirectory(packDir, true);
 
-        dlcManager.Initialize(packDir,
-                              "http://127.0.0.1:8080/superpack_for_unittests.dvpk",
-                              hints);
+        try
+        {
+            dlcManager.Initialize(packDir,
+                                  "http://127.0.0.1:8080/superpack_for_unittests.dvpk",
+                                  hints);
+        }
+        catch (std::exception& ex)
+        {
+            Logger::Error("error: %s", ex.what());
+            TEST_VERIFY(false && "can't initialize dlcManager");
+        }
 
         auto request = dlcManager.RequestPack("3"); // pack "3" depends on "0, 1, 2" packs
         TEST_VERIFY(request != nullptr);
-    }
-
-    DAVA_TEST (TestServerDownDuringDownload03)
-    {
-    }
-
-    DAVA_TEST (TestAddRequestAfterDisableRequesting04)
-    {
-    }
-
-    DAVA_TEST (TestContinueDownloadingAfterEnableRequesting05)
-    {
+        TEST_VERIFY(dlcManager.IsRequestingEnabled());
     }
 };
 
