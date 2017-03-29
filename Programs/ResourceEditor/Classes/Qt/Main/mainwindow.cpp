@@ -4,8 +4,6 @@
 #include "Classes/Qt/CubemapEditor/CubemapTextureBrowser.h"
 #include "Classes/Qt/CubemapEditor/CubemapUtils.h"
 #include "Classes/Qt/DebugTools/VersionInfoWidget/VersionInfoWidget.h"
-#include "Classes/Qt/DeviceInfo/DeviceList/DeviceListController.h"
-#include "Classes/Qt/DeviceInfo/DeviceList/DeviceListWidget.h"
 #include "Classes/Qt/ImageSplitterDialog/ImageSplitterDialog.h"
 #include "Classes/Qt/Main/QtUtils.h"
 #include "Classes/Qt/MaterialEditor/MaterialEditor.h"
@@ -686,7 +684,6 @@ void QtMainWindow::SetupActions()
         DAVA::Sprite::DumpSprites();
     });
 
-    connect(ui->actionDeviceList, &QAction::triggered, this, &QtMainWindow::DebugDeviceList);
     connect(ui->actionCreateTestSkinnedObject, SIGNAL(triggered()), developerTools, SLOT(OnDebugCreateTestSkinnedObject()));
 
     ui->actionObjectTypesOff->setData(ResourceEditor::ESOT_NONE);
@@ -2268,21 +2265,6 @@ void QtMainWindow::DebugVersionInfo()
     }
 
     versionInfoWidget->show();
-}
-
-void QtMainWindow::DebugDeviceList()
-{
-    // Create controller and window if they are not exist
-    // Pointer deviceListController automatically becomes nullptr on window destruction
-    if (nullptr == deviceListController)
-    {
-        DeviceListWidget* w = new DeviceListWidget(this);
-        w->setAttribute(Qt::WA_DeleteOnClose);
-
-        deviceListController = new DeviceListController(w);
-        deviceListController->SetView(w);
-    }
-    deviceListController->ShowView();
 }
 
 void QtMainWindow::OnConsoleItemClicked(const QString& data)

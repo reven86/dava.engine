@@ -1,6 +1,9 @@
 #include "Application/QEApplication.h"
+#include "Application/QEGlobal.h"
 #include "Modules/LegacySupportModule/LegacySupportModule.h"
 #include "Classes/Application/ReflectionExtensions.h"
+
+#include <RemoteTool/RemoteToolModule.h>
 
 #include <TArc/Core/Core.h>
 #include <TArc/Utils/ModuleCollection.h>
@@ -118,6 +121,10 @@ void QEApplication::CreateModules(DAVA::TArc::Core* tarcCore) const
 {
     Q_INIT_RESOURCE(QtToolsResources);
     tarcCore->CreateModule<LegacySupportModule>();
+
+    DAVA::TArc::InsertionParams insertionParams(DAVA::TArc::InsertionParams::eInsertionMethod::AfterItem, QStringLiteral("Tools"));
+    tarcCore->CreateModule<RemoteToolModule>(QEGlobal::windowKey, insertionParams);
+
     for (const DAVA::ReflectedType* type : DAVA::TArc::ModuleCollection::Instance()->GetGuiModules())
     {
         tarcCore->CreateModule(type);

@@ -40,6 +40,7 @@ find_package( DavaFramework REQUIRED COMPONENTS ALL
 
 find_package( QtTools REQUIRED )
 find_package( TArc REQUIRED )
+find_package( RemoteTool REQUIRED )
 
 #
 
