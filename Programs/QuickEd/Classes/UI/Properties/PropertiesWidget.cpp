@@ -79,6 +79,7 @@ PropertiesWidget::~PropertiesWidget() = default;
 void PropertiesWidget::SetAccessor(DAVA::TArc::ContextAccessor* accessor_)
 {
     accessor = accessor_;
+    propertiesModel->SetAccessor(accessor);
 }
 
 void PropertiesWidget::SetProject(const Project* project)
