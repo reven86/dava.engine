@@ -33,22 +33,22 @@ Reflection FormulaExpression::GetData(FormulaContext* context) const
     return Reflection();
 }
 
-bool FormulaExpression::IsLiteral() const
+bool FormulaExpression::IsValue() const
 {
     return false;
 }
 
-FormulaLiteralExpression::FormulaLiteralExpression(const Any& value_)
+FormulaValueExpression::FormulaValueExpression(const Any& value_)
     : value(value_)
 {
 }
 
-Any FormulaLiteralExpression::Calculate(FormulaContext* context) const
+Any FormulaValueExpression::Calculate(FormulaContext* context) const
 {
     return value;
 }
 
-Reflection FormulaLiteralExpression::GetData(FormulaContext* context) const
+Reflection FormulaValueExpression::GetData(FormulaContext* context) const
 {
     if (value.CanGet<shared_ptr<FormulaDataMap>>())
     {
@@ -63,22 +63,22 @@ Reflection FormulaLiteralExpression::GetData(FormulaContext* context) const
     return Reflection::Create(value);
 }
 
-void FormulaLiteralExpression::Accept(FormulaExpressionVisitor* visitor)
+void FormulaValueExpression::Accept(FormulaExpressionVisitor* visitor)
 {
     visitor->Visit(this);
 }
 
-bool FormulaLiteralExpression::IsLiteral() const
+bool FormulaValueExpression::IsValue() const
 {
     return true;
 }
 
-void FormulaLiteralExpression::CollectDepencencies(FormulaContext *context, Vector<void*> &dependencies) const
+void FormulaValueExpression::CollectDepencencies(FormulaContext *context, Vector<void*> &dependencies) const
 {
     // do nothing
 }
     
-const Any& FormulaLiteralExpression::GetValue() const
+const Any& FormulaValueExpression::GetValue() const
 {
     return value;
 }

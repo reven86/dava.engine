@@ -24,7 +24,7 @@ private:
     std::shared_ptr<FormulaExpression> ParseUnary();
     std::shared_ptr<FormulaExpression> ParseRef();
     std::shared_ptr<FormulaExpression> ParseFunction(const String& identifier);
-    std::shared_ptr<FormulaExpression> ParseLiteral();
+    std::shared_ptr<FormulaExpression> ParseValue();
 
     Token LookToken();
     Token NextToken();

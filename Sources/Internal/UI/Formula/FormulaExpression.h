@@ -10,7 +10,7 @@ namespace DAVA
 class FormulaContext;
 
 class FormulaData;
-class FormulaLiteralExpression;
+class FormulaValueExpression;
 class FormulaNegExpression;
 class FormulaNotExpression;
 class FormulaBinaryOperatorExpression;
@@ -25,7 +25,7 @@ public:
     {
     }
 
-    virtual void Visit(FormulaLiteralExpression* exp)
+    virtual void Visit(FormulaValueExpression* exp)
     {
     }
     virtual void Visit(FormulaNegExpression* exp)
@@ -57,20 +57,20 @@ public:
     virtual Any Calculate(FormulaContext* context) const = 0;
     virtual bool ApplyValue(FormulaContext* context, const Any& value) const;
     virtual Reflection GetData(FormulaContext* context) const;
-    virtual bool IsLiteral() const;
+    virtual bool IsValue() const;
     virtual void CollectDepencencies(FormulaContext *context, Vector<void*> &dependencies) const = 0;
 
     virtual void Accept(FormulaExpressionVisitor* visitor) = 0;
 };
 
-class FormulaLiteralExpression : public FormulaExpression
+class FormulaValueExpression : public FormulaExpression
 {
 public:
-    FormulaLiteralExpression(const Any& value);
+    FormulaValueExpression(const Any& value);
 
     Any Calculate(FormulaContext* context) const override;
     Reflection GetData(FormulaContext* context) const override;
-    bool IsLiteral() const override;
+    bool IsValue() const override;
     void CollectDepencencies(FormulaContext *context, Vector<void*> &dependencies) const override;
     
     const Any& GetValue() const;

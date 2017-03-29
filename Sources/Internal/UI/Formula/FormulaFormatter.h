@@ -13,7 +13,7 @@ public:
     String Format(FormulaExpression* exp);
 
 private:
-    void Visit(FormulaLiteralExpression* exp) override;
+    void Visit(FormulaValueExpression* exp) override;
     void Visit(FormulaNegExpression* exp) override;
     void Visit(FormulaNotExpression* exp) override;
     void Visit(FormulaBinaryOperatorExpression* exp) override;

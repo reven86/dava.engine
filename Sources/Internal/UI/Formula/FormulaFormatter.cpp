@@ -20,7 +20,7 @@ String FormulaFormatter::Format(FormulaExpression* exp)
     return result;
 }
 
-void FormulaFormatter::Visit(FormulaLiteralExpression* exp)
+void FormulaFormatter::Visit(FormulaValueExpression* exp)
 {
     Any value = exp->GetValue();
     if (value.CanGet<String>())

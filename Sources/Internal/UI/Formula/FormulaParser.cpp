@@ -52,7 +52,7 @@ shared_ptr<FormulaExpression> FormulaParser::ParseExpression()
             throw FormulaError("'}' expected", tokenizer.GetLineNumber(), tokenizer.GetPositionInLine());
         }
         NextToken(); // close bracket
-        return make_shared<FormulaLiteralExpression>(data);
+        return make_shared<FormulaValueExpression>(data);
     }
     else if (token.GetType() == Token::OPEN_SQUARE_BRACKET)
     {
@@ -64,7 +64,7 @@ shared_ptr<FormulaExpression> FormulaParser::ParseExpression()
             throw FormulaError("']' expected", tokenizer.GetLineNumber(), tokenizer.GetPositionInLine());
         }
         NextToken(); // close bracket
-        return make_shared<FormulaLiteralExpression>(data);
+        return make_shared<FormulaValueExpression>(data);
     }
     else
     {
@@ -94,10 +94,10 @@ shared_ptr<FormulaDataMap> FormulaParser::ParseMap()
             throw FormulaError("Map value expected", tokenizer.GetLineNumber(), tokenizer.GetPositionInLine());
         }
 
-        if (exp->IsLiteral())
+        if (exp->IsValue())
         {
-            FormulaLiteralExpression* literal = static_cast<FormulaLiteralExpression*>(exp.get());
-            map->Add(name, literal->GetValue());
+            FormulaValueExpression* value = static_cast<FormulaValueExpression*>(exp.get());
+            map->Add(name, value->GetValue());
         }
         else
         {
@@ -125,10 +125,10 @@ std::shared_ptr<FormulaDataVector> FormulaParser::ParseVector()
             throw FormulaError("Vector value expected", tokenizer.GetLineNumber(), tokenizer.GetPositionInLine());
         }
 
-        if (exp->IsLiteral())
+        if (exp->IsValue())
         {
-            FormulaLiteralExpression* literal = static_cast<FormulaLiteralExpression*>(exp.get());
-            vector->Add(literal->GetValue());
+            FormulaValueExpression* value = static_cast<FormulaValueExpression*>(exp.get());
+            vector->Add(value->GetValue());
         }
         else
         {
@@ -207,7 +207,7 @@ shared_ptr<FormulaExpression> FormulaParser::ParseUnary()
     }
     else
     {
-        return ParseLiteral();
+        return ParseValue();
     }
 }
 
@@ -327,23 +327,23 @@ shared_ptr<FormulaExpression> FormulaParser::ParseFunction(const String& identif
     return make_shared<FormulaFunctionExpression>(identifier, params);
 }
 
-shared_ptr<FormulaExpression> FormulaParser::ParseLiteral()
+shared_ptr<FormulaExpression> FormulaParser::ParseValue()
 {
     Token token = NextToken();
     
     switch (token.GetType())
     {
     case Token::INT:
-        return make_shared<FormulaLiteralExpression>(Any(token.GetInt()));
+        return make_shared<FormulaValueExpression>(Any(token.GetInt()));
 
     case Token::BOOLEAN:
-        return make_shared<FormulaLiteralExpression>(Any(token.GetBool()));
+        return make_shared<FormulaValueExpression>(Any(token.GetBool()));
 
     case Token::FLOAT:
-        return make_shared<FormulaLiteralExpression>(Any(token.GetFloat()));
+        return make_shared<FormulaValueExpression>(Any(token.GetFloat()));
 
     case Token::STRING:
-        return make_shared<FormulaLiteralExpression>(Any(GetTokenStringValue(token)));
+        return make_shared<FormulaValueExpression>(Any(GetTokenStringValue(token)));
 
     default:
         break;
