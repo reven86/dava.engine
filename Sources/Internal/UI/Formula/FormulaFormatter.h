@@ -22,6 +22,7 @@ private:
     void Visit(FormulaIndexExpression* exp) override;
 
     int GetExpPriority(FormulaExpression* exp) const;
+    String GetOperatorAsString(FormulaBinaryOperatorExpression::Operator op) const;
 
     StringStream stream;
 };

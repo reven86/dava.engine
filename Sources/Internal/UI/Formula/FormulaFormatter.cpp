@@ -2,6 +2,8 @@
 
 #include "UI/Formula/AnyConverter.h"
 
+#include "Debug/DVAssert.h"
+
 namespace DAVA
 {
 FormulaFormatter::FormulaFormatter()
@@ -84,7 +86,7 @@ void FormulaFormatter::Visit(FormulaBinaryOperatorExpression* exp)
         stream << ")";
     }
 
-    stream << " " << exp->GetOperatorAsString() << " ";
+    stream << " " << GetOperatorAsString(exp->GetOperator()) << " ";
 
     if (rhsSq)
     {
@@ -149,5 +151,40 @@ int FormulaFormatter::GetExpPriority(FormulaExpression* exp) const
         return binaryExp->GetOperatorPriority();
     }
     return 0;
+}
+
+String FormulaFormatter::GetOperatorAsString(FormulaBinaryOperatorExpression::Operator op) const
+{
+    switch (op)
+    {
+    case FormulaBinaryOperatorExpression::OP_PLUS:
+        return "+";
+    case FormulaBinaryOperatorExpression::OP_MINUS:
+        return "-";
+    case FormulaBinaryOperatorExpression::OP_MUL:
+        return "*";
+    case FormulaBinaryOperatorExpression::OP_DIV:
+        return "/";
+    case FormulaBinaryOperatorExpression::OP_AND:
+        return "&&";
+    case FormulaBinaryOperatorExpression::OP_OR:
+        return "||";
+    case FormulaBinaryOperatorExpression::OP_EQ:
+        return "==";
+    case FormulaBinaryOperatorExpression::OP_NOT_EQ:
+        return "!=";
+    case FormulaBinaryOperatorExpression::OP_LE:
+        return "<=";
+    case FormulaBinaryOperatorExpression::OP_LT:
+        return "<";
+    case FormulaBinaryOperatorExpression::OP_GE:
+        return ">=";
+    case FormulaBinaryOperatorExpression::OP_GT:
+        return ">";
+
+    default:
+        DVASSERT("Invalid operator.");
+        return "?";
+    }
 }
 }

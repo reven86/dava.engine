@@ -1,15 +1,10 @@
 #pragma once
 
 #include "Base/Any.h"
-#include "Base/AnyFn.h"
-#include "Reflection/Reflection.h"
 
 namespace DAVA
 {
     
-class FormulaContext;
-
-class FormulaData;
 class FormulaValueExpression;
 class FormulaNegExpression;
 class FormulaNotExpression;
@@ -54,11 +49,7 @@ public:
     FormulaExpression();
     virtual ~FormulaExpression();
 
-    virtual Any Calculate(FormulaContext* context) const = 0;
-    virtual bool ApplyValue(FormulaContext* context, const Any& value) const;
-    virtual Reflection GetData(FormulaContext* context) const;
     virtual bool IsValue() const;
-    virtual void CollectDepencencies(FormulaContext *context, Vector<void*> &dependencies) const = 0;
 
     virtual void Accept(FormulaExpressionVisitor* visitor) = 0;
 };
@@ -68,11 +59,7 @@ class FormulaValueExpression : public FormulaExpression
 public:
     FormulaValueExpression(const Any& value);
 
-    Any Calculate(FormulaContext* context) const override;
-    Reflection GetData(FormulaContext* context) const override;
     bool IsValue() const override;
-    void CollectDepencencies(FormulaContext *context, Vector<void*> &dependencies) const override;
-    
     const Any& GetValue() const;
 
     void Accept(FormulaExpressionVisitor* visitor) override;
@@ -86,10 +73,7 @@ class FormulaNegExpression : public FormulaExpression
 public:
     FormulaNegExpression(const std::shared_ptr<FormulaExpression>& exp);
 
-    Any Calculate(FormulaContext* context) const override;
-
     void Accept(FormulaExpressionVisitor* visitor) override;
-    void CollectDepencencies(FormulaContext *context, Vector<void*> &dependencies) const override;
     FormulaExpression* GetExp() const;
 
 private:
@@ -101,10 +85,7 @@ class FormulaNotExpression : public FormulaExpression
 public:
     FormulaNotExpression(const std::shared_ptr<FormulaExpression>& exp);
 
-    Any Calculate(FormulaContext* context) const override;
-
     void Accept(FormulaExpressionVisitor* visitor) override;
-    void CollectDepencencies(FormulaContext *context, Vector<void*> &dependencies) const override;
     
     FormulaExpression* GetExp() const;
 
@@ -134,21 +115,15 @@ public:
 
     FormulaBinaryOperatorExpression(Operator op, const std::shared_ptr<FormulaExpression>& lhs, const std::shared_ptr<FormulaExpression>& rhs);
 
-    Any Calculate(FormulaContext* context) const override;
     void Accept(FormulaExpressionVisitor* visitor) override;
-    void CollectDepencencies(FormulaContext *context, Vector<void*> &dependencies) const override;
     
     Operator GetOperator() const;
-    String GetOperatorAsString() const;
     int32 GetOperatorPriority() const;
 
     FormulaExpression* GetLhs() const;
     FormulaExpression* GetRhs() const;
 
 private:
-    template <typename T>
-    Any CalculateNumberValues(Operator op, T lVal, T rVal) const;
-
     Operator op;
     std::shared_ptr<FormulaExpression> lhs;
     std::shared_ptr<FormulaExpression> rhs;
@@ -159,11 +134,7 @@ class FormulaFunctionExpression : public FormulaExpression
 public:
     FormulaFunctionExpression(const String& name, const Vector<std::shared_ptr<FormulaExpression>>& params_);
 
-    Any Calculate(FormulaContext* context) const override;
-    Reflection GetData(FormulaContext* context) const override;
-
     void Accept(FormulaExpressionVisitor* visitor) override;
-    void CollectDepencencies(FormulaContext *context, Vector<void*> &dependencies) const override;
 
     const String& GetName() const;
     const Vector<std::shared_ptr<FormulaExpression>>& GetParms() const;
@@ -178,12 +149,7 @@ class FormulaFieldAccessExpression : public FormulaExpression
 public:
     FormulaFieldAccessExpression(const std::shared_ptr<FormulaExpression>& exp, const String& fieldName);
 
-    Any Calculate(FormulaContext* context) const override;
-    bool ApplyValue(FormulaContext* context, const Any& value) const override;
-    Reflection GetData(FormulaContext* context) const override;
-
     void Accept(FormulaExpressionVisitor* visitor) override;
-    void CollectDepencencies(FormulaContext *context, Vector<void*> &dependencies) const override;
 
     FormulaExpression* GetExp() const;
     const String& GetFieldName() const;
@@ -198,12 +164,7 @@ class FormulaIndexExpression : public FormulaExpression
 public:
     FormulaIndexExpression(const std::shared_ptr<FormulaExpression>& exp, const std::shared_ptr<FormulaExpression>& indexExp);
 
-    Any Calculate(FormulaContext* context) const override;
-    bool ApplyValue(FormulaContext* context, const Any& value) const override;
-    Reflection GetData(FormulaContext* context) const override;
-
     void Accept(FormulaExpressionVisitor* visitor) override;
-    void CollectDepencencies(FormulaContext *context, Vector<void*> &dependencies) const override;
 
     FormulaExpression* GetExp() const;
     FormulaExpression* GetIndexExp() const;
