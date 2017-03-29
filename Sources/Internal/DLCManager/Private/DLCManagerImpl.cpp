@@ -178,7 +178,7 @@ void DLCManagerImpl::Initialize(const FilePath& dirToDownloadPacks_,
         }
     }
 
-    log << __FUNCTION__ << '\n';
+    log << __FUNCTION__ << std::endl;
 
     // TODO check if signal asyncConnectStateChanged has any subscriber
 
@@ -226,7 +226,7 @@ void DLCManagerImpl::Deinitialize()
 {
     DVASSERT(Thread::IsMainThread());
 
-    log << __FUNCTION__ << '\n';
+    log << __FUNCTION__ << std::endl;
 
     if (IsInitialized())
     {
@@ -264,7 +264,7 @@ void DLCManagerImpl::RetryInit()
 {
     DVASSERT(Thread::IsMainThread());
 
-    log << __FUNCTION__ << '\n';
+    log << __FUNCTION__ << std::endl;
 
     // clear error state
     Initialize(dirToDownloadedPacks, urlToSuperPack, hints);
@@ -434,7 +434,7 @@ PackRequest* DLCManagerImpl::CreateNewRequest(const String& requestedPackName)
         }
     }
 
-    log << __FUNCTION__ << " requestedPackName: " << requestedPackName << '\n';
+    log << __FUNCTION__ << " requestedPackName: " << requestedPackName << std::endl;
 
     Vector<uint32> packIndexes = meta->GetFileIndexes(requestedPackName);
 
@@ -504,13 +504,13 @@ void DLCManagerImpl::AskFooter()
                     uint32 sizeofFooter = static_cast<uint32>(sizeof(initFooterOnServer));
                     downloadTaskId = dm->DownloadIntoBuffer(urlToSuperPack, &initFooterOnServer, sizeofFooter, downloadOffset, sizeofFooter);
                     initState = InitState::LoadingRequestGetFooter;
-                    log << "initState: " << ToString(initState) << '\n';
+                    log << "initState: " << ToString(initState) << std::endl;
                 }
                 else
                 {
                     initError = InitError::LoadingRequestFailed;
                     initErrorMsg = "failed get superpack size on server, download error: " + DLC::ToString(error) + " " + std::to_string(retryCount);
-                    log << initErrorMsg << '\n';
+                    log << initErrorMsg << std::endl;
                 }
             }
         }
@@ -538,13 +538,13 @@ void DLCManagerImpl::GetFooter()
                 }
                 usedPackFile.footer = initFooterOnServer;
                 initState = InitState::LoadingRequestAskFileTable;
-                log << "initState: " << ToString(initState) << '\n';
+                log << "initState: " << ToString(initState) << std::endl;
             }
             else
             {
                 initError = InitError::LoadingRequestFailed;
                 initErrorMsg = "failed get footer from server, download error: " + DLC::ToString(error) + " " + std::to_string(retryCount);
-                log << initErrorMsg << '\n';
+                log << initErrorMsg << std::endl;
             }
         }
     }
@@ -581,7 +581,7 @@ void DLCManagerImpl::AskFileTable()
         DAVA_THROW(DAVA::Exception, "can't start downloading into buffer");
     }
     initState = InitState::LoadingRequestGetFileTable;
-    log << "initState: " << ToString(initState) << '\n';
+    log << "initState: " << ToString(initState) << std::endl;
 }
 
 void DLCManagerImpl::GetFileTable()
@@ -638,7 +638,7 @@ void DLCManagerImpl::GetFileTable()
                 }
 
                 initState = InitState::CalculateLocalDBHashAndCompare;
-                log << "initState: " << ToString(initState) << '\n';
+                log << "initState: " << ToString(initState) << std::endl;
             }
             else
             {
@@ -650,7 +650,7 @@ void DLCManagerImpl::GetFileTable()
     else
     {
         const char* err = "can't get status for download task";
-        log << err << '\n';
+        log << err << std::endl;
         DAVA_THROW(DAVA::Exception, err);
     }
 }
@@ -682,7 +682,7 @@ void DLCManagerImpl::CompareLocalMetaWitnRemoteHash()
 
         initState = InitState::LoadingRequestAskMeta;
     }
-    log << "initState: " << ToString(initState) << '\n';
+    log << "initState: " << ToString(initState) << std::endl;
 }
 
 void DLCManagerImpl::AskServerMeta()
@@ -704,7 +704,7 @@ void DLCManagerImpl::AskServerMeta()
     DVASSERT(0 != downloadTaskId);
 
     initState = InitState::LoadingRequestGetMeta;
-    log << "initState: " << ToString(initState) << '\n';
+    log << "initState: " << ToString(initState) << std::endl;
 }
 
 void DLCManagerImpl::GetServerMeta()
@@ -722,13 +722,13 @@ void DLCManagerImpl::GetServerMeta()
             if (DLE_NO_ERROR == error)
             {
                 initState = InitState::UnpakingDB;
-                log << "initState: " << ToString(initState) << '\n';
+                log << "initState: " << ToString(initState) << std::endl;
             }
             else
             {
                 initError = InitError::LoadingRequestFailed;
                 initErrorMsg = "failed get meta from server, download error: " + DLC::ToString(error) + " " + std::to_string(retryCount);
-                log << initErrorMsg << '\n';
+                log << initErrorMsg << std::endl;
             }
         }
     }
@@ -765,7 +765,7 @@ void DLCManagerImpl::ParseMeta()
     buffer.shrink_to_fit();
 
     initState = InitState::DeleteDownloadedPacksIfNotMatchHash;
-    log << "initState: " << ToString(initState) << '\n';
+    log << "initState: " << ToString(initState) << std::endl;
 }
 
 void DLCManagerImpl::StoreAllMountedPackNames()
@@ -779,7 +779,7 @@ void DLCManagerImpl::DeleteOldPacks()
     StoreAllMountedPackNames();
 
     initState = InitState::LoadingPacksDataFromLocalMeta;
-    log << "initState: " << ToString(initState) << '\n';
+    log << "initState: " << ToString(initState) << std::endl;
 }
 
 void DLCManagerImpl::LoadPacksDataFromMeta()
@@ -827,7 +827,7 @@ void DLCManagerImpl::LoadPacksDataFromMeta()
     metaDataLoadedSem.Post();
 
     initState = InitState::WaitScanThreadToFinish;
-    log << "initState: " << ToString(initState) << '\n';
+    log << "initState: " << ToString(initState) << std::endl;
 }
 
 void DLCManagerImpl::SwapPointers(PackRequest* userRequestObject, PackRequest* invalidPointer)
@@ -899,7 +899,7 @@ void DLCManagerImpl::StartDelayedRequests()
     }
 
     initState = InitState::Ready;
-    log << "initState: " << ToString(initState) << '\n';
+    log << "initState: " << ToString(initState) << std::endl;
 
     size_t numDownloaded = std::count(begin(scanFileReady), end(scanFileReady), true);
 
@@ -919,7 +919,7 @@ bool DLCManagerImpl::IsPackDownloaded(const String& packName)
     if (!IsInitialized())
     {
         DVASSERT(false && "Initialization not finished. Files is scanning now.");
-        log << "Initialization not finished. Files is scanning now." << '\n';
+        log << "Initialization not finished. Files is scanning now." << std::endl;
         return false;
     }
     // client wants only assert on bad pack name or dependency name
@@ -959,7 +959,7 @@ const DLCManager::IRequest* DLCManagerImpl::RequestPack(const String& packName)
 {
     DVASSERT(Thread::IsMainThread());
 
-    log << __FUNCTION__ << " packName: " << packName << '\n';
+    log << __FUNCTION__ << " packName: " << packName << std::endl;
 
     if (!IsInitialized())
     {
@@ -983,7 +983,7 @@ void DLCManagerImpl::SetRequestPriority(const IRequest* request)
     {
         const PackRequest* r = dynamic_cast<const PackRequest*>(request);
 
-        log << __FUNCTION__ << " request: " << request->GetRequestedPackName() << '\n';
+        log << __FUNCTION__ << " request: " << request->GetRequestedPackName() << std::endl;
 
         PackRequest* req = const_cast<PackRequest*>(r);
         if (IsInitialized())

@@ -107,20 +107,28 @@ struct FSMTest02
         if (time > timeout)
         {
             auto prog = dlcManager.GetProgress();
-            Cleanup(dlcManager);
 
             DAVA::Logger::Error("timeout: total: %llu in_queue: %llu downloaded: %lld", prog.total, prog.inQueue, prog.alreadyDownloaded);
-            DAVA::Logger::Error("begin-------dlcManager.log---------content");
 
             DAVA::FilePath logPath(DAVA::DLCManager::Hints().logFilePath);
-            std::ifstream dlcLogFile(logPath.GetAbsolutePathname().c_str());
-            DAVA::String str;
-            while (std::getline(dlcLogFile, str))
+            DAVA::String path = logPath.GetAbsolutePathname();
+            std::ifstream dlcLogFile(path.c_str());
+
+            if (!dlcLogFile)
             {
-                DAVA::Logger::Error("%s", str.c_str());
+                DAVA::Logger::Error("can't open dlcManager.log file at: %s", path.c_str());
+            }
+            else
+            {
+                DAVA::Logger::Error("begin-------dlcManager.log---------content");
+                for (DAVA::String str; getline(dlcLogFile, str);)
+                {
+                    DAVA::Logger::Error("%s", str.c_str());
+                }
+                DAVA::Logger::Error("end-------dlcManager.log---------content");
             }
 
-            DAVA::Logger::Error("end-------dlcManager.log---------content");
+            Cleanup(dlcManager);
 
             TEST_VERIFY(false && "time out wait second connection");
             return true;

@@ -375,7 +375,7 @@ bool PackRequest::UpdateFileRequests()
                                 String err = DLC::ToString(downloadError);
                                 packManagerImpl->GetLog() << "can't download file: "
                                                           << fileRequest.localFile.GetAbsolutePathname()
-                                                          << " cause: " << err << '\n';
+                                                          << " cause: " << err << std::endl;
 
                                 if (DLE_FILE_ERROR == downloadError)
                                 {
