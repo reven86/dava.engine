@@ -15,11 +15,11 @@ public:
     QtVBoxLayout(QWidget* parent);
 
     template <typename T>
-    void AddWidget(ControlProxyImpl<T>* control, int stretch = 0, Qt::Alignment alignment = Qt::Alignment());
+    void AddControl(ControlProxyImpl<T>* control, int stretch = 0, Qt::Alignment alignment = Qt::Alignment());
 };
 
 template <typename T>
-void QtVBoxLayout::AddWidget(ControlProxyImpl<T>* control, int stretch, Qt::Alignment alignment)
+void QtVBoxLayout::AddControl(ControlProxyImpl<T>* control, int stretch, Qt::Alignment alignment)
 {
     addWidget(control->ToWidgetCast(), stretch, alignment);
 }
@@ -31,11 +31,11 @@ public:
     QtHBoxLayout(QWidget* parent);
 
     template <typename T>
-    void AddWidget(ControlProxyImpl<T>* control, int stretch = 0, Qt::Alignment alignment = Qt::Alignment());
+    void AddControl(ControlProxyImpl<T>* control, int stretch = 0, Qt::Alignment alignment = Qt::Alignment());
 };
 
 template <typename T>
-void QtHBoxLayout::AddWidget(ControlProxyImpl<T>* control, int stretch, Qt::Alignment alignment)
+void QtHBoxLayout::AddControl(ControlProxyImpl<T>* control, int stretch, Qt::Alignment alignment)
 {
     addWidget(control->ToWidgetCast(), stretch, alignment);
 }

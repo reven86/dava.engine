@@ -111,7 +111,7 @@ public:
             descr[DoubleSpinBox::Fields::Value] = "value";
             DoubleSpinBox* edit = new DoubleSpinBox(descr, GetAccessor(), ref);
             edit->SetObjectName("SpinBox_value");
-            layout->AddWidget(edit);
+            layout->AddControl(edit);
         }
 
         {
@@ -120,7 +120,7 @@ public:
             descr[DoubleSpinBox::Fields::Range] = "rangeMeta";
             DoubleSpinBox* edit = new DoubleSpinBox(descr, GetAccessor(), ref);
             edit->SetObjectName("SpinBox_metaRangeValue");
-            layout->AddWidget(edit);
+            layout->AddControl(edit);
         }
 
         {
@@ -128,7 +128,7 @@ public:
             descr[DoubleSpinBox::Fields::Value] = "readOnlyValue";
             DoubleSpinBox* edit = new DoubleSpinBox(descr, GetAccessor(), ref);
             edit->SetObjectName("SpinBox_readOnlyValue");
-            layout->AddWidget(edit);
+            layout->AddControl(edit);
         }
 
         {
@@ -136,7 +136,7 @@ public:
             descr[DoubleSpinBox::Fields::Value] = "readOnlyMeta";
             DoubleSpinBox* edit = new DoubleSpinBox(descr, GetAccessor(), ref);
             edit->SetObjectName("SpinBox_readOnlyMeta");
-            layout->AddWidget(edit);
+            layout->AddControl(edit);
         }
 
         {
@@ -145,7 +145,7 @@ public:
             descr[DoubleSpinBox::Fields::IsReadOnly] = "isReadOnly";
             DoubleSpinBox* edit = new DoubleSpinBox(descr, GetAccessor(), ref);
             edit->SetObjectName("SpinBox_readOnlyField");
-            layout->AddWidget(edit);
+            layout->AddControl(edit);
         }
 
         {
@@ -154,7 +154,7 @@ public:
             descr[DoubleSpinBox::Fields::IsEnabled] = "isEnabled";
             DoubleSpinBox* edit = new DoubleSpinBox(descr, GetAccessor(), ref);
             edit->SetObjectName("SpinBox_enable");
-            layout->AddWidget(edit);
+            layout->AddControl(edit);
         }
 
         {
@@ -162,7 +162,7 @@ public:
             descr[DoubleSpinBox::Fields::Value] = "noValue";
             DoubleSpinBox* edit = new DoubleSpinBox(descr, GetAccessor(), ref);
             edit->SetObjectName("SpinBox_noValue");
-            layout->AddWidget(edit);
+            layout->AddControl(edit);
         }
 
         {
@@ -170,7 +170,7 @@ public:
             descr[DoubleSpinBox::Fields::Value] = "noValueHint";
             DoubleSpinBox* edit = new DoubleSpinBox(descr, GetAccessor(), ref);
             edit->SetObjectName("SpinBox_noValuehint");
-            layout->AddWidget(edit);
+            layout->AddControl(edit);
         }
 
         GetUI()->AddView(wndKey, PanelKey("DoubleSpinBoxView", CentralPanelInfo()), w);

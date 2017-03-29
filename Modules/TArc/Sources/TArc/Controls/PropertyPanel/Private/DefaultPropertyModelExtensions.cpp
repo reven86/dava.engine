@@ -96,6 +96,7 @@ std::shared_ptr<PropertyNode> DefaultAllocator::CreatePropertyNode(Reflection::F
     result->propertyType = type;
     result->field = std::move(field);
     result->cachedValue = value;
+    result->sortKey = PropertyNode::InvalidSortKey;
 
     return result;
 }
@@ -103,29 +104,6 @@ std::shared_ptr<PropertyNode> DefaultAllocator::CreatePropertyNode(Reflection::F
 std::shared_ptr<IChildAllocator> CreateDefaultAllocator()
 {
     return std::make_shared<DefaultAllocator>();
-}
-
-ReflectedPropertyItem* DefaultMergeValueExtension::LookUpItem(const std::shared_ptr<const PropertyNode>& node, const Vector<std::unique_ptr<ReflectedPropertyItem>>& items) const
-{
-    DVASSERT(node->field.ref.IsValid());
-
-    ReflectedPropertyItem* result = nullptr;
-    const ReflectedType* valueType = node->field.ref.GetValueObject().GetReflectedType();
-
-    for (const std::unique_ptr<ReflectedPropertyItem>& item : items)
-    {
-        DVASSERT(item->GetPropertyNodesCount() > 0);
-        std::shared_ptr<const PropertyNode> etalonNode = item->GetPropertyNode(0);
-        const ReflectedType* etalonItemType = etalonNode->field.ref.GetValueObject().GetReflectedType();
-
-        if (valueType == etalonItemType && etalonNode->field.key == node->field.key)
-        {
-            result = item.get();
-            break;
-        }
-    }
-
-    return result;
 }
 
 DefaultEditorComponentExtension::DefaultEditorComponentExtension(UI* ui_)
