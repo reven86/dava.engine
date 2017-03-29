@@ -165,6 +165,22 @@ if( DAVA_FOUND )
 
 endif()
 
+###
+
+if( MIX_APP_DATA )
+    
+    append_property( MIX_APP_DATA "${MIX_APP_DATA}" )
+
+    if( POSTPONED_MIX_DATA )
+        processing_mix_data( NOT_DATA_COPY )
+    else()
+        processing_mix_data()
+    endif()
+
+endif()
+
+###
+
 if( IOS )
     list( APPEND RESOURCES_LIST ${APP_DATA} )
     list( APPEND RESOURCES_LIST ${IOS_XIB} )
@@ -346,20 +362,6 @@ if( DAVA_FOUND )
     set ( PLATFORM_ADDED_SRC ${H_FILES} ${CPP_FILES} )
 
 endif()
-###
-
-if( MIX_APP_DATA )
-    
-    append_property( MIX_APP_DATA "${MIX_APP_DATA}" )
-
-    if( POSTPONED_MIX_DATA )
-        processing_mix_data( NOT_DATA_COPY )
-    else()
-        processing_mix_data()
-    endif()
-
-endif()
-
 
 ###
 foreach( TEST_FOLDER ${EXTERNAL_TEST_FOLDERS} )
