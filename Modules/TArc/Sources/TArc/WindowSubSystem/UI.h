@@ -1,9 +1,11 @@
 #pragma once
 
-#include "Base/FastName.h"
-#include "Base/Any.h"
-
 #include "TArc/DataProcessing/DataWrapper.h"
+
+#include <Functional/Function.h>
+#include <Base/Result.h>
+#include <Base/FastName.h>
+#include <Base/Any.h>
 
 #include <Qt>
 #include <QUrl>
@@ -165,6 +167,14 @@ struct ModalMessageParams
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(ModalMessageParams::Buttons);
 
+struct NotificationParams
+{
+    DAVA::String title;
+    DAVA::Result message;
+    DAVA::Function<void()> callback;
+    DAVA::uint32 showTimeMs = std::numeric_limits<DAVA::uint32>::max();
+};
+
 class UI
 {
 public:
@@ -182,6 +192,7 @@ public:
     virtual void ShowMessage(const WindowKey& windowKey, const QString& message, uint32 duration = 0) = 0;
     virtual void ClearMessage(const WindowKey& windowKey) = 0;
     virtual ModalMessageParams::Button ShowModalMessage(const WindowKey& windowKey, const ModalMessageParams& params) = 0;
+    virtual void ShowNotification(const WindowKey& windowKey, const NotificationParams& params) = 0;
 
     virtual QString GetOpenFileName(const WindowKey& windowKey, const FileDialogParams& params = FileDialogParams()) = 0;
     virtual QString GetSaveFileName(const WindowKey& windowKey, const FileDialogParams& params = FileDialogParams()) = 0;

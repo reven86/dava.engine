@@ -815,6 +815,10 @@ ModalMessageParams::Button UIManager::ShowModalMessage(const WindowKey& windowKe
     return Convert(resultButton);
 }
 
+void UIManager::ShowNotification(const WindowKey& windowKey, const NotificationParams& params)
+{
+}
+
 void UIManager::InjectWindow(const WindowKey& windowKey, QMainWindow* window)
 {
     UIManagerDetail::MainWindowInfo windowInfo;
