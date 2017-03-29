@@ -22,6 +22,7 @@ class eMovieScalingMode
 };
 
 final class DavaMovieView implements MediaPlayer.OnCompletionListener,
+                                     MediaPlayer.OnVideoSizeChangedListener,
                                      MediaPlayer.OnPreparedListener,
                                      MediaPlayer.OnErrorListener
 {
@@ -386,13 +387,15 @@ final class DavaMovieView implements MediaPlayer.OnCompletionListener,
         tellPlayingStatus(false);
     }
 
-    // MediaPlayer.OnPreparedListener interface
+    // MediaPlayer.OnVideoSizeChangedListener interface
     @Override
-    public void onPrepared(MediaPlayer mplayer)
+    public void onVideoSizeChanged(MediaPlayer mp, int videoWidth, int videoHeight)
     {
-        // Code that takes into account scaling mode is stealed from previous JNIMovieViewControl implementation
-        int videoWidth = mplayer.getVideoWidth();
-        int videoHeight = mplayer.getVideoHeight();
+        if (videoWidth == 0 || videoHeight == 0)
+        {
+            return;
+        }
+
         int w = (int)width;
         int h = (int)height;
 
@@ -453,7 +456,12 @@ final class DavaMovieView implements MediaPlayer.OnCompletionListener,
 
         setNativePositionAndSize(x, y, params.width, params.height);
         nativeMovieView.setLayoutParams(params);
-        
+    }
+
+    // MediaPlayer.OnPreparedListener interface
+    @Override
+    public void onPrepared(MediaPlayer mp)
+    {
         movieLoaded = true;
         if (playAfterLoaded)
         {
