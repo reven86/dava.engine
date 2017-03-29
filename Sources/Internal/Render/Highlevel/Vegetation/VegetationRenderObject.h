@@ -180,8 +180,6 @@ private:
 
     bool ReadyToRender();
 
-    size_t SelectDirectionIndex(const Vector3& cameraDirection, Vector<VegetationSortedBufferItem>& buffers);
-
     inline uint32 MapToResolution(float32 squareDistance);
 
     inline bool IsNodeEmpty(AbstractQuadTreeNode<VegetationSpatialData>* node) const;
