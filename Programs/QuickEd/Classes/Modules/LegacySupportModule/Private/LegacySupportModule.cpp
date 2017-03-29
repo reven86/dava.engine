@@ -94,9 +94,9 @@ void LegacySupportModule::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, 
 
         Any selectionValue = wrapper.GetFieldValue(DocumentData::selectionPropertyName);
 
-        packageWidget->OnSelectionChanged(Any());
         if (fields.empty())
         {
+            packageWidget->OnSelectionChanged(Any());
             packageWidget->OnPackageChanged(&context, package);
             packageWidget->OnSelectionChanged(selectionValue);
         }
@@ -105,6 +105,14 @@ void LegacySupportModule::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, 
             //event-based code require selectionChange first, packageChange second and than another selecitonChanged
             bool selectionWasChanged = std::find(fields.begin(), fields.end(), String(DocumentData::selectionPropertyName)) != fields.end();
             bool packageWasChanged = std::find(fields.begin(), fields.end(), String(DocumentData::packagePropertyName)) != fields.end();
+
+            if (selectionWasChanged == false && packageWasChanged == false)
+            {
+                return;
+            }
+
+            packageWidget->OnSelectionChanged(Any());
+
             if (packageWasChanged)
             {
                 packageWidget->OnPackageChanged(&context, package);
