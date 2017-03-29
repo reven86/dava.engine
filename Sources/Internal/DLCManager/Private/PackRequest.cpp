@@ -90,7 +90,7 @@ Vector<String> PackRequest::GetDependencies() const
     if (packManagerImpl->IsInitialized())
     {
         const PackMetaData& pack_meta_data = packManagerImpl->GetMeta();
-        dependencyCache = std::move(pack_meta_data.GetDependencyNames(requestedPackName));
+        dependencyCache = pack_meta_data.GetDependencyNames(requestedPackName);
         if (dependencyCache.capacity() == 0)
         {
             dependencyCache.reserve(1); // just mark to know we already check it
