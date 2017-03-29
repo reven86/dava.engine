@@ -175,8 +175,6 @@ public:
 
     void ScrollToPosition(float32 position, float32 timeSec = 0.3f);
 
-    void SetRect(const Rect& rect) override;
-
     void SetSize(const Vector2& newSize) override;
 
     void SetOrientation(int32 orientation);

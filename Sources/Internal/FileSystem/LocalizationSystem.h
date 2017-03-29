@@ -20,7 +20,8 @@ public:
     void Init();
 
     const String& GetCurrentLocale() const;
-    void SetCurrentLocale(const String& newLangId);
+    /** Set locale. If strings file not found return false. */
+    bool SetCurrentLocale(const String& newLangId);
     void OverrideDeviceLocale(const String& langId);
     String GetDeviceLocale() const;
 

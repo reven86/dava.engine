@@ -2,6 +2,7 @@
 #include "Input/KeyboardDevice.h"
 #include "Input/InputSystem.h"
 #include "UI/UIControlSystem.h"
+#include "UI/Update/UIUpdateComponent.h"
 #include "Render/2D/FontManager.h"
 #include "Utils/UTF8Utils.h"
 #include "Logger/Logger.h"
@@ -89,6 +90,7 @@ UITextField::UITextField(const Rect& rect)
     textFieldImpl->SetVisible(false);
 
     SetupDefaults();
+    GetOrCreateComponent<UIUpdateComponent>();
 }
 
 void UITextField::SetupDefaults()

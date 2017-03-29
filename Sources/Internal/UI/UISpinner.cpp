@@ -1,5 +1,6 @@
 #include "UISpinner.h"
 #include "UI/UIEvent.h"
+#include "UI/Update/UIUpdateComponent.h"
 #include "Animation/Animation.h"
 #include "Reflection/ReflectionRegistrator.h"
 
@@ -89,6 +90,8 @@ UISpinner::UISpinner(const Rect& rect)
     contentViewport->AddControl(nextContent.Get());
     contentViewport->SetInputEnabled(false);
     contentViewport->SetClipContents(true);
+
+    GetOrCreateComponent<UIUpdateComponent>();
 }
 
 UISpinner::~UISpinner()

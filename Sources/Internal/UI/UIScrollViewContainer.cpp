@@ -2,6 +2,7 @@
 #include "UI/UIScrollView.h"
 #include "UI/UIControlSystem.h"
 #include "UI/ScrollHelper.h"
+#include "UI/Update/UIUpdateComponent.h"
 #include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
@@ -31,6 +32,7 @@ UIScrollViewContainer::UIScrollViewContainer(const Rect& rect)
 {
     this->SetInputEnabled(true);
     this->SetMultiInput(true);
+    GetOrCreateComponent<UIUpdateComponent>();
 }
 
 UIScrollViewContainer::~UIScrollViewContainer()
@@ -52,6 +54,12 @@ void UIScrollViewContainer::CopyDataFrom(UIControl* srcControl)
 void UIScrollViewContainer::SetSize(const Vector2& size)
 {
     UIControl::SetSize(size);
+    ApplySizeChanges();
+}
+
+void UIScrollViewContainer::SetPosition(const Vector2& pos)
+{
+    UIControl::SetPosition(pos);
     ApplySizeChanges();
 }
 
@@ -159,17 +167,17 @@ void UIScrollViewContainer::Input(UIEvent* currentTouch)
 
 bool UIScrollViewContainer::SystemInput(UIEvent* currentTouch)
 {
-    if (!GetInputEnabled() || !visible || (controlState & STATE_DISABLED))
+    if (!GetInputEnabled() || !visible || (GetState() & STATE_DISABLED))
     {
         return UIControl::SystemInput(currentTouch);
     }
 
     if (currentTouch->touchLocker != this)
     {
-        controlState |= STATE_DISABLED; //this funny code is written to fix bugs with calling Input() twice.
+        AddState(STATE_DISABLED); //this funny code is written to fix bugs with calling Input() twice.
     }
     bool systemInput = UIControl::SystemInput(currentTouch);
-    controlState &= ~STATE_DISABLED; //All this control must be reengeneried
+    RemoveState(STATE_DISABLED); //All this control must be reengeneried
 
     if (currentTouch->GetInputHandledType() == UIEvent::INPUT_HANDLED_HARD)
     {

@@ -1,6 +1,6 @@
 macro( coverage_processing  )  
 
-if( MACOS AND COVERAGE AND NOT DAVA_MEGASOLUTION )
+if( MACOS AND COVERAGE )
 
     if( NOT COVERAGE_ARGS )
         set( COVERAGE_ARGS "''" )
@@ -11,7 +11,7 @@ if( MACOS AND COVERAGE AND NOT DAVA_MEGASOLUTION )
 
     add_definitions( -DTEST_COVERAGE )
     add_definitions( -DDAVA_FOLDERS="${DAVA_FOLDERS}" )
-    add_definitions( -DDAVA_UNITY_FOLDER="${CMAKE_BINARY_DIR}/unity_pack" )
+    add_definitions( -DDAVA_UNITY_FOLDER="${CMAKE_CURRENT_BINARY_DIR}/unity_pack" )
 
     if( MAC_DISABLE_BUNDLE )
         set( APP_ATRIBUTE )
@@ -36,14 +36,17 @@ if( MACOS AND COVERAGE AND NOT DAVA_MEGASOLUTION )
     set( CMAKE_CXX_FLAGS_DEBUG   "${CMAKE_CXX_FLAGS_DEBUG}   -D__DEBUG"   )
     set( CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -D__RELEASE" )
 
-    add_executable( COVERAGE_${PROJECT_NAME} ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/CoverageExecuteGenHtml.cpp )
+    add_executable( COVERAGE_${PROJECT_NAME} EXCLUDE_FROM_ALL ${CMAKE_CURRENT_BINARY_DIR}/CMakeFiles/CoverageExecuteGenHtml.cpp  )
     add_dependencies( COVERAGE_${PROJECT_NAME}  ${PROJECT_NAME} )
+
+    set_target_properties( COVERAGE_${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_GCC_GENERATE_TEST_COVERAGE_FILES YES )
+    set_target_properties( COVERAGE_${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_GCC_INSTRUMENT_PROGRAM_FLOW_ARCS YES )
 
     add_custom_command( TARGET COVERAGE_${PROJECT_NAME} 
             COMMAND ${PYTHON_EXECUTABLE} ${COVERAGE_SCRIPT}
                     --pathExecut    ${EXECUT_FILE}
-                    --pathBuild     ${CMAKE_BINARY_DIR}
-                    --pathReportOut ${CMAKE_BINARY_DIR}/Coverage
+                    --pathBuild     ${CMAKE_CURRENT_BINARY_DIR}
+                    --pathReportOut ${CMAKE_CURRENT_BINARY_DIR}/Coverage
                     --buildConfig   $(CONFIGURATION)
                     --buildMode     true 
                     --targetArgs    ${COVERAGE_ARGS}

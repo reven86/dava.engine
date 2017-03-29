@@ -1,4 +1,6 @@
 #include "UI/UIMovieView.h"
+#include "UI/UIControlSystem.h"
+#include "UI/Update/UIUpdateComponent.h"
 
 #include "Engine/Engine.h"
 
@@ -46,6 +48,7 @@ UIMovieView::UIMovieView(const Rect& rect)
 {
     movieViewControl->Initialize(rect);
     UpdateControlRect();
+    GetOrCreateComponent<UIUpdateComponent>();
 }
 
 UIMovieView::~UIMovieView()

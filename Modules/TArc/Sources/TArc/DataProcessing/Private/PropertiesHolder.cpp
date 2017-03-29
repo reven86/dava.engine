@@ -1,9 +1,10 @@
 #include "TArc/DataProcessing/PropertiesHolder.h"
-#include "FileSystem/FilePath.h"
-#include "Logger/Logger.h"
-#include "Debug/DVAssert.h"
 
+#include <FileSystem/FilePath.h>
+#include <Logger/Logger.h>
+#include <Debug/DVAssert.h>
 #include <Utils/StringFormat.h>
+#include <Base/FastName.h>
 
 #include <QVariant>
 #include <QJsonDocument>
@@ -215,26 +216,37 @@ QJsonValue PropertiesItem::Impl::ToValue(const QRect& value)
 }
 
 template <>
-QJsonValue PropertiesItem::Impl::ToValue(const DAVA::FilePath& value)
+QJsonValue PropertiesItem::Impl::ToValue(const FilePath& value)
 {
     return QJsonValue(QString::fromStdString(value.GetAbsolutePathname()));
 }
 
 template <>
-QJsonValue PropertiesItem::Impl::ToValue(const DAVA::String& value)
+QJsonValue PropertiesItem::Impl::ToValue(const String& value)
 {
     return QJsonValue(QString::fromStdString(value));
 }
 
 template <>
-QJsonValue PropertiesItem::Impl::ToValue(const DAVA::Vector<DAVA::String>& value)
+QJsonValue PropertiesItem::Impl::ToValue(const Vector<String>& value)
 {
     QStringList stringList;
-    std::transform(value.begin(), value.end(), std::back_inserter(stringList), [](const DAVA::String& string) {
-        DAVA::String errorMessage = DAVA::Format("string to save %s contains special character used to save: %s", string.c_str(), PropertiesHolderDetails::stringListDelimiter);
+    std::transform(value.begin(), value.end(), std::back_inserter(stringList), [](const String& string) {
+        String errorMessage = Format("string to save %s contains special character used to save: %s", string.c_str(), PropertiesHolderDetails::stringListDelimiter);
         DVASSERT("%s", errorMessage.c_str());
         return QString::fromStdString(string);
     });
+    return stringList.join(PropertiesHolderDetails::stringListDelimiter);
+}
+
+template <>
+QJsonValue PropertiesItem::Impl::ToValue(const Vector<FastName>& value)
+{
+    QStringList stringList;
+    std::transform(value.begin(), value.end(), std::back_inserter(stringList), [](const FastName& string)
+                   {
+                       return QString(string.c_str());
+                   });
     return stringList.join(PropertiesHolderDetails::stringListDelimiter);
 }
 
@@ -273,11 +285,11 @@ QRect PropertiesItem::Impl::FromValue(const QJsonValue& value, const QRect& defa
 }
 
 template <>
-DAVA::FilePath PropertiesItem::Impl::FromValue(const QJsonValue& value, const DAVA::FilePath& defaultValue)
+FilePath PropertiesItem::Impl::FromValue(const QJsonValue& value, const FilePath& defaultValue)
 {
     if (value.isString())
     {
-        return DAVA::FilePath(value.toString().toStdString());
+        return FilePath(value.toString().toStdString());
     }
     else
     {
@@ -286,7 +298,7 @@ DAVA::FilePath PropertiesItem::Impl::FromValue(const QJsonValue& value, const DA
 }
 
 template <>
-DAVA::String PropertiesItem::Impl::FromValue(const QJsonValue& value, const DAVA::String& defaultValue)
+String PropertiesItem::Impl::FromValue(const QJsonValue& value, const String& defaultValue)
 {
     if (value.isString())
     {
@@ -299,16 +311,36 @@ DAVA::String PropertiesItem::Impl::FromValue(const QJsonValue& value, const DAVA
 }
 
 template <>
-DAVA::Vector<DAVA::String> PropertiesItem::Impl::FromValue(const QJsonValue& value, const DAVA::Vector<DAVA::String>& defaultValue)
+Vector<String> PropertiesItem::Impl::FromValue(const QJsonValue& value, const Vector<String>& defaultValue)
 {
     if (value.isString())
     {
-        DAVA::Vector<DAVA::String> retVal;
+        Vector<String> retVal;
         QString stringValue = value.toString();
         QStringList stringList = stringValue.split(PropertiesHolderDetails::stringListDelimiter, QString::SkipEmptyParts);
         std::transform(stringList.begin(), stringList.end(), std::back_inserter(retVal), [](const QString& string) {
             return string.toStdString();
         });
+        return retVal;
+    }
+    else
+    {
+        return defaultValue;
+    }
+}
+
+template <>
+Vector<FastName> PropertiesItem::Impl::FromValue(const QJsonValue& value, const Vector<FastName>& defaultValue)
+{
+    if (value.isString())
+    {
+        Vector<FastName> retVal;
+        QString stringValue = value.toString();
+        QStringList stringList = stringValue.split(PropertiesHolderDetails::stringListDelimiter, QString::SkipEmptyParts);
+        std::transform(stringList.begin(), stringList.end(), std::back_inserter(retVal), [](const QString& string)
+                       {
+                           return FastName(string.toStdString());
+                       });
         return retVal;
     }
     else
@@ -443,7 +475,7 @@ PropertiesItem::PropertiesItem(const PropertiesItem& parent, const String& name)
         { \
             impl->Set(key, value.Get<T>()); \
         } \
-        catch (const DAVA::Exception& exception) \
+        catch (const Exception& exception) \
         { \
             Logger::Debug("PropertiesHolder::Save: can not get type %s with message %s", type->GetName(), exception.what()); \
         } \
@@ -459,7 +491,7 @@ PropertiesItem::PropertiesItem(const PropertiesItem& parent, const String& name)
         { \
             retVal = Any(impl->Get(key, value.Get<T>())); \
         } \
-        catch (const DAVA::Exception& exception) \
+        catch (const Exception& exception) \
         { \
             Logger::Debug("PropertiesHolder::Load: can not get type %s with message %s", type->GetName(), exception.what()); \
         } \
@@ -475,9 +507,10 @@ PropertiesItem::PropertiesItem(const PropertiesItem& parent, const String& name)
     METHOD(value, type, QString, key) \
     METHOD(value, type, QRect, key) \
     METHOD(value, type, QByteArray, key) \
-    METHOD(value, type, DAVA::FilePath, key) \
-    METHOD(value, type, DAVA::String, key) \
-    METHOD(value, type, DAVA::Vector<DAVA::String>, key) \
+    METHOD(value, type, FilePath, key) \
+    METHOD(value, type, String, key) \
+    METHOD(value, type, Vector<String>, key) \
+    METHOD(value, type, Vector<FastName>, key) \
     ENUM_CAP
 
 void PropertiesItem::Set(const String& key, const Any& value)

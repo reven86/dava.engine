@@ -86,6 +86,7 @@
 #include "UI/Scroll/UIScrollBarDelegateComponent.h"
 #include "UI/Sound/UISoundComponent.h"
 #include "UI/Sound/UISoundValueFilterComponent.h"
+#include "UI/Update/UIUpdateComponent.h"
 
 namespace DAVA
 {
@@ -306,6 +307,7 @@ void RegisterPermanentNames()
     DAVA_REFLECTION_REGISTER_CUSTOM_PERMANENT_NAME(UIActionComponent, "Action");
     DAVA_REFLECTION_REGISTER_CUSTOM_PERMANENT_NAME(UIActionBindingComponent, "ActionBinding");
     DAVA_REFLECTION_REGISTER_CUSTOM_PERMANENT_NAME(UIScrollBarDelegateComponent, "ScrollBarDelegate");
+    DAVA_REFLECTION_REGISTER_CUSTOM_PERMANENT_NAME(UIUpdateComponent, "UIUpdateComponent");
 
     GetEngineContext()->componentManager->RegisterComponent<UIControlBackground>();
     GetEngineContext()->componentManager->RegisterComponent<UILinearLayoutComponent>();
@@ -324,6 +326,7 @@ void RegisterPermanentNames()
     GetEngineContext()->componentManager->RegisterComponent<UIScrollBarDelegateComponent>();
     GetEngineContext()->componentManager->RegisterComponent<UISoundComponent>();
     GetEngineContext()->componentManager->RegisterComponent<UISoundValueFilterComponent>();
+    GetEngineContext()->componentManager->RegisterComponent<UIUpdateComponent>();
 }
 
 void RegisterReflectionForBaseTypes()

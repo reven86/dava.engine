@@ -2,6 +2,7 @@
 #include "Scene3D/Scene.h"
 #include "Core/Core.h"
 #include "UI/UIControlSystem.h"
+#include "UI/Update/UIUpdateComponent.h"
 #include "Render/RenderHelper.h"
 #include "Render/Highlevel/RenderPass.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
@@ -31,6 +32,7 @@ UI3DView::UI3DView(const Rect& rect)
     , fbScaleFactor(1.f)
     , fbRenderSize()
 {
+    GetOrCreateComponent<UIUpdateComponent>();
 }
 
 UI3DView::~UI3DView()
@@ -258,6 +260,7 @@ void UI3DView::PrepareFrameBuffer()
 
 void UI3DView::OnVisible()
 {
+    UIControl::OnVisible();
     if (!registeredInUIControlSystem)
     {
         registeredInUIControlSystem = true;
@@ -272,5 +275,6 @@ void UI3DView::OnInvisible()
         registeredInUIControlSystem = false;
         UIControlSystem::Instance()->UI3DViewRemoved();
     }
+    UIControl::OnInvisible();
 }
 }

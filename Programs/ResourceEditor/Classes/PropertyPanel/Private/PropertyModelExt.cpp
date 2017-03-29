@@ -26,8 +26,7 @@
 
 #include <QToolButton>
 #include <QHBoxLayout>
-#include <QApplication>
-#include <QStyle>
+#include <QPalette>
 
 namespace PropertyModelExtDetails
 {
@@ -91,7 +90,7 @@ struct TypeInitializer : public StaticSingleton<ComponentCreator>
             }
 
             const std::unique_ptr<ReflectedMeta>& meta = refType->GetStructure()->meta;
-            if (meta != nullptr && meta->HasMeta<M::CantBeCreatedManualyComponent>())
+            if (meta != nullptr && (nullptr != meta->GetMeta<M::CantBeCreatedManualyComponent>()))
             {
                 continue;
             }
@@ -272,26 +271,34 @@ void EntityChildCreator::ExposeChildren(const std::shared_ptr<const DAVA::TArc::
         parent->cachedValue.GetType() == DAVA::Type::Instance<DAVA::Entity*>())
     {
         DAVA::Reflection::Field f(Any("Entity"), Reflection(parent->field.ref), nullptr);
-        children.push_back(allocator->CreatePropertyNode(std::move(f), PropertyNode::GroupProperty));
+        std::shared_ptr<PropertyNode> entityNode = allocator->CreatePropertyNode(std::move(f), PropertyNode::GroupProperty);
+        entityNode->sortKey = -1; // zero sort key is for favorites root
+        children.push_back(entityNode);
 
         {
-            DAVA::Reflection componentsField = f.ref.GetField("Components");
+            DAVA::Reflection componentsField = f.ref.GetField(DAVA::Entity::componentFieldString);
             DVASSERT(componentsField.IsValid());
 
             DAVA::TArc::ForEachField(componentsField, [this, &children](Reflection::Field&& field)
                                      {
-                                         if (!field.ref.HasMeta<M::HiddenField>())
+                                         if (nullptr == field.ref.GetMeta<M::HiddenField>())
                                          {
                                              Any value = field.ref.GetValue();
                                              DAVA::Reflection::Field f(GetValueReflectedType(field.ref)->GetPermanentName(), Reflection(field.ref), nullptr);
-                                             children.push_back(allocator->CreatePropertyNode(std::move(f), PropertyNode::RealProperty));
+                                             std::shared_ptr<PropertyNode> node = allocator->CreatePropertyNode(std::move(f), PropertyNode::RealProperty);
+                                             DVASSERT(value.CanGet<Component*>());
+                                             Component* component = value.Get<Component*>();
+                                             node->sortKey = static_cast<size_t>(component->GetType());
+                                             children.push_back(node);
                                          }
                                      });
 
             Reflection::Field addComponentField;
             addComponentField.key = "Add Component";
             addComponentField.ref = parent->field.ref;
-            children.push_back(allocator->CreatePropertyNode(std::move(addComponentField), PropertyPanel::AddComponentProperty));
+            std::shared_ptr<PropertyNode> addComponentNode = allocator->CreatePropertyNode(std::move(addComponentField), PropertyPanel::AddComponentProperty);
+            addComponentNode->sortKey = DAVA::TArc::PropertyNode::InvalidSortKey - 1;
+            children.push_back(addComponentNode);
         }
     }
     else if (parent->propertyType == PropertyNode::GroupProperty &&
@@ -299,7 +306,7 @@ void EntityChildCreator::ExposeChildren(const std::shared_ptr<const DAVA::TArc::
     {
         DAVA::TArc::ForEachField(parent->field.ref, [this, &children](Reflection::Field&& field)
                                  {
-                                     if (field.ref.GetValueType() != DAVA::Type::Instance<DAVA::Vector<DAVA::Component*>>() && field.ref.HasMeta<M::HiddenField>() == false)
+                                     if (field.ref.GetValueType() != DAVA::Type::Instance<DAVA::Vector<DAVA::Component*>>() && field.ref.GetMeta<M::HiddenField>() == nullptr)
                                      {
                                          children.push_back(allocator->CreatePropertyNode(std::move(field), PropertyNode::RealProperty));
                                      }
@@ -319,8 +326,8 @@ std::unique_ptr<DAVA::TArc::BaseComponentValue> EntityEditorCreator::GetEditor(c
         DAVA::TArc::BaseComponentValue::Style style;
         style.fontBold = true;
         style.fontItalic = true;
-        style.fontColor = QColor(Qt::black);
-        style.bgColor = QApplication::palette().alternateBase().color();
+        style.fontColor = QPalette::ButtonText;
+        style.bgColor = QPalette::AlternateBase;
         editor->SetStyle(style);
         return std::move(editor);
     }
@@ -335,8 +342,8 @@ std::unique_ptr<DAVA::TArc::BaseComponentValue> EntityEditorCreator::GetEditor(c
         std::unique_ptr<DAVA::TArc::BaseComponentValue> editor = EditorComponentExtension::GetEditor(node);
         DAVA::TArc::BaseComponentValue::Style style;
         style.fontBold = true;
-        style.fontColor = QColor(Qt::black);
-        style.bgColor = QApplication::palette().alternateBase().color();
+        style.fontColor = QPalette::ButtonText;
+        style.bgColor = QPalette::AlternateBase;
         editor->SetStyle(style);
         return std::move(editor);
     }

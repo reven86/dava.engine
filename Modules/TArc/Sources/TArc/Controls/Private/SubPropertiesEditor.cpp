@@ -85,7 +85,7 @@ void DAVA::TArc::SubPropertiesEditor::SetupControl(T* accessor)
     Vector<Reflection::Field> subFields = copyModel.GetFields();
     for (Reflection::Field& field : subFields)
     {
-        if (field.ref.HasMeta<M::SubProperty>())
+        if (nullptr != field.ref.GetMeta<M::SubProperty>())
         {
             String subFieldName = field.key.Cast<String>();
             QtHBoxLayout* subPropertyLayout = new QtHBoxLayout();
@@ -103,19 +103,19 @@ void DAVA::TArc::SubPropertiesEditor::SetupControl(T* accessor)
             {
                 DoubleSpinBox* control = CreateControl<DoubleSpinBox>(DoubleSpinBox::Fields::Value, subFieldName, accessor, copyModel);
                 editorWidget = control->ToWidgetCast();
-                subPropertyLayout->AddWidget(control);
+                subPropertyLayout->AddControl(control);
             }
             else if (subPropertyValue.CanCast<int32>())
             {
                 IntSpinBox* control = CreateControl<IntSpinBox>(IntSpinBox::Fields::Value, subFieldName, accessor, copyModel);
                 editorWidget = control->ToWidgetCast();
-                subPropertyLayout->AddWidget(control);
+                subPropertyLayout->AddControl(control);
             }
             else if (subPropertyValue.CanCast<String>())
             {
                 LineEdit* control = CreateControl<LineEdit>(LineEdit::Fields::Text, subFieldName, accessor, copyModel);
                 editorWidget = control->ToWidgetCast();
-                subPropertyLayout->AddWidget(control);
+                subPropertyLayout->AddControl(control);
             }
 
             if (editorWidget != nullptr)

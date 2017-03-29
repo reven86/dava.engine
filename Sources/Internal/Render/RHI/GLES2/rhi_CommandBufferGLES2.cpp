@@ -19,6 +19,7 @@ using DAVA::Logger;
 #include "Concurrency/Thread.h"
 #include "Concurrency/Semaphore.h"
 #include "Concurrency/ConditionVariable.h"
+#include "Concurrency/Mutex.h"
 #include "Concurrency/LockGuard.h"
 #include "Concurrency/AutoResetEvent.h"
 #include "Concurrency/ManualResetEvent.h"
