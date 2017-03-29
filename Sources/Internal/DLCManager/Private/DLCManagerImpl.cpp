@@ -9,9 +9,9 @@
 #include "DLC/DLC.h"
 #include "Logger/Logger.h"
 #include "Base/Exception.h"
-#include "Concurrency/Mutex.h"
-#include "Concurrency/LockGuard.h"
 #include "Time/SystemTimer.h"
+#include "Engine/Engine.h"
+#include "Debug/Backtrace.h"
 
 namespace DAVA
 {
@@ -147,6 +147,13 @@ void DLCManagerImpl::Initialize(const FilePath& dirToDownloadPacks_,
                                 const Hints& hints_)
 {
     DVASSERT(Thread::IsMainThread());
+
+    Logger::Info("DLCManager::Initialize(\ndirToDownloadPacks:%s, \nurlToServerSuperpack:%s, \nretryConnectMilliseconds:%d, \nmaxFilesToDownload: %d",
+                 dirToDownloadPacks_.GetAbsolutePathname().c_str(),
+                 urlToServerSuperpack_.c_str(),
+                 hints_.retryConnectMilliseconds,
+                 hints_.maxFilesToDownload);
+
     // TODO check if signal asyncConnectStateChanged has any subscriber
 
     if (!IsInitialized())
@@ -195,13 +202,8 @@ void DLCManagerImpl::Deinitialize()
 
 bool DLCManagerImpl::IsInitialized() const
 {
-    // current inputState can be in differect states becouse of
-    // offline mode
-    LockGuard<Mutex> lock(protectDM);
-
-    bool requestManagerCreated = requestManager != nullptr;
-
-    return requestManagerCreated;
+    DVASSERT(Thread::IsMainThread());
+    return nullptr != requestManager;
 }
 
 // start ISync //////////////////////////////////////
@@ -343,7 +345,7 @@ void DLCManagerImpl::ContinueInitialization(float frameDelta)
     }
     else if (InitState::MoveDeleyedRequestsToQueue == initState)
     {
-        StartDeleyedRequests();
+        StartDelayedRequests();
     }
     else if (InitState::Ready == initState)
     {
@@ -371,7 +373,7 @@ void DLCManagerImpl::ContinueInitialization(float frameDelta)
     }
 }
 
-PackRequest* DLCManagerImpl::AddDeleyedRequest(const String& requestedPackName)
+PackRequest* DLCManagerImpl::AddDelayedRequest(const String& requestedPackName)
 {
     for (auto* request : delayedRequests)
     {
@@ -698,8 +700,17 @@ void DLCManagerImpl::ParseMeta()
     {
         DAVA_THROW(DAVA::Exception, "on server bad superpack!!! Footer meta not match crc32");
     }
-
-    WriteBufferToFile(buffer, localCacheMeta);
+    try
+    {
+        WriteBufferToFile(buffer, localCacheMeta);
+    }
+    catch (DAVA::Exception& ex)
+    {
+        Logger::Error("%s", ex.what());
+        fileErrorOccured.Emit(localCacheMeta.GetAbsolutePathname(), errno);
+        RetryInit();
+        return;
+    }
 
     buffer.clear();
     buffer.shrink_to_fit();
@@ -748,6 +759,9 @@ void DLCManagerImpl::LoadPacksDataFromMeta()
 
         meta.reset(new PackMetaData(&buffer[0], buffer.size()));
 
+        size_t numFiles = meta->GetFileCount();
+        scanFileReady.resize(numFiles);
+
         // now user can do requests for local packs
         requestManager.reset(new RequestManager(*this));
     }
@@ -764,7 +778,29 @@ void DLCManagerImpl::LoadPacksDataFromMeta()
     initState = InitState::WaitScanThreadToFinish;
 }
 
-void DLCManagerImpl::StartDeleyedRequests()
+void DLCManagerImpl::SwapPointers(PackRequest* userRequestObject, PackRequest* invalidPointer)
+{
+    auto it = find(begin(requests), end(requests), invalidPointer);
+    DVASSERT(it != end(requests));
+    // change old pointer (just deleted) to correct one
+    *it = userRequestObject;
+}
+
+void DLCManagerImpl::SwapRequestAndUpdatePointers(PackRequest* userRequestObject, PackRequest* newRequestObject)
+{
+    // We want to give user same pointer, so we need move(swap) old object
+    // with new object value
+    *userRequestObject = std::move(*newRequestObject);
+    delete newRequestObject; // now this pointer is invalid!
+    PackRequest* invalidPointer = newRequestObject;
+    // so we have to update all referencies to new swaped pointer value
+    // find new pointer and change it to correct one
+    SwapPointers(userRequestObject, invalidPointer);
+
+    requestManager->SwapPointers(userRequestObject, invalidPointer);
+}
+
+void DLCManagerImpl::StartDelayedRequests()
 {
     //Logger::FrameworkDebug("pack manager mount_downloaded_packs");
     if (scanThread != nullptr)
@@ -778,19 +814,43 @@ void DLCManagerImpl::StartDeleyedRequests()
         scanThread = nullptr;
     }
 
-    for (auto request : delayedRequests)
+    // I want to create new requests then move its constent to old
+    // to save pointers for users, if user store pointer to IRequest
+    Vector<PackRequest*> tmpRequests;
+    delayedRequests.swap(tmpRequests);
+    // first remove old request pointers from requestManager
+    for (auto request : tmpRequests)
     {
-        const String& packName = request->GetRequestedPackName();
-        Vector<uint32> fileIndexes = meta->GetFileIndexes(packName);
-        request->SetFileIndexes(std::move(fileIndexes));
-
-        requests.push_back(request);
-        requestManager->Push(request);
+        requestManager->Remove(request);
     }
 
-    delayedRequests.clear();
+    for (auto request : tmpRequests)
+    {
+        const String& requestedPackName = request->GetRequestedPackName();
+        PackRequest* r = FindRequest(requestedPackName);
+
+        if (r == nullptr)
+        {
+            PackRequest* newRequest = CreateNewRequest(requestedPackName);
+            DVASSERT(newRequest != request);
+            DVASSERT(newRequest != nullptr);
+
+            SwapRequestAndUpdatePointers(request, newRequest);
+        }
+        else
+        {
+            DVASSERT(r != request);
+            // if we come here, it means one of previous requests
+            // create it's dependencies and this is it
+            SwapRequestAndUpdatePointers(request, r);
+        }
+    }
 
     initState = InitState::Ready;
+
+    size_t numDownloaded = std::count(begin(scanFileReady), end(scanFileReady), true);
+
+    initializeFinished.Emit(numDownloaded, meta->GetFileCount());
 }
 
 void DLCManagerImpl::DeleteLocalMetaFiles()
@@ -799,13 +859,58 @@ void DLCManagerImpl::DeleteLocalMetaFiles()
     fs->DeleteFile(localCacheMeta);
 }
 
+bool DLCManagerImpl::IsPackDownloaded(const String& packName)
+{
+    DVASSERT(Thread::IsMainThread());
+
+    if (!IsInitialized())
+    {
+        DVASSERT(false && "Initialization not finished. Files is scanning now.");
+        Logger::Error("%s", "Initialization not finished. Files is scanning now.");
+        return false;
+    }
+    // client wants only assert on bad pack name or dependency name
+    try
+    {
+        // check every file in requested pack and all it's dependencies
+        Vector<uint32> packFileIndexes = meta->GetFileIndexes(packName);
+        for (uint32 fileIndex : packFileIndexes)
+        {
+            if (!IsFileReady(fileIndex))
+            {
+                return false;
+            }
+        }
+
+        Vector<String> deps = meta->GetDependencyNames(packName);
+        for (const String& dependencyPack : deps)
+        {
+            if (!IsPackDownloaded(dependencyPack)) // recursive call
+            {
+                return false;
+            }
+        }
+    }
+    catch (DAVA::Exception& e)
+    {
+        StringStream ss;
+        ss << "Exception at `" << e.file << "`: " << e.line << std::endl;
+        ss << Debug::GetBacktraceString(e.callstack) << std::endl;
+        Logger::PlatformLog(Logger::LEVEL_ERROR, ss.str().c_str());
+        DVASSERT(false && "check out log file");
+        return false;
+    }
+
+    return true;
+}
+
 const DLCManager::IRequest* DLCManagerImpl::RequestPack(const String& packName)
 {
     DVASSERT(Thread::IsMainThread());
 
     if (!IsInitialized())
     {
-        PackRequest* request = AddDeleyedRequest(packName);
+        PackRequest* request = AddDelayedRequest(packName);
         return request;
     }
 
@@ -817,7 +922,7 @@ const DLCManager::IRequest* DLCManagerImpl::RequestPack(const String& packName)
     return request;
 }
 
-void DLCManagerImpl::SetRequestOrder(const IRequest* request, uint32 orderIndex)
+void DLCManagerImpl::SetRequestPriority(const IRequest* request)
 {
     DVASSERT(Thread::IsMainThread());
 
@@ -827,7 +932,7 @@ void DLCManagerImpl::SetRequestOrder(const IRequest* request, uint32 orderIndex)
         PackRequest* req = const_cast<PackRequest*>(r);
         if (IsInitialized())
         {
-            requestManager->UpdateOrder(req, orderIndex);
+            requestManager->SetPriorityToRequest(req);
         }
         else
         {
@@ -835,9 +940,9 @@ void DLCManagerImpl::SetRequestOrder(const IRequest* request, uint32 orderIndex)
             if (it != end(delayedRequests))
             {
                 delayedRequests.erase(it);
-                if (delayedRequests.size() > orderIndex)
+                if (!delayedRequests.empty())
                 {
-                    delayedRequests.insert(delayedRequests.begin() + orderIndex, req);
+                    delayedRequests.insert(delayedRequests.begin(), req);
                 }
                 else
                 {
@@ -882,10 +987,54 @@ void DLCManagerImpl::RemovePack(const String& requestedPackName)
             {
                 const String relFile = GetRelativeFilePath(index);
                 FileSystem::Instance()->DeleteFile(dirToDownloadedPacks + relFile);
-                scanFileReady.reset(index);
+                scanFileReady[index] = false;
             }
         }
     }
+}
+
+DLCManager::Progress DLCManagerImpl::GetProgress() const
+{
+    using namespace DAVA;
+    using namespace PackFormat;
+
+    Progress progress;
+    if (!isProcessingEnabled)
+    {
+        return progress;
+    }
+
+    if (!IsInitialized())
+    {
+        return progress;
+    }
+
+    progress.isRequestingEnabled = true;
+
+    const Vector<PackFile::FilesTableBlock::FilesData::Data>& files = usedPackFile.filesTable.data.files;
+    const size_t size = files.size();
+    for (size_t indexOfFile = 0; indexOfFile < size; ++indexOfFile)
+    {
+        const auto& fileData = files[indexOfFile];
+        uint64 fullFileSize = fileData.compressedSize + sizeof(LitePack::Footer);
+        progress.total += fullFileSize;
+
+        if (IsFileReady(indexOfFile))
+        {
+            progress.alreadyDownloaded += fullFileSize;
+        }
+        else
+        {
+            // is current file is downloading in requestManager queue?
+            const PackMetaData::PackInfo& packInfo = meta->GetPackInfo(fileData.metaIndex);
+            if (requestManager->IsInQueue(packInfo.packName))
+            {
+                progress.inQueue += fullFileSize;
+            }
+        }
+    }
+
+    return progress;
 }
 
 bool DLCManagerImpl::IsRequestingEnabled() const
@@ -897,8 +1046,6 @@ bool DLCManagerImpl::IsRequestingEnabled() const
 void DLCManagerImpl::SetRequestingEnabled(bool value)
 {
     DVASSERT(Thread::IsMainThread());
-
-    LockGuard<Mutex> lock(protectDM);
 
     if (value)
     {
@@ -1091,7 +1238,7 @@ void DLCManagerImpl::ThreadScanFunc()
             else
             {
                 size_t fileIndex = std::distance(&pack.filesTable.data.files[0], entry);
-                scanFileReady.set(fileIndex);
+                scanFileReady[fileIndex] = true;
             }
         }
         else

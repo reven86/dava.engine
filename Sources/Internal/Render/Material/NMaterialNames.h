@@ -65,6 +65,8 @@ public:
     static const FastName DEBUG_DRAW_OPAQUE;
     static const FastName DEBUG_DRAW_ALPHABLEND;
     static const FastName DEBUG_DRAW_WIREFRAME;
+    static const FastName DEBUG_DRAW_PARTICLES;
+    static const FastName DEBUG_DRAW_PARTICLES_NO_DEPTH;
 
     static const FastName WATER_ALL_QUALITIES;
 };
@@ -85,6 +87,9 @@ public:
 
     static const FastName TEXTURE_DYNAMIC_REFLECTION;
     static const FastName TEXTURE_DYNAMIC_REFRACTION;
+
+    static const FastName TEXTURE_PARTICLES_HEATMAP;
+    static const FastName TEXTURE_PARTICLES_RT;
 
     static bool IsRuntimeTexture(const FastName& texture);
 };
@@ -193,6 +198,8 @@ public:
     static const FastName FLAG_ILLUMINATION_SHADOW_RECEIVER;
 
     static const FastName FLAG_TEST_OCCLUSION;
+
+    static const FastName FLAG_PARTICLES_DEBUG_SHOW_HEATMAP;
 
     static bool IsRuntimeFlag(const FastName& flag);
 };

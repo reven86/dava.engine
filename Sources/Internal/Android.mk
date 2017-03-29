@@ -380,6 +380,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Network/Services/MMNet/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Network/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Particles/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Particles/ParticleEffectDebug/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Platform/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/BacktraceAndroid/*.cpp) \

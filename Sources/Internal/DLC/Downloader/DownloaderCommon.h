@@ -41,7 +41,7 @@ enum DownloadError
     DLE_NO_RANGE_REQUEST, // Range requests is not supported. Use 1 thread without reconnects only.
     DLE_COMMON_ERROR, // some common error which is rare and requires to debug the reason
     DLE_INIT_ERROR, // any handles initialisation was unsuccessful
-    DLE_FILE_ERROR, // file read and write errors
+    DLE_FILE_ERROR, // file write errors
     DLE_UNKNOWN, // we cannot determine the error
     DLE_INVALID_RANGE, // download range is outside file or already downloaded part is greater than download size
 };

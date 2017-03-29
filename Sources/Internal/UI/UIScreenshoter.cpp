@@ -119,7 +119,8 @@ void UIScreenshoter::MakeScreenshotInternal(UIControl* control, Texture* screens
     //[CLEAR ALPHA]
     if (clearAlpha)
     {
-        RenderSystem2D::Instance()->FillRect(Rect(0.0f, 0.0f, static_cast<float32>(screenshot->GetWidth()), static_cast<float32>(screenshot->GetHeight())), Color::White, RenderSystem2D::DEFAULT_2D_FILL_ALPHA_MATERIAL);
+        Vector2 rectSize = UIControlSystem::Instance()->vcs->ConvertPhysicalToVirtual(Vector2(float32(screenshot->GetWidth()), float32(screenshot->GetHeight())));
+        RenderSystem2D::Instance()->FillRect(Rect(0.0f, 0.0f, rectSize.dx, rectSize.dy), Color::White, RenderSystem2D::DEFAULT_2D_FILL_ALPHA_MATERIAL);
     }
 
     RenderSystem2D::Instance()->EndRenderTargetPass();
