@@ -159,8 +159,8 @@ void VegetationGeometry::Build(VegetationRenderData* renderData)
     {
         Vector<BufferData>& indexBuffersOffsets = resolutionDataArray[resolutionIndex];
 
-        indexBuffers.push_back(Vector<VegetationBufferItem>());
-        Vector<VegetationBufferItem>& currentResolutionIndexBuffers = indexBuffers[indexBuffers.size() - 1];
+        indexBuffers.emplace_back();
+        Vector<VegetationBufferItem>& currentResolutionIndexBuffers = indexBuffers.back();
 
         size_t cellCount = indexBuffersOffsets.size();
         for (size_t cellIndex = 0; cellIndex < cellCount; ++cellIndex)
