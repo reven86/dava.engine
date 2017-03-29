@@ -35,6 +35,18 @@ DAVA_VIRTUAL_REFLECTION_IMPL(ActionComponent)
     .End();
 }
 
+template <>
+bool AnyCompare<ActionComponent::ActionContainer>::IsEqual(const Any& v1, const Any& v2)
+{
+    return v1.Get<ActionComponent::ActionContainer>() == v2.Get<ActionComponent::ActionContainer>();
+}
+
+template <>
+bool AnyCompare<ActionComponent::Action>::IsEqual(const Any& v1, const Any& v2)
+{
+    return v1.Get<ActionComponent::Action>() == v2.Get<ActionComponent::Action>();
+}
+
 bool ActionComponent::Action::operator==(const Action& other) const
 {
     return type == other.type &&

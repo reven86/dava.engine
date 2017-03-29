@@ -237,7 +237,7 @@ void UIControl::SetName(const FastName& name_)
     }
 
 #if defined(__DAVAENGINE_DEBUG__)
-    DVASSERT(UIControlHelpers::IsControlNameValid(name_.c_str()));
+    DVASSERT(UIControlHelpers::IsControlNameValid(name_));
 #endif
 
     name = name_;

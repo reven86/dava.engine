@@ -70,7 +70,7 @@ public:
             descr[PlainTextEdit::Fields::Text] = "text";
             PlainTextEdit* edit = new PlainTextEdit(descr, GetAccessor(), Reflection::Create(&model));
             edit->SetObjectName("PlainTextEdit");
-            layout->AddWidget(edit);
+            layout->AddControl(edit);
         }
 
         Reflection refModel = Reflection::Create(&dataSource);
@@ -79,7 +79,7 @@ public:
             descr[PlainTextEdit::Fields::Text] = "readOnlyTextMeta";
             PlainTextEdit* edit = new PlainTextEdit(descr, GetAccessor(), refModel);
             edit->SetObjectName("PlainTextEdit_readOnlyMeta");
-            layout->AddWidget(edit);
+            layout->AddControl(edit);
         }
 
         {
@@ -87,7 +87,7 @@ public:
             descr[PlainTextEdit::Fields::Text] = "readOnlyText";
             PlainTextEdit* edit = new PlainTextEdit(descr, GetAccessor(), refModel);
             edit->SetObjectName("PlainTextEdit_readOnlyText");
-            layout->AddWidget(edit);
+            layout->AddControl(edit);
         }
 
         {
@@ -98,7 +98,7 @@ public:
             descr[PlainTextEdit::Fields::IsEnabled] = "isEnabled";
             PlainTextEdit* edit = new PlainTextEdit(descr, GetAccessor(), refModel);
             edit->SetObjectName("PlainTextEdit_text");
-            layout->AddWidget(edit);
+            layout->AddControl(edit);
         }
 
         {
@@ -106,7 +106,7 @@ public:
             descr[PlainTextEdit::Fields::Text] = "shortText";
             PlainTextEdit* edit = new PlainTextEdit(descr, GetAccessor(), refModel);
             edit->SetObjectName("PlainTextEdit_shortText");
-            layout->AddWidget(edit);
+            layout->AddControl(edit);
         }
 
         PanelKey key("PlainTextEditPanel", CentralPanelInfo());
