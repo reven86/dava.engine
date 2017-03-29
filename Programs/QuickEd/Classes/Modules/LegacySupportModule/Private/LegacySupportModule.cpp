@@ -253,3 +253,9 @@ void LegacySupportModule::JumpToPackage(const DAVA::FilePath& packagePath)
     QString path = QString::fromStdString(packagePath.GetAbsolutePathname());
     InvokeOperation(QEGlobal::OpenDocumentByPath.ID, path);
 }
+
+void LegacySupportModule::OnContextDeleted(DAVA::TArc::DataContext* context)
+{
+    DocumentData* data = context->GetData<DocumentData>();
+    packageWidgetContexts.erase(data->GetPackageNode());
+}

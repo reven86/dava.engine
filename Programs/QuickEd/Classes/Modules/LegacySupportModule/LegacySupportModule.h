@@ -16,6 +16,8 @@ class LegacySupportModule : public DAVA::TArc::ClientModule, private DAVA::TArc:
 {
     void PostInit() override;
     void OnWindowClosed(const DAVA::TArc::WindowKey& key) override;
+    void OnContextDeleted(DAVA::TArc::DataContext* context) override;
+
     void OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields) override;
 
     void InitMainWindow();
