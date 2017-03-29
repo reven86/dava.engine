@@ -13,7 +13,6 @@
 
 namespace DAVA
 {
-
 VariantType PrepareValueForKeyedArchive(const Any& value, VariantType::eVariantType resultType)
 {
     return PrepareValueForKeyedArchiveImpl(value, resultType);
