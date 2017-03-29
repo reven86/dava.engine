@@ -5,8 +5,8 @@
 #pragma clang diagnostic ignored "-Wold-style-cast"
 #endif
 
-#include <fmod/fmod_event.hpp>
-#include <fmod/fmod_errors.h>
+#include <fmod_event.hpp>
+#include <fmod_errors.h>
 
 #include "Logger/Logger.h"
 
