@@ -702,13 +702,13 @@ struct IntSpinBoxTestData : public ReflectionBase
             ControlDescriptorBuilder<IntSpinBox::Fields> descr;
             descr[IntSpinBox::Fields::Value] = "value";
             IntSpinBox* spinBox = new IntSpinBox(descr, accessor, reflection, parent);
-            layout->AddWidget(spinBox);
+            layout->AddControl(spinBox);
         }
 
         {
             ControlDescriptorBuilder<LineEdit::Fields> d;
             d[LineEdit::Fields::Text] = "text";
-            layout->AddWidget(new LineEdit(d, accessor, reflection, parent));
+            layout->AddControl(new LineEdit(d, accessor, reflection, parent));
         }
 
         return r;
@@ -772,26 +772,26 @@ struct DoubleSpinBoxTestData : public ReflectionBase
         {
             ControlDescriptorBuilder<DoubleSpinBox::Fields> descr;
             descr[DoubleSpinBox::Fields::Value] = "value";
-            layout->AddWidget(new DoubleSpinBox(descr, accessor, reflection, parent));
+            layout->AddControl(new DoubleSpinBox(descr, accessor, reflection, parent));
         }
 
         {
             ControlDescriptorBuilder<DoubleSpinBox::Fields> descr;
             descr[DoubleSpinBox::Fields::Value] = "value";
             descr[DoubleSpinBox::Fields::Accuracy] = "accuracy";
-            layout->AddWidget(new DoubleSpinBox(descr, accessor, reflection, parent));
+            layout->AddControl(new DoubleSpinBox(descr, accessor, reflection, parent));
         }
 
         {
             ControlDescriptorBuilder<IntSpinBox::Fields> descr;
             descr[IntSpinBox::Fields::Value] = "accuracy";
-            layout->AddWidget(new IntSpinBox(descr, accessor, reflection, parent));
+            layout->AddControl(new IntSpinBox(descr, accessor, reflection, parent));
         }
 
         {
             ControlDescriptorBuilder<LineEdit::Fields> d;
             d[LineEdit::Fields::Text] = "text";
-            layout->AddWidget(new LineEdit(d, accessor, reflection, parent));
+            layout->AddControl(new LineEdit(d, accessor, reflection, parent));
         }
 
         return r;
@@ -844,7 +844,7 @@ struct FilePathEditTestData : public ReflectionBase
             p.ui = ui;
             p.wndKey = REGlobal::MainWindowKey;
             p.fields[FilePathEdit::Fields::Value] = "readOnlyMetaText";
-            lineLayout->AddWidget(new FilePathEdit(p, accessor, Reflection::Create(data), parent));
+            lineLayout->AddControl(new FilePathEdit(p, accessor, Reflection::Create(data), parent));
             boxLayout->addLayout(lineLayout);
         }
 
@@ -856,7 +856,7 @@ struct FilePathEditTestData : public ReflectionBase
             p.ui = ui;
             p.wndKey = REGlobal::MainWindowKey;
             p.fields[FilePathEdit::Fields::Value] = "readOnlyText";
-            lineLayout->AddWidget(new FilePathEdit(p, accessor, Reflection::Create(data), parent));
+            lineLayout->AddControl(new FilePathEdit(p, accessor, Reflection::Create(data), parent));
             boxLayout->addLayout(lineLayout);
         }
 
@@ -871,7 +871,7 @@ struct FilePathEditTestData : public ReflectionBase
             p.fields[FilePathEdit::Fields::PlaceHolder] = "placeholder";
             p.fields[FilePathEdit::Fields::IsReadOnly] = "isTextReadOnly";
             p.fields[FilePathEdit::Fields::IsEnabled] = "isTextEnabled";
-            lineLayout->AddWidget(new FilePathEdit(p, accessor, Reflection::Create(data), parent));
+            lineLayout->AddControl(new FilePathEdit(p, accessor, Reflection::Create(data), parent));
             boxLayout->addLayout(lineLayout);
 
             {
@@ -918,31 +918,31 @@ struct SubPropertiesControlTest : public ReflectionBase
         {
             ControlDescriptorBuilder<SubPropertiesEditor::Fields> descr;
             descr[SubPropertiesEditor::Fields::Value] = "v2";
-            boxLayout->AddWidget(new SubPropertiesEditor(descr, accessor, model));
+            boxLayout->AddControl(new SubPropertiesEditor(descr, accessor, model));
         }
 
         {
             ControlDescriptorBuilder<SubPropertiesEditor::Fields> descr;
             descr[SubPropertiesEditor::Fields::Value] = "v3";
-            boxLayout->AddWidget(new SubPropertiesEditor(descr, accessor, model));
+            boxLayout->AddControl(new SubPropertiesEditor(descr, accessor, model));
         }
 
         {
             ControlDescriptorBuilder<SubPropertiesEditor::Fields> descr;
             descr[SubPropertiesEditor::Fields::Value] = "v4";
-            boxLayout->AddWidget(new SubPropertiesEditor(descr, accessor, model));
+            boxLayout->AddControl(new SubPropertiesEditor(descr, accessor, model));
         }
 
         {
             ControlDescriptorBuilder<SubPropertiesEditor::Fields> descr;
             descr[SubPropertiesEditor::Fields::Value] = "rect";
-            boxLayout->AddWidget(new SubPropertiesEditor(descr, accessor, model));
+            boxLayout->AddControl(new SubPropertiesEditor(descr, accessor, model));
         }
 
         {
             ControlDescriptorBuilder<SubPropertiesEditor::Fields> descr;
             descr[SubPropertiesEditor::Fields::Value] = "box";
-            boxLayout->AddWidget(new SubPropertiesEditor(descr, accessor, model));
+            boxLayout->AddControl(new SubPropertiesEditor(descr, accessor, model));
         }
 
         Result r;
@@ -1008,7 +1008,7 @@ struct ColorButtonTestData : public ReflectionBase
             params.wndKey = REGlobal::MainWindowKey;
             params.accessor = accessor;
             params.fields[ColorPickerButton::Fields::Color] = "color";
-            lineLayout->AddWidget(new ColorPickerButton(params, accessor, Reflection::Create(data), parent));
+            lineLayout->AddControl(new ColorPickerButton(params, accessor, Reflection::Create(data), parent));
             boxLayout->addLayout(lineLayout);
         }
 
@@ -1021,7 +1021,7 @@ struct ColorButtonTestData : public ReflectionBase
             params.wndKey = REGlobal::MainWindowKey;
             params.accessor = accessor;
             params.fields[ColorPickerButton::Fields::Color] = "colorReadOnly";
-            lineLayout->AddWidget(new ColorPickerButton(params, accessor, Reflection::Create(data), parent));
+            lineLayout->AddControl(new ColorPickerButton(params, accessor, Reflection::Create(data), parent));
             boxLayout->addLayout(lineLayout);
         }
 
@@ -1034,7 +1034,7 @@ struct ColorButtonTestData : public ReflectionBase
             params.wndKey = REGlobal::MainWindowKey;
             params.accessor = accessor;
             params.fields[ColorPickerButton::Fields::Color] = "colorMethod";
-            lineLayout->AddWidget(new ColorPickerButton(params, accessor, Reflection::Create(data), parent));
+            lineLayout->AddControl(new ColorPickerButton(params, accessor, Reflection::Create(data), parent));
             boxLayout->addLayout(lineLayout);
         }
 
@@ -1047,7 +1047,7 @@ struct ColorButtonTestData : public ReflectionBase
             params.wndKey = REGlobal::MainWindowKey;
             params.accessor = accessor;
             params.fields[ColorPickerButton::Fields::Color] = "colorMethodReadOnly";
-            lineLayout->AddWidget(new ColorPickerButton(params, accessor, Reflection::Create(data), parent));
+            lineLayout->AddControl(new ColorPickerButton(params, accessor, Reflection::Create(data), parent));
             boxLayout->addLayout(lineLayout);
         }
 
@@ -1062,14 +1062,14 @@ struct ColorButtonTestData : public ReflectionBase
                 params.accessor = accessor;
                 params.fields[ColorPickerButton::Fields::Color] = "color";
                 params.fields[ColorPickerButton::Fields::IsReadOnly] = "readOnly";
-                lineLayout->AddWidget(new ColorPickerButton(params, accessor, Reflection::Create(data), parent));
+                lineLayout->AddControl(new ColorPickerButton(params, accessor, Reflection::Create(data), parent));
             }
 
             {
                 //add read only check box
                 ControlDescriptorBuilder<CheckBox::Fields> descr;
                 descr[CheckBox::Fields::Checked] = "readOnly";
-                lineLayout->AddWidget(new CheckBox(descr, accessor, Reflection::Create(data), parent));
+                lineLayout->AddControl(new CheckBox(descr, accessor, Reflection::Create(data), parent));
             }
             boxLayout->addLayout(lineLayout);
         }
@@ -1166,13 +1166,13 @@ struct MultiEditorsControlTest : public ReflectionBase
         {
             ControlDescriptorBuilder<MultiDoubleSpinBox::Fields> descr;
             descr[MultiDoubleSpinBox::Fields::FieldsList] = "list";
-            boxLayout->AddWidget(new MultiDoubleSpinBox(descr, accessor, model));
+            boxLayout->AddControl(new MultiDoubleSpinBox(descr, accessor, model));
         }
 
         {
             ControlDescriptorBuilder<CheckBox::Fields> descr;
             descr[CheckBox::Fields::Checked] = "isReadOnly";
-            boxLayout->AddWidget(new CheckBox(descr, accessor, model));
+            boxLayout->AddControl(new CheckBox(descr, accessor, model));
         }
 
         Result r;
@@ -1245,7 +1245,7 @@ struct LabelTestData : public ReflectionBase
 
             ControlDescriptorBuilder<Label::Fields> desr;
             desr[Label::Fields::Text] = "string";
-            lineLayout->AddWidget(new Label(desr, accessor, Reflection::Create(data), parent));
+            lineLayout->AddControl(new Label(desr, accessor, Reflection::Create(data), parent));
             boxLayout->addLayout(lineLayout);
         }
 
@@ -1255,7 +1255,7 @@ struct LabelTestData : public ReflectionBase
 
             ControlDescriptorBuilder<Label::Fields> desr;
             desr[Label::Fields::Text] = "qstring";
-            lineLayout->AddWidget(new Label(desr, accessor, Reflection::Create(data), parent));
+            lineLayout->AddControl(new Label(desr, accessor, Reflection::Create(data), parent));
             boxLayout->addLayout(lineLayout);
         }
 
@@ -1265,7 +1265,7 @@ struct LabelTestData : public ReflectionBase
 
             ControlDescriptorBuilder<Label::Fields> desr;
             desr[Label::Fields::Text] = "getString";
-            lineLayout->AddWidget(new Label(desr, accessor, Reflection::Create(data), parent));
+            lineLayout->AddControl(new Label(desr, accessor, Reflection::Create(data), parent));
             boxLayout->addLayout(lineLayout);
         }
 
@@ -1275,7 +1275,7 @@ struct LabelTestData : public ReflectionBase
 
             ControlDescriptorBuilder<Label::Fields> desr;
             desr[Label::Fields::Text] = "getQString";
-            lineLayout->AddWidget(new Label(desr, accessor, Reflection::Create(data), parent));
+            lineLayout->AddControl(new Label(desr, accessor, Reflection::Create(data), parent));
             boxLayout->addLayout(lineLayout);
         }
 
@@ -1285,7 +1285,7 @@ struct LabelTestData : public ReflectionBase
 
             ControlDescriptorBuilder<Label::Fields> desr;
             desr[Label::Fields::Text] = "matrix2";
-            lineLayout->AddWidget(new Label(desr, accessor, Reflection::Create(data), parent));
+            lineLayout->AddControl(new Label(desr, accessor, Reflection::Create(data), parent));
             boxLayout->addLayout(lineLayout);
         }
 
@@ -1295,7 +1295,7 @@ struct LabelTestData : public ReflectionBase
 
             ControlDescriptorBuilder<Label::Fields> desr;
             desr[Label::Fields::Text] = "matrix3";
-            lineLayout->AddWidget(new Label(desr, accessor, Reflection::Create(data), parent));
+            lineLayout->AddControl(new Label(desr, accessor, Reflection::Create(data), parent));
             boxLayout->addLayout(lineLayout);
         }
 
@@ -1305,7 +1305,7 @@ struct LabelTestData : public ReflectionBase
 
             ControlDescriptorBuilder<Label::Fields> desr;
             desr[Label::Fields::Text] = "matrix4";
-            lineLayout->AddWidget(new Label(desr, accessor, Reflection::Create(data), parent));
+            lineLayout->AddControl(new Label(desr, accessor, Reflection::Create(data), parent));
             boxLayout->addLayout(lineLayout);
         }
 

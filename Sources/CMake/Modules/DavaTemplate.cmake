@@ -51,7 +51,7 @@ load_property( PROPERTY_LIST
         DEFINITIONS                
         DEFINITIONS_${DAVA_PLATFORM_CURENT}
         GLOBAL_DEFINITIONS
-        TARGET_MODULES_LIST  
+        TARGET_MODULES_LIST 
         BINARY_WIN32_DIR_RELEASE
         BINARY_WIN32_DIR_DEBUG
         BINARY_WIN32_DIR_RELWITHDEB
@@ -70,13 +70,12 @@ load_property( PROPERTY_LIST
         PLUGIN_LIST
     )
         
-    list( APPEND DEFINITIONS ${GLOBAL_DEFINITIONS} )
+list( APPEND DEFINITIONS ${GLOBAL_DEFINITIONS} )
 
-if( COVERAGE )
-    string(REPLACE ";" " " TARGET_FOLDERS_${PROJECT_NAME} "${TARGET_FOLDERS_${PROJECT_NAME}}" )
-    string(REPLACE "\"" "" TARGET_FOLDERS_${PROJECT_NAME} "${TARGET_FOLDERS_${PROJECT_NAME}}" )
-    list( APPEND DEFINITIONS -DTARGET_FOLDERS_${PROJECT_NAME}="${TARGET_FOLDERS_${PROJECT_NAME}}" )
-endif()
+foreach( ITEM ${PLUGIN_LIST} ${TARGET_MODULES_LIST} )
+    load_property( PROPERTY_LIST EXECUTE_DEFINITIONS_${ITEM} )
+    list( APPEND DEFINITIONS ${EXECUTE_DEFINITIONS_${ITEM}} )
+endforeach()
 
 if( INCLUDES )
     include_directories( ${INCLUDES})
@@ -165,6 +164,22 @@ if( DAVA_FOUND )
     list( APPEND ANDROID_JAVA_SRC   ${DAVA_ENGINE_DIR}/Notification/Private/Android/Java )
 
 endif()
+
+###
+
+if( MIX_APP_DATA )
+    
+    append_property( MIX_APP_DATA "${MIX_APP_DATA}" )
+
+    if( POSTPONED_MIX_DATA )
+        processing_mix_data( NOT_DATA_COPY )
+    else()
+        processing_mix_data()
+    endif()
+
+endif()
+
+###
 
 if( IOS )
     list( APPEND RESOURCES_LIST ${APP_DATA} )
@@ -347,20 +362,6 @@ if( DAVA_FOUND )
     set ( PLATFORM_ADDED_SRC ${H_FILES} ${CPP_FILES} )
 
 endif()
-###
-
-if( MIX_APP_DATA )
-    
-    append_property( MIX_APP_DATA "${MIX_APP_DATA}" )
-
-    if( POSTPONED_MIX_DATA )
-        processing_mix_data( NOT_DATA_COPY )
-    else()
-        processing_mix_data()
-    endif()
-
-endif()
-
 
 ###
 foreach( TEST_FOLDER ${EXTERNAL_TEST_FOLDERS} )
@@ -628,6 +629,11 @@ elseif( MACOS )
 
     set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS " -Wl,-dead_strip")
 
+    if( COVERAGE AND MACOS )
+        set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_GCC_GENERATE_TEST_COVERAGE_FILES YES )
+        set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_GCC_INSTRUMENT_PROGRAM_FLOW_ARCS YES )
+    endif()
+                
     if( DAVA_FOUND )
         set(LD_RUNPATHES "${ADDED_LD_RUNPATHES} @executable_path/ @executable_path/../Resources @executable_path/../Libs @executable_path/../Frameworks @executable_path/Libs")
         if( NOT DEPLOY )
@@ -730,6 +736,17 @@ if( WIN32 AND NOT WINDOWS_UAP )
     endif()
  
 endif() 
+
+
+if( COVERAGE AND MACOS )
+    string(REPLACE ";" " " TARGET_FOLDERS_${PROJECT_NAME} "${TARGET_FOLDERS_${PROJECT_NAME}}" )
+    string(REPLACE "\"" "" TARGET_FOLDERS_${PROJECT_NAME} "${TARGET_FOLDERS_${PROJECT_NAME}}" )
+    add_definitions(    -DTARGET_FOLDERS_${PROJECT_NAME}="${TARGET_FOLDERS_${PROJECT_NAME}}" 
+                        -DTEST_COVERAGE
+                        -DDAVA_FOLDERS="${DAVA_FOLDERS}"
+                        -DDAVA_UNITY_FOLDER="${CMAKE_CURRENT_BINARY_DIR}/unity_pack" )
+
+endif()
 
 file_tree_check( "${DAVA_FOLDERS}" )
 

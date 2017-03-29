@@ -90,11 +90,11 @@ void SilentUpdater::OnDownloadFinished(QNetworkReply* reply)
 
     QByteArray readedData = reply->readAll();
     FileManager* fileManager = appManager->GetFileManager();
-    QString archivePath;
-    bool archiveCreated = fileManager->CreateZipFile(readedData, archivePath);
+    QString downloadedFilePath = fileManager->GetTempDownloadFilePath(task.newVersion.url);
+    bool archiveCreated = fileManager->CreateFileFromRawData(readedData, downloadedFilePath);
     if (archiveCreated == false)
     {
-        task.onFinished(false, "Can not write archive to file " + archivePath);
+        task.onFinished(false, "Can not write archive to file " + downloadedFilePath);
         return;
     }
     QStringList applicationsToRestart;
@@ -107,16 +107,33 @@ void SilentUpdater::OnDownloadFinished(QNetworkReply* reply)
 
     QString appDir = appManager->GetApplicationDirectory(task.branchID, task.appID, task.newVersion.isToolSet, false);
 
-    ZipUtils::CompressedFilesAndSizes files;
-    SilentUpdaterDetails::UpdateDialogZipFunctor listZipFunctor("Error while listing archive", task.onFinished);
-    SilentUpdaterDetails::UpdateDialogZipFunctor unpackZipFunctor("Error while unpacking archive", task.onFinished);
-
-    //if zip operation fails, callback will be triggered by zipFunctor
-    if (ZipUtils::GetFileList(archivePath, files, listZipFunctor)
-        && ZipUtils::UnpackZipArchive(archivePath, appDir, files, unpackZipFunctor))
+    if (task.newVersion.url.endsWith("zip"))
     {
-        appManager->OnAppInstalled(task.branchID, task.appID, task.newVersion);
-        task.onFinished(true, "Success");
+        ZipUtils::CompressedFilesAndSizes files;
+        SilentUpdaterDetails::UpdateDialogZipFunctor listZipFunctor("Error while listing archive", task.onFinished);
+        SilentUpdaterDetails::UpdateDialogZipFunctor unpackZipFunctor("Error while unpacking archive", task.onFinished);
+
+        //if zip operation fails, callback will be triggered by zipFunctor
+        if (ZipUtils::GetFileList(downloadedFilePath, files, listZipFunctor)
+            && ZipUtils::UnpackZipArchive(downloadedFilePath, appDir, files, unpackZipFunctor))
+        {
+            appManager->OnAppInstalled(task.branchID, task.appID, task.newVersion);
+            task.onFinished(true, "Success");
+        }
+    }
+    else
+    {
+        QString fileName = fileManager->GetFileNameFromURL(task.newVersion.url);
+        QString newFilePath = appDir + fileName;
+        if (fileManager->MoveFileWithMakePath(downloadedFilePath, newFilePath))
+        {
+            appManager->OnAppInstalled(task.branchID, task.appID, task.newVersion);
+            task.onFinished(true, "Success");
+        }
+        else
+        {
+            task.onFinished(false, QString("Can not move file from %1 to %2").arg(downloadedFilePath, newFilePath));
+        }
     }
 
     FileManager::DeleteDirectory(fileManager->GetTempDirectory());

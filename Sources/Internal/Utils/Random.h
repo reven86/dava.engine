@@ -230,7 +230,8 @@ inline void Random::reload()
         *p = twist(p[MmN], p[0], p[1]);
     *p = twist(p[MmN], p[0], state[0]);
 
-    left = N, pNext = state;
+    left = N;
+    pNext = state;
 }
 
 inline void Random::Seed(const uint32 oneSeed)
