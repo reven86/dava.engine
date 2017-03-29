@@ -98,6 +98,8 @@ macro( processing_mix_data )
     if( ANDROID )
         set( MIX_APP_DIR ${CMAKE_BINARY_DIR}/assets )
         set( DAVA_DEBUGGER_WORKING_DIRECTORY ${MIX_APP_DIR} )
+    elseif( WINDOWS_UAP )
+        set( MIX_APP_DIR ${CMAKE_CURRENT_BINARY_DIR}/MixResources )
     elseif( DEPLOY )
         if( NOT DEPLOY_DIR_DATA )
             if( MACOS AND NOT MAC_DISABLE_BUNDLE)
@@ -152,7 +154,16 @@ macro( processing_mix_data )
 
     endforeach()
 
-    if( NOT DEPLOY )
+    if( WINDOWS_UAP )
+
+        file(GLOB LIST_FOLDER_ITEM  "${MIX_APP_DIR}/*" )
+        foreach( ITEM ${LIST_FOLDER_ITEM} )
+            if( IS_DIRECTORY ${ITEM} )
+                set( APP_DATA ${ITEM} ${APP_DATA} )
+            endif()
+        endforeach()
+
+    elseif( NOT DEPLOY )
         file(GLOB LIST_FOLDER_ITEM  "${MIX_APP_DIR}/*" )
         foreach( ITEM ${LIST_FOLDER_ITEM} )
             if( IS_DIRECTORY ${ITEM} )
@@ -688,6 +699,8 @@ endmacro()
 macro ( add_content_win_uap_single CONTENT_DIR )
 
     #get all files from it and add to SRC
+    set( CONTENT_LIST)
+    set( CONTENT_LIST_TMP)
     file ( GLOB_RECURSE CONTENT_LIST_TMP "${CONTENT_DIR}/*")
     
     #check svn dir (it happens)

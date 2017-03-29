@@ -26,20 +26,41 @@ namespace PropertiesHolderDetails
 const char* stringListDelimiter = ";# ";
 struct JSONObject
 {
-    JSONObject(const QString& name_)
+    JSONObject(JSONObject* parent_, const QString& name_)
         : name(name_)
+        , parent(parent_)
     {
+        if (parent != nullptr)
+        {
+            jsonObject = parent->jsonObject[name].toObject();
+
+#if defined(__DAVAENGINE_DEBUG__)
+            auto iter = std::find_if(parent->children.begin(), parent->children.end(), [this](const JSONObject* child) {
+                return child->name == name;
+            });
+            DVASSERT(iter == parent->children.end());
+            parent->children.push_back(this);
+#endif //__DAVAENGINE_DEBUG__
+        }
     }
 
+#if defined(__DAVAENGINE_DEBUG__)
     ~JSONObject()
     {
         DVASSERT(children.empty());
+        if (parent != nullptr)
+        {
+            parent->children.remove(this);
+        }
     }
+    List<JSONObject*> children;
+#endif //__DAVAENGINE_DEBUG__
+
+    virtual void Sync() = 0;
 
     QString name;
-    List<JSONObject*> children;
     QJsonObject jsonObject;
-    bool wasChanged = false;
+    JSONObject* parent = nullptr;
 };
 }
 
@@ -48,36 +69,25 @@ struct PropertiesItem::Impl : public PropertiesHolderDetails::JSONObject
     Impl(JSONObject* impl_, const String& name_);
     ~Impl();
 
-    //realization for the fundamental types
-    template <typename T, typename std::enable_if<std::is_fundamental<T>::value, int>::type = 0>
-    void Set(const QString& key, T value);
-
-    //realization for the pointers
-    template <typename T, typename std::enable_if<std::is_pointer<T>::value, int>::type = 0>
-    void Set(const QString& key, const T& value);
-
-    //realization for the pointers
-    template <typename T, typename std::enable_if<!std::is_pointer<T>::value && !std::is_fundamental<T>::value, int>::type = 0>
-    void Set(const QString& key, const T& value);
-
-    template <typename T>
-    QJsonValue ToValue(const T& value);
-
     template <typename T>
     T Get(const QString& key, const T& defaultValue);
 
-    template <typename T, typename std::enable_if<std::is_fundamental<T>::value, int>::type = 0>
-    T FromValue(const QJsonValue& value, const T& defaultValue);
+    template <typename T>
+    void Set(const QString& key, T value);
 
     template <typename T, typename std::enable_if<std::is_pointer<T>::value, int>::type = 0>
     T FromValue(const QJsonValue& value, const T& defaultValue);
 
-    template <typename T, typename std::enable_if<!std::is_pointer<T>::value && !std::is_fundamental<T>::value, int>::type = 0>
+    template <typename T, typename std::enable_if<!std::is_pointer<T>::value, int>::type = 0>
     T FromValue(const QJsonValue& value, const T& defaultValue);
 
-    void SaveToParent();
+    template <typename T, typename std::enable_if<std::is_pointer<T>::value, int>::type = 0>
+    QJsonValue ToValue(const T& value);
 
-    JSONObject* parent = nullptr;
+    template <typename T, typename std::enable_if<!std::is_pointer<T>::value, int>::type = 0>
+    QJsonValue ToValue(const T& value);
+
+    void Sync() override;
 };
 
 struct PropertiesHolder::Impl : public PropertiesHolderDetails::JSONObject
@@ -90,6 +100,8 @@ struct PropertiesHolder::Impl : public PropertiesHolderDetails::JSONObject
     void LoadFromFile();
     void SaveToFile();
 
+    void Sync() override;
+
     QFileInfo storagePath;
 };
 
@@ -101,60 +113,24 @@ PropertiesItem PropertiesHolder::CreateSubHolder(const String& holderName) const
 }
 
 PropertiesHolder::Impl::Impl(const String& name_, const FilePath& dirPath)
-    : PropertiesHolderDetails::JSONObject(QString::fromStdString(name_))
+    : PropertiesHolderDetails::JSONObject(nullptr, QString::fromStdString(name_))
 {
     SetDirectory(dirPath);
 }
 
-PropertiesItem::Impl::Impl(JSONObject* impl_, const String& name_)
-    : PropertiesHolderDetails::JSONObject(QString::fromStdString(name_))
-    , parent(impl_)
+PropertiesItem::Impl::Impl(JSONObject* parent, const String& name_)
+    : PropertiesHolderDetails::JSONObject(parent, QString::fromStdString(name_))
 {
-    auto iter = std::find_if(parent->children.begin(), parent->children.end(), [this](const JSONObject* child) {
-        return child->name == name;
-    });
-    DVASSERT(iter == parent->children.end());
-    parent->children.push_back(this);
-    jsonObject = parent->jsonObject[name].toObject();
 }
 
 PropertiesItem::Impl::~Impl()
 {
     DVASSERT(parent != nullptr);
-    if (wasChanged)
-    {
-        SaveToParent();
-    }
-    parent->children.remove(this);
 }
 
 PropertiesHolder::Impl::~Impl()
 {
     SaveToFile();
-}
-
-template <typename T, typename std::enable_if<std::is_fundamental<T>::value, int>::type>
-void PropertiesItem::Impl::Set(const QString& key, T value)
-{
-    jsonObject[key] = value;
-}
-
-template <typename T, typename std::enable_if<std::is_pointer<T>::value, int>::type>
-void PropertiesItem::Impl::Set(const QString& key, const T& value)
-{
-    DVASSERT(false, "unsupported type: pointer");
-}
-
-template <typename T, typename std::enable_if<!std::is_pointer<T>::value && !std::is_fundamental<T>::value, int>::type>
-void PropertiesItem::Impl::Set(const QString& key, const T& value)
-{
-    jsonObject[key] = ToValue(value);
-}
-
-template <typename T>
-QJsonValue PropertiesItem::Impl::ToValue(const T& value)
-{
-    DVASSERT(false, "conversion between T and QJsonValue is not declared");
 }
 
 template <typename T>
@@ -171,15 +147,11 @@ T PropertiesItem::Impl::Get(const QString& key, const T& defaultValue)
     }
 }
 
-template <typename T, typename std::enable_if<std::is_fundamental<T>::value, int>::type>
-T PropertiesItem::Impl::FromValue(const QJsonValue& value, const T& defaultValue)
+template <typename T>
+void PropertiesItem::Impl::Set(const QString& key, T value)
 {
-    QVariant var = value.toVariant();
-    if (var.canConvert<T>())
-    {
-        return var.value<T>();
-    }
-    return defaultValue;
+    jsonObject[key] = ToValue(value);
+    Sync();
 }
 
 template <typename T, typename std::enable_if<std::is_pointer<T>::value, int>::type>
@@ -188,165 +160,24 @@ T PropertiesItem::Impl::FromValue(const QJsonValue& value, const T& defaultValue
     DVASSERT(false, "unsupported type: pointer");
 }
 
-template <typename T, typename std::enable_if<!std::is_pointer<T>::value && !std::is_fundamental<T>::value, int>::type>
+template <typename T, typename std::enable_if<!std::is_pointer<T>::value, int>::type>
 T PropertiesItem::Impl::FromValue(const QJsonValue& value, const T& defaultValue)
 {
     DVASSERT(false, "conversion between QJsonValue and T is not declared");
 }
 
-template <>
-QJsonValue PropertiesItem::Impl::ToValue(const QString& value)
+template <typename T, typename std::enable_if<std::is_pointer<T>::value, int>::type>
+QJsonValue ToValue(const T& value)
 {
-    return QJsonValue(value);
+    DVASSERT(false, "unsupported type: pointer");
+    return QJsonValue();
 }
 
-template <>
-QJsonValue PropertiesItem::Impl::ToValue(const QByteArray& value)
+template <typename T, typename std::enable_if<!std::is_pointer<T>::value, int>::type>
+QJsonValue ToValue(const T& value)
 {
-    return QJsonValue(QString(value.toBase64()));
-}
-
-template <>
-QJsonValue PropertiesItem::Impl::ToValue(const QRect& value)
-{
-    QByteArray rectData;
-    QDataStream rectStream(&rectData, QIODevice::WriteOnly);
-    rectStream << value;
-    return ToValue(rectData);
-}
-
-template <>
-QJsonValue PropertiesItem::Impl::ToValue(const FilePath& value)
-{
-    return QJsonValue(QString::fromStdString(value.GetAbsolutePathname()));
-}
-
-template <>
-QJsonValue PropertiesItem::Impl::ToValue(const String& value)
-{
-    return QJsonValue(QString::fromStdString(value));
-}
-
-template <>
-QJsonValue PropertiesItem::Impl::ToValue(const Vector<String>& value)
-{
-    QStringList stringList;
-    std::transform(value.begin(), value.end(), std::back_inserter(stringList), [](const String& string) {
-        String errorMessage = Format("string to save %s contains special character used to save: %s", string.c_str(), PropertiesHolderDetails::stringListDelimiter);
-        DVASSERT("%s", errorMessage.c_str());
-        return QString::fromStdString(string);
-    });
-    return stringList.join(PropertiesHolderDetails::stringListDelimiter);
-}
-
-template <>
-QJsonValue PropertiesItem::Impl::ToValue(const Vector<FastName>& value)
-{
-    QStringList stringList;
-    std::transform(value.begin(), value.end(), std::back_inserter(stringList), [](const FastName& string)
-                   {
-                       return QString(string.c_str());
-                   });
-    return stringList.join(PropertiesHolderDetails::stringListDelimiter);
-}
-
-template <>
-QString PropertiesItem::Impl::FromValue(const QJsonValue& value, const QString& defaultValue)
-{
-    return value.toString(defaultValue);
-}
-
-template <>
-QByteArray PropertiesItem::Impl::FromValue(const QJsonValue& value, const QByteArray& defaultValue)
-{
-    if (value.isString())
-    {
-        return QByteArray::fromBase64(value.toString().toUtf8());
-    }
-    else
-    {
-        return defaultValue;
-    }
-}
-
-template <>
-QRect PropertiesItem::Impl::FromValue(const QJsonValue& value, const QRect& defaultValue)
-{
-    QByteArray defaultData;
-    QDataStream defaultStream(&defaultData, QIODevice::WriteOnly);
-    defaultStream << defaultValue;
-
-    QByteArray loadedData = FromValue(value, defaultData);
-    QDataStream loadedStream(&loadedData, QIODevice::ReadOnly);
-
-    QRect rect;
-    loadedStream >> rect;
-    return rect;
-}
-
-template <>
-FilePath PropertiesItem::Impl::FromValue(const QJsonValue& value, const FilePath& defaultValue)
-{
-    if (value.isString())
-    {
-        return FilePath(value.toString().toStdString());
-    }
-    else
-    {
-        return defaultValue;
-    }
-}
-
-template <>
-String PropertiesItem::Impl::FromValue(const QJsonValue& value, const String& defaultValue)
-{
-    if (value.isString())
-    {
-        return value.toString().toStdString();
-    }
-    else
-    {
-        return defaultValue;
-    }
-}
-
-template <>
-Vector<String> PropertiesItem::Impl::FromValue(const QJsonValue& value, const Vector<String>& defaultValue)
-{
-    if (value.isString())
-    {
-        Vector<String> retVal;
-        QString stringValue = value.toString();
-        QStringList stringList = stringValue.split(PropertiesHolderDetails::stringListDelimiter, QString::SkipEmptyParts);
-        std::transform(stringList.begin(), stringList.end(), std::back_inserter(retVal), [](const QString& string) {
-            return string.toStdString();
-        });
-        return retVal;
-    }
-    else
-    {
-        return defaultValue;
-    }
-}
-
-template <>
-Vector<FastName> PropertiesItem::Impl::FromValue(const QJsonValue& value, const Vector<FastName>& defaultValue)
-{
-    if (value.isString())
-    {
-        Vector<FastName> retVal;
-        QString stringValue = value.toString();
-        QStringList stringList = stringValue.split(PropertiesHolderDetails::stringListDelimiter, QString::SkipEmptyParts);
-        std::transform(stringList.begin(), stringList.end(), std::back_inserter(retVal), [](const QString& string)
-                       {
-                           return FastName(string.toStdString());
-                       });
-        return retVal;
-    }
-    else
-    {
-        return defaultValue;
-    }
+    DVASSERT(false, "conversion between QJsonValue and T is not declared");
+    return QJsonValue();
 }
 
 void PropertiesHolder::Impl::SetDirectory(const FilePath& dirPath)
@@ -403,8 +234,6 @@ void PropertiesHolder::Impl::LoadFromFile()
 
 void PropertiesHolder::Impl::SaveToFile()
 {
-    // right now we not need to save root element with existed child
-    DVASSERT(children.empty());
     QString filePath = storagePath.absoluteFilePath();
     QFile file(filePath);
     if (!file.open(QFile::WriteOnly | QFile::Truncate))
@@ -421,10 +250,16 @@ void PropertiesHolder::Impl::SaveToFile()
     }
 }
 
-void PropertiesItem::Impl::SaveToParent()
+void PropertiesHolder::Impl::Sync()
 {
-    parent->wasChanged = true;
+    SaveToFile();
+}
+
+void PropertiesItem::Impl::Sync()
+{
+    DVASSERT(parent != nullptr);
     parent->jsonObject[name] = jsonObject;
+    parent->Sync();
 }
 
 PropertiesHolder::PropertiesHolder(const String& projectName, const FilePath& directory)
@@ -501,7 +336,9 @@ PropertiesItem::PropertiesItem(const PropertiesItem& parent, const String& name)
 #define ENUM_TYPES(METHOD, value, type, key) \
     METHOD(value, type, bool, key) \
     METHOD(value, type, int32, key) \
+    METHOD(value, type, uint32, key) \
     METHOD(value, type, int64, key) \
+    METHOD(value, type, uint64, key) \
     METHOD(value, type, float32, key) \
     METHOD(value, type, float64, key) \
     METHOD(value, type, QString, key) \
@@ -517,7 +354,6 @@ void PropertiesItem::Set(const String& key, const Any& value)
 {
     const Type* type = value.GetType();
     QString keyStr = QString::fromStdString(key);
-    impl->wasChanged = true;
     DVASSERT(!impl->jsonObject[keyStr].isObject());
     ENUM_TYPES(SAVE_IF_ACCEPTABLE, value, type, keyStr);
 }
@@ -535,6 +371,7 @@ Any PropertiesItem::Get(const String& key, const Any& defaultValue, const Type* 
     ENUM_TYPES(LOAD_IF_ACCEPTABLE, defaultValue, type, keyStr);
     return Any();
 }
-
 } // namespace TArc
 } // namespace DAVA
+
+#include "TArc/DataProcessing/Private/PropertiesTypesConvertion.h"
