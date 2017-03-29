@@ -56,6 +56,7 @@
 #include "UI/UIScreenManager.h"
 #include "UI/UIControlSystem.h"
 #include "Entity/ComponentManager.h"
+#include "Reflection/ReflectedTypeDB.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
@@ -730,6 +731,10 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
     context->uiControlSystem = new UIControlSystem();
     context->animationManager = new AnimationManager();
     context->fontManager = new FontManager();
+
+    context->typeDB = TypeDB::GetLocalDB();
+    context->fastNameDB = FastNameDB::GetLocalDB();
+    context->reflectedTypeDB = ReflectedTypeDB::GetLocalDB();
 
 #if defined(__DAVAENGINE_ANDROID__)
     context->assetsManager = new AssetsManagerAndroid(AndroidBridge::GetApplicationPath());

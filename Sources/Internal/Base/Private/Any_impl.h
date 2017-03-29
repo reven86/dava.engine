@@ -14,7 +14,8 @@ using CanGetVoidPointer = std::integral_constant<int, 2>;
 template <typename T>
 inline bool CanGetImpl(const Type* t, CanGetDefault)
 {
-    return (t == Type::Instance<T>());
+    const Type* rt = Type::Instance<T>();
+    return (t == rt);
 }
 
 template <typename T>

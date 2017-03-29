@@ -31,7 +31,7 @@ UIComponent& UIComponent::operator=(const UIComponent& src)
 
 UIComponent* UIComponent::CreateByType(const Type* componentType)
 {
-    bool isUIComponent = TypeInheritance::CanDownCast(componentType->Pointer(), Type::Instance<UIComponent*>());
+    bool isUIComponent = TypeInheritance::CanDownCast(componentType, Type::Instance<UIComponent>());
     if (isUIComponent)
     {
         const ReflectedType* reflType = ReflectedTypeDB::GetByType(componentType);

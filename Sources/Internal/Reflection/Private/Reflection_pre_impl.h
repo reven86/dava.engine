@@ -11,10 +11,10 @@
     static void Dava__ReflectionInitializerS()
 
 #define IMPL__DAVA_VIRTUAL_REFLECTION(Cls, ...) \
-    template <typename FT__> \
-    friend struct DAVA::ReflectionDetail::ReflectionInitializerRunner; \
+    using Cls__BaseTypes = std::tuple<__VA_ARGS__>; \
     const DAVA::ReflectedType* Dava__GetReflectedType() const override; \
     static void Dava__ReflectionRegisterBases(); \
+    static void Dava__ReflectionInitializerV(); \
     static void Dava__ReflectionInitializer() \
     { \
         static bool registred = false; \
@@ -24,8 +24,8 @@
             Dava__ReflectionInitializerV(); \
         } \
     } \
-    static void Dava__ReflectionInitializerV(); \
-    using Cls__BaseTypes = std::tuple<__VA_ARGS__>
+    template <typename FT__> \
+    friend struct DAVA::ReflectionDetail::ReflectionInitializerRunner
 
 namespace DAVA
 {

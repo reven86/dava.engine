@@ -12,9 +12,67 @@ int DAVAMain(Vector<String> cmdline)
     return 0;
 }
 
+struct SamplePluginA : public ReflectionBase
+{
+    SamplePluginA(const String& name_ = String())
+        : name(name_)
+    {
+        if (name.empty())
+        {
+            name = String("SamplePluginA");
+        }
+    }
+
+    int ai = 11111;
+    float af = 54321;
+    String name;
+
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(SamplePluginA)
+    {
+        ReflectionRegistrator<SamplePluginA>::Begin()
+            .Field("ai", &SamplePluginA::ai)
+            .Field("af", &SamplePluginA::af)
+            .Field("name", &SamplePluginA::name)
+            .End();
+    }
+};
+
+struct SamplePluginB : public SamplePluginA
+{
+    SamplePluginB()
+        : SamplePluginA("SamplePluginB")
+    {
+    }
+
+    int bi = 22222;
+    float bf = 98765;
+
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(SamplePluginB, SamplePluginA)
+    {
+        ReflectionRegistrator<SamplePluginB>::Begin()
+            .Field("bi", &SamplePluginB::bi)
+            .Field("bf", &SamplePluginB::bf)
+            .End();
+    }
+};
+
 class SamplePluginUIComponent : public UIBaseComponent<SamplePluginUIComponent>
 {
-    DAVA_VIRTUAL_REFLECTION(SampleModuleUIComponent, UIComponent);
+    DAVA_VIRTUAL_REFLECTION(SamplePluginUIComponent, UIComponent);
+
+public:
+    SamplePluginUIComponent()
+        : a_ptr(new SamplePluginB())
+    {
+    }
+
+    ~SamplePluginUIComponent()
+    {
+        delete a_ptr;
+    }
+
+    SamplePluginA a;
+    SamplePluginB* a_ptr;
 
     UIComponent* Clone() const override
     {
@@ -22,12 +80,14 @@ class SamplePluginUIComponent : public UIBaseComponent<SamplePluginUIComponent>
     }
 };
 
-
 DAVA_VIRTUAL_REFLECTION_IMPL(SamplePluginUIComponent)
 {
     ReflectionRegistrator<SamplePluginUIComponent>::Begin()
         .ConstructorByPointer()
         .DestructorByPointer([] (SamplePluginUIComponent* o) { o->Release(); })
+        .Field("a", &SamplePluginUIComponent::a)
+        .Field("a_ptr", &SamplePluginUIComponent::a_ptr)
+        .Method("Clone", &SamplePluginUIComponent::Clone)
         .End();
 }
 
@@ -44,6 +104,10 @@ public:
     SamplePlugin(Engine* engine)
         : IModule(engine)
     {
+        TypeDB::GetLocalDB()->SetMasterDB(engine->GetContext()->typeDB);
+        FastNameDB::GetLocalDB()->SetMasterDB(engine->GetContext()->fastNameDB);
+        ReflectedTypeDB::GetLocalDB()->SetMasterDB(engine->GetContext()->reflectedTypeDB);
+
         statusList.emplace_back(eStatus::ES_UNKNOWN);
 
         DAVA_REFLECTION_REGISTER_PERMANENT_NAME(SamplePluginUIComponent);

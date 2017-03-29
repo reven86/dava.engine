@@ -5,21 +5,35 @@
 
 namespace DAVA
 {
-FastNameDB* FastName::db;
+FastNameDB* FastNameDB::GetLocalDB()
+{
+    return *GetLocalDBPtr();
+}
+
+FastNameDB** FastNameDB::GetLocalDBPtr()
+{
+    static FastNameDB db;
+    static FastNameDB* dbPtr = &db;
+    return &dbPtr;
+}
+
+void FastNameDB::SetMasterDB(FastNameDB* db)
+{
+    static bool hasMaster = false;
+
+    DVASSERT(!hasMaster);
+    hasMaster = true;
+
+    // Override db from local to master
+    FastNameDB** localDBPtr = GetLocalDBPtr();
+    *localDBPtr = db;
+}
 
 void FastName::Init(const char* name)
 {
-    static FastNameDB staticDB;
-    static bool initialized = false;
-
-    if (!initialized)
-    {
-        db = &staticDB;
-        initialized = true;
-    }
-
     DVASSERT(nullptr != name);
 
+    FastNameDB* db = FastNameDB::GetLocalDB();
     LockGuard<FastNameDB::MutexT> guard(db->mutex);
 
     // search if that name is already in hash
