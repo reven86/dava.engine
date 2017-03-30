@@ -158,7 +158,7 @@ Vector<uint8> PackMetaData::Serialize() const
     DVASSERT(packIndexes.size() > 0);
 
     Vector<uint8> compBytes;
-    uint32 uncompressedSize;
+    uint32 uncompressedSize = 0;
     {
         String bytes;
         std::stringstream ss;
