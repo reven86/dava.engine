@@ -12,6 +12,8 @@ public:
 
     String Format(FormulaExpression* exp);
 
+    static String AnyToString(const Any& val);
+
 private:
     void Visit(FormulaValueExpression* exp) override;
     void Visit(FormulaNegExpression* exp) override;
@@ -22,7 +24,6 @@ private:
     void Visit(FormulaIndexExpression* exp) override;
 
     int GetExpPriority(FormulaExpression* exp) const;
-    String GetOperatorAsString(FormulaBinaryOperatorExpression::Operator op) const;
 
     StringStream stream;
 };

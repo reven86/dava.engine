@@ -1,6 +1,7 @@
 #include "FormulaFormatter.h"
 
-#include "UI/Formula/AnyConverter.h"
+#include "Utils/StringFormat.h"
+#include "FileSystem/FilePath.h"
 
 #include "Debug/DVAssert.h"
 
@@ -22,6 +23,56 @@ String FormulaFormatter::Format(FormulaExpression* exp)
     return result;
 }
 
+String FormulaFormatter::AnyToString(const Any& val)
+{
+    if (val.CanGet<int32>())
+    {
+        return Format("%d", val.Get<int32>());
+    }
+    else if (val.CanGet<uint64>())
+    {
+        return Format("%ld", val.Get<uint64>());
+    }
+    else if (val.CanGet<int64>())
+    {
+        return Format("%ldL", val.Get<int64>());
+    }
+    else if (val.CanGet<uint16>())
+    {
+        return Format("%d", val.Get<int16>());
+    }
+    else if (val.CanGet<int16>())
+    {
+        return Format("%d", val.Get<int16>());
+    }
+    else if (val.CanGet<uint8>())
+    {
+        return Format("%d", val.Get<uint8>());
+    }
+    else if (val.CanGet<int8>())
+    {
+        return Format("%d", val.Get<int8>());
+    }
+    else if (val.CanGet<float>())
+    {
+        return Format("%f", val.Get<float>());
+    }
+    else if (val.CanGet<String>())
+    {
+        return val.Get<String>();
+    }
+    else if (val.CanGet<FilePath>())
+    {
+        return val.Get<FilePath>().GetFrameworkPath();
+    }
+    else if (val.CanGet<bool>())
+    {
+        return val.Get<bool>() ? "true" : "false";
+    }
+
+    return String("");
+}
+
 void FormulaFormatter::Visit(FormulaValueExpression* exp)
 {
     Any value = exp->GetValue();
@@ -31,7 +82,7 @@ void FormulaFormatter::Visit(FormulaValueExpression* exp)
     }
     else
     {
-        stream << AnyConverter::ToString(exp->GetValue());
+        stream << AnyToString(exp->GetValue());
     }
 }
 
@@ -86,7 +137,52 @@ void FormulaFormatter::Visit(FormulaBinaryOperatorExpression* exp)
         stream << ")";
     }
 
-    stream << " " << GetOperatorAsString(exp->GetOperator()) << " ";
+    switch (exp->GetOperator())
+    {
+    case FormulaBinaryOperatorExpression::OP_PLUS:
+        stream << " + ";
+        break;
+    case FormulaBinaryOperatorExpression::OP_MINUS:
+        stream << " - ";
+        break;
+    case FormulaBinaryOperatorExpression::OP_MUL:
+        stream << " * ";
+        break;
+    case FormulaBinaryOperatorExpression::OP_DIV:
+        stream << " / ";
+        break;
+    case FormulaBinaryOperatorExpression::OP_MOD:
+        stream << " % ";
+        break;
+    case FormulaBinaryOperatorExpression::OP_AND:
+        stream << " && ";
+        break;
+    case FormulaBinaryOperatorExpression::OP_OR:
+        stream << " || ";
+        break;
+    case FormulaBinaryOperatorExpression::OP_EQ:
+        stream << " == ";
+        break;
+    case FormulaBinaryOperatorExpression::OP_NOT_EQ:
+        stream << " != ";
+        break;
+    case FormulaBinaryOperatorExpression::OP_LE:
+        stream << " <= ";
+        break;
+    case FormulaBinaryOperatorExpression::OP_LT:
+        stream << " < ";
+        break;
+    case FormulaBinaryOperatorExpression::OP_GE:
+        stream << " >= ";
+        break;
+    case FormulaBinaryOperatorExpression::OP_GT:
+        stream << " > ";
+        break;
+
+    default:
+        DVASSERT("Invalid operator.");
+        break;
+    }
 
     if (rhsSq)
     {
@@ -153,38 +249,4 @@ int FormulaFormatter::GetExpPriority(FormulaExpression* exp) const
     return 0;
 }
 
-String FormulaFormatter::GetOperatorAsString(FormulaBinaryOperatorExpression::Operator op) const
-{
-    switch (op)
-    {
-    case FormulaBinaryOperatorExpression::OP_PLUS:
-        return "+";
-    case FormulaBinaryOperatorExpression::OP_MINUS:
-        return "-";
-    case FormulaBinaryOperatorExpression::OP_MUL:
-        return "*";
-    case FormulaBinaryOperatorExpression::OP_DIV:
-        return "/";
-    case FormulaBinaryOperatorExpression::OP_AND:
-        return "&&";
-    case FormulaBinaryOperatorExpression::OP_OR:
-        return "||";
-    case FormulaBinaryOperatorExpression::OP_EQ:
-        return "==";
-    case FormulaBinaryOperatorExpression::OP_NOT_EQ:
-        return "!=";
-    case FormulaBinaryOperatorExpression::OP_LE:
-        return "<=";
-    case FormulaBinaryOperatorExpression::OP_LT:
-        return "<";
-    case FormulaBinaryOperatorExpression::OP_GE:
-        return ">=";
-    case FormulaBinaryOperatorExpression::OP_GT:
-        return ">";
-
-    default:
-        DVASSERT("Invalid operator.");
-        return "?";
-    }
-}
 }
