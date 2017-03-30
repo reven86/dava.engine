@@ -112,7 +112,7 @@ bool IsDirectory(const String& dirName)
 #endif
     if (result == 0)
     {
-        return (0 != (fileStat.st_mode & S_IFDIR));
+        return (0 != (S_ISDIR(fileStat.st_mode)));
     }
 
     LogError(errno, dirName, __FUNCTION__);

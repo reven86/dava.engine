@@ -180,7 +180,12 @@ DAVA_TESTCLASS (DLCManagerFullTest)
 
         try
         {
-            dlcManager.Initialize("C:/Windows/", "http://127.0.0.1:8080/superpack_for_unittests.dvpk", DLCManager::Hints());
+#ifdef __DAVAENGINE_WINDOWS__
+            const char* cant_write_dir = "C:/Windows/"; // system dir
+#else
+            const char* cant_write_dir = "/"; // root dir
+#endif
+            dlcManager.Initialize(cant_write_dir, "http://127.0.0.1:8080/superpack_for_unittests.dvpk", DLCManager::Hints());
         }
         catch (Exception& ex)
         {
