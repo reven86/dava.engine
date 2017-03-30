@@ -5,7 +5,7 @@
 
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
-#include "Render/rhi/dbg_Draw.h"
+#include "Render/RHI/dbg_Draw.h"
 
 namespace OverdrawPerformanceTester
 {
