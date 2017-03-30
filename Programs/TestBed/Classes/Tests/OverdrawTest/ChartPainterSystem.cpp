@@ -4,6 +4,7 @@
 #include "OverdrawTesterComponent.h"
 
 #include "Render/2D/Systems/RenderSystem2D.h"
+#include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Render/rhi/dbg_Draw.h"
 
 namespace OverdrawPerformanceTester
@@ -20,6 +21,7 @@ using DAVA::Polygon2;
 using DAVA::UIControlSystem;
 using DAVA::DbgDraw;
 using DAVA::RenderSystem2D;
+using DAVA::VirtualCoordinatesSystem;
 using DAVA::Vector;
 
 const Vector2 ChartPainterSystem::chartOffset(0.1f, 0.1f);
@@ -109,7 +111,11 @@ void ChartPainterSystem::DrawGrid(int32 w, int32 h) const
     gridPoly.AddPoint(yAxis);
     RenderSystem2D::Instance()->DrawPolygon(gridPoly, false, Color::White);
 
+    VirtualCoordinatesSystem* vcs = UIControlSystem::Instance()->vcs;
     int32 stepCount = static_cast<int>(frametimeStepCount + 1);
+    Vector2 vcsOffset = vcs->GetPhysicalDrawOffset();
+    int32 vcsOffsetX = static_cast<int32>(vcsOffset.x);
+    int32 vcsOffsetY = static_cast<int32>(vcsOffset.y);
     for (int32 i = 1; i < stepCount + 1; i++)
     {
         gridPoly.Clear();
@@ -122,7 +128,9 @@ void ChartPainterSystem::DrawGrid(int32 w, int32 h) const
         gridPoly.AddPoint({ chartOffset.x * w, pointY });
         gridPoly.AddPoint({ (chartOffset.x + chartLen) * w, pointY });
 
-        DbgDraw::Text2D(static_cast<int32>(0.05f * DAVA::Renderer::GetFramebufferWidth()), pointYInt, textColor, "%.4f", i * frametimeStep + minFrametime);
+        int32 textX = static_cast<int32>(vcs->ConvertVirtualToPhysicalX(0.05f * w));
+        int32 textY = static_cast<int32>(vcs->ConvertVirtualToPhysicalY(pointY));
+        DbgDraw::Text2D(textX + vcsOffsetX, textY + vcsOffsetY, textColor, "%.4f", i * frametimeStep + minFrametime);
         RenderSystem2D::Instance()->DrawPolygon(gridPoly, false, gridColor);
     }
 
@@ -138,7 +146,9 @@ void ChartPainterSystem::DrawGrid(int32 w, int32 h) const
         gridPoly.AddPoint({ pointX, chartOffset.y * h });
         gridPoly.AddPoint({ pointX, (chartOffset.y + chartLen) * h });
 
-        DbgDraw::Text2D(pointXInt, static_cast<int32>((chartOffset.y + chartLen) * DAVA::Renderer::GetFramebufferHeight()), textColor, "%.2f", i * overdrawStep);
+        int32 textX = static_cast<int32>(vcs->ConvertVirtualToPhysicalX(pointX));
+        int32 textY = static_cast<int32>(vcs->ConvertVirtualToPhysicalY((chartOffset.y + chartLen) * h));
+        DbgDraw::Text2D(textX + vcsOffsetX, textY + vcsOffsetY, textColor, "%.2f", i * overdrawStep);
         RenderSystem2D::Instance()->DrawPolygon(gridPoly, false, gridColor);
     }
 }
@@ -212,23 +222,33 @@ void ChartPainterSystem::DrawLegend(int32 w, int32 h) const
     static const float lineOffsetDivider = 9.0f;
     static const float yOffsetMultiplier = 0.05f;
 
+    VirtualCoordinatesSystem* vcs = UIControlSystem::Instance()->vcs;
+
+    Vector2 vcsOffset = vcs->GetPhysicalDrawOffset();
+    int32 vcsOffsetX = static_cast<int32>(vcsOffset.x);
+    int32 vcsOffsetY = static_cast<int32>(vcsOffset.y);
+
     float32 initialOffset = static_cast<float32>(w) / offsetDivider;
-    float32 textInitialOffset = static_cast<float32>(DAVA::Renderer::GetFramebufferWidth()) / offsetDivider;
+    float32 textInitialOffset = static_cast<float32>(w) / offsetDivider;
     float32 step = static_cast<float32>(w) / stepDivider;
-    float32 textStep = static_cast<float32>(DAVA::Renderer::GetFramebufferWidth()) / stepDivider;
+    float32 textStep = static_cast<float32>(w) / stepDivider;
     int32 lineOffset = static_cast<int32>(static_cast<float32>(w) / lineOffsetDivider);
-    int32 yPos = static_cast<int32>(yOffsetMultiplier * DAVA::Renderer::GetFramebufferHeight());
+    float32 yPosText = yOffsetMultiplier * h;
     float32 yPosFloat = yOffsetMultiplier * h;
+
     Polygon2 p;
     for (int i = 0; i < modsCount; i++)
     {
         p.Clear();
 
-        int32 startX = static_cast<int32>(textStep * i + textInitialOffset);
+        float32 startX = textStep * i + textInitialOffset;
         float32 startXFloat = step * i + initialOffset;
         p.AddPoint({ startXFloat, yPosFloat });
         p.AddPoint({ startXFloat + lineOffset, yPosFloat });
-        DbgDraw::Text2D(startX, yPos, textColor, "%s", legend[i].c_str());
+
+        int32 textX = static_cast<int32>(vcs->ConvertVirtualToPhysicalX(startX));
+        int32 textY = static_cast<int32>(vcs->ConvertVirtualToPhysicalY(yPosText));
+        DbgDraw::Text2D(textX + vcsOffsetX, textY + vcsOffsetY, textColor, "%s", legend[i].c_str());
         RenderSystem2D::Instance()->DrawPolygon(p, false, chartColors[i]);
     }
 }
