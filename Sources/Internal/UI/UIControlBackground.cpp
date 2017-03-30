@@ -19,7 +19,7 @@ DAVA_VIRTUAL_REFLECTION_IMPL(UIControlBackground)
     ReflectionRegistrator<UIControlBackground>::Begin()
     .ConstructorByPointer()
     .DestructorByPointer([](UIControlBackground* o) { o->Release(); })
-    .Field("drawType", &UIControlBackground::GetBgDrawType, &UIControlBackground::SetBgDrawType)[M::EnumT<eDrawType>()]
+    .Field("drawType", &UIControlBackground::GetDrawType, &UIControlBackground::SetDrawType)[M::EnumT<eDrawType>()]
     .Field<FilePath (UIControlBackground::*)() const, void (UIControlBackground::*)(const FilePath&)>("sprite", &UIControlBackground::GetBgSpritePath, &UIControlBackground::SetSprite)
     .Field<int32 (UIControlBackground::*)() const, void (UIControlBackground::*)(int32)>("frame", &UIControlBackground::GetFrame, &UIControlBackground::SetFrame)
     .Field("mask", &UIControlBackground::GetMaskSpritePath, &UIControlBackground::SetMaskSpriteFromPath)
@@ -29,8 +29,8 @@ DAVA_VIRTUAL_REFLECTION_IMPL(UIControlBackground)
     .Field("spriteModification", &UIControlBackground::GetModification, &UIControlBackground::SetModification)[M::FlagsT<eSpriteModification>()]
     .Field("gradientMode", &UIControlBackground::GetGradientBlendMode, &UIControlBackground::SetGradientBlendMode)[M::EnumT<eGradientBlendMode>()]
     .Field("color", &UIControlBackground::GetColor, &UIControlBackground::SetColor)
-    .Field("colorInherit", &UIControlBackground::GetBgColorInherit, &UIControlBackground::SetBgColorInherit)[M::EnumT<eColorInheritType>()]
-    .Field("perPixelAccuracy", &UIControlBackground::GetBgPerPixelAccuracy, &UIControlBackground::SetBgPerPixelAccuracy)[M::EnumT<ePerPixelAccuracyType>()]
+    .Field("colorInherit", &UIControlBackground::GetColorInheritType, &UIControlBackground::SetColorInheritType)[M::EnumT<eColorInheritType>()]
+    .Field("perPixelAccuracy", &UIControlBackground::GetPerPixelAccuracyType, &UIControlBackground::SetPerPixelAccuracyType)[M::EnumT<ePerPixelAccuracyType>()]
     .Field("align", &UIControlBackground::GetAlign, &UIControlBackground::SetAlign)[M::FlagsT<eAlign>()]
     .Field("leftRightStretchCap", &UIControlBackground::GetLeftRightStretchCap, &UIControlBackground::SetLeftRightStretchCap)
     .Field("topBottomStretchCap", &UIControlBackground::GetTopBottomStretchCap, &UIControlBackground::SetTopBottomStretchCap)

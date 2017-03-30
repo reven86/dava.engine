@@ -291,14 +291,7 @@ protected:
 public:
     // for introspection
 
-    int32 GetBgDrawType() const;
-    void SetBgDrawType(int32 type);
     FilePath GetBgSpritePath() const;
-    int32 GetBgColorInherit() const;
-    void SetBgColorInherit(int32 type);
-    int32 GetBgPerPixelAccuracy() const;
-    void SetBgPerPixelAccuracy(int32 type);
-
     FilePath GetMaskSpritePath() const;
     void SetMaskSpriteFromPath(const FilePath& path);
     FilePath GetDetailSpritePath() const;
@@ -308,8 +301,8 @@ public:
     FilePath GetContourSpritePath() const;
     void SetContourSpriteFromPath(const FilePath& path);
 
-    int32 GetGradientBlendMode() const;
-    void SetGradientBlendMode(int32 mode);
+    eGradientBlendMode GetGradientBlendMode() const;
+    void SetGradientBlendMode(eGradientBlendMode mode);
 };
 
 // Implementation
@@ -321,16 +314,6 @@ inline void UIControlBackground::SetColor(const Color& _color)
 inline const Color& UIControlBackground::GetColor() const
 {
     return color;
-}
-
-inline int32 UIControlBackground::GetBgDrawType() const
-{
-    return GetDrawType();
-}
-
-inline void UIControlBackground::SetBgDrawType(int32 type)
-{ // TODO: FIXME: type
-    SetDrawType(static_cast<UIControlBackground::eDrawType>(type));
 }
 
 inline FilePath UIControlBackground::GetBgSpritePath() const
@@ -396,34 +379,15 @@ inline void UIControlBackground::SetContourSpriteFromPath(const FilePath& path)
         contour.Set(nullptr);
 }
 
-inline int32 UIControlBackground::GetGradientBlendMode() const
+inline eGradientBlendMode UIControlBackground::GetGradientBlendMode() const
 {
-    return static_cast<int32>(gradientMode);
+    return gradientMode;
 }
-inline void UIControlBackground::SetGradientBlendMode(int32 mode)
+inline void UIControlBackground::SetGradientBlendMode(eGradientBlendMode mode)
 {
-    gradientMode = eGradientBlendMode(mode);
-}
-
-inline int32 UIControlBackground::GetBgColorInherit() const
-{
-    return GetColorInheritType();
+    gradientMode = mode;
 }
 
-inline void UIControlBackground::SetBgColorInherit(int32 type)
-{
-    SetColorInheritType(static_cast<UIControlBackground::eColorInheritType>(type));
-}
-
-inline int32 UIControlBackground::GetBgPerPixelAccuracy() const
-{
-    return GetPerPixelAccuracyType();
-}
-
-inline void UIControlBackground::SetBgPerPixelAccuracy(int32 type)
-{
-    SetPerPixelAccuracyType(static_cast<UIControlBackground::ePerPixelAccuracyType>(type));
-}
 };
 
 #endif

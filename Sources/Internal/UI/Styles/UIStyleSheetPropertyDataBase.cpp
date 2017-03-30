@@ -32,7 +32,7 @@ UIStyleSheetPropertyDataBase::UIStyleSheetPropertyDataBase()
                      UIStyleSheetPropertyDescriptor(&controlGroup, "noInput", false),
                      UIStyleSheetPropertyDescriptor(&controlGroup, "exclusiveInput", false),
 
-                     UIStyleSheetPropertyDescriptor(&bgGroup, "drawType", static_cast<int32>(UIControlBackground::DRAW_ALIGNED)),
+                     UIStyleSheetPropertyDescriptor(&bgGroup, "drawType", UIControlBackground::DRAW_ALIGNED),
                      UIStyleSheetPropertyDescriptor(&bgGroup, "sprite", FilePath()),
                      UIStyleSheetPropertyDescriptor(&bgGroup, "frame", 0),
                      UIStyleSheetPropertyDescriptor(&bgGroup, "mask", FilePath()),
