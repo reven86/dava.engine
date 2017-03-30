@@ -22,18 +22,18 @@ set( STATIC_LIBRARIES_WIN32_RELEASE  ${LIBRARIES_FMOD}/Win/x86/Release/fmod_even
 set( STATIC_LIBRARIES_WIN32_DEBUG    ${LIBRARIES_FMOD}/Win/x86/Debug/fmod_event.lib 
                                      ${LIBRARIES_FMOD}/Win/x86/Debug/fmodex_vc.lib )
 
-set( STATIC_LIBRARIES_WIN64_RELEASE  ${LIBRARIES_FMOD}/Win/x64/Release/fmod_event.lib 
-                                     ${LIBRARIES_FMOD}/Win/x64/Release/fmodex_vc.lib )
+set( STATIC_LIBRARIES_WIN64_RELEASE  ${LIBRARIES_FMOD}/Win/x64/Release/fmod_event64.lib 
+                                     ${LIBRARIES_FMOD}/Win/x64/Release/fmodex64_vc.lib )
 
-set( STATIC_LIBRARIES_WIN64_DEBUG    ${LIBRARIES_FMOD}/Win/x64/Debug/fmod_event.lib 
-                                     ${LIBRARIES_FMOD}/Win/x64/Debug/fmodex_vc.lib )
+set( STATIC_LIBRARIES_WIN64_DEBUG    ${LIBRARIES_FMOD}/Win/x64/Debug/fmod_event64.lib 
+                                     ${LIBRARIES_FMOD}/Win/x64/Debug/fmodex64_vc.lib )
 
 
 set( STATIC_LIBRARIES_WINUAP_RELEASE ${LIBRARIES_FMOD}/Win10/$(Platform)/Release/fmod_eventUWP.lib 
                                      ${LIBRARIES_FMOD}/Win10/$(Platform)/Release/fmodexUWP_vc.lib )
 
-set( STATIC_LIBRARIES_WINUAP_DEBUG   ${LIBRARIES_FMOD}/Win10/$(Platform)/Debug/fmod_eventUWP.lib 
-                                     ${LIBRARIES_FMOD}/Win10/$(Platform)/Debug/fmodexUWP_vc.lib )
+set( STATIC_LIBRARIES_WINUAP_DEBUG   ${LIBRARIES_FMOD}/Win10/$(Platform)/Debug/fmod_eventUWPD.lib 
+                                     ${LIBRARIES_FMOD}/Win10/$(Platform)/Debug/fmodexUWPD_vc.lib )
 
 
 set( DYNAMIC_LIBRARIES_ANDROID       ${LIBRARIES_FMOD}/Android/${ANDROID_NDK_ABI_NAME}/libfmodevent.so 
@@ -48,9 +48,23 @@ set( DYNAMIC_LIBRARIES_WIN64         ${LIBRARIES_FMOD}/Win/x64/Release/fmodex64.
 set( DYNAMIC_LIBRARIES_MACOS         ${LIBRARIES_FMOD}/Macos/libfmodevent.dylib
                                      ${LIBRARIES_FMOD}/Macos/libfmodex.dylib )
 
+set( DYNAMIC_LIBRARIES_WINUAP_RELEASE ${LIBRARIES_FMOD}/win10/Win32/RELEASE/fmod_eventUWP.dll 
+                                      ${LIBRARIES_FMOD}/win10/Win32/RELEASE/fmodexUWP.dll
 
-set( DYNAMIC_LIBRARIES_WINUAP        ${LIBRARIES_FMOD}/win10/$(Platform)/Release/fmod_eventUWParm.dll 
-                                     ${LIBRARIES_FMOD}/win10/$(Platform)/Release/fmodexUWParm.dll )
+                                      ${LIBRARIES_FMOD}/win10/arm/RELEASE/fmod_eventUWParm.dll
+                                      ${LIBRARIES_FMOD}/win10/arm/RELEASE/fmodexUWParm.dll
+
+                                      ${LIBRARIES_FMOD}/win10/x64/RELEASE/fmod_eventUWP64.dll 
+                                      ${LIBRARIES_FMOD}/win10/x64/RELEASE/fmodexUWP64.dll )
+
+set( DYNAMIC_LIBRARIES_WINUAP_DEBUG   ${LIBRARIES_FMOD}/win10/Win32/DEBUG/fmod_eventUWPD.dll 
+                                      ${LIBRARIES_FMOD}/win10/Win32/DEBUG/fmodexUWPD.dll
+
+                                      ${LIBRARIES_FMOD}/win10/arm/DEBUG/fmod_eventUWPDarm.dll
+                                      ${LIBRARIES_FMOD}/win10/arm/DEBUG/fmodexUWPDarm.dll
+
+                                      ${LIBRARIES_FMOD}/win10/x64/DEBUG/fmod_eventUWPD64.dll 
+                                      ${LIBRARIES_FMOD}/win10/x64/DEBUG/fmodexUWPD64.dll )
 
 set( JAR_FOLDERS_ANDROID             ${LIBRARIES_FMOD}/Android/jar )
 
