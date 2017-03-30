@@ -96,7 +96,7 @@ QString AnyToQString(const DAVA::Any& val, const DAVA::ReflectedStructure::Field
         const M::Flags* flagsMeta = field->meta->GetMeta<M::Flags>();
         if (flagsMeta != nullptr)
         {
-            int32 e = val.Get<int32>();
+            int32 e = val.Cast<int32>();
             QString res = "";
             int p = 0;
             while (e)
@@ -118,7 +118,7 @@ QString AnyToQString(const DAVA::Any& val, const DAVA::ReflectedStructure::Field
         const M::Enum* enumMeta = field->meta->GetMeta<M::Enum>();
         if (enumMeta != nullptr)
         {
-            return QString::fromStdString(enumMeta->GetEnumMap()->ToString(val.Get<int32>()));
+            return QString::fromStdString(enumMeta->GetEnumMap()->ToString(val.Cast<int32>()));
         }
     }
 
