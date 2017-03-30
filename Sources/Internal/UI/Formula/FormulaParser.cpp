@@ -382,7 +382,7 @@ bool FormulaParser::IsIdentifier(const Token& token, const String& identifier)
 
 String FormulaParser::GetTokenStringValue(const Token& token)
 {
-    return tokenizer.GetString().substr(token.GetStringPos(), token.GetStringLen());
+    return tokenizer.GetTokenStringValue(token);
 }
 
 }

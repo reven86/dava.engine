@@ -346,6 +346,11 @@ const String& FormulaTokenizer::GetString() const
     return str;
 }
 
+String FormulaTokenizer::GetTokenStringValue(const Token& token)
+{
+    return str.substr(token.GetStringPos(), token.GetStringLen());
+}
+
 int32 FormulaTokenizer::GetLineNumber() const
 {
     return lineNumber;

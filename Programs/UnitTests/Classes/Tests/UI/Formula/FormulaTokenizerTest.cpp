@@ -1,0 +1,292 @@
+#include "DAVAEngine.h"
+
+#include "UI/Formula/FormulaTokenizer.h"
+#include "UI/Formula/FormulaParser.h"
+#include "UI/Formula/FormulaError.h"
+
+#include "UnitTests/UnitTests.h"
+
+using namespace DAVA;
+
+DAVA_TESTCLASS (FormulaParserTest)
+{
+    void SetUp(const String& testName) override
+    {
+    }
+
+    void TearDown(const String& testName) override
+    {
+    }
+
+    // FormulaTokenizer::ReadToken
+    DAVA_TEST (ReadStringsAndIdentifiers)
+    {
+        FormulaTokenizer tokenizer("\"Hello\" foo A123 a123()");
+
+        Token token;
+
+        token = tokenizer.ReadToken();
+        TEST_VERIFY(token.GetType() == Token::STRING);
+        TEST_VERIFY(tokenizer.GetTokenStringValue(token) == "Hello");
+
+        token = tokenizer.ReadToken();
+        TEST_VERIFY(token.GetType() == Token::IDENTIFIER);
+        TEST_VERIFY(tokenizer.GetTokenStringValue(token) == "foo");
+
+        token = tokenizer.ReadToken();
+        TEST_VERIFY(token.GetType() == Token::IDENTIFIER);
+        TEST_VERIFY(tokenizer.GetTokenStringValue(token) == "A123");
+
+        token = tokenizer.ReadToken();
+        TEST_VERIFY(token.GetType() == Token::IDENTIFIER);
+        TEST_VERIFY(tokenizer.GetTokenStringValue(token) == "a123");
+
+        token = tokenizer.ReadToken();
+        TEST_VERIFY(token.GetType() == Token::OPEN_BRACKET);
+
+        token = tokenizer.ReadToken();
+        TEST_VERIFY(token.GetType() == Token::CLOSE_BRACKET);
+
+        token = tokenizer.ReadToken();
+        TEST_VERIFY(token.GetType() == Token::END);
+    }
+
+    // FormulaTokenizer::ReadToken
+    DAVA_TEST (ReadFloats)
+    {
+        FormulaTokenizer tokenizer("5.5 0.0 -0.0 1.0 0.00001 -0.00001 11111.0");
+
+        Token token;
+
+        token = tokenizer.ReadToken();
+        TEST_VERIFY(token.GetType() == Token::FLOAT);
+        TEST_VERIFY(FLOAT_EQUAL(token.GetFloat(), 5.5f));
+
+        token = tokenizer.ReadToken();
+        TEST_VERIFY(token.GetType() == Token::FLOAT);
+        TEST_VERIFY(FLOAT_EQUAL(token.GetFloat(), 0.0f));
+
+        token = tokenizer.ReadToken();
+        TEST_VERIFY(token.GetType() == Token::FLOAT);
+        TEST_VERIFY(FLOAT_EQUAL(token.GetFloat(), 0.0f));
+
+        token = tokenizer.ReadToken();
+        TEST_VERIFY(token.GetType() == Token::FLOAT);
+        TEST_VERIFY(FLOAT_EQUAL(token.GetFloat(), 1.0f));
+
+        token = tokenizer.ReadToken();
+        TEST_VERIFY(token.GetType() == Token::FLOAT);
+        TEST_VERIFY(FLOAT_EQUAL(token.GetFloat(), 0.00001));
+
+        token = tokenizer.ReadToken();
+        TEST_VERIFY(token.GetType() == Token::FLOAT);
+        TEST_VERIFY(FLOAT_EQUAL(token.GetFloat(), -0.00001f));
+
+        token = tokenizer.ReadToken();
+        TEST_VERIFY(token.GetType() == Token::FLOAT);
+        TEST_VERIFY(FLOAT_EQUAL(token.GetFloat(), 11111.0f));
+
+        token = tokenizer.ReadToken();
+        TEST_VERIFY(token.GetType() == Token::END);
+    }
+
+    // FormulaTokenizer::ReadToken
+    DAVA_TEST (ReadBooleans)
+    {
+        FormulaTokenizer tokenizer("true false");
+
+        Token token;
+
+        token = tokenizer.ReadToken();
+        TEST_VERIFY(token.GetType() == Token::BOOLEAN);
+        TEST_VERIFY(token.GetBool() == true);
+
+        token = tokenizer.ReadToken();
+        TEST_VERIFY(token.GetType() == Token::BOOLEAN);
+        TEST_VERIFY(token.GetBool() == false);
+
+        token = tokenizer.ReadToken();
+        TEST_VERIFY(token.GetType() == Token::END);
+    }
+
+    // FormulaTokenizer::ReadToken
+    DAVA_TEST (ReadInts)
+    {
+        FormulaTokenizer tokenizer("5 -50 0 100 -0");
+
+        Token token;
+
+        token = tokenizer.ReadToken();
+        TEST_VERIFY(token.GetType() == Token::INT);
+        TEST_VERIFY(token.GetInt() == 5);
+
+        token = tokenizer.ReadToken();
+        TEST_VERIFY(token.GetType() == Token::INT);
+        TEST_VERIFY(token.GetInt() == -50);
+
+        token = tokenizer.ReadToken();
+        TEST_VERIFY(token.GetType() == Token::INT);
+        TEST_VERIFY(token.GetInt() == 0);
+
+        token = tokenizer.ReadToken();
+        TEST_VERIFY(token.GetType() == Token::INT);
+        TEST_VERIFY(token.GetInt() == 100);
+
+        token = tokenizer.ReadToken();
+        TEST_VERIFY(token.GetType() == Token::INT);
+        TEST_VERIFY(token.GetInt() == 0);
+
+        token = tokenizer.ReadToken();
+        TEST_VERIFY(token.GetType() == Token::END);
+    }
+
+    // FormulaTokenizer::ReadToken
+    DAVA_TEST (ReadOperatorTokens)
+    {
+        FormulaTokenizer tokenizer(", . + - * / % && || ! <= < >= > = == !=");
+
+        Token token;
+
+        token = tokenizer.ReadToken();
+        TEST_VERIFY(token.GetType() == Token::COMMA);
+
+        token = tokenizer.ReadToken();
+        TEST_VERIFY(token.GetType() == Token::DOT);
+
+        token = tokenizer.ReadToken();
+        TEST_VERIFY(token.GetType() == Token::PLUS);
+
+        token = tokenizer.ReadToken();
+        TEST_VERIFY(token.GetType() == Token::MINUS);
+
+        token = tokenizer.ReadToken();
+        TEST_VERIFY(token.GetType() == Token::MUL);
+
+        token = tokenizer.ReadToken();
+        TEST_VERIFY(token.GetType() == Token::DIV);
+
+        token = tokenizer.ReadToken();
+        TEST_VERIFY(token.GetType() == Token::MOD);
+
+        token = tokenizer.ReadToken();
+        TEST_VERIFY(token.GetType() == Token::AND);
+
+        token = tokenizer.ReadToken();
+        TEST_VERIFY(token.GetType() == Token::OR);
+
+        token = tokenizer.ReadToken();
+        TEST_VERIFY(token.GetType() == Token::NOT);
+
+        token = tokenizer.ReadToken();
+        TEST_VERIFY(token.GetType() == Token::LE);
+
+        token = tokenizer.ReadToken();
+        TEST_VERIFY(token.GetType() == Token::LT);
+
+        token = tokenizer.ReadToken();
+        TEST_VERIFY(token.GetType() == Token::GE);
+
+        token = tokenizer.ReadToken();
+        TEST_VERIFY(token.GetType() == Token::GT);
+
+        token = tokenizer.ReadToken();
+        TEST_VERIFY(token.GetType() == Token::ASSIGN_SIGN);
+
+        token = tokenizer.ReadToken();
+        TEST_VERIFY(token.GetType() == Token::EQ);
+
+        token = tokenizer.ReadToken();
+        TEST_VERIFY(token.GetType() == Token::NOT_EQ);
+
+        token = tokenizer.ReadToken();
+        TEST_VERIFY(token.GetType() == Token::END);
+    }
+
+    // FormulaTokenizer::ReadToken
+    DAVA_TEST (ReadBracketTokens)
+    {
+        FormulaTokenizer tokenizer("() {} []");
+
+        Token token;
+
+        token = tokenizer.ReadToken();
+        TEST_VERIFY(token.GetType() == Token::OPEN_BRACKET);
+
+        token = tokenizer.ReadToken();
+        TEST_VERIFY(token.GetType() == Token::CLOSE_BRACKET);
+
+        token = tokenizer.ReadToken();
+        TEST_VERIFY(token.GetType() == Token::OPEN_CURLY_BRACKET);
+
+        token = tokenizer.ReadToken();
+        TEST_VERIFY(token.GetType() == Token::CLOSE_CURLY_BRACKET);
+
+        token = tokenizer.ReadToken();
+        TEST_VERIFY(token.GetType() == Token::OPEN_SQUARE_BRACKET);
+
+        token = tokenizer.ReadToken();
+        TEST_VERIFY(token.GetType() == Token::CLOSE_SQUARE_BRACKET);
+
+        token = tokenizer.ReadToken();
+        TEST_VERIFY(token.GetType() == Token::END);
+    }
+
+    // FormulaTokenizer::ReadToken
+    DAVA_TEST (ReadTokensWithErrors)
+    {
+        bool wasException = false;
+        try
+        {
+            FormulaTokenizer("&").ReadToken();
+        }
+        catch (const FormulaError& error)
+        {
+            wasException = true;
+        }
+        TEST_VERIFY(wasException == true);
+
+        wasException = false;
+        try
+        {
+            FormulaTokenizer("|").ReadToken();
+        }
+        catch (const FormulaError& error)
+        {
+            wasException = true;
+        }
+        TEST_VERIFY(wasException == true);
+
+        wasException = false;
+        try
+        {
+            FormulaTokenizer("@").ReadToken();
+        }
+        catch (const FormulaError& error)
+        {
+            wasException = true;
+        }
+        TEST_VERIFY(wasException == true);
+
+        wasException = false;
+        try
+        {
+            FormulaTokenizer("@").ReadToken();
+        }
+        catch (const FormulaError& error)
+        {
+            wasException = true;
+        }
+        TEST_VERIFY(wasException == false);
+
+        wasException = false;
+        try
+        {
+            FormulaTokenizer("\"sadfds ").ReadToken();
+        }
+        catch (const FormulaError& error)
+        {
+            wasException = true;
+        }
+        TEST_VERIFY(wasException == false);
+    }
+};

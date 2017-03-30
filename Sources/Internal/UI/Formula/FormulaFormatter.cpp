@@ -27,35 +27,35 @@ String FormulaFormatter::AnyToString(const Any& val)
 {
     if (val.CanGet<int32>())
     {
-        return Format("%d", val.Get<int32>());
+        return DAVA::Format("%d", val.Get<int32>());
     }
     else if (val.CanGet<uint64>())
     {
-        return Format("%ld", val.Get<uint64>());
+        return DAVA::Format("%ld", val.Get<uint64>());
     }
     else if (val.CanGet<int64>())
     {
-        return Format("%ldL", val.Get<int64>());
+        return DAVA::Format("%ldL", val.Get<int64>());
     }
     else if (val.CanGet<uint16>())
     {
-        return Format("%d", val.Get<int16>());
+        return DAVA::Format("%d", val.Get<int16>());
     }
     else if (val.CanGet<int16>())
     {
-        return Format("%d", val.Get<int16>());
+        return DAVA::Format("%d", val.Get<int16>());
     }
     else if (val.CanGet<uint8>())
     {
-        return Format("%d", val.Get<uint8>());
+        return DAVA::Format("%d", val.Get<uint8>());
     }
     else if (val.CanGet<int8>())
     {
-        return Format("%d", val.Get<int8>());
+        return DAVA::Format("%d", val.Get<int8>());
     }
-    else if (val.CanGet<float>())
+    else if (val.CanGet<float32>())
     {
-        return Format("%f", val.Get<float>());
+        return DAVA::Format("%f", val.Get<float32>());
     }
     else if (val.CanGet<String>())
     {

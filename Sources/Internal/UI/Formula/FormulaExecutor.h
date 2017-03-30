@@ -12,7 +12,8 @@ public:
     FormulaExecutor(FormulaContext* context);
     ~FormulaExecutor() override;
 
-    Any Execute(FormulaExpression* exp);
+    Any Calculate(FormulaExpression* exp);
+    Reflection GetDataReference(FormulaExpression* exp);
 
 private:
     void Visit(FormulaValueExpression* exp) override;
@@ -23,15 +24,15 @@ private:
     void Visit(FormulaFieldAccessExpression* exp) override;
     void Visit(FormulaIndexExpression* exp) override;
 
-    const Any& Calculate(FormulaExpression* exp);
-    const Reflection& GetData(FormulaExpression* exp);
+    const Any& CalculateImpl(FormulaExpression* exp);
+    const Reflection& GetDataReferenceImpl(FormulaExpression* exp);
 
     template <typename T>
     Any CalculateNumberValues(FormulaBinaryOperatorExpression::Operator op, T lVal, T rVal) const;
 
     FormulaContext* context = nullptr;
-    Any res;
-    Reflection data;
+    Any calculationResult;
+    Reflection dataReference;
     Vector<void*> dependencies;
 };
 }

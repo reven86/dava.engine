@@ -78,6 +78,8 @@ public:
 
     Token ReadToken();
     const String& GetString() const;
+    String GetTokenStringValue(const Token& token);
+
     int32 GetLineNumber() const;
     int32 GetPositionInLine() const;
 

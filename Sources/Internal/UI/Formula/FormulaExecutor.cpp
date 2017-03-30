@@ -2,6 +2,7 @@
 
 #include "UI/Formula/FormulaContext.h"
 #include "UI/Formula/FormulaError.h"
+#include "UI/Formula/FormulaFormatter.h"
 #include "Utils/StringFormat.h"
 
 namespace DAVA
@@ -15,47 +16,51 @@ FormulaExecutor::~FormulaExecutor()
 {
 }
 
-Any FormulaExecutor::Execute(FormulaExpression* exp)
+Any FormulaExecutor::Calculate(FormulaExpression* exp)
 {
-    exp->Accept(this);
+    return CalculateImpl(exp);
+}
 
-    return res;
+Reflection FormulaExecutor::GetDataReference(FormulaExpression* exp)
+{
+    return GetDataReferenceImpl(exp);
 }
 
 void FormulaExecutor::Visit(FormulaValueExpression* exp)
 {
-    res = exp->GetValue();
+    calculationResult = exp->GetValue();
 
-    if (res.CanGet<std::shared_ptr<FormulaDataMap>>())
+    if (calculationResult.CanGet<std::shared_ptr<FormulaDataMap>>())
     {
-        std::shared_ptr<FormulaDataMap> ptr = res.Get<std::shared_ptr<FormulaDataMap>>();
-        data = Reflection::Create(ReflectedObject(ptr.get()));
+        std::shared_ptr<FormulaDataMap> ptr = calculationResult.Get<std::shared_ptr<FormulaDataMap>>();
+        dataReference = Reflection::Create(ReflectedObject(ptr.get()));
     }
-    else if (res.CanGet<std::shared_ptr<FormulaDataVector>>())
+    else if (calculationResult.CanGet<std::shared_ptr<FormulaDataVector>>())
     {
-        std::shared_ptr<FormulaDataVector> ptr = res.Get<std::shared_ptr<FormulaDataVector>>();
-        data = Reflection::Create(ReflectedObject(ptr.get()));
+        std::shared_ptr<FormulaDataVector> ptr = calculationResult.Get<std::shared_ptr<FormulaDataVector>>();
+        dataReference = Reflection::Create(ReflectedObject(ptr.get()));
     }
     else
     {
-        data = Reflection();
+        dataReference = Reflection();
     }
 }
 
 void FormulaExecutor::Visit(FormulaNegExpression* exp)
 {
-    Any val = Calculate(exp->GetExp());
-    if (res.CanGet<float32>())
+    const Any& val = CalculateImpl(exp->GetExp());
+
+    if (val.CanGet<float32>())
     {
-        res = Any(-val.Get<float32>());
+        calculationResult = Any(-val.Get<float32>());
     }
     else if (val.CanCast<int32>())
     {
-        res = Any(-val.Cast<int32>());
+        calculationResult = Any(-val.Cast<int32>());
     }
     else
     {
-        throw FormulaCalculationError("");
+        throw FormulaCalculationError("Invalid argument type to unary expression");
     }
 }
 
@@ -64,45 +69,45 @@ void FormulaExecutor::Visit(FormulaNotExpression* exp)
     Any val = Calculate(exp->GetExp());
     if (val.CanGet<bool>())
     {
-        res = Any(!val.Get<bool>());
+        calculationResult = Any(!val.Get<bool>());
     }
     else
     {
-        throw FormulaCalculationError("");
+        throw FormulaCalculationError("Invalid argument type to unary expression");
     }
 }
 
 void FormulaExecutor::Visit(FormulaBinaryOperatorExpression* exp)
 {
-    Any l = Calculate(exp->GetLhs());
-    Any r = Calculate(exp->GetRhs());
+    Any l = CalculateImpl(exp->GetLhs());
+    Any r = CalculateImpl(exp->GetRhs());
 
-    bool isLhsInt = l.CanGet<int>();
-    bool isRhsInt = r.CanGet<int>();
+    bool isLhsInt = l.CanGet<int32>();
+    bool isRhsInt = r.CanGet<int32>();
 
     if (isLhsInt && isRhsInt)
     {
-        int lVal = l.Get<int>();
-        int rVal = r.Get<int>();
+        int32 lVal = l.Get<int32>();
+        int32 rVal = r.Get<int32>();
 
         if (exp->GetOperator() == FormulaBinaryOperatorExpression::OP_MOD)
         {
-            res = Any(lVal % rVal);
+            calculationResult = Any(lVal % rVal);
         }
         else
         {
-            res = CalculateNumberValues(exp->GetOperator(), lVal, rVal);
+            calculationResult = CalculateNumberValues(exp->GetOperator(), lVal, rVal);
         }
     }
     else
     {
-        bool isLhsFloat = l.CanGet<float>();
-        bool isRhsFloat = r.CanGet<float>();
+        bool isLhsFloat = l.CanGet<float32>();
+        bool isRhsFloat = r.CanGet<float32>();
         if ((isLhsFloat || isLhsInt) && (isRhsFloat || isRhsInt))
         {
-            float lVal = isLhsFloat ? l.Get<float>() : l.Get<int>();
-            float rVal = isRhsFloat ? r.Get<float>() : r.Get<int>();
-            res = CalculateNumberValues(exp->GetOperator(), lVal, rVal);
+            float32 lVal = isLhsFloat ? l.Get<float32>() : l.Get<int32>();
+            float32 rVal = isRhsFloat ? r.Get<float32>() : r.Get<int32>();
+            calculationResult = CalculateNumberValues(exp->GetOperator(), lVal, rVal);
         }
         else if (l.CanGet<bool>() && r.CanGet<bool>())
         {
@@ -111,19 +116,19 @@ void FormulaExecutor::Visit(FormulaBinaryOperatorExpression* exp)
             switch (exp->GetOperator())
             {
             case FormulaBinaryOperatorExpression::OP_AND:
-                res = Any(lVal && rVal);
+                calculationResult = Any(lVal && rVal);
                 break;
 
             case FormulaBinaryOperatorExpression::OP_OR:
-                res = Any(lVal || rVal);
+                calculationResult = Any(lVal || rVal);
                 break;
 
             case FormulaBinaryOperatorExpression::OP_EQ:
-                res = Any(lVal == rVal);
+                calculationResult = Any(lVal == rVal);
                 break;
 
             case FormulaBinaryOperatorExpression::OP_NOT_EQ:
-                res = Any(lVal != rVal);
+                calculationResult = Any(lVal != rVal);
                 break;
 
             default:
@@ -137,15 +142,15 @@ void FormulaExecutor::Visit(FormulaBinaryOperatorExpression* exp)
             switch (exp->GetOperator())
             {
             case FormulaBinaryOperatorExpression::OP_PLUS:
-                res = Any(lVal + rVal);
+                calculationResult = Any(lVal + rVal);
                 break;
 
             case FormulaBinaryOperatorExpression::OP_EQ:
-                res = Any(lVal == rVal);
+                calculationResult = Any(lVal == rVal);
                 break;
 
             case FormulaBinaryOperatorExpression::OP_NOT_EQ:
-                res = Any(lVal != rVal);
+                calculationResult = Any(lVal != rVal);
                 break;
 
             default:
@@ -168,7 +173,7 @@ void FormulaExecutor::Visit(FormulaFunctionExpression* exp)
 
     for (const std::shared_ptr<FormulaExpression>& exp : params)
     {
-        Any res = Calculate(exp.get());
+        Any res = CalculateImpl(exp.get());
         if (res.IsEmpty())
         {
             throw FormulaCalculationError("Can't execute function ");
@@ -180,14 +185,15 @@ void FormulaExecutor::Visit(FormulaFunctionExpression* exp)
     const AnyFn* fn = context->FindFunction(exp->GetName(), types);
     if (fn != nullptr)
     {
-        throw FormulaCalculationError(Format("Function '%s' not found.", exp->GetName().c_str()));
+        throw FormulaCalculationError(Format("Can't resolve function '%s'", exp->GetName().c_str()));
     }
+
     int32 index = 0;
     for (Any& v : values)
     {
-        if (v.GetType() == Type::Instance<int>() && fn->GetInvokeParams().argsType[index] == Type::Instance<float>())
+        if (v.GetType() == Type::Instance<int32>() && fn->GetInvokeParams().argsType[index] == Type::Instance<float32>())
         {
-            v = Any(static_cast<float>(v.Get<int>()));
+            v = Any(static_cast<float32>(v.Get<int32>()));
         }
 
         index++;
@@ -196,27 +202,27 @@ void FormulaExecutor::Visit(FormulaFunctionExpression* exp)
     switch (params.size())
     {
     case 0:
-        res = fn->Invoke();
+        calculationResult = fn->Invoke();
         break;
 
     case 1:
-        res = fn->Invoke(values[0]);
+        calculationResult = fn->Invoke(values[0]);
         break;
 
     case 2:
-        res = fn->Invoke(values[0], values[1]);
+        calculationResult = fn->Invoke(values[0], values[1]);
         break;
 
     case 3:
-        res = fn->Invoke(values[0], values[1], values[2]);
+        calculationResult = fn->Invoke(values[0], values[1], values[2]);
         break;
 
     case 4:
-        res = fn->Invoke(values[0], values[1], values[2], values[3]);
+        calculationResult = fn->Invoke(values[0], values[1], values[2], values[3]);
         break;
 
     case 5:
-        res = fn->Invoke(values[0], values[1], values[2], values[3], values[4]);
+        calculationResult = fn->Invoke(values[0], values[1], values[2], values[3], values[4]);
         break;
 
     default:
@@ -229,20 +235,28 @@ void FormulaExecutor::Visit(FormulaFieldAccessExpression* exp)
     Reflection res;
     if (exp->GetExp())
     {
-        Reflection d = GetData(exp->GetExp());
-        if (d.IsValid())
+        Reflection data = GetDataReference(exp->GetExp());
+        if (data.IsValid())
         {
-            data = data.GetField(exp->GetFieldName());
-            dependencies.push_back(data.GetValueObject().GetVoidPtr());
+            dataReference = data.GetField(exp->GetFieldName());
         }
         else
         {
-            data = Reflection();
+            dataReference = Reflection();
         }
     }
     else
     {
-        data = context->FindReflection(exp->GetFieldName());
+        dataReference = context->FindReflection(exp->GetFieldName());
+    }
+
+    if (dataReference.IsValid())
+    {
+        dependencies.push_back(dataReference.GetValueObject().GetVoidPtr());
+    }
+    else
+    {
+        throw FormulaCalculationError(Format("Can't resolve symbol %s", exp->GetFieldName().c_str()));
     }
 }
 
@@ -257,51 +271,63 @@ void FormulaExecutor::Visit(FormulaIndexExpression* exp)
     }
     else
     {
-        throw FormulaCalculationError("Type of index expression must be int");
+        throw FormulaCalculationError(Format("Type of index expression (%s) must be int", FormulaFormatter().Format(exp->GetIndexExp()).c_str()));
     }
 
-    Reflection d = GetData(exp->GetExp());
-
-    if (d.IsValid())
-    {
-        data = d.GetField(index);
-        dependencies.push_back(data.GetValueObject().GetVoidPtr());
-    }
-    else
-    {
-        data = Reflection();
-    }
-}
-
-const Any& FormulaExecutor::Calculate(FormulaExpression* exp)
-{
-    res = Any();
-    data = Reflection();
-
-    exp->Accept(this);
+    Reflection data = GetDataReference(exp->GetExp());
 
     if (data.IsValid())
     {
-        res = data.GetValue();
-    }
-
-    return res;
-}
-
-const Reflection& FormulaExecutor::GetData(FormulaExpression* exp)
-{
-    res = Any();
-    data = Reflection();
-
-    exp->Accept(this);
-
-    if (data.IsValid())
-    {
-        return data;
+        dataReference = data.GetField(index);
     }
     else
     {
-        throw FormulaCalculationError("Type of index expression must be int");
+        throw FormulaCalculationError(Format("It's not data access expression (%s)", FormulaFormatter().Format(exp).c_str()));
+    }
+
+    if (dataReference.IsValid())
+    {
+        dependencies.push_back(dataReference.GetValueObject().GetVoidPtr());
+    }
+    else
+    {
+        throw FormulaCalculationError(Format("Can't get data by index (%s)", FormulaFormatter().Format(exp).c_str()));
+    }
+}
+
+const Any& FormulaExecutor::CalculateImpl(FormulaExpression* exp)
+{
+    exp->Accept(this);
+
+    if (calculationResult.IsEmpty())
+    {
+        if (dataReference.IsValid())
+        {
+            calculationResult = dataReference.GetValue();
+        }
+        else
+        {
+            throw FormulaCalculationError("Can't calculate expression");
+        }
+    }
+
+    dataReference = Reflection();
+
+    return calculationResult;
+}
+
+const Reflection& FormulaExecutor::GetDataReferenceImpl(FormulaExpression* exp)
+{
+    exp->Accept(this);
+
+    if (dataReference.IsValid())
+    {
+        calculationResult.Clear();
+        return dataReference;
+    }
+    else
+    {
+        throw FormulaCalculationError("Can't get data reference.");
     }
 }
 

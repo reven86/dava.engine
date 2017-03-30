@@ -1,6 +1,7 @@
 #include "DAVAEngine.h"
 
-#include "UI/UIControlPackageContext.h"
+#include "UI/Formula/FormulaParser.h"
+
 #include "UnitTests/UnitTests.h"
 
 using namespace DAVA;
@@ -17,11 +18,13 @@ DAVA_TESTCLASS (FormulaParserTest)
     {
 
     }
-    
-    // FormulaParser::ParseExpression
-    DAVA_TEST (ParseLiteral)
+
+    // FormulaTokenizer::ReadToken
+    DAVA_TEST (Read)
     {
+        FormulaParser parser("5 + 5");
+
+        std::shared_ptr<FormulaExpression> exp = parser.ParseExpression();
     }
     
-
 };
