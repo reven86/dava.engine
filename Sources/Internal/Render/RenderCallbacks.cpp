@@ -14,7 +14,6 @@ struct SyncCallback
 };
 
 Vector<SyncCallback> syncCallbacks;
-TokenProvider<rhi::HSyncObject> syncCallbackTokenProvider;
 }
 
 namespace RenderCallbacks
@@ -43,7 +42,7 @@ Token RegisterSyncCallback(rhi::HSyncObject syncObject, Function<void(rhi::HSync
 {
     using namespace RenderCallbacksDetails;
 
-    Token token = syncCallbackTokenProvider.Generate();
+    Token token = TokenProvider<rhi::HSyncObject>::Generate();
     syncCallbacks.push_back({ syncObject, token, callback });
 
     return token;
@@ -53,16 +52,13 @@ void UnRegisterSyncCallback(Token token)
 {
     using namespace RenderCallbacksDetails;
 
-    for (size_t i = 0, sz = syncCallbacks.size(); i < sz;)
+    DVASSERT(token.IsValid());
+    for (size_t i = 0, sz = syncCallbacks.size(); i < sz; ++i)
     {
         if (syncCallbacks[i].callbackToken == token)
         {
             RemoveExchangingWithLast(syncCallbacks, i);
-            --sz;
-        }
-        else
-        {
-            ++i;
+            break;
         }
     }
 }
