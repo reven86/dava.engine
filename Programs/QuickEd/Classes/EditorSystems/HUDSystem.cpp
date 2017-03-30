@@ -25,7 +25,8 @@ const Array<HUDAreaInfo::eArea, 2> AreasToHide = { { HUDAreaInfo::PIVOT_POINT_AR
 
 REGISTER_PREFERENCES_ON_START(HUDSystem,
                               PREF_ARG("showPivot", false),
-                              PREF_ARG("showRotate", false)
+                              PREF_ARG("showRotate", false),
+                              PREF_ARG("minimumSelectionRectSize", Vector2(5.0f, 5.0f))
                               )
 
 RefPtr<ControlContainer> CreateControlContainer(HUDAreaInfo::eArea area)
@@ -463,10 +464,19 @@ bool HUDSystem::CanProcessInput(DAVA::UIEvent* currentInput) const
 EditorSystemsManager::eDragState HUDSystem::RequireNewState(DAVA::UIEvent* currentInput)
 {
     EditorSystemsManager::eDragState dragState = systemsManager->GetDragState();
-    if (currentInput->device == eInputDevices::MOUSE && currentInput->phase == UIEvent::Phase::DRAG
-        && dragState != EditorSystemsManager::Transform && dragState != EditorSystemsManager::DragScreen)
+    if (currentInput->device != eInputDevices::MOUSE || dragState == EditorSystemsManager::Transform || dragState == EditorSystemsManager::DragScreen)
     {
-        EditorSystemsManager::eDragState dragState = systemsManager->GetDragState();
+        return EditorSystemsManager::NoDrag;
+    }
+
+    Vector2 point = currentInput->point;
+    if (currentInput->phase == UIEvent::Phase::BEGAN
+        && dragState != EditorSystemsManager::SelectByRect)
+    {
+        pressedPoint = point;
+    }
+    if (currentInput->phase == UIEvent::Phase::DRAG)
+    {
         //if we in selectByRect and still drag mouse - continue this state
         if (dragState == EditorSystemsManager::SelectByRect)
         {
@@ -474,7 +484,6 @@ EditorSystemsManager::eDragState HUDSystem::RequireNewState(DAVA::UIEvent* curre
         }
         //check that we can draw rect
         Vector<ControlNode*> nodesUnderPoint;
-        Vector2 point = currentInput->point;
         auto predicate = [point](const ControlNode* node) -> bool {
             const auto visibleProp = node->GetRootProperty()->GetVisibleProperty();
             DVASSERT(node->GetControl() != nullptr);
@@ -482,16 +491,16 @@ EditorSystemsManager::eDragState HUDSystem::RequireNewState(DAVA::UIEvent* curre
         };
         systemsManager->CollectControlNodes(std::back_inserter(nodesUnderPoint), predicate);
         bool noHudableControls = nodesUnderPoint.empty() || (nodesUnderPoint.size() == 1 && nodesUnderPoint.front()->GetParent()->GetControl() == nullptr);
-        bool noHudUnderCursor = (systemsManager->GetCurrentHUDArea().area == HUDAreaInfo::NO_AREA);
-        bool hotKeyDetected = IsKeyPressed(KeyboardProxy::KEY_CTRL);
 
-        if ((hotKeyDetected || noHudableControls) && noHudUnderCursor)
+        if (noHudableControls)
         {
-            if (systemsManager->GetDragState() != EditorSystemsManager::SelectByRect)
+            //distinguish between mouse click and mouse drag sometimes is less than few pixels
+            //so lets select by rect only if we sure that is not mouse click
+            Vector2 rectSize(pressedPoint - point);
+            if (fabs(rectSize.dx) >= minimumSelectionRectSize.dx || fabs(rectSize.dy) >= minimumSelectionRectSize.dy)
             {
-                pressedPoint = point;
+                return EditorSystemsManager::SelectByRect;
             }
-            return EditorSystemsManager::SelectByRect;
         }
     }
     return EditorSystemsManager::NoDrag;
