@@ -414,7 +414,7 @@ void PackageSerializer::VisitStyleSheetProperty(StyleSheetProperty* property)
         PutValue("transitionTime", Format("%f", property->GetTransitionTime()), false);
 
         const EnumMap* enumMap = GlobalEnumMap<Interpolation::FuncType>::Instance();
-        PutValue("transitionFunction", enumMap->ToString(property->GetTransitionFunction()));
+        PutValue("transitionFunction", enumMap->ToString(property->GetTransitionFunction()), true);
         EndMap();
     }
     else
