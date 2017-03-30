@@ -29,7 +29,7 @@ const Color ChartPainterSystem::gridColor(0.4f, 0.4f, 0.4f, 0.4f);
 const float32 ChartPainterSystem::chartLen = 0.8f;
 const float32 ChartPainterSystem::minFrametime = 1.0f / 60.0f;
 const float32 ChartPainterSystem::overdrawStep = 100.0f;
-const float32 ChartPainterSystem::frametimeStep = 0.016f;
+const float32 ChartPainterSystem::frametimeStep = 0.008f;
 
 const DAVA::uint32 modsCount = 6;
 
