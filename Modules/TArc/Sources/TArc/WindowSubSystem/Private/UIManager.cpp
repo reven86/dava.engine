@@ -2,6 +2,7 @@
 
 #include "TArc/WindowSubSystem/ActionUtils.h"
 #include "TArc/WindowSubSystem/Private/WaitDialog.h"
+#include "TArc/WindowSubSystem/Private/NotificationLayout.h"
 #include "TArc/DataProcessing/PropertiesHolder.h"
 
 #include <Base/BaseTypes.h>
@@ -62,6 +63,13 @@ static Vector<std::pair<QMessageBox::Icon, ModalMessageParams::Icon>> iconsConve
   std::make_pair(QMessageBox::Warning, ModalMessageParams::Warning),
   std::make_pair(QMessageBox::Critical, ModalMessageParams::Critical),
   std::make_pair(QMessageBox::Question, ModalMessageParams::Question),
+};
+
+static Vector<std::pair<QMessageBox::Icon, Result::ResultType>> notificationIconsConvertor =
+{
+  std::make_pair(QMessageBox::Information, Result::RESULT_SUCCESS),
+  std::make_pair(QMessageBox::Warning, Result::RESULT_WARNING),
+  std::make_pair(QMessageBox::Critical, Result::RESULT_ERROR)
 };
 
 QMessageBox::StandardButton Convert(const ModalMessageParams::Button& button)
@@ -126,6 +134,17 @@ ModalMessageParams::Icon Convert(const QMessageBox::Icon& icon)
                              });
     DVASSERT(iter != iconsConvertor.end());
     return iter->second;
+}
+
+QMessageBox::Icon Convert(const Result::ResultType& type)
+{
+    using IconNode = std::pair<QMessageBox::Icon, Result::ResultType>;
+    auto iter = std::find_if(notificationIconsConvertor.begin(), notificationIconsConvertor.end(), [type](const IconNode& node)
+                             {
+                                 return node.second == type;
+                             });
+    DVASSERT(iter != notificationIconsConvertor.end());
+    return iter->first;
 }
 
 struct StatusBarWidget
@@ -452,6 +471,7 @@ struct UIManager::Impl : public QObject
     bool initializationFinished = false;
     Set<WaitHandle*> activeWaitDialogues;
     ClientModule* currentModule = nullptr;
+    NotificationLayout notifictaionLayout;
 
     struct ModuleResources
     {
@@ -817,6 +837,16 @@ ModalMessageParams::Button UIManager::ShowModalMessage(const WindowKey& windowKe
 
 void UIManager::ShowNotification(const WindowKey& windowKey, const NotificationParams& params)
 {
+    using namespace UIManagerDetail;
+    NotificationWidgetParams widgetParams;
+    widgetParams.text = QString::fromStdString(params.message.message);
+    widgetParams.title = QString::fromStdString(params.title);
+    widgetParams.icon = Convert(params.message.type);
+    widgetParams.callBack = params.callback;
+    widgetParams.showTimeMs = static_cast<int>(params.showTimeMs);
+
+    MainWindowInfo& windowInfo = impl->FindOrCreateWindow(windowKey);
+    impl->notifictaionLayout.AddNotificationWidget(windowInfo.window, widgetParams);
 }
 
 void UIManager::InjectWindow(const WindowKey& windowKey, QMainWindow* window)

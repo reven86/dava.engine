@@ -32,6 +32,7 @@ public:
 
     bool operator==(const WindowKey& other) const;
     bool operator!=(const WindowKey& other) const;
+    bool operator<(const WindowKey& other) const;
 
 private:
     FastName appID;
@@ -169,10 +170,12 @@ Q_DECLARE_OPERATORS_FOR_FLAGS(ModalMessageParams::Buttons);
 
 struct NotificationParams
 {
-    DAVA::String title;
     DAVA::Result message;
+    DAVA::String title;
     DAVA::Function<void()> callback;
-    DAVA::uint32 showTimeMs = std::numeric_limits<DAVA::uint32>::max();
+
+    static const DAVA::uint32 defaultShowTimeMs = 60000;
+    DAVA::uint32 showTimeMs = defaultShowTimeMs;
 };
 
 class UI

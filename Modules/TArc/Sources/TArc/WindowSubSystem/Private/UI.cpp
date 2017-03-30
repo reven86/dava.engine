@@ -29,6 +29,11 @@ bool WindowKey::operator!=(const WindowKey& other) const
     return !(*this == other);
 }
 
+bool WindowKey::operator<(const WindowKey& other) const
+{
+    return appID < other.appID;
+}
+
 DockPanelInfo::DockPanelInfo()
     : actionPlacementInfo(CreateMenuPoint(QList<QString>() << "View"
                                                            << "Dock"))
