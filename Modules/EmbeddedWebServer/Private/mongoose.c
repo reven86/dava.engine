@@ -5352,9 +5352,13 @@ void mg_stop(struct mg_context *ctx) {
 
   unsigned int count = 0;
   // Wait until mg_fini() stops
-  while (ctx->stop_flag != 2 || count < 200) {
+  while (ctx->stop_flag != 2) {
     (void) mg_sleep(10);
 	++count;
+	if (count > 200)
+	{
+		break;
+	}
   }
   free_context(ctx);
 
