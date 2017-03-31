@@ -272,6 +272,9 @@ bool SceneCameraSystem::Input(DAVA::UIEvent* event)
     case DAVA::UIEvent::Phase::WHEEL:
         OnWheelInput(event);
         break;
+    case DAVA::UIEvent::Phase::GESTURE:
+        OnNativeGesture(event);
+        break;
     default:
         break;
     }
@@ -287,6 +290,30 @@ void SceneCameraSystem::OnWheelInput(DAVA::UIEvent* event)
     DAVA::int32 reverse = SettingsManager::GetValue(Settings::General_Mouse_InvertWheel).AsBool() ? -1 : 1;
     DAVA::float32 moveIntence = SettingsManager::GetValue(Settings::General_Mouse_WheelMoveIntensity).AsFloat();
     int offset = event->wheelDelta.y * moveIntence;
+#ifdef Q_OS_MAC
+    offset *= reverse * -1;
+#else
+    offset *= reverse;
+#endif
+
+    MoveToStep(offset);
+}
+
+//right now we have the same behavior for mouse wheel and for swipe
+//later requirements will be changed, so i made gestures processing in a separate method
+void SceneCameraSystem::OnNativeGesture(DAVA::UIEvent* event)
+{
+    bool moveCamera = SettingsManager::GetValue(Settings::General_Mouse_WheelMoveCamera).AsBool();
+    if (!moveCamera)
+        return;
+    const UIEvent::Gesture& gesture = event->gesture;
+    if (gesture.dy == 0.0f)
+    {
+        return;
+    }
+    DAVA::int32 reverse = SettingsManager::GetValue(Settings::General_Mouse_InvertWheel).AsBool() ? -1 : 1;
+    DAVA::float32 moveIntence = SettingsManager::GetValue(Settings::General_Mouse_WheelMoveIntensity).AsFloat();
+    int offset = gesture.dy * moveIntence;
 #ifdef Q_OS_MAC
     offset *= reverse * -1;
 #else
