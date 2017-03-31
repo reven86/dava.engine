@@ -91,10 +91,7 @@ void UIUpdateSystem::OnControlInvisible(UIControl* control)
 
 void UIUpdateSystem::Process(float32 elapsedTime)
 {
-    if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_UI_CONTROL_SYSTEM))
-    {
-        return;
-    }
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::UI_UPDATE_SYSTEM);
 
     for (UpdateBind& b : binds)
     {

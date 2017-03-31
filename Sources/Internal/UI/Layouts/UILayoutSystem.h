@@ -19,7 +19,8 @@ public:
     UILayoutSystem();
     ~UILayoutSystem() override;
 
-    void Process(DAVA::float32 elapsedTime) override;
+    void Process(float32 elapsedTime) override;
+    void ManualProcess(float32 elapsedTime, UIControl* control) override;
 
     void SetCurrentScreen(const RefPtr<UIScreen>& screen);
     void SetCurrentScreenTransition(const RefPtr<UIScreenTransition>& screenTransition);
@@ -31,12 +32,10 @@ public:
     bool IsAutoupdatesEnabled() const;
     void SetAutoupdatesEnabled(bool enabled);
 
-    void ProcessControl(UIControl* control);
-    void ManualApplyLayout(UIControl* control);
-
-    void Update(UIControl* root);
     void SetDirty();
     void CheckDirty();
+
+    void ManualApplyLayout(UIControl* control); //DON'T USE IT!
 
 private:
     void ApplyLayout(UIControl* control);
@@ -56,7 +55,8 @@ private:
     void ApplySizesAndPositions();
     void ApplyPositions();
 
-    void UpdateControl(UIControl* control);
+    void ProcessControlHierarhy(UIControl* control);
+    void ProcessControl(UIControl* control);
 
     bool isRtl = false;
     bool autoupdatesEnabled = true;

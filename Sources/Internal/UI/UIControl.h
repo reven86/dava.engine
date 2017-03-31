@@ -70,6 +70,7 @@ class UIControl : public AnimatedObject
 
     // Need for isIteratorCorrupted. See UILayoutSystem::UpdateControl.
     friend class UILayoutSystem;
+    friend class UIRenderSystem;
 
 public:
     /**
@@ -791,6 +792,7 @@ public:
      \param[in] hierarchic Is value need to be changed in all coltrol children.
      */
     void SetDrawPivotPointMode(eDebugDrawPivotMode mode, bool hierarchic = false);
+    eDebugDrawPivotMode GetDrawPivotPointMode() const;
 
 public:
     /**
@@ -801,7 +803,7 @@ public:
         Can be overriden to adjust draw hierarchy.
      \param[in] geometricData Parent geometric data.
      */
-    virtual void SystemDraw(const UIGeometricData& geometricData, const DAVA::UIControlBackground* parentBackground); // Internal method used by ControlSystem
+    //virtual void SystemDraw(const UIGeometricData& geometricData, const DAVA::UIControlBackground* parentBackground); // Internal method used by ControlSystem
 
     /**
      \brief set parent draw color into control
@@ -1038,9 +1040,6 @@ protected:
     void RegisterInputProcessors(int32 processorsCount);
     void UnregisterInputProcessor();
     void UnregisterInputProcessors(int32 processorsCount);
-
-    void DrawDebugRect(const UIGeometricData& geometricData, bool useAlpha = false);
-    void DrawPivotPoint(const Rect& drawRect);
 
 private:
     int32 tag = 0;

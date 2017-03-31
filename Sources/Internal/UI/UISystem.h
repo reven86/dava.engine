@@ -20,6 +20,7 @@ public:
     virtual void OnControlVisible(UIControl* control){};
     virtual void OnControlInvisible(UIControl* control){};
 
-    virtual void Process(DAVA::float32 elapsedTime){};
+    virtual void Process(float32 elapsedTime){};
+    virtual void ManualProcess(float32 elapsedTime, UIControl* control){};
 };
 }
