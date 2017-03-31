@@ -185,10 +185,8 @@ DXGI_FORMAT DX11_TextureFormat(TextureFormat format)
         return DXGI_FORMAT_R32G32B32A32_FLOAT;
 
     default:
-        DVASSERT(0, "Invalid TextureFormat provided");
+        return DXGI_FORMAT_UNKNOWN;
     }
-
-    return DXGI_FORMAT_UNKNOWN;
 }
 
 D3D11_COMPARISON_FUNC DX11_CmpFunc(CmpFunc func)
