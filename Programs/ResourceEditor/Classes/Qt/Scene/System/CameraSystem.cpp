@@ -280,7 +280,7 @@ bool SceneCameraSystem::Input(DAVA::UIEvent* event)
             ScrollCamera(gesture.dy);
         }
     }
-        break;
+    break;
     default:
         break;
     }
