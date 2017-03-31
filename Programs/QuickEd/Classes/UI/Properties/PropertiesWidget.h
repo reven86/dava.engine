@@ -29,9 +29,8 @@ public:
 
     void SetAccessor(DAVA::TArc::ContextAccessor* accessor);
 
-    void SetProject(const Project* project);
-
 public slots:
+    void SetProject(const Project* project);
     void UpdateModel(PackageBaseNode* node);
 
     void OnAddComponent(QAction* action);

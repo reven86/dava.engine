@@ -40,7 +40,6 @@ class MainWindow : public QMainWindow, public DAVA::InspBase, public DAVA::Track
 
 public:
     class ProjectView;
-    class DocumentGroupView;
 
     explicit MainWindow(DAVA::TArc::ContextAccessor* accessor, QWidget* parent = nullptr);
 

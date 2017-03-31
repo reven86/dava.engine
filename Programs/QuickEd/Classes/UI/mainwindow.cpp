@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+#include "Modules/LegacySupportModule/Private/Project.h"
 #include "Render/Texture.h"
 
 #include "Utils/QtDavaConvertion.h"
@@ -55,6 +56,7 @@ MainWindow::MainWindow(DAVA::TArc::ContextAccessor* accessor, QWidget* parent)
     PreferencesStorage::Instance()->RegisterPreferences(this);
 
     connect(ui->packageWidget, &PackageWidget::CurrentIndexChanged, ui->propertiesWidget, &PropertiesWidget::UpdateModel);
+    connect(projectView, &ProjectView::ProjectChanged, ui->propertiesWidget, &PropertiesWidget::SetProject);
 
     qApp->installEventFilter(this);
 }

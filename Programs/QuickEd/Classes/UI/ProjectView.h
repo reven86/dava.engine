@@ -21,8 +21,6 @@ public:
 
     void SetProjectActionsEnabled(bool enable);
 
-    DocumentGroupView* GetDocumentGroupView();
-
     MainWindow* mainWindow = nullptr;
 
 signals:
