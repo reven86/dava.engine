@@ -22,7 +22,6 @@ class eMovieScalingMode
 };
 
 final class DavaMovieView implements MediaPlayer.OnCompletionListener,
-                                     MediaPlayer.OnVideoSizeChangedListener,
                                      MediaPlayer.OnPreparedListener,
                                      MediaPlayer.OnErrorListener
 {
@@ -387,81 +386,70 @@ final class DavaMovieView implements MediaPlayer.OnCompletionListener,
         tellPlayingStatus(false);
     }
 
-    // MediaPlayer.OnVideoSizeChangedListener interface
-    @Override
-    public void onVideoSizeChanged(MediaPlayer mp, int videoWidth, int videoHeight)
-    {
-        if (videoWidth == 0 || videoHeight == 0)
-        {
-            return;
-        }
-
-        int w = (int)width;
-        int h = (int)height;
-
-        float xFactor = videoWidth / width;
-        float yFactor = videoHeight / height;
-        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(0, 0);
-        switch (scaleMode)
-        {
-        case eMovieScalingMode.scalingModeAspectFit:
-            if (xFactor > yFactor)
-            {
-                params.width = w;
-                params.height = videoHeight * w / videoWidth;
-                params.topMargin = (h - params.height) / 2;
-                params.leftMargin = 0;
-            }
-            else
-            {
-                params.height = h;
-                params.width = videoWidth * h / videoHeight;
-                params.leftMargin = (w - params.width) / 2;
-                params.topMargin = 0;
-            }
-            break;
-        case eMovieScalingMode.scalingModeAspectFill:
-            if (xFactor > yFactor)
-            {
-                params.height = h;
-                params.width = videoWidth * h / videoHeight;
-                params.leftMargin = params.rightMargin = (w - params.width) / 2;
-                params.topMargin = 0;
-                params.bottomMargin = 0;
-            }
-            else
-            {
-                params.width = w;
-                params.height = videoHeight * w / videoWidth;
-                params.leftMargin = 0;
-                params.rightMargin = 0;
-                params.topMargin = (h - params.height) / 2;
-                params.bottomMargin = params.topMargin;
-            }
-            break;
-        case eMovieScalingMode.scalingModeFill:
-            params.rightMargin = 0;
-            params.bottomMargin = 0;
-            params.width = w;
-            params.height = h;
-            break;
-        case eMovieScalingMode.scalingModeNone:
-        default:
-            params.width = videoWidth;
-            params.height = videoHeight;
-            params.leftMargin = (w - params.width) / 2;
-            params.topMargin = (h - params.height) / 2;
-            break;
-        }
-
-        setNativePositionAndSize(x, y, params.width, params.height);
-        nativeMovieView.setLayoutParams(params);
-    }
-
     // MediaPlayer.OnPreparedListener interface
     @Override
-    public void onPrepared(MediaPlayer mp)
+    public void onPrepared(MediaPlayer mplayer)
     {
+        int videoWidth = mplayer.getVideoWidth();
+        int videoHeight = mplayer.getVideoHeight();
+
+        if (videoWidth != 0 && videoHeight != 0)
+        {
+            int w = (int) width;
+            int h = (int) height;
+
+            float xFactor = videoWidth / width;
+            float yFactor = videoHeight / height;
+            RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(0, 0);
+            switch (scaleMode) {
+                case eMovieScalingMode.scalingModeAspectFit:
+                    if (xFactor > yFactor) {
+                        params.width = w;
+                        params.height = videoHeight * w / videoWidth;
+                        params.topMargin = (h - params.height) / 2;
+                        params.leftMargin = 0;
+                    } else {
+                        params.height = h;
+                        params.width = videoWidth * h / videoHeight;
+                        params.leftMargin = (w - params.width) / 2;
+                        params.topMargin = 0;
+                    }
+                    break;
+                case eMovieScalingMode.scalingModeAspectFill:
+                    if (xFactor > yFactor) {
+                        params.height = h;
+                        params.width = videoWidth * h / videoHeight;
+                        params.leftMargin = params.rightMargin = (w - params.width) / 2;
+                        params.topMargin = 0;
+                        params.bottomMargin = 0;
+                    } else {
+                        params.width = w;
+                        params.height = videoHeight * w / videoWidth;
+                        params.leftMargin = 0;
+                        params.rightMargin = 0;
+                        params.topMargin = (h - params.height) / 2;
+                        params.bottomMargin = params.topMargin;
+                    }
+                    break;
+                case eMovieScalingMode.scalingModeFill:
+                    params.rightMargin = 0;
+                    params.bottomMargin = 0;
+                    params.width = w;
+                    params.height = h;
+                    break;
+                case eMovieScalingMode.scalingModeNone:
+                default:
+                    params.width = videoWidth;
+                    params.height = videoHeight;
+                    params.leftMargin = (w - params.width) / 2;
+                    params.topMargin = (h - params.height) / 2;
+                    break;
+            }
+
+            setNativePositionAndSize(x, y, params.width, params.height);
+            nativeMovieView.setLayoutParams(params);
+        }
+
         movieLoaded = true;
         if (playAfterLoaded)
         {
