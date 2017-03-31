@@ -381,22 +381,14 @@ Vector2 TextBlock::GetPreferredSizeForWidth(float32 width)
     }
     else
     {
-        Vector2 oldRequestedSize = requestedSize;
-        int32 oldFitting = fittingType;
-        Vector2 oldSize = rectSize;
+        RefPtr<TextBlock> clone(new TextBlock(*this));
+        clone->requestedSize = Vector2(width, -1.0f);
+        clone->rectSize = Vector2(width < 0.0f ? 99999.0f : width, 99999.0f);
+        clone->fittingType = 0;
+        clone->CalculateCacheParams();
 
-        requestedSize = Vector2(width, -1.0f);
-        rectSize = Vector2(width < 0.0f ? 99999.0f : width, 99999.0f);
-        fittingType = 0;
-        CalculateCacheParams();
-
-        cachedLayoutData.size = cacheTextSize;
+        cachedLayoutData.size = clone->cacheTextSize;
         cachedLayoutData.width = width;
-        rectSize = oldSize;
-
-        requestedSize = oldRequestedSize;
-        fittingType = oldFitting;
-        CalculateCacheParams();
     }
 
     return cachedLayoutData.size;
