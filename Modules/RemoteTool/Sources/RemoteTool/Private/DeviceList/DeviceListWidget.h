@@ -14,8 +14,8 @@ class DeviceListWidget
 : public QWidget
 {
     Q_OBJECT
-
 signals:
+
     void connectClicked();
     void disconnectClicked();
     void showLogClicked();

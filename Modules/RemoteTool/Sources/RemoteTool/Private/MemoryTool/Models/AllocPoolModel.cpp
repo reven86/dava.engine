@@ -1,6 +1,6 @@
-#include "AllocPoolModel.h"
-#include "../ProfilingSession.h"
-#include "DataFormat.h"
+#include "RemoteTool/Private/MemoryTool/Models/AllocPoolModel.h"
+#include "RemoteTool/Private/MemoryTool/Models/DataFormat.h"
+#include "RemoteTool/Private/MemoryTool/ProfilingSession.h"
 
 using namespace DAVA;
 

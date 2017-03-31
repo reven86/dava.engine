@@ -333,7 +333,7 @@ void QtMainWindow::WaitStart(const QString& title, const QString& message, int m
     params.min = min;
     params.max = max;
     params.needProgressBar = min != max;
-    waitDialog = tarcUI->ShowWaitDialog(REGlobal::MainWindowKey, params);
+    waitDialog = tarcUI->ShowWaitDialog(DAVA::TArc::mainWindowKey, params);
 }
 
 void QtMainWindow::WaitSetMessage(const QString& messsage)
@@ -509,12 +509,12 @@ void QtMainWindow::SetupStatusBar()
     insertParams.method = DAVA::TArc::InsertionParams::eInsertionMethod::BeforeItem;
     DAVA::TArc::ActionPlacementInfo placementInfo(DAVA::TArc::CreateStatusbarPoint(true, 0, insertParams));
 
-    tarcUI->AddAction(REGlobal::MainWindowKey, placementInfo, ui->actionShowEditorGizmo);
-    tarcUI->AddAction(REGlobal::MainWindowKey, placementInfo, ui->actionLightmapCanvas);
-    tarcUI->AddAction(REGlobal::MainWindowKey, placementInfo, ui->actionShowStaticOcclusion);
-    tarcUI->AddAction(REGlobal::MainWindowKey, placementInfo, ui->actionEnableVisibilitySystem);
-    tarcUI->AddAction(REGlobal::MainWindowKey, placementInfo, ui->actionEnableDisableShadows);
-    tarcUI->AddAction(REGlobal::MainWindowKey, placementInfo, ui->actionEnableSounds);
+    tarcUI->AddAction(DAVA::TArc::mainWindowKey, placementInfo, ui->actionShowEditorGizmo);
+    tarcUI->AddAction(DAVA::TArc::mainWindowKey, placementInfo, ui->actionLightmapCanvas);
+    tarcUI->AddAction(DAVA::TArc::mainWindowKey, placementInfo, ui->actionShowStaticOcclusion);
+    tarcUI->AddAction(DAVA::TArc::mainWindowKey, placementInfo, ui->actionEnableVisibilitySystem);
+    tarcUI->AddAction(DAVA::TArc::mainWindowKey, placementInfo, ui->actionEnableDisableShadows);
+    tarcUI->AddAction(DAVA::TArc::mainWindowKey, placementInfo, ui->actionEnableSounds);
 }
 
 void QtMainWindow::SetupDocks()

@@ -1,11 +1,11 @@
 #pragma once
 
-#include <QObject>
-#include <QPointer>
-
 #include <FileSystem/FilePath.h>
 #include <Network/PeerDesription.h>
 #include <MemoryManager/MemoryManagerTypes.h>
+
+#include <QObject>
+#include <QPointer>
 
 namespace DAVA
 {

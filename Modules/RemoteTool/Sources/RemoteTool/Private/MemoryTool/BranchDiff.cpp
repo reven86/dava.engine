@@ -1,5 +1,5 @@
-#include "BranchDiff.h"
-#include "Branch.h"
+#include "RemoteTool/Private/MemoryTool/BranchDiff.h"
+#include "RemoteTool/Private/MemoryTool/Branch.h"
 
 #include <Debug/DVAssert.h>
 #include <Logger/Logger.h>

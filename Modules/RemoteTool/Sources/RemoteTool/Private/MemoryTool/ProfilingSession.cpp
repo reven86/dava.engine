@@ -1,11 +1,11 @@
-#include "Utils/StringFormat.h"
-#include "FileSystem/FileSystem.h"
-#include "FileSystem/FileList.h"
-#include "FileSystem/File.h"
-#include "Debug/DVAssert.h"
+#include "RemoteTool/Private/MemoryTool/ProfilingSession.h"
+#include "RemoteTool/Private/MemoryTool/BacktraceSymbolTable.h"
 
-#include "BacktraceSymbolTable.h"
-#include "ProfilingSession.h"
+#include <Debug/DVAssert.h>
+#include <FileSystem/FileSystem.h>
+#include <FileSystem/FileList.h>
+#include <FileSystem/File.h>
+#include <Utils/StringFormat.h>
 
 using namespace DAVA;
 

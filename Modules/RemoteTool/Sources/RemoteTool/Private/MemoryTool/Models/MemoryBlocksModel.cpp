@@ -1,6 +1,6 @@
-#include "MemoryBlocksModel.h"
-#include "DataFormat.h"
-#include "../ProfilingSession.h"
+#include "RemoteTool/Private/MemoryTool/Models/MemoryBlocksModel.h"
+#include "RemoteTool/Private/MemoryTool/Models/DataFormat.h"
+#include "RemoteTool/Private/MemoryTool/ProfilingSession.h"
 
 #include <Debug/DVAssert.h>
 #include <MemoryManager/MemoryManagerTypes.h>

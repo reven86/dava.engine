@@ -1,20 +1,21 @@
-#include <Base/BaseTypes.h>
-#include <MemoryManager/MemoryManagerTypes.h>
+#include "RemoteTool/Private/MemoryTool/BranchDiff.h"
+#include "RemoteTool/Private/MemoryTool/Branch.h"
+#include "RemoteTool/Private/MemoryTool/ProfilingSession.h"
 
-#include "../BranchDiff.h"
-#include "../Branch.h"
-#include "../ProfilingSession.h"
+#include "RemoteTool/Private/MemoryTool/Models/AllocPoolModel.h"
+#include "RemoteTool/Private/MemoryTool/Models/TagModel.h"
+#include "RemoteTool/Private/MemoryTool/Models/GeneralStatModel.h"
+#include "RemoteTool/Private/MemoryTool/Models/SnapshotListModel.h"
 
-#include "../Models/AllocPoolModel.h"
-#include "../Models/TagModel.h"
-#include "../Models/GeneralStatModel.h"
-#include "../Models/SnapshotListModel.h"
-
-#include "SnapshotViewerWidget.h"
-#include "SnapshotDiffViewerWidget.h"
-#include "MemProfWidget.h"
+#include "RemoteTool/Private/MemoryTool/Widgets/SnapshotViewerWidget.h"
+#include "RemoteTool/Private/MemoryTool/Widgets/SnapshotDiffViewerWidget.h"
+#include "RemoteTool/Private/MemoryTool/Widgets/MemProfWidget.h"
 
 #include "ui_MemProfWidget.h"
+#include "qcustomplot.h"
+
+#include <Base/BaseTypes.h>
+#include <MemoryManager/MemoryManagerTypes.h>
 
 #include <QLabel>
 #include <QFrame>
@@ -22,7 +23,6 @@
 #include <QGridLayout>
 #include <QVBoxLayout>
 #include <QMessageBox>
-#include "qcustomplot.h"
 
 using namespace DAVA;
 

@@ -842,7 +842,7 @@ struct FilePathEditTestData : public ReflectionBase
 
             FilePathEdit::Params p;
             p.ui = ui;
-            p.wndKey = REGlobal::MainWindowKey;
+            p.wndKey = DAVA::TArc::mainWindowKey;
             p.fields[FilePathEdit::Fields::Value] = "readOnlyMetaText";
             lineLayout->AddControl(new FilePathEdit(p, accessor, Reflection::Create(data), parent));
             boxLayout->addLayout(lineLayout);
@@ -854,7 +854,7 @@ struct FilePathEditTestData : public ReflectionBase
 
             FilePathEdit::Params p;
             p.ui = ui;
-            p.wndKey = REGlobal::MainWindowKey;
+            p.wndKey = DAVA::TArc::mainWindowKey;
             p.fields[FilePathEdit::Fields::Value] = "readOnlyText";
             lineLayout->AddControl(new FilePathEdit(p, accessor, Reflection::Create(data), parent));
             boxLayout->addLayout(lineLayout);
@@ -866,7 +866,7 @@ struct FilePathEditTestData : public ReflectionBase
 
             FilePathEdit::Params p;
             p.ui = ui;
-            p.wndKey = REGlobal::MainWindowKey;
+            p.wndKey = DAVA::TArc::mainWindowKey;
             p.fields[FilePathEdit::Fields::Value] = "path";
             p.fields[FilePathEdit::Fields::PlaceHolder] = "placeholder";
             p.fields[FilePathEdit::Fields::IsReadOnly] = "isTextReadOnly";
@@ -1005,7 +1005,7 @@ struct ColorButtonTestData : public ReflectionBase
 
             ColorPickerButton::Params params;
             params.ui = ui;
-            params.wndKey = REGlobal::MainWindowKey;
+            params.wndKey = DAVA::TArc::mainWindowKey;
             params.accessor = accessor;
             params.fields[ColorPickerButton::Fields::Color] = "color";
             lineLayout->AddControl(new ColorPickerButton(params, accessor, Reflection::Create(data), parent));
@@ -1018,7 +1018,7 @@ struct ColorButtonTestData : public ReflectionBase
 
             ColorPickerButton::Params params;
             params.ui = ui;
-            params.wndKey = REGlobal::MainWindowKey;
+            params.wndKey = DAVA::TArc::mainWindowKey;
             params.accessor = accessor;
             params.fields[ColorPickerButton::Fields::Color] = "colorReadOnly";
             lineLayout->AddControl(new ColorPickerButton(params, accessor, Reflection::Create(data), parent));
@@ -1031,7 +1031,7 @@ struct ColorButtonTestData : public ReflectionBase
 
             ColorPickerButton::Params params;
             params.ui = ui;
-            params.wndKey = REGlobal::MainWindowKey;
+            params.wndKey = DAVA::TArc::mainWindowKey;
             params.accessor = accessor;
             params.fields[ColorPickerButton::Fields::Color] = "colorMethod";
             lineLayout->AddControl(new ColorPickerButton(params, accessor, Reflection::Create(data), parent));
@@ -1044,7 +1044,7 @@ struct ColorButtonTestData : public ReflectionBase
 
             ColorPickerButton::Params params;
             params.ui = ui;
-            params.wndKey = REGlobal::MainWindowKey;
+            params.wndKey = DAVA::TArc::mainWindowKey;
             params.accessor = accessor;
             params.fields[ColorPickerButton::Fields::Color] = "colorMethodReadOnly";
             lineLayout->AddControl(new ColorPickerButton(params, accessor, Reflection::Create(data), parent));
@@ -1058,7 +1058,7 @@ struct ColorButtonTestData : public ReflectionBase
             {
                 ColorPickerButton::Params params;
                 params.ui = ui;
-                params.wndKey = REGlobal::MainWindowKey;
+                params.wndKey = DAVA::TArc::mainWindowKey;
                 params.accessor = accessor;
                 params.fields[ColorPickerButton::Fields::Color] = "color";
                 params.fields[ColorPickerButton::Fields::IsReadOnly] = "readOnly";
@@ -1350,7 +1350,7 @@ void TestUIModule::PostInit()
 
     QAction* assertAction = new QAction("UI Sandbox", nullptr);
     connections.AddConnection(assertAction, &QAction::triggered, DAVA::MakeFunction(this, &TestUIModule::ShowDialog));
-    ui->AddAction(REGlobal::MainWindowKey, placementInfo, assertAction);
+    ui->AddAction(DAVA::TArc::mainWindowKey, placementInfo, assertAction);
 }
 
 void TestUIModule::ShowDialog()

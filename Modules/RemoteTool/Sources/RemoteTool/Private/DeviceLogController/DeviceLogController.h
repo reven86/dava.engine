@@ -1,15 +1,14 @@
 #pragma once
 
-#include <QObject>
-#include <QPointer>
-
 #include <Network/PeerDesription.h>
 #include <Network/NetService.h>
 
+#include <QObject>
+#include <QPointer>
+
 class LogWidget;
 
-class DeviceLogController : public QObject
-                            ,
+class DeviceLogController : public QObject,
                             public DAVA::Net::NetService
 {
     Q_OBJECT

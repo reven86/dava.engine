@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../BlockLink.h"
-#include "../BlockGroup.h"
+#include "RemoteTool/Private/MemoryTool/BlockLink.h"
+#include "RemoteTool/Private/MemoryTool/BlockGroup.h"
 
 #include <Base/BaseTypes.h>
 

@@ -1,5 +1,5 @@
-#include "BlockGroupModel.h"
-#include "DataFormat.h"
+#include "RemoteTool/Private/MemoryTool/Models/BlockGroupModel.h"
+#include "RemoteTool/Private/MemoryTool/Models/DataFormat.h"
 
 using namespace DAVA;
 

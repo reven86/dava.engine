@@ -1,5 +1,5 @@
-#include "SnapshotListModel.h"
-#include "../ProfilingSession.h"
+#include "RemoteTool/Private/MemoryTool/Models/SnapshotListModel.h"
+#include "RemoteTool/Private/MemoryTool/ProfilingSession.h"
 
 using namespace DAVA;
 

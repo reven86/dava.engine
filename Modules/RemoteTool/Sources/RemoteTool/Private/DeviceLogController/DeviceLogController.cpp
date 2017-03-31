@@ -1,7 +1,7 @@
-#include "DeviceLogController.h"
+#include "RemoteTool/Private/DeviceLogController/DeviceLogController.h"
 
-#include "QtTools/ConsoleWidget/LogWidget.h"
-#include "QtTools/ConsoleWidget/LogModel.h"
+#include <QtTools/ConsoleWidget/LogWidget.h>
+#include <QtTools/ConsoleWidget/LogModel.h>
 
 #include <Utils/UTF8Utils.h>
 

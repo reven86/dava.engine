@@ -1,9 +1,9 @@
-#include "BranchDiffTreeModel.h"
-#include "DataFormat.h"
+#include "RemoteTool/Private/MemoryTool/Models/BranchDiffTreeModel.h"
+#include "RemoteTool/Private/MemoryTool/Models/DataFormat.h"
 
-#include "../MemorySnapshot.h"
-#include "../Branch.h"
-#include "../BranchDiff.h"
+#include "RemoteTool/Private/MemoryTool/MemorySnapshot.h"
+#include "RemoteTool/Private/MemoryTool/Branch.h"
+#include "RemoteTool/Private/MemoryTool/BranchDiff.h"
 
 #include <Debug/DVAssert.h>
 

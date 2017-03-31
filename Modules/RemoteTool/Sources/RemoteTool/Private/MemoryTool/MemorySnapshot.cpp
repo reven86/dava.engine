@@ -1,6 +1,6 @@
-#include "Branch.h"
-#include "BacktraceSymbolTable.h"
-#include "MemorySnapshot.h"
+#include "RemoteTool/Private/MemoryTool/MemorySnapshot.h"
+#include "RemoteTool/Private/MemoryTool/BacktraceSymbolTable.h"
+#include "RemoteTool/Private/MemoryTool/Branch.h"
 
 #include <Base/RefPtr.h>
 #include <Debug/DVAssert.h>

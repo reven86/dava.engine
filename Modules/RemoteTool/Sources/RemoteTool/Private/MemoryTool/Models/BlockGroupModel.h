@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../BlockGroup.h"
+#include "RemoteTool/Private/MemoryTool/BlockGroup.h"
 
 #include <Base/BaseTypes.h>
 

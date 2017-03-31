@@ -103,7 +103,7 @@ void ParticleDebugDrawModule::PostInit()
     AttachWidgetToAction(action, w);
 
     ActionPlacementInfo placementInfo(CreateToolbarPoint("ParticleSystemToolbar"));
-    GetUI()->AddAction(REGlobal::MainWindowKey, placementInfo, action);
+    GetUI()->AddAction(DAVA::TArc::mainWindowKey, placementInfo, action);
 
     filedBinder.reset(new FieldBinder(accessor));
     DAVA::TArc::FieldDescriptor descr;

@@ -1,10 +1,10 @@
 #pragma once
 
-#include "../BlockLink.h"
+#include <functional>
+
+#include "RemoteTool/Private/MemoryTool/BlockLink.h"
 
 #include <Base/BaseTypes.h>
-
-#include <functional>
 
 #include <QAbstractTableModel>
 #include <QSortFilterProxyModel>

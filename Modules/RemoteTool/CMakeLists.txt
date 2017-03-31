@@ -5,8 +5,8 @@ set(MODULE_TYPE STATIC)
 set(HPP_FILES_RECURSE *.h *.hpp)
 set(CPP_FILES_RECURSE *.cpp *.mm)
 
-set(INCLUDES "${CMAKE_CURRENT_LIST_DIR}" "Sources" "Sources/RemoteTool" "Sources/RemoteTool/Private/CustomPlot")
-set(INCLUDES_PRIVATE ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_LIST_DIR} ${DAVA_INCLUDE_DIR})
+set(INCLUDES "${CMAKE_CURRENT_LIST_DIR}" "Sources")
+set(INCLUDES_PRIVATE ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_LIST_DIR} ${DAVA_INCLUDE_DIR} "Sources/RemoteTool/Private/MemoryTool/Widgets")
 
 file              ( GLOB UI_LIST "DataQt/*.ui" )
 qt5_wrap_ui       ( UI_APP_HDRS  ${UI_LIST} )

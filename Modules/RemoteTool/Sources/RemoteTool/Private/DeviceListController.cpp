@@ -1,4 +1,11 @@
 #include "RemoteTool/Private/DeviceListController.h"
+#include "RemoteTool/Private/DeviceList/DeviceListWidget.h"
+#include "RemoteTool/Private/DeviceLogController/DeviceLogController.h"
+#include "RemoteTool/Private/MemoryTool/MemProfController.h"
+
+#include <Logger/Logger.h>
+#include <Network/NetworkCommon.h>
+#include <Network/PeerDesription.h>
 
 #include <QDebug>
 #include <QStandardItemModel>
@@ -6,15 +13,6 @@
 #include <QTreeView>
 #include <QUuid>
 #include <QMessageBox>
-
-#include "RemoteTool/Private/DeviceList/DeviceListWidget.h"
-
-#include "RemoteTool/Private/DeviceLogController/DeviceLogController.h"
-#include "RemoteTool/Private/MemoryTool/MemProfController.h"
-
-#include <Logger/Logger.h>
-#include <Network/NetworkCommon.h>
-#include <Network/PeerDesription.h>
 
 using namespace DAVA;
 using namespace DAVA::Net;

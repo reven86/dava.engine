@@ -1,6 +1,7 @@
 #pragma once
 
-#include "BlockLink.h"
+#include "RemoteTool/Private/MemoryTool/BlockLink.h"
+
 #include <Base/BaseTypes.h>
 
 struct BlockGroup

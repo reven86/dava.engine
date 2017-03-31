@@ -1,4 +1,4 @@
-#include "BacktraceSymbolTable.h"
+#include "RemoteTool/Private/MemoryTool/BacktraceSymbolTable.h"
 
 #include <Debug/DVAssert.h>
 #include <Logger/Logger.h>

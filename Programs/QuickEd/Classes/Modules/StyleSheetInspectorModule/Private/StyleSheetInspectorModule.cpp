@@ -26,7 +26,7 @@ void StyleSheetInspectorModule::PostInit()
 
     ContextAccessor* accessor = GetAccessor();
     StyleSheetInspectorWidget* widget = new StyleSheetInspectorWidget(accessor);
-    GetUI()->AddView(QEGlobal::windowKey, panelKey, widget);
+    GetUI()->AddView(DAVA::TArc::mainWindowKey, panelKey, widget);
 }
 
 DECL_GUI_MODULE(StyleSheetInspectorModule);

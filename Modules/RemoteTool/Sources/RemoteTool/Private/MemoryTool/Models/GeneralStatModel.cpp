@@ -1,7 +1,6 @@
-#include "GeneralStatModel.h"
-
-#include "../ProfilingSession.h"
-#include "DataFormat.h"
+#include "RemoteTool/Private/MemoryTool/Models/GeneralStatModel.h"
+#include "RemoteTool/Private/MemoryTool/Models/DataFormat.h"
+#include "RemoteTool/Private/MemoryTool/ProfilingSession.h"
 
 using namespace DAVA;
 

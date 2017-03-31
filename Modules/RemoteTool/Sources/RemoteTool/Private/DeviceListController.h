@@ -1,13 +1,13 @@
 #pragma once
 
-#include <QObject>
-#include <QPointer>
 #include <vector>
 
-#include <Network/NetCore.h>
 #include <Network/Base/Endpoint.h>
-
+#include <Network/NetCore.h>
 #include <Network/PeerDesription.h>
+
+#include <QObject>
+#include <QPointer>
 
 class QStandardItemModel;
 class QStandardItem;

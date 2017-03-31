@@ -1,5 +1,5 @@
-#include "SymbolsListModel.h"
-#include "../BacktraceSymbolTable.h"
+#include "RemoteTool/Private/MemoryTool/Models/SymbolsListModel.h"
+#include "RemoteTool/Private/MemoryTool/BacktraceSymbolTable.h"
 
 using namespace DAVA;
 

@@ -1,5 +1,5 @@
-#include "FilterAndSortBar.h"
-#include "../ProfilingSession.h"
+#include "RemoteTool/Private/MemoryTool/Widgets/FilterAndSortBar.h"
+#include "RemoteTool/Private/MemoryTool/ProfilingSession.h"
 
 #include <QtTools/ComboBox/CheckableComboBox.h>
 

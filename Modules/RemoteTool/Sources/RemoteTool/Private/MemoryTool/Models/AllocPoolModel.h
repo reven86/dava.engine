@@ -1,10 +1,10 @@
 #pragma once
 
-#include <QColor>
-#include <QAbstractTableModel>
-
 #include <Base/BaseTypes.h>
 #include <MemoryManager/MemoryManagerTypes.h>
+
+#include <QColor>
+#include <QAbstractTableModel>
 
 class ProfilingSession;
 class MemoryStatItem;

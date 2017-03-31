@@ -1,15 +1,15 @@
 #pragma once
 
+#include "RemoteTool/Private/MemoryTool/BacktraceSymbolTable.h"
+#include "RemoteTool/Private/MemoryTool/MemoryStatItem.h"
+#include "RemoteTool/Private/MemoryTool/MemorySnapshot.h"
+
 #include <Base/BaseTypes.h>
 #include <Base/RefPtr.h>
 #include <Debug/DVAssert.h>
 #include <FileSystem/FilePath.h>
 #include <Network/PeerDesription.h>
 #include <MemoryManager/MemoryManagerTypes.h>
-
-#include "BacktraceSymbolTable.h"
-#include "MemoryStatItem.h"
-#include "MemorySnapshot.h"
 
 namespace DAVA
 {

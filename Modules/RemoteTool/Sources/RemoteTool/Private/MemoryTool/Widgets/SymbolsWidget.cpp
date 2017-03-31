@@ -1,6 +1,6 @@
-#include "../BacktraceSymbolTable.h"
-#include "../Models/SymbolsListModel.h"
-#include "SymbolsWidget.h"
+#include "RemoteTool/Private/MemoryTool/Widgets/SymbolsWidget.h"
+#include "RemoteTool/Private/MemoryTool/BacktraceSymbolTable.h"
+#include "RemoteTool/Private/MemoryTool/Models/SymbolsListModel.h"
 
 #include <QListView>
 #include <QLineEdit>

@@ -1,16 +1,15 @@
-#include "ProfilingSession.h"
-#include "BacktraceSymbolTable.h"
-#include "MemProfController.h"
-#include "Widgets/MemProfWidget.h"
-
-#include <Utils/UTF8Utils.h>
-#include <Utils/StringFormat.h>
+#include "RemoteTool/Private/MemoryTool/MemProfController.h"
+#include "RemoteTool/Private/MemoryTool/BacktraceSymbolTable.h"
+#include "RemoteTool/Private/MemoryTool/ProfilingSession.h"
+#include "RemoteTool/Private/MemoryTool/Widgets/MemProfWidget.h"
 
 #include <FileSystem/File.h>
 #include <FileSystem/FileSystem.h>
 #include <Logger/Logger.h>
 #include <Time/DateTime.h>
 #include <Network/Services/MMNet/MMNetClient.h>
+#include <Utils/UTF8Utils.h>
+#include <Utils/StringFormat.h>
 
 #include <QMessageBox>
 #include <QFileDialog>

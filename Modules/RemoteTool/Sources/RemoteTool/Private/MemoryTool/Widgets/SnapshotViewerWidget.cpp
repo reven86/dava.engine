@@ -1,17 +1,16 @@
+#include "RemoteTool/Private/MemoryTool/Widgets/SymbolsWidget.h"
+#include "RemoteTool/Private/MemoryTool/Widgets/FilterAndSortBar.h"
+#include "RemoteTool/Private/MemoryTool/Widgets/MemoryBlocksWidget.h"
+#include "RemoteTool/Private/MemoryTool/Widgets/SnapshotViewerWidget.h"
+
+#include "RemoteTool/Private/MemoryTool/Branch.h"
+#include "RemoteTool/Private/MemoryTool/BranchDiff.h"
+#include "RemoteTool/Private/MemoryTool/ProfilingSession.h"
+#include "RemoteTool/Private/MemoryTool/MemorySnapshot.h"
+#include "RemoteTool/Private/MemoryTool/Models/SymbolsListModel.h"
+#include "RemoteTool/Private/MemoryTool/Models/BranchTreeModel.h"
+
 #include <Debug/DVAssert.h>
-
-#include "../Models/SymbolsListModel.h"
-#include "../Models/BranchTreeModel.h"
-
-#include "../Branch.h"
-#include "../BranchDiff.h"
-#include "../ProfilingSession.h"
-#include "../MemorySnapshot.h"
-
-#include "SymbolsWidget.h"
-#include "FilterAndSortBar.h"
-#include "MemoryBlocksWidget.h"
-#include "SnapshotViewerWidget.h"
 
 #include <QTabWidget>
 #include <QTreeView>

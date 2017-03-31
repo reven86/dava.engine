@@ -6,8 +6,6 @@
 #include "Classes/SceneManager/SceneManagerModule.h"
 #include "Classes/Application/LaunchModule.h"
 
-#include <RemoteTool/RemoteToolModule.h>
-
 #include <Tools/TextureCompression/PVRConverter.h>
 #include "Settings/SettingsManager.h"
 #include "Deprecated/SceneValidator.h"
@@ -176,8 +174,6 @@ QString REApplication::GetInstanceKey() const
     return appUidPath;
 }
 
-#include <TArc/WindowSubSystem/ActionUtils.h>
-
 void REApplication::CreateGUIModules(DAVA::TArc::Core* tarcCore) const
 {
     Q_INIT_RESOURCE(QtToolsResources);
@@ -186,8 +182,8 @@ void REApplication::CreateGUIModules(DAVA::TArc::Core* tarcCore) const
     tarcCore->CreateModule<ProjectManagerModule>();
     tarcCore->CreateModule<SceneManagerModule>();
 
-    DAVA::TArc::InsertionParams insertionParams(DAVA::TArc::InsertionParams::eInsertionMethod::AfterItem, QStringLiteral("Tools"));
-    tarcCore->CreateModule<RemoteToolModule>(REGlobal::MainWindowKey, insertionParams);
+    //DAVA::TArc::InsertionParams insertionParams(DAVA::TArc::InsertionParams::eInsertionMethod::BeforeItem, QStringLiteral("Tools"));
+    //tarcCore->CreateModule<RemoteToolModule>(DAVA::TArc::mainWindowKey, insertionParams);
 
     for (const DAVA::ReflectedType* type : DAVA::TArc::ModuleCollection::Instance()->GetGuiModules())
     {

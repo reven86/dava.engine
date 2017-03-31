@@ -1,6 +1,7 @@
 #pragma once
 
 #include <Base/BaseTypes.h>
+#include <Base/TemplateHelpers.h>
 #include <MemoryManager/MemoryManagerTypes.h>
 
 class MemoryStatItem final

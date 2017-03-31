@@ -1,19 +1,19 @@
 #include "RemoteTool/Private/DeviceList/DeviceListWidget.h"
 #include "ui_DeviceListWidget.h"
 
+#include "RemoteTool/Private/MemoryTool/MemProfController.h"
+#include "RemoteTool/Private/MemoryTool/ProfilingSession.h"
+#include "RemoteTool/Private/MemoryTool/Widgets/MemProfWidget.h"
+
+#include <FileSystem/FilePath.h>
+#include <FileSystem/File.h>
+
 #include <QDebug>
 #include <QCloseEvent> 
 #include <QFileDialog>
 #include <QTreeView>
 #include <QVBoxLayout>
 #include <QTabWidget>
-
-#include <FileSystem/FilePath.h>
-#include <FileSystem/File.h>
-
-#include "RemoteTool/Private/MemoryTool/ProfilingSession.h"
-#include "RemoteTool/Private/MemoryTool/MemProfController.h"
-#include "RemoteTool/Private/MemoryTool/Widgets/MemProfWidget.h"
 
 using namespace DAVA;
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Base/BaseTypes.h"
+#include <Base/BaseTypes.h>
 
 #include <QAbstractListModel>
 #include <QSortFilterProxyModel>

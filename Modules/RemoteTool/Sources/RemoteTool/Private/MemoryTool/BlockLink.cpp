@@ -1,10 +1,10 @@
 #include <type_traits>
 
+#include "RemoteTool/Private/MemoryTool/BlockLink.h"
+#include "RemoteTool/Private/MemoryTool/MemorySnapshot.h"
+
 #include <Debug/DVAssert.h>
 #include <MemoryManager/MemoryManagerTypes.h>
-
-#include "MemorySnapshot.h"
-#include "BlockLink.h"
 
 using namespace DAVA;
 

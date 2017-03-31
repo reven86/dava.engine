@@ -1,6 +1,6 @@
-#include "TagModel.h"
-#include "DataFormat.h"
-#include "../ProfilingSession.h"
+#include "RemoteTool/Private/MemoryTool/Models/TagModel.h"
+#include "RemoteTool/Private/MemoryTool/Models/DataFormat.h"
+#include "RemoteTool/Private/MemoryTool/ProfilingSession.h"
 
 using namespace DAVA;
 

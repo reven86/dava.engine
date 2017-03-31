@@ -1,9 +1,9 @@
 #pragma once
 
-#include <QAbstractTableModel>
-
 #include <Base/BaseTypes.h>
 #include <MemoryManager/MemoryManagerTypes.h>
+
+#include <QAbstractTableModel>
 
 class ProfilingSession;
 class MemoryStatItem;

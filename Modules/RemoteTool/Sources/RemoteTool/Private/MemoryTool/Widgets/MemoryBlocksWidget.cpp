@@ -1,11 +1,11 @@
-#include "FilterAndSortBar.h"
-#include "MemoryBlocksWidget.h"
+#include "RemoteTool/Private/MemoryTool/Widgets/FilterAndSortBar.h"
+#include "RemoteTool/Private/MemoryTool/Widgets/MemoryBlocksWidget.h"
 
-#include "../BlockLink.h"
-#include "../ProfilingSession.h"
-#include "../Models/MemoryBlocksModel.h"
-#include "../Models/BlockGroupModel.h"
-#include "../Models/BacktraceListModel.h"
+#include "RemoteTool/Private/MemoryTool/BlockLink.h"
+#include "RemoteTool/Private/MemoryTool/ProfilingSession.h"
+#include "RemoteTool/Private/MemoryTool/Models/MemoryBlocksModel.h"
+#include "RemoteTool/Private/MemoryTool/Models/BlockGroupModel.h"
+#include "RemoteTool/Private/MemoryTool/Models/BacktraceListModel.h"
 
 #include <Debug/DVAssert.h>
 #include <MemoryManager/MemoryManagerTypes.h>
