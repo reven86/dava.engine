@@ -43,6 +43,8 @@ public:
     Vector<uint8> Serialize() const;
     void Deserialize(const void* ptr, size_t size);
 
+    bool IsParent(uint32 parentPackIndex, uint32 childPackIndex) const;
+
 private:
     // fileNames already in DVPK format
     // table 1.
@@ -51,6 +53,9 @@ private:
     // table 2.
     // packIndex(0-NUM_PACKS) -> packName, dependencies
     Vector<PackInfo> packDependencies;
+
+    using Childrens = Vector<uint32>;
+    Vector<Childrens> childrens;
 };
 
 inline size_t PackMetaData::GetFileCount() const
