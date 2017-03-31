@@ -460,7 +460,7 @@ void WindowBackend::OnWheel(QWheelEvent* qtEvent)
     }
     eModifierKeys modifierKeys = GetModifierKeys();
 #ifdef Q_OS_MAC
-    if (qtEvent->source() != Qt::MouseEventNotSynthesized)
+    if (qtEvent->source() == Qt::MouseEventSynthesizedBySystem)
     {
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSwipeGestureEvent(window, deltaX, deltaY, modifierKeys));
         return;
