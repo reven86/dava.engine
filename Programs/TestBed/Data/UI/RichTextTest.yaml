@@ -36,8 +36,8 @@ Controls:
         position: [20.000000, 20.000000]
         size: [315.500000, 406.000000]
         debugDraw: true
-        text: "Example text with <span class=\"red\">red</span> or <span class=\"green\">green</span> substrings and image <img src=\"~res:/Gfx/UI/GoldPin.png\" />. New line. Sentence with linebreak at the end.<br />New line. <p class=\"DejaVu\">Paragraph.</p> End of the text."
-        font: "Font_18"
+        text: "Example text with <span class=\"red\">red</span> or <span class=\"green\">green</span> substrings and image <img src=\"~res:/Gfx/UI/GoldPin.png\" />. New line. Sentence with linebreak at the end.<br />New line. <p class=\"DejaVu\">Paragraph.</p> End of the text. <p class=\"DejaVu\">Arabic test: ضصثق شسيب ئءؤر <img src=\"~res:/Gfx/UI/GoldPin.png\" /> قفغ بلا رلاى.</p>"
+        font: "DejaVuSans_18"
         textalign: ["LEFT", "TOP"]
         isMultiline: true
         components:
