@@ -5,9 +5,11 @@
 #include <QWidget>
 #include <QMessageBox>
 
+class QPropertyAnimation;
 class QTimer;
 class QPaintEvent;
 class QPoint;
+class QPushButton;
 
 namespace DAVA
 {
@@ -33,22 +35,31 @@ public:
     explicit NotificationWidget(const NotificationWidgetParams& params, QWidget* parent = 0);
 
     void SetPosition(const QPoint& point);
+    void Add();
 
 signals:
-    void Remove();
+    void Removed();
 
 public slots:
-    void Show();
 
 private slots:
-    void OnCloseClicked();
+    void Remove();
+    void OnApplicationStateChanged(Qt::ApplicationState state);
 
 private:
-    void Hide();
+    void InitUI(const NotificationWidgetParams& params);
+    void InitAnimations();
+    void InitTimer();
 
-    void paintEvent(QPaintEvent* event);
+    void paintEvent(QPaintEvent* event) override;
 
     QTimer* timer;
+    QPushButton* closeButton = nullptr;
+    QPushButton* detailsButton = nullptr;
+    QPropertyAnimation* opacityAnimation = nullptr;
+    QPropertyAnimation* positionAnimation = nullptr;
+
+    int remainTimeMs = 0;
 };
 } //namespace TArc
 } //namespace DAVA

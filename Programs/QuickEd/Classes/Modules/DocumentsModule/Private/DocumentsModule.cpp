@@ -268,7 +268,7 @@ void DocumentsModule::CreateDocumentsActions()
 
         connections.AddConnection(action, &QAction::triggered, [this]() {
             NotificationParams params;
-            params.title = String(rand() % 2 ? "short title" : "veeeeeeeeeeeeeeeeeeeeeeeeeeeryyyyyyyyyyyyyyyyyyyyyy looooooooooooooooooooooooooooooong title");
+            params.title = String(rand() % 2 ? "short title" : "veeeeeeeeeeeeyyyyyyyyy loooooooong title");
             params.showTimeMs = (10 + rand() % 10) * 1000;
             params.message = Result(static_cast<Result::ResultType>(rand() % 3), String(rand() % 2
                                                                                         ?

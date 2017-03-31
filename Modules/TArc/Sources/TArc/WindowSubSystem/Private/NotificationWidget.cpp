@@ -26,25 +26,91 @@ QString ColorToHTML(const QColor& color)
                   .arg(color.blue(), 2, 16, QChar('0'));
     return ret;
 }
+
+QPoint invalidPos(-1, -1);
 } //namespace NotificationWidgetDetails
 
-DAVA::TArc::NotificationWidget::NotificationWidget(const DAVA::TArc::NotificationWidgetParams& params, QWidget* parent)
+namespace DAVA
+{
+namespace TArc
+{
+NotificationWidget::NotificationWidget(const NotificationWidgetParams& params, QWidget* parent)
     : QWidget(parent)
+    , remainTimeMs(params.showTimeMs)
+
 {
     Qt::WindowFlags flags = (Qt::FramelessWindowHint | // Disable window decoration
-                             Qt::Tool | // Discard display in a separate window
-                             Qt::WindowStaysOnTopHint); // Set on top of all windows
+                             Qt::Tool // Discard display in a separate window
+                             );
     setWindowFlags(flags);
 
     setAttribute(Qt::WA_TranslucentBackground); // Indicates that the background will be transparent
     setAttribute(Qt::WA_ShowWithoutActivating); // At the show, the widget does not get the focus automatically
 
-    QHBoxLayout* mainLayout = new QHBoxLayout(this);
+    InitUI(params);
+    InitTimer();
+    InitAnimations();
 
-    QVBoxLayout* messageLayout = new QVBoxLayout(this);
+    QDesktopWidget* desktop = QApplication::desktop();
+    QRect geometry = desktop->availableGeometry(parent);
+    setFixedWidth(geometry.width() / 6);
+    setMaximumHeight(geometry.height() / 5);
+
+    connect(qApp, &QApplication::applicationStateChanged, this, &NotificationWidget::OnApplicationStateChanged);
+}
+
+void NotificationWidget::SetPosition(const QPoint& point)
+{
+    positionAnimation->stop();
+    if (pos() == NotificationWidgetDetails::invalidPos)
+    {
+        move(point);
+        return;
+    }
+    positionAnimation->setStartValue(pos());
+    positionAnimation->setEndValue(point);
+    positionAnimation->start();
+}
+
+void NotificationWidget::Add()
+{
+    show();
+
+    opacityAnimation->setStartValue(0.0);
+    opacityAnimation->setEndValue(1.0);
+    opacityAnimation->start();
+    move(NotificationWidgetDetails::invalidPos);
+    if (qApp->applicationState() == Qt::ApplicationActive)
+    {
+        timer->start(remainTimeMs);
+    }
+}
+
+void NotificationWidget::OnApplicationStateChanged(Qt::ApplicationState state)
+{
+    if (state == Qt::ApplicationActive)
+    {
+        timer->start(remainTimeMs);
+    }
+    else
+    {
+        if (timer->isActive())
+        {
+            remainTimeMs = timer->remainingTime();
+            timer->stop();
+        }
+    }
+}
+
+void NotificationWidget::InitUI(const NotificationWidgetParams& params)
+{
+    QHBoxLayout* mainLayout = new QHBoxLayout();
+
+    QVBoxLayout* messageLayout = new QVBoxLayout();
     mainLayout->addItem(messageLayout);
 
-    QHBoxLayout* titleLayout = new QHBoxLayout(this);
+    QHBoxLayout* titleLayout = new QHBoxLayout();
+    titleLayout->setSpacing(10);
     messageLayout->addItem(titleLayout);
 
     QPixmap icon = QMessageBox::standardIcon(params.icon);
@@ -60,6 +126,9 @@ DAVA::TArc::NotificationWidget::NotificationWidget(const DAVA::TArc::Notificatio
     if (params.title.isEmpty() == false)
     {
         QLabel* labelTitle = new QLabel(params.title);
+        labelTitle->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
+        labelTitle->setAlignment(Qt::AlignLeft);
+        labelTitle->setWordWrap(true);
         labelTitle->setStyleSheet("font-weight: bold;");
         titleLayout->addWidget(labelTitle);
     }
@@ -74,10 +143,8 @@ DAVA::TArc::NotificationWidget::NotificationWidget(const DAVA::TArc::Notificatio
     QColor pressedColor = baseColor;
     pressedColor.setAlpha(255);
 
-    QSizePolicy sizePolicy(QSizePolicy::Maximum, QSizePolicy::Expanding);
     QString styleSheet = QString("QPushButton {"
-                                 "border-radius: 5px;"
-                                 "border: 1px solid #000000;"
+                                 "border-radius: 1px;"
                                  "background-color: " +
                                  NotificationWidgetDetails::ColorToHTML(buttonColor) + ";"
                                                                                        "padding: 5px;"
@@ -87,49 +154,55 @@ DAVA::TArc::NotificationWidget::NotificationWidget(const DAVA::TArc::Notificatio
                                  NotificationWidgetDetails::ColorToHTML(pressedColor) + ";"
                                                                                         "}");
 
-    QVBoxLayout* buttonsLayout = new QVBoxLayout(this);
+    QVBoxLayout* buttonsLayout = new QVBoxLayout();
+    buttonsLayout->setSpacing(5);
     mainLayout->addItem(buttonsLayout);
     {
-        QPushButton* button = new QPushButton(tr("Close"));
-        button->setStyleSheet(styleSheet);
-        button->setSizePolicy(sizePolicy);
-        buttonsLayout->addWidget(button);
-        connect(button, &QPushButton::clicked, this, &NotificationWidget::OnCloseClicked);
+        closeButton = new QPushButton(tr("Close"));
+        closeButton->setStyleSheet(styleSheet);
+        closeButton->setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred));
+        buttonsLayout->addWidget(closeButton);
+        connect(closeButton, &QPushButton::clicked, this, &NotificationWidget::Remove);
     }
     {
-        QPushButton* button = new QPushButton(tr("Details"));
-        button->setStyleSheet(styleSheet);
-        button->setSizePolicy(sizePolicy);
-        buttonsLayout->addWidget(button);
-        connect(button, &QPushButton::clicked, params.callBack);
+        detailsButton = new QPushButton(tr("Details"));
+        detailsButton->setStyleSheet(styleSheet);
+        detailsButton->setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred));
+        buttonsLayout->addWidget(detailsButton);
+        connect(detailsButton, &QPushButton::clicked, params.callBack);
+        connect(detailsButton, &QPushButton::clicked, this, &NotificationWidget::Remove);
     }
-
-    timer = new QTimer();
-    timer->setSingleShot(true);
-    timer->setInterval(params.showTimeMs);
-    connect(timer, &QTimer::timeout, this, &NotificationWidget::Hide);
-    resize(sizeHint());
+    setLayout(mainLayout);
 }
 
-void DAVA::TArc::NotificationWidget::SetPosition(const QPoint& point)
+void NotificationWidget::InitAnimations()
 {
-    if (pos() == QPoint(-1, -1))
-    {
-        move(point);
-        return;
-    }
-    QPropertyAnimation* animation = new QPropertyAnimation(this);
-    animation->setEasingCurve(QEasingCurve::OutExpo);
-    animation->setTargetObject(this);
-    animation->setPropertyName("position");
+    positionAnimation = new QPropertyAnimation(this, "position", this);
+    positionAnimation->setEasingCurve(QEasingCurve::OutExpo);
+    positionAnimation->setDuration(150);
 
-    animation->setDuration(150); // Configuring the duration of the animation
-    animation->setStartValue(pos()); // The start value is 0 (fully transparent widget)
-    animation->setEndValue(point); // End - completely opaque widget
-    animation->start();
+    opacityAnimation = new QPropertyAnimation(this, "opacity", this);
+    opacityAnimation->setDuration(150);
 }
 
-void DAVA::TArc::NotificationWidget::paintEvent(QPaintEvent* /*event*/)
+void NotificationWidget::InitTimer()
+{
+    timer = new QTimer(this);
+    timer->setSingleShot(true);
+    connect(timer, &QTimer::timeout, this, &NotificationWidget::Remove);
+}
+
+void NotificationWidget::Remove()
+{
+    timer->stop();
+    opacityAnimation->stop();
+    opacityAnimation->setStartValue(1.0);
+    opacityAnimation->setEndValue(0.0);
+    opacityAnimation->start();
+    connect(opacityAnimation, &QAbstractAnimation::finished, this, &NotificationWidget::Removed);
+}
+
+void NotificationWidget::paintEvent(QPaintEvent* /*event*/)
 {
     QPainter painter(this);
     painter.setRenderHint(QPainter::Antialiasing);
@@ -141,55 +214,22 @@ void DAVA::TArc::NotificationWidget::paintEvent(QPaintEvent* /*event*/)
     roundedRect.setHeight(rect().height() - 10);
 
     QPalette palette;
-    QColor baseColor = palette.color(QPalette::Window);
-    painter.setBrush(QBrush(baseColor));
-    painter.setPen(Qt::NoPen);
+    QColor rectColor = palette.color(QPalette::Window);
+    painter.setBrush(QBrush(rectColor));
+    painter.setPen(Qt::black);
 
     painter.drawRoundedRect(roundedRect, 10, 10);
+
+    QRect closeButtonGeometry = closeButton->geometry();
+    QRect detailsButtonGeometry = detailsButton->geometry();
+
+    int y = (closeButtonGeometry.bottom() + detailsButtonGeometry.top()) / 2;
+    QPoint left(qMin(closeButtonGeometry.left(), detailsButtonGeometry.left()), y);
+    QPoint right(qMax(closeButtonGeometry.right(), detailsButtonGeometry.right()), y);
+
+    QColor lineColor = palette.color(QPalette::Text);
+    painter.setPen(lineColor);
+    painter.drawLine(left, right);
 }
-
-void DAVA::TArc::NotificationWidget::Show()
-{
-    setWindowOpacity(1.0); // Set the transparency to zero
-
-    QPropertyAnimation* animation = new QPropertyAnimation(this);
-    animation->setTargetObject(this);
-    animation->setPropertyName("opacity");
-
-    animation->setDuration(150); // Configuring the duration of the animation
-    animation->setStartValue(0.0); // The start value is 0 (fully transparent widget)
-    animation->setEndValue(1.0); // End - completely opaque widget
-
-    connect(animation, &QAbstractAnimation::finished, animation, &QObject::deleteLater);
-
-    //     setGeometry(QApplication::desktop()->availableGeometry().width() - 36 - width() + QApplication::desktop()->availableGeometry().x(),
-    //         QApplication::desktop()->availableGeometry().height() - 36 - height() + QApplication::desktop()->availableGeometry().y(),
-    //         width(),
-    //         height());
-    QWidget::show();
-
-    animation->start();
-    timer->start();
-    move(-1, -1);
-}
-
-void DAVA::TArc::NotificationWidget::OnCloseClicked()
-{
-    timer->stop();
-    Hide();
-}
-
-void DAVA::TArc::NotificationWidget::Hide()
-{
-    timer->stop();
-
-    QPropertyAnimation* animation = new QPropertyAnimation(this);
-    animation->setTargetObject(this);
-    animation->setPropertyName("opacity");
-
-    animation->setDuration(150);
-    animation->setStartValue(1.0);
-    animation->setEndValue(0.0);
-    animation->start();
-    connect(animation, &QAbstractAnimation::finished, this, &NotificationWidget::Remove);
-}
+} //namespace TArc
+} //namespace DAVA

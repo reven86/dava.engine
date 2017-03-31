@@ -17,18 +17,32 @@ class NotificationLayout : public QObject
     Q_OBJECT
 
 public:
-    NotificationLayout();
-    ~NotificationLayout() override;
+    enum eLayoutType
+    {
+        TopLeft,
+        TopRight,
+        BottomLeft,
+        BottomRight
+    };
 
     void AddNotificationWidget(QWidget* parent, const NotificationWidgetParams& params);
 
+private:
+    void SetLayoutTyle(eLayoutType type);
     void RemoveWidget();
-
     void LayoutWidgets();
 
-private:
+    void LayoutToTopLeft(int totalHeight, NotificationWidget* widget, QWidget* parent);
+    void LayoutToTopRight(int totalHeight, NotificationWidget* widget, QWidget* parent);
+    void LayoutToBottonLeft(int totalHeight, NotificationWidget* widget, QWidget* parent);
+    void LayoutToBottomRight(int totalHeight, NotificationWidget* widget, QWidget* parent);
+
+    bool eventFilter(QObject* object, QEvent* event);
+
     using NotificationList = QList<NotificationWidget*>;
-    QMap<QWidget*, NotificationList> notifications;
+    using NotificationListMap = QMap<QWidget*, NotificationList>;
+    NotificationListMap notifications;
+    eLayoutType layoutType = TopLeft;
 };
 } //namespace TArc
 } //namespace DAVA
