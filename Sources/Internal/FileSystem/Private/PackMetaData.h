@@ -19,7 +19,7 @@ public:
 		*/
     PackMetaData(const void* ptr, std::size_t size);
 
-    Vector<String> GetDependencyNames(const String& requestedPackName) const;
+    Vector<uint32> GetDependencyPackIndexes(const String& requestedPackName) const;
 
     Vector<uint32> GetFileIndexes(const String& requestedPackName) const;
 
@@ -43,7 +43,7 @@ public:
     Vector<uint8> Serialize() const;
     void Deserialize(const void* ptr, size_t size);
 
-    bool IsParent(uint32 parentPackIndex, uint32 childPackIndex) const;
+    bool IsChild(uint32 parentPackIndex, uint32 childPackIndex) const;
 
 private:
     // fileNames already in DVPK format
@@ -55,7 +55,11 @@ private:
     Vector<PackInfo> packDependencies;
 
     using Childrens = Vector<uint32>;
+    // packIndex(0-NUM_PACKS) -> Vector of child indexes
     Vector<Childrens> childrens;
+
+    // packName -> packIndex
+    UnorderedMap<String, uint32> mapPackNameToPackIndex;
 };
 
 inline size_t PackMetaData::GetFileCount() const

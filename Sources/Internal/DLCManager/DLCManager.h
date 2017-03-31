@@ -50,8 +50,6 @@ public:
 
         /** return requested pack name */
         virtual const String& GetRequestedPackName() const = 0;
-        /** recalculate full size with all dependencies */
-        virtual Vector<String> GetDependencies() const = 0;
         /** return size of files within this request without dependencies */
         virtual uint64 GetSize() const = 0;
         /** recalculate current downloaded size without dependencies */

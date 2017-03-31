@@ -1049,10 +1049,6 @@ DLCManager::Progress DLCManagerImpl::GetProgress() const
     using namespace PackFormat;
 
     Progress progress;
-    if (!isProcessingEnabled)
-    {
-        return progress;
-    }
 
     if (!IsInitialized())
     {

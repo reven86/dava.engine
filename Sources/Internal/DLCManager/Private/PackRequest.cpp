@@ -81,7 +81,7 @@ const String& PackRequest::GetRequestedPackName() const
     return requestedPackName;
 }
 
-Vector<String> PackRequest::GetDependencies() const
+Vector<uint32> PackRequest::GetDependencies() const
 {
     if (dependencyCache.capacity() > 0)
     {

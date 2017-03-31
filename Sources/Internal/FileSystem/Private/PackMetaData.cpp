@@ -65,15 +65,16 @@ PackMetaData::PackMetaData(const FilePath& metaDb)
     }
 }
 
-Vector<String> PackMetaData::GetDependencyNames(const String& requestedPackName) const
+Vector<uint32> PackMetaData::GetDependencyPackIndexes(const String& requestedPackName) const
 {
     using namespace DAVA;
-    Vector<String> requestNames;
+    Vector<uint32> requestNames;
 
     const PackInfo& packInfo = GetPackInfo(requestedPackName);
     const String& dependencies = packInfo.packDependencies;
     const String delimiter(", ");
 
+    // TODO reimplement!!!
     Split(dependencies, delimiter, requestNames);
 
     // convert every name from string representation of index to packName
@@ -102,29 +103,29 @@ Vector<uint32> PackMetaData::GetFileIndexes(const String& requestedPackName) con
 {
     Vector<uint32> result;
 
-    for (const PackInfo& t : packDependencies)
+    auto it = mapPackNameToPackIndex.find(requestedPackName);
+    if (it != end(mapPackNameToPackIndex))
     {
-        const String& packName = t.packName;
-        if (packName == requestedPackName)
+        uint32 packIndex = it->second;
+        size_t numFilesInThisPack = std::count(begin(packIndexes), end(packIndexes), packIndex);
+
+        if (numFilesInThisPack > 0)
         {
-            ptrdiff_t packIndex = std::distance(&packDependencies[0], &t);
-            uint32 pIndex = static_cast<uint32>(packIndex);
-
-            size_t numFilesInThisPack = std::count(begin(packIndexes), end(packIndexes), pIndex);
             result.reserve(numFilesInThisPack);
-
-            for (const auto& index : packIndexes)
+            uint32 packIndexesSize = static_cast<uint32>(packIndexes.size());
+            for (uint32 fileIndex = 0; fileIndex < packIndexesSize; ++fileIndex)
             {
-                if (index == pIndex)
+                uint32 index = packIndexes[fileIndex];
+                if (index == packIndex)
                 {
-                    ptrdiff_t fileIndex = std::distance(&packIndexes[0], &index);
-                    uint32 fIndex = static_cast<uint32>(fileIndex);
-                    result.push_back(fIndex);
+                    result.push_back(fileIndex);
                 }
             }
-            break;
         }
+
+        return result;
     }
+
     return result;
 }
 
@@ -140,13 +141,13 @@ const PackMetaData::PackInfo& PackMetaData::GetPackInfo(const uint32 packIndex) 
 
 const PackMetaData::PackInfo& PackMetaData::GetPackInfo(const String& packName) const
 {
-    for (const auto& packInfo : packDependencies)
+    auto it = mapPackNameToPackIndex.find(packName);
+    if (it != end(mapPackNameToPackIndex))
     {
-        if (packInfo.packName == packName)
-        {
-            return packInfo;
-        }
+        uint32 packIndex = it->second;
+        return GetPackInfo(packIndex);
     }
+
     Logger::Error("error: can't find packName: %s", packName.c_str());
     DVASSERT(false, "debug packName value");
     DAVA_THROW(Exception, "no such packName: " + packName);
@@ -321,7 +322,9 @@ void PackMetaData::Deserialize(const void* ptr, size_t size)
         }
         packName = line.substr(0, first_space);
         packDependency = line.substr(first_space + 1);
+        uint32 packIndex = static_cast<uint32>(packDependencies.size());
         packDependencies.push_back(PackInfo{ packName, packDependency });
+        mapPackNameToPackIndex.emplace(packName, packIndex);
     }
 
     // debug check that max index of fileIndex exist in packIndex
@@ -331,6 +334,12 @@ void PackMetaData::Deserialize(const void* ptr, size_t size)
     {
         DAVA_THROW(Exception, "read metadata error - too big index bad meta");
     }
+}
+
+bool PackMetaData::IsChild(uint32 parentPackIndex, uint32 childPackIndex) const
+{
+    // TODO implement it
+    DAVA_THROW(DAVA::Exception, "implement it");
 }
 
 } // end namespace DAVA
