@@ -274,7 +274,7 @@ bool SceneCameraSystem::Input(DAVA::UIEvent* event)
         break;
     case DAVA::UIEvent::Phase::GESTURE:
     {
-        const UIEvent::Gesture& gesture = event->gesture;
+        const DAVA::UIEvent::Gesture& gesture = event->gesture;
         if (gesture.dy != 0.0f)
         {
             ScrollCamera(gesture.dy);
