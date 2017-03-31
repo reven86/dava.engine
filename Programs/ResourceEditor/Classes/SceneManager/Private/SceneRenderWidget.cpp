@@ -14,6 +14,25 @@
 
 #include <QVBoxLayout>
 
+namespace SceneRenderWidgetDetails
+{
+class Editor3DView : public DAVA::UI3DView
+{
+public:
+    Editor3DView(const DAVA::Rect& rect)
+        : DAVA::UI3DView(rect)
+    {
+    }
+
+private:
+    bool SystemProcessInput(DAVA::UIEvent* currentInput)
+    {
+        UI3DView::Input(currentInput);
+        return true;
+    }
+};
+}
+
 SceneRenderWidget::SceneRenderWidget(DAVA::TArc::ContextAccessor* accessor_, DAVA::RenderWidget* renderWidget_, IWidgetDelegate* widgetDelegate_)
     : accessor(accessor_)
     , renderWidget(renderWidget_)
@@ -102,7 +121,7 @@ void SceneRenderWidget::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, co
 
 void SceneRenderWidget::InitDavaUI()
 {
-    dava3DView.Set(new DAVA::UI3DView(DAVA::Rect(dava3DViewMargin, dava3DViewMargin, 0, 0)));
+    dava3DView.Set(new SceneRenderWidgetDetails::Editor3DView(DAVA::Rect(dava3DViewMargin, dava3DViewMargin, 0, 0)));
     dava3DView->SetInputEnabled(true, true);
     dava3DView->GetOrCreateComponent<DAVA::UIFocusComponent>();
     dava3DView->SetName(DAVA::FastName("Scene Tab 3D View"));

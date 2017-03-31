@@ -61,8 +61,7 @@ protected:
 
 private:
     void OnKeyboardInput(DAVA::UIEvent* event);
-    void OnWheelInput(DAVA::UIEvent* event);
-    void OnNativeGesture(DAVA::UIEvent* event);
+    void ScrollCamera(DAVA::float32 dy);
 
     void CreateDebugCameras();
     void RecalcCameraAspect();

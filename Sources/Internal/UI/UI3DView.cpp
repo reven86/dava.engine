@@ -193,14 +193,14 @@ void UI3DView::CopyDataFrom(UIControl* srcControl)
     fbTexSize = srcView->fbTexSize;
 }
 
-bool UI3DView::SystemProcessInput(UIEvent* currentInput)
+void UI3DView::Input(UIEvent* currentInput)
 {
     if (scene != nullptr)
     {
         scene->Input(currentInput);
     }
 
-    return UIControl::SystemProcessInput(currentInput);
+    UIControl::Input(currentInput);
 }
 
 void UI3DView::InputCancelled(UIEvent* currentInput)

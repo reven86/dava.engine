@@ -38,7 +38,7 @@ public:
     UI3DView* Clone() override;
     void CopyDataFrom(UIControl* srcControl) override;
 
-    bool SystemProcessInput(UIEvent* currentInput) override;
+    void Input(UIEvent* currentInput) override;
     void InputCancelled(UIEvent* currentInput) override;
 
     void OnVisible() override;
