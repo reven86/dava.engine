@@ -121,7 +121,7 @@ public:
     /** return nullptr if can't find pack */
     virtual const IRequest* RequestPack(const String& packName) = 0;
 
-    virtual bool IsPackInQueue(const String& packName) = 0;
+    virtual bool IsPackInQueue(const String& packName);
 
     /** Update request queue to first download dependency of selected request
         and then request itself */
@@ -140,5 +140,11 @@ public:
     /** Calculate statistic about downloading progress */
     virtual Progress GetProgress() const = 0;
 };
+
+// HACK to compile current Blitz client
+inline bool DLCManager::IsPackInQueue(const String& packName)
+{
+    return false;
+}
 
 } // end namespace DAVA
