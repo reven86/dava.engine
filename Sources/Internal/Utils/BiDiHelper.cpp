@@ -20,6 +20,7 @@
 #endif
 #include <unicode/ubidi.h>
 #include <unicode/ushape.h>
+#include <unicode/ustring.h>
 #if __clang__
     #pragma clang diagnostic pop
 #endif
@@ -33,6 +34,7 @@ class BiDiWrapper
 public:
     bool Prepare(const WideString& logicalStr, WideString& preparedStr, bool* isRTL);
     bool Reorder(const WideString& preparedStr, WideString& reorderedStr, const bool forceRtl);
+    bool IsRtlUTF8String(const String& utf8String);
 
 private:
     Mutex mutex;
@@ -224,6 +226,57 @@ bool BiDiWrapper::Reorder(const WideString& preparedStr, WideString& reorderedSt
 #endif
 }
 
+bool BiDiWrapper::IsRtlUTF8String(const String& utf8String)
+{
+    LockGuard<Mutex> guard(mutex);
+
+#if DAVA_FRIBIDI
+    static FriBidiFlags flags = FRIBIDI_FLAGS_DEFAULT | FRIBIDI_FLAGS_ARABIC;
+
+    FriBidiParType base_dir = FRIBIDI_PAR_ON;
+    uint32 fribidi_len = static_cast<uint32>(logicalStr.length());
+
+    logicalBuffer.assign(logicalStr.begin(), logicalStr.end());
+    bidiTypes.resize(fribidi_len);
+    bidiLevels.resize(fribidi_len);
+    visualBuffer.resize(fribidi_len);
+    arabicProps.resize(fribidi_len);
+
+    fribidi_get_bidi_types(&logicalBuffer[0], fribidi_len, &bidiTypes[0]);
+
+    FriBidiLevel max_level = fribidi_get_par_embedding_levels(&bidiTypes[0], fribidi_len, &base_dir, &bidiLevels[0]) - 1;
+    if (max_level < 0)
+    {
+        return false;
+    }
+    return FRIBIDI_IS_RTL(base_dir);
+
+#elif DAVA_ICU
+    int32 ucharLength = 0;
+    UErrorCode error = U_ZERO_ERROR;
+    u_strFromUTF8(nullptr, 0, &ucharLength, utf8String.c_str(), utf8String.length(), &error);
+    if (error != U_ZERO_ERROR && error != U_BUFFER_OVERFLOW_ERROR)
+    {
+        return false;
+    }
+
+    logicalBuffer.resize(ucharLength + 1); // +1 for \0 character
+    error = U_ZERO_ERROR;
+    u_strFromUTF8(logicalBuffer.data(), ucharLength + 1, nullptr, utf8String.c_str(), utf8String.length(), &error);
+    if (error != U_ZERO_ERROR)
+    {
+        return false;
+    }
+
+    UBiDiDirection direction = ubidi_getBaseDirection(logicalBuffer.data(), ucharLength);
+    return direction == UBIDI_RTL;
+
+#else
+    return false;
+
+#endif
+}
+
 BiDiHelper::BiDiHelper()
     : wrapper(new BiDiWrapper())
 {
@@ -258,5 +311,10 @@ bool BiDiHelper::IsBiDiSpecialCharacter(uint32 character) const
     return false;
 
 #endif
+}
+
+bool BiDiHelper::IsRtlUTF8String(const String& utf8String) const
+{
+    return wrapper->IsRtlUTF8String(utf8String);
 }
 }

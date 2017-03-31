@@ -29,6 +29,9 @@ public:
     bool IsNewLineAfterThis() const;
     void SetNewLineAfterThis(bool flag);
 
+    bool IsRtlContent() const;
+    void SetRtlContent(bool flag);
+
 private:
     void SetLayoutDirty();
 
@@ -37,6 +40,7 @@ private:
     {
         FLAG_NEW_LINE_BEFORE_THIS,
         FLAG_NEW_LINE_AFTER_THIS,
+        FLAG_RTL_CONTENT,
         FLAG_COUNT
     };
 
@@ -45,7 +49,8 @@ private:
 public:
     INTROSPECTION_EXTEND(UIFlowLayoutHintComponent, UIComponent,
                          PROPERTY("newLineBeforeThis", "New Line Before This", IsNewLineBeforeThis, SetNewLineBeforeThis, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("newLineAfterThis", "New Line After This", IsNewLineAfterThis, SetNewLineAfterThis, I_SAVE | I_VIEW | I_EDIT))
+                         PROPERTY("newLineAfterThis", "New Line After This", IsNewLineAfterThis, SetNewLineAfterThis, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("rtlContent", "RTL Content", IsRtlContent, SetRtlContent, I_SAVE | I_VIEW | I_EDIT))
 };
 }
 

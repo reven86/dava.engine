@@ -45,6 +45,17 @@ void UIFlowLayoutHintComponent::SetNewLineAfterThis(bool flag)
     SetLayoutDirty();
 }
 
+bool UIFlowLayoutHintComponent::IsRtlContent() const
+{
+    return flags.test(FLAG_RTL_CONTENT);
+}
+
+void UIFlowLayoutHintComponent::SetRtlContent(bool flag)
+{
+    flags.set(FLAG_RTL_CONTENT, flag);
+    SetLayoutDirty();
+}
+
 void UIFlowLayoutHintComponent::SetLayoutDirty()
 {
     if (GetControl() != nullptr)

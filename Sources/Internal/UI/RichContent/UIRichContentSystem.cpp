@@ -7,6 +7,7 @@
 #include "UI/Layouts/UIFlowLayoutHintComponent.h"
 #include "UI/Styles/UIStyleSheetSystem.h"
 #include "Utils/Utils.h"
+#include "Utils/BiDiHelper.h"
 
 namespace DAVA
 {
@@ -68,7 +69,6 @@ public:
 
     void PrepareControl(UIControl* ctrl)
     {
-        ctrl->SetDebugDraw(true);
         ctrl->SetPackageContext(context);
         ctrl->SetClassesFromString(GetClass());
 
@@ -76,10 +76,11 @@ public:
         sp->SetHorizontalPolicy(UISizePolicyComponent::eSizePolicy::PERCENT_OF_CONTENT);
         sp->SetVerticalPolicy(UISizePolicyComponent::eSizePolicy::PERCENT_OF_CONTENT);
 
-        if (needLineBreak)
+        if (isRtl || needLineBreak)
         {
             UIFlowLayoutHintComponent* flh = ctrl->GetOrCreateComponent<UIFlowLayoutHintComponent>();
-            flh->SetNewLineBeforeThis(true);
+            flh->SetRtlContent(isRtl);
+            flh->SetNewLineBeforeThis(needLineBreak);
             needLineBreak = false;
         }
     }
@@ -147,9 +148,11 @@ public:
             Split(chars, " \n", tokens);
             for (auto token : tokens)
             {
+                isRtl = bidiHelper.IsRtlUTF8String(token);
                 UIStaticText* text = new UIStaticText();
                 PrepareControl(text);
                 text->SetUtf8Text(token);
+                text->SetForceBiDiSupportEnabled(true);
                 controls.emplace_back(text);
             }
         }
@@ -173,9 +176,11 @@ public:
 private:
     bool textMode = true;
     bool needLineBreak = false;
+    bool isRtl = false;
     UIControlPackageContext* context = nullptr;
     Vector<String> classesStack;
     Vector<RefPtr<UIControl>> controls;
+    BiDiHelper bidiHelper;
 };
 
 /*******************************************************************************************************/
