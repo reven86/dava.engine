@@ -119,6 +119,7 @@ DV_LOCAL_C_INCLUDES := $(LOCAL_PATH)
 DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../Tools/
 DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/include
 DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Modules/Sound/Libs/Include
+DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Modules/Sound/Sources
 DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/lua/include
 DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/icucommon/source/common
 DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/openssl/include/android
