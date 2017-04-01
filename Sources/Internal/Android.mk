@@ -445,7 +445,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Scene3D/Lod/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scripting/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Sound/Private/SoundSystem.cpp) \
-                     $(wildcard $(DAVA_ROOT)/Modules/Sound/Sources/Private/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/../../Modules/Sound/Sources/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Time/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Time/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Concurrency/*.cpp) \
