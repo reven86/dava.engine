@@ -129,25 +129,25 @@ void PreviewWidget::CreateActions()
     importPackageAction->setShortcut(QKeySequence::New);
     importPackageAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     connect(importPackageAction, &QAction::triggered, this, &PreviewWidget::ImportRequested);
-    addAction(importPackageAction);
+    renderWidget->addAction(importPackageAction);
 
     QAction* cutAction = new QAction(tr("Cut"), this);
     cutAction->setShortcut(QKeySequence::Cut);
     cutAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     connect(cutAction, &QAction::triggered, this, &PreviewWidget::CutRequested);
-    addAction(cutAction);
+    renderWidget->addAction(cutAction);
 
     QAction* copyAction = new QAction(tr("Copy"), this);
     copyAction->setShortcut(QKeySequence::Copy);
     copyAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     connect(copyAction, &QAction::triggered, this, &PreviewWidget::CopyRequested);
-    addAction(copyAction);
+    renderWidget->addAction(copyAction);
 
     QAction* pasteAction = new QAction(tr("Paste"), this);
     pasteAction->setShortcut(QKeySequence::Paste);
     pasteAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     connect(pasteAction, &QAction::triggered, this, &PreviewWidget::PasteRequested);
-    addAction(pasteAction);
+    renderWidget->addAction(pasteAction);
 
     QAction* deleteAction = new QAction(tr("Delete"), this);
 #if defined Q_OS_WIN
@@ -158,22 +158,22 @@ void PreviewWidget::CreateActions()
 
     deleteAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     connect(deleteAction, &QAction::triggered, this, &PreviewWidget::DeleteRequested);
-    addAction(deleteAction);
+    renderWidget->addAction(deleteAction);
 
     selectAllAction = new QAction(tr("Select all"), this);
     selectAllAction->setShortcut(QKeySequence::SelectAll);
     selectAllAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    addAction(selectAllAction);
+    renderWidget->addAction(selectAllAction);
 
     focusNextChildAction = new QAction(tr("Focus next child"), this);
     focusNextChildAction->setShortcut(Qt::Key_Tab);
     focusNextChildAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    addAction(focusNextChildAction);
+    renderWidget->addAction(focusNextChildAction);
 
     focusPreviousChildAction = new QAction(tr("Focus frevious child"), this);
     focusPreviousChildAction->setShortcut(static_cast<int>(Qt::ShiftModifier | Qt::Key_Tab));
     focusPreviousChildAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    addAction(focusPreviousChildAction);
+    renderWidget->addAction(focusPreviousChildAction);
 }
 
 void PreviewWidget::OnRootControlPositionChanged(const Vector2& pos)
