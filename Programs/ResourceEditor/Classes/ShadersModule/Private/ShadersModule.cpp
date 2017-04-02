@@ -23,6 +23,7 @@
 #include "Render/Material/NMaterial.h"
 #include "Render/ShaderCache.h"
 #include "Scene3D/Systems/FoliageSystem.h"
+#include "Scene3D/Systems/ParticleEffectDebugDrawSystem.h"
 
 namespace ShadersModuleDetail
 {
@@ -79,6 +80,16 @@ void ShadersModule::ReloadShaders()
                                       for (auto material : particleInstances)
                                       {
                                           material.second->InvalidateRenderVariants();
+                                      }
+
+                                      DAVA::ParticleEffectDebugDrawSystem* particleEffectDebugDrawSystem = sceneEditor->GetParticleEffectDebugDrawSystem();
+                                      if (particleEffectDebugDrawSystem != nullptr)
+                                      {
+                                          const DAVA::Vector<DAVA::NMaterial*>* const particleDebug = particleEffectDebugDrawSystem->GetMaterials();
+                                          for (auto material : *particleDebug)
+                                          {
+                                              material->InvalidateRenderVariants();
+                                          }
                                       }
 
                                       DAVA::Set<DAVA::NMaterial*> materialList;

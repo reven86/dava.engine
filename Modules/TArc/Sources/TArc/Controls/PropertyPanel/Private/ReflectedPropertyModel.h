@@ -62,10 +62,17 @@ public:
     QModelIndexList GetExpandedList() const;
     QModelIndexList GetExpandedChildren(const QModelIndex& index) const;
 
-    void SaveExpanded(PropertiesItem& propertyRoot) const;
-    void LoadExpanded(const PropertiesItem& propertyRoot);
+    void SaveState(PropertiesItem& propertyRoot) const;
+    void LoadState(const PropertiesItem& propertyRoot);
 
     void HideEditors();
+
+    bool IsFavorite(const QModelIndex& index) const;
+    void AddFavorite(const QModelIndex& index);
+    void RemoveFavorite(const QModelIndex& index);
+
+    bool IsFavoriteOnly() const;
+    void SetFavoriteOnly(bool isFavoriteOnly);
 
 private:
     friend class BaseComponentValue;
@@ -75,19 +82,29 @@ private:
     ReflectedPropertyItem* MapItem(const QModelIndex& item) const;
     QModelIndex MapItem(ReflectedPropertyItem* item) const;
 
+    ReflectedPropertyItem* GetSmartRoot() const;
+
     void Update(ReflectedPropertyItem* item);
     void UpdateFastImpl(ReflectedPropertyItem* item);
     void HideEditor(ReflectedPropertyItem* item);
 
     template <typename T>
     std::shared_ptr<T> GetExtensionChain() const;
+    ReflectedPropertyItem* LookUpItem(const std::shared_ptr<PropertyNode>& node, const Vector<std::unique_ptr<ReflectedPropertyItem>>& children);
 
     DataWrappersProcessor* GetWrappersProcessor(const std::shared_ptr<PropertyNode>& node);
     void GetExpandedListImpl(QModelIndexList& list, ReflectedPropertyItem* item) const;
 
+    void RefreshFavoritesRoot();
+    void RefreshFavorites(ReflectedPropertyItem* item, uint32 level, bool insertSessionIsOpen, const Set<size_t>& candidates);
+    ReflectedPropertyItem* CreateDeepCopy(ReflectedPropertyItem* itemToCopy, ReflectedPropertyItem* copyParent, size_t positionInParent);
+
 private:
     std::unique_ptr<ReflectedPropertyItem> rootItem;
+    ReflectedPropertyItem* favoritesRoot = nullptr;
     UnorderedMap<std::shared_ptr<const PropertyNode>, ReflectedPropertyItem*> nodeToItem;
+    UnorderedMap<ReflectedPropertyItem*, ReflectedPropertyItem*> favoriteToItem;
+    UnorderedMap<ReflectedPropertyItem*, ReflectedPropertyItem*> itemToFavorite;
 
     ChildCreator childCreator;
     Map<const Type*, std::shared_ptr<ExtensionChain>> extensions;
@@ -95,11 +112,16 @@ private:
     DataWrappersProcessor wrappersProcessor;
     DataWrappersProcessor fastWrappersProcessor;
     ReflectionPathTree expandedItems;
+    Vector<Vector<FastName>> favoritedPathes;
 
     WindowKey wndKey;
     ContextAccessor* accessor = nullptr;
     OperationInvoker* invoker = nullptr;
     UI* ui = nullptr;
+
+    bool showFavoriteOnly = false;
+    class InsertGuard;
+    class RemoveGuard;
 };
 
 template <typename Dst, typename Src>

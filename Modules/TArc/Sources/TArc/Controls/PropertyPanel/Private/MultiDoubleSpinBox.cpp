@@ -43,7 +43,7 @@ QWidget* CreatedEditor(const Reflection& r, const MultiDoubleSpinBox::FieldDescr
     ApplyRole(descr, DoubleSpinBox::Fields::Accuracy, fieldDescr.accuracyRole);
     DoubleSpinBox* spinBox = new DoubleSpinBox(descr, accessor, model, result);
     subControls.push_back(spinBox);
-    layout->AddWidget(spinBox);
+    layout->AddControl(spinBox);
 
     QWidget* editor = spinBox->ToWidgetCast();
     QSizePolicy policy = editor->sizePolicy();

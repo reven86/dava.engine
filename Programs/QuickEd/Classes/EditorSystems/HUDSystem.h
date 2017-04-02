@@ -57,10 +57,12 @@ private:
 
     bool showPivot;
     bool showRotate;
+    DAVA::Vector2 minimumSelectionRectSize;
 
 public:
     INTROSPECTION(HUDSystem,
                   MEMBER(showPivot, "Control Transformations/Can transform pivot", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
                   MEMBER(showRotate, "Control Transformations/Can rotate control", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
+                  MEMBER(minimumSelectionRectSize, "Control Transformations/Minimum size of selection rect", DAVA::I_SAVE | DAVA::I_PREFERENCE)
                   )
 };
