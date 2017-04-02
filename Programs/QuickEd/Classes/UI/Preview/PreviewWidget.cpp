@@ -107,17 +107,6 @@ float PreviewWidget::GetScaleFromComboboxText() const
     return scaleValue / 100.0f;
 }
 
-void PreviewWidget::InjectRenderWidget(DAVA::RenderWidget* renderWidget_)
-{
-    DVASSERT(renderWidget_ != nullptr);
-    renderWidget = renderWidget_;
-    CreateActions();
-
-    renderWidget->resized.Connect(this, &PreviewWidget::OnResized);
-
-    renderWidget->SetClientDelegate(this);
-}
-
 FindInDocumentWidget* PreviewWidget::GetFindInDocumentWidget()
 {
     return findInDocumentWidget;
@@ -342,6 +331,17 @@ void PreviewWidget::InitFromSystemsManager(EditorSystemsManager* systemsManager_
 
     CursorSystem* cursorSystem = new CursorSystem(renderWidget, systemsManager);
     systemsManager->AddEditorSystem(cursorSystem);
+}
+
+void PreviewWidget::InjectRenderWidget(DAVA::RenderWidget* renderWidget_)
+{
+    DVASSERT(renderWidget_ != nullptr);
+    renderWidget = renderWidget_;
+    CreateActions();
+
+    renderWidget->resized.Connect(this, &PreviewWidget::OnResized);
+
+    renderWidget->SetClientDelegate(this);
 }
 
 void PreviewWidget::OnScaleChanged(float32 scale)

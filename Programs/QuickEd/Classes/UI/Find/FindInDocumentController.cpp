@@ -8,6 +8,7 @@
 #include <TArc/WindowSubSystem/ActionUtils.h>
 #include <TArc/WindowSubSystem/UI.h>
 #include <TArc/WindowSubSystem/QtAction.h>
+#include <QApplication>
 
 using namespace DAVA;
 
@@ -121,6 +122,9 @@ void FindInDocumentController::SetFilter(std::shared_ptr<FindFilter> filter)
 
         finder.Process(data->GetPackageNode(), editedRootControls);
     }
+
+    findInDocumentWidget->SetResultIndex(context.currentSelection);
+    findInDocumentWidget->SetResultCount(context.results.size());
 }
 
 void FindInDocumentController::MoveSelection(int32 step)
@@ -147,6 +151,13 @@ void FindInDocumentController::MoveSelection(int32 step)
         const QString& name = QString::fromStdString(context.results[context.currentSelection]);
         documentsModule->InvokeOperation(QEGlobal::SelectControl.ID, path, name);
     }
+    else
+    {
+        QApplication::beep();
+        context.currentSelection = -1;
+    }
+
+    findInDocumentWidget->SetResultIndex(context.currentSelection);
 }
 
 void FindInDocumentController::OnEditedRootControlsChanged(const DAVA::Any& value)

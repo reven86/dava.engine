@@ -4,7 +4,7 @@
 #include <QAction>
 #include <QHBoxLayout>
 #include <QToolButton>
-#include <QMenu>
+#include <QLabel>
 #include <QWidget>
 
 class FindFilter;
@@ -20,6 +20,9 @@ public:
 
     void Reset();
 
+    void SetResultIndex(DAVA::int32 currentResultIndex);
+    void SetResultCount(DAVA::int32 currentResultCount);
+
 signals:
     void OnFindFilterReady(std::shared_ptr<FindFilter> filter);
     void OnFindNext();
@@ -34,7 +37,7 @@ private slots:
     void OnFiltersChanged();
 
 private:
-    void EmitFilterChanges();
+    void UpdateResultIndexAndCountLabel();
 
     QHBoxLayout* layout = nullptr;
     CompositeFindFilterWidget* findFiltersWidget = nullptr;
@@ -42,6 +45,8 @@ private:
     QToolButton* findPreviousButton = nullptr;
     QToolButton* findAllButton = nullptr;
     QToolButton* stopFindButton = nullptr;
+    QLabel* resultIndexCountLabel = nullptr;
 
-    bool hasChanges = true;
+    DAVA::int32 currentResultIndex = -1;
+    DAVA::int32 currentResultCount = 0;
 };

@@ -270,7 +270,7 @@
     <string>Jump to Prototype</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+G</string>
+    <string>Ctrl+J</string>
    </property>
   </action>
   <action name="actionFindPrototypeInstances">

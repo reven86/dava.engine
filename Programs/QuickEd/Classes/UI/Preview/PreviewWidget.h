@@ -48,8 +48,6 @@ public:
     explicit PreviewWidget(DAVA::TArc::ContextAccessor* accessor, DAVA::RenderWidget* renderWidget, EditorSystemsManager* systemsManager);
     ~PreviewWidget();
 
-    void InjectRenderWidget(DAVA::RenderWidget* renderWidget);
-
     FindInDocumentWidget* GetFindInDocumentWidget();
 
     DAVA::Signal<DAVA::uint64> requestCloseTab;
@@ -92,6 +90,8 @@ private:
     bool CanChangeTextInControl(const ControlNode* node) const;
 
     void InitFromSystemsManager(EditorSystemsManager* systemsManager);
+
+    void InjectRenderWidget(DAVA::RenderWidget* renderWidget);
 
 private:
     void CreateActions();

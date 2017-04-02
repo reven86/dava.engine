@@ -23,9 +23,14 @@ FindInDocumentWidget::FindInDocumentWidget(QWidget* parent)
     findAllButton = new QToolButton(this);
     stopFindButton = new QToolButton(this);
 
+    resultIndexCountLabel = new QLabel(this);
+
     connect(findFiltersWidget, SIGNAL(FiltersChanged()), this, SLOT(OnFiltersChanged()));
 
     layout->addWidget(findFiltersWidget);
+
+    layout->addWidget(resultIndexCountLabel);
+    layout->addSpacing(10);
     layout->addWidget(findPreviousButton);
     layout->addWidget(findNextButton);
     layout->addSpacing(10);
@@ -76,40 +81,48 @@ void FindInDocumentWidget::Reset()
     findFiltersWidget->Reset();
 }
 
+void FindInDocumentWidget::SetResultIndex(DAVA::int32 _currentResultIndex)
+{
+    currentResultIndex = _currentResultIndex;
+    UpdateResultIndexAndCountLabel();
+}
+
+void FindInDocumentWidget::SetResultCount(DAVA::int32 _currentResultCount)
+{
+    currentResultCount = _currentResultCount;
+    UpdateResultIndexAndCountLabel();
+}
+
 void FindInDocumentWidget::OnFindNextClicked()
 {
-    EmitFilterChanges();
-
     emit OnFindNext();
 }
 
 void FindInDocumentWidget::OnFindPreviousClicked()
 {
-    EmitFilterChanges();
-
     emit OnFindPrevious();
 }
 
 void FindInDocumentWidget::OnFindAllClicked()
 {
-    EmitFilterChanges();
-
     emit OnFindAll();
 }
 
 void FindInDocumentWidget::OnFiltersChanged()
 {
-    hasChanges = true;
+    std::shared_ptr<FindFilter> filter = findFiltersWidget->BuildFindFilter();
+
+    emit OnFindFilterReady(filter);
 }
 
-void FindInDocumentWidget::EmitFilterChanges()
+void FindInDocumentWidget::UpdateResultIndexAndCountLabel()
 {
-    if (hasChanges)
+    if (currentResultIndex < 0)
     {
-        std::shared_ptr<FindFilter> filter = findFiltersWidget->BuildFindFilter();
-
-        emit OnFindFilterReady(filter);
-
-        hasChanges = false;
+        resultIndexCountLabel->setText(QString("-- / %2").arg(currentResultCount));
+    }
+    else
+    {
+        resultIndexCountLabel->setText(QString("%1 / %2").arg(currentResultIndex + 1).arg(currentResultCount));
     }
 }

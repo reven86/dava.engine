@@ -36,7 +36,7 @@ public:
         return new RegExpStringFindFilterEditor(parent,
                                                 [](const RegExpStringFindFilterEditor* editor)
                                                 {
-                                                    return std::make_unique<ControlNameFilter>(editor->GetString(), editor->IsCaseSensitive());
+                                                    return std::make_unique<ControlNameFilter>(".*" + editor->GetString() + ".*", editor->IsCaseSensitive());
                                                 });
     }
 };
