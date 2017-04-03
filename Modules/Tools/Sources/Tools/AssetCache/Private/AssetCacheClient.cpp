@@ -403,6 +403,7 @@ bool AssetCacheClient::IsConnected() const
 
 void AssetCacheClient::ProcessNetwork()
 {
+    Net::NetCore::Instance()->Update();
     if (dispatcher.HasEvents())
     {
         dispatcher.ProcessEvents();
