@@ -73,6 +73,44 @@ String FormulaFormatter::AnyToString(const Any& val)
     return String("");
 }
 
+String FormulaFormatter::BinaryOpToString(FormulaBinaryOperatorExpression::Operator op)
+{
+    switch (op)
+    {
+    case FormulaBinaryOperatorExpression::OP_PLUS:
+        return "+";
+    case FormulaBinaryOperatorExpression::OP_MINUS:
+        return "-";
+    case FormulaBinaryOperatorExpression::OP_MUL:
+        return "*";
+    case FormulaBinaryOperatorExpression::OP_DIV:
+        return "/";
+    case FormulaBinaryOperatorExpression::OP_MOD:
+        return "%";
+    case FormulaBinaryOperatorExpression::OP_AND:
+        return "&&";
+    case FormulaBinaryOperatorExpression::OP_OR:
+        return "||";
+    case FormulaBinaryOperatorExpression::OP_EQ:
+        return "==";
+    case FormulaBinaryOperatorExpression::OP_NOT_EQ:
+        return "!=";
+    case FormulaBinaryOperatorExpression::OP_LE:
+        return "<=";
+    case FormulaBinaryOperatorExpression::OP_LT:
+        return "<";
+    case FormulaBinaryOperatorExpression::OP_GE:
+        return ">=";
+    case FormulaBinaryOperatorExpression::OP_GT:
+        return ">";
+
+    default:
+        DVASSERT("Invalid operator.");
+        break;
+    }
+    return "";
+}
+
 void FormulaFormatter::Visit(FormulaValueExpression* exp)
 {
     Any value = exp->GetValue();
@@ -137,52 +175,7 @@ void FormulaFormatter::Visit(FormulaBinaryOperatorExpression* exp)
         stream << ")";
     }
 
-    switch (exp->GetOperator())
-    {
-    case FormulaBinaryOperatorExpression::OP_PLUS:
-        stream << " + ";
-        break;
-    case FormulaBinaryOperatorExpression::OP_MINUS:
-        stream << " - ";
-        break;
-    case FormulaBinaryOperatorExpression::OP_MUL:
-        stream << " * ";
-        break;
-    case FormulaBinaryOperatorExpression::OP_DIV:
-        stream << " / ";
-        break;
-    case FormulaBinaryOperatorExpression::OP_MOD:
-        stream << " % ";
-        break;
-    case FormulaBinaryOperatorExpression::OP_AND:
-        stream << " && ";
-        break;
-    case FormulaBinaryOperatorExpression::OP_OR:
-        stream << " || ";
-        break;
-    case FormulaBinaryOperatorExpression::OP_EQ:
-        stream << " == ";
-        break;
-    case FormulaBinaryOperatorExpression::OP_NOT_EQ:
-        stream << " != ";
-        break;
-    case FormulaBinaryOperatorExpression::OP_LE:
-        stream << " <= ";
-        break;
-    case FormulaBinaryOperatorExpression::OP_LT:
-        stream << " < ";
-        break;
-    case FormulaBinaryOperatorExpression::OP_GE:
-        stream << " >= ";
-        break;
-    case FormulaBinaryOperatorExpression::OP_GT:
-        stream << " > ";
-        break;
-
-    default:
-        DVASSERT("Invalid operator.");
-        break;
-    }
+    stream << " " << BinaryOpToString(exp->GetOperator()) << " ";
 
     if (rhsSq)
     {
