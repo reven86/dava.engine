@@ -12,7 +12,7 @@ Our cmake scripts expect library names to be the same across all platforms, so w
 ====================================================================================================
 
 Do not forget to update fmodex.jar in:
-    dava.framework/Libs/lib_CMake/android/jar
+    dava.framework/Modules/Sound/Libs/Android/jar
     dava.framework/Programs/AndroidFramework/libs
 
 ====================================================================================================
