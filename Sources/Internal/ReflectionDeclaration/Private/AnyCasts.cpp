@@ -36,18 +36,34 @@ FastName CharPointerToFastName(const Any& value)
 
 const char* FastNameToCharPointer(const Any& value)
 {
-    return value.Get<FastName>().c_str();
+    const FastName& v = value.Get<FastName>();
+    if (v.IsValid() == false)
+    {
+        return nullptr;
+    }
+    return v.c_str();
 }
 
 String FastNameToString(const Any& value)
 {
-    return String(value.Get<FastName>().c_str());
+    const FastName& v = value.Get<FastName>();
+    if (v.IsValid() == false)
+    {
+        return String();
+    }
+    return String(v.c_str());
 }
 
 template <typename T>
 String IntegralToString(const Any& value)
 {
     return std::to_string(value.Get<T>());
+}
+
+template <typename T>
+FastName IntegralToString(const Any& value)
+{
+    return FastName(std::to_string(value.Get<T>()));
 }
 
 String FilePathToString(const Any& value)
@@ -101,6 +117,15 @@ void RegisterAnyCasts()
     AnyCast<size_t, int32>::RegisterDefault();
     AnyCast<int32, String>::Register(&IntegralToString<int32>);
     AnyCast<size_t, String>::Register(&IntegralToString<size_t>);
+    AnyCast<int8, FastName>::Register(&IntegralToString<int8>);
+    AnyCast<uint8, FastName>::Register(&IntegralToString<uint8>);
+    AnyCast<int16, FastName>::Register(&IntegralToString<int16>);
+    AnyCast<uint16, FastName>::Register(&IntegralToString<uint16>);
+    AnyCast<int32, FastName>::Register(&IntegralToString<int32>);
+    AnyCast<uint32, FastName>::Register(&IntegralToString<uint32>);
+    AnyCast<int64, FastName>::Register(&IntegralToString<int64>);
+    AnyCast<uint64, FastName>::Register(&IntegralToString<uint64>);
+    AnyCast<size_t, FastName>::Register(&IntegralToString<size_t>);
     AnyCast<FilePath, String>::Register(&FilePathToString);
     AnyCast<String, FilePath>::Register(&StringToFilePath);
     AnyCast<float64, float32>::RegisterDefault();

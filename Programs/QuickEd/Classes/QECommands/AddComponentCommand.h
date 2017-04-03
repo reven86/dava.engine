@@ -1,26 +1,19 @@
-#ifndef __QUICKED_ADD_COMPONENT_COMMAND_H__
-#define __QUICKED_ADD_COMPONENT_COMMAND_H__
+#pragma once
 
-#include "Command/Command.h"
+#include "QECommands/Private/QEPackageCommand.h"
 
-class PackageNode;
 class ControlNode;
 class ComponentPropertiesSection;
 
-class AddComponentCommand : public DAVA::Command
+class AddComponentCommand : public QEPackageCommand
 {
 public:
-    AddComponentCommand(PackageNode* root, ControlNode* node, ComponentPropertiesSection* section);
-
-    virtual ~AddComponentCommand();
+    AddComponentCommand(PackageNode* package, ControlNode* node, ComponentPropertiesSection* section);
 
     void Redo() override;
     void Undo() override;
 
 private:
-    PackageNode* root;
-    ControlNode* node;
-    ComponentPropertiesSection* section;
+    DAVA::RefPtr<ControlNode> node;
+    DAVA::RefPtr<ComponentPropertiesSection> section;
 };
-
-#endif // __QUICKED_ADD_COMPONENT_COMMAND_H__

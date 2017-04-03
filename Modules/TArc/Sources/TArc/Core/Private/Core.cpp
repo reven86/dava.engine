@@ -6,6 +6,7 @@
 
 #include "TArc/DataProcessing/PropertiesHolder.h"
 #include "TArc/WindowSubSystem/Private/UIManager.h"
+#include "TArc/WindowSubSystem/Private/UIProxy.h"
 #include "TArc/Utils/AssertGuard.h"
 #include "TArc/Utils/RhiEmptyFrame.h"
 #include "TArc/Utils/Private/CrashDumpHandler.h"
@@ -482,7 +483,7 @@ public:
         DVASSERT(controllerModule != nullptr, "Controller Module hasn't been registered");
         for (std::unique_ptr<ClientModule>& module : modules)
         {
-            module->Init(this, uiManager.get());
+            module->Init(this, std::make_unique<UIProxy>(module.get(), uiManager.get()));
         }
 
         for (std::unique_ptr<ClientModule>& module : modules)
@@ -503,6 +504,11 @@ public:
 
     void OnLoopStopped() override
     {
+        for (std::unique_ptr<ClientModule>& module : modules)
+        {
+            uiManager->ModuleDestroyed(module.get());
+        }
+
         ActivateContextImpl(nullptr);
         controllerModule = nullptr;
         for (DataContext* context : contexts)
@@ -512,6 +518,7 @@ public:
                 module->OnContextDeleted(context);
             }
         }
+
         modules.clear();
         uiManager.reset();
         Impl::OnLoopStopped();
@@ -574,7 +581,7 @@ public:
         {
             module->OnContextDeleted(*iter);
         }
-
+        SafeDelete(*iter);
         contexts.erase(iter);
     }
 

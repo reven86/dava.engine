@@ -169,12 +169,6 @@ SceneEditor2::SceneEditor2()
     editorVegetationSystem = new EditorVegetationSystem(this);
     AddSystem(editorVegetationSystem, MAKE_COMPONENT_MASK(DAVA::Component::RENDER_COMPONENT), 0);
 
-    if (DAVA::Renderer::GetOptions()->IsOptionEnabled(DAVA::RenderOptions::DEBUG_DRAW_STATIC_OCCLUSION) && !staticOcclusionDebugDrawSystem)
-    {
-        staticOcclusionDebugDrawSystem = new DAVA::StaticOcclusionDebugDrawSystem(this);
-        AddSystem(staticOcclusionDebugDrawSystem, MAKE_COMPONENT_MASK(DAVA::Component::STATIC_OCCLUSION_COMPONENT), 0, renderUpdateSystem);
-    }
-
     SceneSignals::Instance()->EmitOpened(this);
 
     wasChanged = false;
@@ -276,6 +270,10 @@ void SceneEditor2::AddSystem(DAVA::SceneSystem* sceneSystem, DAVA::uint64 compon
     if (editorSystem != nullptr)
     {
         editorSystems.push_back(editorSystem);
+        if (dynamic_cast<LandscapeEditorSystem*>(sceneSystem) != nullptr)
+        {
+            landscapeEditorSystems.push_back(editorSystem);
+        }
     }
 }
 
@@ -285,6 +283,10 @@ void SceneEditor2::RemoveSystem(DAVA::SceneSystem* sceneSystem)
     if (editorSystem != nullptr)
     {
         DAVA::FindAndRemoveExchangingWithLast(editorSystems, editorSystem);
+        if (dynamic_cast<LandscapeEditorSystem*>(sceneSystem) != nullptr)
+        {
+            DAVA::FindAndRemoveExchangingWithLast(landscapeEditorSystems, editorSystem);
+        }
     }
 
     Scene::RemoveSystem(sceneSystem);
@@ -530,6 +532,13 @@ void SceneEditor2::Draw()
     if (isHUDVisible)
     {
         for (EditorSceneSystem* system : editorSystems)
+        {
+            system->Draw();
+        }
+    }
+    else
+    {
+        for (EditorSceneSystem* system : landscapeEditorSystems)
         {
             system->Draw();
         }

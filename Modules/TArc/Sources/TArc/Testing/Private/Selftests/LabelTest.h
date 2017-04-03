@@ -5,6 +5,7 @@
 #include "TArc/Core/ClientModule.h"
 #include "TArc/Controls/Label.h"
 #include "TArc/Controls/QtBoxLayouts.h"
+#include "TArc/Controls/CommonStrings.h"
 
 #include "TArc/Qt/QtString.h"
 
@@ -103,7 +104,7 @@ public:
             descr[Label::Fields::Text] = fieldName.c_str();
             Label* label = new Label(descr, GetAccessor(), refModel);
             label->SetObjectName(QString::fromStdString("Label_" + fieldName));
-            layout->AddWidget(label);
+            layout->AddControl(label);
         };
 
         createLabel("text");
@@ -163,7 +164,7 @@ DAVA_TARC_TESTCLASS(LabelTest)
         TEST_VERIFY(label->text() == "test String");
 
         label = GetLabel("multi");
-        TEST_VERIFY(label->text() == "<multiple values>");
+        TEST_VERIFY(label->text() == QString(DAVA::TArc::MultipleValuesString));
 
         LabelTestModule* inst = LabelTestModule::instance;
 

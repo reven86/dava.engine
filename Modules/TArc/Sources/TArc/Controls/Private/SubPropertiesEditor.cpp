@@ -27,17 +27,42 @@ SubPropertiesEditor::SubPropertiesEditor(const ControlDescriptorBuilder<Fields>&
     : ControlProxyImpl<QWidget>(fields, wrappersProcessor, model, parent)
 {
     SetupControl(wrappersProcessor);
+    copyModelWrapper = wrappersProcessor->CreateWrapper(MakeFunction(this, &SubPropertiesEditor::GetCopyModel), nullptr);
+    copyModelWrapper.SetListener(this);
 }
 
 SubPropertiesEditor::SubPropertiesEditor(const ControlDescriptorBuilder<Fields>& fields, ContextAccessor* accessor, Reflection model, QWidget* parent)
     : ControlProxyImpl<QWidget>(fields, accessor, model, parent)
 {
     SetupControl(accessor);
+    copyModelWrapper = accessor->CreateWrapper(MakeFunction(this, &SubPropertiesEditor::GetCopyModel));
+    copyModelWrapper.SetListener(this);
 }
 
 void SubPropertiesEditor::UpdateControl(const ControlDescriptor& descriptor)
 {
+    if (descriptor.IsChanged(Fields::Value))
+    {
+        copyModel.SetValueWithCast(model.GetValue());
+    }
+
     setEnabled(!IsValueReadOnly(descriptor, Fields::Value, Fields::IsReadOnly));
+}
+
+void SubPropertiesEditor::OnDataChanged(const DataWrapper& wrapper, const Vector<Any>& fields)
+{
+    if (wrapper == copyModelWrapper)
+    {
+        this->wrapper.SetFieldValue(GetFieldName(Fields::Value), valueCopy);
+        return;
+    }
+
+    ControlProxyImpl<QWidget>::OnDataChanged(wrapper, fields);
+}
+
+DAVA::Reflection SubPropertiesEditor::GetCopyModel(const DataContext* /*ctx*/)
+{
+    return copyModel;
 }
 
 template <typename T>
@@ -49,12 +74,15 @@ void DAVA::TArc::SubPropertiesEditor::SetupControl(T* accessor)
     Reflection valueField = this->model.GetField(fieldName);
     DVASSERT(valueField.IsValid());
 
+    valueCopy = valueField.GetValue();
+    copyModel = Reflection::Create(valueCopy);
+
     QtWrapLayout* layout = new QtWrapLayout(this);
     layout->SetHorizontalSpacing(2);
     layout->SetVerticalSpacing(2);
     layout->setMargin(1);
 
-    Vector<Reflection::Field> subFields = valueField.GetFields();
+    Vector<Reflection::Field> subFields = copyModel.GetFields();
     for (Reflection::Field& field : subFields)
     {
         if (field.ref.HasMeta<M::SubProperty>())
@@ -73,21 +101,21 @@ void DAVA::TArc::SubPropertiesEditor::SetupControl(T* accessor)
             Any subPropertyValue = field.ref.GetValue();
             if (subPropertyValue.CanGet<float32>() || subPropertyValue.CanGet<float64>())
             {
-                DoubleSpinBox* control = CreateControl<DoubleSpinBox>(DoubleSpinBox::Fields::Value, subFieldName, accessor, valueField);
+                DoubleSpinBox* control = CreateControl<DoubleSpinBox>(DoubleSpinBox::Fields::Value, subFieldName, accessor, copyModel);
                 editorWidget = control->ToWidgetCast();
-                subPropertyLayout->AddWidget(control);
+                subPropertyLayout->AddControl(control);
             }
             else if (subPropertyValue.CanCast<int32>())
             {
-                IntSpinBox* control = CreateControl<IntSpinBox>(IntSpinBox::Fields::Value, subFieldName, accessor, valueField);
+                IntSpinBox* control = CreateControl<IntSpinBox>(IntSpinBox::Fields::Value, subFieldName, accessor, copyModel);
                 editorWidget = control->ToWidgetCast();
-                subPropertyLayout->AddWidget(control);
+                subPropertyLayout->AddControl(control);
             }
             else if (subPropertyValue.CanCast<String>())
             {
-                LineEdit* control = CreateControl<LineEdit>(LineEdit::Fields::Text, subFieldName, accessor, valueField);
+                LineEdit* control = CreateControl<LineEdit>(LineEdit::Fields::Text, subFieldName, accessor, copyModel);
                 editorWidget = control->ToWidgetCast();
-                subPropertyLayout->AddWidget(control);
+                subPropertyLayout->AddControl(control);
             }
 
             if (editorWidget != nullptr)

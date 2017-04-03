@@ -2,6 +2,8 @@
 
 #include <Base/FastName.h>
 
+#include <Base/FastName.h>
+
 namespace ResourceEditor
 {
 // Node names

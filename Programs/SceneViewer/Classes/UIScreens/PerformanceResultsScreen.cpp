@@ -1,3 +1,4 @@
+#ifdef WITH_SCENE_PERFORMANCE_TESTS
 #include "PerformanceResultsScreen.h"
 #include "SceneViewerApp.h"
 
@@ -384,3 +385,4 @@ void PerformanceResultsScreen::SetSectorSelected(Sector* sector)
     selectedSector = sector;
     selectedSector->SetMode(Sector::SELECTED);
 }
+#endif

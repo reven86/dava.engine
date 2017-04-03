@@ -4,6 +4,7 @@
 #include "Classes/Application/ReflectionExtensions.h"
 #include "Classes/Project/ProjectManagerModule.h"
 #include "Classes/SceneManager/SceneManagerModule.h"
+#include "Classes/Application/LaunchModule.h"
 
 #include <Tools/TextureCompression/PVRConverter.h>
 #include "Settings/SettingsManager.h"
@@ -64,6 +65,7 @@ DAVA::KeyedArchive* CreateOptions()
     appOptions->SetInt32("max_texture_count", 2048);
 
     appOptions->SetInt32("shader_const_buffer_size", 256 * 1024 * 1024);
+    appOptions->SetInt32("max_pipeline_state_count", 32 * 1024);
 
     return appOptions;
 }
@@ -176,6 +178,7 @@ QString REApplication::GetInstanceKey() const
 void REApplication::CreateGUIModules(DAVA::TArc::Core* tarcCore) const
 {
     Q_INIT_RESOURCE(QtToolsResources);
+    tarcCore->CreateModule<ReflectionExtensionsModule>();
     tarcCore->CreateModule<REModule>();
     tarcCore->CreateModule<ProjectManagerModule>();
     tarcCore->CreateModule<SceneManagerModule>();
@@ -184,6 +187,8 @@ void REApplication::CreateGUIModules(DAVA::TArc::Core* tarcCore) const
     {
         tarcCore->CreateModule(type);
     }
+
+    tarcCore->CreateModule<LaunchModule>();
 }
 
 void REApplication::CreateConsoleModules(DAVA::TArc::Core* tarcCore) const
@@ -220,9 +225,4 @@ void REApplication::RegisterEditorAnyCasts()
 
     DAVA::AnyCast<ComboBoxTestDataDescr, DAVA::String>::Register(&ComboBoxTestDataDescrToString);
     DAVA::AnyCast<ComboBoxTestDataDescr, QIcon>::Register(&ComboBoxTestDataDescrToQIcon);
-}
-
-void REApplication::RegisterReflectionExtensions()
-{
-    ::RegisterReflectionExtensions();
 }

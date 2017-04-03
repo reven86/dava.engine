@@ -4,6 +4,10 @@
 #include "TArc/Core/FieldBinder.h"
 #include "TArc/DataProcessing/Common.h"
 #include "TArc/Utils/QtConnections.h"
+#include "TArc/WindowSubSystem/UI.h"
+
+#include <Reflection/Reflection.h>
+#include <Functional/Function.h>
 
 #include <QWidget>
 
@@ -16,16 +20,53 @@ namespace TArc
 class ReflectedPropertyModel;
 class ExtensionChain;
 class ContextAccessor;
+class OperationInvoker;
+class UI;
 
 class PropertiesView : public QWidget
 {
     Q_OBJECT
 public:
+    enum eViewMode
+    {
+        VIEW_MODE_NORMAL,
+        VIEW_MODE_FAVORITES_ONLY
+    };
+
+    enum UpdatePolicy
+    {
+        FullUpdate,
+        FastUpdate
+    };
+
+    class Updater
+    {
+    public:
+        virtual ~Updater() = default;
+
+        Signal<UpdatePolicy> update;
+    };
     /**
         Create PropertiesView widget with ReflectedModel. As data source for ReflectedMode use value of "objectsField"
         Value of "objectsField" could be casted to Vector<Reflection>
     */
-    PropertiesView(ContextAccessor* accessor, const FieldDescriptor& objectsField, const String& settingsNodeName);
+    struct Params
+    {
+        Params(const WindowKey& key)
+            : wndKey(key)
+        {
+        }
+
+        WindowKey wndKey;
+        ContextAccessor* accessor = nullptr;
+        OperationInvoker* invoker = nullptr;
+        UI* ui = nullptr;
+        FieldDescriptor objectsField;
+        String settingsNodeName;
+        std::weak_ptr<Updater> updater;
+    };
+
+    PropertiesView(const Params& params);
     ~PropertiesView();
 
     void RegisterExtension(const std::shared_ptr<ExtensionChain>& extension);
@@ -35,17 +76,27 @@ private:
     void SetupUI();
     void OnObjectsChanged(const Any& objects);
     void OnColumnResized(int columnIndex, int oldSize, int newSize);
+    void Update(UpdatePolicy policy);
 
+    void UpdateExpanded();
     void OnExpanded(const QModelIndex& index);
     void OnCollapsed(const QModelIndex& index);
+    void OnFavoritesEditChanged(bool isChecked);
+
+    eViewMode GetViewMode() const;
+    void SetViewMode(eViewMode mode);
 
 private:
     FieldBinder binder;
-    ContextAccessor* accessor = nullptr;
-    QTreeView* view = nullptr;
+    Params params;
+    class PropertiesTreeView;
+    PropertiesTreeView* view = nullptr;
     std::unique_ptr<ReflectedPropertyModel> model;
-    const String settingsNodeName;
+    SigConnectionID updateConnectionID;
     QtConnections connections;
+    bool isExpandUpdate = false;
+
+    DAVA_REFLECTION(PropertiesView);
 };
 }
 }

@@ -450,7 +450,16 @@ struct UIManager::Impl : public QObject
     UnorderedMap<WindowKey, UIManagerDetail::MainWindowInfo> windows;
     PropertiesItem propertiesHolder;
     bool initializationFinished = false;
-    DAVA::Set<WaitHandle*> activeWaitDialogues;
+    Set<WaitHandle*> activeWaitDialogues;
+    ClientModule* currentModule = nullptr;
+
+    struct ModuleResources
+    {
+        Vector<QPointer<QAction>> actions;
+        Vector<QPointer<QWidget>> widgets;
+    };
+
+    Map<ClientModule*, ModuleResources> moduleResourcesMap;
 
     Impl(UIManager::Delegate* delegate, PropertiesItem&& givenPropertiesHolder)
         : managerDelegate(delegate)
@@ -484,6 +493,17 @@ struct UIManager::Impl : public QObject
         }
 
         return iter->second;
+    }
+
+    UIManagerDetail::MainWindowInfo* FindWindow(const WindowKey& key)
+    {
+        auto iter = windows.find(key);
+        if (iter == windows.end())
+        {
+            return nullptr;
+        }
+
+        return &iter->second;
     }
 
     void InitNewWindow(const WindowKey& windowKey, QMainWindow* window)
@@ -651,6 +671,8 @@ void UIManager::InitializationFinished()
 
 void UIManager::AddView(const WindowKey& windowKey, const PanelKey& panelKey, QWidget* widget)
 {
+    DVASSERT(impl->currentModule != nullptr);
+    impl->moduleResourcesMap[impl->currentModule].widgets.push_back(widget);
     DVASSERT(widget != nullptr);
     widget->setObjectName(panelKey.GetViewName());
 
@@ -670,6 +692,9 @@ void UIManager::AddView(const WindowKey& windowKey, const PanelKey& panelKey, QW
 
 void UIManager::AddAction(const WindowKey& windowKey, const ActionPlacementInfo& placement, QAction* action)
 {
+    DVASSERT(impl->currentModule != nullptr);
+    impl->moduleResourcesMap[impl->currentModule].actions.push_back(action);
+
     UIManagerDetail::MainWindowInfo& windowInfo = impl->FindOrCreateWindow(windowKey);
     UIManagerDetail::AddAction(windowInfo, placement, action);
 }
@@ -736,14 +761,19 @@ QString UIManager::GetSaveFileName(const WindowKey& windowKey, const FileDialogP
 
 QString UIManager::GetOpenFileName(const WindowKey& windowKey, const FileDialogParams& params)
 {
-    UIManagerDetail::MainWindowInfo& windowInfo = impl->FindOrCreateWindow(windowKey);
+    UIManagerDetail::MainWindowInfo* windowInfo = impl->FindWindow(windowKey);
+    QWidget* parent = nullptr;
+    if (windowInfo != nullptr)
+    {
+        parent = windowInfo->window;
+    }
 
     QString dir = params.dir;
     if (dir.isEmpty())
     {
         dir = impl->propertiesHolder.Get<QString>(UIManagerDetail::FILE_DIR_KEY, dir);
     }
-    QString filePath = QFileDialog::getOpenFileName(windowInfo.window, params.title, dir, params.filters);
+    QString filePath = QFileDialog::getOpenFileName(parent, params.title, dir, params.filters);
     if (!filePath.isEmpty())
     {
         impl->propertiesHolder.Set(UIManagerDetail::FILE_DIR_KEY, QFileInfo(filePath).absoluteFilePath());
@@ -794,5 +824,45 @@ void UIManager::InjectWindow(const WindowKey& windowKey, QMainWindow* window)
     impl->InitNewWindow(windowKey, window);
     impl->windows.emplace(windowKey, windowInfo);
 }
+
+void UIManager::SetCurrentModule(ClientModule* module)
+{
+    DVASSERT((impl->currentModule == nullptr && module != nullptr) ||
+             (impl->currentModule != nullptr && module == nullptr));
+    impl->currentModule = module;
+}
+
+void UIManager::ModuleDestroyed(ClientModule* module)
+{
+    DVASSERT(impl->currentModule != module);
+    auto iter = impl->moduleResourcesMap.find(module);
+    if (iter != impl->moduleResourcesMap.end())
+    {
+        Impl::ModuleResources& resources = iter->second;
+        for (QPointer<QWidget>& w : resources.widgets)
+        {
+            if (!w.isNull())
+            {
+                delete w.data();
+            }
+        }
+
+        for (QPointer<QAction>& a : resources.actions)
+        {
+            if (!a.isNull())
+            {
+                QWidget* attachedWidget = GetAttachedWidget(a);
+                if (attachedWidget != nullptr)
+                {
+                    delete attachedWidget;
+                }
+                delete a.data();
+            }
+        }
+
+        impl->moduleResourcesMap.erase(iter);
+    }
+}
+
 } // namespace TArc
 } // namespace DAVA

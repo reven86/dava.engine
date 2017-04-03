@@ -35,10 +35,10 @@ LiteArchive::LiteArchive(const std::string& file)
     }
 
     pack_format::file_info info;
-    info.compressedSize = footer.size_compressed;
+    info.compressedSize = footer.sizeCompressed;
     info.compressionType = footer.type;
     info.hash = footer.crc32_compressed;
-    info.originalSize = footer.size_uncompressed;
+    info.originalSize = footer.sizeUncompressed;
 
     std::string relative = file_name.substr(file_name.find_last_of("/\\") + 1, std::string::npos);
     relative = relative.substr(0, relative.size() - 5); // remove ".dvpl" extension
@@ -77,13 +77,13 @@ bool LiteArchive::HoadFile(const std::string& relative, std::vector<uint8_t>& ou
         l << "no such file!\n";
         return false;
     }
-    output.resize(footer.size_uncompressed);
+    output.resize(footer.sizeUncompressed);
 
     switch (footer.type)
     {
     case 0:
     {
-        ifile.read(reinterpret_cast<char*>(output.data()), footer.size_compressed);
+        ifile.read(reinterpret_cast<char*>(output.data()), footer.sizeCompressed);
         if (!ifile)
         {
             return false;
@@ -93,11 +93,11 @@ bool LiteArchive::HoadFile(const std::string& relative, std::vector<uint8_t>& ou
     case 1: // Compressor::Type::Lz4:
     case 2: // Compressor::Type::Lz4HC:
     {
-        std::vector<uint8_t> in(footer.size_compressed);
+        std::vector<uint8_t> in(footer.sizeCompressed);
 
         ifile.seekg(0, std::ios_base::beg);
         ifile.read(reinterpret_cast<char*>(in.data()),
-                   footer.size_compressed);
+                   footer.sizeCompressed);
         if (!ifile)
         {
             return false;
@@ -111,11 +111,11 @@ bool LiteArchive::HoadFile(const std::string& relative, std::vector<uint8_t>& ou
     break;
     case 3: // Compressor::Type::RFC1951:
     {
-        std::vector<uint8_t> packedBuf(footer.size_compressed);
+        std::vector<uint8_t> packedBuf(footer.sizeCompressed);
 
         ifile.seekg(0, std::ios_base::end);
         ifile.read(reinterpret_cast<char*>(packedBuf.data()),
-                   footer.size_compressed);
+                   footer.sizeCompressed);
         if (!ifile)
         {
             return false;

@@ -11,6 +11,11 @@ const SelectableGroup& SelectionData::GetSelection() const
     return selectionSystem->GetSelection();
 }
 
+SelectableGroup SelectionData::GetMutableSelection() const
+{
+    return selectionSystem->GetSelection();
+}
+
 void SelectionData::SetSelection(SelectableGroup& newSelection)
 {
     DVASSERT(selectionSystem);
