@@ -389,7 +389,7 @@ void EditorTransformSystem::MoveAllSelectedControlsByKeyboard(DAVA::Vector2 delt
 
         Vector2 deltaPosition = EditorTransformSystemDetail::RotateVectorForMove(delta, angle);
         Vector2 finalPosition(originalPosition + deltaPosition);
-        propertiesToChange.emplace_back(node, property, VariantType(finalPosition));
+        propertiesToChange.emplace_back(node, property, Any(finalPosition));
     }
     DataContext* activeContext = accessor->GetActiveContext();
     DVASSERT(activeContext != nullptr);
