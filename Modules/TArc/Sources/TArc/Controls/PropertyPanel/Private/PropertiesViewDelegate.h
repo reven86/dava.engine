@@ -33,7 +33,7 @@ public:
     bool UpdateSizeHints(int section, int newWidth);
 
 protected:
-    bool eventFilter(QObject* object, QEvent* event);
+    bool eventFilter(QObject* object, QEvent* event) override;
     bool eventEditorFilter(QObject* obj, QEvent* e);
 
 private:
