@@ -11,7 +11,6 @@
 #include "Sound/SoundSystem.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 #include "UI/ProjectView.h"
-#include "UI/DocumentGroupView.h"
 
 #include <TArc/Core/ContextAccessor.h>
 #include <TArc/Core/OperationInvoker.h>
@@ -66,20 +65,10 @@ Project::Project(MainWindow::ProjectView* view_, DAVA::TArc::ContextAccessor* ac
         editorLocalizationSystem->SetCurrentLocale(QString::fromStdString(projectData->GetDefaultLanguage()));
     }
 
-    const EngineContext* engineContext = accessor->GetEngineContext();
-    DAVA::FileSystem* fileSystem = engineContext->fileSystem;
-
-    FilePath uiDirectory = projectData->GetUiDirectory().absolute;
-    DVASSERT(fileSystem->IsDirectory(uiDirectory));
-    uiResourcesPath = QString::fromStdString(uiDirectory.GetStringValue());
-
-    view->SetResourceDirectory(uiResourcesPath);
-
     view->SetProjectActionsEnabled(true);
     view->SetProjectPath(GetProjectPath());
     view->SetLanguages(GetAvailableLanguages(), GetCurrentLanguage());
     view->OnProjectChanged(this);
-    view->GetDocumentGroupView()->SetProject(this);
 
     connections.AddConnection(editorLocalizationSystem.get(), &EditorLocalizationSystem::CurrentLocaleChanged, MakeFunction(view, &MainWindow::ProjectView::SetCurrentLanguage));
     connections.AddConnection(editorFontSystem.get(), &EditorFontSystem::FontPresetChanged, MakeFunction(this, &Project::OnFontPresetChanged));
@@ -90,6 +79,7 @@ Project::Project(MainWindow::ProjectView* view_, DAVA::TArc::ContextAccessor* ac
     connections.AddConnection(view, &MainWindow::ProjectView::GlobalStyleClassesChanged, MakeFunction(this, &Project::SetGlobalStyleClasses));
 
     QualitySettingsSystem::Instance()->Load("~res:/quality.yaml");
+    const EngineContext* engineContext = accessor->GetEngineContext();
     engineContext->soundSystem->InitFromQualitySettings();
 }
 
@@ -102,10 +92,7 @@ Project::~Project()
     view->SetProjectPath(QString());
     view->SetProjectActionsEnabled(false);
 
-    view->SetResourceDirectory(QString());
-
     view->OnProjectChanged(nullptr);
-    view->GetDocumentGroupView()->SetProject(nullptr);
 
     editorLocalizationSystem->Cleanup();
     editorFontSystem->ClearAllFonts();

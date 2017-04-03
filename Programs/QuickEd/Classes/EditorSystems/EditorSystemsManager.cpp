@@ -372,7 +372,10 @@ void EditorSystemsManager::ControlWillBeRemoved(ControlNode* nodeToRemove, Contr
             }
             node = node->GetParent();
         }
-        ++iter;
+        if (found == false)
+        {
+            ++iter;
+        }
     }
     //we need to synchronize Data in active context and systems state
     //TODO fix it when all editor systems will be separate TArc modules

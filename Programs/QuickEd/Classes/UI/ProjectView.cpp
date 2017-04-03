@@ -53,13 +53,6 @@ void MainWindow::ProjectView::SetProjectActionsEnabled(bool enabled)
     mainWindow->ui->actionJumpToPrototype->setEnabled(enabled);
     mainWindow->ui->actionFindPrototypeInstances->setEnabled(enabled);
     mainWindow->ui->toolBarGlobal->setEnabled(enabled);
-
-    mainWindow->ui->fileSystemDockWidget->setEnabled(enabled);
-}
-
-MainWindow::DocumentGroupView* MainWindow::ProjectView::GetDocumentGroupView()
-{
-    return mainWindow->documentGroupView;
 }
 
 void MainWindow::ProjectView::InitPluginsToolBar()
@@ -153,16 +146,6 @@ void MainWindow::ProjectView::OnCurrentLanguageChanged(int newLanguageIndex)
 {
     QString langCode = comboboxLanguage->itemData(newLanguageIndex).toString();
     emit CurrentLanguageChanged(langCode);
-}
-
-void MainWindow::ProjectView::SelectFile(const QString& filePath)
-{
-    mainWindow->ui->fileSystemDockWidget->SelectFile(filePath);
-}
-
-void MainWindow::ProjectView::SetResourceDirectory(const QString& path)
-{
-    mainWindow->ui->fileSystemDockWidget->SetResourceDirectory(path);
 }
 
 QString MainWindow::ProjectView::ConvertLangCodeToString(const QString& langCode)

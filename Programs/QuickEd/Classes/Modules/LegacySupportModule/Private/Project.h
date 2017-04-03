@@ -69,7 +69,6 @@ private:
 
     QString projectDirectory;
     QString projectName;
-    QString uiResourcesPath;
 
     MainWindow::ProjectView* view = nullptr;
     std::unique_ptr<EditorFontSystem> editorFontSystem;

@@ -17,12 +17,7 @@ public:
     void SetLanguages(const QStringList& availableLangsCodes, const QString& currentLangCode);
     void SetCurrentLanguage(const QString& currentLang);
 
-    void SetResourceDirectory(const QString& path);
-    void SelectFile(const QString& filePath);
-
     void SetProjectActionsEnabled(bool enable);
-
-    DocumentGroupView* GetDocumentGroupView();
 
     MainWindow* mainWindow = nullptr;
 
