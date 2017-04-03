@@ -50,10 +50,11 @@ void InitStyleOptions(QStyleOptionViewItem& options, BaseComponentValue* compone
 }
 
 PropertiesViewDelegate::PropertiesViewDelegate(QTreeView* view_, ReflectedPropertyModel* model_, QObject* parent)
-    : QAbstractItemDelegate(parent)
+    : QStyledItemDelegate(parent)
     , model(model_)
     , view(view_)
 {
+    implFilter.delegate = this;
 }
 
 void PropertiesViewDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
@@ -74,11 +75,10 @@ void PropertiesViewDelegate::paint(QPainter* painter, const QStyleOptionViewItem
     }
     else
     {
-        QStyle* style = option.widget->style();
-        style->drawControl(QStyle::CE_ItemViewItem, &opt, painter, opt.widget);
+        painter->fillRect(opt.rect, opt.palette.window());
 
         AdjustEditorRect(opt);
-        valueComponent->Draw(view->viewport(), painter, opt);
+        valueComponent->Draw(painter, opt);
     }
 }
 
@@ -102,16 +102,15 @@ QSize PropertiesViewDelegate::sizeHint(const QStyleOptionViewItem& option, const
     }
     else
     {
-        QWidget* viewport = view->viewport();
-        if (valueComponent->HasHeightForWidth(viewport))
+        if (valueComponent->HasHeightForWidth())
         {
-            int height = valueComponent->GetHeightForWidth(viewport, view->columnWidth(1));
+            int height = valueComponent->GetHeightForWidth(view->columnWidth(1));
             heightForWidthItems[QPersistentModelIndex(index)] = height;
             sizeHint.setHeight(height);
         }
         else
         {
-            sizeHint.setHeight(valueComponent->GetHeight(viewport));
+            sizeHint.setHeight(valueComponent->GetHeight());
         }
     }
 
@@ -129,22 +128,23 @@ QWidget* PropertiesViewDelegate::createEditor(QWidget* parent, const QStyleOptio
     QStyleOptionViewItem opt = option;
     AdjustEditorRect(opt);
     UpdateSpanning(index, valueComponent->IsSpannedControl());
-    return valueComponent->AcquireEditorWidget(parent, opt);
+    QWidget* result = valueComponent->AcquireEditorWidget(opt);
+    activeEditors.insert(result);
+    return result;
 }
 
 void PropertiesViewDelegate::destroyEditor(QWidget* editor, const QModelIndex& index) const
 {
-    if (index.isValid() == false)
+    if (editor != nullptr)
     {
-        return;
+        activeEditors.remove(editor);
     }
-
-    BaseComponentValue* valueComponent = GetComponentValue(index);
-    return valueComponent->ReleaseEditorWidget(editor);
 }
 
 void PropertiesViewDelegate::setEditorData(QWidget* editor, const QModelIndex& index) const
 {
+    BaseComponentValue* valueComponent = GetComponentValue(index);
+    valueComponent->ForceUpdate();
 }
 
 void PropertiesViewDelegate::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
@@ -162,7 +162,7 @@ void PropertiesViewDelegate::updateEditorGeometry(QWidget* editor, const QStyleO
     QStyleOptionViewItem opt = option;
     AdjustEditorRect(opt);
     UpdateSpanning(index, valueComponent->IsSpannedControl());
-    valueComponent->UpdateGeometry(view->viewport(), opt);
+    valueComponent->UpdateGeometry(opt);
 }
 
 bool PropertiesViewDelegate::editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index)
@@ -178,7 +178,10 @@ bool PropertiesViewDelegate::helpEvent(QHelpEvent* event, QAbstractItemView* vie
 BaseComponentValue* PropertiesViewDelegate::GetComponentValue(const QModelIndex& index) const
 {
     DVASSERT(index.isValid());
-    return model->GetComponentValue(index);
+    BaseComponentValue* value = model->GetComponentValue(index);
+    QWidget* w = value->EnsureEditorCreated(const_cast<EventFilterImpl*>(&implFilter), view->viewport());
+    indexMap[w] = index;
+    return value;
 }
 
 void PropertiesViewDelegate::AdjustEditorRect(QStyleOptionViewItem& opt) const
@@ -206,13 +209,12 @@ bool PropertiesViewDelegate::UpdateSizeHints(int section, int newWidth)
 
     int sectionWidth = view->columnWidth(1);
     QList<QModelIndex> sizeHintChangedIndexes;
-    QWidget* viewportWidgte = view->viewport();
     for (auto iter = heightForWidthItems.begin(); iter != heightForWidthItems.end(); ++iter)
     {
         QPersistentModelIndex index = iter.key();
         BaseComponentValue* value = GetComponentValue(index);
-        DVASSERT(value->HasHeightForWidth(viewportWidgte));
-        int heightForWidth = value->GetHeightForWidth(viewportWidgte, sectionWidth);
+        DVASSERT(value->HasHeightForWidth());
+        int heightForWidth = value->GetHeightForWidth(sectionWidth);
         if (iter.value() != heightForWidth)
         {
             iter.value() = heightForWidth;
@@ -228,12 +230,64 @@ bool PropertiesViewDelegate::UpdateSizeHints(int section, int newWidth)
     return sizeHintChangedIndexes.isEmpty() == false;
 }
 
+bool PropertiesViewDelegate::eventFilter(QObject* object, QEvent* event)
+{
+    return false;
+}
+
+bool PropertiesViewDelegate::eventEditorFilter(QObject* obj, QEvent* e)
+{
+    QWidget* editor = qobject_cast<QWidget*>(obj);
+    if (!editor)
+        return false;
+    auto iter = indexMap.find(editor);
+    DVASSERT(iter != indexMap.end());
+    QModelIndex index = iter.value();
+
+    if (e->type() == QEvent::FocusIn)
+    {
+        QItemSelectionModel* selectionModel = view->selectionModel();
+        QItemSelectionModel::SelectionFlags flags = QItemSelectionModel::Clear | QItemSelectionModel::Select | QItemSelectionModel::Rows;
+        if (selectionModel->currentIndex() == index)
+        {
+            if (activeEditors.contains(editor) == false)
+            {
+                view->edit(index);
+            }
+        }
+        else
+        {
+            selectionModel->setCurrentIndex(index, flags);
+        }
+    }
+
+    if (e->type() == QEvent::KeyPress)
+    {
+        QKeyEvent* keyEvent = static_cast<QKeyEvent*>(e);
+        if (keyEvent->matches(QKeySequence::Cancel))
+        {
+            if (index.isValid())
+            {
+                setEditorData(editor, index);
+            }
+        }
+    }
+
+    return QStyledItemDelegate::eventFilter(obj, e);
+}
+
 void PropertiesViewDelegate::UpdateSpanning(const QModelIndex& index, bool isSpanned) const
 {
     if (view->isFirstColumnSpanned(index.row(), index.parent()) != isSpanned)
     {
         view->setFirstColumnSpanned(index.row(), index.parent(), isSpanned);
     }
+}
+
+bool PropertiesViewDelegate::EventFilterImpl::eventFilter(QObject* obj, QEvent* e)
+{
+    DVASSERT(delegate != nullptr);
+    return delegate->eventEditorFilter(obj, e);
 }
 
 } // namespace TArc

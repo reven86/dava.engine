@@ -618,6 +618,19 @@ bool ReflectedPropertyModel::IsFavorite(const QModelIndex& index) const
     return false;
 }
 
+bool ReflectedPropertyModel::IsInFavoriteHierarchy(const QModelIndex& index) const
+{
+    ReflectedPropertyItem* item = MapItem(index);
+    bool isFavorite = false;
+    while (isFavorite == false && item != nullptr)
+    {
+        isFavorite |= item->IsFavorite();
+        item = item->parent;
+    }
+
+    return isFavorite;
+}
+
 void ReflectedPropertyModel::AddFavorite(const QModelIndex& index)
 {
     ReflectedPropertyItem* item = MapItem(index);

@@ -1,8 +1,9 @@
 #pragma once
 
-#include <QAbstractItemDelegate>
+#include <QStyledItemDelegate>
 #include <QPersistentModelIndex>
 #include <QHash>
+#include <QSet>
 
 class QTreeView;
 
@@ -12,7 +13,8 @@ namespace TArc
 {
 class ReflectedPropertyModel;
 class BaseComponentValue;
-class PropertiesViewDelegate : public QAbstractItemDelegate
+class PropertiesViewDelegatePrivate;
+class PropertiesViewDelegate : public QStyledItemDelegate
 {
     Q_OBJECT
 public:
@@ -30,6 +32,10 @@ public:
 
     bool UpdateSizeHints(int section, int newWidth);
 
+protected:
+    bool eventFilter(QObject* object, QEvent* event);
+    bool eventEditorFilter(QObject* obj, QEvent* e);
+
 private:
     BaseComponentValue* GetComponentValue(const QModelIndex& index) const;
     void AdjustEditorRect(QStyleOptionViewItem& opt) const;
@@ -39,6 +45,18 @@ private:
     ReflectedPropertyModel* model = nullptr;
     QTreeView* view = nullptr;
     mutable QHash<QPersistentModelIndex, int> heightForWidthItems;
+    mutable QHash<QWidget*, QModelIndex> indexMap;
+    mutable QSet<QWidget*> activeEditors;
+
+    class EventFilterImpl : public QObject
+    {
+    public:
+        PropertiesViewDelegate* delegate = nullptr;
+
+        bool eventFilter(QObject* obj, QEvent* e);
+    };
+
+    EventFilterImpl implFilter;
 };
 }
 }

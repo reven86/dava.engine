@@ -17,6 +17,7 @@
 #include <QStyleOption>
 #include <QPainter>
 #include <QToolButton>
+#include <QPainter>
 
 namespace DAVA
 {
@@ -44,44 +45,39 @@ void BaseComponentValue::Init(ReflectedPropertyModel* model_)
     model = model_;
 }
 
-void BaseComponentValue::Draw(QWidget* parent, QPainter* painter, const QStyleOptionViewItem& opt)
+void BaseComponentValue::Draw(QPainter* painter, const QStyleOptionViewItem& opt)
 {
-    UpdateEditorGeometry(parent, opt.rect);
+    UpdateEditorGeometry(opt.rect);
     realWidget->show();
 }
 
-void BaseComponentValue::UpdateGeometry(QWidget* parent, const QStyleOptionViewItem& opt)
+void BaseComponentValue::UpdateGeometry(const QStyleOptionViewItem& opt)
 {
-    UpdateEditorGeometry(parent, opt.rect);
+    UpdateEditorGeometry(opt.rect);
 }
 
-bool BaseComponentValue::HasHeightForWidth(const QWidget* parent) const
+bool BaseComponentValue::HasHeightForWidth() const
 {
-    EnsureEditorCreated(parent);
+    DVASSERT(realWidget != nullptr);
     return realWidget->hasHeightForWidth();
 }
 
-int BaseComponentValue::GetHeightForWidth(const QWidget* parent, int width) const
+int BaseComponentValue::GetHeightForWidth(int width) const
 {
-    EnsureEditorCreated(parent);
+    DVASSERT(realWidget != nullptr);
     return realWidget->heightForWidth(width);
 }
 
-int BaseComponentValue::GetHeight(const QWidget* parent) const
+int BaseComponentValue::GetHeight() const
 {
-    EnsureEditorCreated(parent);
+    DVASSERT(realWidget != nullptr);
     return realWidget->sizeHint().height();
 }
 
-QWidget* BaseComponentValue::AcquireEditorWidget(QWidget* parent, const QStyleOptionViewItem& option)
+QWidget* BaseComponentValue::AcquireEditorWidget(const QStyleOptionViewItem& option)
 {
-    UpdateEditorGeometry(parent, option.rect);
+    UpdateEditorGeometry(option.rect);
     return realWidget;
-}
-
-void BaseComponentValue::ReleaseEditorWidget(QWidget* editor)
-{
-    DVASSERT(realWidget == editor);
 }
 
 QString BaseComponentValue::GetPropertyName() const
@@ -110,6 +106,14 @@ std::shared_ptr<PropertyNode> BaseComponentValue::GetPropertyNode(int32 index) c
 {
     DVASSERT(static_cast<size_t>(index) < nodes.size());
     return nodes[static_cast<size_t>(index)];
+}
+
+void BaseComponentValue::ForceUpdate()
+{
+    if (editorWidget != nullptr)
+    {
+        editorWidget->ForceUpdate();
+    }
 }
 
 void BaseComponentValue::HideEditor()
@@ -210,17 +214,16 @@ DAVA::TArc::DataWrappersProcessor* BaseComponentValue::GetDataProcessor() const
     return model->GetWrappersProcessor(nodes.front());
 }
 
-void BaseComponentValue::EnsureEditorCreated(const QWidget* parent) const
+QWidget* BaseComponentValue::EnsureEditorCreated(QObject* eventFilter, QWidget* parent)
 {
     if (editorWidget == nullptr)
     {
-        DVASSERT(nodes.empty() == false);
-        QWidget* p = const_cast<QWidget*>(parent);
-        BaseComponentValue* nonConstThis = const_cast<BaseComponentValue*>(this);
-        nonConstThis->EnsureEditorCreated(p);
+        EnsureEditorCreated(parent);
+        realWidget->installEventFilter(eventFilter);
     }
 
     DVASSERT(realWidget->parent() == parent);
+    return realWidget;
 }
 
 void BaseComponentValue::EnsureEditorCreated(QWidget* parent)
@@ -247,9 +250,9 @@ void BaseComponentValue::EnsureEditorCreated(QWidget* parent)
     }
 }
 
-void BaseComponentValue::UpdateEditorGeometry(const QWidget* parent, const QRect& geometry) const
+void BaseComponentValue::UpdateEditorGeometry(const QRect& geometry) const
 {
-    EnsureEditorCreated(parent);
+    DVASSERT(realWidget != nullptr);
     if (realWidget->geometry() != geometry)
     {
         realWidget->setGeometry(geometry);

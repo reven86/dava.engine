@@ -68,6 +68,7 @@ public:
     void HideEditors();
 
     bool IsFavorite(const QModelIndex& index) const;
+    bool IsInFavoriteHierarchy(const QModelIndex& index) const;
     void AddFavorite(const QModelIndex& index);
     void RemoveFavorite(const QModelIndex& index);
 

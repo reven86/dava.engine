@@ -17,6 +17,7 @@
 #include <QTimer>
 #include <QPainter>
 #include <QToolBar>
+#include <QPersistentModelIndex>
 #include <QtWidgets/private/qheaderview_p.h>
 
 namespace DAVA
@@ -70,6 +71,7 @@ public:
         headerView = new PropertiesViewDetail::PropertiesHeaderView(Qt::Horizontal, this);
         setHeader(headerView);
         headerView->setStretchLastSection(true);
+        setMouseTracking(true);
     }
 
     void setModel(QAbstractItemModel* model) override
@@ -129,8 +131,15 @@ protected:
         {
             bool isFavotire = propertiesModel->IsFavorite(index);
             QRect iconRect = QRect(options.rect.x(), options.rect.y(), PropertiesViewDetail::FavoritesStarSpaceWidth, options.rect.height());
-            const char* iconPath = isFavotire == true ? ":/QtIcons/star.png" : ":/QtIcons/star_empty.png";
-            SharedIcon(iconPath).paint(painter, iconRect);
+
+            if (isFavotire)
+            {
+                SharedIcon(":/QtIcons/star.png").paint(painter, iconRect);
+            }
+            else if (propertiesModel->IsInFavoriteHierarchy(index) == false)
+            {
+                SharedIcon(":/QtIcons/star_empty.png").paint(painter, iconRect);
+            }
         }
     }
 
@@ -154,10 +163,12 @@ protected:
                     {
                         propertiesModel->RemoveFavorite(index);
                     }
-                    else
+                    else if (propertiesModel->IsInFavoriteHierarchy(index) == false)
                     {
                         propertiesModel->AddFavorite(index);
                     }
+
+                    viewport()->update();
                 }
             }
         }
