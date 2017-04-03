@@ -176,17 +176,22 @@ PackArchive::PackArchive(const std::string& archiveName)
     {
         l << "parse metadata block\n";
         uint64_t startMetaBlock = size - (sizeof(pack_file.footer) + pack_file.footer.info.files_table_size + footerBlock.meta_data_size);
+        l << "start metadata block pos: " << startMetaBlock << '\n';
         file.seekg(startMetaBlock, std::fstream::beg);
+        l << "seek to metadata block\n";
         std::vector<uint8_t> metaBlock(footerBlock.meta_data_size);
+        l << "allocate memory for metablock\n";
         if (!file)
         {
             throw std::runtime_error("can't seek meta");
         }
+        l << "seek to metablock done.\n";
         file.read(reinterpret_cast<char*>(&metaBlock[0]), metaBlock.size());
         if (!file)
         {
             throw std::runtime_error("can't read meta");
         }
+        l << "reset pack_meta_data from byte stream\n";
         pack_meta.reset(new pack_meta_data(&metaBlock[0], metaBlock.size()));
     }
 

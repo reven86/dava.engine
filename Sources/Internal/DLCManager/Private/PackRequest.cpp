@@ -13,40 +13,67 @@
 namespace DAVA
 {
 PackRequest::PackRequest(DLCManagerImpl& packManager_, const String& pack_)
-    : packManagerImpl(packManager_)
+    : packManagerImpl(&packManager_)
     , requestedPackName(pack_)
     , delayedRequest(true)
 {
 }
 
 PackRequest::PackRequest(DLCManagerImpl& packManager_, const String& pack_, Vector<uint32> fileIndexes_)
-    : packManagerImpl(packManager_)
+    : packManagerImpl(&packManager_)
     , requestedPackName(pack_)
     , delayedRequest(false)
 {
     SetFileIndexes(move(fileIndexes_));
 }
 
-PackRequest::~PackRequest()
+PackRequest& PackRequest::operator=(PackRequest&& other)
 {
-    for (FileRequest& r : requests)
+    packManagerImpl = std::move(other.packManagerImpl);
+    requests = std::move(other.requests);
+    fileIndexes = std::move(other.fileIndexes);
+    requestedPackName = std::move(other.requestedPackName);
+    numOfDownloadedFile = std::move(other.numOfDownloadedFile);
+    delayedRequest = std::move(other.delayedRequest);
+
+    return *this;
+}
+
+void PackRequest::CancelCurrentsDownloads()
+{
+    DownloadManager* dm = DownloadManager::Instance();
+    if (dm)
     {
-        if (r.taskId != 0)
+        for (FileRequest& r : requests)
         {
-            DownloadManager::Instance()->Cancel(r.taskId);
-            r.taskId = 0;
+            if (r.taskId != 0)
+            {
+                dm->Cancel(r.taskId);
+                r.taskId = 0;
+            }
         }
     }
 }
 
+PackRequest::~PackRequest()
+{
+    CancelCurrentsDownloads();
+    packManagerImpl = nullptr;
+    requests.clear();
+    fileIndexes.clear();
+    requestedPackName.clear();
+    numOfDownloadedFile = 0;
+    delayedRequest = false;
+}
+
 void PackRequest::Start()
 {
-    // TODO
+    // just continue call Update
 }
 
 void PackRequest::Stop()
 {
-    // TODO
+    CancelCurrentsDownloads();
 }
 
 const String& PackRequest::GetRequestedPackName() const
@@ -56,40 +83,18 @@ const String& PackRequest::GetRequestedPackName() const
 
 Vector<String> PackRequest::GetDependencies() const
 {
-    Vector<String> requestNames;
-
-    const PackMetaData& meta = packManagerImpl.GetMeta();
-    const PackMetaData::PackInfo& packInfo = meta.GetPackInfo(requestedPackName);
-    const String& dependencies = packInfo.packDependencies;
-    String delimiter(", ");
-
-    Split(dependencies, delimiter, requestNames);
-
-    // convert every name from string representation of index to packName
-    for (String& pack : requestNames)
+    if (packManagerImpl->IsInitialized())
     {
-        uint32 index = 0;
-        try
-        {
-            unsigned long i = stoul(pack);
-            index = static_cast<uint32>(i);
-        }
-        catch (std::exception& ex)
-        {
-            Logger::Error("bad dependency index for pack: %s, index value: %s, error message: %s", packInfo.packName.c_str(), pack.c_str(), ex.what());
-            DAVA_THROW(Exception, "bad dependency pack index see log");
-        }
-        const PackMetaData::PackInfo& info = meta.GetPackInfo(index);
-        pack = info.packName;
+        const PackMetaData& pack_meta_data = packManagerImpl->GetMeta();
+        return pack_meta_data.GetDependencyNames(requestedPackName);
     }
-
-    return requestNames;
+    DAVA_THROW(Exception, "Error! Can't get pack dependencies before initialization is finished");
 }
 /** return size of files within this request without dependencies */
 uint64 PackRequest::GetSize() const
 {
     uint64 allFilesSize = 0;
-    const auto& files = packManagerImpl.GetPack().filesTable.data.files;
+    const auto& files = packManagerImpl->GetPack().filesTable.data.files;
     for (uint32 fileIndex : fileIndexes)
     {
         const auto& fileInfo = files.at(fileIndex);
@@ -113,28 +118,61 @@ bool PackRequest::IsDownloaded() const
         return false;
     }
 
-    bool allReady = true;
+    if (requests.size() != fileIndexes.size())
+    {
+        return false; // not initialized yet
+    }
+
+    if (!packManagerImpl->IsInitialized())
+    {
+        return false;
+    }
+
     for (const FileRequest& r : requests)
     {
         if (r.status != Ready)
         {
-            allReady = false;
-            break;
+            return false;
         }
     }
-    return allReady;
+
+    if (packManagerImpl->IsInQueue(this))
+    {
+        if (!packManagerImpl->IsTop(this))
+        {
+            return false; // wait for dependencies to download first
+        }
+    }
+
+    return true;
 }
 
 void PackRequest::SetFileIndexes(Vector<uint32> fileIndexes_)
 {
     fileIndexes = std::move(fileIndexes_);
     delayedRequest = false;
+}
 
-    if (fileIndexes.empty())
+bool PackRequest::IsSubRequest(const PackRequest* other) const
+{
+    Vector<String> dep = GetDependencies();
+    for (const String& s : dep)
     {
-        // all files already loaded or empty virtual pack
-        packManagerImpl.requestUpdated.Emit(*this);
+        PackRequest* r = packManagerImpl->FindRequest(s);
+        if (r != nullptr)
+        {
+            if (r == other)
+            {
+                return true;
+            }
+
+            if (r->IsSubRequest(other))
+            {
+                return true;
+            }
+        }
     }
+    return false;
 }
 
 void PackRequest::InitializeFileRequests()
@@ -147,9 +185,9 @@ void PackRequest::InitializeFileRequests()
         for (size_t requestIndex = 0; requestIndex < requests.size(); ++requestIndex)
         {
             uint32 fileIndex = fileIndexes.at(requestIndex);
-            const auto& fileInfo = packManagerImpl.GetPack().filesTable.data.files.at(fileIndex);
-            String relativePath = packManagerImpl.GetRelativeFilePath(fileIndex);
-            FilePath localPath = packManagerImpl.GetLocalPacksDirectory() + relativePath;
+            const auto& fileInfo = packManagerImpl->GetPack().filesTable.data.files.at(fileIndex);
+            String relativePath = packManagerImpl->GetRelativeFilePath(fileIndex);
+            FilePath localPath = packManagerImpl->GetLocalPacksDirectory() + relativePath;
 
             FileRequest& request = requests.at(requestIndex);
 
@@ -159,17 +197,19 @@ void PackRequest::InitializeFileRequests()
                                   fileInfo.startPosition,
                                   fileInfo.compressedSize,
                                   fileInfo.originalSize,
-                                  packManagerImpl.GetSuperPackUrl(),
+                                  packManagerImpl->GetSuperPackUrl(),
                                   fileInfo.type,
                                   request);
         }
     }
 }
 
-void PackRequest::Update()
+bool PackRequest::Update()
 {
     DVASSERT(Thread::IsMainThread());
-    DVASSERT(packManagerImpl.IsInitialized());
+    DVASSERT(packManagerImpl->IsInitialized());
+
+    bool needFireUpdateSignal = false;
 
     if (numOfDownloadedFile < fileIndexes.size())
     {
@@ -180,9 +220,11 @@ void PackRequest::Update()
 
         if (!IsDownloaded())
         {
-            UpdateFileRequests();
+            needFireUpdateSignal = UpdateFileRequests();
         }
     }
+
+    return needFireUpdateSignal;
 }
 
 void PackRequest::InitializeFileRequest(const uint32 fileIndex_,
@@ -208,11 +250,27 @@ void PackRequest::InitializeFileRequest(const uint32 fileIndex_,
     fileRequest.compressionType = compressionType_;
 }
 
-void PackRequest::UpdateFileRequests()
+void PackRequest::DeleteJustDownloadedFileAndStartAgain(FileRequest& fileRequest)
+{
+    fileRequest.downloadedFileSize = 0;
+    FileSystem::Instance()->DeleteFile(fileRequest.localFile);
+    fileRequest.status = LoadingPackFile;
+}
+
+void PackRequest::DisableRequestingAndFireSignalNoSpaceLeft(PackRequest::FileRequest& fileRequest)
+{
+    int32 errnoValue = errno; // save in local variable if other error happen
+    Logger::Error("No space on device!!! Can't create or write file: %s disable DLCManager requesting", fileRequest.localFile.GetAbsolutePathname().c_str());
+    packManagerImpl->SetRequestingEnabled(false);
+    packManagerImpl->fileErrorOccured.Emit(fileRequest.localFile.GetAbsolutePathname().c_str(), errnoValue);
+}
+
+bool PackRequest::UpdateFileRequests()
 {
     // TODO refactor method
-
     bool callSignal = false;
+
+    FileSystem* fs = FileSystem::Instance();
 
     for (FileRequest& fileRequest : requests)
     {
@@ -223,11 +281,11 @@ void PackRequest::UpdateFileRequests()
             break;
         case CheckLocalFile:
         {
-            if (packManagerImpl.IsFileReady(fileRequest.fileIndex))
+            if (packManagerImpl->IsFileReady(fileRequest.fileIndex))
             {
                 fileRequest.status = Ready;
                 uint64 fileSize = 0;
-                if (FileSystem::Instance()->GetFileSize(fileRequest.localFile, fileSize))
+                if (fs->GetFileSize(fileRequest.localFile, fileSize))
                 {
                     DVASSERT(fileSize == fileRequest.sizeOfCompressedFile + sizeof(PackFormat::LitePack::Footer));
                     fileRequest.downloadedFileSize = fileSize;
@@ -245,8 +303,32 @@ void PackRequest::UpdateFileRequests()
             DownloadManager* dm = DownloadManager::Instance();
             if (fileRequest.taskId == 0)
             {
-                FileSystem::Instance()->DeleteFile(fileRequest.localFile); // just in case (hash not match, size not match...)
-                fileRequest.taskId = dm->DownloadRange(fileRequest.url, fileRequest.localFile, fileRequest.startLoadingPos, fileRequest.sizeOfCompressedFile);
+                if (fileRequest.sizeOfCompressedFile == 0)
+                {
+                    // just create empty file, and go to next state
+                    FilePath dirPath = fileRequest.localFile.GetDirectory();
+                    FileSystem::eCreateDirectoryResult dirCreate = fs->CreateDirectory(dirPath, true);
+                    if (dirCreate == FileSystem::DIRECTORY_CANT_CREATE)
+                    {
+                        DisableRequestingAndFireSignalNoSpaceLeft(fileRequest);
+                        return false;
+                    }
+                    ScopedPtr<File> f(File::Create(fileRequest.localFile, File::CREATE | File::WRITE));
+                    if (!f)
+                    {
+                        DisableRequestingAndFireSignalNoSpaceLeft(fileRequest);
+                        return false;
+                    }
+                    f->Truncate(0);
+                    fileRequest.taskId = 0;
+                    fileRequest.status = CheckHash;
+                    callSignal = true;
+                }
+                else
+                {
+                    fs->DeleteFile(fileRequest.localFile); // just in case (hash not match, size not match...)
+                    fileRequest.taskId = dm->DownloadRange(fileRequest.url, fileRequest.localFile, fileRequest.startLoadingPos, fileRequest.sizeOfCompressedFile);
+                }
             }
             else
             {
@@ -274,8 +356,25 @@ void PackRequest::UpdateFileRequests()
                     break;
                     case DL_FINISHED:
                     {
+                        DownloadError downloadError = DLE_NO_ERROR;
+                        if (dm->GetError(fileRequest.taskId, downloadError))
+                        {
+                            if (DLE_NO_ERROR != downloadError)
+                            {
+                                String err = DLC::ToString(downloadError);
+                                Logger::Error("can't download file: %s couse: %s",
+                                              fileRequest.localFile.GetAbsolutePathname().c_str(),
+                                              err.c_str());
+
+                                if (DLE_FILE_ERROR == downloadError)
+                                {
+                                    DisableRequestingAndFireSignalNoSpaceLeft(fileRequest);
+                                    return false;
+                                }
+                            }
+                        }
                         dm->GetProgress(fileRequest.taskId, fileRequest.downloadedFileSize);
-                        // return full superpack size dm->GetTotal(fileRequest.taskId, fileRequest.downloadedFileSize);
+
                         fileRequest.taskId = 0;
                         fileRequest.status = CheckHash;
                         callSignal = true;
@@ -304,7 +403,12 @@ void PackRequest::UpdateFileRequests()
                 {
                     ScopedPtr<File> f(File::Create(fileRequest.localFile, File::WRITE | File::APPEND | File::OPEN));
                     uint32 written = f->Write(&footer, sizeof(footer));
-                    DVASSERT(written == sizeof(footer));
+                    if (written != sizeof(footer))
+                    {
+                        // not enough space
+                        DisableRequestingAndFireSignalNoSpaceLeft(fileRequest);
+                        return false;
+                    }
                 }
 
                 DVASSERT(fileRequest.downloadedFileSize == footer.sizeCompressed);
@@ -313,13 +417,13 @@ void PackRequest::UpdateFileRequests()
 
                 fileRequest.status = Ready;
                 callSignal = true;
+
+                packManagerImpl->SetFileIsReady(fileRequest.fileIndex);
             }
             else
             {
-                fileRequest.downloadedFileSize = 0;
                 // try download again
-                FileSystem::Instance()->DeleteFile(fileRequest.localFile);
-                fileRequest.status = LoadingPackFile;
+                DeleteJustDownloadedFileAndStartAgain(fileRequest);
             }
         }
         break;
@@ -331,10 +435,7 @@ void PackRequest::UpdateFileRequests()
     } // end for requests
 
     // call signal only once during update
-    if (callSignal)
-    {
-        packManagerImpl.requestUpdated.Emit(*this);
-    }
+    return callSignal;
 }
 
 } // end namespace DAVA
