@@ -60,6 +60,7 @@ public:
     explicit DLCManagerImpl(Engine* engine_);
     Engine& engine;
     SigConnectionID sigConnectionUpdate = 0;
+    SigConnectionID sigBackgroundUpdate = 0;
 #else
     DLCManagerImpl() = default; // TODO remove it later (fix for client UnitTests)
 #endif

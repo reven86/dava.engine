@@ -417,7 +417,13 @@ void DLCManagerTest::OnStartStopLocalServerClicked(DAVA::BaseObject* sender, voi
         FilePath resPath("~res:/TestData/PackManagerTest/superpack_for_unittests.dvpk");
         FilePath docPath("~doc:/DLCManagerTest/superpack_for_unittests.dvpk");
 
-        fs->CopyFile(resPath, docPath, true);
+        if (!fs->CopyFile(resPath, docPath, true))
+        {
+            StringStream ss(logPring->GetUtf8Text());
+            ss << "Error: can't copy superpack_for_unittest.dvpk "
+               << resPath.GetStringValue() << " to " << docPath.GetStringValue() << std::endl;
+            logPring->SetUtf8Text(ss.str());
+        }
 
         docPath = docPath.GetDirectory();
 
@@ -425,16 +431,15 @@ void DLCManagerTest::OnStartStopLocalServerClicked(DAVA::BaseObject* sender, voi
 
         const char* docRoot = absPath.c_str();
         const char* ports = "8080";
-        try
+
+        StringStream ss(logPring->GetUtf8Text());
+        if (!StartEmbeddedWebServer(docRoot, ports))
         {
-            StartEmbeddedWebServer(docRoot, ports);
+            ss << "Error: can't start embedded web server" << std::endl;
         }
-        catch (std::exception& ex)
-        {
-            StringStream ss(logPring->GetUtf8Text());
-            ss << "Error: " << ex.what() << std::endl;
-            logPring->SetUtf8Text(ss.str());
-        }
+        ss << "from: " << resPath.GetAbsolutePathname() << std::endl
+           << "to: " << docPath.GetAbsolutePathname() << std::endl;
+        logPring->SetUtf8Text(ss.str());
     }
     else if (sender == stopServerButton)
     {

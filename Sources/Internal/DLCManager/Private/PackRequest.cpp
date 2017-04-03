@@ -90,7 +90,7 @@ Vector<uint32> PackRequest::GetDependencies() const
     if (packManagerImpl->IsInitialized())
     {
         const PackMetaData& pack_meta_data = packManagerImpl->GetMeta();
-        dependencyCache = pack_meta_data.GetDependencyNames(requestedPackName);
+        dependencyCache = pack_meta_data.GetDependencyPackIndexes(requestedPackName);
         if (dependencyCache.capacity() == 0)
         {
             dependencyCache.reserve(1); // just mark to know we already check it
@@ -164,24 +164,10 @@ void PackRequest::SetFileIndexes(Vector<uint32> fileIndexes_)
 
 bool PackRequest::IsSubRequest(const PackRequest* other) const
 {
-    Vector<String> dep = GetDependencies();
-    for (const String& s : dep)
-    {
-        PackRequest* r = packManagerImpl->FindRequest(s);
-        if (r != nullptr)
-        {
-            if (r == other)
-            {
-                return true;
-            }
-
-            if (r->IsSubRequest(other))
-            {
-                return true;
-            }
-        }
-    }
-    return false;
+    const auto& meta = packManagerImpl->GetMeta();
+    uint32 thisPackIndex = meta.GetPackIndex(requestedPackName);
+    uint32 childPackIndex = meta.GetPackIndex(other->requestedPackName);
+    return meta.IsChild(thisPackIndex, childPackIndex);
 }
 
 void PackRequest::InitializeFileRequests()
