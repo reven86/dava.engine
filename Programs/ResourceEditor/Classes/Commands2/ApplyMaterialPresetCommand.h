@@ -17,14 +17,14 @@ class ApplyMaterialPresetCommand : public RECommand
 public:
     enum eMaterialPart : DAVA::uint32
     {
-        NOTHING = 0x0,
+        NOTHING = 0,
 
-        TEMPLATE = 0x1,
-        GROUP = 0x2,
-        PROPERTIES = 0x4,
-        TEXTURES = 0x8,
+        TEMPLATE = 1 << 0,
+        GROUP = 1 << 1,
+        PROPERTIES = 1 << 2,
+        TEXTURES = 1 << 3,
 
-        ALL = 0xff
+        ALL = TEMPLATE | GROUP | PROPERTIES | TEXTURES
     };
 
     ApplyMaterialPresetCommand(const DAVA::FilePath& presetPath, DAVA::NMaterial* material, DAVA::Scene* scene);
@@ -36,13 +36,11 @@ public:
     void Redo() override;
     bool IsClean() const override;
 
-    static void StoreMaterialPreset(DAVA::KeyedArchive* archive, DAVA::NMaterial* material, const DAVA::SerializationContext& context);
+    static void StoreCurrentConfigPreset(DAVA::KeyedArchive* archive, DAVA::NMaterial* material, const DAVA::SerializationContext& context);
+    static void StoreAllConfigsPreset(DAVA::KeyedArchive* archive, DAVA::NMaterial* material, const DAVA::SerializationContext& context);
 
 private:
     void LoadMaterialPreset(DAVA::KeyedArchive* archive, DAVA::uint32 parts, bool loadForUndo);
-    void LoadMaterialPreset(DAVA::KeyedArchive* archive, DAVA::NMaterial* material, const DAVA::SerializationContext& context, DAVA::uint32 parts, bool loadForUndo);
-    static void StoreMaterialPresetImpl(DAVA::KeyedArchive* archive, DAVA::NMaterial* material, const DAVA::SerializationContext& context, bool storeForUndo);
-
     void PrepareSerializationContext(DAVA::SerializationContext& context);
 
 private:
