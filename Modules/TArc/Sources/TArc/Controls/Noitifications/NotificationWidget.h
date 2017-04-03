@@ -21,7 +21,6 @@ struct NotificationWidgetParams
     QString title;
     QMessageBox::Icon icon;
     DAVA::Function<void(void)> callBack;
-    int showTimeMs = std::numeric_limits<int>::max();
 };
 
 class NotificationWidget : public QWidget
@@ -32,10 +31,10 @@ class NotificationWidget : public QWidget
     Q_PROPERTY(QPoint position READ pos WRITE move)
 
 public:
-    explicit NotificationWidget(const NotificationWidgetParams& params, QWidget* parent = 0);
+    explicit NotificationWidget(const NotificationWidgetParams& params, int displayTimeMs, QWidget* parent = 0);
 
     void SetPosition(const QPoint& point);
-    void Add();
+    void Init();
 
 signals:
     void Removed();

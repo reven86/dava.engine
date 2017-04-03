@@ -261,30 +261,7 @@ void DocumentsModule::CreateDocumentsActions()
 
         ui->AddAction(QEGlobal::windowKey, placementInfo, action);
     }
-    {
-        QAction* action = new QAction("111", nullptr);
-        action->setShortcut(QKeySequence("Ctrl+p"));
-        action->setShortcutContext(Qt::ApplicationShortcut);
 
-        connections.AddConnection(action, &QAction::triggered, [this]() {
-            NotificationParams params;
-            params.title = String(rand() % 2 ? "short title" : "veeeeeeeeeeeeyyyyyyyyy loooooooong title");
-            params.showTimeMs = (10 + rand() % 10) * 1000;
-            params.message = Result(static_cast<Result::ResultType>(rand() % 3), String(rand() % 2
-                                                                                        ?
-                                                                                        "some text\ncan be really big?"
-                                                                                        :
-                                                                                        "reaally big text\n with a lot \n of\nline\nbreaks\nand wide string:\nlgfjlsdafjldjs;ldhasf;ljhasdfhasd;ljhasd;lfas;ljfh;lasdh;lsdf;lasd;lfhas;ldfa;lhasdf"));
-            params.callback = [params]() {
-                Logger::Debug("Callback. Result type %d, show time %d", params.message.type, params.showTimeMs);
-            };
-            GetUI()->ShowNotification(QEGlobal::windowKey, params);
-        });
-        ActionPlacementInfo placementInfo;
-        placementInfo.AddPlacementPoint(CreateMenuPoint(fileMenuName, { InsertionParams::eInsertionMethod::BeforeItem, saveDocumentActionName }));
-
-        ui->AddAction(QEGlobal::windowKey, placementInfo, action);
-    }
     // action reload document
     {
         QtAction* action = new QtAction(accessor, reloadDocumentActionName);

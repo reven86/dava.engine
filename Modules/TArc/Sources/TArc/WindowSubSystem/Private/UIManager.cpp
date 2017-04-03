@@ -2,7 +2,7 @@
 
 #include "TArc/WindowSubSystem/ActionUtils.h"
 #include "TArc/WindowSubSystem/Private/WaitDialog.h"
-#include "TArc/WindowSubSystem/Private/NotificationLayout.h"
+#include "TArc/Controls/Noitifications/NotificationLayout.h"
 #include "TArc/DataProcessing/PropertiesHolder.h"
 
 #include <Base/BaseTypes.h>
@@ -843,7 +843,6 @@ void UIManager::ShowNotification(const WindowKey& windowKey, const NotificationP
     widgetParams.title = QString::fromStdString(params.title);
     widgetParams.icon = Convert(params.message.type);
     widgetParams.callBack = params.callback;
-    widgetParams.showTimeMs = static_cast<int>(params.showTimeMs);
 
     MainWindowInfo& windowInfo = impl->FindOrCreateWindow(windowKey);
     impl->notifictaionLayout.AddNotificationWidget(windowInfo.window, widgetParams);

@@ -1,5 +1,5 @@
-#include "Tarc/WindowSubSystem/Private/NotificationLayout.h"
-#include "TArc/WindowSubSystem/Private/NotificationWidget.h"
+#include "Tarc/Controls/Noitifications/NotificationLayout.h"
+#include "TArc/Controls/Noitifications/NotificationWidget.h"
 
 #include <QEvent>
 
@@ -14,7 +14,7 @@ void NotificationLayout::AddNotificationWidget(QWidget* parent, const Notificati
         parent->installEventFilter(this);
     }
 
-    NotificationWidget* widget = new NotificationWidget(params, parent);
+    NotificationWidget* widget = new NotificationWidget(params, static_cast<int>(displayTimeMs), parent);
     connect(widget, &NotificationWidget::Removed, this, &NotificationLayout::RemoveWidget);
 
     notifications[parent].append(widget);
@@ -29,6 +29,7 @@ void NotificationLayout::RemoveWidget()
         QObject* senderWidget = sender();
         NotificationWidget* widget = qobject_cast<NotificationWidget*>(senderWidget);
         widgets.removeAll(widget);
+        delete widget;
     }
     LayoutWidgets();
 }
@@ -38,14 +39,13 @@ void NotificationLayout::LayoutWidgets()
     for (NotificationListMap::Iterator iter = notifications.begin(); iter != notifications.end(); ++iter)
     {
         QWidget* parent = iter.key();
-        const int maxDisplayCount = 5;
         int displayedCount = 0;
         int totalHeight = 0;
 
         NotificationList& widgets = iter.value();
 
         DAVA::Vector<NotificationWidget*> widgetsToDisplay;
-        int size = std::min(widgets.size(), maxDisplayCount);
+        int size = std::min(static_cast<uint32>(widgets.size()), maximumDisplayCount);
         widgetsToDisplay.resize(size);
 
         int position = (layoutType == BottomLeft || layoutType == BottomRight) ? 0 : (size - 1);
@@ -61,7 +61,7 @@ void NotificationLayout::LayoutWidgets()
         {
             if (widget->isVisible() == false)
             {
-                widget->Add();
+                widget->Init();
             }
             switch (layoutType)
             {
@@ -125,10 +125,15 @@ bool NotificationLayout::eventFilter(QObject* object, QEvent* event)
     return QObject::eventFilter(object, event);
 }
 
-void NotificationLayout::SetLayoutTyle(eLayoutType type)
+void NotificationLayout::SetLayoutType(eLayoutType type)
 {
     layoutType = type;
     LayoutWidgets();
+}
+
+void NotificationLayout::SetDisplayTimeMs(DAVA::uint32 displayTimeMS_)
+{
+    displayTimeMs = displayTimeMS_;
 }
 
 } //namespace DAVA

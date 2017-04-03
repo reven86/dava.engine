@@ -1,4 +1,4 @@
-#include "TArc/WindowSubSystem/Private/NotificationWidget.h"
+#include "TArc/Controls/Noitifications/NotificationWidget.h"
 
 #include <QString>
 #include <QTimer>
@@ -34,10 +34,9 @@ namespace DAVA
 {
 namespace TArc
 {
-NotificationWidget::NotificationWidget(const NotificationWidgetParams& params, QWidget* parent)
+NotificationWidget::NotificationWidget(const NotificationWidgetParams& params, int displayTimeMs, QWidget* parent)
     : QWidget(parent)
-    , remainTimeMs(params.showTimeMs)
-
+    , remainTimeMs(displayTimeMs)
 {
     Qt::WindowFlags flags = (Qt::FramelessWindowHint | // Disable window decoration
                              Qt::Tool // Discard display in a separate window
@@ -54,9 +53,11 @@ NotificationWidget::NotificationWidget(const NotificationWidgetParams& params, Q
     QDesktopWidget* desktop = QApplication::desktop();
     QRect geometry = desktop->availableGeometry(parent);
     setFixedWidth(geometry.width() / 6);
-    setMaximumHeight(geometry.height() / 5);
+    setMaximumHeight(geometry.height() / 3);
 
     connect(qApp, &QApplication::applicationStateChanged, this, &NotificationWidget::OnApplicationStateChanged);
+
+    move(NotificationWidgetDetails::invalidPos);
 }
 
 void NotificationWidget::SetPosition(const QPoint& point)
@@ -72,14 +73,9 @@ void NotificationWidget::SetPosition(const QPoint& point)
     positionAnimation->start();
 }
 
-void NotificationWidget::Add()
+void NotificationWidget::Init()
 {
     show();
-
-    opacityAnimation->setStartValue(0.0);
-    opacityAnimation->setEndValue(1.0);
-    opacityAnimation->start();
-    move(NotificationWidgetDetails::invalidPos);
     if (qApp->applicationState() == Qt::ApplicationActive)
     {
         timer->start(remainTimeMs);
@@ -107,6 +103,7 @@ void NotificationWidget::InitUI(const NotificationWidgetParams& params)
     QHBoxLayout* mainLayout = new QHBoxLayout();
 
     QVBoxLayout* messageLayout = new QVBoxLayout();
+    messageLayout->setSpacing(5);
     mainLayout->addItem(messageLayout);
 
     QHBoxLayout* titleLayout = new QHBoxLayout();
@@ -127,8 +124,6 @@ void NotificationWidget::InitUI(const NotificationWidgetParams& params)
     {
         QLabel* labelTitle = new QLabel(params.title);
         labelTitle->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
-        labelTitle->setAlignment(Qt::AlignLeft);
-        labelTitle->setWordWrap(true);
         labelTitle->setStyleSheet("font-weight: bold;");
         titleLayout->addWidget(labelTitle);
     }
@@ -159,6 +154,7 @@ void NotificationWidget::InitUI(const NotificationWidgetParams& params)
     mainLayout->addItem(buttonsLayout);
     {
         closeButton = new QPushButton(tr("Close"));
+        closeButton->setObjectName("CloseButton");
         closeButton->setStyleSheet(styleSheet);
         closeButton->setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred));
         buttonsLayout->addWidget(closeButton);
@@ -166,6 +162,7 @@ void NotificationWidget::InitUI(const NotificationWidgetParams& params)
     }
     {
         detailsButton = new QPushButton(tr("Details"));
+        detailsButton->setObjectName("DetailsButton");
         detailsButton->setStyleSheet(styleSheet);
         detailsButton->setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred));
         buttonsLayout->addWidget(detailsButton);
@@ -196,7 +193,7 @@ void NotificationWidget::Remove()
 {
     timer->stop();
     opacityAnimation->stop();
-    opacityAnimation->setStartValue(1.0);
+    opacityAnimation->setStartValue(windowOpacity());
     opacityAnimation->setEndValue(0.0);
     opacityAnimation->start();
     connect(opacityAnimation, &QAbstractAnimation::finished, this, &NotificationWidget::Removed);
@@ -216,7 +213,8 @@ void NotificationWidget::paintEvent(QPaintEvent* /*event*/)
     QPalette palette;
     QColor rectColor = palette.color(QPalette::Window);
     painter.setBrush(QBrush(rectColor));
-    painter.setPen(Qt::black);
+    QPen roundedRectPen(Qt::black);
+    painter.setPen(roundedRectPen);
 
     painter.drawRoundedRect(roundedRect, 10, 10);
 
@@ -228,8 +226,15 @@ void NotificationWidget::paintEvent(QPaintEvent* /*event*/)
     QPoint right(qMax(closeButtonGeometry.right(), detailsButtonGeometry.right()), y);
 
     QColor lineColor = palette.color(QPalette::Text);
-    painter.setPen(lineColor);
+    QPen pen(lineColor);
+    pen.setWidth(1);
+    painter.setPen(pen);
     painter.drawLine(left, right);
+
+    int x = std::min(closeButtonGeometry.left(), detailsButtonGeometry.left()) - pen.width();
+    QPoint top(x, roundedRect.top() + roundedRectPen.width());
+    QPoint bottom(x, roundedRect.bottom() - roundedRectPen.width());
+    painter.drawLine(top, bottom);
 }
 } //namespace TArc
 } //namespace DAVA

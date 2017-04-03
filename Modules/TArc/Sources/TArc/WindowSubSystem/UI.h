@@ -173,9 +173,6 @@ struct NotificationParams
     DAVA::Result message;
     DAVA::String title;
     DAVA::Function<void()> callback;
-
-    static const DAVA::uint32 defaultShowTimeMs = 60000;
-    DAVA::uint32 showTimeMs = defaultShowTimeMs;
 };
 
 class UI
