@@ -16,7 +16,7 @@
 
 namespace SceneRenderWidgetDetails
 {
-DAVA::Function<bool(DAVA::UIControl*, DAVA::UIEvent*)> customInput = [](DAVA::UIControl* control, DAVA::UIEvent* event) -> bool
+bool CustomInput(DAVA::UIControl* control, DAVA::UIEvent* event)
 {
     if (event->phase == DAVA::UIEvent::Phase::GESTURE)
     {
@@ -115,7 +115,7 @@ void SceneRenderWidget::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, co
 void SceneRenderWidget::InitDavaUI()
 {
     dava3DView.Set(new DAVA::UI3DView(DAVA::Rect(dava3DViewMargin, dava3DViewMargin, 0, 0)));
-    dava3DView->customSystemProcessInput = SceneRenderWidgetDetails::customInput;
+    dava3DView->customSystemProcessInput = &SceneRenderWidgetDetails::CustomInput;
     dava3DView->SetInputEnabled(true, true);
     dava3DView->GetOrCreateComponent<DAVA::UIFocusComponent>();
     dava3DView->SetName(DAVA::FastName("Scene Tab 3D View"));
