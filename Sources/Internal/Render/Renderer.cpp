@@ -7,10 +7,10 @@
 #include "Render/DynamicBufferAllocator.h"
 #include "Render/GPUFamilyDescriptor.h"
 #include "Render/PixelFormatDescriptor.h"
-#include "Render/RenderCallbacks.h"
 #include "Render/Image/Image.h"
 #include "Render/Texture.h"
 #include "Concurrency/Mutex.h"
+#include "Concurrency/LockGuard.h"
 #include "Platform/DeviceInfo.h"
 #include "Debug/ProfilerGPU.h"
 #include "Debug/ProfilerOverlay.h"
@@ -36,8 +36,19 @@ Mutex restoreMutex;
 Mutex postRestoreMutex;
 bool restoreInProgress = false;
 
+struct SyncCallback
+{
+    rhi::HSyncObject syncObject;
+    Token callbackToken;
+    Function<void(rhi::HSyncObject)> callback;
+};
+
+Vector<SyncCallback> syncCallbacks;
+
 void ProcessSignals()
 {
+    using namespace RendererDetails;
+
     if (rhi::NeedRestoreResources())
     {
         restoreInProgress = true;
@@ -49,6 +60,20 @@ void ProcessSignals()
         LockGuard<Mutex> lock(postRestoreMutex);
         signals.restoreResoucesCompleted.Emit();
         restoreInProgress = false;
+    }
+
+    for (size_t i = 0, sz = syncCallbacks.size(); i < sz;)
+    {
+        if (rhi::SyncObjectSignaled(syncCallbacks[i].syncObject))
+        {
+            syncCallbacks[i].callback(syncCallbacks[i].syncObject);
+            RemoveExchangingWithLast(syncCallbacks, i);
+            --sz;
+        }
+        else
+        {
+            ++i;
+        }
     }
 }
 }
@@ -183,7 +208,6 @@ int32 GetFramebufferHeight()
 void BeginFrame()
 {
     RendererDetails::ProcessSignals();
-    RenderCallbacks::ProcessFrame();
 
     DynamicBufferAllocator::BeginFrame();
 }
@@ -224,6 +248,30 @@ void EndFrame()
     stats.primitiveTriangleListCount = StatSet::StatValue(rhi::stat_DTL);
     stats.primitiveTriangleStripCount = StatSet::StatValue(rhi::stat_DTS);
     stats.primitiveLineListCount = StatSet::StatValue(rhi::stat_DLL);
+}
+
+Token RegisterSyncCallback(rhi::HSyncObject syncObject, Function<void(rhi::HSyncObject)> callback)
+{
+    Token token = TokenProvider<rhi::HSyncObject>::Generate();
+    RendererDetails::syncCallbacks.push_back({ syncObject, token, callback });
+
+    return token;
+}
+
+void UnRegisterSyncCallback(Token token)
+{
+    using namespace RendererDetails;
+    ;
+
+    DVASSERT(token.IsValid());
+    for (size_t i = 0, sz = syncCallbacks.size(); i < sz; ++i)
+    {
+        if (syncCallbacks[i].callbackToken == token)
+        {
+            RemoveExchangingWithLast(syncCallbacks, i);
+            break;
+        }
+    }
 }
 
 } //ns Renderer
