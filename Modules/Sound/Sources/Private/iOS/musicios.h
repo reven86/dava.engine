@@ -62,6 +62,7 @@ protected:
 
     AvSound* avSound = nullptr;
     FilePath filePath;
-    FMODSoundSystem* soundSystem = nullptr;;
+    FMODSoundSystem* soundSystem = nullptr;
+    ;
 };
 };
