@@ -76,6 +76,9 @@ public:
     bool GetRefractionVisible() const;
     void SetRefractionVisible(bool visible);
 
+    inline eState GetAnimationState() const;
+    inline ParticleRenderObject* GetRenderObject() const;
+
     void ReloadEmitters();
 
 private:
@@ -149,4 +152,14 @@ public:
 
     DAVA_VIRTUAL_REFLECTION(ParticleEffectComponent, Component);
 };
+
+ParticleEffectComponent::eState ParticleEffectComponent::GetAnimationState() const
+{
+    return state;
+}
+
+ParticleRenderObject* ParticleEffectComponent::GetRenderObject() const
+{
+    return effectRenderObject;
+}
 }
