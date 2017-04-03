@@ -691,7 +691,28 @@ void VegetationRenderObject::InitHeightTextureFromHeightmap(Heightmap* heightMap
     {
         uint32 hmSize = uint32(heightmap->Size());
         DVASSERT(IsPowerOf2(hmSize));
-        Texture* tx = Texture::CreateFromData(FORMAT_RGBA4444, reinterpret_cast<uint8*>(heightMap->Data()), hmSize, hmSize, false);
+
+        Texture* tx = nullptr;
+        if (rhi::TextureFormatSupported(rhi::TEXTURE_FORMAT_R4G4B4A4))
+        {
+            tx = Texture::CreateFromData(FORMAT_RGBA4444, reinterpret_cast<uint8*>(heightMap->Data()), hmSize, hmSize, false);
+        }
+        else
+        {
+            float32* texData = new float32[hmSize * hmSize];
+            float32* texDataPtr = texData;
+
+            for (uint32 y = 0; y < hmSize; ++y)
+            {
+                for (uint32 x = 0; x < hmSize; ++x)
+                {
+                    *texDataPtr++ = float32(heightmap->GetHeight(x, y)) / Heightmap::MAX_VALUE;
+                }
+            }
+
+            tx = Texture::CreateFromData(FORMAT_R32F, reinterpret_cast<uint8*>(texData), hmSize, hmSize, false);
+            SafeDeleteArray(texData);
+        }
 
         tx->SetWrapMode(rhi::TEXADDR_CLAMP, rhi::TEXADDR_CLAMP);
         tx->SetMinMagFilter(rhi::TEXFILTER_LINEAR, rhi::TEXFILTER_LINEAR, rhi::TEXMIPFILTER_NONE);
@@ -731,7 +752,8 @@ float32 VegetationRenderObject::SampleHeight(int16 x, int16 y)
 bool VegetationRenderObject::IsHardwareCapableToRenderVegetation()
 {
     const rhi::RenderDeviceCaps& deviceCaps = rhi::DeviceCaps();
-    bool result = deviceCaps.isVertexTextureUnitsSupported && deviceCaps.is32BitIndicesSupported && rhi::TextureFormatSupported(rhi::TEXTURE_FORMAT_R4G4B4A4, rhi::PROG_VERTEX);
+    bool result = deviceCaps.isVertexTextureUnitsSupported && deviceCaps.is32BitIndicesSupported &&
+    (rhi::TextureFormatSupported(rhi::TEXTURE_FORMAT_R4G4B4A4, rhi::PROG_VERTEX) || rhi::TextureFormatSupported(rhi::TEXTURE_FORMAT_R32F, rhi::PROG_VERTEX));
 
     return result;
 }
