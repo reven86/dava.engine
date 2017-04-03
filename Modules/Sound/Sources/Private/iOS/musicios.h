@@ -60,8 +60,8 @@ protected:
     virtual bool Init();
     virtual ~MusicIOSSoundEvent();
 
-    AvSound* avSound;
+    AvSound* avSound = nullptr;
     FilePath filePath;
-    FMODSoundSystem* soundSystem;
+    FMODSoundSystem* soundSystem = nullptr;;
 };
 };

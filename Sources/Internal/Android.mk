@@ -3,6 +3,7 @@
 
 # set local path for lib
 LOCAL_PATH := $(call my-dir)
+LOCAL_MODULES_PATH := $(LOCAL_PATH)/../../Modules
 
 # HACK for right order of .so linking
 # c++_shared must be linked before all other shared libs, so add it manually
@@ -118,11 +119,11 @@ DAVA_ROOT := $(LOCAL_PATH)
 DV_LOCAL_C_INCLUDES := $(LOCAL_PATH)
 DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../Tools/
 DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/include
-DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Modules/Sound/Libs/Include
-DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Modules/Sound/Sources
 DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/lua/include
 DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/icucommon/source/common
 DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/openssl/include/android
+DV_LOCAL_C_INCLUDES += $(LOCAL_MODULES_PATH)/Sound/Libs/Include
+DV_LOCAL_C_INCLUDES += $(LOCAL_MODULES_PATH)/Sound/Sources
 
 # set exported includes
 DV_LOCAL_EXPORT_C_INCLUDES := $(DV_LOCAL_C_INCLUDES)
@@ -446,7 +447,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Scene3D/Lod/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scripting/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Sound/Private/SoundSystem.cpp) \
-                     $(wildcard $(LOCAL_PATH)/../../Modules/Sound/Sources/Private/*.cpp) \
+                     $(wildcard $(LOCAL_MODULES_PATH)/Sound/Sources/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Time/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Time/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Concurrency/*.cpp) \
