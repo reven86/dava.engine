@@ -182,9 +182,6 @@ void REApplication::CreateGUIModules(DAVA::TArc::Core* tarcCore) const
     tarcCore->CreateModule<ProjectManagerModule>();
     tarcCore->CreateModule<SceneManagerModule>();
 
-    //DAVA::TArc::InsertionParams insertionParams(DAVA::TArc::InsertionParams::eInsertionMethod::BeforeItem, QStringLiteral("Tools"));
-    //tarcCore->CreateModule<RemoteToolModule>(DAVA::TArc::mainWindowKey, insertionParams);
-
     for (const DAVA::ReflectedType* type : DAVA::TArc::ModuleCollection::Instance()->GetGuiModules())
     {
         tarcCore->CreateModule(type);

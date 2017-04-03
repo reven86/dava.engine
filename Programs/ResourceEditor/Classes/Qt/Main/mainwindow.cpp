@@ -232,6 +232,7 @@ QtMainWindow::QtMainWindow(DAVA::TArc::UI* tarcUI_, QWidget* parent)
 
     ui->setupUi(this);
     SetupWidget();
+    SetupTitle(DAVA::String());
 
     qApp->installEventFilter(this);
 

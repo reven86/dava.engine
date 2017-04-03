@@ -3,6 +3,7 @@ set( NAME_MODULE RemoteTool )
 set( MODULE_TYPE STATIC )
 
 set( HPP_FILES_RECURSE Sources/RemoteTool/Private/*.h  )
+set( HPP_FILES_RECURSE Sources/RemoteTool/*.h  )
 set( CPP_FILES_RECURSE Sources/RemoteTool/Private/*.cpp )
 
 set( CPP_FILES_EXECUTE Sources/RemoteTool/InitRemoteTool.cpp )

@@ -522,7 +522,6 @@ struct UIManager::Impl : public QObject
         window->installEventFilter(this);
 
         FastName appId = windowKey.GetAppID();
-        window->setWindowTitle(appId.c_str());
         window->setObjectName(appId.c_str());
 
         PropertiesItem ph = propertiesHolder.CreateSubHolder(appId.c_str());
