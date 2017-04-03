@@ -124,7 +124,7 @@ void FindInDocumentController::SetFilter(std::shared_ptr<FindFilter> filter)
     }
 
     findInDocumentWidget->SetResultIndex(context.currentSelection);
-    findInDocumentWidget->SetResultCount(context.results.size());
+    findInDocumentWidget->SetResultCount(static_cast<int32>(context.results.size()));
 }
 
 void FindInDocumentController::MoveSelection(int32 step)
