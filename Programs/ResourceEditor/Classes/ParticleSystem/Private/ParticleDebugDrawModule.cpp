@@ -77,6 +77,8 @@ void ParticleDebugDrawModule::PostInit()
 
     QWidget* w = new QWidget();
     QtHBoxLayout* layout = new QtHBoxLayout(w);
+    layout->setMargin(0);
+    layout->setSpacing(4);
 
     {
         ControlDescriptorBuilder<CheckBox::Fields> fields;
