@@ -50,6 +50,7 @@ save_property( PROPERTY_LIST
 load_property( PROPERTY_LIST 
         DEFINITIONS                
         DEFINITIONS_${DAVA_PLATFORM_CURENT}
+        CPP_FILES_EXECUTE
         GLOBAL_DEFINITIONS
         TARGET_MODULES_LIST 
         BINARY_WIN32_DIR_RELEASE
@@ -389,7 +390,11 @@ endforeach()
 
 ###
 
-list( APPEND PROJECT_SOURCE_FILES ${ADDED_SRC} ${PLATFORM_ADDED_SRC} )
+if( CPP_FILES_EXECUTE )
+    source_group( "INIT_MODULE" FILES ${CPP_FILES_EXECUTE} )          
+endif()
+
+list( APPEND PROJECT_SOURCE_FILES ${ADDED_SRC} ${PLATFORM_ADDED_SRC} ${CPP_FILES_EXECUTE} )
 generated_unity_sources( PROJECT_SOURCE_FILES   IGNORE_LIST ${UNIFIED_IGNORE_LIST} 
                                                 IGNORE_LIST_WIN32 ${UNIFIED_IGNORE_LIST_WIN32} 
                                                 IGNORE_LIST_APPLE ${UNIFIED_IGNORE_LIST_APPLE}
