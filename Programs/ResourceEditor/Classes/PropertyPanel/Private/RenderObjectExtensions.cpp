@@ -199,7 +199,12 @@ std::unique_ptr<DAVA::Command> RemoveRenderBatch::CreateCommand(const std::share
     DAVA::RenderBatch* batch = *node->field.ref.GetValueObject().GetPtr<DAVA::RenderBatch*>();
     auto iter = cache.find(batch);
     DVASSERT(iter != cache.end());
-    return std::make_unique<DeleteRenderBatchCommand>(iter->second.first, batch->GetRenderObject(), iter->second.second);
+    DAVA::RenderObject* renderOject = batch->GetRenderObject();
+    if (renderOject->GetRenderBatchCount() < 2)
+    {
+        return nullptr;
+    }
+    return std::make_unique<DeleteRenderBatchCommand>(iter->second.first, renderOject, iter->second.second);
 }
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////

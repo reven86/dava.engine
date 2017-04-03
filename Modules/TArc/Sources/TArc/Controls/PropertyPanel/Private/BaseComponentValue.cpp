@@ -92,9 +92,9 @@ QString BaseComponentValue::GetPropertyName() const
     return nodes.front()->field.key.Cast<QString>();
 }
 
-FastName BaseComponentValue::GetName() const
+FastName BaseComponentValue::GetID() const
 {
-    return nodes.front()->field.key.Cast<FastName>(FastName(""));
+    return itemID;
 }
 
 int32 BaseComponentValue::GetPropertiesNodeCount() const
@@ -174,6 +174,18 @@ std::shared_ptr<ModifyExtension> BaseComponentValue::GetModifyInterface()
 
 void BaseComponentValue::AddPropertyNode(const std::shared_ptr<PropertyNode>& node)
 {
+    if (nodes.empty() == true)
+    {
+        itemID = FastName(node->BuildID());
+    }
+#if defined(__DAVAENGINE_DEBUG__)
+    else
+    {
+        DVASSERT(itemID == FastName(node->BuildID()));
+        DVASSERT(nodes.front()->cachedValue.GetType() == node->cachedValue.GetType());
+    }
+#endif
+
     nodes.push_back(node);
 }
 
@@ -234,6 +246,11 @@ void BaseComponentValue::EnsureEditorCreated(QWidget* parent)
 
     const M::CommandProducerHolder* typeProducer = GetTypeMeta<M::CommandProducerHolder>(nodes.front()->cachedValue);
     const M::CommandProducerHolder* fieldProducer = nodes.front()->field.ref.GetMeta<M::CommandProducerHolder>();
+    if (typeProducer == fieldProducer)
+    {
+        typeProducer = nullptr;
+    }
+
     bool realProperty = nodes.front()->propertyType == PropertyNode::RealProperty;
     if (realProperty == true && (fieldProducer != nullptr || typeProducer != nullptr))
     {

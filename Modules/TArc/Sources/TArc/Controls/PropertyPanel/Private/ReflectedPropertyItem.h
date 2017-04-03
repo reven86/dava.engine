@@ -30,7 +30,7 @@ public:
     std::shared_ptr<PropertyNode> GetPropertyNode(int32 index) const;
 
     QString GetPropertyName() const;
-    FastName GetName() const;
+    FastName GetID() const;
 
     bool IsFavorite() const;
     void SetFavorite(bool isFavorite);

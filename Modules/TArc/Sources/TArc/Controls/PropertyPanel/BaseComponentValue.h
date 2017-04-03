@@ -58,7 +58,7 @@ public:
     QWidget* EnsureEditorCreated(QObject* eventFilter, QWidget* parent);
 
     QString GetPropertyName() const;
-    FastName GetName() const;
+    FastName GetID() const;
     int32 GetPropertiesNodeCount() const;
     std::shared_ptr<PropertyNode> GetPropertyNode(int32 index) const;
 
@@ -115,6 +115,7 @@ private:
     BaseComponentValue* thisValue = nullptr;
     bool isEditorEvent = false;
     Style style;
+    FastName itemID;
 
     QtConnections connections;
 

@@ -41,9 +41,9 @@ QString ReflectedPropertyItem::GetPropertyName() const
     return value->GetPropertyName();
 }
 
-FastName ReflectedPropertyItem::GetName() const
+FastName ReflectedPropertyItem::GetID() const
 {
-    return value->GetName();
+    return value->GetID();
 }
 
 bool ReflectedPropertyItem::IsFavorite() const

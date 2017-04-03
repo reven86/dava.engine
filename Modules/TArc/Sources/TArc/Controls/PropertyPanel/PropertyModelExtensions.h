@@ -5,6 +5,7 @@
 #include <Base/BaseTypes.h>
 #include <Base/Type.h>
 #include <Base/Any.h>
+#include <Base/FastName.h>
 
 #include <memory>
 
@@ -34,12 +35,15 @@ public:
 
     PropertyNode() = default;
 
+    String BuildID() const;
+
     bool operator==(const PropertyNode& other) const;
     bool operator!=(const PropertyNode& other) const;
 
     int32 propertyType = Invalid; // it can be value from PropertyType or any value that you set in your extension
     Reflection::Field field;
     Any cachedValue;
+    FastName idPostfix;
     std::weak_ptr<PropertyNode> parent;
 
     static const int32 InvalidSortKey;

@@ -70,6 +70,17 @@ bool PropertyNode::operator!=(const PropertyNode& other) const
     field.key != field.key;
 }
 
+DAVA::String PropertyNode::BuildID() const
+{
+    String key = field.key.Cast<String>();
+    if (idPostfix.IsValid())
+    {
+        return key + idPostfix.c_str();
+    }
+
+    return key;
+}
+
 const int32 PropertyNode::InvalidSortKey = std::numeric_limits<int32>::max();
 
 ChildCreatorExtension::ChildCreatorExtension()

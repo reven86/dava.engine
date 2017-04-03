@@ -33,7 +33,7 @@ public:
 
     std::unique_ptr<DAVA::Command> CreateCommand(const std::shared_ptr<DAVA::TArc::PropertyNode>& node, const Params& params) const override
     {
-        DAVA::Component* component = *node->field.ref.GetValueObject().GetPtr<DAVA::Component*>();
+        DAVA::Component* component = node->field.ref.GetValueObject().GetPtr<DAVA::Component>();
         DAVA::Entity* entity = component->GetEntity();
         return std::unique_ptr<DAVA::Command>(new RemoveComponentCommand(entity, component));
     }
@@ -67,7 +67,7 @@ public:
         using namespace DAVA;
         using namespace TArc;
 
-        Component* component = *node->field.ref.GetValueObject().GetPtr<Component*>();
+        Component* component = node->field.ref.GetValueObject().GetPtr<Component>();
         ActionComponent* actionComponent = DynamicTypeCheck<ActionComponent*>(component);
         Entity* entity = component->GetEntity();
 
@@ -115,7 +115,7 @@ public:
         using namespace DAVA;
         using namespace TArc;
 
-        Component* component = *node->field.ref.GetValueObject().GetPtr<Component*>();
+        Component* component = node->field.ref.GetValueObject().GetPtr<Component>();
         SoundComponent* soundComponent = DynamicTypeCheck<SoundComponent*>(component);
         Entity* entity = component->GetEntity();
 
@@ -158,7 +158,7 @@ public:
         using namespace DAVA;
         using namespace TArc;
 
-        Component* component = *node->field.ref.GetValueObject().GetPtr<Component*>();
+        Component* component = node->field.ref.GetValueObject().GetPtr<Component>();
         WaveComponent* waveComponent = DynamicTypeCheck<WaveComponent*>(component);
         waveComponent->Trigger();
 

@@ -25,6 +25,7 @@
 #include <Functional/Function.h>
 #include <Base/Any.h>
 #include <Base/StaticSingleton.h>
+#include <Base/TypeInheritance.h>
 
 #include <QToolButton>
 #include <QHBoxLayout>
@@ -305,22 +306,23 @@ void EntityChildCreator::ExposeChildren(const std::shared_ptr<DAVA::TArc::Proper
         children.push_back(entityNode);
 
         {
-            DAVA::Reflection componentsField = f.ref.GetField(DAVA::Entity::componentFieldString);
-            DVASSERT(componentsField.IsValid());
+            Entity* entity = parent->field.ref.GetValueObject().GetPtr<Entity>();
+            for (uint32 type = Component::TRANSFORM_COMPONENT; type < Component::COMPONENT_COUNT; ++type)
+            {
+                uint32 countOftype = entity->GetComponentCount(type);
+                for (uint32 componentIndex = 0; componentIndex < countOftype; ++componentIndex)
+                {
+                    Component* component = entity->GetComponent(type, componentIndex);
+                    Reflection ref = Reflection::Create(ReflectedObject(component));
+                    String permanentName = GetValueReflectedType(ref)->GetPermanentName();
 
-            DAVA::TArc::ForEachField(componentsField, [&](Reflection::Field&& field)
-                                     {
-                                         if (!field.ref.HasMeta<M::HiddenField>())
-                                         {
-                                             Any value = field.ref.GetValue();
-                                             DAVA::Reflection::Field f(GetValueReflectedType(field.ref)->GetPermanentName(), Reflection(field.ref), nullptr);
-                                             std::shared_ptr<PropertyNode> node = allocator->CreatePropertyNode(parent, std::move(f), PropertyNode::RealProperty);
-                                             DVASSERT(value.CanGet<Component*>());
-                                             Component* component = value.Get<Component*>();
-                                             node->sortKey = static_cast<size_t>(component->GetType());
-                                             children.push_back(node);
-                                         }
-                                     });
+                    DAVA::Reflection::Field f(permanentName, Reflection(ref), nullptr);
+                    std::shared_ptr<PropertyNode> node = allocator->CreatePropertyNode(parent, std::move(f), PropertyNode::RealProperty);
+                    node->idPostfix = FastName(Format("%s_%u", permanentName.c_str(), componentIndex));
+                    node->sortKey = static_cast<size_t>(type);
+                    children.push_back(node);
+                }
+            }
 
             Reflection::Field addComponentField;
             addComponentField.key = "Add Component";
@@ -366,7 +368,7 @@ std::unique_ptr<DAVA::TArc::BaseComponentValue> EntityEditorCreator::GetEditor(c
     static const DAVA::Type* entityType = DAVA::Type::Instance<DAVA::Entity*>();
 
     if ((node->propertyType == DAVA::TArc::PropertyNode::GroupProperty && valueType == entityType)
-        || node->cachedValue.GetType() == DAVA::Type::Instance<DAVA::Component*>())
+        || (DAVA::TypeInheritance::CanCast(node->cachedValue.GetType(), DAVA::Type::Instance<DAVA::Component*>()) == true))
     {
         std::unique_ptr<DAVA::TArc::BaseComponentValue> editor = EditorComponentExtension::GetEditor(node);
         DAVA::TArc::BaseComponentValue::Style style;

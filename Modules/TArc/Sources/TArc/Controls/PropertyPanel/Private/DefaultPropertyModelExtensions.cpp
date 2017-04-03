@@ -96,6 +96,11 @@ std::shared_ptr<PropertyNode> DefaultAllocator::CreatePropertyNode(const std::sh
     result->propertyType = type;
     result->field = std::move(field);
     result->cachedValue = value;
+    const ReflectedType* refType = GetValueReflectedType(value);
+    if (refType != nullptr)
+    {
+        result->idPostfix = FastName(refType->GetPermanentName());
+    }
     result->parent = parent;
     result->sortKey = PropertyNode::InvalidSortKey;
 

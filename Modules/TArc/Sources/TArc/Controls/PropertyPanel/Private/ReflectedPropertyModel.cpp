@@ -523,7 +523,7 @@ void ReflectedPropertyModel::SetExpanded(bool expanded, const QModelIndex& index
     while (currentIndex.isValid())
     {
         ReflectedPropertyItem* item = MapItem(currentIndex);
-        reflectedPath.push_front(FastName(item->GetPropertyName().toStdString()));
+        reflectedPath.push_front(item->GetID());
         currentIndex = currentIndex.parent();
     }
 
@@ -551,7 +551,7 @@ QModelIndexList ReflectedPropertyModel::GetExpandedChildren(const QModelIndex& i
     while (currentIndex.isValid())
     {
         ReflectedPropertyItem* item = MapItem(currentIndex);
-        reflectedPath.push_front(FastName(item->GetPropertyName().toStdString()));
+        reflectedPath.push_front(item->GetID());
         currentIndex = currentIndex.parent();
     }
 
@@ -642,7 +642,7 @@ void ReflectedPropertyModel::AddFavorite(const QModelIndex& index)
     currentFavorite.reserve(8);
     while (item != nullptr)
     {
-        currentFavorite.push_back(item->GetName());
+        currentFavorite.push_back(item->GetID());
         item = item->parent;
     }
     std::reverse(currentFavorite.begin(), currentFavorite.end());
@@ -700,7 +700,7 @@ void ReflectedPropertyModel::RemoveFavorite(const QModelIndex& index)
 
     while (item != nullptr)
     {
-        path.push_back(item->GetName());
+        path.push_back(item->GetID());
         item = item->parent;
     }
 
@@ -756,7 +756,7 @@ void ReflectedPropertyModel::GetExpandedListImpl(QModelIndexList& list, Reflecte
     for (int32 i = 0; i < childCount; ++i)
     {
         ReflectedPropertyItem* child = item->GetChild(i);
-        FastName propertyName = FastName(child->GetPropertyName().toStdString());
+        FastName propertyName = FastName(child->GetID());
         if (expandedItems.HasChildInCurrentRoot(propertyName))
         {
             list << MapItem(child);
@@ -855,7 +855,7 @@ void ReflectedPropertyModel::RefreshFavoritesRoot()
                     break;
                 }
 
-                if (currentItem->GetName() != *pathIter)
+                if (currentItem->GetID() != *pathIter)
                 {
                     pathIsEqual = false;
                     break;
@@ -886,7 +886,7 @@ void ReflectedPropertyModel::RefreshFavoritesRoot()
 
 void ReflectedPropertyModel::RefreshFavorites(ReflectedPropertyItem* item, uint32 level, bool insertSessionIsOpen, const Set<size_t>& candidates)
 {
-    FastName itemName = item->GetName();
+    FastName itemName = item->GetID();
     bool itemFoundInPath = false;
 
     for (size_t pathIndex : candidates)
@@ -961,15 +961,12 @@ ReflectedPropertyItem* ReflectedPropertyModel::LookUpItem(const std::shared_ptr<
     DVASSERT(node->field.ref.IsValid());
 
     ReflectedPropertyItem* result = nullptr;
-    const Type* valueType = node->field.ref.GetValueType();
+    FastName nodeID = FastName(node->BuildID());
 
     for (const std::unique_ptr<ReflectedPropertyItem>& item : items)
     {
         DVASSERT(item->GetPropertyNodesCount() > 0);
-        std::shared_ptr<const PropertyNode> etalonNode = item->GetPropertyNode(0);
-        const Type* etalonItemType = etalonNode->field.ref.GetValueType();
-
-        if (valueType == etalonItemType && etalonNode->field.key == node->field.key)
+        if (item->GetID() == nodeID)
         {
             result = item.get();
             break;
