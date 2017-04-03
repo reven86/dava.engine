@@ -585,7 +585,7 @@ static bool dx11_TextureFormatSupported(TextureFormat format, ProgType)
     DXGI_FORMAT dxgiFormat = DX11_TextureFormat(format);
 
     if (dxgiFormat != DXGI_FORMAT_UNKNOWN)
-        dx11.device->CheckFormatSupport(dxgiFormat, &formatSupport);
+        DX11DeviceCommand(DX11Command::CHECK_FORMAT_SUPPORT, dxgiFormat, &formatSupport);
 
     return (formatSupport & D3D11_FORMAT_SUPPORT_TEXTURE2D) != 0;
 }

@@ -254,7 +254,7 @@ void VegetationGeometry::OnVegetationPropertiesChanged(NMaterial* mat, KeyedArch
             else
                 mat->AddTexture(NMaterialTextureName::TEXTURE_HEIGHTMAP, heightmap);
 
-            int32 floatTextureFlag = (heightmap->GetFormat() == PixelFormat::FORMAT_RGBA4444) ? 0 : 1;
+            int32 floatTextureFlag = (heightmap->GetFormat() == PixelFormat::FORMAT_R32F) ? 1 : 0;
             if (mat->HasLocalFlag(NMaterialFlagName::FLAG_HEIGHTMAP_FLOAT_TEXTURE))
                 mat->SetFlag(NMaterialFlagName::FLAG_HEIGHTMAP_FLOAT_TEXTURE, floatTextureFlag);
             else

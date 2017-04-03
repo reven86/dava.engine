@@ -699,19 +699,8 @@ void VegetationRenderObject::InitHeightTextureFromHeightmap(Heightmap* heightMap
         }
         else
         {
-            float32* texData = new float32[hmSize * hmSize];
-            float32* texDataPtr = texData;
-
-            for (uint32 y = 0; y < hmSize; ++y)
-            {
-                for (uint32 x = 0; x < hmSize; ++x)
-                {
-                    *texDataPtr++ = float32(heightmap->GetHeight(x, y)) / Heightmap::MAX_VALUE;
-                }
-            }
-
-            tx = Texture::CreateFromData(FORMAT_R32F, reinterpret_cast<uint8*>(texData), hmSize, hmSize, false);
-            SafeDeleteArray(texData);
+            Vector<float32> texData = BuildHeightmapFloatData(heightMap);
+            tx = Texture::CreateFromData(FORMAT_R32F, reinterpret_cast<uint8*>(texData.data()), hmSize, hmSize, false);
         }
 
         tx->SetWrapMode(rhi::TEXADDR_CLAMP, rhi::TEXADDR_CLAMP);
@@ -729,6 +718,23 @@ void VegetationRenderObject::InitHeightTextureFromHeightmap(Heightmap* heightMap
 
         SafeRelease(tx);
     }
+}
+
+Vector<float32> VegetationRenderObject::BuildHeightmapFloatData(Heightmap* heightMap)
+{
+    uint32 hmSize = uint32(heightMap->Size());
+    Vector<float32> texData(hmSize * hmSize);
+
+    float32* texDataPtr = texData.data();
+    for (uint32 y = 0; y < hmSize; ++y)
+    {
+        for (uint32 x = 0; x < hmSize; ++x)
+        {
+            *texDataPtr++ = float32(heightMap->GetHeight(x, y)) / Heightmap::MAX_VALUE;
+        }
+    }
+
+    return texData;
 }
 
 float32 VegetationRenderObject::SampleHeight(int16 x, int16 y)
@@ -949,7 +955,16 @@ void VegetationRenderObject::RestoreRenderData()
     {
         uint32 hmSize = uint32(heightmap->Size());
         DVASSERT(IsPowerOf2(hmSize));
-        heightmapTexture->TexImage(0, hmSize, hmSize, reinterpret_cast<uint8*>(heightmap->Data()), hmSize * hmSize * sizeof(uint16), 0);
+
+        if (heightmapTexture->GetFormat() == PixelFormat::FORMAT_RGBA4444)
+        {
+            heightmapTexture->TexImage(0, hmSize, hmSize, reinterpret_cast<uint8*>(heightmap->Data()), hmSize * hmSize * sizeof(uint16), 0);
+        }
+        else
+        {
+            Vector<float32> texData = BuildHeightmapFloatData(heightmap);
+            heightmapTexture->TexImage(0, hmSize, hmSize, reinterpret_cast<uint8*>(texData.data()), hmSize * hmSize * sizeof(float32), 0);
+        }
     }
 }
 
