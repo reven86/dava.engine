@@ -77,13 +77,13 @@ DLC::DLC(const String& url, const FilePath& sourceDir, const FilePath& destinati
     fsmAutoReady = false;
 
     DownloadManager* dm = DownloadManager::Instance();
-    taskStateChangedSignalId = dm->downloadTaskStateChanged.Connect(Function<void(uint32, DownloadStatus)>(this, &DLC::OnDownloadTaskStateChanged));
+    dm->downloadTaskStateChanged.Connect(this, &DLC::OnDownloadTaskStateChanged);
 }
 
 DLC::~DLC()
 {
     DownloadManager* dm = DownloadManager::Instance();
-    dm->downloadTaskStateChanged.Disconnect(taskStateChangedSignalId);
+    dm->downloadTaskStateChanged.Disconnect(this);
 
     DVASSERT((dlcState == DS_INIT || dlcState == DS_READY || dlcState == DS_DONE) && "DLC can be safely destroyed only in certain modes");
 }

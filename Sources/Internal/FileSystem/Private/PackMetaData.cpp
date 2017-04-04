@@ -163,7 +163,6 @@ Vector<uint8> PackMetaData::Serialize() const
         String bytes;
         std::stringstream ss;
 
-        size_t sizePackData = 0;
         for (const PackInfo& tuple : packDependencies)
         {
             const String& packName = tuple.packName;
@@ -226,7 +225,6 @@ Vector<uint8> PackMetaData::Serialize() const
         DAVA_THROW(Exception, "write compressedSize failed");
     }
 
-    // write num of files
     return file->GetDataVector();
 }
 
