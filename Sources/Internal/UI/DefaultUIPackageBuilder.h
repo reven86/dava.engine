@@ -1,9 +1,10 @@
-#ifndef __DAVAENGINE_UI_DEFAULT_PACKAGE_LOADER_H__
-#define __DAVAENGINE_UI_DEFAULT_PACKAGE_LOADER_H__
+#pragma once
 
 #include "AbstractUIPackageBuilder.h"
 #include "UIPackage.h"
 #include "UI/UIControlPackageContext.h"
+
+#include <memory>
 
 namespace DAVA
 {
@@ -13,31 +14,35 @@ class DefaultUIPackageBuilder : public AbstractUIPackageBuilder
 {
 public:
     DefaultUIPackageBuilder(UIPackagesCache* _packagesCache = nullptr);
-    virtual ~DefaultUIPackageBuilder();
+    ~DefaultUIPackageBuilder() override;
 
     UIPackage* GetPackage() const;
     UIPackage* FindInCache(const String& packagePath) const;
 
-    virtual void BeginPackage(const FilePath& packagePath) override;
-    virtual void EndPackage() override;
+    void BeginPackage(const FilePath& packagePath) override;
+    void EndPackage() override;
 
-    virtual bool ProcessImportedPackage(const String& packagePath, AbstractUIPackageLoader* loader) override;
-    virtual void ProcessStyleSheet(const Vector<UIStyleSheetSelectorChain>& selectorChains, const Vector<UIStyleSheetProperty>& properties) override;
+    bool ProcessImportedPackage(const String& packagePath, AbstractUIPackageLoader* loader) override;
+    void ProcessStyleSheet(const Vector<UIStyleSheetSelectorChain>& selectorChains, const Vector<UIStyleSheetProperty>& properties) override;
 
-    virtual UIControl* BeginControlWithClass(const FastName& controlName, const String& className) override;
-    virtual UIControl* BeginControlWithCustomClass(const FastName& controlName, const String& customClassName, const String& className) override;
-    virtual UIControl* BeginControlWithPrototype(const FastName& controlName, const String& packageName, const FastName& prototypeName, const String* customClassName, AbstractUIPackageLoader* loader) override;
-    virtual UIControl* BeginControlWithPath(const String& pathName) override;
-    virtual UIControl* BeginUnknownControl(const FastName& controlName, const YamlNode* node) override;
-    virtual void EndControl(eControlPlace controlPlace) override;
+    UIControl* BeginControlWithClass(const FastName& controlName, const String& className) override;
+    UIControl* BeginControlWithCustomClass(const FastName& controlName, const String& customClassName, const String& className) override;
+    UIControl* BeginControlWithPrototype(const FastName& controlName, const String& packageName, const FastName& prototypeName, const String* customClassName, AbstractUIPackageLoader* loader) override;
+    UIControl* BeginControlWithPath(const String& pathName) override;
+    UIControl* BeginUnknownControl(const FastName& controlName, const YamlNode* node) override;
+    void EndControl(eControlPlace controlPlace) override;
 
-    virtual void BeginControlPropertiesSection(const String& name) override;
-    virtual void EndControlPropertiesSection() override;
+    void BeginControlPropertiesSection(const String& name) override;
+    void EndControlPropertiesSection() override;
 
-    virtual UIComponent* BeginComponentPropertiesSection(uint32 componentType, uint32 componentIndex) override;
-    virtual void EndComponentPropertiesSection() override;
+    UIComponent* BeginComponentPropertiesSection(uint32 componentType, uint32 componentIndex) override;
+    void EndComponentPropertiesSection() override;
 
-    virtual void ProcessProperty(const InspMember* member, const VariantType& value) override;
+    void ProcessProperty(const InspMember* member, const VariantType& value) override;
+
+protected:
+    virtual UIControl* CreateControlByName(const String& customClassName, const String& className);
+    virtual std::unique_ptr<DefaultUIPackageBuilder> CreateBuilder(UIPackagesCache* packagesCache);
 
 private:
     void PutImportredPackage(const FilePath& path, UIPackage* package);
@@ -62,5 +67,3 @@ private:
     Map<String, int32> packsByNames;
 };
 }
-
-#endif // __DAVAENGINE_UI_DEFAULT_PACKAGE_LOADER_H__
