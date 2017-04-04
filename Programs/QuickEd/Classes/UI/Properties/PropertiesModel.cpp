@@ -548,7 +548,15 @@ QString PropertiesModel::makeQVariant(const AbstractProperty* property) const
 
     if (val.CanGet<FastName>())
     {
-        return StringToQString(val.Get<FastName>().c_str());
+        const FastName& fastName = val.Get<FastName>();
+        if (fastName.IsValid())
+        {
+            return StringToQString(fastName.c_str());
+        }
+        else
+        {
+            return QString();
+        }
     }
 
     if (val.CanGet<Vector2>())

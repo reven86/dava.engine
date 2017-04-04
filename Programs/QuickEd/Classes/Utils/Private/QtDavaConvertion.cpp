@@ -3,6 +3,7 @@
 #include <Base/Introspection.h>
 #include <Reflection/ReflectedMeta.h>
 #include <Utils/StringFormat.h>
+#include <Utils/UTF8Utils.h>
 #include <QString>
 #include <QColor>
 #include <QVariant>
@@ -162,9 +163,25 @@ QString AnyToQString(const DAVA::Any& val, const DAVA::ReflectedStructure::Field
     {
         return QString::fromStdString(val.Get<String>());
     }
+    else if (val.CanGet<WideString>())
+    {
+        return QString::fromStdWString(val.Get<WideString>().c_str());
+    }
+    else if (val.CanGet<FastName>())
+    {
+        const FastName& fastName = val.Get<FastName>();
+        if (fastName.IsValid())
+        {
+            return QString::fromStdString(fastName.c_str());
+        }
+        else
+        {
+            return QString();
+        }
+    }
     else if (val.CanGet<FilePath>())
     {
-        return QString::fromStdString(val.Get<FilePath>().GetFrameworkPath());
+        return QString::fromStdString(val.Get<FilePath>().GetStringValue());
     }
     else if (val.CanGet<bool>())
     {
@@ -216,9 +233,25 @@ String AnyToString(const Any& val)
     {
         return val.Get<String>();
     }
+    else if (val.CanGet<WideString>())
+    {
+        return UTF8Utils::EncodeToUTF8(val.Get<WideString>());
+    }
+    else if (val.CanGet<FastName>())
+    {
+        const FastName& fastName = val.Get<FastName>();
+        if (fastName.IsValid())
+        {
+            return fastName.c_str();
+        }
+        else
+        {
+            return "";
+        }
+    }
     else if (val.CanGet<FilePath>())
     {
-        return val.Get<FilePath>().GetFrameworkPath();
+        return val.Get<FilePath>().GetStringValue();
     }
     else if (val.CanGet<bool>())
     {
@@ -270,6 +303,14 @@ VariantType AnyToVariantType(const DAVA::Any& val)
     else if (val.CanGet<String>())
     {
         return VariantType(val.Get<String>());
+    }
+    else if (val.CanGet<WideString>())
+    {
+        return VariantType(val.Get<WideString>());
+    }
+    if (val.CanGet<FastName>())
+    {
+        return VariantType(val.Get<FastName>());
     }
     else if (val.CanGet<FilePath>())
     {
