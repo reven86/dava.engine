@@ -1,5 +1,4 @@
 #include "Modules/LegacySupportModule/LegacySupportModule.h"
-#include "Modules/LegacySupportModule/Private/Document.h"
 #include "Modules/DocumentsModule/DocumentData.h"
 #include "Modules/ProjectModule/ProjectData.h"
 #include "Modules/LegacySupportModule/Private/Project.h"
@@ -10,8 +9,6 @@
 
 #include "UI/mainwindow.h"
 #include "UI/ProjectView.h"
-#include "UI/Package/PackageWidget.h"
-#include "UI/DocumentGroupView.h"
 #include "UI/Find/FindFilter.h"
 
 #include <TArc/Core/ContextAccessor.h>
@@ -44,7 +41,6 @@ void LegacySupportModule::PostInit()
     documentDataWrapper.SetListener(this);
 
     InitMainWindow();
-    RegisterOperations();
 }
 
 void LegacySupportModule::OnWindowClosed(const DAVA::TArc::WindowKey& key)
@@ -69,6 +65,7 @@ void LegacySupportModule::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, 
     MainWindow* mainWindow = qobject_cast<MainWindow*>(window);
     DVASSERT(mainWindow != nullptr);
     MainWindow::ProjectView* projectView = mainWindow->GetProjectView();
+    PackageWidget* packageWidget = mainWindow->GetPackageWidget();
 
     if (wrapper == projectDataWrapper)
     {
@@ -81,71 +78,71 @@ void LegacySupportModule::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, 
     }
     else if (wrapper == documentDataWrapper)
     {
-        MainWindow::DocumentGroupView* documentGroupView = projectView->GetDocumentGroupView();
-        DataContext* activeContext = accessor->GetActiveContext();
-        Document* document = nullptr;
-        DataContext::ContextID contextID = activeContext->GetID();
-        if (activeContext != nullptr)
-        {
-            auto iter = documents.find(contextID);
-            DVASSERT(iter != documents.end());
-            document = iter->second.get();
-        }
-        PackageWidget* packageWidget = mainWindow->GetPackageWidget();
+        //move this code to the PackageModule https://jira.wargaming.net/browse/DF-12887
         if (wrapper.HasData() == false)
         {
             packageWidget->OnSelectionChanged(Any());
-            DVASSERT(document == nullptr);
-            documentGroupView->SetDocument(document);
+            packageWidget->OnPackageChanged(nullptr, nullptr);
+            return;
         }
 
-        else if (wrapper.HasData() && fields.empty())
+        DataContext* activeContext = accessor->GetActiveContext();
+        DocumentData* documentData = activeContext->GetData<DocumentData>();
+        DVASSERT(documentData != nullptr);
+        PackageNode* package = documentData->GetPackageNode();
+        PackageContext& context = packageWidgetContexts[package];
+
+        Any selectionValue = wrapper.GetFieldValue(DocumentData::selectionPropertyName);
+
+        if (fields.empty())
         {
-            DVASSERT(document != nullptr);
-            documentGroupView->SetDocument(document);
-            Any selectionValue = wrapper.GetFieldValue(DocumentData::selectionPropertyName);
+            packageWidget->OnSelectionChanged(Any());
+            packageWidget->OnPackageChanged(&context, package);
             packageWidget->OnSelectionChanged(selectionValue);
         }
         else
         {
             //event-based code require selectionChange first, packageChange second and than another selecitonChanged
-            DVASSERT(document != nullptr);
             bool selectionWasChanged = std::find(fields.begin(), fields.end(), String(DocumentData::selectionPropertyName)) != fields.end();
             bool packageWasChanged = std::find(fields.begin(), fields.end(), String(DocumentData::packagePropertyName)) != fields.end();
-            if (selectionWasChanged || packageWasChanged)
-            {
-                bool documentWasChanged = false;
-                if (packageWasChanged)
-                {
-                    const DocumentData* documentData = activeContext->GetData<DocumentData>();
-                    const PackageNode* package = documentData->GetPackageNode();
-                    if (package != document->GetPackage())
-                    {
-                        document = new Document(accessor, contextID);
-                        documentWasChanged = true;
-                    }
 
-                    packageWidget->OnSelectionChanged(Any());
-                    documentGroupView->SetDocument(document);
-                    if (documentWasChanged)
+            if (selectionWasChanged == false && packageWasChanged == false)
+            {
+                return;
+            }
+
+            packageWidget->OnSelectionChanged(Any());
+
+            if (packageWasChanged)
+            {
+                packageWidget->OnPackageChanged(&context, package);
+
+                for (DAVA::Map<PackageNode*, PackageContext>::iterator iter = packageWidgetContexts.begin(); iter != packageWidgetContexts.end();)
+                {
+                    bool packageExists = false;
+                    accessor->ForEachContext([&packageExists, iter](const DataContext& context) {
+                        if (context.GetData<DocumentData>()->GetPackageNode() == iter->first)
+                        {
+                            DVASSERT(packageExists == false);
+                            packageExists = true;
+                        }
+                    });
+                    if (packageExists == false)
                     {
-                        documents[contextID].reset(document);
+                        iter = packageWidgetContexts.erase(iter);
+                    }
+                    else
+                    {
+                        ++iter;
                     }
                 }
-
-                Any selectionValue = wrapper.GetFieldValue(DocumentData::selectionPropertyName);
+            }
+            if (selectionWasChanged)
+            {
                 packageWidget->OnSelectionChanged(selectionValue);
             }
         }
     }
-}
-
-void LegacySupportModule::OnContextCreated(DAVA::TArc::DataContext* context)
-{
-    using namespace DAVA::TArc;
-    ContextAccessor* accessor = GetAccessor();
-    DataContext::ContextID contextID = context->GetID();
-    documents[contextID] = std::make_unique<Document>(accessor, contextID);
 }
 
 void LegacySupportModule::InitMainWindow()
@@ -153,18 +150,13 @@ void LegacySupportModule::InitMainWindow()
     using namespace DAVA;
     using namespace TArc;
 
-    MainWindow* mainWindow = new MainWindow();
+    MainWindow* mainWindow = new MainWindow(GetAccessor());
     MainWindow::ProjectView* projectView = mainWindow->GetProjectView();
 
     connections.AddConnection(projectView, &MainWindow::ProjectView::JumpToControl, MakeFunction(this, &LegacySupportModule::JumpToControl));
     connections.AddConnection(projectView, &MainWindow::ProjectView::JumpToPackage, MakeFunction(this, &LegacySupportModule::JumpToPackage));
     connections.AddConnection(projectView, &MainWindow::ProjectView::JumpToPrototype, MakeFunction(this, &LegacySupportModule::OnJumpToPrototype));
     connections.AddConnection(projectView, &MainWindow::ProjectView::FindPrototypeInstances, MakeFunction(this, &LegacySupportModule::OnFindPrototypeInstances));
-
-    MainWindow::DocumentGroupView* documentGroupView = projectView->GetDocumentGroupView();
-    connections.AddConnection(documentGroupView, &MainWindow::DocumentGroupView::OpenPackageFile, [this](const QString& path) {
-        InvokeOperation(QEGlobal::OpenDocumentByPath.ID, path);
-    });
 
     connections.AddConnection(mainWindow->GetPackageWidget(), &PackageWidget::SelectedNodesChanged, MakeFunction(this, &LegacySupportModule::OnSelectionInPackageChanged));
 
@@ -176,20 +168,6 @@ void LegacySupportModule::InitMainWindow()
     GetUI()->InjectWindow(QEGlobal::windowKey, mainWindow);
     ContextAccessor* accessor = GetAccessor();
     DataContext* globalContext = accessor->GetGlobalContext();
-}
-
-void LegacySupportModule::RegisterOperations()
-{
-    using namespace DAVA;
-    using namespace TArc;
-    ContextAccessor* accessor = GetAccessor();
-    DataContext* globalContext = accessor->GetGlobalContext();
-
-    QWidget* window = GetUI()->GetWindow(QEGlobal::windowKey);
-    MainWindow* mainWindow = qobject_cast<MainWindow*>(window);
-    DVASSERT(nullptr != mainWindow);
-    MainWindow::ProjectView* view = mainWindow->GetProjectView();
-    RegisterOperation(QEGlobal::SelectFile.ID, view, &MainWindow::ProjectView::SelectFile);
 }
 
 void LegacySupportModule::OnFindPrototypeInstances()
@@ -282,4 +260,10 @@ void LegacySupportModule::JumpToPackage(const DAVA::FilePath& packagePath)
 {
     QString path = QString::fromStdString(packagePath.GetAbsolutePathname());
     InvokeOperation(QEGlobal::OpenDocumentByPath.ID, path);
+}
+
+void LegacySupportModule::OnContextDeleted(DAVA::TArc::DataContext* context)
+{
+    DocumentData* data = context->GetData<DocumentData>();
+    packageWidgetContexts.erase(data->GetPackageNode());
 }

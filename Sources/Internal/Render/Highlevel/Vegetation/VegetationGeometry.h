@@ -26,15 +26,6 @@ namespace DAVA
  */
 class VegetationGeometry
 {
-protected:
-    struct PolygonSortData
-    {
-        Array<VegetationIndex, 3> indices;
-        float32 cameraDistance;
-
-        inline PolygonSortData();
-    };
-
 public:
     VegetationGeometry(const Vector<VegetationLayerParams>& _maxClusters,
                        uint32 _maxDensityLevels,
@@ -101,11 +92,10 @@ private:
         void SetMaterial(NMaterial* mat);
     };
 
-    struct SortBufferData
+    struct BufferData
     {
         uint32 indexOffset;
         uint32 size;
-        Vector3 sortDirection;
     };
 
     struct VertexRangeData
@@ -133,11 +123,8 @@ private:
                             Vector<VegetationVertex>& vertexData, Vector<BufferCellData>& cellOffsets);
 
     void GenerateIndexData(const Vector<CustomGeometryEntityData>& sourceGeomData, const Vector<ClusterResolutionData>& clusterResolution, const BufferCellData& rangeData,
-                           Vector<VegetationVertex>& vertexData, Vector<VegetationIndex>& indexData, Vector<SortBufferData>& directionOffsets);
+                           Vector<VegetationVertex>& vertexData, Vector<VegetationIndex>& indexData, BufferData& bufferOffsets);
 
-    void GenerateSortedClusterIndexData(Vector3& cameraPosition, Vector<PolygonSortData>& sourceIndices, Vector<VegetationVertex>& vertexData);
-
-    static bool PolygonByDistanceCompareFunction(const PolygonSortData& a, const PolygonSortData& b);
     static bool ClusterByMatrixCompareFunction(const ClusterResolutionData& a, const ClusterResolutionData& b);
     static int32 RandomShuffleFunc(int32 limit);
 
@@ -163,12 +150,6 @@ private:
 
     Vector<CustomGeometryEntityData> customGeometryData;
 };
-
-inline VegetationGeometry::PolygonSortData::PolygonSortData()
-{
-    indices[0] = indices[1] = indices[2] = -1;
-    cameraDistance = -1.0f;
-}
 };
 
 #endif /* defined(__DAVAENGINE_VEGETATIONCUSTOMSLGEOMETRYGENERATOR_H__) */

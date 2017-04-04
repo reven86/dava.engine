@@ -5,7 +5,6 @@
 #include "ColladaMesh.h"
 #include "ColladaScene.h"
 #include "ColladaErrorCodes.h"
-#include "ImportParams.h"
 
 #include "DAVAEngine.h"
 
@@ -25,7 +24,7 @@ public:
 
     bool IsEmptyNode(ColladaSceneNode* node);
 
-    eColladaErrorCodes SaveSC2(const FilePath& scenePath, std::unique_ptr<DAEConverter::ImportParams>&& importParams) const;
+    eColladaErrorCodes SaveSC2(const FilePath& scenePath) const;
     String GetTextureName(const FilePath& scenePath, ColladaTexture* texture);
 
     void GetAnimationTimeInfo(FCDocument* document, float32& timeStart, float32& timeEnd);
