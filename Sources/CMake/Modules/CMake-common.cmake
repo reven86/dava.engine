@@ -91,10 +91,10 @@ macro (enable_pch)
     endif ()
 endmacro ()
 #
-macro( processing_mix_data_dependencies DEPENDENT_TRGET_LIST )
+macro( processing_mix_data_dependencies DEPENDENT_TARGET_LIST )
 
     if( TARGET DATA_COPY_${PROJECT_NAME}  )
-        foreach (TARGET_NAME ${DEPENDENT_TRGET_LIST})
+        foreach (TARGET_NAME ${DEPENDENT_TARGET_LIST})
             if( TARGET ${TARGET_NAME} )
                 add_dependencies( ${TARGET_NAME} DATA_COPY_${PROJECT_NAME} )
             endif()
