@@ -371,8 +371,6 @@ void PackMetaData::Deserialize(const void* ptr, size_t size)
         DAVA_THROW(Exception, "read metadata error - no compressedSize");
     }
 
-    DVASSERT(16 + numFilesBytes + compressedSize == size);
-
     vector<uint8_t> compressedBuf(compressedSize);
 
     file.read(reinterpret_cast<char*>(&compressedBuf[0]), compressedSize);

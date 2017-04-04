@@ -324,7 +324,15 @@ bool PackRequest::UpdateFileRequests()
                 else
                 {
                     fs->DeleteFile(fileRequest.localFile); // just in case (hash not match, size not match...)
-                    fileRequest.taskId = dm->DownloadRange(fileRequest.url, fileRequest.localFile, fileRequest.startLoadingPos, fileRequest.sizeOfCompressedFile);
+                    const DLCManager::Hints& h = packManagerImpl->GetHints();
+                    fileRequest.taskId = dm->DownloadRange(fileRequest.url,
+                                                           fileRequest.localFile,
+                                                           fileRequest.startLoadingPos,
+                                                           fileRequest.sizeOfCompressedFile,
+                                                           RESUMED,
+                                                           h.numOfThreadsPerFileDownload,
+                                                           h.timeoutForDownload,
+                                                           h.retriesCountForDownload);
                 }
             }
             else

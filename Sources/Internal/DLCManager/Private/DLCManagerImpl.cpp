@@ -581,7 +581,15 @@ void DLCManagerImpl::AskFileTable()
 
     uint64 downloadOffset = fullSizeServerData - (sizeof(initFooterOnServer) + initFooterOnServer.info.filesTableSize);
 
-    downloadTaskId = dm->DownloadRange(urlToSuperPack, localCacheFileTable, downloadOffset, buffer.size());
+    downloadTaskId = dm->DownloadRange(urlToSuperPack,
+                                       localCacheFileTable,
+                                       downloadOffset, buffer.size(),
+                                       RESUMED,
+                                       hints.numOfThreadsPerFileDownload,
+                                       hints.timeoutForDownload,
+                                       hints.retriesCountForDownload
+                                       );
+
     if (0 == downloadTaskId)
     {
         DAVA_THROW(DAVA::Exception, "can't start downloading into buffer");

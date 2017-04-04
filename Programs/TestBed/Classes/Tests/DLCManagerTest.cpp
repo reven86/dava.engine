@@ -173,6 +173,18 @@ void DLCManagerTest::LoadResources()
     checkFile->AddEvent(EVENT_TOUCH_DOWN, Message(this, &DLCManagerTest::OnCheckFileClicked));
     AddControl(checkFile);
 
+    numOfThreadDownload = new UITextField(Rect(5, 410, 400, 20));
+    numOfThreadDownload->SetFont(font);
+    numOfThreadDownload->SetFontSize(14);
+    numOfThreadDownload->SetUtf8Text("1");
+    numOfThreadDownload->SetDebugDraw(true);
+    numOfThreadDownload->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
+    numOfThreadDownload->SetInputEnabled(true);
+    numOfThreadDownload->GetOrCreateComponent<UIFocusComponent>();
+    numOfThreadDownload->SetDelegate(this);
+    numOfThreadDownload->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
+    AddControl(numOfThreadDownload);
+
     startInit = new UIButton(Rect(420, 410, 100, 20));
     startInit->SetDebugDraw(true);
     startInit->SetStateFont(0xFF, font);
@@ -248,6 +260,7 @@ void DLCManagerTest::UnloadResources()
     SafeRelease(startInit);
     SafeRelease(dirToListFiles);
     SafeRelease(lsDirFromPacks);
+    SafeRelease(numOfThreadDownload);
 
     BaseScreen::UnloadResources();
 }
@@ -310,9 +323,12 @@ void DLCManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, vo
 
     dm.networkReady.DisconnectAll();
     dm.networkReady.Connect(this, &DLCManagerTest::OnNetworkReady);
+    DLCManager::Hints hints;
+    int numThreads = stoi(numOfThreadDownload->GetUtf8Text());
+    hints.numOfThreadsPerFileDownload = static_cast<uint32>(numThreads);
     dm.initializeFinished.Connect(this, &DLCManagerTest::OnInitializeFinished);
 
-    dm.Initialize(folderWithDownloadedPacks, urlToServerSuperpack, DLCManager::Hints());
+    dm.Initialize(folderWithDownloadedPacks, urlToServerSuperpack, hints);
 
     dm.SetRequestingEnabled(true);
 
@@ -330,7 +346,12 @@ void DLCManagerTest::OnStartSyncClicked(DAVA::BaseObject* sender, void* data, vo
 void DLCManagerTest::OnClearDocsClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
     DLCManager& dm = *engine.GetContext()->dlcManager;
-
+    if (!FileSystem::Instance()->DeleteDirectory(folderWithDownloadedPacks, true))
+    {
+        std::stringstream ss(logPring->GetUtf8Text());
+        ss << "can't delete dir: " << folderWithDownloadedPacks.GetAbsolutePathname() << std::endl;
+        logPring->SetUtf8Text(ss.str());
+    }
     packNameLoading->SetText(L"done: unmount all dvpk's, and remove dir with downloaded dvpk's");
 }
 
