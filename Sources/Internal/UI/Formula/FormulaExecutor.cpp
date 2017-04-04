@@ -182,8 +182,8 @@ void FormulaExecutor::Visit(FormulaFunctionExpression* exp)
         values.push_back(res);
     }
 
-    const AnyFn* fn = context->FindFunction(exp->GetName(), types);
-    if (fn != nullptr)
+    AnyFn fn = context->FindFunction(exp->GetName(), types);
+    if (!fn.IsValid())
     {
         throw FormulaCalculationError(Format("Can't resolve function '%s'", exp->GetName().c_str()));
     }
@@ -191,7 +191,7 @@ void FormulaExecutor::Visit(FormulaFunctionExpression* exp)
     int32 index = 0;
     for (Any& v : values)
     {
-        if (v.GetType() == Type::Instance<int32>() && fn->GetInvokeParams().argsType[index] == Type::Instance<float32>())
+        if (v.GetType() == Type::Instance<int32>() && fn.GetInvokeParams().argsType[index] == Type::Instance<float32>())
         {
             v = Any(static_cast<float32>(v.Get<int32>()));
         }
@@ -202,27 +202,27 @@ void FormulaExecutor::Visit(FormulaFunctionExpression* exp)
     switch (params.size())
     {
     case 0:
-        calculationResult = fn->Invoke();
+        calculationResult = fn.Invoke();
         break;
 
     case 1:
-        calculationResult = fn->Invoke(values[0]);
+        calculationResult = fn.Invoke(values[0]);
         break;
 
     case 2:
-        calculationResult = fn->Invoke(values[0], values[1]);
+        calculationResult = fn.Invoke(values[0], values[1]);
         break;
 
     case 3:
-        calculationResult = fn->Invoke(values[0], values[1], values[2]);
+        calculationResult = fn.Invoke(values[0], values[1], values[2]);
         break;
 
     case 4:
-        calculationResult = fn->Invoke(values[0], values[1], values[2], values[3]);
+        calculationResult = fn.Invoke(values[0], values[1], values[2], values[3]);
         break;
 
     case 5:
-        calculationResult = fn->Invoke(values[0], values[1], values[2], values[3], values[4]);
+        calculationResult = fn.Invoke(values[0], values[1], values[2], values[3], values[4]);
         break;
 
     default:

@@ -31,7 +31,7 @@ StyleSheetProperty::StyleSheetProperty(const DAVA::UIStyleSheetProperty& aProper
     SetName(String(descr.GetFullName().c_str()));
     SetOverridden(true);
 
-    RefPtr<VariantTypeProperty> valueProp(new VariantTypeProperty("Value", &descr.memberInfo->Desc(), property.value));
+    RefPtr<VariantTypeProperty> valueProp(new VariantTypeP уroperty("Value", &descr.memberInfo->Desc(), property.value));
     valueProp->SetValue(property.value);
     valueProp->SetParent(this);
     AddSubValueProperty(valueProp.Get());
