@@ -436,14 +436,11 @@ void VegetationRenderObject::PrepareToRender(Camera* camera)
         ++renderBatchCount;
     }
 
-    Vector<Vector<Vector<VegetationSortedBufferItem>>>& indexRenderDataObject = renderData->GetIndexBuffers();
+    Vector<Vector<VegetationBufferItem>>& indexRenderDataObject = renderData->GetIndexBuffers();
 
     Vector3 posScale(0.0f, 0.0f, 0.0f);
     Vector2 switchLodScale;
     Vector4 vegetationAnimationOffset[2];
-
-    Vector3 cameraDirection = camera->GetDirection();
-    cameraDirection.Normalize();
 
     for (size_t cellIndex = 0; cellIndex < visibleCellCount; ++cellIndex)
     {
@@ -454,15 +451,12 @@ void VegetationRenderObject::PrepareToRender(Camera* camera)
 
         uint32 resolutionIndex = MapCellSquareToResolutionIndex(treeNode->data.width * treeNode->data.height);
 
-        Vector<Vector<VegetationSortedBufferItem>>& rdoVector = indexRenderDataObject[resolutionIndex];
+        Vector<VegetationBufferItem>& rdoVector = indexRenderDataObject[resolutionIndex];
 
         uint32 indexBufferIndex = treeNode->data.rdoIndex;
         DVASSERT(indexBufferIndex < rdoVector.size());
 
-        Vector<VegetationSortedBufferItem>& indexBufferVector = rdoVector[indexBufferIndex];
-        size_t directionIndex = SelectDirectionIndex(cameraDirection, indexBufferVector);
-        VegetationSortedBufferItem& bufferItem = indexBufferVector[directionIndex];
-
+        VegetationBufferItem& bufferItem = rdoVector[indexBufferIndex];
         rb->startIndex = bufferItem.startIndex;
         rb->indexCount = bufferItem.indexCount;
 
@@ -691,7 +685,17 @@ void VegetationRenderObject::InitHeightTextureFromHeightmap(Heightmap* heightMap
     {
         uint32 hmSize = uint32(heightmap->Size());
         DVASSERT(IsPowerOf2(hmSize));
-        Texture* tx = Texture::CreateFromData(FORMAT_RGBA4444, reinterpret_cast<uint8*>(heightMap->Data()), hmSize, hmSize, false);
+
+        Texture* tx = nullptr;
+        if (rhi::TextureFormatSupported(rhi::TEXTURE_FORMAT_R4G4B4A4))
+        {
+            tx = Texture::CreateFromData(FORMAT_RGBA4444, reinterpret_cast<uint8*>(heightMap->Data()), hmSize, hmSize, false);
+        }
+        else
+        {
+            Vector<float32> texData = BuildHeightmapFloatData(heightMap);
+            tx = Texture::CreateFromData(FORMAT_R32F, reinterpret_cast<uint8*>(texData.data()), hmSize, hmSize, false);
+        }
 
         tx->SetWrapMode(rhi::TEXADDR_CLAMP, rhi::TEXADDR_CLAMP);
         tx->SetMinMagFilter(rhi::TEXFILTER_LINEAR, rhi::TEXFILTER_LINEAR, rhi::TEXMIPFILTER_NONE);
@@ -708,6 +712,23 @@ void VegetationRenderObject::InitHeightTextureFromHeightmap(Heightmap* heightMap
 
         SafeRelease(tx);
     }
+}
+
+Vector<float32> VegetationRenderObject::BuildHeightmapFloatData(Heightmap* heightMap)
+{
+    uint32 hmSize = uint32(heightMap->Size());
+    Vector<float32> texData(hmSize * hmSize);
+
+    float32* texDataPtr = texData.data();
+    for (uint32 y = 0; y < hmSize; ++y)
+    {
+        for (uint32 x = 0; x < hmSize; ++x)
+        {
+            *texDataPtr++ = float32(heightMap->GetHeight(x, y)) / Heightmap::MAX_VALUE;
+        }
+    }
+
+    return texData;
 }
 
 float32 VegetationRenderObject::SampleHeight(int16 x, int16 y)
@@ -731,7 +752,8 @@ float32 VegetationRenderObject::SampleHeight(int16 x, int16 y)
 bool VegetationRenderObject::IsHardwareCapableToRenderVegetation()
 {
     const rhi::RenderDeviceCaps& deviceCaps = rhi::DeviceCaps();
-    bool result = deviceCaps.isVertexTextureUnitsSupported && deviceCaps.is32BitIndicesSupported && rhi::TextureFormatSupported(rhi::TEXTURE_FORMAT_R4G4B4A4, rhi::PROG_VERTEX);
+    bool result = deviceCaps.isVertexTextureUnitsSupported && deviceCaps.is32BitIndicesSupported &&
+    (rhi::TextureFormatSupported(rhi::TEXTURE_FORMAT_R4G4B4A4, rhi::PROG_VERTEX) || rhi::TextureFormatSupported(rhi::TEXTURE_FORMAT_R32F, rhi::PROG_VERTEX));
 
     return result;
 }
@@ -927,7 +949,16 @@ void VegetationRenderObject::RestoreRenderData()
     {
         uint32 hmSize = uint32(heightmap->Size());
         DVASSERT(IsPowerOf2(hmSize));
-        heightmapTexture->TexImage(0, hmSize, hmSize, reinterpret_cast<uint8*>(heightmap->Data()), hmSize * hmSize * sizeof(uint16), 0);
+
+        if (heightmapTexture->GetFormat() == PixelFormat::FORMAT_RGBA4444)
+        {
+            heightmapTexture->TexImage(0, hmSize, hmSize, reinterpret_cast<uint8*>(heightmap->Data()), hmSize * hmSize * sizeof(uint16), 0);
+        }
+        else
+        {
+            Vector<float32> texData = BuildHeightmapFloatData(heightmap);
+            heightmapTexture->TexImage(0, hmSize, hmSize, reinterpret_cast<uint8*>(texData.data()), hmSize * hmSize * sizeof(float32), 0);
+        }
     }
 }
 
@@ -945,36 +976,6 @@ bool VegetationRenderObject::ReadyToRender()
 #endif
 
     return renderFlag && vegetationVisible && renderData;
-}
-
-size_t VegetationRenderObject::SelectDirectionIndex(const Vector3& cameraDirection, Vector<VegetationSortedBufferItem>& buffers)
-{
-    size_t index = 0;
-    float32 currentCosA = 0.0f;
-    size_t directionCount = buffers.size();
-    for (size_t i = 0; i < directionCount; ++i)
-    {
-        VegetationSortedBufferItem& item = buffers[i];
-        //cos (angle) = dotAB / (length A * lengthB)
-        //no need to calculate (length A * lengthB) since vectors are normalized
-
-        if (item.sortDirection == cameraDirection)
-        {
-            index = i;
-            break;
-        }
-        else
-        {
-            float32 cosA = cameraDirection.DotProduct(item.sortDirection);
-            if (cosA > currentCosA)
-            {
-                index = i;
-                currentCosA = cosA;
-            }
-        }
-    }
-
-    return index;
 }
 
 void VegetationRenderObject::DebugDrawVisibleNodes(RenderHelper* drawer)

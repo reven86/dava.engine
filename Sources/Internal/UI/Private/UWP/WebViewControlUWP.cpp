@@ -193,8 +193,8 @@ void WebViewControl::OwnerIsDying()
                 PlatformApi::Win10::RemoveXamlControl(window, nativeWebView);
             });
         }
-        window->sizeChanged.Disconnect(windowSizeChangedConnection);
-        Engine::Instance()->windowDestroyed.Disconnect(windowDestroyedConnection);
+        window->sizeChanged.Disconnect(this);
+        Engine::Instance()->windowDestroyed.Disconnect(this);
     }
 #endif
 }
@@ -209,8 +209,8 @@ void WebViewControl::Initialize(const Rect& rect)
     properties.anyPropertyChanged = true;
 
 #if defined(__DAVAENGINE_COREV2__)
-    windowSizeChangedConnection = window->sizeChanged.Connect(this, &WebViewControl::OnWindowSizeChanged);
-    windowDestroyedConnection = Engine::Instance()->windowDestroyed.Connect(this, &WebViewControl::OnWindowDestroyed);
+    window->sizeChanged.Connect(this, &WebViewControl::OnWindowSizeChanged);
+    Engine::Instance()->windowDestroyed.Connect(this, &WebViewControl::OnWindowDestroyed);
 #endif
 }
 

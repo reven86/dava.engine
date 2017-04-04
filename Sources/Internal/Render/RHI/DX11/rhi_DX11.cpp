@@ -581,22 +581,13 @@ static bool dx11_NeedRestoreResources()
 
 static bool dx11_TextureFormatSupported(TextureFormat format, ProgType)
 {
-    bool supported = false;
-    switch (format)
-    {
-    case TEXTURE_FORMAT_R8G8B8A8:
-    case TEXTURE_FORMAT_R5G5B5A1:
-    case TEXTURE_FORMAT_R5G6B5:
-    case TEXTURE_FORMAT_R4G4B4A4:
-    case TEXTURE_FORMAT_R8:
-    case TEXTURE_FORMAT_R16:
-    case TEXTURE_FORMAT_DXT1:
-    case TEXTURE_FORMAT_DXT3:
-    case TEXTURE_FORMAT_DXT5:
-        supported = true;
-        break;
-    }
-    return supported;
+    UINT formatSupport = 0;
+    DXGI_FORMAT dxgiFormat = DX11_TextureFormat(format);
+
+    if (dxgiFormat != DXGI_FORMAT_UNKNOWN)
+        DX11DeviceCommand(DX11Command::CHECK_FORMAT_SUPPORT, dxgiFormat, &formatSupport);
+
+    return (formatSupport & D3D11_FORMAT_SUPPORT_TEXTURE2D) != 0;
 }
 
 static void dx11_Uninitialize()
