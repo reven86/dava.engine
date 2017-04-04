@@ -1,10 +1,11 @@
 #pragma once
 
+#include <fstream>
+
 #include "DLCManager/DLCManager.h"
 #include "DLCManager/Private/RequestManager.h"
 #include "FileSystem/Private/PackFormatSpec.h"
 #include "FileSystem/Private/PackMetaData.h"
-#include "Concurrency/Mutex.h"
 #include "Concurrency/Semaphore.h"
 #include "Concurrency/Thread.h"
 
@@ -30,7 +31,7 @@ public:
         UnpakingDB, //!< unpack DB from zip
         DeleteDownloadedPacksIfNotMatchHash, //!< go throw all local packs and unmount it if hash not match then delete
         LoadingPacksDataFromLocalMeta, //!< open local DB and build pack index for all packs
-        WaitScanThreadToFinish, //!< wait till finish scaning of downloaded .dvpl files
+        WaitScanThreadToFinish, //!< wait till finish scanning of downloaded .dvpl files
         MoveDeleyedRequestsToQueue, //!< mount all local packs downloaded and not mounted later
         Ready, //!< starting from this state client can call any method, second initialize will work too
         Offline, //!< server not accessible, retry initialization after Hints::retryConnectMilliseconds
@@ -91,6 +92,8 @@ public:
 
     PackRequest* FindRequest(const String& requestedPackName) const;
 
+    bool IsPackInQueue(const String& packName) override;
+
     void SetRequestPriority(const IRequest* request) override;
 
     void RemovePack(const String& packName) override;
@@ -119,6 +122,8 @@ public:
     bool IsInQueue(const PackRequest* request) const;
 
     bool IsTop(const PackRequest* request) const;
+
+    std::ostream& GetLog() const;
 
 private:
     // initialization state functions
@@ -159,7 +164,7 @@ private:
         uint32 compressedSize = 0;
         uint32 crc32Hash = 0;
     };
-    // fill during scan local pack files, emtpy after finish scan
+    // fill during scan local pack files, empty after finish scan
     Vector<LocalFileInfo> localFiles;
     // every bit mean file exist and size match with meta
     Vector<bool> scanFileReady;
@@ -172,7 +177,7 @@ private:
     void ScanFiles(const FilePath& dir, Vector<LocalFileInfo>& files);
     void RecursiveScan(const FilePath& baseDir, const FilePath& dir, Vector<LocalFileInfo>& files);
 
-    mutable Mutex protectDM;
+    mutable std::ofstream log;
 
     FilePath localCacheMeta;
     FilePath localCacheFileTable;
@@ -189,9 +194,9 @@ private:
     String initErrorMsg;
     InitState initState = InitState::Starting;
     InitError initError = InitError::AllGood;
-    PackFormat::PackFile::FooterBlock initFooterOnServer; // tmp supperpack info for every new pack request or during initialization
+    PackFormat::PackFile::FooterBlock initFooterOnServer; // temp superpack info for every new pack request or during initialization
     PackFormat::PackFile usedPackFile; // current superpack info
-    Vector<uint8> buffer; // tmp buff
+    Vector<uint8> buffer; // temp buff
     String uncompressedFileNames;
     UnorderedMap<String, const PackFormat::FileTableEntry*> mapFileData;
     Vector<uint32> startFileNameIndexesInUncompressedNames;

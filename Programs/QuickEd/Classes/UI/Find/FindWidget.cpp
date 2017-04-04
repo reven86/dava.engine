@@ -1,6 +1,5 @@
 #include "FindWidget.h"
 
-#include "Modules/LegacySupportModule/Private/Document.h"
 #include "Modules/LegacySupportModule/Private/Project.h"
 #include "UI/Find/Finder.h"
 
