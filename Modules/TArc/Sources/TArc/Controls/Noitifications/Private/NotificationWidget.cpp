@@ -185,6 +185,7 @@ void NotificationWidget::InitAnimations()
 void NotificationWidget::InitTimer()
 {
     timer = new QTimer(this);
+    timer->setObjectName("notificationTimer");
     timer->setSingleShot(true);
     connect(timer, &QTimer::timeout, this, &NotificationWidget::Remove);
 }
@@ -196,7 +197,7 @@ void NotificationWidget::Remove()
     opacityAnimation->setStartValue(windowOpacity());
     opacityAnimation->setEndValue(0.0);
     opacityAnimation->start();
-    connect(opacityAnimation, &QAbstractAnimation::finished, this, &NotificationWidget::Removed);
+    connect(opacityAnimation, &QAbstractAnimation::finished, this, &QObject::deleteLater);
 }
 
 void NotificationWidget::paintEvent(QPaintEvent* /*event*/)

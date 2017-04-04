@@ -7,6 +7,18 @@ namespace DAVA
 {
 namespace TArc
 {
+NotificationLayout::~NotificationLayout()
+{
+    for (const NotificationList& widgetList : notifications)
+    {
+        for (NotificationWidget* widget : widgetList)
+        {
+            disconnect(widget, &QObject::destroyed, this, &NotificationLayout::RemoveWidget);
+            delete widget;
+        }
+    }
+}
+
 void NotificationLayout::AddNotificationWidget(QWidget* parent, const NotificationWidgetParams& params)
 {
     if (notifications.contains(parent) == false)
@@ -15,7 +27,7 @@ void NotificationLayout::AddNotificationWidget(QWidget* parent, const Notificati
     }
 
     NotificationWidget* widget = new NotificationWidget(params, static_cast<int>(displayTimeMs), parent);
-    connect(widget, &NotificationWidget::Removed, this, &NotificationLayout::RemoveWidget);
+    connect(widget, &QObject::destroyed, this, &NotificationLayout::RemoveWidget);
 
     notifications[parent].append(widget);
     LayoutWidgets();
@@ -26,10 +38,9 @@ void NotificationLayout::RemoveWidget()
     for (NotificationListMap::Iterator iter = notifications.begin(); iter != notifications.end(); ++iter)
     {
         NotificationList& widgets = *iter;
-        QObject* senderWidget = sender();
-        NotificationWidget* widget = qobject_cast<NotificationWidget*>(senderWidget);
-        widgets.removeAll(widget);
-        delete widget;
+        NotificationWidget* senderWidget = static_cast<NotificationWidget*>(sender());
+        DVASSERT(widgets.contains(senderWidget));
+        widgets.removeAll(senderWidget);
     }
     LayoutWidgets();
 }

@@ -36,11 +36,6 @@ public:
     void SetPosition(const QPoint& point);
     void Init();
 
-signals:
-    void Removed();
-
-public slots:
-
 private slots:
     void Remove();
     void OnApplicationStateChanged(Qt::ApplicationState state);

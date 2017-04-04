@@ -25,6 +25,8 @@ public:
         BottomRight
     };
 
+    ~NotificationLayout();
+
     void AddNotificationWidget(QWidget* parent, const NotificationWidgetParams& params);
     void SetLayoutType(eLayoutType type);
     void SetDisplayTimeMs(DAVA::uint32 displayTimeMS);

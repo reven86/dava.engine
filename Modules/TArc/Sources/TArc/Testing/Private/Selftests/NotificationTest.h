@@ -12,6 +12,8 @@
 
 #include "TArc/Utils/QtConnections.h"
 
+#include <Base/BaseTypes.h>
+
 #include <QPushButton>
 
 namespace NotificationTestDetails
@@ -33,6 +35,7 @@ public:
         using namespace DAVA::TArc;
 
         QWidget* w = new QWidget();
+        w->resize(800, 600);
 
         DAVA::TArc::PanelKey panelKey("NotificationTest", DAVA::TArc::CentralPanelInfo());
         GetUI()->AddView(wndKey, panelKey, w);
@@ -95,24 +98,82 @@ DAVA_TARC_TESTCLASS(NotificationTest)
         using namespace DAVA::TArc;
         using namespace testing;
 
-        QElapsedTimer elapsedTimer;
-        elapsedTimer.start();
-
-        const int timeout = 100;
-        EXPECT_CALL(*this, OnDestroyed())
-        .WillOnce(Invoke([&elapsedTimer, timeout]() {
-            int elapsed = elapsedTimer.elapsed();
-            TEST_VERIFY(elapsed == timeout);
-        }));
+        const int timeout = 50;
 
         QWidget* parent = GetWindow(NotificationTestDetails::wndKey);
-        NotificationLayout notificationLayout;
-        notificationLayout.SetDisplayTimeMs(timeout);
 
         NotificationWidgetParams params;
-        notificationLayout.AddNotificationWidget(parent, params);
-        NotificationWidget* child = parent->findChild<NotificationWidget*>();
-        connections.AddConnection(child, &QObject::destroyed, MakeFunction(this, &NotificationTest::OnDestroyed));
+        NotificationWidget* notificationWidget = new NotificationWidget(params, timeout, parent);
+        QElapsedTimer* elapsedTimer = new QElapsedTimer;
+
+        EXPECT_CALL(*this, OnDestroyed())
+        .WillOnce(Invoke([elapsedTimer, timeout]() {
+            int elapsedMs = elapsedTimer->elapsed();
+            const int maxExpectedTimeMs = 300; //widget will be removed after animations are finished
+            TEST_VERIFY(elapsedMs < maxExpectedTimeMs);
+
+            delete elapsedTimer;
+        }));
+
+        connections.AddConnection(notificationWidget, &NotificationWidget::destroyed, MakeFunction(this, &NotificationTest::OnDestroyed));
+        elapsedTimer->start();
+        notificationWidget->Init();
+    }
+
+    DAVA_TEST (TestNotificationsCount)
+    {
+        using namespace DAVA;
+        using namespace DAVA::TArc;
+        using namespace testing;
+
+        NotificationWidgetParams params;
+
+        NotificationLayout layout;
+        QWidget* parent = GetWindow(NotificationTestDetails::wndKey);
+        for (int i = 0; i < 20; ++i)
+        {
+            layout.AddNotificationWidget(parent, params);
+        }
+        QList<NotificationWidget*> widgetList = parent->findChildren<NotificationWidget*>();
+        NotificationWidget* firstNotification = widgetList.first();
+        NotificationWidget* lastNotification = widgetList.last();
+        TEST_VERIFY(firstNotification->isVisible() == true);
+        TEST_VERIFY(lastNotification->isVisible() == false);
+    }
+
+    DAVA_TEST (TestNotificationsLayout)
+    {
+        using namespace DAVA;
+        using namespace DAVA::TArc;
+        using namespace testing;
+
+        QWidget* parent = GetWindow(NotificationTestDetails::wndKey);
+
+        Map<NotificationLayout::eLayoutType, DAVA::Function<QPoint(QWidget * parent, QWidget * bubble)>> positions = {
+            { NotificationLayout::TopLeft, [](QWidget* parent, QWidget* bubble) { return QPoint(0, 0); } },
+            { NotificationLayout::TopRight, [](QWidget* parent, QWidget* bubble) { return QPoint(parent->width() - bubble->width(), 0); } },
+            { NotificationLayout::BottomLeft, [](QWidget* parent, QWidget* bubble) { return QPoint(0, parent->height() - bubble->height()); } },
+            { NotificationLayout::BottomRight, [](QWidget* parent, QWidget* bubble) { return QPoint(parent->width() - bubble->width(), parent->height() - bubble->height()); } }
+        };
+
+        const int positionsCount = 4;
+        for (int i = 0; i < positionsCount; ++i)
+        {
+            NotificationLayout layout;
+
+            NotificationLayout::eLayoutType type = static_cast<NotificationLayout::eLayoutType>(i);
+            layout.SetLayoutType(type);
+
+            NotificationWidgetParams params;
+            layout.AddNotificationWidget(parent, params);
+
+            QList<NotificationWidget*> widgetList = parent->findChildren<NotificationWidget*>();
+            NotificationWidget* first = widgetList.first();
+
+            QPoint firstPos(first->pos());
+            QPoint parentPos = parent->mapToGlobal(positions[type](parent, first));
+            TEST_VERIFY(firstPos == parentPos);
+        }
     }
 
     void ClickCloseButton()
@@ -136,7 +197,6 @@ DAVA_TARC_TESTCLASS(NotificationTest)
     MOCK_METHOD0_VIRTUAL(AfterWrappersSync, void());
     MOCK_METHOD0_VIRTUAL(Callback, void());
     MOCK_METHOD0_VIRTUAL(OnDestroyed, void());
-    MOCK_METHOD0_VIRTUAL(OnTimeout, void());
 
     BEGIN_TESTED_MODULES()
     DECLARE_TESTED_MODULE(NotificationTestDetails::NotificationTestModule);
