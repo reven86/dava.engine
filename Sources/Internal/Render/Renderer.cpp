@@ -261,9 +261,8 @@ Token RegisterSyncCallback(rhi::HSyncObject syncObject, Function<void(rhi::HSync
 void UnRegisterSyncCallback(Token token)
 {
     using namespace RendererDetails;
-    ;
 
-    DVASSERT(token.IsValid());
+    DVASSERT(TokenProvider<rhi::HSyncObject>::IsValid(token));
     for (size_t i = 0, sz = syncCallbacks.size(); i < sz; ++i)
     {
         if (syncCallbacks[i].callbackToken == token)
