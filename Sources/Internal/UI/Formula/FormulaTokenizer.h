@@ -42,11 +42,11 @@ public:
     };
 
     Token();
-    Token(Type type_);
-    Token(Type type, int val);
-    Token(Type type, float val);
-    Token(Type type, bool val);
-    Token(Type type, int startPos, int len);
+    Token(Type type_, int lineNumber, int positionInLine);
+    Token(Type type, int val, int lineNumber, int positionInLine);
+    Token(Type type, float val, int lineNumber, int positionInLine);
+    Token(Type type, bool val, int lineNumber, int positionInLine);
+    Token(Type type, int startPos, int len, int lineNumber, int positionInLine);
 
     Type GetType() const;
     int GetInt() const;
@@ -54,6 +54,9 @@ public:
     bool GetBool() const;
     int GetStringPos() const;
     int GetStringLen() const;
+
+    int32 GetLineNumber() const;
+    int32 GetPositionInLine() const;
 
 private:
     Type type;
@@ -68,6 +71,9 @@ private:
         int32 iVal;
         float32 fVal;
     };
+
+    int lineNumber = 0;
+    int positionInLine = 0;
 };
 
 class FormulaTokenizer

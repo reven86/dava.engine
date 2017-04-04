@@ -157,9 +157,11 @@ void FormulaExecutor::Visit(FormulaBinaryOperatorExpression* exp)
                 throw FormulaCalculationError("Invalid operands to binary expression");
             }
         }
+        else
+        {
+            throw FormulaCalculationError("Invalid operands to binary expression");
+        }
     }
-
-    throw FormulaCalculationError("Invalid operands to binary expression");
 }
 
 void FormulaExecutor::Visit(FormulaFunctionExpression* exp)
@@ -223,6 +225,10 @@ void FormulaExecutor::Visit(FormulaFunctionExpression* exp)
 
     case 5:
         calculationResult = fn.Invoke(values[0], values[1], values[2], values[3], values[4]);
+        break;
+
+    case 6:
+        calculationResult = fn.Invoke(values[0], values[1], values[2], values[3], values[4], values[5]);
         break;
 
     default:
@@ -297,6 +303,9 @@ void FormulaExecutor::Visit(FormulaIndexExpression* exp)
 
 const Any& FormulaExecutor::CalculateImpl(FormulaExpression* exp)
 {
+    dataReference = Reflection();
+    calculationResult.Clear();
+
     exp->Accept(this);
 
     if (calculationResult.IsEmpty())
@@ -318,6 +327,9 @@ const Any& FormulaExecutor::CalculateImpl(FormulaExpression* exp)
 
 const Reflection& FormulaExecutor::GetDataReferenceImpl(FormulaExpression* exp)
 {
+    dataReference = Reflection();
+    calculationResult.Clear();
+
     exp->Accept(this);
 
     if (dataReference.IsValid())

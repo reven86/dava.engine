@@ -234,7 +234,18 @@ DAVA_TESTCLASS (FormulaParserTest)
         wasException = false;
         try
         {
-            Parse("ad + (4 * 5");
+            Parse("+ ad + (4 * 5");
+        }
+        catch (const FormulaError& error)
+        {
+            wasException = true;
+        }
+
+        TEST_VERIFY(wasException == true);
+        wasException = false;
+        try
+        {
+            Parse("foo(a b)");
         }
         catch (const FormulaError& error)
         {

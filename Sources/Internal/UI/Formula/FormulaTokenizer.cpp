@@ -11,37 +11,47 @@ Token::Token()
 {
 }
 
-Token::Token(Type type_)
+Token::Token(Type type_, int lineNumber_, int positionInLine_)
     : type(type_)
+    , lineNumber(lineNumber_)
+    , positionInLine(positionInLine_)
 {
     DVASSERT(type >= COMMA && type <= END);
 }
 
-Token::Token(Type type_, int val_)
+Token::Token(Type type_, int val_, int lineNumber_, int positionInLine_)
     : type(type_)
     , iVal(val_)
+    , lineNumber(lineNumber_)
+    , positionInLine(positionInLine_)
 {
     DVASSERT(type == INT);
 }
 
-Token::Token(Type type_, float val_)
+Token::Token(Type type_, float val_, int lineNumber_, int positionInLine_)
     : type(type_)
     , fVal(val_)
+    , lineNumber(lineNumber_)
+    , positionInLine(positionInLine_)
 {
     DVASSERT(type == FLOAT);
 }
 
-Token::Token(Type type_, bool val_)
+Token::Token(Type type_, bool val_, int lineNumber_, int positionInLine_)
     : type(type_)
     , iVal(val_ ? 1 : 0)
+    , lineNumber(lineNumber_)
+    , positionInLine(positionInLine_)
 {
     DVASSERT(type == BOOLEAN);
 }
 
-Token::Token(Type type_, int startPos_, int len_)
+Token::Token(Type type_, int startPos_, int len_, int lineNumber_, int positionInLine_)
     : type(type_)
     , start(startPos_)
     , len(len_)
+    , lineNumber(lineNumber_)
+    , positionInLine(positionInLine_)
 {
     DVASSERT(type == IDENTIFIER || type == STRING);
 }
@@ -81,6 +91,16 @@ int Token::GetStringLen() const
     return len;
 }
 
+int32 Token::GetLineNumber() const
+{
+    return lineNumber;
+}
+
+int32 Token::GetPositionInLine() const
+{
+    return positionInLine;
+}
+
 FormulaTokenizer::FormulaTokenizer(const String& str_)
     : str(str_)
 {
@@ -99,167 +119,138 @@ Token FormulaTokenizer::ReadToken()
     }
     SkipWhitespaces();
 
-    if (ch == '\0')
+    int line = lineNumber;
+    int column = positionInLine;
+    switch (ch)
     {
-        ReadChar();
-        return Token(Token::END);
-    }
+    case '\0':
+            ReadChar();
+            return Token(Token::END, line, column);
 
-    if (ch == ',')
-    {
-        ReadChar();
-        return Token(Token::COMMA);
-    }
+    case ',':
+            ReadChar();
+            return Token(Token::COMMA, line, column);
 
-    if (ch == '.')
-    {
-        ReadChar();
-        return Token(Token::DOT);
-    }
+    case '.':
+            ReadChar();
+            return Token(Token::DOT, line, column);
 
-    if (ch == '<')
-    {
+    case '<':
+            ReadChar();
+            if (ch == '=')
+            {
+                ReadChar();
+                return Token(Token::LE, line, column);
+            }
+            return Token(Token::LT, line, column);
+
+    case '>':
+            ReadChar();
+            if (ch == '=')
+            {
+                ReadChar();
+                return Token(Token::GE, line, column);
+            }
+            return Token(Token::GT, line, column);
+
+    case '+':
+            ReadChar();
+            return Token(Token::PLUS, line, column);
+
+    case '*':
+            ReadChar();
+            return Token(Token::MUL, line, column);
+
+    case '/':
+        ReadChar();
+        return Token(Token::DIV, line, column);
+
+    case '%':
+        ReadChar();
+        return Token(Token::MOD, line, column);
+
+    case '=':
         ReadChar();
         if (ch == '=')
         {
             ReadChar();
-            return Token(Token::LE);
+            return Token(Token::EQ, line, column);
         }
-        return Token(Token::LT);
-    }
+        return Token(Token::ASSIGN_SIGN, line, column);
 
-    if (ch == '>')
-    {
+    case '!':
         ReadChar();
         if (ch == '=')
         {
             ReadChar();
-            return Token(Token::GE);
+            return Token(Token::NOT_EQ, line, column);
         }
-        return Token(Token::GT);
-    }
+        return Token(Token::NOT, line, column);
 
-    if (ch == '+')
-    {
-        ReadChar();
-        return Token(Token::PLUS);
-    }
-
-    if (ch == '*')
-    {
-        ReadChar();
-        return Token(Token::MUL);
-    }
-
-    if (ch == '/')
-    {
-        ReadChar();
-        return Token(Token::DIV);
-    }
-
-    if (ch == '%')
-    {
-        ReadChar();
-        return Token(Token::MOD);
-    }
-    
-    if (ch == '=')
-    {
-        ReadChar();
-        if (ch == '=')
-        {
-            ReadChar();
-            return Token(Token::EQ);
-        }
-        return Token(Token::ASSIGN_SIGN);
-    }
-
-    if (ch == '!')
-    {
-        ReadChar();
-        if (ch == '=')
-        {
-            ReadChar();
-            return Token(Token::NOT_EQ);
-        }
-        return Token(Token::NOT);
-    }
-    
-    if (ch == '&')
-    {
+    case '&':
         ReadChar();
         if (ch == '&')
         {
             ReadChar();
-            return Token(Token::AND);
+            return Token(Token::AND, line, column);
         }
-        throw FormulaError("Can't resolve symbol '&'", lineNumber, positionInLine);
-    }
-    
-    if (ch == '|')
-    {
+        throw FormulaError("Can't resolve symbol '&'", line, column);
+
+    case '|':
         ReadChar();
         if (ch == '|')
         {
             ReadChar();
-            return Token(Token::OR);
+            return Token(Token::OR, line, column);
         }
-        throw FormulaError("Can't resolve symbol '|'", lineNumber, positionInLine);
-    }
-    
-    if (ch == '(')
-    {
-        ReadChar();
-        return Token(Token::OPEN_BRACKET);
-    }
+        throw FormulaError("Can't resolve symbol '|'", line, column);
 
-    if (ch == ')')
-    {
+    case '(':
         ReadChar();
-        return Token(Token::CLOSE_BRACKET);
-    }
+        return Token(Token::OPEN_BRACKET, line, column);
 
-    if (ch == '{')
-    {
+    case ')':
         ReadChar();
-        return Token(Token::OPEN_CURLY_BRACKET);
-    }
+        return Token(Token::CLOSE_BRACKET, line, column);
 
-    if (ch == '}')
-    {
+    case '{':
         ReadChar();
-        return Token(Token::CLOSE_CURLY_BRACKET);
-    }
+        return Token(Token::OPEN_CURLY_BRACKET, line, column);
 
-    if (ch == '[')
-    {
+    case '}':
         ReadChar();
-        return Token(Token::OPEN_SQUARE_BRACKET);
-    }
+        return Token(Token::CLOSE_CURLY_BRACKET, line, column);
 
-    if (ch == ']')
-    {
+    case '[':
         ReadChar();
-        return Token(Token::CLOSE_SQUARE_BRACKET);
-    }
+        return Token(Token::OPEN_SQUARE_BRACKET, line, column);
 
-    if (ch == '"')
-    {
+    case ']':
         ReadChar();
+        return Token(Token::CLOSE_SQUARE_BRACKET, line, column);
 
-        int p = currentPosition;
-        while (ch != '\0' && ch != '"')
+    case '"':
         {
             ReadChar();
+
+            int p = currentPosition;
+            while (ch != '\0' && ch != '"')
+            {
+                ReadChar();
+            }
+
+            if (ch == '\0')
+            {
+                throw FormulaError("Illegal line end in string literal", lineNumber, positionInLine);
+            }
+            ReadChar();
+
+            return Token(Token::STRING, p, currentPosition - p - 1, line, column);
         }
 
-        if (ch == '\0')
-        {
-            throw FormulaError("Illegal line end in string literal", lineNumber, positionInLine);
-        }
-        ReadChar();
-
-        return Token(Token::STRING, p, currentPosition - p - 1);
+        default:
+            // do nothing
+            break;
     }
 
     if (IsIdentifierStart(ch))
@@ -274,14 +265,14 @@ Token FormulaTokenizer::ReadToken()
         String id = str.substr(p, len);
         if (id == "true")
         {
-            return Token(Token::BOOLEAN, true);
+            return Token(Token::BOOLEAN, true, line, column);
         }
         else if (id == "false")
         {
-            return Token(Token::BOOLEAN, false);
+            return Token(Token::BOOLEAN, false, line, column);
         }
 
-        return Token(Token::IDENTIFIER, p, len);
+        return Token(Token::IDENTIFIER, p, len, line, column);
     }
 
     if (IsDigit(ch) || ch == '-')
@@ -296,7 +287,7 @@ Token FormulaTokenizer::ReadToken()
 
             if (!IsDigit(ch))
             {
-                return Token(Token::MINUS);
+                return Token(Token::MINUS, line, column);
             }
         }
 
@@ -320,7 +311,7 @@ Token FormulaTokenizer::ReadToken()
                 ReadChar();
             }
 
-            return Token(Token::FLOAT, negative ? -fl : fl);
+            return Token(Token::FLOAT, negative ? -fl : fl, line, column);
         }
         else if (ch == 'L')
         {
@@ -335,9 +326,8 @@ Token FormulaTokenizer::ReadToken()
             }
         }
 
-        return Token(Token::INT, negative ? -(int32)num : (int32)num);
+        return Token(Token::INT, negative ? -(int32)num : (int32)num, line, column);
     }
-
     throw FormulaError("Can't resolve symbol", lineNumber, positionInLine);
 }
 
@@ -366,7 +356,6 @@ void FormulaTokenizer::SkipWhitespaces()
     int prevCh = 0;
     while (ch == ' ' || ch == '\t' || ch == 10 || ch == 13)
     {
-        positionInLine++;
         if (ch == 10 || ch == 13)
         {
             if (prevCh != 13 || ch != 10)
@@ -398,10 +387,10 @@ bool FormulaTokenizer::IsDigit(char ch)
 void FormulaTokenizer::ReadChar()
 {
     currentPosition++;
-    positionInLine++;
     if (currentPosition < str.size())
     {
         ch = str.at(currentPosition);
+        positionInLine++;
     }
     else
     {
