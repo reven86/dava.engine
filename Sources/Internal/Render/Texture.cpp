@@ -95,7 +95,7 @@ bool CheckAndFixImageFormat(Vector<Image*>* images)
         return true;
     }
 
-#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_WIN_UAP__)
     //we should decode all images for RE/QE
     if (ImageConvert::CanConvertFromTo(format, FORMAT_RGBA8888))
 #else
