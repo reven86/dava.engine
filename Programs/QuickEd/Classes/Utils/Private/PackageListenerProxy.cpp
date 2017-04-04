@@ -21,23 +21,25 @@ PackageListenerProxy::PackageListenerProxy(PackageListener* listener_, DAVA::TAr
     fieldBinder->BindField(fieldDescr, MakeFunction(this, &PackageListenerProxy::OnPackageChanged));
 }
 
+PackageListenerProxy::~PackageListenerProxy() = default;
+
 void PackageListenerProxy::OnPackageChanged(const DAVA::Any& packageValue)
 {
-    if (package != nullptr)
+    if (package)
     {
         package->RemoveListener(this);
     }
 
     if (packageValue.CanGet<PackageNode*>())
     {
-        package = packageValue.Get<PackageNode*>();
+        package = DAVA::RefPtr<PackageNode>::ConstructWithRetain(packageValue.Get<PackageNode*>());
         package->AddListener(this);
     }
     else
     {
         package = nullptr;
     }
-    ActivePackageNodeWasChanged(package);
+    ActivePackageNodeWasChanged(package.Get());
 }
 
 void PackageListenerProxy::ActivePackageNodeWasChanged(PackageNode* node)

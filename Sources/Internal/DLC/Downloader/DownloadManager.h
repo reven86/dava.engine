@@ -21,8 +21,6 @@ public:
 #if defined(__DAVAENGINE_COREV2__)
     DownloadManager(Engine* e);
     Engine* engine = nullptr;
-    size_t sigUpdateId = 0;
-    size_t sigBackgroundUpdateId = 0;
 #else
     DownloadManager() = default;
 #endif

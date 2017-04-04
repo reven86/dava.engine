@@ -102,6 +102,10 @@ bool IsRegularFile(const String& fileName)
 
 bool IsDirectory(const String& dirName)
 {
+#ifndef S_ISDIR
+#define S_ISDIR(m) (((m)&S_IFMT) == S_IFDIR) /* directory */
+#define CLEAR_S_ISDIR_TMP_VAR 1
+#endif
     Stat fileStat;
 
 #ifdef __DAVAENGINE_WINDOWS__
@@ -112,10 +116,14 @@ bool IsDirectory(const String& dirName)
 #endif
     if (result == 0)
     {
-        return (0 != (fileStat.st_mode & S_IFDIR));
+        return (0 != (S_ISDIR(fileStat.st_mode)));
     }
 
     LogError(errno, dirName, __FUNCTION__);
+#ifdef CLEAR_S_ISDIR_TMP_VAR
+#undef S_ISDIR
+#undef CLEAR_S_ISDIR_TMP_VAR
+#endif
     return false;
 }
 

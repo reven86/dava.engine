@@ -23,13 +23,10 @@ struct VegetationVertex
 /////////////////////////////////////////////////////////////////////////////////
 
 /**
- \brief Represents a single geometry index buffer sorted by polygon for a specific
-    camera direction.
+ \brief Represents a single geometry index buffer
  */
-struct VegetationSortedBufferItem
+struct VegetationBufferItem
 {
-    Vector3 sortDirection;
-
     uint32 startIndex;
     uint32 indexCount;
 };
@@ -61,7 +58,7 @@ public:
 
     inline Vector<VegetationVertex>& GetVertices();
     inline Vector<VegetationIndex>& GetIndices();
-    inline Vector<Vector<Vector<VegetationSortedBufferItem>>>& GetIndexBuffers();
+    inline Vector<Vector<VegetationBufferItem>>& GetIndexBuffers();
     inline NMaterial* GetMaterial();
     inline void SetMaterial(NMaterial* mat);
 
@@ -75,7 +72,7 @@ private:
     NMaterial* material;
     Vector<VegetationVertex> vertexData;
     Vector<VegetationIndex> indexData;
-    Vector<Vector<Vector<VegetationSortedBufferItem>>> indexRenderDataObject; //resolution - cell - direction
+    Vector<Vector<VegetationBufferItem>> indexRenderDataObject; //resolution - cell
 };
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -90,7 +87,7 @@ inline Vector<VegetationIndex>& VegetationRenderData::GetIndices()
     return indexData;
 }
 
-inline Vector<Vector<Vector<VegetationSortedBufferItem>>>& VegetationRenderData::GetIndexBuffers()
+inline Vector<Vector<VegetationBufferItem>>& VegetationRenderData::GetIndexBuffers()
 {
     return indexRenderDataObject;
 }

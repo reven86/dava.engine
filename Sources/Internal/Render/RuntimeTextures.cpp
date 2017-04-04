@@ -12,6 +12,9 @@ const FastName DYNAMIC_TEXTURE_NAMES[RuntimeTextures::DYNAMIC_TEXTURES_COUNT] =
   FastName("dynamicReflection"),
   FastName("dynamicRefraction")
 };
+
+const static PixelFormat REFLECTION_PIXEL_FORMAT = PixelFormat::FORMAT_RGB565;
+const static PixelFormat REFRACTION_PIXEL_FORMAT = PixelFormat::FORMAT_RGB565;
 }
 
 RuntimeTextures::eDynamicTextureSemantic RuntimeTextures::GetDynamicTextureSemanticByName(const FastName& name)
@@ -74,29 +77,35 @@ void RuntimeTextures::InitDynamicTexture(eDynamicTextureSemantic semantic)
     {
     case DAVA::RuntimeTextures::TEXTURE_DYNAMIC_REFLECTION:
     {
-        const PixelFormatDescriptor& formatDescriptor = PixelFormatDescriptor::GetPixelFormatDescriptor(REFLECTION_PIXEL_FORMAT);
+        PixelFormatDescriptor formatDesc = PixelFormatDescriptor::GetPixelFormatDescriptor(REFLECTION_PIXEL_FORMAT);
+        PixelFormat format = rhi::TextureFormatSupported(formatDesc.format) ? REFLECTION_PIXEL_FORMAT : PixelFormat::FORMAT_RGBA8888;
+
         descriptor.width = REFLECTION_TEX_SIZE;
         descriptor.height = REFLECTION_TEX_SIZE;
         descriptor.autoGenMipmaps = false;
         descriptor.isRenderTarget = true;
         descriptor.needRestore = false;
         descriptor.type = rhi::TEXTURE_TYPE_2D;
-        descriptor.format = formatDescriptor.format;
+        descriptor.format = PixelFormatDescriptor::GetPixelFormatDescriptor(format).format;
         dynamicTextures[semantic] = rhi::CreateTexture(descriptor);
+        dynamicTexturesFormat[semantic] = format;
         break;
     }
 
     case DAVA::RuntimeTextures::TEXTURE_DYNAMIC_REFRACTION:
     {
-        const PixelFormatDescriptor& formatDescriptor = PixelFormatDescriptor::GetPixelFormatDescriptor(REFLECTION_PIXEL_FORMAT);
+        PixelFormatDescriptor formatDesc = PixelFormatDescriptor::GetPixelFormatDescriptor(REFRACTION_PIXEL_FORMAT);
+        PixelFormat format = rhi::TextureFormatSupported(formatDesc.format) ? REFRACTION_PIXEL_FORMAT : PixelFormat::FORMAT_RGBA8888;
+
         descriptor.width = REFRACTION_TEX_SIZE;
         descriptor.height = REFRACTION_TEX_SIZE;
         descriptor.autoGenMipmaps = false;
         descriptor.isRenderTarget = true;
         descriptor.needRestore = false;
         descriptor.type = rhi::TEXTURE_TYPE_2D;
-        descriptor.format = formatDescriptor.format;
+        descriptor.format = PixelFormatDescriptor::GetPixelFormatDescriptor(format).format;
         dynamicTextures[semantic] = rhi::CreateTexture(descriptor);
+        dynamicTexturesFormat[semantic] = format;
         break;
     }
 
@@ -109,6 +118,7 @@ void RuntimeTextures::InitDynamicTexture(eDynamicTextureSemantic semantic)
         descriptor.type = rhi::TEXTURE_TYPE_2D;
         descriptor.format = rhi::TEXTURE_FORMAT_D24S8;
         dynamicTextures[semantic] = rhi::CreateTexture(descriptor);
+        dynamicTexturesFormat[semantic] = PixelFormat::FORMAT_INVALID;
         break;
 
     default:
@@ -127,5 +137,10 @@ rhi::SamplerState::Descriptor::Sampler RuntimeTextures::GetDynamicTextureSampler
     sampler.minFilter = rhi::TEXFILTER_LINEAR;
     sampler.mipFilter = rhi::TEXMIPFILTER_NONE;
     return sampler;
+}
+
+PixelFormat RuntimeTextures::GetDynamicTextureFormat(eDynamicTextureSemantic semantic)
+{
+    return dynamicTexturesFormat[semantic];
 }
 }

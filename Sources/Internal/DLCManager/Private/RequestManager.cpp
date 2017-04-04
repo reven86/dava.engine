@@ -137,14 +137,14 @@ void RequestManager::SetPriorityToRequest(PackRequest* request)
         {
             if (r == request)
             {
-                break;
+                break; // only check requests before
             }
             if (!request->IsSubRequest(r))
             {
                 removeFromBeg.push_back(r);
             }
         }
-        // 2. remove all NOT sub request from begining queue
+        // 2. remove all NOT sub request from beginning queue
         for (PackRequest* r : removeFromBeg)
         {
             requests.erase(find(begin(requests), end(requests), r));

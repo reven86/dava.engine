@@ -294,7 +294,7 @@ void MainForwardRenderPass::InitReflectionRefraction()
     reflectionPass->GetPassConfig().depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
     reflectionPass->GetPassConfig().depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
     reflectionPass->SetViewport(Rect(0, 0, static_cast<float32>(RuntimeTextures::REFLECTION_TEX_SIZE), static_cast<float32>(RuntimeTextures::REFLECTION_TEX_SIZE)));
-    reflectionPass->SetRenderTargetProperties(RuntimeTextures::REFLECTION_TEX_SIZE, RuntimeTextures::REFLECTION_TEX_SIZE, RuntimeTextures::REFLECTION_PIXEL_FORMAT);
+    reflectionPass->SetRenderTargetProperties(RuntimeTextures::REFLECTION_TEX_SIZE, RuntimeTextures::REFLECTION_TEX_SIZE, Renderer::GetRuntimeTextures().GetDynamicTextureFormat(RuntimeTextures::TEXTURE_DYNAMIC_REFLECTION));
 
     refractionPass = new WaterRefractionRenderPass(PASS_REFLECTION_REFRACTION);
     refractionPass->GetPassConfig().colorBuffer[0].texture = Renderer::GetRuntimeTextures().GetDynamicTexture(RuntimeTextures::TEXTURE_DYNAMIC_REFRACTION);
@@ -304,7 +304,7 @@ void MainForwardRenderPass::InitReflectionRefraction()
     refractionPass->GetPassConfig().depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
     refractionPass->GetPassConfig().depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
     refractionPass->SetViewport(Rect(0, 0, static_cast<float32>(RuntimeTextures::REFRACTION_TEX_SIZE), static_cast<float32>(RuntimeTextures::REFRACTION_TEX_SIZE)));
-    refractionPass->SetRenderTargetProperties(RuntimeTextures::REFRACTION_TEX_SIZE, RuntimeTextures::REFRACTION_TEX_SIZE, RuntimeTextures::REFRACTION_PIXEL_FORMAT);
+    refractionPass->SetRenderTargetProperties(RuntimeTextures::REFRACTION_TEX_SIZE, RuntimeTextures::REFRACTION_TEX_SIZE, Renderer::GetRuntimeTextures().GetDynamicTextureFormat(RuntimeTextures::TEXTURE_DYNAMIC_REFRACTION));
 }
 
 void MainForwardRenderPass::PrepareReflectionRefractionTextures(RenderSystem* renderSystem)

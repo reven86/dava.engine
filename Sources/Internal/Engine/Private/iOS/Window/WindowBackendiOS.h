@@ -3,6 +3,7 @@
 #if defined(__DAVAENGINE_COREV2__)
 
 #include "Base/BaseTypes.h"
+#include "Base/Token.h"
 
 #if defined(__DAVAENGINE_IPHONE__)
 
@@ -59,8 +60,8 @@ public:
 
     std::unique_ptr<WindowNativeBridge> bridge;
 
-    size_t sigidAppBecomeOrResignActive = 0;
-    size_t sigidAppDidEnterForegroundOrBackground = 0;
+    Token appBecomeOrResignActiveToken;
+    Token appDidEnterForegroundOrBackgroundToken;
 
     // Friends
     friend class PlatformCore;
