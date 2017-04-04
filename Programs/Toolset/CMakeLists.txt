@@ -74,6 +74,7 @@ reset_property ( MIX_APP_DATA )
 
         add_tool     ( TestBed         ROOT_DIR "${DAVA_ROOT_DIR}/Programs/TestBed"         CUSTOM_DEPLOY_DIR ${DEPLOY_DIR} )
         add_tool     ( SceneViewer     ROOT_DIR "${DAVA_ROOT_DIR}/Programs/SceneViewer"     CUSTOM_DEPLOY_DIR ${DEPLOY_DIR} )
+        add_tool     ( UIViewer     ROOT_DIR "${DAVA_ROOT_DIR}/Programs/UIViewer"     CUSTOM_DEPLOY_DIR ${DEPLOY_DIR} )
         add_tool     ( PerfomanceTests ROOT_DIR "${DAVA_ROOT_DIR}/Programs/PerfomanceTests" CUSTOM_DEPLOY_DIR ${DEPLOY_DIR} )
         add_tool     ( Launcher        CUSTOM_DEPLOY_DIR ${DEPLOY_DIR} DEPLOY_DEFINE "-DDAVA_MACOS_DATA_PATH=\"/../Data/\"" )
 

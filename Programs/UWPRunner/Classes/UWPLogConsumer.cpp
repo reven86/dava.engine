@@ -3,7 +3,7 @@
 UWPLogConsumer::UWPLogConsumer()
 {
     channelOpened = IsChannelOpen();
-    newDataNotifier.Connect(DAVA::MakeFunction(this, &UWPLogConsumer::OnNewData));
+    newDataNotifier.Connect(this, &UWPLogConsumer::OnNewData);
 }
 
 bool UWPLogConsumer::IsSessionEnded()
