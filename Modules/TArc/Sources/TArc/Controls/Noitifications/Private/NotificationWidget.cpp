@@ -206,10 +206,11 @@ void NotificationWidget::paintEvent(QPaintEvent* /*event*/)
     painter.setRenderHint(QPainter::Antialiasing);
 
     QRect roundedRect;
-    roundedRect.setX(rect().x() + 5);
-    roundedRect.setY(rect().y() + 5);
-    roundedRect.setWidth(rect().width() - 10);
-    roundedRect.setHeight(rect().height() - 10);
+    const int radius = 10;
+    roundedRect.setX(rect().x() + radius / 2);
+    roundedRect.setY(rect().y() + radius / 2);
+    roundedRect.setWidth(rect().width() - radius);
+    roundedRect.setHeight(rect().height() - radius);
 
     QPalette palette;
     QColor rectColor = palette.color(QPalette::Window);
@@ -217,7 +218,7 @@ void NotificationWidget::paintEvent(QPaintEvent* /*event*/)
     QPen roundedRectPen(Qt::black);
     painter.setPen(roundedRectPen);
 
-    painter.drawRoundedRect(roundedRect, 10, 10);
+    painter.drawRoundedRect(roundedRect, radius, radius);
 
     QRect closeButtonGeometry = closeButton->geometry();
     QRect detailsButtonGeometry = detailsButton->geometry();
