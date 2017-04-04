@@ -436,14 +436,11 @@ void VegetationRenderObject::PrepareToRender(Camera* camera)
         ++renderBatchCount;
     }
 
-    Vector<Vector<Vector<VegetationSortedBufferItem>>>& indexRenderDataObject = renderData->GetIndexBuffers();
+    Vector<Vector<VegetationBufferItem>>& indexRenderDataObject = renderData->GetIndexBuffers();
 
     Vector3 posScale(0.0f, 0.0f, 0.0f);
     Vector2 switchLodScale;
     Vector4 vegetationAnimationOffset[2];
-
-    Vector3 cameraDirection = camera->GetDirection();
-    cameraDirection.Normalize();
 
     for (size_t cellIndex = 0; cellIndex < visibleCellCount; ++cellIndex)
     {
@@ -454,15 +451,12 @@ void VegetationRenderObject::PrepareToRender(Camera* camera)
 
         uint32 resolutionIndex = MapCellSquareToResolutionIndex(treeNode->data.width * treeNode->data.height);
 
-        Vector<Vector<VegetationSortedBufferItem>>& rdoVector = indexRenderDataObject[resolutionIndex];
+        Vector<VegetationBufferItem>& rdoVector = indexRenderDataObject[resolutionIndex];
 
         uint32 indexBufferIndex = treeNode->data.rdoIndex;
         DVASSERT(indexBufferIndex < rdoVector.size());
 
-        Vector<VegetationSortedBufferItem>& indexBufferVector = rdoVector[indexBufferIndex];
-        size_t directionIndex = SelectDirectionIndex(cameraDirection, indexBufferVector);
-        VegetationSortedBufferItem& bufferItem = indexBufferVector[directionIndex];
-
+        VegetationBufferItem& bufferItem = rdoVector[indexBufferIndex];
         rb->startIndex = bufferItem.startIndex;
         rb->indexCount = bufferItem.indexCount;
 
@@ -945,36 +939,6 @@ bool VegetationRenderObject::ReadyToRender()
 #endif
 
     return renderFlag && vegetationVisible && renderData;
-}
-
-size_t VegetationRenderObject::SelectDirectionIndex(const Vector3& cameraDirection, Vector<VegetationSortedBufferItem>& buffers)
-{
-    size_t index = 0;
-    float32 currentCosA = 0.0f;
-    size_t directionCount = buffers.size();
-    for (size_t i = 0; i < directionCount; ++i)
-    {
-        VegetationSortedBufferItem& item = buffers[i];
-        //cos (angle) = dotAB / (length A * lengthB)
-        //no need to calculate (length A * lengthB) since vectors are normalized
-
-        if (item.sortDirection == cameraDirection)
-        {
-            index = i;
-            break;
-        }
-        else
-        {
-            float32 cosA = cameraDirection.DotProduct(item.sortDirection);
-            if (cosA > currentCosA)
-            {
-                index = i;
-                currentCosA = cosA;
-            }
-        }
-    }
-
-    return index;
 }
 
 void VegetationRenderObject::DebugDrawVisibleNodes(RenderHelper* drawer)
