@@ -79,17 +79,23 @@ MouseDevice::MouseDevice()
         }
     };
 #if defined(__DAVAENGINE_COREV2__)
-    Window* primaryWindow = Engine::Instance()->PrimaryWindow();
-    primaryWindow->focusChanged.Connect(focusChanged);
+    Window* primaryWindow = GetPrimaryWindow();
+    primaryWindow->focusChanged.Connect(this, focusChanged);
     context->focused = primaryWindow->HasFocus();
 #else
-    Core::Instance()->focusChanged.Connect(focusChanged);
+    Core::Instance()->focusChanged.Connect(this, focusChanged);
     context->focused = Core::Instance()->IsFocused();
 #endif
 }
 
 MouseDevice::~MouseDevice()
 {
+#if defined(__DAVAENGINE_COREV2__)
+    GetPrimaryWindow()->focusChanged.Disconnect(this);
+#else
+    Core::Instance()->focusChanged.Disconnect(this);
+#endif
+
     delete context;
     delete privateImpl;
 }

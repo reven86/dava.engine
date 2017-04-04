@@ -26,7 +26,5 @@ private:
     DAVA::DeviceManager* deviceManager = nullptr;
     DAVA::Vector<DAVA::UIStaticText*> uiDisplays;
     DAVA::UIStaticText* uiDisplayDescr = nullptr;
-    size_t tokenDisplayConfigChanged;
-
     DAVA::Vector<DAVA::DisplayInfo> displays;
 };

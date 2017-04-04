@@ -42,7 +42,7 @@ private:
     void* GetOrCreateBlankCursor();
     
 #if defined(__DAVAENGINE_STEAM__)
-    SigConnectionID steamOverlayActivationConnId;
+    Token steamOverlayActivationConnId;
     void OnSteamActivation(bool active);
 #endif
 };
