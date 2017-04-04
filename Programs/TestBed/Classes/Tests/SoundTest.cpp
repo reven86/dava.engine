@@ -96,7 +96,7 @@ void SoundTest::LoadResources()
     AddControl(speedTextFieldGroup2);
 
     Window* primaryWindow = GetPrimaryWindow();
-    tokenFocusChanged = primaryWindow->focusChanged.Connect(this, &SoundTest::OnWindowFocusChanged);
+    primaryWindow->focusChanged.Connect(this, &SoundTest::OnWindowFocusChanged);
 }
 
 void SoundTest::UnloadResources()
@@ -119,7 +119,7 @@ void SoundTest::UnloadResources()
     Window* primaryWindow = GetPrimaryWindow();
     if (primaryWindow != nullptr)
     {
-        primaryWindow->focusChanged.Disconnect(tokenFocusChanged);
+        primaryWindow->focusChanged.Disconnect(this);
     }
 }
 

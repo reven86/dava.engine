@@ -189,7 +189,7 @@ PropertiesView::PropertiesView(const Params& params_)
     std::shared_ptr<Updater> lockedUpdater = params.updater.lock();
     if (lockedUpdater != nullptr)
     {
-        updateConnectionID = lockedUpdater->update.Connect(this, &PropertiesView::Update);
+        lockedUpdater->update.Connect(this, &PropertiesView::Update);
     }
 
     PropertiesItem viewItem = params.accessor->CreatePropertiesNode(params.settingsNodeName);
@@ -206,7 +206,7 @@ PropertiesView::~PropertiesView()
     std::shared_ptr<Updater> lockedUpdater = params.updater.lock();
     if (lockedUpdater != nullptr)
     {
-        lockedUpdater->update.Disconnect(updateConnectionID);
+        lockedUpdater->update.Disconnect(this);
     }
 
     PropertiesItem viewSettings = params.accessor->CreatePropertiesNode(params.settingsNodeName);

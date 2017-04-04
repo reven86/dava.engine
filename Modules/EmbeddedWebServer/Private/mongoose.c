@@ -2110,7 +2110,7 @@ static void MD5Init(MD5_CTX *ctx) {
 }
 
 static void MD5Transform(uint32_t buf[4], uint32_t const in[16]) {
-  register uint32_t a, b, c, d;
+  uint32_t a, b, c, d;
 
   a = buf[0];
   b = buf[1];
@@ -5350,9 +5350,15 @@ static void free_context(struct mg_context *ctx) {
 void mg_stop(struct mg_context *ctx) {
   ctx->stop_flag = 1;
 
+  unsigned int count = 0;
   // Wait until mg_fini() stops
   while (ctx->stop_flag != 2) {
     (void) mg_sleep(10);
+	++count;
+	if (count > 200)
+	{
+		break;
+	}
   }
   free_context(ctx);
 
