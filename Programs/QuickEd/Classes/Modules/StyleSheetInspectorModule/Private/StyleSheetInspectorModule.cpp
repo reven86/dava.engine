@@ -5,8 +5,6 @@
 #include <TArc/WindowSubSystem/UI.h>
 #include <TArc/Utils/ModuleCollection.h>
 
-#include <QListWidget>
-
 DAVA_VIRTUAL_REFLECTION_IMPL(StyleSheetInspectorModule)
 {
     DAVA::ReflectionRegistrator<StyleSheetInspectorModule>::Begin()

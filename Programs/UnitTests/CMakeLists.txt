@@ -1,7 +1,6 @@
 cmake_minimum_required (VERSION 3.0)
-if( NOT DAVA_MEGASOLUTION )
-    set( COVERAGE true )
-endif()
+
+set( COVERAGE true )
 
 project ( UnitTests )
 
@@ -37,6 +36,7 @@ endif()
 
 find_package( Steam REQUIRED )
 find_package( DavaFramework REQUIRED COMPONENTS "${DAVA_COMPONENTS}" )
+find_package( EmbeddedWebServer REQUIRED )
 
 include_directories   ( "Classes" )
 
@@ -90,7 +90,7 @@ endif()
 
 setup_main_executable()
 convert_graphics()
-
+ 
 if (IOS)
     # Termporal workaround for unit tests with memory profiling enabled
     # Reason: on iOS on some circumstances memory deallocating operation bypasses memory manager

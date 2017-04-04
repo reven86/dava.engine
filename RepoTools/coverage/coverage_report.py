@@ -237,7 +237,7 @@ class CoverageReport():
         os.makedirs( self.coverageTmpPath ) 
 
         if self.buildConfig:
-            pathConfigSegment = os.path.join(  '{0}.build'.format(self.executName), self.buildConfig )   
+            pathConfigSegment = os.path.join(  '.build', self.buildConfig )   
 
         #coppy '.gcda','.gcno' files
         listCoverData = []
