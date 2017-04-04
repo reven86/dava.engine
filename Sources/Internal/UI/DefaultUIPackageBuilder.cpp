@@ -287,14 +287,17 @@ void DefaultUIPackageBuilder::EndControl(eControlPlace controlPlace)
 {
     ControlDescr* lastDescr = controlsStack.back();
     controlsStack.pop_back();
-    UIControl* control = nullptr;
+
+    DVASSERT(lastDescr->control != nullptr);
+    lastDescr->control->LoadFromYamlNodeCompleted();
+
     if (lastDescr->addToParent)
     {
         switch (controlPlace)
         {
         case TO_PROTOTYPES:
         {
-            control = lastDescr->control.Get();
+            UIControl* control = lastDescr->control.Get();
             UIControlSystem::Instance()->GetLayoutSystem()->ManualApplyLayout(control);
             package->AddPrototype(control);
             break;
@@ -302,7 +305,7 @@ void DefaultUIPackageBuilder::EndControl(eControlPlace controlPlace)
 
         case TO_CONTROLS:
         {
-            control = lastDescr->control.Get();
+            UIControl* control = lastDescr->control.Get();
             UIControlSystem::Instance()->GetLayoutSystem()->ManualApplyLayout(control);
             package->AddControl(control);
             break;
@@ -311,7 +314,7 @@ void DefaultUIPackageBuilder::EndControl(eControlPlace controlPlace)
         case TO_PREVIOUS_CONTROL:
         {
             DVASSERT(!controlsStack.empty());
-            control = controlsStack.back()->control.Get();
+            UIControl* control = controlsStack.back()->control.Get();
             control->AddControl(lastDescr->control.Get());
             break;
         }
@@ -321,8 +324,6 @@ void DefaultUIPackageBuilder::EndControl(eControlPlace controlPlace)
             break;
         }
     }
-    DVASSERT(control != nullptr);
-    control->LoadFromYamlNodeCompleted();
     SafeDelete(lastDescr);
 }
 
