@@ -125,9 +125,9 @@ void UIViewScreen::SetupEnvironment()
 
         VirtualCoordinatesSystem* vcs = window->GetUIControlSystem()->vcs;
         vcs->UnregisterAllAvailableResourceSizes();
-        vcs->SetVirtualScreenSize(size.dx, size.dy);
-        vcs->RegisterAvailableResourceSize(size.dx, size.dy, "Gfx");
-        vcs->RegisterAvailableResourceSize(size.dx * 2, size.dy * 2, "Gfx2");
+        vcs->SetVirtualScreenSize(static_cast<int32>(size.dx), static_cast<int32>(size.dy));
+        vcs->RegisterAvailableResourceSize(static_cast<int32>(size.dx), static_cast<int32>(size.dy), "Gfx");
+        vcs->RegisterAvailableResourceSize(static_cast<int32>(size.dx * 2.0f), static_cast<int32>(size.dy * 2.0f), "Gfx2");
 
         window->sizeChanged.Connect(this, &UIViewScreen::OnWindowSizeChanged);
     }
@@ -151,11 +151,13 @@ void UIViewScreen::ClearEnvironment()
 
 void UIViewScreen::OnWindowSizeChanged(DAVA::Window* window, DAVA::Size2f size, DAVA::Size2f surfaceSize)
 {
-    DAVA::VirtualCoordinatesSystem* vcs = window->GetUIControlSystem()->vcs;
+    using namespace DAVA;
+
+    VirtualCoordinatesSystem* vcs = window->GetUIControlSystem()->vcs;
     vcs->UnregisterAllAvailableResourceSizes();
-    vcs->SetVirtualScreenSize(size.dx, size.dy);
-    vcs->RegisterAvailableResourceSize(size.dx, size.dy, "Gfx");
-    vcs->RegisterAvailableResourceSize(size.dx * 2, size.dy * 2, "Gfx2");
+    vcs->SetVirtualScreenSize(static_cast<int32>(size.dx), static_cast<int32>(size.dy));
+    vcs->RegisterAvailableResourceSize(static_cast<int32>(size.dx), static_cast<int32>(size.dy), "Gfx");
+    vcs->RegisterAvailableResourceSize(static_cast<int32>(size.dx * 2.0f), static_cast<int32>(size.dy * 2.0f), "Gfx2");
 }
 
 void UIViewScreen::SetupUI()
