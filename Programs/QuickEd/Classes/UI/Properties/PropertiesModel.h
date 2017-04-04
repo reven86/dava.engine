@@ -13,13 +13,16 @@
 namespace DAVA
 {
 class InspInfo;
+namespace TArc
+{
+class ContextAccessor;
+}
 }
 
 class AbstractProperty;
 class PackageBaseNode;
 class ControlNode;
 class StyleSheetNode;
-class QtModelPackageCommandExecutor;
 class ComponentPropertiesSection;
 
 class PropertiesModel : public QAbstractItemModel, private PropertyListener
@@ -31,9 +34,13 @@ public:
     {
         ResetRole = Qt::UserRole + 1
     };
+
     PropertiesModel(QObject* parent = nullptr);
-    virtual ~PropertiesModel();
-    void Reset(PackageBaseNode* node_, QtModelPackageCommandExecutor* commandExecutor_);
+    ~PropertiesModel() override;
+
+    void SetAccessor(DAVA::TArc::ContextAccessor* accessor);
+
+    void Reset(PackageBaseNode* node_);
 
     QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
     QModelIndex parent(const QModelIndex& child) const override;
@@ -84,13 +91,13 @@ protected:
     void initVariantType(DAVA::VariantType& var, const QVariant& val) const;
     void CleanUp();
 
-protected:
     PackageBaseNode* nodeToReset = nullptr;
     ControlNode* controlNode = nullptr;
     StyleSheetNode* styleSheet = nullptr;
     AbstractProperty* rootProperty = nullptr;
-    QtModelPackageCommandExecutor* commandExecutor = nullptr;
     DAVA::Set<DAVA::RefPtr<AbstractProperty>> changedProperties;
     ContinuousUpdater propertiesUpdater;
     ContinuousUpdater nodeUpdater;
+
+    DAVA::TArc::ContextAccessor* accessor = nullptr;
 };
