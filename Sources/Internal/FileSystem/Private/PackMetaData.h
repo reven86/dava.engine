@@ -11,7 +11,7 @@ class PackMetaData
 public:
     /** Create meta from sqlite db file
 	    open DB and read meta data vector
-		Throw DAVA::Exception exception on error
+		Throw DAVA::Exception on error
 		*/
     explicit PackMetaData(const FilePath& metaDb);
     /** Create meta from serialized bytes

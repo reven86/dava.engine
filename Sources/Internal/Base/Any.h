@@ -1,8 +1,5 @@
 #pragma once
 
-#include <typeindex>
-
-#include "Base/BaseTypes.h"
 #include "Base/Type.h"
 #include "Base/TypeInheritance.h"
 #include "Base/Exception.h"

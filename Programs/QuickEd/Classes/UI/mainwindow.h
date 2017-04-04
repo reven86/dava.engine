@@ -9,7 +9,6 @@
 
 #include <Base/Introspection.h>
 #include <Preferences/PreferencesRegistrator.h>
-#include <Functional/SignalBase.h>
 
 #include <QMainWindow>
 
