@@ -37,7 +37,7 @@ public:
     virtual UIComponent* BeginComponentPropertiesSection(uint32 componentType, uint32 componentIndex) override;
     virtual void EndComponentPropertiesSection() override;
 
-    virtual void ProcessProperty(const InspMember* member, const VariantType& value) override;
+    virtual void ProcessProperty(const Reflection::Field& field, const Any& value) override;
 
 private:
     void PutImportredPackage(const FilePath& path, UIPackage* package);
@@ -52,6 +52,7 @@ private:
 
     UIPackagesCache* cache;
     BaseObject* currentObject;
+    int32 currentComponentType = -1;
 
     RefPtr<UIPackage> package;
     FilePath currentPackagePath;

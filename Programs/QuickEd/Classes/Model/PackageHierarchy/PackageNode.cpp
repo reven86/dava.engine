@@ -189,7 +189,7 @@ void PackageNode::RemoveListener(PackageListener* listener)
     }
 }
 
-void PackageNode::SetControlProperty(ControlNode* node, AbstractProperty* property, const DAVA::VariantType& newValue)
+void PackageNode::SetControlProperty(ControlNode* node, AbstractProperty* property, const DAVA::Any& newValue)
 {
     node->GetRootProperty()->SetProperty(property, newValue);
     RefreshProperty(node, property);
@@ -244,7 +244,7 @@ void PackageNode::DetachPrototypeComponent(ControlNode* node, ComponentPropertie
         RefreshProperty(node, section->GetProperty(i));
 }
 
-void PackageNode::SetStyleProperty(StyleSheetNode* node, AbstractProperty* property, const DAVA::VariantType& newValue)
+void PackageNode::SetStyleProperty(StyleSheetNode* node, AbstractProperty* property, const DAVA::Any& newValue)
 {
     node->GetRootProperty()->SetProperty(property, newValue);
     node->UpdateName();

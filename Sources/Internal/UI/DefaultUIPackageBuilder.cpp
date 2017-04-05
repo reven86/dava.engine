@@ -322,6 +322,7 @@ void DefaultUIPackageBuilder::EndControl(eControlPlace controlPlace)
 
 void DefaultUIPackageBuilder::BeginControlPropertiesSection(const String& name)
 {
+    DVASSERT(currentComponentType == -1);
     currentObject = controlsStack.back()->control.Get();
 }
 
@@ -341,30 +342,37 @@ UIComponent* DefaultUIPackageBuilder::BeginComponentPropertiesSection(uint32 com
         component->Release();
     }
     currentObject = component;
+    currentComponentType = int32(componentType);
     return component;
 }
 
 void DefaultUIPackageBuilder::EndComponentPropertiesSection()
 {
+    currentComponentType = -1;
     currentObject = nullptr;
 }
 
-void DefaultUIPackageBuilder::ProcessProperty(const InspMember* member, const VariantType& value)
+void DefaultUIPackageBuilder::ProcessProperty(const Reflection::Field& field, const Any& value)
 {
     DVASSERT(currentObject);
 
-    if (currentObject && value.GetType() != VariantType::TYPE_NONE)
+    if (currentObject && !value.IsEmpty())
     {
-        int32 propertyIndex = UIStyleSheetPropertyDataBase::Instance()->FindStyleSheetPropertyByMember(member);
+        FastName name = field.key.Cast<FastName>();
+        int32 propertyIndex = UIStyleSheetPropertyDataBase::Instance()->FindStyleSheetProperty(currentComponentType, name);
         if (propertyIndex >= 0)
         {
             UIControl* control = controlsStack.back()->control.Get();
             control->SetPropertyLocalFlag(propertyIndex, true);
         }
-        if (member->Name() == PROPERTY_NAME_TEXT)
-            member->SetValue(currentObject, VariantType(LocalizedUtf8String(value.AsString())));
+        if (name == PROPERTY_NAME_TEXT)
+        {
+            field.ref.SetValueWithCast(Any(LocalizedUtf8String(value.Cast<String>())));
+        }
         else
-            member->SetValue(currentObject, value);
+        {
+            field.ref.SetValueWithCast(value);
+        }
     }
 }
 

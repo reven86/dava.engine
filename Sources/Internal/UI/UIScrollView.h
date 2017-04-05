@@ -4,6 +4,7 @@
 #include "Base/BaseTypes.h"
 #include "UI/UIControl.h"
 #include "UI/UIScrollBar.h"
+#include "Reflection/Reflection.h"
 
 namespace DAVA
 {
@@ -12,6 +13,8 @@ class ScrollHelper;
 
 class UIScrollView : public UIControl, public UIScrollBarDelegate
 {
+    DAVA_VIRTUAL_REFLECTION(UIScrollView, UIControl);
+
 public:
     UIScrollView(const Rect& rect = Rect());
 
@@ -93,11 +96,6 @@ protected:
 
 private:
     void FindRequiredControls();
-
-public:
-    INTROSPECTION_EXTEND(UIScrollView, UIControl,
-                         PROPERTY("autoUpdate", "Auto Update", IsAutoUpdate, SetAutoUpdate, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("centerContent", "Center Content", IsCenterContent, SetCenterContent, I_SAVE | I_VIEW | I_EDIT));
 };
 };
 

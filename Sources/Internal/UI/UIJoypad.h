@@ -3,6 +3,7 @@
 
 #include "Base/BaseTypes.h"
 #include "UI/UIControl.h"
+#include "Reflection/Reflection.h"
 
 namespace DAVA
 {
@@ -14,6 +15,8 @@ namespace DAVA
 
 class UIJoypad : public UIControl
 {
+    DAVA_VIRTUAL_REFLECTION(UIJoypad, UIControl);
+
     enum eTouchID
     {
         TOUCH_INVALID_ID = -1
@@ -69,12 +72,6 @@ private:
 
     Vector2 digitalVector;
     Vector2 analogVector;
-
-public:
-    INTROSPECTION_EXTEND(UIJoypad, UIControl,
-                         PROPERTY("deadAreaSize", "Dead Area Size", GetDeadAreaSize, SetDeadAreaSize, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("digitalSense", "Digital Sense", GetDigitalSense, SetDigitalSense, I_SAVE | I_VIEW | I_EDIT)
-                         );
 };
 };
 
