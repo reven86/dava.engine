@@ -13,7 +13,7 @@
 #include "Network/NetworkCommon.h"
 #include "Network/NetCore.h"
 #include "Concurrency/Thread.h"
-#include "Concurrency/ConditionVariable.h"
+#include "Concurrency/ManualResetEvent.h"
 
 namespace DAVA
 {
@@ -225,9 +225,7 @@ private:
     RefPtr<Thread> netThread;
     std::unique_ptr<Dispatcher<Function<void()>>> netEventsDispatcher;
 
-    // mutex and cv are used to wait for starup of separate thread
-    Mutex cvMutex;
-    ConditionVariable cvDone;
+    ManualResetEvent loopCreatedEvent; // using for waiting of separate thread starup
 };
 
 //////////////////////////////////////////////////////////////////////////
