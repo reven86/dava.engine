@@ -11,7 +11,7 @@ class ResizeCommand : public QEPackageCommand
 {
 public:
     ResizeCommand(PackageNode* package);
-    void AddNodePropertyValue(ControlNode* node, AbstractProperty* sizeProperty, const DAVA::VariantType& sizeValue, AbstractProperty* pivotProperty, const DAVA::VariantType& pivotValue);
+    void AddNodePropertyValue(ControlNode* node, AbstractProperty* sizeProperty, const DAVA::Any& sizeValue, AbstractProperty* pivotProperty, const DAVA::Any& pivotValue);
 
     void Redo() override;
     void Undo() override;
@@ -21,15 +21,15 @@ public:
 private:
     struct Item
     {
-        Item(ControlNode* node, AbstractProperty* sizeProperty, const DAVA::VariantType& sizeValue, AbstractProperty* pivotProperty, const DAVA::VariantType& pivotValue);
+        Item(ControlNode* node, AbstractProperty* sizeProperty, const DAVA::Any& sizeValue, AbstractProperty* pivotProperty, const DAVA::Any& pivotValue);
         DAVA::RefPtr<ControlNode> node;
         DAVA::RefPtr<AbstractProperty> sizeProperty;
-        DAVA::VariantType sizeNewValue;
-        DAVA::VariantType sizeOldValue;
+        DAVA::Any sizeNewValue;
+        DAVA::Any sizeOldValue;
 
         DAVA::RefPtr<AbstractProperty> pivotProperty;
-        DAVA::VariantType pivotNewValue;
-        DAVA::VariantType pivotOldValue;
+        DAVA::Any pivotNewValue;
+        DAVA::Any pivotOldValue;
     };
     DAVA::Vector<Item> items;
 };

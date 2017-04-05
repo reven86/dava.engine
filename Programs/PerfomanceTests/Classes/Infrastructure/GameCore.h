@@ -9,7 +9,7 @@
 #include "Infrastructure/Controller/SingleTestFlowController.h"
 #include "Infrastructure/Settings/GraphicsDetect.h"
 
-#include "Functional/SignalBase.h"
+#include "Functional/TrackedObject.h"
 
 namespace DAVA
 {

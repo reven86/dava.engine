@@ -54,8 +54,8 @@ TextFieldStbImpl::~TextFieldStbImpl()
 void TextFieldStbImpl::Initialize()
 {
 #if defined(__DAVAENGINE_COREV2__)
-    windowSizeChangedConnection = window->sizeChanged.Connect(this, &TextFieldStbImpl::OnWindowSizeChanged);
-    windowDestroyedConnection = Engine::Instance()->windowDestroyed.Connect(this, &TextFieldStbImpl::OnWindowDestroyed);
+    window->sizeChanged.Connect(this, &TextFieldStbImpl::OnWindowSizeChanged);
+    Engine::Instance()->windowDestroyed.Connect(this, &TextFieldStbImpl::OnWindowDestroyed);
 #endif
 }
 
@@ -64,8 +64,8 @@ void TextFieldStbImpl::OwnerIsDying()
 #if defined(__DAVAENGINE_COREV2__)
     if (window != nullptr)
     {
-        window->sizeChanged.Disconnect(windowSizeChangedConnection);
-        Engine::Instance()->windowDestroyed.Disconnect(windowDestroyedConnection);
+        window->sizeChanged.Disconnect(this);
+        Engine::Instance()->windowDestroyed.Disconnect(this);
     }
 #endif
 }

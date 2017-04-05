@@ -3,11 +3,14 @@
 #include "Base/BaseTypes.h"
 #include "UI/UIControl.h"
 #include "UI/Components/UIComponent.h"
+#include "Reflection/Reflection.h"
 
 namespace DAVA
 {
 class UISoundComponent : public UIBaseComponent<UIComponent::SOUND_COMPONENT>
 {
+    DAVA_VIRTUAL_REFLECTION(UISoundComponent, UIBaseComponent<UIComponent::SOUND_COMPONENT>);
+
 public:
     UISoundComponent();
     UISoundComponent(const UISoundComponent& src);
@@ -36,12 +39,5 @@ private:
     UISoundComponent& operator=(const UISoundComponent&) = delete;
 
     DAVA::Array<FastName, UIControl::EVENTS_COUNT> soundEventNames;
-
-public:
-    INTROSPECTION_EXTEND(UISoundComponent, UIComponent,
-                         PROPERTY("touchDown", "Touch Down", GetOnTouchDownSoundEventName, SetOnTouchDownSoundEventName, I_SAVE | I_VIEW | I_EDIT | I_LOAD)
-                         PROPERTY("touchUpInside", "Touch Up Inside", GetOnTouchUpInsideSoundEventName, SetOnTouchUpInsideSoundEventName, I_SAVE | I_VIEW | I_EDIT | I_LOAD)
-                         PROPERTY("touchUpOutside", "Touch Up Outside", GetOnTouchUpOutsideSoundEventName, SetOnTouchUpOutsideSoundEventName, I_SAVE | I_VIEW | I_EDIT | I_LOAD)
-                         PROPERTY("valueChanged", "Value Changed", GetOnValueChangedSoundEventName, SetOnValueChangedSoundEventName, I_SAVE | I_VIEW | I_EDIT | I_LOAD));
 };
 }

@@ -4,8 +4,7 @@
 
 #include "UI/UIControl.h"
 #include "Render/2D/Sprite.h"
-
-#include "Functional/SignalBase.h"
+#include "Functional/Signal.h"
 
 namespace DAVA
 {
@@ -70,11 +69,9 @@ private:
     bool isActive = true;
     bool isVisible = true;
     CursorType currentCursorType = CursorType::CT_POINTER;
-    SigConnectionID focusConnection = SigConnectionID();
 #if defined(__DAVAENGINE_COREV2__)
     Window* window = nullptr;
     float32 scale = 1.f;
-    SigConnectionID windowDestroyedConnection = SigConnectionID();
 #endif
     unsigned webViewID = 0;
 };

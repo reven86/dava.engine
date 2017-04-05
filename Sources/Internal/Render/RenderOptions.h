@@ -55,6 +55,8 @@ public:
         DRAW_NONDEF_GLYPH,
         HIGHLIGHT_HARD_CONTROLS,
 
+        DEBUG_DRAW_PARTICLES,
+
         OPTIONS_COUNT
     };
 

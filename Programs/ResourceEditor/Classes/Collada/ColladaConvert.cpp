@@ -18,10 +18,30 @@ eColladaErrorCodes ConvertDaeToSc2(const DAVA::FilePath& pathToFile, std::unique
 
     DAVA::FilePath pathSc2 = DAVA::FilePath::CreateWithNewExtension(pathToFile, ".sc2");
 
-    eColladaErrorCodes ret = colladaDocument.SaveSC2(pathSc2, std::move(importParams));
+    eColladaErrorCodes ret = colladaDocument.SaveSC2(pathSc2);
     colladaDocument.Close();
 
     FCollada::Release();
+
+    if (ret == COLLADA_OK)
+    {
+        using namespace DAVA;
+        ScopedPtr<Scene> scene(new Scene());
+        SceneFileV2::eError loadResult = scene->LoadScene(pathSc2);
+        if (loadResult != SceneFileV2::ERROR_NO_ERROR)
+        {
+            DAVA::Logger::Error("[ConvertDaeToSc2] Failed to read scene %s {%u} for apply reimport params", pathToFile.GetAbsolutePathname().c_str(), loadResult);
+        }
+
+        DAEConverter::RestoreSceneParams(RefPtr<Scene>::ConstructWithRetain(scene), pathSc2, importParams.get());
+        SceneFileV2::eError saveRes = scene->SaveScene(pathSc2, false);
+
+        if (saveRes > SceneFileV2::eError::ERROR_NO_ERROR)
+        {
+            Logger::Error("[DAE to SC2] Cannot save SC2 after apply reimport params. Error %d", saveRes);
+            ret = eColladaErrorCodes::COLLADA_ERROR;
+        }
+    }
 
     return ret;
 }

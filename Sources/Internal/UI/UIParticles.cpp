@@ -4,6 +4,7 @@
 #include "Scene3D/Components/ParticleEffectComponent.h"
 #include "Scene3D/Systems/ParticleEffectSystem.h"
 #include "Render/Highlevel/RenderPassNames.h"
+#include "Reflection/ReflectionRegistrator.h"
 #include "UI/UIControlSystem.h"
 #include "UI/Update/UIUpdateComponent.h"
 
@@ -11,6 +12,17 @@ namespace DAVA
 {
 /* this camera is required just for preparing draw data*/
 Camera* UIParticles::defaultCamera = nullptr;
+
+DAVA_VIRTUAL_REFLECTION_IMPL(UIParticles)
+{
+    ReflectionRegistrator<UIParticles>::Begin()
+    .ConstructorByPointer()
+    .DestructorByPointer([](UIParticles* o) { o->Release(); })
+    .Field("effectPath", &UIParticles::GetEffectPath, &UIParticles::SetEffectPath)
+    .Field("autoStart", &UIParticles::IsAutostart, &UIParticles::SetAutostart)
+    .Field("startDelay", &UIParticles::GetStartDelay, &UIParticles::SetStartDelay)
+    .End();
+}
 
 UIParticles::UIParticles(const Rect& rect)
     : UIControl(rect)

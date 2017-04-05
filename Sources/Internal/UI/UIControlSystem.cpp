@@ -61,8 +61,8 @@ UIControlSystem::UIControlSystem()
 #else
     vcs = VirtualCoordinatesSystem::Instance();
 #endif
-    vcs->virtualSizeChanged.Connect([](const Size2i&) { TextBlock::ScreenResolutionChanged(); });
-    vcs->physicalSizeChanged.Connect([](const Size2i&) { TextBlock::ScreenResolutionChanged(); });
+    vcs->virtualSizeChanged.Connect(this, [](const Size2i&) { TextBlock::ScreenResolutionChanged(); });
+    vcs->physicalSizeChanged.Connect(this, [](const Size2i&) { TextBlock::ScreenResolutionChanged(); });
 
     screenshoter = new UIScreenshoter();
 
