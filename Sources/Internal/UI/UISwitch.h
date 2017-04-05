@@ -3,6 +3,7 @@
 
 #include "Base/BaseTypes.h"
 #include "UI/UIControl.h"
+#include "Reflection/Reflection.h"
 
 namespace DAVA
 {
@@ -21,6 +22,7 @@ class TogglePositionAnimation;
 class UISwitch : public UIControl
 {
     friend class TogglePositionAnimation;
+    DAVA_VIRTUAL_REFLECTION(UISwitch, UIControl);
 
 protected:
     virtual ~UISwitch();
@@ -86,11 +88,6 @@ protected:
     // Boolean variables are grouped together because of DF-2149.
     bool switchOnTapBesideToggle : 1;
     bool isLeftSelected : 1;
-
-public:
-    INTROSPECTION_EXTEND(UISwitch, UIControl,
-                         nullptr
-                         );
 };
 }
 #endif //__DAVAENGINE_UI_SWITCH_H__

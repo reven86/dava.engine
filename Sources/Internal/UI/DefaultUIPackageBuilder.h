@@ -38,7 +38,7 @@ public:
     UIComponent* BeginComponentPropertiesSection(uint32 componentType, uint32 componentIndex) override;
     void EndComponentPropertiesSection() override;
 
-    void ProcessProperty(const InspMember* member, const VariantType& value) override;
+    void ProcessProperty(const Reflection::Field& field, const Any& value) override;
 
 protected:
     virtual RefPtr<UIControl> CreateControlByName(const String& customClassName, const String& className);
@@ -57,6 +57,7 @@ private:
 
     UIPackagesCache* cache;
     BaseObject* currentObject;
+    int32 currentComponentType = -1;
 
     RefPtr<UIPackage> package;
     FilePath currentPackagePath;

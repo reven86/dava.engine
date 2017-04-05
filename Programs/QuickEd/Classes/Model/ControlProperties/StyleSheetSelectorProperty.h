@@ -33,8 +33,8 @@ public:
     ePropertyType GetType() const override;
     DAVA::uint32 GetFlags() const override;
 
-    DAVA::VariantType GetValue() const override;
-    void ApplyValue(const DAVA::VariantType& value) override;
+    DAVA::Any GetValue() const override;
+    void ApplyValue(const DAVA::Any& value) override;
 
     const DAVA::UIStyleSheetSelectorChain& GetSelectorChain() const;
     const DAVA::String& GetSelectorChainString() const;

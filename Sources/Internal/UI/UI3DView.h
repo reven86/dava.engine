@@ -15,6 +15,8 @@ namespace DAVA
 class Scene;
 class UI3DView : public UIControl
 {
+    DAVA_VIRTUAL_REFLECTION(UI3DView, UIControl);
+
 public:
     UI3DView(const Rect& rect = Rect());
 
@@ -74,11 +76,6 @@ private:
     int32 basePriority = PRIORITY_MAIN_3D;
 
     rhi::LoadAction colorLoadAction = rhi::LOADACTION_CLEAR;
-
-public:
-    INTROSPECTION_EXTEND(UI3DView, UIControl,
-                         PROPERTY("drawToFrameBuffer", "Draw sceene draw through the frame buffer", GetDrawToFrameBuffer, SetDrawToFrameBuffer, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("frameBufferScaleFactor", "Set scale factor to draw the frame buffer", GetFrameBufferScaleFactor, SetFrameBufferScaleFactor, I_SAVE | I_VIEW | I_EDIT) nullptr)
 };
 
 inline bool UI3DView::GetDrawToFrameBuffer() const

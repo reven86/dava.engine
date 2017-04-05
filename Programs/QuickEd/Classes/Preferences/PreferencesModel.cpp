@@ -12,7 +12,7 @@ void PreferencesModel::ApplyAllChangedProperties()
     DAVA::DynamicTypeCheck<PreferencesRootProperty*>(rootProperty)->ApplyPreference();
 }
 
-void PreferencesModel::ChangeProperty(AbstractProperty* property, const DAVA::VariantType& value)
+void PreferencesModel::ChangeProperty(AbstractProperty* property, const DAVA::Any& value)
 {
     property->SetValue(value);
 }
