@@ -216,7 +216,6 @@ public:
     }
 
 private:
-    bool textMode = true;
     bool needLineBreak = false;
     bool isRtl = false;
     UIControlPackageContext* context = nullptr;

@@ -1,5 +1,6 @@
 #include "UI/RichContent/UIRichAliasMap.h"
 #include "FileSystem/XMLParser.h"
+#include "Utils/StringUtils.h"
 
 namespace DAVA
 {
