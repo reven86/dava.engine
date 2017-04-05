@@ -65,7 +65,7 @@ const FXDescriptor& GetFXDescriptor(const FastName& fxName, HashMap<FastName, in
 
     if (!fxName.IsValid())
     {
-        return defaultFX;
+        return FXCacheDetails::defaultFX;
     }
 
     Vector<int32> key = ShaderDescriptorCache::BuildFlagsKey(fxName, defines);
@@ -104,7 +104,7 @@ const FXDescriptor& LoadOldTempalte(const FastName& fxName, const FastName& qual
     if (!rootNode)
     {
         Logger::Error("Can't load requested old-material-template-into-fx: %s", fxPath.GetAbsolutePathname().c_str());
-        return defaultFX;
+        return FXCacheDetails::defaultFX;
     }
 
     const YamlNode* materialTemplateNode = rootNode->Get("MaterialTemplate");
@@ -138,7 +138,7 @@ const FXDescriptor& LoadOldTempalte(const FastName& fxName, const FastName& qual
         if (!renderTechniqueNode)
         {
             Logger::Error("Can't load technique from template: %s with quality %s", fxPath.GetAbsolutePathname().c_str(), quality.c_str());
-            return defaultFX;
+            return FXCacheDetails::defaultFX;
         }
 
         parser = parserTechnique;
@@ -152,7 +152,7 @@ const FXDescriptor& LoadOldTempalte(const FastName& fxName, const FastName& qual
     const YamlNode* stateNode = renderTechniqueNode->Get("RenderTechnique");
     if (stateNode == nullptr)
     {
-        return defaultFX;
+        return FXCacheDetails::defaultFX;
     }
 
     FXDescriptor target;
