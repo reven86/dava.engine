@@ -8,10 +8,8 @@
 
 #include "Engine/EngineTypes.h"
 #include "Engine/Qt/RenderWidget.h"
-#include "Engine/EngineTypes.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 #include "Engine/Private/Dispatcher/UIDispatcher.h"
-#include "Functional/SignalBase.h"
 
 #include <QPointer>
 

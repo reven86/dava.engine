@@ -126,10 +126,6 @@ protected:
     void OnUpdate(float32 timeElapsed);
     void OnSuspend();
     void OnResume();
-
-    size_t onUpdateToken = 0;
-    size_t onSuspendToken = 0;
-    size_t onResumeToken = 0;
 #endif
 
     void GetGroupEventsNamesRecursive(FMOD::EventGroup* group, String& currNamePath, Vector<String>& names);

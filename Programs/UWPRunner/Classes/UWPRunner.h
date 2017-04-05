@@ -60,7 +60,6 @@ private:
     DAVA::Signal<> cleanNeeded;
     std::unique_ptr<AppxBundleHelper> bundleHelper;
     UWPLogConsumer logConsumer;
-    DAVA::SigConnectionID logConsumerConnectionID = DAVA::SigConnectionID();
     DAVA::Net::NetCore::TrackId controllerId = DAVA::Net::NetCore::INVALID_TRACK_ID;
     DAVA::String qtProfile;
     DAVA::RefPtr<DAVA::File> outputFile;

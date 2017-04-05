@@ -64,7 +64,6 @@ public:
 
     bool isMinimized = false;
     bool closeRequestByApp = false;
-    size_t hideUnhideSignalId = 0;
 
     // Friends
     friend class PlatformCore;

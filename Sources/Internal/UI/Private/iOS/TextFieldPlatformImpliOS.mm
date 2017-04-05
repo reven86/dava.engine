@@ -63,7 +63,7 @@ TextFieldPlatformImpl::TextFieldPlatformImpl(Window* w, UITextField* uiTextField
         UpdateNativeRect(prevRect, 0);
     }
 
-    windowDestroyedSigId = Engine::Instance()->windowDestroyed.Connect(this, &TextFieldPlatformImpl::OnWindowDestroyed);
+    windowDestroyedToken = Engine::Instance()->windowDestroyed.Connect(this, &TextFieldPlatformImpl::OnWindowDestroyed);
 }
 
 TextFieldPlatformImpl::~TextFieldPlatformImpl()
@@ -86,7 +86,7 @@ TextFieldPlatformImpl::~TextFieldPlatformImpl()
         PlatformApi::Ios::ReturnUIViewToPool(window, textFieldHolder);
     }
 
-    Engine::Instance()->windowDestroyed.Disconnect(windowDestroyedSigId);
+    Engine::Instance()->windowDestroyed.Disconnect(windowDestroyedToken);
 }
 
 void TextFieldPlatformImpl::OnWindowDestroyed(Window* destroyedWindow)
