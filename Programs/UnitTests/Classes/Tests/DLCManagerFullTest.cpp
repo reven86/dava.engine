@@ -27,7 +27,7 @@ struct FSMTest02
     State state = WaitInitializationFinished;
     DAVA::float32 time = 0.0f;
     DAVA::float32 waitSecondConnect = 3.0f;
-    const DAVA::float32 timeout = 40.f;
+    const DAVA::float32 timeout = 60.f;
     DAVA::DLCManager::Progress progressAfterInit;
 
     void Cleanup(DAVA::DLCManager& dlcManager)
