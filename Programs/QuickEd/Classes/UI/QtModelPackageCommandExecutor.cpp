@@ -142,7 +142,7 @@ void QtModelPackageCommandExecutor::RemoveImportedPackagesFromPackage(const DAVA
     }
 }
 
-void QtModelPackageCommandExecutor::ChangeProperty(ControlNode* node, AbstractProperty* property, const VariantType& value)
+void QtModelPackageCommandExecutor::ChangeProperty(ControlNode* node, AbstractProperty* property, const Any& value)
 {
     if (!property->IsReadOnly())
     {
@@ -156,7 +156,7 @@ void QtModelPackageCommandExecutor::ResetProperty(ControlNode* node, AbstractPro
     if (!property->IsReadOnly())
     {
         DocumentData* documentData = GetDocumentData();
-        documentData->ExecCommand<ChangePropertyValueCommand>(node, property, VariantType());
+        documentData->ExecCommand<ChangePropertyValueCommand>(node, property, Any());
     }
 }
 
@@ -189,7 +189,7 @@ void QtModelPackageCommandExecutor::RemoveComponent(ControlNode* node, uint32 co
     }
 }
 
-void QtModelPackageCommandExecutor::ChangeProperty(StyleSheetNode* node, AbstractProperty* property, const DAVA::VariantType& value)
+void QtModelPackageCommandExecutor::ChangeProperty(StyleSheetNode* node, AbstractProperty* property, const DAVA::Any& value)
 {
     if (!property->IsReadOnly())
     {

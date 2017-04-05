@@ -102,13 +102,15 @@ void LibraryModule::OnDAEConvertionRequested(const DAVA::FilePath& daePathname)
 {
     HidePreview();
 
-    DAVA::TArc::UI* ui = GetUI();
-    DAVA::TArc::WaitDialogParams waitDlgParams;
-    waitDlgParams.message = QString("DAE to SC2 conversion\n%1").arg(daePathname.GetAbsolutePathname().c_str());
-    waitDlgParams.needProgressBar = false;
-    std::unique_ptr<DAVA::TArc::WaitHandle> waitHandle = ui->ShowWaitDialog(REGlobal::MainWindowKey, waitDlgParams);
+    executor.DelayedExecute([this, daePathname]() {
+        DAVA::TArc::UI* ui = GetUI();
+        DAVA::TArc::WaitDialogParams waitDlgParams;
+        waitDlgParams.message = QString("DAE to SC2 conversion\n%1").arg(daePathname.GetAbsolutePathname().c_str());
+        waitDlgParams.needProgressBar = false;
+        std::unique_ptr<DAVA::TArc::WaitHandle> waitHandle = ui->ShowWaitDialog(REGlobal::MainWindowKey, waitDlgParams);
 
-    DAEConverter::Convert(daePathname);
+        DAEConverter::Convert(daePathname);
+    });
 }
 
 void LibraryModule::OnDoubleClicked(const DAVA::FilePath& scenePathname)

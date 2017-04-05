@@ -4,11 +4,14 @@
 #include "Base/BaseTypes.h"
 
 #include "UI/Components/UIComponent.h"
+#include "Reflection/Reflection.h"
 
 namespace DAVA
 {
 class UIFocusGroupComponent : public UIBaseComponent<UIComponent::FOCUS_GROUP_COMPONENT>
 {
+    DAVA_VIRTUAL_REFLECTION(UIFocusGroupComponent, UIBaseComponent<UIComponent::FOCUS_GROUP_COMPONENT>);
+
 public:
     UIFocusGroupComponent();
     UIFocusGroupComponent(const UIFocusGroupComponent& src);
@@ -21,11 +24,6 @@ private:
 
 public:
     UIFocusGroupComponent* Clone() const override;
-
-private:
-public:
-    INTROSPECTION_EXTEND(UIFocusGroupComponent, UIComponent,
-                         nullptr);
 };
 }
 

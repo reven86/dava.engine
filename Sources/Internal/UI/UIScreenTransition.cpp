@@ -10,10 +10,19 @@
 #include "Scene3D/Scene.h"
 #include "UI/UIScreenshoter.h"
 #include "Logger/Logger.h"
+#include "Reflection/ReflectionRegistrator.h"
 #include "UI/Update/UIUpdateComponent.h"
 
 namespace DAVA
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(UIScreenTransition)
+{
+    ReflectionRegistrator<UIScreenTransition>::Begin()
+    .ConstructorByPointer()
+    .DestructorByPointer([](UIScreenTransition* o) { o->Release(); })
+    .End();
+}
+
 UIScreenTransition::UIScreenTransition()
 {
     interpolationFunc = Interpolation::GetFunction(Interpolation::EASY_IN_EASY_OUT);
