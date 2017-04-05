@@ -669,6 +669,21 @@ void UIManager::InitializationFinished()
     }
 }
 
+void UIManager::DeclareToolbar(const WindowKey& windowKey, const ActionPlacementInfo& toogleToolbarVisibility, const QString& toolbarName)
+{
+    DVASSERT(impl->currentModule != nullptr);
+    UIManagerDetail::MainWindowInfo& mainWindowInfo = impl->FindOrCreateWindow(windowKey);
+    QToolBar* toolbar = mainWindowInfo.window->findChild<QToolBar*>(toolbarName);
+    if (toolbar == nullptr)
+    {
+        toolbar = new QToolBar(toolbarName, mainWindowInfo.window);
+        toolbar->setObjectName(toolbarName);
+        mainWindowInfo.window->addToolBar(toolbar);
+    }
+
+    AddAction(windowKey, toogleToolbarVisibility, toolbar->toggleViewAction());
+}
+
 void UIManager::AddView(const WindowKey& windowKey, const PanelKey& panelKey, QWidget* widget)
 {
     DVASSERT(impl->currentModule != nullptr);
