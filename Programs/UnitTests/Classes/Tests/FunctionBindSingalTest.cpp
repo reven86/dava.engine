@@ -434,7 +434,7 @@ DAVA_TESTCLASS (FunctionBindSignalTest)
             Token tinvalid;
 
             TEST_VERIFY(t1.IsEmpty());
-            TEST_VERIFY(t1);
+            TEST_VERIFY(!t1);
             TEST_VERIFY(t1 == t2);
 
             t1 = testSignal.Connect(obj, &TestObjA::Slot1);
