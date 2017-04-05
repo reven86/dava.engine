@@ -41,7 +41,7 @@ public:
     void ProcessProperty(const InspMember* member, const VariantType& value) override;
 
 protected:
-    virtual UIControl* CreateControlByName(const String& customClassName, const String& className);
+    virtual RefPtr<UIControl> CreateControlByName(const String& customClassName, const String& className);
     virtual std::unique_ptr<DefaultUIPackageBuilder> CreateBuilder(UIPackagesCache* packagesCache);
 
 private:

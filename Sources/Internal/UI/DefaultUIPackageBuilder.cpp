@@ -233,7 +233,7 @@ UIControl* DefaultUIPackageBuilder::BeginControlWithPrototype(const FastName& co
     RefPtr<UIControl> control;
     if (customClassName)
     {
-        control.Set(CreateControlByName(*customClassName, "UIControl"));
+        control = CreateControlByName(*customClassName, "UIControl");
 
         control->RemoveAllControls();
         control->CopyDataFrom(prototype);
@@ -379,13 +379,13 @@ UIPackage* DefaultUIPackageBuilder::FindImportedPackageByName(const String& name
     return nullptr;
 }
 
-UIControl* DefaultUIPackageBuilder::CreateControlByName(const String& customClassName, const String& className)
+RefPtr<UIControl> DefaultUIPackageBuilder::CreateControlByName(const String& customClassName, const String& className)
 {
-    UIControl* c = ObjectFactory::Instance()->New<UIControl>(customClassName);
+    RefPtr<UIControl> c(ObjectFactory::Instance()->New<UIControl>(customClassName));
     if (c == nullptr)
     {
         DVASSERT(false);
-        c = ObjectFactory::Instance()->New<UIControl>(className);
+        c.Set(ObjectFactory::Instance()->New<UIControl>(className));
     }
     return c;
 }

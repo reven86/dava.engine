@@ -29,16 +29,16 @@ public:
     }
 
 protected:
-    DAVA::UIControl* CreateControlByName(const DAVA::String& customClassName, const DAVA::String& className) override
+    DAVA::RefPtr<DAVA::UIControl> CreateControlByName(const DAVA::String& customClassName, const DAVA::String& className) override
     {
         using namespace DAVA;
 
         if (ObjectFactory::Instance()->IsTypeRegistered(customClassName))
         {
-            return ObjectFactory::Instance()->New<UIControl>(customClassName);
+            return RefPtr<UIControl>(ObjectFactory::Instance()->New<UIControl>(customClassName));
         }
 
-        return ObjectFactory::Instance()->New<UIControl>(className);
+        return RefPtr<UIControl>(ObjectFactory::Instance()->New<UIControl>(className));
     }
 
     std::unique_ptr<DAVA::DefaultUIPackageBuilder> CreateBuilder(DAVA::UIPackagesCache* packagesCache) override
@@ -47,16 +47,17 @@ protected:
     }
 };
 
-DAVA::UIControl* LoadControl(const DAVA::FilePath& yamlPath, const DAVA::String& controlName)
+DAVA::RefPtr<DAVA::UIControl> LoadControl(const DAVA::FilePath& yamlPath, const DAVA::String& controlName)
 {
+    using namespace DAVA;
     PreviewPackageBuilder packageBuilder;
-    if (DAVA::UIPackageLoader().LoadPackage(yamlPath, &packageBuilder))
+    if (UIPackageLoader().LoadPackage(yamlPath, &packageBuilder))
     {
-        DAVA::UIControl* ctrl = packageBuilder.GetPackage()->GetControl<DAVA::UIControl*>(controlName);
-        return DAVA::SafeRetain(ctrl);
+        UIControl* ctrl = packageBuilder.GetPackage()->GetControl<UIControl*>(controlName);
+        return RefPtr<UIControl>(SafeRetain(ctrl));
     }
 
-    return nullptr;
+    return RefPtr<UIControl>();
 }
 }
 
@@ -166,23 +167,22 @@ void UIViewScreen::SetupUI()
 
     FilePath placeHolderYaml = "~res:/UI/Screens/Battle/BattleLoadingScreen.yaml";
     String placeHolderRootControl = "BattleLoadingScreen";
-    String placeHolderControl = "MapNameLeftBg";
+    String placeHolderControl = "**/MapNameLeftBg";
 
     FilePath testedYaml = "~res:/UI/Screens/Battle/ChatButton.yaml";
     String testedControlName = "ChatButton";
 
-    ScopedPtr<UIControl> placeHolderRoot(UIViewScreenDetails::LoadControl(placeHolderYaml, placeHolderRootControl));
+    RefPtr<UIControl> placeHolderRoot = UIViewScreenDetails::LoadControl(placeHolderYaml, placeHolderRootControl);
     if (placeHolderRoot)
     {
-        AddControl(placeHolderRoot);
-        //        UIControl* placeholder = placeHolderRoot->FindByPath(placeHolderControl);     // we should use this method in case of using path
-        UIControl* placeholder = placeHolderRoot->FindByName(placeHolderControl, true); // we should use this method in case of using name
+        AddControl(placeHolderRoot.Get());
+        UIControl* placeholder = placeHolderRoot->FindByPath(placeHolderControl);
         if (placeholder != nullptr)
         {
-            ScopedPtr<UIControl> testedControl(UIViewScreenDetails::LoadControl(testedYaml, testedControlName));
+            RefPtr<UIControl> testedControl = UIViewScreenDetails::LoadControl(testedYaml, testedControlName);
             if (testedControl)
             {
-                placeholder->AddControl(testedControl);
+                placeholder->AddControl(testedControl.Get());
             }
             else
             {

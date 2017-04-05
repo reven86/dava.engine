@@ -73,10 +73,9 @@ public:
      
      \param[in] name name of class you want to create
      */
-    bool IsTypeRegistered(const String& name)
+    bool IsTypeRegistered(const String& name) const
     {
-        Map<String, CreateObjectFunc>::iterator it = creatorMap.find(name);
-        return (it != creatorMap.end());
+        return (creatorMap.find(name) != creatorMap.end());
     }
 
     /**
