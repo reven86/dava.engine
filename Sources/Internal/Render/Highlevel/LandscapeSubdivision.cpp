@@ -27,6 +27,24 @@ DAVA_VIRTUAL_REFLECTION_IMPL(LandscapeSubdivision)
     .End();
 }
 
+template <>
+bool AnyCompare<LandscapeSubdivision::SubdivisionMetrics>::IsEqual(const DAVA::Any& v1, const DAVA::Any& v2)
+{
+    return v1.Get<LandscapeSubdivision::SubdivisionMetrics>() == v2.Get<LandscapeSubdivision::SubdivisionMetrics>();
+}
+
+bool LandscapeSubdivision::SubdivisionMetrics::operator==(const SubdivisionMetrics& other) const
+{
+    return normalFov == other.normalFov &&
+    zoomFov == other.zoomFov &&
+    normalMaxHeightError == other.normalMaxHeightError &&
+    normalMaxPatchRadiusError == other.normalMaxPatchRadiusError &&
+    normalMaxAbsoluteHeightError == other.normalMaxAbsoluteHeightError &&
+    zoomMaxHeightError == other.zoomMaxHeightError &&
+    zoomMaxPatchRadiusError == other.zoomMaxPatchRadiusError &&
+    zoomMaxAbsoluteHeightError == other.zoomMaxAbsoluteHeightError;
+}
+
 LandscapeSubdivision::LandscapeSubdivision()
 {
     frustum = new Frustum();

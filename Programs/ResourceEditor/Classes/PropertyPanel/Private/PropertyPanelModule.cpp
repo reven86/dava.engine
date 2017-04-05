@@ -4,6 +4,7 @@
 #include "Classes/PropertyPanel/KeyedArchiveExtensions.h"
 #include "Classes/Selection/SelectionData.h"
 #include "Classes/Application/REGlobal.h"
+#include "Classes/Qt/Scene/SceneSignals.h"
 
 #include <TArc/Controls/PropertyPanel/PropertiesView.h>
 #include <TArc/Controls/PropertyPanel/TimerUpdater.h>
@@ -27,6 +28,32 @@
 
 namespace PropertyPanelModuleDetail
 {
+class PropertyPanelUpdater : public DAVA::TArc::PropertiesView::Updater
+{
+public:
+    PropertyPanelUpdater()
+        : timerUpdater(1000, 100)
+    {
+        SceneSignals* sceneSignals = SceneSignals::Instance();
+        connections.AddConnection(sceneSignals, &SceneSignals::CommandExecuted, [this](SceneEditor2* scene, const RECommandNotificationObject& commandNotification)
+                                  {
+                                      EmitUpdate(DAVA::TArc::PropertiesView::FullUpdate);
+                                  });
+
+        timerUpdater.update.Connect(this, &PropertyPanelUpdater::EmitUpdate);
+    }
+
+private:
+    void EmitUpdate(DAVA::TArc::PropertiesView::UpdatePolicy policy)
+    {
+        update.Emit(policy);
+    }
+
+private:
+    DAVA::TArc::TimerUpdater timerUpdater;
+    DAVA::TArc::QtConnections connections;
+};
+
 class PropertyPanelData : public DAVA::TArc::DataNode
 {
 public:
@@ -59,7 +86,7 @@ public:
 
     static const char* selectedEntitiesProperty;
 
-    std::shared_ptr<DAVA::TArc::TimerUpdater> updater;
+    std::shared_ptr<DAVA::TArc::PropertiesView::Updater> updater;
     DAVA::TArc::ContextAccessor* accessor = nullptr;
 
     DAVA_VIRTUAL_REFLECTION_IN_PLACE(PropertyPanelData, DAVA::TArc::DataNode)
@@ -84,7 +111,7 @@ void PropertyPanelModule::PostInit()
     ctx->CreateData(std::make_unique<PropertyPanelData>(accessor));
 
     PropertyPanelData* data = ctx->GetData<PropertyPanelData>();
-    data->updater.reset(new TimerUpdater(1000, 100));
+    data->updater.reset(new PropertyPanelUpdater());
 
     DockPanelInfo panelInfo;
     panelInfo.title = QStringLiteral("New Property Panel");

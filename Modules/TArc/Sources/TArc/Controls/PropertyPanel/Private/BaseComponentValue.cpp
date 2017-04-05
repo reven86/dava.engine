@@ -82,14 +82,19 @@ QWidget* BaseComponentValue::AcquireEditorWidget(const QStyleOptionViewItem& opt
 
 QString BaseComponentValue::GetPropertyName() const
 {
-    const Reflection& r = nodes.front()->field.ref;
-    const M::DisplayName* displayName = r.GetMeta<M::DisplayName>();
-    if (displayName != nullptr)
+    std::shared_ptr<PropertyNode> node = nodes.front();
+    const Reflection& r = node->field.ref;
+
+    if (node->propertyType != PropertyNode::GroupProperty)
     {
-        return QString::fromStdString(displayName->displayName);
+        const M::DisplayName* displayName = r.GetMeta<M::DisplayName>();
+        if (displayName != nullptr)
+        {
+            return QString::fromStdString(displayName->displayName);
+        }
     }
 
-    return nodes.front()->field.key.Cast<QString>();
+    return node->field.key.Cast<QString>();
 }
 
 FastName BaseComponentValue::GetID() const

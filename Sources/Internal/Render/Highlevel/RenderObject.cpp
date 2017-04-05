@@ -44,7 +44,7 @@ DAVA_VIRTUAL_REFLECTION_IMPL(RenderObject::IndexedRenderBatch)
 {
     ReflectionRegistrator<IndexedRenderBatch>::Begin()
     .Field("renderBatch", &IndexedRenderBatch::renderBatch)[M::DisplayName("Render batch")]
-    .Field("lodIndex", &IndexedRenderBatch::lodIndex)[M::DisplayName("LOD index")]
+    .Field("lodIndex", &IndexedRenderBatch::lodIndex)[M::DisplayName("LOD index"), M::Range(-1, 3, 1)]
     // we have to put upper bound of switchIndex to 1 because in ResourceEditor we have asserts like this one DVASSERT(switch < 2)
     .Field("switchIndex", &IndexedRenderBatch::switchIndex)[M::DisplayName("Switch index"), M::Range(-1, 1, 1)]
     .End();
@@ -59,7 +59,7 @@ DAVA_VIRTUAL_REFLECTION_IMPL(RenderObject)
     .Field("removeIndex", &RenderObject::removeIndex)[M::ReadOnly(), M::HiddenField()]
     .Field("bbox", &RenderObject::bbox)[M::DisplayName("Bounding box")]
     .Field("worldBBox", &RenderObject::worldBBox)[M::DisplayName("World Bounding box")]
-    .Field("lodIndex", &RenderObject::GetLodIndex, &RenderObject::SetLodIndex)[M::DisplayName("LOD index")]
+    .Field("lodIndex", &RenderObject::GetLodIndex, &RenderObject::SetLodIndex)[M::DisplayName("LOD index"), M::Range(-1, 3, 1)]
     // we have to put upper bound of switchIndex to 1 because in ResourceEditor we have asserts like this one DVASSERT(switch < 2)
     .Field("switchIndex", &RenderObject::GetSwitchIndex, &RenderObject::SetSwitchIndex)[M::DisplayName("Switch index"), M::Range(-1, 1, 1)]
     .Field("visibleReflection", &RenderObject::GetReflectionVisible, &RenderObject::SetReflectionVisible)[M::DisplayName("Visible reflection")]
