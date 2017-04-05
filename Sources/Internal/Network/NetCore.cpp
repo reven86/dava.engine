@@ -33,6 +33,7 @@ NetCore::NetCore(Engine* e)
     {
         netThread = Thread::Create([this]() { NetThreadHandler(); });
         netThread->Start();
+        cvDone.Wait(cvMutex);
     }
     else
     {
@@ -81,6 +82,7 @@ NetCore::~NetCore()
 void NetCore::NetThreadHandler()
 {
     loop = new IOLoop(true);
+    cvDone.NotifyAll();
     loop->Run();
     SafeDelete(loop);
 }
