@@ -59,7 +59,6 @@ public:
 #ifdef __DAVAENGINE_COREV2__
     explicit DLCManagerImpl(Engine* engine_);
     Engine& engine;
-    SigConnectionID sigBackgroundUpdate = 0;
 #else
     DLCManagerImpl() = default; // TODO remove it later (fix for client UnitTests)
 #endif

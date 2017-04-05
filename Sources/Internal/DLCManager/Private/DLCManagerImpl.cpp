@@ -83,7 +83,7 @@ DLCManagerImpl::DLCManagerImpl(Engine* engine_)
 {
     DVASSERT(Thread::IsMainThread());
     engine.update.Connect(this, &DLCManagerImpl::Update);
-    sigBackgroundUpdate = engine.backgroundUpdate.Connect(this, &DLCManagerImpl::Update);
+    engine.backgroundUpdate.Connect(this, &DLCManagerImpl::Update);
 }
 #endif
 
@@ -146,9 +146,7 @@ DLCManagerImpl::~DLCManagerImpl()
 
 #ifdef __DAVAENGINE_COREV2__
     engine.update.Disconnect(this);
-    engine.backgroundUpdate.Disconnect(sigBackgroundUpdate);
-    sigConnectionUpdate = 0;
-    sigBackgroundUpdate = 0;
+    engine.backgroundUpdate.Disconnect(this);
 #endif
 
     ClearResouces();
