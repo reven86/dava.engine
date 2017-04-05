@@ -19,6 +19,7 @@ const char8 NetCore::defaultAnnounceMulticastGroup[] = "239.192.100.1";
 #if defined(__DAVAENGINE_COREV2__)
 NetCore::NetCore(Engine* e)
     : engine(e)
+    , loopCreatedEvent(false)
 {
     bool separateThreadDefaultValue = false;
     const KeyedArchive* options = e->GetOptions();
