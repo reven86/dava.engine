@@ -23,6 +23,13 @@
 
 namespace DAVA
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(UIComponent)
+{
+    ReflectionRegistrator<UIComponent>::Begin()
+    .Field("type", &UIComponent::GetType, nullptr)
+    .End();
+}
+
 UIComponent::UIComponent()
     : control(nullptr)
 {

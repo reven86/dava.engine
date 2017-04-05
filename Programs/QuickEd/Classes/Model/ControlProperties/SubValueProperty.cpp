@@ -40,27 +40,27 @@ SubValueProperty::ePropertyType SubValueProperty::GetType() const
     return TYPE_VARIANT;
 }
 
-DAVA::VariantType::eVariantType SubValueProperty::GetValueType() const
+const Type* SubValueProperty::GetValueType() const
 {
     return GetValueProperty()->GetSubValueType(index);
 }
 
-VariantType SubValueProperty::GetValue() const
+Any SubValueProperty::GetValue() const
 {
     return GetValueProperty()->GetSubValue(index);
 }
 
-void SubValueProperty::SetValue(const DAVA::VariantType& newValue)
+void SubValueProperty::SetValue(const DAVA::Any& newValue)
 {
     GetValueProperty()->SetSubValue(index, newValue);
 }
 
-VariantType SubValueProperty::GetDefaultValue() const
+Any SubValueProperty::GetDefaultValue() const
 {
     return GetValueProperty()->GetDefaultSubValue(index);
 }
 
-void SubValueProperty::SetDefaultValue(const DAVA::VariantType& newValue)
+void SubValueProperty::SetDefaultValue(const DAVA::Any& newValue)
 {
     GetValueProperty()->SetDefaultSubValue(index, newValue);
 }

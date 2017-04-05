@@ -73,9 +73,10 @@ FMODSoundSystem::FMODSoundSystem(Engine* e)
     : engine(e)
     , SoundSystem(e)
 {
-    onUpdateToken = engine->update.Connect(this, &FMODSoundSystem::OnUpdate);
-    onSuspendToken = engine->suspended.Connect(this, &FMODSoundSystem::OnSuspend);
-    onResumeToken = engine->resumed.Connect(this, &FMODSoundSystem::OnResume);
+    engine->update.Connect(this, &FMODSoundSystem::OnUpdate);
+    engine->suspended.Connect(this, &FMODSoundSystem::OnSuspend);
+    engine->resumed.Connect(this, &FMODSoundSystem::OnResume);
+
     SetDebugMode(false);
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
@@ -149,10 +150,10 @@ FMODSoundSystem::FMODSoundSystem(Engine* e)
 
 FMODSoundSystem::~FMODSoundSystem()
 {
-    engine->update.Disconnect(onUpdateToken);
-    engine->suspended.Disconnect(onSuspendToken);
-    engine->resumed.Disconnect(onResumeToken);
-
+    engine->update.Disconnect(this);
+    engine->suspended.Disconnect(this);
+    engine->resumed.Disconnect(this);
+    
 #if defined(__DAVAENGINE_ANDROID__)
     if (fmodActivityListenerGlobalRef != nullptr)
     {

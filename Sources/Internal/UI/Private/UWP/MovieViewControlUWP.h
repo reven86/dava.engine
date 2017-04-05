@@ -106,9 +106,6 @@ private:
     bool movieLoaded = false; // Movie has been successfully loaded and decoded
 
     MovieViewProperties properties;
-
-    size_t windowSizeChangedConnection = 0;
-    size_t windowDestroyedConnection = 0;
 };
 
 //////////////////////////////////////////////////////////////////////////

@@ -5,6 +5,7 @@
 #include "FindItem.h"
 
 #include <QObject>
+#include <QMutex>
 
 class Finder : public QObject
 {

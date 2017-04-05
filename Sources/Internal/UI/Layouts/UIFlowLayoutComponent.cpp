@@ -1,9 +1,34 @@
 #include "UIFlowLayoutComponent.h"
 
 #include "UI/UIControl.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(UIFlowLayoutComponent)
+{
+    ReflectionRegistrator<UIFlowLayoutComponent>::Begin()
+    .ConstructorByPointer()
+    .DestructorByPointer([](UIFlowLayoutComponent* o) { o->Release(); })
+    .Field("enabled", &UIFlowLayoutComponent::IsEnabled, &UIFlowLayoutComponent::SetEnabled)
+    .Field("orientation", &UIFlowLayoutComponent::GetOrientation, &UIFlowLayoutComponent::SetOrientation)
+    [
+    M::EnumT<eOrientation>()
+    ]
+    .Field("hPadding", &UIFlowLayoutComponent::GetHorizontalPadding, &UIFlowLayoutComponent::SetHorizontalPadding)
+    .Field("hDynamicPadding", &UIFlowLayoutComponent::IsDynamicHorizontalPadding, &UIFlowLayoutComponent::SetDynamicHorizontalPadding)
+    .Field("hDynamicInLinePadding", &UIFlowLayoutComponent::IsDynamicHorizontalInLinePadding, &UIFlowLayoutComponent::SetDynamicHorizontalInLinePadding)
+    .Field("hSpacing", &UIFlowLayoutComponent::GetHorizontalSpacing, &UIFlowLayoutComponent::SetHorizontalSpacing)
+    .Field("hDynamicSpacing", &UIFlowLayoutComponent::IsDynamicHorizontalSpacing, &UIFlowLayoutComponent::SetDynamicHorizontalSpacing)
+    .Field("vPadding", &UIFlowLayoutComponent::GetVerticalPadding, &UIFlowLayoutComponent::SetVerticalPadding)
+    .Field("vDynamicPadding", &UIFlowLayoutComponent::IsDynamicVerticalPadding, &UIFlowLayoutComponent::SetDynamicVerticalPadding)
+    .Field("vSpacing", &UIFlowLayoutComponent::GetVerticalSpacing, &UIFlowLayoutComponent::SetVerticalSpacing)
+    .Field("vDynamicSpacing", &UIFlowLayoutComponent::IsDynamicVerticalSpacing, &UIFlowLayoutComponent::SetDynamicVerticalSpacing)
+    .Field("skipInvisible", &UIFlowLayoutComponent::IsSkipInvisibleControls, &UIFlowLayoutComponent::SetSkipInvisibleControls)
+    .Field("useRtl", &UIFlowLayoutComponent::IsUseRtl, &UIFlowLayoutComponent::SetUseRtl)
+    .End();
+}
+
 UIFlowLayoutComponent::UIFlowLayoutComponent()
 {
     SetEnabled(true);

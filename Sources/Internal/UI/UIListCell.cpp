@@ -1,8 +1,18 @@
 #include "UI/UIListCell.h"
 #include "Base/ObjectFactory.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(UIListCell)
+{
+    ReflectionRegistrator<UIListCell>::Begin()
+    .ConstructorByPointer()
+    .DestructorByPointer([](UIListCell* o) { o->Release(); })
+    .Field("identifier", &UIListCell::GetIdentifier, &UIListCell::SetIdentifier)
+    .End();
+}
+
 UIListCell::UIListCell(const Rect& rect, const String& cellIdentifier)
     : UIControl(rect)
     , currentIndex(-1)

@@ -4,7 +4,7 @@
 #include "Model/PackageHierarchy/StyleSheetNode.h"
 #include "Model/ControlProperties/AbstractProperty.h"
 
-ChangeStylePropertyCommand::ChangeStylePropertyCommand(PackageNode* package, StyleSheetNode* node_, AbstractProperty* property_, const DAVA::VariantType& newValue_)
+ChangeStylePropertyCommand::ChangeStylePropertyCommand(PackageNode* package, StyleSheetNode* node_, AbstractProperty* property_, const DAVA::Any& newValue_)
     : QEPackageCommand(package, DAVA::String("change ") + property_->GetName().c_str())
     , node(DAVA::RefPtr<StyleSheetNode>::ConstructWithRetain(node_))
     , property(DAVA::RefPtr<AbstractProperty>::ConstructWithRetain(property_))

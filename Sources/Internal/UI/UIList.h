@@ -143,6 +143,8 @@ private:
  */
 class UIList : public UIControl, public UIScrollBarDelegate
 {
+    DAVA_VIRTUAL_REFLECTION(UIList, UIControl);
+
 public:
     static const int32 maximumElementsCount = 100000;
     enum eListOrientation
@@ -238,11 +240,6 @@ protected:
     bool needRefresh : 1;
 
     Map<String, Vector<UIListCell*>*> cellStore;
-
-public:
-    INTROSPECTION_EXTEND(UIList, UIControl,
-                         PROPERTY("orientation", InspDesc("List orientation", GlobalEnumMap<UIList::eListOrientation>::Instance()), GetOrientation, SetOrientation, I_SAVE | I_VIEW | I_EDIT)
-                         );
 };
 
 inline bool UIList::GetNeedRefresh()

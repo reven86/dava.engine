@@ -31,15 +31,15 @@ void TablePropertyDelegate::setEditorData(QWidget* rawEditor, const QModelIndex&
 {
     QLineEdit* editor = rawEditor->findChild<QLineEdit*>("lineEdit");
 
-    DAVA::VariantType variant = index.data(Qt::EditRole).value<DAVA::VariantType>();
+    DAVA::Any variant = index.data(Qt::EditRole).value<DAVA::Any>();
     QString stringValue;
-    if (variant.GetType() == DAVA::VariantType::TYPE_STRING)
+    if (variant.CanGet<DAVA::String>())
     {
-        stringValue = StringToQString(variant.AsString());
+        stringValue = StringToQString(variant.Get<DAVA::String>());
     }
     else
     {
-        stringValue = WideStringToQString(variant.AsWideString());
+        DVASSERT(false);
     }
     editor->blockSignals(true);
     editor->setText(stringValue);
@@ -53,19 +53,20 @@ bool TablePropertyDelegate::setModelData(QWidget* rawEditor, QAbstractItemModel*
 
     QLineEdit* editor = rawEditor->findChild<QLineEdit*>("lineEdit");
 
-    DAVA::VariantType variantType = index.data(Qt::EditRole).value<DAVA::VariantType>();
+    DAVA::Any value = index.data(Qt::EditRole).value<DAVA::Any>();
 
-    if (variantType.GetType() == DAVA::VariantType::TYPE_STRING)
+    if (value.CanGet<DAVA::String>())
     {
-        variantType.SetString(QStringToString(editor->text()));
+        value.Set(QStringToString(editor->text()));
     }
     else
     {
-        variantType.SetWideString(QStringToWideString(editor->text()));
+        DVASSERT(false);
+        value.Set(QStringToWideString(editor->text()));
     }
 
     QVariant variant;
-    variant.setValue<DAVA::VariantType>(variantType);
+    variant.setValue<DAVA::Any>(value);
 
     return model->setData(index, variant, Qt::EditRole);
 }

@@ -8,6 +8,7 @@
 #include "Functional/Signal.h"
 #include "UIActionMap.h"
 #include "UIInputMap.h"
+#include "Reflection/Reflection.h"
 
 namespace DAVA
 {
@@ -15,6 +16,8 @@ class UIControl;
 
 class UIActionBindingComponent : public UIBaseComponent<UIComponent::ACTION_BINDING_COMPONENT>
 {
+    DAVA_VIRTUAL_REFLECTION(UIActionBindingComponent, UIBaseComponent<UIComponent::ACTION_BINDING_COMPONENT>);
+
 public:
     UIActionBindingComponent();
     UIActionBindingComponent(const UIActionBindingComponent& src);
@@ -58,11 +61,6 @@ private:
     UIActionMap actionMap;
     UIInputMap inputMap;
     bool blockOtherKeyboardShortcuts = true;
-
-public:
-    INTROSPECTION_EXTEND(UIActionBindingComponent, UIComponent,
-                         PROPERTY("actions", "Actions", GetActionsAsString, SetActionsFromString, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("blockOtherShortcuts", "Block Other Keyboard Shortcuts", IsBlockOtherKeyboardShortcuts, SetBlockOtherKeyboardShortcuts, I_SAVE | I_VIEW | I_EDIT));
 };
 }
 
