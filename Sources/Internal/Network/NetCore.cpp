@@ -21,11 +21,11 @@ NetCore::NetCore(Engine* e)
     , isFinishing(false)
     , allStopped(false)
 {
-    sigUpdateId = e->update.Connect(this, &NetCore::Poll);
+    e->update.Connect(this, &NetCore::Poll);
 #if defined(__DAVAENGINE_IPHONE__)
     // iOS silently kills sockets when device is locked so recreate sockets
     // when application is resumed
-    sigResumedId = e->resumed.Connect(this, &NetCore::RestartAllControllers);
+    e->resumed.Connect(this, &NetCore::RestartAllControllers);
 #endif
 }
 #else
@@ -40,9 +40,9 @@ NetCore::NetCore()
 NetCore::~NetCore()
 {
 #if defined(__DAVAENGINE_COREV2__)
-    engine->update.Disconnect(sigUpdateId);
+    engine->update.Disconnect(this);
 #if defined(__DAVAENGINE_IPHONE__)
-    engine->resumed.Disconnect(sigResumedId);
+    engine->resumed.Disconnect(this);
 #endif
 #endif
 

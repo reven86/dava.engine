@@ -16,9 +16,6 @@ public:
     const static int32 REFLECTION_TEX_SIZE = 512;
     const static int32 REFRACTION_TEX_SIZE = 512;
 
-    const static PixelFormat REFLECTION_PIXEL_FORMAT = PixelFormat::FORMAT_RGB565;
-    const static PixelFormat REFRACTION_PIXEL_FORMAT = PixelFormat::FORMAT_RGB565;
-
     enum eDynamicTextureSemantic
     {
         TEXTURE_STATIC = 0,
@@ -41,6 +38,7 @@ public:
 
     rhi::HTexture GetDynamicTexture(eDynamicTextureSemantic semantic);
     rhi::SamplerState::Descriptor::Sampler GetDynamicTextureSamplerState(eDynamicTextureSemantic semantic);
+    PixelFormat GetDynamicTextureFormat(eDynamicTextureSemantic semantic);
 
     rhi::HTexture GetPinkTexture(rhi::TextureType type);
     rhi::SamplerState::Descriptor::Sampler GetPinkTextureSamplerState(rhi::TextureType type);
@@ -51,6 +49,7 @@ private:
     void InitDynamicTexture(eDynamicTextureSemantic semantic);
 
     rhi::HTexture dynamicTextures[DYNAMIC_TEXTURES_COUNT];
+    PixelFormat dynamicTexturesFormat[DYNAMIC_TEXTURES_COUNT];
     Texture* pinkTexture[2]; //TEXTURE_2D & TEXTURE_CUBE
 };
 }

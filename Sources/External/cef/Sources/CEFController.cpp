@@ -53,8 +53,6 @@ private:
     void DoUpdate();
 
     List<CefRefPtr<CefClient>> clients;
-    SigConnectionID appFinishedConnectionID = SigConnectionID();
-    SigConnectionID updateConnectionID = SigConnectionID();
     bool isInitialized = false;
     bool schemeRegistered = false;
 };
@@ -93,16 +91,16 @@ CEFControllerImpl::CEFControllerImpl()
 
     if (isInitialized && schemeRegistered)
     {
-        auto shutdown = [] { cefControllerGlobal = nullptr; };
-        auto update = [this](float32) { Update(); };
+        auto onShutdown = [] { cefControllerGlobal = nullptr; };
+        auto onUpdate = [this](float32) { Update(); };
 #if defined(__DAVAENGINE_COREV2__)
         Engine* e = Engine::Instance();
-        updateConnectionID = e->update.Connect(update);
-        appFinishedConnectionID = e->gameLoopStopped.Connect(shutdown);
+        e->update.Connect(this, onUpdate);
+        e->gameLoopStopped.Connect(this, onShutdown);
 #else
         Core* core = Core::Instance();
-        appFinishedConnectionID = core->systemAppFinished.Connect(shutdown);
-        updateConnectionID = core->updated.Connect(update);
+        core->systemAppFinished.Connect(this, onShutdown);
+        core->updated.Connect(this, onUpdate);
 #endif
     }
     else
@@ -120,12 +118,12 @@ CEFControllerImpl::~CEFControllerImpl()
         {
 #if defined(__DAVAENGINE_COREV2__)
             Engine* e = Engine::Instance();
-            e->update.Disconnect(updateConnectionID);
-            e->gameLoopStopped.Disconnect(appFinishedConnectionID);
+            e->update.Disconnect(this);
+            e->gameLoopStopped.Disconnect(this);
 #else
             Core* core = Core::Instance();
-            core->systemAppFinished.Disconnect(appFinishedConnectionID);
-            core->updated.Disconnect(updateConnectionID);
+            core->systemAppFinished.Disconnect(this);
+            core->updated.Disconnect(this);
 #endif
         }
 
