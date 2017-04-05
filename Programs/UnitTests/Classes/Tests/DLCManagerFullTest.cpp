@@ -29,13 +29,11 @@ struct FSMTest02
     DAVA::float32 waitSecondConnect = 3.0f;
     const DAVA::float32 timeout = 40.f;
     DAVA::DLCManager::Progress progressAfterInit;
-    DAVA::SigConnectionID onReqUpdate = 0;
 
     void Cleanup(DAVA::DLCManager& dlcManager)
     {
         using namespace DAVA;
-        dlcManager.requestUpdated.Disconnect(onReqUpdate);
-        onReqUpdate = 0;
+        dlcManager.requestUpdated.Disconnect(this);
         Logger::Info("%s Deinitialize()", __FUNCTION__);
         dlcManager.Deinitialize();
         Logger::Info("%s StopEmbeddedWebServer()", __FUNCTION__);
