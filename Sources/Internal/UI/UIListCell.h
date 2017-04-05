@@ -2,6 +2,7 @@
 #define __DAVAENGINE_UI_LIST_CELL_H__
 
 #include "UI/UIControl.h"
+#include "Reflection/Reflection.h"
 
 namespace DAVA
 {
@@ -14,6 +15,7 @@ namespace DAVA
 class UIListCell : public UIControl
 {
     friend class UIList;
+    DAVA_VIRTUAL_REFLECTION(UIListCell, UIControl);
 
 public:
     /**
@@ -56,11 +58,6 @@ private:
     String identifier;
 
     void* cellStore;
-
-public:
-    INTROSPECTION_EXTEND(UIListCell, UIControl,
-                         PROPERTY("identifier", "Cell identifier", GetIdentifier, SetIdentifier, I_SAVE | I_VIEW | I_EDIT)
-                         );
 };
 }
 
