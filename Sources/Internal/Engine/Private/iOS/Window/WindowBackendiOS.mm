@@ -27,8 +27,8 @@ WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
 WindowBackend::~WindowBackend()
 {
     PlatformCore* core = engineBackend->GetPlatformCore();
-    core->didBecomeResignActive.Disconnect(sigidAppBecomeOrResignActive);
-    core->didEnterForegroundBackground.Disconnect(sigidAppDidEnterForegroundOrBackground);
+    core->didBecomeResignActive.Disconnect(appBecomeOrResignActiveToken);
+    core->didEnterForegroundBackground.Disconnect(appDidEnterForegroundOrBackgroundToken);
 }
 
 void* WindowBackend::GetHandle() const
@@ -42,10 +42,8 @@ bool WindowBackend::Create()
     if (bridge->CreateWindow())
     {
         PlatformCore* core = engineBackend->GetPlatformCore();
-        sigidAppBecomeOrResignActive = core->didBecomeResignActive.Connect(bridge.get(),
-                                                                           &WindowNativeBridge::ApplicationDidBecomeOrResignActive);
-        sigidAppDidEnterForegroundOrBackground = core->didEnterForegroundBackground.Connect(bridge.get(),
-                                                                                            &WindowNativeBridge::ApplicationDidEnterForegroundOrBackground);
+        appBecomeOrResignActiveToken = core->didBecomeResignActive.Connect(bridge.get(), &WindowNativeBridge::ApplicationDidBecomeOrResignActive);
+        appDidEnterForegroundOrBackgroundToken = core->didEnterForegroundBackground.Connect(bridge.get(), &WindowNativeBridge::ApplicationDidEnterForegroundOrBackground);
         return true;
     }
     return false;
