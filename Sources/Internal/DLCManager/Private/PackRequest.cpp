@@ -90,7 +90,7 @@ Vector<uint32> PackRequest::GetDependencies() const
     if (packManagerImpl->IsInitialized())
     {
         const PackMetaData& pack_meta_data = packManagerImpl->GetMeta();
-        dependencyCache = pack_meta_data.GetDependencyPackIndexes(requestedPackName);
+        dependencyCache = pack_meta_data.GetPackDependencyIndexes(requestedPackName);
         if (dependencyCache.capacity() == 0)
         {
             dependencyCache.reserve(1); // just mark to know we already check it

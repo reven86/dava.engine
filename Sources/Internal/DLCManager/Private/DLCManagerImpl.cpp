@@ -947,7 +947,7 @@ bool DLCManagerImpl::IsPackDownloaded(const String& packName)
             }
         }
 
-        Vector<uint32> deps = meta->GetDependencyPackIndexes(packName);
+        Vector<uint32> deps = meta->GetPackDependencyIndexes(packName);
 
         for (uint32 dependencyPack : deps)
         {

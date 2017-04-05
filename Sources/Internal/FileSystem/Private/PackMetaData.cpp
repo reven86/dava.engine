@@ -20,7 +20,7 @@ PackMetaData::PackMetaData(const void* ptr, std::size_t size)
 void PackMetaData::CollectDependencies(uint32 packIndex, Children& out) const
 {
     const String& packName = GetPackInfo(packIndex).packName;
-    for (uint32 childPack : GetDependencyPackIndexes(packName))
+    for (uint32 childPack : GetPackDependencyIndexes(packName))
     {
         out.push_back(childPack);
         CollectDependencies(childPack, out);
@@ -97,7 +97,7 @@ uint32 PackMetaData::GetPackIndex(const String& requestedPackName) const
     DAVA_THROW(Exception, "no such pack name: " + requestedPackName);
 }
 
-Vector<uint32> PackMetaData::GetDependencyPackIndexes(const String& requestedPackName) const
+Vector<uint32> PackMetaData::GetPackDependencyIndexes(const String& requestedPackName) const
 {
     using namespace DAVA;
     Vector<uint32> requestIndexes;

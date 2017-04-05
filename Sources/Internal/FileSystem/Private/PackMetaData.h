@@ -21,7 +21,7 @@ public:
 
     uint32 GetPackIndex(const String& requestedPackName) const;
 
-    Vector<uint32> GetDependencyPackIndexes(const String& requestedPackName) const;
+    Vector<uint32> GetPackDependencyIndexes(const String& requestedPackName) const;
 
     Vector<uint32> GetFileIndexes(const String& requestedPackName) const;
 
