@@ -25,7 +25,7 @@ inline bool Token::IsEmpty() const
 
 inline Token::operator bool() const
 {
-    return IsEmpty();
+    return !IsEmpty();
 }
 
 inline bool Token::operator==(const Token& t) const
