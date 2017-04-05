@@ -65,7 +65,7 @@ vertex_out vp_main( vertex_in input )
     {
     
         float g = 1.45; //guardband extrusion limit
-        float depthExtrusion = 1000.0; //depth extrusion limit - for now just const, but it can be possibly computed on cpu as distance to landscape
+        float depthExtrusion = 200.0; //depth extrusion limit - for now just const, but it can be possibly computed on cpu as distance to landscape
                 
         //compute projected space vector
         float4 lightProj = mul(float4(lightVecView, 0.0), projMatrix);    
