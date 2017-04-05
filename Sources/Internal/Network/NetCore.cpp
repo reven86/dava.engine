@@ -84,7 +84,6 @@ void NetCore::NetThreadHandler()
 {
     loop = new IOLoop(true);
     loopCreatedEvent.Signal();
-    loopCreatedEvent.Reset();
     loop->Run();
     SafeDelete(loop);
 }
