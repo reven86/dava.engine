@@ -79,7 +79,7 @@ public:
 
             ColorPickerButton* button = new DAVA::TArc::ColorPickerButton(params, GetAccessor(), reflectedModel);
             button->SetObjectName("ColorPickerButton_value_readonly");
-            layout->AddWidget(button);
+            layout->AddControl(button);
         }
 
         {
@@ -91,7 +91,7 @@ public:
 
             ColorPickerButton* button = new DAVA::TArc::ColorPickerButton(params, GetAccessor(), reflectedModel);
             button->SetObjectName("ColorPickerButton_readOnlyValue");
-            layout->AddWidget(button);
+            layout->AddControl(button);
         }
 
         {
@@ -103,7 +103,7 @@ public:
 
             ColorPickerButton* button = new DAVA::TArc::ColorPickerButton(params, GetAccessor(), reflectedModel);
             button->SetObjectName("ColorPickerButton_writableValue");
-            layout->AddWidget(button);
+            layout->AddControl(button);
         }
 
         GetUI()->AddView(wndKey, DAVA::TArc::PanelKey("ColorPickerButtonSandbox", DAVA::TArc::CentralPanelInfo()), w);

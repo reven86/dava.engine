@@ -13,7 +13,7 @@
 #include "Render/RenderHelper.h"
 #include "Render/RenderCallbacks.h"
 
-#if defined(__DAVAENGINE_IPHONE__) 
+#if defined(__DAVAENGINE_IPHONE__)
 #include <CoreGraphics/CoreGraphics.h>
 #include <CoreFoundation/CoreFoundation.h>
 #elif defined(__DAVAENGINE_MACOS__)
@@ -95,7 +95,7 @@ bool CheckAndFixImageFormat(Vector<Image*>* images)
         return true;
     }
 
-#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__)
+#if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_WIN_UAP__)
     //we should decode all images for RE/QE
     if (ImageConvert::CanConvertFromTo(format, FORMAT_RGBA8888))
 #else
@@ -655,7 +655,7 @@ void Texture::FlushDataToRenderer(Vector<Image*>* images)
     {
         singleTextureSet = rhi::HTextureSet(rhi::InvalidHandle);
     }
-    
+
 #else
 
     handle = rhi::CreateTexture(descriptor);

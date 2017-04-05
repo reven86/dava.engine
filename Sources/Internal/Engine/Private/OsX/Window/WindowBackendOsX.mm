@@ -38,7 +38,7 @@ void* WindowBackend::GetHandle() const
 
 bool WindowBackend::Create(float32 width, float32 height)
 {
-    hideUnhideSignalId = engineBackend->GetPlatformCore()->didHideUnhide.Connect(bridge.get(), &WindowNativeBridge::ApplicationDidHideUnhide);
+    engineBackend->GetPlatformCore()->didHideUnhide.Connect(bridge.get(), &WindowNativeBridge::ApplicationDidHideUnhide);
 
     NSSize screenSize = [[NSScreen mainScreen] frame].size;
     float32 x = (screenSize.width - width) / 2.0f;
@@ -153,7 +153,7 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
 
 void WindowBackend::WindowWillClose()
 {
-    engineBackend->GetPlatformCore()->didHideUnhide.Disconnect(hideUnhideSignalId);
+    engineBackend->GetPlatformCore()->didHideUnhide.Disconnect(bridge.get());
 }
 
 } // namespace Private

@@ -99,3 +99,6 @@ Programs/support/total_commander_plugins/packer_wcx/.project
 Programs/support/total_commander_plugins/packer_wcx/.settings/language.settings.xml
 Programs/support/total_commander_plugins/packer_wcx/.settings/org.eclipse.cdt.managedbuilder.core.prefs
 *.iml
+Programs/UnitTests/android-studio/gradle/wrapper/
+Programs/UnitTests/android-studio/gradlew
+Programs/UnitTests/android-studio/gradlew.bat

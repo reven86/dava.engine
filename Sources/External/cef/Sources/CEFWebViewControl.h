@@ -112,7 +112,6 @@ private:
     CefRefPtr<CEFWebPageRender> webPageRender;
     String requestedUrl;
     bool pageLoaded = false;
-    SigConnectionID onWindowSizeChangedId;
 };
 
 } // namespace DAVA

@@ -5,7 +5,6 @@
 #if defined __DAVAENGINE_MACOS__ && !defined DISABLE_NATIVE_WEBVIEW
 
 #include "UI/IWebViewControl.h"
-#include "Functional/SignalBase.h"
 
 namespace DAVA
 {
@@ -58,15 +57,11 @@ private:
 #if defined(__DAVAENGINE_COREV2__)
     void OnWindowVisibilityChanged(Window* w, bool visible);
     void OnWindowDestroyed(Window* w);
-    size_t windowVisibilityChangedConnection = 0;
-    size_t windowDestroyedConnection = 0;
 #else
     void OnAppMinimizedRestored(bool minimized);
-    SigConnectionID appMinimizedRestoredConnectionId;
 #endif
 
 #if defined(__DAVAENGINE_STEAM__)
-    SigConnectionID overlayConnectionId = 0;
     bool overlayVisible = false;
     void OnSteamOverlayChanged(bool overlayActivated);
 #endif
