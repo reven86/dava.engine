@@ -2,6 +2,7 @@
 
 #include "OverdrawTest/OverdrawTestingScreen.h"
 #include "OverdrawTest/OverdrawTestConfig.h"
+#include "Render/PixelFormatDescriptor.h"
 
 namespace OverdrawPerformanceTester
 {
@@ -79,10 +80,12 @@ void OverdrawTest::LoadResources()
     screenRect.dy = static_cast<float32>(screenSize.dy);
     SetRect(screenRect);
 
-    ScopedPtr<UIButton> startButton(CreateButton(DAVA::Rect(5, 5, screenRect.dx, buttonHeight), L"Start"));
+    startButton = CreateButton(DAVA::Rect(5, 5, screenRect.dx, buttonHeight), L"Start");
     startButton->SetDebugDraw(true);
     startButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &OverdrawTest::OnStart));
     AddControl(startButton);
+    bool isFormatSupported = DAVA::PixelFormatDescriptor::GetPixelFormatDescriptor(OverdrawTestConfig::pixelFormat).isHardwareSupported;
+    startButton->SetVisibilityFlag(isFormatSupported);
 
     CreateLabel({ overdrawXOffset, overdrawYOffset - buttonHeight, buttonWidth * 3.0f, buttonHeight }, L"Overdraw screens count");
     overdrawCountLabel = new UIStaticText(DAVA::Rect(overdrawXOffset, overdrawYOffset, buttonWidth * 3.0f, buttonHeight));
@@ -121,6 +124,7 @@ void OverdrawTest::UnloadResources()
     ReleaseButtons(texturePixelFormatButtons);
     ReleaseButtons(overdrawButtons);
     ReleaseButtons(chartHeightButtons);
+    SafeRelease(startButton);
 
     SafeRelease(overdrawCountLabel);
     SafeRelease(chartHeightLabel);
@@ -179,6 +183,9 @@ void OverdrawTest::OnTextureFormatButtonClick(BaseObject* sender, void* data, vo
         {
             btn.first->SetDebugDrawColor(Color::Green);
             OverdrawTestConfig::pixelFormat = static_cast<DAVA::PixelFormat>(btn.second.data);
+
+            bool isFormatSupported = DAVA::PixelFormatDescriptor::GetPixelFormatDescriptor(OverdrawTestConfig::pixelFormat).isHardwareSupported;
+            startButton->SetVisibilityFlag(isFormatSupported);
         }
         else
             btn.first->SetDebugDrawColor(Color::Red);

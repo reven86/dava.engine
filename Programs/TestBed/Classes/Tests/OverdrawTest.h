@@ -43,6 +43,7 @@ private:
     UIStaticText* overdrawCountLabel = nullptr;
     UIStaticText* chartHeightLabel = nullptr;
     Font* font = nullptr;
+    UIButton* startButton = nullptr;
     OverdrawTestingScreen* testingScreen = nullptr;
 
     UnorderedMap<UIButton*, ButtonInfo> resolutionButtons;
