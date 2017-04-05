@@ -299,7 +299,7 @@ void LibraryWidget::ShowContextMenu(const QPoint& point)
     if (!fileInfo.isFile())
         return;
 
-    QMenu contextMenu(this);
+    QMenu contextMenu;
     QVariant fileInfoAsVariant = QVariant::fromValue<QFileInfo>(fileInfo);
 
     DAVA::FilePath pathname = fileInfo.absoluteFilePath().toStdString();

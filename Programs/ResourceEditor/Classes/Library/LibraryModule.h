@@ -2,10 +2,12 @@
 
 #include "Classes/Library/Private/ScenePreviewDialog.h"
 
-#include "TArc/Core/ClientModule.h"
-#include "TArc/Utils/QtConnections.h"
+#include <TArc/Core/ClientModule.h>
+#include <TArc/Utils/QtConnections.h>
 
-#include "Reflection/Reflection.h"
+#include <QtTools/Utils/QtDelayedExecutor.h>
+
+#include <Reflection/Reflection.h>
 
 namespace DAVA
 {
@@ -39,6 +41,7 @@ private:
     DAVA::RefPtr<ScenePreviewDialog> previewDialog;
     std::unique_ptr<DAVA::TArc::FieldBinder> fieldBinder;
     DAVA::TArc::QtConnections connections;
+    QtDelayedExecutor executor;
 
     DAVA_VIRTUAL_REFLECTION(LibraryModule, DAVA::TArc::ClientModule);
 };
