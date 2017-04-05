@@ -7,7 +7,7 @@
 using namespace DAVA;
 
 PrototypeNameProperty::PrototypeNameProperty(ControlNode* aNode, const PrototypeNameProperty* sourceProperty, eCloneType cloneType)
-    : ValueProperty("Prototype", VariantType::TYPE_STRING)
+    : ValueProperty("Prototype", Type::Instance<String>())
     , node(aNode) // weak
 {
 }
@@ -27,9 +27,9 @@ AbstractProperty::ePropertyType PrototypeNameProperty::GetType() const
     return TYPE_VARIANT;
 }
 
-DAVA::VariantType PrototypeNameProperty::GetValue() const
+DAVA::Any PrototypeNameProperty::GetValue() const
 {
-    return VariantType(GetPrototypeName());
+    return Any(GetPrototypeName());
 }
 
 bool PrototypeNameProperty::IsReadOnly() const
@@ -67,7 +67,7 @@ ControlNode* PrototypeNameProperty::GetControl() const
     return node;
 }
 
-void PrototypeNameProperty::ApplyValue(const DAVA::VariantType& value)
+void PrototypeNameProperty::ApplyValue(const DAVA::Any& value)
 {
     // do nothing
 }
