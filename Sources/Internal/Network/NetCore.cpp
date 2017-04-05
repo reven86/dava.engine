@@ -24,7 +24,7 @@ NetCore::NetCore(Engine* e)
     const KeyedArchive* options = e->GetOptions();
     useSeparateThread = options->GetBool("separate_net_thread", separateThreadDefaultValue);
 
-    sigUpdateId = e->update.Connect(this, &NetCore::Update);
+    e->update.Connect(this, &NetCore::Update);
 
     netEventsDispatcher.reset(new Dispatcher<Function<void()>>([](const Function<void()>& fn) { fn(); }));
     netEventsDispatcher->LinkToCurrentThread();
@@ -42,7 +42,7 @@ NetCore::NetCore(Engine* e)
 #if defined(__DAVAENGINE_IPHONE__)
     // iOS silently kills sockets when device is locked so recreate sockets
     // when application is resumed
-    sigResumedId = e->resumed.Connect(this, &NetCore::RestartAllControllers);
+    e->resumed.Connect(this, &NetCore::RestartAllControllers);
 #endif
 }
 #else
@@ -55,9 +55,9 @@ NetCore::NetCore()
 NetCore::~NetCore()
 {
 #if defined(__DAVAENGINE_COREV2__)
-    engine->update.Disconnect(sigUpdateId);
+    engine->update.Disconnect(this);
 #if defined(__DAVAENGINE_IPHONE__)
-    engine->resumed.Disconnect(sigResumedId);
+    engine->resumed.Disconnect(this);
 #endif
 #endif
 
