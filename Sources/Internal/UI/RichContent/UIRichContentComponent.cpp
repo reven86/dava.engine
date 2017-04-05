@@ -1,19 +1,21 @@
 #include "UIRichContentComponent.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {
-UIRichContentComponent::UIRichContentComponent()
+DAVA_VIRTUAL_REFLECTION_IMPL(UIRichContentComponent)
 {
+    ReflectionRegistrator<UIRichContentComponent>::Begin()
+    .Field("text", &UIRichContentComponent::GetUTF8Text, &UIRichContentComponent::SetUTF8Text)
+    .Field("baseClasses", &UIRichContentComponent::GetBaseClasses, &UIRichContentComponent::SetBaseClasses)
+    .Field("aliases", &UIRichContentComponent::GetAliasesAsString, &UIRichContentComponent::SetAliasesFromString)
+    .End();
 }
 
 UIRichContentComponent::UIRichContentComponent(const UIRichContentComponent& src)
     : text(src.text)
     , baseClasses(src.baseClasses)
     , modified(true)
-{
-}
-
-UIRichContentComponent::~UIRichContentComponent()
 {
 }
 

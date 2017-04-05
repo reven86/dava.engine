@@ -79,7 +79,7 @@ PropertiesTreeItemDelegate::PropertiesTreeItemDelegate(QObject* parent)
     propertyNameTypeItemDelegates[PropertyPath("*", "bg-contour")] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
     propertyNameTypeItemDelegates[PropertyPath("*", "text-font")] = new FontPropertyDelegate(this);
 
-    propertyNameTypeItemDelegates[PropertyPath("RichContent", "Aliases")] = new TablePropertyDelegate(QList<QString>({ "Alias", "Xml" }), this);
+    propertyNameTypeItemDelegates[PropertyPath("RichContent", "aliases")] = new TablePropertyDelegate(QList<QString>({ "Alias", "Xml" }), this);
     propertyNameTypeItemDelegates[PropertyPath("Sound", "*")] = new FMODEventPropertyDelegate(this);
 }
 

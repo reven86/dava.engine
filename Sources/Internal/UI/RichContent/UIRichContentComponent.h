@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Reflection/Reflection.h"
 #include "UI/Components/UIComponent.h"
 #include "UI/RichContent/UIRichAliasMap.h"
 
@@ -9,8 +10,10 @@ class UIControl;
 
 class UIRichContentComponent : public UIBaseComponent<UIComponent::RICH_CONTENT_COMPONENT>
 {
+    DAVA_VIRTUAL_REFLECTION(UIRichContentComponent, UIBaseComponent<UIComponent::RICH_CONTENT_COMPONENT>);
+
 public:
-    UIRichContentComponent();
+    UIRichContentComponent() = default;
     UIRichContentComponent(const UIRichContentComponent& src);
 
     UIRichContentComponent* Clone() const override;
@@ -28,7 +31,7 @@ public:
     bool IsModified() const;
 
 protected:
-    virtual ~UIRichContentComponent();
+    ~UIRichContentComponent() override = default;
 
 private:
     UIRichContentComponent& operator=(const UIRichContentComponent&) = delete;
@@ -40,12 +43,6 @@ private:
     String baseClasses;
     UIRichAliasMap aliases;
     bool modified = false;
-
-public:
-    INTROSPECTION_EXTEND(UIRichContentComponent, UIComponent,
-                         PROPERTY("text", "Text", GetUTF8Text, SetUTF8Text, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("baseClasses", "Base Classes", GetBaseClasses, SetBaseClasses, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("aliases", "Aliases", GetAliasesAsString, SetAliasesFromString, I_SAVE | I_VIEW | I_EDIT))
 };
 
 inline const String& UIRichContentComponent::GetUTF8Text() const
