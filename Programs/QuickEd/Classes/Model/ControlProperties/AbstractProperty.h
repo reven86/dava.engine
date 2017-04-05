@@ -2,11 +2,14 @@
 #define __UI_EDITOR_ABSTRACT_PROPERTY_H__
 
 #include "Base/BaseObject.h"
+#include "Base/Type.h"
 
 class PropertyVisitor;
 
 class AbstractProperty : public DAVA::BaseObject
 {
+    DAVA_VIRTUAL_REFLECTION(AbstractProperty, DAVA::BaseObject);
+
 public:
     enum ePropertyType
     {
@@ -67,11 +70,11 @@ public:
 
     virtual bool IsReadOnly() const;
 
-    virtual DAVA::VariantType::eVariantType GetValueType() const;
-    virtual DAVA::VariantType GetValue() const;
-    virtual void SetValue(const DAVA::VariantType& newValue);
-    virtual DAVA::VariantType GetDefaultValue() const;
-    virtual void SetDefaultValue(const DAVA::VariantType& newValue);
+    virtual const DAVA::Type* GetValueType() const = 0;
+    virtual DAVA::Any GetValue() const;
+    virtual void SetValue(const DAVA::Any& newValue);
+    virtual DAVA::Any GetDefaultValue() const;
+    virtual void SetDefaultValue(const DAVA::Any& newValue);
     virtual const EnumMap* GetEnumMap() const;
     virtual void ResetValue();
     virtual bool IsOverriddenLocally() const;
@@ -84,11 +87,6 @@ public:
 
 private:
     AbstractProperty* parent = nullptr;
-
-public:
-    INTROSPECTION_EXTEND(AbstractProperty, DAVA::BaseObject,
-                         nullptr
-                         );
 };
 
 

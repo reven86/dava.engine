@@ -1,6 +1,13 @@
 #include "AbstractProperty.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 using namespace DAVA;
+
+DAVA_VIRTUAL_REFLECTION_IMPL(AbstractProperty)
+{
+    ReflectionRegistrator<AbstractProperty>::Begin()
+    .End();
+}
 
 AbstractProperty::AbstractProperty()
     : parent(NULL)
@@ -71,34 +78,29 @@ bool AbstractProperty::IsReadOnly() const
     return parent ? parent->IsReadOnly() : true;
 }
 
-VariantType::eVariantType AbstractProperty::GetValueType() const
+Any AbstractProperty::GetValue() const
 {
-    return VariantType::TYPE_NONE;
+    return Any();
 }
 
-VariantType AbstractProperty::GetValue() const
-{
-    return VariantType();
-}
-
-void AbstractProperty::SetValue(const VariantType& /*newValue*/)
+void AbstractProperty::SetValue(const Any& /*newValue*/)
 {
     // Do nothing by default
 }
 
-VariantType AbstractProperty::GetDefaultValue() const
+Any AbstractProperty::GetDefaultValue() const
 {
-    return VariantType();
+    return Any();
 }
 
-void AbstractProperty::SetDefaultValue(const VariantType& newValue)
+void AbstractProperty::SetDefaultValue(const Any& newValue)
 {
     // Do nothing by default
 }
 
 const EnumMap* AbstractProperty::GetEnumMap() const
 {
-    return NULL;
+    return nullptr;
 }
 
 void AbstractProperty::ResetValue()
@@ -140,7 +142,8 @@ AbstractProperty* AbstractProperty::FindPropertyByName(const String& name)
     }
     for (DAVA::uint32 index = 0, count = GetCount(); index < count; ++index)
     {
-        AbstractProperty* property = GetProperty(index)->FindPropertyByName(name);
+        AbstractProperty* child = GetProperty(index);
+        AbstractProperty* property = child->FindPropertyByName(name);
         if (property != nullptr)
         {
             return property;

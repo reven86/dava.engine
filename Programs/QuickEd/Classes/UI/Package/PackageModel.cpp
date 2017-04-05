@@ -69,9 +69,9 @@ void SetAbsoulutePosToControlNode(PackageNode* package, ControlNode* node, Contr
     }
     relativePos = ::Rotate(relativePos, -angle);
     RootProperty* rootProperty = node->GetRootProperty();
-    AbstractProperty* positionProperty = rootProperty->FindPropertyByName("Position");
+    AbstractProperty* positionProperty = rootProperty->FindPropertyByName("position");
     DVASSERT(nullptr != positionProperty);
-    package->SetControlProperty(node, positionProperty, VariantType(relativePos));
+    package->SetControlProperty(node, positionProperty, relativePos);
 }
 } //PackageModel_local
 
@@ -329,7 +329,7 @@ bool PackageModel::setData(const QModelIndex& index, const QVariant& value, int 
             DAVA::TArc::DataContext* activeContext = accessor->GetActiveContext();
             DVASSERT(activeContext != nullptr);
             DocumentData* documentData = activeContext->GetData<DocumentData>();
-            documentData->ExecCommand<ChangePropertyValueCommand>(controlNode, prop, DAVA::VariantType(newName));
+            documentData->ExecCommand<ChangePropertyValueCommand>(controlNode, prop, Any(newName));
             return true;
         }
     }

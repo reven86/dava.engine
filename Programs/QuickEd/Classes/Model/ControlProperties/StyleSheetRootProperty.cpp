@@ -84,6 +84,11 @@ const DAVA::String& StyleSheetRootProperty::GetName() const
     return rootName;
 }
 
+const Type* StyleSheetRootProperty::GetValueType() const
+{
+    return nullptr;
+}
+
 AbstractProperty::ePropertyType StyleSheetRootProperty::GetType() const
 {
     return TYPE_HEADER;
@@ -107,7 +112,7 @@ void StyleSheetRootProperty::RemoveListener(PropertyListener* listener)
     }
 }
 
-void StyleSheetRootProperty::SetProperty(AbstractProperty* property, const DAVA::VariantType& newValue)
+void StyleSheetRootProperty::SetProperty(AbstractProperty* property, const DAVA::Any& newValue)
 {
     property->SetValue(newValue);
     UpdateStyleSheetPropertyTable();
@@ -255,7 +260,7 @@ String StyleSheetRootProperty::GetSelectorsAsString() const
     {
         if (i > 0)
             stream << ", ";
-        stream << selectors->GetProperty(i)->GetValue().AsString();
+        stream << selectors->GetProperty(i)->GetValue().Cast<String>();
     }
     return stream.str();
 }

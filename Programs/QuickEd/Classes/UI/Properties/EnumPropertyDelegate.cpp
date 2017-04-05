@@ -32,7 +32,7 @@ QWidget* EnumPropertyDelegate::createEditor(QWidget* parent, const PropertiesCon
         if (enumMap->GetValue(i, value))
         {
             QVariant variantValue;
-            variantValue.setValue<DAVA::VariantType>(DAVA::VariantType(value));
+            variantValue.setValue<DAVA::Any>(DAVA::Any(value));
             comboBox->addItem(QString(enumMap->ToString(value)), variantValue);
         }
     }
