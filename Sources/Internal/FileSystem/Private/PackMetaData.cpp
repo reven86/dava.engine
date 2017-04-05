@@ -93,7 +93,7 @@ uint32 PackMetaData::GetPackIndex(const String& requestedPackName) const
     {
         return it->second;
     }
-    DVASSERT(false && "no such pack name");
+    DVASSERT(false, "no such pack name");
     DAVA_THROW(Exception, "no such pack name: " + requestedPackName);
 }
 
@@ -154,8 +154,6 @@ Vector<uint32> PackMetaData::GetFileIndexes(const String& requestedPackName) con
                 }
             }
         }
-
-        return result;
     }
 
     return result;
