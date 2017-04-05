@@ -52,9 +52,7 @@ public:
 
     void PutClass(const String& clazz)
     {
-        String compositeClass;
-        Merge(classesStack, ' ', compositeClass);
-        compositeClass += ' ' + clazz;
+        String compositeClass = GetClass() + " " + clazz;
         classesStack.push_back(compositeClass);
     }
 
@@ -93,7 +91,6 @@ public:
 
     void OnElementStarted(const String& elementName, const String& namespaceURI, const String& qualifedName, const Map<String, String>& attributes) override
     {
-        //Logger::Debug("OnElementStarted: '%s', '%s', '%s', %s", elementName.c_str(), namespaceURI.c_str(), qualifedName.c_str(), PrintMap(attributes).c_str());
         if (aliases.HasAlias(elementName))
         {
             const UIRichAliasMap::Alias& alias = aliases.GetAlias(elementName);
@@ -107,7 +104,6 @@ public:
 
     void OnElementEnded(const String& elementName, const String& namespaceURI, const String& qualifedName) override
     {
-        //Logger::Debug("OnElementEnded: '%s', '%s', '%s'", elementName.c_str(), namespaceURI.c_str(), qualifedName.c_str());
         if (aliases.HasAlias(elementName))
         {
             const UIRichAliasMap::Alias& alias = aliases.GetAlias(elementName);
@@ -121,7 +117,6 @@ public:
 
     void OnFoundCharacters(const String& chars) override
     {
-        //Logger::Debug("OnFoundCharacters: '%s'", chars.c_str());
         ProcessText(chars);
     }
 
@@ -142,13 +137,24 @@ public:
         }
         else if (tag == "br")
         {
-            textMode = false;
             needLineBreak = true;
+        }
+        else if (tag == "ul")
+        {
+            needLineBreak = true;
+        }
+        else if (tag == "li")
+        {
+            needLineBreak = true;
+
+            UIStaticText* ctrl = new UIStaticText();
+            PrepareControl(ctrl);
+            ctrl->SetUtf8Text("*");
+            ctrl->SetForceBiDiSupportEnabled(true);
+            controls.emplace_back(ctrl);
         }
         else if (tag == "img")
         {
-            textMode = false;
-
             String src;
             if (GetAttribute(attributes, "src", src))
             {
@@ -161,16 +167,19 @@ public:
         }
         else if (tag == "object")
         {
-            textMode = false;
+            // TODO: Add custom control
         }
     }
 
     void ProcessTagEnd(const String& tag)
     {
-        textMode = true;
         PopClass();
 
         if (tag == "p")
+        {
+            needLineBreak = true;
+        }
+        else if (tag == "ul")
         {
             needLineBreak = true;
         }
@@ -178,19 +187,16 @@ public:
 
     void ProcessText(const String& text)
     {
-        if (textMode)
+        Vector<String> tokens;
+        Split(text, " \n", tokens);
+        for (auto token : tokens)
         {
-            Vector<String> tokens;
-            Split(text, " \n", tokens);
-            for (auto token : tokens)
-            {
-                isRtl = bidiHelper.IsRtlUTF8String(token);
-                UIStaticText* ctrl = new UIStaticText();
-                PrepareControl(ctrl);
-                ctrl->SetUtf8Text(token);
-                ctrl->SetForceBiDiSupportEnabled(true);
-                controls.emplace_back(ctrl);
-            }
+            isRtl = bidiHelper.IsRtlUTF8String(token);
+            UIStaticText* ctrl = new UIStaticText();
+            PrepareControl(ctrl);
+            ctrl->SetUtf8Text(token);
+            ctrl->SetForceBiDiSupportEnabled(true);
+            controls.emplace_back(ctrl);
         }
     }
 
@@ -235,7 +241,7 @@ void UIRichContentSystem::RegisterControl(UIControl* control)
     UIRichContentComponent* component = control->GetComponent<UIRichContentComponent>();
     if (component)
     {
-        links.push_back(Link(component));
+        links.emplace_back(component);
     }
 }
 
@@ -244,6 +250,11 @@ void UIRichContentSystem::UnregisterControl(UIControl* control)
     UIRichContentComponent* component = control->GetComponent<UIRichContentComponent>();
     if (component)
     {
+        auto findIt = std::find_if(links.begin(), links.end(), [&component](const Link& l) {
+            return l.component == component;
+        });
+        DVASSERT(findIt != links.end());
+        findIt->component = nullptr; // mark link for delete
     }
 }
 
@@ -252,7 +263,7 @@ void UIRichContentSystem::RegisterComponent(UIControl* control, UIComponent* com
     if (component->GetType() == UIRichContentComponent::C_TYPE)
     {
         UIRichContentComponent* rich = static_cast<UIRichContentComponent*>(component);
-        links.push_back(Link(rich));
+        links.emplace_back(rich);
     }
 }
 
@@ -260,6 +271,11 @@ void UIRichContentSystem::UnregisterComponent(UIControl* control, UIComponent* c
 {
     if (component->GetType() == UIRichContentComponent::C_TYPE)
     {
+        auto findIt = std::find_if(links.begin(), links.end(), [&component](const Link& l) {
+            return l.component == component;
+        });
+        DVASSERT(findIt != links.end());
+        findIt->component = nullptr; // mark link for delete
     }
 }
 
@@ -273,8 +289,19 @@ void UIRichContentSystem::OnControlInvisible(UIControl* control)
 
 void UIRichContentSystem::Process(float32 elapsedTime)
 {
+    // Remove empty links
+    if (!links.empty())
+    {
+        links.erase(std::remove_if(links.begin(), links.end(), [](const Link& l) {
+                        return l.component == nullptr;
+                    }),
+                    links.end());
+    }
+
+    // Process links
     for (Link& l : links)
     {
+        DVASSERT(l.component);
         if (l.component->IsModified())
         {
             l.component->ResetModify();
@@ -286,7 +313,7 @@ void UIRichContentSystem::Process(float32 elapsedTime)
             builder.SetTopClass(l.component->GetBaseClasses());
             builder.SetAliases(l.component->GetAliases());
             // builder.SetContext(root->GetPackageContext()); // TODO: need it?
-            if (builder.Build("<root>" + l.component->GetUTF8Text() + "</root>"))
+            if (builder.Build("<span>" + l.component->GetUTF8Text() + "</span>"))
             {
                 for (const RefPtr<UIControl>& ctrl : builder.GetControls())
                 {

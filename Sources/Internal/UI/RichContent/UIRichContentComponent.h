@@ -27,6 +27,9 @@ public:
     void SetAliases(const UIRichAliasMap& aliases);
     const UIRichAliasMap& GetAliases() const;
 
+    void SetAliasesFromString(const String& aliases);
+    String GetAliasesAsString() const;
+
     void ResetModify();
     bool IsModified() const;
 
@@ -35,9 +38,6 @@ protected:
 
 private:
     UIRichContentComponent& operator=(const UIRichContentComponent&) = delete;
-
-    void SetAliasesFromString(const String& aliases);
-    String GetAliasesAsString() const;
 
     String text;
     String baseClasses;

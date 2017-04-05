@@ -75,6 +75,11 @@ const UIRichAliasMap::Alias& UIRichAliasMap::GetAlias(const String& alias) const
     return aliases.at(alias);
 }
 
+uint32 UIRichAliasMap::Count() const
+{
+    return static_cast<uint32>(aliases.size());
+}
+
 void UIRichAliasMap::RemoveAlias(const String& alias)
 {
     aliases.erase(alias);

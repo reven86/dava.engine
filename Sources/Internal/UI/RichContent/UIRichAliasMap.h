@@ -22,6 +22,7 @@ public:
     void PutAliasFromXml(const String& alias, const String& xmlSrc);
     bool HasAlias(const String& alias) const;
     const Alias& GetAlias(const String& alias) const;
+    uint32 Count() const;
     void RemoveAlias(const String& alias);
     void RemoveAll();
 
