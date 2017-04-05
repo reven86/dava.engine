@@ -165,14 +165,6 @@
     <number>2</number>
    </attribute>
   </widget>
-  <widget class="FileSystemDockWidget" name="fileSystemDockWidget">
-   <property name="windowTitle">
-    <string>File System</string>
-   </property>
-   <attribute name="dockWidgetArea">
-    <number>1</number>
-   </attribute>
-  </widget>
   <widget class="PackageWidget" name="packageWidget">
    <property name="allowedAreas">
     <set>Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea</set>
@@ -308,12 +300,6 @@
    <class>PropertiesWidget</class>
    <extends>QDockWidget</extends>
    <header>UI/Properties/PropertiesWidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>FileSystemDockWidget</class>
-   <extends>QDockWidget</extends>
-   <header>UI/FileSystemView/FileSystemDockWidget.h</header>
    <container>1</container>
   </customwidget>
   <customwidget>

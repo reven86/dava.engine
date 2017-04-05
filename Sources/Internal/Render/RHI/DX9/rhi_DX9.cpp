@@ -281,6 +281,8 @@ void dx9_EnumerateAdapters(DAVA::Vector<AdapterInfo>& adapters)
             }
             else
             {
+                DAVA::Logger::Error("[RHI-D3D9] GetDeviceCaps with D3DDEVTYPE_HAL failed for %s with error: %s", dx9_AdapterInfo(adapter.info), D3D9ErrorText(hr));
+
                 hr = _D3D9->GetDeviceCaps(i, D3DDEVTYPE_REF, &adapter.caps);
                 if (SUCCEEDED(hr))
                 {
@@ -387,6 +389,12 @@ void dx9_InitContext()
         // TODO: check z-buf formats and create most suitable
 
         HRESULT hr = _D3D9->CreateDevice(_D3D9_Adapter, D3DDEVTYPE_HAL, wnd, vertex_processing, &_DX9_PresentParam, &_D3D9_Device);
+        if (FAILED(hr))
+        {
+            //try second time, cause CreateDevice can change present params struct to valid values
+            hr = _D3D9->CreateDevice(_D3D9_Adapter, D3DDEVTYPE_HAL, wnd, vertex_processing, &_DX9_PresentParam, &_D3D9_Device);
+        }
+
         if (SUCCEEDED(hr))
         {
             Memcpy(MutableDeviceCaps::Get().deviceDescription, adapter.info.Description,

@@ -1,14 +1,9 @@
 #include "PackageModel.h"
 
-#include <QIcon>
-#include <QAction>
-#include <QUrl>
+#include "Modules/DocumentsModule/DocumentData.h"
 
-#include "DAVAEngine.h"
-#include "Base/ObjectFactory.h"
-
-#include "UI/IconHelper.h"
 #include "UI/QtModelPackageCommandExecutor.h"
+#include "UI/IconHelper.h"
 #include "Utils/QtDavaConvertion.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/ControlNode.h"
@@ -24,9 +19,22 @@
 #include "Model/ControlProperties/PrototypeNameProperty.h"
 #include "Model/ControlProperties/VisibleValueProperty.h"
 #include "Model/YamlPackageSerializer.h"
-#include "QtTools/Utils/Themes/Themes.h"
+
+#include "QECommands/ChangePropertyValueCommand.h"
 
 #include "PackageMimeData.h"
+
+#include <TArc/Core/ContextAccessor.h>
+#include <TArc/DataProcessing/DataContext.h>
+
+#include <QtTools/Utils/Themes/Themes.h>
+
+#include <Base/ObjectFactory.h>
+#include <UI/UIControl.h>
+
+#include <QIcon>
+#include <QAction>
+#include <QUrl>
 
 using namespace DAVA;
 
@@ -61,9 +69,9 @@ void SetAbsoulutePosToControlNode(PackageNode* package, ControlNode* node, Contr
     }
     relativePos = ::Rotate(relativePos, -angle);
     RootProperty* rootProperty = node->GetRootProperty();
-    AbstractProperty* positionProperty = rootProperty->FindPropertyByName("Position");
+    AbstractProperty* positionProperty = rootProperty->FindPropertyByName("position");
     DVASSERT(nullptr != positionProperty);
-    package->SetControlProperty(node, positionProperty, VariantType(relativePos));
+    package->SetControlProperty(node, positionProperty, relativePos);
 }
 } //PackageModel_local
 
@@ -74,7 +82,12 @@ PackageModel::PackageModel(QObject* parent)
 
 PackageModel::~PackageModel() = default;
 
-void PackageModel::Reset(PackageNode* package_, QtModelPackageCommandExecutor* executor_)
+void PackageModel::SetAccessor(DAVA::TArc::ContextAccessor* accessor_)
+{
+    accessor = accessor_;
+}
+
+void PackageModel::Reset(PackageNode* package_)
 {
     beginResetModel();
     if (nullptr != package)
@@ -82,7 +95,6 @@ void PackageModel::Reset(PackageNode* package_, QtModelPackageCommandExecutor* e
         package->RemoveListener(this);
     }
     package = package_;
-    commandExecutor = executor_;
     if (nullptr != package)
     {
         package->AddListener(this);
@@ -310,16 +322,15 @@ bool PackageModel::setData(const QModelIndex& index, const QVariant& value, int 
     }
     if (role == Qt::EditRole)
     {
-        DVASSERT(nullptr != commandExecutor);
-        if (nullptr != commandExecutor)
+        auto prop = controlNode->GetRootProperty()->GetNameProperty();
+        const auto& newName = value.toString().toStdString();
+        if (newName != node->GetName())
         {
-            auto prop = controlNode->GetRootProperty()->GetNameProperty();
-            const auto& newName = value.toString().toStdString();
-            if (newName != node->GetName())
-            {
-                commandExecutor->ChangeProperty(controlNode, prop, DAVA::VariantType(newName));
-                return true;
-            }
+            DAVA::TArc::DataContext* activeContext = accessor->GetActiveContext();
+            DVASSERT(activeContext != nullptr);
+            DocumentData* documentData = activeContext->GetData<DocumentData>();
+            documentData->ExecCommand<ChangePropertyValueCommand>(controlNode, prop, Any(newName));
+            return true;
         }
     }
     return false;
@@ -440,10 +451,12 @@ bool PackageModel::dropMimeData(const QMimeData* data, Qt::DropAction action, in
 
 void PackageModel::OnDropMimeData(const QMimeData* data, Qt::DropAction action, PackageBaseNode* destNode, uint32 destIndex, const DAVA::Vector2* pos)
 {
-    DVASSERT(nullptr != commandExecutor && nullptr != package);
+    DVASSERT(nullptr != package);
 
     ControlsContainerNode* destControlContainer = dynamic_cast<ControlsContainerNode*>(destNode);
     StyleSheetsNode* destStylesContainer = dynamic_cast<StyleSheetsNode*>(destNode);
+
+    QtModelPackageCommandExecutor executor(accessor);
 
     if (destControlContainer && data->hasFormat(PackageMimeData::MIME_TYPE))
     {
@@ -456,13 +469,13 @@ void PackageModel::OnDropMimeData(const QMimeData* data, Qt::DropAction action, 
         switch (action)
         {
         case Qt::CopyAction:
-            nodes = commandExecutor->CopyControls(srcControls, destControlContainer, destIndex);
+            nodes = executor.CopyControls(srcControls, destControlContainer, destIndex);
             break;
         case Qt::MoveAction:
-            nodes = commandExecutor->MoveControls(srcControls, destControlContainer, destIndex);
+            nodes = executor.MoveControls(srcControls, destControlContainer, destIndex);
             break;
         case Qt::LinkAction:
-            nodes = commandExecutor->InsertInstances(srcControls, destControlContainer, destIndex);
+            nodes = executor.InsertInstances(srcControls, destControlContainer, destIndex);
             break;
         default:
             DVASSERT(false && "unrecognised action!");
@@ -490,10 +503,10 @@ void PackageModel::OnDropMimeData(const QMimeData* data, Qt::DropAction action, 
         switch (action)
         {
         case Qt::CopyAction:
-            commandExecutor->CopyStyles(srcStyles, destStylesContainer, destIndex);
+            executor.CopyStyles(srcStyles, destStylesContainer, destIndex);
             break;
         case Qt::MoveAction:
-            commandExecutor->MoveStyles(srcStyles, destStylesContainer, destIndex);
+            executor.MoveStyles(srcStyles, destStylesContainer, destIndex);
             break;
         default:
             DVASSERT(false && "unrecognised action!");
@@ -513,13 +526,13 @@ void PackageModel::OnDropMimeData(const QMimeData* data, Qt::DropAction action, 
         }
         if (!packages.empty())
         {
-            commandExecutor->AddImportedPackagesIntoPackage(packages, package.Get());
+            executor.AddImportedPackagesIntoPackage(packages, package.Get());
         }
     }
     else if (destNode && data->hasFormat("text/plain") && data->hasText())
     {
         String string = data->text().toStdString();
-        auto nodes = commandExecutor->Paste(package.Get(), destNode, destIndex, string);
+        auto nodes = executor.Paste(package.Get(), destNode, destIndex, string);
         if (pos != nullptr && destNode != package->GetPackageControlsNode())
         {
             auto destControl = dynamic_cast<ControlNode*>(destNode);

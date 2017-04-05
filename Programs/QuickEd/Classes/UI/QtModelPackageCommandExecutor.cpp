@@ -71,13 +71,12 @@ String FormatNodeNames(const DAVA::Vector<T*>& nodes)
 }
 }
 
-QtModelPackageCommandExecutor::QtModelPackageCommandExecutor(DAVA::TArc::ContextAccessor* accessor_, DAVA::TArc::DataContext::ContextID contextId_)
+QtModelPackageCommandExecutor::QtModelPackageCommandExecutor(DAVA::TArc::ContextAccessor* accessor_)
     : accessor(accessor_)
-    , contextId(contextId_)
 {
 }
 
-void QtModelPackageCommandExecutor::AddImportedPackagesIntoPackage(const DAVA::Vector<DAVA::FilePath> packagePaths, PackageNode* package)
+void QtModelPackageCommandExecutor::AddImportedPackagesIntoPackage(const DAVA::Vector<DAVA::FilePath> packagePaths, const PackageNode* package)
 {
     Vector<PackageNode*> importedPackages;
     for (const FilePath& path : packagePaths)
@@ -112,7 +111,7 @@ void QtModelPackageCommandExecutor::AddImportedPackagesIntoPackage(const DAVA::V
     }
 }
 
-void QtModelPackageCommandExecutor::RemoveImportedPackagesFromPackage(const DAVA::Vector<PackageNode*>& importedPackages, PackageNode* package)
+void QtModelPackageCommandExecutor::RemoveImportedPackagesFromPackage(const DAVA::Vector<PackageNode*>& importedPackages, const PackageNode* package)
 {
     DAVA::Vector<PackageNode*> checkedPackages;
     for (PackageNode* testPackage : importedPackages)
@@ -143,7 +142,7 @@ void QtModelPackageCommandExecutor::RemoveImportedPackagesFromPackage(const DAVA
     }
 }
 
-void QtModelPackageCommandExecutor::ChangeProperty(ControlNode* node, AbstractProperty* property, const VariantType& value)
+void QtModelPackageCommandExecutor::ChangeProperty(ControlNode* node, AbstractProperty* property, const Any& value)
 {
     if (!property->IsReadOnly())
     {
@@ -157,7 +156,7 @@ void QtModelPackageCommandExecutor::ResetProperty(ControlNode* node, AbstractPro
     if (!property->IsReadOnly())
     {
         DocumentData* documentData = GetDocumentData();
-        documentData->ExecCommand<ChangePropertyValueCommand>(node, property, VariantType());
+        documentData->ExecCommand<ChangePropertyValueCommand>(node, property, Any());
     }
 }
 
@@ -190,7 +189,7 @@ void QtModelPackageCommandExecutor::RemoveComponent(ControlNode* node, uint32 co
     }
 }
 
-void QtModelPackageCommandExecutor::ChangeProperty(StyleSheetNode* node, AbstractProperty* property, const DAVA::VariantType& value)
+void QtModelPackageCommandExecutor::ChangeProperty(StyleSheetNode* node, AbstractProperty* property, const DAVA::Any& value)
 {
     if (!property->IsReadOnly())
     {
@@ -617,7 +616,7 @@ Vector<PackageBaseNode*> QtModelPackageCommandExecutor::Paste(PackageNode* root,
     return createdNodes;
 }
 
-void QtModelPackageCommandExecutor::AddImportedPackageIntoPackageImpl(PackageNode* importedPackage, PackageNode* package)
+void QtModelPackageCommandExecutor::AddImportedPackageIntoPackageImpl(PackageNode* importedPackage, const PackageNode* package)
 {
     DocumentData* data = GetDocumentData();
     data->ExecCommand<InsertImportedPackageCommand>(importedPackage, package->GetImportedPackagesNode()->GetCount());
@@ -793,7 +792,7 @@ bool QtModelPackageCommandExecutor::IsControlNodesHasSameParentControlNode(const
 DocumentData* QtModelPackageCommandExecutor::GetDocumentData() const
 {
     using namespace DAVA::TArc;
-    DataContext* context = accessor->GetContext(contextId);
+    DataContext* context = accessor->GetActiveContext();
     DVASSERT(context != nullptr);
     DocumentData* data = context->GetData<DocumentData>();
     DVASSERT(data != nullptr);

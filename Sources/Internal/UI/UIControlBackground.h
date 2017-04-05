@@ -28,6 +28,8 @@ class NMaterial;
 
 class UIControlBackground : public UIBaseComponent<UIComponent::BACKGROUND_COMPONENT>
 {
+    DAVA_VIRTUAL_REFLECTION(UIControlBackground, UIBaseComponent<UIComponent::BACKGROUND_COMPONENT>);
+
 public:
     /**
      \enum Control draw types.
@@ -289,14 +291,7 @@ protected:
 public:
     // for introspection
 
-    int32 GetBgDrawType() const;
-    void SetBgDrawType(int32 type);
     FilePath GetBgSpritePath() const;
-    int32 GetBgColorInherit() const;
-    void SetBgColorInherit(int32 type);
-    int32 GetBgPerPixelAccuracy() const;
-    void SetBgPerPixelAccuracy(int32 type);
-
     FilePath GetMaskSpritePath() const;
     void SetMaskSpriteFromPath(const FilePath& path);
     FilePath GetDetailSpritePath() const;
@@ -306,25 +301,8 @@ public:
     FilePath GetContourSpritePath() const;
     void SetContourSpriteFromPath(const FilePath& path);
 
-    int32 GetGradientBlendMode() const;
-    void SetGradientBlendMode(int32 mode);
-
-    INTROSPECTION_EXTEND(UIControlBackground, UIBaseComponent<UIComponent::BACKGROUND_COMPONENT>,
-                         PROPERTY("drawType", InspDesc("Draw Type", GlobalEnumMap<eDrawType>::Instance()), GetBgDrawType, SetBgDrawType, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("sprite", "Sprite", GetBgSpritePath, SetSprite, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("frame", "Sprite Frame", GetFrame, SetFrame, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("mask", "Mask", GetMaskSpritePath, SetMaskSpriteFromPath, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("detail", "Detail", GetDetailSpritePath, SetDetailSpriteFromPath, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("gradient", "Gradient", GetGradientSpritePath, SetGradientSpriteFromPath, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("contour", "Contour", GetContourSpritePath, SetContourSpriteFromPath, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("spriteModification", InspDesc("Sprite Modification", GlobalEnumMap<eSpriteModification>::Instance(), InspDesc::T_FLAGS), GetModification, SetModification, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("gradientMode", InspDesc("Gradient Mode", GlobalEnumMap<eGradientBlendMode>::Instance()), GetGradientBlendMode, SetGradientBlendMode, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("color", "Color", GetColor, SetColor, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("colorInherit", InspDesc("Color Inherit", GlobalEnumMap<eColorInheritType>::Instance()), GetBgColorInherit, SetBgColorInherit, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("perPixelAccuracy", InspDesc("Per Pixel Accuracy", GlobalEnumMap<ePerPixelAccuracyType>::Instance()), GetBgPerPixelAccuracy, SetBgPerPixelAccuracy, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("align", InspDesc("Align", GlobalEnumMap<eAlign>::Instance(), InspDesc::T_FLAGS), GetAlign, SetAlign, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("leftRightStretchCap", "Left-Right Stretch Cap", GetLeftRightStretchCap, SetLeftRightStretchCap, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("topBottomStretchCap", "Top-Bottom Stretch Cap", GetTopBottomStretchCap, SetTopBottomStretchCap, I_SAVE | I_VIEW | I_EDIT));
+    eGradientBlendMode GetGradientBlendMode() const;
+    void SetGradientBlendMode(eGradientBlendMode mode);
 };
 
 // Implementation
@@ -336,16 +314,6 @@ inline void UIControlBackground::SetColor(const Color& _color)
 inline const Color& UIControlBackground::GetColor() const
 {
     return color;
-}
-
-inline int32 UIControlBackground::GetBgDrawType() const
-{
-    return GetDrawType();
-}
-
-inline void UIControlBackground::SetBgDrawType(int32 type)
-{ // TODO: FIXME: type
-    SetDrawType(static_cast<UIControlBackground::eDrawType>(type));
 }
 
 inline FilePath UIControlBackground::GetBgSpritePath() const
@@ -411,33 +379,13 @@ inline void UIControlBackground::SetContourSpriteFromPath(const FilePath& path)
         contour.Set(nullptr);
 }
 
-inline int32 UIControlBackground::GetGradientBlendMode() const
+inline eGradientBlendMode UIControlBackground::GetGradientBlendMode() const
 {
-    return static_cast<int32>(gradientMode);
+    return gradientMode;
 }
-inline void UIControlBackground::SetGradientBlendMode(int32 mode)
+inline void UIControlBackground::SetGradientBlendMode(eGradientBlendMode mode)
 {
-    gradientMode = eGradientBlendMode(mode);
-}
-
-inline int32 UIControlBackground::GetBgColorInherit() const
-{
-    return GetColorInheritType();
-}
-
-inline void UIControlBackground::SetBgColorInherit(int32 type)
-{
-    SetColorInheritType(static_cast<UIControlBackground::eColorInheritType>(type));
-}
-
-inline int32 UIControlBackground::GetBgPerPixelAccuracy() const
-{
-    return GetPerPixelAccuracyType();
-}
-
-inline void UIControlBackground::SetBgPerPixelAccuracy(int32 type)
-{
-    SetPerPixelAccuracyType(static_cast<UIControlBackground::ePerPixelAccuracyType>(type));
+    gradientMode = mode;
 }
 };
 

@@ -5,6 +5,8 @@
 #include "Base/BaseMath.h"
 #include "Base/FastName.h"
 
+#include "Reflection/ReflectedStructure.h"
+
 namespace DAVA
 {
 class KeyedArchive;
@@ -81,6 +83,8 @@ public:
     VariantType AsVariantType() const;
 
     VariantType AsVariantType(const InspMember* insp) const;
+    Any AsAny(const ReflectedStructure::Field* field) const;
+    Any AsAny(const Reflection& ref) const;
 
     //These functions work only if type of node is array or map
     uint32 GetCount() const;
@@ -150,6 +154,7 @@ public:
     // Remove node value from map
     void RemoveNodeFromMap(const String& name);
     eStringRepresentation GetStringRepresentation() const;
+    void SetStringRepresentation(eStringRepresentation rep);
     eArrayRepresentation GetArrayRepresentation() const;
     eMapRepresentation GetMapRepresentation() const;
     eStringRepresentation GetMapKeyRepresentation() const;

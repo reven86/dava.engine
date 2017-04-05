@@ -374,7 +374,7 @@ bool BackgroundController::IsPropertyAffectBackground(AbstractProperty* property
 {
     DVASSERT(nullptr != property);
     FastName name(property->GetName());
-    static FastName matchedNames[] = { FastName("Angle"), FastName("Size"), FastName("Scale"), FastName("Position"), FastName("Pivot"), FastName("Visible") };
+    static FastName matchedNames[] = { FastName("angle"), FastName("size"), FastName("scale"), FastName("position"), FastName("pivot"), FastName("visible") };
     return std::find(std::begin(matchedNames), std::end(matchedNames), name) != std::end(matchedNames);
 }
 

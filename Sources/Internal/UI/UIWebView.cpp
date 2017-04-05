@@ -3,6 +3,7 @@
 #include "UI/UIControlSystem.h"
 #include "UI/Update/UIUpdateComponent.h"
 #include "Engine/Engine.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 #if defined(DISABLE_NATIVE_WEBVIEW) && !defined(ENABLE_CEF_WEBVIEW)
 #include "UI/Private/WebViewControlStub.h"
@@ -22,6 +23,15 @@
 
 namespace DAVA
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(UIWebView)
+{
+    ReflectionRegistrator<UIWebView>::Begin()
+    .ConstructorByPointer()
+    .DestructorByPointer([](UIWebView* o) { o->Release(); })
+    .Field("dataDetectorTypes", &UIWebView::GetDataDetectorTypes, &UIWebView::SetDataDetectorTypes)[M::EnumT<eDataDetectorType>()]
+    .End();
+}
+
 UIWebView::UIWebView(const Rect& rect)
     : UIControl(rect)
 #if defined(__DAVAENGINE_COREV2__)

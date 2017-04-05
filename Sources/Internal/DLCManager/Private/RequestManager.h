@@ -7,7 +7,7 @@ namespace DAVA
 class RequestManager
 {
 public:
-    explicit RequestManager(DLCManager& packManager_)
+    explicit RequestManager(DLCManagerImpl& packManager_)
         : packManager(packManager_)
     {
     }
@@ -28,7 +28,7 @@ public:
     void SwapPointers(PackRequest* newPointer, PackRequest* oldInvalidPointer);
 
 private:
-    DLCManager& packManager;
+    DLCManagerImpl& packManager;
     Vector<PackRequest*> requests;
     // optimization to get to know for constant time if request in RequestManager
     UnorderedSet<String> requestNames;

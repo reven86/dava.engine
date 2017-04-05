@@ -5,6 +5,7 @@
 #include "Base/Message.h"
 #include "Reflection/Reflection.h"
 #include "FileSystem/YamlParser.h"
+#include "Reflection/Reflection.h"
 
 namespace DAVA
 {

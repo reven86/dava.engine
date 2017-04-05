@@ -2,12 +2,15 @@
 #define __DAVAENGINE_UI_FLOW_LAYOUT_COMPONENT_H__
 
 #include "UI/Components/UIComponent.h"
+#include "Reflection/Reflection.h"
 #include <bitset>
 
 namespace DAVA
 {
 class UIFlowLayoutComponent : public UIBaseComponent<UIComponent::FLOW_LAYOUT_COMPONENT>
 {
+    DAVA_VIRTUAL_REFLECTION(UIFlowLayoutComponent, UIBaseComponent<UIComponent::FLOW_LAYOUT_COMPONENT>);
+
 public:
     enum eOrientation
     {
@@ -95,26 +98,6 @@ private:
     Array<float32, Vector2::AXIS_COUNT> spacing;
 
     std::bitset<eFlags::FLAG_COUNT> flags;
-
-public:
-    INTROSPECTION_EXTEND(UIFlowLayoutComponent, UIComponent,
-                         PROPERTY("enabled", "Enabled", IsEnabled, SetEnabled, I_SAVE | I_VIEW | I_EDIT)
-
-                         PROPERTY("orientation", InspDesc("Orientation", GlobalEnumMap<eOrientation>::Instance()), GetOrientationAsInt, SetOrientationFromInt, I_SAVE | I_VIEW | I_EDIT)
-
-                         PROPERTY("hPadding", "Horizontal Padding", GetHorizontalPadding, SetHorizontalPadding, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("hDynamicPadding", "Dynamic Horizontal Padding", IsDynamicHorizontalPadding, SetDynamicHorizontalPadding, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("hDynamicInLinePadding", "Dynamic In Line Padding", IsDynamicHorizontalInLinePadding, SetDynamicHorizontalInLinePadding, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("hSpacing", "Horizontal Spacing", GetHorizontalSpacing, SetHorizontalSpacing, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("hDynamicSpacing", "Dynamic Horizontal Spacing", IsDynamicHorizontalSpacing, SetDynamicHorizontalSpacing, I_SAVE | I_VIEW | I_EDIT)
-
-                         PROPERTY("vPadding", "Vertical Padding", GetVerticalPadding, SetVerticalPadding, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("vDynamicPadding", "Dynamic Vertical Padding", IsDynamicVerticalPadding, SetDynamicVerticalPadding, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("vSpacing", "Vertical Spacing", GetVerticalSpacing, SetVerticalSpacing, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("vDynamicSpacing", "Dynamic Vertical Spacing", IsDynamicVerticalSpacing, SetDynamicVerticalSpacing, I_SAVE | I_VIEW | I_EDIT)
-
-                         PROPERTY("skipInvisible", "Skip Invisible Controls", IsSkipInvisibleControls, SetSkipInvisibleControls, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("useRtl", "Use Rtl Align", IsUseRtl, SetUseRtl, I_SAVE | I_VIEW | I_EDIT))
 };
 }
 

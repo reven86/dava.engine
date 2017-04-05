@@ -27,8 +27,8 @@ QWidget* FilePathPropertyDelegate::createEditor(QWidget* parent, const Propertie
 
 void FilePathPropertyDelegate::setEditorData(QWidget*, const QModelIndex& index) const
 {
-    DAVA::VariantType variant = index.data(Qt::EditRole).value<DAVA::VariantType>();
-    QString stringValue = StringToQString(variant.AsFilePath().GetStringValue());
+    DAVA::Any variant = index.data(Qt::EditRole).value<DAVA::Any>();
+    QString stringValue = StringToQString(variant.Get<DAVA::FilePath>().GetStringValue());
     DVASSERT(!lineEdit.isNull());
     lineEdit->setText(stringValue);
 }
@@ -38,13 +38,13 @@ bool FilePathPropertyDelegate::setModelData(QWidget* rawEditor, QAbstractItemMod
     if (BasePropertyDelegate::setModelData(rawEditor, model, index))
         return true;
     DVASSERT(!lineEdit.isNull());
-    DAVA::VariantType variantType = index.data(Qt::EditRole).value<DAVA::VariantType>();
+    DAVA::Any value = index.data(Qt::EditRole).value<DAVA::Any>();
     DAVA::String str = QStringToString(lineEdit->text());
     DAVA::FilePath filePath = str;
-    variantType.SetFilePath(filePath);
+    value.Set(filePath);
 
     QVariant variant;
-    variant.setValue<DAVA::VariantType>(variantType);
+    variant.setValue<DAVA::Any>(value);
 
     return model->setData(index, variant, Qt::EditRole);
 }
