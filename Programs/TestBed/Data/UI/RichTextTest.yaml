@@ -62,5 +62,6 @@ Controls:
                 rightAnchorEnabled: true
                 rightAnchor: 20.000000
             RichContent:
-                text: "Example text with <img class=\"img\" src=\"~res:/Gfx/UI/GoldPin\" /> image."
+                text: "<h1>Header</h1> Example text with <img class=\"img\" src=\"~res:/Gfx/UI/GoldPin\" /> image."
                 baseClasses: "text"
+                aliases: "h1,<p class=\"DejaVu\" />;"

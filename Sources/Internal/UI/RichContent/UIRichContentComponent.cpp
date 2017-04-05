@@ -40,8 +40,25 @@ void UIRichContentComponent::SetBaseClasses(const String& classes)
     }
 }
 
+void UIRichContentComponent::SetAliases(const UIRichAliasMap& _aliases)
+{
+    aliases = _aliases;
+    modified = true;
+}
+
 void UIRichContentComponent::ResetModify()
 {
     modified = false;
+}
+
+void UIRichContentComponent::SetAliasesFromString(const String& _aliases)
+{
+    aliases.FromString(_aliases);
+    modified = true;
+}
+
+String UIRichContentComponent::GetAliasesAsString() const
+{
+    return aliases.AsString();
 }
 }

@@ -5,6 +5,7 @@
 #include "UI/UIStaticText.h"
 #include "UI/Layouts/UISizePolicyComponent.h"
 #include "UI/Layouts/UIFlowLayoutHintComponent.h"
+#include "UI/RichContent/UIRichAliasMap.h"
 #include "UI/Styles/UIStyleSheetSystem.h"
 #include "Utils/Utils.h"
 #include "Utils/BiDiHelper.h"
@@ -42,6 +43,11 @@ public:
     {
         classesStack.clear();
         classesStack.push_back(clazz);
+    }
+
+    void SetAliases(const UIRichAliasMap& _aliases)
+    {
+        aliases = _aliases;
     }
 
     void PutClass(const String& clazz)
@@ -88,24 +94,58 @@ public:
     void OnElementStarted(const String& elementName, const String& namespaceURI, const String& qualifedName, const Map<String, String>& attributes) override
     {
         //Logger::Debug("OnElementStarted: '%s', '%s', '%s', %s", elementName.c_str(), namespaceURI.c_str(), qualifedName.c_str(), PrintMap(attributes).c_str());
+        if (aliases.HasAlias(elementName))
+        {
+            const UIRichAliasMap::Alias& alias = aliases.GetAlias(elementName);
+            ProcessTagBegin(alias.tag, alias.attributes);
+        }
+        else
+        {
+            ProcessTagBegin(elementName, attributes);
+        }
+    }
 
+    void OnElementEnded(const String& elementName, const String& namespaceURI, const String& qualifedName) override
+    {
+        //Logger::Debug("OnElementEnded: '%s', '%s', '%s'", elementName.c_str(), namespaceURI.c_str(), qualifedName.c_str());
+        if (aliases.HasAlias(elementName))
+        {
+            const UIRichAliasMap::Alias& alias = aliases.GetAlias(elementName);
+            ProcessTagEnd(alias.tag);
+        }
+        else
+        {
+            ProcessTagEnd(elementName);
+        }
+    }
+
+    void OnFoundCharacters(const String& chars) override
+    {
+        //Logger::Debug("OnFoundCharacters: '%s'", chars.c_str());
+        ProcessText(chars);
+    }
+
+    void ProcessTagBegin(const String& tag, const Map<String, String>& attributes)
+    {
+        // Global attributes
         String classes;
         GetAttribute(attributes, "class", classes);
         PutClass(classes);
 
-        if (elementName == "span")
+        // Tag
+        if (tag == "span")
         {
         }
-        else if (elementName == "p")
+        else if (tag == "p")
         {
             needLineBreak = true;
         }
-        else if (elementName == "br")
+        else if (tag == "br")
         {
             textMode = false;
             needLineBreak = true;
         }
-        else if (elementName == "img")
+        else if (tag == "img")
         {
             textMode = false;
 
@@ -119,41 +159,37 @@ public:
                 controls.emplace_back(img);
             }
         }
-        if (elementName == "object")
+        else if (tag == "object")
         {
             textMode = false;
         }
     }
 
-    void OnElementEnded(const String& elementName, const String& namespaceURI, const String& qualifedName) override
+    void ProcessTagEnd(const String& tag)
     {
-        //Logger::Debug("OnElementEnded: '%s', '%s', '%s'", elementName.c_str(), namespaceURI.c_str(), qualifedName.c_str());
-
         textMode = true;
         PopClass();
 
-        if (elementName == "p")
+        if (tag == "p")
         {
             needLineBreak = true;
         }
     }
 
-    void OnFoundCharacters(const String& chars) override
+    void ProcessText(const String& text)
     {
-        //Logger::Debug("OnFoundCharacters: '%s'", chars.c_str());
-
         if (textMode)
         {
             Vector<String> tokens;
-            Split(chars, " \n", tokens);
+            Split(text, " \n", tokens);
             for (auto token : tokens)
             {
                 isRtl = bidiHelper.IsRtlUTF8String(token);
-                UIStaticText* text = new UIStaticText();
-                PrepareControl(text);
-                text->SetUtf8Text(token);
-                text->SetForceBiDiSupportEnabled(true);
-                controls.emplace_back(text);
+                UIStaticText* ctrl = new UIStaticText();
+                PrepareControl(ctrl);
+                ctrl->SetUtf8Text(token);
+                ctrl->SetForceBiDiSupportEnabled(true);
+                controls.emplace_back(ctrl);
             }
         }
     }
@@ -181,6 +217,7 @@ private:
     Vector<String> classesStack;
     Vector<RefPtr<UIControl>> controls;
     BiDiHelper bidiHelper;
+    UIRichAliasMap aliases;
 };
 
 /*******************************************************************************************************/
@@ -247,6 +284,7 @@ void UIRichContentSystem::Process(float32 elapsedTime)
 
             XMLBuilder builder;
             builder.SetTopClass(l.component->GetBaseClasses());
+            builder.SetAliases(l.component->GetAliases());
             // builder.SetContext(root->GetPackageContext()); // TODO: need it?
             if (builder.Build("<root>" + l.component->GetUTF8Text() + "</root>"))
             {

@@ -254,7 +254,7 @@ bool BiDiWrapper::IsRtlUTF8String(const String& utf8String)
 #elif DAVA_ICU
     int32 ucharLength = 0;
     UErrorCode error = U_ZERO_ERROR;
-    u_strFromUTF8(nullptr, 0, &ucharLength, utf8String.c_str(), utf8String.length(), &error);
+    u_strFromUTF8(nullptr, 0, &ucharLength, utf8String.c_str(), static_cast<int32_t>(utf8String.length()), &error);
     if (error != U_ZERO_ERROR && error != U_BUFFER_OVERFLOW_ERROR)
     {
         return false;
@@ -262,7 +262,7 @@ bool BiDiWrapper::IsRtlUTF8String(const String& utf8String)
 
     logicalBuffer.resize(ucharLength + 1); // +1 for \0 character
     error = U_ZERO_ERROR;
-    u_strFromUTF8(logicalBuffer.data(), ucharLength + 1, nullptr, utf8String.c_str(), utf8String.length(), &error);
+    u_strFromUTF8(logicalBuffer.data(), ucharLength + 1, nullptr, utf8String.c_str(), static_cast<int32_t>(utf8String.length()), &error);
     if (error != U_ZERO_ERROR)
     {
         return false;
