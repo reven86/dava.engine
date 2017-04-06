@@ -34,6 +34,11 @@ SpeedTreeUpdateSystem::SpeedTreeUpdateSystem(Scene* scene)
 SpeedTreeUpdateSystem::~SpeedTreeUpdateSystem()
 {
     DVASSERT(allTrees.size() == 0);
+    for (auto it = directionIndexBuffers.begin(), itEnd = directionIndexBuffers.end(); it != itEnd; ++it)
+    {
+        for (rhi::HIndexBuffer h : it->second)
+            rhi::DeleteIndexBuffer(h);
+    }
 
     Renderer::GetOptions()->RemoveObserver(this);
 }
@@ -72,6 +77,10 @@ void SpeedTreeUpdateSystem::RemoveEntity(Entity* entity)
     {
         if (allTrees[i]->entity == entity)
         {
+            SpeedTreeObject* object = GetSpeedTreeObject(entity);
+            DVASSERT(object);
+            object->directionIndexBuffers.clear();
+
             RemoveExchangingWithLast(allTrees, i);
             break;
         }
@@ -157,15 +166,111 @@ void SpeedTreeUpdateSystem::SceneDidLoaded()
 {
     for (auto tree : allTrees)
     {
-        auto renderComponent = GetRenderComponent(tree->entity);
-        if (renderComponent != nullptr)
+        SpeedTreeObject* object = GetSpeedTreeObject(tree->entity);
+        DVASSERT(object);
+
+        object->RecalcBoundingBox();
+
+        ProcessSpeedTreeGeometry(object);
+    }
+}
+
+void SpeedTreeUpdateSystem::ProcessSpeedTreeGeometry(SpeedTreeObject* object)
+{
+    uint32 batchCount = object->GetRenderBatchCount();
+    for (uint32 bi = 0; bi < batchCount; ++bi)
+    {
+        RenderBatch* batch = object->GetRenderBatch(bi);
+        PolygonGroup* pg = batch->GetPolygonGroup();
+        if (pg != nullptr)
         {
-            auto ro = renderComponent->GetRenderObject();
-            if (ro != nullptr)
-            {
-                ro->RecalcBoundingBox();
-            }
+            if (directionIndexBuffers.count(pg) == 0)
+                directionIndexBuffers.insert(std::make_pair(pg, BuildDirectionIndexBuffers(pg)));
+
+            object->directionIndexBuffers[pg] = directionIndexBuffers[pg];
         }
     }
+}
+
+SpeedTreeObject::IndexBufferArray SpeedTreeUpdateSystem::BuildDirectionIndexBuffers(PolygonGroup* pg)
+{
+    DVASSERT(pg);
+    DVASSERT(pg->GetPrimitiveType() == rhi::PRIMITIVE_TRIANGLELIST);
+
+    struct Triangle
+    {
+        Vector3 sortPosition;
+        Array<uint16, 3> indices;
+    };
+
+    SpeedTreeObject::IndexBufferArray buffers;
+
+    Vector<Triangle> triangles;
+    triangles.reserve(pg->GetIndexCount() / 3);
+
+    Vector<uint16> indexBufferData;
+    indexBufferData.reserve(pg->GetIndexCount());
+
+    Vector3 tempVec3;
+    int32 tempInd[3];
+    for (uint32 dir = 0; dir < SpeedTreeObject::SORTING_DIRECTION_COUNT; ++dir)
+    {
+        triangles.clear();
+        indexBufferData.clear();
+
+        int32 trianglesCount = pg->GetIndexCount() / 3;
+        for (int32 ti = 0; ti < trianglesCount; ++ti)
+        {
+            triangles.emplace_back();
+            Triangle& triangle = triangles.back();
+
+            pg->GetIndex(ti * 3 + 0, tempInd[0]);
+            pg->GetIndex(ti * 3 + 1, tempInd[1]);
+            pg->GetIndex(ti * 3 + 2, tempInd[2]);
+
+            if (pg->GetFormat() & EVF_PIVOT)
+            {
+                pg->GetPivot(tempInd[0], triangle.sortPosition);
+            }
+            else
+            {
+                pg->GetCoord(tempInd[0], tempVec3);
+                triangle.sortPosition += tempVec3;
+                pg->GetCoord(tempInd[1], tempVec3);
+                triangle.sortPosition += tempVec3;
+                pg->GetCoord(tempInd[2], tempVec3);
+                triangle.sortPosition += tempVec3;
+
+                triangle.sortPosition /= 3.f;
+            }
+
+            triangle.indices[0] = uint16(tempInd[0]);
+            triangle.indices[1] = uint16(tempInd[1]);
+            triangle.indices[2] = uint16(tempInd[2]);
+        }
+
+        Vector3 direction = SpeedTreeObject::GetSortingDirection(dir);
+        std::stable_sort(triangles.begin(), triangles.end(), [&direction](const Triangle& l, const Triangle& r) {
+            return direction.DotProduct(l.sortPosition - r.sortPosition) > 0.f;
+        });
+
+        for (const Triangle& t : triangles)
+            indexBufferData.insert(indexBufferData.end(), t.indices.begin(), t.indices.end());
+
+        DVASSERT(int32(indexBufferData.size()) == pg->GetIndexCount());
+
+        rhi::IndexBuffer::Descriptor ibDesc;
+        ibDesc.size = uint32(indexBufferData.size() * sizeof(uint16));
+        ibDesc.initialData = indexBufferData.data();
+        ibDesc.usage = rhi::USAGE_STATICDRAW;
+        buffers[dir] = rhi::CreateIndexBuffer(ibDesc);
+    }
+
+    return buffers;
+}
+
+void SpeedTreeUpdateSystem::RestoreDirectionBuffers()
+{
+    //TODO
 }
 };

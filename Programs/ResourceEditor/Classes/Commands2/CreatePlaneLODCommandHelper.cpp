@@ -192,11 +192,14 @@ void CreatePlaneLODCommandHelper::CreatePlaneBatchForRequest(RequestPointer& req
             float32 xCoord = min.x + size.x * xy / (float32)gridSizeX; //first plane in Oxz
             float32 yCoord = min.y + size.y * xy / (float32)gridSizeX; //second plane in Oyz
 
+            if (xy == gridSizeX / 2) //align middle vertices to center
+                xCoord = yCoord = 0.f;
+
             Vector3 coord1(xCoord, 0.f, rowCoord); //1st plane
             Vector3 coord2(0.f, yCoord, rowCoord); //2nd plane
 
-            Vector2 txCoord1 = Vector2(xy / (float32)gridSizeX, rowTxCoord) * txCoordPlaneScale;
-            Vector2 txCoord2 = txCoord1 + txCoordPlane2Offset;
+            Vector2 txCoord1 = Vector2((xCoord - min.x) / size.x, rowTxCoord) * txCoordPlaneScale;
+            Vector2 txCoord2 = Vector2((yCoord - min.y) / size.y, rowTxCoord) * txCoordPlaneScale + txCoordPlane2Offset;
 
             planePG->SetCoord(vxIndex1, coord1);
             planePG->SetTexcoord(0, vxIndex1, txCoord1);

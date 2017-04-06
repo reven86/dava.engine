@@ -24,6 +24,7 @@ public:
     static bool IsTreeLeafBatch(RenderBatch* batch);
 
     void BindDynamicParameters(Camera* camera) override;
+    void PrepareToRender(Camera* camera) override;
 
     void SetSphericalHarmonics(const DAVA::Array<float32, HARMONICS_BUFFER_CAPACITY>& coeffs);
     const DAVA::Array<float32, HARMONICS_BUFFER_CAPACITY>& GetSphericalHarmonics() const;
@@ -35,16 +36,26 @@ public:
 protected:
     static const FastName FLAG_WIND_ANIMATION;
 
+    static const uint32 SORTING_DIRECTION_COUNT = 8;
+
     AABBox3 CalcBBoxForSpeedTreeGeometry(RenderBatch* rb);
 
     void SetTreeAnimationParams(const Vector2& trunkOscillationParams, const Vector2& leafOscillationParams);
     void UpdateAnimationFlag(int32 maxAnimatedLod);
+
+    static Vector3 GetSortingDirection(uint32 directionIndex);
+    static uint32 SelectDirectionIndex(const Vector3& direction);
 
     Vector2 trunkOscillation;
     Vector2 leafOscillation;
 
     DAVA::Array<float32, HARMONICS_BUFFER_CAPACITY> sphericalHarmonics;
     float32 lightSmoothing;
+
+    using IndexBufferArray = Array<rhi::HIndexBuffer, SORTING_DIRECTION_COUNT>;
+    using SortedIndexBuffersMap = Map<PolygonGroup*, IndexBufferArray>;
+
+    SortedIndexBuffersMap directionIndexBuffers;
 
 public:
     INTROSPECTION_EXTEND(SpeedTreeObject, RenderObject,

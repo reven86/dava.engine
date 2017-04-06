@@ -5,6 +5,7 @@
 #include "Base/BaseMath.h"
 #include "Base/Observer.h"
 #include "Entity/SceneSystem.h"
+#include "Render/Highlevel/SpeedTreeObject.h"
 
 namespace DAVA
 {
@@ -28,9 +29,14 @@ public:
 
 protected:
     void UpdateAnimationFlag(Entity* entity);
+    void ProcessSpeedTreeGeometry(SpeedTreeObject* object);
+    SpeedTreeObject::IndexBufferArray BuildDirectionIndexBuffers(PolygonGroup* pg);
+
+    void RestoreDirectionBuffers();
 
 private:
     Vector<SpeedTreeComponent*> allTrees;
+    SpeedTreeObject::SortedIndexBuffersMap directionIndexBuffers;
 
     bool isAnimationEnabled;
     bool isVegetationAnimationEnabled;

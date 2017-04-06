@@ -24,6 +24,8 @@ SpeedTreeObject::SpeedTreeObject()
     type = TYPE_SPEED_TREE;
 
     sphericalHarmonics = { 1.f / 0.564188f, 1.f / 0.564188f, 1.f / 0.564188f }; //fake SH value to make original object color
+
+    AddFlag(RenderObject::CUSTOM_PREPARE_TO_RENDER);
 }
 
 SpeedTreeObject::~SpeedTreeObject()
@@ -76,6 +78,42 @@ void SpeedTreeObject::BindDynamicParameters(Camera* camera)
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_SPEED_TREE_LIGHT_SMOOTHING, &lightSmoothing, DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
 
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_SPHERICAL_HARMONICS, sphericalHarmonics.data(), DynamicBindings::UPDATE_SEMANTIC_ALWAYS);
+}
+
+void SpeedTreeObject::PrepareToRender(Camera* camera)
+{
+    RenderObject::PrepareToRender(camera);
+
+    if (!directionIndexBuffers.empty())
+    {
+        Vector3 direction = GetWorldTransformPtr()->GetTranslationVector() - camera->GetPosition();
+        uint32 directionIndex = SelectDirectionIndex(direction);
+
+        for (RenderBatch* batch : activeRenderBatchArray)
+        {
+            PolygonGroup* pg = batch->GetPolygonGroup();
+            if (pg)
+            {
+                if (directionIndexBuffers.count(pg))
+                {
+                    batch->useDataSource = false;
+
+                    batch->vertexBuffer = pg->vertexBuffer;
+                    batch->indexBuffer = directionIndexBuffers[pg][directionIndex];
+
+                    batch->vertexCount = pg->vertexCount;
+                    batch->indexCount = pg->indexCount;
+
+                    batch->primitiveType = pg->primitiveType;
+                    batch->vertexLayoutId = pg->vertexLayoutId;
+                }
+                else
+                {
+                    batch->useDataSource = true;
+                }
+            }
+        }
+    }
 }
 
 void SpeedTreeObject::UpdateAnimationFlag(int32 maxAnimatedLod)
@@ -198,5 +236,28 @@ bool SpeedTreeObject::IsTreeLeafBatch(RenderBatch* batch)
     }
 
     return false;
+}
+
+Vector3 SpeedTreeObject::GetSortingDirection(uint32 directionIndex)
+{
+    float32 angle = (PI_2 / SpeedTreeObject::SORTING_DIRECTION_COUNT) * directionIndex;
+    return Vector3(cosf(angle), sinf(angle), 0.f);
+}
+
+uint32 SpeedTreeObject::SelectDirectionIndex(const Vector3& direction)
+{
+    uint32 index = 0;
+    float32 dp0 = -1.f;
+    for (uint32 i = 0; i < SORTING_DIRECTION_COUNT; ++i)
+    {
+        float32 dp = GetSortingDirection(i).DotProduct(direction);
+        if (dp > dp0)
+        {
+            dp0 = dp;
+            index = i;
+        }
+    }
+
+    return index;
 }
 };

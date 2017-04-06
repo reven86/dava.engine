@@ -77,6 +77,8 @@ public:
     rhi::PrimitiveType primitiveType = rhi::PRIMITIVE_TRIANGLELIST;
     uint32 vertexLayoutId = rhi::VertexLayout::InvalidUID;
 
+    bool useDataSource = true;
+
 private:
     PolygonGroup* dataSource = nullptr;
 
@@ -147,7 +149,7 @@ inline uint32 RenderBatch::GetSortingOffset()
 
 inline void RenderBatch::BindGeometryData(rhi::Packet& packet)
 {
-    if (dataSource)
+    if (dataSource && useDataSource)
     {
         packet.vertexStreamCount = 1;
         packet.vertexStream[0] = dataSource->vertexBuffer;

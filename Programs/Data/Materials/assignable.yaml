@@ -35,6 +35,9 @@
  name: "SpeedTreeLeaf"
  path: SpeedTreeLeaf.material
 -
+ name: "SpeedTreeLeaf Alphablend"
+ path: SpeedTreeLeaf.Alphablend.material
+-
  name: "SpeedTreeLeaf Opaque"
  path: SpeedTreeLeaf.Opaque.material
 -
