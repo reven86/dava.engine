@@ -13,6 +13,9 @@
 #endif
 
 #ifdef __DAVAENGINE_WIN_UAP__
+
+#include "Logger/Logger.h"
+
 #define RHI_POOL_ASSERT(expr, ...) \
 { \
     if (!(expr)) \
@@ -21,8 +24,11 @@
         DAVA::Logger::Error(##__VA_ARGS__); \
     } \
 }
+
 #else
+
 #define RHI_POOL_ASSERT(expr, ...) DVASSERT(expr, ##__VA_ARGS__)
+
 #endif
 
 namespace rhi
