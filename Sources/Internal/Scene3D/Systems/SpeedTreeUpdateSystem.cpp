@@ -199,8 +199,6 @@ void SpeedTreeUpdateSystem::ProcessSpeedTreeGeometry(SpeedTreeObject* object)
 
 SpeedTreeObject::IndexBufferArray SpeedTreeUpdateSystem::BuildDirectionIndexBuffers(PolygonGroup* pg)
 {
-    DVASSERT(pg);
-
     SpeedTreeObject::IndexBufferArray buffers;
     for (uint32 dir = 0; dir < SpeedTreeObject::SORTING_DIRECTION_COUNT; ++dir)
     {
