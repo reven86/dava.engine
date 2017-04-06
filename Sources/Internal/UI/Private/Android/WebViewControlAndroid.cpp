@@ -98,7 +98,7 @@ void WebViewControl::Initialize(const Rect& rect)
         JNIEnv* env = JNI::GetEnv();
         javaWebView = env->NewGlobalRef(obj);
         env->DeleteLocalRef(obj);
-        SetRect(rect);
+        SetRect(œrect);
     }
     else
     {

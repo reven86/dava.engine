@@ -26,12 +26,12 @@ private:
     std::shared_ptr<FormulaExpression> ParseFunction(const String& identifier);
     std::shared_ptr<FormulaExpression> ParseValue();
 
-    Token LookToken();
-    Token NextToken();
-    bool IsIdentifier(const Token& token, const String& identifier);
-    String GetTokenStringValue(const Token& token);
+    FormulaToken LookToken();
+    FormulaToken NextToken();
+    bool IsIdentifier(const FormulaToken& token, const String& identifier);
+    String GetTokenStringValue(const FormulaToken& token);
 
-    Token token;
+    FormulaToken token;
     struct OperatorPriority
     {
         OperatorPriority(FormulaBinaryOperatorExpression::Operator op_, int priority_)
@@ -43,7 +43,7 @@ private:
         FormulaBinaryOperatorExpression::Operator op;
         int priority;
     };
-    UnorderedMap<Token::Type, OperatorPriority> operators;
+    UnorderedMap<FormulaToken::Type, OperatorPriority> operators;
 
     FormulaTokenizer tokenizer;
 };

@@ -4,7 +4,7 @@
 
 namespace DAVA
 {
-class Token
+class FormulaToken
 {
 public:
     enum Type
@@ -41,12 +41,12 @@ public:
         END,
     };
 
-    Token();
-    Token(Type type_, int lineNumber, int positionInLine);
-    Token(Type type, int val, int lineNumber, int positionInLine);
-    Token(Type type, float val, int lineNumber, int positionInLine);
-    Token(Type type, bool val, int lineNumber, int positionInLine);
-    Token(Type type, int startPos, int len, int lineNumber, int positionInLine);
+    FormulaToken();
+    FormulaToken(Type type_, int lineNumber, int positionInLine);
+    FormulaToken(Type type, int val, int lineNumber, int positionInLine);
+    FormulaToken(Type type, float val, int lineNumber, int positionInLine);
+    FormulaToken(Type type, bool val, int lineNumber, int positionInLine);
+    FormulaToken(Type type, int startPos, int len, int lineNumber, int positionInLine);
 
     Type GetType() const;
     int GetInt() const;
@@ -82,9 +82,9 @@ public:
     FormulaTokenizer(const String& str);
     ~FormulaTokenizer();
 
-    Token ReadToken();
+    FormulaToken ReadToken();
     const String& GetString() const;
-    String GetTokenStringValue(const Token& token);
+    String GetTokenStringValue(const FormulaToken& token);
 
     int32 GetLineNumber() const;
     int32 GetPositionInLine() const;

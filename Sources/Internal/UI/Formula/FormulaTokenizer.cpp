@@ -6,12 +6,12 @@
 
 namespace DAVA
 {
-Token::Token()
+FormulaToken::FormulaToken()
     : type(INVALID)
 {
 }
 
-Token::Token(Type type_, int lineNumber_, int positionInLine_)
+FormulaToken::FormulaToken(Type type_, int lineNumber_, int positionInLine_)
     : type(type_)
     , lineNumber(lineNumber_)
     , positionInLine(positionInLine_)
@@ -19,7 +19,7 @@ Token::Token(Type type_, int lineNumber_, int positionInLine_)
     DVASSERT(type >= COMMA && type <= END);
 }
 
-Token::Token(Type type_, int val_, int lineNumber_, int positionInLine_)
+FormulaToken::FormulaToken(Type type_, int val_, int lineNumber_, int positionInLine_)
     : type(type_)
     , iVal(val_)
     , lineNumber(lineNumber_)
@@ -28,7 +28,7 @@ Token::Token(Type type_, int val_, int lineNumber_, int positionInLine_)
     DVASSERT(type == INT);
 }
 
-Token::Token(Type type_, float val_, int lineNumber_, int positionInLine_)
+FormulaToken::FormulaToken(Type type_, float val_, int lineNumber_, int positionInLine_)
     : type(type_)
     , fVal(val_)
     , lineNumber(lineNumber_)
@@ -37,7 +37,7 @@ Token::Token(Type type_, float val_, int lineNumber_, int positionInLine_)
     DVASSERT(type == FLOAT);
 }
 
-Token::Token(Type type_, bool val_, int lineNumber_, int positionInLine_)
+FormulaToken::FormulaToken(Type type_, bool val_, int lineNumber_, int positionInLine_)
     : type(type_)
     , iVal(val_ ? 1 : 0)
     , lineNumber(lineNumber_)
@@ -46,7 +46,7 @@ Token::Token(Type type_, bool val_, int lineNumber_, int positionInLine_)
     DVASSERT(type == BOOLEAN);
 }
 
-Token::Token(Type type_, int startPos_, int len_, int lineNumber_, int positionInLine_)
+FormulaToken::FormulaToken(Type type_, int startPos_, int len_, int lineNumber_, int positionInLine_)
     : type(type_)
     , start(startPos_)
     , len(len_)
@@ -56,47 +56,47 @@ Token::Token(Type type_, int startPos_, int len_, int lineNumber_, int positionI
     DVASSERT(type == IDENTIFIER || type == STRING);
 }
 
-Token::Type Token::GetType() const
+FormulaToken::Type FormulaToken::GetType() const
 {
     return type;
 }
 
-int Token::GetInt() const
+int FormulaToken::GetInt() const
 {
     DVASSERT(type == INT);
     return iVal;
 }
 
-float Token::GetFloat() const
+float FormulaToken::GetFloat() const
 {
     DVASSERT(type == FLOAT);
     return fVal;
 }
 
-bool Token::GetBool() const
+bool FormulaToken::GetBool() const
 {
     DVASSERT(type == BOOLEAN);
     return iVal != 0;
 }
 
-int Token::GetStringPos() const
+int FormulaToken::GetStringPos() const
 {
     DVASSERT(type == IDENTIFIER || type == STRING);
     return start;
 }
 
-int Token::GetStringLen() const
+int FormulaToken::GetStringLen() const
 {
     DVASSERT(type == IDENTIFIER || type == STRING);
     return len;
 }
 
-int32 Token::GetLineNumber() const
+int32 FormulaToken::GetLineNumber() const
 {
     return lineNumber;
 }
 
-int32 Token::GetPositionInLine() const
+int32 FormulaToken::GetPositionInLine() const
 {
     return positionInLine;
 }
@@ -110,7 +110,7 @@ FormulaTokenizer::~FormulaTokenizer()
 {
 }
 
-Token FormulaTokenizer::ReadToken()
+FormulaToken FormulaTokenizer::ReadToken()
 {
     if (currentPosition == -1)
     {
@@ -125,74 +125,74 @@ Token FormulaTokenizer::ReadToken()
     {
     case '\0':
             ReadChar();
-            return Token(Token::END, line, column);
+            return FormulaToken(FormulaToken::END, line, column);
 
     case ',':
             ReadChar();
-            return Token(Token::COMMA, line, column);
+            return FormulaToken(FormulaToken::COMMA, line, column);
 
     case '.':
             ReadChar();
-            return Token(Token::DOT, line, column);
+            return FormulaToken(FormulaToken::DOT, line, column);
 
     case '<':
             ReadChar();
             if (ch == '=')
             {
                 ReadChar();
-                return Token(Token::LE, line, column);
+                return FormulaToken(FormulaToken::LE, line, column);
             }
-            return Token(Token::LT, line, column);
+            return FormulaToken(FormulaToken::LT, line, column);
 
     case '>':
             ReadChar();
             if (ch == '=')
             {
                 ReadChar();
-                return Token(Token::GE, line, column);
+                return FormulaToken(FormulaToken::GE, line, column);
             }
-            return Token(Token::GT, line, column);
+            return FormulaToken(FormulaToken::GT, line, column);
 
     case '+':
             ReadChar();
-            return Token(Token::PLUS, line, column);
+            return FormulaToken(FormulaToken::PLUS, line, column);
 
     case '*':
             ReadChar();
-            return Token(Token::MUL, line, column);
+            return FormulaToken(FormulaToken::MUL, line, column);
 
     case '/':
         ReadChar();
-        return Token(Token::DIV, line, column);
+        return FormulaToken(FormulaToken::DIV, line, column);
 
     case '%':
         ReadChar();
-        return Token(Token::MOD, line, column);
+        return FormulaToken(FormulaToken::MOD, line, column);
 
     case '=':
         ReadChar();
         if (ch == '=')
         {
             ReadChar();
-            return Token(Token::EQ, line, column);
+            return FormulaToken(FormulaToken::EQ, line, column);
         }
-        return Token(Token::ASSIGN_SIGN, line, column);
+        return FormulaToken(FormulaToken::ASSIGN_SIGN, line, column);
 
     case '!':
         ReadChar();
         if (ch == '=')
         {
             ReadChar();
-            return Token(Token::NOT_EQ, line, column);
+            return FormulaToken(FormulaToken::NOT_EQ, line, column);
         }
-        return Token(Token::NOT, line, column);
+        return FormulaToken(FormulaToken::NOT, line, column);
 
     case '&':
         ReadChar();
         if (ch == '&')
         {
             ReadChar();
-            return Token(Token::AND, line, column);
+            return FormulaToken(FormulaToken::AND, line, column);
         }
         throw FormulaError("Can't resolve symbol '&'", line, column);
 
@@ -201,33 +201,33 @@ Token FormulaTokenizer::ReadToken()
         if (ch == '|')
         {
             ReadChar();
-            return Token(Token::OR, line, column);
+            return FormulaToken(FormulaToken::OR, line, column);
         }
         throw FormulaError("Can't resolve symbol '|'", line, column);
 
     case '(':
         ReadChar();
-        return Token(Token::OPEN_BRACKET, line, column);
+        return FormulaToken(FormulaToken::OPEN_BRACKET, line, column);
 
     case ')':
         ReadChar();
-        return Token(Token::CLOSE_BRACKET, line, column);
+        return FormulaToken(FormulaToken::CLOSE_BRACKET, line, column);
 
     case '{':
         ReadChar();
-        return Token(Token::OPEN_CURLY_BRACKET, line, column);
+        return FormulaToken(FormulaToken::OPEN_CURLY_BRACKET, line, column);
 
     case '}':
         ReadChar();
-        return Token(Token::CLOSE_CURLY_BRACKET, line, column);
+        return FormulaToken(FormulaToken::CLOSE_CURLY_BRACKET, line, column);
 
     case '[':
         ReadChar();
-        return Token(Token::OPEN_SQUARE_BRACKET, line, column);
+        return FormulaToken(FormulaToken::OPEN_SQUARE_BRACKET, line, column);
 
     case ']':
         ReadChar();
-        return Token(Token::CLOSE_SQUARE_BRACKET, line, column);
+        return FormulaToken(FormulaToken::CLOSE_SQUARE_BRACKET, line, column);
 
     case '"':
         {
@@ -245,7 +245,7 @@ Token FormulaTokenizer::ReadToken()
             }
             ReadChar();
 
-            return Token(Token::STRING, p, currentPosition - p - 1, line, column);
+            return FormulaToken(FormulaToken::STRING, p, currentPosition - p - 1, line, column);
         }
 
         default:
@@ -265,14 +265,14 @@ Token FormulaTokenizer::ReadToken()
         String id = str.substr(p, len);
         if (id == "true")
         {
-            return Token(Token::BOOLEAN, true, line, column);
+            return FormulaToken(FormulaToken::BOOLEAN, true, line, column);
         }
         else if (id == "false")
         {
-            return Token(Token::BOOLEAN, false, line, column);
+            return FormulaToken(FormulaToken::BOOLEAN, false, line, column);
         }
 
-        return Token(Token::IDENTIFIER, p, len, line, column);
+        return FormulaToken(FormulaToken::IDENTIFIER, p, len, line, column);
     }
 
     if (IsDigit(ch) || ch == '-')
@@ -287,7 +287,7 @@ Token FormulaTokenizer::ReadToken()
 
             if (!IsDigit(ch))
             {
-                return Token(Token::MINUS, line, column);
+                return FormulaToken(FormulaToken::MINUS, line, column);
             }
         }
 
@@ -311,7 +311,7 @@ Token FormulaTokenizer::ReadToken()
                 ReadChar();
             }
 
-            return Token(Token::FLOAT, negative ? -fl : fl, line, column);
+            return FormulaToken(FormulaToken::FLOAT, negative ? -fl : fl, line, column);
         }
         else if (ch == 'L')
         {
@@ -326,7 +326,7 @@ Token FormulaTokenizer::ReadToken()
             }
         }
 
-        return Token(Token::INT, negative ? -(int32)num : (int32)num, line, column);
+        return FormulaToken(FormulaToken::INT, negative ? -(int32)num : (int32)num, line, column);
     }
     throw FormulaError("Can't resolve symbol", lineNumber, positionInLine);
 }
@@ -336,9 +336,9 @@ const String& FormulaTokenizer::GetString() const
     return str;
 }
 
-String FormulaTokenizer::GetTokenStringValue(const Token& token)
+String FormulaTokenizer::GetTokenStringValue(const FormulaToken& FormulaToken)
 {
-    return str.substr(token.GetStringPos(), token.GetStringLen());
+    return str.substr(FormulaToken.GetStringPos(), FormulaToken.GetStringLen());
 }
 
 int32 FormulaTokenizer::GetLineNumber() const

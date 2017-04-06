@@ -23,32 +23,32 @@ DAVA_TESTCLASS (FormulaParserTest)
     {
         FormulaTokenizer tokenizer("\"Hello\" foo A123 a123()");
 
-        Token token;
+        FormulaToken token;
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == Token::STRING);
+        TEST_VERIFY(token.GetType() == FormulaToken::STRING);
         TEST_VERIFY(tokenizer.GetTokenStringValue(token) == "Hello");
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == Token::IDENTIFIER);
+        TEST_VERIFY(token.GetType() == FormulaToken::IDENTIFIER);
         TEST_VERIFY(tokenizer.GetTokenStringValue(token) == "foo");
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == Token::IDENTIFIER);
+        TEST_VERIFY(token.GetType() == FormulaToken::IDENTIFIER);
         TEST_VERIFY(tokenizer.GetTokenStringValue(token) == "A123");
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == Token::IDENTIFIER);
+        TEST_VERIFY(token.GetType() == FormulaToken::IDENTIFIER);
         TEST_VERIFY(tokenizer.GetTokenStringValue(token) == "a123");
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == Token::OPEN_BRACKET);
+        TEST_VERIFY(token.GetType() == FormulaToken::OPEN_BRACKET);
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == Token::CLOSE_BRACKET);
+        TEST_VERIFY(token.GetType() == FormulaToken::CLOSE_BRACKET);
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == Token::END);
+        TEST_VERIFY(token.GetType() == FormulaToken::END);
     }
 
     // FormulaTokenizer::ReadToken
@@ -56,38 +56,38 @@ DAVA_TESTCLASS (FormulaParserTest)
     {
         FormulaTokenizer tokenizer("5.5 0.0 -0.0 1.0 0.00001 -0.00001 11111.0");
 
-        Token token;
+        FormulaToken token;
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == Token::FLOAT);
+        TEST_VERIFY(token.GetType() == FormulaToken::FLOAT);
         TEST_VERIFY(FLOAT_EQUAL(token.GetFloat(), 5.5f));
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == Token::FLOAT);
+        TEST_VERIFY(token.GetType() == FormulaToken::FLOAT);
         TEST_VERIFY(FLOAT_EQUAL(token.GetFloat(), 0.0f));
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == Token::FLOAT);
+        TEST_VERIFY(token.GetType() == FormulaToken::FLOAT);
         TEST_VERIFY(FLOAT_EQUAL(token.GetFloat(), 0.0f));
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == Token::FLOAT);
+        TEST_VERIFY(token.GetType() == FormulaToken::FLOAT);
         TEST_VERIFY(FLOAT_EQUAL(token.GetFloat(), 1.0f));
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == Token::FLOAT);
+        TEST_VERIFY(token.GetType() == FormulaToken::FLOAT);
         TEST_VERIFY(FLOAT_EQUAL(token.GetFloat(), 0.00001));
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == Token::FLOAT);
+        TEST_VERIFY(token.GetType() == FormulaToken::FLOAT);
         TEST_VERIFY(FLOAT_EQUAL(token.GetFloat(), -0.00001f));
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == Token::FLOAT);
+        TEST_VERIFY(token.GetType() == FormulaToken::FLOAT);
         TEST_VERIFY(FLOAT_EQUAL(token.GetFloat(), 11111.0f));
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == Token::END);
+        TEST_VERIFY(token.GetType() == FormulaToken::END);
     }
 
     // FormulaTokenizer::ReadToken
@@ -95,18 +95,18 @@ DAVA_TESTCLASS (FormulaParserTest)
     {
         FormulaTokenizer tokenizer("true false");
 
-        Token token;
+        FormulaToken token;
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == Token::BOOLEAN);
+        TEST_VERIFY(token.GetType() == FormulaToken::BOOLEAN);
         TEST_VERIFY(token.GetBool() == true);
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == Token::BOOLEAN);
+        TEST_VERIFY(token.GetType() == FormulaToken::BOOLEAN);
         TEST_VERIFY(token.GetBool() == false);
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == Token::END);
+        TEST_VERIFY(token.GetType() == FormulaToken::END);
     }
 
     // FormulaTokenizer::ReadToken
@@ -114,30 +114,30 @@ DAVA_TESTCLASS (FormulaParserTest)
     {
         FormulaTokenizer tokenizer("5 -50 0 100 -0");
 
-        Token token;
+        FormulaToken token;
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == Token::INT);
+        TEST_VERIFY(token.GetType() == FormulaToken::INT);
         TEST_VERIFY(token.GetInt() == 5);
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == Token::INT);
+        TEST_VERIFY(token.GetType() == FormulaToken::INT);
         TEST_VERIFY(token.GetInt() == -50);
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == Token::INT);
+        TEST_VERIFY(token.GetType() == FormulaToken::INT);
         TEST_VERIFY(token.GetInt() == 0);
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == Token::INT);
+        TEST_VERIFY(token.GetType() == FormulaToken::INT);
         TEST_VERIFY(token.GetInt() == 100);
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == Token::INT);
+        TEST_VERIFY(token.GetType() == FormulaToken::INT);
         TEST_VERIFY(token.GetInt() == 0);
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == Token::END);
+        TEST_VERIFY(token.GetType() == FormulaToken::END);
     }
 
     // FormulaTokenizer::ReadToken
@@ -145,61 +145,61 @@ DAVA_TESTCLASS (FormulaParserTest)
     {
         FormulaTokenizer tokenizer(", . + - * / % && || ! <= < >= > = == !=");
 
-        Token token;
+        FormulaToken token;
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == Token::COMMA);
+        TEST_VERIFY(token.GetType() == FormulaToken::COMMA);
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == Token::DOT);
+        TEST_VERIFY(token.GetType() == FormulaToken::DOT);
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == Token::PLUS);
+        TEST_VERIFY(token.GetType() == FormulaToken::PLUS);
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == Token::MINUS);
+        TEST_VERIFY(token.GetType() == FormulaToken::MINUS);
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == Token::MUL);
+        TEST_VERIFY(token.GetType() == FormulaToken::MUL);
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == Token::DIV);
+        TEST_VERIFY(token.GetType() == FormulaToken::DIV);
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == Token::MOD);
+        TEST_VERIFY(token.GetType() == FormulaToken::MOD);
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == Token::AND);
+        TEST_VERIFY(token.GetType() == FormulaToken::AND);
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == Token::OR);
+        TEST_VERIFY(token.GetType() == FormulaToken::OR);
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == Token::NOT);
+        TEST_VERIFY(token.GetType() == FormulaToken::NOT);
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == Token::LE);
+        TEST_VERIFY(token.GetType() == FormulaToken::LE);
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == Token::LT);
+        TEST_VERIFY(token.GetType() == FormulaToken::LT);
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == Token::GE);
+        TEST_VERIFY(token.GetType() == FormulaToken::GE);
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == Token::GT);
+        TEST_VERIFY(token.GetType() == FormulaToken::GT);
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == Token::ASSIGN_SIGN);
+        TEST_VERIFY(token.GetType() == FormulaToken::ASSIGN_SIGN);
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == Token::EQ);
+        TEST_VERIFY(token.GetType() == FormulaToken::EQ);
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == Token::NOT_EQ);
+        TEST_VERIFY(token.GetType() == FormulaToken::NOT_EQ);
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == Token::END);
+        TEST_VERIFY(token.GetType() == FormulaToken::END);
     }
 
     // FormulaTokenizer::ReadToken
@@ -207,28 +207,28 @@ DAVA_TESTCLASS (FormulaParserTest)
     {
         FormulaTokenizer tokenizer("() {} []");
 
-        Token token;
+        FormulaToken token;
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == Token::OPEN_BRACKET);
+        TEST_VERIFY(token.GetType() == FormulaToken::OPEN_BRACKET);
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == Token::CLOSE_BRACKET);
+        TEST_VERIFY(token.GetType() == FormulaToken::CLOSE_BRACKET);
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == Token::OPEN_CURLY_BRACKET);
+        TEST_VERIFY(token.GetType() == FormulaToken::OPEN_CURLY_BRACKET);
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == Token::CLOSE_CURLY_BRACKET);
+        TEST_VERIFY(token.GetType() == FormulaToken::CLOSE_CURLY_BRACKET);
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == Token::OPEN_SQUARE_BRACKET);
+        TEST_VERIFY(token.GetType() == FormulaToken::OPEN_SQUARE_BRACKET);
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == Token::CLOSE_SQUARE_BRACKET);
+        TEST_VERIFY(token.GetType() == FormulaToken::CLOSE_SQUARE_BRACKET);
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == Token::END);
+        TEST_VERIFY(token.GetType() == FormulaToken::END);
     }
 
     // FormulaTokenizer::ReadToken
