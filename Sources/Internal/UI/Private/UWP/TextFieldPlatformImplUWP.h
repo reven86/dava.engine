@@ -228,9 +228,6 @@ private:
     Sprite* sprite = nullptr;
 #endif
 
-    size_t windowSizeChangedConnection = 0;
-    size_t windowDestroyedConnection = 0;
-
     static Windows::UI::Xaml::Style ^ customTextBoxStyle;
     static Windows::UI::Xaml::Style ^ customPasswordBoxStyle;
     static Platform::String ^ xamlTextBoxStyles;

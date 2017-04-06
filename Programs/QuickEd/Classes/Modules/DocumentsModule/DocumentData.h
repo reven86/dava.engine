@@ -22,7 +22,7 @@ public:
     DocumentData(const DAVA::RefPtr<PackageNode>& package);
     ~DocumentData() override;
 
-    const PackageNode* GetPackageNode() const;
+    PackageNode* GetPackageNode() const;
 
     void ExecCommand(std::unique_ptr<DAVA::Command>&& command);
     void BeginBatch(const DAVA::String& batchName, DAVA::uint32 commandsCount = 1);

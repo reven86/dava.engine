@@ -3,7 +3,6 @@
 #include "Modules/DocumentsModule/DocumentData.h"
 #include "Modules/DocumentsModule/Private/DocumentsWatcherData.h"
 #include "Modules/DocumentsModule/Private/EditorCanvasData.h"
-#include "Modules/LegacySupportModule/Private/Document.h"
 
 #include "QECommands/ChangePropertyValueCommand.h"
 
@@ -19,7 +18,6 @@
 #include "Application/QEGlobal.h"
 
 #include "UI/mainwindow.h"
-#include "UI/DocumentGroupView.h"
 #include "UI/ProjectView.h"
 #include "UI/Preview/PreviewWidget.h"
 #include "UI/Package/PackageWidget.h"
@@ -35,6 +33,7 @@
 
 #include <QtTools/InputDialogs/MultilineTextInputDialog.h>
 
+#include <Base/Any.h>
 #include <Command/CommandStack.h>
 #include <UI/UIPackageLoader.h>
 #include <UI/UIStaticText.h>
@@ -598,10 +597,10 @@ void DocumentsModule::ChangeControlText(ControlNode* node)
     DVASSERT(staticText != nullptr);
 
     RootProperty* rootProperty = node->GetRootProperty();
-    AbstractProperty* textProperty = rootProperty->FindPropertyByName("Text");
+    AbstractProperty* textProperty = rootProperty->FindPropertyByName("text");
     DVASSERT(textProperty != nullptr);
 
-    String text = textProperty->GetValue().AsString();
+    String text = textProperty->GetValue().Cast<String>();
 
     QString label = QObject::tr("Enter new text, please");
     bool ok;
@@ -614,17 +613,17 @@ void DocumentsModule::ChangeControlText(ControlNode* node)
         DocumentData* data = activeContext->GetData<DocumentData>();
         CommandStack* stack = data->commandStack.get();
         stack->BeginBatch("change text by user");
-        AbstractProperty* multilineProperty = rootProperty->FindPropertyByName("Multi Line");
+        AbstractProperty* multilineProperty = rootProperty->FindPropertyByName("multiline");
         DVASSERT(multilineProperty != nullptr);
-        UIStaticText::eMultiline multilineType = static_cast<UIStaticText::eMultiline>(multilineProperty->GetValue().AsInt32());
+        UIStaticText::eMultiline multilineType = multilineProperty->GetValue().Cast<UIStaticText::eMultiline>();
         if (inputText.contains('\n') && multilineType == UIStaticText::MULTILINE_DISABLED)
         {
             std::unique_ptr<ChangePropertyValueCommand> command = data->CreateCommand<ChangePropertyValueCommand>();
-            command->AddNodePropertyValue(node, multilineProperty, VariantType(UIStaticText::MULTILINE_ENABLED));
+            command->AddNodePropertyValue(node, multilineProperty, Any(UIStaticText::MULTILINE_ENABLED));
             data->ExecCommand(std::move(command));
         }
         std::unique_ptr<ChangePropertyValueCommand> command = data->CreateCommand<ChangePropertyValueCommand>();
-        command->AddNodePropertyValue(node, textProperty, VariantType(inputText.toStdString()));
+        command->AddNodePropertyValue(node, textProperty, Any(inputText.toStdString()));
         data->ExecCommand(std::move(command));
         stack->EndBatch();
     }

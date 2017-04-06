@@ -8,9 +8,9 @@
 
 namespace ResizeCommandDetails
 {
-DAVA::VariantType GetValueFromProperty(AbstractProperty* property)
+DAVA::Any GetValueFromProperty(AbstractProperty* property)
 {
-    return property->IsOverriddenLocally() ? property->GetValue() : DAVA::VariantType();
+    return property->IsOverriddenLocally() ? property->GetValue() : DAVA::Any();
 }
 }
 
@@ -19,7 +19,7 @@ ResizeCommand::ResizeCommand(PackageNode* package)
 {
 }
 
-void ResizeCommand::AddNodePropertyValue(ControlNode* node, AbstractProperty* sizeProperty, const DAVA::VariantType& sizeValue, AbstractProperty* pivotProperty, const DAVA::VariantType& pivotValue)
+void ResizeCommand::AddNodePropertyValue(ControlNode* node, AbstractProperty* sizeProperty, const DAVA::Any& sizeValue, AbstractProperty* pivotProperty, const DAVA::Any& pivotValue)
 {
     DVASSERT(node != nullptr);
     DVASSERT(sizeProperty != nullptr);
@@ -40,7 +40,7 @@ void ResizeCommand::Undo()
 {
     for (const Item& item : items)
     {
-        if (item.sizeOldValue.GetType() == DAVA::VariantType::TYPE_NONE)
+        if (item.sizeOldValue.IsEmpty())
         {
             package->ResetControlProperty(item.node.Get(), item.sizeProperty.Get());
         }
@@ -49,7 +49,7 @@ void ResizeCommand::Undo()
             package->SetControlProperty(item.node.Get(), item.sizeProperty.Get(), item.sizeOldValue);
         }
 
-        if (item.pivotOldValue.GetType() == DAVA::VariantType::TYPE_NONE)
+        if (item.pivotOldValue.IsEmpty())
         {
             package->ResetControlProperty(item.node.Get(), item.pivotProperty.Get());
         }
@@ -92,7 +92,7 @@ bool ResizeCommand::MergeWith(const DAVA::Command* command)
     return true;
 }
 
-ResizeCommand::Item::Item(ControlNode* node_, AbstractProperty* sizeProperty_, const DAVA::VariantType& sizeValue, AbstractProperty* pivotProperty_, const DAVA::VariantType& pivotValue)
+ResizeCommand::Item::Item(ControlNode* node_, AbstractProperty* sizeProperty_, const DAVA::Any& sizeValue, AbstractProperty* pivotProperty_, const DAVA::Any& pivotValue)
     : node(DAVA::RefPtr<ControlNode>::ConstructWithRetain(node_))
     , sizeProperty(DAVA::RefPtr<AbstractProperty>::ConstructWithRetain(sizeProperty_))
     , sizeNewValue(sizeValue)

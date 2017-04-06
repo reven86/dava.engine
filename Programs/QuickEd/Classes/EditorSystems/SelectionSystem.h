@@ -7,7 +7,6 @@
 
 #include <Math/Rect.h>
 #include <UI/UIEvent.h>
-#include <Functional/SignalBase.h>
 #include <Preferences/PreferencesRegistrator.h>
 
 class EditorSystemsManager;

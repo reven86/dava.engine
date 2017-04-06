@@ -5,7 +5,6 @@
 #include <UI/UIControl.h>
 #include <UI/UIStaticText.h>
 #include <UI/UITextField.h>
-#include <Functional/SignalBase.h>
 
 class TestBed;
 class TextFieldDelegate;
@@ -27,6 +26,5 @@ private:
     DAVA::RefPtr<DAVA::UIStaticText> keyboardFrameRectText;
     DAVA::RefPtr<DAVA::UITextField> textField1;
     DAVA::RefPtr<DAVA::UITextField> textField2;
-    DAVA::SigConnectionID visibleFrameChangedId = 0;
     TextFieldDelegate* tfDelegate = nullptr;
 };

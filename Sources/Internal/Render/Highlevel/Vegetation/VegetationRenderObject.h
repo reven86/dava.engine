@@ -168,6 +168,7 @@ private:
     static bool CellByDistanceCompareFunction(const AbstractQuadTreeNode<VegetationSpatialData>* a, const AbstractQuadTreeNode<VegetationSpatialData>* b);
 
     void InitHeightTextureFromHeightmap(Heightmap* heightMap);
+    Vector<float32> BuildHeightmapFloatData(Heightmap* heightMap);
 
     float32 SampleHeight(int16 x, int16 y);
 
@@ -179,8 +180,6 @@ private:
     void RestoreRenderData();
 
     bool ReadyToRender();
-
-    size_t SelectDirectionIndex(const Vector3& cameraDirection, Vector<VegetationSortedBufferItem>& buffers);
 
     inline uint32 MapToResolution(float32 squareDistance);
 

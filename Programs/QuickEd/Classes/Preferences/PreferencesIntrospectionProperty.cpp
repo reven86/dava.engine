@@ -1,24 +1,25 @@
 #include "Model/ControlProperties/SubValueProperty.h"
 #include "Preferences/PreferencesIntrospectionProperty.h"
 #include "Preferences/PreferencesStorage.h"
+#include "Utils/QtDavaConvertion.h"
 
-PreferencesIntrospectionProperty::PreferencesIntrospectionProperty(const DAVA::InspMember* aMember)
-    : ValueProperty(aMember->Desc().text, DAVA::VariantType::TypeFromMetaInfo(aMember->Type()), true, &aMember->Desc())
-    , member(aMember)
+PreferencesIntrospectionProperty::PreferencesIntrospectionProperty(const DAVA::InspMember* member_)
+    : ValueProperty(member_->Desc().text, VariantTypeToType(DAVA::VariantType::TypeFromMetaInfo(member_->Type())))
+    , member(member_)
 {
     DAVA::VariantType defaultValue = PreferencesStorage::Instance()->GetDefaultValue(member);
     if (defaultValue.type != DAVA::VariantType::TYPE_NONE)
     {
-        ValueProperty::SetDefaultValue(defaultValue);
+        ValueProperty::SetDefaultValue(VariantTypeToAny(defaultValue));
     }
     else
     {
-        DAVA::VariantType::eVariantType type = ValueProperty::GetValueType();
-        ValueProperty::SetDefaultValue(DAVA::VariantType::FromType(type));
+        DAVA::VariantType::eVariantType type = DAVA::VariantType::TypeFromMetaInfo(member_->Type());
+        ValueProperty::SetDefaultValue(VariantTypeToAny(DAVA::VariantType::FromType(type)));
     }
     valueOnOpen = PreferencesStorage::Instance()->GetValue(member);
     value = valueOnOpen;
-    DAVA::String name(aMember->Desc().text);
+    DAVA::String name(member_->Desc().text);
     DAVA::size_type index = name.find_last_of('/');
     if (index == DAVA::String::npos)
     {
@@ -28,24 +29,31 @@ PreferencesIntrospectionProperty::PreferencesIntrospectionProperty(const DAVA::I
     {
         SetName(name.substr(index + 1));
     }
+
+    GenerateBuiltInSubProperties();
 }
 
 void PreferencesIntrospectionProperty::ApplyPreference()
 {
     if (value != valueOnOpen)
     {
-        PreferencesStorage::Instance()->SetValue(member, GetValue());
+        PreferencesStorage::Instance()->SetValue(member, AnyToVariantType(GetValue()));
     }
 }
 
-void PreferencesIntrospectionProperty::SetValue(const DAVA::VariantType& val)
+PreferencesIntrospectionProperty::ePropertyType PreferencesIntrospectionProperty::GetType() const
 {
-    value = val;
+    return TYPE_VARIANT;
 }
 
-DAVA::VariantType PreferencesIntrospectionProperty::GetValue() const
+void PreferencesIntrospectionProperty::SetValue(const DAVA::Any& val)
 {
-    return value;
+    value = AnyToVariantType(val);
+}
+
+DAVA::Any PreferencesIntrospectionProperty::GetValue() const
+{
+    return VariantTypeToAny(value);
 }
 
 const EnumMap* PreferencesIntrospectionProperty::GetEnumMap() const
@@ -84,5 +92,5 @@ DAVA::uint32 PreferencesIntrospectionProperty::GetFlags() const
 
 void PreferencesIntrospectionProperty::ResetValue()
 {
-    SetValue(PreferencesStorage::Instance()->GetDefaultValue(member));
+    SetValue(VariantTypeToAny(PreferencesStorage::Instance()->GetDefaultValue(member)));
 }

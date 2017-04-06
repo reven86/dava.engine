@@ -12,7 +12,7 @@ class UIControl;
 class ControlPropertiesSection : public SectionProperty<IntrospectionProperty>
 {
 public:
-    ControlPropertiesSection(DAVA::UIControl* control, const DAVA::InspInfo* typeInfo, const ControlPropertiesSection* sourceSection, eCloneType copyType);
+    ControlPropertiesSection(const DAVA::String& name, DAVA::UIControl* control, const DAVA::Type* type, const DAVA::Vector<DAVA::Reflection::Field>& fields, const ControlPropertiesSection* sourceSection, eCloneType copyType);
 
 protected:
     virtual ~ControlPropertiesSection();

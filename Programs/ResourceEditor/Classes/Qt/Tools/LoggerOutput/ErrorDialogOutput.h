@@ -32,5 +32,5 @@ private:
     std::atomic<bool> isJobStarted;
     std::atomic<bool> enabled;
 
-    DAVA::SigConnectionID waitDialogConnectionId = 0;
+    DAVA::Token waitDialogConnectionToken;
 };
