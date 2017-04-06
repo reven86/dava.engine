@@ -41,6 +41,7 @@
 #include "Tests/DeviceManagerTest.h"
 #include "Tests/SoundTest.h"
 #include "Tests/AnyPerformanceTest.h"
+#include "Tests/OverdrawTest.h"
 #include "Tests/WindowTest.h"
 #include "Tests/RichTextTest.h"
 //$UNITTEST_INCLUDE
@@ -302,6 +303,7 @@ void TestBed::RegisterTests()
 #endif
     new DeviceInfoTest(*this);
     new DlcTest(*this);
+    new OverdrawPerformanceTester::OverdrawTest(*this);
     new UIScrollViewTest(*this);
     new NotificationScreen(*this);
     new SpeedLoadImagesTest(*this);
