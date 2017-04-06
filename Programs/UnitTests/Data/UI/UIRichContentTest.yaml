@@ -25,10 +25,20 @@ StyleSheets:
 -   selector: ".red"
     properties:
         bg-color: [1.000000, 0.000000, 0.000000, 1.000000]
+Prototypes:
+-   class: "UIControl"
+    name: "ProtoControl"
+    size: [32.000000, 32.000000]
+    debugDraw: true
 Controls:
 -   class: "UIControl"
-    name: "Control"
+    name: "RichControl"
     position: [0.000000, 0.000000]
     size: [380.000000, 352.000000]
     components:
         RichContent: {}
+-   class: "UIControl"
+    name: "CustomControl"
+    size: [32.000000, 32.000000]
+    debugDraw: true
+    debugDrawColor: [0.000000, 1.000000, 0.000000, 1.000000]

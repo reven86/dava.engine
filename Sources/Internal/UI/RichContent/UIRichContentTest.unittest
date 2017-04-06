@@ -31,7 +31,7 @@ DAVA_TESTCLASS(UIRichContentTest)
 
         DefaultUIPackageBuilder pkgBuilder;
         UIPackageLoader().LoadPackage("~res:/UI/UIRichContentTest.yaml", &pkgBuilder);
-        richControl = pkgBuilder.GetPackage()->GetControl("Control");
+        richControl = pkgBuilder.GetPackage()->GetControl("RichControl");
 
         screen->AddControl(richControl.Get());
     }
@@ -50,14 +50,17 @@ DAVA_TESTCLASS(UIRichContentTest)
     DAVA_TEST(BasicTest)
     {
         const String testData = R"(
-            <p class="text">Header</p><span class="text">Simple text<br /> with </span><img src="~res:/Gfx/UI/GoldPin" /><span class="text">image.</span><ul><li>Item 1</li><li>Item 2</li></ul>
+            <p class="text">Header</p><span class="text">Simple text<br /> with </span><img src="~res:/Gfx/UI/GoldPin" /><span class="text">image.</span>
+            <ul><li>Item 1</li><li>Item 2</li></ul>
+            <object path="~res:/UI/UIRichContentTest.yaml" prototype="ProtoControl" />
+            <object path="~res:/UI/UIRichContentTest.yaml" control="CustomControl" />
         )";
         UIRichContentComponent* c = richControl->GetOrCreateComponent<UIRichContentComponent>();
         DVASSERT(c);
         c->SetUTF8Text(testData);
 
         UpdateRichContentSystem();
-        TEST_VERIFY(richControl->GetChildren().size() == 12);
+        TEST_VERIFY(richControl->GetChildren().size() == 14);
     }
 
     DAVA_TEST(BaseClassesTest)
