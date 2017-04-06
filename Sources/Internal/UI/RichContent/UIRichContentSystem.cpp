@@ -59,13 +59,16 @@ public:
         return classesStack.back();
     }
 
-    void PrepareControl(UIControl* ctrl)
+    void PrepareControl(UIControl* ctrl, bool autosize)
     {
         ctrl->SetClassesFromString(GetClass());
 
-        UISizePolicyComponent* sp = ctrl->GetOrCreateComponent<UISizePolicyComponent>();
-        sp->SetHorizontalPolicy(UISizePolicyComponent::eSizePolicy::PERCENT_OF_CONTENT);
-        sp->SetVerticalPolicy(UISizePolicyComponent::eSizePolicy::PERCENT_OF_CONTENT);
+        if (autosize)
+        {
+            UISizePolicyComponent* sp = ctrl->GetOrCreateComponent<UISizePolicyComponent>();
+            sp->SetHorizontalPolicy(UISizePolicyComponent::eSizePolicy::PERCENT_OF_CONTENT);
+            sp->SetVerticalPolicy(UISizePolicyComponent::eSizePolicy::PERCENT_OF_CONTENT);
+        }
 
         if (isRtl || needLineBreak)
         {
@@ -135,7 +138,7 @@ public:
             needLineBreak = true;
 
             UIStaticText* ctrl = new UIStaticText();
-            PrepareControl(ctrl);
+            PrepareControl(ctrl, true);
             ctrl->SetUtf8Text("*");
             ctrl->SetForceBiDiSupportEnabled(true);
             controls.emplace_back(ctrl);
@@ -146,7 +149,7 @@ public:
             if (GetAttribute(attributes, "src", src))
             {
                 UIControl* img = new UIControl();
-                PrepareControl(img);
+                PrepareControl(img, true);
                 UIControlBackground* bg = img->GetOrCreateComponent<UIControlBackground>();
                 bg->SetSprite(FilePath(src));
                 controls.emplace_back(img);
@@ -154,7 +157,33 @@ public:
         }
         else if (tag == "object")
         {
-            // TODO: Add custom control
+            String path;
+            GetAttribute(attributes, "path", path);
+            String controlName;
+            GetAttribute(attributes, "control", controlName);
+            String prototypeName;
+            GetAttribute(attributes, "prototype", prototypeName);
+
+            if (!path.empty() && (!controlName.empty() || !prototypeName.empty()))
+            {
+                DefaultUIPackageBuilder pkgBuilder;
+                UIPackageLoader().LoadPackage(path, &pkgBuilder);
+                UIControl* obj = nullptr;
+                if (!controlName.empty())
+                {
+                    obj = pkgBuilder.GetPackage()->GetControl(controlName);
+                }
+                else if (!prototypeName.empty())
+                {
+                    obj = pkgBuilder.GetPackage()->GetPrototype(prototypeName);
+                }
+                if (obj != nullptr)
+                {
+                    obj = obj->Clone(); // Clone control from package
+                    PrepareControl(obj, false); // TODO: Need it for prototypes?
+                    controls.emplace_back(obj);
+                }
+            }
         }
     }
 
@@ -170,6 +199,10 @@ public:
         {
             needLineBreak = true;
         }
+        else if (tag == "li")
+        {
+            needLineBreak = true;
+        }
     }
 
     void ProcessText(const String& text)
@@ -180,7 +213,7 @@ public:
         {
             isRtl = bidiHelper.IsRtlUTF8String(token);
             UIStaticText* ctrl = new UIStaticText();
-            PrepareControl(ctrl);
+            PrepareControl(ctrl, true);
             ctrl->SetUtf8Text(token);
             ctrl->SetForceBiDiSupportEnabled(true);
             controls.emplace_back(ctrl);
