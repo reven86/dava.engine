@@ -430,7 +430,7 @@ void PropertiesModel::ResetProperty(AbstractProperty* property)
 
     if (nullptr != controlNode)
     {
-        documentData->ExecCommand<ChangePropertyValueCommand>(controlNode, property, VariantType());
+        documentData->ExecCommand<ChangePropertyValueCommand>(controlNode, property, Any());
     }
     else
     {
