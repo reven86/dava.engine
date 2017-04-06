@@ -796,5 +796,66 @@ int32 FindEdgeInMappingTable(int32 nV1, int32 nV2, EdgeMappingWork* mapping, int
     DVASSERT(0);
     return -1; // We should never reach this line
 }
+
+Vector<uint16> BuildSortedIndexBufferData(PolygonGroup* pg, Vector3 direction)
+{
+    DVASSERT(pg);
+    DVASSERT(pg->GetPrimitiveType() == rhi::PRIMITIVE_TRIANGLELIST);
+
+    struct Triangle
+    {
+        Vector3 sortPosition;
+        Array<uint16, 3> indices;
+    };
+
+    int32 trianglesCount = pg->GetIndexCount() / 3;
+
+    Vector<uint16> indexBufferData;
+    indexBufferData.reserve(pg->GetIndexCount());
+
+    Vector<Triangle> triangles;
+    triangles.reserve(trianglesCount);
+
+    Vector3 tempVec3;
+    int32 tempInd[3];
+    for (int32 ti = 0; ti < trianglesCount; ++ti)
+    {
+        triangles.emplace_back();
+        Triangle& triangle = triangles.back();
+
+        pg->GetIndex(ti * 3 + 0, tempInd[0]);
+        pg->GetIndex(ti * 3 + 1, tempInd[1]);
+        pg->GetIndex(ti * 3 + 2, tempInd[2]);
+
+        if (pg->GetFormat() & EVF_PIVOT)
+        {
+            pg->GetPivot(tempInd[0], triangle.sortPosition);
+        }
+        else
+        {
+            pg->GetCoord(tempInd[0], tempVec3);
+            triangle.sortPosition += tempVec3;
+            pg->GetCoord(tempInd[1], tempVec3);
+            triangle.sortPosition += tempVec3;
+            pg->GetCoord(tempInd[2], tempVec3);
+            triangle.sortPosition += tempVec3;
+
+            triangle.sortPosition /= 3.f;
+        }
+
+        triangle.indices[0] = uint16(tempInd[0]);
+        triangle.indices[1] = uint16(tempInd[1]);
+        triangle.indices[2] = uint16(tempInd[2]);
+    }
+
+    std::stable_sort(triangles.begin(), triangles.end(), [&direction](const Triangle& l, const Triangle& r) {
+        return direction.DotProduct(l.sortPosition - r.sortPosition) > 0.f;
+    });
+
+    for (const Triangle& t : triangles)
+        indexBufferData.insert(indexBufferData.end(), t.indices.begin(), t.indices.end());
+
+    return indexBufferData;
+}
 };
 };

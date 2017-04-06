@@ -10,6 +10,7 @@
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 #include "Scene3D/Scene.h"
 #include "Render/Highlevel/SpeedTreeObject.h"
+#include "Render/3D/MeshUtils.h"
 #include "Utils/Random.h"
 #include "Math/Math2D.h"
 #include "Debug/ProfilerCPU.h"
@@ -29,6 +30,8 @@ SpeedTreeUpdateSystem::SpeedTreeUpdateSystem(Scene* scene)
 
     scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::WORLD_TRANSFORM_CHANGED);
     scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::SPEED_TREE_MAX_ANIMATED_LOD_CHANGED);
+
+    Renderer::GetSignals().needRestoreResources.Connect(this, &SpeedTreeUpdateSystem::RestoreDirectionBuffers);
 }
 
 SpeedTreeUpdateSystem::~SpeedTreeUpdateSystem()
@@ -39,6 +42,8 @@ SpeedTreeUpdateSystem::~SpeedTreeUpdateSystem()
         for (rhi::HIndexBuffer h : it->second)
             rhi::DeleteIndexBuffer(h);
     }
+
+    Renderer::GetSignals().needRestoreResources.Disconnect(this);
 
     Renderer::GetOptions()->RemoveObserver(this);
 }
@@ -195,68 +200,11 @@ void SpeedTreeUpdateSystem::ProcessSpeedTreeGeometry(SpeedTreeObject* object)
 SpeedTreeObject::IndexBufferArray SpeedTreeUpdateSystem::BuildDirectionIndexBuffers(PolygonGroup* pg)
 {
     DVASSERT(pg);
-    DVASSERT(pg->GetPrimitiveType() == rhi::PRIMITIVE_TRIANGLELIST);
-
-    struct Triangle
-    {
-        Vector3 sortPosition;
-        Array<uint16, 3> indices;
-    };
 
     SpeedTreeObject::IndexBufferArray buffers;
-
-    Vector<Triangle> triangles;
-    triangles.reserve(pg->GetIndexCount() / 3);
-
-    Vector<uint16> indexBufferData;
-    indexBufferData.reserve(pg->GetIndexCount());
-
-    Vector3 tempVec3;
-    int32 tempInd[3];
     for (uint32 dir = 0; dir < SpeedTreeObject::SORTING_DIRECTION_COUNT; ++dir)
     {
-        triangles.clear();
-        indexBufferData.clear();
-
-        int32 trianglesCount = pg->GetIndexCount() / 3;
-        for (int32 ti = 0; ti < trianglesCount; ++ti)
-        {
-            triangles.emplace_back();
-            Triangle& triangle = triangles.back();
-
-            pg->GetIndex(ti * 3 + 0, tempInd[0]);
-            pg->GetIndex(ti * 3 + 1, tempInd[1]);
-            pg->GetIndex(ti * 3 + 2, tempInd[2]);
-
-            if (pg->GetFormat() & EVF_PIVOT)
-            {
-                pg->GetPivot(tempInd[0], triangle.sortPosition);
-            }
-            else
-            {
-                pg->GetCoord(tempInd[0], tempVec3);
-                triangle.sortPosition += tempVec3;
-                pg->GetCoord(tempInd[1], tempVec3);
-                triangle.sortPosition += tempVec3;
-                pg->GetCoord(tempInd[2], tempVec3);
-                triangle.sortPosition += tempVec3;
-
-                triangle.sortPosition /= 3.f;
-            }
-
-            triangle.indices[0] = uint16(tempInd[0]);
-            triangle.indices[1] = uint16(tempInd[1]);
-            triangle.indices[2] = uint16(tempInd[2]);
-        }
-
-        Vector3 direction = SpeedTreeObject::GetSortingDirection(dir);
-        std::stable_sort(triangles.begin(), triangles.end(), [&direction](const Triangle& l, const Triangle& r) {
-            return direction.DotProduct(l.sortPosition - r.sortPosition) > 0.f;
-        });
-
-        for (const Triangle& t : triangles)
-            indexBufferData.insert(indexBufferData.end(), t.indices.begin(), t.indices.end());
-
+        Vector<uint16> indexBufferData = MeshUtils::BuildSortedIndexBufferData(pg, SpeedTreeObject::GetSortingDirection(dir));
         DVASSERT(int32(indexBufferData.size()) == pg->GetIndexCount());
 
         rhi::IndexBuffer::Descriptor ibDesc;
@@ -271,6 +219,17 @@ SpeedTreeObject::IndexBufferArray SpeedTreeUpdateSystem::BuildDirectionIndexBuff
 
 void SpeedTreeUpdateSystem::RestoreDirectionBuffers()
 {
-    //TODO
+    for (auto it = directionIndexBuffers.begin(), itEnd = directionIndexBuffers.end(); it != itEnd; ++it)
+    {
+        for (uint32 dir = 0; dir < SpeedTreeObject::SORTING_DIRECTION_COUNT; ++dir)
+        {
+            rhi::HIndexBuffer bufferHandle = it->second[dir];
+            if (rhi::NeedRestoreIndexBuffer(bufferHandle))
+            {
+                Vector<uint16> indexData = MeshUtils::BuildSortedIndexBufferData(it->first, SpeedTreeObject::GetSortingDirection(dir));
+                rhi::UpdateIndexBuffer(bufferHandle, indexData.data(), 0, uint32(indexData.size() * sizeof(uint16)));
+            }
+        }
+    }
 }
 };

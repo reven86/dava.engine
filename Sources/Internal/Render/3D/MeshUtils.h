@@ -21,6 +21,8 @@ PolygonGroup* CreateShadowPolygonGroup(PolygonGroup* source);
 
 uint32 ReleaseGeometryDataRecursive(Entity* forEntity);
 
+Vector<uint16> BuildSortedIndexBufferData(PolygonGroup* pg, Vector3 direction);
+
 struct FaceWork
 {
     int32 indexOrigin[3];
