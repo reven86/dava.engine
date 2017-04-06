@@ -612,6 +612,10 @@ void PropertiesModel::initAny(Any& var, const QVariant& val) const
         DVASSERT(false);
         var = QStringToWideString(val.toString());
     }
+    else if (var.CanGet<FastName>())
+    {
+        var = FastName(val.toString().toStdString());
+    }
     else if (var.CanGet<Vector2>())
     {
         QVector2D vector = val.value<QVector2D>();
