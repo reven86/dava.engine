@@ -26,6 +26,11 @@ Reflection FormulaExecutor::GetDataReference(FormulaExpression* exp)
     return GetDataReferenceImpl(exp);
 }
 
+const Vector<void*>& FormulaExecutor::GetDependencies() const
+{
+    return dependencies;
+}
+
 void FormulaExecutor::Visit(FormulaValueExpression* exp)
 {
     calculationResult = exp->GetValue();

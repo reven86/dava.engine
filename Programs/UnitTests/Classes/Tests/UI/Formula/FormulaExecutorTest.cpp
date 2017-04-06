@@ -115,6 +115,23 @@ DAVA_TESTCLASS (FormulaExecutorTest)
     }
 
     // FormulaExecutor::Calculate
+    DAVA_TEST (Dependencies)
+    {
+        TestData data;
+
+        Vector<void*> dependencies;
+
+        dependencies = GetDependencies("sum(16, intVal * 2)", &data);
+        TEST_VERIFY(dependencies == Vector<void*>({ &(data.intVal) }));
+
+        dependencies = GetDependencies("map.b + fl", &data);
+        TEST_VERIFY(dependencies == Vector<void*>({ &(data.map), &(data.map["b"]), &(data.flVal) }));
+
+        dependencies = GetDependencies("b && (array[1] == 1)", &data);
+        TEST_VERIFY(dependencies == Vector<void*>({ &(data.bVal), &(data.array), &(data.array[1]) }));
+    }
+
+    // FormulaExecutor::Calculate
     DAVA_TEST (ParseExpressionWithErrors)
     {
         bool wasException = false;
@@ -150,8 +167,17 @@ DAVA_TESTCLASS (FormulaExecutorTest)
         FormulaParser parser(str);
         std::shared_ptr<FormulaExpression> exp = parser.ParseExpression();
         Any res = executor.Calculate(exp.get());
-
-        Logger::Debug(">>> %s", FormulaFormatter::AnyToString(res).c_str());
         return res;
+    }
+
+    Vector<void*> GetDependencies(const String str, TestData* data)
+    {
+        FormulaReflectionContext context(Reflection::Create(data), std::shared_ptr<FormulaContext>());
+        FormulaExecutor executor(&context);
+        FormulaParser parser(str);
+        std::shared_ptr<FormulaExpression> exp = parser.ParseExpression();
+
+        executor.Calculate(exp.get());
+        return executor.GetDependencies();
     }
 };

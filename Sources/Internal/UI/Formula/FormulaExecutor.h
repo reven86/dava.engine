@@ -15,6 +15,8 @@ public:
     Any Calculate(FormulaExpression* exp);
     Reflection GetDataReference(FormulaExpression* exp);
 
+    const Vector<void*>& GetDependencies() const;
+
 private:
     void Visit(FormulaValueExpression* exp) override;
     void Visit(FormulaNegExpression* exp) override;
