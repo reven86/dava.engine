@@ -513,10 +513,6 @@ struct UIManager::Impl : public QObject
         FastName appId = windowKey.GetAppID();
         window->setWindowTitle(appId.c_str());
         window->setObjectName(appId.c_str());
-
-        PropertiesItem ph = propertiesHolder.CreateSubHolder(appId.c_str());
-        window->restoreGeometry(ph.Get<QByteArray>(UIManagerDetail::WINDOW_GEOMETRY_KEY));
-        window->restoreState(ph.Get<QByteArray>(UIManagerDetail::WINDOW_STATE_KEY));
     }
 
 protected:
@@ -665,6 +661,11 @@ void UIManager::InitializationFinished()
     impl->initializationFinished = true;
     for (auto& windowIter : impl->windows)
     {
+        QMainWindow* mainWindow = windowIter.second.window;
+        PropertiesItem ph = impl->propertiesHolder.CreateSubHolder(mainWindow->objectName().toStdString());
+        mainWindow->restoreGeometry(ph.Get<QByteArray>(UIManagerDetail::WINDOW_GEOMETRY_KEY));
+        mainWindow->restoreState(ph.Get<QByteArray>(UIManagerDetail::WINDOW_STATE_KEY));
+
         windowIter.second.window->show();
     }
 }
