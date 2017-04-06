@@ -15,13 +15,6 @@ namespace DAVA
 class XMLBuilder final : public XMLParserDelegate
 {
 public:
-    void Reset()
-    {
-        controls.clear();
-        classesStack.clear();
-        context = nullptr;
-    }
-
     bool Build(const String& text)
     {
         controls.clear();
@@ -34,12 +27,7 @@ public:
         return controls;
     }
 
-    void SetContext(UIControlPackageContext* _context)
-    {
-        context = _context;
-    }
-
-    void SetTopClass(const String& clazz)
+    void SetBaseClass(const String& clazz)
     {
         classesStack.clear();
         classesStack.push_back(clazz);
@@ -73,7 +61,6 @@ public:
 
     void PrepareControl(UIControl* ctrl)
     {
-        ctrl->SetPackageContext(context);
         ctrl->SetClassesFromString(GetClass());
 
         UISizePolicyComponent* sp = ctrl->GetOrCreateComponent<UISizePolicyComponent>();
@@ -200,25 +187,9 @@ public:
         }
     }
 
-    String PrintMap(const Map<String, String>& map)
-    {
-        String out = "[";
-        if (!map.empty())
-        {
-            for (const auto& pair : map)
-            {
-                out += pair.first + "='" + pair.second + "', ";
-            }
-            out.resize(out.length() - 2); //remove last ', '
-        }
-        out += "]";
-        return out;
-    }
-
 private:
     bool needLineBreak = false;
     bool isRtl = false;
-    UIControlPackageContext* context = nullptr;
     Vector<String> classesStack;
     Vector<RefPtr<UIControl>> controls;
     BiDiHelper bidiHelper;
@@ -226,14 +197,6 @@ private:
 };
 
 /*******************************************************************************************************/
-
-UIRichContentSystem::UIRichContentSystem()
-{
-}
-
-UIRichContentSystem::~UIRichContentSystem()
-{
-}
 
 void UIRichContentSystem::RegisterControl(UIControl* control)
 {
@@ -309,9 +272,8 @@ void UIRichContentSystem::Process(float32 elapsedTime)
             root->RemoveAllControls();
 
             XMLBuilder builder;
-            builder.SetTopClass(l.component->GetBaseClasses());
+            builder.SetBaseClass(l.component->GetBaseClasses());
             builder.SetAliases(l.component->GetAliases());
-            // builder.SetContext(root->GetPackageContext()); // TODO: need it?
             if (builder.Build("<span>" + l.component->GetUTF8Text() + "</span>"))
             {
                 for (const RefPtr<UIControl>& ctrl : builder.GetControls())

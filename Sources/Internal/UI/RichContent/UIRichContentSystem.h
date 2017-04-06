@@ -10,17 +10,16 @@ namespace DAVA
 class UIControl;
 class UIControlPackageContext;
 
-class UIRichContentSystem : public UISystem
+class UIRichContentSystem final : public UISystem
 {
 public:
-    UIRichContentSystem();
-    ~UIRichContentSystem() override;
+    UIRichContentSystem() = default;
+    ~UIRichContentSystem() override = default;
 
     void RegisterControl(UIControl* control) override;
     void UnregisterControl(UIControl* control) override;
     void RegisterComponent(UIControl* control, UIComponent* component) override;
     void UnregisterComponent(UIControl* control, UIComponent* component) override;
-
     void OnControlVisible(UIControl* control) override;
     void OnControlInvisible(UIControl* control) override;
 

@@ -8,29 +8,42 @@ namespace DAVA
 {
 class UIControl;
 
+/** Describe rich content inside control. */
 class UIRichContentComponent : public UIBaseComponent<UIComponent::RICH_CONTENT_COMPONENT>
 {
     DAVA_VIRTUAL_REFLECTION(UIRichContentComponent, UIBaseComponent<UIComponent::RICH_CONTENT_COMPONENT>);
 
 public:
+    /** Defaul contructor. */
     UIRichContentComponent() = default;
+    /** Copy contructor. */
     UIRichContentComponent(const UIRichContentComponent& src);
 
     UIRichContentComponent* Clone() const override;
 
+    /** Set rich content text. */
     void SetUTF8Text(const String& text);
+    /** Return rich content text. */
     const String& GetUTF8Text() const;
 
+    /** Set top level classes for rich content. */
     void SetBaseClasses(const String& classes);
+    /** Return top level classes for rich content. */
     const String& GetBaseClasses() const;
 
+    /** Set aliases for tags with attributes. */
     void SetAliases(const UIRichAliasMap& aliases);
+    /** Return aliases tof tags. */
     const UIRichAliasMap& GetAliases() const;
 
+    /** Set aliases for tags from specified string. */
     void SetAliasesFromString(const String& aliases);
+    /** Return aliases for tags as string. */
     String GetAliasesAsString() const;
 
+    /** Reset modification flag. */
     void ResetModify();
+    /** Return value of modification flag. */
     bool IsModified() const;
 
 protected:

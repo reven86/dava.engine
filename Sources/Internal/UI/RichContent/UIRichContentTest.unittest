@@ -55,14 +55,31 @@ DAVA_TESTCLASS(UIRichContentTest)
         UIRichContentComponent* c = richControl->GetOrCreateComponent<UIRichContentComponent>();
         DVASSERT(c);
         c->SetUTF8Text(testData);
+
         UpdateRichContentSystem();
         TEST_VERIFY(richControl->GetChildren().size() == 12);
+    }
+
+    DAVA_TEST(BaseClassesTest)
+    {
+        const String testData = R"(
+            Simple <span class="red">red</span> text
+        )";
+        UIRichContentComponent* c = richControl->GetOrCreateComponent<UIRichContentComponent>();
+        DVASSERT(c);
+        c->SetBaseClasses("text");
+        c->SetUTF8Text(testData);
+
+        UpdateRichContentSystem();
+        TEST_VERIFY(richControl->GetChildren().size() == 3);
+
+        c->SetBaseClasses("");
     }
 
     DAVA_TEST(AliasesTest)
     {
         const String testData = R"(
-            <h1>Header</h1><text>Simple text<nl /> with </text><GoldPin /><text>image.</text>
+            <h1>Header</h1><text>Simple text<nl/> with </text><GoldPin/><text>image.</text>
         )";
         UIRichContentComponent* c = richControl->GetOrCreateComponent<UIRichContentComponent>();
         DVASSERT(c);
@@ -111,8 +128,10 @@ DAVA_TESTCLASS(UIRichContentTest)
 
         // Aliases from/to string
         {
-            String aliasesStr = c->GetAliasesAsString();
-            c->SetAliasesFromString(aliasesStr);
+            uint32 count = aliases.Count();
+            String aliasesStr = aliases.AsString();
+            aliases.FromString(aliasesStr);
+            TEST_VERIFY(count == aliases.Count());
         }
 
         // Remove aliases
@@ -122,5 +141,18 @@ DAVA_TESTCLASS(UIRichContentTest)
             aliases.RemoveAll();
             TEST_VERIFY(aliases.Count() == 0);
         }
+        c->SetAliases(aliases);
+    }
+
+    DAVA_TEST(RichComponentTest)
+    {
+        RefPtr<UIRichContentComponent> orig;
+        orig = richControl->GetComponent<UIRichContentComponent>();
+        richControl->RemoveComponent(orig.Get());
+        RefPtr<UIRichContentComponent> copy(orig->Clone());
+        richControl->AddComponent(copy.Get());
+
+        TEST_VERIFY(orig->GetUTF8Text() == copy->GetUTF8Text());
+        TEST_VERIFY(orig->GetBaseClasses() == copy->GetBaseClasses());
     }
 };
