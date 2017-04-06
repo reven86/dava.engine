@@ -1,6 +1,6 @@
 #include "FileSystem/FileSystem.h"
 #include "Render/Image/Image.h"
-#include "Render/RenderCallbacks.h"
+#include "Render/Renderer.h"
 #include "Render/ShaderCache.h"
 #include "Render/Highlevel/StaticOcclusionRenderPass.h"
 #include "Render/Highlevel/RenderBatchArray.h"
@@ -231,7 +231,7 @@ void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem* renderSystem, C
     renderPassFileNames.insert({ syncObj, folder + fileName });
     sharedColorBuffer = colorBuffer;
 
-    RenderCallbacks::RegisterSyncCallback(syncObj, &OnOcclusionRenderPassCompleted);
+    Renderer::RegisterSyncCallback(syncObj, &OnOcclusionRenderPassCompleted);
     rhi::EndPacketList(packetList, syncObj);
     rhi::EndRenderPass(renderPass);
 #else
