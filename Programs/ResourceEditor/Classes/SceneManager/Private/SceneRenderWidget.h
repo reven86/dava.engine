@@ -14,7 +14,7 @@
 #include "TArc/Utils/QtConnections.h"
 
 #include "Engine/Qt/RenderWidget.h"
-#include "Functional/SignalBase.h"
+#include "Functional/TrackedObject.h"
 
 #include <QFrame>
 

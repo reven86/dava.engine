@@ -20,7 +20,7 @@ InputSystem::InputSystem(Engine* engine)
     : keyboard(new KeyboardDevice())
     , gamepad(new GamepadDevice(this))
 {
-    engine->update.Connect(MakeFunction(this, &InputSystem::Update));
+    engine->update.Connect(this, &InputSystem::Update);
 }
 
 InputSystem::~InputSystem() = default;

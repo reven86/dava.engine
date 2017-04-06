@@ -31,8 +31,6 @@ private:
     bool OnToggleFullscreen(DAVA::UIEvent* uie);
     void OnWindowSizeChanged(DAVA::Window*, DAVA::Size2f windowSize, DAVA::Size2f surfaceSize);
 
-    DAVA::SigConnectionID sizeChangedSigConn = DAVA::SigConnectionID();
-
     DAVA::UIStaticText* currentModeText = nullptr;
     DAVA::UIStaticText* currentScaleText = nullptr;
     DAVA::UI3DView* ui3dview = nullptr;
@@ -44,5 +42,4 @@ private:
     DAVA::UIButton* viewScaleMinus = nullptr;
 
     DAVA::uint32 inputHandlerToken = 0;
-    DAVA::SigConnectionID windowSizeChangedToken = 0;
 };
