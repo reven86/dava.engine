@@ -36,8 +36,8 @@ QWidget* FMODEventPropertyDelegate::createEditor(QWidget* parent, const Properti
 
 void FMODEventPropertyDelegate::setEditorData(QWidget*, const QModelIndex& index) const
 {
-    VariantType variant = index.data(Qt::EditRole).value<VariantType>();
-    const FastName& fastNameValue = variant.AsFastName();
+    Any any = index.data(Qt::EditRole).value<Any>();
+    const FastName& fastNameValue = any.Cast<FastName>();
     const QString& stringValue = StringToQString(fastNameValue.IsValid() ? fastNameValue.c_str() : "");
     DVASSERT(!lineEdit.isNull());
     lineEdit->setText(stringValue);
@@ -48,18 +48,18 @@ bool FMODEventPropertyDelegate::setModelData(QWidget* rawEditor, QAbstractItemMo
     if (BasePropertyDelegate::setModelData(rawEditor, model, index))
         return true;
 
-    VariantType variantType = index.data(Qt::EditRole).value<VariantType>();
+    Any any = index.data(Qt::EditRole).value<Any>();
     DVASSERT(!lineEdit.isNull());
     if (!lineEdit->text().isEmpty())
     {
-        variantType.SetFastName(FastName(lineEdit->text().toStdString()));
+        any = FastName(lineEdit->text().toStdString());
     }
     else
     {
-        variantType.SetFastName(FastName());
+        any = FastName();
     }
     QVariant variant;
-    variant.setValue<VariantType>(variantType);
+    variant.setValue<Any>(any);
 
     return model->setData(index, variant, Qt::EditRole);
 }
