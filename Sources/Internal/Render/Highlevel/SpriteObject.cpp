@@ -1,5 +1,5 @@
 #include "Render/Highlevel/SpriteObject.h"
-#include "Render/RenderCallbacks.h"
+#include "Render/Renderer.h"
 #include "Render/Material/NMaterialNames.h"
 
 namespace DAVA
@@ -28,12 +28,12 @@ SpriteObject::SpriteObject(Sprite* spr, int32 _frame, const Vector2& reqScale, c
 SpriteObject::~SpriteObject()
 {
     Clear();
-    RenderCallbacks::UnRegisterResourceRestoreCallback(MakeFunction(this, &SpriteObject::Restore));
+    Renderer::GetSignals().needRestoreResources.Disconnect(this);
 }
 
 void SpriteObject::RegisterRestoreCallback()
 {
-    RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(this, &SpriteObject::Restore));
+    Renderer::GetSignals().needRestoreResources.Connect(this, &SpriteObject::Restore);
 }
 
 void SpriteObject::ClearRenderBatches()

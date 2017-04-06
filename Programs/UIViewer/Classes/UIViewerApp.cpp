@@ -44,10 +44,11 @@ void UIViewerApp::OnWindowCreated(DAVA::Window* w)
 
     VirtualCoordinatesSystem* vcs = DAVA::UIControlSystem::Instance()->vcs;
     vcs->RegisterAvailableResourceSize(static_cast<int32>(windowSize.dx), static_cast<int32>(windowSize.dy), "Gfx");
+    vcs->RegisterAvailableResourceSize(static_cast<int32>(windowSize.dx * 2.0f), static_cast<int32>(windowSize.dy * 2.0f), "Gfx2");
 
     Renderer::SetDesiredFPS(60);
 
-    uiViewScreen = new UIViewScreen();
+    uiViewScreen = new UIViewScreen(w);
     UIScreenManager::Instance()->SetFirst(uiViewScreen->GetScreenID());
 }
 
