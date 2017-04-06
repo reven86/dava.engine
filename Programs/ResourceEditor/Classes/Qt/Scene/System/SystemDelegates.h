@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Debug/DVAssert.h>
+
 namespace DAVA
 {
 class Entity;
@@ -9,16 +11,43 @@ class AABBox3;
 class EntityModificationSystemDelegate
 {
 public:
-    virtual void WillClone(DAVA::Entity* originalEntity) = 0;
-    virtual void DidCloned(DAVA::Entity* originalEntity, DAVA::Entity* newEntity) = 0;
+    virtual bool HasCustomClonedAddading(DAVA::Entity* entityToClone) const
+    {
+        return false;
+    }
+
+    virtual void PerformAddading(DAVA::Entity* sourceEntity, DAVA::Entity* clonedEntity)
+    {
+        DVASSERT(false);
+    }
+    virtual void WillClone(DAVA::Entity* originalEntity)
+    {
+    }
+    virtual void DidCloned(DAVA::Entity* originalEntity, DAVA::Entity* newEntity)
+    {
+    }
 };
 
 class SelectableGroup;
 class StructureSystemDelegate
 {
 public:
-    virtual void WillRemove(DAVA::Entity* removedEntity) = 0;
-    virtual void DidRemoved(DAVA::Entity* removedEntity) = 0;
+    virtual bool HasCustomRemovingForEntity(DAVA::Entity* entityToRemove) const
+    {
+        return false;
+    }
+
+    virtual void PerformRemoving(DAVA::Entity* entityToRemove)
+    {
+        DVASSERT(false);
+    }
+
+    virtual void WillRemove(DAVA::Entity* removedEntity)
+    {
+    }
+    virtual void DidRemoved(DAVA::Entity* removedEntity)
+    {
+    }
 };
 
 class SelectionSystemDelegate

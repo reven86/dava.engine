@@ -416,21 +416,6 @@ WaypointComponent* GetWaypointComponent(const Entity* fromEntity)
     return NULL;
 }
 
-EdgeComponent* FindEdgeComponent(const Entity* fromEntity, const Entity* toEntity)
-{
-    uint32 count = fromEntity->GetComponentCount(Component::EDGE_COMPONENT);
-    for (uint32 i = 0; i < count; ++i)
-    {
-        EdgeComponent* edge = static_cast<EdgeComponent*>(fromEntity->GetComponent(Component::EDGE_COMPONENT, i));
-        DVASSERT(edge);
-        if (edge->GetNextEntity() == toEntity)
-        {
-            return edge;
-        }
-    }
-    return nullptr;
-}
-
 SnapToLandscapeControllerComponent* GetSnapToLandscapeControllerComponent(const Entity* fromEntity)
 {
     if (fromEntity)

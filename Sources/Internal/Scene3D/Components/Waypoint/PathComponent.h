@@ -18,6 +18,7 @@ public:
     struct Waypoint : public InspBase
     {
         Waypoint();
+        Waypoint(bool withProperties);
         ~Waypoint();
         Waypoint(const Waypoint&);
 
@@ -30,7 +31,7 @@ public:
         KeyedArchive* properties;
 
     public:
-        void AddEdge(Edge* edge);
+        void AddEdge(Edge* edge); // UVR TODO
         void RemoveEdge(Edge* edge);
 
         void SetProperties(KeyedArchive* p);
@@ -53,6 +54,7 @@ public:
     struct Edge : public InspBase
     {
         Edge();
+        Edge(bool withProperties);
         ~Edge();
         Edge(const Edge&);
 
@@ -91,8 +93,10 @@ public:
     void Serialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
     void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
 
-    void AddPoint(Waypoint* point);
+    void AddPoint(Waypoint* point); // UVR TODO
+    void InsertPoint(Waypoint* point, uint32 beforeIndex);
     void RemovePoint(Waypoint* point);
+    void ExtractPoint(Waypoint* point);
 
     Waypoint* GetWaypoint(const FastName& name);
     const Vector<Waypoint*>& GetPoints() const;
@@ -140,6 +144,10 @@ inline const Vector<PathComponent::Waypoint*>& PathComponent::GetPoints() const
 inline void PathComponent::SetName(const FastName& _name)
 {
     name = _name;
+    for (Waypoint* wp : waypoints)
+    {
+        wp->name = name;
+    }
 }
 
 inline const FastName& PathComponent::GetName() const
