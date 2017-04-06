@@ -1,6 +1,6 @@
 #include "Render/2D/TextBlockSoftwareRender.h"
 #include "Render/RHI/rhi_Public.h"
-#include "Render/RenderCallbacks.h"
+#include "Render/Renderer.h"
 #include "UI/UIControlSystem.h"
 #include "Core/Core.h"
 #include "Logger/Logger.h"
@@ -12,7 +12,7 @@ TextBlockSoftwareRender::TextBlockSoftwareRender(TextBlock* textBlock)
     : TextBlockRender(textBlock)
     , ftFont(static_cast<FTFont*>(textBlock->font))
 {
-    RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(this, &TextBlockSoftwareRender::Restore));
+    Renderer::GetSignals().needRestoreResources.Connect(this, &TextBlockSoftwareRender::Restore);
 
 #if defined(LOCALIZATION_DEBUG)
     textOffsetTL.x = std::numeric_limits<float32>::max();
@@ -24,7 +24,7 @@ TextBlockSoftwareRender::TextBlockSoftwareRender(TextBlock* textBlock)
 
 TextBlockSoftwareRender::~TextBlockSoftwareRender()
 {
-    RenderCallbacks::UnRegisterResourceRestoreCallback(MakeFunction(this, &TextBlockSoftwareRender::Restore));
+    Renderer::GetSignals().needRestoreResources.Disconnect(this);
     SafeRelease(currentTexture);
 }
 

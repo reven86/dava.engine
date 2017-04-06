@@ -1,7 +1,7 @@
 #include "CreatePlaneLODCommandHelper.h"
 
 #include "Render/Material/NMaterialNames.h"
-#include "Render/RenderCallbacks.h"
+#include "Render/Renderer.h"
 #include "Scene3D/Lod/LodSystem.h"
 
 #include "Scene/SceneHelper.h"
@@ -326,8 +326,8 @@ CreatePlaneLODCommandHelper::Request::~Request()
 
 void CreatePlaneLODCommandHelper::Request::RegisterRenderCallback()
 {
-    RenderCallbacks::RegisterSyncCallback(rhi::GetCurrentFrameSyncObject(),
-                                          MakeFunction(this, &CreatePlaneLODCommandHelper::Request::OnRenderCallback));
+    Renderer::RegisterSyncCallback(rhi::GetCurrentFrameSyncObject(),
+                                   MakeFunction(this, &CreatePlaneLODCommandHelper::Request::OnRenderCallback));
 }
 
 void CreatePlaneLODCommandHelper::Request::ReloadTexturesToGPU(DAVA::eGPUFamily targetGPU)

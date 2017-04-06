@@ -4,9 +4,8 @@
 #include "Particles/ParticleEffectDebug/ParticleDebugDrawQuadRenderPass.h"
 
 #include "Functional/Function.h"
-#include "Render/RenderCallbacks.h"
+#include "Render/Renderer.h"
 #include "Render/Highlevel/RenderSystem.h"
-#include "Render/RenderCallbacks.h"
 
 #include "Scene3D/Scene.h"
 
@@ -48,7 +47,7 @@ ParticleEffectDebugDrawSystem::ParticleEffectDebugDrawSystem(Scene* scene)
         materials.push_back(quadHeatMaterial);
     }
 
-    RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(this, &ParticleEffectDebugDrawSystem::Restore));
+    Renderer::GetSignals().needRestoreResources.Connect(this, &ParticleEffectDebugDrawSystem::Restore);
 }
 
 ParticleEffectDebugDrawSystem::~ParticleEffectDebugDrawSystem()
@@ -66,7 +65,8 @@ ParticleEffectDebugDrawSystem::~ParticleEffectDebugDrawSystem()
     SafeRelease(quadHeatMaterial);
 
     SafeRelease(heatTexture);
-    RenderCallbacks::UnRegisterResourceRestoreCallback(MakeFunction(this, &ParticleEffectDebugDrawSystem::Restore));
+
+    Renderer::GetSignals().needRestoreResources.Disconnect(this);
 }
 
 void ParticleEffectDebugDrawSystem::Draw()
