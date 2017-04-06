@@ -1,5 +1,5 @@
 #include "DynamicBufferAllocator.h"
-#include "Render/RenderCallbacks.h"
+#include "Render/Renderer.h"
 #include "Functional/Function.h"
 #include <queue>
 
@@ -260,7 +260,7 @@ rhi::HIndexBuffer AllocateQuadListIndexBuffer(uint32 quadCount)
 {
     if (!quadListRestoreRegistered)
     {
-        RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(&RestoreQuadList));
+        Renderer::GetSignals().needRestoreResources.Connect(&RestoreQuadList);
         quadListRestoreRegistered = true;
     }
     if (quadCount > currMaxQuadCount)

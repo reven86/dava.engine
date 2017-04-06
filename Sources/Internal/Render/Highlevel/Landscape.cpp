@@ -18,7 +18,6 @@
 #include "Render/ShaderCache.h"
 #include "Render/TextureDescriptor.h"
 #include "Render/DynamicBufferAllocator.h"
-#include "Render/RenderCallbacks.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 #include "Debug/ProfilerCPU.h"
@@ -143,7 +142,7 @@ Landscape::Landscape()
 
     AddFlag(RenderObject::CUSTOM_PREPARE_TO_RENDER);
 
-    RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(this, &Landscape::RestoreGeometry));
+    Renderer::GetSignals().needRestoreResources.Connect(this, &Landscape::RestoreGeometry);
 }
 
 Landscape::~Landscape()
@@ -156,7 +155,7 @@ Landscape::~Landscape()
     SafeDelete(subdivision);
 
     SafeRelease(landscapeMaterial);
-    RenderCallbacks::UnRegisterResourceRestoreCallback(MakeFunction(this, &Landscape::RestoreGeometry));
+    Renderer::GetSignals().needRestoreResources.Disconnect(this);
 }
 
 void Landscape::RestoreGeometry()
