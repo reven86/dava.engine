@@ -10,7 +10,7 @@
 #include "Functional/Function.h"
 #include "Scene3D/Entity.h"
 #include "Scene3D/Scene.h"
-#include "Render/RenderCallbacks.h"
+#include "Render/Renderer.h"
 #include "Render/Highlevel/RenderSystem.h"
 #include "Render/Highlevel/RenderObject.h"
 #include "Render/Highlevel/RenderPassNames.h"
@@ -77,7 +77,7 @@ OverdrawTesterSystem::OverdrawTesterSystem(DAVA::Scene* scene, DAVA::PixelFormat
     {
         textures.push_back(GenerateTexture(rng, dist255));
     }
-    DAVA::RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(this, &OverdrawTesterSystem::Restore));
+    DAVA::Renderer::GetSignals().needRestoreResources.Connect(this, &OverdrawTesterSystem::Restore);
 }
 
 OverdrawTesterSystem::~OverdrawTesterSystem()
@@ -88,7 +88,7 @@ OverdrawTesterSystem::~OverdrawTesterSystem()
         SafeRelease(tex);
     }
     textures.clear();
-    DAVA::RenderCallbacks::UnRegisterResourceRestoreCallback(MakeFunction(this, &OverdrawTesterSystem::Restore));
+    DAVA::Renderer::GetSignals().needRestoreResources.Disconnect(this);
 }
 
 void OverdrawTesterSystem::AddEntity(DAVA::Entity* entity)
