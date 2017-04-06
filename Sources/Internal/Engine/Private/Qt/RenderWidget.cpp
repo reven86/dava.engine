@@ -112,10 +112,10 @@ RenderWidget::RenderWidgetImpl::RenderWidgetImpl(RenderWidget::IWindowDelegate* 
 
     connect(window, &QQuickWindow::beforeSynchronizing, this, &RenderWidgetImpl::OnBeforeSyncronizing, Qt::DirectConnection);
 }
-    
+
 void RenderWidget::RenderWidgetImpl::TryActivate()
 {
-    if(IsInitialized() == false && isActivated && isSynchronized)
+    if (IsInitialized() == false && isActivated && isSynchronized)
     {
         ActivateRendering();
         OnCreated();
