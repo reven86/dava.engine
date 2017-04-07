@@ -1,4 +1,4 @@
-#include "TArc/Controls/Noitifications/NotificationWidget.h"
+#include "TArc/Controls/Private/NotificationWidget.h"
 
 #include <QString>
 #include <QTimer>
@@ -15,8 +15,28 @@
 #include <QPainter>
 #include <Qt>
 
+namespace DAVA
+{
 namespace NotificationWidgetDetails
 {
+static Vector<std::pair<QMessageBox::Icon, Result::ResultType>> notificationIconsConvertor =
+{
+  std::make_pair(QMessageBox::Information, Result::RESULT_SUCCESS),
+  std::make_pair(QMessageBox::Warning, Result::RESULT_WARNING),
+  std::make_pair(QMessageBox::Critical, Result::RESULT_ERROR)
+};
+
+QMessageBox::Icon Convert(const Result::ResultType& type)
+{
+    using IconNode = std::pair<QMessageBox::Icon, Result::ResultType>;
+    auto iter = std::find_if(notificationIconsConvertor.begin(), notificationIconsConvertor.end(), [type](const IconNode& node)
+                             {
+                                 return node.second == type;
+                             });
+    DVASSERT(iter != notificationIconsConvertor.end());
+    return iter->first;
+}
+
 QString ColorToHTML(const QColor& color)
 {
     QString ret = QString("#%1%2%3%4")
@@ -30,14 +50,14 @@ QString ColorToHTML(const QColor& color)
 QPoint invalidPos(-1, -1);
 } //namespace NotificationWidgetDetails
 
-namespace DAVA
-{
 namespace TArc
 {
-NotificationWidget::NotificationWidget(const NotificationWidgetParams& params, int displayTimeMs, QWidget* parent)
+NotificationWidget::NotificationWidget(const NotificationParams& params, QWidget* parent)
     : QWidget(parent)
-    , remainTimeMs(displayTimeMs)
 {
+    //operator | declared in the global namespace
+    //without this string compilation will be failed
+    using ::operator|;
     Qt::WindowFlags flags = (Qt::FramelessWindowHint | // Disable window decoration
                              Qt::Tool // Discard display in a separate window
                              );
@@ -47,15 +67,12 @@ NotificationWidget::NotificationWidget(const NotificationWidgetParams& params, i
     setAttribute(Qt::WA_ShowWithoutActivating); // At the show, the widget does not get the focus automatically
 
     InitUI(params);
-    InitTimer();
     InitAnimations();
 
     QDesktopWidget* desktop = QApplication::desktop();
     QRect geometry = desktop->availableGeometry(parent);
     setFixedWidth(geometry.width() / 6);
     setMaximumHeight(geometry.height() / 3);
-
-    connect(qApp, &QApplication::applicationStateChanged, this, &NotificationWidget::OnApplicationStateChanged);
 
     move(NotificationWidgetDetails::invalidPos);
 }
@@ -73,32 +90,17 @@ void NotificationWidget::SetPosition(const QPoint& point)
     positionAnimation->start();
 }
 
-void NotificationWidget::Init()
+void NotificationWidget::OnCloseButtonClicked()
 {
-    show();
-    if (qApp->applicationState() == Qt::ApplicationActive)
-    {
-        timer->start(remainTimeMs);
-    }
+    emit CloseButtonClicked(this);
 }
 
-void NotificationWidget::OnApplicationStateChanged(Qt::ApplicationState state)
+void NotificationWidget::OnDetailsButtonClicked()
 {
-    if (state == Qt::ApplicationActive)
-    {
-        timer->start(remainTimeMs);
-    }
-    else
-    {
-        if (timer->isActive())
-        {
-            remainTimeMs = timer->remainingTime();
-            timer->stop();
-        }
-    }
+    emit DetailsButtonClicked(this);
 }
 
-void NotificationWidget::InitUI(const NotificationWidgetParams& params)
+void NotificationWidget::InitUI(const NotificationParams& params)
 {
     QHBoxLayout* mainLayout = new QHBoxLayout();
 
@@ -110,25 +112,27 @@ void NotificationWidget::InitUI(const NotificationWidgetParams& params)
     titleLayout->setSpacing(10);
     messageLayout->addItem(titleLayout);
 
-    QPixmap icon = QMessageBox::standardIcon(params.icon);
     QFont currentFont = font();
     QFontMetrics fm(currentFont);
     int fontHeight = fm.height();
-    icon = icon.scaled(QSize(fontHeight, fontHeight), Qt::KeepAspectRatio, Qt::SmoothTransformation);
     QLabel* iconLabel = new QLabel();
-    iconLabel->setPixmap(icon);
+    QMessageBox::Icon icon = NotificationWidgetDetails::Convert(params.message.type);
+    QPixmap image = QMessageBox::standardIcon(icon).scaled(QSize(fontHeight, fontHeight), Qt::KeepAspectRatio, Qt::SmoothTransformation);
+    iconLabel->setPixmap(image);
     iconLabel->setScaledContents(false);
     titleLayout->addWidget(iconLabel);
 
-    if (params.title.isEmpty() == false)
+    if (params.title.empty() == false)
     {
-        QLabel* labelTitle = new QLabel(params.title);
+        QString title = QString::fromStdString(params.title);
+        QLabel* labelTitle = new QLabel(title);
         labelTitle->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
         labelTitle->setStyleSheet("font-weight: bold;");
         titleLayout->addWidget(labelTitle);
     }
 
-    QLabel* labelMessage = new QLabel(params.text);
+    QString message = QString::fromStdString(params.message.message);
+    QLabel* labelMessage = new QLabel(message);
     messageLayout->addWidget(labelMessage);
 
     QPalette palette;
@@ -158,16 +162,16 @@ void NotificationWidget::InitUI(const NotificationWidgetParams& params)
         closeButton->setStyleSheet(styleSheet);
         closeButton->setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred));
         buttonsLayout->addWidget(closeButton);
-        connect(closeButton, &QPushButton::clicked, this, &NotificationWidget::Remove);
+        connect(closeButton, &QPushButton::clicked, this, &NotificationWidget::OnCloseButtonClicked);
     }
+    if (params.callback)
     {
         detailsButton = new QPushButton(tr("Details"));
         detailsButton->setObjectName("DetailsButton");
         detailsButton->setStyleSheet(styleSheet);
         detailsButton->setSizePolicy(QSizePolicy(QSizePolicy::Preferred, QSizePolicy::Preferred));
         buttonsLayout->addWidget(detailsButton);
-        connect(detailsButton, &QPushButton::clicked, params.callBack);
-        connect(detailsButton, &QPushButton::clicked, this, &NotificationWidget::Remove);
+        connect(detailsButton, &QPushButton::clicked, this, &NotificationWidget::OnDetailsButtonClicked);
     }
     setLayout(mainLayout);
 }
@@ -176,28 +180,8 @@ void NotificationWidget::InitAnimations()
 {
     positionAnimation = new QPropertyAnimation(this, "position", this);
     positionAnimation->setEasingCurve(QEasingCurve::OutExpo);
-    positionAnimation->setDuration(150);
-
-    opacityAnimation = new QPropertyAnimation(this, "opacity", this);
-    opacityAnimation->setDuration(150);
-}
-
-void NotificationWidget::InitTimer()
-{
-    timer = new QTimer(this);
-    timer->setObjectName("notificationTimer");
-    timer->setSingleShot(true);
-    connect(timer, &QTimer::timeout, this, &NotificationWidget::Remove);
-}
-
-void NotificationWidget::Remove()
-{
-    timer->stop();
-    opacityAnimation->stop();
-    opacityAnimation->setStartValue(windowOpacity());
-    opacityAnimation->setEndValue(0.0);
-    opacityAnimation->start();
-    connect(opacityAnimation, &QAbstractAnimation::finished, this, &QObject::deleteLater);
+    const int durationTimeMs = 150;
+    positionAnimation->setDuration(durationTimeMs);
 }
 
 void NotificationWidget::paintEvent(QPaintEvent* /*event*/)
@@ -221,19 +205,23 @@ void NotificationWidget::paintEvent(QPaintEvent* /*event*/)
     painter.drawRoundedRect(roundedRect, radius, radius);
 
     QRect closeButtonGeometry = closeButton->geometry();
-    QRect detailsButtonGeometry = detailsButton->geometry();
-
-    int y = (closeButtonGeometry.bottom() + detailsButtonGeometry.top()) / 2;
-    QPoint left(qMin(closeButtonGeometry.left(), detailsButtonGeometry.left()), y);
-    QPoint right(qMax(closeButtonGeometry.right(), detailsButtonGeometry.right()), y);
-
     QColor lineColor = palette.color(QPalette::Text);
     QPen pen(lineColor);
     pen.setWidth(1);
     painter.setPen(pen);
-    painter.drawLine(left, right);
+    //horizontal line
+    if (detailsButton != nullptr)
+    {
+        QRect detailsButtonGeometry = detailsButton->geometry();
+        int y = (closeButtonGeometry.bottom() + detailsButtonGeometry.top()) / 2;
+        QPoint left(qMin(closeButtonGeometry.left(), detailsButtonGeometry.left()), y);
+        QPoint right(qMax(closeButtonGeometry.right(), detailsButtonGeometry.right()), y);
+        painter.drawLine(left, right);
+    }
 
-    int x = std::min(closeButtonGeometry.left(), detailsButtonGeometry.left()) - pen.width();
+    //vertical line
+    //close button and details button have Preferred size policy
+    int x = closeButtonGeometry.left() - pen.width();
     QPoint top(x, roundedRect.top() + roundedRectPen.width());
     QPoint bottom(x, roundedRect.bottom() - roundedRectPen.width());
     painter.drawLine(top, bottom);

@@ -7,8 +7,8 @@
 
 #include "TArc/WindowSubSystem/UI.h"
 
-#include "TArc/Controls/Noitifications/NotificationLayout.h"
-#include "TArc/Controls/Noitifications/NotificationWidget.h"
+#include "TArc/Controls/Private/NotificationLayout.h"
+#include "TArc/Controls/Private/NotificationWidget.h"
 
 #include "TArc/Utils/QtConnections.h"
 
@@ -100,24 +100,28 @@ DAVA_TARC_TESTCLASS(NotificationTest)
 
         const int timeout = 50;
 
-        QWidget* parent = GetWindow(NotificationTestDetails::wndKey);
+        NotificationLayout* layout = new NotificationLayout();
+        layout->SetDisplayTimeMs(timeout);
 
-        NotificationWidgetParams params;
-        NotificationWidget* notificationWidget = new NotificationWidget(params, timeout, parent);
+        QWidget* parent = GetWindow(NotificationTestDetails::wndKey);
+        NotificationParams params;
         QElapsedTimer* elapsedTimer = new QElapsedTimer;
+        elapsedTimer->start();
+
+        layout->AddNotificationWidget(parent, params);
 
         EXPECT_CALL(*this, OnDestroyed())
-        .WillOnce(Invoke([elapsedTimer, timeout]() {
+        .WillOnce(Invoke([layout, elapsedTimer, timeout]() {
             int elapsedMs = elapsedTimer->elapsed();
-            const int maxExpectedTimeMs = 300; //widget will be removed after animations are finished
+            const int maxExpectedTimeMs = 300; //time can be increased by animations or NotificationLayout timer accuracy
             TEST_VERIFY(elapsedMs < maxExpectedTimeMs);
-
+            delete layout;
             delete elapsedTimer;
         }));
 
-        connections.AddConnection(notificationWidget, &NotificationWidget::destroyed, MakeFunction(this, &NotificationTest::OnDestroyed));
-        elapsedTimer->start();
-        notificationWidget->Init();
+        QList<NotificationWidget*> widgetList = parent->findChildren<NotificationWidget*>();
+        NotificationWidget* firstNotification = widgetList.first();
+        connections.AddConnection(firstNotification, &QObject::destroyed, MakeFunction(this, &NotificationTest::OnDestroyed));
     }
 
     DAVA_TEST (TestNotificationsCount)
@@ -126,7 +130,7 @@ DAVA_TARC_TESTCLASS(NotificationTest)
         using namespace DAVA::TArc;
         using namespace testing;
 
-        NotificationWidgetParams params;
+        NotificationParams params;
 
         NotificationLayout layout;
         QWidget* parent = GetWindow(NotificationTestDetails::wndKey);
@@ -149,11 +153,13 @@ DAVA_TARC_TESTCLASS(NotificationTest)
 
         QWidget* parent = GetWindow(NotificationTestDetails::wndKey);
 
-        Map<NotificationLayout::eLayoutType, DAVA::Function<QPoint(QWidget * parent, QWidget * bubble)>> positions = {
-            { NotificationLayout::TopLeft, [](QWidget* parent, QWidget* bubble) { return QPoint(0, 0); } },
-            { NotificationLayout::TopRight, [](QWidget* parent, QWidget* bubble) { return QPoint(parent->width() - bubble->width(), 0); } },
-            { NotificationLayout::BottomLeft, [](QWidget* parent, QWidget* bubble) { return QPoint(0, parent->height() - bubble->height()); } },
-            { NotificationLayout::BottomRight, [](QWidget* parent, QWidget* bubble) { return QPoint(parent->width() - bubble->width(), parent->height() - bubble->height()); } }
+        using PositionFn = Function<QPoint(QWidget * parent, QWidget * bubble)>;
+        using PositionFnWithAlign = std::pair<uint64, PositionFn>;
+        Vector<PositionFnWithAlign> positions = {
+            { ALIGN_TOP | ALIGN_LEFT, [](QWidget* parent, QWidget* bubble) { return QPoint(0, 0); } },
+            { ALIGN_TOP | ALIGN_RIGHT, [](QWidget* parent, QWidget* bubble) { return QPoint(parent->width() - bubble->width(), 0); } },
+            { ALIGN_BOTTOM | ALIGN_LEFT, [](QWidget* parent, QWidget* bubble) { return QPoint(0, parent->height() - bubble->height()); } },
+            { ALIGN_BOTTOM | ALIGN_RIGHT, [](QWidget* parent, QWidget* bubble) { return QPoint(parent->width() - bubble->width(), parent->height() - bubble->height()); } }
         };
 
         const int positionsCount = 4;
@@ -161,17 +167,19 @@ DAVA_TARC_TESTCLASS(NotificationTest)
         {
             NotificationLayout layout;
 
-            NotificationLayout::eLayoutType type = static_cast<NotificationLayout::eLayoutType>(i);
-            layout.SetLayoutType(type);
+            const PositionFnWithAlign& alignWithFn = positions.at(i);
 
-            NotificationWidgetParams params;
+            layout.SetLayoutType(alignWithFn.first);
+
+            NotificationParams params;
             layout.AddNotificationWidget(parent, params);
 
             QList<NotificationWidget*> widgetList = parent->findChildren<NotificationWidget*>();
             NotificationWidget* first = widgetList.first();
 
             QPoint firstPos(first->pos());
-            QPoint parentPos = parent->mapToGlobal(positions[type](parent, first));
+            PositionFn positionFn = alignWithFn.second;
+            QPoint parentPos = parent->mapToGlobal(positionFn(parent, first));
             TEST_VERIFY(firstPos == parentPos);
         }
     }

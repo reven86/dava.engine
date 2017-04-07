@@ -32,7 +32,6 @@ public:
 
     bool operator==(const WindowKey& other) const;
     bool operator!=(const WindowKey& other) const;
-    bool operator<(const WindowKey& other) const;
 
 private:
     FastName appID;
