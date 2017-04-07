@@ -167,6 +167,7 @@ const FastName NMaterialFlagName::FLAG_FRAME_BLEND = FastName("FRAME_BLEND");
 const FastName NMaterialFlagName::FLAG_FORCE_2D_MODE = FastName("FORCE_2D_MODE");
 
 const FastName NMaterialFlagName::FLAG_ALPHATESTVALUE = FastName("ALPHATESTVALUE");
+const FastName NMaterialFlagName::FLAG_ALPHASTEPVALUE = FastName("ALPHASTEPVALUE");
 
 const FastName NMaterialFlagName::FLAG_LANDSCAPE_USE_INSTANCING("LANDSCAPE_USE_INSTANCING");
 const FastName NMaterialFlagName::FLAG_LANDSCAPE_LOD_MORPHING("LANDSCAPE_LOD_MORPHING");

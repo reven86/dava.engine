@@ -185,6 +185,7 @@ public:
     static const FastName FLAG_FORCE_2D_MODE;
 
     static const FastName FLAG_ALPHATESTVALUE;
+    static const FastName FLAG_ALPHASTEPVALUE;
 
     static const FastName FLAG_LANDSCAPE_USE_INSTANCING;
     static const FastName FLAG_LANDSCAPE_LOD_MORPHING;

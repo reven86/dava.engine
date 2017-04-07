@@ -113,6 +113,10 @@ fragment_out
     [material][a] property float alphatestThreshold           = 0.0;
 #endif
 
+#if MATERIAL_TEXTURE && ALPHASTEPVALUE
+    [material][a] property float alphaStepValue               = 0.5;
+#endif
+
 #if PIXEL_LIT
     uniform sampler2D normalmap;
     [material][a] property float  inSpecularity               = 1.0;    
@@ -244,6 +248,12 @@ fragment_out fp_main( fragment_in input )
                 if( alpha < 0.5 ) discard;
             #endif
         #endif
+        
+        #if ALPHASTEPVALUE
+            textureColor0.a = step(alphaStepValue, textureColor0.a);
+        #endif
+        #endif
+        
     #endif
 
     
