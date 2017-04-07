@@ -4,15 +4,15 @@
 #include <Base/BaseTypes.h>
 #include <Reflection/ReflectedStructure.h>
 
-class HasClassFilter : public FindFilter
+class HasClassesFilter : public FindFilter
 {
 public:
-    HasClassFilter(const DAVA::String& requiredClass);
+    HasClassesFilter(const DAVA::Vector<DAVA::String>& requiredClasses);
 
     bool CanAcceptPackage(const PackageInformation* package) const override;
     bool CanAcceptControl(const ControlInformation* control) const override;
 
 private:
-    DAVA::String requiredClass;
+    DAVA::Vector<DAVA::String> requiredClasses;
     const DAVA::ReflectedStructure::Field* refMember = nullptr;
 };

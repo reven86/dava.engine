@@ -2,7 +2,7 @@
 #include "UI/Find/Filters/AcceptsInputFilter.h"
 #include "UI/Find/Filters/ControlNameFilter.h"
 #include "UI/Find/Filters/HasComponentFilter.h"
-#include "UI/Find/Filters/HasClassFilter.h"
+#include "UI/Find/Filters/HasClassesFilter.h"
 #include "UI/Find/Filters/NegationFilter.h"
 #include "UI/Find/Widgets/EmptyFindFilterEditor.h"
 #include "UI/Find/Widgets/EnumFindFilterEditor.h"
@@ -67,7 +67,7 @@ class HasClassFindFilter
 public:
     const char* GetName() override
     {
-        return "Has class";
+        return "Has classes";
     }
 
     FindFilterEditor* CreateEditor(QWidget* parent) override
@@ -75,7 +75,9 @@ public:
         return new StringFindFilterEditor(parent,
                                           [](const StringFindFilterEditor* editor)
                                           {
-                                              return std::make_unique<HasClassFilter>(editor->GetString());
+                                              Vector<String> classes;
+                                              Split(editor->GetString(), " ", classes);
+                                              return std::make_unique<HasClassesFilter>(classes);
                                           });
     }
 };

@@ -1,15 +1,18 @@
-#include "UI/Find/Filters/HasClassFilter.h"
+#include "UI/Find/Filters/HasClassesFilter.h"
 #include "UI/Find/PackageInformation/ControlInformation.h"
 #include "UI/Find/PackageInformation/PackageInformation.h"
 
+#include <algorithm>
 #include <UI/UIControl.h>
 #include <Utils/Utils.h>
 
 using namespace DAVA;
 
-HasClassFilter::HasClassFilter(const String& requiredClass_)
-    : requiredClass(requiredClass_)
+HasClassesFilter::HasClassesFilter(const Vector<String>& requiredClasses_)
+    : requiredClasses(requiredClasses_)
 {
+    std::sort(requiredClasses.begin(), requiredClasses.end());
+
     for (const auto& field : ReflectedTypeDB::Get<UIControl>()->GetStructure()->fields)
     {
         if (field->name == "classes")
@@ -19,12 +22,12 @@ HasClassFilter::HasClassFilter(const String& requiredClass_)
     }
 }
 
-bool HasClassFilter::CanAcceptPackage(const PackageInformation* package) const
+bool HasClassesFilter::CanAcceptPackage(const PackageInformation* package) const
 {
     return true;
 }
 
-bool HasClassFilter::CanAcceptControl(const ControlInformation* control) const
+bool HasClassesFilter::CanAcceptControl(const ControlInformation* control) const
 {
     const Any& classesStr = control->GetControlPropertyValue(*refMember);
     if (classesStr.CanCast<String>())
@@ -32,7 +35,9 @@ bool HasClassFilter::CanAcceptControl(const ControlInformation* control) const
         Vector<String> classes;
         Split(classesStr.Cast<String>(), " ", classes);
 
-        return std::find(classes.begin(), classes.end(), requiredClass) != classes.end();
+        std::sort(classes.begin(), classes.end());
+
+        return std::includes(classes.begin(), classes.end(), requiredClasses.begin(), requiredClasses.end());
     }
     else
     {

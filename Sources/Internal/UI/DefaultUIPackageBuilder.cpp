@@ -343,7 +343,7 @@ const ReflectedType* DefaultUIPackageBuilder::BeginComponentPropertiesSection(ui
     }
     currentObject = ReflectedObject(component);
     currentComponentType = int32(componentType);
-    return ReflectedTypeDB::GetByPointer(&component);
+    return ReflectedTypeDB::GetByPointer(component);
 }
 
 void DefaultUIPackageBuilder::EndComponentPropertiesSection()
