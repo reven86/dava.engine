@@ -1,7 +1,6 @@
 #include "Tarc/Controls/Private/NotificationLayout.h"
 #include "TArc/Controls/Private/NotificationWidget.h"
 
-#include <QTimer>
 #include <QEvent>
 
 namespace DAVA
@@ -28,17 +27,12 @@ struct NotificationLayout::NotificationWidgetParams
 
 NotificationLayout::NotificationLayout()
     : QObject(nullptr)
-    , timer(new QTimer(this))
 {
-    elapsedTimer.start();
-    timer->setInterval(60);
-    timer->setSingleShot(false);
-    connect(timer, &QTimer::timeout, this, &NotificationLayout::OnTimeout);
+    basicTimer.start(60, this);
 }
 
 NotificationLayout::~NotificationLayout()
 {
-    timer->stop();
     Clear();
 }
 
@@ -127,7 +121,7 @@ bool NotificationLayout::eventFilter(QObject* object, QEvent* event)
     return QObject::eventFilter(object, event);
 }
 
-void NotificationLayout::OnTimeout()
+void NotificationLayout::timerEvent(QTimerEvent* /*event*/)
 {
     for (AllNotifications::Iterator iter = notifications.begin(); iter != notifications.end(); ++iter)
     {

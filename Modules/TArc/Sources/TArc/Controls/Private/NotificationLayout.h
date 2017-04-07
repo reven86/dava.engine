@@ -7,8 +7,7 @@
 #include <QObject>
 #include <QMap>
 #include <QElapsedTimer>
-
-class QTimer;
+#include <QBasicTimer>
 
 namespace DAVA
 {
@@ -32,13 +31,13 @@ private slots:
     void OnCloseClicked(NotificationWidget* notification);
     void OnDetailsClicked(NotificationWidget* notification);
     void OnWidgetDestroyed();
-    void OnTimeout();
 
 private:
     void LayoutWidgets(QWidget* parent);
     void Clear();
 
     bool eventFilter(QObject* object, QEvent* event);
+    void timerEvent(QTimerEvent* event);
 
     struct NotificationWidgetParams;
     using WindowNotifications = QMap<NotificationWidget*, NotificationWidgetParams>;
@@ -50,7 +49,7 @@ private:
     uint32 displayTimeMs = 10000;
     const uint32 maximumDisplayCount = 5;
     QElapsedTimer elapsedTimer;
-    QTimer* timer = nullptr;
+    QBasicTimer basicTimer;
 };
 } //namespace TArc
 } //namespace DAVA

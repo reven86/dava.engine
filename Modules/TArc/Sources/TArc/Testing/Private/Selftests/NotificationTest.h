@@ -115,7 +115,8 @@ DAVA_TARC_TESTCLASS(NotificationTest)
             int elapsedMs = elapsedTimer->elapsed();
             const int maxExpectedTimeMs = 300; //time can be increased by animations or NotificationLayout timer accuracy
             TEST_VERIFY(elapsedMs < maxExpectedTimeMs);
-            delete layout;
+            //layout iterate widgets and can not be deleted right now
+            layout->deleteLater();
             delete elapsedTimer;
         }));
 
