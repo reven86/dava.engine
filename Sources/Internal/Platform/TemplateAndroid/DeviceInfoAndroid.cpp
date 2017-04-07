@@ -14,23 +14,23 @@ namespace DAVA
 DeviceInfoPrivate::DeviceInfoPrivate()
     : jniDeviceInfo("com/dava/framework/JNIDeviceInfo")
 {
-    getVersion = jniDeviceInfo.GetStaticMethod<jstring>("GetVersion");
-    getManufacturer = jniDeviceInfo.GetStaticMethod<jstring>("GetManufacturer");
-    getModel = jniDeviceInfo.GetStaticMethod<jstring>("GetModel");
-    getLocale = jniDeviceInfo.GetStaticMethod<jstring>("GetLocale");
-    getRegion = jniDeviceInfo.GetStaticMethod<jstring>("GetRegion");
-    getTimeZone = jniDeviceInfo.GetStaticMethod<jstring>("GetTimeZone");
-    getUDID = jniDeviceInfo.GetStaticMethod<jstring>("GetUDID");
-    getName = jniDeviceInfo.GetStaticMethod<jstring>("GetName");
-    getZBufferSize = jniDeviceInfo.GetStaticMethod<jint>("GetZBufferSize");
-    getHTTPProxyHost = jniDeviceInfo.GetStaticMethod<jstring>("GetHTTPProxyHost");
-    getHTTPNonProxyHosts = jniDeviceInfo.GetStaticMethod<jstring>("GetHTTPNonProxyHosts");
-    getHTTPProxyPort = jniDeviceInfo.GetStaticMethod<jint>("GetHTTPProxyPort");
-    getNetworkType = jniDeviceInfo.GetStaticMethod<jint>("GetNetworkType");
-    getSignalStrength = jniDeviceInfo.GetStaticMethod<jint, jint>("GetSignalStrength");
-    isPrimaryExternalStoragePresent = jniDeviceInfo.GetStaticMethod<jboolean>("IsPrimaryExternalStoragePresent");
-    getCarrierName = jniDeviceInfo.GetStaticMethod<jstring>("GetCarrierName");
-    getGpuFamily = jniDeviceInfo.GetStaticMethod<jbyte>("GetGpuFamily");
+    jgetVersion = jniDeviceInfo.GetStaticMethod<jstring>("GetVersion");
+    jgetManufacturer = jniDeviceInfo.GetStaticMethod<jstring>("GetManufacturer");
+    jgetModel = jniDeviceInfo.GetStaticMethod<jstring>("GetModel");
+    jgetLocale = jniDeviceInfo.GetStaticMethod<jstring>("GetLocale");
+    jgetRegion = jniDeviceInfo.GetStaticMethod<jstring>("GetRegion");
+    jgetTimeZone = jniDeviceInfo.GetStaticMethod<jstring>("GetTimeZone");
+    jgetUDID = jniDeviceInfo.GetStaticMethod<jstring>("GetUDID");
+    jgetName = jniDeviceInfo.GetStaticMethod<jstring>("GetName");
+    jgetZBufferSize = jniDeviceInfo.GetStaticMethod<jint>("GetZBufferSize");
+    jgetHTTPProxyHost = jniDeviceInfo.GetStaticMethod<jstring>("GetHTTPProxyHost");
+    jgetHTTPNonProxyHosts = jniDeviceInfo.GetStaticMethod<jstring>("GetHTTPNonProxyHosts");
+    jgetHTTPProxyPort = jniDeviceInfo.GetStaticMethod<jint>("GetHTTPProxyPort");
+    jgetNetworkType = jniDeviceInfo.GetStaticMethod<jint>("GetNetworkType");
+    jgetSignalStrength = jniDeviceInfo.GetStaticMethod<jint, jint>("GetSignalStrength");
+    jisPrimaryExternalStoragePresent = jniDeviceInfo.GetStaticMethod<jboolean>("IsPrimaryExternalStoragePresent");
+    jgetCarrierName = jniDeviceInfo.GetStaticMethod<jstring>("GetCarrierName");
+    jgetGpuFamily = jniDeviceInfo.GetStaticMethod<jbyte>("GetGpuFamily");
 }
 
 DeviceInfo::ePlatform DeviceInfoPrivate::GetPlatform()
@@ -45,62 +45,62 @@ String DeviceInfoPrivate::GetPlatformString()
 
 String DeviceInfoPrivate::GetVersion()
 {
-    return JNI::ToString(getVersion());
+    return ReturnDavaStringFromLocalJstring(jgetVersion());
 }
 
 String DeviceInfoPrivate::GetManufacturer()
 {
-    return JNI::ToString(getManufacturer());
+    return ReturnDavaStringFromLocalJstring(jgetManufacturer());
 }
 
 String DeviceInfoPrivate::GetModel()
 {
-    return JNI::ToString(getModel());
+    return ReturnDavaStringFromLocalJstring(jgetModel());
 }
 
 String DeviceInfoPrivate::GetLocale()
 {
-    return JNI::ToString(getLocale());
+    return ReturnDavaStringFromLocalJstring(jgetLocale());
 }
 
 String DeviceInfoPrivate::GetRegion()
 {
-    return JNI::ToString(getRegion());
+    return ReturnDavaStringFromLocalJstring(jgetRegion());
 }
 
 String DeviceInfoPrivate::GetTimeZone()
 {
-    return JNI::ToString(getTimeZone());
+    return ReturnDavaStringFromLocalJstring(jgetTimeZone());
 }
 
 String DeviceInfoPrivate::GetUDID()
 {
-    return JNI::ToString(getUDID());
+    return ReturnDavaStringFromLocalJstring(jgetUDID());
 }
 
 WideString DeviceInfoPrivate::GetName()
 {
-    return UTF8Utils::EncodeToWideString(JNI::ToString(getName()));
+    return UTF8Utils::EncodeToWideString(ReturnDavaStringFromLocalJstring(jgetName()));
 }
 
 int32 DeviceInfoPrivate::GetZBufferSize()
 {
-    return static_cast<int32>(getZBufferSize());
+    return static_cast<int32>(jgetZBufferSize());
 }
 
 String DeviceInfoPrivate::GetHTTPProxyHost()
 {
-    return JNI::ToString(getHTTPProxyHost());
+    return ReturnDavaStringFromLocalJstring(jgetHTTPProxyHost());
 }
 
 String DeviceInfoPrivate::GetHTTPNonProxyHosts()
 {
-    return JNI::ToString(getHTTPNonProxyHosts());
+    return ReturnDavaStringFromLocalJstring(jgetHTTPNonProxyHosts());
 }
 
 int32 DeviceInfoPrivate::GetHTTPProxyPort()
 {
-    return static_cast<int32>(getHTTPProxyPort());
+    return static_cast<int32>(jgetHTTPProxyPort());
 }
 
 #if !defined(__DAVAENGINE_COREV2__)
@@ -114,7 +114,7 @@ eGPUFamily DeviceInfoPrivate::GetGPUFamilyImpl()
 {
     eGPUFamily gpuFamily = GPU_INVALID;
 #ifdef __DAVAENGINE_COREV2__
-    gpuFamily = static_cast<eGPUFamily>(getGpuFamily());
+    gpuFamily = static_cast<eGPUFamily>(jgetGpuFamily());
 #else
     if (Renderer::IsInitialized())
     {
@@ -221,9 +221,7 @@ DeviceInfo::StorageInfo DeviceInfoPrivate::StorageInfoFromJava(jobject object)
         fieldID = env->GetFieldID(classInfo, "path", "Ljava/lang/String;");
         jstring jStr = static_cast<jstring>(env->GetObjectField(object, fieldID));
 
-        info.path = JNI::ToString(jStr);
-
-        env->DeleteLocalRef(jStr);
+        info.path = ReturnDavaStringFromLocalJstring(jStr);
     }
 
     return info;
@@ -231,12 +229,12 @@ DeviceInfo::StorageInfo DeviceInfoPrivate::StorageInfoFromJava(jobject object)
 
 int32 DeviceInfoPrivate::GetNetworkType()
 {
-    return getNetworkType();
+    return jgetNetworkType();
 }
 
 int32 DeviceInfoPrivate::GetSignalStrength(int32 networkType)
 {
-    return getSignalStrength(networkType);
+    return jgetSignalStrength(networkType);
 }
 
 DeviceInfo::StorageInfo DeviceInfoPrivate::GetInternalStorageInfo()
@@ -254,6 +252,7 @@ DeviceInfo::StorageInfo DeviceInfoPrivate::GetInternalStorageInfo()
         {
             info = StorageInfoFromJava(object);
             info.type = DeviceInfo::STORAGE_TYPE_INTERNAL;
+            env->DeleteLocalRef(object);
         }
     }
 
@@ -262,7 +261,7 @@ DeviceInfo::StorageInfo DeviceInfoPrivate::GetInternalStorageInfo()
 
 bool DeviceInfoPrivate::IsPrimaryExternalStoragePresent()
 {
-    return isPrimaryExternalStoragePresent();
+    return jisPrimaryExternalStoragePresent();
 }
 
 DeviceInfo::StorageInfo DeviceInfoPrivate::GetPrimaryExternalStorageInfo()
@@ -285,6 +284,7 @@ DeviceInfo::StorageInfo DeviceInfoPrivate::GetPrimaryExternalStorageInfo()
         {
             info = StorageInfoFromJava(object);
             info.type = DeviceInfo::STORAGE_TYPE_PRIMARY_EXTERNAL;
+            env->DeleteLocalRef(object);
         }
     }
 
@@ -319,6 +319,8 @@ List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetSecondaryExternalStoragesLis
                     list.push_back(info);
                 }
             }
+
+            env->DeleteLocalRef(array);
         }
     }
 
@@ -327,7 +329,15 @@ List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetSecondaryExternalStoragesLis
 
 String DeviceInfoPrivate::GetCarrierName()
 {
-    return JNI::ToString(getCarrierName());
+    return ReturnDavaStringFromLocalJstring(jgetCarrierName());
+}
+
+String DeviceInfoPrivate::ReturnDavaStringFromLocalJstring(jstring jstr)
+{
+    JNIEnv* env = JNI::GetEnv();
+    String str = JNI::ToString(jstr);
+    env->DeleteLocalRef(jstr);
+    return str;
 }
 }
 
