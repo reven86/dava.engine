@@ -34,7 +34,7 @@ class BiDiWrapper
 public:
     bool Prepare(const WideString& logicalStr, WideString& preparedStr, bool* isRTL);
     bool Reorder(const WideString& preparedStr, WideString& reorderedStr, const bool forceRtl);
-    bool IsRtlUTF8String(const String& utf8String);
+    BiDiHelper::Direction GetDirectionUTF8String(const String& utf8String);
 
 private:
     Mutex mutex;
@@ -226,7 +226,7 @@ bool BiDiWrapper::Reorder(const WideString& preparedStr, WideString& reorderedSt
 #endif
 }
 
-bool BiDiWrapper::IsRtlUTF8String(const String& utf8String)
+BiDiHelper::Direction BiDiWrapper::GetDirectionUTF8String(const String& utf8String)
 {
     LockGuard<Mutex> guard(mutex);
 
@@ -249,7 +249,19 @@ bool BiDiWrapper::IsRtlUTF8String(const String& utf8String)
     {
         return false;
     }
-    return FRIBIDI_IS_RTL(base_dir);
+
+    if (FRIBIDI_IS_NEUTRAL(base_dir))
+    {
+        return Direction::NEUTRAL;
+    }
+    else if (FRIBIDI_IS_RTL(base_dir))
+    {
+        return Direction::RTL;
+    }
+    else
+    {
+        return Direction::LTR;
+    }
 
 #elif DAVA_ICU
     int32 ucharLength = 0;
@@ -257,7 +269,7 @@ bool BiDiWrapper::IsRtlUTF8String(const String& utf8String)
     u_strFromUTF8(nullptr, 0, &ucharLength, utf8String.c_str(), static_cast<int32_t>(utf8String.length()), &error);
     if (error != U_ZERO_ERROR && error != U_BUFFER_OVERFLOW_ERROR)
     {
-        return false;
+        return BiDiHelper::Direction::LTR;
     }
 
     logicalBuffer.resize(ucharLength + 1); // +1 for \0 character
@@ -265,11 +277,24 @@ bool BiDiWrapper::IsRtlUTF8String(const String& utf8String)
     u_strFromUTF8(logicalBuffer.data(), ucharLength + 1, nullptr, utf8String.c_str(), static_cast<int32_t>(utf8String.length()), &error);
     if (error != U_ZERO_ERROR)
     {
-        return false;
+        return BiDiHelper::Direction::LTR;
     }
 
     UBiDiDirection direction = ubidi_getBaseDirection(logicalBuffer.data(), ucharLength);
-    return direction == UBIDI_RTL;
+    switch (direction)
+    {
+    case UBIDI_LTR:
+        return BiDiHelper::Direction::LTR;
+    case UBIDI_RTL:
+        return BiDiHelper::Direction::RTL;
+    case UBIDI_MIXED:
+        return BiDiHelper::Direction::MIXED;
+    case UBIDI_NEUTRAL:
+        return BiDiHelper::Direction::NEUTRAL;
+    default:
+        DVASSERT(false);
+        return BiDiHelper::Direction::LTR;
+    }
 
 #else
     return false;
@@ -313,8 +338,8 @@ bool BiDiHelper::IsBiDiSpecialCharacter(uint32 character) const
 #endif
 }
 
-bool BiDiHelper::IsRtlUTF8String(const String& utf8String) const
+BiDiHelper::Direction BiDiHelper::GetDirectionUTF8String(const String& utf8String) const
 {
-    return wrapper->IsRtlUTF8String(utf8String);
+    return wrapper->GetDirectionUTF8String(utf8String);
 }
 }

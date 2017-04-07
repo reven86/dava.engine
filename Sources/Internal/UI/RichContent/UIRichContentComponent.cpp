@@ -6,7 +6,7 @@ namespace DAVA
 DAVA_VIRTUAL_REFLECTION_IMPL(UIRichContentComponent)
 {
     ReflectionRegistrator<UIRichContentComponent>::Begin()
-    .Field("text", &UIRichContentComponent::GetUTF8Text, &UIRichContentComponent::SetUTF8Text)
+    .Field("text", &UIRichContentComponent::GetText, &UIRichContentComponent::SetText)
     .Field("baseClasses", &UIRichContentComponent::GetBaseClasses, &UIRichContentComponent::SetBaseClasses)
     .Field("aliases", &UIRichContentComponent::GetAliasesAsString, &UIRichContentComponent::SetAliasesFromString)
     .End();
@@ -25,7 +25,7 @@ UIRichContentComponent* UIRichContentComponent::Clone() const
     return new UIRichContentComponent(*this);
 }
 
-void UIRichContentComponent::SetUTF8Text(const String& _text)
+void UIRichContentComponent::SetText(const String& _text)
 {
     if (text != _text)
     {
@@ -49,9 +49,9 @@ void UIRichContentComponent::SetAliases(const UIRichAliasMap& _aliases)
     modified = true;
 }
 
-void UIRichContentComponent::ResetModify()
+void UIRichContentComponent::SetModified(bool _modified)
 {
-    modified = false;
+    modified = _modified;
 }
 
 void UIRichContentComponent::SetAliasesFromString(const String& _aliases)

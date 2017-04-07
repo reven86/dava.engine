@@ -22,9 +22,9 @@ public:
     UIRichContentComponent* Clone() const override;
 
     /** Set rich content text. */
-    void SetUTF8Text(const String& text);
+    void SetText(const String& text);
     /** Return rich content text. */
-    const String& GetUTF8Text() const;
+    const String& GetText() const;
 
     /** Set top level classes for rich content. */
     void SetBaseClasses(const String& classes);
@@ -41,8 +41,8 @@ public:
     /** Return aliases for tags as string. */
     String GetAliasesAsString() const;
 
-    /** Reset modification flag. */
-    void ResetModify();
+    /** Set modification flag. */
+    void SetModified(bool modified);
     /** Return value of modification flag. */
     bool IsModified() const;
 
@@ -58,7 +58,7 @@ private:
     bool modified = false;
 };
 
-inline const String& UIRichContentComponent::GetUTF8Text() const
+inline const String& UIRichContentComponent::GetText() const
 {
     return text;
 }

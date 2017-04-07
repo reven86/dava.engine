@@ -70,10 +70,10 @@ public:
             sp->SetVerticalPolicy(UISizePolicyComponent::eSizePolicy::PERCENT_OF_CONTENT);
         }
 
-        if (isRtl || needLineBreak)
+        UIFlowLayoutHintComponent* flh = ctrl->GetOrCreateComponent<UIFlowLayoutHintComponent>();
+        flh->SetContentDirection(direction);
+        if (needLineBreak)
         {
-            UIFlowLayoutHintComponent* flh = ctrl->GetOrCreateComponent<UIFlowLayoutHintComponent>();
-            flh->SetRtlContent(isRtl);
             flh->SetNewLineBeforeThis(needLineBreak);
             needLineBreak = false;
         }
@@ -211,7 +211,7 @@ public:
         Split(text, " \n", tokens);
         for (auto token : tokens)
         {
-            isRtl = bidiHelper.IsRtlUTF8String(token);
+            direction = bidiHelper.GetDirectionUTF8String(token);
             UIStaticText* ctrl = new UIStaticText();
             PrepareControl(ctrl, true);
             ctrl->SetUtf8Text(token);
@@ -222,7 +222,7 @@ public:
 
 private:
     bool needLineBreak = false;
-    bool isRtl = false;
+    BiDiHelper::Direction direction = BiDiHelper::Direction::NEUTRAL;
     Vector<String> classesStack;
     Vector<RefPtr<UIControl>> controls;
     BiDiHelper bidiHelper;
@@ -236,6 +236,7 @@ void UIRichContentSystem::RegisterControl(UIControl* control)
     UIRichContentComponent* component = control->GetComponent<UIRichContentComponent>();
     if (component)
     {
+        component->SetModified(true);
         links.emplace_back(component);
     }
 }
@@ -249,6 +250,7 @@ void UIRichContentSystem::UnregisterControl(UIControl* control)
             return l.component == component;
         });
         DVASSERT(findIt != links.end());
+        findIt->component->GetControl()->RemoveAllControls();
         findIt->component = nullptr; // mark link for delete
     }
 }
@@ -258,6 +260,7 @@ void UIRichContentSystem::RegisterComponent(UIControl* control, UIComponent* com
     if (component->GetType() == UIRichContentComponent::C_TYPE)
     {
         UIRichContentComponent* rich = static_cast<UIRichContentComponent*>(component);
+        rich->SetModified(true);
         links.emplace_back(rich);
     }
 }
@@ -270,6 +273,7 @@ void UIRichContentSystem::UnregisterComponent(UIControl* control, UIComponent* c
             return l.component == component;
         });
         DVASSERT(findIt != links.end());
+        findIt->component->GetControl()->RemoveAllControls();
         findIt->component = nullptr; // mark link for delete
     }
 }
@@ -299,7 +303,7 @@ void UIRichContentSystem::Process(float32 elapsedTime)
         DVASSERT(l.component);
         if (l.component->IsModified())
         {
-            l.component->ResetModify();
+            l.component->SetModified(false);
 
             UIControl* root = l.component->GetControl();
             root->RemoveAllControls();
@@ -307,7 +311,7 @@ void UIRichContentSystem::Process(float32 elapsedTime)
             XMLBuilder builder;
             builder.SetBaseClass(l.component->GetBaseClasses());
             builder.SetAliases(l.component->GetAliases());
-            if (builder.Build("<span>" + l.component->GetUTF8Text() + "</span>"))
+            if (builder.Build("<span>" + l.component->GetText() + "</span>"))
             {
                 for (const RefPtr<UIControl>& ctrl : builder.GetControls())
                 {

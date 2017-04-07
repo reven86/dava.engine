@@ -212,6 +212,92 @@ void FlowLayoutAlgorithm::LayoutLine(ControlLayoutData& data, int32 firstIndex, 
         position = data.GetWidth() - padding;
     }
     int32 realLastIndex = -1;
+
+#define DIRECTION_HINT 1
+#if (DIRECTION_HINT) // Controls ordering by direction hint
+    List<uint32> order;
+    order.push_back(firstIndex);
+    realLastIndex = firstIndex;
+
+    BiDiHelper::Direction linedir = BiDiHelper::Direction::NEUTRAL;
+    {
+        ControlLayoutData& childData = layoutData[firstIndex];
+        UIControl* ctrl = childData.GetControl();
+        UIFlowLayoutHintComponent* hint = ctrl->GetComponent<UIFlowLayoutHintComponent>();
+        if (hint)
+        {
+            linedir = hint->GetContentDirection();
+        }
+    }
+
+    auto lastIt = order.begin();
+    for (int32 i = firstIndex + 1; i <= lastIndex; i++)
+    {
+        ControlLayoutData& childData = layoutData[i];
+        if (childData.HaveToSkipControl(skipInvisible))
+        {
+            continue;
+        }
+        realLastIndex = i;
+
+        UIControl* ctrl = childData.GetControl();
+        BiDiHelper::Direction dir = BiDiHelper::Direction::NEUTRAL;
+
+        UIFlowLayoutHintComponent* hint = ctrl->GetComponent<UIFlowLayoutHintComponent>();
+        if (hint)
+        {
+            dir = hint->GetContentDirection();
+        }
+
+        if (linedir == dir)
+        {
+            switch (linedir)
+            {
+            case BiDiHelper::Direction::LTR:
+                lastIt = order.insert(order.end(), i);
+                break;
+            case BiDiHelper::Direction::NEUTRAL:
+            case BiDiHelper::Direction::RTL:
+                lastIt = order.insert(order.begin(), i);
+                break;
+            default:
+                DVASSERT(false);
+            }
+        }
+        else
+        {
+            switch (dir)
+            {
+            case BiDiHelper::Direction::LTR:
+                lastIt = order.insert(++lastIt, i);
+                break;
+            case BiDiHelper::Direction::NEUTRAL:
+                switch (linedir)
+                {
+                case BiDiHelper::Direction::LTR:
+                    lastIt = order.insert(++lastIt, i);
+                    break;
+                case BiDiHelper::Direction::RTL:
+                case BiDiHelper::Direction::NEUTRAL:
+                    lastIt = order.insert(lastIt, i);
+                    break;
+                default:
+                    DVASSERT(false);
+                }
+                break;
+            case BiDiHelper::Direction::RTL:
+                lastIt = order.insert(lastIt, i);
+                break;
+            default:
+                DVASSERT(false);
+            }
+        }
+    }
+
+    for (int32 i : order)
+    {
+        ControlLayoutData& childData = layoutData[i];
+#else
     for (int32 i = firstIndex; i <= lastIndex; i++)
     {
         ControlLayoutData& childData = layoutData[i];
@@ -219,6 +305,8 @@ void FlowLayoutAlgorithm::LayoutLine(ControlLayoutData& data, int32 firstIndex, 
         {
             continue;
         }
+        realLastIndex = i;
+#endif
 
         float32 size = childData.GetWidth();
         childData.SetPosition(Vector2::AXIS_X, inverse ? position - size : position);
@@ -231,7 +319,6 @@ void FlowLayoutAlgorithm::LayoutLine(ControlLayoutData& data, int32 firstIndex, 
         {
             position += size + spacing;
         }
-        realLastIndex = i;
     }
 
     DVASSERT(realLastIndex != -1);

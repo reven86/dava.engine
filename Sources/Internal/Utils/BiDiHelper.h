@@ -10,6 +10,14 @@ class BiDiWrapper;
 class BiDiHelper
 {
 public:
+    enum Direction
+    {
+        LTR = 0,
+        RTL,
+        NEUTRAL,
+        MIXED
+    };
+
     BiDiHelper();
     virtual ~BiDiHelper();
 
@@ -33,7 +41,7 @@ public:
     bool IsBiDiSpecialCharacter(uint32 character) const;
 
     /** Fast detect UTF-8 string direction */
-    bool IsRtlUTF8String(const String& utf8) const;
+    Direction GetDirectionUTF8String(const String& utf8) const;
 
 private:
     BiDiWrapper* wrapper;

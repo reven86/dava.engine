@@ -12,7 +12,7 @@ DAVA_VIRTUAL_REFLECTION_IMPL(UIFlowLayoutHintComponent)
     .DestructorByPointer([](UIFlowLayoutHintComponent* o) { o->Release(); })
     .Field("newLineBeforeThis", &UIFlowLayoutHintComponent::IsNewLineBeforeThis, &UIFlowLayoutHintComponent::SetNewLineBeforeThis)
     .Field("newLineAfterThis", &UIFlowLayoutHintComponent::IsNewLineAfterThis, &UIFlowLayoutHintComponent::SetNewLineAfterThis)
-    .Field("rtlContent", &UIFlowLayoutHintComponent::IsRtlContent, &UIFlowLayoutHintComponent::SetRtlContent)
+    .Field("contentDirection", &UIFlowLayoutHintComponent::GetContentDirection, &UIFlowLayoutHintComponent::SetContentDirection)[M::EnumT<BiDiHelper::Direction>()]
     .End();
 }
 
@@ -56,14 +56,14 @@ void UIFlowLayoutHintComponent::SetNewLineAfterThis(bool flag)
     SetLayoutDirty();
 }
 
-bool UIFlowLayoutHintComponent::IsRtlContent() const
+BiDiHelper::Direction UIFlowLayoutHintComponent::GetContentDirection() const
 {
-    return flags.test(FLAG_RTL_CONTENT);
+    return contentDirection;
 }
 
-void UIFlowLayoutHintComponent::SetRtlContent(bool flag)
+void UIFlowLayoutHintComponent::SetContentDirection(BiDiHelper::Direction direction)
 {
-    flags.set(FLAG_RTL_CONTENT, flag);
+    contentDirection = direction;
     SetLayoutDirty();
 }
 

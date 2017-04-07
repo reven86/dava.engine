@@ -20,7 +20,7 @@ public:
     void TextFieldOnTextChanged(UITextField* /*textField*/, const WideString& newText, const WideString& /*oldText*/) override
     {
         UIRichContentComponent* rich = richControl->GetOrCreateComponent<UIRichContentComponent>();
-        rich->SetUTF8Text(UTF8Utils::EncodeToUTF8(newText));
+        rich->SetText(UTF8Utils::EncodeToUTF8(newText));
     }
 
 private:
@@ -48,7 +48,7 @@ void RichTextTest::LoadResources()
 
     UIRichContentComponent* rich = richText->GetOrCreateComponent<UIRichContentComponent>();
     rich->SetBaseClasses("text");
-    rich->SetUTF8Text(inputField->GetUtf8Text());
+    rich->SetText(inputField->GetUtf8Text());
 }
 
 void RichTextTest::UnloadResources()

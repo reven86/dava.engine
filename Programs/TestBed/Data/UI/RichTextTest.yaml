@@ -3,7 +3,7 @@ Header:
 StyleSheets:
 -   selector: ".text"
     properties:
-        text-font: "Font_18"
+        text-font: "DejaVuSans_18"
 -   selector: ".text.red"
     properties:
         text-textColor: [1.000000, 0.000000, 0.000000, 1.000000]
@@ -60,7 +60,8 @@ Controls:
         position: [20.000000, 20.000000]
         size: [315.500000, 406.000000]
         debugDraw: true
-        text: "<h1>Header</h1> Example text with <img class=\"img\" src=\"~res:/Gfx/UI/GoldPin\" /> image and <btn /> object. <ul>List example:<li>Item 1</li><li>Item 2</li></ul> Text after list."
+        text: "<h1>وسام كاريوس</h1><text>بخصوص عدد مركبات العدو المُدمرة.</text><br/><text>كان أوتو كاريوس محترف استخدام الدبابات الأكثر نجاحًا في الحرب العالمية الثانية، حيث كان يقود PzKpfw 38\u202A(t)\u202C، وPzKpfw VI Tiger ومدمرة الدبابابة Jagdtiger خلال مسيرته الرائعة.</text><br/><text>• الدرجة الرابعة – 10<br/>• والدرجة الثالثة – 100<br/>• والدرجة الثانية – 1,000<br/>• والدرجة الأولى – 10,000</text>"
+        #text: "LOCALIZED_STRING"
         font: "DejaVuSans_18"
         textalign: ["LEFT", "TOP"]
         isMultiline: true

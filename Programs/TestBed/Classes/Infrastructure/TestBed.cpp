@@ -236,6 +236,11 @@ void TestBed::OnWindowCreated(DAVA::Window* w)
     w->GetUIControlSystem()->vcs->RegisterAvailableResourceSize(resW, resH, "Gfx");
     w->GetUIControlSystem()->SetClearColor(Color::Black);
 
+    LocalizationSystem* ls = LocalizationSystem::Instance();
+    ls->SetDirectory("~res:/Strings/");
+    ls->SetCurrentLocale("en");
+    ls->Init();
+
     testListScreen = new TestListScreen();
     UIScreenManager::Instance()->RegisterScreen(0, testListScreen);
     RegisterTests();
