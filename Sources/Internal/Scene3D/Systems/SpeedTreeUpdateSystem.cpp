@@ -37,9 +37,9 @@ SpeedTreeUpdateSystem::SpeedTreeUpdateSystem(Scene* scene)
 SpeedTreeUpdateSystem::~SpeedTreeUpdateSystem()
 {
     DVASSERT(allTrees.size() == 0);
-    for (auto it = directionIndexBuffers.begin(), itEnd = directionIndexBuffers.end(); it != itEnd; ++it)
+    for (auto& it : directionIndexBuffers)
     {
-        for (rhi::HIndexBuffer h : it->second)
+        for (rhi::HIndexBuffer h : it.second)
             rhi::DeleteIndexBuffer(h);
     }
 
@@ -60,7 +60,7 @@ void SpeedTreeUpdateSystem::ImmediateEvent(Component* _component, uint32 event)
             component->wtPosition = wtMxPrt->GetTranslationVector();
             wtMxPrt->GetInverse(component->wtInvMx);
 
-            DVASSERT(GetSpeedTreeObject(entity));
+            DVASSERT(GetSpeedTreeObject(entity) != nullptr);
             GetSpeedTreeObject(entity)->SetInvWorldTransformPtr(&component->wtInvMx);
         }
     }
@@ -73,7 +73,7 @@ void SpeedTreeUpdateSystem::ImmediateEvent(Component* _component, uint32 event)
 void SpeedTreeUpdateSystem::AddEntity(Entity* entity)
 {
     SpeedTreeComponent* component = GetSpeedTreeComponent(entity);
-    DVASSERT(component);
+    DVASSERT(component != nullptr);
     component->leafTime = static_cast<float32>(Random::Instance()->RandFloat(1000.f));
     allTrees.push_back(component);
 }
@@ -86,8 +86,8 @@ void SpeedTreeUpdateSystem::RemoveEntity(Entity* entity)
         if (allTrees[i]->entity == entity)
         {
             SpeedTreeObject* object = GetSpeedTreeObject(entity);
-            DVASSERT(object);
-            object->SetSortedIndexBuffersMap(SpeedTreeObject::SortedIndexBuffersMap());
+            DVASSERT(object != nullptr);
+            object->ClearSortedIndexBuffersMap();
 
             RemoveExchangingWithLast(allTrees, i);
             break;
@@ -175,7 +175,7 @@ void SpeedTreeUpdateSystem::SceneDidLoaded()
     for (auto tree : allTrees)
     {
         SpeedTreeObject* object = GetSpeedTreeObject(tree->entity);
-        DVASSERT(object);
+        DVASSERT(object != nullptr);
 
         object->RecalcBoundingBox();
 
@@ -195,7 +195,7 @@ void SpeedTreeUpdateSystem::ProcessSpeedTreeGeometry(SpeedTreeObject* object)
         if (pg != nullptr)
         {
             if (directionIndexBuffers.count(pg) == 0)
-                directionIndexBuffers.insert(std::make_pair(pg, BuildDirectionIndexBuffers(pg)));
+                directionIndexBuffers.emplace(pg, BuildDirectionIndexBuffers(pg));
 
             objectMap[pg] = directionIndexBuffers[pg];
         }
@@ -224,14 +224,14 @@ SpeedTreeObject::IndexBufferArray SpeedTreeUpdateSystem::BuildDirectionIndexBuff
 
 void SpeedTreeUpdateSystem::RestoreDirectionBuffers()
 {
-    for (auto it = directionIndexBuffers.begin(), itEnd = directionIndexBuffers.end(); it != itEnd; ++it)
+    for (auto& it : directionIndexBuffers)
     {
         for (uint32 dir = 0; dir < SpeedTreeObject::SORTING_DIRECTION_COUNT; ++dir)
         {
-            rhi::HIndexBuffer bufferHandle = it->second[dir];
+            rhi::HIndexBuffer bufferHandle = it.second[dir];
             if (rhi::NeedRestoreIndexBuffer(bufferHandle))
             {
-                Vector<uint16> indexData = MeshUtils::BuildSortedIndexBufferData(it->first, SpeedTreeObject::GetSortingDirection(dir));
+                Vector<uint16> indexData = MeshUtils::BuildSortedIndexBufferData(it.first, SpeedTreeObject::GetSortingDirection(dir));
                 rhi::UpdateIndexBuffer(bufferHandle, indexData.data(), 0, uint32(indexData.size() * sizeof(uint16)));
             }
         }

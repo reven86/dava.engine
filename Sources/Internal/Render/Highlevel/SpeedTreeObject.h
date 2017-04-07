@@ -49,7 +49,9 @@ protected:
     void UpdateAnimationFlag(int32 maxAnimatedLod);
 
     void SetInvWorldTransformPtr(const Matrix4* invWT);
+
     void SetSortedIndexBuffersMap(const SortedIndexBuffersMap& map);
+    void ClearSortedIndexBuffersMap();
 
     Vector2 trunkOscillation;
     Vector2 leafOscillation;
@@ -79,5 +81,10 @@ inline void SpeedTreeObject::SetInvWorldTransformPtr(const Matrix4* invWT)
 inline void SpeedTreeObject::SetSortedIndexBuffersMap(const SpeedTreeObject::SortedIndexBuffersMap& map)
 {
     directionIndexBuffers = map;
+}
+
+inline void SpeedTreeObject::ClearSortedIndexBuffersMap()
+{
+    directionIndexBuffers.clear();
 }
 }

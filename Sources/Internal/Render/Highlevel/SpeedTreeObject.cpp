@@ -84,37 +84,36 @@ void SpeedTreeObject::PrepareToRender(Camera* camera)
 {
     RenderObject::PrepareToRender(camera);
 
-    if (!directionIndexBuffers.empty())
+    if (directionIndexBuffers.empty())
+        return;
+
+    Vector3 direction = GetWorldTransformPtr()->GetTranslationVector() - camera->GetPosition();
+    direction = MultiplyVectorMat3x3(direction, *invWorldTransform);
+    direction.z = 0.f;
+    direction.Normalize();
+    uint32 directionIndex = SelectDirectionIndex(direction);
+
+    for (RenderBatch* batch : activeRenderBatchArray)
     {
-        Vector3 direction = GetWorldTransformPtr()->GetTranslationVector() - camera->GetPosition();
-        direction = MultiplyVectorMat3x3(direction, *invWorldTransform);
-        direction.z = 0.f;
-        direction.Normalize();
-
-        uint32 directionIndex = SelectDirectionIndex(direction);
-
-        for (RenderBatch* batch : activeRenderBatchArray)
+        PolygonGroup* pg = batch->GetPolygonGroup();
+        if (pg)
         {
-            PolygonGroup* pg = batch->GetPolygonGroup();
-            if (pg)
+            if (directionIndexBuffers.count(pg) > 0)
             {
-                if (directionIndexBuffers.count(pg))
-                {
-                    batch->useDataSource = false;
+                batch->useDataSource = false;
 
-                    batch->vertexBuffer = pg->vertexBuffer;
-                    batch->indexBuffer = directionIndexBuffers[pg][directionIndex];
+                batch->vertexBuffer = pg->vertexBuffer;
+                batch->indexBuffer = directionIndexBuffers[pg][directionIndex];
 
-                    batch->vertexCount = pg->vertexCount;
-                    batch->indexCount = pg->indexCount;
+                batch->vertexCount = pg->vertexCount;
+                batch->indexCount = pg->indexCount;
 
-                    batch->primitiveType = pg->primitiveType;
-                    batch->vertexLayoutId = pg->vertexLayoutId;
-                }
-                else
-                {
-                    batch->useDataSource = true;
-                }
+                batch->primitiveType = pg->primitiveType;
+                batch->vertexLayoutId = pg->vertexLayoutId;
+            }
+            else
+            {
+                batch->useDataSource = true;
             }
         }
     }
@@ -245,7 +244,7 @@ bool SpeedTreeObject::IsTreeLeafBatch(RenderBatch* batch)
 Vector3 SpeedTreeObject::GetSortingDirection(uint32 directionIndex)
 {
     float32 angle = (PI_2 / SpeedTreeObject::SORTING_DIRECTION_COUNT) * directionIndex;
-    return Vector3(cosf(angle), sinf(angle), 0.f);
+    return Vector3(std::cos(angle), std::sin(angle), 0.f);
 }
 
 uint32 SpeedTreeObject::SelectDirectionIndex(const Vector3& direction)
