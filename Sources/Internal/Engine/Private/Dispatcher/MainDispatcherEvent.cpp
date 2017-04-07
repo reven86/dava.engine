@@ -175,8 +175,8 @@ MainDispatcherEvent MainDispatcherEvent::CreateWindowMouseClickEvent(Window* win
     e.mouseEvent.modifierKeys = modifierKeys;
     e.mouseEvent.x = x;
     e.mouseEvent.y = y;
-    e.mouseEvent.scrollDeltaX = 0.f;
-    e.mouseEvent.scrollDeltaY = 0.f;
+    e.mouseEvent.scrollDeltaX = 0.0f;
+    e.mouseEvent.scrollDeltaY = 0.0f;
     e.mouseEvent.isRelative = isRelative;
     return e;
 }
@@ -190,8 +190,8 @@ MainDispatcherEvent MainDispatcherEvent::CreateWindowMouseMoveEvent(Window* wind
     e.mouseEvent.modifierKeys = modifierKeys;
     e.mouseEvent.x = x;
     e.mouseEvent.y = y;
-    e.mouseEvent.scrollDeltaX = 0.f;
-    e.mouseEvent.scrollDeltaY = 0.f;
+    e.mouseEvent.scrollDeltaX = 0.0f;
+    e.mouseEvent.scrollDeltaY = 0.0f;
     e.mouseEvent.isRelative = isRelative;
     return e;
 }
@@ -224,13 +224,15 @@ MainDispatcherEvent MainDispatcherEvent::CreateWindowTouchEvent(Window* window, 
     return e;
 }
 
-MainDispatcherEvent MainDispatcherEvent::CreateWindowMagnificationGestureEvent(Window* window, float32 magnification, eModifierKeys modifierKeys)
+MainDispatcherEvent MainDispatcherEvent::CreateWindowMagnificationGestureEvent(Window* window, float32 x, float32 y, float32 magnification, eModifierKeys modifierKeys)
 {
     MainDispatcherEvent e(TRACKPAD_GESTURE, window);
     e.trackpadGestureEvent.magnification = magnification;
-    e.trackpadGestureEvent.rotation = 0;
-    e.trackpadGestureEvent.deltaX = 0;
-    e.trackpadGestureEvent.deltaY = 0;
+    e.trackpadGestureEvent.rotation = 0.0f;
+    e.trackpadGestureEvent.deltaX = 0.0f;
+    e.trackpadGestureEvent.deltaY = 0.0f;
+    e.trackpadGestureEvent.x = x;
+    e.trackpadGestureEvent.y = y;
     e.trackpadGestureEvent.modifierKeys = modifierKeys;
     return e;
 }
@@ -238,10 +240,12 @@ MainDispatcherEvent MainDispatcherEvent::CreateWindowMagnificationGestureEvent(W
 MainDispatcherEvent MainDispatcherEvent::CreateWindowRotationGestureEvent(Window* window, float32 rotation, eModifierKeys modifierKeys)
 {
     MainDispatcherEvent e(TRACKPAD_GESTURE, window);
-    e.trackpadGestureEvent.magnification = 0;
+    e.trackpadGestureEvent.magnification = 0.0f;
     e.trackpadGestureEvent.rotation = rotation;
-    e.trackpadGestureEvent.deltaX = 0;
-    e.trackpadGestureEvent.deltaY = 0;
+    e.trackpadGestureEvent.deltaX = 0.0f;
+    e.trackpadGestureEvent.deltaY = 0.0f;
+    e.trackpadGestureEvent.x = 0.0f;
+    e.trackpadGestureEvent.y = 0.0f;
     e.trackpadGestureEvent.modifierKeys = modifierKeys;
     return e;
 }
@@ -249,10 +253,12 @@ MainDispatcherEvent MainDispatcherEvent::CreateWindowRotationGestureEvent(Window
 MainDispatcherEvent MainDispatcherEvent::CreateWindowSwipeGestureEvent(Window* window, float32 deltaX, float32 deltaY, eModifierKeys modifierKeys)
 {
     MainDispatcherEvent e(TRACKPAD_GESTURE, window);
-    e.trackpadGestureEvent.magnification = 0;
-    e.trackpadGestureEvent.rotation = 0;
+    e.trackpadGestureEvent.magnification = 0.0f;
+    e.trackpadGestureEvent.rotation = 0.0f;
     e.trackpadGestureEvent.deltaX = deltaX;
     e.trackpadGestureEvent.deltaY = deltaY;
+    e.trackpadGestureEvent.x = 0.0f;
+    e.trackpadGestureEvent.y = 0.0f;
     e.trackpadGestureEvent.modifierKeys = modifierKeys;
     return e;
 }

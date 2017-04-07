@@ -414,7 +414,14 @@ void WindowNativeBridge::MagnifyWithEvent(NSEvent* theEvent)
 {
     eModifierKeys modifierKeys = GetModifierKeys(theEvent);
     float32 magnification = [theEvent magnification];
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMagnificationGestureEvent(window, magnification, modifierKeys));
+
+    NSSize sz = [renderView frame].size;
+    NSPoint pt = [theEvent locationInWindow];
+
+    float32 x = pt.x;
+    float32 y = sz.height - pt.y;
+
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMagnificationGestureEvent(window, x, y, magnification, modifierKeys));
 }
 
 void WindowNativeBridge::RotateWithEvent(NSEvent* theEvent)
