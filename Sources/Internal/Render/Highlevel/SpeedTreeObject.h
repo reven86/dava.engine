@@ -37,6 +37,9 @@ protected:
     static const FastName FLAG_WIND_ANIMATION;
     static const uint32 SORTING_DIRECTION_COUNT = 8;
 
+    using IndexBufferArray = Array<rhi::HIndexBuffer, SORTING_DIRECTION_COUNT>;
+    using SortedIndexBuffersMap = Map<PolygonGroup*, IndexBufferArray>;
+
     static Vector3 GetSortingDirection(uint32 directionIndex);
     static uint32 SelectDirectionIndex(const Vector3& direction);
 
@@ -46,15 +49,13 @@ protected:
     void UpdateAnimationFlag(int32 maxAnimatedLod);
 
     void SetInvWorldTransformPtr(const Matrix4* invWT);
+    void SetSortedIndexBuffersMap(const SortedIndexBuffersMap& map);
 
     Vector2 trunkOscillation;
     Vector2 leafOscillation;
 
     DAVA::Array<float32, HARMONICS_BUFFER_CAPACITY> sphericalHarmonics;
     float32 lightSmoothing;
-
-    using IndexBufferArray = Array<rhi::HIndexBuffer, SORTING_DIRECTION_COUNT>;
-    using SortedIndexBuffersMap = Map<PolygonGroup*, IndexBufferArray>;
 
     SortedIndexBuffersMap directionIndexBuffers;
 
@@ -73,5 +74,10 @@ public:
 inline void SpeedTreeObject::SetInvWorldTransformPtr(const Matrix4* invWT)
 {
     invWorldTransform = invWT;
+}
+
+inline void SpeedTreeObject::SetSortedIndexBuffersMap(const SpeedTreeObject::SortedIndexBuffersMap& map)
+{
+    directionIndexBuffers = map;
 }
 }

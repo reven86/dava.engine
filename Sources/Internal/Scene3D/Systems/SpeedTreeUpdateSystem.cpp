@@ -87,7 +87,7 @@ void SpeedTreeUpdateSystem::RemoveEntity(Entity* entity)
         {
             SpeedTreeObject* object = GetSpeedTreeObject(entity);
             DVASSERT(object);
-            object->directionIndexBuffers.clear();
+            object->SetSortedIndexBuffersMap(SpeedTreeObject::SortedIndexBuffersMap());
 
             RemoveExchangingWithLast(allTrees, i);
             break;
@@ -185,6 +185,8 @@ void SpeedTreeUpdateSystem::SceneDidLoaded()
 
 void SpeedTreeUpdateSystem::ProcessSpeedTreeGeometry(SpeedTreeObject* object)
 {
+    SpeedTreeObject::SortedIndexBuffersMap objectMap;
+
     uint32 batchCount = object->GetRenderBatchCount();
     for (uint32 bi = 0; bi < batchCount; ++bi)
     {
@@ -195,9 +197,11 @@ void SpeedTreeUpdateSystem::ProcessSpeedTreeGeometry(SpeedTreeObject* object)
             if (directionIndexBuffers.count(pg) == 0)
                 directionIndexBuffers.insert(std::make_pair(pg, BuildDirectionIndexBuffers(pg)));
 
-            object->directionIndexBuffers[pg] = directionIndexBuffers[pg];
+            objectMap[pg] = directionIndexBuffers[pg];
         }
     }
+
+    object->SetSortedIndexBuffersMap(objectMap);
 }
 
 SpeedTreeObject::IndexBufferArray SpeedTreeUpdateSystem::BuildDirectionIndexBuffers(PolygonGroup* pg)
