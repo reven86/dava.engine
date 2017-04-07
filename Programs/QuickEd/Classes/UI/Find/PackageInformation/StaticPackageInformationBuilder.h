@@ -30,20 +30,20 @@ public:
     bool ProcessImportedPackage(const DAVA::String& packagePath, DAVA::AbstractUIPackageLoader* loader) override;
     void ProcessStyleSheet(const DAVA::Vector<DAVA::UIStyleSheetSelectorChain>& selectorChains, const DAVA::Vector<DAVA::UIStyleSheetProperty>& properties) override;
 
-    const DAVA::InspInfo* BeginControlWithClass(const DAVA::FastName& controlName, const DAVA::String& className) override;
-    const DAVA::InspInfo* BeginControlWithCustomClass(const DAVA::FastName& controlName, const DAVA::String& customClassName, const DAVA::String& className) override;
-    const DAVA::InspInfo* BeginControlWithPrototype(const DAVA::FastName& controlName, const DAVA::String& packageName, const DAVA::FastName& prototypeName, const DAVA::String* customClassName, DAVA::AbstractUIPackageLoader* loader) override;
-    const DAVA::InspInfo* BeginControlWithPath(const DAVA::String& pathName) override;
-    const DAVA::InspInfo* BeginUnknownControl(const DAVA::FastName& controlName, const DAVA::YamlNode* node) override;
+    const DAVA::ReflectedType* BeginControlWithClass(const DAVA::FastName& controlName, const DAVA::String& className) override;
+    const DAVA::ReflectedType* BeginControlWithCustomClass(const DAVA::FastName& controlName, const DAVA::String& customClassName, const DAVA::String& className) override;
+    const DAVA::ReflectedType* BeginControlWithPrototype(const DAVA::FastName& controlName, const DAVA::String& packageName, const DAVA::FastName& prototypeName, const DAVA::String* customClassName, DAVA::AbstractUIPackageLoader* loader) override;
+    const DAVA::ReflectedType* BeginControlWithPath(const DAVA::String& pathName) override;
+    const DAVA::ReflectedType* BeginUnknownControl(const DAVA::FastName& controlName, const DAVA::YamlNode* node) override;
     void EndControl(eControlPlace controlPlace) override;
 
     void BeginControlPropertiesSection(const DAVA::String& name) override;
     void EndControlPropertiesSection() override;
 
-    const DAVA::InspInfo* BeginComponentPropertiesSection(DAVA::uint32 componentType, DAVA::uint32 componentIndex) override;
+    const DAVA::ReflectedType* BeginComponentPropertiesSection(DAVA::uint32 componentType, DAVA::uint32 componentIndex) override;
     void EndComponentPropertiesSection() override;
 
-    void ProcessProperty(const DAVA::InspMember* member, const DAVA::VariantType& value) override;
+    void ProcessProperty(const DAVA::ReflectedStructure::Field& field, const DAVA::Any& value) override;
 
     std::shared_ptr<StaticPackageInformation> GetPackage() const;
 
@@ -52,7 +52,7 @@ private:
 
     std::shared_ptr<StaticPackageInformation> packageInformation;
     DAVA::Vector<Description> stack;
-    DAVA::Function<void(const DAVA::InspMember* member, const DAVA::VariantType& value)> propertyProcessor;
+    DAVA::Function<void(const DAVA::ReflectedStructure::Field& member, const DAVA::Any& value)> propertyProcessor;
 
     PackageInformationCache* cache = nullptr;
 };

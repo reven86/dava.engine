@@ -141,8 +141,6 @@ private:
 
     WebViewProperties properties;
 
-    size_t windowSizeChangedConnection = 0;
-    size_t windowDestroyedConnection = 0;
     // clang-format on
 };
 

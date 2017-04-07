@@ -74,7 +74,7 @@ void ControlNodeInformation::VisitChildren(const Function<void(const ControlInfo
     }
 }
 
-VariantType ControlNodeInformation::GetControlPropertyValue(const InspMember* member) const
+Any ControlNodeInformation::GetControlPropertyValue(const DAVA::ReflectedStructure::Field& member) const
 {
-    return member->Value(controlNode->GetControl());
+    return member.valueWrapper->GetValue(ReflectedObject(controlNode->GetControl()));
 }

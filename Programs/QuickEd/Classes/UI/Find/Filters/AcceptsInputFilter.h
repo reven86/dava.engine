@@ -2,7 +2,7 @@
 
 #include "UI/Find/Filters/FindFilter.h"
 #include <Base/BaseTypes.h>
-#include <Base/IntrospectionBase.h>
+#include <Reflection/ReflectedStructure.h>
 
 class AcceptsInputFilter : public FindFilter
 {
@@ -13,5 +13,5 @@ public:
     bool CanAcceptControl(const ControlInformation* control) const override;
 
 private:
-    const DAVA::InspMember* inspMember = nullptr;
+    const DAVA::ReflectedStructure::Field* refMember = nullptr;
 };

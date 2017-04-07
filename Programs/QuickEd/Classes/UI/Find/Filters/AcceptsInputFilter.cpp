@@ -8,7 +8,13 @@ using namespace DAVA;
 
 AcceptsInputFilter::AcceptsInputFilter()
 {
-    inspMember = UIControl::TypeInfo()->Member(FastName("noInput"));
+    for (const auto& field : ReflectedTypeDB::Get<UIControl>()->GetStructure()->fields)
+    {
+        if (field->name == "noInput")
+        {
+            refMember = field.get();
+        }
+    }
 }
 
 bool AcceptsInputFilter::CanAcceptPackage(const PackageInformation* package) const
@@ -18,10 +24,10 @@ bool AcceptsInputFilter::CanAcceptPackage(const PackageInformation* package) con
 
 bool AcceptsInputFilter::CanAcceptControl(const ControlInformation* control) const
 {
-    const VariantType& noInput = control->GetControlPropertyValue(inspMember);
-    if (noInput.GetType() == VariantType::TYPE_BOOLEAN)
+    const Any& noInput = control->GetControlPropertyValue(*refMember);
+    if (noInput.CanCast<bool>())
     {
-        return noInput.AsBool() == false;
+        return noInput.Cast<bool>() == false;
     }
     else
     {

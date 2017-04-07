@@ -6,7 +6,7 @@
 #include <QLineEdit>
 #include <QStyledItemDelegate>
 #include "Model/ControlProperties/AbstractProperty.h"
-#include "FileSystem/VariantType.h"
+
 class AbstractPropertyDelegate;
 class QToolButton;
 class Project;
@@ -66,7 +66,7 @@ protected:
     };
 
     QMap<AbstractProperty::ePropertyType, AbstractPropertyDelegate*> propertyItemDelegates;
-    QMap<DAVA::VariantType::eVariantType, AbstractPropertyDelegate*> variantTypeItemDelegates;
+    QMap<const DAVA::Type*, AbstractPropertyDelegate*> anyItemDelegates;
     QMap<PropertyPath, AbstractPropertyDelegate*> propertyNameTypeItemDelegates;
 };
 class PropertyWidget : public QWidget

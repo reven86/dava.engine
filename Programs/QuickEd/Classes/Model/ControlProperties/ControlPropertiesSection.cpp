@@ -8,17 +8,17 @@
 
 using namespace DAVA;
 
-ControlPropertiesSection::ControlPropertiesSection(DAVA::UIControl* aControl, const DAVA::InspInfo* typeInfo, const ControlPropertiesSection* sourceSection, eCloneType cloneType)
-    : SectionProperty(typeInfo->Name().c_str())
-    , control(SafeRetain(aControl))
+ControlPropertiesSection::ControlPropertiesSection(const DAVA::String& name, DAVA::UIControl* control_, const DAVA::Type* type, const Vector<Reflection::Field>& fields, const ControlPropertiesSection* sourceSection, eCloneType cloneType)
+    : SectionProperty(name)
+    , control(SafeRetain(control_))
 {
-    for (int i = 0; i < typeInfo->MembersCount(); i++)
+    for (const Reflection::Field& field : fields)
     {
-        const InspMember* member = typeInfo->Member(i);
-        if ((member->Flags() & I_EDIT) != 0)
+        if (field.inheritFrom->GetType() == type)
         {
-            IntrospectionProperty* sourceProperty = nullptr == sourceSection ? nullptr : sourceSection->FindProperty(member);
-            IntrospectionProperty* prop = IntrospectionProperty::Create(control, member, sourceProperty, cloneType);
+            String name = field.key.Cast<String>();
+            IntrospectionProperty* sourceProperty = nullptr == sourceSection ? nullptr : sourceSection->FindChildPropertyByName(name);
+            IntrospectionProperty* prop = IntrospectionProperty::Create(control, name, field.ref, sourceProperty, cloneType);
             AddProperty(prop);
             SafeRelease(prop);
         }

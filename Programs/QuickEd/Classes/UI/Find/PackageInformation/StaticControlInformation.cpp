@@ -71,9 +71,9 @@ void StaticControlInformation::VisitChildren(const Function<void(const ControlIn
     }
 }
 
-VariantType StaticControlInformation::GetControlPropertyValue(const InspMember* member) const
+Any StaticControlInformation::GetControlPropertyValue(const DAVA::ReflectedStructure::Field& member) const
 {
-    Map<FastName, VariantType>::const_iterator iter = controlProperties.find(member->Name());
+    Map<FastName, Any>::const_iterator iter = controlProperties.find(FastName(member.name));
 
     if (iter != controlProperties.end())
     {
@@ -123,13 +123,13 @@ void StaticControlInformation::AddComponent(UIComponent::eType componentType)
     ++componentCount[componentType];
 }
 
-void StaticControlInformation::SetControlProperty(const InspMember* member, const VariantType& value)
+void StaticControlInformation::SetControlProperty(const DAVA::ReflectedStructure::Field& member, const DAVA::Any& value)
 {
-    controlProperties[member->Name()] = value;
+    controlProperties[FastName(member.name)] = value;
 }
 
-void StaticControlInformation::SetComponentProperty(UIComponent::eType componentType, int32 componentIndex, const InspMember* member, const VariantType& value)
+void StaticControlInformation::SetComponentProperty(UIComponent::eType componentType, int32 componentIndex, const DAVA::ReflectedStructure::Field& member, const DAVA::Any& value)
 {
-    const ComponentPropertyId id = std::make_tuple(componentType, componentIndex, member->Name());
+    const ComponentPropertyId id = std::make_tuple(componentType, componentIndex, FastName(member.name));
     componentProperties[id] = value;
 }

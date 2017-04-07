@@ -43,20 +43,20 @@ public:
     virtual bool ProcessImportedPackage(const String& packagePath, AbstractUIPackageLoader* loader) = 0;
     virtual void ProcessStyleSheet(const Vector<UIStyleSheetSelectorChain>& selectorChains, const Vector<UIStyleSheetProperty>& properties) = 0;
 
-    virtual const InspInfo* BeginControlWithClass(const FastName& controlName, const String& className) = 0;
-    virtual const InspInfo* BeginControlWithCustomClass(const FastName& controlName, const String& customClassName, const String& className) = 0;
-    virtual const InspInfo* BeginControlWithPrototype(const FastName& controlName, const String& packageName, const FastName& prototypeName, const String* customClassName, AbstractUIPackageLoader* loader) = 0;
-    virtual const InspInfo* BeginControlWithPath(const String& pathName) = 0;
-    virtual const InspInfo* BeginUnknownControl(const FastName& controlName, const YamlNode* node) = 0;
+    virtual const ReflectedType* BeginControlWithClass(const FastName& controlName, const String& className) = 0;
+    virtual const ReflectedType* BeginControlWithCustomClass(const FastName& controlName, const String& customClassName, const String& className) = 0;
+    virtual const ReflectedType* BeginControlWithPrototype(const FastName& controlName, const String& packageName, const FastName& prototypeName, const String* customClassName, AbstractUIPackageLoader* loader) = 0;
+    virtual const ReflectedType* BeginControlWithPath(const String& pathName) = 0;
+    virtual const ReflectedType* BeginUnknownControl(const FastName& controlName, const YamlNode* node) = 0;
     virtual void EndControl(eControlPlace controlPlace) = 0;
 
     virtual void BeginControlPropertiesSection(const String& name) = 0;
     virtual void EndControlPropertiesSection() = 0;
 
-    virtual const InspInfo* BeginComponentPropertiesSection(uint32 componentType, uint32 componentIndex) = 0;
+    virtual const ReflectedType* BeginComponentPropertiesSection(uint32 componentType, uint32 componentIndex) = 0;
     virtual void EndComponentPropertiesSection() = 0;
 
-    virtual void ProcessProperty(const InspMember* member, const VariantType& value) = 0;
+    virtual void ProcessProperty(const DAVA::ReflectedStructure::Field& field, const Any& value) = 0;
 };
 }
 

@@ -22,7 +22,7 @@ public:
     void VisitChildren(const DAVA::Function<void(const ControlInformation*)>& visitor) const override;
 
     // for now returns a value ONLY if it is set explicitly
-    DAVA::VariantType GetControlPropertyValue(const DAVA::InspMember* member) const override;
+    DAVA::Any GetControlPropertyValue(const DAVA::ReflectedStructure::Field& member) const override;
 
     StaticControlInformation* GetParent() const;
     void SetParent(StaticControlInformation* parent);
@@ -33,8 +33,8 @@ public:
 
     void AddComponent(DAVA::UIComponent::eType componentType);
 
-    void SetControlProperty(const DAVA::InspMember* member, const DAVA::VariantType& value);
-    void SetComponentProperty(DAVA::UIComponent::eType componentType, DAVA::int32 componentIndex, const DAVA::InspMember* member, const DAVA::VariantType& value);
+    void SetControlProperty(const DAVA::ReflectedStructure::Field& member, const DAVA::Any& value);
+    void SetComponentProperty(DAVA::UIComponent::eType componentType, DAVA::int32 componentIndex, const DAVA::ReflectedStructure::Field& member, const DAVA::Any& value);
 
 private:
     using ComponentPropertyId = std::tuple<DAVA::UIComponent::eType, DAVA::int32, DAVA::FastName>;
@@ -47,8 +47,8 @@ private:
 
     DAVA::UnorderedMap<DAVA::UIComponent::eType, DAVA::int32> componentCount;
 
-    DAVA::Map<DAVA::FastName, DAVA::VariantType> controlProperties;
-    DAVA::Map<ComponentPropertyId, DAVA::VariantType> componentProperties;
+    DAVA::Map<DAVA::FastName, DAVA::Any> controlProperties;
+    DAVA::Map<ComponentPropertyId, DAVA::Any> componentProperties;
 
     DAVA::Vector<std::shared_ptr<StaticControlInformation>> children;
 };

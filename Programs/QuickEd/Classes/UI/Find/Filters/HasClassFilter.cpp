@@ -10,7 +10,13 @@ using namespace DAVA;
 HasClassFilter::HasClassFilter(const String& requiredClass_)
     : requiredClass(requiredClass_)
 {
-    inspMember = UIControl::TypeInfo()->Member(FastName("classes"));
+    for (const auto& field : ReflectedTypeDB::Get<UIControl>()->GetStructure()->fields)
+    {
+        if (field->name == "classes")
+        {
+            refMember = field.get();
+        }
+    }
 }
 
 bool HasClassFilter::CanAcceptPackage(const PackageInformation* package) const
@@ -20,11 +26,11 @@ bool HasClassFilter::CanAcceptPackage(const PackageInformation* package) const
 
 bool HasClassFilter::CanAcceptControl(const ControlInformation* control) const
 {
-    const VariantType& classesStr = control->GetControlPropertyValue(inspMember);
-    if (classesStr.GetType() == VariantType::TYPE_STRING)
+    const Any& classesStr = control->GetControlPropertyValue(*refMember);
+    if (classesStr.CanCast<String>())
     {
         Vector<String> classes;
-        Split(classesStr.AsString(), " ", classes);
+        Split(classesStr.Cast<String>(), " ", classes);
 
         return std::find(classes.begin(), classes.end(), requiredClass) != classes.end();
     }

@@ -24,11 +24,16 @@ public:
 
     const DAVA::String& GetName() const override;
 
-    virtual ValueType* FindProperty(const DAVA::InspMember* member) const;
+    virtual ValueType* FindChildPropertyByName(const DAVA::String& name) const;
 
     ePropertyType GetType() const override
     {
         return TYPE_HEADER;
+    }
+
+    const DAVA::Type* GetValueType() const override
+    {
+        return nullptr;
     }
 
     typename DAVA::Vector<ValueType*>::const_iterator begin() const;
@@ -136,11 +141,11 @@ const DAVA::String& SectionProperty<ValueType>::GetName() const
 }
 
 template <typename ValueType>
-ValueType* SectionProperty<ValueType>::FindProperty(const DAVA::InspMember* member) const
+ValueType* SectionProperty<ValueType>::FindChildPropertyByName(const DAVA::String& name) const
 {
     for (auto child : children)
     {
-        if (child->IsSameMember(member))
+        if (child->GetName() == name)
             return child;
     }
     return nullptr;

@@ -2,7 +2,7 @@
 
 #include "UI/Find/Filters/FindFilter.h"
 #include <Base/BaseTypes.h>
-#include <Base/IntrospectionBase.h>
+#include <Reflection/ReflectedStructure.h>
 
 class HasClassFilter : public FindFilter
 {
@@ -14,5 +14,5 @@ public:
 
 private:
     DAVA::String requiredClass;
-    const DAVA::InspMember* inspMember = nullptr;
+    const DAVA::ReflectedStructure::Field* refMember = nullptr;
 };

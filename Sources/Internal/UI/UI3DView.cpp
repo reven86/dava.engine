@@ -9,10 +9,21 @@
 #include "Scene3D/Systems/Controller/RotationControllerSystem.h"
 #include "Scene3D/Systems/Controller/SnapToLandscapeControllerSystem.h"
 #include "Scene3D/Systems/Controller/WASDControllerSystem.h"
+#include "Reflection/ReflectionRegistrator.h"
 #include "UI/Update/UIUpdateComponent.h"
 
 namespace DAVA
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(UI3DView)
+{
+    ReflectionRegistrator<UI3DView>::Begin()
+    .ConstructorByPointer()
+    .DestructorByPointer([](UI3DView* o) { o->Release(); })
+    .Field("drawToFrameBuffer", &UI3DView::GetDrawToFrameBuffer, &UI3DView::SetDrawToFrameBuffer)
+    .Field("frameBufferScaleFactor", &UI3DView::GetFrameBufferScaleFactor, &UI3DView::SetFrameBufferScaleFactor)
+    .End();
+}
+
 UI3DView::UI3DView(const Rect& rect)
     : UIControl(rect)
     , scene(nullptr)

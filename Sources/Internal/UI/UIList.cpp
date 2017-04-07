@@ -4,12 +4,25 @@
 #include "UI/UIControlSystem.h"
 #include "Base/ObjectFactory.h"
 #include "UI/UIControlHelpers.h"
+#include "Reflection/ReflectionRegistrator.h"
 #include "UI/Update/UIUpdateComponent.h"
 #include "UI/Layouts/UISizePolicyComponent.h"
 
 namespace DAVA
 {
 static const int32 INVALID_INDEX = -1;
+
+DAVA_VIRTUAL_REFLECTION_IMPL(UIList)
+{
+    ReflectionRegistrator<UIList>::Begin()
+    .ConstructorByPointer()
+    .DestructorByPointer([](UIList* o) { o->Release(); })
+    .Field("orientation", &UIList::GetOrientation, &UIList::SetOrientation)
+    [
+    M::EnumT<eListOrientation>()
+    ]
+    .End();
+}
 
 float32 UIListDelegate::CellWidth(UIList* /*list*/, int32 /*index*/)
 {

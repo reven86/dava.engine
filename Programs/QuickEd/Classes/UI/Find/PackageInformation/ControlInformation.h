@@ -1,7 +1,7 @@
 #pragma once
 
 #include <Base/BaseTypes.h>
-#include <Base/IntrospectionBase.h>
+#include <Reflection/Reflection.h>
 #include <Functional/Functional.h>
 #include <FileSystem/VariantType.h>
 #include <UI/Components/UIComponent.h>
@@ -20,5 +20,5 @@ public:
     virtual void VisitParent(const DAVA::Function<void(const ControlInformation*)>& visitor) const = 0;
     virtual void VisitChildren(const DAVA::Function<void(const ControlInformation*)>& visitor) const = 0;
 
-    virtual DAVA::VariantType GetControlPropertyValue(const DAVA::InspMember* member) const = 0;
+    virtual DAVA::Any GetControlPropertyValue(const DAVA::ReflectedStructure::Field& member) const = 0;
 };

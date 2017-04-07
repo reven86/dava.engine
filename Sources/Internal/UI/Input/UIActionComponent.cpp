@@ -5,6 +5,15 @@
 
 namespace DAVA
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(UIActionComponent)
+{
+    ReflectionRegistrator<UIActionComponent>::Begin()
+    .ConstructorByPointer()
+    .DestructorByPointer([](UIActionComponent* o) { o->Release(); })
+    .Field("action", &UIActionComponent::GetActionAsString, &UIActionComponent::SetActionFromString)
+    .End();
+}
+
 UIActionComponent::UIActionComponent()
 {
 }

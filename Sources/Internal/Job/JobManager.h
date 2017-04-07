@@ -30,7 +30,6 @@ public:
 #if defined(__DAVAENGINE_COREV2__)
     JobManager(Engine* e);
     Engine* engine = nullptr;
-    size_t sigUpdateId = 0;
 #else
     JobManager();
 #endif

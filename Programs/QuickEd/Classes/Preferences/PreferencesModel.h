@@ -10,6 +10,6 @@ public:
     void ApplyAllChangedProperties();
 
 protected:
-    void ChangeProperty(AbstractProperty* property, const DAVA::VariantType& value) override;
+    void ChangeProperty(AbstractProperty* property, const DAVA::Any& value) override;
     void ResetProperty(AbstractProperty* property) override;
 };

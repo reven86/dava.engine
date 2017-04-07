@@ -8,6 +8,8 @@ namespace DAVA
 {
 class UIAnchorComponent : public UIBaseComponent<UIComponent::ANCHOR_COMPONENT>
 {
+    DAVA_VIRTUAL_REFLECTION(UIAnchorComponent, UIBaseComponent<UIComponent::ANCHOR_COMPONENT>);
+
 public:
     UIAnchorComponent();
     UIAnchorComponent(const UIAnchorComponent& src);
@@ -87,30 +89,6 @@ private:
     float32 topAnchor = 0.0f;
     float32 vCenterAnchor = 0.0f;
     float32 bottomAnchor = 0.0f;
-
-public:
-    INTROSPECTION_EXTEND(UIAnchorComponent, UIComponent,
-                         PROPERTY("enabled", "Enabled", IsEnabled, SetEnabled, I_SAVE | I_VIEW | I_EDIT)
-
-                         PROPERTY("leftAnchorEnabled", "Left Anchor Enabled", IsLeftAnchorEnabled, SetLeftAnchorEnabled, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("leftAnchor", "Left Anchor", GetLeftAnchor, SetLeftAnchor, I_SAVE | I_VIEW | I_EDIT)
-
-                         PROPERTY("hCenterAnchorEnabled", "HCenter Anchor Enabled", IsHCenterAnchorEnabled, SetHCenterAnchorEnabled, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("hCenterAnchor", "HCenter Anchor", GetHCenterAnchor, SetHCenterAnchor, I_SAVE | I_VIEW | I_EDIT)
-
-                         PROPERTY("rightAnchorEnabled", "Right Anchor Enabled", IsRightAnchorEnabled, SetRightAnchorEnabled, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("rightAnchor", "Right Anchor", GetRightAnchor, SetRightAnchor, I_SAVE | I_VIEW | I_EDIT)
-
-                         PROPERTY("topAnchorEnabled", "Top Anchor Enabled", IsTopAnchorEnabled, SetTopAnchorEnabled, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("topAnchor", "Top Anchor", GetTopAnchor, SetTopAnchor, I_SAVE | I_VIEW | I_EDIT)
-
-                         PROPERTY("vCenterAnchorEnabled", "VCenter Anchor Enabled", IsVCenterAnchorEnabled, SetVCenterAnchorEnabled, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("vCenterAnchor", "VCenter Anchor", GetVCenterAnchor, SetVCenterAnchor, I_SAVE | I_VIEW | I_EDIT)
-
-                         PROPERTY("bottomAnchorEnabled", "Bottom Anchor Enabled", IsBottomAnchorEnabled, SetBottomAnchorEnabled, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("bottomAnchor", "Bottom Anchor", GetBottomAnchor, SetBottomAnchor, I_SAVE | I_VIEW | I_EDIT)
-
-                         PROPERTY("useRtl", "Use Rtl Align", IsUseRtl, SetUseRtl, I_SAVE | I_VIEW | I_EDIT))
 };
 }
 

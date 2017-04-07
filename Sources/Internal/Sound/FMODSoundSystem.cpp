@@ -75,9 +75,9 @@ Function<void(jobject)> fmodActivityListenerUnregisterMethod = nullptr;
 SoundSystem::SoundSystem(Engine* e)
     : engine(e)
 {
-    onUpdateToken = engine->update.Connect(this, &SoundSystem::OnUpdate);
-    onSuspendToken = engine->suspended.Connect(this, &SoundSystem::OnSuspend);
-    onResumeToken = engine->resumed.Connect(this, &SoundSystem::OnResume);
+    engine->update.Connect(this, &SoundSystem::OnUpdate);
+    engine->suspended.Connect(this, &SoundSystem::OnSuspend);
+    engine->resumed.Connect(this, &SoundSystem::OnResume);
 #else
 SoundSystem::SoundSystem()
 {
@@ -156,9 +156,9 @@ SoundSystem::SoundSystem()
 SoundSystem::~SoundSystem()
 {
 #if defined(__DAVAENGINE_COREV2__)
-    engine->update.Disconnect(onUpdateToken);
-    engine->suspended.Disconnect(onSuspendToken);
-    engine->resumed.Disconnect(onResumeToken);
+    engine->update.Disconnect(this);
+    engine->suspended.Disconnect(this);
+    engine->resumed.Disconnect(this);
 
 #if defined(__DAVAENGINE_ANDROID__)
     if (fmodActivityListenerGlobalRef != nullptr)

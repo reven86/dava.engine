@@ -85,20 +85,20 @@ void StaticPackageInformationBuilder::ProcessStyleSheet(const DAVA::Vector<DAVA:
     // do nothing
 }
 
-const InspInfo* StaticPackageInformationBuilder::BeginControlWithClass(const FastName& controlName, const DAVA::String& className)
+const ReflectedType* StaticPackageInformationBuilder::BeginControlWithClass(const FastName& controlName, const DAVA::String& className)
 {
     stack.emplace_back(Description(std::make_shared<StaticControlInformation>(controlName), true));
-    return UIControl::TypeInfo();
+    return ReflectedTypeDB::Get<UIControl>();
 }
 
-const InspInfo* StaticPackageInformationBuilder::BeginControlWithCustomClass(const FastName& controlName, const DAVA::String& customClassName, const DAVA::String& className)
+const ReflectedType* StaticPackageInformationBuilder::BeginControlWithCustomClass(const FastName& controlName, const DAVA::String& customClassName, const DAVA::String& className)
 {
     stack.emplace_back(Description(std::make_shared<StaticControlInformation>(controlName), true));
 
-    return UIControl::TypeInfo();
+    return ReflectedTypeDB::Get<UIControl>();
 }
 
-const InspInfo* StaticPackageInformationBuilder::BeginControlWithPrototype(const FastName& controlName, const DAVA::String& packageName, const DAVA::FastName& prototypeName, const DAVA::String* customClassName, DAVA::AbstractUIPackageLoader* loader)
+const ReflectedType* StaticPackageInformationBuilder::BeginControlWithPrototype(const FastName& controlName, const DAVA::String& packageName, const DAVA::FastName& prototypeName, const DAVA::String* customClassName, DAVA::AbstractUIPackageLoader* loader)
 {
     std::shared_ptr<StaticPackageInformation> prototypePackage;
     std::shared_ptr<StaticControlInformation> prototype;
@@ -131,10 +131,10 @@ const InspInfo* StaticPackageInformationBuilder::BeginControlWithPrototype(const
     DVASSERT(prototype.get() != nullptr);
 
     stack.emplace_back(Description(std::make_shared<StaticControlInformation>(*prototype, controlName, prototypePackage, FastName(prototypeName)), true));
-    return UIControl::TypeInfo();
+    return ReflectedTypeDB::Get<UIControl>();
 }
 
-const InspInfo* StaticPackageInformationBuilder::BeginControlWithPath(const DAVA::String& pathName)
+const ReflectedType* StaticPackageInformationBuilder::BeginControlWithPath(const DAVA::String& pathName)
 {
     if (!stack.empty())
     {
@@ -160,13 +160,13 @@ const InspInfo* StaticPackageInformationBuilder::BeginControlWithPath(const DAVA
         DVASSERT(false);
     }
 
-    return UIControl::TypeInfo();
+    return ReflectedTypeDB::Get<UIControl>();
 }
 
-const InspInfo* StaticPackageInformationBuilder::BeginUnknownControl(const FastName& controlName, const DAVA::YamlNode* node)
+const ReflectedType* StaticPackageInformationBuilder::BeginUnknownControl(const FastName& controlName, const DAVA::YamlNode* node)
 {
     stack.emplace_back(Description(std::make_shared<StaticControlInformation>(controlName), true));
-    return UIControl::TypeInfo();
+    return ReflectedTypeDB::Get<UIControl>();
 }
 
 void StaticPackageInformationBuilder::EndControl(eControlPlace controlPlace)
@@ -203,7 +203,7 @@ void StaticPackageInformationBuilder::BeginControlPropertiesSection(const DAVA::
 {
     std::shared_ptr<StaticControlInformation> ptr = stack.back().controlInformation;
 
-    propertyProcessor = [ptr](const DAVA::InspMember* member, const DAVA::VariantType& value)
+    propertyProcessor = [ptr](const DAVA::ReflectedStructure::Field& member, const DAVA::Any& value)
     {
         ptr->SetControlProperty(member, value);
     };
@@ -214,20 +214,20 @@ void StaticPackageInformationBuilder::EndControlPropertiesSection()
     propertyProcessor = nullptr;
 }
 
-const DAVA::InspInfo* StaticPackageInformationBuilder::BeginComponentPropertiesSection(DAVA::uint32 componentType, DAVA::uint32 componentIndex)
+const ReflectedType* StaticPackageInformationBuilder::BeginComponentPropertiesSection(DAVA::uint32 componentType, DAVA::uint32 componentIndex)
 {
     std::shared_ptr<StaticControlInformation> ptr = stack.back().controlInformation;
 
     ptr->AddComponent(static_cast<UIComponent::eType>(componentType));
 
-    propertyProcessor = [ptr, componentType, componentIndex](const DAVA::InspMember* member, const DAVA::VariantType& value)
+    propertyProcessor = [ptr, componentType, componentIndex](const DAVA::ReflectedStructure::Field& member, const DAVA::Any& value)
     {
         ptr->SetComponentProperty(static_cast<UIComponent::eType>(componentType), componentIndex, member, value);
     };
 
     RefPtr<UIComponent> component = UIComponent::SafeCreateByType(componentType); // this will be gone with new reflection system
 
-    return component->GetTypeInfo();
+    return ReflectedTypeDB::GetByPointer(component.Get());
 }
 
 void StaticPackageInformationBuilder::EndComponentPropertiesSection()
@@ -235,11 +235,11 @@ void StaticPackageInformationBuilder::EndComponentPropertiesSection()
     propertyProcessor = nullptr;
 }
 
-void StaticPackageInformationBuilder::ProcessProperty(const DAVA::InspMember* member, const DAVA::VariantType& value)
+void StaticPackageInformationBuilder::ProcessProperty(const DAVA::ReflectedStructure::Field& field, const DAVA::Any& value)
 {
-    if (value.GetType() != VariantType::TYPE_NONE)
+    if (!value.IsEmpty())
     {
-        propertyProcessor(member, value);
+        propertyProcessor(field, value);
     }
 }
 
