@@ -58,10 +58,10 @@ public:
         ~Edge();
         Edge(const Edge&);
 
-        Waypoint* destination;
+        Waypoint* destination = nullptr;
 
     private:
-        KeyedArchive* properties;
+        KeyedArchive* properties = nullptr;
 
         //For property panel
         void SetDestinationName(const FastName& name);

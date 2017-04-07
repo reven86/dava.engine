@@ -97,8 +97,6 @@ void PathComponent::Waypoint::RemoveEdge(PathComponent::Edge* edge)
 //== Edge ==
 PathComponent::Edge::Edge()
 {
-    properties = nullptr;
-    destination = nullptr;
 }
 
 PathComponent::Edge::Edge(bool withProperties)
