@@ -212,8 +212,8 @@ void TextFieldPlatformImpl::Initialize()
     properties.createNew = true;
 
 #if defined(__DAVAENGINE_COREV2__)
-    windowSizeChangedConnection = window->sizeChanged.Connect(this, &TextFieldPlatformImpl::OnWindowSizeChanged);
-    windowDestroyedConnection = Engine::Instance()->windowDestroyed.Connect(this, &TextFieldPlatformImpl::OnWindowDestroyed);
+    window->sizeChanged.Connect(this, &TextFieldPlatformImpl::OnWindowSizeChanged);
+    Engine::Instance()->windowDestroyed.Connect(this, &TextFieldPlatformImpl::OnWindowDestroyed);
 #endif
 }
 
@@ -239,8 +239,8 @@ void TextFieldPlatformImpl::OwnerIsDying()
             });
         }
 
-        window->sizeChanged.Disconnect(windowSizeChangedConnection);
-        Engine::Instance()->windowDestroyed.Disconnect(windowDestroyedConnection);
+        window->sizeChanged.Disconnect(this);
+        Engine::Instance()->windowDestroyed.Disconnect(this);
     }
 
     SafeRelease(sprite);

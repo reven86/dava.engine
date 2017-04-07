@@ -68,9 +68,15 @@ vertex_out vp_main( vertex_in input )
     float2 uv = 0.5 - clusterCenter.xy / worldSize.xy;
     float2 uvColor = float2(1.0 - uv.x, uv.y);
     float2 uvHeight = float2(uvColor.x, 1.0 - uv.y) + 0.5 / heightmapTextureSize;
-            
+
+#if HEIGHTMAP_FLOAT_TEXTURE
+    float heightSample = tex2Dlod(heightmap, uvHeight, 0.0).r;
+#else
     float4 heightVec = tex2Dlod(heightmap, uvHeight, 0.0);
-    float height = dot(heightVec, float4(0.00022888532845, 0.00366216525521, 0.05859464408331, 0.93751430533303)) * worldSize.z;
+    float heightSample = dot(heightVec, float4(0.00022888532845, 0.00366216525521, 0.05859464408331, 0.93751430533303));
+#endif
+
+    float height = heightSample * worldSize.z;
 
     float3 pos = float3(inPosition.x + tilePos.x, inPosition.y + tilePos.y, inPosition.z);
     pos.z += height;

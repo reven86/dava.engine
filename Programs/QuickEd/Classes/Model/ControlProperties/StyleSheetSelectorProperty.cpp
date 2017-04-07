@@ -9,7 +9,7 @@
 using namespace DAVA;
 
 StyleSheetSelectorProperty::StyleSheetSelectorProperty(const UIStyleSheetSelectorChain& chain, const UIStyleSheetSourceInfo& sourceInfo_)
-    : ValueProperty("Selector", VariantType::TYPE_STRING)
+    : ValueProperty("Selector", Type::Instance<String>())
 {
     styleSheet = new UIStyleSheet();
     styleSheet->SetSelectorChain(chain);
@@ -49,15 +49,15 @@ uint32 StyleSheetSelectorProperty::GetFlags() const
     return EF_CAN_REMOVE;
 }
 
-VariantType StyleSheetSelectorProperty::GetValue() const
+Any StyleSheetSelectorProperty::GetValue() const
 {
-    return VariantType(value);
+    return Any(value);
 }
 
-void StyleSheetSelectorProperty::ApplyValue(const DAVA::VariantType& aValue)
+void StyleSheetSelectorProperty::ApplyValue(const DAVA::Any& aValue)
 {
     Vector<String> selectorList;
-    Split(aValue.AsString(), ",", selectorList);
+    Split(aValue.Cast<String>(), ",", selectorList);
 
     if (!selectorList.empty())
     {

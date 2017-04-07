@@ -5,11 +5,14 @@
 
 #include "UI/Components/UIComponent.h"
 #include "UI/Focus/FocusHelpers.h"
+#include "Reflection/Reflection.h"
 
 namespace DAVA
 {
 class UIFocusComponent : public UIBaseComponent<UIComponent::FOCUS_COMPONENT>
 {
+    DAVA_VIRTUAL_REFLECTION(UIFocusComponent, UIBaseComponent<UIComponent::FOCUS_COMPONENT>);
+
 public:
     UIFocusComponent();
     UIFocusComponent(const UIFocusComponent& src);
@@ -32,11 +35,6 @@ public:
 private:
     bool enabled = true;
     bool requestFocus = false;
-
-public:
-    INTROSPECTION_EXTEND(UIFocusComponent, UIComponent,
-                         PROPERTY("enabled", "Enabled", IsEnabled, SetEnabled, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("requestFocus", "Request Focus", IsRequestFocus, SetRequestFocus, I_SAVE | I_VIEW | I_EDIT));
 };
 }
 

@@ -59,6 +59,8 @@ struct DownloaderTest
 
         dlcManager.Initialize(downloadedPacksDir, superPackUrl, DLCManager::Hints());
 
+        TEST_VERIFY(dlcManager.IsInitialized() == false && "need first reconnect to server check meta version");
+
         Logger::Info("create game client");
 
         dlcManager.SetRequestingEnabled(true);

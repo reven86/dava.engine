@@ -15,7 +15,15 @@
     friend struct DAVA::ReflectionDetail::ReflectionInitializerRunner; \
     const DAVA::ReflectedType* Dava__GetReflectedType() const override; \
     static void Dava__ReflectionRegisterBases(); \
-    static void Dava__ReflectionInitializer() { Dava__ReflectionRegisterBases(); Dava__ReflectionInitializerV(); } \
+    static void Dava__ReflectionInitializer() \
+    { \
+        static bool registred = false; \
+        if (!registred) { \
+            registred = true; \
+            Dava__ReflectionRegisterBases(); \
+            Dava__ReflectionInitializerV(); \
+        } \
+    } \
     static void Dava__ReflectionInitializerV(); \
     using Cls__BaseTypes = std::tuple<__VA_ARGS__>
 

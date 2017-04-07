@@ -8,6 +8,8 @@ namespace DAVA
 {
 class UIScrollBarDelegateComponent : public UIBaseComponent<UIComponent::SCROLL_BAR_DELEGATE_COMPONENT>
 {
+    DAVA_VIRTUAL_REFLECTION(UIScrollBarDelegateComponent, UIBaseComponent<UIComponent::SCROLL_BAR_DELEGATE_COMPONENT>);
+
 public:
     UIScrollBarDelegateComponent();
     UIScrollBarDelegateComponent(const UIScrollBarDelegateComponent& src);
@@ -29,10 +31,5 @@ public:
 private:
     String pathToDelegate;
     bool pathToDelegateDirty = true;
-
-public:
-    INTROSPECTION_EXTEND(UIScrollBarDelegateComponent, UIComponent,
-                         PROPERTY("delegate", "Delegate", GetPathToDelegate, SetPathToDelegate, I_SAVE | I_VIEW | I_EDIT)
-                         );
 };
 }

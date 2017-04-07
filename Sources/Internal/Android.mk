@@ -349,7 +349,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Base/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Collision/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Core/*.cpp) \
-                     $(wildcard $(LOCAL_PATH)/Command/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Command/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Compression/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Clipboard/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Database/*.cpp) \
@@ -368,6 +368,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Entity/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/FileSystem/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/FileSystem/Private/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Functional/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Input/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Input/Private/Android/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Math/*.cpp) \

@@ -122,6 +122,7 @@ public final class DavaActivity extends Activity
     private static final String META_TAG_BOOT_CLASSES = "com.dava.engine.BootClasses";
 
     private static DavaActivity activitySingleton;
+    private static boolean nativeInitialized = false; 
     private static Thread nativeThread; // Thread where native C++ code is running
     private static int nativeThreadId; //
     private static int uiThreadId;
@@ -299,7 +300,8 @@ public final class DavaActivity extends Activity
     
     private void startNativeInitialization() {
         nativeInitializeEngine(externalFilesDir, internalFilesDir, sourceDir, packageName, cmdline);
-        
+        nativeInitialized = true;
+
         long primaryWindowBackendPointer = nativeOnCreate(this);
         primarySurfaceView = new DavaSurfaceView(getApplication(), primaryWindowBackendPointer);
         layout.addView(primarySurfaceView);
@@ -389,20 +391,24 @@ public final class DavaActivity extends Activity
         notifyListeners(ON_ACTIVITY_DESTROY, null);
         activityListeners.clear();
 
-        Log.d(LOG_TAG, "DavaActivity.nativeOnDestroy");
-        nativeOnDestroy();
-        if (isNativeThreadRunning())
+        if (nativeInitialized)
         {
-            try {
-                Log.d(LOG_TAG, "Joining native thread");
-                nativeThread.join();
-            } catch (Exception e) {
-                Log.e(LOG_TAG, "DavaActivity.onDestroy: davaMainThread.join() failed " + e);
+            Log.d(LOG_TAG, "DavaActivity.nativeOnDestroy");
+            nativeOnDestroy();
+            if (isNativeThreadRunning())
+            {
+                try {
+                    Log.d(LOG_TAG, "Joining native thread");
+                    nativeThread.join();
+                } catch (Exception e) {
+                    Log.e(LOG_TAG, "DavaActivity.onDestroy: davaMainThread.join() failed " + e);
+                }
+                nativeThread = null;
             }
-            nativeThread = null;
+            Log.d(LOG_TAG, "DavaActivity.nativeShutdownEngine");
+            nativeShutdownEngine();
         }
-        Log.d(LOG_TAG, "DavaActivity.nativeShutdownEngine");
-        nativeShutdownEngine();
+
         bootstrapObjects.clear();
         activitySingleton = null;
 

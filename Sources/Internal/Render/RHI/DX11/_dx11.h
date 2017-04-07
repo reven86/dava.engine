@@ -57,6 +57,8 @@ struct DX11Command
         CREATE_DEPTH_STENCIL_VIEW,
         CREATE_SHADER_RESOURCE_VIEW,
 
+        CHECK_FORMAT_SUPPORT,
+
         // service values for range checking
         DEVICE_LAST_COMMAND,
         DEVICE_FIRST_COMMAND = QUERY_INTERFACE

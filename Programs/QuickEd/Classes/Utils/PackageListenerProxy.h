@@ -1,6 +1,9 @@
 #pragma once
 
 #include "Model/PackageHierarchy/PackageListener.h"
+
+#include <Base/RefPtr.h>
+
 #include <memory>
 
 namespace DAVA
@@ -17,6 +20,7 @@ class PackageListenerProxy : public PackageListener
 {
 public:
     PackageListenerProxy(PackageListener* listener, DAVA::TArc::ContextAccessor* accessor);
+    ~PackageListenerProxy();
 
 private:
     void OnPackageChanged(const DAVA::Any& package);
@@ -46,7 +50,7 @@ private:
 
     void StyleSheetsWereRebuilt() override;
 
-    PackageNode* package = nullptr;
+    DAVA::RefPtr<PackageNode> package;
     PackageListener* listener;
     std::unique_ptr<DAVA::TArc::FieldBinder> fieldBinder;
 };

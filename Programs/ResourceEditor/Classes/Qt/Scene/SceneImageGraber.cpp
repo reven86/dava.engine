@@ -6,7 +6,7 @@
 #include "Render/RHI/rhi_Type.h"
 #include "Render/RHI/rhi_Public.h"
 #include "Render/RenderBase.h"
-#include "Render/RenderCallbacks.h"
+#include "Render/Renderer.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/Highlevel/RenderSystem.h"
 #include "Render/Image/Image.h"
@@ -60,23 +60,23 @@ void GrabImage(Params inputParams)
 
     internalParams.inputParams.cameraToGrab->SetAspect(cameraAspect);
 
-    DAVA::RenderCallbacks::RegisterSyncCallback(rhi::GetCurrentFrameSyncObject(), [internalParams](rhi::HSyncObject)
-                                                {
-                                                    DAVA::FilePath filePath = internalParams.inputParams.outputFile;
-                                                    if (filePath.IsDirectoryPathname())
-                                                    {
-                                                        filePath = DAVA::FilePath(filePath, "GrabbedScene.png");
-                                                    }
+    DAVA::Renderer::RegisterSyncCallback(rhi::GetCurrentFrameSyncObject(), [internalParams](rhi::HSyncObject)
+                                         {
+                                             DAVA::FilePath filePath = internalParams.inputParams.outputFile;
+                                             if (filePath.IsDirectoryPathname())
+                                             {
+                                                 filePath = DAVA::FilePath(filePath, "GrabbedScene.png");
+                                             }
 
-                                                    DAVA::ScopedPtr<DAVA::Image> image(internalParams.renderTarget->CreateImageFromMemory());
-                                                    DAVA::Size2i imageSize = internalParams.inputParams.imageSize;
-                                                    DAVA::ScopedPtr<DAVA::Image> regionImage(DAVA::Image::CopyImageRegion(image, DAVA::Rect(0, 0, imageSize.dx, imageSize.dy)));
-                                                    regionImage->Save(filePath);
-                                                    if (internalParams.inputParams.readyCallback)
-                                                    {
-                                                        internalParams.inputParams.readyCallback();
-                                                    }
-                                                });
+                                             DAVA::ScopedPtr<DAVA::Image> image(internalParams.renderTarget->CreateImageFromMemory());
+                                             DAVA::Size2i imageSize = internalParams.inputParams.imageSize;
+                                             DAVA::ScopedPtr<DAVA::Image> regionImage(DAVA::Image::CopyImageRegion(image, DAVA::Rect(0, 0, imageSize.dx, imageSize.dy)));
+                                             regionImage->Save(filePath);
+                                             if (internalParams.inputParams.readyCallback)
+                                             {
+                                                 internalParams.inputParams.readyCallback();
+                                             }
+                                         });
 }
 }
 

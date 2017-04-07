@@ -56,7 +56,7 @@ void WindowTest::LoadResources()
     textField1->SetDelegate(tfDelegate);
     textField2->SetDelegate(tfDelegate);
 
-    visibleFrameChangedId = GetPrimaryWindow()->visibleFrameChanged.Connect([this](Window*, const Rect& r) {
+    GetPrimaryWindow()->visibleFrameChanged.Connect(this, [this](Window*, const Rect& r) {
         Rect converted = UIControlSystem::Instance()->vcs->ConvertInputToVirtual(r);
         UpdateVisibleFrameSize(converted);
     });
@@ -72,8 +72,7 @@ void WindowTest::UnloadResources()
     textField2->SetDelegate(nullptr);
     SafeDelete(tfDelegate);
 
-    GetPrimaryWindow()->visibleFrameChanged.Disconnect(visibleFrameChangedId);
-    visibleFrameChangedId = 0;
+    GetPrimaryWindow()->visibleFrameChanged.Disconnect(this);
 }
 
 void WindowTest::UpdateKeyboardFrameSize(const Rect& r)

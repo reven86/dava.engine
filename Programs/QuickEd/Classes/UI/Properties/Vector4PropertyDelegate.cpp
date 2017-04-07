@@ -30,11 +30,11 @@ void Vector4PropertyDelegate::setEditorData(QWidget* rawEditor, const QModelInde
 {
     QLineEdit* editor = rawEditor->findChild<QLineEdit*>("lineEdit");
 
-    DAVA::VariantType variant = index.data(Qt::EditRole).value<DAVA::VariantType>();
+    DAVA::Any variant = index.data(Qt::EditRole).value<DAVA::Any>();
     QString stringValue;
-    if (variant.GetType() == VariantType::TYPE_VECTOR4)
+    if (variant.CanGet<DAVA::Vector4>())
     {
-        const Vector4& v = variant.AsVector4();
+        const Vector4& v = variant.Get<DAVA::Vector4>();
         stringValue.QString::sprintf("%g; %g; %g; %g", v.x, v.y, v.z, v.w);
     }
     else
@@ -57,7 +57,7 @@ bool Vector4PropertyDelegate::setModelData(QWidget* rawEditor, QAbstractItemMode
     Vector4 vector = StringToVector<Vector4>(editor->text());
 
     QVariant variant;
-    variant.setValue<DAVA::VariantType>(VariantType(vector));
+    variant.setValue<DAVA::Any>(Any(vector));
 
     return model->setData(index, variant, Qt::EditRole);
 }

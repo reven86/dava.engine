@@ -1,10 +1,21 @@
 #include "UI/UIJoypad.h"
 #include "UI/UIEvent.h"
 #include "Logger/Logger.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {
 static const FastName UIJOYPAD_STICK_NAME("stick");
+
+DAVA_VIRTUAL_REFLECTION_IMPL(UIJoypad)
+{
+    ReflectionRegistrator<UIJoypad>::Begin()
+    .ConstructorByPointer()
+    .DestructorByPointer([](UIJoypad* o) { o->Release(); })
+    .Field("deadAreaSize", &UIJoypad::GetDeadAreaSize, &UIJoypad::SetDeadAreaSize)
+    .Field("digitalSense", &UIJoypad::GetDigitalSense, &UIJoypad::SetDigitalSense)
+    .End();
+}
 
 UIJoypad::UIJoypad(const Rect& rect)
     : UIControl(rect)

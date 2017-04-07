@@ -2,6 +2,7 @@
 #define __DAVAENGINE_UI_PARTICLES__
 
 #include "UI/UIControl.h"
+#include "Reflection/Reflection.h"
 
 namespace DAVA
 {
@@ -11,6 +12,8 @@ class Camera;
 
 class UIParticles : public UIControl
 {
+    DAVA_VIRTUAL_REFLECTION(UIParticles, UIControl);
+
 protected:
     virtual ~UIParticles();
 
@@ -88,13 +91,6 @@ private:
     bool inheritControlTransform = true;
 
     static Camera* defaultCamera;
-
-public:
-    INTROSPECTION_EXTEND(UIParticles, UIControl,
-                         PROPERTY("effectPath", "Effect path", GetEffectPath, SetEffectPath, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("autoStart", "Auto start", IsAutostart, SetAutostart, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("startDelay", "Start delay", GetStartDelay, SetStartDelay, I_SAVE | I_VIEW | I_EDIT)
-                         );
 };
 };
 
