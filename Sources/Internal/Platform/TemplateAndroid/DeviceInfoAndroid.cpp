@@ -307,7 +307,7 @@ List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetSecondaryExternalStoragesLis
 
             for (jsize i = 0; i < length; ++i)
             {
-                jobject object = env->GetObjectArrayElement(static_cast<jobjectArray>(array.Get()), i);
+                JNI::LocalRef<jobject> object = env->GetObjectArrayElement(static_cast<jobjectArray>(array.Get()), i);
 
                 if (object)
                 {
