@@ -141,6 +141,12 @@ void PreviewWidget::CreateActions()
     connect(pasteAction, &QAction::triggered, this, &PreviewWidget::PasteRequested);
     addAction(pasteAction);
 
+    QAction* duplicateAction = new QAction(tr("Duplicate"), this);
+    duplicateAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_D));
+    duplicateAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    connect(duplicateAction, &QAction::triggered, this, &PreviewWidget::DuplicateRequested);
+    addAction(duplicateAction);
+
     QAction* deleteAction = new QAction(tr("Delete"), this);
 #if defined Q_OS_WIN
     deleteAction->setShortcut(QKeySequence(QKeySequence::Delete));
