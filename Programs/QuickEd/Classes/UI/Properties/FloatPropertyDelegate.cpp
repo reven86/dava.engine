@@ -1,5 +1,4 @@
 #include "FloatPropertyDelegate.h"
-#include "FileSystem/VariantType.h"
 #include "PropertiesModel.h"
 #include "PropertiesTreeItemDelegate.h"
 #include "Utils/QtDavaConvertion.h"
@@ -30,8 +29,8 @@ void FloatPropertyDelegate::setEditorData(QWidget* rawEditor, const QModelIndex&
 {
     QLineEdit* editor = rawEditor->findChild<QLineEdit*>("lineEdit");
 
-    DAVA::VariantType variant = index.data(Qt::EditRole).value<DAVA::VariantType>();
-    editor->setText(QString("%1").arg(variant.AsFloat()));
+    DAVA::Any variant = index.data(Qt::EditRole).value<DAVA::Any>();
+    editor->setText(QString("%1").arg(variant.Get<DAVA::float32>()));
 
     BasePropertyDelegate::SetValueModified(editor, false);
 }
@@ -44,7 +43,7 @@ bool FloatPropertyDelegate::setModelData(QWidget* rawEditor, QAbstractItemModel*
     QLineEdit* editor = rawEditor->findChild<QLineEdit*>("lineEdit");
 
     QVariant variant;
-    variant.setValue<DAVA::VariantType>(DAVA::VariantType(editor->text().toFloat()));
+    variant.setValue<DAVA::Any>(editor->text().toFloat());
 
     return model->setData(index, variant, Qt::EditRole);
 }

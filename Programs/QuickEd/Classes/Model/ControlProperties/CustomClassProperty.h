@@ -23,12 +23,13 @@ public:
     {
         return EF_CAN_RESET;
     };
-    DAVA::VariantType GetValue() const override;
+
+    DAVA::Any GetValue() const override;
 
     const DAVA::String& GetCustomClassName() const;
 
 protected:
-    virtual void ApplyValue(const DAVA::VariantType& value) override;
+    virtual void ApplyValue(const DAVA::Any& value) override;
 
 private:
     ControlNode* control; // weak

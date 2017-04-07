@@ -74,8 +74,8 @@ public:
     void AddListener(PropertyListener* listener);
     void RemoveListener(PropertyListener* listener);
 
-    void SetProperty(AbstractProperty* property, const DAVA::VariantType& newValue);
-    void SetDefaultProperty(AbstractProperty* property, const DAVA::VariantType& newValue);
+    void SetProperty(AbstractProperty* property, const DAVA::Any& newValue);
+    void SetDefaultProperty(AbstractProperty* property, const DAVA::Any& newValue);
     void ResetProperty(AbstractProperty* property);
     void RefreshProperty(AbstractProperty* property, DAVA::int32 refreshFlags);
 
@@ -84,13 +84,14 @@ public:
     bool IsReadOnly() const override;
 
     const DAVA::String& GetName() const override;
+    const DAVA::Type* GetValueType() const override;
     ePropertyType GetType() const override;
 
     ControlNode* GetControlNode() const;
 
 private:
     void AddBaseProperties(DAVA::UIControl* control, const RootProperty* sourceProperties, eCloneType cloneType);
-    void MakeControlPropertiesSection(DAVA::UIControl* control, const DAVA::InspInfo* typeInfo, const RootProperty* sourceProperties, eCloneType cloneType);
+    void MakeControlPropertiesSection(DAVA::UIControl* control, const DAVA::Type* type, const DAVA::Vector<DAVA::Reflection::Field>& fields, const RootProperty* sourceProperties, eCloneType cloneType);
     DAVA::uint32 GetComponentAbsIndex(DAVA::uint32 componentType, DAVA::uint32 index) const;
     void RefreshComponentIndices();
 

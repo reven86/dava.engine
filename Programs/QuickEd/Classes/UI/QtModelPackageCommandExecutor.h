@@ -40,13 +40,13 @@ public:
     void AddImportedPackagesIntoPackage(const DAVA::Vector<DAVA::FilePath> packagePaths, const PackageNode* package);
     void RemoveImportedPackagesFromPackage(const DAVA::Vector<PackageNode*>& importedPackage, const PackageNode* package);
 
-    void ChangeProperty(ControlNode* node, AbstractProperty* property, const DAVA::VariantType& value);
+    void ChangeProperty(ControlNode* node, AbstractProperty* property, const DAVA::Any& value);
     void ResetProperty(ControlNode* node, AbstractProperty* property);
 
     void AddComponent(ControlNode* node, DAVA::uint32 componentType);
     void RemoveComponent(ControlNode* node, DAVA::uint32 componentType, DAVA::uint32 componentIndex);
 
-    void ChangeProperty(StyleSheetNode* node, AbstractProperty* property, const DAVA::VariantType& value);
+    void ChangeProperty(StyleSheetNode* node, AbstractProperty* property, const DAVA::Any& value);
 
     void AddStyleProperty(StyleSheetNode* node, DAVA::uint32 propertyIndex);
     void RemoveStyleProperty(StyleSheetNode* node, DAVA::uint32 propertyIndex);
