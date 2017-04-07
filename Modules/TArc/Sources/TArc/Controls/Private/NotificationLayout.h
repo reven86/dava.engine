@@ -36,8 +36,8 @@ private:
     void LayoutWidgets(QWidget* parent);
     void Clear();
 
-    bool eventFilter(QObject* object, QEvent* event);
-    void timerEvent(QTimerEvent* event);
+    bool eventFilter(QObject* object, QEvent* event) override;
+    void timerEvent(QTimerEvent* event) override;
 
     struct NotificationWidgetParams;
     using WindowNotifications = QMap<NotificationWidget*, NotificationWidgetParams>;
