@@ -35,16 +35,17 @@ public:
 
 protected:
     static const FastName FLAG_WIND_ANIMATION;
-
     static const uint32 SORTING_DIRECTION_COUNT = 8;
+
+    static Vector3 GetSortingDirection(uint32 directionIndex);
+    static uint32 SelectDirectionIndex(const Vector3& direction);
 
     AABBox3 CalcBBoxForSpeedTreeGeometry(RenderBatch* rb);
 
     void SetTreeAnimationParams(const Vector2& trunkOscillationParams, const Vector2& leafOscillationParams);
     void UpdateAnimationFlag(int32 maxAnimatedLod);
 
-    static Vector3 GetSortingDirection(uint32 directionIndex);
-    static uint32 SelectDirectionIndex(const Vector3& direction);
+    void SetInvWorldTransformPtr(const Matrix4* invWT);
 
     Vector2 trunkOscillation;
     Vector2 leafOscillation;
@@ -57,6 +58,8 @@ protected:
 
     SortedIndexBuffersMap directionIndexBuffers;
 
+    const Matrix4* invWorldTransform = nullptr;
+
 public:
     INTROSPECTION_EXTEND(SpeedTreeObject, RenderObject,
                          PROPERTY("lightSmoothing", "Light Smoothing", GetLightSmoothing, SetLightSmoothing, I_SAVE | I_EDIT | I_VIEW)
@@ -66,4 +69,9 @@ public:
 
     friend class SpeedTreeUpdateSystem;
 };
+
+inline void SpeedTreeObject::SetInvWorldTransformPtr(const Matrix4* invWT)
+{
+    invWorldTransform = invWT;
+}
 }

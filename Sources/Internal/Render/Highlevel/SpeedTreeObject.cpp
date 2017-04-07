@@ -87,7 +87,10 @@ void SpeedTreeObject::PrepareToRender(Camera* camera)
     if (!directionIndexBuffers.empty())
     {
         Vector3 direction = GetWorldTransformPtr()->GetTranslationVector() - camera->GetPosition();
+        direction = MultiplyVectorMat3x3(direction, *invWorldTransform);
+        direction.z = 0.f;
         direction.Normalize();
+
         uint32 directionIndex = SelectDirectionIndex(direction);
 
         for (RenderBatch* batch : activeRenderBatchArray)

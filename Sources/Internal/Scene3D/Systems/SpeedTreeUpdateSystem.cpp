@@ -59,6 +59,9 @@ void SpeedTreeUpdateSystem::ImmediateEvent(Component* _component, uint32 event)
             Matrix4* wtMxPrt = GetTransformComponent(component->GetEntity())->GetWorldTransformPtr();
             component->wtPosition = wtMxPrt->GetTranslationVector();
             wtMxPrt->GetInverse(component->wtInvMx);
+
+            DVASSERT(GetSpeedTreeObject(entity));
+            GetSpeedTreeObject(entity)->SetInvWorldTransformPtr(&component->wtInvMx);
         }
     }
     if (event == EventSystem::SPEED_TREE_MAX_ANIMATED_LOD_CHANGED)
