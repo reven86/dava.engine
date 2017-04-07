@@ -113,11 +113,7 @@ String LocalizationSystem::GetDeviceLocale(void) const
     JNI::JavaClass jniLocalisation("com/dava/framework/JNILocalization");
     Function<jstring()> jgetLocale = jniLocalisation.GetStaticMethod<jstring>("GetLocale");
 
-    jstring jlocale = jgetLocale();
-    String locale = JNI::ToString(jlocale);
-    JNI::GetEnv()->DeleteLocalRef(jlocale);
-
-    return locale;
+    return JNI::JavaStringToString(JNI::LocalRef<jstring>(jgetLocale()));
 }
 #endif
 

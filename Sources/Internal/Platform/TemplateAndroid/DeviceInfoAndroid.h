@@ -53,8 +53,6 @@ private:
     DeviceInfo::StorageInfo GetPrimaryExternalStorageInfo();
     List<DeviceInfo::StorageInfo> GetSecondaryExternalStoragesList();
 
-    String ReturnDavaStringFromLocalJstring(jstring str);
-
     JNI::JavaClass jniDeviceInfo;
     Function<jstring()> jgetVersion;
     Function<jstring()> jgetManufacturer;

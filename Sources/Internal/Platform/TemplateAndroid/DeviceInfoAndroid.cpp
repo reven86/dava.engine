@@ -45,42 +45,42 @@ String DeviceInfoPrivate::GetPlatformString()
 
 String DeviceInfoPrivate::GetVersion()
 {
-    return ReturnDavaStringFromLocalJstring(jgetVersion());
+    return JNI::JavaStringToString(JNI::LocalRef<jstring>(jgetVersion()));
 }
 
 String DeviceInfoPrivate::GetManufacturer()
 {
-    return ReturnDavaStringFromLocalJstring(jgetManufacturer());
+    return JNI::JavaStringToString(JNI::LocalRef<jstring>(jgetManufacturer()));
 }
 
 String DeviceInfoPrivate::GetModel()
 {
-    return ReturnDavaStringFromLocalJstring(jgetModel());
+    return JNI::JavaStringToString(JNI::LocalRef<jstring>(jgetModel()));
 }
 
 String DeviceInfoPrivate::GetLocale()
 {
-    return ReturnDavaStringFromLocalJstring(jgetLocale());
+    return JNI::JavaStringToString(JNI::LocalRef<jstring>(jgetLocale()));
 }
 
 String DeviceInfoPrivate::GetRegion()
 {
-    return ReturnDavaStringFromLocalJstring(jgetRegion());
+    return JNI::JavaStringToString(JNI::LocalRef<jstring>(jgetRegion()));
 }
 
 String DeviceInfoPrivate::GetTimeZone()
 {
-    return ReturnDavaStringFromLocalJstring(jgetTimeZone());
+    return JNI::JavaStringToString(JNI::LocalRef<jstring>(jgetTimeZone()));
 }
 
 String DeviceInfoPrivate::GetUDID()
 {
-    return ReturnDavaStringFromLocalJstring(jgetUDID());
+    return JNI::JavaStringToString(JNI::LocalRef<jstring>(jgetUDID()));
 }
 
 WideString DeviceInfoPrivate::GetName()
 {
-    return UTF8Utils::EncodeToWideString(ReturnDavaStringFromLocalJstring(jgetName()));
+    return JNI::JavaStringToWideString(JNI::LocalRef<jstring>(jgetName()));
 }
 
 int32 DeviceInfoPrivate::GetZBufferSize()
@@ -90,12 +90,12 @@ int32 DeviceInfoPrivate::GetZBufferSize()
 
 String DeviceInfoPrivate::GetHTTPProxyHost()
 {
-    return ReturnDavaStringFromLocalJstring(jgetHTTPProxyHost());
+    return JNI::JavaStringToString(JNI::LocalRef<jstring>(jgetHTTPProxyHost()));
 }
 
 String DeviceInfoPrivate::GetHTTPNonProxyHosts()
 {
-    return ReturnDavaStringFromLocalJstring(jgetHTTPNonProxyHosts());
+    return JNI::JavaStringToString(JNI::LocalRef<jstring>(jgetHTTPNonProxyHosts()));
 }
 
 int32 DeviceInfoPrivate::GetHTTPProxyPort()
@@ -219,9 +219,9 @@ DeviceInfo::StorageInfo DeviceInfoPrivate::StorageInfoFromJava(jobject object)
         info.emulated = env->GetBooleanField(object, fieldID);
 
         fieldID = env->GetFieldID(classInfo, "path", "Ljava/lang/String;");
-        jstring jStr = static_cast<jstring>(env->GetObjectField(object, fieldID));
+        JNI::LocalRef<jstring> jStr = static_cast<jstring>(env->GetObjectField(object, fieldID));
 
-        info.path = ReturnDavaStringFromLocalJstring(jStr);
+        info.path = JNI::JavaStringToString(jStr);
     }
 
     return info;
@@ -246,13 +246,12 @@ DeviceInfo::StorageInfo DeviceInfoPrivate::GetInternalStorageInfo()
 
     if (mid)
     {
-        jobject object = static_cast<jobject>(env->CallStaticObjectMethod(jniDeviceInfo, mid));
+        JNI::LocalRef<jobject> object = static_cast<jobject>(env->CallStaticObjectMethod(jniDeviceInfo, mid));
         DAVA_JNI_EXCEPTION_CHECK();
         if (object)
         {
             info = StorageInfoFromJava(object);
             info.type = DeviceInfo::STORAGE_TYPE_INTERNAL;
-            env->DeleteLocalRef(object);
         }
     }
 
@@ -278,13 +277,12 @@ DeviceInfo::StorageInfo DeviceInfoPrivate::GetPrimaryExternalStorageInfo()
 
     if (mid)
     {
-        jobject object = static_cast<jobject>(env->CallStaticObjectMethod(jniDeviceInfo, mid));
+        JNI::LocalRef<jobject> object = static_cast<jobject>(env->CallStaticObjectMethod(jniDeviceInfo, mid));
         DAVA_JNI_EXCEPTION_CHECK();
         if (object)
         {
             info = StorageInfoFromJava(object);
             info.type = DeviceInfo::STORAGE_TYPE_PRIMARY_EXTERNAL;
-            env->DeleteLocalRef(object);
         }
     }
 
@@ -301,7 +299,7 @@ List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetSecondaryExternalStoragesLis
 
     if (mid)
     {
-        jarray array = static_cast<jarray>(env->CallStaticObjectMethod(jniDeviceInfo, mid));
+        JNI::LocalRef<jarray> array = static_cast<jarray>(env->CallStaticObjectMethod(jniDeviceInfo, mid));
         DAVA_JNI_EXCEPTION_CHECK();
         if (array)
         {
@@ -309,7 +307,7 @@ List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetSecondaryExternalStoragesLis
 
             for (jsize i = 0; i < length; ++i)
             {
-                jobject object = env->GetObjectArrayElement(static_cast<jobjectArray>(array), i);
+                jobject object = env->GetObjectArrayElement(static_cast<jobjectArray>(array.Get()), i);
 
                 if (object)
                 {
@@ -319,8 +317,6 @@ List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetSecondaryExternalStoragesLis
                     list.push_back(info);
                 }
             }
-
-            env->DeleteLocalRef(array);
         }
     }
 
@@ -329,16 +325,9 @@ List<DeviceInfo::StorageInfo> DeviceInfoPrivate::GetSecondaryExternalStoragesLis
 
 String DeviceInfoPrivate::GetCarrierName()
 {
-    return ReturnDavaStringFromLocalJstring(jgetCarrierName());
+    return JNI::JavaStringToString(JNI::LocalRef<jstring>(jgetCarrierName()));
 }
 
-String DeviceInfoPrivate::ReturnDavaStringFromLocalJstring(jstring jstr)
-{
-    JNIEnv* env = JNI::GetEnv();
-    String str = JNI::ToString(jstr);
-    env->DeleteLocalRef(jstr);
-    return str;
-}
 }
 
 #endif
