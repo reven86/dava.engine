@@ -2,6 +2,7 @@
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
+#include "Reflection/Reflection.h"
 #include "Animation/AnimatedObject.h"
 #include "Render/Highlevel/RenderSystem.h"
 #include "Render/Highlevel/RenderBatch.h"
@@ -24,7 +25,7 @@ public:
         TYPE_LANDSCAPE, // Landscape object
         TYPE_CUSTOM_DRAW, // Custom drawn object
         TYPE_SPRITE, // Sprite Node
-        TYPE_PARTICLE_EMTITTER, // Particle Emitter
+        TYPE_PARTICLE_EMITTER, // Particle Emitter
         TYPE__DELETED__SKYBOX, //keept for legasy, skybox removed in RHI
         TYPE_VEGETATION,
         TYPE_SPEED_TREE,
@@ -166,20 +167,24 @@ public:
 
     uint8 startClippingPlane = 0;
 
-protected:
-    void UpdateActiveRenderBatches();
-
     struct IndexedRenderBatch : public InspBase
     {
         RenderBatch* renderBatch = nullptr;
         int32 lodIndex = -2;
         int32 switchIndex = -1;
 
+        bool operator==(const IndexedRenderBatch& other) const;
+
         INTROSPECTION(IndexedRenderBatch,
                       MEMBER(renderBatch, "Render Batch", I_SAVE | I_VIEW)
                       MEMBER(lodIndex, "Lod Index", I_SAVE | I_VIEW)
                       MEMBER(switchIndex, "Switch Index", I_SAVE | I_VIEW));
+
+        DAVA_VIRTUAL_REFLECTION(IndexedRenderBatch, InspBase);
     };
+
+protected:
+    void UpdateActiveRenderBatches();
 
     static const int32 DEFAULT_RENDEROBJECT_FLAGS = eFlags::VISIBLE | eFlags::VISIBLE_STATIC_OCCLUSION | eFlags::VISIBLE_QUALITY;
     static const uint32 MAX_LIGHT_COUNT = 2;
@@ -221,6 +226,8 @@ public:
                          COLLECTION(renderBatchArray, "Render Batch Array", I_SAVE | I_VIEW | I_EDIT)
                          COLLECTION(activeRenderBatchArray, "Render Batch Array", I_VIEW)
                          );
+
+    DAVA_VIRTUAL_REFLECTION(RenderObject, AnimatedObject);
 };
 
 inline void RenderObject::SetLight(uint32 index, Light* light)
@@ -353,4 +360,8 @@ inline void RenderObject::SetRefractionVisible(bool visible)
     else
         flags &= ~VISIBLE_REFRACTION;
 }
+
+template <>
+bool AnyCompare<RenderObject::IndexedRenderBatch>::IsEqual(const DAVA::Any& v1, const DAVA::Any& v2);
+extern template struct AnyCompare<RenderObject::IndexedRenderBatch>;
 }

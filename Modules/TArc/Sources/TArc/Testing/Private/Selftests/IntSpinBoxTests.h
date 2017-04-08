@@ -5,6 +5,7 @@
 #include "TArc/Core/ClientModule.h"
 #include "TArc/Controls/IntSpinBox.h"
 #include "TArc/Controls/QtBoxLayouts.h"
+#include "TArc/Controls/CommonStrings.h"
 #include "TArc/Utils/QtConnections.h"
 #include "TArc/Testing/Private/TestModuleHolder.h"
 
@@ -110,7 +111,7 @@ public:
             descr[IntSpinBox::Fields::Value] = "value";
             IntSpinBox* edit = new IntSpinBox(descr, GetAccessor(), ref);
             edit->SetObjectName("SpinBox_value");
-            layout->AddWidget(edit);
+            layout->AddControl(edit);
         }
 
         {
@@ -119,7 +120,7 @@ public:
             descr[IntSpinBox::Fields::Range] = "rangeMeta";
             IntSpinBox* edit = new IntSpinBox(descr, GetAccessor(), ref);
             edit->SetObjectName("SpinBox_metaRangeValue");
-            layout->AddWidget(edit);
+            layout->AddControl(edit);
         }
 
         {
@@ -127,7 +128,7 @@ public:
             descr[IntSpinBox::Fields::Value] = "readOnlyValue";
             IntSpinBox* edit = new IntSpinBox(descr, GetAccessor(), ref);
             edit->SetObjectName("SpinBox_readOnlyValue");
-            layout->AddWidget(edit);
+            layout->AddControl(edit);
         }
 
         {
@@ -135,7 +136,7 @@ public:
             descr[IntSpinBox::Fields::Value] = "readOnlyMeta";
             IntSpinBox* edit = new IntSpinBox(descr, GetAccessor(), ref);
             edit->SetObjectName("SpinBox_readOnlyMeta");
-            layout->AddWidget(edit);
+            layout->AddControl(edit);
         }
 
         {
@@ -144,7 +145,7 @@ public:
             descr[IntSpinBox::Fields::IsReadOnly] = "isReadOnly";
             IntSpinBox* edit = new IntSpinBox(descr, GetAccessor(), ref);
             edit->SetObjectName("SpinBox_readOnlyField");
-            layout->AddWidget(edit);
+            layout->AddControl(edit);
         }
 
         {
@@ -153,7 +154,7 @@ public:
             descr[IntSpinBox::Fields::IsEnabled] = "isEnabled";
             IntSpinBox* edit = new IntSpinBox(descr, GetAccessor(), ref);
             edit->SetObjectName("SpinBox_enable");
-            layout->AddWidget(edit);
+            layout->AddControl(edit);
         }
 
         {
@@ -161,7 +162,7 @@ public:
             descr[IntSpinBox::Fields::Value] = "noValue";
             IntSpinBox* edit = new IntSpinBox(descr, GetAccessor(), ref);
             edit->SetObjectName("SpinBox_noValue");
-            layout->AddWidget(edit);
+            layout->AddControl(edit);
         }
 
         {
@@ -169,7 +170,7 @@ public:
             descr[IntSpinBox::Fields::Value] = "noValueHint";
             IntSpinBox* edit = new IntSpinBox(descr, GetAccessor(), ref);
             edit->SetObjectName("SpinBox_noValuehint");
-            layout->AddWidget(edit);
+            layout->AddControl(edit);
         }
 
         GetUI()->AddView(wndKey, PanelKey("IntSpinBoxView", CentralPanelInfo()), w);
@@ -391,7 +392,7 @@ DAVA_TARC_TESTCLASS(IntSpinBoxTests)
 
     DAVA_TEST (NoValueTest)
     {
-        NoValueTest("SpinBox_noValue", "SpinBox_value", "<multiple values>");
+        NoValueTest("SpinBox_noValue", "SpinBox_value", QString(DAVA::TArc::MultipleValuesString));
     }
 
     DAVA_TEST (NoValueHintTest)

@@ -3,10 +3,30 @@
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/Systems/EventSystem.h"
 #include "Scene3D/Systems/GlobalEventSystem.h"
+#include "Reflection/ReflectionRegistrator.h"
+#include "Reflection/ReflectedMeta.h"
 
 namespace DAVA
 {
 REGISTER_CLASS(SkeletonComponent)
+
+DAVA_VIRTUAL_REFLECTION_IMPL(SkeletonComponent::JointConfig)
+{
+    ReflectionRegistrator<SkeletonComponent::JointConfig>::Begin()
+    .Field("name", &SkeletonComponent::JointConfig::name)[M::DisplayName("Name")]
+    .Field("position", &SkeletonComponent::JointConfig::position)[M::DisplayName("Position")]
+    .Field("scale", &SkeletonComponent::JointConfig::scale)[M::DisplayName("Scale")]
+    .Field("bbox", &SkeletonComponent::JointConfig::bbox)[M::DisplayName("Bounding box")]
+    .End();
+}
+
+DAVA_VIRTUAL_REFLECTION_IMPL(SkeletonComponent)
+{
+    ReflectionRegistrator<SkeletonComponent>::Begin()
+    .ConstructorByPointer()
+    .Field("configJoints", &SkeletonComponent::configJoints)[M::DisplayName("Root Joints")]
+    .End();
+}
 
 SkeletonComponent::SkeletonComponent()
 {
@@ -33,6 +53,17 @@ SkeletonComponent::JointConfig::JointConfig(int32 _parentIndex, int32 _targetId,
     , scale(_scale)
     , bbox(_bbox)
 {
+}
+
+bool SkeletonComponent::JointConfig::operator==(const JointConfig& other) const
+{
+    return parentIndex == other.parentIndex &&
+    targetId == other.targetId &&
+    name == other.name &&
+    orientation == other.orientation &&
+    position == other.position &&
+    scale == other.scale &&
+    bbox == other.bbox;
 }
 
 uint16 SkeletonComponent::GetConfigJointsCount()

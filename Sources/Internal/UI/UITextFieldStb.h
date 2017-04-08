@@ -117,8 +117,6 @@ private:
 
 #if defined(__DAVAENGINE_COREV2__)
     Window* window = nullptr;
-    size_t windowSizeChangedConnection = 0;
-    size_t windowDestroyedConnection = 0;
 #endif
 };
 

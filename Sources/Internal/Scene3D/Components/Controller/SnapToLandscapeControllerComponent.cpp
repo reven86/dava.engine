@@ -3,9 +3,19 @@
 
 #include "Scene3D/Systems/EventSystem.h"
 #include "Scene3D/Systems/GlobalEventSystem.h"
+#include "Reflection/ReflectionRegistrator.h"
+#include "Reflection/ReflectedMeta.h"
 
 namespace DAVA
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(SnapToLandscapeControllerComponent)
+{
+    ReflectionRegistrator<SnapToLandscapeControllerComponent>::Begin()
+    .ConstructorByPointer()
+    .Field("heightOnLandscape", &SnapToLandscapeControllerComponent::GetHeightOnLandscape, &SnapToLandscapeControllerComponent::SetHeightOnLandscape)[M::DisplayName("Height On Landscape")]
+    .End();
+}
+
 SnapToLandscapeControllerComponent::SnapToLandscapeControllerComponent()
     : Component()
     , heightOnLandscape(0.f)

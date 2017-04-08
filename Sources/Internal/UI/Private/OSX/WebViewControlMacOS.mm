@@ -22,11 +22,13 @@
 #import "Engine/Mac/PlatformApi.h"
 
 // Subclassing from WebView to make workaround:
-// Webview should be hidden while window is resizing
+// Webview should change its size while window is resizing
 // (if not, it looks pretty bad for the user)
 @interface MacWebView : WebView
 {
-    NSPoint origin;
+    NSSize origSuperviewSize;
+    NSRect origRect;
+    bool inProportionalResize;
 }
 @end
 
@@ -34,24 +36,78 @@
 - (id)initWithFrame:(NSRect)frame
 {
     self = [super initWithFrame:frame];
+    [self stopProportionalResize];
     return self;
 }
+
 - (void)viewWillStartLiveResize
 {
-    // Instead of really hidding webview we are moving it
-    // far away from the visible screen because we are not
-    // controlling its visible state directly - there are some
-    // cases when webview is hidden (e.m. by user or by steam overlay)
-    // during window resizing so it should stay hidden after resizing
-    // is compleat
+    [super viewWillStartLiveResize];
 
-    origin = [self frame].origin;
-    [self setFrameOrigin:NSMakePoint(10000, 10000)];
+    // Enable WebView size change proportionally
+    // to its super view size.
+    [self startProportionalResize];
 }
+
 - (void)viewDidEndLiveResize
 {
-    [self setFrameOrigin:origin];
+    [super viewDidEndLiveResize];
+
+    // Final apply new WebView size that is
+    // proportional to its super view size
+    [self applyProportionalResize:[[self superview] frame].size];
+
+    // Now we can disable proportional resize
+    inProportionalResize = false;
 }
+
+- (void)resizeWithOldSuperviewSize:(NSSize)oldSize;
+{
+    // live superview resizing oldSize comes here
+    // allowing us to apply proportional resize
+    [super resizeWithOldSuperviewSize:oldSize];
+    [self applyProportionalResize:oldSize];
+}
+
+- (void)startProportionalResize
+{
+    // Remember currect superview size and WebView size to be able
+    // to calculate proportional factor later.
+    origSuperviewSize = [[self superview] frame].size;
+    origRect = [self frame];
+    inProportionalResize = true;
+}
+
+- (void)stopProportionalResize
+{
+    inProportionalResize = false;
+}
+
+- (void)applyProportionalResize:(NSSize)oldSize
+{
+    if (inProportionalResize)
+    {
+        if (origSuperviewSize.width > 0 && origSuperviewSize.height > 0)
+        {
+            // calculate proportional scale factor
+            CGFloat changeScaleX = oldSize.width / origSuperviewSize.width;
+            CGFloat changeScaleY = oldSize.height / origSuperviewSize.height;
+
+            // tune position
+            NSPoint newPos;
+            newPos.x = origRect.origin.x * changeScaleX;
+            newPos.y = origRect.origin.y * changeScaleY;
+            [self setFrameOrigin:newPos];
+
+            // tune size
+            NSSize newSize;
+            newSize.width = origRect.size.width * changeScaleX;
+            newSize.height = origRect.size.height * changeScaleY;
+            [self setFrameSize:newSize];
+        }
+    }
+}
+
 @end
 
 // A delegate is needed to block the context menu. Note - this delegate
@@ -241,24 +297,25 @@ WebViewControl::WebViewControl(UIWebView* uiWebView)
     [bridge->webView setUIDelegate:bridge->controlUIDelegate];
     [bridge->webView setPolicyDelegate:bridge->policyDelegate];
     [bridge->webView setFrameLoadDelegate:bridge->policyDelegate];
+    [bridge->webView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
 
     [bridge->policyDelegate setWebViewControl:this];
     [bridge->policyDelegate setUiWebViewControl:&uiWebViewControl];
 
 #if defined(__DAVAENGINE_COREV2__)
     PlatformApi::Mac::AddNSView(window, bridge->webView);
-
-    windowVisibilityChangedConnection = window->visibilityChanged.Connect(this, &WebViewControl::OnWindowVisibilityChanged);
+    Engine::Instance()->windowDestroyed.Connect(this, &WebViewControl::OnWindowDestroyed);
+    window->visibilityChanged.Connect(this, &WebViewControl::OnWindowVisibilityChanged);
 #else
     NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
     [openGLView addSubview:bridge->webView];
 
     CoreMacOSPlatformBase* xcore = static_cast<CoreMacOSPlatformBase*>(Core::Instance());
-    appMinimizedRestoredConnectionId = xcore->signalAppMinimizedRestored.Connect(this, &WebViewControl::OnAppMinimizedRestored);
+    xcore->signalAppMinimizedRestored.Connect(this, &WebViewControl::OnAppMinimizedRestored);
 #endif
 
 #if defined(__DAVAENGINE_STEAM__)
-    overlayConnectionId = Steam::GameOverlayActivated.Connect(this, &WebViewControl::OnSteamOverlayChanged);
+    Steam::GameOverlayActivated.Connect(this, &WebViewControl::OnSteamOverlayChanged);
 #endif
 
     SetBackgroundTransparency(true);
@@ -267,21 +324,28 @@ WebViewControl::WebViewControl(UIWebView* uiWebView)
 WebViewControl::~WebViewControl()
 {
 #if defined(__DAVAENGINE_STEAM__)
-    Steam::GameOverlayActivated.Disconnect(overlayConnectionId);
+    Steam::GameOverlayActivated.Disconnect(this);
 #endif
 
 #if defined(__DAVAENGINE_COREV2__)
-    window->visibilityChanged.Disconnect(windowVisibilityChangedConnection);
+    if (nullptr != window)
+    {
+        window->visibilityChanged.Disconnect(this);
+        Engine::Instance()->windowDestroyed.Disconnect(this);
+    }
 #else
     CoreMacOSPlatformBase* xcore = static_cast<CoreMacOSPlatformBase*>(Core::Instance());
-    xcore->signalAppMinimizedRestored.Disconnect(appMinimizedRestoredConnectionId);
+    xcore->signalAppMinimizedRestored.Disconnect(this);
 #endif
 
     [bridge->bitmapImageRep release];
     bridge->bitmapImageRep = nullptr;
 
 #if defined(__DAVAENGINE_COREV2__)
-    PlatformApi::Mac::RemoveNSView(window, bridge->webView);
+    if (nullptr != window)
+    {
+        PlatformApi::Mac::RemoveNSView(window, bridge->webView);
+    }
 #else
     [bridge->webView removeFromSuperview];
 #endif
@@ -546,6 +610,14 @@ void WebViewControl::SetNativeVisible(bool visible)
 }
 
 #if defined(__DAVAENGINE_COREV2__)
+void WebViewControl::OnWindowDestroyed(Window* w)
+{
+    if (window == w)
+    {
+        window = nullptr;
+    }
+}
+
 void WebViewControl::OnWindowVisibilityChanged(Window* w, bool visible)
 {
     if (visible && isVisible)

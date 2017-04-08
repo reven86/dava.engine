@@ -15,21 +15,20 @@
 #include "Model/PackageHierarchy/StyleSheetsNode.h"
 
 #include "Model/YamlPackageSerializer.h"
-#include "Document/Document.h"
+#include "Modules/DocumentsModule/DocumentData.h"
 #include "UI/Package/FilteredPackageModel.h"
 #include "UI/Package/PackageModel.h"
-#include "QtTools/FileDialogs/FileDialog.h"
+
+#include <TArc/Core/ContextAccessor.h>
+
+#include <QtTools/FileDialogs/FileDialog.h>
+
+#include <Base/Any.h>
 
 using namespace DAVA;
 
 namespace
 {
-struct PackageContext : WidgetContext
-{
-    PackageWidget::ExpandedIndexes expandedIndexes;
-    QString filterString;
-};
-
 template <typename NodeType>
 void CollectSelectedNodes(const SelectedNodes& selectedNodes, Vector<NodeType*>& nodes, bool forCopy, bool forRemove)
 {
@@ -156,6 +155,12 @@ PackageWidget::PackageWidget(QWidget* parent)
     PlaceActions();
 }
 
+void PackageWidget::SetAccessor(DAVA::TArc::ContextAccessor* accessor_)
+{
+    accessor = accessor_;
+    packageModel->SetAccessor(accessor);
+}
+
 PackageWidget::~PackageWidget()
 {
     DVASSERT(currentIndexes.empty());
@@ -166,28 +171,23 @@ PackageModel* PackageWidget::GetPackageModel() const
     return packageModel;
 }
 
-void PackageWidget::OnDocumentChanged(Document* arg)
+void PackageWidget::OnPackageChanged(PackageContext* context, PackageNode* package)
 {
+    layout()->setEnabled(package != nullptr);
+
     bool isUpdatesEnabled = treeView->updatesEnabled();
     treeView->setUpdatesEnabled(false);
 
     SaveContext();
     filterLine->clear(); //invalidate filter line state
-    document = arg;
-    PackageNode* package = nullptr;
-    QtModelPackageCommandExecutor* commandExecutor = nullptr;
-    if (!document.isNull())
-    {
-        package = document->GetPackage();
-        commandExecutor = document->GetCommandExecutor();
-    }
-    packageModel->Reset(package, commandExecutor);
+    currentContext = context;
+    packageModel->Reset(package);
     treeView->expandToDepth(0);
     LoadContext();
 
     treeView->setColumnWidth(0, treeView->size().width());
     treeView->setUpdatesEnabled(isUpdatesEnabled);
-    filterLine->setEnabled(document != nullptr);
+    filterLine->setEnabled(accessor->GetActiveContext() != nullptr);
 }
 
 QAction* PackageWidget::CreateAction(const QString& name, void (PackageWidget::*callback)(void), const QKeySequence& keySequence)
@@ -252,36 +252,28 @@ void PackageWidget::PlaceActions()
 
 void PackageWidget::LoadContext()
 {
-    if (!document.isNull())
+    if (nullptr != currentContext)
     {
-        //restore context
-        PackageContext* context = dynamic_cast<PackageContext*>(document->GetContext(this));
-        if (nullptr == context)
-        {
-            context = new PackageContext();
-            document->SetContext(this, context);
-        }
         //restore expanded indexes
-        RestoreExpandedIndexes(context->expandedIndexes);
+        RestoreExpandedIndexes(currentContext->expandedIndexes);
         //restore filter line
-        filterLine->setText(context->filterString);
+        filterLine->setText(currentContext->filterString);
     }
 }
 
 void PackageWidget::SaveContext()
 {
-    if (document.isNull())
+    if (currentContext == nullptr)
     {
         return;
     }
-    PackageContext* context = dynamic_cast<PackageContext*>(document->GetContext(this));
     if (filterLine->text().isEmpty())
     {
-        context->expandedIndexes = GetExpandedIndexes();
+        currentContext->expandedIndexes = GetExpandedIndexes();
     }
     else
     {
-        context->filterString = filterLine->text();
+        currentContext->filterString = filterLine->text();
     }
 }
 
@@ -379,8 +371,13 @@ void PackageWidget::CopyNodesToClipboard(const Vector<ControlNode*>& controls, c
     if (!controls.empty() || !styles.empty())
     {
         YamlPackageSerializer serializer;
-        DVASSERT(!document.isNull());
-        PackageNode* package = document->GetPackage();
+
+        DAVA::TArc::DataContext* activeContext = accessor->GetActiveContext();
+        DVASSERT(activeContext != nullptr);
+        DocumentData* documentData = activeContext->GetData<DocumentData>();
+        DVASSERT(documentData != nullptr);
+        PackageNode* package = documentData->GetPackageNode();
+
         serializer.SerializePackageNodes(package, controls, styles);
         String str = serializer.WriteToString();
         QMimeData* data = new QMimeData();
@@ -396,45 +393,25 @@ void PackageWidget::OnSelectionChangedFromView(const QItemSelection& proxySelect
         return;
     }
 
-    for (const auto& index : proxySelected.indexes())
-    {
-        QModelIndex srcIndex = filteredPackageModel->mapToSource(index);
-        currentIndexes.emplace_back(srcIndex);
-    }
-
-    for (const auto& index : proxyDeselected.indexes())
-    {
-        QModelIndex srcIndex = filteredPackageModel->mapToSource(index);
-        DVASSERT(!currentIndexes.empty());
-        for (const QPersistentModelIndex& currIndex : currentIndexes)
-        {
-            if (currIndex == srcIndex)
-            {
-                currentIndexes.remove(currIndex);
-                break;
-            }
-        }
-    }
-
     SelectedNodes selected;
     SelectedNodes deselected;
 
     QItemSelection selectedIndexes = filteredPackageModel->mapSelectionToSource(proxySelected);
     QItemSelection deselectedIndexes = filteredPackageModel->mapSelectionToSource(proxyDeselected);
 
-    for (const auto& index : selectedIndexes.indexes())
-    {
-        selected.insert(static_cast<PackageBaseNode*>(index.internalPointer()));
-    }
+    SelectedNodes selection = selectionContainer.selectedNodes;
     for (const auto& index : deselectedIndexes.indexes())
     {
-        deselected.insert(static_cast<PackageBaseNode*>(index.internalPointer()));
+        selection.erase(static_cast<PackageBaseNode*>(index.internalPointer()));
+    }
+    for (const auto& index : selectedIndexes.indexes())
+    {
+        selection.insert(static_cast<PackageBaseNode*>(index.internalPointer()));
     }
 
-    selectionContainer.MergeSelection(selected, deselected);
+    SetSelectedNodes(selection);
 
-    RefreshActions();
-    emit SelectedNodesChanged(selected, deselected);
+    emit SelectedNodesChanged(selection);
 }
 
 void PackageWidget::OnImport()
@@ -445,8 +422,14 @@ void PackageWidget::OnImport()
     {
         return;
     }
-    QStringList fileNames = FileDialog::getOpenFileNames(
-    qApp->activeWindow(), tr("Select one or move files to import"), QString::fromStdString(document->GetPackageFilePath().GetDirectory().GetStringValue()), "Packages (*.yaml)");
+    DAVA::TArc::DataContext* activeContext = accessor->GetActiveContext();
+    DVASSERT(activeContext != nullptr);
+    DocumentData* documentData = activeContext->GetData<DocumentData>();
+    DVASSERT(documentData != nullptr);
+    QStringList fileNames = FileDialog::getOpenFileNames(qApp->activeWindow(),
+                                                         tr("Select one or move files to import"),
+                                                         QString::fromStdString(documentData->GetPackagePath().GetDirectory().GetStringValue()),
+                                                         "Packages (*.yaml)");
     if (fileNames.isEmpty())
     {
         return;
@@ -458,10 +441,8 @@ void PackageWidget::OnImport()
         packages.push_back(FilePath(fileName.toStdString()));
     }
     DVASSERT(!packages.empty());
-    DVASSERT(!document.isNull());
-    PackageNode* package = document->GetPackage();
-    QtModelPackageCommandExecutor* commandExecutor = document->GetCommandExecutor();
-    commandExecutor->AddImportedPackagesIntoPackage(packages, package);
+    QtModelPackageCommandExecutor commandExecutor(accessor);
+    commandExecutor.AddImportedPackagesIntoPackage(packages, documentData->GetPackageNode());
 }
 
 void PackageWidget::OnCopy()
@@ -490,9 +471,13 @@ void PackageWidget::OnPaste()
         if (!baseNode->IsReadOnly())
         {
             String string = clipboard->mimeData()->text().toStdString();
-            DVASSERT(!document.isNull());
-            PackageNode* package = document->GetPackage();
-            document->GetCommandExecutor()->Paste(package, baseNode, baseNode->GetCount(), string);
+            DAVA::TArc::DataContext* activeContext = accessor->GetActiveContext();
+            DVASSERT(activeContext != nullptr);
+            DocumentData* documentData = activeContext->GetData<DocumentData>();
+            DVASSERT(nullptr != documentData);
+            PackageNode* package = documentData->GetPackageNode();
+            QtModelPackageCommandExecutor executor(accessor);
+            executor.Paste(package, baseNode, baseNode->GetCount(), string);
         }
     }
 }
@@ -507,16 +492,17 @@ void PackageWidget::OnCut()
 
     CopyNodesToClipboard(controls, styles);
 
-    document->GetCommandExecutor()->Remove(controls, styles);
+    QtModelPackageCommandExecutor executor(accessor);
+    executor.Remove(controls, styles);
 }
 
 void PackageWidget::OnDelete()
 {
-    if (document.isNull())
+    if (accessor->GetActiveContext() == nullptr)
     {
         return;
     }
-    QtModelPackageCommandExecutor* commandExecutor = document->GetCommandExecutor();
+    QtModelPackageCommandExecutor executor(accessor);
 
     Vector<ControlNode*> controls;
     CollectSelectedControls(controls, false, true);
@@ -526,14 +512,20 @@ void PackageWidget::OnDelete()
 
     if (!controls.empty() || !styles.empty())
     {
-        commandExecutor->Remove(controls, styles);
+        executor.Remove(controls, styles);
     }
     else
     {
         Vector<PackageNode*> packages;
         CollectSelectedImportedPackages(packages, false, true);
-        PackageNode* package = document->GetPackage();
-        commandExecutor->RemoveImportedPackagesFromPackage(packages, package);
+
+        DAVA::TArc::DataContext* activeContext = accessor->GetActiveContext();
+        DVASSERT(activeContext != nullptr);
+        DocumentData* documentData = activeContext->GetData<DocumentData>();
+        DVASSERT(nullptr != documentData);
+
+        PackageNode* package = documentData->GetPackageNode();
+        executor.RemoveImportedPackagesFromPackage(packages, package);
     }
 }
 
@@ -550,12 +542,15 @@ void PackageWidget::OnAddStyle()
     selectorChains.push_back(UIStyleSheetSelectorChain("?"));
     const DAVA::Vector<DAVA::UIStyleSheetProperty> properties;
 
-    ScopedPtr<StyleSheetNode> style(new StyleSheetNode(UIStyleSheetSourceInfo(document->GetPackageFilePath()), selectorChains, properties));
-    DVASSERT(!document.isNull());
-    PackageNode* package = document->GetPackage();
-    QtModelPackageCommandExecutor* commandExecutor = document->GetCommandExecutor();
+    DAVA::TArc::DataContext* activeContext = accessor->GetActiveContext();
+    DVASSERT(activeContext != nullptr);
+    DocumentData* documentData = activeContext->GetData<DocumentData>();
+    DVASSERT(documentData != nullptr);
+    ScopedPtr<StyleSheetNode> style(new StyleSheetNode(UIStyleSheetSourceInfo(documentData->GetPackagePath()), selectorChains, properties));
+    PackageNode* package = documentData->GetPackageNode();
+    QtModelPackageCommandExecutor commandExecutor(accessor);
     StyleSheetsNode* styleSheets = package->GetStyleSheets();
-    commandExecutor->InsertStyle(style, styleSheets, styleSheets->GetCount());
+    commandExecutor.InsertStyle(style, styleSheets, styleSheets->GetCount());
 }
 
 void PackageWidget::OnCopyControlPath()
@@ -654,15 +649,13 @@ void PackageWidget::OnMoveRight()
 
 void PackageWidget::MoveNodeImpl(PackageBaseNode* node, PackageBaseNode* dest, DAVA::uint32 destIndex)
 {
-    DVASSERT(!document.isNull());
-    QtModelPackageCommandExecutor* commandExecutor = document->GetCommandExecutor();
-
+    QtModelPackageCommandExecutor executor(accessor);
     if (dynamic_cast<ControlNode*>(node) != nullptr)
     {
         DAVA::Vector<ControlNode*> nodes = { static_cast<ControlNode*>(node) };
         ControlsContainerNode* nextControlNode = dynamic_cast<ControlsContainerNode*>(dest);
         OnBeforeProcessNodes(SelectedNodes(nodes.begin(), nodes.end()));
-        commandExecutor->MoveControls(nodes, nextControlNode, destIndex);
+        executor.MoveControls(nodes, nextControlNode, destIndex);
         OnAfterProcessNodes(SelectedNodes(nodes.begin(), nodes.end()));
     }
     else if (dynamic_cast<StyleSheetNode*>(node) != nullptr)
@@ -670,7 +663,7 @@ void PackageWidget::MoveNodeImpl(PackageBaseNode* node, PackageBaseNode* dest, D
         DAVA::Vector<StyleSheetNode*> nodes = { static_cast<StyleSheetNode*>(node) };
         StyleSheetsNode* nextStyleSheetNode = dynamic_cast<StyleSheetsNode*>(dest);
         OnBeforeProcessNodes(SelectedNodes(nodes.begin(), nodes.end()));
-        commandExecutor->MoveStyles(nodes, nextStyleSheetNode, destIndex);
+        executor.MoveStyles(nodes, nextStyleSheetNode, destIndex);
         OnAfterProcessNodes(SelectedNodes(nodes.begin(), nodes.end()));
     }
     else
@@ -681,20 +674,18 @@ void PackageWidget::MoveNodeImpl(PackageBaseNode* node, PackageBaseNode* dest, D
 
 void PackageWidget::OnFilterTextChanged(const QString& filterText)
 {
-    if (!document.isNull())
+    if (currentContext != nullptr)
     {
         if (lastFilterTextEmpty)
         {
-            PackageContext* context = dynamic_cast<PackageContext*>(document->GetContext(this));
-            context->expandedIndexes = GetExpandedIndexes();
+            currentContext->expandedIndexes = GetExpandedIndexes();
         }
         filteredPackageModel->setFilterFixedString(filterText);
 
         if (filterText.isEmpty())
         {
-            PackageContext* context = dynamic_cast<PackageContext*>(document->GetContext(this));
             treeView->collapseAll();
-            RestoreExpandedIndexes(context->expandedIndexes);
+            RestoreExpandedIndexes(currentContext->expandedIndexes);
         }
         else
         {
@@ -748,9 +739,8 @@ void PackageWidget::OnAfterProcessNodes(const SelectedNodes& nodes)
     {
         return;
     }
-    auto deselected = selectionContainer.selectedNodes; //make a copy of a class member
-    OnSelectionChanged(nodes, deselected);
-    emit SelectedNodesChanged(nodes, deselected); //this is only way to select manually in package widget
+    OnSelectionChanged(nodes);
+    emit SelectedNodesChanged(selectionContainer.selectedNodes); //this is only way to select manually in package widget
     for (const auto& node : expandedNodes)
     {
         QModelIndex srcIndex = packageModel->indexByNode(node);
@@ -762,10 +752,6 @@ void PackageWidget::OnAfterProcessNodes(const SelectedNodes& nodes)
 
 void PackageWidget::OnCurrentIndexChanged(const QModelIndex& index, const QModelIndex&)
 {
-    if (!index.isValid())
-    {
-        emit CurrentIndexChanged(nullptr);
-    }
     QModelIndex mappedIndex = filteredPackageModel->mapToSource(index);
     PackageBaseNode* node = static_cast<PackageBaseNode*>(mappedIndex.internalPointer());
     emit CurrentIndexChanged(node);
@@ -781,7 +767,7 @@ void PackageWidget::DeselectNodeImpl(PackageBaseNode* node)
         treeView->selectionModel()->select(dstIndex, QItemSelectionModel::Deselect);
     }
     DVASSERT(!currentIndexes.empty());
-    for (const QPersistentModelIndex& index : currentIndexes)
+    for (const QModelIndex& index : currentIndexes)
     {
         if (index == srcIndex)
         {
@@ -791,7 +777,7 @@ void PackageWidget::DeselectNodeImpl(PackageBaseNode* node)
     }
     if (!currentIndexes.empty())
     {
-        QPersistentModelIndex index = currentIndexes.back();
+        QModelIndex index = currentIndexes.back();
         if (srcIndex == index)
         {
             QModelIndex dstIndex = filteredPackageModel->mapFromSource(index);
@@ -836,35 +822,38 @@ void PackageWidget::RestoreExpandedIndexes(const ExpandedIndexes& indexes)
     }
 }
 
-void PackageWidget::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
+void PackageWidget::OnSelectionChanged(const DAVA::Any& selectionValue)
 {
     disconnect(treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &PackageWidget::OnSelectionChangedFromView);
-    SetSelectedNodes(selected, deselected);
+    SelectedNodes selection = selectionValue.Cast<SelectedNodes>(SelectedNodes());
+    SetSelectedNodes(selection);
     connect(treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &PackageWidget::OnSelectionChangedFromView);
 }
 
-void PackageWidget::SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected)
+void PackageWidget::SetSelectedNodes(const SelectedNodes& selection)
 {
-    DVASSERT(!selected.empty() || !deselected.empty());
-    //we can catch response from systems when we select any of controlNodes in package widget
-    SelectedNodes reallySelected;
-    SelectedNodes reallyDeselected;
-    selectionContainer.GetOnlyExistedItems(deselected, reallyDeselected);
-    selectionContainer.GetNotExistedItems(selected, reallySelected);
-    selectionContainer.MergeSelection(reallySelected, reallyDeselected);
-
     RefreshActions();
-    DVASSERT(!document.isNull());
-    if (document.isNull())
-    {
-        return;
-    }
-    for (const auto& node : reallyDeselected)
+
+    //this code is used to synchronize last selected item with properties model
+    SelectedNodes selected;
+    SelectedNodes deselected;
+
+    selectionContainer.GetNotExistedItems(selection, selected);
+    SelectionContainer tmpContainer = { selection };
+    tmpContainer.GetNotExistedItems(selectionContainer.selectedNodes, deselected);
+
+    selectionContainer.selectedNodes = selection;
+
+    for (PackageBaseNode* node : deselected)
     {
         DeselectNodeImpl(node);
     }
-    for (const auto& node : reallySelected)
+
+    for (PackageBaseNode* node : selected)
     {
         SelectNodeImpl(node);
     }
+
+    //TODO: remove refreshActions and all selection logic when Package will be a TArc module
+    RefreshActions();
 }

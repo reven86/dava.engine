@@ -241,7 +241,16 @@
      <normaloff>:/QtIcons/save_as.png</normaloff>:/QtIcons/save_as.png</iconset>
    </property>
    <property name="text">
-    <string>Save Material Preset As...</string>
+    <string>Save All Configs</string>
+   </property>
+  </action>
+  <action name="actionSaveMaterialCurrentConfigPreset">
+   <property name="icon">
+    <iconset resource="QtIcons.qrc">
+     <normaloff>:/QtIcons/save_as.png</normaloff>:/QtIcons/save_as.png</iconset>
+   </property>
+   <property name="text">
+    <string>Save Current Config</string>
    </property>
   </action>
   <actiongroup name="filterType">

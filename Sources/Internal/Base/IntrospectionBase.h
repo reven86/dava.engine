@@ -18,7 +18,7 @@ struct MetaInfo;
 // абстрактный базовый класс для интроспекции
 class InspBase : public ReflectionBase
 {
-    DAVA_VIRTUAL_REFLECTION(InspBase);
+    DAVA_VIRTUAL_REFLECTION(InspBase, ReflectionBase);
 
 public:
     InspBase();

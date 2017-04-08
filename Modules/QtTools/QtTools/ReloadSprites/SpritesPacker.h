@@ -25,6 +25,7 @@ public:
     SpritesPacker(QObject* parent = nullptr);
 
     void SetCacheClient(DAVA::AssetCacheClient* cacheClient, const DAVA::String& comment);
+    bool IsUsingCache() const;
 
     void AddTask(const QDir& inputDir, const QDir& outputDir);
     void ClearTasks();

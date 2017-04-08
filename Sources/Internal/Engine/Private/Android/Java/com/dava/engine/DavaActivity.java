@@ -11,6 +11,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Looper;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -121,7 +122,10 @@ public final class DavaActivity extends Activity
     private static final String META_TAG_BOOT_CLASSES = "com.dava.engine.BootClasses";
 
     private static DavaActivity activitySingleton;
+    private static boolean nativeInitialized = false; 
     private static Thread nativeThread; // Thread where native C++ code is running
+    private static int nativeThreadId; //
+    private static int uiThreadId;
 
     protected boolean isStopped = true; // Activity is stopped after onStop and before onStart
     protected boolean isPaused = true; // Activity is paused after onPause and before onResume
@@ -136,6 +140,7 @@ public final class DavaActivity extends Activity
     protected DavaCommandHandler commandHandler = new DavaCommandHandler();
     protected DavaKeyboardState keyboardState = new DavaKeyboardState();
     protected DavaGamepadManager gamepadManager = new DavaGamepadManager();
+    protected DavaGlobalLayoutState globalLayoutState = new DavaGlobalLayoutState();
 
     // List of class instances created during bootstrap (using meta-tag in AndroidManifest)
     protected LinkedList<Object> bootstrapObjects = new LinkedList<Object>();
@@ -184,6 +189,18 @@ public final class DavaActivity extends Activity
         return nativeThread != null;
     }
 
+    /** Check whether current thread is UI thread */
+    public static boolean isUIThread()
+    {
+        return android.os.Process.myTid() == uiThreadId;
+    }
+
+    /** Check whether current thread is main native thread where C++ code lives */
+    public static boolean isNativeMainThread()
+    {
+        return android.os.Process.myTid() == nativeThreadId;
+    }
+
     /**
         Register a callback to be invoked when DavaActivity lifecycle event occurs.
 
@@ -223,6 +240,7 @@ public final class DavaActivity extends Activity
         Log.d(LOG_TAG, "DavaActivity.onCreate");
 
         activitySingleton = this;
+        uiThreadId = android.os.Process.myTid();
         
         Application app = getApplication();
         externalFilesDir = app.getExternalFilesDir(null).getAbsolutePath() + "/";
@@ -282,12 +300,14 @@ public final class DavaActivity extends Activity
     
     private void startNativeInitialization() {
         nativeInitializeEngine(externalFilesDir, internalFilesDir, sourceDir, packageName, cmdline);
-        
+        nativeInitialized = true;
+
         long primaryWindowBackendPointer = nativeOnCreate(this);
         primarySurfaceView = new DavaSurfaceView(getApplication(), primaryWindowBackendPointer);
         layout.addView(primarySurfaceView);
 
         registerActivityListener(gamepadManager);
+        registerActivityListener(globalLayoutState);
         registerActivityListener(keyboardState);
     }
     
@@ -371,20 +391,24 @@ public final class DavaActivity extends Activity
         notifyListeners(ON_ACTIVITY_DESTROY, null);
         activityListeners.clear();
 
-        Log.d(LOG_TAG, "DavaActivity.nativeOnDestroy");
-        nativeOnDestroy();
-        if (isNativeThreadRunning())
+        if (nativeInitialized)
         {
-            try {
-                Log.d(LOG_TAG, "Joining native thread");
-                nativeThread.join();
-            } catch (Exception e) {
-                Log.e(LOG_TAG, "DavaActivity.onDestroy: davaMainThread.join() failed " + e);
+            Log.d(LOG_TAG, "DavaActivity.nativeOnDestroy");
+            nativeOnDestroy();
+            if (isNativeThreadRunning())
+            {
+                try {
+                    Log.d(LOG_TAG, "Joining native thread");
+                    nativeThread.join();
+                } catch (Exception e) {
+                    Log.e(LOG_TAG, "DavaActivity.onDestroy: davaMainThread.join() failed " + e);
+                }
+                nativeThread = null;
             }
-            nativeThread = null;
+            Log.d(LOG_TAG, "DavaActivity.nativeShutdownEngine");
+            nativeShutdownEngine();
         }
-        Log.d(LOG_TAG, "DavaActivity.nativeShutdownEngine");
-        nativeShutdownEngine();
+
         bootstrapObjects.clear();
         activitySingleton = null;
 
@@ -587,6 +611,7 @@ public final class DavaActivity extends Activity
             nativeThread = new Thread(new Runnable() {
                 @Override public void run()
                 {
+                    nativeThreadId = android.os.Process.myTid();
                     nativeGameThread();
                 }
             }, "DAVA main thread");
@@ -720,18 +745,18 @@ public final class DavaActivity extends Activity
                 l.onDestroy();
                 break;
             case ON_ACTIVITY_SAVE_INSTANCE_STATE:
-            	l.onSaveInstanceState((Bundle)arg);
-            	break;
+                l.onSaveInstanceState((Bundle)arg);
+                break;
             case ON_ACTIVITY_RESULT:
-            	ActivityResultArgs activityResultArgs = (ActivityResultArgs)arg;
-            	l.onActivityResult(activityResultArgs.requestCode, activityResultArgs.resultCode, activityResultArgs.data);
-            	break;
+                ActivityResultArgs activityResultArgs = (ActivityResultArgs)arg;
+                l.onActivityResult(activityResultArgs.requestCode, activityResultArgs.resultCode, activityResultArgs.data);
+                break;
             case ON_ACTIVITY_NEW_INTENT:
-            	l.onNewIntent((Intent)arg);
-            	break;
+                l.onNewIntent((Intent)arg);
+                break;
             case ON_ACTIVITY_REQUEST_PERMISSION_RESULT:
-            	RequestPermissionResultArgs requestResultArgs = (RequestPermissionResultArgs)arg;
-            	l.onRequestPermissionsResult(requestResultArgs.requestCode, requestResultArgs.permissions, requestResultArgs.grantResults);
+                RequestPermissionResultArgs requestResultArgs = (RequestPermissionResultArgs)arg;
+                l.onRequestPermissionsResult(requestResultArgs.requestCode, requestResultArgs.permissions, requestResultArgs.grantResults);
                 break;
             }
         }

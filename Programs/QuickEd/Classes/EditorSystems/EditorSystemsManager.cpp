@@ -1,6 +1,5 @@
 #include "EditorSystems/EditorSystemsManager.h"
-
-#include "Engine/Qt/RenderWidget.h"
+#include "Modules/DocumentsModule/DocumentData.h"
 
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
@@ -8,20 +7,21 @@
 
 #include "EditorSystems/SelectionSystem.h"
 #include "EditorSystems/EditorControlsView.h"
-#include "EditorSystems/CursorSystem.h"
 #include "EditorSystems/HUDSystem.h"
 #include "EditorSystems/EditorTransformSystem.h"
 #include "EditorSystems/KeyboardProxy.h"
 #include "EditorSystems/EditorControlsView.h"
-#include "EditorSystems/EditorCanvas.h"
 
-#include "UI/UIControl.h"
-#include "UI/Input/UIModalInputComponent.h"
-#include "UI/Input/UIInputSystem.h"
-#include "UI/UIControlSystem.h"
-#include "UI/UIScreen.h"
-#include "UI/UIScreenManager.h"
-#include "Engine/Engine.h"
+#include <TArc/Core/ContextAccessor.h>
+#include <TArc/DataProcessing/DataContext.h>
+
+#include <UI/UIControl.h>
+#include <UI/Input/UIModalInputComponent.h>
+#include <UI/Input/UIInputSystem.h>
+#include <UI/UIControlSystem.h>
+#include <UI/UIScreen.h>
+#include <UI/UIScreenManager.h>
+#include <Engine/Engine.h>
 
 using namespace DAVA;
 
@@ -51,15 +51,19 @@ private:
 };
 }
 
-EditorSystemsManager::EditorSystemsManager(RenderWidget* renderWidget)
+EditorSystemsManager::EditorSystemsManager(DAVA::TArc::ContextAccessor* accessor)
     : rootControl(new UIControl())
     , inputLayerControl(new EditorSystemsManagerDetails::InputLayerControl(this))
     , scalableControl(new UIControl())
     , editingRootControls(CompareByLCA)
 {
+    using namespace DAVA;
+    using namespace TArc;
+
     dragStateChanged.Connect(this, &EditorSystemsManager::OnDragStateChanged);
     displayStateChanged.Connect(this, &EditorSystemsManager::OnDisplayStateChanged);
     activeAreaChanged.Connect(this, &EditorSystemsManager::OnActiveHUDAreaChanged);
+    editingRootControlsChanged.Connect(this, &EditorSystemsManager::OnEditingRootControlsChanged);
 
     rootControl->SetName(FastName("rootControl"));
     rootControl->AddControl(scalableControl.Get());
@@ -67,21 +71,20 @@ EditorSystemsManager::EditorSystemsManager(RenderWidget* renderWidget)
     rootControl->AddControl(inputLayerControl.Get());
     scalableControl->SetName(FastName("scalableContent"));
 
+    documentDataWrapper = accessor->CreateWrapper(ReflectedTypeDB::Get<DocumentData>());
+    documentDataWrapper.SetListener(this);
+
     InitDAVAScreen();
 
     packageChanged.Connect(this, &EditorSystemsManager::OnPackageChanged);
-    selectionChanged.Connect(this, &EditorSystemsManager::OnSelectionChanged);
 
     controlViewPtr = new EditorControlsView(scalableControl.Get(), this);
     systems.emplace_back(controlViewPtr);
 
-    selectionSystemPtr = new SelectionSystem(this);
+    selectionSystemPtr = new SelectionSystem(this, accessor);
     systems.emplace_back(selectionSystemPtr);
     systems.emplace_back(new HUDSystem(this));
-    systems.emplace_back(new CursorSystem(renderWidget, this));
-    systems.emplace_back(new ::EditorTransformSystem(this));
-    editorCanvasPtr = new EditorCanvas(scalableControl.Get(), this);
-    systems.emplace_back(editorCanvasPtr);
+    systems.emplace_back(new ::EditorTransformSystem(this, accessor));
 
     for (auto it = systems.begin(); it != systems.end(); ++it)
     {
@@ -197,6 +200,11 @@ void EditorSystemsManager::SelectNode(ControlNode* node)
     selectionSystemPtr->SelectNode(node);
 }
 
+const SortedPackageBaseNodeSet& EditorSystemsManager::GetEditingRootControls() const
+{
+    return editingRootControls;
+}
+
 void EditorSystemsManager::SetDisplayState(eDisplayState newDisplayState)
 {
     if (displayState == newDisplayState)
@@ -209,18 +217,21 @@ void EditorSystemsManager::SetDisplayState(eDisplayState newDisplayState)
     displayStateChanged.Emit(displayState, previousDisplayState);
 }
 
-void EditorSystemsManager::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
-{
-    SelectionContainer::MergeSelectionToContainer(selected, deselected, selectedControlNodes);
-    if (!selectedControlNodes.empty())
-    {
-        RefreshRootControls();
-    }
-}
-
 void EditorSystemsManager::OnEditingRootControlsChanged(const SortedPackageBaseNodeSet& rootControls)
 {
-    SetDisplayState(rootControls.size() <= 1 ? Edit : Preview);
+    const EngineContext* engineContext = GetEngineContext();
+    engineContext->uiControlSystem->GetInputSystem()->SetCurrentScreen(engineContext->uiControlSystem->GetScreen()); // reset current screen
+
+    editingRootControls = rootControls;
+    eDisplayState state = rootControls.size() == 1 ? Edit : Preview;
+    if (displayState == Emulation)
+    {
+        previousDisplayState = state;
+    }
+    else
+    {
+        SetDisplayState(state);
+    }
 }
 
 void EditorSystemsManager::OnActiveHUDAreaChanged(const HUDAreaInfo& areaInfo)
@@ -234,19 +245,149 @@ void EditorSystemsManager::OnPackageChanged(PackageNode* package_)
     {
         package->RemoveListener(this);
     }
+    magnetLinesChanged.Emit({});
+    SetDragState(NoDrag);
+    ClearHighlight();
+
     package = package_;
-    RefreshRootControls();
     if (nullptr != package)
     {
         package->AddListener(this);
     }
 }
 
-void EditorSystemsManager::ControlWasRemoved(ControlNode* node, ControlsContainerNode* /*from*/)
+void EditorSystemsManager::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields)
 {
-    if (std::find(editingRootControls.begin(), editingRootControls.end(), node) != editingRootControls.end())
+    using namespace DAVA;
+    using namespace TArc;
+
+    if (wrapper.HasData() == false)
     {
-        editingRootControls.erase(node);
+        OnSelectionDataChanged(Any());
+        editingRootControlsChanged.Emit({});
+        OnPackageDataChanged(Any());
+        return;
+    }
+
+    bool selectionChanged = std::find(fields.begin(), fields.end(), String(DocumentData::selectionPropertyName)) != fields.end();
+    bool packageChanged = std::find(fields.begin(), fields.end(), String(DocumentData::packagePropertyName)) != fields.end();
+
+    Function<SortedPackageBaseNodeSet(const SelectedNodes&, const PackageNode*)> CreateRootControls = [](const SelectedNodes& selection, const PackageNode* package)
+    {
+        SortedPackageBaseNodeSet newRootControls(CompareByLCA);
+        if (selection.empty())
+        {
+            PackageControlsNode* controlsNode = package->GetPackageControlsNode();
+            for (int index = 0; index < controlsNode->GetCount(); ++index)
+            {
+                newRootControls.insert(controlsNode->Get(index));
+            }
+            return newRootControls;
+        }
+        else
+        {
+            for (PackageBaseNode* selectedNode : selection)
+            {
+                if (dynamic_cast<ControlNode*>(selectedNode) == nullptr)
+                {
+                    continue;
+                }
+                PackageBaseNode* root = selectedNode;
+                while (nullptr != root->GetParent() && nullptr != root->GetParent()->GetControl())
+                {
+                    root = root->GetParent();
+                }
+                if (nullptr != root)
+                {
+                    newRootControls.insert(root);
+                }
+            }
+            return newRootControls;
+        }
+    };
+
+    Any selectionValue = wrapper.GetFieldValue(DocumentData::selectionPropertyName);
+    SelectedNodes selection = selectionValue.Get(SelectedNodes());
+
+    Any packageValue = wrapper.GetFieldValue(DocumentData::packagePropertyName);
+    PackageNode* package = packageValue.Cast<PackageNode*>();
+
+    if (fields.empty() || packageChanged)
+    {
+        if (selectionChanged == false || selection.empty())
+        {
+            SortedPackageBaseNodeSet newRootControls = CreateRootControls(selection, package);
+            //TODO: remove this when systems will be separate TArc modules
+            if (newRootControls.empty() && fields.empty())
+            {
+                newRootControls = CreateRootControls(SelectedNodes(), package);
+            }
+            editingRootControlsChanged.Emit(newRootControls);
+        }
+        OnPackageDataChanged(packageValue);
+        //when document is closed and active document is changed we receive empty fields
+        OnSelectionDataChanged(selection);
+    }
+
+    //update selection
+    if (selectionChanged)
+    {
+        //if package was not changed and selection is empty -> do nothing
+        if (selection.empty() == false)
+        {
+            SortedPackageBaseNodeSet newRootControls = CreateRootControls(selection, package);
+            //TODO: remove this when systems will be separate TArc modules
+            if (newRootControls.empty() && packageChanged)
+            {
+                newRootControls = CreateRootControls(SelectedNodes(), package);
+            }
+            //no controls selected, so don't refresh visible content
+            if (newRootControls.empty() == false)
+            {
+                editingRootControlsChanged.Emit(newRootControls);
+            }
+        }
+        OnSelectionDataChanged(selectionValue);
+    }
+}
+
+void EditorSystemsManager::ControlWillBeRemoved(ControlNode* nodeToRemove, ControlsContainerNode* /*from*/)
+{
+    //if selected control and its children we will receive Removed signal only for top-level control
+    DVASSERT(documentDataWrapper.HasData());
+    Any selectionValue = documentDataWrapper.GetFieldValue(DocumentData::selectionPropertyName);
+    SelectedNodes nodes = selectionValue.Cast<SelectedNodes>(SelectedNodes());
+    for (auto iter = nodes.begin(); iter != nodes.end();)
+    {
+        PackageBaseNode* node = *iter;
+        bool found = false;
+        while (node != nullptr && found == false)
+        {
+            if (node == nodeToRemove)
+            {
+                iter = nodes.erase(iter);
+                found = true;
+            }
+            node = node->GetParent();
+        }
+        if (found == false)
+        {
+            ++iter;
+        }
+    }
+    //we need to synchronize Data in active context and systems state
+    //TODO fix it when all editor systems will be separate TArc modules
+    documentDataWrapper.SetFieldValue(DocumentData::selectionPropertyName, nodes);
+    OnSelectionDataChanged(nodes);
+
+    //when we removing items node is still highlighted
+    //because selectionChanged sending before editingRootControlsChanged
+    //and HUDSystem think that we have node under point to highlight
+    HighlightNode(nullptr);
+
+    if (std::find(editingRootControls.begin(), editingRootControls.end(), nodeToRemove) != editingRootControls.end())
+    {
+        editingRootControls.erase(nodeToRemove);
         editingRootControlsChanged.Emit(editingRootControls);
     }
 }
@@ -265,45 +406,6 @@ void EditorSystemsManager::ControlWasAdded(ControlNode* node, ControlsContainerN
                 editingRootControlsChanged.Emit(editingRootControls);
             }
         }
-    }
-}
-
-void EditorSystemsManager::RefreshRootControls()
-{
-    SortedPackageBaseNodeSet newRootControls(CompareByLCA);
-
-    if (nullptr != package)
-    {
-        if (selectedControlNodes.empty())
-        {
-            PackageControlsNode* controlsNode = package->GetPackageControlsNode();
-            for (int index = 0; index < controlsNode->GetCount(); ++index)
-            {
-                newRootControls.insert(controlsNode->Get(index));
-            }
-        }
-        else
-        {
-            for (ControlNode* selectedControlNode : selectedControlNodes)
-            {
-                PackageBaseNode* root = static_cast<PackageBaseNode*>(selectedControlNode);
-                while (nullptr != root->GetParent() && nullptr != root->GetParent()->GetControl())
-                {
-                    root = root->GetParent();
-                }
-                if (nullptr != root)
-                {
-                    newRootControls.insert(root);
-                }
-            }
-        }
-    }
-    if (editingRootControls != newRootControls)
-    {
-        editingRootControls = newRootControls;
-        editingRootControlsChanged.Emit(editingRootControls);
-        const EngineContext* engineContext = GetEngineContext();
-        engineContext->uiControlSystem->GetInputSystem()->SetCurrentScreen(engineContext->uiControlSystem->GetScreen()); // reset current screen
     }
 }
 
@@ -337,11 +439,6 @@ void EditorSystemsManager::OnDragStateChanged(eDragState currentState, eDragStat
 void EditorSystemsManager::OnDisplayStateChanged(eDisplayState currentState, eDisplayState previousState)
 {
     DVASSERT(currentState != previousState);
-    if (currentState == Preview || previousState == Preview
-        || currentState == Emulation || previousState == Emulation)
-    {
-        RefreshRootControls();
-    }
     if (currentState == Emulation)
     {
         rootControl->RemoveControl(inputLayerControl.Get());
@@ -357,6 +454,11 @@ UIControl* EditorSystemsManager::GetRootControl() const
     return rootControl.Get();
 }
 
+DAVA::UIControl* EditorSystemsManager::GetScalableControl() const
+{
+    return scalableControl.Get();
+}
+
 Vector2 EditorSystemsManager::GetMouseDelta() const
 {
     return mouseDelta;
@@ -365,6 +467,22 @@ Vector2 EditorSystemsManager::GetMouseDelta() const
 DAVA::Vector2 EditorSystemsManager::GetLastMousePos() const
 {
     return lastMousePos;
+}
+
+void EditorSystemsManager::OnPackageDataChanged(const DAVA::Any& packageValue)
+{
+    PackageNode* package = nullptr;
+    if (packageValue.CanCast<PackageNode*>())
+    {
+        package = packageValue.Cast<PackageNode*>();
+    }
+    packageChanged.Emit(package);
+}
+
+void EditorSystemsManager::OnSelectionDataChanged(const DAVA::Any& newSelectionValue)
+{
+    SelectedNodes selection = newSelectionValue.Cast<SelectedNodes>(SelectedNodes());
+    selectionChanged.Emit(selection);
 }
 
 EditorSystemsManager::eDragState EditorSystemsManager::GetDragState() const
@@ -382,9 +500,11 @@ HUDAreaInfo EditorSystemsManager::GetCurrentHUDArea() const
     return currentHUDArea;
 }
 
-EditorCanvas* EditorSystemsManager::GetEditorCanvas() const
+void EditorSystemsManager::AddEditorSystem(BaseEditorSystem* system)
 {
-    return editorCanvasPtr;
+    dragStateChanged.Connect(system, &BaseEditorSystem::OnDragStateChanged);
+    displayStateChanged.Connect(system, &BaseEditorSystem::OnDisplayStateChanged);
+    systems.emplace_back(system);
 }
 
 void EditorSystemsManager::SetDragState(eDragState newDragState)

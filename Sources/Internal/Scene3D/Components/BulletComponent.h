@@ -1,10 +1,10 @@
-#ifndef __DAVAENGINE_BULLET_COMPONENT_H__
-#define __DAVAENGINE_BULLET_COMPONENT_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Entity/Component.h"
 #include "Scene3D/Entity.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
+#include "Reflection/Reflection.h"
 
 namespace DAVA
 {
@@ -33,7 +33,7 @@ public:
     INTROSPECTION_EXTEND(BulletComponent, Component,
                          PROPERTY("bulletObject", "Bullet Object", GetBulletObject, SetBulletObject, I_SAVE | I_VIEW | I_EDIT)
                          );
+
+    DAVA_VIRTUAL_REFLECTION(BulletComponent, Component);
 };
 }
-
-#endif //__DAVAENGINE_BULLET_COMPONENT_H__

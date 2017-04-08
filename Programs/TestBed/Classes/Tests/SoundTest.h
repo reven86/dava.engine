@@ -31,6 +31,4 @@ private:
 
     DAVA::SoundEvent* eventGroup1 = nullptr;
     DAVA::SoundEvent* eventGroup2 = nullptr;
-
-    size_t tokenFocusChanged = 0;
 };

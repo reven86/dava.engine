@@ -3,11 +3,14 @@
 
 #include "Base/BaseTypes.h"
 #include "UI/UIScreen.h"
+#include "Reflection/Reflection.h"
 
 namespace DAVA
 {
 class UIScreenTransition : public UIScreen
 {
+    DAVA_VIRTUAL_REFLECTION(UIScreenTransition, UIScreen);
+
 public:
     UIScreenTransition();
 

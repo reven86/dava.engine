@@ -1,4 +1,6 @@
 #include "BaseTest.h"
+#include <UI/Update/UIUpdateComponent.h>
+#include <UI/Update/UICustomUpdateDeltaComponent.h>
 
 const uint32 BaseTest::FRAME_OFFSET = 5;
 
@@ -15,6 +17,7 @@ BaseTest::BaseTest(const String& _testName, const TestParams& _testParams)
     , maxAllocatedMemory(0)
 {
     sceneName = testName + ": " + GetParams().sceneName;
+    GetOrCreateComponent<UIUpdateComponent>();
 }
 
 void BaseTest::LoadResources()
@@ -31,6 +34,7 @@ void BaseTest::LoadResources()
 
     sceneView = new UI3DView(rect);
     sceneView->SetScene(scene);
+    sceneCustomDeltaComponent = sceneView->GetOrCreateComponent<UICustomUpdateDeltaComponent>();
 
     AddControl(sceneView);
 
@@ -39,8 +43,13 @@ void BaseTest::LoadResources()
 
 void BaseTest::UnloadResources()
 {
+    sceneCustomDeltaComponent = nullptr;
     SafeRelease(scene);
+
+    RemoveControl(sceneView);
     SafeRelease(sceneView);
+
+    uiRoot->RemoveAllControls();
 }
 
 void BaseTest::CreateUI()
@@ -191,8 +200,9 @@ void BaseTest::PrintStatistic(const Vector<FrameInfo>& frames)
                  .c_str());
 }
 
-void BaseTest::SystemUpdate(float32 timeElapsed)
+void BaseTest::Update(float32 timeElapsed)
 {
+    BaseScreen::Update(timeElapsed);
     uint32 allocatedMem = GetAllocatedMemory();
     if (allocatedMem > maxAllocatedMemory)
     {
@@ -243,10 +253,13 @@ void BaseTest::SystemUpdate(float32 timeElapsed)
             UpdateUI();
         }
 
-        PerformTestLogic(delta);
+        PerformTestLogic(currentFrameDelta);
     }
 
-    BaseScreen::SystemUpdate(delta);
+    if (sceneCustomDeltaComponent)
+    {
+        sceneCustomDeltaComponent->SetDelta(currentFrameDelta);
+    }
 }
 
 void BaseTest::BeginFrame()

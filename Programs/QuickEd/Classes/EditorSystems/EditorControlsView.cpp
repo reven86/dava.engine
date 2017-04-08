@@ -320,7 +320,6 @@ void BackgroundController::AdjustToNestedControl()
     Vector2 size = rect.GetSize();
     positionHolderControl->SetPosition(pos);
     gridControl->SetSize(size);
-    contentSizeChanged.Emit();
     rootControlPosChanged.Emit(pos);
 }
 
@@ -365,6 +364,7 @@ void BackgroundController::FitGridIfParentIsNested(PackageBaseNode* node)
         if (parent->GetControl() == nestedControl) //we change child in the nested control
         {
             AdjustToNestedControl();
+            contentSizeChanged.Emit();
             return;
         }
         parent = parent->GetParent();
@@ -375,7 +375,7 @@ bool BackgroundController::IsPropertyAffectBackground(AbstractProperty* property
 {
     DVASSERT(nullptr != property);
     FastName name(property->GetName());
-    static FastName matchedNames[] = { FastName("Angle"), FastName("Size"), FastName("Scale"), FastName("Position"), FastName("Pivot"), FastName("Visible") };
+    static FastName matchedNames[] = { FastName("angle"), FastName("size"), FastName("scale"), FastName("position"), FastName("pivot"), FastName("visible") };
     return std::find(std::begin(matchedNames), std::end(matchedNames), name) != std::end(matchedNames);
 }
 
@@ -419,6 +419,7 @@ void EditorControlsView::OnDragStateChanged(EditorSystemsManager::eDragState /*c
             control->AdjustToNestedControl();
         }
     }
+    Layout();
 }
 
 void EditorControlsView::ControlWasRemoved(ControlNode* node, ControlsContainerNode* from)

@@ -1,36 +1,37 @@
 #pragma once
 
-#include "Base/Introspection.h"
-#include "Preferences/PreferencesRegistrator.h"
-#include "Functional/SignalBase.h"
-#include "Logger/Logger.h"
+#include <TArc/DataProcessing/DataNode.h>
 
 #if defined(__DAVAENGINE_MACOS__)
-#include "QtTools/Utils/ShortcutChecker.h"
+#include <QtTools/Utils/ShortcutChecker.h>
 #endif //__DAVAENGINE_MACOS__
+#include <QtTools/Utils/QtDelayedExecutor.h>
 
-#include "QtTools/Utils/QtDelayedExecutor.h"
+#include <Base/Introspection.h>
+#include <Preferences/PreferencesRegistrator.h>
+
 #include <QMainWindow>
-
-namespace DAVA
-{
-class RenderWidget;
-}
-
-class LoggerOutputObject;
-class Project;
-class QCheckBox;
-class QActionGroup;
-
-namespace DAVA
-{
-class ResultList;
-}
 
 namespace Ui
 {
 class MainWindow;
 }
+
+class PackageWidget;
+class StyleSheetInspectorWidget;
+
+namespace DAVA
+{
+class ResultList;
+namespace TArc
+{
+class ContextAccessor;
+}
+}
+
+class QCheckBox;
+class QActionGroup;
+class QEvent;
 
 class MainWindow : public QMainWindow, public DAVA::InspBase, public DAVA::TrackedObject
 {
@@ -38,40 +39,26 @@ class MainWindow : public QMainWindow, public DAVA::InspBase, public DAVA::Track
 
 public:
     class ProjectView;
-    class DocumentGroupView;
 
-    explicit MainWindow(QWidget* parent = nullptr);
+    explicit MainWindow(DAVA::TArc::ContextAccessor* accessor, QWidget* parent = nullptr);
 
     ~MainWindow() override;
 
     void SetEditorTitle(const QString& editorTitle);
-    void SetRecentProjects(const QStringList& lastProjectsPathes);
-    void InjectRenderWidget(DAVA::RenderWidget* renderWidget);
 
-    void ShowResultList(const QString& title, const DAVA::ResultList& resultList);
-
-    ProjectView* GetProjectView();
+    ProjectView* GetProjectView() const;
+    PackageWidget* GetPackageWidget() const;
 
 signals:
-    void NewProject();
-    void OpenProject();
-    void CloseProject();
-    void RecentProject(const QString& path);
-
-    void ShowHelp();
-
     void EmulationModeChanged(bool emulationMode);
 
 private slots:
-    void OnRecentMenu(QAction* action);
     void OnPixelizationStateChanged(bool isPixelized);
-    void OnLogOutput(DAVA::Logger::eLogLevel ll, const QByteArray& output);
     void OnEditorPreferencesTriggered();
 
 private:
     void SetProjectPath(const QString& projectPath);
 
-    void SetupShortcuts();
     void ConnectActions();
     void InitEmulationMode();
     void SetupViewMenu();
@@ -88,16 +75,10 @@ private:
 
     bool eventFilter(QObject* object, QEvent* event) override;
 
-    DAVA::String GetConsoleState() const;
-    void SetConsoleState(const DAVA::String& array);
-
     std::unique_ptr<Ui::MainWindow> ui;
 
     QString editorTitle;
     QString projectPath;
-
-    LoggerOutputObject* loggerOutput = nullptr; //will be deleted by logger. Isn't it fun?
-    qint64 acceptableLoggerFlags = ~0; //all flags accepted
 
     QCheckBox* emulationBox = nullptr;
 
@@ -112,12 +93,9 @@ private:
     QtDelayedExecutor delayedExecutor;
 
     ProjectView* projectView = nullptr;
-    DocumentGroupView* documentGroupView = nullptr;
-    //std::unique_ptr<DocumentView> documentView;
 
 public:
     INTROSPECTION(MainWindow,
                   PROPERTY("isPixelized", "MainWindowInternal/IsPixelized", IsPixelized, SetPixelized, DAVA::I_PREFERENCE)
-                  PROPERTY("consoleState", "MainWindowInternal/ConsoleState", GetConsoleState, SetConsoleState, DAVA::I_PREFERENCE)
                   )
 };

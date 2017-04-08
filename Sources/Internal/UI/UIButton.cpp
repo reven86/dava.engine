@@ -6,11 +6,20 @@
 #include "FileSystem/LocalizationSystem.h"
 #include "FileSystem/VariantType.h"
 #include "Render/2D/FontManager.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {
 static const UIControl::eControlState stateArray[] = { UIControl::STATE_NORMAL, UIControl::STATE_PRESSED_OUTSIDE, UIControl::STATE_PRESSED_INSIDE, UIControl::STATE_DISABLED, UIControl::STATE_SELECTED, UIControl::STATE_HOVER };
 static const String statePostfix[] = { "Normal", "PressedOutside", "PressedInside", "Disabled", "Selected", "Hover" };
+
+DAVA_VIRTUAL_REFLECTION_IMPL(UIButton)
+{
+    ReflectionRegistrator<UIButton>::Begin()
+    .ConstructorByPointer()
+    .DestructorByPointer([](UIButton* o) { o->Release(); })
+    .End();
+}
 
 UIButton::UIButton(const Rect& rect)
     : UIControl(rect)
@@ -29,7 +38,7 @@ UIButton::UIButton(const Rect& rect)
     SetExclusiveInput(true, false);
     SetInputEnabled(true, false);
 
-    UIControl::SetBackground(GetActualBackgroundForState(controlState));
+    UIControl::SetBackground(GetActualBackgroundForState(GetState()));
 }
 
 UIButton::~UIButton()
@@ -390,30 +399,6 @@ void UIButton::SetStateTextMultilineBySymbol(int32 state, bool value)
     }
 }
 
-void UIButton::SetStateMargins(int32 state, const UIControlBackground::UIMargins* margins)
-{
-    for (int i = 0; i < DRAW_STATE_COUNT && state; i++)
-    {
-        if (state & 0x01)
-        {
-            GetOrCreateBackground(static_cast<eButtonDrawState>(i))->SetMargins(margins);
-        }
-        state >>= 1;
-    }
-}
-
-void UIButton::SetStateTextMargins(int32 state, const UIControlBackground::UIMargins* margins)
-{
-    for (int i = 0; i < DRAW_STATE_COUNT && state; i++)
-    {
-        if (state & 0x01)
-        {
-            GetOrCreateTextBlock(static_cast<eButtonDrawState>(i))->SetMargins(margins);
-        }
-        state >>= 1;
-    }
-}
-
 void UIButton::SetStateTextControl(int32 state, UIStaticText* textControl)
 {
     for (int i = 0; i < DRAW_STATE_COUNT && state; i++)
@@ -439,11 +424,11 @@ void UIButton::Input(UIEvent* currentInput)
 
 void UIButton::SystemDraw(const UIGeometricData& geometricData, const UIControlBackground* parentBackground)
 {
-    if (oldControlState != controlState)
+    if (oldControlState != GetState())
     {
-        oldControlState = controlState;
-        selectedTextBlock = GetActualTextBlockForState(controlState);
-        UIControl::SetBackground(GetActualBackgroundForState(controlState));
+        oldControlState = GetState();
+        selectedTextBlock = GetActualTextBlockForState(GetState());
+        UIControl::SetBackground(GetActualBackgroundForState(GetState()));
     }
 
     UIControl::SystemDraw(geometricData, parentBackground);
@@ -496,7 +481,7 @@ void UIButton::SetBackground(eButtonDrawState drawState, UIControlBackground* ne
     SafeRelease(stateBacks[drawState]);
     stateBacks[drawState] = newBackground;
 
-    UIControl::SetBackground(GetActualBackgroundForState(controlState));
+    UIControl::SetBackground(GetActualBackgroundForState(GetState()));
 }
 
 UIStaticText* UIButton::GetOrCreateTextBlock(eButtonDrawState drawState)
@@ -588,7 +573,7 @@ void UIButton::SetTextBlock(eButtonDrawState drawState, UIStaticText* newTextBlo
 {
     SafeRelease(stateTexts[drawState]);
     stateTexts[drawState] = SafeRetain(newTextBlock);
-    selectedTextBlock = GetActualTextBlockForState(controlState);
+    selectedTextBlock = GetActualTextBlockForState(GetState());
 }
 
 void UIButton::UpdateStateTextControlSize()

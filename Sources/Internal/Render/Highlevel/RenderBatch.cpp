@@ -7,9 +7,23 @@
 #include "Render/Highlevel/SpeedTreeObject.h"
 #include "Scene3D/SceneFileV2.h"
 #include "Debug/DVAssert.h"
+#include "Reflection/ReflectionRegistrator.h"
+#include "Reflection/ReflectedMeta.h"
 
 namespace DAVA
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(RenderBatch)
+{
+    ReflectionRegistrator<RenderBatch>::Begin()
+    .Field("dataSource", &RenderBatch::dataSource)[M::DisplayName("Data source")]
+    .Field("startIndex", &RenderBatch::startIndex)[M::DisplayName("Start index"), M::ReadOnly(), M::HiddenField()]
+    .Field("indexCount", &RenderBatch::indexCount)[M::DisplayName("Index count"), M::ReadOnly(), M::HiddenField()]
+    .Field("aabbbox", &RenderBatch::aabbox)[M::DisplayName("Bounding box")]
+    .Field("material", &RenderBatch::material)[M::DisplayName("Material")]
+    .Field("sortingKey", &RenderBatch::GetSortingKey, &RenderBatch::SetSortingKey)[M::DisplayName("Sorting key")]
+    .End();
+}
+
 RenderBatch::RenderBatch()
 {
 #if defined(__DAVA_USE_OCCLUSION_QUERY__)

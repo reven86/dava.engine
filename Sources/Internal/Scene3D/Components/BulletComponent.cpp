@@ -1,8 +1,18 @@
 #include "Scene3D/Components/BulletComponent.h"
 #include "Base/BaseObject.h"
 
+#include "Reflection/ReflectionRegistrator.h"
+#include "Reflection/ReflectedMeta.h"
+
 namespace DAVA
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(BulletComponent)
+{
+    ReflectionRegistrator<BulletComponent>::Begin()[M::CantBeCreatedManualyComponent()]
+    .ConstructorByPointer()
+    .Field("bulletObject", &BulletComponent::GetBulletObject, &BulletComponent::SetBulletObject)[M::DisplayName("Bullet Objec")]
+    .End();
+}
 BulletComponent::BulletComponent()
     : bulletObject(0)
 {

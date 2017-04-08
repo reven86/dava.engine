@@ -8,10 +8,8 @@
 
 #include "Engine/EngineTypes.h"
 #include "Engine/Qt/RenderWidget.h"
-#include "Engine/EngineTypes.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 #include "Engine/Private/Dispatcher/UIDispatcher.h"
-#include "Functional/SignalBase.h"
 
 #include <QPointer>
 
@@ -38,7 +36,6 @@ public:
     void OnApplicationFocusChanged(bool isInFocus);
 
     void Update();
-    void ActivateRendering();
     RenderWidget* GetRenderWidget();
 
     void Resize(float32 width, float32 height);

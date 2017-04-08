@@ -6,12 +6,25 @@
 #include "UI/UIEvent.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "UI/UIControlSystem.h"
+#include "Reflection/ReflectionRegistrator.h"
+
 namespace DAVA
 {
 // Use these names for children buttons to define UISlider in .yaml
 static const FastName UISLIDER_THUMB_SPRITE_CONTROL_NAME("thumbSpriteControl");
 static const FastName UISLIDER_MIN_SPRITE_CONTROL_NAME("minSpriteControl");
 static const FastName UISLIDER_MAX_SPRITE_CONTROL_NAME("maxSpriteControl");
+
+DAVA_VIRTUAL_REFLECTION_IMPL(UISlider)
+{
+    ReflectionRegistrator<UISlider>::Begin()
+    .ConstructorByPointer()
+    .DestructorByPointer([](UISlider* o) { o->Release(); })
+    .Field("minValue", &UISlider::GetMinValue, &UISlider::SetMinValue)
+    .Field("maxValue", &UISlider::GetMaxValue, &UISlider::SetMaxValue)
+    .Field("value", &UISlider::GetValue, &UISlider::SetValue)
+    .End();
+}
 
 UISlider::UISlider(const Rect& rect)
     : UIControl(rect)
@@ -103,7 +116,7 @@ void UISlider::SetValue(float32 value)
 
     if (needSendEvent)
     {
-        PerformEvent(EVENT_VALUE_CHANGED);
+        PerformEvent(EVENT_VALUE_CHANGED, nullptr);
     }
 }
 
@@ -204,13 +217,13 @@ void UISlider::Input(UIEvent* currentInput)
     {
         if (oldVal != currentValue)
         {
-            PerformEventWithData(EVENT_VALUE_CHANGED, currentInput);
+            PerformEventWithData(EVENT_VALUE_CHANGED, currentInput, currentInput);
         }
     }
     else if (currentInput->phase == UIEvent::Phase::ENDED)
     {
         /* if not continuos always perform event because last move position almost always the same as end pos */
-        PerformEventWithData(EVENT_VALUE_CHANGED, currentInput);
+        PerformEventWithData(EVENT_VALUE_CHANGED, currentInput, currentInput);
     }
 
     RecalcButtonPos();

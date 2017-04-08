@@ -114,9 +114,10 @@ QString FileManager::GetSelfUpdateTempDirectory() const
     return path;
 }
 
-QString FileManager::GetTempDownloadFilePath() const
+QString FileManager::GetTempDownloadFilePath(const QString& url) const
 {
-    return GetTempDirectory() + "archive.zip";
+    QString fileName = GetFileNameFromURL(url);
+    return GetTempDirectory() + fileName;
 }
 
 QString FileManager::GetLauncherDirectory() const
@@ -258,17 +259,29 @@ QString FileManager::GetFilesDirectory() const
     return filesDirectory;
 }
 
+QString FileManager::GetFileNameFromURL(const QString& url)
+{
+    int index = url.lastIndexOf('/');
+    if (index == -1)
+    {
+        return "archive.zip";
+    }
+    else
+    {
+        return url.right(url.size() - index - 1); //remove extra '/'
+    }
+}
+
 void FileManager::MakeDirectory(const QString& path)
 {
     if (!QDir(path).exists())
         QDir().mkpath(path);
 }
 
-bool FileManager::CreateZipFile(const QByteArray& dataToWrite, QString& filePath) const
+bool FileManager::CreateFileFromRawData(const QByteArray& dataToWrite, const QString& filePath) const
 {
     using namespace std;
     //we can not use QFile::write because of bug https://bugreports.qt.io/browse/QTBUG-57468
-    filePath = GetTempDownloadFilePath();
     try
     {
         ofstream outfile(filePath.toStdString().c_str(), ofstream::out | ofstream::trunc | ofstream::binary);
@@ -328,4 +341,31 @@ QString FileManager::GetBranchDirectory(const QString& branchID) const
     dirName.remove("\\");
     QString path = GetBaseAppsDirectory() + dirName + "/";
     return path;
+}
+
+bool FileManager::MoveFileWithMakePath(const QString& currentPath, const QString& newPath)
+{
+    if (QFile::exists(currentPath) == false)
+    {
+        return false;
+    }
+
+    QFileInfo newFileInfo(newPath);
+    QDir newDir = newFileInfo.absoluteDir();
+    if (newDir.mkpath(".") == false)
+    {
+        return false;
+    }
+
+    if (QFile::copy(currentPath, newPath) == false)
+    {
+        return false;
+    }
+
+    if (QFile::remove(currentPath) == false)
+    {
+        return false;
+    }
+
+    return true;
 }

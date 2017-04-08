@@ -41,7 +41,6 @@ WideString ConvertToWString(const Rect& rect)
 void ClipTest::StartPos(BaseObject* obj, void* data, void* callerData)
 {
     fullSizeWgt->SetRect(defaultRect);
-    fullSizeWgt->Update(0);
     startPos->SetStateText(0xFF, ConvertToWString(defaultRect));
 }
 
@@ -50,7 +49,6 @@ void ClipTest::MoveDown(BaseObject* obj, void* data, void* callerData)
     Rect rect = fullSizeWgt->GetRect();
     rect.y++;
     fullSizeWgt->SetRect(rect);
-    fullSizeWgt->Update(0);
     startPos->SetStateText(0xFF, ConvertToWString(rect));
 }
 
@@ -59,7 +57,6 @@ void ClipTest::MoveUp(BaseObject* obj, void* data, void* callerData)
     Rect rect = fullSizeWgt->GetRect();
     rect.y--;
     fullSizeWgt->SetRect(rect);
-    fullSizeWgt->Update(0);
     startPos->SetStateText(0xFF, ConvertToWString(rect));
 }
 
@@ -68,7 +65,6 @@ void ClipTest::MoveRight(BaseObject* obj, void* data, void* callerData)
     Rect rect = fullSizeWgt->GetRect();
     rect.x++;
     fullSizeWgt->SetRect(rect);
-    fullSizeWgt->Update(0);
     startPos->SetStateText(0xFF, ConvertToWString(rect));
 }
 
@@ -77,7 +73,6 @@ void ClipTest::MoveLeft(BaseObject* obj, void* data, void* callerData)
     Rect rect = fullSizeWgt->GetRect();
     rect.x--;
     fullSizeWgt->SetRect(rect);
-    fullSizeWgt->Update(0);
     startPos->SetStateText(0xFF, ConvertToWString(rect));
 }
 

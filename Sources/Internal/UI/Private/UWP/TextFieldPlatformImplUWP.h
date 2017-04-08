@@ -183,7 +183,6 @@ private: // Event handlers
     void OnSelectionChanged();
 
     // Onscreen keyboard events
-    void OnKeyboardHiding(Windows::UI::ViewManagement::InputPaneVisibilityEventArgs ^ args);
     void OnKeyboardShowing(Windows::UI::ViewManagement::InputPaneVisibilityEventArgs ^ args);
 
     // Signal handlers
@@ -207,7 +206,9 @@ private:
 
     // Tokens to unsubscribe from touch keyboard event handlers
     Windows::Foundation::EventRegistrationToken tokenKeyboardShowing;
+#if !defined(__DAVAENGINE_COREV2__)
     Windows::Foundation::EventRegistrationToken tokenKeyboardHiding;
+#endif
 
     bool ignoreTextChange = false;
     bool waitRenderToTextureComplete = false; // If flag is set do not move native control offscreen to get rid of some flickering
@@ -226,9 +227,6 @@ private:
     Texture* texture = nullptr;
     Sprite* sprite = nullptr;
 #endif
-
-    size_t windowSizeChangedConnection = 0;
-    size_t windowDestroyedConnection = 0;
 
     static Windows::UI::Xaml::Style ^ customTextBoxStyle;
     static Windows::UI::Xaml::Style ^ customPasswordBoxStyle;

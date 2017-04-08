@@ -20,7 +20,7 @@ public:
 
     ePropertyType GetType() const override;
 
-    DAVA::VariantType GetValue() const override;
+    DAVA::Any GetValue() const override;
     const DAVA::String& GetClassName() const;
     ControlNode* GetControlNode() const;
 

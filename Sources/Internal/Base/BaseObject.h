@@ -9,6 +9,7 @@
 #include "DAVAConfig.h"
 #include "Base/RefPtr.h"
 #include "Base/ScopedPtr.h"
+#include "Reflection/Reflection.h"
 
 #include "MemoryManager/MemoryProfiler.h"
 
@@ -36,6 +37,7 @@ class KeyedArchive;
 
 class BaseObject : public InspBase
 {
+    DAVA_VIRTUAL_REFLECTION(BaseObject, InspBase);
     DAVA_ENABLE_CLASS_ALLOCATION_TRACKING(ALLOC_POOL_BASEOBJECT)
 
 protected:
@@ -130,8 +132,6 @@ public:
     INTROSPECTION(BaseObject,
                   MEMBER(referenceCount, "referenceCount", I_SAVE)
                   )
-
-    DAVA_VIRTUAL_REFLECTION(BaseObject, InspBase);
 };
 
 template <typename T>

@@ -4,7 +4,7 @@
 #include "Utils/QtDavaConvertion.h"
 #include "UI/Dialogs/DialogConfigurePreset.h"
 #include "UI/Dialogs/DialogAddPreset.h"
-#include "Project/Project.h"
+#include "Modules/LegacySupportModule/Private/Project.h"
 
 #include <QAction>
 #include <QComboBox>
@@ -37,8 +37,8 @@ void FontPropertyDelegate::setEditorData(QWidget* rawEditor, const QModelIndex& 
 {
     QComboBox* editor = rawEditor->findChild<QComboBox*>("comboBox");
 
-    VariantType variant = index.data(Qt::EditRole).value<VariantType>();
-    editor->setCurrentText(QString::fromStdString(variant.AsString()));
+    Any variant = index.data(Qt::EditRole).value<Any>();
+    editor->setCurrentText(QString::fromStdString(variant.Cast<String>()));
 }
 
 bool FontPropertyDelegate::setModelData(QWidget* rawEditor, QAbstractItemModel* model, const QModelIndex& index) const
@@ -48,12 +48,12 @@ bool FontPropertyDelegate::setModelData(QWidget* rawEditor, QAbstractItemModel* 
 
     QComboBox* editor = rawEditor->findChild<QComboBox*>("comboBox");
 
-    VariantType variantType = index.data(Qt::EditRole).value<VariantType>();
+    Any value = index.data(Qt::EditRole).value<Any>();
     String str = QStringToString(editor->currentText());
-    variantType.SetString(str);
+    value.Set(str);
 
     QVariant variant;
-    variant.setValue<VariantType>(variantType);
+    variant.setValue<Any>(value);
 
     return model->setData(index, variant, Qt::EditRole);
 }

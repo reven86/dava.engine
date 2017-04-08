@@ -1,8 +1,18 @@
 #include "Scene3D/Components/RenderComponent.h"
+#include "Reflection/ReflectionRegistrator.h"
+#include "Reflection/ReflectedMeta.h"
 #include "Base/ObjectFactory.h"
 
 namespace DAVA
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(RenderComponent)
+{
+    ReflectionRegistrator<RenderComponent>::Begin()[M::CantBeCreatedManualyComponent()]
+    .ConstructorByPointer()
+    .Field("renderObject", &RenderComponent::renderObject)[M::DisplayName("Render Object")]
+    .End();
+}
+
 RenderComponent::RenderComponent(RenderObject* _object)
 {
     renderObject = SafeRetain(_object);

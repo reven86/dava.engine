@@ -1,10 +1,11 @@
-#ifndef __QUICKED_PROPERTIES_MODEL_H__
-#define __QUICKED_PROPERTIES_MODEL_H__
-
-#include "Base/RefPtr.h"
-#include "FileSystem/VariantType.h"
+#pragma once
 
 #include "Model/ControlProperties/PropertyListener.h"
+
+#include <QtTools/Updaters/ContinuousUpdater.h>
+
+#include <Base/RefPtr.h>
+#include <FileSystem/VariantType.h>
 
 #include <QAbstractItemModel>
 #include <QSet>
@@ -12,15 +13,17 @@
 namespace DAVA
 {
 class InspInfo;
+namespace TArc
+{
+class ContextAccessor;
+}
 }
 
 class AbstractProperty;
 class PackageBaseNode;
 class ControlNode;
 class StyleSheetNode;
-class QtModelPackageCommandExecutor;
 class ComponentPropertiesSection;
-class ContinuousUpdater;
 
 class PropertiesModel : public QAbstractItemModel, private PropertyListener
 {
@@ -31,9 +34,13 @@ public:
     {
         ResetRole = Qt::UserRole + 1
     };
+
     PropertiesModel(QObject* parent = nullptr);
-    virtual ~PropertiesModel();
-    void Reset(PackageBaseNode* node_, QtModelPackageCommandExecutor* commandExecutor_);
+    ~PropertiesModel() override;
+
+    void SetAccessor(DAVA::TArc::ContextAccessor* accessor);
+
+    void Reset(PackageBaseNode* node_);
 
     QModelIndex index(int row, int column, const QModelIndex& parent = QModelIndex()) const override;
     QModelIndex parent(const QModelIndex& child) const override;
@@ -54,7 +61,7 @@ signals:
 
 protected:
     void UpdateAllChangedProperties();
-
+    void ResetInternal();
     // PropertyListener
     void PropertyChanged(AbstractProperty* property) override;
     void UpdateProperty(AbstractProperty* property);
@@ -77,20 +84,20 @@ protected:
     void StyleSelectorWillBeRemoved(StyleSheetSelectorsSection* section, StyleSheetSelectorProperty* property, int index) override;
     void StyleSelectorWasRemoved(StyleSheetSelectorsSection* section, StyleSheetSelectorProperty* property, int index) override;
 
-    virtual void ChangeProperty(AbstractProperty* property, const DAVA::VariantType& value);
+    virtual void ChangeProperty(AbstractProperty* property, const DAVA::Any& value);
     virtual void ResetProperty(AbstractProperty* property);
 
     QString makeQVariant(const AbstractProperty* property) const;
-    void initVariantType(DAVA::VariantType& var, const QVariant& val) const;
+    void initAny(DAVA::Any& var, const QVariant& val) const;
     void CleanUp();
 
-protected:
+    PackageBaseNode* nodeToReset = nullptr;
     ControlNode* controlNode = nullptr;
     StyleSheetNode* styleSheet = nullptr;
     AbstractProperty* rootProperty = nullptr;
-    QtModelPackageCommandExecutor* commandExecutor = nullptr;
     DAVA::Set<DAVA::RefPtr<AbstractProperty>> changedProperties;
-    ContinuousUpdater* continuousUpdater = nullptr;
-};
+    ContinuousUpdater propertiesUpdater;
+    ContinuousUpdater nodeUpdater;
 
-#endif // __QUICKED_PROPERTIES_MODEL_H__
+    DAVA::TArc::ContextAccessor* accessor = nullptr;
+};

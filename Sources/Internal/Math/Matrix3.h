@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include "Base/BaseTypes.h"
+#include "Base/Any.h"
 #include "Math/Vector.h"
 #include "Math/MathDefines.h"
 
@@ -450,5 +451,9 @@ inline bool Matrix3::operator!=(const Matrix3& _m) const
 {
     return !Matrix3::operator==(_m);
 }
+
+template <>
+bool AnyCompare<Matrix3>::IsEqual(const DAVA::Any& v1, const DAVA::Any& v2);
+extern template struct AnyCompare<Matrix3>;
 
 }; // end of namespace DAVA
