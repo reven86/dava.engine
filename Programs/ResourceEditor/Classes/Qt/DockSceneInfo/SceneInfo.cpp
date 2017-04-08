@@ -1,6 +1,6 @@
 #include "DAVAEngine.h"
 #include "DockSceneInfo/SceneInfo.h"
-#include "Qt/Settings/SettingsManager.h"
+#include "Classes/Settings/SettingsManager.h"
 #include "Qt/Main/QtUtils.h"
 #include "Qt/Scene/SceneSignals.h"
 #include "Qt/Scene/SceneEditor2.h"
@@ -386,7 +386,7 @@ DAVA::uint32 SceneInfo::GetTrianglesForNotLODEntityRecursive(DAVA::Entity* entit
     DAVA::uint32 triangles = 0;
 
     RenderObject* ro = GetRenderObject(entity);
-    if (ro && ro->GetType() != RenderObject::TYPE_PARTICLE_EMTITTER)
+    if (ro && ro->GetType() != RenderObject::TYPE_PARTICLE_EMITTER)
     {
         uint32 batchCount = (onlyVisibleBatches) ? ro->GetActiveRenderBatchCount() : ro->GetRenderBatchCount();
         for (uint32 i = 0; i < batchCount; ++i)

@@ -95,6 +95,8 @@ ENUM_DECLARE(ImageFormat)
     ENUM_ADD_DESCR(ImageFormat::IMAGE_FORMAT_JPEG, "JPEG");
     ENUM_ADD_DESCR(ImageFormat::IMAGE_FORMAT_TGA, "TGA");
     ENUM_ADD_DESCR(ImageFormat::IMAGE_FORMAT_WEBP, "WEBP");
+    ENUM_ADD_DESCR(ImageFormat::IMAGE_FORMAT_PSD, "PSD");
+    ENUM_ADD_DESCR(ImageFormat::IMAGE_FORMAT_HDR, "HDR");
     ENUM_ADD_DESCR(ImageFormat::IMAGE_FORMAT_UNKNOWN, "Unknown");
 }
 
@@ -336,6 +338,10 @@ ENUM_DECLARE(UIComponent::eType)
     ENUM_ADD_DESCR(UIComponent::ACTION_COMPONENT, "Action");
     ENUM_ADD_DESCR(UIComponent::ACTION_BINDING_COMPONENT, "ActionBinding");
     ENUM_ADD_DESCR(UIComponent::SCROLL_BAR_DELEGATE_COMPONENT, "ScrollBarDelegate");
+    ENUM_ADD_DESCR(UIComponent::SOUND_COMPONENT, "Sound");
+    ENUM_ADD_DESCR(UIComponent::SOUND_VALUE_FILTER_COMPONENT, "SoundValueFilter");
+    ENUM_ADD_DESCR(UIComponent::UPDATE_COMPONENT, "Update");
+    ENUM_ADD_DESCR(UIComponent::CUSTOM_UPDATE_DELTA_COMPONENT, "CustomDeltaUpdate");
 };
 
 ENUM_DECLARE(UISizePolicyComponent::eSizePolicy)

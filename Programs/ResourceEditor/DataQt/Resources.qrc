@@ -140,8 +140,6 @@
         <file>QtIcons/btn_rotate_ccw.png</file>
         <file>QtIcons/btn_rotate_cw.png</file>
         <file>QtIcons/landscapesettings.png</file>
-        <file>QtIcons/sound.png</file>
-        <file>QtIcons/sound_group.png</file>
         <file>QtIcons/hangingobjects.png</file>
         <file>QtIcons/map.png</file>
         <file>QtIcons/image_splitter.png</file>
@@ -160,7 +158,6 @@
         <file>QtLibraryIcons/orientation.png</file>
         <file>QtLibraryIcons/lodmaterial.png</file>
         <file>QtIcons/so.png</file>
-        <file>QtIcons/dropper.png</file>
         <file>QtIcons/accept_button.png</file>
         <file>QtIcons/prohibition_button.png</file>
         <file>QtIcons/path.png</file>

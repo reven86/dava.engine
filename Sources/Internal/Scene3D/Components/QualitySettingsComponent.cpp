@@ -1,8 +1,21 @@
 #include "Scene3D/Components/QualitySettingsComponent.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
+#include "Reflection/ReflectionRegistrator.h"
+#include "Reflection/ReflectedMeta.h"
 
 namespace DAVA
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(QualitySettingsComponent)
+{
+    ReflectionRegistrator<QualitySettingsComponent>::Begin()
+    .ConstructorByPointer()
+    .Field("filterByType", &QualitySettingsComponent::GetFilterByType, &QualitySettingsComponent::SetFilterByType)[M::DisplayName("Filter By Type")]
+    .Field("modelType", &QualitySettingsComponent::GetModelType, &QualitySettingsComponent::SetModelType)[M::DisplayName("Model Type")]
+    .Field("requiredGroup", &QualitySettingsComponent::GetRequiredGroup, &QualitySettingsComponent::SetRequiredGroup)[M::DisplayName("Required Group")]
+    .Field("requiredQuality", &QualitySettingsComponent::GetRequiredQuality, &QualitySettingsComponent::SetRequiredQuality)[M::DisplayName("Required Quality")]
+    .End();
+}
+
 QualitySettingsComponent::QualitySettingsComponent()
     : Component()
     , filterByType(true)

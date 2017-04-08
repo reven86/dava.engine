@@ -23,6 +23,7 @@ class EngineBackend final
 {
 public:
     static EngineBackend* Instance();
+    static bool showingModalMessageBox;
 
     static WindowBackend* GetWindowBackend(Window* w);
 
@@ -54,6 +55,8 @@ public:
 
     const KeyedArchive* GetOptions() const;
 
+    bool IsSuspended() const;
+
     Window* InitializePrimaryWindow();
 
     void Init(eEngineRunMode engineRunMode, const Vector<String>& modules, KeyedArchive* options_);
@@ -79,6 +82,9 @@ public:
     void DeinitRender(Window* w);
 
     void UpdateDisplayConfig();
+
+    // Proxy method that calls SystemTimer::Adjust to prevent many friends to SystemTimer
+    static void AdjustSystemTimer(int64 adjustMicro);
 
 private:
     void RunConsole();
@@ -118,7 +124,7 @@ private:
     Set<Window*> aliveWindows; // Windows which have native windows and take part in update cycle
     Set<Window*> dyingWindows; // Windows which will be deleted soon; native window may be already destroyed
 
-    // Applciation-supplied functor which is invoked when user is trying to close window or application
+    // Application-supplied functor which is invoked when user is trying to close window or application
     Function<bool(Window*)> closeRequestHandler;
 
     eEngineRunMode runMode = eEngineRunMode::GUI_STANDALONE;

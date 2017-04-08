@@ -5,12 +5,15 @@
 
 #include "UI/UIControl.h"
 #include "UI/IMovieViewControl.h"
+#include "Reflection/Reflection.h"
 
 namespace DAVA
 {
 // The purpose of UIMovieView class is to display movies.
 class UIMovieView : public UIControl
 {
+    DAVA_VIRTUAL_REFLECTION(UIMovieView, UIControl);
+
 public:
     UIMovieView(const Rect& rect = Rect());
 
@@ -25,7 +28,7 @@ public:
     void SetPosition(const Vector2& position) override;
     void SetSize(const Vector2& newSize) override;
 
-    void SystemDraw(const UIGeometricData& geometricData) override;
+    void SystemDraw(const UIGeometricData& geometricData, const DAVA::UIControlBackground* parentBackground) override;
     void Draw(const UIGeometricData& parentGeometricData) override;
     void Update(float32 timeElapsed) override;
 
@@ -55,10 +58,6 @@ protected:
     // impl can live longer than its owner: native control can queue callback in UI thread
     // but impl's owner is already dead
     std::shared_ptr<IMovieViewControl> movieViewControl;
-
-public:
-    INTROSPECTION_EXTEND(UIMovieView, UIControl,
-                         nullptr);
 };
 
 } // namespace DAVA

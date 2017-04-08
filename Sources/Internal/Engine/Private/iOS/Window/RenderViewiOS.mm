@@ -28,7 +28,8 @@
 
 - (void)setSurfaceScale:(DAVA::float32)surfaceScale
 {
-    [self setContentScaleFactor:[[UIScreen mainScreen] scale] * surfaceScale];
+    CGFloat scale = [[UIScreen mainScreen] scale] * CGFloat(surfaceScale);
+    [self setContentScaleFactor:scale];
 }
 
 - (DAVA::float32)surfaceScale
@@ -38,7 +39,7 @@
 
 - (CGSize)surfaceSize
 {
-    const CGSize size = [self frame].size;
+    const CGSize size = [self bounds].size;
     const CGFloat scaleFactor = [self contentScaleFactor];
     return CGSizeMake(size.width * scaleFactor, size.height * scaleFactor);
 }

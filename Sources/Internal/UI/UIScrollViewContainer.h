@@ -3,6 +3,7 @@
 
 #include "Base/BaseTypes.h"
 #include "UI/UIControl.h"
+#include "Reflection/Reflection.h"
 
 namespace DAVA
 {
@@ -10,6 +11,8 @@ class ScrollHelper;
 
 class UIScrollViewContainer : public UIControl
 {
+    DAVA_VIRTUAL_REFLECTION(UIScrollViewContainer, UIControl);
+
 protected:
     virtual ~UIScrollViewContainer();
 
@@ -25,6 +28,7 @@ public:
     void InputCancelled(UIEvent* currentInput) override;
     bool SystemInput(UIEvent* currentInput) override;
     void SetSize(const Vector2& size) override;
+    void SetPosition(const Vector2& pos) override;
     void OnInactive() override;
 
     // Set container relative position and enable*Scroll properties based on self and parent size

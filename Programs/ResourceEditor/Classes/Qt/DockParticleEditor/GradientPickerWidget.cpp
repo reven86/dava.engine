@@ -1,8 +1,10 @@
 #include "GradientPickerWidget.h"
 
 #include "Main/QtUtils.h"
-#include "Tools/ColorPicker/ColorPicker.h"
 #include "QtTools/Utils/Utils.h"
+#include "Classes/Application/REGlobal.h"
+
+#include <TArc/Controls/ColorPicker/ColorPickerDialog.h>
 
 #include <QPainter>
 #include <QPaintEvent>
@@ -100,6 +102,8 @@ bool GradientPickerWidget::GetValues(DAVA::Vector<DAVA::PropValue<DAVA::Color>>*
 
 void GradientPickerWidget::paintEvent(QPaintEvent*)
 {
+    using namespace DAVA::TArc;
+
     QPainter painter(this);
 
     QFont font("Courier", 11, QFont::Normal);
@@ -217,7 +221,7 @@ void GradientPickerWidget::mouseDoubleClickEvent(QMouseEvent* event)
     if (pointId != -1 && event->button() == Qt::LeftButton)
     {
         const DAVA::Color oldColor = points[pointId].second;
-        ColorPicker cp(this);
+        DAVA::TArc::ColorPickerDialog cp(REGlobal::GetAccessor(), this);
         cp.setWindowTitle("Marker color");
         cp.SetDavaColor(oldColor);
         const bool result = cp.Exec();

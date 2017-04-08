@@ -6,6 +6,10 @@
 #include "MemoryManager/MemoryProfiler.h"
 #include "TeamCityTestsOutput.h"
 
+namespace DAVA
+{
+class UICustomUpdateDeltaComponent;
+}
 class BaseTest : public BaseScreen
 {
 public:
@@ -72,7 +76,6 @@ public:
 
     void BeginFrame() override;
     void EndFrame() override;
-    void SystemUpdate(float32 timeElapsed) override;
 
     void ShowUI(bool visible);
     bool IsUIVisible() const;
@@ -94,6 +97,7 @@ public:
 
     Scene* GetScene() const;
     const Vector<FrameInfo>& GetFramesInfo() const;
+    float32 GetCurrentFrameDelta() const;
 
     static const uint32 FRAME_OFFSET;
 
@@ -102,6 +106,7 @@ protected:
 
     void LoadResources() override;
     void UnloadResources() override;
+    void Update(float32 timeElapsed) override;
 
     virtual void PrintStatistic(const Vector<FrameInfo>& frames);
 
@@ -145,6 +150,7 @@ private:
     UIStaticText* framesRenderedText;
 
     uint32 maxAllocatedMemory;
+    UICustomUpdateDeltaComponent* sceneCustomDeltaComponent;
 };
 
 inline const Vector<BaseTest::FrameInfo>& BaseTest::GetFramesInfo() const
@@ -214,6 +220,10 @@ inline void BaseTest::MergeParams(const TestParams& otherParams)
     testParams.targetFrameDelta = otherParams.targetFrameDelta;
     testParams.frameForDebug = otherParams.frameForDebug;
     testParams.maxDelta = otherParams.maxDelta;
+}
+inline float32 BaseTest::GetCurrentFrameDelta() const
+{
+    return currentFrameDelta;
 }
 
 #endif

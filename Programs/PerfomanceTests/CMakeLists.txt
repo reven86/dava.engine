@@ -2,22 +2,20 @@ cmake_minimum_required (VERSION 3.0)
 
 project      ( PerformanceTests )
 
-set( DAVA_DISABLE_AUTOTESTS true )
-
-if ( ENABLE_MEM_PROFILING )
-    add_definitions( -DDAVA_MEMORY_PROFILING_ENABLE )
-endif()
-
 set          ( WARNINGS_AS_ERRORS true )
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" ) 
 include      ( CMake-common )
 
+if ( ENABLE_MEM_PROFILING )
+    dava_add_definitions( -DDAVA_MEMORY_PROFILING_ENABLE )
+endif()
+
 set ( DAVA_COREV2 1 )
-add_definitions       (
+dava_add_definitions       (
 -D__DAVAENGINE_COREV2__
 )
 
-find_package( DavaFramework REQUIRED )
+find_package( DavaFramework REQUIRED COMPONENTS ALL DAVA_DISABLE_AUTOTESTS )
 
 include_directories   ( "iOSSpecific" )
 include_directories   ( "Classes" )
@@ -90,7 +88,7 @@ if( NOT DAVA_MEGASOLUTION )
     endif()
 
     if( NOT RES_EDITOR_PATH )
-        message( "Error !!!: Please set the correct path to Resource editor in file DavaConfig.in"  )
+        message( "Error !!!: Please set the correct path 'RES_EDITOR_PATH' to Resource editor in file DavaConfig.in"  )
         message( " " )
         exit()
     endif()
@@ -118,7 +116,6 @@ if( NOT DAVA_MEGASOLUTION )
 
     message( "============================Convert resources ============================"  )
 
-    execute_process( COMMAND python ${DAVA_SCRIPTS_FILES_PATH}/convert_graphics.py --pathDataSource=${CMAKE_CURRENT_LIST_DIR}/DataSource --pathDava=${DAVA_ROOT_DIR})
     execute_process( COMMAND python convert_everything.py --gpu ${GPU_PARAM} WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/DataSource )
     execute_process( COMMAND python create_file_structure.py WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/DataSource )
 

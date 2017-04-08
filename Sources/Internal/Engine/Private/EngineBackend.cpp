@@ -13,7 +13,7 @@
 #include "DAVAClassRegistrator.h"
 #include "Analytics/Analytics.h"
 #include "Analytics/LoggingBackend.h"
-#include "AnyCasts/AnyCasts.h"
+#include "ReflectionDeclaration/ReflectionDeclaration.h"
 #include "Autotesting/AutotestingSystem.h"
 #include "Base/AllocatorFactory.h"
 #include "Base/ObjectFactory.h"
@@ -22,22 +22,24 @@
 #include "Debug/DVAssert.h"
 #include "Debug/Replay.h"
 #include "Debug/Private/ImGui.h"
+#include "Debug/ProfilerMarkerNames.h"
+#include "Debug/ProfilerCPU.h"
 #include "DeviceManager/DeviceManager.h"
 #include "DLC/Downloader/CurlDownloader.h"
 #include "DLC/Downloader/DownloadManager.h"
 #include "Engine/EngineSettings.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/KeyedArchive.h"
-#include "Input/InputSystem.h"
 #include "Job/JobManager.h"
+#include "Input/InputSystem.h"
 #include "Logger/Logger.h"
+#include "MemoryManager/MemoryManager.h"
 #include "ModuleManager/ModuleManager.h"
 #include "Network/NetCore.h"
 #include "Notification/LocalNotificationController.h"
-#include "PackManager/Private/PackManagerImpl.h"
+#include "DLCManager/Private/DLCManagerImpl.h"
 #include "Platform/DeviceInfo.h"
 #include "Platform/DPIHelper.h"
-#include "Platform/SystemTimer.h"
 #include "Platform/Steam.h"
 #include "PluginManager/PluginManager.h"
 #include "Render/2D/FTFont.h"
@@ -49,11 +51,10 @@
 #include "Scene3D/SceneFile/VersionInfo.h"
 #include "Sound/SoundEvent.h"
 #include "Sound/SoundSystem.h"
+#include "Time/SystemTimer.h"
 #include "UI/UIEvent.h"
 #include "UI/UIScreenManager.h"
 #include "UI/UIControlSystem.h"
-#include "Debug/ProfilerMarkerNames.h"
-#include "Debug/ProfilerCPU.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
@@ -95,6 +96,7 @@ void RunOnUIThread(const Function<void()>& task)
 namespace Private
 {
 EngineBackend* EngineBackend::instance = nullptr;
+bool EngineBackend::showingModalMessageBox = false;
 
 EngineBackend* EngineBackend::Instance()
 {
@@ -152,6 +154,11 @@ const KeyedArchive* EngineBackend::GetOptions() const
     return options.Get();
 }
 
+bool EngineBackend::IsSuspended() const
+{
+    return appIsSuspended;
+}
+
 Vector<char*> EngineBackend::GetCommandLineAsArgv()
 {
     Vector<char*> argv;
@@ -200,7 +207,7 @@ void EngineBackend::Init(eEngineRunMode engineRunMode, const Vector<String>& mod
     CreateSubsystems(modules);
 
     RegisterDAVAClasses();
-    RegisterAnyCasts();
+    RegisterReflectionForBaseTypes();
 
     isInitialized = true;
 }
@@ -278,12 +285,6 @@ void EngineBackend::OnGameLoopStopped()
 
     DVASSERT(justCreatedWindows.empty());
 
-    for (Window* w : dyingWindows)
-    {
-        delete w;
-    }
-    dyingWindows.clear();
-
     engine->gameLoopStopped.Emit();
     rhi::ShaderSourceCache::Save("~doc:/ShaderSource.bin");
 
@@ -301,6 +302,13 @@ void EngineBackend::OnEngineCleanup()
 
     DestroySubsystems();
 
+    for (Window* w : dyingWindows)
+    {
+        delete w;
+    }
+    dyingWindows.clear();
+    primaryWindow = nullptr;
+
     if (Renderer::IsInitialized())
         Renderer::Uninitialize();
 
@@ -310,6 +318,8 @@ void EngineBackend::OnEngineCleanup()
     context = nullptr;
     dispatcher = nullptr;
     platformCore = nullptr;
+
+    DAVA_MEMORY_PROFILER_FINISH();
 
     Logger::Info("EngineBackend::OnEngineCleanup: leave");
 }
@@ -326,12 +336,17 @@ void EngineBackend::DoEvents()
 
 void EngineBackend::OnFrameConsole()
 {
-    context->systemTimer->Start();
-    float32 frameDelta = context->systemTimer->FrameDelta();
-    context->systemTimer->UpdateGlobalTime(frameDelta);
+    SystemTimer::StartFrame();
+    float32 frameDelta = SystemTimer::GetFrameDelta();
+    SystemTimer::ComputeRealFrameDelta();
+    // TODO: UpdateGlobalTime is deprecated, remove later
+    SystemTimer::UpdateGlobalTime(frameDelta);
 
     DoEvents();
     engine->update.Emit(frameDelta);
+
+    // Notify memory profiler about new frame
+    DAVA_MEMORY_PROFILER_UPDATE();
 
     globalFrameIndex += 1;
 }
@@ -340,13 +355,16 @@ int32 EngineBackend::OnFrame()
 {
     DAVA_PROFILER_CPU_SCOPE_WITH_FRAME_INDEX(ProfilerCPUMarkerName::ENGINE_ON_FRAME, globalFrameIndex);
 
-    context->systemTimer->Start();
-    float32 frameDelta = context->systemTimer->FrameDelta();
-    context->systemTimer->UpdateGlobalTime(frameDelta);
+    SystemTimer::StartFrame();
+    float32 frameDelta = SystemTimer::GetFrameDelta();
 
     DoEvents();
     if (!appIsSuspended)
     {
+        SystemTimer::ComputeRealFrameDelta();
+        // TODO: UpdateGlobalTime is deprecated, remove later
+        SystemTimer::UpdateGlobalTime(frameDelta);
+
         if (Renderer::IsInitialized())
         {
 #if defined(__DAVAENGINE_QT__)
@@ -360,6 +378,9 @@ int32 EngineBackend::OnFrame()
     {
         BackgroundUpdate(frameDelta);
     }
+
+    // Notify memory profiler about new frame
+    DAVA_MEMORY_PROFILER_UPDATE();
 
     globalFrameIndex += 1;
     return Renderer::GetDesiredFPS();
@@ -436,11 +457,6 @@ void EngineBackend::OnWindowDestroyed(Window* window)
     size_t nerased = aliveWindows.erase(window);
     DVASSERT(nerased == 1);
     dyingWindows.insert(window);
-
-    if (window->IsPrimary())
-    {
-        primaryWindow = nullptr;
-    }
 
     if (aliveWindows.empty())
     { // No alive windows left, exit application
@@ -534,7 +550,7 @@ void EngineBackend::HandleAppTerminate(const MainDispatcherEvent& e)
             ++it;
 
             // Directly call Close for WindowBackend to tell important information that application is terminating
-            w->GetBackend()->Close(true);
+            GetWindowBackend(w)->Close(true);
         }
     }
     else if (!appIsTerminating)
@@ -708,7 +724,6 @@ void EngineBackend::UpdateDisplayConfig()
 void EngineBackend::CreateSubsystems(const Vector<String>& modules)
 {
     context->allocatorFactory = new AllocatorFactory();
-    context->systemTimer = new SystemTimer();
     context->random = new Random();
     context->performanceSettings = new PerformanceSettings();
     context->versionInfo = new VersionInfo();
@@ -762,9 +777,9 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
         }
         else if (m == "PackManager")
         {
-            if (context->packManager == nullptr)
+            if (context->dlcManager == nullptr)
             {
-                context->packManager = new PackManagerImpl(*engine);
+                context->dlcManager = new DLCManagerImpl(engine);
             }
         }
     }
@@ -774,7 +789,7 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
         context->inputSystem = new InputSystem(engine);
         context->uiScreenManager = new UIScreenManager();
         context->localNotificationController = new LocalNotificationController();
-        
+
 #if defined(__DAVAENGINE_STEAM__)
         Steam::Init();
 #endif
@@ -910,10 +925,10 @@ void EngineBackend::DestroySubsystems()
         context->soundSystem->Release();
         context->soundSystem = nullptr;
     }
-    if (context->packManager != nullptr)
+    if (context->dlcManager != nullptr)
     {
-        delete context->packManager;
-        context->packManager = nullptr;
+        delete context->dlcManager;
+        context->dlcManager = nullptr;
     }
     if (context->inputSystem != nullptr)
     {
@@ -929,7 +944,7 @@ void EngineBackend::DestroySubsystems()
         context->netCore->Release();
         context->netCore = nullptr;
     }
-    
+
 #if defined(__DAVAENGINE_ANDROID__)
     if (context->assetsManager != nullptr)
     {
@@ -942,11 +957,6 @@ void EngineBackend::DestroySubsystems()
     {
         context->fileSystem->Release();
         context->fileSystem = nullptr;
-    }
-    if (context->systemTimer != nullptr)
-    {
-        context->systemTimer->Release();
-        context->systemTimer = nullptr;
     }
     if (context->deviceManager != nullptr)
     {
@@ -970,6 +980,12 @@ void EngineBackend::OnRenderingError(rhi::RenderingError err, void* param)
     DVASSERT(0, info.c_str());
     Logger::Error("%s", info.c_str());
     abort();
+}
+
+void EngineBackend::AdjustSystemTimer(int64 adjustMicro)
+{
+    Logger::Info("System timer adjusted by %lld us", adjustMicro);
+    SystemTimer::Adjust(adjustMicro);
 }
 
 } // namespace Private

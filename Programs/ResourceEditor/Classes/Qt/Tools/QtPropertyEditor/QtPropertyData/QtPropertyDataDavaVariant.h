@@ -8,7 +8,13 @@
 
 #include "../QtPropertyData.h"
 
-class ColorPicker;
+namespace DAVA
+{
+namespace TArc
+{
+class ColorPickerDialog;
+}
+}
 
 class QtPropertyDataDavaVariant
 : public QtPropertyData
@@ -61,7 +67,7 @@ protected slots:
     void MultilineEditClicked();
     void ColorOWPressed();
     void FilePathOWPressed();
-    void OnColorChanging(ColorPicker* colorPicker);
+    void OnColorChanging(DAVA::TArc::ColorPickerDialog* colorPicker);
 
 protected:
     struct AllowedValue

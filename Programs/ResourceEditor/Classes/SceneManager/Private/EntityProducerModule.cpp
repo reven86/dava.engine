@@ -57,7 +57,7 @@ void EntityProducerModule::InstantiateCurrentCamera()
     sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new EntityAddCommand(sceneNode, sceneEditor.Get())));
 }
 
-DAVA_REFLECTION_IMPL(EntityProducerModule)
+DAVA_VIRTUAL_REFLECTION_IMPL(EntityProducerModule)
 {
     DAVA::ReflectionRegistrator<EntityProducerModule>::Begin()
     .ConstructorByPointer()

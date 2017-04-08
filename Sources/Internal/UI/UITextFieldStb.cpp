@@ -5,7 +5,7 @@
 #include "UI/UIStaticText.h"
 #include "UI/UIControlSystem.h"
 #include "UI/UIEvent.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Input/InputSystem.h"
 #include "Input/KeyboardDevice.h"
@@ -37,7 +37,8 @@ TextFieldStbImpl::TextFieldStbImpl(UITextField* control)
 #endif
 {
     stb->SetSingleLineMode(true); // Set default because UITextField is single line by default
-    staticText->SetSpriteAlign(ALIGN_LEFT | ALIGN_BOTTOM);
+    UIControlBackground* bg = staticText->GetOrCreateComponent<UIControlBackground>();
+    bg->SetAlign(ALIGN_LEFT | ALIGN_BOTTOM);
     staticText->SetName("TextFieldStaticText");
     staticText->GetTextBlock()->SetMeasureEnable(true);
     staticText->SetForceBiDiSupportEnabled(true);
@@ -53,8 +54,8 @@ TextFieldStbImpl::~TextFieldStbImpl()
 void TextFieldStbImpl::Initialize()
 {
 #if defined(__DAVAENGINE_COREV2__)
-    windowSizeChangedConnection = window->sizeChanged.Connect(this, &TextFieldStbImpl::OnWindowSizeChanged);
-    windowDestroyedConnection = Engine::Instance()->windowDestroyed.Connect(this, &TextFieldStbImpl::OnWindowDestroyed);
+    window->sizeChanged.Connect(this, &TextFieldStbImpl::OnWindowSizeChanged);
+    Engine::Instance()->windowDestroyed.Connect(this, &TextFieldStbImpl::OnWindowDestroyed);
 #endif
 }
 
@@ -63,8 +64,8 @@ void TextFieldStbImpl::OwnerIsDying()
 #if defined(__DAVAENGINE_COREV2__)
     if (window != nullptr)
     {
-        window->sizeChanged.Disconnect(windowSizeChangedConnection);
-        Engine::Instance()->windowDestroyed.Disconnect(windowDestroyedConnection);
+        window->sizeChanged.Disconnect(this);
+        Engine::Instance()->windowDestroyed.Disconnect(this);
     }
 #endif
 }
@@ -179,7 +180,7 @@ void TextFieldStbImpl::UpdateRect(const Rect&)
 
     if (control == UIControlSystem::Instance()->GetFocusedControl() && isEditing)
     {
-        float32 timeElapsed = SystemTimer::Instance()->FrameDelta();
+        float32 timeElapsed = SystemTimer::GetFrameDelta();
         cursorTime += timeElapsed;
         if (cursorTime >= 0.5f)
         {
@@ -203,16 +204,16 @@ void TextFieldStbImpl::UpdateRect(const Rect&)
     staticText->SetText(control->GetVisibleText(), UIStaticText::NO_REQUIRED_SIZE);
     needRedraw = false;
 
-    if (isEditing)
+    if (lastCursorPos != stb->GetCursorPosition())
     {
-        if (lastCursorPos != stb->GetCursorPosition())
-        {
-            lastCursorPos = stb->GetCursorPosition();
+        lastCursorPos = stb->GetCursorPosition();
 
-            UpdateCursor(lastCursorPos, stb->IsInsertMode());
-            UpdateOffset(cursorRect + staticTextOffset);
-            // Fix cursor position for multiline if end of some line contains many
-            // spaces over control size (same behavior in MS Word)
+        UpdateCursor(lastCursorPos, stb->IsInsertMode());
+        UpdateOffset(cursorRect + staticTextOffset);
+        // Fix cursor position for multiline if end of some line contains many
+        // spaces over control size (same behavior in MS Word)
+        if (isEditing)
+        {
             if (!stb->IsSingleLineMode())
             {
                 const Vector2& controlSize = control->GetSize();
@@ -231,13 +232,13 @@ void TextFieldStbImpl::UpdateRect(const Rect&)
             cursorTime = 0.f;
             showCursor = true;
         }
+    }
 
-        if (lastSelStart != stb->GetSelectionStart() || lastSelEnd != stb->GetSelectionEnd())
-        {
-            lastSelStart = stb->GetSelectionStart();
-            lastSelEnd = stb->GetSelectionEnd();
-            UpdateSelection(lastSelStart, lastSelEnd);
-        }
+    if (lastSelStart != stb->GetSelectionStart() || lastSelEnd != stb->GetSelectionEnd())
+    {
+        lastSelStart = stb->GetSelectionStart();
+        lastSelEnd = stb->GetSelectionEnd();
+        UpdateSelection(lastSelStart, lastSelEnd);
     }
 }
 
@@ -350,8 +351,11 @@ void TextFieldStbImpl::SetShadowColor(const Color& c)
 
 void TextFieldStbImpl::SetTextAlign(int32 align)
 {
-    DropLastCursorAndSelection();
-    staticText->SetTextAlign(align);
+    if (staticText->GetTextAlign() != align)
+    {
+        DropLastCursorAndSelection();
+        staticText->SetTextAlign(align);
+    }
 }
 
 TextBlock::eUseRtlAlign TextFieldStbImpl::GetTextUseRtlAlign()
@@ -361,20 +365,30 @@ TextBlock::eUseRtlAlign TextFieldStbImpl::GetTextUseRtlAlign()
 
 void TextFieldStbImpl::SetTextUseRtlAlign(TextBlock::eUseRtlAlign align)
 {
-    DropLastCursorAndSelection();
-    staticText->SetTextUseRtlAlign(align);
+    if (staticText->GetTextUseRtlAlign() != align)
+    {
+        DropLastCursorAndSelection();
+        staticText->SetTextUseRtlAlign(align);
+    }
 }
 
 void TextFieldStbImpl::SetSize(const Vector2 vector2)
 {
-    staticText->SetSize(vector2);
+    if (staticText->GetSize() != vector2)
+    {
+        DropLastCursorAndSelection();
+        staticText->SetSize(vector2);
+    }
 }
 
 void TextFieldStbImpl::SetMultiline(bool is_multiline)
 {
-    DropLastCursorAndSelection();
-    staticText->SetMultiline(is_multiline);
-    stb->SetSingleLineMode(!is_multiline);
+    if (staticText->GetMultiline() != is_multiline)
+    {
+        DropLastCursorAndSelection();
+        staticText->SetMultiline(is_multiline);
+        stb->SetSingleLineMode(!is_multiline);
+    }
 }
 
 Color TextFieldStbImpl::GetTextColor()
@@ -399,8 +413,11 @@ rhi::int32 TextFieldStbImpl::GetTextAlign()
 
 void TextFieldStbImpl::SetRect(const Rect& rect)
 {
-    DropLastCursorAndSelection();
-    staticText->SetSize(rect.GetSize());
+    if (staticText->GetSize() != rect.GetSize())
+    {
+        DropLastCursorAndSelection();
+        staticText->SetSize(rect.GetSize());
+    }
 }
 
 void TextFieldStbImpl::SystemDraw(const UIGeometricData& d)
@@ -427,7 +444,7 @@ void TextFieldStbImpl::SystemDraw(const UIGeometricData& d)
     UIGeometricData staticGeometric = staticText->GetLocalGeometricData();
     staticGeometric.AddGeometricData(d);
     staticGeometric.position += staticTextOffset * scale;
-    staticText->SystemDraw(staticGeometric);
+    staticText->SystemDraw(staticGeometric, nullptr);
 
     if (showCursor)
     {
@@ -595,7 +612,6 @@ void TextFieldStbImpl::UpdateSelection(uint32 start, uint32 end)
 void TextFieldStbImpl::UpdateCursor(uint32 cursorPos, bool insertMode)
 {
     const TextBox* tb = staticText->GetTextBlock()->GetTextBox();
-    const Vector<int32> linesSizes = staticText->GetTextBlock()->GetStringSizes();
 
     Rect r;
     r.dx = DEFAULT_CURSOR_WIDTH;

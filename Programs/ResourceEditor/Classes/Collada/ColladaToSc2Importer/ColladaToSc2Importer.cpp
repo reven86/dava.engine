@@ -19,6 +19,10 @@
 
 namespace DAVA
 {
+ColladaToSc2Importer::ColladaToSc2Importer()
+{
+}
+
 // Creates Dava::Mesh from ColladaMeshInstance and puts it
 Mesh* ColladaToSc2Importer::GetMeshFromCollada(ColladaMeshInstance* mesh, const bool isShadow)
 {
@@ -242,13 +246,18 @@ eColladaErrorCodes ColladaToSc2Importer::SaveSC2(ColladaScene* colladaScene, con
         SceneUtils::BakeTransformsUpToFarParent(scene, scene);
 
         // post process Entities and create Lod nodes.
-        SceneUtils::CombineLods(scene);
-
-        SceneFileV2::eError saveRes = scene->SaveScene(scenePath);
-
-        if (saveRes > SceneFileV2::eError::ERROR_NO_ERROR)
+        bool combinedSuccessfull = SceneUtils::CombineLods(scene);
+        if (combinedSuccessfull)
         {
-            Logger::Error("[DAE to SC2] Cannot save SC2. Error %d", saveRes);
+            SceneFileV2::eError saveRes = scene->SaveScene(scenePath);
+            if (saveRes > SceneFileV2::eError::ERROR_NO_ERROR)
+            {
+                Logger::Error("[DAE to SC2] Cannot save SC2. Error %d", saveRes);
+                convertRes = eColladaErrorCodes::COLLADA_ERROR;
+            }
+        }
+        else
+        {
             convertRes = eColladaErrorCodes::COLLADA_ERROR;
         }
     }

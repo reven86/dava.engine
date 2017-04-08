@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Reflection/Reflection.h"
+#include "Reflection/ReflectedTypeDB.h"
 #include "Reflection/Private/Wrappers/ValueWrapperDefault.h"
 #include "Reflection/Private/Wrappers/ValueWrapperDirect.h"
 #include "Reflection/Private/Wrappers/ValueWrapperClass.h"
@@ -23,7 +24,9 @@ template <typename C>
 class ReflectionRegistrator final
 {
 public:
-    static ReflectionRegistrator& Begin();
+    ~ReflectionRegistrator();
+
+    static ReflectionRegistrator Begin(std::unique_ptr<StructureWrapper>&& customStructureWrapper = std::unique_ptr<StructureWrapper>());
 
     template <typename... Args>
     ReflectionRegistrator& ConstructorByValue();
@@ -52,14 +55,14 @@ public:
 
     ReflectionRegistrator& BindMeta(ReflectedMeta&& meta);
 
-    void End();
-
     ReflectionRegistrator& operator[](ReflectedMeta&& meta);
 
-private:
-    ReflectionRegistrator() = default;
-    ReflectedStructure* structure = nullptr;
+    void End();
 
+private:
+    ReflectionRegistrator(std::unique_ptr<StructureWrapper>&& customStructureWrapper);
+
+    ReflectedStructure* structure = nullptr;
     std::unique_ptr<ReflectedMeta>* lastMeta;
 
     ReflectionRegistrator& AddField(const char* name, ReflectedStructure::Field* f);

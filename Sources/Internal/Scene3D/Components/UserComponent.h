@@ -1,7 +1,7 @@
-#ifndef __DAVAENGINE_USER_COMPONENT_H__
-#define __DAVAENGINE_USER_COMPONENT_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
+#include "Reflection/Reflection.h"
 #include "Debug/DVAssert.h"
 #include "Entity/Component.h"
 #include "Base/Introspection.h"
@@ -24,11 +24,6 @@ public:
     void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
 
 public:
-    /*
-		INTROSPECTION_EXTEND(UserComponent, Component,
-			NULL
-			);
-		*/
+    DAVA_VIRTUAL_REFLECTION(UserComponent, Component);
 };
 }
-#endif //__DAVAENGINE_USER_COMPONENT_H__

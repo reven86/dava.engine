@@ -1,11 +1,12 @@
 #include "SpritesPacker.h"
-#include "Render/2D/Sprite.h"
-#include "Logger/Logger.h"
+
+#include <Tools/AssetCache/AssetCacheClient.h>
+
+#include <Render/2D/Sprite.h>
+#include <Logger/Logger.h>
 
 #include <QDir>
 #include <QDirIterator>
-
-#include "AssetCache/AssetCacheClient.h"
 
 using namespace DAVA;
 
@@ -87,4 +88,9 @@ const DAVA::ResourcePacker2D& SpritesPacker::GetResourcePacker() const
 void SpritesPacker::SetCacheClient(AssetCacheClient* cacheClient, const String& comment)
 {
     resourcePacker2D.SetCacheClient(cacheClient, comment);
+}
+
+bool SpritesPacker::IsUsingCache() const
+{
+    return resourcePacker2D.IsUsingCache();
 }

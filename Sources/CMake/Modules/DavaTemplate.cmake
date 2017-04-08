@@ -29,6 +29,8 @@
 #set( EXECUTABLE_FLAG            )
 #set( FILE_TREE_CHECK_FOLDERS    )
 #set( DEFINITIONS                )
+#set( DEFINITIONS_${DAVA_PLATFORM_CURENT} )
+#set( EXTERNAL_TEST_FOLDERS      )
 #
 
 # Only interpret ``if()`` arguments as variables or keywords when unquoted.
@@ -40,10 +42,16 @@ macro( setup_main_executable )
 
 include      ( PlatformSettings )
 
+save_property( PROPERTY_LIST 
+               DEFINITIONS
+               DEFINITIONS_${DAVA_PLATFORM_CURENT}
+             )
+
 load_property( PROPERTY_LIST 
         DEFINITIONS                
         DEFINITIONS_${DAVA_PLATFORM_CURENT}
-        TARGET_MODULES_LIST  
+        GLOBAL_DEFINITIONS
+        TARGET_MODULES_LIST 
         BINARY_WIN32_DIR_RELEASE
         BINARY_WIN32_DIR_DEBUG
         BINARY_WIN32_DIR_RELWITHDEB
@@ -61,12 +69,13 @@ load_property( PROPERTY_LIST
 
         PLUGIN_LIST
     )
+        
+list( APPEND DEFINITIONS ${GLOBAL_DEFINITIONS} )
 
-if( COVERAGE )
-    string(REPLACE ";" " " TARGET_FOLDERS_${PROJECT_NAME} "${TARGET_FOLDERS_${PROJECT_NAME}}" )
-    string(REPLACE "\"" "" TARGET_FOLDERS_${PROJECT_NAME} "${TARGET_FOLDERS_${PROJECT_NAME}}" )
-    list( APPEND DEFINITIONS -DTARGET_FOLDERS_${PROJECT_NAME}="${TARGET_FOLDERS_${PROJECT_NAME}}" )
-endif()
+foreach( ITEM ${PLUGIN_LIST} ${TARGET_MODULES_LIST} )
+    load_property( PROPERTY_LIST EXECUTE_DEFINITIONS_${ITEM} )
+    list( APPEND DEFINITIONS ${EXECUTE_DEFINITIONS_${ITEM}} )
+endforeach()
 
 if( INCLUDES )
     include_directories( ${INCLUDES})
@@ -156,6 +165,22 @@ if( DAVA_FOUND )
 
 endif()
 
+###
+
+if( MIX_APP_DATA )
+    
+    append_property( MIX_APP_DATA "${MIX_APP_DATA}" )
+
+    if( POSTPONED_MIX_DATA )
+        processing_mix_data( NOT_DATA_COPY )
+    else()
+        processing_mix_data()
+    endif()
+
+endif()
+
+###
+
 if( IOS )
     list( APPEND RESOURCES_LIST ${APP_DATA} )
     list( APPEND RESOURCES_LIST ${IOS_XIB} )
@@ -240,7 +265,7 @@ elseif ( WINDOWS_UAP )
     list( APPEND RESOURCES_LIST ${RESOURCE_FILES} )
 
     #add dll's to project and package
-    add_dynamic_libs_win_uap ( ${DAVA_THIRD_PARTY_LIBRARIES_PATH} DAVA_DLL_LIST )
+    add_dynamic_libs_win_uap ( ${DAVA_WIN_UAP_LIBRARIES_PATH_COMMON} DAVA_DLL_LIST )
 
     #add found dll's to project and mark them as deployment content
     if ( DAVA_DLL_LIST_DEBUG )
@@ -337,19 +362,30 @@ if( DAVA_FOUND )
     set ( PLATFORM_ADDED_SRC ${H_FILES} ${CPP_FILES} )
 
 endif()
+
 ###
+foreach( TEST_FOLDER ${EXTERNAL_TEST_FOLDERS} )
+    file( GLOB_RECURSE TEST_FILES "${TEST_FOLDER}/*.unittest"  )
 
-if( MIX_APP_DATA )
-    
-    append_property( MIX_APP_DATA "${MIX_APP_DATA}" )
-
-    if( POSTPONED_MIX_DATA )
-        processing_mix_data( NOT_DATA_COPY )
+    if( ANDROID )#Fucking android
+        foreach( FILE ${TEST_FILES} )
+            get_filename_component( FILE_NAME ${FILE} NAME )
+            set( OUT_FILE ${CMAKE_CURRENT_BINARY_DIR}/EXTERNAL_TEST/${FILE_NAME}.cpp )
+            configure_file( ${FILE}  ${OUT_FILE} COPYONLY)
+            list( APPEND PROJECT_SOURCE_FILES ${OUT_FILE} )
+        endforeach()
     else()
-        processing_mix_data()
+        list( APPEND PROJECT_SOURCE_FILES ${TEST_FILES} )
+        source_group( "EXTERNAL_TEST" FILES ${TEST_FILES} )
+
+        set_source_files_properties(${TEST_FILES} PROPERTIES
+          HEADER_FILE_ONLY FALSE
+          KEEP_EXTENSION TRUE
+          LANGUAGE CXX
+        )
     endif()
 
-endif()
+endforeach()
 
 ###
 
@@ -369,6 +405,7 @@ generated_unity_sources( PROJECT_SOURCE_FILES   IGNORE_LIST ${UNIFIED_IGNORE_LIS
 
                                                )
 
+###
 if( ANDROID )
     set( POSTFIX 0  )
     set( COUNTER 0 )
@@ -501,10 +538,10 @@ if( ANDROID AND NOT ANDROID_CUSTOM_BUILD )
         # ANDROID_BOOT_CLASSES variable should contain semicolon delimited list of class names
         # Both ANDROID_BOOT_MODULES and ANDROID_BOOT_CLASSES are not required to be set in CMakeLists.txt
         if (ANDROID_BOOT_MODULES)
-            set (ANDROID_BOOT_MODULES "<meta-data android:name=\"boot_modules\" android:value=\"${ANDROID_BOOT_MODULES}\"/>")
+            set (ANDROID_BOOT_MODULES "<meta-data android:name=\"com.dava.engine.BootModules\" android:value=\"${ANDROID_BOOT_MODULES}\"/>")
         endif()
         if (ANDROID_BOOT_CLASSES)
-            set (ANDROID_BOOT_CLASSES "<meta-data android:name=\"boot_classes\" android:value=\"${ANDROID_BOOT_CLASSES}\"/>")
+            set (ANDROID_BOOT_CLASSES "<meta-data android:name=\"com.dava.engine.BootClasses\" android:value=\"${ANDROID_BOOT_CLASSES}\"/>")
         endif()
     endif()
 
@@ -592,6 +629,11 @@ elseif( MACOS )
 
     set_property(TARGET ${PROJECT_NAME} APPEND_STRING PROPERTY LINK_FLAGS " -Wl,-dead_strip")
 
+    if( COVERAGE AND MACOS )
+        set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_GCC_GENERATE_TEST_COVERAGE_FILES YES )
+        set_target_properties(${PROJECT_NAME} PROPERTIES XCODE_ATTRIBUTE_GCC_INSTRUMENT_PROGRAM_FLOW_ARCS YES )
+    endif()
+                
     if( DAVA_FOUND )
         set(LD_RUNPATHES "${ADDED_LD_RUNPATHES} @executable_path/ @executable_path/../Resources @executable_path/../Libs @executable_path/../Frameworks @executable_path/Libs")
         if( NOT DEPLOY )
@@ -679,7 +721,6 @@ endif()
 list ( APPEND DAVA_FOLDERS ${PROJECT_FOLDERS} )
 list ( APPEND DAVA_FOLDERS ${DAVA_ENGINE_DIR} )
 list ( APPEND DAVA_FOLDERS ${FILE_TREE_CHECK_FOLDERS} )
-list ( APPEND DAVA_FOLDERS ${DAVA_THIRD_PARTY_LIBRARIES_PATH} )
 
 if( WIN32 AND NOT WINDOWS_UAP )
     set( COMMAND_PY dpiAwarness --pathVcxProj ${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.vcxproj --typeAwerness PerMonitorHighDPIAware )
@@ -695,6 +736,17 @@ if( WIN32 AND NOT WINDOWS_UAP )
     endif()
  
 endif() 
+
+
+if( COVERAGE AND MACOS )
+    string(REPLACE ";" " " TARGET_FOLDERS_${PROJECT_NAME} "${TARGET_FOLDERS_${PROJECT_NAME}}" )
+    string(REPLACE "\"" "" TARGET_FOLDERS_${PROJECT_NAME} "${TARGET_FOLDERS_${PROJECT_NAME}}" )
+    add_definitions(    -DTARGET_FOLDERS_${PROJECT_NAME}="${TARGET_FOLDERS_${PROJECT_NAME}}" 
+                        -DTEST_COVERAGE
+                        -DDAVA_FOLDERS="${DAVA_FOLDERS}"
+                        -DDAVA_UNITY_FOLDER="${CMAKE_CURRENT_BINARY_DIR}/unity_pack" )
+
+endif()
 
 file_tree_check( "${DAVA_FOLDERS}" )
 

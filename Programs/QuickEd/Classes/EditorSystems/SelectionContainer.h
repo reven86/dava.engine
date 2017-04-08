@@ -1,5 +1,4 @@
-#ifndef __QUICKED_SELECTION_CONTAINER_H__
-#define __QUICKED_SELECTION_CONTAINER_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 
@@ -71,4 +70,16 @@ inline void SelectionContainer::MergeSelectionToContainer(const SelectedNodes& s
     }
 }
 
-#endif // __QUICKED_SELECTION_CONTAINER_H__
+namespace DAVA
+{
+template <>
+struct AnyCompare<SelectedNodes>
+{
+    static bool IsEqual(const Any& v1, const Any& v2)
+    {
+        const SelectedNodes& s1 = v1.Get<SelectedNodes>();
+        const SelectedNodes& s2 = v2.Get<SelectedNodes>();
+        return s1 == s2;
+    }
+};
+}

@@ -342,31 +342,30 @@ MovieViewControl::MovieViewControl()
 {
 #if defined(__DAVAENGINE_COREV2__)
     moviePlayerHelper = [[MoviePlayerHelper alloc] init:window];
-
-    windowVisibilityChangedConnection = window->visibilityChanged.Connect(this, &MovieViewControl::OnWindowVisibilityChanged);
+    window->visibilityChanged.Connect(this, &MovieViewControl::OnWindowVisibilityChanged);
 #else
     moviePlayerHelper = [[MoviePlayerHelper alloc] init];
 
     CoreMacOSPlatformBase* xcore = static_cast<CoreMacOSPlatformBase*>(Core::Instance());
-    appMinimizedRestoredConnectionId = xcore->signalAppMinimizedRestored.Connect(this, &MovieViewControl::OnAppMinimizedRestored);
+    xcore->signalAppMinimizedRestored.Connect(this, &MovieViewControl::OnAppMinimizedRestored);
 #endif
 
 #if defined(__DAVAENGINE_STEAM__)
-    overlayConnectionId = Steam::GameOverlayActivated.Connect(this, &MovieViewControl::OnSteamOverlayChanged);
+    Steam::GameOverlayActivated.Connect(this, &MovieViewControl::OnSteamOverlayChanged);
 #endif
 }
 
 MovieViewControl::~MovieViewControl()
 {
 #if defined(__DAVAENGINE_STEAM__)
-    Steam::GameOverlayActivated.Disconnect(overlayConnectionId);
+    Steam::GameOverlayActivated.Disconnect(this);
 #endif
 
 #if defined(__DAVAENGINE_COREV2__)
-    window->visibilityChanged.Disconnect(windowVisibilityChangedConnection);
+    window->visibilityChanged.Disconnect(this);
 #else
     CoreMacOSPlatformBase* xcore = static_cast<CoreMacOSPlatformBase*>(Core::Instance());
-    xcore->signalAppMinimizedRestored.Disconnect(appMinimizedRestoredConnectionId);
+    xcore->signalAppMinimizedRestored.Disconnect(this);
 #endif
 
     MoviePlayerHelper* helper = static_cast<MoviePlayerHelper*>(moviePlayerHelper);

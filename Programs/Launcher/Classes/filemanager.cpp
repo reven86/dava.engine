@@ -7,7 +7,9 @@
 #include <QFileInfo>
 #include <QDirIterator>
 #include <QProcess>
+
 #include <functional>
+#include <fstream>
 
 namespace FileManagerDetails
 {
@@ -112,9 +114,10 @@ QString FileManager::GetSelfUpdateTempDirectory() const
     return path;
 }
 
-QString FileManager::GetTempDownloadFilePath() const
+QString FileManager::GetTempDownloadFilePath(const QString& url) const
 {
-    return GetTempDirectory() + "archive.zip";
+    QString fileName = GetFileNameFromURL(url);
+    return GetTempDirectory() + fileName;
 }
 
 QString FileManager::GetLauncherDirectory() const
@@ -127,19 +130,6 @@ QString FileManager::GetLauncherDirectory() const
     path = path.left(path.lastIndexOf('/'));
 #endif //platform
     return path + "/";
-}
-
-bool FileManager::CreateFileAndWriteData(const QString& filePath, const QByteArray& data)
-{
-    QFile file(filePath);
-    if (file.open(QFile::WriteOnly | QFile::Truncate))
-    {
-        if (file.write(data) == data.size())
-        {
-            return true;
-        }
-    }
-    return false;
 }
 
 bool FileManager::DeleteDirectory(const QString& path)
@@ -167,6 +157,7 @@ FileManager::EntireList FileManager::CreateEntireList(const QString& pathOut, co
     QDir outDir(pathOut);
     if (!outDir.exists())
     {
+        ErrorMessenger::LogMessage(QtWarningMsg, "Can not create entrie list: out dir is not exist!");
         return entryList;
     }
 #ifdef Q_OS_WIN
@@ -183,6 +174,7 @@ FileManager::EntireList FileManager::CreateEntireList(const QString& pathOut, co
         }
         else
         {
+            ErrorMessenger::LogMessage(QtWarningMsg, "Can not create entrie list: can not open file " + infoFilePath + "!");
             return entryList;
         }
     }
@@ -252,7 +244,12 @@ bool FileManager::MoveLauncherRecursively(const QString& pathOut, const QString&
     bool success = true;
     for (const QPair<QFileInfo, QString>& entry : entryList)
     {
-        success &= FileManagerDetails::MoveEntry(entry.first, entry.second);
+        bool moveResult = FileManagerDetails::MoveEntry(entry.first, entry.second);
+        if (moveResult == false)
+        {
+            ErrorMessenger::LogMessage(QtWarningMsg, QString("Can not move entry ") + entry.first.absoluteFilePath() + " to " + entry.second);
+        }
+        success &= moveResult;
     }
     return success;
 }
@@ -262,10 +259,45 @@ QString FileManager::GetFilesDirectory() const
     return filesDirectory;
 }
 
+QString FileManager::GetFileNameFromURL(const QString& url)
+{
+    int index = url.lastIndexOf('/');
+    if (index == -1)
+    {
+        return "archive.zip";
+    }
+    else
+    {
+        return url.right(url.size() - index - 1); //remove extra '/'
+    }
+}
+
 void FileManager::MakeDirectory(const QString& path)
 {
     if (!QDir(path).exists())
         QDir().mkpath(path);
+}
+
+bool FileManager::CreateFileFromRawData(const QByteArray& dataToWrite, const QString& filePath) const
+{
+    using namespace std;
+    //we can not use QFile::write because of bug https://bugreports.qt.io/browse/QTBUG-57468
+    try
+    {
+        ofstream outfile(filePath.toStdString().c_str(), ofstream::out | ofstream::trunc | ofstream::binary);
+        if (outfile.is_open())
+        {
+            outfile.write(dataToWrite, dataToWrite.size());
+            outfile.close();
+            return outfile.good();
+        }
+        return false;
+    }
+    catch (const ofstream::failure& failure)
+    {
+        ErrorMessenger::LogMessage(QtWarningMsg, "can not write to file " + filePath + " the reason is " + failure.what());
+        return false;
+    }
 }
 
 void FileManager::SetFilesDirectory(const QString& newDirPath)
@@ -309,4 +341,31 @@ QString FileManager::GetBranchDirectory(const QString& branchID) const
     dirName.remove("\\");
     QString path = GetBaseAppsDirectory() + dirName + "/";
     return path;
+}
+
+bool FileManager::MoveFileWithMakePath(const QString& currentPath, const QString& newPath)
+{
+    if (QFile::exists(currentPath) == false)
+    {
+        return false;
+    }
+
+    QFileInfo newFileInfo(newPath);
+    QDir newDir = newFileInfo.absoluteDir();
+    if (newDir.mkpath(".") == false)
+    {
+        return false;
+    }
+
+    if (QFile::copy(currentPath, newPath) == false)
+    {
+        return false;
+    }
+
+    if (QFile::remove(currentPath) == false)
+    {
+        return false;
+    }
+
+    return true;
 }

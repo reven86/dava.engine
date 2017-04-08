@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
+#include "Base/Token.h"
 
 #if defined(__DAVAENGINE_IPHONE__)
 
@@ -78,8 +79,11 @@ private:
     void* TruncateText(void* text, int maxLength);
     void UpdateStaticTexture();
     void UpdateNativeRect(const Rect& virtualRect, int xOffset);
-
+    
 #if defined(__DAVAENGINE_COREV2__)
+    void OnWindowDestroyed(Window* destroyedWindow);
+
+    Token windowDestroyedToken;
     Window* window = nullptr;
 #endif
     struct TextFieldObjcBridge;

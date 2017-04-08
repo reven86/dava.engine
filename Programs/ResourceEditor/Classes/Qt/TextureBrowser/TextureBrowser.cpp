@@ -4,7 +4,7 @@
 #include "Qt/TextureBrowser/TextureConvertor.h"
 #include "Qt/TextureBrowser/TextureCache.h"
 #include "Qt/Main/QtUtils.h"
-#include "Qt/Settings/SettingsManager.h"
+#include "Classes/Settings/SettingsManager.h"
 
 #include "Classes/Application/REGlobal.h"
 #include "Classes/Selection/SelectionData.h"
@@ -150,8 +150,8 @@ void TextureBrowser::setTexture(DAVA::Texture* texture, DAVA::TextureDescriptor*
     ui->actionColorG->setChecked(true);
     ui->actionColorB->setChecked(true);
     ui->actionColorA->setChecked(true);
-    ui->textureAreaOriginal->setColorChannel(TextureScrollArea::ChannelAll);
-    ui->textureAreaConverted->setColorChannel(TextureScrollArea::ChannelAll);
+    ui->textureAreaOriginal->setColorChannel(TextureScrollArea::ChannelAll, TextureScrollArea::DoNotApplyNow);
+    ui->textureAreaConverted->setColorChannel(TextureScrollArea::ChannelAll, TextureScrollArea::DoNotApplyNow);
 
     ui->textureAreaOriginal->resetTexturePosZoom();
     ui->textureAreaConverted->resetTexturePosZoom();

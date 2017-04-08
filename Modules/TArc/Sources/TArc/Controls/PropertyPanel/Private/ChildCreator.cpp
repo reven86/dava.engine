@@ -1,6 +1,8 @@
 #include "TArc/Controls/PropertyPanel/Private/ChildCreator.h"
 #include "TArc/Controls/PropertyPanel/Private/DefaultPropertyModelExtensions.h"
 
+#include <Logger/Logger.h>
+
 namespace DAVA
 {
 namespace TArc
@@ -63,7 +65,16 @@ void ChildCreator::UpdateSubTree(const std::shared_ptr<const PropertyNode>& pare
         {
             for (size_t i = 0; i < children.size(); ++i)
             {
-                if (*children[i] != *currentChildren[i])
+                bool isEqual = false;
+                try
+                {
+                    isEqual = *children[i] == *currentChildren[i];
+                }
+                catch (const Exception& e)
+                {
+                    Logger::Debug(e.what());
+                }
+                if (isEqual == false)
                 {
                     RemoveNode(currentChildren[i]);
                     std::swap(currentChildren[i], children[i]);
@@ -85,7 +96,6 @@ void ChildCreator::RemoveNode(const std::shared_ptr<PropertyNode>& parent)
     }
     nodeRemoved.Emit(parent);
     propertiesIndex.erase(iter);
-    DVASSERT(parent.unique());
 }
 
 void ChildCreator::Clear()

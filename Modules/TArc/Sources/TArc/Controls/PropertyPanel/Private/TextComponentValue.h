@@ -1,35 +1,31 @@
 #pragma once
 
-#include "TArc/Controls/PropertyPanel/ProxyComponentValue.h"
-#include "TArc/Controls/PropertyPanel/PropertyModelExtensions.h"
-#include "TArc/Controls/PropertyPanel/DefaultEditorDrawers.h"
-#include "TArc/Controls/PropertyPanel/DefaultValueCompositors.h"
+#include "TArc/Controls/PropertyPanel/BaseComponentValue.h"
 
+#include <Reflection/Reflection.h>
 #include <Base/BaseTypes.h>
 
 namespace DAVA
 {
 namespace TArc
 {
-class TextComponentValue : public ProxyComponentValue<TextEditorDrawer, TextValueCompositor>
+class TextComponentValue : public BaseComponentValue
 {
 public:
     TextComponentValue() = default;
     ~TextComponentValue() override = default;
 
 protected:
-    QWidget* AcquireEditorWidget(QWidget* parent, const QStyleOptionViewItem& option) override;
-    void ReleaseEditorWidget(QWidget* editor) override;
+    Any GetMultipleValue() const override;
+    bool IsValidValueToSet(const Any& newValue, const Any& currentValue) const override;
+    ControlProxy* CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor) const override;
 
 private:
     String GetText() const;
-    void SetText(const DAVA::String& text);
-
-    bool IsReadOnly() const;
-    bool IsEnabled() const;
+    void SetText(const String& text);
 
 private:
-    DAVA_VIRTUAL_REFLECTION(TextComponentValue, ProxyComponentValue<TextEditorDrawer, TextValueCompositor>);
+    DAVA_VIRTUAL_REFLECTION(TextComponentValue, BaseComponentValue);
 };
 }
 }

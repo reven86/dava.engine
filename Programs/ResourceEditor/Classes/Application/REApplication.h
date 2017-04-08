@@ -41,6 +41,8 @@ private:
     void Init(const DAVA::EngineContext* engineContext) override;
     void Cleanup() override;
 
+    void RegisterEditorAnyCasts() override;
+
     bool AllowMultipleInstances() const override;
     QString GetInstanceKey() const override;
 

@@ -41,7 +41,6 @@ WideString ConvertToWString(const Rect& rect)
 void ClipTest::StartPos(BaseObject* obj, void* data, void* callerData)
 {
     fullSizeWgt->SetRect(defaultRect);
-    fullSizeWgt->Update(0);
     startPos->SetStateText(0xFF, ConvertToWString(defaultRect));
 }
 
@@ -50,7 +49,6 @@ void ClipTest::MoveDown(BaseObject* obj, void* data, void* callerData)
     Rect rect = fullSizeWgt->GetRect();
     rect.y++;
     fullSizeWgt->SetRect(rect);
-    fullSizeWgt->Update(0);
     startPos->SetStateText(0xFF, ConvertToWString(rect));
 }
 
@@ -59,7 +57,6 @@ void ClipTest::MoveUp(BaseObject* obj, void* data, void* callerData)
     Rect rect = fullSizeWgt->GetRect();
     rect.y--;
     fullSizeWgt->SetRect(rect);
-    fullSizeWgt->Update(0);
     startPos->SetStateText(0xFF, ConvertToWString(rect));
 }
 
@@ -68,7 +65,6 @@ void ClipTest::MoveRight(BaseObject* obj, void* data, void* callerData)
     Rect rect = fullSizeWgt->GetRect();
     rect.x++;
     fullSizeWgt->SetRect(rect);
-    fullSizeWgt->Update(0);
     startPos->SetStateText(0xFF, ConvertToWString(rect));
 }
 
@@ -77,7 +73,6 @@ void ClipTest::MoveLeft(BaseObject* obj, void* data, void* callerData)
     Rect rect = fullSizeWgt->GetRect();
     rect.x--;
     fullSizeWgt->SetRect(rect);
-    fullSizeWgt->Update(0);
     startPos->SetStateText(0xFF, ConvertToWString(rect));
 }
 
@@ -97,8 +92,9 @@ void ClipTest::LoadResources()
     defaultRect = Rect(0.f, 0.f, static_cast<float32>(screenSize.dx), static_cast<float32>(screenSize.dy));
     fullSizeWgt = new UIControl(defaultRect);
     fullSizeWgt->SetDebugDraw(enableDebugDraw);
-    fullSizeWgt->GetBackground()->SetColor(Color(0.f, 0.5f, 0.1f, 1.f));
-    fullSizeWgt->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
+    UIControlBackground* fullSizeWgtBg = fullSizeWgt->GetOrCreateComponent<UIControlBackground>();
+    fullSizeWgtBg->SetColor(Color(0.f, 0.5f, 0.1f, 1.f));
+    fullSizeWgtBg->SetDrawType(UIControlBackground::DRAW_FILL);
     fullSizeWgt->SetClipContents(enableClip);
     fullSizeWgt->SetName("fullSizeWgt");
     AddControl(fullSizeWgt);
@@ -106,14 +102,16 @@ void ClipTest::LoadResources()
     float32 parentX(0.05f * startX), parentY(parentX), parentW(0.6f * startX), parentH(parentW);
     parent1 = new UIControl(Rect(parentX, parentY, parentW, parentH));
     parent1->SetDebugDraw(enableDebugDraw);
-    parent1->GetBackground()->SetColor(Color(0.5f, 0.f, 0.1f, 1.f));
-    parent1->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
+    UIControlBackground* parent1Bg = parent1->GetOrCreateComponent<UIControlBackground>();
+    parent1Bg->SetColor(Color(0.5f, 0.f, 0.1f, 1.f));
+    parent1Bg->SetDrawType(UIControlBackground::DRAW_FILL);
     parent1->SetClipContents(enableClip);
     parent1->SetName("parent1");
     child1 = new UIControl(Rect(parentW * 0.5f, parentH * 0.5f, parentW, parentH));
     child1->SetDebugDraw(enableDebugDraw);
-    child1->GetBackground()->SetColor(Color(0.1f, 0.f, 0.5f, 1.f));
-    child1->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
+    UIControlBackground* child1Bg = child1->GetOrCreateComponent<UIControlBackground>();
+    child1Bg->SetColor(Color(0.1f, 0.f, 0.5f, 1.f));
+    child1Bg->SetDrawType(UIControlBackground::DRAW_FILL);
     child1->SetClipContents(enableClip);
     child1->SetName("child1");
     parent1->AddControl(child1);
@@ -123,14 +121,16 @@ void ClipTest::LoadResources()
     parentY += parentH * 0.5f;
     parent2 = new UIControl(Rect(parentX, parentY, parentW, parentH));
     parent2->SetDebugDraw(enableDebugDraw);
-    parent2->GetBackground()->SetColor(Color(0.1f, 0.f, 0.5f, 1.f));
-    parent2->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
+    UIControlBackground* parent2Bg = parent2->GetOrCreateComponent<UIControlBackground>();
+    parent2Bg->SetColor(Color(0.1f, 0.f, 0.5f, 1.f));
+    parent2Bg->SetDrawType(UIControlBackground::DRAW_FILL);
     parent2->SetClipContents(enableClip);
     parent2->SetName("parent2");
     child2 = new UIControl(Rect(-1.f * parentW * 0.5f, -1.f * parentH * 0.5f, parentW, parentH));
+    UIControlBackground* child2Bg = child2->GetOrCreateComponent<UIControlBackground>();
     child2->SetDebugDraw(enableDebugDraw);
-    child2->GetBackground()->SetColor(Color(0.5f, 0.f, 0.1f, 1.f));
-    child2->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
+    child2Bg->SetColor(Color(0.5f, 0.f, 0.1f, 1.f));
+    child2Bg->SetDrawType(UIControlBackground::DRAW_FILL);
     child2->SetClipContents(enableClip);
     child2->SetName("child2");
     parent2->AddControl(child2);

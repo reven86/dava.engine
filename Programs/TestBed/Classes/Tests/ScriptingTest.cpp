@@ -10,7 +10,7 @@ using namespace DAVA;
 
 class SubObj : public ReflectionBase
 {
-    DAVA_VIRTUAL_REFLECTION(SubObj)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(SubObj)
     {
         ReflectionRegistrator<SubObj>::Begin()
         .Field("a", &SubObj::a)
@@ -32,7 +32,7 @@ public:
     String b = "String";
     Color c = Color::White;
 
-    DAVA_VIRTUAL_REFLECTION(DemoBase)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(DemoBase)
     {
         ReflectionRegistrator<DemoBase>::Begin()
         .Field("a", &DemoBase::a)
@@ -44,7 +44,7 @@ public:
 
 class DemoObj : public DemoBase
 {
-    DAVA_VIRTUAL_REFLECTION(DemoObj, DemoBase)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(DemoObj, DemoBase)
     {
         ReflectionRegistrator<DemoObj>::Begin()
         .Field("d", &DemoObj::d)
@@ -99,6 +99,8 @@ ScriptingTest::ScriptingTest(TestBed& app)
 
 void ScriptingTest::LoadResources()
 {
+    BaseScreen::LoadResources();
+
     DAVA::DefaultUIPackageBuilder pkgBuilder;
     DAVA::UIPackageLoader().LoadPackage("~res:/UI/ScriptingTest.yaml", &pkgBuilder);
     UIControl* dialog = pkgBuilder.GetPackage()->GetControl("MainFrame");
@@ -170,8 +172,6 @@ void ScriptingTest::LoadResources()
     demoObj.c = Color::White;
     objRef = Reflection::Create(&demoObj);
     CreateScript();
-
-    BaseScreen::LoadResources();
 }
 
 void ScriptingTest::UnloadResources()
@@ -202,9 +202,9 @@ void ScriptingTest::Run(Function<int32()> func)
 {
     try
     {
-        uint64 begin = SystemTimer::Instance()->GetAbsoluteUs();
+        uint64 begin = SystemTimer::GetUs();
         int32 nresults = func();
-        uint64 time = SystemTimer::Instance()->GetAbsoluteUs() - begin;
+        uint64 time = SystemTimer::GetUs() - begin;
 
         String output = Format("Run main() time: %llu us\n", time);
         for (int32 i = 1; i <= nresults; ++i)

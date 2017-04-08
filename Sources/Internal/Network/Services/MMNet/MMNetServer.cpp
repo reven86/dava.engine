@@ -6,7 +6,7 @@
 #include "Functional/Function.h"
 #include "Debug/DVAssert.h"
 #include "DLC/Patcher/ZLibStream.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 #include "Utils/Random.h"
 #include "Utils/StringFormat.h"
 
@@ -27,7 +27,7 @@ namespace Net
 MMNetServer::MMNetServer()
     : NetService()
     , connToken(Random::Instance()->Rand())
-    , baseTimePoint(SystemTimer::Instance()->AbsoluteMS())
+    , baseTimePoint(SystemTimer::GetMs())
     , transferService(new MMBigDataTransferService(SERVER_ROLE))
 {
     MemoryManager::Instance()->SetCallbacks(MakeFunction(this, &MMNetServer::OnUpdate),
@@ -40,7 +40,7 @@ void MMNetServer::OnUpdate()
 {
     if (tokenRequested)
     {
-        uint64 curTimestamp = SystemTimer::Instance()->AbsoluteMS();
+        uint64 curTimestamp = SystemTimer::GetMs();
         if (curTimestamp - lastGatheredStatTimestamp >= statGatherFreq)
         {
             AutoReplyStat(curTimestamp - baseTimePoint);
@@ -77,7 +77,7 @@ void MMNetServer::ChannelClosed(const char8* /*message*/)
     totalPoolEntries = 0;
     for (MMNetProto::Packet& p : packetPool)
     {
-        p = std::move(MMNetProto::Packet());
+        p = MMNetProto::Packet();
     }
     packetQueue.clear();
     transferService->Stop();
@@ -113,7 +113,7 @@ void MMNetServer::ProcessRequestToken(const MMNetProto::PacketHeader* inHeader, 
 void MMNetServer::ProcessRequestSnapshot(const MMNetProto::PacketHeader* inHeader, const void* packetData, size_t dataLength)
 {
     DVASSERT(tokenRequested == true);
-    uint64 curTimestamp = SystemTimer::Instance()->AbsoluteMS();
+    uint64 curTimestamp = SystemTimer::GetMs();
     uint16 status = GetAndSaveSnapshot(curTimestamp - baseTimePoint) ? MMNetProto::STATUS_SUCCESS
                                                                        :
                                                                        MMNetProto::STATUS_ERROR;

@@ -1,7 +1,7 @@
-#ifndef __DAVAENGINE_WAYPOINT_COMPONENT_H__
-#define __DAVAENGINE_WAYPOINT_COMPONENT_H__
+#pragma once
 
 #include "Entity/Component.h"
+#include "Reflection/Reflection.h"
 #include "Base/Introspection.h"
 
 namespace DAVA
@@ -43,6 +43,8 @@ public:
                          MEMBER(pathName, "Path Name", I_VIEW)
                          MEMBER(properties, "Waypoint properties", I_VIEW | I_EDIT)
                          );
+
+    DAVA_VIRTUAL_REFLECTION(WaypointComponent, Component);
 };
 
 inline KeyedArchive* WaypointComponent::GetProperties() const
@@ -70,4 +72,3 @@ inline bool WaypointComponent::IsStarting() const
     return isStarting;
 }
 }
-#endif //__DAVAENGINE_WAYPOINT_COMPONENT_H__

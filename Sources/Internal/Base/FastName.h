@@ -159,13 +159,8 @@ const char* FastName::c_str() const
 }
 
 template <>
-struct AnyCompare<FastName>
-{
-    static bool IsEqual(const Any& v1, const Any& v2)
-    {
-        return v1.Get<FastName>() == v2.Get<FastName>();
-    }
-};
+bool AnyCompare<FastName>::IsEqual(const Any& v1, const Any& v2);
+extern template struct AnyCompare<FastName>;
 };
 
 namespace std

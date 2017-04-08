@@ -1,14 +1,14 @@
-#ifndef __DAVAENGINE_VEGETATIONRENDEROBJECT_H__
-#define __DAVAENGINE_VEGETATIONRENDEROBJECT_H__
+#pragma once
 
 #include <memory>
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
 #include "Base/FastName.h"
-#include "Render/RenderBase.h"
 #include "Base/BaseMath.h"
 #include "Base/AbstractQuadTree.h"
+#include "Reflection/Reflection.h"
+#include "Render/RenderBase.h"
 #include "Render/Image/Image.h"
 
 #include "Render/3D/PolygonGroup.h"
@@ -168,6 +168,7 @@ private:
     static bool CellByDistanceCompareFunction(const AbstractQuadTreeNode<VegetationSpatialData>* a, const AbstractQuadTreeNode<VegetationSpatialData>* b);
 
     void InitHeightTextureFromHeightmap(Heightmap* heightMap);
+    Vector<float32> BuildHeightmapFloatData(Heightmap* heightMap);
 
     float32 SampleHeight(int16 x, int16 y);
 
@@ -179,8 +180,6 @@ private:
     void RestoreRenderData();
 
     bool ReadyToRender();
-
-    size_t SelectDirectionIndex(const Vector3& cameraDirection, Vector<VegetationSortedBufferItem>& buffers);
 
     inline uint32 MapToResolution(float32 squareDistance);
 
@@ -209,8 +208,6 @@ private:
     uint16 halfWidth;
     uint16 halfHeight;
     float32 heightmapSize;
-
-    //Vector<float32> shaderScaleDensityUniforms;
 
     VegetationRenderData* renderData;
 
@@ -273,6 +270,8 @@ public:
                          PROPERTY("animationSpring", "Animation Spring", GetLayersAnimationSpring, SetLayersAnimationSpring, I_SAVE | I_EDIT | I_VIEW)
                          PROPERTY("animationDrag", "Animation Drag", GetLayerAnimationDragCoefficient, SetLayerAnimationDragCoefficient, I_SAVE | I_EDIT | I_VIEW)
                          );
+
+    DAVA_VIRTUAL_REFLECTION(VegetationRenderObject, RenderObject);
 
     friend class FoliageSystem;
 };
@@ -613,6 +612,4 @@ inline const Vector4& VegetationRenderObject::GetLayerAnimationDragCoefficient()
 {
     return layersAnimationDrag;
 }
-};
-
-#endif
+}

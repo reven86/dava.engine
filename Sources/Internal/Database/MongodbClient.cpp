@@ -404,8 +404,8 @@ bool MongodbClient::KeyedArchiveToDBObject(KeyedArchive* archive, MongodbObject*
     if (!outObject->IsFinished())
     {
         //copy data from archive into db object
-        KeyedArchive::UnderlyingMap archiveData = archive->GetArchieveData();
-        for (KeyedArchive::UnderlyingMap::iterator it = archiveData.begin(); it != archiveData.end(); ++it)
+        const KeyedArchive::UnderlyingMap& archiveData = archive->GetArchieveData();
+        for (auto it = archiveData.begin(); it != archiveData.end(); ++it)
         {
             MongodbClient::WriteData(outObject, it->first, it->second);
         }

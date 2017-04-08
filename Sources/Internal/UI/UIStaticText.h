@@ -9,6 +9,8 @@ namespace DAVA
 {
 class UIStaticText : public UIControl
 {
+    DAVA_VIRTUAL_REFLECTION(UIStaticText, UIControl);
+
 public:
     // Use NO_REQUIRED_SIZE to notify SetText that we don't want
     // to enable of any kind of static text fitting
@@ -32,7 +34,7 @@ public:
         MULTILINE_ENABLED,
         MULTILINE_ENABLED_BY_SYMBOL
     };
-    
+
 #if defined(LOCALIZATION_DEBUG)
     static const Color HIGHLIGHT_COLORS[];
     enum DebugHighliteColor
@@ -74,9 +76,6 @@ public:
     void SetMultiline(bool isMultilineEnabled, bool bySymbol = false);
     bool GetMultiline() const;
     bool GetMultilineBySymbol() const;
-
-    void SetMargins(const UIControlBackground::UIMargins* margins);
-    const UIControlBackground::UIMargins* GetMargins() const;
 
     void SetFittingOption(int32 fittingType); //may be FITTING_ENLARGE, FITTING_REDUCE, FITTING_ENLARGE | FITTING_REDUCE
     int32 GetFittingOption() const;
@@ -128,7 +127,7 @@ public:
     virtual Animation* TextColorAnimation(const Color& finalColor, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 0);
     virtual Animation* ShadowColorAnimation(const Color& finalColor, float32 time, Interpolation::FuncType interpolationFunc = Interpolation::LINEAR, int32 track = 1);
 
-    const Vector<int32>& GetStringSizes() const;
+    const Vector<float32>& GetStringSizes() const;
 
     inline bool IsForceBiDiSupportEnabled() const
     {
@@ -165,26 +164,6 @@ public:
 
     int32 GetMultilineType() const;
     void SetMultilineType(int32 multilineType);
-
-    Vector4 GetMarginsAsVector4() const;
-    void SetMarginsAsVector4(const Vector4& margins);
-
-    INTROSPECTION_EXTEND(UIStaticText, UIControl,
-                         PROPERTY("textColor", "Text Color", GetTextColor, SetTextColor, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("textcolorInheritType", InspDesc("Text Color Inherit Type", GlobalEnumMap<UIControlBackground::eColorInheritType>::Instance()), GetTextColorInheritType, SetTextColorInheritType, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("textperPixelAccuracyType", InspDesc("Text Per Pixel Accuracy Type", GlobalEnumMap<UIControlBackground::ePerPixelAccuracyType>::Instance()), GetTextPerPixelAccuracyType, SetTextPerPixelAccuracyType, I_SAVE | I_VIEW | I_EDIT)
-
-                         PROPERTY("shadowoffset", "Shadow Offset", GetShadowOffset, SetShadowOffset, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("shadowcolor", "Shadow Color", GetShadowColor, SetShadowColor, I_SAVE | I_VIEW | I_EDIT)
-
-                         PROPERTY("multiline", InspDesc("Multi Line", GlobalEnumMap<eMultiline>::Instance()), GetMultilineType, SetMultilineType, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("fitting", InspDesc("Fitting", GlobalEnumMap<TextBlock::eFitType>::Instance(), InspDesc::T_FLAGS), GetFittingOption, SetFittingOption, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("textalign", InspDesc("Text Align", GlobalEnumMap<eAlign>::Instance(), InspDesc::T_FLAGS), GetTextAlign, SetTextAlign, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("textUseRtlAlign", InspDesc("Use Rtl Align", GlobalEnumMap<TextBlock::eUseRtlAlign>::Instance(), InspDesc::T_ENUM), GetTextUseRtlAlignAsInt, SetTextUseRtlAlignFromInt, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("textMargins", "Text margins", GetMarginsAsVector4, SetMarginsAsVector4, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("text", "Text", GetUtf8Text, SetUtf8TextWithoutRect, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("font", "Font", GetFontPresetName, SetFontByPresetName, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("forceBiDiSupport", "Force BiDi support", IsForceBiDiSupportEnabled, SetForceBiDiSupportEnabled, I_SAVE | I_VIEW | I_EDIT));
 };
 };
 

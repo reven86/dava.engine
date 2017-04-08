@@ -1,41 +1,66 @@
 #include "ContinuousUpdater.h"
 
+#include <Debug/DVAssert.h>
+
 #include <QTimer>
 
-ContinuousUpdater::ContinuousUpdater(Updater updater_, QObject* parent, int updateInterval)
-    : QObject(parent)
-    , updater(updater_)
-    , timer(new QTimer(this))
+ContinuousUpdater::ContinuousUpdater(int updaterInterval)
+    : timer(new QTimer(nullptr))
 {
     timer->setSingleShot(true);
-    timer->setInterval(updateInterval);
-    connect(timer, &QTimer::timeout, this, &ContinuousUpdater::OnTimer);
+    timer->setInterval(updaterInterval);
+
+    QObject::connect(timer.get(), &QTimer::timeout, [this]() { OnTimer(); });
+}
+
+ContinuousUpdater::~ContinuousUpdater() = default;
+
+void ContinuousUpdater::SetUpdater(const Updater& updater_)
+{
+    updater = updater_;
+}
+
+void ContinuousUpdater::SetStopper(const Stopper& stopper_)
+{
+    stopper = stopper_;
 }
 
 void ContinuousUpdater::Update()
 {
     needUpdate = true;
 
+    if (stopper)
+    {
+        if (stopper())
+        {
+            Stop();
+            return;
+        }
+    }
     if (!timer->isActive())
     {
-        QTimer::singleShot(0, this, &ContinuousUpdater::OnTimer);
+        delayedExecutor.DelayedExecute(DAVA::MakeFunction(this, &ContinuousUpdater::OnTimer));
     }
 }
 
 void ContinuousUpdater::Stop()
 {
     timer->stop();
-    if (needUpdate)
-    {
-        updater();
-        needUpdate = false;
-    }
+    updater();
+    needUpdate = false;
+}
+
+void ContinuousUpdater::Abort()
+{
+    timer->stop();
+    needUpdate = false;
 }
 
 void ContinuousUpdater::OnTimer()
 {
     if (needUpdate)
     {
+        DVASSERT(updater, "updater is not set");
         updater();
         needUpdate = false;
         timer->start();

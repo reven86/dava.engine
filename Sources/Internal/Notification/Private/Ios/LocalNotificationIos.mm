@@ -6,8 +6,8 @@
 #import "Notification/Private/LocalNotificationImpl.h"
 #import <UIKit/UIApplication.h>
 #import <UIKit/UILocalNotification.h>
+#import <UIKit/UIUserNotificationSettings.h>
 #import "Utils/NSStringUtils.h"
-#import "Platform/DateTime.h"
 
 namespace DAVA
 {
@@ -114,6 +114,30 @@ void LocalNotificationIOS::RemoveAllDelayedNotifications()
 LocalNotificationImpl* LocalNotificationImpl::Create(const String& _id)
 {
     return new LocalNotificationIOS(_id);
+}
+
+void LocalNotificationImpl::RequestPermissions()
+{
+// https://developer.apple.com/reference/uikit/uiapplication/1622932-registerusernotificationsettings
+// available 8.0 and later
+    
+#if defined(__IPHONE_8_0)
+    static bool registred = false;
+
+    if (!registred)
+    {
+        NSString* version = [[UIDevice currentDevice] systemVersion];
+        if ([version compare:@"8.0" options:NSNumericSearch] != NSOrderedAscending)
+        {
+            if ([UIApplication instancesRespondToSelector:@selector(registerUserNotificationSettings:)])
+            {
+                [[UIApplication sharedApplication] registerUserNotificationSettings:[UIUserNotificationSettings settingsForTypes:UIUserNotificationTypeAlert | UIUserNotificationTypeBadge | UIUserNotificationTypeSound categories:nil]];
+            }
+        }
+
+        registred = true;
+    }
+#endif
 }
 }
 #endif // defined(__DAVAENGINE_IPHONE__)

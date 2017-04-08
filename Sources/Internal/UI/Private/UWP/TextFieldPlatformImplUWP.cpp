@@ -204,15 +204,16 @@ TextFieldPlatformImpl::~TextFieldPlatformImpl()
 
 void TextFieldPlatformImpl::Initialize()
 {
-    uiTextField->GetBackground()->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
+    UIControlBackground* bg = uiTextField->GetOrCreateComponent<UIControlBackground>();
+    bg->SetDrawType(UIControlBackground::DRAW_SCALE_TO_RECT);
 #if defined(__DAVAENGINE_COREV2__)
-    uiTextField->GetBackground()->SetMaterial(RenderSystem2D::DEFAULT_2D_TEXTURE_PREMULTIPLIED_ALPHA_MATERIAL);
+    bg->SetMaterial(RenderSystem2D::DEFAULT_2D_TEXTURE_PREMULTIPLIED_ALPHA_MATERIAL);
 #endif
     properties.createNew = true;
 
 #if defined(__DAVAENGINE_COREV2__)
-    windowSizeChangedConnection = window->sizeChanged.Connect(this, &TextFieldPlatformImpl::OnWindowSizeChanged);
-    windowDestroyedConnection = Engine::Instance()->windowDestroyed.Connect(this, &TextFieldPlatformImpl::OnWindowDestroyed);
+    window->sizeChanged.Connect(this, &TextFieldPlatformImpl::OnWindowSizeChanged);
+    Engine::Instance()->windowDestroyed.Connect(this, &TextFieldPlatformImpl::OnWindowDestroyed);
 #endif
 }
 
@@ -234,13 +235,12 @@ void TextFieldPlatformImpl::OwnerIsDying()
             auto self{ shared_from_this() };
             window->RunOnUIThreadAsync([this, self]() {
                 InputPane::GetForCurrentView()->Showing -= tokenKeyboardShowing;
-                InputPane::GetForCurrentView()->Hiding -= tokenKeyboardHiding;
                 PlatformApi::Win10::RemoveXamlControl(window, nativeControlHolder);
             });
         }
 
-        window->sizeChanged.Disconnect(windowSizeChangedConnection);
-        Engine::Instance()->windowDestroyed.Disconnect(windowDestroyedConnection);
+        window->sizeChanged.Disconnect(this);
+        Engine::Instance()->windowDestroyed.Disconnect(this);
     }
 
     SafeRelease(sprite);
@@ -324,7 +324,9 @@ void TextFieldPlatformImpl::UpdateRect(const Rect& rect)
     if (properties.createNew || properties.anyPropertyChanged || properties.focusChanged)
     {
         if (properties.textChanged && properties.focusChanged && properties.focus)
-            uiTextField->SetSprite(nullptr, 0);
+        {
+            uiTextField->RemoveComponent(UIComponent::BACKGROUND_COMPONENT);
+        }
 
         auto self{ shared_from_this() };
         TextFieldProperties props(properties);
@@ -369,7 +371,7 @@ void TextFieldPlatformImpl::SetText(const WideString& text)
     curText = text;
     if (text.empty())
     { // Immediatly remove sprite image if new text is empty to get rid of some flickering
-        uiTextField->SetSprite(nullptr, 0);
+        uiTextField->RemoveComponent(UIComponent::BACKGROUND_COMPONENT);
     }
     programmaticTextChange = true;
 }
@@ -656,16 +658,11 @@ void TextFieldPlatformImpl::InstallKeyboardEventHandlers()
     using ::Windows::UI::ViewManagement::InputPaneVisibilityEventArgs;
 
     std::weak_ptr<TextFieldPlatformImpl> self_weak(shared_from_this());
-    auto keyboardHiding = ref new TypedEventHandler<InputPane ^, InputPaneVisibilityEventArgs ^>([this, self_weak](InputPane ^, InputPaneVisibilityEventArgs ^ args) {
-        if (auto self = self_weak.lock())
-            OnKeyboardHiding(args);
-    });
     auto keyboardShowing = ref new TypedEventHandler<InputPane ^, InputPaneVisibilityEventArgs ^>([this, self_weak](InputPane ^, InputPaneVisibilityEventArgs ^ args) {
         if (auto self = self_weak.lock())
             OnKeyboardShowing(args);
     });
     tokenKeyboardShowing = InputPane::GetForCurrentView()->Showing += keyboardShowing;
-    tokenKeyboardHiding = InputPane::GetForCurrentView()->Hiding += keyboardHiding;
 }
 
 void TextFieldPlatformImpl::OnKeyDown(::Windows::UI::Xaml::Input::KeyRoutedEventArgs ^ args)
@@ -756,7 +753,9 @@ void TextFieldPlatformImpl::OnGotFocus()
         if (uiTextField != nullptr)
         {
             if (!multiline)
-                uiTextField->SetSprite(nullptr, 0);
+            {
+                uiTextField->RemoveComponent(UIComponent::BACKGROUND_COMPONENT);
+            }
 
             // Manually set focus through direct call to UITextField::SetFocused()
             // Reason: UIControlSystem has no chance to know whether control has got focus when
@@ -877,17 +876,9 @@ void TextFieldPlatformImpl::OnLayoutUpdated()
     }
 }
 
-void TextFieldPlatformImpl::OnKeyboardHiding(::Windows::UI::ViewManagement::InputPaneVisibilityEventArgs ^ args)
-{
-    args->EnsuredFocusedElementInView = true;
-}
-
 void TextFieldPlatformImpl::OnKeyboardShowing(::Windows::UI::ViewManagement::InputPaneVisibilityEventArgs ^ args)
 {
     using ::Windows::UI::ViewManagement::InputPane;
-
-    // Tell keyboard that application will position native controls by itself
-    args->EnsuredFocusedElementInView = true;
 
     if (HasFocus())
     {
@@ -1278,16 +1269,11 @@ void TextFieldPlatformImpl::RenderToTexture(bool moveOffScreenOnCompletion)
     auto renderTask = create_task(renderTarget->RenderAsync(nativeControlHolder)).then([this, self, renderTarget]() { return renderTarget->GetPixelsAsync(); }).then([this, self, renderTarget, moveOffScreenOnCompletion](IBuffer ^ renderBuffer) {
         uint32 imageWidth = renderTarget->PixelWidth;
         uint32 imageHeight = renderTarget->PixelHeight;
-        size_t streamSize = static_cast<size_t>(renderBuffer->Length);
-        DataReader^ reader = DataReader::FromBuffer(renderBuffer);
 
-        size_t index = 0;
-        Vector<uint8> buf(streamSize, 0);
-        while (reader->UnconsumedBufferLength > 0)
-        {
-            buf[index] = reader->ReadByte();
-            index += 1;
-        }
+        DataReader^ reader = DataReader::FromBuffer(renderBuffer);
+        Platform::Array<uint8>^ inStream = ref new Platform::Array<uint8>(reader->UnconsumedBufferLength);
+        reader->ReadBytes(inStream);
+        Vector<uint8> buf(inStream->begin(), inStream->end());
 
 #if defined(__DAVAENGINE_COREV2__)
         RunOnMainThreadAsync([this, self, moveOffScreenOnCompletion, buf=std::move(buf), imageWidth, imageHeight]() mutable {
@@ -1300,7 +1286,8 @@ void TextFieldPlatformImpl::RenderToTexture(bool moveOffScreenOnCompletion)
                 Sprite* sprite = nullptr;
 #endif
                 sprite = CreateSpriteFromPreviewData(&buf[0], imageWidth, imageHeight);
-                uiTextField->SetSprite(sprite, 0);
+                UIControlBackground *bg = uiTextField->GetOrCreateComponent<UIControlBackground>();
+                bg->SetSprite(sprite, 0);
 #if !defined(__DAVAENGINE_COREV2__)
                 SafeRelease(sprite);
 #endif

@@ -1,10 +1,12 @@
 #include "Classes/Application/REApplication.h"
 #include "Classes/Application/REModule.h"
 #include "Classes/Application/REGlobal.h"
+#include "Classes/Application/ReflectionExtensions.h"
 #include "Classes/Project/ProjectManagerModule.h"
 #include "Classes/SceneManager/SceneManagerModule.h"
+#include "Classes/Application/LaunchModule.h"
 
-#include "TextureCompression/PVRConverter.h"
+#include <Tools/TextureCompression/PVRConverter.h>
 #include "Settings/SettingsManager.h"
 #include "Deprecated/SceneValidator.h"
 #include "Preferences/PreferencesStorage.h"
@@ -28,6 +30,8 @@
 #else
 #include "Beast/BeastProxy.h"
 #endif //__DAVAENGINE_BEAST__
+
+#include "Classes/DevFuncs/TestUIModuleData.h"
 
 #include "TArc/Core/Core.h"
 #include "TArc/Testing/TArcTestClass.h"
@@ -61,6 +65,7 @@ DAVA::KeyedArchive* CreateOptions()
     appOptions->SetInt32("max_texture_count", 2048);
 
     appOptions->SetInt32("shader_const_buffer_size", 256 * 1024 * 1024);
+    appOptions->SetInt32("max_pipeline_state_count", 32 * 1024);
 
     return appOptions;
 }
@@ -173,6 +178,7 @@ QString REApplication::GetInstanceKey() const
 void REApplication::CreateGUIModules(DAVA::TArc::Core* tarcCore) const
 {
     Q_INIT_RESOURCE(QtToolsResources);
+    tarcCore->CreateModule<ReflectionExtensionsModule>();
     tarcCore->CreateModule<REModule>();
     tarcCore->CreateModule<ProjectManagerModule>();
     tarcCore->CreateModule<SceneManagerModule>();
@@ -181,6 +187,8 @@ void REApplication::CreateGUIModules(DAVA::TArc::Core* tarcCore) const
     {
         tarcCore->CreateModule(type);
     }
+
+    tarcCore->CreateModule<LaunchModule>();
 }
 
 void REApplication::CreateConsoleModules(DAVA::TArc::Core* tarcCore) const
@@ -209,4 +217,12 @@ void REApplication::CreateConsoleModules(DAVA::TArc::Core* tarcCore) const
         DAVA::Logger::Error("Cannot create commandLine module for command \'%s\'", command.c_str());
         createModuleFn("-help");
     }
+}
+
+void REApplication::RegisterEditorAnyCasts()
+{
+    DAVA::TArc::BaseApplication::RegisterEditorAnyCasts();
+
+    DAVA::AnyCast<ComboBoxTestDataDescr, DAVA::String>::Register(&ComboBoxTestDataDescrToString);
+    DAVA::AnyCast<ComboBoxTestDataDescr, QIcon>::Register(&ComboBoxTestDataDescrToQIcon);
 }

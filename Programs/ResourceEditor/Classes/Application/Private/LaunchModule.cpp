@@ -5,9 +5,10 @@
 #include "Classes/Selection/Selectable.h"
 
 #include "Classes/Project/ProjectManagerData.h"
-#include "Classes/Qt/Settings/SettingsManager.h"
+#include "Classes/Settings/SettingsManager.h"
 #include "Classes/StringConstants.h"
-#include "version.h"
+
+#include <Tools/Version.h>
 
 #include "TArc/DataProcessing/DataListener.h"
 #include "TArc/DataProcessing/DataWrapper.h"
@@ -92,5 +93,3 @@ void LaunchModule::UnpackHelpDoc()
     }
     SettingsManager::SetValue(Settings::Internal_EditorVersion, DAVA::VariantType(DAVA::String(APPLICATION_BUILD_VERSION)));
 }
-
-DECL_GUI_MODULE(LaunchModule);

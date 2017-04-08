@@ -2,7 +2,7 @@
 
 #include "Math/AABBox3.h"
 #include "Core/Core.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 #include "Render/RenderBase.h"
 
 #include "Engine/Engine.h"
@@ -144,20 +144,6 @@ void DynamicBindings::ComputeWorldScaleIfRequired()
     }
 }
 
-inline void DynamicBindings::UpdateGlobalTimeIfRequired()
-{
-#if defined(__DAVAENGINE_COREV2__)
-    uint32 globalFrameIndex = Engine::Instance()->GetGlobalFrameIndex();
-#else
-    uint32 globalFrameIndex = Core::Instance()->GetGlobalFrameIndex();
-#endif
-    if (dynamicParameters[PARAM_GLOBAL_TIME].updateSemantic != globalFrameIndex)
-    {
-        frameGlobalTime = SystemTimer::Instance()->GetGlobalTime();
-        SetDynamicParam(PARAM_GLOBAL_TIME, &frameGlobalTime, globalFrameIndex);
-    }
-}
-
 inline void DynamicBindings::ComputeLocalBoundingBoxSizeIfRequired()
 {
     if (dynamicParamersRequireUpdate & (1 << PARAM_BOUNDING_BOX_SIZE))
@@ -264,9 +250,6 @@ const void* DynamicBindings::GetDynamicParam(eUniformSemantic shaderSemantic)
         break;
     case PARAM_BOUNDING_BOX_SIZE:
         ComputeLocalBoundingBoxSizeIfRequired();
-        break;
-    case PARAM_GLOBAL_TIME:
-        UpdateGlobalTimeIfRequired();
         break;
     default:
         break;

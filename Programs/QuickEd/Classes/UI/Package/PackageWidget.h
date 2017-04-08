@@ -1,16 +1,27 @@
-#ifndef __UI_EDITOR_UI_PACKAGE_WIDGET__
-#define __UI_EDITOR_UI_PACKAGE_WIDGET__
+#pragma once
+
+#include "ui_PackageWidget.h"
 
 #include "EditorSystems/SelectionContainer.h"
-#include "Base/BaseTypes.h"
-#include "ui_PackageWidget.h"
+
+#include <Base/BaseTypes.h>
+
 #include <QWidget>
 #include <QDockWidget>
 #include <QModelIndex>
 #include <QStack>
 #include <QPointer>
 
-class Document;
+namespace DAVA
+{
+class Any;
+namespace TArc
+{
+class ContextAccessor;
+}
+}
+
+struct PackageContext;
 class ControlNode;
 class StyleSheetNode;
 class PackageNode;
@@ -28,16 +39,19 @@ public:
     explicit PackageWidget(QWidget* parent = 0);
     ~PackageWidget();
 
+    void SetAccessor(DAVA::TArc::ContextAccessor* accessor);
+
     PackageModel* GetPackageModel() const;
     using ExpandedIndexes = QModelIndexList;
 
+    void OnSelectionChanged(const DAVA::Any& selection);
+    void OnPackageChanged(PackageContext* context, PackageNode* node);
+
 signals:
-    void SelectedNodesChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
-    void CurrentIndexChanged(PackageBaseNode* node);
+    void SelectedNodesChanged(const SelectedNodes& selection);
+    void CurrentIndexChanged(PackageBaseNode* package);
 
 public slots:
-    void OnDocumentChanged(Document* context);
-    void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OnCopy();
     void OnPaste();
     void OnCut();
@@ -59,16 +73,16 @@ private slots:
     void OnCurrentIndexChanged(const QModelIndex& index, const QModelIndex& previous);
 
 private:
-    void SetSelectedNodes(const SelectedNodes& selected, const SelectedNodes& deselected);
+    void SetSelectedNodes(const SelectedNodes& selection);
     void CollectExpandedIndexes(PackageBaseNode* node);
     void MoveNodeUpDown(bool up);
     void MoveNodeImpl(PackageBaseNode* node, PackageBaseNode* dest, DAVA::uint32 destIndex);
     QAction* CreateAction(const QString& name, void (PackageWidget::*callback)(void), const QKeySequence& sequence = QKeySequence());
     void CreateActions();
     void PlaceActions();
+    void RefreshActions();
     void LoadContext();
     void SaveContext();
-    void RefreshActions();
 
     void DeselectNodeImpl(PackageBaseNode* node);
     void SelectNodeImpl(PackageBaseNode* node);
@@ -80,7 +94,6 @@ private:
     ExpandedIndexes GetExpandedIndexes() const;
     void RestoreExpandedIndexes(const ExpandedIndexes& indexes);
 
-    QPointer<Document> document;
     QAction* importPackageAction = nullptr;
     QAction* copyAction = nullptr;
     QAction* pasteAction = nullptr;
@@ -103,6 +116,13 @@ private:
     //source indexes
     std::list<QPersistentModelIndex> currentIndexes;
     bool lastFilterTextEmpty = true;
+    PackageContext* currentContext = nullptr;
+
+    DAVA::TArc::ContextAccessor* accessor = nullptr;
 };
 
-#endif // __UI_EDITOR_UI_PACKAGE_WIDGET__
+struct PackageContext
+{
+    PackageWidget::ExpandedIndexes expandedIndexes;
+    QString filterString;
+};

@@ -1,10 +1,10 @@
 #include "Tests/ImGuiTest.h"
-
-#include "Engine/Engine.h"
-#include "Engine/EngineSettings.h"
-#include "Debug/Private/ImGui.h"
-
 #include "Infrastructure/TestBed.h"
+
+#include <Engine/Engine.h>
+#include <Engine/EngineSettings.h>
+#include <Debug/Private/ImGui.h>
+#include <UI/Update/UIUpdateComponent.h>
 
 ImGuiTest::ImGuiTest(TestBed& app)
     : BaseScreen(app, "ImGuiTest")
@@ -14,8 +14,11 @@ ImGuiTest::ImGuiTest(TestBed& app)
 
 void ImGuiTest::LoadResources()
 {
-    GetBackground()->SetDrawType(DAVA::UIControlBackground::DRAW_FILL);
-    GetBackground()->SetColor(backColor);
+    GetOrCreateComponent<DAVA::UIUpdateComponent>();
+    DAVA::UIControlBackground* bg = GetOrCreateComponent<DAVA::UIControlBackground>();
+
+    bg->SetDrawType(DAVA::UIControlBackground::DRAW_FILL);
+    bg->SetColor(backColor);
 
     BaseScreen::LoadResources();
 }

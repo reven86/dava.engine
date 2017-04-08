@@ -15,7 +15,7 @@
 #include "Debug/Backtrace.h"
 #include "Input/InputSystem.h"
 #include "Logger/Logger.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 
 extern int DAVAMain(DAVA::Vector<DAVA::String> cmdline);
 extern DAVA::Private::AndroidBridge* androidBridge;
@@ -56,17 +56,34 @@ void PlatformCore::Init()
 
 void PlatformCore::Run()
 {
+    // Minimum JNI local references count that can be created during one frame.
+    // From docs: VM automatically ensures that at least 16 local references can be created
+    static const jint JniLocalRefsMinCount = 16;
+
+    AndroidBridge::HideSplashView();
     engineBackend->OnGameLoopStarted();
 
+    JNIEnv* env = AndroidBridge::GetEnv();
     while (!quitGameThread)
     {
-        uint64 frameBeginTime = SystemTimer::Instance()->AbsoluteMS();
+        int64 frameBeginTime = SystemTimer::GetMs();
 
+        // We want to automatically clear all JNI local references created by user
+        // on current frame. This should be done to protect our main-loop from
+        // potential IndirectReferenceTable overflow when the user forgot to delete
+        // its local reference.
+        //
+        // Note, engine user is still responsible for freeing local references created by him.
+        env->PushLocalFrame(JniLocalRefsMinCount);
+
+        // Now engine frame can be executed
         int32 fps = engineBackend->OnFrame();
 
-        uint64 frameEndTime = SystemTimer::Instance()->AbsoluteMS();
-        uint32 frameDuration = static_cast<uint32>(frameEndTime - frameBeginTime);
+        // Pop off the current local reference frame and free references.
+        env->PopLocalFrame(nullptr);
 
+        int64 frameEndTime = SystemTimer::GetMs();
+        int32 frameDuration = static_cast<int32>(frameEndTime - frameBeginTime);
         int32 sleep = 1;
         if (fps > 0)
         {
@@ -94,12 +111,25 @@ void PlatformCore::Quit()
 WindowBackend* PlatformCore::ActivityOnCreate()
 {
     Window* primaryWindow = engineBackend->InitializePrimaryWindow();
-    WindowBackend* primaryWindowBackend = primaryWindow->GetBackend();
+    WindowBackend* primaryWindowBackend = EngineBackend::GetWindowBackend(primaryWindow);
     return primaryWindowBackend;
 }
 
 void PlatformCore::ActivityOnResume()
 {
+    if (goBackgroundTimeRelativeToBoot > 0)
+    {
+        int64 timeSpentInBackground1 = SystemTimer::GetSystemUptimeUs() - goBackgroundTimeRelativeToBoot;
+        int64 timeSpentInBackground2 = SystemTimer::GetUs() - goBackgroundTime;
+
+        Logger::Debug("Time spent in background %lld us (reported by SystemTimer %lld us)", timeSpentInBackground1, timeSpentInBackground2);
+        // Do adjustment only if SystemTimer has stopped ticking
+        if (timeSpentInBackground1 - timeSpentInBackground2 > 500000l)
+        {
+            EngineBackend::AdjustSystemTimer(timeSpentInBackground1 - timeSpentInBackground2);
+        }
+    }
+
     mainDispatcher->PostEvent(MainDispatcherEvent(MainDispatcherEvent::APP_RESUMED));
 }
 
@@ -107,6 +137,9 @@ void PlatformCore::ActivityOnPause()
 {
     // Blocking call !!!
     mainDispatcher->SendEvent(MainDispatcherEvent(MainDispatcherEvent::APP_SUSPENDED));
+
+    goBackgroundTimeRelativeToBoot = SystemTimer::GetSystemUptimeUs();
+    goBackgroundTime = SystemTimer::GetUs();
 }
 
 void PlatformCore::ActivityOnDestroy()

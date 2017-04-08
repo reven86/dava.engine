@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
+#include "Base/AnyFn.h"
 
 namespace DAVA
 {
@@ -28,7 +29,7 @@ public:
     struct Method
     {
         String name;
-        AnyFn method;
+        AnyFn fn;
         std::unique_ptr<ReflectedMeta> meta;
     };
 

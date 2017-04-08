@@ -36,6 +36,24 @@ bool Thread::IsMainThread()
     return currentId == mainThreadId;
 }
 
+Thread* Thread::Current()
+{
+    const Id currentId = GetCurrentId();
+
+    auto threadListAccessor = GetThreadList().GetAccessor();
+    for (Thread* t : *threadListAccessor)
+    {
+        if (t->GetId() == currentId)
+        {
+            return t;
+        }
+    }
+
+    DVASSERT(false, "Couldn't get current thread");
+
+    return nullptr;
+}
+
 Thread* Thread::Create(const Message& msg)
 {
     return new Thread(msg);
@@ -124,6 +142,11 @@ void Thread::ThreadFunction(void* param)
     t->id = GetCurrentId();
 
     t->threadFunc();
+
+    // Zero id to mark thread as finished in thread list obtained through GetThreadList() function.
+    // This prevents from retrieving invalid Thread instance through Thread::Current()
+    // as system can reuse thread ids.
+    std::memset(&t->id, 0, sizeof(t->id));
     t->state = STATE_ENDED;
 }
 

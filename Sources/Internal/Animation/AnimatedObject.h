@@ -1,10 +1,11 @@
-#ifndef __DAVAENGINE_ANIMATEDOBJECT_H__
-#define __DAVAENGINE_ANIMATEDOBJECT_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseObject.h"
 #include "Base/Message.h"
+#include "Reflection/Reflection.h"
 #include "FileSystem/YamlParser.h"
+#include "Reflection/Reflection.h"
 
 namespace DAVA
 {
@@ -21,6 +22,8 @@ class Animation;
  */
 class AnimatedObject : public BaseObject
 {
+    DAVA_VIRTUAL_REFLECTION(AnimatedObject, BaseObject);
+
 protected:
     virtual ~AnimatedObject();
 
@@ -52,13 +55,6 @@ public:
 	 */
     Animation* FindPlayingAnimation(int32 track = -1);
 
-    /**
-		\brief Called when all animations for object are finished. Reimplement this function for specific needs
-	*/
-    virtual void OnAllAnimationsFinished()
-    {
-    }
-
 private:
     //AnimationsStorage * animationsStorage;
 
@@ -83,6 +79,4 @@ private:
 	
 	friend class Animation;*/
 };
-};
-
-#endif // __DAVAENGINE_INTERPOLATION_H__
+}

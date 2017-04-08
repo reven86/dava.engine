@@ -8,7 +8,6 @@
 #import <Foundation/Foundation.h>
 
 #import "Utils/NSStringUtils.h"
-#import "Platform/DateTime.h"
 
 namespace DAVA
 {
@@ -119,6 +118,10 @@ void LocalNotificationMac::RemoveAllDelayedNotifications()
 LocalNotificationImpl* LocalNotificationImpl::Create(const String& _id)
 {
     return new LocalNotificationMac(_id);
+}
+
+void LocalNotificationImpl::RequestPermissions()
+{
 }
 }
 #endif // defined(__DAVAENGINE_MACOS__)

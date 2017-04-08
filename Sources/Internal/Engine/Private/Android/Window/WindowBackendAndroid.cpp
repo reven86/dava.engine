@@ -12,7 +12,7 @@
 #include "Engine/Private/Android/PlatformCoreAndroid.h"
 
 #include "Logger/Logger.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 
 extern "C"
 {
@@ -94,6 +94,13 @@ JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewOnG
     wbackend->OnGamepadMotion(deviceId, axis, value);
 }
 
+JNIEXPORT void JNICALL Java_com_dava_engine_DavaSurfaceView_nativeSurfaceViewOnVisibleFrameChanged(JNIEnv* env, jclass jclazz, jlong windowBackendPointer, jint x, jint y, jint w, jint h)
+{
+    using DAVA::Private::WindowBackend;
+    WindowBackend* wbackend = reinterpret_cast<WindowBackend*>(static_cast<uintptr_t>(windowBackendPointer));
+    wbackend->OnVisibleFrameChanged(x, y, w, h);
+}
+
 } // extern "C"
 
 namespace DAVA
@@ -132,7 +139,7 @@ void WindowBackend::Close(bool appIsTerminating)
         // true value is always called on termination.
         if (surfaceView != nullptr)
         {
-            mainDispatcher->SendEvent(MainDispatcherEvent::CreateWindowDestroyedEvent(window));
+            mainDispatcher->SendEvent(MainDispatcherEvent::CreateWindowDestroyedEvent(window), MainDispatcher::eSendPolicy::IMMEDIATE_EXECUTION);
 
             JNIEnv* env = JNI::GetEnv();
             env->DeleteGlobalRef(surfaceView);
@@ -284,6 +291,9 @@ void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, in
         }));
     }
 
+    const float previousWindowWidth = windowWidth;
+    const float previousWindowHeight = windowHeight;
+
     windowWidth = static_cast<float32>(width);
     windowHeight = static_cast<float32>(height);
     dpi = static_cast<float32>(displayDpi);
@@ -310,9 +320,21 @@ void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, in
     }
     else
     {
-        // Do not use passed surfaceWidth & surfaceHeight, instead calculate it based on current scale factor
-        // To handle cases when a surface has been recreated with original size (e.g. when switched to another app and returned back)
-        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, windowWidth, windowHeight, windowWidth * surfaceScale, windowHeight * surfaceScale, surfaceScale, dpi, eFullscreen::On));
+        // If surface size has changed, post sizeChanged event
+        // Otherwise we should reset renderer since surface has been recreated
+
+        if (!FLOAT_EQUAL(previousWindowWidth, windowWidth) || !FLOAT_EQUAL(previousWindowHeight, windowHeight))
+        {
+            // Do not use passed surfaceWidth & surfaceHeight, instead calculate it based on current scale factor
+            // To handle cases when a surface has been recreated with original size (e.g. when switched to another app and returned back)
+            mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, windowWidth, windowHeight, windowWidth * surfaceScale, windowHeight * surfaceScale, surfaceScale, dpi, eFullscreen::On));
+        }
+        else
+        {
+            mainDispatcher->PostEvent(MainDispatcherEvent::CreateFunctorEvent([this]() {
+                engineBackend->ResetRenderer(this->window, !this->IsWindowReadyForRender());
+            }));
+        }
     }
 }
 
@@ -428,6 +450,11 @@ void WindowBackend::OnGamepadButton(int32 deviceId, int32 action, int32 keyCode)
 void WindowBackend::OnGamepadMotion(int32 deviceId, int32 axis, float32 value)
 {
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateGamepadMotionEvent(deviceId, axis, value));
+}
+
+void WindowBackend::OnVisibleFrameChanged(int32 x, int32 y, int32 width, int32 height)
+{
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibleFrameChangedEvent(window, x, y, width, height));
 }
 
 std::bitset<WindowBackend::MOUSE_BUTTON_COUNT> WindowBackend::GetMouseButtonState(int32 nativeButtonState)

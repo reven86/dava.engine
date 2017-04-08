@@ -1,14 +1,19 @@
-#include "Input/InputSystem.h"
 #include "EditorSystems/SelectionSystem.h"
-#include "Model/PackageHierarchy/ControlNode.h"
-#include "UI/UIEvent.h"
-#include "UI/UIControl.h"
 #include "EditorSystems/EditorSystemsManager.h"
 #include "EditorSystems/KeyboardProxy.h"
-#include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 #include "Model/ControlProperties/RootProperty.h"
 #include "Model/ControlProperties/VisibleValueProperty.h"
+#include "Model/PackageHierarchy/ControlNode.h"
+
+#include "Modules/DocumentsModule/DocumentData.h"
+
+#include <TArc/Core/ContextAccessor.h>
+
+#include <Reflection/ReflectedTypeDB.h>
+#include <UI/UIEvent.h>
+#include <UI/UIControl.h>
+#include <Input/InputSystem.h>
 
 using namespace DAVA;
 
@@ -16,11 +21,12 @@ REGISTER_PREFERENCES_ON_START(SelectionSystem,
                               PREF_ARG("CanFindCommonForSelection", true),
                               )
 
-SelectionSystem::SelectionSystem(EditorSystemsManager* parent)
+SelectionSystem::SelectionSystem(EditorSystemsManager* parent, DAVA::TArc::ContextAccessor* accessor_)
     : BaseEditorSystem(parent)
+    , accessor(accessor_)
 {
+    documentDataWrapper = accessor->CreateWrapper(DAVA::ReflectedTypeDB::Get<DocumentData>());
     systemsManager->selectionChanged.Connect(this, &SelectionSystem::OnSelectionChanged);
-    systemsManager->packageNodeChanged.Connect(this, &SelectionSystem::OnPackageNodeChanged);
     systemsManager->selectionRectChanged.Connect(this, &SelectionSystem::OnSelectByRect);
     PreferencesStorage::Instance()->RegisterPreferences(this);
 }
@@ -30,87 +36,81 @@ SelectionSystem::~SelectionSystem()
     PreferencesStorage::Instance()->UnregisterPreferences(this);
 }
 
-bool SelectionSystem::OnInput(UIEvent* currentInput)
+void SelectionSystem::ProcessInput(UIEvent* currentInput)
 {
-    switch (currentInput->phase)
+    if (currentInput->phase == UIEvent::Phase::BEGAN)
     {
-    case UIEvent::Phase::BEGAN:
-        mousePressed = true;
-        ProcessMousePress(currentInput->point, currentInput->mouseButton);
-        break;
-    case UIEvent::Phase::ENDED:
-        if (!mousePressed)
+        if (systemsManager->GetCurrentHUDArea().area != HUDAreaInfo::NO_AREA)
         {
-            ProcessMousePress(currentInput->point, currentInput->mouseButton);
+            selectOnRelease = true;
+            pressedPoint = currentInput->point;
+            return;
         }
-        mousePressed = false;
-    default:
-        break;
     }
-    return false;
-}
-
-void SelectionSystem::OnPackageNodeChanged(PackageNode* packageNode_)
-{
-    if (nullptr != packageNode)
+    else if (currentInput->phase == UIEvent::Phase::ENDED)
     {
-        packageNode->RemoveListener(this);
+        if (selectOnRelease == false || currentInput->point != pressedPoint)
+        {
+            return;
+        }
     }
-    packageNode = packageNode_;
-    if (nullptr != packageNode)
+    else
     {
-        packageNode->AddListener(this);
+        return;
     }
-}
 
-void SelectionSystem::ControlWasRemoved(ControlNode* node, ControlsContainerNode*)
-{
-    SelectedNodes deselected;
-    deselected.insert(node);
-    SelectNode(SelectedNodes(), deselected);
+    ControlNode* selectedNode = systemsManager->GetControlNodeAtPoint(currentInput->point);
+    if (nullptr != selectedNode)
+    {
+        SelectNode(selectedNode);
+    }
 }
 
 void SelectionSystem::OnSelectByRect(const Rect& rect)
 {
-    SelectedNodes deselected;
-    SelectedNodes selected;
-    Set<ControlNode*> areaNodes;
-    auto predicate = [rect](const ControlNode* node) -> bool {
-        const UIControl* control = node->GetControl();
-        DVASSERT(nullptr != control);
-        return control->GetVisibilityFlag() && rect.RectContains(control->GetGeometricData().GetAABBox());
-    };
-    auto stopPredicate = [](const ControlNode* node) -> bool {
-        const UIControl* control = node->GetControl();
-        DVASSERT(nullptr != control);
-        return !control->GetVisibilityFlag();
-    };
-    systemsManager->CollectControlNodes(std::inserter(areaNodes, areaNodes.end()), predicate, stopPredicate);
-    if (!areaNodes.empty())
+    SelectedNodes newSelection;
+    if (IsKeyPressed(KeyboardProxy::KEY_SHIFT))
     {
-        for (ControlNode* node : areaNodes)
+        newSelection = selectionContainer.selectedNodes;
+    }
+
+    for (const PackageBaseNode* node : systemsManager->GetEditingRootControls())
+    {
+        for (int i = 0, count = node->GetCount(); i < count; ++i)
         {
-            selected.insert(node);
+            PackageBaseNode* child = node->Get(i);
+            UIControl* control = child->GetControl();
+            DVASSERT(nullptr != control);
+            if (control->IsVisible() && rect.RectContains(control->GetGeometricData().GetAABBox()))
+            {
+                newSelection.insert(node->Get(i));
+            }
         }
     }
-    if (!IsKeyPressed(KeyboardProxy::KEY_SHIFT))
-    {
-        //deselect all not selected by rect
-        std::set_difference(selectionContainer.selectedNodes.begin(), selectionContainer.selectedNodes.end(), areaNodes.begin(), areaNodes.end(), std::inserter(deselected, deselected.end()));
-    }
-    SelectNode(selected, deselected);
+
+    SelectNodes(newSelection);
 }
 
 void SelectionSystem::ClearSelection()
 {
-    SelectNode(SelectedNodes(), selectionContainer.selectedNodes);
+    SelectNodes(SelectedNodes());
 }
 
 void SelectionSystem::SelectAllControls()
 {
     SelectedNodes selected;
-    systemsManager->CollectControlNodes(std::inserter(selected, selected.end()), [](const ControlNode*) { return true; });
-    SelectNode(selected, SelectedNodes());
+    //find only children of root controls
+    for (const PackageBaseNode* node : systemsManager->GetEditingRootControls())
+    {
+        for (int i = 0, count = node->GetCount(); i < count; ++i)
+        {
+            selected.insert(node->Get(i));
+        }
+    }
+    if (selected.empty() == false)
+    {
+        SelectNodes(selected);
+    }
 }
 
 void SelectionSystem::FocusNextChild()
@@ -152,68 +152,45 @@ void SelectionSystem::FocusToChild(bool next)
         nextNode = findIt == allNodes.begin() ? allNodes.back() : *(--findIt);
     }
 
-    SelectedNodes newSelectedNodes;
-    newSelectedNodes.insert(nextNode);
-    SelectNode(newSelectedNodes, selectionContainer.selectedNodes);
+    SelectNodes({ nextNode });
 }
 
-void SelectionSystem::ProcessMousePress(const DAVA::Vector2& point, DAVA::eMouseButtons buttonID)
+void SelectionSystem::OnSelectionChanged(const SelectedNodes& selection)
 {
-    ControlNode* selectedNode = nullptr;
-    if (buttonID == DAVA::eMouseButtons::LEFT)
-    {
-        selectedNode = systemsManager->GetControlNodeAtPoint(point);
-    }
-    if (nullptr != selectedNode)
-    {
-        SelectNode(selectedNode);
-    }
+    selectionContainer.selectedNodes = selection;
 }
 
-void SelectionSystem::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
+void SelectionSystem::SelectNodes(const SelectedNodes& selection)
 {
-    selectionContainer.MergeSelection(selected, deselected);
-}
-
-void SelectionSystem::SelectNode(const SelectedNodes& selected, const SelectedNodes& deselected)
-{
-    SelectedNodes reallySelected;
-    SelectedNodes reallyDeselected;
-    selectionContainer.GetOnlyExistedItems(deselected, reallyDeselected);
-    selectionContainer.GetNotExistedItems(selected, reallySelected);
-    selectionContainer.MergeSelection(reallySelected, reallyDeselected);
-
-    if (!reallySelected.empty() || !reallyDeselected.empty())
+    selectionContainer.selectedNodes = selection;
+    //remove this "if" when other systems will not emit signal selectionChanged
+    if (documentDataWrapper.HasData())
     {
-        systemsManager->selectionChanged.Emit(reallySelected, reallyDeselected);
+        documentDataWrapper.SetFieldValue(DocumentData::selectionPropertyName, selection);
     }
 }
 
 void SelectionSystem::SelectNode(ControlNode* selectedNode)
 {
-    SelectedNodes selected;
-    SelectedNodes deselected;
-    if (!IsKeyPressed(KeyboardProxy::KEY_SHIFT) && !IsKeyPressed(KeyboardProxy::KEY_CTRL))
+    SelectedNodes newSelection;
+    if (IsKeyPressed(KeyboardProxy::KEY_SHIFT) || IsKeyPressed(KeyboardProxy::KEY_CTRL))
     {
-        deselected = selectionContainer.selectedNodes;
+        newSelection = selectionContainer.selectedNodes;
     }
 
     if (selectedNode != nullptr)
     {
         if (IsKeyPressed(KeyboardProxy::KEY_CTRL) && selectionContainer.IsSelected(selectedNode))
         {
-            deselected.insert(selectedNode);
+            newSelection.erase(selectedNode);
         }
         else
         {
-            selected.insert(selectedNode);
+            newSelection.insert(selectedNode);
         }
     }
-    for (PackageBaseNode* controlNode : selected)
-    {
-        deselected.erase(controlNode);
-    }
-    SelectNode(selected, deselected);
+
+    SelectNodes(newSelection);
 }
 
 ControlNode* SelectionSystem::FindSmallNodeUnderNode(const Vector<ControlNode*>& nodesUnderPoint) const
@@ -299,6 +276,17 @@ void SelectionSystem::GetNodesForSelection(Vector<ControlNode*>& nodesUnderPoint
         return !control->GetVisibilityFlag();
     };
     systemsManager->CollectControlNodes(std::back_inserter(nodesUnderPoint), findPredicate, stopPredicate);
+}
+
+bool SelectionSystem::CanProcessInput(DAVA::UIEvent* currentInput) const
+{
+    EditorSystemsManager::eDisplayState displayState = systemsManager->GetDisplayState();
+    EditorSystemsManager::eDragState dragState = systemsManager->GetDragState();
+    return (displayState == EditorSystemsManager::Edit
+            || displayState == EditorSystemsManager::Preview)
+    && dragState == EditorSystemsManager::NoDrag
+    && currentInput->device == eInputDevices::MOUSE
+    && currentInput->mouseButton == DAVA::eMouseButtons::LEFT;
 }
 
 ControlNode* SelectionSystem::GetCommonNodeUnderPoint(const DAVA::Vector2& point) const

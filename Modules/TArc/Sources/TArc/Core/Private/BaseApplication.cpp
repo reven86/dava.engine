@@ -8,12 +8,18 @@
 #include "Engine/Engine.h"
 #include "CommandLine/CommandLineParser.h"
 
+void InitTArcResources()
+{
+    Q_INIT_RESOURCE(TArcResources);
+}
+
 namespace DAVA
 {
 namespace TArc
 {
 int BaseApplication::Run()
 {
+    InitTArcResources();
     if (!AllowMultipleInstances())
     {
         QtHelpers::RunGuard runGuard(GetInstanceKey());
@@ -46,6 +52,7 @@ int BaseApplication::RunImpl()
         e.Init(eEngineRunMode::GUI_EMBEDDED, initInfo.modules, initInfo.options.Get());
         RegisterAnyCasts();
         RegisterEditorAnyCasts();
+        RegisterReflectionExtensions();
 
         const EngineContext* engineContext = e.GetContext();
         DVASSERT(engineContext);
@@ -60,6 +67,7 @@ int BaseApplication::RunImpl()
         e.Init(initInfo.runMode, initInfo.modules, initInfo.options.Get());
         RegisterAnyCasts();
         RegisterEditorAnyCasts();
+        RegisterReflectionExtensions();
 
         Core core(e);
         Init(&core);
@@ -79,6 +87,10 @@ void BaseApplication::Init(Core* tarcCore)
 }
 
 void BaseApplication::RegisterEditorAnyCasts()
+{
+}
+
+void BaseApplication::RegisterReflectionExtensions()
 {
 }
 

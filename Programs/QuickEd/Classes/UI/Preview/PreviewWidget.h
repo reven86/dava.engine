@@ -1,45 +1,56 @@
 #pragma once
-#include "Engine/Qt/RenderWidget.h"
 
-#include "ui_PreviewWidget.h"
 #include "EditorSystems/EditorSystemsManager.h"
-#include "EditorSystems/SelectionContainer.h"
+
+#include <Engine/Qt/RenderWidget.h>
+
 #include <QWidget>
+#include <QFrame>
 #include <QCursor>
 #include <QPointer>
 
-namespace Ui
+namespace DAVA
 {
-class PreviewWidget;
+namespace TArc
+{
+class ContextAccessor;
+class DataContext;
+}
 }
 class EditorSystemsManager;
+class WidgetsData;
 
-class Document;
 class ControlNode;
-class ScrollAreaController;
 class PackageBaseNode;
 class RulerController;
+class EditorCanvas;
+class CursorInterpreter;
 class AbstractProperty;
+
+class QGridLayout;
+class RulerWidget;
+class RulerController;
+class QComboBox;
+class QScrollBar;
+class RulerController;
 class QWheelEvent;
 class QNativeGestureEvent;
 class QDragMoveEvent;
-class ContinuousUpdater;
 class QDragLeaveEvent;
 class QDropEvent;
 class QMenu;
 
-class PreviewWidget : public QWidget, public Ui::PreviewWidget, private DAVA::RenderWidget::IClientDelegate
+class PreviewWidget : public QFrame, private DAVA::RenderWidget::IClientDelegate
 {
     Q_OBJECT
 public:
-    explicit PreviewWidget(QWidget* parent = nullptr);
+    explicit PreviewWidget(DAVA::TArc::ContextAccessor* accessor, DAVA::RenderWidget* renderWidget, EditorSystemsManager* systemsManager);
     ~PreviewWidget();
-    ScrollAreaController* GetScrollAreaController();
-    RulerController* GetRulerController();
-    void SelectControl(const DAVA::String& path);
 
     void InjectRenderWidget(DAVA::RenderWidget* renderWidget);
-    void OnWindowCreated();
+
+    DAVA::Signal<DAVA::uint64> requestCloseTab;
+    DAVA::Signal<ControlNode*> requestChangeTextInNode;
 
 signals:
     void DeleteRequested();
@@ -47,48 +58,41 @@ signals:
     void CutRequested();
     void CopyRequested();
     void PasteRequested();
-    void SelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OpenPackageFile(QString path);
     void DropRequested(const QMimeData* data, Qt::DropAction action, PackageBaseNode* targetNode, DAVA::uint32 destIndex, const DAVA::Vector2* pos);
 
 public slots:
-    void OnDocumentChanged(Document* document);
-    void SaveSystemsContextAndClear();
-    void LoadSystemsContext(Document* document);
-    void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
     void OnRootControlPositionChanged(const DAVA::Vector2& pos);
-    void OnNestedControlPositionChanged(const QPoint& pos);
+    void OnNestedControlPositionChanged(const DAVA::Vector2& pos);
     void OnEmulationModeChanged(bool emulationMode);
     void OnIncrementScale();
     void OnDecrementScale();
     void SetActualScale();
 
 private slots:
-    void OnScaleChanged(float scale);
+    void OnScaleChanged(DAVA::float32 scale);
     void OnScaleByComboIndex(int value);
     void OnScaleByComboText();
 
-    void OnVScrollbarMoved(int position);
-    void OnHScrollbarMoved(int position);
+    void OnVScrollbarActionTriggered(int action);
+    void OnHScrollbarActionTriggered(int action);
 
-    void UpdateScrollArea();
-    void OnPositionChanged(const QPoint& position);
+    //function argument used for signals compatibility
+    void UpdateScrollArea(const DAVA::Vector2& size = DAVA::Vector2(0.0f, 0.0f));
+    void OnPositionChanged(const DAVA::Vector2& position);
+    void OnResized(DAVA::uint32 width, DAVA::uint32 height);
 
 private:
+    void InitUI();
     void ShowMenu(const QMouseEvent* mouseEvent);
     bool AddSelectionMenuSection(QMenu* parentMenu, const QPoint& pos);
     bool CanChangeTextInControl(const ControlNode* node) const;
-    void ChangeControlText(ControlNode* node);
 
-    void LoadContext();
-    void SaveContext();
+    void InitFromSystemsManager(EditorSystemsManager* systemsManager);
 
-public:
+private:
     void CreateActions();
     void ApplyPosChanges();
-    void OnWheel(QWheelEvent* event) override;
-    void OnNativeGuesture(QNativeGestureEvent* event) override;
-    void OnMousePressed(QMouseEvent* event) override;
     void OnMouseReleased(QMouseEvent* event) override;
     void OnMouseMove(QMouseEvent* event) override;
     void OnMouseDBClick(QMouseEvent* event) override;
@@ -98,29 +102,12 @@ public:
     void OnDragLeaved(QDragLeaveEvent* event) override;
     void OnDrop(QDropEvent* event) override;
     void OnKeyPressed(QKeyEvent* event) override;
-    void OnKeyReleased(QKeyEvent* event) override;
 
-    void OnTransformStateChanged(bool inTransformState);
-    void OnPropertyChanged(ControlNode* node, AbstractProperty* property, DAVA::VariantType newValue);
-
-    float GetScaleFromWheelEvent(int ticksCount) const;
-    float GetNextScale(float currentScale, int ticksCount) const;
-    float GetPreviousScale(float currentScale, int ticksCount) const;
-
-    void OnSelectionInSystemsChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
-    void NotifySelectionChanged();
-    bool CanDragScreen() const;
-    void UpdateDragScreenState();
     float GetScaleFromComboboxText() const;
 
-    QPoint lastMousePos;
-    QCursor lastCursor;
-    QPointer<Document> document;
+    DAVA::TArc::ContextAccessor* accessor = nullptr;
     DAVA::RenderWidget* renderWidget = nullptr;
-    ScrollAreaController* scrollAreaController = nullptr;
-    QList<float> percentages;
 
-    SelectionContainer selectionContainer;
     RulerController* rulerController = nullptr;
     QPoint rootControlPos;
     QPoint canvasPos;
@@ -129,20 +116,17 @@ public:
     QAction* focusNextChildAction = nullptr;
     QAction* focusPreviousChildAction = nullptr;
 
-    std::unique_ptr<EditorSystemsManager> systemsManager;
-
-    ContinuousUpdater* continuousUpdater = nullptr;
-
-    SelectedNodes tmpSelected; //for continuousUpdater
-    SelectedNodes tmpDeselected; //for continuousUpdater
-
-    bool inDragScreenState = false;
+    EditorSystemsManager* systemsManager = nullptr;
+    EditorCanvas* editorCanvas = nullptr;
+    CursorInterpreter* cursorInterpreter = nullptr;
 
     //we can show model dialogs only when mouse released, so remember node to change text when mouse will be released
     ControlNode* nodeToChangeTextOnMouseRelease = nullptr;
 
-    //helper members to store space button and left mouse buttons states
-    bool isSpacePressed = false;
-    bool isMouseLeftButtonPressed = false;
-    bool isMouseMidButtonPressed = false;
+    QGridLayout* gridLayout = nullptr;
+    RulerWidget* horizontalRuler = nullptr;
+    RulerWidget* verticalRuler = nullptr;
+    QComboBox* scaleCombo = nullptr;
+    QScrollBar* horizontalScrollBar = nullptr;
+    QScrollBar* verticalScrollBar = nullptr;
 };

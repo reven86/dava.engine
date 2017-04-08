@@ -9,9 +9,10 @@
 #include "Sound/SoundSystem.h"
 #include "FileSystem/StreamBuffer.h"
 #include "Sound/FMODUtils.h"
-#include "fmod.h"
 #include "Concurrency/ConditionVariable.h"
 #include "Concurrency/Mutex.h"
+
+#include <fmod/fmod.h>
 
 namespace AV
 {
@@ -129,9 +130,9 @@ private:
     void ClearBuffers();
     void CloseMovie();
 
-    void VideoDecodingThread(BaseObject* caller, void* callerData, void* userData);
-    void AudioDecodingThread(BaseObject* caller, void* callerData, void* userData);
-    void ReadingThread(BaseObject* caller, void* callerData, void* userData);
+    void VideoDecodingThread();
+    void AudioDecodingThread();
+    void ReadingThread();
     void SortPacketsByVideoAndAudio(AV::AVPacket* packet);
 
     FilePath moviePath;

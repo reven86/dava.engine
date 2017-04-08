@@ -1,8 +1,8 @@
-#ifndef __DAVAENGINE_POLYGONGROUP_H__
-#define __DAVAENGINE_POLYGONGROUP_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Base/BaseMath.h"
+#include "Reflection/Reflection.h"
 #include "Scene3D/DataNode.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
 #include "Render/RHI/rhi_Public.h"
@@ -168,6 +168,8 @@ public:
                          //        MEMBER(vertices, "Vertices", INTROSPECTION_SERIALIZABLE)
                          //        MEMBER(indices, "Indices", INTROSPECTION_SERIALIZABLE)
                          )
+
+    DAVA_VIRTUAL_REFLECTION(PolygonGroup, DataNode);
 };
 
 // Static Mesh Implementation
@@ -353,6 +355,4 @@ inline rhi::PrimitiveType PolygonGroup::GetPrimitiveType()
 {
     return primitiveType;
 }
-};
-
-#endif // __DAVAENGINE_POLYGONGROUPGLES_H__
+}

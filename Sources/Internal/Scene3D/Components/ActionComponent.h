@@ -1,9 +1,9 @@
-#ifndef __DAVAENGINE_ACTION_COMPONENT_H__
-#define __DAVAENGINE_ACTION_COMPONENT_H__
-
+#pragma once
 
 #include "Entity/Component.h"
+#include "Reflection/Reflection.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
+#include "Base/Any.h"
 
 namespace DAVA
 {
@@ -63,10 +63,14 @@ public:
         {
         }
 
+        bool operator==(const Action& other) const;
+
         void actualizeDelay();
 
         INTROSPECTION(Action,
                       NULL);
+
+        DAVA_VIRTUAL_REFLECTION(Action, InspBase);
     };
 
 protected:
@@ -100,19 +104,6 @@ public:
 
     IMPLEMENT_COMPONENT_TYPE(ACTION_COMPONENT);
 
-private:
-    void EvaluateAction(const Action& action);
-
-    void OnActionParticleEffectStart(const Action& action);
-    void OnActionParticleEffectStop(const Action& action);
-    void OnActionAnimationStart(const Action& action);
-    void OnActionAnimationStop(const Action& action);
-    void OnActionSoundStart(const Action& action);
-    void OnActionSoundStop(const Action& action);
-    void OnActionWave(const Action& action);
-
-    Entity* GetTargetEntity(const FastName& name, Entity* parent);
-
     struct ActionContainer : public InspBase
     {
         Action action;
@@ -135,9 +126,26 @@ private:
             action = srcAction;
         }
 
+        bool operator==(const ActionContainer& container) const;
+
         INTROSPECTION(ActionContainer,
                       NULL);
+
+        DAVA_VIRTUAL_REFLECTION(ActionContainer, InspBase);
     };
+
+private:
+    void EvaluateAction(const Action& action);
+
+    void OnActionParticleEffectStart(const Action& action);
+    void OnActionParticleEffectStop(const Action& action);
+    void OnActionAnimationStart(const Action& action);
+    void OnActionAnimationStop(const Action& action);
+    void OnActionSoundStart(const Action& action);
+    void OnActionSoundStop(const Action& action);
+    void OnActionWave(const Action& action);
+
+    Entity* GetTargetEntity(const FastName& name, Entity* parent);
 
     Vector<ActionComponent::ActionContainer> actions;
     bool started;
@@ -147,7 +155,15 @@ public:
     INTROSPECTION_EXTEND(ActionComponent, Component,
                          COLLECTION(actions, "Actions Array", I_VIEW | I_EDIT)
                          );
-};
+
+    DAVA_VIRTUAL_REFLECTION(ActionComponent, Component);
 };
 
-#endif /* defined(__DAVAENGINE_ACTION_COMPONENT_H__) */
+template <>
+bool AnyCompare<ActionComponent::ActionContainer>::IsEqual(const Any&, const Any&);
+extern template struct AnyCompare<ActionComponent::ActionContainer>;
+
+template <>
+bool AnyCompare<ActionComponent::Action>::IsEqual(const Any&, const Any&);
+extern template struct AnyCompare<ActionComponent::Action>;
+};

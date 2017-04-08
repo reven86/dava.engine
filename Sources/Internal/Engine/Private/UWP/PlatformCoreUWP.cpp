@@ -15,7 +15,7 @@
 #include "Debug/Backtrace.h"
 #include "Logger/Logger.h"
 #include "Platform/DeviceInfo.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 #include "Utils/Utils.h"
 
 extern int DAVAMain(DAVA::Vector<DAVA::String> cmdline);
@@ -25,6 +25,7 @@ namespace DAVA
 namespace Private
 {
 bool PlatformCore::isPhoneContractPresent = false;
+::Windows::UI::Core::CoreDispatcher ^ PlatformCore::coreDispatcher = nullptr;
 
 PlatformCore::PlatformCore(EngineBackend* engineBackend_)
     : engineBackend(engineBackend_)
@@ -57,14 +58,19 @@ void PlatformCore::Run()
 
     engineBackend->OnGameLoopStarted();
 
+    if (appPrelaunched)
+    {
+        Logger::Info("Application is PrelaunchActivated");
+    }
+
     while (!quitGameThread)
     {
-        uint64 frameBeginTime = SystemTimer::Instance()->AbsoluteMS();
+        int64 frameBeginTime = SystemTimer::GetMs();
 
         int32 fps = engineBackend->OnFrame();
 
-        uint64 frameEndTime = SystemTimer::Instance()->AbsoluteMS();
-        uint32 frameDuration = static_cast<uint32>(frameEndTime - frameBeginTime);
+        int64 frameEndTime = SystemTimer::GetMs();
+        int32 frameDuration = static_cast<int32>(frameEndTime - frameBeginTime);
 
         int32 sleep = 1;
         if (fps > 0)
@@ -73,7 +79,7 @@ void PlatformCore::Run()
             if (sleep < 1)
                 sleep = 1;
         }
-        Sleep(sleep);
+        ::Sleep(sleep);
     }
 
     engineBackend->OnGameLoopStopped();
@@ -92,10 +98,23 @@ void PlatformCore::Quit()
 
 void PlatformCore::OnLaunchedOrActivated(::Windows::ApplicationModel::Activation::IActivatedEventArgs ^ args)
 {
+    using ::Windows::UI::Core::CoreDispatcher;
+    using ::Windows::UI::Core::CoreWindow;
     using namespace ::Windows::ApplicationModel::Activation;
 
     // Force DeviceInfo instantiation for early initialization (due to static nature of DeviceInfo)
     Logger::FrameworkDebug("%s", DeviceInfo::GetPlatformString().c_str());
+
+    if (coreDispatcher == nullptr)
+    {
+        coreDispatcher = CoreWindow::GetForCurrentThread()->Dispatcher;
+    }
+
+    if (args->Kind == ActivationKind::Launch)
+    {
+        LaunchActivatedEventArgs ^ launchArgs = static_cast<LaunchActivatedEventArgs ^>(args);
+        appPrelaunched = launchArgs->PrelaunchActivated;
+    }
 
     ApplicationExecutionState prevExecState = args->PreviousExecutionState;
     if (prevExecState != ApplicationExecutionState::Running && prevExecState != ApplicationExecutionState::Suspended)
@@ -126,12 +145,13 @@ void PlatformCore::OnWindowCreated(::Windows::UI::Xaml::Window ^ xamlWindow)
     {
         primaryWindow = engineBackend->InitializePrimaryWindow();
     }
-    WindowBackend* windowBackend = primaryWindow->GetBackend();
+    WindowBackend* windowBackend = EngineBackend::GetWindowBackend(primaryWindow);
     windowBackend->BindXamlWindow(xamlWindow);
 }
 
 void PlatformCore::OnSuspending()
 {
+    NotifyListeners(ON_SUSPENDING, nullptr);
     dispatcher->SendEvent(MainDispatcherEvent(MainDispatcherEvent::APP_SUSPENDED)); // Blocking call !!!
 }
 
@@ -240,6 +260,9 @@ void PlatformCore::NotifyListeners(eNotificationType type, ::Platform::Object ^ 
             break;
         case ON_ACTIVATED:
             l->OnActivated(static_cast<IActivatedEventArgs ^>(arg1));
+            break;
+        case ON_SUSPENDING:
+            l->OnSuspending();
             break;
         default:
             break;

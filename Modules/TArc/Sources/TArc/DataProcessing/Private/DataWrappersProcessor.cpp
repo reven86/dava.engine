@@ -15,7 +15,7 @@ DataWrapper DataWrappersProcessor::CreateWrapper(const ReflectedType* type, Data
 {
     DataWrapper wrapper(type);
     wrapper.SetContext(ctx);
-    wrappers.push_back(wrapper);
+    justCreatedWrappers.push_back(wrapper);
     return wrapper;
 }
 
@@ -23,13 +23,18 @@ DataWrapper DataWrappersProcessor::CreateWrapper(const DataWrapper::DataAccessor
 {
     DataWrapper wrapper(accessor);
     wrapper.SetContext(ctx);
-    wrappers.push_back(wrapper);
+    justCreatedWrappers.push_back(wrapper);
     return wrapper;
 }
 
 void DataWrappersProcessor::SetContext(DataContext* ctx)
 {
     for (DataWrapper& wrapper : wrappers)
+    {
+        wrapper.SetContext(ctx);
+    }
+
+    for (DataWrapper& wrapper : justCreatedWrappers)
     {
         wrapper.SetContext(ctx);
     }
@@ -41,6 +46,9 @@ void DataWrappersProcessor::Sync()
     {
         return;
     }
+    wrappers.insert(wrappers.end(), justCreatedWrappers.begin(), justCreatedWrappers.end());
+    justCreatedWrappers.clear();
+
     recursiveSyncGuard = true;
     size_t index = 0;
     while (index < wrappers.size())

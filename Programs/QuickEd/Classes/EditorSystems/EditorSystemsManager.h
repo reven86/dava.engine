@@ -1,21 +1,29 @@
-#ifndef __QUICKED_SYSTEMS_MANAGER_H__
-#define __QUICKED_SYSTEMS_MANAGER_H__
+#pragma once
 
-#include "Base/BaseTypes.h"
-#include "Base/RefPtr.h"
-#include "Functional/Signal.h"
 #include "Model/PackageHierarchy/PackageListener.h"
 #include "EditorSystems/SelectionContainer.h"
-#include "Math/Rect.h"
-#include "Math/Vector.h"
+
+#include <TArc/DataProcessing/DataWrapper.h>
+#include <TArc/DataProcessing/DataListener.h>
+
+#include <Base/BaseTypes.h>
+#include <Base/RefPtr.h>
+#include <Functional/Signal.h>
+
+#include <Math/Rect.h>
+#include <Math/Vector.h>
 
 namespace DAVA
 {
 class UIControl;
 class UIEvent;
-class VariantType;
 class UIGeometricData;
-class RenderWidget;
+
+namespace TArc
+{
+class ContextAccessor;
+class DataContext;
+}
 }
 
 struct HUDAreaInfo
@@ -67,36 +75,61 @@ struct MagnetLineInfo
 class BaseEditorSystem;
 class AbstractProperty;
 class PackageNode;
-class CanvasSystem;
+class EditorControlsView;
 class SelectionSystem;
 class HUDSystem;
 
-class EditorSystemsManager : PackageListener
+class EditorSystemsManager : PackageListener, DAVA::TArc::DataListener
 {
     using StopPredicate = std::function<bool(const ControlNode*)>;
     static StopPredicate defaultStopPredicate;
 
 public:
-    explicit EditorSystemsManager(DAVA::RenderWidget* renderWidget);
+    //we have situations, when one input can produce two different state. To resolve this conflict we declare that state priority is equal to it value
+    //as an example dragging control with pressed spacebar button will perform drag screen and transform at the same time
+    enum eDragState
+    {
+        //invalid state to request new state from baseEditorSystem
+        NoDrag,
+        //if cursor is under control and it selectable
+        SelectByRect,
+        //if cursor under selected control, pressed left mouse button and starts dragging
+        Transform,
+        //all user input used only to drag canvas inide rednder widget
+        DragScreen
+    };
+
+    enum eDisplayState
+    {
+        //remove hud and throw all input to the DAVA frameworkx
+        Emulation,
+        //just display all root controls, no other iteraction enabled
+        Preview,
+        //display one root control
+        Edit
+    };
+
+    explicit EditorSystemsManager(DAVA::TArc::ContextAccessor* accessor);
     ~EditorSystemsManager();
 
-    DAVA::RenderWidget* GetRenderWidget() const;
+    eDragState GetDragState() const;
+    eDisplayState GetDisplayState() const;
+    HUDAreaInfo GetCurrentHUDArea() const;
 
-    DAVA::UIControl* GetRootControl() const;
-    DAVA::UIControl* GetInputLayerControl() const;
-    DAVA::UIControl* GetScalableControl() const;
+    void AddEditorSystem(BaseEditorSystem* system);
 
-    bool OnInput(DAVA::UIEvent* currentInput);
-
-    void SetEmulationMode(bool emulationMode);
+    void OnInput(DAVA::UIEvent* currentInput);
 
     template <class OutIt, class Predicate>
     void CollectControlNodes(OutIt destination, Predicate predicate, StopPredicate stopPredicate = defaultStopPredicate) const;
 
     void HighlightNode(ControlNode* node);
     void ClearHighlight();
+
+    void SetEmulationMode(bool emulationMode);
+
     ControlNode* GetControlNodeAtPoint(const DAVA::Vector2& point) const;
-    DAVA::uint32 GetIndexOfNearestControl(const DAVA::Vector2& point) const;
+    DAVA::uint32 GetIndexOfNearestRootControl(const DAVA::Vector2& point) const;
 
     void SelectAll();
     void FocusNextChild();
@@ -104,47 +137,75 @@ public:
     void ClearSelection();
     void SelectNode(ControlNode* node);
 
-    DAVA::Signal<const SelectedNodes& /*selected*/, const SelectedNodes& /*deselected*/> selectionChanged;
+    const SortedPackageBaseNodeSet& GetEditingRootControls() const;
+
+    DAVA::UIControl* GetRootControl() const;
+    DAVA::UIControl* GetScalableControl() const;
+
+    DAVA::Signal<const SelectedNodes& /*selection*/> selectionChanged;
     DAVA::Signal<const HUDAreaInfo& /*areaInfo*/> activeAreaChanged;
-    DAVA::Signal<const DAVA::Rect& /*selectionRectControl*/> selectionRectChanged;
-    DAVA::Signal<bool> emulationModeChangedSignal;
-    DAVA::Signal<> canvasSizeChanged;
-    DAVA::Signal<ControlNode*, AbstractProperty*, DAVA::VariantType> propertyChanged;
-    DAVA::Signal<const SortedPackageBaseNodeSet&> editingRootControlsChanged;
     DAVA::Signal<const DAVA::Vector<MagnetLineInfo>& /*magnetLines*/> magnetLinesChanged;
+    DAVA::Signal<const ControlNode*> highlightNode;
+    DAVA::Signal<const DAVA::Rect& /*selectionRectControl*/> selectionRectChanged;
+    DAVA::Signal<const DAVA::Vector2&> contentSizeChanged;
+    DAVA::Signal<ControlNode*, AbstractProperty*, const DAVA::Any&> propertyChanged;
+    DAVA::Signal<const SortedPackageBaseNodeSet&> editingRootControlsChanged;
     DAVA::Signal<const DAVA::Vector2& /*new position*/> rootControlPositionChanged;
-    DAVA::Signal<PackageNode* /*node*/> packageNodeChanged;
-    DAVA::Signal<bool> transformStateChanged; //indicates when user transform control
+    DAVA::Signal<PackageNode* /*node*/> packageChanged;
+    DAVA::Signal<bool> emulationModeChanged;
+    DAVA::Signal<eDragState /*currentState*/, eDragState /*previousState*/> dragStateChanged;
+    DAVA::Signal<eDisplayState /*currentState*/, eDisplayState /*previousState*/> displayStateChanged;
+
+    //helpers
+    DAVA::Vector2 GetMouseDelta() const;
+    DAVA::Vector2 GetLastMousePos() const;
 
 private:
-    class InputLayerControl;
-    void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
+    void SetDragState(eDragState dragState);
+    void SetDisplayState(eDisplayState displayState);
+
+    void OnEditingRootControlsChanged(const SortedPackageBaseNodeSet& rootControls);
+    void OnActiveHUDAreaChanged(const HUDAreaInfo& areaInfo);
 
     template <class OutIt, class Predicate>
     void CollectControlNodesImpl(OutIt destination, Predicate predicate, StopPredicate stopPredicate, ControlNode* node) const;
 
-    void OnPackageNodeChanged(PackageNode* node);
-    void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from) override;
+    void OnPackageChanged(PackageNode* node);
+    void ControlWillBeRemoved(ControlNode* node, ControlsContainerNode* from) override;
     void ControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int index) override;
-    void SetPreviewMode(bool mode);
-    void RefreshRootControls();
-    void OnTransformStateChanged(bool inTransformState);
+    void InitDAVAScreen();
+
+    void OnDragStateChanged(eDragState currentState, eDragState previousState);
+    void OnDisplayStateChanged(eDisplayState currentState, eDisplayState previousState);
+
+    void OnSelectionDataChanged(const DAVA::Any& newSelection);
+    void OnPackageDataChanged(const DAVA::Any& package);
+
+    void OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields) override;
 
     DAVA::RefPtr<DAVA::UIControl> rootControl;
-    DAVA::RefPtr<InputLayerControl> inputLayerControl;
+    DAVA::RefPtr<DAVA::UIControl> inputLayerControl;
     DAVA::RefPtr<DAVA::UIControl> scalableControl;
 
     DAVA::List<std::unique_ptr<BaseEditorSystem>> systems;
 
-    PackageNode* package = nullptr;
-    SelectedControls selectedControlNodes;
+    DAVA::RefPtr<PackageNode> package;
     SortedPackageBaseNodeSet editingRootControls;
-    bool previewMode = true;
-    SelectionContainer selectionContainer;
-    CanvasSystem* canvasSystemPtr = nullptr; //weak pointer to canvas system;
+    EditorControlsView* controlViewPtr = nullptr; //weak pointer to canvas system;
     SelectionSystem* selectionSystemPtr = nullptr; // weak pointer to selection system
-    DAVA::RenderWidget* renderWidget = nullptr;
     HUDSystem* hudSystemPtr = nullptr;
+
+    eDragState dragState = NoDrag;
+    eDragState previousDragState = NoDrag;
+    eDisplayState displayState = Preview;
+    eDisplayState previousDisplayState = Preview;
+
+    HUDAreaInfo currentHUDArea;
+    //helpers
+    DAVA::Vector2 lastMousePos;
+    DAVA::Vector2 mouseDelta;
+
+    DAVA::TArc::DataWrapper documentDataWrapper;
 };
 
 template <class OutIt, class Predicate>
@@ -174,5 +235,3 @@ void EditorSystemsManager::CollectControlNodesImpl(OutIt destination, Predicate 
         }
     }
 }
-
-#endif // __QUICKED_SYSTEMS_MANAGER_H__

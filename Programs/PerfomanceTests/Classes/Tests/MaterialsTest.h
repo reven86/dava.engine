@@ -7,7 +7,6 @@ class MaterialsTest : public BaseTest
 {
 public:
     MaterialsTest(const TestParams& testParams);
-    ~MaterialsTest();
 
     void BeginFrame() override;
 
@@ -17,8 +16,9 @@ public:
 
 protected:
     void LoadResources() override;
-    void PerformTestLogic(float32 timeElapsed) override{};
+    void UnloadResources() override;
 
+    void PerformTestLogic(float32 timeElapsed) override{};
     void PrintStatistic(const Vector<BaseTest::FrameInfo>& frames) override;
 
     const String& GetSceneName() const override;
@@ -42,7 +42,7 @@ private:
     static const uint32 FRAMES_PER_MATERIAL_TEST;
 
     int32 currentTestStartFrame;
-    uint64 currentTestStartTime;
+    float32 currentTestStartTime;
     uint32 currentMaterialIndex;
 
     Vector<Entity*> planes;

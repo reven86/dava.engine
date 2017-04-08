@@ -1,5 +1,5 @@
 #include "mainwindow.h"
-#include "version.h"
+#include <Tools/Version.h>
 #include "Classes/Qt/BeastDialog/BeastDialog.h"
 #include "Classes/Qt/CubemapEditor/CubemapTextureBrowser.h"
 #include "Classes/Qt/CubemapEditor/CubemapUtils.h"
@@ -18,15 +18,12 @@
 #include "Classes/Qt/Scene/System/VisibilityCheckSystem/VisibilityCheckSystem.h"
 #include "Classes/Qt/Scene/System/EditorVegetationSystem.h"
 #include "Classes/Qt/Scene/Validation/SceneValidationDialog.h"
-#include "Classes/Qt/Settings/SettingsDialog.h"
-#include "Classes/Qt/Settings/SettingsManager.h"
-#include "Classes/Qt/SoundComponentEditor/FMODSoundBrowser.h"
+#include "Classes/Settings/SettingsManager.h"
 #include "Classes/Qt/SpritesPacker/SpritesPackerModule.h"
 #include "Classes/Qt/TextureBrowser/TextureBrowser.h"
 #include "Classes/Qt/TextureBrowser/TextureCache.h"
 #include "Classes/Qt/Tools/AddSwitchEntityDialog/AddSwitchEntityDialog.h"
 #include "Classes/Qt/Tools/BaseAddEntityDialog/BaseAddEntityDialog.h"
-#include "Classes/Qt/Tools/ColorPicker/ColorPicker.h"
 #include "Classes/Qt/Tools/DeveloperTools/DeveloperTools.h"
 #include "Classes/Qt/Tools/HangingObjectsHeight/HangingObjectsHeight.h"
 #include "Classes/Qt/Tools/HeightDeltaTool/HeightDeltaTool.h"
@@ -72,9 +69,9 @@
 
 #include "Render/2D/Sprite.h"
 
-#include "TextureCompression/TextureConverter.h"
+#include <Tools/TextureCompression/TextureConverter.h>
 
-#include "TArc/WindowSubSystem/Private/WaitDialog.h"
+#include <TArc/WindowSubSystem/Private/WaitDialog.h>
 
 #include "QtTools/ConsoleWidget/LogWidget.h"
 #include "QtTools/ConsoleWidget/LogModel.h"
@@ -249,7 +246,6 @@ QtMainWindow::QtMainWindow(DAVA::TArc::UI* tarcUI_, QWidget* parent)
     // create tool windows
     new TextureBrowser(this);
     new MaterialEditor(this);
-    new FMODSoundBrowser(this);
 
     beastWaitDialog = new QtWaitDialog(this);
 
@@ -297,7 +293,8 @@ QtMainWindow::~QtMainWindow()
 void QtMainWindow::OnRenderingInitialized()
 {
     ui->landscapeEditorControlsPlaceholder->OnOpenGLInitialized();
-    QObject::connect(DAVA::PlatformApi::Qt::GetRenderWidget(), &DAVA::RenderWidget::Resized, ui->statusBar, &StatusBar::OnSceneGeometryChaged);
+    DAVA::RenderWidget* renderWidget = DAVA::PlatformApi::Qt::GetRenderWidget();
+    renderWidget->resized.Connect(ui->statusBar, &StatusBar::OnSceneGeometryChaged);
 }
 
 void QtMainWindow::AfterInjectInit()
@@ -642,8 +639,6 @@ void QtMainWindow::SetupActions()
     QObject::connect(ui->actionAddWind, SIGNAL(triggered()), this, SLOT(OnAddWindEntity()));
     QObject::connect(ui->actionAddVegetation, SIGNAL(triggered()), this, SLOT(OnAddVegetation()));
     QObject::connect(ui->actionAddPath, SIGNAL(triggered()), this, SLOT(OnAddPathEntity()));
-
-    QObject::connect(ui->actionShowSettings, SIGNAL(triggered()), this, SLOT(OnShowSettings()));
 
     QObject::connect(ui->actionSaveHeightmapToPNG, SIGNAL(triggered()), this, SLOT(OnSaveHeightmapToImage()));
     QObject::connect(ui->actionSaveTiledTexture, SIGNAL(triggered()), this, SLOT(OnSaveTiledTexture()));
@@ -1397,12 +1392,6 @@ void QtMainWindow::On2DSpriteDialog()
 void QtMainWindow::OnAddEntityFromSceneTree()
 {
     ui->menuAdd->exec(QCursor::pos());
-}
-
-void QtMainWindow::OnShowSettings()
-{
-    SettingsDialog t(this);
-    t.exec();
 }
 
 void QtMainWindow::OnOpenHelp()
@@ -2279,13 +2268,6 @@ void QtMainWindow::DebugVersionInfo()
     }
 
     versionInfoWidget->show();
-}
-
-void QtMainWindow::DebugColorPicker()
-{
-    ColorPicker* cp = new ColorPicker(this);
-
-    cp->Exec();
 }
 
 void QtMainWindow::DebugDeviceList()

@@ -1,7 +1,10 @@
 #include "TArc/DataProcessing/PropertiesHolder.h"
-#include "FileSystem/FilePath.h"
-#include "Logger/Logger.h"
-#include "Debug/DVAssert.h"
+
+#include <FileSystem/FilePath.h>
+#include <Logger/Logger.h>
+#include <Debug/DVAssert.h>
+#include <Utils/StringFormat.h>
+#include <Base/FastName.h>
 
 #include <QVariant>
 #include <QJsonDocument>
@@ -11,6 +14,8 @@
 #include <QFileInfo>
 #include <QDir>
 #include <QFile>
+#include <QRect>
+#include <QDataStream>
 
 namespace DAVA
 {
@@ -18,22 +23,44 @@ namespace TArc
 {
 namespace PropertiesHolderDetails
 {
+const char* stringListDelimiter = ";# ";
 struct JSONObject
 {
-    JSONObject(const QString& name_)
+    JSONObject(JSONObject* parent_, const QString& name_)
         : name(name_)
+        , parent(parent_)
     {
+        if (parent != nullptr)
+        {
+            jsonObject = parent->jsonObject[name].toObject();
+
+#if defined(__DAVAENGINE_DEBUG__)
+            auto iter = std::find_if(parent->children.begin(), parent->children.end(), [this](const JSONObject* child) {
+                return child->name == name;
+            });
+            DVASSERT(iter == parent->children.end());
+            parent->children.push_back(this);
+#endif //__DAVAENGINE_DEBUG__
+        }
     }
 
+#if defined(__DAVAENGINE_DEBUG__)
     ~JSONObject()
     {
         DVASSERT(children.empty());
+        if (parent != nullptr)
+        {
+            parent->children.remove(this);
+        }
     }
+    List<JSONObject*> children;
+#endif //__DAVAENGINE_DEBUG__
+
+    virtual void Sync() = 0;
 
     QString name;
-    List<JSONObject*> children;
     QJsonObject jsonObject;
-    bool wasChanged = false;
+    JSONObject* parent = nullptr;
 };
 }
 
@@ -42,38 +69,25 @@ struct PropertiesItem::Impl : public PropertiesHolderDetails::JSONObject
     Impl(JSONObject* impl_, const String& name_);
     ~Impl();
 
-    //realization for the fundamental types
-    template <typename T, typename std::enable_if<std::is_fundamental<T>::value, int>::type = 0>
-    void Set(const QString& key, T value);
-
-    //realization for the pointers
-    template <typename T, typename std::enable_if<std::is_pointer<T>::value, int>::type = 0>
-    void Set(const QString& key, const T& value);
-
-    //realization for the pointers
-    template <typename T, typename std::enable_if<!std::is_pointer<T>::value && !std::is_fundamental<T>::value, int>::type = 0>
-    void Set(const QString& key, const T& value);
-
-    QJsonValue ToValue(const QString& value);
-    QJsonValue ToValue(const QByteArray& value);
-    QJsonValue ToValue(const DAVA::FilePath& value);
-
     template <typename T>
     T Get(const QString& key, const T& defaultValue);
 
-    template <typename T, typename std::enable_if<std::is_fundamental<T>::value, int>::type = 0>
-    T FromValue(const QJsonValue& value, const T& defaultValue);
+    template <typename T>
+    void Set(const QString& key, T value);
 
     template <typename T, typename std::enable_if<std::is_pointer<T>::value, int>::type = 0>
     T FromValue(const QJsonValue& value, const T& defaultValue);
 
-    QString FromValue(const QJsonValue& value, const QString& defaultValue);
-    QByteArray FromValue(const QJsonValue& value, const QByteArray& defaultValue);
-    DAVA::FilePath FromValue(const QJsonValue& value, const DAVA::FilePath& defaultValue);
+    template <typename T, typename std::enable_if<!std::is_pointer<T>::value, int>::type = 0>
+    T FromValue(const QJsonValue& value, const T& defaultValue);
 
-    void SaveToParent();
+    template <typename T, typename std::enable_if<std::is_pointer<T>::value, int>::type = 0>
+    QJsonValue ToValue(const T& value);
 
-    JSONObject* parent = nullptr;
+    template <typename T, typename std::enable_if<!std::is_pointer<T>::value, int>::type = 0>
+    QJsonValue ToValue(const T& value);
+
+    void Sync() override;
 };
 
 struct PropertiesHolder::Impl : public PropertiesHolderDetails::JSONObject
@@ -86,6 +100,8 @@ struct PropertiesHolder::Impl : public PropertiesHolderDetails::JSONObject
     void LoadFromFile();
     void SaveToFile();
 
+    void Sync() override;
+
     QFileInfo storagePath;
 };
 
@@ -97,69 +113,24 @@ PropertiesItem PropertiesHolder::CreateSubHolder(const String& holderName) const
 }
 
 PropertiesHolder::Impl::Impl(const String& name_, const FilePath& dirPath)
-    : PropertiesHolderDetails::JSONObject(QString::fromStdString(name_))
+    : PropertiesHolderDetails::JSONObject(nullptr, QString::fromStdString(name_))
 {
     SetDirectory(dirPath);
 }
 
-PropertiesItem::Impl::Impl(JSONObject* impl_, const String& name_)
-    : PropertiesHolderDetails::JSONObject(QString::fromStdString(name_))
-    , parent(impl_)
+PropertiesItem::Impl::Impl(JSONObject* parent, const String& name_)
+    : PropertiesHolderDetails::JSONObject(parent, QString::fromStdString(name_))
 {
-    auto iter = std::find_if(parent->children.begin(), parent->children.end(), [this](const JSONObject* child) {
-        return child->name == name;
-    });
-    DVASSERT(iter == parent->children.end());
-    parent->children.push_back(this);
-    jsonObject = parent->jsonObject[name].toObject();
 }
 
 PropertiesItem::Impl::~Impl()
 {
     DVASSERT(parent != nullptr);
-    if (wasChanged)
-    {
-        SaveToParent();
-    }
-    parent->children.remove(this);
 }
 
 PropertiesHolder::Impl::~Impl()
 {
     SaveToFile();
-}
-
-template <typename T, typename std::enable_if<std::is_fundamental<T>::value, int>::type>
-void PropertiesItem::Impl::Set(const QString& key, T value)
-{
-    jsonObject[key] = value;
-}
-
-template <typename T, typename std::enable_if<std::is_pointer<T>::value, int>::type>
-void PropertiesItem::Impl::Set(const QString& key, const T& value)
-{
-    DVASSERT(false, "unsupported type: pointer");
-}
-
-template <typename T, typename std::enable_if<!std::is_pointer<T>::value && !std::is_fundamental<T>::value, int>::type>
-void PropertiesItem::Impl::Set(const QString& key, const T& value)
-{
-    jsonObject[key] = ToValue(value);
-}
-
-QJsonValue PropertiesItem::Impl::ToValue(const QString& value)
-{
-    return QJsonValue(value);
-}
-
-QJsonValue PropertiesItem::Impl::ToValue(const QByteArray& value)
-{
-    return QJsonValue(QString(value.toBase64()));
-}
-
-QJsonValue PropertiesItem::Impl::ToValue(const DAVA::FilePath& value)
-{
-    return QJsonValue(QString::fromStdString(value.GetAbsolutePathname()));
 }
 
 template <typename T>
@@ -176,15 +147,11 @@ T PropertiesItem::Impl::Get(const QString& key, const T& defaultValue)
     }
 }
 
-template <typename T, typename std::enable_if<std::is_fundamental<T>::value, int>::type>
-T PropertiesItem::Impl::FromValue(const QJsonValue& value, const T& defaultValue)
+template <typename T>
+void PropertiesItem::Impl::Set(const QString& key, T value)
 {
-    QVariant var = value.toVariant();
-    if (var.canConvert<T>())
-    {
-        return var.value<T>();
-    }
-    return defaultValue;
+    jsonObject[key] = ToValue(value);
+    Sync();
 }
 
 template <typename T, typename std::enable_if<std::is_pointer<T>::value, int>::type>
@@ -193,33 +160,24 @@ T PropertiesItem::Impl::FromValue(const QJsonValue& value, const T& defaultValue
     DVASSERT(false, "unsupported type: pointer");
 }
 
-QString PropertiesItem::Impl::FromValue(const QJsonValue& value, const QString& defaultValue)
+template <typename T, typename std::enable_if<!std::is_pointer<T>::value, int>::type>
+T PropertiesItem::Impl::FromValue(const QJsonValue& value, const T& defaultValue)
 {
-    return value.toString(defaultValue);
+    DVASSERT(false, "conversion between QJsonValue and T is not declared");
 }
 
-QByteArray PropertiesItem::Impl::FromValue(const QJsonValue& value, const QByteArray& defaultValue)
+template <typename T, typename std::enable_if<std::is_pointer<T>::value, int>::type>
+QJsonValue ToValue(const T& value)
 {
-    if (value.isString())
-    {
-        return QByteArray::fromBase64(value.toString().toUtf8());
-    }
-    else
-    {
-        return defaultValue;
-    }
+    DVASSERT(false, "unsupported type: pointer");
+    return QJsonValue();
 }
 
-DAVA::FilePath PropertiesItem::Impl::FromValue(const QJsonValue& value, const DAVA::FilePath& defaultValue)
+template <typename T, typename std::enable_if<!std::is_pointer<T>::value, int>::type>
+QJsonValue ToValue(const T& value)
 {
-    if (value.isString())
-    {
-        return DAVA::FilePath(value.toString().toStdString());
-    }
-    else
-    {
-        return defaultValue;
-    }
+    DVASSERT(false, "conversion between QJsonValue and T is not declared");
+    return QJsonValue();
 }
 
 void PropertiesHolder::Impl::SetDirectory(const FilePath& dirPath)
@@ -246,9 +204,14 @@ void PropertiesHolder::Impl::LoadFromFile()
     }
     QString filePath = storagePath.absoluteFilePath();
     QFile file(filePath);
+    if (file.exists() == false)
+    {
+        return;
+    }
+
     if (!file.open(QFile::ReadOnly))
     {
-        Logger::Error("Can not open file %s", filePath.toUtf8().data());
+        Logger::Error("Can not open file %s for read", filePath.toUtf8().data());
         return;
     }
     QByteArray fileContent = file.readAll();
@@ -271,13 +234,11 @@ void PropertiesHolder::Impl::LoadFromFile()
 
 void PropertiesHolder::Impl::SaveToFile()
 {
-    // right now we not need to save root element with existed child
-    DVASSERT(children.empty());
     QString filePath = storagePath.absoluteFilePath();
     QFile file(filePath);
     if (!file.open(QFile::WriteOnly | QFile::Truncate))
     {
-        Logger::Error("Can not open file %s", filePath.toUtf8().data());
+        Logger::Error("Can not open file %s for write", filePath.toUtf8().data());
         return;
     }
     QJsonDocument document(jsonObject);
@@ -289,10 +250,16 @@ void PropertiesHolder::Impl::SaveToFile()
     }
 }
 
-void PropertiesItem::Impl::SaveToParent()
+void PropertiesHolder::Impl::Sync()
 {
-    parent->wasChanged = true;
+    SaveToFile();
+}
+
+void PropertiesItem::Impl::Sync()
+{
+    DVASSERT(parent != nullptr);
     parent->jsonObject[name] = jsonObject;
+    parent->Sync();
 }
 
 PropertiesHolder::PropertiesHolder(const String& projectName, const FilePath& directory)
@@ -329,6 +296,12 @@ PropertiesItem::PropertiesItem(const PropertiesItem& parent, const String& name)
 {
 }
 
+#define ENUM_CAP \
+        else \
+        { \
+            DVASSERT(false, "type is not enumerated in the ENUM_TYPES define!");\
+        }
+
 #define SAVE_IF_ACCEPTABLE(value, type, T, key) \
     if (type == Type::Instance<T>()) \
     { \
@@ -337,10 +310,11 @@ PropertiesItem::PropertiesItem(const PropertiesItem& parent, const String& name)
         { \
             impl->Set(key, value.Get<T>()); \
         } \
-        catch (const DAVA::Exception& exception) \
+        catch (const Exception& exception) \
         { \
             Logger::Debug("PropertiesHolder::Save: can not get type %s with message %s", type->GetName(), exception.what()); \
         } \
+        return; \
     }
 
 #define LOAD_IF_ACCEPTABLE(value, type, T, key) \
@@ -352,7 +326,7 @@ PropertiesItem::PropertiesItem(const PropertiesItem& parent, const String& name)
         { \
             retVal = Any(impl->Get(key, value.Get<T>())); \
         } \
-        catch (const DAVA::Exception& exception) \
+        catch (const Exception& exception) \
         { \
             Logger::Debug("PropertiesHolder::Load: can not get type %s with message %s", type->GetName(), exception.what()); \
         } \
@@ -362,18 +336,24 @@ PropertiesItem::PropertiesItem(const PropertiesItem& parent, const String& name)
 #define ENUM_TYPES(METHOD, value, type, key) \
     METHOD(value, type, bool, key) \
     METHOD(value, type, int32, key) \
+    METHOD(value, type, uint32, key) \
     METHOD(value, type, int64, key) \
+    METHOD(value, type, uint64, key) \
     METHOD(value, type, float32, key) \
     METHOD(value, type, float64, key) \
     METHOD(value, type, QString, key) \
+    METHOD(value, type, QRect, key) \
     METHOD(value, type, QByteArray, key) \
-    METHOD(value, type, DAVA::FilePath, key)
+    METHOD(value, type, FilePath, key) \
+    METHOD(value, type, String, key) \
+    METHOD(value, type, Vector<String>, key) \
+    METHOD(value, type, Vector<FastName>, key) \
+    ENUM_CAP
 
 void PropertiesItem::Set(const String& key, const Any& value)
 {
     const Type* type = value.GetType();
     QString keyStr = QString::fromStdString(key);
-    impl->wasChanged = true;
     DVASSERT(!impl->jsonObject[keyStr].isObject());
     ENUM_TYPES(SAVE_IF_ACCEPTABLE, value, type, keyStr);
 }
@@ -391,6 +371,7 @@ Any PropertiesItem::Get(const String& key, const Any& defaultValue, const Type* 
     ENUM_TYPES(LOAD_IF_ACCEPTABLE, defaultValue, type, keyStr);
     return Any();
 }
-
 } // namespace TArc
 } // namespace DAVA
+
+#include "TArc/DataProcessing/Private/PropertiesTypesConvertion.h"

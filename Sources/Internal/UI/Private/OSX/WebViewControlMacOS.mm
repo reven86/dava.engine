@@ -21,6 +21,95 @@
 
 #import "Engine/Mac/PlatformApi.h"
 
+// Subclassing from WebView to make workaround:
+// Webview should change its size while window is resizing
+// (if not, it looks pretty bad for the user)
+@interface MacWebView : WebView
+{
+    NSSize origSuperviewSize;
+    NSRect origRect;
+    bool inProportionalResize;
+}
+@end
+
+@implementation MacWebView
+- (id)initWithFrame:(NSRect)frame
+{
+    self = [super initWithFrame:frame];
+    [self stopProportionalResize];
+    return self;
+}
+
+- (void)viewWillStartLiveResize
+{
+    [super viewWillStartLiveResize];
+
+    // Enable WebView size change proportionally
+    // to its super view size.
+    [self startProportionalResize];
+}
+
+- (void)viewDidEndLiveResize
+{
+    [super viewDidEndLiveResize];
+
+    // Final apply new WebView size that is
+    // proportional to its super view size
+    [self applyProportionalResize:[[self superview] frame].size];
+
+    // Now we can disable proportional resize
+    inProportionalResize = false;
+}
+
+- (void)resizeWithOldSuperviewSize:(NSSize)oldSize;
+{
+    // live superview resizing oldSize comes here
+    // allowing us to apply proportional resize
+    [super resizeWithOldSuperviewSize:oldSize];
+    [self applyProportionalResize:oldSize];
+}
+
+- (void)startProportionalResize
+{
+    // Remember currect superview size and WebView size to be able
+    // to calculate proportional factor later.
+    origSuperviewSize = [[self superview] frame].size;
+    origRect = [self frame];
+    inProportionalResize = true;
+}
+
+- (void)stopProportionalResize
+{
+    inProportionalResize = false;
+}
+
+- (void)applyProportionalResize:(NSSize)oldSize
+{
+    if (inProportionalResize)
+    {
+        if (origSuperviewSize.width > 0 && origSuperviewSize.height > 0)
+        {
+            // calculate proportional scale factor
+            CGFloat changeScaleX = oldSize.width / origSuperviewSize.width;
+            CGFloat changeScaleY = oldSize.height / origSuperviewSize.height;
+
+            // tune position
+            NSPoint newPos;
+            newPos.x = origRect.origin.x * changeScaleX;
+            newPos.y = origRect.origin.y * changeScaleY;
+            [self setFrameOrigin:newPos];
+
+            // tune size
+            NSSize newSize;
+            newSize.width = origRect.size.width * changeScaleX;
+            newSize.height = origRect.size.height * changeScaleY;
+            [self setFrameSize:newSize];
+        }
+    }
+}
+
+@end
+
 // A delegate is needed to block the context menu. Note - this delegate
 // is informal, so no inheritance from WebUIDelegate needed.
 #if defined(__MAC_10_11)
@@ -201,33 +290,32 @@ WebViewControl::WebViewControl(UIWebView* uiWebView)
 {
     bridge->controlUIDelegate = [[WebViewControlUIDelegate alloc] init];
     bridge->policyDelegate = [[WebViewPolicyDelegate alloc] init];
-    bridge->webView = [[WebView alloc] initWithFrame:NSMakeRect(0.0f, 0.0f, 0.0f, 0.0f)
-                                           frameName:nil
-                                           groupName:nil];
+    bridge->webView = [[MacWebView alloc] initWithFrame:NSMakeRect(0.0f, 0.0f, 0.0f, 0.0f)];
     [bridge->webView setWantsLayer:YES];
     [bridge->webView setShouldUpdateWhileOffscreen:YES]; // for rendering to texture
 
     [bridge->webView setUIDelegate:bridge->controlUIDelegate];
     [bridge->webView setPolicyDelegate:bridge->policyDelegate];
     [bridge->webView setFrameLoadDelegate:bridge->policyDelegate];
+    [bridge->webView setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
 
     [bridge->policyDelegate setWebViewControl:this];
     [bridge->policyDelegate setUiWebViewControl:&uiWebViewControl];
 
 #if defined(__DAVAENGINE_COREV2__)
     PlatformApi::Mac::AddNSView(window, bridge->webView);
-
-    windowVisibilityChangedConnection = window->visibilityChanged.Connect(this, &WebViewControl::OnWindowVisibilityChanged);
+    Engine::Instance()->windowDestroyed.Connect(this, &WebViewControl::OnWindowDestroyed);
+    window->visibilityChanged.Connect(this, &WebViewControl::OnWindowVisibilityChanged);
 #else
     NSView* openGLView = static_cast<NSView*>(Core::Instance()->GetNativeView());
     [openGLView addSubview:bridge->webView];
 
     CoreMacOSPlatformBase* xcore = static_cast<CoreMacOSPlatformBase*>(Core::Instance());
-    appMinimizedRestoredConnectionId = xcore->signalAppMinimizedRestored.Connect(this, &WebViewControl::OnAppMinimizedRestored);
+    xcore->signalAppMinimizedRestored.Connect(this, &WebViewControl::OnAppMinimizedRestored);
 #endif
 
 #if defined(__DAVAENGINE_STEAM__)
-    overlayConnectionId = Steam::GameOverlayActivated.Connect(this, &WebViewControl::OnSteamOverlayChanged);
+    Steam::GameOverlayActivated.Connect(this, &WebViewControl::OnSteamOverlayChanged);
 #endif
 
     SetBackgroundTransparency(true);
@@ -236,21 +324,28 @@ WebViewControl::WebViewControl(UIWebView* uiWebView)
 WebViewControl::~WebViewControl()
 {
 #if defined(__DAVAENGINE_STEAM__)
-    Steam::GameOverlayActivated.Disconnect(overlayConnectionId);
+    Steam::GameOverlayActivated.Disconnect(this);
 #endif
 
 #if defined(__DAVAENGINE_COREV2__)
-    window->visibilityChanged.Disconnect(windowVisibilityChangedConnection);
+    if (nullptr != window)
+    {
+        window->visibilityChanged.Disconnect(this);
+        Engine::Instance()->windowDestroyed.Disconnect(this);
+    }
 #else
     CoreMacOSPlatformBase* xcore = static_cast<CoreMacOSPlatformBase*>(Core::Instance());
-    xcore->signalAppMinimizedRestored.Disconnect(appMinimizedRestoredConnectionId);
+    xcore->signalAppMinimizedRestored.Disconnect(this);
 #endif
 
     [bridge->bitmapImageRep release];
     bridge->bitmapImageRep = nullptr;
 
 #if defined(__DAVAENGINE_COREV2__)
-    PlatformApi::Mac::RemoveNSView(window, bridge->webView);
+    if (nullptr != window)
+    {
+        PlatformApi::Mac::RemoveNSView(window, bridge->webView);
+    }
 #else
     [bridge->webView removeFromSuperview];
 #endif
@@ -393,7 +488,7 @@ void WebViewControl::SetRenderToTexture(bool value)
     else
     {
         // remove sprite from UIControl and show native window
-        uiWebViewControl.SetSprite(0, 0);
+        uiWebViewControl.RemoveComponent(UIComponent::BACKGROUND_COMPONENT);
         if (isVisible)
         {
             SetNativeVisible(true);
@@ -430,7 +525,7 @@ void WebViewControl::RenderToTextureAndSetAsBackgroundSpriteToControl(UIWebView&
 
     if (bridge->bitmapImageRep == nullptr)
     {
-        uiWebViewControl.SetSprite(nullptr, 0);
+        uiWebViewControl.RemoveComponent(UIComponent::BACKGROUND_COMPONENT);
         return;
     }
 
@@ -459,7 +554,7 @@ void WebViewControl::RenderToTextureAndSetAsBackgroundSpriteToControl(UIWebView&
     else
     {
         DVASSERT(false && "[WebView] Unexpected bits per pixel value");
-        uiWebViewControl.SetSprite(nullptr, 0);
+        uiWebViewControl.RemoveComponent(UIComponent::BACKGROUND_COMPONENT);
         return;
     }
 
@@ -491,7 +586,8 @@ void WebViewControl::RenderToTextureAndSetAsBackgroundSpriteToControl(UIWebView&
             const Rect& rect = uiWebViewControl.GetRect();
             {
                 RefPtr<Sprite> sprite(Sprite::CreateFromTexture(tex.Get(), 0, 0, w, h, rect.dx, rect.dy));
-                uiWebViewControl.SetSprite(sprite.Get(), 0);
+                UIControlBackground* bg = uiWebViewControl.GetOrCreateComponent<UIControlBackground>();
+                bg->SetSprite(sprite.Get(), 0);
             }
         }
     }
@@ -514,6 +610,14 @@ void WebViewControl::SetNativeVisible(bool visible)
 }
 
 #if defined(__DAVAENGINE_COREV2__)
+void WebViewControl::OnWindowDestroyed(Window* w)
+{
+    if (window == w)
+    {
+        window = nullptr;
+    }
+}
+
 void WebViewControl::OnWindowVisibilityChanged(Window* w, bool visible)
 {
     if (visible && isVisible)

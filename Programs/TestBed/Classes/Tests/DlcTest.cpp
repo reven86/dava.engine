@@ -6,6 +6,7 @@
 #include "Notification/LocalNotificationText.h"
 #include "UI/Focus/UIFocusComponent.h"
 #include "Utils/StringUtils.h"
+#include "UI/Update/UIUpdateComponent.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/DeviceInfo.h"
@@ -50,6 +51,7 @@ DlcTest::DlcTest(TestBed& app)
     , options(new KeyedArchive)
     , dlc(nullptr)
 {
+    GetOrCreateComponent<UIUpdateComponent>();
 }
 
 void DlcTest::LoadResources()
@@ -309,7 +311,6 @@ void DlcTest::OnActive()
 void DlcTest::Update(float32 timeElapsed)
 {
     BaseScreen::Update(timeElapsed);
-
     lastUpdateTime += timeElapsed;
     if (lastUpdateTime > 0.05f)
     {
@@ -676,12 +677,12 @@ void DLCCrashTest::Update(float32 timeElapsed, DLC* dlc)
 
 void DLCCrashTest::ExitThread(BaseObject* caller, void* callerData, void* userData)
 {
-    DAVA::uint64 start = DAVA::SystemTimer::Instance()->AbsoluteMS();
-    DAVA::uint64 elapsed = 0;
+    DAVA::int64 start = DAVA::SystemTimer::GetMs();
+    DAVA::int64 elapsed = 0;
 
     while (elapsed < exitTimeout)
     {
-        elapsed = (DAVA::SystemTimer::Instance()->AbsoluteMS() - start) / 1000;
+        elapsed = (DAVA::SystemTimer::GetMs() - start) / 1000;
         Thread::Sleep(100);
     }
 

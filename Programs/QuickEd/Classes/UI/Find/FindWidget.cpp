@@ -1,13 +1,16 @@
 #include "FindWidget.h"
 
-#include <QtConcurrent>
-
-#include "Document/Document.h"
-#include "Project/Project.h"
+#include "Modules/LegacySupportModule/Private/Project.h"
 #include "UI/Find/Finder.h"
-#include "QtTools/ProjectInformation/FileSystemCache.h"
 
-#include "UI/UIControl.h"
+#include <QtTools/ProjectInformation/FileSystemCache.h>
+
+#include <QtHelpers/HelperFunctions.h>
+
+#include <UI/UIControl.h>
+
+#include <QtConcurrent>
+#include <QKeyEvent>
 
 using namespace DAVA;
 
@@ -24,9 +27,7 @@ FindWidget::FindWidget(QWidget* parent)
     ui.treeView->installEventFilter(this);
 }
 
-FindWidget::~FindWidget()
-{
-}
+FindWidget::~FindWidget() = default;
 
 void FindWidget::Find(std::unique_ptr<FindFilter>&& filter)
 {
@@ -45,7 +46,7 @@ void FindWidget::Find(std::unique_ptr<FindFilter>&& filter)
             connect(finder, &Finder::ItemFound, this, &FindWidget::OnItemFound, Qt::QueuedConnection);
             connect(finder, &Finder::Finished, this, &FindWidget::OnFindFinished, Qt::QueuedConnection);
 
-            QtConcurrent::run([this]() { finder->Process(); });
+            QtConcurrent::run(QtHelpers::InvokeInAutoreleasePool, [this]() { finder->Process(); });
         }
     }
 }
@@ -103,11 +104,11 @@ void FindWidget::OnActivated(const QModelIndex& index)
         if (index.data(CONTROL_DATA).isValid())
         {
             QString control = index.data(CONTROL_DATA).toString();
-            project->JumpToControl(FilePath(path.toStdString()), control.toStdString());
+            emit JumpToControl(FilePath(path.toStdString()), control.toStdString());
         }
         else
         {
-            project->JumpToPackage(FilePath(path.toStdString()));
+            emit JumpToPackage(FilePath(path.toStdString()));
         }
     }
 }

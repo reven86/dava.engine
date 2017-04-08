@@ -15,37 +15,9 @@ const uint32 MaterialsTest::FRAMES_PER_MATERIAL_TEST = 60;
 MaterialsTest::MaterialsTest(const TestParams& testParams)
     : BaseTest(TEST_NAME, testParams)
     , currentTestStartFrame(0)
-    , currentTestStartTime(0)
+    , currentTestStartTime(0.f)
     , currentMaterialIndex(0)
 {
-}
-
-MaterialsTest::~MaterialsTest()
-{
-    for (NMaterial* material : materials)
-    {
-        SafeRelease(material);
-    }
-
-    for (Entity* child : planes)
-    {
-        SafeRelease(child);
-    }
-
-    for (Entity* child : spoPlanes)
-    {
-        SafeRelease(child);
-    }
-
-    for (Entity* child : skinnedPlanes)
-    {
-        SafeRelease(child);
-    }
-
-    for (Entity* child : lightmapMaterialPlanes)
-    {
-        SafeRelease(child);
-    }
 }
 
 void MaterialsTest::LoadResources()
@@ -90,6 +62,41 @@ void MaterialsTest::LoadResources()
     GetScene()->SetCurrentCamera(cameraComponent->GetCamera());
 }
 
+void MaterialsTest::UnloadResources()
+{
+    for (NMaterial* material : materials)
+    {
+        SafeRelease(material);
+    }
+    materials.clear();
+
+    for (Entity* child : planes)
+    {
+        SafeRelease(child);
+    }
+    planes.clear();
+
+    for (Entity* child : spoPlanes)
+    {
+        SafeRelease(child);
+    }
+    spoPlanes.clear();
+
+    for (Entity* child : skinnedPlanes)
+    {
+        SafeRelease(child);
+    }
+    skinnedPlanes.clear();
+
+    for (Entity* child : lightmapMaterialPlanes)
+    {
+        SafeRelease(child);
+    }
+    lightmapMaterialPlanes.clear();
+
+    BaseTest::UnloadResources();
+}
+
 void MaterialsTest::BeginFrame()
 {
     BaseTest::BeginFrame();
@@ -97,7 +104,7 @@ void MaterialsTest::BeginFrame()
     // material test finished
     if (GetTestFrameNumber() - currentTestStartFrame == FRAMES_PER_MATERIAL_TEST)
     {
-        float32 testTime = (SystemTimer::Instance()->FrameStampTimeMS() - currentTestStartTime) / 1000.0f;
+        float32 testTime = SystemTimer::GetFrameTimestamp() - currentTestStartTime;
         materialTestsElapsedTime.push_back(testTime);
 
         NMaterial* material = materials[currentMaterialIndex]->GetParent();
@@ -146,21 +153,21 @@ void MaterialsTest::BeginFrame()
             }
         }
 
-        currentTestStartTime = SystemTimer::Instance()->FrameStampTimeMS();
+        currentTestStartTime = SystemTimer::GetFrameTimestamp();
         currentTestStartFrame = GetTestFrameNumber();
     }
 }
 
 bool MaterialsTest::IsFinished() const
 {
-    return GetTestFrameNumber() > materials.size() * FRAMES_PER_MATERIAL_TEST;
+    return static_cast<size_t>(GetTestFrameNumber()) > materials.size() * FRAMES_PER_MATERIAL_TEST;
 }
 
 void MaterialsTest::PrintStatistic(const Vector<BaseTest::FrameInfo>& frames)
 {
     BaseTest::PrintStatistic(frames);
 
-    for (int32 i = 0; i < materials.size(); i++)
+    for (uint32 i = 0; i < materials.size(); i++)
     {
         String materialName = "MaterialSubtestName:" + String(materials[i]->GetParent()->GetMaterialName().c_str());
         Logger::Info(materialName.c_str());

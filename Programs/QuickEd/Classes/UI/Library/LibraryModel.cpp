@@ -60,9 +60,9 @@ LibraryModel::LibraryModel(QObject* parent)
             else
                 defaultControls.push_back(ControlNode::CreateFromControl(control));
 
-            auto prop = defaultControls.back()->GetRootProperty()->FindPropertyByName("Size");
+            AbstractProperty* prop = defaultControls.back()->GetRootProperty()->FindPropertyByName("size");
 
-            prop->SetValue(VariantType(Vector2(32.0f, 32.0f)));
+            prop->SetValue(Vector2(32.0f, 32.0f));
         }
         else
         {
@@ -103,14 +103,43 @@ LibraryModel::~LibraryModel()
     libraryPackages.clear();
 }
 
-void LibraryModel::SetLibraryPackages(const DAVA::Vector<DAVA::FilePath>& libraryPackagePaths_)
-{
-    libraryPackagePaths = libraryPackagePaths_;
-}
-
-void LibraryModel::SetPrototypes(const DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>>& prototypes_)
+void LibraryModel::SetProjectLibraries(const DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>>& prototypes_, const DAVA::Vector<DAVA::FilePath>& libraryPackages_)
 {
     prototypes = prototypes_;
+    libraryPackagePaths = libraryPackages_;
+
+    for (QStandardItem* item : libraryRootItems)
+    {
+        removeRow(item->row());
+    }
+    libraryRootItems.clear();
+
+    for (PackageNode* package : libraryPackages)
+    {
+        package->Release();
+    }
+    libraryPackages.clear();
+
+    int32 index = 0;
+    for (const FilePath& path : libraryPackagePaths)
+    {
+        QuickEdPackageBuilder builder;
+        PackageNode* package = nullptr;
+        if (UIPackageLoader(prototypes).LoadPackage(path, &builder))
+        {
+            RefPtr<PackageNode> libraryPackage = builder.BuildPackage();
+            package = SafeRetain(libraryPackage.Get());
+            libraryPackages.push_back(package);
+        }
+
+        if (package)
+        {
+            QStandardItem* libraryRootItem = CreatePackageControlsItem(package, false);
+            libraryRootItems.push_back(libraryRootItem);
+            invisibleRootItem()->insertRow(index, libraryRootItem);
+            index++;
+        }
+    }
 }
 
 Qt::ItemFlags LibraryModel::flags(const QModelIndex& index) const
@@ -175,7 +204,7 @@ QMimeData* LibraryModel::mimeData(const QModelIndexList& indexes) const
 
                 YamlPackageSerializer serializer;
 
-                serializer.SerializePackageNodes(package, controls, styles);
+                serializer.SerializePackageNodes(package.Get(), controls, styles);
                 String str = serializer.WriteToString();
                 data->setText(QString::fromStdString(str));
 
@@ -188,18 +217,6 @@ QMimeData* LibraryModel::mimeData(const QModelIndexList& indexes) const
 
 void LibraryModel::SetPackageNode(PackageNode* package_)
 {
-    for (QStandardItem* item : libraryRootItems)
-    {
-        removeRow(item->row());
-    }
-    libraryRootItems.clear();
-
-    for (PackageNode* package : libraryPackages)
-    {
-        package->Release();
-    }
-    libraryPackages.clear();
-
     controlsRootItem->removeRows(0, controlsRootItem->rowCount());
     importedPackageRootItem->removeRows(0, importedPackageRootItem->rowCount());
 
@@ -211,7 +228,14 @@ void LibraryModel::SetPackageNode(PackageNode* package_)
     if (package != nullptr)
     {
         package->AddListener(this);
-        BuildModel();
+
+        ImportedPackagesNode* importedPackagesNode = package->GetImportedPackagesNode();
+        for (PackageNode* package : *importedPackagesNode)
+        {
+            importedPackageRootItem->appendRow(CreatePackageControlsItem(package, true));
+        }
+
+        AddPackageControls(package->GetPrototypes(), controlsRootItem, true);
     }
 }
 
@@ -251,38 +275,6 @@ QModelIndex LibraryModel::indexByNode(const void* node, const QStandardItem* ite
         }
     }
     return QModelIndex();
-}
-
-void LibraryModel::BuildModel()
-{
-    int32 index = 0;
-    for (const FilePath& path : libraryPackagePaths)
-    {
-        QuickEdPackageBuilder builder;
-        PackageNode* package = nullptr;
-        if (UIPackageLoader(prototypes).LoadPackage(path, &builder))
-        {
-            RefPtr<PackageNode> libraryPackage = builder.BuildPackage();
-            package = SafeRetain(libraryPackage.Get());
-            libraryPackages.push_back(package);
-        }
-
-        if (package)
-        {
-            QStandardItem* libraryRootItem = CreatePackageControlsItem(package, false);
-            libraryRootItems.push_back(libraryRootItem);
-            invisibleRootItem()->insertRow(index, libraryRootItem);
-            index++;
-        }
-    }
-
-    AddPackageControls(package->GetPrototypes(), controlsRootItem, true);
-
-    ImportedPackagesNode* importedPackagesNode = package->GetImportedPackagesNode();
-    for (PackageNode* package : *importedPackagesNode)
-    {
-        importedPackageRootItem->appendRow(CreatePackageControlsItem(package, true));
-    }
 }
 
 void LibraryModel::AddControl(ControlNode* node, QStandardItem* rootItem, bool makePrototype)
@@ -333,7 +325,7 @@ void LibraryModel::ControlPropertyWasChanged(ControlNode* node, AbstractProperty
             auto item = itemFromIndex(index);
             if (nullptr != item)
             {
-                auto text = QString::fromStdString(property->GetValue().AsString());
+                auto text = QString::fromStdString(property->GetValue().Get<String>());
                 item->setText(text);
             }
         }

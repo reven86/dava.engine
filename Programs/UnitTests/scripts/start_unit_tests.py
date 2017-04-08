@@ -70,7 +70,7 @@ def start_unittests_on_android_device():
         stdout=subprocess.PIPE)
     # start unittests on device
     subprocess.Popen(
-        ["adb", "shell", "am", "start", "-n", "com.dava.unittests/com.dava.unittests." + PRJ_NAME_BASE])
+        ["adb", "shell", "am", "start", "-n", "com.dava.unittests/com.dava.engine.DavaActivity"])
     return sub_process
 
 def start_unittests_on_uwp_device():
@@ -175,7 +175,7 @@ if sys.platform == "darwin" and start_on_ios == False:
     pathScriptDir        = os.path.dirname(os.path.realpath(__file__))
     pathCoverageDir      = os.path.realpath( os.path.join(pathScriptDir, '../../../RepoTools/coverage') )
     pathHtmlReportScript = os.path.join( pathCoverageDir, 'coverage_report.py' )   
-    pathBuild            = os.path.realpath( os.path.join( os.getcwd(), '../' ) )
+    pathBuild            = os.path.realpath( os.path.join( os.getcwd(), '../UnitTests' ) )
     pathExecut           = os.path.realpath( os.path.join( os.getcwd(), '{0}.app'.format( PRJ_NAME_BASE ) ) )
     pathReportOut        = os.path.join( pathBuild, 'Coverage')    
 
@@ -185,7 +185,8 @@ if sys.platform == "darwin" and start_on_ios == False:
                 '--pathReportOut', pathReportOut,
                 '--buildConfig', 'Release',
                 '--notExecute' , 'true',
-                '--teamcityMode' , 'true'                
+                '--teamcityMode' , 'true', 
+                '--buildMode', 'true'                
                  ]
 
     subprocess.call(params)

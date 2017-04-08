@@ -1,13 +1,28 @@
 #include "UI/UIList.h"
 #include "Debug/DVAssert.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 #include "UI/UIControlSystem.h"
 #include "Base/ObjectFactory.h"
 #include "UI/UIControlHelpers.h"
+#include "Reflection/ReflectionRegistrator.h"
+#include "UI/Update/UIUpdateComponent.h"
+#include "UI/Layouts/UISizePolicyComponent.h"
 
 namespace DAVA
 {
 static const int32 INVALID_INDEX = -1;
+
+DAVA_VIRTUAL_REFLECTION_IMPL(UIList)
+{
+    ReflectionRegistrator<UIList>::Begin()
+    .ConstructorByPointer()
+    .DestructorByPointer([](UIList* o) { o->Release(); })
+    .Field("orientation", &UIList::GetOrientation, &UIList::SetOrientation)
+    [
+    M::EnumT<eListOrientation>()
+    ]
+    .End();
+}
 
 float32 UIListDelegate::CellWidth(UIList* /*list*/, int32 /*index*/)
 {
@@ -35,6 +50,7 @@ UIList::UIList(const Rect& rect /* = Rect()*/, eListOrientation requiredOrientat
     , scroll(NULL)
 {
     InitAfterYaml();
+    GetOrCreateComponent<UIUpdateComponent>();
 }
 
 void UIList::InitAfterYaml()
@@ -53,6 +69,13 @@ void UIList::InitAfterYaml()
     }
 
     scrollContainer = new UIControl(r);
+
+    UISizePolicyComponent* spc = scrollContainer->GetOrCreateComponent<UISizePolicyComponent>();
+    spc->SetHorizontalPolicy(UISizePolicyComponent::eSizePolicy::PERCENT_OF_PARENT);
+    spc->SetHorizontalValue(100.f);
+    spc->SetVerticalPolicy(UISizePolicyComponent::eSizePolicy::PERCENT_OF_PARENT);
+    spc->SetVerticalValue(100.f);
+
     AddControl(scrollContainer);
 
     oldPos = 0;
@@ -93,12 +116,6 @@ void UIList::ScrollTo(float delta)
     scroll->Impulse(delta * -4.8f);
 }
 
-void UIList::SetRect(const Rect& rect)
-{
-    UIControl::SetRect(rect);
-    scrollContainer->SetRect(rect);
-}
-
 void UIList::SetSize(const Vector2& newSize)
 {
     if (orientation == ORIENTATION_HORIZONTAL)
@@ -111,7 +128,6 @@ void UIList::SetSize(const Vector2& newSize)
     }
 
     UIControl::SetSize(newSize);
-    scrollContainer->SetSize(newSize);
 }
 
 void UIList::SetDelegate(UIListDelegate* newDelegate)
@@ -171,12 +187,12 @@ void UIList::ResetScrollPosition()
 {
     if (orientation == ORIENTATION_HORIZONTAL)
     {
-        scrollContainer->relativePosition.x = 0;
+        scrollContainer->SetPosition(Vector2(0.f, scrollContainer->GetPosition().y));
         scroll->SetPosition(0);
     }
     else
     {
-        scrollContainer->relativePosition.y = 0;
+        scrollContainer->SetPosition(Vector2(scrollContainer->GetPosition().x, 0.f));
         scroll->SetPosition(0);
     }
 }
@@ -296,17 +312,17 @@ void UIList::Update(float32 timeElapsed)
         // this code works for scroll through touch screen.
         if (orientation == ORIENTATION_HORIZONTAL)
         {
-            r.x = scroll->GetPosition(d, SystemTimer::FrameDelta(), lockTouch);
+            r.x = scroll->GetPosition(d, SystemTimer::GetFrameDelta(), lockTouch);
         }
         else
         {
-            r.y = scroll->GetPosition(d, SystemTimer::FrameDelta(), lockTouch);
+            r.y = scroll->GetPosition(d, SystemTimer::GetFrameDelta(), lockTouch);
         }
     }
 
-    if (r != scrollContainer->GetRect())
+    if (r.x != scrollContainer->GetRect().x || r.y != scrollContainer->GetRect().y)
     {
-        scrollContainer->SetRect(r);
+        scrollContainer->SetPosition(r.GetPosition());
     }
 
     List<UIControl*>::const_iterator it;
@@ -523,7 +539,7 @@ void UIList::Input(UIEvent* currentInput)
 
 bool UIList::SystemInput(UIEvent* currentInput)
 {
-    if (!GetInputEnabled() || !visible || controlState & STATE_DISABLED)
+    if (!GetInputEnabled() || !visible || GetState() & STATE_DISABLED)
     {
         return false;
     }
@@ -542,7 +558,7 @@ bool UIList::SystemInput(UIEvent* currentInput)
         {
             if (IsPointInside(currentInput->point))
             {
-                PerformEvent(EVENT_TOUCH_DOWN);
+                PerformEvent(EVENT_TOUCH_DOWN, currentInput);
                 Input(currentInput);
             }
         }

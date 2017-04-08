@@ -3,7 +3,7 @@
 #include "Scene3D/Components/TransformComponent.h"
 #include "Particles/ParticleEmitter.h"
 #include "Scene3D/Systems/EventSystem.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 #include "Utils/Random.h"
 #include "Core/PerformanceSettings.h"
 #include "Scene3D/Components/ComponentHelpers.h"

@@ -1,10 +1,11 @@
 #pragma once
 
-#include "Base/BaseTypes.h"
-#include "UI/UIControlBackground.h"
-#include "UI/Styles/UIStyleSheetPropertyDataBase.h"
 #include "Animation/AnimatedObject.h"
 #include "Animation/Interpolation.h"
+#include "Base/BaseTypes.h"
+#include "UI/Styles/UIStyleSheetPropertyDataBase.h"
+#include "UI/UIControlBackground.h"
+#include "UI/UIGeometricData.h"
 
 namespace DAVA
 {
@@ -19,133 +20,6 @@ class UIControlFamily;
 class UIControlPackageContext;
 
 #define CONTROL_TOUCH_AREA 15
-/**
-     \ingroup controlsystem
-     \brief Compound of geometric transformations used to draw control in the screen space.
-     */
-
-class UIGeometricData
-{
-    friend class UIControl;
-
-public:
-    UIGeometricData()
-        : scale(1.0f, 1.0f)
-        , angle(0.0f)
-        , cosA(1.0f)
-        , sinA(0.0f)
-        , calculatedAngle(0.0f)
-    {
-    }
-    Vector2 position;
-    Vector2 size;
-
-    Vector2 pivotPoint;
-    Vector2 scale;
-    float32 angle;
-
-    mutable float32 cosA;
-    mutable float32 sinA;
-
-    void AddGeometricData(const UIGeometricData& data)
-    {
-        position.x = data.position.x - data.pivotPoint.x * data.scale.x + position.x * data.scale.x;
-        position.y = data.position.y - data.pivotPoint.y * data.scale.y + position.y * data.scale.y;
-        if (data.angle != 0)
-        {
-            float tmpX = position.x;
-            position.x = (tmpX - data.position.x) * data.cosA + (data.position.y - position.y) * data.sinA + data.position.x;
-            position.y = (tmpX - data.position.x) * data.sinA + (position.y - data.position.y) * data.cosA + data.position.y;
-        }
-        scale.x *= data.scale.x;
-        scale.y *= data.scale.y;
-        angle += data.angle;
-        if (angle != calculatedAngle)
-        {
-            if (angle != data.angle)
-            {
-                cosA = std::cos(angle);
-                sinA = std::sin(angle);
-            }
-            else
-            {
-                cosA = data.cosA;
-                sinA = data.sinA;
-            }
-            calculatedAngle = angle;
-        }
-
-        unrotatedRect.x = position.x - pivotPoint.x * scale.x;
-        unrotatedRect.y = position.y - pivotPoint.y * scale.y;
-        unrotatedRect.dx = size.x * scale.x;
-        unrotatedRect.dy = size.y * scale.y;
-    }
-
-    DAVA_DEPRECATED(void AddToGeometricData(const UIGeometricData& data))
-    {
-        AddGeometricData(data);
-    }
-
-    void BuildTransformMatrix(Matrix3& transformMatr) const
-    {
-        Matrix3 pivotMatr;
-        pivotMatr.BuildTranslation(-pivotPoint);
-
-        Matrix3 translateMatr;
-        translateMatr.BuildTranslation(position);
-        // well it must be here otherwise there is a bug!
-        if (calculatedAngle != angle)
-        {
-            cosA = std::cos(angle);
-            sinA = std::sin(angle);
-            calculatedAngle = angle;
-        }
-        Matrix3 rotateMatr;
-        rotateMatr.BuildRotation(cosA, sinA);
-
-        Matrix3 scaleMatr;
-        scaleMatr.BuildScale(scale);
-
-        transformMatr = pivotMatr * scaleMatr * rotateMatr * translateMatr;
-    }
-
-    void GetPolygon(Polygon2& polygon) const
-    {
-        polygon.Clear();
-        polygon.points.reserve(4);
-        polygon.AddPoint(Vector2());
-        polygon.AddPoint(Vector2(size.x, 0));
-        polygon.AddPoint(size);
-        polygon.AddPoint(Vector2(0, size.y));
-
-        Matrix3 transformMtx;
-        BuildTransformMatrix(transformMtx);
-        polygon.Transform(transformMtx);
-    }
-
-    const Rect& GetUnrotatedRect() const
-    {
-        return unrotatedRect;
-    }
-
-    Rect GetAABBox() const
-    {
-        Polygon2 polygon;
-        GetPolygon(polygon);
-
-        AABBox2 aabbox;
-        for (int32 i = 0; i < polygon.GetPointCount(); ++i)
-        {
-            aabbox.AddPoint(polygon.GetPoints()[i]);
-        }
-        Rect bboxRect = Rect(aabbox.min, aabbox.max - aabbox.min);
-        return bboxRect;
-    }
-
-private:
-    mutable float32 calculatedAngle;
-    Rect unrotatedRect;
-};
 
 /**
      \ingroup controlsystem
@@ -167,9 +41,6 @@ private:
                 calls OnInactive() for the control and then calls SystemInactive() for all control children.
 
         Every frame:
-
-            -SystemUpdate() is calls. SystemUpdate() calls Updadte() for the control then calls SystemUpdate()
-                for the all control children.
 
             -SystemDraw() is calls. SystemDraw() calculates current control geometric data. Transmit information
                 about the parent color to the control background. Sets clip if requested. Calls Draw().
@@ -195,6 +66,10 @@ class UIControl : public AnimatedObject
 {
     friend class UIInputSystem;
     friend class UIControlSystem;
+    DAVA_VIRTUAL_REFLECTION(UIControl, AnimatedObject);
+
+    // Need for isIteratorCorrupted. See UILayoutSystem::UpdateControl.
+    friend class UILayoutSystem;
 
 public:
     /**
@@ -228,7 +103,6 @@ public:
         EVENT_FOCUS_SET = 6, //!<Trigger when control becomes focused
         EVENT_FOCUS_LOST = 7, //!<Trigger when control losts focus
         EVENT_TOUCH_UP_OUTSIDE = 8, //!<Trigger when mouse pressure or touch processed by the control is released outside of the control.
-        EVENT_ALL_ANIMATIONS_FINISHED = 9, //!<Trigger when all animations associated with control are ended.
         EVENTS_COUNT
     };
 
@@ -254,94 +128,69 @@ public:
         You can call this function directly for the controlBackgound.
      \returns Sprite used for draw.
      */
-    virtual Sprite* GetSprite() const;
+    DAVA_DEPRECATED(Sprite* GetSprite() const);
     /**
      \brief Returns Sprite frame used for draw in the current UIControlBackground object.
         You can call this function directly for the controlBackgound.
      \returns Sprite frame used for draw.
      */
-    int32 GetFrame() const;
+    DAVA_DEPRECATED(int32 GetFrame() const);
     /**
      \brief Returns draw type used for draw in the current UIControlBackground object.
         You can call this function directly for the controlBackgound.
      \returns Draw type used for draw.
      */
-    virtual UIControlBackground::eDrawType GetSpriteDrawType() const;
+    DAVA_DEPRECATED(virtual UIControlBackground::eDrawType GetSpriteDrawType() const);
     /**
      \brief Returns Sprite align used for draw in the current UIControlBackground object.
         You can call this function directly for the controlBackgound.
      \returns Sprite eAlign bit mask used for draw.
      */
-    virtual int32 GetSpriteAlign() const;
+    DAVA_DEPRECATED(virtual int32 GetSpriteAlign() const);
     /**
      \brief Sets Sprite for the control UIControlBackground object.
      \param[in] spriteName Sprite path-name.
      \param[in] spriteFrame Sprite frame you want to use for draw.
      */
-    virtual void SetSprite(const FilePath& spriteName, int32 spriteFrame);
+    DAVA_DEPRECATED(virtual void SetSprite(const FilePath& spriteName, int32 spriteFrame));
     /**
      \brief Sets Sprite for the control UIControlBackground object.
      \param[in] newSprite Pointer for a Sprite.
      \param[in] spriteFrame Sprite frame you want to use for draw.
      */
-    virtual void SetSprite(Sprite* newSprite, int32 spriteFrame);
+    DAVA_DEPRECATED(virtual void SetSprite(Sprite* newSprite, int32 spriteFrame));
     /**
      \brief Sets Sprite frame you want to use for draw for the control UIControlBackground object.
      \param[in] spriteFrame Sprite frame.
      */
-    virtual void SetSpriteFrame(int32 spriteFrame);
+    DAVA_DEPRECATED(virtual void SetSpriteFrame(int32 spriteFrame));
     /**
      \brief Sets Sprite frame you want to use for draw for the control UIControlBackground object.
      \param[in] frame Sprite frame name.
      */
-    virtual void SetSpriteFrame(const FastName& frameName);
+    DAVA_DEPRECATED(virtual void SetSpriteFrame(const FastName& frameName));
     /**
      \brief Sets draw type you want to use the control UIControlBackground object.
      \param[in] drawType Draw type to use for drawing.
      */
-    virtual void SetSpriteDrawType(UIControlBackground::eDrawType drawType);
+    DAVA_DEPRECATED(virtual void SetSpriteDrawType(UIControlBackground::eDrawType drawType));
     /**
      \brief Sets Sprite align you want to use for draw for the control UIControlBackground object.
      \param[in] drawAlign Sprite eAlign bit mask.
      */
-    virtual void SetSpriteAlign(int32 align);
+    DAVA_DEPRECATED(virtual void SetSpriteAlign(int32 align));
 
     /**
      \brief Sets background what will be used for draw.
         Background is cloned inside control.
      \param[in] newBg control background you want to use for draw.
      */
-    void SetBackground(UIControlBackground* newBg);
+    DAVA_DEPRECATED(void SetBackground(UIControlBackground* newBg));
     /**
      \brief Returns current background used for draw.
      \returns background used for draw.
      */
-    UIControlBackground* GetBackground() const;
-
-    virtual void SetLeftAlign(float32 align);
-    virtual float32 GetLeftAlign() const;
-    virtual void SetHCenterAlign(float32 align);
-    virtual float32 GetHCenterAlign() const;
-    virtual void SetRightAlign(float32 align);
-    virtual float32 GetRightAlign() const;
-    virtual void SetTopAlign(float32 align);
-    virtual float32 GetTopAlign() const;
-    virtual void SetVCenterAlign(float32 align);
-    virtual float32 GetVCenterAlign() const;
-    virtual void SetBottomAlign(float32 align);
-    virtual float32 GetBottomAlign() const;
-    virtual void SetLeftAlignEnabled(bool isEnabled);
-    virtual bool GetLeftAlignEnabled() const;
-    virtual void SetHCenterAlignEnabled(bool isEnabled);
-    virtual bool GetHCenterAlignEnabled() const;
-    virtual void SetRightAlignEnabled(bool isEnabled);
-    virtual bool GetRightAlignEnabled() const;
-    virtual void SetTopAlignEnabled(bool isEnabled);
-    virtual bool GetTopAlignEnabled() const;
-    virtual void SetVCenterAlignEnabled(bool isEnabled);
-    virtual bool GetVCenterAlignEnabled() const;
-    virtual void SetBottomAlignEnabled(bool isEnabled);
-    virtual bool GetBottomAlignEnabled() const;
+    DAVA_DEPRECATED(UIControlBackground* GetBackground() const);
 
     /**
      \brief Returns untransformed control rect.
@@ -781,14 +630,16 @@ public:
     /**
      \brief Send given event to the all subscribed objects.
      \param[in] eventType event type you want to process.
+     \param[in] uiEvent input event that triggered this control event.
      */
-    void PerformEvent(int32 eventType);
+    void PerformEvent(int32 eventType, const UIEvent* uiEvent = nullptr);
     /**
      \brief Send given event with given user data to the all subscribed objects.
      \param[in] eventType event type you want to process.
      \param[in] callerData data you want to send to the all messages.
+     \param[in] uiEvent input event that triggered this control event.
      */
-    void PerformEventWithData(int32 eventType, void* callerData);
+    void PerformEventWithData(int32 eventType, void* callerData, const UIEvent* uiEvent = nullptr);
 
     /**
      \brief Creates the absoulutely identic copy of the control.
@@ -943,12 +794,6 @@ public:
 
 public:
     /**
-     \brief SystemUpdate() calls Updadte() for the control then SystemUpdate() calls for the all control children.
-        Internal method used by ControlSystem. Can be overriden to prevent hierarchical call or adjust functionality.
-     \param[in] timeElapsed Current frame time delta.
-     */
-    virtual void SystemUpdate(float32 timeElapsed);
-    /**
      \brief Calls on every frame to process controls drawing.
         Firstly this method calls Draw() for the curent control. When SystemDraw() called for the every control child.
         And at the end DrawAfterChilds() called for current control.
@@ -956,7 +801,7 @@ public:
         Can be overriden to adjust draw hierarchy.
      \param[in] geometricData Parent geometric data.
      */
-    virtual void SystemDraw(const UIGeometricData& geometricData); // Internal method used by ControlSystem
+    virtual void SystemDraw(const UIGeometricData& geometricData, const DAVA::UIControlBackground* parentBackground); // Internal method used by ControlSystem
 
     /**
      \brief set parent draw color into control
@@ -1027,11 +872,12 @@ public:
      */
     virtual void InputCancelled(UIEvent* currentInput);
     /**
-     \brief Calls on every frame with frame delata time parameter.
-        Should be overriden to implement perframe functionality.
-        Default realization is empty.
-     \param[in] timeElapsed Current frame time delta.
-     */
+	 \brief Calls on every frame with frame delata time parameter.
+            Works only with added UIUpdateComponent!
+            Should be overriden to implement perframe functionality.
+            Default realization is empty.
+	 \param[in] timeElapsed Current frame time delta.
+	 */
     virtual void Update(float32 timeElapsed);
     /**
      \brief Calls on every frame to draw control.
@@ -1079,6 +925,9 @@ protected:
 
     void ChangeViewState(eViewState newViewState);
 
+    void AddState(int32 state);
+    void RemoveState(int32 state);
+
 public:
     /**
      \brief Called when this control and his children are loaded.
@@ -1114,8 +963,6 @@ public:
 
     virtual void OnTouchOutsideFocus();
 
-    void OnAllAnimationsFinished() override;
-
     /// sets rect to match background sprite, also moves pivot point to center
     void SetSizeFromBg(bool pivotToCenter = true);
 
@@ -1136,6 +983,11 @@ private:
     UIControl* parent;
     List<UIControl*> children;
 
+    DAVA_DEPRECATED(bool isUpdated = false);
+    DAVA_DEPRECATED(void SystemUpdate(float32 timeElapsed));
+    // Need for old implementation of SystemUpdate.
+    friend class UIScreenshoter;
+
 public:
     //TODO: store geometric data in UIGeometricData
     Vector2 relativePosition; //!<position in the parent control.
@@ -1145,20 +997,17 @@ public:
     float32 angle; //!<control rotation angle. Rotation around pivot point.
 
 protected:
-    int32 controlState;
-    int32 prevControlState;
-
     float32 wheelSensitivity = 30.f;
 
     // boolean flags are grouped here to pack them together (see please DF-2149).
     bool exclusiveInput : 1;
+    bool isInputProcessed : 1;
     bool visible : 1;
     bool clipContents : 1;
     bool debugDrawEnabled : 1;
     bool multiInput : 1;
 
     // Enable align options
-    bool isUpdated : 1;
     bool isIteratorCorrupted : 1;
 
     bool styleSheetDirty : 1;
@@ -1196,6 +1045,8 @@ protected:
 private:
     int32 tag = 0;
     eViewState viewState = eViewState::INACTIVE;
+    int32 controlState;
+
     bool inputEnabled : 1;
 
     /* Components */
@@ -1305,103 +1156,84 @@ public:
     inline void SetNoInput(bool noInput);
     inline bool GetDebugDraw() const;
     inline void SetDebugDrawNotHierarchic(bool val);
-
-    INTROSPECTION_EXTEND(UIControl, AnimatedObject,
-                         PROPERTY("position", "Position", GetPosition, SetPosition, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("size", "Size", GetSize, SetSize, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("scale", "Scale", GetScale, SetScale, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("pivot", "Pivot", GetPivot, SetPivot, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("angle", "Angle", GetAngleInDegrees, SetAngleInDegrees, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("visible", "Visible", GetVisibilityFlag, SetVisibilityFlag, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("enabled", "Enabled", GetEnabled, SetEnabledNotHierarchic, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("selected", "Selected", GetSelected, SetSelectedNotHierarchic, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("clip", "Clip", GetClipContents, SetClipContents, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("noInput", "No Input", GetNoInput, SetNoInput, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("exclusiveInput", "Exclusive Input", GetExclusiveInput, SetExclusiveInputNotHierarchic, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("wheelSensitivity", "Wheel Sensitivity", GetWheelSensitivity, SetWheelSensitivity, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("tag", "Tag", GetTag, SetTag, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("classes", "Classes", GetClassesAsString, SetClassesFromString, I_SAVE | I_VIEW | I_EDIT)
-
-                         PROPERTY("debugDraw", "Debug Draw", GetDebugDraw, SetDebugDrawNotHierarchic, I_VIEW | I_EDIT)
-                         PROPERTY("debugDrawColor", "Debug draw color", GetDebugDrawColor, SetDebugDrawColor, I_VIEW | I_EDIT));
 };
 
-Vector2 UIControl::GetPivotPoint() const
+inline Vector2 UIControl::GetPivotPoint() const
 {
     return pivot * size;
 }
 
-const Vector2& UIControl::GetPivot() const
+inline const Vector2& UIControl::GetPivot() const
 {
     return pivot;
 }
 
-const Vector2& UIControl::GetScale() const
+inline const Vector2& UIControl::GetScale() const
 {
     return scale;
 }
 
-void UIControl::SetScale(const Vector2& newScale)
+inline void UIControl::SetScale(const Vector2& newScale)
 {
     scale = newScale;
 }
 
-const Vector2& UIControl::GetSize() const
+inline const Vector2& UIControl::GetSize() const
 {
     return size;
 }
 
-const Vector2& UIControl::GetPosition() const
+inline const Vector2& UIControl::GetPosition() const
 {
     return relativePosition;
 }
 
-float32 UIControl::GetAngle() const
+inline float32 UIControl::GetAngle() const
 {
     return angle;
 }
 
-float32 UIControl::GetAngleInDegrees() const
+inline float32 UIControl::GetAngleInDegrees() const
 {
     return RadToDeg(angle);
 }
 
-const FastName& UIControl::GetName() const
+inline const FastName& UIControl::GetName() const
 {
     return name;
 }
 
-int32 UIControl::GetTag() const
+inline int32 UIControl::GetTag() const
 {
     return tag;
 }
 
-Rect UIControl::GetRect() const
+inline Rect UIControl::GetRect() const
 {
     return Rect(GetPosition() - GetPivotPoint(), GetSize());
 }
 
-bool UIControl::GetVisibilityFlag() const
+inline bool UIControl::GetVisibilityFlag() const
 {
     return visible;
 }
 
-bool UIControl::GetInputEnabled() const
+inline bool UIControl::GetInputEnabled() const
 {
     return inputEnabled;
 }
 
-bool UIControl::GetClipContents() const
+inline bool UIControl::GetClipContents() const
 {
     return clipContents;
 }
 
-bool UIControl::GetExclusiveInput() const
+inline bool UIControl::GetExclusiveInput() const
 {
     return exclusiveInput;
 }
 
-bool UIControl::GetMultiInput() const
+inline bool UIControl::GetMultiInput() const
 {
     return multiInput;
 }
@@ -1415,57 +1247,72 @@ inline void UIControl::SortChildren(const T& predicate)
     SetLayoutOrderDirty();
 }
 
-int32 UIControl::GetState() const
+inline int32 UIControl::GetState() const
 {
     return controlState;
 }
 
-bool UIControl::GetEnabled() const
+inline bool UIControl::GetEnabled() const
 {
     return !GetDisabled();
 }
 
-void UIControl::SetEnabledNotHierarchic(bool enabled)
+inline void UIControl::SetEnabledNotHierarchic(bool enabled)
 {
     SetDisabled(!enabled, false);
 }
 
-void UIControl::SetSelectedNotHierarchic(bool selected)
+inline void UIControl::SetSelectedNotHierarchic(bool selected)
 {
     SetSelected(selected, false);
 }
 
-void UIControl::SetExclusiveInputNotHierarchic(bool enabled)
+inline void UIControl::SetExclusiveInputNotHierarchic(bool enabled)
 {
     SetExclusiveInput(enabled, false);
 }
 
-bool UIControl::GetNoInput() const
+inline bool UIControl::GetNoInput() const
 {
     return !GetInputEnabled();
 }
 
-void UIControl::SetNoInput(bool noInput)
+inline void UIControl::SetNoInput(bool noInput)
 {
     SetInputEnabled(!noInput, false);
 }
 
-bool UIControl::GetDebugDraw() const
+inline bool UIControl::GetDebugDraw() const
 {
     return debugDrawEnabled;
 }
 
-void UIControl::SetDebugDrawNotHierarchic(bool val)
+inline void UIControl::SetDebugDrawNotHierarchic(bool val)
 {
     SetDebugDraw(val, false);
 }
 
-float32 UIControl::GetWheelSensitivity() const
+inline float32 UIControl::GetWheelSensitivity() const
 {
     return wheelSensitivity;
 }
-void UIControl::SetWheelSensitivity(float32 newSens)
+inline void UIControl::SetWheelSensitivity(float32 newSens)
 {
     wheelSensitivity = newSens;
+}
+
+inline bool UIControl::IsLayoutDirty() const
+{
+    return layoutDirty;
+}
+
+inline bool UIControl::IsLayoutPositionDirty() const
+{
+    return layoutPositionDirty;
+}
+
+inline bool UIControl::IsLayoutOrderDirty() const
+{
+    return layoutOrderDirty;
 }
 };

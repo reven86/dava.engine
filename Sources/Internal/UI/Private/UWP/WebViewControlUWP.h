@@ -110,6 +110,9 @@ private:
 private: // WebView event handlers
     void OnNavigationStarting(Windows::UI::Xaml::Controls::WebView ^ sender, Windows::UI::Xaml::Controls::WebViewNavigationStartingEventArgs ^ args);
     void OnNavigationCompleted(Windows::UI::Xaml::Controls::WebView ^ sender, Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs ^ args);
+    void OnUnsupportedUriSchemeIdentified(::Windows::UI::Xaml::Controls::WebView ^, ::Windows::UI::Xaml::Controls::WebViewUnsupportedUriSchemeIdentifiedEventArgs ^ args);
+
+    IUIWebViewDelegate::eAction HandleUriNavigation(::Windows::Foundation::Uri ^ uri);
 
     // Signal handlers
     void OnWindowSizeChanged(Window* w, Size2f windowSize, Size2f surfaceSize);
@@ -126,6 +129,7 @@ private:
     IUIWebViewDelegate* webViewDelegate = nullptr;
     Windows::UI::Xaml::Controls::WebView^ nativeWebView = nullptr;
     Windows::UI::Color defaultBkgndColor;   // Original WebView's background color used on transparency turned off
+    bool programmaticUrlNavigation = false; // Flag indicating that WebView has followed URL provided by code not by user click
 
     bool renderToTexture = false;
     bool visible = false;                   // Native control initially is invisible
@@ -133,11 +137,10 @@ private:
 
     Windows::Foundation::EventRegistrationToken tokenNavigationStarting;
     Windows::Foundation::EventRegistrationToken tokenNavigationCompleted;
+    Windows::Foundation::EventRegistrationToken tokenUnsupportedUriSchemeIdentified;
 
     WebViewProperties properties;
 
-    size_t windowSizeChangedConnection = 0;
-    size_t windowDestroyedConnection = 0;
     // clang-format on
 };
 

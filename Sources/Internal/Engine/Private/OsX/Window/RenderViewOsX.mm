@@ -17,7 +17,7 @@
 
 @implementation RenderView
 
-- (id)initWithFrame:(NSRect)frameRect andBridge:(DAVA::Private::WindowNativeBridge*)nativeBridge;
+- (id)initWithBridge:(DAVA::Private::WindowNativeBridge*)nativeBridge;
 {
     bridge = nativeBridge;
 
@@ -39,9 +39,7 @@
 
     // Create non-fullscreen pixel format.
     NSOpenGLPixelFormat* pixelFormat = [[NSOpenGLPixelFormat alloc] initWithAttributes:attrs];
-    self = [super initWithFrame:frameRect pixelFormat:pixelFormat];
-
-    [self setBackbufferScale:1.0f];
+    self = [super initWithFrame:NSMakeRect(0, 0, 10.f, 10.f) pixelFormat:pixelFormat];
 
     // Prepare tracking area to receive messages:
     //  - mouseEntered and mouseExited, used with mouse capture handling
@@ -57,39 +55,7 @@
                                                   owner:self
                                                userInfo:nil];
     [self addTrackingArea:trackingArea];
-
     return self;
-}
-
-- (void)reshape
-{
-    if (![self inLiveResize])
-    {
-        const NSSize frameSize = [self frame].size;
-        const DAVA::float32 resultScale = [self backbufferScale] * [[NSScreen mainScreen] backingScaleFactor];
-
-        const GLint backingSize[2] = { GLint(frameSize.width * resultScale), GLint(frameSize.height * resultScale) };
-
-        CGLSetParameter([[self openGLContext] CGLContextObj], kCGLCPSurfaceBackingSize, backingSize);
-        CGLEnable([[self openGLContext] CGLContextObj], kCGLCESurfaceBackingSize);
-        CGLUpdateContext([[self openGLContext] CGLContextObj]);
-    }
-}
-
-- (NSSize)convertSizeToBacking:(NSSize)size
-{
-    const DAVA::float32 resultScale = [self backbufferScale] * [[NSScreen mainScreen] backingScaleFactor];
-    size.width *= resultScale;
-    size.height *= resultScale;
-    return size;
-}
-
-- (NSSize)convertSizeFromBacking:(NSSize)size
-{
-    const DAVA::float32 resultScale = [self backbufferScale] * [[NSScreen mainScreen] backingScaleFactor];
-    size.width /= resultScale;
-    size.height /= resultScale;
-    return size;
 }
 
 - (uint32_t)displayBitsPerPixel:(CGDirectDisplayID)displayId

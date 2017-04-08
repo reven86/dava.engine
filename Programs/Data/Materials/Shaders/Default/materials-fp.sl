@@ -25,10 +25,6 @@ fragment_in
         float2 varTexCoord1 : TEXCOORD1;
     #endif
 
-    #if MATERIAL_DETAIL
-        float2 varTexCoord1 : TEXCOORD1;
-    #endif
-
     #if TILED_DECAL_MASK
         float2 varDecalTileTexCoord : TEXCOORD2;
     #endif
@@ -152,6 +148,11 @@ fragment_out
 
 #if SETUP_LIGHTMAP && (MATERIAL_DECAL || MATERIAL_LIGHTMAP)
     [material][a] property float lightmapSize = 1.0;
+#endif
+
+#if PARTICLE_DEBUG_SHOW_ALPHA
+    [material][a] property float particleAlphaThreshold = 0.2f;
+    [material][a] property float4 particleDebugShowAlphaColor =  float4(0.0f, 0.0f, 1.0f, 0.4f);
 #endif
 
 inline float 
@@ -576,6 +577,16 @@ fragment_out fp_main( fragment_in input )
             //VI: fog equation is inside of color equation for framebuffer fetch
             output.color.rgb = lerp( output.color.rgb, varFogColor, varFogAmoung );
         #endif
+    #endif
+
+    #if PARTICLE_DEBUG_SHOW_ALPHA
+        if (output.color.a < particleAlphaThreshold)
+            output.color = particleDebugShowAlphaColor;
+        else
+            output.color = 0.0;
+    #endif
+    #if PARTICLE_DEBUG_SHOW_OVERDRAW
+        output.color = float4(0.01f, 0.0f, 0.0f, 1.0f);
     #endif
 
     return output;

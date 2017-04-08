@@ -72,7 +72,7 @@ CEFWebViewControl::CEFWebViewControl(UIWebView& uiWebView)
 void CEFWebViewControl::Initialize(const Rect& rect)
 {
 #if defined(__DAVAENGINE_COREV2__)
-    onWindowSizeChangedId = Engine::Instance()->PrimaryWindow()->sizeChanged.Connect(this, &CEFWebViewControl::OnWindowSizeChanged);
+    Engine::Instance()->PrimaryWindow()->sizeChanged.Connect(this, &CEFWebViewControl::OnWindowSizeChanged);
     scale = window->GetDPI() / defaultDpi;
     webPageRender = new CEFWebPageRender(window, scale);
 #else
@@ -94,7 +94,7 @@ void CEFWebViewControl::Deinitialize()
     Window* primaryWindow = Engine::Instance()->PrimaryWindow();
     if (primaryWindow != nullptr)
     {
-        primaryWindow->sizeChanged.Disconnect(onWindowSizeChangedId);
+        primaryWindow->sizeChanged.Disconnect(this);
     }
 #endif
 

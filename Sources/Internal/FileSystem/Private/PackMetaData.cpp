@@ -4,6 +4,9 @@
 #include "Compression/LZ4Compressor.h"
 #include "Base/Exception.h"
 #include "Debug/DVAssert.h"
+#include "Utils/Utils.h"
+#include "Utils/StringFormat.h"
+#include "Logger/Logger.h"
 
 #include <sqlite_modern_cpp.h>
 
@@ -50,7 +53,7 @@ PackMetaData::PackMetaData(const FilePath& metaDb)
     db << "SELECT name, dependency FROM packs"
     >> [&](std::string name, std::string dependency)
     {
-        packDependencies.push_back(std::tuple<String, String>(name, dependency));
+        packDependencies.push_back(PackInfo{ name, dependency });
     };
 
     // debug check that max index of fileIndex exist in packIndex
@@ -62,14 +65,91 @@ PackMetaData::PackMetaData(const FilePath& metaDb)
     }
 }
 
+Vector<String> PackMetaData::GetDependencyNames(const String& requestedPackName) const
+{
+    using namespace DAVA;
+    Vector<String> requestNames;
+
+    const PackInfo& packInfo = GetPackInfo(requestedPackName);
+    const String& dependencies = packInfo.packDependencies;
+    const String delimiter(", ");
+
+    Split(dependencies, delimiter, requestNames);
+
+    // convert every name from string representation of index to packName
+    for (String& pack : requestNames)
+    {
+        try
+        {
+            unsigned long i = stoul(pack);
+            uint32 index = static_cast<uint32>(i);
+            const PackInfo& info = GetPackInfo(index);
+            pack = info.packName;
+        }
+        catch (std::exception& ex)
+        {
+            String str = Format("bad dependency index for pack: %s, index value: %s, error: %s.",
+                                packInfo.packName.c_str(), pack.c_str(), ex.what());
+            Logger::Error("%s", str.c_str());
+            DAVA_THROW(Exception, str);
+        }
+    }
+
+    return requestNames;
+}
+
+Vector<uint32> PackMetaData::GetFileIndexes(const String& requestedPackName) const
+{
+    Vector<uint32> result;
+
+    for (const PackInfo& t : packDependencies)
+    {
+        const String& packName = t.packName;
+        if (packName == requestedPackName)
+        {
+            ptrdiff_t packIndex = std::distance(&packDependencies[0], &t);
+            uint32 pIndex = static_cast<uint32>(packIndex);
+
+            size_t numFilesInThisPack = std::count(begin(packIndexes), end(packIndexes), pIndex);
+            result.reserve(numFilesInThisPack);
+
+            for (const auto& index : packIndexes)
+            {
+                if (index == pIndex)
+                {
+                    ptrdiff_t fileIndex = std::distance(&packIndexes[0], &index);
+                    uint32 fIndex = static_cast<uint32>(fileIndex);
+                    result.push_back(fIndex);
+                }
+            }
+            break;
+        }
+    }
+    return result;
+}
+
 uint32 PackMetaData::GetPackIndexForFile(const uint32 fileIndex) const
 {
     return packIndexes.at(fileIndex);
 }
 
-const std::tuple<String, String>& PackMetaData::GetPackInfo(const uint32 packIndex) const
+const PackMetaData::PackInfo& PackMetaData::GetPackInfo(const uint32 packIndex) const
 {
     return packDependencies.at(packIndex);
+}
+
+const PackMetaData::PackInfo& PackMetaData::GetPackInfo(const String& packName) const
+{
+    for (const auto& packInfo : packDependencies)
+    {
+        if (packInfo.packName == packName)
+        {
+            return packInfo;
+        }
+    }
+    Logger::Error("error: can't find packName: %s", packName.c_str());
+    DVASSERT(false, "debug packName value");
+    DAVA_THROW(Exception, "no such packName: " + packName);
 }
 
 Vector<uint8> PackMetaData::Serialize() const
@@ -83,11 +163,10 @@ Vector<uint8> PackMetaData::Serialize() const
         String bytes;
         std::stringstream ss;
 
-        size_t sizePackData = 0;
-        for (const auto& tuple : packDependencies)
+        for (const PackInfo& tuple : packDependencies)
         {
-            const String& packName = std::get<0>(tuple);
-            const String& depend = std::get<1>(tuple);
+            const String& packName = tuple.packName;
+            const String& depend = tuple.packDependencies;
             ss << packName << ' ' << depend << '\n';
         }
 
@@ -146,7 +225,6 @@ Vector<uint8> PackMetaData::Serialize() const
         DAVA_THROW(Exception, "write compressedSize failed");
     }
 
-    // write num of files
     return file->GetDataVector();
 }
 
@@ -221,8 +299,6 @@ void PackMetaData::Deserialize(const void* ptr, size_t size)
         DAVA_THROW(Exception, "read metadata error - no compressedBuf");
     }
 
-    DVASSERT(uncompressedSize >= compressedSize);
-
     vector<uint8_t> uncompressedBuf(uncompressedSize);
 
     if (!LZ4Compressor().Decompress(compressedBuf, uncompressedBuf))
@@ -245,7 +321,7 @@ void PackMetaData::Deserialize(const void* ptr, size_t size)
         }
         packName = line.substr(0, first_space);
         packDependency = line.substr(first_space + 1);
-        packDependencies.push_back(tuple<String, String>(packName, packDependency));
+        packDependencies.push_back(PackInfo{ packName, packDependency });
     }
 
     // debug check that max index of fileIndex exist in packIndex

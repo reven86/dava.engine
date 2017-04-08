@@ -1,10 +1,9 @@
 #include "TArc/Controls/PropertyPanel/Private/BoolComponentValue.h"
 #include "TArc/Controls/CheckBox.h"
-#include "TArc/Controls/PropertyPanel/DefaultEditorDrawers.h"
-#include "TArc/DataProcessing/DataWrappersProcessor.h"
+#include "TArc/Controls/PropertyPanel/PropertyModelExtensions.h"
 
 #include <Reflection/ReflectionRegistrator.h>
-#include <Base/FastName.h>
+#include <Reflection/ReflectedMeta.h>
 
 namespace DAVA
 {
@@ -20,35 +19,53 @@ void BoolComponentValue::SetCheckState(Qt::CheckState checkState)
     SetValue(checkState);
 }
 
-QWidget* BoolComponentValue::AcquireEditorWidget(QWidget* parent, const QStyleOptionViewItem& option)
+Any BoolComponentValue::GetMultipleValue() const
 {
-    CheckBox::FieldsDescriptor descr;
-    descr.valueFieldName = FastName("bool");
-
-    return (new CheckBox(descr, GetWrappersProcessor(), GetReflection(), parent))->ToWidgetCast();
+    return Any(Qt::PartiallyChecked);
 }
 
-void BoolComponentValue::ReleaseEditorWidget(QWidget* editor)
+bool BoolComponentValue::IsValidValueToSet(const Any& newValue, const Any& currentValue) const
 {
-    editor->deleteLater();
+    Qt::CheckState newCheckedState = newValue.Cast<Qt::CheckState>(Qt::PartiallyChecked);
+    Qt::CheckState currentCheckedState = currentValue.Cast<Qt::CheckState>(Qt::PartiallyChecked);
+    return newCheckedState != Qt::PartiallyChecked && newCheckedState != currentCheckedState;
 }
 
-bool BoolComponentValue::IsReadOnly() const
+ControlProxy* BoolComponentValue::CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor) const
 {
-    return nodes.front()->field.ref.IsReadonly();
+    ControlDescriptorBuilder<CheckBox::Fields> descr;
+    descr[CheckBox::Fields::Checked] = "bool";
+    descr[CheckBox::Fields::TextHint] = "textHint";
+    descr[CheckBox::Fields::IsReadOnly] = readOnlyFieldName;
+    return new CheckBox(descr, wrappersProcessor, model, parent);
 }
 
-bool BoolComponentValue::IsEnabled() const
+String BoolComponentValue::GetTextHint() const
 {
-    return true;
+    String result;
+    Any value = GetValue();
+    const M::ValueDescription* description = nodes.front()->field.ref.GetMeta<M::ValueDescription>();
+    if (description != nullptr)
+    {
+        Qt::CheckState state = GetValue().Cast<Qt::CheckState>();
+        if (state == Qt::PartiallyChecked)
+        {
+            result = "< multiple values >";
+        }
+        else
+        {
+            result = description->GetDescription(value);
+        }
+    }
+
+    return result;
 }
 
-DAVA_REFLECTION_IMPL(BoolComponentValue)
+DAVA_VIRTUAL_REFLECTION_IMPL(BoolComponentValue)
 {
     ReflectionRegistrator<BoolComponentValue>::Begin()
     .Field("bool", &BoolComponentValue::GetCheckState, &BoolComponentValue::SetCheckState)
-    .Field("readOnly", &BoolComponentValue::IsReadOnly, nullptr)
-    .Field("enabled", &BoolComponentValue::IsEnabled, nullptr)
+    .Field("textHint", &BoolComponentValue::GetTextHint, nullptr)
     .End();
 }
 }

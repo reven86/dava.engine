@@ -1,10 +1,10 @@
 #include "GetRequest.h"
 
-#include "FileSystem/FileSystem.h"
-#include "Platform/SystemTimer.h"
-#include "Logger/Logger.h"
+#include <Tools/AssetCache/AssetCacheClient.h>
 
-#include "AssetCache/AssetCacheClient.h"
+#include <FileSystem/FileSystem.h>
+#include <Time/SystemTimer.h>
+#include <Logger/Logger.h>
 
 using namespace DAVA;
 

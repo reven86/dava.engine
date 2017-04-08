@@ -1,7 +1,7 @@
 #include "SpeedLoadImagesTest.h"
 
-#include "Platform/SystemTimer.h"
 #include "Render/Image/ImageSystem.h"
+#include "Time/SystemTimer.h"
 #include "Utils/UTF8Utils.h"
 
 using namespace DAVA;
@@ -44,8 +44,9 @@ void SpeedLoadImagesTest::LoadResources()
     resultText = new UIStaticText(Rect(10, 280, 700, 1400));
     resultText->SetFont(font);
     resultText->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
-    resultText->GetBackground()->SetColor(Color(0.0, 0.0, 0.0, 1.0));
-    resultText->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
+    UIControlBackground* resultTextBg = resultText->GetOrCreateComponent<UIControlBackground>();
+    resultTextBg->SetColor(Color(0.0, 0.0, 0.0, 1.0));
+    resultTextBg->SetDrawType(UIControlBackground::DRAW_FILL);
     resultText->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
     resultText->SetMultiline(true);
     AddControl(resultText);
@@ -195,9 +196,9 @@ uint64 SpeedLoadImagesTest::GetLoadTime(const FilePath& path)
     uint64 allTime = 0;
     for (auto i = 0; i < number; ++i)
     {
-        uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
+        uint64 startTime = SystemTimer::GetMs();
         ImageSystem::Load(infile, imageSet);
-        uint64 finishTime = SystemTimer::Instance()->AbsoluteMS();
+        uint64 finishTime = SystemTimer::GetMs();
         allTime += finishTime - startTime;
 
         for (auto image : imageSet)

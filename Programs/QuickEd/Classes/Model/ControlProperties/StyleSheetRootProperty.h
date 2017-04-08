@@ -54,12 +54,13 @@ public:
     bool IsReadOnly() const override;
 
     const DAVA::String& GetName() const override;
+    const DAVA::Type* GetValueType() const override;
     ePropertyType GetType() const override;
 
     void AddListener(PropertyListener* listener);
     void RemoveListener(PropertyListener* listener);
 
-    void SetProperty(AbstractProperty* property, const DAVA::VariantType& newValue);
+    void SetProperty(AbstractProperty* property, const DAVA::Any& newValue);
     bool CanAddProperty(DAVA::uint32 propertyIndex) const;
     bool CanRemoveProperty(DAVA::uint32 propertyIndex) const;
     void AddProperty(StyleSheetProperty* property);

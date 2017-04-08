@@ -2,13 +2,22 @@
 #include "Scene3D/Scene.h"
 #include "Scene3D/Systems/EventSystem.h"
 #include "Scene3D/Systems/GlobalEventSystem.h"
+#include "Reflection/ReflectionRegistrator.h"
+#include "Reflection/ReflectedMeta.h"
 
 namespace DAVA
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(SwitchComponent)
+{
+    ReflectionRegistrator<SwitchComponent>::Begin()[M::CantBeCreatedManualyComponent()]
+    .ConstructorByPointer()
+    .Field("newSwitchIndex", &SwitchComponent::GetSwitchIndex, &SwitchComponent::SetSwitchIndex)[M::DisplayName("Switch index")]
+    .End();
+}
+
 SwitchComponent::SwitchComponent()
     : oldSwitchIndex(-1)
-    ,
-    newSwitchIndex(0)
+    , newSwitchIndex(0)
 {
 }
 

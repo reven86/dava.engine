@@ -36,6 +36,8 @@ public:
     const DAVA::Vector<MaterialTemplateInfo>* GetMaterialTemplatesInfo() const;
     DAVA_DEPRECATED(const SpritesPackerModule* GetSpritesModules() const);
 
+    static DAVA::FilePath GetDataSource3DPath(const DAVA::FilePath& projectPath);
+
 public:
     static const DAVA::String ProjectPathProperty;
 
@@ -49,7 +51,7 @@ private:
 
     DAVA::FilePath projectPath;
 
-    DAVA_VIRTUAL_REFLECTION(ProjectManagerData, DAVA::TArc::DataNode)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(ProjectManagerData, DAVA::TArc::DataNode)
     {
         DAVA::ReflectionRegistrator<ProjectManagerData>::Begin()
         .Field(ProjectPathProperty.c_str(), &ProjectManagerData::GetProjectPath, nullptr)

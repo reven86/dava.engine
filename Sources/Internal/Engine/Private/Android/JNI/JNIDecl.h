@@ -1,3 +1,5 @@
+#pragma once
+
 #if defined(__DAVAENGINE_ANDROID__)
 #if defined(__DAVAENGINE_COREV2__)
 
@@ -119,7 +121,7 @@ struct TypeSignature<jbooleanArray>
 {
     static const char8* value()
     {
-        return "[Ljava/lang/Object;";
+        return "[Z";
     }
 };
 template <>
@@ -127,7 +129,7 @@ struct TypeSignature<jbyteArray>
 {
     static const char8* value()
     {
-        return "[Ljava/lang/Object;";
+        return "[B";
     }
 };
 template <>
@@ -135,7 +137,7 @@ struct TypeSignature<jcharArray>
 {
     static const char8* value()
     {
-        return "[Ljava/lang/Object;";
+        return "[C";
     }
 };
 template <>
@@ -143,7 +145,7 @@ struct TypeSignature<jshortArray>
 {
     static const char8* value()
     {
-        return "[Ljava/lang/Object;";
+        return "[S";
     }
 };
 template <>
@@ -151,7 +153,7 @@ struct TypeSignature<jintArray>
 {
     static const char8* value()
     {
-        return "[Ljava/lang/Object;";
+        return "[I";
     }
 };
 template <>
@@ -159,7 +161,7 @@ struct TypeSignature<jlongArray>
 {
     static const char8* value()
     {
-        return "[Ljava/lang/Object;";
+        return "[J";
     }
 };
 template <>
@@ -167,7 +169,7 @@ struct TypeSignature<jfloatArray>
 {
     static const char8* value()
     {
-        return "[Ljava/lang/Object;";
+        return "[F";
     }
 };
 template <>
@@ -175,7 +177,7 @@ struct TypeSignature<jdoubleArray>
 {
     static const char8* value()
     {
-        return "[Ljava/lang/Object;";
+        return "[D";
     }
 };
 
@@ -221,6 +223,10 @@ struct TypedMethod<R, std::enable_if_t<std::is_base_of<std::remove_pointer_t<job
 {
     static constexpr auto Call = &JNIEnv::CallObjectMethod;
     static constexpr auto CallStatic = &JNIEnv::CallStaticObjectMethod;
+    static constexpr auto GetField = &JNIEnv::GetObjectField;
+    static constexpr auto SetField = &JNIEnv::SetObjectField;
+    static constexpr auto GetStaticField = &JNIEnv::GetStaticObjectField;
+    static constexpr auto SetStaticField = &JNIEnv::SetStaticObjectField;
 };
 
 template <>
@@ -235,6 +241,10 @@ struct TypedMethod<jboolean>
 {
     static constexpr auto Call = &JNIEnv::CallBooleanMethod;
     static constexpr auto CallStatic = &JNIEnv::CallStaticBooleanMethod;
+    static constexpr auto GetField = &JNIEnv::GetBooleanField;
+    static constexpr auto SetField = &JNIEnv::SetBooleanField;
+    static constexpr auto GetStaticField = &JNIEnv::GetStaticBooleanField;
+    static constexpr auto SetStaticField = &JNIEnv::SetStaticBooleanField;
 };
 
 template <>
@@ -242,6 +252,10 @@ struct TypedMethod<jbyte>
 {
     static constexpr auto Call = &JNIEnv::CallByteMethod;
     static constexpr auto CallStatic = &JNIEnv::CallStaticByteMethod;
+    static constexpr auto GetField = &JNIEnv::GetByteField;
+    static constexpr auto SetField = &JNIEnv::SetByteField;
+    static constexpr auto GetStaticField = &JNIEnv::GetStaticByteField;
+    static constexpr auto SetStaticField = &JNIEnv::SetStaticByteField;
 };
 
 template <>
@@ -249,6 +263,10 @@ struct TypedMethod<jchar>
 {
     static constexpr auto Call = &JNIEnv::CallCharMethod;
     static constexpr auto CallStatic = &JNIEnv::CallStaticCharMethod;
+    static constexpr auto GetField = &JNIEnv::GetCharField;
+    static constexpr auto SetField = &JNIEnv::SetCharField;
+    static constexpr auto GetStaticField = &JNIEnv::GetStaticCharField;
+    static constexpr auto SetStaticField = &JNIEnv::SetStaticCharField;
 };
 
 template <>
@@ -256,6 +274,10 @@ struct TypedMethod<jshort>
 {
     static constexpr auto Call = &JNIEnv::CallShortMethod;
     static constexpr auto CallStatic = &JNIEnv::CallStaticShortMethod;
+    static constexpr auto GetField = &JNIEnv::GetShortField;
+    static constexpr auto SetField = &JNIEnv::SetShortField;
+    static constexpr auto GetStaticField = &JNIEnv::GetStaticShortField;
+    static constexpr auto SetStaticField = &JNIEnv::SetStaticShortField;
 };
 
 template <>
@@ -263,6 +285,10 @@ struct TypedMethod<jint>
 {
     static constexpr auto Call = &JNIEnv::CallIntMethod;
     static constexpr auto CallStatic = &JNIEnv::CallStaticIntMethod;
+    static constexpr auto GetField = &JNIEnv::GetIntField;
+    static constexpr auto SetField = &JNIEnv::SetIntField;
+    static constexpr auto GetStaticField = &JNIEnv::GetStaticIntField;
+    static constexpr auto SetStaticField = &JNIEnv::SetStaticIntField;
 };
 
 template <>
@@ -270,6 +296,10 @@ struct TypedMethod<jlong>
 {
     static constexpr auto Call = &JNIEnv::CallLongMethod;
     static constexpr auto CallStatic = &JNIEnv::CallStaticLongMethod;
+    static constexpr auto GetField = &JNIEnv::GetLongField;
+    static constexpr auto SetField = &JNIEnv::SetLongField;
+    static constexpr auto GetStaticField = &JNIEnv::GetStaticLongField;
+    static constexpr auto SetStaticField = &JNIEnv::SetStaticLongField;
 };
 
 template <>
@@ -277,6 +307,10 @@ struct TypedMethod<jfloat>
 {
     static constexpr auto Call = &JNIEnv::CallFloatMethod;
     static constexpr auto CallStatic = &JNIEnv::CallStaticFloatMethod;
+    static constexpr auto GetField = &JNIEnv::GetFloatField;
+    static constexpr auto SetField = &JNIEnv::SetFloatField;
+    static constexpr auto GetStaticField = &JNIEnv::GetStaticFloatField;
+    static constexpr auto SetStaticField = &JNIEnv::SetStaticFloatField;
 };
 
 template <>
@@ -284,6 +318,10 @@ struct TypedMethod<jdouble>
 {
     static constexpr auto Call = &JNIEnv::CallDoubleMethod;
     static constexpr auto CallStatic = &JNIEnv::CallStaticDoubleMethod;
+    static constexpr auto GetField = &JNIEnv::GetDoubleField;
+    static constexpr auto SetField = &JNIEnv::SetDoubleField;
+    static constexpr auto GetStaticField = &JNIEnv::GetStaticDoubleField;
+    static constexpr auto SetStaticField = &JNIEnv::SetStaticDoubleField;
 };
 
 } // namespace JNI

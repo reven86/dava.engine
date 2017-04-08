@@ -136,7 +136,7 @@ UIControl* QuickEdPackageBuilder::BeginControlWithCustomClass(const FastName& co
     }
 
     ControlNode* node = ControlNode::CreateFromControl(control.Get());
-    node->GetRootProperty()->GetCustomClassProperty()->SetValue(VariantType(customClassName));
+    node->GetRootProperty()->GetCustomClassProperty()->SetValue(customClassName);
     controlsStack.push_back(ControlDescr(node, true));
 
     return control.Get();
@@ -175,7 +175,7 @@ UIControl* QuickEdPackageBuilder::BeginControlWithPrototype(const FastName& cont
     ControlNode* node = ControlNode::CreateFromPrototype(prototypeNode);
     if (customClassName)
     {
-        node->GetRootProperty()->GetCustomClassProperty()->SetValue(VariantType(*customClassName));
+        node->GetRootProperty()->GetCustomClassProperty()->SetValue(*customClassName);
     }
 
     if (controlName.IsValid())
@@ -251,7 +251,9 @@ void QuickEdPackageBuilder::EndControl(eControlPlace controlPlace)
 void QuickEdPackageBuilder::BeginControlPropertiesSection(const String& name)
 {
     currentSection = controlsStack.back().node->GetRootProperty()->GetControlPropertiesSection(name);
+    DVASSERT(currentSection != nullptr);
     currentObject = controlsStack.back().node->GetControl();
+    DVASSERT(currentObject != nullptr);
 }
 
 void QuickEdPackageBuilder::EndControlPropertiesSection()
@@ -278,18 +280,22 @@ void QuickEdPackageBuilder::EndComponentPropertiesSection()
     currentObject = nullptr;
 }
 
-void QuickEdPackageBuilder::ProcessProperty(const InspMember* member, const VariantType& value)
+void QuickEdPackageBuilder::ProcessProperty(const Reflection::Field& field, const DAVA::Any& value)
 {
-    if (currentObject && currentSection && (member->Flags() & I_EDIT))
+    if (currentObject && currentSection)
     {
-        ValueProperty* property = currentSection->FindProperty(member);
-        if (property && value.GetType() != VariantType::TYPE_NONE)
+        ValueProperty* property = currentSection->FindChildPropertyByName(field.key.Cast<String>());
+        if (property && !value.IsEmpty())
         {
             if (property->GetStylePropertyIndex() != -1)
                 controlsStack.back().node->GetControl()->SetPropertyLocalFlag(property->GetStylePropertyIndex(), true);
 
             property->SetValue(value);
         }
+    }
+    else
+    {
+        DVASSERT(false);
     }
 }
 

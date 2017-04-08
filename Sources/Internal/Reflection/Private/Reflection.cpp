@@ -3,6 +3,8 @@
 #include <cstring>
 
 #include "Reflection/Reflection.h"
+#include "Reflection/ReflectedTypeDB.h"
+#include "Reflection/Private/Wrappers/ValueWrapperDirect.h"
 #include "Reflection/Private/Wrappers/StructureWrapperDefault.h"
 
 namespace DAVA
@@ -165,24 +167,34 @@ struct Dumper
             // print hierarchy
             PrintHierarhy(line, level, hierarchyColWidth);
 
-            // print key
+            // print key setup
             line << std::setw(nameColWidth - level * hierarchyColWidth) << std::left;
-            if (0 == maxlevel || !hasChildren)
-            {
-                DumpAny(line, field.key);
-            }
-            else
+
+            // print key
             {
                 std::ostringstream name;
+
+                if (field.inheritFrom != nullptr)
+                {
+                    name << std::setw(6) << field.inheritFrom->GetType()->GetName() << "::";
+                }
+
                 DumpAny(name, field.key);
 
-                if ((level + 1) <= maxlevel)
+                if (0 == maxlevel || !hasChildren)
                 {
-                    line << name.str() + "[-]";
+                    line << name.str();
                 }
                 else
                 {
-                    line << name.str() + "[+]";
+                    if ((level + 1) <= maxlevel)
+                    {
+                        line << name.str() + "[-]";
+                    }
+                    else
+                    {
+                        line << name.str() + "[+]";
+                    }
                 }
             }
 
@@ -273,9 +285,9 @@ Reflection::Reflection(const ReflectedObject& object_, const ValueWrapper* vw, c
             structureWrapper = reflectedType->GetStrucutreWrapper();
         }
 
-        if (nullptr == meta && nullptr != reflectedType->GetStrucutre())
+        if (nullptr == meta && nullptr != reflectedType->GetStructure())
         {
-            meta = reflectedType->GetStrucutre()->meta.get();
+            meta = reflectedType->GetStructure()->meta.get();
         }
     }
 
@@ -354,21 +366,67 @@ Vector<Reflection::Method> Reflection::GetMethods() const
 
 void Reflection::Dump(std::ostream& out, size_t maxlevel) const
 {
-    ReflectedTypeDBDetail::Dumper::Dump(out, { "this", *this }, 0, maxlevel);
+    ReflectedTypeDBDetail::Dumper::Dump(out, Reflection::Field(Any("this"), Reflection(*this), nullptr), 0, maxlevel);
 }
 
-Reflection Reflection::Create(const Any& any, const ReflectedMeta* objectMeta)
+Reflection Reflection::Create(const ReflectedObject& object, const ReflectedMeta* objectMeta)
 {
-    if (!any.IsEmpty())
+    if (object.IsValid())
     {
-        const ReflectedType* objectType = ReflectedTypeDB::GetByType(any.GetType());
-
-        // TODO:
-        // ...
-
-        DVASSERT(false);
+        static ValueWrapperObject objectValueWrapper;
+        return Reflection(object, &objectValueWrapper, nullptr, objectMeta);
     }
 
     return Reflection();
 }
+
+Reflection Reflection::Create(const Any& any, const ReflectedMeta* objectMeta)
+{
+    static ValueWrapperDirect vw;
+
+    if (!any.IsEmpty())
+    {
+        if (any.GetType()->IsPointer())
+        {
+            const ReflectedType* objectType = ReflectedTypeDB::GetByType(any.GetType()->Deref());
+
+            if (nullptr != objectType)
+            {
+                ReflectedObject object(any.Get<void*>(), objectType);
+                return Reflection(object, &vw, nullptr, objectMeta);
+            }
+        }
+        else
+        {
+            const ReflectedType* objectType = ReflectedTypeDB::GetByType(any.GetType());
+
+            if (nullptr != objectType)
+            {
+                ReflectedObject object(const_cast<void*>(any.GetData()), objectType);
+                return Reflection(object, &vw, nullptr, objectMeta);
+            }
+        }
+    }
+
+    return Reflection();
+}
+
+Reflection Reflection::Create(const Reflection& etalon, const Reflection& metaProvider)
+{
+    return Reflection(etalon.object, etalon.valueWrapper, etalon.structureWrapper, metaProvider.meta);
+}
+
+Reflection::Field::Field(Any&& key_, Reflection&& ref_, const ReflectedType* inheritFrom_)
+    : key(key_)
+    , ref(ref_)
+    , inheritFrom(inheritFrom_)
+{
+}
+
+Reflection::Method::Method(String&& key_, AnyFn&& fn_)
+    : key(key_)
+    , fn(fn_)
+{
+}
+
 } // namespace DAVA

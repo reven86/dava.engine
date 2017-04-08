@@ -1,7 +1,7 @@
-#ifndef __DAVAENGINE_PATH_COMPONENT_H__
-#define __DAVAENGINE_PATH_COMPONENT_H__
+#pragma once
 
 #include "Entity/Component.h"
+#include "Reflection/Reflection.h"
 #include "Base/Introspection.h"
 #include "Math/Color.h"
 
@@ -46,6 +46,8 @@ public:
                       //MEMBER(isStarting, "Is waypoint starting", I_VIEW) // still editable on property editor. TODO: uncomment when fixed this
                       COLLECTION(edges, "Edges", I_SAVE | I_VIEW | I_EDIT)
                       );
+
+        DAVA_VIRTUAL_REFLECTION(Waypoint, InspBase);
     };
 
     struct Edge : public InspBase
@@ -75,6 +77,8 @@ public:
                       PROPERTY("DestinationPoint", "Destination Point", GetDestinationPoint, SetDestinationPoint, I_VIEW)
                       MEMBER(properties, "Edge Properties", I_SAVE | I_EDIT | I_VIEW)
                       );
+
+        DAVA_VIRTUAL_REFLECTION(Edge, InspBase);
     };
 
 public:
@@ -114,6 +118,8 @@ public:
                          MEMBER(name, "Name", I_SAVE | I_VIEW | I_EDIT)
                          MEMBER(color, "Color", I_SAVE | I_VIEW | I_EDIT)
                          );
+
+    DAVA_VIRTUAL_REFLECTION(PathComponent, Component);
 };
 
 inline void PathComponent::Waypoint::SetStarting(bool val)
@@ -161,4 +167,3 @@ inline KeyedArchive* PathComponent::Edge::GetProperties() const
     return properties;
 }
 }
-#endif //__DAVAENGINE_PATH_COMPONENT_H__

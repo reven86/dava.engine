@@ -1,10 +1,21 @@
 #include "UI/UIJoypad.h"
 #include "UI/UIEvent.h"
 #include "Logger/Logger.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {
 static const FastName UIJOYPAD_STICK_NAME("stick");
+
+DAVA_VIRTUAL_REFLECTION_IMPL(UIJoypad)
+{
+    ReflectionRegistrator<UIJoypad>::Begin()
+    .ConstructorByPointer()
+    .DestructorByPointer([](UIJoypad* o) { o->Release(); })
+    .Field("deadAreaSize", &UIJoypad::GetDeadAreaSize, &UIJoypad::SetDeadAreaSize)
+    .Field("digitalSense", &UIJoypad::GetDigitalSense, &UIJoypad::SetDigitalSense)
+    .End();
+}
 
 UIJoypad::UIJoypad(const Rect& rect)
     : UIControl(rect)
@@ -20,7 +31,8 @@ UIJoypad::UIJoypad(const Rect& rect)
 
     RefPtr<UIControl> stickCtrl(new UIControl(Rect(0.0f, 0.0f, 10.0f, 10.0f)));
     stickCtrl->SetName(UIJOYPAD_STICK_NAME);
-    stickCtrl->GetBackground()->SetAlign(ALIGN_HCENTER | ALIGN_VCENTER);
+    UIControlBackground* stickCtrlBg = stickCtrl->GetOrCreateComponent<UIControlBackground>();
+    stickCtrlBg->SetAlign(ALIGN_HCENTER | ALIGN_VCENTER);
     stickCtrl->SetInputEnabled(false);
     stickCtrl->SetPivot(Vector2(0.5f, 0.5f));
     stickCtrl->SetPosition(GetSize() / 2.0f);

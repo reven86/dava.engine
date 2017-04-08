@@ -24,29 +24,33 @@ void UIBackgroundTest::LoadResources()
     text_orig = new UIStaticText(Rect(0, 0, 100, 100));
     text_orig->SetText(L"orig");
     text_orig->SetFont(font);
-    text_orig->GetBackground()->SetDrawType(UIControlBackground::DRAW_STRETCH_BOTH);
-    text_orig->GetBackground()->SetSprite(sprite, 0);
+    UIControlBackground* text_origBg = text_orig->GetOrCreateComponent<UIControlBackground>();
+    text_origBg->SetDrawType(UIControlBackground::DRAW_STRETCH_BOTH);
+    text_origBg->SetSprite(sprite, 0);
 
     text_modif_h = new UIStaticText(Rect(0, 120, 100, 100));
     text_modif_h->SetText(L"H");
     text_modif_h->SetFont(font);
-    text_modif_h->GetBackground()->SetDrawType(UIControlBackground::DRAW_STRETCH_BOTH);
-    text_modif_h->GetBackground()->SetModification(ESM_HFLIP);
-    text_modif_h->GetBackground()->SetSprite(sprite, 0);
+    UIControlBackground* text_modif_hBg = text_modif_h->GetOrCreateComponent<UIControlBackground>();
+    text_modif_hBg->SetDrawType(UIControlBackground::DRAW_STRETCH_BOTH);
+    text_modif_hBg->SetModification(ESM_HFLIP);
+    text_modif_hBg->SetSprite(sprite, 0);
 
     text_modif_v = new UIStaticText(Rect(120, 0, 100, 100));
     text_modif_v->SetText(L"V");
     text_modif_v->SetFont(font);
-    text_modif_v->GetBackground()->SetDrawType(UIControlBackground::DRAW_STRETCH_BOTH);
-    text_modif_v->GetBackground()->SetModification(ESM_VFLIP);
-    text_modif_v->GetBackground()->SetSprite(sprite, 0);
+    UIControlBackground* text_modif_vBg = text_modif_v->GetOrCreateComponent<UIControlBackground>();
+    text_modif_vBg->SetDrawType(UIControlBackground::DRAW_STRETCH_BOTH);
+    text_modif_vBg->SetModification(ESM_VFLIP);
+    text_modif_vBg->SetSprite(sprite, 0);
 
     text_modif_hv = new UIStaticText(Rect(120, 120, 100, 100));
     text_modif_hv->SetText(L"HV");
     text_modif_hv->SetFont(font);
-    text_modif_hv->GetBackground()->SetDrawType(UIControlBackground::DRAW_STRETCH_BOTH);
-    text_modif_hv->GetBackground()->SetModification(ESM_VFLIP | ESM_HFLIP);
-    text_modif_hv->GetBackground()->SetSprite(sprite, 0);
+    UIControlBackground* text_modif_hvBg = text_modif_hv->GetOrCreateComponent<UIControlBackground>();
+    text_modif_hvBg->SetDrawType(UIControlBackground::DRAW_STRETCH_BOTH);
+    text_modif_hvBg->SetModification(ESM_VFLIP | ESM_HFLIP);
+    text_modif_hvBg->SetSprite(sprite, 0);
 
     AddControl(text_orig);
     AddControl(text_modif_h);

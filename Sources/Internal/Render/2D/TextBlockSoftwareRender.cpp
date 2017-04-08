@@ -1,7 +1,9 @@
 #include "Render/2D/TextBlockSoftwareRender.h"
-#include "Render/RenderCallbacks.h"
+#include "Render/RHI/rhi_Public.h"
+#include "Render/Renderer.h"
 #include "UI/UIControlSystem.h"
 #include "Core/Core.h"
+#include "Logger/Logger.h"
 #include "Utils/UTF8Utils.h"
 
 namespace DAVA
@@ -10,7 +12,7 @@ TextBlockSoftwareRender::TextBlockSoftwareRender(TextBlock* textBlock)
     : TextBlockRender(textBlock)
     , ftFont(static_cast<FTFont*>(textBlock->font))
 {
-    RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(this, &TextBlockSoftwareRender::Restore));
+    Renderer::GetSignals().needRestoreResources.Connect(this, &TextBlockSoftwareRender::Restore);
 
 #if defined(LOCALIZATION_DEBUG)
     textOffsetTL.x = std::numeric_limits<float32>::max();
@@ -22,7 +24,7 @@ TextBlockSoftwareRender::TextBlockSoftwareRender(TextBlock* textBlock)
 
 TextBlockSoftwareRender::~TextBlockSoftwareRender()
 {
-    RenderCallbacks::UnRegisterResourceRestoreCallback(MakeFunction(this, &TextBlockSoftwareRender::Restore));
+    Renderer::GetSignals().needRestoreResources.Disconnect(this);
     SafeRelease(currentTexture);
 }
 
@@ -37,9 +39,25 @@ TextBlockRender* TextBlockSoftwareRender::Clone()
 void TextBlockSoftwareRender::Prepare()
 {
     TextBlockRender::Prepare();
+    SafeRelease(currentTexture);
 
-    int32 width = Max(textBlock->cacheDx, 1);
-    int32 height = Max(textBlock->cacheDy, 1);
+    uint32 width = Max(textBlock->cacheDx, 1);
+    uint32 height = Max(textBlock->cacheDy, 1);
+
+    // Check that text can be rendered in available texture size otherwise don't draw it
+    uint32 maxSize = rhi::DeviceCaps().maxTextureSize;
+    if (width > maxSize || height > maxSize)
+    {
+        String text = UTF8Utils::EncodeToUTF8(textBlock->GetText());
+        static const uint32 SHORT_SIZE = 40;
+        if (text.size() > SHORT_SIZE)
+        {
+            text.resize(SHORT_SIZE);
+            text.append("...");
+        }
+        Logger::Error("TextBlockSoftwareRender: Text '%s' is too big for rendering (need %dx%d texture)", text.c_str(), width, height);
+        return;
+    }
 
 #if defined(LOCALIZATION_DEBUG)
     bufHeight = height;
@@ -72,7 +90,6 @@ void TextBlockSoftwareRender::Prepare()
         }
     }
 
-    SafeRelease(currentTexture);
     currentTexture = Texture::CreateTextFromData(FORMAT_A8, buffer.data(), width, height, false, addInfo.c_str());
     sprite = Sprite::CreateFromTexture(currentTexture, 0, 0, textBlock->cacheFinalSize.dx, textBlock->cacheFinalSize.dy);
 }

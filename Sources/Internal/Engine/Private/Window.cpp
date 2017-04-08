@@ -12,7 +12,7 @@
 #include "Autotesting/AutotestingSystem.h"
 #include "Input/InputSystem.h"
 #include "Logger/Logger.h"
-#include "Platform/SystemTimer.h"
+#include "Time/SystemTimer.h"
 #include "Render/2D/TextBlock.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
@@ -183,7 +183,7 @@ void Window::Update(float32 frameDelta)
     const EngineContext* context = engineBackend->GetContext();
 
 #if defined(__DAVAENGINE_AUTOTESTING__)
-    float32 realFrameDelta = context->systemTimer->RealFrameDelta();
+    float32 realFrameDelta = SystemTimer::GetRealFrameDelta();
     context->autotestingSystem->Update(realFrameDelta);
 #endif
 
@@ -271,6 +271,9 @@ void Window::EventHandler(const Private::MainDispatcherEvent& e)
     case MainDispatcherEvent::WINDOW_CANCEL_INPUT:
         HandleCancelInput(e);
         break;
+    case MainDispatcherEvent::WINDOW_VISIBLE_FRAME_CHANGED:
+        HandleVisibleFrameChanged(e);
+        break;
     default:
         break;
     }
@@ -284,8 +287,9 @@ void Window::FinishEventHandlingOnCurrentFrame()
 
 void Window::HandleWindowCreated(const Private::MainDispatcherEvent& e)
 {
-    Logger::FrameworkDebug("=========== WINDOW_CREATED, dpi %.1f", e.sizeEvent.dpi);
+    Logger::Info("Window::HandleWindowCreated: enter");
 
+    isAlive = true;
     MergeSizeChangedEvents(e);
     sizeEventsMerged = true;
 
@@ -299,11 +303,13 @@ void Window::HandleWindowCreated(const Private::MainDispatcherEvent& e)
     engineBackend->OnWindowCreated(this);
 
     sizeChanged.Emit(this, GetSize(), GetSurfaceSize());
+
+    Logger::Info("Window::HandleWindowCreated: leave");
 }
 
 void Window::HandleWindowDestroyed(const Private::MainDispatcherEvent& e)
 {
-    Logger::FrameworkDebug("=========== WINDOW_DESTROYED");
+    Logger::Info("Window::HandleWindowDestroyed: enter");
 
     engineBackend->OnWindowDestroyed(this);
 
@@ -311,6 +317,9 @@ void Window::HandleWindowDestroyed(const Private::MainDispatcherEvent& e)
     uiControlSystem = nullptr;
 
     engineBackend->DeinitRender(this);
+    isAlive = false;
+
+    Logger::Info("Window::HandleWindowDestroyed: leave");
 }
 
 void Window::HandleCursorCaptureLost(const Private::MainDispatcherEvent& e)
@@ -345,8 +354,19 @@ void Window::HandleSizeChanged(const Private::MainDispatcherEvent& e)
             // call reloadig sprites/fonts from this point ((
             if (uiControlSystem->vcs->GetReloadResourceOnResize())
             {
+// Disable sprite reloading on macos and windows
+// Game uses separate thread for loading battle and its resources.
+// Window resizing during battle loading may lead to crash as sprite
+// reloading is not ready for multiple threads.
+// TODO: do something with sprite reloading
+//
+// !!! At the moment this is a huge architectural problem,
+// that we do not know how to solve.
+// More detail can be found in DF-13044
+//
+#if !defined(__DAVAENGINE_MACOS__) && !defined(__DAVAENGINE_WINDOWS__)
                 Sprite::ValidateForSize();
-                TextBlock::ScreenResolutionChanged();
+#endif
             }
         }
     }
@@ -444,6 +464,12 @@ void Window::HandleCancelInput(const Private::MainDispatcherEvent& e)
     inputSystem->GetKeyboard().ClearAllKeys();
 }
 
+void Window::HandleVisibleFrameChanged(const Private::MainDispatcherEvent& e)
+{
+    Rect visibleRect(e.visibleFrameEvent.x, e.visibleFrameEvent.y, e.visibleFrameEvent.width, e.visibleFrameEvent.height);
+    visibleFrameChanged.Emit(this, visibleRect);
+}
+
 void Window::HandleFocusChanged(const Private::MainDispatcherEvent& e)
 {
     Logger::FrameworkDebug("=========== WINDOW_FOCUS_CHANGED: state=%s", e.stateEvent.state ? "got_focus" : "lost_focus");
@@ -467,7 +493,7 @@ void Window::HandleFocusChanged(const Private::MainDispatcherEvent& e)
 
 void Window::HandleVisibilityChanged(const Private::MainDispatcherEvent& e)
 {
-    Logger::FrameworkDebug("=========== WINDOW_VISIBILITY_CHANGED: state=%s", e.stateEvent.state ? "visible" : "hidden");
+    Logger::Info("Window::HandleVisibilityChanged: become %s", e.stateEvent.state ? "visible" : "hidden");
 
     isVisible = e.stateEvent.state != 0;
     visibilityChanged.Emit(this, isVisible);
@@ -583,6 +609,7 @@ void Window::HandleTrackpadGesture(const Private::MainDispatcherEvent& e)
     uie.modifiers = e.trackpadGestureEvent.modifierKeys;
     uie.device = eInputDevices::TOUCH_PAD;
     uie.phase = UIEvent::Phase::GESTURE;
+    uie.physPoint = Vector2(e.trackpadGestureEvent.x, e.trackpadGestureEvent.y);
     uie.gesture.magnification = e.trackpadGestureEvent.magnification;
     uie.gesture.rotation = e.trackpadGestureEvent.rotation;
     uie.gesture.dx = e.trackpadGestureEvent.deltaX;
@@ -613,7 +640,6 @@ void Window::HandleKeyPress(const Private::MainDispatcherEvent& e)
         uie.phase = UIEvent::Phase::KEY_UP;
     }
 
-    inputSystem->HandleInputEvent(&uie);
     if (pressed)
     {
         keyboard.OnKeyPressed(uie.key);
@@ -622,6 +648,7 @@ void Window::HandleKeyPress(const Private::MainDispatcherEvent& e)
     {
         keyboard.OnKeyUnpressed(uie.key);
     }
+    inputSystem->HandleInputEvent(&uie);
 }
 
 void Window::HandleKeyChar(const Private::MainDispatcherEvent& e)

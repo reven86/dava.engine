@@ -4,11 +4,9 @@
 
 #include "Core/Core.h"
 #include "Engine/Engine.h"
-#include "Render/RenderHelper.h"
-#include "FileSystem/FileList.h"
-#include "Platform/DeviceInfo.h"
-#include "Platform/DateTime.h"
 #include "FileSystem/KeyedArchive.h"
+#include "Platform/DeviceInfo.h"
+#include "Time/DateTime.h"
 
 #include "Autotesting/AutotestingSystemLua.h"
 #include "Autotesting/AutotestingDB.h"
@@ -17,9 +15,10 @@
 
 namespace DAVA
 {
+const String AutotestingSystem::RecordScriptFileName("RecordedScript.lua");
+
 AutotestingSystem::AutotestingSystem()
     : luaSystem(nullptr)
-    , startTimeMS(0)
     , isInit(false)
     , isRunning(false)
     , needExitApp(false)
@@ -56,6 +55,10 @@ AutotestingSystem::AutotestingSystem()
     , waitCheckTimeLeft(0.0f)
 {
     new AutotestingDB();
+
+    //default behavior for autotests is to exit on test end/error
+    SetTestFinishedCallback([this] { ExitApp(); });
+    SetTestErrorCallback([this](const String& error) { ExitApp(); });
 }
 
 AutotestingSystem::~AutotestingSystem()
@@ -75,39 +78,53 @@ void AutotestingSystem::InitLua(AutotestingSystemLuaDelegate* _delegate)
     luaSystem->SetDelegate(_delegate);
 }
 
-String AutotestingSystem::ResolvePathToAutomation(const String& automationPath)
+bool AutotestingSystem::ResolvePathToAutomation()
 {
-    Logger::Info("AutotestingSystem::ResolvePathToAutomation platform=%s path=%s", DeviceInfo::GetPlatformString().c_str(), automationPath.c_str());
-    String automationResolvedStrPath;
-    // Try to find automation data in Documents
-    if (DeviceInfo::GetPlatform() == DeviceInfo::PLATFORM_PHONE_WIN_UAP)
+    Logger::Info("AutotestingSystem::ResolvePathToAutomation platform=%s", DeviceInfo::GetPlatformString().c_str());
+    pathToAutomation = "~doc:/atpath.txt";
+    if (FileSystem::Instance()->Exists(pathToAutomation))
     {
-        //TODO: it's temporary solution will be changed with upgrading WinSDK and launching tool
-        automationResolvedStrPath = "d:" + automationPath;
+        ScopedPtr<File> file(File::Create(pathToAutomation, File::OPEN | File::READ));
+        if (file)
+        {
+            pathToAutomation = file->ReadLine();
+            if (FileSystem::Instance()->Exists(pathToAutomation))
+            {
+                Logger::Info("AutotestingSystem::ResolvePathToAutomation resolved path %s", pathToAutomation.GetAbsolutePathname().c_str());
+                return true;
+            }
+        }
     }
-    else if (DeviceInfo::GetPlatform() == DeviceInfo::PLATFORM_ANDROID)
+
+    // Try to find automation data in Documents
+    if (DeviceInfo::GetPlatform() == DeviceInfo::PLATFORM_ANDROID)
     {
-        automationResolvedStrPath = FileSystem::Instance()->GetPublicDocumentsPath().GetAbsolutePathname() + automationPath;
+        pathToAutomation = FileSystem::Instance()->GetPublicDocumentsPath().GetAbsolutePathname() + "/Autotesting/";
     }
     else
     {
-        automationResolvedStrPath = "~doc:" + automationPath;
+        pathToAutomation = "~doc:/Autotesting/";
     }
 
-    if (FilePath(automationResolvedStrPath).Exists())
+    if (FileSystem::Instance()->Exists(pathToAutomation))
     {
-        Logger::Info("AutotestingSystem::ResolvePathToAutomation resolved path=%s", automationResolvedStrPath.c_str());
-        return automationResolvedStrPath;
+        Logger::Info("AutotestingSystem::ResolvePathToAutomation resolved path in documents %s", pathToAutomation.GetAbsolutePathname().c_str());
+        return true;
     }
 
     // If there are no automation data in documents, try to find it in Data
-    if (FilePath("~res:" + automationPath).Exists())
+    pathToAutomation = "~res:/Autotesting/";
+    if (FileSystem::Instance()->Exists(pathToAutomation))
     {
-        automationResolvedStrPath = "~res:" + automationPath;
-        Logger::Info("AutotestingSystem::ResolvePathToAutomation resolved path=%s", automationResolvedStrPath.c_str());
-        return automationResolvedStrPath;
+        Logger::Info("AutotestingSystem::ResolvePathToAutomation resolved in resources %s", pathToAutomation.GetAbsolutePathname().c_str());
+        return true;
     }
-    return "";
+    return false;
+}
+
+FilePath AutotestingSystem::GetPathTo(const String& path) const
+{
+    return pathToAutomation + path;
 }
 
 // This method is called on application started and it handle autotest initialisation
@@ -129,20 +146,20 @@ void AutotestingSystem::OnAppStarted()
         FetchParametersFromDB();
     }
 
-    const String testFileLocation = Format("/Autotesting/Tests/%s/%s.lua", groupName.c_str(), testFileName.c_str());
-    String testFileStrPath = ResolvePathToAutomation(testFileLocation);
-    if (testFileStrPath.empty())
+    const String testFileLocation = Format("/Tests/%s/%s.lua", groupName.c_str(), testFileName.c_str());
+    FilePath testFileStrPath = GetPathTo(testFileLocation);
+    if (!FileSystem::Instance()->Exists(testFileStrPath))
     {
         Logger::Error("AutotestingSystemLua::OnAppStarted: couldn't open %s", testFileLocation.c_str());
-        return;
+        testFileStrPath = "";
     }
 
     AutotestingDB::Instance()->WriteLogHeader();
     AutotestingSystemLua::Instance()->InitFromFile(testFileStrPath);
  
 #if defined(__DAVAENGINE_COREV2__)
-    SigConnectionID sid = GetPrimaryWindow()->sizeChanged.Connect(this, &AutotestingSystem::OnWindowSizeChanged);
-    GetPrimaryWindow()->sizeChanged.Track(sid, &localTrackedObject);
+    Token wndSizeChangedToken = GetPrimaryWindow()->sizeChanged.Connect(this, &AutotestingSystem::OnWindowSizeChanged);
+    GetPrimaryWindow()->sizeChanged.Track(wndSizeChangedToken, &localTrackedObject);
 #endif
 
     Size2i size = UIControlSystem::Instance()->vcs->GetPhysicalScreenSize();
@@ -186,8 +203,7 @@ void AutotestingSystem::FetchParametersFromIdYaml()
     frameworkRev = option->GetString("FrameworkRev");
 
     // Check is build fol local debugging.  By default: use DB.
-    bool isLocalBuild = option->GetBool("LocalBuild", false);
-    if (isLocalBuild)
+    if ("true" == option->GetString("LocalBuild", "false"))
     {
         groupName = option->GetString("Group", AutotestingDB::DB_ERROR_STR_VALUE);
         testFileName = option->GetString("Filename", AutotestingDB::DB_ERROR_STR_VALUE);
@@ -197,12 +213,11 @@ void AutotestingSystem::FetchParametersFromIdYaml()
 
 RefPtr<KeyedArchive> AutotestingSystem::GetIdYamlOptions()
 {
-    const String idYamlStrLocation = "/Autotesting/id.yaml";
-    String idYamlStrPath = ResolvePathToAutomation(idYamlStrLocation);
+    FilePath idYamlStrPath = GetPathTo("/id.yaml");
     RefPtr<KeyedArchive> option(new KeyedArchive());
-    if (idYamlStrPath.empty() || !option->LoadFromYamlFile(idYamlStrPath))
+    if (!FileSystem::Instance()->Exists(idYamlStrPath) || !option->LoadFromYamlFile(idYamlStrPath))
     {
-        ForceQuit("Couldn't open file " + idYamlStrLocation);
+        ForceQuit("Couldn't open file " + idYamlStrPath.GetAbsolutePathname());
     }
 
     return option;
@@ -238,12 +253,11 @@ void AutotestingSystem::FetchParametersFromDB()
 // Read DB parameters from config file and set connection to it
 void AutotestingSystem::SetUpConnectionToDB()
 {
-    const String dbConfigLocation = "/Autotesting/dbConfig.yaml";
-    String dbConfigStrPath = ResolvePathToAutomation(dbConfigLocation);
+    FilePath dbConfigStrPath = GetPathTo("/dbConfig.yaml");
     KeyedArchive* option = new KeyedArchive();
-    if (dbConfigStrPath.empty() || !option->LoadFromYamlFile(dbConfigStrPath))
+    if (!FileSystem::Instance()->Exists(dbConfigStrPath) || !option->LoadFromYamlFile(dbConfigStrPath))
     {
-        ForceQuit("Couldn't open file " + dbConfigLocation);
+        ForceQuit("Couldn't open file " + dbConfigStrPath.GetAbsolutePathname());
     }
 
     String dbName = option->GetString("name");
@@ -369,7 +383,7 @@ void AutotestingSystem::Draw()
             desc.transformVirtualToPhysical = true;
 
             RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
-            currentScreen->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData());
+            currentScreen->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData(), nullptr);
             DrawTouches();
             RenderSystem2D::Instance()->FillRect(Rect(0.0f, 0.0f, float32(pScreenSize.dx), float32(pScreenSize.dy)), Color::White, RenderSystem2D::DEFAULT_2D_FILL_ALPHA_MATERIAL);
             RenderSystem2D::Instance()->EndRenderTargetPass();
@@ -397,7 +411,7 @@ void AutotestingSystem::DrawTouches()
 void AutotestingSystem::OnTestStarted()
 {
     Logger::Info("AutotestingSystem::OnTestsStarted");
-    startTimeMS = SystemTimer::Instance()->FrameStampTimeMS();
+    startTime = SystemTimer::GetFrameTimestamp();
     luaSystem->StartTest();
 }
 
@@ -416,7 +430,7 @@ void AutotestingSystem::OnError(const String& errorMessage)
         AutotestingDB::Instance()->WriteState(deviceName, "State", "error");
     }
 
-    ExitApp();
+    testErrorCallback(errorMessage);
 }
 
 void AutotestingSystem::ForceQuit(const String& errorMessage)
@@ -452,15 +466,15 @@ void AutotestingSystem::OnScreenShotInternal(Texture* texture)
     DVASSERT(texture);
 
     Logger::Info("AutotestingSystem::OnScreenShot %s", screenshotName.c_str());
-    uint64 startTime = SystemTimer::Instance()->AbsoluteMS();
+    int64 startTime = SystemTimer::GetMs();
 
     DAVA::ScopedPtr<DAVA::Image> image(texture->CreateImageFromMemory());
     const Size2i& size = UIControlSystem::Instance()->vcs->GetPhysicalScreenSize();
     image->ResizeCanvas(uint32(size.dx), uint32(size.dy));
     image->Save(FilePath(AutotestingDB::Instance()->logsFolder + Format("/%s.png", screenshotName.c_str())));
 
-    uint64 finishTime = SystemTimer::Instance()->AbsoluteMS();
-    Logger::FrameworkDebug("AutotestingSystem::OnScreenShot Upload: %d", finishTime - startTime);
+    int64 finishTime = SystemTimer::GetMs();
+    Logger::FrameworkDebug("AutotestingSystem::OnScreenShot Upload: %lld", finishTime - startTime);
     isScreenShotSaving = false;
 
     SafeRelease(texture);
@@ -494,7 +508,7 @@ void AutotestingSystem::ClickSystemBack()
     keyEvent.device = eInputDevices::KEYBOARD;
     keyEvent.phase = DAVA::UIEvent::Phase::KEY_DOWN;
     keyEvent.key = DAVA::Key::BACK;
-    keyEvent.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+    keyEvent.timestamp = SystemTimer::GetMs() / 1000.0;
     UIControlSystem::Instance()->OnInput(&keyEvent);
 }
 
@@ -504,7 +518,7 @@ void AutotestingSystem::PressEscape()
     keyEvent.device = eInputDevices::KEYBOARD;
     keyEvent.phase = DAVA::UIEvent::Phase::KEY_DOWN;
     keyEvent.key = DAVA::Key::ESCAPE;
-    keyEvent.timestamp = (SystemTimer::FrameStampTimeMS() / 1000.0);
+    keyEvent.timestamp = SystemTimer::GetMs() / 1000.0;
     UIControlSystem::Instance()->OnInput(&keyEvent);
 }
 
@@ -523,7 +537,7 @@ void AutotestingSystem::OnTestsFinished()
     // Mark test as SUCCESS
     AutotestingDB::Instance()->Log("INFO", "Test finished.");
 
-    ExitApp();
+    testFinishedCallback();
 }
 
 void AutotestingSystem::OnTestSkipped()
@@ -637,6 +651,168 @@ void AutotestingSystem::ExitApp()
     isWaiting = false;
     needExitApp = true;
     timeBeforeExit = 1.0f;
+}
+
+void AutotestingSystem::OnRecordClickControl(UIControl* control)
+{
+    if (isRecording)
+    {
+        if (!control->GetParent()->GetName().IsValid()) //this criteria is so unreliable..
+        {
+            AutotestingSystem::Instance()->OnRecordFastSelectControl(control);
+        }
+        else
+        {
+            String hierarchy = GetControlHierarchy(control);
+            if (hierarchy.find("DebugPopup") == String::npos)
+            {
+                String codeLine = Format("ClickControl('%s')", hierarchy.c_str());
+                WriteScriptLine(codeLine);
+            }
+        }
+    }
+}
+
+void AutotestingSystem::OnRecordDoubleClickControl(UIControl* control)
+{
+    String hierarchy = GetControlHierarchy(control);
+    String codeLine = Format("DoubleClick('%s')", hierarchy.c_str());
+    WriteScriptLine(codeLine);
+}
+
+void AutotestingSystem::OnRecordSetText(UIControl* control, const String& text)
+{
+    String hierarchy = GetControlHierarchy(control);
+    String codeLine = Format("SetText('%s', '%s')", hierarchy.c_str(), text.c_str());
+    WriteScriptLine(codeLine);
+}
+
+void AutotestingSystem::OnRecordCheckText(UIControl* control)
+{
+    String hierarchy = GetControlHierarchy(control);
+    String text = DynamicTypeCheck<UIStaticText*>(control)->GetUtf8Text();
+    String codeLine = Format("CheckText('%s', '%s')", hierarchy.c_str(), text.c_str());
+    WriteScriptLine(codeLine);
+}
+
+void AutotestingSystem::OnRecordFastSelectControl(UIControl* control)
+{
+    String codeLine = Format("FastSelectControl('%s')", control->GetName().c_str());
+    WriteScriptLine(codeLine);
+}
+
+void AutotestingSystem::OnRecordWaitControlBecomeVisible(UIControl* control)
+{
+    String hierarchy = GetControlHierarchy(control);
+    String codeLine = Format("WaitControlBecomeVisible('%s')", hierarchy.c_str());
+    WriteScriptLine(codeLine);
+}
+void AutotestingSystem::OnRecordWaitControlBecomeEnabled(UIControl* control)
+{
+    String hierarchy = GetControlHierarchy(control);
+    String codeLine = Format("WaitControlBecomeEnabled('%s')", hierarchy.c_str());
+    WriteScriptLine(codeLine);
+}
+void AutotestingSystem::OnRecordWaitControlDissapeared(UIControl* control)
+{
+    String hierarchy = GetControlHierarchy(control);
+    String codeLine = Format("WaitControlDisappeared('%s')", hierarchy.c_str());
+    WriteScriptLine(codeLine);
+}
+
+void AutotestingSystem::OnRecordIsVisible(UIControl* control)
+{
+    String hierarchy = GetControlHierarchy(control);
+    String codeLine = Format("IsVisible('%s')", hierarchy.c_str());
+    WriteScriptLine(codeLine);
+}
+void AutotestingSystem::OnRecordIsDisabled(UIControl* control)
+{
+    String hierarchy = GetControlHierarchy(control);
+    String codeLine = Format("IsDisabled('%s')", hierarchy.c_str());
+    WriteScriptLine(codeLine);
+}
+
+String AutotestingSystem::GetControlHierarchy(UIControl* control) const
+{
+    UIControl* iter = control->GetParent();
+    String hierarhy;
+    while (iter)
+    {
+        hierarhy = Format("%s/%s", iter->GetName().c_str(), hierarhy.c_str());
+        iter = iter->GetParent();
+    }
+    FilePath scriptPath = pathToAutomation + RecordScriptFileName;
+    hierarhy = Format("%s%s", hierarhy.c_str(), control->GetName().c_str());
+    return hierarhy;
+}
+
+void AutotestingSystem::WriteScriptLine(const String& textLine)
+{
+    if (!isRecording)
+    {
+        return;
+    }
+    FilePath scriptPath = pathToAutomation + RecordScriptFileName;
+    ScopedPtr<File> recordedActs(nullptr);
+    if (FileSystem::Instance()->Exists(scriptPath))
+    {
+        recordedActs.reset(File::Create(scriptPath, File::APPEND | File::WRITE));
+    }
+    else
+    {
+        recordedActs.reset(File::Create(scriptPath, File::CREATE | File::WRITE));
+    }
+    if (recordedActs)
+    {
+        recordedActs->WriteLine(textLine);
+    }
+}
+
+String AutotestingSystem::GetLuaString(int32& lineNumber) const
+{
+    String result;
+
+    FilePath scriptPath = pathToAutomation + RecordScriptFileName;
+    ScopedPtr<File> file(File::Create(scriptPath, File::OPEN | File::READ));
+
+    if (file)
+    {
+        for (int32 i = 0; i <= lineNumber; i++)
+        {
+            if (!file->IsEof())
+            {
+                result = file->ReadLine();
+                if (i == lineNumber && result.empty())
+                {
+                    lineNumber++; //skip empty lines
+                }
+            }
+            else
+            {
+                lineNumber = -1;
+                result = "";
+            }
+        }
+    }
+    else
+    {
+        lineNumber = -1;
+    }
+
+    return result;
+}
+
+void AutotestingSystem::StartRecording()
+{
+    DVASSERT(!isRecording);
+    isRecording = true;
+}
+
+void AutotestingSystem::StopRecording()
+{
+    DVASSERT(isRecording);
+    isRecording = false;
 }
 
 // Multiplayer API

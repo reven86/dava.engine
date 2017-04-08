@@ -1,5 +1,8 @@
 #include "DAVAEngine.h"
 #include "UnitTests/UnitTests.h"
+#include "Compression/LZ4Compressor.h"
+#include "FileSystem/Private/PackFormatSpec.h"
+#include "Utils/CRC32.h"
 
 using namespace DAVA;
 
@@ -12,6 +15,11 @@ DAVA_TESTCLASS (FileSystemTest)
         FileSystem::Instance()->DeleteDirectory("~doc:/TestData/FileSystemTest/", true);
         bool dataPrepared = FileSystem::Instance()->RecursiveCopy("~res:/TestData/FileSystemTest/", "~doc:/TestData/FileSystemTest/");
         DVASSERT(dataPrepared);
+    }
+
+    ~FileSystemTest()
+    {
+        FileSystem::Instance()->DeleteDirectory("~doc:/TestData/FileSystemTest/", true);
     }
 
     void SetUp(const String&)override
@@ -466,6 +474,54 @@ DAVA_TESTCLASS (FileSystemTest)
 
         ScopedPtr<File> file(File::Create(dirPath, File::CREATE | File::WRITE));
         TEST_VERIFY(file.get() == nullptr)
+    }
+
+    DAVA_TEST (LoadCompressedMiniPackFile)
+    {
+        FileSystem* fs = FileSystem::Instance();
+
+        // first: generate compressed file
+        {
+            Vector<uint8> buff(1024, 'A');
+            Vector<uint8> compressedBuff;
+            LZ4HCCompressor().Compress(buff, compressedBuff);
+
+            FilePath filePath = tempDir + "file.txt.dvpl";
+            fs->DeleteFile(filePath);
+
+            ScopedPtr<File> file(File::Create(filePath, File::CREATE | File::WRITE));
+
+            file->Write(&compressedBuff[0], static_cast<uint32>(compressedBuff.size()));
+
+            PackFormat::LitePack::Footer footer;
+            footer.sizeCompressed = static_cast<uint32>(compressedBuff.size());
+            footer.sizeUncompressed = static_cast<uint32>(buff.size());
+            footer.type = Compressor::Type::Lz4HC;
+            footer.crc32Compressed = CRC32::ForBuffer(&compressedBuff[0], compressedBuff.size());
+            footer.packMarkerLite = PackFormat::FILE_MARKER_LITE;
+
+            file->Write(&footer, sizeof(footer));
+        }
+
+        // second: load just generated file and check
+        {
+            FilePath filePath = tempDir + "file.txt";
+            TEST_VERIFY(fs->IsFile(filePath));
+
+            ScopedPtr<File> file(File::Create(filePath, File::OPEN | File::READ));
+            if (!file)
+            {
+                TEST_VERIFY(false)
+            }
+            else
+            {
+                TEST_VERIFY(file->GetSize() == 1024);
+                String content = fs->ReadFileContents(filePath);
+                TEST_VERIFY(content == String(1024, 'A'));
+            }
+            // clear
+            TEST_VERIFY(fs->DeleteFile(filePath + ".dvpl"))
+        }
     }
 }
 ;

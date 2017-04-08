@@ -24,6 +24,7 @@
 #include <QOpenGLContext>
 #include <QOpenGLFramebufferObject>
 #include <QObject>
+#include <QQuickWidget>
 
 namespace DAVA
 {
@@ -181,11 +182,15 @@ WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
     : engineBackend(engineBackend)
     , window(window)
     , mainDispatcher(engineBackend->GetDispatcher())
-    , uiDispatcher(MakeFunction(this, &WindowBackend::UIEventHandler))
+    , uiDispatcher(MakeFunction(this, &WindowBackend::UIEventHandler), MakeFunction(this, &WindowBackend::TriggerPlatformEvents))
 {
     QtEventListener::TCallback triggered = [this]()
     {
-        uiDispatcher.ProcessEvents();
+        // Prevent processing UI dispatcher events when modal dialog is open as Dispatcher::ProcessEvents is not reentrant now
+        if (!EngineBackend::showingModalMessageBox)
+        {
+            uiDispatcher.ProcessEvents();
+        }
     };
 
     QtEventListener::TCallback destroyed = [this]()
@@ -290,13 +295,13 @@ void WindowBackend::UIEventHandler(const UIDispatcherEvent& e)
 namespace WindowBackendDetails
 {
 //there is a bug in Qt: https://bugreports.qt.io/browse/QTBUG-50465
-void Kostil_ForceUpdateCurrentScreen(RenderWidget* renderWidget, QApplication* application)
+void Kostil_ForceUpdateCurrentScreen(RenderWidget* renderWidget, QWindow* wnd, QApplication* application)
 {
     QDesktopWidget* desktop = application->desktop();
     int screenNumber = desktop->screenNumber(renderWidget);
     DVASSERT(screenNumber >= 0 && screenNumber < qApp->screens().size());
 
-    QWindow* parent = renderWidget->quickWindow();
+    QWindow* parent = wnd;
     while (parent->parent() != nullptr)
     {
         parent = parent->parent();
@@ -307,6 +312,8 @@ void Kostil_ForceUpdateCurrentScreen(RenderWidget* renderWidget, QApplication* a
 
 void WindowBackend::OnCreated()
 {
+    uiDispatcher.LinkToCurrentThread();
+
     // QuickWidnow in QQuickWidget is not "real" window, it doesn't have "platform window" handle,
     // so Qt can't make context current for that surface. Real surface is QOffscreenWindow that live inside
     // QQuickWidgetPrivate and we can get it only through context.
@@ -315,10 +322,10 @@ void WindowBackend::OnCreated()
     // because QQuickWidget "recreate" offscreenWindow every time on pair of show-hide events
     // I don't know what we can do with this.
     // Now i can only suggest: do not create Qt-based game! Never! Do you hear me??? Never! Never! Never! Never! Never! NEVER!!!
-    QOpenGLContext* context = renderWidget->quickWindow()->openglContext();
+    QOpenGLContext* context = renderWidget->GetQQuickWindow()->openglContext();
     contextBinder.reset(new OGLContextBinder(context->surface(), context));
 
-    WindowBackendDetails::Kostil_ForceUpdateCurrentScreen(renderWidget, PlatformApi::Qt::GetApplication());
+    WindowBackendDetails::Kostil_ForceUpdateCurrentScreen(renderWidget, renderWidget->GetQQuickWindow(), PlatformApi::Qt::GetApplication());
     dpi = static_cast<float32>(renderWidget->logicalDpiX());
     float32 scale = static_cast<float32>(renderWidget->devicePixelRatio());
     float32 w = static_cast<float32>(renderWidget->width());
@@ -446,12 +453,41 @@ void WindowBackend::OnWheel(QWheelEvent* qtEvent)
     }
     else
     {
-        QPointF delta = QPointF(qtEvent->angleDelta()) / 180.0f;
+        //most mouse types work in steps of 15 degrees, in which case the delta value is a multiple of 120
+        QPointF delta = QPointF(qtEvent->angleDelta()) / 120.0f;
         deltaX = delta.x();
         deltaY = delta.y();
     }
     eModifierKeys modifierKeys = GetModifierKeys();
+#ifdef Q_OS_MAC
+    if (qtEvent->source() == Qt::MouseEventSynthesizedBySystem)
+    {
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSwipeGestureEvent(window, deltaX, deltaY, modifierKeys));
+        return;
+    }
+#endif
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseWheelEvent(window, x, y, deltaX, deltaY, modifierKeys, false));
+}
+
+void WindowBackend::OnNativeGesture(QNativeGestureEvent* qtEvent)
+{
+    eModifierKeys modifierKeys = GetModifierKeys();
+    //local coordinates don't work on OS X - https://bugreports.qt.io/browse/QTBUG-59595
+    QPoint localPos = renderWidget->mapFromGlobal(qtEvent->globalPos());
+
+    float32 x = static_cast<float32>(localPos.x());
+    float32 y = static_cast<float32>(localPos.y());
+    switch (qtEvent->gestureType())
+    {
+    case Qt::RotateNativeGesture:
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowRotationGestureEvent(window, qtEvent->value(), modifierKeys));
+        break;
+    case Qt::ZoomNativeGesture:
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMagnificationGestureEvent(window, x, y, qtEvent->value(), modifierKeys));
+        break;
+    default:
+        break;
+    }
 }
 
 void WindowBackend::OnKeyPressed(QKeyEvent* qtEvent)
@@ -479,27 +515,26 @@ void WindowBackend::OnKeyPressed(QKeyEvent* qtEvent)
     eModifierKeys modifierKeys = GetModifierKeys();
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowKeyPressEvent(window, MainDispatcherEvent::KEY_DOWN, key, modifierKeys, isRepeated));
 
-    // Windows and macOs translates some Ctrl key combinations into ASCII control characters.
-    // It seems to me that control character are not wanted by game to handle in character message.
-    // https://msdn.microsoft.com/en-us/library/windows/desktop/gg153546(v=vs.85).aspx
-    if ((modifierKeys & eModifierKeys::CONTROL) == eModifierKeys::NONE)
+    QString text = qtEvent->text();
+    if (!text.isEmpty())
     {
-        QString text = qtEvent->text();
-        if (!text.isEmpty())
+        MainDispatcherEvent e = MainDispatcherEvent::CreateWindowKeyPressEvent(window, MainDispatcherEvent::KEY_CHAR, 0, modifierKeys, isRepeated);
+        for (int i = 0, n = text.size(); i < n; ++i)
         {
-            MainDispatcherEvent e = MainDispatcherEvent::CreateWindowKeyPressEvent(window, MainDispatcherEvent::KEY_CHAR, 0, modifierKeys, isRepeated);
-            for (int i = 0, n = text.size(); i < n; ++i)
-            {
-                QCharRef charRef = text[i];
-                e.keyEvent.key = charRef.unicode();
-                mainDispatcher->PostEvent(e);
-            }
+            QCharRef charRef = text[i];
+            e.keyEvent.key = charRef.unicode();
+            mainDispatcher->PostEvent(e);
         }
     }
 }
 
 void WindowBackend::OnKeyReleased(QKeyEvent* qtEvent)
 {
+    //we don't support autorepeat key_up
+    if (qtEvent->isAutoRepeat())
+    {
+        return;
+    }
     uint32 key = qtEvent->nativeVirtualKey();
 #if defined(Q_OS_WIN)
     // How to distinguish left and right shift, control and alt: http://stackoverflow.com/a/15977613
@@ -546,7 +581,7 @@ void WindowBackend::DoSetMinimumSize(float32 width, float32 height)
 
 void WindowBackend::DoSetFullscreen(eFullscreen newMode)
 {
-    QQuickWindow* quickWindow = renderWidget->quickWindow();
+    QQuickWindow* quickWindow = renderWidget->GetQQuickWindow();
     if (quickWindow == nullptr)
     {
         return;
@@ -584,15 +619,7 @@ void WindowBackend::Update()
 {
     if (renderWidget != nullptr)
     {
-        renderWidget->quickWindow()->update();
-    }
-}
-
-void WindowBackend::ActivateRendering()
-{
-    if (renderWidget != nullptr)
-    {
-        renderWidget->ActivateRendering();
+        renderWidget->GetQQuickWindow()->update();
     }
 }
 
@@ -612,7 +639,7 @@ void WindowBackend::InitCustomRenderParams(rhi::InitParam& params)
     params.acquireContextFunc = &AcquireContextImpl;
     params.releaseContextFunc = &ReleaseContextImpl;
     DVASSERT(renderWidget != nullptr);
-    params.defaultFrameBuffer = reinterpret_cast<void*>(renderWidget->quickWindow()->renderTarget()->handle());
+    params.defaultFrameBuffer = reinterpret_cast<void*>(renderWidget->GetQQuickWindow()->renderTarget()->handle());
 }
 
 void WindowBackend::SetCursorCapture(eCursorCapture mode)

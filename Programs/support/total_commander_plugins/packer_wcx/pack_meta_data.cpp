@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <array>
 #include <cassert>
+#include <fstream>
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
@@ -10,13 +11,15 @@
 
 #include "lz4.h"
 
-static bool LZ4CompressorDecompress(const std::vector<uint8_t>& in,
-                                    std::vector<uint8_t>& out)
+extern std::ofstream l;
+
+static bool lz4_compressor_decompress(const std::vector<uint8_t>& in,
+                                      std::vector<uint8_t>& out)
 {
-    int32_t decompressResult =
-    LZ4_decompress_fast(reinterpret_cast<const char*>(in.data()),
-                        reinterpret_cast<char*>(out.data()),
-                        static_cast<uint32_t>(out.size()));
+    int32_t decompressResult = LZ4_decompress_fast(
+    reinterpret_cast<const char*>(in.data()),
+    reinterpret_cast<char*>(out.data()),
+    static_cast<uint32_t>(out.size()));
     if (decompressResult < 0)
     {
         return false;
@@ -24,32 +27,34 @@ static bool LZ4CompressorDecompress(const std::vector<uint8_t>& in,
     return true;
 }
 
-PackMetaData::PackMetaData(const void* ptr, std::size_t size)
+pack_meta_data::pack_meta_data(const void* ptr, std::size_t size)
 {
-    Deserialize(ptr, size);
+    deserialize(ptr, size);
 }
 
-uint32_t PackMetaData::GetNumFiles() const
+uint32_t pack_meta_data::get_num_files() const
 {
-    return tableFiles.size();
+    return table_files.size();
 }
 
-uint32_t PackMetaData::GetNumPacks() const
+uint32_t pack_meta_data::get_num_packs() const
 {
-    return tablePacks.size();
+    return table_packs.size();
 }
 
-uint32_t PackMetaData::GetPackIndexForFile(const uint32_t fileIndex) const
+uint32_t pack_meta_data::get_pack_index_for_file(
+const uint32_t fileIndex) const
 {
-    return tableFiles.at(fileIndex);
+    return table_files.at(fileIndex);
 }
 
-const std::tuple<std::string, std::string>& PackMetaData::GetPackInfo(const uint32_t packIndex) const
+const std::tuple<std::string, std::string>& pack_meta_data::get_pack_info(
+const uint32_t packIndex) const
 {
-    return tablePacks.at(packIndex);
+    return table_packs.at(packIndex);
 }
 
-std::vector<uint8_t> PackMetaData::Serialize() const
+std::vector<uint8_t> pack_meta_data::serialize() const
 {
     return std::vector<uint8_t>();
 }
@@ -64,15 +69,21 @@ struct membuf : std::streambuf
     }
 };
 
-void PackMetaData::Deserialize(const void* ptr, size_t size)
+void pack_meta_data::deserialize(const void* ptr, size_t size)
 {
     using namespace std;
     assert(ptr != nullptr);
     assert(size >= 16);
 
+    l << "start deserialize\n";
+
     membuf buf(ptr, size);
 
-    istream file(&buf);
+    l << "create membuf\n";
+
+    istream is(&buf);
+
+    l << "create istream\n";
 
     // 4b header - "meta"
     // 4b num_files
@@ -81,73 +92,96 @@ void PackMetaData::Deserialize(const void* ptr, size_t size)
     // 4b - compressed_size
     // compressed_size b
     array<char, 4> header;
-    file.read(&header[0], 4);
-    if (header != array<char, 4>{ 'm', 'e', 't', 'a' })
+    is.read(&header[0], 4);
+    if (!is || header != array<char, 4>{ 'm', 'e', 't', 'a' })
     {
+        l << "read metadata error - not meta\n";
         throw runtime_error("read metadata error - not meta");
     }
+    l << "read numFiles\n";
     uint32_t numFiles = 0;
-    file.read(reinterpret_cast<char*>(&numFiles), 4);
-    if (!file)
+    is.read(reinterpret_cast<char*>(&numFiles), 4);
+    if (!is)
     {
+        l << "read metadata error - no numFiles\n";
         throw runtime_error("read metadata error - no numFiles");
     }
-    tableFiles.resize(numFiles);
+    l << "numFiles = " << numFiles << '\n';
+    table_files.resize(numFiles);
 
+    l << "read numFilesBytes\n";
     const uint32_t numFilesBytes = numFiles * 4;
-    file.read(reinterpret_cast<char*>(&tableFiles[0]), numFilesBytes);
-    if (!file)
+    is.read(reinterpret_cast<char*>(&table_files[0]), numFilesBytes);
+    if (!is)
     {
+        l << "read metadata error - no tableFiles\n";
         throw runtime_error("read metadata error - no tableFiles");
     }
 
     uint32_t uncompressedSize = 0;
-    file.read(reinterpret_cast<char*>(&uncompressedSize), 4);
-    if (!file)
+    is.read(reinterpret_cast<char*>(&uncompressedSize), 4);
+    if (!is)
     {
+        l << "read metadata error - no uncompressedSize\n";
         throw runtime_error("read metadata error - no uncompressedSize");
     }
+    l << "read uncompressedSize " << uncompressedSize << '\n';
     uint32_t compressedSize = 0;
-    file.read(reinterpret_cast<char*>(&compressedSize), 4);
-    if (!file)
+    is.read(reinterpret_cast<char*>(&compressedSize), 4);
+    if (!is)
     {
+        l << "read metadata error - no compressedSize\n";
         throw runtime_error("read metadata error - no compressedSize");
     }
+    l << "read compressedSize " << compressedSize << '\n';
 
+    l << "numFilesBytes = " << numFilesBytes << " compressedSize = " << compressedSize << " size = " << size << '\n';
     assert(16 + numFilesBytes + compressedSize == size);
 
     vector<uint8_t> compressedBuf(compressedSize);
 
-    file.read(reinterpret_cast<char*>(&compressedBuf[0]), compressedSize);
-    if (!file)
+    is.read(reinterpret_cast<char*>(&compressedBuf[0]), compressedSize);
+    if (!is)
     {
+        l << "read metadata error - no compressedBuf\n";
         throw runtime_error("read metadata error - no compressedBuf");
     }
+    l << "read compressedBuf\n";
+    l << "uncompressedSize >= compressedSize == " << (uncompressedSize >= compressedSize) << '\n';
 
-    assert(uncompressedSize >= compressedSize);
+    if (uncompressedSize < compressedSize)
+    {
+        l << "warning! uncompressedSize < compressedSize, continue\n";
+    }
 
+    l << "decompress start\n";
     vector<uint8_t> uncompressedBuf(uncompressedSize);
 
-    if (!LZ4CompressorDecompress(compressedBuf, uncompressedBuf))
+    if (!lz4_compressor_decompress(compressedBuf, uncompressedBuf))
     {
+        l << "read metadata error - can't decompress\n";
         throw runtime_error("read metadata error - can't decompress");
     }
 
+    l << "finish decompress\n";
     const char* startBuf = reinterpret_cast<const char*>(&uncompressedBuf[0]);
 
     membuf outBuf(startBuf, uncompressedSize);
     istream ss(&outBuf);
 
+    l << "start parse decompressed data line by line\n";
     // now parse decompressed packs data line by line (%s %s\n) format
     for (string line, packName, packDependency; getline(ss, line);)
     {
+        l << "line: " << line << '\n';
         auto first_space = line.find(' ');
         if (first_space == string::npos)
         {
+            l << "can't parse packs and dependencies\n";
             throw runtime_error("can't parse packs and dependencies");
         }
         packName = line.substr(0, first_space);
         packDependency = line.substr(first_space + 1);
-        tablePacks.push_back({ packName, packDependency });
+        table_packs.push_back({ packName, packDependency });
     }
 }

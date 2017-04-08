@@ -53,6 +53,10 @@ uint32 TextureStride(TextureFormat format, Size2i size, uint32 level)
         return width * sizeof(uint8);
     case TEXTURE_FORMAT_D24S8:
         return width * sizeof(uint32);
+
+    case TEXTURE_FORMAT_R32F:
+        return width * sizeof(float32);
+
     case TEXTURE_FORMAT_DXT1:
         return 8 * std::max(1u, (width + 3) / 4);
     case TEXTURE_FORMAT_DXT3:

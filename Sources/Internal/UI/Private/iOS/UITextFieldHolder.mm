@@ -3,12 +3,14 @@
 
 #if defined(__DAVAENGINE_IPHONE__)
 
+#include "Logger/Logger.h"
 #include "UI/UIControlSystem.h"
 #include "UI/Private/iOS/TextFieldPlatformImpliOS.h"
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #include "Utils/NSStringUtils.h"
 #include "Utils/StringUtils.h"
 #include "Utils/UTF8Utils.h"
+#include "Logger/Logger.h"
 
 #if defined(__DAVAENGINE_COREV2__)
 #include "Engine/Window.h"

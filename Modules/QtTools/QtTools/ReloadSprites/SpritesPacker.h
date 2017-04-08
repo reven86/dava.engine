@@ -1,9 +1,11 @@
 #ifndef __SPRITES_PACKER_H__
 #define __SPRITES_PACKER_H__
 
-#include "Render/RenderBase.h"
-#include "TextureCompression/TextureConverter.h"
-#include "TexturePacker/ResourcePacker2D.h"
+#include <Tools/TextureCompression/TextureConverter.h>
+#include <Tools/TexturePacker/ResourcePacker2D.h>
+
+#include <Render/RenderBase.h>
+
 #include <QObject>
 #include <QDir>
 #include <atomic>
@@ -23,6 +25,7 @@ public:
     SpritesPacker(QObject* parent = nullptr);
 
     void SetCacheClient(DAVA::AssetCacheClient* cacheClient, const DAVA::String& comment);
+    bool IsUsingCache() const;
 
     void AddTask(const QDir& inputDir, const QDir& outputDir);
     void ClearTasks();
