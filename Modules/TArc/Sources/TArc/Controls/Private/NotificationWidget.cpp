@@ -46,8 +46,6 @@ QString ColorToHTML(const QColor& color)
                   .arg(color.blue(), 2, 16, QChar('0'));
     return ret;
 }
-
-QPoint invalidPos(-1, -1);
 } //namespace NotificationWidgetDetails
 
 namespace TArc
@@ -67,27 +65,11 @@ NotificationWidget::NotificationWidget(const NotificationParams& params, QWidget
     setAttribute(Qt::WA_ShowWithoutActivating); // At the show, the widget does not get the focus automatically
 
     InitUI(params);
-    InitAnimations();
 
     QDesktopWidget* desktop = QApplication::desktop();
     QRect geometry = desktop->availableGeometry(parent);
-    setFixedWidth(geometry.width() / 6);
+    setFixedWidth(geometry.width() / 5);
     setMaximumHeight(geometry.height() / 3);
-
-    move(NotificationWidgetDetails::invalidPos);
-}
-
-void NotificationWidget::SetPosition(const QPoint& point)
-{
-    positionAnimation->stop();
-    if (pos() == NotificationWidgetDetails::invalidPos)
-    {
-        move(point);
-        return;
-    }
-    positionAnimation->setStartValue(pos());
-    positionAnimation->setEndValue(point);
-    positionAnimation->start();
 }
 
 void NotificationWidget::OnCloseButtonClicked()
@@ -133,6 +115,7 @@ void NotificationWidget::InitUI(const NotificationParams& params)
 
     QString message = QString::fromStdString(params.message.message);
     QLabel* labelMessage = new QLabel(message);
+    labelMessage->setWordWrap(true);
     messageLayout->addWidget(labelMessage);
 
     QPalette palette;
@@ -174,14 +157,6 @@ void NotificationWidget::InitUI(const NotificationParams& params)
         connect(detailsButton, &QPushButton::clicked, this, &NotificationWidget::OnDetailsButtonClicked);
     }
     setLayout(mainLayout);
-}
-
-void NotificationWidget::InitAnimations()
-{
-    positionAnimation = new QPropertyAnimation(this, "position", this);
-    positionAnimation->setEasingCurve(QEasingCurve::OutExpo);
-    const int durationTimeMs = 150;
-    positionAnimation->setDuration(durationTimeMs);
 }
 
 void NotificationWidget::paintEvent(QPaintEvent* /*event*/)

@@ -31,6 +31,7 @@ private slots:
     void OnCloseClicked(NotificationWidget* notification);
     void OnDetailsClicked(NotificationWidget* notification);
     void OnWidgetDestroyed();
+    void OnParentWidgetDestroyed();
 
 private:
     void LayoutWidgets(QWidget* parent);
@@ -40,7 +41,8 @@ private:
     void timerEvent(QTimerEvent* event) override;
 
     struct NotificationWidgetParams;
-    using WindowNotifications = QMap<NotificationWidget*, NotificationWidgetParams>;
+    using NotificationPair = std::pair<NotificationWidget*, NotificationWidgetParams>;
+    using WindowNotifications = Vector<NotificationPair>;
     using AllNotifications = QMap<QWidget*, WindowNotifications>;
     AllNotifications notifications;
 

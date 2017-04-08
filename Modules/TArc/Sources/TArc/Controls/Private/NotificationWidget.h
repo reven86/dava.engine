@@ -18,13 +18,10 @@ namespace TArc
 class NotificationWidget : public QWidget
 {
     Q_OBJECT
-
     Q_PROPERTY(QPoint position READ pos WRITE move)
 
 public:
     explicit NotificationWidget(const NotificationParams& params, QWidget* parent = 0);
-
-    void SetPosition(const QPoint& point);
 
 signals:
     void CloseButtonClicked(NotificationWidget* current);
@@ -36,13 +33,11 @@ private slots:
 
 private:
     void InitUI(const NotificationParams& params);
-    void InitAnimations();
 
     void paintEvent(QPaintEvent* event) override;
 
     QPushButton* closeButton = nullptr;
     QPushButton* detailsButton = nullptr;
-    QPropertyAnimation* positionAnimation = nullptr;
 };
 } //namespace TArc
 } //namespace DAVA
