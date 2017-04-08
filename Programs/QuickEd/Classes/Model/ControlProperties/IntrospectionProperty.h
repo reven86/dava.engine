@@ -45,9 +45,8 @@ protected:
     DAVA::int32 flags;
 
 private:
-    void SetLayoutSourceRectValue(const DAVA::VariantType& value);
+    void SetLayoutSourceRectValue(const DAVA::Any& value);
     DAVA::RefPtr<DAVA::UILayoutSourceRectComponent> sourceRectComponent;
-    DAVA::Any sourceValue;
 };
 
 #endif //__UI_EDITOR_INTROSPECTION_PROPERTY__

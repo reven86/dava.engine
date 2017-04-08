@@ -52,21 +52,16 @@ IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject* anObject, DAVA::i
         SetDefaultValue(reflection.GetValue());
     }
 
-    if (sourceProperty != nullptr)
-        sourceValue = sourceProperty->sourceValue;
-    else
-        sourceValue = reflection.GetValue();
-
     GenerateBuiltInSubProperties();
 
-    bool isSizeProperty = member->Name() == INTROSPECTION_PROPERTY_NAME_SIZE;
-    if (isSizeProperty || member->Name() == INTROSPECTION_PROPERTY_NAME_POSITION)
+    bool isSizeProperty = name == INTROSPECTION_PROPERTY_NAME_SIZE;
+    if (isSizeProperty || name == INTROSPECTION_PROPERTY_NAME_POSITION)
     {
         UIControl* control = DynamicTypeCheck<UIControl*>(anObject);
         if (dynamic_cast<UIScrollViewContainer*>(control) == nullptr)
         {
             sourceRectComponent = control->GetOrCreateComponent<UILayoutSourceRectComponent>();
-            SetLayoutSourceRectValue(member->Value(anObject));
+            SetLayoutSourceRectValue(reflection.GetValue());
         }
     }
 }
@@ -163,16 +158,16 @@ void IntrospectionProperty::ApplyValue(const DAVA::Any& value)
     }
 }
 
-void IntrospectionProperty::SetLayoutSourceRectValue(const DAVA::VariantType& value)
+void IntrospectionProperty::SetLayoutSourceRectValue(const DAVA::Any& value)
 {
     DVASSERT(sourceRectComponent.Valid());
-    if (member->Name() == INTROSPECTION_PROPERTY_NAME_SIZE)
+    if (GetName() == INTROSPECTION_PROPERTY_NAME_SIZE)
     {
-        sourceRectComponent->SetSize(value.AsVector2());
+        sourceRectComponent->SetSize(value.Get<Vector2>());
     }
-    else if (member->Name() == INTROSPECTION_PROPERTY_NAME_POSITION)
+    else if (GetName() == INTROSPECTION_PROPERTY_NAME_POSITION)
     {
-        sourceRectComponent->SetPosition(value.AsVector2());
+        sourceRectComponent->SetPosition(value.Get<Vector2>());
     }
     else
     {
