@@ -327,7 +327,6 @@ String DeviceInfoPrivate::GetCarrierName()
 {
     return JNI::JavaStringToString(JNI::LocalRef<jstring>(jgetCarrierName()));
 }
-
 }
 
 #endif
