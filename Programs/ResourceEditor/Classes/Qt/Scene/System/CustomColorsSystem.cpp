@@ -22,7 +22,7 @@
 #include "Engine/Engine.h"
 #include "Engine/EngineContext.h"
 #include "FileSystem/FileSystem.h"
-#include "Render/RenderCallbacks.h"
+#include "Render/Renderer.h"
 #include "Render/RHI/rhi_Type.h"
 
 CustomColorsSystem::CustomColorsSystem(DAVA::Scene* scene)
@@ -316,18 +316,18 @@ void CustomColorsSystem::SaveTexture(const DAVA::FilePath& filePath)
     DAVA::Texture* customColorsTexture = drawSystem->GetCustomColorsProxy()->GetTexture();
 
     rhi::HSyncObject frameSyncObject = rhi::GetCurrentFrameSyncObject();
-    DAVA::RenderCallbacks::RegisterSyncCallback(rhi::GetCurrentFrameSyncObject(), [this, customColorsTexture, filePath, frameSyncObject](rhi::HSyncObject syncObject)
-                                                {
-                                                    if (frameSyncObject != syncObject)
-                                                        return;
+    DAVA::Renderer::RegisterSyncCallback(rhi::GetCurrentFrameSyncObject(), [this, customColorsTexture, filePath, frameSyncObject](rhi::HSyncObject syncObject)
+                                         {
+                                             if (frameSyncObject != syncObject)
+                                                 return;
 
-                                                    DAVA::Image* image = customColorsTexture->CreateImageFromMemory();
-                                                    DAVA::ImageSystem::Save(filePath, image);
-                                                    DAVA::SafeRelease(image);
+                                             DAVA::Image* image = customColorsTexture->CreateImageFromMemory();
+                                             DAVA::ImageSystem::Save(filePath, image);
+                                             DAVA::SafeRelease(image);
 
-                                                    StoreSaveFileName(filePath);
-                                                    drawSystem->GetCustomColorsProxy()->ResetChanges();
-                                                });
+                                             StoreSaveFileName(filePath);
+                                             drawSystem->GetCustomColorsProxy()->ResetChanges();
+                                         });
 }
 
 void CustomColorsSystem::SaveTexture()
