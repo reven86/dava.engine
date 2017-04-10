@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Functional/Signal.h"
 #include "Reflection/Reflection.h"
 #include "UI/Components/UIComponent.h"
 #include "UI/RichContent/UIRichAliasMap.h"

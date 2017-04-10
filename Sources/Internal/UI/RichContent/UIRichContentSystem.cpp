@@ -1,11 +1,14 @@
-#include "UIRichContentSystem.h"
 #include "FileSystem/XMLParser.h"
+#include "UI/DefaultUIPackageBuilder.h"
+#include "UI/UIPackageLoader.h"
 #include "UI/UIControl.h"
 #include "UI/UIControlSystem.h"
 #include "UI/UIStaticText.h"
 #include "UI/Layouts/UISizePolicyComponent.h"
 #include "UI/Layouts/UIFlowLayoutHintComponent.h"
 #include "UI/RichContent/UIRichAliasMap.h"
+#include "UI/RichContent/UIRichContentComponent.h"
+#include "UI/RichContent/UIRichContentSystem.h"
 #include "UI/Styles/UIStyleSheetSystem.h"
 #include "Utils/BiDiHelper.h"
 #include "Utils/UTF8Utils.h"
@@ -173,7 +176,7 @@ public:
                 if (obj != nullptr)
                 {
                     obj = obj->Clone(); // Clone control from package
-                    PrepareControl(obj, false); // TODO: Need it for prototypes?
+                    PrepareControl(obj, false);
                     if (!name.empty())
                     {
                         obj->SetName(name);
