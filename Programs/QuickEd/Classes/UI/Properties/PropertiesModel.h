@@ -13,9 +13,11 @@
 namespace DAVA
 {
 class InspInfo;
+class Any;
 namespace TArc
 {
 class ContextAccessor;
+class FieldBinder;
 }
 }
 
@@ -91,6 +93,9 @@ protected:
     void initAny(DAVA::Any& var, const QVariant& val) const;
     void CleanUp();
 
+    void OnPackageChanged(const DAVA::Any& package);
+    void BindFields();
+
     PackageBaseNode* nodeToReset = nullptr;
     ControlNode* controlNode = nullptr;
     StyleSheetNode* styleSheet = nullptr;
@@ -100,4 +105,5 @@ protected:
     ContinuousUpdater nodeUpdater;
 
     DAVA::TArc::ContextAccessor* accessor = nullptr;
+    std::unique_ptr<DAVA::TArc::FieldBinder> fieldBinder;
 };
