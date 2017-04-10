@@ -7,6 +7,8 @@
 #include "Model/ControlProperties/SectionProperty.h"
 #include "Model/ControlProperties/StyleSheetRootProperty.h"
 #include "Model/ControlProperties/StyleSheetProperty.h"
+#include "Model/ControlProperties/SubValueProperty.h"
+#include "Model/ControlProperties/ValueProperty.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/StyleSheetNode.h"
 #include "Utils/QtDavaConvertion.h"
@@ -409,7 +411,17 @@ void PropertiesModel::ChangeProperty(AbstractProperty* property, const Any& valu
 
     if (nullptr != controlNode)
     {
-        documentData->ExecCommand<ChangePropertyValueCommand>(controlNode, property, value);
+        SubValueProperty* subValueProperty = dynamic_cast<SubValueProperty*>(property);
+        if (subValueProperty)
+        {
+            ValueProperty* valueProperty = subValueProperty->GetValueProperty();
+            Any newValue = valueProperty->ChangeValueComponent(valueProperty->GetValue(), value, subValueProperty->GetIndex());
+            documentData->ExecCommand<ChangePropertyValueCommand>(controlNode, valueProperty, newValue);
+        }
+        else
+        {
+            documentData->ExecCommand<ChangePropertyValueCommand>(controlNode, property, value);
+        }
     }
     else if (styleSheet)
     {

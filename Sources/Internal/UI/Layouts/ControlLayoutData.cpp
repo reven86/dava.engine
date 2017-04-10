@@ -14,7 +14,7 @@ ControlLayoutData::ControlLayoutData(UIControl* control_)
 
     if (sourceRectComponent != nullptr)
     {
-        position = sourceRectComponent->GetPosition() - control->GetPivotPoint();
+        position = sourceRectComponent->GetPosition();
         size = sourceRectComponent->GetSize();
     }
     else
@@ -44,7 +44,7 @@ void ControlLayoutData::ApplyLayoutToControl()
     }
     else if (sourceRectComponent != nullptr)
     {
-        control->SetPosition(sourceRectComponent->GetPosition() + control->GetPivotPoint());
+        control->SetPosition(sourceRectComponent->GetPosition());
     }
 
     control->ResetLayoutDirty();
@@ -59,7 +59,7 @@ void ControlLayoutData::ApplyOnlyPositionLayoutToControl()
     }
     else if (sourceRectComponent != nullptr)
     {
-        control->SetPosition(sourceRectComponent->GetPosition() + control->GetPivotPoint());
+        control->SetPosition(sourceRectComponent->GetPosition());
     }
 
     control->ResetLayoutPositionDirty();

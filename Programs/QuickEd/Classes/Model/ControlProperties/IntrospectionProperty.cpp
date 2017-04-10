@@ -11,6 +11,7 @@
 #include <UI/Styles/UIStyleSheetPropertyDataBase.h>
 #include <UI/UIControl.h>
 #include <UI/UIScrollViewContainer.h>
+#include <UI/UISlider.h>
 
 using namespace DAVA;
 
@@ -58,7 +59,34 @@ IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject* anObject, DAVA::i
     if (isSizeProperty || name == INTROSPECTION_PROPERTY_NAME_POSITION)
     {
         UIControl* control = DynamicTypeCheck<UIControl*>(anObject);
-        if (dynamic_cast<UIScrollViewContainer*>(control) == nullptr)
+        bool shouldAddSourceRectComponent = true;
+
+        if (dynamic_cast<UIScrollViewContainer*>(control) != nullptr)
+        {
+            shouldAddSourceRectComponent = false;
+        }
+        else
+        {
+            static const FastName UISLIDER_THUMB_SPRITE_CONTROL_NAME("thumbSpriteControl");
+            static const FastName UISLIDER_MIN_SPRITE_CONTROL_NAME("minSpriteControl");
+            static const FastName UISLIDER_MAX_SPRITE_CONTROL_NAME("maxSpriteControl");
+
+            static const FastName UISWITCH_BUTTON_LEFT_NAME("buttonLeft");
+            static const FastName UISWITCH_BUTTON_RIGHT_NAME("buttonRight");
+            static const FastName UISWITCH_BUTTON_TOGGLE_NAME("buttonToggle");
+
+            if (control->GetName() == UISLIDER_THUMB_SPRITE_CONTROL_NAME ||
+                control->GetName() == UISLIDER_MIN_SPRITE_CONTROL_NAME ||
+                control->GetName() == UISLIDER_MIN_SPRITE_CONTROL_NAME ||
+                control->GetName() == UISWITCH_BUTTON_LEFT_NAME ||
+                control->GetName() == UISWITCH_BUTTON_RIGHT_NAME ||
+                control->GetName() == UISWITCH_BUTTON_TOGGLE_NAME)
+            {
+                shouldAddSourceRectComponent = false;
+            }
+        }
+
+        if (shouldAddSourceRectComponent)
         {
             sourceRectComponent = control->GetOrCreateComponent<UILayoutSourceRectComponent>();
             SetLayoutSourceRectValue(reflection.GetValue());
@@ -167,7 +195,9 @@ void IntrospectionProperty::SetLayoutSourceRectValue(const DAVA::Any& value)
     }
     else if (GetName() == INTROSPECTION_PROPERTY_NAME_POSITION)
     {
-        sourceRectComponent->SetPosition(value.Get<Vector2>());
+        UIControl* control = DynamicTypeCheck<UIControl*>(object);
+        Vector2 p = value.Get<Vector2>();
+        sourceRectComponent->SetPosition(p);
     }
     else
     {
