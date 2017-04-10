@@ -25,7 +25,7 @@ public:
 
     void AddNotificationWidget(QWidget* parent, const NotificationParams& params);
     void SetLayoutType(uint64 align);
-    void SetDisplayTimeMs(DAVA::uint32 displayTimeMS);
+    void SetDisplayTimeMs(uint32 displayTimeMS);
 
 private slots:
     void OnCloseClicked(NotificationWidget* notification);

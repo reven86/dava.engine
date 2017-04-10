@@ -38,7 +38,8 @@ struct NotificationLayout::NotificationWidgetParams
 NotificationLayout::NotificationLayout()
     : QObject(nullptr)
 {
-    basicTimer.start(60, this);
+    const int updateIntervalMs = 60;
+    basicTimer.start(updateIntervalMs, this);
 }
 
 NotificationLayout::~NotificationLayout()
@@ -196,7 +197,8 @@ void NotificationLayout::SetLayoutType(uint64 type)
 
 void NotificationLayout::SetDisplayTimeMs(uint32 displayTimeMs_)
 {
-    uint32 differenceMs = displayTimeMs_ - displayTimeMs;
+    DVASSERT((displayTimeMs_ & 0x80000000) == 0);
+    int32 differenceMs = displayTimeMs_ - displayTimeMs;
     if (differenceMs == 0)
     {
         return;
@@ -205,9 +207,8 @@ void NotificationLayout::SetDisplayTimeMs(uint32 displayTimeMs_)
 
     if (differenceMs > 0)
     {
-        for (AllNotifications::Iterator iter = notifications.begin(); iter != notifications.end(); ++iter)
+        for (AllNotifications::Iterator iter = notifications.begin(), end = notifications.end(); iter != end; ++iter)
         {
-            QWidget* parent = iter.key();
             WindowNotifications& widgets = iter.value();
             for (WindowNotifications::iterator iter = widgets.begin(); iter != widgets.end(); ++iter)
             {
