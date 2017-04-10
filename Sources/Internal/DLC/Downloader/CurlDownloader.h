@@ -19,6 +19,7 @@ public:
     CurlDownloader();
     virtual ~CurlDownloader();
 
+    static bool isCURLInit; // move to public, to other curl downloader know initialize is done
 protected:
     /**
         \brief Interrupts current download.
@@ -101,7 +102,6 @@ private:
      */
     void SetTimeout(CURL* easyHandle);
 
-    static bool isCURLInit;
     bool isDownloadInterrupting;
     uint8 currentDownloadPartsCount;
     Vector<DownloadPart*> downloadParts;
