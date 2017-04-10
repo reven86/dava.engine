@@ -20,8 +20,6 @@ public:
     void UnregisterControl(UIControl* control) override;
     void RegisterComponent(UIControl* control, UIComponent* component) override;
     void UnregisterComponent(UIControl* control, UIComponent* component) override;
-    void OnControlVisible(UIControl* control) override;
-    void OnControlInvisible(UIControl* control) override;
 
     void Process(float32 elapsedTime) override;
 
@@ -34,6 +32,9 @@ private:
         }
         UIRichContentComponent* component = nullptr;
     };
+
+    void AddLink(UIRichContentComponent* component);
+    void RemoveLink(UIRichContentComponent* component);
 
     Vector<Link> links;
 };

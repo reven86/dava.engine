@@ -8,7 +8,47 @@ namespace DAVA
 {
 class UIControl;
 
-/** Describe rich content inside control. */
+/**
+    Describe rich content inside control.
+    Format of input text source it xml (or xhtml).
+
+    For default all text content in any tags will be added as UIStaticText controls.
+    Also all tags support attribute `class` witch set specified class to created
+    UIStaticText controls.
+
+    Special rules available for next tags:
+    - <p> - paragraph.
+        Text content inside this tag will be wrap by new lines.
+    - <ul> and <li> - unordered list and list item.
+        Text content inside these tags will be wrap by new lines and before all
+        lines in `li` tag will be added bullet symbol.
+    - <img src="..."> - image.
+        Insert UIControl with UIControlBackground component and set intro it
+        sprite by path specified in `src` attribute.
+    - <object control="..." prototype="..." name="..."> - custom control.
+        Insert clone of specified control by root control name or prototype name
+        witch contain in current package. Also set name to this clone from name
+        attribute. One of attributes `control` or `prototype` is required.
+        Attribute `name` is optional.
+
+    RichContent compoent also support tag aliases. Any alias contains alias
+    name, original tag and original attributes. After declaration of alias you
+    can use it like an any tag in the content source. But all attributes witch
+    will be added to alias in content source will be ignored and replaced by
+    attributes from alias data.
+
+    For exmaple:
+    <code>
+        Defined aliases:
+        h1 = <p class="header" />
+
+        Source:
+        <h1 class="ordinary_text">Header</h1>
+    </code>
+    In this case tag `h1` with its attributes will be raplaced by tag `p` with
+    attributes `class="header"`.
+
+*/
 class UIRichContentComponent : public UIBaseComponent<UIComponent::RICH_CONTENT_COMPONENT>
 {
     DAVA_VIRTUAL_REFLECTION(UIRichContentComponent, UIBaseComponent<UIComponent::RICH_CONTENT_COMPONENT>);

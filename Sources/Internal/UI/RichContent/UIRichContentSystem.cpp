@@ -252,11 +252,11 @@ private:
 
 void UIRichContentSystem::RegisterControl(UIControl* control)
 {
+    UISystem::RegisterControl(control);
     UIRichContentComponent* component = control->GetComponent<UIRichContentComponent>();
     if (component)
     {
-        component->SetModified(true);
-        links.emplace_back(component);
+        AddLink(component);
     }
 }
 
@@ -265,22 +265,19 @@ void UIRichContentSystem::UnregisterControl(UIControl* control)
     UIRichContentComponent* component = control->GetComponent<UIRichContentComponent>();
     if (component)
     {
-        auto findIt = std::find_if(links.begin(), links.end(), [&component](const Link& l) {
-            return l.component == component;
-        });
-        DVASSERT(findIt != links.end());
-        findIt->component->GetControl()->RemoveAllControls();
-        findIt->component = nullptr; // mark link for delete
+        RemoveLink(component);
     }
+
+    UISystem::UnregisterControl(control);
 }
 
 void UIRichContentSystem::RegisterComponent(UIControl* control, UIComponent* component)
 {
+    UISystem::RegisterComponent(control, component);
+
     if (component->GetType() == UIRichContentComponent::C_TYPE)
     {
-        UIRichContentComponent* rich = static_cast<UIRichContentComponent*>(component);
-        rich->SetModified(true);
-        links.emplace_back(rich);
+        AddLink(static_cast<UIRichContentComponent*>(component));
     }
 }
 
@@ -288,21 +285,10 @@ void UIRichContentSystem::UnregisterComponent(UIControl* control, UIComponent* c
 {
     if (component->GetType() == UIRichContentComponent::C_TYPE)
     {
-        auto findIt = std::find_if(links.begin(), links.end(), [&component](const Link& l) {
-            return l.component == component;
-        });
-        DVASSERT(findIt != links.end());
-        findIt->component->GetControl()->RemoveAllControls();
-        findIt->component = nullptr; // mark link for delete
+        RemoveLink(static_cast<UIRichContentComponent*>(component));
     }
-}
 
-void UIRichContentSystem::OnControlVisible(UIControl* control)
-{
-}
-
-void UIRichContentSystem::OnControlInvisible(UIControl* control)
-{
+    UISystem::UnregisterComponent(control, component);
 }
 
 void UIRichContentSystem::Process(float32 elapsedTime)
@@ -337,5 +323,23 @@ void UIRichContentSystem::Process(float32 elapsedTime)
             }
         }
     }
+}
+
+void UIRichContentSystem::AddLink(UIRichContentComponent* component)
+{
+    DVASSERT(component);
+    component->SetModified(true);
+    links.emplace_back(component);
+}
+
+void UIRichContentSystem::RemoveLink(UIRichContentComponent* component)
+{
+    DVASSERT(component);
+    auto findIt = std::find_if(links.begin(), links.end(), [&component](const Link& l) {
+        return l.component == component;
+    });
+    DVASSERT(findIt != links.end());
+    findIt->component->GetControl()->RemoveAllControls();
+    findIt->component = nullptr; // mark link for delete
 }
 }
