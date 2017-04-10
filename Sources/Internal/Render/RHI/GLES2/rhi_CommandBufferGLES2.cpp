@@ -639,6 +639,7 @@ void CommandBufferGLES2_t::Execute()
                     #endif
 
                     #if defined(__DAVAENGINE_MACOS__)
+                    /*                    
                     if (passCfg.colorBuffer[0].loadAction == LOADACTION_CLEAR)
                     {
                         // since glClearBuffer doesn't work on MacOS, clear buffers with the same color at least
@@ -647,6 +648,8 @@ void CommandBufferGLES2_t::Execute()
                         GL_CALL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT));
                     }
                     do_clear = false;
+*/
+                    do_clear = true;
                     #endif
                 }
 
