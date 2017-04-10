@@ -498,7 +498,10 @@ void PackageWidget::OnPaste()
             PackageNode* package = documentData->GetPackageNode();
             QtModelPackageCommandExecutor executor(accessor);
             SelectedNodes selection = executor.Paste(package, baseNode, baseNode->GetCount(), string);
-            dataWrapper.SetFieldValue(DocumentData::selectionPropertyName, selection);
+            if (selection.empty() == false)
+            {
+                dataWrapper.SetFieldValue(DocumentData::selectionPropertyName, selection);
+            }
         }
     }
 }
@@ -518,7 +521,7 @@ void PackageWidget::OnDuplicate()
         SelectedNodes nodes = documentData->GetSelectedNodes();
         DVASSERT(nodes.empty() == false);
         Vector<PackageBaseNode*> sortedSelection(nodes.begin(), nodes.end());
-
+        std::sort(sortedSelection.begin(), sortedSelection.end(), CompareByLCA);
         PackageBaseNode* parent = sortedSelection.front()->GetParent();
         if (parent->IsReadOnly() == false)
         {
@@ -530,6 +533,7 @@ void PackageWidget::OnDuplicate()
             PackageBaseNode* lastSelected = sortedSelection.back();
             int index = parent->GetIndex(lastSelected);
             SelectedNodes selection = executor.Paste(package, parent, index + 1, string);
+            DVASSERT(selection.empty() == false);
             dataWrapper.SetFieldValue(DocumentData::selectionPropertyName, selection);
         }
     }
