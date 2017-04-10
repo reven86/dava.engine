@@ -85,6 +85,7 @@ void NotificationWidget::OnDetailsButtonClicked()
 void NotificationWidget::InitUI(const NotificationParams& params)
 {
     QHBoxLayout* mainLayout = new QHBoxLayout();
+    mainLayout->setContentsMargins(radius, radius, radius, radius);
 
     QVBoxLayout* messageLayout = new QVBoxLayout();
     messageLayout->setSpacing(5);
@@ -137,6 +138,7 @@ void NotificationWidget::InitUI(const NotificationParams& params)
                                                                                         "}");
 
     QVBoxLayout* buttonsLayout = new QVBoxLayout();
+    buttonsLayout->setContentsMargins(0, 0, 0, 0);
     buttonsLayout->setSpacing(5);
     mainLayout->addItem(buttonsLayout);
     {
@@ -165,7 +167,6 @@ void NotificationWidget::paintEvent(QPaintEvent* /*event*/)
     painter.setRenderHint(QPainter::Antialiasing);
 
     QRect roundedRect;
-    const int radius = 10;
     roundedRect.setX(rect().x() + radius / 2);
     roundedRect.setY(rect().y() + radius / 2);
     roundedRect.setWidth(rect().width() - radius);

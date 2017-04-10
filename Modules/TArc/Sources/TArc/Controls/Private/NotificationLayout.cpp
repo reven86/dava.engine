@@ -151,6 +151,7 @@ void NotificationLayout::timerEvent(QTimerEvent* /*event*/)
         QWidget* parent = iter.key();
         if (parent->isActiveWindow())
         {
+            bool needLayout = false;
             WindowNotifications& widgets = iter.value();
             for (WindowNotifications::iterator iter = widgets.begin(); iter != widgets.end();)
             {
@@ -159,13 +160,19 @@ void NotificationLayout::timerEvent(QTimerEvent* /*event*/)
                 params.DecrementTime(elapsedMs);
                 if (params.remainTimeMs == 0)
                 {
+                    needLayout = true;
                     iter = widgets.erase(iter);
+                    disconnect(widget, &QObject::destroyed, this, &NotificationLayout::OnWidgetDestroyed);
                     delete widget;
                 }
                 else
                 {
                     ++iter;
                 }
+            }
+            if (needLayout)
+            {
+                LayoutWidgets(parent);
             }
             return;
         }

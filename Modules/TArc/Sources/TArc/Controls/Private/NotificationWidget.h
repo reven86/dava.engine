@@ -38,6 +38,7 @@ private:
 
     QPushButton* closeButton = nullptr;
     QPushButton* detailsButton = nullptr;
+    const int32 radius = 10;
 };
 } //namespace TArc
 } //namespace DAVA
