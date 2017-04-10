@@ -184,6 +184,8 @@ public:
     {
     }
 
+    virtual void DeclareToolbar(const WindowKey& windowKey, const ActionPlacementInfo& toogleToolbarVisibility, const QString& toolbarName) = 0;
+
     virtual void AddView(const WindowKey& windowKey, const PanelKey& panelKey, QWidget* widget) = 0;
     virtual void AddAction(const WindowKey& windowKey, const ActionPlacementInfo& placement, QAction* action) = 0;
     virtual void RemoveAction(const WindowKey& windowKey, const ActionPlacementInfo& placement) = 0;

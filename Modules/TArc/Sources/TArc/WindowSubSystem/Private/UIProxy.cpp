@@ -29,6 +29,12 @@ UIProxy::UIProxy(ClientModule* module_, UI* globalUI_)
     globalUI->lastWaitDialogWasClosed.Connect(&lastWaitDialogWasClosed, &Signal<>::Emit);
 }
 
+void UIProxy::DeclareToolbar(const WindowKey& windowKey, const ActionPlacementInfo& toogleToolbarVisibility, const QString& toolbarName)
+{
+    Guard g(this);
+    globalUI->DeclareToolbar(windowKey, toogleToolbarVisibility, toolbarName);
+}
+
 void UIProxy::AddView(const WindowKey& windowKey, const PanelKey& panelKey, QWidget* widget)
 {
     Guard g(this);
