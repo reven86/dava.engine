@@ -104,7 +104,7 @@ void ParticleDebugDrawModule::PostInit()
     QString toolbarName = "ParticleSystemToolbar";
     ActionPlacementInfo toolbarTogglePlacement(CreateMenuPoint(QList<QString>() << "View"
                                                                                 << "Toolbars"));
-    GetUI()->DeclareToolbar(REGlobal::MainWindowKey, toolbarTogglePlacement, toolbarName);
+    GetUI()->DeclareToolbar(DAVA::TArc::mainWindowKey, toolbarTogglePlacement, toolbarName);
 
     QAction* action = new QAction(nullptr);
     AttachWidgetToAction(action, w);
