@@ -12,6 +12,7 @@
 #include <UI/UIControl.h>
 #include <UI/UIScrollViewContainer.h>
 #include <UI/UISlider.h>
+#include <UI/UISwitch.h>
 
 using namespace DAVA;
 
@@ -67,20 +68,12 @@ IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject* anObject, DAVA::i
         }
         else
         {
-            static const FastName UISLIDER_THUMB_SPRITE_CONTROL_NAME("thumbSpriteControl");
-            static const FastName UISLIDER_MIN_SPRITE_CONTROL_NAME("minSpriteControl");
-            static const FastName UISLIDER_MAX_SPRITE_CONTROL_NAME("maxSpriteControl");
-
-            static const FastName UISWITCH_BUTTON_LEFT_NAME("buttonLeft");
-            static const FastName UISWITCH_BUTTON_RIGHT_NAME("buttonRight");
-            static const FastName UISWITCH_BUTTON_TOGGLE_NAME("buttonToggle");
-
-            if (control->GetName() == UISLIDER_THUMB_SPRITE_CONTROL_NAME ||
-                control->GetName() == UISLIDER_MIN_SPRITE_CONTROL_NAME ||
-                control->GetName() == UISLIDER_MIN_SPRITE_CONTROL_NAME ||
-                control->GetName() == UISWITCH_BUTTON_LEFT_NAME ||
-                control->GetName() == UISWITCH_BUTTON_RIGHT_NAME ||
-                control->GetName() == UISWITCH_BUTTON_TOGGLE_NAME)
+            if (control->GetName() == UISlider::THUMB_SPRITE_CONTROL_NAME ||
+                control->GetName() == UISlider::MIN_SPRITE_CONTROL_NAME ||
+                control->GetName() == UISlider::MIN_SPRITE_CONTROL_NAME ||
+                control->GetName() == UISwitch::BUTTON_LEFT_NAME ||
+                control->GetName() == UISwitch::BUTTON_RIGHT_NAME ||
+                control->GetName() == UISwitch::BUTTON_TOGGLE_NAME)
             {
                 shouldAddSourceRectComponent = false;
             }
