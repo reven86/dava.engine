@@ -214,10 +214,10 @@ void WindowBackend::DoSetSurfaceScale(const float32 scale)
 jobject WindowBackend::CreateNativeControl(const char8* controlClassName, void* backendPointer)
 {
     jobject object = nullptr;
-    JNI::LocalRef<jstring> className = JNI::CStrToJavaString(controlClassName);
 
     try
     {
+        JNI::LocalRef<jstring> className = JNI::CStrToJavaString(controlClassName);
         object = createNativeControl(surfaceView, className, reinterpret_cast<jlong>(backendPointer));
     }
     catch (const JNI::Exception& e)
