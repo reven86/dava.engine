@@ -7,14 +7,22 @@
 #include "UI/Layouts/UIFlowLayoutHintComponent.h"
 #include "UI/RichContent/UIRichAliasMap.h"
 #include "UI/Styles/UIStyleSheetSystem.h"
-#include "Utils/Utils.h"
 #include "Utils/BiDiHelper.h"
+#include "Utils/UTF8Utils.h"
+#include "Utils/Utils.h"
 
 namespace DAVA
 {
-class XMLBuilder final : public XMLParserDelegate
+class XMLRichContentBuilder final : public XMLParserDelegate
 {
 public:
+    XMLRichContentBuilder(UIRichContentComponent* component)
+        : component(component)
+    {
+        DVASSERT(component);
+        PutClass(component->GetBaseClasses());
+    }
+
     bool Build(const String& text)
     {
         controls.clear();
@@ -25,17 +33,6 @@ public:
     const Vector<RefPtr<UIControl>>& GetControls() const
     {
         return controls;
-    }
-
-    void SetBaseClass(const String& clazz)
-    {
-        classesStack.clear();
-        classesStack.push_back(clazz);
-    }
-
-    void SetAliases(const UIRichAliasMap& _aliases)
-    {
-        aliases = _aliases;
     }
 
     void PutClass(const String& clazz)
@@ -81,6 +78,7 @@ public:
 
     void OnElementStarted(const String& elementName, const String& namespaceURI, const String& qualifedName, const Map<String, String>& attributes) override
     {
+        const UIRichAliasMap& aliases = component->GetAliases();
         if (aliases.HasAlias(elementName))
         {
             const UIRichAliasMap::Alias& alias = aliases.GetAlias(elementName);
@@ -94,6 +92,7 @@ public:
 
     void OnElementEnded(const String& elementName, const String& namespaceURI, const String& qualifedName) override
     {
+        const UIRichAliasMap& aliases = component->GetAliases();
         if (aliases.HasAlias(elementName))
         {
             const UIRichAliasMap::Alias& alias = aliases.GetAlias(elementName);
@@ -118,10 +117,7 @@ public:
         PutClass(classes);
 
         // Tag
-        if (tag == "span")
-        {
-        }
-        else if (tag == "p")
+        if (tag == "p")
         {
             needLineBreak = true;
         }
@@ -136,12 +132,7 @@ public:
         else if (tag == "li")
         {
             needLineBreak = true;
-
-            UIStaticText* ctrl = new UIStaticText();
-            PrepareControl(ctrl, true);
-            ctrl->SetUtf8Text("*");
-            ctrl->SetForceBiDiSupportEnabled(true);
-            controls.emplace_back(ctrl);
+            ProcessText("*"); // TODO: Change to create "bullet" control
         }
         else if (tag == "img")
         {
@@ -163,6 +154,8 @@ public:
             GetAttribute(attributes, "control", controlName);
             String prototypeName;
             GetAttribute(attributes, "prototype", prototypeName);
+            String name;
+            GetAttribute(attributes, "name", name);
 
             if (!path.empty() && (!controlName.empty() || !prototypeName.empty()))
             {
@@ -181,6 +174,11 @@ public:
                 {
                     obj = obj->Clone(); // Clone control from package
                     PrepareControl(obj, false); // TODO: Need it for prototypes?
+                    if (!name.empty())
+                    {
+                        obj->SetName(name);
+                    }
+                    component->onCreateObject.Emit(obj);
                     controls.emplace_back(obj);
                 }
             }
@@ -207,15 +205,36 @@ public:
 
     void ProcessText(const String& text)
     {
+        const static String LTR_MARK = UTF8Utils::EncodeToUTF8(L"\u200E");
+        const static String RTL_MARK = UTF8Utils::EncodeToUTF8(L"\u200F");
+
         Vector<String> tokens;
-        Split(text, " \n", tokens);
-        for (auto token : tokens)
+        Split(text, " \n\r\t", tokens);
+        for (String& token : tokens)
         {
-            direction = bidiHelper.GetDirectionUTF8String(token);
+            BiDiHelper::Direction wordDirection = bidiHelper.GetDirectionUTF8String(token);
+            if (wordDirection == BiDiHelper::Direction::NEUTRAL)
+            {
+                if (direction == BiDiHelper::Direction::RTL)
+                {
+                    token = RTL_MARK + token;
+                }
+                else if (direction == BiDiHelper::Direction::LTR)
+                {
+                    token = LTR_MARK + token;
+                }
+            }
+            else
+            {
+                direction = wordDirection;
+            }
+
             UIStaticText* ctrl = new UIStaticText();
             PrepareControl(ctrl, true);
             ctrl->SetUtf8Text(token);
+#if _DEBUG // TODO: Remove before merge
             ctrl->SetForceBiDiSupportEnabled(true);
+#endif
             controls.emplace_back(ctrl);
         }
     }
@@ -226,7 +245,7 @@ private:
     Vector<String> classesStack;
     Vector<RefPtr<UIControl>> controls;
     BiDiHelper bidiHelper;
-    UIRichAliasMap aliases;
+    UIRichContentComponent* component = nullptr;
 };
 
 /*******************************************************************************************************/
@@ -308,9 +327,7 @@ void UIRichContentSystem::Process(float32 elapsedTime)
             UIControl* root = l.component->GetControl();
             root->RemoveAllControls();
 
-            XMLBuilder builder;
-            builder.SetBaseClass(l.component->GetBaseClasses());
-            builder.SetAliases(l.component->GetAliases());
+            XMLRichContentBuilder builder(l.component);
             if (builder.Build("<span>" + l.component->GetText() + "</span>"))
             {
                 for (const RefPtr<UIControl>& ctrl : builder.GetControls())

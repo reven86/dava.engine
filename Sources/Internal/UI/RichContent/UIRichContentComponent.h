@@ -46,6 +46,9 @@ public:
     /** Return value of modification flag. */
     bool IsModified() const;
 
+    /** Emit signal on create control by `<object />` tag */
+    Signal<UIControl* /* createdControl */> onCreateObject;
+
 protected:
     ~UIRichContentComponent() override = default;
 
