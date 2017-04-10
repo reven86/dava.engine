@@ -197,16 +197,9 @@ void NotificationLayout::SetLayoutType(uint64 type)
 
 void NotificationLayout::SetDisplayTimeMs(uint32 displayTimeMs_)
 {
-    DVASSERT((displayTimeMs_ & 0x80000000) == 0);
-    int32 differenceMs = displayTimeMs_ - displayTimeMs;
-    if (differenceMs == 0)
+    if (displayTimeMs_ > displayTimeMs)
     {
-        return;
-    }
-    displayTimeMs = displayTimeMs_;
-
-    if (differenceMs > 0)
-    {
+        uint32 differenceMs = displayTimeMs_ - displayTimeMs;
         for (AllNotifications::Iterator iter = notifications.begin(), end = notifications.end(); iter != end; ++iter)
         {
             WindowNotifications& widgets = iter.value();
@@ -217,6 +210,7 @@ void NotificationLayout::SetDisplayTimeMs(uint32 displayTimeMs_)
             }
         }
     }
+    displayTimeMs = displayTimeMs_;
 }
 
 void NotificationLayout::OnCloseClicked(NotificationWidget* notification)
