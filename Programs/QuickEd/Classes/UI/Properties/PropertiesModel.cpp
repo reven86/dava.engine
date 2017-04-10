@@ -17,6 +17,7 @@
 #include "QECommands/ChangeStylePropertyCommand.h"
 
 #include <TArc/Core/ContextAccessor.h>
+#include <TArc/Core/FieldBinder.h>
 #include <TArc/DataProcessing/DataContext.h>
 
 #include <QtTools/Utils/Themes/Themes.h>
@@ -51,6 +52,7 @@ PropertiesModel::~PropertiesModel()
 void PropertiesModel::SetAccessor(DAVA::TArc::ContextAccessor* accessor_)
 {
     accessor = accessor_;
+    BindFields();
 }
 
 void PropertiesModel::Reset(PackageBaseNode* node_)
@@ -442,7 +444,7 @@ void PropertiesModel::ResetProperty(AbstractProperty* property)
 
     if (nullptr != controlNode)
     {
-        documentData->ExecCommand<ChangePropertyValueCommand>(controlNode, property, VariantType());
+        documentData->ExecCommand<ChangePropertyValueCommand>(controlNode, property, Any());
     }
     else
     {
@@ -624,6 +626,10 @@ void PropertiesModel::initAny(Any& var, const QVariant& val) const
         DVASSERT(false);
         var = QStringToWideString(val.toString());
     }
+    else if (var.CanGet<FastName>())
+    {
+        var = FastName(val.toString().toStdString());
+    }
     else if (var.CanGet<Vector2>())
     {
         QVector2D vector = val.value<QVector2D>();
@@ -653,4 +659,23 @@ void PropertiesModel::CleanUp()
     controlNode = nullptr;
     styleSheet = nullptr;
     rootProperty = nullptr;
+}
+
+void PropertiesModel::OnPackageChanged(const DAVA::Any& /*package*/)
+{
+    nodeUpdater.Abort();
+}
+
+void PropertiesModel::BindFields()
+{
+    using namespace DAVA;
+    using namespace DAVA::TArc;
+
+    fieldBinder.reset(new FieldBinder(accessor));
+    {
+        FieldDescriptor fieldDescr;
+        fieldDescr.type = ReflectedTypeDB::Get<DocumentData>();
+        fieldDescr.fieldName = FastName(DocumentData::packagePropertyName);
+        fieldBinder->BindField(fieldDescr, MakeFunction(this, &PropertiesModel::OnPackageChanged));
+    }
 }

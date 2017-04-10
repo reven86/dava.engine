@@ -4,6 +4,7 @@
 #include "Model/ControlProperties/IntrospectionProperty.h"
 #include "Model/ControlProperties/SubValueProperty.h"
 #include "Model/PackageHierarchy/StyleSheetNode.h"
+
 #include <UI/Styles/UIStyleSheet.h>
 #include <Reflection/ReflectedMeta.h>
 
