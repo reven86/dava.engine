@@ -12,10 +12,7 @@ class FindInDocumentWidget;
 class FindFilter;
 class MainWindow;
 
-class FindInDocumentController
-: public QObject
-  ,
-  PackageListener
+class FindInDocumentController : public QObject, PackageListener
 {
     Q_OBJECT
 public:

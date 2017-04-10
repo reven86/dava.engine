@@ -8,6 +8,7 @@
 #include "UI/Find/Widgets/EnumFindFilterEditor.h"
 #include "UI/Find/Widgets/RegExpStringFindFilterEditor.h"
 #include "UI/Find/Widgets/StringFindFilterEditor.h"
+#include "Utils/Utils.h"
 
 using namespace DAVA;
 
