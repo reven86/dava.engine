@@ -20,6 +20,7 @@
 #include "Utils/StringFormat.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/Renderer.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 #ifdef __DAVAENGINE_AUTOTESTING__
 #include "Autotesting/AutotestingSystem.h"
@@ -34,6 +35,31 @@
 namespace DAVA
 {
 const char* UIControl::STATE_NAMES[] = { "normal", "pressed_outside", "pressed_inside", "disabled", "selected", "hover", "focused" };
+
+DAVA_VIRTUAL_REFLECTION_IMPL(UIControl)
+{
+    ReflectionRegistrator<UIControl>::Begin()
+    .ConstructorByPointer()
+    .DestructorByPointer([](UIControl* o) { o->Release(); })
+    .Field("position", &UIControl::GetPosition, &UIControl::SetPosition)
+    .Field("size", &UIControl::GetSize, &UIControl::SetSize)
+    .Field("scale", &UIControl::GetScale, &UIControl::SetScale)
+    .Field("pivot", &UIControl::GetPivot, &UIControl::SetPivot)
+    .Field("angle", &UIControl::GetAngleInDegrees, &UIControl::SetAngleInDegrees)
+    .Field("visible", &UIControl::GetVisibilityFlag, &UIControl::SetVisibilityFlag)
+    .Field("enabled", &UIControl::GetEnabled, &UIControl::SetEnabledNotHierarchic)
+    .Field("selected", &UIControl::GetSelected, &UIControl::SetSelectedNotHierarchic)
+    .Field("clip", &UIControl::GetClipContents, &UIControl::SetClipContents)
+    .Field("noInput", &UIControl::GetNoInput, &UIControl::SetNoInput)
+    .Field("exclusiveInput", &UIControl::GetExclusiveInput, &UIControl::SetExclusiveInputNotHierarchic)
+    .Field("wheelSensitivity", &UIControl::GetWheelSensitivity, &UIControl::SetWheelSensitivity)
+    .Field("tag", &UIControl::GetTag, &UIControl::SetTag)
+    .Field("classes", &UIControl::GetClassesAsString, &UIControl::SetClassesFromString)
+    .Field("debugDraw", &UIControl::GetDebugDraw, &UIControl::SetDebugDrawNotHierarchic)
+    .Field("debugDrawColor", &UIControl::GetDebugDrawColor, &UIControl::SetDebugDrawColor)
+    //    .Field("components", &UIControl::GetComponents, nullptr)
+    .End();
+}
 
 static Mutex controlsListMutex;
 static Vector<const UIControl*> controlsList; //weak pointers

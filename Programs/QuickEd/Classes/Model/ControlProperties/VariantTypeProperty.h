@@ -2,6 +2,7 @@
 #define __QUICKED_VALUE_PROPERTY_H__
 
 #include "Model/ControlProperties/ValueProperty.h"
+#include <Reflection/ReflectedStructure.h>
 
 class ValueProperty;
 
@@ -15,7 +16,7 @@ class UIControl;
 class VariantTypeProperty : public ValueProperty
 {
 public:
-    VariantTypeProperty(const DAVA::String& name, const DAVA::InspDesc* desc, DAVA::VariantType& variantType);
+    VariantTypeProperty(const DAVA::String& name, DAVA::Any& variantType, const DAVA::ReflectedStructure::Field* field);
 
 protected:
     virtual ~VariantTypeProperty();
@@ -24,11 +25,14 @@ public:
     void Accept(PropertyVisitor* visitor) override;
     bool IsReadOnly() const override;
 
-    DAVA::VariantType GetValue() const override;
-    void ApplyValue(const DAVA::VariantType& value) override;
+    ePropertyType GetType() const override;
+    const EnumMap* GetEnumMap() const override;
+    DAVA::Any GetValue() const override;
+    void ApplyValue(const DAVA::Any& value) override;
 
 private:
-    DAVA::VariantType& value;
+    DAVA::Any& value;
+    const DAVA::ReflectedStructure::Field* field = nullptr;
 };
 
 #endif // __QUICKED_VALUE_PROPERTY_H__

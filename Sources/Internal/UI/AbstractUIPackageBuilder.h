@@ -56,7 +56,7 @@ public:
     virtual UIComponent* BeginComponentPropertiesSection(uint32 componentType, uint32 componentIndex) = 0;
     virtual void EndComponentPropertiesSection() = 0;
 
-    virtual void ProcessProperty(const InspMember* member, const VariantType& value) = 0;
+    virtual void ProcessProperty(const DAVA::Reflection::Field& field, const Any& value) = 0;
 };
 }
 

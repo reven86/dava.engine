@@ -28,6 +28,7 @@ ComboBox::ComboBox(const ControlDescriptorBuilder<Fields>& fields, ContextAccess
 void ComboBox::SetupControl()
 {
     connections.AddConnection(this, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), MakeFunction(this, &ComboBox::CurrentIndexChanged));
+    setSizeAdjustPolicy(QComboBox::AdjustToContents);
 }
 
 void ComboBox::UpdateControl(const ControlDescriptor& changedFields)
