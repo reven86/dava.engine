@@ -70,6 +70,7 @@ protected:
     bool event(QEvent* e) override;
 
 private:
+    void TryActivate();
     void OnCreated();
     void OnFrame();
     void OnActiveFocusItemChanged();
@@ -86,6 +87,7 @@ private:
     bool isInPaint = false;
 
     bool isSynchronized = false;
+    bool isActivated = false;
 
     std::unique_ptr<RenderWidgetDetails::QtScreenParams> screenParams;
 };
@@ -109,6 +111,15 @@ RenderWidget::RenderWidgetImpl::RenderWidgetImpl(RenderWidget::IWindowDelegate* 
     connect(window, &QQuickWindow::activeFocusItemChanged, this, &RenderWidgetImpl::OnActiveFocusItemChanged, Qt::DirectConnection);
 
     connect(window, &QQuickWindow::beforeSynchronizing, this, &RenderWidgetImpl::OnBeforeSyncronizing, Qt::DirectConnection);
+}
+
+void RenderWidget::RenderWidgetImpl::TryActivate()
+{
+    if (IsInitialized() == false && isActivated && isSynchronized)
+    {
+        ActivateRendering();
+        OnCreated();
+    }
 }
 
 void RenderWidget::RenderWidgetImpl::OnCreated()
@@ -367,7 +378,8 @@ void RenderWidget::RenderWidgetImpl::keyReleaseEvent(QKeyEvent* e)
 
 bool RenderWidget::RenderWidgetImpl::event(QEvent* e)
 {
-    if (e->type() == QEvent::NativeGesture)
+    QEvent::Type eventType = e->type();
+    if (eventType == QEvent::NativeGesture && clientDelegate != nullptr)
     {
         QNativeGestureEvent* gestureEvent = static_cast<QNativeGestureEvent*>(e);
         widgetDelegate->OnNativeGesture(gestureEvent);
@@ -376,14 +388,10 @@ bool RenderWidget::RenderWidgetImpl::event(QEvent* e)
             clientDelegate->OnNativeGesture(gestureEvent);
         }
     }
-    else if (e->type() == QEvent::WindowActivate)
+    if (eventType == QEvent::WindowActivate || (eventType == QEvent::Polish && isActiveWindow()))
     {
-        if (IsInitialized() == false)
-        {
-            DVASSERT(isSynchronized);
-            ActivateRendering();
-            OnCreated();
-        }
+        isActivated = true;
+        TryActivate();
     }
 
     return QQuickWidget::event(e);
@@ -425,8 +433,9 @@ void RenderWidget::RenderWidgetImpl::OnClientDelegateDestroyed()
 
 void RenderWidget::RenderWidgetImpl::OnBeforeSyncronizing()
 {
-    isSynchronized = true;
     disconnect(quickWindow(), &QQuickWindow::beforeSynchronizing, this, &RenderWidgetImpl::OnBeforeSyncronizing);
+    isSynchronized = true;
+    TryActivate();
 }
 
 /////////////////////////////////////////////////////////////////////////////////

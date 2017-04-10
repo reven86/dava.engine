@@ -436,12 +436,12 @@ void QtMainWindow::SetupToolBars()
     QAction* actionModifToolBar = ui->modificationToolBar->toggleViewAction();
     QAction* actionLandscapeToolbar = ui->landscapeToolBar->toggleViewAction();
 
-    ui->menuToolbars->addAction(actionMainToolBar);
-    ui->menuToolbars->addAction(actionModifToolBar);
-    ui->menuToolbars->addAction(actionLandscapeToolbar);
-    ui->menuToolbars->addAction(ui->sceneToolBar->toggleViewAction());
-    ui->menuToolbars->addAction(ui->testingToolBar->toggleViewAction());
-    ui->menuToolbars->addAction(ui->cameraToolBar->toggleViewAction());
+    ui->Toolbars->addAction(actionMainToolBar);
+    ui->Toolbars->addAction(actionModifToolBar);
+    ui->Toolbars->addAction(actionLandscapeToolbar);
+    ui->Toolbars->addAction(ui->sceneToolBar->toggleViewAction());
+    ui->Toolbars->addAction(ui->testingToolBar->toggleViewAction());
+    ui->Toolbars->addAction(ui->cameraToolBar->toggleViewAction());
 
     // modification widget
     modificationWidget = new ModificationWidget(nullptr);

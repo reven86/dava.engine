@@ -175,7 +175,7 @@ PackageModel* PackageWidget::GetPackageModel() const
 
 void PackageWidget::OnPackageChanged(PackageContext* context, PackageNode* package)
 {
-    layout()->setEnabled(package != nullptr);
+    widget()->setEnabled(package != nullptr);
 
     bool isUpdatesEnabled = treeView->updatesEnabled();
     treeView->setUpdatesEnabled(false);
