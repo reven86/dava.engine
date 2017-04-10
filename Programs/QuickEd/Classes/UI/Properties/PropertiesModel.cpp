@@ -1,7 +1,6 @@
 #include "PropertiesModel.h"
 
-#include "Modules/LegacySupportModule/Private/Document.h"
-#include "Ui/QtModelPackageCommandExecutor.h"
+#include "Modules/DocumentsModule/DocumentData.h"
 
 #include "Model/ControlProperties/AbstractProperty.h"
 #include "Model/ControlProperties/RootProperty.h"
@@ -13,12 +12,16 @@
 #include "Utils/QtDavaConvertion.h"
 #include "Utils/StringFormat.h"
 #include "QECommands/ChangePropertyValueCommand.h"
-#include "UI/QtModelPackageCommandExecutor.h"
+#include "QECommands/ChangeStylePropertyCommand.h"
 
+#include <TArc/Core/ContextAccessor.h>
+#include <TArc/Core/FieldBinder.h>
+#include <TArc/DataProcessing/DataContext.h>
 
 #include <QtTools/Utils/Themes/Themes.h>
 #include <QtTools/Utils/Utils.h>
 
+#include <Reflection/ReflectedTypeDB.h>
 #include <UI/UIControl.h>
 
 #include <QFont>
@@ -34,6 +37,7 @@ PropertiesModel::PropertiesModel(QObject* parent)
 {
     propertiesUpdater.SetUpdater(MakeFunction(this, &PropertiesModel::UpdateAllChangedProperties));
     nodeUpdater.SetUpdater(MakeFunction(this, &PropertiesModel::ResetInternal));
+    nodeUpdater.SetStopper([this]() { return nodeToReset == nullptr; });
 }
 
 PropertiesModel::~PropertiesModel()
@@ -43,23 +47,17 @@ PropertiesModel::~PropertiesModel()
     nodeUpdater.Abort();
 }
 
-void PropertiesModel::Reset(PackageBaseNode* node_, QtModelPackageCommandExecutor* commandExecutor_)
+void PropertiesModel::SetAccessor(DAVA::TArc::ContextAccessor* accessor_)
+{
+    accessor = accessor_;
+    BindFields();
+}
+
+void PropertiesModel::Reset(PackageBaseNode* node_)
 {
     nodeToReset = node_;
-    //to make better performance when we selecting all controls by mouse rect
-    //update current item using continuousUpdater
-    //but if new item came from another document or this item is nullptr - we need to refresh model immediately
-    bool canDelay = nodeToReset != nullptr && (commandExecutor == nullptr || commandExecutor == commandExecutor_);
 
-    commandExecutor = commandExecutor_;
-    if (canDelay)
-    {
-        nodeUpdater.Update();
-    }
-    else
-    {
-        nodeUpdater.Stop();
-    }
+    nodeUpdater.Update();
 }
 
 void PropertiesModel::ResetInternal()
@@ -134,14 +132,14 @@ QVariant PropertiesModel::data(const QModelIndex& index, int role) const
         return QVariant();
 
     AbstractProperty* property = static_cast<AbstractProperty*>(index.internalPointer());
-    DAVA::VariantType value = property->GetValue();
+    DAVA::Any value = property->GetValue();
     uint32 flags = property->GetFlags();
     switch (role)
     {
     case Qt::CheckStateRole:
     {
-        if (value.GetType() == VariantType::TYPE_BOOLEAN && index.column() == 1)
-            return value.AsBool() ? Qt::Checked : Qt::Unchecked;
+        if (value.CanGet<bool>() && index.column() == 1)
+            return value.Get<bool>() ? Qt::Checked : Qt::Unchecked;
     }
     break;
 
@@ -177,7 +175,7 @@ QVariant PropertiesModel::data(const QModelIndex& index, int role) const
         QVariant var;
         if (index.column() != 0)
         {
-            var.setValue<VariantType>(value);
+            var.setValue<Any>(value);
         }
         return var;
     }
@@ -245,9 +243,9 @@ bool PropertiesModel::setData(const QModelIndex& index, const QVariant& value, i
     {
     case Qt::CheckStateRole:
     {
-        if (property->GetValueType() == VariantType::TYPE_BOOLEAN)
+        if (property->GetValueType() == Type::Instance<bool>())
         {
-            VariantType newVal(value != Qt::Unchecked);
+            Any newVal(value != Qt::Unchecked);
             ChangeProperty(property, newVal);
             UpdateProperty(property);
             return true;
@@ -256,16 +254,16 @@ bool PropertiesModel::setData(const QModelIndex& index, const QVariant& value, i
     break;
     case Qt::EditRole:
     {
-        VariantType newVal;
+        Any newVal;
 
-        if (value.userType() == QMetaTypeId<VariantType>::qt_metatype_id())
+        if (value.canConvert<Any>())
         {
-            newVal = value.value<VariantType>();
+            newVal = value.value<Any>();
         }
         else
         {
             newVal = property->GetValue();
-            initVariantType(newVal, value);
+            initAny(newVal, value);
         }
 
         ChangeProperty(property, newVal);
@@ -404,39 +402,41 @@ void PropertiesModel::StyleSelectorWasRemoved(StyleSheetSelectorsSection* sectio
     endRemoveRows();
 }
 
-void PropertiesModel::ChangeProperty(AbstractProperty* property, const VariantType& value)
+void PropertiesModel::ChangeProperty(AbstractProperty* property, const Any& value)
 {
-    DVASSERT(nullptr != commandExecutor);
-    if (nullptr != commandExecutor)
+    DAVA::TArc::DataContext* activeContext = accessor->GetActiveContext();
+    DVASSERT(activeContext != nullptr);
+    DocumentData* documentData = activeContext->GetData<DocumentData>();
+    DVASSERT(documentData != nullptr);
+
+    if (nullptr != controlNode)
     {
-        if (nullptr != controlNode)
-        {
-            commandExecutor->ChangeProperty(controlNode, property, value);
-        }
-        else if (styleSheet)
-        {
-            commandExecutor->ChangeProperty(styleSheet, property, value);
-        }
-        else
-        {
-            DVASSERT(false);
-        }
+        documentData->ExecCommand<ChangePropertyValueCommand>(controlNode, property, value);
+    }
+    else if (styleSheet)
+    {
+        documentData->ExecCommand<ChangeStylePropertyCommand>(styleSheet, property, value);
+    }
+    else
+    {
+        DVASSERT(false);
     }
 }
 
 void PropertiesModel::ResetProperty(AbstractProperty* property)
 {
-    DVASSERT(nullptr != commandExecutor);
-    if (nullptr != commandExecutor)
+    DAVA::TArc::DataContext* activeContext = accessor->GetActiveContext();
+    DVASSERT(activeContext != nullptr);
+    DocumentData* documentData = activeContext->GetData<DocumentData>();
+    DVASSERT(documentData != nullptr);
+
+    if (nullptr != controlNode)
     {
-        if (nullptr != controlNode)
-        {
-            commandExecutor->ResetProperty(controlNode, property);
-        }
-        else
-        {
-            DVASSERT(false);
-        }
+        documentData->ExecCommand<ChangePropertyValueCommand>(controlNode, property, Any());
+    }
+    else
+    {
+        DVASSERT(false);
     }
 }
 
@@ -451,179 +451,186 @@ QModelIndex PropertiesModel::indexByProperty(const AbstractProperty* property, i
 
 QString PropertiesModel::makeQVariant(const AbstractProperty* property) const
 {
-    const VariantType& val = property->GetValue();
-    switch (val.GetType())
+    Any val = property->GetValue();
+
+    if (property->GetType() == AbstractProperty::TYPE_ENUM)
     {
-    case VariantType::TYPE_NONE:
-        return QString();
-
-    case VariantType::TYPE_BOOLEAN:
-        return QString();
-    case VariantType::TYPE_INT8:
-        return QVariant(val.AsInt8()).toString();
-    case VariantType::TYPE_UINT8:
-        return QVariant(val.AsUInt8()).toString();
-    case VariantType::TYPE_INT16:
-        return QVariant(val.AsInt16()).toString();
-    case VariantType::TYPE_UINT16:
-        return QVariant(val.AsUInt16()).toString();
-    case VariantType::TYPE_INT32:
-        if (property->GetType() == AbstractProperty::TYPE_ENUM)
-        {
-            int32 e = val.AsInt32();
-            return QString::fromStdString(property->GetEnumMap()->ToString(e));
-        }
-        else if (property->GetType() == AbstractProperty::TYPE_FLAGS)
-        {
-            int32 e = val.AsInt32();
-            QString res = "";
-            int p = 0;
-            while (e)
-            {
-                if ((e & 0x01) != 0)
-                {
-                    if (!res.isEmpty())
-                        res += " | ";
-                    res += QString::fromStdString(property->GetEnumMap()->ToString(1 << p));
-                }
-                p++;
-                e >>= 1;
-            }
-            return res;
-        }
-        else
-        {
-            return QVariant(val.AsInt32()).toString();
-        }
-
-    case VariantType::TYPE_UINT32:
-        return QVariant(val.AsUInt32()).toString();
-
-    case VariantType::TYPE_INT64:
-        return QVariant(val.AsInt64()).toString();
-
-    case VariantType::TYPE_UINT64:
-        return QVariant(val.AsUInt64()).toString();
-
-    case VariantType::TYPE_FLOAT:
-        return QVariant(val.AsFloat()).toString();
-
-    case VariantType::TYPE_FLOAT64:
-        return QVariant(val.AsFloat64()).toString();
-
-    case VariantType::TYPE_STRING:
-        return UnescapeString(StringToQString(val.AsString()));
-
-    case VariantType::TYPE_WIDE_STRING:
-        return UnescapeString(WideStringToQString(val.AsWideString()));
-
-    case VariantType::TYPE_FASTNAME:
-        if (val.AsFastName().IsValid())
-        {
-            return StringToQString(val.AsFastName().c_str());
-        }
-        else
-        {
-            return "";
-        }
-
-    case VariantType::TYPE_VECTOR2:
-        return StringToQString(Format("%g; %g", val.AsVector2().x, val.AsVector2().y));
-
-    case VariantType::TYPE_COLOR:
-        return QColorToHex(ColorToQColor(val.AsColor()));
-
-    case VariantType::TYPE_VECTOR4:
-        return StringToQString(Format("%g; %g; %g; %g", val.AsVector4().x, val.AsVector4().y, val.AsVector4().z, val.AsVector4().w));
-
-    case VariantType::TYPE_FILEPATH:
-        return StringToQString(val.AsFilePath().GetStringValue());
-
-    case VariantType::TYPE_BYTE_ARRAY:
-    case VariantType::TYPE_KEYED_ARCHIVE:
-    case VariantType::TYPE_VECTOR3:
-
-    case VariantType::TYPE_MATRIX2:
-    case VariantType::TYPE_MATRIX3:
-    case VariantType::TYPE_MATRIX4:
-    case VariantType::TYPE_AABBOX3:
-    default:
-        DVASSERT(false);
-        break;
+        return QString::fromStdString(property->GetEnumMap()->ToString(val.Cast<int32>()));
     }
+
+    if (property->GetType() == AbstractProperty::TYPE_FLAGS)
+    {
+        int32 e = val.Get<int32>();
+        QString res = "";
+        int p = 0;
+        while (e)
+        {
+            if ((e & 0x01) != 0)
+            {
+                if (!res.isEmpty())
+                    res += " | ";
+                res += QString::fromStdString(property->GetEnumMap()->ToString(1 << p));
+            }
+            p++;
+            e >>= 1;
+        }
+        return res;
+    }
+
+    if (val.IsEmpty())
+    {
+        return QString();
+    }
+
+    if (val.CanGet<bool>())
+    {
+        return QString();
+    }
+
+    if (val.CanGet<int8>())
+    {
+        return QVariant(val.Get<int8>()).toString();
+    }
+
+    if (val.CanGet<uint8>())
+    {
+        return QVariant(val.Get<uint8>()).toString();
+    }
+
+    if (val.CanGet<int16>())
+    {
+        return QVariant(val.Get<int16>()).toString();
+    }
+
+    if (val.CanGet<uint16>())
+    {
+        return QVariant(val.Get<uint16>()).toString();
+    }
+
+    if (val.CanGet<int32>())
+    {
+        return QVariant(val.Get<int32>()).toString();
+    }
+
+    if (val.CanGet<uint32>())
+    {
+        return QVariant(val.Get<uint32>()).toString();
+    }
+
+    if (val.CanGet<int64>())
+    {
+        return QVariant(val.Get<int64>()).toString();
+    }
+
+    if (val.CanGet<uint64>())
+    {
+        return QVariant(val.Get<uint64>()).toString();
+    }
+
+    if (val.CanGet<float32>())
+    {
+        return QVariant(val.Get<float32>()).toString();
+    }
+
+    if (val.CanGet<float64>())
+    {
+        return QVariant(val.Get<float64>()).toString();
+    }
+
+    if (val.CanGet<String>())
+    {
+        return UnescapeString(StringToQString(val.Get<String>()));
+    }
+
+    if (val.CanGet<WideString>())
+    {
+        DVASSERT(false);
+        return UnescapeString(WideStringToQString(val.Get<WideString>()));
+    }
+
+    if (val.CanGet<FastName>())
+    {
+        const FastName& fastName = val.Get<FastName>();
+        if (fastName.IsValid())
+        {
+            return StringToQString(fastName.c_str());
+        }
+        else
+        {
+            return QString();
+        }
+    }
+
+    if (val.CanGet<Vector2>())
+    {
+        Vector2 vec = val.Get<Vector2>();
+        return StringToQString(Format("%g; %g", vec.x, vec.y));
+    }
+
+    if (val.CanGet<Color>())
+    {
+        return QColorToHex(ColorToQColor(val.Get<Color>()));
+    }
+
+    if (val.CanGet<Vector4>())
+    {
+        Vector4 vec = val.Get<Vector4>();
+        return StringToQString(Format("%g; %g; %g; %g", vec.x, vec.y, vec.z, vec.w));
+    }
+
+    if (val.CanGet<FilePath>())
+    {
+        return StringToQString(val.Get<FilePath>().GetStringValue());
+    }
+
+    DVASSERT(false);
     return QString();
 }
 
-void PropertiesModel::initVariantType(VariantType& var, const QVariant& val) const
+void PropertiesModel::initAny(Any& var, const QVariant& val) const
 {
-    switch (var.GetType())
+    if (var.IsEmpty())
     {
-    case VariantType::TYPE_NONE:
-        break;
-
-    case VariantType::TYPE_BOOLEAN:
-        var.SetBool(val.toBool());
-        break;
-
-    case VariantType::TYPE_INT32:
-        var.SetInt32(val.toInt());
-        break;
-
-    case VariantType::TYPE_FLOAT:
-        var.SetFloat(val.toFloat());
-        break;
-
-    case VariantType::TYPE_STRING:
-        var.SetString(val.toString().toStdString());
-        break;
-
-    case VariantType::TYPE_WIDE_STRING:
-        var.SetWideString(QStringToWideString(val.toString()));
-        break;
-
-    //        case VariantType::TYPE_UINT32:
-    //            return val.AsUInt32();
-    //
-    //        case VariantType::TYPE_INT64:
-    //            return val.AsInt64();
-    //
-    //        case VariantType::TYPE_UINT64:
-    //            return val.AsUInt64();
-
-    case VariantType::TYPE_VECTOR2:
+        // do nothing;
+    }
+    else if (var.CanGet<bool>())
+    {
+        var = val.toBool();
+    }
+    else if (var.CanGet<int32>())
+    {
+        var = val.toInt();
+    }
+    else if (var.CanGet<float32>())
+    {
+        var = val.toFloat();
+    }
+    else if (var.CanGet<String>())
+    {
+        var = val.toString().toStdString();
+    }
+    else if (var.CanGet<WideString>())
+    {
+        DVASSERT(false);
+        var = QStringToWideString(val.toString());
+    }
+    else if (var.CanGet<FastName>())
+    {
+        var = FastName(val.toString().toStdString());
+    }
+    else if (var.CanGet<Vector2>())
     {
         QVector2D vector = val.value<QVector2D>();
-        var.SetVector2(Vector2(vector.x(), vector.y()));
+        var = Vector2(vector.x(), vector.y());
     }
-    break;
-
-    case VariantType::TYPE_COLOR:
-        //return QString::fromStdString(Format("%.3f, %.3f, %.3f, %.3f", val.AsColor().a, val.AsColor().r, val.AsColor().g, val.AsColor().b));
-        break;
-
-    //        case VariantType::TYPE_BYTE_ARRAY:
-    //        case VariantType::TYPE_KEYED_ARCHIVE:
-    //        case VariantType::TYPE_VECTOR3:
-    case VariantType::TYPE_VECTOR4:
+    else if (var.CanGet<Vector4>())
     {
         QVector4D vector = val.value<QVector4D>();
-        var.SetVector4(Vector4(vector.x(), vector.y(), vector.z(), vector.w()));
+        var = Vector4(vector.x(), vector.y(), vector.z(), vector.w());
     }
-    break;
-
-    //        case VariantType::TYPE_MATRIX2:
-    //        case VariantType::TYPE_MATRIX3:
-    //        case VariantType::TYPE_MATRIX4:
-    case VariantType::TYPE_FASTNAME:
+    else
     {
-        var.SetFastName(FastName(val.toString().toStdString()));
-    }
-    break;
-    //        case VariantType::TYPE_AABBOX3:
-    //        case VariantType::TYPE_FILEPATH:
-    default:
         DVASSERT(false);
-        break;
     }
 }
 
@@ -640,4 +647,23 @@ void PropertiesModel::CleanUp()
     controlNode = nullptr;
     styleSheet = nullptr;
     rootProperty = nullptr;
+}
+
+void PropertiesModel::OnPackageChanged(const DAVA::Any& /*package*/)
+{
+    nodeUpdater.Abort();
+}
+
+void PropertiesModel::BindFields()
+{
+    using namespace DAVA;
+    using namespace DAVA::TArc;
+
+    fieldBinder.reset(new FieldBinder(accessor));
+    {
+        FieldDescriptor fieldDescr;
+        fieldDescr.type = ReflectedTypeDB::Get<DocumentData>();
+        fieldDescr.fieldName = FastName(DocumentData::packagePropertyName);
+        fieldBinder->BindField(fieldDescr, MakeFunction(this, &PropertiesModel::OnPackageChanged));
+    }
 }

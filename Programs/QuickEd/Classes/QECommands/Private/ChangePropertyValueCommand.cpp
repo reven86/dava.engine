@@ -8,9 +8,9 @@
 
 namespace ChangePropertyValueCommandDetails
 {
-DAVA::VariantType GetValueFromProperty(AbstractProperty* property)
+DAVA::Any GetValueFromProperty(AbstractProperty* property)
 {
-    return property->IsOverriddenLocally() ? property->GetValue() : DAVA::VariantType();
+    return property->IsOverriddenLocally() ? property->GetValue() : DAVA::Any();
 }
 }
 
@@ -19,13 +19,13 @@ ChangePropertyValueCommand::ChangePropertyValueCommand(PackageNode* package)
 {
 }
 
-ChangePropertyValueCommand::ChangePropertyValueCommand(PackageNode* package, ControlNode* node, AbstractProperty* property, const DAVA::VariantType& newValue)
+ChangePropertyValueCommand::ChangePropertyValueCommand(PackageNode* package, ControlNode* node, AbstractProperty* property, const DAVA::Any& newValue)
     : QEPackageCommand(package, DAVA::Format("Change property: %s", property->GetName().c_str()))
 {
     AddNodePropertyValue(node, property, newValue);
 }
 
-void ChangePropertyValueCommand::AddNodePropertyValue(ControlNode* node, AbstractProperty* property, const DAVA::VariantType& newValue)
+void ChangePropertyValueCommand::AddNodePropertyValue(ControlNode* node, AbstractProperty* property, const DAVA::Any& newValue)
 {
     DVASSERT(node != nullptr);
     DVASSERT(property != nullptr);
@@ -48,9 +48,9 @@ void ChangePropertyValueCommand::Undo()
     }
 }
 
-void ChangePropertyValueCommand::ApplyProperty(ControlNode* node, AbstractProperty* property, const DAVA::VariantType& value)
+void ChangePropertyValueCommand::ApplyProperty(ControlNode* node, AbstractProperty* property, const DAVA::Any& value)
 {
-    if (value.GetType() == DAVA::VariantType::TYPE_NONE)
+    if (value.IsEmpty())
     {
         package->ResetControlProperty(node, property);
     }
@@ -90,7 +90,7 @@ bool ChangePropertyValueCommand::MergeWith(const DAVA::Command* command)
     return true;
 }
 
-ChangePropertyValueCommand::Item::Item(ControlNode* node_, AbstractProperty* property_, const DAVA::VariantType& newValue_)
+ChangePropertyValueCommand::Item::Item(ControlNode* node_, AbstractProperty* property_, const DAVA::Any& newValue_)
     : node(DAVA::RefPtr<ControlNode>::ConstructWithRetain(node_))
     , property(DAVA::RefPtr<AbstractProperty>::ConstructWithRetain(property_))
     , newValue(newValue_)

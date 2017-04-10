@@ -92,6 +92,7 @@ private:
     Vector<FileRequest> requests;
     Vector<uint32> fileIndexes;
     String requestedPackName;
+    mutable Vector<String> dependencyCache;
 
     uint32 numOfDownloadedFile = 0;
 

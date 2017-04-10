@@ -25,10 +25,19 @@
 #include "Render/RenderHelper.h"
 #endif
 #include "Render/2D/Systems/RenderSystem2D.h"
+#include "Reflection/ReflectionRegistrator.h"
 #include "UI/Update/UIUpdateComponent.h"
 
 namespace DAVA
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(UIMovieView)
+{
+    ReflectionRegistrator<UIMovieView>::Begin()
+    .ConstructorByPointer()
+    .DestructorByPointer([](UIMovieView* o) { o->Release(); })
+    .End();
+}
+
 UIMovieView::UIMovieView(const Rect& rect)
     : UIControl(rect)
 #if defined(__DAVAENGINE_COREV2__)

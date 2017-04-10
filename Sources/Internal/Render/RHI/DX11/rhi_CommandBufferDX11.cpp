@@ -1636,6 +1636,12 @@ static void dx11_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)
             cmd->retval = dx11.device->CreateShaderResourceView((ID3D11Resource*)(arg[0]), (const D3D11_SHADER_RESOURCE_VIEW_DESC*)(arg[1]), (ID3D11ShaderResourceView**)(arg[2]));
             break;
         }
+        case DX11Command::CHECK_FORMAT_SUPPORT:
+        {
+            ValidateDX11Device("CheckFormatSupport");
+            cmd->retval = dx11.device->CheckFormatSupport((DXGI_FORMAT)(arg[0]), (UINT*)(arg[1]));
+            break;
+        }
         default:
         {
             DAVA::String message = DAVA::Format("Invalid or unsupported DX11 command: %u", cmd->func);

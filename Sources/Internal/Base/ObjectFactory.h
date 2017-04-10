@@ -69,10 +69,21 @@ public:
     ObjectFactory();
 
     /**
+     \brief check an ability to create class with given name
+     
+     \param[in] name name of class you want to create
+     */
+    bool IsTypeRegistered(const String& name) const
+    {
+        return (creatorMap.find(name) != creatorMap.end());
+    }
+
+    /**
 		\brief creates a class with given name
 		
 		\param[in] name name of class you want to create
 	 */
+
     template <class T>
     T* New(const String& name)
     {

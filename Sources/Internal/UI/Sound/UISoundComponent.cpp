@@ -1,7 +1,20 @@
 #include "UISoundComponent.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(UISoundComponent)
+{
+    ReflectionRegistrator<UISoundComponent>::Begin()
+    .ConstructorByPointer()
+    .DestructorByPointer([](UISoundComponent* c) { SafeRelease(c); })
+    .Field("touchDown", &UISoundComponent::GetOnTouchDownSoundEventName, &UISoundComponent::SetOnTouchDownSoundEventName)
+    .Field("touchUpInside", &UISoundComponent::GetOnTouchUpInsideSoundEventName, &UISoundComponent::SetOnTouchUpInsideSoundEventName)
+    .Field("touchUpOutside", &UISoundComponent::GetOnTouchUpOutsideSoundEventName, &UISoundComponent::SetOnTouchUpOutsideSoundEventName)
+    .Field("valueChanged", &UISoundComponent::GetOnValueChangedSoundEventName, &UISoundComponent::SetOnValueChangedSoundEventName)
+    .End();
+}
+
 UISoundComponent::UISoundComponent()
 {
 }

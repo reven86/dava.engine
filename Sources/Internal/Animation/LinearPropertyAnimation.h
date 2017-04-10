@@ -3,6 +3,7 @@
 
 #include "Animation/Animation.h"
 #include "Base/BaseTypes.h"
+#include "Reflection/Reflection.h"
 
 namespace DAVA
 {
@@ -15,7 +16,7 @@ protected:
     }
 
 public:
-    LinearPropertyAnimation(AnimatedObject* _owner, void* _object, const InspMember* _inspMember, const T& _startValue, const T& _endValue, float32 _animationTimeLength, Interpolation::FuncType _iFuncType);
+    LinearPropertyAnimation(AnimatedObject* _owner, const Reflection& _ref, const T& _startValue, const T& _endValue, float32 _animationTimeLength, Interpolation::FuncType _iFuncType);
 
     virtual void Update(float32 timeElapsed);
 
@@ -23,17 +24,15 @@ public:
     const T& GetEndValue() const;
 
 protected:
-    void* object;
-    const InspMember* inspMember;
+    Reflection ref;
     T startValue;
     T endValue;
 };
 
 template <class T>
-LinearPropertyAnimation<T>::LinearPropertyAnimation(AnimatedObject* _owner, void* _object, const InspMember* _inspMember, const T& _startValue, const T& _endValue, float32 _animationTimeLength, Interpolation::FuncType _iFuncType)
+LinearPropertyAnimation<T>::LinearPropertyAnimation(AnimatedObject* _owner, const Reflection& _ref, const T& _startValue, const T& _endValue, float32 _animationTimeLength, Interpolation::FuncType _iFuncType)
     : Animation(_owner, _animationTimeLength, _iFuncType)
-    , object(_object)
-    , inspMember(_inspMember)
+    , ref(_ref)
     , startValue(_startValue)
     , endValue(_endValue)
 {
@@ -44,7 +43,7 @@ void LinearPropertyAnimation<T>::Update(float32 timeElapsed)
 {
     Animation::Update(timeElapsed);
     T val = startValue + (endValue - startValue) * normalizedTime;
-    inspMember->SetValueRaw(object, &val);
+    ref.SetValue(val);
 }
 
 template <class T>

@@ -2,10 +2,8 @@
 #define DAVAENGINE_AUTO_STORAGE__H
 
 #include <memory>
-#include <cassert>
 #include <type_traits>
-
-#include "Base/BaseTypes.h"
+#include "Debug/DVAssert.h"
 
 namespace DAVA
 {
@@ -115,4 +113,5 @@ private:
 
 } // namespace DAVA
 
+#define __DAVA_AutoStorage__
 #include "Base/Private/AutoStorage_impl.h"

@@ -10,6 +10,7 @@
 #include "Utils/NSStringUtils.h"
 #include "Utils/StringUtils.h"
 #include "Utils/UTF8Utils.h"
+#include "Logger/Logger.h"
 
 #if defined(__DAVAENGINE_COREV2__)
 #include "Engine/Window.h"

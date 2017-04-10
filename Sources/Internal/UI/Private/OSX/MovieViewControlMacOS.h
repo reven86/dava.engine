@@ -6,7 +6,6 @@
 #if !defined(DISABLE_NATIVE_MOVIEVIEW)
 
 #include "UI/IMovieViewControl.h"
-#include "Functional/SignalBase.h"
 
 namespace DAVA
 {
@@ -46,14 +45,11 @@ public:
 private:
 #if defined(__DAVAENGINE_COREV2__)
     void OnWindowVisibilityChanged(Window* w, bool visible);
-    size_t windowVisibilityChangedConnection = 0;
 #else
     void OnAppMinimizedRestored(bool minimized);
-    SigConnectionID appMinimizedRestoredConnectionId;
 #endif
 
 #if defined(__DAVAENGINE_STEAM__)
-    SigConnectionID overlayConnectionId = 0;
     bool wasVisible = false;
     void OnSteamOverlayChanged(bool overlayActivated);
 #endif

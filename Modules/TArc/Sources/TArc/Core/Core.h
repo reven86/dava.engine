@@ -7,7 +7,7 @@
 #include "TArc/WindowSubSystem/Private/UIManager.h"
 
 #include "Base/BaseTypes.h"
-#include "Functional/SignalBase.h"
+#include "Functional/Signal.h"
 
 #include <memory>
 
