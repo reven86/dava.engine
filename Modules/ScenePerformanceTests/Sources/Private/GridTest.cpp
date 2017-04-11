@@ -16,7 +16,6 @@
 #include <FileSystem/FileSystem.h>
 #include <FileSystem/FilePath.h>
 #include <FileSystem/File.h>
-#include <Functional/SignalBase.h>
 #include <Utils/StringFormat.h>
 #include <Utils/FpsMeter.h>
 
@@ -185,7 +184,6 @@ private:
 
 private:
     DAVA::Engine& engine;
-    DAVA::SigConnectionID updateSignalID = 0;
 
     GridTestListener* listener = nullptr;
     DAVA::Scene* scene = nullptr;
@@ -230,12 +228,12 @@ GridTestImpl::GridTestImpl(DAVA::Engine& engine, GridTestListener* listener, Gri
     , mode(mode)
     , fpsMeter(GridTestDetails::EXPOSURE_DURATION_SEC)
 {
-    updateSignalID = engine.update.Connect(this, &GridTestImpl::Update);
+    engine.update.Connect(this, &GridTestImpl::Update);
 }
 
 GridTestImpl::~GridTestImpl()
 {
-    engine.update.Disconnect(updateSignalID);
+    engine.update.Disconnect(this);
     Stop();
 }
 

@@ -3,7 +3,6 @@
 #include "Modules/DocumentsModule/DocumentData.h"
 #include "Modules/DocumentsModule/Private/DocumentsWatcherData.h"
 #include "Modules/DocumentsModule/Private/EditorCanvasData.h"
-#include "Modules/LegacySupportModule/Private/Document.h"
 
 #include "QECommands/ChangePropertyValueCommand.h"
 
@@ -19,7 +18,6 @@
 #include "Application/QEGlobal.h"
 
 #include "UI/mainwindow.h"
-#include "UI/DocumentGroupView.h"
 #include "UI/ProjectView.h"
 #include "UI/Preview/PreviewWidget.h"
 #include "UI/Package/PackageWidget.h"
@@ -35,6 +33,7 @@
 
 #include <QtTools/InputDialogs/MultilineTextInputDialog.h>
 
+#include <Base/Any.h>
 #include <Command/CommandStack.h>
 #include <UI/UIPackageLoader.h>
 #include <UI/UIStaticText.h>
@@ -620,11 +619,11 @@ void DocumentsModule::ChangeControlText(ControlNode* node)
         if (inputText.contains('\n') && multilineType == UIStaticText::MULTILINE_DISABLED)
         {
             std::unique_ptr<ChangePropertyValueCommand> command = data->CreateCommand<ChangePropertyValueCommand>();
-            command->AddNodePropertyValue(node, multilineProperty, VariantType(UIStaticText::MULTILINE_ENABLED));
+            command->AddNodePropertyValue(node, multilineProperty, Any(UIStaticText::MULTILINE_ENABLED));
             data->ExecCommand(std::move(command));
         }
         std::unique_ptr<ChangePropertyValueCommand> command = data->CreateCommand<ChangePropertyValueCommand>();
-        command->AddNodePropertyValue(node, textProperty, VariantType(inputText.toStdString()));
+        command->AddNodePropertyValue(node, textProperty, Any(inputText.toStdString()));
         data->ExecCommand(std::move(command));
         stack->EndBatch();
     }

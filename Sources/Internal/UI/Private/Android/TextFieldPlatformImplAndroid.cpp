@@ -466,9 +466,9 @@ void TextFieldPlatformImpl::nativeOnTextureReady(JNIEnv* env, jintArray pixels, 
             }
             else
             {
-                std::shared_ptr<SigConnectionID> connectionIdPtr = std::make_shared<SigConnectionID>();
-                *connectionIdPtr = Engine::Instance()->resumed.Connect([this, image, connectionIdPtr]() {
-                    Engine::Instance()->resumed.Disconnect(*connectionIdPtr);
+                std::shared_ptr<Token> connectionTokenPtr = std::make_shared<Token>();
+                *connectionTokenPtr = Engine::Instance()->resumed.Connect([this, image, connectionTokenPtr]() {
+                    Engine::Instance()->resumed.Disconnect(*connectionTokenPtr);
                     SetSpriteFromImage(image.Get());
                 });
             }
@@ -517,7 +517,10 @@ void TextFieldPlatformImpl::OnFocusChanged(bool hasFocus)
 
 void TextFieldPlatformImpl::OnKeyboardShown(const Rect& keyboardRect)
 {
-    uiTextField->OnKeyboardShown(keyboardRect);
+    if (nullptr != uiTextField)
+    {
+        uiTextField->OnKeyboardShown(keyboardRect);
+    }
 }
 
 void TextFieldPlatformImpl::OnEnterPressed()

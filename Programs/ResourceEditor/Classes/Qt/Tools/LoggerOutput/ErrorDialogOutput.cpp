@@ -99,7 +99,7 @@ void ErrorDialogOutput::Output(DAVA::Logger::eLogLevel ll, const DAVA::char8* te
 
     if (isJobStarted == false)
     {
-        DVASSERT(waitDialogConnectionId == 0);
+        DVASSERT(waitDialogConnectionToken.IsEmpty());
 
         isJobStarted = true;
         DelayedExecute(DAVA::MakeFunction(this, &ErrorDialogOutput::ShowErrorDialog));
@@ -112,16 +112,16 @@ void ErrorDialogOutput::ShowErrorDialog()
 
     if (globalOperations->IsWaitDialogVisible())
     {
-        DVASSERT(waitDialogConnectionId == 0);
-        waitDialogConnectionId = globalOperations->waitDialogClosed.Connect(this, &ErrorDialogOutput::ShowErrorDialog);
+        DVASSERT(waitDialogConnectionToken.IsEmpty());
+        waitDialogConnectionToken = globalOperations->waitDialogClosed.Connect(this, &ErrorDialogOutput::ShowErrorDialog);
         return;
     }
 
     { // disconnect from
-        if (waitDialogConnectionId != 0)
+        if (!waitDialogConnectionToken.IsEmpty())
         {
-            globalOperations->waitDialogClosed.Disconnect(waitDialogConnectionId);
-            waitDialogConnectionId = 0;
+            globalOperations->waitDialogClosed.Disconnect(waitDialogConnectionToken);
+            waitDialogConnectionToken.Clear();
         }
         isJobStarted = false;
     }

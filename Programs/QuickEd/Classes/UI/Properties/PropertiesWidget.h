@@ -1,31 +1,37 @@
-#ifndef __QUICKED_PROPERTIES_WIDGET_H__
-#define __QUICKED_PROPERTIES_WIDGET_H__
+#pragma once
 
 #include <QDockWidget>
 #include "Base/BaseTypes.h"
 #include "ui_PropertiesWidget.h"
 #include "EditorSystems/SelectionContainer.h"
 
-class ControlNode;
-class Document;
-class PackageBaseNode;
+namespace DAVA
+{
+namespace TArc
+{
+class FieldBinder;
+class ContextAccessor;
+}
+}
+
 class Project;
+class PackageNode;
+class PackageBaseNode;
 class PropertiesModel;
 class PropertiesTreeItemDelegate;
-class QtModelPackageCommandExecutor;
-class StyleSheetNode;
 
 class PropertiesWidget : public QDockWidget, public Ui::PropertiesWidget
 {
     Q_OBJECT
 public:
     PropertiesWidget(QWidget* parent = nullptr);
+    ~PropertiesWidget();
 
-    void SetProject(const Project* project);
+    void SetAccessor(DAVA::TArc::ContextAccessor* accessor);
 
 public slots:
+    void SetProject(const Project* project);
     void UpdateModel(PackageBaseNode* node);
-    void OnDocumentChanged(Document* doc);
 
     void OnAddComponent(QAction* action);
     void OnAddStyleProperty(QAction* action);
@@ -52,6 +58,10 @@ private:
 
     void ApplyExpanding();
 
+    void OnPackageChanged(const DAVA::Any& package);
+
+    void BindFields();
+
     QAction* addComponentAction = nullptr;
     QAction* addStylePropertyAction = nullptr;
     QAction* addStyleSelectorAction = nullptr;
@@ -65,8 +75,9 @@ private:
     SelectionContainer selectionContainer;
 
     DAVA::String lastTopIndexPath;
-    QtModelPackageCommandExecutor* commandExecutor = nullptr;
     PackageBaseNode* selectedNode = nullptr; //node used to build model
-};
 
-#endif //__QUICKED_PROPERTIES_WIDGET_H__
+    std::unique_ptr<DAVA::TArc::FieldBinder> fieldBinder;
+
+    DAVA::TArc::ContextAccessor* accessor = nullptr;
+};

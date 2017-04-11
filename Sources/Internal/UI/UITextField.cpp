@@ -2,10 +2,10 @@
 #include "Input/KeyboardDevice.h"
 #include "Input/InputSystem.h"
 #include "UI/UIControlSystem.h"
-#include "UI/Update/UIUpdateComponent.h"
 #include "Render/2D/FontManager.h"
 #include "Utils/UTF8Utils.h"
 #include "Logger/Logger.h"
+#include "UI/Update/UIUpdateComponent.h"
 #include "Engine/Engine.h"
 #include "Reflection/ReflectionRegistrator.h"
 
@@ -645,7 +645,7 @@ void UITextField::OnStartEditing()
 {
     if (delegate != nullptr)
     {
-        delegate->OnStartEditing();
+        delegate->OnStartEditing(this);
     }
 }
 
@@ -653,7 +653,7 @@ void UITextField::OnStopEditing()
 {
     if (delegate != nullptr)
     {
-        delegate->OnStopEditing();
+        delegate->OnStopEditing(this);
     }
 }
 

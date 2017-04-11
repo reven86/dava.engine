@@ -291,25 +291,23 @@ protected:
 public:
     // for introspection
 
-    int32 GetBgDrawType() const;
-    void SetBgDrawType(int32 type);
     FilePath GetBgSpritePath() const;
-    int32 GetBgColorInherit() const;
-    void SetBgColorInherit(int32 type);
-    int32 GetBgPerPixelAccuracy() const;
-    void SetBgPerPixelAccuracy(int32 type);
 
     FilePath GetMaskSpritePath() const;
     void SetMaskSpriteFromPath(const FilePath& path);
+    void SetMaskSprite(Sprite* sprite);
     FilePath GetDetailSpritePath() const;
     void SetDetailSpriteFromPath(const FilePath& path);
+    void SetDetailSprite(Sprite* sprite);
     FilePath GetGradientSpritePath() const;
     void SetGradientSpriteFromPath(const FilePath& path);
+    void SetGradientSprite(Sprite* sprite);
     FilePath GetContourSpritePath() const;
     void SetContourSpriteFromPath(const FilePath& path);
+    void SetContourSprite(Sprite* sprite);
 
-    int32 GetGradientBlendMode() const;
-    void SetGradientBlendMode(int32 mode);
+    eGradientBlendMode GetGradientBlendMode() const;
+    void SetGradientBlendMode(eGradientBlendMode mode);
 };
 
 // Implementation
@@ -321,16 +319,6 @@ inline void UIControlBackground::SetColor(const Color& _color)
 inline const Color& UIControlBackground::GetColor() const
 {
     return color;
-}
-
-inline int32 UIControlBackground::GetBgDrawType() const
-{
-    return GetDrawType();
-}
-
-inline void UIControlBackground::SetBgDrawType(int32 type)
-{ // TODO: FIXME: type
-    SetDrawType(static_cast<UIControlBackground::eDrawType>(type));
 }
 
 inline FilePath UIControlBackground::GetBgSpritePath() const
@@ -356,6 +344,11 @@ inline void UIControlBackground::SetMaskSpriteFromPath(const FilePath& path)
     else
         mask.Set(nullptr);
 }
+inline void UIControlBackground::SetMaskSprite(Sprite* sprite)
+{
+    mask = sprite;
+}
+
 inline FilePath UIControlBackground::GetDetailSpritePath() const
 {
     if ((detail != nullptr) && (detail->GetRelativePathname().GetType() != FilePath::PATH_IN_MEMORY))
@@ -369,6 +362,11 @@ inline void UIControlBackground::SetDetailSpriteFromPath(const FilePath& path)
     else
         detail.Set(nullptr);
 }
+inline void UIControlBackground::SetDetailSprite(Sprite* sprite)
+{
+    detail = sprite;
+}
+
 inline FilePath UIControlBackground::GetGradientSpritePath() const
 {
     if ((gradient != nullptr) && (gradient->GetRelativePathname().GetType() != FilePath::PATH_IN_MEMORY))
@@ -382,6 +380,11 @@ inline void UIControlBackground::SetGradientSpriteFromPath(const FilePath& path)
     else
         gradient.Set(nullptr);
 }
+inline void UIControlBackground::SetGradientSprite(Sprite* sprite)
+{
+    gradient = sprite;
+}
+
 inline FilePath UIControlBackground::GetContourSpritePath() const
 {
     if ((contour != nullptr) && (contour->GetRelativePathname().GetType() != FilePath::PATH_IN_MEMORY))
@@ -395,34 +398,18 @@ inline void UIControlBackground::SetContourSpriteFromPath(const FilePath& path)
     else
         contour.Set(nullptr);
 }
-
-inline int32 UIControlBackground::GetGradientBlendMode() const
+inline void UIControlBackground::SetContourSprite(Sprite* sprite)
 {
-    return static_cast<int32>(gradientMode);
-}
-inline void UIControlBackground::SetGradientBlendMode(int32 mode)
-{
-    gradientMode = eGradientBlendMode(mode);
+    contour = sprite;
 }
 
-inline int32 UIControlBackground::GetBgColorInherit() const
+inline eGradientBlendMode UIControlBackground::GetGradientBlendMode() const
 {
-    return GetColorInheritType();
+    return gradientMode;
 }
-
-inline void UIControlBackground::SetBgColorInherit(int32 type)
+inline void UIControlBackground::SetGradientBlendMode(eGradientBlendMode mode)
 {
-    SetColorInheritType(static_cast<UIControlBackground::eColorInheritType>(type));
-}
-
-inline int32 UIControlBackground::GetBgPerPixelAccuracy() const
-{
-    return GetPerPixelAccuracyType();
-}
-
-inline void UIControlBackground::SetBgPerPixelAccuracy(int32 type)
-{
-    SetPerPixelAccuracyType(static_cast<UIControlBackground::ePerPixelAccuracyType>(type));
+    gradientMode = mode;
 }
 };
 

@@ -59,6 +59,7 @@ protected slots:
     void OnMaterialAddGlobal(bool checked);
     void OnMaterialRemoveGlobal(bool checked);
     void OnMaterialSave(bool checked);
+    void OnMaterialSaveCurrentConfig(bool checked);
     void OnMaterialLoad(bool checked);
     void OnMaterialPropertyEditorContextMenuRequest(const QPoint& pos);
 
@@ -85,6 +86,8 @@ private slots:
     void onTabContextMenuRequested(const QPoint& pos);
 
 private:
+    void SaveMaterialPresetImpl(const DAVA::Function<void(DAVA::KeyedArchive*, DAVA::NMaterial*, const DAVA::SerializationContext&)>& saveFunction);
+
     QString GetTemplatePath(DAVA::int32 index) const;
     bool ExecMaterialLoadingDialog(DAVA::uint32& useChoise, const QString& inputFile);
 

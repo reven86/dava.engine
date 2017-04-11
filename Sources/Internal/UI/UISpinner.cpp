@@ -1,8 +1,8 @@
 #include "UISpinner.h"
 #include "UI/UIEvent.h"
-#include "UI/Update/UIUpdateComponent.h"
 #include "Animation/Animation.h"
 #include "Reflection/ReflectionRegistrator.h"
+#include "UI/Update/UIUpdateComponent.h"
 
 namespace DAVA
 {

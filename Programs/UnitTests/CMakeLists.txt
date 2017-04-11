@@ -21,8 +21,8 @@ dava_add_definitions(-D__DAVAENGINE_COREV2__)
 # Enable LOCALIZATION_DEBUG in UnitTests to verify successful compilation
 dava_add_definitions(-DLOCALIZATION_DEBUG)
 
-set ( DAVA_COMPONENTS "ALL" "SampleModule" "DAVA_DISABLE_AUTOTESTS" )
-if ( WIN32 AND NOT WIN_UAP AND NOT DAVA_PLATFORM_QT)
+set ( DAVA_COMPONENTS "SampleModule" "DAVA_DISABLE_AUTOTESTS" )
+if ( WIN32 AND NOT WINDOWS_UAP )
     list ( APPEND DAVA_COMPONENTS "CEFWebview" )
 endif ()
 
@@ -35,6 +35,7 @@ if ( WIN32 OR MACOS )
 endif()
 find_package( Steam REQUIRED )
 find_package( DavaFramework REQUIRED COMPONENTS "${DAVA_COMPONENTS}" )
+find_package( EmbeddedWebServer REQUIRED )
 
 include_directories   ( "Classes" )
 

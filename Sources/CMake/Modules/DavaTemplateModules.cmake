@@ -90,6 +90,9 @@ BINARY_WIN64_DIR_RELEASE
 BINARY_WIN64_DIR_DEBUG
 BINARY_WIN64_DIR_RELWITHDEB
 #
+JAR_FOLDERS_ANDROID
+JAVA_FOLDERS_ANDROID
+#
 EXCLUDE_FROM_ALL
 #
 PLUGIN_OUT_DIR
@@ -186,7 +189,7 @@ macro( modules_tree_info )
 
     set( EXTERNAL_MODULES ${EXTERNAL_MODULES} ${EXTERNAL_MODULES_${DAVA_PLATFORM_CURENT}} ${IMPL_MODULE} ) 
 
-    if( SRC_FOLDERS OR EXTERNAL_MODULES )
+    if( SRC_FOLDERS OR EXTERNAL_MODULES  )
 
         foreach( VALUE ${MAIN_MODULE_VALUES} )
             set( ${VALUE}_DIR_NAME ${${VALUE}} )
@@ -204,7 +207,7 @@ macro( modules_tree_info )
             set_project_files_properties( "${PROJECT_SOURCE_FILES_CPP}" )
             list( APPEND ALL_SRC  ${PROJECT_SOURCE_FILES} )
             list( APPEND ALL_SRC_HEADER_FILE_ONLY  ${PROJECT_HEADER_FILE_ONLY} )
-        endif()
+        endif()            
 
         foreach( VALUE ${MAIN_MODULE_VALUES} )
             set(  ${VALUE} ${${VALUE}_DIR_NAME} )
@@ -497,10 +500,12 @@ macro( setup_main_module )
         endif()
         
         if( WIN )
-            list( APPEND STATIC_LIBRARIES_WIN         ${STATIC_LIBRARIES_WIN${DAVA_PROJECT_BIT}} )
-            list( APPEND STATIC_LIBRARIES_WIN_RELEASE ${STATIC_LIBRARIES_WIN${DAVA_PROJECT_BIT}_RELEASE} ) 
-            list( APPEND STATIC_LIBRARIES_WIN_DEBUG   ${STATIC_LIBRARIES_WIN${DAVA_PROJECT_BIT}_DEBUG} )
-            list( APPEND DYNAMIC_LIBRARIES_WIN        ${DYNAMIC_LIBRARIES_WIN${DAVA_PROJECT_BIT}} )
+            list( APPEND STATIC_LIBRARIES_WIN          ${STATIC_LIBRARIES_WIN${DAVA_PROJECT_BIT}} )
+            list( APPEND STATIC_LIBRARIES_WIN_RELEASE  ${STATIC_LIBRARIES_WIN${DAVA_PROJECT_BIT}_RELEASE} ) 
+            list( APPEND STATIC_LIBRARIES_WIN_DEBUG    ${STATIC_LIBRARIES_WIN${DAVA_PROJECT_BIT}_DEBUG} )
+            list( APPEND DYNAMIC_LIBRARIES_WIN         ${DYNAMIC_LIBRARIES_WIN${DAVA_PROJECT_BIT}} )
+            list( APPEND DYNAMIC_LIBRARIES_WIN_RELEASE ${DYNAMIC_LIBRARIES_WIN${DAVA_PROJECT_BIT}_RELEASE} )
+            list( APPEND DYNAMIC_LIBRARIES_WIN_DEBUG   ${DYNAMIC_LIBRARIES_WIN${DAVA_PROJECT_BIT}_DEBUG} )
         endif()      
        
         #"FIND LIBRARY"
@@ -585,10 +590,8 @@ macro( setup_main_module )
 
             foreach ( ITEM  HPP_FILES_RECURSE HPP_FILES
                             CPP_FILES_RECURSE CPP_FILES )
-
                 list( APPEND ${ITEM}   ${${ITEM}_${CONECTION_TYPE}} )
                 list( APPEND ${ITEM}_${DAVA_PLATFORM_CURENT} ${${ITEM}_${CONECTION_TYPE}_${DAVA_PLATFORM_CURENT}} )
-            
             endforeach ()
 
         endif()
@@ -627,6 +630,8 @@ macro( setup_main_module )
                 DEFINITIONS
                 DEFINITIONS_${DAVA_PLATFORM_CURENT}
                 DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}          
+                DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE
+                DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG
                 STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT} 
                 STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE 
                 STATIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG 
@@ -641,6 +646,8 @@ macro( setup_main_module )
                 BINARY_WIN64_DIR_RELEASE
                 BINARY_WIN64_DIR_DEBUG
                 BINARY_WIN64_DIR_RELWITHDEB
+                JAR_FOLDERS_ANDROID
+                JAVA_FOLDERS_ANDROID
                 )
 
         load_property( PROPERTY_LIST 

@@ -1,6 +1,5 @@
 #include "UI/UIMovieView.h"
 #include "UI/UIControlSystem.h"
-#include "UI/Update/UIUpdateComponent.h"
 
 #include "Engine/Engine.h"
 
@@ -27,6 +26,7 @@
 #endif
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Reflection/ReflectionRegistrator.h"
+#include "UI/Update/UIUpdateComponent.h"
 
 namespace DAVA
 {

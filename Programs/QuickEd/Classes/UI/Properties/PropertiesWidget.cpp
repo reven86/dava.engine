@@ -1,10 +1,11 @@
 #include "PropertiesWidget.h"
+#include "ui_PropertiesWidget.h"
+#include "PropertiesModel.h"
 
-#include <qitemeditorfactory>
-#include <qstyleditemdelegate>
-#include <QMenu>
-#include <QItemSelection>
+#include "Modules/DocumentsModule/DocumentData.h"
+#include "Modules/LegacySupportModule/Private/Project.h"
 
+#include "UI/Properties/PropertiesTreeItemDelegate.h"
 #include "UI/QtModelPackageCommandExecutor.h"
 #include "Model/ControlProperties/ComponentPropertiesSection.h"
 #include "Model/ControlProperties/StyleSheetProperty.h"
@@ -14,18 +15,19 @@
 #include "Model/PackageHierarchy/StyleSheetNode.h"
 #include "Utils/QtDavaConvertion.h"
 
+#include <TArc/Core/FieldBinder.h>
+
+#include <UI/Components/UIComponent.h>
+#include <UI/UIControl.h>
+#include <UI/Styles/UIStyleSheetPropertyDataBase.h>
+#include <Engine/Engine.h>
+#include <Entity/ComponentManager.h>
+
 #include <QAbstractItemModel>
-
-#include "ui_PropertiesWidget.h"
-#include "PropertiesModel.h"
-#include "UI/Properties/PropertiesTreeItemDelegate.h"
-
-#include "Modules/LegacySupportModule/Private/Document.h"
-#include "UI/Components/UIComponent.h"
-#include "UI/UIControl.h"
-#include "UI/Styles/UIStyleSheetPropertyDataBase.h"
-#include "Engine/Engine.h"
-#include "Entity/ComponentManager.h"
+#include <QItemEditorFactory>
+#include <QStyledItemDelegate>
+#include <QMenu>
+#include <QItemSelection>
 
 using namespace DAVA;
 
@@ -75,112 +77,102 @@ PropertiesWidget::PropertiesWidget(QWidget* parent)
     UpdateModel(nullptr);
 }
 
+PropertiesWidget::~PropertiesWidget() = default;
+
+void PropertiesWidget::SetAccessor(DAVA::TArc::ContextAccessor* accessor_)
+{
+    accessor = accessor_;
+    propertiesModel->SetAccessor(accessor);
+}
+
 void PropertiesWidget::SetProject(const Project* project)
 {
     propertiesItemsDelegate->SetProject(project);
 }
 
-void PropertiesWidget::OnDocumentChanged(Document* document)
+void PropertiesWidget::OnAddComponent(QAction* action)
 {
-    if (nullptr != document)
+    QtModelPackageCommandExecutor executor(accessor);
+    DVASSERT(accessor->GetActiveContext() != nullptr);
+    const RootProperty* rootProperty = DAVA::DynamicTypeCheck<const RootProperty*>(propertiesModel->GetRootProperty());
+
+    const Type* componentType = action->data().value<Any>().Cast<const Type*>();
+    ComponentPropertiesSection* componentSection = rootProperty->FindComponentPropertiesSection(componentType, 0);
+    if (componentSection != nullptr && !UIComponent::IsMultiple(componentType))
     {
-        commandExecutor = document->GetCommandExecutor();
+        QModelIndex index = propertiesModel->indexByProperty(componentSection);
+        OnComponentAdded(index);
     }
     else
     {
-        commandExecutor = nullptr;
-    }
-    UpdateModel(nullptr); //SelectionChanged will invoke by Queued Connection, so selectedNode have invalid value
-}
-
-void PropertiesWidget::OnAddComponent(QAction* action)
-{
-    DVASSERT(nullptr != commandExecutor);
-    if (nullptr != commandExecutor)
-    {
-        const RootProperty* rootProperty = DAVA::DynamicTypeCheck<const RootProperty*>(propertiesModel->GetRootProperty());
-        const Type* componentType = action->data().value<Any>().Cast<const Type*>();
-        ComponentPropertiesSection* componentSection = rootProperty->FindComponentPropertiesSection(componentType, 0);
-        if (componentSection != nullptr && !UIComponent::IsMultiple(componentType))
-        {
-            QModelIndex index = propertiesModel->indexByProperty(componentSection);
-            OnComponentAdded(index);
-        }
-        else
-        {
-            commandExecutor->AddComponent(DynamicTypeCheck<ControlNode*>(selectedNode), componentType);
-        }
+        executor.AddComponent(DynamicTypeCheck<ControlNode*>(selectedNode), componentType);
     }
 }
 
 void PropertiesWidget::OnRemove()
 {
-    DVASSERT(nullptr != commandExecutor);
-    if (nullptr != commandExecutor)
-    {
-        QModelIndexList indices = treeView->selectionModel()->selectedIndexes();
-        if (!indices.empty())
-        {
-            const QModelIndex& index = indices.first();
-            AbstractProperty* property = static_cast<AbstractProperty*>(index.internalPointer());
+    QtModelPackageCommandExecutor executor(accessor);
+    DVASSERT(accessor->GetActiveContext() != nullptr);
 
-            if ((property->GetFlags() & AbstractProperty::EF_CAN_REMOVE) != 0)
+    QModelIndexList indices = treeView->selectionModel()->selectedIndexes();
+    if (!indices.empty())
+    {
+        const QModelIndex& index = indices.first();
+        AbstractProperty* property = static_cast<AbstractProperty*>(index.internalPointer());
+
+        if ((property->GetFlags() & AbstractProperty::EF_CAN_REMOVE) != 0)
+        {
+            ComponentPropertiesSection* section = dynamic_cast<ComponentPropertiesSection*>(property);
+            if (section)
             {
-                ComponentPropertiesSection* section = dynamic_cast<ComponentPropertiesSection*>(property);
-                if (section)
+                executor.RemoveComponent(DynamicTypeCheck<ControlNode*>(selectedNode), section->GetComponentType(), section->GetComponentIndex());
+            }
+            else
+            {
+                StyleSheetProperty* styleProperty = dynamic_cast<StyleSheetProperty*>(property);
+                if (styleProperty)
                 {
-                    commandExecutor->RemoveComponent(DynamicTypeCheck<ControlNode*>(selectedNode), section->GetComponentType(), section->GetComponentIndex());
+                    executor.RemoveStyleProperty(DynamicTypeCheck<StyleSheetNode*>(selectedNode), styleProperty->GetPropertyIndex());
                 }
                 else
                 {
-                    StyleSheetProperty* styleProperty = dynamic_cast<StyleSheetProperty*>(property);
-                    if (styleProperty)
+                    StyleSheetSelectorProperty* selectorProperty = dynamic_cast<StyleSheetSelectorProperty*>(property);
+                    if (selectorProperty)
                     {
-                        commandExecutor->RemoveStyleProperty(DynamicTypeCheck<StyleSheetNode*>(selectedNode), styleProperty->GetPropertyIndex());
-                    }
-                    else
-                    {
-                        StyleSheetSelectorProperty* selectorProperty = dynamic_cast<StyleSheetSelectorProperty*>(property);
-                        if (selectorProperty)
+                        int32 index = property->GetParent()->GetIndex(selectorProperty);
+                        if (index != -1)
                         {
-                            int32 index = property->GetParent()->GetIndex(selectorProperty);
-                            if (index != -1)
-                            {
-                                commandExecutor->RemoveStyleSelector(DynamicTypeCheck<StyleSheetNode*>(selectedNode), index);
-                            }
+                            executor.RemoveStyleSelector(DynamicTypeCheck<StyleSheetNode*>(selectedNode), index);
                         }
                     }
                 }
             }
         }
-        UpdateActions();
     }
+    UpdateActions();
 }
 
 void PropertiesWidget::OnAddStyleProperty(QAction* action)
 {
-    DVASSERT(nullptr != commandExecutor);
-    if (nullptr != commandExecutor)
+    QtModelPackageCommandExecutor executor(accessor);
+    DVASSERT(accessor->GetActiveContext() != nullptr);
+
+    uint32 propertyIndex = action->data().toUInt();
+    if (propertyIndex < UIStyleSheetPropertyDataBase::STYLE_SHEET_PROPERTY_COUNT)
     {
-        uint32 propertyIndex = action->data().toUInt();
-        if (propertyIndex < UIStyleSheetPropertyDataBase::STYLE_SHEET_PROPERTY_COUNT)
-        {
-            commandExecutor->AddStyleProperty(DynamicTypeCheck<StyleSheetNode*>(selectedNode), propertyIndex);
-        }
-        else
-        {
-            DVASSERT(propertyIndex < UIStyleSheetPropertyDataBase::STYLE_SHEET_PROPERTY_COUNT);
-        }
+        executor.AddStyleProperty(DynamicTypeCheck<StyleSheetNode*>(selectedNode), propertyIndex);
+    }
+    else
+    {
+        DVASSERT(propertyIndex < UIStyleSheetPropertyDataBase::STYLE_SHEET_PROPERTY_COUNT);
     }
 }
 
 void PropertiesWidget::OnAddStyleSelector()
 {
-    DVASSERT(nullptr != commandExecutor);
-    if (nullptr != commandExecutor)
-    {
-        commandExecutor->AddStyleSelector(DynamicTypeCheck<StyleSheetNode*>(selectedNode));
-    }
+    QtModelPackageCommandExecutor executor(accessor);
+    DVASSERT(accessor->GetActiveContext() != nullptr);
+    executor.AddStyleSelector(DynamicTypeCheck<StyleSheetNode*>(selectedNode));
 }
 
 void PropertiesWidget::OnSelectionChanged(const QItemSelection& /*selected*/, const QItemSelection& /*deselected*/)
@@ -309,7 +301,7 @@ void PropertiesWidget::UpdateModel(PackageBaseNode* node)
         lastTopIndexPath = GetPathFromIndex(index);
     }
     selectedNode = node;
-    propertiesModel->Reset(selectedNode, commandExecutor);
+    propertiesModel->Reset(selectedNode);
     bool isControl = dynamic_cast<ControlNode*>(selectedNode) != nullptr;
     bool isStyle = dynamic_cast<StyleSheetNode*>(selectedNode) != nullptr;
     addComponentAction->menu()->setEnabled(isControl);
@@ -348,5 +340,25 @@ void PropertiesWidget::ApplyExpanding()
         }
 
         index = treeView->indexBelow(index);
+    }
+}
+
+void PropertiesWidget::OnPackageChanged(const DAVA::Any& package)
+{
+    treeView->setEnabled(package.CanGet<PackageNode*>() && (package.Get<PackageNode*>() != nullptr));
+}
+
+void PropertiesWidget::BindFields()
+{
+    using namespace DAVA;
+    using namespace DAVA::TArc;
+
+    fieldBinder.reset(new FieldBinder(accessor));
+
+    {
+        FieldDescriptor fieldDescr;
+        fieldDescr.type = ReflectedTypeDB::Get<DocumentData>();
+        fieldDescr.fieldName = FastName(DocumentData::packagePropertyName);
+        fieldBinder->BindField(fieldDescr, MakeFunction(this, &PropertiesWidget::OnPackageChanged));
     }
 }

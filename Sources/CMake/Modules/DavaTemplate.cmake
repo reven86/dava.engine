@@ -64,9 +64,12 @@ load_property( PROPERTY_LIST
         DEPLOY_TO_BIN
         DEPLOY_TO_BIN_${DAVA_PLATFORM_CURENT}
         DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}
+        DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE
+        DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG
         INCLUDES
         INCLUDES_${DAVA_PLATFORM_CURENT}
-
+        JAR_FOLDERS_ANDROID
+        JAVA_FOLDERS_ANDROID
         PLUGIN_LIST
     )
         
@@ -165,6 +168,22 @@ if( DAVA_FOUND )
 
 endif()
 
+###
+
+if( MIX_APP_DATA )
+    
+    append_property( MIX_APP_DATA "${MIX_APP_DATA}" )
+
+    if( POSTPONED_MIX_DATA )
+        processing_mix_data( NOT_DATA_COPY )
+    else()
+        processing_mix_data()
+    endif()
+
+endif()
+
+###
+
 if( IOS )
     list( APPEND RESOURCES_LIST ${APP_DATA} )
     list( APPEND RESOURCES_LIST ${IOS_XIB} )
@@ -250,6 +269,10 @@ elseif ( WINDOWS_UAP )
 
     #add dll's to project and package
     add_dynamic_libs_win_uap ( ${DAVA_WIN_UAP_LIBRARIES_PATH_COMMON} DAVA_DLL_LIST )
+
+
+    list( APPEND DAVA_DLL_LIST_RELEASE  ${DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_RELEASE} )
+    list( APPEND DAVA_DLL_LIST_DEBUG    ${DYNAMIC_LIBRARIES_${DAVA_PLATFORM_CURENT}_DEBUG} )
 
     #add found dll's to project and mark them as deployment content
     if ( DAVA_DLL_LIST_DEBUG )
@@ -346,20 +369,6 @@ if( DAVA_FOUND )
     set ( PLATFORM_ADDED_SRC ${H_FILES} ${CPP_FILES} )
 
 endif()
-###
-
-if( MIX_APP_DATA )
-    
-    append_property( MIX_APP_DATA "${MIX_APP_DATA}" )
-
-    if( POSTPONED_MIX_DATA )
-        processing_mix_data( NOT_DATA_COPY )
-    else()
-        processing_mix_data()
-    endif()
-
-endif()
-
 
 ###
 foreach( TEST_FOLDER ${EXTERNAL_TEST_FOLDERS} )
@@ -477,6 +486,7 @@ if ( STEAM_SDK_FOUND AND WIN32 )
     )
 endif ()
 
+processing_mix_data_dependencies( ${PROJECT_NAME} )
 
 if (QT5_FOUND)
     link_with_qt5(${PROJECT_NAME})
@@ -554,14 +564,16 @@ if( ANDROID AND NOT ANDROID_CUSTOM_BUILD )
     configure_file( ${DAVA_CONFIGURE_FILES_PATH}/AntProperties.in
                     ${CMAKE_CURRENT_BINARY_DIR}/ant.properties )
 
-    if( ANDROID_JAVA_SRC )
-        foreach ( ITEM ${ANDROID_JAVA_SRC} )
-            execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${ITEM} ${CMAKE_BINARY_DIR}/src )
-        endforeach ()
-    endif()
+    foreach ( ITEM ${ANDROID_JAVA_SRC} ${JAVA_FOLDERS_ANDROID} )
+        execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${ITEM} ${CMAKE_BINARY_DIR}/src )
+    endforeach ()
 
     if( ANDROID_JAVA_LIBS )
         execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${ANDROID_JAVA_LIBS} ${CMAKE_BINARY_DIR}/libs )
+    endif()
+
+    if( JAR_FOLDERS_ANDROID )
+        execute_process(COMMAND ${CMAKE_COMMAND} -E copy_directory ${JAR_FOLDERS_ANDROID} ${CMAKE_BINARY_DIR}/libs )
     endif()
 
     if( ANDROID_JAVA_RES )

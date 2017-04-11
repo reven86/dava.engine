@@ -2,8 +2,8 @@
 #include "UI/UIScrollView.h"
 #include "UI/UIControlSystem.h"
 #include "UI/ScrollHelper.h"
-#include "UI/Update/UIUpdateComponent.h"
 #include "Reflection/ReflectionRegistrator.h"
+#include "UI/Update/UIUpdateComponent.h"
 
 namespace DAVA
 {

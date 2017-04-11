@@ -1,11 +1,12 @@
 #include "UI/UIParticles.h"
-#include "UI/Update/UIUpdateComponent.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/Components/ParticleEffectComponent.h"
 #include "Scene3D/Systems/ParticleEffectSystem.h"
 #include "Render/Highlevel/RenderPassNames.h"
 #include "Reflection/ReflectionRegistrator.h"
+#include "UI/UIControlSystem.h"
+#include "UI/Update/UIUpdateComponent.h"
 
 namespace DAVA
 {

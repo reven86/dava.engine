@@ -2,7 +2,6 @@
 #include "Scene3D/Scene.h"
 #include "Core/Core.h"
 #include "UI/UIControlSystem.h"
-#include "UI/Update/UIUpdateComponent.h"
 #include "Render/RenderHelper.h"
 #include "Render/Highlevel/RenderPass.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
@@ -11,6 +10,7 @@
 #include "Scene3D/Systems/Controller/SnapToLandscapeControllerSystem.h"
 #include "Scene3D/Systems/Controller/WASDControllerSystem.h"
 #include "Reflection/ReflectionRegistrator.h"
+#include "UI/Update/UIUpdateComponent.h"
 
 namespace DAVA
 {
