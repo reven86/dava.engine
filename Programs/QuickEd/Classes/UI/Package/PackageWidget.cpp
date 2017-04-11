@@ -479,22 +479,23 @@ void PackageWidget::OnCopy()
 
 void PackageWidget::OnPaste()
 {
+    QItemSelection selected = filteredPackageModel->mapSelectionToSource(treeView->selectionModel()->selection());
+    QModelIndexList selectedIndexList = selected.indexes();
     QClipboard* clipboard = QApplication::clipboard();
 
-    if (clipboard && clipboard->mimeData())
+    if (!selectedIndexList.empty() && clipboard && clipboard->mimeData())
     {
-        TArc::DataContext* activeContext = accessor->GetActiveContext();
-        DVASSERT(activeContext != nullptr);
-        DocumentData* documentData = activeContext->GetData<DocumentData>();
-        DVASSERT(nullptr != documentData);
-        SelectedNodes nodes = documentData->GetSelectedNodes();
-        DVASSERT(nodes.size() == 1);
-        PackageBaseNode* baseNode = *nodes.begin();
+        const QModelIndex& index = selectedIndexList.first();
+
+        PackageBaseNode* baseNode = static_cast<PackageBaseNode*>(index.internalPointer());
 
         if (!baseNode->IsReadOnly())
         {
             String string = clipboard->mimeData()->text().toStdString();
-
+            DAVA::TArc::DataContext* activeContext = accessor->GetActiveContext();
+            DVASSERT(activeContext != nullptr);
+            DocumentData* documentData = activeContext->GetData<DocumentData>();
+            DVASSERT(nullptr != documentData);
             PackageNode* package = documentData->GetPackageNode();
             QtModelPackageCommandExecutor executor(accessor);
             SelectedNodes selection = executor.Paste(package, baseNode, baseNode->GetCount(), string);
