@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_ANIMATEDTREE_CONVERTER_H__
-#define __DAVAENGINE_ANIMATEDTREE_CONVERTER_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 
@@ -9,22 +8,23 @@ class Entity;
 class SpeedTreeObject;
 class PolygonGroup;
 
-class TreeToAnimatedTreeConverter
+class SpeedTreeConverter
 {
 public:
     static void CalculateAnimationParams(SpeedTreeObject* object);
 
     void ConvertTrees(Entity* scene);
+    void ConvertPolygonPivotGroups(Entity* scene);
 
 private:
     void ConvertingPathRecursive(Entity* scene);
     void ConvertLeafPGForAnimations(PolygonGroup* geometry);
     void ConvertTrunkForAnimations(PolygonGroup* geometry);
 
+    Set<PolygonGroup*> uniqPGs;
     Set<PolygonGroup*> uniqLeafPGs;
     Set<PolygonGroup*> uniqTrunkPGs;
+    Set<NMaterial*> materials;
     Set<SpeedTreeObject*> uniqTreeObjects;
 };
 };
-
-#endif //__DAVAENGINE_ANIMATEDTREE_CONVERTER_H__

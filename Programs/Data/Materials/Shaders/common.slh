@@ -129,8 +129,8 @@
 #define SKINNING 0
 #endif
 
-#if !defined SPEED_TREE_LEAF
-#define SPEED_TREE_LEAF 0
+#if !defined SPEED_TREE_OBJECT
+#define SPEED_TREE_OBJECT 0
 #endif
 
 #if !defined CUT_LEAF

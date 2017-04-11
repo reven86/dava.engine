@@ -198,26 +198,26 @@ AABBox3 SpeedTreeObject::CalcBBoxForSpeedTreeGeometry(RenderBatch* rb)
         AABBox3 pgBbox;
         PolygonGroup* pg = rb->GetPolygonGroup();
 
-        if ((pg->GetFormat() & EVF_PIVOT) == 0)
+        if ((pg->GetFormat() & EVF_PIVOT4) == 0)
             return rb->GetBoundingBox();
 
         int32 vertexCount = pg->GetVertexCount();
         for (int32 vi = 0; vi < vertexCount; vi++)
         {
-            Vector3 pivot;
+            Vector4 pivot;
             pg->GetPivot(vi, pivot);
 
             Vector3 pointX, pointY, pointZ;
             Vector3 offsetX, offsetY;
 
             pg->GetCoord(vi, pointZ);
-            offsetX = offsetY = pointZ - pivot;
+            offsetX = offsetY = pointZ - Vector3(pivot);
 
             Swap(offsetX.x, offsetX.z);
             Swap(offsetX.y, offsetX.z);
 
-            pointX = pivot + offsetX;
-            pointY = pivot + offsetY;
+            pointX = Vector3(pivot) + offsetX;
+            pointY = Vector3(pivot) + offsetY;
 
             pgBbox.AddPoint(pointX);
             pgBbox.AddPoint(pointY);

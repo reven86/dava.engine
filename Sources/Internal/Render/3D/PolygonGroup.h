@@ -54,6 +54,7 @@ public:
     inline void GetCubeTexcoord(int32 ti, int32 i, Vector3& v);
     inline void GetIndex(int32 i, int32& index);
 
+    inline void GetPivot(int32 i, Vector4& v);
     inline void GetPivot(int32 i, Vector3& v);
     inline void GetFlexibility(int32 i, float32& v);
     inline void GetAngle(int32 i, Vector2& v);
@@ -75,6 +76,7 @@ public:
 
     inline void SetIndex(int32 i, int16 index);
 
+    inline void SetPivot(int32 i, const Vector4& v);
     inline void SetPivot(int32 i, const Vector3& v);
     inline void SetFlexibility(int32 i, const float32& v);
     inline void SetAngle(int32 i, const Vector2& v);
@@ -106,6 +108,7 @@ public:
 
     uint32* jointCountArray;
 
+    Vector4* pivot4Array;
     Vector3* pivotArray;
     float32* flexArray;
     Vector2* angleArray;
@@ -136,16 +139,13 @@ public:
      */
     void ApplyMatrix(const Matrix4& matrix);
 
-    /*
-        Use greedy algorithm to convert mesh from triangle lists to triangle strips
-     */
-    void ConvertToStrips();
-
     void BuildBuffers();
     void RestoreBuffers();
 
     void Save(KeyedArchive* keyedArchive, SerializationContext* serializationContext) override;
     void LoadPolygonData(KeyedArchive* keyedArchive, SerializationContext* serializationContext, int32 requiredFlags, bool cutUnusedStreams);
+
+    static void CopyData(const uint8** meshData, uint8** newMeshData, uint32 vertexFormat, uint32 newVertexFormat, uint32 format);
 
     rhi::HVertexBuffer vertexBuffer;
     rhi::HIndexBuffer indexBuffer;
@@ -153,7 +153,6 @@ public:
 
 private:
     void UpdateDataPointersAndStreams();
-    void CopyData(const uint8** meshData, uint8** newMeshData, uint32 vertexFormat, uint32 newVertexFormat, uint32 format) const;
 
 public:
     INTROSPECTION_EXTEND(PolygonGroup, DataNode,
@@ -163,10 +162,6 @@ public:
                          MEMBER(vertexStride, "Vertex Stride", I_VIEW | I_SAVE)
                          MEMBER(vertexFormat, "Vertex Format", I_VIEW | I_SAVE)
                          MEMBER(indexFormat, "Index Format", I_VIEW | I_SAVE)
-                         //        MEMBER(primitiveType, "Primitive Type", INTROSPECTION_SERIALIZABLE)
-
-                         //        MEMBER(vertices, "Vertices", INTROSPECTION_SERIALIZABLE)
-                         //        MEMBER(indices, "Indices", INTROSPECTION_SERIALIZABLE)
                          )
 
     DAVA_VIRTUAL_REFLECTION(PolygonGroup, DataNode);
@@ -216,6 +211,12 @@ inline void PolygonGroup::SetCubeTexcoord(int32 ti, int32 i, const Vector3& _t)
 {
     Vector3* t = reinterpret_cast<Vector3*>(reinterpret_cast<uint8*>(cubeTextureCoordArray[ti]) + i * vertexStride);
     *t = _t;
+}
+
+inline void PolygonGroup::SetPivot(int32 i, const Vector4& _v)
+{
+    Vector4* v = reinterpret_cast<Vector4*>(reinterpret_cast<uint8*>(pivot4Array) + i * vertexStride);
+    *v = _v;
 }
 
 inline void PolygonGroup::SetPivot(int32 i, const Vector3& _v)
@@ -312,6 +313,12 @@ inline void PolygonGroup::GetCubeTexcoord(int32 ti, int32 i, Vector3& _t)
 {
     Vector3* t = reinterpret_cast<Vector3*>(reinterpret_cast<uint8*>(cubeTextureCoordArray[ti]) + i * vertexStride);
     _t = *t;
+}
+
+inline void PolygonGroup::GetPivot(int32 i, Vector4& _v)
+{
+    Vector4* v = reinterpret_cast<Vector4*>(reinterpret_cast<uint8*>(pivot4Array) + i * vertexStride);
+    _v = *v;
 }
 
 inline void PolygonGroup::GetPivot(int32 i, Vector3& _v)

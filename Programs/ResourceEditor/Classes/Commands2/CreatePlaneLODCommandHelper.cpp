@@ -170,7 +170,7 @@ void CreatePlaneLODCommandHelper::CreatePlaneBatchForRequest(RequestPointer& req
     Vector2 cellCenterTxCoordOffset = Vector2(.5f / gridSizeX, .5f / gridSizeY) * txCoordPlaneScale;
 
     ScopedPtr<PolygonGroup> planePG(new PolygonGroup());
-    planePG->AllocateData(EVF_VERTEX | EVF_TEXCOORD0, vxCount, indCount);
+    planePG->AllocateData(EVF_VERTEX | EVF_TEXCOORD0 | EVF_PIVOT4, vxCount, indCount);
 
     int32 currentIndex = 0;
     for (int32 z = 0; z <= gridSizeY; ++z)
@@ -203,9 +203,11 @@ void CreatePlaneLODCommandHelper::CreatePlaneBatchForRequest(RequestPointer& req
 
             planePG->SetCoord(vxIndex1, coord1);
             planePG->SetTexcoord(0, vxIndex1, txCoord1);
+            planePG->SetPivot(vxIndex1, Vector4());
 
             planePG->SetCoord(vxIndex2, coord2);
             planePG->SetTexcoord(0, vxIndex2, txCoord2);
+            planePG->SetPivot(vxIndex2, Vector4());
 
             // cell center vertices
             if (z != gridSizeY && xy != gridSizeX)

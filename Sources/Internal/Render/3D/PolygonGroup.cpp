@@ -125,6 +125,30 @@ void PolygonGroup::UpdateDataPointersAndStreams()
         baseShift += GetVertexSize(EVF_BINORMAL);
         vLayout.AddElement(rhi::VS_BINORMAL, 0, rhi::VDT_FLOAT, 3);
     }
+    if (vertexFormat & EVF_PIVOT4)
+    {
+        pivot4Array = reinterpret_cast<Vector4*>(meshData + baseShift);
+        baseShift += GetVertexSize(EVF_PIVOT4);
+        vLayout.AddElement(rhi::VS_TEXCOORD, 4, rhi::VDT_FLOAT, 4);
+    }
+    if (vertexFormat & EVF_PIVOT)
+    {
+        pivotArray = reinterpret_cast<Vector3*>(meshData + baseShift);
+        baseShift += GetVertexSize(EVF_PIVOT);
+        vLayout.AddElement(rhi::VS_TEXCOORD, 4, rhi::VDT_FLOAT, 3);
+    }
+    if (vertexFormat & EVF_FLEXIBILITY)
+    {
+        flexArray = reinterpret_cast<float32*>(meshData + baseShift);
+        baseShift += GetVertexSize(EVF_FLEXIBILITY);
+        vLayout.AddElement(rhi::VS_TEXCOORD, 5, rhi::VDT_FLOAT, 1);
+    }
+    if (vertexFormat & EVF_ANGLE_SIN_COS)
+    {
+        angleArray = reinterpret_cast<Vector2*>(meshData + baseShift);
+        baseShift += GetVertexSize(EVF_ANGLE_SIN_COS);
+        vLayout.AddElement(rhi::VS_TEXCOORD, 6, rhi::VDT_FLOAT, 2);
+    }
     if (vertexFormat & EVF_JOINTINDEX)
     {
         jointIdxArray = reinterpret_cast<float32*>(meshData + baseShift);
@@ -163,24 +187,6 @@ void PolygonGroup::UpdateDataPointersAndStreams()
         cubeTextureCoordArray[3] = reinterpret_cast<Vector3*>(meshData + baseShift);
         baseShift += GetVertexSize(EVF_CUBETEXCOORD3);
         vLayout.AddElement(rhi::VS_TEXCOORD, 3, rhi::VDT_FLOAT, 3);
-    }
-    if (vertexFormat & EVF_PIVOT)
-    {
-        pivotArray = reinterpret_cast<Vector3*>(meshData + baseShift);
-        baseShift += GetVertexSize(EVF_PIVOT);
-        vLayout.AddElement(rhi::VS_TEXCOORD, 3, rhi::VDT_FLOAT, 3);
-    }
-    if (vertexFormat & EVF_FLEXIBILITY)
-    {
-        flexArray = reinterpret_cast<float32*>(meshData + baseShift);
-        baseShift += GetVertexSize(EVF_FLEXIBILITY);
-        vLayout.AddElement(rhi::VS_TEXCOORD, 5, rhi::VDT_FLOAT, 1);
-    }
-    if (vertexFormat & EVF_ANGLE_SIN_COS)
-    {
-        angleArray = reinterpret_cast<Vector2*>(meshData + baseShift);
-        baseShift += GetVertexSize(EVF_ANGLE_SIN_COS);
-        vLayout.AddElement(rhi::VS_TEXCOORD, 4, rhi::VDT_FLOAT, 2);
     }
 
     vertexLayoutId = rhi::VertexLayout::UniqueId(vLayout);
@@ -454,7 +460,7 @@ void PolygonGroup::RecalcAABBox()
     }
 }
 
-void PolygonGroup::CopyData(const uint8** meshData, uint8** newMeshData, uint32 vertexFormat, uint32 newVertexFormat, uint32 format) const
+void PolygonGroup::CopyData(const uint8** meshData, uint8** newMeshData, uint32 vertexFormat, uint32 newVertexFormat, uint32 format)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 

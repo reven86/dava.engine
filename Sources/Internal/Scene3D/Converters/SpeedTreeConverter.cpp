@@ -1,4 +1,4 @@
-#include "TreeToAnimatedTreeConverter.h"
+#include "SpeedTreeConverter.h"
 #include "Scene3D/Components/SpeedTreeComponent.h"
 #include "Render/Highlevel/SpeedTreeObject.h"
 #include "Render/Highlevel/RenderObject.h"
@@ -11,7 +11,7 @@
 
 namespace DAVA
 {
-void TreeToAnimatedTreeConverter::CalculateAnimationParams(SpeedTreeObject* object)
+void SpeedTreeConverter::CalculateAnimationParams(SpeedTreeObject* object)
 {
     float32 treeHeight = object->GetBoundingBox().GetSize().z;
 
@@ -54,7 +54,7 @@ void TreeToAnimatedTreeConverter::CalculateAnimationParams(SpeedTreeObject* obje
     }
 }
 
-void TreeToAnimatedTreeConverter::ConvertTrees(Entity* scene)
+void SpeedTreeConverter::ConvertTrees(Entity* scene)
 {
     uniqLeafPGs.clear();
     uniqTrunkPGs.clear();
@@ -78,7 +78,7 @@ void TreeToAnimatedTreeConverter::ConvertTrees(Entity* scene)
     }
 }
 
-void TreeToAnimatedTreeConverter::ConvertingPathRecursive(Entity* node)
+void SpeedTreeConverter::ConvertingPathRecursive(Entity* node)
 {
     for (int32 c = 0; c < node->GetChildrenCount(); ++c)
     {
@@ -133,10 +133,19 @@ void TreeToAnimatedTreeConverter::ConvertingPathRecursive(Entity* node)
             uniqLeafPGs.insert(pg);
         else
             uniqTrunkPGs.insert(pg);
+
+        uniqPGs.insert(pg);
+
+        NMaterial* mat = rb->GetMaterial();
+        while (mat)
+        {
+            materials.insert(mat);
+            mat = mat->GetParent();
+        }
     }
 }
 
-void TreeToAnimatedTreeConverter::ConvertLeafPGForAnimations(PolygonGroup* pg)
+void SpeedTreeConverter::ConvertLeafPGForAnimations(PolygonGroup* pg)
 {
     int32 vertexFormat = pg->GetFormat();
     int32 vxCount = pg->GetVertexCount();
@@ -185,7 +194,7 @@ void TreeToAnimatedTreeConverter::ConvertLeafPGForAnimations(PolygonGroup* pg)
     pg->BuildBuffers();
 }
 
-void TreeToAnimatedTreeConverter::ConvertTrunkForAnimations(PolygonGroup* pg)
+void SpeedTreeConverter::ConvertTrunkForAnimations(PolygonGroup* pg)
 {
     int32 vertexFormat = pg->GetFormat();
     int32 vxCount = pg->GetVertexCount();
@@ -226,5 +235,73 @@ void TreeToAnimatedTreeConverter::ConvertTrunkForAnimations(PolygonGroup* pg)
     SafeRelease(pgCopy);
 
     pg->BuildBuffers();
+}
+
+void SpeedTreeConverter::ConvertPolygonPivotGroups(Entity* scene)
+{
+    uniqPGs.clear();
+    materials.clear();
+    uniqTreeObjects.clear();
+
+    ConvertingPathRecursive(scene);
+
+    Map<PolygonGroup*, PolygonGroup*> convertedPGs;
+    for (PolygonGroup* dataSource : uniqPGs)
+    {
+        int32 vertexFormat = dataSource->GetFormat();
+        int32 vxCount = dataSource->GetVertexCount();
+        int32 indCount = dataSource->GetIndexCount();
+
+        int32 convertedFormat = (vertexFormat & ~EVF_PIVOT) | EVF_PIVOT4;
+        PolygonGroup* pg = new PolygonGroup();
+        pg->AllocateData(convertedFormat, vxCount, indCount);
+
+        Memcpy(pg->indexArray, dataSource->indexArray, indCount * sizeof(int16));
+
+        uint8* dst = pg->meshData;
+        const uint8* src = dataSource->meshData;
+        for (int32 i = 0; i < vxCount; ++i)
+        {
+            for (uint32 mask = EVF_LOWER_BIT; mask <= EVF_HIGHER_BIT; mask = mask << 1)
+                PolygonGroup::CopyData(&src, &dst, vertexFormat, convertedFormat, mask);
+
+            if (vertexFormat & EVF_PIVOT)
+            {
+                Vector3 pivot3;
+                dataSource->GetPivot(i, pivot3);
+
+                Vector4 pivot4(pivot3, 1.f);
+                pg->SetPivot(i, pivot4);
+            }
+            else
+            {
+                pg->SetPivot(i, Vector4());
+            }
+        }
+
+        pg->RecalcAABBox();
+        pg->BuildBuffers();
+
+        convertedPGs[dataSource] = pg;
+    }
+
+    static const FastName FLAG_SPEED_TREE_LEAF("SPEED_TREE_LEAF");
+    for (NMaterial* material : materials)
+    {
+        if (material->HasLocalFlag(FLAG_SPEED_TREE_LEAF))
+            material->AddFlag(NMaterialFlagName::FLAG_SPEED_TREE_OBJECT, material->GetLocalFlagValue(FLAG_SPEED_TREE_LEAF));
+    }
+
+    for (SpeedTreeObject* object : uniqTreeObjects)
+    {
+        for (uint32 ri = 0, rCount = object->GetRenderBatchCount(); ri < rCount; ++ri)
+        {
+            RenderBatch* batch = object->GetRenderBatch(ri);
+            batch->SetPolygonGroup(convertedPGs[batch->GetPolygonGroup()]);
+        }
+    }
+
+    for (auto& it : convertedPGs)
+        SafeRelease(it.second);
 }
 };

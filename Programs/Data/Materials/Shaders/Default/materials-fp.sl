@@ -569,7 +569,7 @@ fragment_out fp_main( fragment_in input )
     #endif
 
     
-    #if VERTEX_COLOR || SPEED_TREE_LEAF || SPHERICAL_LIT
+    #if VERTEX_COLOR || SPEED_TREE_OBJECT || SPHERICAL_LIT
         output.color *= float4(input.varVertexColor);
     #endif
         

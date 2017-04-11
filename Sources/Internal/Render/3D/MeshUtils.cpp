@@ -827,9 +827,13 @@ Vector<uint16> BuildSortedIndexBufferData(PolygonGroup* pg, Vector3 direction)
         pg->GetIndex(ti * 3 + 1, tempInd[1]);
         pg->GetIndex(ti * 3 + 2, tempInd[2]);
 
-        if (pg->GetFormat() & EVF_PIVOT)
+        Vector4 pivot;
+        if (pg->GetFormat() & EVF_PIVOT4)
+            pg->GetPivot(tempInd[0], pivot);
+
+        if (pivot.w > 0.f) //billboard
         {
-            pg->GetPivot(tempInd[0], triangle.sortPosition);
+            triangle.sortPosition = Vector3(pivot);
         }
         else
         {

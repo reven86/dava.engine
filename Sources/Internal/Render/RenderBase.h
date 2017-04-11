@@ -165,7 +165,7 @@ enum eVertexFormat
     EVF_TANGENT = 1 << 7,
     EVF_BINORMAL = 1 << 8,
     // nine bit skipped cause legacy; for now it unused
-    EVF_TIME = 1 << 10,
+    EVF_PIVOT4 = 1 << 10,
     EVF_PIVOT = 1 << 11,
     EVF_FLEXIBILITY = 1 << 12,
     EVF_ANGLE_SIN_COS = 1 << 13,
@@ -245,9 +245,8 @@ inline int32 GetVertexSize(int32 flags)
     if (flags & EVF_CUBETEXCOORD3)
         size += 3 * sizeof(float32);
 
-    if (flags & EVF_TIME)
-        size += sizeof(float32);
-
+    if (flags & EVF_PIVOT4)
+        size += 4 * sizeof(float32);
     if (flags & EVF_PIVOT)
         size += 3 * sizeof(float32);
     if (flags & EVF_FLEXIBILITY)

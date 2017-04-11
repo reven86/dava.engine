@@ -241,7 +241,7 @@ void MitsubaExporterDetail::Exporter::ExportBatch(const DAVA::String& name, cons
             return;
         }
 
-        bool hasPivot = (vertexFormat & DAVA::EVF_PIVOT) == DAVA::EVF_PIVOT;
+        bool hasPivot = (vertexFormat & DAVA::EVF_PIVOT4) == DAVA::EVF_PIVOT4;
         if (hasPivot)
         {
             DAVA::Logger::Error("%s data contains pivot point, which are not supported", name.c_str());
