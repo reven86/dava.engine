@@ -44,7 +44,7 @@ public:
     const TaskInfo* GetTaskInfo(Task* task) override;
     TaskStatus GetTaskStatus(Task* task) override;
 
-    static void DownloadThreadFunc(DLCDownloaderImpl* downloader);
+    void DownloadThreadFunc();
 
 private:
     Deque<Task*> taskQueue;

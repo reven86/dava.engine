@@ -13,6 +13,7 @@ public:
 
     enum class TaskState
     {
+        JustAdded,
         Downloading,
         Finished
     };
@@ -27,13 +28,19 @@ public:
     struct IWriter
     {
         virtual ~IWriter() = default;
-        virtual size_t Save(const void* ptr, size_t size) = 0;
+        /** save next buffer bytes into memory or file */
+        virtual uint64 Save(const void* ptr, uint64 size) = 0;
+        /** return current size of saved byte stream */
+        virtual uint64 GetSeekPos() = 0;
+        /** truncate file */
+        virtual void Truncate() = 0;
+        /** return maximum size of memory buffer*/
+        virtual uint64 SpaceLeft() = 0;
     };
 
     struct TaskInfo
     {
         String srcUrl;
-        FilePath dstPath;
         TaskType type;
         int32 partsCount = -1;
         int32 timeoutSec = 30;
@@ -50,7 +57,7 @@ public:
             NO_ERROR_,
             SOME_ERROR_
         };
-        Error error = NO_ERROR_;
+        Error errorCode = NO_ERROR_;
         int32 curlErr = 0;
         int32 errnoVal = 0;
     };
@@ -69,16 +76,14 @@ public:
     struct Task;
 
     // Schedule download content or get content size (indicated by downloadMode)
-    virtual Task* StartTask(
-    const String& srcUrl,
-    IWriter* dstWriter,
-    TaskType taskType,
-    uint64 rangeOffset = 0,
-    uint64 rangeSize = 0,
-    int16 partsCount = -1,
-    int32 timeout = 30,
-    int32 retriesCount = 3
-    ) = 0;
+    virtual Task* StartTask(const String& srcUrl,
+                            IWriter* dstWriter,
+                            TaskType taskType,
+                            uint64 rangeOffset = 0,
+                            uint64 rangeSize = 0,
+                            int16 partsCount = -1,
+                            int32 timeout = 30,
+                            int32 retriesCount = 3) = 0;
 
     // Cancel download by ID (works for scheduled and current)
     virtual void RemoveTask(Task* task) = 0;
