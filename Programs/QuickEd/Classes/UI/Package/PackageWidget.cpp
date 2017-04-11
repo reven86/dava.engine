@@ -508,18 +508,30 @@ void PackageWidget::OnPaste()
 
 void PackageWidget::OnDuplicate()
 {
+    //TODO: remove this block when package widget will be refactored
+    TArc::DataContext* activeContext = accessor->GetActiveContext();
+    if (activeContext == nullptr)
+    {
+        return;
+    }
+    DocumentData* documentData = activeContext->GetData<DocumentData>();
+    if (documentData == nullptr)
+    {
+        return;
+    }
+    SelectedNodes nodes = documentData->GetSelectedNodes();
+    if (nodes.empty())
+    {
+        return;
+    }
+    QApplication::clipboard()->clear();
+
     OnCopy();
 
     QClipboard* clipboard = QApplication::clipboard();
 
     if (clipboard && clipboard->mimeData())
     {
-        TArc::DataContext* activeContext = accessor->GetActiveContext();
-        DVASSERT(activeContext != nullptr);
-        DocumentData* documentData = activeContext->GetData<DocumentData>();
-        DVASSERT(nullptr != documentData);
-        SelectedNodes nodes = documentData->GetSelectedNodes();
-        DVASSERT(nodes.empty() == false);
         Vector<PackageBaseNode*> sortedSelection(nodes.begin(), nodes.end());
         std::sort(sortedSelection.begin(), sortedSelection.end(), CompareByLCA);
         PackageBaseNode* parent = sortedSelection.front()->GetParent();
@@ -533,8 +545,10 @@ void PackageWidget::OnDuplicate()
             PackageBaseNode* lastSelected = sortedSelection.back();
             int index = parent->GetIndex(lastSelected);
             SelectedNodes selection = executor.Paste(package, parent, index + 1, string);
-            DVASSERT(selection.empty() == false);
-            dataWrapper.SetFieldValue(DocumentData::selectionPropertyName, selection);
+            if (selection.empty() == false)
+            {
+                dataWrapper.SetFieldValue(DocumentData::selectionPropertyName, selection);
+            }
         }
     }
 }
