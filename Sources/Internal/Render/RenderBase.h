@@ -166,7 +166,7 @@ enum eVertexFormat
     EVF_BINORMAL = 1 << 8,
     // nine bit skipped cause legacy; for now it unused
     EVF_PIVOT4 = 1 << 10,
-    EVF_PIVOT = 1 << 11,
+    EVF_PIVOT = 1 << 11, //deprecated, need remove after content re-saving
     EVF_FLEXIBILITY = 1 << 12,
     EVF_ANGLE_SIN_COS = 1 << 13,
     EVF_JOINTINDEX = 1 << 14,
