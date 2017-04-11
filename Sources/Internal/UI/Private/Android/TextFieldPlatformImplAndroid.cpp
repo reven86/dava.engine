@@ -144,7 +144,7 @@ void TextFieldPlatformImpl::Initialize()
     else
     {
         delete selfWeakPtr;
-        Logger::Error("[WebViewControl] failed to create java webview");
+        Logger::Error("[TextFieldControl] failed to create java textfield");
     }
 }
 
