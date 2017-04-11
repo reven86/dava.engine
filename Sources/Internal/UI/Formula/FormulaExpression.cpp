@@ -4,7 +4,9 @@
 
 namespace DAVA
 {
-FormulaExpression::FormulaExpression()
+FormulaExpression::FormulaExpression(int32 lineNumber_, int32 positionInLine_)
+    : lineNumber(lineNumber_)
+    , positionInLine(positionInLine_)
 {
 }
 
@@ -17,8 +19,19 @@ bool FormulaExpression::IsValue() const
     return false;
 }
 
-FormulaValueExpression::FormulaValueExpression(const Any& value_)
-    : value(value_)
+int32 FormulaExpression::GetLineNumber() const
+{
+    return lineNumber;
+}
+
+int32 FormulaExpression::GetPositionInLine() const
+{
+    return positionInLine;
+}
+
+FormulaValueExpression::FormulaValueExpression(const Any& value_, int32 lineNumber_, int32 positionInLine_)
+    : FormulaExpression(lineNumber_, positionInLine_)
+    , value(value_)
 {
 }
 
@@ -37,8 +50,9 @@ const Any& FormulaValueExpression::GetValue() const
     return value;
 }
 
-FormulaNegExpression::FormulaNegExpression(const std::shared_ptr<FormulaExpression>& exp_)
-    : exp(exp_)
+FormulaNegExpression::FormulaNegExpression(const std::shared_ptr<FormulaExpression>& exp_, int32 lineNumber_, int32 positionInLine_)
+    : FormulaExpression(lineNumber_, positionInLine_)
+    , exp(exp_)
 {
 }
 
@@ -52,8 +66,9 @@ FormulaExpression* FormulaNegExpression::GetExp() const
     return exp.get();
 }
 
-FormulaNotExpression::FormulaNotExpression(const std::shared_ptr<FormulaExpression>& exp_)
-    : exp(exp_)
+FormulaNotExpression::FormulaNotExpression(const std::shared_ptr<FormulaExpression>& exp_, int32 lineNumber_, int32 positionInLine_)
+    : FormulaExpression(lineNumber_, positionInLine_)
+    , exp(exp_)
 {
 }
 
@@ -67,8 +82,9 @@ FormulaExpression* FormulaNotExpression::GetExp() const
     return exp.get();
 }
 
-FormulaBinaryOperatorExpression::FormulaBinaryOperatorExpression(Operator op_, const std::shared_ptr<FormulaExpression>& lhs_, const std::shared_ptr<FormulaExpression>& rhs_)
-    : op(op_)
+FormulaBinaryOperatorExpression::FormulaBinaryOperatorExpression(Operator op_, const std::shared_ptr<FormulaExpression>& lhs_, const std::shared_ptr<FormulaExpression>& rhs_, int32 lineNumber_, int32 positionInLine_)
+    : FormulaExpression(lineNumber_, positionInLine_)
+    , op(op_)
     , lhs(lhs_)
     , rhs(rhs_)
 {
@@ -129,8 +145,9 @@ int32 FormulaBinaryOperatorExpression::GetOperatorPriority() const
     }
 }
 
-FormulaFunctionExpression::FormulaFunctionExpression(const String& name_, const Vector<std::shared_ptr<FormulaExpression>>& params_)
-    : name(name_)
+FormulaFunctionExpression::FormulaFunctionExpression(const String& name_, const Vector<std::shared_ptr<FormulaExpression>>& params_, int32 lineNumber_, int32 positionInLine_)
+    : FormulaExpression(lineNumber_, positionInLine_)
+    , name(name_)
 {
     params.reserve(params_.size());
 
@@ -155,8 +172,9 @@ void FormulaFunctionExpression::Accept(FormulaExpressionVisitor* visitor)
     visitor->Visit(this);
 }
 
-FormulaFieldAccessExpression::FormulaFieldAccessExpression(const std::shared_ptr<FormulaExpression>& exp_, const String& fieldName_)
-    : exp(exp_)
+FormulaFieldAccessExpression::FormulaFieldAccessExpression(const std::shared_ptr<FormulaExpression>& exp_, const String& fieldName_, int32 lineNumber_, int32 positionInLine_)
+    : FormulaExpression(lineNumber_, positionInLine_)
+    , exp(exp_)
     , fieldName(fieldName_)
 {
 }
@@ -176,8 +194,9 @@ const String& FormulaFieldAccessExpression::GetFieldName() const
     return fieldName;
 }
 
-FormulaIndexExpression::FormulaIndexExpression(const std::shared_ptr<FormulaExpression>& exp_, const std::shared_ptr<FormulaExpression>& indexExp_)
-    : exp(exp_)
+FormulaIndexExpression::FormulaIndexExpression(const std::shared_ptr<FormulaExpression>& exp_, const std::shared_ptr<FormulaExpression>& indexExp_, int32 lineNumber_, int32 positionInLine_)
+    : FormulaExpression(lineNumber_, positionInLine_)
+    , exp(exp_)
     , indexExp(indexExp_)
 {
 }

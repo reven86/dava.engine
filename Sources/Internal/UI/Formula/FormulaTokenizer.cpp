@@ -194,7 +194,7 @@ FormulaToken FormulaTokenizer::ReadToken()
             ReadChar();
             return FormulaToken(FormulaToken::AND, line, column);
         }
-        throw FormulaError("Can't resolve symbol '&'", line, column);
+        DAVA_THROW(FormulaError, "Can't resolve symbol '&'", line, column);
 
     case '|':
         ReadChar();
@@ -203,7 +203,7 @@ FormulaToken FormulaTokenizer::ReadToken()
             ReadChar();
             return FormulaToken(FormulaToken::OR, line, column);
         }
-        throw FormulaError("Can't resolve symbol '|'", line, column);
+        DAVA_THROW(FormulaError, "Can't resolve symbol '|'", line, column);
 
     case '(':
         ReadChar();
@@ -241,7 +241,7 @@ FormulaToken FormulaTokenizer::ReadToken()
 
             if (ch == '\0')
             {
-                throw FormulaError("Illegal line end in string literal", lineNumber, positionInLine);
+                DAVA_THROW(FormulaError, "Illegal line end in string literal", lineNumber, positionInLine);
             }
             ReadChar();
 
@@ -328,7 +328,7 @@ FormulaToken FormulaTokenizer::ReadToken()
 
         return FormulaToken(FormulaToken::INT, negative ? -(int32)num : (int32)num, line, column);
     }
-    throw FormulaError("Can't resolve symbol", lineNumber, positionInLine);
+    DAVA_THROW(FormulaError, "Can't resolve symbol", lineNumber, positionInLine);
 }
 
 const String& FormulaTokenizer::GetString() const

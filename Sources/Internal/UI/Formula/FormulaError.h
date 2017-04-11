@@ -1,14 +1,18 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
+#include "Base/Exception.h"
+#include "UI/Formula/FormulaExpression.h"
 
 namespace DAVA
 {
-class FormulaError: public std::runtime_error
+class FormulaError : public Exception
 {
 public:
-    FormulaError(const char *message, int32 lineNumber, int32 positionInLine);
-    FormulaError(const String &message, int32 lineNumber, int32 positionInLine);
+    FormulaError(const String& message, int32 lineNumber, int32 positionInLine, const char* file, size_t line);
+    FormulaError(const char* message, int32 lineNumber, int32 positionInLine, const char* file, size_t line);
+    FormulaError(const String& message, const FormulaExpression* exp, const char* file, size_t line);
+    FormulaError(const char* message, const FormulaExpression* exp, const char* file, size_t line);
     ~FormulaError();
 
     int32 GetLineNumber() const;
@@ -19,16 +23,5 @@ public:
 private:
     int32 lineNumber = -1;
     int32 positionInLine = -1;
-};
-  
-    
-class FormulaCalculationError : public std::runtime_error
-{
-public:
-    FormulaCalculationError(const char *message);
-    FormulaCalculationError(const String &message);
-    ~FormulaCalculationError();
-    
-    String GetMessage() const;
 };
 }

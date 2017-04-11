@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Base/BaseTypes.h"
 #include "Base/Any.h"
 
 namespace DAVA
@@ -46,18 +47,25 @@ public:
 class FormulaExpression
 {
 public:
-    FormulaExpression();
+    FormulaExpression(int32 lineNumber, int32 positionInLine);
     virtual ~FormulaExpression();
 
     virtual bool IsValue() const;
 
     virtual void Accept(FormulaExpressionVisitor* visitor) = 0;
+
+    int32 GetLineNumber() const;
+    int32 GetPositionInLine() const;
+
+private:
+    int32 lineNumber = 0;
+    int32 positionInLine = 0;
 };
 
 class FormulaValueExpression : public FormulaExpression
 {
 public:
-    FormulaValueExpression(const Any& value);
+    FormulaValueExpression(const Any& value, int32 lineNumber, int32 positionInLine);
 
     bool IsValue() const override;
     const Any& GetValue() const;
@@ -71,7 +79,7 @@ private:
 class FormulaNegExpression : public FormulaExpression
 {
 public:
-    FormulaNegExpression(const std::shared_ptr<FormulaExpression>& exp);
+    FormulaNegExpression(const std::shared_ptr<FormulaExpression>& exp, int32 lineNumber, int32 positionInLine);
 
     void Accept(FormulaExpressionVisitor* visitor) override;
     FormulaExpression* GetExp() const;
@@ -83,7 +91,7 @@ private:
 class FormulaNotExpression : public FormulaExpression
 {
 public:
-    FormulaNotExpression(const std::shared_ptr<FormulaExpression>& exp);
+    FormulaNotExpression(const std::shared_ptr<FormulaExpression>& exp, int32 lineNumber, int32 positionInLine);
 
     void Accept(FormulaExpressionVisitor* visitor) override;
     
@@ -113,7 +121,7 @@ public:
         OP_GT
     };
 
-    FormulaBinaryOperatorExpression(Operator op, const std::shared_ptr<FormulaExpression>& lhs, const std::shared_ptr<FormulaExpression>& rhs);
+    FormulaBinaryOperatorExpression(Operator op, const std::shared_ptr<FormulaExpression>& lhs, const std::shared_ptr<FormulaExpression>& rhs, int32 lineNumber, int32 positionInLine);
 
     void Accept(FormulaExpressionVisitor* visitor) override;
     
@@ -132,7 +140,7 @@ private:
 class FormulaFunctionExpression : public FormulaExpression
 {
 public:
-    FormulaFunctionExpression(const String& name, const Vector<std::shared_ptr<FormulaExpression>>& params_);
+    FormulaFunctionExpression(const String& name, const Vector<std::shared_ptr<FormulaExpression>>& params, int32 lineNumber, int32 positionInLine);
 
     void Accept(FormulaExpressionVisitor* visitor) override;
 
@@ -147,7 +155,7 @@ private:
 class FormulaFieldAccessExpression : public FormulaExpression
 {
 public:
-    FormulaFieldAccessExpression(const std::shared_ptr<FormulaExpression>& exp, const String& fieldName);
+    FormulaFieldAccessExpression(const std::shared_ptr<FormulaExpression>& exp, const String& fieldName, int32 lineNumber, int32 positionInLine);
 
     void Accept(FormulaExpressionVisitor* visitor) override;
 
@@ -162,7 +170,7 @@ private:
 class FormulaIndexExpression : public FormulaExpression
 {
 public:
-    FormulaIndexExpression(const std::shared_ptr<FormulaExpression>& exp, const std::shared_ptr<FormulaExpression>& indexExp);
+    FormulaIndexExpression(const std::shared_ptr<FormulaExpression>& exp, const std::shared_ptr<FormulaExpression>& indexExp, int32 lineNumber, int32 positionInLine);
 
     void Accept(FormulaExpressionVisitor* visitor) override;
 
