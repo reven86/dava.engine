@@ -117,9 +117,9 @@ void ColorPickerButton::ButtonReleased()
             Color stepValue = rangeMeta->step.Get<Color>();
 
             colorValue.r = clampValue(prevValue.r, colorValue.r, minValue.r, maxValue.r, stepValue.r);
-            colorValue.g = clampValue(prevValue.r, colorValue.g, minValue.g, maxValue.g, stepValue.g);
-            colorValue.b = clampValue(prevValue.r, colorValue.b, minValue.b, maxValue.b, stepValue.b);
-            colorValue.a = clampValue(prevValue.r, colorValue.a, minValue.a, maxValue.a, stepValue.a);
+            colorValue.g = clampValue(prevValue.g, colorValue.g, minValue.g, maxValue.g, stepValue.g);
+            colorValue.b = clampValue(prevValue.b, colorValue.b, minValue.b, maxValue.b, stepValue.b);
+            colorValue.a = clampValue(prevValue.a, colorValue.a, minValue.a, maxValue.a, stepValue.a);
         }
 
         cachedColor = colorValue;
