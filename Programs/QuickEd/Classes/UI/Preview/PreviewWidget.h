@@ -93,8 +93,6 @@ private:
 private:
     void CreateActions();
     void ApplyPosChanges();
-    void OnWheel(QWheelEvent* event) override;
-    void OnNativeGuesture(QNativeGestureEvent* event) override;
     void OnMouseReleased(QMouseEvent* event) override;
     void OnMouseMove(QMouseEvent* event) override;
     void OnMouseDBClick(QMouseEvent* event) override;
@@ -105,16 +103,10 @@ private:
     void OnDrop(QDropEvent* event) override;
     void OnKeyPressed(QKeyEvent* event) override;
 
-    float GetScaleFromWheelEvent(int ticksCount) const;
-    float GetNextScale(float currentScale, int ticksCount) const;
-    float GetPreviousScale(float currentScale, int ticksCount) const;
-
     float GetScaleFromComboboxText() const;
 
     DAVA::TArc::ContextAccessor* accessor = nullptr;
     DAVA::RenderWidget* renderWidget = nullptr;
-
-    QList<float> percentages;
 
     RulerController* rulerController = nullptr;
     QPoint rootControlPos;

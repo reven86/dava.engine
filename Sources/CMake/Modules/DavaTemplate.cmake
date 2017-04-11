@@ -479,6 +479,7 @@ if ( STEAM_SDK_FOUND AND WIN32 )
     )
 endif ()
 
+processing_mix_data_dependencies( ${PROJECT_NAME} )
 
 if (QT5_FOUND)
     link_with_qt5(${PROJECT_NAME})

@@ -3,7 +3,6 @@
 #include "Render/Highlevel/RenderBatchArray.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 #include "Render/Renderer.h"
-#include "Render/RenderCallbacks.h"
 
 namespace DAVA
 {
@@ -11,14 +10,14 @@ ShadowVolumeRenderLayer::ShadowVolumeRenderLayer(eRenderLayerID id, uint32 sorti
     : RenderLayer(id, sortingFlags)
 {
     PrepareRenderData();
-    RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(this, &ShadowVolumeRenderLayer::Restore));
+    Renderer::GetSignals().needRestoreResources.Connect(this, &ShadowVolumeRenderLayer::Restore);
 }
 
 ShadowVolumeRenderLayer::~ShadowVolumeRenderLayer()
 {
     rhi::DeleteVertexBuffer(quadBuffer);
     SafeRelease(shadowRectMaterial);
-    RenderCallbacks::UnRegisterResourceRestoreCallback(MakeFunction(this, &ShadowVolumeRenderLayer::Restore));
+    Renderer::GetSignals().needRestoreResources.Disconnect(this);
 }
 
 const static uint32 VERTEX_COUNT = 6;

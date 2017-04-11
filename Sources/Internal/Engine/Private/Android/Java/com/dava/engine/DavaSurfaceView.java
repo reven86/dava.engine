@@ -235,11 +235,11 @@ final class DavaSurfaceView extends SurfaceView
     public boolean onTouch(View v, MotionEvent event) 
     {
         int source = event.getSource();
-        if (source == InputDevice.SOURCE_MOUSE)
+        if (InputDevice.SOURCE_MOUSE == (source & InputDevice.SOURCE_MOUSE))
         {
             handleMouseEvent(event);
         }
-        else if (source == InputDevice.SOURCE_TOUCHSCREEN)
+        else if (InputDevice.SOURCE_TOUCHSCREEN == (source & InputDevice.SOURCE_TOUCHSCREEN))
         {
             handleTouchEvent(event);
         }
@@ -255,14 +255,14 @@ final class DavaSurfaceView extends SurfaceView
 
         // Some SOURCE_GAMEPAD and SOURCE_DPAD events are also SOURCE_KEYBOARD. So first check and process events
         // from gamepad and then from keyboard if not processed.
-        if (((source & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD) ||
-            ((source & InputDevice.SOURCE_DPAD) == InputDevice.SOURCE_DPAD))
+        if (InputDevice.SOURCE_GAMEPAD == (source & InputDevice.SOURCE_GAMEPAD)
+                || InputDevice.SOURCE_DPAD == (source & InputDevice.SOURCE_DPAD))
         {
             nativeSurfaceViewOnGamepadButton(windowBackendPointer, event.getDeviceId(), action, keyCode);
             return true;
         }
 
-        if ((source & InputDevice.SOURCE_KEYBOARD) == InputDevice.SOURCE_KEYBOARD)
+        if (InputDevice.SOURCE_KEYBOARD == (source & InputDevice.SOURCE_KEYBOARD))
         {
             int modifierKeys = event.getMetaState();
             int unicodeChar = event.getUnicodeChar();
@@ -278,12 +278,14 @@ final class DavaSurfaceView extends SurfaceView
     public boolean onGenericMotion(View v, MotionEvent event)
     {
         int source = event.getSource();
-        if (source == InputDevice.SOURCE_GAMEPAD || source == InputDevice.SOURCE_DPAD || source == InputDevice.SOURCE_JOYSTICK)
+        if (InputDevice.SOURCE_GAMEPAD == (source & InputDevice.SOURCE_GAMEPAD)
+                || InputDevice.SOURCE_DPAD == (source & InputDevice.SOURCE_DPAD)
+                || InputDevice.SOURCE_JOYSTICK == (source & InputDevice.SOURCE_JOYSTICK))
         {
             handleGamepadMotionEvent(event);
             return true;
         }
-        else if (source == InputDevice.SOURCE_MOUSE)
+        else if (InputDevice.SOURCE_MOUSE == (source & InputDevice.SOURCE_MOUSE))
         {
             handleMouseEvent(event);
             return true;

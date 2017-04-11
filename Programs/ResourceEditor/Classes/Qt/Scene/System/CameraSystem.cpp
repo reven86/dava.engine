@@ -270,15 +270,24 @@ bool SceneCameraSystem::Input(DAVA::UIEvent* event)
         OnKeyboardInput(event);
         break;
     case DAVA::UIEvent::Phase::WHEEL:
-        OnWheelInput(event);
+        ScrollCamera(event->wheelDelta.y);
         break;
+    case DAVA::UIEvent::Phase::GESTURE:
+    {
+        const DAVA::UIEvent::Gesture& gesture = event->gesture;
+        if (gesture.dy != 0.0f)
+        {
+            ScrollCamera(gesture.dy);
+        }
+    }
+    break;
     default:
         break;
     }
     return false;
 }
 
-void SceneCameraSystem::OnWheelInput(DAVA::UIEvent* event)
+void SceneCameraSystem::ScrollCamera(DAVA::float32 dy)
 {
     bool moveCamera = SettingsManager::GetValue(Settings::General_Mouse_WheelMoveCamera).AsBool();
     if (!moveCamera)
@@ -286,7 +295,7 @@ void SceneCameraSystem::OnWheelInput(DAVA::UIEvent* event)
 
     DAVA::int32 reverse = SettingsManager::GetValue(Settings::General_Mouse_InvertWheel).AsBool() ? -1 : 1;
     DAVA::float32 moveIntence = SettingsManager::GetValue(Settings::General_Mouse_WheelMoveIntensity).AsFloat();
-    int offset = event->wheelDelta.y * moveIntence;
+    int offset = dy * moveIntence;
 #ifdef Q_OS_MAC
     offset *= reverse * -1;
 #else
