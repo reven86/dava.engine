@@ -30,7 +30,7 @@ void DefaultChildCheatorExtension::ExposeChildren(const std::shared_ptr<const Pr
         UnorderedSet<String> groups;
         ForEachField(node->field.ref, [&](Reflection::Field&& field)
                      {
-                         if (field.ref.HasMeta<M::HiddenField>() == false)
+                         if (field.ref.GetMeta<M::HiddenField>() == nullptr)
                          {
                              const M::Group* groupMeta = field.ref.GetMeta<M::Group>();
                              if (groupMeta == nullptr)
@@ -96,6 +96,7 @@ std::shared_ptr<PropertyNode> DefaultAllocator::CreatePropertyNode(Reflection::F
     result->propertyType = type;
     result->field = std::move(field);
     result->cachedValue = value;
+    result->sortKey = PropertyNode::InvalidSortKey;
 
     return result;
 }
@@ -103,29 +104,6 @@ std::shared_ptr<PropertyNode> DefaultAllocator::CreatePropertyNode(Reflection::F
 std::shared_ptr<IChildAllocator> CreateDefaultAllocator()
 {
     return std::make_shared<DefaultAllocator>();
-}
-
-ReflectedPropertyItem* DefaultMergeValueExtension::LookUpItem(const std::shared_ptr<const PropertyNode>& node, const Vector<std::unique_ptr<ReflectedPropertyItem>>& items) const
-{
-    DVASSERT(node->field.ref.IsValid());
-
-    ReflectedPropertyItem* result = nullptr;
-    const ReflectedType* valueType = node->field.ref.GetValueObject().GetReflectedType();
-
-    for (const std::unique_ptr<ReflectedPropertyItem>& item : items)
-    {
-        DVASSERT(item->GetPropertyNodesCount() > 0);
-        std::shared_ptr<const PropertyNode> etalonNode = item->GetPropertyNode(0);
-        const ReflectedType* etalonItemType = etalonNode->field.ref.GetValueObject().GetReflectedType();
-
-        if (valueType == etalonItemType && etalonNode->field.key == node->field.key)
-        {
-            result = item.get();
-            break;
-        }
-    }
-
-    return result;
 }
 
 DefaultEditorComponentExtension::DefaultEditorComponentExtension(UI* ui_)
@@ -137,11 +115,11 @@ std::unique_ptr<BaseComponentValue> DefaultEditorComponentExtension::GetEditor(c
 {
     if (node->propertyType == PropertyNode::RealProperty)
     {
-        if (node->field.ref.HasMeta<M::Enum>())
+        if (nullptr != node->field.ref.GetMeta<M::Enum>())
         {
             return std::make_unique<EnumComponentValue>();
         }
-        else if (node->field.ref.HasMeta<M::Flags>())
+        else if (nullptr != node->field.ref.GetMeta<M::Flags>())
         {
             return std::make_unique<FlagsComponentValue>();
         }

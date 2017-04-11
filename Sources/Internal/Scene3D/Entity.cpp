@@ -45,9 +45,11 @@ DAVA_VIRTUAL_REFLECTION_IMPL(Entity)
     .Field("Tag", &Entity::tag)
     .Field("Flags", &Entity::flags)[M::FlagsT<Entity::EntityFlags>()]
     .Field("Visible", &Entity::GetVisible, &Entity::SetVisible)[M::ValueDescription(&VisibleValueDescription)]
-    .Field("Components", &Entity::components)
+    .Field(componentFieldString, &Entity::components)
     .End();
 }
+
+const char* Entity::componentFieldString = "Components";
 
 Entity::Entity()
     : scene(nullptr)

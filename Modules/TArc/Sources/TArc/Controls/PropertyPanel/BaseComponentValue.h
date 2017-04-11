@@ -8,6 +8,7 @@
 
 #include <Reflection/Reflection.h>
 #include <Base/BaseTypes.h>
+#include <Base/FastName.h>
 
 #include <QString>
 #include <QRect>
@@ -36,8 +37,8 @@ class BaseComponentValue : public ReflectionBase
 public:
     struct Style
     {
-        Any bgColor; // Cast<QColor> should be defined
-        Any fontColor; // Cast<QColor> should be defined
+        Any bgColor; // Cast<QPalette::ColorRole> should be defined
+        Any fontColor; // Cast<QPalette::ColorRole> should be defined
         Any fontBold; // Cast<bool> should be defined
         Any fontItalic; // Cast<bool> should be defined
     };
@@ -57,8 +58,9 @@ public:
     void ReleaseEditorWidget(QWidget* editor);
 
     QString GetPropertyName() const;
+    FastName GetName() const;
     int32 GetPropertiesNodeCount() const;
-    std::shared_ptr<const PropertyNode> GetPropertyNode(int32 index) const;
+    std::shared_ptr<PropertyNode> GetPropertyNode(int32 index) const;
 
     void HideEditor();
 

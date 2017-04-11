@@ -5,6 +5,7 @@
 #include <Math/MathHelpers.h>
 #include <Render/2D/Sprite.h>
 #include <UI/Layouts/UIAnchorComponent.h>
+#include <UI/Update/UIUpdateComponent.h>
 
 namespace ViewSceneScreenDetails
 {
@@ -24,6 +25,7 @@ ViewSceneScreen::ViewSceneScreen(SceneViewerData& data)
     , gridTest(data.engine, this)
 #endif
 {
+    GetOrCreateComponent<DAVA::UIUpdateComponent>();
 }
 
 void ViewSceneScreen::LoadResources()

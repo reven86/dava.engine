@@ -1,4 +1,5 @@
 #include "UI/UIParticles.h"
+#include "UI/Update/UIUpdateComponent.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/Components/ParticleEffectComponent.h"
@@ -38,6 +39,7 @@ UIParticles::UIParticles(const Rect& rect)
         defaultCamera->RebuildCameraFromValues();
         defaultCamera->RebuildViewMatrix();
     }
+    GetOrCreateComponent<UIUpdateComponent>();
 }
 
 UIParticles::~UIParticles()

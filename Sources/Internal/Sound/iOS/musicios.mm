@@ -1,6 +1,7 @@
 #include "Logger/Logger.h"
 #include "FileSystem/FilePath.h"
 #include "Sound/SoundSystem.h"
+#include "Math/Math2D.h"
 
 #ifdef __DAVAENGINE_IPHONE__
 

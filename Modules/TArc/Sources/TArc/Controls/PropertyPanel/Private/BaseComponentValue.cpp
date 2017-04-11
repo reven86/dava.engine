@@ -97,12 +97,17 @@ QString BaseComponentValue::GetPropertyName() const
     return nodes.front()->field.key.Cast<QString>();
 }
 
+FastName BaseComponentValue::GetName() const
+{
+    return nodes.front()->field.key.Cast<FastName>(FastName(""));
+}
+
 int32 BaseComponentValue::GetPropertiesNodeCount() const
 {
     return static_cast<int32>(nodes.size());
 }
 
-std::shared_ptr<const PropertyNode> BaseComponentValue::GetPropertyNode(int32 index) const
+std::shared_ptr<PropertyNode> BaseComponentValue::GetPropertyNode(int32 index) const
 {
     DVASSERT(static_cast<size_t>(index) < nodes.size());
     return nodes[static_cast<size_t>(index)];
@@ -119,7 +124,7 @@ void BaseComponentValue::HideEditor()
 bool BaseComponentValue::IsReadOnly() const
 {
     Reflection r = nodes.front()->field.ref;
-    return r.IsReadonly() || r.HasMeta<M::ReadOnly>();
+    return r.IsReadonly() || (nullptr != r.GetMeta<M::ReadOnly>());
 }
 
 bool BaseComponentValue::IsSpannedControl() const

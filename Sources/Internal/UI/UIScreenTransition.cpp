@@ -4,6 +4,7 @@
 #include "Render/Image/Image.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "UI/UIControlSystem.h"
+#include "UI/Update/UIUpdateComponent.h"
 #include "Time/SystemTimer.h"
 
 #include "UI/UI3DView.h"
@@ -26,6 +27,7 @@ UIScreenTransition::UIScreenTransition()
 {
     interpolationFunc = Interpolation::GetFunction(Interpolation::EASY_IN_EASY_OUT);
     SetFillBorderOrder(UIScreen::FILL_BORDER_AFTER_DRAW);
+    GetOrCreateComponent<UIUpdateComponent>();
 }
 
 UIScreenTransition::~UIScreenTransition()
