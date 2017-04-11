@@ -57,7 +57,7 @@ DAVA_TESTCLASS(UIRichContentTest)
         )";
         UIRichContentComponent* c = richControl->GetOrCreateComponent<UIRichContentComponent>();
         DVASSERT(c);
-        c->SetUTF8Text(testData);
+        c->SetText(testData);
 
         UpdateRichContentSystem();
         TEST_VERIFY(richControl->GetChildren().size() == 14);
@@ -71,7 +71,7 @@ DAVA_TESTCLASS(UIRichContentTest)
         UIRichContentComponent* c = richControl->GetOrCreateComponent<UIRichContentComponent>();
         DVASSERT(c);
         c->SetBaseClasses("text");
-        c->SetUTF8Text(testData);
+        c->SetText(testData);
 
         UpdateRichContentSystem();
         TEST_VERIFY(richControl->GetChildren().size() == 3);
@@ -123,7 +123,7 @@ DAVA_TESTCLASS(UIRichContentTest)
             TEST_VERIFY(aliases.HasAlias("notDefined") == false);
         }
 
-        c->SetUTF8Text(testData);
+        c->SetText(testData);
         c->SetAliases(aliases);
 
         UpdateRichContentSystem();
@@ -155,7 +155,7 @@ DAVA_TESTCLASS(UIRichContentTest)
         RefPtr<UIRichContentComponent> copy(orig->Clone());
         richControl->AddComponent(copy.Get());
 
-        TEST_VERIFY(orig->GetUTF8Text() == copy->GetUTF8Text());
+        TEST_VERIFY(orig->GetText() == copy->GetText());
         TEST_VERIFY(orig->GetBaseClasses() == copy->GetBaseClasses());
     }
 };

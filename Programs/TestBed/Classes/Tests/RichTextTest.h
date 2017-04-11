@@ -2,6 +2,7 @@
 
 #include "Infrastructure/BaseScreen.h"
 #include <Base/RefPtr.h>
+#include <UI/UIControl.h>
 #include <UI/UITextField.h>
 
 class TestBed;
@@ -18,6 +19,6 @@ protected:
 
 private:
     RichInputDelegate* inputDelegate = nullptr;
-    RefPtr<UITextField> inputField;
-    RefPtr<UIControl> richText;
+    DAVA::RefPtr<DAVA::UITextField> inputField;
+    DAVA::RefPtr<DAVA::UIControl> richText;
 };
