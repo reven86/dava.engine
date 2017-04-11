@@ -76,11 +76,12 @@ set( STATIC_LIBRARIES_WINUAP_DEBUG  ${DAVA_STATIC_LIBRARIES_WINUAP_DEBUG} )
 
 set( DYNAMIC_LIBRARIES_WIN32        ${DAVA_DYNAMIC_LIBRARIES_WIN32})
 set( DYNAMIC_LIBRARIES_WIN64        ${DAVA_DYNAMIC_LIBRARIES_WIN64} )
-                               
+  
+set( DYNAMIC_LIBRARIES_ANDROID      ${DAVA_DYNAMIC_LIBRARIES_ANDROID} )
+
 set( SRC_FOLDERS                    "." )
  
 set( MODULE_MANAGER_TEMPLATE        ModuleManager/ModuleManager.in )
-set( MODULE_CONTAINER_MODE          true )
 
 set( CPP_FILES                      ${DAVA_EXTERNAL_DIR}/lz4/*.c
                                     ${DAVA_EXTERNAL_DIR}/imgui/*.cpp)
