@@ -35,5 +35,5 @@ android {
 dependencies {
     compile 'com.android.support:support-v4:25.0.1'
     compile files("${FRAMEWORK_OLD_PROJECT}/libs/com.bda.controller.jar")
-    compile files("${FRAMEWORK_OLD_PROJECT}/libs/fmodex.jar")
+    compile files("${FRAMEWORK_PATH}/Modules/Sound/Libs/Android/jar/fmodex.jar")
 }
