@@ -9,6 +9,14 @@
 #include <Functional/Function.h>
 #include <Reflection/ReflectionRegistrator.h>
 
+RemoteToolModule::~RemoteToolModule()
+{
+    if (deviceListWidget)
+    {
+        delete deviceListWidget;
+    }
+}
+
 void RemoteToolModule::PostInit()
 {
     using namespace DAVA::TArc;
@@ -31,13 +39,21 @@ void RemoteToolModule::Show()
 {
     if (!deviceListController)
     {
-        DeviceListWidget* w = new DeviceListWidget();
-        w->setAttribute(Qt::WA_DeleteOnClose);
+        deviceListWidget = new DeviceListWidget();
+        deviceListWidget->setAttribute(Qt::WA_DeleteOnClose);
 
-        deviceListController = new DeviceListController(w);
-        deviceListController->SetView(w);
+        deviceListController = new DeviceListController(deviceListWidget);
+        deviceListController->SetView(deviceListWidget);
     }
     deviceListController->ShowView();
+}
+
+void RemoteToolModule::OnWindowClosed(const DAVA::TArc::WindowKey& key)
+{
+    if (key == DAVA::TArc::mainWindowKey && deviceListWidget)
+    {
+        delete deviceListWidget;
+    }
 }
 
 DAVA_VIRTUAL_REFLECTION_IMPL(RemoteToolModule)

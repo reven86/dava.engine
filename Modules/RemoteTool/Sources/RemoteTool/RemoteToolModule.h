@@ -16,6 +16,7 @@ class FieldBinder;
 }
 
 class DeviceListController;
+class DeviceListWidget;
 
 /**
     Module allows to inspect remote applications, retrieve logs and memory profiling data from them.
@@ -34,15 +35,19 @@ class DeviceListController;
 */
 class RemoteToolModule : public DAVA::TArc::ClientModule
 {
-protected:
-    void PostInit() override;
+public:
+    ~RemoteToolModule();
 
 private:
+    void PostInit() override;
+    void OnWindowClosed(const DAVA::TArc::WindowKey& key) override;
+
     void Show();
 
 private:
     DAVA::TArc::QtConnections connections;
     QPointer<DeviceListController> deviceListController;
+    QPointer<DeviceListWidget> deviceListWidget;
 
     DAVA_VIRTUAL_REFLECTION(RemoteToolModule, DAVA::TArc::ClientModule);
 };
