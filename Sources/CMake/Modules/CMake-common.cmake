@@ -91,6 +91,17 @@ macro (enable_pch)
     endif ()
 endmacro ()
 #
+macro( processing_mix_data_dependencies DEPENDENT_TARGET_LIST )
+
+    if( TARGET DATA_COPY_${PROJECT_NAME}  )
+        foreach (TARGET_NAME ${DEPENDENT_TARGET_LIST})
+            if( TARGET ${TARGET_NAME} )
+                add_dependencies( ${TARGET_NAME} DATA_COPY_${PROJECT_NAME} )
+            endif()
+        endforeach ()
+    endif()
+endmacro ()
+#
 macro( processing_mix_data )
     cmake_parse_arguments ( ARG "NOT_DATA_COPY"  "" "" ${ARGN} )
 
@@ -123,6 +134,10 @@ macro( processing_mix_data )
     
     get_filename_component( MIX_APP_DIR ${MIX_APP_DIR} ABSOLUTE )
 
+    if( NOT ARG_NOT_DATA_COPY )
+        add_custom_target ( DATA_COPY_${PROJECT_NAME} )
+    endif()
+
     foreach( ITEM ${MIX_APP_DATA} )
 
         string(FIND ${ITEM} "=>" SYMBOL_FOUND)
@@ -135,7 +150,11 @@ macro( processing_mix_data )
             get_filename_component( DATA_PATH ${DATA_PATH} ABSOLUTE )
             execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${MIX_APP_DIR}/${GROUP_PATH} )
             if( NOT ARG_NOT_DATA_COPY )
-                execute_process( COMMAND ${CMAKE_COMMAND} -E copy_directory ${DATA_PATH} ${MIX_APP_DIR}/${GROUP_PATH} )
+                ADD_CUSTOM_COMMAND( TARGET DATA_COPY_${PROJECT_NAME}  
+                   COMMAND ${CMAKE_COMMAND} -E copy_directory
+                   ${DATA_PATH} 
+                   ${MIX_APP_DIR}/${GROUP_PATH}
+                )
             endif()
 
         else()
@@ -153,6 +172,7 @@ macro( processing_mix_data )
         endif()
 
     endforeach()
+
 
     if( WINDOWS_UAP )
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "QECommands/Private/QEPackageCommand.h"
-#include <FileSystem/VariantType.h>
+#include <Base/Any.h>
 
 class StyleSheetNode;
 class AbstractProperty;

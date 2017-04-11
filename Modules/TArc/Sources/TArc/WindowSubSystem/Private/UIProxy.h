@@ -12,6 +12,8 @@ class UIProxy : public UI
 public:
     UIProxy(ClientModule* module, UI* globalUI);
 
+    void DeclareToolbar(const WindowKey& windowKey, const ActionPlacementInfo& toogleToolbarVisibility, const QString& toolbarName) override;
+
     void AddView(const WindowKey& windowKey, const PanelKey& panelKey, QWidget* widget) override;
     void AddAction(const WindowKey& windowKey, const ActionPlacementInfo& placement, QAction* action) override;
     void RemoveAction(const WindowKey& windowKey, const ActionPlacementInfo& placement) override;

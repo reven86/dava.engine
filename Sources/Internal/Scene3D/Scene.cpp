@@ -1,5 +1,5 @@
-#include "Scene3D/Scene.h"
 
+#include "Scene3D/Scene.h"
 #include "Render/Texture.h"
 #include "Render/3D/StaticMesh.h"
 #include "Render/Image/Image.h"
@@ -27,13 +27,13 @@
 #include "Scene3D/Systems/UpdateSystem.h"
 #include "Scene3D/Systems/LightUpdateSystem.h"
 #include "Scene3D/Systems/SwitchSystem.h"
-#include "Scene3D/Systems/SoundUpdateSystem.h"
 #include "Scene3D/Systems/ActionUpdateSystem.h"
 #include "Scene3D/Systems/WindSystem.h"
 #include "Scene3D/Systems/WaveSystem.h"
 #include "Scene3D/Systems/SkeletonSystem.h"
 #include "Scene3D/Systems/AnimationSystem.h"
 #include "Scene3D/Systems/LandscapeSystem.h"
+#include "Scene3D/Systems/SoundUpdateSystem.h"
 #include "Scene3D/Systems/ParticleEffectDebugDrawSystem.h"
 
 #include "Debug/ProfilerCPU.h"
