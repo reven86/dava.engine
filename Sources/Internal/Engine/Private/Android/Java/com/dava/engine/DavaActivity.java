@@ -595,6 +595,11 @@ public final class DavaActivity extends Activity
             {
                 isPaused = false;
                 nativeOnResume();
+
+                // Notification is here to prevent listener to call
+                // c++ native methods from itself when native part
+                // isn't initialized yet.
+                // TODO: maybe this notify should be called outside of the 'if(primary...)'
                 notifyListeners(ON_ACTIVITY_RESUME, null);
             }
         }
@@ -605,8 +610,13 @@ public final class DavaActivity extends Activity
         if (primarySurfaceView != null && isNativeThreadRunning())
         {
             if (!isPaused) {
-                isPaused = true;
+                // Notification is here to prevent listener to call
+                // c++ native methods from itself when native part
+                // isn't initialized yet.
+                // TODO: maybe this notify should be called outside of the 'if(primary...)'
                 notifyListeners(ON_ACTIVITY_PAUSE, null);
+
+                isPaused = true;
                 nativeOnPause();
             }
         }
