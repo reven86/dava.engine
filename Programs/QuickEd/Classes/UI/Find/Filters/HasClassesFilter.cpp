@@ -41,6 +41,6 @@ bool HasClassesFilter::CanAcceptControl(const ControlInformation* control) const
     }
     else
     {
-        return false;
+        return requiredClasses.empty();
     }
 }
