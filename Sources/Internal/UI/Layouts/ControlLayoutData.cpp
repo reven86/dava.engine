@@ -32,7 +32,7 @@ void ControlLayoutData::ApplyLayoutToControl()
         control->SetSize(size);
         control->OnSizeChanged();
     }
-    else if (sourceRectComponent)
+    else if (sourceRectComponent != nullptr)
     {
         control->SetSize(sourceRectComponent->GetSize());
         control->OnSizeChanged();

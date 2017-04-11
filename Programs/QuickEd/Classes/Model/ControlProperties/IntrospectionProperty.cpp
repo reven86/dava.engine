@@ -56,8 +56,7 @@ IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject* anObject, DAVA::i
 
     GenerateBuiltInSubProperties();
 
-    bool isSizeProperty = name == INTROSPECTION_PROPERTY_NAME_SIZE;
-    if (isSizeProperty || name == INTROSPECTION_PROPERTY_NAME_POSITION)
+    if (name == INTROSPECTION_PROPERTY_NAME_SIZE || name == INTROSPECTION_PROPERTY_NAME_POSITION)
     {
         UIControl* control = DynamicTypeCheck<UIControl*>(anObject);
         bool shouldAddSourceRectComponent = true;
