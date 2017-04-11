@@ -11,7 +11,8 @@
 
 RemoteToolModule::~RemoteToolModule()
 {
-    if (deviceListWidget)
+    DVASSERT(deviceListWidget == nullptr);
+    if (deviceListWidget != nullptr)
     {
         delete deviceListWidget;
     }
@@ -50,7 +51,7 @@ void RemoteToolModule::Show()
 
 void RemoteToolModule::OnWindowClosed(const DAVA::TArc::WindowKey& key)
 {
-    if (key == DAVA::TArc::mainWindowKey && deviceListWidget)
+    if (key == DAVA::TArc::mainWindowKey && deviceListWidget != nullptr)
     {
         delete deviceListWidget;
     }
