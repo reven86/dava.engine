@@ -25,7 +25,7 @@ StyleSheetInspectorWidget::StyleSheetInspectorWidget(DAVA::TArc::ContextAccessor
 {
     updater.SetUpdater(DAVA::MakeFunction(this, &StyleSheetInspectorWidget::Update));
     updater.SetStopper([this]() {
-        return currentControl.Valid();
+        return currentControl.Valid() == false;
     });
 
     InitFieldBinder();
@@ -133,7 +133,7 @@ void StyleSheetInspectorWidget::Update()
 
             String propertyStr = Format("  %s = %s",
                                         descr.GetFullName().c_str(),
-                                        VariantToQString(prop.value, descr.memberInfo).toUtf8().data());
+                                        AnyToQString(prop.value, descr.field).toUtf8().data());
 
             QListWidgetItem* styleSheetPropertyItem = new QListWidgetItem(propertyStr.c_str());
 

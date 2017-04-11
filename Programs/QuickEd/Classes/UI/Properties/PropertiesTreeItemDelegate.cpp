@@ -42,35 +42,35 @@ PropertiesTreeItemDelegate::PropertiesTreeItemDelegate(QObject* parent)
     : QStyledItemDelegate(parent)
 {
     propertyItemDelegates[AbstractProperty::TYPE_ENUM] = new EnumPropertyDelegate(this);
-    variantTypeItemDelegates[DAVA::VariantType::TYPE_VECTOR2] = new Vector2PropertyDelegate(this);
-    variantTypeItemDelegates[DAVA::VariantType::TYPE_STRING] = new StringPropertyDelegate(this);
-    variantTypeItemDelegates[DAVA::VariantType::TYPE_COLOR] = new ColorPropertyDelegate(this);
-    variantTypeItemDelegates[DAVA::VariantType::TYPE_WIDE_STRING] = new StringPropertyDelegate(this);
-    variantTypeItemDelegates[DAVA::VariantType::TYPE_FILEPATH] = new FilePathPropertyDelegate(this);
-    variantTypeItemDelegates[DAVA::VariantType::TYPE_INT8] = new IntegerPropertyDelegate(this);
-    variantTypeItemDelegates[DAVA::VariantType::TYPE_UINT8] = new IntegerPropertyDelegate(this);
-    variantTypeItemDelegates[DAVA::VariantType::TYPE_INT16] = new IntegerPropertyDelegate(this);
-    variantTypeItemDelegates[DAVA::VariantType::TYPE_UINT16] = new IntegerPropertyDelegate(this);
-    variantTypeItemDelegates[DAVA::VariantType::TYPE_INT32] = new IntegerPropertyDelegate(this);
-    variantTypeItemDelegates[DAVA::VariantType::TYPE_UINT32] = new IntegerPropertyDelegate(this);
-    variantTypeItemDelegates[DAVA::VariantType::TYPE_INT64] = new IntegerPropertyDelegate(this);
-    variantTypeItemDelegates[DAVA::VariantType::TYPE_UINT64] = new IntegerPropertyDelegate(this);
-    variantTypeItemDelegates[DAVA::VariantType::TYPE_FLOAT] = new FloatPropertyDelegate(this);
-    variantTypeItemDelegates[DAVA::VariantType::TYPE_BOOLEAN] = new BoolPropertyDelegate(this);
-    variantTypeItemDelegates[DAVA::VariantType::TYPE_VECTOR4] = new Vector4PropertyDelegate(this);
+    anyItemDelegates[Type::Instance<Vector2>()] = new Vector2PropertyDelegate(this);
+    anyItemDelegates[Type::Instance<String>()] = new StringPropertyDelegate(this);
+    anyItemDelegates[Type::Instance<Color>()] = new ColorPropertyDelegate(this);
+    anyItemDelegates[Type::Instance<WideString>()] = new StringPropertyDelegate(this);
+    anyItemDelegates[Type::Instance<FilePath>()] = new FilePathPropertyDelegate(this);
+    anyItemDelegates[Type::Instance<int8>()] = new IntegerPropertyDelegate(this);
+    anyItemDelegates[Type::Instance<uint8>()] = new IntegerPropertyDelegate(this);
+    anyItemDelegates[Type::Instance<int16>()] = new IntegerPropertyDelegate(this);
+    anyItemDelegates[Type::Instance<uint16>()] = new IntegerPropertyDelegate(this);
+    anyItemDelegates[Type::Instance<int32>()] = new IntegerPropertyDelegate(this);
+    anyItemDelegates[Type::Instance<uint32>()] = new IntegerPropertyDelegate(this);
+    anyItemDelegates[Type::Instance<int64>()] = new IntegerPropertyDelegate(this);
+    anyItemDelegates[Type::Instance<uint64>()] = new IntegerPropertyDelegate(this);
+    anyItemDelegates[Type::Instance<float32>()] = new FloatPropertyDelegate(this);
+    anyItemDelegates[Type::Instance<bool>()] = new BoolPropertyDelegate(this);
+    anyItemDelegates[Type::Instance<Vector4>()] = new Vector4PropertyDelegate(this);
 
     const QString& gfxExtension = Project::GetGraphicsFileExtension();
     const QString& particleExtension = Project::Get3dFileExtension();
 
-    propertyNameTypeItemDelegates[PropertyPath("*", "Actions")] = new TablePropertyDelegate(QList<QString>({ "Action", "Shortcut" }), this);
-    propertyNameTypeItemDelegates[PropertyPath("*", "Sprite")] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
-    propertyNameTypeItemDelegates[PropertyPath("*", "Mask")] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
-    propertyNameTypeItemDelegates[PropertyPath("*", "Detail")] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
-    propertyNameTypeItemDelegates[PropertyPath("*", "Gradient")] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
-    propertyNameTypeItemDelegates[PropertyPath("*", "Contour")] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
-    propertyNameTypeItemDelegates[PropertyPath("*", "Effect path")] = new ResourceFilePropertyDelegate(particleExtension, "/3d/", this);
-    propertyNameTypeItemDelegates[PropertyPath("*", "Font")] = new FontPropertyDelegate(this);
-    propertyNameTypeItemDelegates[PropertyPath("ScrollBarDelegate", "Delegate")] = new ComboPropertyDelegate(this, std::make_unique<CompletionsProviderForScrollBar>());
+    propertyNameTypeItemDelegates[PropertyPath("*", "actions")] = new TablePropertyDelegate(QList<QString>({ "Action", "Shortcut" }), this);
+    propertyNameTypeItemDelegates[PropertyPath("*", "sprite")] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
+    propertyNameTypeItemDelegates[PropertyPath("*", "mask")] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
+    propertyNameTypeItemDelegates[PropertyPath("*", "detail")] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
+    propertyNameTypeItemDelegates[PropertyPath("*", "gradient")] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
+    propertyNameTypeItemDelegates[PropertyPath("*", "contour")] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
+    propertyNameTypeItemDelegates[PropertyPath("*", "effectPath")] = new ResourceFilePropertyDelegate(particleExtension, "/3d/", this);
+    propertyNameTypeItemDelegates[PropertyPath("*", "font")] = new FontPropertyDelegate(this);
+    propertyNameTypeItemDelegates[PropertyPath("ScrollBarDelegate", "delegate")] = new ComboPropertyDelegate(this, std::make_unique<CompletionsProviderForScrollBar>());
 
     propertyNameTypeItemDelegates[PropertyPath("*", "bg-sprite")] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
     propertyNameTypeItemDelegates[PropertyPath("*", "bg-mask")] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
@@ -80,6 +80,10 @@ PropertiesTreeItemDelegate::PropertiesTreeItemDelegate(QObject* parent)
     propertyNameTypeItemDelegates[PropertyPath("*", "text-font")] = new FontPropertyDelegate(this);
 
     propertyNameTypeItemDelegates[PropertyPath("Sound", "*")] = new FMODEventPropertyDelegate(this);
+    propertyNameTypeItemDelegates[PropertyPath("*", "sound-touchDown")] = new FMODEventPropertyDelegate(this);
+    propertyNameTypeItemDelegates[PropertyPath("*", "sound-touchUpInside")] = new FMODEventPropertyDelegate(this);
+    propertyNameTypeItemDelegates[PropertyPath("*", "sound-touchUpOutside")] = new FMODEventPropertyDelegate(this);
+    propertyNameTypeItemDelegates[PropertyPath("*", "sound-touchValueChanged")] = new FMODEventPropertyDelegate(this);
 }
 
 PropertiesTreeItemDelegate::~PropertiesTreeItemDelegate()
@@ -89,7 +93,7 @@ PropertiesTreeItemDelegate::~PropertiesTreeItemDelegate()
         SafeDelete(iter.value());
     }
 
-    for (auto iter = variantTypeItemDelegates.begin(); iter != variantTypeItemDelegates.end(); ++iter)
+    for (auto iter = anyItemDelegates.begin(); iter != anyItemDelegates.end(); ++iter)
     {
         SafeDelete(iter.value());
     }
@@ -214,8 +218,14 @@ AbstractPropertyDelegate* PropertiesTreeItemDelegate::GetCustomItemDelegateForIn
             return propNameIt.value();
         }
 
-        auto varIt = variantTypeItemDelegates.find(property->GetValueType());
-        if (varIt != variantTypeItemDelegates.end())
+        auto varIt = anyItemDelegates.find(property->GetValueType());
+        if (varIt != anyItemDelegates.end())
+        {
+            return varIt.value();
+        }
+
+        varIt = anyItemDelegates.find(property->GetValueType()->Decay());
+        if (varIt != anyItemDelegates.end())
         {
             return varIt.value();
         }

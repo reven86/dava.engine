@@ -3,6 +3,8 @@
 
 #include "Base/BaseObject.h"
 #include "Math/Math2D.h"
+#include "Reflection/Reflection.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {
@@ -10,6 +12,8 @@ class UIControl;
 
 class UIComponent : public BaseObject
 {
+    DAVA_VIRTUAL_REFLECTION(UIComponent, BaseObject);
+
 public:
     enum eType
     {
@@ -63,6 +67,12 @@ private:
 template <uint32 TYPE>
 class UIBaseComponent : public UIComponent
 {
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(UIBaseComponent<TYPE>, UIComponent)
+    {
+        ReflectionRegistrator<UIBaseComponent<TYPE>>::Begin()
+        .End();
+    }
+
 public:
     static const uint32 C_TYPE = TYPE;
 

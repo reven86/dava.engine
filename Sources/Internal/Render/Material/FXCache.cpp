@@ -12,7 +12,7 @@
 
 namespace DAVA
 {
-namespace //for private members
+namespace FXCacheDetails
 {
 Map<Vector<int32>, FXDescriptor> fxDescriptors;
 Map<std::pair<FastName, FastName>, FXDescriptor> oldTemplateMap;
@@ -23,11 +23,12 @@ bool initialized = false;
 
 namespace FXCache
 {
-rhi::DepthStencilState::Descriptor LoadDepthStencilState(const YamlNode* stateNode);
 const FXDescriptor& LoadFXFromOldTemplate(const FastName& fxName, HashMap<FastName, int32>& defines, const Vector<int32>& key, const FastName& quality);
 
 void Initialize()
 {
+    using namespace FXCacheDetails;
+
     DVASSERT(!initialized);
     initialized = true;
 
@@ -48,21 +49,23 @@ void Initialize()
 void Uninitialize()
 {
     Clear();
-    initialized = false;
+    FXCacheDetails::initialized = false;
 }
 void Clear()
 {
-    DVASSERT(initialized);
+    DVASSERT(FXCacheDetails::initialized);
     //RHI_COMPLETE
 }
 
 const FXDescriptor& GetFXDescriptor(const FastName& fxName, HashMap<FastName, int32>& defines, const FastName& quality)
 {
+    using namespace FXCacheDetails;
+
     DVASSERT(initialized);
 
     if (!fxName.IsValid())
     {
-        return defaultFX;
+        return FXCacheDetails::defaultFX;
     }
 
     Vector<int32> key = ShaderDescriptorCache::BuildFlagsKey(fxName, defines);
@@ -83,6 +86,8 @@ const FXDescriptor& GetFXDescriptor(const FastName& fxName, HashMap<FastName, in
 
 const FXDescriptor& LoadOldTempalte(const FastName& fxName, const FastName& quality)
 {
+    using namespace FXCacheDetails;
+
     auto oldTemplate = oldTemplateMap.find(std::make_pair(fxName, quality));
     if (oldTemplate != oldTemplateMap.end())
     {
@@ -99,7 +104,7 @@ const FXDescriptor& LoadOldTempalte(const FastName& fxName, const FastName& qual
     if (!rootNode)
     {
         Logger::Error("Can't load requested old-material-template-into-fx: %s", fxPath.GetAbsolutePathname().c_str());
-        return defaultFX;
+        return FXCacheDetails::defaultFX;
     }
 
     const YamlNode* materialTemplateNode = rootNode->Get("MaterialTemplate");
@@ -133,7 +138,7 @@ const FXDescriptor& LoadOldTempalte(const FastName& fxName, const FastName& qual
         if (!renderTechniqueNode)
         {
             Logger::Error("Can't load technique from template: %s with quality %s", fxPath.GetAbsolutePathname().c_str(), quality.c_str());
-            return defaultFX;
+            return FXCacheDetails::defaultFX;
         }
 
         parser = parserTechnique;
@@ -147,7 +152,7 @@ const FXDescriptor& LoadOldTempalte(const FastName& fxName, const FastName& qual
     const YamlNode* stateNode = renderTechniqueNode->Get("RenderTechnique");
     if (stateNode == nullptr)
     {
-        return defaultFX;
+        return FXCacheDetails::defaultFX;
     }
 
     FXDescriptor target;
@@ -387,7 +392,7 @@ const FXDescriptor& LoadFXFromOldTemplate(const FastName& fxName, HashMap<FastNa
         pass.depthStencilState = rhi::AcquireDepthStencilState(pass.depthStateDescriptor);
     }
 
-    return fxDescriptors[key] = target;
+    return FXCacheDetails::fxDescriptors[key] = target;
 }
 }
 }

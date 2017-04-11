@@ -3,10 +3,9 @@
 #include "Qt/Scene/SceneHelper.h"
 #include "Project/ProjectManagerData.h"
 
-
+#include "Scene3D/Components/SoundComponent.h"
 #include "Scene3D/Scene.h"
 #include "Scene3D/Components/ComponentHelpers.h"
-#include "Scene3D/Components/SoundComponent.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 #include <Render/RenderBase.h>
 #include "Render/Material/NMaterialNames.h"

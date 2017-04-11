@@ -966,6 +966,12 @@ struct SubPropertiesControlTest : public ReflectionBase
 
 struct ColorButtonTestData : public ReflectionBase
 {
+    ColorButtonTestData()
+        : ReflectionBase()
+    {
+        colorRange.reset(new M::Range(Color(0.2f, 0.2f, 0.2f, 0.2f), Color(0.4f, 0.4f, 0.4f, 0.4f), Color(0.1f, 0.1f, 0.1f, 0.1f)));
+    }
+
     Color GetColorInverted() const
     {
         Color c = Color::White - color;
@@ -979,16 +985,24 @@ struct ColorButtonTestData : public ReflectionBase
     }
 
     Color color = Color(1.0f, 0.0f, 0.0f, 1.0f);
+    std::shared_ptr<M::Range> colorRange;
+    const M::Range* GetColorRange() const
+    {
+        return colorRange.get();
+    }
+
     bool readOnly = false;
 
     DAVA_VIRTUAL_REFLECTION_IN_PLACE(ColorButtonTestData, ReflectionBase)
     {
         ReflectionRegistrator<ColorButtonTestData>::Begin()
         .Field("color", &ColorButtonTestData::color)
-        .Field("colorReadOnly", &ColorButtonTestData::color)[DAVA::M::ReadOnly()]
+        .Field("colorReadOnly", &ColorButtonTestData::color)[M::ReadOnly()]
         .Field("colorMethod", &ColorButtonTestData::GetColorInverted, &ColorButtonTestData::SetColor)
         .Field("colorMethodReadOnly", &ColorButtonTestData::GetColorInverted, nullptr)
         .Field("readOnly", &ColorButtonTestData::readOnly)
+        .Field("colorRange", &ColorButtonTestData::color)[M::Range(Color(0.8f, 0.8f, 0.8f, 1.f), Color(1.0f, 1.0f, 0.8f, 1.f), Color(0.1f, 0.1f, 0.1f, 0.1f))]
+        .Field("range", &ColorButtonTestData::GetColorRange, nullptr)
         .End();
     }
 
@@ -1047,6 +1061,33 @@ struct ColorButtonTestData : public ReflectionBase
             params.wndKey = REGlobal::MainWindowKey;
             params.accessor = accessor;
             params.fields[ColorPickerButton::Fields::Color] = "colorMethodReadOnly";
+            lineLayout->AddControl(new ColorPickerButton(params, accessor, Reflection::Create(data), parent));
+            boxLayout->addLayout(lineLayout);
+        }
+
+        {
+            QtHBoxLayout* lineLayout = new QtHBoxLayout();
+            lineLayout->addWidget(new QLabel("Color Meta Range: ", parent));
+
+            ColorPickerButton::Params params;
+            params.ui = ui;
+            params.wndKey = REGlobal::MainWindowKey;
+            params.accessor = accessor;
+            params.fields[ColorPickerButton::Fields::Color] = "colorRange";
+            lineLayout->AddControl(new ColorPickerButton(params, accessor, Reflection::Create(data), parent));
+            boxLayout->addLayout(lineLayout);
+        }
+
+        {
+            QtHBoxLayout* lineLayout = new QtHBoxLayout();
+            lineLayout->addWidget(new QLabel("Color Range Field: ", parent));
+
+            ColorPickerButton::Params params;
+            params.ui = ui;
+            params.wndKey = REGlobal::MainWindowKey;
+            params.accessor = accessor;
+            params.fields[ColorPickerButton::Fields::Color] = "color";
+            params.fields[ColorPickerButton::Fields::Range] = "range";
             lineLayout->AddControl(new ColorPickerButton(params, accessor, Reflection::Create(data), parent));
             boxLayout->addLayout(lineLayout);
         }

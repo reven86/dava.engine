@@ -4,11 +4,14 @@
 #include "Base/BaseTypes.h"
 
 #include "UI/Components/UIComponent.h"
+#include "Reflection/Reflection.h"
 
 namespace DAVA
 {
 class UITabOrderComponent : public UIBaseComponent<UIComponent::TAB_ORDER_COMPONENT>
 {
+    DAVA_VIRTUAL_REFLECTION(UITabOrderComponent, UIBaseComponent<UIComponent::TAB_ORDER_COMPONENT>);
+
 public:
     enum Direction
     {
@@ -33,10 +36,6 @@ public:
 
 private:
     int32 tabOrder = 0;
-
-public:
-    INTROSPECTION_EXTEND(UITabOrderComponent, UIComponent,
-                         PROPERTY("tab", "Tab Order", GetTabOrder, SetTabOrder, I_SAVE | I_VIEW | I_EDIT));
 };
 }
 

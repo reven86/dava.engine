@@ -3,6 +3,7 @@
 #include "Base/String.h"
 #include "Base/Vector.h"
 #include "Base/FastName.h"
+#include "Base/AnyFn.h"
 #include <memory>
 
 namespace DAVA
