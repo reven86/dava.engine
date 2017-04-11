@@ -214,49 +214,9 @@ void FlowLayoutAlgorithm::LayoutLine(ControlLayoutData& data, int32 firstIndex, 
     }
     int32 realLastIndex = -1;
 
-    // Reorder controls in line by direction hint
+    // Sort controls in line by direction hint
     List<uint32> order;
-    auto lastIt = order.end();
-    BiDiHelper::Direction lastDir = BiDiHelper::Direction::NEUTRAL;
-    for (int32 i = firstIndex; i <= lastIndex; i++)
-    {
-        ControlLayoutData& childData = layoutData[i];
-        if (childData.HaveToSkipControl(skipInvisible))
-        {
-            continue;
-        }
-
-        UIControl* ctrl = childData.GetControl();
-        BiDiHelper::Direction dir = BiDiHelper::Direction::NEUTRAL;
-        UIFlowLayoutHintComponent* hint = ctrl->GetComponent<UIFlowLayoutHintComponent>();
-        if (hint)
-        {
-            dir = hint->GetContentDirection();
-        }
-
-        if (!order.empty() && lastDir == dir)
-        {
-            switch (dir)
-            {
-            case BiDiHelper::Direction::LTR:
-                lastIt = order.insert(inverse ? lastIt : order.end(), i);
-                break;
-            case BiDiHelper::Direction::NEUTRAL:
-            case BiDiHelper::Direction::RTL:
-                lastIt = order.insert(inverse ? order.end() : lastIt, i);
-                break;
-            default:
-                DVASSERT(false);
-            }
-        }
-        else
-        {
-            lastIt = order.insert(order.end(), i);
-        }
-
-        lastDir = dir;
-        realLastIndex = i;
-    }
+    SortLineItemsByContentDirection(firstIndex, lastIndex, order, realLastIndex);
 
     // Layout controls in correct order
     for (uint32 i : order)
@@ -397,6 +357,52 @@ void FlowLayoutAlgorithm::CorrectPaddingAndSpacing(float32& padding, float32& sp
                 }
             }
         }
+    }
+}
+
+void FlowLayoutAlgorithm::SortLineItemsByContentDirection(int32 firstIndex, int32 lastIndex, List<uint32>& order, int32& realLastIndex)
+{
+    order.clear();
+    auto lastIt = order.end();
+    BiDiHelper::Direction lastDir = BiDiHelper::Direction::NEUTRAL;
+    for (int32 i = firstIndex; i <= lastIndex; i++)
+    {
+        ControlLayoutData& childData = layoutData[i];
+        if (childData.HaveToSkipControl(skipInvisible))
+        {
+            continue;
+        }
+
+        UIControl* ctrl = childData.GetControl();
+        BiDiHelper::Direction dir = BiDiHelper::Direction::NEUTRAL;
+        UIFlowLayoutHintComponent* hint = ctrl->GetComponent<UIFlowLayoutHintComponent>();
+        if (hint)
+        {
+            dir = hint->GetContentDirection();
+        }
+
+        if (!order.empty() && lastDir == dir)
+        {
+            switch (dir)
+            {
+            case BiDiHelper::Direction::LTR:
+                lastIt = order.insert(inverse ? lastIt : order.end(), i);
+                break;
+            case BiDiHelper::Direction::NEUTRAL:
+            case BiDiHelper::Direction::RTL:
+                lastIt = order.insert(inverse ? order.end() : lastIt, i);
+                break;
+            default:
+                DVASSERT(false);
+            }
+        }
+        else
+        {
+            lastIt = order.insert(order.end(), i);
+        }
+
+        lastDir = dir;
+        realLastIndex = i;
     }
 }
 }

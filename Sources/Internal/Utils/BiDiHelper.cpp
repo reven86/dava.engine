@@ -1,4 +1,5 @@
 #include "BiDiHelper.h"
+#include "Debug/DVAssert.h"
 #include "Concurrency/Mutex.h"
 #include "Concurrency/LockGuard.h"
 #include "Utils/StringUtils.h"
