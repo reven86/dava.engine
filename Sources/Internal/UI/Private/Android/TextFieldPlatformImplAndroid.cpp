@@ -517,7 +517,10 @@ void TextFieldPlatformImpl::OnFocusChanged(bool hasFocus)
 
 void TextFieldPlatformImpl::OnKeyboardShown(const Rect& keyboardRect)
 {
-    uiTextField->OnKeyboardShown(keyboardRect);
+    if (nullptr != uiTextField)
+    {
+        uiTextField->OnKeyboardShown(keyboardRect);
+    }
 }
 
 void TextFieldPlatformImpl::OnEnterPressed()
