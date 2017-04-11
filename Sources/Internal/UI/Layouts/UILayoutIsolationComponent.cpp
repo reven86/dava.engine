@@ -5,21 +5,20 @@
 
 namespace DAVA
 {
-    UILayoutIsolationComponent::UILayoutIsolationComponent()
-    {
-    }
-    
-    UILayoutIsolationComponent::UILayoutIsolationComponent(const UILayoutIsolationComponent& src)
-    {
-    }
-    
-    UILayoutIsolationComponent::~UILayoutIsolationComponent()
-    {
-    }
-    
-    UILayoutIsolationComponent* UILayoutIsolationComponent::Clone() const
-    {
-        return new UILayoutIsolationComponent(*this);
-    }
-    
+UILayoutIsolationComponent::UILayoutIsolationComponent()
+{
+}
+
+UILayoutIsolationComponent::UILayoutIsolationComponent(const UILayoutIsolationComponent& src)
+{
+}
+
+UILayoutIsolationComponent::~UILayoutIsolationComponent()
+{
+}
+
+UILayoutIsolationComponent* UILayoutIsolationComponent::Clone() const
+{
+    return new UILayoutIsolationComponent(*this);
+}
 }

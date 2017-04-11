@@ -78,7 +78,7 @@ UIComponent* UIComponent::CreateByType(uint32 componentType)
 
     case LAYOUT_ISOLATION_COMPONENT:
         return new UILayoutIsolationComponent();
-        
+
     case BACKGROUND_COMPONENT:
         return new UIControlBackground();
 
