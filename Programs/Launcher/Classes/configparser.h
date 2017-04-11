@@ -1,15 +1,10 @@
-#ifndef CONFIGPARSER_H
-#define CONFIGPARSER_H
+#pragma once
 
 #include "defines.h"
-#include <yaml-cpp/yaml.h>
 #include <QString>
 #include <QMap>
 #include <QVector>
 #include <QSet>
-
-QString GetStringValueFromYamlNode(const YAML::Node* node, QString defaultValue = "");
-QStringList GetArrayValueFromYamlNode(const YAML::Node* node);
 
 struct AppVersion;
 class QJsonObject;
@@ -28,8 +23,6 @@ struct AppVersion
     QString url;
     QString buildNum;
     bool isToolSet = false;
-
-    static AppVersion LoadFromYamlNode(const YAML::Node* node);
 };
 
 struct Application
@@ -64,8 +57,6 @@ struct Application
     AppVersion* GetVersionByNum(const QString& num);
     void RemoveVersion(const QString& versionID);
 
-    static Application LoadFromYamlNode(const YAML::Node* node);
-
     QVector<AppVersion> versions;
 };
 
@@ -97,8 +88,6 @@ struct Branch
     Application* GetApplication(const QString& appID);
 
     void RemoveApplication(const QString& appID);
-
-    static Branch LoadFromYamlNode(const YAML::Node* node);
 
     QVector<Application> applications;
 };
@@ -171,5 +160,3 @@ private:
     QVector<Branch> branches;
     QMap<QString, QString> strings;
 };
-
-#endif // CONFIGPARSER_H
