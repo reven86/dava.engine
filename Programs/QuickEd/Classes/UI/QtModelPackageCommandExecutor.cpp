@@ -722,7 +722,6 @@ void QtModelPackageCommandExecutor::AddComponentImpl(ControlNode* node, const Ty
     ComponentPropertiesSection* destSection = nullptr;
     DocumentData* data = GetDocumentData();
 
-    UIComponent::eType type = static_cast<UIComponent::eType>(typeIndex);
     if (!UIComponent::IsMultiple(type))
     {
         destSection = node->GetRootProperty()->FindComponentPropertiesSection(type, index);
