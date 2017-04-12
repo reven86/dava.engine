@@ -24,17 +24,18 @@ public:
     DLCDownloaderImpl();
     ~DLCDownloaderImpl();
 
+    DLCDownloaderImpl(const DLCDownloaderImpl&) = delete;
+    DLCDownloaderImpl(DLCDownloaderImpl&&) = delete;
+
     // Schedule download content or get content size (indicated by downloadMode)
-    Task* StartTask(
-    const String& srcUrl,
-    IWriter* dstWriter,
-    TaskType taskType,
-    uint64 rangeOffset = 0,
-    uint64 rangeSize = 0,
-    int16 partsCount = -1,
-    int32 timeout = 30,
-    int32 retriesCount = 3
-    ) override;
+    Task* StartTask(const String& srcUrl,
+                    IWriter* dstWriter,
+                    TaskType taskType,
+                    uint64 rangeOffset = 0,
+                    uint64 rangeSize = 0,
+                    int16 partsCount = -1,
+                    int32 timeout = 30,
+                    int32 retriesCount = 3) override;
     // Cancel download by ID (works for scheduled and current)
     void RemoveTask(Task* task) override;
 
@@ -44,9 +45,9 @@ public:
     const TaskInfo* GetTaskInfo(Task* task) override;
     TaskStatus GetTaskStatus(Task* task) override;
 
+private:
     void DownloadThreadFunc();
 
-private:
     Deque<Task*> taskQueue;
     Vector<CURL*> easyHandlesAll;
     CURLM* multiHandle = nullptr;

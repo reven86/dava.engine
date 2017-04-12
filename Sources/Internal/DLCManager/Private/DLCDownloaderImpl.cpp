@@ -356,8 +356,14 @@ void DLCDownloaderImpl::DownloadThreadFunc()
             }
         }
 
-        bool allDone = CurlPerform(multiHandle);
-    }
+        bool allDone = false;
+
+        while (!allDone)
+        {
+            allDone = CurlPerform(multiHandle);
+            // TODO check more incoming tasks?
+        }
+    } // !currentThread->IsCancelling()
 }
 
 // from https://curl.haxx.se/libcurl/c/curl_multi_perform.html
