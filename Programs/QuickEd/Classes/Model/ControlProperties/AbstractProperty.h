@@ -1,8 +1,9 @@
 #ifndef __UI_EDITOR_ABSTRACT_PROPERTY_H__
 #define __UI_EDITOR_ABSTRACT_PROPERTY_H__
 
-#include "Base/BaseObject.h"
-#include "Base/Type.h"
+#include <Base/Any.h>
+#include <Base/BaseObject.h>
+#include <Base/Type.h>
 
 class PropertyVisitor;
 
