@@ -8,9 +8,9 @@
 
 namespace ChangePivotCommandDetails
 {
-DAVA::VariantType GetValueFromProperty(AbstractProperty* property)
+DAVA::Any GetValueFromProperty(AbstractProperty* property)
 {
-    return property->IsOverriddenLocally() ? property->GetValue() : DAVA::VariantType();
+    return property->IsOverriddenLocally() ? property->GetValue() : DAVA::Any();
 }
 }
 
@@ -19,7 +19,7 @@ ChangePivotCommand::ChangePivotCommand(PackageNode* package)
 {
 }
 
-void ChangePivotCommand::AddNodePropertyValue(ControlNode* node, AbstractProperty* pivotProperty, const DAVA::VariantType& pivotValue, AbstractProperty* positionProperty, const DAVA::VariantType& positionValue)
+void ChangePivotCommand::AddNodePropertyValue(ControlNode* node, AbstractProperty* pivotProperty, const DAVA::Any& pivotValue, AbstractProperty* positionProperty, const DAVA::Any& positionValue)
 {
     DVASSERT(node != nullptr);
     DVASSERT(pivotProperty != nullptr);
@@ -40,7 +40,7 @@ void ChangePivotCommand::Undo()
 {
     for (const Item& item : items)
     {
-        if (item.pivotOldValue.GetType() == DAVA::VariantType::TYPE_NONE)
+        if (item.pivotOldValue.IsEmpty())
         {
             package->ResetControlProperty(item.node.Get(), item.pivotProperty.Get());
         }
@@ -92,7 +92,7 @@ bool ChangePivotCommand::MergeWith(const DAVA::Command* command)
     return true;
 }
 
-ChangePivotCommand::Item::Item(ControlNode* node_, AbstractProperty* pivotProperty_, const DAVA::VariantType& pivotValue, AbstractProperty* positionProperty_, const DAVA::VariantType& positionValue)
+ChangePivotCommand::Item::Item(ControlNode* node_, AbstractProperty* pivotProperty_, const DAVA::Any& pivotValue, AbstractProperty* positionProperty_, const DAVA::Any& positionValue)
     : node(DAVA::RefPtr<ControlNode>::ConstructWithRetain(node_))
     , pivotProperty(DAVA::RefPtr<AbstractProperty>::ConstructWithRetain(pivotProperty_))
     , pivotNewValue(pivotValue)
