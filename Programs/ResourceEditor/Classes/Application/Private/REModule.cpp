@@ -63,7 +63,7 @@ void REModule::PostInit()
     TData* globalData = globalContext->GetData<TData>();
 
     DAVA::TArc::UI* ui = GetUI();
-    ui->InjectWindow(REGlobal::MainWindowKey, globalData->mainWindow);
+    ui->InjectWindow(DAVA::TArc::mainWindowKey, globalData->mainWindow);
     globalData->mainWindow->AfterInjectInit();
     globalData->mainWindow->EnableGlobalTimeout(true);
 

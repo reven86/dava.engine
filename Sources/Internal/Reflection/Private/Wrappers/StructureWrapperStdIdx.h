@@ -9,20 +9,15 @@
 
 namespace DAVA
 {
-namespace StructureWrapperDetail
+namespace StructureWrapperStdIdxDetail
 {
-enum class IsDynamic
+enum Flags
 {
-    YES,
-    NO
+    None = 0x0,
+    Dynamic = 0x1,
+    Range = 0x2
 };
-
-enum class HasRange
-{
-    YES,
-    NO
-};
-} // namespace StructureWrapperDetail
+}
 
 template <typename C>
 class StructureWrapperStdIdx : public StructureWrapperDefault
@@ -30,14 +25,14 @@ class StructureWrapperStdIdx : public StructureWrapperDefault
 public:
     using V = typename C::value_type;
 
-    StructureWrapperStdIdx(StructureWrapperDetail::IsDynamic isDynamic, StructureWrapperDetail::HasRange hasRange)
+    StructureWrapperStdIdx(uint32 flags)
     {
         caps.canAddField = true;
         caps.canInsertField = true;
         caps.canRemoveField = true;
         caps.hasFlatStruct = true;
-        caps.hasDynamicStruct = (isDynamic == StructureWrapperDetail::IsDynamic::YES);
-        caps.hasRangeAccess = (hasRange == StructureWrapperDetail::HasRange::YES);
+        caps.hasDynamicStruct = ((flags & StructureWrapperStdIdxDetail::Dynamic) != 0);
+        caps.hasRangeAccess = ((flags & StructureWrapperStdIdxDetail::Range) != 0);
         caps.flatKeysType = Type::Instance<size_t>();
         caps.flatValuesType = Type::Instance<V>();
     }
@@ -190,7 +185,7 @@ struct StructureWrapperCreator<Array<T, N>>
 {
     static StructureWrapper* Create()
     {
-        return new StructureWrapperStdIdx<Array<T, N>>(StructureWrapperDetail::IsDynamic::NO, StructureWrapperDetail::HasRange::YES);
+        return new StructureWrapperStdIdx<Array<T, N>>(StructureWrapperStdIdxDetail::Range);
     }
 };
 
@@ -199,7 +194,7 @@ struct StructureWrapperCreator<Vector<T>>
 {
     static StructureWrapper* Create()
     {
-        return new StructureWrapperStdIdx<Vector<T>>(StructureWrapperDetail::IsDynamic::YES, StructureWrapperDetail::HasRange::YES);
+        return new StructureWrapperStdIdx<Vector<T>>(StructureWrapperStdIdxDetail::Range | StructureWrapperStdIdxDetail::Dynamic);
     }
 };
 
@@ -208,7 +203,7 @@ struct StructureWrapperCreator<List<T>>
 {
     static StructureWrapper* Create()
     {
-        return new StructureWrapperStdIdx<List<T>>(StructureWrapperDetail::IsDynamic::NO, StructureWrapperDetail::HasRange::NO);
+        return new StructureWrapperStdIdx<List<T>>(StructureWrapperStdIdxDetail::None);
     }
 };
 

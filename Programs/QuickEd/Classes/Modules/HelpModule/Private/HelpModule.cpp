@@ -37,8 +37,8 @@ void HelpModule::CreateActions()
     connections.AddConnection(action, &QAction::triggered, DAVA::Bind(&HelpModule::OnShowHelp, this));
 
     ActionPlacementInfo placementInfo;
-    placementInfo.AddPlacementPoint(CreateMenuPoint("Help", { InsertionParams::eInsertionMethod::BeforeItem }));
-    GetUI()->AddAction(QEGlobal::windowKey, placementInfo, action);
+    placementInfo.AddPlacementPoint(CreateMenuPoint(MenuItems::menuHelp, { InsertionParams::eInsertionMethod::BeforeItem }));
+    GetUI()->AddAction(DAVA::TArc::mainWindowKey, placementInfo, action);
 }
 
 void HelpModule::UnpackHelp()
