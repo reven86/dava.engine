@@ -25,7 +25,7 @@ class StructureWrapperStdIdx : public StructureWrapperDefault
 public:
     using V = typename C::value_type;
 
-    StructureWrapperStdIdx(StructureWrapperStdIdxDetail::Flags flags)
+    StructureWrapperStdIdx(uint32 flags)
     {
         caps.canAddField = true;
         caps.canInsertField = true;
