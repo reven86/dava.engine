@@ -292,14 +292,19 @@ public:
     // for introspection
 
     FilePath GetBgSpritePath() const;
+
     FilePath GetMaskSpritePath() const;
     void SetMaskSpriteFromPath(const FilePath& path);
+    void SetMaskSprite(Sprite* sprite);
     FilePath GetDetailSpritePath() const;
     void SetDetailSpriteFromPath(const FilePath& path);
+    void SetDetailSprite(Sprite* sprite);
     FilePath GetGradientSpritePath() const;
     void SetGradientSpriteFromPath(const FilePath& path);
+    void SetGradientSprite(Sprite* sprite);
     FilePath GetContourSpritePath() const;
     void SetContourSpriteFromPath(const FilePath& path);
+    void SetContourSprite(Sprite* sprite);
 
     eGradientBlendMode GetGradientBlendMode() const;
     void SetGradientBlendMode(eGradientBlendMode mode);
@@ -339,6 +344,11 @@ inline void UIControlBackground::SetMaskSpriteFromPath(const FilePath& path)
     else
         mask.Set(nullptr);
 }
+inline void UIControlBackground::SetMaskSprite(Sprite* sprite)
+{
+    mask = sprite;
+}
+
 inline FilePath UIControlBackground::GetDetailSpritePath() const
 {
     if ((detail != nullptr) && (detail->GetRelativePathname().GetType() != FilePath::PATH_IN_MEMORY))
@@ -352,6 +362,11 @@ inline void UIControlBackground::SetDetailSpriteFromPath(const FilePath& path)
     else
         detail.Set(nullptr);
 }
+inline void UIControlBackground::SetDetailSprite(Sprite* sprite)
+{
+    detail = sprite;
+}
+
 inline FilePath UIControlBackground::GetGradientSpritePath() const
 {
     if ((gradient != nullptr) && (gradient->GetRelativePathname().GetType() != FilePath::PATH_IN_MEMORY))
@@ -365,6 +380,11 @@ inline void UIControlBackground::SetGradientSpriteFromPath(const FilePath& path)
     else
         gradient.Set(nullptr);
 }
+inline void UIControlBackground::SetGradientSprite(Sprite* sprite)
+{
+    gradient = sprite;
+}
+
 inline FilePath UIControlBackground::GetContourSpritePath() const
 {
     if ((contour != nullptr) && (contour->GetRelativePathname().GetType() != FilePath::PATH_IN_MEMORY))
@@ -377,6 +397,10 @@ inline void UIControlBackground::SetContourSpriteFromPath(const FilePath& path)
         contour.Set(Sprite::Create(path));
     else
         contour.Set(nullptr);
+}
+inline void UIControlBackground::SetContourSprite(Sprite* sprite)
+{
+    contour = sprite;
 }
 
 inline eGradientBlendMode UIControlBackground::GetGradientBlendMode() const

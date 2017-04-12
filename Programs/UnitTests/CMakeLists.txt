@@ -25,7 +25,7 @@ endif()
 # Enable LOCALIZATION_DEBUG in UnitTests to verify successful compilation
 dava_add_definitions(-DLOCALIZATION_DEBUG)
 
-set ( DAVA_COMPONENTS "ALL" DAVA_DISABLE_AUTOTESTS )
+set ( DAVA_COMPONENTS "Sound" DAVA_DISABLE_AUTOTESTS )
 if ( WIN32 AND NOT WINDOWS_UAP )
     list ( APPEND DAVA_COMPONENTS "CEFWebview" )
 endif ()
