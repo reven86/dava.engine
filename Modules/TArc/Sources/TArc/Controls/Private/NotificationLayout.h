@@ -41,10 +41,9 @@ private:
     void timerEvent(QTimerEvent* event) override;
 
     struct NotificationWidgetParams;
-    using NotificationPair = std::pair<NotificationWidget*, NotificationWidgetParams>;
-    using WindowNotifications = Vector<NotificationPair>;
-    using AllNotifications = QMap<QWidget*, WindowNotifications>;
-    AllNotifications notifications;
+    using ParameterList = List<NotificationWidgetParams>;
+    using Notifications = Map<QWidget*, ParameterList>;
+    Notifications notifications;
 
     uint64 layoutType = ALIGN_TOP | ALIGN_RIGHT;
 

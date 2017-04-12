@@ -19,6 +19,7 @@ class NotificationWidget : public QWidget
 {
     Q_OBJECT
     Q_PROPERTY(QPoint position READ pos WRITE move)
+    Q_PROPERTY(float opacity READ windowOpacity WRITE setWindowOpacity)
 
 public:
     explicit NotificationWidget(const NotificationParams& params, QWidget* parent = 0);
