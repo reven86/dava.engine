@@ -108,7 +108,7 @@ DAVA_TARC_TESTCLASS(NotificationTest)
         QElapsedTimer* elapsedTimer = new QElapsedTimer;
         elapsedTimer->start();
 
-        layout->AddNotificationWidget(parent, params);
+        layout->ShowNotification(parent, params);
 
         EXPECT_CALL(*this, OnDestroyed())
         .WillOnce(Invoke([layout, elapsedTimer, timeout]() {
@@ -137,7 +137,7 @@ DAVA_TARC_TESTCLASS(NotificationTest)
         QWidget* parent = GetWindow(NotificationTestDetails::wndKey);
         for (int i = 0; i < 20; ++i)
         {
-            layout.AddNotificationWidget(parent, params);
+            layout.ShowNotification(parent, params);
         }
         QList<NotificationWidget*> widgetList = parent->findChildren<NotificationWidget*>();
         NotificationWidget* firstNotification = widgetList.first();
@@ -173,7 +173,7 @@ DAVA_TARC_TESTCLASS(NotificationTest)
             layout.SetLayoutType(alignWithFn.first);
 
             NotificationParams params;
-            layout.AddNotificationWidget(parent, params);
+            layout.ShowNotification(parent, params);
 
             QList<NotificationWidget*> widgetList = parent->findChildren<NotificationWidget*>();
             NotificationWidget* first = widgetList.first();

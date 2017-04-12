@@ -848,7 +848,7 @@ void UIManager::ShowNotification(const WindowKey& windowKey, const NotificationP
     using namespace UIManagerDetail;
 
     MainWindowInfo& windowInfo = impl->FindOrCreateWindow(windowKey);
-    impl->notificationLayout.AddNotificationWidget(windowInfo.window, params);
+    impl->notificationLayout.ShowNotification(windowInfo.window, params);
 }
 
 void UIManager::InjectWindow(const WindowKey& windowKey, QMainWindow* window)

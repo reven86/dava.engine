@@ -53,12 +53,9 @@ namespace TArc
 NotificationWidget::NotificationWidget(const NotificationParams& params, QWidget* parent)
     : QWidget(parent)
 {
-    //operator | declared in the global namespace
-    //without this string compilation will be failed
-    using ::operator|;
-    Qt::WindowFlags flags = (Qt::FramelessWindowHint | // Disable window decoration
-                             Qt::Tool // Discard display in a separate window
-                             );
+    Qt::WindowFlags flags = static_cast<Qt::WindowFlags>(Qt::FramelessWindowHint | // Disable window decoration
+                                                         Qt::Tool // Discard display in a separate window
+                                                         );
     setWindowFlags(flags);
 
     setAttribute(Qt::WA_TranslucentBackground); // Indicates that the background will be transparent

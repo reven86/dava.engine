@@ -8,15 +8,16 @@ namespace DAVA
 {
 namespace TArc
 {
-struct NotificationLayout::NotificationWidgetParams
+struct NotificationLayout::Notification
 {
-    void InitAnimation(NotificationWidget* target)
+    Notification(NotificationWidget* widget_)
+        : widget(widget_)
     {
         const int durationTimeMs = 100;
-        positionAnimation = new QPropertyAnimation(target, "position", target);
+        positionAnimation = new QPropertyAnimation(widget, "position", widget);
         positionAnimation->setDuration(durationTimeMs);
 
-        opacityAnimation = new QPropertyAnimation(target, "opacity", target);
+        opacityAnimation = new QPropertyAnimation(widget, "opacity", widget);
         //opacity animation must be longer for better visual effects
         opacityAnimation->setDuration(durationTimeMs * 2);
     }
@@ -32,7 +33,7 @@ struct NotificationLayout::NotificationWidgetParams
             remainTimeMs -= elapsedMs;
         }
     }
-    NotificationWidget* notification = nullptr;
+    NotificationWidget* widget = nullptr;
     std::function<void()> callback;
     uint32 remainTimeMs = 0;
     QPropertyAnimation* positionAnimation = nullptr;
@@ -51,28 +52,25 @@ NotificationLayout::~NotificationLayout()
     Clear();
 }
 
-void NotificationLayout::AddNotificationWidget(QWidget* parent, const NotificationParams& params)
+void NotificationLayout::ShowNotification(QWidget* parent, const NotificationParams& params)
 {
-    auto notificationsIter = notifications.find(parent);
-    if (notificationsIter == notifications.end())
+    auto notificationsIter = allNotifications.find(parent);
+    if (notificationsIter == allNotifications.end())
     {
         parent->installEventFilter(this);
         connect(parent, &QObject::destroyed, this, &NotificationLayout::OnParentWidgetDestroyed);
     }
 
-    NotificationWidget* notification = new NotificationWidget(params, parent);
-    connect(notification, &NotificationWidget::CloseButtonClicked, this, &NotificationLayout::OnCloseClicked);
-    connect(notification, &NotificationWidget::DetailsButtonClicked, this, &NotificationLayout::OnDetailsClicked);
-    connect(notification, &QObject::destroyed, this, &NotificationLayout::OnWidgetDestroyed);
+    NotificationWidget* widget = new NotificationWidget(params, parent);
+    connect(widget, &NotificationWidget::CloseButtonClicked, this, &NotificationLayout::OnCloseClicked);
+    connect(widget, &NotificationWidget::DetailsButtonClicked, this, &NotificationLayout::OnDetailsClicked);
+    connect(widget, &QObject::destroyed, this, &NotificationLayout::OnWidgetDestroyed);
 
-    NotificationWidgetParams widgetParams;
-    widgetParams.notification = notification;
-    widgetParams.InitAnimation(notification);
-
+    Notification widgetParams(widget);
     widgetParams.callback = std::move(params.callback);
     widgetParams.remainTimeMs = displayTimeMs;
 
-    notifications[parent].push_back(widgetParams);
+    allNotifications[parent].push_back(widgetParams);
 
     LayoutWidgets(parent);
 }
@@ -80,30 +78,28 @@ void NotificationLayout::AddNotificationWidget(QWidget* parent, const Notificati
 void NotificationLayout::LayoutWidgets(QWidget* parent)
 {
     int32 totalHeight = 0;
-    auto notificationsIter = notifications.find(parent);
-    DVASSERT(notificationsIter != notifications.end());
-    ParameterList& parameterList = notificationsIter->second;
+    auto notificationsIter = allNotifications.find(parent);
+    DVASSERT(notificationsIter != allNotifications.end());
+    List<Notification>& notifications = notificationsIter->second;
 
-    uint32 size = std::min(static_cast<uint32>(parameterList.size()), maximumDisplayCount);
-
-    auto endIter = parameterList.begin();
-    std::advance(endIter, size);
-    List<NotificationWidgetParams> paramsToDisplay(parameterList.begin(), endIter);
+    uint32 size = std::min(static_cast<uint32>(allNotifications.size()), maximumDisplayCount);
+    auto endIter = std::next(notifications.begin(), size);
+    List<Notification> notificationsToDisplay(notifications.begin(), endIter);
     if (layoutType & ALIGN_TOP)
     {
-        std::reverse(paramsToDisplay.begin(), paramsToDisplay.end());
+        std::reverse(notificationsToDisplay.begin(), notificationsToDisplay.end());
     }
 
-    for (const NotificationWidgetParams& params : paramsToDisplay)
+    for (const Notification& notification : notificationsToDisplay)
     {
-        NotificationWidget* widget = params.notification;
+        NotificationWidget* widget = notification.widget;
         bool justCreated = false;
         if (widget->isVisible() == false)
         {
             justCreated = true;
 
             widget->show();
-            QPropertyAnimation* opacityAnimation = params.opacityAnimation;
+            QPropertyAnimation* opacityAnimation = notification.opacityAnimation;
             opacityAnimation->setStartValue(0.0f);
             opacityAnimation->setEndValue(1.0f);
             opacityAnimation->start();
@@ -123,7 +119,7 @@ void NotificationLayout::LayoutWidgets(QWidget* parent)
         }
         else
         {
-            QPropertyAnimation* positionAnimation = params.positionAnimation;
+            QPropertyAnimation* positionAnimation = notification.positionAnimation;
             positionAnimation->stop();
             positionAnimation->setStartValue(widget->pos());
             positionAnimation->setEndValue(widgetPos);
@@ -136,16 +132,16 @@ void NotificationLayout::LayoutWidgets(QWidget* parent)
 
 void NotificationLayout::Clear()
 {
-    for (auto& widgetParamsPair : notifications)
+    for (auto& windowNotifications : allNotifications)
     {
-        for (NotificationWidgetParams& params : widgetParamsPair.second)
+        for (Notification& notification : windowNotifications.second)
         {
-            QWidget* widget = params.notification;
+            QWidget* widget = notification.widget;
             disconnect(widget, &QObject::destroyed, this, &NotificationLayout::OnWidgetDestroyed);
             delete widget;
         }
     }
-    notifications.clear();
+    allNotifications.clear();
 }
 
 bool NotificationLayout::eventFilter(QObject* object, QEvent* event)
@@ -162,16 +158,16 @@ bool NotificationLayout::eventFilter(QObject* object, QEvent* event)
 void NotificationLayout::timerEvent(QTimerEvent* /*event*/)
 {
     int elapsedMs = elapsedTimer.restart();
-    for (auto& widgetParamsPair : notifications)
+    for (auto& windowNotifications : allNotifications)
     {
-        QWidget* parent = widgetParamsPair.first;
+        QWidget* parent = windowNotifications.first;
         if (parent->isActiveWindow())
         {
             bool needLayout = false;
-            ParameterList& parameterList = widgetParamsPair.second;
-            for (ParameterList::iterator iter = parameterList.begin(); iter != parameterList.end();)
+            List<Notification>& notifications = windowNotifications.second;
+            for (List<Notification>::iterator iter = notifications.begin(); iter != notifications.end();)
             {
-                NotificationWidget* widget = iter->notification;
+                NotificationWidget* widget = iter->widget;
                 if (widget->isVisible() == false)
                 {
                     ++iter;
@@ -181,7 +177,7 @@ void NotificationLayout::timerEvent(QTimerEvent* /*event*/)
                 if (iter->remainTimeMs == 0)
                 {
                     needLayout = true;
-                    iter = parameterList.erase(iter);
+                    iter = notifications.erase(iter);
                     disconnect(widget, &QObject::destroyed, this, &NotificationLayout::OnWidgetDestroyed);
                     delete widget;
                 }
@@ -219,12 +215,12 @@ void NotificationLayout::SetDisplayTimeMs(uint32 displayTimeMs_)
     if (displayTimeMs_ > displayTimeMs)
     {
         uint32 differenceMs = displayTimeMs_ - displayTimeMs;
-        for (auto& widgetParamsPair : notifications)
+        for (auto& windowNotifications : allNotifications)
         {
-            ParameterList& paramList = widgetParamsPair.second;
-            for (NotificationWidgetParams& params : paramList)
+            List<Notification>& notifications = windowNotifications.second;
+            for (Notification& notification : notifications)
             {
-                params.remainTimeMs += differenceMs;
+                notification.remainTimeMs += differenceMs;
             }
         }
     }
@@ -236,34 +232,34 @@ void NotificationLayout::OnCloseClicked(NotificationWidget* notification)
     delete notification;
 }
 
-void NotificationLayout::OnDetailsClicked(NotificationWidget* notification)
+void NotificationLayout::OnDetailsClicked(NotificationWidget* widget)
 {
-    QWidget* parent = notification->parentWidget();
-    auto iter = notifications.find(parent);
-    DVASSERT(iter != notifications.end());
-    ParameterList& paramList = iter->second;
-    ParameterList::iterator paramListIter = std::find_if(paramList.begin(), paramList.end(), [notification](const NotificationWidgetParams& params) {
-        return params.notification == notification;
+    QWidget* parent = widget->parentWidget();
+    auto iter = allNotifications.find(parent);
+    DVASSERT(iter != allNotifications.end());
+    List<Notification>& notifications = iter->second;
+    List<Notification>::iterator notificationsIter = std::find_if(notifications.begin(), notifications.end(), [widget](const Notification& notification) {
+        return notification.widget == widget;
     });
-    DVASSERT(paramListIter != paramList.end());
-    paramListIter->callback();
+    DVASSERT(notificationsIter != notifications.end());
+    notificationsIter->callback();
 
-    delete notification;
+    delete widget;
 }
 
 void NotificationLayout::OnWidgetDestroyed()
 {
-    NotificationWidget* notification = static_cast<NotificationWidget*>(sender());
-    for (auto& widgetParamsPair : notifications)
+    NotificationWidget* widget = static_cast<NotificationWidget*>(sender());
+    for (auto& windowNotifications : allNotifications)
     {
-        ParameterList& paramList = widgetParamsPair.second;
-        ParameterList::iterator paramListIter = std::find_if(paramList.begin(), paramList.end(), [notification](const NotificationWidgetParams& params) {
-            return params.notification == notification;
+        List<Notification>& notifications = windowNotifications.second;
+        List<Notification>::iterator notificationsIter = std::find_if(notifications.begin(), notifications.end(), [widget](const Notification& notification) {
+            return notification.widget == widget;
         });
-        if (paramListIter != paramList.end())
+        if (notificationsIter != notifications.end())
         {
-            paramList.erase(paramListIter);
-            LayoutWidgets(widgetParamsPair.first);
+            notifications.erase(notificationsIter);
+            LayoutWidgets(windowNotifications.first);
             return;
         }
     }
@@ -272,7 +268,7 @@ void NotificationLayout::OnWidgetDestroyed()
 void NotificationLayout::OnParentWidgetDestroyed()
 {
     QWidget* senderWidget = static_cast<QWidget*>(sender());
-    notifications.erase(senderWidget);
+    allNotifications.erase(senderWidget);
 }
 
 } //namespace DAVA

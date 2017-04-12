@@ -23,8 +23,9 @@ public:
     NotificationLayout();
     ~NotificationLayout() override;
 
-    void AddNotificationWidget(QWidget* parent, const NotificationParams& params);
-    void SetLayoutType(uint64 align);
+    void ShowNotification(QWidget* parent, const NotificationParams& params);
+    //supported values is ALIGN_TOP or ALIGN_BOTTOM and ALIGN_LEFT or ALIGN_RIGHT
+    void SetLayoutType(uint64 alignment);
     void SetDisplayTimeMs(uint32 displayTimeMS);
 
 private slots:
@@ -40,10 +41,8 @@ private:
     bool eventFilter(QObject* object, QEvent* event) override;
     void timerEvent(QTimerEvent* event) override;
 
-    struct NotificationWidgetParams;
-    using ParameterList = List<NotificationWidgetParams>;
-    using Notifications = Map<QWidget*, ParameterList>;
-    Notifications notifications;
+    struct Notification;
+    Map<QWidget*, List<Notification>> allNotifications;
 
     uint64 layoutType = ALIGN_TOP | ALIGN_RIGHT;
 
