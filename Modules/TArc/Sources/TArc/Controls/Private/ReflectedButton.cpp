@@ -23,7 +23,7 @@ void ReflectedButton::SetupControl()
 {
     setToolButtonStyle(Qt::ToolButtonIconOnly);
     setAutoRaise(autoRaise);
-    setEnabled(enabled);
+    setEnabled(true);
 
     connections.AddConnection(this, &QToolButton::released, MakeFunction(this, &ReflectedButton::ButtonReleased));
 }
@@ -66,56 +66,37 @@ void ReflectedButton::UpdateControl(const ControlDescriptor& changedFields)
 
     if (changedFields.IsChanged(Fields::Enabled) == true)
     {
-        enabled = GetFieldValue<bool>(Fields::Enabled, true);
-    }
-    setEnabled(enabled);
-}
-
-void ReflectedButton::mousePressEvent(QMouseEvent* e)
-{
-    if (enabled)
-    {
-        QToolButton::mousePressEvent(e);
-    }
-}
-
-void ReflectedButton::mouseReleaseEvent(QMouseEvent* e)
-{
-    if (enabled)
-    {
-        QToolButton::mouseReleaseEvent(e);
+        bool enabled = GetFieldValue<bool>(Fields::Enabled, true);
+        setEnabled(enabled);
     }
 }
 
 void ReflectedButton::ButtonReleased()
 {
-    if (enabled)
+    AnyFn method = model.GetMethod(GetFieldName(Fields::Clicked).c_str());
+    DVASSERT(method.IsValid());
+
+    const AnyFn::Params& params = method.GetInvokeParams();
+
+    const Type* retType = params.retType;
+    Vector<const Type*> argsType = params.argsType;
+
+    if (argsType.empty())
     {
-        AnyFn method = model.GetMethod(GetFieldName(Fields::Clicked).c_str());
-        DVASSERT(method.IsValid());
-
-        const AnyFn::Params& params = method.GetInvokeParams();
-
-        const Type* retType = params.retType;
-        Vector<const Type*> argsType = params.argsType;
-
-        if (argsType.empty())
+        Reflection resultValue = model.GetField(GetFieldName(Fields::Result));
+        if (retType != nullptr && resultValue.IsValid())
         {
-            Reflection resultValue = model.GetField(GetFieldName(Fields::Result));
-            if (retType != nullptr && resultValue.IsValid())
-            {
-                Any result = method.Invoke();
-                wrapper.SetFieldValue(GetFieldName(Fields::Result), result);
-            }
-            else
-            {
-                method.Invoke();
-            }
+            Any result = method.Invoke();
+            wrapper.SetFieldValue(GetFieldName(Fields::Result), result);
         }
         else
         {
-            DVASSERT(false, "We could invoke only methods without arguments");
+            method.Invoke();
         }
+    }
+    else
+    {
+        DVASSERT(false, "We could invoke only methods without arguments");
     }
 }
 

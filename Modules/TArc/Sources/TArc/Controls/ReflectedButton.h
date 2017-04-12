@@ -33,9 +33,6 @@ public:
     ReflectedButton(const ControlDescriptorBuilder<Fields>& fields, ContextAccessor* accessor, Reflection model, QWidget* parent = nullptr);
 
 private:
-    void mousePressEvent(QMouseEvent* e) override;
-    void mouseReleaseEvent(QMouseEvent* e) override;
-
     void UpdateControl(const ControlDescriptor& changedfields) override;
     void SetupControl();
 
@@ -43,7 +40,6 @@ private:
 
     QIcon icon;
     QString text;
-    bool enabled = true;
     bool autoRaise = true;
 
     QtConnections connections;
