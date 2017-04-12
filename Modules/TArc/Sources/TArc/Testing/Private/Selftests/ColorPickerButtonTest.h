@@ -22,12 +22,20 @@
 #include <QToolButton>
 #include <QApplication>
 
+#include <memory>
+
 namespace ColorPickerButtonTestDetails
 {
 DAVA::TArc::WindowKey wndKey = DAVA::FastName("ColorPickerButtonTestWnd");
 
 struct ColorPickerButtonDataSource
 {
+    ColorPickerButtonDataSource()
+    {
+        using namespace DAVA;
+        colorRange.reset(new M::Range(Color(0.2f, 0.2f, 0.2f, 0.2f), Color(0.4f, 0.4f, 0.4f, 0.4f), Color(0.1f, 0.1f, 0.1f, 0.1f)));
+    }
+
     DAVA::Color value;
     bool isReadOnly = false;
 
@@ -41,10 +49,18 @@ struct ColorPickerButtonDataSource
         value = v;
     }
 
+    const DAVA::M::Range* GetRangeMeta() const
+    {
+        return colorRange.get();
+    }
+    std::shared_ptr<DAVA::M::Range> colorRange;
+
     DAVA_REFLECTION(ColorPickerButtonDataSource)
     {
         DAVA::ReflectionRegistrator<ColorPickerButtonDataSource>::Begin()
         .Field("value", &ColorPickerButtonDataSource::value)
+        .Field("valueWithRange", &ColorPickerButtonDataSource::value)[DAVA::M::Range(DAVA::Color(0.2f, 0.2f, 0.2f, 0.2f), DAVA::Color(0.4f, 0.4f, 0.4f, 0.4f), DAVA::Color(0.1f, 0.1f, 0.1f, 0.1f))]
+        .Field("range", &ColorPickerButtonDataSource::GetRangeMeta, nullptr)
         .Field("readOnlyValue", &ColorPickerButtonDataSource::value)[DAVA::M::ReadOnly()]
         .Field("writableValue", &ColorPickerButtonDataSource::GetValue, &ColorPickerButtonDataSource::SetValue)
         .Field("isReadOnly", &ColorPickerButtonDataSource::isReadOnly)
@@ -106,6 +122,31 @@ public:
             layout->AddControl(button);
         }
 
+        {
+            ColorPickerButton::Params params;
+            params.ui = GetUI();
+            params.wndKey = ColorPickerButtonTestDetails::wndKey;
+            params.accessor = GetAccessor();
+            params.fields[ColorPickerButton::Fields::Color] = "valueWithRange";
+
+            ColorPickerButton* button = new DAVA::TArc::ColorPickerButton(params, GetAccessor(), reflectedModel);
+            button->SetObjectName("ColorPickerButton_valueWithRange");
+            layout->AddControl(button);
+        }
+
+        {
+            ColorPickerButton::Params params;
+            params.ui = GetUI();
+            params.wndKey = ColorPickerButtonTestDetails::wndKey;
+            params.accessor = GetAccessor();
+            params.fields[ColorPickerButton::Fields::Color] = "value";
+            params.fields[ColorPickerButton::Fields::Range] = "range";
+
+            ColorPickerButton* button = new DAVA::TArc::ColorPickerButton(params, GetAccessor(), reflectedModel);
+            button->SetObjectName("ColorPickerButton_range");
+            layout->AddControl(button);
+        }
+
         GetUI()->AddView(wndKey, DAVA::TArc::PanelKey("ColorPickerButtonSandbox", DAVA::TArc::CentralPanelInfo()), w);
     }
 
@@ -144,6 +185,7 @@ DAVA_TARC_TESTCLASS(ColorPickerButtonTest)
         QString controlName;
         DAVA::String testName;
         bool finished = false;
+        DAVA::Function<void()> finishFn;
     } currentTestData;
 
     void WritableValueTestStart()
@@ -191,7 +233,7 @@ DAVA_TARC_TESTCLASS(ColorPickerButtonTest)
         eventList.simulate(colorPaletteWidget);
         eventList.simulate(okButtonWidget);
 
-        delayedExecutor.DelayedExecute(DAVA::MakeFunction(this, &ColorPickerButtonTest::WritableValueTestFinish));
+        delayedExecutor.DelayedExecute(currentTestData.finishFn);
     }
 
     void WritableValueTestFinish()
@@ -221,6 +263,7 @@ DAVA_TARC_TESTCLASS(ColorPickerButtonTest)
         currentTestData.controlName = "ColorPickerButton_value_readonly";
         currentTestData.testName = "ValueWritableTest";
         currentTestData.finished = false;
+        currentTestData.finishFn = DAVA::MakeFunction(this, &ColorPickerButtonTest::WritableValueTestFinish);
 
         WritableValueTestStart();
     }
@@ -235,6 +278,66 @@ DAVA_TARC_TESTCLASS(ColorPickerButtonTest)
         currentTestData.controlName = "ColorPickerButton_writableValue";
         currentTestData.testName = "MethodWritableTest";
         currentTestData.finished = false;
+        currentTestData.finishFn = DAVA::MakeFunction(this, &ColorPickerButtonTest::WritableValueTestFinish);
+
+        WritableValueTestStart();
+    }
+
+    void RangeTestFinish()
+    {
+        using namespace ColorPickerButtonTestDetails;
+        using namespace ::testing;
+
+        ColorPickerButtonTestModule* inst = ColorPickerButtonTestModule::instance;
+
+        EXPECT_CALL(*this, AfterWrappersSync())
+        .WillOnce(Invoke([this, inst]() {
+            if (currentTestData.finished == false)
+            {
+                TEST_VERIFY(inst->dataSource.value != ColorPickerButtonTestModule::initialColor);
+
+                const DAVA::M::Range* colorRange = inst->dataSource.GetRangeMeta();
+                TEST_VERIFY(colorRange != nullptr);
+
+                DAVA::Color minV = colorRange->minValue.Get<DAVA::Color>();
+                DAVA::Color maxV = colorRange->maxValue.Get<DAVA::Color>();
+
+                TEST_VERIFY(inst->dataSource.value.r >= minV.r && inst->dataSource.value.r <= maxV.r);
+                TEST_VERIFY(inst->dataSource.value.g >= minV.g && inst->dataSource.value.g <= maxV.g);
+                TEST_VERIFY(inst->dataSource.value.b >= minV.b && inst->dataSource.value.b <= maxV.b);
+                TEST_VERIFY(inst->dataSource.value.a >= minV.a && inst->dataSource.value.a <= maxV.a);
+
+                currentTestData.finished = true;
+            }
+        }));
+    }
+
+    DAVA_TEST (RangeMetaTest)
+    {
+        using namespace ColorPickerButtonTestDetails;
+
+        ColorPickerButtonTestModule* inst = ColorPickerButtonTestModule::instance;
+        inst->dataSource.value = ColorPickerButtonTestModule::initialColor;
+
+        currentTestData.controlName = "ColorPickerButton_valueWithRange";
+        currentTestData.testName = "RangeMetaTest";
+        currentTestData.finished = false;
+        currentTestData.finishFn = DAVA::MakeFunction(this, &ColorPickerButtonTest::RangeTestFinish);
+
+        WritableValueTestStart();
+    }
+
+    DAVA_TEST (RangeValueTest)
+    {
+        using namespace ColorPickerButtonTestDetails;
+
+        ColorPickerButtonTestModule* inst = ColorPickerButtonTestModule::instance;
+        inst->dataSource.value = ColorPickerButtonTestModule::initialColor;
+
+        currentTestData.controlName = "ColorPickerButton_range";
+        currentTestData.testName = "RangeValueTest";
+        currentTestData.finished = false;
+        currentTestData.finishFn = DAVA::MakeFunction(this, &ColorPickerButtonTest::RangeTestFinish);
 
         WritableValueTestStart();
     }

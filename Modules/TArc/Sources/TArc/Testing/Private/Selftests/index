@@ -17,4 +17,5 @@ PlainTextEditTest.h
 PropertiesViewTests.h
 PropertiesViewTimerUpdaterTests.h
 QtWrapLayoutTests.h
+ReflectedButtonTest.h
 ReflectionPathTreeTests.h

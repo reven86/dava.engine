@@ -1,3 +1,5 @@
+#ifdef ENABLE_FULL_DLC_MANAGER_TEST
+
 #include <fstream>
 
 #include <DLCManager/DLCManager.h>
@@ -14,7 +16,7 @@
 #ifndef __DAVAENGINE_WIN_UAP__
 
 DAVA::FilePath documentRootDir;
-const char* const localPort = "8080";
+const char* const localPort = "8181";
 
 struct FSMTest02
 {
@@ -144,12 +146,6 @@ struct FSMTest02
 
 DAVA_TESTCLASS (DLCManagerFullTest)
 {
-    //BEGIN_FILES_COVERED_BY_TESTS()
-    //DECLARE_COVERED_FILES("DLCManagerImpl.cpp")
-    //DECLARE_COVERED_FILES("PackRequest.cpp")
-    //DECLARE_COVERED_FILES("RequestManager.cpp")
-    //END_FILES_COVERED_BY_TESTS()
-
     FSMTest02 fsm02;
     bool TestAfterInitStopServer02_done = false;
 
@@ -185,7 +181,7 @@ DAVA_TESTCLASS (DLCManagerFullTest)
 #else
             const char* cant_write_dir = "/"; // root dir
 #endif
-            dlcManager.Initialize(cant_write_dir, "http://127.0.0.1:8080/superpack_for_unittests.dvpk", DLCManager::Hints());
+            dlcManager.Initialize(cant_write_dir, "http://127.0.0.1:8181/superpack_for_unittests.dvpk", DLCManager::Hints());
         }
         catch (Exception& ex)
         {
@@ -243,7 +239,7 @@ DAVA_TESTCLASS (DLCManagerFullTest)
         try
         {
             dlcManager.Initialize(packDir,
-                                  "http://127.0.0.1:8080/superpack_for_unittests.dvpk",
+                                  "http://127.0.0.1:8181/superpack_for_unittests.dvpk",
                                   hints);
             Logger::Info("Initialize called no exception");
         }
@@ -261,3 +257,5 @@ DAVA_TESTCLASS (DLCManagerFullTest)
 };
 
 #endif // __DAVAENGINE_WIN_UAP__
+
+#endif // ENABLE_FULL_DLC_MANAGER_TEST

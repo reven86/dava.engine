@@ -32,7 +32,7 @@ find_package( QT5 REQUIRED )
 find_package( GMock REQUIRED )
 find_package( QtHelpers REQUIRED )
 
-find_package( DavaFramework REQUIRED COMPONENTS ALL
+find_package( DavaFramework REQUIRED COMPONENTS "Sound"
                                                 DAVA_PLATFORM_QT 
                                                 DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME 
                                                 DAVA_DISABLE_AUTOTESTS 
@@ -40,6 +40,7 @@ find_package( DavaFramework REQUIRED COMPONENTS ALL
 
 find_package( QtTools REQUIRED )
 find_package( TArc REQUIRED )
+find_package( RemoteTool REQUIRED )
 
 #
 
@@ -79,7 +80,6 @@ dava_add_definitions       (
 -D_CRT_SECURE_NO_DEPRECATE
 -D__DAVAENGINE_RESOURCEEDITOR__
 -DDAVA_QT
--DDAVA_FMOD
 )
 
 if (NOT PUBLIC_BUILD)

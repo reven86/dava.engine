@@ -5,8 +5,6 @@
 
 namespace QEGlobal
 {
-extern DAVA::TArc::WindowKey windowKey;
-
 //open las opened project. If no one project was opened - do nothing
 DECLARE_OPERATION_ID(OpenLastProject);
 
@@ -27,4 +25,10 @@ DECLARE_OPERATION_ID(SelectFile);
 //Select control by document name and control name
 //If document was not open - opens it and than select control
 DECLARE_OPERATION_ID(SelectControl);
+
+//Find controls in project using provided filter and dump them to results widget
+DECLARE_OPERATION_ID(FindInProject);
+
+//Find controls in current document using provided filter and dump them to results widget
+DECLARE_OPERATION_ID(FindInDocument);
 }
