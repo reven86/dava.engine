@@ -2,6 +2,7 @@
 #include "DLCManager/DLCDownloader.h"
 #include "Concurrency/Thread.h"
 #include "Concurrency/Semaphore.h"
+#include "Concurrency/Atomic.h"
 
 extern "C"
 {
@@ -15,7 +16,8 @@ struct DLCDownloader::Task
 {
     TaskInfo info;
     TaskStatus status;
-    Vector<CURL*> easyHandles;
+    Set<CURL*> easyHandles;
+    std::unique_ptr<IWriter> defaultWriter;
 };
 
 class DLCDownloaderImpl : public DLCDownloader
@@ -29,8 +31,9 @@ public:
 
     // Schedule download content or get content size (indicated by downloadMode)
     Task* StartTask(const String& srcUrl,
-                    IWriter* dstWriter,
+                    const String& dsrPath,
                     TaskType taskType,
+                    IWriter* dstWriter = nullptr,
                     uint64 rangeOffset = 0,
                     uint64 rangeSize = 0,
                     int16 partsCount = -1,
@@ -46,6 +49,7 @@ public:
     TaskStatus GetTaskStatus(Task* task) override;
 
 private:
+    bool TakeOneNewTaskFromQueue();
     void DownloadThreadFunc();
 
     Deque<Task*> taskQueue;
@@ -53,6 +57,7 @@ private:
     CURLM* multiHandle = nullptr;
     Thread* downloadThread = nullptr;
     Semaphore downloadSem; // to resume download thread
-    Mutex mutex; // to protect access to taskQueue
+    Atomic<int> numOfNewTasks;
+    Mutex mutexTaskQueue; // to protect access to taskQueue
 };
 } // end namespace DAVA

@@ -41,13 +41,14 @@ public:
     struct TaskInfo
     {
         String srcUrl;
+        String dstPath;
         TaskType type;
         int32 partsCount = -1;
         int32 timeoutSec = 30;
         int32 retriesCount = 3;
-        uint64 downloadOffset = 0;
-        uint64 downloadSize = 0;
-        IWriter* writer = nullptr;
+        uint64 rangeOffset = 0;
+        uint64 rangeSize = 0;
+        IWriter* customWriter = nullptr;
     };
 
     struct TaskError
@@ -64,7 +65,6 @@ public:
 
     struct TaskStatus
     {
-        uint32 id;
         int32 fileErrno;
         int32 retriesLeft;
         TaskState state;
@@ -77,8 +77,9 @@ public:
 
     // Schedule download content or get content size (indicated by downloadMode)
     virtual Task* StartTask(const String& srcUrl,
-                            IWriter* dstWriter,
+                            const String& dstPath,
                             TaskType taskType,
+                            IWriter* customWriter = nullptr,
                             uint64 rangeOffset = 0,
                             uint64 rangeSize = 0,
                             int16 partsCount = -1,

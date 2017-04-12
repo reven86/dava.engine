@@ -1,3 +1,4 @@
+#pragma once
 #ifndef __DAVAENGINE_ATOMIC_H__
 #define __DAVAENGINE_ATOMIC_H__
 
