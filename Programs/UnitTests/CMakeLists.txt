@@ -8,11 +8,12 @@ set          ( WARNINGS_AS_ERRORS true )
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" )
 include      ( CMake-common )
 
+# DISABLED since MemoryManager do not work with DLLs 
 # Enable MemoryManagerTest in UnitTests
 # this variable should be defined in all dependant projects (dava framework, etc)
-if( NOT DAVA_MEGASOLUTION AND NOT DISABLE_MEMORY_PROFILER )
-    set ( DAVA_MEMORY_PROFILER 1 )
-endif()
+# if( NOT DAVA_MEGASOLUTION AND NOT DISABLE_MEMORY_PROFILER )
+#    set ( DAVA_MEMORY_PROFILER 1 )
+# endif()
 
 # Now unittests is core v2 only
 set (DAVA_COREV2 1)
