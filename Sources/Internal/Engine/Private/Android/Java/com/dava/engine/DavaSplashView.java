@@ -205,7 +205,7 @@ public class DavaSplashView extends GLSurfaceView
             
             // Now we collect all device info and while show splash to user
             // continue engine initialization
-            DavaActivity.instance().onFinishCollectDeviceInfo();
+            DavaActivity.instance().onSplashFinishedCollectingDeviceInfo();
         }
 
         @Override

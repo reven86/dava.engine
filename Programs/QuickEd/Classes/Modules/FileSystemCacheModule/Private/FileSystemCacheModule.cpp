@@ -101,7 +101,7 @@ void FileSystemCacheModule::CreateActions()
     ActionPlacementInfo placementInfo;
     placementInfo.AddPlacementPoint(CreateMenuPoint("Find", { InsertionParams::eInsertionMethod::BeforeItem }));
 
-    GetUI()->AddAction(QEGlobal::windowKey, placementInfo, action);
+    GetUI()->AddAction(DAVA::TArc::mainWindowKey, placementInfo, action);
 }
 
 void FileSystemCacheModule::FastOpenDocument()
@@ -113,7 +113,7 @@ void FileSystemCacheModule::FastOpenDocument()
     FileSystemCache* cache = cacheData->GetFileSystemCache();
     DVASSERT(cache != nullptr);
 
-    QString filePath = FindFileDialog::GetFilePath(cache, "yaml", GetUI()->GetWindow(QEGlobal::windowKey));
+    QString filePath = FindFileDialog::GetFilePath(cache, "yaml", GetUI()->GetWindow(DAVA::TArc::mainWindowKey));
     if (filePath.isEmpty())
     {
         return;

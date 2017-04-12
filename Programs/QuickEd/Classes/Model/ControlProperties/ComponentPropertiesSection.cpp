@@ -40,11 +40,11 @@ ComponentPropertiesSection::ComponentPropertiesSection(DAVA::UIControl* control_
     Vector<Reflection::Field> fields = componentRef.GetFields();
     for (const Reflection::Field& field : fields)
     {
-        if (!(field.ref.IsReadonly() || field.ref.HasMeta<DAVA::M::ReadOnly>()))
+        if (!field.ref.IsReadonly() && nullptr == field.ref.GetMeta<DAVA::M::ReadOnly>())
         {
-            String name = field.key.Get<String>();
+            String name = field.key.Get<FastName>().c_str();
             const IntrospectionProperty* sourceProp = sourceSection == nullptr ? nullptr : sourceSection->FindChildPropertyByName(name);
-            IntrospectionProperty* prop = new IntrospectionProperty(component, type_, name, field.ref, sourceProp, cloneType);
+            IntrospectionProperty* prop = new IntrospectionProperty(component, type_, name.c_str(), field.ref, sourceProp, cloneType);
             AddProperty(prop);
             SafeRelease(prop);
         }
