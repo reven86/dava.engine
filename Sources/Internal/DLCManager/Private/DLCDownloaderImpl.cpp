@@ -16,7 +16,9 @@ struct DefaultWriter : DLCDownloader::IWriter
         f = File::Create(outputFile, File::OPEN | File::WRITE | File::CREATE);
         if (!f)
         {
-            DAVA_THROW(Exception, "can't create output file: " + outputFile);
+            int32 errNo = errno;
+            const char* err = strerror(errNo);
+            DAVA_THROW(Exception, "can't create output file: " + outputFile + " " + err);
         }
     }
     ~DefaultWriter()
@@ -111,20 +113,6 @@ DLCDownloader::Task* DLCDownloaderImpl::StartTask(const String& srcUrl,
                                                   int32 timeout,
                                                   int32 retriesCount)
 {
-    IWriter* defaultWriter = nullptr;
-    if (dstWriter == nullptr && TaskType::SIZE != taskType)
-    {
-        try
-        {
-            defaultWriter = new DefaultWriter(dstPath);
-        }
-        catch (Exception& ex)
-        {
-            Logger::Error("%s", ex.what());
-            return nullptr;
-        }
-    }
-
     Task* task = new Task();
 
     auto& info = task->info;
@@ -146,11 +134,6 @@ DLCDownloader::Task* DLCDownloaderImpl::StartTask(const String& srcUrl,
     state.retriesLeft = info.retriesCount;
     state.sizeDownloaded = 0;
     state.sizeTotal = info.rangeSize;
-
-    if (defaultWriter != nullptr && TaskType::SIZE != taskType)
-    {
-        task->defaultWriter.reset(defaultWriter);
-    }
 
     {
         LockGuard<Mutex> lock(mutexTaskQueue);
@@ -312,12 +295,17 @@ static void SetupFullDownload(DLCDownloader::Task* justAddedTask)
 {
     CURLcode code = CURLE_OK;
 
+    auto& info = justAddedTask->info;
+
+    if (info.customWriter == nullptr && DLCDownloader::TaskType::SIZE != info.type)
+    {
+        justAddedTask->defaultWriter.reset(new DefaultWriter(info.dstPath));
+    }
+
     CURL* easyHandle = CurlSimpleInitHandle();
     DVASSERT(easyHandle != nullptr);
 
     StoreHandle(justAddedTask, easyHandle);
-
-    auto& info = justAddedTask->info;
 
     DLCDownloader::IWriter* writer = info.customWriter != nullptr ? info.customWriter : justAddedTask->defaultWriter.get();
     DVASSERT(writer != nullptr);
@@ -368,6 +356,11 @@ static void SetupResumeDownload(DLCDownloader::Task* justAddedTask)
     StoreHandle(justAddedTask, easyHandle);
 
     auto& info = justAddedTask->info;
+
+    if (info.customWriter == nullptr && DLCDownloader::TaskType::SIZE != info.type)
+    {
+        justAddedTask->defaultWriter.reset(new DefaultWriter(info.dstPath));
+    }
 
     DLCDownloader::IWriter* writer = info.customWriter != nullptr ? info.customWriter : justAddedTask->defaultWriter.get();
     DVASSERT(writer != nullptr);
@@ -455,19 +448,20 @@ bool DLCDownloaderImpl::TakeOneNewTaskFromQueue()
             CURLMcode code = curl_multi_add_handle(multiHandle, easyHandle);
             DVASSERT(CURLM_OK == code);
         }
-        --numOfNewTasks;
+        justAddedTask->status.state = TaskState::Downloading;
     }
     return justAddedTask != nullptr;
 }
 
 void DLCDownloaderImpl::DownloadThreadFunc()
 {
-    const size_t maxSimultaniousDownloads = 1024;
+    const int maxSimultaniousDownloads = 32;
     Thread* currentThread = Thread::Current();
     DVASSERT(currentThread != nullptr);
 
-    bool stillRuning = true;
-    size_t numOfRunningHandles = 0;
+    bool stillRuning = false;
+    int numOfRunningHandles = 0;
+    int numOfAddedTasks = 0;
 
     while (!currentThread->IsCancelling())
     {
@@ -477,12 +471,17 @@ void DLCDownloaderImpl::DownloadThreadFunc()
             stillRuning = true;
         }
 
-        size_t num = maxSimultaniousDownloads - numOfRunningHandles;
-        for (; num > 0; --num)
+        if (numOfNewTasks > 0 && numOfAddedTasks < maxSimultaniousDownloads)
         {
-            if (!TakeOneNewTaskFromQueue())
+            while (numOfAddedTasks < maxSimultaniousDownloads)
             {
-                break; // no more new tasks
+                bool justAdded = TakeOneNewTaskFromQueue();
+                if (!justAdded)
+                {
+                    break; // no more new tasks
+                }
+                ++numOfAddedTasks;
+                --numOfNewTasks;
             }
         }
 
@@ -533,6 +532,7 @@ void DLCDownloaderImpl::DownloadThreadFunc()
                     {
                         finishedTask->defaultWriter.reset();
                         finishedTask->status.state = TaskState::Finished;
+                        --numOfAddedTasks;
                     }
 
                     curl_multi_remove_handle(multiHandle, easyHandle);
@@ -542,7 +542,7 @@ void DLCDownloaderImpl::DownloadThreadFunc()
 
             if (stillRuning)
             {
-                if (numOfRunningHandles < maxSimultaniousDownloads)
+                if (numOfAddedTasks < maxSimultaniousDownloads)
                 {
                     if (numOfNewTasks > 0)
                     {
