@@ -20,15 +20,23 @@ AddressResolver::~AddressResolver()
     Cancel();
 }
 
-bool AddressResolver::AsyncResolve(const char8* address, uint16 port, ResolverCallbackFn cbk)
+void AddressResolver::AsyncResolve(const char8* address, uint16 port, ResolverCallbackFn cbk)
+{
+    loop->Post(Bind(&AddressResolver::DoAsyncResolve, this, address, port, cbk));
+}
+
+void AddressResolver::DoAsyncResolve(const char8* address, uint16 port, ResolverCallbackFn cbk)
 {
 #if !defined(DAVA_NETWORK_DISABLE)
     DVASSERT(loop != nullptr);
     DVASSERT(handle == nullptr);
     DVASSERT(cbk != nullptr);
 
-    handle = new uv_getaddrinfo_t;
-    handle->data = this;
+    {
+        LockGuard<Mutex> lock(handleMutex);
+        handle = new uv_getaddrinfo_t;
+        handle->data = this;
+    }
 
     struct addrinfo hints;
     hints.ai_family = PF_INET;
@@ -43,29 +51,42 @@ bool AddressResolver::AsyncResolve(const char8* address, uint16 port, ResolverCa
     if (0 == res)
     {
         resolverCallbackFn = cbk;
-        return true;
+        return;
     }
     else
     {
-        SafeDelete(handle);
+        {
+            LockGuard<Mutex> lock(handleMutex);
+            SafeDelete(handle);
+        }
 
-        Logger::Error("[AddressResolver::StartResolving] Can't get addr info: %s", Net::ErrorToString(res));
-        return false;
+        Logger::Error("Can't get addr info: %s", Net::ErrorToString(res));
+        resolverCallbackFn(Endpoint(), res);
+        return;
     }
-#else
-    return false;
 #endif
 }
 
 void AddressResolver::Cancel()
 {
 #if !defined(DAVA_NETWORK_DISABLE)
+
+    LockGuard<Mutex> lock(handleMutex);
+
     if (handle != nullptr)
     {
         handle->data = nullptr;
-        uv_cancel(reinterpret_cast<uv_req_t*>(handle));
+        loop->Post(Bind(&AddressResolver::DoCancel, handle));
         handle = nullptr;
     }
+#endif
+}
+
+void AddressResolver::DoCancel(uv_getaddrinfo_t* handle)
+{
+#if !defined(DAVA_NETWORK_DISABLE)
+    DVASSERT(handle != nullptr);
+    uv_cancel(reinterpret_cast<uv_req_t*>(handle));
 #endif
 }
 
@@ -75,6 +96,7 @@ void AddressResolver::GetAddrInfoCallback(uv_getaddrinfo_t* handle, int status, 
     AddressResolver* resolver = static_cast<AddressResolver*>(handle->data);
     if (nullptr != resolver && resolver->handle != nullptr)
     {
+        LockGuard<Mutex> lock(resolver->handleMutex);
         DVASSERT(resolver->handle == handle);
         resolver->GotAddrInfo(status, response);
         resolver->handle = nullptr;

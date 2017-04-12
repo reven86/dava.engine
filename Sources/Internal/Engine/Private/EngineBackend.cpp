@@ -936,11 +936,8 @@ void EngineBackend::DestroySubsystems()
         context->inputSystem = nullptr;
     }
 
-    // Finish network infrastructure
-    // As I/O event loop runs in main thread so NetCore should run out loop to make graceful shutdown
     if (context->netCore != nullptr)
     {
-        context->netCore->Finish(true);
         context->netCore->Release();
         context->netCore = nullptr;
     }
