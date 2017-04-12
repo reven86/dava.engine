@@ -61,7 +61,7 @@ void LegacySupportModule::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, 
     using namespace TArc;
     ContextAccessor* accessor = GetAccessor();
     DataContext* globalContext = accessor->GetGlobalContext();
-    QWidget* window = GetUI()->GetWindow(QEGlobal::windowKey);
+    QWidget* window = GetUI()->GetWindow(DAVA::TArc::mainWindowKey);
     MainWindow* mainWindow = qobject_cast<MainWindow*>(window);
     DVASSERT(mainWindow != nullptr);
     MainWindow::ProjectView* projectView = mainWindow->GetProjectView();
@@ -165,7 +165,7 @@ void LegacySupportModule::InitMainWindow()
     QString title = QString(editorTitle).arg(DAVAENGINE_VERSION).arg(APPLICATION_BUILD_VERSION).arg(bit);
     mainWindow->SetEditorTitle(title);
 
-    GetUI()->InjectWindow(QEGlobal::windowKey, mainWindow);
+    GetUI()->InjectWindow(DAVA::TArc::mainWindowKey, mainWindow);
     ContextAccessor* accessor = GetAccessor();
     DataContext* globalContext = accessor->GetGlobalContext();
 }
@@ -198,7 +198,7 @@ void LegacySupportModule::OnFindPrototypeInstances()
             String name = controlNode->GetName();
 
             DataContext* globalContext = accessor->GetGlobalContext();
-            QWidget* window = GetUI()->GetWindow(QEGlobal::windowKey);
+            QWidget* window = GetUI()->GetWindow(DAVA::TArc::mainWindowKey);
             MainWindow* mainWindow = qobject_cast<MainWindow*>(window);
             MainWindow::ProjectView* view = mainWindow->GetProjectView();
 

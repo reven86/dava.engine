@@ -18,7 +18,7 @@ dava_add_definitions(-D__DAVAENGINE_COREV2__)
 # Uncomment to use local resources for android
 # dava_add_definitions(-DUSE_LOCAL_RESOURCES)
 
-set ( DAVA_COMPONENTS "ALL" "SampleModule" "DAVA_DISABLE_AUTOTESTS" )
+set ( DAVA_COMPONENTS "Sound" "SampleModule" "DAVA_DISABLE_AUTOTESTS" )
 if ( WIN32 AND NOT WIN_UAP AND NOT DAVA_PLATFORM_QT)
     list ( APPEND DAVA_COMPONENTS "CEFWebview" )
 endif ()

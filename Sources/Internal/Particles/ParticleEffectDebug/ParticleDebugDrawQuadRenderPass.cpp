@@ -1,7 +1,7 @@
 #include "Particles/ParticleEffectDebug/ParticleDebugDrawQuadRenderPass.h"
 
 #include "Functional/Function.h"
-#include "Render/RenderCallbacks.h"
+#include "Render/Renderer.h"
 #include "Render/RHI/rhi_Type.h"
 #include "Render/RHI/rhi_Public.h"
 
@@ -33,14 +33,15 @@ ParticleDebugDrawQuadRenderPass::ParticleDebugDrawQuadRenderPass(ParticleDebugQu
 
     SetRenderTargetProperties(passConfig.viewport.width, passConfig.viewport.height, DAVA::PixelFormat::FORMAT_RGBA8888);
     PrepareRenderData();
-    RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(this, &ParticleDebugDrawQuadRenderPass::Restore));
+
+    Renderer::GetSignals().needRestoreResources.Connect(this, &ParticleDebugDrawQuadRenderPass::Restore);
 }
 
 ParticleDebugDrawQuadRenderPass::~ParticleDebugDrawQuadRenderPass()
 {
     if (quadBuffer.IsValid())
         rhi::DeleteVertexBuffer(quadBuffer);
-    RenderCallbacks::UnRegisterResourceRestoreCallback(MakeFunction(this, &ParticleDebugDrawQuadRenderPass::Restore));
+    Renderer::GetSignals().needRestoreResources.Disconnect(this);
 }
 
 void ParticleDebugDrawQuadRenderPass::Draw(DAVA::RenderSystem* renderSystem)
