@@ -52,12 +52,10 @@ DAVA::String FMODSoundBrowser::GetSelectSoundEvent()
 
 void FMODSoundBrowser::UpdateEventTree()
 {
-#ifdef DAVA_FMOD
     DAVA::Vector<DAVA::String> names;
     DAVA::SoundSystem::Instance()->GetAllEventsNames(names);
 
     FillEventsTree(names);
-#endif //DAVA_FMOD
 }
 
 void FMODSoundBrowser::OnEventSelected(QTreeWidgetItem* current, QTreeWidgetItem* previous)
