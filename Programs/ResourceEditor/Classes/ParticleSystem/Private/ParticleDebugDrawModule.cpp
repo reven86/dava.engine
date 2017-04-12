@@ -104,13 +104,13 @@ void ParticleDebugDrawModule::PostInit()
     QString toolbarName = "ParticleSystemToolbar";
     ActionPlacementInfo toolbarTogglePlacement(CreateMenuPoint(QList<QString>() << "View"
                                                                                 << "Toolbars"));
-    GetUI()->DeclareToolbar(REGlobal::MainWindowKey, toolbarTogglePlacement, toolbarName);
+    GetUI()->DeclareToolbar(DAVA::TArc::mainWindowKey, toolbarTogglePlacement, toolbarName);
 
     QAction* action = new QAction(nullptr);
     AttachWidgetToAction(action, w);
 
     ActionPlacementInfo placementInfo(CreateToolbarPoint(toolbarName));
-    GetUI()->AddAction(REGlobal::MainWindowKey, placementInfo, action);
+    GetUI()->AddAction(DAVA::TArc::mainWindowKey, placementInfo, action);
 
     filedBinder.reset(new FieldBinder(accessor));
     DAVA::TArc::FieldDescriptor descr;

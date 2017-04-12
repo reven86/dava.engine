@@ -137,7 +137,7 @@ public:
     void ClearSelection();
     void SelectNode(ControlNode* node);
 
-    const SortedPackageBaseNodeSet& GetEditingRootControls() const;
+    const SortedControlNodeSet& GetEditingRootControls() const;
 
     DAVA::UIControl* GetRootControl() const;
     DAVA::UIControl* GetScalableControl() const;
@@ -149,7 +149,7 @@ public:
     DAVA::Signal<const DAVA::Rect& /*selectionRectControl*/> selectionRectChanged;
     DAVA::Signal<const DAVA::Vector2&> contentSizeChanged;
     DAVA::Signal<ControlNode*, AbstractProperty*, const DAVA::Any&> propertyChanged;
-    DAVA::Signal<const SortedPackageBaseNodeSet&> editingRootControlsChanged;
+    DAVA::Signal<const SortedControlNodeSet&> editingRootControlsChanged;
     DAVA::Signal<const DAVA::Vector2& /*new position*/> rootControlPositionChanged;
     DAVA::Signal<PackageNode* /*node*/> packageChanged;
     DAVA::Signal<bool> emulationModeChanged;
@@ -164,7 +164,7 @@ private:
     void SetDragState(eDragState dragState);
     void SetDisplayState(eDisplayState displayState);
 
-    void OnEditingRootControlsChanged(const SortedPackageBaseNodeSet& rootControls);
+    void OnEditingRootControlsChanged(const SortedControlNodeSet& rootControls);
     void OnActiveHUDAreaChanged(const HUDAreaInfo& areaInfo);
 
     template <class OutIt, class Predicate>
@@ -190,7 +190,7 @@ private:
     DAVA::List<std::unique_ptr<BaseEditorSystem>> systems;
 
     DAVA::RefPtr<PackageNode> package;
-    SortedPackageBaseNodeSet editingRootControls;
+    SortedControlNodeSet editingRootControls;
     EditorControlsView* controlViewPtr = nullptr; //weak pointer to canvas system;
     SelectionSystem* selectionSystemPtr = nullptr; // weak pointer to selection system
     HUDSystem* hudSystemPtr = nullptr;

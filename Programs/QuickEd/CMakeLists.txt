@@ -33,7 +33,7 @@ find_package( QT5 REQUIRED )
 find_package( DavaTools REQUIRED )
 find_package( QtHelpers REQUIRED )
 
-find_package( DavaFramework REQUIRED COMPONENTS ALL
+find_package( DavaFramework REQUIRED COMPONENTS "Sound"
                                                 DAVA_PLATFORM_QT 
                                                 DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME 
                                                 DAVA_DISABLE_AUTOTESTS 
@@ -41,6 +41,7 @@ find_package( DavaFramework REQUIRED COMPONENTS ALL
 
 find_package( QtTools REQUIRED )
 find_package( TArc REQUIRED )
+find_package( RemoteTool REQUIRED )
 
 
 include_directories   ( ${CMAKE_CURRENT_BINARY_DIR} )
