@@ -24,7 +24,6 @@ class ContextAccessor;
 struct PackageContext;
 class ControlNode;
 class StyleSheetNode;
-class PackageNode;
 class PackageBaseNode;
 class FilteredPackageModel;
 class PackageModel;

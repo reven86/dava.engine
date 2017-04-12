@@ -15,12 +15,12 @@ FileSystemCacheData::FileSystemCacheData(const QStringList& extensions)
 
 FileSystemCacheData::~FileSystemCacheData() = default;
 
-FileSystemCache* FileSystemCacheData::GetFileSystemCache()
+QStringList FileSystemCacheData::GetFiles(const QString& extension) const
 {
-    return fileSystemCache.get();
+    return fileSystemCache->GetFiles(extension);
 }
 
-const FileSystemCache* FileSystemCacheData::GetFileSystemCache() const
+FileSystemCache* FileSystemCacheData::GetFileSystemCache()
 {
     return fileSystemCache.get();
 }
