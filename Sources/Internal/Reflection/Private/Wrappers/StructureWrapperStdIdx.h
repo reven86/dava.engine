@@ -31,8 +31,8 @@ public:
         caps.canInsertField = true;
         caps.canRemoveField = true;
         caps.hasFlatStruct = true;
-        caps.hasDynamicStruct = static_cast<bool>(flags & StructureWrapperStdIdxDetail::Dynamic);
-        caps.hasRangeAccess = static_cast<bool>(flags & StructureWrapperStdIdxDetail::Range);
+        caps.hasDynamicStruct = ((flags & StructureWrapperStdIdxDetail::Dynamic) != 0);
+        caps.hasRangeAccess = ((flags & StructureWrapperStdIdxDetail::Range) != 0);
         caps.flatKeysType = Type::Instance<size_t>();
         caps.flatValuesType = Type::Instance<V>();
     }
