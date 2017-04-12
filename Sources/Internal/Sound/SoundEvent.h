@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_SOUND_EVENT_H__
-#define __DAVAENGINE_SOUND_EVENT_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Base/EventDispatcher.h"
@@ -87,5 +86,3 @@ inline bool SoundEvent::IsDirectional() const
     return isDirectional;
 }
 };
-
-#endif
