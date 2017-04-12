@@ -1247,7 +1247,7 @@ struct ColorButtonTestData : public ReflectionBase
 
             ColorPickerButton::Params params;
             params.ui = ui;
-            params.wndKey = REGlobal::MainWindowKey;
+            params.wndKey = DAVA::TArc::mainWindowKey;
             params.accessor = accessor;
             params.fields[ColorPickerButton::Fields::Color] = "colorRange";
             lineLayout->AddControl(new ColorPickerButton(params, accessor, Reflection::Create(data), parent));
@@ -1260,7 +1260,7 @@ struct ColorButtonTestData : public ReflectionBase
 
             ColorPickerButton::Params params;
             params.ui = ui;
-            params.wndKey = REGlobal::MainWindowKey;
+            params.wndKey = DAVA::TArc::mainWindowKey;
             params.accessor = accessor;
             params.fields[ColorPickerButton::Fields::Color] = "color";
             params.fields[ColorPickerButton::Fields::Range] = "range";
