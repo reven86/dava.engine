@@ -33,7 +33,7 @@ class WayEditSystem : public DAVA::SceneSystem,
 
 public:
     WayEditSystem(DAVA::Scene* scene);
-    ~WayEditSystem();
+    ~WayEditSystem() = default;
 
     void ImmediateEvent(DAVA::Component* component, DAVA::uint32 event) override;
 
@@ -47,10 +47,12 @@ public:
     void RemoveEntity(DAVA::Entity* entity) override;
 
     bool HasCustomClonedAddading(DAVA::Entity* entityToClone) const override;
-    void PerformAddading(DAVA::Entity* sourceEntity, DAVA::Entity* clonedEntity) override;
+    void PerformAdding(DAVA::Entity* sourceEntity, DAVA::Entity* clonedEntity) override;
 
     bool HasCustomRemovingForEntity(DAVA::Entity* entityToRemove) const override;
     void PerformRemoving(DAVA::Entity* entityToRemove) override;
+
+    void SetScene(DAVA::Scene* scene) override;
 
 protected:
     void Draw() override;
@@ -60,16 +62,6 @@ protected:
                                 DAVA::Vector<DAVA::PathComponent::Waypoint*>& toAddEdge, DAVA::Vector<DAVA::PathComponent::Waypoint*>& toRemoveEdge);
     void AddEdges(DAVA::PathComponent* path, const DAVA::Vector<DAVA::PathComponent::Waypoint*>& srcPoints, DAVA::PathComponent::Waypoint* nextWaypoint);
     void RemoveEdges(DAVA::PathComponent* path, const DAVA::Vector<DAVA::PathComponent::Waypoint*>& srcPoints, DAVA::PathComponent::Waypoint* nextWaypoint);
-
-    struct AccessibleQueryParams
-    {
-        DAVA::PathComponent::Waypoint* startPoint = nullptr;
-        DAVA::PathComponent::Waypoint* destinationPoint = nullptr;
-        DAVA::PathComponent::Waypoint* excludePoint = nullptr;
-        DAVA::PathComponent::Edge* excludeEdge = nullptr;
-    };
-    bool IsAccessible(const AccessibleQueryParams& params) const;
-    bool IsAccessibleImpl(const AccessibleQueryParams& params, DAVA::Set<DAVA::PathComponent::Waypoint*>& passedPoints) const;
 
     void ResetSelection();
     void ProcessSelection(const SelectableGroup& selection);
@@ -89,6 +81,4 @@ private:
     DAVA::PathComponent::Waypoint* underCursorPathEntity = nullptr;
     bool inCloneState = false;
     bool isEnabled = false;
-
-    DAVA::Vector<DAVA::Entity*> entityForRelease;
 };

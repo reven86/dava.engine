@@ -48,7 +48,10 @@ PathComponent::Waypoint::Waypoint()
 PathComponent::Waypoint::Waypoint(bool withProperties)
     : name(FastName(""))
 {
-    properties = new KeyedArchive();
+    if (withProperties == true)
+    {
+        properties = new KeyedArchive();
+    }
 }
 
 PathComponent::Waypoint::~Waypoint()
@@ -101,7 +104,10 @@ PathComponent::Edge::Edge()
 
 PathComponent::Edge::Edge(bool withProperties)
 {
-    properties = new KeyedArchive();
+    if (withProperties)
+    {
+        properties = new KeyedArchive();
+    }
 }
 
 PathComponent::Edge::~Edge()
@@ -405,11 +411,9 @@ void PathComponent::ExtractPoint(Waypoint* point)
     {
         Waypoint* wp = waypoints[w];
 
-        uint32 edgesCount = static_cast<uint32>(wp->edges.size());
-        for (uint32 e = 0; e < edgesCount; ++e)
+        for (Edge* e : wp->edges)
         {
-            Edge* edge = wp->edges[e];
-            DVASSERT(edge->destination != point);
+            DVASSERT(e->destination != point);
         }
 
         if (wp == point)

@@ -14,7 +14,7 @@ protected:
     void EnableWayEdit(bool enable);
 
 private:
-    SceneEditor2* scene;
+    SceneEditor2* scene = nullptr;
 };
 
 class EnableWayEditCommand : public ToggleWayEditCommand
@@ -94,7 +94,7 @@ private:
     DAVA::PathComponent::Waypoint* destination = nullptr;
     DAVA::PathComponent::Edge* edge = nullptr;
 
-    DAVA::uint32 edgeIndex = 0;
+    size_t edgeIndex = 0;
     bool isEdgeAdded = false;
 };
 

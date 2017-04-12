@@ -160,7 +160,7 @@ EdgeEditCommand::EdgeEditCommand(SceneEditor2* scene_, DAVA::PathComponent* path
         if (waypoint->edges[i] == edge)
         {
             isEdgeAdded = true;
-            edgeIndex = static_cast<DAVA::uint32>(i);
+            edgeIndex = i;
             break;
         }
     }
@@ -168,7 +168,7 @@ EdgeEditCommand::EdgeEditCommand(SceneEditor2* scene_, DAVA::PathComponent* path
     DVASSERT(isEdgeAdded == isRemovingCommand);
     if (isEdgeAdded == false)
     {
-        edgeIndex = static_cast<DAVA::uint32>(waypoint->edges.size());
+        edgeIndex = waypoint->edges.size();
     }
 }
 

@@ -795,7 +795,7 @@ void EntityModificationSystem::CloneEnd()
                 }
                 else
                 {
-                    addadingDelegate->PerformAddading(origEntity, clonedEntities[i]);
+                    addadingDelegate->PerformAdding(origEntity, clonedEntities[i]);
                 }
             }
 

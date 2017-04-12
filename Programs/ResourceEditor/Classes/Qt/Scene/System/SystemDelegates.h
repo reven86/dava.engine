@@ -16,7 +16,7 @@ public:
         return false;
     }
 
-    virtual void PerformAddading(DAVA::Entity* sourceEntity, DAVA::Entity* clonedEntity)
+    virtual void PerformAdding(DAVA::Entity* sourceEntity, DAVA::Entity* clonedEntity)
     {
         DVASSERT(false);
     }

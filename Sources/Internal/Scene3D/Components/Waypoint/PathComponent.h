@@ -31,7 +31,7 @@ public:
         KeyedArchive* properties;
 
     public:
-        void AddEdge(Edge* edge); // UVR TODO
+        void AddEdge(Edge* edge);
         void RemoveEdge(Edge* edge);
 
         void SetProperties(KeyedArchive* p);
@@ -93,7 +93,7 @@ public:
     void Serialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
     void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
 
-    void AddPoint(Waypoint* point); // UVR TODO
+    void AddPoint(Waypoint* point);
     void InsertPoint(Waypoint* point, uint32 beforeIndex);
     void RemovePoint(Waypoint* point);
     void ExtractPoint(Waypoint* point);

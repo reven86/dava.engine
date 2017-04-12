@@ -173,6 +173,7 @@ void PathSystem::RemoveEntity(DAVA::Entity* entity)
 
 void PathSystem::AddComponent(DAVA::Entity* entity, DAVA::Component* component)
 {
+    DVASSERT(component->GetType() == DAVA::Component::PATH_COMPONENT);
     InitPathComponent(static_cast<DAVA::PathComponent*>(component));
 }
 
@@ -222,14 +223,14 @@ void PathSystem::OnEdgeRemoved(DAVA::PathComponent* path, DAVA::PathComponent::W
 
 void PathSystem::OnWaypointDeleted(DAVA::PathComponent* path, DAVA::PathComponent::Waypoint* waypoint)
 {
-    DVASSERT(entityCache.count(waypoint) > 0);
-    entityCache.erase(waypoint);
+    size_t erasedCount = entityCache.erase(waypoint);
+    DVASSERT(erasedCount > 0);
 }
 
 void PathSystem::OnEdgeDeleted(DAVA::PathComponent* path, DAVA::PathComponent::Waypoint* waypoint, DAVA::PathComponent::Edge* edge)
 {
-    DVASSERT(edgeComponentCache.count(edge) > 0);
     auto iter = edgeComponentCache.find(edge);
+    DVASSERT(iter != edgeComponentCache.end());
     SafeDelete(iter->second);
     edgeComponentCache.erase(iter);
 }
@@ -504,18 +505,18 @@ void PathSystem::ExpandPathEntity(DAVA::Entity* pathEntity)
     for (int32 i = 0; i < pathEntity->GetChildrenCount(); ++i)
     {
         Entity* child = pathEntity->GetChild(i);
-        for (uint32 waypointIndex = 0; waypointIndex < child->GetComponentCount(Component::WAYPOINT_COMPONENT); ++waypointIndex)
+        WaypointComponent* component = GetWaypointComponent(child);
+        WaypointKey key;
+        key.path = component->GetPath();
+        key.waypoint = component->GetWaypoint();
+
+        MappingValue value;
+        value.entity = RefPtr<Entity>::ConstructWithRetain(child);
+
+        waypointToEntity.emplace(key, value);
+        if (entityCache.count(key.waypoint) == 0)
         {
-            WaypointComponent* component = static_cast<WaypointComponent*>(child->GetComponent(Component::WAYPOINT_COMPONENT, waypointIndex));
-
-            WaypointKey key;
-            key.path = component->GetPath();
-            key.waypoint = component->GetWaypoint();
-
-            MappingValue value;
-            value.entity = RefPtr<Entity>::ConstructWithRetain(child);
-
-            waypointToEntity.emplace(key, value);
+            entityCache[key.waypoint] = value.entity;
         }
 
         for (uint32 edgeIndex = 0; edgeIndex < child->GetComponentCount(Component::EDGE_COMPONENT); ++edgeIndex)

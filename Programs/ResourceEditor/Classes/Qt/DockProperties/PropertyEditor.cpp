@@ -842,7 +842,7 @@ void PropertyEditor::CommandExecuted(SceneEditor2* scene, const RECommandNotific
 
     if (shouldReset)
     {
-        UpdateSelectionLazy();
+        propertiesUpdater->Update();
     }
     else
     {
