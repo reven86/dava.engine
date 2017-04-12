@@ -41,7 +41,7 @@ void FindInProjectModule::PostInit()
     connections.AddConnection(findInProjectAction, &QAction::triggered, MakeFunction(this, &FindInProjectModule::OnFindInProject));
 
     TArc::ActionPlacementInfo placementInfo(TArc::CreateMenuPoint("Find", TArc::InsertionParams(TArc::InsertionParams::eInsertionMethod::AfterItem)));
-    ui->AddAction(QEGlobal::windowKey, placementInfo, findInProjectAction);
+    ui->AddAction(DAVA::TArc::mainWindowKey, placementInfo, findInProjectAction);
 }
 
 void FindInProjectModule::OnFindInProject()

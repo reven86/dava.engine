@@ -74,7 +74,7 @@ void SceneManagerModule::OnRenderSystemInitialized(DAVA::Window* w)
     DAVA::eGPUFamily family = static_cast<DAVA::eGPUFamily>(val);
     DAVA::Texture::SetGPULoadingOrder({ family });
 
-    QtMainWindow* wnd = qobject_cast<QtMainWindow*>(GetUI()->GetWindow(REGlobal::MainWindowKey));
+    QtMainWindow* wnd = qobject_cast<QtMainWindow*>(GetUI()->GetWindow(DAVA::TArc::mainWindowKey));
     DVASSERT(wnd != nullptr);
     if (wnd != nullptr)
     {
@@ -107,7 +107,7 @@ bool SceneManagerModule::ControlWindowClosing(const DAVA::TArc::WindowKey& key, 
         params.message = QStringLiteral("Do you want to quit anyway?");
         params.buttons = ModalMessageParams::Yes | ModalMessageParams::No;
         params.defaultButton = ModalMessageParams::No;
-        if (GetUI()->ShowModalMessage(REGlobal::MainWindowKey, params) == ModalMessageParams::Yes)
+        if (GetUI()->ShowModalMessage(DAVA::TArc::mainWindowKey, params) == ModalMessageParams::Yes)
         {
             event->accept();
             CloseAllScenes(false);
@@ -192,9 +192,9 @@ void SceneManagerModule::PostInit()
         fieldBinder->BindField(fieldDescr, DAVA::MakeFunction(this, &SceneManagerModule::OnProjectPathChanged));
     }
 
-    RecentMenuItems::Params params(REGlobal::MainWindowKey, accessor, "Recent scenes");
+    RecentMenuItems::Params params(DAVA::TArc::mainWindowKey, accessor, "Recent scenes");
     params.ui = ui;
-    params.menuSubPath << "File";
+    params.menuSubPath << MenuItems::menuFile;
     params.predicateFieldDescriptor.fieldName = DAVA::FastName(ProjectManagerData::ProjectPathProperty);
     params.predicateFieldDescriptor.type = DAVA::ReflectedTypeDB::Get<ProjectManagerData>();
     params.enablePredicate = [](const DAVA::Any& v) -> DAVA::Any
@@ -236,7 +236,7 @@ void SceneManagerModule::CreateModuleControls(DAVA::TArc::UI* ui)
     connections.AddConnection(moveToSelection, &QAction::triggered, DAVA::MakeFunction(this, &SceneManagerModule::MoveToSelection));
 
     PanelKey panelKey(QStringLiteral("SceneTabBar"), CentralPanelInfo());
-    GetUI()->AddView(REGlobal::MainWindowKey, panelKey, renderWidget);
+    GetUI()->AddView(DAVA::TArc::mainWindowKey, panelKey, renderWidget);
 }
 
 void SceneManagerModule::CreateModuleActions(DAVA::TArc::UI* ui)
@@ -260,10 +260,10 @@ void SceneManagerModule::CreateModuleActions(DAVA::TArc::UI* ui)
         connections.AddConnection(action, &QAction::triggered, DAVA::Bind(&SceneManagerModule::CreateNewScene, this));
 
         ActionPlacementInfo placementInfo;
-        placementInfo.AddPlacementPoint(CreateMenuPoint("File", { InsertionParams::eInsertionMethod::BeforeItem, "menuImport" }));
+        placementInfo.AddPlacementPoint(CreateMenuPoint(MenuItems::menuFile, { InsertionParams::eInsertionMethod::BeforeItem, "menuImport" }));
         placementInfo.AddPlacementPoint(CreateToolbarPoint("mainToolBar", { InsertionParams::eInsertionMethod::BeforeItem }));
 
-        ui->AddAction(REGlobal::MainWindowKey, placementInfo, action);
+        ui->AddAction(mainWindowKey, placementInfo, action);
 
         RegisterOperation(REGlobal::CreateNewSceneOperation.ID, this, &SceneManagerModule::CreateNewScene);
     }
@@ -284,10 +284,10 @@ void SceneManagerModule::CreateModuleActions(DAVA::TArc::UI* ui)
         connections.AddConnection(action, &QAction::triggered, DAVA::Bind(&SceneManagerModule::OpenScene, this));
 
         ActionPlacementInfo placementInfo;
-        placementInfo.AddPlacementPoint(CreateMenuPoint("File", { InsertionParams::eInsertionMethod::AfterItem, "New Scene" }));
+        placementInfo.AddPlacementPoint(CreateMenuPoint(MenuItems::menuFile, { InsertionParams::eInsertionMethod::AfterItem, "New Scene" }));
         placementInfo.AddPlacementPoint(CreateToolbarPoint("mainToolBar", { InsertionParams::eInsertionMethod::AfterItem, "New Scene" }));
 
-        ui->AddAction(REGlobal::MainWindowKey, placementInfo, action);
+        ui->AddAction(mainWindowKey, placementInfo, action);
     }
 
     // Open Scene Quickly Action
@@ -323,9 +323,9 @@ void SceneManagerModule::CreateModuleActions(DAVA::TArc::UI* ui)
         connections.AddConnection(action, &QAction::triggered, DAVA::Bind(&SceneManagerModule::OpenSceneQuckly, this));
 
         ActionPlacementInfo placementInfo;
-        placementInfo.AddPlacementPoint(CreateMenuPoint("File", { InsertionParams::eInsertionMethod::AfterItem, "Open Scene" }));
+        placementInfo.AddPlacementPoint(CreateMenuPoint(MenuItems::menuFile, { InsertionParams::eInsertionMethod::AfterItem, "Open Scene" }));
 
-        ui->AddAction(REGlobal::MainWindowKey, placementInfo, action);
+        ui->AddAction(mainWindowKey, placementInfo, action);
     }
 
     // Save Scene Action
@@ -344,10 +344,10 @@ void SceneManagerModule::CreateModuleActions(DAVA::TArc::UI* ui)
         connections.AddConnection(action, &QAction::triggered, DAVA::Bind(static_cast<void (SceneManagerModule::*)(bool)>(&SceneManagerModule::SaveScene), this, false));
 
         ActionPlacementInfo placementInfo;
-        placementInfo.AddPlacementPoint(CreateMenuPoint("File", { InsertionParams::eInsertionMethod::AfterItem, "Open Scene Quickly" }));
+        placementInfo.AddPlacementPoint(CreateMenuPoint(MenuItems::menuFile, { InsertionParams::eInsertionMethod::AfterItem, "Open Scene Quickly" }));
         placementInfo.AddPlacementPoint(CreateToolbarPoint("mainToolBar", { InsertionParams::eInsertionMethod::AfterItem, "Open Scene" }));
 
-        ui->AddAction(REGlobal::MainWindowKey, placementInfo, action);
+        ui->AddAction(mainWindowKey, placementInfo, action);
     }
 
     // Save Scene As Action
@@ -366,9 +366,9 @@ void SceneManagerModule::CreateModuleActions(DAVA::TArc::UI* ui)
         connections.AddConnection(action, &QAction::triggered, DAVA::Bind(static_cast<void (SceneManagerModule::*)(bool)>(&SceneManagerModule::SaveScene), this, true));
 
         ActionPlacementInfo placementInfo;
-        placementInfo.AddPlacementPoint(CreateMenuPoint("File", { InsertionParams::eInsertionMethod::AfterItem, "Save Scene" }));
+        placementInfo.AddPlacementPoint(CreateMenuPoint(MenuItems::menuFile, { InsertionParams::eInsertionMethod::AfterItem, "Save Scene" }));
 
-        ui->AddAction(REGlobal::MainWindowKey, placementInfo, action);
+        ui->AddAction(mainWindowKey, placementInfo, action);
     }
 
     // Separator
@@ -378,10 +378,10 @@ void SceneManagerModule::CreateModuleActions(DAVA::TArc::UI* ui)
         action->setSeparator(true);
 
         ActionPlacementInfo placementInfo;
-        placementInfo.AddPlacementPoint(CreateMenuPoint("File", { InsertionParams::eInsertionMethod::AfterItem, "Save Scene As" }));
+        placementInfo.AddPlacementPoint(CreateMenuPoint(MenuItems::menuFile, { InsertionParams::eInsertionMethod::AfterItem, "Save Scene As" }));
         placementInfo.AddPlacementPoint(CreateToolbarPoint("mainToolBar", { InsertionParams::eInsertionMethod::AfterItem, "Save Scene" }));
 
-        ui->AddAction(REGlobal::MainWindowKey, placementInfo, action);
+        ui->AddAction(mainWindowKey, placementInfo, action);
     }
 
     // Export
@@ -396,11 +396,11 @@ void SceneManagerModule::CreateModuleActions(DAVA::TArc::UI* ui)
         });
 
         ActionPlacementInfo placementInfo;
-        placementInfo.AddPlacementPoint(CreateMenuPoint("File", { InsertionParams::eInsertionMethod::AfterItem, "saveSeparator" }));
+        placementInfo.AddPlacementPoint(CreateMenuPoint(MenuItems::menuFile, { InsertionParams::eInsertionMethod::AfterItem, "saveSeparator" }));
 
         connections.AddConnection(action, &QAction::triggered, DAVA::MakeFunction(this, &SceneManagerModule::ExportScene));
 
-        ui->AddAction(REGlobal::MainWindowKey, placementInfo, action);
+        ui->AddAction(mainWindowKey, placementInfo, action);
     }
 
     // Save To Folder
@@ -414,12 +414,12 @@ void SceneManagerModule::CreateModuleActions(DAVA::TArc::UI* ui)
         });
 
         ActionPlacementInfo placementInfo;
-        placementInfo.AddPlacementPoint(CreateMenuPoint("File", { InsertionParams::eInsertionMethod::AfterItem, "Export" }));
+        placementInfo.AddPlacementPoint(CreateMenuPoint(MenuItems::menuFile, { InsertionParams::eInsertionMethod::AfterItem, "Export" }));
 
-        ui->AddAction(REGlobal::MainWindowKey, placementInfo, action);
+        ui->AddAction(mainWindowKey, placementInfo, action);
 
         QList<QString> menusPath;
-        menusPath << "File"
+        menusPath << MenuItems::menuFile
                   << "Save To Folder With Children";
 
         {
@@ -428,7 +428,7 @@ void SceneManagerModule::CreateModuleActions(DAVA::TArc::UI* ui)
 
             ActionPlacementInfo placementInfo;
             placementInfo.AddPlacementPoint(CreateMenuPoint(menusPath));
-            ui->AddAction(REGlobal::MainWindowKey, placementInfo, action);
+            ui->AddAction(DAVA::TArc::mainWindowKey, placementInfo, action);
         }
 
         {
@@ -437,7 +437,7 @@ void SceneManagerModule::CreateModuleActions(DAVA::TArc::UI* ui)
 
             ActionPlacementInfo placementInfo;
             placementInfo.AddPlacementPoint(CreateMenuPoint(menusPath));
-            ui->AddAction(REGlobal::MainWindowKey, placementInfo, action);
+            ui->AddAction(DAVA::TArc::mainWindowKey, placementInfo, action);
         }
     }
 
@@ -448,8 +448,8 @@ void SceneManagerModule::CreateModuleActions(DAVA::TArc::UI* ui)
         action->setSeparator(true);
 
         ActionPlacementInfo placementInfo;
-        placementInfo.AddPlacementPoint(CreateMenuPoint("File", { InsertionParams::eInsertionMethod::AfterItem, "Save To Folder With Children" }));
-        ui->AddAction(REGlobal::MainWindowKey, placementInfo, action);
+        placementInfo.AddPlacementPoint(CreateMenuPoint(MenuItems::menuFile, { InsertionParams::eInsertionMethod::AfterItem, "Save To Folder With Children" }));
+        ui->AddAction(mainWindowKey, placementInfo, action);
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////
@@ -466,14 +466,14 @@ void SceneManagerModule::CreateModuleActions(DAVA::TArc::UI* ui)
         return v.CanCast<SceneData::TSceneType>() && v.Cast<SceneData::TSceneType>().Get() != nullptr;
     });
 
-    ActionPlacementInfo placementGPU(CreateMenuPoint("View", InsertionParams(InsertionParams::eInsertionMethod::BeforeItem)));
-    ui->AddAction(REGlobal::MainWindowKey, placementGPU, actionGPU);
+    ActionPlacementInfo placementGPU(CreateMenuPoint(MenuItems::menuView, InsertionParams(InsertionParams::eInsertionMethod::BeforeItem)));
+    ui->AddAction(DAVA::TArc::mainWindowKey, placementGPU, actionGPU);
 
     QActionGroup* actionGroup = new QActionGroup(actionGPU);
     actionGroup->setExclusive(true);
 
     DAVA::Vector<QAction*> gpuFormatActions;
-    ActionPlacementInfo placement(CreateMenuPoint(QList<QString>() << "View"
+    ActionPlacementInfo placement(CreateMenuPoint(QList<QString>() << MenuItems::menuView
                                                                    << "GPU"));
 
     auto createGpuAction = [&](DAVA::eGPUFamily gpu)
@@ -498,7 +498,7 @@ void SceneManagerModule::CreateModuleActions(DAVA::TArc::UI* ui)
                                          });
         connections.AddConnection(action, &QAction::triggered, DAVA::Bind(&SceneManagerModule::ReloadTextures, this, gpu));
 
-        ui->AddAction(REGlobal::MainWindowKey, placement, action);
+        ui->AddAction(DAVA::TArc::mainWindowKey, placement, action);
         gpuFormatActions.push_back(action);
     };
 
@@ -513,7 +513,7 @@ void SceneManagerModule::CreateModuleActions(DAVA::TArc::UI* ui)
         action->setObjectName("originSeparator");
         action->setSeparator(true);
 
-        ui->AddAction(REGlobal::MainWindowKey, placement, action);
+        ui->AddAction(DAVA::TArc::mainWindowKey, placement, action);
         gpuFormatActions.push_back(action);
     }
 
@@ -567,7 +567,7 @@ void SceneManagerModule::CreateModuleActions(DAVA::TArc::UI* ui)
         AttachWidgetToAction(action, toolButton);
 
         ActionPlacementInfo placement(CreateToolbarPoint("mainToolBar", InsertionParams(InsertionParams::eInsertionMethod::AfterItem)));
-        ui->AddAction(REGlobal::MainWindowKey, placement, action);
+        ui->AddAction(DAVA::TArc::mainWindowKey, placement, action);
     }
 }
 
@@ -590,7 +590,7 @@ void SceneManagerModule::CreateNewScene()
     waitDlgParams.message = QStringLiteral("Creating new scene");
     waitDlgParams.needProgressBar = false;
 
-    std::unique_ptr<WaitHandle> waitHandle = ui->ShowWaitDialog(REGlobal::MainWindowKey, waitDlgParams);
+    std::unique_ptr<WaitHandle> waitHandle = ui->ShowWaitDialog(DAVA::TArc::mainWindowKey, waitDlgParams);
 
     DAVA::FilePath scenePath = QString("newscene%1.sc2").arg(++newSceneCounter).toStdString();
     DAVA::RefPtr<SceneEditor2> scene = OpenSceneImpl(scenePath);
@@ -615,7 +615,7 @@ void SceneManagerModule::OpenScene()
     params.filters = QStringLiteral("DAVA Scene V2 (*.sc2)");
     params.title = QStringLiteral("Open scene file");
 
-    QString scenePath = GetUI()->GetOpenFileName(REGlobal::MainWindowKey, params);
+    QString scenePath = GetUI()->GetOpenFileName(DAVA::TArc::mainWindowKey, params);
     OpenSceneByPath(DAVA::FilePath(scenePath.toStdString()));
 }
 
@@ -627,7 +627,7 @@ void SceneManagerModule::OpenSceneQuckly()
     DAVA::FileSystem* fileSystem = GetAccessor()->GetEngineContext()->fileSystem;
     if (fileSystem->Exists(cachedPath))
     {
-        QString path = FindFileDialog::GetFilePath(sceneFilesCache.get(), "sc2", GetUI()->GetWindow(REGlobal::MainWindowKey));
+        QString path = FindFileDialog::GetFilePath(sceneFilesCache.get(), "sc2", GetUI()->GetWindow(DAVA::TArc::mainWindowKey));
         if (!path.isEmpty())
         {
             OpenSceneByPath(DAVA::FilePath(path.toStdString()));
@@ -657,7 +657,7 @@ void SceneManagerModule::OpenSceneByPath(const DAVA::FilePath& scenePath)
                          .arg(scenePath.GetAbsolutePathname().c_str())
                          .arg(projectPath.GetAbsolutePathname().c_str());
 
-        GetUI()->ShowModalMessage(REGlobal::MainWindowKey, params);
+        GetUI()->ShowModalMessage(DAVA::TArc::mainWindowKey, params);
         return;
     }
 
@@ -712,7 +712,7 @@ void SceneManagerModule::OpenSceneByPath(const DAVA::FilePath& scenePath)
     waitDlgParams.message = QString("Opening scene\n%1").arg(scenePath.GetAbsolutePathname().c_str());
     waitDlgParams.needProgressBar = false;
 
-    std::unique_ptr<WaitHandle> waitHandle = ui->ShowWaitDialog(REGlobal::MainWindowKey, waitDlgParams);
+    std::unique_ptr<WaitHandle> waitHandle = ui->ShowWaitDialog(DAVA::TArc::mainWindowKey, waitDlgParams);
 
     DAVA::RefPtr<SceneEditor2> scene = OpenSceneImpl(scenePath);
     std::unique_ptr<SceneData> sceneData = std::make_unique<SceneData>();
@@ -737,7 +737,7 @@ void SceneManagerModule::AddSceneByPath(const DAVA::FilePath& scenePath)
         WaitDialogParams waitDlgParams;
         waitDlgParams.message = QString("Add object to scene\n%1").arg(scenePath.GetAbsolutePathname().c_str());
         waitDlgParams.needProgressBar = false;
-        std::unique_ptr<WaitHandle> waitHandle = ui->ShowWaitDialog(REGlobal::MainWindowKey, waitDlgParams);
+        std::unique_ptr<WaitHandle> waitHandle = ui->ShowWaitDialog(DAVA::TArc::mainWindowKey, waitDlgParams);
 
         sceneEditor->structureSystem->Add(scenePath);
     }
@@ -796,14 +796,14 @@ void SceneManagerModule::SaveSceneToFolder(bool compressedTextures)
         params.title = QStringLiteral("Save to folder");
         params.message = QStringLiteral("Can't save not saved scene.");
         params.buttons = ModalMessageParams::Ok;
-        ui->ShowModalMessage(REGlobal::MainWindowKey, params);
+        ui->ShowModalMessage(DAVA::TArc::mainWindowKey, params);
         return;
     }
 
     DirectoryDialogParams dirDlgParams;
     dirDlgParams.dir = QString("/");
     dirDlgParams.title = QString("Open Folder");
-    QString path = ui->GetExistingDirectory(REGlobal::MainWindowKey, dirDlgParams);
+    QString path = ui->GetExistingDirectory(DAVA::TArc::mainWindowKey, dirDlgParams);
     if (path.isEmpty())
     {
         return;
@@ -812,7 +812,7 @@ void SceneManagerModule::SaveSceneToFolder(bool compressedTextures)
     WaitDialogParams waitDlgParams;
     waitDlgParams.needProgressBar = false;
     waitDlgParams.message = QStringLiteral("Save with Children.\nPlease wait...");
-    ui->ShowWaitDialog(REGlobal::MainWindowKey, waitDlgParams);
+    ui->ShowWaitDialog(DAVA::TArc::mainWindowKey, waitDlgParams);
 
     DAVA::FilePath folder(path.toStdString());
     folder.MakeDirectoryPathname();
@@ -916,7 +916,7 @@ void SceneManagerModule::ReloadTextures(DAVA::eGPUFamily gpu)
             params.min = 0;
             params.max = static_cast<int>(allScenesTextures.size());
 
-            std::unique_ptr<WaitHandle> waitHandle = GetUI()->ShowWaitDialog(REGlobal::MainWindowKey, params);
+            std::unique_ptr<WaitHandle> waitHandle = GetUI()->ShowWaitDialog(DAVA::TArc::mainWindowKey, params);
 
             DAVA::TexturesMap::const_iterator it = allScenesTextures.begin();
             DAVA::TexturesMap::const_iterator end = allScenesTextures.end();
@@ -1047,7 +1047,7 @@ void SceneManagerModule::OnDrop(QObject* target, QDropEvent* event)
         params.min = 0;
         params.max = static_cast<DAVA::uint32>(files.size());
 
-        std::unique_ptr<WaitHandle> waitHandle = GetUI()->ShowWaitDialog(REGlobal::MainWindowKey, params);
+        std::unique_ptr<WaitHandle> waitHandle = GetUI()->ShowWaitDialog(DAVA::TArc::mainWindowKey, params);
         for (size_t i = 0; i < files.size(); ++i)
         {
             const DAVA::FilePath& path = files[i];
@@ -1096,7 +1096,7 @@ bool SceneManagerModule::CanCloseScene(SceneData* data)
     params.message = "Do you want to save changes, made to scene?";
     params.title = "Scene was changed";
 
-    ModalMessageParams::Button answer = ui->ShowModalMessage(REGlobal::MainWindowKey, params);
+    ModalMessageParams::Button answer = ui->ShowModalMessage(DAVA::TArc::mainWindowKey, params);
 
     if (answer == ModalMessageParams::Cancel)
     {
@@ -1145,7 +1145,7 @@ DAVA::RefPtr<SceneEditor2> SceneManagerModule::OpenSceneImpl(const DAVA::FilePat
             params.message = QStringLiteral("Unexpected opening error. See logs for more info.");
             params.title = QStringLiteral("Open scene error.");
 
-            GetUI()->ShowModalMessage(REGlobal::MainWindowKey, params);
+            GetUI()->ShowModalMessage(DAVA::TArc::mainWindowKey, params);
         }
     }
     scene->EnableEditorSystems();
@@ -1194,7 +1194,7 @@ bool SceneManagerModule::SaveSceneImpl(DAVA::RefPtr<SceneEditor2> scene, const D
         params.buttons = ModalMessageParams::Ok;
         params.title = QStringLiteral("Save error");
         params.message = QStringLiteral("An error occurred while saving the scene.See log for more info.");
-        ui->ShowModalMessage(REGlobal::MainWindowKey, params);
+        ui->ShowModalMessage(DAVA::TArc::mainWindowKey, params);
         return false;
     }
 
@@ -1224,7 +1224,7 @@ DAVA::FilePath SceneManagerModule::GetSceneSavePath(const DAVA::RefPtr<SceneEdit
     params.dir = QString::fromStdString(initialPath.GetAbsolutePathname());
     params.title = QStringLiteral("Save scene as");
     params.filters = "DAVA Scene V2 (*.sc2)";
-    QString saveScenePath = GetUI()->GetSaveFileName(REGlobal::MainWindowKey, params);
+    QString saveScenePath = GetUI()->GetSaveFileName(DAVA::TArc::mainWindowKey, params);
     return DAVA::FilePath(saveScenePath.toStdString());
 }
 
@@ -1249,7 +1249,7 @@ DAVA::FilePath SceneManagerModule::SaveEmitterFallback(const DAVA::String& entit
     params.title = QString("Save Particle Emitter %1").arg(emitterName.c_str());
     params.filters = QStringLiteral("YAML File (*.yaml)");
 
-    QString savePath = GetUI()->GetSaveFileName(REGlobal::MainWindowKey, params);
+    QString savePath = GetUI()->GetSaveFileName(DAVA::TArc::mainWindowKey, params);
     DAVA::FilePath result(savePath.toStdString());
     if (!result.IsEmpty())
     {
@@ -1281,7 +1281,7 @@ bool SceneManagerModule::IsSceneCompatible(const DAVA::FilePath& scenePath)
             params.message = QString("Scene was created with older version or another branch of ResourceEditor. Saving scene will broke compatibility.\nScene version: %1 (required %2)\n\nNext tags will be added:\n%3\n\nContinue opening?").arg(sceneVersion.version).arg(curVersion).arg(branches.c_str());
             params.buttons = ModalMessageParams::Open | ModalMessageParams::Cancel;
             params.defaultButton = ModalMessageParams::Open;
-            ModalMessageParams::Button result = GetUI()->ShowModalMessage(REGlobal::MainWindowKey, params);
+            ModalMessageParams::Button result = GetUI()->ShowModalMessage(DAVA::TArc::mainWindowKey, params);
 
             if (result != ModalMessageParams::Open)
             {
@@ -1293,7 +1293,7 @@ bool SceneManagerModule::IsSceneCompatible(const DAVA::FilePath& scenePath)
         {
             const DAVA::String& branches = DAVA::VersionInfo::Instance()->NoncompatibleTagsMessage(sceneVersion);
             params.message = QString("Scene was created with incompatible version or branch of ResourceEditor.\nScene version: %1 (required %2)\nNext tags aren't implemented in current branch:\n%3").arg(sceneVersion.version).arg(curVersion).arg(branches.c_str());
-            GetUI()->ShowModalMessage(REGlobal::MainWindowKey, params);
+            GetUI()->ShowModalMessage(DAVA::TArc::mainWindowKey, params);
             return false;
         }
         default:
@@ -1344,7 +1344,7 @@ bool SceneManagerModule::SaveTileMaskInAllScenes()
                     params.buttons |= (ModalMessageParams::YesToAll | ModalMessageParams::NoToAll);
                 }
                 params.defaultButton = ModalMessageParams::Cancel;
-                answer = GetUI()->ShowModalMessage(REGlobal::MainWindowKey, params);
+                answer = GetUI()->ShowModalMessage(DAVA::TArc::mainWindowKey, params);
             }
 
             if (answer == ModalMessageParams::Cancel)
@@ -1378,7 +1378,7 @@ bool SceneManagerModule::SaveTileMaskInScene(DAVA::RefPtr<SceneEditor2> scene)
         params.buttons = ModalMessageParams::Yes | ModalMessageParams::No | ModalMessageParams::Cancel;
         params.defaultButton = ModalMessageParams::Cancel;
 
-        ModalMessageParams::Button result = GetUI()->ShowModalMessage(REGlobal::MainWindowKey, params);
+        ModalMessageParams::Button result = GetUI()->ShowModalMessage(DAVA::TArc::mainWindowKey, params);
 
         if (result == ModalMessageParams::Cancel)
         {
@@ -1448,7 +1448,7 @@ bool SceneManagerModule::IsSavingAllowed(SceneData* sceneData)
         params.message = message;
         params.buttons = ModalMessageParams::Ok;
         params.title = "Saving is not allowed";
-        GetUI()->ShowModalMessage(REGlobal::MainWindowKey, params);
+        GetUI()->ShowModalMessage(DAVA::TArc::mainWindowKey, params);
     }
 
     return result;

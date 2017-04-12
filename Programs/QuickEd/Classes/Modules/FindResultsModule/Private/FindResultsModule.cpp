@@ -27,7 +27,7 @@ void FindResultsModule::PostInit()
     panelInfo.title = title;
     panelInfo.area = Qt::BottomDockWidgetArea;
     TArc::PanelKey panelKey(title, panelInfo);
-    GetUI()->AddView(QEGlobal::windowKey, panelKey, findResultsWidget);
+    GetUI()->AddView(DAVA::TArc::mainWindowKey, panelKey, findResultsWidget);
 
     connections.AddConnection(findResultsWidget, &FindResultsWidget::JumpToControl, MakeFunction(this, &FindResultsModule::JumpToControl));
     connections.AddConnection(findResultsWidget, &FindResultsWidget::JumpToPackage, MakeFunction(this, &FindResultsModule::JumpToPackage));

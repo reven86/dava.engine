@@ -54,9 +54,9 @@ FindInDocumentController::FindInDocumentController(DocumentsModule* documentsMod
     QObject::connect(findPreviousAction, &QAction::triggered, this, &FindInDocumentController::SelectPreviousFindResult);
 
     TArc::ActionPlacementInfo placementInfo(TArc::CreateMenuPoint("Find", TArc::InsertionParams(TArc::InsertionParams::eInsertionMethod::AfterItem)));
-    ui->AddAction(QEGlobal::windowKey, placementInfo, findInDocumentAction);
-    ui->AddAction(QEGlobal::windowKey, placementInfo, findNextAction);
-    ui->AddAction(QEGlobal::windowKey, placementInfo, findPreviousAction);
+    ui->AddAction(DAVA::TArc::mainWindowKey, placementInfo, findInDocumentAction);
+    ui->AddAction(DAVA::TArc::mainWindowKey, placementInfo, findNextAction);
+    ui->AddAction(DAVA::TArc::mainWindowKey, placementInfo, findPreviousAction);
 
     editedRootControlsFieldBinder.reset(new TArc::FieldBinder(accessor));
     TArc::FieldDescriptor editedRootControlsFieldDescriptor(ReflectedTypeDB::Get<DocumentData>(), FastName(DocumentData::editedRootControlsPropertyName));

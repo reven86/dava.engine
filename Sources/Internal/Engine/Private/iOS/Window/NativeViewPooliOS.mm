@@ -48,7 +48,7 @@
     }
 
     Class viewClass = NSClassFromString(viewClassName);
-    UIView* newView = [[[viewClass alloc] init] retain];
+    UIView* newView = [[viewClass alloc] init];
     pool.emplace_back(newView, true);
     return newView;
 }

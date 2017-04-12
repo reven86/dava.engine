@@ -5,8 +5,6 @@
 
 namespace QEGlobal
 {
-extern DAVA::TArc::WindowKey windowKey;
-
 //open las opened project. If no one project was opened - do nothing
 DECLARE_OPERATION_ID(OpenLastProject);
 
