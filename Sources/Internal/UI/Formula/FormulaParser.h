@@ -20,31 +20,25 @@ public:
 
 private:
     std::shared_ptr<FormulaDataVector> ParseVector();
-    std::shared_ptr<FormulaExpression> ParseBinaryOp(int priority);
+    std::shared_ptr<FormulaExpression> ParseLogicalOr();
+    std::shared_ptr<FormulaExpression> ParseLogicalAnd();
+    std::shared_ptr<FormulaExpression> ParseEquality();
+    std::shared_ptr<FormulaExpression> ParseRelation();
+    std::shared_ptr<FormulaExpression> ParseAdditive();
+    std::shared_ptr<FormulaExpression> ParseMultiplicative();
     std::shared_ptr<FormulaExpression> ParseUnary();
-    std::shared_ptr<FormulaExpression> ParseRef();
+    std::shared_ptr<FormulaExpression> ParsePostfix();
+    std::shared_ptr<FormulaExpression> ParsePrimary();
     std::shared_ptr<FormulaExpression> ParseFunction(const String& identifier);
-    std::shared_ptr<FormulaExpression> ParseValue();
+    std::shared_ptr<FormulaExpression> ParseAccess(const String& identifier);
 
     FormulaToken LookToken();
     FormulaToken NextToken();
     bool IsIdentifier(const FormulaToken& token, const String& identifier);
     String GetTokenStringValue(const FormulaToken& token);
+    FormulaBinaryOperatorExpression::Operator TokenTypeToBinaryOp(FormulaToken::Type type);
 
     FormulaToken token;
-    struct OperatorPriority
-    {
-        OperatorPriority(FormulaBinaryOperatorExpression::Operator op_, int priority_)
-            : op(op_)
-            , priority(priority_)
-        {
-        }
-
-        FormulaBinaryOperatorExpression::Operator op;
-        int priority;
-    };
-    UnorderedMap<FormulaToken::Type, OperatorPriority> operators;
-
     FormulaTokenizer tokenizer;
 };
 }

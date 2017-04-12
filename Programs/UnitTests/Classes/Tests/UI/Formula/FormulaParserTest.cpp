@@ -169,6 +169,8 @@ DAVA_TESTCLASS (FormulaParserTest)
     DAVA_TEST (ParsePriorities)
     {
         TEST_VERIFY(Parse("1 + 2 - 3") == Vector<String>({ "-", "+", "1", "2", "3" }));
+        TEST_VERIFY(Parse("1+2-3") == Vector<String>({ "-", "+", "1", "2", "3" }));
+        TEST_VERIFY(Parse("1---3") == Vector<String>({ "-", "1", "-", "-", "3" }));
         TEST_VERIFY(Parse("1 * 2 / 3") == Vector<String>({ "/", "*", "1", "2", "3" }));
         TEST_VERIFY(Parse("1 + 2 / 3") == Vector<String>({ "+", "1", "/", "2", "3" }));
         TEST_VERIFY(Parse("1 + 2 < 3 - 4") == Vector<String>({ "<", "+", "1", "2", "-", "3", "4" }));
@@ -189,12 +191,15 @@ DAVA_TESTCLASS (FormulaParserTest)
     {
         TEST_VERIFY(Parse("var") == Vector<String>({ "field_var" }));
         TEST_VERIFY(Parse("a.b") == Vector<String>({ "field_b", "field_a" }));
+        Vector<String> Res = Parse("a.b.c");
+        TEST_VERIFY(Res == Vector<String>({ "field_c", "field_b", "field_a" }));
     }
 
     // FormulaParser::ParseExpression
     DAVA_TEST (ParseIndex)
     {
         TEST_VERIFY(Parse("var[25]") == Vector<String>({ "index", "field_var", "25" }));
+        TEST_VERIFY(Parse("a.var[25 + 5]") == Vector<String>({ "index", "field_var", "field_a", "+", "25", "5" }));
     }
 
     // FormulaParser::ParseMap

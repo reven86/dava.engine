@@ -87,6 +87,10 @@ DAVA_TESTCLASS (FormulaExecutorTest)
     {
         TEST_VERIFY(Execute("5") == Any(5));
         TEST_VERIFY(Execute("5 + 5") == Any(10));
+        TEST_VERIFY(Execute("7-2") == Any(5));
+        TEST_VERIFY(Execute("-2") == Any(-2));
+        TEST_VERIFY(Execute("--2") == Any(2));
+        TEST_VERIFY(Execute("1---2") == Any(-1));
     }
 
     // FormulaExecutor::Calculate
@@ -139,7 +143,7 @@ DAVA_TESTCLASS (FormulaExecutorTest)
         {
             Execute("unknownData");
         }
-        catch (const FormulaCalculationError& error)
+        catch (const FormulaError& error)
         {
             wasException = true;
         }
@@ -151,7 +155,7 @@ DAVA_TESTCLASS (FormulaExecutorTest)
         {
             Execute("unknownMethod()");
         }
-        catch (const FormulaCalculationError& error)
+        catch (const FormulaError& error)
         {
             wasException = true;
         }

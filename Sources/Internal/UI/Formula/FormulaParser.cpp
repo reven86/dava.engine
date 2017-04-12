@@ -3,6 +3,68 @@
 #include "Logger/Logger.h"
 #include "Debug/DVAssert.h"
 
+/**
+    \ingroup formula
+ 
+    grammar formula; // antlr EBNF format
+
+    expression: logicalOrExpression | vector | map;
+    vector: OPEN_SQUARE_BRACKET expression* CLOSE_SQUAR_BRACKET;
+    map: OPEN_CURLY_BRACKET (IDENTIFIER ASSIGN_SIGN expression)* CLOSE_CURLY_BRACKET;
+
+    logicalOrExpression: logicalAndExpression | logicalOrExpression OR logicalAndExpression;
+    logicalAndExpression: equalityExpression | logicalAndExpression AND equalityExpression;
+    equalityExpression: relationExpression | equalityExpression (EQ | NOT_EQ) relationExpression;
+    relationExpression: additiveExpression | relationExpression (LE | LT | GE | GT) additiveExpression;
+    additiveExpression: multiplicativeExpression | additiveExpression (PLUS | MINUS) multiplicativeExpression;
+    multiplicativeExpression: unaryExpression | multiplicativeExpression (MUL | DIV | MOD) unaryExpression;
+    unaryExpression: postfixExpression | (NOT | MINUS) unaryExpression;
+
+    postfixExpression: functionExpression | accessExpression | primaryExpression;
+
+    functionExpression: IDENTIFIER OPEN_BRACKET (expression (COMMA expression)*)? CLOSE_BRACKET;
+
+    accessExpression:
+        IDENTIFIER |
+        accessExpression DOT IDENTIFIER |
+        accessExpression OPEN_SQUARE_BRACKET expression CLOSE_SQUAR_BRACKET;
+
+    primaryExpression: BOOL | INTEGER | STRING | FLOAT | OPEN_BRACKET expression CLOSE_BRACKET;
+
+
+    BOOL: 'true' | 'false';
+    STRING: '"' (~["])* '"';
+    INTEGER: [0-9]+;
+    FLOAT: ([0-9]+)? DOT [0-9] | [0-9]+ DOT [0-9]*;
+    IDENTIFIER: ([A-Za-z] | '_') ([a-zA-Z0-9] | '_')* ;
+
+    COMMA: ',';
+    DOT: '.';
+    LT: '<';
+    LE: '<=';
+    GT: '>';
+    GE: '>=';
+    PLUS: '+';
+    MINUS: '-';
+    MUL: '*';
+    DIV: '/';
+    MOD: '%';
+    ASSIGN_SIGN: '=';
+    EQ: '==';
+    NOT_EQ: '!=';
+    NOT: '!';
+    AND: '&&';
+    OR: '|';
+    OPEN_BRACKET: '(';
+    CLOSE_BRACKET: ')';
+    OPEN_CURLY_BRACKET: '{';
+    CLOSE_CURLY_BRACKET: '}';
+    OPEN_SQUARE_BRACKET: '[';
+    CLOSE_SQUAR_BRACKET: ']';
+
+    WS : [ \t\r\n]+ -> skip ;
+ */
+
 namespace DAVA
 {
 using std::shared_ptr;
@@ -11,24 +73,6 @@ using std::make_shared;
 FormulaParser::FormulaParser(const String& str)
     : tokenizer(str)
 {
-    operators.insert({ FormulaToken::MUL, OperatorPriority(FormulaBinaryOperatorExpression::OP_MUL, 1) });
-    operators.insert({ FormulaToken::DIV, OperatorPriority(FormulaBinaryOperatorExpression::OP_DIV, 1) });
-    operators.insert({ FormulaToken::MOD, OperatorPriority(FormulaBinaryOperatorExpression::OP_MOD, 1) });
-
-    operators.insert({ FormulaToken::PLUS, OperatorPriority(FormulaBinaryOperatorExpression::OP_PLUS, 2) });
-    operators.insert({ FormulaToken::MINUS, OperatorPriority(FormulaBinaryOperatorExpression::OP_MINUS, 2) });
-
-    operators.insert({ FormulaToken::LT, OperatorPriority(FormulaBinaryOperatorExpression::OP_LT, 3) });
-    operators.insert({ FormulaToken::LE, OperatorPriority(FormulaBinaryOperatorExpression::OP_LE, 3) });
-    operators.insert({ FormulaToken::GT, OperatorPriority(FormulaBinaryOperatorExpression::OP_GT, 3) });
-    operators.insert({ FormulaToken::GE, OperatorPriority(FormulaBinaryOperatorExpression::OP_GE, 3) });
-
-    operators.insert({ FormulaToken::EQ, OperatorPriority(FormulaBinaryOperatorExpression::OP_EQ, 4) });
-    operators.insert({ FormulaToken::NOT_EQ, OperatorPriority(FormulaBinaryOperatorExpression::OP_NOT_EQ, 4) });
-
-    operators.insert({ FormulaToken::AND, OperatorPriority(FormulaBinaryOperatorExpression::OP_AND, 5) });
-
-    operators.insert({ FormulaToken::OR, OperatorPriority(FormulaBinaryOperatorExpression::OP_OR, 6) });
 }
 
 FormulaParser::~FormulaParser()
@@ -71,7 +115,7 @@ shared_ptr<FormulaExpression> FormulaParser::ParseExpression()
     }
     else
     {
-        return ParseBinaryOp(6);
+        return ParseLogicalOr();
     }
 }
 
@@ -146,21 +190,92 @@ std::shared_ptr<FormulaDataVector> FormulaParser::ParseVector()
     return vector;
 }
 
-shared_ptr<FormulaExpression> FormulaParser::ParseBinaryOp(int priority)
+std::shared_ptr<FormulaExpression> FormulaParser::ParseLogicalOr()
 {
-    if (priority == 0)
-    {
-        return ParseUnary();
-    }
-
-    shared_ptr<FormulaExpression> exp1 = ParseBinaryOp(priority - 1);
+    shared_ptr<FormulaExpression> exp1 = ParseLogicalAnd();
     FormulaToken token = LookToken();
-    UnorderedMap<FormulaToken::Type, OperatorPriority>::iterator it;
-    while ((it = operators.find(token.GetType())) != operators.end() && it->second.priority == priority)
+    while (token.GetType() == FormulaToken::OR)
     {
         NextToken();
-        shared_ptr<FormulaExpression> exp2 = ParseBinaryOp(priority - 1);
-        exp1 = make_shared<FormulaBinaryOperatorExpression>(it->second.op, exp1, exp2, token.GetLineNumber(), token.GetPositionInLine());
+        shared_ptr<FormulaExpression> exp2 = ParseLogicalAnd();
+        exp1 = make_shared<FormulaBinaryOperatorExpression>(TokenTypeToBinaryOp(token.GetType()), exp1, exp2, token.GetLineNumber(), token.GetPositionInLine());
+        token = LookToken();
+    }
+    return exp1;
+}
+
+std::shared_ptr<FormulaExpression> FormulaParser::ParseLogicalAnd()
+{
+    shared_ptr<FormulaExpression> exp1 = ParseEquality();
+    FormulaToken token = LookToken();
+    while (token.GetType() == FormulaToken::AND)
+    {
+        NextToken();
+        shared_ptr<FormulaExpression> exp2 = ParseEquality();
+        exp1 = make_shared<FormulaBinaryOperatorExpression>(TokenTypeToBinaryOp(token.GetType()), exp1, exp2, token.GetLineNumber(), token.GetPositionInLine());
+        token = LookToken();
+    }
+    return exp1;
+}
+
+std::shared_ptr<FormulaExpression> FormulaParser::ParseEquality()
+{
+    shared_ptr<FormulaExpression> exp1 = ParseRelation();
+    FormulaToken token = LookToken();
+    while (token.GetType() == FormulaToken::EQ ||
+           token.GetType() == FormulaToken::NOT_EQ)
+    {
+        NextToken();
+        shared_ptr<FormulaExpression> exp2 = ParseRelation();
+        exp1 = make_shared<FormulaBinaryOperatorExpression>(TokenTypeToBinaryOp(token.GetType()), exp1, exp2, token.GetLineNumber(), token.GetPositionInLine());
+        token = LookToken();
+    }
+    return exp1;
+}
+
+std::shared_ptr<FormulaExpression> FormulaParser::ParseRelation()
+{
+    shared_ptr<FormulaExpression> exp1 = ParseAdditive();
+    FormulaToken token = LookToken();
+    while (token.GetType() == FormulaToken::LE ||
+           token.GetType() == FormulaToken::LT ||
+           token.GetType() == FormulaToken::GE ||
+           token.GetType() == FormulaToken::GT)
+    {
+        NextToken();
+        shared_ptr<FormulaExpression> exp2 = ParseAdditive();
+        exp1 = make_shared<FormulaBinaryOperatorExpression>(TokenTypeToBinaryOp(token.GetType()), exp1, exp2, token.GetLineNumber(), token.GetPositionInLine());
+        token = LookToken();
+    }
+    return exp1;
+}
+
+std::shared_ptr<FormulaExpression> FormulaParser::ParseAdditive()
+{
+    shared_ptr<FormulaExpression> exp1 = ParseMultiplicative();
+    FormulaToken token = LookToken();
+    while (token.GetType() == FormulaToken::PLUS ||
+           token.GetType() == FormulaToken::MINUS)
+    {
+        NextToken();
+        shared_ptr<FormulaExpression> exp2 = ParseMultiplicative();
+        exp1 = make_shared<FormulaBinaryOperatorExpression>(TokenTypeToBinaryOp(token.GetType()), exp1, exp2, token.GetLineNumber(), token.GetPositionInLine());
+        token = LookToken();
+    }
+    return exp1;
+}
+
+std::shared_ptr<FormulaExpression> FormulaParser::ParseMultiplicative()
+{
+    shared_ptr<FormulaExpression> exp1 = ParseUnary();
+    FormulaToken token = LookToken();
+    while (token.GetType() == FormulaToken::MUL ||
+           token.GetType() == FormulaToken::DIV ||
+           token.GetType() == FormulaToken::MOD)
+    {
+        NextToken();
+        shared_ptr<FormulaExpression> exp2 = ParseUnary();
+        exp1 = make_shared<FormulaBinaryOperatorExpression>(TokenTypeToBinaryOp(token.GetType()), exp1, exp2, token.GetLineNumber(), token.GetPositionInLine());
         token = LookToken();
     }
     return exp1;
@@ -169,29 +284,12 @@ shared_ptr<FormulaExpression> FormulaParser::ParseBinaryOp(int priority)
 shared_ptr<FormulaExpression> FormulaParser::ParseUnary()
 {
     FormulaToken token = LookToken();
-    if (token.GetType() == FormulaToken::IDENTIFIER)
-    {
-        return ParseRef();
-    }
-    else if (token.GetType() == FormulaToken::OPEN_BRACKET)
-    {
-        NextToken();
-        shared_ptr<FormulaExpression> exp = ParseExpression();
 
-        token = LookToken();
-        if (token.GetType() != FormulaToken::CLOSE_BRACKET)
-        {
-            DAVA_THROW(FormulaError, "')' expected", token.GetLineNumber(), token.GetPositionInLine());
-        }
-        NextToken(); // close bracket
-
-        return exp;
-    }
-    else if (token.GetType() == FormulaToken::NOT)
+    if (token.GetType() == FormulaToken::NOT)
     {
         NextToken();
         token = LookToken();
-        shared_ptr<FormulaExpression> exp = ParseExpression();
+        shared_ptr<FormulaExpression> exp = ParseUnary();
         if (!exp)
         {
             DAVA_THROW(FormulaError, "Expression expected", token.GetLineNumber(), token.GetPositionInLine());
@@ -203,7 +301,7 @@ shared_ptr<FormulaExpression> FormulaParser::ParseUnary()
     {
         NextToken();
         token = LookToken();
-        shared_ptr<FormulaExpression> exp = ParseExpression();
+        shared_ptr<FormulaExpression> exp = ParseUnary();
         if (!exp)
         {
             DAVA_THROW(FormulaError, "Expression expected", token.GetLineNumber(), token.GetPositionInLine());
@@ -213,35 +311,120 @@ shared_ptr<FormulaExpression> FormulaParser::ParseUnary()
     }
     else
     {
-        return ParseValue();
+        return ParsePostfix();
     }
 }
 
-std::shared_ptr<FormulaExpression> FormulaParser::ParseRef()
+std::shared_ptr<FormulaExpression> FormulaParser::ParsePostfix()
 {
     FormulaToken token = LookToken();
 
-    if (token.GetType() != FormulaToken::IDENTIFIER)
+    if (token.GetType() == FormulaToken::IDENTIFIER)
     {
-        DAVA_THROW(FormulaError, "Expected identifier.", token.GetLineNumber(), token.GetPositionInLine());
-    }
-    NextToken();
+        NextToken();
+        String identifier = GetTokenStringValue(token);
 
-    String identifier = GetTokenStringValue(token);
-
-    token = LookToken();
-
-    shared_ptr<FormulaExpression> exp;
-    if (token.GetType() == FormulaToken::OPEN_BRACKET)
-    {
-        exp = ParseFunction(identifier);
+        token = LookToken();
+        if (token.GetType() == FormulaToken::OPEN_BRACKET)
+        {
+            return ParseFunction(identifier);
+        }
+        else
+        {
+            return ParseAccess(identifier);
+        }
     }
     else
     {
-        exp = make_shared<FormulaFieldAccessExpression>(nullptr, identifier, token.GetLineNumber(), token.GetPositionInLine());
+        return ParsePrimary();
+    }
+}
+
+std::shared_ptr<FormulaExpression> FormulaParser::ParsePrimary()
+{
+    FormulaToken token = NextToken();
+
+    switch (token.GetType())
+    {
+    case FormulaToken::INT:
+        return make_shared<FormulaValueExpression>(Any(token.GetInt()), token.GetLineNumber(), token.GetPositionInLine());
+
+    case FormulaToken::BOOLEAN:
+        return make_shared<FormulaValueExpression>(Any(token.GetBool()), token.GetLineNumber(), token.GetPositionInLine());
+
+    case FormulaToken::FLOAT:
+        return make_shared<FormulaValueExpression>(Any(token.GetFloat()), token.GetLineNumber(), token.GetPositionInLine());
+
+    case FormulaToken::STRING:
+        return make_shared<FormulaValueExpression>(Any(GetTokenStringValue(token)), token.GetLineNumber(), token.GetPositionInLine());
+
+    case FormulaToken::OPEN_BRACKET:
+        {
+            shared_ptr<FormulaExpression> exp = ParseExpression();
+
+            token = LookToken();
+            if (token.GetType() != FormulaToken::CLOSE_BRACKET)
+            {
+                DAVA_THROW(FormulaError, "')' expected", token.GetLineNumber(), token.GetPositionInLine());
+            }
+            NextToken(); // close bracket
+            return exp;
+        }
+
+        default:
+            break;
     }
 
+    DAVA_THROW(FormulaError, "Expected literal", token.GetLineNumber(), token.GetPositionInLine());
+}
+
+shared_ptr<FormulaExpression> FormulaParser::ParseFunction(const String& identifier)
+{
+    FormulaToken token = NextToken(); // skip open bracket
+
+    if (token.GetType() != FormulaToken::OPEN_BRACKET)
+    {
+        DAVA_THROW(FormulaError, "'(' expected", token.GetLineNumber(), token.GetPositionInLine());
+    }
+    
     token = LookToken();
+    Vector<shared_ptr<FormulaExpression>> params;
+
+    if (token.GetType() == FormulaToken::CLOSE_BRACKET)
+    {
+        NextToken(); // skip close token
+    }
+    else
+    {
+        while (true)
+        {
+            params.push_back(ParseExpression());
+
+            token = LookToken();
+            if (token.GetType() == FormulaToken::COMMA)
+            {
+                NextToken(); // skip comma and continue
+            }
+            else if (token.GetType() == FormulaToken::CLOSE_BRACKET)
+            {
+                NextToken(); // finish function
+                break;
+            }
+            else
+            {
+                DAVA_THROW(FormulaError, "expected ')'", token.GetLineNumber(), token.GetPositionInLine());
+            }
+        }
+    }
+
+    return make_shared<FormulaFunctionExpression>(identifier, params, token.GetLineNumber(), token.GetPositionInLine());
+}
+
+std::shared_ptr<FormulaExpression> FormulaParser::ParseAccess(const String& identifier)
+{
+    std::shared_ptr<FormulaExpression> exp = make_shared<FormulaFieldAccessExpression>(nullptr, identifier, token.GetLineNumber(), token.GetPositionInLine());
+
+    FormulaToken token = LookToken();
 
     while (token.GetType() == FormulaToken::DOT || token.GetType() == FormulaToken::OPEN_SQUARE_BRACKET)
     {
@@ -269,7 +452,6 @@ std::shared_ptr<FormulaExpression> FormulaParser::ParseRef()
             if (token.GetType() == FormulaToken::IDENTIFIER)
             {
                 String identifier = GetTokenStringValue(token);
-                token = LookToken();
                 exp = make_shared<FormulaFieldAccessExpression>(exp, identifier, token.GetLineNumber(), token.GetPositionInLine());
             }
             else
@@ -280,84 +462,7 @@ std::shared_ptr<FormulaExpression> FormulaParser::ParseRef()
 
         token = LookToken();
     }
-
     return exp;
-}
-
-shared_ptr<FormulaExpression> FormulaParser::ParseFunction(const String& identifier)
-{
-    FormulaToken token = LookToken();
-
-    if (token.GetType() != FormulaToken::OPEN_BRACKET)
-    {
-        DAVA_THROW(FormulaError, "'(' expected", token.GetLineNumber(), token.GetPositionInLine());
-    }
-    
-    NextToken(); // skip open bracket
-    
-    token = LookToken();
-    Vector<shared_ptr<FormulaExpression>> params;
-
-    if (token.GetType() == FormulaToken::CLOSE_BRACKET)
-    {
-        NextToken(); // skip close token
-    }
-    else
-    {
-        while (true)
-        {
-            token = LookToken();
-            shared_ptr<FormulaExpression> exp = ParseExpression();
-            if (!exp)
-            {
-                DAVA_THROW(FormulaError, "Function param expected", token.GetLineNumber(), token.GetPositionInLine());
-            }
-            
-            params.push_back(exp);
-            
-            token = LookToken();
-            if (token.GetType() == FormulaToken::COMMA)
-            {
-                NextToken(); // skip comma and continue
-            }
-            else if (token.GetType() == FormulaToken::CLOSE_BRACKET)
-            {
-                NextToken(); // finish function
-                break;
-            }
-            else
-            {
-                DAVA_THROW(FormulaError, "expected ')'", token.GetLineNumber(), token.GetPositionInLine());
-            }
-        }
-    }
-
-    return make_shared<FormulaFunctionExpression>(identifier, params, token.GetLineNumber(), token.GetPositionInLine());
-}
-
-shared_ptr<FormulaExpression> FormulaParser::ParseValue()
-{
-    FormulaToken token = NextToken();
-
-    switch (token.GetType())
-    {
-    case FormulaToken::INT:
-        return make_shared<FormulaValueExpression>(Any(token.GetInt()));
-
-    case FormulaToken::BOOLEAN:
-        return make_shared<FormulaValueExpression>(Any(token.GetBool()));
-
-    case FormulaToken::FLOAT:
-        return make_shared<FormulaValueExpression>(Any(token.GetFloat()));
-
-    case FormulaToken::STRING:
-        return make_shared<FormulaValueExpression>(Any(GetTokenStringValue(token)));
-
-    default:
-        break;
-    }
-
-    DAVA_THROW(FormulaError, "Expected literal", token.GetLineNumber(), token.GetPositionInLine());
 }
 
 FormulaToken FormulaParser::LookToken()
@@ -393,4 +498,52 @@ String FormulaParser::GetTokenStringValue(const FormulaToken& token)
     return tokenizer.GetTokenStringValue(token);
 }
 
+FormulaBinaryOperatorExpression::Operator FormulaParser::TokenTypeToBinaryOp(FormulaToken::Type type)
+{
+    switch (type)
+    {
+    case FormulaToken::PLUS:
+        return FormulaBinaryOperatorExpression::OP_PLUS;
+
+    case FormulaToken::MINUS:
+        return FormulaBinaryOperatorExpression::OP_MINUS;
+
+    case FormulaToken::MUL:
+        return FormulaBinaryOperatorExpression::OP_MUL;
+
+    case FormulaToken::DIV:
+        return FormulaBinaryOperatorExpression::OP_DIV;
+
+    case FormulaToken::MOD:
+        return FormulaBinaryOperatorExpression::OP_MOD;
+
+    case FormulaToken::AND:
+        return FormulaBinaryOperatorExpression::OP_AND;
+
+    case FormulaToken::OR:
+        return FormulaBinaryOperatorExpression::OP_OR;
+
+    case FormulaToken::LE:
+        return FormulaBinaryOperatorExpression::OP_LE;
+
+    case FormulaToken::LT:
+        return FormulaBinaryOperatorExpression::OP_LT;
+
+    case FormulaToken::GE:
+        return FormulaBinaryOperatorExpression::OP_GE;
+
+    case FormulaToken::GT:
+        return FormulaBinaryOperatorExpression::OP_GT;
+
+    case FormulaToken::EQ:
+        return FormulaBinaryOperatorExpression::OP_EQ;
+
+    case FormulaToken::NOT_EQ:
+        return FormulaBinaryOperatorExpression::OP_NOT_EQ;
+
+    default:
+        DVASSERT(false);
+        return FormulaBinaryOperatorExpression::OP_PLUS;
+    }
+}
 }

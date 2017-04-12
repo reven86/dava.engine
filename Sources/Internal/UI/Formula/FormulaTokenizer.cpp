@@ -157,6 +157,10 @@ FormulaToken FormulaTokenizer::ReadToken()
             ReadChar();
             return FormulaToken(FormulaToken::PLUS, line, column);
 
+    case '-':
+        ReadChar();
+        return FormulaToken(FormulaToken::MINUS, line, column);
+
     case '*':
             ReadChar();
             return FormulaToken(FormulaToken::MUL, line, column);
@@ -275,21 +279,9 @@ FormulaToken FormulaTokenizer::ReadToken()
         return FormulaToken(FormulaToken::IDENTIFIER, p, len, line, column);
     }
 
-    if (IsDigit(ch) || ch == '-')
+    if (IsDigit(ch))
     {
-        bool negative = false;
         int64 num = 0; // optimize
-
-        if (ch == '-')
-        {
-            negative = true;
-            ReadChar();
-
-            if (!IsDigit(ch))
-            {
-                return FormulaToken(FormulaToken::MINUS, line, column);
-            }
-        }
 
         while (IsDigit(ch))
         {
@@ -311,7 +303,7 @@ FormulaToken FormulaTokenizer::ReadToken()
                 ReadChar();
             }
 
-            return FormulaToken(FormulaToken::FLOAT, negative ? -fl : fl, line, column);
+            return FormulaToken(FormulaToken::FLOAT, fl, line, column);
         }
         else if (ch == 'L')
         {
@@ -326,7 +318,7 @@ FormulaToken FormulaTokenizer::ReadToken()
             }
         }
 
-        return FormulaToken(FormulaToken::INT, negative ? -(int32)num : (int32)num, line, column);
+        return FormulaToken(FormulaToken::INT, (int32)num, line, column);
     }
     DAVA_THROW(FormulaError, "Can't resolve symbol", lineNumber, positionInLine);
 }

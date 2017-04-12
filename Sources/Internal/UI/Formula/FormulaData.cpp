@@ -33,10 +33,6 @@ void FormulaDataVector::Add(const Any &value)
 
 Any &FormulaDataVector::Get(size_t index)
 {
-    if (index >= vector.size())
-    {
-        throw FormulaCalculationError("Array out of bound");
-    }
     return vector.at(index);
 }
 
