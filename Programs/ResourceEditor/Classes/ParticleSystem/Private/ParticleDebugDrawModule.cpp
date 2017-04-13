@@ -101,11 +101,16 @@ void ParticleDebugDrawModule::PostInit()
         layout->AddControl(new CheckBox(fields, accessor, DAVA::Reflection::Create(DAVA::ReflectedObject(this)), w));
     }
 
+    QString toolbarName = "ParticleSystemToolbar";
+    ActionPlacementInfo toolbarTogglePlacement(CreateMenuPoint(QList<QString>() << "View"
+                                                                                << "Toolbars"));
+    GetUI()->DeclareToolbar(DAVA::TArc::mainWindowKey, toolbarTogglePlacement, toolbarName);
+
     QAction* action = new QAction(nullptr);
     AttachWidgetToAction(action, w);
 
-    ActionPlacementInfo placementInfo(CreateToolbarPoint("ParticleSystemToolbar"));
-    GetUI()->AddAction(REGlobal::MainWindowKey, placementInfo, action);
+    ActionPlacementInfo placementInfo(CreateToolbarPoint(toolbarName));
+    GetUI()->AddAction(DAVA::TArc::mainWindowKey, placementInfo, action);
 
     filedBinder.reset(new FieldBinder(accessor));
     DAVA::TArc::FieldDescriptor descr;

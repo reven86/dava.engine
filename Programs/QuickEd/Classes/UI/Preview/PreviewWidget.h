@@ -27,6 +27,7 @@ class EditorCanvas;
 class CursorInterpreter;
 class AbstractProperty;
 
+class FindInDocumentWidget;
 class QGridLayout;
 class RulerWidget;
 class RulerController;
@@ -47,7 +48,7 @@ public:
     explicit PreviewWidget(DAVA::TArc::ContextAccessor* accessor, DAVA::RenderWidget* renderWidget, EditorSystemsManager* systemsManager);
     ~PreviewWidget();
 
-    void InjectRenderWidget(DAVA::RenderWidget* renderWidget);
+    FindInDocumentWidget* GetFindInDocumentWidget();
 
     DAVA::Signal<DAVA::uint64> requestCloseTab;
     DAVA::Signal<ControlNode*> requestChangeTextInNode;
@@ -90,11 +91,11 @@ private:
 
     void InitFromSystemsManager(EditorSystemsManager* systemsManager);
 
+    void InjectRenderWidget(DAVA::RenderWidget* renderWidget);
+
 private:
     void CreateActions();
     void ApplyPosChanges();
-    void OnWheel(QWheelEvent* event) override;
-    void OnNativeGuesture(QNativeGestureEvent* event) override;
     void OnMouseReleased(QMouseEvent* event) override;
     void OnMouseMove(QMouseEvent* event) override;
     void OnMouseDBClick(QMouseEvent* event) override;
@@ -105,16 +106,10 @@ private:
     void OnDrop(QDropEvent* event) override;
     void OnKeyPressed(QKeyEvent* event) override;
 
-    float GetScaleFromWheelEvent(int ticksCount) const;
-    float GetNextScale(float currentScale, int ticksCount) const;
-    float GetPreviousScale(float currentScale, int ticksCount) const;
-
     float GetScaleFromComboboxText() const;
 
     DAVA::TArc::ContextAccessor* accessor = nullptr;
     DAVA::RenderWidget* renderWidget = nullptr;
-
-    QList<float> percentages;
 
     RulerController* rulerController = nullptr;
     QPoint rootControlPos;
@@ -134,6 +129,7 @@ private:
     QGridLayout* gridLayout = nullptr;
     RulerWidget* horizontalRuler = nullptr;
     RulerWidget* verticalRuler = nullptr;
+    FindInDocumentWidget* findInDocumentWidget = nullptr;
     QComboBox* scaleCombo = nullptr;
     QScrollBar* horizontalScrollBar = nullptr;
     QScrollBar* verticalScrollBar = nullptr;

@@ -67,6 +67,8 @@ DAVA::KeyedArchive* CreateOptions()
     appOptions->SetInt32("shader_const_buffer_size", 256 * 1024 * 1024);
     appOptions->SetInt32("max_pipeline_state_count", 32 * 1024);
 
+    appOptions->SetBool("separate_net_thread", true);
+
     return appOptions;
 }
 }

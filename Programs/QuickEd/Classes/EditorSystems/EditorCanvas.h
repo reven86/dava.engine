@@ -39,18 +39,24 @@ public:
     DAVA::Vector2 GetMaximumPos() const;
     void SetPosition(const DAVA::Vector2& position);
 
+    const DAVA::Vector<DAVA::float32>& GetPredefinedScales() const;
+
+    DAVA::float32 GetNextScale(DAVA::int32 ticksCount) const;
+    DAVA::float32 GetPreviousScale(DAVA::int32 ticksCount) const;
+
     DAVA::Signal<const DAVA::Vector2&> sizeChanged;
     DAVA::Signal<const DAVA::Vector2&> positionChanged;
     DAVA::Signal<const DAVA::Vector2&> nestedControlPositionChanged; //control position, excluding margins
     DAVA::Signal<DAVA::float32> scaleChanged;
 
 private:
-    void UpdateContentSize();
     void OnContentSizeChanged(const DAVA::Vector2& size);
 
-    //private
+    void UpdateContentSize();
     void UpdateDragScreenState();
     void UpdatePosition();
+
+    DAVA::float32 GetScaleFromWheelEvent(DAVA::int32 ticksCount) const;
 
     DAVA::UIControl* movableControl = nullptr;
     DAVA::Vector2 size = DAVA::Vector2(0.0f, 0.0f);
@@ -65,4 +71,6 @@ private:
     bool isMouseMidButtonPressed = false;
     bool isSpacePressed = false;
     DAVA::TArc::ContextAccessor* accessor = nullptr;
+
+    DAVA::Vector<DAVA::float32> predefinedScales;
 };

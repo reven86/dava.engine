@@ -107,7 +107,7 @@ void MitsubaExporter::PostInit()
                                                return value.CanCast<SceneData::TSceneType>();
                                            });
 
-    GetUI()->AddAction(REGlobal::MainWindowKey, CreateMenuPoint("DebugFunctions"), exportAction);
+    GetUI()->AddAction(DAVA::TArc::mainWindowKey, CreateMenuPoint("DebugFunctions"), exportAction);
     connections.AddConnection(exportAction, &QAction::triggered, DAVA::MakeFunction(this, &MitsubaExporter::Export));
 }
 
@@ -118,7 +118,7 @@ void MitsubaExporter::Export()
     FileDialogParams parameters;
     parameters.title = "Export to";
     parameters.filters = "XML Files (*.xml)";
-    QString exportFolder = GetUI()->GetSaveFileName(REGlobal::MainWindowKey, parameters);
+    QString exportFolder = GetUI()->GetSaveFileName(DAVA::TArc::mainWindowKey, parameters);
     if (!exportFolder.isEmpty())
     {
         DAVA::FilePath exportFile(exportFolder.toUtf8().toStdString());

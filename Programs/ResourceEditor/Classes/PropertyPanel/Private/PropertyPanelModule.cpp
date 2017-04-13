@@ -87,9 +87,9 @@ void PropertyPanelModule::PostInit()
 
     DockPanelInfo panelInfo;
     panelInfo.title = QStringLiteral("New Property Panel");
-    panelInfo.actionPlacementInfo = ActionPlacementInfo(CreateMenuPoint(QList<QString>() << "View"
+    panelInfo.actionPlacementInfo = ActionPlacementInfo(CreateMenuPoint(QList<QString>() << MenuItems::menuView
                                                                                          << "Dock"));
-    PropertiesView::Params params(REGlobal::MainWindowKey);
+    PropertiesView::Params params(DAVA::TArc::mainWindowKey);
     params.accessor = accessor;
     params.invoker = GetInvoker();
     params.ui = ui;
@@ -105,7 +105,7 @@ void PropertyPanelModule::PostInit()
     view->RegisterExtension(std::make_shared<EntityEditorCreator>());
     view->RegisterExtension(std::make_shared<QualitySettingsChildCreator>());
     view->RegisterExtension(std::make_shared<QualitySettingsEditorCreator>());
-    ui->AddView(REGlobal::MainWindowKey, PanelKey(panelInfo.title, panelInfo), view);
+    ui->AddView(DAVA::TArc::mainWindowKey, PanelKey(panelInfo.title, panelInfo), view);
 }
 
 DAVA_VIRTUAL_REFLECTION_IMPL(PropertyPanelModule)

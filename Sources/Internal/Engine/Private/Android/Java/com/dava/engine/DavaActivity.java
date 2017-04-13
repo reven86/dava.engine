@@ -122,8 +122,8 @@ public final class DavaActivity extends Activity
     private static final String META_TAG_BOOT_CLASSES = "com.dava.engine.BootClasses";
 
     private static DavaActivity activitySingleton;
-    private static boolean nativeInitialized = false; 
     private static Thread nativeThread; // Thread where native C++ code is running
+    private static long nativePrimaryWindowBackend = 0;
     private static int nativeThreadId; //
     private static int uiThreadId;
 
@@ -262,12 +262,17 @@ public final class DavaActivity extends Activity
         Bitmap splashViewBitmap =  loadSplashViewBitmap();
         splashView = new DavaSplashView(this, splashViewBitmap);
 
+        // #1 create splash view
         layout = new FrameLayout(this);
         layout.addView(splashView);
         setContentView(layout);
 
-        // Load library modules and create class instances specified under meta-data tag in AndroidManifest.xml
+        // #2 Load library modules and create class instances specified under meta-data tag in AndroidManifest.xml
         bootstrap();
+
+        // #3 Initialize engine and run its onCreate method
+        nativeInitializeEngine(externalFilesDir, internalFilesDir, sourceDir, packageName, cmdline);
+        nativePrimaryWindowBackend = nativeOnCreate(this);
 
         notifyListeners(ON_ACTIVITY_CREATE, savedInstanceState);
 
@@ -298,26 +303,27 @@ public final class DavaActivity extends Activity
         return splashViewBitmap;
     }
     
-    private void startNativeInitialization() {
-        nativeInitializeEngine(externalFilesDir, internalFilesDir, sourceDir, packageName, cmdline);
-        nativeInitialized = true;
-
-        long primaryWindowBackendPointer = nativeOnCreate(this);
-        primarySurfaceView = new DavaSurfaceView(getApplication(), primaryWindowBackendPointer);
+    private void continueOnCreate() {
+        // #4 create surfaceView
+        primarySurfaceView = new DavaSurfaceView(getApplication(), nativePrimaryWindowBackend);
         layout.addView(primarySurfaceView);
 
         registerActivityListener(gamepadManager);
         registerActivityListener(globalLayoutState);
         registerActivityListener(keyboardState);
     }
-    
-    protected void onFinishCollectDeviceInfo()
+
+    protected void onSplashFinishedCollectingDeviceInfo()
     {
-        runOnUiThread(new Runnable(){
+        // On some devices step #1 can cause this callback
+        // to be synchronously invoked. In this case onCreate hasn't
+        // been finished yet. To ensure that we call `continueOnCreate`
+        // only when onCreate is finished we must put Runnable into commandHandler
+        // and it will be run on next java-message-queue processing step.
+        commandHandler.post(new Runnable(){
             @Override
             public void run() {
-                startNativeInitialization();
-                // now wait till SurfaceView will be created to continue
+                continueOnCreate();
             }
         });
     }
@@ -391,7 +397,7 @@ public final class DavaActivity extends Activity
         notifyListeners(ON_ACTIVITY_DESTROY, null);
         activityListeners.clear();
 
-        if (nativeInitialized)
+        if (0 != nativePrimaryWindowBackend)
         {
             Log.d(LOG_TAG, "DavaActivity.nativeOnDestroy");
             nativeOnDestroy();
@@ -589,6 +595,11 @@ public final class DavaActivity extends Activity
             {
                 isPaused = false;
                 nativeOnResume();
+
+                // Notification is here to prevent listener to call
+                // c++ native methods from itself when native part
+                // isn't initialized yet.
+                // TODO: maybe this notify should be called outside of the 'if(primary...)'
                 notifyListeners(ON_ACTIVITY_RESUME, null);
             }
         }
@@ -596,11 +607,18 @@ public final class DavaActivity extends Activity
 
     private void handlePause()
     {
-        if (!isPaused)
+        if (primarySurfaceView != null && isNativeThreadRunning())
         {
-            isPaused = true;
-            notifyListeners(ON_ACTIVITY_PAUSE, null);
-            nativeOnPause();
+            if (!isPaused) {
+                // Notification is here to prevent listener to call
+                // c++ native methods from itself when native part
+                // isn't initialized yet.
+                // TODO: maybe this notify should be called outside of the 'if(primary...)'
+                notifyListeners(ON_ACTIVITY_PAUSE, null);
+
+                isPaused = true;
+                nativeOnPause();
+            }
         }
     }
 

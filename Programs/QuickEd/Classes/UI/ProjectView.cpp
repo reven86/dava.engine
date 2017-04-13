@@ -16,13 +16,8 @@ MainWindow::ProjectView::ProjectView(MainWindow* mainWindow_)
     connect(mainWindow->ui->actionJumpToPrototype, &QAction::triggered, this, &MainWindow::ProjectView::JumpToPrototype);
     connect(mainWindow->ui->actionFindPrototypeInstances, &QAction::triggered, this, &MainWindow::ProjectView::FindPrototypeInstances);
 
-    connect(this, &MainWindow::ProjectView::ProjectChanged, mainWindow->ui->findWidget, &FindWidget::OnProjectChanged);
-
     mainWindow->ui->packageWidget->treeView->addAction(mainWindow->ui->actionJumpToPrototype);
     mainWindow->ui->packageWidget->treeView->addAction(mainWindow->ui->actionFindPrototypeInstances);
-
-    connect(mainWindow->ui->findWidget, &FindWidget::JumpToControl, this, &MainWindow::ProjectView::JumpToControl);
-    connect(mainWindow->ui->findWidget, &FindWidget::JumpToPackage, this, &MainWindow::ProjectView::JumpToPackage);
 }
 
 void MainWindow::ProjectView::SetLanguages(const QStringList& availableLangsCodes, const QString& currentLangCode)
@@ -151,11 +146,6 @@ void MainWindow::ProjectView::OnCurrentLanguageChanged(int newLanguageIndex)
 {
     QString langCode = comboboxLanguage->itemData(newLanguageIndex).toString();
     emit CurrentLanguageChanged(langCode);
-}
-
-void MainWindow::ProjectView::FindControls(std::unique_ptr<FindFilter>&& filter)
-{
-    mainWindow->ui->findWidget->Find(std::move(filter));
 }
 
 QString MainWindow::ProjectView::ConvertLangCodeToString(const QString& langCode)
