@@ -385,7 +385,9 @@ QMimeData* PackageModel::mimeData(const QModelIndexList& indices) const
 
     PackageMimeData* mimeData = new PackageMimeData();
 
-    Vector<ControlNode*> controlNodesForCopy;
+    SortedPackageBaseNodeSet controlNodesForCopy(CompareByLCA);
+    SortedPackageBaseNodeSet styleSheetNodesForCopy(CompareByLCA);
+
     for (const QModelIndex& index : indices)
     {
         if (index.isValid())
@@ -393,34 +395,34 @@ QMimeData* PackageModel::mimeData(const QModelIndexList& indices) const
             PackageBaseNode* node = static_cast<PackageBaseNode*>(index.internalPointer());
             if (node->CanCopy())
             {
-                ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
-                if (nullptr != controlNode)
+                if (dynamic_cast<ControlNode*>(node) != nullptr)
                 {
-                    controlNodesForCopy.push_back(controlNode);
+                    controlNodesForCopy.insert(node);
                 }
-                else
+                else if (dynamic_cast<StyleSheetNode*>(node) != nullptr)
                 {
-                    StyleSheetNode* style = dynamic_cast<StyleSheetNode*>(node);
-                    if (nullptr != style)
-                    {
-                        mimeData->AddStyle(style);
-                    }
+                    styleSheetNodesForCopy.insert(node);
                 }
             }
         }
     }
 
-    for (ControlNode* controlNode : controlNodesForCopy)
+    for (PackageBaseNode* controlNode : controlNodesForCopy)
     {
         PackageBaseNode* parent = controlNode->GetParent();
-        while (parent != nullptr && std::find(controlNodesForCopy.begin(), controlNodesForCopy.end(), parent) == controlNodesForCopy.end())
+        while (parent != nullptr && controlNodesForCopy.find(parent) == controlNodesForCopy.end())
         {
             parent = parent->GetParent();
         }
         if (parent == nullptr)
         {
-            mimeData->AddControl(controlNode);
+            mimeData->AddControl(static_cast<ControlNode*>(controlNode));
         }
+    }
+
+    for (PackageBaseNode* styleSheetNode : controlNodesForCopy)
+    {
+        mimeData->AddStyle(static_cast<StyleSheetNode*>(styleSheetNode));
     }
 
     YamlPackageSerializer serializer;
