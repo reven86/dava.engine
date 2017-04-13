@@ -7,6 +7,7 @@
 
 #import <AppKit/NSApplication.h>
 
+#include "Engine/Engine.h"
 #include "Engine/Window.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/OsX/Window/WindowBackendOsX.h"
@@ -23,10 +24,18 @@ PlatformCore::PlatformCore(EngineBackend* engineBackend)
 {
 }
 
-PlatformCore::~PlatformCore() = default;
+PlatformCore::~PlatformCore()
+{
+    Engine::Instance()->windowCreated.Disconnect(this);
+    Engine::Instance()->windowDestroyed.Disconnect(this);
+}
 
 void PlatformCore::Init()
 {
+    // Subscribe to window creation & destroying, used for handling screen timeout option
+    Engine::Instance()->windowCreated.Connect(this, &PlatformCore::OnWindowCreated);
+    Engine::Instance()->windowDestroyed.Connect(this, &PlatformCore::OnWindowDestroyed);
+
     engineBackend->InitializePrimaryWindow();
 }
 
@@ -47,27 +56,64 @@ void PlatformCore::Quit()
 
 void PlatformCore::SetScreenTimeoutEnabled(bool enabled)
 {
-    const bool timeoutEnabledNow = (screenTimeoutAssertionId == kIOPMNullAssertionID);
-    if (timeoutEnabledNow == enabled)
+    screenTimeoutEnabled = enabled;
+    UpdateIOPMAssertion();
+}
+
+void PlatformCore::OnWindowCreated(Window* window)
+{
+    window->visibilityChanged.Connect(this, &PlatformCore::OnWindowVisibilityChanged);
+}
+
+void PlatformCore::OnWindowDestroyed(Window* window)
+{
+    window->visibilityChanged.Disconnect(this);
+}
+
+void PlatformCore::OnWindowVisibilityChanged(Window* window, bool visible)
+{
+    UpdateIOPMAssertion();
+}
+
+void PlatformCore::UpdateIOPMAssertion()
+{
+    bool useCustomAssertion = false;
+
+    if (!screenTimeoutEnabled)
     {
-        return;
+        // User requested disabling screen timeout
+        // Do that only if at least one window is visible
+        for (Window* w : engineBackend->GetWindows())
+        {
+            if (w->IsVisible())
+            {
+                useCustomAssertion = true;
+                break;
+            }
+        }
     }
 
-    IOReturn result;
-    if (enabled)
+    if (useCustomAssertion == false)
     {
-        result = IOPMAssertionRelease(screenTimeoutAssertionId);
-        screenTimeoutAssertionId = kIOPMNullAssertionID;
-    }
-    else
-    {
-        result = IOPMAssertionCreateWithName(kIOPMAssertionTypeNoDisplaySleep,
-                                             kIOPMAssertionLevelOn,
-                                             CFSTR("Dava Engine application is running"),
-                                             &screenTimeoutAssertionId);
-    }
+        // Free the previous one, if any
+        if (screenTimeoutAssertionId != kIOPMNullAssertionID)
+        {
+            const IOReturn releaseResult = IOPMAssertionRelease(screenTimeoutAssertionId);
+            DVASSERT(releaseResult == kIOReturnSuccess);
 
-    DVASSERT(result == kIOReturnSuccess, Format("IOPMAssertion api failed in PlatformCore::SetScreenTimeoutEnabled(%s)", enabled ? "true" : "false").c_str());
+            screenTimeoutAssertionId = kIOPMNullAssertionID;
+        }
+    }
+    else if (screenTimeoutAssertionId == kIOPMNullAssertionID)
+    {
+        // Otherwise, create custom assertion if it hasn't been yet
+
+        const IOReturn createResult = IOPMAssertionCreateWithName(kIOPMAssertionTypeNoDisplaySleep,
+                                                                  kIOPMAssertionLevelOn,
+                                                                  CFSTR("Dava Engine application is running"),
+                                                                  &screenTimeoutAssertionId);
+        DVASSERT(createResult == kIOReturnSuccess);
+    }
 }
 
 int32 PlatformCore::OnFrame()
