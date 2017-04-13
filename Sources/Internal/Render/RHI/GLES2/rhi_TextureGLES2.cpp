@@ -373,6 +373,7 @@ void TextureGLES2_t::Destroy(bool forceExecute)
             ++cmd_cnt;
         }
 
+        DAVA::Logger::Info("fbo-count = %u", unsigned(TextureFBO.size()));
         for (std::vector<FramebufferGLES2_t>::iterator f = TextureFBO.begin(); f != TextureFBO.end();)
         {
             bool do_delete = false;
@@ -391,6 +392,12 @@ void TextureGLES2_t::Destroy(bool forceExecute)
 
             if (do_delete)
             {
+                if (cmd_cnt == countof(cmd) - 1)
+                {
+                    DAVA::Logger::Info("flushing %u gl-cmds", unsigned(countof(cmd)));
+                    ExecGL(cmd, static_cast<uint32>(cmd_cnt), forceExecute);
+                    cmd_cnt = 0;
+                }
                 DVASSERT(cmd_cnt <= countof(cmd) - 1);
                 doomed_fbo[cmd_cnt] = f->frameBuffer;
                 cmd[cmd_cnt].func = GLCommand::DELETE_FRAMEBUFFERS;
@@ -413,7 +420,8 @@ void TextureGLES2_t::Destroy(bool forceExecute)
         cmd[0].arg[1] = uint64(&(uid));
     }
 
-    ExecGL(cmd, static_cast<uint32>(cmd_cnt), forceExecute);
+    if (cmd_cnt)
+        ExecGL(cmd, static_cast<uint32>(cmd_cnt), forceExecute);
 
     DVASSERT(!isMapped);
 
