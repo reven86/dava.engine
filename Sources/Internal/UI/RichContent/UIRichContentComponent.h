@@ -38,7 +38,7 @@ class UIControl;
     will be added to alias in content source will be ignored and replaced by
     attributes from alias data.
 
-    For exmaple:
+    For example:
     <code>
         Defined aliases:
         h1 = <p class="header" />
@@ -55,9 +55,9 @@ class UIRichContentComponent : public UIBaseComponent<UIComponent::RICH_CONTENT_
     DAVA_VIRTUAL_REFLECTION(UIRichContentComponent, UIBaseComponent<UIComponent::RICH_CONTENT_COMPONENT>);
 
 public:
-    /** Defaul contructor. */
+    /** Default constructor. */
     UIRichContentComponent() = default;
-    /** Copy contructor. */
+    /** Copy constructor. */
     UIRichContentComponent(const UIRichContentComponent& src);
 
     UIRichContentComponent* Clone() const override;
@@ -74,13 +74,13 @@ public:
 
     /** Set aliases for tags with attributes. */
     void SetAliases(const UIRichAliasMap& aliases);
-    /** Return aliases tof tags. */
+    /** Return aliases for tags. */
     const UIRichAliasMap& GetAliases() const;
 
     /** Set aliases for tags from specified string. */
     void SetAliasesFromString(const String& aliases);
     /** Return aliases for tags as string. */
-    String GetAliasesAsString() const;
+    const String& GetAliasesAsString();
 
     /** Set modification flag. */
     void SetModified(bool modified);

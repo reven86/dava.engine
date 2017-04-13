@@ -37,11 +37,13 @@ public:
     /** Remove all aliases. */
     void RemoveAll();
     /** Return all aliases as serializable string. */
-    String AsString() const;
+    const String& AsString();
     /** Load aliases from serializable string. */
     void FromString(const String& aliases);
 
 private:
     UnorderedMap<String, Alias> aliases;
+    bool asStringDirty = false;
+    String asStringTemp;
 };
 }

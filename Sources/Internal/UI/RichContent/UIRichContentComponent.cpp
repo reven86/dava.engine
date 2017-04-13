@@ -61,7 +61,7 @@ void UIRichContentComponent::SetAliasesFromString(const String& _aliases)
     modified = true;
 }
 
-String UIRichContentComponent::GetAliasesAsString() const
+const String& UIRichContentComponent::GetAliasesAsString()
 {
     return aliases.AsString();
 }

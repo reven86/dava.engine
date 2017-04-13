@@ -89,3 +89,10 @@ Controls:
                 text: "<h1>Header</h1> Example text with <img class=\"img\" src=\"~res:/Gfx/UI/GoldPin\" /> image and <btn /> object. <ul>List example:<li>Item 1</li><li>Item 2</li></ul> Text after list."
                 baseClasses: "text"
                 aliases: "h1,<p class=\"DejaVu\" />;btn,<object path=\"~res:/UI/RichTextTest.yaml\" prototype=\"Button\" />;"
+    -   class: "UIControl"
+        name: "UIControl"
+        position: [119.000000, 493.000000]
+        size: [32.000000, 32.000000]
+        debugDraw: true
+        components:
+            Background: {}

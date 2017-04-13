@@ -3,12 +3,11 @@
 #include "Base/BaseTypes.h"
 #include "Base/RefPtr.h"
 #include "UI/UISystem.h"
-#include "UI/RichContent/UIRichContentComponent.h"
 
 namespace DAVA
 {
 class UIControl;
-class UIControlPackageContext;
+class UIRichContentComponent;
 
 class UIRichContentSystem final : public UISystem
 {
