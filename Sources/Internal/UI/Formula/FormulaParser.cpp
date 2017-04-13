@@ -34,9 +34,14 @@
 
     BOOL: 'true' | 'false';
     STRING: '"' (~["])* '"';
-    INTEGER: [0-9]+;
-    FLOAT: ([0-9]+)? DOT [0-9] | [0-9]+ DOT [0-9]*;
+    INTEGER: [0-9]+ INTEGER_SUFFIX?;
+    FLOAT: [0-9]+ DOT [0-9]*;
     IDENTIFIER: ([A-Za-z] | '_') ([a-zA-Z0-9] | '_')* ;
+
+    fragment INTEGER_SUFFIX: UNSIGNED_SUFFIX LONG_SUFFIX? | LONG_SUFFIX UNSIGNED_SUFFIX?;
+
+    fragment UNSIGNED_SUFFIX: [uU];
+    fragment LONG_SUFFIX: [lL];
 
     COMMA: ',';
     DOT: '.';
@@ -346,8 +351,17 @@ std::shared_ptr<FormulaExpression> FormulaParser::ParsePrimary()
 
     switch (token.GetType())
     {
-    case FormulaToken::INT:
-        return make_shared<FormulaValueExpression>(Any(token.GetInt()), token.GetLineNumber(), token.GetPositionInLine());
+    case FormulaToken::INT32:
+        return make_shared<FormulaValueExpression>(Any(token.GetInt32()), token.GetLineNumber(), token.GetPositionInLine());
+
+    case FormulaToken::UINT32:
+        return make_shared<FormulaValueExpression>(Any(token.GetUInt32()), token.GetLineNumber(), token.GetPositionInLine());
+
+    case FormulaToken::INT64:
+        return make_shared<FormulaValueExpression>(Any(token.GetInt64()), token.GetLineNumber(), token.GetPositionInLine());
+
+    case FormulaToken::UINT64:
+        return make_shared<FormulaValueExpression>(Any(token.GetUInt64()), token.GetLineNumber(), token.GetPositionInLine());
 
     case FormulaToken::BOOLEAN:
         return make_shared<FormulaValueExpression>(Any(token.GetBool()), token.GetLineNumber(), token.GetPositionInLine());

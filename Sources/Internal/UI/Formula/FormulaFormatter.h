@@ -13,6 +13,7 @@ public:
     String Format(FormulaExpression* exp);
 
     static String AnyToString(const Any& val);
+    static String AnyTypeToString(const Any& val);
     static String BinaryOpToString(FormulaBinaryOperatorExpression::Operator op);
 
 private:

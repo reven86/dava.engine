@@ -8,7 +8,7 @@
 
 using namespace DAVA;
 
-DAVA_TESTCLASS (FormulaParserTest)
+DAVA_TESTCLASS (FormulaTokenizerTest)
 {
     void SetUp(const String& testName) override
     {
@@ -54,7 +54,7 @@ DAVA_TESTCLASS (FormulaParserTest)
     // FormulaTokenizer::ReadToken
     DAVA_TEST (ReadFloats)
     {
-        FormulaTokenizer tokenizer("5.5 0.0 -0.0 1.0 0.00001 -0.00001 11111.0");
+        FormulaTokenizer tokenizer("5.5 0.0 1.0 0.00001 11111.0");
 
         FormulaToken token;
 
@@ -68,19 +68,11 @@ DAVA_TESTCLASS (FormulaParserTest)
 
         token = tokenizer.ReadToken();
         TEST_VERIFY(token.GetType() == FormulaToken::FLOAT);
-        TEST_VERIFY(FLOAT_EQUAL(token.GetFloat(), 0.0f));
-
-        token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == FormulaToken::FLOAT);
         TEST_VERIFY(FLOAT_EQUAL(token.GetFloat(), 1.0f));
 
         token = tokenizer.ReadToken();
         TEST_VERIFY(token.GetType() == FormulaToken::FLOAT);
-        TEST_VERIFY(FLOAT_EQUAL(token.GetFloat(), 0.00001));
-
-        token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == FormulaToken::FLOAT);
-        TEST_VERIFY(FLOAT_EQUAL(token.GetFloat(), -0.00001f));
+        TEST_VERIFY(FLOAT_EQUAL(token.GetFloat(), 0.00001f));
 
         token = tokenizer.ReadToken();
         TEST_VERIFY(token.GetType() == FormulaToken::FLOAT);
@@ -112,29 +104,41 @@ DAVA_TESTCLASS (FormulaParserTest)
     // FormulaTokenizer::ReadToken
     DAVA_TEST (ReadInts)
     {
-        FormulaTokenizer tokenizer("5 -50 0 100 -0");
+        FormulaTokenizer tokenizer("0 2147483647 0U 4294967295U 0L 9223372036854775807L 0LU 18446744073709551615UL");
 
         FormulaToken token;
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == FormulaToken::INT);
-        TEST_VERIFY(token.GetInt() == 5);
+        TEST_VERIFY(token.GetType() == FormulaToken::INT32);
+        TEST_VERIFY(token.GetInt32() == 0);
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == FormulaToken::INT);
-        TEST_VERIFY(token.GetInt() == -50);
+        TEST_VERIFY(token.GetType() == FormulaToken::INT32);
+        TEST_VERIFY(token.GetInt32() == 2147483647);
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == FormulaToken::INT);
-        TEST_VERIFY(token.GetInt() == 0);
+        TEST_VERIFY(token.GetType() == FormulaToken::UINT32);
+        TEST_VERIFY(token.GetUInt32() == 0U);
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == FormulaToken::INT);
-        TEST_VERIFY(token.GetInt() == 100);
+        TEST_VERIFY(token.GetType() == FormulaToken::UINT32);
+        TEST_VERIFY(token.GetUInt32() == 4294967295U);
 
         token = tokenizer.ReadToken();
-        TEST_VERIFY(token.GetType() == FormulaToken::INT);
-        TEST_VERIFY(token.GetInt() == 0);
+        TEST_VERIFY(token.GetType() == FormulaToken::INT64);
+        TEST_VERIFY(token.GetUInt64() == 0L);
+
+        token = tokenizer.ReadToken();
+        TEST_VERIFY(token.GetType() == FormulaToken::INT64);
+        TEST_VERIFY(token.GetUInt64() == 9223372036854775807L);
+
+        token = tokenizer.ReadToken();
+        TEST_VERIFY(token.GetType() == FormulaToken::UINT64);
+        TEST_VERIFY(token.GetUInt64() == 0UL);
+
+        token = tokenizer.ReadToken();
+        TEST_VERIFY(token.GetType() == FormulaToken::UINT64);
+        TEST_VERIFY(token.GetUInt64() == 18446744073709551615UL);
 
         token = tokenizer.ReadToken();
         TEST_VERIFY(token.GetType() == FormulaToken::END);
@@ -276,7 +280,7 @@ DAVA_TESTCLASS (FormulaParserTest)
         {
             wasException = true;
         }
-        TEST_VERIFY(wasException == false);
+        TEST_VERIFY(wasException == true);
 
         wasException = false;
         try
@@ -287,6 +291,6 @@ DAVA_TESTCLASS (FormulaParserTest)
         {
             wasException = true;
         }
-        TEST_VERIFY(wasException == false);
+        TEST_VERIFY(wasException == true);
     }
 };

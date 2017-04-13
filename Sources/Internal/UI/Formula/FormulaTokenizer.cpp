@@ -11,7 +11,7 @@ FormulaToken::FormulaToken()
 {
 }
 
-FormulaToken::FormulaToken(Type type_, int lineNumber_, int positionInLine_)
+FormulaToken::FormulaToken(Type type_, int32 lineNumber_, int32 positionInLine_)
     : type(type_)
     , lineNumber(lineNumber_)
     , positionInLine(positionInLine_)
@@ -19,16 +19,43 @@ FormulaToken::FormulaToken(Type type_, int lineNumber_, int positionInLine_)
     DVASSERT(type >= COMMA && type <= END);
 }
 
-FormulaToken::FormulaToken(Type type_, int val_, int lineNumber_, int positionInLine_)
+FormulaToken::FormulaToken(Type type_, int32 val_, int32 lineNumber_, int32 positionInLine_)
     : type(type_)
-    , iVal(val_)
+    , i32Val(val_)
     , lineNumber(lineNumber_)
     , positionInLine(positionInLine_)
 {
-    DVASSERT(type == INT);
+    DVASSERT(type == INT32);
 }
 
-FormulaToken::FormulaToken(Type type_, float val_, int lineNumber_, int positionInLine_)
+FormulaToken::FormulaToken(Type type_, uint32 val_, int32 lineNumber_, int32 positionInLine_)
+    : type(type_)
+    , ui32Val(val_)
+    , lineNumber(lineNumber_)
+    , positionInLine(positionInLine_)
+{
+    DVASSERT(type == UINT32);
+}
+
+FormulaToken::FormulaToken(Type type_, int64 val_, int32 lineNumber_, int32 positionInLine_)
+    : type(type_)
+    , i64Val(val_)
+    , lineNumber(lineNumber_)
+    , positionInLine(positionInLine_)
+{
+    DVASSERT(type == INT64);
+}
+
+FormulaToken::FormulaToken(Type type_, uint64 val_, int32 lineNumber_, int32 positionInLine_)
+    : type(type_)
+    , ui64Val(val_)
+    , lineNumber(lineNumber_)
+    , positionInLine(positionInLine_)
+{
+    DVASSERT(type == UINT64);
+}
+
+FormulaToken::FormulaToken(Type type_, float32 val_, int32 lineNumber_, int32 positionInLine_)
     : type(type_)
     , fVal(val_)
     , lineNumber(lineNumber_)
@@ -37,16 +64,16 @@ FormulaToken::FormulaToken(Type type_, float val_, int lineNumber_, int position
     DVASSERT(type == FLOAT);
 }
 
-FormulaToken::FormulaToken(Type type_, bool val_, int lineNumber_, int positionInLine_)
+FormulaToken::FormulaToken(Type type_, bool val_, int32 lineNumber_, int32 positionInLine_)
     : type(type_)
-    , iVal(val_ ? 1 : 0)
+    , bVal(val_)
     , lineNumber(lineNumber_)
     , positionInLine(positionInLine_)
 {
     DVASSERT(type == BOOLEAN);
 }
 
-FormulaToken::FormulaToken(Type type_, int startPos_, int len_, int lineNumber_, int positionInLine_)
+FormulaToken::FormulaToken(Type type_, int32 startPos_, int32 len_, int32 lineNumber_, int32 positionInLine_)
     : type(type_)
     , start(startPos_)
     , len(len_)
@@ -61,13 +88,31 @@ FormulaToken::Type FormulaToken::GetType() const
     return type;
 }
 
-int FormulaToken::GetInt() const
+int32 FormulaToken::GetInt32() const
 {
-    DVASSERT(type == INT);
-    return iVal;
+    DVASSERT(type == INT32);
+    return i32Val;
 }
 
-float FormulaToken::GetFloat() const
+uint32 FormulaToken::GetUInt32() const
+{
+    DVASSERT(type == UINT32);
+    return i32Val;
+}
+
+int64 FormulaToken::GetInt64() const
+{
+    DVASSERT(type == INT64);
+    return i64Val;
+}
+
+uint64 FormulaToken::GetUInt64() const
+{
+    DVASSERT(type == UINT64);
+    return ui64Val;
+}
+
+float32 FormulaToken::GetFloat() const
 {
     DVASSERT(type == FLOAT);
     return fVal;
@@ -76,16 +121,16 @@ float FormulaToken::GetFloat() const
 bool FormulaToken::GetBool() const
 {
     DVASSERT(type == BOOLEAN);
-    return iVal != 0;
+    return bVal;
 }
 
-int FormulaToken::GetStringPos() const
+int32 FormulaToken::GetStringPos() const
 {
     DVASSERT(type == IDENTIFIER || type == STRING);
     return start;
 }
 
-int FormulaToken::GetStringLen() const
+int32 FormulaToken::GetStringLen() const
 {
     DVASSERT(type == IDENTIFIER || type == STRING);
     return len;
@@ -110,6 +155,26 @@ FormulaTokenizer::~FormulaTokenizer()
 {
 }
 
+const String& FormulaTokenizer::GetString() const
+{
+    return str;
+}
+
+String FormulaTokenizer::GetTokenStringValue(const FormulaToken& FormulaToken)
+{
+    return str.substr(FormulaToken.GetStringPos(), FormulaToken.GetStringLen());
+}
+
+int32 FormulaTokenizer::GetLineNumber() const
+{
+    return lineNumber;
+}
+
+int32 FormulaTokenizer::GetPositionInLine() const
+{
+    return positionInLine;
+}
+
 FormulaToken FormulaTokenizer::ReadToken()
 {
     if (currentPosition == -1)
@@ -119,8 +184,8 @@ FormulaToken FormulaTokenizer::ReadToken()
     }
     SkipWhitespaces();
 
-    int line = lineNumber;
-    int column = positionInLine;
+    int32 line = lineNumber;
+    int32 column = positionInLine;
     switch (ch)
     {
     case '\0':
@@ -237,7 +302,7 @@ FormulaToken FormulaTokenizer::ReadToken()
         {
             ReadChar();
 
-            int p = currentPosition;
+            int32 p = currentPosition;
             while (ch != '\0' && ch != '"')
             {
                 ReadChar();
@@ -259,13 +324,13 @@ FormulaToken FormulaTokenizer::ReadToken()
 
     if (IsIdentifierStart(ch))
     {
-        int p = currentPosition;
+        int32 p = currentPosition;
         while (IsIdentifierPart(ch))
         {
             ReadChar();
         }
 
-        int len = currentPosition - p;
+        int32 len = currentPosition - p;
         String id = str.substr(p, len);
         if (id == "true")
         {
@@ -281,71 +346,95 @@ FormulaToken FormulaTokenizer::ReadToken()
 
     if (IsDigit(ch))
     {
-        int64 num = 0; // optimize
+        int32 first = currentPosition;
+        int32 last = currentPosition;
 
         while (IsDigit(ch))
         {
-            num = num * 10 + (ch - '0');
             ReadChar();
         }
+        last = currentPosition - 1;
 
         if (ch == '.')
         {
+            int32 dotPos = currentPosition;
             ReadChar();
 
-            float n = 0.1f;
-            float fl = (float)num;
             while (IsDigit(ch))
             {
-                fl += (float)(ch - '0') * n;
-                n *= 0.1f;
-
                 ReadChar();
             }
 
-            return FormulaToken(FormulaToken::FLOAT, fl, line, column);
+            return FormulaToken(FormulaToken::FLOAT, ParseFloat(first, currentPosition - 1, dotPos), lineNumber, first);
         }
-        else if (ch == 'L')
+        else if (ch == 'L' || ch == 'l')
         {
             ReadChar();
-        }
-        else if (ch == 'U')
-        {
-            ReadChar();
-            if (ch == 'L')
+            if (ch == 'U' || ch == 'u')
             {
                 ReadChar();
+
+                return FormulaToken(FormulaToken::UINT64, ParseInt<uint64>(first, last), lineNumber, first);
+            }
+            else
+            {
+                return FormulaToken(FormulaToken::INT64, ParseInt<int64>(first, last), lineNumber, first);
             }
         }
+        else if (ch == 'U' || ch == 'u')
+        {
+            ReadChar();
+            if (ch == 'L' || ch == 'l')
+            {
+                ReadChar();
 
-        return FormulaToken(FormulaToken::INT, (int32)num, line, column);
+                return FormulaToken(FormulaToken::UINT64, ParseInt<uint64>(first, last), lineNumber, first);
+            }
+            else
+            {
+                return FormulaToken(FormulaToken::UINT32, ParseInt<uint32>(first, last), lineNumber, first);
+            }
+        }
+        return FormulaToken(FormulaToken::INT32, ParseInt<int32>(first, last), lineNumber, first);
     }
     DAVA_THROW(FormulaError, "Can't resolve symbol", lineNumber, positionInLine);
 }
 
-const String& FormulaTokenizer::GetString() const
+float32 FormulaTokenizer::ParseFloat(int32 startPos, int32 endPos, int32 dotPos)
 {
-    return str;
+    float32 val = 0;
+
+    for (int32 index = startPos; index < dotPos; index++)
+    {
+        val = val * 10.0f + (str[index] - '0');
+    }
+
+    float32 fractionalPart = 0.0f;
+    for (int32 index = endPos; index > dotPos; index--)
+    {
+        fractionalPart += (str[index] - '0');
+        fractionalPart *= 0.1f;
+    }
+
+    return val + fractionalPart;
 }
 
-String FormulaTokenizer::GetTokenStringValue(const FormulaToken& FormulaToken)
+template <typename T>
+T FormulaTokenizer::ParseInt(int32 startPos, int32 endPos)
 {
-    return str.substr(FormulaToken.GetStringPos(), FormulaToken.GetStringLen());
-}
+    T val = 0;
 
-int32 FormulaTokenizer::GetLineNumber() const
-{
-    return lineNumber;
-}
+    for (int32 index = startPos; index <= endPos; index++)
+    {
+        val = val * 10 + (str[index] - '0');
+    }
 
-int32 FormulaTokenizer::GetPositionInLine() const
-{
-    return positionInLine;
+    return val;
 }
 
 void FormulaTokenizer::SkipWhitespaces()
 {
-    int prevCh = 0;
+    int32 prevCh = 0;
     while (ch == ' ' || ch == '\t' || ch == 10 || ch == 13)
     {
         if (ch == 10 || ch == 13)

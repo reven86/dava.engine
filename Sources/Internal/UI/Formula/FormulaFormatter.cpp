@@ -29,9 +29,13 @@ String FormulaFormatter::AnyToString(const Any& val)
     {
         return DAVA::Format("%d", val.Get<int32>());
     }
+    else if (val.CanGet<uint32>())
+    {
+        return DAVA::Format("%dU", val.Get<uint32>());
+    }
     else if (val.CanGet<uint64>())
     {
-        return DAVA::Format("%ld", val.Get<uint64>());
+        return DAVA::Format("%ldUL", val.Get<uint64>());
     }
     else if (val.CanGet<int64>())
     {
@@ -69,8 +73,68 @@ String FormulaFormatter::AnyToString(const Any& val)
     {
         return val.Get<bool>() ? "true" : "false";
     }
+    else if (val.IsEmpty())
+    {
+        return "<empty>";
+    }
+    return "<unknown>";
+}
 
-    return String("");
+String FormulaFormatter::AnyTypeToString(const Any& val)
+{
+    if (val.CanGet<int32>())
+    {
+        return "int32";
+    }
+    else if (val.CanGet<uint32>())
+    {
+        return "uint32";
+    }
+    else if (val.CanGet<int64>())
+    {
+        return "int64";
+    }
+    else if (val.CanGet<uint64>())
+    {
+        return "uint64";
+    }
+    else if (val.CanGet<int16>())
+    {
+        return "int16";
+    }
+    else if (val.CanGet<uint16>())
+    {
+        return "uint16";
+    }
+    else if (val.CanGet<int8>())
+    {
+        return "int8";
+    }
+    else if (val.CanGet<uint8>())
+    {
+        return "uint8";
+    }
+    else if (val.CanGet<float32>())
+    {
+        return "float32";
+    }
+    else if (val.CanGet<String>())
+    {
+        return "String";
+    }
+    else if (val.CanGet<FilePath>())
+    {
+        return "FilePath";
+    }
+    else if (val.CanGet<bool>())
+    {
+        return "bool";
+    }
+    else if (val.IsEmpty())
+    {
+        return "<empty>";
+    }
+    return val.GetType()->GetName();
 }
 
 String FormulaFormatter::BinaryOpToString(FormulaBinaryOperatorExpression::Operator op)

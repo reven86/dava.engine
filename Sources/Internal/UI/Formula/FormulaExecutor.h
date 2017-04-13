@@ -30,6 +30,12 @@ private:
     const Reflection& GetDataReferenceImpl(FormulaExpression* exp);
 
     template <typename T>
+    Any CalculateNumberAnyValues(FormulaBinaryOperatorExpression::Operator op, Any lVal, Any rVal) const;
+
+    template <typename T>
+    Any CalculateIntAnyValues(FormulaBinaryOperatorExpression::Operator op, Any lVal, Any rVal) const;
+
+    template <typename T>
     Any CalculateNumberValues(FormulaBinaryOperatorExpression::Operator op, T lVal, T rVal) const;
 
     FormulaContext* context = nullptr;

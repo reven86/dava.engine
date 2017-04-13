@@ -59,13 +59,25 @@ void FormulaExecutor::Visit(FormulaNegExpression* exp)
     {
         calculationResult = Any(-val.Get<float32>());
     }
+    else if (val.CanGet<uint64>())
+    {
+        calculationResult = Any(-val.Get<uint64>());
+    }
+    else if (val.CanGet<int64>())
+    {
+        calculationResult = Any(-val.Get<int64>());
+    }
+    else if (val.CanGet<uint32>())
+    {
+        calculationResult = Any(-val.Get<uint32>());
+    }
     else if (val.CanCast<int32>())
     {
         calculationResult = Any(-val.Cast<int32>());
     }
     else
     {
-        DAVA_THROW(FormulaError, "Invalid argument type to unary expression", exp);
+        DAVA_THROW(FormulaError, Format("Invalid argument type '%s' to unary expression", FormulaFormatter::AnyTypeToString(val).c_str()), exp);
     }
 }
 
@@ -78,7 +90,7 @@ void FormulaExecutor::Visit(FormulaNotExpression* exp)
     }
     else
     {
-        DAVA_THROW(FormulaError, "Invalid argument type to unary expression", exp);
+        DAVA_THROW(FormulaError, Format("Invalid argument type '%s' to unary expression", FormulaFormatter::AnyTypeToString(val).c_str()), exp);
     }
 }
 
@@ -87,85 +99,79 @@ void FormulaExecutor::Visit(FormulaBinaryOperatorExpression* exp)
     Any l = CalculateImpl(exp->GetLhs());
     Any r = CalculateImpl(exp->GetRhs());
 
-    bool isLhsInt = l.CanGet<int32>();
-    bool isRhsInt = r.CanGet<int32>();
-
-    if (isLhsInt && isRhsInt)
+    if (l.CanGet<uint64>() && r.CanGet<uint64>())
     {
-        int32 lVal = l.Get<int32>();
-        int32 rVal = r.Get<int32>();
+        calculationResult = CalculateIntAnyValues<uint64>(exp->GetOperator(), l, r);
+    }
+    else if (l.CanGet<int64>() && r.CanGet<int64>())
+    {
+        calculationResult = CalculateIntAnyValues<int64>(exp->GetOperator(), l, r);
+    }
+    else if (l.CanGet<uint32>() && r.CanGet<uint32>())
+    {
+        calculationResult = CalculateIntAnyValues<uint32>(exp->GetOperator(), l, r);
+    }
+    else if (l.CanCast<int32>() && r.CanCast<int32>())
+    {
+        calculationResult = CalculateIntAnyValues<int32>(exp->GetOperator(), l, r);
+    }
+    else if ((l.CanGet<float32>() || l.CanCast<int32>()) && (r.CanGet<float32>() || r.CanCast<int32>()))
+    {
+        float32 lVal = l.CanGet<float32>() ? l.Get<float32>() : static_cast<float32>(l.Cast<int32>());
+        float32 rVal = r.CanGet<float32>() ? r.Get<float32>() : static_cast<float32>(r.Cast<int32>());
+        calculationResult = CalculateNumberValues<float32>(exp->GetOperator(), lVal, rVal);
+    }
+    else if (l.CanGet<bool>() && r.CanGet<bool>())
+    {
+        bool lVal = l.Get<bool>();
+        bool rVal = r.Get<bool>();
+        switch (exp->GetOperator())
+        {
+        case FormulaBinaryOperatorExpression::OP_AND:
+            calculationResult = Any(lVal && rVal);
+            break;
 
-        if (exp->GetOperator() == FormulaBinaryOperatorExpression::OP_MOD)
-        {
-            calculationResult = Any(lVal % rVal);
+        case FormulaBinaryOperatorExpression::OP_OR:
+            calculationResult = Any(lVal || rVal);
+            break;
+
+        case FormulaBinaryOperatorExpression::OP_EQ:
+            calculationResult = Any(lVal == rVal);
+            break;
+
+        case FormulaBinaryOperatorExpression::OP_NOT_EQ:
+            calculationResult = Any(lVal != rVal);
+            break;
+
+        default:
+            DAVA_THROW(FormulaError, Format("Incomparable types: %s and %s", FormulaFormatter::AnyTypeToString(l).c_str(), FormulaFormatter::AnyTypeToString(r).c_str()), exp);
         }
-        else
+    }
+    else if (l.CanGet<String>() && r.CanGet<String>())
+    {
+        String lVal = l.Get<String>();
+        String rVal = r.Get<String>();
+        switch (exp->GetOperator())
         {
-            calculationResult = CalculateNumberValues(exp->GetOperator(), lVal, rVal);
+        case FormulaBinaryOperatorExpression::OP_PLUS:
+            calculationResult = Any(lVal + rVal);
+            break;
+
+        case FormulaBinaryOperatorExpression::OP_EQ:
+            calculationResult = Any(lVal == rVal);
+            break;
+
+        case FormulaBinaryOperatorExpression::OP_NOT_EQ:
+            calculationResult = Any(lVal != rVal);
+            break;
+
+        default:
+            DAVA_THROW(FormulaError, Format("Incomparable types: %s and %s", FormulaFormatter::AnyTypeToString(l).c_str(), FormulaFormatter::AnyTypeToString(r).c_str()), exp);
         }
     }
     else
     {
-        bool isLhsFloat = l.CanGet<float32>();
-        bool isRhsFloat = r.CanGet<float32>();
-        if ((isLhsFloat || isLhsInt) && (isRhsFloat || isRhsInt))
-        {
-            float32 lVal = isLhsFloat ? l.Get<float32>() : l.Get<int32>();
-            float32 rVal = isRhsFloat ? r.Get<float32>() : r.Get<int32>();
-            calculationResult = CalculateNumberValues(exp->GetOperator(), lVal, rVal);
-        }
-        else if (l.CanGet<bool>() && r.CanGet<bool>())
-        {
-            bool lVal = l.Get<bool>();
-            bool rVal = r.Get<bool>();
-            switch (exp->GetOperator())
-            {
-            case FormulaBinaryOperatorExpression::OP_AND:
-                calculationResult = Any(lVal && rVal);
-                break;
-
-            case FormulaBinaryOperatorExpression::OP_OR:
-                calculationResult = Any(lVal || rVal);
-                break;
-
-            case FormulaBinaryOperatorExpression::OP_EQ:
-                calculationResult = Any(lVal == rVal);
-                break;
-
-            case FormulaBinaryOperatorExpression::OP_NOT_EQ:
-                calculationResult = Any(lVal != rVal);
-                break;
-
-            default:
-                DAVA_THROW(FormulaError, "Invalid operands to binary expression", exp);
-            }
-        }
-        else if (l.CanGet<String>() && r.CanGet<String>())
-        {
-            String lVal = l.Get<String>();
-            String rVal = r.Get<String>();
-            switch (exp->GetOperator())
-            {
-            case FormulaBinaryOperatorExpression::OP_PLUS:
-                calculationResult = Any(lVal + rVal);
-                break;
-
-            case FormulaBinaryOperatorExpression::OP_EQ:
-                calculationResult = Any(lVal == rVal);
-                break;
-
-            case FormulaBinaryOperatorExpression::OP_NOT_EQ:
-                calculationResult = Any(lVal != rVal);
-                break;
-
-            default:
-                DAVA_THROW(FormulaError, "Invalid operands to binary expression", exp);
-            }
-        }
-        else
-        {
-            DAVA_THROW(FormulaError, "Invalid operands to binary expression", exp);
-        }
+        DAVA_THROW(FormulaError, Format("Incomparable types: %s and %s", FormulaFormatter::AnyTypeToString(l).c_str(), FormulaFormatter::AnyTypeToString(r).c_str()), exp);
     }
 }
 
@@ -345,6 +351,30 @@ const Reflection& FormulaExecutor::GetDataReferenceImpl(FormulaExpression* exp)
     else
     {
         DAVA_THROW(FormulaError, "Can't get data reference.", exp);
+    }
+}
+
+template <typename T>
+Any FormulaExecutor::CalculateNumberAnyValues(FormulaBinaryOperatorExpression::Operator op, Any anyLVal, Any anyRVal) const
+{
+    T lVal = anyLVal.Cast<T>();
+    T rVal = anyRVal.Cast<T>();
+    return CalculateNumberValues<T>(op, lVal, rVal);
+}
+
+template <typename T>
+Any FormulaExecutor::CalculateIntAnyValues(FormulaBinaryOperatorExpression::Operator op, Any anyLVal, Any anyRVal) const
+{
+    T lVal = anyLVal.Cast<T>();
+    T rVal = anyRVal.Cast<T>();
+
+    if (op == FormulaBinaryOperatorExpression::OP_MOD)
+    {
+        return Any(lVal % rVal);
+    }
+    else
+    {
+        return CalculateNumberValues<T>(op, lVal, rVal);
     }
 }
 

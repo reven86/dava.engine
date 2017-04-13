@@ -87,10 +87,21 @@ DAVA_TESTCLASS (FormulaExecutorTest)
     {
         TEST_VERIFY(Execute("5") == Any(5));
         TEST_VERIFY(Execute("5 + 5") == Any(10));
+        TEST_VERIFY(Execute("5 + 5.5") == Any(10.5f));
         TEST_VERIFY(Execute("7-2") == Any(5));
         TEST_VERIFY(Execute("-2") == Any(-2));
         TEST_VERIFY(Execute("--2") == Any(2));
         TEST_VERIFY(Execute("1---2") == Any(-1));
+    }
+
+    // FormulaExecutor::Calculate
+    DAVA_TEST (CalculateNumbersWithErrors)
+    {
+        try
+        {
+            TEST_VERIFY(Execute("5U + 5.5") == Any(5));
+        }
+        catch ();
     }
 
     // FormulaExecutor::Calculate

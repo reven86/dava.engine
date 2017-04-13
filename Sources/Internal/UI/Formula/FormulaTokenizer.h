@@ -10,7 +10,10 @@ public:
     enum Type
     {
         INVALID,
-        INT,
+        INT32,
+        UINT32,
+        INT64,
+        UINT64,
         FLOAT,
         BOOLEAN,
         STRING,
@@ -42,18 +45,24 @@ public:
     };
 
     FormulaToken();
-    FormulaToken(Type type_, int lineNumber, int positionInLine);
-    FormulaToken(Type type, int val, int lineNumber, int positionInLine);
-    FormulaToken(Type type, float val, int lineNumber, int positionInLine);
-    FormulaToken(Type type, bool val, int lineNumber, int positionInLine);
-    FormulaToken(Type type, int startPos, int len, int lineNumber, int positionInLine);
+    FormulaToken(Type type_, int32 lineNumber, int32 positionInLine);
+    FormulaToken(Type type, int32 val, int32 lineNumber, int32 positionInLine);
+    FormulaToken(Type type, uint32 val, int32 lineNumber, int32 positionInLine);
+    FormulaToken(Type type, int64 val, int32 lineNumber, int32 positionInLine);
+    FormulaToken(Type type, uint64 val, int32 lineNumber, int32 positionInLine);
+    FormulaToken(Type type, float32 val, int32 lineNumber, int32 positionInLine);
+    FormulaToken(Type type, bool val, int32 lineNumber, int32 positionInLine);
+    FormulaToken(Type type, int32 startPos, int32 len, int32 lineNumber, int32 positionInLine);
 
     Type GetType() const;
-    int GetInt() const;
-    float GetFloat() const;
+    int32 GetInt32() const;
+    uint32 GetUInt32() const;
+    int64 GetInt64() const;
+    uint64 GetUInt64() const;
+    float32 GetFloat() const;
     bool GetBool() const;
-    int GetStringPos() const;
-    int GetStringLen() const;
+    int32 GetStringPos() const;
+    int32 GetStringLen() const;
 
     int32 GetLineNumber() const;
     int32 GetPositionInLine() const;
@@ -64,16 +73,20 @@ private:
     union {
         struct
         {
-            int start = 0;
-            int len = 0;
+            int32 start = 0;
+            int32 len = 0;
         };
 
-        int32 iVal;
+        int32 i32Val;
+        uint32 ui32Val;
+        int64 i64Val;
+        uint64 ui64Val;
         float32 fVal;
+        bool bVal;
     };
 
-    int lineNumber = 0;
-    int positionInLine = 0;
+    int32 lineNumber = 0;
+    int32 positionInLine = 0;
 };
 
 class FormulaTokenizer
@@ -82,14 +95,20 @@ public:
     FormulaTokenizer(const String& str);
     ~FormulaTokenizer();
 
-    FormulaToken ReadToken();
     const String& GetString() const;
     String GetTokenStringValue(const FormulaToken& token);
 
     int32 GetLineNumber() const;
     int32 GetPositionInLine() const;
 
+    FormulaToken ReadToken();
+
 private:
+    float32 ParseFloat(int32 startPos, int32 endPos, int32 dotPos);
+
+    template <typename T>
+    T ParseInt(int32 startPos, int32 endPos);
+
     void SkipWhitespaces();
     bool IsIdentifierStart(char ch);
     bool IsIdentifierPart(char ch);
@@ -98,8 +117,8 @@ private:
 
     String str;
     char ch = '\0';
-    int currentPosition = -1;
-    int lineNumber = 0;
-    int positionInLine = 0;
+    int32 currentPosition = -1;
+    int32 lineNumber = 0;
+    int32 positionInLine = 0;
 };
 }
