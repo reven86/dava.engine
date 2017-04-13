@@ -441,6 +441,7 @@ void EngineBackend::OnWindowCreated(Window* window)
         size_t nerased = justCreatedWindows.erase(window);
         DVASSERT(nerased == 1);
 
+        DVASSERT(std::find(aliveWindows.begin(), aliveWindows.end(), window) == aliveWindows.end());
         aliveWindows.push_back(window);
     }
     engine->windowCreated.Emit(window);
