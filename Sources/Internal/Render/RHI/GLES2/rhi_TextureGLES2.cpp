@@ -355,8 +355,8 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool forceExecute)
 
 void TextureGLES2_t::Destroy(bool forceExecute)
 {
-    GLCommand cmd[64] = {};
-    GLint doomed_fbo[64];
+    GLCommand cmd[128] = {};
+    GLint doomed_fbo[128];
     size_t cmd_cnt = 1;
 
     if (isRenderTarget || isRenderBuffer)
