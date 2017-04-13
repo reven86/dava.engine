@@ -57,7 +57,7 @@ void RunOnMainThreadAsync(const Function<void()>& task);
     \ingroup engine
     Utility function to run task on DAVA main thread and wait its completion blocking caller thread.
 
-    Does nothing if called outside of main loop (i.e. before `Engine::Run` execution).
+    This function should not be called before `Engine::Run` is executed since it can lead to deadlock.
     Behaviour is undefined when called after `Engine::cleanup` signal has emited.
 */
 void RunOnMainThread(const Function<void()>& task);

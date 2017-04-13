@@ -82,14 +82,8 @@ void RunOnMainThread(const Function<void()>& task)
 {
     Private::EngineBackend* backend = Private::EngineBackend::Instance();
 
-    if (backend->IsRunning())
-    {
-        backend->DispatchOnMainThread(task, true);
-    }
-    else
-    {
-        DVASSERT(false, "RunOnMainThread should not be called outside of main loop (i.e. during `Engine::Run` execution)");
-    }
+    DVASSERT(backend->IsRunning(), "RunOnMainThread should not be called outside of main loop (i.e. during `Engine::Run` execution)");
+    backend->DispatchOnMainThread(task, true);
 }
 
 void RunOnUIThreadAsync(const Function<void()>& task)
