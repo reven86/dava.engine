@@ -21,8 +21,6 @@ public:
     void Save(KeyedArchive* archive, SerializationContext* serializationContext) override;
     void Load(KeyedArchive* archive, SerializationContext* serializationContext) override;
 
-    static bool IsTreeLeafBatch(RenderBatch* batch);
-
     void BindDynamicParameters(Camera* camera) override;
     void PrepareToRender(Camera* camera) override;
 
@@ -62,6 +60,8 @@ protected:
     SortedIndexBuffersMap directionIndexBuffers;
 
     const Matrix4* invWorldTransform = nullptr;
+
+    bool hasUnsortedGeometry = false;
 
 public:
     INTROSPECTION_EXTEND(SpeedTreeObject, RenderObject,

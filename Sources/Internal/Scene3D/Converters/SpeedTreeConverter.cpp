@@ -28,23 +28,12 @@ void SpeedTreeConverter::CalculateAnimationParams(SpeedTreeObject* object)
             int32 vxCount = pg->GetVertexCount();
             for (int32 i = 0; i < vxCount; ++i)
             {
-                Vector3 vxPosition;
+                float32 flexebility = CalculateVertexFlexibility(pg, i, treeHeight);
+                pg->SetFlexibility(i, flexebility);
 
-                pg->GetCoord(i, vxPosition);
-                float32 t0 = vxPosition.Length() * LEAF_BASE_ANGLE_DIFFERENCE_FACTOR;
-
-                float32 x = vxPosition.z / treeHeight;
-                float32 flexebility = std::log((std::exp(1.0f) - 1) * x + 1);
-
-                pg->SetFlexibility(i, flexebility * TRUNK_AMPLITUDE_USERFRIENDLY_FACTOR);
-
-                if (SpeedTreeObject::IsTreeLeafBatch(rb)) //leafs geometry
+                if ((pg->GetFormat() & EVF_ANGLE_SIN_COS) > 0)
                 {
-                    float32 leafHeightOscillationCoeff = (.5f + x / 2);
-                    //leafAngle: x: cos(T0);  y: sin(T0)
-                    Vector2 leafAngle(std::cos(t0) * leafHeightOscillationCoeff * LEAF_AMPLITUDE_USERFRIENDLY_FACTOR,
-                                      std::sin(t0) * leafHeightOscillationCoeff * LEAF_AMPLITUDE_USERFRIENDLY_FACTOR);
-
+                    Vector2 leafAngle = CalculateVertexAngle(pg, i, treeHeight);
                     pg->SetAngle(i, leafAngle);
                 }
             }
@@ -52,6 +41,45 @@ void SpeedTreeConverter::CalculateAnimationParams(SpeedTreeObject* object)
             pg->BuildBuffers();
         }
     }
+}
+
+float32 SpeedTreeConverter::CalculateVertexFlexibility(PolygonGroup* pg, int32 vi, float32 treeHeight)
+{
+    Vector3 vxPosition;
+    pg->GetCoord(vi, vxPosition);
+    float32 t0 = vxPosition.Length() * LEAF_BASE_ANGLE_DIFFERENCE_FACTOR;
+
+    float32 x = vxPosition.z / treeHeight;
+    float32 flexebility = std::log((std::exp(1.0f) - 1) * x + 1);
+
+    return flexebility * TRUNK_AMPLITUDE_USERFRIENDLY_FACTOR;
+}
+
+Vector2 SpeedTreeConverter::CalculateVertexAngle(PolygonGroup* pg, int32 vi, float32 treeHeight)
+{
+    Vector3 vxPosition;
+    pg->GetCoord(vi, vxPosition);
+
+    float32 t0 = vxPosition.Length() * LEAF_BASE_ANGLE_DIFFERENCE_FACTOR;
+    float32 x = vxPosition.z / treeHeight;
+
+    float32 leafHeightOscillationCoeff = (.5f + x / 2);
+    //leafAngle: x: cos(T0);  y: sin(T0)
+    Vector2 leafAngle(std::cos(t0) * leafHeightOscillationCoeff * LEAF_AMPLITUDE_USERFRIENDLY_FACTOR,
+                      std::sin(t0) * leafHeightOscillationCoeff * LEAF_AMPLITUDE_USERFRIENDLY_FACTOR);
+
+    return leafAngle;
+}
+
+bool SpeedTreeConverter::IsTreeLeafBatch(RenderBatch* batch)
+{
+    if (batch && batch->GetPolygonGroup())
+    {
+        const FastName& materialFXName = batch->GetMaterial()->GetEffectiveFXName();
+        return (materialFXName == NMaterialName::SPEEDTREE) || (materialFXName == NMaterialName::SPHERICLIT_SPEEDTREE);
+    }
+
+    return false;
 }
 
 void SpeedTreeConverter::ConvertTrees(Entity* scene)
@@ -104,7 +132,7 @@ void SpeedTreeConverter::ConvertingPathRecursive(Entity* node)
     for (uint32 b = 0; b < count && !isSpeedTree; ++b)
     {
         RenderBatch* renderBatch = ro->GetRenderBatch(b);
-        isSpeedTree |= SpeedTreeObject::IsTreeLeafBatch(renderBatch);
+        isSpeedTree |= IsTreeLeafBatch(renderBatch);
     }
 
     if (!isSpeedTree)
@@ -129,7 +157,7 @@ void SpeedTreeConverter::ConvertingPathRecursive(Entity* node)
     {
         RenderBatch* rb = treeObject->GetRenderBatch(k);
         PolygonGroup* pg = rb->GetPolygonGroup();
-        if (SpeedTreeObject::IsTreeLeafBatch(rb))
+        if (IsTreeLeafBatch(rb))
             uniqLeafPGs.insert(pg);
         else
             uniqTrunkPGs.insert(pg);

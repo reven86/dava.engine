@@ -247,7 +247,7 @@ void CreatePlaneLODCommandHelper::CreatePlaneBatchForRequest(RequestPointer& req
 
     ScopedPtr<NMaterial> material(new NMaterial());
     material->SetMaterialName(FastName(DAVA::Format("plane_lod_%d_for_%s", request->newLodIndex, fromEntity->GetName().c_str())));
-    material->SetFXName(NMaterialName::TEXTURED_ALPHATEST);
+    material->SetFXName(NMaterialName::TEXTURED_ALPHABLEND);
 
     request->planeBatch->SetPolygonGroup(planePG);
     request->planeBatch->SetMaterial(material);

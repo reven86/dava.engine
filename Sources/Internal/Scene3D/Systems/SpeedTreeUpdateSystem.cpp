@@ -109,9 +109,6 @@ void SpeedTreeUpdateSystem::Process(float32 timeElapsed)
 {
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::SCENE_SPEEDTREE_SYSTEM);
 
-    if (!isAnimationEnabled || !isVegetationAnimationEnabled)
-        return;
-
     WindSystem* windSystem = GetScene()->windSystem;
     WaveSystem* waveSystem = GetScene()->waveSystem;
 
@@ -122,6 +119,12 @@ void SpeedTreeUpdateSystem::Process(float32 timeElapsed)
         SpeedTreeComponent* component = allTrees[i];
         DVASSERT(GetRenderObject(component->GetEntity())->GetType() == RenderObject::TYPE_SPEED_TREE);
         SpeedTreeObject* treeObject = static_cast<SpeedTreeObject*>(GetRenderObject(component->GetEntity()));
+
+        if (treeObject->hasUnsortedGeometry)
+            ProcessSpeedTreeGeometry(treeObject);
+
+        if (!isAnimationEnabled || !isVegetationAnimationEnabled)
+            continue;
 
         if (component->GetMaxAnimatedLOD() < treeObject->GetLodIndex())
             continue;
@@ -202,6 +205,7 @@ void SpeedTreeUpdateSystem::ProcessSpeedTreeGeometry(SpeedTreeObject* object)
     }
 
     object->SetSortedIndexBuffersMap(objectMap);
+    object->hasUnsortedGeometry = false;
 }
 
 SpeedTreeObject::IndexBufferArray SpeedTreeUpdateSystem::BuildDirectionIndexBuffers(PolygonGroup* pg)

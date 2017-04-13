@@ -113,6 +113,7 @@ void SpeedTreeObject::PrepareToRender(Camera* camera)
             }
             else
             {
+                hasUnsortedGeometry = true;
                 batch->useDataSource = true;
             }
         }
@@ -193,19 +194,20 @@ void SpeedTreeObject::Load(KeyedArchive* archive, SerializationContext* serializ
 
 AABBox3 SpeedTreeObject::CalcBBoxForSpeedTreeGeometry(RenderBatch* rb)
 {
-    if (IsTreeLeafBatch(rb))
+    AABBox3 pgBbox;
+    PolygonGroup* pg = rb->GetPolygonGroup();
+
+    if ((pg->GetFormat() & EVF_PIVOT4) == 0)
+        return rb->GetBoundingBox();
+
+    int32 vertexCount = pg->GetVertexCount();
+    for (int32 vi = 0; vi < vertexCount; vi++)
     {
-        AABBox3 pgBbox;
-        PolygonGroup* pg = rb->GetPolygonGroup();
+        Vector4 pivot;
+        pg->GetPivot(vi, pivot);
 
-        if ((pg->GetFormat() & EVF_PIVOT4) == 0)
-            return rb->GetBoundingBox();
-
-        int32 vertexCount = pg->GetVertexCount();
-        for (int32 vi = 0; vi < vertexCount; vi++)
+        if (pivot.w > 0.f)
         {
-            Vector4 pivot;
-            pg->GetPivot(vi, pivot);
 
             Vector3 pointX, pointY, pointZ;
             Vector3 offsetX, offsetY;
@@ -223,22 +225,15 @@ AABBox3 SpeedTreeObject::CalcBBoxForSpeedTreeGeometry(RenderBatch* rb)
             pgBbox.AddPoint(pointY);
             pgBbox.AddPoint(pointZ);
         }
-
-        return pgBbox;
+        else
+        {
+            Vector3 position;
+            pg->GetCoord(vi, position);
+            pgBbox.AddPoint(position);
+        }
     }
 
-    return rb->GetBoundingBox();
-}
-
-bool SpeedTreeObject::IsTreeLeafBatch(RenderBatch* batch)
-{
-    if (batch && batch->GetMaterial())
-    {
-        const FastName& materialFXName = batch->GetMaterial()->GetEffectiveFXName();
-        return (materialFXName == NMaterialName::SPEEDTREE_LEAF) || (materialFXName == NMaterialName::SPHERICLIT_SPEEDTREE_LEAF);
-    }
-
-    return false;
+    return pgBbox;
 }
 
 Vector3 SpeedTreeObject::GetSortingDirection(uint32 directionIndex)
