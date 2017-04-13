@@ -46,20 +46,15 @@ public:
         int32 partsCount = -1;
         int32 timeoutSec = 30;
         int32 retriesCount = 3;
-        uint64 rangeOffset = 0;
-        uint64 rangeSize = 0;
+        int64 rangeOffset = -1;
+        int64 rangeSize = -1;
         IWriter* customWriter = nullptr;
     };
 
     struct TaskError
     {
-        enum Error
-        {
-            NO_ERROR_,
-            SOME_ERROR_
-        };
-        Error errorCode = NO_ERROR_;
-        int32 curlErr = 0;
+        int32 curlErr = 0; // CURLE_OK == 0
+        int32 curlMErr = 0; // CURLM_OK == 0
         int32 errnoVal = 0;
     };
 
@@ -80,8 +75,8 @@ public:
                             const String& dstPath,
                             TaskType taskType,
                             IWriter* customWriter = nullptr,
-                            uint64 rangeOffset = 0,
-                            uint64 rangeSize = 0,
+                            int64 rangeOffset = -1,
+                            int64 rangeSize = -1,
                             int16 partsCount = -1,
                             int32 timeout = 30,
                             int32 retriesCount = 3) = 0;

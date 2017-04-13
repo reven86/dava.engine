@@ -107,8 +107,8 @@ DLCDownloader::Task* DLCDownloaderImpl::StartTask(const String& srcUrl,
                                                   const String& dstPath,
                                                   TaskType taskType,
                                                   IWriter* dstWriter,
-                                                  uint64 rangeOffset,
-                                                  uint64 rangeSize,
+                                                  int64 rangeOffset,
+                                                  int64 rangeSize,
                                                   int16 partsCount,
                                                   int32 timeout,
                                                   int32 retriesCount)
@@ -185,7 +185,7 @@ void DLCDownloaderImpl::WaitTask(Task* task)
         {
             break;
         }
-        Thread::Sleep(50); // TODO reimplement it!
+        Thread::Sleep(10); // TODO reimplement it!
     }
 }
 
@@ -322,8 +322,8 @@ static void SetupFullDownload(DLCDownloader::Task* justAddedTask)
     code = curl_easy_setopt(easyHandle, CURLOPT_WRITEDATA, writer);
     DVASSERT(code == CURLE_OK);
 
-    bool hasRangeStart = info.rangeOffset != 0;
-    bool hasRangeFinish = info.rangeOffset != 0;
+    bool hasRangeStart = info.rangeOffset != -1;
+    bool hasRangeFinish = info.rangeOffset != -1;
 
     if (hasRangeStart || hasRangeFinish)
     {
@@ -455,7 +455,7 @@ bool DLCDownloaderImpl::TakeOneNewTaskFromQueue()
 
 void DLCDownloaderImpl::DownloadThreadFunc()
 {
-    const int maxSimultaniousDownloads = 32;
+    const int maxSimultaniousDownloads = 128;
     Thread* currentThread = Thread::Current();
     DVASSERT(currentThread != nullptr);
 
@@ -535,7 +535,8 @@ void DLCDownloaderImpl::DownloadThreadFunc()
                         --numOfAddedTasks;
                     }
 
-                    curl_multi_remove_handle(multiHandle, easyHandle);
+                    CURLMcode code = curl_multi_remove_handle(multiHandle, easyHandle);
+                    DVASSERT(CURLM_OK == code);
                     curl_easy_cleanup(easyHandle);
                 }
             } while (curlMsg);
@@ -561,21 +562,21 @@ static size_t CurlPerform(CURLM* multiHandle)
     int stillRunning = 0;
     //long curl_timeo;
 
-    CURLMcode mc;
+    CURLMcode code;
     int numfds;
 
-    mc = curl_multi_perform(multiHandle, &stillRunning);
-    DVASSERT(mc == CURLM_OK);
+    code = curl_multi_perform(multiHandle, &stillRunning);
+    DVASSERT(code == CURLM_OK);
 
-    if (mc == CURLM_OK)
+    if (code == CURLM_OK)
     {
         /* wait for activity, timeout or "nothing" */
-        mc = curl_multi_wait(multiHandle, nullptr, 0, 1000, &numfds);
+        code = curl_multi_wait(multiHandle, nullptr, 0, 1000, &numfds);
     }
 
-    if (mc != CURLM_OK)
+    if (code != CURLM_OK)
     {
-        Logger::Error("curl_multi failed, code %d.n", mc);
+        Logger::Error("curl_multi failed, code %d.n", code);
         return 0;
     }
 

@@ -16,7 +16,7 @@ DAVA_TESTCLASS (DLCDownloaderTest)
         using namespace DAVA;
 
         DLCDownloaderImpl downloader;
-        String url = "http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz/smart_dlc/3.7.245.dvpk";
+        String url = "http://dl-wotblitz.wargaming.net/dlc/r11608713/3.7.0.236.dvpk";
         DLCDownloader::Task* task = downloader.StartTask(url, "", DLCDownloader::TaskType::SIZE);
 
         downloader.WaitTask(task);
@@ -29,9 +29,11 @@ DAVA_TESTCLASS (DLCDownloaderTest)
     {
         using namespace DAVA;
 
+        FileSystem* fs = FileSystem::Instance();
         DLCDownloaderImpl downloader;
-        String url = "http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz/smart_dlc/3.7.245.dvpk";
+        String url = "http://dl-wotblitz.wargaming.net/dlc/r11608713/3.7.0.236.dvpk";
         FilePath path("~doc:/big_tmp_file_from_server.remove.me");
+        fs->DeleteFile(path);
         String p = path.GetAbsolutePathname();
         int64 start = 0;
         DLCDownloader::Task* task = nullptr;
@@ -40,20 +42,23 @@ DAVA_TESTCLASS (DLCDownloaderTest)
 
         DownloadManager* dm = DownloadManager::Instance();
 
-        //FilePath pathOld("~doc:/big_tmp_file_from_server.old.remove.me");
+        FilePath pathOld("~doc:/big_tmp_file_from_server.old.remove.me");
+        fs->DeleteFile(pathOld);
 
         ////----first--------------------------------------------------------
-        //start = SystemTimer::GetMs();
+        //      start = SystemTimer::GetMs();
 
-        //uint32 id = dm->Download(url, pathOld);
+        //int numOfParts = 4;
 
-        //dm->Wait(id);
+        //      uint32 id = dm->Download(url, pathOld, FULL);
 
-        //finish = SystemTimer::GetMs();
+        //      dm->Wait(id);
 
-        //seconds = (finish - start) / 1000.f;
+        //      finish = SystemTimer::GetMs();
 
-        //Logger::Info("old downloader 1.5 Gb download from in house server for: %f", seconds);
+        //      seconds = (finish - start) / 1000.f;
+
+        //      Logger::Info("old downloader 1.5 Gb parts(%d) download from in house server for: %f", numOfParts, seconds);
         // ----next-------------------------------------------------------
         //{
         //    start = SystemTimer::GetMs();
@@ -80,7 +85,6 @@ DAVA_TESTCLASS (DLCDownloaderTest)
         uint64 nextIndex = 0;
         const uint64 lastIndex = sizeTotal - 1;
 
-        FileSystem* fs = FileSystem::Instance();
         FilePath dir("~doc:/multy_tmp/");
         fs->DeleteDirectory(dir, true);
         fs->CreateDirectory(dir);
@@ -98,21 +102,11 @@ DAVA_TESTCLASS (DLCDownloaderTest)
         for (size_t i = 0; i < numAll; ++i, firstIndex += onePart, nextIndex += onePart)
         {
             StringStream ss;
-            ss << "part_" << std::setw(5) << std::setfill('0') << i << '_' << firstIndex << '-';
-            uint64 endIndex = 0;
-            if (nextIndex <= lastIndex)
-            {
-                endIndex = nextIndex;
-            }
-            else
-            {
-                endIndex = lastIndex;
-            }
-            ss << endIndex;
+            ss << "part_" << std::setw(5) << std::setfill('0') << i << '_' << firstIndex << '-' << nextIndex;
             String fileName = ss.str() + ".part";
             FilePath pathFull = dir + fileName;
             String full = pathFull.GetAbsolutePathname();
-            task = downloader.StartTask(url, full, DLCDownloader::TaskType::FULL, nullptr, firstIndex, endIndex);
+            task = downloader.StartTask(url, full, DLCDownloader::TaskType::FULL, nullptr, firstIndex, nextIndex);
             allTasks.push_back(task);
         }
 

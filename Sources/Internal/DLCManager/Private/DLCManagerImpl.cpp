@@ -4,7 +4,7 @@
 #include "FileSystem/Private/PackArchive.h"
 #include "FileSystem/Private/PackMetaData.h"
 #include "FileSystem/FileAPIHelper.h"
-#include "DLC/Downloader/DownloadManager.h"
+#include "DLCManager/Private/DLCDownloaderImpl.h"
 #include "Utils/CRC32.h"
 #include "DLC/DLC.h"
 #include "Logger/Logger.h"
@@ -17,6 +17,48 @@ namespace DAVA
 {
 DLCManager::~DLCManager() = default;
 DLCManager::IRequest::~IRequest() = default;
+
+class MemoryBufferWriter final : public DLCDownloader::IWriter
+{
+public:
+    MemoryBufferWriter(void* buff, size_t size)
+    {
+        start = static_cast<char*>(buff);
+        current = start;
+        end = start + size;
+    }
+
+    uint64 Save(const void* ptr, uint64 size) override
+    {
+        uint64 space = SpaceLeft();
+        if (size > space)
+        {
+            DAVA_THROW(Exception, "memory corruption");
+        }
+        memcpy(current, ptr, size);
+        current += size;
+    }
+
+    uint64 GetSeekPos() override
+    {
+        return current - start;
+    }
+
+    void Truncate() override
+    {
+        current = start;
+    }
+
+    uint64 SpaceLeft() override
+    {
+        return end - current;
+    }
+
+private:
+    char* start = nullptr;
+    char* current = nullptr;
+    char* end = nullptr;
+};
 
 const String& DLCManagerImpl::ToString(InitState state)
 {
@@ -83,6 +125,7 @@ DLCManagerImpl::DLCManagerImpl(Engine* engine_)
 {
     DVASSERT(Thread::IsMainThread());
     engine.update.Connect(this, &DLCManagerImpl::Update);
+    downloader.reset(new DLCDownloaderImpl());
 }
 #endif
 
@@ -126,10 +169,9 @@ void DLCManagerImpl::ClearResouces()
 
     if (downloadTaskId != 0)
     {
-        DownloadManager* dm = DownloadManager::Instance();
-        if (dm != nullptr)
+        if (downloader != nullptr)
         {
-            dm->Cancel(downloadTaskId);
+            downloader->RemoveTask(downloadTaskId);
             downloadTaskId = 0;
         }
     }
@@ -211,8 +253,8 @@ void DLCManagerImpl::Initialize(const FilePath& dirToDownloadPacks_,
     fullSizeServerData = 0;
     if (0 != downloadTaskId)
     {
-        DownloadManager::Instance()->Cancel(downloadTaskId);
-        downloadTaskId = 0;
+        downloader->RemoveTask(downloadTaskId);
+        downloadTaskId = nullptr;
     }
 
     initError = InitError::AllGood;
@@ -472,47 +514,46 @@ void DLCManagerImpl::AskFooter()
 {
     //Logger::FrameworkDebug("pack manager ask_footer");
 
-    DownloadManager* dm = DownloadManager::Instance();
-
     DVASSERT(0 == fullSizeServerData);
 
     if (0 == downloadTaskId)
     {
-        downloadTaskId = dm->Download(urlToSuperPack, "", GET_SIZE);
+        downloadTaskId = downloader->StartTask(urlToSuperPack, "", DLCDownloader::TaskType::SIZE);
     }
     else
     {
-        DownloadStatus status = DL_UNKNOWN;
-        if (dm->GetStatus(downloadTaskId, status))
-        {
-            if (DL_FINISHED == status)
-            {
-                DownloadError error = DLE_NO_ERROR;
-                dm->GetError(downloadTaskId, error);
-                if (DLE_NO_ERROR == error)
-                {
-                    if (!dm->GetTotal(downloadTaskId, fullSizeServerData))
-                    {
-                        DAVA_THROW(DAVA::Exception, "can't get size of file on server side");
-                    }
+        DLCDownloader::TaskStatus status = downloader->GetTaskStatus(downloadTaskId);
 
-                    if (fullSizeServerData < sizeof(PackFormat::PackFile))
-                    {
-                        DAVA_THROW(DAVA::Exception, "too small superpack on server");
-                    }
-                    // start downloading footer from server superpack
-                    uint64 downloadOffset = fullSizeServerData - sizeof(initFooterOnServer);
-                    uint32 sizeofFooter = static_cast<uint32>(sizeof(initFooterOnServer));
-                    downloadTaskId = dm->DownloadIntoBuffer(urlToSuperPack, &initFooterOnServer, sizeofFooter, downloadOffset, sizeofFooter);
-                    initState = InitState::LoadingRequestGetFooter;
-                    log << "initState: " << ToString(initState) << std::endl;
-                }
-                else
+        if (DLCDownloader::TaskState::Finished == status.state)
+        {
+            bool allGood = status.error.curlErr == 0 && status.error.curlMErr == 0;
+            if (allGood)
+            {
+                fullSizeServerData = status.sizeTotal;
+                if (fullSizeServerData == 0)
                 {
-                    initError = InitError::LoadingRequestFailed;
-                    initErrorMsg = "failed get superpack size on server, download error: " + DLC::ToString(error) + " " + std::to_string(retryCount);
-                    log << initErrorMsg << std::endl;
+                    DAVA_THROW(DAVA::Exception, "can't get size of file on server side");
                 }
+
+                if (fullSizeServerData < sizeof(PackFormat::PackFile))
+                {
+                    DAVA_THROW(DAVA::Exception, "too small superpack on server");
+                }
+                // start downloading footer from server superpack
+                uint64 downloadOffset = fullSizeServerData - sizeof(initFooterOnServer);
+                uint32 sizeofFooter = static_cast<uint32>(sizeof(initFooterOnServer));
+
+                memBufWriter.reset(new MemoryBufferWriter(&initFooterOnServer, sizeofFooter));
+                downloadTaskId = downloader->StartTask(urlToSuperPack, "", DLCDownloader::TaskType::FULL, memBufWriter.get(), downloadOffset, sizeofFooter);
+                initState = InitState::LoadingRequestGetFooter;
+                log << "initState: " << ToString(initState) << std::endl;
+            }
+            else
+            {
+                DVASSERT(false); // TODO implement it better
+                initError = InitError::LoadingRequestFailed;
+                initErrorMsg = "failed get superpack size on server, download error: ";
+                log << initErrorMsg << std::endl;
             }
         }
     }
@@ -522,36 +563,28 @@ void DLCManagerImpl::GetFooter()
 {
     //Logger::FrameworkDebug("pack manager get_footer");
 
-    DownloadManager* dm = DownloadManager::Instance();
-    DownloadStatus status = DL_UNKNOWN;
-    if (dm->GetStatus(downloadTaskId, status))
+    DLCDownloader::TaskStatus status = downloader->GetTaskStatus(downloadTaskId);
+
+    if (DLCDownloader::TaskState::Finished == status.state)
     {
-        if (DL_FINISHED == status)
+        bool allGood = status.error.curlErr == 0 && status.error.curlMErr == 0;
+        if (allGood)
         {
-            DownloadError error = DLE_NO_ERROR;
-            dm->GetError(downloadTaskId, error);
-            if (DLE_NO_ERROR == error)
+            uint32 crc32 = CRC32::ForBuffer(reinterpret_cast<char*>(&initFooterOnServer.info), sizeof(initFooterOnServer.info));
+            if (crc32 != initFooterOnServer.infoCrc32)
             {
-                uint32 crc32 = CRC32::ForBuffer(reinterpret_cast<char*>(&initFooterOnServer.info), sizeof(initFooterOnServer.info));
-                if (crc32 != initFooterOnServer.infoCrc32)
-                {
-                    DAVA_THROW(DAVA::Exception, "on server bad superpack!!! Footer not match crc32");
-                }
-                usedPackFile.footer = initFooterOnServer;
-                initState = InitState::LoadingRequestAskFileTable;
-                log << "initState: " << ToString(initState) << std::endl;
+                DAVA_THROW(DAVA::Exception, "on server bad superpack!!! Footer not match crc32");
             }
-            else
-            {
-                initError = InitError::LoadingRequestFailed;
-                initErrorMsg = "failed get footer from server, download error: " + DLC::ToString(error) + " " + std::to_string(retryCount);
-                log << initErrorMsg << std::endl;
-            }
+            usedPackFile.footer = initFooterOnServer;
+            initState = InitState::LoadingRequestAskFileTable;
+            log << "initState: " << ToString(initState) << std::endl;
         }
-    }
-    else
-    {
-        DAVA_THROW(DAVA::Exception, "can't get status for download task");
+        else
+        {
+            initError = InitError::LoadingRequestFailed;
+            initErrorMsg = "failed get footer from server, download error: ";
+            log << initErrorMsg << std::endl;
+        }
     }
 }
 
@@ -571,12 +604,11 @@ void DLCManagerImpl::AskFileTable()
         fs->DeleteFile(localCacheFileTable);
     }
 
-    DownloadManager* dm = DownloadManager::Instance();
     buffer.resize(initFooterOnServer.info.filesTableSize);
 
     uint64 downloadOffset = fullSizeServerData - (sizeof(initFooterOnServer) + initFooterOnServer.info.filesTableSize);
 
-    downloadTaskId = dm->DownloadRange(urlToSuperPack, localCacheFileTable, downloadOffset, buffer.size());
+    downloadTaskId = downloader->StartTask(urlToSuperPack, localCacheFileTable.GetAbsolutePathname(), DLCDownloader::TaskType::FULL, nullptr, downloadOffset, buffer.size());
     if (0 == downloadTaskId)
     {
         DAVA_THROW(DAVA::Exception, "can't start downloading into buffer");
@@ -589,70 +621,61 @@ void DLCManagerImpl::GetFileTable()
 {
     //Logger::FrameworkDebug("pack manager get_file_table");
 
-    DownloadManager* dm = DownloadManager::Instance();
-    DownloadStatus status = DL_UNKNOWN;
-    if (dm->GetStatus(downloadTaskId, status))
+    DLCDownloader::TaskStatus status = downloader->GetTaskStatus(downloadTaskId);
+
+    if (DLCDownloader::TaskState::Finished == status.state)
     {
-        if (DL_FINISHED == status)
+        bool allGood = status.error.curlErr == 0 && status.error.curlMErr == 0;
+        if (allGood)
         {
-            DownloadError error = DLE_NO_ERROR;
-            dm->GetError(downloadTaskId, error);
-            if (DLE_NO_ERROR == error)
+            uint64 fileSize = 0;
+            FileSystem* fs = FileSystem::Instance();
+
+            fs->GetFileSize(localCacheFileTable, fileSize);
+
+            buffer.resize(static_cast<size_t>(fileSize));
+
             {
-                uint64 fileSize = 0;
-                FileSystem* fs = FileSystem::Instance();
-
-                fs->GetFileSize(localCacheFileTable, fileSize);
-
-                buffer.resize(static_cast<size_t>(fileSize));
-
-                {
-                    ScopedPtr<File> f(File::Create(localCacheFileTable, File::OPEN | File::READ));
-                    f->Read(&buffer[0], static_cast<uint32>(buffer.size()));
-                }
-
-                uint32 crc32 = CRC32::ForBuffer(&buffer[0], buffer.size());
-                if (crc32 != initFooterOnServer.info.filesTableCrc32)
-                {
-                    const char* err = "FileTable not match crc32";
-                    Logger::Error("%s", err);
-                    DAVA_THROW(DAVA::Exception, err);
-                }
-
-                uncompressedFileNames.clear();
-                PackArchive::ExtractFileTableData(initFooterOnServer,
-                                                  buffer,
-                                                  uncompressedFileNames,
-                                                  usedPackFile.filesTable);
-
-                // fill fileNamesIndexes
-                startFileNameIndexesInUncompressedNames.clear();
-                startFileNameIndexesInUncompressedNames.reserve(usedPackFile.filesTable.data.files.size());
-                startFileNameIndexesInUncompressedNames.push_back(0); // first name, and skip last '\0' char
-                for (uint32 index = 0, last = static_cast<uint32>(uncompressedFileNames.size()) - 1;
-                     index < last; ++index)
-                {
-                    if (uncompressedFileNames[index] == '\0')
-                    {
-                        startFileNameIndexesInUncompressedNames.push_back(index + 1);
-                    }
-                }
-
-                initState = InitState::CalculateLocalDBHashAndCompare;
-                log << "initState: " << ToString(initState) << std::endl;
+                ScopedPtr<File> f(File::Create(localCacheFileTable, File::OPEN | File::READ));
+                f->Read(&buffer[0], static_cast<uint32>(buffer.size()));
             }
-            else
+
+            uint32 crc32 = CRC32::ForBuffer(&buffer[0], buffer.size());
+            if (crc32 != initFooterOnServer.info.filesTableCrc32)
             {
-                initError = InitError::LoadingRequestFailed;
-                initErrorMsg = "failed get fileTable from server, download error: " + DLC::ToString(error) + " " + std::to_string(retryCount);
+                const char* err = "FileTable not match crc32";
+                Logger::Error("%s", err);
+                DAVA_THROW(DAVA::Exception, err);
             }
+
+            uncompressedFileNames.clear();
+            PackArchive::ExtractFileTableData(initFooterOnServer,
+                                              buffer,
+                                              uncompressedFileNames,
+                                              usedPackFile.filesTable);
+
+            // fill fileNamesIndexes
+            startFileNameIndexesInUncompressedNames.clear();
+            startFileNameIndexesInUncompressedNames.reserve(usedPackFile.filesTable.data.files.size());
+            startFileNameIndexesInUncompressedNames.push_back(0); // first name, and skip last '\0' char
+            for (uint32 index = 0, last = static_cast<uint32>(uncompressedFileNames.size()) - 1;
+                 index < last; ++index)
+            {
+                if (uncompressedFileNames[index] == '\0')
+                {
+                    startFileNameIndexesInUncompressedNames.push_back(index + 1);
+                }
+            }
+
+            initState = InitState::CalculateLocalDBHashAndCompare;
+            log << "initState: " << ToString(initState) << std::endl;
         }
-    }
-    else
-    {
-        const char* err = "can't get status for download task";
-        log << err << std::endl;
-        DAVA_THROW(DAVA::Exception, err);
+        else
+        {
+            DVASSERT(false);
+            initError = InitError::LoadingRequestFailed;
+            initErrorMsg = "failed get fileTable from server, download error: ";
+        }
     }
 }
 
@@ -690,8 +713,6 @@ void DLCManagerImpl::AskServerMeta()
 {
     //Logger::FrameworkDebug("pack manager ask_db");
 
-    DownloadManager* dm = DownloadManager::Instance();
-
     uint64 internalDataSize = initFooterOnServer.metaDataSize +
     initFooterOnServer.info.filesTableSize +
     sizeof(PackFormat::PackFile::FooterBlock);
@@ -701,7 +722,9 @@ void DLCManagerImpl::AskServerMeta()
 
     buffer.resize(static_cast<size_t>(downloadSize));
 
-    downloadTaskId = dm->DownloadIntoBuffer(urlToSuperPack, buffer.data(), static_cast<uint32>(buffer.size()), downloadOffset, downloadSize);
+    memBufWriter.reset(new MemoryBufferWriter(buffer.data(), buffer.size()));
+
+    downloadTaskId = downloader->StartTask(urlToSuperPack, "", DLCDownloader::TaskType::FULL, memBufWriter.get(), downloadOffset, downloadSize);
     DVASSERT(0 != downloadTaskId);
 
     initState = InitState::LoadingRequestGetMeta;
@@ -712,30 +735,23 @@ void DLCManagerImpl::GetServerMeta()
 {
     //Logger::FrameworkDebug("pack manager get_db");
 
-    DownloadManager* dm = DownloadManager::Instance();
-    DownloadStatus status = DL_UNKNOWN;
-    if (dm->GetStatus(downloadTaskId, status))
+    DLCDownloader::TaskStatus status = downloader->GetTaskStatus(downloadTaskId);
+
+    if (DLCDownloader::TaskState::Finished == status.state)
     {
-        if (DL_FINISHED == status)
+        bool allGood = status.error.curlErr == 0 && status.error.curlMErr == 0;
+        if (allGood)
         {
-            DownloadError error = DLE_NO_ERROR;
-            dm->GetError(downloadTaskId, error);
-            if (DLE_NO_ERROR == error)
-            {
-                initState = InitState::UnpakingDB;
-                log << "initState: " << ToString(initState) << std::endl;
-            }
-            else
-            {
-                initError = InitError::LoadingRequestFailed;
-                initErrorMsg = "failed get meta from server, download error: " + DLC::ToString(error) + " " + std::to_string(retryCount);
-                log << initErrorMsg << std::endl;
-            }
+            initState = InitState::UnpakingDB;
+            log << "initState: " << ToString(initState) << std::endl;
         }
-    }
-    else
-    {
-        DAVA_THROW(DAVA::Exception, "can't get status for download task");
+        else
+        {
+            DVASSERT(false);
+            initError = InitError::LoadingRequestFailed;
+            initErrorMsg = "failed get meta from server, download error: ";
+            log << initErrorMsg << std::endl;
+        }
     }
 }
 

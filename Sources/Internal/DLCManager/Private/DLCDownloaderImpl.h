@@ -34,8 +34,8 @@ public:
                     const String& dsrPath,
                     TaskType taskType,
                     IWriter* dstWriter = nullptr,
-                    uint64 rangeOffset = 0,
-                    uint64 rangeSize = 0,
+                    int64 rangeOffset = -1,
+                    int64 rangeSize = -1,
                     int16 partsCount = -1,
                     int32 timeout = 30,
                     int32 retriesCount = 3) override;

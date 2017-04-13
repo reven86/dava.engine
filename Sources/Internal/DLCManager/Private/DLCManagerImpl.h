@@ -3,6 +3,7 @@
 #include <fstream>
 
 #include "DLCManager/DLCManager.h"
+#include "DLCManager/DLCDownloader.h"
 #include "DLCManager/Private/RequestManager.h"
 #include "FileSystem/Private/PackFormatSpec.h"
 #include "FileSystem/Private/PackMetaData.h"
@@ -15,6 +16,8 @@
 
 namespace DAVA
 {
+class MemoryBufferWriter;
+
 class DLCManagerImpl final : public DLCManager
 {
 public:
@@ -194,19 +197,22 @@ private:
     String initErrorMsg;
     InitState initState = InitState::Starting;
     InitError initError = InitError::AllGood;
+    std::unique_ptr<MemoryBufferWriter> memBufWriter;
     PackFormat::PackFile::FooterBlock initFooterOnServer; // temp superpack info for every new pack request or during initialization
     PackFormat::PackFile usedPackFile; // current superpack info
     Vector<uint8> buffer; // temp buff
     String uncompressedFileNames;
     UnorderedMap<String, const PackFormat::FileTableEntry*> mapFileData;
     Vector<uint32> startFileNameIndexesInUncompressedNames;
-    uint32 downloadTaskId = 0;
+    DLCDownloader::Task* downloadTaskId = nullptr;
     uint64 fullSizeServerData = 0;
 
     Hints hints{};
 
     float32 timeWaitingNextInitializationAttempt = 0;
     uint32 retryCount = 0; // count every initialization error during session
+
+    std::unique_ptr<DLCDownloader> downloader;
 };
 
 inline uint32 DLCManagerImpl::GetServerFooterCrc32() const
