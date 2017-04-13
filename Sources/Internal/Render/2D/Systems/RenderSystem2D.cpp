@@ -1173,10 +1173,11 @@ void RenderSystem2D::DrawStretched(Sprite* sprite, Sprite::DrawState* state, Vec
     }
 
     transformMatr = flipMatrix * transformMatr;
-    if (needGenerateData || sd.transformMatr != transformMatr)
+    if (needGenerateData || sd.transformMatr != transformMatr || sd.usePerPixelAccuracy != state->usePerPixelAccuracy)
     {
         sd.transformMatr = transformMatr;
-        sd.GenerateTransformData(state->usePerPixelAccuracy);
+        sd.usePerPixelAccuracy = state->usePerPixelAccuracy;
+        sd.GenerateTransformData();
     }
 
     spriteVertexCount = int32(sd.transformedVertices.size());
@@ -1991,7 +1992,7 @@ uint32 StretchDrawData::GetVertexInTrianglesCount() const
     }
 }
 
-void StretchDrawData::GenerateTransformData(bool usePerPixelAccuracy)
+void StretchDrawData::GenerateTransformData()
 {
     const uint32 size = uint32(vertices.size());
     for (uint32 index = 0; index < size; ++index)

@@ -47,7 +47,7 @@ struct StretchDrawData
     static const uint16 indeces[18 * 3];
 
     void GenerateStretchData();
-    void GenerateTransformData(bool usePerPixelAccuracy);
+    void GenerateTransformData();
     uint32 GetVertexInTrianglesCount() const;
 
     Sprite* sprite;
@@ -57,6 +57,7 @@ struct StretchDrawData
     int32 type;
     Vector2 stretchCap;
     Matrix3 transformMatr;
+    bool usePerPixelAccuracy;
 };
 
 struct TiledMultilayerData
