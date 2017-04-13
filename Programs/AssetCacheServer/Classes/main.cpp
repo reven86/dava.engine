@@ -73,8 +73,12 @@ int DAVAMain(DAVA::Vector<DAVA::String> cmdLine)
       "JobManager",
       "NetCore"
     };
+
+    KeyedArchive* options = new KeyedArchive; // options will be placed into RefPtr inside of Engine
+    options->SetBool("separate_net_thread", true);
+
     Engine e;
-    e.Init(eEngineRunMode::CONSOLE_MODE, modules, nullptr);
+    e.Init(eEngineRunMode::CONSOLE_MODE, modules, options);
 
     e.update.Connect([&e](float32)
                      {

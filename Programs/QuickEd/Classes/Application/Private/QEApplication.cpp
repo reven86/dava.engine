@@ -1,4 +1,5 @@
 #include "Application/QEApplication.h"
+#include "Application/QEGlobal.h"
 #include "Modules/LegacySupportModule/LegacySupportModule.h"
 #include "Classes/Application/ReflectionExtensions.h"
 
@@ -118,6 +119,7 @@ void QEApplication::CreateModules(DAVA::TArc::Core* tarcCore) const
 {
     Q_INIT_RESOURCE(QtToolsResources);
     tarcCore->CreateModule<LegacySupportModule>();
+
     for (const DAVA::ReflectedType* type : DAVA::TArc::ModuleCollection::Instance()->GetGuiModules())
     {
         tarcCore->CreateModule(type);

@@ -50,10 +50,10 @@ void ShadersModule::PostInit()
                                                   });
 
     ActionPlacementInfo menuPlacement(CreateMenuPoint("Scene", InsertionParams(InsertionParams::eInsertionMethod::AfterItem, "actionEnableCameraLight")));
-    GetUI()->AddAction(REGlobal::MainWindowKey, menuPlacement, reloadShadersAction);
+    GetUI()->AddAction(DAVA::TArc::mainWindowKey, menuPlacement, reloadShadersAction);
 
     ActionPlacementInfo toolbarPlacement(CreateToolbarPoint("sceneToolBar", InsertionParams(InsertionParams::eInsertionMethod::AfterItem, "Reload Sprites")));
-    GetUI()->AddAction(REGlobal::MainWindowKey, toolbarPlacement, reloadShadersAction);
+    GetUI()->AddAction(DAVA::TArc::mainWindowKey, toolbarPlacement, reloadShadersAction);
 
     connections.AddConnection(reloadShadersAction, &QAction::triggered, DAVA::MakeFunction(this, &ShadersModule::ReloadShaders));
 

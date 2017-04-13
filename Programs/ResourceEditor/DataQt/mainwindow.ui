@@ -421,7 +421,6 @@
     <addaction name="actionGridCopy"/>
     <addaction name="actionBatchProcess"/>
     <addaction name="actionCreateTestSkinnedObject"/>
-    <addaction name="actionDeviceList"/>
     <addaction name="actionImageSplitterForNormals"/>
     <addaction name="actionReplaceTextureMipmap"/>
     <addaction name="menuDump"/>
@@ -1793,11 +1792,6 @@
   <action name="actionCreateTestSkinnedObject">
    <property name="text">
     <string>Create Test Skinned Object</string>
-   </property>
-  </action>
-  <action name="actionDeviceList">
-   <property name="text">
-    <string>Device List</string>
    </property>
   </action>
   <action name="actionWayEditor">

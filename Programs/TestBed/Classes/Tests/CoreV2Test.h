@@ -2,7 +2,7 @@
 
 #include "Infrastructure/BaseScreen.h"
 
-#include <Engine/Private/Dispatcher/Dispatcher.h>
+#include <Engine/Dispatcher.h>
 
 namespace DAVA
 {
