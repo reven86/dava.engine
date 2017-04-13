@@ -60,7 +60,7 @@ Controls:
         position: [20.000000, 20.000000]
         size: [315.500000, 406.000000]
         debugDraw: true
-        text: "<h1>Header</h1> Example text with <img class=\"img\" src=\"~res:/Gfx/UI/GoldPin\" /> image and <btn /> object. <ul>List example:<li>Item 1</li><li>Item 2</li></ul> Text after list."
+        text: "<h1>Header</h1> Example text with <img class=\"img\" src=\"~res:/UI/Images/GoldPin.png\" /> image and <btn /> object. <ul>List example:<li>Item 1</li><li>Item 2</li></ul> Text after list."
         font: "DejaVuSans_18"
         textalign: ["LEFT", "TOP"]
         isMultiline: true
@@ -86,13 +86,6 @@ Controls:
                 rightAnchorEnabled: true
                 rightAnchor: 20.000000
             RichContent:
-                text: "<h1>Header</h1> Example text with <img class=\"img\" src=\"~res:/Gfx/UI/GoldPin\" /> image and <btn /> object. <ul>List example:<li>Item 1</li><li>Item 2</li></ul> Text after list."
+                text: "<h1>Header</h1> Example text with <img class=\"img\" src=\"~res:/UI/Images/GoldPin.png\" /> image and <btn /> object. <ul>List example:<li>Item 1</li><li>Item 2</li></ul> Text after list."
                 baseClasses: "text"
                 aliases: "h1,<p class=\"DejaVu\" />;btn,<object path=\"~res:/UI/RichTextTest.yaml\" prototype=\"Button\" />;"
-    -   class: "UIControl"
-        name: "UIControl"
-        position: [119.000000, 493.000000]
-        size: [32.000000, 32.000000]
-        debugDraw: true
-        components:
-            Background: {}
