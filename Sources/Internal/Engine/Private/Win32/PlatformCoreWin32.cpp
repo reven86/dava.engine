@@ -44,8 +44,9 @@ PlatformCore::PlatformCore(EngineBackend* engineBackend)
 
 PlatformCore::~PlatformCore()
 {
-    Engine::Instance()->windowCreated.Disconnect(this);
-    Engine::Instance()->windowDestroyed.Disconnect(this);
+    Engine* engine = Engine::Instance();
+    engine->windowCreated.Disconnect(this);
+    engine->windowDestroyed.Disconnect(this);
 }
 
 void PlatformCore::Init()
@@ -80,8 +81,9 @@ void PlatformCore::Init()
     }
 
     // Subscribe to window creation & destroying, used for handling screen timeout option
-    Engine::Instance()->windowCreated.Connect(this, &PlatformCore::OnWindowCreated);
-    Engine::Instance()->windowDestroyed.Connect(this, &PlatformCore::OnWindowDestroyed);
+    Engine* engine = Engine::Instance();
+    engine->windowCreated.Connect(this, &PlatformCore::OnWindowCreated);
+    engine->windowDestroyed.Connect(this, &PlatformCore::OnWindowDestroyed);
 
     engineBackend.InitializePrimaryWindow();
 }

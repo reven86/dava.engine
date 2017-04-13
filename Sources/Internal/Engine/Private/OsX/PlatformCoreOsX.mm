@@ -26,15 +26,17 @@ PlatformCore::PlatformCore(EngineBackend* engineBackend)
 
 PlatformCore::~PlatformCore()
 {
-    Engine::Instance()->windowCreated.Disconnect(this);
-    Engine::Instance()->windowDestroyed.Disconnect(this);
+    Engine* engine = Engine::Instance();
+    engine->windowCreated.Disconnect(this);
+    engine->windowDestroyed.Disconnect(this);
 }
 
 void PlatformCore::Init()
 {
     // Subscribe to window creation & destroying, used for handling screen timeout option
-    Engine::Instance()->windowCreated.Connect(this, &PlatformCore::OnWindowCreated);
-    Engine::Instance()->windowDestroyed.Connect(this, &PlatformCore::OnWindowDestroyed);
+    Engine* engine = Engine::Instance();
+    engine->windowCreated.Connect(this, &PlatformCore::OnWindowCreated);
+    engine->windowDestroyed.Connect(this, &PlatformCore::OnWindowDestroyed);
 
     engineBackend->InitializePrimaryWindow();
 }
@@ -77,6 +79,7 @@ void PlatformCore::OnWindowVisibilityChanged(Window* window, bool visible)
 
 void PlatformCore::UpdateIOPMAssertion()
 {
+    // True = we should create IOPM assertion to keep display alive, if it's not created yet
     bool useCustomAssertion = false;
 
     if (!screenTimeoutEnabled)
@@ -107,7 +110,6 @@ void PlatformCore::UpdateIOPMAssertion()
     else if (screenTimeoutAssertionId == kIOPMNullAssertionID)
     {
         // Otherwise, create custom assertion if it hasn't been yet
-
         const IOReturn createResult = IOPMAssertionCreateWithName(kIOPMAssertionTypeNoDisplaySleep,
                                                                   kIOPMAssertionLevelOn,
                                                                   CFSTR("Dava Engine application is running"),
