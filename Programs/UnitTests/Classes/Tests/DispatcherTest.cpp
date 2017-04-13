@@ -2,7 +2,7 @@
 #include "Concurrency/Mutex.h"
 #include "Concurrency/Thread.h"
 #include "Engine/Engine.h"
-#include "Engine/Private/Dispatcher/Dispatcher.h"
+#include "Engine/Dispatcher.h"
 #include "Functional/Function.h"
 #include "UnitTests/UnitTests.h"
 

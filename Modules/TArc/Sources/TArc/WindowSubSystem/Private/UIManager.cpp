@@ -184,6 +184,11 @@ void InsertActionImpl(QToolBar* toolbar, QAction* before, QAction* action)
     }
 }
 
+void InsertActionImpl(QMenuBar* menuBar, QAction* before, QAction* action)
+{
+    menuBar->insertAction(before, action);
+}
+
 template <typename T>
 void InsertAction(T* container, QAction* action, const InsertionParams& params)
 {
@@ -226,9 +231,15 @@ void AddMenuPoint(const QUrl& url, QAction* action, MainWindowInfo& windowInfo)
     }
 
     QStringList path = url.path().split("$/", QString::SkipEmptyParts);
-    DVASSERT(!path.isEmpty());
+    if (path.isEmpty())
+    {
+        UIManagerDetail::InsertAction(windowInfo.menuBar, action, InsertionParams::Create(url));
+        return;
+    }
+
+    QMenu* topLevelMenu = nullptr;
     QString topLevelTitle = path.front();
-    QMenu* topLevelMenu = windowInfo.menuBar->findChild<QMenu*>(topLevelTitle, Qt::FindDirectChildrenOnly);
+    topLevelMenu = windowInfo.menuBar->findChild<QMenu*>(topLevelTitle, Qt::FindDirectChildrenOnly);
     if (topLevelMenu == nullptr)
     {
         QAction* action = FindAction(windowInfo.menuBar, topLevelTitle);
@@ -511,7 +522,6 @@ struct UIManager::Impl : public QObject
         window->installEventFilter(this);
 
         FastName appId = windowKey.GetAppID();
-        window->setWindowTitle(appId.c_str());
         window->setObjectName(appId.c_str());
     }
 

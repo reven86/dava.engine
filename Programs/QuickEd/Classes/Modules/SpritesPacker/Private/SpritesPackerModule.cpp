@@ -74,7 +74,7 @@ void SpritesPackerModule::CreateActions()
     placementInfo.AddPlacementPoint(CreateMenuPoint("Tools", { InsertionParams::eInsertionMethod::AfterItem }));
     placementInfo.AddPlacementPoint(CreateToolbarPoint("toolBarGlobal", { InsertionParams::eInsertionMethod::BeforeItem }));
 
-    GetUI()->AddAction(QEGlobal::windowKey, placementInfo, action);
+    GetUI()->AddAction(DAVA::TArc::mainWindowKey, placementInfo, action);
 }
 
 bool SpritesPackerModule::IsUsingAssetCache() const
@@ -164,7 +164,7 @@ void SpritesPackerModule::OnReloadSprites()
         spritesPacker->AddTask(gfxDirectory, gfxOutDirectory);
     }
 
-    DialogReloadSprites dialogReloadSprites(spritesPacker, GetUI()->GetWindow(QEGlobal::windowKey));
+    DialogReloadSprites dialogReloadSprites(spritesPacker, GetUI()->GetWindow(DAVA::TArc::mainWindowKey));
     dialogReloadSprites.exec();
 }
 

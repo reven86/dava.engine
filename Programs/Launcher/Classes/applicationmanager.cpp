@@ -329,24 +329,35 @@ void ApplicationManager::CheckUpdates(QQueue<UpdateTask>& tasks)
     int branchCount = remoteConfig.GetBranchCount();
     for (int i = 0; i < branchCount; ++i)
     {
-        Branch* branch = remoteConfig.GetBranch(i);
-        if (!localConfig.GetBranch(branch->id))
+        bool toolsetWasFound = false;
+        Branch* remoteBranch = remoteConfig.GetBranch(i);
+        if (!localConfig.GetBranch(remoteBranch->id))
             continue;
 
-        int appCount = branch->GetAppCount();
+        int appCount = remoteBranch->GetAppCount();
         for (int j = 0; j < appCount; ++j)
         {
-            Application* app = branch->GetApplication(j);
-            if (!localConfig.GetApplication(branch->id, app->id))
+            Application* remoteApp = remoteBranch->GetApplication(j);
+            if (!localConfig.GetApplication(remoteBranch->id, remoteApp->id))
                 continue;
 
-            if (app->GetVerionsCount() == 1)
+            if (remoteApp->GetVerionsCount() == 1)
             {
-                AppVersion* appVersion = app->GetVersion(0);
-                Application* localApp = localConfig.GetApplication(branch->id, app->id);
+                AppVersion* remoteAppVersion = remoteApp->GetVersion(0);
+                Application* localApp = localConfig.GetApplication(remoteBranch->id, remoteApp->id);
                 AppVersion* localAppVersion = localApp->GetVersion(0);
-                if (localAppVersion->id != appVersion->id)
-                    tasks.push_back(UpdateTask(branch->id, app->id, localAppVersion, *appVersion));
+                if (localAppVersion->id != remoteAppVersion->id)
+                {
+                    if (remoteAppVersion->isToolSet)
+                    {
+                        if (toolsetWasFound)
+                        {
+                            continue;
+                        }
+                        toolsetWasFound = true;
+                    }
+                    tasks.push_back(UpdateTask(remoteBranch->id, remoteApp->id, localAppVersion, *remoteAppVersion));
+                }
             }
         }
     }

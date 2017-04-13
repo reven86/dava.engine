@@ -7,6 +7,7 @@
 #include "Time/SystemTimer.h"
 #include "Utils/StringFormat.h"
 #include "Logger/Logger.h"
+#include "Network/NetCore.h"
 
 namespace DAVA
 {
@@ -20,8 +21,11 @@ InspInfoRegistrator inspInfoRegistrator(AssetCacheClient::ConnectionParams::Type
 };
 
 AssetCacheClient::AssetCacheClient()
-    : isActive(false)
+    : dispatcher([](const Function<void()>& fn) { fn(); })
+    , client(&dispatcher)
+    , isActive(false)
 {
+    dispatcher.LinkToCurrentThread();
     client.AddListener(this);
 }
 
@@ -39,12 +43,7 @@ AssetCache::Error AssetCacheClient::ConnectSynchronously(const ConnectionParams&
     heavyRequestTimeoutMs = lightRequestTimeoutMs + (100u * 1000u);
     currentTimeoutMs = lightRequestTimeoutMs;
 
-    bool connectCalled = client.Connect(connectionParams.ip, AssetCache::ASSET_SERVER_PORT);
-    if (!connectCalled)
-    {
-        isActive = false;
-        return AssetCache::Error::ADDRESS_RESOLVER_FAILED;
-    }
+    client.Connect(connectionParams.ip, AssetCache::ASSET_SERVER_PORT);
 
     {
         LockGuard<Mutex> guard(connectEstablishLocker);
@@ -52,7 +51,7 @@ AssetCache::Error AssetCacheClient::ConnectSynchronously(const ConnectionParams&
         uint64 startTime = SystemTimer::GetMs();
         while (client.ChannelIsOpened() == false)
         {
-            PollNetworkIfSuitable();
+            ProcessNetwork();
             if (!isActive)
             {
                 return AssetCache::Error::CANNOT_CONNECT;
@@ -214,7 +213,7 @@ AssetCache::Error AssetCacheClient::WaitRequest(uint64 timeoutMs)
 
     while (currentRequest.recieved == false)
     {
-        PollNetworkIfSuitable();
+        ProcessNetwork();
 
         {
             LockGuard<Mutex> guard(requestLocker);
@@ -233,7 +232,7 @@ AssetCache::Error AssetCacheClient::WaitRequest(uint64 timeoutMs)
     {
         while (currentRequest.processingRequest)
         {
-            PollNetworkIfSuitable();
+            ProcessNetwork();
             LockGuard<Mutex> guard(requestLocker);
             currentRequest = request;
         }
@@ -402,11 +401,12 @@ bool AssetCacheClient::IsConnected() const
     return client.ChannelIsOpened();
 }
 
-void AssetCacheClient::PollNetworkIfSuitable()
+void AssetCacheClient::ProcessNetwork()
 {
-    if (Thread::IsMainThread())
+    Net::NetCore::Instance()->Update();
+    if (dispatcher.HasEvents())
     {
-        Net::NetCore::Instance()->Poll();
+        dispatcher.ProcessEvents();
     }
 }
 
