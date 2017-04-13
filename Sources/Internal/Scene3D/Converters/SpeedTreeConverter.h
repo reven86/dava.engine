@@ -1,12 +1,15 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
+#include "Base/BaseMath.h"
 
 namespace DAVA
 {
 class Entity;
 class SpeedTreeObject;
 class PolygonGroup;
+class RenderBatch;
+class NMaterial;
 
 class SpeedTreeConverter
 {
