@@ -47,7 +47,7 @@ struct StretchDrawData
     static const uint16 indeces[18 * 3];
 
     void GenerateStretchData();
-    void GenerateTransformData();
+    void GenerateTransformData(bool usePerPixelAccuracy);
     uint32 GetVertexInTrianglesCount() const;
 
     Sprite* sprite;

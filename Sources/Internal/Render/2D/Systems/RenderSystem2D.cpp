@@ -1176,7 +1176,7 @@ void RenderSystem2D::DrawStretched(Sprite* sprite, Sprite::DrawState* state, Vec
     if (needGenerateData || sd.transformMatr != transformMatr)
     {
         sd.transformMatr = transformMatr;
-        sd.GenerateTransformData();
+        sd.GenerateTransformData(state->usePerPixelAccuracy);
     }
 
     spriteVertexCount = int32(sd.transformedVertices.size());
@@ -1991,12 +1991,42 @@ uint32 StretchDrawData::GetVertexInTrianglesCount() const
     }
 }
 
-void StretchDrawData::GenerateTransformData()
+void StretchDrawData::GenerateTransformData(bool usePerPixelAccuracy)
 {
     const uint32 size = uint32(vertices.size());
     for (uint32 index = 0; index < size; ++index)
     {
         transformedVertices[index] = vertices[index] * transformMatr;
+    }
+
+    if (usePerPixelAccuracy)
+    {
+        Vector2 ppaShift = RenderSystem2D::Instance()->GetAlignedVertex(transformedVertices[0]) - transformedVertices[0];
+        transformedVertices[0] += ppaShift;
+        transformedVertices[1] += ppaShift;
+        transformedVertices[4] += ppaShift;
+        transformedVertices[5] += ppaShift;
+
+        ppaShift = RenderSystem2D::Instance()->GetAlignedVertex(transformedVertices[2]) - transformedVertices[2];
+        transformedVertices[2] += ppaShift;
+        transformedVertices[3] += ppaShift;
+        transformedVertices[6] += ppaShift;
+        transformedVertices[7] += ppaShift;
+
+        if (transformedVertices.size() > 8)
+        {
+            ppaShift = RenderSystem2D::Instance()->GetAlignedVertex(transformedVertices[8]) - transformedVertices[8];
+            transformedVertices[8] += ppaShift;
+            transformedVertices[9] += ppaShift;
+            transformedVertices[12] += ppaShift;
+            transformedVertices[13] += ppaShift;
+
+            ppaShift = RenderSystem2D::Instance()->GetAlignedVertex(transformedVertices[10]) - transformedVertices[10];
+            transformedVertices[10] += ppaShift;
+            transformedVertices[11] += ppaShift;
+            transformedVertices[14] += ppaShift;
+            transformedVertices[15] += ppaShift;
+        }
     }
 }
 
