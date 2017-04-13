@@ -80,7 +80,16 @@ void RunOnMainThreadAsync(const Function<void()>& task)
 
 void RunOnMainThread(const Function<void()>& task)
 {
-    Private::EngineBackend::Instance()->DispatchOnMainThread(task, true);
+    Private::EngineBackend* backend = Private::EngineBackend::Instance();
+
+    if (backend->IsRunning())
+    {
+        backend->DispatchOnMainThread(task, true);
+    }
+    else
+    {
+        DVASSERT(false, "RunOnMainThread should not be called outside of main loop (i.e. during `Engine::Run` execution)");
+    }
 }
 
 void RunOnUIThreadAsync(const Function<void()>& task)
@@ -216,6 +225,8 @@ int EngineBackend::Run()
 {
     DVASSERT(isInitialized == true && "Engine::Init is not called");
 
+    isRunning = true;
+
     if (IsConsoleMode())
     {
         RunConsole();
@@ -224,6 +235,9 @@ int EngineBackend::Run()
     {
         platformCore->Run();
     }
+
+    isRunning = false;
+
     return exitCode;
 }
 
@@ -986,6 +1000,11 @@ void EngineBackend::AdjustSystemTimer(int64 adjustMicro)
 {
     Logger::Info("System timer adjusted by %lld us", adjustMicro);
     SystemTimer::Adjust(adjustMicro);
+}
+
+bool EngineBackend::IsRunning() const
+{
+    return isRunning;
 }
 
 } // namespace Private
