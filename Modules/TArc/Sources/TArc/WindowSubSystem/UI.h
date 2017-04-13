@@ -35,6 +35,27 @@ private:
     FastName appID;
 };
 
+/** Token of TArc application's main window */
+extern const WindowKey mainWindowKey;
+
+/**
+    Most common menu items tokens.
+    It's recommended to use them instead of literals hardcoding.
+    e.g.
+    /code
+        CreateMenuPoint(MenuItems::menuEdit); // recommended
+        CreateMenuPoint("Edit");              // not recommended
+    /endcode
+    
+*/
+namespace MenuItems
+{
+extern const QString menuFile;
+extern const QString menuEdit;
+extern const QString menuView;
+extern const QString menuHelp;
+}
+
 class ActionPlacementInfo
 {
 public:
@@ -174,6 +195,8 @@ public:
     virtual ~UI()
     {
     }
+
+    virtual void DeclareToolbar(const WindowKey& windowKey, const ActionPlacementInfo& toogleToolbarVisibility, const QString& toolbarName) = 0;
 
     virtual void AddView(const WindowKey& windowKey, const PanelKey& panelKey, QWidget* widget) = 0;
     virtual void AddAction(const WindowKey& windowKey, const ActionPlacementInfo& placement, QAction* action) = 0;

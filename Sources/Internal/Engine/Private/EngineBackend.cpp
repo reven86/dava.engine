@@ -774,7 +774,7 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
         {
             if (context->soundSystem == nullptr)
             {
-                context->soundSystem = new SoundSystem(engine);
+                context->soundSystem = CreateSoundSystem(engine);
             }
         }
         else if (m == "PackManager")
@@ -938,11 +938,8 @@ void EngineBackend::DestroySubsystems()
         context->inputSystem = nullptr;
     }
 
-    // Finish network infrastructure
-    // As I/O event loop runs in main thread so NetCore should run out loop to make graceful shutdown
     if (context->netCore != nullptr)
     {
-        context->netCore->Finish(true);
         context->netCore->Release();
         context->netCore = nullptr;
     }

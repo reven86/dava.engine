@@ -15,7 +15,6 @@ public:
 
 private:
     void OnReloadFinished();
-    void OnProjectChanged(ProjectData* projectdata);
     void OnReloadSprites();
 
     void PostInit() override;

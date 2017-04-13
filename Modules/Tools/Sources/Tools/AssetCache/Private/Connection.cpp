@@ -31,11 +31,28 @@ bool SendArchieve(Net::IChannel* channel, KeyedArchive* archieve)
     return channel->Send(packedData, packedSize, 0, &packedId);
 }
 
-Connection::Connection(Net::eNetworkRole _role, const Net::Endpoint& _endpoint, Net::IChannelListener* _listener, Net::eTransportType transport, uint32 timeoutMs)
-    : endpoint(_endpoint)
+std::shared_ptr<Connection> Connection::MakeConnection(
+Dispatcher<Function<void()>>* dispatcher,
+Net::eNetworkRole role,
+const Net::Endpoint& endpoint,
+Net::IChannelListener* listener,
+Net::eTransportType transport,
+uint32 timeoutMs)
+{
+    std::shared_ptr<Connection> connection(new Connection(dispatcher, role, endpoint, listener, transport, timeoutMs));
+    bool res = connection->Connect(role, transport, timeoutMs);
+    if (!res)
+    {
+        connection.reset();
+    }
+    return connection;
+}
+
+Connection::Connection(Dispatcher<Function<void()>>* dispatcher, Net::eNetworkRole _role, const Net::Endpoint& _endpoint, Net::IChannelListener* _listener, Net::eTransportType transport, uint32 timeoutMs)
+    : dispatcher(dispatcher)
+    , endpoint(_endpoint)
     , listener(_listener)
 {
-    Connect(_role, transport, timeoutMs);
 }
 
 Connection::~Connection()
@@ -49,6 +66,8 @@ Connection::~Connection()
 
 bool Connection::Connect(Net::eNetworkRole role, Net::eTransportType transport, uint32 timeoutMs)
 {
+    channelListenerDispatched.reset(new Net::ChannelListenerDispatched(shared_from_this(), dispatcher));
+
     const auto serviceID = NET_SERVICE_ID;
 
     bool isRegistered = Net::NetCore::Instance()->IsServiceRegistered(serviceID);
@@ -65,7 +84,7 @@ bool Connection::Connect(Net::eNetworkRole role, Net::eTransportType transport, 
         config.AddTransport(transport, endpoint);
         config.AddService(serviceID);
 
-        controllerId = Net::NetCore::Instance()->CreateController(config, this, timeoutMs);
+        controllerId = Net::NetCore::Instance()->CreateController(config, channelListenerDispatched.get(), timeoutMs);
         if (Net::NetCore::INVALID_TRACK_ID != controllerId)
         {
             return true;
@@ -95,7 +114,7 @@ void Connection::DisconnectBlocked()
 
 Net::IChannelListener* Connection::Create(uint32 serviceId, void* context)
 {
-    auto connection = static_cast<Net::IChannelListener*>(context);
+    Net::IChannelListener* connection = static_cast<Net::IChannelListener*>(context);
     return connection;
 }
 

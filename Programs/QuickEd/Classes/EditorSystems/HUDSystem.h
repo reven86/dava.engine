@@ -52,7 +52,7 @@ private:
     DAVA::RefPtr<DAVA::UIControl> selectionRectControl;
     DAVA::Vector<DAVA::RefPtr<DAVA::UIControl>> magnetControls;
     DAVA::Vector<DAVA::RefPtr<DAVA::UIControl>> magnetTargetControls;
-    SortedPackageBaseNodeSet sortedControlList;
+    SortedControlNodeSet sortedControlList;
     DAVA::RefPtr<DAVA::UIControl> hoveredNodeControl;
 
     bool showPivot;

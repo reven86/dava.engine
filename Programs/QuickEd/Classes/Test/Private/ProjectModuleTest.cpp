@@ -75,7 +75,7 @@ DAVA_TARC_TESTCLASS(ProjectManagerTests)
 
         EXPECT_CALL(*GetMockInvoker(), Invoke(QEGlobal::CloseAllDocuments.ID));
 
-        QAction* action = FindActionInMenus(GetWindow(QEGlobal::windowKey), fileMenuName, closeProjectActionName);
+        QAction* action = FindActionInMenus(GetWindow(mainWindowKey), MenuItems::menuFile, closeProjectActionName);
         action->triggered();
 
         ContextAccessor* accessor = GetAccessor();
@@ -122,7 +122,7 @@ DAVA_TARC_TESTCLASS(ProjectManagerTests)
 
         EXPECT_CALL(*GetMockInvoker(), Invoke(QEGlobal::CloseAllDocuments.ID));
 
-        QAction* action = FindActionInMenus(GetWindow(QEGlobal::windowKey), fileMenuName, closeProjectActionName);
+        QAction* action = FindActionInMenus(GetWindow(mainWindowKey), MenuItems::menuFile, closeProjectActionName);
         action->triggered();
 
         DataContext* globalContext = accessor->GetGlobalContext();
@@ -148,12 +148,11 @@ DAVA_TARC_TESTCLASS(ProjectManagerTests)
                              TEST_VERIFY(GetAccessor()->GetContextCount() == 0);
                          }));
 
-        QWidget* widget = GetWindow(QEGlobal::windowKey);
+        QWidget* widget = GetWindow(DAVA::TArc::mainWindowKey);
         widget->close();
     }
 
     const QString closeProjectActionName = "Close project";
-    const QString fileMenuName = "File";
 
     DAVA::TArc::DataWrapper wrapper;
     DAVA::TArc::MockListener listener;

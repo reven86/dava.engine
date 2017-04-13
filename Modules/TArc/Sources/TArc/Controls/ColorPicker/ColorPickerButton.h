@@ -22,6 +22,7 @@ public:
     {
         Color,
         IsReadOnly,
+        Range,
         FieldCount
     };
 
@@ -49,6 +50,7 @@ private:
     WindowKey wndKey;
     ContextAccessor* contextAccessor = nullptr;
 
+    const M::Range* rangeMeta = nullptr;
     Any cachedColor;
     bool readOnly = false;
     QtConnections connections;
