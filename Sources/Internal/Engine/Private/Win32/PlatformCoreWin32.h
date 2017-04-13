@@ -35,6 +35,13 @@ public:
     bool IsScreenTimeoutEnabled() const;
 
 private:
+    void OnWindowCreated(Window* window);
+    void OnWindowDestroyed(Window* window);
+    void OnWindowVisibilityChanged(Window* window, bool visible);
+
+    void UpdateThreadExecutionState();
+
+private:
     EngineBackend& engineBackend;
 
     bool screenTimeoutEnabled = true;

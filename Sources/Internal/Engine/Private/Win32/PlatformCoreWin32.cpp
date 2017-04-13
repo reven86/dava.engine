@@ -8,6 +8,7 @@
 #include <shellapi.h>
 #include <timeapi.h>
 
+#include "Engine/Engine.h"
 #include "Engine/Window.h"
 #include "Engine/Private/EngineBackend.h"
 #include "Engine/Private/Win32/DllImportWin32.h"
@@ -41,7 +42,11 @@ PlatformCore::PlatformCore(EngineBackend* engineBackend)
     hinstance = reinterpret_cast<HINSTANCE>(::GetModuleHandleW(nullptr));
 }
 
-PlatformCore::~PlatformCore() = default;
+PlatformCore::~PlatformCore()
+{
+    Engine::Instance()->windowCreated.Disconnect(this);
+    Engine::Instance()->windowDestroyed.Disconnect(this);
+}
 
 void PlatformCore::Init()
 {
@@ -73,6 +78,10 @@ void PlatformCore::Init()
             DllImport::fnSetDisplayAutoRotationPreferences(ORIENTATION_PREFERENCE_LANDSCAPE | ORIENTATION_PREFERENCE_LANDSCAPE_FLIPPED);
         }
     }
+
+    // Subscribe to window creation & destroying, used for handling screen timeout option
+    Engine::Instance()->windowCreated.Connect(this, &PlatformCore::OnWindowCreated);
+    Engine::Instance()->windowDestroyed.Connect(this, &PlatformCore::OnWindowDestroyed);
 
     engineBackend.InitializePrimaryWindow();
 }
@@ -133,16 +142,8 @@ void PlatformCore::Quit()
 
 void PlatformCore::SetScreenTimeoutEnabled(bool enabled)
 {
-    if (enabled)
-    {
-        SetThreadExecutionState(ES_CONTINUOUS);
-    }
-    else
-    {
-        SetThreadExecutionState(ES_DISPLAY_REQUIRED | ES_SYSTEM_REQUIRED | ES_CONTINUOUS);
-    }
-
     screenTimeoutEnabled = enabled;
+    UpdateThreadExecutionState();
 }
 
 bool PlatformCore::IsScreenTimeoutEnabled() const
@@ -178,6 +179,56 @@ void PlatformCore::EnableHighResolutionTimer(bool enable)
             timeEndPeriod(minTimerPeriod);
         }
         highResolutionEnabled = enable;
+    }
+}
+
+void PlatformCore::OnWindowCreated(Window* window)
+{
+    window->visibilityChanged.Connect(this, &PlatformCore::OnWindowVisibilityChanged);
+}
+
+void PlatformCore::OnWindowDestroyed(Window* window)
+{
+    window->visibilityChanged.Disconnect(this);
+}
+
+void PlatformCore::OnWindowVisibilityChanged(Window* window, bool visible)
+{
+    UpdateThreadExecutionState();
+}
+
+void PlatformCore::UpdateThreadExecutionState()
+{
+    // Change thread execution policy according to screenTimeoutEnabled flag and windows visibility
+    // If all windows are not visible, then set state to ES_CONTINUOUS even if screenTimeoutEnabled flag is set
+
+    if (screenTimeoutEnabled)
+    {
+        SetThreadExecutionState(ES_CONTINUOUS);
+    }
+    else
+    {
+        // User requested disabling screen timeout
+        // Do that only if at least one window is visible
+
+        bool atLeastOneWindowIsVisible = false;
+        for (Window* w : engineBackend.GetWindows())
+        {
+            if (w->IsVisible())
+            {
+                atLeastOneWindowIsVisible = true;
+                break;
+            }
+        }
+
+        if (atLeastOneWindowIsVisible)
+        {
+            SetThreadExecutionState(ES_DISPLAY_REQUIRED | ES_SYSTEM_REQUIRED | ES_CONTINUOUS);
+        }
+        else
+        {
+            SetThreadExecutionState(ES_CONTINUOUS);
+        }
     }
 }
 

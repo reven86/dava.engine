@@ -45,6 +45,11 @@ Window* Engine::PrimaryWindow() const
     return engineBackend->GetPrimaryWindow();
 }
 
+const Vector<Window*>& Engine::GetWindows() const
+{
+    return engineBackend->GetWindows();
+}
+
 eEngineRunMode Engine::GetRunMode() const
 {
     return engineBackend->GetRunMode();

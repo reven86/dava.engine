@@ -179,6 +179,11 @@ public:
     */
     Window* PrimaryWindow() const;
 
+    /**
+        Return currently existing windows, including the primary one.
+    */
+    const Vector<Window*>& GetWindows() const;
+
     eEngineRunMode GetRunMode() const;
     bool IsStandaloneGUIMode() const;
     bool IsEmbeddedGUIMode() const;

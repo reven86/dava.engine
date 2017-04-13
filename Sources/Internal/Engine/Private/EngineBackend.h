@@ -44,6 +44,7 @@ public:
 
     const EngineContext* GetContext() const;
     Window* GetPrimaryWindow() const;
+    const Vector<Window*>& GetWindows() const;
     uint32 GetGlobalFrameIndex() const;
     int32 GetExitCode() const;
     const Vector<String>& GetCommandLine() const;
@@ -123,7 +124,7 @@ private:
 
     Window* primaryWindow = nullptr;
     Set<Window*> justCreatedWindows; // Just created Window instances which do not have native windows yet
-    Set<Window*> aliveWindows; // Windows which have native windows and take part in update cycle
+    Vector<Window*> aliveWindows; // Windows which have native windows and take part in update cycle
     Set<Window*> dyingWindows; // Windows which will be deleted soon; native window may be already destroyed
 
     // Application-supplied functor which is invoked when user is trying to close window or application
@@ -171,6 +172,11 @@ inline const EngineContext* EngineBackend::GetContext() const
 inline Window* EngineBackend::GetPrimaryWindow() const
 {
     return primaryWindow;
+}
+
+inline const Vector<Window*>& EngineBackend::GetWindows() const
+{
+    return aliveWindows;
 }
 
 inline uint32 EngineBackend::GetGlobalFrameIndex() const

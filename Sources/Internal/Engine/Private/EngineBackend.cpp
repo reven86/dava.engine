@@ -441,8 +441,7 @@ void EngineBackend::OnWindowCreated(Window* window)
         size_t nerased = justCreatedWindows.erase(window);
         DVASSERT(nerased == 1);
 
-        auto result = aliveWindows.insert(window);
-        DVASSERT(result.second == true);
+        aliveWindows.push_back(window);
     }
     engine->windowCreated.Emit(window);
 }
@@ -453,9 +452,12 @@ void EngineBackend::OnWindowDestroyed(Window* window)
 
     engine->windowDestroyed.Emit(window);
 
-    // Remove window from alive window list and place it into dying window list to delete later
-    size_t nerased = aliveWindows.erase(window);
-    DVASSERT(nerased == 1);
+    // Remove window from alive window list
+    auto it = std::find(aliveWindows.begin(), aliveWindows.end(), window);
+    DVASSERT(it != aliveWindows.end());
+    aliveWindows.erase(it);
+
+    // Place it into dying window list to delete later
     dyingWindows.insert(window);
 
     if (aliveWindows.empty())
