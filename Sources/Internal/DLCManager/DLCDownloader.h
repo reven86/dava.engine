@@ -60,12 +60,12 @@ public:
 
     struct TaskStatus
     {
-        int32 fileErrno;
-        int32 retriesLeft;
-        TaskState state;
+        int32 fileErrno = 0;
+        int32 retriesLeft = 0;
+        TaskState state = TaskState::JustAdded;
         TaskError error;
-        uint64 sizeTotal;
-        uint64 sizeDownloaded;
+        uint64 sizeTotal = 0;
+        uint64 sizeDownloaded = 0;
     };
 
     struct Task;

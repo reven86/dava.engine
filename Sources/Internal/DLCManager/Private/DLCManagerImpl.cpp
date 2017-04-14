@@ -35,8 +35,9 @@ public:
         {
             DAVA_THROW(Exception, "memory corruption");
         }
-        memcpy(current, ptr, size);
+        memcpy(current, ptr, static_cast<size_t>(size));
         current += size;
+        return size;
     }
 
     uint64 GetSeekPos() override

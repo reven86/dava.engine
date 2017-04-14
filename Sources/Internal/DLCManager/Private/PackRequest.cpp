@@ -40,15 +40,15 @@ PackRequest& PackRequest::operator=(PackRequest&& other)
 
 void PackRequest::CancelCurrentsDownloads()
 {
-    DownloadManager* dm = DownloadManager::Instance();
+    DLCDownloader* dm = packManagerImpl->GetDownloader();
     if (dm)
     {
         for (FileRequest& r : requests)
         {
             if (r.taskId != 0)
             {
-                dm->Cancel(r.taskId);
-                r.taskId = 0;
+                dm->RemoveTask(r.taskId);
+                r.taskId = nullptr;
             }
         }
     }
@@ -310,7 +310,7 @@ bool PackRequest::UpdateFileRequests()
         }
         case LoadingPackFile:
         {
-            DownloadManager* dm = DownloadManager::Instance();
+            DLCDownloader* dm = packManagerImpl->GetDownloader();
             if (fileRequest.taskId == 0)
             {
                 if (fileRequest.sizeOfCompressedFile == 0)
@@ -337,61 +337,54 @@ bool PackRequest::UpdateFileRequests()
                 else
                 {
                     fs->DeleteFile(fileRequest.localFile); // just in case (hash not match, size not match...)
-                    fileRequest.taskId = dm->DownloadRange(fileRequest.url, fileRequest.localFile, fileRequest.startLoadingPos, fileRequest.sizeOfCompressedFile);
+                    fileRequest.taskId = dm->StartTask(fileRequest.url, fileRequest.localFile.GetAbsolutePathname(), DLCDownloader::TaskType::FULL, nullptr,
+                                                       fileRequest.startLoadingPos, fileRequest.sizeOfCompressedFile);
                 }
             }
             else
             {
                 // TODO move to separate function
-                DownloadStatus downloadStatus;
-                if (dm->GetStatus(fileRequest.taskId, downloadStatus))
+                DLCDownloader::TaskStatus status = dm->GetTaskStatus(fileRequest.taskId);
                 {
-                    switch (downloadStatus)
+                    switch (status.state)
                     {
-                    case DL_PENDING:
+                    case DLCDownloader::TaskState::JustAdded:
                         break;
-                    case DL_IN_PROGRESS:
+                    case DLCDownloader::TaskState::Downloading:
                     {
-                        uint64 progress = 0;
-                        if (dm->GetProgress(fileRequest.taskId, progress))
-                        {
-                            fileRequest.downloadedFileSize = progress;
-                            uint64 s = GetSize();
-                            uint64 ds = GetDownloadedSize();
-                            DVASSERT(s > 0);
-                            DVASSERT(s >= ds);
-                            callSignal = true;
-                        }
+                        fileRequest.downloadedFileSize = status.sizeDownloaded;
+                        callSignal = true;
                     }
                     break;
-                    case DL_FINISHED:
+                    case DLCDownloader::TaskState::Finished:
                     {
+                        bool allGood = status.error.curlErr == 0 && status.error.curlMErr == 0;
                         DownloadError downloadError = DLE_NO_ERROR;
-                        if (dm->GetError(fileRequest.taskId, downloadError))
-                        {
-                            if (DLE_NO_ERROR != downloadError)
-                            {
-                                String err = DLC::ToString(downloadError);
-                                packManagerImpl->GetLog() << "can't download file: "
-                                                          << fileRequest.localFile.GetAbsolutePathname()
-                                                          << " cause: " << err << std::endl;
 
-                                if (DLE_FILE_ERROR == downloadError)
-                                {
-                                    DisableRequestingAndFireSignalNoSpaceLeft(fileRequest);
-                                    return false;
-                                }
+                        if (allGood)
+                        {
+                            String err = DLC::ToString(downloadError);
+                            packManagerImpl->GetLog() << "can't download file: "
+                                                      << fileRequest.localFile.GetAbsolutePathname()
+                                                      << " cause: " << err << std::endl;
+
+                            if (DLE_FILE_ERROR == downloadError)
+                            {
+                                DisableRequestingAndFireSignalNoSpaceLeft(fileRequest);
+                                return false;
                             }
                         }
-                        dm->GetProgress(fileRequest.taskId, fileRequest.downloadedFileSize);
+                        else
+                        {
+                            DVASSERT(false);
+                        }
 
-                        fileRequest.taskId = 0;
+                        fileRequest.taskId = nullptr;
+                        fileRequest.downloadedFileSize = status.sizeDownloaded;
                         fileRequest.status = CheckHash;
                         callSignal = true;
                     }
                     break;
-                    case DL_UNKNOWN:
-                        break;
                     }
                 }
             }

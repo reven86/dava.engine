@@ -4,6 +4,8 @@
 
 #include "Logger/Logger.h"
 #include "FileSystem/File.h"
+#include "FileSystem/FileSystem.h"
+#include "Concurrency/LockGuard.h"
 
 #include <curl/curl.h>
 
@@ -13,6 +15,9 @@ struct DefaultWriter : DLCDownloader::IWriter
 {
     DefaultWriter(const String& outputFile)
     {
+        FileSystem* fs = FileSystem::Instance();
+        FilePath path = outputFile;
+        fs->CreateDirectory(path.GetDirectory(), true);
         f = File::Create(outputFile, File::OPEN | File::WRITE | File::CREATE);
         if (!f)
         {
@@ -31,6 +36,10 @@ struct DefaultWriter : DLCDownloader::IWriter
     uint64 Save(const void* ptr, uint64 size) override
     {
         uint32 writen = f->Write(ptr, static_cast<uint32>(size));
+        if (writen != size)
+        {
+            DAVA_THROW(Exception, "bad write");
+        }
         return writen;
     }
     /** return current size of saved byte stream */
@@ -323,7 +332,7 @@ static void SetupFullDownload(DLCDownloader::Task* justAddedTask)
     DVASSERT(code == CURLE_OK);
 
     bool hasRangeStart = info.rangeOffset != -1;
-    bool hasRangeFinish = info.rangeOffset != -1;
+    bool hasRangeFinish = info.rangeSize != -1;
 
     if (hasRangeStart || hasRangeFinish)
     {
@@ -335,7 +344,8 @@ static void SetupFullDownload(DLCDownloader::Task* justAddedTask)
         ss << '-';
         if (hasRangeFinish)
         {
-            ss << info.rangeSize;
+            DVASSERT(info.rangeSize > 0);
+            ss << info.rangeOffset + info.rangeSize - 1;
         }
         String s = ss.str();
         code = curl_easy_setopt(easyHandle, CURLOPT_RANGE, s.c_str());
@@ -517,15 +527,29 @@ void DLCDownloaderImpl::DownloadThreadFunc()
                         taskMap.erase(it);
                     }
 
-                    if (finishedTask->info.type == TaskType::SIZE)
+                    finishedTask->status.error.curlErr = curlMsg->data.result;
+
                     {
                         float64 sizeToDownload = 0.0; // curl need double! do not change https://curl.haxx.se/libcurl/c/CURLINFO_CONTENT_LENGTH_DOWNLOAD.html
                         CURLcode code = curl_easy_getinfo(easyHandle, CURLINFO_CONTENT_LENGTH_DOWNLOAD, &sizeToDownload);
                         DVASSERT(CURLE_OK == code);
-                        finishedTask->status.sizeTotal = static_cast<uint64>(sizeToDownload);
+                        finishedTask->status.sizeDownloaded = static_cast<uint64>(sizeToDownload);
+                        if (finishedTask->info.type == TaskType::SIZE)
+                        {
+                            finishedTask->status.sizeTotal = finishedTask->status.sizeDownloaded;
+                        }
                     }
-
-                    finishedTask->status.error.curlErr = curlMsg->data.result;
+                    if (curlMsg->data.result != CURLE_OK)
+                    {
+                        if (curlMsg->data.result == CURLE_PARTIAL_FILE && finishedTask->status.sizeDownloaded == finishedTask->info.rangeSize)
+                        {
+                            // all good
+                        }
+                        else
+                        {
+                            DVASSERT(false); // error downloading
+                        }
+                    }
 
                     finishedTask->easyHandles.erase(easyHandle);
                     if (finishedTask->easyHandles.empty())

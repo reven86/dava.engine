@@ -128,6 +128,11 @@ public:
 
     std::ostream& GetLog() const;
 
+    DLCDownloader* GetDownloader() const
+    {
+        return downloader.get();
+    }
+
 private:
     // initialization state functions
     void AskFooter();

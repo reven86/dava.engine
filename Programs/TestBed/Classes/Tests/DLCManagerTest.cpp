@@ -425,15 +425,16 @@ void DLCManagerTest::OnStartStopLocalServerClicked(DAVA::BaseObject* sender, voi
 
         const char* docRoot = absPath.c_str();
         const char* ports = "8080";
-        try
-        {
-            StartEmbeddedWebServer(docRoot, ports);
-        }
-        catch (std::exception& ex)
+
+        if (!StartEmbeddedWebServer(docRoot, ports))
         {
             StringStream ss(logPring->GetUtf8Text());
-            ss << "Error: " << ex.what() << std::endl;
+            ss << "Error starting embedded web server" << std::endl;
             logPring->SetUtf8Text(ss.str());
+        }
+        else
+        {
+            logPring->SetUtf8Text("start embedded web server done");
         }
     }
     else if (sender == stopServerButton)

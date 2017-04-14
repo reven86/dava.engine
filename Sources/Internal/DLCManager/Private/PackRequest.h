@@ -3,6 +3,7 @@
 #include "Base/BaseTypes.h"
 #include "DLCManager/DLCManager.h"
 #include "Compression/Compressor.h"
+#include "DLCManager/DLCDownloader.h"
 
 namespace DAVA
 {
@@ -68,7 +69,7 @@ private:
         uint64 sizeOfCompressedFile = 0;
         uint64 sizeOfUncompressedFile = 0;
         uint64 downloadedFileSize = 0;
-        uint32 taskId = 0;
+        DLCDownloader::Task* taskId = nullptr;
         Compressor::Type compressionType = Compressor::Type::Lz4HC;
         Status status = Wait;
     };
