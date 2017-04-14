@@ -58,6 +58,7 @@ public:
 
     virtual void Refresh(DAVA::int32 refreshFlags);
     virtual AbstractProperty* FindPropertyByPrototype(AbstractProperty* prototype);
+    virtual AbstractProperty* FindPropertyByStyleIndex(DAVA::int32 propertyIndex) const;
     virtual bool HasChanges() const;
     virtual void Accept(PropertyVisitor* visitor) = 0;
 

@@ -197,15 +197,17 @@ void PackageNode::SetControlProperty(ControlNode* node, AbstractProperty* proper
 
 void PackageNode::ResetControlProperty(ControlNode* node, AbstractProperty* property)
 {
-    node->GetRootProperty()->ResetProperty(property);
-    RefreshProperty(node, property);
+    if (property->IsOverriddenLocally())
+    {
+        node->GetRootProperty()->ResetProperty(property);
+        RefreshProperty(node, property);
+    }
 }
 
 void PackageNode::RefreshProperty(ControlNode* node, AbstractProperty* property)
 {
     if (property->GetStylePropertyIndex() != -1)
         node->GetControl()->SetPropertyLocalFlag(property->GetStylePropertyIndex(), property->IsOverridden());
-    node->GetControl()->SetStyleSheetDirty();
 
     node->GetRootProperty()->RefreshProperty(property, AbstractProperty::REFRESH_DEFAULT_VALUE | AbstractProperty::REFRESH_LOCALIZATION | AbstractProperty::REFRESH_FONT);
 
@@ -419,11 +421,13 @@ void PackageNode::RefreshPackageStylesAndLayout(bool includeImportedPackages)
     RebuildStyleSheets();
     for (int32 i = 0; i < packageControlsNode->GetCount(); i++)
     {
-        UIControlSystem::Instance()->GetStyleSheetSystem()->ProcessControl(packageControlsNode->Get(i)->GetControl());
+        UIControlSystem::Instance()->GetStyleSheetSystem()->ProcessControl(packageControlsNode->Get(i)->GetControl(), true);
+        NotifyPropertyChanged(packageControlsNode->Get(i));
     }
     for (int32 i = 0; i < prototypes->GetCount(); i++)
     {
-        UIControlSystem::Instance()->GetStyleSheetSystem()->ProcessControl(prototypes->Get(i)->GetControl());
+        UIControlSystem::Instance()->GetStyleSheetSystem()->ProcessControl(prototypes->Get(i)->GetControl(), true);
+        NotifyPropertyChanged(prototypes->Get(i));
     }
 }
 

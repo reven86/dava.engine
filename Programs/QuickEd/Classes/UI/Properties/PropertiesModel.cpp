@@ -25,6 +25,7 @@
 
 #include <Reflection/ReflectedTypeDB.h>
 #include <UI/UIControl.h>
+#include <UI/UIControlSystem.h>
 
 #include <QFont>
 #include <QVector2D>
@@ -40,10 +41,14 @@ PropertiesModel::PropertiesModel(QObject* parent)
     propertiesUpdater.SetUpdater(MakeFunction(this, &PropertiesModel::UpdateAllChangedProperties));
     nodeUpdater.SetUpdater(MakeFunction(this, &PropertiesModel::ResetInternal));
     nodeUpdater.SetStopper([this]() { return nodeToReset == nullptr; });
+
+    UIControlSystem::Instance()->GetStyleSheetSystem()->SetListener(this);
 }
 
 PropertiesModel::~PropertiesModel()
 {
+    UIControlSystem::Instance()->GetStyleSheetSystem()->SetListener(nullptr);
+
     CleanUp();
     propertiesUpdater.Abort();
     nodeUpdater.Abort();
@@ -402,6 +407,18 @@ void PropertiesModel::StyleSelectorWillBeRemoved(StyleSheetSelectorsSection* sec
 void PropertiesModel::StyleSelectorWasRemoved(StyleSheetSelectorsSection* section, StyleSheetSelectorProperty* property, int index)
 {
     endRemoveRows();
+}
+
+void PropertiesModel::OnStylePropertyChanged(DAVA::UIControl* control, DAVA::UIComponent* component, uint32 propertyIndex)
+{
+    if (controlNode != nullptr && rootProperty != nullptr && controlNode->GetControl() == control)
+    {
+        AbstractProperty* changedProperty = rootProperty->FindPropertyByStyleIndex(static_cast<int32>(propertyIndex));
+        if (changedProperty != nullptr)
+        {
+            PropertyChanged(changedProperty);
+        }
+    }
 }
 
 void PropertiesModel::ChangeProperty(AbstractProperty* property, const Any& value)
