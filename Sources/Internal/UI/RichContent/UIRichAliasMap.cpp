@@ -145,4 +145,32 @@ void UIRichAliasMap::FromString(const String& aliases)
         }
     }
 }
+
+bool UIRichAliasMap::operator==(const UIRichAliasMap& b) const
+{
+    const auto pred = [](const std::pair<String, Alias>& a, const std::pair<String, Alias>& b) { return (a == b); };
+
+    return (aliases.size() == b.aliases.size())
+    && std::equal(aliases.begin(), aliases.end(), b.aliases.begin(), pred);
+}
+
+bool UIRichAliasMap::operator!=(const UIRichAliasMap& b) const
+{
+    return !(operator==(b));
+}
+
+bool UIRichAliasMap::Alias::operator==(const Alias& b) const
+{
+    const auto pred = [](const std::pair<String, String>& a, const std::pair<String, String>& b) { return (a == b); };
+
+    return (alias == b.alias)
+    && (tag == b.tag)
+    && (attributes.size() == b.attributes.size())
+    && std::equal(attributes.begin(), attributes.end(), b.attributes.begin(), pred);
+}
+
+bool UIRichAliasMap::Alias::operator!=(const Alias& b) const
+{
+    return !(operator==(b));
+}
 }

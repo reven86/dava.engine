@@ -16,6 +16,11 @@ public:
         String alias; //!< Alias tag name
         String tag; //!< Original tag name
         Attributes attributes; //!< Original attributes
+
+        /** Equal to opaerator. */
+        bool operator==(const Alias& b) const;
+        /** Not equal to opaerator. */
+        bool operator!=(const Alias& b) const;
     };
 
     /** Add new specified `alias`. */
@@ -40,6 +45,11 @@ public:
     const String& AsString();
     /** Load aliases from serializable string. */
     void FromString(const String& aliases);
+
+    /** Equal to opaerator. */
+    bool operator==(const UIRichAliasMap& b) const;
+    /** Not equal to opaerator. */
+    bool operator!=(const UIRichAliasMap& b) const;
 
 private:
     UnorderedMap<String, Alias> aliases;
