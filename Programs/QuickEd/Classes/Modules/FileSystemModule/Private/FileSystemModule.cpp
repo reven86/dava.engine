@@ -30,7 +30,7 @@ void FileSystemModule::InitUI()
 
     widget = new FileSystemWidget(GetAccessor());
     widget->openFile.Connect(this, &FileSystemModule::OnOpenFile);
-    GetUI()->AddView(QEGlobal::windowKey, panelKey, widget);
+    GetUI()->AddView(DAVA::TArc::mainWindowKey, panelKey, widget);
 }
 
 void FileSystemModule::RegisterOperations()

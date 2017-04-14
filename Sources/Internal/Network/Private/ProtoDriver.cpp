@@ -185,7 +185,6 @@ void ProtoDriver::OnSendComplete()
         if (curPacket.sentLength == curPacket.dataLength)
         {
             Channel* ch = GetChannel(curPacket.channelId);
-
             ch->service->OnPacketSent(ch, curPacket.data, curPacket.dataLength);
             curPacket.data = NULL;
         }
@@ -224,7 +223,6 @@ bool ProtoDriver::ProcessDataPacket(ProtoDecoder::DecodeResult* result)
         // Send back delivery confirmation
         SendControl(TYPE_DELIVERY_ACK, result->channelId, result->packetId);
         ch->service->OnPacketReceived(ch, result->data, result->dataSize);
-
         return true;
     }
     DVASSERT(0);
@@ -281,7 +279,6 @@ bool ProtoDriver::ProcessChannelDeny(ProtoDecoder::DecodeResult* result)
     Channel* ch = GetChannel(result->channelId);
     if (ch != NULL && ch->service != NULL)
     {
-        // Call OnChannelClosed when remote peer cannot provide service
         ch->service->OnChannelClosed(ch, "Remote service is unavailable");
         return true;
     }
@@ -315,6 +312,7 @@ void ProtoDriver::ClearQueues()
     {
         Channel* ch = GetChannel(curPacket.channelId);
         ch->service->OnPacketSent(ch, curPacket.data, curPacket.dataLength);
+
         curPacket.data = NULL;
     }
     for (Deque<Packet>::iterator i = dataQueue.begin(), e = dataQueue.end(); i != e; ++i)
