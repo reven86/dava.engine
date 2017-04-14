@@ -1001,54 +1001,6 @@ void UIControl::SystemUpdate(float32 timeElapsed)
     }
 }
 
-//void UIControl::SystemDraw(const UIGeometricData& geometricData, const UIControlBackground* parentBackground){}
-// {
-//     if (!GetVisibilityFlag())
-//         return;
-//
-//     UIGeometricData drawData = GetLocalGeometricData();
-//     drawData.AddGeometricData(geometricData);
-//
-//     const Color& parentColor = parentBackground ? parentBackground->GetDrawColor() : Color::White;
-//
-//     SetParentColor(parentColor);
-//
-//     const Rect& unrotatedRect = drawData.GetUnrotatedRect();
-//
-//     if (clipContents)
-//     { //WARNING: for now clip contents don't work for rotating controls if you have any ideas you are welcome
-//         RenderSystem2D::Instance()->PushClip();
-//         RenderSystem2D::Instance()->IntersectClipRect(unrotatedRect); //anyway it doesn't work with rotation
-//     }
-//
-//     Draw(drawData);
-//
-//     const UIControlBackground* bg = GetComponent<UIControlBackground>();
-//     const UIControlBackground* parentBgForChild = bg ? bg : parentBackground;
-//     isIteratorCorrupted = false;
-//     for (UIControl* child : children)
-//     {
-//         child->SystemDraw(drawData, parentBgForChild);
-//         DVASSERT(!isIteratorCorrupted);
-//     }
-//
-//     DrawAfterChilds(drawData);
-//
-//     if (clipContents)
-//     {
-//         RenderSystem2D::Instance()->PopClip();
-//     }
-//
-//     if (debugDrawEnabled)
-//     {
-//         RenderSystem2D::Instance()->PushClip();
-//         RenderSystem2D::Instance()->RemoveClip();
-//         DrawDebugRect(drawData, false);
-//         DrawPivotPoint(unrotatedRect);
-//         RenderSystem2D::Instance()->PopClip();
-//     }
-// }
-
 void UIControl::SetParentColor(const Color& parentColor)
 {
     UIControlBackground* bg = GetComponent<UIControlBackground>();
@@ -1057,68 +1009,6 @@ void UIControl::SetParentColor(const Color& parentColor)
         bg->SetParentColor(parentColor);
     }
 }
-//
-// void UIControl::DrawDebugRect(const UIGeometricData& gd, bool useAlpha)
-// {
-//     RenderSystem2D::Instance()->PushClip();
-//
-//     auto drawColor = debugDrawColor;
-//     if (useAlpha)
-//     {
-//         drawColor.a = 0.4f;
-//     }
-//
-//     if (gd.angle != 0.0f)
-//     {
-//         Polygon2 poly;
-//         gd.GetPolygon(poly);
-//
-//         RenderSystem2D::Instance()->DrawPolygon(poly, true, drawColor);
-//     }
-//     else
-//     {
-//         RenderSystem2D::Instance()->DrawRect(gd.GetUnrotatedRect(), drawColor);
-//     }
-//
-//     RenderSystem2D::Instance()->PopClip();
-// }
-//
-// void UIControl::DrawPivotPoint(const Rect& drawRect)
-// {
-//     if (drawPivotPointMode == DRAW_NEVER)
-//     {
-//         return;
-//     }
-//
-//     if (drawPivotPointMode == DRAW_ONLY_IF_NONZERO && GetPivotPoint().IsZero())
-//     {
-//         return;
-//     }
-//
-//     static const float32 PIVOT_POINT_MARK_RADIUS = 10.0f;
-//     static const float32 PIVOT_POINT_MARK_HALF_LINE_LENGTH = 13.0f;
-//     static const Color drawColor(1.0f, 0.0f, 0.0f, 1.0f);
-//
-//     RenderSystem2D::Instance()->PushClip();
-//
-//     Vector2 pivotPointCenter = drawRect.GetPosition() + GetPivotPoint();
-//     RenderSystem2D::Instance()->DrawCircle(pivotPointCenter, PIVOT_POINT_MARK_RADIUS, drawColor);
-//
-//     // Draw the cross mark.
-//     Vector2 lineStartPoint = pivotPointCenter;
-//     Vector2 lineEndPoint = pivotPointCenter;
-//     lineStartPoint.y -= PIVOT_POINT_MARK_HALF_LINE_LENGTH;
-//     lineEndPoint.y += PIVOT_POINT_MARK_HALF_LINE_LENGTH;
-//     RenderSystem2D::Instance()->DrawLine(lineStartPoint, lineEndPoint, drawColor);
-//
-//     lineStartPoint = pivotPointCenter;
-//     lineEndPoint = pivotPointCenter;
-//     lineStartPoint.x -= PIVOT_POINT_MARK_HALF_LINE_LENGTH;
-//     lineEndPoint.x += PIVOT_POINT_MARK_HALF_LINE_LENGTH;
-//     RenderSystem2D::Instance()->DrawLine(lineStartPoint, lineEndPoint, drawColor);
-//
-//     RenderSystem2D::Instance()->PopClip();
-// }
 
 bool UIControl::IsPointInside(const Vector2& _point, bool expandWithFocus /* = false*/) const
 {

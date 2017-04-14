@@ -796,16 +796,6 @@ public:
 
 public:
     /**
-     \brief Calls on every frame to process controls drawing.
-        Firstly this method calls Draw() for the curent control. When SystemDraw() called for the every control child.
-        And at the end DrawAfterChilds() called for current control.
-        Internal method used by ControlSystem.
-        Can be overriden to adjust draw hierarchy.
-     \param[in] geometricData Parent geometric data.
-     */
-    //virtual void SystemDraw(const UIGeometricData& geometricData, const DAVA::UIControlBackground* parentBackground); // Internal method used by ControlSystem
-
-    /**
      \brief set parent draw color into control
      \param[in] parentColor draw color of parent background.
      */
