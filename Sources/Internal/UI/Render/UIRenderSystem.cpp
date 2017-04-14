@@ -1,8 +1,11 @@
 #include "UIRenderSystem.h"
-//#include "UI/Render/UIDebugDrawComponent.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "UI/UIControl.h"
 #include "UI/UIScreenshoter.h"
+#include "UI/UI3DView.h"
+#include "UI/UIScreen.h"
+#include "UI/UIScreenTransition.h"
+#include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerMarkerNames.h"
 
 namespace DAVA
@@ -160,11 +163,11 @@ void UIRenderSystem::DrawControlHierarhy(UIControl* control, const UIGeometricDa
     }
 }
 
-void UIRenderSystem::DebugDraw(UIControl* control, UIGeometricData drawData, const Rect& unrotatedRect)
+void UIRenderSystem::DebugDraw(UIControl* control, const UIGeometricData& geometricData, const Rect& unrotatedRect)
 {
     renderSystem2D->PushClip();
     renderSystem2D->RemoveClip();
-    DrawDebugRect(control, drawData, false);
+    DrawDebugRect(control, geometricData, false);
     UIControl::eDebugDrawPivotMode drawMode = control->GetDrawPivotPointMode();
     if (drawMode != UIControl::DRAW_NEVER &&
         (drawMode != UIControl::DRAW_ONLY_IF_NONZERO || !control->GetPivotPoint().IsZero()))

@@ -2,6 +2,8 @@
 #include "UIUpdateComponent.h"
 #include "UICustomUpdateDeltaComponent.h"
 #include "UI/UIControl.h"
+#include "Debug/ProfilerCPU.h"
+#include "Debug/ProfilerMarkerNames.h"
 
 namespace DAVA
 {

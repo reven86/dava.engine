@@ -1,11 +1,15 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
+#include "Base/RefPtr.h"
 #include "UI/UISystem.h"
+#include "UI/UIGeometricData.h"
 
 namespace DAVA
 {
+class Color;
 class RenderSystem2D;
+class UIControlBackground;
 class UIScreenshoter;
 class UIScreen;
 class UIScreenTransition;
@@ -38,8 +42,7 @@ public:
 private:
     void DrawControlHierarhy(UIControl* control, const UIGeometricData& geometricData, const UIControlBackground* parentBackground);
 
-    void DebugDraw(UIControl* control, UIGeometricData drawData, const Rect& unrotatedRect);
-
+    void DebugDraw(UIControl* control, const UIGeometricData& geometricData, const Rect& unrotatedRect);
     void DrawDebugRect(UIControl* control, const UIGeometricData& geometricData, bool useAlpha = false);
     void DrawPivotPoint(UIControl* control, const Rect& drawRect);
 
