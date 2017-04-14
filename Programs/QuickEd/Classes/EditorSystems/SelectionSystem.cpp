@@ -68,13 +68,19 @@ void SelectionSystem::ProcessInput(UIEvent* currentInput)
 
 void SelectionSystem::OnSelectByRect(const Rect& rect)
 {
+    using namespace DAVA::TArc;
+
     SelectedNodes newSelection;
     if (IsKeyPressed(KeyboardProxy::KEY_SHIFT))
     {
         newSelection = selectionContainer.selectedNodes;
     }
 
-    for (const PackageBaseNode* node : systemsManager->GetEditingRootControls())
+    DataContext* activeContext = accessor->GetActiveContext();
+    DVASSERT(activeContext != nullptr);
+    DocumentData* documentData = activeContext->GetData<DocumentData>();
+
+    for (const PackageBaseNode* node : documentData->GetDisplayedRootControls())
     {
         for (int i = 0, count = node->GetCount(); i < count; ++i)
         {
@@ -98,9 +104,15 @@ void SelectionSystem::ClearSelection()
 
 void SelectionSystem::SelectAllControls()
 {
+    using namespace DAVA::TArc;
+
+    DataContext* activeContext = accessor->GetActiveContext();
+    DVASSERT(activeContext != nullptr);
+    DocumentData* documentData = activeContext->GetData<DocumentData>();
+
     SelectedNodes selected;
     //find only children of root controls
-    for (const PackageBaseNode* node : systemsManager->GetEditingRootControls())
+    for (const PackageBaseNode* node : documentData->GetDisplayedRootControls())
     {
         for (int i = 0, count = node->GetCount(); i < count; ++i)
         {

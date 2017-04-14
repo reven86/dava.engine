@@ -56,8 +56,8 @@ private:
 
     bool selectOnRelease = false;
     DAVA::Vector2 pressedPoint = DAVA::Vector2(-1.0f, -1.0f);
-    DAVA::TArc::ContextAccessor* accessor = nullptr;
 
+    DAVA::TArc::ContextAccessor* accessor = nullptr;
     DAVA::TArc::DataWrapper documentDataWrapper;
 
 public:

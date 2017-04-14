@@ -51,11 +51,11 @@ private:
 };
 }
 
-EditorSystemsManager::EditorSystemsManager(DAVA::TArc::ContextAccessor* accessor)
+EditorSystemsManager::EditorSystemsManager(DAVA::TArc::ContextAccessor* accessor_)
     : rootControl(new UIControl())
     , inputLayerControl(new EditorSystemsManagerDetails::InputLayerControl(this))
     , scalableControl(new UIControl())
-    , editingRootControls(CompareByLCA)
+    , accessor(accessor_)
 {
     using namespace DAVA;
     using namespace TArc;
@@ -63,7 +63,6 @@ EditorSystemsManager::EditorSystemsManager(DAVA::TArc::ContextAccessor* accessor
     dragStateChanged.Connect(this, &EditorSystemsManager::OnDragStateChanged);
     displayStateChanged.Connect(this, &EditorSystemsManager::OnDisplayStateChanged);
     activeAreaChanged.Connect(this, &EditorSystemsManager::OnActiveHUDAreaChanged);
-    editingRootControlsChanged.Connect(this, &EditorSystemsManager::OnEditingRootControlsChanged);
 
     rootControl->SetName(FastName("rootControl"));
     rootControl->AddControl(scalableControl.Get());
@@ -78,7 +77,7 @@ EditorSystemsManager::EditorSystemsManager(DAVA::TArc::ContextAccessor* accessor
 
     packageChanged.Connect(this, &EditorSystemsManager::OnPackageChanged);
 
-    controlViewPtr = new EditorControlsView(scalableControl.Get(), this);
+    controlViewPtr = new EditorControlsView(scalableControl.Get(), this, accessor);
     systems.emplace_back(controlViewPtr);
 
     selectionSystemPtr = new SelectionSystem(this, accessor);
@@ -153,14 +152,15 @@ ControlNode* EditorSystemsManager::GetControlNodeAtPoint(const DAVA::Vector2& po
 
 uint32 EditorSystemsManager::GetIndexOfNearestRootControl(const DAVA::Vector2& point) const
 {
-    if (editingRootControls.empty())
+    SortedControlNodeSet displayedRootControls = GetDisplayedRootControls();
+    if (displayedRootControls.empty())
     {
         return 0;
     }
     uint32 index = controlViewPtr->GetIndexByPos(point);
-    bool insertToEnd = (index == editingRootControls.size());
+    bool insertToEnd = (index == displayedRootControls.size());
 
-    auto iter = editingRootControls.begin();
+    auto iter = displayedRootControls.begin();
     std::advance(iter, insertToEnd ? index - 1 : index);
     PackageBaseNode* target = *iter;
     PackageControlsNode* controlsNode = package->GetPackageControlsNode();
@@ -200,11 +200,6 @@ void EditorSystemsManager::SelectNode(ControlNode* node)
     selectionSystemPtr->SelectNode(node);
 }
 
-const SortedControlNodeSet& EditorSystemsManager::GetEditingRootControls() const
-{
-    return editingRootControls;
-}
-
 void EditorSystemsManager::SetDisplayState(eDisplayState newDisplayState)
 {
     if (displayState == newDisplayState)
@@ -222,7 +217,6 @@ void EditorSystemsManager::OnEditingRootControlsChanged(const SortedControlNodeS
     const EngineContext* engineContext = GetEngineContext();
     engineContext->uiControlSystem->GetInputSystem()->SetCurrentScreen(engineContext->uiControlSystem->GetScreen()); // reset current screen
 
-    editingRootControls = rootControls;
     eDisplayState state = rootControls.size() == 1 ? Edit : Preview;
     if (displayState == Emulation)
     {
@@ -241,19 +235,9 @@ void EditorSystemsManager::OnActiveHUDAreaChanged(const HUDAreaInfo& areaInfo)
 
 void EditorSystemsManager::OnPackageChanged(PackageNode* package_)
 {
-    if (nullptr != package)
-    {
-        package->RemoveListener(this);
-    }
     magnetLinesChanged.Emit({});
     SetDragState(NoDrag);
     ClearHighlight();
-
-    package = package_;
-    if (nullptr != package)
-    {
-        package->AddListener(this);
-    }
 }
 
 void EditorSystemsManager::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields)
@@ -264,49 +248,12 @@ void EditorSystemsManager::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper,
     if (wrapper.HasData() == false)
     {
         OnSelectionDataChanged(Any());
-        editingRootControlsChanged.Emit({});
         OnPackageDataChanged(Any());
         return;
     }
 
     bool selectionChanged = std::find(fields.begin(), fields.end(), String(DocumentData::selectionPropertyName)) != fields.end();
     bool packageChanged = std::find(fields.begin(), fields.end(), String(DocumentData::packagePropertyName)) != fields.end();
-
-    Function<SortedControlNodeSet(const SelectedNodes&, const PackageNode*)> CreateRootControls = [](const SelectedNodes& selection, const PackageNode* package)
-    {
-        SortedControlNodeSet newRootControls(CompareByLCA);
-        if (selection.empty())
-        {
-            PackageControlsNode* controlsNode = package->GetPackageControlsNode();
-            for (int index = 0; index < controlsNode->GetCount(); ++index)
-            {
-                newRootControls.insert(controlsNode->Get(index));
-            }
-            return newRootControls;
-        }
-        else
-        {
-            for (PackageBaseNode* selectedNode : selection)
-            {
-                if (dynamic_cast<ControlNode*>(selectedNode) == nullptr)
-                {
-                    continue;
-                }
-                PackageBaseNode* root = selectedNode;
-                while (nullptr != root->GetParent() && nullptr != root->GetParent()->GetControl())
-                {
-                    root = root->GetParent();
-                }
-                if (nullptr != root)
-                {
-                    ControlNode* rootControl = dynamic_cast<ControlNode*>(root);
-                    DVASSERT(rootControl != nullptr);
-                    newRootControls.insert(rootControl);
-                }
-            }
-            return newRootControls;
-        }
-    };
 
     Any selectionValue = wrapper.GetFieldValue(DocumentData::selectionPropertyName);
     SelectedNodes selection = selectionValue.Get(SelectedNodes());
@@ -316,16 +263,6 @@ void EditorSystemsManager::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper,
 
     if (fields.empty() || packageChanged)
     {
-        if (selectionChanged == false || selection.empty())
-        {
-            SortedControlNodeSet newRootControls = CreateRootControls(selection, package);
-            //TODO: remove this when systems will be separate TArc modules
-            if (newRootControls.empty() && fields.empty())
-            {
-                newRootControls = CreateRootControls(SelectedNodes(), package);
-            }
-            editingRootControlsChanged.Emit(newRootControls);
-        }
         OnPackageDataChanged(packageValue);
         //when document is closed and active document is changed we receive empty fields
         OnSelectionDataChanged(selection);
@@ -334,82 +271,13 @@ void EditorSystemsManager::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper,
     //update selection
     if (selectionChanged)
     {
-        //if package was not changed and selection is empty -> do nothing
-        if (selection.empty() == false)
-        {
-            SortedControlNodeSet newRootControls = CreateRootControls(selection, package);
-            //TODO: remove this when systems will be separate TArc modules
-            if (newRootControls.empty() && packageChanged)
-            {
-                newRootControls = CreateRootControls(SelectedNodes(), package);
-            }
-            //no controls selected, so don't refresh visible content
-            if (newRootControls.empty() == false)
-            {
-                editingRootControlsChanged.Emit(newRootControls);
-            }
-        }
         OnSelectionDataChanged(selectionValue);
     }
 }
 
-void EditorSystemsManager::ControlWillBeRemoved(ControlNode* nodeToRemove, ControlsContainerNode* /*from*/)
-{
-    //if selected control and its children we will receive Removed signal only for top-level control
-    DVASSERT(documentDataWrapper.HasData());
-    Any selectionValue = documentDataWrapper.GetFieldValue(DocumentData::selectionPropertyName);
-    SelectedNodes nodes = selectionValue.Cast<SelectedNodes>(SelectedNodes());
-    for (auto iter = nodes.begin(); iter != nodes.end();)
-    {
-        PackageBaseNode* node = *iter;
-        bool found = false;
-        while (node != nullptr && found == false)
-        {
-            if (node == nodeToRemove)
-            {
-                iter = nodes.erase(iter);
-                found = true;
-            }
-            node = node->GetParent();
-        }
-        if (found == false)
-        {
-            ++iter;
-        }
-    }
-    //we need to synchronize Data in active context and systems state
-    //TODO fix it when all editor systems will be separate TArc modules
-    documentDataWrapper.SetFieldValue(DocumentData::selectionPropertyName, nodes);
-    OnSelectionDataChanged(nodes);
 
-    //when we removing items node is still highlighted
-    //because selectionChanged sending before editingRootControlsChanged
-    //and HUDSystem think that we have node under point to highlight
-    HighlightNode(nullptr);
 
-    if (std::find(editingRootControls.begin(), editingRootControls.end(), nodeToRemove) != editingRootControls.end())
-    {
-        editingRootControls.erase(nodeToRemove);
-        editingRootControlsChanged.Emit(editingRootControls);
-    }
-}
 
-void EditorSystemsManager::ControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int)
-{
-    if (displayState == Preview || displayState == Emulation)
-    {
-        DVASSERT(nullptr != package);
-        if (nullptr != package)
-        {
-            PackageControlsNode* packageControlsNode = package->GetPackageControlsNode();
-            if (destination == packageControlsNode)
-            {
-                editingRootControls.insert(node);
-                editingRootControlsChanged.Emit(editingRootControls);
-            }
-        }
-    }
-}
 
 void EditorSystemsManager::InitDAVAScreen()
 {
@@ -518,4 +386,13 @@ void EditorSystemsManager::SetDragState(eDragState newDragState)
     previousDragState = dragState;
     dragState = newDragState;
     dragStateChanged.Emit(dragState, previousDragState);
+}
+
+const SortedControlNodeSet& EditorSystemsManager::GetDisplayedRootControls() const
+{
+    using namespace DAVA::TArc;
+    DataContext* activeContext = accessor->GetActiveContext();
+    DocumentData* documentData = activeContext->GetData<DocumentData>();
+
+    return documentData->GetDisplayedRootControls();
 }
