@@ -29,7 +29,7 @@ Prototypes:
     components:
         Background:
             drawType: "DRAW_STRETCH_BOTH"
-            sprite: "~res:/Gfx/UI/GoldPin"
+            sprite: "~res:/UI/Images/GoldPin.png"
             leftRightStretchCap: 5.000000
             topBottomStretchCap: 5.000000
     children:

@@ -46,7 +46,10 @@ void UIRichContentComponent::SetBaseClasses(const String& classes)
 
 void UIRichContentComponent::SetAliases(const UIRichAliasMap& _aliases)
 {
-    aliases = _aliases;
+    if (aliases != _aliases)
+    {
+        aliases = _aliases;
+    }
     modified = true;
 }
 

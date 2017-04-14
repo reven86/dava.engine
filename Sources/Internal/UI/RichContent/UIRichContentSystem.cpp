@@ -19,8 +19,8 @@ namespace DAVA
 class XMLRichContentBuilder final : public XMLParserDelegate
 {
 public:
-    XMLRichContentBuilder(UIRichContentComponent* component)
-        : component(component)
+    XMLRichContentBuilder(UIRichContentComponent* component_)
+        : component(component_)
     {
         DVASSERT(component);
         PutClass(component->GetBaseClasses());

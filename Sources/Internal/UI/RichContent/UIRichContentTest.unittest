@@ -50,7 +50,7 @@ DAVA_TESTCLASS(UIRichContentTest)
     DAVA_TEST(BasicTest)
     {
         const String testData = R"(
-            <p class="text">Header</p><span class="text">Simple text<br /> with </span><img src="~res:/Gfx/UI/GoldPin" /><span class="text">image.</span>
+            <p class="text">Header</p><span class="text">Simple text<br /> with </span><img src="~res:/UI/Images/GoldPin.png" /><span class="text">image.</span>
             <ul><li>Item 1</li><li>Item 2</li></ul>
             <object path="~res:/UI/UIRichContentTest.yaml" prototype="ProtoControl" />
             <object path="~res:/UI/UIRichContentTest.yaml" control="CustomControl" />

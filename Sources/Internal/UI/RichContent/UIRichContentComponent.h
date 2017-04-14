@@ -26,11 +26,11 @@ class UIControl;
     - <img src="..."> - image.
         Insert UIControl with UIControlBackground component and set intro it
         sprite by path specified in `src` attribute.
-    - <object control="..." prototype="..." name="..."> - custom control.
+    - <object path="..." control="..." prototype="..." name="..."> - custom control.
         Insert clone of specified control by root control name or prototype name
-        witch contain in current package. Also set name to this clone from name
-        attribute. One of attributes `control` or `prototype` is required.
-        Attribute `name` is optional.
+        witch contain in package by specialized path. Also set name to this clone
+        from name attribute. Attribute `path` and one of attributes `control` or
+        `prototype` are required. Attribute `name` is optional.
 
     RichContent compoent also support tag aliases. Any alias contains alias
     name, original tag and original attributes. After declaration of alias you
