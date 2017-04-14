@@ -450,17 +450,17 @@ void FormulaTokenizer::SkipWhitespaces()
     }
 }
 
-bool FormulaTokenizer::IsIdentifierStart(char ch)
+bool FormulaTokenizer::IsIdentifierStart(char ch) const
 {
     return ('a' <= ch && ch <= 'z') || ('A' <= ch && ch <= 'Z') || ch == '_';
 }
 
-bool FormulaTokenizer::IsIdentifierPart(char ch)
+bool FormulaTokenizer::IsIdentifierPart(char ch) const
 {
     return IsIdentifierStart(ch) || IsDigit(ch);
 }
 
-bool FormulaTokenizer::IsDigit(char ch)
+bool FormulaTokenizer::IsDigit(char ch) const
 {
     return '0' <= ch && ch <= '9';
 }

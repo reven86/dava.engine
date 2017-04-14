@@ -110,9 +110,9 @@ private:
     T ParseInt(int32 startPos, int32 endPos);
 
     void SkipWhitespaces();
-    bool IsIdentifierStart(char ch);
-    bool IsIdentifierPart(char ch);
-    bool IsDigit(char ch);
+    bool IsIdentifierStart(char ch) const;
+    bool IsIdentifierPart(char ch) const;
+    bool IsDigit(char ch) const;
     void ReadChar();
 
     String str;

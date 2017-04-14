@@ -90,15 +90,17 @@ FormulaContext* FormulaReflectionContext::GetParent() const
 
 bool FormulaReflectionContext::IsArgsMatchToFn(const Vector<const Type*>& types, const AnyFn& fn) const
 {
-    if (fn.GetInvokeParams().argsType.size() != types.size())
+    const Vector<const Type*>& fnTypes = fn.GetInvokeParams().argsType;
+
+    if (fnTypes.size() != types.size())
     {
         return false;
     }
 
     for (std::size_t i = 0; i < types.size(); i++)
     {
-        const Type* type = types[i]->Decay();
-        const Type* fnType = fn.GetInvokeParams().argsType[i]->Decay();
+        const Type* type = types[i];
+        const Type* fnType = fnTypes[i]->Decay();
 
         if (type != fnType && (type != Type::Instance<int32>() && fnType != Type::Instance<float32>())) // allow conversion from int32 to float32
         {
