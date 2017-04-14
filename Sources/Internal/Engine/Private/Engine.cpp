@@ -85,16 +85,6 @@ void Engine::SetCloseRequestHandler(const Function<bool(Window*)>& handler)
     engineBackend->SetCloseRequestHandler(handler);
 }
 
-void Engine::RunOnMainThreadAsync(const Function<void()>& task)
-{
-    engineBackend->DispatchOnMainThread(task, false);
-}
-
-void Engine::RunOnMainThread(const Function<void()>& task)
-{
-    engineBackend->DispatchOnMainThread(task, true);
-}
-
 uint32 Engine::GetGlobalFrameIndex() const
 {
     return engineBackend->GetGlobalFrameIndex();
