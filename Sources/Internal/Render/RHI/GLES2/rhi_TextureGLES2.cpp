@@ -355,8 +355,8 @@ bool TextureGLES2_t::Create(const Texture::Descriptor& desc, bool forceExecute)
 
 void TextureGLES2_t::Destroy(bool forceExecute)
 {
-    GLCommand cmd[128] = {};
-    GLint doomed_fbo[128];
+    GLCommand cmd[64] = {};
+    GLint doomed_fbo[64];
     size_t cmd_cnt = 1;
 
     if (isRenderTarget || isRenderBuffer)
@@ -373,7 +373,6 @@ void TextureGLES2_t::Destroy(bool forceExecute)
             ++cmd_cnt;
         }
 
-        DAVA::Logger::Info("fbo-count = %u", unsigned(TextureFBO.size()));
         for (std::vector<FramebufferGLES2_t>::iterator f = TextureFBO.begin(); f != TextureFBO.end();)
         {
             bool do_delete = false;
@@ -394,7 +393,6 @@ void TextureGLES2_t::Destroy(bool forceExecute)
             {
                 if (cmd_cnt == countof(cmd) - 1)
                 {
-                    DAVA::Logger::Info("flushing %u gl-cmds", unsigned(countof(cmd)));
                     ExecGL(cmd, static_cast<uint32>(cmd_cnt), forceExecute);
                     cmd_cnt = 0;
                 }
