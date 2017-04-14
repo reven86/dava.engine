@@ -326,11 +326,11 @@ vertex_out vp_main( vertex_in input )
     float4  eyeCoordsPosition4;
 
     float3 position = lerp(input.position.xyz, input.pivot.xyz, input.pivot.w);
-    float3 offset = input.position.xyz - position.xyz;
+    float3 billboardOffset = input.position.xyz - position.xyz;
     
     #if WIND_ANIMATION
     
-        //inAngleSinCos:        x: cos(T0);  y: sin(T0);
+        //inAngleSinCos:          x: cos(T0);  y: sin(T0);
         //leafOscillationParams:  x: A*sin(T); y: A*cos(T);
         float3 windVectorFlex = float3(trunkOscillationParams * input.flexibility, 0.0);
         position += windVectorFlex;
@@ -340,21 +340,21 @@ vertex_out vp_main( vertex_in input )
         float cosT = 1.0 - 0.5 * sinT * sinT; //cos(t+t0)*A = 1 - 0.5*sin^2
         
         float4 SinCosT = float4(sinT, cosT, cosT, sinT); //temp vec for mul
-        float4 offsetXY = float4(offset.x, offset.y, offset.x, offset.y); //temp vec for mul
+        float4 offsetXY = float4(billboardOffset.x, billboardOffset.y, billboardOffset.x, billboardOffset.y); //temp vec for mul
         float4 rotatedOffsetXY = offsetXY * SinCosT; //vec4(x*sin, y*cos, x*cos, y*sin)
         
-        offset.x = rotatedOffsetXY.z - rotatedOffsetXY.w; //x*cos - y*sin
-        offset.y = rotatedOffsetXY.x + rotatedOffsetXY.y; //x*sin + y*cos
+        billboardOffset.x = rotatedOffsetXY.z - rotatedOffsetXY.w; //x*cos - y*sin
+        billboardOffset.y = rotatedOffsetXY.x + rotatedOffsetXY.y; //x*sin + y*cos
 
     #endif
     
     eyeCoordsPosition4 = mul( float4(position, 1.0), worldViewMatrix );
     
     #if CUT_LEAF
-        offset *= step(cutDistance, -eyeCoordsPosition4.z);
+        billboardOffset *= step(-cutDistance, eyeCoordsPosition4.z);
     #endif
     
-    eyeCoordsPosition4 += float4(worldScale * offset, 0.0);
+    eyeCoordsPosition4 += float4(worldScale * billboardOffset, 0.0);
 
     output.position = mul(eyeCoordsPosition4, projMatrix);
 
@@ -577,9 +577,10 @@ vertex_out vp_main( vertex_in input )
             sphericalLightFactor += A1 * mul(float3(n.y, n.z, n.x), shMatrix);
         
             #if SPEED_TREE_OBJECT
-                float3 localNormal = mul( (eyeCoordsPosition - float3(eyeCoordsPivot.xyz)), invViewMatrix3 );
+                float3 localNormal = mul( (worldScale * billboardOffset), invViewMatrix3 );
+                localNormal.z += 1.0 - input.pivot.w; //in case regular geometry (not billboard) we have zero 'localNoraml', so add something to correct 'normalize'
                 float3 ln = normalize(localNormal);
-                localSphericalLightFactor += A1 * mul(float3(ln.y, ln.z, ln.x), shMatrix);
+                localSphericalLightFactor += (A1 * mul(float3(ln.y, ln.z, ln.x), shMatrix)) * input.pivot.w;
             #endif
 
             #if SPHERICAL_HARMONICS_9

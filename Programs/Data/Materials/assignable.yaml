@@ -44,6 +44,9 @@
  name: "SphericalLit AllQualities SpeedTreeLeaf"
  path: SphericalLitAllQualities.SpeedTreeLeaf.material
 -
+ name: "SphericalLit AllQualities SpeedTreeLeaf Alphablend"
+ path: SphericalLitAllQualities.SpeedTreeLeaf.Alphablend.material
+-
  name: "SphericalLit AllQualities SpeedTreeLeaf Opaque"
  path: SphericalLitAllQualities.SpeedTreeLeaf.Opaque.material
 -
