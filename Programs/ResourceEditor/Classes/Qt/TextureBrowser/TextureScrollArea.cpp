@@ -37,7 +37,7 @@ TextureScrollArea::TextureScrollArea(QWidget* parent /* = 0 */)
     , noImageVisible(false)
 {
     // create and setup scene
-    textureScene = new QGraphicsScene();
+    textureScene = new QGraphicsScene(this);
     setRenderHints((QPainter::RenderHints)0);
     setScene(textureScene);
 
@@ -53,7 +53,7 @@ TextureScrollArea::TextureScrollArea(QWidget* parent /* = 0 */)
 
     // add "No Image" label
     {
-        noImageLabel = new QLabel("No image");
+        noImageLabel = new QLabel("No image", this);
         noImageLabel->setAttribute(Qt::WA_NoSystemBackground, true);
         // label color
         QPalette palette = noImageLabel->palette();
@@ -73,7 +73,7 @@ TextureScrollArea::TextureScrollArea(QWidget* parent /* = 0 */)
 
     // add warning label
     {
-        warningLabel = new QLabel("Warning");
+        warningLabel = new QLabel("Warning", this);
         warningLabel->setAttribute(Qt::WA_NoSystemBackground, true);
         // label color
         QPalette palette = noImageLabel->palette();
@@ -92,7 +92,7 @@ TextureScrollArea::TextureScrollArea(QWidget* parent /* = 0 */)
     }
 
     // add wait-bar to scene
-    QProgressBar* progressBar = new QProgressBar();
+    QProgressBar* progressBar = new QProgressBar(this);
     progressBar->setMinimum(0);
     progressBar->setMaximum(0);
     progressBar->setTextVisible(false);
@@ -112,6 +112,20 @@ TextureScrollArea::TextureScrollArea(QWidget* parent /* = 0 */)
 
 TextureScrollArea::~TextureScrollArea()
 {
+    if (warningProxy != nullptr && warningProxy->parent() != nullptr)
+    {
+        DAVA::SafeDelete(warningProxy);
+    }
+
+    if (waitBar != nullptr && waitBar->parent() != nullptr)
+    {
+        DAVA::SafeDelete(waitBar);
+    }
+
+    if (noImageProxy != nullptr && noImageProxy->parent() != nullptr)
+    {
+        DAVA::SafeDelete(noImageProxy);
+    }
 }
 
 void TextureScrollArea::setImage(const QImage& image)
