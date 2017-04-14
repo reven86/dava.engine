@@ -9,6 +9,7 @@
 #include "Modules/DocumentsModule/DocumentData.h"
 
 #include <TArc/Core/ContextAccessor.h>
+#include <TArc/Core/FieldBinder.h>
 
 #include <Reflection/ReflectedTypeDB.h>
 #include <UI/UIEvent.h>
@@ -21,19 +22,33 @@ REGISTER_PREFERENCES_ON_START(SelectionSystem,
                               PREF_ARG("CanFindCommonForSelection", true),
                               )
 
-SelectionSystem::SelectionSystem(EditorSystemsManager* parent, DAVA::TArc::ContextAccessor* accessor_)
-    : BaseEditorSystem(parent)
-    , accessor(accessor_)
+SelectionSystem::SelectionSystem(EditorSystemsManager* parent, DAVA::TArc::ContextAccessor* accessor)
+    : BaseEditorSystem(parent, accessor)
 {
     documentDataWrapper = accessor->CreateWrapper(DAVA::ReflectedTypeDB::Get<DocumentData>());
-    systemsManager->selectionChanged.Connect(this, &SelectionSystem::OnSelectionChanged);
     systemsManager->selectionRectChanged.Connect(this, &SelectionSystem::OnSelectByRect);
+
+    InitFieldBinder();
     PreferencesStorage::Instance()->RegisterPreferences(this);
 }
 
 SelectionSystem::~SelectionSystem()
 {
     PreferencesStorage::Instance()->UnregisterPreferences(this);
+}
+
+void SelectionSystem::InitFieldBinder()
+{
+    using namespace DAVA;
+    using namespace DAVA::TArc;
+
+    fieldBinder.reset(new FieldBinder(accessor));
+    {
+        FieldDescriptor fieldDescr;
+        fieldDescr.type = ReflectedTypeDB::Get<DocumentData>();
+        fieldDescr.fieldName = FastName(DocumentData::selectionPropertyName);
+        fieldBinder->BindField(fieldDescr, MakeFunction(this, &SelectionSystem::OnSelectionChanged));
+    }
 }
 
 void SelectionSystem::ProcessInput(UIEvent* currentInput)
@@ -167,9 +182,9 @@ void SelectionSystem::FocusToChild(bool next)
     SelectNodes({ nextNode });
 }
 
-void SelectionSystem::OnSelectionChanged(const SelectedNodes& selection)
+void SelectionSystem::OnSelectionChanged(const Any& selection)
 {
-    selectionContainer.selectedNodes = selection;
+    selectionContainer.selectedNodes = selection.Cast<SelectedNodes>(SelectedNodes());
 }
 
 void SelectionSystem::SelectNodes(const SelectedNodes& selection)

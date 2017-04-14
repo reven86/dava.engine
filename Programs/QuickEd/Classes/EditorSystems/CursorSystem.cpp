@@ -12,7 +12,7 @@ using namespace DAVA;
 QMap<QString, QPixmap> CursorSystem::cursorpixes;
 
 CursorSystem::CursorSystem(RenderWidget* renderWidget_, EditorSystemsManager* parent)
-    : BaseEditorSystem(parent)
+    : BaseEditorSystem(parent, nullptr)
     , renderWidget(renderWidget_)
 {
     systemsManager->activeAreaChanged.Connect(this, &CursorSystem::OnActiveAreaChanged);

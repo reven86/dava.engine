@@ -18,7 +18,6 @@ namespace DAVA
 class Any;
 namespace TArc
 {
-class ContextAccessor;
 class FieldBinder;
 }
 }
@@ -47,10 +46,8 @@ private:
     DAVA::List<std::unique_ptr<BackgroundController>> gridControls;
 
     DAVA::Set<ControlNode*> rootControls;
-    DAVA::RefPtr<PackageNode> package;
     DAVA::UIControl* canvasParent = nullptr;
 
-    DAVA::TArc::ContextAccessor* accessor = nullptr;
     std::unique_ptr<DAVA::TArc::FieldBinder> fieldBinder;
 
     PackageListenerProxy packageListenerProxy;

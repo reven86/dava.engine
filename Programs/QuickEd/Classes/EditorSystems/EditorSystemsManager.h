@@ -17,11 +17,11 @@ namespace DAVA
 class UIControl;
 class UIEvent;
 class UIGeometricData;
-
+class Any;
 namespace TArc
 {
 class ContextAccessor;
-class DataContext;
+class FieldBinder;
 }
 }
 
@@ -78,7 +78,7 @@ class EditorControlsView;
 class SelectionSystem;
 class HUDSystem;
 
-class EditorSystemsManager : DAVA::TArc::DataListener
+class EditorSystemsManager
 {
     using StopPredicate = std::function<bool(const ControlNode*)>;
     static StopPredicate defaultStopPredicate;
@@ -139,7 +139,6 @@ public:
     DAVA::UIControl* GetRootControl() const;
     DAVA::UIControl* GetScalableControl() const;
 
-    DAVA::Signal<const SelectedNodes& /*selection*/> selectionChanged;
     DAVA::Signal<const HUDAreaInfo& /*areaInfo*/> activeAreaChanged;
     DAVA::Signal<const DAVA::Vector<MagnetLineInfo>& /*magnetLines*/> magnetLinesChanged;
     DAVA::Signal<const ControlNode*> highlightNode;
@@ -147,7 +146,6 @@ public:
     DAVA::Signal<const DAVA::Vector2&> contentSizeChanged;
     DAVA::Signal<ControlNode*, AbstractProperty*, const DAVA::Any&> propertyChanged;
     DAVA::Signal<const DAVA::Vector2& /*new position*/> rootControlPositionChanged;
-    DAVA::Signal<PackageNode* /*node*/> packageChanged;
     DAVA::Signal<bool> emulationModeChanged;
     DAVA::Signal<eDragState /*currentState*/, eDragState /*previousState*/> dragStateChanged;
     DAVA::Signal<eDisplayState /*currentState*/, eDisplayState /*previousState*/> displayStateChanged;
@@ -157,26 +155,23 @@ public:
     DAVA::Vector2 GetLastMousePos() const;
 
 private:
+    void InitFieldBinder();
     void SetDragState(eDragState dragState);
     void SetDisplayState(eDisplayState displayState);
 
-    void OnEditingRootControlsChanged(const SortedControlNodeSet& rootControls);
+    void OnRootContolsChanged(const DAVA::Any& rootControls);
     void OnActiveHUDAreaChanged(const HUDAreaInfo& areaInfo);
 
     template <class OutIt, class Predicate>
     void CollectControlNodesImpl(OutIt destination, Predicate predicate, StopPredicate stopPredicate, ControlNode* node) const;
-
-    void OnPackageChanged(PackageNode* node);
 
     void InitDAVAScreen();
 
     void OnDragStateChanged(eDragState currentState, eDragState previousState);
     void OnDisplayStateChanged(eDisplayState currentState, eDisplayState previousState);
 
-    void OnSelectionDataChanged(const DAVA::Any& newSelection);
-    void OnPackageDataChanged(const DAVA::Any& package);
+    void OnPackageChanged(const DAVA::Any& package);
 
-    void OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields) override;
     const SortedControlNodeSet& GetDisplayedRootControls() const;
 
     DAVA::RefPtr<DAVA::UIControl> rootControl;
@@ -185,7 +180,6 @@ private:
 
     DAVA::List<std::unique_ptr<BaseEditorSystem>> systems;
 
-    DAVA::RefPtr<PackageNode> package;
     EditorControlsView* controlViewPtr = nullptr; //weak pointer to canvas system;
     SelectionSystem* selectionSystemPtr = nullptr; // weak pointer to selection system
     HUDSystem* hudSystemPtr = nullptr;
@@ -201,7 +195,7 @@ private:
     DAVA::Vector2 mouseDelta;
 
     DAVA::TArc::ContextAccessor* accessor = nullptr;
-    DAVA::TArc::DataWrapper documentDataWrapper;
+    std::unique_ptr<DAVA::TArc::FieldBinder> fieldBinder;
 };
 
 template <class OutIt, class Predicate>

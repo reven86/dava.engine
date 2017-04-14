@@ -13,6 +13,7 @@
 #include "EditorSystems/EditorControlsView.h"
 
 #include <TArc/Core/ContextAccessor.h>
+#include <TArc/Core/FieldBinder.h>
 #include <TArc/DataProcessing/DataContext.h>
 
 #include <UI/UIControl.h>
@@ -70,19 +71,14 @@ EditorSystemsManager::EditorSystemsManager(DAVA::TArc::ContextAccessor* accessor
     rootControl->AddControl(inputLayerControl.Get());
     scalableControl->SetName(FastName("scalableContent"));
 
-    documentDataWrapper = accessor->CreateWrapper(ReflectedTypeDB::Get<DocumentData>());
-    documentDataWrapper.SetListener(this);
-
     InitDAVAScreen();
-
-    packageChanged.Connect(this, &EditorSystemsManager::OnPackageChanged);
 
     controlViewPtr = new EditorControlsView(scalableControl.Get(), this, accessor);
     systems.emplace_back(controlViewPtr);
 
     selectionSystemPtr = new SelectionSystem(this, accessor);
     systems.emplace_back(selectionSystemPtr);
-    systems.emplace_back(new HUDSystem(this));
+    systems.emplace_back(new HUDSystem(this, accessor));
     systems.emplace_back(new ::EditorTransformSystem(this, accessor));
 
     for (auto it = systems.begin(); it != systems.end(); ++it)
@@ -92,12 +88,34 @@ EditorSystemsManager::EditorSystemsManager(DAVA::TArc::ContextAccessor* accessor
         dragStateChanged.Connect(editorSystemPtr, &BaseEditorSystem::OnDragStateChanged);
         displayStateChanged.Connect(editorSystemPtr, &BaseEditorSystem::OnDisplayStateChanged);
     }
+
+    InitFieldBinder();
 }
 
 EditorSystemsManager::~EditorSystemsManager()
 {
     const EngineContext* engineContext = GetEngineContext();
     engineContext->uiScreenManager->ResetScreen();
+}
+
+void EditorSystemsManager::InitFieldBinder()
+{
+    using namespace DAVA;
+    using namespace DAVA::TArc;
+
+    fieldBinder.reset(new FieldBinder(accessor));
+    {
+        FieldDescriptor fieldDescr;
+        fieldDescr.type = ReflectedTypeDB::Get<DocumentData>();
+        fieldDescr.fieldName = FastName(DocumentData::displayedRootControlsPropertyName);
+        fieldBinder->BindField(fieldDescr, MakeFunction(this, &EditorSystemsManager::OnRootContolsChanged));
+    }
+    {
+        FieldDescriptor fieldDescr;
+        fieldDescr.type = ReflectedTypeDB::Get<DocumentData>();
+        fieldDescr.fieldName = FastName(DocumentData::packagePropertyName);
+        fieldBinder->BindField(fieldDescr, MakeFunction(this, &EditorSystemsManager::OnPackageChanged));
+    }
 }
 
 void EditorSystemsManager::OnInput(UIEvent* currentInput)
@@ -152,6 +170,8 @@ ControlNode* EditorSystemsManager::GetControlNodeAtPoint(const DAVA::Vector2& po
 
 uint32 EditorSystemsManager::GetIndexOfNearestRootControl(const DAVA::Vector2& point) const
 {
+    using namespace DAVA::TArc;
+
     SortedControlNodeSet displayedRootControls = GetDisplayedRootControls();
     if (displayedRootControls.empty())
     {
@@ -163,6 +183,12 @@ uint32 EditorSystemsManager::GetIndexOfNearestRootControl(const DAVA::Vector2& p
     auto iter = displayedRootControls.begin();
     std::advance(iter, insertToEnd ? index - 1 : index);
     PackageBaseNode* target = *iter;
+
+    DataContext* activeContext = accessor->GetActiveContext();
+    DVASSERT(activeContext != nullptr);
+    DocumentData* documentData = activeContext->GetData<DocumentData>();
+    PackageNode* package = documentData->GetPackageNode();
+
     PackageControlsNode* controlsNode = package->GetPackageControlsNode();
     for (uint32 i = 0, count = controlsNode->GetCount(); i < count; ++i)
     {
@@ -212,11 +238,13 @@ void EditorSystemsManager::SetDisplayState(eDisplayState newDisplayState)
     displayStateChanged.Emit(displayState, previousDisplayState);
 }
 
-void EditorSystemsManager::OnEditingRootControlsChanged(const SortedControlNodeSet& rootControls)
+void EditorSystemsManager::OnRootContolsChanged(const DAVA::Any& rootControlsValue)
 {
     const EngineContext* engineContext = GetEngineContext();
-    engineContext->uiControlSystem->GetInputSystem()->SetCurrentScreen(engineContext->uiControlSystem->GetScreen()); // reset current screen
+    // reset current screen
+    engineContext->uiControlSystem->GetInputSystem()->SetCurrentScreen(engineContext->uiControlSystem->GetScreen());
 
+    SortedControlNodeSet rootControls = rootControlsValue.Cast<SortedControlNodeSet>(SortedControlNodeSet());
     eDisplayState state = rootControls.size() == 1 ? Edit : Preview;
     if (displayState == Emulation)
     {
@@ -232,52 +260,6 @@ void EditorSystemsManager::OnActiveHUDAreaChanged(const HUDAreaInfo& areaInfo)
 {
     currentHUDArea = areaInfo;
 }
-
-void EditorSystemsManager::OnPackageChanged(PackageNode* package_)
-{
-    magnetLinesChanged.Emit({});
-    SetDragState(NoDrag);
-    ClearHighlight();
-}
-
-void EditorSystemsManager::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields)
-{
-    using namespace DAVA;
-    using namespace TArc;
-
-    if (wrapper.HasData() == false)
-    {
-        OnSelectionDataChanged(Any());
-        OnPackageDataChanged(Any());
-        return;
-    }
-
-    bool selectionChanged = std::find(fields.begin(), fields.end(), String(DocumentData::selectionPropertyName)) != fields.end();
-    bool packageChanged = std::find(fields.begin(), fields.end(), String(DocumentData::packagePropertyName)) != fields.end();
-
-    Any selectionValue = wrapper.GetFieldValue(DocumentData::selectionPropertyName);
-    SelectedNodes selection = selectionValue.Get(SelectedNodes());
-
-    Any packageValue = wrapper.GetFieldValue(DocumentData::packagePropertyName);
-    PackageNode* package = packageValue.Cast<PackageNode*>();
-
-    if (fields.empty() || packageChanged)
-    {
-        OnPackageDataChanged(packageValue);
-        //when document is closed and active document is changed we receive empty fields
-        OnSelectionDataChanged(selection);
-    }
-
-    //update selection
-    if (selectionChanged)
-    {
-        OnSelectionDataChanged(selectionValue);
-    }
-}
-
-
-
-
 
 void EditorSystemsManager::InitDAVAScreen()
 {
@@ -298,9 +280,14 @@ void EditorSystemsManager::InitDAVAScreen()
 
 void EditorSystemsManager::OnDragStateChanged(eDragState currentState, eDragState previousState)
 {
+    using namespace DAVA::TArc;
+
     if (currentState == Transform || previousState == Transform)
     {
-        DVASSERT(package != nullptr);
+        DataContext* activeContext = accessor->GetActiveContext();
+        DVASSERT(activeContext != nullptr);
+        DocumentData* documentData = activeContext->GetData<DocumentData>();
+        PackageNode* package = documentData->GetPackageNode();
         //calling this function can refresh all properties and styles in this node
         package->SetCanUpdateAll(previousState == Transform);
     }
@@ -339,20 +326,11 @@ DAVA::Vector2 EditorSystemsManager::GetLastMousePos() const
     return lastMousePos;
 }
 
-void EditorSystemsManager::OnPackageDataChanged(const DAVA::Any& packageValue)
+void EditorSystemsManager::OnPackageChanged(const DAVA::Any& /*packageValue*/)
 {
-    PackageNode* package = nullptr;
-    if (packageValue.CanCast<PackageNode*>())
-    {
-        package = packageValue.Cast<PackageNode*>();
-    }
-    packageChanged.Emit(package);
-}
-
-void EditorSystemsManager::OnSelectionDataChanged(const DAVA::Any& newSelectionValue)
-{
-    SelectedNodes selection = newSelectionValue.Cast<SelectedNodes>(SelectedNodes());
-    selectionChanged.Emit(selection);
+    magnetLinesChanged.Emit({});
+    SetDragState(NoDrag);
+    ClearHighlight();
 }
 
 EditorSystemsManager::eDragState EditorSystemsManager::GetDragState() const
@@ -392,7 +370,11 @@ const SortedControlNodeSet& EditorSystemsManager::GetDisplayedRootControls() con
 {
     using namespace DAVA::TArc;
     DataContext* activeContext = accessor->GetActiveContext();
-    DocumentData* documentData = activeContext->GetData<DocumentData>();
+    if (activeContext == nullptr)
+    {
+        return SortedControlNodeSet();
+    }
 
+    DocumentData* documentData = activeContext->GetData<DocumentData>();
     return documentData->GetDisplayedRootControls();
 }

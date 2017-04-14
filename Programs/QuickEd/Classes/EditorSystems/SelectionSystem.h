@@ -18,7 +18,7 @@ namespace DAVA
 class Vector2;
 namespace TArc
 {
-class ContextAccessor;
+class FieldBinder;
 }
 }
 
@@ -39,15 +39,17 @@ public:
     ControlNode* GetCommonNodeUnderPoint(const DAVA::Vector2& point) const;
 
 private:
+    void InitFieldBinder();
+
     bool CanProcessInput(DAVA::UIEvent* currentInput) const override;
+    void ProcessInput(DAVA::UIEvent* currentInput) override;
 
     void GetNodesForSelection(DAVA::Vector<ControlNode*>& nodesUnderPoint, const DAVA::Vector2& point) const;
-    void ProcessInput(DAVA::UIEvent* currentInput) override;
     void OnSelectByRect(const DAVA::Rect& rect);
 
     void FocusToChild(bool next);
     void SelectNodes(const SelectedNodes& selection);
-    void OnSelectionChanged(const SelectedNodes& selection);
+    void OnSelectionChanged(const DAVA::Any& selection);
 
     ControlNode* FindSmallNodeUnderNode(const DAVA::Vector<ControlNode*>& nodesUnderPoint) const;
 
@@ -57,8 +59,8 @@ private:
     bool selectOnRelease = false;
     DAVA::Vector2 pressedPoint = DAVA::Vector2(-1.0f, -1.0f);
 
-    DAVA::TArc::ContextAccessor* accessor = nullptr;
     DAVA::TArc::DataWrapper documentDataWrapper;
+    std::unique_ptr<DAVA::TArc::FieldBinder> fieldBinder;
 
 public:
     INTROSPECTION(SelectionSystem,

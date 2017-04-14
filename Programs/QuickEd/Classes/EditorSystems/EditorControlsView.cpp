@@ -381,11 +381,10 @@ bool BackgroundController::IsPropertyAffectBackground(AbstractProperty* property
     return std::find(std::begin(matchedNames), std::end(matchedNames), name) != std::end(matchedNames);
 }
 
-EditorControlsView::EditorControlsView(UIControl* canvasParent_, EditorSystemsManager* parent, DAVA::TArc::ContextAccessor* accessor_)
-    : BaseEditorSystem(parent)
+EditorControlsView::EditorControlsView(UIControl* canvasParent_, EditorSystemsManager* parent, DAVA::TArc::ContextAccessor* accessor)
+    : BaseEditorSystem(parent, accessor)
     , controlsCanvas(new UIControl())
     , canvasParent(canvasParent_)
-    , accessor(accessor_)
     , packageListenerProxy(this, accessor)
 {
     canvasParent->AddControl(controlsCanvas.Get());
@@ -407,7 +406,7 @@ void EditorControlsView::InitFieldBinder()
     fieldBinder.reset(new FieldBinder(accessor));
     FieldDescriptor fieldDescr;
     fieldDescr.type = ReflectedTypeDB::Get<DocumentData>();
-    fieldDescr.fieldName = FastName(DocumentData::selectionPropertyName);
+    fieldDescr.fieldName = FastName(DocumentData::displayedRootControlsPropertyName);
     fieldBinder->BindField(fieldDescr, MakeFunction(this, &EditorControlsView::OnRootContolsChanged));
 }
 
