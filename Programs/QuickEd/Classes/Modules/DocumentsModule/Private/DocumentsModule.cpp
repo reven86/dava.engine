@@ -194,6 +194,7 @@ void DocumentsModule::InitCentralWidget()
     QObject::connect(previewWidget, &PreviewWidget::CutRequested, mainWindow->GetPackageWidget(), &PackageWidget::OnCut);
     QObject::connect(previewWidget, &PreviewWidget::CopyRequested, mainWindow->GetPackageWidget(), &PackageWidget::OnCopy);
     QObject::connect(previewWidget, &PreviewWidget::PasteRequested, mainWindow->GetPackageWidget(), &PackageWidget::OnPaste);
+    QObject::connect(previewWidget, &PreviewWidget::DuplicateRequested, mainWindow->GetPackageWidget(), &PackageWidget::OnDuplicate);
 
     findInDocumentController.reset(new FindInDocumentController(this, mainWindow, previewWidget->GetFindInDocumentWidget()));
 }
