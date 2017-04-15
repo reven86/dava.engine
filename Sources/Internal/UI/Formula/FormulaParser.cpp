@@ -326,17 +326,20 @@ std::shared_ptr<FormulaExpression> FormulaParser::ParsePostfix()
 
     if (token.GetType() == FormulaToken::IDENTIFIER)
     {
+        int32 lineNumber = token.GetLineNumber();
+        int32 positionInLine = token.GetPositionInLine();
+
         NextToken();
         String identifier = GetTokenStringValue(token);
 
         token = LookToken();
         if (token.GetType() == FormulaToken::OPEN_BRACKET)
         {
-            return ParseFunction(identifier);
+            return ParseFunction(identifier, lineNumber, positionInLine);
         }
         else
         {
-            return ParseAccess(identifier);
+            return ParseAccess(identifier, lineNumber, positionInLine);
         }
     }
     else
@@ -392,7 +395,7 @@ std::shared_ptr<FormulaExpression> FormulaParser::ParsePrimary()
     DAVA_THROW(FormulaError, "Expected literal", token.GetLineNumber(), token.GetPositionInLine());
 }
 
-shared_ptr<FormulaExpression> FormulaParser::ParseFunction(const String& identifier)
+shared_ptr<FormulaExpression> FormulaParser::ParseFunction(const String& identifier, int32 lineNumber, int32 positionInLine)
 {
     FormulaToken token = NextToken(); // skip open bracket
 
@@ -431,12 +434,12 @@ shared_ptr<FormulaExpression> FormulaParser::ParseFunction(const String& identif
         }
     }
 
-    return make_shared<FormulaFunctionExpression>(identifier, params, token.GetLineNumber(), token.GetPositionInLine());
+    return make_shared<FormulaFunctionExpression>(identifier, params, lineNumber, positionInLine);
 }
 
-std::shared_ptr<FormulaExpression> FormulaParser::ParseAccess(const String& identifier)
+std::shared_ptr<FormulaExpression> FormulaParser::ParseAccess(const String& identifier, int32 lineNumber, int32 positionInLine)
 {
-    std::shared_ptr<FormulaExpression> exp = make_shared<FormulaFieldAccessExpression>(nullptr, identifier, token.GetLineNumber(), token.GetPositionInLine());
+    std::shared_ptr<FormulaExpression> exp = make_shared<FormulaFieldAccessExpression>(nullptr, identifier, lineNumber, positionInLine);
 
     FormulaToken token = LookToken();
 

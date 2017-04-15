@@ -102,7 +102,9 @@ bool FormulaReflectionContext::IsArgsMatchToFn(const Vector<const Type*>& types,
         const Type* type = types[i];
         const Type* fnType = fnTypes[i]->Decay();
 
-        if (type != fnType && (type != Type::Instance<int32>() && fnType != Type::Instance<float32>())) // allow conversion from int32 to float32
+        const Type* int32T = Type::Instance<int32>();
+        const Type* float32T = Type::Instance<float32>();
+        if (type != fnType && (type != int32T || fnType != float32T)) // allow conversion from int32 to float32
         {
             return false;
         }

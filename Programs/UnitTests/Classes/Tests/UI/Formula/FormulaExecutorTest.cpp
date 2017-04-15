@@ -74,20 +74,11 @@ DAVA_VIRTUAL_REFLECTION_IMPL(TestData)
 
 DAVA_TESTCLASS (FormulaExecutorTest)
 {
-    void SetUp(const String& testName) override
-    {
-    }
-
-    void TearDown(const String& testName) override
-    {
-    }
-
     // FormulaExecutor::Calculate
     DAVA_TEST (CalculateNumbers)
     {
         TEST_VERIFY(Execute("5") == Any(5));
         TEST_VERIFY(Execute("5 + 5") == Any(10));
-        TEST_VERIFY(Execute("5 + 5.5") == Any(10.5f));
         TEST_VERIFY(Execute("7-2") == Any(5));
         TEST_VERIFY(Execute("7U-2U") == Any(5U));
         TEST_VERIFY(Execute("7L-9L").Get<int64>() == Any(static_cast<int64>(-2L)).Get<int64>());
@@ -95,6 +86,10 @@ DAVA_TESTCLASS (FormulaExecutorTest)
         TEST_VERIFY(Execute("-2") == Any(-2));
         TEST_VERIFY(Execute("--2") == Any(2));
         TEST_VERIFY(Execute("1---2") == Any(-1));
+
+        TEST_VERIFY(FLOAT_EQUAL(Execute("-5.5").Get<float32>(), -5.5f));
+        TEST_VERIFY(FLOAT_EQUAL(Execute("5 + 5.5").Get<float32>(), 10.5f));
+        TEST_VERIFY(FLOAT_EQUAL(Execute("2.0 * 5.5").Get<float32>(), 11.0f));
     }
 
     // FormulaExecutor::Calculate
@@ -112,85 +107,73 @@ DAVA_TESTCLASS (FormulaExecutorTest)
     }
 
     // FormulaExecutor::Calculate
+    DAVA_TEST (CalculateStrings)
+    {
+        TEST_VERIFY(Execute("\"Hello, world\" == str") == Any(true));
+        TEST_VERIFY(Execute("\"Hello,\" + \" world\" == str") == Any(true));
+        TEST_VERIFY(Execute("intToStr(5) == \"*5*\"") == Any(true));
+    }
+
+    // FormulaExecutor::Calculate
     DAVA_TEST (CalculateNumbersWithErrors)
     {
-        bool wasException = false;
         try
         {
-            Any res = Execute("5 + 5L");
-            Logger::Debug("Res: %s", FormulaFormatter::AnyToString(res).c_str());
+            Execute("5 + 5L");
+            TEST_VERIFY(false);
         }
         catch (const FormulaError& error)
         {
-            Logger::Debug("FormulaError: %s", error.GetFormattedMessage().c_str());
-            wasException = true;
+            TEST_VERIFY(error.GetFormattedMessage() == "[1, 3] Operator '+' cannot be applied to 'int32', 'int64'");
         }
 
-        TEST_VERIFY(wasException);
-        wasException = false;
         try
         {
-            Any res = Execute("5U + 5UL");
-            Logger::Debug("Res: %s", FormulaFormatter::AnyToString(res).c_str());
+            Execute("5U + 5UL");
+            TEST_VERIFY(false);
         }
         catch (const FormulaError& error)
         {
-            Logger::Debug("FormulaError: %s", error.GetFormattedMessage().c_str());
-            wasException = true;
+            TEST_VERIFY(error.GetFormattedMessage() == "[1, 4] Operator '+' cannot be applied to 'uint32', 'uint64'");
         }
 
-        TEST_VERIFY(wasException);
-        wasException = false;
         try
         {
-            Any res = Execute("5L + 5UL");
-            Logger::Debug("Res: %s", FormulaFormatter::AnyToString(res).c_str());
+            Execute("5L + 5UL");
+            TEST_VERIFY(false);
         }
         catch (const FormulaError& error)
         {
-            Logger::Debug("FormulaError: %s", error.GetFormattedMessage().c_str());
-            wasException = true;
+            TEST_VERIFY(error.GetFormattedMessage() == "[1, 4] Operator '+' cannot be applied to 'int64', 'uint64'");
         }
 
-        TEST_VERIFY(wasException);
-        wasException = false;
         try
         {
-            Any res = Execute("5L + \"543543\"");
-            Logger::Debug("Res: %s", FormulaFormatter::AnyToString(res).c_str());
+            Execute("5L + \"543543\"");
+            TEST_VERIFY(false);
         }
         catch (const FormulaError& error)
         {
-            Logger::Debug("FormulaError: %s", error.GetFormattedMessage().c_str());
-            wasException = true;
+            TEST_VERIFY(error.GetFormattedMessage() == "[1, 4] Operator '+' cannot be applied to 'int64', 'String'");
         }
-        TEST_VERIFY(wasException);
 
-        wasException = false;
         try
         {
-            Any res = Execute("\"54354\" - \"543543\"");
-            Logger::Debug("Res: %s", FormulaFormatter::AnyToString(res).c_str());
+            Execute("\"54354\" - \"543543\"");
         }
         catch (const FormulaError& error)
         {
-            Logger::Debug("FormulaError: %s", error.GetFormattedMessage().c_str());
-            wasException = true;
+            TEST_VERIFY(error.GetFormattedMessage() == "[1, 9] Operator '-' cannot be applied to 'String', 'String'");
         }
-        TEST_VERIFY(wasException);
 
-        wasException = false;
         try
         {
-            Any res = Execute("false * true");
-            Logger::Debug("Res: %s", FormulaFormatter::AnyToString(res).c_str());
+            Execute("false * true");
         }
         catch (const FormulaError& error)
         {
-            Logger::Debug("FormulaError: %s", error.GetFormattedMessage().c_str());
-            wasException = true;
+            TEST_VERIFY(error.GetFormattedMessage() == "[1, 7] Operator '*' cannot be applied to 'bool', 'bool'");
         }
-        TEST_VERIFY(wasException);
     }
 
     // FormulaExecutor::Calculate
@@ -203,9 +186,37 @@ DAVA_TESTCLASS (FormulaExecutorTest)
     }
 
     // FormulaExecutor::Calculate
+    DAVA_TEST (FieldAccessWithErrors)
+    {
+        try
+        {
+            Execute("map.d");
+            TEST_VERIFY(false);
+        }
+        catch (const FormulaError& error)
+        {
+            TEST_VERIFY(error.GetFormattedMessage() == "[1, 5] Can't resolve symbol 'd'");
+        }
+    }
+
+    // FormulaExecutor::Calculate
     DAVA_TEST (IndexAccess)
     {
         TEST_VERIFY(Execute("array[1]") == Any(20));
+    }
+
+    // FormulaExecutor::Calculate
+    DAVA_TEST (IndexAccessWithErrors)
+    {
+        try
+        {
+            Execute("array[5.5]");
+            TEST_VERIFY(false);
+        }
+        catch (const FormulaError& error)
+        {
+            TEST_VERIFY(error.GetFormattedMessage() == "[1, 6] Can't get data 'array[5.500000]' by index '5.500000' with type 'float32'");
+        }
     }
 
     // FormulaExecutor::Calculate
@@ -216,6 +227,30 @@ DAVA_TESTCLASS (FormulaExecutorTest)
         TEST_VERIFY(Execute("floatToStr(55)") == Any(String("55.000")));
         TEST_VERIFY(Execute("floatToStr(55.5)") == Any(String("55.500")));
         TEST_VERIFY(Execute("boolToStr(true)") == Any(String("+")));
+    }
+
+    // FormulaExecutor::Calculate
+    DAVA_TEST (FunctionWithErrors)
+    {
+        try
+        {
+            Execute("sum(1, 2, 3)");
+            TEST_VERIFY(false);
+        }
+        catch (const FormulaError& error)
+        {
+            TEST_VERIFY(error.GetFormattedMessage() == "[1, 1] Can't resolve function 'sum(int32, int32, int32)'");
+        }
+
+        try
+        {
+            Execute("floatToStr(true)");
+            TEST_VERIFY(false);
+        }
+        catch (const FormulaError& error)
+        {
+            TEST_VERIFY(error.GetFormattedMessage() == "[1, 1] Can't resolve function 'floatToStr(bool)'");
+        }
     }
 
     // FormulaExecutor::Calculate
@@ -235,34 +270,6 @@ DAVA_TESTCLASS (FormulaExecutorTest)
         TEST_VERIFY(dependencies == Vector<void*>({ &(data.bVal), &(data.array), &(data.array[1]) }));
     }
 
-    // FormulaExecutor::Calculate
-    DAVA_TEST (ParseExpressionWithErrors)
-    {
-        bool wasException = false;
-        try
-        {
-            Execute("unknownData");
-        }
-        catch (const FormulaError& error)
-        {
-            wasException = true;
-        }
-
-        TEST_VERIFY(wasException == true);
-
-        wasException = false;
-        try
-        {
-            Execute("unknownMethod()");
-        }
-        catch (const FormulaError& error)
-        {
-            wasException = true;
-        }
-
-        TEST_VERIFY(wasException == true);
-    }
-
     Any Execute(const String str)
     {
         TestData data;
@@ -271,7 +278,7 @@ DAVA_TESTCLASS (FormulaExecutorTest)
         FormulaParser parser(str);
         std::shared_ptr<FormulaExpression> exp = parser.ParseExpression();
         Any res = executor.Calculate(exp.get());
-        Logger::Debug("res; %s", FormulaFormatter::AnyToString(res).c_str());
+        Logger::Debug("test: %s", FormulaFormatter::AnyToString(res).c_str());
         return res;
     }
 

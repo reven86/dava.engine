@@ -29,8 +29,8 @@ private:
     std::shared_ptr<FormulaExpression> ParseUnary();
     std::shared_ptr<FormulaExpression> ParsePostfix();
     std::shared_ptr<FormulaExpression> ParsePrimary();
-    std::shared_ptr<FormulaExpression> ParseFunction(const String& identifier);
-    std::shared_ptr<FormulaExpression> ParseAccess(const String& identifier);
+    std::shared_ptr<FormulaExpression> ParseFunction(const String& identifier, int32 lineNumber, int32 positionInLine);
+    std::shared_ptr<FormulaExpression> ParseAccess(const String& identifier, int32 lineNumber, int32 positionInLine);
 
     FormulaToken LookToken();
     FormulaToken NextToken();

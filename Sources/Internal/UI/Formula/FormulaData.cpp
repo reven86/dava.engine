@@ -123,7 +123,15 @@ public:
     Reflection GetField(const ReflectedObject& obj, const ValueWrapper* vw, const Any& key) const override
     {
         FormulaDataVector* data = vw->GetValueObject(obj).GetPtr<FormulaDataVector>();
-        return CreateReflection(data->Get(key.Cast<size_t>()));
+        if (key.CanCast<size_t>())
+        {
+            size_t index = key.Cast<size_t>();
+            if (index < data->GetCount())
+            {
+                return CreateReflection(data->Get(index));
+            }
+        }
+        return Reflection();
     }
 
     Vector<Reflection::Field> GetFields(const ReflectedObject& obj, const ValueWrapper* vw) const override

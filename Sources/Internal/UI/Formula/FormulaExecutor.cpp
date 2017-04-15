@@ -199,10 +199,6 @@ void FormulaExecutor::Visit(FormulaFunctionExpression* exp)
     for (const std::shared_ptr<FormulaExpression>& paramExp : params)
     {
         Any res = CalculateImpl(paramExp.get());
-        if (res.IsEmpty())
-        {
-            DAVA_THROW(FormulaError, "Can't execute function ", exp);
-        }
         types.push_back(res.GetType());
         values.push_back(res);
     }
@@ -210,7 +206,16 @@ void FormulaExecutor::Visit(FormulaFunctionExpression* exp)
     AnyFn fn = context->FindFunction(exp->GetName(), types);
     if (!fn.IsValid())
     {
-        DAVA_THROW(FormulaError, Format("Can't resolve function '%s'", exp->GetName().c_str()), exp);
+        String args;
+        for (size_t i = 0; i < values.size(); i++)
+        {
+            if (i > 0)
+            {
+                args += ", ";
+            }
+            args += FormulaFormatter::AnyTypeToString(values[i]);
+        }
+        DAVA_THROW(FormulaError, Format("Can't resolve function '%s(%s)'", exp->GetName().c_str(), args.c_str()), exp);
     }
 
     int32 index = 0;
@@ -255,7 +260,22 @@ void FormulaExecutor::Visit(FormulaFunctionExpression* exp)
         break;
 
     default:
-        DAVA_THROW(FormulaError, Format("To much function arguments (%d)", params.size()), exp);
+    {
+        String args;
+        for (size_t i = 0; i < values.size(); i++)
+        {
+            if (i > 0)
+            {
+                args += ", ";
+            }
+            args += FormulaFormatter::AnyTypeToString(values[i]);
+        }
+        DAVA_THROW(FormulaError,
+                   Format("Function '%s(%s)' has to much arguments (more than 6)",
+                          exp->GetName().c_str(),
+                          args.c_str()),
+                   exp);
+    }
     }
 }
 
@@ -285,42 +305,34 @@ void FormulaExecutor::Visit(FormulaFieldAccessExpression* exp)
     }
     else
     {
-        DAVA_THROW(FormulaError, Format("Can't resolve symbol %s", exp->GetFieldName().c_str()), exp);
+        DAVA_THROW(FormulaError, Format("Can't resolve symbol '%s'", exp->GetFieldName().c_str()), exp);
     }
 }
 
 void FormulaExecutor::Visit(FormulaIndexExpression* exp)
 {
     Any indexVal = Calculate(exp->GetIndexExp());
-
-    int32 index = -1;
-    if (indexVal.CanCast<int32>())
-    {
-        index = indexVal.Cast<int32>();
-    }
-    else
-    {
-        DAVA_THROW(FormulaError, Format("Type of index expression (%s) must be int", FormulaFormatter().Format(exp->GetIndexExp()).c_str()), exp);
-    }
-
     Reflection data = GetDataReference(exp->GetExp());
-
     if (data.IsValid())
     {
-        dataReference = data.GetField(index);
-    }
-    else
-    {
-        DAVA_THROW(FormulaError, Format("It's not data access expression (%s)", FormulaFormatter().Format(exp).c_str()), exp);
-    }
+        dataReference = data.GetField(indexVal);
 
-    if (dataReference.IsValid())
-    {
-        dependencies.push_back(dataReference.GetValueObject().GetVoidPtr());
+        if (dataReference.IsValid())
+        {
+            dependencies.push_back(dataReference.GetValueObject().GetVoidPtr());
+        }
+        else
+        {
+            DAVA_THROW(FormulaError, Format("Can't get data '%s' by index '%s' with type '%s'",
+                                            FormulaFormatter().Format(exp).c_str(),
+                                            FormulaFormatter::AnyToString(indexVal).c_str(),
+                                            FormulaFormatter::AnyTypeToString(indexVal).c_str()),
+                       exp);
+        }
     }
     else
     {
-        DAVA_THROW(FormulaError, Format("Can't get data by index (%s)", FormulaFormatter().Format(exp).c_str()), exp);
+        DAVA_THROW(FormulaError, Format("It's not data access expression '%s'", FormulaFormatter().Format(exp).c_str()), exp);
     }
 }
 
@@ -339,7 +351,10 @@ const Any& FormulaExecutor::CalculateImpl(FormulaExpression* exp)
         }
         else
         {
-            DAVA_THROW(FormulaError, "Can't calculate expression", exp);
+            DAVA_THROW(FormulaError,
+                       Format("Can't calculate expression '%s'",
+                              FormulaFormatter().Format(exp).c_str()),
+                       exp);
         }
     }
 
@@ -362,7 +377,10 @@ const Reflection& FormulaExecutor::GetDataReferenceImpl(FormulaExpression* exp)
     }
     else
     {
-        DAVA_THROW(FormulaError, "Can't get data reference.", exp);
+        DAVA_THROW(FormulaError,
+                   Format("Can't get data reference '%s'",
+                          FormulaFormatter().Format(exp).c_str()),
+                   exp);
     }
 }
 

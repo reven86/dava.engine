@@ -45,7 +45,7 @@ public:
     };
 
     FormulaToken();
-    FormulaToken(Type type_, int32 lineNumber, int32 positionInLine);
+    FormulaToken(Type type, int32 lineNumber, int32 positionInLine);
     FormulaToken(Type type, int32 val, int32 lineNumber, int32 positionInLine);
     FormulaToken(Type type, uint32 val, int32 lineNumber, int32 positionInLine);
     FormulaToken(Type type, int64 val, int32 lineNumber, int32 positionInLine);
