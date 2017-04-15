@@ -5,7 +5,6 @@
 #include "UI/UI3DView.h"
 #include "UI/UIControlSystem.h"
 #include "UI/Update/UIUpdateSystem.h"
-#include "UI/Render/UIRenderSystem.h"
 
 namespace DAVA
 {
@@ -115,8 +114,7 @@ void UIScreenshoter::MakeScreenshotInternal(UIControl* control, Texture* screens
     {
         PrepareControl(control);
     }
-    UIRenderSystem* uiRenderSystem = UIControlSystem::Instance()->GetRenderSystem();
-    uiRenderSystem->ManualRender(control);
+    UIControlSystem::Instance()->ManualRender(control);
 
     //[CLEAR ALPHA]
     if (clearAlpha)

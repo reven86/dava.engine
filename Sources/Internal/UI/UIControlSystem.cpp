@@ -227,6 +227,8 @@ void UIControlSystem::Reset()
 
 void UIControlSystem::ManualUpdate(UIControl* control)
 {
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::UI_UPDATE);
+
     if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_UI_CONTROL_SYSTEM))
         return;
 
@@ -236,6 +238,13 @@ void UIControlSystem::ManualUpdate(UIControl* control)
     {
         system->ManualProcess(timeElapsed, control);
     }
+}
+
+void UIControlSystem::ManualRender(UIControl* control)
+{
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::UI_DRAW);
+
+    renderSystem->ManualRender(control);
 }
 
 void UIControlSystem::ProcessScreenLogic()

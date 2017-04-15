@@ -78,18 +78,16 @@ void UIScreenTransition::SetSourceScreen(UIControl* prevScreen, bool updateScree
 {
     DVASSERT(renderTargetPrevScreen && renderTargetNextScreen);
 
-    UIControlSystem::Instance()->GetRenderSystem()->
-    GetScreenshoter()
-    ->MakeScreenshot(prevScreen, renderTargetPrevScreen->GetTexture(), true, updateScreen);
+    UIScreenshoter* screenshoter = UIControlSystem::Instance()->GetRenderSystem()->GetScreenshoter();
+    screenshoter->MakeScreenshot(prevScreen, renderTargetPrevScreen->GetTexture(), true, updateScreen);
 }
 
 void UIScreenTransition::SetDestinationScreen(UIControl* nextScreen, bool updateScreen)
 {
     DVASSERT(renderTargetPrevScreen && renderTargetNextScreen);
 
-    UIControlSystem::Instance()->GetRenderSystem()->
-    GetScreenshoter()
-    ->MakeScreenshot(nextScreen, renderTargetNextScreen->GetTexture(), true, updateScreen);
+    UIScreenshoter* screenshoter = UIControlSystem::Instance()->GetRenderSystem()->GetScreenshoter();
+    screenshoter->MakeScreenshot(nextScreen, renderTargetNextScreen->GetTexture(), true, updateScreen);
 }
 
 void UIScreenTransition::EndTransition()

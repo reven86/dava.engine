@@ -68,7 +68,7 @@ private:
     RefPtr<UIScreen> currentScreen;
     RefPtr<UIControl> popupContainer;
     RefPtr<UIScreenTransition> currentScreenTransition;
-    
+
     friend UILayoutSystemTest;
 };
 

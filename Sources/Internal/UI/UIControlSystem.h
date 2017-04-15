@@ -295,6 +295,7 @@ public:
     void SetDoubleTapSettings(float32 time, float32 inch);
 
     void ManualUpdate(UIControl* control);
+    void ManualRender(UIControl* control);
     VirtualCoordinatesSystem* vcs = nullptr; // TODO: Should be completely removed in favor of direct DAVA::Window methods
 
 private:
@@ -356,9 +357,6 @@ private:
         bool lastClickEnded = false;
     };
     LastClickData lastClickData;
-
-    //     int32 ui3DViewCount = 0;
-    //     bool needClearMainPass = true;
 };
 };
 
