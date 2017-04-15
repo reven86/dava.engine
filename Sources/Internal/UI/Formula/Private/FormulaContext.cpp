@@ -32,16 +32,14 @@ Reflection FormulaContext::FindReflection(const String& name) const
     return Reflection();
 }
 
-FormulaReflectionContext::FormulaReflectionContext(const Reflection &ref_, std::shared_ptr<FormulaContext> parent_)
+FormulaReflectionContext::FormulaReflectionContext(const Reflection& ref_, std::shared_ptr<FormulaContext> parent_)
     : reflection(ref_)
     , parent(parent_)
 {
-    
 }
 
 FormulaReflectionContext::~FormulaReflectionContext()
 {
-    
 }
 
 AnyFn FormulaReflectionContext::FindFunction(const String& name, const Vector<const Type*>& types) const
@@ -68,21 +66,20 @@ Reflection FormulaReflectionContext::FindReflection(const String& name) const
     {
         return res;
     }
-    
+
     if (parent)
     {
         return parent->FindReflection(name);
     }
-    
-    return Reflection();
 
+    return Reflection();
 }
 
-const Reflection &FormulaReflectionContext::GetReflection() const
+const Reflection& FormulaReflectionContext::GetReflection() const
 {
     return reflection;
 }
-    
+
 FormulaContext* FormulaReflectionContext::GetParent() const
 {
     return parent.get();

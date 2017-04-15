@@ -55,4 +55,3 @@ String FormulaError::GetFormattedMessage() const
     return Format("[%d, %d] %s", lineNumber, positionInLine, what());
 }
 }
-

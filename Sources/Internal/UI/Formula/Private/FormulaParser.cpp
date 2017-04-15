@@ -157,7 +157,6 @@ shared_ptr<FormulaDataMap> FormulaParser::ParseMap()
             map->Add(name, Any(exp));
         }
 
-
         token = LookToken();
     }
 
@@ -187,7 +186,7 @@ std::shared_ptr<FormulaDataVector> FormulaParser::ParseVector()
         {
             vector->Add(Any(exp));
         }
-        
+
         token = LookToken();
         index++;
     }
@@ -374,20 +373,20 @@ std::shared_ptr<FormulaExpression> FormulaParser::ParsePrimary()
         return make_shared<FormulaValueExpression>(Any(GetTokenStringValue(token)), token.GetLineNumber(), token.GetPositionInLine());
 
     case FormulaToken::OPEN_BRACKET:
+    {
+        shared_ptr<FormulaExpression> exp = ParseExpression();
+
+        token = LookToken();
+        if (token.GetType() != FormulaToken::CLOSE_BRACKET)
         {
-            shared_ptr<FormulaExpression> exp = ParseExpression();
-
-            token = LookToken();
-            if (token.GetType() != FormulaToken::CLOSE_BRACKET)
-            {
-                DAVA_THROW(FormulaError, "')' expected", token.GetLineNumber(), token.GetPositionInLine());
-            }
-            NextToken(); // close bracket
-            return exp;
+            DAVA_THROW(FormulaError, "')' expected", token.GetLineNumber(), token.GetPositionInLine());
         }
+        NextToken(); // close bracket
+        return exp;
+    }
 
-        default:
-            break;
+    default:
+        break;
     }
 
     DAVA_THROW(FormulaError, "Expected literal", token.GetLineNumber(), token.GetPositionInLine());
@@ -401,7 +400,7 @@ shared_ptr<FormulaExpression> FormulaParser::ParseFunction(const String& identif
     {
         DAVA_THROW(FormulaError, "'(' expected", token.GetLineNumber(), token.GetPositionInLine());
     }
-    
+
     token = LookToken();
     Vector<shared_ptr<FormulaExpression>> params;
 

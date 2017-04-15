@@ -305,5 +305,4 @@ int32 FormulaFormatter::GetExpPriority(FormulaExpression* exp) const
     }
     return 0;
 }
-
 }

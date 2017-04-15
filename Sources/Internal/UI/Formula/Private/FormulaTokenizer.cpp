@@ -189,46 +189,46 @@ FormulaToken FormulaTokenizer::ReadToken()
     switch (ch)
     {
     case '\0':
-            ReadChar();
-            return FormulaToken(FormulaToken::END, line, column);
+        ReadChar();
+        return FormulaToken(FormulaToken::END, line, column);
 
     case ',':
-            ReadChar();
-            return FormulaToken(FormulaToken::COMMA, line, column);
+        ReadChar();
+        return FormulaToken(FormulaToken::COMMA, line, column);
 
     case '.':
-            ReadChar();
-            return FormulaToken(FormulaToken::DOT, line, column);
+        ReadChar();
+        return FormulaToken(FormulaToken::DOT, line, column);
 
     case '<':
+        ReadChar();
+        if (ch == '=')
+        {
             ReadChar();
-            if (ch == '=')
-            {
-                ReadChar();
-                return FormulaToken(FormulaToken::LE, line, column);
-            }
-            return FormulaToken(FormulaToken::LT, line, column);
+            return FormulaToken(FormulaToken::LE, line, column);
+        }
+        return FormulaToken(FormulaToken::LT, line, column);
 
     case '>':
+        ReadChar();
+        if (ch == '=')
+        {
             ReadChar();
-            if (ch == '=')
-            {
-                ReadChar();
-                return FormulaToken(FormulaToken::GE, line, column);
-            }
-            return FormulaToken(FormulaToken::GT, line, column);
+            return FormulaToken(FormulaToken::GE, line, column);
+        }
+        return FormulaToken(FormulaToken::GT, line, column);
 
     case '+':
-            ReadChar();
-            return FormulaToken(FormulaToken::PLUS, line, column);
+        ReadChar();
+        return FormulaToken(FormulaToken::PLUS, line, column);
 
     case '-':
         ReadChar();
         return FormulaToken(FormulaToken::MINUS, line, column);
 
     case '*':
-            ReadChar();
-            return FormulaToken(FormulaToken::MUL, line, column);
+        ReadChar();
+        return FormulaToken(FormulaToken::MUL, line, column);
 
     case '/':
         ReadChar();
@@ -299,27 +299,27 @@ FormulaToken FormulaTokenizer::ReadToken()
         return FormulaToken(FormulaToken::CLOSE_SQUARE_BRACKET, line, column);
 
     case '"':
+    {
+        ReadChar();
+
+        int32 p = currentPosition;
+        while (ch != '\0' && ch != '"')
         {
             ReadChar();
-
-            int32 p = currentPosition;
-            while (ch != '\0' && ch != '"')
-            {
-                ReadChar();
-            }
-
-            if (ch == '\0')
-            {
-                DAVA_THROW(FormulaError, "Illegal line end in string literal", lineNumber, positionInLine);
-            }
-            ReadChar();
-
-            return FormulaToken(FormulaToken::STRING, p, currentPosition - p - 1, line, column);
         }
 
-        default:
-            // do nothing
-            break;
+        if (ch == '\0')
+        {
+            DAVA_THROW(FormulaError, "Illegal line end in string literal", lineNumber, positionInLine);
+        }
+        ReadChar();
+
+        return FormulaToken(FormulaToken::STRING, p, currentPosition - p - 1, line, column);
+    }
+
+    default:
+        // do nothing
+        break;
     }
 
     if (IsIdentifierStart(ch))
