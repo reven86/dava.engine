@@ -168,7 +168,7 @@ std::shared_ptr<FormulaDataVector> FormulaParser::ParseVector()
 {
     shared_ptr<FormulaDataVector> vector = make_shared<FormulaDataVector>();
 
-    int index = 0;
+    int32 index = 0;
     FormulaToken token = LookToken();
     while (token.GetType() != FormulaToken::CLOSE_SQUARE_BRACKET)
     {

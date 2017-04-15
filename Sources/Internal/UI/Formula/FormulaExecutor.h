@@ -16,12 +16,15 @@ public:
     Reflection GetDataReference(FormulaExpression* exp);
 
     /**
-        Vector of pointers is just way to know from which variables this expression 
-        is dependend.
+     \ingroup formula
      
-        It can be useful for data binding system purposes. Data binding system 
-        uses pointers like marks to have posibility to know that some data was 
-        changed and it should recalculate some formulas.
+     Vector of pointers is just way to know from which variables this expression
+     is dependent.
+     
+     It can be useful for data binding system purposes. Data binding system
+     uses pointers as marks to have posibility to know that some data was
+     changed and it should recalculate dependent formulas.
+     
      */
     const Vector<void*>& GetDependencies() const;
 

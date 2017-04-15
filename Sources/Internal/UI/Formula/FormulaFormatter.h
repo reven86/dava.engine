@@ -25,7 +25,7 @@ private:
     void Visit(FormulaFieldAccessExpression* exp) override;
     void Visit(FormulaIndexExpression* exp) override;
 
-    int GetExpPriority(FormulaExpression* exp) const;
+    int32 GetExpPriority(FormulaExpression* exp) const;
 
     StringStream stream;
 };

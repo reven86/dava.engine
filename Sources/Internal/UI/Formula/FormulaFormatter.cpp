@@ -296,7 +296,7 @@ void FormulaFormatter::Visit(FormulaIndexExpression* exp)
     stream << "]";
 }
 
-int FormulaFormatter::GetExpPriority(FormulaExpression* exp) const
+int32 FormulaFormatter::GetExpPriority(FormulaExpression* exp) const
 {
     FormulaBinaryOperatorExpression* binaryExp = dynamic_cast<FormulaBinaryOperatorExpression*>(exp);
     if (binaryExp != nullptr)
