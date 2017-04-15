@@ -1,8 +1,8 @@
 #include "DAVAEngine.h"
 
-#include "UI/Formula/FormulaTokenizer.h"
 #include "UI/Formula/FormulaParser.h"
 #include "UI/Formula/FormulaError.h"
+#include "UI/Formula/Private/FormulaTokenizer.h"
 
 #include "UnitTests/UnitTests.h"
 

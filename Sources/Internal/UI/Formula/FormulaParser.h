@@ -4,8 +4,8 @@
 
 #include "UI/Formula/FormulaExpression.h"
 #include "UI/Formula/FormulaData.h"
-#include "UI/Formula/FormulaTokenizer.h"
 #include "UI/Formula/FormulaError.h"
+#include "UI/Formula/Private/FormulaTokenizer.h"
 
 namespace DAVA
 {
