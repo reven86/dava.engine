@@ -144,7 +144,11 @@ void FormulaExecutor::Visit(FormulaBinaryOperatorExpression* exp)
             break;
 
         default:
-            DAVA_THROW(FormulaError, Format("Incomparable types: %s and %s", FormulaFormatter::AnyTypeToString(l).c_str(), FormulaFormatter::AnyTypeToString(r).c_str()), exp);
+            DAVA_THROW(FormulaError, Format("Operator '%s' cannot be applied to '%s', '%s'",
+                                            FormulaFormatter::BinaryOpToString(exp->GetOperator()).c_str(),
+                                            FormulaFormatter::AnyTypeToString(l).c_str(),
+                                            FormulaFormatter::AnyTypeToString(r).c_str()),
+                       exp);
         }
     }
     else if (l.CanGet<String>() && r.CanGet<String>())
@@ -166,12 +170,20 @@ void FormulaExecutor::Visit(FormulaBinaryOperatorExpression* exp)
             break;
 
         default:
-            DAVA_THROW(FormulaError, Format("Incomparable types: %s and %s", FormulaFormatter::AnyTypeToString(l).c_str(), FormulaFormatter::AnyTypeToString(r).c_str()), exp);
+            DAVA_THROW(FormulaError, Format("Operator '%s' cannot be applied to '%s', '%s'",
+                                            FormulaFormatter::BinaryOpToString(exp->GetOperator()).c_str(),
+                                            FormulaFormatter::AnyTypeToString(l).c_str(),
+                                            FormulaFormatter::AnyTypeToString(r).c_str()),
+                       exp);
         }
     }
     else
     {
-        DAVA_THROW(FormulaError, Format("Incomparable types: %s and %s", FormulaFormatter::AnyTypeToString(l).c_str(), FormulaFormatter::AnyTypeToString(r).c_str()), exp);
+        DAVA_THROW(FormulaError, Format("Operator '%s' cannot be applied to '%s', '%s'",
+                                        FormulaFormatter::BinaryOpToString(exp->GetOperator()).c_str(),
+                                        FormulaFormatter::AnyTypeToString(l).c_str(),
+                                        FormulaFormatter::AnyTypeToString(r).c_str()),
+                   exp);
     }
 }
 

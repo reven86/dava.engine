@@ -89,19 +89,108 @@ DAVA_TESTCLASS (FormulaExecutorTest)
         TEST_VERIFY(Execute("5 + 5") == Any(10));
         TEST_VERIFY(Execute("5 + 5.5") == Any(10.5f));
         TEST_VERIFY(Execute("7-2") == Any(5));
+        TEST_VERIFY(Execute("7U-2U") == Any(5U));
+        TEST_VERIFY(Execute("7L-9L").Get<int64>() == Any(static_cast<int64>(-2L)).Get<int64>());
+        TEST_VERIFY(Execute("7U-9U").Get<uint32>() == Any(static_cast<uint32>(-2U)).Get<uint32>());
         TEST_VERIFY(Execute("-2") == Any(-2));
         TEST_VERIFY(Execute("--2") == Any(2));
         TEST_VERIFY(Execute("1---2") == Any(-1));
     }
 
     // FormulaExecutor::Calculate
+    DAVA_TEST (CalculateBools)
+    {
+        TEST_VERIFY(Execute("5 > 5") == Any(false));
+        TEST_VERIFY(Execute("6 > 5") == Any(true));
+        TEST_VERIFY(Execute("5 >= 5") == Any(true));
+        TEST_VERIFY(Execute("5 >= 4") == Any(true));
+
+        TEST_VERIFY(Execute("5 < 5") == Any(false));
+        TEST_VERIFY(Execute("6 < 7") == Any(true));
+        TEST_VERIFY(Execute("5 <= 5") == Any(true));
+        TEST_VERIFY(Execute("5 <= 4") == Any(false));
+    }
+
+    // FormulaExecutor::Calculate
     DAVA_TEST (CalculateNumbersWithErrors)
     {
+        bool wasException = false;
         try
         {
-            TEST_VERIFY(Execute("5U + 5.5") == Any(5));
+            Any res = Execute("5 + 5L");
+            Logger::Debug("Res: %s", FormulaFormatter::AnyToString(res).c_str());
         }
-        catch ();
+        catch (const FormulaError& error)
+        {
+            Logger::Debug("FormulaError: %s", error.GetFormattedMessage().c_str());
+            wasException = true;
+        }
+
+        TEST_VERIFY(wasException);
+        wasException = false;
+        try
+        {
+            Any res = Execute("5U + 5UL");
+            Logger::Debug("Res: %s", FormulaFormatter::AnyToString(res).c_str());
+        }
+        catch (const FormulaError& error)
+        {
+            Logger::Debug("FormulaError: %s", error.GetFormattedMessage().c_str());
+            wasException = true;
+        }
+
+        TEST_VERIFY(wasException);
+        wasException = false;
+        try
+        {
+            Any res = Execute("5L + 5UL");
+            Logger::Debug("Res: %s", FormulaFormatter::AnyToString(res).c_str());
+        }
+        catch (const FormulaError& error)
+        {
+            Logger::Debug("FormulaError: %s", error.GetFormattedMessage().c_str());
+            wasException = true;
+        }
+
+        TEST_VERIFY(wasException);
+        wasException = false;
+        try
+        {
+            Any res = Execute("5L + \"543543\"");
+            Logger::Debug("Res: %s", FormulaFormatter::AnyToString(res).c_str());
+        }
+        catch (const FormulaError& error)
+        {
+            Logger::Debug("FormulaError: %s", error.GetFormattedMessage().c_str());
+            wasException = true;
+        }
+        TEST_VERIFY(wasException);
+
+        wasException = false;
+        try
+        {
+            Any res = Execute("\"54354\" - \"543543\"");
+            Logger::Debug("Res: %s", FormulaFormatter::AnyToString(res).c_str());
+        }
+        catch (const FormulaError& error)
+        {
+            Logger::Debug("FormulaError: %s", error.GetFormattedMessage().c_str());
+            wasException = true;
+        }
+        TEST_VERIFY(wasException);
+
+        wasException = false;
+        try
+        {
+            Any res = Execute("false * true");
+            Logger::Debug("Res: %s", FormulaFormatter::AnyToString(res).c_str());
+        }
+        catch (const FormulaError& error)
+        {
+            Logger::Debug("FormulaError: %s", error.GetFormattedMessage().c_str());
+            wasException = true;
+        }
+        TEST_VERIFY(wasException);
     }
 
     // FormulaExecutor::Calculate
@@ -182,6 +271,7 @@ DAVA_TESTCLASS (FormulaExecutorTest)
         FormulaParser parser(str);
         std::shared_ptr<FormulaExpression> exp = parser.ParseExpression();
         Any res = executor.Calculate(exp.get());
+        Logger::Debug("res; %s", FormulaFormatter::AnyToString(res).c_str());
         return res;
     }
 
