@@ -148,13 +148,8 @@ int32 FormulaBinaryOperatorExpression::GetOperatorPriority() const
 FormulaFunctionExpression::FormulaFunctionExpression(const String& name_, const Vector<std::shared_ptr<FormulaExpression>>& params_, int32 lineNumber_, int32 positionInLine_)
     : FormulaExpression(lineNumber_, positionInLine_)
     , name(name_)
+    , params(params_)
 {
-    params.reserve(params_.size());
-
-    for (const std::shared_ptr<FormulaExpression>& exp : params_)
-    {
-        params.push_back(exp);
-    }
 }
 
 const String& FormulaFunctionExpression::GetName() const
