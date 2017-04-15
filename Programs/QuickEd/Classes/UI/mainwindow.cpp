@@ -104,7 +104,6 @@ void MainWindow::SetupViewMenu()
     dockWidgetToggleActions << ui->propertiesWidget->toggleViewAction()
                             << ui->packageWidget->toggleViewAction()
                             << ui->libraryWidget->toggleViewAction()
-                            << ui->findWidget->toggleViewAction()
                             << ui->mainToolbar->toggleViewAction()
                             << ui->toolBarGlobal->toggleViewAction();
 

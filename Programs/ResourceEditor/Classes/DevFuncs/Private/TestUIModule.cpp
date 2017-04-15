@@ -2,6 +2,7 @@
 #include "Classes/DevFuncs/TestUIModuleData.h"
 #include "Classes/Application/REGlobal.h"
 
+#include <TArc/Controls/ReflectedButton.h>
 #include <TArc/Controls/CheckBox.h>
 #include <TArc/Controls/ComboBox.h>
 #include <TArc/Controls/ComboBoxCheckable.h>
@@ -19,7 +20,6 @@
 #include <TArc/Utils/ModuleCollection.h>
 #include <TArc/WindowSubSystem/ActionUtils.h>
 #include <TArc/WindowSubSystem/UI.h>
-
 #include <TArc/Qt/QtString.h>
 
 #include <QtTools/WidgetHelpers/SharedIcon.h>
@@ -54,6 +54,182 @@ struct Result
 };
 
 using TestSpaceCreator = Result (*)(TArc::UI* ui, TArc::ContextAccessor* accessor, QWidget* parent);
+
+struct MethodTestData : public ReflectionBase
+{
+    void PrintPlus()
+    {
+        DAVA::Logger::Info("++++ PLUS ++++");
+    }
+
+    void PrintMinus()
+    {
+        DAVA::Logger::Info("---- Minus ----");
+    }
+
+    QIcon GetPlusIcon() const
+    {
+        return SharedIcon(":/QtIcons/cplus.png");
+    }
+
+    QIcon GetMinusIcon() const
+    {
+        return SharedIcon(":/QtIcons/cminus.png");
+    }
+
+    QString GetPlusText() const
+    {
+        return "plus text";
+    }
+
+    QString GetMinusText() const
+    {
+        return "minus text";
+    }
+
+    void SetEnabled(bool a)
+    {
+        enabled = a;
+    }
+
+    bool GetEnabled() const
+    {
+        return enabled;
+    }
+
+    bool GetInverseEnabled() const
+    {
+        return !enabled;
+    }
+
+    bool enabled = false;
+    bool autoRaise = false;
+
+    DAVA::String GetEnabledText() const
+    {
+        return (enabled) ? "Enabled" : "Disabled";
+    }
+
+    DAVA::String GetAutoRaiseText() const
+    {
+        return (autoRaise) ? "AutoRaise on" : "AutoRaise off";
+    }
+
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(MethodTestData, ReflectionBase)
+    {
+        ReflectionRegistrator<MethodTestData>::Begin()
+        .Field("enabled", &MethodTestData::enabled)
+        .Field("enabledText", &MethodTestData::GetEnabledText, nullptr)
+        .Field("autoRaise", &MethodTestData::autoRaise)
+        .Field("autoRaiseText", &MethodTestData::GetAutoRaiseText, nullptr)
+        .Field("plusIcon", &MethodTestData::GetPlusIcon, nullptr)
+        .Field("plusText", &MethodTestData::GetPlusText, nullptr)
+        .Field("minusIcon", &MethodTestData::GetMinusIcon, nullptr)
+        .Field("minusText", &MethodTestData::GetMinusText, nullptr)
+        .Method("plusMethod", &MethodTestData::PrintPlus)
+        .Method("minusMethod", &MethodTestData::PrintMinus)
+        .Method("inverseEnabled", &MethodTestData::GetInverseEnabled)
+        .Field("enabledSetter", &MethodTestData::GetEnabled, &MethodTestData::SetEnabled)
+        .End();
+    }
+
+    static Result Create(TArc::UI* ui, TArc::ContextAccessor* accessor, QWidget* parent)
+    {
+        using namespace DAVA::TArc;
+
+        using namespace DAVA::TArc;
+        MethodTestData* data = new MethodTestData();
+        QVBoxLayout* boxLayout = new QVBoxLayout();
+
+        {
+            QHBoxLayout* lineLayout = new QHBoxLayout();
+            lineLayout->addWidget(new QLabel("Print Plus Icon: ", parent));
+
+            ControlDescriptorBuilder<ReflectedButton::Fields> desr;
+            desr[ReflectedButton::Fields::Clicked] = "plusMethod";
+            desr[ReflectedButton::Fields::Icon] = "plusIcon";
+            ReflectedButton* button = new ReflectedButton(desr, accessor, Reflection::Create(data), parent);
+            lineLayout->addWidget(button->ToWidgetCast());
+            boxLayout->addLayout(lineLayout);
+        }
+
+        {
+            QHBoxLayout* lineLayout = new QHBoxLayout();
+            lineLayout->addWidget(new QLabel("Print Minus Text: ", parent));
+
+            ControlDescriptorBuilder<ReflectedButton::Fields> desr;
+            desr[ReflectedButton::Fields::Clicked] = "minusMethod";
+            desr[ReflectedButton::Fields::Text] = "minusText";
+            ReflectedButton* button = new ReflectedButton(desr, accessor, Reflection::Create(data), parent);
+            lineLayout->addWidget(button->ToWidgetCast());
+            boxLayout->addLayout(lineLayout);
+        }
+
+        {
+            QHBoxLayout* lineLayout = new QHBoxLayout();
+            lineLayout->addWidget(new QLabel("Print Plus Text&Icon: ", parent));
+
+            ControlDescriptorBuilder<ReflectedButton::Fields> desr;
+            desr[ReflectedButton::Fields::Clicked] = "plusMethod";
+            desr[ReflectedButton::Fields::Icon] = "plusIcon";
+            desr[ReflectedButton::Fields::Text] = "plusText";
+            ReflectedButton* button = new ReflectedButton(desr, accessor, Reflection::Create(data), parent);
+            lineLayout->addWidget(button->ToWidgetCast());
+            boxLayout->addLayout(lineLayout);
+        }
+
+        {
+            QHBoxLayout* lineLayout = new QHBoxLayout();
+            lineLayout->addWidget(new QLabel("Print Minus Icon AutoRize|Enabled: ", parent));
+
+            ControlDescriptorBuilder<ReflectedButton::Fields> desr;
+            desr[ReflectedButton::Fields::Clicked] = "minusMethod";
+            desr[ReflectedButton::Fields::Icon] = "minusIcon";
+            desr[ReflectedButton::Fields::AutoRaise] = "autoRaise";
+            desr[ReflectedButton::Fields::Enabled] = "enabled";
+            ReflectedButton* button = new ReflectedButton(desr, accessor, Reflection::Create(data), parent);
+            lineLayout->addWidget(button->ToWidgetCast());
+            boxLayout->addLayout(lineLayout);
+
+            {
+                // Read only check box
+                ControlDescriptorBuilder<CheckBox::Fields> descr;
+                descr[CheckBox::Fields::Checked] = "enabled";
+                descr[CheckBox::Fields::TextHint] = "enabledText";
+                CheckBox* checkBox = new CheckBox(descr, accessor, Reflection::Create(data), parent);
+                boxLayout->addWidget(checkBox->ToWidgetCast());
+            }
+
+            {
+                // Read only check box
+                ControlDescriptorBuilder<CheckBox::Fields> descr;
+                descr[CheckBox::Fields::Checked] = "autoRaise";
+                descr[CheckBox::Fields::TextHint] = "autoRaiseText";
+                CheckBox* checkBox = new CheckBox(descr, accessor, Reflection::Create(data), parent);
+                boxLayout->addWidget(checkBox->ToWidgetCast());
+            }
+        }
+
+        {
+            QHBoxLayout* lineLayout = new QHBoxLayout();
+            lineLayout->addWidget(new QLabel("Inverse method: ", parent));
+
+            ControlDescriptorBuilder<ReflectedButton::Fields> desr;
+            desr[ReflectedButton::Fields::Clicked] = "inverseEnabled";
+            desr[ReflectedButton::Fields::Icon] = "minusIcon";
+            desr[ReflectedButton::Fields::Enabled] = "enabled";
+            desr[ReflectedButton::Fields::Result] = "enabledSetter";
+            ReflectedButton* button = new ReflectedButton(desr, accessor, Reflection::Create(data), parent);
+            lineLayout->addWidget(button->ToWidgetCast());
+            boxLayout->addLayout(lineLayout);
+        }
+
+        Result r;
+        r.model = data;
+        r.layout = boxLayout;
+        return r;
+    }
+};
 
 struct CheckBoxTestData : public ReflectionBase
 {
@@ -842,7 +1018,7 @@ struct FilePathEditTestData : public ReflectionBase
 
             FilePathEdit::Params p;
             p.ui = ui;
-            p.wndKey = REGlobal::MainWindowKey;
+            p.wndKey = DAVA::TArc::mainWindowKey;
             p.fields[FilePathEdit::Fields::Value] = "readOnlyMetaText";
             lineLayout->AddControl(new FilePathEdit(p, accessor, Reflection::Create(data), parent));
             boxLayout->addLayout(lineLayout);
@@ -854,7 +1030,7 @@ struct FilePathEditTestData : public ReflectionBase
 
             FilePathEdit::Params p;
             p.ui = ui;
-            p.wndKey = REGlobal::MainWindowKey;
+            p.wndKey = DAVA::TArc::mainWindowKey;
             p.fields[FilePathEdit::Fields::Value] = "readOnlyText";
             lineLayout->AddControl(new FilePathEdit(p, accessor, Reflection::Create(data), parent));
             boxLayout->addLayout(lineLayout);
@@ -866,7 +1042,7 @@ struct FilePathEditTestData : public ReflectionBase
 
             FilePathEdit::Params p;
             p.ui = ui;
-            p.wndKey = REGlobal::MainWindowKey;
+            p.wndKey = DAVA::TArc::mainWindowKey;
             p.fields[FilePathEdit::Fields::Value] = "path";
             p.fields[FilePathEdit::Fields::PlaceHolder] = "placeholder";
             p.fields[FilePathEdit::Fields::IsReadOnly] = "isTextReadOnly";
@@ -1019,7 +1195,7 @@ struct ColorButtonTestData : public ReflectionBase
 
             ColorPickerButton::Params params;
             params.ui = ui;
-            params.wndKey = REGlobal::MainWindowKey;
+            params.wndKey = DAVA::TArc::mainWindowKey;
             params.accessor = accessor;
             params.fields[ColorPickerButton::Fields::Color] = "color";
             lineLayout->AddControl(new ColorPickerButton(params, accessor, Reflection::Create(data), parent));
@@ -1032,7 +1208,7 @@ struct ColorButtonTestData : public ReflectionBase
 
             ColorPickerButton::Params params;
             params.ui = ui;
-            params.wndKey = REGlobal::MainWindowKey;
+            params.wndKey = DAVA::TArc::mainWindowKey;
             params.accessor = accessor;
             params.fields[ColorPickerButton::Fields::Color] = "colorReadOnly";
             lineLayout->AddControl(new ColorPickerButton(params, accessor, Reflection::Create(data), parent));
@@ -1045,7 +1221,7 @@ struct ColorButtonTestData : public ReflectionBase
 
             ColorPickerButton::Params params;
             params.ui = ui;
-            params.wndKey = REGlobal::MainWindowKey;
+            params.wndKey = DAVA::TArc::mainWindowKey;
             params.accessor = accessor;
             params.fields[ColorPickerButton::Fields::Color] = "colorMethod";
             lineLayout->AddControl(new ColorPickerButton(params, accessor, Reflection::Create(data), parent));
@@ -1058,7 +1234,7 @@ struct ColorButtonTestData : public ReflectionBase
 
             ColorPickerButton::Params params;
             params.ui = ui;
-            params.wndKey = REGlobal::MainWindowKey;
+            params.wndKey = DAVA::TArc::mainWindowKey;
             params.accessor = accessor;
             params.fields[ColorPickerButton::Fields::Color] = "colorMethodReadOnly";
             lineLayout->AddControl(new ColorPickerButton(params, accessor, Reflection::Create(data), parent));
@@ -1071,7 +1247,7 @@ struct ColorButtonTestData : public ReflectionBase
 
             ColorPickerButton::Params params;
             params.ui = ui;
-            params.wndKey = REGlobal::MainWindowKey;
+            params.wndKey = DAVA::TArc::mainWindowKey;
             params.accessor = accessor;
             params.fields[ColorPickerButton::Fields::Color] = "colorRange";
             lineLayout->AddControl(new ColorPickerButton(params, accessor, Reflection::Create(data), parent));
@@ -1084,7 +1260,7 @@ struct ColorButtonTestData : public ReflectionBase
 
             ColorPickerButton::Params params;
             params.ui = ui;
-            params.wndKey = REGlobal::MainWindowKey;
+            params.wndKey = DAVA::TArc::mainWindowKey;
             params.accessor = accessor;
             params.fields[ColorPickerButton::Fields::Color] = "color";
             params.fields[ColorPickerButton::Fields::Range] = "range";
@@ -1099,7 +1275,7 @@ struct ColorButtonTestData : public ReflectionBase
             {
                 ColorPickerButton::Params params;
                 params.ui = ui;
-                params.wndKey = REGlobal::MainWindowKey;
+                params.wndKey = DAVA::TArc::mainWindowKey;
                 params.accessor = accessor;
                 params.fields[ColorPickerButton::Fields::Color] = "color";
                 params.fields[ColorPickerButton::Fields::IsReadOnly] = "readOnly";
@@ -1391,7 +1567,7 @@ void TestUIModule::PostInit()
 
     QAction* assertAction = new QAction("UI Sandbox", nullptr);
     connections.AddConnection(assertAction, &QAction::triggered, DAVA::MakeFunction(this, &TestUIModule::ShowDialog));
-    ui->AddAction(REGlobal::MainWindowKey, placementInfo, assertAction);
+    ui->AddAction(DAVA::TArc::mainWindowKey, placementInfo, assertAction);
 }
 
 void TestUIModule::ShowDialog()
@@ -1405,6 +1581,7 @@ void TestUIModule::ShowDialog()
 
     DAVA::Vector<Node> nodes = DAVA::Vector<Node>
     {
+      { &MethodTestData::Create, "Method Test" },
       { &CheckBoxTestData::Create, "CheckBox Test" },
       { &LineEditTestData::Create, "LineEdit Test" },
       { &PlainTextEditTestData::Create, "PlainTextEdit Test" },

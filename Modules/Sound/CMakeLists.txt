@@ -39,11 +39,19 @@ set( STATIC_LIBRARIES_WINUAP_DEBUG   ${LIBRARIES_FMOD}/Win10/$(Platform)/Debug/f
 set( DYNAMIC_LIBRARIES_ANDROID       ${LIBRARIES_FMOD}/Android/${ANDROID_NDK_ABI_NAME}/libfmodevent.so 
                                      ${LIBRARIES_FMOD}/Android/${ANDROID_NDK_ABI_NAME}/libfmodex.so )
 
-set( DYNAMIC_LIBRARIES_WIN32         ${LIBRARIES_FMOD}/Win/x86/Release/fmodex.dll 
+set( DYNAMIC_LIBRARIES_WIN32_RELEASE ${LIBRARIES_FMOD}/Win/x86/Release/fmodex.dll 
                                      ${LIBRARIES_FMOD}/Win/x86/Release/fmod_event.dll )
 
-set( DYNAMIC_LIBRARIES_WIN64         ${LIBRARIES_FMOD}/Win/x64/Release/fmodex64.dll 
+set( DYNAMIC_LIBRARIES_WIN64_RELEASE ${LIBRARIES_FMOD}/Win/x64/Release/fmodex64.dll 
                                      ${LIBRARIES_FMOD}/Win/x64/Release/fmod_event64.dll )
+
+
+set( DYNAMIC_LIBRARIES_WIN32_DEBUG   ${LIBRARIES_FMOD}/Win/x86/Debug/fmodex.dll 
+                                     ${LIBRARIES_FMOD}/Win/x86/Debug/fmod_event.dll )
+
+set( DYNAMIC_LIBRARIES_WIN64_DEBUG   ${LIBRARIES_FMOD}/Win/x64/Debug/fmodex64.dll 
+                                     ${LIBRARIES_FMOD}/Win/x64/Debug/fmod_event64.dll )
+
 
 set( DYNAMIC_LIBRARIES_MACOS         ${LIBRARIES_FMOD}/Macos/libfmodevent.dylib
                                      ${LIBRARIES_FMOD}/Macos/libfmodex.dylib )
