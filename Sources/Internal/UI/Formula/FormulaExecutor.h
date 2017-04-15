@@ -15,6 +15,14 @@ public:
     Any Calculate(FormulaExpression* exp);
     Reflection GetDataReference(FormulaExpression* exp);
 
+    /**
+        Vector of pointers is just way to know from which variables this expression 
+        is dependend.
+     
+        It can be useful for data binding system purposes. Data binding system 
+        uses pointers like marks to have posibility to know that some data was 
+        changed and it should recalculate some formulas.
+     */
     const Vector<void*>& GetDependencies() const;
 
 private:

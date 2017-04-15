@@ -67,7 +67,7 @@ String FormulaFormatter::AnyToString(const Any& val)
     }
     else if (val.CanGet<FilePath>())
     {
-        return val.Get<FilePath>().GetFrameworkPath();
+        return val.Get<FilePath>().GetStringValue();
     }
     else if (val.CanGet<bool>())
     {

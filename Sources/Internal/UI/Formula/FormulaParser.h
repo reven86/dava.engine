@@ -34,8 +34,8 @@ private:
 
     FormulaToken LookToken();
     FormulaToken NextToken();
-    bool IsIdentifier(const FormulaToken& token, const String& identifier);
-    String GetTokenStringValue(const FormulaToken& token);
+    bool IsIdentifier(const FormulaToken& token, const String& identifier) const;
+    String GetTokenStringValue(const FormulaToken& token) const;
     FormulaBinaryOperatorExpression::Operator TokenTypeToBinaryOp(FormulaToken::Type type);
 
     FormulaToken token;

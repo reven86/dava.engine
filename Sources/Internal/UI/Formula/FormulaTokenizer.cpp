@@ -160,7 +160,7 @@ const String& FormulaTokenizer::GetString() const
     return str;
 }
 
-String FormulaTokenizer::GetTokenStringValue(const FormulaToken& FormulaToken)
+String FormulaTokenizer::GetTokenStringValue(const FormulaToken& FormulaToken) const
 {
     return str.substr(FormulaToken.GetStringPos(), FormulaToken.GetStringLen());
 }

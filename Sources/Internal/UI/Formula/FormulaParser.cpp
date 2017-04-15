@@ -293,7 +293,6 @@ shared_ptr<FormulaExpression> FormulaParser::ParseUnary()
     if (token.GetType() == FormulaToken::NOT)
     {
         NextToken();
-        token = LookToken();
         shared_ptr<FormulaExpression> exp = ParseUnary();
         if (!exp)
         {
@@ -305,7 +304,6 @@ shared_ptr<FormulaExpression> FormulaParser::ParseUnary()
     else if (token.GetType() == FormulaToken::MINUS)
     {
         NextToken();
-        token = LookToken();
         shared_ptr<FormulaExpression> exp = ParseUnary();
         if (!exp)
         {
@@ -505,12 +503,12 @@ FormulaToken FormulaParser::NextToken()
     }
 }
 
-bool FormulaParser::IsIdentifier(const FormulaToken& token, const String& identifier)
+bool FormulaParser::IsIdentifier(const FormulaToken& token, const String& identifier) const
 {
     return token.GetType() == FormulaToken::IDENTIFIER && GetTokenStringValue(token) == identifier;
 }
 
-String FormulaParser::GetTokenStringValue(const FormulaToken& token)
+String FormulaParser::GetTokenStringValue(const FormulaToken& token) const
 {
     return tokenizer.GetTokenStringValue(token);
 }

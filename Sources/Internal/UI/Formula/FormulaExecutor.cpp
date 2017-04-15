@@ -77,7 +77,7 @@ void FormulaExecutor::Visit(FormulaNegExpression* exp)
     }
     else
     {
-        DAVA_THROW(FormulaError, Format("Invalid argument type '%s' to unary expression", FormulaFormatter::AnyTypeToString(val).c_str()), exp);
+        DAVA_THROW(FormulaError, Format("Invalid argument type '%s' to unary '-' expression", FormulaFormatter::AnyTypeToString(val).c_str()), exp);
     }
 }
 
@@ -90,7 +90,7 @@ void FormulaExecutor::Visit(FormulaNotExpression* exp)
     }
     else
     {
-        DAVA_THROW(FormulaError, Format("Invalid argument type '%s' to unary expression", FormulaFormatter::AnyTypeToString(val).c_str()), exp);
+        DAVA_THROW(FormulaError, Format("Invalid argument type '%s' to unary '!' expression", FormulaFormatter::AnyTypeToString(val).c_str()), exp);
     }
 }
 
@@ -221,9 +221,9 @@ void FormulaExecutor::Visit(FormulaFunctionExpression* exp)
     int32 index = 0;
     for (Any& v : values)
     {
-        if (v.GetType() == Type::Instance<int32>() && fn.GetInvokeParams().argsType[index] == Type::Instance<float32>())
+        if (v.CanCast<int32>() && fn.GetInvokeParams().argsType[index] == Type::Instance<float32>())
         {
-            v = Any(static_cast<float32>(v.Get<int32>()));
+            v = Any(static_cast<float32>(v.Cast<int32>()));
         }
 
         index++;

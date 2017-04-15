@@ -96,7 +96,7 @@ public:
     ~FormulaTokenizer();
 
     const String& GetString() const;
-    String GetTokenStringValue(const FormulaToken& token);
+    String GetTokenStringValue(const FormulaToken& token) const;
 
     int32 GetLineNumber() const;
     int32 GetPositionInLine() const;

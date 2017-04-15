@@ -95,6 +95,9 @@ DAVA_TESTCLASS (FormulaExecutorTest)
     // FormulaExecutor::Calculate
     DAVA_TEST (CalculateBools)
     {
+        TEST_VERIFY(Execute("!true") == Any(false));
+        TEST_VERIFY(Execute("!false") == Any(true));
+
         TEST_VERIFY(Execute("5 > 5") == Any(false));
         TEST_VERIFY(Execute("6 > 5") == Any(true));
         TEST_VERIFY(Execute("5 >= 5") == Any(true));
@@ -173,6 +176,24 @@ DAVA_TESTCLASS (FormulaExecutorTest)
         catch (const FormulaError& error)
         {
             TEST_VERIFY(error.GetFormattedMessage() == "[1, 7] Operator '*' cannot be applied to 'bool', 'bool'");
+        }
+
+        try
+        {
+            Execute("!5");
+        }
+        catch (const FormulaError& error)
+        {
+            TEST_VERIFY(error.GetFormattedMessage() == "[1, 1] Invalid argument type 'int32' to unary '!' expression");
+        }
+
+        try
+        {
+            Execute("-true");
+        }
+        catch (const FormulaError& error)
+        {
+            TEST_VERIFY(error.GetFormattedMessage() == "[1, 1] Invalid argument type 'bool' to unary '-' expression");
         }
     }
 
