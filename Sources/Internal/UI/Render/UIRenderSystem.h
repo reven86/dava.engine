@@ -40,7 +40,7 @@ public:
     void SetPopupContainer(const RefPtr<UIControl>& popupContainer);
 
 private:
-    void DrawControlHierarhy(UIControl* control, const UIGeometricData& geometricData, const UIControlBackground* parentBackground);
+    void RenderControlHierarhy(UIControl* control, const UIGeometricData& geometricData, const UIControlBackground* parentBackground);
 
     void DebugDraw(UIControl* control, const UIGeometricData& geometricData, const Rect& unrotatedRect);
     void DrawDebugRect(UIControl* control, const UIGeometricData& geometricData, bool useAlpha = false);

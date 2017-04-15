@@ -7,6 +7,8 @@
 #include "UI/UISystem.h"
 #include "Base/RefPtr.h"
 
+struct UILayoutSystemTest;
+
 namespace DAVA
 {
 class UIControl;
@@ -66,6 +68,8 @@ private:
     RefPtr<UIScreen> currentScreen;
     RefPtr<UIControl> popupContainer;
     RefPtr<UIScreenTransition> currentScreenTransition;
+    
+    friend UILayoutSystemTest;
 };
 
 inline void UILayoutSystem::SetDirty()

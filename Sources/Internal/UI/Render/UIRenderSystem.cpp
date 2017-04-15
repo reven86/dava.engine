@@ -53,16 +53,16 @@ void UIRenderSystem::Render()
 
     if (currentScreenTransition.Valid())
     {
-        DrawControlHierarhy(currentScreenTransition.Get(), baseGeometricData, nullptr);
+        RenderControlHierarhy(currentScreenTransition.Get(), baseGeometricData, nullptr);
     }
     else if (currentScreen.Valid())
     {
-        DrawControlHierarhy(currentScreen.Get(), baseGeometricData, nullptr);
+        RenderControlHierarhy(currentScreen.Get(), baseGeometricData, nullptr);
     }
 
     if (popupContainer.Valid())
     {
-        DrawControlHierarhy(popupContainer.Get(), baseGeometricData, nullptr);
+        RenderControlHierarhy(popupContainer.Get(), baseGeometricData, nullptr);
     }
 
     screenshoter->OnFrame();
@@ -74,7 +74,7 @@ void UIRenderSystem::ManualRender(UIControl* control)
     if (control == nullptr)
         return;
 
-    DrawControlHierarhy(control, baseGeometricData, nullptr);
+    RenderControlHierarhy(control, baseGeometricData, nullptr);
 }
 
 const UIGeometricData& UIRenderSystem::GetBaseGeometricData() const
@@ -119,7 +119,7 @@ void UIRenderSystem::SetPopupContainer(const RefPtr<UIControl>& _popupContainer)
     popupContainer = _popupContainer;
 }
 
-void UIRenderSystem::DrawControlHierarhy(UIControl* control, const UIGeometricData& geometricData, const UIControlBackground* parentBackground)
+void UIRenderSystem::RenderControlHierarhy(UIControl* control, const UIGeometricData& geometricData, const UIControlBackground* parentBackground)
 {
     if (!control->GetVisibilityFlag())
         return;
@@ -146,7 +146,7 @@ void UIRenderSystem::DrawControlHierarhy(UIControl* control, const UIGeometricDa
     control->isIteratorCorrupted = false;
     for (UIControl* child : control->GetChildren())
     {
-        DrawControlHierarhy(child, drawData, parentBgForChild);
+        RenderControlHierarhy(child, drawData, parentBgForChild);
         DVASSERT(!control->isIteratorCorrupted);
     }
 
