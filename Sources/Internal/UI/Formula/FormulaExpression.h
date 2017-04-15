@@ -44,6 +44,11 @@ public:
     }
 };
 
+/**
+ \ingroup formula
+
+ FormulaExpression represents node in AST.  
+ */
 class FormulaExpression
 {
 public:
@@ -62,6 +67,11 @@ private:
     int32 positionInLine = 0;
 };
 
+/**
+ \ingroup formula
+ 
+ FormulaValueExpression stores data.
+ */
 class FormulaValueExpression : public FormulaExpression
 {
 public:
@@ -76,6 +86,11 @@ private:
     Any value;
 };
 
+/**
+ \ingroup formula
+ 
+ Stores node for unary minus operator.
+ */
 class FormulaNegExpression : public FormulaExpression
 {
 public:
@@ -88,6 +103,11 @@ private:
     std::shared_ptr<FormulaExpression> exp;
 };
 
+/**
+ \ingroup formula
+ 
+ Stores node for unary logical not operator.
+ */
 class FormulaNotExpression : public FormulaExpression
 {
 public:
@@ -101,6 +121,11 @@ private:
     std::shared_ptr<FormulaExpression> exp;
 };
 
+/**
+ \ingroup formula
+ 
+ Stores node for binary operator.
+ */
 class FormulaBinaryOperatorExpression : public FormulaExpression
 {
 public:
@@ -137,6 +162,11 @@ private:
     std::shared_ptr<FormulaExpression> rhs;
 };
 
+/**
+ \ingroup formula
+ 
+ Stores node for function with parameters.
+ */
 class FormulaFunctionExpression : public FormulaExpression
 {
 public:
@@ -152,6 +182,12 @@ private:
     Vector<std::shared_ptr<FormulaExpression>> params;
 };
 
+/**
+ \ingroup formula
+ 
+ Stores node for access to fields. Null expression indicates that data will be 
+ taken from the context.
+ */
 class FormulaFieldAccessExpression : public FormulaExpression
 {
 public:
@@ -167,6 +203,11 @@ private:
     String fieldName;
 };
 
+/**
+ \ingroup formula
+ 
+ Stores node for index access to fields.
+ */
 class FormulaIndexExpression : public FormulaExpression
 {
 public:

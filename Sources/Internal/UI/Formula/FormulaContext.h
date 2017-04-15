@@ -6,6 +6,12 @@
 
 namespace DAVA
 {
+/**
+ \ingroup formula
+ 
+ Context provides access to data and methods. Formula uses contexts to find values 
+ of variables or functions.
+ */
 class FormulaContext
 {
 public:
@@ -16,6 +22,11 @@ public:
     virtual Reflection FindReflection(const String& name) const;
 };
 
+/**
+ \ingroup formula
+ 
+ Default implementation of FormulaContext which uses Reflection.
+ */
 class FormulaReflectionContext : public FormulaContext
 {
 public:

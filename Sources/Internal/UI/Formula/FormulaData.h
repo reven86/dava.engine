@@ -6,6 +6,13 @@
 
 namespace DAVA
 {
+/**
+ \ingroup formula
+
+ FormulaDataVector and FormulaDataMap containers of any values. Used reflection
+ structure wrappers to organize more simpler access to data.
+ E.g. data.value[4] instead of data._vector_.value._map_[4]
+ */
 class FormulaDataVector : public ReflectionBase
 {
     DAVA_VIRTUAL_REFLECTION(DataVectorAny);

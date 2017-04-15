@@ -9,13 +9,34 @@
 
 namespace DAVA
 {
+/**
+ \ingroup formula
+ 
+ FormualParser stores string with expressions and allow to read sequences
+ of expressions.
+ */
 class FormulaParser
 {
 public:
     FormulaParser(const String& str);
     ~FormulaParser();
 
+    /**
+     \ingroup formula
+     
+     Method read one expression.
+     */
     std::shared_ptr<FormulaExpression> ParseExpression();
+
+    /**
+     \ingroup formula
+     
+     Method read map of expressions or other data. 
+     Format:
+     key1 = expression
+     key2 = data
+     key3 = otherExpression
+     */
     std::shared_ptr<FormulaDataMap> ParseMap();
 
 private:

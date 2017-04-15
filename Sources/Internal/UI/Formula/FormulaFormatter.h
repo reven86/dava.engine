@@ -4,6 +4,11 @@
 
 namespace DAVA
 {
+/**
+ \ingroup formula
+ 
+ Helper for converting expression back to text form.
+ */
 class FormulaFormatter : private FormulaExpressionVisitor
 {
 public:

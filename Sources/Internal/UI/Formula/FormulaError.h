@@ -6,6 +6,12 @@
 
 namespace DAVA
 {
+/**
+ \ingroup formula
+ 
+ Exception class for parsing and execution of formulas with information about
+ problem location.
+ */
 class FormulaError : public Exception
 {
 public:

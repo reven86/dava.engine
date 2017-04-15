@@ -6,13 +6,30 @@
 
 namespace DAVA
 {
+/**
+ \ingroup formula
+
+ Executor can calculate expression. It uses context to get data access.
+ */
 class FormulaExecutor : private FormulaExpressionVisitor
 {
 public:
     FormulaExecutor(FormulaContext* context);
     ~FormulaExecutor() override;
 
+    /**
+     \ingroup formula
+     
+     Method calculates expression and returns result.
+     */
     Any Calculate(FormulaExpression* exp);
+
+    /**
+     \ingroup formula
+
+     Method calculates expression and returns reference to data instead of value.
+     It is useful if need found reference to data from context to store data.
+     */
     Reflection GetDataReference(FormulaExpression* exp);
 
     /**
