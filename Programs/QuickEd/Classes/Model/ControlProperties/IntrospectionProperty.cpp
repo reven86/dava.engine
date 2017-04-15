@@ -81,7 +81,22 @@ IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject* anObject, DAVA::i
         if (shouldAddSourceRectComponent)
         {
             sourceRectComponent = control->GetOrCreateComponent<UILayoutSourceRectComponent>();
-            SetLayoutSourceRectValue(reflection.GetValue());
+
+            if (sourceProperty != nullptr && sourceProperty->sourceRectComponent)
+            {
+                if (name == INTROSPECTION_PROPERTY_NAME_SIZE)
+                {
+                    sourceRectComponent->SetSize(sourceProperty->sourceRectComponent->GetSize());
+                }
+                else
+                {
+                    sourceRectComponent->SetPosition(sourceProperty->sourceRectComponent->GetPosition());
+                }
+            }
+            else
+            {
+                SetLayoutSourceRectValue(reflection.GetValue());
+            }
         }
     }
 }
