@@ -58,11 +58,11 @@ public:
     void SetDirty();
     void CheckDirty();
 
+    void DebugControl(UIControl* control, UIStyleSheetProcessDebugData* debugData);
     void ProcessControl(UIControl* control, bool styleSheetListChanged = false); //DON'T USE IT!
 private:
     void ProcessControl_(UIControl* control, int32 distanceFromDirty, bool styleSheetListChanged, bool recursively, bool dryRun, UIStyleSheetProcessDebugData* debugData);
     void ProcessControlHierarhy(UIControl* root);
-    void DebugControl(UIControl* control, UIStyleSheetProcessDebugData* debugData);
 
     bool StyleSheetMatchesControl(const UIStyleSheet* styleSheet, const UIControl* control);
     bool SelectorMatchesControl(const UIStyleSheetSelector& selector, const UIControl* control);

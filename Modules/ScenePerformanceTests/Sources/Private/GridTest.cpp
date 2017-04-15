@@ -81,7 +81,8 @@ SectorScreenshot::SectorScreenshot(UI3DView* sceneView, const GridTestSample& sa
 void SectorScreenshot::MakeScreenshot()
 {
     SetSamplePosition(sceneView->GetScene(), sample);
-    UIControlSystem::Instance()->GetScreenshoter()->MakeScreenshot(sceneView, FORMAT_RGBA8888, MakeFunction(this, &GridTestDetails::SectorScreenshot::SaveScreenshot));
+    UIScreenshoter* screenshoter = UIControlSystem::Instance()->GetScreenshoter();
+    screenshoter->MakeScreenshot(sceneView, FORMAT_RGBA8888, MakeFunction(this, &GridTestDetails::SectorScreenshot::SaveScreenshot));
 }
 
 void SectorScreenshot::SaveScreenshot(Texture* screenshot)
@@ -133,7 +134,8 @@ void PanoramaScreenshot::MakeScreenshot()
     camera->SetPosition(Vector3(0.f, 0.f, 60.f));
     camera->SetTarget(Vector3(0.f, 0.1f, 0.f));
 
-    UIControlSystem::Instance()->GetScreenshoter()->MakeScreenshot(sceneView, FORMAT_RGBA8888, MakeFunction(this, &PanoramaScreenshot::SaveScreenshot));
+    UIScreenshoter* screenshoter = UIControlSystem::Instance()->GetScreenshoter();
+    screenshoter->MakeScreenshot(sceneView, FORMAT_RGBA8888, MakeFunction(this, &PanoramaScreenshot::SaveScreenshot));
 }
 
 void PanoramaScreenshot::SaveScreenshot(Texture* screenshot)
