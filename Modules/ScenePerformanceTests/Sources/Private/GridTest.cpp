@@ -10,6 +10,7 @@
 #include <Scene3D/Components/ComponentHelpers.h>
 #include <Time/DateTime.h>
 #include <UI/UIControlSystem.h>
+#include <UI/Render/UIRenderSystem.h>
 #include <UI/UIScreenshoter.h>
 #include <Logger/Logger.h>
 #include <Math/Vector.h>
@@ -81,7 +82,7 @@ SectorScreenshot::SectorScreenshot(UI3DView* sceneView, const GridTestSample& sa
 void SectorScreenshot::MakeScreenshot()
 {
     SetSamplePosition(sceneView->GetScene(), sample);
-    UIScreenshoter* screenshoter = UIControlSystem::Instance()->GetScreenshoter();
+    UIScreenshoter* screenshoter = UIControlSystem::Instance()->GetRenderSystem()->GetScreenshoter();
     screenshoter->MakeScreenshot(sceneView, FORMAT_RGBA8888, MakeFunction(this, &GridTestDetails::SectorScreenshot::SaveScreenshot));
 }
 
@@ -134,7 +135,7 @@ void PanoramaScreenshot::MakeScreenshot()
     camera->SetPosition(Vector3(0.f, 0.f, 60.f));
     camera->SetTarget(Vector3(0.f, 0.1f, 0.f));
 
-    UIScreenshoter* screenshoter = UIControlSystem::Instance()->GetScreenshoter();
+    UIScreenshoter* screenshoter = UIControlSystem::Instance()->GetRenderSystem()->GetScreenshoter();
     screenshoter->MakeScreenshot(sceneView, FORMAT_RGBA8888, MakeFunction(this, &PanoramaScreenshot::SaveScreenshot));
 }
 
