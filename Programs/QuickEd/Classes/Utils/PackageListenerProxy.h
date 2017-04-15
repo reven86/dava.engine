@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageListener.h"
 
 #include <Base/RefPtr.h>

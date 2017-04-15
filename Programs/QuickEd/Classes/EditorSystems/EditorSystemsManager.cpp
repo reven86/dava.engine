@@ -372,7 +372,8 @@ const SortedControlNodeSet& EditorSystemsManager::GetDisplayedRootControls() con
     DataContext* activeContext = accessor->GetActiveContext();
     if (activeContext == nullptr)
     {
-        return SortedControlNodeSet();
+        static SortedControlNodeSet empty;
+        return empty;
     }
 
     DocumentData* documentData = activeContext->GetData<DocumentData>();
