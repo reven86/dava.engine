@@ -96,6 +96,9 @@ void SpeedTreeUpdateSystem::Process(float32 timeElapsed)
 {
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::SCENE_SPEEDTREE_SYSTEM);
 
+    if (!isAnimationEnabled || !isVegetationAnimationEnabled)
+        return;
+
     WindSystem* windSystem = GetScene()->windSystem;
     WaveSystem* waveSystem = GetScene()->waveSystem;
 
@@ -106,9 +109,6 @@ void SpeedTreeUpdateSystem::Process(float32 timeElapsed)
         SpeedTreeComponent* component = allTrees[i];
         DVASSERT(GetRenderObject(component->GetEntity())->GetType() == RenderObject::TYPE_SPEED_TREE);
         SpeedTreeObject* treeObject = static_cast<SpeedTreeObject*>(GetRenderObject(component->GetEntity()));
-
-        if (!isAnimationEnabled || !isVegetationAnimationEnabled)
-            continue;
 
         if (component->GetMaxAnimatedLOD() < treeObject->GetLodIndex())
             continue;
@@ -161,10 +161,15 @@ void SpeedTreeUpdateSystem::SceneDidLoaded()
 {
     for (auto tree : allTrees)
     {
-        SpeedTreeObject* object = GetSpeedTreeObject(tree->entity);
-        DVASSERT(object != nullptr);
-
-        object->RecalcBoundingBox();
+        auto renderComponent = GetRenderComponent(tree->entity);
+        if (renderComponent != nullptr)
+        {
+            auto ro = renderComponent->GetRenderObject();
+            if (ro != nullptr)
+            {
+                ro->RecalcBoundingBox();
+            }
+        }
     }
 }
 

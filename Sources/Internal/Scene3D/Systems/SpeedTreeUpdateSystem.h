@@ -5,7 +5,6 @@
 #include "Base/BaseMath.h"
 #include "Base/Observer.h"
 #include "Entity/SceneSystem.h"
-#include "Render/Highlevel/SpeedTreeObject.h"
 
 namespace DAVA
 {
