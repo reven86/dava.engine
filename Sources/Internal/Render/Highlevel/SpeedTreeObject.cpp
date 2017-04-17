@@ -103,10 +103,11 @@ void SpeedTreeObject::PrepareToRender(Camera* camera)
                 batch->useDataSource = false;
 
                 batch->vertexBuffer = pg->vertexBuffer;
-                batch->indexBuffer = directionIndexBuffers[pg][directionIndex];
+                batch->indexBuffer = directionIndexBuffers[pg];
 
                 batch->vertexCount = pg->vertexCount;
                 batch->indexCount = pg->indexCount;
+                batch->startIndex = pg->indexCount * directionIndex;
 
                 batch->primitiveType = pg->primitiveType;
                 batch->vertexLayoutId = pg->vertexLayoutId;

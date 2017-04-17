@@ -38,13 +38,9 @@ SpeedTreeUpdateSystem::~SpeedTreeUpdateSystem()
 {
     DVASSERT(allTrees.size() == 0);
     for (auto& it : directionIndexBuffers)
-    {
-        for (rhi::HIndexBuffer h : it.second)
-            rhi::DeleteIndexBuffer(h);
-    }
+        rhi::DeleteIndexBuffer(it.second);
 
     Renderer::GetSignals().needRestoreResources.Disconnect(this);
-
     Renderer::GetOptions()->RemoveObserver(this);
 }
 
@@ -188,7 +184,7 @@ void SpeedTreeUpdateSystem::SceneDidLoaded()
 
 void SpeedTreeUpdateSystem::ProcessSpeedTreeGeometry(SpeedTreeObject* object)
 {
-    SpeedTreeObject::SortedIndexBuffersMap objectMap;
+    Map<PolygonGroup*, rhi::HIndexBuffer> objectMap;
 
     uint32 batchCount = object->GetRenderBatchCount();
     for (uint32 bi = 0; bi < batchCount; ++bi)
@@ -208,36 +204,36 @@ void SpeedTreeUpdateSystem::ProcessSpeedTreeGeometry(SpeedTreeObject* object)
     object->hasUnsortedGeometry = false;
 }
 
-SpeedTreeObject::IndexBufferArray SpeedTreeUpdateSystem::BuildDirectionIndexBuffers(PolygonGroup* pg)
+rhi::HIndexBuffer SpeedTreeUpdateSystem::BuildDirectionIndexBuffers(PolygonGroup* pg)
 {
-    SpeedTreeObject::IndexBufferArray buffers;
+    Vector<uint16> indexBufferData;
     for (uint32 dir = 0; dir < SpeedTreeObject::SORTING_DIRECTION_COUNT; ++dir)
     {
-        Vector<uint16> indexBufferData = MeshUtils::BuildSortedIndexBufferData(pg, SpeedTreeObject::GetSortingDirection(dir));
-        DVASSERT(int32(indexBufferData.size()) == pg->GetIndexCount());
-
-        rhi::IndexBuffer::Descriptor ibDesc;
-        ibDesc.size = uint32(indexBufferData.size() * sizeof(uint16));
-        ibDesc.initialData = indexBufferData.data();
-        ibDesc.usage = rhi::USAGE_STATICDRAW;
-        buffers[dir] = rhi::CreateIndexBuffer(ibDesc);
+        Vector<uint16> bufferData = MeshUtils::BuildSortedIndexBufferData(pg, SpeedTreeObject::GetSortingDirection(dir));
+        indexBufferData.insert(indexBufferData.end(), bufferData.begin(), bufferData.end());
     }
 
-    return buffers;
+    rhi::IndexBuffer::Descriptor ibDesc;
+    ibDesc.size = uint32(indexBufferData.size() * sizeof(uint16));
+    ibDesc.initialData = indexBufferData.data();
+    ibDesc.usage = rhi::USAGE_STATICDRAW;
+    return rhi::CreateIndexBuffer(ibDesc);
 }
 
 void SpeedTreeUpdateSystem::RestoreDirectionBuffers()
 {
     for (auto& it : directionIndexBuffers)
     {
-        for (uint32 dir = 0; dir < SpeedTreeObject::SORTING_DIRECTION_COUNT; ++dir)
+        rhi::HIndexBuffer bufferHandle = it.second;
+        if (rhi::NeedRestoreIndexBuffer(bufferHandle))
         {
-            rhi::HIndexBuffer bufferHandle = it.second[dir];
-            if (rhi::NeedRestoreIndexBuffer(bufferHandle))
+            Vector<uint16> indexBufferData;
+            for (uint32 dir = 0; dir < SpeedTreeObject::SORTING_DIRECTION_COUNT; ++dir)
             {
-                Vector<uint16> indexData = MeshUtils::BuildSortedIndexBufferData(it.first, SpeedTreeObject::GetSortingDirection(dir));
-                rhi::UpdateIndexBuffer(bufferHandle, indexData.data(), 0, uint32(indexData.size() * sizeof(uint16)));
+                Vector<uint16> bufferData = MeshUtils::BuildSortedIndexBufferData(it.first, SpeedTreeObject::GetSortingDirection(dir));
+                indexBufferData.insert(indexBufferData.end(), bufferData.begin(), bufferData.end());
             }
+            rhi::UpdateIndexBuffer(bufferHandle, indexBufferData.data(), 0, uint32(indexBufferData.size() * sizeof(uint16)));
         }
     }
 }

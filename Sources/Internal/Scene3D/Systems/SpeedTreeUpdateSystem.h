@@ -30,13 +30,13 @@ public:
 protected:
     void UpdateAnimationFlag(Entity* entity);
     void ProcessSpeedTreeGeometry(SpeedTreeObject* object);
-    SpeedTreeObject::IndexBufferArray BuildDirectionIndexBuffers(PolygonGroup* pg);
+    rhi::HIndexBuffer BuildDirectionIndexBuffers(PolygonGroup* pg);
 
     void RestoreDirectionBuffers();
 
 private:
     Vector<SpeedTreeComponent*> allTrees;
-    SpeedTreeObject::SortedIndexBuffersMap directionIndexBuffers;
+    Map<PolygonGroup*, rhi::HIndexBuffer> directionIndexBuffers;
 
     bool isAnimationEnabled;
     bool isVegetationAnimationEnabled;
