@@ -2,6 +2,7 @@
 
 #include "TArc/WindowSubSystem/ActionUtils.h"
 #include "TArc/WindowSubSystem/Private/WaitDialog.h"
+#include "TArc/Controls/Private/NotificationLayout.h"
 #include "TArc/DataProcessing/PropertiesHolder.h"
 
 #include <Base/BaseTypes.h>
@@ -184,6 +185,11 @@ void InsertActionImpl(QToolBar* toolbar, QAction* before, QAction* action)
     }
 }
 
+void InsertActionImpl(QMenuBar* menuBar, QAction* before, QAction* action)
+{
+    menuBar->insertAction(before, action);
+}
+
 template <typename T>
 void InsertAction(T* container, QAction* action, const InsertionParams& params)
 {
@@ -226,9 +232,15 @@ void AddMenuPoint(const QUrl& url, QAction* action, MainWindowInfo& windowInfo)
     }
 
     QStringList path = url.path().split("$/", QString::SkipEmptyParts);
-    DVASSERT(!path.isEmpty());
+    if (path.isEmpty())
+    {
+        UIManagerDetail::InsertAction(windowInfo.menuBar, action, InsertionParams::Create(url));
+        return;
+    }
+
+    QMenu* topLevelMenu = nullptr;
     QString topLevelTitle = path.front();
-    QMenu* topLevelMenu = windowInfo.menuBar->findChild<QMenu*>(topLevelTitle, Qt::FindDirectChildrenOnly);
+    topLevelMenu = windowInfo.menuBar->findChild<QMenu*>(topLevelTitle, Qt::FindDirectChildrenOnly);
     if (topLevelMenu == nullptr)
     {
         QAction* action = FindAction(windowInfo.menuBar, topLevelTitle);
@@ -452,6 +464,7 @@ struct UIManager::Impl : public QObject
     bool initializationFinished = false;
     Set<WaitHandle*> activeWaitDialogues;
     ClientModule* currentModule = nullptr;
+    NotificationLayout notificationLayout;
 
     struct ModuleResources
     {
@@ -511,7 +524,6 @@ struct UIManager::Impl : public QObject
         window->installEventFilter(this);
 
         FastName appId = windowKey.GetAppID();
-        window->setWindowTitle(appId.c_str());
         window->setObjectName(appId.c_str());
     }
 
@@ -829,6 +841,14 @@ ModalMessageParams::Button UIManager::ShowModalMessage(const WindowKey& windowKe
     int ret = msgBox.exec();
     QMessageBox::StandardButton resultButton = static_cast<QMessageBox::StandardButton>(ret);
     return Convert(resultButton);
+}
+
+void UIManager::ShowNotification(const WindowKey& windowKey, const NotificationParams& params)
+{
+    using namespace UIManagerDetail;
+
+    MainWindowInfo& windowInfo = impl->FindOrCreateWindow(windowKey);
+    impl->notificationLayout.ShowNotification(windowInfo.window, params);
 }
 
 void UIManager::InjectWindow(const WindowKey& windowKey, QMainWindow* window)

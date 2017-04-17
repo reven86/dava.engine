@@ -16,6 +16,7 @@ VariantTypeProperty::VariantTypeProperty(const String& name, Any& vt, const Refl
     , field(field)
 {
     SetOverridden(true);
+    SetDefaultValue(vt);
 
     GenerateBuiltInSubProperties();
 }

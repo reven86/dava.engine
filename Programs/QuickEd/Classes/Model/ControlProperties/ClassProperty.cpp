@@ -33,11 +33,6 @@ ClassProperty::ePropertyType ClassProperty::GetType() const
     return TYPE_VARIANT;
 }
 
-DAVA::uint32 ClassProperty::GetFlags() const
-{
-    return EF_AFFECTS_STYLES;
-}
-
 Any ClassProperty::GetValue() const
 {
     return Any(control->GetControl()->GetClassName());

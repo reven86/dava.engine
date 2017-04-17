@@ -3,12 +3,14 @@
 
 #include "configparser.h"
 #include "ziputils.h"
+
 #include <QDialog>
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
 #include <QQueue>
 #include <QFile>
 #include <QTreeWidgetItem>
+#include <memory>
 
 namespace Ui
 {

@@ -43,13 +43,13 @@ void ProjectManagerModule::PostInit()
     CreateActions();
     RegisterOperations();
 
-    RecentMenuItems::Params params(REGlobal::MainWindowKey, accessor, "Recent projects");
+    RecentMenuItems::Params params(DAVA::TArc::mainWindowKey, accessor, "Recent projects");
     params.ui = GetUI();
     params.getMaximumCount = []() {
         return SettingsManager::GetValue(Settings::General_RecentProjectsCount).AsInt32();
     };
 
-    params.menuSubPath << "File"
+    params.menuSubPath << MenuItems::menuFile
                        << "Recent Projects";
     params.insertionParams.method = InsertionParams::eInsertionMethod::BeforeItem;
 
@@ -77,15 +77,15 @@ void ProjectManagerModule::CreateActions()
                                       OpenProject();
                                   });
 
-        DAVA::TArc::ActionPlacementInfo placementInfo(DAVA::TArc::CreateMenuPoint("File", DAVA::TArc::InsertionParams(InsertionParams::eInsertionMethod::BeforeItem)));
-        ui->AddAction(REGlobal::MainWindowKey, placementInfo, openProjectAction);
+        ActionPlacementInfo placementInfo(CreateMenuPoint(MenuItems::menuFile, InsertionParams(InsertionParams::eInsertionMethod::BeforeItem)));
+        ui->AddAction(DAVA::TArc::mainWindowKey, placementInfo, openProjectAction);
     }
 
     // RecentProjects
     {
         QAction* recentProjects = new QAction(recentProjectsName, nullptr);
-        DAVA::TArc::ActionPlacementInfo placementInfo(DAVA::TArc::CreateMenuPoint("File", DAVA::TArc::InsertionParams(InsertionParams::eInsertionMethod::AfterItem, openProjectName)));
-        ui->AddAction(REGlobal::MainWindowKey, placementInfo, recentProjects);
+        ActionPlacementInfo placementInfo(CreateMenuPoint(MenuItems::menuFile, InsertionParams(InsertionParams::eInsertionMethod::AfterItem, openProjectName)));
+        ui->AddAction(DAVA::TArc::mainWindowKey, placementInfo, recentProjects);
     }
 
     {
@@ -100,27 +100,27 @@ void ProjectManagerModule::CreateActions()
         connections.AddConnection(closeProjectAction, &QAction::triggered, [this]() {
             CloseProject();
         });
-        DAVA::TArc::ActionPlacementInfo placementInfo(DAVA::TArc::CreateMenuPoint("File", DAVA::TArc::InsertionParams(InsertionParams::eInsertionMethod::AfterItem, recentProjectsName)));
-        ui->AddAction(REGlobal::MainWindowKey, placementInfo, closeProjectAction);
+        ActionPlacementInfo placementInfo(DAVA::TArc::CreateMenuPoint(MenuItems::menuFile, InsertionParams(InsertionParams::eInsertionMethod::AfterItem, recentProjectsName)));
+        ui->AddAction(DAVA::TArc::mainWindowKey, placementInfo, closeProjectAction);
     }
 
     // Separator
     {
         QAction* separator = new QAction(nullptr);
         separator->setSeparator(true);
-        DAVA::TArc::ActionPlacementInfo placementInfo(DAVA::TArc::CreateMenuPoint("File", DAVA::TArc::InsertionParams(InsertionParams::eInsertionMethod::AfterItem, closeProjectsName)));
-        ui->AddAction(REGlobal::MainWindowKey, placementInfo, separator);
+        ActionPlacementInfo placementInfo(CreateMenuPoint(MenuItems::menuFile, InsertionParams(InsertionParams::eInsertionMethod::AfterItem, closeProjectsName)));
+        ui->AddAction(DAVA::TArc::mainWindowKey, placementInfo, separator);
     }
 
-    DAVA::TArc::InsertionParams reloadSpritesInsertionParams;
+    InsertionParams reloadSpritesInsertionParams;
     reloadSpritesInsertionParams.method = InsertionParams::eInsertionMethod::BeforeItem;
-    DAVA::TArc::ActionPlacementInfo reloadSpritePlacement(DAVA::TArc::CreateToolbarPoint("sceneToolBar", reloadSpritesInsertionParams));
+    ActionPlacementInfo reloadSpritePlacement(CreateToolbarPoint("sceneToolBar", reloadSpritesInsertionParams));
     QAction* reloadSprites = new QAction(QIcon(":/QtIcons/refresh_particle.png"), "Reload Sprites", nullptr);
     connections.AddConnection(reloadSprites, &QAction::triggered, [this]()
                               {
                                   ReloadSprites();
                               });
-    ui->AddAction(REGlobal::MainWindowKey, reloadSpritePlacement, reloadSprites);
+    ui->AddAction(mainWindowKey, reloadSpritePlacement, reloadSprites);
 }
 
 void ProjectManagerModule::RegisterOperations()
@@ -132,7 +132,7 @@ void ProjectManagerModule::OpenProject()
 {
     DAVA::TArc::DirectoryDialogParams dirDialogParams;
     dirDialogParams.title = QString("Open Project Folder");
-    QString dirPath = GetUI()->GetExistingDirectory(REGlobal::MainWindowKey, dirDialogParams);
+    QString dirPath = GetUI()->GetExistingDirectory(DAVA::TArc::mainWindowKey, dirDialogParams);
     if (!dirPath.isEmpty())
     {
         DAVA::FilePath path(dirPath.toStdString());
