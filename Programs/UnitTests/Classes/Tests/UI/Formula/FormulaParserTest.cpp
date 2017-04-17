@@ -131,12 +131,10 @@ DAVA_TESTCLASS (FormulaParserTest)
 
     void SetUp(const String& testName) override
     {
-
     }
-    
+
     void TearDown(const String& testName) override
     {
-
     }
 
     // FormulaParser::ParseExpression
@@ -259,5 +257,4 @@ DAVA_TESTCLASS (FormulaParserTest)
 
         TEST_VERIFY(wasException == true);
     }
-    
 };
