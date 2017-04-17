@@ -90,7 +90,7 @@ void RebuildMeshTangentSpace(PolygonGroup* group, bool precomputeBinormal /*=tru
     DVASSERT(group->GetFormat() & EVF_NORMAL);
 
     Vector<FaceWork> faces;
-    uint32 faceCount = group->GetIndexCount() / 3;
+    uint32 faceCount = group->GetPrimitiveCount();
     faces.resize(faceCount);
     Vector<VertexWork> verticesOrigin;
     Vector<VertexWork> verticesFull;
@@ -808,7 +808,7 @@ Vector<uint16> BuildSortedIndexBufferData(PolygonGroup* pg, Vector3 direction)
         Array<uint16, 3> indices;
     };
 
-    int32 trianglesCount = pg->GetIndexCount() / 3;
+    int32 trianglesCount = pg->GetPrimitiveCount();
 
     Vector<uint16> indexBufferData;
     indexBufferData.reserve(pg->GetIndexCount());

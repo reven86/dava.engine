@@ -2,6 +2,7 @@
 
 #include "Render/Material/NMaterialNames.h"
 #include "Render/Renderer.h"
+#include "Render/Highlevel/SpeedTreeObject.h"
 #include "Scene3D/Lod/LodSystem.h"
 
 #include "Scene/SceneHelper.h"
@@ -243,7 +244,9 @@ void CreatePlaneLODCommandHelper::CreatePlaneBatchForRequest(RequestPointer& req
             }
         }
     }
-    planePG->BuildBuffers();
+
+    if (GetSpeedTreeObject(fromEntity) != nullptr)
+        planePG.reset(SpeedTreeObject::CreateSortedPolygonGroup(planePG));
 
     ScopedPtr<NMaterial> material(new NMaterial());
     material->SetMaterialName(FastName(DAVA::Format("plane_lod_%d_for_%s", request->newLodIndex, fromEntity->GetName().c_str())));

@@ -167,7 +167,7 @@ RequestID Create(DAVA::Landscape* landscape, LandscapeThumbnails::Callback handl
     packet.vertexCount = renderData->vertexCount;
     packet.indexBuffer = renderData->indexBuffer;
     packet.primitiveType = renderData->primitiveType;
-    packet.primitiveCount = GetPrimitiveCount(renderData->indexCount, renderData->primitiveType);
+    packet.primitiveCount = CalculatePrimitiveCount(renderData->indexCount, renderData->primitiveType);
     packet.vertexLayoutUID = renderData->vertexLayoutId;
 
     thumbnailMaterial->BindParams(packet);

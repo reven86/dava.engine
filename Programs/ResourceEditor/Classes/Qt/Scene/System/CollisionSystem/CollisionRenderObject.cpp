@@ -45,11 +45,11 @@ CollisionRenderObject::CollisionRenderObject(DAVA::Entity* entity, btCollisionWo
                     btTriangles = new btTriangleMesh();
                 }
 
-                for (int i = 0; i < pg->indexCount; i += 3)
+                for (int i = 0; i < pg->primitiveCount; ++i)
                 {
-                    DAVA::uint16 index0 = pg->indexArray[i];
-                    DAVA::uint16 index1 = pg->indexArray[i + 1];
-                    DAVA::uint16 index2 = pg->indexArray[i + 2];
+                    DAVA::uint16 index0 = pg->indexArray[i * 3];
+                    DAVA::uint16 index1 = pg->indexArray[i * 3 + 1];
+                    DAVA::uint16 index2 = pg->indexArray[i * 3 + 2];
 
                     DAVA::Vector3 v0;
                     DAVA::Vector3 v1;

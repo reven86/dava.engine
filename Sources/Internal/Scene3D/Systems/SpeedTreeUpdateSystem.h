@@ -29,14 +29,9 @@ public:
 
 protected:
     void UpdateAnimationFlag(Entity* entity);
-    void ProcessSpeedTreeGeometry(SpeedTreeObject* object);
-    rhi::HIndexBuffer BuildDirectionIndexBuffers(PolygonGroup* pg);
-
-    void RestoreDirectionBuffers();
 
 private:
     Vector<SpeedTreeComponent*> allTrees;
-    Map<PolygonGroup*, rhi::HIndexBuffer> directionIndexBuffers;
 
     bool isAnimationEnabled;
     bool isVegetationAnimationEnabled;

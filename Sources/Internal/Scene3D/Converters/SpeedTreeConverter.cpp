@@ -265,7 +265,7 @@ void SpeedTreeConverter::ConvertTrunkForAnimations(PolygonGroup* pg)
     pg->BuildBuffers();
 }
 
-void SpeedTreeConverter::ConvertPolygonPivotGroups(Entity* scene)
+void SpeedTreeConverter::ConvertPolygonSortedGroups(Entity* scene)
 {
     uniqPGs.clear();
     materials.clear();
@@ -281,7 +281,7 @@ void SpeedTreeConverter::ConvertPolygonPivotGroups(Entity* scene)
         int32 indCount = dataSource->GetIndexCount();
 
         int32 convertedFormat = (vertexFormat & ~EVF_PIVOT) | EVF_PIVOT4;
-        PolygonGroup* pg = new PolygonGroup();
+        ScopedPtr<PolygonGroup> pg(new PolygonGroup());
         pg->AllocateData(convertedFormat, vxCount, indCount);
 
         Memcpy(pg->indexArray, dataSource->indexArray, indCount * sizeof(int16));
@@ -307,10 +307,7 @@ void SpeedTreeConverter::ConvertPolygonPivotGroups(Entity* scene)
             }
         }
 
-        pg->RecalcAABBox();
-        pg->BuildBuffers();
-
-        convertedPGs[dataSource] = pg;
+        convertedPGs[dataSource] = SpeedTreeObject::CreateSortedPolygonGroup(pg);
     }
 
     static const FastName FLAG_SPEED_TREE_LEAF("SPEED_TREE_LEAF");

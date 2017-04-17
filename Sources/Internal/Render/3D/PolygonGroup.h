@@ -83,6 +83,7 @@ public:
 
     inline int32 GetVertexCount();
     inline int32 GetIndexCount();
+    inline int32 GetPrimitiveCount();
 
     inline const AABBox3& GetBoundingBox() const;
 
@@ -94,6 +95,7 @@ public:
     int32 vertexStride;
     int32 vertexFormat;
     int32 indexFormat;
+    int32 primitiveCount;
     rhi::PrimitiveType primitiveType;
     int32 cubeTextureCoordCount;
 
@@ -126,7 +128,7 @@ public:
     Vector3* baseVertexArray;
 
     //meshFormat is EVF_VERTEX etc.
-    void AllocateData(int32 meshFormat, int32 vertexCount, int32 indexCount);
+    void AllocateData(int32 meshFormat, int32 vertexCount, int32 indexCount, int32 primitiveCount = 0);
     void ReleaseData();
     void RecalcAABBox();
 
@@ -352,12 +354,14 @@ inline int32 PolygonGroup::GetIndexCount()
 {
     return indexCount;
 }
-
+inline int32 PolygonGroup::GetPrimitiveCount()
+{
+    return primitiveCount;
+}
 inline const AABBox3& PolygonGroup::GetBoundingBox() const
 {
     return aabbox;
 }
-
 inline rhi::PrimitiveType PolygonGroup::GetPrimitiveType()
 {
     return primitiveType;

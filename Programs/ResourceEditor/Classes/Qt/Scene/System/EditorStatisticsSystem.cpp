@@ -55,7 +55,7 @@ void EnumerateTriangles(RenderObject* renderObject, Vector<uint32>& triangles, V
             PolygonGroup* pg = rb->GetPolygonGroup();
             if (nullptr != pg)
             {
-                int32 trianglesCount = pg->GetIndexCount() / 3;
+                int32 trianglesCount = pg->GetPrimitiveCount();
                 triangles[lodIndex] += trianglesCount;
                 if (batchIsVisible)
                 {

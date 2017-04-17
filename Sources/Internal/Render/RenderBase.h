@@ -264,7 +264,7 @@ inline int32 GetVertexSize(int32 flags)
     return size;
 }
 
-inline uint32 GetPrimitiveCount(uint32 indexCount, rhi::PrimitiveType primitiveType)
+inline uint32 CalculatePrimitiveCount(uint32 indexCount, rhi::PrimitiveType primitiveType)
 {
     switch (primitiveType)
     {

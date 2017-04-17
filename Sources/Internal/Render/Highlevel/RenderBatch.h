@@ -77,8 +77,6 @@ public:
     rhi::PrimitiveType primitiveType = rhi::PRIMITIVE_TRIANGLELIST;
     uint32 vertexLayoutId = rhi::VertexLayout::InvalidUID;
 
-    bool useDataSource = true;
-
 private:
     PolygonGroup* dataSource = nullptr;
 
@@ -149,7 +147,7 @@ inline uint32 RenderBatch::GetSortingOffset()
 
 inline void RenderBatch::BindGeometryData(rhi::Packet& packet)
 {
-    if (dataSource && useDataSource)
+    if (dataSource)
     {
         packet.vertexStreamCount = 1;
         packet.vertexStream[0] = dataSource->vertexBuffer;
@@ -159,9 +157,9 @@ inline void RenderBatch::BindGeometryData(rhi::Packet& packet)
         packet.vertexCount = dataSource->vertexCount;
         packet.indexBuffer = dataSource->indexBuffer;
         packet.primitiveType = dataSource->primitiveType;
-        packet.primitiveCount = GetPrimitiveCount(dataSource->indexCount, dataSource->primitiveType); //later move it into pg!
+        packet.primitiveCount = dataSource->primitiveCount;
         packet.vertexLayoutUID = dataSource->vertexLayoutId;
-        packet.startIndex = 0;
+        packet.startIndex = startIndex;
     }
     else
     {
@@ -173,7 +171,7 @@ inline void RenderBatch::BindGeometryData(rhi::Packet& packet)
         packet.vertexCount = vertexCount;
         packet.indexBuffer = indexBuffer;
         packet.primitiveType = primitiveType;
-        packet.primitiveCount = GetPrimitiveCount(indexCount, primitiveType);
+        packet.primitiveCount = CalculatePrimitiveCount(indexCount, primitiveType);
         packet.vertexLayoutUID = vertexLayoutId;
         packet.startIndex = startIndex;
     }

@@ -84,10 +84,7 @@ void SpeedTreeObject::PrepareToRender(Camera* camera)
 {
     RenderObject::PrepareToRender(camera);
 
-    if (directionIndexBuffers.empty())
-        return;
-
-    Vector3 direction = GetWorldTransformPtr()->GetTranslationVector() - camera->GetPosition();
+    Vector3 direction = GetWorldBoundingBox().GetCenter() - camera->GetPosition();
     direction = MultiplyVectorMat3x3(direction, *invWorldTransform);
     direction.z = 0.f;
     direction.Normalize();
@@ -98,24 +95,13 @@ void SpeedTreeObject::PrepareToRender(Camera* camera)
         PolygonGroup* pg = batch->GetPolygonGroup();
         if (pg)
         {
-            if (directionIndexBuffers.count(pg) > 0)
+            int32 meshIndexCount = pg->primitiveCount * 3;
+            if (meshIndexCount != pg->indexCount) //sorted polygon group
             {
-                batch->useDataSource = false;
+                uint32 startIndex = meshIndexCount * directionIndex;
+                DVASSERT(uint32(pg->indexCount) >= uint32(startIndex + meshIndexCount));
 
-                batch->vertexBuffer = pg->vertexBuffer;
-                batch->indexBuffer = directionIndexBuffers[pg];
-
-                batch->vertexCount = pg->vertexCount;
-                batch->indexCount = pg->indexCount;
-                batch->startIndex = pg->indexCount * directionIndex;
-
-                batch->primitiveType = pg->primitiveType;
-                batch->vertexLayoutId = pg->vertexLayoutId;
-            }
-            else
-            {
-                hasUnsortedGeometry = true;
-                batch->useDataSource = true;
+                batch->startIndex = startIndex;
             }
         }
     }
@@ -258,5 +244,27 @@ uint32 SpeedTreeObject::SelectDirectionIndex(const Vector3& direction)
     }
 
     return index;
+}
+
+PolygonGroup* SpeedTreeObject::CreateSortedPolygonGroup(PolygonGroup* pg)
+{
+    DVASSERT(pg->GetPrimitiveType() == rhi::PRIMITIVE_TRIANGLELIST);
+
+    uint32 meshIndexCount = pg->GetPrimitiveCount() * 3;
+
+    PolygonGroup* spg = new PolygonGroup();
+    spg->AllocateData(pg->GetFormat(), pg->GetVertexCount(), meshIndexCount * SORTING_DIRECTION_COUNT, pg->GetPrimitiveCount());
+    Memcpy(spg->meshData, pg->meshData, pg->GetVertexCount() * pg->vertexStride);
+
+    for (uint32 dir = 0; dir < SpeedTreeObject::SORTING_DIRECTION_COUNT; ++dir)
+    {
+        Vector<uint16> bufferData = MeshUtils::BuildSortedIndexBufferData(pg, SpeedTreeObject::GetSortingDirection(dir));
+        Memcpy(spg->indexArray + meshIndexCount * dir, bufferData.data(), bufferData.size() * sizeof(uint16));
+    }
+
+    spg->RecalcAABBox();
+    spg->BuildBuffers();
+
+    return spg;
 }
 };

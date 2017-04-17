@@ -19,7 +19,7 @@ public:
     static Vector2 CalculateVertexAngle(PolygonGroup* pg, int32 vi, float32 treeHeight);
 
     void ConvertTrees(Entity* scene);
-    void ConvertPolygonPivotGroups(Entity* scene);
+    void ConvertPolygonSortedGroups(Entity* scene);
 
 private:
     void ConvertingPathRecursive(Entity* scene);

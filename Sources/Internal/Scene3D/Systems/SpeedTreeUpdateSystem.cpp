@@ -30,17 +30,12 @@ SpeedTreeUpdateSystem::SpeedTreeUpdateSystem(Scene* scene)
 
     scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::WORLD_TRANSFORM_CHANGED);
     scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::SPEED_TREE_MAX_ANIMATED_LOD_CHANGED);
-
-    Renderer::GetSignals().needRestoreResources.Connect(this, &SpeedTreeUpdateSystem::RestoreDirectionBuffers);
 }
 
 SpeedTreeUpdateSystem::~SpeedTreeUpdateSystem()
 {
     DVASSERT(allTrees.size() == 0);
-    for (auto& it : directionIndexBuffers)
-        rhi::DeleteIndexBuffer(it.second);
 
-    Renderer::GetSignals().needRestoreResources.Disconnect(this);
     Renderer::GetOptions()->RemoveObserver(this);
 }
 
@@ -81,10 +76,6 @@ void SpeedTreeUpdateSystem::RemoveEntity(Entity* entity)
     {
         if (allTrees[i]->entity == entity)
         {
-            SpeedTreeObject* object = GetSpeedTreeObject(entity);
-            DVASSERT(object != nullptr);
-            object->ClearSortedIndexBuffersMap();
-
             RemoveExchangingWithLast(allTrees, i);
             break;
         }
@@ -115,9 +106,6 @@ void SpeedTreeUpdateSystem::Process(float32 timeElapsed)
         SpeedTreeComponent* component = allTrees[i];
         DVASSERT(GetRenderObject(component->GetEntity())->GetType() == RenderObject::TYPE_SPEED_TREE);
         SpeedTreeObject* treeObject = static_cast<SpeedTreeObject*>(GetRenderObject(component->GetEntity()));
-
-        if (treeObject->hasUnsortedGeometry)
-            ProcessSpeedTreeGeometry(treeObject);
 
         if (!isAnimationEnabled || !isVegetationAnimationEnabled)
             continue;
@@ -177,64 +165,7 @@ void SpeedTreeUpdateSystem::SceneDidLoaded()
         DVASSERT(object != nullptr);
 
         object->RecalcBoundingBox();
-
-        ProcessSpeedTreeGeometry(object);
     }
 }
 
-void SpeedTreeUpdateSystem::ProcessSpeedTreeGeometry(SpeedTreeObject* object)
-{
-    Map<PolygonGroup*, rhi::HIndexBuffer> objectMap;
-
-    uint32 batchCount = object->GetRenderBatchCount();
-    for (uint32 bi = 0; bi < batchCount; ++bi)
-    {
-        RenderBatch* batch = object->GetRenderBatch(bi);
-        PolygonGroup* pg = batch->GetPolygonGroup();
-        if (pg != nullptr)
-        {
-            if (directionIndexBuffers.count(pg) == 0)
-                directionIndexBuffers.emplace(pg, BuildDirectionIndexBuffers(pg));
-
-            objectMap[pg] = directionIndexBuffers[pg];
-        }
-    }
-
-    object->SetSortedIndexBuffersMap(objectMap);
-    object->hasUnsortedGeometry = false;
-}
-
-rhi::HIndexBuffer SpeedTreeUpdateSystem::BuildDirectionIndexBuffers(PolygonGroup* pg)
-{
-    Vector<uint16> indexBufferData;
-    for (uint32 dir = 0; dir < SpeedTreeObject::SORTING_DIRECTION_COUNT; ++dir)
-    {
-        Vector<uint16> bufferData = MeshUtils::BuildSortedIndexBufferData(pg, SpeedTreeObject::GetSortingDirection(dir));
-        indexBufferData.insert(indexBufferData.end(), bufferData.begin(), bufferData.end());
-    }
-
-    rhi::IndexBuffer::Descriptor ibDesc;
-    ibDesc.size = uint32(indexBufferData.size() * sizeof(uint16));
-    ibDesc.initialData = indexBufferData.data();
-    ibDesc.usage = rhi::USAGE_STATICDRAW;
-    return rhi::CreateIndexBuffer(ibDesc);
-}
-
-void SpeedTreeUpdateSystem::RestoreDirectionBuffers()
-{
-    for (auto& it : directionIndexBuffers)
-    {
-        rhi::HIndexBuffer bufferHandle = it.second;
-        if (rhi::NeedRestoreIndexBuffer(bufferHandle))
-        {
-            Vector<uint16> indexBufferData;
-            for (uint32 dir = 0; dir < SpeedTreeObject::SORTING_DIRECTION_COUNT; ++dir)
-            {
-                Vector<uint16> bufferData = MeshUtils::BuildSortedIndexBufferData(it.first, SpeedTreeObject::GetSortingDirection(dir));
-                indexBufferData.insert(indexBufferData.end(), bufferData.begin(), bufferData.end());
-            }
-            rhi::UpdateIndexBuffer(bufferHandle, indexBufferData.data(), 0, uint32(indexBufferData.size() * sizeof(uint16)));
-        }
-    }
-}
 };

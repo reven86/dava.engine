@@ -192,7 +192,7 @@ void PolygonGroup::UpdateDataPointersAndStreams()
     vertexLayoutId = rhi::VertexLayout::UniqueId(vLayout);
 }
 
-void PolygonGroup::AllocateData(int32 _meshFormat, int32 _vertexCount, int32 _indexCount)
+void PolygonGroup::AllocateData(int32 _meshFormat, int32 _vertexCount, int32 _indexCount, int32 _primitiveCount)
 {
     DAVA_MEMORY_PROFILER_CLASS_ALLOC_SCOPE();
 
@@ -202,6 +202,7 @@ void PolygonGroup::AllocateData(int32 _meshFormat, int32 _vertexCount, int32 _in
     vertexFormat = _meshFormat;
     textureCoordCount = GetTexCoordCount(vertexFormat);
     cubeTextureCoordCount = GetCubeTexCoordCount(vertexFormat);
+    primitiveCount = (_primitiveCount == 0) ? CalculatePrimitiveCount(indexCount, primitiveType) : _primitiveCount;
 
     meshData = new uint8[vertexStride * vertexCount];
     indexArray = new int16[indexCount];
@@ -352,19 +353,13 @@ void PolygonGroup::Save(KeyedArchive* keyedArchive, SerializationContext* serial
     keyedArchive->SetInt32("indexCount", indexCount);
     keyedArchive->SetInt32("textureCoordCount", textureCoordCount);
     keyedArchive->SetInt32("rhi_primitiveType", primitiveType);
+    keyedArchive->SetInt32("primitiveCount", primitiveCount);
 
     keyedArchive->SetInt32("packing", PACKING_NONE);
     keyedArchive->SetByteArray("vertices", meshData, vertexCount * vertexStride);
     keyedArchive->SetInt32("indexFormat", indexFormat);
     keyedArchive->SetByteArray("indices", reinterpret_cast<uint8*>(indexArray), indexCount * INDEX_FORMAT_SIZE[indexFormat]);
     keyedArchive->SetInt32("cubeTextureCoordCount", cubeTextureCoordCount);
-
-    //    for (int32 k = 0; k < GetVertexCount(); ++k)
-    //    {
-    //        Vector3 normal;
-    //        GetNormal(k, normal);
-    //        Logger::FrameworkDebug("savenorm2: %f %f %f", normal.x, normal.y, normal.z);
-    //    }
 }
 
 void PolygonGroup::LoadPolygonData(KeyedArchive* keyedArchive, SerializationContext* serializationContext, int32 requiredFlags, bool cutUnusedStreams)
@@ -377,6 +372,7 @@ void PolygonGroup::LoadPolygonData(KeyedArchive* keyedArchive, SerializationCont
     indexCount = keyedArchive->GetInt32("indexCount");
     textureCoordCount = keyedArchive->GetInt32("textureCoordCount");
     primitiveType = rhi::PrimitiveType(keyedArchive->GetInt32("rhi_primitiveType", rhi::PRIMITIVE_TRIANGLELIST));
+    primitiveCount = keyedArchive->GetInt32("primitiveCount", CalculatePrimitiveCount(indexCount, primitiveType));
     cubeTextureCoordCount = keyedArchive->GetInt32("cubeTextureCoordCount");
 
     int32 formatPacking = keyedArchive->GetInt32("packing");

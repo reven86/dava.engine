@@ -98,6 +98,7 @@ void DeveloperTools::OnDebugCreateTestSkinnedObject()
     entity->AddComponent(component);
 
     ScopedPtr<PolygonGroup> polygonGroup(new PolygonGroup());
+    polygonGroup->SetPrimitiveType(rhi::PRIMITIVE_LINELIST);
     polygonGroup->AllocateData(EVF_VERTEX | EVF_JOINTINDEX | EVF_JOINTWEIGHT, boxesCount * 8, boxesCount * 24);
     for (int32 i = 0; i < boxesCount; i++)
     {
@@ -141,8 +142,6 @@ void DeveloperTools::OnDebugCreateTestSkinnedObject()
         polygonGroup->SetIndex(i * 24 + 22, i * 8 + 7);
         polygonGroup->SetIndex(i * 24 + 23, i * 8 + 4);
     }
-
-    polygonGroup->SetPrimitiveType(rhi::PRIMITIVE_LINELIST);
 
     ScopedPtr<NMaterial> material(new NMaterial());
     material->SetMaterialName(FastName("DebugSkeleton"));

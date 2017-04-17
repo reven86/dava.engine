@@ -395,7 +395,7 @@ DAVA::uint32 SceneInfo::GetTrianglesForNotLODEntityRecursive(DAVA::Entity* entit
             PolygonGroup* pg = rb->GetPolygonGroup();
             if (pg)
             {
-                triangles += (pg->GetIndexCount() / 3);
+                triangles += pg->GetPrimitiveCount();
             }
         }
     }

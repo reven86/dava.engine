@@ -1325,10 +1325,10 @@ void SceneFileV2::OptimizeScene(Entity* rootNode)
         RemoveDeprecatedMaterialFlags(rootNode);
     }
 
-    if (header.version < SPEED_TREE_POLYGON_GPROUPS_PIVOT_SCENE_VERSION)
+    if (header.version < SPEED_TREE_SORTED_POLYGON_GROUPS_SCENE_VERSION)
     {
         SpeedTreeConverter covert;
-        covert.ConvertPolygonPivotGroups(rootNode);
+        covert.ConvertPolygonSortedGroups(rootNode);
     }
 
     QualitySettingsSystem::Instance()->UpdateEntityAfterLoad(rootNode);

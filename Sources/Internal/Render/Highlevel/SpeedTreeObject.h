@@ -31,6 +31,8 @@ public:
     void SetLightSmoothing(const float32& smooth);
     const float32& GetLightSmoothing() const;
 
+    static PolygonGroup* CreateSortedPolygonGroup(PolygonGroup* pg);
+
 protected:
     static const FastName FLAG_WIND_ANIMATION;
     static const uint32 SORTING_DIRECTION_COUNT = 8;
@@ -45,20 +47,13 @@ protected:
 
     void SetInvWorldTransformPtr(const Matrix4* invWT);
 
-    void SetSortedIndexBuffersMap(const Map<PolygonGroup*, rhi::HIndexBuffer>& map);
-    void ClearSortedIndexBuffersMap();
-
     Vector2 trunkOscillation;
     Vector2 leafOscillation;
 
     DAVA::Array<float32, HARMONICS_BUFFER_CAPACITY> sphericalHarmonics;
     float32 lightSmoothing;
 
-    Map<PolygonGroup*, rhi::HIndexBuffer> directionIndexBuffers;
-
     const Matrix4* invWorldTransform = nullptr;
-
-    bool hasUnsortedGeometry = false;
 
 public:
     INTROSPECTION_EXTEND(SpeedTreeObject, RenderObject,
@@ -75,13 +70,4 @@ inline void SpeedTreeObject::SetInvWorldTransformPtr(const Matrix4* invWT)
     invWorldTransform = invWT;
 }
 
-inline void SpeedTreeObject::SetSortedIndexBuffersMap(const Map<PolygonGroup*, rhi::HIndexBuffer>& map)
-{
-    directionIndexBuffers = map;
-}
-
-inline void SpeedTreeObject::ClearSortedIndexBuffersMap()
-{
-    directionIndexBuffers.clear();
-}
 }

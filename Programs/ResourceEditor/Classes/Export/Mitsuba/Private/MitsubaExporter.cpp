@@ -270,7 +270,7 @@ void MitsubaExporterDetail::Exporter::ExportBatch(const DAVA::String& name, cons
 
         fOut << std::endl
              << DAVA::Format("g group_%llu_%llu", poly->GetNodeID(), reinterpret_cast<DAVA::uint64>(poly)) << std::endl;
-        for (DAVA::int32 ti = 0, te = poly->GetIndexCount() / 3; ti < te; ++ti)
+        for (DAVA::int32 ti = 0, te = poly->GetPrimitiveCount(); ti < te; ++ti)
         {
             DAVA::int32 tri[3] = {};
             poly->GetIndex(3 * ti + 0, tri[0]);
