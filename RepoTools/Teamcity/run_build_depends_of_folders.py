@@ -21,7 +21,9 @@ def __parser_args():
     arg_parser = argparse.ArgumentParser()
     arg_parser.add_argument( '--teamcity_url', required = True )
     arg_parser.add_argument( '--stash_url', required = True )
-    arg_parser.add_argument( '--brunch', required = True )
+    arg_parser.add_argument( '--framework_brunch', required = True )
+    arg_parser.add_argument( '--client_brunch' )
+
     arg_parser.add_argument( '--check_folders', required = True  )
 
     arg_parser.add_argument( '--configuration_id'  )
@@ -38,7 +40,11 @@ def __run_build( args ):
                                        args.login,
                                        args.password )
 
-    teamcity_start_result = teamcity.run_build( args.configuration_id, args.brunch  )
+    client_brunch = {}
+    if args.client_brunch:
+        client_brunch = {'client_branch': args.client_brunch}
+
+    teamcity_start_result = teamcity.run_build( args.configuration_id, args.framework_brunch, client_brunch  )
 
     build_status = ''
     build_status_text = ''
@@ -49,6 +55,7 @@ def __run_build( args ):
         time.sleep( 10 )
 
         teamcity_build_status =  teamcity.get_build_status( teamcity_start_result['id'] )
+
         build_status          = teamcity_build_status['state']
 
         build_status_text_old = build_status_text
@@ -65,32 +72,32 @@ def __check_depends_of_folders( args ):
     __print( "Check depends" )
 
     #brunch check
-    brunch     =  args.brunch.split('/')
-    brunch_len = len(brunch)
+    framework_brunch     =  args.framework_brunch.split('/')
+    framework_brunch_len = len(framework_brunch)
 
-    if brunch_len == 1  :
-        if brunch[0].isdigit() :
-            brunch = brunch[0]
+    if framework_brunch_len == 1  :
+        if framework_brunch[0].isdigit() :
+            framework_brunch = framework_brunch[0]
         else :
-            __print( "Build is required, because brunch == {}".format( brunch ) )
+            __print( "Build is required, because brunch == {}".format( framework_brunch ) )
             return True
     else :
-        brunch = brunch[ brunch_len - 2 ]
+        framework_brunch = framework_brunch[ framework_brunch_len - 2 ]
 
     stash = stash_api.Stash( args.stash_url,
                              args.login,
                              args.password )
 
-    brunch_info = stash.get_pull_requests_info( brunch )
+    brunch_info = stash.get_pull_requests_info( framework_brunch )
 
     brunch_info_toRef = brunch_info['toRef']['id'].split('/').pop()
 
     if brunch_info_toRef != 'development' :
-        __print( "Build is required, because brunch_toRef == {}".format( brunch ) )
+        __print( "Build is required, because brunch_toRef == {}".format( framework_brunch ) )
         return True
 
     #changes folders check
-    brunch_changes = stash.get_pull_requests_changes( brunch )
+    brunch_changes = stash.get_pull_requests_changes( framework_brunch )
     branch_changes_values =  brunch_changes[ 'values' ]
 
     depends_folders = args.check_folders.split(';')
