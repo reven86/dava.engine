@@ -54,12 +54,24 @@ class TeamCity:
     def get_build_status(self, build_id ):
         response = self.__request("builds/id:{}/".format(build_id))
         root = ET.fromstring(response.content)
+        statusText = None
 
-        find_statusText = root.find('statusText')
-        if find_statusText != None :
-            root.attrib['statusText'] = find_statusText.text
-        else:
-            root.attrib['statusText'] = root.attrib[ 'state' ]
+        #statusText
+        find_running_info = root.find('running-info')
+        if find_running_info != None :
+            find_currentStageText = find_running_info.attrib['currentStageText']
+            if find_currentStageText !=  None \
+               and len( find_currentStageText  ) :
+                statusText = find_currentStageText
+
+        if statusText == None :
+            find_statusText = root.find('statusText')
+            if find_statusText != None :
+                statusText = find_statusText.text
+            else:
+                statusText = root.attrib[ 'state' ]
+
+        root.attrib['statusText'] = statusText
 
         return root.attrib
 
