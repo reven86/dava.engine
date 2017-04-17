@@ -2000,7 +2000,7 @@ void StretchDrawData::GenerateTransformData()
         transformedVertices[index] = vertices[index] * transformMatr;
     }
 
-    RenderSystem2D *renderSystem = RenderSystem2D::Instance();
+    RenderSystem2D* renderSystem = RenderSystem2D::Instance();
 
     if (usePerPixelAccuracy)
     {
