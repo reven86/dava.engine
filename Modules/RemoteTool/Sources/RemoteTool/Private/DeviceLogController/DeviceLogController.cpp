@@ -3,6 +3,7 @@
 #include <QtTools/ConsoleWidget/LogWidget.h>
 #include <QtTools/ConsoleWidget/LogModel.h>
 
+#include <Network/NetCore.h>
 #include <Utils/UTF8Utils.h>
 
 using namespace DAVA;
@@ -18,6 +19,11 @@ DeviceLogController::DeviceLogController(const DAVA::Net::PeerDescription& peerD
 
 DeviceLogController::~DeviceLogController()
 {
+}
+
+void DeviceLogController::Init()
+{
+    channelListenerDispatched.reset(new ChannelListenerDispatched(shared_from_this(), NetCore::Instance()->GetNetEventsDispatcher()));
 }
 
 void DeviceLogController::ShowView()

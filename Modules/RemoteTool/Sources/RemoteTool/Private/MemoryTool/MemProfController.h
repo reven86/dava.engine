@@ -1,7 +1,10 @@
 #pragma once
 
+#include <Tools/NetworkHelpers/ChannelListenerDispatched.h>
+
 #include <FileSystem/FilePath.h>
 #include <Network/PeerDesription.h>
+#include <Network/IChannel.h>
 #include <MemoryManager/MemoryManagerTypes.h>
 
 #include <QObject>
@@ -39,7 +42,7 @@ public:
 
     void ShowView();
 
-    DAVA::Net::IChannelListener* NetObject() const;
+    DAVA::Net::IChannelListener* GetAsyncChannelListener();
 
     int Mode() const;
     bool IsFileLoaded() const;
@@ -77,7 +80,8 @@ private:
     DAVA::uint32 snapshotRecvSize = 0;
 
     DAVA::Net::PeerDescription profiledPeer;
-    std::unique_ptr<DAVA::Net::MMNetClient> netClient;
+    std::shared_ptr<DAVA::Net::MMNetClient> netClient;
+    DAVA::Net::ChannelListenerDispatched channelListenerDispatched;
     std::unique_ptr<ProfilingSession> profilingSession;
 };
 

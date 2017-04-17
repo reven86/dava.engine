@@ -17,6 +17,7 @@
 
 #include "Application/QEGlobal.h"
 
+#include "UI/Find/FindInDocumentController.h"
 #include "UI/mainwindow.h"
 #include "UI/ProjectView.h"
 #include "UI/Preview/PreviewWidget.h"
@@ -162,6 +163,7 @@ void DocumentsModule::InitEditorSystems()
     DVASSERT(nullptr == systemsManager);
     systemsManager.reset(new EditorSystemsManager(GetAccessor()));
     systemsManager->dragStateChanged.Connect(this, &DocumentsModule::OnDragStateChanged);
+    systemsManager->editingRootControlsChanged.Connect(this, &DocumentsModule::OnEditingRootControlsChanged);
 }
 
 void DocumentsModule::InitCentralWidget()
@@ -192,6 +194,9 @@ void DocumentsModule::InitCentralWidget()
     QObject::connect(previewWidget, &PreviewWidget::CutRequested, mainWindow->GetPackageWidget(), &PackageWidget::OnCut);
     QObject::connect(previewWidget, &PreviewWidget::CopyRequested, mainWindow->GetPackageWidget(), &PackageWidget::OnCopy);
     QObject::connect(previewWidget, &PreviewWidget::PasteRequested, mainWindow->GetPackageWidget(), &PackageWidget::OnPaste);
+    QObject::connect(previewWidget, &PreviewWidget::DuplicateRequested, mainWindow->GetPackageWidget(), &PackageWidget::OnDuplicate);
+
+    findInDocumentController.reset(new FindInDocumentController(this, mainWindow, previewWidget->GetFindInDocumentWidget()));
 }
 
 void DocumentsModule::InitWatcher()
@@ -994,6 +999,20 @@ void DocumentsModule::OnDragStateChanged(EditorSystemsManager::eDragState dragSt
     {
         documentData->commandStack->EndBatch();
     }
+}
+
+void DocumentsModule::OnEditingRootControlsChanged(const SortedControlNodeSet& rootControls)
+{
+    using namespace DAVA::TArc;
+    ContextAccessor* accessor = GetAccessor();
+    DataContext* activeContext = accessor->GetActiveContext();
+    if (activeContext == nullptr)
+    {
+        return;
+    }
+    DocumentData* data = activeContext->GetData<DocumentData>();
+
+    data->editedRootControls = rootControls;
 }
 
 DECL_GUI_MODULE(DocumentsModule);

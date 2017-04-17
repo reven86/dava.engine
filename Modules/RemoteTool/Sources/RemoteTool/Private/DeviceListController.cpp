@@ -21,12 +21,16 @@ using namespace DAVA::Net;
 DeviceListController::DeviceListController(QObject* parent)
     : QObject(parent)
     , model(NULL)
+    , loggerServiceCreatorAsync(MakeFunction(this, &DeviceListController::CreateLogger), NetCore::Instance()->GetNetEventsDispatcher())
+    , profilerServiceCreatorAsync(MakeFunction(this, &DeviceListController::CreateMemProfiler), NetCore::Instance()->GetNetEventsDispatcher())
+    , loggerServiceDeleterAsync(MakeFunction(this, &DeviceListController::DeleteLogger), NetCore::Instance()->GetNetEventsDispatcher())
+    , profilerServiceDeleterAsync(MakeFunction(this, &DeviceListController::DeleteMemProfiler), NetCore::Instance()->GetNetEventsDispatcher())
 {
     model = new QStandardItemModel(this);
 
     // Register network service for recieving logs from device
-    NetCore::Instance()->RegisterService(NetCore::SERVICE_LOG, MakeFunction(this, &DeviceListController::CreateLogger), MakeFunction(this, &DeviceListController::DeleteLogger), "Logger");
-    NetCore::Instance()->RegisterService(NetCore::SERVICE_MEMPROF, MakeFunction(this, &DeviceListController::CreateMemProfiler), MakeFunction(this, &DeviceListController::DeleteMemProfiler), "Memory profiler");
+    NetCore::Instance()->RegisterService(NetCore::SERVICE_LOG, MakeFunction(&loggerServiceCreatorAsync, &ServiceCreatorDispatched::ServiceCreatorCall), MakeFunction(&loggerServiceDeleterAsync, &ServiceDeleterDispatched::ServiceDeleterCall), "Logger");
+    NetCore::Instance()->RegisterService(NetCore::SERVICE_MEMPROF, MakeFunction(&profilerServiceCreatorAsync, &ServiceCreatorDispatched::ServiceCreatorCall), MakeFunction(&profilerServiceDeleterAsync, &ServiceDeleterDispatched::ServiceDeleterCall), "Memory profiler");
 
     // Create controller for discovering remote devices
     DAVA::Net::Endpoint endpoint(NetCore::defaultAnnounceMulticastGroup, NetCore::DEFAULT_UDP_ANNOUNCE_PORT);
@@ -116,7 +120,7 @@ IChannelListener* DeviceListController::CreateLogger(uint32 serviceId, void* con
     {
         QModelIndex index = model->index(row, 0);
         DeviceServices services = index.data(ROLE_PEER_SERVICES).value<DeviceServices>();
-        return services.log;
+        return services.log->GetAsyncChannelListener();
     }
     return NULL;
 }
@@ -135,7 +139,7 @@ void DeviceListController::DeleteLogger(IChannelListener*, void* context)
         if (item != NULL)
         {
             DeviceServices services = index.data(ROLE_PEER_SERVICES).value<DeviceServices>();
-            SafeDelete(services.log);
+            services.log.reset();
 
             QVariant v;
             v.setValue(services);
@@ -151,7 +155,7 @@ IChannelListener* DeviceListController::CreateMemProfiler(uint32 serviceId, void
     {
         QModelIndex index = model->index(row, 0);
         DeviceServices services = index.data(ROLE_PEER_SERVICES).value<DeviceServices>();
-        return services.memprof->NetObject();
+        return services.memprof->GetAsyncChannelListener();
     }
     return NULL;
 }
@@ -167,7 +171,7 @@ void DeviceListController::DeleteMemProfiler(IChannelListener* obj, void* contex
         if (item != NULL)
         {
             DeviceServices services = index.data(ROLE_PEER_SERVICES).value<DeviceServices>();
-            SafeDelete(services.memprof);
+            services.memprof.reset();
 
             QVariant v;
             v.setValue(services);
@@ -199,37 +203,39 @@ void DeviceListController::ConnectDeviceInternal(QModelIndex& index, size_t ifIn
         bool deviceUnderMemoryProfiler = std::find(servIds.begin(), servIds.end(), NetCore::SERVICE_MEMPROF) != servIds.end();
         uint32 readTimeout = deviceUnderMemoryProfiler ? 120 * 1000 : Net::DEFAULT_READ_TIMEOUT;
 
+        QStandardItem* item = model->itemFromIndex(index);
+        if (NULL == item)
+            return;
+
+        // Append prefix 'ACTIVE!' to distinguish active objects
+        QString s = item->text();
+        item->setText("ACTIVE! " + s);
+
+        {
+            DeviceServices services = index.data(ROLE_PEER_SERVICES).value<DeviceServices>();
+            // Check whether remote device has corresponding services
+            auto iterService = std::find(servIds.begin(), servIds.end(), NetCore::SERVICE_LOG);
+            if (iterService != servIds.end())
+            {
+                services.log.reset(new DeviceLogController(peer, view, this));
+                services.log->Init();
+            }
+            iterService = std::find(servIds.begin(), servIds.end(), NetCore::SERVICE_MEMPROF);
+            if (iterService != servIds.end())
+            {
+                services.memprof.reset(new MemProfController(peer, view, this));
+            }
+
+            QVariant v;
+            v.setValue(services);
+            item->setData(v, ROLE_PEER_SERVICES);
+        }
+
         trackId = NetCore::Instance()->CreateController(config, reinterpret_cast<void*>(index.row()), readTimeout);
         if (trackId != NetCore::INVALID_TRACK_ID)
         {
-            QStandardItem* item = model->itemFromIndex(index);
-            if (NULL == item)
-                return;
-
-            // Append prefix 'ACTIVE!' to distinguish active objects
-            QString s = item->text();
-            item->setText("ACTIVE! " + s);
-
             // Update item's ROLE_CONNECTION_ID and ROLE_PEER_SERVICES
             item->setData(QVariant(static_cast<qulonglong>(trackId)), ROLE_CONNECTION_ID);
-            {
-                DeviceServices services = index.data(ROLE_PEER_SERVICES).value<DeviceServices>();
-                // Check whether remote device has corresponding services
-                auto iterService = std::find(servIds.begin(), servIds.end(), NetCore::SERVICE_LOG);
-                if (iterService != servIds.end())
-                {
-                    services.log = new DeviceLogController(peer, view, this);
-                }
-                iterService = std::find(servIds.begin(), servIds.end(), NetCore::SERVICE_MEMPROF);
-                if (iterService != servIds.end())
-                {
-                    services.memprof = new MemProfController(peer, view, this);
-                }
-
-                QVariant v;
-                v.setValue(services);
-                item->setData(v, ROLE_PEER_SERVICES);
-            }
         }
     }
 }
@@ -319,11 +325,11 @@ void DeviceListController::OnShowLogButtonPressed()
         if (trackId != NetCore::INVALID_TRACK_ID)
         {
             DeviceServices services = index.data(ROLE_PEER_SERVICES).value<DeviceServices>();
-            if (services.log != nullptr)
+            if (services.log)
             {
                 services.log->ShowView();
             }
-            if (services.memprof != nullptr)
+            if (services.memprof)
             {
                 services.memprof->ShowView();
             }

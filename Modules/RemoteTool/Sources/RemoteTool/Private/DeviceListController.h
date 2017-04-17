@@ -2,8 +2,11 @@
 
 #include <vector>
 
-#include <Network/Base/Endpoint.h>
+#include <Tools/NetworkHelpers/ServiceCreatorDispatched.h>
+#include <Tools/NetworkHelpers/ServiceDeleterDispatched.h>
+
 #include <Network/NetCore.h>
+#include <Network/Base/Endpoint.h>
 #include <Network/PeerDesription.h>
 
 #include <QObject>
@@ -20,14 +23,8 @@ class MemProfController;
 // For now only one service - log receiver
 struct DeviceServices
 {
-    DeviceServices()
-        : log(nullptr)
-        , memprof(nullptr)
-    {
-    }
-
-    DeviceLogController* log;
-    MemProfController* memprof;
+    std::shared_ptr<DeviceLogController> log;
+    std::shared_ptr<MemProfController> memprof;
 };
 
 // Register types for use with QVariant
@@ -83,6 +80,12 @@ private:
 private:
     QPointer<QStandardItemModel> model;
     QPointer<DeviceListWidget> view;
+
+    DAVA::Net::ServiceCreatorDispatched loggerServiceCreatorAsync;
+    DAVA::Net::ServiceDeleterDispatched loggerServiceDeleterAsync;
+
+    DAVA::Net::ServiceCreatorDispatched profilerServiceCreatorAsync;
+    DAVA::Net::ServiceDeleterDispatched profilerServiceDeleterAsync;
 
 private:
     static QStandardItem* CreateDeviceItem(const DAVA::Net::Endpoint& endp, const DAVA::Net::PeerDescription& peerDescr);

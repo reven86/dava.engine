@@ -214,7 +214,11 @@ int DAVAMain(Vector<String> cmdLine)
       "NetCore", // AssetCacheClient
       "LocalizationSystem" // ResourcePacker2D::SetCacheClient is using DateTime::GetLocalizedTime() to create cache item
     };
-    e.Init(eEngineRunMode::CONSOLE_MODE, modules, nullptr);
+
+    KeyedArchive* options = new KeyedArchive; // options will be placed into RefPtr inside of Engine
+    options->SetBool("separate_net_thread", true);
+
+    e.Init(eEngineRunMode::CONSOLE_MODE, modules, options);
 
     e.update.Connect([&e](float32)
                      {

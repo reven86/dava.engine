@@ -9,6 +9,7 @@
 
 #include <QtTools/Utils/QtDelayedExecutor.h>
 
+class FindInDocumentController;
 class PreviewWidget;
 class EditorSystemsManager;
 class PackageNode;
@@ -79,10 +80,14 @@ private:
     DAVA::TArc::DataContext::ContextID GetContextByPath(const QString& path) const;
 
     void OnDragStateChanged(EditorSystemsManager::eDragState dragState, EditorSystemsManager::eDragState previousState);
+    void OnEditingRootControlsChanged(const SortedControlNodeSet& rootControls);
 
     PreviewWidget* previewWidget = nullptr;
     std::unique_ptr<EditorSystemsManager> systemsManager;
     DAVA::TArc::QtConnections connections;
+
+    friend class FindInDocumentController;
+    std::unique_ptr<FindInDocumentController> findInDocumentController;
 
     QtDelayedExecutor delayedExecutor;
 
