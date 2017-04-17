@@ -50,10 +50,15 @@ public:
 
 private:
     bool TakeOneNewTaskFromQueue();
+    CURL* CurlCreateHandle();
+    void CurlDeleteHandle(CURL* easy);
+    void SetupFullDownload(Task* justAddedTask);
+    void SetupResumeDownload(Task* justAddedTask);
+    void SetupGetSizeDownload(Task* justAddedTask);
     void DownloadThreadFunc();
 
     Deque<Task*> taskQueue;
-    Vector<CURL*> easyHandlesAll;
+    List<CURL*> reusableHandles;
     CURLM* multiHandle = nullptr;
     Thread* downloadThread = nullptr;
     Semaphore downloadSem; // to resume download thread

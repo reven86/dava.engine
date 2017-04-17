@@ -37,7 +37,8 @@ private:
 
     DAVA::FilePath folderWithDownloadedPacks = "~doc:/DLCManagerTest/packs/";
     // TODO quick and dirty way to test download on all platforms, in future replace with local http server
-    DAVA::String urlToServerSuperpack = "http://127.0.0.1:8080/superpack_for_unittests.dvpk";
+    DAVA::String urlToServerSuperpack = "http://dl-wotblitz.wargaming.net/dlc/r11608713/3.7.0.236.dvpk";
+    //"http://127.0.0.1:8080/superpack_for_unittests.dvpk";
     //"http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz/superpack_for_unittests.dvpk";
     //"http://127.0.0.1:2424/superpack.dvpk";
 
@@ -56,6 +57,7 @@ private:
     DAVA::UIStaticText* description = nullptr;
     DAVA::UITextField* url = nullptr;
     DAVA::UITextField* filePathField = nullptr;
+    DAVA::UITextField* numOfThreadDownload = nullptr;
     DAVA::UIButton* checkFile = nullptr;
     DAVA::UIButton* startInit = nullptr;
     DAVA::UIButton* startSync = nullptr;

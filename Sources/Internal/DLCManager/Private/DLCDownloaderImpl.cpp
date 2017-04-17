@@ -11,6 +11,8 @@
 
 namespace DAVA
 {
+static const size_t numOfMaxEasyHandles = 128;
+
 struct DefaultWriter : DLCDownloader::IWriter
 {
     DefaultWriter(const String& outputFile)
@@ -100,11 +102,11 @@ DLCDownloaderImpl::~DLCDownloaderImpl()
     curl_multi_cleanup(multiHandle);
     multiHandle = nullptr;
 
-    for (CURL* easy : easyHandlesAll)
+    for (CURL* easy : reusableHandles)
     {
         curl_easy_cleanup(easy);
     }
-    easyHandlesAll.clear();
+    reusableHandles.clear();
 
     if (!CurlDownloader::isCURLInit)
     {
@@ -226,27 +228,45 @@ static DLCDownloader::Task* FindJustEddedTask(Deque<DLCDownloader::Task*>& taskQ
     return nullptr;
 }
 
-static CURL* CurlSimpleInitHandle()
+CURL* DLCDownloaderImpl::CurlCreateHandle()
 {
-    CURL* curl_handle = curl_easy_init();
+    CURL* curl_handle = nullptr;
+
+    if (reusableHandles.empty())
+    {
+        curl_handle = curl_easy_init();
+        CURLcode code = CURLE_OK;
+        code = curl_easy_setopt(curl_handle, CURLOPT_NOPROGRESS, 1L); // Do we need it?
+        DVASSERT(CURLE_OK == code);
+
+        code = curl_easy_setopt(curl_handle, CURLOPT_VERBOSE, 0L);
+        DVASSERT(CURLE_OK == code);
+
+        code = curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, "DAVA DLC");
+        DVASSERT(CURLE_OK == code);
+
+        code = curl_easy_setopt(curl_handle, CURLOPT_SSL_VERIFYPEER, 0L);
+        DVASSERT(CURLE_OK == code);
+
+        code = curl_easy_setopt(curl_handle, CURLOPT_FOLLOWLOCATION, 1L);
+        DVASSERT(CURLE_OK == code);
+
+        code = curl_easy_setopt(curl_handle, CURLOPT_TCP_KEEPALIVE, 1L);
+        DVASSERT(CURLE_OK == code);
+    }
+    else
+    {
+        curl_handle = reusableHandles.front();
+        reusableHandles.pop_front();
+    }
+
     DVASSERT(curl_handle != nullptr);
-
-    CURLcode code = CURLE_OK;
-    code = curl_easy_setopt(curl_handle, CURLOPT_NOPROGRESS, 1L); // Do we need it?
-    DVASSERT(CURLE_OK == code);
-
-    code = curl_easy_setopt(curl_handle, CURLOPT_VERBOSE, 0L);
-    DVASSERT(CURLE_OK == code);
-
-    code = curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11");
-    DVASSERT(CURLE_OK == code);
-
-    code = curl_easy_setopt(curl_handle, CURLOPT_SSL_VERIFYPEER, 0L);
-    DVASSERT(CURLE_OK == code);
-
-    code = curl_easy_setopt(curl_handle, CURLOPT_FOLLOWLOCATION, 1L);
-    DVASSERT(CURLE_OK == code);
     return curl_handle;
+}
+
+void DLCDownloaderImpl::CurlDeleteHandle(CURL* easy)
+{
+    reusableHandles.push_back(easy);
 }
 
 static void CurlSetTimeout(DLCDownloader::Task* justAddedTask, CURL* easyHandle)
@@ -300,23 +320,23 @@ static void StoreHandle(DLCDownloader::Task* justAddedTask, CURL* easyHandle)
     }
 }
 
-static void SetupFullDownload(DLCDownloader::Task* justAddedTask)
+void DLCDownloaderImpl::SetupFullDownload(Task* justAddedTask)
 {
     CURLcode code = CURLE_OK;
 
     auto& info = justAddedTask->info;
 
-    if (info.customWriter == nullptr && DLCDownloader::TaskType::SIZE != info.type)
+    if (info.customWriter == nullptr && TaskType::SIZE != info.type)
     {
         justAddedTask->defaultWriter.reset(new DefaultWriter(info.dstPath));
     }
 
-    CURL* easyHandle = CurlSimpleInitHandle();
+    CURL* easyHandle = CurlCreateHandle();
     DVASSERT(easyHandle != nullptr);
 
     StoreHandle(justAddedTask, easyHandle);
 
-    DLCDownloader::IWriter* writer = info.customWriter != nullptr ? info.customWriter : justAddedTask->defaultWriter.get();
+    IWriter* writer = info.customWriter != nullptr ? info.customWriter : justAddedTask->defaultWriter.get();
     DVASSERT(writer != nullptr);
 
     const char* url = justAddedTask->info.srcUrl.c_str();
@@ -356,23 +376,23 @@ static void SetupFullDownload(DLCDownloader::Task* justAddedTask)
     CurlSetTimeout(justAddedTask, easyHandle);
 }
 
-static void SetupResumeDownload(DLCDownloader::Task* justAddedTask)
+void DLCDownloaderImpl::SetupResumeDownload(Task* justAddedTask)
 {
     CURLcode code = CURLE_OK;
 
-    CURL* easyHandle = CurlSimpleInitHandle();
+    CURL* easyHandle = CurlCreateHandle();
     DVASSERT(easyHandle != nullptr);
 
     StoreHandle(justAddedTask, easyHandle);
 
     auto& info = justAddedTask->info;
 
-    if (info.customWriter == nullptr && DLCDownloader::TaskType::SIZE != info.type)
+    if (info.customWriter == nullptr && TaskType::SIZE != info.type)
     {
         justAddedTask->defaultWriter.reset(new DefaultWriter(info.dstPath));
     }
 
-    DLCDownloader::IWriter* writer = info.customWriter != nullptr ? info.customWriter : justAddedTask->defaultWriter.get();
+    IWriter* writer = info.customWriter != nullptr ? info.customWriter : justAddedTask->defaultWriter.get();
     DVASSERT(writer != nullptr);
 
     const char* url = justAddedTask->info.srcUrl.c_str();
@@ -398,11 +418,11 @@ static void SetupResumeDownload(DLCDownloader::Task* justAddedTask)
     CurlSetTimeout(justAddedTask, easyHandle);
 }
 
-static void SetupGetSizeDownload(DLCDownloader::Task* justAddedTask)
+void DLCDownloaderImpl::SetupGetSizeDownload(DLCDownloader::Task* justAddedTask)
 {
     CURLcode code = CURLE_OK;
 
-    CURL* easyHandle = CurlSimpleInitHandle();
+    CURL* easyHandle = CurlCreateHandle();
     DVASSERT(easyHandle != nullptr);
 
     StoreHandle(justAddedTask, easyHandle);
@@ -419,11 +439,6 @@ static void SetupGetSizeDownload(DLCDownloader::Task* justAddedTask)
     // Don't return the header (we'll use curl_getinfo();
     code = curl_easy_setopt(easyHandle, CURLOPT_NOBODY, 1L);
     DVASSERT(CURLE_OK == code);
-
-    //CURLcode curlStatus = curl_easy_perform(easyHandle);
-    //double sizeToDownload = 0.0;
-    //curl_easy_getinfo(easyHandle, CURLINFO_CONTENT_LENGTH_DOWNLOAD, &sizeToDownload);
-    //Logger::Info("size is = %f", sizeToDownload);
 }
 
 // return number of still running handles
@@ -465,7 +480,7 @@ bool DLCDownloaderImpl::TakeOneNewTaskFromQueue()
 
 void DLCDownloaderImpl::DownloadThreadFunc()
 {
-    const int maxSimultaniousDownloads = 128;
+    const int maxSimultaniousDownloads = 8;
     Thread* currentThread = Thread::Current();
     DVASSERT(currentThread != nullptr);
 
@@ -561,7 +576,7 @@ void DLCDownloaderImpl::DownloadThreadFunc()
 
                     CURLMcode code = curl_multi_remove_handle(multiHandle, easyHandle);
                     DVASSERT(CURLM_OK == code);
-                    curl_easy_cleanup(easyHandle);
+                    CurlDeleteHandle(easyHandle);
                 }
             } while (curlMsg);
 

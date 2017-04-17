@@ -126,6 +126,8 @@ DLCManagerImpl::DLCManagerImpl(Engine* engine_)
 {
     DVASSERT(Thread::IsMainThread());
     engine.update.Connect(this, &DLCManagerImpl::Update);
+    engine.backgroundUpdate.Connect(this, &DLCManagerImpl::Update);
+
     downloader.reset(new DLCDownloaderImpl());
 }
 #endif
@@ -188,6 +190,7 @@ DLCManagerImpl::~DLCManagerImpl()
 
 #ifdef __DAVAENGINE_COREV2__
     engine.update.Disconnect(this);
+    engine.backgroundUpdate.Disconnect(this);
 #endif
 
     ClearResouces();
@@ -492,15 +495,16 @@ PackRequest* DLCManagerImpl::CreateNewRequest(const String& requestedPackName)
 
     PackRequest* request = new PackRequest(*this, requestedPackName, std::move(packIndexes));
 
-    Vector<String> deps = request->GetDependencies();
+    Vector<uint32> deps = request->GetDependencies();
 
-    for (const String& dependent : deps)
+    for (uint32 dependent : deps)
     {
-        PackRequest* r = FindRequest(dependent);
+        const String& depPackName = meta->GetPackInfo(dependent).packName;
+        PackRequest* r = FindRequest(depPackName);
         if (nullptr == r)
         {
             // recursive call
-            PackRequest* dependentRequest = CreateNewRequest(dependent);
+            PackRequest* dependentRequest = CreateNewRequest(depPackName);
             DVASSERT(dependentRequest != nullptr);
         }
     }
@@ -953,10 +957,12 @@ bool DLCManagerImpl::IsPackDownloaded(const String& packName)
             }
         }
 
-        Vector<String> deps = meta->GetDependencyNames(packName);
-        for (const String& dependencyPack : deps)
+        Vector<uint32> deps = meta->GetPackDependencyIndexes(packName);
+
+        for (uint32 dependencyPack : deps)
         {
-            if (!IsPackDownloaded(dependencyPack)) // recursive call
+            const String& depPackName = meta->GetPackInfo(dependencyPack).packName;
+            if (!IsPackDownloaded(depPackName)) // recursive call
             {
                 return false;
             }
@@ -1066,10 +1072,6 @@ DLCManager::Progress DLCManagerImpl::GetProgress() const
     using namespace PackFormat;
 
     Progress progress;
-    if (!isProcessingEnabled)
-    {
-        return progress;
-    }
 
     if (!IsInitialized())
     {

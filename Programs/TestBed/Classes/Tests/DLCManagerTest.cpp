@@ -50,7 +50,7 @@ void DLCManagerTest::LoadResources()
 
     packInput = new UITextField(Rect(5, 10, 400, 20));
     packInput->SetFont(font);
-    packInput->SetText(L"0");
+    packInput->SetUtf8Text("all_level_packs");
     packInput->SetFontSize(14);
     packInput->SetDebugDraw(true);
     packInput->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
