@@ -31,6 +31,7 @@ AssetCacheClient::AssetCacheClient()
 
 AssetCacheClient::~AssetCacheClient()
 {
+    //Logger::Debug("%s", __FUNCTION__);
     client.RemoveListener(this);
 
     DVASSERT(isActive == false);
@@ -78,13 +79,13 @@ void AssetCacheClient::Disconnect()
         LockGuard<Mutex> guard(connectEstablishLocker);
     }
 
-    client.Disconnect();
+    client.DisconnectBlocked();
 }
 
 AssetCache::Error AssetCacheClient::CheckStatusSynchronously()
 {
     {
-        LockGuard<Mutex> guard(requestLocker);
+        LockGuard<Mutex> guard(requestLocker); 
         request = Request();
         request.requestID = AssetCache::ePacketID::PACKET_STATUS_REQUEST;
     }

@@ -155,16 +155,38 @@ NetCore::TrackId NetCore::CreateDiscoverer(const Endpoint& endpoint, Function<vo
 #endif
 }
 
-void NetCore::DestroyController(TrackId id)
+void NetCore::DestroyController(TrackId id, Function<void()> callback)
 {
 #if !defined(DAVA_NETWORK_DISABLE)
     DVASSERT(state == State::ACTIVE);
-    DVASSERT(GetTrackedObject(id) != NULL);
+
+    IController* ctrl = GetTrackedObject(id);
+    DVASSERT(ctrl != nullptr);
+
     if (id == discovererId)
     {
         discovererId = INVALID_TRACK_ID;
     }
-    loop->Post(Bind(&NetCore::DoDestroy, this, GetTrackedObject(id)));
+
+    if (callback)
+    {
+        controllerStoppedCallback.emplace(TrackIdToObject(id), callback);
+    }
+
+    size_t erased = 0;
+    {
+        LockGuard<Mutex> lock(trackedObjectsMutex);
+        erased = trackedObjects.erase(ctrl);
+    }
+
+    if (erased > 0)
+    {
+        {
+            LockGuard<Mutex> lock(dyingObjectsMutex);
+            dyingObjects.emplace(ctrl);
+        }
+        loop->Post(Bind(&NetCore::DoDestroy, this, ctrl));
+    }
 #endif
 }
 
@@ -231,9 +253,9 @@ void NetCore::DestroyAllControllers(Function<void()> callback)
 {
 #if !defined(DAVA_NETWORK_DISABLE)
     DVASSERT(state == State::ACTIVE);
-    DVASSERT(controllersStoppedCallback == nullptr);
+    DVASSERT(allControllersStoppedCallback == nullptr);
 
-    controllersStoppedCallback = callback;
+    allControllersStoppedCallback = callback;
     PostAllToDestroy();
 #endif
 }
@@ -242,7 +264,7 @@ void NetCore::DestroyAllControllersBlocked()
 {
 #if !defined(DAVA_NETWORK_DISABLE)
     DVASSERT(state == State::ACTIVE);
-    DVASSERT(controllersStoppedCallback == nullptr);
+    DVASSERT(allControllersStoppedCallback == nullptr);
 
     PostAllToDestroy();
     WaitForAllDestroyed();
@@ -350,10 +372,10 @@ void NetCore::DoDestroy(IController* ctrl)
 
 void NetCore::AllDestroyed()
 {
-    if (controllersStoppedCallback != nullptr)
+    if (allControllersStoppedCallback != nullptr)
     {
-        controllersStoppedCallback();
-        controllersStoppedCallback = nullptr;
+        allControllersStoppedCallback();
+        allControllersStoppedCallback = nullptr;
     }
     if (state == State::FINISHING)
     {
@@ -379,6 +401,14 @@ void NetCore::TrackedObjectStopped(IController* obj)
     if (dyingObjects.erase(obj) == 0)
     {
         DVASSERT(false && "dying object is not found");
+    }
+
+    auto cbkFound = controllerStoppedCallback.find(obj);
+    if (cbkFound != controllerStoppedCallback.end())
+    {
+        Function<void()>& callback = cbkFound->second;
+        callback();
+        controllerStoppedCallback.erase(cbkFound);
     }
 
     if (true == dyingObjects.empty() && true == trackedObjects.empty())

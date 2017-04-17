@@ -23,14 +23,17 @@ class Connection final : public Net::IChannelListener, public std::enable_shared
 {
 public:
     static std::shared_ptr<Connection> MakeConnection(
-    Dispatcher<Function<void()>>* dispatcher,
-    Net::eNetworkRole role,
-    const Net::Endpoint& endpoint,
-    Net::IChannelListener* listener,
-    Net::eTransportType transport = Net::TRANSPORT_TCP,
-    uint32 timeoutMs = 5 * 1000);
+        Dispatcher<Function<void()>>* dispatcher,
+        Net::eNetworkRole role,
+        const Net::Endpoint& endpoint,
+        Net::IChannelListener* listener,
+        Net::eTransportType transport = Net::TRANSPORT_TCP,
+        uint32 timeoutMs = 5 * 1000);
 
     ~Connection();
+
+    void Disconnect();
+    void DisconnectBlocked();
 
     const Net::Endpoint& GetEndpoint() const;
 
@@ -44,7 +47,6 @@ public:
 private:
     Connection(Dispatcher<Function<void()>>* dispatcher, Net::eNetworkRole role, const Net::Endpoint& endpoint, Net::IChannelListener* listener, Net::eTransportType transport, uint32 timeoutMs);
     bool Connect(Net::eNetworkRole _role, Net::eTransportType transport, uint32 timeoutMs);
-    void DisconnectBlocked();
 
     static Net::IChannelListener* Create(uint32 serviceId, void* context);
     static void Delete(Net::IChannelListener* obj, void* context);
@@ -56,7 +58,7 @@ private:
     Net::NetCore::TrackId controllerId = Net::NetCore::INVALID_TRACK_ID;
 
     Net::IChannelListener* listener = nullptr;
-    std::unique_ptr<Net::ChannelListenerDispatched> channelListenerDispatched;
+    std::shared_ptr<Net::ChannelListenerDispatched> channelListenerDispatched;
 };
 
 inline const Net::Endpoint& Connection::GetEndpoint() const

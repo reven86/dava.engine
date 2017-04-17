@@ -38,11 +38,24 @@ void ClientNetProxy::Connect(const String& ip, uint16 port)
 
 void ClientNetProxy::Disconnect()
 {
-    Logger::FrameworkDebug("ClientNetProxy::Disconnect");
+    //Logger::Debug("ClientNetProxy::Disconnect %p", this);
     openedChannel = nullptr;
 
     addressResolver.Cancel();
     netClient.reset();
+}
+
+void ClientNetProxy::DisconnectBlocked()
+{
+    //Logger::Debug("ClientNetProxy::Disconnect %p", this);
+    openedChannel = nullptr;
+
+    addressResolver.Cancel();
+    if (netClient)
+    {
+        netClient->DisconnectBlocked();
+        netClient.reset();
+    }
 }
 
 void ClientNetProxy::OnAddressResolved(const Net::Endpoint& endpoint, int32 status)

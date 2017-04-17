@@ -45,6 +45,7 @@ public:
 
     void Connect(const String& ip, uint16 port);
     void Disconnect();
+    void DisconnectBlocked();
 
     bool ChannelIsOpened() const;
 
