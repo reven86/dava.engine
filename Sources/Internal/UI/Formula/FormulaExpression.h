@@ -21,27 +21,13 @@ public:
     {
     }
 
-    virtual void Visit(FormulaValueExpression* exp)
-    {
-    }
-    virtual void Visit(FormulaNegExpression* exp)
-    {
-    }
-    virtual void Visit(FormulaNotExpression* exp)
-    {
-    }
-    virtual void Visit(FormulaBinaryOperatorExpression* exp)
-    {
-    }
-    virtual void Visit(FormulaFunctionExpression* exp)
-    {
-    }
-    virtual void Visit(FormulaFieldAccessExpression* exp)
-    {
-    }
-    virtual void Visit(FormulaIndexExpression* exp)
-    {
-    }
+    virtual void Visit(FormulaValueExpression* exp) = 0;
+    virtual void Visit(FormulaNegExpression* exp) = 0;
+    virtual void Visit(FormulaNotExpression* exp) = 0;
+    virtual void Visit(FormulaBinaryOperatorExpression* exp) = 0;
+    virtual void Visit(FormulaFunctionExpression* exp) = 0;
+    virtual void Visit(FormulaFieldAccessExpression* exp) = 0;
+    virtual void Visit(FormulaIndexExpression* exp) = 0;
 };
 
 /**

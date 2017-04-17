@@ -15,24 +15,6 @@ namespace DAVA
 using std::make_shared;
 using std::shared_ptr;
 
-FormulaContext::FormulaContext()
-{
-}
-
-FormulaContext::~FormulaContext()
-{
-}
-
-AnyFn FormulaContext::FindFunction(const String& name, const Vector<const Type*>& types) const
-{
-    return AnyFn();
-}
-
-Reflection FormulaContext::FindReflection(const String& name) const
-{
-    return Reflection();
-}
-
 FormulaReflectionContext::FormulaReflectionContext(const Reflection& ref_, std::shared_ptr<FormulaContext> parent_)
     : reflection(ref_)
     , parent(parent_)

@@ -5,6 +5,8 @@
 
 #include "Debug/DVAssert.h"
 
+#include <cinttypes>
+
 namespace DAVA
 {
 FormulaFormatter::FormulaFormatter()
@@ -27,35 +29,35 @@ String FormulaFormatter::AnyToString(const Any& val)
 {
     if (val.CanGet<int32>())
     {
-        return DAVA::Format("%d", val.Get<int32>());
+        return DAVA::Format("%" PRId32, val.Get<int32>());
     }
     else if (val.CanGet<uint32>())
     {
-        return DAVA::Format("%dU", val.Get<uint32>());
-    }
-    else if (val.CanGet<uint64>())
-    {
-        return DAVA::Format("%ldUL", val.Get<uint64>());
+        return DAVA::Format("%" PRIu32 "U", val.Get<uint32>());
     }
     else if (val.CanGet<int64>())
     {
-        return DAVA::Format("%ldL", val.Get<int64>());
+        return DAVA::Format("%" PRId64 "L", val.Get<int64>());
     }
-    else if (val.CanGet<uint16>())
+    else if (val.CanGet<uint64>())
     {
-        return DAVA::Format("%d", val.Get<int16>());
+        return DAVA::Format("%" PRIu64 "UL", val.Get<uint64>());
     }
     else if (val.CanGet<int16>())
     {
         return DAVA::Format("%d", val.Get<int16>());
     }
-    else if (val.CanGet<uint8>())
+    else if (val.CanGet<uint16>())
     {
-        return DAVA::Format("%d", val.Get<uint8>());
+        return DAVA::Format("%d", val.Get<int16>());
     }
     else if (val.CanGet<int8>())
     {
         return DAVA::Format("%d", val.Get<int8>());
+    }
+    else if (val.CanGet<uint8>())
+    {
+        return DAVA::Format("%d", val.Get<uint8>());
     }
     else if (val.CanGet<float32>())
     {

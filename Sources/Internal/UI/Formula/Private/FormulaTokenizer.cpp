@@ -1,6 +1,6 @@
 #include "UI/Formula/Private/FormulaTokenizer.h"
 
-#include "UI/Formula/FormulaError.h"
+#include "UI/Formula/FormulaException.h"
 
 #include "Debug/DVAssert.h"
 #include "Utils/StringFormat.h"
@@ -264,7 +264,7 @@ FormulaToken FormulaTokenizer::ReadToken()
             ReadChar();
             return FormulaToken(FormulaToken::AND, line, column);
         }
-        DAVA_THROW(FormulaError, "Can't resolve symbol '&'", line, column);
+        DAVA_THROW(FormulaException, "Can't resolve symbol '&'", line, column);
 
     case '|':
         ReadChar();
@@ -273,7 +273,7 @@ FormulaToken FormulaTokenizer::ReadToken()
             ReadChar();
             return FormulaToken(FormulaToken::OR, line, column);
         }
-        DAVA_THROW(FormulaError, "Can't resolve symbol '|'", line, column);
+        DAVA_THROW(FormulaException, "Can't resolve symbol '|'", line, column);
 
     case '(':
         ReadChar();
@@ -311,7 +311,7 @@ FormulaToken FormulaTokenizer::ReadToken()
 
         if (ch == '\0')
         {
-            DAVA_THROW(FormulaError, "Illegal line end in string literal", lineNumber, positionInLine);
+            DAVA_THROW(FormulaException, "Illegal line end in string literal", lineNumber, positionInLine);
         }
         ReadChar();
 
@@ -398,7 +398,7 @@ FormulaToken FormulaTokenizer::ReadToken()
         }
         return FormulaToken(FormulaToken::INT32, ParseInt<int32>(first, last), lineNumber, first);
     }
-    DAVA_THROW(FormulaError, "Can't resolve symbol", lineNumber, positionInLine);
+    DAVA_THROW(FormulaException, "Can't resolve symbol", lineNumber, positionInLine);
 }
 
 float32 FormulaTokenizer::ParseFloat(int32 startPos, int32 endPos, int32 dotPos)

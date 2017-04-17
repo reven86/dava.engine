@@ -15,11 +15,11 @@ namespace DAVA
 class FormulaContext
 {
 public:
-    FormulaContext();
-    virtual ~FormulaContext();
+    FormulaContext(){};
+    virtual ~FormulaContext(){};
 
-    virtual AnyFn FindFunction(const String& name, const Vector<const Type*>& types) const;
-    virtual Reflection FindReflection(const String& name) const;
+    virtual AnyFn FindFunction(const String& name, const Vector<const Type*>& types) const = 0;
+    virtual Reflection FindReflection(const String& name) const = 0;
 };
 
 /**

@@ -1,7 +1,7 @@
 #include "UI/Formula/FormulaExecutor.h"
 
 #include "UI/Formula/FormulaContext.h"
-#include "UI/Formula/FormulaError.h"
+#include "UI/Formula/FormulaException.h"
 #include "UI/Formula/FormulaFormatter.h"
 #include "Utils/StringFormat.h"
 
@@ -77,7 +77,7 @@ void FormulaExecutor::Visit(FormulaNegExpression* exp)
     }
     else
     {
-        DAVA_THROW(FormulaError, Format("Invalid argument type '%s' to unary '-' expression", FormulaFormatter::AnyTypeToString(val).c_str()), exp);
+        DAVA_THROW(FormulaException, Format("Invalid argument type '%s' to unary '-' expression", FormulaFormatter::AnyTypeToString(val).c_str()), exp);
     }
 }
 
@@ -90,7 +90,7 @@ void FormulaExecutor::Visit(FormulaNotExpression* exp)
     }
     else
     {
-        DAVA_THROW(FormulaError, Format("Invalid argument type '%s' to unary '!' expression", FormulaFormatter::AnyTypeToString(val).c_str()), exp);
+        DAVA_THROW(FormulaException, Format("Invalid argument type '%s' to unary '!' expression", FormulaFormatter::AnyTypeToString(val).c_str()), exp);
     }
 }
 
@@ -144,10 +144,10 @@ void FormulaExecutor::Visit(FormulaBinaryOperatorExpression* exp)
             break;
 
         default:
-            DAVA_THROW(FormulaError, Format("Operator '%s' cannot be applied to '%s', '%s'",
-                                            FormulaFormatter::BinaryOpToString(exp->GetOperator()).c_str(),
-                                            FormulaFormatter::AnyTypeToString(l).c_str(),
-                                            FormulaFormatter::AnyTypeToString(r).c_str()),
+            DAVA_THROW(FormulaException, Format("Operator '%s' cannot be applied to '%s', '%s'",
+                                                FormulaFormatter::BinaryOpToString(exp->GetOperator()).c_str(),
+                                                FormulaFormatter::AnyTypeToString(l).c_str(),
+                                                FormulaFormatter::AnyTypeToString(r).c_str()),
                        exp);
         }
     }
@@ -170,19 +170,19 @@ void FormulaExecutor::Visit(FormulaBinaryOperatorExpression* exp)
             break;
 
         default:
-            DAVA_THROW(FormulaError, Format("Operator '%s' cannot be applied to '%s', '%s'",
-                                            FormulaFormatter::BinaryOpToString(exp->GetOperator()).c_str(),
-                                            FormulaFormatter::AnyTypeToString(l).c_str(),
-                                            FormulaFormatter::AnyTypeToString(r).c_str()),
+            DAVA_THROW(FormulaException, Format("Operator '%s' cannot be applied to '%s', '%s'",
+                                                FormulaFormatter::BinaryOpToString(exp->GetOperator()).c_str(),
+                                                FormulaFormatter::AnyTypeToString(l).c_str(),
+                                                FormulaFormatter::AnyTypeToString(r).c_str()),
                        exp);
         }
     }
     else
     {
-        DAVA_THROW(FormulaError, Format("Operator '%s' cannot be applied to '%s', '%s'",
-                                        FormulaFormatter::BinaryOpToString(exp->GetOperator()).c_str(),
-                                        FormulaFormatter::AnyTypeToString(l).c_str(),
-                                        FormulaFormatter::AnyTypeToString(r).c_str()),
+        DAVA_THROW(FormulaException, Format("Operator '%s' cannot be applied to '%s', '%s'",
+                                            FormulaFormatter::BinaryOpToString(exp->GetOperator()).c_str(),
+                                            FormulaFormatter::AnyTypeToString(l).c_str(),
+                                            FormulaFormatter::AnyTypeToString(r).c_str()),
                    exp);
     }
 }
@@ -215,7 +215,7 @@ void FormulaExecutor::Visit(FormulaFunctionExpression* exp)
             }
             args += FormulaFormatter::AnyTypeToString(values[i]);
         }
-        DAVA_THROW(FormulaError, Format("Can't resolve function '%s(%s)'", exp->GetName().c_str(), args.c_str()), exp);
+        DAVA_THROW(FormulaException, Format("Can't resolve function '%s(%s)'", exp->GetName().c_str(), args.c_str()), exp);
     }
 
     int32 index = 0;
@@ -270,7 +270,7 @@ void FormulaExecutor::Visit(FormulaFunctionExpression* exp)
             }
             args += FormulaFormatter::AnyTypeToString(values[i]);
         }
-        DAVA_THROW(FormulaError,
+        DAVA_THROW(FormulaException,
                    Format("Function '%s(%s)' has to much arguments (more than 6)",
                           exp->GetName().c_str(),
                           args.c_str()),
@@ -305,7 +305,7 @@ void FormulaExecutor::Visit(FormulaFieldAccessExpression* exp)
     }
     else
     {
-        DAVA_THROW(FormulaError, Format("Can't resolve symbol '%s'", exp->GetFieldName().c_str()), exp);
+        DAVA_THROW(FormulaException, Format("Can't resolve symbol '%s'", exp->GetFieldName().c_str()), exp);
     }
 }
 
@@ -323,16 +323,16 @@ void FormulaExecutor::Visit(FormulaIndexExpression* exp)
         }
         else
         {
-            DAVA_THROW(FormulaError, Format("Can't get data '%s' by index '%s' with type '%s'",
-                                            FormulaFormatter().Format(exp).c_str(),
-                                            FormulaFormatter::AnyToString(indexVal).c_str(),
-                                            FormulaFormatter::AnyTypeToString(indexVal).c_str()),
+            DAVA_THROW(FormulaException, Format("Can't get data '%s' by index '%s' with type '%s'",
+                                                FormulaFormatter().Format(exp).c_str(),
+                                                FormulaFormatter::AnyToString(indexVal).c_str(),
+                                                FormulaFormatter::AnyTypeToString(indexVal).c_str()),
                        exp);
         }
     }
     else
     {
-        DAVA_THROW(FormulaError, Format("It's not data access expression '%s'", FormulaFormatter().Format(exp).c_str()), exp);
+        DAVA_THROW(FormulaException, Format("It's not data access expression '%s'", FormulaFormatter().Format(exp).c_str()), exp);
     }
 }
 
@@ -351,7 +351,7 @@ const Any& FormulaExecutor::CalculateImpl(FormulaExpression* exp)
         }
         else
         {
-            DAVA_THROW(FormulaError,
+            DAVA_THROW(FormulaException,
                        Format("Can't calculate expression '%s'",
                               FormulaFormatter().Format(exp).c_str()),
                        exp);
@@ -377,7 +377,7 @@ const Reflection& FormulaExecutor::GetDataReferenceImpl(FormulaExpression* exp)
     }
     else
     {
-        DAVA_THROW(FormulaError,
+        DAVA_THROW(FormulaException,
                    Format("Can't get data reference '%s'",
                           FormulaFormatter().Format(exp).c_str()),
                    exp);

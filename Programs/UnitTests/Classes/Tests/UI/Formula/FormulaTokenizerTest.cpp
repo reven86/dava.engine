@@ -1,7 +1,7 @@
 #include "DAVAEngine.h"
 
 #include "UI/Formula/FormulaParser.h"
-#include "UI/Formula/FormulaError.h"
+#include "UI/Formula/FormulaException.h"
 #include "UI/Formula/Private/FormulaTokenizer.h"
 
 #include "UnitTests/UnitTests.h"
@@ -243,7 +243,7 @@ DAVA_TESTCLASS (FormulaTokenizerTest)
         {
             FormulaTokenizer("&").ReadToken();
         }
-        catch (const FormulaError& error)
+        catch (const FormulaException& error)
         {
             wasException = true;
         }
@@ -254,7 +254,7 @@ DAVA_TESTCLASS (FormulaTokenizerTest)
         {
             FormulaTokenizer("|").ReadToken();
         }
-        catch (const FormulaError& error)
+        catch (const FormulaException& error)
         {
             wasException = true;
         }
@@ -265,7 +265,7 @@ DAVA_TESTCLASS (FormulaTokenizerTest)
         {
             FormulaTokenizer("@").ReadToken();
         }
-        catch (const FormulaError& error)
+        catch (const FormulaException& error)
         {
             wasException = true;
         }
@@ -276,7 +276,7 @@ DAVA_TESTCLASS (FormulaTokenizerTest)
         {
             FormulaTokenizer("@").ReadToken();
         }
-        catch (const FormulaError& error)
+        catch (const FormulaException& error)
         {
             wasException = true;
         }
@@ -287,7 +287,7 @@ DAVA_TESTCLASS (FormulaTokenizerTest)
         {
             FormulaTokenizer("\"sadfds ").ReadToken();
         }
-        catch (const FormulaError& error)
+        catch (const FormulaException& error)
         {
             wasException = true;
         }

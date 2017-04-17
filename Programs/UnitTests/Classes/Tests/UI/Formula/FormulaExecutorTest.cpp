@@ -2,7 +2,7 @@
 
 #include "UI/Formula/FormulaParser.h"
 #include "UI/Formula/FormulaExecutor.h"
-#include "UI/Formula/FormulaError.h"
+#include "UI/Formula/FormulaException.h"
 #include "UI/Formula/FormulaFormatter.h"
 
 #include "Reflection/ReflectionRegistrator.h"
@@ -125,7 +125,7 @@ DAVA_TESTCLASS (FormulaExecutorTest)
             Execute("5 + 5L");
             TEST_VERIFY(false);
         }
-        catch (const FormulaError& error)
+        catch (const FormulaException& error)
         {
             TEST_VERIFY(error.GetFormattedMessage() == "[1, 3] Operator '+' cannot be applied to 'int32', 'int64'");
         }
@@ -135,7 +135,7 @@ DAVA_TESTCLASS (FormulaExecutorTest)
             Execute("5U + 5UL");
             TEST_VERIFY(false);
         }
-        catch (const FormulaError& error)
+        catch (const FormulaException& error)
         {
             TEST_VERIFY(error.GetFormattedMessage() == "[1, 4] Operator '+' cannot be applied to 'uint32', 'uint64'");
         }
@@ -145,7 +145,7 @@ DAVA_TESTCLASS (FormulaExecutorTest)
             Execute("5L + 5UL");
             TEST_VERIFY(false);
         }
-        catch (const FormulaError& error)
+        catch (const FormulaException& error)
         {
             TEST_VERIFY(error.GetFormattedMessage() == "[1, 4] Operator '+' cannot be applied to 'int64', 'uint64'");
         }
@@ -155,7 +155,7 @@ DAVA_TESTCLASS (FormulaExecutorTest)
             Execute("5L + \"543543\"");
             TEST_VERIFY(false);
         }
-        catch (const FormulaError& error)
+        catch (const FormulaException& error)
         {
             TEST_VERIFY(error.GetFormattedMessage() == "[1, 4] Operator '+' cannot be applied to 'int64', 'String'");
         }
@@ -164,7 +164,7 @@ DAVA_TESTCLASS (FormulaExecutorTest)
         {
             Execute("\"54354\" - \"543543\"");
         }
-        catch (const FormulaError& error)
+        catch (const FormulaException& error)
         {
             TEST_VERIFY(error.GetFormattedMessage() == "[1, 9] Operator '-' cannot be applied to 'String', 'String'");
         }
@@ -173,7 +173,7 @@ DAVA_TESTCLASS (FormulaExecutorTest)
         {
             Execute("false * true");
         }
-        catch (const FormulaError& error)
+        catch (const FormulaException& error)
         {
             TEST_VERIFY(error.GetFormattedMessage() == "[1, 7] Operator '*' cannot be applied to 'bool', 'bool'");
         }
@@ -182,7 +182,7 @@ DAVA_TESTCLASS (FormulaExecutorTest)
         {
             Execute("!5");
         }
-        catch (const FormulaError& error)
+        catch (const FormulaException& error)
         {
             TEST_VERIFY(error.GetFormattedMessage() == "[1, 1] Invalid argument type 'int32' to unary '!' expression");
         }
@@ -191,7 +191,7 @@ DAVA_TESTCLASS (FormulaExecutorTest)
         {
             Execute("-true");
         }
-        catch (const FormulaError& error)
+        catch (const FormulaException& error)
         {
             TEST_VERIFY(error.GetFormattedMessage() == "[1, 1] Invalid argument type 'bool' to unary '-' expression");
         }
@@ -214,7 +214,7 @@ DAVA_TESTCLASS (FormulaExecutorTest)
             Execute("map.d");
             TEST_VERIFY(false);
         }
-        catch (const FormulaError& error)
+        catch (const FormulaException& error)
         {
             TEST_VERIFY(error.GetFormattedMessage() == "[1, 5] Can't resolve symbol 'd'");
         }
@@ -234,7 +234,7 @@ DAVA_TESTCLASS (FormulaExecutorTest)
             Execute("array[5.5]");
             TEST_VERIFY(false);
         }
-        catch (const FormulaError& error)
+        catch (const FormulaException& error)
         {
             TEST_VERIFY(error.GetFormattedMessage() == "[1, 6] Can't get data 'array[5.500000]' by index '5.500000' with type 'float32'");
         }
@@ -258,7 +258,7 @@ DAVA_TESTCLASS (FormulaExecutorTest)
             Execute("sum(1, 2, 3)");
             TEST_VERIFY(false);
         }
-        catch (const FormulaError& error)
+        catch (const FormulaException& error)
         {
             TEST_VERIFY(error.GetFormattedMessage() == "[1, 1] Can't resolve function 'sum(int32, int32, int32)'");
         }
@@ -268,7 +268,7 @@ DAVA_TESTCLASS (FormulaExecutorTest)
             Execute("floatToStr(true)");
             TEST_VERIFY(false);
         }
-        catch (const FormulaError& error)
+        catch (const FormulaException& error)
         {
             TEST_VERIFY(error.GetFormattedMessage() == "[1, 1] Can't resolve function 'floatToStr(bool)'");
         }
