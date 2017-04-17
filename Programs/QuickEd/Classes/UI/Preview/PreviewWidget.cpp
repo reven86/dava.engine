@@ -7,8 +7,9 @@
 
 #include "Ruler/RulerWidget.h"
 #include "Ruler/RulerController.h"
-#include "UI/QtModelPackageCommandExecutor.h"
+#include "UI/Find/Widgets/FindInDocumentWidget.h"
 #include "UI/Package/PackageMimeData.h"
+#include "UI/QtModelPackageCommandExecutor.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 #include "Model/PackageHierarchy/PackageBaseNode.h"
@@ -104,15 +105,9 @@ float PreviewWidget::GetScaleFromComboboxText() const
     return scaleValue / 100.0f;
 }
 
-void PreviewWidget::InjectRenderWidget(DAVA::RenderWidget* renderWidget_)
+FindInDocumentWidget* PreviewWidget::GetFindInDocumentWidget()
 {
-    DVASSERT(renderWidget_ != nullptr);
-    renderWidget = renderWidget_;
-    CreateActions();
-
-    renderWidget->resized.Connect(this, &PreviewWidget::OnResized);
-
-    renderWidget->SetClientDelegate(this);
+    return findInDocumentWidget;
 }
 
 void PreviewWidget::CreateActions()
@@ -121,25 +116,31 @@ void PreviewWidget::CreateActions()
     importPackageAction->setShortcut(QKeySequence::New);
     importPackageAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     connect(importPackageAction, &QAction::triggered, this, &PreviewWidget::ImportRequested);
-    addAction(importPackageAction);
+    renderWidget->addAction(importPackageAction);
 
     QAction* cutAction = new QAction(tr("Cut"), this);
     cutAction->setShortcut(QKeySequence::Cut);
     cutAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     connect(cutAction, &QAction::triggered, this, &PreviewWidget::CutRequested);
-    addAction(cutAction);
+    renderWidget->addAction(cutAction);
 
     QAction* copyAction = new QAction(tr("Copy"), this);
     copyAction->setShortcut(QKeySequence::Copy);
     copyAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     connect(copyAction, &QAction::triggered, this, &PreviewWidget::CopyRequested);
-    addAction(copyAction);
+    renderWidget->addAction(copyAction);
 
     QAction* pasteAction = new QAction(tr("Paste"), this);
     pasteAction->setShortcut(QKeySequence::Paste);
     pasteAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     connect(pasteAction, &QAction::triggered, this, &PreviewWidget::PasteRequested);
-    addAction(pasteAction);
+    renderWidget->addAction(pasteAction);
+
+    QAction* duplicateAction = new QAction(tr("Duplicate"), this);
+    duplicateAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_D));
+    duplicateAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    connect(duplicateAction, &QAction::triggered, this, &PreviewWidget::DuplicateRequested);
+    addAction(duplicateAction);
 
     QAction* deleteAction = new QAction(tr("Delete"), this);
 #if defined Q_OS_WIN
@@ -150,22 +151,22 @@ void PreviewWidget::CreateActions()
 
     deleteAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     connect(deleteAction, &QAction::triggered, this, &PreviewWidget::DeleteRequested);
-    addAction(deleteAction);
+    renderWidget->addAction(deleteAction);
 
     selectAllAction = new QAction(tr("Select all"), this);
     selectAllAction->setShortcut(QKeySequence::SelectAll);
     selectAllAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    addAction(selectAllAction);
+    renderWidget->addAction(selectAllAction);
 
     focusNextChildAction = new QAction(tr("Focus next child"), this);
     focusNextChildAction->setShortcut(Qt::Key_Tab);
     focusNextChildAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    addAction(focusNextChildAction);
+    renderWidget->addAction(focusNextChildAction);
 
     focusPreviousChildAction = new QAction(tr("Focus frevious child"), this);
     focusPreviousChildAction->setShortcut(static_cast<int>(Qt::ShiftModifier | Qt::Key_Tab));
     focusPreviousChildAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    addAction(focusPreviousChildAction);
+    renderWidget->addAction(focusPreviousChildAction);
 }
 
 void PreviewWidget::OnRootControlPositionChanged(const Vector2& pos)
@@ -285,6 +286,7 @@ void PreviewWidget::InitFromSystemsManager(EditorSystemsManager* systemsManager_
     connect(selectAllAction, &QAction::triggered, std::bind(&EditorSystemsManager::SelectAll, systemsManager));
 
     editorCanvas = new EditorCanvas(systemsManager, accessor);
+
     editorCanvas->sizeChanged.Connect(this, &PreviewWidget::UpdateScrollArea);
     editorCanvas->positionChanged.Connect(this, &PreviewWidget::OnPositionChanged);
     editorCanvas->nestedControlPositionChanged.Connect(this, &PreviewWidget::OnNestedControlPositionChanged);
@@ -293,6 +295,17 @@ void PreviewWidget::InitFromSystemsManager(EditorSystemsManager* systemsManager_
 
     CursorSystem* cursorSystem = new CursorSystem(renderWidget, systemsManager);
     systemsManager->AddEditorSystem(cursorSystem);
+}
+
+void PreviewWidget::InjectRenderWidget(DAVA::RenderWidget* renderWidget_)
+{
+    DVASSERT(renderWidget_ != nullptr);
+    renderWidget = renderWidget_;
+    CreateActions();
+
+    renderWidget->resized.Connect(this, &PreviewWidget::OnResized);
+
+    renderWidget->SetClientDelegate(this);
 }
 
 void PreviewWidget::OnScaleChanged(float32 scale)
@@ -363,36 +376,41 @@ void PreviewWidget::InitUI()
     tabBar->setElideMode(Qt::ElideNone);
     tabBar->setTabsClosable(true);
     tabBar->setUsesScrollButtons(true);
-    gridLayout->addWidget(tabBar, 0, 0, 1, 3);
+    gridLayout->addWidget(tabBar, 0, 0, 1, 4);
+
+    findInDocumentWidget = new FindInDocumentWidget(this);
+    gridLayout->addWidget(findInDocumentWidget, 1, 0, 1, 4);
 
     horizontalRuler = new RulerWidget(this);
     horizontalRuler->SetRulerOrientation(Qt::Horizontal);
 
-    gridLayout->addWidget(horizontalRuler, 1, 1, 1, 2);
+    gridLayout->addWidget(horizontalRuler, 2, 1, 1, 2);
 
     verticalRuler = new RulerWidget(this);
     verticalRuler->SetRulerOrientation(Qt::Vertical);
-    gridLayout->addWidget(verticalRuler, 2, 0, 1, 1);
+    gridLayout->addWidget(verticalRuler, 3, 0, 1, 1);
 
     QSizePolicy expandingPolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     renderWidget->setSizePolicy(expandingPolicy);
-    gridLayout->addWidget(renderWidget, 2, 1, 1, 2);
+    gridLayout->addWidget(renderWidget, 3, 1, 1, 2);
 
     verticalScrollBar = new QScrollBar(this);
     verticalScrollBar->setOrientation(Qt::Vertical);
 
-    gridLayout->addWidget(verticalScrollBar, 2, 3, 1, 1);
+    gridLayout->addWidget(verticalScrollBar, 3, 3, 1, 1);
 
     scaleCombo = new QComboBox(this);
     scaleCombo->setEditable(true);
 
-    gridLayout->addWidget(scaleCombo, 3, 1, 1, 1);
+    gridLayout->addWidget(scaleCombo, 4, 1, 1, 1);
 
     horizontalScrollBar = new QScrollBar(this);
     horizontalScrollBar->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
     horizontalScrollBar->setOrientation(Qt::Horizontal);
 
-    gridLayout->addWidget(horizontalScrollBar, 3, 2, 1, 1);
+    gridLayout->addWidget(horizontalScrollBar, 4, 2, 1, 1);
+
+    gridLayout->setMargin(0.0f);
 }
 
 void PreviewWidget::ShowMenu(const QMouseEvent* mouseEvent)

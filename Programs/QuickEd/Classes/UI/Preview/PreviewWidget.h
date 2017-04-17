@@ -27,6 +27,7 @@ class EditorCanvas;
 class CursorInterpreter;
 class AbstractProperty;
 
+class FindInDocumentWidget;
 class QGridLayout;
 class RulerWidget;
 class RulerController;
@@ -47,7 +48,7 @@ public:
     explicit PreviewWidget(DAVA::TArc::ContextAccessor* accessor, DAVA::RenderWidget* renderWidget, EditorSystemsManager* systemsManager);
     ~PreviewWidget();
 
-    void InjectRenderWidget(DAVA::RenderWidget* renderWidget);
+    FindInDocumentWidget* GetFindInDocumentWidget();
 
     DAVA::Signal<DAVA::uint64> requestCloseTab;
     DAVA::Signal<ControlNode*> requestChangeTextInNode;
@@ -58,6 +59,8 @@ signals:
     void CutRequested();
     void CopyRequested();
     void PasteRequested();
+    void DuplicateRequested();
+
     void OpenPackageFile(QString path);
     void DropRequested(const QMimeData* data, Qt::DropAction action, PackageBaseNode* targetNode, DAVA::uint32 destIndex, const DAVA::Vector2* pos);
 
@@ -89,6 +92,8 @@ private:
     bool CanChangeTextInControl(const ControlNode* node) const;
 
     void InitFromSystemsManager(EditorSystemsManager* systemsManager);
+
+    void InjectRenderWidget(DAVA::RenderWidget* renderWidget);
 
 private:
     void CreateActions();
@@ -126,6 +131,7 @@ private:
     QGridLayout* gridLayout = nullptr;
     RulerWidget* horizontalRuler = nullptr;
     RulerWidget* verticalRuler = nullptr;
+    FindInDocumentWidget* findInDocumentWidget = nullptr;
     QComboBox* scaleCombo = nullptr;
     QScrollBar* horizontalScrollBar = nullptr;
     QScrollBar* verticalScrollBar = nullptr;

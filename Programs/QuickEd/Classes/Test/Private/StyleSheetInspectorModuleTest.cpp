@@ -98,7 +98,7 @@ DAVA_TARC_TESTCLASS(StyleSheetInspectorModuleTest)
 
     StyleSheetInspectorWidget* FindSSWidget() const
     {
-        QList<QWidget*> foundWidgets = LookupWidget(QEGlobal::windowKey, "Style Sheet Inspector");
+        QList<QWidget*> foundWidgets = LookupWidget(DAVA::TArc::mainWindowKey, "Style Sheet Inspector");
         StyleSheetInspectorWidget* ssWidget = nullptr;
         for (QWidget* widget : foundWidgets)
         {

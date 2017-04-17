@@ -33,6 +33,7 @@ public:
     void ExecCommand(Arguments&&... args);
 
     const SelectedNodes& GetSelectedNodes() const;
+    const SortedControlNodeSet& GetEditedRootControls() const;
 
     QString GetName() const;
     QString GetPackageAbsolutePath() const;
@@ -57,15 +58,18 @@ public:
     static const char* undoTextPropertyName;
     static const char* redoTextPropertyName;
     static const char* selectionPropertyName;
+    static const char* editedRootControlsPropertyName;
 
 private:
     friend class DocumentsModule;
 
     void SetSelectedNodes(const SelectedNodes& selection);
+    void SetEditedRootControls(const SortedControlNodeSet& controls);
 
     DAVA::RefPtr<PackageNode> package;
     std::unique_ptr<DAVA::CommandStack> commandStack;
     SelectionContainer selection;
+    SortedControlNodeSet editedRootControls;
 
     bool documentExists = true;
 
