@@ -7,6 +7,16 @@ import time
 import team_city_api
 import stash_api
 
+
+def __print( str ):
+    sys.stdout.write("{0}\n".format(str))
+    sys.stdout.flush()
+
+
+def __print_teamcity( str, type ):
+    __print("##teamcity[message text={} status={}]\n".format( str, type) )
+
+
 def __parser_args():
     arg_parser = argparse.ArgumentParser()
     arg_parser.add_argument( '--teamcity_url', required = True )
@@ -32,8 +42,11 @@ def __run_build( args ):
 
     build_status = ''
     build_status_text = ''
+
+    teamcity_build_status = {}
+
     while  build_status != 'finished':
-        time.sleep( 5 )
+        time.sleep( 10 )
 
         teamcity_build_status =  teamcity.get_build_status( teamcity_start_result['id'] )
         build_status          = teamcity_build_status['state']
@@ -42,12 +55,14 @@ def __run_build( args ):
         build_status_text     = teamcity_build_status['statusText']
 
         if build_status_text != build_status_text_old:
-            print build_status_text, ' ..'
+            __print( "{} ..".format( build_status_text ) )
+
+    if( teamcity_build_status[ 'status' ] != 'SUCCESS' ):
+        __print_teamcity( 'Build failed !!!', 'ERROR' )
 
 
 def __check_depends_of_folders( args ):
-
-    print 'Check depends'
+    __print( "Check depends" )
 
     #brunch check
     brunch     =  args.brunch.split('/')
@@ -57,7 +72,7 @@ def __check_depends_of_folders( args ):
         if brunch[0].isdigit() :
             brunch = brunch[0]
         else :
-            print 'Build is required, because brunch == ', brunch
+            __print( "Build is required, because brunch == {}".format( brunch ) )
             return True
     else :
         brunch = brunch[ brunch_len - 2 ]
@@ -71,7 +86,7 @@ def __check_depends_of_folders( args ):
     brunch_info_toRef = brunch_info['toRef']['id'].split('/').pop()
 
     if brunch_info_toRef != 'development' :
-        print 'Build is required, because brunch_toRef == ', brunch
+        __print( "Build is required, because brunch_toRef == {}".format( brunch ) )
         return True
 
     #changes folders check
@@ -80,16 +95,15 @@ def __check_depends_of_folders( args ):
 
     depends_folders = args.check_folders.split(';')
 
-    print depends_folders
-
     for path_dep_folder in depends_folders:
         for path_brunch_folder in branch_changes_values:
             path =  path_brunch_folder['path']['parent']
             if path_dep_folder in path:
-                print 'Build is required because changes affect folders', depends_folders
+                __print( "Build is required because changes affect folders {}".format( depends_folders ) )
                 return True
 
-    print 'Build it is possible not to launch'
+        __print( "Build it is possible not to launch" )
+
     return False
 
 def main():
