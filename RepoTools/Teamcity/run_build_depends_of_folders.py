@@ -65,7 +65,7 @@ def __run_build( args ):
             __print( "{} ..".format( build_status_text ) )
 
     if( teamcity_build_status[ 'status' ] != 'SUCCESS' ):
-        __print_teamcity_message( 'Build failed !!!', 'ERROR', teamcity_build_status['webUrl'] )
+        __print_teamcity_message( 'Build failed !!!', 'FAILURE', teamcity_build_status['webUrl'] )
 
 
 def __check_depends_of_folders( args ):
