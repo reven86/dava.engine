@@ -14,7 +14,7 @@ def __print( str ):
 
 
 def __print_teamcity_message( str, type ):
-    __print('##teamcity[message text=\'{}\' status=\'{}\' ]'.format( str, type) )
+    __print('##teamcity[message text=\'{}\' status=\'{}\']'.format( str, type) )
 
 
 def __parser_args():
@@ -109,7 +109,7 @@ def __check_depends_of_folders( args ):
                 __print( "Build is required because changes affect folders {}".format( depends_folders ) )
                 return True
 
-        __print( "Build it is possible not to launch" )
+    __print( "Build it is possible not to launch" )
 
     return False
 
