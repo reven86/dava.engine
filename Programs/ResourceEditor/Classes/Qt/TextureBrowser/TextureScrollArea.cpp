@@ -37,7 +37,7 @@ TextureScrollArea::TextureScrollArea(QWidget* parent /* = 0 */)
     , noImageVisible(false)
 {
     // create and setup scene
-    textureScene = new QGraphicsScene(this);
+    textureScene = new QGraphicsScene();
     setRenderHints((QPainter::RenderHints)0);
     setScene(textureScene);
 
@@ -53,7 +53,7 @@ TextureScrollArea::TextureScrollArea(QWidget* parent /* = 0 */)
 
     // add "No Image" label
     {
-        noImageLabel = new QLabel("No image", this);
+        noImageLabel = new QLabel("No image");
         noImageLabel->setAttribute(Qt::WA_NoSystemBackground, true);
         // label color
         QPalette palette = noImageLabel->palette();
@@ -73,7 +73,7 @@ TextureScrollArea::TextureScrollArea(QWidget* parent /* = 0 */)
 
     // add warning label
     {
-        warningLabel = new QLabel("Warning", this);
+        warningLabel = new QLabel("Warning");
         warningLabel->setAttribute(Qt::WA_NoSystemBackground, true);
         // label color
         QPalette palette = noImageLabel->palette();
@@ -92,7 +92,7 @@ TextureScrollArea::TextureScrollArea(QWidget* parent /* = 0 */)
     }
 
     // add wait-bar to scene
-    QProgressBar* progressBar = new QProgressBar(this);
+    QProgressBar* progressBar = new QProgressBar();
     progressBar->setMinimum(0);
     progressBar->setMaximum(0);
     progressBar->setTextVisible(false);
@@ -110,22 +110,29 @@ TextureScrollArea::TextureScrollArea(QWidget* parent /* = 0 */)
     warningShow(false);
 }
 
+namespace TextureScrollAreaDetail
+{
+template <class TYPE>
+void SafeDeleteObject(TYPE*& obj)
+{
+    if (obj != nullptr && obj->parent() != nullptr)
+    {
+        DAVA::SafeDelete(obj);
+    }
+}
+}
+
 TextureScrollArea::~TextureScrollArea()
 {
-    if (warningProxy != nullptr && warningProxy->parent() != nullptr)
-    {
-        DAVA::SafeDelete(warningProxy);
-    }
+    TextureScrollAreaDetail::SafeDeleteObject(waitBar);
 
-    if (waitBar != nullptr && waitBar->parent() != nullptr)
-    {
-        DAVA::SafeDelete(waitBar);
-    }
+    TextureScrollAreaDetail::SafeDeleteObject(warningProxy);
+    TextureScrollAreaDetail::SafeDeleteObject(warningLabel);
 
-    if (noImageProxy != nullptr && noImageProxy->parent() != nullptr)
-    {
-        DAVA::SafeDelete(noImageProxy);
-    }
+    TextureScrollAreaDetail::SafeDeleteObject(noImageProxy);
+    TextureScrollAreaDetail::SafeDeleteObject(noImageLabel);
+
+    TextureScrollAreaDetail::SafeDeleteObject(textureScene);
 }
 
 void TextureScrollArea::setImage(const QImage& image)
