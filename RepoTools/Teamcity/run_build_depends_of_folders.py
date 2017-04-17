@@ -41,8 +41,8 @@ def __run_build( args ):
                                        args.password )
 
     client_brunch = {}
-    if args.client_brunch:
-        client_brunch = {'client_branch': args.client_brunch}
+    if args.client_brunch and args.client_brunch != '<default>':
+        client_brunch = {'client_branch': args.client_brunch }
 
     teamcity_start_result = teamcity.run_build( args.configuration_id, args.framework_brunch, client_brunch  )
 
