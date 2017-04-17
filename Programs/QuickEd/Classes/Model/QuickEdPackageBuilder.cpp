@@ -306,7 +306,7 @@ void QuickEdPackageBuilder::ProcessProperty(const ReflectedStructure::Field& fie
 {
     if (currentObject && currentSection)
     {
-        ValueProperty* property = currentSection->FindChildPropertyByName(field.name);
+        ValueProperty* property = currentSection->FindChildPropertyByName(field.name.c_str());
         if (property && !value.IsEmpty())
         {
             if (property->GetStylePropertyIndex() != -1)
