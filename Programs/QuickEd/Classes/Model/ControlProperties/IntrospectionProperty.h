@@ -6,6 +6,7 @@
 namespace DAVA
 {
 class UIControl;
+class UILayoutSourceRectComponent;
 }
 
 class IntrospectionProperty : public ValueProperty
@@ -19,7 +20,6 @@ protected:
 public:
     static IntrospectionProperty* Create(DAVA::UIControl* control, const DAVA::String& name, const DAVA::Reflection& ref, const IntrospectionProperty* sourceProperty, eCloneType cloneType);
 
-    void Refresh(DAVA::int32 refreshFlags) override;
     void Accept(PropertyVisitor* visitor) override;
 
     DAVA::uint32 GetFlags() const override;
@@ -45,7 +45,8 @@ protected:
     DAVA::int32 flags;
 
 private:
-    DAVA::Any sourceValue;
+    void SetLayoutSourceRectValue(const DAVA::Any& value);
+    DAVA::RefPtr<DAVA::UILayoutSourceRectComponent> sourceRectComponent;
 };
 
 #endif //__UI_EDITOR_INTROSPECTION_PROPERTY__

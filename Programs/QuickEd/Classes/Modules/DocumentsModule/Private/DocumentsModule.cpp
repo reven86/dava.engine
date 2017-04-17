@@ -931,6 +931,7 @@ void DocumentsModule::ApplyFileChanges()
 {
     using namespace DAVA::TArc;
     ContextAccessor* accessor = GetAccessor();
+
     DocumentsWatcherData* watcherData = accessor->GetGlobalContext()->GetData<DocumentsWatcherData>();
 
     DAVA::Set<DAVA::TArc::DataContext::ContextID> changed;

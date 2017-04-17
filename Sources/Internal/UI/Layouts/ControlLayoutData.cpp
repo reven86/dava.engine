@@ -3,21 +3,38 @@
 #include "UI/UIControl.h"
 #include "UI/Components/UIComponent.h"
 #include "UI/Layouts/UIIgnoreLayoutComponent.h"
+#include "UI/Layouts/UILayoutSourceRectComponent.h"
 
 namespace DAVA
 {
 ControlLayoutData::ControlLayoutData(UIControl* control_)
     : control(control_)
 {
-    position = control->GetPosition() - control->GetPivotPoint();
-    size = control->GetSize();
+    UILayoutSourceRectComponent* sourceRectComponent = control->GetComponent<UILayoutSourceRectComponent>();
+
+    if (sourceRectComponent != nullptr)
+    {
+        position = sourceRectComponent->GetPosition();
+        size = sourceRectComponent->GetSize();
+    }
+    else
+    {
+        position = control->GetPosition() - control->GetPivotPoint();
+        size = control->GetSize();
+    }
 }
 
 void ControlLayoutData::ApplyLayoutToControl()
 {
+    UILayoutSourceRectComponent* sourceRectComponent = control->GetComponent<UILayoutSourceRectComponent>();
     if (HasFlag(FLAG_SIZE_CHANGED))
     {
         control->SetSize(size);
+        control->OnSizeChanged();
+    }
+    else if (sourceRectComponent != nullptr)
+    {
+        control->SetSize(sourceRectComponent->GetSize());
         control->OnSizeChanged();
     }
 
@@ -25,15 +42,24 @@ void ControlLayoutData::ApplyLayoutToControl()
     {
         control->SetPosition(position + control->GetPivotPoint());
     }
+    else if (sourceRectComponent != nullptr)
+    {
+        control->SetPosition(sourceRectComponent->GetPosition());
+    }
 
     control->ResetLayoutDirty();
 }
 
 void ControlLayoutData::ApplyOnlyPositionLayoutToControl()
 {
+    UILayoutSourceRectComponent* sourceRectComponent = control->GetComponent<UILayoutSourceRectComponent>();
     if (HasFlag(FLAG_POSITION_CHANGED))
     {
         control->SetPosition(position + control->GetPivotPoint());
+    }
+    else if (sourceRectComponent != nullptr)
+    {
+        control->SetPosition(sourceRectComponent->GetPosition());
     }
 
     control->ResetLayoutPositionDirty();
