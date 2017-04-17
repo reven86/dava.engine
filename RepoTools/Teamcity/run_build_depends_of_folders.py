@@ -110,10 +110,10 @@ def __check_depends_of_folders( args ):
                 return True
 
 
-    if args.configuration_id != None
+    if args.configuration_id != None :
         __print( "Build [{}] it is possible not to launch".format( args.configuration_id ) )
 
-    if args.run_command != None
+    if args.run_command != None :
         __print( "Command [{}] it is possible not to launch".format( args.run_command ) )
 
     return False
