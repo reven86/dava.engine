@@ -109,7 +109,12 @@ def __check_depends_of_folders( args ):
                 __print( "Build is required because changes affect folders {}".format( depends_folders ) )
                 return True
 
-    __print( "Build it is possible not to launch" )
+
+    if args.configuration_id != None
+        __print( "Build [{}] it is possible not to launch".format( args.configuration_id ) )
+
+    if args.run_command != None
+        __print( "Command [{}] it is possible not to launch".format( args.run_command ) )
 
     return False
 
