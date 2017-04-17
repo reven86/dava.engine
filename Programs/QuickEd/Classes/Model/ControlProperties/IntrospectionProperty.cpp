@@ -69,7 +69,7 @@ IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject* anObject, DAVA::i
         {
             if (control->GetName() == UISlider::THUMB_SPRITE_CONTROL_NAME ||
                 control->GetName() == UISlider::MIN_SPRITE_CONTROL_NAME ||
-                control->GetName() == UISlider::MIN_SPRITE_CONTROL_NAME ||
+                control->GetName() == UISlider::MAX_SPRITE_CONTROL_NAME ||
                 control->GetName() == UISwitch::BUTTON_LEFT_NAME ||
                 control->GetName() == UISwitch::BUTTON_RIGHT_NAME ||
                 control->GetName() == UISwitch::BUTTON_TOGGLE_NAME)
