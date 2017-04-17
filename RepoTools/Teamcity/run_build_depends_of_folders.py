@@ -13,8 +13,8 @@ def __print( str ):
     sys.stdout.flush()
 
 
-def __print_teamcity( str, type ):
-    __print("##teamcity[message text={} status={}]\n".format( str, type) )
+def __print_teamcity_message( str, type ):
+    __print('##teamcity[message text=\'{}\' status=\'{}\' ]'.format( str, type) )
 
 
 def __parser_args():
@@ -52,7 +52,7 @@ def __run_build( args ):
     teamcity_build_status = {}
 
     while  build_status != 'finished':
-        time.sleep( 10 )
+        time.sleep( 5 )
 
         teamcity_build_status =  teamcity.get_build_status( teamcity_start_result['id'] )
 
@@ -65,7 +65,7 @@ def __run_build( args ):
             __print( "{} ..".format( build_status_text ) )
 
     if( teamcity_build_status[ 'status' ] != 'SUCCESS' ):
-        __print_teamcity( 'Build failed !!!', 'ERROR' )
+        __print_teamcity_message( 'Build failed !!!', 'ERROR' )
 
 
 def __check_depends_of_folders( args ):
@@ -117,7 +117,7 @@ def main():
 
     args = __parser_args()
 
-    check_depends = __check_depends_of_folders(args)
+    check_depends = __check_depends_of_folders( args )
     if check_depends == True:
         if args.run_command != None :
             os.system( args.run_command )
