@@ -31,7 +31,6 @@ AssetCacheClient::AssetCacheClient()
 
 AssetCacheClient::~AssetCacheClient()
 {
-    //Logger::Debug("%s", __FUNCTION__);
     client.RemoveListener(this);
 
     DVASSERT(isActive == false);

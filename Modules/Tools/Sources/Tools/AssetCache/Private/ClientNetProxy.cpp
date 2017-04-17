@@ -38,7 +38,6 @@ void ClientNetProxy::Connect(const String& ip, uint16 port)
 
 void ClientNetProxy::Disconnect()
 {
-    //Logger::Debug("ClientNetProxy::Disconnect %p", this);
     openedChannel = nullptr;
 
     addressResolver.Cancel();
@@ -47,7 +46,6 @@ void ClientNetProxy::Disconnect()
 
 void ClientNetProxy::DisconnectBlocked()
 {
-    //Logger::Debug("ClientNetProxy::Disconnect %p", this);
     openedChannel = nullptr;
 
     addressResolver.Cancel();
