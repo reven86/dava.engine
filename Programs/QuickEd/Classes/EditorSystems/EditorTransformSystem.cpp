@@ -156,6 +156,29 @@ void ClampProperty(float32& propertyValue, float32& extraDelta)
     extraDelta += (propertyValue - clampedValue);
     propertyValue = clampedValue;
 }
+
+using DeltaPositionBehavior = Function<void(Vector2& deltaPosition)>;
+
+Vector2 CreateFinalPosition(const UIGeometricData* parentGd, const Vector2& originalPosition, Vector2& mouseDelta, Vector2& extraDelta, DeltaPositionBehavior behavior = DeltaPositionBehavior())
+{
+    //transform mouse delta to control coordinates
+    Vector2 scaledDelta = mouseDelta / parentGd->scale;
+    Vector2 deltaPosition(::Rotate(scaledDelta, -parentGd->angle));
+
+    //add delta from previous move event
+    deltaPosition += extraDelta;
+    extraDelta.SetZero();
+
+    //call behavior if control must magnet somewhere
+    if (behavior)
+    {
+        behavior(deltaPosition);
+    }
+
+    Vector2 finalPosition(originalPosition + deltaPosition);
+    EditorTransformSystemDetail::ClampProperty(finalPosition, extraDelta);
+    return finalPosition;
+};
 }
 
 EditorTransformSystem::EditorTransformSystem(EditorSystemsManager* parent, TArc::ContextAccessor* accessor_)
@@ -409,39 +432,6 @@ void EditorTransformSystem::MoveAllSelectedControlsByMouse(Vector2 mouseDelta, b
 
     Vector<EditorTransformSystemDetail::ChangePropertyAction> propertiesToChange;
 
-    using DeltaPositionBehavior = Function<void(const MoveInfo* moveInfo, Vector2& deltaPosition)>;
-    auto moveNode = [&propertiesToChange](const MoveInfo* moveInfo, Vector2& mouseDelta, Vector2& extraDelta, DeltaPositionBehavior behavior)
-    {
-        //transform mouse delta to control coordinates
-        const UIGeometricData* gd = moveInfo->parentGD;
-        Vector2 scaledDelta = mouseDelta / gd->scale;
-        Vector2 deltaPosition(::Rotate(scaledDelta, -gd->angle));
-
-        //add delta from previous move event
-        deltaPosition += extraDelta;
-        extraDelta.SetZero();
-
-        //call behavior if control must magnet somewhere
-        if (behavior)
-        {
-            behavior(moveInfo, deltaPosition);
-        }
-
-        //calculate original position and final position
-        AbstractProperty* positionProperty = moveInfo->positionProperty;
-        Vector2 originalPosition = positionProperty->GetValue().Cast<Vector2>();
-
-        Vector2 finalPosition(originalPosition + deltaPosition);
-        EditorTransformSystemDetail::ClampProperty(finalPosition, extraDelta);
-
-        //add final position to the collection
-        ControlNode* node = moveInfo->node;
-        propertiesToChange.emplace_back(node, positionProperty, Any(finalPosition));
-
-        //return actual delta in control coordinates
-        return finalPosition - originalPosition;
-    };
-
     if (canAdjust)
     {
         //find hovered node alias in nodesToMoveInfos
@@ -459,7 +449,9 @@ void EditorTransformSystem::MoveAllSelectedControlsByMouse(Vector2 mouseDelta, b
                                  });
         DVASSERT(iter != nodesToMoveInfos.end());
 
-        auto deltaPositionBehavior = [this](const MoveInfo* nodeInfo, Vector2& deltaPosition) {
+        const MoveInfo* nodeInfo = iter->get();
+
+        auto deltaPositionBehavior = [this, nodeInfo](Vector2& deltaPosition) {
             ControlNode* node = nodeInfo->node;
             const UIGeometricData* gd = nodeInfo->parentGD;
             UIControl* control = node->GetControl();
@@ -467,14 +459,20 @@ void EditorTransformSystem::MoveAllSelectedControlsByMouse(Vector2 mouseDelta, b
             deltaPosition = AdjustMoveToNearestBorder(deltaPosition, magnets, gd, control);
             systemsManager->magnetLinesChanged.Emit(magnets);
         };
-        const MoveInfo* nodeToMoveInfo = iter->get();
-        Vector2 deltaPosition = moveNode(nodeToMoveInfo, mouseDelta, extraDelta, deltaPositionBehavior);
+        const UIGeometricData* gd = nodeInfo->parentGD;
+
+        AbstractProperty* positionProperty = nodeInfo->positionProperty;
+        Vector2 originalPosition = positionProperty->GetValue().Cast<Vector2>();
+
+        Vector2 finalPosition = EditorTransformSystemDetail::CreateFinalPosition(gd, originalPosition, mouseDelta, extraDelta, deltaPositionBehavior);
+
+        ControlNode* node = nodeInfo->node;
+        propertiesToChange.emplace_back(node, positionProperty, Any(finalPosition));
 
         //if control will clap it position or will magnet somewhere - it will jump from mouse cursor
         //and all other selected controls must jump too
-        //in this case we get actual delta in control coordinates and transform it to global coordinates
-        const UIGeometricData* gd = nodeToMoveInfo->parentGD;
-        mouseDelta = ::Rotate(deltaPosition, gd->angle);
+        //in this case we get actual delta in control coordinates and transform it to global
+        mouseDelta = ::Rotate((finalPosition - originalPosition), gd->angle);
         mouseDelta *= gd->scale;
     }
     for (auto& nodeToMove : nodesToMoveInfos)
@@ -485,7 +483,12 @@ void EditorTransformSystem::MoveAllSelectedControlsByMouse(Vector2 mouseDelta, b
             continue; //we already move it in this function
         }
         DAVA::Vector2& activeExtraDelta = extraDeltaToMoveControls[node];
-        moveNode(nodeToMove.get(), mouseDelta, activeExtraDelta, DeltaPositionBehavior());
+        AbstractProperty* positionProperty = nodeToMove->positionProperty;
+        Vector2 originalPosition = positionProperty->GetValue().Cast<Vector2>();
+        const UIGeometricData* gd = nodeToMove->parentGD;
+        Vector2 finalPosition = EditorTransformSystemDetail::CreateFinalPosition(gd, originalPosition, mouseDelta, activeExtraDelta);
+
+        propertiesToChange.emplace_back(node, positionProperty, Any(finalPosition));
     }
 
     DataContext* activeContext = accessor->GetActiveContext();
