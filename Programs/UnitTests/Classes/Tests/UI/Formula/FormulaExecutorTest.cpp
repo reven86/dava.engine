@@ -1,9 +1,9 @@
 #include "DAVAEngine.h"
 
-#include "UI/Formula/FormulaParser.h"
-#include "UI/Formula/FormulaExecutor.h"
-#include "UI/Formula/FormulaException.h"
-#include "UI/Formula/FormulaFormatter.h"
+#include "UI/Formula/Private/FormulaParser.h"
+#include "UI/Formula/Private/FormulaExecutor.h"
+#include "UI/Formula/Private/FormulaException.h"
+#include "UI/Formula/Private/FormulaFormatter.h"
 
 #include "Reflection/ReflectionRegistrator.h"
 

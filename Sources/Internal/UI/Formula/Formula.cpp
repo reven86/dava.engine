@@ -1,8 +1,8 @@
 #include "Formula.h"
 
-#include "UI/Formula/FormulaParser.h"
-#include "UI/Formula/FormulaExecutor.h"
-#include "UI/Formula/FormulaFormatter.h"
+#include "UI/Formula/Private/FormulaParser.h"
+#include "UI/Formula/Private/FormulaExecutor.h"
+#include "UI/Formula/Private/FormulaFormatter.h"
 
 namespace DAVA
 {

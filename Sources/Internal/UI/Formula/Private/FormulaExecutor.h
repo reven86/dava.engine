@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Base/BaseTypes.h"
-#include "UI/Formula/FormulaExpression.h"
+#include "UI/Formula/Private/FormulaExpression.h"
 #include "UI/Formula/FormulaContext.h"
 
 namespace DAVA

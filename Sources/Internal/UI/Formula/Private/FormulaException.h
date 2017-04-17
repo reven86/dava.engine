@@ -2,7 +2,7 @@
 
 #include "Base/BaseTypes.h"
 #include "Base/Exception.h"
-#include "UI/Formula/FormulaExpression.h"
+#include "UI/Formula/Private/FormulaExpression.h"
 
 namespace DAVA
 {

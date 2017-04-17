@@ -1,4 +1,4 @@
-#include "UI/Formula/FormulaFormatter.h"
+#include "UI/Formula/Private/FormulaFormatter.h"
 
 #include "Utils/StringFormat.h"
 #include "FileSystem/FilePath.h"

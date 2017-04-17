@@ -1,6 +1,6 @@
 #include "UI/Formula/Private/FormulaTokenizer.h"
 
-#include "UI/Formula/FormulaException.h"
+#include "UI/Formula/Private/FormulaException.h"
 
 #include "Debug/DVAssert.h"
 #include "Utils/StringFormat.h"

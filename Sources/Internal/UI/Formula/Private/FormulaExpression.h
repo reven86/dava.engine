@@ -5,7 +5,6 @@
 
 namespace DAVA
 {
-    
 class FormulaValueExpression;
 class FormulaNegExpression;
 class FormulaNotExpression;
@@ -100,7 +99,7 @@ public:
     FormulaNotExpression(const std::shared_ptr<FormulaExpression>& exp, int32 lineNumber, int32 positionInLine);
 
     void Accept(FormulaExpressionVisitor* visitor) override;
-    
+
     FormulaExpression* GetExp() const;
 
 private:
@@ -135,7 +134,7 @@ public:
     FormulaBinaryOperatorExpression(Operator op, const std::shared_ptr<FormulaExpression>& lhs, const std::shared_ptr<FormulaExpression>& rhs, int32 lineNumber, int32 positionInLine);
 
     void Accept(FormulaExpressionVisitor* visitor) override;
-    
+
     Operator GetOperator() const;
     int32 GetOperatorPriority() const;
 

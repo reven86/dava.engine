@@ -1,6 +1,6 @@
-#include "UI/Formula/FormulaData.h"
+#include "UI/Formula/Private/FormulaData.h"
 
-#include "UI/Formula/FormulaException.h"
+#include "UI/Formula/Private/FormulaException.h"
 
 #include "Debug/DVAssert.h"
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "UI/Formula/FormulaExpression.h"
+#include "UI/Formula/Private/FormulaExpression.h"
 
 namespace DAVA
 {

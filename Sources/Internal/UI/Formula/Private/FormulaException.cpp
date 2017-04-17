@@ -1,4 +1,4 @@
-#include "UI/Formula/FormulaException.h"
+#include "UI/Formula/Private/FormulaException.h"
 #include "Utils/StringFormat.h"
 
 namespace DAVA

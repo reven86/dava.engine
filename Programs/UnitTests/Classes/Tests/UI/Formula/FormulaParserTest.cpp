@@ -1,7 +1,7 @@
 #include "DAVAEngine.h"
 
-#include "UI/Formula/FormulaParser.h"
-#include "UI/Formula/FormulaFormatter.h"
+#include "UI/Formula/Private/FormulaParser.h"
+#include "UI/Formula/Private/FormulaFormatter.h"
 
 #include "UnitTests/UnitTests.h"
 

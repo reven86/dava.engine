@@ -1,6 +1,6 @@
 #include "UI/Formula/FormulaContext.h"
 
-#include "UI/Formula/FormulaParser.h"
+#include "UI/Formula/Private/FormulaParser.h"
 
 #include "Functional/Function.h"
 #include "FileSystem/LocalizationSystem.h"

@@ -1,8 +1,8 @@
-#include "UI/Formula/FormulaExecutor.h"
+#include "UI/Formula/Private/FormulaExecutor.h"
 
 #include "UI/Formula/FormulaContext.h"
-#include "UI/Formula/FormulaException.h"
-#include "UI/Formula/FormulaFormatter.h"
+#include "UI/Formula/Private/FormulaException.h"
+#include "UI/Formula/Private/FormulaFormatter.h"
 #include "Utils/StringFormat.h"
 
 namespace DAVA
