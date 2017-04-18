@@ -79,7 +79,7 @@ EditorSystemsManager::EditorSystemsManager(DAVA::TArc::ContextAccessor* accessor
     selectionSystemPtr = new SelectionSystem(this, accessor);
     systems.emplace_back(selectionSystemPtr);
     systems.emplace_back(new HUDSystem(this, accessor));
-    systems.emplace_back(new ::EditorTransformSystem(this, accessor));
+    systems.emplace_back(new EditorTransformSystem(this, accessor));
 
     for (auto it = systems.begin(); it != systems.end(); ++it)
     {

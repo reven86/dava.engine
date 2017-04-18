@@ -542,10 +542,10 @@ void EditorControlsView::Layout()
     systemsManager->contentSizeChanged.Emit(size);
 }
 
-void EditorControlsView::OnRootContolsChanged(const Any& rootControlsValue)
+void EditorControlsView::OnRootContolsChanged(const Any& newRootControlsValue)
 {
-    SortedControlNodeSet rootControls_ = rootControlsValue.Cast<SortedControlNodeSet>(SortedControlNodeSet());
-    Set<ControlNode*> sortedRootControls(rootControls_.begin(), rootControls_.end());
+    SortedControlNodeSet newRootControls = newRootControlsValue.Cast<SortedControlNodeSet>(SortedControlNodeSet());
+    Set<ControlNode*> sortedRootControls(newRootControls.begin(), newRootControls.end());
     Set<ControlNode*> newNodes;
     Set<ControlNode*> deletedNodes;
     if (!rootControls.empty())
@@ -569,8 +569,8 @@ void EditorControlsView::OnRootContolsChanged(const Any& rootControlsValue)
         controlsCanvas->RemoveControl(findIt->get()->GetGridControl());
         gridControls.erase(findIt);
     }
-    DVASSERT(rootControls_.size() == rootControls.size());
-    for (auto iter = rootControls_.begin(); iter != rootControls_.end(); ++iter)
+    DVASSERT(newRootControls.size() == rootControls.size());
+    for (auto iter = newRootControls.begin(); iter != newRootControls.end(); ++iter)
     {
         ControlNode* node = *iter;
         if (newNodes.find(node) == newNodes.end())
@@ -582,7 +582,7 @@ void EditorControlsView::OnRootContolsChanged(const Any& rootControlsValue)
                      return gridIter->IsNestedControl(control);
                  }) == gridControls.end());
         BackgroundController* backgroundController = CreateControlBackground(node);
-        AddBackgroundControllerToCanvas(backgroundController, std::distance(rootControls_.begin(), iter));
+        AddBackgroundControllerToCanvas(backgroundController, std::distance(newRootControls.begin(), iter));
     }
     Layout();
 }

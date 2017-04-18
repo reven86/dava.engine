@@ -20,8 +20,6 @@
 #include <Preferences/PreferencesRegistrator.h>
 #include <Preferences/PreferencesStorage.h>
 
-#include <numeric>
-
 using namespace DAVA;
 
 namespace
