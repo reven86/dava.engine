@@ -2,7 +2,6 @@
 
 #include "Base/BaseTypes.h"
 #include "FileSystem/FilePath.h"
-#include "Functional/Signal.h"
 
 namespace DAVA
 {
@@ -10,6 +9,11 @@ class DLCDownloader
 {
 public:
     virtual ~DLCDownloader() = default;
+
+    struct Hints
+    {
+        size_t numOfMaxEasyHandles = 128;
+    };
 
     enum class TaskState
     {
@@ -42,10 +46,8 @@ public:
     {
         String srcUrl;
         String dstPath;
-        TaskType type;
-        int32 partsCount = -1;
+        TaskType type = TaskType::FULL;
         int32 timeoutSec = 30;
-        int32 retriesCount = 3;
         int64 rangeOffset = -1;
         int64 rangeSize = -1;
         IWriter* customWriter = nullptr;
@@ -55,13 +57,12 @@ public:
     {
         int32 curlErr = 0; // CURLE_OK == 0
         int32 curlMErr = 0; // CURLM_OK == 0
-        int32 errnoVal = 0;
+        const char* curlEasyStrErr = nullptr; // see curl_easy_strerr
     };
 
     struct TaskStatus
     {
         int32 fileErrno = 0;
-        int32 retriesLeft = 0;
         TaskState state = TaskState::JustAdded;
         TaskError error;
         uint64 sizeTotal = 0;
@@ -77,20 +78,17 @@ public:
                             IWriter* customWriter = nullptr,
                             int64 rangeOffset = -1,
                             int64 rangeSize = -1,
-                            int16 partsCount = -1,
-                            int32 timeout = 30,
-                            int32 retriesCount = 3) = 0;
+                            int32 timeout = 30) = 0;
 
-    // Cancel download by ID (works for scheduled and current)
+    //  task pointer become an invalid after this function
     virtual void RemoveTask(Task* task) = 0;
 
-    // wait for task status = finished
+    // wait for task status == finished
     virtual void WaitTask(Task* task) = 0;
 
     virtual const TaskInfo* GetTaskInfo(Task* task) = 0;
     virtual TaskStatus GetTaskStatus(Task* task) = 0;
 
-    // Signal about download task state changing
-    Signal<uint32, const TaskStatus&> taskStatusChanged;
+    virtual void SetHints(const Hints& h) = 0;
 };
 }

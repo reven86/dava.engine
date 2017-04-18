@@ -122,5 +122,12 @@ DAVA_TESTCLASS (DLCDownloaderTest)
         seconds = (finish - start) / 1000.f;
 
         Logger::Info("1024 part of 1.5 Gb download from in house server for: %f", seconds);
+
+        // free memory
+        for (auto t : allTasks)
+        {
+            downloader.RemoveTask(t);
+        }
+        allTasks.clear();
     }
 };

@@ -23,6 +23,9 @@ class MemoryBufferWriter final : public DLCDownloader::IWriter
 public:
     MemoryBufferWriter(void* buff, size_t size)
     {
+        DVASSERT(buff != nullptr);
+        DVASSERT(size > 0);
+
         start = static_cast<char*>(buff);
         current = start;
         end = start + size;

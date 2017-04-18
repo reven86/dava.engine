@@ -18,6 +18,7 @@ struct DLCDownloader::Task
     TaskStatus status;
     Set<CURL*> easyHandles;
     std::unique_ptr<IWriter> defaultWriter;
+    bool needRemove = false;
 };
 
 class DLCDownloaderImpl : public DLCDownloader
@@ -28,6 +29,7 @@ public:
 
     DLCDownloaderImpl(const DLCDownloaderImpl&) = delete;
     DLCDownloaderImpl(DLCDownloaderImpl&&) = delete;
+    DLCDownloaderImpl& operator=(const DLCDownloader&) = delete;
 
     // Schedule download content or get content size (indicated by downloadMode)
     Task* StartTask(const String& srcUrl,
@@ -36,9 +38,7 @@ public:
                     IWriter* dstWriter = nullptr,
                     int64 rangeOffset = -1,
                     int64 rangeSize = -1,
-                    int16 partsCount = -1,
-                    int32 timeout = 30,
-                    int32 retriesCount = 3) override;
+                    int32 timeout = 30) override;
     // Cancel download by ID (works for scheduled and current)
     void RemoveTask(Task* task) override;
 
@@ -48,7 +48,11 @@ public:
     const TaskInfo* GetTaskInfo(Task* task) override;
     TaskStatus GetTaskStatus(Task* task) override;
 
+    void SetHints(const Hints& h) override;
+
 private:
+    void Initialize();
+    void Deinitialize();
     bool TakeOneNewTaskFromQueue();
     CURL* CurlCreateHandle();
     void CurlDeleteHandle(CURL* easy);
@@ -56,13 +60,25 @@ private:
     void SetupResumeDownload(Task* justAddedTask);
     void SetupGetSizeDownload(Task* justAddedTask);
     void DownloadThreadFunc();
+    void StoreHandle(Task* justAddedTask, CURL* easyHandle);
+    void DeleteTask(Task* task);
+    void RemoveDeletedTasks();
+    Task* FindJustEddedTask();
 
-    Deque<Task*> taskQueue;
+    List<Task*> taskQueue;
+    Mutex mutexTaskQueue; // to protect access to taskQueue
+
+    // [start] next variables used only from DownloadThreadFunc TODO move in local variables
+    UnorderedMap<CURL*, Task*> taskMap;
     List<CURL*> reusableHandles;
     CURLM* multiHandle = nullptr;
     Thread* downloadThread = nullptr;
+    // [finish] variables
+
     Semaphore downloadSem; // to resume download thread
     Atomic<int> numOfNewTasks;
-    Mutex mutexTaskQueue; // to protect access to taskQueue
+    Atomic<int> numOfTaskToRemove;
+
+    Hints hints; // read only params
 };
 } // end namespace DAVA
