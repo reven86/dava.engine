@@ -267,7 +267,8 @@ void BaseComponentValue::EnsureEditorCreated(QWidget* parent)
         CreateButtons(layout, typeProducer, true);
         CreateButtons(layout, fieldProducer, false);
         layout->addWidget(realWidget);
-
+        boxWidget->setFocusProxy(realWidget);
+        boxWidget->setFocusPolicy(realWidget->focusPolicy());
         realWidget = boxWidget;
     }
 }

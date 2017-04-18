@@ -52,6 +52,8 @@ ControlProxy* kDComponentValue<T, TEditor, TComponent>::CreateEditorWidget(QWidg
         layout->setMargin(0);
         w->SetLayout(layout);
 
+        QWidget* containerWidget = w->ToWidgetCast();
+
         {
             ColorPickerButton::Params params;
             params.accessor = GetAccessor();
@@ -59,13 +61,17 @@ ControlProxy* kDComponentValue<T, TEditor, TComponent>::CreateEditorWidget(QWidg
             params.wndKey = GetWindowKey();
             params.fields[ColorPickerButton::Fields::Color] = "value";
             params.fields[ColorPickerButton::Fields::IsReadOnly] = readOnlyFieldName;
-            w->AddControl(new ColorPickerButton(params, wrappersProcessor, model, w->ToWidgetCast()));
+            w->AddControl(new ColorPickerButton(params, wrappersProcessor, model, containerWidget));
         }
 
         {
             ControlDescriptorBuilder<typename TEditor::Fields> descr;
             descr[TEditor::Fields::FieldsList] = "fieldsList";
-            w->AddControl(new TEditor(descr, wrappersProcessor, model, w->ToWidgetCast()));
+            TEditor* editor = new TEditor(descr, wrappersProcessor, model, containerWidget);
+            w->AddControl(editor);
+            QWidget* editorWidget = editor->ToWidgetCast();
+            containerWidget->setFocusProxy(editorWidget);
+            containerWidget->setFocusPolicy(editorWidget->focusPolicy());
         }
 
         return w;

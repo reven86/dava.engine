@@ -3,6 +3,8 @@
 
 #include <Base/BaseTypes.h>
 
+#include <QtEvents>
+
 namespace DAVA
 {
 namespace TArc
@@ -31,6 +33,10 @@ public:
     MultiDoubleSpinBox(const ControlDescriptorBuilder<Fields>& fields, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent = nullptr);
     MultiDoubleSpinBox(const ControlDescriptorBuilder<Fields>& fields, ContextAccessor* accessor, Reflection model, QWidget* parent = nullptr);
 
+protected:
+    void focusInEvent(QFocusEvent* e) override;
+    bool eventFilter(QObject* obj, QEvent* event) override;
+
 private:
     template <typename T>
     void SetupControl(T* accessor);
@@ -41,6 +47,7 @@ private:
     void UpdateControl(const ControlDescriptor& descriptor) override;
 
     Vector<ControlProxy*> subControls;
+    QWidget* lastFocusedItem = nullptr;
 };
 } // namespace TArc
 } // namespace DAVA

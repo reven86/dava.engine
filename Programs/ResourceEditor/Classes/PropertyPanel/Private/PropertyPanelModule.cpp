@@ -14,6 +14,8 @@
 #include <TArc/Utils/ModuleCollection.h>
 #include <TArc/Core/FieldBinder.h>
 
+#include <QtTools/Utils/QtDelayedExecutor.h>
+
 #include <Scene3D/Entity.h>
 #include <Reflection/Reflection.h>
 #include <Reflection/ReflectionRegistrator.h>
@@ -37,7 +39,7 @@ public:
         SceneSignals* sceneSignals = SceneSignals::Instance();
         connections.AddConnection(sceneSignals, &SceneSignals::CommandExecuted, [this](SceneEditor2* scene, const RECommandNotificationObject& commandNotification)
                                   {
-                                      EmitUpdate(DAVA::TArc::PropertiesView::FullUpdate);
+                                      QueueFullUpdate();
                                   });
 
         timerUpdater.update.Connect(this, &PropertyPanelUpdater::EmitUpdate);
@@ -49,9 +51,15 @@ private:
         update.Emit(policy);
     }
 
+    void QueueFullUpdate()
+    {
+        executor.DelayedExecute(DAVA::Bind(&PropertyPanelUpdater::EmitUpdate, this, DAVA::TArc::PropertiesView::FullUpdate));
+    }
+
 private:
     DAVA::TArc::TimerUpdater timerUpdater;
     DAVA::TArc::QtConnections connections;
+    QtDelayedExecutor executor;
 };
 
 class PropertyPanelData : public DAVA::TArc::DataNode

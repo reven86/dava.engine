@@ -62,6 +62,7 @@ public:
         OperationInvoker* invoker = nullptr;
         UI* ui = nullptr;
         FieldDescriptor objectsField;
+        FieldDescriptor developerModeField;
         String settingsNodeName;
         std::weak_ptr<Updater> updater;
     };
@@ -85,6 +86,9 @@ private:
 
     eViewMode GetViewMode() const;
     void SetViewMode(eViewMode mode);
+
+    bool IsInDeveloperMode() const;
+    void SetDeveloperMode(bool isDevMode);
 
 private:
     FieldBinder binder;

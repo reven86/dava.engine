@@ -19,6 +19,10 @@ class HiddenField
 {
 };
 
+class DeveloperModeOnly
+{
+};
+
 class DisplayName
 {
 public:

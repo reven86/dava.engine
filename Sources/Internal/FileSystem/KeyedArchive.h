@@ -290,6 +290,7 @@ public:
 		\param[in] value we want to set for this key
 	 */
     void SetVariant(const String& key, const VariantType& value);
+    void SetVariantWithoutRealloc(const String& key, const VariantType& value);
     /**
         \brief Function to set another keyed archive as kye for this archive.
         \param[in] key string key

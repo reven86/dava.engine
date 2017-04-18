@@ -336,6 +336,19 @@ void KeyedArchive::SetVariant(const String& key, const VariantType& value)
     objectMap[key] = variantValue;
 }
 
+void KeyedArchive::SetVariantWithoutRealloc(const String& key, const VariantType& value)
+{
+    auto iter = objectMap.find(key);
+    if (iter != objectMap.end())
+    {
+        *iter->second = value;
+    }
+    else
+    {
+        objectMap[key] = new VariantType(value);
+    }
+}
+
 void KeyedArchive::SetByteArrayFromArchive(const String& key, KeyedArchive* archive)
 {
     //DVWARNING(false, "Method is depriceted! Use SetArchive()");

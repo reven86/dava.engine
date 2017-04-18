@@ -364,6 +364,20 @@ void PropertiesView::SetViewMode(PropertiesView::eViewMode mode)
     UpdateExpanded();
 }
 
+bool PropertiesView::IsInDeveloperMode() const
+{
+    return model->IsDeveloperMode();
+}
+
+void PropertiesView::SetDeveloperMode(bool isDevMode)
+{
+    if (isDevMode == true)
+    {
+    }
+
+    model->SetDeveloperMode(isDevMode);
+}
+
 } // namespace TArc
 } // namespace DAVA
 

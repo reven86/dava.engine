@@ -75,6 +75,9 @@ public:
     bool IsFavoriteOnly() const;
     void SetFavoriteOnly(bool isFavoriteOnly);
 
+    bool IsDeveloperMode() const;
+    void SetDeveloperMode(bool isDevMode);
+
 private:
     friend class BaseComponentValue;
     void ChildAdded(std::shared_ptr<const PropertyNode> parent, std::shared_ptr<PropertyNode> node, int32 childPosition);

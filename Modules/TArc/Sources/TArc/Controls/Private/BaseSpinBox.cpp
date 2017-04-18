@@ -192,7 +192,10 @@ template <typename TBase, typename TEditableType>
 void BaseSpinBox<TBase, TEditableType>::ToEditingState()
 {
     DVASSERT(this->hasFocus() == true);
-    DVASSERT(stateHistory.top() != ControlState::Editing);
+    if (stateHistory.top() == ControlState::Editing)
+    {
+        return;
+    }
 
     ControlState prevState = stateHistory.top();
     stateHistory.push(ControlState::Editing);

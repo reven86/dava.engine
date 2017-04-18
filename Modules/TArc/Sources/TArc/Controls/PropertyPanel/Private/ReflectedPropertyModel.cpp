@@ -476,7 +476,6 @@ void ReflectedPropertyModel::RegisterExtension(const std::shared_ptr<ExtensionCh
     if (extType == Type::Instance<ChildCreatorExtension>())
     {
         childCreator.RegisterExtension(PolymorphCast<ChildCreatorExtension>(extension));
-        return;
     }
 
     auto iter = extensions.find(extType);
@@ -495,7 +494,6 @@ void ReflectedPropertyModel::UnregisterExtension(const std::shared_ptr<Extension
     if (extType == Type::Instance<ChildCreatorExtension>())
     {
         childCreator.UnregisterExtension(PolymorphCast<ChildCreatorExtension>(extension));
-        return;
     }
 
     auto iter = extensions.find(extType);
@@ -743,6 +741,20 @@ void ReflectedPropertyModel::SetFavoriteOnly(bool isFavoriteOnly_)
     beginResetModel();
     showFavoriteOnly = isFavoriteOnly_;
     endResetModel();
+}
+
+bool ReflectedPropertyModel::IsDeveloperMode() const
+{
+    DVASSERT(extensions.empty() == false);
+    return extensions.begin()->second->IsDeveloperMode();
+}
+
+void ReflectedPropertyModel::SetDeveloperMode(bool isDevMode)
+{
+    for (auto& iter : extensions)
+    {
+        iter.second->SetDevelopertMode(isDevMode);
+    }
 }
 
 void ReflectedPropertyModel::GetExpandedListImpl(QModelIndexList& list, ReflectedPropertyItem* item) const

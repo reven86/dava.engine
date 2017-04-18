@@ -4,9 +4,12 @@
 #include "TArc/DataProcessing/DataListener.h"
 #include "TArc/DataProcessing/DataWrappersProcessor.h"
 #include "TArc/Controls/ControlDescriptor.h"
+#include "TArc/WindowSubSystem/QtTArcEvents.h"
+#include "TArc/Utils/ScopedValueGuard.h"
 
 #include <QWidget>
 #include <QObject>
+#include <QCoreApplication>
 
 namespace DAVA
 {
@@ -97,6 +100,18 @@ protected:
     {
         wrapper = accessor->CreateWrapper(MakeFunction(this, &ControlProxyImpl<TBase>::GetModel));
         wrapper.SetListener(this);
+    }
+
+    void focusInEvent(QFocusEvent* e) override
+    {
+        QCoreApplication::postEvent(ToWidgetCast(), new FocusToParentEvent(QT_EVENT_TYPE(EventsTable::FocusInToParent), *e));
+        TBase::focusInEvent(e);
+    }
+
+    void focusOutEvent(QFocusEvent* e) override
+    {
+        QCoreApplication::postEvent(ToWidgetCast(), new FocusToParentEvent(QT_EVENT_TYPE(EventsTable::FocusOutToParent), *e));
+        TBase::focusOutEvent(e);
     }
 
 protected:

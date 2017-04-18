@@ -80,6 +80,12 @@ Any TextComponentValue::GetMultipleValue() const
 
 bool TextComponentValue::IsValidValueToSet(const Any& newValue, const Any& currentValue) const
 {
+    if (currentValue.IsEmpty())
+        return true;
+
+    if (newValue.IsEmpty())
+        return false;
+
     String newStrignValue = newValue.Cast<String>();
     String currentStringValue = currentValue.Cast<String>();
     return newStrignValue != GetMultipleValue().Cast<String>() && newStrignValue != currentStringValue;
@@ -127,7 +133,12 @@ DAVA::TArc::ControlProxy* MultiLineTextComponentValue::CreateEditorWidget(QWidge
     connections.AddConnection(button, &QToolButton::clicked, MakeFunction(this, &MultiLineTextComponentValue::OpenMultiLineEdit));
     layout->addWidget(button);
 
-    w->AddControl(TextComponentValue::CreateEditorWidget(w->ToWidgetCast(), model, wrappersProcessor));
+    ControlProxy* baseControl = TextComponentValue::CreateEditorWidget(w->ToWidgetCast(), model, wrappersProcessor);
+    w->AddControl(baseControl);
+    QWidget* widget = w->ToWidgetCast();
+    QWidget* controlWidget = baseControl->ToWidgetCast();
+    widget->setFocusProxy(controlWidget);
+    widget->setFocusPolicy(controlWidget->focusPolicy());
 
     return w;
 }

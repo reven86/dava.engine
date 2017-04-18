@@ -63,12 +63,17 @@ namespace M
 using ReadOnly = Meta<Metas::ReadOnly>;
 
 /**
-    \ingroup
+    \ingroup metas
     Mark field as invisible in property panel
 */
 using HiddenField = Meta<Metas::HiddenField>;
 /**
-    \ingroup
+    \ingroup metas
+    Mark field to be visible only in developer mode of property panel
+*/
+using DeveloperModeOnly = Meta<Metas::DeveloperModeOnly>;
+/**
+    \ingroup metas
     Name of property that should be shown for user instead of field name
 */
 using DisplayName = Meta<Metas::DisplayName>;

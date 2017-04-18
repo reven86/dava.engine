@@ -34,6 +34,8 @@ void FilePathEdit::SetupControl()
 {
     edit = new QLineEdit(this);
     edit->setObjectName("filePathEdit");
+    setFocusProxy(edit);
+    setFocusPolicy(edit->focusPolicy());
 
     button = new QToolButton(this);
     button->setAutoRaise(true);

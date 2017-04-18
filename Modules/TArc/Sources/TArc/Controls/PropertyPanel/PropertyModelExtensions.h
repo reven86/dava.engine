@@ -110,6 +110,20 @@ public:
         return extensionType;
     }
 
+    void SetDevelopertMode(bool isDeveloperMode)
+    {
+        isInDeveloperMode = true;
+        if (nextExtension != nullptr)
+        {
+            nextExtension->SetDevelopertMode(isDeveloperMode);
+        }
+    }
+
+    bool IsDeveloperMode() const
+    {
+        return isInDeveloperMode;
+    }
+
 protected:
     template <typename T>
     T* GetNext()
@@ -130,6 +144,7 @@ protected:
 private:
     const Type* extensionType;
     std::shared_ptr<ExtensionChain> nextExtension;
+    bool isInDeveloperMode = false;
 };
 
 // The main goal of this extension is create children of some property.

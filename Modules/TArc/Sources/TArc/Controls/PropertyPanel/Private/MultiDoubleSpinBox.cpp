@@ -44,6 +44,7 @@ QWidget* CreatedEditor(const Reflection& r, const MultiDoubleSpinBox::FieldDescr
     DoubleSpinBox* spinBox = new DoubleSpinBox(descr, accessor, model, result);
     subControls.push_back(spinBox);
     layout->AddControl(spinBox);
+    spinBox->ToWidgetCast()->installEventFilter(parent);
 
     QWidget* editor = spinBox->ToWidgetCast();
     QSizePolicy policy = editor->sizePolicy();
@@ -64,6 +65,28 @@ MultiDoubleSpinBox::MultiDoubleSpinBox(const ControlDescriptorBuilder<Fields>& f
     : TBase(ControlDescriptor(fields), accessor, model, parent)
 {
     SetupControl(accessor);
+}
+
+void MultiDoubleSpinBox::focusInEvent(QFocusEvent* e)
+{
+    if (lastFocusedItem != nullptr)
+    {
+        lastFocusedItem->setFocus(e->reason());
+    }
+}
+
+bool MultiDoubleSpinBox::eventFilter(QObject* obj, QEvent* event)
+{
+    if (event->type() == QEvent::FocusIn)
+    {
+        QWidget* widget = qobject_cast<QWidget*>(obj);
+        if (widget != nullptr)
+        {
+            lastFocusedItem = widget;
+        }
+    }
+
+    return false;
 }
 
 template <typename T>

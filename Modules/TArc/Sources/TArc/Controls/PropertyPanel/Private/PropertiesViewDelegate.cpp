@@ -2,7 +2,9 @@
 #include "TArc/Controls/PropertyPanel/Private/ReflectedPropertyModel.h"
 #include "TArc/Controls/PropertyPanel/BaseComponentValue.h"
 
-#include "Engine/PlatformApi.h"
+#include "TArc/WindowSubSystem/QtTArcEvents.h"
+
+#include <Engine/PlatformApi.h>
 
 #include <QTreeView>
 #include <QApplication>
@@ -244,7 +246,7 @@ bool PropertiesViewDelegate::eventEditorFilter(QObject* obj, QEvent* e)
     DVASSERT(iter != indexMap.end());
     QModelIndex index = iter.value();
 
-    if (e->type() == QEvent::FocusIn)
+    if (e->type() == QT_EVENT_TYPE(EventsTable::FocusInToParent))
     {
         QItemSelectionModel* selectionModel = view->selectionModel();
         QItemSelectionModel::SelectionFlags flags = QItemSelectionModel::Clear | QItemSelectionModel::Select | QItemSelectionModel::Rows;
