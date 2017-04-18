@@ -28,32 +28,38 @@ void DefaultChildCheatorExtension::ExposeChildren(const std::shared_ptr<Property
     if (node->propertyType == PropertyNode::SelfRoot || node->propertyType == PropertyNode::RealProperty)
     {
         UnorderedSet<String> groups;
-        ForEachField(node->field.ref, [&](Reflection::Field&& field)
-                     {
-                         if (field.ref.HasMeta<M::HiddenField>() == false)
-                         {
-                             const M::Group* groupMeta = field.ref.GetMeta<M::Group>();
-                             if (groupMeta == nullptr)
-                             {
-                                 children.push_back(allocator->CreatePropertyNode(node, std::move(field)));
-                             }
-                             else
-                             {
-                                 if (groups.count(groupMeta->groupName) == 0)
-                                 {
-                                     Reflection::Field groupField = node->field;
-                                     groupField.key = groupMeta->groupName;
-                                     children.push_back(allocator->CreatePropertyNode(node, std::move(groupField), PropertyNode::GroupProperty, groupMeta->groupName));
-                                     groups.insert(groupMeta->groupName);
-                                 }
-                             }
-                         }
-                     });
+        ForEachField(node->field.ref, [&](Reflection::Field&& field) {
+            if (CanBeExposed(field) == false)
+            {
+                return;
+            }
+
+            const M::Group* groupMeta = field.ref.GetMeta<M::Group>();
+            if (groupMeta == nullptr)
+            {
+                children.push_back(allocator->CreatePropertyNode(node, std::move(field)));
+            }
+            else
+            {
+                if (groups.count(groupMeta->groupName) == 0)
+                {
+                    Reflection::Field groupField = node->field;
+                    groupField.key = groupMeta->groupName;
+                    children.push_back(allocator->CreatePropertyNode(node, std::move(groupField), PropertyNode::GroupProperty, groupMeta->groupName));
+                    groups.insert(groupMeta->groupName);
+                }
+            }
+        });
     }
     else if (node->propertyType == PropertyNode::GroupProperty)
     {
         String groupName = node->cachedValue.Cast<String>();
         ForEachField(node->field.ref, [&](Reflection::Field&& field) {
+            if (CanBeExposed(field) == false)
+            {
+                return;
+            }
+
             const M::Group* groupMeta = field.ref.GetMeta<M::Group>();
             if (groupMeta != nullptr && groupMeta->groupName == groupName)
             {

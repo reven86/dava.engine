@@ -337,7 +337,7 @@ void EntityChildCreator::ExposeChildren(const std::shared_ptr<DAVA::TArc::Proper
     {
         DAVA::TArc::ForEachField(parent->field.ref, [&](Reflection::Field&& field)
                                  {
-                                     if (field.ref.GetValueType() != DAVA::Type::Instance<DAVA::Vector<DAVA::Component*>>() && field.ref.HasMeta<M::HiddenField>() == false)
+                                     if (field.ref.GetValueType() != DAVA::Type::Instance<DAVA::Vector<DAVA::Component*>>() && CanBeExposed(field))
                                      {
                                          children.push_back(allocator->CreatePropertyNode(parent, std::move(field), PropertyNode::RealProperty));
                                      }

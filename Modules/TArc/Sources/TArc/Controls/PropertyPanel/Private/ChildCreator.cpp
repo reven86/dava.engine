@@ -103,6 +103,12 @@ void ChildCreator::Clear()
     propertiesIndex.clear();
 }
 
+void ChildCreator::SetDevMode(bool isDevMode)
+{
+    DVASSERT(extensions != nullptr);
+    extensions->SetDevelopertMode(isDevMode);
+}
+
 void ChildCreator::RegisterExtension(const std::shared_ptr<ChildCreatorExtension>& extension)
 {
     extension->SetAllocator(allocator);

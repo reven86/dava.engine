@@ -2,6 +2,8 @@
 #include "TArc/Controls/PropertyPanel/Private/ReflectedPropertyModel.h"
 #include "TArc/Controls/PropertyPanel/Private/PropertiesViewDelegate.h"
 #include "TArc/Controls/ComboBox.h"
+#include "TArc/Controls/CheckBox.h"
+#include "TArc/WindowSubSystem/UI.h"
 #include "TArc/Core/ContextAccessor.h"
 #include "TArc/Utils/ScopedValueGuard.h"
 
@@ -59,6 +61,14 @@ protected:
 private:
     bool isInFavoritesEdit = false;
 };
+
+String DeveloperModeDescription(const Any& v)
+{
+    if (v.Get<bool>() == true)
+        return "Developer mode on";
+    else
+        return "Developer mode off";
+}
 
 } // namespace PropertiesViewDetail
 
@@ -185,6 +195,7 @@ DAVA_REFLECTION_IMPL(PropertiesView)
 {
     ReflectionRegistrator<PropertiesView>::Begin()
     .Field("viewMode", &PropertiesView::GetViewMode, &PropertiesView::SetViewMode)[M::EnumT<eViewMode>()]
+    .Field("devMode", &PropertiesView::IsInDeveloperMode, &PropertiesView::SetDeveloperMode)[M::ValueDescription(&PropertiesViewDetail::DeveloperModeDescription)]
     .End();
 }
 
@@ -210,6 +221,10 @@ PropertiesView::PropertiesView(const Params& params_)
     model->LoadState(viewItem);
     QObject::connect(view, &QTreeView::expanded, this, &PropertiesView::OnExpanded);
     QObject::connect(view, &QTreeView::collapsed, this, &PropertiesView::OnCollapsed);
+
+#if !defined(DEPLOY_BUILD)
+    model->SetDeveloperMode(true);
+#endif
 }
 
 PropertiesView::~PropertiesView()
@@ -267,10 +282,20 @@ void PropertiesView::SetupUI()
     toolBar->addAction(favoriteModeAction);
     connections.AddConnection(favoriteModeAction, &QAction::toggled, MakeFunction(this, &PropertiesView::OnFavoritesEditChanged));
 
-    ControlDescriptorBuilder<ComboBox::Fields> descr;
-    descr[ComboBox::Fields::Value] = "viewMode";
-    ComboBox* comboBox = new ComboBox(descr, params.accessor, Reflection::Create(ReflectedObject(this)), toolBar);
-    toolBar->addWidget(comboBox->ToWidgetCast());
+    Reflection thisModel = Reflection::Create(ReflectedObject(this));
+    {
+        ControlDescriptorBuilder<ComboBox::Fields> descr;
+        descr[ComboBox::Fields::Value] = "viewMode";
+        ComboBox* comboBox = new ComboBox(descr, params.accessor, thisModel, toolBar);
+        toolBar->addWidget(comboBox->ToWidgetCast());
+    }
+
+    {
+        ControlDescriptorBuilder<CheckBox::Fields> descr;
+        descr[CheckBox::Fields::Checked] = "devMode";
+        CheckBox* checkBox = new CheckBox(descr, params.accessor, thisModel, toolBar);
+        toolBar->addWidget(checkBox->ToWidgetCast());
+    }
 
     QHeaderView* headerView = view->header();
     connections.AddConnection(headerView, &QHeaderView::sectionResized, MakeFunction(this, &PropertiesView::OnColumnResized));
@@ -373,6 +398,15 @@ void PropertiesView::SetDeveloperMode(bool isDevMode)
 {
     if (isDevMode == true)
     {
+        ModalMessageParams p;
+        p.defaultButton = ModalMessageParams::Cancel;
+        p.icon = ModalMessageParams::Warning;
+        p.title = "Switch to developer mode";
+        p.message = "You are trying to switch into developer mode. It can be unsafe.\nAre you sure?";
+        if (params.ui->ShowModalMessage(DAVA::TArc::mainWindowKey, p) == ModalMessageParams::Cancel)
+        {
+            return;
+        }
     }
 
     model->SetDeveloperMode(isDevMode);

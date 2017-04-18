@@ -81,6 +81,7 @@ public:
             return head;
         }
 
+        extension->SetDevelopertMode(head->IsDeveloperMode());
         extension->nextExtension = head;
         DVASSERT(extension->nextExtension != nullptr);
         return extension;
@@ -112,7 +113,7 @@ public:
 
     void SetDevelopertMode(bool isDeveloperMode)
     {
-        isInDeveloperMode = true;
+        isInDeveloperMode = isDeveloperMode;
         if (nextExtension != nullptr)
         {
             nextExtension->SetDevelopertMode(isDeveloperMode);
@@ -161,6 +162,7 @@ public:
     void SetAllocator(std::shared_ptr<IChildAllocator> allocator);
 
 protected:
+    bool CanBeExposed(const Reflection::Field& field) const;
     std::shared_ptr<IChildAllocator> allocator;
 };
 

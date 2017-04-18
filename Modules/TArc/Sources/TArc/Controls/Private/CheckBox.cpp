@@ -89,7 +89,9 @@ void CheckBox::StateChanged(int newState)
         }
         else if (dataType == eContainedDataType::TYPE_BOOL)
         {
-            Any newValue = Any(checkState());
+            Qt::CheckState checkStateValue = checkState();
+            DVASSERT(checkStateValue != Qt::PartiallyChecked);
+            Any newValue = Any(checkStateValue == Qt::Checked ? true : false);
             if (currentValue != newValue)
             {
                 wrapper.SetFieldValue(GetFieldName(Fields::Checked), newValue);

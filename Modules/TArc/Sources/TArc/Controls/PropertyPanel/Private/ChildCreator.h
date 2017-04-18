@@ -20,6 +20,8 @@ public:
     void RemoveNode(const std::shared_ptr<PropertyNode>& parent);
     void Clear();
 
+    void SetDevMode(bool isDevMode);
+
     void RegisterExtension(const std::shared_ptr<ChildCreatorExtension>& extension);
     void UnregisterExtension(const std::shared_ptr<ChildCreatorExtension>& extension);
 

@@ -476,6 +476,7 @@ void ReflectedPropertyModel::RegisterExtension(const std::shared_ptr<ExtensionCh
     if (extType == Type::Instance<ChildCreatorExtension>())
     {
         childCreator.RegisterExtension(PolymorphCast<ChildCreatorExtension>(extension));
+        return;
     }
 
     auto iter = extensions.find(extType);
@@ -494,6 +495,7 @@ void ReflectedPropertyModel::UnregisterExtension(const std::shared_ptr<Extension
     if (extType == Type::Instance<ChildCreatorExtension>())
     {
         childCreator.UnregisterExtension(PolymorphCast<ChildCreatorExtension>(extension));
+        return;
     }
 
     auto iter = extensions.find(extType);
@@ -751,6 +753,7 @@ bool ReflectedPropertyModel::IsDeveloperMode() const
 
 void ReflectedPropertyModel::SetDeveloperMode(bool isDevMode)
 {
+    childCreator.SetDevMode(isDevMode);
     for (auto& iter : extensions)
     {
         iter.second->SetDevelopertMode(isDevMode);

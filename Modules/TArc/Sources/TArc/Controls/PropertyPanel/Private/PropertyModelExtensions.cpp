@@ -103,6 +103,21 @@ void ChildCreatorExtension::SetAllocator(std::shared_ptr<IChildAllocator> alloca
     allocator = allocator_;
 }
 
+bool ChildCreatorExtension::CanBeExposed(const Reflection::Field& field) const
+{
+    if (field.ref.GetMeta<M::HiddenField>() != nullptr)
+    {
+        return false;
+    }
+
+    if (field.ref.GetMeta<M::DeveloperModeOnly>() != nullptr && IsDeveloperMode() == false)
+    {
+        return false;
+    }
+
+    return true;
+}
+
 EditorComponentExtension::EditorComponentExtension()
     : ExtensionChain(Type::Instance<EditorComponentExtension>())
 {
