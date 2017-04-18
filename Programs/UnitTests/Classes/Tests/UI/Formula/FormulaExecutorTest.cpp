@@ -51,7 +51,8 @@ public:
 
     String floatToStr(float a)
     {
-        return Format("%.3f", a);
+        double var = static_cast<double>(a);
+        return Format("%.3f", var);
     }
 };
 
@@ -81,8 +82,8 @@ DAVA_TESTCLASS (FormulaExecutorTest)
         TEST_VERIFY(Execute("5 + 5") == Any(10));
         TEST_VERIFY(Execute("7-2") == Any(5));
         TEST_VERIFY(Execute("7U-2U") == Any(5U));
-        TEST_VERIFY(Execute("7L-9L").Get<int64>() == Any(static_cast<int64>(-2L)).Get<int64>());
-        TEST_VERIFY(Execute("7U-9U").Get<uint32>() == Any(static_cast<uint32>(-2U)).Get<uint32>());
+        TEST_VERIFY(Execute("7L-9L").Get<int64>() == static_cast<int64>(-2L));
+        TEST_VERIFY(Execute("7U-9U").Get<uint32>() == static_cast<uint32>(-2));
         TEST_VERIFY(Execute("-2") == Any(-2));
         TEST_VERIFY(Execute("--2") == Any(2));
         TEST_VERIFY(Execute("1---2") == Any(-1));

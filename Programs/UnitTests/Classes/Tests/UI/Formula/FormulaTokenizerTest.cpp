@@ -126,7 +126,7 @@ DAVA_TESTCLASS (FormulaTokenizerTest)
 
         token = tokenizer.ReadToken();
         TEST_VERIFY(token.GetType() == FormulaToken::INT64);
-        TEST_VERIFY(token.GetUInt64() == 0L);
+        TEST_VERIFY(token.GetInt64() == 0L);
 
         token = tokenizer.ReadToken();
         TEST_VERIFY(token.GetType() == FormulaToken::INT64);
