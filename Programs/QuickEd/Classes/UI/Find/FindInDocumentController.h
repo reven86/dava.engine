@@ -41,7 +41,7 @@ private:
     void FindIfActive();
     void MoveSelection(DAVA::int32 step);
 
-    void OnEditedRootControlsChanged(const DAVA::Any& value);
+    void OnDisplayedRootControlsChanged(const DAVA::Any& value);
 
     // PackageListener
     void ControlPropertyWasChanged(ControlNode* node, AbstractProperty* property) override;
@@ -59,5 +59,5 @@ private:
     PackageListenerProxy packageListenerProxy;
     ContinuousUpdater findResultsUpdater;
 
-    std::unique_ptr<DAVA::TArc::FieldBinder> editedRootControlsFieldBinder;
+    std::unique_ptr<DAVA::TArc::FieldBinder> fieldBinder;
 };

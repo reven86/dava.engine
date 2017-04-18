@@ -136,6 +136,12 @@ void PreviewWidget::CreateActions()
     connect(pasteAction, &QAction::triggered, this, &PreviewWidget::PasteRequested);
     renderWidget->addAction(pasteAction);
 
+    QAction* duplicateAction = new QAction(tr("Duplicate"), this);
+    duplicateAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_D));
+    duplicateAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    connect(duplicateAction, &QAction::triggered, this, &PreviewWidget::DuplicateRequested);
+    addAction(duplicateAction);
+
     QAction* deleteAction = new QAction(tr("Delete"), this);
 #if defined Q_OS_WIN
     deleteAction->setShortcut(QKeySequence(QKeySequence::Delete));
@@ -287,7 +293,7 @@ void PreviewWidget::InitFromSystemsManager(EditorSystemsManager* systemsManager_
     editorCanvas->scaleChanged.Connect(this, &PreviewWidget::OnScaleChanged);
     systemsManager->AddEditorSystem(editorCanvas);
 
-    CursorSystem* cursorSystem = new CursorSystem(renderWidget, systemsManager);
+    CursorSystem* cursorSystem = new CursorSystem(renderWidget, systemsManager, accessor);
     systemsManager->AddEditorSystem(cursorSystem);
 }
 

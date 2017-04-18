@@ -7,6 +7,8 @@
 #include "Model/ControlProperties/SectionProperty.h"
 #include "Model/ControlProperties/StyleSheetRootProperty.h"
 #include "Model/ControlProperties/StyleSheetProperty.h"
+#include "Model/ControlProperties/SubValueProperty.h"
+#include "Model/ControlProperties/ValueProperty.h"
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/StyleSheetNode.h"
 #include "Utils/QtDavaConvertion.h"
@@ -23,6 +25,7 @@
 
 #include <Reflection/ReflectedTypeDB.h>
 #include <UI/UIControl.h>
+#include <UI/UIControlSystem.h>
 
 #include <QFont>
 #include <QVector2D>
@@ -38,10 +41,14 @@ PropertiesModel::PropertiesModel(QObject* parent)
     propertiesUpdater.SetUpdater(MakeFunction(this, &PropertiesModel::UpdateAllChangedProperties));
     nodeUpdater.SetUpdater(MakeFunction(this, &PropertiesModel::ResetInternal));
     nodeUpdater.SetStopper([this]() { return nodeToReset == nullptr; });
+
+    UIControlSystem::Instance()->GetStyleSheetSystem()->SetListener(this);
 }
 
 PropertiesModel::~PropertiesModel()
 {
+    UIControlSystem::Instance()->GetStyleSheetSystem()->SetListener(nullptr);
+
     CleanUp();
     propertiesUpdater.Abort();
     nodeUpdater.Abort();
@@ -402,6 +409,18 @@ void PropertiesModel::StyleSelectorWasRemoved(StyleSheetSelectorsSection* sectio
     endRemoveRows();
 }
 
+void PropertiesModel::OnStylePropertyChanged(DAVA::UIControl* control, DAVA::UIComponent* component, uint32 propertyIndex)
+{
+    if (controlNode != nullptr && rootProperty != nullptr && controlNode->GetControl() == control)
+    {
+        AbstractProperty* changedProperty = rootProperty->FindPropertyByStyleIndex(static_cast<int32>(propertyIndex));
+        if (changedProperty != nullptr)
+        {
+            PropertyChanged(changedProperty);
+        }
+    }
+}
+
 void PropertiesModel::ChangeProperty(AbstractProperty* property, const Any& value)
 {
     DAVA::TArc::DataContext* activeContext = accessor->GetActiveContext();
@@ -411,7 +430,17 @@ void PropertiesModel::ChangeProperty(AbstractProperty* property, const Any& valu
 
     if (nullptr != controlNode)
     {
-        documentData->ExecCommand<ChangePropertyValueCommand>(controlNode, property, value);
+        SubValueProperty* subValueProperty = dynamic_cast<SubValueProperty*>(property);
+        if (subValueProperty)
+        {
+            ValueProperty* valueProperty = subValueProperty->GetValueProperty();
+            Any newValue = valueProperty->ChangeValueComponent(valueProperty->GetValue(), value, subValueProperty->GetIndex());
+            documentData->ExecCommand<ChangePropertyValueCommand>(controlNode, valueProperty, newValue);
+        }
+        else
+        {
+            documentData->ExecCommand<ChangePropertyValueCommand>(controlNode, property, value);
+        }
     }
     else if (styleSheet)
     {

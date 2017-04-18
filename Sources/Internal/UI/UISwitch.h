@@ -88,6 +88,11 @@ protected:
     // Boolean variables are grouped together because of DF-2149.
     bool switchOnTapBesideToggle : 1;
     bool isLeftSelected : 1;
+
+public:
+    static const FastName BUTTON_LEFT_NAME;
+    static const FastName BUTTON_RIGHT_NAME;
+    static const FastName BUTTON_TOGGLE_NAME;
 };
 }
 #endif //__DAVAENGINE_UI_SWITCH_H__

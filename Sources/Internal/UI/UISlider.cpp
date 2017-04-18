@@ -11,9 +11,9 @@
 namespace DAVA
 {
 // Use these names for children buttons to define UISlider in .yaml
-static const FastName UISLIDER_THUMB_SPRITE_CONTROL_NAME("thumbSpriteControl");
-static const FastName UISLIDER_MIN_SPRITE_CONTROL_NAME("minSpriteControl");
-static const FastName UISLIDER_MAX_SPRITE_CONTROL_NAME("maxSpriteControl");
+const FastName UISlider::THUMB_SPRITE_CONTROL_NAME("thumbSpriteControl");
+const FastName UISlider::MIN_SPRITE_CONTROL_NAME("minSpriteControl");
+const FastName UISlider::MAX_SPRITE_CONTROL_NAME("maxSpriteControl");
 
 DAVA_VIRTUAL_REFLECTION_IMPL(UISlider)
 {
@@ -45,7 +45,7 @@ UISlider::UISlider(const Rect& rect)
 void UISlider::InitThumb()
 {
     thumbButton = new UIControl(Rect(0, 0, 40.f, 40.f));
-    thumbButton->SetName(UISLIDER_THUMB_SPRITE_CONTROL_NAME);
+    thumbButton->SetName(UISlider::THUMB_SPRITE_CONTROL_NAME);
     thumbButton->GetOrCreateComponent<UIControlBackground>();
     AddControl(thumbButton);
 
@@ -78,7 +78,7 @@ void UISlider::SetThumb(UIControl* newThumb)
     SafeRelease(thumbButton);
 
     thumbButton = SafeRetain(newThumb);
-    thumbButton->SetName(UISLIDER_THUMB_SPRITE_CONTROL_NAME);
+    thumbButton->SetName(UISlider::THUMB_SPRITE_CONTROL_NAME);
     thumbButton->SetInputEnabled(false);
 
     thumbButton->relativePosition.y = size.y * 0.5f;
@@ -170,7 +170,7 @@ void UISlider::AddControl(UIControl* control)
     // Synchronize the pointers to the thumb each time new control is added.
     UIControl::AddControl(control);
 
-    if (control->GetName() == UISLIDER_THUMB_SPRITE_CONTROL_NAME && thumbButton != control)
+    if (control->GetName() == UISlider::THUMB_SPRITE_CONTROL_NAME && thumbButton != control)
     {
         SafeRelease(thumbButton);
         thumbButton = SafeRetain(control);
@@ -274,7 +274,7 @@ void UISlider::AttachToSubcontrols()
 {
     if (!thumbButton)
     {
-        thumbButton = FindByName(UISLIDER_THUMB_SPRITE_CONTROL_NAME);
+        thumbButton = FindByName(UISlider::THUMB_SPRITE_CONTROL_NAME);
         DVASSERT(thumbButton);
         thumbButton->Retain();
     }
