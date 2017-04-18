@@ -15,6 +15,7 @@
 #include "QECommands/ChangePivotCommand.h"
 
 #include <TArc/Core/ContextAccessor.h>
+#include <TArc/Core/FieldBinder.h>
 
 #include <UI/UIEvent.h>
 #include <UI/UIControl.h>
@@ -181,19 +182,32 @@ Vector2 CreateFinalPosition(const UIGeometricData* parentGd, const Vector2& orig
 };
 }
 
-EditorTransformSystem::EditorTransformSystem(EditorSystemsManager* parent, TArc::ContextAccessor* accessor_)
-    : BaseEditorSystem(parent)
-    , accessor(accessor_)
+EditorTransformSystem::EditorTransformSystem(EditorSystemsManager* parent, TArc::ContextAccessor* accessor)
+    : BaseEditorSystem(parent, accessor)
 {
     systemsManager->activeAreaChanged.Connect(this, &EditorTransformSystem::OnActiveAreaChanged);
-    systemsManager->selectionChanged.Connect(this, &EditorTransformSystem::OnSelectionChanged);
 
+    InitFieldBinder();
     PreferencesStorage::Instance()->RegisterPreferences(this);
 }
 
 EditorTransformSystem::~EditorTransformSystem()
 {
     PreferencesStorage::Instance()->UnregisterPreferences(this);
+}
+
+void EditorTransformSystem::InitFieldBinder()
+{
+    using namespace DAVA;
+    using namespace DAVA::TArc;
+
+    fieldBinder.reset(new FieldBinder(accessor));
+    {
+        FieldDescriptor fieldDescr;
+        fieldDescr.type = ReflectedTypeDB::Get<DocumentData>();
+        fieldDescr.fieldName = FastName(DocumentData::selectionPropertyName);
+        fieldBinder->BindField(fieldDescr, MakeFunction(this, &EditorTransformSystem::OnSelectionChanged));
+    }
 }
 
 void EditorTransformSystem::OnActiveAreaChanged(const HUDAreaInfo& areaInfo)
@@ -302,10 +316,10 @@ void EditorTransformSystem::OnDragStateChanged(EditorSystemsManager::eDragState 
     }
 }
 
-void EditorTransformSystem::OnSelectionChanged(const SelectedNodes& selection)
+void EditorTransformSystem::OnSelectionChanged(const Any& selection)
 {
     selectedControlNodes.clear();
-    for (PackageBaseNode* node : selection)
+    for (PackageBaseNode* node : selection.Cast<SelectedNodes>(SelectedNodes()))
     {
         ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
         if (controlNode != nullptr)

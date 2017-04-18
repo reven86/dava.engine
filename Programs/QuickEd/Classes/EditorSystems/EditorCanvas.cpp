@@ -12,9 +12,8 @@
 
 using namespace DAVA;
 
-EditorCanvas::EditorCanvas(EditorSystemsManager* parent, DAVA::TArc::ContextAccessor* accessor_)
-    : BaseEditorSystem(parent)
-    , accessor(accessor_)
+EditorCanvas::EditorCanvas(EditorSystemsManager* parent, DAVA::TArc::ContextAccessor* accessor)
+    : BaseEditorSystem(parent, accessor)
 {
     movableControl = systemsManager->GetScalableControl();
     systemsManager->contentSizeChanged.Connect(this, &EditorCanvas::OnContentSizeChanged);
