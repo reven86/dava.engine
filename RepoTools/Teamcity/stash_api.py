@@ -3,13 +3,13 @@ import sys
 import requests
 import json
 
-class Stash:
-    def __init__(self, stash_url, login, password ):
+class StashRequest:
+    def __init__(self, stash_url,stash_api_version, stash_project, stesh_repo_name, login, password ):
 
         self.__headers      = {'Content-Type': 'application/json'}
         self.__session      = requests.Session()
         self.__session.auth = (login, password)
-        self.__base_url     = ''.join((stash_url, "/rest/api/1.0/projects/DF/repos/dava.framework/"))
+        self.__base_url     = ''.join((stash_url, "/rest/api/{}/projects/{}/repos/{}/".format( stash_api_version, stash_project, stesh_repo_name ) ) )
 
     def __request(self, uri, data=None):
 

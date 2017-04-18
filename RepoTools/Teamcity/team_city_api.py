@@ -4,7 +4,7 @@ import requests
 import xml.etree.ElementTree as ET
 
 
-class TeamCity:
+class TeamCityRequest:
     def __init__(self, teamcity_url, login, password ):
 
         self.__headers      = {'Content-Type': 'application/xml'}
