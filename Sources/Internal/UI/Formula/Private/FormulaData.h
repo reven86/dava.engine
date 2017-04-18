@@ -32,9 +32,9 @@ private:
 
 class FormulaDataMap : public ReflectionBase
 {
-public:
     DAVA_VIRTUAL_REFLECTION(DataMapAny);
 
+public:
     FormulaDataMap();
     ~FormulaDataMap();
 

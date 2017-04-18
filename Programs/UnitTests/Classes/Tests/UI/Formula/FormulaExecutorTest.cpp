@@ -291,7 +291,7 @@ DAVA_TESTCLASS (FormulaExecutorTest)
         TEST_VERIFY(dependencies == Vector<void*>({ &(data.bVal), &(data.array), &(data.array[1]) }));
     }
 
-    Any Execute(const String str)
+    Any Execute(const String& str)
     {
         TestData data;
         FormulaReflectionContext context(Reflection::Create(&data), std::shared_ptr<FormulaContext>());

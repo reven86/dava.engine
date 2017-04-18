@@ -15,7 +15,7 @@ namespace DAVA
  FormualParser stores string with expressions and allow to read sequences
  of expressions.
  */
-class FormulaParser
+class FormulaParser final
 {
 public:
     FormulaParser(const String& str);

@@ -98,7 +98,7 @@ int32 FormulaToken::GetInt32() const
 uint32 FormulaToken::GetUInt32() const
 {
     DVASSERT(type == UINT32);
-    return i32Val;
+    return ui32Val;
 }
 
 int64 FormulaToken::GetInt64() const
@@ -161,9 +161,9 @@ const String& FormulaTokenizer::GetString() const
     return str;
 }
 
-String FormulaTokenizer::GetTokenStringValue(const FormulaToken& FormulaToken) const
+String FormulaTokenizer::GetTokenStringValue(const FormulaToken& token) const
 {
-    return str.substr(FormulaToken.GetStringPos(), FormulaToken.GetStringLen());
+    return str.substr(token.GetStringPos(), token.GetStringLen());
 }
 
 int32 FormulaTokenizer::GetLineNumber() const

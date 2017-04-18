@@ -9,7 +9,6 @@
 namespace DAVA
 {
 using std::shared_ptr;
-using std::make_shared;
 
 FormulaDataVector::FormulaDataVector()
 {
