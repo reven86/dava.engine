@@ -150,7 +150,7 @@ public final class DavaActivity extends Activity
     private DavaSplashView splashView;
     private ViewGroup layout;
     private ArrayList<ActivityListener> activityListeners = new ArrayList<ActivityListener>();
-    private ActivityResultArgs savedActivityResultArgs = null; // Saved arguments coming with onActivityResult
+    private ArrayList<ActivityResultArgs> savedActivityResultArgs = null; // Saved arguments coming from onActivityResult (possible multiple calls)
 
     private static final int ON_ACTIVITY_CREATE = 0;
     private static final int ON_ACTIVITY_START = 1;
@@ -401,7 +401,7 @@ public final class DavaActivity extends Activity
         notifyListeners(ON_ACTIVITY_DESTROY, null);
         activityListeners.clear();
 
-        if (0 != nativePrimaryWindowBackend)
+        if (isEngineRunning)
         {
             Log.d(LOG_TAG, "DavaActivity.nativeOnDestroy");
             nativeOnDestroy();
@@ -504,7 +504,11 @@ public final class DavaActivity extends Activity
             //  - user puts application into background (presses Home button),
             //  - system silently kill application to free some memory,
             //  - onActivityResult is invoked before c++ thread has started.
-            savedActivityResultArgs = args;
+            if (savedActivityResultArgs == null)
+            {
+                savedActivityResultArgs = new ArrayList<ActivityResultArgs>();
+            }
+            savedActivityResultArgs.add(args);
         }
     }
 
@@ -599,7 +603,10 @@ public final class DavaActivity extends Activity
                 // Notify about onActivityResult if it has occured (see comments in onActivityResult method)
                 if (savedActivityResultArgs != null)
                 {
-                    notifyListeners(ON_ACTIVITY_RESULT, savedActivityResultArgs);
+                    for (ActivityResultArgs args : savedActivityResultArgs)
+                    {
+                        notifyListeners(ON_ACTIVITY_RESULT, args);
+                    }
                     savedActivityResultArgs = null;
                 }
             }

@@ -339,8 +339,8 @@ void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, in
         }
     }
 
-    // Simulate application resuming to compensate suspending in SurfaceDestroyed
-    // APP_RESUMED handler in EngineBackend prevents from resuming application twice
+    // Simulate application resuming to compensate suspending in SurfaceDestroyed.
+    // APP_RESUMED handler in EngineBackend prevents from resuming application twice.
     mainDispatcher->PostEvent(MainDispatcherEvent(MainDispatcherEvent::APP_RESUMED));
 }
 
@@ -350,9 +350,9 @@ void WindowBackend::SurfaceDestroyed()
         ReplaceAndroidNativeWindow(nullptr);
     }));
 
-    // Simulate appplication suspending if surface has been destroyed as in some cases
+    // Simulate application suspending if surface has been destroyed as in some cases
     // SurfaceDestroyed can be called without corresponding Activity.onPause.
-    // APP_SUSPENDED handler in EngineBackend prevents from suspending application twice
+    // APP_SUSPENDED handler in EngineBackend prevents from suspending application twice.
     mainDispatcher->SendEvent(MainDispatcherEvent(MainDispatcherEvent::APP_SUSPENDED));
 }
 

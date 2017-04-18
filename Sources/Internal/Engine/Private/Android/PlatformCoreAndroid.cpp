@@ -61,6 +61,8 @@ void PlatformCore::Run()
     static const jint JniLocalRefsMinCount = 16;
 
     engineBackend->OnGameLoopStarted();
+    // OnGameLoopStarted can take some amount of time so hide spash view after game has done
+    // its work to not frighten user with black screen.
     AndroidBridge::HideSplashView();
     AndroidBridge::NotifyEngineRunning();
 
