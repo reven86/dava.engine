@@ -60,8 +60,9 @@ void PlatformCore::Run()
     // From docs: VM automatically ensures that at least 16 local references can be created
     static const jint JniLocalRefsMinCount = 16;
 
-    AndroidBridge::HideSplashView();
     engineBackend->OnGameLoopStarted();
+    AndroidBridge::HideSplashView();
+    AndroidBridge::NotifyEngineRunning();
 
     JNIEnv* env = AndroidBridge::GetEnv();
     while (!quitGameThread)

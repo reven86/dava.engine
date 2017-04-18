@@ -124,12 +124,13 @@ public final class DavaActivity extends Activity
     private static DavaActivity activitySingleton;
     private static Thread nativeThread; // Thread where native C++ code is running
     private static long nativePrimaryWindowBackend = 0;
-    private static int nativeThreadId; //
-    private static int uiThreadId;
+    private static int nativeThreadId; // C++ native thread id
+    private static int uiThreadId; // UI thread id
 
     protected boolean isStopped = true; // Activity is stopped after onStop and before onStart
     protected boolean isPaused = true; // Activity is paused after onPause and before onResume
     protected boolean isFocused = false;
+    protected boolean isEngineRunning = false; // Engine has entered Run method in c++ thread and ready to pump MainDispatcher events
     
     protected String externalFilesDir;
     protected String internalFilesDir;
@@ -149,6 +150,7 @@ public final class DavaActivity extends Activity
     private DavaSplashView splashView;
     private ViewGroup layout;
     private ArrayList<ActivityListener> activityListeners = new ArrayList<ActivityListener>();
+    private ActivityResultArgs savedActivityResultArgs = null; // Saved arguments coming with onActivityResult
 
     private static final int ON_ACTIVITY_CREATE = 0;
     private static final int ON_ACTIVITY_START = 1;
@@ -303,7 +305,8 @@ public final class DavaActivity extends Activity
         return splashViewBitmap;
     }
     
-    private void continueOnCreate() {
+    private void continueOnCreate()
+    {
         // #4 create surfaceView
         primarySurfaceView = new DavaSurfaceView(getApplication(), nativePrimaryWindowBackend);
         layout.addView(primarySurfaceView);
@@ -330,7 +333,8 @@ public final class DavaActivity extends Activity
     
     void onFinishCreatingMainWindowSurface()
     {
-        runOnUiThread(new Runnable(){
+        runOnUiThread(new Runnable()
+        {
             @Override
             public void run() {
                 startNativeThreadIfNotRunning();
@@ -488,7 +492,20 @@ public final class DavaActivity extends Activity
         args.requestCode = requestCode;
         args.resultCode = resultCode;
         args.data = data;
-        notifyListeners(ON_ACTIVITY_RESULT, args);
+        if (isEngineRunning)
+        {
+            notifyListeners(ON_ACTIVITY_RESULT, args);
+        }
+        else
+        {
+            // Save arguments and notify listeners later when Engine will enter Run method.
+            // Reason: onActivityResult can be called before native thread has started, e.g.:
+            //  - application starts Google Services activity,
+            //  - user puts application into background (presses Home button),
+            //  - system silently kill application to free some memory,
+            //  - onActivityResult is invoked before c++ thread has started.
+            savedActivityResultArgs = args;
+        }
     }
 
     @Override
@@ -570,6 +587,25 @@ public final class DavaActivity extends Activity
 
     }
 
+    // Invoked from c++ thread and tells that Engine has entered Run method
+    private void notifyEngineRunning()
+    {
+        runOnUiThread(new Runnable()
+        {
+            @Override public void run()
+            {
+                isEngineRunning = true;
+
+                // Notify about onActivityResult if it has occured (see comments in onActivityResult method)
+                if (savedActivityResultArgs != null)
+                {
+                    notifyListeners(ON_ACTIVITY_RESULT, savedActivityResultArgs);
+                    savedActivityResultArgs = null;
+                }
+            }
+        });
+    }
+
     public boolean isPaused()
     {
         return isPaused;
@@ -609,7 +645,8 @@ public final class DavaActivity extends Activity
     {
         if (primarySurfaceView != null && isNativeThreadRunning())
         {
-            if (!isPaused) {
+            if (!isPaused)
+            {
                 // Notification is here to prevent listener to call
                 // c++ native methods from itself when native part
                 // isn't initialized yet.
