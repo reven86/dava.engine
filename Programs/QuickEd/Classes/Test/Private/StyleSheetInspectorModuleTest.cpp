@@ -22,6 +22,7 @@
 #include <TArc/Testing/TArcUnitTests.h>
 #include <TArc/Testing/MockListener.h>
 #include <TArc/Core/ContextManager.h>
+#include <TArc/Utils/QtConnections.h>
 
 #include <FileSystem/FileSystem.h>
 #include <FileSystem/FilePath.h>
@@ -54,6 +55,17 @@ DAVA_TARC_TESTCLASS(StyleSheetInspectorModuleTest)
         using namespace ::testing;
         using namespace TestHelpers;
 
+        EXPECT_CALL(*this, OnRowInserted())
+        .Times(2)
+        .WillOnce(Return())
+        .WillOnce(Invoke([this]() {
+            EXPECT_CALL(*this, AfterWrappersSync())
+            .WillOnce(Invoke(this, &StyleSheetInspectorModuleTest::CheckSSWidget));
+        }));
+
+        StyleSheetInspectorWidget* ssWidget = FindSSWidget();
+        connections.AddConnection(ssWidget->model(), &QAbstractItemModel::rowsInserted, MakeFunction(this, &StyleSheetInspectorModuleTest::OnRowInserted));
+
         ContextAccessor* accessor = GetAccessor();
         TEST_VERIFY(accessor->GetContextCount() == 0);
 
@@ -73,14 +85,20 @@ DAVA_TARC_TESTCLASS(StyleSheetInspectorModuleTest)
         FilePath documentPath(projectPath + "/DataSource/UI/test.yaml");
         InvokeOperation(QEGlobal::SelectControl.ID, documentPath, GetContextManager());
         TEST_VERIFY(accessor->GetContextCount() == 1);
-
-        EXPECT_CALL(*this, AfterWrappersSync())
-        .WillOnce(Invoke(this, &StyleSheetInspectorModuleTest::CheckSSWidget));
     }
 
     void CheckSSWidget()
     {
-        QList<QWidget*> foundWidgets = LookupWidget(QEGlobal::windowKey, "Style Sheet Inspector");
+        StyleSheetInspectorWidget* ssWidget = FindSSWidget();
+        QList<QListWidgetItem*> items = ssWidget->findItems("#Control", Qt::MatchContains);
+        TEST_VERIFY(items.isEmpty() == false);
+        items = ssWidget->findItems("bg-drawType = DRAW_FILL", Qt::MatchContains);
+        TEST_VERIFY(items.isEmpty() == false);
+    }
+
+    StyleSheetInspectorWidget* FindSSWidget() const
+    {
+        QList<QWidget*> foundWidgets = LookupWidget(DAVA::TArc::mainWindowKey, "Style Sheet Inspector");
         StyleSheetInspectorWidget* ssWidget = nullptr;
         for (QWidget* widget : foundWidgets)
         {
@@ -91,13 +109,13 @@ DAVA_TARC_TESTCLASS(StyleSheetInspectorModuleTest)
             }
         }
         TEST_VERIFY(ssWidget != nullptr);
-        QList<QListWidgetItem*> items = ssWidget->findItems("#Control", Qt::MatchContains);
-        TEST_VERIFY(items.isEmpty() == false);
-        items = ssWidget->findItems("bg-drawType = DRAW_FILL", Qt::MatchContains);
-        TEST_VERIFY(items.isEmpty() == false);
+        return ssWidget;
     }
 
+    DAVA::TArc::QtConnections connections;
+
     MOCK_METHOD0_VIRTUAL(AfterWrappersSync, void());
+    MOCK_METHOD0_VIRTUAL(OnRowInserted, void());
 };
 
 namespace StyleSheetInspectorModuleTestDetails

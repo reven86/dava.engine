@@ -2,6 +2,7 @@
 
 #include "Model/ControlProperties/PropertyListener.h"
 
+#include <UI/Styles/UIStyleSheetSystem.h>
 #include <QtTools/Updaters/ContinuousUpdater.h>
 
 #include <Base/RefPtr.h>
@@ -13,9 +14,11 @@
 namespace DAVA
 {
 class InspInfo;
+class Any;
 namespace TArc
 {
 class ContextAccessor;
+class FieldBinder;
 }
 }
 
@@ -25,7 +28,7 @@ class ControlNode;
 class StyleSheetNode;
 class ComponentPropertiesSection;
 
-class PropertiesModel : public QAbstractItemModel, private PropertyListener
+class PropertiesModel : public QAbstractItemModel, private PropertyListener, private DAVA::UIStyleSheetSystemListener
 {
     Q_OBJECT
 
@@ -84,12 +87,18 @@ protected:
     void StyleSelectorWillBeRemoved(StyleSheetSelectorsSection* section, StyleSheetSelectorProperty* property, int index) override;
     void StyleSelectorWasRemoved(StyleSheetSelectorsSection* section, StyleSheetSelectorProperty* property, int index) override;
 
+    // UIStyleSheetSystemListener
+    void OnStylePropertyChanged(DAVA::UIControl* control, DAVA::UIComponent* component, DAVA::uint32 propertyIndex) override;
+
     virtual void ChangeProperty(AbstractProperty* property, const DAVA::Any& value);
     virtual void ResetProperty(AbstractProperty* property);
 
     QString makeQVariant(const AbstractProperty* property) const;
     void initAny(DAVA::Any& var, const QVariant& val) const;
     void CleanUp();
+
+    void OnPackageChanged(const DAVA::Any& package);
+    void BindFields();
 
     PackageBaseNode* nodeToReset = nullptr;
     ControlNode* controlNode = nullptr;
@@ -100,4 +109,5 @@ protected:
     ContinuousUpdater nodeUpdater;
 
     DAVA::TArc::ContextAccessor* accessor = nullptr;
+    std::unique_ptr<DAVA::TArc::FieldBinder> fieldBinder;
 };

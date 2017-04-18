@@ -204,14 +204,6 @@
     <bool>false</bool>
    </attribute>
   </widget>
-  <widget class="FindWidget" name="findWidget">
-   <property name="windowTitle">
-    <string>Find</string>
-   </property>
-   <attribute name="dockWidgetArea">
-    <number>8</number>
-   </attribute>
-  </widget>
   <action name="actionExit">
    <property name="text">
     <string>&amp;Exit</string>
@@ -270,15 +262,12 @@
     <string>Jump to Prototype</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+G</string>
+    <string>Ctrl+J</string>
    </property>
   </action>
   <action name="actionFindPrototypeInstances">
    <property name="text">
     <string>Find Prototype Instances</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+Shift+F</string>
    </property>
   </action>
  </widget>
@@ -300,12 +289,6 @@
    <class>PropertiesWidget</class>
    <extends>QDockWidget</extends>
    <header>UI/Properties/PropertiesWidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>FindWidget</class>
-   <extends>QDockWidget</extends>
-   <header>UI/Find/FindWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

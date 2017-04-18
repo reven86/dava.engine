@@ -70,6 +70,10 @@ protected:
     void InitInactiveParts(UIControl* thumb);
 
 public:
+    static const FastName THUMB_SPRITE_CONTROL_NAME;
+    static const FastName MIN_SPRITE_CONTROL_NAME;
+    static const FastName MAX_SPRITE_CONTROL_NAME;
+
 private:
     static const int32 BACKGROUND_COMPONENTS_COUNT = 3;
 };

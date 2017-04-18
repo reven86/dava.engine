@@ -65,7 +65,7 @@ void AddSeparatorAction(QWidget* widget)
     widget->addAction(separator);
 }
 
-bool CanInsertControlOrStyle(const PackageBaseNode* dest, PackageBaseNode* node, DAVA::int32 destIndex)
+bool CanInsertControlOrStyle(const PackageBaseNode* dest, PackageBaseNode* node, int32 destIndex)
 {
     if (dynamic_cast<ControlNode*>(node))
     {
@@ -155,9 +155,11 @@ PackageWidget::PackageWidget(QWidget* parent)
     PlaceActions();
 }
 
-void PackageWidget::SetAccessor(DAVA::TArc::ContextAccessor* accessor_)
+void PackageWidget::SetAccessor(TArc::ContextAccessor* accessor_)
 {
     accessor = accessor_;
+    dataWrapper = accessor->CreateWrapper(ReflectedTypeDB::Get<DocumentData>());
+
     packageModel->SetAccessor(accessor);
 }
 
@@ -173,7 +175,7 @@ PackageModel* PackageWidget::GetPackageModel() const
 
 void PackageWidget::OnPackageChanged(PackageContext* context, PackageNode* package)
 {
-    layout()->setEnabled(package != nullptr);
+    widget()->setEnabled(package != nullptr);
 
     bool isUpdatesEnabled = treeView->updatesEnabled();
     treeView->setUpdatesEnabled(false);
@@ -212,6 +214,7 @@ void PackageWidget::CreateActions()
 #if defined Q_OS_MAC
     delAction->setShortcuts({ QKeySequence::Delete, QKeySequence(Qt::Key_Backspace) });
 #endif // platform
+    duplicateControlsAction = CreateAction(tr("Duplicate"), &PackageWidget::OnDuplicate, QKeySequence(Qt::CTRL + Qt::Key_D));
 
     renameAction = CreateAction(tr("Rename"), &PackageWidget::OnRename);
 
@@ -232,6 +235,7 @@ void PackageWidget::PlaceActions()
     treeView->addAction(cutAction);
     treeView->addAction(copyAction);
     treeView->addAction(pasteAction);
+    treeView->addAction(duplicateControlsAction);
     AddSeparatorAction(treeView);
 
     treeView->addAction(copyControlPathAction);
@@ -291,6 +295,7 @@ void PackageWidget::RefreshActions()
     bool canMoveLeft = false;
     bool canMoveRight = false;
     bool containControlNodes = false;
+    bool canDuplicate = false;
 
     if (nodes.size() == 1)
     {
@@ -323,14 +328,29 @@ void PackageWidget::RefreshActions()
             canMoveRight = CanMoveRight(node);
         }
     }
-    for (auto iter = nodes.cbegin(); iter != nodes.cend() && (!canCopy || !canRemove); ++iter)
+    if (nodes.empty() == false)
     {
-        canCopy |= (*iter)->CanCopy();
-        canRemove |= (*iter)->CanRemove();
-
-        if ((*iter)->GetControl() != nullptr)
+        PackageBaseNode* parent = nullptr;
+        for (auto iter = nodes.cbegin(); iter != nodes.cend(); ++iter)
         {
-            containControlNodes = true;
+            PackageBaseNode* node = *iter;
+            canCopy |= node->CanCopy();
+            canRemove |= node->CanRemove();
+
+            if (parent == nullptr)
+            {
+                parent = node->GetParent();
+                canDuplicate = parent->IsInsertingControlsSupported();
+            }
+            else if (canDuplicate)
+            {
+                canDuplicate &= (parent == node->GetParent());
+            }
+
+            if (node->GetControl() != nullptr)
+            {
+                containControlNodes = true;
+            }
         }
     }
 
@@ -339,6 +359,7 @@ void PackageWidget::RefreshActions()
     pasteAction->setEnabled(canInsertControls || canInsertStyles);
     cutAction->setEnabled(canCopy && canRemove);
     delAction->setEnabled(canRemove);
+    duplicateControlsAction->setEnabled(canDuplicate);
 
     importPackageAction->setEnabled(canInsertPackages);
     addStyleAction->setEnabled(canInsertStyles);
@@ -360,7 +381,7 @@ void PackageWidget::CollectSelectedImportedPackages(Vector<PackageNode*>& nodes,
     CollectSelectedNodes(selectionContainer.selectedNodes, nodes, forCopy, forRemove);
 }
 
-void PackageWidget::CollectSelectedStyles(DAVA::Vector<StyleSheetNode*>& nodes, bool forCopy, bool forRemove)
+void PackageWidget::CollectSelectedStyles(Vector<StyleSheetNode*>& nodes, bool forCopy, bool forRemove)
 {
     CollectSelectedNodes(selectionContainer.selectedNodes, nodes, forCopy, forRemove);
 }
@@ -372,7 +393,7 @@ void PackageWidget::CopyNodesToClipboard(const Vector<ControlNode*>& controls, c
     {
         YamlPackageSerializer serializer;
 
-        DAVA::TArc::DataContext* activeContext = accessor->GetActiveContext();
+        TArc::DataContext* activeContext = accessor->GetActiveContext();
         DVASSERT(activeContext != nullptr);
         DocumentData* documentData = activeContext->GetData<DocumentData>();
         DVASSERT(documentData != nullptr);
@@ -422,7 +443,7 @@ void PackageWidget::OnImport()
     {
         return;
     }
-    DAVA::TArc::DataContext* activeContext = accessor->GetActiveContext();
+    TArc::DataContext* activeContext = accessor->GetActiveContext();
     DVASSERT(activeContext != nullptr);
     DocumentData* documentData = activeContext->GetData<DocumentData>();
     DVASSERT(documentData != nullptr);
@@ -477,7 +498,58 @@ void PackageWidget::OnPaste()
             DVASSERT(nullptr != documentData);
             PackageNode* package = documentData->GetPackageNode();
             QtModelPackageCommandExecutor executor(accessor);
-            executor.Paste(package, baseNode, baseNode->GetCount(), string);
+            SelectedNodes selection = executor.Paste(package, baseNode, baseNode->GetCount(), string);
+            if (selection.empty() == false)
+            {
+                dataWrapper.SetFieldValue(DocumentData::selectionPropertyName, selection);
+            }
+        }
+    }
+}
+
+void PackageWidget::OnDuplicate()
+{
+    //TODO: remove this block when package widget will be refactored
+    TArc::DataContext* activeContext = accessor->GetActiveContext();
+    if (activeContext == nullptr)
+    {
+        return;
+    }
+    DocumentData* documentData = activeContext->GetData<DocumentData>();
+    if (documentData == nullptr)
+    {
+        return;
+    }
+    SelectedNodes nodes = documentData->GetSelectedNodes();
+    if (nodes.empty())
+    {
+        return;
+    }
+    QApplication::clipboard()->clear();
+
+    OnCopy();
+
+    QClipboard* clipboard = QApplication::clipboard();
+
+    if (clipboard && clipboard->mimeData())
+    {
+        Vector<PackageBaseNode*> sortedSelection(nodes.begin(), nodes.end());
+        std::sort(sortedSelection.begin(), sortedSelection.end(), CompareByLCA);
+        PackageBaseNode* parent = sortedSelection.front()->GetParent();
+        if (parent->IsReadOnly() == false)
+        {
+            String string = clipboard->mimeData()->text().toStdString();
+
+            PackageNode* package = documentData->GetPackageNode();
+            QtModelPackageCommandExecutor executor(accessor);
+
+            PackageBaseNode* lastSelected = sortedSelection.back();
+            int index = parent->GetIndex(lastSelected);
+            SelectedNodes selection = executor.Paste(package, parent, index + 1, string);
+            if (selection.empty() == false)
+            {
+                dataWrapper.SetFieldValue(DocumentData::selectionPropertyName, selection);
+            }
         }
     }
 }
@@ -519,7 +591,7 @@ void PackageWidget::OnDelete()
         Vector<PackageNode*> packages;
         CollectSelectedImportedPackages(packages, false, true);
 
-        DAVA::TArc::DataContext* activeContext = accessor->GetActiveContext();
+        TArc::DataContext* activeContext = accessor->GetActiveContext();
         DVASSERT(activeContext != nullptr);
         DocumentData* documentData = activeContext->GetData<DocumentData>();
         DVASSERT(nullptr != documentData);
@@ -538,11 +610,11 @@ void PackageWidget::OnRename()
 
 void PackageWidget::OnAddStyle()
 {
-    DAVA::Vector<DAVA::UIStyleSheetSelectorChain> selectorChains;
+    Vector<UIStyleSheetSelectorChain> selectorChains;
     selectorChains.push_back(UIStyleSheetSelectorChain("?"));
-    const DAVA::Vector<DAVA::UIStyleSheetProperty> properties;
+    const Vector<UIStyleSheetProperty> properties;
 
-    DAVA::TArc::DataContext* activeContext = accessor->GetActiveContext();
+    TArc::DataContext* activeContext = accessor->GetActiveContext();
     DVASSERT(activeContext != nullptr);
     DocumentData* documentData = activeContext->GetData<DocumentData>();
     DVASSERT(documentData != nullptr);
@@ -647,12 +719,12 @@ void PackageWidget::OnMoveRight()
     MoveNodeImpl(node, dest, dest->GetCount());
 }
 
-void PackageWidget::MoveNodeImpl(PackageBaseNode* node, PackageBaseNode* dest, DAVA::uint32 destIndex)
+void PackageWidget::MoveNodeImpl(PackageBaseNode* node, PackageBaseNode* dest, uint32 destIndex)
 {
     QtModelPackageCommandExecutor executor(accessor);
     if (dynamic_cast<ControlNode*>(node) != nullptr)
     {
-        DAVA::Vector<ControlNode*> nodes = { static_cast<ControlNode*>(node) };
+        Vector<ControlNode*> nodes = { static_cast<ControlNode*>(node) };
         ControlsContainerNode* nextControlNode = dynamic_cast<ControlsContainerNode*>(dest);
         OnBeforeProcessNodes(SelectedNodes(nodes.begin(), nodes.end()));
         executor.MoveControls(nodes, nextControlNode, destIndex);
@@ -660,7 +732,7 @@ void PackageWidget::MoveNodeImpl(PackageBaseNode* node, PackageBaseNode* dest, D
     }
     else if (dynamic_cast<StyleSheetNode*>(node) != nullptr)
     {
-        DAVA::Vector<StyleSheetNode*> nodes = { static_cast<StyleSheetNode*>(node) };
+        Vector<StyleSheetNode*> nodes = { static_cast<StyleSheetNode*>(node) };
         StyleSheetsNode* nextStyleSheetNode = dynamic_cast<StyleSheetsNode*>(dest);
         OnBeforeProcessNodes(SelectedNodes(nodes.begin(), nodes.end()));
         executor.MoveStyles(nodes, nextStyleSheetNode, destIndex);
@@ -822,7 +894,7 @@ void PackageWidget::RestoreExpandedIndexes(const ExpandedIndexes& indexes)
     }
 }
 
-void PackageWidget::OnSelectionChanged(const DAVA::Any& selectionValue)
+void PackageWidget::OnSelectionChanged(const Any& selectionValue)
 {
     disconnect(treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &PackageWidget::OnSelectionChangedFromView);
     SelectedNodes selection = selectionValue.Cast<SelectedNodes>(SelectedNodes());

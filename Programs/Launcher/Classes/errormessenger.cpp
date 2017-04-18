@@ -15,8 +15,8 @@ QString errorsMsg[ERROR_COUNT] = {
     "Archive unpacking error",
     "Application %1 is running. Please, close it.",
     "Updating error",
-    "File error",
-    "Can not find path"
+    "Can not find path",
+    "File error"
 };
 
 void ShowErrorMessage(ErrorID id, const QString& addInfo)
