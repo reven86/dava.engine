@@ -20,6 +20,10 @@ def __print_teamcity_message( text, type, errorDetails = '' ):
     __print('##teamcity[message text=\'{}\' errorDetails=\'{}\' status=\'{}\']'.format( text, errorDetails, type) )
 
 
+def __print_teamcity_set_parameter( name, value ):
+    __print('##teamcity[setParameter name=\'{}\' value=\'{}\']'.format( name, value ) )
+
+
 def __parser_args():
     arg_parser = argparse.ArgumentParser()
     arg_parser.add_argument( '--teamcity_url', required = True )
@@ -145,6 +149,12 @@ def main():
 
         if args.configuration_id != None :
             __run_build( args )
+
+        __print_teamcity_set_parameter( 'env.build_required', 'true' )
+
+    else:
+        __print_teamcity_set_parameter( 'env.build_required', 'false' )
+
 
 
 if __name__ == '__main__':
