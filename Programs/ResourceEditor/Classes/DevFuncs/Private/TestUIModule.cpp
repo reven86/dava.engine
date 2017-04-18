@@ -1607,7 +1607,7 @@ void TestUIModule::ShowDialog()
     {
         QGroupBox* groupBox = new QGroupBox(node.title, dlg);
 
-        Result r = node.creator(ui, accessor, groupBox);
+        TestUIModuleDetails::Result r = node.creator(ui, accessor, groupBox);
         data.push_back(r.model);
 
         groupBox->setLayout(r.layout);
