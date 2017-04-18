@@ -3,6 +3,7 @@
 #include "UI/Formula/FormulaContext.h"
 #include "UI/Formula/Private/FormulaException.h"
 #include "UI/Formula/Private/FormulaFormatter.h"
+#include "UI/Formula/Private/FormulaData.h"
 #include "Utils/StringFormat.h"
 
 namespace DAVA
