@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Reflection/Reflection.h"
-#include "Math/Vector.h"
 
 namespace DAVA
 {

@@ -1,15 +1,5 @@
 #include "UI/Formula/FormulaContext.h"
 
-#include "UI/Formula/Private/FormulaParser.h"
-
-#include "Functional/Function.h"
-#include "FileSystem/LocalizationSystem.h"
-#include "FileSystem/File.h"
-#include "Utils/StringFormat.h"
-#include "Utils/Utils.h"
-#include "Logger/Logger.h"
-#include "Reflection/ReflectionRegistrator.h"
-
 namespace DAVA
 {
 using std::make_shared;
