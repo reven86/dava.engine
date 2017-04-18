@@ -1,4 +1,5 @@
 #include "UI/Formula/FormulaContext.h"
+#include "Reflection/ReflectedTypeDB.h"
 
 namespace DAVA
 {

@@ -5,6 +5,7 @@
 #include "UI/Formula/Private/FormulaFormatter.h"
 #include "UI/Formula/Private/FormulaData.h"
 #include "Utils/StringFormat.h"
+#include "Reflection/ReflectedTypeDB.h"
 
 namespace DAVA
 {
