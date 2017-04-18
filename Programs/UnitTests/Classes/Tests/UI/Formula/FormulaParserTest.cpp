@@ -227,7 +227,7 @@ DAVA_TESTCLASS (FormulaParserTest)
         {
             Parse("a + ");
         }
-        catch (const FormulaException& error)
+        catch (const FormulaException& /*error*/)
         {
             wasException = true;
         }
@@ -239,7 +239,7 @@ DAVA_TESTCLASS (FormulaParserTest)
         {
             Parse("+ ad + (4 * 5");
         }
-        catch (const FormulaException& error)
+        catch (const FormulaException& /*error*/)
         {
             wasException = true;
         }
@@ -250,7 +250,7 @@ DAVA_TESTCLASS (FormulaParserTest)
         {
             Parse("foo(a b)");
         }
-        catch (const FormulaException& error)
+        catch (const FormulaException& /*error*/)
         {
             wasException = true;
         }

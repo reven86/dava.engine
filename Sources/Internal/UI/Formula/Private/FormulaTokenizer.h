@@ -73,8 +73,8 @@ private:
     union {
         struct
         {
-            int32 start = 0;
-            int32 len = 0;
+            int32 start;
+            int32 len;
         };
 
         int32 i32Val;

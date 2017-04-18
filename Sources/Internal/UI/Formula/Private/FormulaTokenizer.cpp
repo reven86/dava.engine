@@ -469,7 +469,7 @@ bool FormulaTokenizer::IsDigit(char ch) const
 void FormulaTokenizer::ReadChar()
 {
     currentPosition++;
-    if (currentPosition < str.size())
+    if (currentPosition < static_cast<int32>(str.size()))
     {
         ch = str.at(currentPosition);
         positionInLine++;
@@ -477,7 +477,7 @@ void FormulaTokenizer::ReadChar()
     else
     {
         ch = '\0';
-        currentPosition = str.size();
+        currentPosition = static_cast<int32>(str.size());
     }
 }
 }

@@ -243,7 +243,7 @@ DAVA_TESTCLASS (FormulaTokenizerTest)
         {
             FormulaTokenizer("&").ReadToken();
         }
-        catch (const FormulaException& error)
+        catch (const FormulaException& /*error*/)
         {
             wasException = true;
         }
@@ -254,7 +254,7 @@ DAVA_TESTCLASS (FormulaTokenizerTest)
         {
             FormulaTokenizer("|").ReadToken();
         }
-        catch (const FormulaException& error)
+        catch (const FormulaException& /*error*/)
         {
             wasException = true;
         }
@@ -265,7 +265,7 @@ DAVA_TESTCLASS (FormulaTokenizerTest)
         {
             FormulaTokenizer("@").ReadToken();
         }
-        catch (const FormulaException& error)
+        catch (const FormulaException& /*error*/)
         {
             wasException = true;
         }
@@ -276,7 +276,7 @@ DAVA_TESTCLASS (FormulaTokenizerTest)
         {
             FormulaTokenizer("@").ReadToken();
         }
-        catch (const FormulaException& error)
+        catch (const FormulaException& /*error*/)
         {
             wasException = true;
         }
@@ -287,7 +287,7 @@ DAVA_TESTCLASS (FormulaTokenizerTest)
         {
             FormulaTokenizer("\"sadfds ").ReadToken();
         }
-        catch (const FormulaException& error)
+        catch (const FormulaException& /*error*/)
         {
             wasException = true;
         }

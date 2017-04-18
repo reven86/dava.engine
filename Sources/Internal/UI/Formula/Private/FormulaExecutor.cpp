@@ -61,17 +61,9 @@ void FormulaExecutor::Visit(FormulaNegExpression* exp)
     {
         calculationResult = Any(-val.Get<float32>());
     }
-    else if (val.CanGet<uint64>())
-    {
-        calculationResult = Any(-val.Get<uint64>());
-    }
     else if (val.CanGet<int64>())
     {
         calculationResult = Any(-val.Get<int64>());
-    }
-    else if (val.CanGet<uint32>())
-    {
-        calculationResult = Any(-val.Get<uint32>());
     }
     else if (val.CanCast<int32>())
     {
