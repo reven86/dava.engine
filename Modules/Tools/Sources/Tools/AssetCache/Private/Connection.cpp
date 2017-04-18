@@ -20,6 +20,17 @@ namespace AssetCache
 {
 namespace ConnectionDetails
 {
+/**
+    ControllerHolder allows to hold instances of ChannelListenerDispatcher on shared pointer.
+
+    supposed flow:
+    1. create instance of ChannelListenerDispatcher. Instance is holded by Connection object by shared pointer
+    2. register ChannelListenerDispatcher as a controller in netcore
+    3. add it to ControllersHolder. Now two objects are holding ChannelListenerDispatcher instance
+    4. remove controller, specify callback function ControllersHolder::RemoveController
+    5. delete Connection
+    6. as soon as controller is removed from netcore, callback RemoveController will be invoked, that will finally release ChannelListenerDispatcher object
+*/
 class ControllersHolder : public StaticSingleton<ControllersHolder>
 {
 public:
@@ -53,12 +64,12 @@ bool SendArchieve(Net::IChannel* channel, KeyedArchive* archieve)
 }
 
 std::shared_ptr<Connection> Connection::MakeConnection(
-    Dispatcher<Function<void()>>* dispatcher,
-    Net::eNetworkRole role,
-    const Net::Endpoint& endpoint,
-    Net::IChannelListener* listener,
-    Net::eTransportType transport,
-    uint32 timeoutMs)
+Dispatcher<Function<void()>>* dispatcher,
+Net::eNetworkRole role,
+const Net::Endpoint& endpoint,
+Net::IChannelListener* listener,
+Net::eTransportType transport,
+uint32 timeoutMs)
 {
     std::shared_ptr<Connection> connection(new Connection(dispatcher, role, endpoint, listener, transport, timeoutMs));
     bool res = connection->Connect(role, transport, timeoutMs);

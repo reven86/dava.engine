@@ -23,12 +23,12 @@ class Connection final : public Net::IChannelListener, public std::enable_shared
 {
 public:
     static std::shared_ptr<Connection> MakeConnection(
-        Dispatcher<Function<void()>>* dispatcher,
-        Net::eNetworkRole role,
-        const Net::Endpoint& endpoint,
-        Net::IChannelListener* listener,
-        Net::eTransportType transport = Net::TRANSPORT_TCP,
-        uint32 timeoutMs = 5 * 1000);
+    Dispatcher<Function<void()>>* dispatcher,
+    Net::eNetworkRole role,
+    const Net::Endpoint& endpoint,
+    Net::IChannelListener* listener,
+    Net::eTransportType transport = Net::TRANSPORT_TCP,
+    uint32 timeoutMs = 5 * 1000);
 
     ~Connection();
 

@@ -395,23 +395,34 @@ IController* NetCore::GetTrackedObject(TrackId id)
 
 void NetCore::TrackedObjectStopped(IController* obj)
 {
-    LockGuard<Mutex> lock(dyingObjectsMutex);
-    LockGuard<Mutex> lock2(trackedObjectsMutex);
+    Function<void()> callbackOnStopped;
+    bool allDestroyed = false;
 
-    if (dyingObjects.erase(obj) == 0)
     {
-        DVASSERT(false && "dying object is not found");
+        LockGuard<Mutex> lock(dyingObjectsMutex);
+        LockGuard<Mutex> lock2(trackedObjectsMutex);
+
+        if (dyingObjects.erase(obj) == 0)
+        {
+            DVASSERT(false && "dying object is not found");
+        }
+
+        auto cbkFound = controllerStoppedCallback.find(obj);
+        if (cbkFound != controllerStoppedCallback.end())
+        {
+            callbackOnStopped = cbkFound->second;
+            controllerStoppedCallback.erase(cbkFound);
+        }
+
+        allDestroyed = (true == dyingObjects.empty() && true == trackedObjects.empty());
     }
 
-    auto cbkFound = controllerStoppedCallback.find(obj);
-    if (cbkFound != controllerStoppedCallback.end())
+    if (callbackOnStopped)
     {
-        Function<void()>& callback = cbkFound->second;
-        callback();
-        controllerStoppedCallback.erase(cbkFound);
+        callbackOnStopped();
     }
 
-    if (true == dyingObjects.empty() && true == trackedObjects.empty())
+    if (allDestroyed)
     {
         AllDestroyed();
     }

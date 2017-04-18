@@ -84,7 +84,7 @@ void AssetCacheClient::Disconnect()
 AssetCache::Error AssetCacheClient::CheckStatusSynchronously()
 {
     {
-        LockGuard<Mutex> guard(requestLocker); 
+        LockGuard<Mutex> guard(requestLocker);
         request = Request();
         request.requestID = AssetCache::ePacketID::PACKET_STATUS_REQUEST;
     }

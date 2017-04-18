@@ -133,6 +133,7 @@ void ServerCore::DisconnectRemote()
     connectTimer->stop();
     reconnectWaitTimer->stop();
     remoteState = RemoteState::STOPPED;
+    serverLogics.OnRemoteDisconnecting();
     clientProxy.Disconnect();
 }
 
