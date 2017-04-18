@@ -6,7 +6,7 @@
 /**
     \ingroup formula
  
-    grammar formula; // antlr EBNF format
+    grammar formula; // antlr EBNF format https://github.com/antlr/antlr4/blob/master/doc/index.md
 
     expression: logicalOrExpression | vector | map;
     vector: OPEN_SQUARE_BRACKET expression* CLOSE_SQUAR_BRACKET;
