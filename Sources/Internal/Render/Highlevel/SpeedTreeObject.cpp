@@ -1,3 +1,4 @@
+#include "Render/3D/MeshUtils.H"
 #include "Render/Highlevel/SpeedTreeObject.h"
 #include "Render/Material/NMaterialNames.h"
 #include "Utils/Utils.h"
