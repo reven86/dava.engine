@@ -4,6 +4,8 @@
 
 #include "EditorSystems/SelectionContainer.h"
 
+#include <TArc/DataProcessing/DataWrapper.h>
+
 #include <Base/BaseTypes.h>
 
 #include <QWidget>
@@ -55,9 +57,9 @@ public slots:
     void OnPaste();
     void OnCut();
     void OnDelete();
+    void OnDuplicate();
     void OnImport();
 
-private slots:
     void OnSelectionChangedFromView(const QItemSelection& proxySelected, const QItemSelection& proxyDeselected);
     void OnFilterTextChanged(const QString&);
     void OnRename();
@@ -82,6 +84,7 @@ private:
     void RefreshActions();
     void LoadContext();
     void SaveContext();
+    void Paste(PackageBaseNode* target, int index);
 
     void DeselectNodeImpl(PackageBaseNode* node);
     void SelectNodeImpl(PackageBaseNode* node);
@@ -98,6 +101,8 @@ private:
     QAction* pasteAction = nullptr;
     QAction* cutAction = nullptr;
     QAction* delAction = nullptr;
+    QAction* duplicateControlsAction = nullptr;
+
     QAction* renameAction = nullptr;
     QAction* addStyleAction = nullptr;
     QAction* copyControlPathAction = nullptr;
@@ -118,6 +123,7 @@ private:
     PackageContext* currentContext = nullptr;
 
     DAVA::TArc::ContextAccessor* accessor = nullptr;
+    DAVA::TArc::DataWrapper dataWrapper;
 };
 
 struct PackageContext

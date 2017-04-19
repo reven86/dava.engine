@@ -86,6 +86,8 @@ public:
     // Proxy method that calls SystemTimer::Adjust to prevent many friends to SystemTimer
     static void AdjustSystemTimer(int64 adjustMicro);
 
+    bool IsRunning() const;
+
 private:
     void RunConsole();
 
@@ -137,6 +139,8 @@ private:
 
     RefPtr<KeyedArchive> options;
     uint32 globalFrameIndex = 1;
+
+    bool isRunning = false;
 
     static EngineBackend* instance;
 };

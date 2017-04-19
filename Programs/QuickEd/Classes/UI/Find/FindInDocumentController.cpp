@@ -58,9 +58,9 @@ FindInDocumentController::FindInDocumentController(DocumentsModule* documentsMod
     ui->AddAction(DAVA::TArc::mainWindowKey, placementInfo, findNextAction);
     ui->AddAction(DAVA::TArc::mainWindowKey, placementInfo, findPreviousAction);
 
-    editedRootControlsFieldBinder.reset(new TArc::FieldBinder(accessor));
-    TArc::FieldDescriptor editedRootControlsFieldDescriptor(ReflectedTypeDB::Get<DocumentData>(), FastName(DocumentData::editedRootControlsPropertyName));
-    editedRootControlsFieldBinder->BindField(editedRootControlsFieldDescriptor, MakeFunction(this, &FindInDocumentController::OnEditedRootControlsChanged));
+    fieldBinder.reset(new TArc::FieldBinder(accessor));
+    TArc::FieldDescriptor displayedRootControlsFieldDescriptor(ReflectedTypeDB::Get<DocumentData>(), FastName(DocumentData::displayedRootControlsPropertyName));
+    fieldBinder->BindField(displayedRootControlsFieldDescriptor, MakeFunction(this, &FindInDocumentController::OnDisplayedRootControlsChanged));
 
     findResultsUpdater.SetUpdater(DAVA::MakeFunction(this, &FindInDocumentController::Find));
     findResultsUpdater.SetStopper([this]() {
@@ -131,9 +131,9 @@ void FindInDocumentController::Find()
     {
         DocumentData* data = activeContext->GetData<DocumentData>();
 
-        const SortedControlNodeSet& editedRootControls = data->GetEditedRootControls();
+        const SortedControlNodeSet& displayedRootControls = data->GetDisplayedRootControls();
 
-        finder.Process(data->GetPackageNode(), editedRootControls);
+        finder.Process(data->GetPackageNode(), displayedRootControls);
     }
 
     findInDocumentWidget->SetResultIndex(context.currentSelection);
@@ -181,7 +181,7 @@ void FindInDocumentController::MoveSelection(int32 step)
     findInDocumentWidget->SetResultIndex(context.currentSelection);
 }
 
-void FindInDocumentController::OnEditedRootControlsChanged(const DAVA::Any& value)
+void FindInDocumentController::OnDisplayedRootControlsChanged(const DAVA::Any& value)
 {
     HideFindInDocumentWidget();
 

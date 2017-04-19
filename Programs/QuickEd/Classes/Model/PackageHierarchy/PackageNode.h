@@ -106,10 +106,6 @@ private:
 
     void RefreshPropertiesInInstances(ControlNode* node, AbstractProperty* property);
 
-    void RefreshControlStylesAndLayout(ControlNode* node, bool canUpdateAll = true);
-    void RefreshStyles(ControlNode* node);
-    void CollectRootControlsToRefreshLayout(ControlNode* node, DAVA::Vector<ControlNode*>& roots);
-    void RestoreProperties(ControlNode* control);
     void NotifyPropertyChanged(ControlNode* control);
     DAVA::Vector<DepthPackageNode> CollectImportedPackagesRecursively();
 

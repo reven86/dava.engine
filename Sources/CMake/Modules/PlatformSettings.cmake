@@ -229,6 +229,8 @@ elseif( WARNINGS_AS_ERRORS )
             -Wno-format-pedantic \
             -Wno-shift-negative-value \
             -Wno-return-stack-address \
+            -Wno-undefined-func-template \
+            -Wno-comma \
         ")
     endif()
 

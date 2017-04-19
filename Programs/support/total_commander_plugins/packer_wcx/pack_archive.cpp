@@ -330,19 +330,20 @@ std::string PackArchive::PrintMeta() const
 
         size_t max_filename = max_it->relativeFilePath.size();
 
-        ss << "-FILES---------------------------------------------------------";
+        ss << "-FILES-file-index|file-name|pack-index-------------------------";
         ss << '\n';
+        size_t numbers_in_max_num = std::to_string(numFiles).size();
         for (unsigned i = 0; i < numFiles; ++i)
         {
             const auto& p = files_info.at(i).relativeFilePath;
-            const auto index = meta.get_pack_index_for_file(i);
+            const auto pack_index = meta.get_pack_index_for_file(i);
 
-            ss << left << setw(max_filename) << p
-               << "|" << setw(10) << index << '\n';
+            ss << left << "# f" << setw(numbers_in_max_num) << i << " | " << setw(max_filename) << p
+               << " | " << 'p' << pack_index << '\n';
         }
         ss << "-END-FILES-----------------------------------------------------";
         ss << '\n';
-        ss << "-PACKS---------------------------------------------------------";
+        ss << "-PACKS-pack-index|pack-name|pack-dependency-indexes------------";
         ss << '\n';
         size_t numPacks = meta.get_num_packs();
         string packName;
@@ -363,16 +364,32 @@ std::string PackArchive::PrintMeta() const
                 max_dep_name = dependencies.length();
             }
         }
+        size_t numbers_in_max_pack = std::to_string(numPacks).size();
         for (unsigned i = 0; i < numPacks; ++i)
         {
             const auto& info = meta.get_pack_info(i);
             const std::string& packName = std::get<0>(info);
             const std::string& dependencies = std::get<1>(info);
-            ss << left << setw(max_pack_name)
-               << packName << "|" << setw(max_dep_name)
+            ss << "# p" << setw(numbers_in_max_pack) << i << " | " << left << setw(max_pack_name)
+               << packName << " | " << setw(max_dep_name)
                << dependencies << '\n';
         }
         ss << "-END-PACKS-----------------------------------------------------";
+        ss << '\n';
+        ss << "-START-DEPENDENCY(pack_index|num-of-dependencies|all-dependency-indexes------------";
+        ss << '\n';
+        for (unsigned i = 0; i < numPacks; ++i)
+        {
+            const std::vector<uint32_t>& c = meta.get_children(i);
+            ss << "# p" << setw(numbers_in_max_pack) << i << " | ";
+            ss << setw(3) << c.size() << " | ";
+            for (uint32_t child_index : c)
+            {
+                ss << "p" << child_index << ", ";
+            }
+            ss << '\n';
+        }
+        ss << "-END-DEPENDENCY------------------------------------------------";
         ss << '\n';
     }
 

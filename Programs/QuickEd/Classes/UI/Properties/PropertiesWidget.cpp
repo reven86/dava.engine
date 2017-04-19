@@ -186,10 +186,13 @@ QAction* PropertiesWidget::CreateAddComponentAction()
     QMenu* addComponentMenu = new QMenu(this);
     for (int32 i = 0; i < UIComponent::COMPONENT_COUNT; i++)
     {
-        const char* name = GlobalEnumMap<UIComponent::eType>::Instance()->ToString(i);
-        QAction* componentAction = new QAction(name, this); // TODO: Localize name
-        componentAction->setData(i);
-        addComponentMenu->addAction(componentAction);
+        if (!ComponentPropertiesSection::IsHiddenComponent(static_cast<UIComponent::eType>(i)))
+        {
+            const char* name = GlobalEnumMap<UIComponent::eType>::Instance()->ToString(i);
+            QAction* componentAction = new QAction(name, this); // TODO: Localize name
+            componentAction->setData(i);
+            addComponentMenu->addAction(componentAction);
+        }
     }
     connect(addComponentMenu, &QMenu::triggered, this, &PropertiesWidget::OnAddComponent);
 
