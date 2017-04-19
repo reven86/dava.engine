@@ -1,7 +1,7 @@
 #ifndef __QT_CLICKABLE_QLABEL_H__
 #define __QT_CLICKABLE_QLABEL_H__
 
-#include <QLabel.h>
+#include <QLabel>
 
 class ClickableQLabel : public QLabel
 {
