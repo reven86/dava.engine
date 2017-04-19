@@ -143,8 +143,9 @@ void UpdateDialog::StartNextTask()
             connect(currentDownload, SIGNAL(finished()), this, SLOT(DownloadFinished()));
             connect(currentDownload, SIGNAL(downloadProgress(qint64, qint64)), this, SLOT(DownloadProgress(qint64, qint64)));
 
+            QString appName = task.newVersion.isToolSet ? "Toolset" : task.appID;
             AddTopLogValue(QString("%1 - %2:")
-                           .arg(appManager->GetString(task.appID))
+                           .arg(appManager->GetString(appName))
                            .arg(appManager->GetString(task.branchID))
                            );
 

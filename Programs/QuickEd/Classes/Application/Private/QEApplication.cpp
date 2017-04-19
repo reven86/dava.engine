@@ -1,4 +1,5 @@
 #include "Application/QEApplication.h"
+#include "Application/QEGlobal.h"
 #include "Modules/LegacySupportModule/LegacySupportModule.h"
 #include "Classes/Application/ReflectionExtensions.h"
 
@@ -71,7 +72,7 @@ void QEApplication::Init(const DAVA::EngineContext* engineContext)
     engineContext->logger->SetLogFilename("QuickEd.txt");
 
     UIControlSystem* uiControlSystem = engineContext->uiControlSystem;
-    uiControlSystem->GetLayoutSystem()->SetAutoupdatesEnabled(false);
+    uiControlSystem->GetLayoutSystem()->SetAutoupdatesEnabled(true);
     uiControlSystem->GetSystem<UIScrollBarLinkSystem>()->SetRestoreLinks(true);
 
     UIInputSystem* inputSystem = uiControlSystem->GetInputSystem();
@@ -118,6 +119,7 @@ void QEApplication::CreateModules(DAVA::TArc::Core* tarcCore) const
 {
     Q_INIT_RESOURCE(QtToolsResources);
     tarcCore->CreateModule<LegacySupportModule>();
+
     for (const DAVA::ReflectedType* type : DAVA::TArc::ModuleCollection::Instance()->GetGuiModules())
     {
         tarcCore->CreateModule(type);

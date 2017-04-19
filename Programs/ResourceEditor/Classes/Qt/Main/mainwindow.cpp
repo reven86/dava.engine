@@ -1,11 +1,9 @@
 #include "mainwindow.h"
 #include <Tools/Version.h>
 #include "Classes/Qt/BeastDialog/BeastDialog.h"
-#include "Classes/Qt/CubemapEditor/CubemapTextureBrowser.h"
+#include "Classes/Qt/CubemapEditor/CubeMapTextureBrowser.h"
 #include "Classes/Qt/CubemapEditor/CubemapUtils.h"
 #include "Classes/Qt/DebugTools/VersionInfoWidget/VersionInfoWidget.h"
-#include "Classes/Qt/DeviceInfo/DeviceList/DeviceListController.h"
-#include "Classes/Qt/DeviceInfo/DeviceList/DeviceListWidget.h"
 #include "Classes/Qt/ImageSplitterDialog/ImageSplitterDialog.h"
 #include "Classes/Qt/Main/QtUtils.h"
 #include "Classes/Qt/MaterialEditor/MaterialEditor.h"
@@ -233,7 +231,10 @@ QtMainWindow::QtMainWindow(DAVA::TArc::UI* tarcUI_, QWidget* parent)
     PathDescriptor::InitializePathDescriptors();
 
     ui->setupUi(this);
+    setObjectName("ResourceEditor"); //we need to support old names to save settings
+
     SetupWidget();
+    SetupTitle(DAVA::String());
 
     qApp->installEventFilter(this);
 
@@ -335,7 +336,7 @@ void QtMainWindow::WaitStart(const QString& title, const QString& message, int m
     params.min = min;
     params.max = max;
     params.needProgressBar = min != max;
-    waitDialog = tarcUI->ShowWaitDialog(REGlobal::MainWindowKey, params);
+    waitDialog = tarcUI->ShowWaitDialog(DAVA::TArc::mainWindowKey, params);
 }
 
 void QtMainWindow::WaitSetMessage(const QString& messsage)
@@ -511,12 +512,12 @@ void QtMainWindow::SetupStatusBar()
     insertParams.method = DAVA::TArc::InsertionParams::eInsertionMethod::BeforeItem;
     DAVA::TArc::ActionPlacementInfo placementInfo(DAVA::TArc::CreateStatusbarPoint(true, 0, insertParams));
 
-    tarcUI->AddAction(REGlobal::MainWindowKey, placementInfo, ui->actionShowEditorGizmo);
-    tarcUI->AddAction(REGlobal::MainWindowKey, placementInfo, ui->actionLightmapCanvas);
-    tarcUI->AddAction(REGlobal::MainWindowKey, placementInfo, ui->actionShowStaticOcclusion);
-    tarcUI->AddAction(REGlobal::MainWindowKey, placementInfo, ui->actionEnableVisibilitySystem);
-    tarcUI->AddAction(REGlobal::MainWindowKey, placementInfo, ui->actionEnableDisableShadows);
-    tarcUI->AddAction(REGlobal::MainWindowKey, placementInfo, ui->actionEnableSounds);
+    tarcUI->AddAction(DAVA::TArc::mainWindowKey, placementInfo, ui->actionShowEditorGizmo);
+    tarcUI->AddAction(DAVA::TArc::mainWindowKey, placementInfo, ui->actionLightmapCanvas);
+    tarcUI->AddAction(DAVA::TArc::mainWindowKey, placementInfo, ui->actionShowStaticOcclusion);
+    tarcUI->AddAction(DAVA::TArc::mainWindowKey, placementInfo, ui->actionEnableVisibilitySystem);
+    tarcUI->AddAction(DAVA::TArc::mainWindowKey, placementInfo, ui->actionEnableDisableShadows);
+    tarcUI->AddAction(DAVA::TArc::mainWindowKey, placementInfo, ui->actionEnableSounds);
 }
 
 void QtMainWindow::SetupDocks()
@@ -686,7 +687,6 @@ void QtMainWindow::SetupActions()
         DAVA::Sprite::DumpSprites();
     });
 
-    connect(ui->actionDeviceList, &QAction::triggered, this, &QtMainWindow::DebugDeviceList);
     connect(ui->actionCreateTestSkinnedObject, SIGNAL(triggered()), developerTools, SLOT(OnDebugCreateTestSkinnedObject()));
 
     ui->actionObjectTypesOff->setData(ResourceEditor::ESOT_NONE);
@@ -2268,21 +2268,6 @@ void QtMainWindow::DebugVersionInfo()
     }
 
     versionInfoWidget->show();
-}
-
-void QtMainWindow::DebugDeviceList()
-{
-    // Create controller and window if they are not exist
-    // Pointer deviceListController automatically becomes nullptr on window destruction
-    if (nullptr == deviceListController)
-    {
-        DeviceListWidget* w = new DeviceListWidget(this);
-        w->setAttribute(Qt::WA_DeleteOnClose);
-
-        deviceListController = new DeviceListController(w);
-        deviceListController->SetView(w);
-    }
-    deviceListController->ShowView();
 }
 
 void QtMainWindow::OnConsoleItemClicked(const QString& data)

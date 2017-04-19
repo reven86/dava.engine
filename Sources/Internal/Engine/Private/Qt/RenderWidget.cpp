@@ -382,9 +382,12 @@ bool RenderWidget::RenderWidgetImpl::event(QEvent* e)
     if (eventType == QEvent::NativeGesture && clientDelegate != nullptr)
     {
         QNativeGestureEvent* gestureEvent = static_cast<QNativeGestureEvent*>(e);
-        clientDelegate->OnNativeGuesture(gestureEvent);
+        widgetDelegate->OnNativeGesture(gestureEvent);
+        if (clientDelegate != nullptr)
+        {
+            clientDelegate->OnNativeGesture(gestureEvent);
+        }
     }
-
     if (eventType == QEvent::WindowActivate || (eventType == QEvent::Polish && isActiveWindow()))
     {
         isActivated = true;

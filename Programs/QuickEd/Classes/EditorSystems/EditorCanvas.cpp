@@ -1,3 +1,4 @@
+
 #include "EditorSystems/EditorCanvas.h"
 #include "EditorSystems/EditorSystemsManager.h"
 
@@ -11,12 +12,15 @@
 
 using namespace DAVA;
 
-EditorCanvas::EditorCanvas(EditorSystemsManager* parent, DAVA::TArc::ContextAccessor* accessor_)
-    : BaseEditorSystem(parent)
-    , accessor(accessor_)
+EditorCanvas::EditorCanvas(EditorSystemsManager* parent, DAVA::TArc::ContextAccessor* accessor)
+    : BaseEditorSystem(parent, accessor)
 {
     movableControl = systemsManager->GetScalableControl();
     systemsManager->contentSizeChanged.Connect(this, &EditorCanvas::OnContentSizeChanged);
+
+    predefinedScales = { 0.25f, 0.33f, 0.50f, 0.67f, 0.75f,
+                         0.90f, 1.00f, 1.10f, 1.25f, 1.50f, 1.75f, 2.00f,
+                         2.50f, 3.00f, 4.00f, 5.00f, 6.00f, 7.00f, 8.00f };
 }
 
 EditorCanvas::~EditorCanvas() = default;
@@ -171,6 +175,11 @@ void EditorCanvas::SetPosition(const Vector2& position_)
     }
 }
 
+const Vector<float32>& EditorCanvas::GetPredefinedScales() const
+{
+    return predefinedScales;
+}
+
 void EditorCanvas::UpdatePosition()
 {
     DVASSERT(nullptr != movableControl);
@@ -192,17 +201,73 @@ void EditorCanvas::UpdatePosition()
     nestedControlPositionChanged.Emit(counterPosition);
 }
 
-bool EditorCanvas::CanProcessInput(DAVA::UIEvent* currentInput) const
+bool EditorCanvas::CanProcessInput(UIEvent* currentInput) const
 {
-    return systemsManager->GetDragState() == EditorSystemsManager::DragScreen
-    && currentInput->device == eInputDevices::MOUSE
-    && (currentInput->mouseButton == eMouseButtons::LEFT || currentInput->mouseButton == eMouseButtons::MIDDLE);
+    if ((currentInput->device & eInputDevices::CLASS_POINTER) == eInputDevices::UNKNOWN)
+    {
+        return false;
+    }
+    if (currentInput->phase == UIEvent::Phase::WHEEL || currentInput->phase == UIEvent::Phase::GESTURE)
+    {
+        return true;
+    }
+    return (systemsManager->GetDragState() == EditorSystemsManager::DragScreen &&
+            (currentInput->mouseButton == eMouseButtons::LEFT || currentInput->mouseButton == eMouseButtons::MIDDLE));
 }
 
 void EditorCanvas::ProcessInput(UIEvent* currentInput)
 {
-    Vector2 delta = systemsManager->GetMouseDelta();
-    SetPosition(position - delta);
+    if (accessor->GetActiveContext() == nullptr)
+    {
+        return;
+    }
+    if (currentInput->device == eInputDevices::TOUCH_PAD)
+    {
+        if (currentInput->phase == UIEvent::Phase::GESTURE)
+        {
+            const UIEvent::Gesture& gesture = currentInput->gesture;
+            if (gesture.dx != 0.0f || gesture.dy != 0.0f)
+            {
+                SetPosition(GetPosition() - Vector2(gesture.dx, gesture.dy));
+            }
+            else if (gesture.magnification != 0.0f)
+            {
+                AdjustScale(scale + gesture.magnification, currentInput->physPoint);
+            }
+        }
+    }
+    else if (currentInput->device == eInputDevices::MOUSE)
+    {
+        if (currentInput->phase == UIEvent::Phase::WHEEL)
+        {
+            if ((currentInput->modifiers & (eModifierKeys::CONTROL | eModifierKeys::COMMAND)) != eModifierKeys::NONE)
+            {
+                int32 ticksCount = static_cast<int32>(currentInput->wheelDelta.y);
+                float scale = GetScaleFromWheelEvent(ticksCount);
+                AdjustScale(scale, currentInput->physPoint);
+            }
+            else
+            {
+                Vector2 position = GetPosition();
+                Vector2 additionalPos(currentInput->wheelDelta.x, currentInput->wheelDelta.y);
+                additionalPos *= GetViewSize();
+//custom delimiter to scroll widget by little chunks of visible area
+#if defined(__DAVAENGINE_MACOS__)
+                //on the OS X platform wheelDelta depend on scrolling speed
+                static const float wheelDelta = 0.002f;
+#elif defined(__DAVAENGINE_WIN32__)
+                static const float wheelDelta = 0.1f;
+#endif //platform
+                Vector2 newPosition = position - additionalPos * wheelDelta;
+                SetPosition(newPosition);
+            }
+        }
+        else
+        {
+            Vector2 delta = systemsManager->GetMouseDelta();
+            SetPosition(position - delta);
+        }
+    }
 }
 
 EditorSystemsManager::eDragState EditorCanvas::RequireNewState(UIEvent* currentInput)
@@ -245,4 +310,44 @@ void EditorCanvas::OnContentSizeChanged(const DAVA::Vector2& size)
 {
     contentSize = size;
     UpdateContentSize();
+}
+
+float32 EditorCanvas::GetScaleFromWheelEvent(int32 ticksCount) const
+{
+    if (ticksCount > 0)
+    {
+        return GetNextScale(ticksCount);
+    }
+    else if (ticksCount < 0)
+    {
+        return GetPreviousScale(ticksCount);
+    }
+    return scale;
+}
+
+float32 EditorCanvas::GetNextScale(int32 ticksCount) const
+{
+    auto iter = std::upper_bound(predefinedScales.begin(), predefinedScales.end(), scale);
+    if (iter == predefinedScales.end())
+    {
+        return scale;
+    }
+    ticksCount--;
+    int32 distance = static_cast<int32>(std::distance(iter, predefinedScales.end()));
+    ticksCount = std::min(distance, ticksCount);
+    std::advance(iter, ticksCount);
+    return iter != predefinedScales.end() ? *iter : predefinedScales.back();
+}
+
+float32 EditorCanvas::GetPreviousScale(int32 ticksCount) const
+{
+    auto iter = std::lower_bound(predefinedScales.begin(), predefinedScales.end(), scale);
+    if (iter == predefinedScales.end())
+    {
+        return scale;
+    }
+    int32 distance = static_cast<int32>(std::distance(iter, predefinedScales.begin()));
+    ticksCount = std::max(ticksCount, distance);
+    std::advance(iter, ticksCount);
+    return *iter;
 }

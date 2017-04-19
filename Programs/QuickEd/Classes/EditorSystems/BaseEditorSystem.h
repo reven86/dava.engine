@@ -5,16 +5,21 @@
 namespace DAVA
 {
 class UIEvent;
+namespace TArc
+{
+class ContextAccessor;
+}
 }
 
 class BaseEditorSystem
 {
 public:
-    explicit BaseEditorSystem(EditorSystemsManager* parent);
+    explicit BaseEditorSystem(EditorSystemsManager* parent, DAVA::TArc::ContextAccessor* accessor);
     virtual ~BaseEditorSystem() = default;
 
 protected:
     EditorSystemsManager* systemsManager = nullptr;
+    DAVA::TArc::ContextAccessor* accessor = nullptr;
 
 private:
     //this class is designed to be used only by EditorSystemsManager

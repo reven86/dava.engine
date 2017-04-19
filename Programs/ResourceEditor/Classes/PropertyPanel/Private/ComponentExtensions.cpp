@@ -71,7 +71,7 @@ public:
         ActionComponent* actionComponent = DynamicTypeCheck<ActionComponent*>(component);
         Entity* entity = component->GetEntity();
 
-        ActionComponentEditor editor(params.ui->GetWindow(REGlobal::MainWindowKey));
+        ActionComponentEditor editor(params.ui->GetWindow(DAVA::TArc::mainWindowKey));
         editor.SetComponent(actionComponent);
         editor.exec();
 
@@ -122,7 +122,7 @@ public:
         DataContext* ctx = params.accessor->GetActiveContext();
         DVASSERT(ctx != nullptr);
 
-        SoundComponentEditor editor(ctx->GetData<SceneData>()->GetScene().Get(), params.ui->GetWindow(REGlobal::MainWindowKey));
+        SoundComponentEditor editor(ctx->GetData<SceneData>()->GetScene().Get(), params.ui->GetWindow(DAVA::TArc::mainWindowKey));
         editor.SetEditableEntity(entity);
         editor.exec();
 

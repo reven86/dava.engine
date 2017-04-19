@@ -42,7 +42,6 @@ struct DefaultUIPackageBuilder::ControlDescr
 };
 
 DefaultUIPackageBuilder::DefaultUIPackageBuilder(UIPackagesCache* _cache)
-    : currentObject(nullptr)
 {
     if (_cache)
         cache = SafeRetain(_cache);
@@ -126,10 +125,10 @@ bool DefaultUIPackageBuilder::ProcessImportedPackage(const String& packagePath, 
 
     if (!importedPackage)
     {
-        DefaultUIPackageBuilder builder(cache);
-        if (loader->LoadPackage(packagePath, &builder) && builder.GetPackage())
+        std::unique_ptr<DefaultUIPackageBuilder> builder = CreateBuilder(cache);
+        if (loader->LoadPackage(packagePath, builder.get()) && builder->GetPackage())
         {
-            importedPackage = builder.GetPackage();
+            importedPackage = builder->GetPackage();
             cache->PutPackage(packagePath, importedPackage);
         }
     }
@@ -161,9 +160,9 @@ void DefaultUIPackageBuilder::ProcessStyleSheet(const Vector<UIStyleSheetSelecto
     }
 }
 
-UIControl* DefaultUIPackageBuilder::BeginControlWithClass(const FastName& controlName, const String& className)
+const ReflectedType* DefaultUIPackageBuilder::BeginControlWithClass(const FastName& controlName, const String& className)
 {
-    RefPtr<UIControl> control(ObjectFactory::Instance()->New<UIControl>(className));
+    RefPtr<UIControl> control(CreateControlByName(className, className));
 
     if (control.Valid())
     {
@@ -183,38 +182,34 @@ UIControl* DefaultUIPackageBuilder::BeginControlWithClass(const FastName& contro
     }
 
     controlsStack.push_back(new ControlDescr(control.Get(), true));
-    return control.Get();
+
+    return ReflectedTypeDB::GetByPointer(control.Get());
 }
 
-UIControl* DefaultUIPackageBuilder::BeginControlWithCustomClass(const FastName& controlName, const String& customClassName, const String& className)
+const ReflectedType* DefaultUIPackageBuilder::BeginControlWithCustomClass(const FastName& controlName, const String& customClassName, const String& className)
 {
-    RefPtr<UIControl> control(ObjectFactory::Instance()->New<UIControl>(customClassName));
-
-    if (control.Valid())
-    {
-        if (className != EXCEPTION_CLASS_UI_TEXT_FIELD && className != EXCEPTION_CLASS_UI_LIST) //TODO: fix internal staticText for Win\Mac
-        {
-            control->RemoveAllControls();
-        }
-
-        if (controlName.IsValid())
-        {
-            control->SetName(controlName);
-        }
-    }
-    else
-    {
-        DVASSERT(false);
-        control.Set(ObjectFactory::Instance()->New<UIControl>(className)); // TODO: remove
-    }
-
+    RefPtr<UIControl> control(CreateControlByName(customClassName, className));
     DVASSERT(control.Valid());
 
+    if (control.Valid())
+    {
+        if (className != EXCEPTION_CLASS_UI_TEXT_FIELD && className != EXCEPTION_CLASS_UI_LIST) //TODO: fix internal staticText for Win\Mac
+        {
+            control->RemoveAllControls();
+        }
+
+        if (controlName.IsValid())
+        {
+            control->SetName(controlName);
+        }
+    }
+
     controlsStack.push_back(new ControlDescr(control.Get(), true));
-    return control.Get();
+
+    return ReflectedTypeDB::GetByPointer(control.Get());
 }
 
-UIControl* DefaultUIPackageBuilder::BeginControlWithPrototype(const FastName& controlName, const String& packageName, const FastName& prototypeName, const String* customClassName, AbstractUIPackageLoader* loader)
+const ReflectedType* DefaultUIPackageBuilder::BeginControlWithPrototype(const FastName& controlName, const String& packageName, const FastName& prototypeName, const String* customClassName, AbstractUIPackageLoader* loader)
 {
     UIControl* prototype = nullptr;
 
@@ -239,9 +234,9 @@ UIControl* DefaultUIPackageBuilder::BeginControlWithPrototype(const FastName& co
     RefPtr<UIControl> control;
     if (customClassName)
     {
-        control.Set(ObjectFactory::Instance()->New<UIControl>(*customClassName));
-        control->RemoveAllControls();
+        control = CreateControlByName(*customClassName, "UIControl");
 
+        control->RemoveAllControls();
         control->CopyDataFrom(prototype);
     }
     else
@@ -257,10 +252,10 @@ UIControl* DefaultUIPackageBuilder::BeginControlWithPrototype(const FastName& co
     control->SetPackageContext(nullptr);
 
     controlsStack.push_back(new ControlDescr(control.Get(), true));
-    return control.Get();
+    return ReflectedTypeDB::GetByPointer(control.Get());
 }
 
-UIControl* DefaultUIPackageBuilder::BeginControlWithPath(const String& pathName)
+const ReflectedType* DefaultUIPackageBuilder::BeginControlWithPath(const String& pathName)
 {
     UIControl* control = nullptr;
     if (!controlsStack.empty())
@@ -270,10 +265,11 @@ UIControl* DefaultUIPackageBuilder::BeginControlWithPath(const String& pathName)
 
     DVASSERT(control);
     controlsStack.push_back(new ControlDescr(control, false));
-    return control;
+
+    return ReflectedTypeDB::GetByPointer(control);
 }
 
-UIControl* DefaultUIPackageBuilder::BeginUnknownControl(const FastName& controlName, const YamlNode* node)
+const ReflectedType* DefaultUIPackageBuilder::BeginUnknownControl(const FastName& controlName, const YamlNode* node)
 {
     DVASSERT(false);
     controlsStack.push_back(new ControlDescr(nullptr, false));
@@ -284,6 +280,10 @@ void DefaultUIPackageBuilder::EndControl(eControlPlace controlPlace)
 {
     ControlDescr* lastDescr = controlsStack.back();
     controlsStack.pop_back();
+
+    DVASSERT(lastDescr->control != nullptr);
+    lastDescr->control->LoadFromYamlNodeCompleted();
+
     if (lastDescr->addToParent)
     {
         switch (controlPlace)
@@ -323,15 +323,15 @@ void DefaultUIPackageBuilder::EndControl(eControlPlace controlPlace)
 void DefaultUIPackageBuilder::BeginControlPropertiesSection(const String& name)
 {
     DVASSERT(currentComponentType == -1);
-    currentObject = controlsStack.back()->control.Get();
+    currentObject = ReflectedObject(controlsStack.back()->control.Get());
 }
 
 void DefaultUIPackageBuilder::EndControlPropertiesSection()
 {
-    currentObject = nullptr;
+    currentObject = ReflectedObject();
 }
 
-UIComponent* DefaultUIPackageBuilder::BeginComponentPropertiesSection(uint32 componentType, uint32 componentIndex)
+const ReflectedType* DefaultUIPackageBuilder::BeginComponentPropertiesSection(uint32 componentType, uint32 componentIndex)
 {
     UIControl* control = controlsStack.back()->control.Get();
     UIComponent* component = control->GetComponent(componentType, componentIndex);
@@ -341,37 +341,38 @@ UIComponent* DefaultUIPackageBuilder::BeginComponentPropertiesSection(uint32 com
         control->AddComponent(component);
         component->Release();
     }
-    currentObject = component;
+    currentObject = ReflectedObject(component);
     currentComponentType = int32(componentType);
-    return component;
+    return ReflectedTypeDB::GetByPointer(component);
 }
 
 void DefaultUIPackageBuilder::EndComponentPropertiesSection()
 {
     currentComponentType = -1;
-    currentObject = nullptr;
+    currentObject = ReflectedObject();
 }
 
-void DefaultUIPackageBuilder::ProcessProperty(const Reflection::Field& field, const Any& value)
+void DefaultUIPackageBuilder::ProcessProperty(const ReflectedStructure::Field& field, const Any& value)
 {
-    DVASSERT(currentObject);
+    DVASSERT(currentObject.IsValid());
 
-    if (currentObject && !value.IsEmpty())
+    if (currentObject.IsValid() && !value.IsEmpty())
     {
-        FastName name = field.key.Cast<FastName>();
+        FastName name(field.name);
         int32 propertyIndex = UIStyleSheetPropertyDataBase::Instance()->FindStyleSheetProperty(currentComponentType, name);
         if (propertyIndex >= 0)
         {
             UIControl* control = controlsStack.back()->control.Get();
             control->SetPropertyLocalFlag(propertyIndex, true);
         }
+
         if (name == PROPERTY_NAME_TEXT)
         {
-            field.ref.SetValueWithCast(Any(LocalizedUtf8String(value.Cast<String>())));
+            field.valueWrapper->SetValueWithCast(currentObject, Any(LocalizedUtf8String(value.Cast<String>())));
         }
         else
         {
-            field.ref.SetValueWithCast(value);
+            field.valueWrapper->SetValueWithCast(currentObject, value);
         }
     }
 }
@@ -391,5 +392,21 @@ UIPackage* DefaultUIPackageBuilder::FindImportedPackageByName(const String& name
         return importedPackages[it->second];
 
     return nullptr;
+}
+
+RefPtr<UIControl> DefaultUIPackageBuilder::CreateControlByName(const String& customClassName, const String& className)
+{
+    RefPtr<UIControl> c(ObjectFactory::Instance()->New<UIControl>(customClassName));
+    if (c == nullptr)
+    {
+        DVASSERT(false);
+        c.Set(ObjectFactory::Instance()->New<UIControl>(className));
+    }
+    return c;
+}
+
+std::unique_ptr<DefaultUIPackageBuilder> DefaultUIPackageBuilder::CreateBuilder(UIPackagesCache* packagesCache)
+{
+    return std::make_unique<DefaultUIPackageBuilder>(packagesCache);
 }
 }

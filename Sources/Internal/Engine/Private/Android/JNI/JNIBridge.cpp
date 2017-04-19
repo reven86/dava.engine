@@ -12,12 +12,16 @@ namespace DAVA
 {
 namespace JNI
 {
-JNIEnv* GetEnv()
+JNIEnv* GetEnv(bool abortIfNotAttachedToJVM)
 {
     JNIEnv* env = Private::AndroidBridge::GetEnv();
     if (env == nullptr)
     {
-        Logger::Error("Thread is not attached to Java VM");
+        ANDROID_LOG_FATAL("Thread is not attached to Java VM");
+        if (abortIfNotAttachedToJVM)
+        {
+            std::abort();
+        }
     }
     return env;
 }

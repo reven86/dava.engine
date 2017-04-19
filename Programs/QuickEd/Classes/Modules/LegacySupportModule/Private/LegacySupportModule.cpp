@@ -9,13 +9,13 @@
 
 #include "UI/mainwindow.h"
 #include "UI/ProjectView.h"
-#include "UI/Find/FindFilter.h"
+#include "UI/Find/Filters/PrototypeUsagesFilter.h"
 
 #include <TArc/Core/ContextAccessor.h>
 
 #include <QtTools/Utils/Themes/Themes.h>
 
-#include <Tools/version.h>
+#include <Tools/Version.h>
 #include <DAVAVersion.h>
 
 DAVA_VIRTUAL_REFLECTION_IMPL(LegacySupportModule)
@@ -61,7 +61,7 @@ void LegacySupportModule::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, 
     using namespace TArc;
     ContextAccessor* accessor = GetAccessor();
     DataContext* globalContext = accessor->GetGlobalContext();
-    QWidget* window = GetUI()->GetWindow(QEGlobal::windowKey);
+    QWidget* window = GetUI()->GetWindow(DAVA::TArc::mainWindowKey);
     MainWindow* mainWindow = qobject_cast<MainWindow*>(window);
     DVASSERT(mainWindow != nullptr);
     MainWindow::ProjectView* projectView = mainWindow->GetProjectView();
@@ -153,8 +153,6 @@ void LegacySupportModule::InitMainWindow()
     MainWindow* mainWindow = new MainWindow(GetAccessor());
     MainWindow::ProjectView* projectView = mainWindow->GetProjectView();
 
-    connections.AddConnection(projectView, &MainWindow::ProjectView::JumpToControl, MakeFunction(this, &LegacySupportModule::JumpToControl));
-    connections.AddConnection(projectView, &MainWindow::ProjectView::JumpToPackage, MakeFunction(this, &LegacySupportModule::JumpToPackage));
     connections.AddConnection(projectView, &MainWindow::ProjectView::JumpToPrototype, MakeFunction(this, &LegacySupportModule::OnJumpToPrototype));
     connections.AddConnection(projectView, &MainWindow::ProjectView::FindPrototypeInstances, MakeFunction(this, &LegacySupportModule::OnFindPrototypeInstances));
 
@@ -165,7 +163,7 @@ void LegacySupportModule::InitMainWindow()
     QString title = QString(editorTitle).arg(DAVAENGINE_VERSION).arg(APPLICATION_BUILD_VERSION).arg(bit);
     mainWindow->SetEditorTitle(title);
 
-    GetUI()->InjectWindow(QEGlobal::windowKey, mainWindow);
+    GetUI()->InjectWindow(DAVA::TArc::mainWindowKey, mainWindow);
     ContextAccessor* accessor = GetAccessor();
     DataContext* globalContext = accessor->GetGlobalContext();
 }
@@ -197,12 +195,12 @@ void LegacySupportModule::OnFindPrototypeInstances()
             FilePath path = controlNode->GetPackage()->GetPath();
             String name = controlNode->GetName();
 
-            DataContext* globalContext = accessor->GetGlobalContext();
-            QWidget* window = GetUI()->GetWindow(QEGlobal::windowKey);
+            QWidget* window = GetUI()->GetWindow(DAVA::TArc::mainWindowKey);
             MainWindow* mainWindow = qobject_cast<MainWindow*>(window);
             MainWindow::ProjectView* view = mainWindow->GetProjectView();
 
-            view->FindControls(std::make_unique<PrototypeUsagesFilter>(path.GetFrameworkPath(), FastName(name)));
+            std::shared_ptr<FindFilter> filter = std::make_shared<PrototypeUsagesFilter>(path.GetFrameworkPath(), FastName(name));
+            InvokeOperation(QEGlobal::FindInProject.ID, filter);
         }
     }
 }

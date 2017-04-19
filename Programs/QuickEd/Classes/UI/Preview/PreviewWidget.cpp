@@ -7,8 +7,9 @@
 
 #include "Ruler/RulerWidget.h"
 #include "Ruler/RulerController.h"
-#include "UI/QtModelPackageCommandExecutor.h"
+#include "UI/Find/Widgets/FindInDocumentWidget.h"
 #include "UI/Package/PackageMimeData.h"
+#include "UI/QtModelPackageCommandExecutor.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
 #include "Model/PackageHierarchy/PackageBaseNode.h"
@@ -31,7 +32,7 @@
 #include <QLineEdit>
 #include <QScreen>
 #include <QMenu>
-#include <QShortCut>
+#include <QShortcut>
 #include <QFileInfo>
 #include <QInputDialog>
 #include <QComboBox>
@@ -57,9 +58,7 @@ PreviewWidget::PreviewWidget(DAVA::TArc::ContextAccessor* accessor_, DAVA::Rende
     , rulerController(new RulerController(this))
 {
     qRegisterMetaType<SelectedNodes>("SelectedNodes");
-    percentages << 0.25f << 0.33f << 0.50f << 0.67f << 0.75f << 0.90f
-                << 1.00f << 1.10f << 1.25f << 1.50f << 1.75f << 2.00f
-                << 2.50f << 3.00f << 4.00f << 5.00f << 6.00f << 7.00f << 8.00f;
+
     InjectRenderWidget(renderWidget);
 
     InitUI();
@@ -73,9 +72,9 @@ PreviewWidget::PreviewWidget(DAVA::TArc::ContextAccessor* accessor_, DAVA::Rende
     connect(rulerController, &RulerController::VerticalRulerMarkPositionChanged, verticalRuler, &RulerWidget::OnMarkerPositionChanged);
 
     // Setup the Scale Combo.
-    for (auto percentage : percentages)
+    for (DAVA::float32 scale : editorCanvas->GetPredefinedScales())
     {
-        scaleCombo->addItem(ScaleStringFromReal(percentage));
+        scaleCombo->addItem(ScaleStringFromReal(scale));
     }
 
     connect(scaleCombo, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &PreviewWidget::OnScaleByComboIndex);
@@ -106,15 +105,9 @@ float PreviewWidget::GetScaleFromComboboxText() const
     return scaleValue / 100.0f;
 }
 
-void PreviewWidget::InjectRenderWidget(DAVA::RenderWidget* renderWidget_)
+FindInDocumentWidget* PreviewWidget::GetFindInDocumentWidget()
 {
-    DVASSERT(renderWidget_ != nullptr);
-    renderWidget = renderWidget_;
-    CreateActions();
-
-    renderWidget->resized.Connect(this, &PreviewWidget::OnResized);
-
-    renderWidget->SetClientDelegate(this);
+    return findInDocumentWidget;
 }
 
 void PreviewWidget::CreateActions()
@@ -123,25 +116,31 @@ void PreviewWidget::CreateActions()
     importPackageAction->setShortcut(QKeySequence::New);
     importPackageAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     connect(importPackageAction, &QAction::triggered, this, &PreviewWidget::ImportRequested);
-    addAction(importPackageAction);
+    renderWidget->addAction(importPackageAction);
 
     QAction* cutAction = new QAction(tr("Cut"), this);
     cutAction->setShortcut(QKeySequence::Cut);
     cutAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     connect(cutAction, &QAction::triggered, this, &PreviewWidget::CutRequested);
-    addAction(cutAction);
+    renderWidget->addAction(cutAction);
 
     QAction* copyAction = new QAction(tr("Copy"), this);
     copyAction->setShortcut(QKeySequence::Copy);
     copyAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     connect(copyAction, &QAction::triggered, this, &PreviewWidget::CopyRequested);
-    addAction(copyAction);
+    renderWidget->addAction(copyAction);
 
     QAction* pasteAction = new QAction(tr("Paste"), this);
     pasteAction->setShortcut(QKeySequence::Paste);
     pasteAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     connect(pasteAction, &QAction::triggered, this, &PreviewWidget::PasteRequested);
-    addAction(pasteAction);
+    renderWidget->addAction(pasteAction);
+
+    QAction* duplicateAction = new QAction(tr("Duplicate"), this);
+    duplicateAction->setShortcut(QKeySequence(Qt::CTRL + Qt::Key_D));
+    duplicateAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    connect(duplicateAction, &QAction::triggered, this, &PreviewWidget::DuplicateRequested);
+    addAction(duplicateAction);
 
     QAction* deleteAction = new QAction(tr("Delete"), this);
 #if defined Q_OS_WIN
@@ -152,22 +151,22 @@ void PreviewWidget::CreateActions()
 
     deleteAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     connect(deleteAction, &QAction::triggered, this, &PreviewWidget::DeleteRequested);
-    addAction(deleteAction);
+    renderWidget->addAction(deleteAction);
 
     selectAllAction = new QAction(tr("Select all"), this);
     selectAllAction->setShortcut(QKeySequence::SelectAll);
     selectAllAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    addAction(selectAllAction);
+    renderWidget->addAction(selectAllAction);
 
     focusNextChildAction = new QAction(tr("Focus next child"), this);
     focusNextChildAction->setShortcut(Qt::Key_Tab);
     focusNextChildAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    addAction(focusNextChildAction);
+    renderWidget->addAction(focusNextChildAction);
 
     focusPreviousChildAction = new QAction(tr("Focus frevious child"), this);
     focusPreviousChildAction->setShortcut(static_cast<int>(Qt::ShiftModifier | Qt::Key_Tab));
     focusPreviousChildAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    addAction(focusPreviousChildAction);
+    renderWidget->addAction(focusPreviousChildAction);
 }
 
 void PreviewWidget::OnRootControlPositionChanged(const Vector2& pos)
@@ -206,54 +205,14 @@ void PreviewWidget::OnEmulationModeChanged(bool emulationMode)
 
 void PreviewWidget::OnIncrementScale()
 {
-    int nextIndex = -1;
-    float actualScale = GetScaleFromComboboxText();
-    if (actualScale >= percentages.last())
-    {
-        return;
-    }
-    if (percentages.contains(actualScale))
-    {
-        int currentIndex = scaleCombo->currentIndex();
-        DVASSERT(currentIndex < scaleCombo->count() - 1);
-        nextIndex = currentIndex + 1;
-    }
-    else
-    {
-        QList<float>::iterator iter = std::upper_bound(percentages.begin(), percentages.end(), actualScale);
-        nextIndex = std::distance(percentages.begin(), iter);
-    }
-    DVASSERT(nextIndex >= 0 && nextIndex < percentages.size());
-    if (editorCanvas != nullptr)
-    {
-        editorCanvas->SetScale(percentages.at(nextIndex));
-    }
+    float32 nextScale = editorCanvas->GetNextScale(1);
+    editorCanvas->SetScale(nextScale);
 }
 
 void PreviewWidget::OnDecrementScale()
 {
-    int nextIndex = -1;
-    float actualScale = GetScaleFromComboboxText();
-    if (actualScale <= percentages.first())
-    {
-        return;
-    }
-    if (percentages.contains(actualScale))
-    {
-        int currentIndex = scaleCombo->currentIndex();
-        DVASSERT(currentIndex > 0);
-        nextIndex = currentIndex - 1;
-    }
-    else
-    {
-        QList<float>::iterator iter = std::lower_bound(percentages.begin(), percentages.end(), actualScale);
-        nextIndex = std::distance(percentages.begin(), iter) - 1; //lower bound returns first largest element, but we need smaller;
-    }
-    DVASSERT(nextIndex >= 0 && nextIndex < percentages.size());
-    if (editorCanvas != nullptr)
-    {
-        editorCanvas->SetScale(percentages.at(nextIndex));
-    }
+    float32 nextScale = editorCanvas->GetPreviousScale(1);
+    editorCanvas->SetScale(nextScale);
 }
 
 void PreviewWidget::SetActualScale()
@@ -327,23 +286,37 @@ void PreviewWidget::InitFromSystemsManager(EditorSystemsManager* systemsManager_
     connect(selectAllAction, &QAction::triggered, std::bind(&EditorSystemsManager::SelectAll, systemsManager));
 
     editorCanvas = new EditorCanvas(systemsManager, accessor);
+
     editorCanvas->sizeChanged.Connect(this, &PreviewWidget::UpdateScrollArea);
     editorCanvas->positionChanged.Connect(this, &PreviewWidget::OnPositionChanged);
     editorCanvas->nestedControlPositionChanged.Connect(this, &PreviewWidget::OnNestedControlPositionChanged);
     editorCanvas->scaleChanged.Connect(this, &PreviewWidget::OnScaleChanged);
     systemsManager->AddEditorSystem(editorCanvas);
 
-    CursorSystem* cursorSystem = new CursorSystem(renderWidget, systemsManager);
+    CursorSystem* cursorSystem = new CursorSystem(renderWidget, systemsManager, accessor);
     systemsManager->AddEditorSystem(cursorSystem);
+}
+
+void PreviewWidget::InjectRenderWidget(DAVA::RenderWidget* renderWidget_)
+{
+    DVASSERT(renderWidget_ != nullptr);
+    renderWidget = renderWidget_;
+    CreateActions();
+
+    renderWidget->resized.Connect(this, &PreviewWidget::OnResized);
+
+    renderWidget->SetClientDelegate(this);
 }
 
 void PreviewWidget::OnScaleChanged(float32 scale)
 {
     bool wasBlocked = scaleCombo->blockSignals(true);
-    int scaleIndex = percentages.indexOf(scale);
-    if (scaleIndex != -1)
+    const Vector<float32>& scales = editorCanvas->GetPredefinedScales();
+    auto iter = std::find(scales.begin(), scales.end(), scale);
+    if (iter != scales.end())
     {
-        scaleCombo->setCurrentIndex(scaleIndex);
+        int index = std::distance(scales.begin(), iter);
+        scaleCombo->setCurrentIndex(index);
     }
     scaleCombo->lineEdit()->setText(ScaleStringFromReal(scale));
     scaleCombo->blockSignals(wasBlocked);
@@ -355,10 +328,11 @@ void PreviewWidget::OnScaleChanged(float32 scale)
 void PreviewWidget::OnScaleByComboIndex(int index)
 {
     DVASSERT(index >= 0);
-    float scale = static_cast<float>(percentages.at(index));
+    const Vector<float32> scales = editorCanvas->GetPredefinedScales();
+    DVASSERT(index < static_cast<int>(scales.size()));
     if (editorCanvas != nullptr)
     {
-        editorCanvas->SetScale(scale);
+        editorCanvas->SetScale(scales.at(index));
     }
 }
 
@@ -402,36 +376,41 @@ void PreviewWidget::InitUI()
     tabBar->setElideMode(Qt::ElideNone);
     tabBar->setTabsClosable(true);
     tabBar->setUsesScrollButtons(true);
-    gridLayout->addWidget(tabBar, 0, 0, 1, 3);
+    gridLayout->addWidget(tabBar, 0, 0, 1, 4);
+
+    findInDocumentWidget = new FindInDocumentWidget(this);
+    gridLayout->addWidget(findInDocumentWidget, 1, 0, 1, 4);
 
     horizontalRuler = new RulerWidget(this);
     horizontalRuler->SetRulerOrientation(Qt::Horizontal);
 
-    gridLayout->addWidget(horizontalRuler, 1, 1, 1, 2);
+    gridLayout->addWidget(horizontalRuler, 2, 1, 1, 2);
 
     verticalRuler = new RulerWidget(this);
     verticalRuler->SetRulerOrientation(Qt::Vertical);
-    gridLayout->addWidget(verticalRuler, 2, 0, 1, 1);
+    gridLayout->addWidget(verticalRuler, 3, 0, 1, 1);
 
     QSizePolicy expandingPolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     renderWidget->setSizePolicy(expandingPolicy);
-    gridLayout->addWidget(renderWidget, 2, 1, 1, 2);
+    gridLayout->addWidget(renderWidget, 3, 1, 1, 2);
 
     verticalScrollBar = new QScrollBar(this);
     verticalScrollBar->setOrientation(Qt::Vertical);
 
-    gridLayout->addWidget(verticalScrollBar, 2, 3, 1, 1);
+    gridLayout->addWidget(verticalScrollBar, 3, 3, 1, 1);
 
     scaleCombo = new QComboBox(this);
     scaleCombo->setEditable(true);
 
-    gridLayout->addWidget(scaleCombo, 3, 1, 1, 1);
+    gridLayout->addWidget(scaleCombo, 4, 1, 1, 1);
 
     horizontalScrollBar = new QScrollBar(this);
     horizontalScrollBar->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Maximum);
     horizontalScrollBar->setOrientation(Qt::Horizontal);
 
-    gridLayout->addWidget(horizontalScrollBar, 3, 2, 1, 1);
+    gridLayout->addWidget(horizontalScrollBar, 4, 2, 1, 1);
+
+    gridLayout->setMargin(0.0f);
 }
 
 void PreviewWidget::ShowMenu(const QMouseEvent* mouseEvent)
@@ -512,74 +491,6 @@ bool PreviewWidget::CanChangeTextInControl(const ControlNode* node) const
 
     UIStaticText* staticText = dynamic_cast<UIStaticText*>(control);
     return staticText != nullptr;
-}
-
-void PreviewWidget::OnWheel(QWheelEvent* event)
-{
-    if (accessor->GetActiveContext() == nullptr)
-    {
-        return;
-    }
-    bool shouldZoom = QApplication::keyboardModifiers().testFlag(Qt::ControlModifier)
-#if defined(Q_OS_WIN)
-    ;
-#elif defined(Q_OS_MAC)
-    && event->source() == Qt::MouseEventNotSynthesized;
-#else
-#error "wrong platform"
-#endif //platform
-    if (shouldZoom)
-    {
-        //resize view
-        int tickSize = 120;
-        int ticksCount = event->angleDelta().y() / tickSize;
-        if (ticksCount == 0)
-        {
-            return;
-        }
-        float scale = GetScaleFromWheelEvent(ticksCount);
-        QPoint pos = event->pos();
-        editorCanvas->AdjustScale(scale, Vector2(pos.x(), pos.y()));
-    }
-    else
-    {
-#if defined(Q_OS_WIN)
-        QPoint delta = event->angleDelta();
-#else //Q_OS_MAC
-        QPoint delta = event->pixelDelta();
-#endif //platform
-        //scroll view up and down
-        static const float wheelDelta = 0.002f;
-        Vector2 position = editorCanvas->GetPosition();
-        Vector2 additionalPos((delta.x() * horizontalScrollBar->pageStep()) * wheelDelta,
-                              (delta.y() * verticalScrollBar->pageStep()) * wheelDelta);
-        editorCanvas->SetPosition(position - additionalPos);
-    }
-}
-
-void PreviewWidget::OnNativeGuesture(QNativeGestureEvent* event)
-{
-    if (accessor->GetActiveContext() == nullptr)
-    {
-        return;
-    }
-    const float normalScale = 1.0f;
-    const float expandedScale = 1.5f;
-    float scale = editorCanvas->GetScale();
-    QPoint qtPos = event->pos();
-    Vector2 pos(qtPos.x(), qtPos.y());
-    switch (event->gestureType())
-    {
-    case Qt::ZoomNativeGesture:
-        editorCanvas->AdjustScale(scale + event->value(), pos);
-        break;
-    case Qt::SmartZoomNativeGesture:
-        //event->value() returns 1.0f or 0.0f
-        editorCanvas->AdjustScale((event->value() == 0.0f ? normalScale : expandedScale), pos);
-        break;
-    default:
-        break;
-    }
 }
 
 void PreviewWidget::OnMouseReleased(QMouseEvent* event)
@@ -760,45 +671,4 @@ void PreviewWidget::OnKeyPressed(QKeyEvent* event)
             }
         }
     }
-}
-
-float PreviewWidget::GetScaleFromWheelEvent(int ticksCount) const
-{
-    float scale = editorCanvas->GetScale();
-    if (ticksCount > 0)
-    {
-        scale = GetNextScale(scale, ticksCount);
-    }
-    else if (ticksCount < 0)
-    {
-        scale = GetPreviousScale(scale, ticksCount);
-    }
-    return scale;
-}
-
-float PreviewWidget::GetNextScale(float currentScale, int ticksCount) const
-{
-    auto iter = std::upper_bound(percentages.begin(), percentages.end(), currentScale);
-    if (iter == percentages.end())
-    {
-        return currentScale;
-    }
-    ticksCount--;
-    int distance = std::distance(iter, percentages.end());
-    ticksCount = std::min(distance, ticksCount);
-    std::advance(iter, ticksCount);
-    return iter != percentages.end() ? *iter : percentages.last();
-}
-
-float PreviewWidget::GetPreviousScale(float currentScale, int ticksCount) const
-{
-    auto iter = std::lower_bound(percentages.begin(), percentages.end(), currentScale);
-    if (iter == percentages.end())
-    {
-        return currentScale;
-    }
-    int distance = std::distance(iter, percentages.begin());
-    ticksCount = std::max(ticksCount, distance);
-    std::advance(iter, ticksCount);
-    return *iter;
 }

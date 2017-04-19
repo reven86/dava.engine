@@ -645,7 +645,7 @@ void UITextField::OnStartEditing()
 {
     if (delegate != nullptr)
     {
-        delegate->OnStartEditing();
+        delegate->OnStartEditing(this);
     }
 }
 
@@ -653,7 +653,7 @@ void UITextField::OnStopEditing()
 {
     if (delegate != nullptr)
     {
-        delegate->OnStopEditing();
+        delegate->OnStopEditing(this);
     }
 }
 
