@@ -56,6 +56,7 @@ private:
     DAVA::UIStaticText* description = nullptr;
     DAVA::UITextField* url = nullptr;
     DAVA::UITextField* filePathField = nullptr;
+    DAVA::UITextField* numOfThreadDownload = nullptr;
     DAVA::UIButton* checkFile = nullptr;
     DAVA::UIButton* startInit = nullptr;
     DAVA::UIButton* startSync = nullptr;

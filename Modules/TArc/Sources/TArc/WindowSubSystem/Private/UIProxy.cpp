@@ -58,6 +58,11 @@ void UIProxy::ShowMessage(const WindowKey& windowKey, const QString& message, ui
     globalUI->ShowMessage(windowKey, message, duration);
 }
 
+void UIProxy::ShowNotification(const WindowKey& windowKey, const NotificationParams& params)
+{
+    globalUI->ShowNotification(windowKey, params);
+}
+
 void UIProxy::ClearMessage(const WindowKey& windowKey)
 {
     globalUI->ClearMessage(windowKey);

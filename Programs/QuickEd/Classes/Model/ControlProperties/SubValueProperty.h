@@ -28,8 +28,10 @@ public:
     void ResetValue() override;
     bool IsOverriddenLocally() const override;
 
-private:
     ValueProperty* GetValueProperty() const;
+    DAVA::int32 GetIndex() const;
+
+private:
     DAVA::int32 index = 0;
     DAVA::String name;
 };

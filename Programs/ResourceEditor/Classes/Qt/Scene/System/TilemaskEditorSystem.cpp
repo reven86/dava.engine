@@ -373,7 +373,7 @@ void TilemaskEditorSystem::UpdateToolImage()
         DVASSERT(images.size() == 1);
         DVASSERT(images[0]->GetPixelFormat() == DAVA::FORMAT_RGBA8888);
 
-        DAVA::Image* toolImage = DAVA::Image::Create(curToolSize, curToolSize, DAVA::FORMAT_RGBA8888);
+        DAVA::ScopedPtr<DAVA::Image> toolImage(DAVA::Image::Create(curToolSize, curToolSize, DAVA::FORMAT_RGBA8888));
         DAVA::ImageConvert::ResizeRGBA8Billinear(reinterpret_cast<DAVA::uint32*>(images[0]->data), images[0]->GetWidth(), images[0]->GetHeight(),
                                                  reinterpret_cast<DAVA::uint32*>(toolImage->data), curToolSize, curToolSize);
 

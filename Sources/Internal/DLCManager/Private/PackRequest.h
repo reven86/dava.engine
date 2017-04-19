@@ -26,7 +26,7 @@ public:
 
     const String& GetRequestedPackName() const override;
     /** recalculate full size with all dependencies */
-    Vector<String> GetDependencies() const override;
+    Vector<uint32> GetDependencies() const;
     /** return size of files within this request without dependencies */
     uint64 GetSize() const override;
     /** recalculate current downloaded size without dependencies */
@@ -92,7 +92,7 @@ private:
     Vector<FileRequest> requests;
     Vector<uint32> fileIndexes;
     String requestedPackName;
-    mutable Vector<String> dependencyCache;
+    mutable Vector<uint32> dependencyCache;
 
     uint32 numOfDownloadedFile = 0;
 

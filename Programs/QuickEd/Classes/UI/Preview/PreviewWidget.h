@@ -59,6 +59,8 @@ signals:
     void CutRequested();
     void CopyRequested();
     void PasteRequested();
+    void DuplicateRequested();
+
     void OpenPackageFile(QString path);
     void DropRequested(const QMimeData* data, Qt::DropAction action, PackageBaseNode* targetNode, DAVA::uint32 destIndex, const DAVA::Vector2* pos);
 

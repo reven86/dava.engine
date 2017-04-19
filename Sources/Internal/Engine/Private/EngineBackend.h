@@ -89,6 +89,8 @@ public:
 
     void SetScreenTimeoutEnabled(bool enabled);
 
+    bool IsRunning() const;
+
 private:
     void RunConsole();
 
@@ -140,6 +142,8 @@ private:
 
     RefPtr<KeyedArchive> options;
     uint32 globalFrameIndex = 1;
+
+    bool isRunning = false;
 
     static EngineBackend* instance;
 };

@@ -16,14 +16,20 @@ DAVA_VIRTUAL_REFLECTION_IMPL(DocumentData)
     .Field(undoTextPropertyName, &DocumentData::GetUndoText, nullptr)
     .Field(redoTextPropertyName, &DocumentData::GetRedoText, nullptr)
     .Field(selectionPropertyName, &DocumentData::GetSelectedNodes, &DocumentData::SetSelectedNodes)
-    .Field(editedRootControlsPropertyName, &DocumentData::GetEditedRootControls, &DocumentData::SetEditedRootControls)
+    .Field(displayedRootControlsPropertyName, &DocumentData::GetDisplayedRootControls, &DocumentData::SetDisplayedRootControls)
     .End();
 }
 
 DocumentData::DocumentData(const DAVA::RefPtr<PackageNode>& package_)
     : package(package_)
     , commandStack(new DAVA::CommandStack())
+    , displayedRootControls(CompareByLCA)
 {
+    PackageControlsNode* controlsNode = package->GetPackageControlsNode();
+    for (int index = 0; index < controlsNode->GetCount(); ++index)
+    {
+        displayedRootControls.insert(controlsNode->Get(index));
+    }
 }
 
 DocumentData::~DocumentData() = default;
@@ -53,19 +59,43 @@ const SelectedNodes& DocumentData::GetSelectedNodes() const
     return selection.selectedNodes;
 }
 
-const SortedControlNodeSet& DocumentData::GetEditedRootControls() const
+const SortedControlNodeSet& DocumentData::GetDisplayedRootControls() const
 {
-    return editedRootControls;
+    return displayedRootControls;
 }
 
 void DocumentData::SetSelectedNodes(const SelectedNodes& nodes)
 {
     selection.selectedNodes = nodes;
+
+    SortedControlNodeSet newDisplayedRootControls(CompareByLCA);
+    for (PackageBaseNode* selectedNode : selection.selectedNodes)
+    {
+        if (dynamic_cast<ControlNode*>(selectedNode) == nullptr)
+        {
+            continue;
+        }
+        PackageBaseNode* root = selectedNode;
+        while (nullptr != root->GetParent() && nullptr != root->GetParent()->GetControl())
+        {
+            root = root->GetParent();
+        }
+        if (nullptr != root)
+        {
+            ControlNode* rootControl = dynamic_cast<ControlNode*>(root);
+            DVASSERT(rootControl != nullptr);
+            newDisplayedRootControls.insert(rootControl);
+        }
+    }
+    if (newDisplayedRootControls.empty() == false)
+    {
+        displayedRootControls = newDisplayedRootControls;
+    }
 }
 
-void DocumentData::SetEditedRootControls(const SortedControlNodeSet& controls)
+void DocumentData::SetDisplayedRootControls(const SortedControlNodeSet& controls)
 {
-    editedRootControls = controls;
+    displayedRootControls = controls;
 }
 
 QString DocumentData::GetName() const
@@ -136,4 +166,4 @@ const char* DocumentData::canRedoPropertyName = "can redo";
 const char* DocumentData::undoTextPropertyName = "undo text";
 const char* DocumentData::redoTextPropertyName = "redo text";
 const char* DocumentData::selectionPropertyName = "selection";
-const char* DocumentData::editedRootControlsPropertyName = "edited root controls";
+const char* DocumentData::displayedRootControlsPropertyName = "displayed root controls";
