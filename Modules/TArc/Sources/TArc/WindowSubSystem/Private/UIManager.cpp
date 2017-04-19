@@ -2,6 +2,7 @@
 
 #include "TArc/WindowSubSystem/ActionUtils.h"
 #include "TArc/WindowSubSystem/Private/WaitDialog.h"
+#include "TArc/Controls/Private/NotificationLayout.h"
 #include "TArc/DataProcessing/PropertiesHolder.h"
 
 #include <Base/BaseTypes.h>
@@ -463,6 +464,7 @@ struct UIManager::Impl : public QObject
     bool initializationFinished = false;
     Set<WaitHandle*> activeWaitDialogues;
     ClientModule* currentModule = nullptr;
+    NotificationLayout notificationLayout;
 
     struct ModuleResources
     {
@@ -839,6 +841,14 @@ ModalMessageParams::Button UIManager::ShowModalMessage(const WindowKey& windowKe
     int ret = msgBox.exec();
     QMessageBox::StandardButton resultButton = static_cast<QMessageBox::StandardButton>(ret);
     return Convert(resultButton);
+}
+
+void UIManager::ShowNotification(const WindowKey& windowKey, const NotificationParams& params)
+{
+    using namespace UIManagerDetail;
+
+    MainWindowInfo& windowInfo = impl->FindOrCreateWindow(windowKey);
+    impl->notificationLayout.ShowNotification(windowInfo.window, params);
 }
 
 void UIManager::InjectWindow(const WindowKey& windowKey, QMainWindow* window)

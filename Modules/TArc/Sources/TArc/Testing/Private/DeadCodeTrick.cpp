@@ -13,6 +13,7 @@
 #include "TArc/Testing/Private/Selftests/IntSpinBoxTests.h"
 #include "TArc/Testing/Private/Selftests/LabelTest.h"
 #include "TArc/Testing/Private/Selftests/LineEditTest.h"
+#include "TArc/Testing/Private/Selftests/NotificationTest.h"
 #include "TArc/Testing/Private/Selftests/PlainTextEditTest.h"
 #include "TArc/Testing/Private/Selftests/PropertiesViewTests.h"
 #include "TArc/Testing/Private/Selftests/PropertiesViewTimerUpdaterTests.h"

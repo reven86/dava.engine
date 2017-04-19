@@ -18,6 +18,19 @@ class UIStyleSheet;
 struct UIStyleSheetSelector;
 class VariantType;
 
+class UIStyleSheetSystemListener
+{
+public:
+    UIStyleSheetSystemListener()
+    {
+    }
+    virtual ~UIStyleSheetSystemListener()
+    {
+    }
+
+    virtual void OnStylePropertyChanged(UIControl* control, UIComponent* component, uint32 propertyIndex) = 0;
+};
+
 struct UIStyleSheetProcessDebugData
 {
     UIStyleSheetProcessDebugData()
@@ -40,6 +53,7 @@ public:
     void SetCurrentScreen(const RefPtr<UIScreen>& screen);
     void SetCurrentScreenTransition(const RefPtr<UIScreenTransition>& screenTransition);
     void SetPopupContainer(const RefPtr<UIControl>& popupContainer);
+    void SetListener(UIStyleSheetSystemListener* listener);
 
     void AddGlobalClass(const FastName& clazz);
     void RemoveGlobalClass(const FastName& clazz);
@@ -82,6 +96,8 @@ private:
     RefPtr<UIScreen> currentScreen;
     RefPtr<UIControl> popupContainer;
     RefPtr<UIScreenTransition> currentScreenTransition;
+
+    UIStyleSheetSystemListener* listener = nullptr;
 };
 
 inline void UIStyleSheetSystem::SetDirty()

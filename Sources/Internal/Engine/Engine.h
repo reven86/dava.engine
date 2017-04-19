@@ -49,8 +49,7 @@ Window* GetPrimaryWindow();
     \ingroup engine
     Utility function to run asynchronous task on DAVA main thread.
 
-    Behaviour is undefined when called before `Engine` instantiated or after `Engine::cleanup` signal has emited.
-    Another but longer way to get primary window is to call `Engine::Instance()->RunOnMainThreadAsync()`.
+    Behaviour is undefined when called after `Engine::cleanup` signal has emited.
 */
 void RunOnMainThreadAsync(const Function<void()>& task);
 
@@ -58,8 +57,8 @@ void RunOnMainThreadAsync(const Function<void()>& task);
     \ingroup engine
     Utility function to run task on DAVA main thread and wait its completion blocking caller thread.
 
-    Behaviour is undefined when called before `Engine` instantiated or after `Engine::cleanup` signal has emited.
-    Another but longer way to get primary window is to call `Engine::Instance()->RunOnMainThread()`.
+    This function should not be called before `Engine::Run` is executed since it can lead to deadlock.
+    Behaviour is undefined when called after `Engine::cleanup` signal has emited.
 */
 void RunOnMainThread(const Function<void()>& task);
 
@@ -71,7 +70,6 @@ void RunOnMainThread(const Function<void()>& task);
         - if Engine is initialized with console run mode.
         - if called before `Engine::Init` method which create instance of primary window.
         - if called after `Engine::windowDestroyed` signal emited for primary window.
-    Another but longer way to get primary window is to call `Engine::Instance()->PrimaryWindow()->RunOnUIThreadAsync()`.
 */
 void RunOnUIThreadAsync(const Function<void()>& task);
 
@@ -83,7 +81,6 @@ void RunOnUIThreadAsync(const Function<void()>& task);
         - if Engine is initialized with console run mode.
         - if called before `Engine::windowCreated` signal emited for primary window.
         - if called after `Engine::windowDestroyed` signal emited for primary window.
-    Another but longer way to get primary window is to call `Engine::Instance()->PrimaryWindow()->RunOnUIThread()`.
 */
 void RunOnUIThread(const Function<void()>& task);
 
@@ -271,18 +268,6 @@ public:
                        otherwise user is trying to close specified window.
     */
     void SetCloseRequestHandler(const Function<bool(Window*)>& handler);
-
-    /**
-        Run given task in DAVA main thread context without waiting task execution.
-        This method can be called from any thread.
-    */
-    void RunOnMainThreadAsync(const Function<void()>& task);
-
-    /**
-        Run given task in DAVA main thread context and block calling thread until task is executed.
-        This method can be called from any thread.
-    */
-    void RunOnMainThread(const Function<void()>& task);
 
     const KeyedArchive* GetOptions() const;
 

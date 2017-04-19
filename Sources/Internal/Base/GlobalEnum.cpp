@@ -323,13 +323,15 @@ ENUM_DECLARE(UITextField::eStopEditPolicy)
 
 ENUM_DECLARE(UIComponent::eType)
 {
-    ENUM_ADD_DESCR(UIComponent::BACKGROUND_COMPONENT, "Background");
     ENUM_ADD_DESCR(UIComponent::LINEAR_LAYOUT_COMPONENT, "LinearLayout");
     ENUM_ADD_DESCR(UIComponent::FLOW_LAYOUT_COMPONENT, "FlowLayout");
     ENUM_ADD_DESCR(UIComponent::FLOW_LAYOUT_HINT_COMPONENT, "FlowLayoutHint");
     ENUM_ADD_DESCR(UIComponent::IGNORE_LAYOUT_COMPONENT, "IgnoreLayout");
     ENUM_ADD_DESCR(UIComponent::SIZE_POLICY_COMPONENT, "SizePolicy");
     ENUM_ADD_DESCR(UIComponent::ANCHOR_COMPONENT, "Anchor");
+    ENUM_ADD_DESCR(UIComponent::LAYOUT_SOURCE_RECT_COMPONENT, "UILayoutSourceRectComponent");
+    ENUM_ADD_DESCR(UIComponent::LAYOUT_ISOLATION_COMPONENT, "UILayoutIsolationComponent");
+    ENUM_ADD_DESCR(UIComponent::BACKGROUND_COMPONENT, "Background");
     ENUM_ADD_DESCR(UIComponent::MODAL_INPUT_COMPONENT, "ModalInput");
     ENUM_ADD_DESCR(UIComponent::FOCUS_COMPONENT, "Focus");
     ENUM_ADD_DESCR(UIComponent::FOCUS_GROUP_COMPONENT, "FocusGroup");

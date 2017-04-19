@@ -1967,6 +1967,7 @@ void UIControl::AddComponent(UIComponent* component)
     {
         UIControlSystem::Instance()->RegisterComponent(this, component);
     }
+    SetStyleSheetDirty();
     SetLayoutDirty();
 }
 
@@ -1992,6 +1993,7 @@ void UIControl::InsertComponentAt(UIComponent* component, uint32 index)
             UIControlSystem::Instance()->RegisterComponent(this, component);
         }
 
+        SetStyleSheetDirty();
         SetLayoutDirty();
     }
 }
@@ -2065,6 +2067,7 @@ void UIControl::RemoveComponent(const Vector<UIComponent*>::iterator& it)
         component->SetControl(nullptr);
         SafeRelease(component);
 
+        SetStyleSheetDirty();
         SetLayoutDirty();
     }
 }

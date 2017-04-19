@@ -53,6 +53,26 @@ AbstractProperty* AbstractProperty::FindPropertyByPrototype(AbstractProperty* pr
     return nullptr;
 }
 
+AbstractProperty* AbstractProperty::FindPropertyByStyleIndex(DAVA::int32 propertyIndex) const
+{
+    for (uint32 i = 0; i < GetCount(); i++)
+    {
+        AbstractProperty* child = GetProperty(i);
+        if (child->GetStylePropertyIndex() == propertyIndex)
+        {
+            return child;
+        }
+
+        AbstractProperty* result = child->FindPropertyByStyleIndex(propertyIndex);
+        if (result)
+        {
+            return result;
+        }
+    }
+
+    return nullptr;
+}
+
 bool AbstractProperty::HasChanges() const
 {
     for (uint32 i = 0; i < GetCount(); i++)
