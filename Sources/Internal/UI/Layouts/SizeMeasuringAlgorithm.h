@@ -21,17 +21,15 @@ public:
     void Apply(ControlLayoutData& data, Vector2::eAxis axis);
 
 private:
-    void ProcessIgnoreSizePolicy(ControlLayoutData& data, Vector2::eAxis axis);
-    void ProcessFixedSizePolicy(ControlLayoutData& data, Vector2::eAxis axis);
-    void ProcessPercentOfChildrenSumPolicy(ControlLayoutData& data, Vector2::eAxis axis);
-    void ProcessDefaultPercentOfChildrenSumPolicy(ControlLayoutData& data, Vector2::eAxis axis);
-    void ProcessHorizontalFlowLayoutPercentOfChildrenSumPolicy(ControlLayoutData& data);
-    void ProcessVerticalFlowLayoutPercentOfChildrenSumPolicy(ControlLayoutData& data);
-    void ProcessPercentOfMaxChildPolicy(ControlLayoutData& data, Vector2::eAxis axis);
-    void ProcessPercentOfFirstChildPolicy(ControlLayoutData& data, Vector2::eAxis axis);
-    void ProcessPercentOfLastChildPolicy(ControlLayoutData& data, Vector2::eAxis axis);
-    void ProcessPercentOfContentPolicy(ControlLayoutData& data, Vector2::eAxis axis);
-    void ProcessPercentOfParentPolicy(ControlLayoutData& data, Vector2::eAxis axis);
+    float32 CalculateFixedSize(ControlLayoutData& data, Vector2::eAxis axis);
+    float32 CalculatePercentOfChildrenSum(ControlLayoutData& data, Vector2::eAxis axis);
+    float32 CalculateDefaultPercentOfChildrenSum(ControlLayoutData& data, Vector2::eAxis axis);
+    float32 CalculateHorizontalFlowLayoutPercentOfChildrenSum(ControlLayoutData& data);
+    float32 CalculateVerticalFlowLayoutPercentOfChildrenSum(ControlLayoutData& data);
+    float32 CalculatePercentOfMaxChild(ControlLayoutData& data, Vector2::eAxis axis);
+    float32 CalculatePercentOfFirstChild(ControlLayoutData& data, Vector2::eAxis axis);
+    float32 CalculatePercentOfLastChild(ControlLayoutData& data, Vector2::eAxis axis);
+    float32 CalculatePercentOfContent(ControlLayoutData& data, Vector2::eAxis axis);
 
     void ApplySize(ControlLayoutData& data, float32 value, Vector2::eAxis axis);
     float32 GetSize(const ControlLayoutData& data, Vector2::eAxis axis);
