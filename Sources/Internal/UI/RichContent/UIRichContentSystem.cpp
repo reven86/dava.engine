@@ -145,6 +145,7 @@ public:
                 UIControl* img = new UIControl();
                 PrepareControl(img, true);
                 UIControlBackground* bg = img->GetOrCreateComponent<UIControlBackground>();
+                bg->SetDrawType(UIControlBackground::DRAW_STRETCH_BOTH);
                 bg->SetSprite(FilePath(src));
                 controls.emplace_back(img);
             }
