@@ -1998,7 +1998,7 @@ void StretchDrawData::GenerateTransformData()
 
     const uint32 size = uint32(vertices.size());
     for (uint32 index = 0; index < size; ++index)
-    {        
+    {
         transformedVertices[index] = vertices[index] * transformMatr;
 
         if (usePerPixelAccuracy)
