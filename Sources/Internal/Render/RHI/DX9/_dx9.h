@@ -21,6 +21,7 @@ void ScheduleDeviceReset();
 
 extern IDirect3D9* _D3D9;
 extern IDirect3DDevice9* _D3D9_Device;
+extern unsigned _D3D9_TargetCount;
 extern IDirect3DSurface9* _D3D9_BackBuf;
 extern IDirect3DSurface9* _D3D9_DepthBuf;
 extern UINT _D3D9_Adapter;

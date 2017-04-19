@@ -4,6 +4,7 @@
 #include <Debug/DVAssert.h>
 #include <FileSystem/KeyedArchive.h>
 #include <Logger/Logger.h>
+#include <Base/StaticSingleton.h>
 
 #include <Network/IChannel.h>
 #include <Network/NetworkCommon.h>
@@ -17,6 +18,37 @@ namespace DAVA
 {
 namespace AssetCache
 {
+namespace ConnectionDetails
+{
+/**
+    ControllerHolder allows to hold instances of ChannelListenerDispatcher on shared pointer.
+
+    supposed flow:
+    1. create instance of ChannelListenerDispatcher. Instance is holded by Connection object by shared pointer
+    2. register ChannelListenerDispatcher as a controller in netcore
+    3. add it to ControllersHolder. Now two objects are holding ChannelListenerDispatcher instance
+    4. remove controller, specify callback function ControllersHolder::RemoveController
+    5. delete Connection
+    6. as soon as controller is removed from netcore, callback RemoveController will be invoked, that will finally release ChannelListenerDispatcher object
+*/
+class ControllersHolder : public StaticSingleton<ControllersHolder>
+{
+public:
+    void AddController(Net::NetCore::TrackId controllerId, std::shared_ptr<Net::ChannelListenerDispatched>& controller)
+    {
+        controllers.emplace(controllerId, controller);
+    }
+
+    void RemoveController(Net::NetCore::TrackId controllerId)
+    {
+        controllers.erase(controllerId);
+    }
+
+private:
+    UnorderedMap<Net::NetCore::TrackId, std::shared_ptr<Net::ChannelListenerDispatched>> controllers;
+};
+}
+
 bool SendArchieve(Net::IChannel* channel, KeyedArchive* archieve)
 {
     DVASSERT(archieve && channel);
@@ -60,7 +92,7 @@ Connection::~Connection()
     listener = nullptr;
     if (Net::NetCore::INVALID_TRACK_ID != controllerId && Net::NetCore::Instance() != nullptr)
     {
-        DisconnectBlocked();
+        Disconnect();
     }
 }
 
@@ -87,6 +119,7 @@ bool Connection::Connect(Net::eNetworkRole role, Net::eTransportType transport, 
         controllerId = Net::NetCore::Instance()->CreateController(config, channelListenerDispatched.get(), timeoutMs);
         if (Net::NetCore::INVALID_TRACK_ID != controllerId)
         {
+            ConnectionDetails::ControllersHolder::Instance()->AddController(controllerId, channelListenerDispatched);
             return true;
         }
         else
@@ -100,6 +133,18 @@ bool Connection::Connect(Net::eNetworkRole role, Net::eTransportType transport, 
     }
 
     return false;
+}
+
+void Connection::Disconnect()
+{
+    DVASSERT(Net::NetCore::INVALID_TRACK_ID != controllerId);
+    DVASSERT(Net::NetCore::Instance() != nullptr);
+
+    listener = nullptr;
+
+    Function<void()> onDestroyedCallback = Bind(&ConnectionDetails::ControllersHolder::RemoveController, ConnectionDetails::ControllersHolder::Instance(), controllerId);
+    Net::NetCore::Instance()->DestroyController(controllerId, onDestroyedCallback);
+    controllerId = Net::NetCore::INVALID_TRACK_ID;
 }
 
 void Connection::DisconnectBlocked()

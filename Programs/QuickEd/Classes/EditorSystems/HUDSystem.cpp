@@ -1,5 +1,6 @@
-#include <numeric>
 #include "HUDSystem.h"
+
+#include "Modules/DocumentsModule/DocumentData.h"
 
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/PackageNode.h"
@@ -9,6 +10,9 @@
 
 #include "EditorSystems/HUDControls.h"
 #include "EditorSystems/KeyboardProxy.h"
+
+#include <TArc/Core/ContextAccessor.h>
+#include <TArc/Core/FieldBinder.h>
 
 #include <Base/BaseTypes.h>
 #include <UI/UIControl.h>
@@ -124,17 +128,17 @@ class HUDControl : public UIControl
     }
 };
 
-HUDSystem::HUDSystem(EditorSystemsManager* parent)
-    : BaseEditorSystem(parent)
+HUDSystem::HUDSystem(EditorSystemsManager* parent, DAVA::TArc::ContextAccessor* accessor)
+    : BaseEditorSystem(parent, accessor)
     , hudControl(new HUDControl())
     , sortedControlList(CompareByLCA)
 {
     hudControl->SetName(FastName("hudControl"));
     systemsManager->highlightNode.Connect(this, &HUDSystem::OnHighlightNode);
-    systemsManager->selectionChanged.Connect(this, &HUDSystem::OnSelectionChanged);
     systemsManager->magnetLinesChanged.Connect(this, &HUDSystem::OnMagnetLinesChanged);
-    systemsManager->packageChanged.Connect(this, &HUDSystem::OnPackageChanged);
     systemsManager->GetRootControl()->AddControl(hudControl.Get());
+
+    InitFieldBinder();
 
     PreferencesStorage::Instance()->RegisterPreferences(this);
 }
@@ -147,12 +151,26 @@ HUDSystem::~HUDSystem()
     PreferencesStorage::Instance()->UnregisterPreferences(this);
 }
 
-void HUDSystem::OnSelectionChanged(const SelectedNodes& selection)
+void HUDSystem::InitFieldBinder()
+{
+    using namespace DAVA;
+    using namespace DAVA::TArc;
+
+    fieldBinder.reset(new FieldBinder(accessor));
+    {
+        FieldDescriptor fieldDescr;
+        fieldDescr.type = ReflectedTypeDB::Get<DocumentData>();
+        fieldDescr.fieldName = FastName(DocumentData::selectionPropertyName);
+        fieldBinder->BindField(fieldDescr, MakeFunction(this, &HUDSystem::OnSelectionChanged));
+    }
+}
+
+void HUDSystem::OnSelectionChanged(const Any& selection)
 {
     sortedControlList.clear();
     hudMap.clear();
 
-    for (auto node : selection)
+    for (auto node : selection.Cast<SelectedNodes>(SelectedNodes()))
     {
         ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
         if (controlNode != nullptr)
@@ -510,11 +528,6 @@ void HUDSystem::ClearMagnetLines()
 {
     static const Vector<MagnetLineInfo> emptyVector;
     OnMagnetLinesChanged(emptyVector);
-}
-
-void HUDSystem::OnPackageChanged(PackageNode* package)
-{
-    OnHighlightNode(nullptr);
 }
 
 void HUDSystem::SetHUDEnabled(bool enabled)

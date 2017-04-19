@@ -45,6 +45,7 @@ public:
 
     void Connect(const String& ip, uint16 port);
     void Disconnect();
+    void DisconnectBlocked();
 
     bool ChannelIsOpened() const;
 
@@ -76,8 +77,7 @@ public:
 
 private:
     Dispatcher<Function<void()>>* dispatcher = nullptr;
-    Net::AddressResolver addressResolver;
-
+    std::shared_ptr<Net::AddressResolver> addressResolver;
     std::shared_ptr<Connection> netClient;
     DAVA::Net::IChannel* openedChannel = nullptr;
 

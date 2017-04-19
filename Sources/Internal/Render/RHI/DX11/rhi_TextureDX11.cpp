@@ -463,30 +463,25 @@ void SetToRHIVertex(Handle tex, uint32 unit_i, ID3D11DeviceContext* context)
     context->VSSetShaderResources(unit_i, 1, &(self->tex2d_srv));
 }
 
-void SetRenderTarget(Handle color, Handle depthstencil, uint32 level, TextureFace face, ID3D11DeviceContext* context)
-{
-    bool hasDepthStencil = depthstencil != InvalidHandle;
-    bool usesOwnDepthStencil = depthstencil != DefaultDepthBuffer;
-
-    TextureDX11_t* rt = TextureDX11Pool::Get(color);
-    TextureDX11_t* ds = (hasDepthStencil && usesOwnDepthStencil) ? TextureDX11Pool::Get(depthstencil) : nullptr;
-
-    if (rt->lastUnit != DAVA::InvalidIndex)
-    {
-        ID3D11ShaderResourceView* srv[] = { nullptr };
-        context->PSSetShaderResources(rt->lastUnit, countof(srv), srv);
-        rt->lastUnit = DAVA::InvalidIndex;
-    }
-
-    ID3D11RenderTargetView* rtv[] = { rt->getRenderTargetView(level, face) };
-    ID3D11DepthStencilView* dsv = (ds == nullptr) ? (usesOwnDepthStencil ? nullptr : dx11.depthStencilView.Get()) : ds->tex2d_dsv;
-
-    context->OMSetRenderTargets(countof(rtv), rtv, dsv);
-}
-
-void SetAsDepthStencil(Handle tex)
+void SetRenderTarget(Handle tex, uint32 level, TextureFace face, ID3D11DeviceContext* context, ID3D11RenderTargetView** view)
 {
     TextureDX11_t* self = TextureDX11Pool::Get(tex);
+
+    if (self->lastUnit != DAVA::InvalidIndex)
+    {
+        ID3D11ShaderResourceView* srv[1] = {};
+        context->PSSetShaderResources(self->lastUnit, 1, srv);
+        self->lastUnit = DAVA::InvalidIndex;
+    }
+
+    *view = self->getRenderTargetView(level, face);
+}
+
+void SetDepthStencil(Handle tex, ID3D11DepthStencilView** view)
+{
+    TextureDX11_t* self = TextureDX11Pool::Get(tex);
+
+    *view = self->tex2d_dsv;
 }
 
 Size2i Size(Handle tex)
