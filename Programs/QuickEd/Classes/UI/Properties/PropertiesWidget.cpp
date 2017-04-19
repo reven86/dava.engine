@@ -44,8 +44,13 @@ String GetPathFromIndex(QModelIndex index)
 
 PropertiesWidget::PropertiesWidget(QWidget* parent)
     : QDockWidget(parent)
+    , nodeUpdater(300)
 {
     setupUi(this);
+
+    nodeUpdater.SetUpdater(MakeFunction(this, &PropertiesWidget::UpdateModelInternal));
+    nodeUpdater.SetStopper([this]() { return selectedNode == nullptr; });
+
     propertiesModel = new PropertiesModel(treeView);
     propertiesItemsDelegate = new PropertiesTreeItemDelegate(this);
     treeView->setModel(propertiesModel);
@@ -74,11 +79,16 @@ PropertiesWidget::PropertiesWidget(QWidget* parent)
     UpdateModel(nullptr);
 }
 
-PropertiesWidget::~PropertiesWidget() = default;
+PropertiesWidget::~PropertiesWidget()
+{
+    nodeUpdater.Abort();
+}
 
 void PropertiesWidget::SetAccessor(DAVA::TArc::ContextAccessor* accessor_)
 {
     accessor = accessor_;
+    BindFields();
+
     propertiesModel->SetAccessor(accessor);
 }
 
@@ -298,12 +308,17 @@ void PropertiesWidget::UpdateModel(PackageBaseNode* node)
     {
         return;
     }
+    selectedNode = node;
+    nodeUpdater.Update();
+}
+
+void PropertiesWidget::UpdateModelInternal()
+{
     if (nullptr != selectedNode)
     {
         auto index = treeView->indexAt(QPoint(0, 0));
         lastTopIndexPath = GetPathFromIndex(index);
     }
-    selectedNode = node;
     propertiesModel->Reset(selectedNode);
     bool isControl = dynamic_cast<ControlNode*>(selectedNode) != nullptr;
     bool isStyle = dynamic_cast<StyleSheetNode*>(selectedNode) != nullptr;
@@ -312,8 +327,7 @@ void PropertiesWidget::UpdateModel(PackageBaseNode* node)
     addStyleSelectorAction->setEnabled(isStyle);
     removeAction->setEnabled(false);
 
-    //delay long time work with view
-    QMetaObject::invokeMethod(this, "OnModelUpdated", Qt::QueuedConnection);
+    OnModelUpdated();
 }
 
 void PropertiesWidget::UpdateActions()
@@ -348,6 +362,7 @@ void PropertiesWidget::ApplyExpanding()
 
 void PropertiesWidget::OnPackageChanged(const DAVA::Any& package)
 {
+    nodeUpdater.Abort();
     treeView->setEnabled(package.CanGet<PackageNode*>() && (package.Get<PackageNode*>() != nullptr));
 }
 

@@ -1,9 +1,12 @@
 #pragma once
 
-#include <QDockWidget>
-#include "Base/BaseTypes.h"
 #include "ui_PropertiesWidget.h"
 #include "EditorSystems/SelectionContainer.h"
+
+#include <QtTools/Updaters/ContinuousUpdater.h>
+#include <Base/BaseTypes.h>
+
+#include <QDockWidget>
 
 namespace DAVA
 {
@@ -54,6 +57,8 @@ private:
     QAction* CreateRemoveAction();
     QAction* CreateSeparator();
 
+    void UpdateModelInternal();
+
     void UpdateActions();
 
     void ApplyExpanding();
@@ -70,9 +75,9 @@ private:
     PropertiesModel* propertiesModel = nullptr;
     PropertiesTreeItemDelegate* propertiesItemsDelegate = nullptr;
 
-    DAVA::Map<DAVA::String, bool> itemsState;
+    ContinuousUpdater nodeUpdater;
 
-    SelectionContainer selectionContainer;
+    DAVA::Map<DAVA::String, bool> itemsState;
 
     DAVA::String lastTopIndexPath;
     PackageBaseNode* selectedNode = nullptr; //node used to build model
