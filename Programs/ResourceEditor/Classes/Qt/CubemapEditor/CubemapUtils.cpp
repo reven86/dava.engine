@@ -1,4 +1,4 @@
-#include "CUbemapEditor/CubemapUtils.h"
+#include "CubemapEditor/CubemapUtils.h"
 #include "Render/Texture.h"
 #include "Classes/Settings/SettingsManager.h"
 #include "Qt/Main/QtUtils.h"
