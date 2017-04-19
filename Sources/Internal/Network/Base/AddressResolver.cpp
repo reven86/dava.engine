@@ -82,6 +82,11 @@ void AddressResolver::Cancel()
 #endif
 }
 
+bool AddressResolver::IsActive() const
+{
+    return handle != nullptr;
+}
+
 void AddressResolver::DoCancel(uv_getaddrinfo_t* handle)
 {
 #if !defined(DAVA_NETWORK_DISABLE)
