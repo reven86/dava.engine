@@ -225,26 +225,29 @@ void UIControlSystem::Reset()
     SetScreen(nullptr);
 }
 
-void UIControlSystem::ManualUpdate(UIControl* control)
+void UIControlSystem::ForceUpdateControl(float32 timeElapsed, UIControl* control)
 {
+    DVASSERT(control != nullptr);
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::UI_UPDATE);
 
-    if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_UI_CONTROL_SYSTEM))
+    if (control == nullptr || !Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_UI_CONTROL_SYSTEM))
         return;
-
-    float32 timeElapsed = SystemTimer::GetFrameDelta();
 
     for (auto& system : systems)
     {
-        system->ManualProcess(timeElapsed, control);
+        system->ForceProcessControl(timeElapsed, control);
     }
 }
 
-void UIControlSystem::ManualRender(UIControl* control)
+void UIControlSystem::ForceDrawControl(UIControl* control)
 {
+    DVASSERT(control != nullptr);
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::UI_DRAW);
 
-    renderSystem->ManualRender(control);
+    if (control == nullptr)
+        return;
+
+    renderSystem->ForceRenderControl(control);
 }
 
 void UIControlSystem::ProcessScreenLogic()

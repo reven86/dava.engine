@@ -10,8 +10,8 @@
 
 namespace DAVA
 {
-UIRenderSystem::UIRenderSystem(RenderSystem2D* _renderSystem2D)
-    : renderSystem2D(_renderSystem2D)
+UIRenderSystem::UIRenderSystem(RenderSystem2D* renderSystem2D_)
+    : renderSystem2D(renderSystem2D_)
     , screenshoter(std::make_unique<UIScreenshoter>())
 {
     baseGeometricData.position = Vector2(0, 0);
@@ -68,11 +68,9 @@ void UIRenderSystem::Render()
     screenshoter->OnFrame();
 }
 
-void UIRenderSystem::ManualRender(UIControl* control)
+void UIRenderSystem::ForceRenderControl(UIControl* control)
 {
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::UI_RENDER_SYSTEM);
-    if (control == nullptr)
-        return;
 
     RenderControlHierarhy(control, baseGeometricData, nullptr);
 }
@@ -159,25 +157,25 @@ void UIRenderSystem::RenderControlHierarhy(UIControl* control, const UIGeometric
 
     if (control->GetDebugDraw())
     {
-        DebugDraw(control, drawData, unrotatedRect);
+        DebugRender(control, drawData, unrotatedRect);
     }
 }
 
-void UIRenderSystem::DebugDraw(UIControl* control, const UIGeometricData& geometricData, const Rect& unrotatedRect)
+void UIRenderSystem::DebugRender(UIControl* control, const UIGeometricData& geometricData, const Rect& unrotatedRect)
 {
     renderSystem2D->PushClip();
     renderSystem2D->RemoveClip();
-    DrawDebugRect(control, geometricData, false);
+    RenderDebugRect(control, geometricData, false);
     UIControl::eDebugDrawPivotMode drawMode = control->GetDrawPivotPointMode();
     if (drawMode != UIControl::DRAW_NEVER &&
         (drawMode != UIControl::DRAW_ONLY_IF_NONZERO || !control->GetPivotPoint().IsZero()))
     {
-        DrawPivotPoint(control, unrotatedRect);
+        RenderPivotPoint(control, unrotatedRect);
     }
     renderSystem2D->PopClip();
 }
 
-void UIRenderSystem::DrawDebugRect(UIControl* control, const UIGeometricData& gd, bool useAlpha)
+void UIRenderSystem::RenderDebugRect(UIControl* control, const UIGeometricData& gd, bool useAlpha)
 {
     auto drawColor = control->GetDebugDrawColor();
     if (useAlpha)
@@ -198,7 +196,7 @@ void UIRenderSystem::DrawDebugRect(UIControl* control, const UIGeometricData& gd
     }
 }
 
-void UIRenderSystem::DrawPivotPoint(UIControl* control, const Rect& drawRect)
+void UIRenderSystem::RenderPivotPoint(UIControl* control, const Rect& drawRect)
 {
     static const float32 PIVOT_POINT_MARK_RADIUS = 10.0f;
     static const float32 PIVOT_POINT_MARK_HALF_LINE_LENGTH = 13.0f;

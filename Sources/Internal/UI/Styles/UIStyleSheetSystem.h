@@ -37,9 +37,6 @@ public:
     UIStyleSheetSystem();
     ~UIStyleSheetSystem() override;
 
-    void Process(float32 elapsedTime) override;
-    void ManualProcess(float32 elapsedTime, UIControl* control) override;
-
     void SetCurrentScreen(const RefPtr<UIScreen>& screen);
     void SetCurrentScreenTransition(const RefPtr<UIScreenTransition>& screenTransition);
     void SetPopupContainer(const RefPtr<UIControl>& popupContainer);
@@ -60,8 +57,12 @@ public:
 
     void DebugControl(UIControl* control, UIStyleSheetProcessDebugData* debugData);
     void ProcessControl(UIControl* control, bool styleSheetListChanged = false); //DON'T USE IT!
+
 private:
-    void ProcessControl_(UIControl* control, int32 distanceFromDirty, bool styleSheetListChanged, bool recursively, bool dryRun, UIStyleSheetProcessDebugData* debugData);
+    void Process(float32 elapsedTime) override;
+    void ForceProcessControl(float32 elapsedTime, UIControl* control) override;
+
+    void ProcessControlImpl(UIControl* control, int32 distanceFromDirty, bool styleSheetListChanged, bool recursively, bool dryRun, UIStyleSheetProcessDebugData* debugData);
     void ProcessControlHierarhy(UIControl* root);
 
     bool StyleSheetMatchesControl(const UIStyleSheet* styleSheet, const UIControl* control);

@@ -21,9 +21,6 @@ public:
     UILayoutSystem();
     ~UILayoutSystem() override;
 
-    void Process(float32 elapsedTime) override;
-    void ManualProcess(float32 elapsedTime, UIControl* control) override;
-
     void SetCurrentScreen(const RefPtr<UIScreen>& screen);
     void SetCurrentScreenTransition(const RefPtr<UIScreenTransition>& screenTransition);
     void SetPopupContainer(const RefPtr<UIControl>& popupContainer);
@@ -40,6 +37,9 @@ public:
     void ManualApplyLayout(UIControl* control); //DON'T USE IT!
 
 private:
+    void Process(float32 elapsedTime) override;
+    void ForceProcessControl(float32 elapsedTime, UIControl* control) override;
+
     void ApplyLayout(UIControl* control);
     void ApplyLayoutNonRecursive(UIControl* control);
 

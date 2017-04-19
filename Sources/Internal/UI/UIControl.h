@@ -976,9 +976,8 @@ private:
     List<UIControl*> children;
 
     DAVA_DEPRECATED(bool isUpdated = false);
-    DAVA_DEPRECATED(void SystemUpdate(float32 timeElapsed));
     // Need for old implementation of SystemUpdate.
-    friend class UIScreenshoter;
+    friend class UIUpdateSystem;
 
 public:
     //TODO: store geometric data in UIGeometricData

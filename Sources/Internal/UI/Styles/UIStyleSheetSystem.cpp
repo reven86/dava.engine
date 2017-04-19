@@ -127,10 +127,10 @@ void UIStyleSheetSystem::Process(float32 elapsedTime)
     }
 }
 
-void UIStyleSheetSystem::ManualProcess(float32 elapsedTime, UIControl* control)
+void UIStyleSheetSystem::ForceProcessControl(float32 elapsedTime, UIControl* control)
 {
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::UI_STYLE_SHEET_SYSTEM);
-    if (control == nullptr || !(needUpdate || dirty))
+    if (!needUpdate && !dirty)
         return;
 
     ProcessControlHierarhy(control);
@@ -156,7 +156,7 @@ void UIStyleSheetSystem::ProcessControl(UIControl* control, bool styleSheetListC
 #if STYLESHEET_STATS
     uint64 startTime = SystemTimer::GetUs();
 #endif
-    ProcessControl_(control, 0, styleSheetListChanged, true, false, nullptr);
+    ProcessControlImpl(control, 0, styleSheetListChanged, true, false, nullptr);
 #if STYLESHEET_STATS
     statsTime += SystemTimer::GetUs() - startTime;
 #endif
@@ -164,10 +164,10 @@ void UIStyleSheetSystem::ProcessControl(UIControl* control, bool styleSheetListC
 
 void UIStyleSheetSystem::DebugControl(UIControl* control, UIStyleSheetProcessDebugData* debugData)
 {
-    ProcessControl_(control, 0, true, false, true, debugData);
+    ProcessControlImpl(control, 0, true, false, true, debugData);
 }
 
-void UIStyleSheetSystem::ProcessControl_(UIControl* control, int32 distanceFromDirty, bool styleSheetListChanged, bool recursively, bool dryRun, UIStyleSheetProcessDebugData* debugData)
+void UIStyleSheetSystem::ProcessControlImpl(UIControl* control, int32 distanceFromDirty, bool styleSheetListChanged, bool recursively, bool dryRun, UIStyleSheetProcessDebugData* debugData)
 {
     UIControlPackageContext* packageContext = control->GetPackageContext();
     const UIStyleSheetPropertyDataBase* propertyDB = UIStyleSheetPropertyDataBase::Instance();
@@ -265,7 +265,7 @@ void UIStyleSheetSystem::ProcessControl_(UIControl* control, int32 distanceFromD
     {
         for (UIControl* child : control->GetChildren())
         {
-            ProcessControl_(child, distanceFromDirty + 1, styleSheetListChanged, true, dryRun, debugData);
+            ProcessControlImpl(child, distanceFromDirty + 1, styleSheetListChanged, true, dryRun, debugData);
         }
     }
 }

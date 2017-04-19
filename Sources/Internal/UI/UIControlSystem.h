@@ -162,10 +162,22 @@ public:
     void Update();
 
     /**
+     \brief Calls update logic for specific control. Used to make screenshoots.
+        Not recommended to use in common code.
+     */
+    void ForceUpdateControl(float32 timeElapsed, UIControl* control);
+
+    /**
 	 \brief Calls every frame by the system for draw.
 		Draws all controls hierarchy to the screen.
 	 */
     void Draw();
+
+    /**
+     \brief Calls draw logic for specific control. Used to make screenshoots.
+        Not recommended to use in common code.
+     */
+    void ForceDrawControl(UIControl* control);
 
     //	void SetTransitionType(int newTransitionType);
 
@@ -294,8 +306,6 @@ public:
 
     void SetDoubleTapSettings(float32 time, float32 inch);
 
-    void ManualUpdate(UIControl* control);
-    void ManualRender(UIControl* control);
     VirtualCoordinatesSystem* vcs = nullptr; // TODO: Should be completely removed in favor of direct DAVA::Window methods
 
 private:

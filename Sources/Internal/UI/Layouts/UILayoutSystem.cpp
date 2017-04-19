@@ -54,10 +54,11 @@ void UILayoutSystem::Process(float32 elapsedTime)
     }
 }
 
-void UILayoutSystem::ManualProcess(float32 elapsedTime, UIControl* control)
+void UILayoutSystem::ForceProcessControl(float32 elapsedTime, UIControl* control)
 {
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::UI_LAYOUT_SYSTEM);
-    if (control == nullptr || !(needUpdate || dirty))
+
+    if (!needUpdate && !dirty)
         return;
 
     ProcessControlHierarhy(control);

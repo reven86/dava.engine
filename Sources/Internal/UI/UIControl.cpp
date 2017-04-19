@@ -967,40 +967,6 @@ bool UIControl::IsVisible() const
     return (viewState == eViewState::VISIBLE);
 }
 
-void UIControl::SystemUpdate(float32 timeElapsed)
-{
-    if ((GetAvailableComponentFlags() & MAKE_COMPONENT_MASK(UIComponent::UPDATE_COMPONENT)) != 0)
-    {
-        Update(timeElapsed);
-    }
-
-    isUpdated = true;
-    List<UIControl*>::iterator it = children.begin();
-    for (; it != children.end(); ++it)
-    {
-        (*it)->isUpdated = false;
-    }
-
-    it = children.begin();
-    isIteratorCorrupted = false;
-    while (it != children.end())
-    {
-        RefPtr<UIControl> child;
-        child = *it;
-        if (!child->isUpdated)
-        {
-            child->SystemUpdate(timeElapsed);
-            if (isIteratorCorrupted)
-            {
-                it = children.begin();
-                isIteratorCorrupted = false;
-                continue;
-            }
-        }
-        ++it;
-    }
-}
-
 void UIControl::SetParentColor(const Color& parentColor)
 {
     UIControlBackground* bg = GetComponent<UIControlBackground>();
