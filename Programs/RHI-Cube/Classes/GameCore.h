@@ -49,7 +49,8 @@ public:
 protected:
     void SetupTriangle();
     void SetupCube();
-    void SetupRT();
+    void rtInit();
+    void mrtInit();
 
     void SetupInstancedCube();
     void DrawInstancedCube();
@@ -60,6 +61,7 @@ protected:
     void manticoreDraw();
     void rhiDraw();
     void rtDraw();
+    void mrtDraw();
     void visibilityTestDraw();
 
     static void ScreenShotCallback(uint32 width, uint32 height, const void* rgba);
@@ -115,6 +117,7 @@ protected:
     Object triangle;
 
     Object cube;
+    Object cube_mrt;
     uint64 cube_t0;
     float cube_angle;
 
@@ -123,8 +126,14 @@ protected:
     float icube_angle;
 
     Object rtQuad;
-    rhi::Packet rtQuadBatch;
-    rhi::Handle rtColor;
+    rhi::Packet rtQuadBatch0;
+    rhi::Packet rtQuadBatch1;
+    rhi::Packet rtQuadBatch2;
+    rhi::Packet rtQuadBatch3;
+    rhi::Handle rtColor0;
+    rhi::Handle rtColor1;
+    rhi::Handle rtColor2;
+    rhi::Handle rtColor3;
     rhi::Handle rtDepthStencil;
 
     struct Tank

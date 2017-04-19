@@ -509,35 +509,43 @@ void CommandBufferDX9_t::Execute()
             if (isFirstInPass)
             {
                 _D3D9_Device->SetRenderState(D3DRS_SCISSORTESTENABLE, FALSE);
-
-                const RenderPassConfig::ColorBuffer& color0 = passCfg.colorBuffer[0];
-                if ((color0.texture != rhi::InvalidHandle) || passCfg.UsingMSAA())
+                _D3D9_TargetCount = 0;
+                for (unsigned i = 0; i != countof(passCfg.colorBuffer); ++i)
                 {
-                    DVASSERT(_D3D9_BackBuf == nullptr);
-                    _D3D9_Device->GetRenderTarget(0, &_D3D9_BackBuf);
-
-                    Handle targetTexture = color0.texture;
-                    if (passCfg.UsingMSAA())
+                    if (passCfg.colorBuffer[i].texture != rhi::InvalidHandle || passCfg.UsingMSAA())
                     {
-                        DVASSERT(color0.multisampleTexture != InvalidHandle);
-                        targetTexture = color0.multisampleTexture;
+                        if (i == 0)
+                        {
+                            DVASSERT(_D3D9_BackBuf == nullptr);
+                            _D3D9_Device->GetRenderTarget(0, &_D3D9_BackBuf);
+
+                            if (passCfg.UsingMSAA())
+                                TextureDX9::SetAsRenderTarget(passCfg.colorBuffer[i].multisampleTexture, i);
+                        }
+
+                        if (!passCfg.UsingMSAA())
+                            TextureDX9::SetAsRenderTarget(passCfg.colorBuffer[i].texture, i);
+                        ++_D3D9_TargetCount;
                     }
-                    TextureDX9::SetAsRenderTarget(targetTexture);
+
+                    if (passCfg.colorBuffer[i].texture == rhi::InvalidHandle && i == 0)
+                    {
+                        _D3D9_TargetCount = 1;
+                        break;
+                    }
                 }
 
-                bool renderToDepth = (passCfg.depthStencilBuffer.texture != rhi::InvalidHandle) && (passCfg.depthStencilBuffer.texture != DefaultDepthBuffer);
-                if (renderToDepth || passCfg.UsingMSAA())
+                if ((passCfg.depthStencilBuffer.texture != rhi::InvalidHandle && passCfg.depthStencilBuffer.texture != rhi::DefaultDepthBuffer)
+                    || passCfg.UsingMSAA()
+                    )
                 {
                     DVASSERT(_D3D9_DepthBuf == nullptr);
                     _D3D9_Device->GetDepthStencilSurface(&_D3D9_DepthBuf);
 
-                    Handle targetDepthStencil = passCfg.depthStencilBuffer.texture;
                     if (passCfg.UsingMSAA())
-                    {
-                        DVASSERT(passCfg.depthStencilBuffer.multisampleTexture != InvalidHandle);
-                        targetDepthStencil = passCfg.depthStencilBuffer.multisampleTexture;
-                    }
-                    TextureDX9::SetAsDepthStencil(targetDepthStencil);
+                        TextureDX9::SetAsDepthStencil(passCfg.depthStencilBuffer.multisampleTexture);
+                    else
+                        TextureDX9::SetAsDepthStencil(passCfg.depthStencilBuffer.texture);
                 }
 
                 IDirect3DSurface9* rt = nullptr;
@@ -596,14 +604,10 @@ void CommandBufferDX9_t::Execute()
 
                 DX9_CALL(_D3D9_Device->EndScene(), "EndScene");
 
-                if (passCfg.colorBuffer[0].storeAction == rhi::STOREACTION_RESOLVE)
+                for (unsigned t = 0; t != MAX_RENDER_TARGET_COUNT; ++t)
                 {
-                    TextureDX9::ResolveMultisampling(passCfg.colorBuffer[0].multisampleTexture, passCfg.colorBuffer[0].texture);
-                }
-
-                if (passCfg.colorBuffer[1].storeAction == rhi::STOREACTION_RESOLVE)
-                {
-                    TextureDX9::ResolveMultisampling(passCfg.colorBuffer[1].multisampleTexture, passCfg.colorBuffer[1].texture);
+                    if (passCfg.colorBuffer[t].storeAction == rhi::STOREACTION_RESOLVE)
+                        TextureDX9::ResolveMultisampling(passCfg.colorBuffer[t].multisampleTexture, passCfg.colorBuffer[t].texture);
                 }
 
                 if (_D3D9_BackBuf)
@@ -618,6 +622,10 @@ void CommandBufferDX9_t::Execute()
                     _D3D9_DepthBuf->Release();
                     _D3D9_DepthBuf = nullptr;
                 }
+
+                for (unsigned i = 1; i != _D3D9_TargetCount; ++i)
+                    _D3D9_Device->SetRenderTarget(i, NULL);
+                _D3D9_TargetCount = 1;
             }
         }
         break;
