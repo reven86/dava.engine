@@ -9,6 +9,8 @@ set( HPP_FILES *.h
     Scroll/*.h
     Sound/*.h
     Update/*.h
+    Formula/*.h
+    Formula/Private/*.h
     RichContent/*.h
     )
 
@@ -23,6 +25,8 @@ set( CPP_FILES *.cpp
     Scroll/*.cpp
     Sound/*.cpp
     Update/*.cpp
+    Formula/*.cpp
+    Formula/Private/*.cpp
     RichContent/*.cpp
     )
 
