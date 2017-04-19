@@ -18,7 +18,6 @@ struct DLCDownloader::Task
     TaskStatus status;
     Set<CURL*> easyHandles;
     std::unique_ptr<IWriter> defaultWriter;
-    bool needRemove = false;
 };
 
 class DLCDownloaderImpl : public DLCDownloader
@@ -45,15 +44,18 @@ public:
     // wait for task status = finished
     void WaitTask(Task* task) override;
 
-    const TaskInfo* GetTaskInfo(Task* task) override;
-    TaskStatus GetTaskStatus(Task* task) override;
+    const TaskInfo& GetTaskInfo(Task* task) override;
+    const TaskStatus& GetTaskStatus(Task* task) override;
 
     void SetHints(const Hints& h) override;
 
 private:
     void Initialize();
     void Deinitialize();
-    bool TakeOneNewTaskFromQueue();
+    bool TakeNewTaskFromInputList();
+    void SignalOnFinishedWaitingTasks();
+    void AddNewTasks(int& numOfAddedTasks);
+    void ProcessMessagesFromMulti(int& numOfAddedTasks);
     CURL* CurlCreateHandle();
     void CurlDeleteHandle(CURL* easy);
     void SetupFullDownload(Task* justAddedTask);
@@ -64,9 +66,20 @@ private:
     void DeleteTask(Task* task);
     void RemoveDeletedTasks();
     Task* FindJustEddedTask();
+    int CurlPerform();
 
-    List<Task*> taskQueue;
-    Mutex mutexTaskQueue; // to protect access to taskQueue
+    struct WaitingDescTask
+    {
+        Task* task = nullptr;
+        Semaphore* semaphore = nullptr;
+    };
+
+    List<Task*> inputList;
+    Mutex mutexTaskList; // to protect access to taskQueue
+    List<WaitingDescTask> waitingTaskList;
+    Mutex mutexWaitingList;
+    List<Task*> removedList;
+    Mutex mutexRemovedList;
 
     // [start] next variables used only from DownloadThreadFunc TODO move in local variables
     UnorderedMap<CURL*, Task*> taskMap;
@@ -76,8 +89,6 @@ private:
     // [finish] variables
 
     Semaphore downloadSem; // to resume download thread
-    Atomic<int> numOfNewTasks;
-    Atomic<int> numOfTaskToRemove;
 
     Hints hints; // read only params
 };

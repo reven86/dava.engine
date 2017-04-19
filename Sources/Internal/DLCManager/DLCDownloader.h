@@ -2,6 +2,7 @@
 
 #include "Base/BaseTypes.h"
 #include "FileSystem/FilePath.h"
+#include "Concurrency/Atomic.h"
 
 namespace DAVA
 {
@@ -12,7 +13,7 @@ public:
 
     struct Hints
     {
-        size_t numOfMaxEasyHandles = 128;
+        int32 numOfMaxEasyHandles = 128;
     };
 
     enum class TaskState
@@ -57,16 +58,20 @@ public:
     {
         int32 curlErr = 0; // CURLE_OK == 0
         int32 curlMErr = 0; // CURLM_OK == 0
+        int32 fileErrno = 0;
         const char* curlEasyStrErr = nullptr; // see curl_easy_strerr
     };
 
     struct TaskStatus
     {
-        int32 fileErrno = 0;
-        TaskState state = TaskState::JustAdded;
+        Atomic<TaskState> state = TaskState::JustAdded;
         TaskError error;
         uint64 sizeTotal = 0;
         uint64 sizeDownloaded = 0;
+
+        TaskStatus();
+        TaskStatus(const TaskStatus& other);
+        TaskStatus& operator=(const TaskStatus& other);
     };
 
     struct Task;
@@ -86,8 +91,8 @@ public:
     // wait for task status == finished
     virtual void WaitTask(Task* task) = 0;
 
-    virtual const TaskInfo* GetTaskInfo(Task* task) = 0;
-    virtual TaskStatus GetTaskStatus(Task* task) = 0;
+    virtual const TaskInfo& GetTaskInfo(Task* task) = 0;
+    virtual const TaskStatus& GetTaskStatus(Task* task) = 0;
 
     virtual void SetHints(const Hints& h) = 0;
 };

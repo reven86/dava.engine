@@ -59,6 +59,25 @@ private:
     File* f = nullptr;
 };
 
+DLCDownloader::TaskStatus::TaskStatus() = default;
+
+DLCDownloader::TaskStatus::TaskStatus(const TaskStatus& other)
+    : state(other.state.Get())
+    , error(other.error)
+    , sizeTotal(other.sizeTotal)
+    , sizeDownloaded(other.sizeDownloaded)
+{
+}
+
+DLCDownloader::TaskStatus& DLCDownloader::TaskStatus::operator=(const TaskStatus& other)
+{
+    state = other.state.Get();
+    error = other.error;
+    sizeTotal = other.sizeTotal;
+    sizeDownloaded = other.sizeDownloaded;
+    return *this;
+}
+
 void DLCDownloaderImpl::Initialize()
 {
     if (!CurlDownloader::isCURLInit && CURLE_OK != curl_global_init(CURL_GLOBAL_ALL))
@@ -138,16 +157,13 @@ DLCDownloader::Task* DLCDownloaderImpl::StartTask(const String& srcUrl,
     auto& state = task->status;
     state.state = TaskState::JustAdded;
     state.error = TaskError();
-    state.fileErrno = 0;
     state.sizeDownloaded = 0;
     state.sizeTotal = info.rangeSize;
 
     {
-        LockGuard<Mutex> lock(mutexTaskQueue);
-        taskQueue.push_back(task);
+        LockGuard<Mutex> lock(mutexTaskList);
+        inputList.push_back(task);
     }
-
-    ++numOfNewTasks;
 
     downloadSem.Post(1);
 
@@ -159,47 +175,45 @@ void DLCDownloaderImpl::RemoveTask(Task* task)
     DVASSERT(task);
     if (task != nullptr)
     {
-        DVASSERT(task->needRemove == false); // double remove
-        if (task->needRemove == false)
-        {
-            task->needRemove = true;
-            ++numOfTaskToRemove;
-        }
+        LockGuard<Mutex> lock(mutexRemovedList);
+        removedList.push_back(task);
     }
 }
 
 void DLCDownloaderImpl::WaitTask(Task* task)
 {
-    while (true)
+    DVASSERT(task != nullptr);
+    if (task->status.state != TaskState::Finished)
     {
-        TaskStatus status = GetTaskStatus(task);
-        if (status.state == TaskState::Finished)
+        Semaphore semaphore;
+
+        WaitingDescTask wt;
+        wt.task = task;
+        wt.semaphore = &semaphore;
+
         {
-            break;
+            LockGuard<Mutex> lock(mutexWaitingList);
+            waitingTaskList.push_back(wt);
         }
-        Thread::Sleep(10); // TODO reimplement it!
+        // if download thread waiting for signal (all downloaded already)
+        downloadSem.Post();
+        semaphore.Wait();
     }
 }
 
-const DLCDownloader::TaskInfo* DLCDownloaderImpl::GetTaskInfo(Task* task)
+const DLCDownloader::TaskInfo& DLCDownloaderImpl::GetTaskInfo(Task* task)
 {
-    return &task->info;
+    return task->info;
 }
 
-DLCDownloader::TaskStatus DLCDownloaderImpl::GetTaskStatus(Task* task)
+const DLCDownloader::TaskStatus& DLCDownloaderImpl::GetTaskStatus(Task* task)
 {
-    TaskStatus status;
-    {
-        LockGuard<Mutex> lock(mutexTaskQueue);
-        status = task->status;
-    }
-
-    return status;
+    return task->status;
 }
 
 void DLCDownloaderImpl::SetHints(const Hints& h)
 {
-    DVASSERT(numOfNewTasks == 0);
+    DVASSERT(inputList.empty());
     Deinitialize();
     hints = h;
     Initialize();
@@ -207,31 +221,35 @@ void DLCDownloaderImpl::SetHints(const Hints& h)
 
 void DLCDownloaderImpl::RemoveDeletedTasks()
 {
-    taskQueue.remove_if([this](Task* task) {
-        if (task->needRemove)
-        {
+    if (!removedList.empty())
+    {
+        LockGuard<Mutex> lock(mutexRemovedList);
+        removedList.remove_if([this](Task* task) {
+
             if (task->status.state == TaskState::JustAdded)
             {
-                --numOfNewTasks;
-                DVASSERT(numOfNewTasks >= 0);
+                LockGuard<Mutex> lock2(mutexTaskList);
+                auto it = find(begin(inputList), end(inputList), task);
+                if (it != end(inputList))
+                {
+                    inputList.erase(it);
+                }
             }
             DeleteTask(task);
             return true;
-        }
-        return false;
-    });
+        });
+    }
 }
 
 DLCDownloader::Task* DLCDownloaderImpl::FindJustEddedTask()
 {
-    for (auto task : taskQueue)
+    if (inputList.empty())
     {
-        if (task->status.state == TaskState::JustAdded)
-        {
-            return task;
-        }
+        return nullptr;
     }
-    return nullptr;
+    Task* task = inputList.front();
+    inputList.pop_front();
+    return task;
 }
 
 CURL* DLCDownloaderImpl::CurlCreateHandle()
@@ -339,8 +357,6 @@ void DLCDownloaderImpl::DeleteTask(Task* task)
     }
 
     delete task;
-    --numOfTaskToRemove;
-    DVASSERT(numOfTaskToRemove >= 0);
 }
 
 void DLCDownloaderImpl::StoreHandle(Task* justAddedTask, CURL* easyHandle)
@@ -470,17 +486,9 @@ void DLCDownloaderImpl::SetupGetSizeDownload(Task* justAddedTask)
     DVASSERT(CURLE_OK == code);
 }
 
-// return number of still running handles
-static size_t CurlPerform(CURLM* multiHandle);
-
-bool DLCDownloaderImpl::TakeOneNewTaskFromQueue()
+bool DLCDownloaderImpl::TakeNewTaskFromInputList()
 {
-    Task* justAddedTask = nullptr;
-
-    {
-        LockGuard<Mutex> lock(mutexTaskQueue);
-        justAddedTask = FindJustEddedTask();
-    }
+    Task* justAddedTask = FindJustEddedTask();
 
     if (justAddedTask != nullptr)
     {
@@ -507,6 +515,100 @@ bool DLCDownloaderImpl::TakeOneNewTaskFromQueue()
     return justAddedTask != nullptr;
 }
 
+void DLCDownloaderImpl::SignalOnFinishedWaitingTasks()
+{
+    if (!waitingTaskList.empty())
+    {
+        LockGuard<Mutex> lock(mutexWaitingList);
+        waitingTaskList.remove_if([this](WaitingDescTask& wt) {
+            DVASSERT(wt.task != nullptr);
+            if (wt.task->status.state == TaskState::Finished)
+            {
+                DVASSERT(wt.semaphore != nullptr);
+                wt.semaphore->Post();
+                return true;
+            }
+            return false;
+        });
+    }
+}
+
+void DLCDownloaderImpl::AddNewTasks(int& numOfAddedTasks)
+{
+    if (!inputList.empty() && numOfAddedTasks < hints.numOfMaxEasyHandles)
+    {
+        LockGuard<Mutex> lock(mutexTaskList);
+        while (!inputList.empty() && numOfAddedTasks < hints.numOfMaxEasyHandles)
+        {
+            bool justAdded = TakeNewTaskFromInputList();
+            if (!justAdded)
+            {
+                break; // no more new tasks
+            }
+            ++numOfAddedTasks;
+        }
+    }
+}
+
+void DLCDownloaderImpl::ProcessMessagesFromMulti(int& numOfAddedTasks)
+{
+    CURLMsg* curlMsg = nullptr;
+
+    do
+    {
+        int msgq = 0;
+        curlMsg = curl_multi_info_read(multiHandle, &msgq);
+        if (curlMsg && (curlMsg->msg == CURLMSG_DONE))
+        {
+            CURL* easyHandle = curlMsg->easy_handle;
+
+            auto it = taskMap.find(easyHandle);
+            DVASSERT(it != end(taskMap));
+
+            Task* finishedTask = it->second;
+
+            taskMap.erase(it);
+            finishedTask->status.error.curlErr = curlMsg->data.result;
+
+            {
+                float64 sizeToDownload = 0.0; // curl need double! do not change https://curl.haxx.se/libcurl/c/CURLINFO_CONTENT_LENGTH_DOWNLOAD.html
+                CURLcode code = curl_easy_getinfo(easyHandle, CURLINFO_CONTENT_LENGTH_DOWNLOAD, &sizeToDownload);
+                DVASSERT(CURLE_OK == code);
+                finishedTask->status.sizeDownloaded = static_cast<uint64>(sizeToDownload);
+                if (finishedTask->info.type == TaskType::SIZE)
+                {
+                    finishedTask->status.sizeTotal = finishedTask->status.sizeDownloaded;
+                }
+            }
+            if (curlMsg->data.result != CURLE_OK)
+            {
+                if (curlMsg->data.result == CURLE_PARTIAL_FILE && finishedTask->status.sizeDownloaded == finishedTask->info.rangeSize)
+                {
+                    // all good
+                }
+                else
+                {
+                    const char* errStr = curl_easy_strerror(curlMsg->data.result);
+                    Logger::Error("%s", errStr);
+                    DVASSERT(false); // error downloading
+                }
+            }
+
+            CURLMcode code = curl_multi_remove_handle(multiHandle, easyHandle);
+            DVASSERT(CURLM_OK == code);
+            CurlDeleteHandle(easyHandle);
+
+            finishedTask->easyHandles.erase(easyHandle);
+            if (finishedTask->easyHandles.empty())
+            {
+                finishedTask->defaultWriter.reset();
+                finishedTask->status.state = TaskState::Finished;
+                --numOfAddedTasks;
+            }
+        }
+    } while (curlMsg);
+}
+
 void DLCDownloaderImpl::DownloadThreadFunc()
 {
     Thread* currentThread = Thread::Current();
@@ -515,8 +617,7 @@ void DLCDownloaderImpl::DownloadThreadFunc()
     downlodThreadId = currentThread->GetId();
 
     bool stillRuning = false;
-    int numOfRunningHandles = 0;
-    int numOfAddedTasks = 0;
+    int numOfRunningTasks = 0;
 
     while (!currentThread->IsCancelling())
     {
@@ -526,100 +627,25 @@ void DLCDownloaderImpl::DownloadThreadFunc()
             stillRuning = true;
         }
 
-        if (numOfTaskToRemove > 0)
-        {
-            LockGuard<Mutex> lock(mutexTaskQueue);
-            RemoveDeletedTasks();
-        }
+        SignalOnFinishedWaitingTasks();
 
-        int max = static_cast<int>(hints.numOfMaxEasyHandles);
-        if (numOfNewTasks > 0 && numOfAddedTasks < max)
-        {
-            while (numOfAddedTasks < max)
-            {
-                bool justAdded = TakeOneNewTaskFromQueue();
-                if (!justAdded)
-                {
-                    break; // no more new tasks
-                }
-                ++numOfAddedTasks;
-                --numOfNewTasks;
-            }
-        }
+        RemoveDeletedTasks();
+
+        AddNewTasks(numOfRunningTasks);
 
         while (stillRuning)
         {
-            numOfRunningHandles = CurlPerform(multiHandle);
+            stillRuning = CurlPerform() != 0;
 
-            if (numOfRunningHandles == 0)
-            {
-                stillRuning = false;
-            }
-
-            CURLMsg* curlMsg = nullptr;
-
-            do
-            {
-                int msgq = 0;
-                curlMsg = curl_multi_info_read(multiHandle, &msgq);
-                if (curlMsg && (curlMsg->msg == CURLMSG_DONE))
-                {
-                    CURL* easyHandle = curlMsg->easy_handle;
-
-                    auto it = taskMap.find(easyHandle);
-                    DVASSERT(it != end(taskMap));
-
-                    Task* finishedTask = it->second;
-
-                    taskMap.erase(it);
-                    finishedTask->status.error.curlErr = curlMsg->data.result;
-
-                    {
-                        float64 sizeToDownload = 0.0; // curl need double! do not change https://curl.haxx.se/libcurl/c/CURLINFO_CONTENT_LENGTH_DOWNLOAD.html
-                        CURLcode code = curl_easy_getinfo(easyHandle, CURLINFO_CONTENT_LENGTH_DOWNLOAD, &sizeToDownload);
-                        DVASSERT(CURLE_OK == code);
-                        finishedTask->status.sizeDownloaded = static_cast<uint64>(sizeToDownload);
-                        if (finishedTask->info.type == TaskType::SIZE)
-                        {
-                            finishedTask->status.sizeTotal = finishedTask->status.sizeDownloaded;
-                        }
-                    }
-                    if (curlMsg->data.result != CURLE_OK)
-                    {
-                        if (curlMsg->data.result == CURLE_PARTIAL_FILE && finishedTask->status.sizeDownloaded == finishedTask->info.rangeSize)
-                        {
-                            // all good
-                        }
-                        else
-                        {
-                            const char* errStr = curl_easy_strerror(curlMsg->data.result);
-                            Logger::Error("%s", errStr);
-                            DVASSERT(false); // error downloading
-                        }
-                    }
-
-                    finishedTask->easyHandles.erase(easyHandle);
-                    if (finishedTask->easyHandles.empty())
-                    {
-                        finishedTask->defaultWriter.reset();
-                        finishedTask->status.state = TaskState::Finished;
-                        --numOfAddedTasks;
-                    }
-
-                    CURLMcode code = curl_multi_remove_handle(multiHandle, easyHandle);
-                    DVASSERT(CURLM_OK == code);
-                    CurlDeleteHandle(easyHandle);
-                }
-            } while (curlMsg);
+            ProcessMessagesFromMulti(numOfRunningTasks);
 
             if (stillRuning)
             {
-                if (numOfAddedTasks < static_cast<int>(hints.numOfMaxEasyHandles))
+                if (!inputList.empty() && numOfRunningTasks < hints.numOfMaxEasyHandles)
                 {
-                    if (numOfNewTasks > 0)
-                    {
-                        break; // get more new task to do it simultaneously
-                    }
+                    // get more new task to do it simultaneously
+                    // and check removed and waiting tasks
+                    break;
                 }
             }
         }
@@ -628,7 +654,7 @@ void DLCDownloaderImpl::DownloadThreadFunc()
 
 // from https://curl.haxx.se/libcurl/c/curl_multi_perform.html
 // from https://curl.haxx.se/libcurl/c/curl_multi_wait.html
-static size_t CurlPerform(CURLM* multiHandle)
+int DLCDownloaderImpl::CurlPerform()
 {
     int stillRunning = 0;
 
@@ -648,7 +674,7 @@ static size_t CurlPerform(CURLM* multiHandle)
     }
 
     // if there are still transfers, loop!
-    return static_cast<size_t>(stillRunning);
+    return stillRunning;
 }
 
 } // end namespace DAVA
