@@ -522,9 +522,11 @@ struct UIManager::Impl : public QObject
     void InitNewWindow(const WindowKey& windowKey, QMainWindow* window)
     {
         window->installEventFilter(this);
-
-        FastName appId = windowKey.GetAppID();
-        window->setObjectName(appId.c_str());
+        if (window->objectName().isEmpty())
+        {
+            FastName appId = windowKey.GetAppID();
+            window->setObjectName(appId.c_str());
+        }
     }
 
 protected:
@@ -549,7 +551,7 @@ protected:
                 {
                     QMainWindow* mainWindow = iter->second.window;
 
-                    PropertiesItem ph = propertiesHolder.CreateSubHolder(windowKey.GetAppID().c_str());
+                    PropertiesItem ph = propertiesHolder.CreateSubHolder(mainWindow->objectName().toStdString());
                     ph.Set(UIManagerDetail::WINDOW_STATE_KEY, mainWindow->saveState());
                     ph.Set(UIManagerDetail::WINDOW_GEOMETRY_KEY, mainWindow->saveGeometry());
 

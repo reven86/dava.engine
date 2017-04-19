@@ -24,6 +24,7 @@ public:
 
     void AsyncResolve(const char8* address, uint16 port, ResolverCallbackFn cbk);
     void Cancel();
+    bool IsActive() const;
 
 private:
     void DoAsyncResolve(const char8* address, uint16 port, ResolverCallbackFn cbk);

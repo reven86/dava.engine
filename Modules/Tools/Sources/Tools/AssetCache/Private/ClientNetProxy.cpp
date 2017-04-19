@@ -16,7 +16,6 @@ namespace AssetCache
 {
 ClientNetProxy::ClientNetProxy(Dispatcher<Function<void()>>* dispatcher)
     : dispatcher(dispatcher)
-    , addressResolver(Net::NetCore::Instance()->Loop())
 {
     DVASSERT(nullptr != Net::NetCore::Instance());
 }
@@ -30,19 +29,44 @@ void ClientNetProxy::Connect(const String& ip, uint16 port)
 {
     Logger::FrameworkDebug("Connecting to %s:%d", ip.c_str(), port);
     DVASSERT(nullptr == netClient);
+    DVASSERT(nullptr == addressResolver);
     DVASSERT(nullptr == openedChannel);
 
-    Net::ResolverCallbackDispatched resolverCallbackDispatched(dispatcher, MakeFunction(this, &ClientNetProxy::OnAddressResolved));
-    addressResolver.AsyncResolve(ip.c_str(), port, resolverCallbackDispatched);
+    addressResolver.reset(new Net::AddressResolver(Net::NetCore::Instance()->Loop()));
+    Net::ResolverCallbackDispatched resolverCallbackDispatched(dispatcher, addressResolver, MakeFunction(this, &ClientNetProxy::OnAddressResolved));
+    addressResolver->AsyncResolve(ip.c_str(), port, resolverCallbackDispatched);
 }
 
 void ClientNetProxy::Disconnect()
 {
-    Logger::FrameworkDebug("ClientNetProxy::Disconnect");
     openedChannel = nullptr;
 
-    addressResolver.Cancel();
-    netClient.reset();
+    if (addressResolver)
+    {
+        addressResolver->Cancel();
+        addressResolver.reset();
+    }
+    if (netClient)
+    {
+        netClient->Disconnect();
+        netClient.reset();
+    }
+}
+
+void ClientNetProxy::DisconnectBlocked()
+{
+    openedChannel = nullptr;
+
+    if (addressResolver)
+    {
+        addressResolver->Cancel();
+        addressResolver.reset();
+    }
+    if (netClient)
+    {
+        netClient->DisconnectBlocked();
+        netClient.reset();
+    }
 }
 
 void ClientNetProxy::OnAddressResolved(const Net::Endpoint& endpoint, int32 status)

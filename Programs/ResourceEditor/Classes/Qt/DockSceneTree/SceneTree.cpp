@@ -13,7 +13,7 @@
 
 #include "Classes/Settings/SettingsManager.h"
 #include "Deprecated/SceneValidator.h"
-#include "Main/QTUtils.h"
+#include "Main/QtUtils.h"
 #include "Scene/SceneEditor2.h"
 #include "Scene/SceneImageGraber.h"
 #include "Qt/GlobalOperations.h"
