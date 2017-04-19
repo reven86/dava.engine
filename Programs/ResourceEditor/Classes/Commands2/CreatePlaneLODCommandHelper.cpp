@@ -252,8 +252,12 @@ void CreatePlaneLODCommandHelper::CreatePlaneBatchForRequest(RequestPointer& req
     material->SetMaterialName(FastName(DAVA::Format("plane_lod_%d_for_%s", request->newLodIndex, fromEntity->GetName().c_str())));
     material->SetFXName(NMaterialName::TEXTURED_ALPHABLEND);
 
+    ScopedPtr<NMaterial> materialInstance(new NMaterial());
+    materialInstance->SetParent(material);
+    materialInstance->SetMaterialName(FastName("Instance0"));
+
     request->planeBatch->SetPolygonGroup(planePG);
-    request->planeBatch->SetMaterial(material);
+    request->planeBatch->SetMaterial(materialInstance);
 }
 
 void CreatePlaneLODCommandHelper::DrawToTextureForRequest(RequestPointer& request, DAVA::Entity* fromEntity, DAVA::Camera* camera,

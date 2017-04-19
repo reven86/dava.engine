@@ -113,7 +113,7 @@ fragment_out
     [material][a] property float alphatestThreshold           = 0.0;
 #endif
 
-#if MATERIAL_TEXTURE && ALPHASTEPVALUE
+#if MATERIAL_TEXTURE && ALPHASTEPVALUE && ALPHABLEND
     [material][a] property float alphaStepValue               = 0.5;
 #endif
 
@@ -249,7 +249,7 @@ fragment_out fp_main( fragment_in input )
             #endif
         #endif
         
-        #if ALPHASTEPVALUE
+        #if ALPHASTEPVALUE && ALPHABLEND
             textureColor0.a = step(alphaStepValue, textureColor0.a);
         #endif
         #endif

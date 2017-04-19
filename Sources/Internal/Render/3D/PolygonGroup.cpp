@@ -13,6 +13,7 @@ DAVA_VIRTUAL_REFLECTION_IMPL(PolygonGroup)
     ReflectionRegistrator<PolygonGroup>::Begin()
     .Field("vertexCount", &PolygonGroup::vertexCount)[M::ReadOnly(), M::DisplayName("Vertex Count")]
     .Field("indexCount", &PolygonGroup::indexCount)[M::ReadOnly(), M::DisplayName("Index Count")]
+    .Field("primitiveCount", &PolygonGroup::primitiveCount)[M::ReadOnly(), M::DisplayName("Primitive Count")]
     .Field("textureCoordCount", &PolygonGroup::textureCoordCount)[M::ReadOnly(), M::DisplayName("Texture Coord Count")]
     .Field("vertexStride", &PolygonGroup::vertexStride)[M::ReadOnly(), M::DisplayName("Vertex Stride")]
     .Field("vertexFormat", &PolygonGroup::vertexFormat)[M::ReadOnly(), M::DisplayName("Vertex Format"), M::FlagsT<eVertexFormat>()]

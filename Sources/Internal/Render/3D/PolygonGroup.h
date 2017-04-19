@@ -160,6 +160,7 @@ public:
     INTROSPECTION_EXTEND(PolygonGroup, DataNode,
                          MEMBER(vertexCount, "Vertex Count", I_VIEW | I_SAVE)
                          MEMBER(indexCount, "Index Count", I_VIEW | I_SAVE)
+                         MEMBER(primitiveCount, "Primitive Count", I_VIEW | I_SAVE)
                          MEMBER(textureCoordCount, "Texture Coord Count", I_VIEW | I_SAVE)
                          MEMBER(vertexStride, "Vertex Stride", I_VIEW | I_SAVE)
                          MEMBER(vertexFormat, "Vertex Format", I_VIEW | I_SAVE)
