@@ -122,7 +122,7 @@ IntrospectionProperty* IntrospectionProperty::Create(BaseObject* object, uint32 
     }
     else
     {
-        IntrospectionProperty* result = new IntrospectionProperty(object, componentType, name, ref, sourceProperty, cloneType);
+        return new IntrospectionProperty(object, componentType, name, ref, sourceProperty, cloneType);
     }
 }
 

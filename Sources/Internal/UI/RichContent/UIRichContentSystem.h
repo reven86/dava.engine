@@ -34,6 +34,7 @@ private:
 
     void AddLink(UIRichContentComponent* component);
     void RemoveLink(UIRichContentComponent* component);
+    void RemoveRichContentItems(UIControl* root);
 
     Vector<Link> links;
 };

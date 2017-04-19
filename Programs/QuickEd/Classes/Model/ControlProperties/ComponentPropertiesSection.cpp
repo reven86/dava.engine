@@ -59,9 +59,9 @@ ComponentPropertiesSection::~ComponentPropertiesSection()
 
 bool ComponentPropertiesSection::IsHiddenComponent(UIComponent::eType type)
 {
-    return
-    type == UIComponent::LAYOUT_ISOLATION_COMPONENT ||
-    type == UIComponent::LAYOUT_SOURCE_RECT_COMPONENT;
+    return (type == UIComponent::LAYOUT_ISOLATION_COMPONENT ||
+            type == UIComponent::LAYOUT_SOURCE_RECT_COMPONENT ||
+            type == UIComponent::RICH_CONTENT_ITEM_COMPONENT);
 }
 
 UIComponent* ComponentPropertiesSection::GetComponent() const

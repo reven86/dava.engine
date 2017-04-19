@@ -59,6 +59,8 @@ public:
     UIRichContentComponent() = default;
     /** Copy constructor. */
     UIRichContentComponent(const UIRichContentComponent& src);
+    /** Removed operator overloading. */
+    UIRichContentComponent& operator=(const UIRichContentComponent&) = delete;
 
     UIRichContentComponent* Clone() const override;
 
@@ -94,8 +96,6 @@ protected:
     ~UIRichContentComponent() override = default;
 
 private:
-    UIRichContentComponent& operator=(const UIRichContentComponent&) = delete;
-
     String text;
     String baseClasses;
     UIRichAliasMap aliases;

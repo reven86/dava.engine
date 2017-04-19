@@ -6,6 +6,8 @@ namespace DAVA
 DAVA_VIRTUAL_REFLECTION_IMPL(UIRichContentComponent)
 {
     ReflectionRegistrator<UIRichContentComponent>::Begin()
+    .ConstructorByPointer()
+    .DestructorByPointer([](UIRichContentComponent* o) { o->Release(); })
     .Field("text", &UIRichContentComponent::GetText, &UIRichContentComponent::SetText)
     .Field("baseClasses", &UIRichContentComponent::GetBaseClasses, &UIRichContentComponent::SetBaseClasses)
     .Field("aliases", &UIRichContentComponent::GetAliasesAsString, &UIRichContentComponent::SetAliasesFromString)

@@ -8,6 +8,7 @@
 #include "UI/Layouts/UIFlowLayoutHintComponent.h"
 #include "UI/RichContent/UIRichAliasMap.h"
 #include "UI/RichContent/UIRichContentComponent.h"
+#include "UI/RichContent/UIRichContentItemComponent.h"
 #include "UI/RichContent/UIRichContentSystem.h"
 #include "UI/Styles/UIStyleSheetSystem.h"
 #include "Utils/BiDiHelper.h"
@@ -77,6 +78,8 @@ public:
             flh->SetNewLineBeforeThis(needLineBreak);
             needLineBreak = false;
         }
+
+        ctrl->GetOrCreateComponent<UIRichContentItemComponent>();
     }
 
     void OnElementStarted(const String& elementName, const String& namespaceURI, const String& qualifedName, const Map<String, String>& attributes) override
@@ -315,7 +318,7 @@ void UIRichContentSystem::Process(float32 elapsedTime)
             l.component->SetModified(false);
 
             UIControl* root = l.component->GetControl();
-            root->RemoveAllControls();
+            RemoveRichContentItems(root);
 
             XMLRichContentBuilder builder(l.component);
             if (builder.Build("<span>" + l.component->GetText() + "</span>"))
@@ -343,7 +346,20 @@ void UIRichContentSystem::RemoveLink(UIRichContentComponent* component)
         return l.component == component;
     });
     DVASSERT(findIt != links.end());
-    findIt->component->GetControl()->RemoveAllControls();
+    RemoveRichContentItems(findIt->component->GetControl());
     findIt->component = nullptr; // mark link for delete
+}
+
+void UIRichContentSystem::RemoveRichContentItems(UIControl* root)
+{
+    DVASSERT(root);
+    List<UIControl*> children = root->GetChildren();
+    for (UIControl* child : children)
+    {
+        if (child->GetComponentCount<UIRichContentItemComponent>() > 0)
+        {
+            root->RemoveControl(child);
+        }
+    }
 }
 }
