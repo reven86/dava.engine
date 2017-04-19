@@ -1994,17 +1994,15 @@ uint32 StretchDrawData::GetVertexInTrianglesCount() const
 
 void StretchDrawData::GenerateTransformData()
 {
-    RenderSystem2D* renderSystem = RenderSystem2D::Instance();
-
-    const uint32 size = uint32(vertices.size());
-    for (uint32 index = 0; index < size; ++index)
+    if (usePerPixelAccuracy)
     {
-        transformedVertices[index] = vertices[index] * transformMatr;
-
-        if (usePerPixelAccuracy)
-        {
-            transformedVertices[index] = renderSystem->GetAlignedVertex(transformedVertices[index]);
-        }
+        for (size_t i = 0, sz = vertices.size(); i < sz; ++i)
+            transformedVertices[i] = RenderSystem2D::Instance()->GetAlignedVertex(vertices[i] * transformMatr);
+    }
+    else
+    {
+        for (size_t i = 0, sz = vertices.size(); i < sz; ++i)
+            transformedVertices[i] = vertices[i] * transformMatr;
     }
 }
 
