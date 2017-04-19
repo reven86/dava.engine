@@ -56,7 +56,6 @@ PropertiesViewDelegate::PropertiesViewDelegate(QTreeView* view_, ReflectedProper
     , model(model_)
     , view(view_)
 {
-    implFilter.delegate = this;
 }
 
 void PropertiesViewDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
@@ -131,16 +130,13 @@ QWidget* PropertiesViewDelegate::createEditor(QWidget* parent, const QStyleOptio
     AdjustEditorRect(opt);
     UpdateSpanning(index, valueComponent->IsSpannedControl());
     QWidget* result = valueComponent->AcquireEditorWidget(opt);
-    activeEditors.insert(result);
+    result->setProperty("modelIndex", index);
     return result;
 }
 
 void PropertiesViewDelegate::destroyEditor(QWidget* editor, const QModelIndex& index) const
 {
-    if (editor != nullptr)
-    {
-        activeEditors.remove(editor);
-    }
+    editor->setProperty("modelIndex", QVariant());
 }
 
 void PropertiesViewDelegate::setEditorData(QWidget* editor, const QModelIndex& index) const
@@ -169,6 +165,33 @@ void PropertiesViewDelegate::updateEditorGeometry(QWidget* editor, const QStyleO
 
 bool PropertiesViewDelegate::editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index)
 {
+    switch (event->type())
+    {
+    case QEvent::MouseButtonPress:
+    case QEvent::MouseButtonRelease:
+    case QEvent::MouseButtonDblClick:
+    case QEvent::MouseMove:
+    {
+        QMouseEvent* ev = static_cast<QMouseEvent*>(event);
+
+        BaseComponentValue* value = GetComponentValue(index);
+        QWidget* target = view->viewport();
+        QPoint localPos = ev->pos();
+        QWidget* childAt = value->AcquireEditorWidget(option);
+        while (childAt != nullptr && childAt != target)
+        {
+            localPos = childAt->mapFrom(target, localPos);
+            target = childAt;
+            childAt = target->childAt(localPos);
+        }
+
+        QMouseEvent* newEvent = new QMouseEvent(ev->type(), localPos, ev->windowPos(), ev->screenPos(),
+                                                ev->button(), ev->buttons(), ev->modifiers(), ev->source());
+        newEvent->setTimestamp(ev->timestamp());
+        PlatformApi::Qt::GetApplication()->postEvent(target, newEvent);
+    }
+    break;
+    }
     return false;
 }
 
@@ -181,8 +204,7 @@ BaseComponentValue* PropertiesViewDelegate::GetComponentValue(const QModelIndex&
 {
     DVASSERT(index.isValid());
     BaseComponentValue* value = model->GetComponentValue(index);
-    QWidget* w = value->EnsureEditorCreated(const_cast<EventFilterImpl*>(&implFilter), view->viewport());
-    indexMap[w] = index;
+    value->EnsureEditorCreated(view->viewport());
     return value;
 }
 
@@ -232,52 +254,6 @@ bool PropertiesViewDelegate::UpdateSizeHints(int section, int newWidth)
     return sizeHintChangedIndexes.isEmpty() == false;
 }
 
-bool PropertiesViewDelegate::eventFilter(QObject* object, QEvent* event)
-{
-    return false;
-}
-
-bool PropertiesViewDelegate::eventEditorFilter(QObject* obj, QEvent* e)
-{
-    QWidget* editor = qobject_cast<QWidget*>(obj);
-    if (!editor)
-        return false;
-    auto iter = indexMap.find(editor);
-    DVASSERT(iter != indexMap.end());
-    QModelIndex index = iter.value();
-
-    if (e->type() == QT_EVENT_TYPE(EventsTable::FocusInToParent))
-    {
-        QItemSelectionModel* selectionModel = view->selectionModel();
-        QItemSelectionModel::SelectionFlags flags = QItemSelectionModel::Clear | QItemSelectionModel::Select | QItemSelectionModel::Rows;
-        if (selectionModel->currentIndex() == index)
-        {
-            if (activeEditors.contains(editor) == false)
-            {
-                view->edit(index);
-            }
-        }
-        else
-        {
-            selectionModel->setCurrentIndex(index, flags);
-        }
-    }
-
-    if (e->type() == QEvent::KeyPress)
-    {
-        QKeyEvent* keyEvent = static_cast<QKeyEvent*>(e);
-        if (keyEvent->matches(QKeySequence::Cancel))
-        {
-            if (index.isValid())
-            {
-                setEditorData(editor, index);
-            }
-        }
-    }
-
-    return QStyledItemDelegate::eventFilter(obj, e);
-}
-
 void PropertiesViewDelegate::UpdateSpanning(const QModelIndex& index, bool isSpanned) const
 {
     if (view->isFirstColumnSpanned(index.row(), index.parent()) != isSpanned)
@@ -286,10 +262,30 @@ void PropertiesViewDelegate::UpdateSpanning(const QModelIndex& index, bool isSpa
     }
 }
 
-bool PropertiesViewDelegate::EventFilterImpl::eventFilter(QObject* obj, QEvent* e)
+bool PropertiesViewDelegate::eventFilter(QObject* object, QEvent* event)
 {
-    DVASSERT(delegate != nullptr);
-    return delegate->eventEditorFilter(obj, e);
+    QWidget* w = qobject_cast<QWidget*>(object);
+    if (w == nullptr)
+    {
+        return false;
+    }
+
+    if (event->type() == QEvent::KeyPress)
+    {
+        QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
+        if (keyEvent->matches(QKeySequence::Cancel))
+        {
+            QVariant value = w->property("modelIndex");
+            if (value.isValid() && value.canConvert<QModelIndex>())
+            {
+                QModelIndex index = value.value<QModelIndex>();
+                GetComponentValue(index)->ForceUpdate();
+            }
+            return true;
+        }
+    }
+
+    return QStyledItemDelegate::eventFilter(object, event);
 }
 
 } // namespace TArc

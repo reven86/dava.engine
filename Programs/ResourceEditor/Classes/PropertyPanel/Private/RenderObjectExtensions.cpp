@@ -301,6 +301,10 @@ bool RebuildTangentSpace::IsApplyable(const std::shared_ptr<DAVA::TArc::Property
 {
     DAVA::RenderBatch* batch = *node->field.ref.GetValueObject().GetPtr<DAVA::RenderBatch*>();
     DAVA::PolygonGroup* group = batch->GetPolygonGroup();
+    if (group == nullptr)
+    {
+        return false;
+    }
     bool isRebuildTsEnabled = true;
     const DAVA::int32 requiredVertexFormat = (DAVA::EVF_TEXCOORD0 | DAVA::EVF_NORMAL);
     isRebuildTsEnabled &= (group->GetPrimitiveType() == rhi::PRIMITIVE_TRIANGLELIST);

@@ -38,6 +38,10 @@ BaseComponentValue::~BaseComponentValue()
         realWidget->deleteLater();
         realWidget = nullptr;
     }
+    else
+    {
+        DVASSERT(realWidget == nullptr);
+    }
 }
 
 void BaseComponentValue::Init(ReflectedPropertyModel* model_)
@@ -48,7 +52,8 @@ void BaseComponentValue::Init(ReflectedPropertyModel* model_)
 void BaseComponentValue::Draw(QPainter* painter, const QStyleOptionViewItem& opt)
 {
     UpdateEditorGeometry(opt.rect);
-    realWidget->show();
+    QPixmap pxmap = realWidget->grab();
+    painter->drawPixmap(opt.rect, pxmap);
 }
 
 void BaseComponentValue::UpdateGeometry(const QStyleOptionViewItem& opt)
@@ -118,14 +123,6 @@ void BaseComponentValue::ForceUpdate()
     if (editorWidget != nullptr)
     {
         editorWidget->ForceUpdate();
-    }
-}
-
-void BaseComponentValue::HideEditor()
-{
-    if (realWidget != nullptr)
-    {
-        realWidget->hide();
     }
 }
 
@@ -231,21 +228,17 @@ DAVA::TArc::DataWrappersProcessor* BaseComponentValue::GetDataProcessor() const
     return model->GetWrappersProcessor(nodes.front());
 }
 
-QWidget* BaseComponentValue::EnsureEditorCreated(QObject* eventFilter, QWidget* parent)
-{
-    if (editorWidget == nullptr)
-    {
-        EnsureEditorCreated(parent);
-        realWidget->installEventFilter(eventFilter);
-    }
-
-    DVASSERT(realWidget->parent() == parent);
-    return realWidget;
-}
-
 void BaseComponentValue::EnsureEditorCreated(QWidget* parent)
 {
-    editorWidget = CreateEditorWidget(parent, Reflection::Create(&thisValue), GetDataProcessor());
+    if (editorWidget != nullptr)
+    {
+        return;
+    }
+
+    DataWrappersProcessor* processor = GetDataProcessor();
+    processor->SetDebugName(GetPropertyName().toStdString());
+    editorWidget = CreateEditorWidget(parent, Reflection::Create(&thisValue), processor);
+    processor->SetDebugName("");
     editorWidget->ForceUpdate();
     realWidget = editorWidget->ToWidgetCast();
 
@@ -279,6 +272,12 @@ void BaseComponentValue::UpdateEditorGeometry(const QRect& geometry) const
     if (realWidget->geometry() != geometry)
     {
         realWidget->setGeometry(geometry);
+        QLayout* layout = realWidget->layout();
+        if (layout != nullptr)
+        {
+            // force to layout items even if widget isn't visible
+            layout->activate();
+        }
     }
 }
 

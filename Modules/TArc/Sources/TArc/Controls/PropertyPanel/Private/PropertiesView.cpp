@@ -318,10 +318,7 @@ void PropertiesView::OnColumnResized(int columnIndex, int oldSize, int newSize)
 {
     PropertiesViewDelegate* d = qobject_cast<PropertiesViewDelegate*>(view->itemDelegate());
     DVASSERT(d != nullptr);
-    if (d->UpdateSizeHints(columnIndex, newSize) == true)
-    {
-        model->HideEditors();
-    }
+    d->UpdateSizeHints(columnIndex, newSize);
 }
 
 void PropertiesView::Update(UpdatePolicy policy)
@@ -356,7 +353,6 @@ void PropertiesView::OnExpanded(const QModelIndex& index)
 {
     SCOPED_VALUE_GUARD(bool, isExpandUpdate, true, void());
     model->SetExpanded(true, index);
-    model->HideEditors();
 
     QModelIndexList expandedList = model->GetExpandedChildren(index);
     foreach (const QModelIndex& index, expandedList)
@@ -369,7 +365,6 @@ void PropertiesView::OnCollapsed(const QModelIndex& index)
 {
     SCOPED_VALUE_GUARD(bool, isExpandUpdate, true, void());
     model->SetExpanded(false, index);
-    model->HideEditors();
 }
 
 void PropertiesView::OnFavoritesEditChanged(bool isChecked)
@@ -385,7 +380,6 @@ PropertiesView::eViewMode PropertiesView::GetViewMode() const
 void PropertiesView::SetViewMode(PropertiesView::eViewMode mode)
 {
     model->SetFavoriteOnly(mode == VIEW_MODE_FAVORITES_ONLY);
-    model->HideEditors();
     UpdateExpanded();
 }
 

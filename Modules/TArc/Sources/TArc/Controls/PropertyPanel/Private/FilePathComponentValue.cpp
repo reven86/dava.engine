@@ -2,6 +2,7 @@
 #include "TArc/Controls/PropertyPanel/Private/ComponentStructureWrapper.h"
 #include "TArc/Controls/PropertyPanel/PropertyPanelMeta.h"
 #include "TArc/Controls/FilePathEdit.h"
+#include "TArc/Controls/CommonStrings.h"
 
 #include <Reflection/ReflectionRegistrator.h>
 
@@ -11,12 +12,16 @@ namespace TArc
 {
 Any FilePathComponentValue::GetMultipleValue() const
 {
-    return Any();
+    return Any(MultipleValuesString);
 }
 
 bool FilePathComponentValue::IsValidValueToSet(const Any& newValue, const Any& currentValue) const
 {
-    if (currentValue.CanCast<FilePath>() == false)
+    if (newValue.Cast<String>(MultipleValuesString) == String(MultipleValuesString))
+    {
+        return false;
+    }
+    if (currentValue.CanGet<FilePath>() == false)
     {
         return true;
     }

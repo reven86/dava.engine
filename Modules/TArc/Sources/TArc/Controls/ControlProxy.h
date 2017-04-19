@@ -11,6 +11,12 @@
 #include <QObject>
 #include <QCoreApplication>
 
+#define RETURN_IF_MODEL_LOST(x) \
+    if (wrapper.HasData() == false) \
+    {\
+        return (x);\
+    }
+
 namespace DAVA
 {
 namespace TArc
@@ -102,16 +108,23 @@ protected:
         wrapper.SetListener(this);
     }
 
-    void focusInEvent(QFocusEvent* e) override
+    bool event(QEvent* e)
     {
-        QCoreApplication::postEvent(ToWidgetCast(), new FocusToParentEvent(QT_EVENT_TYPE(EventsTable::FocusInToParent), *e));
-        TBase::focusInEvent(e);
-    }
+        switch (e->type())
+        {
+        case QEvent::FocusIn:
+        case QEvent::FocusOut:
+        case QEvent::KeyPress:
+        case QEvent::KeyRelease:
+        case QEvent::MouseButtonPress:
+        case QEvent::MouseButtonRelease:
+        case QEvent::MouseMove:
+        case QEvent::MouseButtonDblClick:
+            RETURN_IF_MODEL_LOST(false);
+            break;
+        }
 
-    void focusOutEvent(QFocusEvent* e) override
-    {
-        QCoreApplication::postEvent(ToWidgetCast(), new FocusToParentEvent(QT_EVENT_TYPE(EventsTable::FocusOutToParent), *e));
-        TBase::focusOutEvent(e);
+        return TBase::event(e);
     }
 
 protected:

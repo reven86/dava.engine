@@ -2,7 +2,6 @@
 
 #include "TArc/WindowSubSystem/ActionUtils.h"
 #include "TArc/WindowSubSystem/Private/WaitDialog.h"
-#include "TArc/WindowSubSystem/Private/HierarchyEventsNotifier.h"
 #include "TArc/Controls/Private/NotificationLayout.h"
 #include "TArc/DataProcessing/PropertiesHolder.h"
 
@@ -665,9 +664,6 @@ protected:
 UIManager::UIManager(Delegate* delegate, PropertiesItem&& holder)
     : impl(new Impl(delegate, std::move(holder)))
 {
-    QApplication* app = PlatformApi::Qt::GetApplication();
-    HierarchyEventsNotifier* notifier = new HierarchyEventsNotifier(app);
-    app->installEventFilter(notifier);
 }
 
 UIManager::~UIManager() = default;

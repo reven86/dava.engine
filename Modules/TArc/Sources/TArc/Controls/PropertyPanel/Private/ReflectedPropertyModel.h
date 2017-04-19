@@ -65,8 +65,6 @@ public:
     void SaveState(PropertiesItem& propertyRoot) const;
     void LoadState(const PropertiesItem& propertyRoot);
 
-    void HideEditors();
-
     bool IsFavorite(const QModelIndex& index) const;
     bool IsInFavoriteHierarchy(const QModelIndex& index) const;
     void AddFavorite(const QModelIndex& index);
@@ -90,7 +88,6 @@ private:
 
     void Update(ReflectedPropertyItem* item);
     void UpdateFastImpl(ReflectedPropertyItem* item);
-    void HideEditor(ReflectedPropertyItem* item);
 
     template <typename T>
     std::shared_ptr<T> GetExtensionChain() const;

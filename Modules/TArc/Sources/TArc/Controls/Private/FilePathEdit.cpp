@@ -55,6 +55,7 @@ void FilePathEdit::SetupControl()
 
 void FilePathEdit::EditingFinished()
 {
+    RETURN_IF_MODEL_LOST(void());
     if (!edit->isReadOnly())
     {
         FilePath path(edit->text().toStdString());
@@ -79,6 +80,7 @@ void FilePathEdit::EditingFinished()
 
 void FilePathEdit::ButtonClicked()
 {
+    RETURN_IF_MODEL_LOST(void());
     if (!edit->isReadOnly())
     {
         QString path;
@@ -112,6 +114,7 @@ void FilePathEdit::ButtonClicked()
 
 void FilePathEdit::UpdateControl(const ControlDescriptor& descriptor)
 {
+    RETURN_IF_MODEL_LOST(void());
     bool readOnlyChanged = descriptor.IsChanged(Fields::IsReadOnly);
     bool textChanged = descriptor.IsChanged(Fields::Value);
     if (readOnlyChanged || textChanged)
@@ -122,7 +125,15 @@ void FilePathEdit::UpdateControl(const ControlDescriptor& descriptor)
         {
             DAVA::Reflection fieldValue = model.GetField(descriptor.GetName(Fields::Value));
             DVASSERT(fieldValue.IsValid());
-            edit->setText(QString::fromStdString(fieldValue.GetValue().Cast<FilePath>().GetAbsolutePathname()));
+            Any value = fieldValue.GetValue();
+            if (value.CanGet<FilePath>())
+            {
+                edit->setText(QString::fromStdString(value.Get<FilePath>().GetAbsolutePathname()));
+            }
+            else if (value.CanCast<String>())
+            {
+                edit->setText(QString::fromStdString(value.Cast<String>()));
+            }
         }
     }
 
@@ -141,6 +152,7 @@ void FilePathEdit::UpdateControl(const ControlDescriptor& descriptor)
 
 M::ValidationResult FilePathEdit::Validate(const Any& value) const
 {
+    RETURN_IF_MODEL_LOST(M::ValidationResult());
     Reflection field = model.GetField(GetFieldName(Fields::Value));
     DVASSERT(field.IsValid());
 

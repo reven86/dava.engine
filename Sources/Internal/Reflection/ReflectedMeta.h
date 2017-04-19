@@ -226,13 +226,23 @@ using ValueDescription = Meta<Metas::ValueDescription>;
 using SubProperty = Meta<Metas::SubProperty>;
 
 /**
+    \ingroup metas
     Says that value can be changed at some unpredictable moment and
     Reflection's client should update value as often as possible
 */
 using FrequentlyChangedValue = Meta<Metas::FrequentlyChangedValue>;
 
-/** Type that derived from Component and marked by this Meta couldn't be created in PropertyPanel */
+/**
+    \ingroup metas
+    Type that derived from Component and marked by this Meta couldn't be created in PropertyPanel
+*/
 using CantBeCreatedManualyComponent = Meta<Metas::CantBeCreatedManualyComponent>;
+
+/**
+    \ingroup metas
+    Type that derived from Component and marked by this Meta couldn't be created in PropertyPanel
+*/
+using CantBeDeletedManualyComponent = Meta<Metas::CantBeDeletedManualyComponent>;
 }
 
 } // namespace DAVA

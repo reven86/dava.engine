@@ -32,31 +32,17 @@ public:
 
     bool UpdateSizeHints(int section, int newWidth);
 
-protected:
-    bool eventFilter(QObject* object, QEvent* event) override;
-    bool eventEditorFilter(QObject* obj, QEvent* e);
-
 private:
     BaseComponentValue* GetComponentValue(const QModelIndex& index) const;
     void AdjustEditorRect(QStyleOptionViewItem& opt) const;
     void UpdateSpanning(const QModelIndex& index, bool isSpanned) const;
 
+    bool eventFilter(QObject* object, QEvent* event) override;
+
 private:
     ReflectedPropertyModel* model = nullptr;
     QTreeView* view = nullptr;
     mutable QHash<QPersistentModelIndex, int> heightForWidthItems;
-    mutable QHash<QWidget*, QModelIndex> indexMap;
-    mutable QSet<QWidget*> activeEditors;
-
-    class EventFilterImpl : public QObject
-    {
-    public:
-        PropertiesViewDelegate* delegate = nullptr;
-
-        bool eventFilter(QObject* obj, QEvent* e);
-    };
-
-    EventFilterImpl implFilter;
 };
 }
 }

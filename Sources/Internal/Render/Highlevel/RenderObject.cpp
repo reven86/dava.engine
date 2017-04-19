@@ -54,7 +54,7 @@ DAVA_VIRTUAL_REFLECTION_IMPL(RenderObject)
 {
     ReflectionRegistrator<RenderObject>::Begin()
     .Field("type", &RenderObject::type)[M::DisplayName("Type"), M::EnumT<RenderObject::eType>(), M::ReadOnly()]
-    .Field("flags", &RenderObject::flags)[M::DisplayName("Flags"), M::FlagsT<RenderObject::eFlags>()]
+    .Field("flags", &RenderObject::flags)[M::DisplayName("Flags"), M::FlagsT<RenderObject::eFlags>(), M::DeveloperModeOnly()]
     .Field("debugFlags", &RenderObject::debugFlags)[M::DisplayName("Debug flags")]
     .Field("removeIndex", &RenderObject::removeIndex)[M::ReadOnly(), M::HiddenField()]
     .Field("bbox", &RenderObject::bbox)[M::DisplayName("Bounding box")]

@@ -60,6 +60,11 @@ DataWrapper::DataWrapper(DataWrapper&& other)
 {
 }
 
+void DataWrapper::SetDebugName(const String& name)
+{
+    impl->typeName = name;
+}
+
 DataWrapper& DataWrapper::operator=(DataWrapper&& other)
 {
     if (&other == this)

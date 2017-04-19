@@ -31,6 +31,8 @@ void LineEdit::SetupControl()
 
 void LineEdit::EditingFinished()
 {
+    RETURN_IF_MODEL_LOST(void());
+
     if (!isReadOnly())
     {
         wrapper.SetFieldValue(GetFieldName(Fields::Text), text().toStdString());
@@ -39,6 +41,7 @@ void LineEdit::EditingFinished()
 
 void LineEdit::UpdateControl(const ControlDescriptor& descriptor)
 {
+    RETURN_IF_MODEL_LOST(void());
     bool readOnlyChanged = descriptor.IsChanged(Fields::IsReadOnly);
     bool textChanged = descriptor.IsChanged(Fields::Text);
     if (readOnlyChanged || textChanged)
@@ -67,6 +70,7 @@ void LineEdit::UpdateControl(const ControlDescriptor& descriptor)
 
 M::ValidationResult LineEdit::Validate(const Any& value) const
 {
+    RETURN_IF_MODEL_LOST(M::ValidationResult());
     Reflection field = model.GetField(GetFieldName(Fields::Text));
     DVASSERT(field.IsValid());
 

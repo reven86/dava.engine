@@ -55,7 +55,7 @@ public:
     int GetHeight() const;
 
     QWidget* AcquireEditorWidget(const QStyleOptionViewItem& option);
-    QWidget* EnsureEditorCreated(QObject* eventFilter, QWidget* parent);
+    void EnsureEditorCreated(QWidget* parent);
 
     QString GetPropertyName() const;
     FastName GetID() const;
@@ -63,7 +63,6 @@ public:
     std::shared_ptr<PropertyNode> GetPropertyNode(int32 index) const;
 
     void ForceUpdate();
-    void HideEditor();
 
     virtual bool IsReadOnly() const;
     virtual bool IsSpannedControl() const;
@@ -79,7 +78,6 @@ protected:
     friend class ComponentStructureWrapper;
     friend class ReflectedPropertyItem;
 
-    void EnsureEditorCreated(QWidget* parent);
     virtual Any GetMultipleValue() const = 0;
     virtual bool IsValidValueToSet(const Any& newValue, const Any& currentValue) const = 0;
     virtual ControlProxy* CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor) = 0;

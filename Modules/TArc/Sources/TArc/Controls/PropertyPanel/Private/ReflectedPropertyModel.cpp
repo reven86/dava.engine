@@ -311,22 +311,10 @@ void ReflectedPropertyModel::UpdateFast()
     RefreshFavoritesRoot();
 }
 
-void ReflectedPropertyModel::HideEditor(ReflectedPropertyItem* item)
-{
-    if (item->value != nullptr)
-    {
-        item->value->HideEditor();
-    }
-
-    for (int32 i = 0; i < item->GetChildCount(); ++i)
-    {
-        HideEditor(item->GetChild(i));
-    }
-}
-
 void ReflectedPropertyModel::SetObjects(Vector<Reflection> objects)
 {
     wrappersProcessor.Shoutdown();
+    fastWrappersProcessor.Shoutdown();
 
     int childCount = static_cast<int>(rootItem->GetChildCount());
     if (childCount != 0)
@@ -600,11 +588,6 @@ void ReflectedPropertyModel::LoadState(const PropertiesItem& propertyRoot)
     }
 
     showFavoriteOnly = propertyRoot.Get(isFavoritesViewOnlyKey, false);
-}
-
-void ReflectedPropertyModel::HideEditors()
-{
-    HideEditor(rootItem.get());
 }
 
 bool ReflectedPropertyModel::IsFavorite(const QModelIndex& index) const
