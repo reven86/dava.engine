@@ -1994,41 +1994,16 @@ uint32 StretchDrawData::GetVertexInTrianglesCount() const
 
 void StretchDrawData::GenerateTransformData()
 {
-    const uint32 size = uint32(vertices.size());
-    for (uint32 index = 0; index < size; ++index)
-    {
-        transformedVertices[index] = vertices[index] * transformMatr;
-    }
-
     RenderSystem2D* renderSystem = RenderSystem2D::Instance();
 
-    if (usePerPixelAccuracy)
-    {
-        Vector2 ppaShift = renderSystem->GetAlignedVertex(transformedVertices[0]) - transformedVertices[0];
-        transformedVertices[0] += ppaShift;
-        transformedVertices[1] += ppaShift;
-        transformedVertices[4] += ppaShift;
-        transformedVertices[5] += ppaShift;
+    const uint32 size = uint32(vertices.size());
+    for (uint32 index = 0; index < size; ++index)
+    {        
+        transformedVertices[index] = vertices[index] * transformMatr;
 
-        ppaShift = renderSystem->GetAlignedVertex(transformedVertices[2]) - transformedVertices[2];
-        transformedVertices[2] += ppaShift;
-        transformedVertices[3] += ppaShift;
-        transformedVertices[6] += ppaShift;
-        transformedVertices[7] += ppaShift;
-
-        if (transformedVertices.size() > 8)
+        if (usePerPixelAccuracy)
         {
-            ppaShift = renderSystem->GetAlignedVertex(transformedVertices[8]) - transformedVertices[8];
-            transformedVertices[8] += ppaShift;
-            transformedVertices[9] += ppaShift;
-            transformedVertices[12] += ppaShift;
-            transformedVertices[13] += ppaShift;
-
-            ppaShift = renderSystem->GetAlignedVertex(transformedVertices[10]) - transformedVertices[10];
-            transformedVertices[10] += ppaShift;
-            transformedVertices[11] += ppaShift;
-            transformedVertices[14] += ppaShift;
-            transformedVertices[15] += ppaShift;
+            transformedVertices[index] = renderSystem->GetAlignedVertex(transformedVertices[index]);
         }
     }
 }
