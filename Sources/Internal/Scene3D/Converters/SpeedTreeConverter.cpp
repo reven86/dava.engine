@@ -189,7 +189,7 @@ void SpeedTreeConverter::ConvertLeafPGForAnimations(PolygonGroup* pg)
     Memcpy(pgCopy->indexArray, pg->indexArray, indCount * sizeof(int16));
 
     pg->ReleaseData();
-    pg->AllocateData(EVF_VERTEX | EVF_COLOR | EVF_TEXCOORD0 | EVF_PIVOT | EVF_FLEXIBILITY | EVF_ANGLE_SIN_COS, vxCount, indCount);
+    pg->AllocateData(EVF_VERTEX | EVF_COLOR | EVF_TEXCOORD0 | EVF_PIVOT_DEPRECATED | EVF_FLEXIBILITY | EVF_ANGLE_SIN_COS, vxCount, indCount);
 
     //copy indices
     for (int32 i = 0; i < indCount; ++i)
@@ -215,7 +215,7 @@ void SpeedTreeConverter::ConvertLeafPGForAnimations(PolygonGroup* pg)
         pg->SetCoord(i, vxPosition);
         pg->SetColor(i, color);
         pg->SetTexcoord(0, i, vxTx);
-        pg->SetPivot(i, vxPivot);
+        pg->SetPivotDeprecated(i, vxPivot);
     }
     SafeRelease(pgCopy);
 
@@ -280,7 +280,7 @@ void SpeedTreeConverter::ConvertPolygonSortedGroups(Entity* scene)
         int32 vxCount = dataSource->GetVertexCount();
         int32 indCount = dataSource->GetIndexCount();
 
-        int32 convertedFormat = (vertexFormat & ~EVF_PIVOT) | EVF_PIVOT4;
+        int32 convertedFormat = (vertexFormat & ~EVF_PIVOT_DEPRECATED) | EVF_PIVOT4;
         ScopedPtr<PolygonGroup> pg(new PolygonGroup());
         pg->AllocateData(convertedFormat, vxCount, indCount);
 
@@ -293,10 +293,10 @@ void SpeedTreeConverter::ConvertPolygonSortedGroups(Entity* scene)
             for (uint32 mask = EVF_LOWER_BIT; mask <= EVF_HIGHER_BIT; mask = mask << 1)
                 PolygonGroup::CopyData(&src, &dst, vertexFormat, convertedFormat, mask);
 
-            if (vertexFormat & EVF_PIVOT)
+            if (vertexFormat & EVF_PIVOT_DEPRECATED)
             {
                 Vector3 pivot3;
-                dataSource->GetPivot(i, pivot3);
+                dataSource->GetPivotDeprecated(i, pivot3);
 
                 Vector4 pivot4(pivot3, 1.f);
                 pg->SetPivot(i, pivot4);

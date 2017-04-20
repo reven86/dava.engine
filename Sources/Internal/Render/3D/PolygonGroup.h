@@ -55,7 +55,7 @@ public:
     inline void GetIndex(int32 i, int32& index);
 
     inline void GetPivot(int32 i, Vector4& v);
-    inline void GetPivot(int32 i, Vector3& v);
+    inline void GetPivotDeprecated(int32 i, Vector3& v);
     inline void GetFlexibility(int32 i, float32& v);
     inline void GetAngle(int32 i, Vector2& v);
 
@@ -77,7 +77,7 @@ public:
     inline void SetIndex(int32 i, int16 index);
 
     inline void SetPivot(int32 i, const Vector4& v);
-    inline void SetPivot(int32 i, const Vector3& v);
+    inline void SetPivotDeprecated(int32 i, const Vector3& v);
     inline void SetFlexibility(int32 i, const float32& v);
     inline void SetAngle(int32 i, const Vector2& v);
 
@@ -222,7 +222,7 @@ inline void PolygonGroup::SetPivot(int32 i, const Vector4& _v)
     *v = _v;
 }
 
-inline void PolygonGroup::SetPivot(int32 i, const Vector3& _v)
+inline void PolygonGroup::SetPivotDeprecated(int32 i, const Vector3& _v)
 {
     Vector3* v = reinterpret_cast<Vector3*>(reinterpret_cast<uint8*>(pivotArray) + i * vertexStride);
     *v = _v;
@@ -324,7 +324,7 @@ inline void PolygonGroup::GetPivot(int32 i, Vector4& _v)
     _v = *v;
 }
 
-inline void PolygonGroup::GetPivot(int32 i, Vector3& _v)
+inline void PolygonGroup::GetPivotDeprecated(int32 i, Vector3& _v)
 {
     Vector3* v = reinterpret_cast<Vector3*>(reinterpret_cast<uint8*>(pivotArray) + i * vertexStride);
     _v = *v;

@@ -96,7 +96,7 @@ void SpeedTreeObject::PrepareToRender(Camera* camera)
         PolygonGroup* pg = batch->GetPolygonGroup();
         if (pg)
         {
-            int32 meshIndexCount = pg->primitiveCount * 3;
+            int32 meshIndexCount = pg->GetPrimitiveCount() * 3;
             if (meshIndexCount != pg->indexCount) //sorted polygon group
             {
                 uint32 startIndex = meshIndexCount * directionIndex;

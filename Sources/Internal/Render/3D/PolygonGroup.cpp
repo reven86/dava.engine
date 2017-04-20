@@ -132,10 +132,10 @@ void PolygonGroup::UpdateDataPointersAndStreams()
         baseShift += GetVertexSize(EVF_PIVOT4);
         vLayout.AddElement(rhi::VS_TEXCOORD, 4, rhi::VDT_FLOAT, 4);
     }
-    if (vertexFormat & EVF_PIVOT)
+    if (vertexFormat & EVF_PIVOT_DEPRECATED)
     {
         pivotArray = reinterpret_cast<Vector3*>(meshData + baseShift);
-        baseShift += GetVertexSize(EVF_PIVOT);
+        baseShift += GetVertexSize(EVF_PIVOT_DEPRECATED);
         vLayout.AddElement(rhi::VS_TEXCOORD, 4, rhi::VDT_FLOAT, 3);
     }
     if (vertexFormat & EVF_FLEXIBILITY)
@@ -203,6 +203,8 @@ void PolygonGroup::AllocateData(int32 _meshFormat, int32 _vertexCount, int32 _in
     vertexFormat = _meshFormat;
     textureCoordCount = GetTexCoordCount(vertexFormat);
     cubeTextureCoordCount = GetCubeTexCoordCount(vertexFormat);
+
+    DVASSERT(_primitiveCount >= 0 && _primitiveCount <= int32(CalculatePrimitiveCount(indexCount, primitiveType)));
     primitiveCount = (_primitiveCount == 0) ? CalculatePrimitiveCount(indexCount, primitiveType) : _primitiveCount;
 
     meshData = new uint8[vertexStride * vertexCount];

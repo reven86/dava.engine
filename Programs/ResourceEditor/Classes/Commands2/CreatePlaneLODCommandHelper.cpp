@@ -194,7 +194,10 @@ void CreatePlaneLODCommandHelper::CreatePlaneBatchForRequest(RequestPointer& req
             float32 yCoord = min.y + size.y * xy / (float32)gridSizeX; //second plane in Oyz
 
             if (xy == gridSizeX / 2) //align middle vertices to center
-                xCoord = yCoord = 0.f;
+            {
+                xCoord = 0.f;
+                yCoord = 0.f;
+            }
 
             Vector3 coord1(xCoord, 0.f, rowCoord); //1st plane
             Vector3 coord2(0.f, yCoord, rowCoord); //2nd plane
