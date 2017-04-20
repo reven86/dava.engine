@@ -961,7 +961,7 @@ bool WindowBackend::OnSysCommand(int sysCommand)
     }
 
     // If screen timeout is disabled, do not show screen saver
-    if (sysCommand == SC_SCREENSAVE && !engineBackend->GetPlatformCore()->IsScreenTimeoutEnabled())
+    if (sysCommand == SC_SCREENSAVE && !engineBackend->IsScreenTimeoutEnabled())
     {
         return true;
     }

@@ -88,6 +88,7 @@ public:
     static void AdjustSystemTimer(int64 adjustMicro);
 
     void SetScreenTimeoutEnabled(bool enabled);
+    bool IsScreenTimeoutEnabled() const;
 
     bool IsRunning() const;
 
@@ -113,6 +114,8 @@ private:
 
     void CreateSubsystems(const Vector<String>& modules);
     void DestroySubsystems();
+
+    void OnWindowVisibilityChanged(Window* window, bool visible);
 
     static void OnRenderingError(rhi::RenderingError err, void* param);
 
@@ -144,6 +147,9 @@ private:
     uint32 globalFrameIndex = 1;
 
     bool isRunning = false;
+
+    bool atLeastOneWindowIsVisible = false;
+    bool screenTimeoutEnabled = true;
 
     static EngineBackend* instance;
 };
@@ -211,6 +217,11 @@ inline MainDispatcher* EngineBackend::GetDispatcher() const
 inline PlatformCore* EngineBackend::GetPlatformCore() const
 {
     return platformCore;
+}
+
+inline bool EngineBackend::IsScreenTimeoutEnabled() const
+{
+    return screenTimeoutEnabled;
 }
 
 } // namespace Private
