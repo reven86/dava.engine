@@ -32,19 +32,12 @@ public:
         float32 subdivMorph = 0.f;
         uint8 subdivisionState = CLIPPED;
         uint8 startClipPlane = 0;
-
-        bool operator==(const SubdivisionPatchInfo& other) const;
     };
 
     struct SubdivisionLevelInfo
     {
         uint32 offset;
         uint32 size;
-
-        bool operator==(const SubdivisionLevelInfo& other) const
-        {
-            return offset == other.offset && size == other.size;
-        }
     };
 
     struct SubdivisionMetrics : public InspBase
@@ -59,8 +52,6 @@ public:
         float32 zoomMaxHeightError = 0.03f;
         float32 zoomMaxPatchRadiusError = 0.9f;
         float32 zoomMaxAbsoluteHeightError = 3.f;
-
-        bool operator==(const SubdivisionMetrics& other) const;
 
         INTROSPECTION(SubdivisionMetrics,
                       MEMBER(normalMaxHeightError, "normalMaxHeightError", I_VIEW | I_EDIT)
@@ -90,8 +81,6 @@ public:
     void UpdatePatchInfo(const Rect2i& heighmapRect);
     void SetForceMaxSubdivision(bool forceSubdivide);
 
-    bool operator==(const LandscapeSubdivision& other) const;
-
 private:
     struct PatchQuadInfo
     {
@@ -99,8 +88,6 @@ private:
         Vector3 positionOfMaxError;
         float32 maxError;
         float32 radius;
-
-        bool operator==(const PatchQuadInfo& other) const;
     };
 
     void UpdatePatchInfo(uint32 level, uint32 x, uint32 y, PatchQuadInfo* parentPatch, const Rect2i& updateRect);
@@ -190,12 +177,4 @@ inline LandscapeSubdivision::SubdivisionMetrics& LandscapeSubdivision::GetMetric
 {
     return metrics;
 }
-
-template <>
-bool AnyCompare<LandscapeSubdivision>::IsEqual(const Any& v1, const Any& v2);
-extern template struct AnyCompare<LandscapeSubdivision>;
-
-template <>
-bool AnyCompare<LandscapeSubdivision::SubdivisionMetrics>::IsEqual(const Any& v1, const Any& v2);
-extern template struct AnyCompare<LandscapeSubdivision::SubdivisionMetrics>;
 }
