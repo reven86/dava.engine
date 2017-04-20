@@ -1,0 +1,22 @@
+Header:
+    version: "11"
+Controls:
+-   class: "UIControl"
+    name: "UIControl"
+    position: [0.000000, 0.000000]
+    size: [596.000000, 229.000000]
+    children:
+    -   class: "UIControl"
+        name: "UIControl"
+        position: [76.500000, 90.500000]
+        size: [32.000000, 32.000000]
+        components:
+            Background:
+                drawType: "DRAW_FILL"
+    -   class: "UIControl"
+        name: "UIControl"
+        position: [347.000000, 98.000000]
+        size: [32.000000, 32.000000]
+        components:
+            Background:
+                drawType: "DRAW_FILL"
