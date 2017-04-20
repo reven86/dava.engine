@@ -13,6 +13,7 @@
 
 #include <TArc/Core/ContextAccessor.h>
 #include <TArc/Core/FieldBinder.h>
+#include <TArc/DataProcessing/DataContext.h>
 
 #include <Base/BaseTypes.h>
 #include <UI/UIControl.h>
@@ -469,7 +470,10 @@ void HUDSystem::OnDisplayStateChanged(EditorSystemsManager::eDisplayState curren
 
 bool HUDSystem::CanProcessInput(DAVA::UIEvent* currentInput) const
 {
-    if (hudControl->GetParent() == nullptr)
+    using namespace DAVA::TArc;
+
+    DataContext* activeContext = accessor->GetActiveContext();
+    if (hudControl->GetParent() == nullptr || activeContext == nullptr)
     {
         return false;
     }
