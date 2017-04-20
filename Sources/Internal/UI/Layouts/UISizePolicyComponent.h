@@ -3,10 +3,12 @@
 
 #include "UI/Components/UIComponent.h"
 #include "Reflection/Reflection.h"
+#include "UI/Formula/Formula.h"
 
 namespace DAVA
 {
 class UIControl;
+class Formulas;
 
 class UISizePolicyComponent : public UIBaseComponent<UIComponent::SIZE_POLICY_COMPONENT>
 {
@@ -24,6 +26,14 @@ public:
         PERCENT_OF_CONTENT,
         PERCENT_OF_PARENT,
         FORMULA
+    };
+
+    struct FormulaInfo
+    {
+        FormulaInfo(const String& source);
+
+        String source;
+        Formula formula;
     };
 
 public:
@@ -51,7 +61,7 @@ public:
     float32 GetHorizontalMaxValue() const;
     void SetHorizontalMaxValue(float32 value);
 
-    const String& GetHorizontalFormula() const;
+    String GetHorizontalFormula() const;
     void SetHorizontalFormula(const String& formula);
 
     eSizePolicy GetVerticalPolicy() const;
@@ -66,14 +76,15 @@ public:
     float32 GetVerticalMaxValue() const;
     void SetVerticalMaxValue(float32 value);
 
-    const String& GetVerticalFormula() const;
+    String GetVerticalFormula() const;
     void SetVerticalFormula(const String& formula);
 
     eSizePolicy GetPolicyByAxis(int32 axis) const;
     float32 GetValueByAxis(int32 axis) const;
     float32 GetMinValueByAxis(int32 axis) const;
     float32 GetMaxValueByAxis(int32 axis) const;
-    const String& GetFormulaByAxis(int32 axis) const;
+
+    FormulaInfo* GetFormulaInfo(int32 axis) const;
 
     bool IsDependsOnChildren(int32 axis) const;
 
@@ -87,7 +98,7 @@ private:
         float32 value;
         float32 min;
         float32 max;
-        String formula;
+        std::unique_ptr<FormulaInfo> formulaInfo;
     };
 
 private:

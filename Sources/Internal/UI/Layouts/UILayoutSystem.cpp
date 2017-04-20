@@ -270,7 +270,11 @@ void UILayoutSystem::DoMeasurePhase(Vector2::eAxis axis)
     int32 lastIndex = static_cast<int32>(layoutData.size() - 1);
     for (int32 index = lastIndex; index >= 0; index--)
     {
-        SizeMeasuringAlgorithm(layoutData).Apply(layoutData[index], axis);
+        UISizePolicyComponent* sizePolicy = layoutData[index].GetControl()->GetComponent<UISizePolicyComponent>();
+        if (sizePolicy != nullptr)
+        {
+            SizeMeasuringAlgorithm(layoutData, layoutData[index], axis, sizePolicy).Apply();
+        }
     }
 }
 

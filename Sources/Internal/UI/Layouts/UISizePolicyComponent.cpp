@@ -23,6 +23,12 @@ DAVA_VIRTUAL_REFLECTION_IMPL(UISizePolicyComponent)
     .End();
 }
 
+UISizePolicyComponent::FormulaInfo::FormulaInfo(const String& source_)
+    : source(source_)
+{
+    formula.Parse(source);
+}
+
 UISizePolicyComponent::UISizePolicyComponent()
 {
     const float32 DEFAULT_VALUE = 100.0f;
@@ -122,14 +128,18 @@ void UISizePolicyComponent::SetHorizontalMaxValue(float32 value)
     SetLayoutDirty();
 }
 
-const String& UISizePolicyComponent::GetHorizontalFormula() const
+String UISizePolicyComponent::GetHorizontalFormula() const
 {
-    return policy[Vector2::AXIS_X].formula;
+    if (policy[Vector2::AXIS_X].formulaInfo)
+    {
+        return policy[Vector2::AXIS_X].formulaInfo->source;
+    }
+    return "";
 }
 
-void UISizePolicyComponent::SetHorizontalFormula(const String& formula)
+void UISizePolicyComponent::SetHorizontalFormula(const String& formulaSource)
 {
-    policy[Vector2::AXIS_X].formula = formula;
+    policy[Vector2::AXIS_X].formulaInfo.reset(new FormulaInfo(formulaSource));
     SetLayoutDirty();
 }
 
@@ -197,14 +207,18 @@ void UISizePolicyComponent::SetVerticalMaxValue(float32 value)
     SetLayoutDirty();
 }
 
-const String& UISizePolicyComponent::GetVerticalFormula() const
+String UISizePolicyComponent::GetVerticalFormula() const
 {
-    return policy[Vector2::AXIS_Y].formula;
+    if (policy[Vector2::AXIS_Y].formulaInfo)
+    {
+        return policy[Vector2::AXIS_Y].formulaInfo->source;
+    }
+    return "";
 }
 
-void UISizePolicyComponent::SetVerticalFormula(const String& formula)
+void UISizePolicyComponent::SetVerticalFormula(const String& formulaSource)
 {
-    policy[Vector2::AXIS_Y].formula = formula;
+    policy[Vector2::AXIS_Y].formulaInfo.reset(new FormulaInfo(formulaSource));
     SetLayoutDirty();
 }
 
@@ -232,9 +246,9 @@ float32 UISizePolicyComponent::GetMaxValueByAxis(int32 axis) const
     return policy[axis].max;
 }
 
-const String& UISizePolicyComponent::GetFormulaByAxis(int32 axis) const
+UISizePolicyComponent::FormulaInfo* UISizePolicyComponent::GetFormulaInfo(int32 axis) const
 {
-    return policy[axis].formula;
+    return policy[axis].formulaInfo.get();
 }
 
 bool UISizePolicyComponent::IsDependsOnChildren(int32 axis) const
