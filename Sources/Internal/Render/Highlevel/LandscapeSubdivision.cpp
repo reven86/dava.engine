@@ -336,4 +336,70 @@ void LandscapeSubdivision::BuildSubdivision(Heightmap* _heightmap, const AABBox3
 
     UpdatePatchInfo(0, 0, 0, nullptr, Rect2i(0, 0, -1, -1));
 }
-};
+
+bool LandscapeSubdivision::PatchQuadInfo::operator==(const LandscapeSubdivision::PatchQuadInfo& other) const
+{
+    return bbox == other.bbox
+    && positionOfMaxError == other.positionOfMaxError
+    && maxError == other.maxError
+    && radius == other.radius;
+}
+
+bool LandscapeSubdivision::SubdivisionPatchInfo::operator==(const LandscapeSubdivision::SubdivisionPatchInfo& other) const
+{
+    return lastUpdateID == other.lastUpdateID
+    && subdivMorph == other.subdivMorph
+    && subdivisionState == other.subdivisionState
+    && startClipPlane == other.startClipPlane;
+}
+
+bool LandscapeSubdivision::SubdivisionMetrics::operator==(const LandscapeSubdivision::SubdivisionMetrics& other) const
+{
+    return (normalFov == other.normalFov
+            && zoomFov == other.zoomFov
+            && normalMaxHeightError == other.normalMaxHeightError
+            && normalMaxPatchRadiusError == other.normalMaxPatchRadiusError
+            && normalMaxAbsoluteHeightError == other.normalMaxAbsoluteHeightError
+            && zoomMaxHeightError == other.zoomMaxHeightError
+            && zoomMaxPatchRadiusError == other.zoomMaxPatchRadiusError
+            && zoomMaxAbsoluteHeightError == other.zoomMaxAbsoluteHeightError
+            );
+}
+
+bool LandscapeSubdivision::operator==(const LandscapeSubdivision& other) const
+{
+    return (subdivLevelInfoArray == other.subdivLevelInfoArray
+            && patchQuadArray == other.patchQuadArray
+            && subdivPatchArray == other.subdivPatchArray
+            && terminatedPatchesCount == other.terminatedPatchesCount
+            && minSubdivLevel == other.minSubdivLevel
+            && subdivLevelCount == other.subdivLevelCount
+            && subdivPatchCount == other.subdivPatchCount
+            && patchSizeQuads == other.patchSizeQuads
+            && updateID == other.updateID
+            && metrics == other.metrics
+            && maxHeightError == other.maxHeightError
+            && maxPatchRadiusError == other.maxPatchRadiusError
+            && maxAbsoluteHeightError == other.maxAbsoluteHeightError
+            && cameraPos == other.cameraPos
+            && tanFovY == other.tanFovY
+            && frustum == other.frustum
+            && heightmap == other.heightmap
+            && bbox == other.bbox
+            && calculateMorph == other.calculateMorph
+            && forceMaxSubdiv == other.forceMaxSubdiv
+            );
+}
+
+template <>
+bool AnyCompare<LandscapeSubdivision::SubdivisionMetrics>::IsEqual(const DAVA::Any& v1, const DAVA::Any& v2)
+{
+    return v1.Get<LandscapeSubdivision::SubdivisionMetrics>() == v2.Get<LandscapeSubdivision::SubdivisionMetrics>();
+}
+
+template <>
+bool AnyCompare<LandscapeSubdivision>::IsEqual(const DAVA::Any& v1, const DAVA::Any& v2)
+{
+    return v1.Get<LandscapeSubdivision>() == v2.Get<LandscapeSubdivision>();
+}
+}

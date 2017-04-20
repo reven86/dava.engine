@@ -72,7 +72,7 @@ void ChildCreator::UpdateSubTree(const std::shared_ptr<const PropertyNode>& pare
                 }
                 catch (const Exception& e)
                 {
-                    Logger::Debug(e.what());
+                    Logger::Warning(e.what());
                 }
                 if (isEqual == false)
                 {
