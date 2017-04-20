@@ -39,30 +39,44 @@ public:
     void CheckDirty();
 
 private:
-    void ApplyLayout(UIControl* control);
-    void ApplyLayoutNonRecursive(UIControl* control);
+    class Layouter
+    {
+    public:
+        void ApplyLayout(UIControl* control);
+        void ApplyLayoutNonRecursive(UIControl* control);
+
+        void CollectControls(UIControl* control, bool recursive);
+        void CollectControlChildren(UIControl* control, int32 parentIndex, bool recursive);
+
+        void ProcessAxis(Vector2::eAxis axis, bool processSizes);
+        void DoMeasurePhase(Vector2::eAxis axis);
+        void DoLayoutPhase(Vector2::eAxis axis);
+
+        void ApplySizesAndPositions();
+        void ApplyPositions();
+
+        void SetRtl(bool rtl)
+        {
+            isRtl = rtl;
+        }
+
+    private:
+        Vector<ControlLayoutData> layoutData;
+        bool isRtl = false;
+    };
+
+    void UpdateControl(UIControl* control);
 
     UIControl* FindNotDependentOnChildrenControl(UIControl* control) const;
     bool HaveToLayoutAfterReorder(const UIControl* control) const;
     bool HaveToLayoutAfterReposition(const UIControl* control) const;
 
-    void CollectControls(UIControl* control, bool recursive);
-    void CollectControlChildren(UIControl* control, int32 parentIndex, bool recursive);
-
-    void ProcessAxis(Vector2::eAxis axis, bool processSizes);
-    void DoMeasurePhase(Vector2::eAxis axis);
-    void DoLayoutPhase(Vector2::eAxis axis);
-
-    void ApplySizesAndPositions();
-    void ApplyPositions();
-
-    void UpdateControl(UIControl* control);
-
     bool isRtl = false;
     bool autoupdatesEnabled = true;
     bool dirty = false;
     bool needUpdate = false;
-    Vector<ControlLayoutData> layoutData;
+    //Vector<ControlLayoutData> sharedLayoutData;
+    Layouter sharedLayouter;
     RefPtr<UIScreen> currentScreen;
     RefPtr<UIControl> popupContainer;
     RefPtr<UIScreenTransition> currentScreenTransition;

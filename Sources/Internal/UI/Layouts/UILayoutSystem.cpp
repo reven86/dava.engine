@@ -29,6 +29,8 @@ UILayoutSystem::~UILayoutSystem()
 
 void UILayoutSystem::Process(DAVA::float32 elapsedTime)
 {
+    DVASSERT(Thread::IsMainThread());
+
     if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_UI_CONTROL_SYSTEM))
     {
         return;
@@ -74,6 +76,7 @@ bool UILayoutSystem::IsRtl() const
 void UILayoutSystem::SetRtl(bool rtl)
 {
     isRtl = rtl;
+    sharedLayouter.SetRtl(isRtl);
 }
 
 void UILayoutSystem::ProcessControl(UIControl* control)
@@ -89,18 +92,20 @@ void UILayoutSystem::ProcessControl(UIControl* control)
     if (dirty || (orderDirty && HaveToLayoutAfterReorder(control)))
     {
         UIControl* container = FindNotDependentOnChildrenControl(control);
-        ApplyLayout(container);
+        sharedLayouter.ApplyLayout(container);
     }
     else if (positionDirty && HaveToLayoutAfterReposition(control))
     {
         UIControl* container = control->GetParent();
-        ApplyLayoutNonRecursive(container);
+        sharedLayouter.ApplyLayoutNonRecursive(container);
     }
 }
 
 void UILayoutSystem::ManualApplyLayout(UIControl* control)
 {
-    ApplyLayout(control);
+    Layouter localLayouter;
+    localLayouter.SetRtl(isRtl);
+    localLayouter.ApplyLayout(control);
 }
 
 bool UILayoutSystem::IsAutoupdatesEnabled() const
@@ -113,10 +118,8 @@ void UILayoutSystem::SetAutoupdatesEnabled(bool enabled)
     autoupdatesEnabled = enabled;
 }
 
-void UILayoutSystem::ApplyLayout(UIControl* control)
+void UILayoutSystem::Layouter::ApplyLayout(UIControl* control)
 {
-    DVASSERT(Thread::IsMainThread() || autoupdatesEnabled == false);
-
     CollectControls(control, true);
 
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::UI_LAYOUTING);
@@ -129,10 +132,8 @@ void UILayoutSystem::ApplyLayout(UIControl* control)
     layoutData.clear();
 }
 
-void UILayoutSystem::ApplyLayoutNonRecursive(UIControl* control)
+void UILayoutSystem::Layouter::ApplyLayoutNonRecursive(UIControl* control)
 {
-    DVASSERT(Thread::IsMainThread() || autoupdatesEnabled == false);
-
     CollectControls(control, false);
 
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::UI_LAYOUTING);
@@ -217,14 +218,14 @@ bool UILayoutSystem::HaveToLayoutAfterReposition(const UIControl* control) const
     return false;
 }
 
-void UILayoutSystem::CollectControls(UIControl* control, bool recursive)
+void UILayoutSystem::Layouter::CollectControls(UIControl* control, bool recursive)
 {
     layoutData.clear();
     layoutData.emplace_back(ControlLayoutData(control));
     CollectControlChildren(control, 0, recursive);
 }
 
-void UILayoutSystem::CollectControlChildren(UIControl* control, int32 parentIndex, bool recursive)
+void UILayoutSystem::Layouter::CollectControlChildren(UIControl* control, int32 parentIndex, bool recursive)
 {
     int32 index = static_cast<int32>(layoutData.size());
     const List<UIControl*>& children = control->GetChildren();
@@ -256,7 +257,7 @@ void UILayoutSystem::CollectControlChildren(UIControl* control, int32 parentInde
     }
 }
 
-void UILayoutSystem::ProcessAxis(Vector2::eAxis axis, bool processSizes)
+void UILayoutSystem::Layouter::ProcessAxis(Vector2::eAxis axis, bool processSizes)
 {
     if (processSizes)
     {
@@ -265,7 +266,7 @@ void UILayoutSystem::ProcessAxis(Vector2::eAxis axis, bool processSizes)
     DoLayoutPhase(axis);
 }
 
-void UILayoutSystem::DoMeasurePhase(Vector2::eAxis axis)
+void UILayoutSystem::Layouter::DoMeasurePhase(Vector2::eAxis axis)
 {
     int32 lastIndex = static_cast<int32>(layoutData.size() - 1);
     for (int32 index = lastIndex; index >= 0; index--)
@@ -274,7 +275,7 @@ void UILayoutSystem::DoMeasurePhase(Vector2::eAxis axis)
     }
 }
 
-void UILayoutSystem::DoLayoutPhase(Vector2::eAxis axis)
+void UILayoutSystem::Layouter::DoLayoutPhase(Vector2::eAxis axis)
 {
     for (auto it = layoutData.begin(); it != layoutData.end(); ++it)
     {
@@ -314,7 +315,7 @@ void UILayoutSystem::DoLayoutPhase(Vector2::eAxis axis)
     }
 }
 
-void UILayoutSystem::ApplySizesAndPositions()
+void UILayoutSystem::Layouter::ApplySizesAndPositions()
 {
     for (ControlLayoutData& data : layoutData)
     {
@@ -322,7 +323,7 @@ void UILayoutSystem::ApplySizesAndPositions()
     }
 }
 
-void UILayoutSystem::ApplyPositions()
+void UILayoutSystem::Layouter::ApplyPositions()
 {
     for (ControlLayoutData& data : layoutData)
     {
