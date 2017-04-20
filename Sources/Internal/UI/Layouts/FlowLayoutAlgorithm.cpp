@@ -385,10 +385,12 @@ void FlowLayoutAlgorithm::SortLineItemsByContentDirection(int32 firstIndex, int3
         {
             switch (dir)
             {
+            case BiDiHelper::Direction::NEUTRAL:
+                lastIt = order.insert(order.end(), i);
+                break;
             case BiDiHelper::Direction::LTR:
                 lastIt = order.insert(inverse ? lastIt : order.end(), i);
                 break;
-            case BiDiHelper::Direction::NEUTRAL:
             case BiDiHelper::Direction::RTL:
                 lastIt = order.insert(inverse ? order.end() : lastIt, i);
                 break;
