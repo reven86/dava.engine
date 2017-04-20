@@ -376,6 +376,20 @@ UIRichContentSystem::Link::~Link()
     RemoveItems(false);
 }
 
+UIRichContentSystem::Link& UIRichContentSystem::Link::operator=(const Link& b)
+{
+    if (this != &b)
+    {
+        RemoveItems(false);
+        component = b.component;
+        for (UIControl* item : b.richItems)
+        {
+            richItems.push_back(SafeRetain(item));
+        }
+    }
+    return *this;
+}
+
 void UIRichContentSystem::Link::AddItem(UIControl* item)
 {
     DVASSERT(item);

@@ -29,6 +29,7 @@ private:
         Link(Link& src);
         Link(Link&& src);
         ~Link();
+        Link& operator=(const Link& b);
 
         void AddItem(UIControl* item);
         void RemoveItems(bool fromControl);
