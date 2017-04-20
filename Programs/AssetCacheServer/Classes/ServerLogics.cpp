@@ -141,6 +141,7 @@ void ServerLogics::OnRemoteDisconnecting()
         }
     }
     waitedRequests.clear();
+    serverTasks.clear();
 }
 
 void ServerLogics::OnClientProxyStateChanged()
