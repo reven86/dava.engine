@@ -331,6 +331,11 @@ public final class DavaActivity extends Activity
         });
     }
 
+    void onFinishCreatingMainWindowSurface()
+    {
+        startNativeThreadIfNotRunning();
+    }
+
     @Override
     protected void onStart()
     {
@@ -652,7 +657,7 @@ public final class DavaActivity extends Activity
         }
     }
 
-    void startNativeThreadIfNotRunning()
+    private void startNativeThreadIfNotRunning()
     {
         if (!isNativeThreadRunning())
         {
