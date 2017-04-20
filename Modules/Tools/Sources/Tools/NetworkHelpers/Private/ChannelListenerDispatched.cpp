@@ -33,25 +33,24 @@ void ChannelListenerDispatched::OnChannelClosed(IChannel* channel, const char8* 
 /**
     OnPacketReceivedUsingTempBuffer works together with OnPacketReceived.
     It performs manual deletion of tempbuffer, that was created in OnPacketReceived function.
-    The reason of using of temp buffer is that our network uses single buffer for all incoming packets
-    and that creates problems when processing of incoming packets become asynchronous.
+    The reason of using of temp buffer is that buffer passed to OnPacketReceived
+    is valid only during OnPacketReceived call. Since our processing of OnPackedReceived
+    is delayed, we need to remain buffer valid until its delayed invokation.
 */
-void OnPacketReceivedUsingTempBuffer(std::weak_ptr<IChannelListener> listenerWeak, IChannel* channel, uint8* tempBuffer, size_t length)
+void OnPacketReceivedUsingTempBuffer(std::weak_ptr<IChannelListener> listenerWeak, IChannel* channel, Vector<uint8> tempBuffer)
 {
     std::shared_ptr<IChannelListener> listenerShared = listenerWeak.lock();
     if (listenerShared)
     {
-        listenerShared->OnPacketReceived(channel, tempBuffer, length);
+        listenerShared->OnPacketReceived(channel, tempBuffer.data(), tempBuffer.size());
     }
-
-    delete[] tempBuffer;
 }
 
 void ChannelListenerDispatched::OnPacketReceived(IChannel* channel, const void* buffer, size_t length)
 {
-    uint8* tempBuf = new uint8[length];
-    Memcpy(tempBuf, buffer, length);
-    Function<void()> msg(Bind(&OnPacketReceivedUsingTempBuffer, targetObjectWeak, channel, tempBuf, length));
+    Vector<uint8> tempBuf(length);
+    Memcpy(tempBuf.data(), buffer, length);
+    Function<void()> msg(Bind(&OnPacketReceivedUsingTempBuffer, targetObjectWeak, channel, std::move(tempBuf)));
     netEventsDispatcher->PostEvent(msg);
 }
 
