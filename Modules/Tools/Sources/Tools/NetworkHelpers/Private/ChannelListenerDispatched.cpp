@@ -30,12 +30,28 @@ void ChannelListenerDispatched::OnChannelClosed(IChannel* channel, const char8* 
     netEventsDispatcher->PostEvent(msg);
 }
 
+/**
+    OnPacketReceivedUsingTempBuffer works together with OnPacketReceived.
+    It performs manual deletion of tempbuffer, that was created in OnPacketReceived function.
+    The reason of using of temp buffer is that our network uses single buffer for all incoming packets
+    and that creates problems when processing of incoming packets become asynchronous.
+*/
+void OnPacketReceivedUsingTempBuffer(std::weak_ptr<IChannelListener> listenerWeak, IChannel* channel, uint8* tempBuffer, size_t length)
+{
+    std::shared_ptr<IChannelListener> listenerShared = listenerWeak.lock();
+    if (listenerShared)
+    {
+        listenerShared->OnPacketReceived(channel, tempBuffer, length);
+    }
+
+    delete[] tempBuffer;
+}
+
 void ChannelListenerDispatched::OnPacketReceived(IChannel* channel, const void* buffer, size_t length)
 {
-    Function<void(IChannelListener*)> targetFn(Bind(&IChannelListener::OnPacketReceived, std::placeholders::_1, channel, buffer, length));
-    auto targetFnCaller = &SafeMemberFnCaller<IChannelListener>;
-    auto callerWithParams = Bind(targetFnCaller, targetFn, targetObjectWeak);
-    Function<void()> msg(callerWithParams);
+    uint8* tempBuf = new uint8[length];
+    Memcpy(tempBuf, buffer, length);
+    Function<void()> msg(Bind(&OnPacketReceivedUsingTempBuffer, targetObjectWeak, channel, tempBuf, length));
     netEventsDispatcher->PostEvent(msg);
 }
 
