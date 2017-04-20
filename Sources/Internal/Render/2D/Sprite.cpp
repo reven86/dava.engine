@@ -277,11 +277,10 @@ void Sprite::InitFromFile(File* file)
 
 Sprite* Sprite::Create(const FilePath& spriteName)
 {
-    static const Vector<String> RAW_EXTENSIONS = { ".png", ".jpg", ".jpeg" };
     String extension = spriteName.GetExtension();
 
     Sprite* spr = nullptr;
-    if (!extension.empty() && std::find(RAW_EXTENSIONS.begin(), RAW_EXTENSIONS.end(), extension) != RAW_EXTENSIONS.end())
+    if (!extension.empty() && TextureDescriptor::IsSourceTextureExtension(extension))
     {
         spr = CreateFromSourceFile(spriteName);
     }
