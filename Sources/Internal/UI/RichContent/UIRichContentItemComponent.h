@@ -18,7 +18,7 @@ public:
     /** Removed operator overloading. */
     UIRichContentItemComponent& operator=(const UIRichContentItemComponent&) = delete;
 
-    UIComponent* Clone() const override;
+    UIRichContentItemComponent* Clone() const override;
 
 protected:
     ~UIRichContentItemComponent() override = default;

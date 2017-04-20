@@ -16,7 +16,7 @@ UIRichContentItemComponent::UIRichContentItemComponent(const UIRichContentItemCo
 {
 }
 
-UIComponent* UIRichContentItemComponent::Clone() const
+UIRichContentItemComponent* UIRichContentItemComponent::Clone() const
 {
     return new UIRichContentItemComponent(*this);
 }
