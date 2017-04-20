@@ -65,39 +65,39 @@ IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject* anObject, DAVA::i
         {
             shouldAddSourceRectComponent = false;
         }
-    else
-    {
-        if (control->GetName() == UISlider::THUMB_SPRITE_CONTROL_NAME ||
-            control->GetName() == UISlider::MIN_SPRITE_CONTROL_NAME ||
-            control->GetName() == UISlider::MAX_SPRITE_CONTROL_NAME ||
-            control->GetName() == UISwitch::BUTTON_LEFT_NAME ||
-            control->GetName() == UISwitch::BUTTON_RIGHT_NAME ||
-            control->GetName() == UISwitch::BUTTON_TOGGLE_NAME)
+        else
         {
-            shouldAddSourceRectComponent = false;
-        }
-    }
-
-    if (shouldAddSourceRectComponent)
-    {
-        sourceRectComponent = control->GetOrCreateComponent<UILayoutSourceRectComponent>();
-
-        if (sourceProperty != nullptr && sourceProperty->sourceRectComponent)
-        {
-            if (name == INTROSPECTION_PROPERTY_NAME_SIZE)
+            if (control->GetName() == UISlider::THUMB_SPRITE_CONTROL_NAME ||
+                control->GetName() == UISlider::MIN_SPRITE_CONTROL_NAME ||
+                control->GetName() == UISlider::MAX_SPRITE_CONTROL_NAME ||
+                control->GetName() == UISwitch::BUTTON_LEFT_NAME ||
+                control->GetName() == UISwitch::BUTTON_RIGHT_NAME ||
+                control->GetName() == UISwitch::BUTTON_TOGGLE_NAME)
             {
-                sourceRectComponent->SetSize(sourceProperty->sourceRectComponent->GetSize());
+                shouldAddSourceRectComponent = false;
+            }
+        }
+
+        if (shouldAddSourceRectComponent)
+        {
+            sourceRectComponent = control->GetOrCreateComponent<UILayoutSourceRectComponent>();
+
+            if (sourceProperty != nullptr && sourceProperty->sourceRectComponent)
+            {
+                if (name == INTROSPECTION_PROPERTY_NAME_SIZE)
+                {
+                    sourceRectComponent->SetSize(sourceProperty->sourceRectComponent->GetSize());
+                }
+                else
+                {
+                    sourceRectComponent->SetPosition(sourceProperty->sourceRectComponent->GetPosition());
+                }
             }
             else
             {
-                sourceRectComponent->SetPosition(sourceProperty->sourceRectComponent->GetPosition());
+                SetLayoutSourceRectValue(reflection.GetValue());
             }
         }
-        else
-        {
-            SetLayoutSourceRectValue(reflection.GetValue());
-        }
-    }
     }
 }
 
