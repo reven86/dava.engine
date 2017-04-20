@@ -215,7 +215,7 @@ struct Reflection::FieldCaps
     bool canCreateFieldValue = false;
     bool hasFlatStruct = false; //< structure is flat - all keys have the same type, all values have the same type
     bool hasDynamicStruct = false; //< add/removing/inserting one value into that structure can cause changes to existing values
-    bool hasRangeAccess = false; //< structure has fixed size, its size can be retrieved, its fields can be accessed by range
+    bool hasRangeAccess = false; //< structure has deterministic size and its size can be retrieved, its fields can be accessed by range
     const Type* flatKeysType = nullptr; //< when structure if flat this will hold the key type, or `nullptr` if not
     const Type* flatValuesType = nullptr; //< when structure if flat this will hold the value type, or `nullptr` if not
 };
