@@ -8,7 +8,6 @@
 #include "UI/Layouts/UIFlowLayoutHintComponent.h"
 #include "UI/RichContent/UIRichAliasMap.h"
 #include "UI/RichContent/UIRichContentComponent.h"
-#include "UI/RichContent/UIRichContentItemComponent.h"
 #include "UI/RichContent/UIRichContentSystem.h"
 #include "UI/Styles/UIStyleSheetSystem.h"
 #include "Utils/BiDiHelper.h"
@@ -79,7 +78,7 @@ public:
             needLineBreak = false;
         }
 
-        ctrl->GetOrCreateComponent<UIRichContentItemComponent>();
+        //ctrl->GetOrCreateComponent<UIRichContentItemComponent>();
     }
 
     void OnElementStarted(const String& elementName, const String& namespaceURI, const String& qualifedName, const Map<String, String>& attributes) override
@@ -318,7 +317,7 @@ void UIRichContentSystem::Process(float32 elapsedTime)
             l.component->SetModified(false);
 
             UIControl* root = l.component->GetControl();
-            RemoveRichContentItems(root);
+            l.RemoveItems(true);
 
             XMLRichContentBuilder builder(l.component);
             if (builder.Build("<span>" + l.component->GetText() + "</span>"))
@@ -326,6 +325,7 @@ void UIRichContentSystem::Process(float32 elapsedTime)
                 for (const RefPtr<UIControl>& ctrl : builder.GetControls())
                 {
                     root->AddControl(ctrl.Get());
+                    l.AddItem(ctrl.Get());
                 }
             }
         }
@@ -346,20 +346,59 @@ void UIRichContentSystem::RemoveLink(UIRichContentComponent* component)
         return l.component == component;
     });
     DVASSERT(findIt != links.end());
-    RemoveRichContentItems(findIt->component->GetControl());
+    findIt->RemoveItems(true);
     findIt->component = nullptr; // mark link for delete
 }
 
-void UIRichContentSystem::RemoveRichContentItems(UIControl* root)
+UIRichContentSystem::Link::Link(UIRichContentComponent* c)
+    : component(c)
+    , richItems(0)
 {
-    DVASSERT(root);
-    List<UIControl*> children = root->GetChildren();
-    for (UIControl* child : children)
+}
+
+UIRichContentSystem::Link::Link(Link& src)
+    : component(src.component)
+{
+    for (UIControl* item : src.richItems)
     {
-        if (child->GetComponentCount<UIRichContentItemComponent>() > 0)
+        richItems.push_back(SafeRetain(item));
+    }
+}
+
+UIRichContentSystem::Link::Link(Link&& src)
+{
+    std::swap(component, src.component);
+    std::swap(richItems, src.richItems);
+}
+
+UIRichContentSystem::Link::~Link()
+{
+    RemoveItems(false);
+}
+
+void UIRichContentSystem::Link::AddItem(UIControl* item)
+{
+    DVASSERT(item);
+    richItems.push_back(SafeRetain(item));
+}
+
+void UIRichContentSystem::Link::RemoveItems(bool fromControl)
+{
+    if (!richItems.empty())
+    {
+        if (fromControl && component != nullptr)
         {
-            root->RemoveControl(child);
+            UIControl* ctrl = component->GetControl();
+            if (ctrl != nullptr)
+            {
+                for (UIControl* item : richItems)
+                {
+                    ctrl->RemoveControl(item);
+                }
+            }
         }
+        for_each(richItems.begin(), richItems.end(), SafeRelease<UIControl>);
+        richItems.clear();
     }
 }
 }

@@ -23,19 +23,23 @@ public:
     void Process(float32 elapsedTime) override;
 
 private:
-    struct Link
+    struct Link final
     {
-        Link(UIRichContentComponent* c)
-            : component(c)
-        {
-        }
+        Link(UIRichContentComponent* c);
+        Link(Link& src);
+        Link(Link&& src);
+        ~Link();
+
+        void AddItem(UIControl* item);
+        void RemoveItems(bool fromControl);
+
         UIRichContentComponent* component = nullptr;
+        List<UIControl*> richItems;
     };
 
     void AddLink(UIRichContentComponent* component);
     void RemoveLink(UIRichContentComponent* component);
-    void RemoveRichContentItems(UIControl* root);
 
-    Vector<Link> links;
+    List<Link> links;
 };
 }
