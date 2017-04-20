@@ -317,7 +317,7 @@ void UIRichContentSystem::Process(float32 elapsedTime)
             l.component->SetModified(false);
 
             UIControl* root = l.component->GetControl();
-            l.RemoveItems(true);
+            l.RemoveItems();
 
             XMLRichContentBuilder builder(l.component);
             if (builder.Build("<span>" + l.component->GetText() + "</span>"))
@@ -325,7 +325,7 @@ void UIRichContentSystem::Process(float32 elapsedTime)
                 for (const RefPtr<UIControl>& ctrl : builder.GetControls())
                 {
                     root->AddControl(ctrl.Get());
-                    l.AddItem(ctrl.Get());
+                    l.AddItem(ctrl);
                 }
             }
         }
@@ -346,73 +346,34 @@ void UIRichContentSystem::RemoveLink(UIRichContentComponent* component)
         return l.component == component;
     });
     DVASSERT(findIt != links.end());
-    findIt->RemoveItems(true);
+    findIt->RemoveItems();
     findIt->component = nullptr; // mark link for delete
 }
 
 UIRichContentSystem::Link::Link(UIRichContentComponent* c)
     : component(c)
-    , richItems(0)
+    , richItems()
 {
 }
 
-UIRichContentSystem::Link::Link(Link& src)
-    : component(src.component)
+void UIRichContentSystem::Link::AddItem(const RefPtr<UIControl>& item)
 {
-    for (UIControl* item : src.richItems)
+    richItems.push_back(item);
+}
+
+void UIRichContentSystem::Link::RemoveItems()
+{
+    if (component != nullptr)
     {
-        richItems.push_back(SafeRetain(item));
-    }
-}
-
-UIRichContentSystem::Link::Link(Link&& src)
-{
-    std::swap(component, src.component);
-    std::swap(richItems, src.richItems);
-}
-
-UIRichContentSystem::Link::~Link()
-{
-    RemoveItems(false);
-}
-
-UIRichContentSystem::Link& UIRichContentSystem::Link::operator=(const Link& b)
-{
-    if (this != &b)
-    {
-        RemoveItems(false);
-        component = b.component;
-        for (UIControl* item : b.richItems)
+        UIControl* ctrl = component->GetControl();
+        if (ctrl != nullptr)
         {
-            richItems.push_back(SafeRetain(item));
-        }
-    }
-    return *this;
-}
-
-void UIRichContentSystem::Link::AddItem(UIControl* item)
-{
-    DVASSERT(item);
-    richItems.push_back(SafeRetain(item));
-}
-
-void UIRichContentSystem::Link::RemoveItems(bool fromControl)
-{
-    if (!richItems.empty())
-    {
-        if (fromControl && component != nullptr)
-        {
-            UIControl* ctrl = component->GetControl();
-            if (ctrl != nullptr)
+            for (const RefPtr<UIControl>& item : richItems)
             {
-                for (UIControl* item : richItems)
-                {
-                    ctrl->RemoveControl(item);
-                }
+                ctrl->RemoveControl(item.Get());
             }
         }
-        for_each(richItems.begin(), richItems.end(), SafeRelease<UIControl>);
-        richItems.clear();
     }
+    richItems.clear();
 }
 }

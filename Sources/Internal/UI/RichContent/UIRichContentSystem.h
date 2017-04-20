@@ -2,11 +2,11 @@
 
 #include "Base/BaseTypes.h"
 #include "Base/RefPtr.h"
+#include "UI/UIControl.h"
 #include "UI/UISystem.h"
 
 namespace DAVA
 {
-class UIControl;
 class UIRichContentComponent;
 
 class UIRichContentSystem final : public UISystem
@@ -26,21 +26,17 @@ private:
     struct Link final
     {
         Link(UIRichContentComponent* c);
-        Link(Link& src);
-        Link(Link&& src);
-        ~Link();
-        Link& operator=(const Link& b);
 
-        void AddItem(UIControl* item);
-        void RemoveItems(bool fromControl);
+        void AddItem(const RefPtr<UIControl>& item);
+        void RemoveItems();
 
         UIRichContentComponent* component = nullptr;
-        List<UIControl*> richItems;
+        Vector<RefPtr<UIControl>> richItems;
     };
 
     void AddLink(UIRichContentComponent* component);
     void RemoveLink(UIRichContentComponent* component);
 
-    List<Link> links;
+    Vector<Link> links;
 };
 }
