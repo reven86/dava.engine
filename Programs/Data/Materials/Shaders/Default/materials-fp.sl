@@ -250,7 +250,7 @@ fragment_out fp_main( fragment_in input )
         #endif
         
         #if ALPHASTEPVALUE && ALPHABLEND
-            textureColor0.a = step(alphaStepValue, textureColor0.a);
+            textureColor0.a = half(step(alphaStepValue, float(textureColor0.a)));
         #endif
         #endif
         
