@@ -40,6 +40,8 @@ MainWindow::MainWindow(DAVA::TArc::ContextAccessor* accessor, QWidget* parent)
 #endif //__DAVAENGINE_MACOS__
 {
     ui->setupUi(this);
+    setObjectName("QuickEd"); //we need to support old names to save window settings
+
     ui->libraryWidget->SetAccessor(accessor);
     ui->propertiesWidget->SetAccessor(accessor);
     ui->packageWidget->SetAccessor(accessor);

@@ -15,7 +15,7 @@
 
 #include <QtTools/Utils/Themes/Themes.h>
 
-#include <Tools/version.h>
+#include <Tools/Version.h>
 #include <DAVAVersion.h>
 
 DAVA_VIRTUAL_REFLECTION_IMPL(LegacySupportModule)

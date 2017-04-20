@@ -32,7 +32,7 @@
 #include <QLineEdit>
 #include <QScreen>
 #include <QMenu>
-#include <QShortCut>
+#include <QShortcut>
 #include <QFileInfo>
 #include <QInputDialog>
 #include <QComboBox>
