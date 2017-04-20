@@ -317,6 +317,8 @@ void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, in
         }
 
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, windowWidth, windowHeight, surfaceWidth, surfaceHeight, dpi, eFullscreen::On));
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, true));
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, true));
 
         firstTimeSurfaceChanged = false;
     }
@@ -338,10 +340,6 @@ void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, in
             }));
         }
     }
-
-    // Simulate application resuming to compensate suspending in SurfaceDestroyed.
-    // APP_RESUMED handler in EngineBackend prevents from resuming application twice.
-    mainDispatcher->PostEvent(MainDispatcherEvent(MainDispatcherEvent::APP_RESUMED));
 }
 
 void WindowBackend::SurfaceDestroyed()
@@ -349,11 +347,6 @@ void WindowBackend::SurfaceDestroyed()
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateFunctorEvent([this]() {
         ReplaceAndroidNativeWindow(nullptr);
     }));
-
-    // Simulate application suspending if surface has been destroyed as in some cases
-    // SurfaceDestroyed can be called without corresponding Activity.onPause.
-    // APP_SUSPENDED handler in EngineBackend prevents from suspending application twice.
-    mainDispatcher->SendEvent(MainDispatcherEvent(MainDispatcherEvent::APP_SUSPENDED));
 }
 
 void WindowBackend::ProcessProperties()

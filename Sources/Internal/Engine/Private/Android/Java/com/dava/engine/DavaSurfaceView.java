@@ -38,7 +38,8 @@ final class DavaSurfaceView extends SurfaceView
                                        View.OnGenericMotionListener,
                                        View.OnKeyListener
 {
-    protected long windowBackendPointer = 0;
+    private long windowBackendPointer = 0;
+    private boolean isSurfaceReady = false;
     
     public static native void nativeSurfaceViewOnResume(long windowBackendPointer);
     public static native void nativeSurfaceViewOnPause(long windowBackendPointer);
@@ -69,6 +70,11 @@ final class DavaSurfaceView extends SurfaceView
         setOnGenericMotionListener(this);
 
         DavaActivity.instance().registerActivityListener(this);
+    }
+
+    public boolean isSurfaceReady()
+    {
+        return isSurfaceReady;
     }
     
     public Object createNativeControl(String className, long backendPointer)
@@ -175,7 +181,7 @@ final class DavaSurfaceView extends SurfaceView
         Log.d(DavaActivity.LOG_TAG, "DavaSurface.surfaceCreated");
         nativeSurfaceViewOnSurfaceCreated(windowBackendPointer, this);
     }
-    
+
     @Override
     public void surfaceChanged(SurfaceHolder holder, int format, int w, int h)
     {
@@ -206,22 +212,26 @@ final class DavaSurfaceView extends SurfaceView
         }
 
         int dpi = getDpi();
+        isSurfaceReady = true;
         
         Log.d(DavaActivity.LOG_TAG, String.format("DavaSurface.surfaceChanged: w=%d, h=%d, surfW=%d, surfH=%d, dpi=%d", w, h, w, h, dpi));
         nativeSurfaceViewOnSurfaceChanged(windowBackendPointer, holder.getSurface(), w, h, w, h, dpi);
         
-        if (!DavaActivity.isNativeThreadRunning())
-        {
-            // continue initialization of game after creating main window
-            DavaActivity.instance().onFinishCreatingMainWindowSurface();
-        }
+        DavaActivity.instance().startNativeThreadIfNotRunning();
+        DavaActivity.instance().handleResume();
     }
     
     @Override
     public void surfaceDestroyed(SurfaceHolder holder)
     {
         Log.d(DavaActivity.LOG_TAG, "DavaSurface.surfaceDestroyed");
-        nativeSurfaceViewOnSurfaceDestroyed(windowBackendPointer);
+        
+        DavaActivity.instance().handlePause();
+        if (isSurfaceReady)
+        {
+            isSurfaceReady = false;
+            nativeSurfaceViewOnSurfaceDestroyed(windowBackendPointer);
+        }
     }
 
     @Override
