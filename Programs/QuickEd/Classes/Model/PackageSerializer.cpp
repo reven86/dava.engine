@@ -493,6 +493,6 @@ void PackageSerializer::PutValueProperty(const DAVA::String& name, ValueProperty
     }
     else
     {
-        PutValue(name, AnyToString(value), value.CanGet<String>() || value.CanGet<FilePath>());
+        PutValue(name, AnyToString(value), value.CanGet<String>() || value.CanGet<FilePath>() || value.CanGet<FastName>());
     }
 }
