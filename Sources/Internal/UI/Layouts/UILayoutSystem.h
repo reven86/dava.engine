@@ -75,7 +75,6 @@ private:
     bool autoupdatesEnabled = true;
     bool dirty = false;
     bool needUpdate = false;
-    //Vector<ControlLayoutData> sharedLayoutData;
     Layouter sharedLayouter;
     RefPtr<UIScreen> currentScreen;
     RefPtr<UIControl> popupContainer;
