@@ -849,16 +849,11 @@ void PackageWidget::DeselectNodeImpl(PackageBaseNode* node)
     }
     if (!currentIndexes.empty())
     {
-        QModelIndex index = currentIndexes.back();
-        if (srcIndex == index)
-        {
-            QModelIndex dstIndex = filteredPackageModel->mapFromSource(index);
-            if (dstIndex.isValid())
-            {
-                treeView->selectionModel()->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
-                treeView->scrollTo(dstIndex);
-            }
-        }
+        QModelIndex srcIndex = currentIndexes.back();
+        QModelIndex dstIndex = filteredPackageModel->mapFromSource(srcIndex);
+        QItemSelectionModel* selectionModel = treeView->selectionModel();
+        selectionModel->setCurrentIndex(dstIndex, QItemSelectionModel::NoUpdate);
+        treeView->scrollTo(dstIndex);
     }
     else
     {
@@ -875,7 +870,7 @@ void PackageWidget::SelectNodeImpl(PackageBaseNode* node)
     QModelIndex dstIndex = filteredPackageModel->mapFromSource(srcIndex);
     if (dstIndex.isValid())
     {
-        auto selectionModel = treeView->selectionModel();
+        QItemSelectionModel* selectionModel = treeView->selectionModel();
         selectionModel->setCurrentIndex(dstIndex, QItemSelectionModel::NoUpdate);
         selectionModel->select(dstIndex, QItemSelectionModel::Select);
         treeView->scrollTo(dstIndex);
