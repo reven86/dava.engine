@@ -1,12 +1,10 @@
 #include "FlowLayoutAlgorithm.h"
 
-#include "UIFlowLayoutComponent.h"
-#include "UISizePolicyComponent.h"
-#include "UIFlowLayoutHintComponent.h"
-
-#include "AnchorLayoutAlgorithm.h"
-#include "LayoutHelpers.h"
-
+#include "UI/Layouts/Private/AnchorLayoutAlgorithm.h"
+#include "UI/Layouts/Private/LayoutHelpers.h"
+#include "UI/Layouts/UIFlowLayoutComponent.h"
+#include "UI/Layouts/UIFlowLayoutHintComponent.h"
+#include "UI/Layouts/UISizePolicyComponent.h"
 #include "UI/UIControl.h"
 
 namespace DAVA

@@ -1,10 +1,9 @@
 #include "SizeMeasuringAlgorithm.h"
 
-#include "UILinearLayoutComponent.h"
-#include "UIFlowLayoutComponent.h"
-#include "UIFlowLayoutHintComponent.h"
-#include "UISizePolicyComponent.h"
-
+#include "UI/Layouts/UILinearLayoutComponent.h"
+#include "UI/Layouts/UIFlowLayoutComponent.h"
+#include "UI/Layouts/UIFlowLayoutHintComponent.h"
+#include "UI/Layouts/UISizePolicyComponent.h"
 #include "UI/UIControl.h"
 
 namespace DAVA

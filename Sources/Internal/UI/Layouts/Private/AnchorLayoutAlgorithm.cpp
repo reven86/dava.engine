@@ -1,8 +1,7 @@
 #include "AnchorLayoutAlgorithm.h"
 
-#include "UIAnchorComponent.h"
-#include "UISizePolicyComponent.h"
-
+#include "UI/Layouts/UIAnchorComponent.h"
+#include "UI/Layouts/UISizePolicyComponent.h"
 #include "UI/UIControl.h"
 
 namespace DAVA
