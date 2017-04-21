@@ -36,8 +36,6 @@ public:
 private:
     EngineBackend& engineBackend;
 
-    bool screenTimeoutEnabled = true;
-
     static HINSTANCE hinstance;
 };
 
