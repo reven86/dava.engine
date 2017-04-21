@@ -175,8 +175,14 @@ bool LinearLayoutAlgorithm::CalculateChildDependentOnParentSize(ControlLayoutDat
     {
         SizeMeasuringAlgorithm alg(layoutData, childData, axis, sizeHint);
         alg.SetParentSize(currentSize);
+        alg.SetParentRestSize(restSize);
 
         float32 size = alg.Calculate();
+        if (size < 0.0f)
+        {
+            size = 0.0f;
+        }
+        restSize -= size;
         childData.SetSize(axis, size);
     }
 

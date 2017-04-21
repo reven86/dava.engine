@@ -18,6 +18,7 @@ DAVA_VIRTUAL_REFLECTION_IMPL(SizeMeasuringAlgorithm)
     .Field("lastChild", &SizeMeasuringAlgorithm::CalculateLastChild, nullptr)
     .Field("content", &SizeMeasuringAlgorithm::CalculateContent, nullptr)
     .Field("parent", &SizeMeasuringAlgorithm::parentSize)
+    .Field("parentRest", &SizeMeasuringAlgorithm::parentRestSize)
     .Field("minLimit", &SizeMeasuringAlgorithm::GetMinLimit, nullptr)
     .Field("maxLimit", &SizeMeasuringAlgorithm::GetMaxLimit, nullptr)
     .Field("value", &SizeMeasuringAlgorithm::GetValue, nullptr)
@@ -42,6 +43,11 @@ SizeMeasuringAlgorithm::~SizeMeasuringAlgorithm()
 void SizeMeasuringAlgorithm::SetParentSize(float32 parentSize_)
 {
     parentSize = parentSize_;
+}
+
+void SizeMeasuringAlgorithm::SetParentRestSize(float32 restSize_)
+{
+    parentRestSize = restSize_;
 }
 
 void SizeMeasuringAlgorithm::Apply()
