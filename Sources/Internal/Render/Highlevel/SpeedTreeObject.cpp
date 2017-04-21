@@ -196,7 +196,6 @@ AABBox3 SpeedTreeObject::CalcBBoxForSpeedTreeGeometry(RenderBatch* rb)
 
         if (pivot.w > 0.f)
         {
-
             Vector3 pointX, pointY, pointZ;
             Vector3 offsetX, offsetY;
 

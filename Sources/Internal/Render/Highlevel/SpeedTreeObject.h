@@ -69,5 +69,4 @@ inline void SpeedTreeObject::SetInvWorldTransformPtr(const Matrix4* invWT)
 {
     invWorldTransform = invWT;
 }
-
 }

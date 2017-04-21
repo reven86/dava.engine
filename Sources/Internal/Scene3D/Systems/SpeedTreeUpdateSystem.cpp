@@ -172,5 +172,4 @@ void SpeedTreeUpdateSystem::SceneDidLoaded()
         }
     }
 }
-
 };
