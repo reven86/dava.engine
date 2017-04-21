@@ -60,6 +60,11 @@ final class DavaGamepadManager extends DavaActivity.ActivityListenerImpl
     public static native void nativeOnGamepadAdded(int deviceId, String name, boolean hasTriggerButtons);
     public static native void nativeOnGamepadRemoved(int deviceId);
 
+    public DavaGamepadManager()
+    {
+        onResume();
+    }
+
     // DavaActivity.ActivityListener interface
     @Override
     public void onResume()
