@@ -99,8 +99,6 @@ void PlatformCore::Quit()
 void PlatformCore::SetScreenTimeoutEnabled(bool enabled)
 {
     engineBackend->GetPrimaryWindow()->RunOnUIThreadAsync([this, enabled]() {
-        // If user wants to disable screen timeout and display request is already active - do nothing
-        // If user wants to enable screen timeout and display request is not active - do nothing
         if (displayRequestActive != enabled)
         {
             return;
