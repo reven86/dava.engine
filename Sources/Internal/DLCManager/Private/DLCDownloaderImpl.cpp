@@ -7,11 +7,170 @@
 #include "FileSystem/FileSystem.h"
 #include "Concurrency/LockGuard.h"
 
-#include <curl/curl.h>
-
 namespace DAVA
 {
 Thread::Id downlodThreadId = 0;
+
+IDownloaderSubTask::~IDownloaderSubTask() = default;
+ICurlEasyStorage::~ICurlEasyStorage() = default;
+
+struct GetSizeSubTask : IDownloaderSubTask
+{
+    DLCDownloader::Task* task = nullptr;
+    CURL* easy = nullptr;
+
+    GetSizeSubTask(DLCDownloader::Task* task_)
+        : task(task_)
+    {
+        DVASSERT(task != nullptr);
+
+        easy = task->curlStorage->CurlCreateHandle();
+        DVASSERT(easy != nullptr);
+
+        CURLcode code = curl_easy_setopt(easy, CURLOPT_HEADER, 0L);
+        DVASSERT(CURLE_OK == code);
+
+        const char* url = task->info.srcUrl.c_str();
+        DVASSERT(url != nullptr);
+
+        code = curl_easy_setopt(easy, CURLOPT_URL, url);
+        DVASSERT(CURLE_OK == code);
+
+        // Don't return the header (we'll use curl_getinfo();
+        code = curl_easy_setopt(easy, CURLOPT_NOBODY, 1L);
+        DVASSERT(CURLE_OK == code);
+    }
+    void OnDone(CURLMsg* curlMsg) override
+    {
+        if (curlMsg->data.result != CURLE_OK)
+        {
+            task->status.error.curlErr = curlMsg->data.result;
+            task->status.error.curlEasyStrErr = curl_easy_strerror(curlMsg->data.result);
+        }
+        else
+        {
+            float64 sizeToDownload = 0.0; // curl need double! do not change https://curl.haxx.se/libcurl/c/CURLINFO_CONTENT_LENGTH_DOWNLOAD.html
+            CURLcode code = curl_easy_getinfo(easy, CURLINFO_CONTENT_LENGTH_DOWNLOAD, &sizeToDownload);
+            DVASSERT(CURLE_OK == code);
+            task->status.sizeDownloaded = static_cast<uint64>(sizeToDownload);
+            if (task->info.type == DLCDownloader::TaskType::SIZE)
+            {
+                task->status.sizeTotal = task->status.sizeDownloaded;
+            }
+        }
+
+        ICurlEasyStorage* storage = task->curlStorage;
+        CURLMcode code = curl_multi_remove_handle(storage->GetMultiHandle(), easy);
+        DVASSERT(CURLM_OK == code);
+        storage->CurlDeleteHandle(easy);
+
+        //if (curlMsg->data.result != CURLE_OK)
+        //{
+        //	if (curlMsg->data.result == CURLE_PARTIAL_FILE && task->status.sizeDownloaded == task->info.rangeSize)
+        //	{
+        //		// all good
+        //	}
+        //	else
+        //	{
+        //		const char* errStr = curl_easy_strerror(curlMsg->data.result);
+        //		Logger::Error("%s", errStr);
+        //		DVASSERT(false); // error downloading
+        //	}
+        //}
+    }
+    DLCDownloader::Task* GetTask() override
+    {
+        return task;
+    }
+    CURL* GetEasyHandle() override
+    {
+        return easy;
+    }
+};
+
+DLCDownloader::Task::Task(const String& srcUrl,
+                          const String& dstPath,
+                          TaskType taskType,
+                          IWriter* dstWriter,
+                          int64 rangeOffset,
+                          int64 rangeSize,
+                          int32 timeout)
+{
+    info.rangeOffset = rangeOffset;
+    info.rangeSize = rangeSize;
+    info.srcUrl = srcUrl;
+    info.dstPath = dstPath;
+    info.timeoutSec = timeout;
+    info.type = taskType;
+
+    status.state = TaskState::JustAdded;
+    status.error = TaskError();
+    status.sizeDownloaded = 0;
+    status.sizeTotal = info.rangeSize;
+
+    defaultWriter.reset(dstWriter);
+}
+
+DLCDownloader::Task::~Task()
+{
+    // TODO do I need to check
+}
+
+void DLCDownloader::Task::PrepareForDownloading()
+{
+    CURLM* multiHandle = curlStorage->GetMultiHandle();
+    DVASSERT(multiHandle != nullptr);
+
+    switch (info.type)
+    {
+    case TaskType::FULL:
+        SetupFullDownload();
+        break;
+    case TaskType::RESUME:
+        SetupResumeDownload();
+        break;
+    case TaskType::SIZE:
+        SetupGetSizeDownload();
+        break;
+    }
+
+    for (auto& subTask : subTasksWorking)
+    {
+        CURL* easyHandle = subTask->GetEasyHandle();
+        CURLMcode code = curl_multi_add_handle(multiHandle, easyHandle);
+        DVASSERT(CURLM_OK == code);
+    }
+    status.state = TaskState::Downloading;
+}
+
+bool DLCDownloader::Task::IsDone() const
+{
+    return subTasksWorking.empty() && subTasksReadyToWrite.empty();
+}
+
+struct SubBuf : std::streambuf
+{
+    explicit SubBuf(size_t size_)
+    {
+        size = size_;
+        buf = new char[size];
+        Restart();
+    }
+    ~SubBuf()
+    {
+        delete[] buf;
+        buf = nullptr;
+        size = 0;
+    }
+    void Restart()
+    {
+        char* begin = buf;
+        char* end = const_cast<char*>(begin + size);
+        setg(begin, begin, end);
+    }
+    char* buf = nullptr;
+    size_t size = 0;
+};
 
 struct DefaultWriter : DLCDownloader::IWriter
 {
@@ -142,26 +301,16 @@ DLCDownloader::Task* DLCDownloaderImpl::StartTask(const String& srcUrl,
                                                   int64 rangeSize,
                                                   int32 timeout)
 {
-    Task* task = new Task();
-
-    auto& info = task->info;
-
-    info.rangeOffset = rangeOffset;
-    info.rangeSize = rangeSize;
-    info.srcUrl = srcUrl;
-    info.dstPath = dstPath;
-    info.timeoutSec = timeout;
-    info.type = taskType;
-    info.customWriter = dstWriter;
-
-    auto& state = task->status;
-    state.state = TaskState::JustAdded;
-    state.error = TaskError();
-    state.sizeDownloaded = 0;
-    state.sizeTotal = info.rangeSize;
+    Task* task = new Task(srcUrl,
+                          dstPath,
+                          taskType,
+                          dstWriter,
+                          rangeOffset,
+                          rangeSize,
+                          timeout);
 
     {
-        LockGuard<Mutex> lock(mutexTaskList);
+        LockGuard<Mutex> lock(mutexInputList);
         inputList.push_back(task);
     }
 
@@ -228,20 +377,35 @@ void DLCDownloaderImpl::RemoveDeletedTasks()
 
             if (task->status.state == TaskState::JustAdded)
             {
-                LockGuard<Mutex> lock2(mutexTaskList);
+                LockGuard<Mutex> lock2(mutexInputList);
                 auto it = find(begin(inputList), end(inputList), task);
                 if (it != end(inputList))
                 {
                     inputList.erase(it);
                 }
             }
+
+            if (!waitingTaskList.empty())
+            {
+                LockGuard<Mutex> lock3(mutexWaitingList);
+                auto it = find_if(begin(waitingTaskList), end(waitingTaskList), [task](WaitingDescTask& wd)
+                                  {
+                                      return wd.task == task;
+                                  });
+                if (it != end(waitingTaskList))
+                {
+                    it->semaphore->Post(1);
+                    waitingTaskList.erase(it);
+                }
+            }
+
             DeleteTask(task);
             return true;
         });
     }
 }
 
-DLCDownloader::Task* DLCDownloaderImpl::FindJustEddedTask()
+DLCDownloader::Task* DLCDownloaderImpl::AddMoreNewTasks()
 {
     if (inputList.empty())
     {
@@ -298,6 +462,42 @@ void DLCDownloaderImpl::CurlDeleteHandle(CURL* easy)
     reusableHandles.push_back(easy);
 }
 
+CURLM* DLCDownloaderImpl::GetMultiHandle()
+{
+    return multiHandle;
+}
+
+int DLCDownloaderImpl::GetFreeHandleCount()
+{
+    int numFree = hints.numOfMaxEasyHandles - numOfRunningTasks;
+    DVASSERT(numFree >= 0);
+    return numFree;
+}
+
+void DLCDownloaderImpl::Map(CURL* easy, IDownloaderSubTask* subTask)
+{
+    DVASSERT(easy != nullptr);
+    DVASSERT(subTask != nullptr);
+    taskMap.emplace(easy, subTask);
+}
+
+IDownloaderSubTask* DLCDownloaderImpl::FindInMap(CURL* easy)
+{
+    DVASSERT(easy != nullptr);
+    auto it = taskMap.find(easy);
+    if (it != end(taskMap))
+    {
+        return it->second;
+    }
+    return nullptr;
+}
+
+void DLCDownloaderImpl::UnMap(CURL* easy)
+{
+    DVASSERT(easy != nullptr);
+    taskMap.erase(easy);
+}
+
 static void CurlSetTimeout(DLCDownloader::Task* justAddedTask, CURL* easyHandle)
 {
     CURLcode code = CURLE_OK;
@@ -320,22 +520,15 @@ static void CurlSetTimeout(DLCDownloader::Task* justAddedTask, CURL* easyHandle)
 
 static size_t CurlDataRecvHandler(void* ptr, size_t size, size_t nmemb, void* part)
 {
-    DLCDownloader::IWriter* writer = static_cast<DLCDownloader::IWriter*>(part);
+    DLCDownloader::Task* task = static_cast<DLCDownloader::Task*>(part);
+    DVASSERT(task != nullptr);
+    DLCDownloader::IWriter* writer = task->defaultWriter.get();
     DVASSERT(writer != nullptr);
 
     size_t fullSizeToWrite = size * nmemb;
 
-    uint64 writen = 0;
-
-    size_t spaceLeft = static_cast<size_t>(writer->SpaceLeft());
-    if (spaceLeft >= fullSizeToWrite)
-    {
-        writen = writer->Save(ptr, fullSizeToWrite);
-    }
-    else
-    {
-        writen = writer->Save(ptr, spaceLeft);
-    }
+    uint64 writen = writer->Save(ptr, fullSizeToWrite);
+    DVASSERT(writen == fullSizeToWrite);
 
     return static_cast<size_t>(writen);
 }
@@ -344,8 +537,9 @@ void DLCDownloaderImpl::DeleteTask(Task* task)
 {
     if (task->status.state == TaskState::Downloading)
     {
-        for (CURL* easy : task->easyHandles)
+        for (auto& t : task->subTasksWorking)
         {
+            CURL* easy = t->GetEasyHandle();
             taskMap.erase(easy);
 
             CURLMcode r = curl_multi_remove_handle(multiHandle, easy);
@@ -353,164 +547,140 @@ void DLCDownloaderImpl::DeleteTask(Task* task)
 
             CurlDeleteHandle(easy);
         }
-        task->easyHandles.clear();
+        for (auto& t : task->subTasksReadyToWrite)
+        {
+            CURL* easy = t->GetEasyHandle();
+            taskMap.erase(easy);
+
+            CURLMcode r = curl_multi_remove_handle(multiHandle, easy);
+            DVASSERT(CURLM_OK == r);
+
+            CurlDeleteHandle(easy);
+        }
     }
 
     delete task;
 }
 
-void DLCDownloaderImpl::StoreHandle(Task* justAddedTask, CURL* easyHandle)
-{
-    justAddedTask->easyHandles.emplace(easyHandle);
-    taskMap.emplace(easyHandle, justAddedTask);
-}
-
-void DLCDownloaderImpl::SetupFullDownload(Task* justAddedTask)
+void DLCDownloader::Task::SetupFullDownload()
 {
     CURLcode code = CURLE_OK;
 
-    auto& info = justAddedTask->info;
-
-    if (info.customWriter == nullptr && TaskType::SIZE != info.type)
+    if (defaultWriter.get() == nullptr)
     {
-        justAddedTask->defaultWriter.reset(new DefaultWriter(info.dstPath));
+        defaultWriter.reset(new DefaultWriter(info.dstPath));
+    }
+    defaultWriter->Truncate();
+
+    if (info.rangeOffset != -1 && info.rangeSize != -1)
+    {
+        // we already know size to download
+        restOffset = info.rangeOffset;
+        restSize = info.rangeSize;
+        // TODO generate range sub_requests
+    }
+    else
+    {
+        DVASSERT(info.rangeOffset != -1);
+        DVASSERT(info.rangeSize != -1);
+        // first get size of full file
+        IDownloaderSubTask* subTask = new GetSizeSubTask(this);
+        subTasksWorking.push_back(subTask);
     }
 
-    CURL* easyHandle = CurlCreateHandle();
-    DVASSERT(easyHandle != nullptr);
+    //const char* url = info.srcUrl.c_str();
+    //DVASSERT(url != nullptr);
 
-    StoreHandle(justAddedTask, easyHandle);
+    //code = curl_easy_setopt(easyHandle, CURLOPT_URL, url);
+    //DVASSERT(code == CURLE_OK);
 
-    IWriter* writer = info.customWriter != nullptr ? info.customWriter : justAddedTask->defaultWriter.get();
-    DVASSERT(writer != nullptr);
+    //code = curl_easy_setopt(easyHandle, CURLOPT_WRITEFUNCTION, CurlDataRecvHandler);
+    //DVASSERT(code == CURLE_OK);
 
-    const char* url = justAddedTask->info.srcUrl.c_str();
-    DVASSERT(url != nullptr);
+    //code = curl_easy_setopt(easyHandle, CURLOPT_WRITEDATA, subTask);
+    //DVASSERT(code == CURLE_OK);
 
-    code = curl_easy_setopt(easyHandle, CURLOPT_URL, url);
-    DVASSERT(code == CURLE_OK);
+    //bool hasRangeStart = info.rangeOffset != -1;
+    //bool hasRangeFinish = info.rangeSize != -1;
 
-    code = curl_easy_setopt(easyHandle, CURLOPT_WRITEFUNCTION, CurlDataRecvHandler);
-    DVASSERT(code == CURLE_OK);
+    //if (hasRangeStart || hasRangeFinish)
+    //{
+    //    StringStream ss;
+    //    if (hasRangeStart)
+    //    {
+    //        ss << info.rangeOffset;
+    //    }
+    //    ss << '-';
+    //    if (hasRangeFinish)
+    //    {
+    //        DVASSERT(info.rangeSize > 0);
+    //        ss << info.rangeOffset + info.rangeSize - 1;
+    //    }
+    //    String s = ss.str();
+    //    code = curl_easy_setopt(easyHandle, CURLOPT_RANGE, s.c_str());
+    //    DVASSERT(code == CURLE_OK);
+    //}
 
-    code = curl_easy_setopt(easyHandle, CURLOPT_WRITEDATA, writer);
-    DVASSERT(code == CURLE_OK);
-
-    bool hasRangeStart = info.rangeOffset != -1;
-    bool hasRangeFinish = info.rangeSize != -1;
-
-    if (hasRangeStart || hasRangeFinish)
-    {
-        StringStream ss;
-        if (hasRangeStart)
-        {
-            ss << info.rangeOffset;
-        }
-        ss << '-';
-        if (hasRangeFinish)
-        {
-            DVASSERT(info.rangeSize > 0);
-            ss << info.rangeOffset + info.rangeSize - 1;
-        }
-        String s = ss.str();
-        code = curl_easy_setopt(easyHandle, CURLOPT_RANGE, s.c_str());
-        DVASSERT(code == CURLE_OK);
-    }
-
-    // set all timeouts
-    CurlSetTimeout(justAddedTask, easyHandle);
+    //// set all timeouts
+    //CurlSetTimeout(this, easyHandle);
 }
 
-void DLCDownloaderImpl::SetupResumeDownload(Task* justAddedTask)
+void DLCDownloader::Task::SetupResumeDownload()
 {
-    CURLcode code = CURLE_OK;
-
-    CURL* easyHandle = CurlCreateHandle();
-    DVASSERT(easyHandle != nullptr);
-
-    StoreHandle(justAddedTask, easyHandle);
-
-    auto& info = justAddedTask->info;
-
-    if (info.customWriter == nullptr && TaskType::SIZE != info.type)
+    if (defaultWriter.get() == nullptr)
     {
-        justAddedTask->defaultWriter.reset(new DefaultWriter(info.dstPath));
+        defaultWriter.reset(new DefaultWriter(info.dstPath));
     }
 
-    IWriter* writer = info.customWriter != nullptr ? info.customWriter : justAddedTask->defaultWriter.get();
-    DVASSERT(writer != nullptr);
-
-    const char* url = justAddedTask->info.srcUrl.c_str();
-    DVASSERT(url != nullptr);
-
-    code = curl_easy_setopt(easyHandle, CURLOPT_URL, url);
-    DVASSERT(code == CURLE_OK);
-
-    code = curl_easy_setopt(easyHandle, CURLOPT_WRITEFUNCTION, CurlDataRecvHandler);
-    DVASSERT(code == CURLE_OK);
-
-    code = curl_easy_setopt(easyHandle, CURLOPT_WRITEDATA, writer);
-    DVASSERT(code == CURLE_OK);
-
+    if (info.rangeOffset != -1 && info.rangeSize != -1)
     {
-        char8 rangeStr[32];
-        sprintf(rangeStr, "%lld-", writer->GetSeekPos());
-        code = curl_easy_setopt(easyHandle, CURLOPT_RANGE, rangeStr);
-        DVASSERT(code == CURLE_OK);
+        // we already know size to download
+        // TODO generate range sub_requests
+    }
+    else
+    {
+        // first get size of full file
+        IDownloaderSubTask* subTask = new GetSizeSubTask(this);
+        subTasksWorking.push_back(subTask);
     }
 
-    // set all timeouts
-    CurlSetTimeout(justAddedTask, easyHandle);
+    //const char* url = info.srcUrl.c_str();
+    //DVASSERT(url != nullptr);
+
+    //code = curl_easy_setopt(easyHandle, CURLOPT_URL, url);
+    //DVASSERT(code == CURLE_OK);
+
+    //code = curl_easy_setopt(easyHandle, CURLOPT_WRITEFUNCTION, CurlDataRecvHandler);
+    //DVASSERT(code == CURLE_OK);
+
+    //code = curl_easy_setopt(easyHandle, CURLOPT_WRITEDATA, subTask);
+    //DVASSERT(code == CURLE_OK);
+
+    //{
+    //    char8 rangeStr[32];
+    //    sprintf(rangeStr, "%lld-", defaultWriter->GetSeekPos());
+    //    code = curl_easy_setopt(easyHandle, CURLOPT_RANGE, rangeStr);
+    //    DVASSERT(code == CURLE_OK);
+    //}
+
+    //// set all timeouts
+    //CurlSetTimeout(this, easyHandle);
 }
 
-void DLCDownloaderImpl::SetupGetSizeDownload(Task* justAddedTask)
+void DLCDownloader::Task::SetupGetSizeDownload()
 {
-    CURLcode code = CURLE_OK;
+    IDownloaderSubTask* subTask = new GetSizeSubTask(this);
 
-    CURL* easyHandle = CurlCreateHandle();
-    DVASSERT(easyHandle != nullptr);
-
-    StoreHandle(justAddedTask, easyHandle);
-
-    code = curl_easy_setopt(easyHandle, CURLOPT_HEADER, 0L);
-    DVASSERT(CURLE_OK == code);
-
-    const char* url = justAddedTask->info.srcUrl.c_str();
-    DVASSERT(url != nullptr);
-
-    code = curl_easy_setopt(easyHandle, CURLOPT_URL, url);
-    DVASSERT(CURLE_OK == code);
-
-    // Don't return the header (we'll use curl_getinfo();
-    code = curl_easy_setopt(easyHandle, CURLOPT_NOBODY, 1L);
-    DVASSERT(CURLE_OK == code);
+    subTasksWorking.push_back(subTask);
 }
 
 bool DLCDownloaderImpl::TakeNewTaskFromInputList()
 {
-    Task* justAddedTask = FindJustEddedTask();
+    Task* justAddedTask = AddMoreNewTasks();
 
     if (justAddedTask != nullptr)
     {
-        switch (justAddedTask->info.type)
-        {
-        case TaskType::FULL:
-            SetupFullDownload(justAddedTask);
-            break;
-        case TaskType::RESUME:
-            SetupResumeDownload(justAddedTask);
-            break;
-        case TaskType::SIZE:
-            SetupGetSizeDownload(justAddedTask);
-            break;
-        }
-
-        for (CURL* easyHandle : justAddedTask->easyHandles)
-        {
-            CURLMcode code = curl_multi_add_handle(multiHandle, easyHandle);
-            DVASSERT(CURLM_OK == code);
-        }
-        justAddedTask->status.state = TaskState::Downloading;
+        justAddedTask->PrepareForDownloading();
     }
     return justAddedTask != nullptr;
 }
@@ -533,24 +703,24 @@ void DLCDownloaderImpl::SignalOnFinishedWaitingTasks()
     }
 }
 
-void DLCDownloaderImpl::AddNewTasks(int& numOfAddedTasks)
+void DLCDownloaderImpl::AddNewTasks()
 {
-    if (!inputList.empty() && numOfAddedTasks < hints.numOfMaxEasyHandles)
+    if (!inputList.empty() && numOfRunningTasks < hints.numOfMaxEasyHandles)
     {
-        LockGuard<Mutex> lock(mutexTaskList);
-        while (!inputList.empty() && numOfAddedTasks < hints.numOfMaxEasyHandles)
+        LockGuard<Mutex> lock(mutexInputList);
+        while (!inputList.empty() && numOfRunningTasks < hints.numOfMaxEasyHandles)
         {
             bool justAdded = TakeNewTaskFromInputList();
             if (!justAdded)
             {
                 break; // no more new tasks
             }
-            ++numOfAddedTasks;
+            ++numOfRunningTasks;
         }
     }
 }
 
-void DLCDownloaderImpl::ProcessMessagesFromMulti(int& numOfAddedTasks)
+void DLCDownloaderImpl::ProcessMessagesFromMulti()
 {
     CURLMsg* curlMsg = nullptr;
 
@@ -565,45 +735,17 @@ void DLCDownloaderImpl::ProcessMessagesFromMulti(int& numOfAddedTasks)
             auto it = taskMap.find(easyHandle);
             DVASSERT(it != end(taskMap));
 
-            Task* finishedTask = it->second;
+            IDownloaderSubTask* subTask = it->second;
+            Task* task = subTask->GetTask();
 
             taskMap.erase(it);
-            finishedTask->status.error.curlErr = curlMsg->data.result;
 
-            {
-                float64 sizeToDownload = 0.0; // curl need double! do not change https://curl.haxx.se/libcurl/c/CURLINFO_CONTENT_LENGTH_DOWNLOAD.html
-                CURLcode code = curl_easy_getinfo(easyHandle, CURLINFO_CONTENT_LENGTH_DOWNLOAD, &sizeToDownload);
-                DVASSERT(CURLE_OK == code);
-                finishedTask->status.sizeDownloaded = static_cast<uint64>(sizeToDownload);
-                if (finishedTask->info.type == TaskType::SIZE)
-                {
-                    finishedTask->status.sizeTotal = finishedTask->status.sizeDownloaded;
-                }
-            }
-            if (curlMsg->data.result != CURLE_OK)
-            {
-                if (curlMsg->data.result == CURLE_PARTIAL_FILE && finishedTask->status.sizeDownloaded == finishedTask->info.rangeSize)
-                {
-                    // all good
-                }
-                else
-                {
-                    const char* errStr = curl_easy_strerror(curlMsg->data.result);
-                    Logger::Error("%s", errStr);
-                    DVASSERT(false); // error downloading
-                }
-            }
+            subTask->OnDone(curlMsg);
 
-            CURLMcode code = curl_multi_remove_handle(multiHandle, easyHandle);
-            DVASSERT(CURLM_OK == code);
-            CurlDeleteHandle(easyHandle);
-
-            finishedTask->easyHandles.erase(easyHandle);
-            if (finishedTask->easyHandles.empty())
+            if (task->IsDone())
             {
-                finishedTask->defaultWriter.reset();
-                finishedTask->status.state = TaskState::Finished;
-                --numOfAddedTasks;
+                task->status.state = TaskState::Finished;
+                --numOfRunningTasks;
             }
         }
     } while (curlMsg);
@@ -617,7 +759,6 @@ void DLCDownloaderImpl::DownloadThreadFunc()
     downlodThreadId = currentThread->GetId();
 
     bool stillRuning = false;
-    int numOfRunningTasks = 0;
 
     while (!currentThread->IsCancelling())
     {
@@ -631,13 +772,13 @@ void DLCDownloaderImpl::DownloadThreadFunc()
 
         RemoveDeletedTasks();
 
-        AddNewTasks(numOfRunningTasks);
+        AddNewTasks();
 
         while (stillRuning)
         {
             stillRuning = CurlPerform() != 0;
 
-            ProcessMessagesFromMulti(numOfRunningTasks);
+            ProcessMessagesFromMulti();
 
             if (stillRuning)
             {

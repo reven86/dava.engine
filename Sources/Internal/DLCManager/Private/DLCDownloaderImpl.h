@@ -2,25 +2,61 @@
 #include "DLCManager/DLCDownloader.h"
 #include "Concurrency/Thread.h"
 #include "Concurrency/Semaphore.h"
-#include "Concurrency/Atomic.h"
 
-extern "C"
-{
-typedef void CURL;
-typedef void CURLM;
-}
+#include <curl/curl.h>
 
 namespace DAVA
 {
+struct IDownloaderSubTask
+{
+    virtual ~IDownloaderSubTask();
+    virtual void OnDone(CURLMsg* msg) = 0;
+    virtual DLCDownloader::Task* GetTask() = 0;
+    virtual CURL* GetEasyHandle() = 0;
+};
+
+struct ICurlEasyStorage
+{
+    virtual ~ICurlEasyStorage();
+    virtual CURLM* GetMultiHandle() = 0;
+    virtual CURL* CurlCreateHandle() = 0;
+    virtual void CurlDeleteHandle(CURL* easy) = 0;
+    virtual int GetFreeHandleCount() = 0;
+    virtual void Map(CURL* easy, IDownloaderSubTask* subTask) = 0;
+    virtual IDownloaderSubTask* FindInMap(CURL* easy) = 0;
+    virtual void UnMap(CURL* easy) = 0;
+};
+
 struct DLCDownloader::Task
 {
     TaskInfo info;
     TaskStatus status;
-    Set<CURL*> easyHandles;
+    List<IDownloaderSubTask*> subTasksWorking;
+    List<IDownloaderSubTask*> subTasksReadyToWrite; // sorted list by subTaskIndex
+    size_t lastWritenSubTaskIndex = 0;
     std::unique_ptr<IWriter> defaultWriter;
+    ICurlEasyStorage* curlStorage = nullptr;
+
+    int64 restOffset = -1;
+    int64 restSize = -1;
+
+    Task(const String& srcUrl,
+         const String& dstPath,
+         TaskType taskType,
+         IWriter* dstWriter,
+         int64 rangeOffset,
+         int64 rangeSize,
+         int32 timeout);
+    ~Task();
+
+    void PrepareForDownloading();
+    bool IsDone() const;
+    void SetupFullDownload();
+    void SetupResumeDownload();
+    void SetupGetSizeDownload();
 };
 
-class DLCDownloaderImpl : public DLCDownloader
+class DLCDownloaderImpl : public DLCDownloader, public ICurlEasyStorage
 {
 public:
     DLCDownloaderImpl();
@@ -54,18 +90,23 @@ private:
     void Deinitialize();
     bool TakeNewTaskFromInputList();
     void SignalOnFinishedWaitingTasks();
-    void AddNewTasks(int& numOfAddedTasks);
-    void ProcessMessagesFromMulti(int& numOfAddedTasks);
-    CURL* CurlCreateHandle();
-    void CurlDeleteHandle(CURL* easy);
-    void SetupFullDownload(Task* justAddedTask);
-    void SetupResumeDownload(Task* justAddedTask);
-    void SetupGetSizeDownload(Task* justAddedTask);
+    void AddNewTasks();
+    void ProcessMessagesFromMulti();
+
+    // [start] implement ICurlEasyStorage interface
+    CURL* CurlCreateHandle() override;
+    void CurlDeleteHandle(CURL* easy) override;
+    CURLM* GetMultiHandle() override;
+    int GetFreeHandleCount() override;
+    void Map(CURL* easy, IDownloaderSubTask* subTask) override;
+    IDownloaderSubTask* FindInMap(CURL* easy) override;
+    void UnMap(CURL* easy) override;
+    // [end] implement ICurlEasyStorage interface
+
     void DownloadThreadFunc();
-    void StoreHandle(Task* justAddedTask, CURL* easyHandle);
     void DeleteTask(Task* task);
     void RemoveDeletedTasks();
-    Task* FindJustEddedTask();
+    Task* AddMoreNewTasks();
     int CurlPerform();
 
     struct WaitingDescTask
@@ -75,18 +116,19 @@ private:
     };
 
     List<Task*> inputList;
-    Mutex mutexTaskList; // to protect access to taskQueue
+    Mutex mutexInputList; // to protect access to taskQueue
     List<WaitingDescTask> waitingTaskList;
     Mutex mutexWaitingList;
     List<Task*> removedList;
     Mutex mutexRemovedList;
 
-    // [start] next variables used only from DownloadThreadFunc TODO move in local variables
-    UnorderedMap<CURL*, Task*> taskMap;
+    // [start] next variables used only from Download thread
+    UnorderedMap<CURL*, IDownloaderSubTask*> taskMap;
     List<CURL*> reusableHandles;
     CURLM* multiHandle = nullptr;
     Thread* downloadThread = nullptr;
-    // [finish] variables
+    int numOfRunningTasks = 0;
+    // [end] variables
 
     Semaphore downloadSem; // to resume download thread
 

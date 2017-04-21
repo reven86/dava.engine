@@ -14,6 +14,7 @@ public:
     struct Hints
     {
         int32 numOfMaxEasyHandles = 128;
+        int32 chankMemBuffSize = 1024 * 16; // 16K
     };
 
     enum class TaskState
@@ -51,7 +52,6 @@ public:
         int32 timeoutSec = 30;
         int64 rangeOffset = -1;
         int64 rangeSize = -1;
-        IWriter* customWriter = nullptr;
     };
 
     struct TaskError
