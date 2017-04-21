@@ -30,6 +30,7 @@ final class DavaWebView
     private WebViewProperties properties = new WebViewProperties();
     // Properties that reflect WebView current properties
     private WebViewProperties curProperties = new WebViewProperties();
+    private boolean programmaticUrlNavigation = false; // Flag indicating that WebView has followed URL provided by code not by user click
 
     public static native void nativeReleaseWeakPtr(long backendPointer);
     public static native int nativeOnUrlChanged(long backendPointer, String url, boolean isRedirectedByMouseClick);
@@ -348,6 +349,10 @@ final class DavaWebView
 
     void nativeNavigateTo(WebViewProperties props)
     {
+        // Until API level 24 WebView does not provide methods to determine whether navigation has occured by user click or
+        // programmatically. So try to guess it myself using programmaticUrlNavigation flag.
+        programmaticUrlNavigation = true;
+
         if (eNavigateTo.NAVIGATE_OPEN_URL == props.navigateTo)
         {
             nativeWebView.loadUrl(props.urlOrHtml);
@@ -434,24 +439,29 @@ final class DavaWebView
 
     public void onPageFinished(String url)
     {
+        programmaticUrlNavigation = false;
         if (webviewBackendPointer != 0)
         {
             nativeOnPageLoaded(webviewBackendPointer);
         }
     }
 
-    public boolean shouldOverrideUrlLoading(String url, boolean isRedirectedByMouseClick)
+    public boolean shouldOverrideUrlLoading(String url)
     {
         if (webviewBackendPointer != 0)
         {
-            int action = nativeOnUrlChanged(webviewBackendPointer, url, isRedirectedByMouseClick);
+            int action = nativeOnUrlChanged(webviewBackendPointer, url, !programmaticUrlNavigation);
             switch (action)
             {
             case eAction.PROCESS_IN_WEBVIEW:
                 return false;
             case eAction.PROCESS_IN_SYSTEM_BROWSER:
-                Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-                DavaActivity.instance().startActivity(intent);
+                try {
+                    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                    DavaActivity.instance().startActivity(intent);
+                } catch (Exception e) {
+                    Log.e(DavaActivity.LOG_TAG, String.format("[WebView] failed to open '%s' in browser: %s", url, e.toString()));
+                }
                 return true;
             case eAction.NO_PROCESS:
                 return true;

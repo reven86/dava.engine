@@ -226,6 +226,7 @@ BackgroundController::BackgroundController(UIControl* nestedControl_)
     gridControl->AddControl(positionHolderControl.Get());
     positionHolderControl->AddControl(counterpoiseControl.Get());
     counterpoiseControl->AddControl(nestedControl);
+    nestedControl->GetOrCreateComponent(UIComponent::LAYOUT_ISOLATION_COMPONENT);
 }
 
 UIControl* BackgroundController::GetGridControl() const
@@ -319,7 +320,6 @@ void BackgroundController::AdjustToNestedControl()
     Vector2 size = rect.GetSize();
     positionHolderControl->SetPosition(pos);
     gridControl->SetSize(size);
-    contentSizeChanged.Emit();
     rootControlPosChanged.Emit(pos);
 }
 
@@ -364,6 +364,7 @@ void BackgroundController::FitGridIfParentIsNested(PackageBaseNode* node)
         if (parent->GetControl() == nestedControl) //we change child in the nested control
         {
             AdjustToNestedControl();
+            contentSizeChanged.Emit();
             return;
         }
         parent = parent->GetParent();
@@ -374,7 +375,7 @@ bool BackgroundController::IsPropertyAffectBackground(AbstractProperty* property
 {
     DVASSERT(nullptr != property);
     FastName name(property->GetName());
-    static FastName matchedNames[] = { FastName("Angle"), FastName("Size"), FastName("Scale"), FastName("Position"), FastName("Pivot"), FastName("Visible") };
+    static FastName matchedNames[] = { FastName("angle"), FastName("size"), FastName("scale"), FastName("position"), FastName("pivot"), FastName("visible") };
     return std::find(std::begin(matchedNames), std::end(matchedNames), name) != std::end(matchedNames);
 }
 
@@ -418,6 +419,7 @@ void EditorControlsView::OnDragStateChanged(EditorSystemsManager::eDragState /*c
             control->AdjustToNestedControl();
         }
     }
+    Layout();
 }
 
 void EditorControlsView::ControlWasRemoved(ControlNode* node, ControlsContainerNode* from)
@@ -539,11 +541,11 @@ void EditorControlsView::Layout()
     systemsManager->contentSizeChanged.Emit(size);
 }
 
-void EditorControlsView::OnRootContolsChanged(const SortedPackageBaseNodeSet& rootControls_)
+void EditorControlsView::OnRootContolsChanged(const SortedControlNodeSet& rootControls_)
 {
-    Set<PackageBaseNode*> sortedRootControls(rootControls_.begin(), rootControls_.end());
-    Set<PackageBaseNode*> newNodes;
-    Set<PackageBaseNode*> deletedNodes;
+    Set<ControlNode*> sortedRootControls(rootControls_.begin(), rootControls_.end());
+    Set<ControlNode*> newNodes;
+    Set<ControlNode*> deletedNodes;
     if (!rootControls.empty())
     {
         std::set_difference(rootControls.begin(), rootControls.end(), sortedRootControls.begin(), sortedRootControls.end(), std::inserter(deletedNodes, deletedNodes.end()));
@@ -568,7 +570,7 @@ void EditorControlsView::OnRootContolsChanged(const SortedPackageBaseNodeSet& ro
     DVASSERT(rootControls_.size() == rootControls.size());
     for (auto iter = rootControls_.begin(); iter != rootControls_.end(); ++iter)
     {
-        PackageBaseNode* node = *iter;
+        ControlNode* node = *iter;
         if (newNodes.find(node) == newNodes.end())
         {
             continue;

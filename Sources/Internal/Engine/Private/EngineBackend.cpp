@@ -80,7 +80,10 @@ void RunOnMainThreadAsync(const Function<void()>& task)
 
 void RunOnMainThread(const Function<void()>& task)
 {
-    Private::EngineBackend::Instance()->DispatchOnMainThread(task, true);
+    Private::EngineBackend* backend = Private::EngineBackend::Instance();
+
+    DVASSERT(backend->IsRunning(), "RunOnMainThread should not be called outside of main loop (i.e. during `Engine::Run` execution)");
+    backend->DispatchOnMainThread(task, true);
 }
 
 void RunOnUIThreadAsync(const Function<void()>& task)
@@ -96,6 +99,7 @@ void RunOnUIThread(const Function<void()>& task)
 namespace Private
 {
 EngineBackend* EngineBackend::instance = nullptr;
+bool EngineBackend::showingModalMessageBox = false;
 
 EngineBackend* EngineBackend::Instance()
 {
@@ -215,6 +219,8 @@ int EngineBackend::Run()
 {
     DVASSERT(isInitialized == true && "Engine::Init is not called");
 
+    isRunning = true;
+
     if (IsConsoleMode())
     {
         RunConsole();
@@ -223,6 +229,9 @@ int EngineBackend::Run()
     {
         platformCore->Run();
     }
+
+    isRunning = false;
+
     return exitCode;
 }
 
@@ -284,12 +293,6 @@ void EngineBackend::OnGameLoopStopped()
 
     DVASSERT(justCreatedWindows.empty());
 
-    for (Window* w : dyingWindows)
-    {
-        delete w;
-    }
-    dyingWindows.clear();
-
     engine->gameLoopStopped.Emit();
     rhi::ShaderSourceCache::Save("~doc:/ShaderSource.bin");
 
@@ -306,6 +309,13 @@ void EngineBackend::OnEngineCleanup()
         ImGui::Uninitialize();
 
     DestroySubsystems();
+
+    for (Window* w : dyingWindows)
+    {
+        delete w;
+    }
+    dyingWindows.clear();
+    primaryWindow = nullptr;
 
     if (Renderer::IsInitialized())
         Renderer::Uninitialize();
@@ -456,11 +466,6 @@ void EngineBackend::OnWindowDestroyed(Window* window)
     DVASSERT(nerased == 1);
     dyingWindows.insert(window);
 
-    if (window->IsPrimary())
-    {
-        primaryWindow = nullptr;
-    }
-
     if (aliveWindows.empty())
     { // No alive windows left, exit application
         platformCore->Quit();
@@ -553,7 +558,7 @@ void EngineBackend::HandleAppTerminate(const MainDispatcherEvent& e)
             ++it;
 
             // Directly call Close for WindowBackend to tell important information that application is terminating
-            w->GetBackend()->Close(true);
+            GetWindowBackend(w)->Close(true);
         }
     }
     else if (!appIsTerminating)
@@ -775,7 +780,7 @@ void EngineBackend::CreateSubsystems(const Vector<String>& modules)
         {
             if (context->soundSystem == nullptr)
             {
-                context->soundSystem = new SoundSystem(engine);
+                context->soundSystem = CreateSoundSystem(engine);
             }
         }
         else if (m == "PackManager")
@@ -939,11 +944,8 @@ void EngineBackend::DestroySubsystems()
         context->inputSystem = nullptr;
     }
 
-    // Finish network infrastructure
-    // As I/O event loop runs in main thread so NetCore should run out loop to make graceful shutdown
     if (context->netCore != nullptr)
     {
-        context->netCore->Finish(true);
         context->netCore->Release();
         context->netCore = nullptr;
     }
@@ -989,6 +991,11 @@ void EngineBackend::AdjustSystemTimer(int64 adjustMicro)
 {
     Logger::Info("System timer adjusted by %lld us", adjustMicro);
     SystemTimer::Adjust(adjustMicro);
+}
+
+bool EngineBackend::IsRunning() const
+{
+    return isRunning;
 }
 
 } // namespace Private

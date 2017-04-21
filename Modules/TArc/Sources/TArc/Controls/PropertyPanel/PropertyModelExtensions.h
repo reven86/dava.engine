@@ -1,9 +1,10 @@
 #pragma once
 
-#include "Reflection/Reflection.h"
-#include "Base/BaseTypes.h"
-#include "Base/Type.h"
-#include "Base/Any.h"
+#include <Reflection/Reflection.h>
+#include <Command/Command.h>
+#include <Base/BaseTypes.h>
+#include <Base/Type.h>
+#include <Base/Any.h>
 
 #include <memory>
 
@@ -23,6 +24,7 @@ public:
         SelfRoot = 0,
         RealProperty,
         GroupProperty,
+        FavoritesProperty,
         VirtualProperty, // reserve some range for generic types. I don't know now what types it will be,
         // but reserve some values is good idea in my opinion
         DomainSpecificProperty = 255
@@ -38,6 +40,9 @@ public:
     int32 propertyType = Invalid; // it can be value from PropertyType or any value that you set in your extension
     Reflection::Field field;
     Any cachedValue;
+
+    static const int32 InvalidSortKey;
+    int32 sortKey = InvalidSortKey;
 };
 
 class IChildAllocator
@@ -45,6 +50,7 @@ class IChildAllocator
 public:
     virtual ~IChildAllocator() = default;
     virtual std::shared_ptr<PropertyNode> CreatePropertyNode(Reflection::Field&& reflection, int32_t type = PropertyNode::RealProperty) = 0;
+    virtual std::shared_ptr<PropertyNode> CreatePropertyNode(Reflection::Field&& reflection, int32_t type, const Any& value) = 0;
 };
 
 std::shared_ptr<PropertyNode> MakeRootNode(IChildAllocator* allocator, DAVA::Reflection::Field&& field);
@@ -138,19 +144,6 @@ protected:
     std::shared_ptr<IChildAllocator> allocator;
 };
 
-// This extension should implements custom rules of search ReflectedPropertyItem for some value.
-// As ReflectedPropertyItem is real item that user will see, in multi selection case we should make decision in which
-// ReflectedPropertyItem add current property.
-// Limitation - node.propertyInstance should be equal of item.property()
-// If your extension return nullptr, ReflectedPropertyModel will create new ReflectedPropertyItem for that.
-class MergeValuesExtension : public ExtensionChain
-{
-public:
-    MergeValuesExtension();
-    virtual ReflectedPropertyItem* LookUpItem(const std::shared_ptr<const PropertyNode>& node, const Vector<std::unique_ptr<ReflectedPropertyItem>>& items) const;
-    static std::shared_ptr<MergeValuesExtension> CreateDummy();
-};
-
 class EditorComponentExtension : public ExtensionChain
 {
 public:
@@ -162,10 +155,33 @@ public:
 class ModifyExtension : public ExtensionChain
 {
 public:
+    class MultiCommandInterface final
+    {
+    public:
+        MultiCommandInterface(std::shared_ptr<ModifyExtension> ext);
+
+        void ProduceCommand(const Reflection::Field& object, const Any& newValue);
+        void ModifyPropertyValue(const std::shared_ptr<PropertyNode>& nodes, const Any& newValue);
+        void Exec(std::unique_ptr<Command>&& command);
+
+    private:
+        std::shared_ptr<ModifyExtension> extension;
+    };
+
     ModifyExtension();
-    void ModifyPropertyValue(Vector<std::shared_ptr<PropertyNode>>& nodes, const Any& newValue);
-    virtual void ProduceCommand(const Vector<Reflection::Field>& objects, const Any& newValue);
+    void ModifyPropertyValue(const Vector<std::shared_ptr<PropertyNode>>& nodes, const Any& newValue);
+    MultiCommandInterface GetMultiCommandInterface(const String& description, uint32 commandCount);
+    MultiCommandInterface GetMultiCommandInterface(uint32 commandCount);
+
     static std::shared_ptr<ModifyExtension> CreateDummy();
+
+protected:
+    virtual void BeginBatch(const String& text, uint32 commandCount);
+    virtual void ProduceCommand(const Reflection::Field& object, const Any& newValue);
+    virtual void Exec(std::unique_ptr<Command>&& command);
+    virtual void EndBatch();
+
+    struct ModifyExtDeleter;
 };
 } // namespace TArc
 } // namespace DAVA

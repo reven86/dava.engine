@@ -5,16 +5,16 @@
 #include "Classes/Qt/Main/ModificationWidget.h"
 #include "Classes/Qt/Tools/QtWaitDialog/QtWaitDialog.h"
 #include "Classes/Qt/Scene/SceneEditor2.h"
-#include "Classes/Qt/Main/RecentMenuItems.h"
 #include "Classes/Qt/GlobalOperations.h"
 #include "Classes/Beast/BeastProxy.h"
 
-#include "TArc/DataProcessing/DataListener.h"
-#include "TArc/DataProcessing/DataWrapper.h"
-#include "TArc/WindowSubSystem/UI.h"
+#include <TArc/Models/RecentMenuItems.h>
+#include <TArc/DataProcessing/DataListener.h>
+#include <TArc/DataProcessing/DataWrapper.h>
+#include <TArc/WindowSubSystem/UI.h>
 
-#include "QtTools/Utils/ShortcutChecker.h"
-#include "QtTools/Utils/QtDelayedExecutor.h"
+#include <QtTools/Utils/ShortcutChecker.h>
+#include <QtTools/Utils/QtDelayedExecutor.h>
 
 #include <QMainWindow>
 #include <QDockWidget>
@@ -126,7 +126,6 @@ public slots:
     void On2DSpriteDialog();
     void OnAddEntityFromSceneTree();
 
-    void OnShowSettings();
     void OnOpenHelp();
 
     void OnSaveHeightmapToImage();
@@ -202,8 +201,6 @@ private slots:
     void UnmodalDialogFinished(int);
 
     void DebugVersionInfo();
-    void DebugColorPicker();
-    void DebugDeviceList();
     void OnConsoleItemClicked(const QString& data);
 
     void UpdateUndoActionText(const DAVA::String& text);
@@ -248,7 +245,6 @@ private:
     QPointer<DeveloperTools> developerTools;
     QPointer<VersionInfoWidget> versionInfoWidget;
 
-    QPointer<DeviceListController> deviceListController;
     std::shared_ptr<GlobalOperations> globalOperations;
     ErrorDialogOutput* errorLoggerOutput = nullptr;
 

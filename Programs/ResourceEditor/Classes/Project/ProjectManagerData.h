@@ -36,6 +36,8 @@ public:
     const DAVA::Vector<MaterialTemplateInfo>* GetMaterialTemplatesInfo() const;
     DAVA_DEPRECATED(const SpritesPackerModule* GetSpritesModules() const);
 
+    static DAVA::FilePath GetDataSource3DPath(const DAVA::FilePath& projectPath);
+
 public:
     static const DAVA::String ProjectPathProperty;
 

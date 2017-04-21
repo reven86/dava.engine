@@ -16,14 +16,14 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_SOURCE_DIR}")
 
 set(SOURCE_FILES 
         main.cpp 
-        iarchive.cpp
+        archive.cpp
         lite_archive.cpp
         pack_archive.cpp 
         pack_archive.cpp 
         pack_meta_data.cpp
         lz4.c
         lz4.h 
-        iarchive.h
+        archive.h
         lite_archive.h
         pack_archive.h 
         pack_format.h 

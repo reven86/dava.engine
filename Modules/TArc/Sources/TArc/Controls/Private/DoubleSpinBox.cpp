@@ -66,9 +66,15 @@ QValidator::State DoubleSpinBox::TypeSpecificValidate(const QString& input) cons
             return QValidator::Invalid;
         }
 
-        if (input.size() < 3)
+        int inputSize = input.size();
+        if (inputSize == 1)
         {
             return QValidator::Intermediate;
+        }
+
+        if (inputSize < 3)
+        {
+            return QValidator::Acceptable;
         }
 
         if (input[1].digitValue() == 0 && input[2] != QChar('.'))
@@ -91,6 +97,28 @@ QValidator::State DoubleSpinBox::TypeSpecificValidate(const QString& input) cons
     }
 
     return QValidator::Acceptable;
+}
+
+QSize DoubleSpinBox::sizeHint() const
+{
+    QSize s = TBase::sizeHint();
+    if (decimals() > 3)
+    {
+        s.setWidth(s.width() >> 1);
+    }
+
+    return s;
+}
+
+QSize DoubleSpinBox::minimumSizeHint() const
+{
+    QSize s = TBase::minimumSizeHint();
+    if (decimals() > 3)
+    {
+        s.setWidth(s.width() >> 1);
+    }
+
+    return s;
 }
 
 } // namespace TArc

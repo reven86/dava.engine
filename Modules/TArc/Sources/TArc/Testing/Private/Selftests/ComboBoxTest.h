@@ -7,8 +7,6 @@
 #include "TArc/Controls/QtBoxLayouts.h"
 #include "TArc/Utils/QtConnections.h"
 
-#include <QtTools/Utils/QtDelayedExecutor.h>
-
 #include <Base/Any.h>
 #include <Base/BaseTypes.h>
 #include <Base/FastName.h>
@@ -134,7 +132,7 @@ public:
             descriptor[ComboBox::Fields::Value] = "valueMeta";
             ComboBox* comboBox = new ComboBox(descriptor, GetAccessor(), reflectedModel);
             comboBox->SetObjectName("ComboBoxMeta");
-            layout->AddWidget(comboBox);
+            layout->AddControl(comboBox);
         }
 
         {
@@ -143,7 +141,7 @@ public:
             descriptor[ComboBox::Fields::Enumerator] = "enumeratorUnorderedMap";
             ComboBox* comboBox = new ComboBox(descriptor, GetAccessor(), reflectedModel);
             comboBox->SetObjectName("ComboBoxUnorderedMap");
-            layout->AddWidget(comboBox);
+            layout->AddControl(comboBox);
         }
 
         {
@@ -152,7 +150,7 @@ public:
             descriptor[ComboBox::Fields::Enumerator] = "enumeratorOrderedMap";
             ComboBox* comboBox = new ComboBox(descriptor, GetAccessor(), reflectedModel);
             comboBox->SetObjectName("ComboBoxOrderedMap");
-            layout->AddWidget(comboBox);
+            layout->AddControl(comboBox);
         }
 
         {
@@ -161,7 +159,7 @@ public:
             descriptor[ComboBox::Fields::Enumerator] = "enumeratorVector";
             ComboBox* comboBox = new ComboBox(descriptor, GetAccessor(), reflectedModel);
             comboBox->SetObjectName("ComboBoxVector");
-            layout->AddWidget(comboBox);
+            layout->AddControl(comboBox);
         }
 
         {
@@ -170,7 +168,7 @@ public:
             descriptor[ComboBox::Fields::Enumerator] = "enumeratorSet";
             ComboBox* comboBox = new ComboBox(descriptor, GetAccessor(), reflectedModel);
             comboBox->SetObjectName("ComboBoxSet");
-            layout->AddWidget(comboBox);
+            layout->AddControl(comboBox);
         }
 
         DAVA::TArc::PanelKey panelKey("ComboBoxTest", DAVA::TArc::CentralPanelInfo());
@@ -334,15 +332,17 @@ DAVA_TARC_TESTCLASS(ComboBoxTest)
 
     bool TestComplete(const DAVA::String& testName) const override
     {
+        bool testCompleted = true;
+
         if (testName == "ShouldBeFirst_ComboTest")
         {
-            return (currentTest == static_cast<int>(comboTestData.size()));
+            testCompleted = (currentTest == static_cast<int>(comboTestData.size()));
         }
         else if (testName == "ShouldBeSecond_ComboTest")
         {
-            return (currentTest == static_cast<int>(comboTestData.size()));
+            testCompleted = (currentTest == static_cast<int>(comboTestData.size()));
         }
-        return true;
+        return testCompleted;
     }
 
     MOCK_METHOD0_VIRTUAL(AfterWrappersSync, void());

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.graphics.PixelFormat;
+import android.graphics.Rect;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -32,6 +33,7 @@ import java.lang.reflect.Constructor;
 final class DavaSurfaceView extends SurfaceView
                             implements SurfaceHolder.Callback,
                                        DavaActivity.ActivityListener,
+                                       DavaGlobalLayoutState.GlobalLayoutListener,
                                        View.OnTouchListener,
                                        View.OnGenericMotionListener,
                                        View.OnKeyListener
@@ -49,7 +51,8 @@ final class DavaSurfaceView extends SurfaceView
     public static native void nativeSurfaceViewOnKeyEvent(long windowBackendPointer, int action, int keyCode, int unicodeChar, int modifierKeys, boolean isRepeated);
     public static native void nativeSurfaceViewOnGamepadButton(long windowBackendPointer, int deviceId, int action, int keyCode);
     public static native void nativeSurfaceViewOnGamepadMotion(long windowBackendPointer, int deviceId, int axis, float value);
-    
+    public static native void nativeSurfaceViewOnVisibleFrameChanged(long windowBackendPointer, int x, int y, int w, int h);
+
     public DavaSurfaceView(Context context, long windowBackendPtr)
     {
         super(context);
@@ -137,6 +140,8 @@ final class DavaSurfaceView extends SurfaceView
     @Override
     public void onResume()
     {
+        DavaActivity.instance().globalLayoutState.addGlobalLayoutListener(this);
+
         setFocusableInTouchMode(true);
         setFocusable(true);
         requestFocus();
@@ -148,6 +153,8 @@ final class DavaSurfaceView extends SurfaceView
     @Override
     public void onPause()
     {
+        DavaActivity.instance().globalLayoutState.removeGlobalLayoutListener(this);
+
         nativeSurfaceViewOnPause(windowBackendPointer);
     }
 
@@ -216,17 +223,23 @@ final class DavaSurfaceView extends SurfaceView
         Log.d(DavaActivity.LOG_TAG, "DavaSurface.surfaceDestroyed");
         nativeSurfaceViewOnSurfaceDestroyed(windowBackendPointer);
     }
+
+    @Override
+    public void onVisibleFrameChanged(Rect visibleFrame)
+    {
+        nativeSurfaceViewOnVisibleFrameChanged(windowBackendPointer, visibleFrame.left, visibleFrame.top, visibleFrame.width(), visibleFrame.height());
+    }
     
     // View.OnTouchListener interface
     @Override
     public boolean onTouch(View v, MotionEvent event) 
     {
         int source = event.getSource();
-        if (source == InputDevice.SOURCE_MOUSE)
+        if (InputDevice.SOURCE_MOUSE == (source & InputDevice.SOURCE_MOUSE))
         {
             handleMouseEvent(event);
         }
-        else if (source == InputDevice.SOURCE_TOUCHSCREEN)
+        else if (InputDevice.SOURCE_TOUCHSCREEN == (source & InputDevice.SOURCE_TOUCHSCREEN))
         {
             handleTouchEvent(event);
         }
@@ -242,14 +255,14 @@ final class DavaSurfaceView extends SurfaceView
 
         // Some SOURCE_GAMEPAD and SOURCE_DPAD events are also SOURCE_KEYBOARD. So first check and process events
         // from gamepad and then from keyboard if not processed.
-        if (((source & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD) ||
-            ((source & InputDevice.SOURCE_DPAD) == InputDevice.SOURCE_DPAD))
+        if (InputDevice.SOURCE_GAMEPAD == (source & InputDevice.SOURCE_GAMEPAD)
+                || InputDevice.SOURCE_DPAD == (source & InputDevice.SOURCE_DPAD))
         {
             nativeSurfaceViewOnGamepadButton(windowBackendPointer, event.getDeviceId(), action, keyCode);
             return true;
         }
 
-        if ((source & InputDevice.SOURCE_KEYBOARD) == InputDevice.SOURCE_KEYBOARD)
+        if (InputDevice.SOURCE_KEYBOARD == (source & InputDevice.SOURCE_KEYBOARD))
         {
             int modifierKeys = event.getMetaState();
             int unicodeChar = event.getUnicodeChar();
@@ -265,12 +278,14 @@ final class DavaSurfaceView extends SurfaceView
     public boolean onGenericMotion(View v, MotionEvent event)
     {
         int source = event.getSource();
-        if (source == InputDevice.SOURCE_GAMEPAD || source == InputDevice.SOURCE_DPAD || source == InputDevice.SOURCE_JOYSTICK)
+        if (InputDevice.SOURCE_GAMEPAD == (source & InputDevice.SOURCE_GAMEPAD)
+                || InputDevice.SOURCE_DPAD == (source & InputDevice.SOURCE_DPAD)
+                || InputDevice.SOURCE_JOYSTICK == (source & InputDevice.SOURCE_JOYSTICK))
         {
             handleGamepadMotionEvent(event);
             return true;
         }
-        else if (source == InputDevice.SOURCE_MOUSE)
+        else if (InputDevice.SOURCE_MOUSE == (source & InputDevice.SOURCE_MOUSE))
         {
             handleMouseEvent(event);
             return true;

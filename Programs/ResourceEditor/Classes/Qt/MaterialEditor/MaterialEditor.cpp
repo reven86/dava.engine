@@ -15,7 +15,7 @@
 #include "Classes/Selection/SelectionData.h"
 
 #include "Classes/Qt/Main/QtUtils.h"
-#include "Classes/Qt/Settings/SettingsManager.h"
+#include "Classes/Settings/SettingsManager.h"
 #include "Classes/Qt/Tools/QtPropertyEditor/QtPropertyData/QtPropertyDataIntrospection.h"
 #include "Classes/Qt/Tools/QtPropertyEditor/QtPropertyData/QtPropertyDataInspMember.h"
 #include "Classes/Qt/Tools/QtPropertyEditor/QtPropertyData/QtPropertyDataInspDynamic.h"
@@ -30,8 +30,9 @@
 #include "QtTools/Updaters/LazyUpdater.h"
 #include "QtTools/WidgetHelpers/SharedIcon.h"
 
-#include "Base/Introspection.h"
-#include "Scene3D/Systems/QualitySettingsSystem.h"
+#include <Base/Introspection.h>
+#include <Functional/Function.h>
+#include <Scene3D/Systems/QualitySettingsSystem.h>
 
 #include <QFile>
 #include <QFileInfo>
@@ -541,6 +542,7 @@ MaterialEditor::MaterialEditor(QWidget* parent /* = 0 */)
     QObject::connect(ui->actionAddGlobalMaterial, SIGNAL(triggered(bool)), this, SLOT(OnMaterialAddGlobal(bool)));
     QObject::connect(ui->actionRemoveGlobalMaterial, SIGNAL(triggered(bool)), this, SLOT(OnMaterialRemoveGlobal(bool)));
     QObject::connect(ui->actionSaveMaterialPreset, SIGNAL(triggered(bool)), this, SLOT(OnMaterialSave(bool)));
+    QObject::connect(ui->actionSaveMaterialCurrentConfigPreset, SIGNAL(triggered(bool)), this, SLOT(OnMaterialSaveCurrentConfig(bool)));
     QObject::connect(ui->actionLoadMaterialPreset, SIGNAL(triggered(bool)), this, SLOT(OnMaterialLoad(bool)));
 
     QObject::connect(SceneSignals::Instance(), &SceneSignals::QualityChanged, this, &MaterialEditor::OnQualityChanged);
@@ -779,10 +781,12 @@ void MaterialEditor::commandExecuted(SceneEditor2* scene, const RECommandNotific
         materialPropertiesUpdater->Update();
     }
 
-    if (commandNotification.MatchCommandIDs({ CMDID_MATERIAL_CHANGE_CURRENT_CONFIG,
-                                              CMDID_MATERIAL_CREATE_CONFIG,
-                                              CMDID_MATERIAL_REMOVE_CONFIG,
-                                              CMDID_MATERIAL_APPLY_PRESET }))
+    if (commandNotification.MatchCommandIDs({
+        CMDID_MATERIAL_CHANGE_CURRENT_CONFIG,
+        CMDID_MATERIAL_CREATE_CONFIG,
+        CMDID_MATERIAL_REMOVE_CONFIG,
+        CMDID_MATERIAL_APPLY_PRESET
+        }))
     {
         RefreshMaterialProperties();
     }
@@ -1137,9 +1141,11 @@ void MaterialEditor::onContextMenuPrepare(QMenu* menu)
     if (curMaterials.size() > 0)
     {
         ui->actionSaveMaterialPreset->setEnabled(curMaterials.size() == 1);
+        ui->actionSaveMaterialCurrentConfigPreset->setEnabled(curMaterials.size() == 1);
         menu->addSeparator();
         menu->addAction(ui->actionLoadMaterialPreset);
         menu->addAction(ui->actionSaveMaterialPreset);
+        menu->addAction(ui->actionSaveMaterialCurrentConfigPreset);
     }
 }
 
@@ -1182,6 +1188,16 @@ void MaterialEditor::OnMaterialPropertyEditorContextMenuRequest(const QPoint& po
 
 void MaterialEditor::OnMaterialSave(bool checked)
 {
+    SaveMaterialPresetImpl(DAVA::MakeFunction(&ApplyMaterialPresetCommand::StoreAllConfigsPreset));
+}
+
+void MaterialEditor::OnMaterialSaveCurrentConfig(bool checked)
+{
+    SaveMaterialPresetImpl(DAVA::MakeFunction(&ApplyMaterialPresetCommand::StoreCurrentConfigPreset));
+}
+
+void MaterialEditor::SaveMaterialPresetImpl(const DAVA::Function<void(DAVA::KeyedArchive*, DAVA::NMaterial*, const DAVA::SerializationContext&)>& saveFunction)
+{
     if (curMaterials.size() == 1)
     {
         QString outputFile = FileDialog::getSaveFileName(this, "Save Material Preset", lastSavePath.GetAbsolutePathname().c_str(),
@@ -1200,7 +1216,7 @@ void MaterialEditor::OnMaterialSave(bool checked)
             materialContext.SetVersion(DAVA::VersionInfo::Instance()->GetCurrentVersion().version);
 
             DAVA::ScopedPtr<DAVA::KeyedArchive> presetArchive(new DAVA::KeyedArchive());
-            ApplyMaterialPresetCommand::StoreMaterialPreset(presetArchive, curMaterials.front(), materialContext);
+            saveFunction(presetArchive, curMaterials.front(), materialContext);
             presetArchive->SaveToYamlFile(lastSavePath);
         }
     }

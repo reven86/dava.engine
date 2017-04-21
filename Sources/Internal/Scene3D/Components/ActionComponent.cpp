@@ -4,15 +4,63 @@
 #include "Scene3D/Components/ActionComponent.h"
 #include "Scene3D/Components/ParticleEffectComponent.h"
 #include "Scene3D/Components/AnimationComponent.h"
-#include "Scene3D/Components/SoundComponent.h"
 #include "Scene3D/Components/WaveComponent.h"
+#include "Scene3D/Components/SoundComponent.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/Systems/ActionUpdateSystem.h"
+#include "Reflection/ReflectionRegistrator.h"
+#include "Reflection/ReflectedMeta.h"
 
 #include "Utils/Random.h"
 
 namespace DAVA
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(ActionComponent::Action)
+{
+    ReflectionRegistrator<ActionComponent::Action>::Begin()
+    .End();
+}
+
+DAVA_VIRTUAL_REFLECTION_IMPL(ActionComponent::ActionContainer)
+{
+    ReflectionRegistrator<ActionContainer>::Begin()
+    .End();
+}
+
+DAVA_VIRTUAL_REFLECTION_IMPL(ActionComponent)
+{
+    ReflectionRegistrator<ActionComponent>::Begin()
+    .ConstructorByPointer()
+    .Field("actions", &ActionComponent::actions)[M::DisplayName("Actions Array")]
+    .End();
+}
+
+template <>
+bool AnyCompare<ActionComponent::ActionContainer>::IsEqual(const Any& v1, const Any& v2)
+{
+    return v1.Get<ActionComponent::ActionContainer>() == v2.Get<ActionComponent::ActionContainer>();
+}
+
+template <>
+bool AnyCompare<ActionComponent::Action>::IsEqual(const Any& v1, const Any& v2)
+{
+    return v1.Get<ActionComponent::Action>() == v2.Get<ActionComponent::Action>();
+}
+
+bool ActionComponent::Action::operator==(const Action& other) const
+{
+    return type == other.type &&
+    eventType == other.eventType &&
+    userEventId == other.userEventId &&
+    switchIndex == other.switchIndex &&
+    delay == other.delay &&
+    delayVariation == other.delayVariation &&
+    actualDelay == other.actualDelay &&
+    entityName == other.entityName &&
+    stopAfterNRepeats == other.stopAfterNRepeats &&
+    stopWhenEmpty == other.stopWhenEmpty;
+}
+
 void ActionComponent::Action::actualizeDelay()
 {
     actualDelay = static_cast<float32>(delay + Random::Instance()->RandFloat(delayVariation));
@@ -560,5 +608,13 @@ Entity* ActionComponent::GetTargetEntity(const FastName& name, Entity* parent)
     }
 
     return parent->FindByName(name);
+}
+
+bool ActionComponent::ActionContainer::operator==(const ActionContainer& container) const
+{
+    return action == container.action &&
+    timer == container.timer &&
+    active == container.active &&
+    markedForUpdate == container.markedForUpdate;
 }
 };

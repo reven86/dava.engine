@@ -7,7 +7,7 @@ namespace DAVA
 class RequestManager
 {
 public:
-    explicit RequestManager(DLCManager& packManager_)
+    explicit RequestManager(DLCManagerImpl& packManager_)
         : packManager(packManager_)
     {
     }
@@ -17,15 +17,26 @@ public:
     void Update();
     bool Empty() const;
     size_t GetNumRequests() const;
+    bool IsInQueue(const String& packName) const;
     PackRequest* Find(const String& requestedPackName) const;
     PackRequest* Top() const;
     void Push(PackRequest*);
     void Pop();
-    void UpdateOrder(PackRequest* request, uint32 newOrderIndex);
+    void SetPriorityToRequest(PackRequest* request);
     void Remove(PackRequest* request);
 
+    void SwapPointers(PackRequest* newPointer, PackRequest* oldInvalidPointer);
+
 private:
-    DLCManager& packManager;
+    DLCManagerImpl& packManager;
     Vector<PackRequest*> requests;
+    // optimization to get to know for constant time if request in RequestManager
+    UnorderedSet<String> requestNames;
 };
+
+inline bool RequestManager::IsInQueue(const String& packName) const
+{
+    return requestNames.find(packName) != end(requestNames);
+}
+
 } // end namespace DAVA

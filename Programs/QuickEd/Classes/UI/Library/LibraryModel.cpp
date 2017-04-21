@@ -60,9 +60,9 @@ LibraryModel::LibraryModel(QObject* parent)
             else
                 defaultControls.push_back(ControlNode::CreateFromControl(control));
 
-            auto prop = defaultControls.back()->GetRootProperty()->FindPropertyByName("Size");
+            AbstractProperty* prop = defaultControls.back()->GetRootProperty()->FindPropertyByName("size");
 
-            prop->SetValue(VariantType(Vector2(32.0f, 32.0f)));
+            prop->SetValue(Vector2(32.0f, 32.0f));
         }
         else
         {
@@ -204,7 +204,7 @@ QMimeData* LibraryModel::mimeData(const QModelIndexList& indexes) const
 
                 YamlPackageSerializer serializer;
 
-                serializer.SerializePackageNodes(package, controls, styles);
+                serializer.SerializePackageNodes(package.Get(), controls, styles);
                 String str = serializer.WriteToString();
                 data->setText(QString::fromStdString(str));
 
@@ -325,7 +325,7 @@ void LibraryModel::ControlPropertyWasChanged(ControlNode* node, AbstractProperty
             auto item = itemFromIndex(index);
             if (nullptr != item)
             {
-                auto text = QString::fromStdString(property->GetValue().AsString());
+                auto text = QString::fromStdString(property->GetValue().Get<String>());
                 item->setText(text);
             }
         }

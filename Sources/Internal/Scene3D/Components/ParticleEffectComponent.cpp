@@ -8,9 +8,24 @@
 #include "Scene3D/Systems/EventSystem.h"
 #include "Scene3D/Systems/GlobalEventSystem.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
+#include "Reflection/ReflectionRegistrator.h"
+#include "Reflection/ReflectedMeta.h"
 
 namespace DAVA
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(ParticleEffectComponent)
+{
+    ReflectionRegistrator<ParticleEffectComponent>::Begin()[M::CantBeCreatedManualyComponent()]
+    .ConstructorByPointer()
+    .Field("repeatsCount", &ParticleEffectComponent::repeatsCount)[M::DisplayName("Repeats Count")]
+    .Field("stopWhenEmpty", &ParticleEffectComponent::stopWhenEmpty)[M::DisplayName("Stop When Empty")]
+    .Field("effectDuration", &ParticleEffectComponent::effectDuration)[M::DisplayName("Duration")]
+    .Field("clearOnRestart", &ParticleEffectComponent::clearOnRestart)[M::DisplayName("Clear On Restart")]
+    .Field("visibleReflection", &ParticleEffectComponent::GetReflectionVisible, &ParticleEffectComponent::SetReflectionVisible)[M::DisplayName("Visible Reflection")]
+    .Field("visibleRefraction", &ParticleEffectComponent::GetRefractionVisible, &ParticleEffectComponent::SetRefractionVisible)[M::DisplayName("Visible Refraction")]
+    .End();
+}
+
 ParticleEffectComponent::ParticleEffectComponent()
 {
     effectData.infoSources.resize(1);

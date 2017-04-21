@@ -8,7 +8,7 @@
 using namespace DAVA;
 
 ClassProperty::ClassProperty(ControlNode* aControl)
-    : ValueProperty("Class", VariantType::TYPE_STRING)
+    : ValueProperty("Class", Type::Instance<String>())
     , control(aControl) // weak
 {
 }
@@ -33,14 +33,9 @@ ClassProperty::ePropertyType ClassProperty::GetType() const
     return TYPE_VARIANT;
 }
 
-DAVA::uint32 ClassProperty::GetFlags() const
+Any ClassProperty::GetValue() const
 {
-    return EF_AFFECTS_STYLES;
-}
-
-VariantType ClassProperty::GetValue() const
-{
-    return VariantType(control->GetControl()->GetClassName());
+    return Any(control->GetControl()->GetClassName());
 }
 
 const String& ClassProperty::GetClassName() const

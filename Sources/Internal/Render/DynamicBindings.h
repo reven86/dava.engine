@@ -108,7 +108,6 @@ private:
     Vector3 worldScale;
     Vector3 boundingBoxSize;
     Vector3 worldViewObjectCenter;
-    float32 frameGlobalTime;
 
     void ComputeWorldViewMatrixIfRequired();
     void ComputeWorldScaleIfRequired();
@@ -118,7 +117,6 @@ private:
     void ComputeWorldViewInvTransposeMatrixIfRequired();
     void ComputeLocalBoundingBoxSizeIfRequired();
     void ComputeWorldViewObjectCenterIfRequired();
-    void UpdateGlobalTimeIfRequired();
 
     void ComputeInvWorldMatrixIfRequired();
     void ComputeWorldInvTransposeMatrixIfRequired();

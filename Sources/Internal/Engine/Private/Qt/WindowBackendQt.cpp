@@ -182,11 +182,15 @@ WindowBackend::WindowBackend(EngineBackend* engineBackend, Window* window)
     : engineBackend(engineBackend)
     , window(window)
     , mainDispatcher(engineBackend->GetDispatcher())
-    , uiDispatcher(MakeFunction(this, &WindowBackend::UIEventHandler))
+    , uiDispatcher(MakeFunction(this, &WindowBackend::UIEventHandler), MakeFunction(this, &WindowBackend::TriggerPlatformEvents))
 {
     QtEventListener::TCallback triggered = [this]()
     {
-        uiDispatcher.ProcessEvents();
+        // Prevent processing UI dispatcher events when modal dialog is open as Dispatcher::ProcessEvents is not reentrant now
+        if (!EngineBackend::showingModalMessageBox)
+        {
+            uiDispatcher.ProcessEvents();
+        }
     };
 
     QtEventListener::TCallback destroyed = [this]()
@@ -308,6 +312,8 @@ void Kostil_ForceUpdateCurrentScreen(RenderWidget* renderWidget, QWindow* wnd, Q
 
 void WindowBackend::OnCreated()
 {
+    uiDispatcher.LinkToCurrentThread();
+
     // QuickWidnow in QQuickWidget is not "real" window, it doesn't have "platform window" handle,
     // so Qt can't make context current for that surface. Real surface is QOffscreenWindow that live inside
     // QQuickWidgetPrivate and we can get it only through context.
@@ -447,12 +453,41 @@ void WindowBackend::OnWheel(QWheelEvent* qtEvent)
     }
     else
     {
-        QPointF delta = QPointF(qtEvent->angleDelta()) / 180.0f;
+        //most mouse types work in steps of 15 degrees, in which case the delta value is a multiple of 120
+        QPointF delta = QPointF(qtEvent->angleDelta()) / 120.0f;
         deltaX = delta.x();
         deltaY = delta.y();
     }
     eModifierKeys modifierKeys = GetModifierKeys();
+#ifdef Q_OS_MAC
+    if (qtEvent->source() == Qt::MouseEventSynthesizedBySystem)
+    {
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSwipeGestureEvent(window, deltaX, deltaY, modifierKeys));
+        return;
+    }
+#endif
     mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMouseWheelEvent(window, x, y, deltaX, deltaY, modifierKeys, false));
+}
+
+void WindowBackend::OnNativeGesture(QNativeGestureEvent* qtEvent)
+{
+    eModifierKeys modifierKeys = GetModifierKeys();
+    //local coordinates don't work on OS X - https://bugreports.qt.io/browse/QTBUG-59595
+    QPoint localPos = renderWidget->mapFromGlobal(qtEvent->globalPos());
+
+    float32 x = static_cast<float32>(localPos.x());
+    float32 y = static_cast<float32>(localPos.y());
+    switch (qtEvent->gestureType())
+    {
+    case Qt::RotateNativeGesture:
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowRotationGestureEvent(window, qtEvent->value(), modifierKeys));
+        break;
+    case Qt::ZoomNativeGesture:
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMagnificationGestureEvent(window, x, y, qtEvent->value(), modifierKeys));
+        break;
+    default:
+        break;
+    }
 }
 
 void WindowBackend::OnKeyPressed(QKeyEvent* qtEvent)
@@ -585,14 +620,6 @@ void WindowBackend::Update()
     if (renderWidget != nullptr)
     {
         renderWidget->GetQQuickWindow()->update();
-    }
-}
-
-void WindowBackend::ActivateRendering()
-{
-    if (renderWidget != nullptr)
-    {
-        renderWidget->ActivateRendering();
     }
 }
 

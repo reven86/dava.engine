@@ -19,8 +19,6 @@ DAVA::TArc::UI* GetUI()
 }
 }
 
-DAVA::TArc::WindowKey MainWindowKey(DAVA::FastName("ResourceEditor"));
-
 DAVA::TArc::DataContext* GetGlobalContext()
 {
     DAVA::TArc::CoreInterface* coreInterface = REGlobalDetails::GetCoreInterface();
@@ -63,7 +61,7 @@ DAVA::TArc::ModalMessageParams::Button ShowModalMessage(const DAVA::TArc::ModalM
     {
         return DAVA::TArc::ModalMessageParams::NoButton;
     }
-    return ui->ShowModalMessage(MainWindowKey, params);
+    return ui->ShowModalMessage(DAVA::TArc::mainWindowKey, params);
 }
 
 void InitTArcCore(DAVA::TArc::Core* core)
@@ -78,5 +76,6 @@ IMPL_OPERATION_ID(AddSceneOperation);
 IMPL_OPERATION_ID(SaveCurrentScene);
 IMPL_OPERATION_ID(CloseAllScenesOperation);
 IMPL_OPERATION_ID(ReloadTexturesOperation);
+IMPL_OPERATION_ID(ShowMaterial);
 
 } // namespace REGlobal

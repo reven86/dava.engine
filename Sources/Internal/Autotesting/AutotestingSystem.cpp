@@ -158,8 +158,8 @@ void AutotestingSystem::OnAppStarted()
     AutotestingSystemLua::Instance()->InitFromFile(testFileStrPath);
  
 #if defined(__DAVAENGINE_COREV2__)
-    SigConnectionID sid = GetPrimaryWindow()->sizeChanged.Connect(this, &AutotestingSystem::OnWindowSizeChanged);
-    GetPrimaryWindow()->sizeChanged.Track(sid, &localTrackedObject);
+    Token wndSizeChangedToken = GetPrimaryWindow()->sizeChanged.Connect(this, &AutotestingSystem::OnWindowSizeChanged);
+    GetPrimaryWindow()->sizeChanged.Track(wndSizeChangedToken, &localTrackedObject);
 #endif
 
     Size2i size = UIControlSystem::Instance()->vcs->GetPhysicalScreenSize();

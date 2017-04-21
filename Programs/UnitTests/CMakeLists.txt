@@ -1,7 +1,6 @@
 cmake_minimum_required (VERSION 3.0)
-if( NOT DAVA_MEGASOLUTION )
-    set( COVERAGE true )
-endif()
+
+set( COVERAGE true )
 
 project ( UnitTests )
 
@@ -26,7 +25,7 @@ endif()
 # Enable LOCALIZATION_DEBUG in UnitTests to verify successful compilation
 dava_add_definitions(-DLOCALIZATION_DEBUG)
 
-set ( DAVA_COMPONENTS "ALL" DAVA_DISABLE_AUTOTESTS )
+set ( DAVA_COMPONENTS "Sound" DAVA_DISABLE_AUTOTESTS )
 if ( WIN32 AND NOT WINDOWS_UAP )
     list ( APPEND DAVA_COMPONENTS "CEFWebview" )
 endif ()
@@ -37,6 +36,7 @@ endif()
 
 find_package( Steam REQUIRED )
 find_package( DavaFramework REQUIRED COMPONENTS "${DAVA_COMPONENTS}" )
+find_package( EmbeddedWebServer REQUIRED )
 
 include_directories   ( "Classes" )
 
@@ -56,7 +56,9 @@ endif()
 define_source                  ( SOURCE "Classes" )
 
 set( STEAM_APPID                Win32Specific/steam_appid.txt )
-set( APP_DATA                   ${CMAKE_CURRENT_LIST_DIR}/Data )
+
+set( MIX_APP_DATA                 "Data = ${DAVA_ROOT_DIR}/Programs/Data" 
+                                  "Data = ${CMAKE_CURRENT_LIST_DIR}/Data" )
 
 set( IOS_PLISTT                 ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/UnitTests-Info.plist )
 
@@ -70,6 +72,7 @@ set( ANDROID_ICO                ${CMAKE_CURRENT_LIST_DIR}/android/ic_launcher-we
 
 set( ADDED_SRC                  ${IOS_ADD_SRC} )
 
+set( EXTERNAL_TEST_FOLDERS      ${DAVA_MODULES_DIR} ${DAVA_ENGINE_DIR} )
 
 #uncomment this 2 strings to link libjpeg as additional project.
 #set( LIBRARIES jpeg )
@@ -87,7 +90,7 @@ endif()
 
 setup_main_executable()
 convert_graphics()
-
+ 
 if (IOS)
     # Termporal workaround for unit tests with memory profiling enabled
     # Reason: on iOS on some circumstances memory deallocating operation bypasses memory manager

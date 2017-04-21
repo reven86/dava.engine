@@ -14,7 +14,7 @@ set( NAME_MODULE ${DAVA_LIBRARY} )
 set( MODULE_TYPE STATIC )#INLINE STATIC DYNAMIC 
 
 set( EXTERNAL_MODULES_WIN           ${DAVA_EXTERNAL_DIR}/cef )
-set( EXTERNAL_MODULES                     ${DAVA_MODULES_DIR}/SampleModule )
+set( EXTERNAL_MODULES               ${DAVA_MODULES_DIR}/SampleModule )
 
 set( INCLUDES_PRIVATE               ${DAVA_ENGINE_DIR} 
                                     ${DAVA_THIRD_PARTY_INCLUDES_PATH}  )
@@ -76,7 +76,9 @@ set( STATIC_LIBRARIES_WINUAP_DEBUG  ${DAVA_STATIC_LIBRARIES_WINUAP_DEBUG} )
 
 set( DYNAMIC_LIBRARIES_WIN32        ${DAVA_DYNAMIC_LIBRARIES_WIN32})
 set( DYNAMIC_LIBRARIES_WIN64        ${DAVA_DYNAMIC_LIBRARIES_WIN64} )
-                               
+  
+set( DYNAMIC_LIBRARIES_ANDROID      ${DAVA_DYNAMIC_LIBRARIES_ANDROID} )
+
 set( SRC_FOLDERS                    "." )
  
 set( MODULE_MANAGER_TEMPLATE        ModuleManager/ModuleManager.in )

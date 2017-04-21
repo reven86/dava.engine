@@ -4,6 +4,8 @@
 #include "Base/Type.h"
 #endif
 
+#include "Base/List.h"
+
 namespace DAVA
 {
 namespace TypeDetail
@@ -26,7 +28,7 @@ struct TypeSize<const void>
     static const size_t size = 0;
 };
 
-static std::list<Type**> allTypes;
+static List<Type**> allTypes;
 
 template <typename T>
 struct TypeHolder
@@ -155,7 +157,7 @@ Type* Type::Init()
     using DecayU = DecayT<T>;
     using PointerU = PointerT<T>;
 
-    static const bool needDeref = (!std::is_same<T, DerefU>::value && !std::is_same<T, void*>::value);
+    static const bool needDeref = (!std::is_same<T, DerefU>::value);
     static const bool needDecay = (!std::is_same<T, DecayU>::value);
     static const bool needPointer = (!std::is_pointer<T>::value);
 

@@ -76,18 +76,21 @@ private:
         DrawCommand(eDrawCommandID _id) //-V730
         : id(_id)
         {
+            Memset(params, 0, sizeof(params));
         }
 
-        DrawCommand(eDrawCommandID _id, eDrawType _drawType, Vector<float32>&& _params)
+        DrawCommand(eDrawCommandID _id, eDrawType _drawType, Vector<float32>&& _extraParams)
             : id(_id)
             , drawType(_drawType)
-            , params(std::move(_params))
+            , extraParams(std::move(_extraParams))
         {
+            Memset(params, 0, sizeof(params));
         }
 
         eDrawCommandID id;
         eDrawType drawType;
-        Vector<float32> params;
+        float32 params[16];
+        Vector<float32> extraParams;
     };
     struct ColoredVertex
     {
@@ -97,24 +100,17 @@ private:
 
     struct RenderStruct
     {
-        rhi::HPacketList packetList;
-        rhi::Packet packet[DRAW_TYPE_COUNT];
-        ColoredVertex* vBufferPtr[DRAW_TYPE_COUNT];
-        uint16* iBufferPtr[DRAW_TYPE_COUNT];
-        uint32 vBufferOffset[DRAW_TYPE_COUNT];
+        rhi::Packet packet;
+        ColoredVertex* vBufferPtr = nullptr;
+        uint16* iBufferPtr = nullptr;
+        uint32 vBufferOffset = 0;
+        uint32 vBufferSize = 0;
+        uint32 iBufferSize = 0;
         bool valid = true;
-
-        RenderStruct()
-        {
-            memset(vBufferPtr, 0, sizeof(vBufferPtr));
-            memset(iBufferPtr, 0, sizeof(iBufferPtr));
-            memset(vBufferOffset, 0, sizeof(vBufferOffset));
-        }
     };
 
     void QueueCommand(const DrawCommand& command);
     void GetRequestedVertexCount(const DrawCommand& command, uint32& vertexCount, uint32& indexCount);
-    bool PreparePacket(rhi::Packet& packet, NMaterial* material, const std::pair<uint32, uint32>& buffersCount, ColoredVertex** vBufferDataPtr, uint16** iBufferDataPtr);
 
     void QueueDrawBoxCommand(eDrawCommandID commandID, const AABBox3& box, const Matrix4* matrix, const Color& color, eDrawType drawType);
 
@@ -126,13 +122,14 @@ private:
     void FillCircleVBuffer(ColoredVertex* buffer, const Vector3& center, const Vector3& direction, float32 radius, uint32 pointCount, uint32 nativeColor);
     void FillArrowVBuffer(ColoredVertex* buffer, const Vector3& from, const Vector3& to, uint32 nativeColor);
 
-    RenderStruct AllocateRenderStruct(rhi::HPacketList packetList);
-    void CommitRenderStruct(const RenderStruct&);
+    RenderStruct AllocateRenderStruct(eDrawType);
+    void CommitRenderStruct(rhi::HPacketList packetList, const RenderStruct& rs);
 
     uint32 coloredVertexLayoutUID;
 
     Vector<DrawCommand> commandQueue;
-    Array<std::pair<uint32, uint32>, DRAW_TYPE_COUNT> buffersElemCount; //first - VertexBuffer, second - IndexBuffer
+    uint32 vBuffersElemCount[DRAW_TYPE_COUNT];
+    uint32 iBuffersElemCount[DRAW_TYPE_COUNT];
     NMaterial* materials[DRAW_TYPE_COUNT];
 
     DrawCommand drawLineCommand;

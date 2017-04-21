@@ -111,9 +111,9 @@ String LocalizationSystem::GetDeviceLocale(void) const
     }
 
     JNI::JavaClass jniLocalisation("com/dava/framework/JNILocalization");
-    Function<jstring()> getLocale = jniLocalisation.GetStaticMethod<jstring>("GetLocale");
+    Function<jstring()> jgetLocale = jniLocalisation.GetStaticMethod<jstring>("GetLocale");
 
-    return JNI::ToString(getLocale());
+    return JNI::JavaStringToString(JNI::LocalRef<jstring>(jgetLocale()));
 }
 #endif
 
@@ -137,8 +137,10 @@ void LocalizationSystem::OverrideDeviceLocale(const String& langId)
     overridenLangId = langId;
 }
 
-void LocalizationSystem::SetCurrentLocale(const String& requestedLangId)
+bool LocalizationSystem::SetCurrentLocale(const String& requestedLangId)
 {
+    bool requestedLocaleFound = true;
+
     String actualLangId;
 
     FilePath localeFilePath(directoryPath + (requestedLangId + ".yaml"));
@@ -196,6 +198,8 @@ void LocalizationSystem::SetCurrentLocale(const String& requestedLangId)
 
     if (actualLangId.empty())
     {
+        requestedLocaleFound = false;
+
         localeFilePath = directoryPath + (String(DEFAULT_LOCALE) + ".yaml");
         if (FileSystem::Instance()->Exists(localeFilePath))
         {
@@ -204,7 +208,7 @@ void LocalizationSystem::SetCurrentLocale(const String& requestedLangId)
         else
         {
             Logger::Warning("LocalizationSystem requested locale %s is not supported, failed to set default lang, locale will not be changed", requestedLangId.c_str(), actualLangId.c_str());
-            return;
+            return requestedLocaleFound;
         }
     }
 
@@ -212,6 +216,7 @@ void LocalizationSystem::SetCurrentLocale(const String& requestedLangId)
     Logger::FrameworkDebug("LocalizationSystem requested locale: %s, set locale: %s", requestedLangId.c_str(), actualLangId.c_str());
     langId = actualLangId;
     SoundSystem::Instance()->SetCurrentLocale(langId);
+    return requestedLocaleFound;
 }
 
 LocalizationSystem::StringFile* LocalizationSystem::LoadFromYamlFile(const String& langID, const FilePath& pathName)

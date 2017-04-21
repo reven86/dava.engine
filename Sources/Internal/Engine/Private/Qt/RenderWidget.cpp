@@ -70,11 +70,13 @@ protected:
     bool event(QEvent* e) override;
 
 private:
+    void TryActivate();
     void OnCreated();
     void OnFrame();
     void OnActiveFocusItemChanged();
     void OnSceneGraphInvalidated();
     void OnClientDelegateDestroyed();
+    void OnBeforeSyncronizing();
 
 private:
     IWindowDelegate* widgetDelegate = nullptr;
@@ -83,6 +85,9 @@ private:
 
     bool isClosing = false;
     bool isInPaint = false;
+
+    bool isSynchronized = false;
+    bool isActivated = false;
 
     std::unique_ptr<RenderWidgetDetails::QtScreenParams> screenParams;
 };
@@ -104,11 +109,21 @@ RenderWidget::RenderWidgetImpl::RenderWidgetImpl(RenderWidget::IWindowDelegate* 
     window->setColor(QColor(76, 76, 76, 255));
     connect(window, &QQuickWindow::sceneGraphInvalidated, this, &RenderWidgetImpl::OnSceneGraphInvalidated, Qt::DirectConnection);
     connect(window, &QQuickWindow::activeFocusItemChanged, this, &RenderWidgetImpl::OnActiveFocusItemChanged, Qt::DirectConnection);
+
+    connect(window, &QQuickWindow::beforeSynchronizing, this, &RenderWidgetImpl::OnBeforeSyncronizing, Qt::DirectConnection);
+}
+
+void RenderWidget::RenderWidgetImpl::TryActivate()
+{
+    if (IsInitialized() == false && isActivated && isSynchronized)
+    {
+        ActivateRendering();
+        OnCreated();
+    }
 }
 
 void RenderWidget::RenderWidgetImpl::OnCreated()
 {
-    QObject::disconnect(quickWindow(), &QQuickWindow::beforeSynchronizing, this, &RenderWidgetImpl::OnCreated);
     setProperty(initializedPropertyName, true);
 
     widgetDelegate->OnCreated();
@@ -169,7 +184,6 @@ void RenderWidget::RenderWidgetImpl::OnFrame()
 void RenderWidget::RenderWidgetImpl::ActivateRendering()
 {
     QQuickWindow* w = quickWindow();
-    connect(w, &QQuickWindow::beforeSynchronizing, this, &RenderWidgetImpl::OnCreated, Qt::DirectConnection);
     connect(w, &QQuickWindow::beforeRendering, this, &RenderWidgetImpl::OnFrame, Qt::DirectConnection);
     w->setClearBeforeRendering(false);
 }
@@ -364,10 +378,20 @@ void RenderWidget::RenderWidgetImpl::keyReleaseEvent(QKeyEvent* e)
 
 bool RenderWidget::RenderWidgetImpl::event(QEvent* e)
 {
-    if (e->type() == QEvent::NativeGesture && clientDelegate != nullptr)
+    QEvent::Type eventType = e->type();
+    if (eventType == QEvent::NativeGesture && clientDelegate != nullptr)
     {
         QNativeGestureEvent* gestureEvent = static_cast<QNativeGestureEvent*>(e);
-        clientDelegate->OnNativeGuesture(gestureEvent);
+        widgetDelegate->OnNativeGesture(gestureEvent);
+        if (clientDelegate != nullptr)
+        {
+            clientDelegate->OnNativeGesture(gestureEvent);
+        }
+    }
+    if (eventType == QEvent::WindowActivate || (eventType == QEvent::Polish && isActiveWindow()))
+    {
+        isActivated = true;
+        TryActivate();
     }
 
     return QQuickWidget::event(e);
@@ -407,6 +431,13 @@ void RenderWidget::RenderWidgetImpl::OnClientDelegateDestroyed()
     clientDelegate = nullptr;
 }
 
+void RenderWidget::RenderWidgetImpl::OnBeforeSyncronizing()
+{
+    disconnect(quickWindow(), &QQuickWindow::beforeSynchronizing, this, &RenderWidgetImpl::OnBeforeSyncronizing);
+    isSynchronized = true;
+    TryActivate();
+}
+
 /////////////////////////////////////////////////////////////////////////////////
 //                      RenderWidget                                           //
 /////////////////////////////////////////////////////////////////////////////////
@@ -428,11 +459,6 @@ RenderWidget::~RenderWidget() = default;
 void RenderWidget::SetClientDelegate(RenderWidget::IClientDelegate* delegate)
 {
     impl->SetClientDelegate(delegate);
-}
-
-void RenderWidget::ActivateRendering()
-{
-    impl->ActivateRendering();
 }
 
 bool RenderWidget::IsInitialized() const

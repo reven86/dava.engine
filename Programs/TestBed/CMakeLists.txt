@@ -18,7 +18,7 @@ dava_add_definitions(-D__DAVAENGINE_COREV2__)
 # Uncomment to use local resources for android
 # dava_add_definitions(-DUSE_LOCAL_RESOURCES)
 
-set ( DAVA_COMPONENTS "ALL" "SampleModule" "DAVA_DISABLE_AUTOTESTS" )
+set ( DAVA_COMPONENTS "Sound" "SampleModule" "DAVA_DISABLE_AUTOTESTS" )
 if ( WIN32 AND NOT WIN_UAP AND NOT DAVA_PLATFORM_QT)
     list ( APPEND DAVA_COMPONENTS "CEFWebview" )
 endif ()
@@ -38,12 +38,14 @@ endif()
 dava_add_definitions(-DLOCALIZATION_DEBUG)
 
 
-if( MACOS OR WIN32 )
+if( NOT WINDOWS_UAP AND ( MACOS OR WIN32 ) )
     add_plugin( SamplePlugin "${DAVA_MODULES_DIR}/SamplePlugin" COMPONENTS  ${DAVA_COMPONENTS} )
 endif()
 
 
 find_package( DavaFramework REQUIRED COMPONENTS ${DAVA_COMPONENTS} )
+find_package( EmbeddedWebServer REQUIRED )
+
 
 include_directories   ( "Classes" )
 include_directories   ( "Classes/Infrastructure" )
@@ -63,7 +65,8 @@ file ( GLOB_RECURSE XIB_LIST "${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLD
 
 define_source ( SOURCE    "Classes" )
 
-set( APP_DATA                   ${CMAKE_CURRENT_LIST_DIR}/Data )
+set( MIX_APP_DATA                 "Data = ${DAVA_ROOT_DIR}/Programs/Data" 
+                                  "Data = ${CMAKE_CURRENT_LIST_DIR}/Data" )
 
 if (MACOS OR WIN32)
     set( APP_DATA  ${APP_DATA} "scripts")

@@ -22,7 +22,7 @@ private:
     void OnDragStateChanged(EditorSystemsManager::eDragState currentState, EditorSystemsManager::eDragState previousState) override;
 
     void Layout();
-    void OnRootContolsChanged(const SortedPackageBaseNodeSet& rootControls_);
+    void OnRootContolsChanged(const SortedControlNodeSet& rootControls_);
     void OnPackageChanged(PackageNode* node);
     void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from) override;
     void ControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int index) override;
@@ -33,7 +33,7 @@ private:
     DAVA::RefPtr<DAVA::UIControl> controlsCanvas; //to attach or detach from document
     DAVA::List<std::unique_ptr<BackgroundController>> gridControls;
 
-    DAVA::Set<PackageBaseNode*> rootControls;
-    PackageNode* package = nullptr;
+    DAVA::Set<ControlNode*> rootControls;
+    DAVA::RefPtr<PackageNode> package;
     DAVA::UIControl* canvasParent = nullptr;
 };

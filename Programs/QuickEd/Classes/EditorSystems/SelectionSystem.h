@@ -2,11 +2,12 @@
 
 #include "EditorSystems/SelectionContainer.h"
 #include "EditorSystems/BaseEditorSystem.h"
-#include "Math/Rect.h"
-#include "UI/UIEvent.h"
-#include "Functional/SignalBase.h"
-#include "Model/PackageHierarchy/PackageListener.h"
-#include "Preferences/PreferencesRegistrator.h"
+
+#include <TArc/DataProcessing/DataWrapper.h>
+
+#include <Math/Rect.h>
+#include <UI/UIEvent.h>
+#include <Preferences/PreferencesRegistrator.h>
 
 class EditorSystemsManager;
 class ControlNode;
@@ -15,12 +16,16 @@ class ControlsContainerNode;
 namespace DAVA
 {
 class Vector2;
+namespace TArc
+{
+class ContextAccessor;
+}
 }
 
-class SelectionSystem : public BaseEditorSystem, PackageListener, public DAVA::InspBase
+class SelectionSystem : public BaseEditorSystem, public DAVA::InspBase
 {
 public:
-    SelectionSystem(EditorSystemsManager* doc);
+    SelectionSystem(EditorSystemsManager* doc, DAVA::TArc::ContextAccessor* accessor);
     ~SelectionSystem() override;
 
     void ClearSelection();
@@ -38,22 +43,22 @@ private:
 
     void GetNodesForSelection(DAVA::Vector<ControlNode*>& nodesUnderPoint, const DAVA::Vector2& point) const;
     void ProcessInput(DAVA::UIEvent* currentInput) override;
-    void OnPackageChanged(PackageNode* packageNode);
-    void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from) override;
     void OnSelectByRect(const DAVA::Rect& rect);
 
     void FocusToChild(bool next);
-    void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
-    void SelectNode(const SelectedNodes& selected, const SelectedNodes& deselected);
+    void SelectNodes(const SelectedNodes& selection);
+    void OnSelectionChanged(const SelectedNodes& selection);
 
     ControlNode* FindSmallNodeUnderNode(const DAVA::Vector<ControlNode*>& nodesUnderPoint) const;
 
     SelectionContainer selectionContainer;
-    PackageNode* packageNode = nullptr;
     bool canFindCommonForSelection = true;
 
     bool selectOnRelease = false;
     DAVA::Vector2 pressedPoint = DAVA::Vector2(-1.0f, -1.0f);
+    DAVA::TArc::ContextAccessor* accessor = nullptr;
+
+    DAVA::TArc::DataWrapper documentDataWrapper;
 
 public:
     INTROSPECTION(SelectionSystem,

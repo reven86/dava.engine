@@ -3,9 +3,38 @@
 #include "Scene3D/Systems/EventSystem.h"
 #include "Scene3D/Systems/GlobalEventSystem.h"
 #include "Render/Highlevel/RenderObject.h"
+#include "Reflection/ReflectionRegistrator.h"
+#include "Reflection/ReflectedMeta.h"
 
 namespace DAVA
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(StaticOcclusionDataComponent)
+{
+    ReflectionRegistrator<StaticOcclusionDataComponent>::Begin()[M::CantBeCreatedManualyComponent()]
+    .ConstructorByPointer()
+    .Field("sizeInKBytes", &StaticOcclusionDataComponent::GetDataSize, &StaticOcclusionDataComponent::SetDataSize)[M::ReadOnly(), M::DisplayName("Size in kBytes")]
+    .End();
+}
+
+DAVA_VIRTUAL_REFLECTION_IMPL(StaticOcclusionComponent)
+{
+    ReflectionRegistrator<StaticOcclusionComponent>::Begin()
+    .ConstructorByPointer()
+    .Field("bbox", &StaticOcclusionComponent::GetBoundingBox, &StaticOcclusionComponent::SetSubdivisionsX)[M::DisplayName("Bounding Box")]
+    .Field("subdivX", &StaticOcclusionComponent::GetSubdivisionsX, &StaticOcclusionComponent::SetSubdivisionsY)[M::DisplayName("Subdivisions X")]
+    .Field("subdivY", &StaticOcclusionComponent::GetSubdivisionsY, &StaticOcclusionComponent::SetSubdivisionsZ)[M::DisplayName("Subdivisions Y")]
+    .Field("subdivZ", &StaticOcclusionComponent::GetSubdivisionsZ, &StaticOcclusionComponent::SetSubdivisionsZ)[M::DisplayName("Subdivisions Z")]
+    .Field("placeOnLandScape", &StaticOcclusionComponent::GetPlaceOnLandscape, &StaticOcclusionComponent::SetPlaceOnLandscape)[M::DisplayName("Place on Landscape")]
+    .End();
+}
+
+DAVA_VIRTUAL_REFLECTION_IMPL(StaticOcclusionDebugDrawComponent)
+{
+    ReflectionRegistrator<StaticOcclusionDebugDrawComponent>::Begin()[M::CantBeCreatedManualyComponent()]
+    .ConstructorByPointer()
+    .End();
+}
+
 StaticOcclusionComponent::StaticOcclusionComponent()
 {
     xSubdivisions = 2;
@@ -13,6 +42,8 @@ StaticOcclusionComponent::StaticOcclusionComponent()
     zSubdivisions = 2;
     boundingBox = AABBox3(Vector3(0.0f, 0.0f, 0.0f), Vector3(20.0f, 20.0f, 20.0f));
     placeOnLandscape = false;
+    occlusionPixelThreshold = 0;
+    occlusionPixelThresholdForSpeedtree = 0;
 }
 
 Component* StaticOcclusionComponent::Clone(Entity* toEntity)
@@ -25,6 +56,8 @@ Component* StaticOcclusionComponent::Clone(Entity* toEntity)
     newComponent->SetBoundingBox(boundingBox);
     newComponent->SetPlaceOnLandscape(placeOnLandscape);
     newComponent->cellHeightOffset = cellHeightOffset;
+    newComponent->SetOcclusionPixelThreshold(occlusionPixelThreshold);
+    newComponent->SetOcclusionPixelThresholdForSpeedtree(occlusionPixelThresholdForSpeedtree);
     return newComponent;
 }
 
@@ -39,6 +72,8 @@ void StaticOcclusionComponent::Serialize(KeyedArchive* archive, SerializationCon
         archive->SetUInt32("soc.ysub", ySubdivisions);
         archive->SetUInt32("soc.zsub", zSubdivisions);
         archive->SetBool("soc.placeOnLandscape", placeOnLandscape);
+        archive->SetUInt32("soc.occlusionPixelThreshold", occlusionPixelThreshold);
+        archive->SetUInt32("soc.occlusionPixelThresholdForSpeedtree", occlusionPixelThresholdForSpeedtree);
         if (placeOnLandscape)
             archive->SetByteArray("soc.cellHeightOffset", reinterpret_cast<uint8*>(&cellHeightOffset.front()), xSubdivisions * ySubdivisions * sizeof(float32));
     }
@@ -52,6 +87,8 @@ void StaticOcclusionComponent::Deserialize(KeyedArchive* archive, SerializationC
         xSubdivisions = archive->GetUInt32("soc.xsub", 1);
         ySubdivisions = archive->GetUInt32("soc.ysub", 1);
         zSubdivisions = archive->GetUInt32("soc.zsub", 1);
+        occlusionPixelThreshold = archive->GetUInt32("soc.occlusionPixelThreshold", 0);
+        occlusionPixelThresholdForSpeedtree = archive->GetUInt32("soc.occlusionPixelThresholdForSpeedtree", 0);
         placeOnLandscape = archive->GetBool("soc.placeOnLandscape", false);
         if (placeOnLandscape)
         {

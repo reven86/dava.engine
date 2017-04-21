@@ -103,7 +103,7 @@ if ( WINDOWS_UAP )
     #turning on openssl_WinRT lib on Windows Store
     set( DAVA_THIRD_PARTY_INCLUDES_PATH "${DAVA_THIRD_PARTY_INCLUDES_PATH}" 
                                         "${DAVA_THIRD_PARTY_ROOT_PATH}/openssl/include/uwp"
-                                        "${DAVA_THIRD_PARTY_ROOT_PATH}/fmod_uap/include" )
+    )
   
     #Deprecated since cmake 3.4, added for backwards compatibility
     set ( CMAKE_VS_TARGET_PLATFORM_VERSION ${WINDOWS_UAP_TARGET_PLATFORM_VERSION} )
@@ -161,7 +161,7 @@ set( DAVA_THIRD_PARTY_INCLUDES_PATH "${DAVA_THIRD_PARTY_INCLUDES_PATH}"
 get_filename_component( DAVA_SPEEDTREE_ROOT_DIR ${DAVA_SPEEDTREE_ROOT_DIR} ABSOLUTE )
 get_filename_component( DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR ${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR} ABSOLUTE )
 
-set( DAVA_BINARY_WIN32_DIR  "${DAVA_THIRD_PARTY_LIBRARIES_PATH}" "${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/beast/bin"  )
+set( DAVA_BINARY_WIN32_DIR  "${DAVA_RESOURCEEDITOR_BEAST_ROOT_DIR}/beast/bin" )
 
 set( DAVA_INCLUDE_DIR       ${DAVA_ENGINE_DIR} ${DAVA_THIRD_PARTY_INCLUDES_PATH} )
 

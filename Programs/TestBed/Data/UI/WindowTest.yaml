@@ -1,0 +1,225 @@
+Header:
+    version: "10"
+Controls:
+-   class: "UIControl"
+    name: "MainFrame"
+    position: [0.000000, 0.000000]
+    size: [719.000000, 547.000000]
+    noInput: true
+    components:
+        SizePolicy:
+            horizontalPolicy: "PercentOfParent"
+            verticalPolicy: "PercentOfParent"
+    children:
+    -   class: "UIControl"
+        name: "VisibleFrame"
+        position: [152.500000, 118.500000]
+        size: [414.000000, 310.000000]
+        noInput: true
+        debugDraw: true
+        debugDrawColor: [0.000000, 1.000000, 0.000000, 1.000000]
+        children:
+        -   class: "UIControl"
+            name: "Rect"
+            size: [394.000000, 290.000000]
+            noInput: true
+            components:
+                Anchor:
+                    leftAnchorEnabled: true
+                    leftAnchor: 10.000000
+                    rightAnchorEnabled: true
+                    rightAnchor: 10.000000
+                    topAnchorEnabled: true
+                    topAnchor: 10.000000
+                    bottomAnchorEnabled: true
+                    bottomAnchor: 10.000000
+            children:
+            -   class: "UIControl"
+                name: "TopOffset"
+                size: [10.000000, 10.000000]
+                components:
+                    Anchor:
+                        hCenterAnchorEnabled: true
+                        topAnchorEnabled: true
+                        topAnchor: -10.000000
+                    Background:
+                        drawType: "DRAW_FILL"
+                        color: [0.000000, 1.000000, 0.000000, 1.000000]
+            -   class: "UIControl"
+                name: "LeftOffset"
+                size: [10.000000, 10.000000]
+                components:
+                    Anchor:
+                        leftAnchorEnabled: true
+                        leftAnchor: -10.000000
+                        vCenterAnchorEnabled: true
+                    Background:
+                        drawType: "DRAW_FILL"
+                        color: [0.000000, 1.000000, 0.000000, 1.000000]
+            -   class: "UIControl"
+                name: "RightOffset"
+                size: [10.000000, 10.000000]
+                components:
+                    Anchor:
+                        rightAnchorEnabled: true
+                        rightAnchor: -10.000000
+                        vCenterAnchorEnabled: true
+                    Background:
+                        drawType: "DRAW_FILL"
+                        color: [0.000000, 1.000000, 0.000000, 1.000000]
+            -   class: "UIControl"
+                name: "BottomOffset"
+                size: [10.000000, 10.000000]
+                components:
+                    Anchor:
+                        hCenterAnchorEnabled: true
+                        bottomAnchorEnabled: true
+                        bottomAnchor: -10.000000
+                    Background:
+                        drawType: "DRAW_FILL"
+                        color: [0.000000, 1.000000, 0.000000, 1.000000]
+        -   class: "UIControl"
+            name: "ControlsPanel"
+            position: [20.000000, 20.000000]
+            size: [374.000000, 270.000000]
+            noInput: true
+            components:
+                Anchor:
+                    leftAnchorEnabled: true
+                    leftAnchor: 20.000000
+                    rightAnchorEnabled: true
+                    rightAnchor: 20.000000
+                    topAnchorEnabled: true
+                    topAnchor: 20.000000
+                    bottomAnchorEnabled: true
+                    bottomAnchor: 20.000000
+            children:
+            -   class: "UIControl"
+                name: "InfoPanel"
+                size: [374.000000, 158.000000]
+                components:
+                    LinearLayout:
+                        orientation: "TopDown"
+                        spacing: 10.000000
+                    SizePolicy:
+                        horizontalPolicy: "PercentOfParent"
+                        verticalPolicy: "PercentOfChildrenSum"
+                    Anchor:
+                        topAnchorEnabled: true
+                children:
+                -   class: "UIControl"
+                    name: "InputPanel"
+                    position: [0.000000, 0.000000]
+                    size: [374.000000, 32.000000]
+                    components:
+                        LinearLayout: {}
+                        SizePolicy:
+                            horizontalPolicy: "PercentOfParent"
+                            verticalPolicy: "PercentOfMaxChild"
+                    children:
+                    -   class: "UIStaticText"
+                        name: "Label"
+                        position: [0.000000, 0.000000]
+                        size: [192.000000, 32.000000]
+                        text: "Text field with options: "
+                        font: "Korinna_18"
+                        components:
+                            SizePolicy:
+                                horizontalPolicy: "PercentOfContent"
+                    -   class: "UITextField"
+                        name: "TextField1"
+                        size: [182.000000, 32.000000]
+                        debugDraw: true
+                        text: "select me"
+                        font: "Korinna_18"
+                        autoCorrectionType: "AUTO_CORRECTION_TYPE_YES"
+                        spellCheckingType: "SPELL_CHECKING_TYPE_YES"
+                        components:
+                            SizePolicy:
+                                horizontalPolicy: "PercentOfParent"
+                            Focus: {}
+                -   class: "UIControl"
+                    name: "InputPanel"
+                    size: [374.000000, 32.000000]
+                    components:
+                        LinearLayout: {}
+                        SizePolicy:
+                            horizontalPolicy: "PercentOfParent"
+                            verticalPolicy: "PercentOfMaxChild"
+                    children:
+                    -   class: "UIStaticText"
+                        name: "Label"
+                        position: [0.000000, 0.000000]
+                        size: [188.000000, 32.000000]
+                        text: "Text field w/o options: "
+                        font: "Korinna_18"
+                        components:
+                            SizePolicy:
+                                horizontalPolicy: "PercentOfContent"
+                    -   class: "UITextField"
+                        name: "TextField2"
+                        size: [186.000000, 32.000000]
+                        debugDraw: true
+                        text: "select me"
+                        font: "Korinna_18"
+                        autoCorrectionType: "AUTO_CORRECTION_TYPE_NO"
+                        spellCheckingType: "SPELL_CHECKING_TYPE_NO"
+                        keyboardType: "KEYBOARD_TYPE_NUMBER_PAD"
+                        components:
+                            SizePolicy:
+                                horizontalPolicy: "PercentOfParent"
+                            Focus: {}
+                -   class: "UIControl"
+                    name: "Line"
+                    size: [374.000000, 32.000000]
+                    components:
+                        LinearLayout: {}
+                        SizePolicy:
+                            horizontalPolicy: "PercentOfParent"
+                            verticalPolicy: "PercentOfMaxChild"
+                    children:
+                    -   class: "UIStaticText"
+                        name: "Label"
+                        position: [0.000000, 0.000000]
+                        size: [156.000000, 32.000000]
+                        text: "Visible frame rect: "
+                        font: "Korinna_18"
+                        components:
+                            SizePolicy:
+                                horizontalPolicy: "PercentOfContent"
+                    -   class: "UIStaticText"
+                        name: "VisibleFrameRectText"
+                        position: [156.000000, 0.000000]
+                        size: [72.000000, 32.000000]
+                        text: "0,0 - 0,0"
+                        font: "Korinna_18"
+                        components:
+                            SizePolicy:
+                                horizontalPolicy: "PercentOfContent"
+                -   class: "UIControl"
+                    name: "Line"
+                    size: [374.000000, 32.000000]
+                    components:
+                        LinearLayout: {}
+                        SizePolicy:
+                            horizontalPolicy: "PercentOfParent"
+                            verticalPolicy: "PercentOfMaxChild"
+                    children:
+                    -   class: "UIStaticText"
+                        name: "Label"
+                        position: [0.000000, 0.000000]
+                        size: [178.000000, 32.000000]
+                        text: "Keyboard frame rect: "
+                        font: "Korinna_18"
+                        components:
+                            SizePolicy:
+                                horizontalPolicy: "PercentOfContent"
+                    -   class: "UIStaticText"
+                        name: "KeyboardFrameRectText"
+                        position: [178.000000, 0.000000]
+                        size: [72.000000, 32.000000]
+                        text: "0,0 - 0,0"
+                        font: "Korinna_18"
+                        components:
+                            SizePolicy:
+                                horizontalPolicy: "PercentOfContent"

@@ -72,13 +72,7 @@ void RulerWidget::paintEvent(QPaintEvent* /*event*/)
 QSize RulerWidget::minimumSizeHint() const
 {
     static const int minimumSize = 16;
-    switch (orientation)
-    {
-    default:
-        return QSize(0, minimumSize);
-    case Qt::Vertical:
-        return QSize(minimumSize, 0);
-    }
+    return QSize(minimumSize, minimumSize);
 }
 
 void RulerWidget::resizeEvent(QResizeEvent*)

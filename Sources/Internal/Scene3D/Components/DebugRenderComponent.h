@@ -1,18 +1,18 @@
-#ifndef __DAVAENGINE_SCENE3D_DEBUG_RENDER_COMPONENT_H__
-#define __DAVAENGINE_SCENE3D_DEBUG_RENDER_COMPONENT_H__
+#pragma once
 
-#include "Base/BaseTypes.h"
-#include "Entity/Component.h"
 #include "Scene3D/Entity.h"
-#include "Render/Highlevel/RenderObject.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
+#include "Entity/Component.h"
+#include "Reflection/Reflection.h"
+#include "Render/Highlevel/RenderObject.h"
+#include "Base/BaseTypes.h"
 
 namespace DAVA
 {
 class DebugRenderComponent : public Component
 {
 public:
-    enum
+    enum eDebugDrawFlags
     {
         DEBUG_DRAW_NONE = 0x0,
         DEBUG_DRAW_AABBOX = 0x1,
@@ -51,7 +51,7 @@ public:
     INTROSPECTION_EXTEND(DebugRenderComponent, Component,
                          PROPERTY("curDebugFlags", "Debug Flags ", GetDebugFlags, SetDebugFlags, I_SAVE | I_VIEW | I_EDIT)
                          );
-};
-};
 
-#endif //__DAVAENGINE_SCENE3D_RENDER_COMPONENT_H__
+    DAVA_VIRTUAL_REFLECTION(DebugRenderComponent, Component);
+};
+};

@@ -91,39 +91,99 @@ macro (enable_pch)
     endif ()
 endmacro ()
 #
+macro( processing_mix_data_dependencies DEPENDENT_TARGET_LIST )
+
+    if( TARGET DATA_COPY_${PROJECT_NAME}  )
+        foreach (TARGET_NAME ${DEPENDENT_TARGET_LIST})
+            if( TARGET ${TARGET_NAME} )
+                add_dependencies( ${TARGET_NAME} DATA_COPY_${PROJECT_NAME} )
+            endif()
+        endforeach ()
+    endif()
+endmacro ()
+#
 macro( processing_mix_data )
     cmake_parse_arguments ( ARG "NOT_DATA_COPY"  "" "" ${ARGN} )
 
     load_property( PROPERTY_LIST MIX_APP_DATA )
-    if( DEPLOY )
+    if( ANDROID )
+        set( MIX_APP_DIR ${CMAKE_BINARY_DIR}/assets )
+        set( DAVA_DEBUGGER_WORKING_DIRECTORY ${MIX_APP_DIR} )
+    elseif( WINDOWS_UAP )
+        set( MIX_APP_DIR ${CMAKE_CURRENT_BINARY_DIR}/MixResources )
+    elseif( DEPLOY )
         if( NOT DEPLOY_DIR_DATA )
             if( MACOS AND NOT MAC_DISABLE_BUNDLE)
                 set( DEPLOY_DIR_DATA ${DEPLOY_DIR}/${PROJECT_NAME}.app/Contents/Resources )
+            elseif( IOS )
+                set( DEPLOY_DIR_DATA ${DEPLOY_DIR}/${PROJECT_NAME}.app )                
             else()
                 set( DEPLOY_DIR_DATA ${DEPLOY_DIR} )
             endif()
         endif()
 
-        set( MIX_APP_DIR ${DEPLOY_DIR_DATA} )        
+        set( MIX_APP_DIR ${DEPLOY_DIR_DATA} )     
     else()
-        set( MIX_APP_DIR ${CMAKE_BINARY_DIR}/MixResources )
+
+        if( NOT MIX_APP_DIR )
+            set( MIX_APP_DIR ${CMAKE_CURRENT_BINARY_DIR}/MixResources )
+        endif()
+
         set( DAVA_DEBUGGER_WORKING_DIRECTORY ${MIX_APP_DIR} )
     endif()
+    
     get_filename_component( MIX_APP_DIR ${MIX_APP_DIR} ABSOLUTE )
 
+    if( NOT ARG_NOT_DATA_COPY )
+        add_custom_target ( DATA_COPY_${PROJECT_NAME} )
+    endif()
+
     foreach( ITEM ${MIX_APP_DATA} )
-        string( REGEX REPLACE " " "" ITEM ${ITEM} )
-        string( REGEX REPLACE "=" ";" ITEM ${ITEM} )
-        list(GET ITEM 0 GROUP_PATH )
-        list(GET ITEM 1 DATA_PATH )
-        get_filename_component( DATA_PATH ${DATA_PATH} ABSOLUTE )
-        execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${MIX_APP_DIR}/${GROUP_PATH} )
-        if( NOT ARG_NOT_DATA_COPY )
-            execute_process( COMMAND ${CMAKE_COMMAND} -E copy_directory ${DATA_PATH} ${MIX_APP_DIR}/${GROUP_PATH} )
+
+        string(FIND ${ITEM} "=>" SYMBOL_FOUND)
+        if (${SYMBOL_FOUND} MATCHES -1)
+            string( REGEX REPLACE " " "" ITEM ${ITEM} )
+            string( REGEX REPLACE "=" ";" ITEM ${ITEM} )
+            list(GET ITEM 0 GROUP_PATH )
+            list(GET ITEM 1 DATA_PATH )
+
+            get_filename_component( DATA_PATH ${DATA_PATH} ABSOLUTE )
+            execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${MIX_APP_DIR}/${GROUP_PATH} )
+            if( NOT ARG_NOT_DATA_COPY )
+                ADD_CUSTOM_COMMAND( TARGET DATA_COPY_${PROJECT_NAME}  
+                   COMMAND ${CMAKE_COMMAND} -E copy_directory
+                   ${DATA_PATH} 
+                   ${MIX_APP_DIR}/${GROUP_PATH}
+                )
+            endif()
+
+        else()
+            string( REGEX REPLACE " " "" ITEM ${ITEM} )
+            string( REGEX REPLACE "=>" ";" ITEM ${ITEM} )
+            list(GET ITEM 0 FILE_PATH )
+            list(GET ITEM 1 DATA_PATH )
+
+            if( NOT ARG_NOT_DATA_COPY )
+                get_filename_component(FILE_NAME ${FILE_PATH} NAME)
+
+                execute_process( COMMAND ${CMAKE_COMMAND} -E rename ${MIX_APP_DIR}/${FILE_PATH} ${MIX_APP_DIR}/${DATA_PATH}/${FILE_NAME} )
+            endif()
+
         endif()
+
     endforeach()
 
-    if( NOT DEPLOY )
+
+    if( WINDOWS_UAP )
+
+        file(GLOB LIST_FOLDER_ITEM  "${MIX_APP_DIR}/*" )
+        foreach( ITEM ${LIST_FOLDER_ITEM} )
+            if( IS_DIRECTORY ${ITEM} )
+                set( APP_DATA ${ITEM} ${APP_DATA} )
+            endif()
+        endforeach()
+
+    elseif( NOT DEPLOY )
         file(GLOB LIST_FOLDER_ITEM  "${MIX_APP_DIR}/*" )
         foreach( ITEM ${LIST_FOLDER_ITEM} )
             if( IS_DIRECTORY ${ITEM} )
@@ -143,6 +203,10 @@ macro( processing_mix_data )
                 endif()
             endif()
         endforeach()
+    endif()
+
+    if( NOT ARG_NOT_DATA_COPY )
+        reset_property ( MIX_APP_DATA )
     endif()
 
 endmacro ()
@@ -624,9 +688,10 @@ endmacro()
 
 #
 
-function (reset_property KEY_PROP )
-    SET_PROPERTY(GLOBAL PROPERTY ${KEY_PROP} )
-endfunction()
+macro (reset_property KEY_PROP )
+    set( ${KEY_PROP} )
+    SET_PROPERTY(GLOBAL PROPERTY ${KEY_PROP}  )
+endmacro()
 
 macro( load_property  )
     cmake_parse_arguments (ARG "" "" "PROPERTY_LIST" ${ARGN})
@@ -654,6 +719,8 @@ endmacro()
 macro ( add_content_win_uap_single CONTENT_DIR )
 
     #get all files from it and add to SRC
+    set( CONTENT_LIST)
+    set( CONTENT_LIST_TMP)
     file ( GLOB_RECURSE CONTENT_LIST_TMP "${CONTENT_DIR}/*")
     
     #check svn dir (it happens)

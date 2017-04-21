@@ -1,20 +1,29 @@
 #pragma once
 
-#include "Base/BaseTypes.h"
-#include "Base/RefPtr.h"
-#include "Functional/Signal.h"
 #include "Model/PackageHierarchy/PackageListener.h"
 #include "EditorSystems/SelectionContainer.h"
-#include "Math/Rect.h"
-#include "Math/Vector.h"
+
+#include <TArc/DataProcessing/DataWrapper.h>
+#include <TArc/DataProcessing/DataListener.h>
+
+#include <Base/BaseTypes.h>
+#include <Base/RefPtr.h>
+#include <Functional/Signal.h>
+
+#include <Math/Rect.h>
+#include <Math/Vector.h>
 
 namespace DAVA
 {
 class UIControl;
 class UIEvent;
-class VariantType;
 class UIGeometricData;
-class RenderWidget;
+
+namespace TArc
+{
+class ContextAccessor;
+class DataContext;
+}
 }
 
 struct HUDAreaInfo
@@ -69,9 +78,8 @@ class PackageNode;
 class EditorControlsView;
 class SelectionSystem;
 class HUDSystem;
-class EditorCanvas;
 
-class EditorSystemsManager : PackageListener
+class EditorSystemsManager : PackageListener, DAVA::TArc::DataListener
 {
     using StopPredicate = std::function<bool(const ControlNode*)>;
     static StopPredicate defaultStopPredicate;
@@ -101,14 +109,14 @@ public:
         Edit
     };
 
-    explicit EditorSystemsManager(DAVA::RenderWidget* renderWidget);
+    explicit EditorSystemsManager(DAVA::TArc::ContextAccessor* accessor);
     ~EditorSystemsManager();
 
     eDragState GetDragState() const;
     eDisplayState GetDisplayState() const;
     HUDAreaInfo GetCurrentHUDArea() const;
 
-    EditorCanvas* GetEditorCanvas() const;
+    void AddEditorSystem(BaseEditorSystem* system);
 
     void OnInput(DAVA::UIEvent* currentInput);
 
@@ -129,23 +137,24 @@ public:
     void ClearSelection();
     void SelectNode(ControlNode* node);
 
-    DAVA::UIControl* GetRootControl() const;
+    const SortedControlNodeSet& GetEditingRootControls() const;
 
-    DAVA::Signal<const SelectedNodes& /*selected*/, const SelectedNodes& /*deselected*/> selectionChanged;
+    DAVA::UIControl* GetRootControl() const;
+    DAVA::UIControl* GetScalableControl() const;
+
+    DAVA::Signal<const SelectedNodes& /*selection*/> selectionChanged;
     DAVA::Signal<const HUDAreaInfo& /*areaInfo*/> activeAreaChanged;
     DAVA::Signal<const DAVA::Vector<MagnetLineInfo>& /*magnetLines*/> magnetLinesChanged;
     DAVA::Signal<const ControlNode*> highlightNode;
     DAVA::Signal<const DAVA::Rect& /*selectionRectControl*/> selectionRectChanged;
     DAVA::Signal<const DAVA::Vector2&> contentSizeChanged;
-    DAVA::Signal<ControlNode*, AbstractProperty*, DAVA::VariantType> propertyChanged;
-    DAVA::Signal<const SortedPackageBaseNodeSet&> editingRootControlsChanged;
+    DAVA::Signal<ControlNode*, AbstractProperty*, const DAVA::Any&> propertyChanged;
+    DAVA::Signal<const SortedControlNodeSet&> editingRootControlsChanged;
     DAVA::Signal<const DAVA::Vector2& /*new position*/> rootControlPositionChanged;
     DAVA::Signal<PackageNode* /*node*/> packageChanged;
     DAVA::Signal<bool> emulationModeChanged;
     DAVA::Signal<eDragState /*currentState*/, eDragState /*previousState*/> dragStateChanged;
     DAVA::Signal<eDisplayState /*currentState*/, eDisplayState /*previousState*/> displayStateChanged;
-    //render widget size changed
-    DAVA::Signal<DAVA::uint32 /*width*/, DAVA::uint32 /*height*/> viewSizeChanged;
 
     //helpers
     DAVA::Vector2 GetMouseDelta() const;
@@ -155,22 +164,24 @@ private:
     void SetDragState(eDragState dragState);
     void SetDisplayState(eDisplayState displayState);
 
-    void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
-    void OnEditingRootControlsChanged(const SortedPackageBaseNodeSet& rootControls);
+    void OnEditingRootControlsChanged(const SortedControlNodeSet& rootControls);
     void OnActiveHUDAreaChanged(const HUDAreaInfo& areaInfo);
 
     template <class OutIt, class Predicate>
     void CollectControlNodesImpl(OutIt destination, Predicate predicate, StopPredicate stopPredicate, ControlNode* node) const;
 
     void OnPackageChanged(PackageNode* node);
-    void ControlWasRemoved(ControlNode* node, ControlsContainerNode* from) override;
+    void ControlWillBeRemoved(ControlNode* node, ControlsContainerNode* from) override;
     void ControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int index) override;
-    void RefreshRootControls();
-    void OnTransformStateChanged(bool inTransformState);
     void InitDAVAScreen();
 
     void OnDragStateChanged(eDragState currentState, eDragState previousState);
     void OnDisplayStateChanged(eDisplayState currentState, eDisplayState previousState);
+
+    void OnSelectionDataChanged(const DAVA::Any& newSelection);
+    void OnPackageDataChanged(const DAVA::Any& package);
+
+    void OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields) override;
 
     DAVA::RefPtr<DAVA::UIControl> rootControl;
     DAVA::RefPtr<DAVA::UIControl> inputLayerControl;
@@ -178,14 +189,11 @@ private:
 
     DAVA::List<std::unique_ptr<BaseEditorSystem>> systems;
 
-    PackageNode* package = nullptr;
-    SelectedControls selectedControlNodes;
-    SortedPackageBaseNodeSet editingRootControls;
-    SelectionContainer selectionContainer;
+    DAVA::RefPtr<PackageNode> package;
+    SortedControlNodeSet editingRootControls;
     EditorControlsView* controlViewPtr = nullptr; //weak pointer to canvas system;
     SelectionSystem* selectionSystemPtr = nullptr; // weak pointer to selection system
     HUDSystem* hudSystemPtr = nullptr;
-    EditorCanvas* editorCanvasPtr = nullptr;
 
     eDragState dragState = NoDrag;
     eDragState previousDragState = NoDrag;
@@ -196,6 +204,8 @@ private:
     //helpers
     DAVA::Vector2 lastMousePos;
     DAVA::Vector2 mouseDelta;
+
+    DAVA::TArc::DataWrapper documentDataWrapper;
 };
 
 template <class OutIt, class Predicate>

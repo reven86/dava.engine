@@ -5,8 +5,12 @@
 #include "ImageTools/ImageTools.h"
 
 #include "TileTexturePreviewWidgetItemDelegate.h"
-#include "Tools/ColorPicker/ColorPicker.h"
-#include "QtTools/Utils/Utils.h"
+#include "Classes/Application/REGlobal.h"
+
+#include <TArc/Controls/ColorPicker/ColorPickerDialog.h>
+
+#include <QtTools/Utils/Utils.h>
+
 
 #include <QHeaderView>
 #include <QLabel>
@@ -270,7 +274,7 @@ bool TileTexturePreviewWidget::eventFilter(QObject* obj, QEvent* ev)
             if (ev->type() == QEvent::MouseButtonRelease)
             {
                 const DAVA::Color oldColor = colors[i];
-                ColorPicker cp(this);
+                DAVA::TArc::ColorPickerDialog cp(REGlobal::GetAccessor(), this);
                 cp.setWindowTitle("Tile color");
                 cp.SetDavaColor(oldColor);
                 const bool result = cp.Exec();

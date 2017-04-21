@@ -21,7 +21,7 @@ void RequestManager::Stop()
     PackRequest* request = Top();
     if (request != nullptr)
     {
-        request->Start();
+        request->Stop();
     }
 }
 
@@ -29,11 +29,41 @@ void RequestManager::Update()
 {
     if (!Empty())
     {
+        Vector<PackRequest*> nextDependentPacks;
+
         PackRequest* request = Top();
-        request->Update();
+        bool callSignal = request->Update();
+
         if (request->IsDownloaded())
         {
             Pop();
+            if (!Empty())
+            {
+                PackRequest* next = Top();
+                while (next->IsDownloaded())
+                {
+                    nextDependentPacks.push_back(next);
+                    Pop();
+                    if (!Empty() && Top()->IsDownloaded())
+                    {
+                        next = Top();
+                    }
+                    else
+                    {
+                        next = nullptr;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (callSignal)
+        {
+            packManager.requestUpdated.Emit(*request);
+            for (PackRequest* r : nextDependentPacks)
+            {
+                packManager.requestUpdated.Emit(*r);
+            }
         }
     }
 }
@@ -81,10 +111,15 @@ void RequestManager::Push(PackRequest* request_)
     }
 
     requests.push_back(request_);
+
+    requestNames.insert(request_->GetRequestedPackName());
+
+    DVASSERT(requests.size() == requestNames.size());
 }
 
-void RequestManager::UpdateOrder(PackRequest* request, uint32 orderIndex)
+void RequestManager::SetPriorityToRequest(PackRequest* request)
 {
+    DVASSERT(Thread::IsMainThread());
     DVASSERT(request != nullptr);
 
     PackRequest* prevTop = Top();
@@ -96,15 +131,32 @@ void RequestManager::UpdateOrder(PackRequest* request, uint32 orderIndex)
     auto it = find(begin(requests), end(requests), request);
     if (it != end(requests))
     {
-        requests.erase(it);
-        if (orderIndex >= requests.size())
+        // 1. collect all requests that are not subrequests of request
+        Vector<PackRequest*> removeFromBeg;
+        for (PackRequest* r : requests)
         {
-            requests.push_back(request);
+            if (r == request)
+            {
+                break; // only check requests before
+            }
+            if (!request->IsSubRequest(r))
+            {
+                removeFromBeg.push_back(r);
+            }
         }
-        else
+        // 2. remove all NOT sub request from beginning queue
+        for (PackRequest* r : removeFromBeg)
         {
-            auto insertIt = begin(requests) + orderIndex;
-            requests.insert(insertIt, request);
+            requests.erase(find(begin(requests), end(requests), r));
+        }
+        // 3. find position after "request"
+        it = find(begin(requests), end(requests), request);
+        ++it;
+        // 4. insert all previously removed request after preserve order
+        for (PackRequest* r : removeFromBeg)
+        {
+            it = requests.insert(it, r);
+            ++it;
         }
     }
 
@@ -120,7 +172,13 @@ void RequestManager::Pop()
 {
     if (!requests.empty())
     {
-        requests.erase(begin(requests));
+        auto it = begin(requests);
+        auto nameIt = requestNames.find((*it)->GetRequestedPackName());
+
+        requestNames.erase(nameIt);
+        requests.erase(it);
+
+        DVASSERT(requests.size() == requestNames.size());
     }
 }
 
@@ -131,8 +189,28 @@ void RequestManager::Remove(PackRequest* request)
     auto it = find(begin(requests), end(requests), request);
     if (it != end(requests))
     {
+        auto nameIt = requestNames.find((*it)->GetRequestedPackName());
+
+        requestNames.erase(nameIt);
         requests.erase(it);
+
+        DVASSERT(requests.size() == requestNames.size());
     }
+}
+
+void RequestManager::SwapPointers(PackRequest* newPointer, PackRequest* oldInvalidPointer)
+{
+    DVASSERT(newPointer != nullptr);
+    DVASSERT(oldInvalidPointer != nullptr);
+    DVASSERT(newPointer != oldInvalidPointer);
+
+    auto it = find(begin(requests), end(requests), oldInvalidPointer);
+    DVASSERT(it != end(requests));
+    // update old pointer value in 'requests'
+    *it = newPointer;
+
+    auto nameIt = requestNames.find(newPointer->GetRequestedPackName());
+    DVASSERT(nameIt != end(requestNames));
 }
 
 } // end namespace DAVA

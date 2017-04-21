@@ -8,7 +8,8 @@
 #include "PropertiesTreeItemDelegate.h"
 #include "Utils/QtDavaConvertion.h"
 #include "QtTools/FileDialogs/FileDialog.h"
-#include "Project/Project.h"
+#include "Modules/LegacySupportModule/Private/Project.h"
+#include "Utils/MacOSSymLinkRestorer.h"
 
 #include "Engine/Engine.h"
 
@@ -32,6 +33,10 @@ QWidget* ResourceFilePropertyDelegate::createEditor(QWidget* parent, const Prope
 {
     DVASSERT(context.project != nullptr);
     project = context.project;
+#if defined(__DAVAENGINE_MACOS__)
+    QString directoryPath = project->GetResourceDirectory();
+    symLinkRestorer = std::make_unique<MacOSSymLinkRestorer>(directoryPath);
+#endif
     projectResourceDir = context.project->GetResourceDirectory();
     lineEdit = new QLineEdit(parent);
     lineEdit->setObjectName(QString::fromUtf8("lineEdit"));
@@ -42,8 +47,8 @@ QWidget* ResourceFilePropertyDelegate::createEditor(QWidget* parent, const Prope
 
 void ResourceFilePropertyDelegate::setEditorData(QWidget*, const QModelIndex& index) const
 {
-    DAVA::VariantType variant = index.data(Qt::EditRole).value<DAVA::VariantType>();
-    QString stringValue = StringToQString(variant.AsFilePath().GetStringValue());
+    DAVA::Any variant = index.data(Qt::EditRole).value<DAVA::Any>();
+    QString stringValue = StringToQString(variant.Get<FilePath>().GetStringValue());
     DVASSERT(!lineEdit.isNull());
     lineEdit->setText(stringValue);
 }
@@ -53,20 +58,20 @@ bool ResourceFilePropertyDelegate::setModelData(QWidget* rawEditor, QAbstractIte
     if (BasePropertyDelegate::setModelData(rawEditor, model, index))
         return true;
 
-    DAVA::VariantType variantType = index.data(Qt::EditRole).value<DAVA::VariantType>();
+    DAVA::Any value = index.data(Qt::EditRole).value<DAVA::Any>();
     DVASSERT(!lineEdit.isNull());
     if (!lineEdit->text().isEmpty())
     {
         DAVA::FilePath absoluteFilePath = QStringToString(lineEdit->text());
         DAVA::FilePath frameworkFilePath = absoluteFilePath.GetFrameworkPath();
-        variantType.SetFilePath(frameworkFilePath);
+        value.Set(frameworkFilePath);
     }
     else
     {
-        variantType.SetFilePath(DAVA::FilePath());
+        value.Set(DAVA::FilePath());
     }
     QVariant variant;
-    variant.setValue<DAVA::VariantType>(variantType);
+    variant.setValue<DAVA::Any>(value);
 
     return model->setData(index, variant, Qt::EditRole);
 }
@@ -108,7 +113,7 @@ void ResourceFilePropertyDelegate::selectFileClicked()
 
     if (project)
     {
-        filePathText = project->RestoreSymLinkInFilePath(filePathText);
+        filePathText = RestoreSymLinkInFilePath(filePathText);
     }
 
     if (!filePathText.isEmpty())
@@ -174,4 +179,13 @@ bool ResourceFilePropertyDelegate::IsPathValid(const QString& path)
 
     DAVA::FileSystem* fileSystem = DAVA::Engine::Instance()->GetContext()->fileSystem;
     return fileSystem->Exists(filePath);
+}
+
+QString ResourceFilePropertyDelegate::RestoreSymLinkInFilePath(const QString& filePath) const
+{
+#if defined(__DAVAENGINE_MACOS__)
+    return symLinkRestorer->RestoreSymLinkInFilePath(filePath);
+#else
+    return filePath;
+#endif
 }

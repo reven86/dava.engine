@@ -8,10 +8,8 @@
 
 #include "Engine/EngineTypes.h"
 #include "Engine/Qt/RenderWidget.h"
-#include "Engine/EngineTypes.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 #include "Engine/Private/Dispatcher/UIDispatcher.h"
-#include "Functional/SignalBase.h"
 
 #include <QPointer>
 
@@ -38,7 +36,6 @@ public:
     void OnApplicationFocusChanged(bool isInFocus);
 
     void Update();
-    void ActivateRendering();
     RenderWidget* GetRenderWidget();
 
     void Resize(float32 width, float32 height);
@@ -85,6 +82,8 @@ private:
     void OnDragMoved(QDragMoveEvent* e) override;
     void OnMouseDBClick(QMouseEvent* e) override;
     void OnWheel(QWheelEvent* e) override;
+    void OnNativeGesture(QNativeGestureEvent* e) override;
+
     void OnKeyPressed(QKeyEvent* e) override;
     void OnKeyReleased(QKeyEvent* e) override;
 

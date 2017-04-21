@@ -4,6 +4,8 @@
 #include "Utils/Utils.h"
 #include "Utils/UTF8Utils.h"
 #include "Utils/StringFormat.h"
+#include "Base/Type.h"
+#include "Reflection/ReflectedTypeDB.h"
 
 namespace DAVA
 {
@@ -518,9 +520,155 @@ VariantType YamlNode::AsVariantType(const InspMember* insp) const
         return VariantType(AsVector4());
     else if (insp->Type() == MetaInfo::Instance<FilePath>())
         return VariantType(FilePath(AsString()));
+    else if (insp->Type() == MetaInfo::Instance<FastName>())
+        return VariantType(AsFastName());
 
     DVASSERT(false);
     return VariantType();
+}
+
+Any YamlNode::AsAny(const ReflectedStructure::Field* field) const
+{
+    // TODO: Make better
+    const Type* type = field->valueWrapper->GetType(ReflectedObject())->Decay();
+    if (field->meta && field->meta->HasMeta<M::Enum>())
+    {
+        int32 val = 0;
+        const M::Enum* emeta = field->meta->GetMeta<M::Enum>();
+        if (GetType() == TYPE_STRING)
+        {
+            if (emeta->GetEnumMap()->ToValue(AsString().c_str(), val))
+            {
+                return Any(val).ReinterpretCast(type);
+            }
+        }
+        DVASSERT(false);
+    }
+    else if (field->meta && field->meta->HasMeta<M::Flags>())
+    {
+        int32 val = 0;
+        const M::Flags* fmeta = field->meta->GetMeta<M::Flags>();
+        const uint32 count = GetCount();
+        for (uint32 i = 0; i < count; i++)
+        {
+            const YamlNode* flagNode = Get(i);
+            int32 flag = 0;
+            if (fmeta->GetFlagsMap()->ToValue(flagNode->AsString().c_str(), flag))
+            {
+                val |= flag;
+            }
+            else
+            {
+                DVASSERT(false);
+            }
+        }
+        return Any(val).ReinterpretCast(type);
+    }
+    else if (type == Type::Instance<bool>())
+        return Any(AsBool());
+    else if (type == Type::Instance<int32>())
+        return Any(AsInt32());
+    else if (type == Type::Instance<uint32>())
+        return Any(AsUInt32());
+    else if (type == Type::Instance<int64>())
+        return Any(AsInt64());
+    else if (type == Type::Instance<uint64>())
+        return Any(AsUInt64());
+    else if (type == Type::Instance<float32>())
+        return Any(AsFloat());
+    else if (type == Type::Instance<FastName>())
+        return Any(AsFastName());
+    else if (type == Type::Instance<String>())
+        return Any(AsString());
+    else if (type == Type::Instance<WideString>())
+        return Any(AsWString());
+    else if (type == Type::Instance<Vector2>())
+        return Any(AsVector2());
+    else if (type == Type::Instance<Vector3>())
+        return Any(AsVector3());
+    else if (type == Type::Instance<Vector4>())
+        return Any(AsVector4());
+    else if (type == Type::Instance<Color>())
+        return Any(AsColor());
+    else if (type == Type::Instance<Rect>())
+        return Any(AsRect());
+    else if (type == Type::Instance<FilePath>())
+        return Any(FilePath(AsString()));
+
+    DVASSERT(false);
+    return Any();
+}
+
+Any YamlNode::AsAny(const Reflection& ref) const
+{
+    // TODO: Make better
+    const Type* type = ref.GetValueType()->Decay();
+    if (ref.HasMeta<M::Enum>())
+    {
+        int32 val = 0;
+        const M::Enum* emeta = ref.GetMeta<M::Enum>();
+        if (GetType() == TYPE_STRING)
+        {
+            if (emeta->GetEnumMap()->ToValue(AsString().c_str(), val))
+            {
+                return Any(val);
+            }
+        }
+        DVASSERT(false);
+    }
+    else if (ref.HasMeta<M::Flags>())
+    {
+        int32 val = 0;
+        const M::Flags* fmeta = ref.GetMeta<M::Flags>();
+        const uint32 count = GetCount();
+        for (uint32 i = 0; i < count; i++)
+        {
+            const YamlNode* flagNode = Get(i);
+            int32 flag = 0;
+            if (fmeta->GetFlagsMap()->ToValue(flagNode->AsString().c_str(), flag))
+            {
+                val |= flag;
+            }
+            else
+            {
+                DVASSERT(false);
+            }
+        }
+        return Any(val);
+    }
+    else if (type == Type::Instance<bool>())
+        return Any(AsBool());
+    else if (type == Type::Instance<int32>())
+        return Any(AsInt32());
+    else if (type == Type::Instance<uint32>())
+        return Any(AsUInt32());
+    else if (type == Type::Instance<int64>())
+        return Any(AsInt64());
+    else if (type == Type::Instance<uint64>())
+        return Any(AsUInt64());
+    else if (type == Type::Instance<float32>())
+        return Any(AsFloat());
+    else if (type == Type::Instance<FastName>())
+        return Any(AsFastName());
+    else if (type == Type::Instance<String>())
+        return Any(AsString());
+    else if (type == Type::Instance<WideString>())
+        return Any(AsWString());
+    else if (type == Type::Instance<Vector2>())
+        return Any(AsVector2());
+    else if (type == Type::Instance<Vector3>())
+        return Any(AsVector3());
+    else if (type == Type::Instance<Vector4>())
+        return Any(AsVector4());
+    else if (type == Type::Instance<Color>())
+        return Any(AsColor());
+    else if (type == Type::Instance<Rect>())
+        return Any(AsRect());
+    else if (type == Type::Instance<FilePath>())
+        return Any(FilePath(AsString()));
+
+    DVASSERT(false);
+    return Any();
 }
 
 const Vector<YamlNode*>& YamlNode::AsVector() const
@@ -608,6 +756,12 @@ YamlNode::eStringRepresentation YamlNode::GetStringRepresentation() const
 {
     DVASSERT(GetType() == TYPE_STRING);
     return objectString->style;
+}
+
+void YamlNode::SetStringRepresentation(eStringRepresentation rep)
+{
+    DVASSERT(GetType() == TYPE_STRING);
+    objectString->style = rep;
 }
 
 YamlNode::eArrayRepresentation YamlNode::GetArrayRepresentation() const
@@ -818,7 +972,14 @@ bool YamlNode::InitStringFromVariantType(const VariantType& varType)
     break;
     case VariantType::TYPE_FASTNAME:
     {
-        InternalSetString(varType.AsFastName().c_str(), SR_DOUBLE_QUOTED_REPRESENTATION);
+        if (varType.AsFastName().IsValid())
+        {
+            InternalSetString(varType.AsFastName().c_str(), SR_DOUBLE_QUOTED_REPRESENTATION);
+        }
+        else
+        {
+            InternalSetString("", SR_DOUBLE_QUOTED_REPRESENTATION);
+        }
     }
     break;
 

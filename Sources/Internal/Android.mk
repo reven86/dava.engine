@@ -3,6 +3,7 @@
 
 # set local path for lib
 LOCAL_PATH := $(call my-dir)
+LOCAL_MODULES_PATH := $(LOCAL_PATH)/../../Modules
 
 # HACK for right order of .so linking
 # c++_shared must be linked before all other shared libs, so add it manually
@@ -19,12 +20,12 @@ endif
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := fmodex-prebuild
-LOCAL_SRC_FILES := ../../Libs/fmod/lib/android/$(TARGET_ARCH_ABI)/libfmodex.so
+LOCAL_SRC_FILES := ../../Modules/Sound/Libs/Android/$(TARGET_ARCH_ABI)/libfmodex.so
 include $(PREBUILT_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := fmodevent-prebuild
-LOCAL_SRC_FILES := ../../Libs/fmod/lib/android/$(TARGET_ARCH_ABI)/libfmodevent.so
+LOCAL_SRC_FILES := ../../Modules/Sound/Libs/Android/$(TARGET_ARCH_ABI)/libfmodevent.so
 include $(PREBUILT_SHARED_LIBRARY)
 
 include $(CLEAR_VARS)
@@ -118,10 +119,11 @@ DAVA_ROOT := $(LOCAL_PATH)
 DV_LOCAL_C_INCLUDES := $(LOCAL_PATH)
 DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../Tools/
 DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/include
-DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/fmod/include
 DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/lua/include
 DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/icucommon/source/common
 DV_LOCAL_C_INCLUDES += $(LOCAL_PATH)/../../Libs/openssl/include/android
+DV_LOCAL_C_INCLUDES += $(LOCAL_MODULES_PATH)/Sound/Libs/Include
+DV_LOCAL_C_INCLUDES += $(LOCAL_MODULES_PATH)/Sound/Sources
 
 # set exported includes
 DV_LOCAL_EXPORT_C_INCLUDES := $(DV_LOCAL_C_INCLUDES)
@@ -135,7 +137,6 @@ DV_LOCAL_CFLAGS += -DUSE_NEON
 DV_LOCAL_CPPFLAGS += -frtti -DGL_GLEXT_PROTOTYPES=1
 DV_LOCAL_CPPFLAGS += -std=c++14
 
-DV_LOCAL_CFLAGS += -DDAVA_FMOD
 DV_LOCAL_CFLAGS += -D__DAVAENGINE_ANDROID__
 
 # remove warnings about unused arguments to compiler
@@ -350,7 +351,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Base/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Collision/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Core/*.cpp) \
-                     $(wildcard $(LOCAL_PATH)/Command/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Command/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Compression/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Clipboard/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Database/*.cpp) \
@@ -369,6 +370,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Entity/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/FileSystem/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/FileSystem/Private/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Functional/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Input/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Input/Private/Android/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Math/*.cpp) \
@@ -380,6 +382,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Network/Services/MMNet/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Network/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Particles/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Particles/ParticleEffectDebug/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Platform/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Platform/TemplateAndroid/BacktraceAndroid/*.cpp) \
@@ -444,7 +447,8 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Scene3D/Lod/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene3D/Lod/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scripting/Private/*.cpp) \
-                     $(wildcard $(LOCAL_PATH)/Sound/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Sound/Private/SoundSystem.cpp) \
+                     $(wildcard $(LOCAL_MODULES_PATH)/Sound/Sources/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Time/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Time/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Concurrency/*.cpp) \
@@ -455,8 +459,10 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/UI/Focus/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/Input/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/Scroll/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/UI/Sound/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/Private/Android/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/UI/Update/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UnitTests/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Utils/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Job/*.cpp) \

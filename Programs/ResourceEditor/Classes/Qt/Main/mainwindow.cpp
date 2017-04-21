@@ -4,8 +4,6 @@
 #include "Classes/Qt/CubemapEditor/CubemapTextureBrowser.h"
 #include "Classes/Qt/CubemapEditor/CubemapUtils.h"
 #include "Classes/Qt/DebugTools/VersionInfoWidget/VersionInfoWidget.h"
-#include "Classes/Qt/DeviceInfo/DeviceList/DeviceListController.h"
-#include "Classes/Qt/DeviceInfo/DeviceList/DeviceListWidget.h"
 #include "Classes/Qt/ImageSplitterDialog/ImageSplitterDialog.h"
 #include "Classes/Qt/Main/QtUtils.h"
 #include "Classes/Qt/MaterialEditor/MaterialEditor.h"
@@ -18,15 +16,12 @@
 #include "Classes/Qt/Scene/System/VisibilityCheckSystem/VisibilityCheckSystem.h"
 #include "Classes/Qt/Scene/System/EditorVegetationSystem.h"
 #include "Classes/Qt/Scene/Validation/SceneValidationDialog.h"
-#include "Classes/Qt/Settings/SettingsDialog.h"
-#include "Classes/Qt/Settings/SettingsManager.h"
-#include "Classes/Qt/SoundComponentEditor/FMODSoundBrowser.h"
+#include "Classes/Settings/SettingsManager.h"
 #include "Classes/Qt/SpritesPacker/SpritesPackerModule.h"
 #include "Classes/Qt/TextureBrowser/TextureBrowser.h"
 #include "Classes/Qt/TextureBrowser/TextureCache.h"
 #include "Classes/Qt/Tools/AddSwitchEntityDialog/AddSwitchEntityDialog.h"
 #include "Classes/Qt/Tools/BaseAddEntityDialog/BaseAddEntityDialog.h"
-#include "Classes/Qt/Tools/ColorPicker/ColorPicker.h"
 #include "Classes/Qt/Tools/DeveloperTools/DeveloperTools.h"
 #include "Classes/Qt/Tools/HangingObjectsHeight/HangingObjectsHeight.h"
 #include "Classes/Qt/Tools/HeightDeltaTool/HeightDeltaTool.h"
@@ -74,7 +69,7 @@
 
 #include <Tools/TextureCompression/TextureConverter.h>
 
-#include "TArc/WindowSubSystem/Private/WaitDialog.h"
+#include <TArc/WindowSubSystem/Private/WaitDialog.h>
 
 #include "QtTools/ConsoleWidget/LogWidget.h"
 #include "QtTools/ConsoleWidget/LogModel.h"
@@ -237,6 +232,7 @@ QtMainWindow::QtMainWindow(DAVA::TArc::UI* tarcUI_, QWidget* parent)
 
     ui->setupUi(this);
     SetupWidget();
+    SetupTitle(DAVA::String());
 
     qApp->installEventFilter(this);
 
@@ -249,7 +245,6 @@ QtMainWindow::QtMainWindow(DAVA::TArc::UI* tarcUI_, QWidget* parent)
     // create tool windows
     new TextureBrowser(this);
     new MaterialEditor(this);
-    new FMODSoundBrowser(this);
 
     beastWaitDialog = new QtWaitDialog(this);
 
@@ -339,7 +334,7 @@ void QtMainWindow::WaitStart(const QString& title, const QString& message, int m
     params.min = min;
     params.max = max;
     params.needProgressBar = min != max;
-    waitDialog = tarcUI->ShowWaitDialog(REGlobal::MainWindowKey, params);
+    waitDialog = tarcUI->ShowWaitDialog(DAVA::TArc::mainWindowKey, params);
 }
 
 void QtMainWindow::WaitSetMessage(const QString& messsage)
@@ -440,12 +435,12 @@ void QtMainWindow::SetupToolBars()
     QAction* actionModifToolBar = ui->modificationToolBar->toggleViewAction();
     QAction* actionLandscapeToolbar = ui->landscapeToolBar->toggleViewAction();
 
-    ui->menuToolbars->addAction(actionMainToolBar);
-    ui->menuToolbars->addAction(actionModifToolBar);
-    ui->menuToolbars->addAction(actionLandscapeToolbar);
-    ui->menuToolbars->addAction(ui->sceneToolBar->toggleViewAction());
-    ui->menuToolbars->addAction(ui->testingToolBar->toggleViewAction());
-    ui->menuToolbars->addAction(ui->cameraToolBar->toggleViewAction());
+    ui->Toolbars->addAction(actionMainToolBar);
+    ui->Toolbars->addAction(actionModifToolBar);
+    ui->Toolbars->addAction(actionLandscapeToolbar);
+    ui->Toolbars->addAction(ui->sceneToolBar->toggleViewAction());
+    ui->Toolbars->addAction(ui->testingToolBar->toggleViewAction());
+    ui->Toolbars->addAction(ui->cameraToolBar->toggleViewAction());
 
     // modification widget
     modificationWidget = new ModificationWidget(nullptr);
@@ -515,12 +510,12 @@ void QtMainWindow::SetupStatusBar()
     insertParams.method = DAVA::TArc::InsertionParams::eInsertionMethod::BeforeItem;
     DAVA::TArc::ActionPlacementInfo placementInfo(DAVA::TArc::CreateStatusbarPoint(true, 0, insertParams));
 
-    tarcUI->AddAction(REGlobal::MainWindowKey, placementInfo, ui->actionShowEditorGizmo);
-    tarcUI->AddAction(REGlobal::MainWindowKey, placementInfo, ui->actionLightmapCanvas);
-    tarcUI->AddAction(REGlobal::MainWindowKey, placementInfo, ui->actionShowStaticOcclusion);
-    tarcUI->AddAction(REGlobal::MainWindowKey, placementInfo, ui->actionEnableVisibilitySystem);
-    tarcUI->AddAction(REGlobal::MainWindowKey, placementInfo, ui->actionEnableDisableShadows);
-    tarcUI->AddAction(REGlobal::MainWindowKey, placementInfo, ui->actionEnableSounds);
+    tarcUI->AddAction(DAVA::TArc::mainWindowKey, placementInfo, ui->actionShowEditorGizmo);
+    tarcUI->AddAction(DAVA::TArc::mainWindowKey, placementInfo, ui->actionLightmapCanvas);
+    tarcUI->AddAction(DAVA::TArc::mainWindowKey, placementInfo, ui->actionShowStaticOcclusion);
+    tarcUI->AddAction(DAVA::TArc::mainWindowKey, placementInfo, ui->actionEnableVisibilitySystem);
+    tarcUI->AddAction(DAVA::TArc::mainWindowKey, placementInfo, ui->actionEnableDisableShadows);
+    tarcUI->AddAction(DAVA::TArc::mainWindowKey, placementInfo, ui->actionEnableSounds);
 }
 
 void QtMainWindow::SetupDocks()
@@ -644,8 +639,6 @@ void QtMainWindow::SetupActions()
     QObject::connect(ui->actionAddVegetation, SIGNAL(triggered()), this, SLOT(OnAddVegetation()));
     QObject::connect(ui->actionAddPath, SIGNAL(triggered()), this, SLOT(OnAddPathEntity()));
 
-    QObject::connect(ui->actionShowSettings, SIGNAL(triggered()), this, SLOT(OnShowSettings()));
-
     QObject::connect(ui->actionSaveHeightmapToPNG, SIGNAL(triggered()), this, SLOT(OnSaveHeightmapToImage()));
     QObject::connect(ui->actionSaveTiledTexture, SIGNAL(triggered()), this, SLOT(OnSaveTiledTexture()));
 
@@ -692,7 +685,6 @@ void QtMainWindow::SetupActions()
         DAVA::Sprite::DumpSprites();
     });
 
-    connect(ui->actionDeviceList, &QAction::triggered, this, &QtMainWindow::DebugDeviceList);
     connect(ui->actionCreateTestSkinnedObject, SIGNAL(triggered()), developerTools, SLOT(OnDebugCreateTestSkinnedObject()));
 
     ui->actionObjectTypesOff->setData(ResourceEditor::ESOT_NONE);
@@ -1398,12 +1390,6 @@ void QtMainWindow::On2DSpriteDialog()
 void QtMainWindow::OnAddEntityFromSceneTree()
 {
     ui->menuAdd->exec(QCursor::pos());
-}
-
-void QtMainWindow::OnShowSettings()
-{
-    SettingsDialog t(this);
-    t.exec();
 }
 
 void QtMainWindow::OnOpenHelp()
@@ -2280,28 +2266,6 @@ void QtMainWindow::DebugVersionInfo()
     }
 
     versionInfoWidget->show();
-}
-
-void QtMainWindow::DebugColorPicker()
-{
-    ColorPicker* cp = new ColorPicker(this);
-
-    cp->Exec();
-}
-
-void QtMainWindow::DebugDeviceList()
-{
-    // Create controller and window if they are not exist
-    // Pointer deviceListController automatically becomes nullptr on window destruction
-    if (nullptr == deviceListController)
-    {
-        DeviceListWidget* w = new DeviceListWidget(this);
-        w->setAttribute(Qt::WA_DeleteOnClose);
-
-        deviceListController = new DeviceListController(w);
-        deviceListController->SetView(w);
-    }
-    deviceListController->ShowView();
 }
 
 void QtMainWindow::OnConsoleItemClicked(const QString& data)
