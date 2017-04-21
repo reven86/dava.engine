@@ -354,6 +354,7 @@ public final class DavaActivity extends Activity
         super.onResume();
 
         handleResume();
+        notifyListeners(ON_ACTIVITY_RESUME, null);
     }
 
     @Override
@@ -363,6 +364,7 @@ public final class DavaActivity extends Activity
         super.onPause();
 
         handlePause();
+        notifyListeners(ON_ACTIVITY_PAUSE, null);
     }
 
     @Override
@@ -631,12 +633,7 @@ public final class DavaActivity extends Activity
 
             isPaused = false;
             nativeOnResume();
-
-            // Notification is here to prevent listener to call
-            // c++ native methods from itself when native part
-            // isn't initialized yet.
-            // TODO: maybe this notify should be called outside of the 'if(primary...)'
-            notifyListeners(ON_ACTIVITY_RESUME, null);
+            primarySurfaceView.onResume();
         }
     }
 
@@ -646,13 +643,8 @@ public final class DavaActivity extends Activity
         {
             Log.d(LOG_TAG, "DavaActivity.handlePause");
 
-            // Notification is here to prevent listener to call
-            // c++ native methods from itself when native part
-            // isn't initialized yet.
-            // TODO: maybe this notify should be called outside of the 'if(primary...)'
-            notifyListeners(ON_ACTIVITY_PAUSE, null);
-
             isPaused = true;
+            primarySurfaceView.onPause();
             nativeOnPause();
         }
     }

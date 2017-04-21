@@ -32,7 +32,6 @@ import java.lang.reflect.Constructor;
 */
 final class DavaSurfaceView extends SurfaceView
                             implements SurfaceHolder.Callback,
-                                       DavaActivity.ActivityListener,
                                        DavaGlobalLayoutState.GlobalLayoutListener,
                                        View.OnTouchListener,
                                        View.OnGenericMotionListener,
@@ -68,8 +67,6 @@ final class DavaSurfaceView extends SurfaceView
         setOnTouchListener(this);
         setOnKeyListener(this);
         setOnGenericMotionListener(this);
-
-        DavaActivity.instance().registerActivityListener(this);
     }
 
     public boolean isSurfaceReady()
@@ -121,17 +118,6 @@ final class DavaSurfaceView extends SurfaceView
     {
         nativeSurfaceViewProcessEvents(windowBackendPointer);
     }
-    
-    // DavaActivity.ActivityListener interface
-    @Override public void onCreate(Bundle savedInstanceState) {}
-    @Override public void onStart() {}
-    @Override public void onRestart() {}
-    @Override public void onStop() {}
-    @Override public void onDestroy() {}
-    @Override public void onSaveInstanceState(Bundle outState) {}
-    @Override public void onActivityResult(int requestCode, int resultCode, Intent data) {}
-    @Override public void onNewIntent(Intent intent) {}
-    @Override public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {}
 
     @Override
     public InputConnection onCreateInputConnection(EditorInfo outAttrs)
@@ -143,7 +129,6 @@ final class DavaSurfaceView extends SurfaceView
         return super.onCreateInputConnection(outAttrs);
     }
 
-    @Override
     public void onResume()
     {
         DavaActivity.instance().globalLayoutState.addGlobalLayoutListener(this);
@@ -156,7 +141,6 @@ final class DavaSurfaceView extends SurfaceView
         nativeSurfaceViewOnResume(windowBackendPointer);
     }
 
-    @Override
     public void onPause()
     {
         DavaActivity.instance().globalLayoutState.removeGlobalLayoutListener(this);
