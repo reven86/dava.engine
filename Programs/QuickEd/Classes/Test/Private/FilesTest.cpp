@@ -53,7 +53,7 @@ DAVA_TARC_TESTCLASS(FilesTest)
         ContextAccessor* accessor = GetAccessor();
         TEST_VERIFY(accessor->GetContextCount() == 0);
 
-        DAVA::FilePath projectPath = TestHelpers::GetTestPath() + "FilesTest";
+        DAVA::FilePath projectPath = TestHelpers::GetTestPath() + "FilesTest/";
 
         CreateProjectFolder(projectPath);
 
@@ -65,6 +65,11 @@ DAVA_TARC_TESTCLASS(FilesTest)
         TEST_VERIFY(projectData != nullptr);
         TEST_VERIFY(projectData->GetUiDirectory().absolute.IsEmpty() == false);
         TEST_VERIFY(projectData->GetProjectDirectory().IsEmpty() == false);
+
+        FilePath testDir("res:/QuickEd/Test/");
+        FileSystem* fs = accessor->GetEngineContext()->fileSystem;
+        fs->CopyDirectoryFiles(testDir, projectPath, true);
+
         FilePath path("~res:/QuickEd/Test/testEquality.yaml");
 
         InvokeOperation(QEGlobal::OpenDocumentByPath.ID, path, GetContextManager());
@@ -84,7 +89,6 @@ DAVA_TARC_TESTCLASS(FilesTest)
 
         Vector<uint8> originalData;
         Vector<uint8> newData;
-        FileSystem* fs = accessor->GetEngineContext()->fileSystem;
         fs->ReadFileContents(path, originalData);
         fs->ReadFileContents(newPath, newData);
         TEST_VERIFY(originalData == newData);
