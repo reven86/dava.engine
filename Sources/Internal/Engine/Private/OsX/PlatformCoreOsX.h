@@ -41,12 +41,6 @@ public:
     std::unique_ptr<CoreNativeBridge> bridge;
 
 private:
-    void OnWindowCreated(Window* window);
-    void OnWindowDestroyed(Window* window);
-    void OnWindowVisibilityChanged(Window* window, bool visible);
-    void UpdateIOPMAssertion();
-
-private:
     bool screenTimeoutEnabled = true;
     IOPMAssertionID screenTimeoutAssertionId = kIOPMNullAssertionID;
 };

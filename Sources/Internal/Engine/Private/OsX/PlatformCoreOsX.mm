@@ -24,20 +24,10 @@ PlatformCore::PlatformCore(EngineBackend* engineBackend)
 {
 }
 
-PlatformCore::~PlatformCore()
-{
-    Engine* engine = Engine::Instance();
-    engine->windowCreated.Disconnect(this);
-    engine->windowDestroyed.Disconnect(this);
-}
+PlatformCore::~PlatformCore() = default;
 
 void PlatformCore::Init()
 {
-    // Subscribe to window creation & destroying, used for handling screen timeout option
-    Engine* engine = Engine::Instance();
-    engine->windowCreated.Connect(this, &PlatformCore::OnWindowCreated);
-    engine->windowDestroyed.Connect(this, &PlatformCore::OnWindowDestroyed);
-
     engineBackend->InitializePrimaryWindow();
 }
 
@@ -58,47 +48,9 @@ void PlatformCore::Quit()
 
 void PlatformCore::SetScreenTimeoutEnabled(bool enabled)
 {
-    screenTimeoutEnabled = enabled;
-    UpdateIOPMAssertion();
-}
-
-void PlatformCore::OnWindowCreated(Window* window)
-{
-    window->visibilityChanged.Connect(this, &PlatformCore::OnWindowVisibilityChanged);
-}
-
-void PlatformCore::OnWindowDestroyed(Window* window)
-{
-    window->visibilityChanged.Disconnect(this);
-}
-
-void PlatformCore::OnWindowVisibilityChanged(Window* window, bool visible)
-{
-    UpdateIOPMAssertion();
-}
-
-void PlatformCore::UpdateIOPMAssertion()
-{
-    // True = we should create IOPM assertion to keep display alive, if it's not created yet
-    bool useCustomAssertion = false;
-
-    if (!screenTimeoutEnabled)
+    if (enabled)
     {
-        // User requested disabling screen timeout
-        // Do that only if at least one window is visible
-        for (Window* w : engineBackend->GetWindows())
-        {
-            if (w->IsVisible())
-            {
-                useCustomAssertion = true;
-                break;
-            }
-        }
-    }
-
-    if (useCustomAssertion == false)
-    {
-        // Free the previous one, if any
+        // Free the previous assertion, if any
         if (screenTimeoutAssertionId != kIOPMNullAssertionID)
         {
             const IOReturn releaseResult = IOPMAssertionRelease(screenTimeoutAssertionId);
