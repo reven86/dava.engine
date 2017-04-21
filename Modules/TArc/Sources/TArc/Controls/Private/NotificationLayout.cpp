@@ -1,4 +1,4 @@
-#include "Tarc/Controls/Private/NotificationLayout.h"
+#include "TArc/Controls/Private/NotificationLayout.h"
 #include "TArc/Controls/Private/NotificationWidget.h"
 
 #include <QEvent>

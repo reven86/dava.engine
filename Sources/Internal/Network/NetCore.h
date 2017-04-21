@@ -153,7 +153,7 @@ public:
     TrackId CreateAnnouncer(const Endpoint& endpoint, uint32 sendPeriod, Function<size_t(size_t, void*)> needDataCallback, const Endpoint& tcpEndpoint = Endpoint(DEFAULT_TCP_ANNOUNCE_PORT));
     TrackId CreateDiscoverer(const Endpoint& endpoint, Function<void(size_t, const void*, const Endpoint&)> dataReadyCallback);
 
-    void DestroyController(TrackId id);
+    void DestroyController(TrackId id, Function<void()> callback = nullptr);
     DAVA_DEPRECATED(void DestroyControllerBlocked(TrackId id)); // blocked functions are deprecated for use
     void DestroyAllControllers(Function<void()> callback);
     DAVA_DEPRECATED(void DestroyAllControllersBlocked()); // blocked functions are deprecated for use
@@ -209,7 +209,8 @@ private:
     Set<IController*> dyingObjects;
 
     ServiceRegistrar registrar; //-V730_NOINIT
-    Function<void()> controllersStoppedCallback;
+    Function<void()> allControllersStoppedCallback;
+    UnorderedMap<IController*, Function<void()>> controllerStoppedCallback;
 
     enum State
     {

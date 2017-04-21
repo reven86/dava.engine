@@ -115,6 +115,8 @@ void DocumentsModule::PostInit()
     using namespace DAVA;
     using namespace TArc;
 
+    packageListenerProxy.Init(this, GetAccessor());
+
     InitWatcher();
     InitEditorSystems();
     InitCentralWidget();
@@ -163,7 +165,6 @@ void DocumentsModule::InitEditorSystems()
     DVASSERT(nullptr == systemsManager);
     systemsManager.reset(new EditorSystemsManager(GetAccessor()));
     systemsManager->dragStateChanged.Connect(this, &DocumentsModule::OnDragStateChanged);
-    systemsManager->editingRootControlsChanged.Connect(this, &DocumentsModule::OnEditingRootControlsChanged);
 }
 
 void DocumentsModule::InitCentralWidget()
@@ -1002,18 +1003,42 @@ void DocumentsModule::OnDragStateChanged(EditorSystemsManager::eDragState dragSt
     }
 }
 
-void DocumentsModule::OnEditingRootControlsChanged(const SortedControlNodeSet& rootControls)
+void DocumentsModule::ControlWillBeRemoved(ControlNode* nodeToRemove, ControlsContainerNode* /*from*/)
 {
     using namespace DAVA::TArc;
+
     ContextAccessor* accessor = GetAccessor();
     DataContext* activeContext = accessor->GetActiveContext();
-    if (activeContext == nullptr)
-    {
-        return;
-    }
-    DocumentData* data = activeContext->GetData<DocumentData>();
+    DocumentData* documentData = activeContext->GetData<DocumentData>();
 
-    data->editedRootControls = rootControls;
+    SortedControlNodeSet displayedRootControls = documentData->GetDisplayedRootControls();
+    if (std::find(displayedRootControls.begin(), displayedRootControls.end(), nodeToRemove) != displayedRootControls.end())
+    {
+        displayedRootControls.erase(nodeToRemove);
+    }
+    documentData->SetDisplayedRootControls(displayedRootControls);
+}
+
+void DocumentsModule::ControlWasAdded(ControlNode* node, ControlsContainerNode* destination, int)
+{
+    using namespace DAVA::TArc;
+
+    ContextAccessor* accessor = GetAccessor();
+    DataContext* activeContext = accessor->GetActiveContext();
+    DocumentData* documentData = activeContext->GetData<DocumentData>();
+
+    EditorSystemsManager::eDisplayState displayState = systemsManager->GetDisplayState();
+    if (displayState == EditorSystemsManager::Preview || displayState == EditorSystemsManager::Emulation)
+    {
+        PackageNode* package = documentData->GetPackageNode();
+        PackageControlsNode* packageControlsNode = package->GetPackageControlsNode();
+        if (destination == packageControlsNode)
+        {
+            SortedControlNodeSet displayedRootControls = documentData->GetDisplayedRootControls();
+            displayedRootControls.insert(node);
+            documentData->SetDisplayedRootControls(displayedRootControls);
+        }
+    }
 }
 
 DECL_GUI_MODULE(DocumentsModule);
