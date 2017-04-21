@@ -29,6 +29,9 @@ FindResultsWidget::~FindResultsWidget() = default;
 
 void FindResultsWidget::Find(std::shared_ptr<FindFilter> filter, const ProjectData* projectData, const QStringList& files)
 {
+    totalResults = 0;
+    totalFilesWithResults = 0;
+
     Find(filter, projectData, [files](Finder* finder)
          {
              QtConcurrent::run(QtHelpers::InvokeInAutoreleasePool, [finder, files]() { finder->Process(files); });
@@ -37,6 +40,9 @@ void FindResultsWidget::Find(std::shared_ptr<FindFilter> filter, const ProjectDa
 
 void FindResultsWidget::Find(std::shared_ptr<FindFilter> filter, const ProjectData* projectData, DocumentData* documentData)
 {
+    totalResults = 0;
+    totalFilesWithResults = 0;
+
     const PackageNode* package = documentData->GetPackageNode();
     Find(filter, projectData, [package](Finder* finder)
          {
@@ -54,6 +60,7 @@ void FindResultsWidget::StopFind()
 
 void FindResultsWidget::ClearResults()
 {
+    ui.status->setVisible(false);
     model.removeRows(0, model.rowCount());
 }
 
@@ -65,8 +72,10 @@ void FindResultsWidget::OnItemFound(FindItem item)
     pathItem->setData(QString::fromStdString(fwPath), PACKAGE_DATA);
     model.appendRow(pathItem);
 
+    totalFilesWithResults++;
     for (const String& pathToControl : item.GetControlPaths())
     {
+        totalResults++;
         QStandardItem* controlItem = new QStandardItem(QString::fromStdString(pathToControl));
         controlItem->setEditable(false);
         controlItem->setData(QString::fromStdString(fwPath), PACKAGE_DATA);
@@ -89,8 +98,22 @@ void FindResultsWidget::OnFindFinished()
         finder = nullptr;
     }
 
-    ui.status->setText(QString("Find - Finished"));
-    ui.status->setVisible(false);
+    if (totalResults == 0)
+    {
+        ui.status->setText(QString("No results"));
+    }
+    else if (totalResults == 1)
+    {
+        ui.status->setText(QString("1 result in 1 file"));
+    }
+    else if (totalFilesWithResults == 1)
+    {
+        ui.status->setText(QString("%1 results in 1 file").arg(totalResults));
+    }
+    else
+    {
+        ui.status->setText(QString("%1 results in %2 files").arg(totalResults).arg(totalFilesWithResults));
+    }
 
     if (model.rowCount() == 1)
     {
