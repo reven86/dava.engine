@@ -66,11 +66,11 @@ DAVA_TARC_TESTCLASS(FilesTest)
         TEST_VERIFY(projectData->GetUiDirectory().absolute.IsEmpty() == false);
         TEST_VERIFY(projectData->GetProjectDirectory().IsEmpty() == false);
 
-        FilePath testDir("res:/QuickEd/Test/");
+        FilePath testDir("~res:/QuickEd/Test/");
         FileSystem* fs = accessor->GetEngineContext()->fileSystem;
-        fs->CopyDirectoryFiles(testDir, projectPath, true);
+        TEST_VERIFY(fs->CopyDirectoryRecursively(testDir, projectPath, true));
 
-        FilePath path("~res:/QuickEd/Test/testEquality.yaml");
+        FilePath path("~res:/UI/testEquality.yaml");
 
         InvokeOperation(QEGlobal::OpenDocumentByPath.ID, path, GetContextManager());
         TEST_VERIFY(accessor->GetContextCount() == 1);
@@ -81,7 +81,7 @@ DAVA_TARC_TESTCLASS(FilesTest)
         DocumentData* documentData = activeContext->GetData<DocumentData>();
         PackageNode* package = documentData->GetPackageNode();
 
-        FilePath newPath = projectPath + "/DataSource/testEquality.yaml";
+        FilePath newPath = projectPath + "/DataSource/savedTestEquality.yaml";
 
         YamlPackageSerializer serializer;
         serializer.SerializePackage(package);

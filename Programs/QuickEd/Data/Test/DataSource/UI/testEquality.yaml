@@ -172,7 +172,7 @@ Controls:
                 components:
                     Background:
                         drawType: "DRAW_STRETCH_HORIZONTAL"
-                        sprite: "~res:/Gfx/test"
+                        sprite: "~res:/Gfx/Images/test"
                         frame: 0
                         leftRightStretchCap: 6.000000
                     Focus: {}
@@ -208,7 +208,7 @@ Controls:
             size: [8.000000, 564.001770]
             components:
                 Background:
-                    sprite: "~res:/Gfx/test"
+                    sprite: "~res:/Gfx/Images/test"
                     topBottomStretchCap: 10.000000
     -   class: "UIControl"
         customClass: "UITabSwitcher"
@@ -237,14 +237,14 @@ Controls:
             -   path: "selected/icon"
                 components:
                     Background:
-                        sprite: "~res:/Gfx/test"
+                        sprite: "~res:/Gfx/Images/test"
                         frame: 4
             -   path: "unselected/text"
                 text: "#settings:Graphics"
             -   path: "unselected/icon"
                 components:
                     Background:
-                        sprite: "~res:/Gfx/test"
+                        sprite: "~res:/Gfx/Images/test"
                         frame: 4
         -   prototype: "ToImport2/UIControl"
             name: "TouchTab"
@@ -256,13 +256,13 @@ Controls:
             -   path: "selected/icon"
                 components:
                     Background:
-                        sprite: "~res:/Gfx/test"
+                        sprite: "~res:/Gfx/Images/test"
             -   path: "unselected/text"
                 text: "#settings:Controls"
             -   path: "unselected/icon"
                 components:
                     Background:
-                        sprite: "~res:/Gfx/test"
+                        sprite: "~res:/Gfx/Images/test"
         -   prototype: "ToImport3/UIControl"
             name: "markersTab"
             position: [406.799988, 0.000000]
@@ -273,14 +273,14 @@ Controls:
             -   path: "selected/icon"
                 components:
                     Background:
-                        sprite: "~res:/Gfx/test"
+                        sprite: "~res:/Gfx/Images/test"
                         frame: 1
             -   path: "unselected/text"
                 text: "#settings:Markers"
             -   path: "unselected/icon"
                 components:
                     Background:
-                        sprite: "~res:/Gfx/test"
+                        sprite: "~res:/Gfx/Images/test"
                         frame: 1
         -   prototype: "ToImport3/UIControl"
             name: "generalTab"
@@ -291,14 +291,14 @@ Controls:
             -   path: "selected/icon"
                 components:
                     Background:
-                        sprite: "~res:/test"
+                        sprite: "~res:/Gfx/Images/test"
                         frame: 0
             -   path: "unselected/text"
                 text: "#settings:Other"
             -   path: "unselected/icon"
                 components:
                     Background:
-                        sprite: "~res:/test"
+                        sprite: "~res:/Gfx/Images/test"
                         frame: 0
         -   prototype: "ToImport3/UIControl"
             name: "devOptionsTab"
