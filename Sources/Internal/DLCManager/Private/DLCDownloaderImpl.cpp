@@ -14,6 +14,202 @@ Thread::Id downlodThreadId = 0;
 IDownloaderSubTask::~IDownloaderSubTask() = default;
 ICurlEasyStorage::~ICurlEasyStorage() = default;
 
+class BufferWriter final : public DLCDownloader::IWriter
+{
+public:
+    explicit BufferWriter(int64 size)
+    {
+        buf = new char[static_cast<unsigned>(size)];
+        DVASSERT(buf != nullptr);
+        DVASSERT(size > 0);
+
+        current = buf;
+        end = buf + size;
+    }
+    ~BufferWriter()
+    {
+        delete buf;
+        buf = nullptr;
+        current = nullptr;
+        end = nullptr;
+    }
+
+    uint64 Save(const void* ptr, uint64 size) override
+    {
+        uint64 space = SpaceLeft();
+        if (size > space)
+        {
+            DAVA_THROW(Exception, "memory corruption");
+        }
+        memcpy(current, ptr, static_cast<size_t>(size));
+        current += size;
+        return size;
+    }
+
+    uint64 GetSeekPos() override
+    {
+        return current - buf;
+    }
+
+    void Truncate() override
+    {
+        current = buf;
+    }
+
+    uint64 SpaceLeft() override
+    {
+        return end - current;
+    }
+
+private:
+    char* buf = nullptr;
+    char* current = nullptr;
+    char* end = nullptr;
+};
+
+static void CurlSetTimeout(DLCDownloader::Task* justAddedTask, CURL* easyHandle)
+{
+    CURLcode code = CURLE_OK;
+
+    long operationTimeout = static_cast<long>(justAddedTask->info.timeoutSec);
+
+    code = curl_easy_setopt(easyHandle, CURLOPT_CONNECTTIMEOUT, operationTimeout);
+    DVASSERT(CURLE_OK == code);
+
+    // we could set operation time limit which produce timeout if operation takes time.
+    code = curl_easy_setopt(easyHandle, CURLOPT_TIMEOUT, 0L);
+    DVASSERT(CURLE_OK == code);
+
+    code = curl_easy_setopt(easyHandle, CURLOPT_DNS_CACHE_TIMEOUT, operationTimeout);
+    DVASSERT(CURLE_OK == code);
+
+    code = curl_easy_setopt(easyHandle, CURLOPT_SERVER_RESPONSE_TIMEOUT, operationTimeout);
+    DVASSERT(CURLE_OK == code);
+}
+
+static size_t CurlDataRecvHandler(void* ptr, size_t size, size_t nmemb, void* part)
+{
+    IDownloaderSubTask* subTask = static_cast<IDownloaderSubTask*>(part);
+    DVASSERT(subTask != nullptr);
+    DLCDownloader::IWriter* writer = subTask->GetIWriter();
+    DVASSERT(writer != nullptr);
+
+    size_t fullSizeToWrite = size * nmemb;
+
+    uint64 writen = writer->Save(ptr, fullSizeToWrite);
+    DVASSERT(writen == fullSizeToWrite);
+
+    return static_cast<size_t>(writen);
+}
+
+struct DownloadChankSubTask : IDownloaderSubTask
+{
+    DLCDownloader::Task* task = nullptr;
+    CURL* easy = nullptr;
+    int64 offset;
+    int64 size;
+    BufferWriter chankBuf;
+
+    DownloadChankSubTask(DLCDownloader::Task* task_, int64 offset_, int64 size_)
+        : task(task_)
+        , offset(offset_)
+        , size(size_)
+        , chankBuf(size_)
+    {
+        DVASSERT(task != nullptr);
+        DVASSERT(offset != -1);
+        DVASSERT(size > 0);
+
+        easy = task->curlStorage->CurlCreateHandle();
+        DVASSERT(easy != nullptr);
+
+        CURLcode code = curl_easy_setopt(easy, CURLOPT_HEADER, 0L);
+        DVASSERT(CURLE_OK == code);
+
+        const char* url = task->info.srcUrl.c_str();
+        DVASSERT(url != nullptr);
+
+        code = curl_easy_setopt(easy, CURLOPT_URL, url);
+        DVASSERT(CURLE_OK == code);
+
+        // Don't return the header (we'll use curl_getinfo();
+        code = curl_easy_setopt(easy, CURLOPT_NOBODY, 1L);
+        DVASSERT(CURLE_OK == code);
+
+        code = curl_easy_setopt(easy, CURLOPT_WRITEFUNCTION, CurlDataRecvHandler);
+        DVASSERT(code == CURLE_OK);
+
+        code = curl_easy_setopt(easy, CURLOPT_WRITEDATA, task);
+        DVASSERT(code == CURLE_OK);
+
+        char buf[128] = { 0 };
+        int result = snprintf(buf, sizeof(buf), "%lld-%lld", offset, offset + size - 1);
+        DVASSERT(result > 0 && result < sizeof(buf));
+
+        code = curl_easy_setopt(easy, CURLOPT_RANGE, buf);
+        DVASSERT(code == CURLE_OK);
+
+        // set all timeouts
+        CurlSetTimeout(task, easy);
+    }
+
+    ~DownloadChankSubTask()
+    {
+        Cleanup();
+    }
+
+    void Cleanup()
+    {
+        if (task)
+        {
+            ICurlEasyStorage* storage = task->curlStorage;
+            if (easy)
+            {
+                CURLMcode code = curl_multi_remove_handle(storage->GetMultiHandle(), easy);
+                DVASSERT(CURLM_OK == code);
+                storage->CurlDeleteHandle(easy);
+            }
+        }
+        easy = nullptr;
+        task = nullptr;
+        offset = 0;
+        size = 0;
+    }
+
+    void OnDone(CURLMsg* curlMsg) override
+    {
+        if (curlMsg->data.result != CURLE_OK)
+        {
+            if (curlMsg->data.result == CURLE_PARTIAL_FILE && task->status.sizeDownloaded == task->info.rangeSize)
+            {
+                // all good
+            }
+            else
+            {
+                task->status.error.curlErr = curlMsg->data.result;
+                task->status.error.curlEasyStrErr = curl_easy_strerror(curlMsg->data.result);
+            }
+        }
+
+        Cleanup();
+    }
+
+    DLCDownloader::Task* GetTask() override
+    {
+        return task;
+    }
+
+    CURL* GetEasyHandle() override
+    {
+        return easy;
+    }
+
+    DLCDownloader::IWriter* GetIWriter() override
+    {
+        return &chankBuf;
+    }
+};
+
 struct GetSizeSubTask : IDownloaderSubTask
 {
     DLCDownloader::Task* task = nullptr;
@@ -40,6 +236,7 @@ struct GetSizeSubTask : IDownloaderSubTask
         code = curl_easy_setopt(easy, CURLOPT_NOBODY, 1L);
         DVASSERT(CURLE_OK == code);
     }
+
     void OnDone(CURLMsg* curlMsg) override
     {
         if (curlMsg->data.result != CURLE_OK)
@@ -63,28 +260,21 @@ struct GetSizeSubTask : IDownloaderSubTask
         CURLMcode code = curl_multi_remove_handle(storage->GetMultiHandle(), easy);
         DVASSERT(CURLM_OK == code);
         storage->CurlDeleteHandle(easy);
-
-        //if (curlMsg->data.result != CURLE_OK)
-        //{
-        //	if (curlMsg->data.result == CURLE_PARTIAL_FILE && task->status.sizeDownloaded == task->info.rangeSize)
-        //	{
-        //		// all good
-        //	}
-        //	else
-        //	{
-        //		const char* errStr = curl_easy_strerror(curlMsg->data.result);
-        //		Logger::Error("%s", errStr);
-        //		DVASSERT(false); // error downloading
-        //	}
-        //}
     }
+
     DLCDownloader::Task* GetTask() override
     {
         return task;
     }
+
     CURL* GetEasyHandle() override
     {
         return easy;
+    }
+
+    DLCDownloader::IWriter* GetIWriter() override
+    {
+        return nullptr;
     }
 };
 
@@ -147,30 +337,6 @@ bool DLCDownloader::Task::IsDone() const
 {
     return subTasksWorking.empty() && subTasksReadyToWrite.empty();
 }
-
-struct SubBuf : std::streambuf
-{
-    explicit SubBuf(size_t size_)
-    {
-        size = size_;
-        buf = new char[size];
-        Restart();
-    }
-    ~SubBuf()
-    {
-        delete[] buf;
-        buf = nullptr;
-        size = 0;
-    }
-    void Restart()
-    {
-        char* begin = buf;
-        char* end = const_cast<char*>(begin + size);
-        setg(begin, begin, end);
-    }
-    char* buf = nullptr;
-    size_t size = 0;
-};
 
 struct DefaultWriter : DLCDownloader::IWriter
 {
@@ -498,39 +664,9 @@ void DLCDownloaderImpl::UnMap(CURL* easy)
     taskMap.erase(easy);
 }
 
-static void CurlSetTimeout(DLCDownloader::Task* justAddedTask, CURL* easyHandle)
+int DLCDownloaderImpl::GetChankSize()
 {
-    CURLcode code = CURLE_OK;
-
-    long operationTimeout = static_cast<long>(justAddedTask->info.timeoutSec);
-
-    code = curl_easy_setopt(easyHandle, CURLOPT_CONNECTTIMEOUT, operationTimeout);
-    DVASSERT(CURLE_OK == code);
-
-    // we could set operation time limit which produce timeout if operation takes time.
-    code = curl_easy_setopt(easyHandle, CURLOPT_TIMEOUT, 0L);
-    DVASSERT(CURLE_OK == code);
-
-    code = curl_easy_setopt(easyHandle, CURLOPT_DNS_CACHE_TIMEOUT, operationTimeout);
-    DVASSERT(CURLE_OK == code);
-
-    code = curl_easy_setopt(easyHandle, CURLOPT_SERVER_RESPONSE_TIMEOUT, operationTimeout);
-    DVASSERT(CURLE_OK == code);
-}
-
-static size_t CurlDataRecvHandler(void* ptr, size_t size, size_t nmemb, void* part)
-{
-    DLCDownloader::Task* task = static_cast<DLCDownloader::Task*>(part);
-    DVASSERT(task != nullptr);
-    DLCDownloader::IWriter* writer = task->defaultWriter.get();
-    DVASSERT(writer != nullptr);
-
-    size_t fullSizeToWrite = size * nmemb;
-
-    uint64 writen = writer->Save(ptr, fullSizeToWrite);
-    DVASSERT(writen == fullSizeToWrite);
-
-    return static_cast<size_t>(writen);
+    return hints.chankMemBuffSize;
 }
 
 void DLCDownloaderImpl::DeleteTask(Task* task)
@@ -577,7 +713,24 @@ void DLCDownloader::Task::SetupFullDownload()
         // we already know size to download
         restOffset = info.rangeOffset;
         restSize = info.rangeSize;
+        const int chankSize = curlStorage->GetChankSize();
         // TODO generate range sub_requests
+        while (restSize > 0 && curlStorage->GetFreeHandleCount() > 0)
+        {
+            if (restSize < chankSize)
+            {
+                IDownloaderSubTask* subTask = new DownloadChankSubTask(this, restOffset, restSize); // TODO take full rest range
+                subTasksWorking.push_back(subTask);
+                restOffset += restSize;
+                restSize = 0;
+                break;
+            }
+
+            IDownloaderSubTask* subTask = new DownloadChankSubTask(this, restOffset, chankSize); // TODO take full rest range
+            subTasksWorking.push_back(subTask);
+            restOffset += chankSize;
+            restSize -= chankSize;
+        }
     }
     else
     {
@@ -587,42 +740,6 @@ void DLCDownloader::Task::SetupFullDownload()
         IDownloaderSubTask* subTask = new GetSizeSubTask(this);
         subTasksWorking.push_back(subTask);
     }
-
-    //const char* url = info.srcUrl.c_str();
-    //DVASSERT(url != nullptr);
-
-    //code = curl_easy_setopt(easyHandle, CURLOPT_URL, url);
-    //DVASSERT(code == CURLE_OK);
-
-    //code = curl_easy_setopt(easyHandle, CURLOPT_WRITEFUNCTION, CurlDataRecvHandler);
-    //DVASSERT(code == CURLE_OK);
-
-    //code = curl_easy_setopt(easyHandle, CURLOPT_WRITEDATA, subTask);
-    //DVASSERT(code == CURLE_OK);
-
-    //bool hasRangeStart = info.rangeOffset != -1;
-    //bool hasRangeFinish = info.rangeSize != -1;
-
-    //if (hasRangeStart || hasRangeFinish)
-    //{
-    //    StringStream ss;
-    //    if (hasRangeStart)
-    //    {
-    //        ss << info.rangeOffset;
-    //    }
-    //    ss << '-';
-    //    if (hasRangeFinish)
-    //    {
-    //        DVASSERT(info.rangeSize > 0);
-    //        ss << info.rangeOffset + info.rangeSize - 1;
-    //    }
-    //    String s = ss.str();
-    //    code = curl_easy_setopt(easyHandle, CURLOPT_RANGE, s.c_str());
-    //    DVASSERT(code == CURLE_OK);
-    //}
-
-    //// set all timeouts
-    //CurlSetTimeout(this, easyHandle);
 }
 
 void DLCDownloader::Task::SetupResumeDownload()

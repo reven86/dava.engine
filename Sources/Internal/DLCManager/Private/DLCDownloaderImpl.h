@@ -13,6 +13,7 @@ struct IDownloaderSubTask
     virtual void OnDone(CURLMsg* msg) = 0;
     virtual DLCDownloader::Task* GetTask() = 0;
     virtual CURL* GetEasyHandle() = 0;
+    virtual DLCDownloader::IWriter* GetIWriter() = 0;
 };
 
 struct ICurlEasyStorage
@@ -25,6 +26,7 @@ struct ICurlEasyStorage
     virtual void Map(CURL* easy, IDownloaderSubTask* subTask) = 0;
     virtual IDownloaderSubTask* FindInMap(CURL* easy) = 0;
     virtual void UnMap(CURL* easy) = 0;
+    virtual int GetChankSize() = 0;
 };
 
 struct DLCDownloader::Task
@@ -101,6 +103,7 @@ private:
     void Map(CURL* easy, IDownloaderSubTask* subTask) override;
     IDownloaderSubTask* FindInMap(CURL* easy) override;
     void UnMap(CURL* easy) override;
+    int GetChankSize() override;
     // [end] implement ICurlEasyStorage interface
 
     void DownloadThreadFunc();
