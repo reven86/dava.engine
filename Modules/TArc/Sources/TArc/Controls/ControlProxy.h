@@ -122,6 +122,8 @@ protected:
         case QEvent::MouseButtonDblClick:
             RETURN_IF_MODEL_LOST(false);
             break;
+        default:
+            break;
         }
 
         return TBase::event(e);
