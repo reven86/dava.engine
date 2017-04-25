@@ -25,8 +25,6 @@ public:
     void AddEntity(DAVA::Entity* entity) override;
     void RemoveEntity(DAVA::Entity* entity) override;
 
-    void AddComponent(DAVA::Entity* entity, DAVA::Component* component) override;
-
     void Process(DAVA::float32 timeElapsed) override;
 
     DAVA::Entity* GetCurrrentPath() const;

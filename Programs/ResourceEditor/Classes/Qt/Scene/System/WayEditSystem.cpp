@@ -134,15 +134,7 @@ void WayEditSystem::PerformRemoving(DAVA::Entity* entityToRemove)
 #if defined(__DAVAENGINE_DEBUG__)
     Entity* parentEntity = entityToRemove->GetParent();
     bool pathFound = false;
-    for (uint32 i = 0; i < parentEntity->GetComponentCount(Component::PATH_COMPONENT); ++i)
-    {
-        if (parentEntity->GetComponent(Component::PATH_COMPONENT) == path)
-        {
-            pathFound = true;
-            break;
-        }
-    }
-    DVASSERT(pathFound);
+    DVASSERT(path == GetPathComponent(parentEntity));
 
     bool waypointFound = false;
     for (PathComponent::Waypoint* waypoint : path->GetPoints())

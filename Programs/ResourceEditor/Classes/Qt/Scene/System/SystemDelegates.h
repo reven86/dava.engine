@@ -18,7 +18,7 @@ public:
 
     virtual void PerformAdding(DAVA::Entity* sourceEntity, DAVA::Entity* clonedEntity)
     {
-        DVASSERT(false);
+        DVASSERT(false, "You should override this method in pair with HasCustomClonedAddading");
     }
     virtual void WillClone(DAVA::Entity* originalEntity)
     {
@@ -39,7 +39,7 @@ public:
 
     virtual void PerformRemoving(DAVA::Entity* entityToRemove)
     {
-        DVASSERT(false);
+        DVASSERT(false, "You should override this method in pair with HasCustomRemovingForEntity");
     }
 
     virtual void WillRemove(DAVA::Entity* removedEntity)
