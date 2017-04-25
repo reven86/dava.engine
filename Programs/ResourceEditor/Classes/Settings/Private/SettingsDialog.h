@@ -6,7 +6,7 @@
 #include "Tools/QtPropertyEditor/QtPropertyEditor.h"
 #include "Tools/QtPropertyEditor/QtPropertyData/QtPropertyDataDavaVariant.h"
 
-#include <QDialog.h>
+#include <QDialog>
 
 class SettingsDialog : public QDialog
 {

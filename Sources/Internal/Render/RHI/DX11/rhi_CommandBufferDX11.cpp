@@ -222,6 +222,9 @@ ID3D11RasterizerState* CommandBufferDX11_t::GetRasterizerState(const RasterizerP
 
 void CommandBufferDX11_t::Begin(ID3D11DeviceContext* inContext)
 {
+    bool clear_color = isFirstInPass && passCfg.colorBuffer[0].loadAction == LOADACTION_CLEAR;
+    bool clear_depth = isFirstInPass && passCfg.depthStencilBuffer.loadAction == LOADACTION_CLEAR;
+
     sync = InvalidHandle;
 
     def_viewport.TopLeftX = 0;
@@ -229,65 +232,101 @@ void CommandBufferDX11_t::Begin(ID3D11DeviceContext* inContext)
     def_viewport.MinDepth = 0.0f;
     def_viewport.MaxDepth = 1.0f;
 
-    const RenderPassConfig::ColorBuffer& color0 = passCfg.colorBuffer[0];
-    if ((color0.texture != rhi::InvalidHandle) && (color0.texture != rhi::DefaultDepthBuffer))
+    ID3D11RenderTargetView* rt_view[D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT] = {};
+    unsigned rt_count = 0;
+    ID3D11DepthStencilView* ds_view = NULL;
+
+    if (passCfg.depthStencilBuffer.texture == rhi::DefaultDepthBuffer)
     {
-        Handle targetTexture = color0.texture;
-        Handle targetDepth = passCfg.depthStencilBuffer.texture;
-        if (passCfg.UsingMSAA())
+        ds_view = dx11.depthStencilView.Get();
+    }
+    else if (passCfg.depthStencilBuffer.texture != rhi::InvalidHandle)
+    {
+        TextureDX11::SetDepthStencil(passCfg.depthStencilBuffer.texture, &ds_view);
+    }
+
+    if (passCfg.UsingMSAA())
+    {
+        DVASSERT(passCfg.depthStencilBuffer.multisampleTexture != InvalidHandle);
+        TextureDX11::SetDepthStencil(passCfg.depthStencilBuffer.multisampleTexture, &ds_view);
+    }
+
+    for (unsigned i = 0; i != countof(passCfg.colorBuffer); ++i)
+    {
+        if (passCfg.colorBuffer[i].texture != rhi::InvalidHandle)
         {
-            targetTexture = color0.multisampleTexture;
-            targetDepth = passCfg.depthStencilBuffer.multisampleTexture;
+            if (passCfg.UsingMSAA())
+                TextureDX11::SetRenderTarget(passCfg.colorBuffer[i].multisampleTexture, passCfg.colorBuffer[i].textureLevel, passCfg.colorBuffer[i].textureFace, inContext, rt_view + i);
+            else
+                TextureDX11::SetRenderTarget(passCfg.colorBuffer[i].texture, passCfg.colorBuffer[i].textureLevel, passCfg.colorBuffer[i].textureFace, inContext, rt_view + i);
+
+            ++rt_count;
         }
-        TextureDX11::SetRenderTarget(targetTexture, targetDepth, color0.textureLevel, color0.textureFace, inContext);
+        else
+        {
+            if (i == 0)
+            {
+                if (passCfg.UsingMSAA())
+                    TextureDX11::SetRenderTarget(passCfg.colorBuffer[i].multisampleTexture, passCfg.colorBuffer[i].textureLevel, passCfg.colorBuffer[i].textureFace, inContext, rt_view + i);
+                else
+                    rt_view[0] = dx11.renderTargetView.Get();
 
-        Size2i sz = TextureDX11::Size(targetTexture);
+                rt_count = 1;
+            }
+
+            break;
+        }
+    }
+
+    inContext->OMSetRenderTargets(rt_count, rt_view, ds_view);
+
+    if (passCfg.colorBuffer[0].texture != rhi::InvalidHandle)
+    {
+        Size2i sz = (passCfg.UsingMSAA()) ? TextureDX11::Size(passCfg.colorBuffer[0].multisampleTexture) : TextureDX11::Size(passCfg.colorBuffer[0].texture);
+
         def_viewport.Width = static_cast<float>(sz.dx);
         def_viewport.Height = static_cast<float>(sz.dy);
     }
-    else if (passCfg.UsingMSAA())
+
+    inContext->OMGetRenderTargets(countof(rt_view), rt_view, &ds_view);
+
+    for (unsigned i = 0; i != countof(rt_view); ++i)
     {
-        TextureDX11::SetRenderTarget(color0.multisampleTexture, passCfg.depthStencilBuffer.multisampleTexture,
-                                     color0.textureLevel, color0.textureFace, inContext);
+        if (rt_view[i])
+        {
+            if (i == 0)
+            {
+                if (passCfg.colorBuffer[0].texture == rhi::InvalidHandle)
+                {
+                    D3D11_TEXTURE2D_DESC desc;
 
-        Size2i sz = TextureDX11::Size(color0.multisampleTexture);
-        def_viewport.Width = static_cast<float>(sz.dx);
-        def_viewport.Height = static_cast<float>(sz.dy);
+                    dx11.renderTarget->GetDesc(&desc);
+
+                    def_viewport.Width = float(desc.Width);
+                    def_viewport.Height = float(desc.Height);
+                }
+
+                inContext->RSSetViewports(1, &(def_viewport));
+            }
+
+            if (clear_color)
+                inContext->ClearRenderTargetView(rt_view[i], passCfg.colorBuffer[i].clearColor);
+
+            rt_view[i]->Release();
+        }
     }
-    else
+
+    if (ds_view)
     {
-        ID3D11RenderTargetView* rtView[] = { dx11.renderTargetView.Get() };
-        inContext->OMSetRenderTargets(1, rtView, dx11.depthStencilView.Get());
+        if (clear_depth)
+            inContext->ClearDepthStencilView(ds_view, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, passCfg.depthStencilBuffer.clearDepth, passCfg.depthStencilBuffer.clearStencil);
 
-        D3D11_TEXTURE2D_DESC desc = {};
-        dx11.renderTarget->GetDesc(&desc);
-        def_viewport.Width = float(desc.Width);
-        def_viewport.Height = float(desc.Height);
+        ds_view->Release();
     }
 
-    ID3D11DepthStencilView* dsView = nullptr;
-    ID3D11RenderTargetView* rtViews[D3D11_SIMULTANEOUS_RENDER_TARGET_COUNT] = {};
-    inContext->OMGetRenderTargets(countof(rtViews), rtViews, &dsView);
-    inContext->RSSetViewports(1, &def_viewport);
     inContext->IASetPrimitiveTopology(cur_topo);
 
-    bool clear_color = isFirstInPass && passCfg.colorBuffer[0].loadAction == LOADACTION_CLEAR;
-    for (ID3D11RenderTargetView* rtView : rtViews)
-    {
-        if (rtView && clear_color)
-        {
-            inContext->ClearRenderTargetView(rtView, passCfg.colorBuffer[0].clearColor);
-        }
-        DAVA::SafeRelease(rtView);
-    }
-
-    bool clear_depth = isFirstInPass && passCfg.depthStencilBuffer.loadAction == LOADACTION_CLEAR;
-    if (dsView && clear_depth)
-    {
-        inContext->ClearDepthStencilView(dsView, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL,
-                                         passCfg.depthStencilBuffer.clearDepth, passCfg.depthStencilBuffer.clearStencil);
-    }
-    DAVA::SafeRelease(dsView);
+    DVASSERT(!isFirstInPass || cur_query_buf == InvalidHandle || !QueryBufferDX11::QueryIsCompleted(cur_query_buf));
 }
 
 /*

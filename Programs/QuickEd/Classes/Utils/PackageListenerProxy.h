@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageListener.h"
 
 #include <Base/RefPtr.h>
@@ -19,8 +20,11 @@ class FieldBinder;
 class PackageListenerProxy : public PackageListener
 {
 public:
+    PackageListenerProxy() = default;
     PackageListenerProxy(PackageListener* listener, DAVA::TArc::ContextAccessor* accessor);
     ~PackageListenerProxy();
+
+    void Init(PackageListener* listener, DAVA::TArc::ContextAccessor* accessor);
 
 private:
     void OnPackageChanged(const DAVA::Any& package);

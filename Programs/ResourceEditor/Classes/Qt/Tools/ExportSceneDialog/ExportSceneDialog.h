@@ -3,7 +3,7 @@
 #include <Tools/TextureCompression/TextureConverter.h>
 #include <Render/RenderBase.h>
 
-#include <QDialog.h>
+#include <QDialog>
 
 class FilePathBrowser;
 class QCheckBox;

@@ -1,7 +1,7 @@
 #include "mainwindow.h"
 #include <Tools/Version.h>
 #include "Classes/Qt/BeastDialog/BeastDialog.h"
-#include "Classes/Qt/CubemapEditor/CubemapTextureBrowser.h"
+#include "Classes/Qt/CubemapEditor/CubeMapTextureBrowser.h"
 #include "Classes/Qt/CubemapEditor/CubemapUtils.h"
 #include "Classes/Qt/DebugTools/VersionInfoWidget/VersionInfoWidget.h"
 #include "Classes/Qt/ImageSplitterDialog/ImageSplitterDialog.h"
@@ -231,6 +231,8 @@ QtMainWindow::QtMainWindow(DAVA::TArc::UI* tarcUI_, QWidget* parent)
     PathDescriptor::InitializePathDescriptors();
 
     ui->setupUi(this);
+    setObjectName("ResourceEditor"); //we need to support old names to save settings
+
     SetupWidget();
     SetupTitle(DAVA::String());
 
