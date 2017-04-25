@@ -1,4 +1,4 @@
-#include "Tarc/Controls/Private/NotificationLayout.h"
+#include "TArc/Controls/Private/NotificationLayout.h"
 #include "TArc/Controls/Private/NotificationWidget.h"
 
 #include <QEvent>
@@ -82,7 +82,7 @@ void NotificationLayout::LayoutWidgets(QWidget* parent)
     DVASSERT(notificationsIter != allNotifications.end());
     List<Notification>& notifications = notificationsIter->second;
 
-    uint32 size = std::min(static_cast<uint32>(allNotifications.size()), maximumDisplayCount);
+    uint32 size = std::min(static_cast<uint32>(notifications.size()), maximumDisplayCount);
     auto endIter = std::next(notifications.begin(), size);
     List<Notification> notificationsToDisplay(notifications.begin(), endIter);
     if (layoutType & ALIGN_TOP)

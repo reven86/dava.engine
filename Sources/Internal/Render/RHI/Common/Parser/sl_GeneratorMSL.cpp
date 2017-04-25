@@ -609,6 +609,8 @@ void MSLGenerator::OutputStatements(int indent, HLSLStatement* statement)
                           { "SV_TARGET", rhi::VATTR_COLOR_0, "color0", "color(0)" },
                           { "SV_TARGET0", rhi::VATTR_COLOR_0, "color0", "color(0)" },
                           { "SV_TARGET1", rhi::VATTR_COLOR_1, "color1", "color(1)" },
+                          { "SV_TARGET2", rhi::VATTR_COLOR_1, "color2", "color(2)" },
+                          { "SV_TARGET3", rhi::VATTR_COLOR_1, "color3", "color(3)" },
                           { "TANGENT", rhi::VATTR_TANGENT, "tangent", "" },
                           { "BINORMAL", rhi::VATTR_BINORMAL, "binormal", "" },
                           { "BLENDWEIGHT", rhi::VATTR_BLENDWEIGHT, "blend_weight", "" },

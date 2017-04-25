@@ -184,4 +184,4 @@ inline LandscapeSubdivision::SubdivisionMetrics& LandscapeSubdivision::GetMetric
 template <>
 bool AnyCompare<LandscapeSubdivision::SubdivisionMetrics>::IsEqual(const DAVA::Any& v1, const DAVA::Any& v2);
 extern template struct AnyCompare<LandscapeSubdivision::SubdivisionMetrics>;
-};
+}

@@ -354,4 +354,4 @@ void LandscapeSubdivision::BuildSubdivision(Heightmap* _heightmap, const AABBox3
 
     UpdatePatchInfo(0, 0, 0, nullptr, Rect2i(0, 0, -1, -1));
 }
-};
+}

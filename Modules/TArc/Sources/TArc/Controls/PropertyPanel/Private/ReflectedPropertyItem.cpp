@@ -1,5 +1,5 @@
 #include "TArc/Controls/PropertyPanel/Private/ReflectedPropertyItem.h"
-#include "Tarc/Controls/PropertyPanel/Private/ReflectedPropertyModel.h"
+#include "TArc/Controls/PropertyPanel/Private/ReflectedPropertyModel.h"
 #include "TArc/Controls/PropertyPanel/BaseComponentValue.h"
 
 #include "Debug/DVAssert.h"

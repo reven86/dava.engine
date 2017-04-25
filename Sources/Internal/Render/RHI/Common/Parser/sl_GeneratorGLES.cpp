@@ -146,6 +146,7 @@ GLESGenerator::GLESGenerator(Allocator* allocator)
     scalarSwizzle4Function[0] = 0;
     sinCosFunction[0] = 0;
     outputPosition = false;
+    mrtUsed = false;
 }
 
 bool GLESGenerator::Generate(const HLSLTree* tree_, Target target_, const char* entryName_, std::string* code)
@@ -153,8 +154,22 @@ bool GLESGenerator::Generate(const HLSLTree* tree_, Target target_, const char* 
     tree = tree_;
     entryName = entryName_;
     target = target_;
+    mrtUsed = false;
 
     writer.Reset(code);
+
+    HLSLStruct* fragment_out = tree->FindGlobalStruct("fragment_out");
+    if (fragment_out)
+    {
+        for (HLSLStructField* f = fragment_out->field; f; f = f->nextField)
+        {
+            if (f->semantic && stricmp(f->semantic, "SV_TARGET1") == 0)
+            {
+                mrtUsed = true;
+                break;
+            }
+        }
+    }
 
     bool usesClip = tree->GetContainsString("clip");
     bool usesTex2Dlod = tree->GetContainsString("tex2Dlod");
@@ -593,9 +608,23 @@ void GLESGenerator::OutputExpression(HLSLExpression* expression, const HLSLType*
                         {
                             writer.Write("gl_Position");
                         }
-                        else if (f->semantic && (stricmp(f->semantic, "SV_TARGET") == 0 || stricmp(f->semantic, "SV_TARGET0") == 0))
+                        else if (f->semantic && (stricmp(f->semantic, "SV_TARGET") == 0 || stricmp(f->semantic, "SV_TARGET0") == 0 || stricmp(f->semantic, "SV_TARGET1") == 0 || stricmp(f->semantic, "SV_TARGET2") == 0 || stricmp(f->semantic, "SV_TARGET3") == 0))
                         {
-                            writer.Write("gl_FragColor");
+                            if (mrtUsed)
+                            {
+                                if (stricmp(f->semantic, "SV_TARGET0") == 0)
+                                    writer.Write("gl_FragData[0]");
+                                else if (stricmp(f->semantic, "SV_TARGET1") == 0)
+                                    writer.Write("gl_FragData[1]");
+                                else if (stricmp(f->semantic, "SV_TARGET2") == 0)
+                                    writer.Write("gl_FragData[2]");
+                                else if (stricmp(f->semantic, "SV_TARGET3") == 0)
+                                    writer.Write("gl_FragData[3]");
+                            }
+                            else
+                            {
+                                writer.Write("gl_FragColor");
+                            }
                         }
                         else
                         {

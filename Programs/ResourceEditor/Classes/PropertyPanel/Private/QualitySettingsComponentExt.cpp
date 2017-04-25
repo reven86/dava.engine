@@ -3,7 +3,7 @@
 #include "Classes/PropertyPanel/Private/QualityGroupComponentValue.h"
 
 #include <TArc/Controls/PropertyPanel/BaseComponentValue.h>
-#include <Tarc/Utils/ReflectionHelpers.h>
+#include <TArc/Utils/ReflectionHelpers.h>
 
 #include <Scene3D/Components/QualitySettingsComponent.h>
 #include <Reflection/ReflectedType.h>

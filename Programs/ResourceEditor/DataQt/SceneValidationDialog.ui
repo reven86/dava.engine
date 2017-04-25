@@ -223,7 +223,7 @@ c. effects</string>
   <customwidget>
    <class>LogWidget</class>
    <extends>QWidget</extends>
-   <header>QtTools/ConsoleWidget/logwidget.h</header>
+   <header>QtTools/ConsoleWidget/LogWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
