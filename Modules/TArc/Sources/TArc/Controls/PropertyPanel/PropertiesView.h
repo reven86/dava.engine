@@ -65,6 +65,7 @@ public:
         FieldDescriptor developerModeField;
         String settingsNodeName;
         std::weak_ptr<Updater> updater;
+        bool isInDevMode = false;
     };
 
     PropertiesView(const Params& params);

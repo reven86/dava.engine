@@ -26,27 +26,16 @@ const char* expandedItemsKey = "expandedItems";
 class ReflectedPropertyModel::InsertGuard final
 {
 public:
-    InsertGuard(ReflectedPropertyModel* model_, ReflectedPropertyItem* item, int first, int last, bool forceOpenSession)
+    InsertGuard(ReflectedPropertyModel* model_, ReflectedPropertyItem* item, int first, int last)
         : model(model_)
     {
-        // When mode works in FavoritesOnly mode, view doesn't know about regular part of model data
-        // so we should not to open begin\end InsertRows session
-        /*if (model->IsFavoriteOnly())
-        {
-            return;
-        }*/
-
-        sessionOpened = true;
         QModelIndex index = model->MapItem(item);
         model->beginInsertRows(index, first, last);
     }
 
     ~InsertGuard()
     {
-        if (sessionOpened == true)
-        {
-            model->endInsertRows();
-        }
+        model->endInsertRows();
     }
 
     ReflectedPropertyModel* model;
@@ -56,13 +45,10 @@ public:
 class ReflectedPropertyModel::RemoveGuard final
 {
 public:
-    RemoveGuard(ReflectedPropertyModel* model_, ReflectedPropertyItem* item, bool forceOpenSession)
+    RemoveGuard(ReflectedPropertyModel* model_, ReflectedPropertyItem* item)
         : model(model_)
     {
-        // When mode works in FavoritesOnly mode, view doesn't know about regular part of model data
-        // so we should not to open begin\end RemoveRows session
-        // but if there is a favorite item has been removed we should remove it from view.
-        if (forceOpenSession == false && (/*model->IsFavoriteOnly() ||*/ item->GetChildCount() > 1))
+        if (item->GetChildCount() > 1)
         {
             return;
         }
@@ -352,7 +338,7 @@ void ReflectedPropertyModel::OnChildAdded(const std::shared_ptr<PropertyNode>& p
         valueComponent->Init(this);
 
         int32 childPosition = parentItem->LookupChildPosition(node->sortKey);
-        InsertGuard guard(this, parentItem, childPosition, childPosition, false);
+        InsertGuard guard(this, parentItem, childPosition, childPosition);
         childItem = parentItem->CreateChild(std::move(valueComponent), childPosition, node->sortKey);
         childItem->AddPropertyNode(node);
     }
@@ -367,7 +353,7 @@ void ReflectedPropertyModel::OnChildRemoved(const std::shared_ptr<PropertyNode>&
     DVASSERT(iter != nodeToItem.end());
     ReflectedPropertyItem* item = iter->second;
 
-    RemoveGuard guard(this, item, false);
+    RemoveGuard guard(this, item);
     item->RemovePropertyNode(node);
     bool needRemove = item->GetPropertyNodesCount() == 0;
     if (needRemove)
@@ -409,7 +395,7 @@ void ReflectedPropertyModel::OnFavoritedAdded(const std::shared_ptr<PropertyNode
         valueComponent->Init(this);
 
         int32 childPosition = parentItem->LookupChildPosition(sortKey);
-        InsertGuard guard(this, parentItem, childPosition, childPosition, true);
+        InsertGuard guard(this, parentItem, childPosition, childPosition);
         childItem = parentItem->CreateChild(std::move(valueComponent), childPosition, node->sortKey);
         childItem->SetFavorite(isRoot);
         childItem->AddPropertyNode(node);
@@ -426,7 +412,7 @@ void ReflectedPropertyModel::OnFavoritedRemoved(const std::shared_ptr<PropertyNo
 
     ReflectedPropertyItem* item = fvIter->second;
 
-    RemoveGuard guard(this, item, true);
+    RemoveGuard guard(this, item);
     item->RemovePropertyNode(node);
     bool needRemove = item->GetPropertyNodesCount() == 0;
     if (needRemove)

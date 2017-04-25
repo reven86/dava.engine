@@ -133,6 +133,9 @@ void PropertyPanelModule::PostInit()
     params.objectsField.fieldName = DAVA::FastName(PropertyPanelData::selectedEntitiesProperty);
     params.settingsNodeName = "PropertyPanel";
     params.updater = std::weak_ptr<PropertiesView::Updater>(data->updater);
+#if !defined(DEPLOY_BUILD)
+    params.isInDevMode = true;
+#endif
 
     PropertiesView* view = new PropertiesView(params);
 

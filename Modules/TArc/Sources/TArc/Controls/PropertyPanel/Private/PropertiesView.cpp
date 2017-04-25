@@ -225,9 +225,7 @@ PropertiesView::PropertiesView(const Params& params_)
     QObject::connect(view, &QTreeView::expanded, this, &PropertiesView::OnExpanded);
     QObject::connect(view, &QTreeView::collapsed, this, &PropertiesView::OnCollapsed);
 
-#if !defined(DEPLOY_BUILD)
-    model->SetDeveloperMode(true);
-#endif
+    model->SetDeveloperMode(params.isInDevMode);
 }
 
 PropertiesView::~PropertiesView()
@@ -381,7 +379,6 @@ void PropertiesView::OnFavoritesEditChanged(bool isChecked)
 
 PropertiesView::eViewMode PropertiesView::GetViewMode() const
 {
-    //return model->IsFavoriteOnly() == true ? VIEW_MODE_FAVORITES_ONLY : VIEW_MODE_NORMAL;
     return viewMode;
 }
 
