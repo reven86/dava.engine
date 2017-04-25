@@ -20,7 +20,9 @@ ControlProxy* MatrixComponentValue::CreateEditorWidget(QWidget* parent, const Re
 {
     ControlDescriptorBuilder<Label::Fields> descr;
     descr[Label::Fields::Text] = "value";
-    return new Label(descr, wrappersProcessor, model, parent);
+    ControlProxy* result = new Label(descr, wrappersProcessor, model, parent);
+    result->ToWidgetCast()->setAutoFillBackground(true);
+    return result;
 }
 
 String MatrixComponentValue::GetTextValue() const

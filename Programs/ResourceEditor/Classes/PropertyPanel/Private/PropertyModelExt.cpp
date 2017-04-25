@@ -301,8 +301,7 @@ void EntityChildCreator::ExposeChildren(const std::shared_ptr<DAVA::TArc::Proper
         parent->cachedValue.GetType() == DAVA::Type::Instance<DAVA::Entity*>())
     {
         DAVA::Reflection::Field f(Any("Entity"), Reflection(parent->field.ref), nullptr);
-        std::shared_ptr<PropertyNode> entityNode = allocator->CreatePropertyNode(parent, std::move(f), PropertyNode::GroupProperty);
-        entityNode->sortKey = -1; // zero sort key is for favorites root
+        std::shared_ptr<PropertyNode> entityNode = allocator->CreatePropertyNode(parent, std::move(f), -1, PropertyNode::GroupProperty);
         children.push_back(entityNode);
 
         {
@@ -317,9 +316,8 @@ void EntityChildCreator::ExposeChildren(const std::shared_ptr<DAVA::TArc::Proper
                     String permanentName = GetValueReflectedType(ref)->GetPermanentName();
 
                     DAVA::Reflection::Field f(permanentName, Reflection(ref), nullptr);
-                    std::shared_ptr<PropertyNode> node = allocator->CreatePropertyNode(parent, std::move(f), PropertyNode::RealProperty);
+                    std::shared_ptr<PropertyNode> node = allocator->CreatePropertyNode(parent, std::move(f), static_cast<size_t>(type), PropertyNode::RealProperty);
                     node->idPostfix = FastName(Format("%s_%u", permanentName.c_str(), componentIndex));
-                    node->sortKey = static_cast<size_t>(type);
                     children.push_back(node);
                 }
             }
@@ -327,8 +325,7 @@ void EntityChildCreator::ExposeChildren(const std::shared_ptr<DAVA::TArc::Proper
             Reflection::Field addComponentField;
             addComponentField.key = "Add Component";
             addComponentField.ref = parent->field.ref;
-            std::shared_ptr<PropertyNode> addComponentNode = allocator->CreatePropertyNode(parent, std::move(addComponentField), PropertyPanel::AddComponentProperty);
-            addComponentNode->sortKey = DAVA::TArc::PropertyNode::InvalidSortKey - 1;
+            std::shared_ptr<PropertyNode> addComponentNode = allocator->CreatePropertyNode(parent, std::move(addComponentField), DAVA::TArc::PropertyNode::InvalidSortKey - 1, PropertyPanel::AddComponentProperty);
             children.push_back(addComponentNode);
         }
     }
@@ -339,7 +336,7 @@ void EntityChildCreator::ExposeChildren(const std::shared_ptr<DAVA::TArc::Proper
                                  {
                                      if (field.ref.GetValueType() != DAVA::Type::Instance<DAVA::Vector<DAVA::Component*>>() && CanBeExposed(field))
                                      {
-                                         children.push_back(allocator->CreatePropertyNode(parent, std::move(field), PropertyNode::RealProperty));
+                                         children.push_back(allocator->CreatePropertyNode(parent, std::move(field), static_cast<int32>(children.size()), PropertyNode::RealProperty));
                                      }
                                  });
     }

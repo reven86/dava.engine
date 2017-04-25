@@ -48,14 +48,16 @@ public:
 
     static const int32 InvalidSortKey;
     int32 sortKey = InvalidSortKey;
+
+    static const int32 FavoritesRootSortKey;
 };
 
 class IChildAllocator
 {
 public:
     virtual ~IChildAllocator() = default;
-    virtual std::shared_ptr<PropertyNode> CreatePropertyNode(const std::shared_ptr<PropertyNode>& parent, Reflection::Field&& reflection, int32_t type = PropertyNode::RealProperty) = 0;
-    virtual std::shared_ptr<PropertyNode> CreatePropertyNode(const std::shared_ptr<PropertyNode>& parent, Reflection::Field&& reflection, int32_t type, const Any& value) = 0;
+    virtual std::shared_ptr<PropertyNode> CreatePropertyNode(const std::shared_ptr<PropertyNode>& parent, Reflection::Field&& reflection, int32 sortKey, int32_t type) = 0;
+    virtual std::shared_ptr<PropertyNode> CreatePropertyNode(const std::shared_ptr<PropertyNode>& parent, Reflection::Field&& reflection, int32 sortKey, int32_t type, const Any& value) = 0;
 };
 
 std::shared_ptr<PropertyNode> MakeRootNode(IChildAllocator* allocator, DAVA::Reflection::Field&& field);

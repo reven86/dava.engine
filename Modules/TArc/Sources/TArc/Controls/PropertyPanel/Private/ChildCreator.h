@@ -25,12 +25,12 @@ public:
     void RegisterExtension(const std::shared_ptr<ChildCreatorExtension>& extension);
     void UnregisterExtension(const std::shared_ptr<ChildCreatorExtension>& extension);
 
-    Signal<std::shared_ptr<const PropertyNode> /*parent*/, std::shared_ptr<PropertyNode> /*child*/, int32 /*childPosition*/> nodeCreated;
-    Signal<std::shared_ptr<PropertyNode> /*child*/> nodeRemoved;
+    Signal<const std::shared_ptr<PropertyNode>& /*parent*/, const std::shared_ptr<PropertyNode>& /*child*/> nodeCreated;
+    Signal<const std::shared_ptr<PropertyNode>& /*child*/> nodeRemoved;
 
 private:
     std::shared_ptr<ChildCreatorExtension> extensions;
-    UnorderedMap<std::shared_ptr<const PropertyNode>, Vector<std::shared_ptr<PropertyNode>>> propertiesIndex;
+    UnorderedMap<std::shared_ptr<PropertyNode>, Vector<std::shared_ptr<PropertyNode>>> propertiesIndex;
     std::shared_ptr<IChildAllocator> allocator;
 };
 

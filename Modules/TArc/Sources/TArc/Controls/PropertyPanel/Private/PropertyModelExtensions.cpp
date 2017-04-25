@@ -51,7 +51,7 @@ public:
 
 std::shared_ptr<PropertyNode> MakeRootNode(IChildAllocator* allocator, DAVA::Reflection::Field&& field)
 {
-    return allocator->CreatePropertyNode(nullptr, std::move(field), PropertyNode::SelfRoot);
+    return allocator->CreatePropertyNode(nullptr, std::move(field), 0, PropertyNode::SelfRoot);
 }
 
 bool PropertyNode::operator==(const PropertyNode& other) const
@@ -82,6 +82,7 @@ DAVA::String PropertyNode::BuildID() const
 }
 
 const int32 PropertyNode::InvalidSortKey = std::numeric_limits<int32>::max();
+const int32 PropertyNode::FavoritesRootSortKey = -1000;
 
 ChildCreatorExtension::ChildCreatorExtension()
     : ExtensionChain(Type::Instance<ChildCreatorExtension>())

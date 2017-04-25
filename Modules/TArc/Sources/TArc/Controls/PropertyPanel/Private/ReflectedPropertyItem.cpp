@@ -68,31 +68,12 @@ void ReflectedPropertyItem::SetFavorited(bool isFavorited_)
 
 ReflectedPropertyItem* ReflectedPropertyItem::CreateChild(std::unique_ptr<BaseComponentValue>&& value, int32 childPosition, int32 sortKey)
 {
-    if (sortKey != PropertyNode::InvalidSortKey)
-    {
-        for (size_t i = 0; i < children.size(); ++i)
-        {
-            ReflectedPropertyItem* child = children[i].get();
-            if (sortKey < child->sortKey)
-            {
-                childPosition = static_cast<int32>(i);
-                break;
-            }
-        }
-    }
-
-    ReflectedPropertyItem* item = CreateChild(std::move(value), childPosition);
-    item->sortKey = sortKey;
-    return item;
-}
-
-ReflectedPropertyItem* ReflectedPropertyItem::CreateChild(std::unique_ptr<BaseComponentValue>&& value, int32 childPosition)
-{
     int32 position = static_cast<int32>(children.size());
+    ReflectedPropertyItem* item = nullptr;
     if (position < childPosition)
     {
         children.emplace_back(new ReflectedPropertyItem(model, this, position, std::move(value)));
-        return children.back().get();
+        item = children.back().get();
     }
     else
     {
@@ -103,8 +84,28 @@ ReflectedPropertyItem* ReflectedPropertyItem::CreateChild(std::unique_ptr<BaseCo
             (*tailIter)->position++;
         }
 
-        return iter->get();
+        item = iter->get();
     }
+
+    item->sortKey = sortKey;
+    return item;
+}
+
+int32 ReflectedPropertyItem::LookupChildPosition(int32 sortKey)
+{
+    DVASSERT(sortKey != PropertyNode::InvalidSortKey);
+    int32 childPosition = static_cast<int32>(children.size());
+    for (size_t i = 0; i < children.size(); ++i)
+    {
+        ReflectedPropertyItem* child = children[i].get();
+        if (sortKey < child->sortKey)
+        {
+            childPosition = static_cast<int32>(i);
+            break;
+        }
+    }
+
+    return childPosition;
 }
 
 int32 ReflectedPropertyItem::GetChildCount() const

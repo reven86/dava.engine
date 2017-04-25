@@ -29,6 +29,7 @@ namespace TArc
 namespace PropertiesViewDetail
 {
 const char* SeparatorPositionKey = "SeparatorPosition";
+const char* isFavoritesViewOnlyKey = "isFavoritesViewOnly";
 const int ToolBarHeight = 34;
 const int FavoritesStarSpaceWidth = 20;
 
@@ -219,6 +220,8 @@ PropertiesView::PropertiesView(const Params& params_)
     view->setColumnWidth(0, columnWidth);
 
     model->LoadState(viewItem);
+    viewMode = static_cast<eViewMode>(viewItem.Get(PropertiesViewDetail::isFavoritesViewOnlyKey, static_cast<int32>(VIEW_MODE_NORMAL)));
+
     QObject::connect(view, &QTreeView::expanded, this, &PropertiesView::OnExpanded);
     QObject::connect(view, &QTreeView::collapsed, this, &PropertiesView::OnCollapsed);
 
@@ -237,6 +240,7 @@ PropertiesView::~PropertiesView()
 
     PropertiesItem viewSettings = params.accessor->CreatePropertiesNode(params.settingsNodeName);
     viewSettings.Set(PropertiesViewDetail::SeparatorPositionKey, view->columnWidth(0));
+    viewSettings.Set(PropertiesViewDetail::isFavoritesViewOnlyKey, static_cast<int32>(viewMode));
 
     model->SaveState(viewSettings);
 }
@@ -303,14 +307,17 @@ void PropertiesView::SetupUI()
 
 void PropertiesView::OnObjectsChanged(const Any& objects)
 {
+    view->setRootIndex(QModelIndex());
     if (objects.IsEmpty())
     {
         model->SetObjects(Vector<Reflection>());
-        return;
     }
-
-    DVASSERT(objects.CanCast<Vector<Reflection>>());
-    model->SetObjects(objects.Cast<Vector<Reflection>>());
+    else
+    {
+        DVASSERT(objects.CanCast<Vector<Reflection>>());
+        model->SetObjects(objects.Cast<Vector<Reflection>>());
+    }
+    UpdateViewRootIndex();
     UpdateExpanded();
 }
 
@@ -342,7 +349,7 @@ void PropertiesView::Update(UpdatePolicy policy)
 void PropertiesView::UpdateExpanded()
 {
     ScopedValueGuard<bool> guard(isExpandUpdate, true);
-    QModelIndexList expandedList = model->GetExpandedList();
+    QModelIndexList expandedList = model->GetExpandedList(view->rootIndex());
     foreach (const QModelIndex& index, expandedList)
     {
         view->expand(index);
@@ -374,12 +381,15 @@ void PropertiesView::OnFavoritesEditChanged(bool isChecked)
 
 PropertiesView::eViewMode PropertiesView::GetViewMode() const
 {
-    return model->IsFavoriteOnly() == true ? VIEW_MODE_FAVORITES_ONLY : VIEW_MODE_NORMAL;
+    //return model->IsFavoriteOnly() == true ? VIEW_MODE_FAVORITES_ONLY : VIEW_MODE_NORMAL;
+    return viewMode;
 }
 
 void PropertiesView::SetViewMode(PropertiesView::eViewMode mode)
 {
-    model->SetFavoriteOnly(mode == VIEW_MODE_FAVORITES_ONLY);
+    view->setRootIndex(QModelIndex());
+    viewMode = mode;
+    UpdateViewRootIndex();
     UpdateExpanded();
 }
 
@@ -404,6 +414,17 @@ void PropertiesView::SetDeveloperMode(bool isDevMode)
     }
 
     model->SetDeveloperMode(isDevMode);
+}
+
+void PropertiesView::UpdateViewRootIndex()
+{
+    QModelIndex newRootIndex = model->GetRegularRootIndex();
+    if (viewMode == VIEW_MODE_FAVORITES_ONLY)
+    {
+        newRootIndex = model->GetFavoriteRootIndex();
+    }
+
+    view->setRootIndex(newRootIndex);
 }
 
 } // namespace TArc

@@ -2,6 +2,7 @@
 
 #include "TArc/Controls/PropertyPanel/Private/ChildCreator.h"
 #include "TArc/Controls/PropertyPanel/Private/ReflectionPathTree.h"
+#include "TArc/Controls/PropertyPanel/Private/FavoritesController.h"
 #include "TArc/DataProcessing/DataWrappersProcessor.h"
 #include "TArc/DataProcessing/PropertiesHolder.h"
 #include "TArc/WindowSubSystem/UI.h"
@@ -59,7 +60,7 @@ public:
     }
 
     void SetExpanded(bool expanded, const QModelIndex& index);
-    QModelIndexList GetExpandedList() const;
+    QModelIndexList GetExpandedList(const QModelIndex& rootIndex) const;
     QModelIndexList GetExpandedChildren(const QModelIndex& index) const;
 
     void SaveState(PropertiesItem& propertyRoot) const;
@@ -70,21 +71,22 @@ public:
     void AddFavorite(const QModelIndex& index);
     void RemoveFavorite(const QModelIndex& index);
 
-    bool IsFavoriteOnly() const;
-    void SetFavoriteOnly(bool isFavoriteOnly);
-
     bool IsDeveloperMode() const;
     void SetDeveloperMode(bool isDevMode);
 
+    QModelIndex GetRegularRootIndex() const;
+    QModelIndex GetFavoriteRootIndex() const;
+
 private:
     friend class BaseComponentValue;
-    void ChildAdded(std::shared_ptr<const PropertyNode> parent, std::shared_ptr<PropertyNode> node, int32 childPosition);
-    void ChildRemoved(std::shared_ptr<PropertyNode> node);
+    void OnChildAdded(const std::shared_ptr<PropertyNode>& parent, const std::shared_ptr<PropertyNode>& node);
+    void OnChildRemoved(const std::shared_ptr<PropertyNode>& node);
+
+    void OnFavoritedAdded(const std::shared_ptr<PropertyNode>& parent, const std::shared_ptr<PropertyNode>& node, int32 sortKey, bool isRoot);
+    void OnFavoritedRemoved(const std::shared_ptr<PropertyNode>& node);
 
     ReflectedPropertyItem* MapItem(const QModelIndex& item) const;
     QModelIndex MapItem(ReflectedPropertyItem* item) const;
-
-    ReflectedPropertyItem* GetSmartRoot() const;
 
     void Update(ReflectedPropertyItem* item);
     void UpdateFastImpl(ReflectedPropertyItem* item);
@@ -96,31 +98,24 @@ private:
     DataWrappersProcessor* GetWrappersProcessor(const std::shared_ptr<PropertyNode>& node);
     void GetExpandedListImpl(QModelIndexList& list, ReflectedPropertyItem* item) const;
 
-    void RefreshFavoritesRoot();
-    void RefreshFavorites(ReflectedPropertyItem* item, uint32 level, bool insertSessionIsOpen, const Set<size_t>& candidates);
-    ReflectedPropertyItem* CreateDeepCopy(ReflectedPropertyItem* itemToCopy, ReflectedPropertyItem* copyParent, size_t positionInParent);
-
 private:
     std::unique_ptr<ReflectedPropertyItem> rootItem;
-    ReflectedPropertyItem* favoritesRoot = nullptr;
-    UnorderedMap<std::shared_ptr<const PropertyNode>, ReflectedPropertyItem*> nodeToItem;
-    UnorderedMap<ReflectedPropertyItem*, ReflectedPropertyItem*> favoriteToItem;
-    UnorderedMap<ReflectedPropertyItem*, ReflectedPropertyItem*> itemToFavorite;
+    UnorderedMap<std::shared_ptr<PropertyNode>, ReflectedPropertyItem*> nodeToItem;
+    UnorderedMap<std::shared_ptr<PropertyNode>, ReflectedPropertyItem*> nodeToFavorite;
 
     ChildCreator childCreator;
+    FavoritesController favoritesController;
     Map<const Type*, std::shared_ptr<ExtensionChain>> extensions;
 
     DataWrappersProcessor wrappersProcessor;
     DataWrappersProcessor fastWrappersProcessor;
     ReflectionPathTree expandedItems;
-    Vector<Vector<FastName>> favoritedPathes;
 
     WindowKey wndKey;
     ContextAccessor* accessor = nullptr;
     OperationInvoker* invoker = nullptr;
     UI* ui = nullptr;
 
-    bool showFavoriteOnly = false;
     class InsertGuard;
     class RemoveGuard;
 };

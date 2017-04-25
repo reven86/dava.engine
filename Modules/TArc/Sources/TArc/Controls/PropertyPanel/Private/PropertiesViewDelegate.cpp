@@ -165,6 +165,11 @@ void PropertiesViewDelegate::updateEditorGeometry(QWidget* editor, const QStyleO
 
 bool PropertiesViewDelegate::editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index)
 {
+    if (index.isValid() == false || index.column() == 0)
+    {
+        return false;
+    }
+
     switch (event->type())
     {
     case QEvent::MouseButtonPress:

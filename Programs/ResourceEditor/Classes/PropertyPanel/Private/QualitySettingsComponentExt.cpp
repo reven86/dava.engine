@@ -21,7 +21,8 @@ void QualitySettingsChildCreator::ExposeChildren(const std::shared_ptr<DAVA::TAr
         {
             Reflection::Field field = parent->field;
             field.key = "group_quality";
-            children.push_back(allocator->CreatePropertyNode(parent, std::move(field), PropertyPanel::GroupQualityProperty, parent->cachedValue));
+            children.push_back(allocator->CreatePropertyNode(parent, std::move(field), static_cast<int32>(children.size()),
+                                                             PropertyPanel::GroupQualityProperty, parent->cachedValue));
         }
     }
     else

@@ -37,7 +37,8 @@ void DefaultChildCheatorExtension::ExposeChildren(const std::shared_ptr<Property
             const M::Group* groupMeta = field.ref.GetMeta<M::Group>();
             if (groupMeta == nullptr)
             {
-                children.push_back(allocator->CreatePropertyNode(node, std::move(field)));
+                children.push_back(allocator->CreatePropertyNode(node, std::move(field),
+                                                                 static_cast<int32>(children.size()), PropertyNode::RealProperty));
             }
             else
             {
@@ -45,7 +46,7 @@ void DefaultChildCheatorExtension::ExposeChildren(const std::shared_ptr<Property
                 {
                     Reflection::Field groupField = node->field;
                     groupField.key = groupMeta->groupName;
-                    children.push_back(allocator->CreatePropertyNode(node, std::move(groupField), PropertyNode::GroupProperty, groupMeta->groupName));
+                    children.push_back(allocator->CreatePropertyNode(node, std::move(groupField), static_cast<int32>(children.size()), PropertyNode::GroupProperty, groupMeta->groupName));
                     groups.insert(groupMeta->groupName);
                 }
             }
@@ -63,7 +64,8 @@ void DefaultChildCheatorExtension::ExposeChildren(const std::shared_ptr<Property
             const M::Group* groupMeta = field.ref.GetMeta<M::Group>();
             if (groupMeta != nullptr && groupMeta->groupName == groupName)
             {
-                children.push_back(allocator->CreatePropertyNode(node, std::move(field)));
+                children.push_back(allocator->CreatePropertyNode(node, std::move(field),
+                                                                 static_cast<int32>(children.size()), PropertyNode::RealProperty));
             }
         });
     }
@@ -76,8 +78,8 @@ class DefaultAllocator : public IChildAllocator
 public:
     DefaultAllocator();
     ~DefaultAllocator() override = default;
-    std::shared_ptr<PropertyNode> CreatePropertyNode(const std::shared_ptr<PropertyNode>& parent, Reflection::Field&& reflection, int32_t type = PropertyNode::RealProperty) override;
-    std::shared_ptr<PropertyNode> CreatePropertyNode(const std::shared_ptr<PropertyNode>& parent, Reflection::Field&& reflection, int32_t type, const Any& value) override;
+    std::shared_ptr<PropertyNode> CreatePropertyNode(const std::shared_ptr<PropertyNode>& parent, Reflection::Field&& reflection, int32 sortKey, int32_t type) override;
+    std::shared_ptr<PropertyNode> CreatePropertyNode(const std::shared_ptr<PropertyNode>& parent, Reflection::Field&& reflection, int32 sortKey, int32_t type, const Any& value) override;
 
 private:
     ObjectsPool<PropertyNode, SingleThreadStrategy> pool;
@@ -88,15 +90,15 @@ DefaultAllocator::DefaultAllocator()
 {
 }
 
-std::shared_ptr<PropertyNode> DefaultAllocator::CreatePropertyNode(const std::shared_ptr<PropertyNode>& parent, Reflection::Field&& field, int32_t type)
+std::shared_ptr<PropertyNode> DefaultAllocator::CreatePropertyNode(const std::shared_ptr<PropertyNode>& parent, Reflection::Field&& field, int32 sortKey, int32_t type)
 {
     if (field.ref.IsValid())
-        return CreatePropertyNode(parent, std::move(field), type, field.ref.GetValue());
+        return CreatePropertyNode(parent, std::move(field), sortKey, type, field.ref.GetValue());
 
-    return CreatePropertyNode(parent, std::move(field), type, Any());
+    return CreatePropertyNode(parent, std::move(field), sortKey, type, Any());
 }
 
-std::shared_ptr<PropertyNode> DefaultAllocator::CreatePropertyNode(const std::shared_ptr<PropertyNode>& parent, Reflection::Field&& field, int32_t type, const Any& value)
+std::shared_ptr<PropertyNode> DefaultAllocator::CreatePropertyNode(const std::shared_ptr<PropertyNode>& parent, Reflection::Field&& field, int32 sortKey, int32_t type, const Any& value)
 {
     std::shared_ptr<PropertyNode> result = pool.RequestObject();
     result->propertyType = type;
@@ -108,7 +110,7 @@ std::shared_ptr<PropertyNode> DefaultAllocator::CreatePropertyNode(const std::sh
         result->idPostfix = FastName(refType->GetPermanentName());
     }
     result->parent = parent;
-    result->sortKey = PropertyNode::InvalidSortKey;
+    result->sortKey = sortKey;
 
     return result;
 }
@@ -162,6 +164,18 @@ std::unique_ptr<BaseComponentValue> DefaultEditorComponentExtension::GetEditor(c
         {
             return iter->second();
         }
+    }
+
+    if (node->propertyType == PropertyNode::FavoritesProperty)
+    {
+        std::unique_ptr<BaseComponentValue> result(new EmptyComponentValue());
+        BaseComponentValue::Style style;
+        style.bgColor = QPalette::AlternateBase;
+        style.fontBold = true;
+        style.fontColor = QPalette::ButtonText;
+
+        result->SetStyle(style);
+        return result;
     }
 
     return EditorComponentExtension::GetEditor(node);

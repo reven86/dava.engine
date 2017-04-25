@@ -90,6 +90,8 @@ private:
     bool IsInDeveloperMode() const;
     void SetDeveloperMode(bool isDevMode);
 
+    void UpdateViewRootIndex();
+
 private:
     FieldBinder binder;
     Params params;
@@ -98,6 +100,8 @@ private:
     std::unique_ptr<ReflectedPropertyModel> model;
     QtConnections connections;
     bool isExpandUpdate = false;
+
+    eViewMode viewMode = VIEW_MODE_NORMAL;
 
     DAVA_REFLECTION(PropertiesView);
 };

@@ -69,7 +69,7 @@ void KeyedArchiveChildCreator::ExposeChildren(const std::shared_ptr<DAVA::TArc::
         for (Reflection::Field& f : fields)
         {
             f.ref = Reflection::Create(f.ref, elementsMeta.get());
-            std::shared_ptr<PropertyNode> node = allocator->CreatePropertyNode(parent, std::move(f));
+            std::shared_ptr<PropertyNode> node = allocator->CreatePropertyNode(parent, std::move(f), static_cast<int32>(children.size()), PropertyNode::RealProperty);
             children.push_back(node);
         }
 
