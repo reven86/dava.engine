@@ -21,7 +21,6 @@ namespace DAVA
 {
 namespace TArc
 {
-
 const char* expandedItemsKey = "expandedItems";
 
 class ReflectedPropertyModel::InsertGuard final

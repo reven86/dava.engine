@@ -108,7 +108,7 @@ protected:
         wrapper.SetListener(this);
     }
 
-    bool event(QEvent* e)
+    bool event(QEvent* e) override
     {
         switch (e->type())
         {

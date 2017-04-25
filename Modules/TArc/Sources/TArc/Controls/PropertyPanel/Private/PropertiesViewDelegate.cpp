@@ -195,7 +195,8 @@ bool PropertiesViewDelegate::editorEvent(QEvent* event, QAbstractItemModel* mode
         newEvent->setTimestamp(ev->timestamp());
         PlatformApi::Qt::GetApplication()->postEvent(target, newEvent);
     }
-    break;
+    default:
+        break;
     }
     return false;
 }
