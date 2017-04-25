@@ -123,8 +123,8 @@ DAVA_TARC_TESTCLASS(PropertiesViewTests)
     {
         using namespace DAVA;
         ReflectionPathTree tree(FastName("Root"));
-        tree.AddLeaf(List<FastName>{ FastName("child1"), FastName("value") });
-        tree.AddLeaf(List<FastName>{ FastName("child2") });
+        tree.AddLeaf(List<FastName>{ FastName("SelfRoot"), FastName("child1"), FastName("value") });
+        tree.AddLeaf(List<FastName>{ FastName("SelfRoot"), FastName("child2") });
 
         const EngineContext* ctx = GetEngineContext();
 
@@ -152,15 +152,15 @@ DAVA_TARC_TESTCLASS(PropertiesViewTests)
             TEST_VERIFY(view != nullptr);
 
             QAbstractItemModel* model = view->model();
-            TEST_VERIFY(model->columnCount(QModelIndex()) == 2);
-            TEST_VERIFY(model->rowCount(QModelIndex()) == 5);
+            TEST_VERIFY(model->columnCount(view->rootIndex()) == 2);
+            TEST_VERIFY(model->rowCount(view->rootIndex()) == 5);
 
-            QModelIndex child1Index = model->index(3, 0, QModelIndex());
+            QModelIndex child1Index = model->index(3, 0, view->rootIndex());
             TEST_VERIFY(view->isExpanded(child1Index) == true);
             QModelIndex child1ValueIndex = model->index(0, 0, child1Index);
             TEST_VERIFY(view->isExpanded(child1ValueIndex) == true);
 
-            QModelIndex child2Index = model->index(4, 0, QModelIndex());
+            QModelIndex child2Index = model->index(4, 0, view->rootIndex());
             TEST_VERIFY(view->isExpanded(child2Index) == true);
             QModelIndex child2ValueIndex = model->index(0, 0, child2Index);
             TEST_VERIFY(view->isExpanded(child2ValueIndex) == false);
@@ -191,15 +191,15 @@ DAVA_TARC_TESTCLASS(PropertiesViewTests)
             TEST_VERIFY(view != nullptr);
 
             QAbstractItemModel* model = view->model();
-            TEST_VERIFY(model->columnCount(QModelIndex()) == 2);
-            TEST_VERIFY(model->rowCount(QModelIndex()) == 5);
+            TEST_VERIFY(model->columnCount(view->rootIndex()) == 2);
+            TEST_VERIFY(model->rowCount(view->rootIndex()) == 5);
 
-            QModelIndex child2Index = model->index(4, 0, QModelIndex());
+            QModelIndex child2Index = model->index(4, 0, view->rootIndex());
             TEST_VERIFY(view->isExpanded(child2Index) == true);
             QModelIndex child2ValueIndex = model->index(0, 0, child2Index);
             TEST_VERIFY(view->isExpanded(child2ValueIndex) == false);
 
-            QModelIndex child1Index = model->index(3, 0, QModelIndex());
+            QModelIndex child1Index = model->index(3, 0, view->rootIndex());
             TEST_VERIFY(view->isExpanded(child1Index) == false);
             QModelIndex child1ValueIndex = model->index(0, 0, child1Index);
             TEST_VERIFY(view->isExpanded(child1ValueIndex) == false);
