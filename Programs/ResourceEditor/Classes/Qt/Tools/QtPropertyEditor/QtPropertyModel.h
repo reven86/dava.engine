@@ -52,7 +52,7 @@ signals:
 protected:
     enum
     {
-        DataRefreshRequired = DAVA::TArc::EventsTable::End
+        DataRefreshRequired = static_cast<DAVA::int32>(DAVA::TArc::EventsTable::End)
     };
 
     friend class QtPropertyData;

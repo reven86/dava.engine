@@ -1,5 +1,7 @@
 #pragma once
 
+#include "TArc/DataProcessing/PropertiesHolder.h"
+
 #include <Reflection/Reflection.h>
 #include <Functional/Signal.h>
 #include <Base/FastName.h>

@@ -1,4 +1,7 @@
 #include "TArc/Controls/PropertyPanel/Private/FavoritesController.h"
+#include "TArc/Controls/PropertyPanel/PropertyModelExtensions.h"
+
+#include <Reflection/ReflectionRegistrator.h>
 
 #include <Debug/DVAssert.h>
 #include <Base/BaseTypes.h>

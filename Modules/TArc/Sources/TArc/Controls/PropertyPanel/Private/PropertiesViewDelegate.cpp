@@ -10,6 +10,7 @@
 #include <QApplication>
 #include <QtEvents>
 #include <QtGlobal>
+#include <QPainter>
 
 namespace DAVA
 {
