@@ -81,7 +81,7 @@ DAVA_TARC_TESTCLASS(FilesTest)
         DocumentData* documentData = activeContext->GetData<DocumentData>();
         PackageNode* package = documentData->GetPackageNode();
 
-        FilePath newPath = projectPath + "/DataSource/savedTestEquality.yaml";
+        FilePath newPath = projectPath + "/DataSource/UI/savedTestEquality.yaml";
 
         YamlPackageSerializer serializer;
         serializer.SerializePackage(package);

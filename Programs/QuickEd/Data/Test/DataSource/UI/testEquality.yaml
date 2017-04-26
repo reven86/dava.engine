@@ -90,7 +90,7 @@ Controls:
                     multiline: "MULTILINE_ENABLED"
                     fitting: ["REDUCE"]
                     text: "SETTINGS_BUTTON_LANGUAGE"
-                    font: "WarHeliosCondC_Bold_19"
+                    font: ""
             -   class: "UIControl"
                 name: "Volume"
                 position: [5.000000, 198.000000]
@@ -120,7 +120,7 @@ Controls:
                     multiline: "MULTILINE_ENABLED"
                     fitting: ["REDUCE"]
                     text: "SETTINGS_GROUP_CAPTION_VOLUME"
-                    font: "WarHeliosCondC_Bold_19"
+                    font: ""
                     components:
                         Anchor:
                             leftAnchorEnabled: true
@@ -158,7 +158,7 @@ Controls:
                     multiline: "MULTILINE_ENABLED"
                     fitting: ["REDUCE"]
                     text: "SETTINGS_GROUP_CAPTION_MINIMAP"
-                    font: "WarHeliosCondC_Bold_19"
+                    font: ""
                     components:
                         Anchor:
                             leftAnchorEnabled: true
@@ -183,7 +183,7 @@ Controls:
                     size: [276.000000, 50.000000]
                     classes: "button"
                     text: "enterMessageHint"
-                    font: "WarHeliosCondC_21_tf"
+                    font: ""
                     textcolor: [1.000000, 1.000000, 1.000000, 1.000000]
                     selectioncolor: [0.000000, 0.666667, 1.000000, 0.392157]
                     components:
