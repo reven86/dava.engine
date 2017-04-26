@@ -12,7 +12,7 @@ class UIControl;
      can be changed by layout system in previous invocation. This is usefull for QuickEd which uses this component for saving
      position and size entered by user.
      */
-class UILayoutSourceRectComponent : public UIBaseComponent<UIComponent::LAYOUT_SOURCE_RECT_COMPONENT>
+class UILayoutSourceRectComponent : public UIBaseComponent<UILayoutSourceRectComponent>
 {
 public:
     UILayoutSourceRectComponent();

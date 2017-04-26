@@ -12,7 +12,7 @@ class UIControl;
  common traversal algorithm. It's usefull in cases when some ui-controls 
  hierarchy works in editor context with their own ui-controls hierarchy.
  */
-class UILayoutIsolationComponent : public UIBaseComponent<UIComponent::LAYOUT_ISOLATION_COMPONENT>
+class UILayoutIsolationComponent : public UIBaseComponent<UILayoutIsolationComponent>
 {
 public:
     UILayoutIsolationComponent();
