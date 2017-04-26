@@ -14,7 +14,7 @@ const uint32 OCCLUSION_RENDER_TARGET_SIZE = 1024;
 StaticOcclusionRenderPass::StaticOcclusionRenderPass(const FastName& name)
     : RenderPass(name)
 {
-    meshBatchesWithDepthWriteOption.reserve(1024);
+    meshRenderBatches.reserve(1024);
     terrainBatches.reserve(256);
 
     uint32 sortingFlags = RenderBatchArray::SORT_THIS_FRAME | RenderBatchArray::SORT_BY_DISTANCE_FRONT_TO_BACK;
@@ -53,24 +53,16 @@ StaticOcclusionRenderPass::StaticOcclusionRenderPass(const FastName& name)
     passConfig.viewport.height = OCCLUSION_RENDER_TARGET_SIZE;
     passConfig.priority = PRIORITY_SERVICE_3D;
 
-    /*
-	 * Create depth states
-	 */
     rhi::DepthStencilState::Descriptor ds;
-
     ds.depthWriteEnabled = 0;
-    depthWriteStateState[0] = rhi::AcquireDepthStencilState(ds);
-
-    ds.depthWriteEnabled = 1;
-    depthWriteStateState[1] = rhi::AcquireDepthStencilState(ds);
+    stateDisabledDepthWrite = rhi::AcquireDepthStencilState(ds);
 }
 
 StaticOcclusionRenderPass::~StaticOcclusionRenderPass()
 {
     rhi::DeleteTexture(colorBuffer);
     rhi::DeleteTexture(depthBuffer);
-    rhi::ReleaseDepthStencilState(depthWriteStateState[0]);
-    rhi::ReleaseDepthStencilState(depthWriteStateState[1]);
+    rhi::ReleaseDepthStencilState(stateDisabledDepthWrite);
 }
 
 #if (SAVE_OCCLUSION_IMAGES)
@@ -95,43 +87,46 @@ void OnOcclusionRenderPassCompleted(rhi::HSyncObject syncObj)
 }
 #endif
 
-bool StaticOcclusionRenderPass::ShouldEnableDepthWriteForRenderObject(RenderObject* ro)
+bool StaticOcclusionRenderPass::ShouldDisableDepthWrite(RenderBatch* batch)
 {
-    auto it = switchRenderObjects.find(ro);
-    if (it != switchRenderObjects.end())
+    if (batchesWithoutDepth.count(batch) > 0)
     {
-        return it->second;
+        return true;
     }
 
-    auto count = ro->GetRenderBatchCount();
+    if (batchesWithDepth.count(batch) > 0)
+    {
+        return false;
+    }
+
+    RenderObject* ro = batch->GetRenderObject();
+    uint32 count = ro->GetRenderBatchCount();
     for (uint32 i = 0; i < count; ++i)
     {
         int32 switchIndex = -1;
         int32 lodIndex = -1;
-        ro->GetRenderBatch(i, lodIndex, switchIndex);
+        RenderBatch* rb = ro->GetRenderBatch(i, lodIndex, switchIndex);
         if (switchIndex > 0)
-        {
-            switchRenderObjects.insert({ ro, false });
-            return false;
-        }
+            batchesWithoutDepth.insert(rb);
+        else
+            batchesWithDepth.insert(rb);
     }
 
-    switchRenderObjects.insert({ ro, true });
-    return true;
+    return ShouldDisableDepthWrite(batch);
 }
 
 void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem* renderSystem, Camera* occlusionCamera,
                                                    StaticOcclusionFrameResult& target, const StaticOcclusionData& data,
                                                    uint32 blockIndex)
 {
-    meshBatchesWithDepthWriteOption.clear();
     terrainBatches.clear();
+    meshRenderBatches.clear();
 
     ShaderDescriptorCache::ClearDynamicBindigs();
     SetupCameraParams(occlusionCamera, occlusionCamera);
     PrepareVisibilityArrays(occlusionCamera, renderSystem);
 
-    std::unordered_set<uint32> invisibleObjects;
+    UnorderedSet<uint32> invisibleObjects;
     Vector3 cameraPosition = occlusionCamera->GetPosition();
 
     for (RenderLayer* layer : renderLayers)
@@ -151,9 +146,11 @@ void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem* renderSystem, C
             }
             else if (objectType != RenderObject::TYPE_PARTICLE_EMITTER)
             {
-                bool shouldEnableDepthWrite = ShouldEnableDepthWriteForRenderObject(renderObject);
-                auto option = shouldEnableDepthWrite ? Option_DepthWriteEnabled : Option_DepthWriteDisabled;
-                meshBatchesWithDepthWriteOption.emplace_back(batch, option);
+                uint32 batchOptions = 0;
+                if (ShouldDisableDepthWrite(batch))
+                    batchOptions |= RenderBatchOption::OPTION_DISABLE_DEPTH;
+
+                meshRenderBatches.emplace_back(batch, batchOptions);
 
                 Vector3 position = renderObject->GetWorldBoundingBox().GetCenter();
                 batch->layerSortingKey = static_cast<uint32>((position - cameraPosition).SquareLength() * 100.0f);
@@ -172,12 +169,12 @@ void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem* renderSystem, C
     if (invisibleObjects.empty())
         return;
 
-    std::sort(meshBatchesWithDepthWriteOption.begin(), meshBatchesWithDepthWriteOption.end(),
-              [](const RenderBatchWithDepthOption& a, const RenderBatchWithDepthOption& b) { return a.first->layerSortingKey < b.first->layerSortingKey; });
+    std::sort(meshRenderBatches.begin(), meshRenderBatches.end(),
+              [](const BatchWithOptions& a, const BatchWithOptions& b) { return a.first->layerSortingKey < b.first->layerSortingKey; });
 
     target.blockIndex = blockIndex;
-    target.queryBuffer = rhi::CreateQueryBuffer(static_cast<uint32>(meshBatchesWithDepthWriteOption.size()));
-    target.frameRequests.resize(meshBatchesWithDepthWriteOption.size(), nullptr);
+    target.queryBuffer = rhi::CreateQueryBuffer(static_cast<uint32>(meshRenderBatches.size()));
+    target.frameRequests.resize(meshRenderBatches.size(), nullptr);
 
     passConfig.queryBuffer = target.queryBuffer;
     renderPass = rhi::AllocateRenderPass(passConfig, 1, &packetList);
@@ -199,7 +196,7 @@ void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem* renderSystem, C
     }
 
     uint16 k = 0;
-    for (const auto& batch : meshBatchesWithDepthWriteOption)
+    for (const auto& batch : meshRenderBatches)
     {
         RenderObject* renderObject = batch.first->GetRenderObject();
         renderObject->BindDynamicParameters(occlusionCamera);
@@ -214,7 +211,10 @@ void StaticOcclusionRenderPass::DrawOcclusionFrame(RenderSystem* renderSystem, C
             target.frameRequests[packet.queryIndex] = renderObject;
         }
         packet.cullMode = rhi::CULL_NONE;
-        packet.depthStencilState = depthWriteStateState[batch.second];
+
+        if ((batch.second & OPTION_DISABLE_DEPTH) == OPTION_DISABLE_DEPTH)
+            packet.depthStencilState = stateDisabledDepthWrite;
+
         rhi::AddPacket(packetList, packet);
         ++k;
     }
