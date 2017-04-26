@@ -9,7 +9,10 @@ namespace DAVA
 class DLCDownloader
 {
 public:
-    virtual ~DLCDownloader() = default;
+    virtual ~DLCDownloader();
+
+    static DLCDownloader* Create();
+    static void Destroy(DLCDownloader* downloader);
 
     struct Hints
     {

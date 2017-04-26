@@ -7,13 +7,22 @@
 
 namespace DAVA
 {
+struct Buffer
+{
+    void* ptr = nullptr;
+    size_t size = 0;
+};
+
 struct IDownloaderSubTask
 {
+    int downloadOrderIndex = 0;
+
     virtual ~IDownloaderSubTask();
     virtual void OnDone(CURLMsg* msg) = 0;
     virtual DLCDownloader::Task* GetTask() = 0;
     virtual CURL* GetEasyHandle() = 0;
     virtual DLCDownloader::IWriter* GetIWriter() = 0;
+    virtual Buffer GetBuffer() = 0;
 };
 
 struct ICurlEasyStorage
@@ -35,14 +44,16 @@ struct DLCDownloader::Task
     TaskStatus status;
     List<IDownloaderSubTask*> subTasksWorking;
     List<IDownloaderSubTask*> subTasksReadyToWrite; // sorted list by subTaskIndex
-    size_t lastWritenSubTaskIndex = 0;
+    int lastCreateSubTaskIndex = -1;
+    int lastWritenSubTaskIndex = -1;
     std::unique_ptr<IWriter> defaultWriter;
     ICurlEasyStorage* curlStorage = nullptr;
 
     int64 restOffset = -1;
     int64 restSize = -1;
 
-    Task(const String& srcUrl,
+    Task(ICurlEasyStorage* storage,
+         const String& srcUrl,
          const String& dstPath,
          TaskType taskType,
          IWriter* dstWriter,
@@ -53,6 +64,9 @@ struct DLCDownloader::Task
 
     void PrepareForDownloading();
     bool IsDone() const;
+    bool NeedHandle() const;
+    void OnSubTaskDone();
+    void GenerateChankSubRequests(const int chankSize);
     void SetupFullDownload();
     void SetupResumeDownload();
     void SetupGetSizeDownload();
@@ -94,6 +108,7 @@ private:
     void SignalOnFinishedWaitingTasks();
     void AddNewTasks();
     void ProcessMessagesFromMulti();
+    void BalancingHandles();
 
     // [start] implement ICurlEasyStorage interface
     CURL* CurlCreateHandle() override;
@@ -109,7 +124,7 @@ private:
     void DownloadThreadFunc();
     void DeleteTask(Task* task);
     void RemoveDeletedTasks();
-    Task* AddMoreNewTasks();
+    Task* AddOneMoreTask();
     int CurlPerform();
 
     struct WaitingDescTask
@@ -126,11 +141,12 @@ private:
     Mutex mutexRemovedList;
 
     // [start] next variables used only from Download thread
+    List<Task*> tasks;
     UnorderedMap<CURL*, IDownloaderSubTask*> taskMap;
     List<CURL*> reusableHandles;
     CURLM* multiHandle = nullptr;
     Thread* downloadThread = nullptr;
-    int numOfRunningTasks = 0;
+    int numOfRunningSubTasks = 0;
     // [end] variables
 
     Semaphore downloadSem; // to resume download thread
