@@ -86,7 +86,7 @@ void UILayoutSystem::ProcessControl(UIControl* control)
     bool positionDirty = control->IsLayoutPositionDirty();
     control->ResetLayoutDirty();
 
-    if (dirty || (orderDirty && HaveToLayoutAfterReorder(control)))
+    if (dirty || (orderDirty && HaveToLayoutAfterReorder(control)) || (positionDirty && control->GetComponent(UIComponent::LAYOUT_SOURCE_RECT_COMPONENT)))
     {
         UIControl* container = FindNotDependentOnChildrenControl(control);
         sharedLayouter->ApplyLayout(container);
@@ -130,7 +130,8 @@ UIControl* UILayoutSystem::FindNotDependentOnChildrenControl(UIControl* control)
     while (result->GetParent() != nullptr && result->GetComponentCount(UIComponent::LAYOUT_ISOLATION_COMPONENT) == 0)
     {
         UISizePolicyComponent* sizePolicy = result->GetParent()->GetComponent<UISizePolicyComponent>();
-        if (sizePolicy != nullptr && (sizePolicy->IsDependsOnChildren(Vector2::AXIS_X) || sizePolicy->IsDependsOnChildren(Vector2::AXIS_Y)))
+        if ((sizePolicy != nullptr && (sizePolicy->IsDependsOnChildren(Vector2::AXIS_X) || sizePolicy->IsDependsOnChildren(Vector2::AXIS_Y))) ||
+            result->GetComponent(UIComponent::LAYOUT_SOURCE_RECT_COMPONENT) != nullptr)
         {
             result = result->GetParent();
         }
