@@ -6,11 +6,13 @@
 
 #include "PropertyVisitor.h"
 #include "SubValueProperty.h"
-
-#include "UI/Styles/UIStyleSheetPropertyDataBase.h"
 #include <Base/BaseMath.h>
+#include <UI/Layouts/UILayoutSourceRectComponent.h>
+#include <UI/Styles/UIStyleSheetPropertyDataBase.h>
 #include <UI/UIControl.h>
-#include <Reflection/ReflectedMeta.h>
+#include <UI/UIScrollViewContainer.h>
+#include <UI/UISlider.h>
+#include <UI/UISwitch.h>
 
 using namespace DAVA;
 
@@ -52,12 +54,51 @@ IntrospectionProperty::IntrospectionProperty(DAVA::BaseObject* anObject, const D
         SetDefaultValue(reflection.GetValue());
     }
 
-    if (sourceProperty != nullptr)
-        sourceValue = sourceProperty->sourceValue;
-    else
-        sourceValue = reflection.GetValue();
-
     GenerateBuiltInSubProperties();
+
+    if (name == INTROSPECTION_PROPERTY_NAME_SIZE || name == INTROSPECTION_PROPERTY_NAME_POSITION)
+    {
+        UIControl* control = DynamicTypeCheck<UIControl*>(anObject);
+        bool shouldAddSourceRectComponent = true;
+
+        if (dynamic_cast<UIScrollViewContainer*>(control) != nullptr)
+        {
+            shouldAddSourceRectComponent = false;
+        }
+        else
+        {
+            if (control->GetName() == UISlider::THUMB_SPRITE_CONTROL_NAME ||
+                control->GetName() == UISlider::MIN_SPRITE_CONTROL_NAME ||
+                control->GetName() == UISlider::MAX_SPRITE_CONTROL_NAME ||
+                control->GetName() == UISwitch::BUTTON_LEFT_NAME ||
+                control->GetName() == UISwitch::BUTTON_RIGHT_NAME ||
+                control->GetName() == UISwitch::BUTTON_TOGGLE_NAME)
+            {
+                shouldAddSourceRectComponent = false;
+            }
+        }
+
+        if (shouldAddSourceRectComponent)
+        {
+            sourceRectComponent = control->GetOrCreateComponent<UILayoutSourceRectComponent>();
+
+            if (sourceProperty != nullptr && sourceProperty->sourceRectComponent)
+            {
+                if (name == INTROSPECTION_PROPERTY_NAME_SIZE)
+                {
+                    sourceRectComponent->SetSize(sourceProperty->sourceRectComponent->GetSize());
+                }
+                else
+                {
+                    sourceRectComponent->SetPosition(sourceProperty->sourceRectComponent->GetPosition());
+                }
+            }
+            else
+            {
+                SetLayoutSourceRectValue(reflection.GetValue());
+            }
+        }
+    }
 }
 
 IntrospectionProperty::~IntrospectionProperty()
@@ -81,25 +122,8 @@ IntrospectionProperty* IntrospectionProperty::Create(UIControl* control, const S
     }
     else
     {
-        IntrospectionProperty* result = new IntrospectionProperty(control, Type::Instance<void>(), name, ref, sourceProperty, cloneType);
-        if (name == INTROSPECTION_PROPERTY_NAME_SIZE || name == INTROSPECTION_PROPERTY_NAME_POSITION)
-        {
-            result->flags |= EF_DEPENDS_ON_LAYOUTS;
-        }
-        if (name == INTROSPECTION_PROPERTY_NAME_CLASSES)
-        {
-            result->flags |= EF_AFFECTS_STYLES;
-        }
-        return result;
+        return new IntrospectionProperty(control, Type::Instance<void>(), name, ref, sourceProperty, cloneType);
     }
-}
-
-void IntrospectionProperty::Refresh(DAVA::int32 refreshFlags)
-{
-    ValueProperty::Refresh(refreshFlags);
-
-    if ((refreshFlags & REFRESH_DEPENDED_ON_LAYOUT_PROPERTIES) != 0 && (GetFlags() & EF_DEPENDS_ON_LAYOUTS) != 0)
-        ApplyValue(sourceValue);
 }
 
 void IntrospectionProperty::Accept(PropertyVisitor* visitor)
@@ -161,6 +185,29 @@ void IntrospectionProperty::DisableResetFeature()
 
 void IntrospectionProperty::ApplyValue(const DAVA::Any& value)
 {
-    sourceValue = value;
     reflection.SetValueWithCast(value);
+
+    if (sourceRectComponent.Valid())
+    {
+        SetLayoutSourceRectValue(value);
+    }
+}
+
+void IntrospectionProperty::SetLayoutSourceRectValue(const DAVA::Any& value)
+{
+    DVASSERT(sourceRectComponent.Valid());
+    if (GetName() == INTROSPECTION_PROPERTY_NAME_SIZE)
+    {
+        sourceRectComponent->SetSize(value.Get<Vector2>());
+    }
+    else if (GetName() == INTROSPECTION_PROPERTY_NAME_POSITION)
+    {
+        UIControl* control = DynamicTypeCheck<UIControl*>(object);
+        Vector2 p = value.Get<Vector2>();
+        sourceRectComponent->SetPosition(p);
+    }
+    else
+    {
+        DVASSERT(false);
+    }
 }

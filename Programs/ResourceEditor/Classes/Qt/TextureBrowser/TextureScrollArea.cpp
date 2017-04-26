@@ -110,8 +110,29 @@ TextureScrollArea::TextureScrollArea(QWidget* parent /* = 0 */)
     warningShow(false);
 }
 
+namespace TextureScrollAreaDetail
+{
+template <class TYPE>
+void SafeDeleteObject(TYPE*& obj)
+{
+    if (obj != nullptr && obj->parent() != nullptr)
+    {
+        DAVA::SafeDelete(obj);
+    }
+}
+}
+
 TextureScrollArea::~TextureScrollArea()
 {
+    TextureScrollAreaDetail::SafeDeleteObject(waitBar);
+
+    TextureScrollAreaDetail::SafeDeleteObject(warningProxy);
+    TextureScrollAreaDetail::SafeDeleteObject(warningLabel);
+
+    TextureScrollAreaDetail::SafeDeleteObject(noImageProxy);
+    TextureScrollAreaDetail::SafeDeleteObject(noImageLabel);
+
+    TextureScrollAreaDetail::SafeDeleteObject(textureScene);
 }
 
 void TextureScrollArea::setImage(const QImage& image)

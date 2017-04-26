@@ -29,17 +29,30 @@ struct FSMTest02
     State state = WaitInitializationFinished;
     DAVA::float32 time = 0.0f;
     DAVA::float32 waitSecondConnect = 3.0f;
-    const DAVA::float32 timeout = 40.f;
+    const DAVA::float32 timeout = 60.f;
     DAVA::DLCManager::Progress progressAfterInit;
 
     void Cleanup(DAVA::DLCManager& dlcManager)
     {
         using namespace DAVA;
+        dlcManager.requestUpdated.Disconnect(this);
         Logger::Info("%s Deinitialize()", __FUNCTION__);
         dlcManager.Deinitialize();
         Logger::Info("%s StopEmbeddedWebServer()", __FUNCTION__);
         StopEmbeddedWebServer();
         Logger::Info("%s done", __FUNCTION__);
+    }
+
+    void OnRequestUpdateCheckOrder(const DAVA::DLCManager::IRequest& r)
+    {
+        static int nextDownloadedPackIndexShouldBe = 0;
+        // order of downloaded pack should be "0, 1, 2, 3"
+        if (r.IsDownloaded())
+        {
+            int packIndex = stoi(r.GetRequestedPackName());
+            DVASSERT(packIndex == nextDownloadedPackIndexShouldBe);
+            nextDownloadedPackIndexShouldBe += 1;
+        }
     }
 
     bool Update(DAVA::float32 dt)
@@ -57,6 +70,15 @@ struct FSMTest02
                 state = WaitSecondConnectAttempt;
                 DAVA::StopEmbeddedWebServer();
                 progressAfterInit = dlcManager.GetProgress();
+                const DAVA::DLCManager::IRequest* r3 = dlcManager.RequestPack("3");
+                const DAVA::DLCManager::IRequest* r2 = dlcManager.RequestPack("2");
+                const DAVA::DLCManager::IRequest* r1 = dlcManager.RequestPack("1");
+                const DAVA::DLCManager::IRequest* r0 = dlcManager.RequestPack("0");
+                TEST_VERIFY(r3 != nullptr);
+                TEST_VERIFY(r2 != nullptr);
+                TEST_VERIFY(r1 != nullptr);
+                TEST_VERIFY(r0 != nullptr);
+                dlcManager.requestUpdated.Connect(this, &FSMTest02::OnRequestUpdateCheckOrder);
                 return false;
             }
         }

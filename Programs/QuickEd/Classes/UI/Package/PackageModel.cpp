@@ -71,7 +71,8 @@ void SetAbsoulutePosToControlNode(PackageNode* package, ControlNode* node, Contr
     RootProperty* rootProperty = node->GetRootProperty();
     AbstractProperty* positionProperty = rootProperty->FindPropertyByName("position");
     DVASSERT(nullptr != positionProperty);
-    package->SetControlProperty(node, positionProperty, relativePos);
+    Vector2 clampedRelativePos(std::floor(relativePos.x), std::floor(relativePos.y));
+    package->SetControlProperty(node, positionProperty, clampedRelativePos);
 }
 } //PackageModel_local
 

@@ -86,7 +86,7 @@ void UILayoutSystem::ProcessControl(UIControl* control)
     bool positionDirty = control->IsLayoutPositionDirty();
     control->ResetLayoutDirty();
 
-    if (dirty || (orderDirty && HaveToLayoutAfterReorder(control)))
+    if (dirty || (orderDirty && HaveToLayoutAfterReorder(control)) || (positionDirty && control->GetComponent(UIComponent::LAYOUT_SOURCE_RECT_COMPONENT)))
     {
         UIControl* container = FindNotDependentOnChildrenControl(control);
         ApplyLayout(container);
@@ -155,10 +155,11 @@ void UILayoutSystem::Update(UIControl* root)
 UIControl* UILayoutSystem::FindNotDependentOnChildrenControl(UIControl* control) const
 {
     UIControl* result = control;
-    while (result->GetParent() != nullptr)
+    while (result->GetParent() != nullptr && result->GetComponentCount(UIComponent::LAYOUT_ISOLATION_COMPONENT) == 0)
     {
         UISizePolicyComponent* sizePolicy = result->GetParent()->GetComponent<UISizePolicyComponent>();
-        if (sizePolicy != nullptr && (sizePolicy->IsDependsOnChildren(Vector2::AXIS_X) || sizePolicy->IsDependsOnChildren(Vector2::AXIS_Y)))
+        if ((sizePolicy != nullptr && (sizePolicy->IsDependsOnChildren(Vector2::AXIS_X) || sizePolicy->IsDependsOnChildren(Vector2::AXIS_Y))) ||
+            result->GetComponent(UIComponent::LAYOUT_SOURCE_RECT_COMPONENT) != nullptr)
         {
             result = result->GetParent();
         }
@@ -168,7 +169,7 @@ UIControl* UILayoutSystem::FindNotDependentOnChildrenControl(UIControl* control)
         }
     }
 
-    if (result->GetParent())
+    if (result->GetParent() != nullptr && result->GetComponentCount(UIComponent::LAYOUT_ISOLATION_COMPONENT) == 0)
     {
         result = result->GetParent();
     }
@@ -225,20 +226,29 @@ void UILayoutSystem::CollectControlChildren(UIControl* control, int32 parentInde
     int32 index = static_cast<int32>(layoutData.size());
     const List<UIControl*>& children = control->GetChildren();
 
-    layoutData[parentIndex].SetFirstChildIndex(index);
-    layoutData[parentIndex].SetLastChildIndex(index + static_cast<int32>(children.size() - 1));
+    int32 childrenCount = 0;
 
     for (UIControl* child : children)
     {
-        layoutData.emplace_back(ControlLayoutData(child));
+        if (child->GetComponentCount(UIComponent::LAYOUT_ISOLATION_COMPONENT) == 0)
+        {
+            layoutData.emplace_back(ControlLayoutData(child));
+            childrenCount++;
+        }
     }
+
+    layoutData[parentIndex].SetFirstChildIndex(index);
+    layoutData[parentIndex].SetLastChildIndex(index + childrenCount - 1);
 
     if (recursive)
     {
         for (UIControl* child : children)
         {
-            CollectControlChildren(child, index, recursive);
-            index++;
+            if (child->GetComponentCount(UIComponent::LAYOUT_ISOLATION_COMPONENT) == 0)
+            {
+                CollectControlChildren(child, index, recursive);
+                index++;
+            }
         }
     }
 }

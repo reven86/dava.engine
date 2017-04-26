@@ -710,26 +710,19 @@ macro( setup_main_module )
 #####
             set( CREATE_NEW_MODULE true )
 
-            if( ${MODULE_TYPE} STREQUAL "STATIC" )
-                
-                get_property( MODULE_CACHE_LIST GLOBAL PROPERTY MODULE_CACHE_LIST )
-
-                list (FIND MODULE_CACHE_LIST ${MODULE_CACHE} _index)
-
-                if ( ${_index} GREATER -1 )
-                    set( CREATE_NEW_MODULE )
-
-                    list(GET MODULE_CACHE_LIST ${_index}  MODULE_CACHE )
-                    get_property( MODULE_CACHE_LOADED_NAME GLOBAL PROPERTY ${MODULE_CACHE} )
-                    set_property( GLOBAL PROPERTY CACHE_LOG_${NAME_MODULE}_MODULE_UNIQUE  false )
-
-                    append_property( CACHE_LOG_${MODULE_CACHE_LOADED_NAME}_MODULE_USES_LIST ${NAME_MODULE} )  
-
-                    set( NAME_MODULE ${MODULE_CACHE_LOADED_NAME} )
-
-                endif()
-
-            endif()
+            # Temporarily disabled due to problems with stub / iml implementation of the module 
+            #if( ${MODULE_TYPE} STREQUAL "STATIC" )
+            #    get_property( MODULE_CACHE_LIST GLOBAL PROPERTY MODULE_CACHE_LIST )
+            #    list (FIND MODULE_CACHE_LIST ${MODULE_CACHE} _index)
+            #    if ( ${_index} GREATER -1 )
+            #        set( CREATE_NEW_MODULE )
+            #        list(GET MODULE_CACHE_LIST ${_index}  MODULE_CACHE )
+            #        get_property( MODULE_CACHE_LOADED_NAME GLOBAL PROPERTY ${MODULE_CACHE} )
+            #        set_property( GLOBAL PROPERTY CACHE_LOG_${NAME_MODULE}_MODULE_UNIQUE  false )
+            #        append_property( CACHE_LOG_${MODULE_CACHE_LOADED_NAME}_MODULE_USES_LIST ${NAME_MODULE} )  
+            #        set( NAME_MODULE ${MODULE_CACHE_LOADED_NAME} )
+            #    endif()
+            #endif()
 
 ######
 

@@ -6,10 +6,19 @@
 #include <Base/Introspection.h>
 #include <Math/Vector.h>
 
+namespace DAVA
+{
+class Any;
+namespace TArc
+{
+class FieldBinder;
+}
+}
+
 class HUDSystem : public DAVA::InspBase, public BaseEditorSystem
 {
 public:
-    HUDSystem(EditorSystemsManager* parent);
+    HUDSystem(EditorSystemsManager* parent, DAVA::TArc::ContextAccessor* accessor);
     ~HUDSystem() override;
 
 private:
@@ -20,13 +29,14 @@ private:
     };
     struct HUD;
 
+    void InitFieldBinder();
     bool CanProcessInput(DAVA::UIEvent* currentInput) const override;
     void ProcessInput(DAVA::UIEvent* currentInput) override;
     EditorSystemsManager::eDragState RequireNewState(DAVA::UIEvent* currentInput) override;
     void OnDragStateChanged(EditorSystemsManager::eDragState currentState, EditorSystemsManager::eDragState previousState) override;
     void OnDisplayStateChanged(EditorSystemsManager::eDisplayState currentState, EditorSystemsManager::eDisplayState previousState) override;
 
-    void OnSelectionChanged(const SelectedNodes& selection);
+    void OnSelectionChanged(const DAVA::Any& selection);
     void OnHighlightNode(const ControlNode* node);
 
     void OnMagnetLinesChanged(const DAVA::Vector<MagnetLineInfo>& magnetLines);
@@ -37,7 +47,6 @@ private:
     void SetNewArea(const HUDAreaInfo& HUDAreaInfo);
 
     void UpdateAreasVisibility();
-    void OnPackageChanged(PackageNode* package);
 
     void SetHUDEnabled(bool enabled);
 
@@ -58,6 +67,8 @@ private:
     bool showPivot;
     bool showRotate;
     DAVA::Vector2 minimumSelectionRectSize;
+
+    std::unique_ptr<DAVA::TArc::FieldBinder> fieldBinder;
 
 public:
     INTROSPECTION(HUDSystem,

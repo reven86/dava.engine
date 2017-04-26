@@ -20,6 +20,8 @@ protected:
     virtual ~ComponentPropertiesSection();
 
 public:
+    static bool IsHiddenComponent(const DAVA::Type* type);
+
     DAVA::UIComponent* GetComponent() const;
     const DAVA::Type* GetComponentType() const;
 

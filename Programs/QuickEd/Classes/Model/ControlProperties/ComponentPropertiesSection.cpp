@@ -4,6 +4,7 @@
 #include "PropertyVisitor.h"
 
 #include <UI/UIControl.h>
+#include <UI/Layouts/UILayoutIsolationComponent.h>
 #include <Utils/StringFormat.h>
 #include <Reflection/ReflectedMeta.h>
 #include <Reflection/ReflectedTypeDB.h>
@@ -58,6 +59,13 @@ ComponentPropertiesSection::~ComponentPropertiesSection()
     prototypeSection = nullptr; // weak
 }
 
+bool ComponentPropertiesSection::IsHiddenComponent(const Type* type)
+{
+    return
+    type == Type::Instance<UILayoutIsolationComponent>() ||
+    type == Type::Instance<UILayoutSourceRectComponent>;
+}
+
 UIComponent* ComponentPropertiesSection::GetComponent() const
 {
     return component;
@@ -82,7 +90,14 @@ void ComponentPropertiesSection::AttachPrototypeSection(ComponentPropertiesSecti
             String name = field.key.Cast<String>();
             ValueProperty* value = FindChildPropertyByName(name);
             ValueProperty* prototypeValue = prototypeSection->FindChildPropertyByName(name);
-            value->AttachPrototypeProperty(prototypeValue);
+            if (value != nullptr && prototypeValue != nullptr)
+            {
+                value->AttachPrototypeProperty(prototypeValue);
+            }
+            else
+            {
+                DVASSERT(value == nullptr && prototypeValue == nullptr);
+            }
         }
     }
     else

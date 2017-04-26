@@ -1,5 +1,4 @@
-#ifndef __EDITOR_HEIGHTMAP_H__
-#define __EDITOR_HEIGHTMAP_H__
+#pragma once
 
 #include "DAVAEngine.h"
 
@@ -41,11 +40,8 @@ protected:
     void UpscaleValue(DAVA::int32 leftX, DAVA::int32 topY, DAVA::int32 muliplier);
 
 protected:
-    Heightmap* savedHeightmap;
+    Heightmap* savedHeightmap = nullptr;
 
-    DAVA::uint8* tableOfChanges;
-    DAVA::float32* scalingTable;
+    DAVA::uint8* tableOfChanges = nullptr;
+    DAVA::float32* scalingTable = nullptr;
 };
-
-
-#endif //__EDITOR_HEIGHTMAP_H__

@@ -70,12 +70,6 @@ public:
     bool IsDependsOnChildren(int32 axis) const;
 
 private:
-    int32 GetHorizontalPolicyAsInt() const;
-    void SetHorizontalPolicyFromInt(int32 policy);
-
-    int32 GetVerticalPolicyAsInt() const;
-    void SetVerticalPolicyFromInt(int32 policy);
-
     void SetLayoutDirty();
 
 private:

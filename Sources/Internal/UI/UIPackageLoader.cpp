@@ -2,6 +2,7 @@
 
 #include "Base/ObjectFactory.h"
 #include "Entity/ComponentManager.h"
+#include "Engine/Engine.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/FilePath.h"
 #include "FileSystem/YamlNode.h"
@@ -16,6 +17,7 @@
 #include "UI/Layouts/UILinearLayoutComponent.h"
 #include "Utils/Utils.h"
 #include "Logger/Logger.h"
+#include "Reflection/ReflectedTypeDB.h"
 
 namespace DAVA
 {
@@ -518,13 +520,8 @@ Vector<UIPackageLoader::ComponentNode> UIPackageLoader::ExtractComponentNodes(co
             uint32 componentIndex = atoi(fullName.substr(lastChar + 1).c_str());
 
             const ReflectedType* reflectedType = ReflectedTypeDB::GetByPermanentName(componentName);
-            if (reflectedType)
+            if (reflectedType && cm->IsUIComponent(reflectedType->GetType()))
             {
-                const Type* type = reflectedType->GetType();
-                if(cm->IsUIComponent(type))
-                {
-                    
-                }
                 ComponentNode n;
                 n.node = componentsNode->Get(i);
                 n.type = reflectedType->GetType();

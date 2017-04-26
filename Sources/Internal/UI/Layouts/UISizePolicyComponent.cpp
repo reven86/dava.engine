@@ -11,17 +11,11 @@ DAVA_VIRTUAL_REFLECTION_IMPL(UISizePolicyComponent)
     ReflectionRegistrator<UISizePolicyComponent>::Begin()
     .ConstructorByPointer()
     .DestructorByPointer([](UISizePolicyComponent* o) { o->Release(); })
-    .Field("horizontalPolicy", &UISizePolicyComponent::GetHorizontalPolicy, &UISizePolicyComponent::SetHorizontalPolicy)
-    [
-    M::EnumT<UISizePolicyComponent::eSizePolicy>()
-    ]
+    .Field("horizontalPolicy", &UISizePolicyComponent::GetHorizontalPolicy, &UISizePolicyComponent::SetHorizontalPolicy)[M::EnumT<UISizePolicyComponent::eSizePolicy>()]
     .Field("horizontalValue", &UISizePolicyComponent::GetHorizontalValue, &UISizePolicyComponent::SetHorizontalValue)
     .Field("horizontalMin", &UISizePolicyComponent::GetHorizontalMinValue, &UISizePolicyComponent::SetHorizontalMinValue)
     .Field("horizontalMax", &UISizePolicyComponent::GetHorizontalMaxValue, &UISizePolicyComponent::SetHorizontalMaxValue)
-    .Field("verticalPolicy", &UISizePolicyComponent::GetVerticalPolicy, &UISizePolicyComponent::SetVerticalPolicy)
-    [
-    M::EnumT<UISizePolicyComponent::eSizePolicy>()
-    ]
+    .Field("verticalPolicy", &UISizePolicyComponent::GetVerticalPolicy, &UISizePolicyComponent::SetVerticalPolicy)[M::EnumT<UISizePolicyComponent::eSizePolicy>()]
     .Field("verticalValue", &UISizePolicyComponent::GetVerticalValue, &UISizePolicyComponent::SetVerticalValue)
     .Field("verticalMin", &UISizePolicyComponent::GetVerticalMinValue, &UISizePolicyComponent::SetVerticalMinValue)
     .Field("verticalMax", &UISizePolicyComponent::GetVerticalMaxValue, &UISizePolicyComponent::SetVerticalMaxValue)
@@ -220,26 +214,6 @@ bool UISizePolicyComponent::IsDependsOnChildren(int32 axis) const
     DVASSERT(0 <= axis && axis < Vector2::AXIS_COUNT);
     eSizePolicy p = policy[axis].policy;
     return p == PERCENT_OF_CHILDREN_SUM || p == PERCENT_OF_MAX_CHILD || p == PERCENT_OF_FIRST_CHILD || p == PERCENT_OF_LAST_CHILD;
-}
-
-int32 UISizePolicyComponent::GetHorizontalPolicyAsInt() const
-{
-    return GetHorizontalPolicy();
-}
-
-void UISizePolicyComponent::SetHorizontalPolicyFromInt(int32 policy)
-{
-    SetHorizontalPolicy(static_cast<eSizePolicy>(policy));
-}
-
-int32 UISizePolicyComponent::GetVerticalPolicyAsInt() const
-{
-    return GetVerticalPolicy();
-}
-
-void UISizePolicyComponent::SetVerticalPolicyFromInt(int32 policy)
-{
-    SetVerticalPolicy(static_cast<eSizePolicy>(policy));
 }
 
 void UISizePolicyComponent::SetLayoutDirty()

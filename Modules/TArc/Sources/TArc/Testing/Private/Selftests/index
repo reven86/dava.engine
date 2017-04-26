@@ -12,6 +12,7 @@ FilePathEditTest.h
 IntSpinBoxTests.h
 LabelTest.h
 LineEditTest.h
+NotificationTest.h
 PlainTextEditTest.h
 PropertiesViewTests.h
 PropertiesViewTimerUpdaterTests.h

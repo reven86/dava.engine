@@ -186,10 +186,13 @@ QAction* PropertiesWidget::CreateAddComponentAction()
     auto& types = GetEngineContext()->componentManager->GetRegisteredTypes();
     for (auto& pair : types)
     {
-        const String& name = ReflectedTypeDB::GetByType(pair.first)->GetPermanentName();
-        QAction* componentAction = new QAction(name.c_str(), this); // TODO: Localize name
-        componentAction->setData(QVariant::fromValue(Any(pair.first)));
-        addComponentMenu->addAction(componentAction);
+        if (!ComponentPropertiesSection::IsHiddenComponent(pair.first))
+        {
+            const String& name = ReflectedTypeDB::GetByType(pair.first)->GetPermanentName();
+            QAction* componentAction = new QAction(name.c_str(), this); // TODO: Localize name
+            componentAction->setData(QVariant::fromValue(Any(pair.first)));
+            addComponentMenu->addAction(componentAction);
+        }
     }
     connect(addComponentMenu, &QMenu::triggered, this, &PropertiesWidget::OnAddComponent);
 

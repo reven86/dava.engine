@@ -74,12 +74,6 @@ public:
     void SetSkipInvisibleControls(bool skip);
 
 private:
-    int32 GetOrientationAsInt() const;
-    void SetOrientationFromInt(int32 orientation);
-
-    void SetLayoutDirty();
-
-private:
     enum eFlags
     {
         FLAG_ENABLED,
@@ -93,6 +87,12 @@ private:
         FLAG_IS_RIGHT_TO_LEFT,
         FLAG_COUNT
     };
+
+    int32 GetOrientationAsInt() const;
+    void SetOrientationFromInt(int32 orientation);
+
+    void SetLayoutDirty();
+    void SetFlag(eFlags flag, bool enabled);
 
     Array<float32, Vector2::AXIS_COUNT> padding;
     Array<float32, Vector2::AXIS_COUNT> spacing;

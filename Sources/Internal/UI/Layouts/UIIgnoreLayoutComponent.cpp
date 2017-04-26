@@ -2,6 +2,7 @@
 #include "Reflection/ReflectionRegistrator.h"
 
 #include "Math/Vector.h"
+#include "UI/UIControl.h"
 
 namespace DAVA
 {
@@ -32,5 +33,10 @@ bool UIIgnoreLayoutComponent::IsEnabled() const
 void UIIgnoreLayoutComponent::SetEnabled(bool enabled_)
 {
     enabled = enabled_;
+
+    if (GetControl() != nullptr)
+    {
+        GetControl()->SetLayoutDirty();
+    }
 }
 }
