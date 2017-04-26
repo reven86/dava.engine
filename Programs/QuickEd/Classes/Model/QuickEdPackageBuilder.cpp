@@ -236,7 +236,7 @@ void QuickEdPackageBuilder::EndControl(eControlPlace controlPlace)
         const ComponentPropertiesSection* section = lastControl->GetRootProperty()->FindComponentPropertiesSection(componentType, 0);
 
         if (section == nullptr && lastControl->GetControl()->GetComponentCount(componentType) > 0 &&
-            !ComponentPropertiesSection::IsHiddenComponent(static_cast<UIComponent::eType>(componentType)))
+            !ComponentPropertiesSection::IsHiddenComponent(componentType))
         {
             BeginComponentPropertiesSection(componentType, 0);
             EndComponentPropertiesSection();

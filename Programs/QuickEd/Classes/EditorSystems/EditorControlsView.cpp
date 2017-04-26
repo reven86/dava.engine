@@ -16,6 +16,7 @@
 #include <Render/2D/Systems/RenderSystem2D.h>
 #include <Base/Introspection.h>
 #include <UI/UIControl.h>
+#include <UI/Layouts/UILayoutIsolationComponent.h>
 #include <Base/BaseTypes.h>
 
 using namespace DAVA;
@@ -229,7 +230,7 @@ BackgroundController::BackgroundController(UIControl* nestedControl_)
     gridControl->AddControl(positionHolderControl.Get());
     positionHolderControl->AddControl(counterpoiseControl.Get());
     counterpoiseControl->AddControl(nestedControl);
-    nestedControl->GetOrCreateComponent(UIComponent::LAYOUT_ISOLATION_COMPONENT);
+    nestedControl->GetOrCreateComponent(Type::Instance<UILayoutIsolationComponent>());
 }
 
 UIControl* BackgroundController::GetGridControl() const

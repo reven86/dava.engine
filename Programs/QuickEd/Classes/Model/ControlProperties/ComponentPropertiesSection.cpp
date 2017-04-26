@@ -63,7 +63,7 @@ bool ComponentPropertiesSection::IsHiddenComponent(const Type* type)
 {
     return
     type == Type::Instance<UILayoutIsolationComponent>() ||
-    type == Type::Instance<UILayoutSourceRectComponent>;
+    type == Type::Instance<UILayoutSourceRectComponent>();
 }
 
 UIComponent* ComponentPropertiesSection::GetComponent() const
