@@ -362,7 +362,6 @@ void PropertiesWidget::ApplyExpanding()
 
 void PropertiesWidget::OnPackageChanged(const DAVA::Any& package)
 {
-    nodeUpdater.Abort();
     treeView->setEnabled(package.CanGet<PackageNode*>() && (package.Get<PackageNode*>() != nullptr));
 }
 

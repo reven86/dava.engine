@@ -847,17 +847,23 @@ void PackageWidget::DeselectNodeImpl(PackageBaseNode* node)
             break;
         }
     }
+    QItemSelectionModel* selectionModel = treeView->selectionModel();
     if (!currentIndexes.empty())
     {
         QModelIndex srcIndex = currentIndexes.back();
         QModelIndex dstIndex = filteredPackageModel->mapFromSource(srcIndex);
-        QItemSelectionModel* selectionModel = treeView->selectionModel();
         selectionModel->setCurrentIndex(dstIndex, QItemSelectionModel::NoUpdate);
         treeView->scrollTo(dstIndex);
     }
     else
     {
-        treeView->selectionModel()->setCurrentIndex(QModelIndex(), QItemSelectionModel::NoUpdate);
+        //make current first visible index
+        //otherwise treeView will do it itself on focus event and we will receive currentChanged after packageChanged
+        QModelIndex index = filteredPackageModel->index(0, 0);
+        if (index.isValid() && (filteredPackageModel->flags(index) & Qt::ItemIsEnabled))
+        {
+            selectionModel->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
+        }
     }
 }
 
