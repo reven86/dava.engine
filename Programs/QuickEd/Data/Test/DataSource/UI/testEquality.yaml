@@ -228,7 +228,7 @@ Controls:
             Background:
                 color: [0.000000, 0.000000, 0.000000, 1.000000]
         children:
-        -   prototype: "ToImport3/UIControl"
+        -   prototype: "ToImport3/SettingsTabControl"
             name: "graphicsTab"
             tag: 1
             children:
@@ -246,7 +246,7 @@ Controls:
                     Background:
                         sprite: "~res:/Gfx/Images/test"
                         frame: 4
-        -   prototype: "ToImport2/UIControl"
+        -   prototype: "ToImport3/SettingsTabControl"
             name: "TouchTab"
             position: [203.399994, 0.000000]
             tag: 2
@@ -263,7 +263,7 @@ Controls:
                 components:
                     Background:
                         sprite: "~res:/Gfx/Images/test"
-        -   prototype: "ToImport3/UIControl"
+        -   prototype: "ToImport3/SettingsTabControl"
             name: "markersTab"
             position: [406.799988, 0.000000]
             tag: 3
@@ -282,7 +282,7 @@ Controls:
                     Background:
                         sprite: "~res:/Gfx/Images/test"
                         frame: 1
-        -   prototype: "ToImport3/UIControl"
+        -   prototype: "ToImport3/SettingsTabControl"
             name: "generalTab"
             tag: 0
             children:
@@ -300,7 +300,7 @@ Controls:
                     Background:
                         sprite: "~res:/Gfx/Images/test"
                         frame: 0
-        -   prototype: "ToImport3/UIControl"
+        -   prototype: "ToImport3/SettingsTabControl"
             name: "devOptionsTab"
             tag: 4
             children:
