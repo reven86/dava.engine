@@ -23,20 +23,20 @@ public:
     virtual bool ProcessImportedPackage(const DAVA::String& packagePath, DAVA::AbstractUIPackageLoader* loader) override;
     virtual void ProcessStyleSheet(const DAVA::Vector<DAVA::UIStyleSheetSelectorChain>& selectorChains, const DAVA::Vector<DAVA::UIStyleSheetProperty>& properties) override;
 
-    virtual DAVA::UIControl* BeginControlWithClass(const DAVA::FastName& controlName, const DAVA::String& className) override;
-    virtual DAVA::UIControl* BeginControlWithCustomClass(const DAVA::FastName& controlName, const DAVA::String& customClassName, const DAVA::String& className) override;
-    virtual DAVA::UIControl* BeginControlWithPrototype(const DAVA::FastName& controlName, const DAVA::String& packageName, const DAVA::FastName& prototypeName, const DAVA::String* customClassName, DAVA::AbstractUIPackageLoader* loader) override;
-    virtual DAVA::UIControl* BeginControlWithPath(const DAVA::String& pathName) override;
-    virtual DAVA::UIControl* BeginUnknownControl(const DAVA::FastName& controlName, const DAVA::YamlNode* node) override;
+    virtual const DAVA::ReflectedType* BeginControlWithClass(const DAVA::FastName& controlName, const DAVA::String& className) override;
+    virtual const DAVA::ReflectedType* BeginControlWithCustomClass(const DAVA::FastName& controlName, const DAVA::String& customClassName, const DAVA::String& className) override;
+    virtual const DAVA::ReflectedType* BeginControlWithPrototype(const DAVA::FastName& controlName, const DAVA::String& packageName, const DAVA::FastName& prototypeName, const DAVA::String* customClassName, DAVA::AbstractUIPackageLoader* loader) override;
+    virtual const DAVA::ReflectedType* BeginControlWithPath(const DAVA::String& pathName) override;
+    virtual const DAVA::ReflectedType* BeginUnknownControl(const DAVA::FastName& controlName, const DAVA::YamlNode* node) override;
     virtual void EndControl(eControlPlace controlPlace) override;
 
     virtual void BeginControlPropertiesSection(const DAVA::String& name) override;
     virtual void EndControlPropertiesSection() override;
 
-    virtual DAVA::UIComponent* BeginComponentPropertiesSection(const DAVA::Type* componentType, DAVA::uint32 componentIndex) override;
+    virtual const DAVA::ReflectedType* BeginComponentPropertiesSection(const DAVA::Type* componentType, DAVA::uint32 componentIndex) override;
     virtual void EndComponentPropertiesSection() override;
 
-    virtual void ProcessProperty(const DAVA::Reflection::Field& field, const DAVA::Any& value) override;
+    virtual void ProcessProperty(const DAVA::ReflectedStructure::Field& field, const DAVA::Any& value) override;
 
     DAVA::RefPtr<PackageNode> BuildPackage() const;
     const DAVA::Vector<ControlNode*>& GetRootControls() const;

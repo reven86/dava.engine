@@ -1,6 +1,7 @@
-#include "UI/UIPackageLoader.h"
+#include "UIPackageLoader.h"
 
 #include "Base/ObjectFactory.h"
+#include "Entity/ComponentManager.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/FilePath.h"
 #include "FileSystem/YamlNode.h"
@@ -15,7 +16,6 @@
 #include "UI/Layouts/UILinearLayoutComponent.h"
 #include "Utils/Utils.h"
 #include "Logger/Logger.h"
-#include "Reflection/ReflectedTypeDB.h"
 
 namespace DAVA
 {
@@ -30,18 +30,18 @@ UIPackageLoader::UIPackageLoader(const Map<String, DAVA::Set<FastName>>& legacyP
     version = DAVA::UIPackage::CURRENT_VERSION;
     if (MIN_SUPPORTED_VERSION <= VERSION_WITH_LEGACY_ALIGNS)
     {
-        legacyAlignsMap["leftAnchorEnabled"] = "leftAlignEnabled";
-        legacyAlignsMap["leftAnchor"] = "leftAlign";
-        legacyAlignsMap["hCenterAnchorEnabled"] = "hcenterAlignEnabled";
-        legacyAlignsMap["hCenterAnchor"] = "hcenterAlign";
-        legacyAlignsMap["rightAnchorEnabled"] = "rightAlignEnabled";
-        legacyAlignsMap["rightAnchor"] = "rightAlign";
-        legacyAlignsMap["topAnchorEnabled"] = "topAlignEnabled";
-        legacyAlignsMap["topAnchor"] = "topAlign";
-        legacyAlignsMap["vCenterAnchorEnabled"] = "vcenterAlignEnabled";
-        legacyAlignsMap["vCenterAnchor"] = "vcenterAlign";
-        legacyAlignsMap["bottomAnchorEnabled"] = "bottomAlignEnabled";
-        legacyAlignsMap["bottomAnchor"] = "bottomAlign";
+        legacyAlignsMap[FastName("leftAnchorEnabled")] = FastName("leftAlignEnabled");
+        legacyAlignsMap[FastName("leftAnchor")] = FastName("leftAlign");
+        legacyAlignsMap[FastName("hCenterAnchorEnabled")] = FastName("hcenterAlignEnabled");
+        legacyAlignsMap[FastName("hCenterAnchor")] = FastName("hcenterAlign");
+        legacyAlignsMap[FastName("rightAnchorEnabled")] = FastName("rightAlignEnabled");
+        legacyAlignsMap[FastName("rightAnchor")] = FastName("rightAlign");
+        legacyAlignsMap[FastName("topAnchorEnabled")] = FastName("topAlignEnabled");
+        legacyAlignsMap[FastName("topAnchor")] = FastName("topAlign");
+        legacyAlignsMap[FastName("vCenterAnchorEnabled")] = FastName("vcenterAlignEnabled");
+        legacyAlignsMap[FastName("vCenterAnchor")] = FastName("vcenterAlign");
+        legacyAlignsMap[FastName("bottomAnchorEnabled")] = FastName("bottomAlignEnabled");
+        legacyAlignsMap[FastName("bottomAnchor")] = FastName("bottomAlign");
     }
     else
     {
@@ -300,7 +300,8 @@ void UIPackageLoader::LoadStyleSheets(const YamlNode* styleSheetsNode, AbstractU
 
 void UIPackageLoader::LoadControl(const YamlNode* node, AbstractUIPackageBuilder::eControlPlace controlPlace, AbstractUIPackageBuilder* builder)
 {
-    UIControl* control = nullptr;
+    const ReflectedType* controlReflectedType = nullptr;
+
     const YamlNode* pathNode = node->Get("path");
     const YamlNode* prototypeNode = node->Get("prototype");
     const YamlNode* classNode = node->Get("class");
@@ -316,7 +317,7 @@ void UIPackageLoader::LoadControl(const YamlNode* node, AbstractUIPackageBuilder
 
     if (pathNode)
     {
-        control = builder->BeginControlWithPath(pathNode->AsString());
+        controlReflectedType = builder->BeginControlWithPath(pathNode->AsString());
     }
     else if (prototypeNode)
     {
@@ -330,30 +331,29 @@ void UIPackageLoader::LoadControl(const YamlNode* node, AbstractUIPackageBuilder
             packageName = prototypeName.substr(0, pos);
             prototypeName = prototypeName.substr(pos + 1, prototypeName.length() - pos - 1);
         }
-        control = builder->BeginControlWithPrototype(controlName, packageName, FastName(prototypeName), customClass, this);
+        controlReflectedType = builder->BeginControlWithPrototype(controlName, packageName, FastName(prototypeName), customClass, this);
     }
     else if (classNode)
     {
         const YamlNode* customClassNode = node->Get("customClass");
         if (customClassNode)
-            control = builder->BeginControlWithCustomClass(controlName, customClassNode->AsString(), classNode->AsString());
+            controlReflectedType = builder->BeginControlWithCustomClass(controlName, customClassNode->AsString(), classNode->AsString());
         else
-            control = builder->BeginControlWithClass(controlName, classNode->AsString());
+            controlReflectedType = builder->BeginControlWithClass(controlName, classNode->AsString());
     }
     else
     {
         builder->BeginUnknownControl(controlName, node);
     }
 
-    if (control != nullptr)
+    if (controlReflectedType != nullptr)
     {
-        Reflection ref = Reflection::Create(&control);
-        LoadControlPropertiesFromYamlNode(control, ref, node, builder);
-        LoadComponentPropertiesFromYamlNode(control, node, builder);
+        LoadControlPropertiesFromYamlNode(controlReflectedType, node, builder);
+        LoadComponentPropertiesFromYamlNode(node, builder);
 
         if (version <= VERSION_WITH_LEGACY_ALIGNS)
         {
-            ProcessLegacyAligns(control, node, builder);
+            ProcessLegacyAligns(node, builder);
         }
     }
 
@@ -366,58 +366,64 @@ void UIPackageLoader::LoadControl(const YamlNode* node, AbstractUIPackageBuilder
             LoadControl(childrenNode->Get(i), AbstractUIPackageBuilder::TO_PREVIOUS_CONTROL, builder);
     }
 
-    if (control != nullptr)
-    {
-        control->LoadFromYamlNodeCompleted();
-    }
-
     builder->EndControl(controlPlace);
 }
 
-void UIPackageLoader::LoadControlPropertiesFromYamlNode(UIControl* control, const Reflection& ref, const YamlNode* node, AbstractUIPackageBuilder* builder)
+void UIPackageLoader::LoadControlPropertiesFromYamlNode(const ReflectedType* ref, const YamlNode* node, AbstractUIPackageBuilder* builder)
 {
-    Vector<Reflection::Field> fields = ref.GetFields();
-    for (const Reflection::Field& field : fields)
+    const TypeInheritance* inheritance = ref->GetType()->GetInheritance();
+    if (nullptr != inheritance)
     {
-        String name = field.key.Get<String>();
-        if (name == "components")
+        const Vector<TypeInheritance::Info>& baseTypesInfo = inheritance->GetBaseTypes();
+        for (auto& baseInfo : baseTypesInfo)
         {
-            // TODO: Make loading components by reflection here
-            continue;
+            LoadControlPropertiesFromYamlNode(ReflectedTypeDB::GetByType(baseInfo.type), node, builder);
         }
+    }
 
-        Any res;
-        if (node)
+    if (ref->GetStructure())
+    {
+        const Vector<std::unique_ptr<ReflectedStructure::Field>>& fields = ref->GetStructure()->fields;
+        for (const std::unique_ptr<ReflectedStructure::Field>& field : fields)
         {
-            res = ReadAnyFromYamlNode(field.ref, node, name);
-            if (!res.IsEmpty())
+            static FastName components("components");
+            const FastName& name = field->name;
+            if (name == components)
             {
-                builder->BeginControlPropertiesSection(ReflectedTypeDB::GetByType(field.inheritFrom->GetType())->GetPermanentName());
-                builder->ProcessProperty(field, res);
-                builder->EndControlPropertiesSection();
+                // TODO: Make loading components by reflection here
+                continue;
+            }
+
+            Any res;
+            if (node)
+            {
+                res = ReadAnyFromYamlNode(field.get(), node, name);
+                if (!res.IsEmpty())
+                {
+                    builder->BeginControlPropertiesSection(ref->GetPermanentName());
+                    builder->ProcessProperty(*field, res);
+                    builder->EndControlPropertiesSection();
+                }
             }
         }
     }
 }
 
-void UIPackageLoader::LoadComponentPropertiesFromYamlNode(UIControl* control, const YamlNode* node, AbstractUIPackageBuilder* builder)
+void UIPackageLoader::LoadComponentPropertiesFromYamlNode(const YamlNode* node, AbstractUIPackageBuilder* builder)
 {
     Vector<ComponentNode> components = ExtractComponentNodes(node);
-    Vector<const Type*> processedComponents;
     for (ComponentNode& nodeDescr : components)
     {
-        processedComponents.push_back(nodeDescr.type);
-        UIComponent* component = builder->BeginComponentPropertiesSection(nodeDescr.type, nodeDescr.index);
-        if (component)
+        const ReflectedType* componentRef = builder->BeginComponentPropertiesSection(nodeDescr.type, nodeDescr.index);
+        if (componentRef != nullptr && componentRef->GetStructure() != nullptr)
         {
-            Reflection componentRef = Reflection::Create(&component);
-            Vector<Reflection::Field> fields = componentRef.GetFields();
-            for (Reflection::Field& field : fields)
+            const Vector<std::unique_ptr<ReflectedStructure::Field>>& fields = componentRef->GetStructure()->fields;
+            for (const std::unique_ptr<ReflectedStructure::Field>& field : fields)
             {
                 Any res;
                 if (nodeDescr.type == Type::Instance<UILinearLayoutComponent>() && version <= LAST_VERSION_WITH_LINEAR_LAYOUT_LEGACY_ORIENTATION)
                 {
-                    FastName name(field.key.Get<String>());
+                    FastName name(field->name);
                     if (nodeDescr.type == Type::Instance<UILinearLayoutComponent>() && name == FastName("orientation"))
                     {
                         const YamlNode* valueNode = nodeDescr.node->Get(name.c_str());
@@ -441,7 +447,7 @@ void UIPackageLoader::LoadComponentPropertiesFromYamlNode(UIControl* control, co
                 if (nodeDescr.type == Type::Instance<UIControlBackground>() && version <= LAST_VERSION_WITH_LEGACY_SPRITE_MODIFICATION)
                 {
                     static const FastName propertyName("spriteModification");
-                    const FastName name(field.key.Cast<String>());
+                    const FastName name(field->name);
                     if (name == propertyName)
                     {
                         const YamlNode* valueNode = nodeDescr.node->Get(name.c_str());
@@ -454,33 +460,23 @@ void UIPackageLoader::LoadComponentPropertiesFromYamlNode(UIControl* control, co
 
                 if (res.IsEmpty())
                 {
-                    res = ReadAnyFromYamlNode(field.ref, nodeDescr.node, field.key.Get<String>());
+                    res = ReadAnyFromYamlNode(field.get(), nodeDescr.node, field->name);
                 }
 
-                builder->ProcessProperty(field, res);
+                builder->ProcessProperty(*field, res);
             }
         }
 
         builder->EndComponentPropertiesSection();
     }
-    /*
-    for (uint32 i = 0; i < UIComponent::COMPONENT_COUNT; ++i)
-    {
-        if (!processedComponents[i] && control->GetComponentCount(i) > 0)
-        {
-            builder->BeginComponentPropertiesSection(i, 0);
-            builder->EndComponentPropertiesSection();
-        }
-    }
-    */
 }
 
-void UIPackageLoader::ProcessLegacyAligns(UIControl* control, const YamlNode* node, AbstractUIPackageBuilder* builder)
+void UIPackageLoader::ProcessLegacyAligns(const YamlNode* node, AbstractUIPackageBuilder* builder)
 {
     bool hasAnchorProperties = false;
     for (const auto& it : legacyAlignsMap)
     {
-        if (node->Get(it.second))
+        if (node->Get(it.second.c_str()))
         {
             hasAnchorProperties = true;
             break;
@@ -489,16 +485,15 @@ void UIPackageLoader::ProcessLegacyAligns(UIControl* control, const YamlNode* no
 
     if (hasAnchorProperties)
     {
-        UIComponent* component = builder->BeginComponentPropertiesSection(Type::Instance<UIAnchorComponent>(), 0);
-        if (component)
+        const ReflectedType* componentRef = builder->BeginComponentPropertiesSection(Type::Instance<UIAnchorComponent>(), 0);
+        if (componentRef != nullptr && componentRef->GetStructure() != nullptr)
         {
-            Reflection componentRef = Reflection::Create(&component);
-            Vector<Reflection::Field> fields = componentRef.GetFields();
-            for (const Reflection::Field& field : fields)
+            const Vector<std::unique_ptr<ReflectedStructure::Field>>& fields = componentRef->GetStructure()->fields;
+            for (const std::unique_ptr<ReflectedStructure::Field>& field : fields)
             {
-                String name = field.key.Get<String>();
-                Any res = ReadAnyFromYamlNode(field.ref, node, legacyAlignsMap[name]);
-                builder->ProcessProperty(field, res);
+                const FastName& name = field->name;
+                Any res = ReadAnyFromYamlNode(field.get(), node, legacyAlignsMap[name]);
+                builder->ProcessProperty(*field, res);
             }
         }
 
@@ -514,6 +509,7 @@ Vector<UIPackageLoader::ComponentNode> UIPackageLoader::ExtractComponentNodes(co
 
     if (componentsNode)
     {
+        ComponentManager* cm = GetEngineContext()->componentManager;
         for (uint32 i = 0; i < componentsNode->GetCount(); i++)
         {
             const String& fullName = componentsNode->GetItemKeyName(i);
@@ -521,18 +517,23 @@ Vector<UIPackageLoader::ComponentNode> UIPackageLoader::ExtractComponentNodes(co
             String componentName = fullName.substr(0, lastChar + 1);
             uint32 componentIndex = atoi(fullName.substr(lastChar + 1).c_str());
 
-            const ReflectedType* type = ReflectedTypeDB::GetByPermanentName(componentName);
-            if (type)
+            const ReflectedType* reflectedType = ReflectedTypeDB::GetByPermanentName(componentName);
+            if (reflectedType)
             {
+                const Type* type = reflectedType->GetType();
+                if(cm->IsUIComponent(type))
+                {
+                    
+                }
                 ComponentNode n;
                 n.node = componentsNode->Get(i);
-                n.type = type->GetType();
+                n.type = reflectedType->GetType();
                 n.index = componentIndex;
                 components.push_back(n);
             }
             else
             {
-                DVASSERT(false);
+                Logger::Error("UIPackageLoader::ExtractComponentNodes UIComponent %s was not registered.", componentName.c_str());
             }
         }
 
@@ -543,13 +544,13 @@ Vector<UIPackageLoader::ComponentNode> UIPackageLoader::ExtractComponentNodes(co
     return components;
 }
 
-Any UIPackageLoader::ReadAnyFromYamlNode(const Reflection& ref, const YamlNode* node, const String& name)
+Any UIPackageLoader::ReadAnyFromYamlNode(const ReflectedStructure::Field* fieldRef, const YamlNode* node, const FastName& name)
 {
-    const YamlNode* valueNode = node->Get(name);
+    const YamlNode* valueNode = node->Get(name.c_str());
 
     if (valueNode)
     {
-        return valueNode->AsAny(ref);
+        return valueNode->AsAny(fieldRef);
     }
     return Any();
 }

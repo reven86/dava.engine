@@ -9,7 +9,7 @@
 
 #include "UI/mainwindow.h"
 #include "UI/ProjectView.h"
-#include "UI/Find/FindFilter.h"
+#include "UI/Find/Filters/PrototypeUsagesFilter.h"
 
 #include <TArc/Core/ContextAccessor.h>
 
@@ -153,8 +153,6 @@ void LegacySupportModule::InitMainWindow()
     MainWindow* mainWindow = new MainWindow(GetAccessor());
     MainWindow::ProjectView* projectView = mainWindow->GetProjectView();
 
-    connections.AddConnection(projectView, &MainWindow::ProjectView::JumpToControl, MakeFunction(this, &LegacySupportModule::JumpToControl));
-    connections.AddConnection(projectView, &MainWindow::ProjectView::JumpToPackage, MakeFunction(this, &LegacySupportModule::JumpToPackage));
     connections.AddConnection(projectView, &MainWindow::ProjectView::JumpToPrototype, MakeFunction(this, &LegacySupportModule::OnJumpToPrototype));
     connections.AddConnection(projectView, &MainWindow::ProjectView::FindPrototypeInstances, MakeFunction(this, &LegacySupportModule::OnFindPrototypeInstances));
 
@@ -197,12 +195,12 @@ void LegacySupportModule::OnFindPrototypeInstances()
             FilePath path = controlNode->GetPackage()->GetPath();
             String name = controlNode->GetName();
 
-            DataContext* globalContext = accessor->GetGlobalContext();
             QWidget* window = GetUI()->GetWindow(DAVA::TArc::mainWindowKey);
             MainWindow* mainWindow = qobject_cast<MainWindow*>(window);
             MainWindow::ProjectView* view = mainWindow->GetProjectView();
 
-            view->FindControls(std::make_unique<PrototypeUsagesFilter>(path.GetFrameworkPath(), FastName(name)));
+            std::shared_ptr<FindFilter> filter = std::make_shared<PrototypeUsagesFilter>(path.GetFrameworkPath(), FastName(name));
+            InvokeOperation(QEGlobal::FindInProject.ID, filter);
         }
     }
 }

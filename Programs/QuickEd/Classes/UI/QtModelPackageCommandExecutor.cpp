@@ -504,11 +504,11 @@ void QtModelPackageCommandExecutor::Remove(const Vector<ControlNode*>& controls,
     }
 }
 
-Vector<PackageBaseNode*> QtModelPackageCommandExecutor::Paste(PackageNode* root, PackageBaseNode* dest, int32 destIndex, const DAVA::String& data)
+SelectedNodes QtModelPackageCommandExecutor::Paste(PackageNode* root, PackageBaseNode* dest, int32 destIndex, const DAVA::String& data)
 {
     using namespace DAVA::TArc;
 
-    Vector<PackageBaseNode*> createdNodes;
+    SelectedNodes createdNodes;
     if (dest->IsReadOnly())
         return createdNodes;
 
@@ -589,7 +589,7 @@ Vector<PackageBaseNode*> QtModelPackageCommandExecutor::Paste(PackageNode* root,
                 int32 index = destIndex;
                 for (ControlNode* control : acceptedControls)
                 {
-                    createdNodes.push_back(control);
+                    createdNodes.insert(control);
                     InsertControl(control, controlsDest, index);
                     index++;
                 }
@@ -604,7 +604,7 @@ Vector<PackageBaseNode*> QtModelPackageCommandExecutor::Paste(PackageNode* root,
             int32 index = destIndex;
             for (StyleSheetNode* style : styles)
             {
-                createdNodes.push_back(style);
+                createdNodes.insert(style);
                 data->ExecCommand<InsertStyleCommand>(style, stylesDest, index);
                 index++;
             }

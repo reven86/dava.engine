@@ -8,6 +8,7 @@
 #include <Logger/Logger.h>
 #include <Time/DateTime.h>
 #include <Network/Services/MMNet/MMNetClient.h>
+#include <Network/NetCore.h>
 #include <Utils/UTF8Utils.h>
 #include <Utils/StringFormat.h>
 
@@ -24,6 +25,7 @@ MemProfController::MemProfController(const DAVA::Net::PeerDescription& peerDescr
     , profiledPeer(peerDescr)
     , netClient(new MMNetClient)
     , profilingSession(new ProfilingSession)
+    , channelListenerDispatched(netClient, NetCore::Instance()->GetNetEventsDispatcher())
 {
     ShowView();
     netClient->InstallCallbacks(MakeFunction(this, &MemProfController::NetConnEstablished),
@@ -39,6 +41,7 @@ MemProfController::MemProfController(const DAVA::FilePath& srcDir, QWidget* pare
     , parentWidget(parentWidget_)
     , netClient(new MMNetClient)
     , profilingSession(new ProfilingSession)
+    , channelListenerDispatched(netClient, NetCore::Instance()->GetNetEventsDispatcher())
 {
     if (profilingSession->LoadFromFile(srcDir))
     {
@@ -100,9 +103,9 @@ void MemProfController::ShowView()
     view->raise();
 }
 
-DAVA::Net::IChannelListener* MemProfController::NetObject() const
+DAVA::Net::IChannelListener* MemProfController::GetAsyncChannelListener()
 {
-    return netClient.get();
+    return &channelListenerDispatched;
 }
 
 bool MemProfController::IsFileLoaded() const

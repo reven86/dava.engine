@@ -23,7 +23,7 @@ struct ImmediatePropertySetter
     void operator()(UIControl* control, const Reflection& ref) const
     {
         control->StopAnimations(PROPERTY_ANIMATION_GROUP_OFFSET + propertyIndex);
-        ref.SetValue(value);
+        ref.SetValueWithCast(value);
     }
 
     uint32 propertyIndex;

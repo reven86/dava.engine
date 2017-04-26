@@ -46,13 +46,13 @@ private:
     void LoadStyleSheets(const YamlNode* styleSheetsNode, AbstractUIPackageBuilder* builder);
     void LoadControl(const YamlNode* node, AbstractUIPackageBuilder::eControlPlace controlPlace, AbstractUIPackageBuilder* builder);
 
-    void LoadControlPropertiesFromYamlNode(UIControl* control, const Reflection& ref, const YamlNode* node, AbstractUIPackageBuilder* builder);
+    void LoadControlPropertiesFromYamlNode(const ReflectedType* ref, const YamlNode* node, AbstractUIPackageBuilder* builder);
 
-    void LoadComponentPropertiesFromYamlNode(UIControl* control, const YamlNode* node, AbstractUIPackageBuilder* builder);
-    void ProcessLegacyAligns(UIControl* control, const YamlNode* node, AbstractUIPackageBuilder* builder);
+    void LoadComponentPropertiesFromYamlNode(const YamlNode* node, AbstractUIPackageBuilder* builder);
+    void ProcessLegacyAligns(const YamlNode* node, AbstractUIPackageBuilder* builder);
     Vector<ComponentNode> ExtractComponentNodes(const YamlNode* node);
 
-    virtual Any ReadAnyFromYamlNode(const Reflection& ref, const YamlNode* node, const String& name);
+    virtual Any ReadAnyFromYamlNode(const ReflectedStructure::Field* fieldRef, const YamlNode* node, const FastName& name);
 
 private:
     enum eItemStatus
@@ -72,7 +72,7 @@ private:
     Vector<QueueItem> loadingQueue;
     DAVA::int32 version = 0;
 
-    DAVA::Map<DAVA::String, DAVA::String> legacyAlignsMap;
+    DAVA::Map<DAVA::FastName, DAVA::FastName> legacyAlignsMap;
     DAVA::Map<DAVA::String, DAVA::Set<DAVA::FastName>> legacyPrototypes;
 };
 };

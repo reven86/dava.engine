@@ -64,7 +64,7 @@ public:
     void MoveStyles(const DAVA::Vector<StyleSheetNode*>& nodes, StyleSheetsNode* dest, DAVA::int32 destIndex);
 
     void Remove(const DAVA::Vector<ControlNode*>& controls, const DAVA::Vector<StyleSheetNode*>& styles);
-    DAVA::Vector<PackageBaseNode*> Paste(PackageNode* root, PackageBaseNode* dest, DAVA::int32 destIndex, const DAVA::String& data);
+    SelectedNodes Paste(PackageNode* root, PackageBaseNode* dest, DAVA::int32 destIndex, const DAVA::String& data);
 
 private:
     void AddImportedPackageIntoPackageImpl(PackageNode* importedPackage, const PackageNode* package);

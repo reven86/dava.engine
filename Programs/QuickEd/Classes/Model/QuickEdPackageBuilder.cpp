@@ -97,7 +97,7 @@ void QuickEdPackageBuilder::ProcessStyleSheet(const DAVA::Vector<DAVA::UIStyleSh
     styleSheets.push_back(node);
 }
 
-UIControl* QuickEdPackageBuilder::BeginControlWithClass(const FastName& controlName, const String& className)
+const ReflectedType* QuickEdPackageBuilder::BeginControlWithClass(const FastName& controlName, const String& className)
 {
     RefPtr<UIControl> control(ObjectFactory::Instance()->New<UIControl>(className));
     if (control.Valid())
@@ -115,10 +115,13 @@ UIControl* QuickEdPackageBuilder::BeginControlWithClass(const FastName& controlN
 
     controlsStack.push_back(ControlDescr(ControlNode::CreateFromControl(control.Get()), true));
 
-    return control.Get();
+    if (control != nullptr)
+        return ReflectedTypeDB::GetByPointer(control.Get());
+    else
+        return nullptr;
 }
 
-UIControl* QuickEdPackageBuilder::BeginControlWithCustomClass(const FastName& controlName, const String& customClassName, const String& className)
+const ReflectedType* QuickEdPackageBuilder::BeginControlWithCustomClass(const FastName& controlName, const String& customClassName, const String& className)
 {
     RefPtr<UIControl> control(ObjectFactory::Instance()->New<UIControl>(className));
 
@@ -139,10 +142,13 @@ UIControl* QuickEdPackageBuilder::BeginControlWithCustomClass(const FastName& co
     node->GetRootProperty()->GetCustomClassProperty()->SetValue(customClassName);
     controlsStack.push_back(ControlDescr(node, true));
 
-    return control.Get();
+    if (control != nullptr)
+        return ReflectedTypeDB::GetByPointer(control.Get());
+    else
+        return nullptr;
 }
 
-UIControl* QuickEdPackageBuilder::BeginControlWithPrototype(const FastName& controlName, const String& packageName, const FastName& prototypeFastName, const String* customClassName, AbstractUIPackageLoader* loader)
+const ReflectedType* QuickEdPackageBuilder::BeginControlWithPrototype(const FastName& controlName, const String& packageName, const FastName& prototypeFastName, const String* customClassName, AbstractUIPackageLoader* loader)
 {
     ControlNode* prototypeNode = nullptr;
     String prototypeName(prototypeFastName.c_str());
@@ -184,10 +190,10 @@ UIControl* QuickEdPackageBuilder::BeginControlWithPrototype(const FastName& cont
     }
     controlsStack.push_back(ControlDescr(node, true));
 
-    return node->GetControl();
+    return ReflectedTypeDB::GetByPointer(node->GetControl());
 }
 
-UIControl* QuickEdPackageBuilder::BeginControlWithPath(const String& pathName)
+const ReflectedType* QuickEdPackageBuilder::BeginControlWithPath(const String& pathName)
 {
     ControlNode* control = nullptr;
     if (!controlsStack.empty())
@@ -205,13 +211,13 @@ UIControl* QuickEdPackageBuilder::BeginControlWithPath(const String& pathName)
 
     controlsStack.push_back(ControlDescr(SafeRetain(control), false));
 
-    if (!control)
+    if (control != nullptr)
+        return ReflectedTypeDB::GetByPointer(control->GetControl());
+    else
         return nullptr;
-
-    return control->GetControl();
 }
 
-UIControl* QuickEdPackageBuilder::BeginUnknownControl(const FastName& controlName, const YamlNode* node)
+const ReflectedType* QuickEdPackageBuilder::BeginUnknownControl(const FastName& controlName, const YamlNode* node)
 {
     DVASSERT(false);
     return nullptr;
@@ -220,6 +226,22 @@ UIControl* QuickEdPackageBuilder::BeginUnknownControl(const FastName& controlNam
 void QuickEdPackageBuilder::EndControl(eControlPlace controlPlace)
 {
     ControlNode* lastControl = SafeRetain(controlsStack.back().node);
+
+    // the following code handles cases when component was created by control himself (UIParticles creates UIUpdateComponent for example)
+    ComponentManager* cm = GetEngineContext()->componentManager;
+    auto& componentMap = cm->GetRegisteredTypes();
+    for (auto& pair : componentMap)
+    {
+        const Type* componentType = pair.first;
+        const ComponentPropertiesSection* section = lastControl->GetRootProperty()->FindComponentPropertiesSection(componentType, 0);
+
+        if (section == nullptr && lastControl->GetControl()->GetComponentCount(componentType) > 0)
+        {
+            BeginComponentPropertiesSection(componentType, 0);
+            EndComponentPropertiesSection();
+        }
+    }
+
     bool addToParent = controlsStack.back().addToParent;
     controlsStack.pop_back();
 
@@ -245,6 +267,9 @@ void QuickEdPackageBuilder::EndControl(eControlPlace controlPlace)
             break;
         }
     }
+
+    lastControl->GetControl()->LoadFromYamlNodeCompleted();
+
     SafeRelease(lastControl);
 }
 
@@ -262,7 +287,7 @@ void QuickEdPackageBuilder::EndControlPropertiesSection()
     currentObject = nullptr;
 }
 
-UIComponent* QuickEdPackageBuilder::BeginComponentPropertiesSection(const Type* componentType, DAVA::uint32 componentIndex)
+const ReflectedType* QuickEdPackageBuilder::BeginComponentPropertiesSection(const Type* componentType, DAVA::uint32 componentIndex)
 {
     ControlNode* node = controlsStack.back().node;
     ComponentPropertiesSection* section;
@@ -271,7 +296,7 @@ UIComponent* QuickEdPackageBuilder::BeginComponentPropertiesSection(const Type* 
         section = node->GetRootProperty()->AddComponentPropertiesSection(componentType);
     currentObject = section->GetComponent();
     currentSection = section;
-    return section->GetComponent();
+    return ReflectedTypeDB::GetByPointer(section->GetComponent());
 }
 
 void QuickEdPackageBuilder::EndComponentPropertiesSection()
@@ -280,11 +305,11 @@ void QuickEdPackageBuilder::EndComponentPropertiesSection()
     currentObject = nullptr;
 }
 
-void QuickEdPackageBuilder::ProcessProperty(const Reflection::Field& field, const DAVA::Any& value)
+void QuickEdPackageBuilder::ProcessProperty(const ReflectedStructure::Field& field, const DAVA::Any& value)
 {
     if (currentObject && currentSection)
     {
-        ValueProperty* property = currentSection->FindChildPropertyByName(field.key.Cast<String>());
+        ValueProperty* property = currentSection->FindChildPropertyByName(field.name.c_str());
         if (property && !value.IsEmpty())
         {
             if (property->GetStylePropertyIndex() != -1)
