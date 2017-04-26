@@ -197,14 +197,6 @@ public:
     virtual bool CopyDirectoryFiles(const FilePath& sourceDirectory, const FilePath& destinationDirectory, bool overwriteExisting = false);
 
     /**
-     \brief Copies directory to another directory.
-     \param[in] sourceDirectory The name of an existing file.
-     \param[in] destinationDirectory The name of the new file.
-     \returns true if all entries were successfully copied, false otherwise.
-     */
-    virtual bool CopyDirectoryRecursively(const FilePath& sourceDirectory, const FilePath& destinationDirectory, bool overwriteExisting = false);
-
-    /**
         \brief Read whole file contents into new buffer.
         If function returns zero error happened and it haven't loaded the file
         After you'll finish using the date you should DELETE returned buffer using function SafeDeleteArray.

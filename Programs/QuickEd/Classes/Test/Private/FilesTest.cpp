@@ -24,15 +24,19 @@
 #include <FileSystem/FileSystem.h>
 #include <FileSystem/FilePath.h>
 #include <FileSystem/File.h>
+#include <FileSystem/FileList.h>
 
 #include <UI/UIPackageLoader.h>
 #include <UI/UIPackage.h>
+
+#include <Engine/Engine.h>
 
 #include <gmock/gmock.h>
 
 namespace FilesTestDetails
 {
 class LocalMockModule;
+bool CopyDirectoryRecursively(const DAVA::FilePath& sourceDirectory, const DAVA::FilePath& destinationDirectory);
 }
 
 DAVA_TARC_TESTCLASS(FilesTest)
@@ -67,8 +71,7 @@ DAVA_TARC_TESTCLASS(FilesTest)
         TEST_VERIFY(projectData->GetProjectDirectory().IsEmpty() == false);
 
         FilePath testDir("~res:/QuickEd/Test/");
-        FileSystem* fs = accessor->GetEngineContext()->fileSystem;
-        TEST_VERIFY(fs->CopyDirectoryRecursively(testDir, projectPath, true));
+        TEST_VERIFY(FilesTestDetails::CopyDirectoryRecursively(testDir, projectPath));
 
         FilePath path("~res:/UI/testEquality.yaml");
 
@@ -87,6 +90,7 @@ DAVA_TARC_TESTCLASS(FilesTest)
         serializer.SerializePackage(package);
         TEST_VERIFY(serializer.WriteToFile(newPath));
 
+        FileSystem* fs = accessor->GetEngineContext()->fileSystem;
         Vector<uint8> originalData;
         Vector<uint8> newData;
         fs->ReadFileContents(path, originalData);
@@ -138,4 +142,41 @@ DAVA_VIRTUAL_REFLECTION_IMPL(LocalMockModule)
     .ConstructorByPointer()
     .End();
 }
+
+bool CopyDirectoryRecursively(const DAVA::FilePath& sourceDirectory, const DAVA::FilePath& destinationDirectory)
+{
+    using namespace DAVA;
+
+    const EngineContext* context = GetEngineContext();
+    FileSystem* fs = context->fileSystem;
+    DVASSERT(sourceDirectory.IsDirectoryPathname() && destinationDirectory.IsDirectoryPathname());
+
+    if (fs->CreateDirectory(destinationDirectory, true) == FileSystem::DIRECTORY_CANT_CREATE)
+    {
+        return false;
+    }
+
+    bool ret = true;
+    ScopedPtr<FileList> fileList(new FileList(sourceDirectory));
+    int32 count = fileList->GetCount();
+    for (int32 i = 0; i < count; ++i)
+    {
+        if (fileList->IsNavigationDirectory(i))
+        {
+            continue;
+        }
+        FilePath destinationPath = destinationDirectory + fileList->GetFilename(i);
+        FilePath sourcePath = fileList->GetPathname(i);
+        if (fileList->IsDirectory(i))
+        {
+            ret &= CopyDirectoryRecursively(sourcePath.MakeDirectoryPathname(), destinationPath.MakeDirectoryPathname());
+        }
+        else
+        {
+            ret &= fs->CopyFile(sourcePath, destinationPath, false);
+        }
+    }
+    return ret;
+}
+
 } //namespace SSIT

@@ -250,6 +250,8 @@ bool FileSystem::CopyDirectoryFiles(const FilePath& sourceDirectory, const FileP
 
     ScopedPtr<FileList> fileList(new FileList(sourceDirectory));
     int32 count = fileList->GetCount();
+    String fileOnly;
+    String pathOnly;
     for (int32 i = 0; i < count; ++i)
     {
         if (!fileList->IsDirectory(i) && !fileList->IsNavigationDirectory(i))
@@ -262,38 +264,6 @@ bool FileSystem::CopyDirectoryFiles(const FilePath& sourceDirectory, const FileP
         }
     }
 
-    return ret;
-}
-
-bool FileSystem::CopyDirectoryRecursively(const FilePath& sourceDirectory, const FilePath& destinationDirectory, bool overwriteExisting)
-{
-    DVASSERT(sourceDirectory.IsDirectoryPathname() && destinationDirectory.IsDirectoryPathname());
-
-    if (CreateDirectory(destinationDirectory, true) == DIRECTORY_CANT_CREATE)
-    {
-        return false;
-    }
-
-    bool ret = true;
-    ScopedPtr<FileList> fileList(new FileList(sourceDirectory));
-    int32 count = fileList->GetCount();
-    for (int32 i = 0; i < count; ++i)
-    {
-        if (fileList->IsNavigationDirectory(i))
-        {
-            continue;
-        }
-        FilePath destinationPath = destinationDirectory + fileList->GetFilename(i);
-        FilePath sourcePath = fileList->GetPathname(i);
-        if (fileList->IsDirectory(i))
-        {
-            ret &= CopyDirectoryRecursively(sourcePath.MakeDirectoryPathname(), destinationPath.MakeDirectoryPathname(), overwriteExisting);
-        }
-        else
-        {
-            ret &= CopyFile(sourcePath, destinationPath, overwriteExisting);
-        }
-    }
     return ret;
 }
 
