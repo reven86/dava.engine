@@ -1,9 +1,9 @@
-#include "UI/Find/Widgets/EnumFindFilterEditor.h"
+#include "UI/Find/Widgets/ComboBoxFilterEditor.h"
 #include "UI/Find/Filters/FindFilter.h"
 
 using namespace DAVA;
 
-EnumFindFilterEditor::EnumFindFilterEditor(QWidget* parent, const EnumMap* editedEnum, const EnumFindFilterBuilder& findFilterBuilder_)
+ComboBoxFilterEditor::ComboBoxFilterEditor(QWidget* parent, const DAVA::Vector<ComboBoxData>& data, const ComboBoxFilterBuilder& findFilterBuilder_)
     : FindFilterEditor(parent)
     , findFilterBuilder(findFilterBuilder_)
 {
@@ -11,9 +11,9 @@ EnumFindFilterEditor::EnumFindFilterEditor(QWidget* parent, const EnumMap* edite
 
     enumCombobox = new QComboBox(this);
 
-    for (int32 enumIndex = 0; enumIndex < editedEnum->GetCount(); ++enumIndex)
+    for (const ComboBoxData& d : data)
     {
-        enumCombobox->addItem(editedEnum->ToString(enumIndex));
+        enumCombobox->addItem(d.description.c_str(), QVariant(d.userData));
     }
 
     layout->addWidget(enumCombobox);
@@ -27,12 +27,12 @@ EnumFindFilterEditor::EnumFindFilterEditor(QWidget* parent, const EnumMap* edite
     setFocusProxy(enumCombobox);
 }
 
-int32 EnumFindFilterEditor::GetValue() const
+uint64 ComboBoxFilterEditor::GetUserData() const
 {
-    return enumCombobox->currentIndex();
+    return enumCombobox->currentData().toULongLong();
 }
 
-std::unique_ptr<FindFilter> EnumFindFilterEditor::BuildFindFilter()
+std::unique_ptr<FindFilter> ComboBoxFilterEditor::BuildFindFilter()
 {
     return findFilterBuilder(this);
 }
