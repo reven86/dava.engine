@@ -293,7 +293,6 @@ bool FileSystem::CopyDirectoryRecursively(const FilePath& sourceDirectory, const
         {
             ret &= CopyFile(sourcePath, destinationPath, overwriteExisting);
         }
-        Logger::Debug("res = %d for file %s", ret, destinationPath.GetAbsolutePathname().c_str());
     }
     return ret;
 }
