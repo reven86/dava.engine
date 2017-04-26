@@ -50,12 +50,6 @@ std::unique_ptr<BaseComponentValue> SubPropertyEditorCreator::GetEditor(const st
     using namespace SubPropertiesExtensionsDetail;
     InitSubPropertyTypes();
 
-    const Type* t = node->field.ref.GetValueType();
-    if (t == nullptr)
-    {
-        int x = 0;
-        x++;
-    }
     const Type* valueType = node->field.ref.GetValueType()->Decay();
     if (subPropertyTypes.count(valueType) > 0)
     {
