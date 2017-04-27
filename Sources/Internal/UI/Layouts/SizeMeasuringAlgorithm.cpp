@@ -1,9 +1,10 @@
 #include "SizeMeasuringAlgorithm.h"
 
-#include "UILinearLayoutComponent.h"
-#include "UIFlowLayoutComponent.h"
-#include "UIFlowLayoutHintComponent.h"
-#include "UISizePolicyComponent.h"
+#include "UI/Layouts/UILinearLayoutComponent.h"
+#include "UI/Layouts/UIFlowLayoutComponent.h"
+#include "UI/Layouts/UIFlowLayoutHintComponent.h"
+#include "UI/Layouts/UISizePolicyComponent.h"
+#include "UI/Layouts/LayoutFormula.h"
 
 #include "UI/UIControl.h"
 
@@ -105,10 +106,10 @@ void SizeMeasuringAlgorithm::Apply()
 
     case UISizePolicyComponent::FORMULA:
     {
-        UISizePolicyComponent::FormulaInfo* info = sizePolicy->GetFormulaInfo(axis);
-        if (info != nullptr && info->formula.IsValid())
+        LayoutFormula* formula = sizePolicy->GetFormula(axis);
+        if (formula != nullptr && formula->IsValid())
         {
-            value = CalculateFormula(&info->formula);
+            value = formula->Calculate(Reflection::Create(ReflectedObject(this)));
         }
     }
         break;
@@ -187,10 +188,10 @@ float32 SizeMeasuringAlgorithm::Calculate()
 
     case UISizePolicyComponent::FORMULA:
     {
-        UISizePolicyComponent::FormulaInfo* info = sizePolicy->GetFormulaInfo(axis);
-        if (info != nullptr && info->formula.IsValid())
+        LayoutFormula* formula = sizePolicy->GetFormula(axis);
+        if (formula != nullptr && formula->IsValid())
         {
-            value = CalculateFormula(&info->formula);
+            value = formula->Calculate(Reflection::Create(ReflectedObject(this)));
         }
     }
     break;
@@ -402,20 +403,6 @@ float32 SizeMeasuringAlgorithm::CalculateContent() const
     }
 
     return data.GetControl()->GetContentPreferredSize(constraints).data[axis];
-}
-
-float32 SizeMeasuringAlgorithm::CalculateFormula(Formula* formula) const
-{
-    Any res = formula->Calculate(Reflection::Create(this));
-    if (res.CanCast<float32>())
-    {
-        return res.Cast<float32>();
-    }
-    else if (res.CanCast<int32>())
-    {
-        return res.Cast<int32>();
-    }
-    return 0;
 }
 
 float32 SizeMeasuringAlgorithm::GetSize(const ControlLayoutData& data) const

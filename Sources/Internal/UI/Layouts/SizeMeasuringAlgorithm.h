@@ -13,7 +13,6 @@ namespace DAVA
 class UISizePolicyComponent;
 class UIFlowLayoutComponent;
 class UILinearLayoutComponent;
-class Formula;
 
 class SizeMeasuringAlgorithm : public ReflectionBase
 {
@@ -38,7 +37,6 @@ private:
     float32 CalculateFirstChild() const;
     float32 CalculateLastChild() const;
     float32 CalculateContent() const;
-    float32 CalculateFormula(Formula* formula) const;
 
     void ApplySize(float32 value);
     float32 GetSize(const ControlLayoutData& data) const;

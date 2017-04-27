@@ -1,6 +1,7 @@
 #include "UISizePolicyComponent.h"
 
 #include "UI/UIControl.h"
+#include "UI/Layouts/LayoutFormula.h"
 #include "Math/Vector.h"
 
 namespace DAVA
@@ -21,12 +22,6 @@ DAVA_VIRTUAL_REFLECTION_IMPL(UISizePolicyComponent)
     .Field("verticalMax", &UISizePolicyComponent::GetVerticalMaxValue, &UISizePolicyComponent::SetVerticalMaxValue)
     .Field("verticalFormula", &UISizePolicyComponent::GetVerticalFormula, &UISizePolicyComponent::SetVerticalFormula)
     .End();
-}
-
-UISizePolicyComponent::FormulaInfo::FormulaInfo(const String& source_)
-    : source(source_)
-{
-    formula.Parse(source);
 }
 
 UISizePolicyComponent::UISizePolicyComponent()
@@ -130,16 +125,21 @@ void UISizePolicyComponent::SetHorizontalMaxValue(float32 value)
 
 String UISizePolicyComponent::GetHorizontalFormula() const
 {
-    if (policy[Vector2::AXIS_X].formulaInfo)
+    if (policy[Vector2::AXIS_X].formula)
     {
-        return policy[Vector2::AXIS_X].formulaInfo->source;
+        return policy[Vector2::AXIS_X].formula->GetSource();
     }
     return "";
 }
 
 void UISizePolicyComponent::SetHorizontalFormula(const String& formulaSource)
 {
-    policy[Vector2::AXIS_X].formulaInfo.reset(new FormulaInfo(formulaSource));
+    if (policy[Vector2::AXIS_X].formula == nullptr)
+    {
+        policy[Vector2::AXIS_X].formula.reset(new LayoutFormula());
+    }
+    policy[Vector2::AXIS_X].formula->SetSource(formulaSource);
+
     SetLayoutDirty();
 }
 
@@ -209,16 +209,21 @@ void UISizePolicyComponent::SetVerticalMaxValue(float32 value)
 
 String UISizePolicyComponent::GetVerticalFormula() const
 {
-    if (policy[Vector2::AXIS_Y].formulaInfo)
+    if (policy[Vector2::AXIS_Y].formula)
     {
-        return policy[Vector2::AXIS_Y].formulaInfo->source;
+        return policy[Vector2::AXIS_Y].formula->GetSource();
     }
     return "";
 }
 
 void UISizePolicyComponent::SetVerticalFormula(const String& formulaSource)
 {
-    policy[Vector2::AXIS_Y].formulaInfo.reset(new FormulaInfo(formulaSource));
+    if (policy[Vector2::AXIS_Y].formula == nullptr)
+    {
+        policy[Vector2::AXIS_Y].formula.reset(new LayoutFormula());
+    }
+    policy[Vector2::AXIS_Y].formula->SetSource(formulaSource);
+
     SetLayoutDirty();
 }
 
@@ -246,9 +251,9 @@ float32 UISizePolicyComponent::GetMaxValueByAxis(int32 axis) const
     return policy[axis].max;
 }
 
-UISizePolicyComponent::FormulaInfo* UISizePolicyComponent::GetFormulaInfo(int32 axis) const
+LayoutFormula* UISizePolicyComponent::GetFormula(int32 axis) const
 {
-    return policy[axis].formulaInfo.get();
+    return policy[axis].formula.get();
 }
 
 bool UISizePolicyComponent::IsDependsOnChildren(int32 axis) const

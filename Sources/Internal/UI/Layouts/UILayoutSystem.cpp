@@ -13,6 +13,7 @@
 #include "UI/Layouts/UIFlowLayoutComponent.h"
 #include "UI/Layouts/UILinearLayoutComponent.h"
 #include "UI/Layouts/UISizePolicyComponent.h"
+#include "UI/Layouts/LayoutFormula.h"
 #include "UI/UIControl.h"
 #include "UI/UIScreen.h"
 #include "UI/UIScreenTransition.h"
@@ -90,11 +91,21 @@ void UILayoutSystem::ProcessControl(UIControl* control)
     {
         UIControl* container = FindNotDependentOnChildrenControl(control);
         ApplyLayout(container);
+
+        if (listener)
+        {
+            listener->OnControlLayouted(container);
+        }
     }
     else if (positionDirty && HaveToLayoutAfterReposition(control))
     {
         UIControl* container = control->GetParent();
         ApplyLayoutNonRecursive(container);
+
+        if (listener)
+        {
+            listener->OnControlLayouted(container);
+        }
     }
 }
 
@@ -274,6 +285,36 @@ void UILayoutSystem::DoMeasurePhase(Vector2::eAxis axis)
         UISizePolicyComponent* sizePolicy = layoutData[index].GetControl()->GetComponent<UISizePolicyComponent>();
         if (sizePolicy != nullptr)
         {
+            LayoutFormula* formula = sizePolicy->GetFormula(axis);
+            if (formula != nullptr)
+            {
+                LayoutFormula::eProcessResult res = formula->Process();
+
+                switch (res)
+                {
+                case LayoutFormula::eProcessResult::NOTHING_CHANGED:
+                    // do nothing
+                    break;
+
+                case LayoutFormula::eProcessResult::ERROR_GENERATED:
+                    if (listener != nullptr)
+                    {
+                        listener->OnFormulaChanged(layoutData[index].GetControl(), axis);
+                    }
+                    break;
+
+                case LayoutFormula::eProcessResult::PARSED:
+                    if (listener != nullptr)
+                    {
+                        listener->OnFormulaChanged(layoutData[index].GetControl(), axis);
+                    }
+                    break;
+
+                default:
+                    DVASSERT(false);
+                    break;
+                }
+            }
             SizeMeasuringAlgorithm(layoutData, layoutData[index], axis, sizePolicy).Apply();
         }
     }
