@@ -12,12 +12,16 @@
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/StyleSheetNode.h"
 #include "Model/PackageHierarchy/StyleSheetsNode.h"
+
+#include "Base/ObjectFactory.h"
+#include "Engine/Engine.h"
+#include "Entity/ComponentManager.h"
+#include "Reflection/ReflectedTypeDB.h"
 #include "UI/UIPackage.h"
 #include "UI/UIControl.h"
 #include "UI/UIControlPackageContext.h"
 #include "UI/Styles/UIStyleSheet.h"
 #include "UI/Styles/UIStyleSheetYamlLoader.h"
-#include "Base/ObjectFactory.h"
 #include "Utils/Utils.h"
 
 using namespace DAVA;

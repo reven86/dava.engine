@@ -1,5 +1,7 @@
 #include "UI/Find/PackageInformation/StaticPackageInformationBuilder.h"
-#include "Utils/Utils.h"
+
+#include <Reflection/ReflectedTypeDB.h>
+#include <Utils/Utils.h>
 #include <UI/UIControl.h>
 
 using namespace DAVA;

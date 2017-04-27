@@ -13,6 +13,8 @@
 #include "UI/Layouts/UIFlowLayoutComponent.h"
 #include "UI/Layouts/UILinearLayoutComponent.h"
 #include "UI/Layouts/UISizePolicyComponent.h"
+#include "UI/Layouts/UILayoutSourceRectComponent.h"
+#include "UI/Layouts/UILayoutIsolationComponent.h"
 #include "UI/UIControl.h"
 #include "UI/UIScreen.h"
 #include "UI/UIScreenTransition.h"

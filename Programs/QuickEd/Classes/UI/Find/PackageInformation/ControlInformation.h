@@ -2,6 +2,7 @@
 
 #include <Base/BaseTypes.h>
 #include <Reflection/Reflection.h>
+#include <Reflection/ReflectedStructure.h>
 #include <Functional/Functional.h>
 #include <FileSystem/VariantType.h>
 #include <UI/Components/UIComponent.h>

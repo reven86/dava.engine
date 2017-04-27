@@ -3,6 +3,7 @@
 #include "UI/Find/PackageInformation/PackageInformation.h"
 
 #include <algorithm>
+#include <Reflection/ReflectedTypeDB.h>
 #include <UI/UIControl.h>
 #include <Utils/Utils.h>
 

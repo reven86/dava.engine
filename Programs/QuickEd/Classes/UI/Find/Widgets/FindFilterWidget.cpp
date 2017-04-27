@@ -8,8 +8,11 @@
 #include "UI/Find/Widgets/ComboBoxFilterEditor.h"
 #include "UI/Find/Widgets/RegExpStringFindFilterEditor.h"
 #include "UI/Find/Widgets/StringFindFilterEditor.h"
-#include "Utils/Utils.h"
-#include "Entity/ComponentManager.h"
+
+#include <Engine/Engine.h>
+#include <Entity/ComponentManager.h>
+#include <Reflection/ReflectedTypeDB.h>
+#include <Utils/Utils.h>
 
 using namespace DAVA;
 

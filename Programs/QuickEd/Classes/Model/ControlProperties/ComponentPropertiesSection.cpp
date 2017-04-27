@@ -5,6 +5,7 @@
 
 #include <UI/UIControl.h>
 #include <UI/Layouts/UILayoutIsolationComponent.h>
+#include <UI/Layouts/UILayoutSourceRectComponent.h>
 #include <Utils/StringFormat.h>
 #include <Reflection/ReflectedMeta.h>
 #include <Reflection/ReflectedTypeDB.h>

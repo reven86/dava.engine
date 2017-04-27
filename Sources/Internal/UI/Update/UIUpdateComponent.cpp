@@ -1,4 +1,5 @@
 #include "UIUpdateComponent.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {

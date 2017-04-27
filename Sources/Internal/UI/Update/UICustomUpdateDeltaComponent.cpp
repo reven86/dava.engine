@@ -1,4 +1,5 @@
 #include "UICustomUpdateDeltaComponent.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {
