@@ -32,7 +32,7 @@
 #include <QLineEdit>
 #include <QScreen>
 #include <QMenu>
-#include <QShortCut>
+#include <QShortcut>
 #include <QFileInfo>
 #include <QInputDialog>
 #include <QComboBox>
@@ -211,7 +211,7 @@ void PreviewWidget::OnIncrementScale()
 
 void PreviewWidget::OnDecrementScale()
 {
-    float32 nextScale = editorCanvas->GetPreviousScale(1);
+    float32 nextScale = editorCanvas->GetPreviousScale(-1);
     editorCanvas->SetScale(nextScale);
 }
 
@@ -293,7 +293,7 @@ void PreviewWidget::InitFromSystemsManager(EditorSystemsManager* systemsManager_
     editorCanvas->scaleChanged.Connect(this, &PreviewWidget::OnScaleChanged);
     systemsManager->AddEditorSystem(editorCanvas);
 
-    CursorSystem* cursorSystem = new CursorSystem(renderWidget, systemsManager);
+    CursorSystem* cursorSystem = new CursorSystem(renderWidget, systemsManager, accessor);
     systemsManager->AddEditorSystem(cursorSystem);
 }
 

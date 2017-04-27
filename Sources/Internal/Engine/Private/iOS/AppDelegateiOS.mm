@@ -105,6 +105,11 @@ extern CoreNativeBridge* coreNativeBridge;
     return bridge->OpenURL(application, url, sourceApplication, annotation);
 }
 
+- (BOOL)application:(UIApplication*)application continueUserActivity:(NSUserActivity*)userActivity restorationHandler:(void (^)(NSArray* restorableObjects))restorationHandler
+{
+    return bridge->ContinueUserActivity(application, userActivity, restorationHandler);
+}
+
 @end
 
 #endif // __DAVAENGINE_IPHONE__

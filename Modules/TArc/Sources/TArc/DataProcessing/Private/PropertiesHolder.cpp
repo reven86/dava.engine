@@ -9,7 +9,7 @@
 #include <QVariant>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QJSonValue>
+#include <QJsonValue>
 #include <QJsonArray>
 #include <QFileInfo>
 #include <QDir>

@@ -563,72 +563,128 @@ void CommandBufferGLES2_t::Execute()
 #if defined(__DAVAENGINE_IPHONE__)
                 ios_gl_begin_frame();
 #endif
-                GLuint flags = 0;
+                Handle rt[MAX_RENDER_TARGET_COUNT];
+                TextureFace rt_face[MAX_RENDER_TARGET_COUNT];
+                unsigned rt_level[MAX_RENDER_TARGET_COUNT];
+                unsigned rt_count = 0;
+                bool apply_fb = true;
+                bool do_clear = true;
 
                 def_viewport[0] = 0;
                 def_viewport[1] = 0;
 
-                const RenderPassConfig::ColorBuffer& color0 = passCfg.colorBuffer[0];
-                Handle targetColorTexture = color0.texture;
-                Handle targetDepthTexture = passCfg.depthStencilBuffer.texture;
-
-                if (targetColorTexture != InvalidHandle)
+                for (unsigned i = 0; i != countof(passCfg.colorBuffer); ++i)
                 {
-                    if (passCfg.UsingMSAA())
+                    if (passCfg.colorBuffer[i].texture != InvalidHandle)
                     {
-                        DVASSERT(color0.multisampleTexture != InvalidHandle);
-                        targetColorTexture = color0.multisampleTexture;
-                        targetDepthTexture = passCfg.depthStencilBuffer.multisampleTexture;
+                        rt[i] = (passCfg.UsingMSAA()) ? passCfg.colorBuffer[i].multisampleTexture : passCfg.colorBuffer[i].texture;
+                        rt_face[i] = passCfg.colorBuffer[i].textureFace;
+                        rt_level[i] = passCfg.colorBuffer[i].textureLevel;
+                        ++rt_count;
+
+                        if (i == 0)
+                        {
+                            Size2i sz = TextureGLES2::Size(passCfg.colorBuffer[i].texture);
+                            def_viewport[2] = sz.dx;
+                            def_viewport[3] = sz.dy;
+                        }
                     }
-
-                    TextureGLES2::SetAsRenderTarget(targetColorTexture, targetDepthTexture, color0.textureFace, color0.textureLevel);
-
-                    Size2i sz = TextureGLES2::Size(targetColorTexture);
-                    def_viewport[2] = sz.dx;
-                    def_viewport[3] = sz.dy;
-                }
-                else
-                {
-                    if (passCfg.UsingMSAA())
+                    else
                     {
-                        DVASSERT(color0.multisampleTexture != InvalidHandle);
-                        TextureGLES2::SetAsRenderTarget(color0.multisampleTexture, passCfg.depthStencilBuffer.multisampleTexture, color0.textureFace, color0.textureLevel);
+                        if (i == 0)
+                        {
+                            if (passCfg.UsingMSAA())
+                            {
+                                DVASSERT(passCfg.colorBuffer[i].multisampleTexture != InvalidHandle);
+                                rt[0] = passCfg.colorBuffer[i].multisampleTexture;
+                                rt_count = 1;
+                                apply_fb = true;
+                            }
+                            else
+                            {
+                                GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, _GLES2_Default_FrameBuffer));
+                                _GLES2_Bound_FrameBuffer = _GLES2_Default_FrameBuffer;
+                                def_viewport[2] = _GLES2_DefaultFrameBuffer_Width;
+                                def_viewport[3] = _GLES2_DefaultFrameBuffer_Height;
+                                rt_count = 1;
+                                apply_fb = false;
+                                do_clear = true;
+                            }
+                        }
+                        break;
                     }
-                    else if (_GLES2_Bound_FrameBuffer != _GLES2_Default_FrameBuffer)
-                    {
-                        GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, _GLES2_Default_FrameBuffer));
-                        _GLES2_Bound_FrameBuffer = _GLES2_Default_FrameBuffer;
-                    }
-
-                    def_viewport[2] = _GLES2_DefaultFrameBuffer_Width;
-                    def_viewport[3] = _GLES2_DefaultFrameBuffer_Height;
-                }
-
-                if (color0.loadAction == LOADACTION_CLEAR)
-                {
-                    GL_CALL(glClearColor(color0.clearColor[0], color0.clearColor[1], color0.clearColor[2], color0.clearColor[3]));
-                    flags |= GL_COLOR_BUFFER_BIT;
-                }
-
-                if (passCfg.depthStencilBuffer.loadAction == LOADACTION_CLEAR)
-                {
-                        #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
-                    GL_CALL(glStencilMask(0xFFFFFFFF));
-                    GL_CALL(glClearDepthf(passCfg.depthStencilBuffer.clearDepth));
-                        #else
-                    GL_CALL(glClearDepth(passCfg.depthStencilBuffer.clearDepth));
-                    GL_CALL(glStencilMask(0xFFFFFFFF));
-                    GL_CALL(glClearStencil(0));
-                        #endif
-
-                    flags |= GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT;
                 }
 
                 GL_CALL(glViewport(def_viewport[0], def_viewport[1], def_viewport[2], def_viewport[3]));
 
-                if (flags)
+                if (apply_fb)
                 {
-                    GL_CALL(glClear(flags));
+                    Handle ds = (passCfg.UsingMSAA()) ? passCfg.depthStencilBuffer.multisampleTexture : passCfg.depthStencilBuffer.texture;
+                    GLuint fbo = TextureGLES2::GetFrameBuffer(rt, rt_face, rt_level, rt_count, ds);
+                    GL_CALL(glBindFramebuffer(GL_FRAMEBUFFER, fbo));
+                    _GLES2_Bound_FrameBuffer = fbo;
+
+                    #if !defined(__DAVAENGINE_ANDROID__)
+                    for (unsigned i = 0; i != rt_count; ++i)
+                    {
+                        if (passCfg.colorBuffer[i].loadAction == LOADACTION_CLEAR)
+                            glClearBufferfv(GL_COLOR, i, passCfg.colorBuffer[i].clearColor);
+                    }
+
+                    if (passCfg.depthStencilBuffer.loadAction == LOADACTION_CLEAR)
+                    {
+                        glClearBufferfi(GL_DEPTH_STENCIL, 0, passCfg.depthStencilBuffer.clearDepth, 0);
+                    }
+                    do_clear = false;
+                    #endif
+
+                    #if defined(__DAVAENGINE_MACOS__)
+                    /*                    
+                    if (passCfg.colorBuffer[0].loadAction == LOADACTION_CLEAR)
+                    {
+                        // since glClearBuffer doesn't work on MacOS, clear buffers with the same color at least
+                        GL_CALL(glClearColor(passCfg.colorBuffer[0].clearColor[0], passCfg.colorBuffer[0].clearColor[1], passCfg.colorBuffer[0].clearColor[2], passCfg.colorBuffer[0].clearColor[3]));
+                        GL_CALL(glClearDepthf(passCfg.depthStencilBuffer.clearDepth));
+                        GL_CALL(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT));
+                    }
+                    do_clear = false;
+*/
+                    do_clear = true;
+                    #endif
+                }
+
+
+                #if defined(__DAVAENGINE_IPHONE__)
+                if (rt_count == 1)
+                    do_clear = true;
+                #endif
+
+                if (do_clear)
+                {
+                    GLuint flags = 0;
+
+                    if (passCfg.colorBuffer[0].loadAction == LOADACTION_CLEAR)
+                    {
+                        GL_CALL(glClearColor(passCfg.colorBuffer[0].clearColor[0], passCfg.colorBuffer[0].clearColor[1], passCfg.colorBuffer[0].clearColor[2], passCfg.colorBuffer[0].clearColor[3]));
+                        flags |= GL_COLOR_BUFFER_BIT;
+                    }
+
+                    if (passCfg.depthStencilBuffer.loadAction == LOADACTION_CLEAR)
+                    {
+                        #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)
+                        GL_CALL(glStencilMask(0xFFFFFFFF));
+                        GL_CALL(glClearDepthf(passCfg.depthStencilBuffer.clearDepth));
+                        #else
+                        GL_CALL(glClearDepth(passCfg.depthStencilBuffer.clearDepth));
+                        GL_CALL(glStencilMask(0xFFFFFFFF));
+                        GL_CALL(glClearStencil(0));
+                        #endif
+
+                        flags |= GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT;
+                    }
+
+                    if (flags)
+                        GL_CALL(glClear(flags));
                 }
 
                 DVASSERT(cur_query_buf == InvalidHandle || !QueryBufferGLES2::QueryIsCompleted(cur_query_buf));
