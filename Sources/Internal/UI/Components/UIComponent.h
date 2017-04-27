@@ -79,4 +79,3 @@ int32 UIBaseComponent<T>::runtimeType = -1;
 template <class T>
 const Type* UIBaseComponent<T>::reflectionType = Type::Instance<T>();
 }
-

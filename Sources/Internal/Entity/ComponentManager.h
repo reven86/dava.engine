@@ -30,7 +30,7 @@ public:
 
     /** Return total number of registered components. */
     uint32 GetComponentsCount();
-    
+
     /** Check if specified 'type' was registered as UIComponent. */
     bool IsUIComponent(const Type* type);
 
@@ -65,7 +65,7 @@ void ComponentManager::RegisterComponent()
         throw new std::logic_error("Can only register UIComponents");
     }
 }
-    
+
 inline bool ComponentManager::IsUIComponent(const Type* type)
 {
     auto it = typeToRuntimeType.find(type);

@@ -16,6 +16,7 @@ class UIControl;
 class UILayoutSourceRectComponent : public UIBaseComponent<UILayoutSourceRectComponent>
 {
     DAVA_VIRTUAL_REFLECTION(UICustomUpdateDeltaComponent, UIComponent);
+
 public:
     UILayoutSourceRectComponent();
     UILayoutSourceRectComponent(const UILayoutSourceRectComponent& src);

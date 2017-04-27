@@ -30,10 +30,10 @@ struct SamplePluginA : public ReflectionBase
     DAVA_VIRTUAL_REFLECTION_IN_PLACE(SamplePluginA)
     {
         ReflectionRegistrator<SamplePluginA>::Begin()
-            .Field("ai", &SamplePluginA::ai)
-            .Field("af", &SamplePluginA::af)
-            .Field("name", &SamplePluginA::name)
-            .End();
+        .Field("ai", &SamplePluginA::ai)
+        .Field("af", &SamplePluginA::af)
+        .Field("name", &SamplePluginA::name)
+        .End();
     }
 };
 
@@ -50,9 +50,9 @@ struct SamplePluginB : public SamplePluginA
     DAVA_VIRTUAL_REFLECTION_IN_PLACE(SamplePluginB, SamplePluginA)
     {
         ReflectionRegistrator<SamplePluginB>::Begin()
-            .Field("bi", &SamplePluginB::bi)
-            .Field("bf", &SamplePluginB::bf)
-            .End();
+        .Field("bi", &SamplePluginB::bi)
+        .Field("bf", &SamplePluginB::bf)
+        .End();
     }
 };
 
@@ -83,12 +83,12 @@ public:
 DAVA_VIRTUAL_REFLECTION_IMPL(SamplePluginUIComponent)
 {
     ReflectionRegistrator<SamplePluginUIComponent>::Begin()
-        .ConstructorByPointer()
-        .DestructorByPointer([] (SamplePluginUIComponent* o) { o->Release(); })
-        .Field("a", &SamplePluginUIComponent::a)
-        .Field("a_ptr", &SamplePluginUIComponent::a_ptr)
-        .Method("Clone", &SamplePluginUIComponent::Clone)
-        .End();
+    .ConstructorByPointer()
+    .DestructorByPointer([](SamplePluginUIComponent* o) { o->Release(); })
+    .Field("a", &SamplePluginUIComponent::a)
+    .Field("a_ptr", &SamplePluginUIComponent::a_ptr)
+    .Method("Clone", &SamplePluginUIComponent::Clone)
+    .End();
 }
 
 class SamplePlugin : public IModule

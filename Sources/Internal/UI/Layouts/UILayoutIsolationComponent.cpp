@@ -13,7 +13,7 @@ DAVA_VIRTUAL_REFLECTION_IMPL(UILayoutIsolationComponent)
     .DestructorByPointer([](UILayoutIsolationComponent* o) { o->Release(); })
     .End();
 }
-    
+
 UILayoutIsolationComponent::UILayoutIsolationComponent()
 {
 }

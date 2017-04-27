@@ -11,12 +11,12 @@ DAVA_VIRTUAL_REFLECTION_IMPL(UIUpdateComponent)
     .Field("updateInvisible", &UIUpdateComponent::GetUpdateInvisible, &UIUpdateComponent::SetUpdateInvisible)
     .End();
 }
-    
+
 UIUpdateComponent::UIUpdateComponent() = default;
 UIUpdateComponent::~UIUpdateComponent() = default;
 
 UIUpdateComponent::UIUpdateComponent(const UIUpdateComponent& src)
-: updateInvisible(src.updateInvisible)
+    : updateInvisible(src.updateInvisible)
 {
 }
 

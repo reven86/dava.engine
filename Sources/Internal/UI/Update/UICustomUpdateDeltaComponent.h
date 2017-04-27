@@ -14,18 +14,18 @@ namespace DAVA
 class UICustomUpdateDeltaComponent : public UIBaseComponent<UICustomUpdateDeltaComponent>
 {
     DAVA_VIRTUAL_REFLECTION(UICustomUpdateDeltaComponent, UIComponent);
-    
+
 public:
     UICustomUpdateDeltaComponent();
     UICustomUpdateDeltaComponent(const UICustomUpdateDeltaComponent& src);
     UIComponent* Clone() const override;
-    
+
     void SetDelta(float32 delta);
     float32 GetDelta() const;
-    
+
 protected:
     ~UICustomUpdateDeltaComponent() override;
-    
+
 private:
     float32 customDelta = 0.f;
 };

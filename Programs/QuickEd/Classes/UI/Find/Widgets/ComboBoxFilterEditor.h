@@ -13,7 +13,7 @@ class ComboBoxFilterEditor
 {
 public:
     using ComboBoxFilterBuilder = DAVA::Function<std::unique_ptr<FindFilter>(const ComboBoxFilterEditor*)>;
-    
+
     struct ComboBoxData
     {
         DAVA::String description;

@@ -6,15 +6,13 @@
 
 namespace DAVA
 {
-
 DAVA_VIRTUAL_REFLECTION_IMPL(SampleModuleUIComponent)
 {
     ReflectionRegistrator<SampleModuleUIComponent>::Begin()
     .ConstructorByPointer()
-    .DestructorByPointer([] (SampleModuleUIComponent* o) { o->Release(); })
+    .DestructorByPointer([](SampleModuleUIComponent* o) { o->Release(); })
     .End();
 }
-
 
 SampleModule::SampleModule(Engine* engine)
     : IModule(engine)

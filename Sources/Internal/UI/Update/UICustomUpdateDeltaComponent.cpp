@@ -16,7 +16,7 @@ UICustomUpdateDeltaComponent::UICustomUpdateDeltaComponent() = default;
 UICustomUpdateDeltaComponent::~UICustomUpdateDeltaComponent() = default;
 
 UICustomUpdateDeltaComponent::UICustomUpdateDeltaComponent(const UICustomUpdateDeltaComponent& src)
-: customDelta(src.customDelta)
+    : customDelta(src.customDelta)
 {
 }
 

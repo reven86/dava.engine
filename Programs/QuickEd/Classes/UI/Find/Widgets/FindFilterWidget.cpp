@@ -50,7 +50,6 @@ class HasComponentFindFilter
 : public AbstractFindFilter
 {
 public:
-    
     const char* GetName() override
     {
         return "Has component";
@@ -59,7 +58,7 @@ public:
     FindFilterEditor* CreateEditor(QWidget* parent) override
     {
         Vector<ComboBoxFilterEditor::ComboBoxData> data;
-        
+
         auto& types = GetEngineContext()->componentManager->GetRegisteredTypes();
         int32 i = 0;
         for (auto& pair : types)
@@ -69,7 +68,7 @@ public:
             d.userData = reinterpret_cast<uint64>(pair.first);
             data.push_back(d);
         }
-        
+
         return new ComboBoxFilterEditor(parent,
                                         data,
                                         [](const ComboBoxFilterEditor* editor)
@@ -77,7 +76,6 @@ public:
                                             return std::make_unique<HasComponentFilter>(reinterpret_cast<const Type*>(editor->GetUserData()));
                                         });
     }
-
 };
 
 class HasClassFindFilter

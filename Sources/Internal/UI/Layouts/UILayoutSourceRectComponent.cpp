@@ -13,7 +13,7 @@ DAVA_VIRTUAL_REFLECTION_IMPL(UILayoutSourceRectComponent)
     .DestructorByPointer([](UILayoutSourceRectComponent* o) { o->Release(); })
     .End();
 }
-    
+
 UILayoutSourceRectComponent::UILayoutSourceRectComponent()
 {
 }

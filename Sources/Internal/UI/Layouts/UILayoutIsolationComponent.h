@@ -16,6 +16,7 @@ class UIControl;
 class UILayoutIsolationComponent : public UIBaseComponent<UILayoutIsolationComponent>
 {
     DAVA_VIRTUAL_REFLECTION(UILayoutIsolationComponent, UIComponent);
+
 public:
     UILayoutIsolationComponent();
     UILayoutIsolationComponent(const UILayoutIsolationComponent& src);
