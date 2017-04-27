@@ -77,7 +77,7 @@ StringPool::~StringPool()
 {
     for (int i = 0; i < stringArray.GetSize(); i++)
     {
-        ::free((void*)(stringArray[i]));
+        ::free(stringArray[i]);
     }
 }
 
