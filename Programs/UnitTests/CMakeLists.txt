@@ -27,9 +27,9 @@ if ( WIN32 AND NOT WINDOWS_UAP )
     list ( APPEND DAVA_COMPONENTS "CEFWebview" )
 endif ()
 
-if( NOT WINDOWS_UAP AND ( MACOS OR WIN32 ) )
-    add_plugin( SamplePlugin "${DAVA_MODULES_DIR}/SamplePlugin" COMPONENTS  ${DAVA_COMPONENTS} )
-endif()
+#if( NOT WINDOWS_UAP AND ( MACOS OR WIN32 ) )
+#    add_plugin( SamplePlugin "${DAVA_MODULES_DIR}/SamplePlugin" COMPONENTS  ${DAVA_COMPONENTS} )
+#endif()
 
 if ( WIN32 OR MACOS )
     find_package(DavaTools REQUIRED )

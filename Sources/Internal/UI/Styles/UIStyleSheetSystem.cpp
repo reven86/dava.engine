@@ -10,6 +10,7 @@
 #include "Render/Renderer.h"
 #include "UI/UIScreen.h"
 #include "UI/UIScreenTransition.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {
