@@ -46,7 +46,8 @@ struct DLCDownloader::Task
     List<IDownloaderSubTask*> subTasksReadyToWrite; // sorted list by subTaskIndex
     int lastCreateSubTaskIndex = -1;
     int lastWritenSubTaskIndex = -1;
-    std::unique_ptr<IWriter> defaultWriter;
+    std::unique_ptr<IWriter> writer;
+    bool userWriter = false;
     ICurlEasyStorage* curlStorage = nullptr;
 
     int64 restOffset = -1;
@@ -60,6 +61,7 @@ struct DLCDownloader::Task
          int64 rangeOffset,
          int64 rangeSize,
          int32 timeout);
+    void FlushWriterAndReset();
     ~Task();
 
     void PrepareForDownloading();

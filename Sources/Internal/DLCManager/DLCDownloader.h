@@ -16,8 +16,8 @@ public:
 
     struct Hints
     {
-        int32 numOfMaxEasyHandles = 128;
-        int32 chankMemBuffSize = 1024 * 16; // 16K
+        int32 numOfMaxEasyHandles = 4;
+        int32 chankMemBuffSize = 1024 * 1024;
     };
 
     enum class TaskState
