@@ -1,6 +1,7 @@
 #pragma once
 
 #include "UI/Components/UIComponent.h"
+#include "Reflection/Reflection.h"
 
 namespace DAVA
 {
@@ -14,6 +15,7 @@ class UIControl;
      */
 class UILayoutSourceRectComponent : public UIBaseComponent<UILayoutSourceRectComponent>
 {
+    DAVA_VIRTUAL_REFLECTION(UICustomUpdateDeltaComponent, UIComponent);
 public:
     UILayoutSourceRectComponent();
     UILayoutSourceRectComponent(const UILayoutSourceRectComponent& src);

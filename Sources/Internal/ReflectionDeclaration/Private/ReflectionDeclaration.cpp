@@ -83,6 +83,8 @@
 #include "UI/Layouts/UIIgnoreLayoutComponent.h"
 #include "UI/Layouts/UILinearLayoutComponent.h"
 #include "UI/Layouts/UISizePolicyComponent.h"
+#include "UI/Layouts/UILayoutSourceRectComponent.h"
+#include "UI/Layouts/UILayoutIsolationComponent.h"
 #include "UI/Scroll/UIScrollBarDelegateComponent.h"
 #include "UI/Sound/UISoundComponent.h"
 #include "UI/Sound/UISoundValueFilterComponent.h"
@@ -310,6 +312,8 @@ void RegisterPermanentNames()
     DAVA_REFLECTION_REGISTER_CUSTOM_PERMANENT_NAME(UIScrollBarDelegateComponent, "ScrollBarDelegate");
     DAVA_REFLECTION_REGISTER_CUSTOM_PERMANENT_NAME(UIUpdateComponent, "UIUpdateComponent");
     DAVA_REFLECTION_REGISTER_CUSTOM_PERMANENT_NAME(UICustomUpdateDeltaComponent, "CustomDeltaUpdate");
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UILayoutSourceRectComponent);
+    DAVA_REFLECTION_REGISTER_PERMANENT_NAME(UILayoutIsolationComponent);
 
     GetEngineContext()->componentManager->RegisterComponent<UIControlBackground>();
     GetEngineContext()->componentManager->RegisterComponent<UILinearLayoutComponent>();
@@ -330,6 +334,8 @@ void RegisterPermanentNames()
     GetEngineContext()->componentManager->RegisterComponent<UISoundValueFilterComponent>();
     GetEngineContext()->componentManager->RegisterComponent<UIUpdateComponent>();
     GetEngineContext()->componentManager->RegisterComponent<UICustomUpdateDeltaComponent>();
+    GetEngineContext()->componentManager->RegisterComponent<UILayoutSourceRectComponent>();
+    GetEngineContext()->componentManager->RegisterComponent<UILayoutIsolationComponent>();
 }
 
 void RegisterReflectionForBaseTypes()
