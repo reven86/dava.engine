@@ -11,38 +11,49 @@
 
 using namespace DAVA;
 
-DAVA_VIRTUAL_REFLECTION_IMPL(StyleSheetProperty)
+class UIStyleSheetPropertyWrapper
+: public DAVA::UIStyleSheetProperty
+  ,
+  public DAVA::BaseObject
 {
-    ReflectionRegistrator<StyleSheetProperty>::Begin()
-    .Field("transition", &StyleSheetProperty::HasTransition, &StyleSheetProperty::SetTransition)
-    .Field("transitionTime", &StyleSheetProperty::GetTransitionTime, &StyleSheetProperty::SetTransitionTime)
-    .Field("transitionFunction", &StyleSheetProperty::GetTransitionFunction, &StyleSheetProperty::SetTransitionFunction)
-    [
-    M::EnumT<Interpolation::FuncType>()
-    ]
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(UIStyleSheetPropertyWrapper, BaseObject)
+    {
+        ReflectionRegistrator<UIStyleSheetPropertyWrapper>::Begin()
+        .Field("transition", &UIStyleSheetPropertyWrapper::transition)
+        .Field("transitionTime", &UIStyleSheetPropertyWrapper::transitionTime)
+        .Field("transitionFunction", &UIStyleSheetPropertyWrapper::transitionFunction)
+        [
+        M::EnumT<Interpolation::FuncType>()
+        ]
+        .End();
+    }
 
-    .End();
-}
+public:
+    UIStyleSheetPropertyWrapper(const DAVA::UIStyleSheetProperty& src)
+        : DAVA::UIStyleSheetProperty(src)
+    {
+    }
+};
 
 StyleSheetProperty::StyleSheetProperty(const DAVA::UIStyleSheetProperty& property_)
     : ValueProperty("prop", property_.value.GetType())
-    , property(property_)
+    , property(new UIStyleSheetPropertyWrapper(property_))
 {
-    const UIStyleSheetPropertyDescriptor& descr = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(property.propertyIndex);
+    const UIStyleSheetPropertyDescriptor& descr = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(property->propertyIndex);
     SetName(String(descr.GetFullName().c_str()));
     SetOverridden(true);
 
-    RefPtr<VariantTypeProperty> valueProp(new VariantTypeProperty("Value", property.value, descr.field));
-    valueProp->SetValue(property.value);
+    RefPtr<VariantTypeProperty> valueProp(new VariantTypeProperty("Value", property->value, descr.field));
+    valueProp->SetValue(property->value);
     valueProp->SetParent(this);
     AddSubValueProperty(valueProp.Get());
 
-    StyleSheetProperty* pp = this;
+    UIStyleSheetPropertyWrapper* pp = property.Get();
     Reflection ref = Reflection::Create(&pp);
     Vector<Reflection::Field> fields = ref.GetFields();
     for (const Reflection::Field& field : fields)
     {
-        RefPtr<IntrospectionProperty> inspProp(new IntrospectionProperty(this, -1, field.key.Get<String>(), field.ref, nullptr, CT_COPY));
+        RefPtr<IntrospectionProperty> inspProp(new IntrospectionProperty(property.Get(), -1, field.key.Get<String>(), field.ref, nullptr, CT_COPY));
         inspProp->SetValue(field.ref.GetValue());
         inspProp->SetParent(this);
         inspProp->DisableResetFeature();
@@ -66,7 +77,7 @@ DAVA::uint32 StyleSheetProperty::GetFlags() const
 
 StyleSheetProperty::ePropertyType StyleSheetProperty::GetType() const
 {
-    const UIStyleSheetPropertyDescriptor& descr = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(property.propertyIndex);
+    const UIStyleSheetPropertyDescriptor& descr = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(property->propertyIndex);
     if (descr.field->meta)
     {
         const M::Enum* enumMeta = descr.field->meta->GetMeta<M::Enum>();
@@ -86,7 +97,7 @@ StyleSheetProperty::ePropertyType StyleSheetProperty::GetType() const
 
 const EnumMap* StyleSheetProperty::GetEnumMap() const
 {
-    const UIStyleSheetPropertyDescriptor& descr = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(property.propertyIndex);
+    const UIStyleSheetPropertyDescriptor& descr = UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetPropertyByIndex(property->propertyIndex);
     if (descr.field->meta)
     {
         const M::Enum* enumMeta = descr.field->meta->GetMeta<M::Enum>();
@@ -106,50 +117,50 @@ const EnumMap* StyleSheetProperty::GetEnumMap() const
 
 Any StyleSheetProperty::GetValue() const
 {
-    return property.value;
+    return property->value;
 }
 
 void StyleSheetProperty::ApplyValue(const DAVA::Any& value)
 {
-    property.value = value;
+    property->value = value;
 }
 
 Interpolation::FuncType StyleSheetProperty::GetTransitionFunction() const
 {
-    return property.transitionFunction;
+    return property->transitionFunction;
 }
 
 void StyleSheetProperty::SetTransitionFunction(Interpolation::FuncType type)
 {
-    property.transitionFunction = type;
+    property->transitionFunction = type;
 }
 
 float32 StyleSheetProperty::GetTransitionTime() const
 {
-    return property.transitionTime;
+    return property->transitionTime;
 }
 
 void StyleSheetProperty::SetTransitionTime(DAVA::float32 transitionTime)
 {
-    property.transitionTime = transitionTime;
+    property->transitionTime = transitionTime;
 }
 
 bool StyleSheetProperty::HasTransition() const
 {
-    return property.transition;
+    return property->transition;
 }
 
 void StyleSheetProperty::SetTransition(bool transition)
 {
-    property.transition = transition;
+    property->transition = transition;
 }
 
 uint32 StyleSheetProperty::GetPropertyIndex() const
 {
-    return property.propertyIndex;
+    return property->propertyIndex;
 }
 
 const UIStyleSheetProperty& StyleSheetProperty::GetProperty() const
 {
-    return property;
+    return *property;
 }
