@@ -38,9 +38,9 @@ endif()
 dava_add_definitions(-DLOCALIZATION_DEBUG)
 
 
-if( NOT WINDOWS_UAP AND ( MACOS OR WIN32 ) )
-    add_plugin( SamplePlugin "${DAVA_MODULES_DIR}/SamplePlugin" COMPONENTS  ${DAVA_COMPONENTS} )
-endif()
+#if( NOT WINDOWS_UAP AND ( MACOS OR WIN32 ) )
+#    add_plugin( SamplePlugin "${DAVA_MODULES_DIR}/SamplePlugin" COMPONENTS  ${DAVA_COMPONENTS} )
+#endif()
 
 
 find_package( DavaFramework REQUIRED COMPONENTS ${DAVA_COMPONENTS} )
