@@ -15,13 +15,13 @@ DAVA_TESTCLASS (UIComponentTest)
     ComponentManager* globalCM;
     ComponentManager* localCM;
 
-    UIComponentTest::UIComponentTest()
+    UIComponentTest()
     {
         globalCM = GetEngineContext()->componentManager;
         localCM = new ComponentManager();
     }
 
-    UIComponentTest::~UIComponentTest()
+    ~UIComponentTest()
     {
         SafeDelete(localCM);
     }
