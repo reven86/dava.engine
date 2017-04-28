@@ -26,6 +26,10 @@ ControlLayoutData::ControlLayoutData(UIControl* control_)
 
 void ControlLayoutData::ApplyLayoutToControl()
 {
+    if (control->GetName() == FastName("ScrollArea") && control->GetParent() && control->GetParent()->GetName() == FastName("Body"))
+    {
+        int i = 0;
+    }
     UILayoutSourceRectComponent* sourceRectComponent = control->GetComponent<UILayoutSourceRectComponent>();
     if (HasFlag(FLAG_SIZE_CHANGED))
     {
