@@ -339,37 +339,39 @@ bool PackRequest::UpdateFileRequests()
                         break;
                     case DLCDownloader::TaskState::Downloading:
                     {
-                        fileRequest.downloadedFileSize = status.sizeDownloaded;
-                        callSignal = true;
+                        if (fileRequest.downloadedFileSize != status.sizeDownloaded)
+                        {
+                            fileRequest.downloadedFileSize = status.sizeDownloaded;
+                            callSignal = true;
+                        }
                     }
                     break;
                     case DLCDownloader::TaskState::Finished:
                     {
                         bool allGood = status.error.curlErr == 0 && status.error.curlMErr == 0;
-                        DownloadError downloadError = DLE_NO_ERROR;
 
                         if (allGood)
                         {
-                            String err = DLC::ToString(downloadError);
-                            packManagerImpl->GetLog() << "can't download file: "
-                                                      << fileRequest.localFile.GetAbsolutePathname()
-                                                      << " cause: " << err << std::endl;
+                            fileRequest.taskId = nullptr;
+                            fileRequest.downloadedFileSize = status.sizeDownloaded;
+                            fileRequest.status = CheckHash;
+                            callSignal = true;
+                        }
+                        else
+                        {
+                            String err = status.error.curlEasyStrErr;
+                            std::ostream& out = packManagerImpl->GetLog();
 
-                            if (DLE_FILE_ERROR == downloadError)
+                            out << "can't download file: "
+                                << fileRequest.localFile.GetAbsolutePathname()
+                                << " cause: " << err << std::endl;
+
+                            if (status.error.fileErrno != 0)
                             {
                                 DisableRequestingAndFireSignalNoSpaceLeft(fileRequest);
                                 return false;
                             }
                         }
-                        else
-                        {
-                            DVASSERT(false);
-                        }
-
-                        fileRequest.taskId = nullptr;
-                        fileRequest.downloadedFileSize = status.sizeDownloaded;
-                        fileRequest.status = CheckHash;
-                        callSignal = true;
                     }
                     break;
                     }

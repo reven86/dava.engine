@@ -16,7 +16,7 @@ public:
 
     struct Hints
     {
-        int32 numOfMaxEasyHandles = 4;
+        int32 numOfMaxEasyHandles = 1;
         int32 chankMemBuffSize = 1024 * 1024;
     };
 

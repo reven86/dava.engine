@@ -6,6 +6,7 @@
 #include <DLCManager/DLCManager.h>
 #include <UI/Focus/UIFocusComponent.h>
 #include <EmbeddedWebServer.h>
+#include <DLCManager/DLCDownloader.h>
 
 using namespace DAVA;
 
@@ -217,6 +218,22 @@ void DLCManagerTest::LoadResources()
     dirToListFiles->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
     AddControl(dirToListFiles);
 
+    DLCDownloader::Hints hintsDefault;
+    std::stringstream ss;
+    ss << "handles " << hintsDefault.numOfMaxEasyHandles << " buf_size " << hintsDefault.chankMemBuffSize;
+
+    numHandlesInput = new UITextField(Rect(5, 410, 400, 20));
+    numHandlesInput->SetFont(font);
+    numHandlesInput->SetFontSize(14);
+    numHandlesInput->SetUtf8Text(ss.str());
+    numHandlesInput->SetDebugDraw(true);
+    numHandlesInput->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
+    numHandlesInput->SetInputEnabled(true);
+    numHandlesInput->GetOrCreateComponent<UIFocusComponent>();
+    numHandlesInput->SetDelegate(this);
+    numHandlesInput->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
+    AddControl(numHandlesInput);
+
     lsDirFromPacks = new UIButton(Rect(420, 300, 100, 20));
     lsDirFromPacks->SetDebugDraw(true);
     lsDirFromPacks->SetStateFont(0xFF, font);
@@ -247,6 +264,7 @@ void DLCManagerTest::UnloadResources()
     SafeRelease(checkFile);
     SafeRelease(startInit);
     SafeRelease(dirToListFiles);
+    SafeRelease(numHandlesInput);
     SafeRelease(lsDirFromPacks);
 
     BaseScreen::UnloadResources();
@@ -269,11 +287,13 @@ void DLCManagerTest::OnRequestUpdated(const DAVA::DLCManager::IRequest& request)
     float32 progress = static_cast<float32>(current) / total;
 
     std::stringstream ss;
-    ss << "downloading: " << packName << " : " << current << "/" << total << " (" << (progress * 100) << ")%";
+    ss << "downloading: " << packName << " : (" << (progress * 100) << ")%";
 
-    if (request.IsDownloaded())
+    DLCManager& dm = *engine.GetContext()->dlcManager;
+    auto p = dm.GetProgress();
+    if (p.total > 0)
     {
-        ss << " DOWNLOADED!!!";
+        ss << "\n total:" << (100.0 * p.alreadyDownloaded) / p.total << '%';
     }
 
     packNameLoading->SetUtf8Text(ss.str());
@@ -312,7 +332,21 @@ void DLCManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, vo
     dm.networkReady.Connect(this, &DLCManagerTest::OnNetworkReady);
     dm.initializeFinished.Connect(this, &DLCManagerTest::OnInitializeFinished);
 
-    dm.Initialize(folderWithDownloadedPacks, urlToServerSuperpack, DLCManager::Hints());
+    std::stringstream ss(numHandlesInput->GetUtf8Text());
+    int numHandles = 0;
+    int bufSize = 0;
+    String text;
+    ss >> text >> numHandles; // skip "handles " // last read num
+    ss >> text >> bufSize; // skip " buf_size " // last read num
+
+    DVASSERT(numHandles > 0);
+    DVASSERT(bufSize > 0);
+
+    DLCManager::Hints hints;
+    hints.downloaderMaxHandles = static_cast<uint32>(numHandles);
+    hints.downloaderChankBufSize = static_cast<uint32>(bufSize);
+
+    dm.Initialize(folderWithDownloadedPacks, urlToServerSuperpack, hints);
 
     dm.SetRequestingEnabled(true);
 
@@ -330,6 +364,8 @@ void DLCManagerTest::OnStartSyncClicked(DAVA::BaseObject* sender, void* data, vo
 void DLCManagerTest::OnClearDocsClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
     DLCManager& dm = *engine.GetContext()->dlcManager;
+
+    FileSystem::Instance()->DeleteDirectory(folderWithDownloadedPacks, true);
 
     packNameLoading->SetText(L"done: unmount all dvpk's, and remove dir with downloaded dvpk's");
 }

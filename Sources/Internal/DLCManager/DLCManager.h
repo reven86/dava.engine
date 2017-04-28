@@ -95,6 +95,8 @@ public:
         uint32 numOfThreadsPerFileDownload = 1; //!< this value passed to DownloadManager
         uint32 timeoutForDownload = 30; //!< this value passed to DownloadManager
         uint32 retriesCountForDownload = 3; //!< this value passed to DownloadManager
+        uint32 downloaderMaxHandles = 4; //!< play with any values you like from 1 to max open file per process
+        uint32 downloaderChankBufSize = 1024 * 1024; //!< 1Mb RAM buffer for one handle, you can set any value in bytes
     };
 
     /** Start complex initialization process. You can call it again if need.

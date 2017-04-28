@@ -70,6 +70,7 @@ struct DLCDownloader::Task
     void OnSubTaskDone();
     void GenerateChankSubRequests(const int chankSize);
     void SetupFullDownload();
+    void CorrectRangeToResumeDownloading();
     void SetupResumeDownload();
     void SetupGetSizeDownload();
 };

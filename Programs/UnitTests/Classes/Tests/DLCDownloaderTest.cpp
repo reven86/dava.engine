@@ -194,8 +194,27 @@ DAVA_TESTCLASS (DLCDownloaderTest)
         uint32 crcFromFile = CRC32::ForFile(p);
 
         TEST_VERIFY(crcFromFile == crc32);
+        ////-----resume-downloading------------------------------------------------
+        File* file = File::Create(p, File::OPEN | File::WRITE | File::READ);
+        if (file)
+        {
+            uint64 fileSize = file->GetSize();
+            TEST_VERIFY(fileSize == FULL_SIZE_ON_SERVER);
 
-        ////-----multi-files------------------------------------------------
+            bool result = file->Truncate(fileSize / 2);
+            TEST_VERIFY(result);
+
+            file->Release();
+        }
+        task = downloader->StartTask(url, p, DLCDownloader::TaskType::RESUME);
+
+        downloader->WaitTask(task);
+        downloader->RemoveTask(task);
+
+        crcFromFile = CRC32::ForFile(p);
+        TEST_VERIFY(crcFromFile == crc32);
+
+        ////-----multi-files-------------------------------------------------------
         DLCDownloader::Task* taskSize = downloader->StartTask(url, "", DLCDownloader::TaskType::SIZE);
         downloader->WaitTask(taskSize);
         uint64 sizeTotal = downloader->GetTaskStatus(taskSize).sizeTotal;

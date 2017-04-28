@@ -314,8 +314,6 @@ struct GetSizeSubTask : IDownloaderSubTask
                     uint64 posInFile = task->writer->GetSeekPos();
                     if (posInFile != 0)
                     {
-                        task->info.rangeOffset += posInFile;
-                        task->info.rangeSize -= posInFile;
                         task->restOffset += posInFile;
                         task->restSize -= posInFile;
                     }
@@ -494,6 +492,12 @@ struct DefaultWriter : DLCDownloader::IWriter
         f = nullptr;
     }
 
+    void MoveToEndOfFile()
+    {
+        bool result = f->Seek(0, File::eFileSeek::SEEK_FROM_END);
+        DVASSERT(result);
+    }
+
     // save next buffer bytes into memory or file
     uint64 Save(const void* ptr, uint64 size) override
     {
@@ -668,10 +672,13 @@ const DLCDownloader::TaskStatus& DLCDownloaderImpl::GetTaskStatus(Task* task)
 
 void DLCDownloaderImpl::SetHints(const Hints& h)
 {
-    DVASSERT(inputList.empty());
-    Deinitialize();
-    hints = h;
-    Initialize();
+    if (h.numOfMaxEasyHandles != hints.numOfMaxEasyHandles || h.chankMemBuffSize != hints.chankMemBuffSize)
+    {
+        DVASSERT(inputList.empty());
+        Deinitialize();
+        hints = h;
+        Initialize();
+    }
 }
 
 void DLCDownloaderImpl::RemoveDeletedTasks()
@@ -899,18 +906,30 @@ void DLCDownloader::Task::SetupFullDownload()
     }
 }
 
+void DLCDownloader::Task::CorrectRangeToResumeDownloading()
+{
+    uint64 pos = writer->GetSeekPos();
+    if (pos > 0)
+    {
+        restOffset += pos;
+        restSize -= pos;
+    }
+}
+
 void DLCDownloader::Task::SetupResumeDownload()
 {
     if (writer.get() == nullptr)
     {
-        writer.reset(new DefaultWriter(info.dstPath));
+        DefaultWriter* w = new DefaultWriter(info.dstPath);
+        writer.reset(w);
+        w->MoveToEndOfFile();
     }
 
     if (info.rangeOffset != -1 && info.rangeSize != -1)
     {
         // we already know size to download
-        // TODO generate range sub_requests
-        DVASSERT(false && "implement it");
+        // so correct range to download only rest of file
+        CorrectRangeToResumeDownloading();
     }
     else
     {

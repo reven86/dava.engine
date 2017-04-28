@@ -4,7 +4,7 @@
 #include "FileSystem/Private/PackArchive.h"
 #include "FileSystem/Private/PackMetaData.h"
 #include "FileSystem/FileAPIHelper.h"
-#include "DLCManager/Private/DLCDownloaderImpl.h"
+#include "DLCManager/DLCDownloader.h"
 #include "Utils/CRC32.h"
 #include "DLC/DLC.h"
 #include "Logger/Logger.h"
@@ -131,7 +131,7 @@ DLCManagerImpl::DLCManagerImpl(Engine* engine_)
     engine.update.Connect(this, &DLCManagerImpl::Update);
     engine.backgroundUpdate.Connect(this, &DLCManagerImpl::Update);
 
-    downloader.reset(new DLCDownloaderImpl());
+    downloader.reset(DLCDownloader::Create());
 }
 #endif
 
@@ -229,6 +229,12 @@ void DLCManagerImpl::Initialize(const FilePath& dirToDownloadPacks_,
     }
 
     log << __FUNCTION__ << std::endl;
+
+    DLCDownloader::Hints downloaderHints;
+    downloaderHints.numOfMaxEasyHandles = static_cast<int>(hints.downloaderMaxHandles);
+    downloaderHints.chankMemBuffSize = static_cast<int>(hints.downloaderChankBufSize);
+
+    downloader->SetHints(downloaderHints);
 
     // TODO check if signal asyncConnectStateChanged has any subscriber
 
