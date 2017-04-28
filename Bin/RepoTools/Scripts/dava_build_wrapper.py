@@ -153,6 +153,7 @@ class BuildWrapper():
         self.incredi_build = True if arg.incrediBuild == 'true' else False
         self.config = arg.config
         self.teamcity_log = True if arg.teamcityLog == 'true' else False
+        self.path_to_root = arg.pathToRoot
         self.path_to_dava = arg.pathToDava
         self.path_to_build = arg.pathToBuild
         self.native_options = arg.nativeOptions if arg.nativeOptions else ''
@@ -226,7 +227,10 @@ class BuildWrapper():
 
     def pathCleaning(self, line):
         """ Clear path before output """
-        line = line.replace(self.path_to_dava.rsplit(os.sep, 1)[0], '..')
+        if self.path_to_root:
+            line = line.replace(self.path_to_root, '..')
+        else:
+            line = line.replace(self.path_to_dava.rsplit(os.sep, 1)[0], '..')
         return line
 
 
@@ -238,6 +242,7 @@ def main():
     parser.add_argument('--incrediBuild', default='false', choices=['true', 'false'])
     parser.add_argument('--config', default='Debug', choices=['Debug', 'Release'])
     parser.add_argument('--teamcityLog', default='false', choices=['true', 'false'])
+    parser.add_argument('--pathToRoot')
     parser.add_argument('--pathToDava', required=True)
     parser.add_argument('--pathToBuild', required=True)
     parser.add_argument('--nativeOptions', help='Native options for cmake, for example "/p:Platform=x86"')
