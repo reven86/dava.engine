@@ -105,7 +105,7 @@ UIListCell* FormatsTest::CellAtIndex(UIList* list, int32 index)
         const float32 cellWidth = list->GetSize().x;
         const float32 cellHeight = CellHeight(list, index);
         cell = new UIListCell(Rect(0.f, 0.f, cellWidth, cellHeight), cellName);
-        cell->SetDebugDraw(true, false);
+        cell->GetOrCreateComponent<UIDebugRenderComponent>();
 
         const float32 formatNameWidth = Min(cellWidth / 2.0f, 200.0f);
         formatName = new UIStaticText(Rect(0., 0., formatNameWidth, cellHeight));

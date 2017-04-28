@@ -95,7 +95,7 @@ void ProfilerTest::LoadResources()
     AddControl(ScopedPtr<UIStaticText>(CreateStaticText(Rect(5.f, 525.f, 400.f, 35.f), L"JSON path: \"" + UTF8Utils::EncodeToWideString(PROFILER_TEST_DUMP_JSON_PATH) + L"\"", textFont, Color::White)));
 
     dumpScrollView = new UIScrollView();
-    dumpScrollView->SetDebugDraw(true);
+    dumpScrollView->GetOrCreateComponent<UIDebugRenderComponent>();
     UIControlBackground* dumpScrollViewBg = dumpScrollView->GetOrCreateComponent<UIControlBackground>();
     dumpScrollViewBg->SetColor(Color(0.f, 0.f, 0.f, 0.5f));
     dumpScrollViewBg->SetDrawType(UIControlBackground::DRAW_FILL);
@@ -146,7 +146,7 @@ UIButton* ProfilerTest::CreateButton(const Rect& rect, const WideString& text, c
     button->SetStateFontColor(UIControl::STATE_NORMAL, Color::White);
     button->SetStateFontColor(UIControl::STATE_PRESSED_INSIDE, Color(0.7f, 0.7f, 0.7f, 1.f));
     button->AddEvent(UIButton::EVENT_TOUCH_UP_INSIDE, msg);
-    button->SetDebugDraw(true);
+    button->GetOrCreateComponent<UIDebugRenderComponent>();
 
     return button;
 }

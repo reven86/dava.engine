@@ -42,7 +42,7 @@ void WebViewTest::LoadResources()
     ScopedPtr<UIButton> visibleBtn(new UIButton(Rect(440, 10, 200, 50)));
     visibleBtn->SetStateFont(0xFF, font);
     visibleBtn->SetStateText(0xFF, L"Show/hide with sleep");
-    visibleBtn->SetDebugDraw(true);
+    visibleBtn->GetOrCreateComponent<UIDebugRenderComponent>();
     visibleBtn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &WebViewTest::OnVisibleClick));
     AddControl(visibleBtn);
 }

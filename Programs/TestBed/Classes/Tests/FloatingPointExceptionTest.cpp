@@ -71,7 +71,7 @@ void FloatingPointExceptionTest::LoadResources()
     ScopedPtr<FTFont> font(FTFont::Create("~res:/Fonts/korinna.ttf"));
 
     ScopedPtr<UIButton> resetButton(new UIButton(Rect(420, 30, 200, 30)));
-    resetButton->SetDebugDraw(true);
+    resetButton->GetOrCreateComponent<UIDebugRenderComponent>();
     resetButton->SetStateFont(0xFF, font);
     resetButton->SetStateFontColor(0xFF, Color::White);
     resetButton->SetStateText(0xFF, L"Generate Floating point exception");

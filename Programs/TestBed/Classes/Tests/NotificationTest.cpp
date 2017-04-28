@@ -32,7 +32,7 @@ void NotificationScreen::LoadResources()
     showNotificationText->SetStateFontColor(0xFF, Color::White);
     showNotificationText->SetStateText(0xFF, L"Notify text");
 
-    showNotificationText->SetDebugDraw(true);
+    showNotificationText->GetOrCreateComponent<UIDebugRenderComponent>();
     showNotificationText->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &NotificationScreen::OnNotifyText));
     AddControl(showNotificationText);
 
@@ -41,7 +41,7 @@ void NotificationScreen::LoadResources()
     showNotificationTextDelayed->SetStateFontColor(0xFF, Color::White);
     showNotificationTextDelayed->SetStateText(0xFF, L"Notify text after X seconds");
 
-    showNotificationTextDelayed->SetDebugDraw(true);
+    showNotificationTextDelayed->GetOrCreateComponent<UIDebugRenderComponent>();
     showNotificationTextDelayed->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &NotificationScreen::OnNotifyTextDelayed));
     AddControl(showNotificationTextDelayed);
 
@@ -50,7 +50,7 @@ void NotificationScreen::LoadResources()
     cancelDelayedNotifications->SetStateFontColor(0xFF, Color::White);
     cancelDelayedNotifications->SetStateText(0xFF, L"Cancel all delayed notifications");
 
-    cancelDelayedNotifications->SetDebugDraw(true);
+    cancelDelayedNotifications->GetOrCreateComponent<UIDebugRenderComponent>();
     cancelDelayedNotifications->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &NotificationScreen::OnNotifyCancelDelayed));
     AddControl(cancelDelayedNotifications);
 
@@ -59,7 +59,7 @@ void NotificationScreen::LoadResources()
     hideNotificationText->SetStateFontColor(0xFF, Color::White);
     hideNotificationText->SetStateText(0xFF, L"Hide text");
 
-    hideNotificationText->SetDebugDraw(false);
+    hideNotificationText->GetOrCreateComponent<UIDebugRenderComponent>();
     hideNotificationText->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &NotificationScreen::OnHideText));
     AddControl(hideNotificationText);
 
@@ -68,7 +68,7 @@ void NotificationScreen::LoadResources()
     showNotificationProgress->SetStateFontColor(0xFF, Color::White);
     showNotificationProgress->SetStateText(0xFF, L"Notify progress");
 
-    showNotificationProgress->SetDebugDraw(true);
+    showNotificationProgress->GetOrCreateComponent<UIDebugRenderComponent>();
     showNotificationProgress->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &NotificationScreen::OnNotifyProgress));
     AddControl(showNotificationProgress);
 
@@ -77,7 +77,7 @@ void NotificationScreen::LoadResources()
     hideNotificationProgress->SetStateFontColor(0xFF, Color::White);
     hideNotificationProgress->SetStateText(0xFF, L"Hide progress");
 
-    hideNotificationProgress->SetDebugDraw(false);
+    hideNotificationProgress->GetOrCreateComponent<UIDebugRenderComponent>();
     hideNotificationProgress->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &NotificationScreen::OnHideProgress));
     AddControl(hideNotificationProgress);
 
@@ -91,7 +91,7 @@ void NotificationScreen::LoadResources()
     notificationDelayTextField = new UITextField(Rect(420, 100, 35, 60));
     notificationDelayTextField->GetOrCreateComponent<UIFocusComponent>();
     notificationDelayTextField->SetFont(font);
-    notificationDelayTextField->SetDebugDraw(true);
+    notificationDelayTextField->GetOrCreateComponent<UIDebugRenderComponent>();
     notificationDelayTextField->SetTextAlign(ALIGN_HCENTER | ALIGN_VCENTER);
     notificationDelayTextField->SetText(L"5");
     AddControl(notificationDelayTextField);
@@ -170,7 +170,7 @@ void NotificationScreen::OnNotifyText(BaseObject* obj, void* data, void* callerD
     notificationText->SetTitle(L"Application is on foreground!");
     notificationText->SetText(L"This text appeared at button press ");
 
-    hideNotificationText->SetDebugDraw(true);
+    hideNotificationText->GetOrCreateComponent<UIDebugRenderComponent>();
 }
 
 void NotificationScreen::OnNotifyTextDelayed(BaseObject* obj, void* data, void* callerData)
@@ -189,7 +189,7 @@ void NotificationScreen::OnHideText(BaseObject* obj, void* data, void* callerDat
     if (notificationText && notificationText->IsVisible())
     {
         notificationText->Hide();
-        hideNotificationText->SetDebugDraw(false);
+        hideNotificationText->GetOrCreateComponent<UIDebugRenderComponent>()->SetEnabled(false);
     }
     activateFromNotification->SetText(L"");
 }
@@ -209,7 +209,7 @@ void NotificationScreen::OnNotifyProgress(BaseObject* obj, void* data, void* cal
     notificationProgress->SetTitle(L"Fake Download Progress");
     notificationProgress->SetText(L"You pressed the button");
 
-    hideNotificationProgress->SetDebugDraw(true);
+    hideNotificationProgress->GetOrCreateComponent<UIDebugRenderComponent>()->SetEnabled(true);
 }
 
 void NotificationScreen::OnHideProgress(BaseObject* obj, void* data, void* callerData)
@@ -217,7 +217,7 @@ void NotificationScreen::OnHideProgress(BaseObject* obj, void* data, void* calle
     if (notificationProgress && notificationProgress->IsVisible())
     {
         notificationProgress->Hide();
-        hideNotificationProgress->SetDebugDraw(false);
+        hideNotificationProgress->GetOrCreateComponent<UIDebugRenderComponent>()->SetEnabled(false);
     }
 }
 
