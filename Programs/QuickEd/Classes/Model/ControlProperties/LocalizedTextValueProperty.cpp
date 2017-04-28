@@ -5,7 +5,7 @@
 using namespace DAVA;
 
 LocalizedTextValueProperty::LocalizedTextValueProperty(DAVA::BaseObject* anObject, const DAVA::String& name, const DAVA::Reflection& ref, const IntrospectionProperty* sourceProperty, eCloneType cloneType)
-    : IntrospectionProperty(anObject, Type::Instance<void>(), name, ref, sourceProperty, cloneType)
+    : IntrospectionProperty(anObject, nullptr, name, ref, sourceProperty, cloneType)
 {
     ApplyValue(ref.GetValue());
 }

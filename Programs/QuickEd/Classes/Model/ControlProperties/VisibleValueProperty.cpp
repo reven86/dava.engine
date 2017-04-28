@@ -3,7 +3,7 @@
 using namespace DAVA;
 
 VisibleValueProperty::VisibleValueProperty(DAVA::BaseObject* object, const String& name, const Reflection& ref, const IntrospectionProperty* sourceProperty, eCloneType copyType)
-    : IntrospectionProperty(object, Type::Instance<void>(), name, ref, sourceProperty, copyType)
+    : IntrospectionProperty(object, nullptr, name, ref, sourceProperty, copyType)
 {
     ApplyValue(ref.GetValue());
 }

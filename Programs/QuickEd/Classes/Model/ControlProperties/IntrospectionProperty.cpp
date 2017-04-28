@@ -124,7 +124,7 @@ IntrospectionProperty* IntrospectionProperty::Create(UIControl* control, const S
     }
     else
     {
-        return new IntrospectionProperty(control, Type::Instance<void>(), name, ref, sourceProperty, cloneType);
+        return new IntrospectionProperty(control, nullptr, name, ref, sourceProperty, cloneType);
     }
 }
 
