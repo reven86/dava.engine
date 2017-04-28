@@ -8,32 +8,37 @@ set          ( WARNINGS_AS_ERRORS true )
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" )
 include      ( CMake-common )
 
-# DISABLED since MemoryManager do not work with DLLs 
 # Enable MemoryManagerTest in UnitTests
 # this variable should be defined in all dependant projects (dava framework, etc)
-# if( NOT DAVA_MEGASOLUTION AND NOT DISABLE_MEMORY_PROFILER )
-#    set ( DAVA_MEMORY_PROFILER 1 )
-# endif()
+if( NOT DAVA_MEGASOLUTION AND NOT DISABLE_MEMORY_PROFILER )
+    set ( DAVA_MEMORY_PROFILER 1 )
+endif()
 
 # Now unittests is core v2 only
 set (DAVA_COREV2 1)
 dava_add_definitions(-D__DAVAENGINE_COREV2__)
 
+if ( WIN32 OR MACOS )
+    find_package(DavaTools REQUIRED )
+endif()
+
 # Enable LOCALIZATION_DEBUG in UnitTests to verify successful compilation
 dava_add_definitions(-DLOCALIZATION_DEBUG)
 
-set ( DAVA_COMPONENTS "SampleModule" "DAVA_DISABLE_AUTOTESTS" )
+set ( DAVA_COMPONENTS "Sound" DAVA_DISABLE_AUTOTESTS )
 if ( WIN32 AND NOT WINDOWS_UAP )
     list ( APPEND DAVA_COMPONENTS "CEFWebview" )
 endif ()
+
+if (NOT ANDROID)
+    list ( APPEND DAVA_COMPONENTS "SampleModule" )
+endif()
 
 #if( NOT WINDOWS_UAP AND ( MACOS OR WIN32 ) )
 #    add_plugin( SamplePlugin "${DAVA_MODULES_DIR}/SamplePlugin" COMPONENTS  ${DAVA_COMPONENTS} )
 #endif()
 
-if ( WIN32 OR MACOS )
-    find_package(DavaTools REQUIRED )
-endif()
+
 find_package( Steam REQUIRED )
 find_package( DavaFramework REQUIRED COMPONENTS "${DAVA_COMPONENTS}" )
 find_package( EmbeddedWebServer REQUIRED )
