@@ -194,11 +194,7 @@ void AutotestingDB::Log(const String& level, const String& message)
     Logger::eLogLevel logLevel = (it != stringToLevel.end()) ? it->second : Logger::LEVEL_ERROR;
     Logger::eLogLevel oldLogLevel = logger->GetLogLevel();
     logger->SetLogLevel(Logger::LEVEL_DEBUG);
-    const char8* text = message.c_str();
-    va_list vl;
-    va_start(vl, text);
-    logger->Logv(logFilePath, logLevel, text, vl);
-    va_end(vl);
+    Logger::LogToFile(logFilePath, logLevel, "%s", message.c_str());
     logger->SetLogLevel(oldLogLevel);
 }
 

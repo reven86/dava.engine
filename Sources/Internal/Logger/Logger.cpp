@@ -267,6 +267,18 @@ void Logger::ErrorToFile(const FilePath& customLogFileName, const char8* text, .
     }
 }
 
+void Logger::LogToFile(const FilePath& customLogFileName, eLogLevel ll, const char8* text, ...)
+{
+    Logger* log = Logger::Instance();
+    if (nullptr != log)
+    {
+        va_list vl;
+        va_start(vl, text);
+        log->Logv(customLogFileName, ll, text, vl);
+        va_end(vl);
+    }
+}
+
 void Logger::AddCustomOutput(DAVA::LoggerOutput* lo)
 {
     Logger* log = Logger::Instance();
