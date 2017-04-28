@@ -37,6 +37,7 @@ namespace FilesTestDetails
 {
 class LocalMockModule;
 bool CopyDirectoryRecursively(const DAVA::FilePath& sourceDirectory, const DAVA::FilePath& destinationDirectory);
+void CompareFiles(const DAVA::FilePath& left, const DAVA::FilePath& right);
 }
 
 DAVA_TARC_TESTCLASS(FilesTest)
@@ -73,7 +74,7 @@ DAVA_TARC_TESTCLASS(FilesTest)
         FilePath testDir("~res:/QuickEd/Test/");
         TEST_VERIFY(FilesTestDetails::CopyDirectoryRecursively(testDir, projectPath));
 
-        FilePath path("~res:/UI/testEquality.yaml");
+        FilePath path("~res:/UI/TestEquality.yaml");
 
         InvokeOperation(QEGlobal::OpenDocumentByPath.ID, path, GetContextManager());
         TEST_VERIFY(accessor->GetContextCount() == 1);
@@ -84,18 +85,15 @@ DAVA_TARC_TESTCLASS(FilesTest)
         DocumentData* documentData = activeContext->GetData<DocumentData>();
         PackageNode* package = documentData->GetPackageNode();
 
-        FilePath newPath = projectPath + "/DataSource/UI/savedTestEquality.yaml";
+        FilePath newPath = projectPath + "/DataSource/UI/SavedTestEquality.yaml";
 
         YamlPackageSerializer serializer;
         serializer.SerializePackage(package);
         TEST_VERIFY(serializer.WriteToFile(newPath));
 
         FileSystem* fs = accessor->GetEngineContext()->fileSystem;
-        Vector<uint8> originalData;
-        Vector<uint8> newData;
-        fs->ReadFileContents(path, originalData);
-        fs->ReadFileContents(newPath, newData);
-        TEST_VERIFY(originalData == newData);
+
+        FilesTestDetails::CompareFiles(path, newPath);
     }
 };
 
@@ -179,4 +177,19 @@ bool CopyDirectoryRecursively(const DAVA::FilePath& sourceDirectory, const DAVA:
     return ret;
 }
 
-} //namespace SSIT
+void CompareFiles(const DAVA::FilePath& left, const DAVA::FilePath& right)
+{
+    using namespace DAVA;
+
+    ScopedPtr<File> leftFile(File::Create(left, File::OPEN | File::READ));
+    TEST_VERIFY(leftFile);
+    ScopedPtr<File> rightFile(File::Create(left, File::OPEN | File::READ));
+    TEST_VERIFY(rightFile);
+    while (leftFile->IsEof() == false && rightFile->IsEof() == false)
+    {
+        TEST_VERIFY(leftFile->ReadLine() == rightFile->ReadLine());
+    }
+    TEST_VERIFY(leftFile->IsEof() && rightFile->IsEof());
+}
+
+} //namespace FilesTestDetails
