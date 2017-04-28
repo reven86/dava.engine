@@ -4,6 +4,7 @@
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/YamlParser.h"
 #include "FileSystem/YamlNode.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {

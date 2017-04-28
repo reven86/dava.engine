@@ -494,8 +494,12 @@ void UIPackageLoader::ProcessLegacyAligns(const YamlNode* node, AbstractUIPackag
             for (const std::unique_ptr<ReflectedStructure::Field>& field : fields)
             {
                 const FastName& name = field->name;
-                Any res = ReadAnyFromYamlNode(field.get(), node, legacyAlignsMap[name]);
-                builder->ProcessProperty(*field, res);
+                auto iter = legacyAlignsMap.find(name);
+                if (iter != legacyAlignsMap.end())
+                {
+                    Any res = ReadAnyFromYamlNode(field.get(), node, legacyAlignsMap[name]);
+                    builder->ProcessProperty(*field, res);
+                }
             }
         }
 
@@ -543,12 +547,17 @@ Vector<UIPackageLoader::ComponentNode> UIPackageLoader::ExtractComponentNodes(co
 
 Any UIPackageLoader::ReadAnyFromYamlNode(const ReflectedStructure::Field* fieldRef, const YamlNode* node, const FastName& name)
 {
-    const YamlNode* valueNode = node->Get(name.c_str());
-
-    if (valueNode)
+    Any res;
+    if (!name.empty())
     {
-        return valueNode->AsAny(fieldRef);
+        const YamlNode* valueNode = node->Get(name.c_str());
+
+        if (valueNode)
+        {
+            res = valueNode->AsAny(fieldRef);
+        }
     }
-    return Any();
+
+    return res;
 }
 }
