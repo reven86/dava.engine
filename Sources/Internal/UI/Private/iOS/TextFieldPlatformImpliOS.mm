@@ -13,7 +13,7 @@
 #include "Core/Core.h"
 #include "UI/UIControlSystem.h"
 #include "Render/Image/Image.h"
-#include "UI/UIControlSystem.h"
+#include "UI/UIControlBackground.h"
 #include "Utils/NSStringUtils.h"
 #include "Utils/UTF8Utils.h"
 #include "Logger/Logger.h"
@@ -706,7 +706,7 @@ void TextFieldPlatformImpl::UpdateStaticTexture()
     else
     {
         // remove background component
-        davaTextField.RemoveComponent(UIComponent::BACKGROUND_COMPONENT);
+        davaTextField.RemoveComponent(Type::Instance<UIControlBackground>());
     }
 }
 

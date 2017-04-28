@@ -2,6 +2,7 @@
 
 #include "UI/Private/Android/WebViewControlAndroid.h"
 #include "UI/UIControlSystem.h"
+#include "UI/UIControlBackground.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #if defined(__DAVAENGINE_COREV2__)
@@ -585,7 +586,7 @@ void JniWebView::PageLoaded(int id, int* rawPixels, int width, int height)
     else
     {
         // reset sprite to prevent render old sprite under native webveiw
-        webView.RemoveComponent(UIComponent::BACKGROUND_COMPONENT);
+        webView.RemoveComponent(Type::Instance<UIControlBackground>());
     }
 }
 
