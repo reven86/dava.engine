@@ -1,5 +1,6 @@
 #pragma once
 #include "Reflection/Reflection.h"
+#include "Reflection/ReflectedTypeDB.h"
 #include "UI/Components/UIComponent.h"
 
 namespace DAVA
@@ -22,9 +23,7 @@ UIComponent registration also introduces 'runtimeType' (just integer) for UIComp
 class ComponentManager
 {
 public:
-    /**
-    Register new component of specified type 'T'. The behavior is undefined until 'T' is a UIComponent subclass.
-    */
+    /** Register new component of specified type 'T'. The behavior is undefined until 'T' is a UIComponent subclass. */
     template <class T>
     void RegisterComponent();
 
@@ -34,19 +33,17 @@ public:
     /** Check if specified 'type' was registered as UIComponent. */
     bool IsUIComponent(const Type* type);
 
-    /**
-    Return runtimeType for specified 'type'. The behavior is undefined until 'type' is registered in ComponentManager.
-    */
+    /** Return runtimeType for specified 'type'. The behavior is undefined until 'type' is registered in ComponentManager. */
     int32 GetRuntimeType(const Type* type);
 
-    /**
-    Return reference to internal Type=>runtimeType map. Used for enumerating of registered types.
-    */
-    const UnorderedMap<const Type*, int32>& GetRegisteredTypes();
+    /** Return reference to sorted vector of registered components types. */
+    Vector<const Type*>& GetRegisteredComponents();
 
 private:
     int32 runtimeComponentsCount = 0;
     UnorderedMap<const Type*, int32> typeToRuntimeType;
+
+    Vector<const Type*> sortedTypes;
 };
 
 template <class T>
@@ -57,7 +54,15 @@ void ComponentManager::RegisterComponent()
     {
         T::runtimeType = runtimeComponentsCount;
         T::reflectionType = Type::Instance<T>();
-        typeToRuntimeType[Type::Instance<T>()] = runtimeComponentsCount;
+        typeToRuntimeType[T::reflectionType] = runtimeComponentsCount;
+
+        sortedTypes.push_back(T::reflectionType);
+        std::sort(sortedTypes.begin(), sortedTypes.end(),
+                  [](const Type*& a, const Type*& b) -> bool
+                  {
+                      return ReflectedTypeDB::GetByType(a)->GetPermanentName() < ReflectedTypeDB::GetByType(b)->GetPermanentName();
+                  });
+
         runtimeComponentsCount++;
     }
     else
@@ -78,9 +83,9 @@ inline int32 ComponentManager::GetRuntimeType(const Type* type)
     return typeToRuntimeType[type];
 }
 
-inline const UnorderedMap<const Type*, int32>& ComponentManager::GetRegisteredTypes()
+inline Vector<const Type*>& ComponentManager::GetRegisteredComponents()
 {
-    return typeToRuntimeType;
+    return sortedTypes;
 }
 
 inline uint32 ComponentManager::GetComponentsCount()

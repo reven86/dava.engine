@@ -183,14 +183,14 @@ void PropertiesWidget::OnSelectionChanged(const QItemSelection& /*selected*/, co
 QAction* PropertiesWidget::CreateAddComponentAction()
 {
     QMenu* addComponentMenu = new QMenu(this);
-    auto& types = GetEngineContext()->componentManager->GetRegisteredTypes();
-    for (auto& pair : types)
+    auto& components = GetEngineContext()->componentManager->GetRegisteredComponents();
+    for (auto& c : components)
     {
-        if (!ComponentPropertiesSection::IsHiddenComponent(pair.first))
+        if (!ComponentPropertiesSection::IsHiddenComponent(c))
         {
-            const String& name = ReflectedTypeDB::GetByType(pair.first)->GetPermanentName();
+            const String& name = ReflectedTypeDB::GetByType(c)->GetPermanentName();
             QAction* componentAction = new QAction(name.c_str(), this); // TODO: Localize name
-            componentAction->setData(QVariant::fromValue(Any(pair.first)));
+            componentAction->setData(QVariant::fromValue(Any(c)));
             addComponentMenu->addAction(componentAction);
         }
     }

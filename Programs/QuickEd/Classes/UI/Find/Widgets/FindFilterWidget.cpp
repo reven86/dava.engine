@@ -59,13 +59,13 @@ public:
     {
         Vector<ComboBoxFilterEditor::ComboBoxData> data;
 
-        auto& types = GetEngineContext()->componentManager->GetRegisteredTypes();
+        auto& components = GetEngineContext()->componentManager->GetRegisteredComponents();
         int32 i = 0;
-        for (auto& pair : types)
+        for (auto& c : components)
         {
             ComboBoxFilterEditor::ComboBoxData d;
-            d.description = ReflectedTypeDB::GetByType(pair.first)->GetPermanentName();
-            d.userData = reinterpret_cast<uint64>(pair.first);
+            d.description = ReflectedTypeDB::GetByType(c)->GetPermanentName();
+            d.userData = reinterpret_cast<uint64>(c);
             data.push_back(d);
         }
 

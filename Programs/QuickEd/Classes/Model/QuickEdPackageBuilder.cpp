@@ -233,16 +233,15 @@ void QuickEdPackageBuilder::EndControl(eControlPlace controlPlace)
 
     // the following code handles cases when component was created by control himself (UIParticles creates UIUpdateComponent for example)
     ComponentManager* cm = GetEngineContext()->componentManager;
-    auto& componentMap = cm->GetRegisteredTypes();
-    for (auto& pair : componentMap)
+    auto& components = cm->GetRegisteredComponents();
+    for (auto& c : components)
     {
-        const Type* componentType = pair.first;
-        const ComponentPropertiesSection* section = lastControl->GetRootProperty()->FindComponentPropertiesSection(componentType, 0);
+        const ComponentPropertiesSection* section = lastControl->GetRootProperty()->FindComponentPropertiesSection(c, 0);
 
-        if (section == nullptr && lastControl->GetControl()->GetComponentCount(componentType) > 0 &&
-            !ComponentPropertiesSection::IsHiddenComponent(componentType))
+        if (section == nullptr && lastControl->GetControl()->GetComponentCount(c) > 0 &&
+            !ComponentPropertiesSection::IsHiddenComponent(c))
         {
-            BeginComponentPropertiesSection(componentType, 0);
+            BeginComponentPropertiesSection(c, 0);
             EndComponentPropertiesSection();
         }
     }
