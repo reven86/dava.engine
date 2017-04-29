@@ -92,11 +92,19 @@ String JavaStringToString(jstring string, JNIEnv* env)
 
         if (env != nullptr)
         {
-            const char* rawString = env->GetStringUTFChars(string, nullptr);
-            if (rawString != nullptr)
+            JavaClass stringClass("java/lang/String");
+            Function<jbyteArray(jobject, jstring)> methodGetBytes = stringClass.GetMethod<jbyteArray, jstring>("getBytes");
+            LocalRef<jstring> charsetName(env->NewStringUTF("UTF-8"));
+            LocalRef<jbyteArray> stringJbytes = methodGetBytes(string, charsetName);
+
+            const jsize length = env->GetArrayLength(stringJbytes);
+            jbyte* pBytes = env->GetByteArrayElements(stringJbytes, NULL);
+            JNI::CheckJavaException(env, true);
+            if (pBytes != nullptr)
             {
-                result = rawString;
-                env->ReleaseStringUTFChars(string, rawString);
+                result.assign(reinterpret_cast<char*>(pBytes), reinterpret_cast<char*>(pBytes + length));
+                env->ReleaseByteArrayElements(stringJbytes, pBytes, JNI_ABORT);
+                JNI::CheckJavaException(env, true);
             }
         }
     }
