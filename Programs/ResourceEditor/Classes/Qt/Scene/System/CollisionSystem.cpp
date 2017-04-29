@@ -295,13 +295,13 @@ void SceneCollisionSystem::Process(DAVA::float32 timeElapsed)
     }
 
     DAVA::TransformSingleComponent* tsc = GetScene()->transformSingleComponent;
-    for (DAVA::TransformComponent* t : tsc->localTransformChanged)
+    for (DAVA::Entity* entity : tsc->localTransformChanged)
     {
-        UpdateCollisionObject(Selectable(t->GetEntity()));
+        UpdateCollisionObject(Selectable(entity));
     }
-    for (DAVA::TransformComponent* t : tsc->transformParentChanged)
+    for (DAVA::Entity* entity : tsc->transformParentChanged)
     {
-        UpdateCollisionObject(Selectable(t->GetEntity()));
+        UpdateCollisionObject(Selectable(entity));
     }
 
     // check in there are entities that should be added or removed

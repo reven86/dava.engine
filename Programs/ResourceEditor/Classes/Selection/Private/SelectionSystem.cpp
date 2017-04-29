@@ -117,16 +117,16 @@ void SelectionSystem::Process(DAVA::float32 timeElapsed)
     }
 
     DAVA::TransformSingleComponent* tsc = GetScene()->transformSingleComponent;
-    for (DAVA::TransformComponent* t : tsc->localTransformChanged)
+    for (DAVA::Entity* entity : tsc->localTransformChanged)
     {
-        if (currentSelection.ContainsObject(t->GetEntity()))
+        if (currentSelection.ContainsObject(entity))
         {
             invalidSelectionBoxes = true;
         }
     }
-    for (DAVA::TransformComponent* t : tsc->transformParentChanged)
+    for (DAVA::Entity* entity : tsc->transformParentChanged)
     {
-        if (currentSelection.ContainsObject(t->GetEntity()))
+        if (currentSelection.ContainsObject(entity))
         {
             invalidSelectionBoxes = true;
         }

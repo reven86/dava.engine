@@ -24,13 +24,13 @@ void OwnersSignatureSystem::AddEntity(DAVA::Entity* entity)
 void OwnersSignatureSystem::Process(DAVA::float32 timeElapsed)
 {
     DAVA::TransformSingleComponent* tsc = GetScene()->transformSingleComponent;
-    for (DAVA::TransformComponent* t : tsc->localTransformChanged)
+    for (DAVA::Entity* entity : tsc->localTransformChanged)
     {
-        UpdateOwner(t->GetEntity());
+        UpdateOwner(entity);
     }
-    for (DAVA::TransformComponent* t : tsc->transformParentChanged)
+    for (DAVA::Entity* entity : tsc->transformParentChanged)
     {
-        UpdateOwner(t->GetEntity());
+        UpdateOwner(entity);
     }
 }
 
