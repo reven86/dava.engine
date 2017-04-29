@@ -10,6 +10,7 @@
 #include "Scene3D/AnimationData.h"
 #include "Scene3D/Components/TransformComponent.h"
 #include "Scene3D/Components/ComponentHelpers.h"
+#include "Scene3D/Components/SingleComponents/TransformSingleComponent.h"
 
 namespace DAVA
 {
@@ -63,7 +64,8 @@ void AnimationSystem::Process(float32 timeElapsed)
         Matrix4 animTransform;
         comp->animation->Interpolate(comp->time, comp->frameIndex).GetMatrix(animTransform);
         comp->animationTransform = comp->animation->invPose * animTransform;
-        GlobalEventSystem::Instance()->Event(comp, EventSystem::ANIMATION_TRANSFORM_CHANGED);
+        TransformSingleComponent* tsc = GetScene()->transformSingleComponent;
+        tsc->animationTransformChanged.push_back(comp);
     }
 }
 
@@ -95,7 +97,8 @@ void AnimationSystem::MoveAnimationToFrame(AnimationComponent* comp, int frameIn
     Matrix4 animationMatrix;
     comp->animation->GetKeyForFrame(frameIndex).GetMatrix(animationMatrix);
     comp->animationTransform = comp->animation->invPose * animationMatrix;
-    GlobalEventSystem::Instance()->Event(comp, EventSystem::ANIMATION_TRANSFORM_CHANGED);
+    TransformSingleComponent* tsc = GetScene()->transformSingleComponent;
+    tsc->animationTransformChanged.push_back(comp);
 }
 
 void AnimationSystem::AddToActive(AnimationComponent* comp)

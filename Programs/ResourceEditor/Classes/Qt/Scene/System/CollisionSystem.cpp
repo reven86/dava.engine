@@ -24,6 +24,7 @@
 // framework
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/Components/TransformComponent.h"
+#include "Scene3D/Components/SingleComponents/TransformSingleComponent.h"
 #include "Scene3D/Scene.h"
 
 #define SIMPLE_COLLISION_BOX_SIZE 1.0f
@@ -61,8 +62,6 @@ SceneCollisionSystem::SceneCollisionSystem(DAVA::Scene* scene)
     landCollWorld->setDebugDrawer(landDebugDrawer);
 
     scene->GetEventSystem()->RegisterSystemForEvent(this, DAVA::EventSystem::SWITCH_CHANGED);
-    scene->GetEventSystem()->RegisterSystemForEvent(this, DAVA::EventSystem::LOCAL_TRANSFORM_CHANGED);
-    scene->GetEventSystem()->RegisterSystemForEvent(this, DAVA::EventSystem::TRANSFORM_PARENT_CHANGED);
 }
 
 SceneCollisionSystem::~SceneCollisionSystem()
@@ -295,6 +294,16 @@ void SceneCollisionSystem::Process(DAVA::float32 timeElapsed)
         return;
     }
 
+    DAVA::TransformSingleComponent* tsc = GetScene()->transformSingleComponent;
+    for (DAVA::TransformComponent* t : tsc->localTransformChanged)
+    {
+        UpdateCollisionObject(Selectable(t->GetEntity()));
+    }
+    for (DAVA::TransformComponent* t : tsc->transformParentChanged)
+    {
+        UpdateCollisionObject(Selectable(t->GetEntity()));
+    }
+
     // check in there are entities that should be added or removed
     if (!(objectsToAdd.empty() && objectsToRemove.empty()))
     {
@@ -457,8 +466,6 @@ void SceneCollisionSystem::ImmediateEvent(DAVA::Component* component, DAVA::uint
     switch (event)
     {
     case DAVA::EventSystem::SWITCH_CHANGED:
-    case DAVA::EventSystem::LOCAL_TRANSFORM_CHANGED:
-    case DAVA::EventSystem::TRANSFORM_PARENT_CHANGED:
     {
         UpdateCollisionObject(Selectable(component->GetEntity()));
         break;

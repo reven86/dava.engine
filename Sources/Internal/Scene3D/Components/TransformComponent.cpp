@@ -1,8 +1,7 @@
 #include "Scene3D/Components/TransformComponent.h"
 #include "Scene3D/Entity.h"
 #include "Scene3D/Scene.h"
-#include "Scene3D/Systems/EventSystem.h"
-#include "Scene3D/Systems/GlobalEventSystem.h"
+#include "Scene3D/Components/SingleComponents/TransformSingleComponent.h"
 #include "Reflection/ReflectionRegistrator.h"
 #include "Reflection/ReflectedMeta.h"
 
@@ -37,7 +36,11 @@ void TransformComponent::SetLocalTransform(const Matrix4* transform)
         worldMatrix = *transform;
     }
 
-    GlobalEventSystem::Instance()->Event(this, EventSystem::LOCAL_TRANSFORM_CHANGED);
+    if (entity && entity->GetScene() && entity->GetScene()->transformSingleComponent)
+    {
+        TransformSingleComponent* tsc = entity->GetScene()->transformSingleComponent;
+        tsc->localTransformChanged.push_back(this);
+    }
 }
 
 void TransformComponent::SetParent(Entity* node)
@@ -53,12 +56,20 @@ void TransformComponent::SetParent(Entity* node)
         parentMatrix = 0;
     }
 
-    GlobalEventSystem::Instance()->Event(this, EventSystem::TRANSFORM_PARENT_CHANGED);
+    if (entity && entity->GetScene() && entity->GetScene()->transformSingleComponent)
+    {
+        TransformSingleComponent* tsc = entity->GetScene()->transformSingleComponent;
+        tsc->transformParentChanged.push_back(this);
+    }
 }
 
 Matrix4& TransformComponent::ModifyLocalTransform()
 {
-    GlobalEventSystem::Instance()->Event(this, EventSystem::LOCAL_TRANSFORM_CHANGED);
+    if (entity && entity->GetScene() && entity->GetScene()->transformSingleComponent)
+    {
+        TransformSingleComponent* tsc = entity->GetScene()->transformSingleComponent;
+        tsc->localTransformChanged.push_back(this);
+    }
     return localMatrix;
 }
 

@@ -11,7 +11,7 @@ public:
     OwnersSignatureSystem(DAVA::Scene* scene, const DAVA::String& userName);
 
     void AddEntity(DAVA::Entity* entity) override;
-    void ImmediateEvent(DAVA::Component* component, DAVA::uint32 event) override;
+    void Process(DAVA::float32 timeElapsed) override;
 
 private:
     void UpdateOwner(DAVA::Entity* entity);

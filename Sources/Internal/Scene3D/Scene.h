@@ -48,6 +48,7 @@ class AnimationSystem;
 class LandscapeSystem;
 class LodSystem;
 class ParticleEffectDebugDrawSystem;
+class TransformSingleComponent;
 
 class UIEvent;
 
@@ -166,6 +167,8 @@ public:
     SkeletonSystem* skeletonSystem;
     LandscapeSystem* landscapeSystem;
     ParticleEffectDebugDrawSystem* particleEffectDebugDrawSystem;
+
+    TransformSingleComponent* transformSingleComponent = nullptr;
 
     /**
         \brief Overloaded GetScene returns this, instead of normal functionality.

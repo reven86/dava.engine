@@ -7,6 +7,7 @@
 #include "Scene3D/Scene.h"
 #include "Scene3D/Systems/GlobalEventSystem.h"
 #include "Scene3D/Components/ComponentHelpers.h"
+#include "Scene3D/Components/SingleComponents/TransformSingleComponent.h"
 #include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerMarkerNames.h"
 
@@ -15,26 +16,31 @@ namespace DAVA
 TransformSystem::TransformSystem(Scene* scene)
     : SceneSystem(scene)
 {
-    scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::LOCAL_TRANSFORM_CHANGED);
-    scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::TRANSFORM_PARENT_CHANGED);
-    scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::ANIMATION_TRANSFORM_CHANGED);
-}
-
-TransformSystem::~TransformSystem()
-{
-}
-
-void TransformSystem::LinkTransform(int32 parentIndex, int32 childIndex)
-{
-}
-
-void TransformSystem::UnlinkTransform(int32 childIndex)
-{
 }
 
 void TransformSystem::Process(float32 timeElapsed)
 {
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::SCENE_TRANSFORM_SYSTEM);
+
+    TransformSingleComponent* tsc = GetScene()->transformSingleComponent;
+    for (TransformComponent* t : tsc->localTransformChanged)
+    {
+        Entity* e = t->GetEntity();
+        EntityNeedUpdate(e);
+        HierahicAddToUpdate(e);
+    }
+    for (TransformComponent* t : tsc->transformParentChanged)
+    {
+        Entity* e = t->GetEntity();
+        EntityNeedUpdate(e);
+        HierahicAddToUpdate(e);
+    }
+    for (AnimationComponent* a : tsc->animationTransformChanged)
+    {
+        Entity* e = a->GetEntity();
+        EntityNeedUpdate(e);
+        HierahicAddToUpdate(e);
+    }
 
     passedNodes = 0;
     multipliedNodes = 0;
@@ -42,7 +48,6 @@ void TransformSystem::Process(float32 timeElapsed)
     uint32 size = static_cast<uint32>(updatableEntities.size());
     for (uint32 i = 0; i < size; ++i)
     {
-        //HierahicFindUpdatableTransform(updatableEntities[i]);
         FindNodeThatRequireUpdate(updatableEntities[i]);
     }
 
@@ -59,7 +64,6 @@ void TransformSystem::Process(float32 timeElapsed)
 
 void TransformSystem::FindNodeThatRequireUpdate(Entity* entity)
 {
-    //    stack1.push(entity);
     static const uint32 STACK_SIZE = 5000;
     uint32 stackPosition = 0;
     Entity* stack[STACK_SIZE];
@@ -115,17 +119,10 @@ void TransformSystem::TransformAllChildEntities(Entity* entity)
                 transform->worldMatrix = animComp->animationTransform * transform->localMatrix * *(transform->parentMatrix);
             else
                 transform->worldMatrix = transform->localMatrix * *(transform->parentMatrix);
-            //GlobalEventSystem::Instance()->Event(entity, EventSystem::WORLD_TRANSFORM_CHANGED);
             sendEvent.push_back(transform);
         }
 
         entity->RemoveFlag(Entity::TRANSFORM_NEED_UPDATE | Entity::TRANSFORM_DIRTY);
-
-        //        Vector<Entity*> & children = entity->children;
-        //        uint32 childrenSize = children.size();
-        //        std::memcpy(&(stack[stackPosition]), &(children[0]), childrenSize*sizeof(Entity*));
-        //        DVASSERT(stackPosition < STACK_SIZE - childrenSize);
-        //        stackPosition += childrenSize;
 
         uint32 size = entity->GetChildrenCount();
         for (uint32 i = 0; i < size; ++i)
@@ -167,24 +164,6 @@ void TransformSystem::HierahicFindUpdatableTransform(Entity* entity, bool forced
     entity->RemoveFlag(Entity::TRANSFORM_DIRTY);
 }
 
-void TransformSystem::SortAndThreadSplit()
-{
-}
-
-void TransformSystem::ImmediateEvent(Component* component, uint32 event)
-{
-    Entity* entity = component->GetEntity();
-    switch (event)
-    {
-    case EventSystem::LOCAL_TRANSFORM_CHANGED:
-    case EventSystem::TRANSFORM_PARENT_CHANGED:
-    case EventSystem::ANIMATION_TRANSFORM_CHANGED:
-        EntityNeedUpdate(entity);
-        HierahicAddToUpdate(entity);
-        break;
-    }
-}
-
 void TransformSystem::EntityNeedUpdate(Entity* entity)
 {
     entity->AddFlag(Entity::TRANSFORM_NEED_UPDATE);
@@ -210,13 +189,8 @@ void TransformSystem::HierahicAddToUpdate(Entity* entity)
 
 void TransformSystem::AddEntity(Entity* entity)
 {
-    TransformComponent* transform = static_cast<TransformComponent*>(entity->GetComponent(Component::TRANSFORM_COMPONENT));
-    if (!transform)
-        return; //just in case
-    if (transform->parentMatrix)
-        transform->worldMatrix = transform->localMatrix * *(transform->parentMatrix);
-    else
-        transform->worldMatrix = transform->localMatrix;
+    EntityNeedUpdate(entity);
+    HierahicAddToUpdate(entity);
 }
 
 void TransformSystem::RemoveEntity(Entity* entity)
