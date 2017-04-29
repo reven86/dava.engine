@@ -28,15 +28,14 @@ void LodSystem::Process(float32 timeElapsed)
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::SCENE_LOD_SYSTEM);
 
     TransformSingleComponent* tsc = GetScene()->transformSingleComponent;
-    for (TransformComponent* t : tsc->worldTransformChanged)
+    for (Entity* entity : tsc->worldTransformChanged)
     {
-        Entity* entity = t->GetEntity();
         auto iter = fastMap.find(entity);
         if (iter != fastMap.end())
         {
             int32 index = iter->second;
             FastStruct* fast = &fastVector[index];
-            fast->position = t->GetWorldTransform().GetTranslationVector();
+            fast->position = static_cast<TransformComponent*>(entity->GetComponent(Component::TRANSFORM_COMPONENT))->GetWorldTransform().GetTranslationVector();
         }
     }
 

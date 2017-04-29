@@ -39,7 +39,7 @@ void TransformComponent::SetLocalTransform(const Matrix4* transform)
     if (entity && entity->GetScene() && entity->GetScene()->transformSingleComponent)
     {
         TransformSingleComponent* tsc = entity->GetScene()->transformSingleComponent;
-        tsc->localTransformChanged.push_back(this);
+        tsc->localTransformChanged.push_back(entity);
     }
 }
 
@@ -59,7 +59,7 @@ void TransformComponent::SetParent(Entity* node)
     if (entity && entity->GetScene() && entity->GetScene()->transformSingleComponent)
     {
         TransformSingleComponent* tsc = entity->GetScene()->transformSingleComponent;
-        tsc->transformParentChanged.push_back(this);
+        tsc->transformParentChanged.push_back(entity);
     }
 }
 
@@ -68,7 +68,7 @@ Matrix4& TransformComponent::ModifyLocalTransform()
     if (entity && entity->GetScene() && entity->GetScene()->transformSingleComponent)
     {
         TransformSingleComponent* tsc = entity->GetScene()->transformSingleComponent;
-        tsc->localTransformChanged.push_back(this);
+        tsc->localTransformChanged.push_back(entity);
     }
     return localMatrix;
 }

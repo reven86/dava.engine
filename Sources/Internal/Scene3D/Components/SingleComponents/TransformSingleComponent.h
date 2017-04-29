@@ -4,15 +4,14 @@
 
 namespace DAVA
 {
-class TransformComponent;
-class AnimationComponent;
+class Entity;
 class TransformSingleComponent
 {
 public:
-    Vector<TransformComponent*> localTransformChanged;
-    Vector<TransformComponent*> transformParentChanged;
-    Vector<TransformComponent*> worldTransformChanged;
-    Vector<AnimationComponent*> animationTransformChanged;
+    Vector<Entity*> localTransformChanged;
+    Vector<Entity*> transformParentChanged;
+    Vector<Entity*> worldTransformChanged;
+    Vector<Entity*> animationTransformChanged;
 
     void Clear()
     {

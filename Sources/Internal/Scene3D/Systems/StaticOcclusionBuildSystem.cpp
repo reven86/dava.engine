@@ -262,9 +262,8 @@ void StaticOcclusionBuildSystem::SceneForceLod(int32 forceLodIndex)
 void StaticOcclusionBuildSystem::Process(float32 timeElapsed)
 {
     TransformSingleComponent* tsc = GetScene()->transformSingleComponent;
-    for (TransformComponent* t : tsc->worldTransformChanged)
+    for (Entity* entity : tsc->worldTransformChanged)
     {
-        Entity* entity = t->GetEntity();
         StaticOcclusionComponent* component = static_cast<StaticOcclusionComponent*>(entity->GetComponent(Component::STATIC_OCCLUSION_COMPONENT));
         if (component->GetPlaceOnLandscape())
         {

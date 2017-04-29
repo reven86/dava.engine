@@ -90,15 +90,14 @@ void StaticOcclusionSystem::Process(float32 timeElapsed)
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::SCENE_STATIC_OCCLUSION_SYSTEM)
 
     TransformSingleComponent* tsc = GetScene()->transformSingleComponent;
-    for (TransformComponent* t : tsc->worldTransformChanged)
+    for (Entity* entity : tsc->worldTransformChanged)
     {
-        Entity* entity = t->GetEntity();
         StaticOcclusionDebugDrawComponent* debugDrawComponent = GetStaticOcclusionDebugDrawComponent(entity);
         if (debugDrawComponent && debugDrawComponent->GetRenderObject())
         {
             RenderObject* object = debugDrawComponent->GetRenderObject();
             // Update new transform pointer, and mark that transform is changed
-            Matrix4* worldTransformPointer = t->GetWorldTransformPtr();
+            Matrix4* worldTransformPointer = static_cast<TransformComponent*>(entity->GetComponent(Component::TRANSFORM_COMPONENT))->GetWorldTransformPtr();
             object->SetWorldTransformPtr(worldTransformPointer);
             GetScene()->renderSystem->MarkForUpdate(object);
         }

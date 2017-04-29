@@ -21,21 +21,18 @@ void TransformSystem::Process(float32 timeElapsed)
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::SCENE_TRANSFORM_SYSTEM);
 
     TransformSingleComponent* tsc = GetScene()->transformSingleComponent;
-    for (TransformComponent* t : tsc->localTransformChanged)
+    for (Entity* e : tsc->localTransformChanged)
     {
-        Entity* e = t->GetEntity();
         EntityNeedUpdate(e);
         HierahicAddToUpdate(e);
     }
-    for (TransformComponent* t : tsc->transformParentChanged)
+    for (Entity* e : tsc->transformParentChanged)
     {
-        Entity* e = t->GetEntity();
         EntityNeedUpdate(e);
         HierahicAddToUpdate(e);
     }
-    for (AnimationComponent* a : tsc->animationTransformChanged)
+    for (Entity* e : tsc->animationTransformChanged)
     {
-        Entity* e = a->GetEntity();
         EntityNeedUpdate(e);
         HierahicAddToUpdate(e);
     }
@@ -115,7 +112,7 @@ void TransformSystem::TransformAllChildEntities(Entity* entity)
             else
                 transform->worldMatrix = transform->localMatrix * *(transform->parentMatrix);
             TransformSingleComponent* tsc = GetScene()->transformSingleComponent;
-            tsc->worldTransformChanged.push_back(transform);
+            tsc->worldTransformChanged.push_back(entity);
         }
 
         entity->RemoveFlag(Entity::TRANSFORM_NEED_UPDATE | Entity::TRANSFORM_DIRTY);
@@ -144,7 +141,7 @@ void TransformSystem::HierahicFindUpdatableTransform(Entity* entity, bool forced
         {
             transform->worldMatrix = transform->localMatrix * *(transform->parentMatrix);
             TransformSingleComponent* tsc = GetScene()->transformSingleComponent;
-            tsc->worldTransformChanged.push_back(transform);
+            tsc->worldTransformChanged.push_back(entity);
         }
     }
 

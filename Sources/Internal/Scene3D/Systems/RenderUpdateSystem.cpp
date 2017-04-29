@@ -56,9 +56,8 @@ void RenderUpdateSystem::Process(float32 timeElapsed)
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::SCENE_RENDER_UPDATE_SYSTEM);
 
     TransformSingleComponent* tsc = GetScene()->transformSingleComponent;
-    for (TransformComponent* t : tsc->worldTransformChanged)
+    for (Entity* entity : tsc->worldTransformChanged)
     {
-        Entity* entity = t->GetEntity();
         RenderComponent* rc = static_cast<RenderComponent*>(entity->GetComponent(Component::RENDER_COMPONENT));
         if (rc && rc->GetRenderObject())
         {

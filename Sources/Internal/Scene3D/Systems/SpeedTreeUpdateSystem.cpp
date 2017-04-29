@@ -83,9 +83,9 @@ void SpeedTreeUpdateSystem::Process(float32 timeElapsed)
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::SCENE_SPEEDTREE_SYSTEM);
 
     TransformSingleComponent* tsc = GetScene()->transformSingleComponent;
-    for (TransformComponent* t : tsc->worldTransformChanged)
+    for (Entity* entity : tsc->worldTransformChanged)
     {
-        SpeedTreeComponent* component = GetSpeedTreeComponent(t->GetEntity());
+        SpeedTreeComponent* component = GetSpeedTreeComponent(entity);
         if (component)
         {
             Matrix4* wtMxPrt = GetTransformComponent(component->GetEntity())->GetWorldTransformPtr();

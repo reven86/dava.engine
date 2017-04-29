@@ -65,7 +65,7 @@ void AnimationSystem::Process(float32 timeElapsed)
         comp->animation->Interpolate(comp->time, comp->frameIndex).GetMatrix(animTransform);
         comp->animationTransform = comp->animation->invPose * animTransform;
         TransformSingleComponent* tsc = GetScene()->transformSingleComponent;
-        tsc->animationTransformChanged.push_back(comp);
+        tsc->animationTransformChanged.push_back(comp->GetEntity());
     }
 }
 
@@ -98,7 +98,7 @@ void AnimationSystem::MoveAnimationToFrame(AnimationComponent* comp, int frameIn
     comp->animation->GetKeyForFrame(frameIndex).GetMatrix(animationMatrix);
     comp->animationTransform = comp->animation->invPose * animationMatrix;
     TransformSingleComponent* tsc = GetScene()->transformSingleComponent;
-    tsc->animationTransformChanged.push_back(comp);
+    tsc->animationTransformChanged.push_back(comp->GetEntity());
 }
 
 void AnimationSystem::AddToActive(AnimationComponent* comp)
