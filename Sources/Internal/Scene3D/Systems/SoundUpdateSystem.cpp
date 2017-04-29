@@ -66,23 +66,23 @@ void SoundUpdateSystem::Process(float32 timeElapsed)
     TransformSingleComponent* tsc = GetScene()->transformSingleComponent;
     for (TransformComponent* t : tsc->worldTransformChanged)
     {
-        const Matrix4& worldTransform = GetTransformComponent(t->GetEntity())->GetWorldTransform();
-        Vector3 translation = worldTransform.GetTranslationVector();
-
-        SoundComponent* sc = GetSoundComponent(t->GetEntity());
-        DVASSERT(sc);
-
-        uint32 eventsCount = sc->GetEventsCount();
-        for (uint32 i = 0; i < eventsCount; ++i)
+        if (SoundComponent* sc = static_cast<SoundComponent*>(t->GetEntity()->GetComponent(Component::SOUND_COMPONENT)))
         {
-            SoundEvent* sound = sc->GetSoundEvent(i);
-            sound->SetPosition(translation);
-            if (sound->IsDirectional())
+            const Matrix4& worldTransform = GetTransformComponent(t->GetEntity())->GetWorldTransform();
+            Vector3 translation = worldTransform.GetTranslationVector();
+
+            uint32 eventsCount = sc->GetEventsCount();
+            for (uint32 i = 0; i < eventsCount; ++i)
             {
-                Vector3 worldDirection = MultiplyVectorMat3x3(sc->GetLocalDirection(i), worldTransform);
-                sound->SetDirection(worldDirection);
+                SoundEvent* sound = sc->GetSoundEvent(i);
+                sound->SetPosition(translation);
+                if (sound->IsDirectional())
+                {
+                    Vector3 worldDirection = MultiplyVectorMat3x3(sc->GetLocalDirection(i), worldTransform);
+                    sound->SetDirection(worldDirection);
+                }
+                sound->UpdateInstancesPosition();
             }
-            sound->UpdateInstancesPosition();
         }
     }
 

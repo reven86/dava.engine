@@ -59,11 +59,12 @@ void RenderUpdateSystem::Process(float32 timeElapsed)
     for (TransformComponent* t : tsc->worldTransformChanged)
     {
         Entity* entity = t->GetEntity();
-        // Update new transform pointer, and mark that transform is changed
-        Matrix4* worldTransformPointer = (static_cast<TransformComponent*>(entity->GetComponent(Component::TRANSFORM_COMPONENT)))->GetWorldTransformPtr();
-        RenderObject* object = (static_cast<RenderComponent*>(entity->GetComponent(Component::RENDER_COMPONENT)))->GetRenderObject();
-        if (nullptr != object)
+        RenderComponent* rc = static_cast<RenderComponent*>(entity->GetComponent(Component::RENDER_COMPONENT));
+        if (rc && rc->GetRenderObject())
         {
+            RenderObject* object = rc->GetRenderObject();
+            // Update new transform pointer, and mark that transform is changed
+            Matrix4* worldTransformPointer = (static_cast<TransformComponent*>(entity->GetComponent(Component::TRANSFORM_COMPONENT)))->GetWorldTransformPtr();
             object->SetWorldTransformPtr(worldTransformPointer);
             entity->GetScene()->renderSystem->MarkForUpdate(object);
         }

@@ -94,14 +94,13 @@ void StaticOcclusionSystem::Process(float32 timeElapsed)
     {
         Entity* entity = t->GetEntity();
         StaticOcclusionDebugDrawComponent* debugDrawComponent = GetStaticOcclusionDebugDrawComponent(entity);
-        StaticOcclusionComponent* staticOcclusionComponent = GetStaticOcclusionComponent(entity);
-        // Update new transform pointer, and mark that transform is changed
-        Matrix4* worldTransformPointer = GetTransformComponent(entity)->GetWorldTransformPtr();
-        RenderObject* object = debugDrawComponent->GetRenderObject();
-        if (NULL != object)
+        if (debugDrawComponent && debugDrawComponent->GetRenderObject())
         {
+            RenderObject* object = debugDrawComponent->GetRenderObject();
+            // Update new transform pointer, and mark that transform is changed
+            Matrix4* worldTransformPointer = t->GetWorldTransformPtr();
             object->SetWorldTransformPtr(worldTransformPointer);
-            entity->GetScene()->renderSystem->MarkForUpdate(object);
+            GetScene()->renderSystem->MarkForUpdate(object);
         }
     }
 

@@ -23,7 +23,6 @@ public:
 
 private:
     Vector<Entity*> updatableEntities;
-    Vector<Component*> sendEvent;
 
     void EntityNeedUpdate(Entity* entity);
     void HierahicAddToUpdate(Entity* entity);

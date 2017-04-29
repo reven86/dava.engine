@@ -114,7 +114,8 @@ void TransformSystem::TransformAllChildEntities(Entity* entity)
                 transform->worldMatrix = animComp->animationTransform * transform->localMatrix * *(transform->parentMatrix);
             else
                 transform->worldMatrix = transform->localMatrix * *(transform->parentMatrix);
-            sendEvent.push_back(transform);
+            TransformSingleComponent* tsc = GetScene()->transformSingleComponent;
+            tsc->worldTransformChanged.push_back(transform);
         }
 
         entity->RemoveFlag(Entity::TRANSFORM_NEED_UPDATE | Entity::TRANSFORM_DIRTY);
