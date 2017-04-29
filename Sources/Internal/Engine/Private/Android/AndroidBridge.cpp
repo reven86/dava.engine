@@ -98,6 +98,28 @@ void AndroidBridge::InitializeJNI(JNIEnv* env)
     // Cache Java ClassLoader
     try
     {
+        // Get java.lang.String class
+        classString = env->FindClass("java/lang/String");
+        JNI::CheckJavaException(env, true);
+
+        classString = static_cast<jclass>(env->NewGlobalRef(classString));
+        JNI::CheckJavaException(env, true);
+
+        // Get String.getBytes method
+        methodString_getBytes = env->GetMethodID(classString, "getBytes", "(Ljava/lang/String;)[B");
+        JNI::CheckJavaException(env, true);
+
+        // Get String constructor with bytes and charset
+        methodString_initBytesCharset = env->GetMethodID(classString, "<init>", "([BLjava/lang/String;)V");
+        JNI::CheckJavaException(env, true);
+
+        // Get const String("UTF-8") global reference for converting jstring to/from utf-8 bytes
+        constUtf8CharsetName = env->NewStringUTF("UTF-8");
+        JNI::CheckJavaException(env, true);
+
+        constUtf8CharsetName = static_cast<jstring>(env->NewGlobalRef(constUtf8CharsetName));
+        JNI::CheckJavaException(env, true);
+
         // Get com.dava.engine.DavaActivity class which will be used to obtain ClassLoader instance
         jclass jclassDavaActivity = env->FindClass("com/dava/engine/DavaActivity");
         JNI::CheckJavaException(env, true);
@@ -322,6 +344,33 @@ String AndroidBridge::toString(JNIEnv* env, jobject object)
         result = JNI::JavaStringToString(jstr, env);
     }
     return result;
+}
+
+jbyteArray AndroidBridge::JavaStringToUtf8Bytes(JNIEnv* env, jstring string)
+{
+    if (androidBridge->methodString_getBytes != nullptr &&
+        androidBridge->constUtf8CharsetName != nullptr &&
+        string != nullptr)
+    {
+        jbyteArray bytes = static_cast<jbyteArray>(env->CallObjectMethod(string, androidBridge->methodString_getBytes, androidBridge->constUtf8CharsetName));
+        JNI::CheckJavaException(env, false);
+        return bytes;
+    }
+    return nullptr;
+}
+
+jstring AndroidBridge::JavaStringFromUtf8Bytes(JNIEnv* env, jbyteArray bytes)
+{
+    if (androidBridge->classString != nullptr &&
+        androidBridge->methodString_initBytesCharset != nullptr &&
+        androidBridge->constUtf8CharsetName != nullptr &&
+        bytes != nullptr)
+    {
+        jstring string = static_cast<jstring>(env->NewObject(androidBridge->classString, androidBridge->methodString_initBytesCharset, bytes, androidBridge->constUtf8CharsetName));
+        JNI::CheckJavaException(env, false);
+        return string;
+    }
+    return nullptr;
 }
 
 const String& AndroidBridge::GetExternalDocumentsDir()

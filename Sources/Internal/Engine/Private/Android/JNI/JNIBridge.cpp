@@ -70,7 +70,7 @@ jclass LoadJavaClass(const char8* className, bool throwJniException, JNIEnv* env
 {
     if (env == nullptr)
     {
-        env = Private::AndroidBridge::GetEnv();
+        env = GetEnv();
     }
 
     if (env != nullptr)
@@ -87,24 +87,23 @@ String JavaStringToString(jstring string, JNIEnv* env)
     {
         if (env == nullptr)
         {
-            env = Private::AndroidBridge::GetEnv();
+            env = GetEnv();
         }
 
         if (env != nullptr)
         {
-            JavaClass stringClass("java/lang/String");
-            Function<jbyteArray(jobject, jstring)> methodGetBytes = stringClass.GetMethod<jbyteArray, jstring>("getBytes");
-            LocalRef<jstring> charsetName(env->NewStringUTF("UTF-8"));
-            LocalRef<jbyteArray> stringJbytes = methodGetBytes(string, charsetName);
-
-            const jsize length = env->GetArrayLength(stringJbytes);
-            jbyte* pBytes = env->GetByteArrayElements(stringJbytes, NULL);
-            JNI::CheckJavaException(env, true);
-            if (pBytes != nullptr)
+            LocalRef<jbyteArray> bytes = Private::AndroidBridge::JavaStringToUtf8Bytes(env, string);
+            if (bytes != nullptr)
             {
-                result.assign(reinterpret_cast<char*>(pBytes), reinterpret_cast<char*>(pBytes + length));
-                env->ReleaseByteArrayElements(stringJbytes, pBytes, JNI_ABORT);
+                const jsize length = env->GetArrayLength(bytes);
+                jbyte* pBytes = env->GetByteArrayElements(bytes, nullptr);
                 JNI::CheckJavaException(env, true);
+                if (pBytes != nullptr)
+                {
+                    result.assign(reinterpret_cast<char*>(pBytes), reinterpret_cast<char*>(pBytes + length));
+                    env->ReleaseByteArrayElements(bytes, pBytes, JNI_ABORT);
+                    JNI::CheckJavaException(env, true);
+                }
             }
         }
     }
@@ -118,14 +117,22 @@ WideString JavaStringToWideString(jstring string, JNIEnv* env)
 
 jstring CStrToJavaString(const char* cstr, JNIEnv* env)
 {
-    if (env == nullptr)
+    if (cstr != nullptr)
     {
-        env = Private::AndroidBridge::GetEnv();
-    }
+        if (env == nullptr)
+        {
+            env = GetEnv();
+        }
 
-    if (env != nullptr)
-    {
-        return env->NewStringUTF(cstr);
+        if (env != nullptr)
+        {
+            jsize length = strlen(cstr);
+            jbyteArray bytes = env->NewByteArray(length);
+            JNI::CheckJavaException(env, true);
+            env->SetByteArrayRegion(bytes, 0, length, reinterpret_cast<const jbyte*>(cstr));
+            JNI::CheckJavaException(env, true);
+            return Private::AndroidBridge::JavaStringFromUtf8Bytes(env, bytes);
+        }
     }
     return nullptr;
 }
