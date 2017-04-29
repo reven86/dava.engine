@@ -26,7 +26,10 @@ void LightUpdateSystem::Process(float32 timeElapsed)
     TransformSingleComponent* tsc = GetScene()->transformSingleComponent;
     for (Entity* entity : tsc->worldTransformChanged)
     {
-        RecalcLight(entity);
+        if (entity->GetComponent(Component::LIGHT_COMPONENT))
+        {
+            RecalcLight(entity);
+        }
     }
 }
 

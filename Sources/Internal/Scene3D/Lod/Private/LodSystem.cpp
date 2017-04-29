@@ -30,12 +30,15 @@ void LodSystem::Process(float32 timeElapsed)
     TransformSingleComponent* tsc = GetScene()->transformSingleComponent;
     for (Entity* entity : tsc->worldTransformChanged)
     {
-        auto iter = fastMap.find(entity);
-        if (iter != fastMap.end())
+        if (entity->GetComponent(Component::LOD_COMPONENT))
         {
-            int32 index = iter->second;
-            FastStruct* fast = &fastVector[index];
-            fast->position = static_cast<TransformComponent*>(entity->GetComponent(Component::TRANSFORM_COMPONENT))->GetWorldTransform().GetTranslationVector();
+            auto iter = fastMap.find(entity);
+            if (iter != fastMap.end())
+            {
+                int32 index = iter->second;
+                FastStruct* fast = &fastVector[index];
+                fast->position = static_cast<TransformComponent*>(entity->GetComponent(Component::TRANSFORM_COMPONENT))->GetWorldTransform().GetTranslationVector();
+            }
         }
     }
 
