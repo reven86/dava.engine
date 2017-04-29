@@ -140,6 +140,11 @@ void UIStyleSheetSystem::SetPopupContainer(const RefPtr<UIControl>& _popupContai
     popupContainer = _popupContainer;
 }
 
+void UIStyleSheetSystem::SetListener(UIStyleSheetSystemListener* listener_)
+{
+    listener = listener_;
+}
+
 void UIStyleSheetSystem::ProcessControl(UIControl* control, bool styleSheetListChanged /* = false*/)
 {
 #if STYLESHEET_STATS
@@ -244,11 +249,17 @@ void UIStyleSheetSystem::ProcessControl(UIControl* control, int32 distanceFromDi
             }
         }
 
-        control->SetStyledPropertySet(propertiesToApply);
+        if (!dryRun)
+        {
+            control->SetStyledPropertySet(propertiesToApply);
+        }
     }
 
-    control->ResetStyleSheetDirty();
-    control->SetStyleSheetInitialized();
+    if (!dryRun)
+    {
+        control->ResetStyleSheetDirty();
+        control->SetStyleSheetInitialized();
+    }
 
     if (recursively)
     {
@@ -382,6 +393,11 @@ void UIStyleSheetSystem::DoForAllPropertyInstances(UIControl* control, uint32 pr
         if (ref.IsValid())
         {
             action(control, ref);
+
+            if (listener != nullptr)
+            {
+                listener->OnStylePropertyChanged(control, nullptr, propertyIndex);
+            }
         }
     }
     else
@@ -393,6 +409,11 @@ void UIStyleSheetSystem::DoForAllPropertyInstances(UIControl* control, uint32 pr
             if (ref.IsValid())
             {
                 action(control, ref);
+
+                if (listener != nullptr)
+                {
+                    listener->OnStylePropertyChanged(control, component, propertyIndex);
+                }
             }
         }
         else

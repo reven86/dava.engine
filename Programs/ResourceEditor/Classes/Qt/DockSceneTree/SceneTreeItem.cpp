@@ -3,7 +3,7 @@
 #include "Commands2/ConvertToShadowCommand.h"
 
 // framework
-#include "Scene3d/Components/ComponentHelpers.h"
+#include "Scene3D/Components/ComponentHelpers.h"
 #include "QtTools/WidgetHelpers/SharedIcon.h"
 
 SceneTreeItem::SceneTreeItem(eItemType _type, DAVA::BaseObject* object_)

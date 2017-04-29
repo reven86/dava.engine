@@ -37,6 +37,12 @@ TileTexturePreviewWidget::~TileTexturePreviewWidget()
 {
     Clear();
 
+    if (itemDelegate != nullptr)
+    {
+        setItemDelegate(nullptr);
+        DAVA::SafeDelete(itemDelegate);
+    }
+
     DAVA::SafeDelete(validator);
 }
 
@@ -90,7 +96,11 @@ void TileTexturePreviewWidget::AddTexture(DAVA::Image* previewTexture, const DAV
 
         UpdateColor(static_cast<DAVA::uint32>(images.size() - 1));
 
-        this->setItemDelegate(new TileTexturePreviewWidgetItemDelegate());
+        if (itemDelegate == nullptr)
+        {
+            itemDelegate = new TileTexturePreviewWidgetItemDelegate();
+            setItemDelegate(itemDelegate);
+        }
     }
 
     UpdateImage(static_cast<DAVA::uint32>(images.size() - 1));

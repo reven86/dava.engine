@@ -15,7 +15,8 @@
 #include <QRadioButton>
 #include <QCheckBox>
 #include <QDoubleSpinBox>
-#include <QEvent.h>
+#include <QEvent>
+#include <QKeyEvent>
 
 HeightmapEditorPanel::HeightmapEditorPanel(QWidget* parent)
     : LandscapeEditorBasePanel(parent)

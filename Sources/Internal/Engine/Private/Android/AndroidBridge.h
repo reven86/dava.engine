@@ -40,6 +40,7 @@ struct AndroidBridge final
     static const String& GetPackageName();
 
     static void HideSplashView();
+    static void NotifyEngineRunning();
 
     static void AttachPlatformCore(PlatformCore* platformCore);
 
@@ -65,6 +66,7 @@ struct AndroidBridge final
     jobject activity = nullptr; // Reference to DavaActivity instance
     jmethodID methodDavaActivity_postFinish = nullptr; // DavaActivity.postFinish method
     jmethodID methodDavaActivity_hideSplashView = nullptr; // DavaActivity.hideSplashView method
+    jmethodID methodDavaActivity_notifyEngineRunning = nullptr; // DavaActivity.notifyEngineRunning method
     EngineBackend* engineBackend = nullptr;
     PlatformCore* core = nullptr;
 

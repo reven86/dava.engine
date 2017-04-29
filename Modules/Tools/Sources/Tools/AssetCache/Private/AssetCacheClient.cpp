@@ -78,7 +78,7 @@ void AssetCacheClient::Disconnect()
         LockGuard<Mutex> guard(connectEstablishLocker);
     }
 
-    client.Disconnect();
+    client.DisconnectBlocked();
 }
 
 AssetCache::Error AssetCacheClient::CheckStatusSynchronously()
