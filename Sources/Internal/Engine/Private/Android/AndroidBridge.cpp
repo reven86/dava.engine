@@ -318,7 +318,7 @@ void AndroidBridge::PostQuitToActivity()
 
 jclass AndroidBridge::LoadJavaClass(JNIEnv* env, const char8* className, bool throwJniException)
 {
-    jstring name = JNI::CStrToJavaString(className);
+    jstring name = JavaStringFromModifiedUtfString(env, className);
     if (name != nullptr)
     {
         jobject obj = env->CallObjectMethod(androidBridge->classLoader, androidBridge->methodClassLoader_loadClass, name);
@@ -341,19 +341,17 @@ String AndroidBridge::toString(JNIEnv* env, jobject object)
     {
         jstring jstr = static_cast<jstring>(env->CallObjectMethod(object, androidBridge->methodObject_toString));
         JNI::CheckJavaException(env, false);
-        result = JNI::JavaStringToString(jstr, env);
+        result = JavaStringToModifiedUtfString(env, jstr);
     }
     return result;
 }
 
 jbyteArray AndroidBridge::JavaStringToUtf8Bytes(JNIEnv* env, jstring string)
 {
-    if (androidBridge->methodString_getBytes != nullptr &&
-        androidBridge->constUtf8CharsetName != nullptr &&
-        string != nullptr)
+    if (string != nullptr)
     {
         jbyteArray bytes = static_cast<jbyteArray>(env->CallObjectMethod(string, androidBridge->methodString_getBytes, androidBridge->constUtf8CharsetName));
-        JNI::CheckJavaException(env, false);
+        JNI::CheckJavaException(env, true);
         return bytes;
     }
     return nullptr;
@@ -361,14 +359,51 @@ jbyteArray AndroidBridge::JavaStringToUtf8Bytes(JNIEnv* env, jstring string)
 
 jstring AndroidBridge::JavaStringFromUtf8Bytes(JNIEnv* env, jbyteArray bytes)
 {
-    if (androidBridge->classString != nullptr &&
-        androidBridge->methodString_initBytesCharset != nullptr &&
-        androidBridge->constUtf8CharsetName != nullptr &&
-        bytes != nullptr)
+    if (bytes != nullptr)
     {
         jstring string = static_cast<jstring>(env->NewObject(androidBridge->classString, androidBridge->methodString_initBytesCharset, bytes, androidBridge->constUtf8CharsetName));
-        JNI::CheckJavaException(env, false);
+        JNI::CheckJavaException(env, true);
         return string;
+    }
+    return nullptr;
+}
+
+String AndroidBridge::JavaStringToModifiedUtfString(JNIEnv* env, jstring string)
+{
+    String result;
+    if (string != nullptr)
+    {
+        if (env == nullptr)
+        {
+            env = GetEnv();
+        }
+
+        if (env != nullptr)
+        {
+            const char* rawString = env->GetStringUTFChars(string, nullptr);
+            if (rawString != nullptr)
+            {
+                result = rawString;
+                env->ReleaseStringUTFChars(string, rawString);
+            }
+        }
+    }
+    return result;
+}
+
+jstring AndroidBridge::JavaStringFromModifiedUtfString(JNIEnv* env, const char* cstr)
+{
+    if (cstr != nullptr)
+    {
+        if (env == nullptr)
+        {
+            env = GetEnv();
+        }
+
+        if (env != nullptr)
+        {
+            return env->NewStringUTF(cstr);
+        }
     }
     return nullptr;
 }

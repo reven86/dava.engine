@@ -35,6 +35,8 @@ struct AndroidBridge final
     static String toString(JNIEnv* env, jobject object);
     static jbyteArray JavaStringToUtf8Bytes(JNIEnv* env, jstring string);
     static jstring JavaStringFromUtf8Bytes(JNIEnv* env, jbyteArray bytes);
+    static String JavaStringToModifiedUtfString(JNIEnv* env, jstring string);
+    static jstring JavaStringFromModifiedUtfString(JNIEnv* env, const char* cstr);
 
     static const String& GetExternalDocumentsDir();
     static const String& GetInternalDocumentsDir();
