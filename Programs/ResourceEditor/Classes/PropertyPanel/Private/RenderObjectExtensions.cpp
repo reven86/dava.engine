@@ -294,7 +294,7 @@ private:
 
 bool RebuildTangentSpace::IsApplyable(const DAVA::Reflection& field) const
 {
-    DAVA::RenderBatch* batch = field.GetValueObject().GetPtr<DAVA::RenderBatch>();
+    DAVA::RenderBatch* batch = *field.GetValueObject().GetPtr<DAVA::RenderBatch*>();
     DAVA::PolygonGroup* group = batch->GetPolygonGroup();
     bool isRebuildTsEnabled = true;
     const DAVA::int32 requiredVertexFormat = (DAVA::EVF_TEXCOORD0 | DAVA::EVF_NORMAL);
