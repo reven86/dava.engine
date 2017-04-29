@@ -814,6 +814,12 @@ class ConvertDownscaleTwiceBillinear
 public:
     void operator()(const void* inData, uint32 inWidth, uint32 inHeight, uint32 inPitch,
                     void* outData, uint32 outWidth, uint32 outHeight, uint32 outPitch)
+#if defined(__DAVAENGINE_IPHONE__) && __clang_major__ == 7 && __clang_minor__ == 3
+    // Clang 7.3 incorrectly optimizes nested loops below using ARM's vld2.32 instruction,
+    // reading memory outside of input image's data bounds, which leads to EXC_BAD_ACCESS.
+    // So, just disable any optimizations for this function on this specific clang version.
+    __attribute__((optnone))
+#endif
     {
         UNPACK_FUNC unpackFunc;
         PACK_FUNC packFunc;
