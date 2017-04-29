@@ -177,4 +177,4 @@ inline LandscapeSubdivision::SubdivisionMetrics& LandscapeSubdivision::GetMetric
 {
     return metrics;
 }
-};
+}

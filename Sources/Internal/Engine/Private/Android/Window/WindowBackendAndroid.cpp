@@ -317,6 +317,8 @@ void WindowBackend::SurfaceChanged(JNIEnv* env, jobject surface, int32 width, in
         }
 
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowCreatedEvent(window, windowWidth, windowHeight, surfaceWidth, surfaceHeight, dpi, eFullscreen::On));
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowVisibilityChangedEvent(window, true));
+        mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowFocusChangedEvent(window, true));
 
         firstTimeSurfaceChanged = false;
     }
