@@ -21,7 +21,6 @@ class StaticOcclusionSystem : public SceneSystem
 {
 public:
     StaticOcclusionSystem(Scene* scene);
-    ~StaticOcclusionSystem() override;
 
     void SetCamera(Camera* camera);
 

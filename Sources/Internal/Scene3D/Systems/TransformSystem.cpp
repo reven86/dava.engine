@@ -3,9 +3,7 @@
 #include "Scene3D/Components/AnimationComponent.h"
 #include "Scene3D/Entity.h"
 #include "Debug/DVAssert.h"
-#include "Scene3D/Systems/EventSystem.h"
 #include "Scene3D/Scene.h"
-#include "Scene3D/Systems/GlobalEventSystem.h"
 #include "Scene3D/Components/ComponentHelpers.h"
 #include "Scene3D/Components/SingleComponents/TransformSingleComponent.h"
 #include "Debug/ProfilerCPU.h"
@@ -50,9 +48,6 @@ void TransformSystem::Process(float32 timeElapsed)
     {
         FindNodeThatRequireUpdate(updatableEntities[i]);
     }
-
-    GlobalEventSystem::Instance()->GroupEvent(GetScene(), sendEvent, EventSystem::WORLD_TRANSFORM_CHANGED);
-    sendEvent.clear();
 
     updatableEntities.clear();
 
@@ -147,7 +142,8 @@ void TransformSystem::HierahicFindUpdatableTransform(Entity* entity, bool forced
         if (transform->parentMatrix)
         {
             transform->worldMatrix = transform->localMatrix * *(transform->parentMatrix);
-            GlobalEventSystem::Instance()->Event(transform, EventSystem::WORLD_TRANSFORM_CHANGED);
+            TransformSingleComponent* tsc = GetScene()->transformSingleComponent;
+            tsc->worldTransformChanged.push_back(transform);
         }
     }
 

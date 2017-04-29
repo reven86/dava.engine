@@ -12,7 +12,6 @@ class EventSystem
 public:
     enum eEventType
     {
-        WORLD_TRANSFORM_CHANGED,
         SWITCH_CHANGED,
         START_PARTICLE_EFFECT,
         STOP_PARTICLE_EFFECT,

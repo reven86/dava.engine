@@ -43,11 +43,9 @@ private:
     void StartBuildOcclusion();
     void FinishBuildOcclusion();
 
-    void StartOcclusionComponent();
-    void FinishOcclusionComponent();
-
     void SceneForceLod(int32 layerIndex);
     void CollectEntitiesForOcclusionRecursively(Vector<Entity*>& dest, Entity* entity);
+    void OnEntityChanged(Entity* entity);
 
     Camera* camera = nullptr;
     Landscape* landscape = nullptr;

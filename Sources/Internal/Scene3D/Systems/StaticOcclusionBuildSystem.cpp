@@ -6,6 +6,7 @@
 #include "Scene3D/Components/RenderComponent.h"
 #include "Scene3D/Components/TransformComponent.h"
 #include "Scene3D/Components/StaticOcclusionComponent.h"
+#include "Scene3D/Components/SingleComponents/TransformSingleComponent.h"
 #include "Sound/SoundEvent.h"
 #include "Sound/SoundSystem.h"
 #include "Render/Highlevel/RenderSystem.h"
@@ -27,13 +28,11 @@ StaticOcclusionBuildSystem::StaticOcclusionBuildSystem(Scene* scene)
     staticOcclusion = 0;
     activeIndex = -1;
     componentInProgress = 0;
-    scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::WORLD_TRANSFORM_CHANGED);
     scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::STATIC_OCCLUSION_COMPONENT_CHANGED);
 }
 
 StaticOcclusionBuildSystem::~StaticOcclusionBuildSystem()
 {
-    GetScene()->GetEventSystem()->UnregisterSystemForEvent(this, EventSystem::WORLD_TRANSFORM_CHANGED);
     GetScene()->GetEventSystem()->UnregisterSystemForEvent(this, EventSystem::STATIC_OCCLUSION_COMPONENT_CHANGED);
     SafeDelete(staticOcclusion);
 }
@@ -52,32 +51,9 @@ void StaticOcclusionBuildSystem::ImmediateEvent(Component* _component, uint32 ev
 {
     Entity* entity = _component->GetEntity();
     StaticOcclusionComponent* component = static_cast<StaticOcclusionComponent*>(entity->GetComponent(Component::STATIC_OCCLUSION_COMPONENT));
-    if (component->GetPlaceOnLandscape() && ((event == EventSystem::WORLD_TRANSFORM_CHANGED) || (event == EventSystem::STATIC_OCCLUSION_COMPONENT_CHANGED)))
+    if (component->GetPlaceOnLandscape() && (event == EventSystem::STATIC_OCCLUSION_COMPONENT_CHANGED))
     {
-        component->cellHeightOffset.clear();
-        component->cellHeightOffset.resize(component->GetSubdivisionsX() * component->GetSubdivisionsY(), 0);
-        /*place on landscape*/
-        Landscape* landscape = FindLandscape(GetScene());
-        AABBox3 localBox = component->GetBoundingBox();
-        Vector3 boxSize = localBox.GetSize();
-        AABBox3 bbox;
-        localBox.GetTransformedBox(GetTransformComponent(entity)->GetWorldTransform(), bbox);
-        uint32 xSubdivisions = component->GetSubdivisionsX();
-        uint32 ySubdivisions = component->GetSubdivisionsY();
-        boxSize.x /= xSubdivisions;
-        boxSize.y /= ySubdivisions;
-
-        if (landscape)
-        {
-            //place on landscape
-            for (uint32 xs = 0; xs < xSubdivisions; ++xs)
-                for (uint32 ys = 0; ys < ySubdivisions; ++ys)
-                {
-                    Vector3 v = bbox.min + Vector3(boxSize.x * (xs + 0.5f), boxSize.y * (ys + 0.5f), 0);
-                    if (landscape->PlacePoint(v, v))
-                        component->cellHeightOffset[xs + ys * xSubdivisions] = v.z - bbox.min.z;
-                }
-        }
+        OnEntityChanged(entity);
     }
 }
 
@@ -141,6 +117,35 @@ void StaticOcclusionBuildSystem::CollectEntitiesForOcclusionRecursively(Vector<E
 
     for (int32 i = 0, sz = entity->GetChildrenCount(); i < sz; ++i)
         CollectEntitiesForOcclusionRecursively(dest, entity->GetChild(i));
+}
+
+void StaticOcclusionBuildSystem::OnEntityChanged(Entity* entity)
+{
+    StaticOcclusionComponent* component = static_cast<StaticOcclusionComponent*>(entity->GetComponent(Component::STATIC_OCCLUSION_COMPONENT));
+    component->cellHeightOffset.clear();
+    component->cellHeightOffset.resize(component->GetSubdivisionsX() * component->GetSubdivisionsY(), 0);
+    /*place on landscape*/
+    Landscape* landscape = FindLandscape(GetScene());
+    AABBox3 localBox = component->GetBoundingBox();
+    Vector3 boxSize = localBox.GetSize();
+    AABBox3 bbox;
+    localBox.GetTransformedBox(GetTransformComponent(entity)->GetWorldTransform(), bbox);
+    uint32 xSubdivisions = component->GetSubdivisionsX();
+    uint32 ySubdivisions = component->GetSubdivisionsY();
+    boxSize.x /= xSubdivisions;
+    boxSize.y /= ySubdivisions;
+
+    if (landscape)
+    {
+        //place on landscape
+        for (uint32 xs = 0; xs < xSubdivisions; ++xs)
+            for (uint32 ys = 0; ys < ySubdivisions; ++ys)
+            {
+                Vector3 v = bbox.min + Vector3(boxSize.x * (xs + 0.5f), boxSize.y * (ys + 0.5f), 0);
+                if (landscape->PlacePoint(v, v))
+                    component->cellHeightOffset[xs + ys * xSubdivisions] = v.z - bbox.min.z;
+            }
+    }
 }
 
 void StaticOcclusionBuildSystem::StartBuildOcclusion()
@@ -256,6 +261,17 @@ void StaticOcclusionBuildSystem::SceneForceLod(int32 forceLodIndex)
 
 void StaticOcclusionBuildSystem::Process(float32 timeElapsed)
 {
+    TransformSingleComponent* tsc = GetScene()->transformSingleComponent;
+    for (TransformComponent* t : tsc->worldTransformChanged)
+    {
+        Entity* entity = t->GetEntity();
+        StaticOcclusionComponent* component = static_cast<StaticOcclusionComponent*>(entity->GetComponent(Component::STATIC_OCCLUSION_COMPONENT));
+        if (component->GetPlaceOnLandscape())
+        {
+            OnEntityChanged(entity);
+        }
+    }
+
     if (activeIndex == static_cast<uint32>(-1))
         return;
 

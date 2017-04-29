@@ -5,6 +5,7 @@
 #include "Scene3D/Components/RenderComponent.h"
 #include "Scene3D/Components/TransformComponent.h"
 #include "Scene3D/Components/StaticOcclusionComponent.h"
+#include "Scene3D/Components/SingleComponents/TransformSingleComponent.h"
 #include "Sound/SoundEvent.h"
 #include "Sound/SoundSystem.h"
 #include "Render/Highlevel/RenderSystem.h"
@@ -84,13 +85,25 @@ StaticOcclusionSystem::StaticOcclusionSystem(Scene* scene)
         indexedRenderObjects[k] = nullptr;
 }
 
-StaticOcclusionSystem::~StaticOcclusionSystem()
-{
-}
-
 void StaticOcclusionSystem::Process(float32 timeElapsed)
 {
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::SCENE_STATIC_OCCLUSION_SYSTEM)
+
+    TransformSingleComponent* tsc = GetScene()->transformSingleComponent;
+    for (TransformComponent* t : tsc->worldTransformChanged)
+    {
+        Entity* entity = t->GetEntity();
+        StaticOcclusionDebugDrawComponent* debugDrawComponent = GetStaticOcclusionDebugDrawComponent(entity);
+        StaticOcclusionComponent* staticOcclusionComponent = GetStaticOcclusionComponent(entity);
+        // Update new transform pointer, and mark that transform is changed
+        Matrix4* worldTransformPointer = GetTransformComponent(entity)->GetWorldTransformPtr();
+        RenderObject* object = debugDrawComponent->GetRenderObject();
+        if (NULL != object)
+        {
+            object->SetWorldTransformPtr(worldTransformPointer);
+            entity->GetScene()->renderSystem->MarkForUpdate(object);
+        }
+    }
 
     SetCamera(GetScene()->GetCurrentCamera());
 
@@ -322,7 +335,6 @@ StaticOcclusionDebugDrawSystem::StaticOcclusionDebugDrawSystem(Scene* scene)
     vertexLayout.AddElement(rhi::VS_POSITION, 0, rhi::VDT_FLOAT, 3);
     vertexLayoutId = rhi::VertexLayout::UniqueId(vertexLayout);
 
-    GetScene()->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::WORLD_TRANSFORM_CHANGED);
     GetScene()->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::STATIC_OCCLUSION_COMPONENT_CHANGED);
 }
 
@@ -338,7 +350,6 @@ void StaticOcclusionDebugDrawSystem::SetScene(Scene* scene)
     Scene* oldScene = GetScene();
     if (oldScene != nullptr)
     {
-        oldScene->GetEventSystem()->UnregisterSystemForEvent(this, EventSystem::WORLD_TRANSFORM_CHANGED);
         oldScene->GetEventSystem()->UnregisterSystemForEvent(this, EventSystem::STATIC_OCCLUSION_COMPONENT_CHANGED);
     }
 
@@ -346,7 +357,6 @@ void StaticOcclusionDebugDrawSystem::SetScene(Scene* scene)
 
     if (scene != nullptr)
     {
-        scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::WORLD_TRANSFORM_CHANGED);
         scene->GetEventSystem()->RegisterSystemForEvent(this, EventSystem::STATIC_OCCLUSION_COMPONENT_CHANGED);
     }
 }
@@ -388,17 +398,6 @@ void StaticOcclusionDebugDrawSystem::ImmediateEvent(Component* component, uint32
     Entity* entity = component->GetEntity();
     StaticOcclusionDebugDrawComponent* debugDrawComponent = GetStaticOcclusionDebugDrawComponent(entity);
     StaticOcclusionComponent* staticOcclusionComponent = GetStaticOcclusionComponent(entity);
-    if (event == EventSystem::WORLD_TRANSFORM_CHANGED)
-    {
-        // Update new transform pointer, and mark that transform is changed
-        Matrix4* worldTransformPointer = GetTransformComponent(entity)->GetWorldTransformPtr();
-        RenderObject* object = debugDrawComponent->GetRenderObject();
-        if (NULL != object)
-        {
-            object->SetWorldTransformPtr(worldTransformPointer);
-            entity->GetScene()->renderSystem->MarkForUpdate(object);
-        }
-    }
 
     if ((event == EventSystem::STATIC_OCCLUSION_COMPONENT_CHANGED) || (staticOcclusionComponent->GetPlaceOnLandscape()))
     {
