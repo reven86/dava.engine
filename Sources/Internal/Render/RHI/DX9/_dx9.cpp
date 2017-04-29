@@ -23,6 +23,8 @@ InitParam _DX9_InitParam;
 D3DPRESENT_PARAMETERS _DX9_PresentParam;
 DAVA::Mutex _DX9_ResetParamsMutex;
 
+bool _DX9_EventQuerySupported = false;
+
 const char* D3D9ErrorText(HRESULT hr)
 {
 #define D3DCASE(ERR) case ERR: return #ERR ": "
