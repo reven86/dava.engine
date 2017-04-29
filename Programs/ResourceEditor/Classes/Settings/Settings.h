@@ -93,7 +93,9 @@ public:
     static const DAVA::FastName Internal_EditorVersion;
     static const DAVA::FastName Internal_CubemapLastFaceDir;
     static const DAVA::FastName Internal_CubemapLastProjDir;
-    static const DAVA::FastName Internal_ParticleLastEmitterDir;
+    static const DAVA::FastName Internal_ParticleLastSaveEmitterDir;
+    static const DAVA::FastName Internal_ParticleLastLoadEmitterDir;
+
     static const DAVA::FastName Internal_RecentFiles;
     static const DAVA::FastName Internal_RecentProjects;
     static const DAVA::FastName Internal_MaterialsLightViewMode;

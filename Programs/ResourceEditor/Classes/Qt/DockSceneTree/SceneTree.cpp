@@ -77,7 +77,7 @@ void SaveEmitter(SceneEditor2* scene, DAVA::ParticleEffectComponent* component, 
     DAVA::FilePath yamlPath = emitter->configPath;
     if (askFileName)
     {
-        DAVA::FilePath defaultPath = SettingsManager::GetValue(Settings::Internal_ParticleLastEmitterDir).AsFilePath();
+        DAVA::FilePath defaultPath = SettingsManager::GetValue(Settings::Internal_ParticleLastSaveEmitterDir).AsFilePath();
         QString particlesPath = defaultPath.IsEmpty() ? GetParticlesConfigPath() : QString::fromStdString(defaultPath.GetAbsolutePathname());
 
         DAVA::FileSystem::Instance()->CreateDirectory(DAVA::FilePath(particlesPath.toStdString()), true); //to ensure that folder is created
@@ -93,7 +93,7 @@ void SaveEmitter(SceneEditor2* scene, DAVA::ParticleEffectComponent* component, 
 
         yamlPath = DAVA::FilePath(filePath.toStdString());
 
-        SettingsManager::SetValue(Settings::Internal_ParticleLastEmitterDir, DAVA::VariantType(yamlPath.GetDirectory()));
+        SettingsManager::SetValue(Settings::Internal_ParticleLastSaveEmitterDir, DAVA::VariantType(yamlPath.GetDirectory()));
     }
 
     scene->Exec(commandCreator(yamlPath));
@@ -746,15 +746,19 @@ protected:
 
     void LoadEmitterFromYaml()
     {
-        QString filePath = FileDialog::getOpenFileName(nullptr, QStringLiteral("Open Particle Emitter Yaml file"),
-                                                       SceneTreeDetails::GetParticlesConfigPath(), QStringLiteral("YAML File (*.yaml)"));
-        if (filePath.isEmpty())
-        {
-            return;
-        }
+        DAVA::FilePath defaultPath = SettingsManager::GetValue(Settings::Internal_ParticleLastLoadEmitterDir).AsFilePath();
+        QString particlesPath = defaultPath.IsEmpty() ? SceneTreeDetails::GetParticlesConfigPath() : QString::fromStdString(defaultPath.GetAbsolutePathname());
 
-        GetScene()->Exec(CreateLoadCommand(filePath.toStdString()));
-        MarkStructureChanged();
+        QString selectedPath = FileDialog::getOpenFileName(nullptr, QStringLiteral("Open Particle Emitter Yaml file"), particlesPath, QStringLiteral("YAML File (*.yaml)"));
+
+        if (selectedPath.isEmpty() == false)
+        {
+            FilePath yamlPath = selectedPath.toStdString();
+            SettingsManager::SetValue(Settings::Internal_ParticleLastLoadEmitterDir, DAVA::VariantType(yamlPath.GetDirectory()));
+
+            GetScene()->Exec(CreateLoadCommand(yamlPath));
+            MarkStructureChanged();
+        }
     }
 
     void SaveEmitterToYaml()
@@ -774,7 +778,7 @@ protected:
                                       DAVA::MakeFunction(this, &ParticleEmitterContextMenu::CreateSaveCommand));
     }
 
-    virtual std::unique_ptr<DAVA::Command> CreateLoadCommand(const DAVA::String& path)
+    virtual std::unique_ptr<DAVA::Command> CreateLoadCommand(const DAVA::FilePath& path)
     {
         return std::unique_ptr<DAVA::Command>(new CommandLoadParticleEmitterFromYaml(emitterItem->effect, emitterItem->GetEmitterInstance(), path));
     }
@@ -810,7 +814,7 @@ protected:
         return false;
     }
 
-    std::unique_ptr<DAVA::Command> CreateLoadCommand(const DAVA::String& path) override
+    std::unique_ptr<DAVA::Command> CreateLoadCommand(const DAVA::FilePath& path) override
     {
         emitterItem->parent->innerEmitterPath = path;
         return std::unique_ptr<DAVA::Command>(new CommandLoadInnerParticleEmitterFromYaml(emitterItem->GetEmitterInstance(), path));
