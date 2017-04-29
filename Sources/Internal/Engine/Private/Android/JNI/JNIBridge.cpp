@@ -126,8 +126,8 @@ jstring CStrToJavaString(const char* cstr, JNIEnv* env)
 
         if (env != nullptr)
         {
-            jsize length = strlen(cstr);
-            jbyteArray bytes = env->NewByteArray(length);
+            jsize length = static_cast<jsize>(strlen(cstr));
+            LocalRef<jbyteArray> bytes = env->NewByteArray(length);
             JNI::CheckJavaException(env, true);
             env->SetByteArrayRegion(bytes, 0, length, reinterpret_cast<const jbyte*>(cstr));
             JNI::CheckJavaException(env, true);
