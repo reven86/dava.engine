@@ -3,7 +3,8 @@ if ( REMOTE_TOOL_FOUND )
 endif ()
 set ( REMOTE_TOOL_FOUND 1 )
 
+add_definitions(-DWITH_SCENE_PERFORMANCE_TESTS)
+
 include (GlobalVariables)
-append_property( DAVA_COMPONENTS  "RemoteTool" )
 
 add_module_subdirectory ( RemoteTool "${DAVA_MODULES_DIR}/RemoteTool" )

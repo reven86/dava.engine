@@ -1,4 +1,4 @@
-#include "Classes/Library/Private/LibraryData.h"
+#include "Classes/Library/Private/LIbraryData.h"
 
 const char* LibraryData::selectedPathProperty = "SelectedPath";
 

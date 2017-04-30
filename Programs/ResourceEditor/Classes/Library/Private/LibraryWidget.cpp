@@ -1,6 +1,6 @@
 #include "Classes/Library/Private/LibraryWidget.h"
 #include "Classes/Library/Private/LibraryFileSystemModel.h"
-#include "Classes/Library/Private/LibraryData.h"
+#include "Classes/Library/Private/LIbraryData.h"
 
 #include "Classes/Project/ProjectManagerData.h"
 #include "Classes/Application/REGlobal.h"

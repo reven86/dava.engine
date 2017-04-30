@@ -1,6 +1,6 @@
 #include "Classes/Library/LibraryModule.h"
 #include "Classes/Library/Private/ControlsFactory.h"
-#include "Classes/Library/Private/LibraryData.h"
+#include "Classes/Library/Private/LIbraryData.h"
 #include "Classes/Library/Private/LibraryWidget.h"
 #include "Classes/Application/REGlobal.h"
 #include "Classes/Qt/Actions/DAEConverter.h"
