@@ -5,10 +5,12 @@
 #include "UI/Find/Filters/HasClassesFilter.h"
 #include "UI/Find/Filters/NegationFilter.h"
 #include "UI/Find/Filters/HasErrorsFilter.h"
+#include "UI/Find/Filters/PackageVersionFilter.h"
 #include "UI/Find/Widgets/EmptyFindFilterEditor.h"
 #include "UI/Find/Widgets/EnumFindFilterEditor.h"
 #include "UI/Find/Widgets/RegExpStringFindFilterEditor.h"
 #include "UI/Find/Widgets/StringFindFilterEditor.h"
+#include "UI/Find/Widgets/EnumAndStringFindFilterEditor.h"
 #include "Utils/Utils.h"
 
 using namespace DAVA;
@@ -122,13 +124,36 @@ public:
     }
 };
 
-static const Array<std::unique_ptr<AbstractFindFilter>, 5> FILTERS
+class PackageVersionFindFilter
+: public AbstractFindFilter
+{
+public:
+    const char* GetName() override
+    {
+        return "Package version";
+    }
+
+    FindFilterEditor* CreateEditor(QWidget* parent) override
+    {
+        return new EnumAndStringFindFilterEditor(parent,
+                                                 GlobalEnumMap<PackageVersionFilter::eCmpType>::Instance(),
+                                                 [](const EnumAndStringFindFilterEditor* editor)
+                                                 {
+                                                     int32 version = QString::fromStdString(editor->GetString()).toInt();
+                                                     PackageVersionFilter::eCmpType cmpType = static_cast<PackageVersionFilter::eCmpType>(editor->GetEnumValue());
+                                                     return std::make_unique<PackageVersionFilter>(version, cmpType);
+                                                 });
+    }
+};
+
+static const Array<std::unique_ptr<AbstractFindFilter>, 6> FILTERS
 {
   std::make_unique<NameFindFilter>(),
   std::make_unique<HasComponentFindFilter>(),
   std::make_unique<HasClassFindFilter>(),
   std::make_unique<AcceptsInputFindFilter>(),
   std::make_unique<HasErrorsFindFilter>(),
+  std::make_unique<PackageVersionFindFilter>()
 };
 }
 

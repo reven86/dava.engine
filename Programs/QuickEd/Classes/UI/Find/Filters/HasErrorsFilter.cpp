@@ -9,12 +9,12 @@ HasErrorsFilter::HasErrorsFilter()
 {
 }
 
-bool HasErrorsFilter::CanAcceptPackage(const PackageInformation* package) const
+FindFilter::ePackageStatus HasErrorsFilter::AcceptPackage(const PackageInformation* package) const
 {
-    return true;
+    return PACKAGE_CAN_ACCEPT_CONTROLS;
 }
 
-bool HasErrorsFilter::CanAcceptControl(const ControlInformation* control) const
+bool HasErrorsFilter::AcceptControl(const ControlInformation* control) const
 {
     return control->HasErrors();
 }

@@ -19,7 +19,7 @@ public:
     QuickEdPackageBuilder();
     virtual ~QuickEdPackageBuilder();
 
-    virtual void BeginPackage(const DAVA::FilePath& packagePath) override;
+    virtual void BeginPackage(const DAVA::FilePath& packagePath, DAVA::int32 version) override;
     virtual void EndPackage() override;
 
     virtual bool ProcessImportedPackage(const DAVA::String& packagePath, DAVA::AbstractUIPackageLoader* loader) override;

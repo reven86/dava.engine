@@ -50,7 +50,7 @@ QuickEdPackageBuilder::~QuickEdPackageBuilder()
     styleSheets.clear();
 }
 
-void QuickEdPackageBuilder::BeginPackage(const FilePath& aPackagePath)
+void QuickEdPackageBuilder::BeginPackage(const FilePath& aPackagePath, int32 version)
 {
     DVASSERT(packagePath.IsEmpty());
     packagePath = aPackagePath;

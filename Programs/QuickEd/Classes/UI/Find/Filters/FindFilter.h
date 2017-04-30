@@ -6,8 +6,15 @@ class ControlInformation;
 class FindFilter
 {
 public:
+    enum ePackageStatus
+    {
+        PACKAGE_NOT_INTERESED,
+        PACKAGE_CAN_ACCEPT_CONTROLS,
+        PACKAGE_FOUND
+    };
+
     virtual ~FindFilter() = default;
 
-    virtual bool CanAcceptPackage(const PackageInformation* package) const = 0;
-    virtual bool CanAcceptControl(const ControlInformation* control) const = 0;
+    virtual ePackageStatus AcceptPackage(const PackageInformation* package) const = 0;
+    virtual bool AcceptControl(const ControlInformation* control) const = 0;
 };

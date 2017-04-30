@@ -5,6 +5,7 @@
 #include "UI/Find/PackageInformation/PackageNodeInformation.h"
 
 #include <UI/UIPackageLoader.h>
+#include <UI/UIPackage.h>
 
 using namespace DAVA;
 
@@ -53,7 +54,7 @@ void Finder::Process(const PackageNode* package)
 {
     FindItem currentItem;
 
-    PackageNodeInformation packageInfo(package);
+    PackageNodeInformation packageInfo(package, UIPackage::CURRENT_VERSION);
     ProcessPackage(currentItem, &packageInfo);
 
     emit Finished();
@@ -63,9 +64,10 @@ void Finder::Process(const PackageNode* package, const SortedControlNodeSet& con
 {
     FindItem currentItem;
 
-    PackageNodeInformation packageInfo(package);
+    PackageNodeInformation packageInfo(package, UIPackage::CURRENT_VERSION);
 
-    if (filter->CanAcceptPackage(&packageInfo))
+    FindFilter::ePackageStatus status = filter->AcceptPackage(&packageInfo);
+    if (status != FindFilter::PACKAGE_NOT_INTERESED)
     {
         currentItem = FindItem(packageInfo.GetPath());
 
@@ -75,7 +77,7 @@ void Finder::Process(const PackageNode* package, const SortedControlNodeSet& con
             CollectControls(currentItem, *filter, &controlInfo);
         }
 
-        if (!currentItem.GetControlPaths().empty())
+        if (!currentItem.GetControlPaths().empty() || status == FindFilter::PACKAGE_FOUND)
         {
             emit ItemFound(currentItem);
         }
@@ -92,7 +94,7 @@ void Finder::Stop()
 
 void Finder::CollectControls(FindItem& currentItem, const FindFilter& filter, const ControlInformation* control)
 {
-    if (filter.CanAcceptControl(control))
+    if (filter.AcceptControl(control))
     {
         currentItem.AddPathToControl(ControlInformationHelpers::GetPathToControl(control));
     }
@@ -106,7 +108,8 @@ void Finder::CollectControls(FindItem& currentItem, const FindFilter& filter, co
 
 void Finder::ProcessPackage(FindItem& currentItem, const PackageInformation* package)
 {
-    if (filter->CanAcceptPackage(package))
+    FindFilter::ePackageStatus status = filter->AcceptPackage(package);
+    if (status != FindFilter::PACKAGE_NOT_INTERESED)
     {
         currentItem = FindItem(package->GetPath());
 
@@ -122,7 +125,7 @@ void Finder::ProcessPackage(FindItem& currentItem, const PackageInformation* pac
             CollectControls(currentItem, *filter, prototype);
         });
 
-        if (!currentItem.GetControlPaths().empty())
+        if (!currentItem.GetControlPaths().empty() || status == FindFilter::PACKAGE_FOUND)
         {
             emit ItemFound(currentItem);
         }

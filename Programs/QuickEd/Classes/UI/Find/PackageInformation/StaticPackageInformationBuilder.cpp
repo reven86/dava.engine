@@ -45,10 +45,10 @@ StaticPackageInformationBuilder::~StaticPackageInformationBuilder()
 {
 }
 
-void StaticPackageInformationBuilder::BeginPackage(const DAVA::FilePath& packagePath)
+void StaticPackageInformationBuilder::BeginPackage(const DAVA::FilePath& packagePath, int32 version)
 {
     DVASSERT(packageInformation.get() == nullptr);
-    packageInformation = std::make_shared<StaticPackageInformation>(packagePath.GetFrameworkPath());
+    packageInformation = std::make_shared<StaticPackageInformation>(packagePath.GetFrameworkPath(), version);
 }
 
 void StaticPackageInformationBuilder::EndPackage()

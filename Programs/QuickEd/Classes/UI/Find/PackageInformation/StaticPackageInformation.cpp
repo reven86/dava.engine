@@ -2,14 +2,20 @@
 
 using namespace DAVA;
 
-StaticPackageInformation::StaticPackageInformation(const String& path_)
+StaticPackageInformation::StaticPackageInformation(const String& path_, int32 version_)
     : path(path_)
+    , version(version_)
 {
 }
 
 String StaticPackageInformation::GetPath() const
 {
     return path;
+}
+
+DAVA::int32 StaticPackageInformation::GetVersion() const
+{
+    return version;
 }
 
 void StaticPackageInformation::VisitImportedPackages(const Function<void(const PackageInformation*)>& visitor) const
