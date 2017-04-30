@@ -128,16 +128,6 @@ bool PackageBaseNode::HasErrors() const
     return results.HasErrors();
 }
 
-String PackageBaseNode::GetErrorsAsString() const
-{
-    StringStream stream;
-    for (const Result& result : results.GetResults())
-    {
-        stream << result.message << std::endl;
-    }
-    return stream.str();
-}
-
 namespace
 {
 uint32 CalculateDepth(const PackageBaseNode* node)

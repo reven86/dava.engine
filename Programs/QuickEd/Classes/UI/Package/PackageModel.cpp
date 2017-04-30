@@ -26,6 +26,7 @@
 
 #include <TArc/Core/ContextAccessor.h>
 #include <TArc/DataProcessing/DataContext.h>
+#include <TArc/WindowSubSystem/UI.h>
 
 #include <QtTools/Utils/Themes/Themes.h>
 
@@ -86,6 +87,11 @@ PackageModel::~PackageModel() = default;
 void PackageModel::SetAccessor(DAVA::TArc::ContextAccessor* accessor_)
 {
     accessor = accessor_;
+}
+
+void PackageModel::SetUI(DAVA::TArc::UI* ui_)
+{
+    ui = ui_;
 }
 
 void PackageModel::Reset(PackageNode* package_)
@@ -220,7 +226,7 @@ QVariant PackageModel::data(const QModelIndex& index, int role) const
 
             if (controlNode->HasErrors())
             {
-                toolTip = QString::fromStdString(controlNode->GetErrorsAsString());
+                toolTip = QString::fromStdString(controlNode->GetResults().GetResultMessages());
             }
             else
             {
@@ -308,7 +314,7 @@ QVariant PackageModel::data(const QModelIndex& index, int role) const
             {
                 if (node->HasErrors())
                 {
-                    return QString::fromStdString(node->GetErrorsAsString());
+                    return QString::fromStdString(node->GetResults().GetResultMessages());
                 }
                 return QVariant();
             }
@@ -489,7 +495,7 @@ void PackageModel::OnDropMimeData(const QMimeData* data, Qt::DropAction action, 
     ControlsContainerNode* destControlContainer = dynamic_cast<ControlsContainerNode*>(destNode);
     StyleSheetsNode* destStylesContainer = dynamic_cast<StyleSheetsNode*>(destNode);
 
-    QtModelPackageCommandExecutor executor(accessor);
+    QtModelPackageCommandExecutor executor(accessor, ui);
 
     if (destControlContainer && data->hasFormat(PackageMimeData::MIME_TYPE))
     {

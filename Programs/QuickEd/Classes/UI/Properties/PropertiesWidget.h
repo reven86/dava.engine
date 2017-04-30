@@ -11,6 +11,7 @@ namespace TArc
 {
 class FieldBinder;
 class ContextAccessor;
+class UI;
 }
 }
 
@@ -28,6 +29,7 @@ public:
     ~PropertiesWidget();
 
     void SetAccessor(DAVA::TArc::ContextAccessor* accessor);
+    void SetUI(DAVA::TArc::UI* ui);
 
 public slots:
     void SetProject(const Project* project);
@@ -80,4 +82,5 @@ private:
     std::unique_ptr<DAVA::TArc::FieldBinder> fieldBinder;
 
     DAVA::TArc::ContextAccessor* accessor = nullptr;
+    DAVA::TArc::UI* ui = nullptr;
 };

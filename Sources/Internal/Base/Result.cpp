@@ -116,3 +116,22 @@ ResultList& ResultList::AddResultList(ResultList&& resultList)
     }
     return *this;
 }
+
+String ResultList::GetResultMessages() const
+{
+    StringStream stream;
+    bool first = true;
+    for (const Result& result : results)
+    {
+        if (first)
+        {
+            first = false;
+        }
+        else
+        {
+            stream << std::endl;
+        }
+        stream << result.message;
+    }
+    return stream.str();
+}

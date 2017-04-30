@@ -53,6 +53,7 @@ public:
     ResultList& AddResultList(ResultList&& resultList);
 
     const Deque<Result>& GetResults() const;
+    String GetResultMessages() const;
 
 private:
     bool hasErrors = false;

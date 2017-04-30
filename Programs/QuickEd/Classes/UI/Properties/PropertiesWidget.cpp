@@ -15,6 +15,7 @@
 #include "Model/PackageHierarchy/StyleSheetNode.h"
 
 #include <TArc/Core/FieldBinder.h>
+#include <TArc/WindowSubSystem/UI.h>
 
 #include <UI/Components/UIComponent.h>
 #include <UI/UIControl.h>
@@ -82,6 +83,11 @@ void PropertiesWidget::SetAccessor(DAVA::TArc::ContextAccessor* accessor_)
     propertiesModel->SetAccessor(accessor);
 }
 
+void PropertiesWidget::SetUI(DAVA::TArc::UI* ui_)
+{
+    ui = ui_;
+}
+
 void PropertiesWidget::SetProject(const Project* project)
 {
     propertiesItemsDelegate->SetProject(project);
@@ -89,7 +95,7 @@ void PropertiesWidget::SetProject(const Project* project)
 
 void PropertiesWidget::OnAddComponent(QAction* action)
 {
-    QtModelPackageCommandExecutor executor(accessor);
+    QtModelPackageCommandExecutor executor(accessor, ui);
     DVASSERT(accessor->GetActiveContext() != nullptr);
     const RootProperty* rootProperty = DAVA::DynamicTypeCheck<const RootProperty*>(propertiesModel->GetRootProperty());
 
@@ -112,7 +118,7 @@ void PropertiesWidget::OnAddComponent(QAction* action)
 
 void PropertiesWidget::OnRemove()
 {
-    QtModelPackageCommandExecutor executor(accessor);
+    QtModelPackageCommandExecutor executor(accessor, ui);
     DVASSERT(accessor->GetActiveContext() != nullptr);
 
     QModelIndexList indices = treeView->selectionModel()->selectedIndexes();
@@ -155,7 +161,7 @@ void PropertiesWidget::OnRemove()
 
 void PropertiesWidget::OnAddStyleProperty(QAction* action)
 {
-    QtModelPackageCommandExecutor executor(accessor);
+    QtModelPackageCommandExecutor executor(accessor, ui);
     DVASSERT(accessor->GetActiveContext() != nullptr);
 
     uint32 propertyIndex = action->data().toUInt();
@@ -171,7 +177,7 @@ void PropertiesWidget::OnAddStyleProperty(QAction* action)
 
 void PropertiesWidget::OnAddStyleSelector()
 {
-    QtModelPackageCommandExecutor executor(accessor);
+    QtModelPackageCommandExecutor executor(accessor, ui);
     DVASSERT(accessor->GetActiveContext() != nullptr);
     executor.AddStyleSelector(DynamicTypeCheck<StyleSheetNode*>(selectedNode));
 }

@@ -150,7 +150,7 @@ void LegacySupportModule::InitMainWindow()
     using namespace DAVA;
     using namespace TArc;
 
-    MainWindow* mainWindow = new MainWindow(GetAccessor());
+    MainWindow* mainWindow = new MainWindow(GetAccessor(), GetUI());
     MainWindow::ProjectView* projectView = mainWindow->GetProjectView();
 
     connections.AddConnection(projectView, &MainWindow::ProjectView::JumpToPrototype, MakeFunction(this, &LegacySupportModule::OnJumpToPrototype));

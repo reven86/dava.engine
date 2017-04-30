@@ -56,7 +56,6 @@ public:
     void AddResult(const DAVA::Result& r);
     const DAVA::ResultList& GetResults() const;
     bool HasErrors() const;
-    DAVA::String GetErrorsAsString() const;
 
 private:
     PackageBaseNode* parent;
