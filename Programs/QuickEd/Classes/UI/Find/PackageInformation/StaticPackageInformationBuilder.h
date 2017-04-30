@@ -55,4 +55,5 @@ private:
     DAVA::Function<void(const DAVA::ReflectedStructure::Field& member, const DAVA::Any& value)> propertyProcessor;
 
     PackageInformationCache* cache = nullptr;
+    DAVA::ResultList results;
 };

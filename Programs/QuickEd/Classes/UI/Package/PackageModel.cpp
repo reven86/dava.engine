@@ -215,24 +215,39 @@ QVariant PackageModel::data(const QModelIndex& index, int role) const
             const String& prototype = controlNode->GetRootProperty()->GetPrototypeProperty()->GetPrototypeName();
             const String& className = controlNode->GetRootProperty()->GetClassProperty()->GetClassName();
             const String& customClassName = controlNode->GetRootProperty()->GetCustomClassProperty()->GetCustomClassName();
-            QString toolTip = QString("class: ") + className.c_str();
-            if (!customClassName.empty())
-            {
-                toolTip += QString("\ncustom class: ") + customClassName.c_str();
-            }
 
-            if (controlNode->GetPrototype())
+            QString toolTip;
+
+            if (controlNode->HasErrors())
             {
-                toolTip += QString("\nprototype: ") + prototype.c_str();
+                toolTip = QString::fromStdString(controlNode->GetErrorsAsString());
+            }
+            else
+            {
+                toolTip = QString("class: ") + className.c_str();
+                if (!customClassName.empty())
+                {
+                    toolTip += QString("\ncustom class: ") + customClassName.c_str();
+                }
+
+                if (controlNode->GetPrototype())
+                {
+                    toolTip += QString("\nprototype: ") + prototype.c_str();
+                }
             }
             return toolTip;
         }
 
         case Qt::TextColorRole:
-            if (controlNode->GetPrototype() != nullptr)
+            if (controlNode->HasErrors())
+            {
+                return Themes::GetErrorColor();
+            }
+            else if (controlNode->GetPrototype() != nullptr)
             {
                 return Themes::GetPrototypeColor();
             }
+            return QVariant();
 
         case Qt::FontRole:
         {
@@ -282,6 +297,21 @@ QVariant PackageModel::data(const QModelIndex& index, int role) const
             case Qt::BackgroundRole:
                 return Themes::GetViewLineAlternateColor();
 
+            case Qt::TextColorRole:
+                if (node->HasErrors())
+                {
+                    return Themes::GetErrorColor();
+                }
+                return QVariant();
+
+            case Qt::ToolTipRole:
+            {
+                if (node->HasErrors())
+                {
+                    return QString::fromStdString(node->GetErrorsAsString());
+                }
+                return QVariant();
+            }
             case Qt::FontRole:
             {
                 QFont myFont;

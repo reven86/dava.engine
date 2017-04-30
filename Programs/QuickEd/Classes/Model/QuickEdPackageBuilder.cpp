@@ -71,7 +71,8 @@ bool QuickEdPackageBuilder::ProcessImportedPackage(const String& packagePathStr,
 
     if (std::find(declinedPackages.begin(), declinedPackages.end(), packagePath) != declinedPackages.end())
     {
-        DVASSERT(false);
+        Result r(Result::RESULT_ERROR, Format("Can't import package '%s' (to prevent cyclic imports)", packagePathStr.c_str()));
+        results.AddResult(r);
         return false;
     }
 
@@ -85,6 +86,12 @@ bool QuickEdPackageBuilder::ProcessImportedPackage(const String& packagePathStr,
         importedPackages.push_back(SafeRetain(importedPackage.Get()));
         return true;
     }
+
+    Result r(Result::RESULT_ERROR, Format("Can't import package '%s'", packagePathStr.c_str()));
+    results.AddResult(r);
+    PackageNode* fakeNode = new PackageNode(packagePathStr);
+    fakeNode->AddResult(r);
+    importedPackages.push_back(fakeNode);
 
     return false;
 }
@@ -177,8 +184,24 @@ const ReflectedType* QuickEdPackageBuilder::BeginControlWithPrototype(const Fast
         }
     }
 
-    DVASSERT(prototypeNode);
-    ControlNode* node = ControlNode::CreateFromPrototype(prototypeNode);
+    ControlNode* node = nullptr;
+
+    if (prototypeNode)
+    {
+        node = ControlNode::CreateFromPrototype(prototypeNode);
+    }
+    else
+    {
+        RefPtr<UIControl> fakeControl(new UIControl());
+        node = ControlNode::CreateFromControl(fakeControl.Get());
+
+        String errorMsg = Format("Can't find prototype '%s' from package '%s'",
+                                 prototypeFastName.c_str(), packageName.c_str());
+        Result r(Result::RESULT_ERROR, errorMsg);
+        results.AddResult(r);
+        node->AddResult(r);
+    }
+
     if (customClassName)
     {
         node->GetRootProperty()->GetCustomClassProperty()->SetValue(*customClassName);
@@ -201,20 +224,28 @@ const ReflectedType* QuickEdPackageBuilder::BeginControlWithPath(const String& p
         control = controlsStack.back().node;
         Vector<String> controlNames;
         Split(pathName, "/", controlNames, false, true);
-        for (Vector<String>::const_iterator iter = controlNames.begin(); iter != controlNames.end(); ++iter)
+        for (const String& controlName : controlNames)
         {
-            control = control->FindByName(*iter);
-            if (!control)
-                break;
+            ControlNode* child = control->FindByName(controlName);
+            if (child == nullptr)
+            {
+                RefPtr<UIControl> fakeControl(new UIControl());
+                fakeControl->SetName(controlName);
+                RefPtr<ControlNode> newChild(ControlNode::CreateFromControl(fakeControl.Get()));
+
+                results.AddResult(Result(Result::RESULT_ERROR, Format("Access to removed control by path '%s'", pathName.c_str())));
+                newChild->AddResult(Result(Result::RESULT_ERROR, Format("Control was removed in prototype")));
+                control->Add(newChild.Get());
+                child = newChild.Get();
+            }
+
+            control = child;
         }
     }
 
     controlsStack.push_back(ControlDescr(SafeRetain(control), false));
 
-    if (control != nullptr)
-        return ReflectedTypeDB::GetByPointer(control->GetControl());
-    else
-        return nullptr;
+    return ReflectedTypeDB::GetByPointer(control->GetControl());
 }
 
 const ReflectedType* QuickEdPackageBuilder::BeginUnknownControl(const FastName& controlName, const YamlNode* node)
@@ -403,6 +434,11 @@ const Vector<StyleSheetNode*>& QuickEdPackageBuilder::GetStyles() const
 void QuickEdPackageBuilder::AddImportedPackage(PackageNode* node)
 {
     importedPackages.push_back(SafeRetain(node));
+}
+
+const DAVA::ResultList& QuickEdPackageBuilder::GetResults() const
+{
+    return results;
 }
 
 ControlNode* QuickEdPackageBuilder::FindPrototype(const DAVA::String& name) const

@@ -541,9 +541,33 @@ DAVA::RefPtr<PackageNode> DocumentsModule::CreatePackage(const QString& path)
 
     if (packageLoaded)
     {
-        RefPtr<PackageNode> packageRef = builder.BuildPackage();
-        DVASSERT(packageRef.Get() != nullptr);
-        return packageRef;
+        bool canLoadPackage = true;
+
+        if (builder.GetResults().HasErrors())
+        {
+            ModalMessageParams params;
+            params.icon = ModalMessageParams::Question;
+            params.title = QObject::tr("Document was loaded with errors.");
+
+            QString message = QObject::tr("Document by path:\n%1 was loaded with next errors:\n").arg(path);
+            for (const Result& r : builder.GetResults().GetResults())
+            {
+                message.append(QString::fromStdString(r.message));
+                message.append("\n");
+            }
+
+            message.append("Would you like to load this document?");
+            params.message = message;
+            params.buttons = ModalMessageParams::Yes | ModalMessageParams::Cancel;
+            canLoadPackage = GetUI()->ShowModalMessage(DAVA::TArc::mainWindowKey, params) == ModalMessageParams::Yes;
+        }
+
+        if (canLoadPackage)
+        {
+            RefPtr<PackageNode> packageRef = builder.BuildPackage();
+            DVASSERT(packageRef.Get() != nullptr);
+            return packageRef;
+        }
     }
     else
     {

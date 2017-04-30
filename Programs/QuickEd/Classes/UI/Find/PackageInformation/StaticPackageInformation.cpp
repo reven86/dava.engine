@@ -77,3 +77,13 @@ std::shared_ptr<StaticControlInformation> StaticPackageInformation::FindPrototyp
     }
     return std::shared_ptr<StaticControlInformation>();
 }
+
+void StaticPackageInformation::AddResult(const DAVA::Result& result)
+{
+    results.AddResult(result);
+}
+
+bool StaticPackageInformation::HasErrors() const
+{
+    return results.HasErrors();
+}

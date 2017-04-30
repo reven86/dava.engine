@@ -4,6 +4,7 @@
 #include "UI/Find/Filters/HasComponentFilter.h"
 #include "UI/Find/Filters/HasClassesFilter.h"
 #include "UI/Find/Filters/NegationFilter.h"
+#include "UI/Find/Filters/HasErrorsFilter.h"
 #include "UI/Find/Widgets/EmptyFindFilterEditor.h"
 #include "UI/Find/Widgets/EnumFindFilterEditor.h"
 #include "UI/Find/Widgets/RegExpStringFindFilterEditor.h"
@@ -102,12 +103,32 @@ public:
     }
 };
 
-static const Array<std::unique_ptr<AbstractFindFilter>, 4> FILTERS
+class HasErrorsFindFilter
+: public AbstractFindFilter
+{
+public:
+    const char* GetName() override
+    {
+        return "Errors";
+    }
+
+    FindFilterEditor* CreateEditor(QWidget* parent) override
+    {
+        return new EmptyFindFilterEditor(parent,
+                                         []()
+                                         {
+                                             return std::make_unique<HasErrorsFilter>();
+                                         });
+    }
+};
+
+static const Array<std::unique_ptr<AbstractFindFilter>, 5> FILTERS
 {
   std::make_unique<NameFindFilter>(),
   std::make_unique<HasComponentFindFilter>(),
   std::make_unique<HasClassFindFilter>(),
   std::make_unique<AcceptsInputFindFilter>(),
+  std::make_unique<HasErrorsFindFilter>(),
 };
 }
 
