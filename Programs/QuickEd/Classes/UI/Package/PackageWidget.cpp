@@ -147,7 +147,6 @@ PackageWidget::PackageWidget(QWidget* parent)
 
     connect(packageModel, &PackageModel::BeforeProcessNodes, this, &PackageWidget::OnBeforeProcessNodes);
     connect(packageModel, &PackageModel::AfterProcessNodes, this, &PackageWidget::OnAfterProcessNodes);
-    connect(treeView->selectionModel(), &QItemSelectionModel::currentChanged, this, &PackageWidget::OnCurrentIndexChanged);
     connect(treeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &PackageWidget::OnSelectionChangedFromView);
 
     connect(filterLine, &QLineEdit::textChanged, this, &PackageWidget::OnFilterTextChanged);
@@ -163,10 +162,7 @@ void PackageWidget::SetAccessor(TArc::ContextAccessor* accessor_)
     packageModel->SetAccessor(accessor);
 }
 
-PackageWidget::~PackageWidget()
-{
-    DVASSERT(currentIndexes.empty());
-}
+PackageWidget::~PackageWidget() = default;
 
 PackageModel* PackageWidget::GetPackageModel() const
 {
@@ -822,13 +818,6 @@ void PackageWidget::OnAfterProcessNodes(const SelectedNodes& nodes)
     expandedNodes.clear();
 }
 
-void PackageWidget::OnCurrentIndexChanged(const QModelIndex& index, const QModelIndex&)
-{
-    QModelIndex mappedIndex = filteredPackageModel->mapToSource(index);
-    PackageBaseNode* node = static_cast<PackageBaseNode*>(mappedIndex.internalPointer());
-    emit CurrentIndexChanged(node);
-}
-
 void PackageWidget::DeselectNodeImpl(PackageBaseNode* node)
 {
     QModelIndex srcIndex = packageModel->indexByNode(node);
@@ -838,47 +827,18 @@ void PackageWidget::DeselectNodeImpl(PackageBaseNode* node)
     {
         treeView->selectionModel()->select(dstIndex, QItemSelectionModel::Deselect);
     }
-    DVASSERT(!currentIndexes.empty());
-    for (const QModelIndex& index : currentIndexes)
-    {
-        if (index == srcIndex)
-        {
-            currentIndexes.remove(index);
-            break;
-        }
-    }
-    QItemSelectionModel* selectionModel = treeView->selectionModel();
-    if (!currentIndexes.empty())
-    {
-        QModelIndex srcIndex = currentIndexes.back();
-        QModelIndex dstIndex = filteredPackageModel->mapFromSource(srcIndex);
-        selectionModel->setCurrentIndex(dstIndex, QItemSelectionModel::NoUpdate);
-        treeView->scrollTo(dstIndex);
-    }
-    else
-    {
-        //make current first visible index
-        //otherwise treeView will do it itself on focus event and we will receive currentChanged after packageChanged
-        QModelIndex index = filteredPackageModel->index(0, 0);
-        if (index.isValid() && (filteredPackageModel->flags(index) & Qt::ItemIsEnabled))
-        {
-            selectionModel->setCurrentIndex(index, QItemSelectionModel::NoUpdate);
-        }
-    }
 }
 
 void PackageWidget::SelectNodeImpl(PackageBaseNode* node)
 {
     QModelIndex srcIndex = packageModel->indexByNode(node);
     DVASSERT(srcIndex.isValid());
-    currentIndexes.emplace_back(srcIndex);
 
     QModelIndex dstIndex = filteredPackageModel->mapFromSource(srcIndex);
     if (dstIndex.isValid())
     {
         QItemSelectionModel* selectionModel = treeView->selectionModel();
-        selectionModel->setCurrentIndex(dstIndex, QItemSelectionModel::NoUpdate);
-        selectionModel->select(dstIndex, QItemSelectionModel::Select);
+        selectionModel->setCurrentIndex(dstIndex, QItemSelectionModel::Select);
         treeView->scrollTo(dstIndex);
     }
 }

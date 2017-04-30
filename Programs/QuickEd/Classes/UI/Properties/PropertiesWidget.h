@@ -63,9 +63,9 @@ private:
 
     void ApplyExpanding();
 
-    void OnPackageChanged(const DAVA::Any& package);
-
     void BindFields();
+    void OnPackageDataChanged(const DAVA::Any& package);
+    void OnSelectionDataChanged(const DAVA::Any& selection);
 
     QAction* addComponentAction = nullptr;
     QAction* addStylePropertyAction = nullptr;
