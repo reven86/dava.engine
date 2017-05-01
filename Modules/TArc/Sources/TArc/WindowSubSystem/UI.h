@@ -165,7 +165,7 @@ struct ModalMessageParams
         Abort = 0x1000,
         Retry = 0x2000,
         Ignore = 0x4000,
-        Reset = 0x8000,
+        Reset = 0x8000
     };
 
     enum Icon
