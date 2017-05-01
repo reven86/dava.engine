@@ -40,8 +40,11 @@
      <property name="defaultDropAction">
       <enum>Qt::CopyAction</enum>
      </property>
-     <attribute name="headerVisible">
+     <property name="headerHidden">
       <bool>false</bool>
+     </property>
+     <attribute name="headerVisible">
+      <bool>true</bool>
      </attribute>
     </widget>
    </item>

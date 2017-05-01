@@ -1,11 +1,12 @@
 #include "FlowLayoutAlgorithm.h"
 
-#include "UIFlowLayoutComponent.h"
-#include "UISizePolicyComponent.h"
-#include "UIFlowLayoutHintComponent.h"
+#include "UI/Layouts/UIFlowLayoutComponent.h"
+#include "UI/Layouts/UISizePolicyComponent.h"
+#include "UI/Layouts/UIFlowLayoutHintComponent.h"
 
-#include "AnchorLayoutAlgorithm.h"
-#include "LayoutHelpers.h"
+#include "UI/Layouts/AnchorLayoutAlgorithm.h"
+#include "UI/Layouts/SizeMeasuringAlgorithm.h"
+#include "UI/Layouts/LayoutHelpers.h"
 
 #include "UI/UIControl.h"
 
@@ -122,6 +123,12 @@ void FlowLayoutAlgorithm::CollectLinesInformation(ControlLayoutData& data, Vecto
             childSize = sizePolicy->GetHorizontalValue() * (data.GetWidth() - horizontalPadding * 2.0f) / 100.0f;
             childSize = Clamp(childSize, sizePolicy->GetHorizontalMinValue(), sizePolicy->GetHorizontalMaxValue());
             childData.SetSize(Vector2::AXIS_X, childSize);
+        }
+        else if (sizePolicy != nullptr && sizePolicy->GetHorizontalPolicy() == UISizePolicyComponent::FORMULA)
+        {
+            SizeMeasuringAlgorithm alg(layoutData, childData, Vector2::AXIS_X, sizePolicy);
+            alg.SetParentSize(data.GetWidth());
+            childData.SetSize(Vector2::AXIS_X, alg.Calculate());
         }
 
         bool newLineBeforeThis = newLineBeforeNext;
@@ -314,6 +321,13 @@ void FlowLayoutAlgorithm::LayoutLineVertically(ControlLayoutData& data, int32 fi
                 childSize = (bottom - top) * sizePolicy->GetVerticalValue() / 100.0f;
                 childSize = Clamp(childSize, sizePolicy->GetVerticalMinValue(), sizePolicy->GetVerticalMaxValue());
                 childData.SetSize(Vector2::AXIS_Y, childSize);
+            }
+            else if (sizePolicy != nullptr && sizePolicy->GetHorizontalPolicy() == UISizePolicyComponent::FORMULA)
+            {
+                SizeMeasuringAlgorithm alg(layoutData, childData, Vector2::AXIS_Y, sizePolicy);
+                alg.SetParentSize(data.GetHeight());
+                alg.SetParentLineSize(bottom - top);
+                childData.SetSize(Vector2::AXIS_Y, alg.Calculate());
             }
         }
 

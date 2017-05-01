@@ -1,5 +1,7 @@
 #include "Modules/IssueNavigatorModule/IssueNavigatorModule.h"
+
 #include "Modules/IssueNavigatorModule/IssueNavigatorWidget.h"
+#include "Modules/IssueNavigatorModule/LayoutIssuesHandler.h"
 
 #include "Application/QEGlobal.h"
 
@@ -32,6 +34,9 @@ void IssueNavigatorModule::InitUI()
 
     widget = new IssueNavigatorWidget(GetAccessor());
     GetUI()->AddView(DAVA::TArc::mainWindowKey, key, widget);
+
+    DAVA::int32 sectionId = 0;
+    layoutIssuesHandler.reset(new LayoutIssuesHandler(sectionId++, widget));
 }
 
 void IssueNavigatorModule::RegisterOperations()

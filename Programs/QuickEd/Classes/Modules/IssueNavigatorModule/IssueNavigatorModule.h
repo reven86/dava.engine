@@ -4,17 +4,19 @@
 #include <TArc/Core/ClientModule.h>
 
 class IssueNavigatorWidget;
+class LayoutIssuesHandler;
 
 class IssueNavigatorModule : public DAVA::TArc::ClientModule
 {
+    DAVA_VIRTUAL_REFLECTION(IssueNavigatorModule, DAVA::TArc::ClientModule);
+
 private:
     void PostInit() override;
     void InitUI();
     void RegisterOperations();
 
-    void OnSomething();
-
     IssueNavigatorWidget* widget = nullptr;
 
-    DAVA_VIRTUAL_REFLECTION(IssueNavigatorModule, DAVA::TArc::ClientModule);
+private:
+    std::unique_ptr<LayoutIssuesHandler> layoutIssuesHandler;
 };

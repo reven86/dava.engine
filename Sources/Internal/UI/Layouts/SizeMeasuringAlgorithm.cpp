@@ -20,6 +20,7 @@ DAVA_VIRTUAL_REFLECTION_IMPL(SizeMeasuringAlgorithm)
     .Field("content", &SizeMeasuringAlgorithm::CalculateContent, nullptr)
     .Field("parent", &SizeMeasuringAlgorithm::parentSize)
     .Field("parentRest", &SizeMeasuringAlgorithm::parentRestSize)
+    .Field("parentLine", &SizeMeasuringAlgorithm::parentLineSize)
     .Field("minLimit", &SizeMeasuringAlgorithm::GetMinLimit, nullptr)
     .Field("maxLimit", &SizeMeasuringAlgorithm::GetMaxLimit, nullptr)
     .Field("value", &SizeMeasuringAlgorithm::GetValue, nullptr)
@@ -51,85 +52,17 @@ void SizeMeasuringAlgorithm::SetParentRestSize(float32 restSize_)
     parentRestSize = restSize_;
 }
 
+void SizeMeasuringAlgorithm::SetParentLineSize(float32 size)
+{
+    parentLineSize = size;
+}
+
 void SizeMeasuringAlgorithm::Apply()
 {
-    linearLayout = nullptr;
-    flowLayout = data.GetControl()->GetComponent<UIFlowLayoutComponent>();
-
-    skipInvisible = false;
-
-    if (flowLayout && flowLayout->IsEnabled())
-    {
-        skipInvisible = flowLayout->IsSkipInvisibleControls();
-    }
-    else
-    {
-        linearLayout = data.GetControl()->GetComponent<UILinearLayoutComponent>();
-        if (linearLayout != nullptr && linearLayout->IsEnabled())
-        {
-            skipInvisible = linearLayout->IsSkipInvisibleControls();
-        }
-    }
-
-    float32 value = 0.0f;
     UISizePolicyComponent::eSizePolicy policy = sizePolicy->GetPolicyByAxis(axis);
-    switch (policy)
+    if (policy != UISizePolicyComponent::IGNORE_SIZE && policy != UISizePolicyComponent::PERCENT_OF_PARENT)
     {
-    case UISizePolicyComponent::IGNORE_SIZE:
-    case UISizePolicyComponent::PERCENT_OF_PARENT:
-        // do nothing
-        break;
-
-    case UISizePolicyComponent::FIXED_SIZE:
-        value = CalculateFixedSize();
-        break;
-
-    case UISizePolicyComponent::PERCENT_OF_CHILDREN_SUM:
-        value = CalculateChildrenSum();
-        break;
-
-    case UISizePolicyComponent::PERCENT_OF_MAX_CHILD:
-        value = CalculateMaxChild();
-        break;
-
-    case UISizePolicyComponent::PERCENT_OF_FIRST_CHILD:
-        value = CalculateFirstChild();
-        break;
-
-    case UISizePolicyComponent::PERCENT_OF_LAST_CHILD:
-        value = CalculateLastChild();
-        break;
-
-    case UISizePolicyComponent::PERCENT_OF_CONTENT:
-        value = CalculateContent();
-        break;
-
-    case UISizePolicyComponent::FORMULA:
-    {
-        LayoutFormula* formula = sizePolicy->GetFormula(axis);
-        if (formula != nullptr && formula->IsValid())
-        {
-            value = formula->Calculate(Reflection::Create(ReflectedObject(this)));
-        }
-    }
-        break;
-
-    default:
-        DVASSERT(false);
-        break;
-    }
-
-    if (policy == UISizePolicyComponent::FORMULA)
-    {
-        data.SetSize(axis, value);
-    }
-    else if (policy != UISizePolicyComponent::IGNORE_SIZE && policy != UISizePolicyComponent::PERCENT_OF_PARENT)
-    {
-        float32 valueWithPadding = value + GetLayoutPadding();
-        float32 percentedValue = valueWithPadding * sizePolicy->GetValueByAxis(axis) / 100.0f;
-
-        float32 clampedValue = ClampValue(percentedValue);
-        data.SetSize(axis, clampedValue);
+        data.SetSize(axis, Calculate());
     }
 }
 
@@ -189,7 +122,7 @@ float32 SizeMeasuringAlgorithm::Calculate()
     case UISizePolicyComponent::FORMULA:
     {
         LayoutFormula* formula = sizePolicy->GetFormula(axis);
-        if (formula != nullptr && formula->IsValid())
+        if (formula != nullptr)
         {
             value = formula->Calculate(Reflection::Create(ReflectedObject(this)));
         }
@@ -199,6 +132,18 @@ float32 SizeMeasuringAlgorithm::Calculate()
     default:
         DVASSERT(false);
         break;
+    }
+
+    if (policy == UISizePolicyComponent::PERCENT_OF_CHILDREN_SUM ||
+        policy == UISizePolicyComponent::PERCENT_OF_MAX_CHILD ||
+        policy == UISizePolicyComponent::PERCENT_OF_FIRST_CHILD ||
+        policy == UISizePolicyComponent::PERCENT_OF_LAST_CHILD ||
+        policy == UISizePolicyComponent::PERCENT_OF_CONTENT)
+    {
+        float32 valueWithPadding = value + GetLayoutPadding();
+        float32 percentedValue = valueWithPadding * sizePolicy->GetValueByAxis(axis) / 100.0f;
+
+        value = ClampValue(percentedValue);
     }
 
     return value;

@@ -17,68 +17,61 @@ const String& LayoutFormula::GetSource() const
 void LayoutFormula::SetSource(const String& str)
 {
     source = str;
-    status = eStatus::UNPROCESSED;
-}
-
-LayoutFormula::eStatus LayoutFormula::GetStatus() const
-{
-    return status;
-}
-
-bool LayoutFormula::IsValid() const
-{
-    return status == eStatus::OK && formula.IsValid();
-}
-
-LayoutFormula::eProcessResult LayoutFormula::Process()
-{
-    switch (status)
+    errorMsg = "";
+    if (!formula.Parse(source))
     {
-    case eStatus::OK:
-        // do nothing
-        return eProcessResult::NOTHING_CHANGED;
-
-    case LayoutFormula::eStatus::ERROR:
-        // do nothing
-        return eProcessResult::NOTHING_CHANGED;
-
-    case eStatus::UNPROCESSED:
-        if (!formula.Parse(source))
-        {
-            status = eStatus::ERROR;
-            errorMsg = formula.GetParsingError();
-
-            return eProcessResult::ERROR_GENERATED;
-        }
-        return eProcessResult::PARSED;
-
-    case LayoutFormula::eStatus::RUNTIME_ERROR:
-        status = eStatus::ERROR;
-        return eProcessResult::ERROR_GENERATED;
+        errorMsg = formula.GetParsingError();
     }
-    return eProcessResult::NOTHING_CHANGED;
+    hasChanges = true;
+}
+
+bool LayoutFormula::HasError() const
+{
+    return !errorMsg.empty();
+}
+
+bool LayoutFormula::IsEmpty() const
+{
+    return errorMsg.empty() && !formula.IsValid();
+}
+
+bool LayoutFormula::Process()
+{
+    if (hasChanges)
+    {
+        hasChanges = false;
+        return true;
+    }
+    return false;
 }
 
 float32 LayoutFormula::Calculate(const Reflection& ref)
 {
-    Any res = formula.Calculate(ref);
-
-    if (res.CanCast<float32>())
+    if (formula.IsValid() && errorMsg.empty())
     {
-        return res.Cast<float32>();
-    }
-    else if (res.CanCast<int32>())
-    {
-        return static_cast<float32>(res.Cast<int32>());
-    }
-    else if (res.IsEmpty())
-    {
-        errorMsg = formula.GetCalculationError();
-        status = eStatus::RUNTIME_ERROR;
+        Any res = formula.Calculate(ref);
 
-        DVASSERT(!errorMsg.empty());
-    }
+        if (res.CanCast<float32>())
+        {
+            return res.Cast<float32>();
+        }
+        else if (res.CanCast<int32>())
+        {
+            return static_cast<float32>(res.Cast<int32>());
+        }
+        else if (res.IsEmpty())
+        {
+            errorMsg = formula.GetCalculationError();
+            hasChanges = true;
 
+            DVASSERT(!errorMsg.empty());
+        }
+    }
     return 0.0f;
+}
+
+const String& LayoutFormula::GetErrorMessage() const
+{
+    return errorMsg;
 }
 }

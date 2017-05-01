@@ -24,6 +24,7 @@ public:
 
     void SetParentSize(float32 parentSize);
     void SetParentRestSize(float32 parentRestSize);
+    void SetParentLineSize(float32 size);
     void Apply();
     float32 Calculate();
 
@@ -56,6 +57,7 @@ private:
     Vector2::eAxis axis = Vector2::AXIS_X;
     float32 parentSize = 0.0f;
     float32 parentRestSize = 0.0f;
+    float32 parentLineSize = 0.0f;
 
     const UISizePolicyComponent* sizePolicy = nullptr;
     const UILinearLayoutComponent* linearLayout = nullptr;

@@ -256,6 +256,11 @@ LayoutFormula* UISizePolicyComponent::GetFormula(int32 axis) const
     return policy[axis].formula.get();
 }
 
+void UISizePolicyComponent::RemoveFormula(int32 axis)
+{
+    policy[axis].formula.reset();
+}
+
 bool UISizePolicyComponent::IsDependsOnChildren(int32 axis) const
 {
     DVASSERT(0 <= axis && axis < Vector2::AXIS_COUNT);

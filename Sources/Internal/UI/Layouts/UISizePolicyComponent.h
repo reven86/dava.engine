@@ -76,6 +76,7 @@ public:
     float32 GetMaxValueByAxis(int32 axis) const;
 
     LayoutFormula* GetFormula(int32 axis) const;
+    void RemoveFormula(int32 axis);
 
     bool IsDependsOnChildren(int32 axis) const;
 
