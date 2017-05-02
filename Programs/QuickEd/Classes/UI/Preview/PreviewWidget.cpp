@@ -211,7 +211,7 @@ void PreviewWidget::OnIncrementScale()
 
 void PreviewWidget::OnDecrementScale()
 {
-    float32 nextScale = editorCanvas->GetPreviousScale(-1);
+    float32 nextScale = editorCanvas->GetPreviousScale(1);
     editorCanvas->SetScale(nextScale);
 }
 
