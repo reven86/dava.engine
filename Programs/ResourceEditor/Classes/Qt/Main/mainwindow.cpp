@@ -303,24 +303,6 @@ void QtMainWindow::AfterInjectInit()
     SetupStatusBar();
 }
 
-QString GetSaveFolderForEmitters()
-{
-    const DAVA::FilePath defaultPath = SettingsManager::GetValue(Settings::Internal_ParticleLastEmitterDir).AsFilePath();
-    QString particlesPath;
-    if (defaultPath.IsEmpty())
-    {
-        ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
-        DVASSERT(data != nullptr);
-        particlesPath = QString::fromStdString(data->GetParticlesConfigPath().GetAbsolutePathname());
-    }
-    else
-    {
-        particlesPath = QString::fromStdString(defaultPath.GetAbsolutePathname());
-    }
-
-    return particlesPath;
-}
-
 void QtMainWindow::SetupWidget()
 {
     ui->sceneTree->Init(globalOperations);
