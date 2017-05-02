@@ -26,6 +26,11 @@ class DavaKeyboardState extends DavaActivity.ActivityListenerImpl
     private Rect keyboardRect = new Rect();
     private List<KeyboardStateListener> listeners = new LinkedList<KeyboardStateListener>();
 
+    DavaKeyboardState()
+    {
+        onResume();
+    }
+
     // DavaActivity.ActivityListener interface
     @Override
     public void onResume()

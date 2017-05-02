@@ -60,6 +60,7 @@ struct CoreNativeBridge final
     void DidReceiveLocalNotification(UIApplication* app, UILocalNotification* notification);
     void HandleActionWithIdentifier(UIApplication* app, NSString* identifier, NSDictionary* userInfo, id completionHandler);
     BOOL OpenURL(UIApplication* app, NSURL* url, NSString* sourceApplication, id annotation);
+    BOOL ContinueUserActivity(UIApplication* application, NSUserActivity* userActivity, id restorationHandler);
 
     void GameControllerDidConnected();
     void GameControllerDidDisconnected();
@@ -83,7 +84,8 @@ struct CoreNativeBridge final
         ON_DID_RECEIVE_REMOTE_NOTIFICATION_FETCH_COMPLETION_HANDLER,
         ON_DID_RECEIVE_LOCAL_NOTIFICATION,
         ON_HANDLE_ACTION_WITH_IDENTIFIER,
-        ON_OPEN_URL
+        ON_OPEN_URL,
+        ON_CONTINUE_USER_ACTIVITY,
     };
 
     BOOL NotifyListeners(eNotificationType type, NSObject* arg1 = nullptr, NSObject* arg2 = nullptr, NSObject* arg3 = nullptr, id arg4 = nullptr);
