@@ -1,5 +1,5 @@
-#include "Scene3D/Scene.h"
 
+#include "Scene3D/Scene.h"
 #include "Render/Texture.h"
 #include "Render/3D/StaticMesh.h"
 #include "Render/Image/Image.h"
@@ -27,13 +27,14 @@
 #include "Scene3D/Systems/UpdateSystem.h"
 #include "Scene3D/Systems/LightUpdateSystem.h"
 #include "Scene3D/Systems/SwitchSystem.h"
-#include "Scene3D/Systems/SoundUpdateSystem.h"
 #include "Scene3D/Systems/ActionUpdateSystem.h"
 #include "Scene3D/Systems/WindSystem.h"
 #include "Scene3D/Systems/WaveSystem.h"
 #include "Scene3D/Systems/SkeletonSystem.h"
 #include "Scene3D/Systems/AnimationSystem.h"
 #include "Scene3D/Systems/LandscapeSystem.h"
+#include "Scene3D/Systems/SoundUpdateSystem.h"
+#include "Scene3D/Systems/ParticleEffectDebugDrawSystem.h"
 
 #include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerMarkerNames.h"
@@ -176,6 +177,7 @@ Scene::Scene(uint32 _systemsMask /* = SCENE_SYSTEM_ALL_MASK */)
     , windSystem(0)
     , animationSystem(0)
     , staticOcclusionDebugDrawSystem(0)
+    , particleEffectDebugDrawSystem(0)
     , systemsMask(_systemsMask)
     , maxEntityIDCounter(0)
     , sceneGlobalMaterial(0)
@@ -342,6 +344,18 @@ void Scene::CreateSystems()
     {
         skeletonSystem = new SkeletonSystem(this);
         AddSystem(skeletonSystem, MAKE_COMPONENT_MASK(Component::SKELETON_COMPONENT), SCENE_SYSTEM_REQUIRE_PROCESS);
+    }
+
+    if (DAVA::Renderer::GetOptions()->IsOptionEnabled(DAVA::RenderOptions::DEBUG_DRAW_STATIC_OCCLUSION) && !staticOcclusionDebugDrawSystem)
+    {
+        staticOcclusionDebugDrawSystem = new DAVA::StaticOcclusionDebugDrawSystem(this);
+        AddSystem(staticOcclusionDebugDrawSystem, MAKE_COMPONENT_MASK(DAVA::Component::STATIC_OCCLUSION_COMPONENT), 0, renderUpdateSystem);
+    }
+
+    if (DAVA::Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DEBUG_DRAW_PARTICLES) && particleEffectDebugDrawSystem == nullptr)
+    {
+        particleEffectDebugDrawSystem = new ParticleEffectDebugDrawSystem(this);
+        AddSystem(particleEffectDebugDrawSystem, 0);
     }
 }
 
@@ -678,6 +692,7 @@ void Scene::Update(float timeElapsed)
     }
 
     updateTime = SystemTimer::GetMs() - time;
+    sceneGlobalTime += timeElapsed;
 }
 
 void Scene::Draw()
@@ -697,11 +712,14 @@ void Scene::Draw()
 
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_SHADOW_COLOR, shadowDataPtr, reinterpret_cast<pointer_size>(shadowDataPtr));
     Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_WATER_CLEAR_COLOR, waterDataPtr, reinterpret_cast<pointer_size>(waterDataPtr));
+    Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_GLOBAL_TIME, &sceneGlobalTime, reinterpret_cast<pointer_size>(&sceneGlobalTime));
 
     uint64 time = SystemTimer::GetMs();
 
     renderSystem->Render();
 
+    if (particleEffectDebugDrawSystem != nullptr)
+        particleEffectDebugDrawSystem->Draw();
     //foliageSystem->DebugDrawVegetation();
 
     drawTime = SystemTimer::GetMs() - time;
@@ -875,6 +893,11 @@ AnimationSystem* Scene::GetAnimationSystem() const
     return animationSystem;
 }
 
+ParticleEffectDebugDrawSystem* Scene::GetParticleEffectDebugDrawSystem() const
+{
+    return particleEffectDebugDrawSystem;
+}
+
 /*void Scene::Save(KeyedArchive * archive)
 {
     // Perform refactoring and add Matrix4, Vector4 types to VariantType and KeyedArchive
@@ -990,6 +1013,17 @@ void Scene::HandleEvent(Observable* observable)
     {
         RemoveSystem(staticOcclusionDebugDrawSystem);
         SafeDelete(staticOcclusionDebugDrawSystem);
+    }
+
+    if (DAVA::Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DEBUG_DRAW_PARTICLES) && particleEffectDebugDrawSystem == nullptr)
+    {
+        particleEffectDebugDrawSystem = new ParticleEffectDebugDrawSystem(this);
+        AddSystem(particleEffectDebugDrawSystem, 0);
+    }
+    else if (!DAVA::Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DEBUG_DRAW_PARTICLES) && particleEffectDebugDrawSystem != nullptr)
+    {
+        RemoveSystem(particleEffectDebugDrawSystem);
+        SafeDelete(particleEffectDebugDrawSystem);
     }
 }
 

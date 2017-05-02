@@ -96,6 +96,11 @@ QString ProcessID(const QString& id)
     QStringList digits = version.split(QRegularExpression("\\D+"), QString::SkipEmptyParts);
     version = digits.join(".");
     QString dateTime = id.right(id.length() - versionLength - index);
+    QString extension(".txt");
+    if (dateTime.endsWith(extension))
+    {
+        dateTime.chop(extension.length());
+    }
     QRegularExpression timeRegex("\\_\\d+\\_\\d+\\_\\d+");
     if (dateTime.indexOf(timeRegex, 0, &match) != -1)
     {
@@ -119,12 +124,21 @@ bool ExtractApp(const QString& appName, const QJsonObject& entry, Branch* branch
         branch->applications.append(Application(appName));
         app = &branch->applications.last();
     }
-    QString buildType = entry["build_type"].toString();
-    if (buildType.isEmpty())
+    QString buildNum = entry["build_num"].toString();
+    AppVersion* appVer = nullptr;
+    if (buildNum.isEmpty() == false)
     {
-        return false;
+        appVer = app->GetVersionByNum(buildNum);
     }
-    AppVersion* appVer = app->GetVersion(buildType);
+    if (appVer == nullptr)
+    {
+        QString buildType = entry["build_type"].toString();
+        if (buildType.isEmpty())
+        {
+            return false;
+        }
+        appVer = app->GetVersion(buildType);
+    }
     if (appVer == nullptr)
     {
         app->versions.append(AppVersion());
@@ -195,40 +209,44 @@ bool IsToolset(const QString& appName)
     return appName.startsWith("toolset", Qt::CaseInsensitive);
 }
 
+bool IsBuildSupported(const QString& url)
+{
+    static QStringList supportedExtensions = {
+        ".zip", ".ipa"
+    };
+
+    for (const QString& ext : supportedExtensions)
+    {
+        if (url.endsWith(ext))
+        {
+            return true;
+        }
+    }
+    return false;
+}
+
 bool FillAppFields(AppVersion* appVer, const QJsonObject& entry, bool toolset)
 {
+    QString url = entry["artifacts"].toString();
     QString buildType = entry["build_type"].toString();
-    appVer->id = ConfigParserDetails::ProcessID(buildType);
-    appVer->url = entry["artifacts"].toString();
+
+    //remember num to fill it later
     appVer->buildNum = entry["build_num"].toString();
-    appVer->runPath = toolset ? "" : entry["exe_location"].toString();
-    appVer->isToolSet = toolset;
-    return !appVer->id.isEmpty();
-}
-
-AppVersion AppVersion::LoadFromYamlNode(const YAML::Node* node)
-{
-    AppVersion version;
-    version.runPath = GetStringValueFromYamlNode(node->FindValue(CONFIG_APPVERSION_RUNPATH_KEY));
-    version.cmd = GetStringValueFromYamlNode(node->FindValue(CONFIG_APPVERSION_CMD_KEY));
-    version.url = GetStringValueFromYamlNode(node->FindValue(CONFIG_URL_KEY));
-
-    return version;
-}
-
-Application Application::LoadFromYamlNode(const YAML::Node* node)
-{
-    Application app;
-    YAML::Iterator it = node->begin();
-    while (it != node->end())
+    if (appVer->id.isEmpty() || url.endsWith(".zip") || buildType.startsWith("Desc"))
     {
-        AppVersion version = AppVersion::LoadFromYamlNode(&it.second());
-        version.id = GetStringValueFromYamlNode(&it.first());
-        app.versions.push_back(version);
-        ++it;
+        appVer->id = ConfigParserDetails::ProcessID(buildType);
     }
 
-    return app;
+    if (IsBuildSupported(url) == false)
+    {
+        //this is valid situation
+        return true;
+    }
+
+    appVer->url = url;
+    appVer->runPath = toolset ? "" : entry["exe_location"].toString();
+    appVer->isToolSet = toolset;
+    return !appVer->url.isEmpty();
 }
 
 AppVersion* Application::GetVersion(const QString& versionID)
@@ -239,6 +257,18 @@ AppVersion* Application::GetVersion(const QString& versionID)
             return &versions[i];
 
     return 0;
+}
+
+AppVersion* Application::GetVersionByNum(const QString& num)
+{
+    auto iter = std::find_if(versions.begin(), versions.end(), [num](const AppVersion& ver) {
+        return ver.buildNum == num;
+    });
+    if (iter == versions.end())
+    {
+        return nullptr;
+    }
+    return &(*iter);
 }
 
 void Application::RemoveVersion(const QString& versionID)
@@ -281,21 +311,6 @@ void Branch::RemoveApplication(const QString& appID)
     }
     if (index != -1)
         applications.remove(index);
-}
-
-Branch Branch::LoadFromYamlNode(const YAML::Node* node)
-{
-    Branch branch;
-    YAML::Iterator it = node->begin();
-    while (it != node->end())
-    {
-        Application app = Application::LoadFromYamlNode(&it.second());
-        app.id = GetStringValueFromYamlNode(&it.first());
-        branch.applications.push_back(app);
-        ++it;
-    }
-
-    return branch;
 }
 
 ConfigParser::ConfigParser()
@@ -377,74 +392,7 @@ bool ConfigParser::Parse(const QByteArray& configData)
     {
         return false;
     }
-    if (ParseJSON(configData))
-    {
-        return true;
-    }
-    YAML::Parser parser;
-
-    YAML::Node configRoot;
-    YAML::Iterator it;
-    const YAML::Node* launcherNode;
-    const YAML::Node* stringsNode;
-    const YAML::Node* branchesNode;
-
-    std::istringstream fileStream(configData.data());
-    parser.Load(fileStream);
-
-    try
-    {
-        if (parser.GetNextDocument(configRoot))
-        {
-            launcherNode = configRoot.FindValue(CONFIG_LAUNCHER_KEY);
-            stringsNode = configRoot.FindValue(CONFIG_STRINGS_KEY);
-            branchesNode = configRoot.FindValue(CONFIG_BRANCHES_KEY);
-
-            launcherVersion = GetStringValueFromYamlNode(launcherNode->FindValue(CONFIG_LAUNCHER_VERSION_KEY), LAUNCHER_VER);
-            launcherURL = GetStringValueFromYamlNode(launcherNode->FindValue(CONFIG_URL_KEY));
-            webPageURL = GetStringValueFromYamlNode(launcherNode->FindValue(CONFIG_LAUNCHER_WEBPAGE_KEY));
-            newsID = GetStringValueFromYamlNode(launcherNode->FindValue(CONFIG_LAUNCHER_NEWSID_KEY));
-            favorites = GetArrayValueFromYamlNode(launcherNode->FindValue(CONFIG_LAUNCHER_FAVORITES_KEY));
-
-            //hotfix to remove duplicates
-            favorites = favorites.toSet().toList();
-            if (stringsNode)
-            {
-                it = stringsNode->begin();
-                while (it != stringsNode->end())
-                {
-                    QString key = GetStringValueFromYamlNode(&it.first());
-                    QString value = GetStringValueFromYamlNode(&it.second());
-                    strings[key] = value;
-                    ++it;
-                }
-            }
-
-            if (branchesNode)
-            {
-                it = branchesNode->begin();
-                while (it != branchesNode->end())
-                {
-                    Branch branch = Branch::LoadFromYamlNode(&it.second());
-                    branch.id = GetStringValueFromYamlNode(&it.first());
-                    branches.push_back(branch);
-                    ++it;
-                }
-            }
-        }
-        else
-        {
-            ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_CONFIG);
-            return false;
-        }
-    }
-    catch (YAML::Exception& e)
-    {
-        QString errorMessage = QObject::tr("Can not parse config file.\nError text: %1").arg(e.msg.c_str());
-        ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_CONFIG, errorMessage);
-        return false;
-    }
-    return true;
+    return ParseJSON(configData);
 }
 
 void ConfigParser::CopyStringsAndFavsFromConfig(const ConfigParser& parser)
@@ -519,7 +467,7 @@ QByteArray ConfigParser::Serialize() const
                 const AppVersion* ver = app->GetVersion(k);
                 QString appName = ver->isToolSet ? "ToolSet" : app->id;
                 QJsonObject buildObj = {
-                    { "buildNum", ver->buildNum },
+                    { "build_num", ver->buildNum },
                     { "build_type", ver->id },
                     { "build_name", appName },
                     { "branchName", branch->id },
@@ -805,36 +753,4 @@ void ConfigParser::SetLastNewsID(const QString& id)
 const QStringList& ConfigParser::GetFavorites()
 {
     return favorites;
-}
-
-QString GetStringValueFromYamlNode(const YAML::Node* node, QString defaultValue /* "" */)
-{
-    if (!node)
-        return defaultValue;
-
-    std::string stdStr;
-    node->GetScalar(stdStr);
-    return QString(stdStr.c_str());
-}
-
-QStringList GetArrayValueFromYamlNode(const YAML::Node* node)
-{
-    QStringList array;
-
-    if (!node)
-        return array;
-
-    if (node->Type() == YAML::NodeType::Scalar)
-        array.push_back(GetStringValueFromYamlNode(node));
-
-    if (node->Type() == YAML::NodeType::Sequence)
-    {
-        YAML::Iterator it = node->begin();
-        while (it != node->end())
-        {
-            array.push_back(GetStringValueFromYamlNode(&(*it)));
-            ++it;
-        }
-    }
-    return array;
 }

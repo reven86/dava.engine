@@ -25,6 +25,7 @@
 #include "UI/UIControl.h"
 
 #include "Utils/StringFormat.h"
+#include "Utils/QtDavaConvertion.h"
 
 using namespace DAVA;
 
@@ -91,14 +92,14 @@ void PackageSerializer::SerializePackageNodes(PackageNode* package, const DAVA::
 void PackageSerializer::VisitPackage(PackageNode* node)
 {
     BeginMap("Header");
-    PutValue("version", Format("%d", UIPackage::CURRENT_VERSION));
+    PutValue("version", Format("%d", UIPackage::CURRENT_VERSION), true);
     EndMap();
 
     if (!importedPackages.empty())
     {
         BeginArray("ImportedPackages");
         for (const PackageNode* package : importedPackages)
-            PutValue(package->GetPath().GetFrameworkPath());
+            PutValue(package->GetPath().GetFrameworkPath(), true);
         EndArray();
     }
 
@@ -333,11 +334,11 @@ void PackageSerializer::VisitNameProperty(NameProperty* property)
     {
     case ControlNode::CREATED_FROM_PROTOTYPE:
     case ControlNode::CREATED_FROM_CLASS:
-        PutValue("name", property->GetControlNode()->GetName());
+        PutValue("name", property->GetControlNode()->GetName(), true);
         break;
 
     case ControlNode::CREATED_FROM_PROTOTYPE_CHILD:
-        PutValue("path", property->GetControlNode()->GetPathToPrototypeChild());
+        PutValue("path", property->GetControlNode()->GetPathToPrototypeChild(), true);
         break;
 
     default:
@@ -359,7 +360,7 @@ void PackageSerializer::VisitPrototypeNameProperty(PrototypeNameProperty* proper
         }
         name += prototype->GetName();
 
-        PutValue("prototype", name);
+        PutValue("prototype", name, true);
     }
 }
 
@@ -367,7 +368,7 @@ void PackageSerializer::VisitClassProperty(ClassProperty* property)
 {
     if (property->GetControlNode()->GetCreationType() == ControlNode::CREATED_FROM_CLASS)
     {
-        PutValue("class", property->GetClassName());
+        PutValue("class", property->GetClassName(), true);
     }
 }
 
@@ -375,7 +376,7 @@ void PackageSerializer::VisitCustomClassProperty(CustomClassProperty* property)
 {
     if (property->IsOverriddenLocally())
     {
-        PutValue("customClass", property->GetCustomClassName());
+        PutValue("customClass", property->GetCustomClassName(), true);
     }
 }
 
@@ -383,13 +384,13 @@ void PackageSerializer::VisitIntrospectionProperty(IntrospectionProperty* proper
 {
     if (property->IsOverriddenLocally())
     {
-        PutValueProperty(property->GetMember()->Name().c_str(), property);
+        PutValueProperty(property->GetName(), property);
     }
 }
 
 void PackageSerializer::VisitStyleSheetRoot(StyleSheetRootProperty* property)
 {
-    PutValue("selector", property->GetSelectorsAsString());
+    PutValue("selector", property->GetSelectorsAsString(), true);
 
     BeginMap("properties", false);
     if (property->GetPropertiesSection()->GetCount() > 0)
@@ -410,10 +411,10 @@ void PackageSerializer::VisitStyleSheetProperty(StyleSheetProperty* property)
     {
         BeginMap(property->GetName());
         PutValueProperty("value", property);
-        PutValue("transitionTime", VariantType(property->GetTransitionTime()));
+        PutValue("transitionTime", Format("%f", property->GetTransitionTime()), false);
 
         const EnumMap* enumMap = GlobalEnumMap<Interpolation::FuncType>::Instance();
-        PutValue("transitionFunction", enumMap->ToString(property->GetTransitionFunction()));
+        PutValue("transitionFunction", enumMap->ToString(property->GetTransitionFunction()), true);
         EndMap();
     }
     else
@@ -432,13 +433,13 @@ void PackageSerializer::AcceptChildren(AbstractProperty* property)
 
 void PackageSerializer::PutValueProperty(const DAVA::String& name, ValueProperty* property)
 {
-    VariantType value = property->GetValue();
+    Any value = property->GetValue();
 
-    if (value.GetType() == VariantType::TYPE_INT32 && property->GetType() == AbstractProperty::TYPE_FLAGS)
+    if (property->GetType() == AbstractProperty::TYPE_FLAGS)
     {
         Vector<String> values;
         const EnumMap* enumMap = property->GetEnumMap();
-        int val = value.AsInt32();
+        int val = value.Cast<int32>();
         int p = 1;
         while (val > 0)
         {
@@ -449,13 +450,49 @@ void PackageSerializer::PutValueProperty(const DAVA::String& name, ValueProperty
         }
         PutValue(name, values);
     }
-    else if (value.GetType() == VariantType::TYPE_INT32 && property->GetType() == AbstractProperty::TYPE_ENUM)
+    else if (property->GetType() == AbstractProperty::TYPE_ENUM)
     {
-        const EnumMap* enumMap = property->GetEnumMap();
-        PutValue(name, enumMap->ToString(value.AsInt32()));
+        PutValue(name, property->GetEnumMap()->ToString(value.Cast<int32>()), true);
+    }
+    else if (value.CanGet<Vector2>())
+    {
+        BeginArray(name, true);
+        const Vector2& vector = value.Get<Vector2>();
+        PutValue(AnyToString(vector.x), false);
+        PutValue(AnyToString(vector.y), false);
+        EndArray();
+    }
+    else if (value.CanGet<Vector3>())
+    {
+        BeginArray(name, true);
+        const Vector3& vector = value.Get<Vector3>();
+        PutValue(AnyToString(vector.x), false);
+        PutValue(AnyToString(vector.y), false);
+        PutValue(AnyToString(vector.z), false);
+        EndArray();
+    }
+    else if (value.CanGet<Vector4>())
+    {
+        BeginArray(name, true);
+        const Vector4& vector = value.Get<Vector4>();
+        PutValue(AnyToString(vector.x), false);
+        PutValue(AnyToString(vector.y), false);
+        PutValue(AnyToString(vector.z), false);
+        PutValue(AnyToString(vector.w), false);
+        EndArray();
+    }
+    else if (value.CanGet<Color>())
+    {
+        BeginArray(name, true);
+        const Color& color = value.Get<Color>();
+        PutValue(AnyToString(color.r), false);
+        PutValue(AnyToString(color.g), false);
+        PutValue(AnyToString(color.b), false);
+        PutValue(AnyToString(color.a), false);
+        EndArray();
     }
     else
     {
-        PutValue(name, value);
+        PutValue(name, AnyToString(value), value.CanGet<String>() || value.CanGet<FilePath>() || value.CanGet<FastName>());
     }
 }

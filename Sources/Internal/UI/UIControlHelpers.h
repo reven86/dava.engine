@@ -24,6 +24,8 @@ public:
     static void ScrollToControl(DAVA::UIControl* control, bool toTopLeftForBigControls = false);
     static void ScrollToControlWithAnimation(DAVA::UIControl* control, float32 animationTime = 0.3f, bool toTopLeftForBigControls = false);
 
+    static bool IsControlNameValid(const FastName& controlName);
+
 private:
     static const UIControl* FindControlByPathImpl(const String& controlPath, const UIControl* rootControl);
     static const UIControl* FindControlByPathImpl(Vector<FastName>::const_iterator begin, Vector<FastName>::const_iterator end, const UIControl* rootControl);
@@ -33,12 +35,6 @@ private:
     static float32 GetScrollPositionToShowControl(float32 controlPos, float32 controlSize, float32 scrollSize, bool toTopLeftForBigControls);
     static Rect ScrollListToRect(UIList* list, const DAVA::Rect& rect, float32 animationTime, bool toTopLeftForBigControls);
     static Rect ScrollUIScrollViewToRect(UIScrollView* scrollView, const DAVA::Rect& rect, float32 animationTime, bool toTopLeftForBigControls);
-
-    static const FastName WILDCARD_PARENT;
-    static const FastName WILDCARD_CURRENT;
-    static const FastName WILDCARD_ROOT;
-    static const FastName WILDCARD_MATCHES_ONE_LEVEL;
-    static const FastName WILDCARD_MATCHES_ZERO_OR_MORE_LEVEL;
 };
 };
 #endif // __DAVAENGINE_UI_CONTROL_HELPERS_H__

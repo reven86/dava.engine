@@ -5,8 +5,6 @@
 #include <type_traits>
 #include <bitset>
 
-#include "Base/BaseTypes.h"
-
 namespace DAVA
 {
 namespace TypeDetail

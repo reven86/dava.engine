@@ -7,6 +7,8 @@
 #include "UI/Layouts/UIIgnoreLayoutComponent.h"
 #include "UI/Layouts/UISizePolicyComponent.h"
 #include "UI/Layouts/UIAnchorComponent.h"
+#include "UI/Layouts/UILayoutSourceRectComponent.h"
+#include "UI/Layouts/UILayoutIsolationComponent.h"
 #include "UI/Input/UIModalInputComponent.h"
 #include "UI/Focus/UIFocusComponent.h"
 #include "UI/Focus/UIFocusGroupComponent.h"
@@ -15,9 +17,21 @@
 #include "UI/Input/UIActionComponent.h"
 #include "UI/Input/UIActionBindingComponent.h"
 #include "UI/Scroll/UIScrollBarDelegateComponent.h"
+#include "UI/Sound/UISoundComponent.h"
+#include "UI/Sound/UISoundValueFilterComponent.h"
+#include "UI/Update/UIUpdateComponent.h"
+#include "UI/Update/UICustomUpdateDeltaComponent.h"
+#include "Utils/StringFormat.h"
 
 namespace DAVA
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(UIComponent)
+{
+    ReflectionRegistrator<UIComponent>::Begin()
+    .Field("type", &UIComponent::GetType, nullptr)
+    .End();
+}
+
 UIComponent::UIComponent()
     : control(nullptr)
 {
@@ -41,9 +55,6 @@ UIComponent* UIComponent::CreateByType(uint32 componentType)
 {
     switch (componentType)
     {
-    case BACKGROUND_COMPONENT:
-        return new UIControlBackground();
-
     case LINEAR_LAYOUT_COMPONENT:
         return new UILinearLayoutComponent();
 
@@ -61,6 +72,15 @@ UIComponent* UIComponent::CreateByType(uint32 componentType)
 
     case ANCHOR_COMPONENT:
         return new UIAnchorComponent();
+
+    case LAYOUT_SOURCE_RECT_COMPONENT:
+        return new UILayoutSourceRectComponent();
+
+    case LAYOUT_ISOLATION_COMPONENT:
+        return new UILayoutIsolationComponent();
+
+    case BACKGROUND_COMPONENT:
+        return new UIControlBackground();
 
     case MODAL_INPUT_COMPONENT:
         return new UIModalInputComponent();
@@ -86,8 +106,20 @@ UIComponent* UIComponent::CreateByType(uint32 componentType)
     case SCROLL_BAR_DELEGATE_COMPONENT:
         return new UIScrollBarDelegateComponent();
 
+    case SOUND_COMPONENT:
+        return new UISoundComponent();
+
+    case SOUND_VALUE_FILTER_COMPONENT:
+        return new UISoundValueFilterComponent();
+
+    case UPDATE_COMPONENT:
+        return new UIUpdateComponent();
+
+    case CUSTOM_UPDATE_DELTA_COMPONENT:
+        return new UICustomUpdateDeltaComponent();
+
     default:
-        DVASSERT(false);
+        DVASSERT(false, Format("Can't create component with type %d", componentType).c_str());
         return nullptr;
     }
 }

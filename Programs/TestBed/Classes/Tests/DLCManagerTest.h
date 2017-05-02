@@ -28,23 +28,21 @@ private:
     void OnCheckFileClicked(DAVA::BaseObject* sender, void* data, void* callerData);
     void OnListInDvpkClicked(DAVA::BaseObject* sender, void* data, void* callerData);
 
+    void WriteErrorOnDevice(const DAVA::String& filePath, DAVA::int32 errVal);
     void OnRequestUpdated(const DAVA::DLCManager::IRequest& request);
     void OnNetworkReady(bool isReady);
+    void OnInitializeFinished(size_t numDownloaded, size_t numTotalFiles);
 
     DAVA::Engine& engine;
 
-    DAVA::String sqliteDbFile = "db_{gpu}.db.zip";
     DAVA::FilePath folderWithDownloadedPacks = "~doc:/DLCManagerTest/packs/";
     // TODO quick and dirty way to test download on all platforms, in future replace with local http server
-    DAVA::String urlToServerSuperpack = "http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz/test_pack.dvpk";
-    //"http://127.0.0.1:2424/test_pack.dvpk";
+    DAVA::String urlToServerSuperpack = "http://127.0.0.1:8080/superpack_for_unittests.dvpk";
+    //"http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz/superpack_for_unittests.dvpk";
     //"http://127.0.0.1:2424/superpack.dvpk";
-    //"http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz/s000001/superpack.dvpk";
-    //"http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz/packs/superpack.dvpk";
-    //"http://127.0.0.1:2424/superpack.dvpk"
-    DAVA::String gpuArchitecture;
 
     DAVA::UIStaticText* packNameLoading = nullptr;
+    DAVA::UIStaticText* logPring = nullptr;
     DAVA::UIButton* loadPack = nullptr;
     DAVA::UIButton* loadNext = nullptr;
 
@@ -58,6 +56,7 @@ private:
     DAVA::UIStaticText* description = nullptr;
     DAVA::UITextField* url = nullptr;
     DAVA::UITextField* filePathField = nullptr;
+    DAVA::UITextField* numOfThreadDownload = nullptr;
     DAVA::UIButton* checkFile = nullptr;
     DAVA::UIButton* startInit = nullptr;
     DAVA::UIButton* startSync = nullptr;

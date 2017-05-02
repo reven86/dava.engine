@@ -1,9 +1,34 @@
 #include "UIFlowLayoutComponent.h"
 
 #include "UI/UIControl.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(UIFlowLayoutComponent)
+{
+    ReflectionRegistrator<UIFlowLayoutComponent>::Begin()
+    .ConstructorByPointer()
+    .DestructorByPointer([](UIFlowLayoutComponent* o) { o->Release(); })
+    .Field("enabled", &UIFlowLayoutComponent::IsEnabled, &UIFlowLayoutComponent::SetEnabled)
+    .Field("orientation", &UIFlowLayoutComponent::GetOrientation, &UIFlowLayoutComponent::SetOrientation)
+    [
+    M::EnumT<eOrientation>()
+    ]
+    .Field("hPadding", &UIFlowLayoutComponent::GetHorizontalPadding, &UIFlowLayoutComponent::SetHorizontalPadding)
+    .Field("hDynamicPadding", &UIFlowLayoutComponent::IsDynamicHorizontalPadding, &UIFlowLayoutComponent::SetDynamicHorizontalPadding)
+    .Field("hDynamicInLinePadding", &UIFlowLayoutComponent::IsDynamicHorizontalInLinePadding, &UIFlowLayoutComponent::SetDynamicHorizontalInLinePadding)
+    .Field("hSpacing", &UIFlowLayoutComponent::GetHorizontalSpacing, &UIFlowLayoutComponent::SetHorizontalSpacing)
+    .Field("hDynamicSpacing", &UIFlowLayoutComponent::IsDynamicHorizontalSpacing, &UIFlowLayoutComponent::SetDynamicHorizontalSpacing)
+    .Field("vPadding", &UIFlowLayoutComponent::GetVerticalPadding, &UIFlowLayoutComponent::SetVerticalPadding)
+    .Field("vDynamicPadding", &UIFlowLayoutComponent::IsDynamicVerticalPadding, &UIFlowLayoutComponent::SetDynamicVerticalPadding)
+    .Field("vSpacing", &UIFlowLayoutComponent::GetVerticalSpacing, &UIFlowLayoutComponent::SetVerticalSpacing)
+    .Field("vDynamicSpacing", &UIFlowLayoutComponent::IsDynamicVerticalSpacing, &UIFlowLayoutComponent::SetDynamicVerticalSpacing)
+    .Field("skipInvisible", &UIFlowLayoutComponent::IsSkipInvisibleControls, &UIFlowLayoutComponent::SetSkipInvisibleControls)
+    .Field("useRtl", &UIFlowLayoutComponent::IsUseRtl, &UIFlowLayoutComponent::SetUseRtl)
+    .End();
+}
+
 UIFlowLayoutComponent::UIFlowLayoutComponent()
 {
     SetEnabled(true);
@@ -42,7 +67,7 @@ bool UIFlowLayoutComponent::IsEnabled() const
 
 void UIFlowLayoutComponent::SetEnabled(bool enabled)
 {
-    flags.set(FLAG_ENABLED, enabled);
+    SetFlag(FLAG_ENABLED, enabled);
 }
 
 UIFlowLayoutComponent::eOrientation UIFlowLayoutComponent::GetOrientation() const
@@ -52,7 +77,7 @@ UIFlowLayoutComponent::eOrientation UIFlowLayoutComponent::GetOrientation() cons
 
 void UIFlowLayoutComponent::SetOrientation(eOrientation orientation)
 {
-    flags.set(FLAG_IS_RIGHT_TO_LEFT, orientation == ORIENTATION_RIGHT_TO_LEFT);
+    SetFlag(FLAG_IS_RIGHT_TO_LEFT, orientation == ORIENTATION_RIGHT_TO_LEFT);
 }
 
 float32 UIFlowLayoutComponent::GetHorizontalPadding() const
@@ -63,6 +88,7 @@ float32 UIFlowLayoutComponent::GetHorizontalPadding() const
 void UIFlowLayoutComponent::SetHorizontalPadding(float32 newPadding)
 {
     padding[Vector2::AXIS_X] = newPadding;
+    SetLayoutDirty();
 }
 
 float32 UIFlowLayoutComponent::GetHorizontalSpacing() const
@@ -83,8 +109,7 @@ bool UIFlowLayoutComponent::IsDynamicHorizontalPadding() const
 
 void UIFlowLayoutComponent::SetDynamicHorizontalPadding(bool dynamic)
 {
-    flags.set(FLAG_DYNAMIC_HORIZONTAL_PADDING, dynamic);
-    SetLayoutDirty();
+    SetFlag(FLAG_DYNAMIC_HORIZONTAL_PADDING, dynamic);
 }
 
 bool UIFlowLayoutComponent::IsDynamicHorizontalInLinePadding() const
@@ -94,8 +119,7 @@ bool UIFlowLayoutComponent::IsDynamicHorizontalInLinePadding() const
 
 void UIFlowLayoutComponent::SetDynamicHorizontalInLinePadding(bool dynamic)
 {
-    flags.set(FLAG_DYNAMIC_HORIZONTAL_IN_LINE_PADDING, dynamic);
-    SetLayoutDirty();
+    SetFlag(FLAG_DYNAMIC_HORIZONTAL_IN_LINE_PADDING, dynamic);
 }
 
 bool UIFlowLayoutComponent::IsDynamicHorizontalSpacing() const
@@ -105,8 +129,7 @@ bool UIFlowLayoutComponent::IsDynamicHorizontalSpacing() const
 
 void UIFlowLayoutComponent::SetDynamicHorizontalSpacing(bool dynamic)
 {
-    flags.set(FLAG_DYNAMIC_HORIZONTAL_SPACING, dynamic);
-    SetLayoutDirty();
+    SetFlag(FLAG_DYNAMIC_HORIZONTAL_SPACING, dynamic);
 }
 
 float32 UIFlowLayoutComponent::GetVerticalPadding() const
@@ -138,8 +161,7 @@ bool UIFlowLayoutComponent::IsDynamicVerticalPadding() const
 
 void UIFlowLayoutComponent::SetDynamicVerticalPadding(bool dynamic)
 {
-    flags.set(FLAG_DYNAMIC_VERTICAL_PADDING, dynamic);
-    SetLayoutDirty();
+    SetFlag(FLAG_DYNAMIC_VERTICAL_PADDING, dynamic);
 }
 
 bool UIFlowLayoutComponent::IsDynamicVerticalSpacing() const
@@ -149,8 +171,7 @@ bool UIFlowLayoutComponent::IsDynamicVerticalSpacing() const
 
 void UIFlowLayoutComponent::SetDynamicVerticalSpacing(bool dynamic)
 {
-    flags.set(FLAG_DYNAMIC_VERTICAL_SPACING, dynamic);
-    SetLayoutDirty();
+    SetFlag(FLAG_DYNAMIC_VERTICAL_SPACING, dynamic);
 }
 
 float32 UIFlowLayoutComponent::GetPaddingByAxis(int32 axis)
@@ -170,8 +191,7 @@ bool UIFlowLayoutComponent::IsUseRtl() const
 
 void UIFlowLayoutComponent::SetUseRtl(bool use)
 {
-    flags.set(FLAG_USE_RTL, use);
-    SetLayoutDirty();
+    SetFlag(FLAG_USE_RTL, use);
 }
 
 bool UIFlowLayoutComponent::IsSkipInvisibleControls() const
@@ -181,8 +201,7 @@ bool UIFlowLayoutComponent::IsSkipInvisibleControls() const
 
 void UIFlowLayoutComponent::SetSkipInvisibleControls(bool skip)
 {
-    flags.set(FLAG_SKIP_INVISIBLE_CONTROLS, skip);
-    SetLayoutDirty();
+    SetFlag(FLAG_SKIP_INVISIBLE_CONTROLS, skip);
 }
 
 int32 UIFlowLayoutComponent::GetOrientationAsInt() const
@@ -200,6 +219,15 @@ void UIFlowLayoutComponent::SetLayoutDirty()
     if (GetControl() != nullptr)
     {
         GetControl()->SetLayoutDirty();
+    }
+}
+
+void UIFlowLayoutComponent::SetFlag(eFlags flag, bool enabled)
+{
+    if (flags.test(flag) != enabled)
+    {
+        flags.set(flag, enabled);
+        SetLayoutDirty();
     }
 }
 }

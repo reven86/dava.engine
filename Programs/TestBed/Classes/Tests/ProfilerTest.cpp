@@ -96,8 +96,9 @@ void ProfilerTest::LoadResources()
 
     dumpScrollView = new UIScrollView();
     dumpScrollView->SetDebugDraw(true);
-    dumpScrollView->GetBackground()->SetColor(Color(0.f, 0.f, 0.f, 0.5f));
-    dumpScrollView->GetBackground()->SetBgDrawType(UIControlBackground::DRAW_FILL);
+    UIControlBackground* dumpScrollViewBg = dumpScrollView->GetOrCreateComponent<UIControlBackground>();
+    dumpScrollViewBg->SetColor(Color(0.f, 0.f, 0.f, 0.5f));
+    dumpScrollViewBg->SetDrawType(UIControlBackground::DRAW_FILL);
     dumpScrollView->SetRect(Rect(425.f, 245.f, 500.f, 400.f));
     AddControl(dumpScrollView);
     dumpScrollView->Release();

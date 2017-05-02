@@ -51,6 +51,18 @@ extern CoreNativeBridge* coreNativeBridge;
     bridge->ApplicationWillTerminate(application);
 }
 
+- (UIInterfaceOrientationMask)application:(UIApplication*)application supportedInterfaceOrientationsForWindow:(UIWindow*)window
+{
+    // This method returns the total set of interface orientations supported by the app.
+    // To determine whether to rotate screen system intersects orientations reported by this method
+    // and UIViewController's supportedInterfaceOrientations.
+    // For now use hardcoded landscape orientation here and in [RenderViewController supportedInterfaceOrientations].
+    // https://developer.apple.com/reference/uikit/uiapplicationdelegate/1623107-application?language=objc
+    // https://developer.apple.com/reference/uikit/uiviewcontroller/1621435-supportedinterfaceorientations?language=objc
+    // TODO: provide public methods to set orientations desired by client application
+    return UIInterfaceOrientationMaskLandscape;
+}
+
 - (void)applicationDidReceiveMemoryWarning:(UIApplication*)application
 {
     bridge->ApplicationDidReceiveMemoryWarning(application);
@@ -59,6 +71,11 @@ extern CoreNativeBridge* coreNativeBridge;
 - (void)application:(UIApplication*)application didReceiveRemoteNotification:(NSDictionary*)userInfo
 {
     bridge->DidReceiveRemoteNotification(application, userInfo);
+}
+
+- (void)application:(UIApplication*)application didReceiveRemoteNotification:(NSDictionary*)userInfo fetchCompletionHandler:(void (^)(UIBackgroundFetchResult result))completionHandler
+{
+    bridge->DidReceiveRemoteNotificationFetchCompletionHandler(application, userInfo, completionHandler);
 }
 
 - (void)application:(UIApplication*)application didRegisterForRemoteNotificationsWithDeviceToken:(NSData*)deviceToken
@@ -86,6 +103,11 @@ extern CoreNativeBridge* coreNativeBridge;
 - (BOOL)application:(UIApplication*)application openURL:(NSURL*)url sourceApplication:(NSString*)sourceApplication annotation:(id)annotation
 {
     return bridge->OpenURL(application, url, sourceApplication, annotation);
+}
+
+- (BOOL)application:(UIApplication*)application continueUserActivity:(NSUserActivity*)userActivity restorationHandler:(void (^)(NSArray* restorableObjects))restorationHandler
+{
+    return bridge->ContinueUserActivity(application, userActivity, restorationHandler);
 }
 
 @end

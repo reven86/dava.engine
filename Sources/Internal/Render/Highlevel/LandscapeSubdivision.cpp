@@ -3,9 +3,30 @@
 #include "Render/Highlevel/Frustum.h"
 #include "Render/Highlevel/Camera.h"
 #include "Render/RHI/rhi_Public.h"
+#include "Reflection/ReflectionRegistrator.h"
+#include "Reflection/ReflectedMeta.h"
 
 namespace DAVA
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(LandscapeSubdivision::SubdivisionMetrics)
+{
+    ReflectionRegistrator<SubdivisionMetrics>::Begin()
+    .Field("normalMaxHeightError", &SubdivisionMetrics::normalMaxHeightError)[M::DisplayName("Maximum height error"), M::Group("Normal")]
+    .Field("normalMaxPatchRadiusError", &SubdivisionMetrics::normalMaxPatchRadiusError)[M::DisplayName("Maximum patch radius error"), M::Group("Normal")]
+    .Field("normalMaxAbsoluteHeightError", &SubdivisionMetrics::normalMaxAbsoluteHeightError)[M::DisplayName("Maximum absolute height error"), M::Group("Normal")]
+    .Field("zoomMaxHeightError", &SubdivisionMetrics::zoomMaxHeightError)[M::DisplayName("Maximum height error"), M::Group("Zoom")]
+    .Field("zoomMaxPatchRadiusError", &SubdivisionMetrics::zoomMaxPatchRadiusError)[M::DisplayName("Maximum patch radius error"), M::Group("Zoom")]
+    .Field("zoomMaxAbsoluteHeightError", &SubdivisionMetrics::zoomMaxAbsoluteHeightError)[M::DisplayName("Maximum absolute height error"), M::Group("Zoom")]
+    .End();
+}
+
+DAVA_VIRTUAL_REFLECTION_IMPL(LandscapeSubdivision)
+{
+    ReflectionRegistrator<LandscapeSubdivision>::Begin()
+    .Field("metrics", &LandscapeSubdivision::metrics)[M::DisplayName("Metrics")]
+    .End();
+}
+
 LandscapeSubdivision::LandscapeSubdivision()
 {
     frustum = new Frustum();
@@ -315,4 +336,4 @@ void LandscapeSubdivision::BuildSubdivision(Heightmap* _heightmap, const AABBox3
 
     UpdatePatchInfo(0, 0, 0, nullptr, Rect2i(0, 0, -1, -1));
 }
-};
+}

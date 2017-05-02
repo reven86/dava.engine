@@ -6,7 +6,7 @@
 #include <QLineEdit>
 #include <QStyledItemDelegate>
 #include "Model/ControlProperties/AbstractProperty.h"
-#include "FileSystem/VariantType.h"
+
 class AbstractPropertyDelegate;
 class QToolButton;
 class Project;
@@ -25,6 +25,7 @@ public:
     ~PropertiesTreeItemDelegate();
 
     QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+
     void setEditorData(QWidget* editor, const QModelIndex& index) const override;
     void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
 
@@ -38,6 +39,8 @@ public:
 protected:
     void paint(QPainter* painter, const QStyleOptionViewItem& option,
                const QModelIndex& index) const override;
+
+    QModelIndex GetSourceIndex(QModelIndex index, QAbstractItemModel* itemModel) const;
 
     PropertiesContext context;
 
@@ -63,7 +66,7 @@ protected:
     };
 
     QMap<AbstractProperty::ePropertyType, AbstractPropertyDelegate*> propertyItemDelegates;
-    QMap<DAVA::VariantType::eVariantType, AbstractPropertyDelegate*> variantTypeItemDelegates;
+    QMap<const DAVA::Type*, AbstractPropertyDelegate*> anyItemDelegates;
     QMap<PropertyPath, AbstractPropertyDelegate*> propertyNameTypeItemDelegates;
 };
 class PropertyWidget : public QWidget

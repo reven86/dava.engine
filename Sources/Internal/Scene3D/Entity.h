@@ -424,6 +424,8 @@ public:
                          PROPERTY("visible", "Visible", GetVisible, SetVisible, I_VIEW | I_EDIT)
                          COLLECTION(components, "components", I_VIEW)
                          )
+
+    static const char* componentFieldString;
 };
 
 inline bool Entity::GetVisible()

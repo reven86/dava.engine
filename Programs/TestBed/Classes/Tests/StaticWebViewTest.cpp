@@ -41,6 +41,7 @@ L"  <body style='color: #d0e4fe'>"
 L"      <h1>This is a WebView</h1>"
 L"      <a href='http://www.turion.by'>click me</a><br/>"
 L"      <a href='https://wargaming.net'>click me</a><br/>"
+L"      <a href='wotblitz://come.here'>custom scheme</a><br/>"
 L"  </body>"
 L"</html>";
 
@@ -51,7 +52,9 @@ class MyWebViewDelegate : public IUIWebViewDelegate
 public:
     eAction URLChanged(UIWebView* webview, const String& newURL, bool isRedirectedByMouseClick) override
     {
-        Logger::Debug("MyWebViewDelegate::URLChanged: %s", newURL.c_str());
+        Logger::Debug("MyWebViewDelegate::URLChanged %s: %s", isRedirectedByMouseClick ? "by user" : "by code", newURL.c_str());
+        if (newURL.find("wotblitz://") == 0)
+            return eAction::NO_PROCESS;
         return eAction::PROCESS_IN_WEBVIEW;
     }
 
@@ -99,9 +102,9 @@ void StaticWebViewTest::LoadResources()
     webView3->SetVisibilityFlag(true);
     webView3->SetRenderToTexture(true);
     webView3->SetDebugDraw(true);
+    webView3->SetDelegate(webviewDelegate);
     webView3->LoadHtmlString(htmlString);
     webView3->GetOrCreateComponent<UIFocusComponent>();
-
     AddControl(webView3);
 
     Font* font = FTFont::Create("~res:/Fonts/korinna.ttf");
@@ -113,7 +116,8 @@ void StaticWebViewTest::LoadResources()
     overlapedImage = new UIControl(Rect(500, 0, 300, 300));
     FilePath imgPath("~res:/TestData/UI/Rotation.png");
     ScopedPtr<Sprite> sprite(Sprite::CreateFromSourceFile(imgPath));
-    overlapedImage->SetSprite(sprite, 0);
+    UIControlBackground* overlapedImageBg = overlapedImage->GetOrCreateComponent<UIControlBackground>();
+    overlapedImageBg->SetSprite(sprite, 0);
     overlapedImage->SetDebugDraw(true);
     AddControl(overlapedImage);
 
@@ -179,8 +183,8 @@ void StaticWebViewTest::OnButtonSetNormal(BaseObject*, void*, void*)
 
 void StaticWebViewTest::OnButtonAdd10ToAlfa(BaseObject* obj, void* data, void* callerData)
 {
-    Sprite* spr = webView1->GetSprite();
-    UIControlBackground* back = webView1->GetBackground();
+    UIControlBackground* back = webView1->GetOrCreateComponent<UIControlBackground>();
+    Sprite* spr = back ? back->GetSprite() : nullptr;
     if (spr)
     {
         Color color = back->GetColor();
@@ -192,8 +196,8 @@ void StaticWebViewTest::OnButtonAdd10ToAlfa(BaseObject* obj, void* data, void* c
 
 void StaticWebViewTest::OnButtonMinus10FromAlfa(BaseObject* obj, void* data, void* callerData)
 {
-    Sprite* spr = webView1->GetSprite();
-    UIControlBackground* back = webView1->GetBackground();
+    UIControlBackground* back = webView1->GetOrCreateComponent<UIControlBackground>();
+    Sprite* spr = back ? back->GetSprite() : nullptr;
     if (spr)
     {
         Color color = back->GetColor();

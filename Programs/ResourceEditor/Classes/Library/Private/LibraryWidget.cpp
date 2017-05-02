@@ -1,6 +1,6 @@
 #include "Classes/Library/Private/LibraryWidget.h"
 #include "Classes/Library/Private/LibraryFileSystemModel.h"
-#include "Classes/Library/Private/LIbraryData.h"
+#include "Classes/Library/Private/LibraryData.h"
 
 #include "Classes/Project/ProjectManagerData.h"
 #include "Classes/Application/REGlobal.h"
@@ -299,7 +299,7 @@ void LibraryWidget::ShowContextMenu(const QPoint& point)
     if (!fileInfo.isFile())
         return;
 
-    QMenu contextMenu(this);
+    QMenu contextMenu;
     QVariant fileInfoAsVariant = QVariant::fromValue<QFileInfo>(fileInfo);
 
     DAVA::FilePath pathname = fileInfo.absoluteFilePath().toStdString();

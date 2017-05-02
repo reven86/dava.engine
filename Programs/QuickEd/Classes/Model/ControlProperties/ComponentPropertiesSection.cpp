@@ -35,15 +35,18 @@ ComponentPropertiesSection::ComponentPropertiesSection(DAVA::UIControl* control_
 
     RefreshName();
 
-    const InspInfo* insp = component->GetTypeInfo();
-    for (int j = 0; j < insp->MembersCount(); j++)
+    Reflection componentRef = Reflection::Create(&component);
+    Vector<Reflection::Field> fields = componentRef.GetFields();
+    for (const Reflection::Field& field : fields)
     {
-        const InspMember* member = insp->Member(j);
-
-        const IntrospectionProperty* sourceProp = sourceSection == nullptr ? nullptr : sourceSection->FindProperty(member);
-        IntrospectionProperty* prop = new IntrospectionProperty(component, member, sourceProp, cloneType);
-        AddProperty(prop);
-        SafeRelease(prop);
+        if (!(field.ref.IsReadonly() || field.ref.HasMeta<DAVA::M::ReadOnly>()))
+        {
+            String name = field.key.Get<String>();
+            const IntrospectionProperty* sourceProp = sourceSection == nullptr ? nullptr : sourceSection->FindChildPropertyByName(name);
+            IntrospectionProperty* prop = new IntrospectionProperty(component, type_, name, field.ref, sourceProp, cloneType);
+            AddProperty(prop);
+            SafeRelease(prop);
+        }
     }
 }
 
@@ -52,6 +55,13 @@ ComponentPropertiesSection::~ComponentPropertiesSection()
     SafeRelease(control);
     SafeRelease(component);
     prototypeSection = nullptr; // weak
+}
+
+bool ComponentPropertiesSection::IsHiddenComponent(UIComponent::eType type)
+{
+    return
+    type == UIComponent::LAYOUT_ISOLATION_COMPONENT ||
+    type == UIComponent::LAYOUT_SOURCE_RECT_COMPONENT;
 }
 
 UIComponent* ComponentPropertiesSection::GetComponent() const
@@ -69,13 +79,23 @@ void ComponentPropertiesSection::AttachPrototypeSection(ComponentPropertiesSecti
     if (prototypeSection == nullptr)
     {
         prototypeSection = section;
-        const InspInfo* insp = component->GetTypeInfo();
-        for (int j = 0; j < insp->MembersCount(); j++)
+
+        Reflection componentRef = Reflection::Create(&component);
+        Vector<Reflection::Field> fields = componentRef.GetFields();
+
+        for (const Reflection::Field& field : fields)
         {
-            const InspMember* member = insp->Member(j);
-            ValueProperty* value = FindProperty(member);
-            ValueProperty* prototypeValue = prototypeSection->FindProperty(member);
-            value->AttachPrototypeProperty(prototypeValue);
+            String name = field.key.Cast<String>();
+            ValueProperty* value = FindChildPropertyByName(name);
+            ValueProperty* prototypeValue = prototypeSection->FindChildPropertyByName(name);
+            if (value != nullptr && prototypeValue != nullptr)
+            {
+                value->AttachPrototypeProperty(prototypeValue);
+            }
+            else
+            {
+                DVASSERT(value == nullptr && prototypeValue == nullptr);
+            }
         }
     }
     else

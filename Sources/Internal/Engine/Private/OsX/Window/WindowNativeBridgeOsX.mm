@@ -34,6 +34,8 @@ WindowNativeBridge::~WindowNativeBridge() = default;
 
 bool WindowNativeBridge::CreateWindow(float32 x, float32 y, float32 width, float32 height)
 {
+    windowBackend->uiDispatcher.LinkToCurrentThread();
+
     // clang-format off
     NSUInteger style = NSTitledWindowMask |
                        NSMiniaturizableWindowMask |
@@ -57,12 +59,9 @@ bool WindowNativeBridge::CreateWindow(float32 x, float32 y, float32 width, float
 
     // create render view and add it into window
     renderView = [[RenderView alloc] initWithBridge:this];
-    [nswindow setContentView:renderView];
 
-    // we need to call this hack because native controls
-    // will be drawn below render view (will be invisible).
-    // See hack implementation for more description
-    ForceBackbufferSizeUpdate();
+    // now set renderView as contentView
+    [nswindow setContentView:renderView];
 
     {
         float32 dpi = GetDpi();
@@ -187,16 +186,19 @@ void WindowNativeBridge::WindowDidResignKey()
     }
 }
 
-void WindowNativeBridge::HandleSizeChanging(bool dpiChanged)
+void WindowNativeBridge::HandleSizeChanging(WindowNativeBridge::SizeChangingReason reason)
 {
-    CGSize size = [renderView frame].size;
-    CGSize surfSize = [renderView convertSizeToBacking:size];
-    float32 surfaceScale = [renderView backbufferScale];
-    eFullscreen fullscreen = isFullscreen ? eFullscreen::On : eFullscreen::Off;
     float32 dpi = GetDpi();
+    eFullscreen fullscreen = isFullscreen ? eFullscreen::On : eFullscreen::Off;
 
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, size.width, size.height, surfSize.width, surfSize.height, surfaceScale, dpi, fullscreen));
-    if (dpiChanged)
+    CGSize windowSize = [renderView frame].size;
+    CGFloat backingScale = [nswindow backingScaleFactor];
+    CGFloat surfaceWidth = windowSize.width * surfaceScale * backingScale;
+    CGFloat surfaceHeight = windowSize.height * surfaceScale * backingScale;
+
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowSizeChangedEvent(window, windowSize.width, windowSize.height, surfaceWidth, surfaceHeight, surfaceScale, dpi, fullscreen));
+
+    if (reason == WindowNativeBridge::SizeChangingReason::WindowDpiChanged)
     {
         mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowDpiChangedEvent(window, dpi));
     }
@@ -204,25 +206,12 @@ void WindowNativeBridge::HandleSizeChanging(bool dpiChanged)
 
 void WindowNativeBridge::WindowDidResize()
 {
-    HandleSizeChanging(false);
-}
-
-void WindowNativeBridge::WindowWillStartLiveResize()
-{
-}
-
-void WindowNativeBridge::WindowDidEndLiveResize()
-{
-    if (!isFullscreenToggling)
-    {
-        ForceBackbufferSizeUpdate();
-    }
+    HandleSizeChanging(WindowNativeBridge::SizeChangingReason::WindowSurfaceChanged);
 }
 
 void WindowNativeBridge::WindowDidChangeScreen()
 {
-    ForceBackbufferSizeUpdate();
-    HandleSizeChanging(true);
+    HandleSizeChanging(WindowNativeBridge::SizeChangingReason::WindowDpiChanged);
 }
 
 bool WindowNativeBridge::WindowShouldClose()
@@ -250,23 +239,11 @@ void WindowNativeBridge::WindowWillClose()
 void WindowNativeBridge::WindowWillEnterFullScreen()
 {
     isFullscreen = true;
-    isFullscreenToggling = true;
-}
-
-void WindowNativeBridge::WindowDidEnterFullScreen()
-{
-    isFullscreenToggling = false;
 }
 
 void WindowNativeBridge::WindowWillExitFullScreen()
 {
     isFullscreen = false;
-    isFullscreenToggling = true;
-}
-
-void WindowNativeBridge::WindowDidExitFullScreen()
-{
-    isFullscreenToggling = false;
 }
 
 void WindowNativeBridge::MouseClick(NSEvent* theEvent)
@@ -437,7 +414,14 @@ void WindowNativeBridge::MagnifyWithEvent(NSEvent* theEvent)
 {
     eModifierKeys modifierKeys = GetModifierKeys(theEvent);
     float32 magnification = [theEvent magnification];
-    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMagnificationGestureEvent(window, magnification, modifierKeys));
+
+    NSSize sz = [renderView frame].size;
+    NSPoint pt = [theEvent locationInWindow];
+
+    float32 x = pt.x;
+    float32 y = sz.height - pt.y;
+
+    mainDispatcher->PostEvent(MainDispatcherEvent::CreateWindowMagnificationGestureEvent(window, x, y, magnification, modifierKeys));
 }
 
 void WindowNativeBridge::RotateWithEvent(NSEvent* theEvent)
@@ -597,23 +581,8 @@ void WindowNativeBridge::SetCursorVisibility(bool visible)
 
 void WindowNativeBridge::SetSurfaceScale(const float32 scale)
 {
-    [renderView setBackbufferScale:scale];
-
-    ForceBackbufferSizeUpdate();
-    HandleSizeChanging(false);
-}
-
-void WindowNativeBridge::ForceBackbufferSizeUpdate()
-{
-    // Workaround #1: to force change backbuffer size
-    // after resizing or change scaling
-    // Workaround #2: to ensure that native controls
-    // will be added above renderView
-    [nswindow setContentView:nil]; // #1
-    [renderView setWantsLayer:YES]; // #2
-    [nswindow setContentView:renderView]; // #1
-    [renderView setWantsLayer:NO]; // #2
-    [nswindow makeFirstResponder:renderView]; // #1
+    surfaceScale = scale;
+    HandleSizeChanging(WindowNativeBridge::SizeChangingReason::WindowSurfaceChanged);
 }
 
 } // namespace Private

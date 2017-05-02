@@ -46,12 +46,25 @@ public:
         filePath = path;
     }
 
+    static DAVA::M::ValidationResult ValidatePath(const DAVA::Any& newValue, const DAVA::Any& oldValue)
+    {
+        DAVA::M::ValidationResult result;
+        result.state = DAVA::M::ValidationResult::eState::Valid;
+        DAVA::FilePath path = newValue.Cast<DAVA::FilePath>();
+        if (path.Exists() == false)
+        {
+            result.state = DAVA::M::ValidationResult::eState::Invalid;
+        }
+
+        return result;
+    }
+
     DAVA_VIRTUAL_REFLECTION_IN_PLACE(TestData)
     {
         ReflectionRegistrator<TestData>::Begin()
-        .Field("readOnlyValue", &TestData::GetValue, nullptr)[DAVA::M::File(true, "Material (*.material)")]
-        .Field("readOnlyMetaValue", &TestData::GetValue, &TestData::SetValue)[DAVA::M::ReadOnly(), DAVA::M::File(true, "Material (*.material)")]
-        .Field("value", &TestData::GetValue, &TestData::SetValue)[DAVA::M::File(true, "Material (*.material)")]
+        .Field("readOnlyValue", &TestData::GetValue, nullptr)[DAVA::M::File("Material (*.material)", "Open Material")]
+        .Field("readOnlyMetaValue", &TestData::GetValue, &TestData::SetValue)[DAVA::M::ReadOnly(), DAVA::M::File("Material (*.material)", "Open Material")]
+        .Field("value", &TestData::GetValue, &TestData::SetValue)[DAVA::M::File("Material (*.material)"), DAVA::M::Validator(&TestData::ValidatePath)]
         .Field("isReadOnly", &TestData::isReadOnly)
         .Field("isEnabled", &TestData::isEnabled)
         .End();
@@ -80,7 +93,7 @@ public:
             params.fields[FilePathEdit::Fields::Value] = "readOnlyValue";
             FilePathEdit* edit = new FilePathEdit(params, GetAccessor(), model);
             edit->SetObjectName("FilePathEdit_readOnlyValue");
-            layout->AddWidget(edit);
+            layout->AddControl(edit);
         }
 
         {
@@ -90,7 +103,7 @@ public:
             params.fields[FilePathEdit::Fields::Value] = "readOnlyMetaValue";
             FilePathEdit* edit = new FilePathEdit(params, GetAccessor(), model);
             edit->SetObjectName("FilePathEdit_readOnlyMetaValue");
-            layout->AddWidget(edit);
+            layout->AddControl(edit);
         }
 
         {
@@ -100,7 +113,7 @@ public:
             params.fields[FilePathEdit::Fields::Value] = "value";
             FilePathEdit* edit = new FilePathEdit(params, GetAccessor(), model);
             edit->SetObjectName("FilePathEdit_value");
-            layout->AddWidget(edit);
+            layout->AddControl(edit);
         }
 
         {
@@ -112,7 +125,7 @@ public:
             params.fields[FilePathEdit::Fields::IsReadOnly] = "isReadOnly";
             FilePathEdit* edit = new FilePathEdit(params, GetAccessor(), model);
             edit->SetObjectName("FilePathEdit_final");
-            layout->AddWidget(edit);
+            layout->AddControl(edit);
         }
 
         GetUI()->AddView(wndKey, PanelKey(QStringLiteral("FilePathEditPanel"), CentralPanelInfo()), centralWidget);

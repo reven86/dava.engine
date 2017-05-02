@@ -89,3 +89,8 @@ void SpritesPacker::SetCacheClient(AssetCacheClient* cacheClient, const String& 
 {
     resourcePacker2D.SetCacheClient(cacheClient, comment);
 }
+
+bool SpritesPacker::IsUsingCache() const
+{
+    return resourcePacker2D.IsUsingCache();
+}

@@ -323,13 +323,15 @@ ENUM_DECLARE(UITextField::eStopEditPolicy)
 
 ENUM_DECLARE(UIComponent::eType)
 {
-    ENUM_ADD_DESCR(UIComponent::BACKGROUND_COMPONENT, "Background");
     ENUM_ADD_DESCR(UIComponent::LINEAR_LAYOUT_COMPONENT, "LinearLayout");
     ENUM_ADD_DESCR(UIComponent::FLOW_LAYOUT_COMPONENT, "FlowLayout");
     ENUM_ADD_DESCR(UIComponent::FLOW_LAYOUT_HINT_COMPONENT, "FlowLayoutHint");
     ENUM_ADD_DESCR(UIComponent::IGNORE_LAYOUT_COMPONENT, "IgnoreLayout");
     ENUM_ADD_DESCR(UIComponent::SIZE_POLICY_COMPONENT, "SizePolicy");
     ENUM_ADD_DESCR(UIComponent::ANCHOR_COMPONENT, "Anchor");
+    ENUM_ADD_DESCR(UIComponent::LAYOUT_SOURCE_RECT_COMPONENT, "UILayoutSourceRectComponent");
+    ENUM_ADD_DESCR(UIComponent::LAYOUT_ISOLATION_COMPONENT, "UILayoutIsolationComponent");
+    ENUM_ADD_DESCR(UIComponent::BACKGROUND_COMPONENT, "Background");
     ENUM_ADD_DESCR(UIComponent::MODAL_INPUT_COMPONENT, "ModalInput");
     ENUM_ADD_DESCR(UIComponent::FOCUS_COMPONENT, "Focus");
     ENUM_ADD_DESCR(UIComponent::FOCUS_GROUP_COMPONENT, "FocusGroup");
@@ -338,6 +340,10 @@ ENUM_DECLARE(UIComponent::eType)
     ENUM_ADD_DESCR(UIComponent::ACTION_COMPONENT, "Action");
     ENUM_ADD_DESCR(UIComponent::ACTION_BINDING_COMPONENT, "ActionBinding");
     ENUM_ADD_DESCR(UIComponent::SCROLL_BAR_DELEGATE_COMPONENT, "ScrollBarDelegate");
+    ENUM_ADD_DESCR(UIComponent::SOUND_COMPONENT, "Sound");
+    ENUM_ADD_DESCR(UIComponent::SOUND_VALUE_FILTER_COMPONENT, "SoundValueFilter");
+    ENUM_ADD_DESCR(UIComponent::UPDATE_COMPONENT, "Update");
+    ENUM_ADD_DESCR(UIComponent::CUSTOM_UPDATE_DELTA_COMPONENT, "CustomDeltaUpdate");
 };
 
 ENUM_DECLARE(UISizePolicyComponent::eSizePolicy)

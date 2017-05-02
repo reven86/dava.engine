@@ -7,6 +7,9 @@
 #include "Animation/LinearPropertyAnimation.h"
 #include "Animation/AnimationManager.h"
 #include "Logger/Logger.h"
+#include "Render/Renderer.h"
+#include "UI/UIScreen.h"
+#include "UI/UIScreenTransition.h"
 
 namespace DAVA
 {
@@ -17,20 +20,20 @@ const int32 PROPERTY_ANIMATION_GROUP_OFFSET = 100000;
 
 struct ImmediatePropertySetter
 {
-    void operator()(UIControl* control, void* targetObject, const InspMember* targetIntrospectionMember) const
+    void operator()(UIControl* control, const Reflection& ref) const
     {
         control->StopAnimations(PROPERTY_ANIMATION_GROUP_OFFSET + propertyIndex);
-        targetIntrospectionMember->SetValue(targetObject, value);
+        ref.SetValueWithCast(value);
     }
 
     uint32 propertyIndex;
-    const VariantType& value;
+    const Any& value;
 };
 
 struct AnimatedPropertySetter
 {
     template <typename T>
-    void Animate(UIControl* control, void* targetObject, const InspMember* targetIntrospectionMember, const T& startValue, const T& endValue) const
+    void Animate(UIControl* control, const Reflection& ref, const T& startValue, const T& endValue) const
     {
         const int32 track = PROPERTY_ANIMATION_GROUP_OFFSET + propertyIndex;
         LinearPropertyAnimation<T>* currentAnimation = DynamicTypeCheck<LinearPropertyAnimation<T>*>(AnimationManager::Instance()->FindPlayingAnimation(control, track));
@@ -40,39 +43,52 @@ struct AnimatedPropertySetter
             if (currentAnimation)
                 control->StopAnimations(track);
 
-            if (targetIntrospectionMember->Value(targetObject) != value)
+            if (ref.GetValue() != value)
             {
-                (new LinearPropertyAnimation<T>(control, targetObject, targetIntrospectionMember, startValue, endValue, time, transitionFunction))->Start(track);
+                (new LinearPropertyAnimation<T>(control, ref, startValue, endValue, time, transitionFunction))->Start(track);
             }
         }
     }
 
-    void operator()(UIControl* control, void* targetObject, const InspMember* targetIntrospectionMember) const
+    void operator()(UIControl* control, const Reflection& ref) const
     {
-        switch (value.GetType())
+        const Any& refValue = ref.GetValue();
+        const Type* valueType = value.GetType()->Decay();
+        if (valueType == refValue.GetType()->Decay())
         {
-        case VariantType::TYPE_VECTOR2:
-            Animate<Vector2>(control, targetObject, targetIntrospectionMember, targetIntrospectionMember->Value(targetObject).AsVector2(), value.AsVector2());
-            break;
-        case VariantType::TYPE_VECTOR3:
-            Animate<Vector3>(control, targetObject, targetIntrospectionMember, targetIntrospectionMember->Value(targetObject).AsVector3(), value.AsVector3());
-            break;
-        case VariantType::TYPE_VECTOR4:
-            Animate<Vector4>(control, targetObject, targetIntrospectionMember, targetIntrospectionMember->Value(targetObject).AsVector4(), value.AsVector4());
-            break;
-        case VariantType::TYPE_FLOAT:
-            Animate<float32>(control, targetObject, targetIntrospectionMember, targetIntrospectionMember->Value(targetObject).AsFloat(), value.AsFloat());
-            break;
-        case VariantType::TYPE_COLOR:
-            Animate<Color>(control, targetObject, targetIntrospectionMember, targetIntrospectionMember->Value(targetObject).AsColor(), value.AsColor());
-            break;
-        default:
-            DVASSERT(false, "Non-animatable property");
+            if (valueType == Type::Instance<Vector2>())
+            {
+                Animate<Vector2>(control, ref, refValue.Get<Vector2>(), value.Get<Vector2>());
+            }
+            else if (valueType == Type::Instance<Vector3>())
+            {
+                Animate<Vector3>(control, ref, refValue.Get<Vector3>(), value.Get<Vector3>());
+            }
+            else if (valueType == Type::Instance<Vector4>())
+            {
+                Animate<Vector4>(control, ref, refValue.Get<Vector4>(), value.Get<Vector4>());
+            }
+            else if (valueType == Type::Instance<float32>())
+            {
+                Animate<float32>(control, ref, refValue.Get<float32>(), value.Get<float32>());
+            }
+            else if (valueType == Type::Instance<Color>())
+            {
+                Animate<Color>(control, ref, refValue.Get<Color>(), value.Get<Color>());
+            }
+            else
+            {
+                DVASSERT(false, "Non-animatable property");
+            }
+        }
+        else
+        {
+            DVASSERT(false, "Different types");
         }
     }
 
     uint32 propertyIndex;
-    const VariantType& value;
+    const Any& value;
     Interpolation::FuncType transitionFunction;
     float32 time;
 };
@@ -83,6 +99,50 @@ UIStyleSheetSystem::UIStyleSheetSystem()
 
 UIStyleSheetSystem::~UIStyleSheetSystem()
 {
+}
+
+void UIStyleSheetSystem::Process(DAVA::float32 elapsedTime)
+{
+    if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_UI_CONTROL_SYSTEM))
+    {
+        return;
+    }
+
+    CheckDirty();
+
+    if (currentScreenTransition.Valid())
+    {
+        Update(currentScreenTransition.Get());
+    }
+    else if (currentScreen.Valid())
+    {
+        Update(currentScreen.Get());
+    }
+
+    if (popupContainer.Valid())
+    {
+        Update(popupContainer.Get());
+    }
+}
+
+void UIStyleSheetSystem::SetCurrentScreen(const RefPtr<UIScreen>& screen)
+{
+    currentScreen = screen;
+}
+
+void UIStyleSheetSystem::SetCurrentScreenTransition(const RefPtr<UIScreenTransition>& screenTransition)
+{
+    currentScreenTransition = screenTransition;
+}
+
+void UIStyleSheetSystem::SetPopupContainer(const RefPtr<UIControl>& _popupContainer)
+{
+    popupContainer = _popupContainer;
+}
+
+void UIStyleSheetSystem::SetListener(UIStyleSheetSystemListener* listener_)
+{
+    listener = listener_;
 }
 
 void UIStyleSheetSystem::ProcessControl(UIControl* control, bool styleSheetListChanged /* = false*/)
@@ -189,11 +249,17 @@ void UIStyleSheetSystem::ProcessControl(UIControl* control, int32 distanceFromDi
             }
         }
 
-        control->SetStyledPropertySet(propertiesToApply);
+        if (!dryRun)
+        {
+            control->SetStyledPropertySet(propertiesToApply);
+        }
     }
 
-    control->ResetStyleSheetDirty();
-    control->SetStyleSheetInitialized();
+    if (!dryRun)
+    {
+        control->ResetStyleSheetDirty();
+        control->SetStyleSheetInitialized();
+    }
 
     if (recursively)
     {
@@ -257,6 +323,27 @@ void UIStyleSheetSystem::DumpStats()
     }
 }
 
+void UIStyleSheetSystem::Update(UIControl* root)
+{
+    if (!(needUpdate || dirty) || !root)
+        return;
+    UpdateControl(root);
+}
+
+void UIStyleSheetSystem::UpdateControl(UIControl* control)
+{
+    if ((control->IsVisible() || control->GetStyledPropertySet().test(UIStyleSheetPropertyDataBase::Instance()->GetStyleSheetVisiblePropertyIndex()))
+        && control->IsStyleSheetDirty())
+    {
+        ProcessControl(control);
+    }
+
+    for (UIControl* child : control->GetChildren())
+    {
+        UpdateControl(child);
+    }
+}
+
 bool UIStyleSheetSystem::StyleSheetMatchesControl(const UIStyleSheet* styleSheet, const UIControl* control)
 {
 #if STYLESHEET_STATS
@@ -299,30 +386,42 @@ void UIStyleSheetSystem::DoForAllPropertyInstances(UIControl* control, uint32 pr
 
     const UIStyleSheetPropertyDescriptor& descr = propertyDB->GetStyleSheetPropertyByIndex(propertyIndex);
 
-    switch (descr.group->propertyOwner)
+    if (descr.group->componentType == -1)
     {
-    case ePropertyOwner::CONTROL:
-    {
-        const InspInfo* typeInfo = control->GetTypeInfo();
-        do
+        Reflection ref = Reflection::Create(ReflectedObject(control));
+        ref = ref.GetField(descr.field->name);
+        if (ref.IsValid())
         {
-            if (typeInfo == descr.group->typeInfo)
-            {
-                action(control, control, descr.memberInfo);
-                break;
-            }
-            typeInfo = typeInfo->BaseInfo();
-        } while (typeInfo);
+            action(control, ref);
 
-        break;
+            if (listener != nullptr)
+            {
+                listener->OnStylePropertyChanged(control, nullptr, propertyIndex);
+            }
+        }
     }
-    case ePropertyOwner::COMPONENT:
+    else
+    {
         if (UIComponent* component = control->GetComponent(descr.group->componentType))
-            action(control, component, descr.memberInfo);
-        break;
-    default:
-        DVASSERT(false);
-        break;
+        {
+            Reflection ref = Reflection::Create(ReflectedObject(component));
+            ref = ref.GetField(descr.field->name);
+            if (ref.IsValid())
+            {
+                action(control, ref);
+
+                if (listener != nullptr)
+                {
+                    listener->OnStylePropertyChanged(control, component, propertyIndex);
+                }
+            }
+        }
+        else
+        {
+            const char* componentName = GlobalEnumMap<UIComponent::eType>::Instance()->ToString(descr.group->componentType);
+            const char* controlName = control->GetName().c_str();
+            Logger::Warning("Style sheet can not find component \'%s\' in control \'%s\'", componentName, controlName);
+        }
     }
 }
 }

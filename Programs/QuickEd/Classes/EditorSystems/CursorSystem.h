@@ -7,10 +7,15 @@
 #include <QString>
 #include <QCursor>
 
+namespace DAVA
+{
+class RenderWidget;
+}
+
 class CursorSystem final : public BaseEditorSystem
 {
 public:
-    explicit CursorSystem(DAVA::RenderWidget* renderWidget, EditorSystemsManager* doc);
+    explicit CursorSystem(DAVA::RenderWidget* renderWidget, EditorSystemsManager* doc, DAVA::TArc::ContextAccessor* accessor);
     ~CursorSystem() override = default;
 
 private:

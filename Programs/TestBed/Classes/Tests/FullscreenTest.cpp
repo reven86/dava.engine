@@ -17,10 +17,9 @@ void FullscreenTest::LoadResources()
     BaseScreen::LoadResources();
 
     inputHandlerToken = GetEngineContext()->inputSystem->AddHandler(eInputDevices::CLASS_KEYBOARD, MakeFunction(this, &FullscreenTest::OnToggleFullscreen));
-
-    windowSizeChangedToken = GetPrimaryWindow()->sizeChanged.Connect(this, &FullscreenTest::OnWindowSizeChanged);
-
-    GetBackground()->SetColor(Color::White);
+    GetPrimaryWindow()->sizeChanged.Connect(this, &FullscreenTest::OnWindowSizeChanged);
+    UIControlBackground* background = GetOrCreateComponent<UIControlBackground>();
+    background->SetColor(Color::White);
 
     ScopedPtr<Font> font(FTFont::Create("~res:/Fonts/korinna.ttf"));
 
@@ -180,8 +179,7 @@ void FullscreenTest::LoadResources()
     btn->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FullscreenTest::On3DViewControllClick));
     AddControl(btn);
 
-    auto update = [this](Window*, Size2f, Size2f) { UpdateMode(); };
-    sizeChangedSigConn = GetPrimaryWindow()->sizeChanged.Connect(update);
+    GetPrimaryWindow()->sizeChanged.Connect(this, [this](Window*, Size2f, Size2f) { UpdateMode(); });
 
     // Scale factor test
     y = 170;
@@ -218,7 +216,7 @@ void FullscreenTest::LoadResources()
 void FullscreenTest::UnloadResources()
 {
     GetEngineContext()->inputSystem->RemoveHandler(inputHandlerToken);
-    GetPrimaryWindow()->sizeChanged.Disconnect(windowSizeChangedToken);
+    GetPrimaryWindow()->sizeChanged.Disconnect(this);
 
     if (ui3dview->GetScene())
     {
@@ -234,8 +232,7 @@ void FullscreenTest::UnloadResources()
     // TODO: UIControls and others should be deleted when window is destroyed, not later
     if (GetPrimaryWindow() != nullptr)
     {
-        GetPrimaryWindow()->sizeChanged.Disconnect(sizeChangedSigConn);
-        sizeChangedSigConn = SigConnectionID();
+        GetPrimaryWindow()->sizeChanged.Disconnect(this);
     }
 
     BaseScreen::UnloadResources();

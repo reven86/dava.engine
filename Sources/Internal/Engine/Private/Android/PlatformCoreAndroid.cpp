@@ -56,19 +56,37 @@ void PlatformCore::Init()
 
 void PlatformCore::Run()
 {
-    AndroidBridge::HideSplashView();
+    // Minimum JNI local references count that can be created during one frame.
+    // From docs: VM automatically ensures that at least 16 local references can be created
+    static const jint JniLocalRefsMinCount = 16;
 
     engineBackend->OnGameLoopStarted();
+    // OnGameLoopStarted can take some amount of time so hide spash view after game has done
+    // its work to not frighten user with black screen.
+    AndroidBridge::HideSplashView();
+    AndroidBridge::NotifyEngineRunning();
 
+    JNIEnv* env = AndroidBridge::GetEnv();
     while (!quitGameThread)
     {
         int64 frameBeginTime = SystemTimer::GetMs();
 
+        // We want to automatically clear all JNI local references created by user
+        // on current frame. This should be done to protect our main-loop from
+        // potential IndirectReferenceTable overflow when the user forgot to delete
+        // its local reference.
+        //
+        // Note, engine user is still responsible for freeing local references created by him.
+        env->PushLocalFrame(JniLocalRefsMinCount);
+
+        // Now engine frame can be executed
         int32 fps = engineBackend->OnFrame();
+
+        // Pop off the current local reference frame and free references.
+        env->PopLocalFrame(nullptr);
 
         int64 frameEndTime = SystemTimer::GetMs();
         int32 frameDuration = static_cast<int32>(frameEndTime - frameBeginTime);
-
         int32 sleep = 1;
         if (fps > 0)
         {
@@ -96,7 +114,7 @@ void PlatformCore::Quit()
 WindowBackend* PlatformCore::ActivityOnCreate()
 {
     Window* primaryWindow = engineBackend->InitializePrimaryWindow();
-    WindowBackend* primaryWindowBackend = primaryWindow->GetBackend();
+    WindowBackend* primaryWindowBackend = EngineBackend::GetWindowBackend(primaryWindow);
     return primaryWindowBackend;
 }
 

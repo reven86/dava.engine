@@ -28,8 +28,8 @@
   <property name="unifiedTitleAndToolBarOnMac">
    <bool>true</bool>
   </property>
-  <widget class="QWidget" name="centralWidget">
-   <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0">
+  <widget class="QFrame" name="mainFrame">
+   <layout class="QVBoxLayout" name="verticalLayout_8">
     <property name="spacing">
      <number>0</number>
     </property>
@@ -45,19 +45,6 @@
     <property name="bottomMargin">
      <number>0</number>
     </property>
-    <item>
-     <widget class="QTabBar" name="tabBar" native="true">
-      <property name="minimumSize">
-       <size>
-        <width>0</width>
-        <height>0</height>
-       </size>
-      </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="PreviewWidget" name="previewWidget" native="true"/>
-    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menuBar">
@@ -66,32 +53,18 @@
      <x>0</x>
      <y>0</y>
      <width>1024</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menuFile">
+   <widget class="QMenu" name="File">
     <property name="title">
      <string>&amp;File</string>
     </property>
-    <widget class="QMenu" name="menuRecent">
-     <property name="title">
-      <string>&amp;Recent</string>
-     </property>
-    </widget>
-    <addaction name="actionNewProject"/>
-    <addaction name="actionOpenProject"/>
-    <addaction name="menuRecent"/>
     <addaction name="separator"/>
-    <addaction name="actionSaveDocument"/>
-    <addaction name="actionCloseDocument"/>
-    <addaction name="actionReloadDocument"/>
-    <addaction name="actionSaveAllDocuments"/>
-    <addaction name="separator"/>
-    <addaction name="actionCloseProject"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
-   <widget class="QMenu" name="menuView">
+   <widget class="QMenu" name="View">
     <property name="title">
      <string>&amp;View</string>
     </property>
@@ -105,15 +78,17 @@
       <string>Grid Color</string>
      </property>
     </widget>
+    <widget class="QMenu" name="Dock">
+     <property name="title">
+      <string>Dock Windows</string>
+     </property>
+    </widget>
+    <addaction name="Dock"/>
     <addaction name="menuApplicationStyle"/>
     <addaction name="separator"/>
     <addaction name="menuGridColor"/>
-    <addaction name="separator"/>
-    <addaction name="actionZoomIn"/>
-    <addaction name="actionZoomOut"/>
-    <addaction name="actionActualZoom"/>
    </widget>
-   <widget class="QMenu" name="menuTools">
+   <widget class="QMenu" name="Tools">
     <property name="title">
      <string>&amp;Tools</string>
     </property>
@@ -129,39 +104,34 @@
     <addaction name="menuDebug"/>
     <addaction name="separator"/>
     <addaction name="actionPreferences"/>
-    <addaction name="actionReloadSprites"/>
    </widget>
-   <widget class="QMenu" name="menuHelp">
+   <widget class="QMenu" name="Help">
     <property name="contextMenuPolicy">
      <enum>Qt::ActionsContextMenu</enum>
     </property>
     <property name="title">
      <string>&amp;Help</string>
     </property>
-    <addaction name="actionHelp"/>
    </widget>
-   <widget class="QMenu" name="menuEdit">
+   <widget class="QMenu" name="Edit">
     <property name="title">
      <string>&amp;Edit</string>
     </property>
-    <addaction name="actionUndo"/>
-    <addaction name="actionRedo"/>
     <addaction name="separator"/>
-    <addaction name="actionFindFileInProject"/>
    </widget>
-   <widget class="QMenu" name="menuFind">
+   <widget class="QMenu" name="Find">
     <property name="title">
      <string>Find</string>
     </property>
     <addaction name="actionJumpToPrototype"/>
     <addaction name="actionFindPrototypeInstances"/>
    </widget>
-   <addaction name="menuFile"/>
-   <addaction name="menuEdit"/>
-   <addaction name="menuView"/>
-   <addaction name="menuFind"/>
-   <addaction name="menuTools"/>
-   <addaction name="menuHelp"/>
+   <addaction name="File"/>
+   <addaction name="Edit"/>
+   <addaction name="View"/>
+   <addaction name="Find"/>
+   <addaction name="Tools"/>
+   <addaction name="Help"/>
   </widget>
   <widget class="QToolBar" name="mainToolbar">
    <property name="windowTitle">
@@ -182,16 +152,9 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionNewProject"/>
-   <addaction name="actionOpenProject"/>
-   <addaction name="actionSaveDocument"/>
-   <addaction name="actionSaveAllDocuments"/>
-   <addaction name="actionCloseProject"/>
    <addaction name="actionPreferences"/>
    <addaction name="actionPixelized"/>
    <addaction name="separator"/>
-   <addaction name="actionUndo"/>
-   <addaction name="actionRedo"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="PropertiesWidget" name="propertiesWidget">
@@ -200,14 +163,6 @@
    </property>
    <attribute name="dockWidgetArea">
     <number>2</number>
-   </attribute>
-  </widget>
-  <widget class="FileSystemDockWidget" name="fileSystemDockWidget">
-   <property name="windowTitle">
-    <string>File System</string>
-   </property>
-   <attribute name="dockWidgetArea">
-    <number>1</number>
    </attribute>
   </widget>
   <widget class="PackageWidget" name="packageWidget">
@@ -232,7 +187,7 @@
     <number>1</number>
    </attribute>
   </widget>
-  <widget class="QToolBar" name="toolBarPlugins">
+  <widget class="QToolBar" name="toolBarGlobal">
    <property name="windowTitle">
     <string>Project ToolBar</string>
    </property>
@@ -248,63 +203,7 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="actionReloadSprites"/>
   </widget>
-  <widget class="QDockWidget" name="consoleDockWidget">
-   <property name="windowTitle">
-    <string>Console</string>
-   </property>
-   <attribute name="dockWidgetArea">
-    <number>8</number>
-   </attribute>
-   <widget class="QWidget" name="logWidgetContainer">
-    <layout class="QVBoxLayout" name="verticalLayout1">
-     <item>
-      <widget class="LogWidget" name="logWidget" native="true"/>
-     </item>
-    </layout>
-   </widget>
-  </widget>
-  <widget class="StyleSheetInspectorWidget" name="styleSheetInspectorWidget">
-   <property name="windowTitle">
-    <string>Style Sheet Inspector</string>
-   </property>
-   <attribute name="dockWidgetArea">
-    <number>2</number>
-   </attribute>
-  </widget>
-  <widget class="FindWidget" name="findWidget">
-   <property name="windowTitle">
-    <string>Find</string>
-   </property>
-   <attribute name="dockWidgetArea">
-    <number>8</number>
-   </attribute>
-  </widget>
-  <action name="actionOpenProject">
-   <property name="enabled">
-    <bool>true</bool>
-   </property>
-   <property name="icon">
-    <iconset resource="../DataQt/icons.qrc">
-     <normaloff>:/Icons/openproject.png</normaloff>:/Icons/openproject.png</iconset>
-   </property>
-   <property name="text">
-    <string>&amp;Open project...</string>
-   </property>
-   <property name="toolTip">
-    <string>Open project</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+O</string>
-   </property>
-   <property name="shortcutContext">
-    <enum>Qt::ApplicationShortcut</enum>
-   </property>
-   <property name="visible">
-    <bool>true</bool>
-   </property>
-  </action>
   <action name="actionExit">
    <property name="text">
     <string>&amp;Exit</string>
@@ -314,131 +213,6 @@
    </property>
    <property name="shortcutContext">
     <enum>Qt::ApplicationShortcut</enum>
-   </property>
-  </action>
-  <action name="actionNewProject">
-   <property name="icon">
-    <iconset resource="../DataQt/icons.qrc">
-     <normaloff>:/Icons/newscene.png</normaloff>:/Icons/newscene.png</iconset>
-   </property>
-   <property name="text">
-    <string>&amp;New project...</string>
-   </property>
-   <property name="shortcutContext">
-    <enum>Qt::ApplicationShortcut</enum>
-   </property>
-  </action>
-  <action name="actionCloseProject">
-   <property name="icon">
-    <iconset>
-     <normaloff>:/QtTools/Icons/close-16.png</normaloff>:/QtTools/Icons/close-16.png</iconset>
-   </property>
-   <property name="text">
-    <string>&amp;Close project</string>
-   </property>
-   <property name="toolTip">
-    <string>Close project</string>
-   </property>
-   <property name="shortcutContext">
-    <enum>Qt::ApplicationShortcut</enum>
-   </property>
-  </action>
-  <action name="actionSaveDocument">
-   <property name="icon">
-    <iconset resource="../DataQt/icons.qrc">
-     <normaloff>:/Icons/savescene.png</normaloff>:/Icons/savescene.png</iconset>
-   </property>
-   <property name="text">
-    <string>&amp;Save document</string>
-   </property>
-   <property name="toolTip">
-    <string>Save document</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+S</string>
-   </property>
-   <property name="shortcutContext">
-    <enum>Qt::ApplicationShortcut</enum>
-   </property>
-  </action>
-  <action name="actionReloadDocument">
-   <property name="text">
-    <string>Reload document</string>
-   </property>
-   <property name="toolTip">
-    <string>Reload current document</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+R</string>
-   </property>
-  </action>
-  <action name="actionCloseDocument">
-   <property name="text">
-    <string>Close document</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+W</string>
-   </property>
-   <property name="shortcutContext">
-    <enum>Qt::ApplicationShortcut</enum>
-   </property>
-  </action>
-  <action name="actionSaveAllDocuments">
-   <property name="icon">
-    <iconset resource="../DataQt/icons.qrc">
-     <normaloff>:/Icons/savesceneall.png</normaloff>:/Icons/savesceneall.png</iconset>
-   </property>
-   <property name="text">
-    <string>&amp;Force Save All</string>
-   </property>
-   <property name="toolTip">
-    <string>Force save all opened documents</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+Shift+S</string>
-   </property>
-  </action>
-  <action name="actionHelp">
-   <property name="icon">
-    <iconset resource="../DataQt/icons.qrc">
-     <normaloff>:/Icons/help.png</normaloff>:/Icons/help.png</iconset>
-   </property>
-   <property name="text">
-    <string>QuickEd Help</string>
-   </property>
-   <property name="shortcut">
-    <string>F1</string>
-   </property>
-   <property name="shortcutContext">
-    <enum>Qt::ApplicationShortcut</enum>
-   </property>
-  </action>
-  <action name="actionZoomIn">
-   <property name="text">
-    <string>Zoom In</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl++</string>
-   </property>
-   <property name="shortcutContext">
-    <enum>Qt::ApplicationShortcut</enum>
-   </property>
-   <property name="visible">
-    <bool>true</bool>
-   </property>
-  </action>
-  <action name="actionZoomOut">
-   <property name="text">
-    <string>Zoom Out</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+-</string>
-   </property>
-   <property name="shortcutContext">
-    <enum>Qt::ApplicationShortcut</enum>
-   </property>
-   <property name="visible">
-    <bool>true</bool>
    </property>
   </action>
   <action name="actionPixelized">
@@ -471,18 +245,6 @@
     <string>Dump Textures</string>
    </property>
   </action>
-  <action name="actionReloadSprites">
-   <property name="icon">
-    <iconset resource="../DataQt/icons.qrc">
-     <normaloff>:/Icons/reload.png</normaloff>:/Icons/reload.png</iconset>
-   </property>
-   <property name="text">
-    <string>Reload Sprites</string>
-   </property>
-   <property name="toolTip">
-    <string>reload sprites</string>
-   </property>
-  </action>
   <action name="actionPreferences">
    <property name="icon">
     <iconset resource="../DataQt/icons.qrc">
@@ -495,78 +257,17 @@
     <string>Preferences</string>
    </property>
   </action>
-  <action name="actionUndo">
-   <property name="icon">
-    <iconset resource="../DataQt/icons.qrc">
-     <normaloff>:/Icons/edit_undo.png</normaloff>:/Icons/edit_undo.png</iconset>
-   </property>
-   <property name="text">
-    <string>&amp;Undo</string>
-   </property>
-   <property name="toolTip">
-    <string>Undo</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+Z</string>
-   </property>
-   <property name="shortcutContext">
-    <enum>Qt::ApplicationShortcut</enum>
-   </property>
-  </action>
-  <action name="actionRedo">
-   <property name="icon">
-    <iconset resource="../DataQt/icons.qrc">
-     <normaloff>:/Icons/edit_redo.png</normaloff>:/Icons/edit_redo.png</iconset>
-   </property>
-   <property name="text">
-    <string>&amp;Redo</string>
-   </property>
-   <property name="toolTip">
-    <string>Redo</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+Shift+Z</string>
-   </property>
-   <property name="shortcutContext">
-    <enum>Qt::ApplicationShortcut</enum>
-   </property>
-  </action>
-  <action name="actionActualZoom">
-   <property name="text">
-    <string>Actual zoom</string>
-   </property>
-   <property name="toolTip">
-    <string>Set screen zoom to 100%</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+0</string>
-   </property>
-  </action>
-  <action name="actionFindFileInProject">
-   <property name="text">
-    <string>Find file in project...</string>
-   </property>
-   <property name="toolTip">
-    <string>Find file in project</string>
-   </property>
-   <property name="shortcut">
-    <string>Alt+Shift+O</string>
-   </property>
-  </action>
   <action name="actionJumpToPrototype">
    <property name="text">
     <string>Jump to Prototype</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+G</string>
+    <string>Ctrl+J</string>
    </property>
   </action>
   <action name="actionFindPrototypeInstances">
    <property name="text">
     <string>Find Prototype Instances</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+Shift+F</string>
    </property>
   </action>
  </widget>
@@ -585,43 +286,9 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>QTabBar</class>
-   <extends>QWidget</extends>
-   <header>qtabbar.h</header>
-  </customwidget>
-  <customwidget>
-   <class>PreviewWidget</class>
-   <extends>QWidget</extends>
-   <header>UI/Preview/PreviewWidget.h</header>
-  </customwidget>
-  <customwidget>
    <class>PropertiesWidget</class>
    <extends>QDockWidget</extends>
    <header>UI/Properties/PropertiesWidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>FileSystemDockWidget</class>
-   <extends>QDockWidget</extends>
-   <header>UI/FileSystemView/FileSystemDockWidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>LogWidget</class>
-   <extends>QWidget</extends>
-   <header>QtTools/ConsoleWidget/logwidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>StyleSheetInspectorWidget</class>
-   <extends>QDockWidget</extends>
-   <header>UI/StyleSheetInspector/StyleSheetInspectorWidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>FindWidget</class>
-   <extends>QDockWidget</extends>
-   <header>UI/Find/FindWidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

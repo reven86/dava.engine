@@ -136,7 +136,16 @@ void DataWrapper::SetFieldValue(const Any& fieldKey, const Any& value)
     DVASSERT(field.IsValid() == true);
     bool result = field.SetValueWithCast(value);
     DVASSERT(result);
-    SyncByFieldKey(fieldKey);
+    SyncByFieldKey(fieldKey, value);
+}
+
+Any DataWrapper::GetFieldValue(const Any& fieldKey) const
+{
+    DVASSERT(HasData());
+    Reflection data = GetData();
+    Reflection field = data.GetField(fieldKey);
+    DVASSERT(field.IsValid() == true);
+    return field.GetValue();
 }
 
 bool DataWrapper::IsActive() const
@@ -168,6 +177,11 @@ void DataWrapper::Sync(bool notifyListener)
         {
             impl->listener->AddWrapper(*this);
         }
+    }
+
+    if (impl->listener == nullptr)
+    {
+        return;
     }
 
     if (HasData())
@@ -233,7 +247,7 @@ void DataWrapper::Sync(bool notifyListener)
     }
 }
 
-void DataWrapper::SyncByFieldKey(const Any& fieldKey)
+void DataWrapper::SyncByFieldKey(const Any& fieldKey, const Any& v)
 {
     if (impl->cachedValues.empty())
     {
@@ -250,7 +264,8 @@ void DataWrapper::SyncByFieldKey(const Any& fieldKey)
     {
         if (dataFields[i].key.Cast<String>() == fieldName)
         {
-            impl->cachedValues[i] = dataFields[i].ref.GetValue();
+            impl->cachedValues[i] = v;
+            break;
         }
     }
 }

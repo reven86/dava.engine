@@ -185,7 +185,12 @@ void WindowBackend::SetCursorInCenter()
 
 void WindowBackend::ProcessPlatformEvents()
 {
-    uiDispatcher.ProcessEvents();
+    // Prevent processing UI dispatcher events to exclude cases when WM_TRIGGER_EVENTS is delivered
+    // when modal dialog is open as Dispatcher::ProcessEvents is not reentrant now
+    if (!EngineBackend::showingModalMessageBox)
+    {
+        uiDispatcher.ProcessEvents();
+    }
 }
 
 void WindowBackend::SetSurfaceScaleAsync(const float32 scale)
@@ -911,6 +916,7 @@ LRESULT WindowBackend::OnCreate()
     RECT rc;
     ::GetClientRect(hwnd, &rc);
 
+    uiDispatcher.LinkToCurrentThread();
     hcurCursor = defaultCursor;
 
     // If new pointer input is available then do not handle legacy WM_TOUCH message
@@ -948,7 +954,8 @@ bool WindowBackend::OnSysCommand(int sysCommand)
 {
     // Ignore 'Move' and 'Size' commands from system menu as handling them takes more efforts than brings profit.
     // Window still can be moved and sized by mouse.
-    return sysCommand == SC_MOVE || sysCommand == SC_SIZE;
+    // Also prevent system menu from showing triggered by keyboard (Alt+Space).
+    return sysCommand == SC_MOVE || sysCommand == SC_SIZE || sysCommand == SC_KEYMENU;
 }
 
 LRESULT WindowBackend::OnDestroy()
@@ -1074,7 +1081,7 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
         bool isRepeated = (HIWORD(lparam) & KF_REPEAT) == KF_REPEAT;
         lresult = OnKeyEvent(key, scanCode, isPressed, isExtended, isRepeated);
         // Mark only WM_SYSKEYUP message as handled to prevent entering modal loop when Alt is released,
-        // but leave WM_SYSKEYDOWN as unhandled to allow system shortcust as Alt+F4, Alt+Space.
+        // but leave WM_SYSKEYDOWN and other as unhandled to allow system shortcuts such as Alt+F4.
         isHandled = (message == WM_SYSKEYUP);
     }
     else if (message == WM_UNICHAR)
@@ -1095,7 +1102,7 @@ LRESULT WindowBackend::WindowProc(UINT message, WPARAM wparam, LPARAM lparam, bo
         uint32 key = static_cast<uint32>(wparam);
         bool isRepeated = (HIWORD(lparam) & KF_REPEAT) == KF_REPEAT;
         lresult = OnCharEvent(key, isRepeated);
-        // Leave WM_SYSCHAR unhandled to allow system shortcust as Alt+F4, Alt+Space.
+        // Leave WM_SYSCHAR unhandled to allow system shortcuts such as Alt+F4.
         isHandled = (message == WM_CHAR);
     }
     else if (message == WM_TRIGGER_EVENTS)

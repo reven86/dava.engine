@@ -1,7 +1,7 @@
-#ifndef __DAVAENGINE_HEIGHTMAP_SUBDIVISION_H__
-#define __DAVAENGINE_HEIGHTMAP_SUBDIVISION_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
+#include "Reflection/Reflection.h"
 #include "Base/IntrospectionBase.h"
 #include "MemoryManager/MemoryProfiler.h"
 
@@ -61,6 +61,8 @@ public:
                       MEMBER(zoomMaxPatchRadiusError, "zoomMaxPatchRadiusError", I_VIEW | I_EDIT)
                       MEMBER(zoomMaxAbsoluteHeightError, "zoomMaxAbsoluteHeightError", I_VIEW | I_EDIT)
                       );
+
+        DAVA_VIRTUAL_REFLECTION(SubdivisionMetrics, InspBase);
     };
 
     void BuildSubdivision(Heightmap* heightmap, const AABBox3& bbox, uint32 patchSizeQuads, uint32 minSubdivideLevel, bool calculateMorph);
@@ -127,6 +129,8 @@ public:
     INTROSPECTION(LandscapeSubdivision,
                   MEMBER(metrics, "metrics", I_VIEW | I_EDIT)
                   );
+
+    DAVA_VIRTUAL_REFLECTION(LandscapeSubdivision, InspBase);
 };
 
 inline const LandscapeSubdivision::SubdivisionLevelInfo& LandscapeSubdivision::GetLevelInfo(uint32 level) const
@@ -173,6 +177,4 @@ inline LandscapeSubdivision::SubdivisionMetrics& LandscapeSubdivision::GetMetric
 {
     return metrics;
 }
-};
-
-#endif //__DAVAENGINE_HEIGHTMAP_SUBDIVISION_H__
+}

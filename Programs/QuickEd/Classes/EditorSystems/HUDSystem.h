@@ -1,13 +1,24 @@
 #pragma once
 
-#include "Math/Vector.h"
 #include "EditorSystems/BaseEditorSystem.h"
 #include "EditorSystems/EditorSystemsManager.h"
 
-class HUDSystem final : public BaseEditorSystem
+#include <Base/Introspection.h>
+#include <Math/Vector.h>
+
+namespace DAVA
+{
+class Any;
+namespace TArc
+{
+class FieldBinder;
+}
+}
+
+class HUDSystem : public DAVA::InspBase, public BaseEditorSystem
 {
 public:
-    HUDSystem(EditorSystemsManager* parent);
+    HUDSystem(EditorSystemsManager* parent, DAVA::TArc::ContextAccessor* accessor);
     ~HUDSystem() override;
 
 private:
@@ -18,13 +29,14 @@ private:
     };
     struct HUD;
 
+    void InitFieldBinder();
     bool CanProcessInput(DAVA::UIEvent* currentInput) const override;
     void ProcessInput(DAVA::UIEvent* currentInput) override;
     EditorSystemsManager::eDragState RequireNewState(DAVA::UIEvent* currentInput) override;
     void OnDragStateChanged(EditorSystemsManager::eDragState currentState, EditorSystemsManager::eDragState previousState) override;
     void OnDisplayStateChanged(EditorSystemsManager::eDisplayState currentState, EditorSystemsManager::eDisplayState previousState) override;
 
-    void OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected);
+    void OnSelectionChanged(const DAVA::Any& selection);
     void OnHighlightNode(const ControlNode* node);
 
     void OnMagnetLinesChanged(const DAVA::Vector<MagnetLineInfo>& magnetLines);
@@ -35,7 +47,6 @@ private:
     void SetNewArea(const HUDAreaInfo& HUDAreaInfo);
 
     void UpdateAreasVisibility();
-    void OnPackageChanged(PackageNode* package);
 
     void SetHUDEnabled(bool enabled);
 
@@ -50,7 +61,19 @@ private:
     DAVA::RefPtr<DAVA::UIControl> selectionRectControl;
     DAVA::Vector<DAVA::RefPtr<DAVA::UIControl>> magnetControls;
     DAVA::Vector<DAVA::RefPtr<DAVA::UIControl>> magnetTargetControls;
-    SortedPackageBaseNodeSet sortedControlList;
-    SelectionContainer selectionContainer;
+    SortedControlNodeSet sortedControlList;
     DAVA::RefPtr<DAVA::UIControl> hoveredNodeControl;
+
+    bool showPivot;
+    bool showRotate;
+    DAVA::Vector2 minimumSelectionRectSize;
+
+    std::unique_ptr<DAVA::TArc::FieldBinder> fieldBinder;
+
+public:
+    INTROSPECTION(HUDSystem,
+                  MEMBER(showPivot, "Control Transformations/Can transform pivot", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
+                  MEMBER(showRotate, "Control Transformations/Can rotate control", DAVA::I_SAVE | DAVA::I_VIEW | DAVA::I_EDIT | DAVA::I_PREFERENCE)
+                  MEMBER(minimumSelectionRectSize, "Control Transformations/Minimum size of selection rect", DAVA::I_SAVE | DAVA::I_PREFERENCE)
+                  )
 };

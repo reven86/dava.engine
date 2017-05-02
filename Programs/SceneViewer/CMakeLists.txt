@@ -9,7 +9,8 @@ set ( DAVA_COREV2 1 )
 
 dava_add_definitions ( -D__DAVAENGINE_COREV2__ )
 
-find_package( DavaFramework REQUIRED COMPONENTS ALL DAVA_DISABLE_AUTOTESTS )
+find_package( DavaFramework REQUIRED COMPONENTS ALL DAVA_DISABLE_AUTOTESTS "Sound" )
+find_package( ScenePerformanceTests REQUIRED )
 
 include_directories   ( "Classes" )
 
@@ -28,7 +29,8 @@ file ( GLOB_RECURSE XIB_LIST "${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLD
 
 define_source ( SOURCE "Classes" ${PLATFORM_SPECIFIC_FOLDER} )
 
-set( APP_DATA                     ${CMAKE_CURRENT_LIST_DIR}/Data )
+set( MIX_APP_DATA                 "Data = ${DAVA_ROOT_DIR}/Programs/Data" 
+                                  "Data = ${CMAKE_CURRENT_LIST_DIR}/Data" )
 
 set( IOS_PLISTT                   ${CMAKE_CURRENT_LIST_DIR}/${PLATFORM_SPECIFIC_FOLDER}/SceneVieweriPhone-Info.plist )
 
@@ -43,6 +45,12 @@ set( ANDROID_ACTIVITY_APP_NAME    "SceneViewer"   )
 set( ANDROID_ICO                   ${CMAKE_CURRENT_LIST_DIR}/android/ic_launcher-web.png )
 
 set( ADDED_SRC                     ${IOS_ADD_SRC} )
+
+if (ANDROID)
+    # Libraries and classes to load at startup
+    set (ANDROID_BOOT_MODULES "crystax;c++_shared;fmodex;fmodevent;SceneViewer")
+    set (ANDROID_BOOT_CLASSES "com.dava.sceneviewer.SceneViewer")
+endif()
 
 if ( WINDOWS_UAP )
     set ( WIN_STORE_MANIFEST_PACKAGE_GUID "C3B05534-90DF-4E75-829E-25D10C77FE49" )

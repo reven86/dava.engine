@@ -277,12 +277,21 @@ protected:
     Fn fn;
     std::shared_ptr<Obj> obj;
 };
-
 } // namespace Fn11
 
 template <typename Fn>
 class Function;
 
+/**
+    \ingroup functional
+    Class template Function is a general-purpose polymorphic function wrapper. Instances of Function can 
+    store, copy, and invoke any Callable target - functions, lambda expressions, bind expressions, or other
+    function objects, as well as pointers to member functions.
+
+    The stored callable object is named as 'target'. If a Function contains no target, it is named as 'empty'. 
+    Invoking the target of an empty Function will lead to undefined behavior (usually nullptr dereference). 
+    User can check for empty target comparing Function with nullptr.
+*/
 template <typename Ret, typename... Args>
 class Function<Ret(Args...)>
 {

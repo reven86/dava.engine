@@ -147,17 +147,32 @@ void AutotestingSystemLua::InitFromFile(const FilePath& luaFilePath)
         AutotestingSystem::Instance()->ForceQuit(Format("AutotestingSystemLua::InitFromFile SetPackagePath failed: %s", err));
     }
 
-    if (!LoadScriptFromFile(luaFilePath))
+    if (!luaFilePath.IsEmpty())
     {
-        AutotestingSystem::Instance()->ForceQuit("Load of '" + luaFilePath.GetAbsolutePathname() + "' was failed failed");
+        if (!LoadScriptFromFile(luaFilePath))
+        {
+            AutotestingSystem::Instance()->ForceQuit("Load of '" + luaFilePath.GetAbsolutePathname() + "' was failed failed");
+        }
+    }
+    else //Empty 'luaFilePath' means we start record&play mode. In this mode we load all requirements beforehand.
+    {
+        for (const FilePath& path : FileSystem::Instance()->EnumerateFilesInDirectory(AutotestingSystem::Instance()->GetPathTo("/Actions/")))
+        {
+            RunScript(Format("require '%s'", path.GetBasename().c_str()));
+            Logger::FrameworkDebug("Used memory after '%s': %d", path.GetBasename().c_str(), GetUsedMemory());
+        }
     }
 
     lua_getglobal(luaState, "ResumeTest");
     resumeTestFunctionRef = luaL_ref(luaState, LUA_REGISTRYINDEX);
-
     AutotestingSystem::Instance()->OnInit();
-    String baseName = FilePath(luaFilePath).GetBasename();
-    lua_pushstring(luaState, baseName.c_str());
+
+    if (!luaFilePath.IsEmpty())
+    {
+        String baseName = FilePath(luaFilePath).GetBasename();
+        lua_pushstring(luaState, baseName.c_str());
+    }
+
     AutotestingSystem::Instance()->RunTests();
 }
 
@@ -422,6 +437,13 @@ UIControl* AutotestingSystemLua::FindControl(const String& path, UIControl* srcC
         return nullptr;
     }
 
+    String zeroOrMoreLevelsWildcard = "**";
+
+    if (controlPath[0] == zeroOrMoreLevelsWildcard)
+    {
+        return srcControl->FindByPath(path);
+    }
+
     UIControl* control = FindControl(srcControl, controlPath[0]);
     for (uint32 i = 1; i < controlPath.size(); ++i)
     {
@@ -440,10 +462,13 @@ UIControl* AutotestingSystemLua::FindControl(UIControl* srcControl, const String
     {
         return nullptr;
     }
+
     int32 index = atoi(controlName.c_str());
+    // not number
     if (Format("%d", index) != controlName)
     {
-        // not number
+        if (srcControl->GetName().c_str() == controlName)
+            return srcControl;
         return srcControl->FindByName(controlName);
     }
     // number

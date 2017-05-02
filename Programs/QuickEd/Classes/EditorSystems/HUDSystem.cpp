@@ -1,18 +1,25 @@
-#include <numeric>
 #include "HUDSystem.h"
 
-#include "UI/UIControl.h"
-#include "UI/UIEvent.h"
-#include "Base/BaseTypes.h"
+#include "Modules/DocumentsModule/DocumentData.h"
 
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/PackageNode.h"
 #include "Model/PackageHierarchy/PackageControlsNode.h"
+#include "Model/ControlProperties/RootProperty.h"
+#include "Model/ControlProperties/VisibleValueProperty.h"
 
 #include "EditorSystems/HUDControls.h"
 #include "EditorSystems/KeyboardProxy.h"
-#include "Model/ControlProperties/RootProperty.h"
-#include "Model/ControlProperties/VisibleValueProperty.h"
+
+#include <TArc/Core/ContextAccessor.h>
+#include <TArc/Core/FieldBinder.h>
+#include <TArc/DataProcessing/DataContext.h>
+
+#include <Base/BaseTypes.h>
+#include <UI/UIControl.h>
+#include <UI/UIEvent.h>
+#include <Preferences/PreferencesRegistrator.h>
+#include <Preferences/PreferencesStorage.h>
 
 using namespace DAVA;
 
@@ -20,6 +27,12 @@ namespace
 {
 const Array<HUDAreaInfo::eArea, 2> AreasToHide = { { HUDAreaInfo::PIVOT_POINT_AREA, HUDAreaInfo::ROTATE_AREA } };
 }
+
+REGISTER_PREFERENCES_ON_START(HUDSystem,
+                              PREF_ARG("showPivot", false),
+                              PREF_ARG("showRotate", false),
+                              PREF_ARG("minimumSelectionRectSize", Vector2(5.0f, 5.0f))
+                              )
 
 RefPtr<ControlContainer> CreateControlContainer(HUDAreaInfo::eArea area)
 {
@@ -48,7 +61,7 @@ RefPtr<ControlContainer> CreateControlContainer(HUDAreaInfo::eArea area)
 
 struct HUDSystem::HUD
 {
-    HUD(ControlNode* node, UIControl* hudControl);
+    HUD(ControlNode* node, HUDSystem* hudSystem);
     ~HUD();
     ControlNode* node = nullptr;
     UIControl* control = nullptr;
@@ -57,10 +70,10 @@ struct HUDSystem::HUD
     Map<HUDAreaInfo::eArea, RefPtr<ControlContainer>> hudControls;
 };
 
-HUDSystem::HUD::HUD(ControlNode* node_, UIControl* hudControl_)
+HUDSystem::HUD::HUD(ControlNode* node_, HUDSystem* hudSystem)
     : node(node_)
     , control(node_->GetControl())
-    , hudControl(hudControl_)
+    , hudControl(hudSystem->hudControl.Get())
     , container(new HUDContainer(node_))
 {
     container->SetName(FastName("Container for HUD controls of node " + node_->GetName()));
@@ -70,12 +83,17 @@ HUDSystem::HUD::HUD(ControlNode* node_, UIControl* hudControl_)
         areas.reserve(HUDAreaInfo::AREAS_COUNT);
         for (int area = HUDAreaInfo::AREAS_BEGIN; area != HUDAreaInfo::AREAS_COUNT; ++area)
         {
+            if ((hudSystem->showPivot == false && area == HUDAreaInfo::PIVOT_POINT_AREA) ||
+                (hudSystem->showRotate == false && area == HUDAreaInfo::ROTATE_AREA))
+            {
+                continue;
+            }
             areas.push_back(static_cast<HUDAreaInfo::eArea>(area));
         }
     }
     else
     {
-        //custom areas
+        //custom areas for root control
         areas = {
             HUDAreaInfo::TOP_LEFT_AREA,
             HUDAreaInfo::TOP_CENTER_AREA,
@@ -111,45 +129,56 @@ class HUDControl : public UIControl
     }
 };
 
-HUDSystem::HUDSystem(EditorSystemsManager* parent)
-    : BaseEditorSystem(parent)
+HUDSystem::HUDSystem(EditorSystemsManager* parent, DAVA::TArc::ContextAccessor* accessor)
+    : BaseEditorSystem(parent, accessor)
     , hudControl(new HUDControl())
     , sortedControlList(CompareByLCA)
 {
     hudControl->SetName(FastName("hudControl"));
-    systemsManager->selectionChanged.Connect(this, &HUDSystem::OnSelectionChanged);
+    systemsManager->highlightNode.Connect(this, &HUDSystem::OnHighlightNode);
     systemsManager->magnetLinesChanged.Connect(this, &HUDSystem::OnMagnetLinesChanged);
-    systemsManager->packageChanged.Connect(this, &HUDSystem::OnPackageChanged);
     systemsManager->GetRootControl()->AddControl(hudControl.Get());
+
+    InitFieldBinder();
+
+    PreferencesStorage::Instance()->RegisterPreferences(this);
 }
 
 HUDSystem::~HUDSystem()
 {
     DVASSERT(systemsManager->GetDragState() != EditorSystemsManager::SelectByRect);
     systemsManager->GetRootControl()->RemoveControl(hudControl.Get());
+
+    PreferencesStorage::Instance()->UnregisterPreferences(this);
 }
 
-void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const SelectedNodes& deselected)
+void HUDSystem::InitFieldBinder()
 {
-    selectionContainer.MergeSelection(selected, deselected);
-    for (auto node : deselected)
-    {
-        ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
-        if (nullptr != controlNode)
-        {
-            hudMap.erase(controlNode);
-            sortedControlList.erase(controlNode);
-        }
-    }
+    using namespace DAVA;
+    using namespace DAVA::TArc;
 
-    for (auto node : selected)
+    fieldBinder.reset(new FieldBinder(accessor));
+    {
+        FieldDescriptor fieldDescr;
+        fieldDescr.type = ReflectedTypeDB::Get<DocumentData>();
+        fieldDescr.fieldName = FastName(DocumentData::selectionPropertyName);
+        fieldBinder->BindField(fieldDescr, MakeFunction(this, &HUDSystem::OnSelectionChanged));
+    }
+}
+
+void HUDSystem::OnSelectionChanged(const Any& selection)
+{
+    sortedControlList.clear();
+    hudMap.clear();
+
+    for (auto node : selection.Cast<SelectedNodes>(SelectedNodes()))
     {
         ControlNode* controlNode = dynamic_cast<ControlNode*>(node);
         if (controlNode != nullptr)
         {
             if (nullptr != controlNode && nullptr != controlNode->GetControl())
             {
-                hudMap[controlNode] = std::make_unique<HUD>(controlNode, hudControl.Get());
+                hudMap[controlNode] = std::make_unique<HUD>(controlNode, this);
                 sortedControlList.insert(controlNode);
             }
         }
@@ -163,7 +192,7 @@ void HUDSystem::OnSelectionChanged(const SelectedNodes& selected, const Selected
 
 void HUDSystem::ProcessInput(UIEvent* currentInput)
 {
-    bool findPivot = selectionContainer.selectedNodes.size() == 1 && IsKeyPressed(KeyboardProxy::KEY_CTRL) && IsKeyPressed(KeyboardProxy::KEY_ALT);
+    bool findPivot = hudMap.size() == 1 && IsKeyPressed(KeyboardProxy::KEY_CTRL) && IsKeyPressed(KeyboardProxy::KEY_ALT);
     eSearchOrder searchOrder = findPivot ? SEARCH_BACKWARD : SEARCH_FORWARD;
     hoveredPoint = currentInput->point;
     UIEvent::Phase phase = currentInput->phase;
@@ -312,6 +341,10 @@ void HUDSystem::OnMagnetLinesChanged(const Vector<MagnetLineInfo>& magnetLines)
 
 void HUDSystem::ProcessCursor(const Vector2& pos, eSearchOrder searchOrder)
 {
+    if (systemsManager->GetDragState() == EditorSystemsManager::SelectByRect)
+    {
+        return;
+    }
     SetNewArea(GetControlArea(pos, searchOrder));
 }
 
@@ -437,7 +470,10 @@ void HUDSystem::OnDisplayStateChanged(EditorSystemsManager::eDisplayState curren
 
 bool HUDSystem::CanProcessInput(DAVA::UIEvent* currentInput) const
 {
-    if (hudControl->GetParent() == nullptr)
+    using namespace DAVA::TArc;
+
+    DataContext* activeContext = accessor->GetActiveContext();
+    if (hudControl->GetParent() == nullptr || activeContext == nullptr)
     {
         return false;
     }
@@ -450,10 +486,19 @@ bool HUDSystem::CanProcessInput(DAVA::UIEvent* currentInput) const
 EditorSystemsManager::eDragState HUDSystem::RequireNewState(DAVA::UIEvent* currentInput)
 {
     EditorSystemsManager::eDragState dragState = systemsManager->GetDragState();
-    if (currentInput->device == eInputDevices::MOUSE && currentInput->phase == UIEvent::Phase::DRAG
-        && dragState != EditorSystemsManager::Transform && dragState != EditorSystemsManager::DragScreen)
+    if (currentInput->device != eInputDevices::MOUSE || dragState == EditorSystemsManager::Transform || dragState == EditorSystemsManager::DragScreen)
     {
-        EditorSystemsManager::eDragState dragState = systemsManager->GetDragState();
+        return EditorSystemsManager::NoDrag;
+    }
+
+    Vector2 point = currentInput->point;
+    if (currentInput->phase == UIEvent::Phase::BEGAN
+        && dragState != EditorSystemsManager::SelectByRect)
+    {
+        pressedPoint = point;
+    }
+    if (currentInput->phase == UIEvent::Phase::DRAG)
+    {
         //if we in selectByRect and still drag mouse - continue this state
         if (dragState == EditorSystemsManager::SelectByRect)
         {
@@ -461,7 +506,6 @@ EditorSystemsManager::eDragState HUDSystem::RequireNewState(DAVA::UIEvent* curre
         }
         //check that we can draw rect
         Vector<ControlNode*> nodesUnderPoint;
-        Vector2 point = currentInput->point;
         auto predicate = [point](const ControlNode* node) -> bool {
             const auto visibleProp = node->GetRootProperty()->GetVisibleProperty();
             DVASSERT(node->GetControl() != nullptr);
@@ -469,16 +513,16 @@ EditorSystemsManager::eDragState HUDSystem::RequireNewState(DAVA::UIEvent* curre
         };
         systemsManager->CollectControlNodes(std::back_inserter(nodesUnderPoint), predicate);
         bool noHudableControls = nodesUnderPoint.empty() || (nodesUnderPoint.size() == 1 && nodesUnderPoint.front()->GetParent()->GetControl() == nullptr);
-        bool noHudUnderCursor = (systemsManager->GetCurrentHUDArea().area == HUDAreaInfo::NO_AREA);
-        bool hotKeyDetected = IsKeyPressed(KeyboardProxy::KEY_CTRL);
 
-        if ((hotKeyDetected || noHudableControls) && noHudUnderCursor)
+        if (noHudableControls)
         {
-            if (systemsManager->GetDragState() != EditorSystemsManager::SelectByRect)
+            //distinguish between mouse click and mouse drag sometimes is less than few pixels
+            //so lets select by rect only if we sure that is not mouse click
+            Vector2 rectSize(pressedPoint - point);
+            if (fabs(rectSize.dx) >= minimumSelectionRectSize.dx || fabs(rectSize.dy) >= minimumSelectionRectSize.dy)
             {
-                pressedPoint = point;
+                return EditorSystemsManager::SelectByRect;
             }
-            return EditorSystemsManager::SelectByRect;
         }
     }
     return EditorSystemsManager::NoDrag;
@@ -488,11 +532,6 @@ void HUDSystem::ClearMagnetLines()
 {
     static const Vector<MagnetLineInfo> emptyVector;
     OnMagnetLinesChanged(emptyVector);
-}
-
-void HUDSystem::OnPackageChanged(PackageNode* package)
-{
-    OnHighlightNode(nullptr);
 }
 
 void HUDSystem::SetHUDEnabled(bool enabled)

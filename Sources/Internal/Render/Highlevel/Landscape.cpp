@@ -18,7 +18,6 @@
 #include "Render/ShaderCache.h"
 #include "Render/TextureDescriptor.h"
 #include "Render/DynamicBufferAllocator.h"
-#include "Render/RenderCallbacks.h"
 #include "Scene3D/SceneFile/SerializationContext.h"
 #include "Scene3D/Systems/QualitySettingsSystem.h"
 #include "Debug/ProfilerCPU.h"
@@ -28,6 +27,9 @@
 
 #include "Engine/Engine.h"
 #include "Engine/EngineSettings.h"
+
+#include "Reflection/ReflectionRegistrator.h"
+#include "Reflection/ReflectedMeta.h"
 
 #include "Concurrency/Mutex.h"
 #include "Concurrency/LockGuard.h"
@@ -39,6 +41,20 @@
 
 namespace DAVA
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(Landscape)
+{
+    ReflectionRegistrator<Landscape>::Begin()
+    .Field("heightmapPath", &Landscape::GetHeightmapPathname, &Landscape::SetHeightmapPathname)[M::DisplayName("Height Map Path")]
+    .Field("size", &Landscape::GetLandscapeSize, static_cast<void (Landscape::*)(float32)>(&Landscape::SetLandscapeSize))[M::DisplayName("Size")]
+    .Field("height", &Landscape::GetLandscapeHeight, &Landscape::SetLandscapeHeight)[M::DisplayName("Height")]
+    .Field("userMorphing", &Landscape::IsUseMorphing, &Landscape::SetUseMorphing)[M::DisplayName("Use morphing")]
+    .Field("isDrawWired", &Landscape::IsDrawWired, &Landscape::SetDrawWired)[M::DisplayName("Is draw wired")]
+    .Field("debugDrawMorphing", &Landscape::IsDrawMorphing, &Landscape::SetDrawMorphing)[M::DisplayName("Debug draw morphing")]
+    .Field("debugDrawMetrics", &Landscape::debugDrawMetrics)[M::DisplayName("Debug draw metrics")]
+    .Field("subdivision", &Landscape::subdivision)[M::DisplayName("Subdivision")]
+    .End();
+}
+
 const FastName Landscape::PARAM_TEXTURE_TILING("textureTiling");
 const FastName Landscape::PARAM_TILE_COLOR0("tileColor0");
 const FastName Landscape::PARAM_TILE_COLOR1("tileColor1");
@@ -126,7 +142,7 @@ Landscape::Landscape()
 
     AddFlag(RenderObject::CUSTOM_PREPARE_TO_RENDER);
 
-    RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(this, &Landscape::RestoreGeometry));
+    Renderer::GetSignals().needRestoreResources.Connect(this, &Landscape::RestoreGeometry);
 }
 
 Landscape::~Landscape()
@@ -139,7 +155,7 @@ Landscape::~Landscape()
     SafeDelete(subdivision);
 
     SafeRelease(landscapeMaterial);
-    RenderCallbacks::UnRegisterResourceRestoreCallback(MakeFunction(this, &Landscape::RestoreGeometry));
+    Renderer::GetSignals().needRestoreResources.Disconnect(this);
 }
 
 void Landscape::RestoreGeometry()
@@ -348,7 +364,6 @@ void Landscape::PrepareMaterial(NMaterial* material)
     material->AddFlag(NMaterialFlagName::FLAG_LANDSCAPE_USE_INSTANCING, (renderMode == RENDERMODE_NO_INSTANCING) ? 0 : 1);
     material->AddFlag(NMaterialFlagName::FLAG_LANDSCAPE_LOD_MORPHING, (renderMode == RENDERMODE_INSTANCING_MORPHING) ? 1 : 0);
     material->AddFlag(NMaterialFlagName::FLAG_LANDSCAPE_MORPHING_COLOR, debugDrawMorphing ? 1 : 0);
-    material->AddFlag(NMaterialFlagName::FLAG_LANDSCAPE_SPECULAR, isRequireTangentBasis ? 1 : 0);
     material->AddFlag(NMaterialFlagName::FLAG_HEIGHTMAP_FLOAT_TEXTURE, floatHeightTexture ? 1 : 0);
 }
 

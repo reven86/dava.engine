@@ -4,7 +4,7 @@
 #include "PackageBaseNode.h"
 
 #include "FileSystem/FilePath.h"
-#include "FileSystem/VariantType.h"
+#include "Base/Any.h"
 
 class ImportedPackagesNode;
 class PackageControlsNode;
@@ -61,7 +61,7 @@ public:
     void AddListener(PackageListener* listener);
     void RemoveListener(PackageListener* listener);
 
-    void SetControlProperty(ControlNode* node, AbstractProperty* property, const DAVA::VariantType& newValue);
+    void SetControlProperty(ControlNode* node, AbstractProperty* property, const DAVA::Any& newValue);
     void ResetControlProperty(ControlNode* node, AbstractProperty* property);
     void RefreshProperty(ControlNode* node, AbstractProperty* property);
 
@@ -70,7 +70,7 @@ public:
     void AttachPrototypeComponent(ControlNode* node, ComponentPropertiesSection* destSection, ComponentPropertiesSection* prototypeSection);
     void DetachPrototypeComponent(ControlNode* node, ComponentPropertiesSection* destSection, ComponentPropertiesSection* prototypeSection);
 
-    void SetStyleProperty(StyleSheetNode* node, AbstractProperty* property, const DAVA::VariantType& newValue);
+    void SetStyleProperty(StyleSheetNode* node, AbstractProperty* property, const DAVA::Any& newValue);
     void AddStyleProperty(StyleSheetNode* node, StyleSheetProperty* property);
     void RemoveStyleProperty(StyleSheetNode* node, StyleSheetProperty* property);
     void InsertSelector(StyleSheetNode* node, StyleSheetSelectorProperty* property, DAVA::int32 index);
@@ -106,10 +106,6 @@ private:
 
     void RefreshPropertiesInInstances(ControlNode* node, AbstractProperty* property);
 
-    void RefreshControlStylesAndLayout(ControlNode* node, bool canUpdateAll = true);
-    void RefreshStyles(ControlNode* node);
-    void CollectRootControlsToRefreshLayout(ControlNode* node, DAVA::Vector<ControlNode*>& roots);
-    void RestoreProperties(ControlNode* control);
     void NotifyPropertyChanged(ControlNode* control);
     DAVA::Vector<DepthPackageNode> CollectImportedPackagesRecursively();
 

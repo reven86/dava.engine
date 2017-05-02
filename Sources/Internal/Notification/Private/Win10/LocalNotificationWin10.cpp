@@ -5,6 +5,7 @@
 #include "Notification/Private/Win10/LocalNotificationWin10.h"
 #include "Utils/StringFormat.h"
 #include "Utils/UTF8Utils.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {
@@ -143,13 +144,25 @@ void LocalNotificationUAP::CreateOrUpdateNotification(::Windows::Data::Xml::Dom:
 
         ScheduledToastNotification ^ notif = ref new ScheduledToastNotification(notificationDeclaration, deliveryTime);
         notif->SuppressPopup = ghostNotification;
-        toastNotifier->AddToSchedule(notif);
+
+        try
+        {
+            toastNotifier->AddToSchedule(notif);
+        }
+        catch (Platform::Exception ^ e)
+        {
+            Logger::Error("Exception occured when tried to schedule a notification: %s (hresult=0x%08X)", UTF8Utils::EncodeToUTF8(e->Message->Data()).c_str(), e->HResult);
+        }
     }
 }
 
 LocalNotificationImpl* LocalNotificationImpl::Create(const String& _id)
 {
     return new LocalNotificationUAP(_id);
+}
+
+void LocalNotificationImpl::RequestPermissions()
+{
 }
 
 } // namespace DAVA

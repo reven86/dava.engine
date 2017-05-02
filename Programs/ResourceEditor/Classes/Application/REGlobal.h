@@ -19,7 +19,6 @@ class DataContext;
 
 namespace REGlobal
 {
-extern DAVA::TArc::WindowKey MainWindowKey;
 void InitTArcCore(DAVA::TArc::Core* core);
 
 DAVA::TArc::DataContext* GetGlobalContext();
@@ -56,4 +55,5 @@ DECLARE_OPERATION_ID(AddSceneOperation); // Args - scenePath: DAVA::FilePath
 DECLARE_OPERATION_ID(SaveCurrentScene); // Args - empty
 DECLARE_OPERATION_ID(CloseAllScenesOperation); // Args - need ask user about saving scenes : bool
 DECLARE_OPERATION_ID(ReloadTexturesOperation); // Args - gpu : eGpuFamily
+DECLARE_OPERATION_ID(ShowMaterial); // Args - NMaterial*
 }

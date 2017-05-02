@@ -472,7 +472,7 @@ bool FilePath::operator==(const FilePath& path) const
 
 bool FilePath::operator!=(const FilePath& path) const
 {
-    return absolutePathname != path.absolutePathname;
+    return !(*this == path);
 }
 
 bool FilePath::IsDirectoryPathname() const
@@ -979,5 +979,11 @@ String FilePath::AsURL() const
 #endif //#if defined(__DAVAENGINE_ANDROID__)
 
     return ("file://" + path);
+}
+
+template <>
+bool AnyCompare<FilePath>::IsEqual(const Any& v1, const Any& v2)
+{
+    return v1.Get<FilePath>() == v2.Get<FilePath>();
 }
 }

@@ -39,7 +39,6 @@ private:
     void AcquireContext();
     void ReleaseContext();
 
-    void ActivateRendering();
     bool IsInitialized() const;
 
     void Update();

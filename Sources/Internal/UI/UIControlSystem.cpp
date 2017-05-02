@@ -12,6 +12,7 @@
 #include "UI/Focus/UIFocusSystem.h"
 #include "UI/Input/UIInputSystem.h"
 #include "UI/Scroll/UIScrollBarLinkSystem.h"
+#include "UI/Sound/UISoundSystem.h"
 #include "Render/Renderer.h"
 #include "Render/RenderHelper.h"
 #include "UI/UIScreenshoter.h"
@@ -24,6 +25,7 @@
 #include "Platform/DPIHelper.h"
 #include "Platform/DeviceInfo.h"
 #include "Input/InputSystem.h"
+#include "UI/Update/UIUpdateSystem.h"
 #include "Debug/ProfilerOverlay.h"
 #include "Engine/Engine.h"
 #include "Input/MouseDevice.h"
@@ -39,13 +41,17 @@ UIControlSystem::UIControlSystem()
     baseGeometricData.angle = 0;
 
     AddSystem(std::make_unique<UIInputSystem>());
-    AddSystem(std::make_unique<UILayoutSystem>());
+    AddSystem(std::make_unique<UIUpdateSystem>());
     AddSystem(std::make_unique<UIStyleSheetSystem>());
+    AddSystem(std::make_unique<UILayoutSystem>());
     AddSystem(std::make_unique<UIScrollBarLinkSystem>());
+    AddSystem(std::make_unique<UISoundSystem>());
 
     inputSystem = GetSystem<UIInputSystem>();
-    layoutSystem = GetSystem<UILayoutSystem>();
     styleSheetSystem = GetSystem<UIStyleSheetSystem>();
+    layoutSystem = GetSystem<UILayoutSystem>();
+    soundSystem = GetSystem<UISoundSystem>();
+    updateSystem = GetSystem<UIUpdateSystem>();
 
 #if defined(__DAVAENGINE_COREV2__)
     vcs = new VirtualCoordinatesSystem();
@@ -53,8 +59,8 @@ UIControlSystem::UIControlSystem()
 #else
     vcs = VirtualCoordinatesSystem::Instance();
 #endif
-    vcs->virtualSizeChanged.Connect([](const Size2i&) { TextBlock::ScreenResolutionChanged(); });
-    vcs->physicalSizeChanged.Connect([](const Size2i&) { TextBlock::ScreenResolutionChanged(); });
+    vcs->virtualSizeChanged.Connect(this, [](const Size2i&) { TextBlock::ScreenResolutionChanged(); });
+    vcs->physicalSizeChanged.Connect(this, [](const Size2i&) { TextBlock::ScreenResolutionChanged(); });
 
     screenshoter = new UIScreenshoter();
 
@@ -63,13 +69,15 @@ UIControlSystem::UIControlSystem()
     popupContainer->SetInputEnabled(false);
     popupContainer->InvokeActive(UIControl::eViewState::VISIBLE);
     inputSystem->SetPopupContainer(popupContainer.Get());
+    styleSheetSystem->SetPopupContainer(popupContainer);
+    layoutSystem->SetPopupContainer(popupContainer);
 
 #if !defined(__DAVAENGINE_COREV2__)
     // calculate default radius
     if (DeviceInfo::IsHIDConnected(DeviceInfo::eHIDType::HID_TOUCH_TYPE))
     {
-        //half an inch
-        defaultDoubleClickRadiusSquared = DPIHelper::GetScreenDPI() / 4.f;
+        // quarter of an inch
+        defaultDoubleClickRadiusSquared = DPIHelper::GetScreenDPI() * 0.25f;
         if (DeviceInfo::GetScreenInfo().scale != 0.f)
         {
             // to look the same on all devices
@@ -85,7 +93,7 @@ UIControlSystem::UIControlSystem()
     doubleClickRadiusSquared = defaultDoubleClickRadiusSquared;
     doubleClickPhysSquare = defaultDoubleClickRadiusSquared;
 #else
-    SetDoubleTapSettings(0.5f, 0.5f);
+    SetDoubleTapSettings(0.5f, 0.25f);
 #endif
 
     ui3DViewCount = 0;
@@ -95,6 +103,12 @@ UIControlSystem::~UIControlSystem()
 {
     inputSystem->SetPopupContainer(nullptr);
     inputSystem->SetCurrentScreen(nullptr);
+    styleSheetSystem->SetPopupContainer(RefPtr<UIControl>());
+    styleSheetSystem->SetCurrentScreen(RefPtr<UIScreen>());
+    styleSheetSystem->SetCurrentScreenTransition(RefPtr<UIScreenTransition>());
+    layoutSystem->SetPopupContainer(RefPtr<UIControl>());
+    layoutSystem->SetCurrentScreen(RefPtr<UIScreen>());
+    layoutSystem->SetCurrentScreenTransition(RefPtr<UIScreenTransition>());
 
     popupContainer->InvokeInactive();
     popupContainer = nullptr;
@@ -105,9 +119,11 @@ UIControlSystem::~UIControlSystem()
         currentScreen = nullptr;
     }
 
+    soundSystem = nullptr;
     inputSystem = nullptr;
     styleSheetSystem = nullptr;
     layoutSystem = nullptr;
+    updateSystem = nullptr;
 
     systems.clear();
     SafeDelete(screenshoter);
@@ -206,7 +222,15 @@ UIScreenTransition* UIControlSystem::GetScreenTransition() const
 void UIControlSystem::Reset()
 {
     inputSystem->SetCurrentScreen(nullptr);
+    styleSheetSystem->SetCurrentScreen(RefPtr<UIScreen>());
+    layoutSystem->SetCurrentScreen(RefPtr<UIScreen>());
     SetScreen(nullptr);
+}
+
+void UIControlSystem::UpdateControl(UIControl* control)
+{
+    styleSheetSystem->Update(control);
+    layoutSystem->Update(control);
 }
 
 void UIControlSystem::ProcessScreenLogic()
@@ -248,6 +272,8 @@ void UIControlSystem::ProcessScreenLogic()
             RefPtr<UIScreen> prevScreen = currentScreen;
             currentScreen = nullptr;
             inputSystem->SetCurrentScreen(currentScreen.Get());
+            styleSheetSystem->SetCurrentScreen(currentScreen);
+            layoutSystem->SetCurrentScreen(currentScreen);
 
             if ((nextScreenProcessed == nullptr) || (prevScreen->GetGroupId() != nextScreenProcessed->GetGroupId()))
             {
@@ -271,6 +297,8 @@ void UIControlSystem::ProcessScreenLogic()
             currentScreen->InvokeActive(UIControl::eViewState::VISIBLE);
         }
         inputSystem->SetCurrentScreen(currentScreen.Get());
+        styleSheetSystem->SetCurrentScreen(currentScreen);
+        layoutSystem->SetCurrentScreen(currentScreen);
 
         NotifyListenersDidSwitch(currentScreen.Get());
 
@@ -283,6 +311,8 @@ void UIControlSystem::ProcessScreenLogic()
 
             currentScreenTransition = nextScreenTransitionProcessed;
             currentScreenTransition->InvokeActive(UIControl::eViewState::VISIBLE);
+            styleSheetSystem->SetCurrentScreenTransition(currentScreenTransition);
+            layoutSystem->SetCurrentScreenTransition(currentScreenTransition);
         }
 
         UnlockInput();
@@ -299,6 +329,8 @@ void UIControlSystem::ProcessScreenLogic()
 
             RefPtr<UIScreenTransition> prevScreenTransitionProcessed = currentScreenTransition;
             currentScreenTransition = nullptr;
+            styleSheetSystem->SetCurrentScreenTransition(currentScreenTransition);
+            layoutSystem->SetCurrentScreenTransition(currentScreenTransition);
 
             UnlockInput();
             UnlockSwitch();
@@ -338,20 +370,6 @@ void UIControlSystem::Update()
         system->Process(timeElapsed);
     }
 
-    if (Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_UI_CONTROL_SYSTEM))
-    {
-        if (currentScreenTransition)
-        {
-            currentScreenTransition->SystemUpdate(timeElapsed);
-        }
-        else if (currentScreen)
-        {
-            currentScreen->SystemUpdate(timeElapsed);
-        }
-
-        popupContainer->SystemUpdate(timeElapsed);
-    }
-
     RenderSystem2D::RenderTargetPassDescriptor newDescr = RenderSystem2D::Instance()->GetMainTargetDescriptor();
     newDescr.clearTarget = (ui3DViewCount == 0 || currentScreenTransition) && needClearMainPass;
     RenderSystem2D::Instance()->SetMainTargetDescriptor(newDescr);
@@ -369,14 +387,14 @@ void UIControlSystem::Draw()
 
     if (currentScreenTransition)
     {
-        currentScreenTransition->SystemDraw(baseGeometricData);
+        currentScreenTransition->SystemDraw(baseGeometricData, nullptr);
     }
     else if (currentScreen)
     {
-        currentScreen->SystemDraw(baseGeometricData);
+        currentScreen->SystemDraw(baseGeometricData, nullptr);
     }
 
-    popupContainer->SystemDraw(baseGeometricData);
+    popupContainer->SystemDraw(baseGeometricData, nullptr);
 
     if (frameSkip > 0)
     {
@@ -530,6 +548,11 @@ void UIControlSystem::SetFocusedControl(UIControl* newFocused)
 UIControl* UIControlSystem::GetFocusedControl() const
 {
     return GetFocusSystem()->GetFocusedControl();
+}
+
+void UIControlSystem::ProcessControlEvent(int32 eventType, const UIEvent* uiEvent, UIControl* control)
+{
+    soundSystem->ProcessControlEvent(eventType, uiEvent, control);
 }
 
 const UIGeometricData& UIControlSystem::GetBaseGeometricData() const
@@ -776,9 +799,19 @@ UIFocusSystem* UIControlSystem::GetFocusSystem() const
     return inputSystem->GetFocusSystem();
 }
 
+UISoundSystem* UIControlSystem::GetSoundSystem() const
+{
+    return soundSystem;
+}
+
 UIStyleSheetSystem* UIControlSystem::GetStyleSheetSystem() const
 {
     return styleSheetSystem;
+}
+
+UIUpdateSystem* UIControlSystem::GetUpdateSystem() const
+{
+    return updateSystem;
 }
 
 UIScreenshoter* UIControlSystem::GetScreenshoter()

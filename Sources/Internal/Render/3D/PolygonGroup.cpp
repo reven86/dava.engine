@@ -1,11 +1,25 @@
 #include "Render/3D/PolygonGroup.h"
 #include "FileSystem/KeyedArchive.h"
-#include "Render/RenderCallbacks.h"
+#include "Render/Renderer.h"
 #include "Scene3D/SceneFileV2.h"
 #include "Logger/Logger.h"
+#include "Reflection/ReflectionRegistrator.h"
+#include "Reflection/ReflectedMeta.h"
 
 namespace DAVA
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(PolygonGroup)
+{
+    ReflectionRegistrator<PolygonGroup>::Begin()
+    .Field("vertexCount", &PolygonGroup::vertexCount)[M::ReadOnly(), M::DisplayName("Vertex Count")]
+    .Field("indexCount", &PolygonGroup::indexCount)[M::ReadOnly(), M::DisplayName("Index Count")]
+    .Field("textureCoordCount", &PolygonGroup::textureCoordCount)[M::ReadOnly(), M::DisplayName("Texture Coord Count")]
+    .Field("vertexStride", &PolygonGroup::vertexStride)[M::ReadOnly(), M::DisplayName("Vertex Stride")]
+    .Field("vertexFormat", &PolygonGroup::vertexFormat)[M::ReadOnly(), M::DisplayName("Vertex Format"), M::FlagsT<eVertexFormat>()]
+    .Field("indexFormat", &PolygonGroup::indexFormat)[M::ReadOnly(), M::DisplayName("Index Format"), M::EnumT<eIndexFormat>()]
+    .End();
+}
+
 PolygonGroup::PolygonGroup()
     : DataNode()
     , vertexCount(0)
@@ -36,12 +50,12 @@ PolygonGroup::PolygonGroup()
     , baseVertexArray(0)
     , vertexLayoutId(rhi::VertexLayout::InvalidUID)
 {
-    RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(this, &PolygonGroup::RestoreBuffers));
+    Renderer::GetSignals().needRestoreResources.Connect(this, &PolygonGroup::RestoreBuffers);
 }
 
 PolygonGroup::~PolygonGroup()
 {
-    RenderCallbacks::UnRegisterResourceRestoreCallback(MakeFunction(this, &PolygonGroup::RestoreBuffers));
+    Renderer::GetSignals().needRestoreResources.Disconnect(this);
     ReleaseData();
     if (vertexBuffer.IsValid())
         rhi::DeleteVertexBuffer(vertexBuffer);

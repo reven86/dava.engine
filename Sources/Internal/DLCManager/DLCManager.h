@@ -1,7 +1,7 @@
 #pragma once
 
-#include "Functional/Signal.h"
 #include "FileSystem/FilePath.h"
+#include "Functional/Signal.h"
 
 namespace DAVA
 {
@@ -16,13 +16,15 @@ namespace DAVA
  example:
  ```
  DLCManager& pm = *engine.GetContext()->dlcManager;
- // if init failed we will know about it
+ // if initialize failed we will know about it
  pm.networkReady.Connect(this, &DLCManagerTest::OnNetworkReady);
 
  FilePath folderWithDownloadedPacks = "~doc:/FolderForPacks/";
  String urlToServerSuperpack = "http://server.net/superpack.3.7.0.mali.dvpk";
  DLCManager::Hints hints;
+ hints.logFilePath = "~doc:/UberGame/dlc_manager.log";
  hints.retryConnectMilliseconds = 1000; // retry connect every second
+ hints.maxFilesToDownload = 22456; // help download manager to reserve memory better
 
  pm.Initialize(folderWithDownloadedPacks, urlToServerSuperpack, hints);
 
@@ -48,8 +50,6 @@ public:
 
         /** return requested pack name */
         virtual const String& GetRequestedPackName() const = 0;
-        /** recalculate full size with all dependencies */
-        virtual Vector<String> GetDependencies() const = 0;
         /** return size of files within this request without dependencies */
         virtual uint64 GetSize() const = 0;
         /** recalculate current downloaded size without dependencies */
@@ -58,42 +58,94 @@ public:
         virtual bool IsDownloaded() const = 0;
     };
 
-    /** you have to subscribe to this signal before call `Initialize` */
+    /**
+	   You have to subscribe to this signal before calling `Initialize`, it helps
+	   to know whether connection to server works or connection lost.
+	   Note: if download attempt is failed, DLC Manager will retry every `Hints::retryConnectMilliseconds` ms.
+	   */
     Signal<bool> networkReady;
-    /** signal per user request with full size of all depended packs */
+    /**
+	    Tells that dlcmanager is initialized.
+	    First parameter is a number of already downloaded files.
+	    Second parameter is total number of files in server superpack.
+	    After this signal you can use ```bool IsPackDownloaded(const String& packName);```
+		*/
+    Signal<size_t, size_t> initializeFinished;
+    /** signal per user request */
     Signal<const IRequest&> requestUpdated;
-
-    struct Hints
-    {
-        uint32 retryConnectMilliseconds = 5000; //!< try to reconnect to server if `Offline` state
-        uint32 checkLocalFileExistPerUpdate = 100; //!< how many file to check per Update call
-        uint32 maxFilesToDownload = 22000; //!< arond 22000 files now we have in build
-    };
+    /**
+	    Tells that some file error occurred during downloading process.
+	    First parameter is a full path to the file which couldn't be created or written,
+		second parameter is an error code
+		(example: ENOSPC - No space left on device (POSIX.1).)
+		DLCManager requesting disabled before signal.
+		If you receive this signal first check available space on device.
+		*/
+    Signal<const String&, int32> fileErrorOccured;
 
     /**
-     Start complex initialization process. You can call it again if need.
+	    User fills hints to internal implementation.
+		Used for initialization.
+	*/
+    struct Hints
+    {
+        const char* logFilePath = "~doc:/dlc_manager.log"; //!< path for separate log file
+        uint32 retryConnectMilliseconds = 5000; //!< try to reconnect to server if `Offline` state default every 5 seconds
+        uint32 maxFilesToDownload = 22000; //!< user should fill this value default value average files count in Data
+        uint32 numOfThreadsPerFileDownload = 1; //!< this value passed to DownloadManager
+        uint32 timeoutForDownload = 30; //!< this value passed to DownloadManager
+        uint32 retriesCountForDownload = 3; //!< this value passed to DownloadManager
+    };
 
-     You also should subscribe to all signals especially state changes
-     before you call Initialize.
-     At least subscribe to `networkReady` signal
+    /** Start complex initialization process. You can call it again if need.
+
+		If you want to know what is going on during initialization you
+		have to subscribe to any signals you want before call `Initialize(..)`
     */
     virtual void Initialize(const FilePath& dirToDownloadPacks,
                             const String& urlToServerSuperpack,
                             const Hints& hints) = 0;
+    /**
+	 Stop all operations and free all resources. Useful during unit tests.
+	*/
+    virtual void Deinitialize() = 0;
 
     virtual bool IsInitialized() const = 0;
 
     virtual bool IsRequestingEnabled() const = 0;
+
+    /** Return true if pack is already downloaded. */
+    virtual bool IsPackDownloaded(const String& packName) = 0;
 
     virtual void SetRequestingEnabled(bool value) = 0;
 
     /** return nullptr if can't find pack */
     virtual const IRequest* RequestPack(const String& packName) = 0;
 
-    /** DEPRECATED order - [0..N] - 0 - first, 1, 2, ... , N - last in queue */
-    virtual void SetRequestOrder(const IRequest* request, uint32 orderIndex) = 0;
+    virtual bool IsPackInQueue(const String& packName);
+
+    /** Update request queue to first download dependency of selected request
+        and then request itself */
+    virtual void SetRequestPriority(const IRequest* request) = 0;
 
     virtual void RemovePack(const String& packName) = 0;
+
+    struct Progress
+    {
+        uint64 total = 0; //!< in bytes
+        uint64 alreadyDownloaded = 0; //!< in bytes
+        uint64 inQueue = 0; //!< in bytes
+        bool isRequestingEnabled = false; //!< current state of requesting
+    };
+
+    /** Calculate statistic about downloading progress */
+    virtual Progress GetProgress() const = 0;
 };
+
+// HACK to compile current Blitz client
+inline bool DLCManager::IsPackInQueue(const String& packName)
+{
+    return false;
+}
 
 } // end namespace DAVA

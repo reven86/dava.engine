@@ -1,8 +1,8 @@
 #include "Tests/CoreV2Test.h"
 #include "Infrastructure/TestBed.h"
 
-#include "Engine/Engine.h"
-#include "Logger/Logger.h"
+#include <Engine/Engine.h>
+#include <Logger/Logger.h>
 
 using namespace DAVA;
 
@@ -57,8 +57,8 @@ void CoreV2Test::LoadResources()
     buttonDisableClose = CreateUIButton(font, Rect(500, y, 200, h), "Disable close", &CoreV2Test::OnDisableEnableClose);
     buttonEnableClose = CreateUIButton(font, Rect(500, y += h + gap, 200, h), "Enable close", &CoreV2Test::OnDisableEnableClose);
 
-    tokenOnWindowCreated = engine.windowCreated.Connect(MakeFunction(this, &CoreV2Test::OnWindowCreated));
-    tokenOnWindowDestroyed = engine.windowDestroyed.Connect(MakeFunction(this, &CoreV2Test::OnWindowDestroyed));
+    engine.windowCreated.Connect(this, &CoreV2Test::OnWindowCreated);
+    engine.windowDestroyed.Connect(this, &CoreV2Test::OnWindowDestroyed);
     engine.SetCloseRequestHandler(MakeFunction(this, &CoreV2Test::OnWindowWantsToClose));
 
     SafeRelease(font);
@@ -66,8 +66,8 @@ void CoreV2Test::LoadResources()
 
 void CoreV2Test::UnloadResources()
 {
-    engine.windowCreated.Disconnect(tokenOnWindowCreated);
-    engine.windowDestroyed.Disconnect(tokenOnWindowDestroyed);
+    engine.windowCreated.Disconnect(this);
+    engine.windowDestroyed.Disconnect(this);
 
     SafeRelease(buttonQuit);
     SafeRelease(buttonCloseWindow);

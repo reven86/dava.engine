@@ -1,12 +1,16 @@
 #ifndef __UI_EDITOR_ABSTRACT_PROPERTY_H__
 #define __UI_EDITOR_ABSTRACT_PROPERTY_H__
 
-#include "Base/BaseObject.h"
+#include <Base/Any.h>
+#include <Base/BaseObject.h>
+#include <Base/Type.h>
 
 class PropertyVisitor;
 
 class AbstractProperty : public DAVA::BaseObject
 {
+    DAVA_VIRTUAL_REFLECTION(AbstractProperty, DAVA::BaseObject);
+
 public:
     enum ePropertyType
     {
@@ -23,8 +27,6 @@ public:
         EF_CAN_RESET = 0x01,
         EF_INHERITED = 0x02,
         EF_CAN_REMOVE = 0x04,
-        EF_AFFECTS_STYLES = 0x08,
-        EF_DEPENDS_ON_LAYOUTS = 0x10,
     };
 
     enum eRefreshFlags
@@ -32,7 +34,6 @@ public:
         REFRESH_DEFAULT_VALUE = 0x01,
         REFRESH_LOCALIZATION = 0x02,
         REFRESH_FONT = 0x04,
-        REFRESH_DEPENDED_ON_LAYOUT_PROPERTIES = 0x08
     };
 
     enum eCloneType
@@ -57,6 +58,7 @@ public:
 
     virtual void Refresh(DAVA::int32 refreshFlags);
     virtual AbstractProperty* FindPropertyByPrototype(AbstractProperty* prototype);
+    virtual AbstractProperty* FindPropertyByStyleIndex(DAVA::int32 propertyIndex) const;
     virtual bool HasChanges() const;
     virtual void Accept(PropertyVisitor* visitor) = 0;
 
@@ -67,11 +69,11 @@ public:
 
     virtual bool IsReadOnly() const;
 
-    virtual DAVA::VariantType::eVariantType GetValueType() const;
-    virtual DAVA::VariantType GetValue() const;
-    virtual void SetValue(const DAVA::VariantType& newValue);
-    virtual DAVA::VariantType GetDefaultValue() const;
-    virtual void SetDefaultValue(const DAVA::VariantType& newValue);
+    virtual const DAVA::Type* GetValueType() const = 0;
+    virtual DAVA::Any GetValue() const;
+    virtual void SetValue(const DAVA::Any& newValue);
+    virtual DAVA::Any GetDefaultValue() const;
+    virtual void SetDefaultValue(const DAVA::Any& newValue);
     virtual const EnumMap* GetEnumMap() const;
     virtual void ResetValue();
     virtual bool IsOverriddenLocally() const;
@@ -84,11 +86,6 @@ public:
 
 private:
     AbstractProperty* parent = nullptr;
-
-public:
-    INTROSPECTION_EXTEND(AbstractProperty, DAVA::BaseObject,
-                         nullptr
-                         );
 };
 
 

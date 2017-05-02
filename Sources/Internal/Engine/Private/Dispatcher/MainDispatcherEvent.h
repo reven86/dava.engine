@@ -27,6 +27,7 @@ struct MainDispatcherEvent final
         WINDOW_DPI_CHANGED,
         WINDOW_CAPTURE_LOST,
         WINDOW_CANCEL_INPUT,
+        WINDOW_VISIBLE_FRAME_CHANGED,
 
         FIRST_INPUT_EVENT,
         MOUSE_BUTTON_DOWN = FIRST_INPUT_EVENT,
@@ -112,6 +113,15 @@ struct MainDispatcherEvent final
         float32 dpi;
     };
 
+    /// Parameter for event WINDOW_VISIBLE_FRAME_CHANGED
+    struct WindowVisibleFrameEvent
+    {
+        float32 x;
+        float32 y;
+        float32 width;
+        float32 height;
+    };
+
     /// Parameter for mouse events:
     ///     - MOUSE_BUTTON_DOWN
     ///     - MOUSE_BUTTON_UP
@@ -148,6 +158,8 @@ struct MainDispatcherEvent final
         float32 rotation;
         float32 deltaX;
         float32 deltaY;
+        float32 x;
+        float32 y;
         eModifierKeys modifierKeys;
     };
 
@@ -213,6 +225,7 @@ struct MainDispatcherEvent final
         WindowDestroyedEvent destroyedEvent;
         WindowSizeEvent sizeEvent;
         WindowDpiEvent dpiEvent;
+        WindowVisibleFrameEvent visibleFrameEvent;
         MouseEvent mouseEvent;
         TouchEvent touchEvent;
         TrackpadGestureEvent trackpadGestureEvent;
@@ -241,13 +254,14 @@ struct MainDispatcherEvent final
     static MainDispatcherEvent CreateWindowVisibilityChangedEvent(Window* window, bool visibilityState);
     static MainDispatcherEvent CreateWindowDpiChangedEvent(Window*, float32 dpi);
     static MainDispatcherEvent CreateWindowCancelInputEvent(Window* window);
+    static MainDispatcherEvent CreateWindowVisibleFrameChangedEvent(Window* window, float32 x, float32 y, float32 width, float32 height);
 
     static MainDispatcherEvent CreateWindowKeyPressEvent(Window* window, eType keyEventType, uint32 key, eModifierKeys modifierKeys, bool isRepeated);
     static MainDispatcherEvent CreateWindowMouseClickEvent(Window* window, eType mouseClickEventType, eMouseButtons button, float32 x, float32 y, uint32 clicks, eModifierKeys modifierKeys, bool isRelative);
     static MainDispatcherEvent CreateWindowMouseMoveEvent(Window* window, float32 x, float32 y, eModifierKeys modifierKeys, bool isRelative);
     static MainDispatcherEvent CreateWindowMouseWheelEvent(Window* window, float32 x, float32 y, float32 deltaX, float32 deltaY, eModifierKeys modifierKeys, bool isRelative);
     static MainDispatcherEvent CreateWindowTouchEvent(Window* window, eType touchEventType, uint32 touchId, float32 x, float32 y, eModifierKeys modifierKeys);
-    static MainDispatcherEvent CreateWindowMagnificationGestureEvent(Window* window, float32 magnification, eModifierKeys modifierKeys);
+    static MainDispatcherEvent CreateWindowMagnificationGestureEvent(Window* window, float32 x, float32 y, float32 magnification, eModifierKeys modifierKeys);
     static MainDispatcherEvent CreateWindowRotationGestureEvent(Window* window, float32 rotation, eModifierKeys modifierKeys);
     static MainDispatcherEvent CreateWindowSwipeGestureEvent(Window* window, float32 deltaX, float32 deltaY, eModifierKeys modifierKeys);
     static MainDispatcherEvent CreateWindowCaptureLostEvent(Window* window);

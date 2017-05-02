@@ -3,6 +3,7 @@
 
 #include "Base/BaseTypes.h"
 #include "UI/UIControl.h"
+#include "Reflection/Reflection.h"
 
 namespace DAVA
 {
@@ -90,6 +91,8 @@ protected:
  */
 class UISpinner : public UIControl, SpinnerAdapter::SelectionObserver
 {
+    DAVA_VIRTUAL_REFLECTION(UISpinner, UIControl);
+
 public:
     UISpinner(const Rect& rect = Rect());
 

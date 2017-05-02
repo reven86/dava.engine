@@ -8,7 +8,6 @@ include ( CMake-common )
 macro ( add_tool TARGET_NAME )
     cmake_parse_arguments ( ARG ""  "ROOT_DIR;CUSTOM_DEPLOY_DIR;DEPLOY_DEFINE" "" ${ARGN} )
 
-
     if( ARG_DEPLOY_DEFINE AND DEPLOY ) 
         get_property( DEFINITIONS_OLD GLOBAL PROPERTY DEFINITIONS )
         append_property( DEFINITIONS ${ARG_DEPLOY_DEFINE} )
@@ -30,9 +29,13 @@ macro ( add_tool TARGET_NAME )
     endif()
 
     set( DEPLOY_DIR ${OLD_DEPLOY_DIR} )
+
+    list( APPEND TOOL_TARGET_LIST ${TARGET_NAME} )
+
 endmacro ()
 
 ############
+set( UNITY_BUILD_OLD_VALUE ${UNITY_BUILD} )
 
 set( JOIN_PROJECT_NAME 1 )
 set( DAVA_MEGASOLUTION      1 )
@@ -53,24 +56,31 @@ set( CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR} )
 set( CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR} )
 
 ## other
-set( DEFINITIONS           )
+set( DEFINITIONS            )
 
-set( DEPLOY_DIR            ${CMAKE_BINARY_DIR}/app_other )
-set( DEPLOY_DIR_EXECUTABLE )
-set( QT_POST_DEPLOY        )
+set( DEPLOY_DIR             ${CMAKE_BINARY_DIR}/app_other )
+set( MIX_APP_DIR            )
+set( DEPLOY_DIR_EXECUTABLE  )
+set( QT_POST_DEPLOY         )
+set( TOOL_TARGET_LIST       )
+
 reset_property ( MIX_APP_DATA )
 
     if ( NOT ONLY_CONTENT_TOOLS )
-        add_tool     ( Launcher        CUSTOM_DEPLOY_DIR ${DEPLOY_DIR} DEPLOY_DEFINE "-DDAVA_MACOS_DATA_PATH=\"/../Data/\"" )
+         
+        set( UNITY_BUILD false )
         add_tool     ( UnitTests       ROOT_DIR "${DAVA_ROOT_DIR}/Programs/UnitTests"       CUSTOM_DEPLOY_DIR ${DEPLOY_DIR} )
+        set( UNITY_BUILD ${UNITY_BUILD_OLD_VALUE} )
+
         add_tool     ( TestBed         ROOT_DIR "${DAVA_ROOT_DIR}/Programs/TestBed"         CUSTOM_DEPLOY_DIR ${DEPLOY_DIR} )
         add_tool     ( SceneViewer     ROOT_DIR "${DAVA_ROOT_DIR}/Programs/SceneViewer"     CUSTOM_DEPLOY_DIR ${DEPLOY_DIR} )
+        add_tool     ( UIViewer     ROOT_DIR "${DAVA_ROOT_DIR}/Programs/UIViewer"     CUSTOM_DEPLOY_DIR ${DEPLOY_DIR} )
         add_tool     ( PerfomanceTests ROOT_DIR "${DAVA_ROOT_DIR}/Programs/PerfomanceTests" CUSTOM_DEPLOY_DIR ${DEPLOY_DIR} )
+        add_tool     ( Launcher        CUSTOM_DEPLOY_DIR ${DEPLOY_DIR} DEPLOY_DEFINE "-DDAVA_MACOS_DATA_PATH=\"/../Data/\"" )
 
         if ( WIN32 )
             add_tool ( UWPRunner CUSTOM_DEPLOY_DIR ${DEPLOY_DIR} )
         endif ()
-        processing_mix_data()
     endif ()
 
 ## tools
@@ -92,6 +102,8 @@ set( DEPLOY_DIR             ${DEPLOY_DIR_${DAVA_PLATFORM_CURENT}})
 set( DEPLOY_DIR_LIBS        ${DEPLOY_DIR_LIBS_${DAVA_PLATFORM_CURENT}})
 set( DEPLOY_DIR_DATA        ${DEPLOY_DIR_DATA_${DAVA_PLATFORM_CURENT}})
 set( DEPLOY_DIR_EXECUTABLE  ${DEPLOY_DIR_EXECUTABLE_${DAVA_PLATFORM_CURENT}})
+set( MIX_APP_DIR            ${CMAKE_BINARY_DIR}/MixResources )
+set( TOOL_TARGET_LIST             )
 
 
 reset_property ( MIX_APP_DATA )
@@ -109,7 +121,7 @@ reset_property ( MIX_APP_DATA )
     add_tool     ( Dep )
 
     processing_mix_data()
-
+    processing_mix_data_dependencies( "${TOOL_TARGET_LIST}" )
 
     dump_module_log()
 

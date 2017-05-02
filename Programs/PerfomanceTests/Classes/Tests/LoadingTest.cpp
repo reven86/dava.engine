@@ -90,10 +90,6 @@ LoadingTest::LoadingTest(const TestParams& _testParams)
 {
 }
 
-LoadingTest::~LoadingTest()
-{
-}
-
 void LoadingTest::LoadResources()
 {
     ScopedPtr<Font> font12(FTFont::Create("~res:/Fonts/korinna.ttf"));
@@ -149,10 +145,9 @@ void LoadingTest::OnInactive()
     Renderer::SetDesiredFPS(FPS_REGULAR);
 }
 
-void LoadingTest::SystemUpdate(float32 timeElapsed)
+void LoadingTest::Update(float32 timeElapsed)
 {
-    BaseScreen::SystemUpdate(timeElapsed);
-
+    BaseScreen::Update(timeElapsed);
     if (loadJobs.size())
     {
         if (loadingDelayFrames == 0)

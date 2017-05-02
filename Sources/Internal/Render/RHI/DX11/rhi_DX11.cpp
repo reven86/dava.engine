@@ -16,7 +16,7 @@
 #include <Windows.ui.xaml.media.dxinterop.h>
 #endif
 
-#define RHI_DX11_ALLOW_FEATURE_LEVEL_11 1
+#define RHI_DX11_FORCE_FEATURE_LEVEL_9 0
 #define RHI_DX11_ASSERT_ON_ERROR 1
 
 extern "C" {
@@ -42,9 +42,11 @@ static DAVA::Mutex resetParamsSync;
 static DWORD _DX11_RenderThreadId = 0;
 static D3D_FEATURE_LEVEL _DX11_SupportedFeatureLevels[] =
 {
-#if (RHI_DX11_ALLOW_FEATURE_LEVEL_11)
+#if (!RHI_DX11_FORCE_FEATURE_LEVEL_9)
   D3D_FEATURE_LEVEL_11_1,
   D3D_FEATURE_LEVEL_11_0,
+  D3D_FEATURE_LEVEL_10_1,
+  D3D_FEATURE_LEVEL_10_0,
 #endif
   D3D_FEATURE_LEVEL_9_3,
   D3D_FEATURE_LEVEL_9_2,
@@ -358,10 +360,14 @@ bool dx11_CreateDeviceWithAdapter(const InitParam& param, ComPtr<IDXGIAdapter> a
 
     if (!DX11Check(dx11.device.As(&dx11.dxgiDevice)))
     {
-        DAVA::Logger::Error("[RHI-DX11] Failed to retreive IDXGIDevice1 object from ID3D11Device");
+        DAVA::Logger::Error("[RHI-DX11] Failed to retrieve IDXGIDevice1 object from ID3D11Device");
         ReportError(param, RenderingError::FailedToInitialize);
         return false;
     }
+    uint32 featureLevel = static_cast<uint32>(dx11.usedFeatureLevel);
+    uint32 featureLevelMajor = ((featureLevel >> 8) & 0xf0) >> 4;
+    uint32 featureLevelMinor = (featureLevel >> 8) & 0x0f;
+    DAVA::Logger::Info("[RHI-DX11] Init with feature level: 0x%04x (%u.%u)", featureLevel, featureLevelMajor, featureLevelMinor);
 
     // device was created, but no adapter provided
     if (adapter.Get() == nullptr)
@@ -369,26 +375,22 @@ bool dx11_CreateDeviceWithAdapter(const InitParam& param, ComPtr<IDXGIAdapter> a
         DX11Check(dx11.dxgiDevice->GetAdapter(adapter.GetAddressOf()));
         if (adapter.Get() == nullptr)
         {
-            DAVA::Logger::Error("[RHI-DX11] Failed to retreive IDXGIAdapter object from IDXGIDevice1");
+            DAVA::Logger::Error("[RHI-DX11] Failed to retrieve IDXGIAdapter object from IDXGIDevice1");
             ReportError(param, RenderingError::FailedToInitialize);
             return false;
         }
 
         DXGI_ADAPTER_DESC desc = {};
         adapter->GetDesc(&desc);
-        uint32 featureLevel = static_cast<uint32>(dx11.usedFeatureLevel);
-        uint32 featureLevelMajor = ((featureLevel >> 8) & 0xf0) >> 4;
-        uint32 featureLevelMinor = (featureLevel >> 8) & 0x0f;
-        DAVA::Logger::Info("[RHI-DX11] Using retreived adapter `%S` (vendor: 0x%04X, subsystem: 0x%04X), feature level: 0x%04x (%u.%u)",
-                           desc.Description, desc.VendorId, desc.SubSysId, featureLevel, featureLevelMajor, featureLevelMinor);
+        DAVA::Logger::Info("[RHI-DX11] Using retrieved adapter `%S` (vendor: 0x%04X, subsystem: 0x%04X)", desc.Description, desc.VendorId, desc.SubSysId);
 
         if (dx11.factory.Get() == nullptr)
         {
-            DAVA::Logger::Info("[RHI-DX11] IDXGIFactory2 was not created, retreiving it from the adapter");
+            DAVA::Logger::Info("[RHI-DX11] IDXGIFactory2 was not created, retrieving it from the adapter");
             DX11Check(adapter->GetParent(IID_PPV_ARGS(dx11.factory.GetAddressOf())));
             if (dx11.factory.Get() == nullptr)
             {
-                DAVA::Logger::Info("[RHI-DX11] Failed to retreive IDXGIFactory2 from IDXGIAdapter");
+                DAVA::Logger::Info("[RHI-DX11] Failed to retrieve IDXGIFactory2 from IDXGIAdapter");
                 ReportError(param, RenderingError::FailedToInitialize);
                 return false;
             }
@@ -400,7 +402,7 @@ bool dx11_CreateDeviceWithAdapter(const InitParam& param, ComPtr<IDXGIAdapter> a
 
 bool dx11_CreateDevice(const InitParam& param)
 {
-    DAVA::Logger::Info("[RHI-DX11] Creting device...");
+    DAVA::Logger::Info("[RHI-DX11] Creating device...");
     ComPtr<IDXGIAdapter> adapter = dx11_SelectAdapter();
     return dx11_CreateDeviceWithAdapter(param, adapter);
 }
@@ -579,22 +581,13 @@ static bool dx11_NeedRestoreResources()
 
 static bool dx11_TextureFormatSupported(TextureFormat format, ProgType)
 {
-    bool supported = false;
-    switch (format)
-    {
-    case TEXTURE_FORMAT_R8G8B8A8:
-    case TEXTURE_FORMAT_R5G5B5A1:
-    case TEXTURE_FORMAT_R5G6B5:
-    case TEXTURE_FORMAT_R4G4B4A4:
-    case TEXTURE_FORMAT_R8:
-    case TEXTURE_FORMAT_R16:
-    case TEXTURE_FORMAT_DXT1:
-    case TEXTURE_FORMAT_DXT3:
-    case TEXTURE_FORMAT_DXT5:
-        supported = true;
-        break;
-    }
-    return supported;
+    UINT formatSupport = 0;
+    DXGI_FORMAT dxgiFormat = DX11_TextureFormat(format);
+
+    if (dxgiFormat != DXGI_FORMAT_UNKNOWN)
+        DX11DeviceCommand(DX11Command::CHECK_FORMAT_SUPPORT, dxgiFormat, &formatSupport);
+
+    return (formatSupport & D3D11_FORMAT_SUPPORT_TEXTURE2D) != 0;
 }
 
 static void dx11_Uninitialize()

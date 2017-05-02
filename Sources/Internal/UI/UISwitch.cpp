@@ -1,18 +1,27 @@
 #include "UISwitch.h"
 #include "Animation/LinearAnimation.h"
 #include "UI/UIEvent.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {
 //use these names for children controls to define UISwitch in .yaml
-static const FastName UISWITCH_BUTTON_LEFT_NAME("buttonLeft");
-static const FastName UISWITCH_BUTTON_RIGHT_NAME("buttonRight");
-static const FastName UISWITCH_BUTTON_TOGGLE_NAME("buttonToggle");
+const FastName UISwitch::BUTTON_LEFT_NAME("buttonLeft");
+const FastName UISwitch::BUTTON_RIGHT_NAME("buttonRight");
+const FastName UISwitch::BUTTON_TOGGLE_NAME("buttonToggle");
 
 static const float32 UISWITCH_SWITCH_ANIMATION_TIME = 0.1f;
 static const int32 UISWITCH_MOVE_ANIMATION_TRACK = 10;
 static const float32 UISWITCH_ANCHOR_UNDEFINED = 10000.f;
 static float32 dragAnchorX = UISWITCH_ANCHOR_UNDEFINED;
+
+DAVA_VIRTUAL_REFLECTION_IMPL(UISwitch)
+{
+    ReflectionRegistrator<UISwitch>::Begin()
+    .ConstructorByPointer()
+    .DestructorByPointer([](UISwitch* o) { o->Release(); })
+    .End();
+}
 
 class TogglePositionAnimation : public LinearAnimation<float32>
 {
@@ -64,9 +73,9 @@ UISwitch::UISwitch(const Rect& rect)
     , toggle(new UIControl())
     , switchOnTapBesideToggle(true)
 {
-    buttonLeft->SetName(UISWITCH_BUTTON_LEFT_NAME);
-    buttonRight->SetName(UISWITCH_BUTTON_RIGHT_NAME);
-    toggle->SetName(UISWITCH_BUTTON_TOGGLE_NAME);
+    buttonLeft->SetName(UISwitch::BUTTON_LEFT_NAME);
+    buttonRight->SetName(UISwitch::BUTTON_RIGHT_NAME);
+    toggle->SetName(UISwitch::BUTTON_TOGGLE_NAME);
     AddControl(buttonLeft.Get());
     AddControl(buttonRight.Get());
     AddControl(toggle.Get());
@@ -102,16 +111,19 @@ void UISwitch::AddControl(UIControl* control)
     // Synchronize the pointers to the buttons each time new control is added.
     UIControl::AddControl(control);
 
-    if (control->GetName() == UISWITCH_BUTTON_LEFT_NAME && buttonLeft.Get() != control)
+    if (control->GetName() == UISwitch::BUTTON_LEFT_NAME && buttonLeft.Get() != control)
     {
+        UIControl::RemoveControl(buttonLeft.Get());
         buttonLeft = control;
     }
-    else if (control->GetName() == UISWITCH_BUTTON_TOGGLE_NAME && toggle.Get() != control)
+    else if (control->GetName() == UISwitch::BUTTON_TOGGLE_NAME && toggle.Get() != control)
     {
+        UIControl::RemoveControl(toggle.Get());
         toggle = control;
     }
-    else if (control->GetName() == UISWITCH_BUTTON_RIGHT_NAME && buttonRight.Get() != control)
+    else if (control->GetName() == UISwitch::BUTTON_RIGHT_NAME && buttonRight.Get() != control)
     {
+        UIControl::RemoveControl(buttonRight.Get());
         buttonRight = control;
     }
 }
@@ -245,7 +257,7 @@ void UISwitch::InternalSetIsLeftSelected(bool aIsLeftSelected, bool changeVisual
             ChangeVisualState();
         }
 
-        PerformEventWithData(EVENT_VALUE_CHANGED, inputEvent);
+        PerformEventWithData(EVENT_VALUE_CHANGED, inputEvent, inputEvent);
     }
 }
 

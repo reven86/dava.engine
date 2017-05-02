@@ -60,9 +60,13 @@ private:
     void OnPointerPressed(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg);
     void OnPointerReleased(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg);
     void OnPointerCaptureLost(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg);
+    void OnPointerCancelled(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg);
     void OnPointerMoved(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg);
     void OnPointerWheelChanged(::Platform::Object ^ sender, ::Windows::UI::Xaml::Input::PointerRoutedEventArgs ^ arg);
     void OnMouseMoved(Windows::Devices::Input::MouseDevice ^ mouseDevice, ::Windows::Devices::Input::MouseEventArgs ^ args);
+
+    void OnKeyboardShowing(Windows::UI::ViewManagement::InputPane ^ sender, Windows::UI::ViewManagement::InputPaneVisibilityEventArgs ^ args);
+    void OnKeyboardHiding(Windows::UI::ViewManagement::InputPane ^ sender, Windows::UI::ViewManagement::InputPaneVisibilityEventArgs ^ args);
 
     eModifierKeys GetModifierKeys() const;
     static eMouseButtons GetMouseButtonState(::Windows::UI::Input::PointerUpdateKind buttonUpdateKind, bool* isPressed);
@@ -84,7 +88,10 @@ private:
     ::Windows::UI::Xaml::Controls::Button ^ xamlControlThatStealsFocus = nullptr;
     ::Windows::UI::Xaml::Input::Pointer ^ lastPressedPointer = nullptr;
 
-    // Tokens to unsubscribe from event handlers
+    // List of pointer ids which are currently pressed
+    Vector<uint32> pressedPointerIds;
+
+    // Tokens & handler objects to unsubscribe from event handlers
     ::Windows::Foundation::EventRegistrationToken tokenActivated;
     ::Windows::Foundation::EventRegistrationToken tokenVisibilityChanged;
     ::Windows::Foundation::EventRegistrationToken tokenCharacterReceived;
@@ -92,11 +99,14 @@ private:
     ::Windows::Foundation::EventRegistrationToken tokenSizeChanged;
     ::Windows::Foundation::EventRegistrationToken tokenCompositionScaleChanged;
     ::Windows::Foundation::EventRegistrationToken tokenPointerPressed;
-    ::Windows::Foundation::EventRegistrationToken tokenPointerReleased;
-    ::Windows::Foundation::EventRegistrationToken tokenPointerCaptureLost;
     ::Windows::Foundation::EventRegistrationToken tokenPointerMoved;
     ::Windows::Foundation::EventRegistrationToken tokenPointerWheelChanged;
     ::Windows::Foundation::EventRegistrationToken tokenMouseMoved;
+    ::Windows::Foundation::EventRegistrationToken tokenKeyboardShowing;
+    ::Windows::Foundation::EventRegistrationToken tokenKeyboardHiding;
+    ::Windows::UI::Xaml::Input::PointerEventHandler ^ pointerReleasedHandler;
+    ::Windows::UI::Xaml::Input::PointerEventHandler ^ pointerCaptureLostHandler;
+    ::Windows::UI::Xaml::Input::PointerEventHandler ^ pointerCancelledHandler;
 
     static ::Platform::String ^ xamlWorkaroundWebViewProblems;
     static ::Platform::String ^ xamlWorkaroundTextBoxProblems;

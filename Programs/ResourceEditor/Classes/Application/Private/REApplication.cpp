@@ -1,8 +1,10 @@
 #include "Classes/Application/REApplication.h"
 #include "Classes/Application/REModule.h"
 #include "Classes/Application/REGlobal.h"
+#include "Classes/Application/ReflectionExtensions.h"
 #include "Classes/Project/ProjectManagerModule.h"
 #include "Classes/SceneManager/SceneManagerModule.h"
+#include "Classes/Application/LaunchModule.h"
 
 #include <Tools/TextureCompression/PVRConverter.h>
 #include "Settings/SettingsManager.h"
@@ -180,6 +182,7 @@ QString REApplication::GetInstanceKey() const
 void REApplication::CreateGUIModules(DAVA::TArc::Core* tarcCore) const
 {
     Q_INIT_RESOURCE(QtToolsResources);
+    tarcCore->CreateModule<ReflectionExtensionsModule>();
     tarcCore->CreateModule<REModule>();
     tarcCore->CreateModule<ProjectManagerModule>();
     tarcCore->CreateModule<SceneManagerModule>();
@@ -188,6 +191,8 @@ void REApplication::CreateGUIModules(DAVA::TArc::Core* tarcCore) const
     {
         tarcCore->CreateModule(type);
     }
+
+    tarcCore->CreateModule<LaunchModule>();
 }
 
 void REApplication::CreateConsoleModules(DAVA::TArc::Core* tarcCore) const

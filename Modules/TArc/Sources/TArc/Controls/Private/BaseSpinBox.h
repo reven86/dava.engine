@@ -2,6 +2,7 @@
 
 #include "TArc/Controls/ControlProxy.h"
 #include "TArc/Controls/Private/ValidationUtils.h"
+#include "TArc/Controls/CommonStrings.h"
 #include "TArc/Utils/QtConnections.h"
 
 #include <QDoubleSpinBox>
@@ -16,7 +17,7 @@ namespace DAVA
 namespace TArc
 {
 template <typename TBase, typename TEditableType>
-class BaseSpinBox : public ControlProxy<TBase>
+class BaseSpinBox : public ControlProxyImpl<TBase>
 {
 public:
     enum BaseFields : uint32
@@ -31,8 +32,10 @@ public:
     BaseSpinBox(const ControlDescriptor& descriptor, ContextAccessor* accessor, Reflection model, QWidget* parent);
 
 protected:
+    bool event(QEvent* e) override;
     void UpdateControl(const ControlDescriptor& changedFields) override;
     void SetupSpinBoxBase();
+    void UpdateRange();
 
     void ValueChanged(TEditableType val);
 
@@ -50,7 +53,7 @@ protected:
 
 protected:
     QtConnections connections;
-    QString noValueString = QStringLiteral("<multiple values>");
+    QString noValueString = QString(MultipleValuesString);
 
     enum class ControlState
     {

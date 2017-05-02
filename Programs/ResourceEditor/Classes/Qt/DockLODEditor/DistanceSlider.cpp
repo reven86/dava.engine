@@ -11,7 +11,7 @@
 #include "Settings/Settings.h"
 #include "Settings/SettingsManager.h"
 
-#include "QtTools/Utils/Utils.h"
+#include <QtTools/Utils/Utils.h>
 
 #include <QApplication>
 #include <QFrame>

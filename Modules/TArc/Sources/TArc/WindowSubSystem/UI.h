@@ -1,9 +1,11 @@
 #pragma once
 
-#include "Base/FastName.h"
-#include "Base/Any.h"
-
 #include "TArc/DataProcessing/DataWrapper.h"
+
+#include <Functional/Function.h>
+#include <Base/Result.h>
+#include <Base/FastName.h>
+#include <Base/Any.h>
 
 #include <Qt>
 #include <QUrl>
@@ -14,11 +16,13 @@
 
 class QWidget;
 class QAction;
+class QMainWindow;
 
 namespace DAVA
 {
 namespace TArc
 {
+class ClientModule;
 class QtReflectionBridge;
 class WindowKey
 {
@@ -32,6 +36,27 @@ public:
 private:
     FastName appID;
 };
+
+/** Token of TArc application's main window */
+extern const WindowKey mainWindowKey;
+
+/**
+    Most common menu items tokens.
+    It's recommended to use them instead of literals hardcoding.
+    e.g.
+    /code
+        CreateMenuPoint(MenuItems::menuEdit); // recommended
+        CreateMenuPoint("Edit");              // not recommended
+    /endcode
+    
+*/
+namespace MenuItems
+{
+extern const QString menuFile;
+extern const QString menuEdit;
+extern const QString menuView;
+extern const QString menuHelp;
+}
 
 class ActionPlacementInfo
 {
@@ -143,15 +168,32 @@ struct ModalMessageParams
         Reset = 0x8000
     };
 
+    enum Icon
+    {
+        NoIcon,
+        Information,
+        Warning,
+        Critical,
+        Question
+    };
+
     Q_DECLARE_FLAGS(Buttons, Button);
 
     QString title;
     QString message;
     Buttons buttons = Buttons(Ok | Cancel);
     Button defaultButton = NoButton;
+    Icon icon = NoIcon;
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(ModalMessageParams::Buttons);
+
+struct NotificationParams
+{
+    DAVA::Result message;
+    DAVA::String title;
+    DAVA::Function<void()> callback;
+};
 
 class UI
 {
@@ -163,6 +205,8 @@ public:
     {
     }
 
+    virtual void DeclareToolbar(const WindowKey& windowKey, const ActionPlacementInfo& toogleToolbarVisibility, const QString& toolbarName) = 0;
+
     virtual void AddView(const WindowKey& windowKey, const PanelKey& panelKey, QWidget* widget) = 0;
     virtual void AddAction(const WindowKey& windowKey, const ActionPlacementInfo& placement, QAction* action) = 0;
     virtual void RemoveAction(const WindowKey& windowKey, const ActionPlacementInfo& placement) = 0;
@@ -170,6 +214,7 @@ public:
     virtual void ShowMessage(const WindowKey& windowKey, const QString& message, uint32 duration = 0) = 0;
     virtual void ClearMessage(const WindowKey& windowKey) = 0;
     virtual ModalMessageParams::Button ShowModalMessage(const WindowKey& windowKey, const ModalMessageParams& params) = 0;
+    virtual void ShowNotification(const WindowKey& windowKey, const NotificationParams& params) = 0;
 
     virtual QString GetOpenFileName(const WindowKey& windowKey, const FileDialogParams& params = FileDialogParams()) = 0;
     virtual QString GetSaveFileName(const WindowKey& windowKey, const FileDialogParams& params = FileDialogParams()) = 0;
@@ -180,6 +225,11 @@ public:
     Signal<> lastWaitDialogWasClosed;
 
     DAVA_DEPRECATED(virtual QWidget* GetWindow(const WindowKey& windowKey) = 0);
+    DAVA_DEPRECATED(virtual void InjectWindow(const WindowKey& windowKey, QMainWindow* window) = 0);
+
+protected:
+    friend class UIProxy;
+    virtual void SetCurrentModule(ClientModule* module) = 0;
 };
 } // namespace TArc
 } // namespace DAVA

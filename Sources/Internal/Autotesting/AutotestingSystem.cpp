@@ -4,8 +4,6 @@
 
 #include "Core/Core.h"
 #include "Engine/Engine.h"
-#include "Render/RenderHelper.h"
-#include "FileSystem/FileList.h"
 #include "FileSystem/KeyedArchive.h"
 #include "Platform/DeviceInfo.h"
 #include "Time/DateTime.h"
@@ -17,6 +15,8 @@
 
 namespace DAVA
 {
+const String AutotestingSystem::RecordScriptFileName("RecordedScript.lua");
+
 AutotestingSystem::AutotestingSystem()
     : luaSystem(nullptr)
     , isInit(false)
@@ -55,6 +55,10 @@ AutotestingSystem::AutotestingSystem()
     , waitCheckTimeLeft(0.0f)
 {
     new AutotestingDB();
+
+    //default behavior for autotests is to exit on test end/error
+    SetTestFinishedCallback([this] { ExitApp(); });
+    SetTestErrorCallback([this](const String& error) { ExitApp(); });
 }
 
 AutotestingSystem::~AutotestingSystem()
@@ -118,7 +122,7 @@ bool AutotestingSystem::ResolvePathToAutomation()
     return false;
 }
 
-FilePath AutotestingSystem::GetPathTo(const String& path)
+FilePath AutotestingSystem::GetPathTo(const String& path) const
 {
     return pathToAutomation + path;
 }
@@ -147,15 +151,15 @@ void AutotestingSystem::OnAppStarted()
     if (!FileSystem::Instance()->Exists(testFileStrPath))
     {
         Logger::Error("AutotestingSystemLua::OnAppStarted: couldn't open %s", testFileLocation.c_str());
-        return;
+        testFileStrPath = "";
     }
 
     AutotestingDB::Instance()->WriteLogHeader();
     AutotestingSystemLua::Instance()->InitFromFile(testFileStrPath);
  
 #if defined(__DAVAENGINE_COREV2__)
-    SigConnectionID sid = GetPrimaryWindow()->sizeChanged.Connect(this, &AutotestingSystem::OnWindowSizeChanged);
-    GetPrimaryWindow()->sizeChanged.Track(sid, &localTrackedObject);
+    Token wndSizeChangedToken = GetPrimaryWindow()->sizeChanged.Connect(this, &AutotestingSystem::OnWindowSizeChanged);
+    GetPrimaryWindow()->sizeChanged.Track(wndSizeChangedToken, &localTrackedObject);
 #endif
 
     Size2i size = UIControlSystem::Instance()->vcs->GetPhysicalScreenSize();
@@ -379,7 +383,7 @@ void AutotestingSystem::Draw()
             desc.transformVirtualToPhysical = true;
 
             RenderSystem2D::Instance()->BeginRenderTargetPass(desc);
-            currentScreen->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData());
+            currentScreen->SystemDraw(UIControlSystem::Instance()->GetBaseGeometricData(), nullptr);
             DrawTouches();
             RenderSystem2D::Instance()->FillRect(Rect(0.0f, 0.0f, float32(pScreenSize.dx), float32(pScreenSize.dy)), Color::White, RenderSystem2D::DEFAULT_2D_FILL_ALPHA_MATERIAL);
             RenderSystem2D::Instance()->EndRenderTargetPass();
@@ -426,7 +430,7 @@ void AutotestingSystem::OnError(const String& errorMessage)
         AutotestingDB::Instance()->WriteState(deviceName, "State", "error");
     }
 
-    ExitApp();
+    testErrorCallback(errorMessage);
 }
 
 void AutotestingSystem::ForceQuit(const String& errorMessage)
@@ -533,7 +537,7 @@ void AutotestingSystem::OnTestsFinished()
     // Mark test as SUCCESS
     AutotestingDB::Instance()->Log("INFO", "Test finished.");
 
-    ExitApp();
+    testFinishedCallback();
 }
 
 void AutotestingSystem::OnTestSkipped()
@@ -647,6 +651,168 @@ void AutotestingSystem::ExitApp()
     isWaiting = false;
     needExitApp = true;
     timeBeforeExit = 1.0f;
+}
+
+void AutotestingSystem::OnRecordClickControl(UIControl* control)
+{
+    if (isRecording)
+    {
+        if (!control->GetParent()->GetName().IsValid()) //this criteria is so unreliable..
+        {
+            AutotestingSystem::Instance()->OnRecordFastSelectControl(control);
+        }
+        else
+        {
+            String hierarchy = GetControlHierarchy(control);
+            if (hierarchy.find("DebugPopup") == String::npos)
+            {
+                String codeLine = Format("ClickControl('%s')", hierarchy.c_str());
+                WriteScriptLine(codeLine);
+            }
+        }
+    }
+}
+
+void AutotestingSystem::OnRecordDoubleClickControl(UIControl* control)
+{
+    String hierarchy = GetControlHierarchy(control);
+    String codeLine = Format("DoubleClick('%s')", hierarchy.c_str());
+    WriteScriptLine(codeLine);
+}
+
+void AutotestingSystem::OnRecordSetText(UIControl* control, const String& text)
+{
+    String hierarchy = GetControlHierarchy(control);
+    String codeLine = Format("SetText('%s', '%s')", hierarchy.c_str(), text.c_str());
+    WriteScriptLine(codeLine);
+}
+
+void AutotestingSystem::OnRecordCheckText(UIControl* control)
+{
+    String hierarchy = GetControlHierarchy(control);
+    String text = DynamicTypeCheck<UIStaticText*>(control)->GetUtf8Text();
+    String codeLine = Format("CheckText('%s', '%s')", hierarchy.c_str(), text.c_str());
+    WriteScriptLine(codeLine);
+}
+
+void AutotestingSystem::OnRecordFastSelectControl(UIControl* control)
+{
+    String codeLine = Format("FastSelectControl('%s')", control->GetName().c_str());
+    WriteScriptLine(codeLine);
+}
+
+void AutotestingSystem::OnRecordWaitControlBecomeVisible(UIControl* control)
+{
+    String hierarchy = GetControlHierarchy(control);
+    String codeLine = Format("WaitControlBecomeVisible('%s')", hierarchy.c_str());
+    WriteScriptLine(codeLine);
+}
+void AutotestingSystem::OnRecordWaitControlBecomeEnabled(UIControl* control)
+{
+    String hierarchy = GetControlHierarchy(control);
+    String codeLine = Format("WaitControlBecomeEnabled('%s')", hierarchy.c_str());
+    WriteScriptLine(codeLine);
+}
+void AutotestingSystem::OnRecordWaitControlDissapeared(UIControl* control)
+{
+    String hierarchy = GetControlHierarchy(control);
+    String codeLine = Format("WaitControlDisappeared('%s')", hierarchy.c_str());
+    WriteScriptLine(codeLine);
+}
+
+void AutotestingSystem::OnRecordIsVisible(UIControl* control)
+{
+    String hierarchy = GetControlHierarchy(control);
+    String codeLine = Format("IsVisible('%s')", hierarchy.c_str());
+    WriteScriptLine(codeLine);
+}
+void AutotestingSystem::OnRecordIsDisabled(UIControl* control)
+{
+    String hierarchy = GetControlHierarchy(control);
+    String codeLine = Format("IsDisabled('%s')", hierarchy.c_str());
+    WriteScriptLine(codeLine);
+}
+
+String AutotestingSystem::GetControlHierarchy(UIControl* control) const
+{
+    UIControl* iter = control->GetParent();
+    String hierarhy;
+    while (iter)
+    {
+        hierarhy = Format("%s/%s", iter->GetName().c_str(), hierarhy.c_str());
+        iter = iter->GetParent();
+    }
+    FilePath scriptPath = pathToAutomation + RecordScriptFileName;
+    hierarhy = Format("%s%s", hierarhy.c_str(), control->GetName().c_str());
+    return hierarhy;
+}
+
+void AutotestingSystem::WriteScriptLine(const String& textLine)
+{
+    if (!isRecording)
+    {
+        return;
+    }
+    FilePath scriptPath = pathToAutomation + RecordScriptFileName;
+    ScopedPtr<File> recordedActs(nullptr);
+    if (FileSystem::Instance()->Exists(scriptPath))
+    {
+        recordedActs.reset(File::Create(scriptPath, File::APPEND | File::WRITE));
+    }
+    else
+    {
+        recordedActs.reset(File::Create(scriptPath, File::CREATE | File::WRITE));
+    }
+    if (recordedActs)
+    {
+        recordedActs->WriteLine(textLine);
+    }
+}
+
+String AutotestingSystem::GetLuaString(int32& lineNumber) const
+{
+    String result;
+
+    FilePath scriptPath = pathToAutomation + RecordScriptFileName;
+    ScopedPtr<File> file(File::Create(scriptPath, File::OPEN | File::READ));
+
+    if (file)
+    {
+        for (int32 i = 0; i <= lineNumber; i++)
+        {
+            if (!file->IsEof())
+            {
+                result = file->ReadLine();
+                if (i == lineNumber && result.empty())
+                {
+                    lineNumber++; //skip empty lines
+                }
+            }
+            else
+            {
+                lineNumber = -1;
+                result = "";
+            }
+        }
+    }
+    else
+    {
+        lineNumber = -1;
+    }
+
+    return result;
+}
+
+void AutotestingSystem::StartRecording()
+{
+    DVASSERT(!isRecording);
+    isRecording = true;
+}
+
+void AutotestingSystem::StopRecording()
+{
+    DVASSERT(isRecording);
+    isRecording = false;
 }
 
 // Multiplayer API

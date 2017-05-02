@@ -2,6 +2,7 @@
 
 #include <Engine/Engine.h>
 #include <Engine/EngineSettings.h>
+#include <Render/RHI/rhi_Public.h>
 
 #include <CommandLine/CommandLineParser.h>
 #include <Debug/DVAssertDefaultHandlers.h>
@@ -40,6 +41,8 @@
 #include "Tests/DeviceManagerTest.h"
 #include "Tests/SoundTest.h"
 #include "Tests/AnyPerformanceTest.h"
+#include "Tests/OverdrawTest.h"
+#include "Tests/WindowTest.h"
 //$UNITTEST_INCLUDE
 
 #if defined(DAVA_MEMORY_PROFILING_ENABLE)
@@ -70,7 +73,14 @@ int DAVAMain(DAVA::Vector<DAVA::String> cmdline)
 #elif defined(__DAVAENGINE_MACOS__)
     appOptions->SetInt32("renderer", rhi::RHI_GLES2);
 #elif defined(__DAVAENGINE_IPHONE__)
-    appOptions->SetInt32("renderer", rhi::RHI_METAL);
+    if (rhi::ApiIsSupported(rhi::Api::RHI_METAL))
+    {
+        appOptions->SetInt32("renderer", rhi::RHI_METAL);
+    }
+    else
+    {
+        appOptions->SetInt32("renderer", rhi::RHI_GLES2);
+    }
 #elif defined(__DAVAENGINE_WIN32__)
     appOptions->SetInt32("renderer", rhi::RHI_DX9);
 #elif defined(__DAVAENGINE_WIN_UAP__)
@@ -292,6 +302,7 @@ void TestBed::RegisterTests()
 #endif
     new DeviceInfoTest(*this);
     new DlcTest(*this);
+    new OverdrawPerformanceTester::OverdrawTest(*this);
     new UIScrollViewTest(*this);
     new NotificationScreen(*this);
     new SpeedLoadImagesTest(*this);
@@ -325,6 +336,7 @@ void TestBed::RegisterTests()
 
 #endif
 
+    new WindowTest(*this);
     //$UNITTEST_CTOR
 }
 

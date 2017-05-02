@@ -1,10 +1,7 @@
 #include "FileSystem/FileAPIHelper.h"
 #include "Utils/UTF8Utils.h"
-#include "Debug/DVAssert.h"
 #include "Logger/Logger.h"
 
-#include <cstdio>
-#include <sys/types.h>
 #include <sys/stat.h>
 
 namespace DAVA
@@ -65,6 +62,25 @@ int32 RenameFile(const String& oldFileName, const String& newFileName)
 #endif
 }
 
+static void LogError(int32 errnoCode, const String& fileName, const char* functionName)
+{
+    switch (errnoCode)
+    {
+    case ENOENT:
+        // file not found
+        break;
+    case EINVAL:
+        Logger::Error("Invalid parameter to stat: %s", fileName.c_str());
+        break;
+    default:
+        // Should never be reached.
+        Logger::Error("Unexpected error in func: %s: errno: %s for path: %s",
+                      functionName,
+                      strerror(errnoCode),
+                      fileName.c_str());
+    }
+}
+
 bool IsRegularFile(const String& fileName)
 {
     Stat fileStat;
@@ -80,23 +96,16 @@ bool IsRegularFile(const String& fileName)
         return (0 != (fileStat.st_mode & S_IFREG));
     }
 
-    switch (errno)
-    {
-    case ENOENT:
-        // file not found
-        break;
-    case EINVAL:
-        Logger::Error("Invalid parameter to stat.");
-        break;
-    default:
-        /* Should never be reached. */
-        Logger::Error("Unexpected error in %s: errno = (%d)", __FUNCTION__, static_cast<int32>(errno));
-    }
+    LogError(errno, fileName, __FUNCTION__);
     return false;
 }
 
 bool IsDirectory(const String& dirName)
 {
+#ifndef S_ISDIR
+#define S_ISDIR(m) (((m)&S_IFMT) == S_IFDIR) /* directory */
+#define CLEAR_S_ISDIR_TMP_VAR 1
+#endif
     Stat fileStat;
 
 #ifdef __DAVAENGINE_WINDOWS__
@@ -107,21 +116,14 @@ bool IsDirectory(const String& dirName)
 #endif
     if (result == 0)
     {
-        return (0 != (fileStat.st_mode & S_IFDIR));
+        return (0 != (S_ISDIR(fileStat.st_mode)));
     }
 
-    switch (errno)
-    {
-    case ENOENT:
-        // file not found
-        break;
-    case EINVAL:
-        Logger::Error("Invalid parameter to stat.");
-        break;
-    default:
-        /* Should never be reached. */
-        Logger::Error("Unexpected error in %s: errno = (%d)", __FUNCTION__, static_cast<int32>(errno));
-    }
+    LogError(errno, dirName, __FUNCTION__);
+#ifdef CLEAR_S_ISDIR_TMP_VAR
+#undef S_ISDIR
+#undef CLEAR_S_ISDIR_TMP_VAR
+#endif
     return false;
 }
 
@@ -139,6 +141,9 @@ uint64 GetFileSize(const String& fileName)
     {
         return static_cast<uint64>(fileStat.st_size);
     }
+
+    LogError(errno, fileName, __FUNCTION__);
+
     return std::numeric_limits<uint64>::max();
 }
 

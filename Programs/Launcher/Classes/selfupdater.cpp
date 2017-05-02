@@ -89,7 +89,7 @@ struct DirCleaner
 SelfUpdater::UpdateError SelfUpdater::ProcessLauncherUpdate()
 {
     QString appDirPath = fileManager->GetLauncherDirectory();
-    QString tempArchiveFilePath = fileManager->GetTempDownloadFilePath();
+    QString tempArchiveFilePath = fileManager->GetTempDownloadFilePath(archiveUrl);
     QString selfUpdateDirPath = fileManager->GetSelfUpdateTempDirectory();
 
     ZipUtils::CompressedFilesAndSizes files;
@@ -127,8 +127,8 @@ void SelfUpdater::DownloadFinished()
         currentDownload->deleteLater();
         currentDownload = nullptr;
         //create an archive with a new version
-        QString tempArchiveFilePath;
-        bool archiveCreated = fileManager->CreateZipFile(data, tempArchiveFilePath);
+        QString tempArchiveFilePath = fileManager->GetTempDownloadFilePath(archiveUrl);
+        bool archiveCreated = fileManager->CreateFileFromRawData(data, tempArchiveFilePath);
         if (archiveCreated)
         {
             err = ProcessLauncherUpdate();

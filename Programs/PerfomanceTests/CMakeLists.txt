@@ -15,7 +15,7 @@ dava_add_definitions       (
 -D__DAVAENGINE_COREV2__
 )
 
-find_package( DavaFramework REQUIRED COMPONENTS ALL DAVA_DISABLE_AUTOTESTS )
+find_package( DavaFramework REQUIRED COMPONENTS DAVA_DISABLE_AUTOTESTS "Sound" )
 
 include_directories   ( "iOSSpecific" )
 include_directories   ( "Classes" )
@@ -88,7 +88,7 @@ if( NOT DAVA_MEGASOLUTION )
     endif()
 
     if( NOT RES_EDITOR_PATH )
-        message( "Error !!!: Please set the correct path to Resource editor in file DavaConfig.in"  )
+        message( "Error !!!: Please set the correct path 'RES_EDITOR_PATH' to Resource editor in file DavaConfig.in"  )
         message( " " )
         exit()
     endif()
@@ -116,7 +116,6 @@ if( NOT DAVA_MEGASOLUTION )
 
     message( "============================Convert resources ============================"  )
 
-    execute_process( COMMAND python ${DAVA_SCRIPTS_FILES_PATH}/convert_graphics.py --pathDataSource=${CMAKE_CURRENT_LIST_DIR}/DataSource --pathDava=${DAVA_ROOT_DIR})
     execute_process( COMMAND python convert_everything.py --gpu ${GPU_PARAM} WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/DataSource )
     execute_process( COMMAND python create_file_structure.py WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/DataSource )
 

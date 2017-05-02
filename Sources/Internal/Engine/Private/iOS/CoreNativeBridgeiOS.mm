@@ -9,7 +9,6 @@
 #include "Engine/Private/iOS/PlatformCoreiOS.h"
 #include "Engine/Private/iOS/Window/WindowBackendiOS.h"
 #include "Engine/Private/Dispatcher/MainDispatcher.h"
-#include "UI/UIScreenManager.h"
 
 #include "Logger/Logger.h"
 #include "Time/SystemTimer.h"
@@ -153,22 +152,17 @@ void CoreNativeBridge::Run()
 
 void CoreNativeBridge::OnFrameTimer()
 {
-    // Yuri Coder, 2013/02/06. This flag can be used to block drawView() call
-    // in case if ASSERTion happened. This is introduced to do not stuck on the RenderManager::Lock()
-    // mutex (since assertion might be called in the middle of drawing, DAVA::RenderManager::Instance()->Lock()
-    // mutex might be already locked so we'll got a deadlock.
-    // Return to this code after RenderManager mutex will be removed.
-    if (GetEngineContext()->uiScreenManager->IsDrawBlocked())
-        return;
-
-    int32 fps = core->OnFrame();
-    if (fps <= 0)
+    if (!EngineBackend::showingModalMessageBox)
     {
-        fps = std::numeric_limits<int32>::max();
-    }
+        int32 fps = core->OnFrame();
+        if (fps <= 0)
+        {
+            fps = std::numeric_limits<int32>::max();
+        }
 
-    int32 interval = static_cast<int32>(60.0 / fps + 0.5);
-    [objcInterop setDisplayLinkInterval:interval];
+        int32 interval = static_cast<int32>(60.0 / fps + 0.5);
+        [objcInterop setDisplayLinkInterval:interval];
+    }
 }
 
 BOOL CoreNativeBridge::ApplicationWillFinishLaunchingWithOptions(UIApplication* app, NSDictionary* launchOptions)
@@ -273,6 +267,11 @@ void CoreNativeBridge::DidReceiveRemoteNotification(UIApplication* app, NSDictio
     NotifyListeners(ON_DID_RECEIVE_REMOTE_NOTIFICATION, app, userInfo);
 }
 
+void CoreNativeBridge::DidReceiveRemoteNotificationFetchCompletionHandler(UIApplication* app, NSDictionary* userInfo, void (^completionHandler)(UIBackgroundFetchResult))
+{
+    NotifyListeners(ON_DID_RECEIVE_REMOTE_NOTIFICATION_FETCH_COMPLETION_HANDLER, app, userInfo, nil, completionHandler);
+}
+
 void CoreNativeBridge::DidRegisterForRemoteNotificationsWithDeviceToken(UIApplication* app, NSData* deviceToken)
 {
     NotifyListeners(ON_DID_REGISTER_FOR_REMOTE_NOTIFICATION_WITH_TOKEN, app, deviceToken);
@@ -291,6 +290,11 @@ void CoreNativeBridge::HandleActionWithIdentifier(UIApplication* app, NSString* 
 BOOL CoreNativeBridge::OpenURL(UIApplication* app, NSURL* url, NSString* sourceApplication, id annotation)
 {
     return NotifyListeners(ON_OPEN_URL, app, url, sourceApplication, annotation);
+}
+
+BOOL CoreNativeBridge::ContinueUserActivity(UIApplication* app, NSUserActivity* userActivity, id restorationHandler)
+{
+    return NotifyListeners(ON_CONTINUE_USER_ACTIVITY, app, userActivity, nil, restorationHandler);
 }
 
 void CoreNativeBridge::GameControllerDidConnected()
@@ -360,7 +364,7 @@ BOOL CoreNativeBridge::NotifyListeners(eNotificationType type, NSObject* arg1, N
             }
             break;
         case ON_DID_BECOME_ACTIVE:
-            if ([listener respondsToSelector:@selector(application:applicationDidBecomeActive:)])
+            if ([listener respondsToSelector:@selector(applicationDidBecomeActive:)])
             {
                 [listener applicationDidBecomeActive:static_cast<UIApplication*>(arg1)];
             }
@@ -413,6 +417,12 @@ BOOL CoreNativeBridge::NotifyListeners(eNotificationType type, NSObject* arg1, N
                 [listener application:static_cast<UIApplication*>(arg1) didReceiveRemoteNotification:static_cast<NSDictionary*>(arg2)];
             }
             break;
+        case ON_DID_RECEIVE_REMOTE_NOTIFICATION_FETCH_COMPLETION_HANDLER:
+            if ([listener respondsToSelector:@selector(application:didReceiveRemoteNotification:fetchCompletionHandler:)])
+            {
+                [listener application:static_cast<UIApplication*>(arg1) didReceiveRemoteNotification:static_cast<NSDictionary*>(arg2) fetchCompletionHandler:static_cast<void (^)(UIBackgroundFetchResult)>(arg4)];
+            }
+            break;
         case ON_DID_RECEIVE_LOCAL_NOTIFICATION:
             if ([listener respondsToSelector:@selector(application:didReceiveLocalNotification:)])
             {
@@ -429,6 +439,12 @@ BOOL CoreNativeBridge::NotifyListeners(eNotificationType type, NSObject* arg1, N
             if ([listener respondsToSelector:@selector(application:openURL:sourceApplication:annotation:)])
             {
                 ret |= [listener application:static_cast<UIApplication*>(arg1) openURL:static_cast<NSURL*>(arg2) sourceApplication:static_cast<NSString*>(arg3) annotation:arg4];
+            }
+            break;
+        case ON_CONTINUE_USER_ACTIVITY:
+            if ([listener respondsToSelector:@selector(application:continueUserActivity:restorationHandler:)])
+            {
+                ret |= [listener application:static_cast<UIApplication*>(arg1) continueUserActivity:static_cast<NSUserActivity*>(arg2) restorationHandler:arg4];
             }
             break;
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Render/Highlevel/RenderObject.h"
+#include "Reflection/Reflection.h"
 
 namespace DAVA
 {
@@ -35,6 +36,8 @@ private:
 public:
     INTROSPECTION_EXTEND(BillboardRenderObject, RenderObject,
                          MEMBER(billboardType, InspDesc("billboardType", GlobalEnumMap<BillboardRenderObject::BillboardType>::Instance()), I_SAVE | I_VIEW | I_EDIT))
+
+    DAVA_VIRTUAL_REFLECTION(BillboardRenderObject, RenderObject);
 };
 
 inline uint32 BillboardRenderObject::GetBillboardType() const

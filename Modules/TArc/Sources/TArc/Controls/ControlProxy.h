@@ -12,11 +12,21 @@ namespace DAVA
 {
 namespace TArc
 {
-template <typename TBase>
-class ControlProxy : protected TBase, protected DataListener
+class ControlProxy
 {
 public:
-    ControlProxy(const ControlDescriptor& descriptor_, DataWrappersProcessor* wrappersProcessor, Reflection model_, QWidget* parent)
+    virtual ~ControlProxy() = default;
+
+    virtual void ForceUpdate() = 0;
+    virtual void TearDown() = 0;
+    virtual QWidget* ToWidgetCast() = 0;
+};
+
+template <typename TBase>
+class ControlProxyImpl : protected TBase, public ControlProxy, protected DataListener
+{
+public:
+    ControlProxyImpl(const ControlDescriptor& descriptor_, DataWrappersProcessor* wrappersProcessor, Reflection model_, QWidget* parent)
         : TBase(parent)
         , descriptor(descriptor_)
         , model(model_)
@@ -24,7 +34,7 @@ public:
         SetupControl(wrappersProcessor);
     }
 
-    ControlProxy(const ControlDescriptor& descriptor_, ContextAccessor* accessor, Reflection model_, QWidget* parent)
+    ControlProxyImpl(const ControlDescriptor& descriptor_, ContextAccessor* accessor, Reflection model_, QWidget* parent)
         : TBase(parent)
         , descriptor(descriptor_)
         , model(model_)
@@ -32,7 +42,7 @@ public:
         SetupControl(accessor);
     }
 
-    ~ControlProxy() override
+    ~ControlProxyImpl() override
     {
         wrapper.SetListener(nullptr);
     }
@@ -42,19 +52,25 @@ public:
         TBase::setObjectName(objName);
     }
 
-    QWidget* ToWidgetCast()
+    QWidget* ToWidgetCast() override
     {
         return this;
     }
 
-    void ForceUpdateControl()
+    void ForceUpdate() override
     {
         OnDataChanged(wrapper, Vector<Any>());
     }
 
+    void TearDown() override
+    {
+        wrapper.SetListener(nullptr);
+        wrapper = DataWrapper();
+    }
+
 protected:
     template <typename TPrivate>
-    ControlProxy(const ControlDescriptor& descriptor_, DataWrappersProcessor* wrappersProcessor, Reflection model_, TPrivate&& d, QWidget* parent)
+    ControlProxyImpl(const ControlDescriptor& descriptor_, DataWrappersProcessor* wrappersProcessor, Reflection model_, TPrivate&& d, QWidget* parent)
         : TBase(std::move(d), parent)
         , descriptor(descriptor_)
         , model(model_)
@@ -63,7 +79,7 @@ protected:
     }
 
     template <typename TPrivate>
-    ControlProxy(const ControlDescriptor& descriptor_, ContextAccessor* accessor, Reflection model_, TPrivate&& d, QWidget* parent)
+    ControlProxyImpl(const ControlDescriptor& descriptor_, ContextAccessor* accessor, Reflection model_, TPrivate&& d, QWidget* parent)
         : TBase(std::move(d), parent)
         , descriptor(descriptor_)
         , model(model_)
@@ -73,13 +89,13 @@ protected:
 
     void SetupControl(DataWrappersProcessor* wrappersProcessor)
     {
-        wrapper = wrappersProcessor->CreateWrapper(MakeFunction(this, &ControlProxy<TBase>::GetModel), nullptr);
+        wrapper = wrappersProcessor->CreateWrapper(MakeFunction(this, &ControlProxyImpl<TBase>::GetModel), nullptr);
         wrapper.SetListener(this);
     }
 
     void SetupControl(ContextAccessor* accessor)
     {
-        wrapper = accessor->CreateWrapper(MakeFunction(this, &ControlProxy<TBase>::GetModel));
+        wrapper = accessor->CreateWrapper(MakeFunction(this, &ControlProxyImpl<TBase>::GetModel));
         wrapper.SetListener(this);
     }
 
@@ -142,9 +158,10 @@ protected:
         DVASSERT(fieldValue.IsValid());
 
         bool readOnlyFieldValue = false;
-        if (descriptor.IsChanged(readOnlyRole))
+        FastName readOnlyFieldName = descriptor.GetName(readOnlyRole);
+        if (readOnlyFieldName.IsValid())
         {
-            DAVA::Reflection fieldReadOnly = model.GetField(descriptor.GetName(readOnlyRole));
+            DAVA::Reflection fieldReadOnly = model.GetField(readOnlyFieldName);
             if (fieldReadOnly.IsValid())
             {
                 readOnlyFieldValue = fieldReadOnly.GetValue().Cast<bool>();

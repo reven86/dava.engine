@@ -5,10 +5,24 @@
 #include "Scene3D/Systems/WaveSystem.h"
 #include "Scene3D/Systems/EventSystem.h"
 #include "Scene3D/Systems/GlobalEventSystem.h"
+#include "Reflection/ReflectionRegistrator.h"
+#include "Reflection/ReflectedMeta.h"
 #include "FileSystem/KeyedArchive.h"
 
 namespace DAVA
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(WaveComponent)
+{
+    ReflectionRegistrator<WaveComponent>::Begin()
+    .ConstructorByPointer()
+    .Field("amplitude", &WaveComponent::GetWaveAmplitude, &WaveComponent::SetWaveAmplitude)[M::DisplayName("Amplitude")]
+    .Field("lenght", &WaveComponent::GetWaveLenght, &WaveComponent::SetWaveLenght)[M::DisplayName("Lenght")]
+    .Field("speed", &WaveComponent::GetWaveSpeed, &WaveComponent::SetWaveSpeed)[M::DisplayName("Speed")]
+    .Field("damping", &WaveComponent::GetDampingRatio, &WaveComponent::SetDampingRatio)[M::DisplayName("Damping")]
+    .Field("infRadius", &WaveComponent::GetInfluenceRadius, &WaveComponent::SetInfluenceRadius)[M::DisplayName("Inf Radius")]
+    .End();
+}
+
 WaveComponent::WaveComponent()
     : amplitude(10.f)
     , lenght(5.f)

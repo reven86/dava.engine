@@ -10,7 +10,7 @@
 #include "Classes/Selection/Selection.h"
 
 #include <UI/UIEvent.h>
-#include <Render/RenderCallbacks.h>
+#include <Render/Renderer.h>
 #include <Render/Image/ImageConvert.h>
 
 #include <QApplication>
@@ -63,7 +63,7 @@ TilemaskEditorSystem::TilemaskEditorSystem(DAVA::Scene* scene)
 
     quadBuffer = rhi::CreateVertexBuffer(static_cast<DAVA::uint32>(buffer.size() * sizeof(DAVA::float32)));
     rhi::UpdateVertexBuffer(quadBuffer, buffer.data(), 0, static_cast<DAVA::uint32>(buffer.size() * sizeof(DAVA::float32)));
-    DAVA::RenderCallbacks::RegisterResourceRestoreCallback(MakeFunction(this, &TilemaskEditorSystem::UpdateVertexBuffer));
+    DAVA::Renderer::GetSignals().needRestoreResources.Connect(this, &TilemaskEditorSystem::UpdateVertexBuffer);
 
     quadPacket.vertexStreamCount = 1;
     quadPacket.vertexStream[0] = quadBuffer;
@@ -85,7 +85,7 @@ TilemaskEditorSystem::TilemaskEditorSystem(DAVA::Scene* scene)
 
 TilemaskEditorSystem::~TilemaskEditorSystem()
 {
-    DAVA::RenderCallbacks::UnRegisterResourceRestoreCallback(MakeFunction(this, &TilemaskEditorSystem::UpdateVertexBuffer));
+    DAVA::Renderer::GetSignals().needRestoreResources.Disconnect(this);
     rhi::DeleteVertexBuffer(quadBuffer);
 
     SafeRelease(editorMaterial);
@@ -376,7 +376,7 @@ void TilemaskEditorSystem::UpdateToolImage()
         DVASSERT(images.size() == 1);
         DVASSERT(images[0]->GetPixelFormat() == DAVA::FORMAT_RGBA8888);
 
-        DAVA::Image* toolImage = DAVA::Image::Create(curToolSize, curToolSize, DAVA::FORMAT_RGBA8888);
+        DAVA::ScopedPtr<DAVA::Image> toolImage(DAVA::Image::Create(curToolSize, curToolSize, DAVA::FORMAT_RGBA8888));
         DAVA::ImageConvert::ResizeRGBA8Billinear(reinterpret_cast<DAVA::uint32*>(images[0]->data), images[0]->GetWidth(), images[0]->GetHeight(),
                                                  reinterpret_cast<DAVA::uint32*>(toolImage->data), curToolSize, curToolSize);
 

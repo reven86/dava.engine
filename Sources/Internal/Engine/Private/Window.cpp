@@ -271,6 +271,9 @@ void Window::EventHandler(const Private::MainDispatcherEvent& e)
     case MainDispatcherEvent::WINDOW_CANCEL_INPUT:
         HandleCancelInput(e);
         break;
+    case MainDispatcherEvent::WINDOW_VISIBLE_FRAME_CHANGED:
+        HandleVisibleFrameChanged(e);
+        break;
     default:
         break;
     }
@@ -286,6 +289,7 @@ void Window::HandleWindowCreated(const Private::MainDispatcherEvent& e)
 {
     Logger::Info("Window::HandleWindowCreated: enter");
 
+    isAlive = true;
     MergeSizeChangedEvents(e);
     sizeEventsMerged = true;
 
@@ -313,6 +317,7 @@ void Window::HandleWindowDestroyed(const Private::MainDispatcherEvent& e)
     uiControlSystem = nullptr;
 
     engineBackend->DeinitRender(this);
+    isAlive = false;
 
     Logger::Info("Window::HandleWindowDestroyed: leave");
 }
@@ -349,7 +354,19 @@ void Window::HandleSizeChanged(const Private::MainDispatcherEvent& e)
             // call reloadig sprites/fonts from this point ((
             if (uiControlSystem->vcs->GetReloadResourceOnResize())
             {
+// Disable sprite reloading on macos and windows
+// Game uses separate thread for loading battle and its resources.
+// Window resizing during battle loading may lead to crash as sprite
+// reloading is not ready for multiple threads.
+// TODO: do something with sprite reloading
+//
+// !!! At the moment this is a huge architectural problem,
+// that we do not know how to solve.
+// More detail can be found in DF-13044
+//
+#if !defined(__DAVAENGINE_MACOS__) && !defined(__DAVAENGINE_WINDOWS__)
                 Sprite::ValidateForSize();
+#endif
             }
         }
     }
@@ -447,35 +464,49 @@ void Window::HandleCancelInput(const Private::MainDispatcherEvent& e)
     inputSystem->GetKeyboard().ClearAllKeys();
 }
 
+void Window::HandleVisibleFrameChanged(const Private::MainDispatcherEvent& e)
+{
+    Rect visibleRect(e.visibleFrameEvent.x, e.visibleFrameEvent.y, e.visibleFrameEvent.width, e.visibleFrameEvent.height);
+    visibleFrameChanged.Emit(this, visibleRect);
+}
+
 void Window::HandleFocusChanged(const Private::MainDispatcherEvent& e)
 {
-    Logger::FrameworkDebug("=========== WINDOW_FOCUS_CHANGED: state=%s", e.stateEvent.state ? "got_focus" : "lost_focus");
-
-    uiControlSystem->CancelAllInputs();
-    inputSystem->GetKeyboard().ClearAllKeys();
-    hasFocus = e.stateEvent.state != 0;
-    /*if (windowBackend->IsPlatformSupported(SET_CURSOR_CAPTURE))*/ // TODO: Add platfom's caps check
+    bool gainsFocus = e.stateEvent.state != 0;
+    if (hasFocus != gainsFocus)
     {
-        // When the native window loses focus, it restores the original cursor capture and visibility.
-        // After the window gives the focus back, set the current visibility state, if not set pinning mode.
-        // If the cursor capture mode is pinning, set the visibility state and capture mode when input activated.
-        if (hasFocus && cursorCapture != eCursorCapture::PINNING)
+        Logger::FrameworkDebug("=========== WINDOW_FOCUS_CHANGED: state=%s", e.stateEvent.state ? "got_focus" : "lost_focus");
+
+        uiControlSystem->CancelAllInputs();
+        inputSystem->GetKeyboard().ClearAllKeys();
+        hasFocus = gainsFocus;
+        /*if (windowBackend->IsPlatformSupported(SET_CURSOR_CAPTURE))*/ // TODO: Add platfom's caps check
         {
-            windowBackend->SetCursorVisibility(cursorVisible);
-            windowBackend->SetCursorCapture(cursorCapture);
+            // When the native window loses focus, it restores the original cursor capture and visibility.
+            // After the window gives the focus back, set the current visibility state, if not set pinning mode.
+            // If the cursor capture mode is pinning, set the visibility state and capture mode when input activated.
+            if (hasFocus && cursorCapture != eCursorCapture::PINNING)
+            {
+                windowBackend->SetCursorVisibility(cursorVisible);
+                windowBackend->SetCursorCapture(cursorCapture);
+            }
         }
+        focusChanged.Emit(this, hasFocus);
     }
-    focusChanged.Emit(this, hasFocus);
 }
 
 void Window::HandleVisibilityChanged(const Private::MainDispatcherEvent& e)
 {
-    Logger::Info("Window::HandleVisibilityChanged: become %s", e.stateEvent.state ? "visible" : "hidden");
+    bool becomesVisible = e.stateEvent.state != 0;
+    if (isVisible != becomesVisible)
+    {
+        Logger::Info("Window::HandleVisibilityChanged: become %s", e.stateEvent.state ? "visible" : "hidden");
 
-    isVisible = e.stateEvent.state != 0;
-    visibilityChanged.Emit(this, isVisible);
+        isVisible = becomesVisible;
+        visibilityChanged.Emit(this, isVisible);
 
-    waitInputActivation = isVisible;
+        waitInputActivation = isVisible;
+    }
 }
 
 void Window::HandleMouseClick(const Private::MainDispatcherEvent& e)
@@ -586,6 +617,7 @@ void Window::HandleTrackpadGesture(const Private::MainDispatcherEvent& e)
     uie.modifiers = e.trackpadGestureEvent.modifierKeys;
     uie.device = eInputDevices::TOUCH_PAD;
     uie.phase = UIEvent::Phase::GESTURE;
+    uie.physPoint = Vector2(e.trackpadGestureEvent.x, e.trackpadGestureEvent.y);
     uie.gesture.magnification = e.trackpadGestureEvent.magnification;
     uie.gesture.rotation = e.trackpadGestureEvent.rotation;
     uie.gesture.dx = e.trackpadGestureEvent.deltaX;

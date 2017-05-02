@@ -143,8 +143,9 @@ void UpdateDialog::StartNextTask()
             connect(currentDownload, SIGNAL(finished()), this, SLOT(DownloadFinished()));
             connect(currentDownload, SIGNAL(downloadProgress(qint64, qint64)), this, SLOT(DownloadProgress(qint64, qint64)));
 
+            QString appName = task.newVersion.isToolSet ? "Toolset" : task.appID;
             AddTopLogValue(QString("%1 - %2:")
-                           .arg(appManager->GetString(task.appID))
+                           .arg(appManager->GetString(appName))
                            .arg(appManager->GetString(task.branchID))
                            );
 
@@ -193,10 +194,11 @@ void UpdateDialog::DownloadFinished()
         ErrorMessenger::ShowErrorMessage(ErrorMessenger::ERROR_NETWORK, error, errorString);
         return;
     }
+    const UpdateTask& task = tasks.head();
 
-    QString filePath;
     FileManager* fileManager = appManager->GetFileManager();
-    bool archiveCreated = fileManager->CreateZipFile(readedData, filePath);
+    QString filePath = fileManager->GetTempDownloadFilePath(task.newVersion.url);
+    bool archiveCreated = fileManager->CreateFileFromRawData(readedData, filePath);
     if (archiveCreated == false)
     {
         UpdateLastLogValue(tr("Can not create archive %1!").arg(filePath));
@@ -205,7 +207,6 @@ void UpdateDialog::DownloadFinished()
     }
     UpdateLastLogValue(tr("Download Complete!"));
 
-    const UpdateTask& task = tasks.head();
     QStringList applicationsToRestart;
     bool canRemoveCorrectrly = appManager->PrepareToInstallNewApplication(task.branchID, task.appID, task.newVersion.isToolSet, false, applicationsToRestart);
     if (canRemoveCorrectrly == false)
@@ -215,24 +216,42 @@ void UpdateDialog::DownloadFinished()
         return;
     }
 
-    AddLogValue(tr("Unpacking archive..."));
-
     //create path to a new version directory
     QString appDir = appManager->GetApplicationDirectory(task.branchID, task.appID, task.newVersion.isToolSet, false);
-
     ui->cancelButton->setEnabled(false);
-    ZipUtils::CompressedFilesAndSizes files;
-    if (ListArchive(filePath, files)
-        && UnpackArchive(filePath, appDir, files))
+
+    if (task.newVersion.url.endsWith("zip"))
     {
-        appManager->OnAppInstalled(task.branchID, task.appID, task.newVersion);
-        UpdateLastLogValue("Unpack Complete!");
-        CompleteLog();
+        AddLogValue(tr("Unpacking archive..."));
+        ZipUtils::CompressedFilesAndSizes files;
+        if (ListArchive(filePath, files)
+            && UnpackArchive(filePath, appDir, files))
+        {
+            appManager->OnAppInstalled(task.branchID, task.appID, task.newVersion);
+            UpdateLastLogValue("Unpack Complete!");
+            CompleteLog();
+        }
+        else
+        {
+            UpdateLastLogValue("Unpack Fail!");
+            BreakLog();
+        }
     }
     else
     {
-        UpdateLastLogValue("Unpack Fail!");
-        BreakLog();
+        AddLogValue(tr("Moving file archive..."));
+        QString newFilePath = appDir + fileManager->GetFileNameFromURL(task.newVersion.url);
+        if (fileManager->MoveFileWithMakePath(filePath, newFilePath))
+        {
+            appManager->OnAppInstalled(task.branchID, task.appID, task.newVersion);
+            UpdateLastLogValue("Move Complete!");
+            CompleteLog();
+        }
+        else
+        {
+            UpdateLastLogValue("Moving Fail!");
+            BreakLog();
+        }
     }
     ui->cancelButton->setEnabled(true);
     FileManager::DeleteDirectory(fileManager->GetTempDirectory());

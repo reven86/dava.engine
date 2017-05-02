@@ -3,6 +3,8 @@
 #include "Tools/AssetCache/CachedItemValue.h"
 #include "Tools/AssetCache/CachePacket.h"
 
+#include "Tools/NetworkHelpers/ResolverCallbackDispatched.h"
+
 #include <FileSystem/KeyedArchive.h>
 #include <Debug/DVAssert.h>
 #include <Logger/Logger.h>
@@ -12,8 +14,8 @@ namespace DAVA
 {
 namespace AssetCache
 {
-ClientNetProxy::ClientNetProxy()
-    : addressResolver(Net::NetCore::Instance()->Loop())
+ClientNetProxy::ClientNetProxy(Dispatcher<Function<void()>>* dispatcher)
+    : dispatcher(dispatcher)
 {
     DVASSERT(nullptr != Net::NetCore::Instance());
 }
@@ -23,22 +25,48 @@ ClientNetProxy::~ClientNetProxy()
     Disconnect();
 }
 
-bool ClientNetProxy::Connect(const String& ip, uint16 port)
+void ClientNetProxy::Connect(const String& ip, uint16 port)
 {
     Logger::FrameworkDebug("Connecting to %s:%d", ip.c_str(), port);
     DVASSERT(nullptr == netClient);
+    DVASSERT(nullptr == addressResolver);
     DVASSERT(nullptr == openedChannel);
 
-    return addressResolver.AsyncResolve(ip.c_str(), port, MakeFunction(this, &ClientNetProxy::OnAddressResolved));
+    addressResolver.reset(new Net::AddressResolver(Net::NetCore::Instance()->Loop()));
+    Net::ResolverCallbackDispatched resolverCallbackDispatched(dispatcher, addressResolver, MakeFunction(this, &ClientNetProxy::OnAddressResolved));
+    addressResolver->AsyncResolve(ip.c_str(), port, resolverCallbackDispatched);
 }
 
 void ClientNetProxy::Disconnect()
 {
-    Logger::FrameworkDebug("Disconnect");
     openedChannel = nullptr;
 
-    addressResolver.Cancel();
-    netClient.reset();
+    if (addressResolver)
+    {
+        addressResolver->Cancel();
+        addressResolver.reset();
+    }
+    if (netClient)
+    {
+        netClient->Disconnect();
+        netClient.reset();
+    }
+}
+
+void ClientNetProxy::DisconnectBlocked()
+{
+    openedChannel = nullptr;
+
+    if (addressResolver)
+    {
+        addressResolver->Cancel();
+        addressResolver.reset();
+    }
+    if (netClient)
+    {
+        netClient->DisconnectBlocked();
+        netClient.reset();
+    }
 }
 
 void ClientNetProxy::OnAddressResolved(const Net::Endpoint& endpoint, int32 status)
@@ -48,7 +76,7 @@ void ClientNetProxy::OnAddressResolved(const Net::Endpoint& endpoint, int32 stat
 
     if (0 == status)
     {
-        netClient.reset(new Connection(Net::CLIENT_ROLE, endpoint, this));
+        netClient = Connection::MakeConnection(dispatcher, Net::CLIENT_ROLE, endpoint, this);
     }
     else
     {

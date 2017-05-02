@@ -1,17 +1,26 @@
+
 #include "EditorSystems/EditorCanvas.h"
 #include "EditorSystems/EditorSystemsManager.h"
-#include "Engine/Engine.h"
 
-#include "UI/UIScreenManager.h"
+#include "Modules/DocumentsModule/Private/EditorCanvasData.h"
+
+#include <TArc/Core/ContextAccessor.h>
+#include <TArc/DataProcessing/DataContext.h>
+
+#include <Engine/Engine.h>
+#include <UI/UIScreenManager.h>
 
 using namespace DAVA;
 
-EditorCanvas::EditorCanvas(UIControl* movableControl_, EditorSystemsManager* parent)
-    : BaseEditorSystem(parent)
-    , movableControl(movableControl_)
+EditorCanvas::EditorCanvas(EditorSystemsManager* parent, DAVA::TArc::ContextAccessor* accessor)
+    : BaseEditorSystem(parent, accessor)
 {
+    movableControl = systemsManager->GetScalableControl();
     systemsManager->contentSizeChanged.Connect(this, &EditorCanvas::OnContentSizeChanged);
-    systemsManager->viewSizeChanged.Connect(this, &EditorCanvas::OnViewSizeChanged);
+
+    predefinedScales = { 0.25f, 0.33f, 0.50f, 0.67f, 0.75f,
+                         0.90f, 1.00f, 1.10f, 1.25f, 1.50f, 1.75f, 2.00f,
+                         2.50f, 3.00f, 4.00f, 5.00f, 6.00f, 7.00f, 8.00f };
 }
 
 EditorCanvas::~EditorCanvas() = default;
@@ -89,23 +98,39 @@ Vector2 EditorCanvas::GetMaximumPos() const
 
 void EditorCanvas::UpdateContentSize()
 {
+    using namespace TArc;
+
     Vector2 marginsSize(margin * 2.0f, margin * 2.0f);
     size = contentSize * scale + marginsSize;
-    Vector2 sizeDiff = (size - viewSize) / 2.0f;
-    if ((needCentralize.first && sizeDiff.dx > 0.0f)
-        || (needCentralize.second && sizeDiff.dy > 0.0f))
-    {
-        Vector2 newPosition(needCentralize.first ? sizeDiff.dx : position.x,
-                            needCentralize.second ? sizeDiff.dy : position.y);
-        SetPosition(newPosition);
-    }
-    else
-    {
-        UpdatePosition();
-    }
     sizeChanged.Emit(size);
 
-    needCentralize = { size.dx < viewSize.dx, size.dy < viewSize.dy };
+    Vector2 sizeDiff = (size - viewSize) / 2.0f;
+
+    DataContext* activeContext = accessor->GetActiveContext();
+    if (activeContext != nullptr)
+    {
+        EditorCanvasData* data = activeContext->GetData<EditorCanvasData>();
+
+        //we select big control after small control was selected
+        if ((data->needCentralizeX && sizeDiff.dx > 0.0f)
+            || (data->needCentralizeY && sizeDiff.dy > 0.0f))
+        {
+            Vector2 newPosition(data->needCentralizeX ? sizeDiff.dx : position.x,
+                                data->needCentralizeY ? sizeDiff.dy : position.y);
+            SetPosition(newPosition);
+        }
+        else if (data->canvasPosition == EditorCanvasData::invalidPosition)
+        {
+            SetPosition(GetMaximumPos() / 2.0f);
+        }
+        else
+        {
+            SetPosition(data->canvasPosition);
+        }
+        data->needCentralizeX = size.dx < viewSize.dx;
+        data->needCentralizeY = size.dy < viewSize.dy;
+    }
+    UpdatePosition();
 }
 
 void EditorCanvas::SetScale(float32 arg)
@@ -128,7 +153,7 @@ void EditorCanvas::OnViewSizeChanged(DAVA::uint32 width, DAVA::uint32 height)
 
 void EditorCanvas::SetPosition(const Vector2& position_)
 {
-    needCentralize = { false, false };
+    using namespace TArc;
     Vector2 minPos = GetMinimumPos();
     Vector2 maxPos = GetMaximumPos();
     Vector2 fixedPos(Clamp(position_.x, minPos.x, maxPos.x),
@@ -139,7 +164,20 @@ void EditorCanvas::SetPosition(const Vector2& position_)
         position = fixedPos;
         UpdatePosition();
         positionChanged.Emit(position);
+
+        DataContext* activeContext = accessor->GetActiveContext();
+        if (activeContext == nullptr)
+        {
+            return;
+        }
+        EditorCanvasData* data = activeContext->GetData<EditorCanvasData>();
+        data->canvasPosition = position;
     }
+}
+
+const Vector<float32>& EditorCanvas::GetPredefinedScales() const
+{
+    return predefinedScales;
 }
 
 void EditorCanvas::UpdatePosition()
@@ -155,24 +193,81 @@ void EditorCanvas::UpdatePosition()
     {
         offset.dy = position.y;
     }
-    offset -= Vector2(margin, margin);
-    Vector2 newPosition(-offset.dx, -offset.dy);
-    movableControl->SetPosition(newPosition);
 
-    nestedControlPositionChanged.Emit(newPosition);
+    offset -= Vector2(margin, margin);
+    Vector2 counterPosition(-offset.dx, -offset.dy);
+    movableControl->SetPosition(counterPosition);
+
+    nestedControlPositionChanged.Emit(counterPosition);
 }
 
-bool EditorCanvas::CanProcessInput(DAVA::UIEvent* currentInput) const
+bool EditorCanvas::CanProcessInput(UIEvent* currentInput) const
 {
-    return systemsManager->GetDragState() == EditorSystemsManager::DragScreen
-    && currentInput->device == eInputDevices::MOUSE
-    && (currentInput->mouseButton == eMouseButtons::LEFT || currentInput->mouseButton == eMouseButtons::MIDDLE);
+    if ((currentInput->device & eInputDevices::CLASS_POINTER) == eInputDevices::UNKNOWN)
+    {
+        return false;
+    }
+    if (currentInput->phase == UIEvent::Phase::WHEEL || currentInput->phase == UIEvent::Phase::GESTURE)
+    {
+        return true;
+    }
+    return (systemsManager->GetDragState() == EditorSystemsManager::DragScreen &&
+            (currentInput->mouseButton == eMouseButtons::LEFT || currentInput->mouseButton == eMouseButtons::MIDDLE));
 }
 
 void EditorCanvas::ProcessInput(UIEvent* currentInput)
 {
-    Vector2 delta = systemsManager->GetMouseDelta();
-    SetPosition(position - delta);
+    if (accessor->GetActiveContext() == nullptr)
+    {
+        return;
+    }
+    if (currentInput->device == eInputDevices::TOUCH_PAD)
+    {
+        if (currentInput->phase == UIEvent::Phase::GESTURE)
+        {
+            const UIEvent::Gesture& gesture = currentInput->gesture;
+            if (gesture.dx != 0.0f || gesture.dy != 0.0f)
+            {
+                SetPosition(GetPosition() - Vector2(gesture.dx, gesture.dy));
+            }
+            else if (gesture.magnification != 0.0f)
+            {
+                AdjustScale(scale + gesture.magnification, currentInput->physPoint);
+            }
+        }
+    }
+    else if (currentInput->device == eInputDevices::MOUSE)
+    {
+        if (currentInput->phase == UIEvent::Phase::WHEEL)
+        {
+            if ((currentInput->modifiers & (eModifierKeys::CONTROL | eModifierKeys::COMMAND)) != eModifierKeys::NONE)
+            {
+                int32 ticksCount = static_cast<int32>(currentInput->wheelDelta.y);
+                float scale = GetScaleFromWheelEvent(ticksCount);
+                AdjustScale(scale, currentInput->physPoint);
+            }
+            else
+            {
+                Vector2 position = GetPosition();
+                Vector2 additionalPos(currentInput->wheelDelta.x, currentInput->wheelDelta.y);
+                additionalPos *= GetViewSize();
+//custom delimiter to scroll widget by little chunks of visible area
+#if defined(__DAVAENGINE_MACOS__)
+                //on the OS X platform wheelDelta depend on scrolling speed
+                static const float wheelDelta = 0.002f;
+#elif defined(__DAVAENGINE_WIN32__)
+                static const float wheelDelta = 0.1f;
+#endif //platform
+                Vector2 newPosition = position - additionalPos * wheelDelta;
+                SetPosition(newPosition);
+            }
+        }
+        else
+        {
+            Vector2 delta = systemsManager->GetMouseDelta();
+            SetPosition(position - delta);
+        }
+    }
 }
 
 EditorSystemsManager::eDragState EditorCanvas::RequireNewState(UIEvent* currentInput)
@@ -215,4 +310,44 @@ void EditorCanvas::OnContentSizeChanged(const DAVA::Vector2& size)
 {
     contentSize = size;
     UpdateContentSize();
+}
+
+float32 EditorCanvas::GetScaleFromWheelEvent(int32 ticksCount) const
+{
+    if (ticksCount > 0)
+    {
+        return GetNextScale(ticksCount);
+    }
+    else if (ticksCount < 0)
+    {
+        return GetPreviousScale(ticksCount);
+    }
+    return scale;
+}
+
+float32 EditorCanvas::GetNextScale(int32 ticksCount) const
+{
+    auto iter = std::upper_bound(predefinedScales.begin(), predefinedScales.end(), scale);
+    if (iter == predefinedScales.end())
+    {
+        return scale;
+    }
+    ticksCount--;
+    int32 distance = static_cast<int32>(std::distance(iter, predefinedScales.end()));
+    ticksCount = std::min(distance, ticksCount);
+    std::advance(iter, ticksCount);
+    return iter != predefinedScales.end() ? *iter : predefinedScales.back();
+}
+
+float32 EditorCanvas::GetPreviousScale(int32 ticksCount) const
+{
+    auto iter = std::lower_bound(predefinedScales.begin(), predefinedScales.end(), scale);
+    if (iter == predefinedScales.end())
+    {
+        return scale;
+    }
+    int32 distance = static_cast<int32>(std::distance(iter, predefinedScales.begin()));
+    ticksCount = std::max(ticksCount, distance);
+    std::advance(iter, ticksCount);
+    return *iter;
 }

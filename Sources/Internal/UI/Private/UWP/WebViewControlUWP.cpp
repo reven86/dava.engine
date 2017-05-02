@@ -182,36 +182,21 @@ void WebViewControl::OwnerIsDying()
 
 #if defined(__DAVAENGINE_COREV2__)
     if (window != nullptr)
-#endif
     {
         if (nativeWebView != nullptr)
         {
-#if defined(__DAVAENGINE_COREV2__)
             auto self{ shared_from_this() };
             window->RunOnUIThreadAsync([this, self]() {
                 nativeWebView->NavigationStarting -= tokenNavigationStarting;
                 nativeWebView->NavigationCompleted -= tokenNavigationCompleted;
+                nativeWebView->UnsupportedUriSchemeIdentified -= tokenUnsupportedUriSchemeIdentified;
                 PlatformApi::Win10::RemoveXamlControl(window, nativeWebView);
             });
-#else
-            // Compiler complains of capturing nativeWebView data member in lambda
-            WebView ^ p = nativeWebView;
-            Windows::Foundation::EventRegistrationToken tokenNS = tokenNavigationStarting;
-            Windows::Foundation::EventRegistrationToken tokenNC = tokenNavigationCompleted;
-
-            core->RunOnUIThread([p, tokenNS, tokenNC]() {
-                // We don't need blocking call here
-                p->NavigationStarting -= tokenNS;
-                p->NavigationCompleted -= tokenNC;
-            });
-#endif
         }
-
-#if defined(__DAVAENGINE_COREV2__)
-        window->sizeChanged.Disconnect(windowSizeChangedConnection);
-        Engine::Instance()->windowDestroyed.Disconnect(windowDestroyedConnection);
-#endif
+        window->sizeChanged.Disconnect(this);
+        Engine::Instance()->windowDestroyed.Disconnect(this);
     }
+#endif
 }
 
 void WebViewControl::Initialize(const Rect& rect)
@@ -224,8 +209,8 @@ void WebViewControl::Initialize(const Rect& rect)
     properties.anyPropertyChanged = true;
 
 #if defined(__DAVAENGINE_COREV2__)
-    windowSizeChangedConnection = window->sizeChanged.Connect(this, &WebViewControl::OnWindowSizeChanged);
-    windowDestroyedConnection = Engine::Instance()->windowDestroyed.Connect(this, &WebViewControl::OnWindowDestroyed);
+    window->sizeChanged.Connect(this, &WebViewControl::OnWindowSizeChanged);
+    Engine::Instance()->windowDestroyed.Connect(this, &WebViewControl::OnWindowDestroyed);
 #endif
 }
 
@@ -289,13 +274,6 @@ void WebViewControl::SetVisible(bool isVisible, bool /*hierarchic*/)
                     }
                 });
             }
-#else
-            core->RunOnUIThread([this, self]() {
-                if (nativeWebView != nullptr)
-                {
-                    SetNativePositionAndSize(rectInWindowSpace, true);
-                }
-            });
 #endif
         }
     }
@@ -333,13 +311,6 @@ void WebViewControl::SetRenderToTexture(bool value)
                     SetNativePositionAndSize(rectInWindowSpace, true);
                 }
             });
-#else
-            core->RunOnUIThread([this, self]() {
-                if (nativeWebView != nullptr)
-                {
-                    SetNativePositionAndSize(rectInWindowSpace, true);
-                }
-            });
 #endif
         }
     }
@@ -358,10 +329,6 @@ void WebViewControl::Update()
         WebViewProperties props(properties);
 #if defined(__DAVAENGINE_COREV2__)
         window->RunOnUIThreadAsync([this, self, props]() {
-            ProcessProperties(props);
-        });
-#else
-        core->RunOnUIThread([this, self, props] {
             ProcessProperties(props);
         });
 #endif
@@ -386,8 +353,6 @@ void WebViewControl::CreateNativeControl()
 
 #if defined(__DAVAENGINE_COREV2__)
     PlatformApi::Win10::AddXamlControl(window, nativeWebView);
-#else
-    core->XamlApplication()->AddUIElement(nativeWebView);
 #endif
     SetNativePositionAndSize(rectInWindowSpace, true); // After creation move native control offscreen
 }
@@ -395,9 +360,7 @@ void WebViewControl::CreateNativeControl()
 void WebViewControl::InstallEventHandlers()
 {
     using ::Windows::Foundation::TypedEventHandler;
-    using ::Windows::UI::Xaml::Controls::WebView;
-    using ::Windows::UI::Xaml::Controls::WebViewNavigationStartingEventArgs;
-    using ::Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs;
+    using namespace ::Windows::UI::Xaml::Controls;
 
     // clang-format off
     std::weak_ptr<WebViewControl> self_weak(shared_from_this());
@@ -410,43 +373,34 @@ void WebViewControl::InstallEventHandlers()
         if (auto self = self_weak.lock())
             OnNavigationCompleted(sender, args);
     });
+    auto unsupportedUriSchemeIdentified = ref new TypedEventHandler<WebView^, WebViewUnsupportedUriSchemeIdentifiedEventArgs^>([this, self_weak](WebView^ sender, WebViewUnsupportedUriSchemeIdentifiedEventArgs^ args) {
+        if (auto self = self_weak.lock())
+            OnUnsupportedUriSchemeIdentified(sender, args);
+    });
     tokenNavigationStarting = nativeWebView->NavigationStarting += navigationStarting;
     tokenNavigationCompleted = nativeWebView->NavigationCompleted += navigationCompleted;
+    tokenUnsupportedUriSchemeIdentified = nativeWebView->UnsupportedUriSchemeIdentified += unsupportedUriSchemeIdentified;
     // clang-format on
 }
 
-void WebViewControl::OnNavigationStarting(::Windows::UI::Xaml::Controls::WebView ^ sender, ::Windows::UI::Xaml::Controls::WebViewNavigationStartingEventArgs ^ args)
+void WebViewControl::OnNavigationStarting(::Windows::UI::Xaml::Controls::WebView ^, ::Windows::UI::Xaml::Controls::WebViewNavigationStartingEventArgs ^ args)
 {
-    String url;
     if (args->Uri != nullptr)
     {
-        url = UTF8Utils::EncodeToUTF8(args->Uri->AbsoluteCanonicalUri->Data());
-    }
-    Logger::FrameworkDebug("[WebView] OnNavigationStarting: url=%s", url.c_str());
-
-    bool redirectedByMouse = false; // For now I don't know how to get redirection method
-    IUIWebViewDelegate::eAction whatToDo = IUIWebViewDelegate::PROCESS_IN_WEBVIEW;
-#if defined(__DAVAENGINE_COREV2__)
-    RunOnMainThread([this, &whatToDo, &url, redirectedByMouse]() {
-        if (uiWebView != nullptr && webViewDelegate != nullptr)
+        IUIWebViewDelegate::eAction whatToDo = HandleUriNavigation(args->Uri);
+        switch (whatToDo)
         {
-            whatToDo = webViewDelegate->URLChanged(uiWebView, url, redirectedByMouse);
+        case IUIWebViewDelegate::NO_PROCESS:
+            args->Cancel = true;
+            break;
+        case IUIWebViewDelegate::PROCESS_IN_SYSTEM_BROWSER:
+            ::Windows::System::Launcher::LaunchUriAsync(args->Uri);
+            args->Cancel = true;
+            break;
+        default:
+            break;
         }
-    });
-#else
-    core->RunOnMainThreadBlocked([this, &whatToDo, &url, redirectedByMouse]() {
-        if (uiWebView != nullptr && webViewDelegate != nullptr)
-        {
-            whatToDo = webViewDelegate->URLChanged(uiWebView, url, redirectedByMouse);
-        }
-    });
-#endif
-
-    if (IUIWebViewDelegate::PROCESS_IN_SYSTEM_BROWSER == whatToDo && args->Uri != nullptr)
-    {
-        ::Windows::System::Launcher::LaunchUriAsync(args->Uri);
     }
-    args->Cancel = whatToDo != IUIWebViewDelegate::PROCESS_IN_WEBVIEW;
 }
 
 void WebViewControl::OnNavigationCompleted(::Windows::UI::Xaml::Controls::WebView ^ sender, ::Windows::UI::Xaml::Controls::WebViewNavigationCompletedEventArgs ^ args)
@@ -456,6 +410,7 @@ void WebViewControl::OnNavigationCompleted(::Windows::UI::Xaml::Controls::WebVie
     {
         url = UTF8Utils::EncodeToUTF8(args->Uri->AbsoluteCanonicalUri->Data());
     }
+    programmaticUrlNavigation = false;
 
     if (args->IsSuccess)
     {
@@ -479,14 +434,43 @@ void WebViewControl::OnNavigationCompleted(::Windows::UI::Xaml::Controls::WebVie
             webViewDelegate->PageLoaded(uiWebView);
         }
     });
-#else
-    core->RunOnMainThread([this, self]() {
+#endif
+}
+
+void WebViewControl::OnUnsupportedUriSchemeIdentified(::Windows::UI::Xaml::Controls::WebView ^, ::Windows::UI::Xaml::Controls::WebViewUnsupportedUriSchemeIdentifiedEventArgs ^ args)
+{
+    if (args->Uri != nullptr)
+    {
+        IUIWebViewDelegate::eAction whatToDo = HandleUriNavigation(args->Uri);
+        args->Handled = whatToDo == IUIWebViewDelegate::NO_PROCESS;
+        programmaticUrlNavigation = false;
+    }
+}
+
+IUIWebViewDelegate::eAction WebViewControl::HandleUriNavigation(::Windows::Foundation::Uri ^ uri)
+{
+    String url = UTF8Utils::EncodeToUTF8(uri->AbsoluteCanonicalUri->Data());
+    Logger::FrameworkDebug("[WebView] HandleUriNavigation: url=%s", url.c_str());
+
+    // Delegate can hide UIWebView control which possesses this native control, but UI thread is blocked.
+    // Also during delegate invocation user can click link multiple times and webview later will follow them.
+    // Try to hide native webview while asking delegate to reduce cases described above.
+    using ::Windows::UI::Xaml::Visibility;
+    nativeWebView->Visibility = Visibility::Collapsed;
+
+    bool redirectedByMouse = !programmaticUrlNavigation;
+    IUIWebViewDelegate::eAction whatToDo = IUIWebViewDelegate::PROCESS_IN_WEBVIEW;
+#if defined(__DAVAENGINE_COREV2__)
+    RunOnMainThread([this, &whatToDo, &url, redirectedByMouse]() {
         if (uiWebView != nullptr && webViewDelegate != nullptr)
         {
-            webViewDelegate->PageLoaded(uiWebView);
+            whatToDo = webViewDelegate->URLChanged(uiWebView, url, redirectedByMouse);
         }
     });
 #endif
+
+    nativeWebView->Visibility = Visibility::Visible;
+    return whatToDo;
 }
 
 void WebViewControl::OnWindowSizeChanged(Window* w, Size2f windowSize, Size2f surfaceSize)
@@ -552,8 +536,6 @@ void WebViewControl::SetNativePositionAndSize(const Rect& rect, bool offScreen)
     nativeWebView->Height = std::max(0.0f, rect.dy);
 #if defined(__DAVAENGINE_COREV2__)
     PlatformApi::Win10::PositionXamlControl(window, nativeWebView, rect.x - xOffset, rect.y - yOffset);
-#else
-    core->XamlApplication()->PositionUIElement(nativeWebView, rect.x - xOffset, rect.y - yOffset);
 #endif
 }
 
@@ -566,6 +548,10 @@ void WebViewControl::SetNativeBackgroundTransparency(bool enabled)
 void WebViewControl::NativeNavigateTo(const WebViewProperties& props)
 {
     using ::Windows::Foundation::Uri;
+
+    // WebView does not provide methods to determine whether navigation has occured by user click or
+    // programmatically. So try to guess it myself using programmaticUrlNavigation flag.
+    programmaticUrlNavigation = true;
 
     // clang-format off
     if (WebViewProperties::NAVIGATE_OPEN_URL == props.navigateTo)
@@ -609,14 +595,6 @@ void WebViewControl::NativeExecuteJavaScript(const String& jsScript)
     create_task(js).then([this, self](Platform::String^ result) {
 #if defined(__DAVAENGINE_COREV2__)
         RunOnMainThreadAsync([this, self, result]() {
-            if (webViewDelegate != nullptr && uiWebView != nullptr)
-            {
-                String jsResult = UTF8Utils::EncodeToUTF8(result->Data());
-                webViewDelegate->OnExecuteJScript(uiWebView, jsResult);
-            }
-        });
-#else
-        core->RunOnMainThread([this, self, result]() {
             if (webViewDelegate != nullptr && uiWebView != nullptr)
             {
                 String jsResult = UTF8Utils::EncodeToUTF8(result->Data());
@@ -681,15 +659,8 @@ void WebViewControl::RenderToTexture()
                 {
                     if (uiWebView != nullptr)
                     {
-                        uiWebView->SetSprite(sprite.Get(), 0);
-                    }
-                });
-#else
-                core->RunOnMainThread([this, self, sprite]()
-                {
-                    if (uiWebView != nullptr)
-                    {
-                        uiWebView->SetSprite(sprite.Get(), 0);
+                        UIControlBackground* bg = uiWebView->GetOrCreateComponent<UIControlBackground>();
+                        bg->SetSprite(sprite.Get(), 0);
                     }
                 });
 #endif

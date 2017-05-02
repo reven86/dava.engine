@@ -1,8 +1,9 @@
 #include "EditorSystems/BaseEditorSystem.h"
 #include "UI/UIEvent.h"
 
-BaseEditorSystem::BaseEditorSystem(EditorSystemsManager* parent)
+BaseEditorSystem::BaseEditorSystem(EditorSystemsManager* parent, DAVA::TArc::ContextAccessor* accessor_)
     : systemsManager(parent)
+    , accessor(accessor_)
 {
 }
 

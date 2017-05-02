@@ -8,6 +8,7 @@
 #include "Reflection/ReflectionRegistrator.h"
 
 #include <QAction>
+#include <thread>
 
 void CrashProduceModule::PostInit()
 {
@@ -22,7 +23,7 @@ void CrashProduceModule::PostInit()
                                   DVASSERT(false);
                               });
 
-    ui->AddAction(REGlobal::MainWindowKey, placementInfo, assertAction);
+    ui->AddAction(DAVA::TArc::mainWindowKey, placementInfo, assertAction);
 
     QAction* sequencalsAssert = new QAction("Generate sequencal asserts", nullptr);
     connections.AddConnection(sequencalsAssert, &QAction::triggered, []()
@@ -31,7 +32,17 @@ void CrashProduceModule::PostInit()
                                   DVASSERT(false && "Second assert");
                               });
 
-    ui->AddAction(REGlobal::MainWindowKey, placementInfo, sequencalsAssert);
+    ui->AddAction(DAVA::TArc::mainWindowKey, placementInfo, sequencalsAssert);
+
+    QAction* threadAssertAction = new QAction("Generate Assert From Thread", nullptr);
+    connections.AddConnection(threadAssertAction, &QAction::triggered, []()
+                              {
+                                  std::thread t([]() {
+                                      DVASSERT(0, "Assert from foreign thread");
+                                  });
+                                  t.detach();
+                              });
+    ui->AddAction(DAVA::TArc::mainWindowKey, placementInfo, threadAssertAction);
 
     QAction* dumpAction = new QAction("Generate dump", nullptr);
     connections.AddConnection(dumpAction, &QAction::triggered, []()
@@ -41,7 +52,7 @@ void CrashProduceModule::PostInit()
                                   DAVA::Logger::Info("Crash value %d", x);
                               });
 
-    ui->AddAction(REGlobal::MainWindowKey, placementInfo, dumpAction);
+    ui->AddAction(DAVA::TArc::mainWindowKey, placementInfo, dumpAction);
 }
 
 DAVA_VIRTUAL_REFLECTION_IMPL(CrashProduceModule)

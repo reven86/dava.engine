@@ -20,6 +20,7 @@ public:
     static const char* selectionAllowedPropertyName;
 
     const SelectableGroup& GetSelection() const;
+    SelectableGroup GetMutableSelection() const;
     void SetSelection(SelectableGroup& newSelection);
 
     const DAVA::AABBox3& GetSelectionBox() const;
@@ -58,13 +59,6 @@ private:
 namespace DAVA
 {
 template <>
-struct AnyCompare<SelectableGroup>
-{
-    static bool IsEqual(const DAVA::Any& v1, const DAVA::Any& v2)
-    {
-        const SelectableGroup& tab1 = v1.Get<SelectableGroup>();
-        const SelectableGroup& tab2 = v2.Get<SelectableGroup>();
-        return tab1 == tab2;
-    }
-};
+bool AnyCompare<SelectableGroup>::IsEqual(const DAVA::Any& v1, const DAVA::Any& v2);
+extern template struct AnyCompare<SelectableGroup>;
 }

@@ -13,6 +13,7 @@ class ImportLibrary;
 class ColladaToSc2Importer
 {
 public:
+    ColladaToSc2Importer();
     eColladaErrorCodes SaveSC2(ColladaScene* colladaScene, const FilePath& scenePath);
 
 private:

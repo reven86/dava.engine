@@ -1,6 +1,6 @@
-#include "CUbemapEditor/CubemapUtils.h"
+#include "CubemapEditor/CubemapUtils.h"
 #include "Render/Texture.h"
-#include "Qt/Settings/SettingsManager.h"
+#include "Classes/Settings/SettingsManager.h"
 #include "Qt/Main/QtUtils.h"
 #include "Classes/Application/REGlobal.h"
 #include "Classes/Project/ProjectManagerData.h"

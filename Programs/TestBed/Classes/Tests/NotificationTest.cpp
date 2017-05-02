@@ -1,6 +1,7 @@
 #include "Tests/NotificationTest.h"
 #include "Base/Message.h"
 #include "UI/Focus/UIFocusComponent.h"
+#include "UI/Update/UIUpdateComponent.h"
 
 using namespace DAVA;
 
@@ -15,6 +16,7 @@ NotificationScreen::NotificationScreen(TestBed& app)
     , notificationText(nullptr)
     , progress(0)
 {
+    GetOrCreateComponent<UIUpdateComponent>();
 }
 
 void NotificationScreen::LoadResources()
@@ -93,6 +95,8 @@ void NotificationScreen::LoadResources()
     notificationDelayTextField->SetTextAlign(ALIGN_HCENTER | ALIGN_VCENTER);
     notificationDelayTextField->SetText(L"5");
     AddControl(notificationDelayTextField);
+
+    LocalNotificationController::Instance()->RequestPermissions();
 
     SafeRelease(font);
 }

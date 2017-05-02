@@ -24,7 +24,7 @@ void DeviceManagerTest::LoadResources()
     AddControl(uiDisplayDescr);
 
     OnDisplayConfigChanged();
-    tokenDisplayConfigChanged = deviceManager->displayConfigChanged.Connect(this, &DeviceManagerTest::OnDisplayConfigChanged);
+    deviceManager->displayConfigChanged.Connect(this, &DeviceManagerTest::OnDisplayConfigChanged);
 }
 
 void DeviceManagerTest::UnloadResources()
@@ -40,7 +40,7 @@ void DeviceManagerTest::UnloadResources()
     uiDisplays.clear();
     SafeRelease(uiDisplayDescr);
 
-    deviceManager->displayConfigChanged.Disconnect(tokenDisplayConfigChanged);
+    deviceManager->displayConfigChanged.Disconnect(this);
 }
 
 void DeviceManagerTest::OnDisplayConfigChanged()
@@ -77,8 +77,9 @@ void DeviceManagerTest::OnDisplayConfigChanged()
         ui->SetFont(font);
         ui->SetDebugDraw(true);
         ui->SetInputEnabled(true);
-        ui->GetBackground()->SetColor(Color(0, 0, 0.8f, 1));
-        ui->GetBackground()->SetDrawType(UIControlBackground::DRAW_FILL);
+        UIControlBackground* uiBg = ui->GetOrCreateComponent<UIControlBackground>();
+        uiBg->SetColor(Color(0, 0, 0.8f, 1));
+        uiBg->SetDrawType(UIControlBackground::DRAW_FILL);
         ui->SetText(UTF8Utils::EncodeToWideString(Format("%d", n + 1)));
         ui->SetTextAlign(ALIGN_HCENTER | ALIGN_VCENTER);
         ui->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE,

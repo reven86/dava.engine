@@ -2,7 +2,7 @@
 
 #include "Infrastructure/BaseScreen.h"
 
-#include <Engine/Private/Dispatcher/Dispatcher.h>
+#include <Engine/Dispatcher.h>
 
 namespace DAVA
 {
@@ -64,9 +64,6 @@ private:
 
     DAVA::UIButton* buttonDisableClose = nullptr;
     DAVA::UIButton* buttonEnableClose = nullptr;
-
-    size_t tokenOnWindowCreated = 0;
-    size_t tokenOnWindowDestroyed = 0;
 
     bool closeDisabled = false;
 

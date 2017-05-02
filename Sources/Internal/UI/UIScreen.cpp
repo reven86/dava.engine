@@ -3,12 +3,21 @@
 #include "Render/RenderHelper.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Render/RHI/Common/PreProcess.h"
+#include "Reflection/ReflectionRegistrator.h"
 #include "Time/SystemTimer.h"
 
 namespace DAVA
 {
 List<UIScreen*> UIScreen::appScreens;
 int32 UIScreen::groupIdCounter = -1;
+
+DAVA_VIRTUAL_REFLECTION_IMPL(UIScreen)
+{
+    ReflectionRegistrator<UIScreen>::Begin()
+    .ConstructorByPointer()
+    .DestructorByPointer([](UIScreen* o) { o->Release(); })
+    .End();
+}
 
 UIScreen::UIScreen(const Rect& rect)
     : UIControl(rect)
@@ -45,21 +54,21 @@ void UIScreen::SetFillBorderOrder(UIScreen::eFillBorderOrder fillOrder)
     fillBorderOrder = fillOrder;
 }
 
-void UIScreen::SystemDraw(const UIGeometricData& geometricData)
+void UIScreen::SystemDraw(const UIGeometricData& geometricData, const UIControlBackground* parentBackground)
 {
     if (fillBorderOrder == FILL_BORDER_BEFORE_DRAW)
     {
         FillScreenBorders(geometricData);
-        UIControl::SystemDraw(geometricData);
+        UIControl::SystemDraw(geometricData, parentBackground);
     }
     else if (fillBorderOrder == FILL_BORDER_AFTER_DRAW)
     {
-        UIControl::SystemDraw(geometricData);
+        UIControl::SystemDraw(geometricData, parentBackground);
         FillScreenBorders(geometricData);
     }
     else
     {
-        UIControl::SystemDraw(geometricData);
+        UIControl::SystemDraw(geometricData, parentBackground);
     }
 }
 

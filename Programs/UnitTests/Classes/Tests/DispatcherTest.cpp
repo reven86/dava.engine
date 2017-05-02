@@ -2,10 +2,11 @@
 #include "Concurrency/Mutex.h"
 #include "Concurrency/Thread.h"
 #include "Engine/Engine.h"
-#include "Engine/Private/Dispatcher/Dispatcher.h"
+#include "Engine/Dispatcher.h"
 #include "Functional/Function.h"
 #include "UnitTests/UnitTests.h"
 
+#include "Logger/Logger.h"
 using namespace DAVA;
 
 class SyncBarrier final
@@ -15,6 +16,10 @@ public:
         : syncEvent(false)
         , totalThreads(totalThreads)
     {
+    }
+    ~SyncBarrier()
+    {
+        syncEvent.Signal();
     }
 
     void Enter()
@@ -31,6 +36,7 @@ public:
         if (rendezvous)
         {
             syncEvent.Signal();
+            syncEvent.Reset();
         }
         else
         {
@@ -100,14 +106,24 @@ DAVA_TESTCLASS (DispatcherTest)
         }
 
         dispatcher->PostEvent([this]() {
-            // Post and send events from dispatcher's thread
+            // Post events from dispatcher's thread
             for (int i = 0; i < 10; ++i)
             {
                 dispatcher->PostEvent([this]() { counter3 += 1; });
             }
-            dispatcher->SendEvent([]() {});
-            TEST_VERIFY(counter3 == 10);
+            dispatcher->PostEvent([this]() { barrier.Enter(); });
+
+            // Send out-of-band event which should be executed first as send is performed in dispatcher's thread
+            int testMe = 0;
+            dispatcher->SendEvent([&testMe]() { testMe = 42; }, MyDispatcher::eSendPolicy::IMMEDIATE_EXECUTION);
+            TEST_VERIFY(testMe == 42);
+            TEST_VERIFY(counter3 == 0);
         });
+
+        barrier.Enter();
+        // This thread and dispatcher's thread should come here simultaneously
+        // Dispatcher guarantees sequential order of event processing so counter3 should be 10
+        TEST_VERIFY(counter3 == 10);
 
         // Tell dispatcher's thread to exit
         dispatcher->PostEvent([this]() { byeDispatcherThread = true; });

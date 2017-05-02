@@ -3,11 +3,14 @@
 
 #include "Base/BaseTypes.h"
 #include "UI/UIControl.h"
+#include "Reflection/Reflection.h"
 
 namespace DAVA
 {
 class UISlider : public UIControl
 {
+    DAVA_VIRTUAL_REFLECTION(UISlider, UIControl);
+
 protected:
     virtual ~UISlider();
 
@@ -64,14 +67,12 @@ protected:
     void InitThumb();
 
     void AttachToSubcontrols();
-    void InitInactiveParts(Sprite* spr);
+    void InitInactiveParts(UIControl* thumb);
 
 public:
-    INTROSPECTION_EXTEND(UISlider, UIControl,
-                         PROPERTY("minValue", "Min Value", GetMinValue, SetMinValue, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("maxValue", "Max Value", GetMaxValue, SetMaxValue, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("value", "Value", GetValue, SetValue, I_SAVE | I_VIEW | I_EDIT)
-                         );
+    static const FastName THUMB_SPRITE_CONTROL_NAME;
+    static const FastName MIN_SPRITE_CONTROL_NAME;
+    static const FastName MAX_SPRITE_CONTROL_NAME;
 
 private:
     static const int32 BACKGROUND_COMPONENTS_COUNT = 3;

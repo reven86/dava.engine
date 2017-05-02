@@ -20,7 +20,7 @@ using namespace DAVA;
 Vector<String> LoadMaterialQualities(FilePath fxPath)
 {
     Vector<String> qualities;
-    YamlParser* parser = YamlParser::Create(fxPath);
+    ScopedPtr<YamlParser> parser(YamlParser::Create(fxPath));
     if (parser)
     {
         YamlNode* rootNode = parser->GetRootNode();
@@ -141,6 +141,9 @@ void ProjectResources::UnloadProject()
 
     if (!data->projectPath.IsEmpty())
     {
+        const DAVA::EngineContext* engineCtx = accessor->GetEngineContext();
+        engineCtx->soundSystem->UnloadFMODProjects();
+
         DAVA::FilePath::RemoveResourcesFolder(data->GetDataPath());
         DAVA::FilePath::RemoveResourcesFolder(data->GetDataSourcePath());
         data->projectPath = "";

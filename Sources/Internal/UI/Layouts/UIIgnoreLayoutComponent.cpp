@@ -1,9 +1,19 @@
 #include "UIIgnoreLayoutComponent.h"
 
 #include "Math/Vector.h"
+#include "UI/UIControl.h"
 
 namespace DAVA
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(UIIgnoreLayoutComponent)
+{
+    ReflectionRegistrator<UIIgnoreLayoutComponent>::Begin()
+    .ConstructorByPointer()
+    .DestructorByPointer([](UIIgnoreLayoutComponent* o) { o->Release(); })
+    .Field("enabled", &UIIgnoreLayoutComponent::IsEnabled, &UIIgnoreLayoutComponent::SetEnabled)
+    .End();
+}
+
 UIIgnoreLayoutComponent::UIIgnoreLayoutComponent(const UIIgnoreLayoutComponent& src)
     : enabled(src.enabled)
 {
@@ -22,5 +32,10 @@ bool UIIgnoreLayoutComponent::IsEnabled() const
 void UIIgnoreLayoutComponent::SetEnabled(bool enabled_)
 {
     enabled = enabled_;
+
+    if (GetControl() != nullptr)
+    {
+        GetControl()->SetLayoutDirty();
+    }
 }
 }

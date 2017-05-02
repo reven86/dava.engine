@@ -1,10 +1,11 @@
 #pragma once
 
+#include <fstream>
+
 #include "DLCManager/DLCManager.h"
 #include "DLCManager/Private/RequestManager.h"
 #include "FileSystem/Private/PackFormatSpec.h"
 #include "FileSystem/Private/PackMetaData.h"
-#include "Concurrency/Mutex.h"
 #include "Concurrency/Semaphore.h"
 #include "Concurrency/Thread.h"
 
@@ -30,7 +31,7 @@ public:
         UnpakingDB, //!< unpack DB from zip
         DeleteDownloadedPacksIfNotMatchHash, //!< go throw all local packs and unmount it if hash not match then delete
         LoadingPacksDataFromLocalMeta, //!< open local DB and build pack index for all packs
-        WaitScanThreadToFinish, //!< wait till finish scaning of downloaded .dvpl files
+        WaitScanThreadToFinish, //!< wait till finish scanning of downloaded .dvpl files
         MoveDeleyedRequestsToQueue, //!< mount all local packs downloaded and not mounted later
         Ready, //!< starting from this state client can call any method, second initialize will work too
         Offline, //!< server not accessible, retry initialization after Hints::retryConnectMilliseconds
@@ -55,20 +56,19 @@ public:
     };
 
     static const String& ToString(InitError state);
-
 #ifdef __DAVAENGINE_COREV2__
     explicit DLCManagerImpl(Engine* engine_);
-    ~DLCManagerImpl();
     Engine& engine;
-    SigConnectionID sigConnectionUpdate = 0;
 #else
-    DLCManagerImpl() = default;
-    ~DLCManagerImpl() = default;
+    DLCManagerImpl() = default; // TODO remove it later (fix for client UnitTests)
 #endif
+    ~DLCManagerImpl();
 
     void Initialize(const FilePath& dirToDownloadPacks_,
                     const String& urlToServerSuperpack_,
                     const Hints& hints_) override;
+
+    void Deinitialize() override;
 
     void RetryInit();
 
@@ -86,45 +86,44 @@ public:
 
     void Update(float frameDelta);
 
+    bool IsPackDownloaded(const String& packName) override;
+
     const IRequest* RequestPack(const String& requestedPackName) override;
 
     PackRequest* FindRequest(const String& requestedPackName) const;
 
-    void SetRequestOrder(const IRequest* request, uint32 orderIndex) override;
+    bool IsPackInQueue(const String& packName) override;
+
+    void SetRequestPriority(const IRequest* request) override;
 
     void RemovePack(const String& packName) override;
+
+    Progress GetProgress() const override;
 
     const FilePath& GetLocalPacksDirectory() const;
 
     const String& GetSuperPackUrl() const;
 
-    uint32 GetServerFooterCrc32() const
-    {
-        return initFooterOnServer.infoCrc32;
-    }
+    uint32 GetServerFooterCrc32() const;
 
     String GetRelativeFilePath(uint32 fileIndex);
 
-    const Hints& GetHints() const
-    {
-        return hints;
-    }
+    const Hints& GetHints() const;
 
-    const PackMetaData& GetMeta() const
-    {
-        return *meta;
-    }
+    const PackMetaData& GetMeta() const;
 
-    const PackFormat::PackFile& GetPack() const
-    {
-        return usedPackFile;
-    }
+    const PackFormat::PackFile& GetPack() const;
 
     // use only after initialization
-    bool IsFileReady(uint32 fileIndex) const
-    {
-        return fileIndex < scanFileReady.size() && scanFileReady.test(fileIndex);
-    }
+    bool IsFileReady(size_t fileIndex) const;
+
+    void SetFileIsReady(size_t fileIndex);
+
+    bool IsInQueue(const PackRequest* request) const;
+
+    bool IsTop(const PackRequest* request) const;
+
+    std::ostream& GetLog() const;
 
 private:
     // initialization state functions
@@ -140,12 +139,17 @@ private:
     void DeleteOldPacks();
     void LoadPacksDataFromMeta();
     void WaitScanThreadToFinish();
-    void StartDeleyedRequests();
+    void StartDelayedRequests();
     // helper functions
     void DeleteLocalMetaFiles();
     void ContinueInitialization(float frameDelta);
-    PackRequest* AddDeleyedRequest(const String& requestedPackName);
+
+    void SwapRequestAndUpdatePointers(PackRequest* request, PackRequest* newRequest);
+    void SwapPointers(PackRequest* userRequestObject, PackRequest* newRequestObject);
+    PackRequest* AddDelayedRequest(const String& requestedPackName);
     PackRequest* CreateNewRequest(const String& requestedPackName);
+
+    void ClearResouces();
 
     enum class ScanState : uint32
     {
@@ -160,10 +164,10 @@ private:
         uint32 compressedSize = 0;
         uint32 crc32Hash = 0;
     };
-    // fill during scan local pack files, emtpy after finish scan
+    // fill during scan local pack files, empty after finish scan
     Vector<LocalFileInfo> localFiles;
     // every bit mean file exist and size match with meta
-    std::bitset<32000> scanFileReady;
+    Vector<bool> scanFileReady;
     Thread* scanThread = nullptr;
     ScanState scanState{ ScanState::Wait };
     Semaphore metaDataLoadedSem;
@@ -173,7 +177,7 @@ private:
     void ScanFiles(const FilePath& dir, Vector<LocalFileInfo>& files);
     void RecursiveScan(const FilePath& baseDir, const FilePath& dir, Vector<LocalFileInfo>& files);
 
-    mutable Mutex protectDM;
+    mutable std::ofstream log;
 
     FilePath localCacheMeta;
     FilePath localCacheFileTable;
@@ -190,15 +194,12 @@ private:
     String initErrorMsg;
     InitState initState = InitState::Starting;
     InitError initError = InitError::AllGood;
-    PackFormat::PackFile::FooterBlock initFooterOnServer; // tmp supperpack info for every new pack request or during initialization
+    PackFormat::PackFile::FooterBlock initFooterOnServer; // temp superpack info for every new pack request or during initialization
     PackFormat::PackFile usedPackFile; // current superpack info
-    Vector<uint8> buffer; // tmp buff
+    Vector<uint8> buffer; // temp buff
     String uncompressedFileNames;
     UnorderedMap<String, const PackFormat::FileTableEntry*> mapFileData;
     Vector<uint32> startFileNameIndexesInUncompressedNames;
-    // first - relative file name in archive, second - file properties
-    // DO I NEED IT? UnorderedMap<String, const PackFormat::FileTableEntry*> initFileData;
-    // DO I NEED IN? Vector<ResourceArchive::FileInfo> initfilesInfo;
     uint32 downloadTaskId = 0;
     uint64 fullSizeServerData = 0;
 
@@ -207,5 +208,52 @@ private:
     float32 timeWaitingNextInitializationAttempt = 0;
     uint32 retryCount = 0; // count every initialization error during session
 };
+
+inline uint32 DLCManagerImpl::GetServerFooterCrc32() const
+{
+    return initFooterOnServer.infoCrc32;
+}
+
+inline const DLCManagerImpl::Hints& DLCManagerImpl::GetHints() const
+{
+    return hints;
+}
+
+inline const PackMetaData& DLCManagerImpl::GetMeta() const
+{
+    return *meta;
+}
+
+inline const PackFormat::PackFile& DLCManagerImpl::GetPack() const
+{
+    return usedPackFile;
+}
+
+inline bool DLCManagerImpl::IsFileReady(size_t fileIndex) const
+{
+    DVASSERT(fileIndex < scanFileReady.size());
+    return scanFileReady[fileIndex];
+}
+
+inline void DLCManagerImpl::SetFileIsReady(size_t fileIndex)
+{
+    scanFileReady.at(fileIndex) = true;
+}
+
+inline bool DLCManagerImpl::IsInQueue(const PackRequest* request) const
+{
+    DVASSERT(request != nullptr);
+    return requestManager->IsInQueue(request->GetRequestedPackName());
+}
+
+inline bool DLCManagerImpl::IsTop(const PackRequest* request) const
+{
+    DVASSERT(request != nullptr);
+    if (!requestManager->Empty())
+    {
+        return request == requestManager->Top();
+    }
+    return false;
+}
 
 } // end namespace DAVA

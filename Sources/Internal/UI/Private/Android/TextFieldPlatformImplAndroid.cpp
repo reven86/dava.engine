@@ -32,40 +32,55 @@ JNIEXPORT void JNICALL Java_com_dava_engine_DavaTextField_nativeOnFocusChange(JN
 {
     using DAVA::TextFieldPlatformImpl;
     std::weak_ptr<TextFieldPlatformImpl>* weak = reinterpret_cast<std::weak_ptr<TextFieldPlatformImpl>*>(static_cast<uintptr_t>(backendPointer));
-    if (auto backend = weak->lock())
-        backend->nativeOnFocusChange(env, hasFocus);
+    if (weak != nullptr)
+    {
+        if (auto backend = weak->lock())
+            backend->nativeOnFocusChange(env, hasFocus);
+    }
 }
 
 JNIEXPORT void JNICALL Java_com_dava_engine_DavaTextField_nativeOnKeyboardShown(JNIEnv* env, jclass jclazz, jlong backendPointer, jint x, jint y, jint w, jint h)
 {
     using DAVA::TextFieldPlatformImpl;
     std::weak_ptr<TextFieldPlatformImpl>* weak = reinterpret_cast<std::weak_ptr<TextFieldPlatformImpl>*>(static_cast<uintptr_t>(backendPointer));
-    if (auto backend = weak->lock())
-        backend->nativeOnKeyboardShown(env, x, y, w, h);
+    if (weak != nullptr)
+    {
+        if (auto backend = weak->lock())
+            backend->nativeOnKeyboardShown(env, x, y, w, h);
+    }
 }
 
 JNIEXPORT void JNICALL Java_com_dava_engine_DavaTextField_nativeOnKeyboardHidden(JNIEnv* env, jclass jclazz, jlong backendPointer)
 {
     using DAVA::TextFieldPlatformImpl;
     std::weak_ptr<TextFieldPlatformImpl>* weak = reinterpret_cast<std::weak_ptr<TextFieldPlatformImpl>*>(static_cast<uintptr_t>(backendPointer));
-    if (auto backend = weak->lock())
-        backend->nativeOnKeyboardHidden(env);
+    if (weak != nullptr)
+    {
+        if (auto backend = weak->lock())
+            backend->nativeOnKeyboardHidden(env);
+    }
 }
 
 JNIEXPORT void JNICALL Java_com_dava_engine_DavaTextField_nativeOnEnterPressed(JNIEnv* env, jclass jclazz, jlong backendPointer)
 {
     using DAVA::TextFieldPlatformImpl;
     std::weak_ptr<TextFieldPlatformImpl>* weak = reinterpret_cast<std::weak_ptr<TextFieldPlatformImpl>*>(static_cast<uintptr_t>(backendPointer));
-    if (auto backend = weak->lock())
-        backend->nativeOnEnterPressed(env);
+    if (weak != nullptr)
+    {
+        if (auto backend = weak->lock())
+            backend->nativeOnEnterPressed(env);
+    }
 }
 
 JNIEXPORT jboolean JNICALL Java_com_dava_engine_DavaTextField_nativeOnKeyPressed(JNIEnv* env, jclass jclazz, jlong backendPointer, jint replacementStart, jint replacementLength, jstring replaceWith)
 {
     using DAVA::TextFieldPlatformImpl;
     std::weak_ptr<TextFieldPlatformImpl>* weak = reinterpret_cast<std::weak_ptr<TextFieldPlatformImpl>*>(static_cast<uintptr_t>(backendPointer));
-    if (auto backend = weak->lock())
-        return backend->nativeOnKeyPressed(env, replacementStart, replacementLength, replaceWith);
+    if (weak != nullptr)
+    {
+        if (auto backend = weak->lock())
+            return backend->nativeOnKeyPressed(env, replacementStart, replacementLength, replaceWith);
+    }
     return JNI_TRUE;
 }
 
@@ -73,16 +88,22 @@ JNIEXPORT void JNICALL Java_com_dava_engine_DavaTextField_nativeOnTextChanged(JN
 {
     using DAVA::TextFieldPlatformImpl;
     std::weak_ptr<TextFieldPlatformImpl>* weak = reinterpret_cast<std::weak_ptr<TextFieldPlatformImpl>*>(static_cast<uintptr_t>(backendPointer));
-    if (auto backend = weak->lock())
-        backend->nativeOnTextChanged(env, newText, programmaticTextChange);
+    if (weak != nullptr)
+    {
+        if (auto backend = weak->lock())
+            backend->nativeOnTextChanged(env, newText, programmaticTextChange);
+    }
 }
 
 JNIEXPORT void JNICALL Java_com_dava_engine_DavaTextField_nativeOnTextureReady(JNIEnv* env, jclass jclazz, jlong backendPointer, jintArray pixels, jint w, jint h)
 {
     using DAVA::TextFieldPlatformImpl;
     std::weak_ptr<TextFieldPlatformImpl>* weak = reinterpret_cast<std::weak_ptr<TextFieldPlatformImpl>*>(static_cast<uintptr_t>(backendPointer));
-    if (auto backend = weak->lock())
-        backend->nativeOnTextureReady(env, pixels, w, h);
+    if (weak != nullptr)
+    {
+        if (auto backend = weak->lock())
+            backend->nativeOnTextureReady(env, pixels, w, h);
+    }
 }
 }
 
@@ -144,7 +165,7 @@ void TextFieldPlatformImpl::Initialize()
     else
     {
         delete selfWeakPtr;
-        Logger::Error("[WebViewControl] failed to create java webview");
+        Logger::Error("[TextFieldControl] failed to create java textfield");
     }
 }
 
@@ -238,7 +259,7 @@ void TextFieldPlatformImpl::SetText(const WideString& text)
 
             if (curText.empty())
             { // Immediately remove sprite image if new text is empty to get rid of some flickering
-                uiTextField->SetSprite(nullptr, 0);
+                uiTextField->RemoveComponent(UIComponent::BACKGROUND_COMPONENT);
             }
         }
     }
@@ -466,9 +487,9 @@ void TextFieldPlatformImpl::nativeOnTextureReady(JNIEnv* env, jintArray pixels, 
             }
             else
             {
-                std::shared_ptr<SigConnectionID> connectionIdPtr = std::make_shared<SigConnectionID>();
-                *connectionIdPtr = Engine::Instance()->resumed.Connect([this, image, connectionIdPtr]() {
-                    Engine::Instance()->resumed.Disconnect(*connectionIdPtr);
+                std::shared_ptr<Token> connectionTokenPtr = std::make_shared<Token>();
+                *connectionTokenPtr = Engine::Instance()->resumed.Connect([this, image, connectionTokenPtr]() {
+                    Engine::Instance()->resumed.Disconnect(*connectionTokenPtr);
                     SetSpriteFromImage(image.Get());
                 });
             }
@@ -480,16 +501,17 @@ void TextFieldPlatformImpl::SetSpriteFromImage(Image* image) const
 {
     if (uiTextField != nullptr)
     {
-        Sprite* sprite = nullptr;
+        RefPtr<Sprite> sprite;
 
         if (image != nullptr)
         {
             const Rect textFieldRect = uiTextField->GetRect();
             RefPtr<Texture> texture(Texture::CreateFromData(FORMAT_RGBA8888, image->GetData(), image->GetWidth(), image->GetHeight(), false));
-            sprite = Sprite::CreateFromTexture(texture.Get(), 0, 0, texture->GetWidth(), texture->GetHeight(), textFieldRect.dx, textFieldRect.dy);
+            sprite.Set(Sprite::CreateFromTexture(texture.Get(), 0, 0, texture->GetWidth(), texture->GetHeight(), textFieldRect.dx, textFieldRect.dy));
         }
 
-        uiTextField->SetSprite(sprite, 0);
+        UIControlBackground* bg = uiTextField->GetOrCreateComponent<UIControlBackground>();
+        bg->SetSprite(sprite.Get(), 0);
     }
 }
 
@@ -505,7 +527,7 @@ void TextFieldPlatformImpl::OnFocusChanged(bool hasFocus)
                 uiTextField->SetFocused();
             }
             uiTextField->StartEdit();
-            uiTextField->SetSprite(nullptr, 0);
+            uiTextField->RemoveComponent(UIComponent::BACKGROUND_COMPONENT);
         }
         else
         {
@@ -516,7 +538,10 @@ void TextFieldPlatformImpl::OnFocusChanged(bool hasFocus)
 
 void TextFieldPlatformImpl::OnKeyboardShown(const Rect& keyboardRect)
 {
-    uiTextField->OnKeyboardShown(keyboardRect);
+    if (nullptr != uiTextField)
+    {
+        uiTextField->OnKeyboardShown(keyboardRect);
+    }
 }
 
 void TextFieldPlatformImpl::OnEnterPressed()

@@ -5,6 +5,7 @@
 #include "Utils/Utils.h"
 #include "Core/Core.h"
 #include "UI/UIControl.h"
+#include "Reflection/Reflection.h"
 #if !defined(__DAVAENGINE_COREV2__)
 #include "Render/2D/Systems/VirtualCoordinatesSystem.h"
 #else
@@ -17,6 +18,8 @@ class UIScreenTransition;
 class UIControlSystem;
 class UIScreen : public UIControl
 {
+    DAVA_VIRTUAL_REFLECTION(UIScreen, UIControl);
+
 public:
     enum eFillBorderOrder
     {
@@ -58,9 +61,9 @@ public:
     virtual void RemoveFromGroup();
 
     virtual int32 GetGroupId();
-    virtual void SystemDraw(const UIGeometricData& geometricData); // Internal method used by ControlSystem
 
-    virtual void SystemScreenSizeChanged(const Rect& newFullScreenSize);
+    void SystemDraw(const UIGeometricData& geometricData, const DAVA::UIControlBackground* parentBackground) override; // Internal method used by ControlSystem
+    void SystemScreenSizeChanged(const Rect& newFullScreenSize) override;
 
 protected:
     virtual void LoadResources()

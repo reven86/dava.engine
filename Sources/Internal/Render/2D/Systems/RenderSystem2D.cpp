@@ -6,9 +6,10 @@
 
 #include "Render/Renderer.h"
 #include "Render/DynamicBufferAllocator.h"
-
 #include "Render/ShaderCache.h"
 #include "Render/VisibilityQueryResults.h"
+
+#include "Time/SystemTimer.h"
 
 #include "Debug/ProfilerGPU.h"
 #include "Debug/ProfilerMarkerNames.h"
@@ -184,6 +185,8 @@ void RenderSystem2D::BeginFrame()
     }
 
     Setup2DMatrices();
+
+    globalTime = SystemTimer::GetFrameTimestamp();
 }
 
 void RenderSystem2D::EndFrame()
@@ -391,10 +394,11 @@ void RenderSystem2D::IntersectClipRect(const Rect& rect)
 {
     if (currentClip.dx < 0 || currentClip.dy < 0)
     {
+        VirtualCoordinatesSystem* vcs = UIControlSystem::Instance()->vcs;
         const RenderTargetPassDescriptor& descr = GetActiveTargetDescriptor();
         Rect screen(0.0f, 0.0f,
-                    static_cast<float32>(descr.width == 0 ? UIControlSystem::Instance()->vcs->GetVirtualScreenSize().dx : descr.width),
-                    static_cast<float32>(descr.height == 0 ? UIControlSystem::Instance()->vcs->GetVirtualScreenSize().dy : descr.height));
+                    (descr.width == 0 ? vcs->GetVirtualScreenSize().dx : vcs->ConvertPhysicalToVirtualX(float32(descr.width))),
+                    (descr.height == 0 ? vcs->GetVirtualScreenSize().dy : vcs->ConvertPhysicalToVirtualY(float32(descr.height))));
         Rect res = screen.Intersection(rect);
         SetClip(res);
     }
@@ -445,6 +449,11 @@ Rect RenderSystem2D::TransformClipRect(const Rect& rect, const Matrix4& transfor
 void RenderSystem2D::SetSpriteClipping(bool clipping)
 {
     spriteClipping = clipping;
+}
+
+bool RenderSystem2D::GetSpriteClipping() const
+{
+    return spriteClipping;
 }
 
 bool RenderSystem2D::IsPreparedSpriteOnScreen(Sprite::DrawState* drawState)
@@ -624,6 +633,7 @@ void RenderSystem2D::PushBatch(const BatchDescriptor& batchDesc)
         }
         Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_PROJ, &projMatrix, static_cast<pointer_size>(projMatrixSemantic));
         Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_VIEW, &viewMatrix, static_cast<pointer_size>(viewMatrixSemantic));
+        Renderer::GetDynamicBindings().SetDynamicParam(DynamicBindings::PARAM_GLOBAL_TIME, &globalTime, reinterpret_cast<pointer_size>(&globalTime));
 
         if (currentClip.dx > 0.f && currentClip.dy > 0.f)
         {
@@ -1163,9 +1173,10 @@ void RenderSystem2D::DrawStretched(Sprite* sprite, Sprite::DrawState* state, Vec
     }
 
     transformMatr = flipMatrix * transformMatr;
-    if (needGenerateData || sd.transformMatr != transformMatr)
+    if (needGenerateData || sd.transformMatr != transformMatr || sd.usePerPixelAccuracy != state->usePerPixelAccuracy)
     {
         sd.transformMatr = transformMatr;
+        sd.usePerPixelAccuracy = state->usePerPixelAccuracy;
         sd.GenerateTransformData();
     }
 
@@ -1983,10 +1994,15 @@ uint32 StretchDrawData::GetVertexInTrianglesCount() const
 
 void StretchDrawData::GenerateTransformData()
 {
-    const uint32 size = uint32(vertices.size());
-    for (uint32 index = 0; index < size; ++index)
+    if (usePerPixelAccuracy)
     {
-        transformedVertices[index] = vertices[index] * transformMatr;
+        for (size_t i = 0, sz = vertices.size(); i < sz; ++i)
+            transformedVertices[i] = RenderSystem2D::Instance()->GetAlignedVertex(vertices[i] * transformMatr);
+    }
+    else
+    {
+        for (size_t i = 0, sz = vertices.size(); i < sz; ++i)
+            transformedVertices[i] = vertices[i] * transformMatr;
     }
 }
 

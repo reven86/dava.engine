@@ -10,7 +10,7 @@
 #include "Classes/Selection/Selection.h"
 
 // framework
-#include "Scene3d/Components/ComponentHelpers.h"
+#include "Scene3D/Components/ComponentHelpers.h"
 
 // commands
 #include "Commands2/ParticleEditorCommands.h"
@@ -268,7 +268,7 @@ QStringList SceneTreeModel::mimeTypes() const
     QStringList types;
 
     types << MimeDataHelper2<DAVA::Entity>::GetMimeType();
-    types << MimeDataHelper2<DAVA::ParticleEmitter>::GetMimeType();
+    types << MimeDataHelper2<DAVA::ParticleEmitterInstance>::GetMimeType();
     types << MimeDataHelper2<DAVA::ParticleLayer>::GetMimeType();
     types << MimeDataHelper2<DAVA::ParticleForce>::GetMimeType();
 
@@ -395,12 +395,6 @@ bool SceneTreeModel::dropMimeData(const QMimeData* data, Qt::DropAction action, 
             curScene->structureSystem->MoveForce(forcesGroup, layersGroup, newLayer);
             ret = true;
         }
-    }
-    break;
-
-    case DropingMaterial:
-    {
-        DVASSERT(false, "This can't be done. Materials should be assigned only on RenderBatch");
     }
     break;
 
@@ -535,16 +529,6 @@ bool SceneTreeModel::DropCanBeAccepted(const QMimeData* data, Qt::DropAction act
             {
                 ret = true;
             }
-        }
-    }
-    break;
-
-    case DropingMaterial:
-    {
-        DAVA::Entity* targetEntity = SceneTreeItemEntity::GetEntity(parentItem);
-        if (targetEntity)
-        {
-            ret = true;
         }
     }
     break;
@@ -728,10 +712,6 @@ int SceneTreeModel::GetDropType(const QMimeData* data) const
         else if (MimeDataHelper2<DAVA::ParticleForce>::IsValid(data))
         {
             ret = DropingForce;
-        }
-        else if (MimeDataHelper2<DAVA::NMaterial>::IsValid(data))
-        {
-            ret = DropingMaterial;
         }
     }
 

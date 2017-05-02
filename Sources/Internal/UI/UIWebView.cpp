@@ -1,7 +1,9 @@
 #include "UIWebView.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "UI/UIControlSystem.h"
+#include "UI/Update/UIUpdateComponent.h"
 #include "Engine/Engine.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 #if defined(DISABLE_NATIVE_WEBVIEW) && !defined(ENABLE_CEF_WEBVIEW)
 #include "UI/Private/WebViewControlStub.h"
@@ -21,6 +23,15 @@
 
 namespace DAVA
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(UIWebView)
+{
+    ReflectionRegistrator<UIWebView>::Begin()
+    .ConstructorByPointer()
+    .DestructorByPointer([](UIWebView* o) { o->Release(); })
+    .Field("dataDetectorTypes", &UIWebView::GetDataDetectorTypes, &UIWebView::SetDataDetectorTypes)[M::EnumT<eDataDetectorType>()]
+    .End();
+}
+
 UIWebView::UIWebView(const Rect& rect)
     : UIControl(rect)
 #if defined(__DAVAENGINE_COREV2__)
@@ -36,6 +47,8 @@ UIWebView::UIWebView(const Rect& rect)
 
     UpdateNativeControlVisible(false); // will be displayed in OnActive.
     SetDataDetectorTypes(DATA_DETECTOR_LINKS);
+
+    GetOrCreateComponent<UIUpdateComponent>()->SetUpdateInvisible(true);
 }
 
 UIWebView::~UIWebView()
@@ -218,10 +231,10 @@ void UIWebView::CopyDataFrom(UIControl* srcControl)
     SetDataDetectorTypes(webView->GetDataDetectorTypes());
 }
 
-void UIWebView::SystemDraw(const DAVA::UIGeometricData& geometricData)
+void UIWebView::SystemDraw(const DAVA::UIGeometricData& geometricData, const UIControlBackground* parentBackground)
 {
     webViewControl->WillDraw();
-    UIControl::SystemDraw(geometricData);
+    UIControl::SystemDraw(geometricData, parentBackground);
     webViewControl->DidDraw();
 }
 

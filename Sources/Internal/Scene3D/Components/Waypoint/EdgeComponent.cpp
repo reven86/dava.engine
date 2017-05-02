@@ -1,8 +1,20 @@
 #include "Scene3D/Components/Waypoint/EdgeComponent.h"
 #include "Scene3D/Entity.h"
+#include "Reflection/ReflectionRegistrator.h"
+#include "Reflection/ReflectedMeta.h"
 
 namespace DAVA
 {
+DAVA_VIRTUAL_REFLECTION_IMPL(EdgeComponent)
+{
+    ReflectionRegistrator<EdgeComponent>::Begin()[M::CantBeCreatedManualyComponent()]
+    .ConstructorByPointer()
+    .Field("properties", &EdgeComponent::properties)[M::DisplayName("Edge properties")]
+    .Field("nextEntityName", &EdgeComponent::GetNextEntityName, &EdgeComponent::SetNextEntityName)[M::ReadOnly(), M::DisplayName("Next Entity Name")]
+    .Field("nextEntityTag", &EdgeComponent::GetNextEntityTag, &EdgeComponent::SetNextEntityTag)[M::ReadOnly(), M::DisplayName("Next Entity Tag")]
+    .End();
+}
+
 EdgeComponent::EdgeComponent()
     : Component()
     , nextEntity(NULL)

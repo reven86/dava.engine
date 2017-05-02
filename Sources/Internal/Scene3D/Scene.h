@@ -47,6 +47,7 @@ class SkeletonSystem;
 class AnimationSystem;
 class LandscapeSystem;
 class LodSystem;
+class ParticleEffectDebugDrawSystem;
 
 class UIEvent;
 
@@ -164,6 +165,7 @@ public:
     StaticOcclusionDebugDrawSystem* staticOcclusionDebugDrawSystem;
     SkeletonSystem* skeletonSystem;
     LandscapeSystem* landscapeSystem;
+    ParticleEffectDebugDrawSystem* particleEffectDebugDrawSystem;
 
     /**
         \brief Overloaded GetScene returns this, instead of normal functionality.
@@ -204,6 +206,7 @@ public:
     EventSystem* GetEventSystem() const;
     RenderSystem* GetRenderSystem() const;
     AnimationSystem* GetAnimationSystem() const;
+    ParticleEffectDebugDrawSystem* GetParticleEffectDebugDrawSystem() const;
 
     virtual SceneFileV2::eError LoadScene(const DAVA::FilePath& pathname);
     virtual SceneFileV2::eError SaveScene(const DAVA::FilePath& pathname, bool saveForGame = false);
@@ -247,6 +250,8 @@ protected:
 
     uint32 systemsMask;
     uint32 maxEntityIDCounter;
+
+    float32 sceneGlobalTime = 0.f;
 
     Vector<Camera*> cameras;
 

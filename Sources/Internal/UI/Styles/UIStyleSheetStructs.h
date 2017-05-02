@@ -1,33 +1,28 @@
 #ifndef __DAVAENGINE_UI_STYLESHEET_STRUCTS_H__
 #define __DAVAENGINE_UI_STYLESHEET_STRUCTS_H__
 
-#include "Base/IntrospectionBase.h"
+#include "Base/Introspection.h"
 #include "Base/BaseTypes.h"
 #include "Base/FastName.h"
 #include "FileSystem/FilePath.h"
 #include "FileSystem/VariantType.h"
 #include "Animation/Interpolation.h"
+#include "Reflection/Reflection.h"
+#include "Reflection/ReflectedStructure.h"
+#include "Reflection/ReflectedType.h"
 
 namespace DAVA
 {
-enum class ePropertyOwner
-{
-    CONTROL,
-    COMPONENT,
-};
-
 struct UIStyleSheetPropertyGroup
 {
     String prefix;
-    ePropertyOwner propertyOwner;
-    uint32 componentType;
-    const InspInfo* typeInfo;
+    uint32 componentType; // -1 for UIControl
+    const ReflectedType* refType;
 
-    UIStyleSheetPropertyGroup(const String& prefix_, ePropertyOwner owner_, uint32 componentType_, const InspInfo* typeInfo_)
+    UIStyleSheetPropertyGroup(const String& prefix_, uint32 componentType_, const ReflectedType* refType_)
         : prefix(prefix_)
-        , propertyOwner(owner_)
         , componentType(componentType_)
-        , typeInfo(typeInfo_)
+        , refType(refType_)
     {
     }
 };
@@ -37,17 +32,26 @@ struct UIStyleSheetPropertyDescriptor
     UIStyleSheetPropertyGroup* group;
 
     FastName name;
-    VariantType defaultValue;
-    const InspMember* memberInfo = nullptr;
+    Any defaultValue;
+    const ReflectedStructure::Field* field = nullptr;
 
-    UIStyleSheetPropertyDescriptor(UIStyleSheetPropertyGroup* group_, const FastName& name_, const VariantType& defaultValue_)
+    UIStyleSheetPropertyDescriptor(UIStyleSheetPropertyGroup* group_, const char* name_, const Any& defaultValue_)
         : group(group_)
         , name(name_)
         , defaultValue(defaultValue_)
     {
+        String fieldname_ = name_;
+        const ReflectedStructure* s = group->refType->GetStructure();
+        auto it = std::find_if(s->fields.begin(), s->fields.end(), [&fieldname_](const std::unique_ptr<ReflectedStructure::Field>& field) {
+            return field->name == fieldname_;
+        });
+        if (it != s->fields.end())
+        {
+            field = it->get();
+        }
     }
 
-    String GetFullName() const
+    inline String GetFullName() const
     {
         if (group->prefix.empty())
             return String(name.c_str());
@@ -59,12 +63,9 @@ struct UIStyleSheetPropertyDescriptor
 struct UIStyleSheetSelector
 {
     UIStyleSheetSelector()
-        :
-        className("")
-        ,
-        name()
-        ,
-        stateMask(0)
+        : className("")
+        , name()
+        , stateMask(0)
     {
     }
 
@@ -76,23 +77,21 @@ struct UIStyleSheetSelector
 
 struct UIStyleSheetProperty
 {
-    UIStyleSheetProperty(uint32 aPropertyIndex, const VariantType& aValue, bool aTransition = false, Interpolation::FuncType aTransitionFunction = Interpolation::LINEAR, float32 aTransitionTime = 0.0f)
-        :
-        propertyIndex(aPropertyIndex)
-        ,
-        value(aValue)
-        ,
-        transitionFunction(aTransitionFunction)
-        ,
-        transitionTime(aTransitionTime)
-        ,
-        transition(aTransition)
+    UIStyleSheetProperty(uint32 aPropertyIndex,
+                         const Any& aValue,
+                         bool aTransition = false,
+                         Interpolation::FuncType aTransitionFunction = Interpolation::LINEAR,
+                         float32 aTransitionTime = 0.0f)
+        : propertyIndex(aPropertyIndex)
+        , value(aValue)
+        , transitionFunction(aTransitionFunction)
+        , transitionTime(aTransitionTime)
+        , transition(aTransition)
     {
     }
 
     uint32 propertyIndex;
-    VariantType value;
-
+    Any value;
     Interpolation::FuncType transitionFunction;
     float32 transitionTime;
     bool transition;

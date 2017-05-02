@@ -125,11 +125,8 @@ elseif ( WIN32 )
 
 endif  ()
 
-if( MACOS AND COVERAGE AND NOT DAVA_MEGASOLUTION )
+if( MACOS AND COVERAGE )
     set ( CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage -fprofile-instr-generate -fcoverage-mapping" ) 
-    set( CMAKE_XCODE_ATTRIBUTE_GCC_INSTRUMENT_PROGRAM_FLOW_ARCS YES )
-    set( CMAKE_XCODE_ATTRIBUTE_GCC_GENERATE_TEST_COVERAGE_FILES YES )
-
 endif()
 
 if( NOT DISABLE_DEBUG )
@@ -232,6 +229,8 @@ elseif( WARNINGS_AS_ERRORS )
             -Wno-format-pedantic \
             -Wno-shift-negative-value \
             -Wno-return-stack-address \
+            -Wno-undefined-func-template \
+            -Wno-comma \
         ")
     endif()
 
