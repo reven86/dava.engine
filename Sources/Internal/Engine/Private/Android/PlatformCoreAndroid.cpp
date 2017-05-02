@@ -60,8 +60,11 @@ void PlatformCore::Run()
     // From docs: VM automatically ensures that at least 16 local references can be created
     static const jint JniLocalRefsMinCount = 16;
 
-    AndroidBridge::HideSplashView();
     engineBackend->OnGameLoopStarted();
+    // OnGameLoopStarted can take some amount of time so hide spash view after game has done
+    // its work to not frighten user with black screen.
+    AndroidBridge::HideSplashView();
+    AndroidBridge::NotifyEngineRunning();
 
     JNIEnv* env = AndroidBridge::GetEnv();
     while (!quitGameThread)
