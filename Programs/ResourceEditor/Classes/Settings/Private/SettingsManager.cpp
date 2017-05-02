@@ -74,8 +74,10 @@ void SettingsManager::Init()
     CreateValue(Settings::General_AssetCache_Port, DAVA::VariantType(static_cast<DAVA::uint32>(DAVA::AssetCache::ASSET_SERVER_PORT)));
     CreateValue(Settings::General_AssetCache_Timeout, DAVA::VariantType(static_cast<DAVA::uint32>(10)));
     CreateValue(Settings::General_AutoConvertation, DAVA::VariantType(true));
+#if !defined(DEPLOY_BUILD)
     CreateValue(Settings::General_RenderBackend, DAVA::VariantType(static_cast<DAVA::int32>(RenderingBackend::OpenGL)),
                 DAVA::InspDesc("Rendering backend", GlobalEnumMap<RenderingBackend>::Instance()));
+#endif
 
     CreateValue(Settings::Scene_GridStep, DAVA::VariantType(10.0f));
     CreateValue(Settings::Scene_GridSize, DAVA::VariantType(600.0f));

@@ -132,9 +132,10 @@ void REApplication::Init(const DAVA::EngineContext* engineContext)
     engineContext->logger->SetLogFilename("ResourceEditor.txt");
 
     settingsManager = new SettingsManager();
+#if !defined(DEPLOY_BUILD)
     RenderingBackend renderBackend = static_cast<RenderingBackend>(settingsManager->GetValue(Settings::General_RenderBackend).AsInt32());
-
     appOptions->SetInt32("renderer", REApplicationDetail::Convert(renderBackend));
+#endif
 
     beastProxy = new BEAST_PROXY_TYPE();
     const char* settingsPath = "ResourceEditorSettings.archive";
