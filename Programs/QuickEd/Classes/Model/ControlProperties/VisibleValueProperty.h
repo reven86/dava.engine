@@ -11,7 +11,6 @@ public:
 
     void SetVisibleInEditor(bool visible);
     bool GetVisibleInEditor() const;
-
 };
 
 #endif // __QUICKED_VISIBLE_VALUE_PROPERTY__

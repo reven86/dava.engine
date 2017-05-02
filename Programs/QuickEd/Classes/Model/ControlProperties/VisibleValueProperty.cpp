@@ -18,4 +18,3 @@ bool VisibleValueProperty::GetVisibleInEditor() const
 {
     return !DynamicTypeCheck<UIControl*>(GetBaseObject())->IsHiddenForDebug();
 }
-
