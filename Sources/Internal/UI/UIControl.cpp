@@ -109,6 +109,7 @@ UIControl::UIControl(const Rect& rect)
     clipContents = false;
 
     debugDrawEnabled = false;
+    hiddenForDebug = false;
     debugDrawColor = Color(1.0f, 0.0f, 0.0f, 1.0f);
 
     drawPivotPointMode = DRAW_NEVER;
@@ -1004,8 +1005,10 @@ void UIControl::SystemUpdate(float32 timeElapsed)
 
 void UIControl::SystemDraw(const UIGeometricData& geometricData, const UIControlBackground* parentBackground)
 {
-    if (!GetVisibilityFlag())
+    if (!GetVisibilityFlag() || IsHiddenForDebug())
+    {
         return;
+    }
 
     UIControlSystem::Instance()->drawCounter++;
     UIGeometricData drawData = GetLocalGeometricData();
@@ -1937,6 +1940,16 @@ void UIControl::SetDebugDrawColor(const Color& color)
 const Color& UIControl::GetDebugDrawColor() const
 {
     return debugDrawColor;
+}
+
+bool UIControl::IsHiddenForDebug() const
+{
+    return hiddenForDebug;
+}
+
+void UIControl::SetHiddenForDebug(bool hidden)
+{
+    hiddenForDebug = hidden;
 }
 
 void UIControl::SetDrawPivotPointMode(eDebugDrawPivotMode mode, bool hierarchic /*=false*/)
