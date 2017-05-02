@@ -348,7 +348,7 @@ bool PackRequest::UpdateFileRequests()
                     break;
                     case DLCDownloader::TaskState::Finished:
                     {
-                        bool allGood = status.error.curlErr == 0 && status.error.curlMErr == 0;
+                        bool allGood = !status.error.errorHappened;
 
                         if (allGood)
                         {
@@ -359,7 +359,7 @@ bool PackRequest::UpdateFileRequests()
                         }
                         else
                         {
-                            String err = status.error.curlEasyStrErr;
+                            String err = status.error.errStr;
                             std::ostream& out = packManagerImpl->GetLog();
 
                             out << "can't download file: "

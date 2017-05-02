@@ -34,10 +34,15 @@ public:
     uint64 Save(const void* ptr, uint64 size) override
     {
         uint64 space = SpaceLeft();
+
         if (size > space)
         {
-            DAVA_THROW(Exception, "memory corruption");
+            DVASSERT(false && "not enough buffer size");
+            memcpy(current, ptr, static_cast<size_t>(space));
+            current += space;
+            return space;
         }
+
         memcpy(current, ptr, static_cast<size_t>(size));
         current += size;
         return size;
@@ -48,12 +53,13 @@ public:
         return current - start;
     }
 
-    void Truncate() override
+    bool Truncate() override
     {
         current = start;
+        return true;
     }
 
-    uint64 SpaceLeft() override
+    uint64 SpaceLeft() const
     {
         return end - current;
     }

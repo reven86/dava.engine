@@ -73,6 +73,11 @@ struct DLCDownloader::Task
     void CorrectRangeToResumeDownloading();
     void SetupResumeDownload();
     void SetupGetSizeDownload();
+
+    // error handles
+    static void OnErrorCurlMulti(int32 multiCode, Task* task, CURLM* multi, CURL* easy);
+    static void OnErrorCurlEasy(int32 easyCode, Task* task, IDownloaderSubTask* subTask);
+    static void OnErrorCurlErrno(int32 errnoVal, Task* task, IDownloaderSubTask* subTask);
 };
 
 class DLCDownloaderImpl : public DLCDownloader, public ICurlEasyStorage
@@ -122,6 +127,7 @@ private:
     IDownloaderSubTask* FindInMap(CURL* easy) override;
     void UnMap(CURL* easy) override;
     int GetChankSize() override;
+    void DeleteSubTaskHandler(IDownloaderSubTask* t);
     // [end] implement ICurlEasyStorage interface
 
     void DownloadThreadFunc();

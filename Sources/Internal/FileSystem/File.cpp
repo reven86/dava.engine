@@ -43,9 +43,13 @@ File::~File()
 static uint64 GetFilePos(FILE* f)
 {
 #if defined(__DAVAENGINE_WINDOWS__)
-    return _ftelli64(f);
+    int64 result = _ftelli64(f);
+    DVASSERT(-1 != result);
+    return static_cast<uint64>(result);
 #else
-    return static_cast<uint64>(ftello(f));
+    off_t result = ftello(f);
+    DVASSERT(-1 != result);
+    return static_cast<uint64>(result);
 #endif
 }
 
