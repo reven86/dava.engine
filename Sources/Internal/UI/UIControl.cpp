@@ -918,6 +918,7 @@ void UIControl::CopyDataFrom(UIControl* srcControl)
     drawPivotPointMode = srcControl->drawPivotPointMode;
     debugDrawColor = srcControl->debugDrawColor;
     debugDrawEnabled = srcControl->debugDrawEnabled;
+    hiddenForDebug = srcControl->hiddenForDebug;
 
     classes = srcControl->classes;
     localProperties = srcControl->localProperties;
