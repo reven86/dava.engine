@@ -52,11 +52,11 @@ protected:
     DAVA::FastName GeneratePathName() const;
     const DAVA::Color& GetNextPathColor() const;
 
-    void ExpandPathEntity(DAVA::Entity*);
-    void CollapsePathEntity(DAVA::Entity*);
+    void ExpandPathEntity(DAVA::Entity* entity);
+    void CollapsePathEntity(DAVA::Entity* entity, DAVA::FastName pathName);
 
     DAVA::Vector<DAVA::Entity*> pathes;
-    DAVA::Set<DAVA::Entity*> entitiesForCollapse;
+    DAVA::Set<std::pair<DAVA::Entity*, DAVA::FastName>> entitiesForCollapse;
     DAVA::Set<DAVA::Entity*> entitiesForExpand;
     DAVA::UnorderedMap<DAVA::PathComponent::Waypoint*, DAVA::RefPtr<DAVA::Entity>> entityCache;
     DAVA::UnorderedMap<DAVA::PathComponent::Edge*, DAVA::EdgeComponent*> edgeComponentCache;

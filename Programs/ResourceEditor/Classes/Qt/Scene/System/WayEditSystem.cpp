@@ -127,6 +127,7 @@ void WayEditSystem::PerformRemoving(DAVA::Entity* entityToRemove)
 
     WaypointComponent* waypointComponent = GetWaypointComponent(entityToRemove);
     DVASSERT(waypointComponent != nullptr);
+    DVASSERT(waypointComponent->GetWaypoint()->IsStarting() == false);
 
     PathComponent* path = waypointComponent->GetPath();
     PathComponent::Waypoint* waypointToRemove = waypointComponent->GetWaypoint();
@@ -613,6 +614,13 @@ void WayEditSystem::PerformAdding(DAVA::Entity* sourceEntity, DAVA::Entity* clon
     clonedComponent->Init(path, clonedWayPoint);
     sourceEntity->GetParent()->AddNode(clonedEntity);
 
+    UnorderedMap<PathComponent::Edge*, EdgeComponent*> edgeMap;
+    for (uint32 i = 0; i < clonedEntity->GetComponentCount(Component::EDGE_COMPONENT); ++i)
+    {
+        EdgeComponent* edgeComponent = static_cast<EdgeComponent*>(clonedEntity->GetComponent(Component::EDGE_COMPONENT, i));
+        edgeMap[edgeComponent->GetEdge()] = edgeComponent;
+    }
+
     // add new waypoint
     SceneEditor2* sceneEditor = GetSceneEditor();
     sceneEditor->Exec(std::make_unique<AddWaypointCommand>(sceneEditor, path, clonedWayPoint));
@@ -622,6 +630,9 @@ void WayEditSystem::PerformAdding(DAVA::Entity* sourceEntity, DAVA::Entity* clon
     {
         PathComponent::Edge* newEdge = new PathComponent::Edge(true);
         newEdge->destination = edge->destination;
+        auto edgeMappingIter = edgeMap.find(edge);
+        DVASSERT(edgeMappingIter != edgeMap.end());
+        edgeMappingIter->second->Init(path, newEdge);
         sceneEditor->Exec(std::make_unique<AddEdgeCommand>(sceneEditor, path, clonedWayPoint, newEdge));
     }
 
