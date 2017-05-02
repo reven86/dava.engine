@@ -26,6 +26,7 @@ public:
     virtual void OnDragMoved(QDragMoveEvent* e) = 0;
     virtual void OnMouseDBClick(QMouseEvent* e) = 0;
     virtual void OnWheel(QWheelEvent* e) = 0;
+    virtual void OnNativeGesture(QNativeGestureEvent* e) = 0;
 
     virtual void OnKeyPressed(QKeyEvent* e) = 0;
     virtual void OnKeyReleased(QKeyEvent* e) = 0;

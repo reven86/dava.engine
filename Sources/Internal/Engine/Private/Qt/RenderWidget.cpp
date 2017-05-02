@@ -76,11 +76,6 @@ void RenderWidget::ReleaseContext()
     renderWidgetBackend->ReleaseContext();
 }
 
-void RenderWidget::ActivateRendering()
-{
-    renderWidgetBackend->ActivateRendering();
-}
-
 bool RenderWidget::IsInitialized() const
 {
     return renderWidgetBackend->IsInitialized();

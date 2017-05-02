@@ -84,10 +84,6 @@ RenderWidgetDX::RenderWidgetDX(IWindowDelegate* windowDelegate, uint32 width, ui
     container->setFocusProxy(this);
 }
 
-void RenderWidgetDX::ActivateRendering()
-{
-}
-
 bool RenderWidgetDX::IsInitialized() const
 {
     return surface->IsCreated();

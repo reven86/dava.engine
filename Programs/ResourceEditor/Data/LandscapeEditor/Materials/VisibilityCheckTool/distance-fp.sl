@@ -24,21 +24,21 @@ fragment_out
     float4  color   : SV_TARGET0;
 };
 
-const float4 decodeVector = float4(1.0, 255.0, 65025.0, 16581375.0);
-const float MAGIC_TRESHOLD_2 = 1.0 / 255.0;
-const float MAGIC_TRESHOLD_1 = 1.0 + MAGIC_TRESHOLD_2;
+float4 decodeVector = float4(1.0, 255.0, 65025.0, 16581375.0);
+float MAGIC_TRESHOLD_2 = 1.0 / 255.0;
+float MAGIC_TRESHOLD_1 = 1.0 + 1.0 / 255.0;
 
-inline float4 EncodeFloat(float v)
+float4 EncodeFloat(float v)
 {
     return float4(v, v * v, 0.0, 0.0);
 }
 
-inline float DecodeFloat(float4 encoded)
+float DecodeFloat(float4 encoded)
 {
     return encoded.x;
 }
 
-inline float ComputeOcclusion(float4 sampledDistance, float actualDistance)
+float ComputeOcclusion(float4 sampledDistance, float actualDistance)
 {
     float Ex_2 = sampledDistance.x * sampledDistance.x;
     float E_x2 = sampledDistance.y;

@@ -121,11 +121,11 @@ RenderWidgetOGL::RenderWidgetOGL(IWindowDelegate* widgetDelegate, uint32 width, 
     window->setColor(QColor(76, 76, 76, 255));
     connect(window, &QQuickWindow::sceneGraphInvalidated, this, &RenderWidgetOGL::OnSceneGraphInvalidated, Qt::DirectConnection);
     connect(window, &QQuickWindow::activeFocusItemChanged, this, &RenderWidgetOGL::OnActiveFocusItemChanged, Qt::DirectConnection);
+    connect(window, &QQuickWindow::beforeSynchronizing, this, &RenderWidgetOGL::OnBeforeSyncronizing, Qt::DirectConnection);
 }
 
 void RenderWidgetOGL::OnCreated()
 {
-    QObject::disconnect(quickWindow(), &QQuickWindow::beforeSynchronizing, this, &RenderWidgetOGL::OnCreated);
     setProperty(RenderWidgetOGLDetail::initializedPropertyName, true);
 
     // QuickWidnow in QQuickWidget is not "real" window, it doesn't have "platform window" handle,
@@ -166,10 +166,25 @@ void RenderWidgetOGL::OnFrame()
     wnd->resetOpenGLState();
 }
 
+void RenderWidgetOGL::OnBeforeSyncronizing()
+{
+    disconnect(quickWindow(), &QQuickWindow::beforeSynchronizing, this, &RenderWidgetOGL::OnBeforeSyncronizing);
+    isSynchronized = true;
+    TryActivate();
+}
+
+void RenderWidgetOGL::TryActivate()
+{
+    if (IsInitialized() == false && isActivated && isSynchronized)
+    {
+        ActivateRendering();
+        OnCreated();
+    }
+}
+
 void RenderWidgetOGL::ActivateRendering()
 {
     QQuickWindow* w = quickWindow();
-    connect(w, &QQuickWindow::beforeSynchronizing, this, &RenderWidgetOGL::OnCreated, Qt::DirectConnection);
     connect(w, &QQuickWindow::beforeRendering, this, &RenderWidgetOGL::OnFrame, Qt::DirectConnection);
     w->setClearBeforeRendering(false);
 }
@@ -219,6 +234,18 @@ void RenderWidgetOGL::OnActiveFocusItemChanged()
 void RenderWidgetOGL::OnSceneGraphInvalidated()
 {
     TBase::OnDestroyed();
+}
+
+bool RenderWidgetOGL::event(QEvent* e)
+{
+    QEvent::Type eventType = e->type();
+    if (eventType == QEvent::WindowActivate || (eventType == QEvent::Polish && isActiveWindow()))
+    {
+        isActivated = true;
+        TryActivate();
+    }
+
+    return TBase::event(e);
 }
 
 bool RenderWidgetOGL::eventFilter(QObject* object, QEvent* e)

@@ -15,7 +15,6 @@ class RenderWidgetDX : public RenderWidgetBackendImpl<QWidget>
 public:
     RenderWidgetDX(IWindowDelegate* windowDelegate, uint32 width, uint32 height, QWidget* parent);
 
-    void ActivateRendering() override;
     bool IsInitialized() const override;
     void Update() override;
     void InitCustomRenderParams(rhi::InitParam& params) override;

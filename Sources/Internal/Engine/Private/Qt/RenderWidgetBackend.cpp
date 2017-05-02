@@ -104,11 +104,10 @@ void RenderWidgetBackendImpl<TBase>::OnDestroyed()
 template <typename TBase>
 void RenderWidgetBackendImpl<TBase>::resizeEvent(QResizeEvent* e)
 {
-    TBase::resizeEvent(e);
     QSize size = e->size();
-
     windowDelegate->OnResized(size.width(), size.height(), IsInFullScreen());
     resized.Emit(size.width(), size.height());
+    TBase::resizeEvent(e);
 }
 
 template <typename TBase>
@@ -262,10 +261,14 @@ void RenderWidgetBackendImpl<TBase>::keyReleaseEvent(QKeyEvent* e)
 template <typename TBase>
 bool RenderWidgetBackendImpl<TBase>::event(QEvent* e)
 {
-    if (e->type() == QEvent::NativeGesture && clientDelegate != nullptr)
+    if (e->type() == QEvent::NativeGesture)
     {
         QNativeGestureEvent* gestureEvent = static_cast<QNativeGestureEvent*>(e);
-        clientDelegate->OnNativeGuesture(gestureEvent);
+        windowDelegate->OnNativeGesture(gestureEvent);
+        if (clientDelegate != nullptr)
+        {
+            clientDelegate->OnNativeGesture(gestureEvent);
+        }
     }
 
     return TBase::event(e);

@@ -24,7 +24,7 @@ public:
     virtual void OnWheel(QWheelEvent* e)
     {
     }
-    virtual void OnNativeGuesture(QNativeGestureEvent* e)
+    virtual void OnNativeGesture(QNativeGestureEvent* e)
     {
     }
 

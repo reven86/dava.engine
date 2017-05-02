@@ -7,6 +7,7 @@
 #include <Base/BaseTypes.h>
 
 #include <QQuickWidget>
+#include <QEvent>
 
 namespace DAVA
 {
@@ -17,7 +18,6 @@ class RenderWidgetOGL : public RenderWidgetBackendImpl<QQuickWidget>
 public:
     RenderWidgetOGL(IWindowDelegate* widgetDelegate_, uint32 width, uint32 height, QWidget* parent);
 
-    void ActivateRendering() override;
     bool IsInitialized() const override;
     void Update() override;
     void InitCustomRenderParams(rhi::InitParam& params) override;
@@ -25,6 +25,7 @@ public:
     void ReleaseContext() override;
 
 protected:
+    bool event(QEvent* e) override;
     bool eventFilter(QObject* object, QEvent* e) override;
     bool IsInFullScreen() const override;
 
@@ -33,12 +34,18 @@ protected:
 private:
     void OnCreated() override;
     void OnFrame() override;
+    void OnBeforeSyncronizing();
     void OnActiveFocusItemChanged();
     void OnSceneGraphInvalidated();
+
+    void TryActivate();
+    void ActivateRendering();
 
 private:
     bool keyEventRecursiveGuard = false;
     bool isInPaint = false;
+    bool isSynchronized = false;
+    bool isActivated = false;
 
     class OGLContextBinder;
     friend void AcquireContextImpl();

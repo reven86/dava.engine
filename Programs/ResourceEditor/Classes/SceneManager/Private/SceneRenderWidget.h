@@ -6,7 +6,6 @@
 
 #include <Engine/Qt/IClientDelegate.h>
 #include <Engine/Qt/RenderWidget.h>
-#include <Functional/SignalBase.h>
 
 #include <Reflection/Reflection.h>
 #include <UI/UIScreen.h>

@@ -19,7 +19,6 @@ public:
     RenderWidgetBackend(IWindowDelegate* windowDelegate);
 
     virtual ~RenderWidgetBackend() = default;
-    virtual void ActivateRendering() = 0;
     virtual bool IsInitialized() const = 0;
     virtual void Update() = 0;
     virtual void InitCustomRenderParams(rhi::InitParam& params) = 0;
