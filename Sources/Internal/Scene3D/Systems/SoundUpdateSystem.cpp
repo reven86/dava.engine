@@ -64,24 +64,28 @@ void SoundUpdateSystem::Process(float32 timeElapsed)
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::SCENE_SOUND_UPDATE_SYSTEM);
 
     TransformSingleComponent* tsc = GetScene()->transformSingleComponent;
-    for (Entity* entity : tsc->worldTransformChanged)
+    for (auto& pair : tsc->worldTransformChanged.map)
     {
-        if (SoundComponent* sc = static_cast<SoundComponent*>(entity->GetComponent(Component::SOUND_COMPONENT)))
+        if (pair.first->GetComponentsCount(Component::SOUND_COMPONENT) > 0)
         {
-            const Matrix4& worldTransform = GetTransformComponent(entity)->GetWorldTransform();
-            Vector3 translation = worldTransform.GetTranslationVector();
-
-            uint32 eventsCount = sc->GetEventsCount();
-            for (uint32 i = 0; i < eventsCount; ++i)
+            for (Entity* entity : pair.second)
             {
-                SoundEvent* sound = sc->GetSoundEvent(i);
-                sound->SetPosition(translation);
-                if (sound->IsDirectional())
+                SoundComponent* sc = static_cast<SoundComponent*>(entity->GetComponent(Component::SOUND_COMPONENT));
+                const Matrix4& worldTransform = GetTransformComponent(entity)->GetWorldTransform();
+                Vector3 translation = worldTransform.GetTranslationVector();
+
+                uint32 eventsCount = sc->GetEventsCount();
+                for (uint32 i = 0; i < eventsCount; ++i)
                 {
-                    Vector3 worldDirection = MultiplyVectorMat3x3(sc->GetLocalDirection(i), worldTransform);
-                    sound->SetDirection(worldDirection);
+                    SoundEvent* sound = sc->GetSoundEvent(i);
+                    sound->SetPosition(translation);
+                    if (sound->IsDirectional())
+                    {
+                        Vector3 worldDirection = MultiplyVectorMat3x3(sc->GetLocalDirection(i), worldTransform);
+                        sound->SetDirection(worldDirection);
+                    }
+                    sound->UpdateInstancesPosition();
                 }
-                sound->UpdateInstancesPosition();
             }
         }
     }

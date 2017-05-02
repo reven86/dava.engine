@@ -1,6 +1,7 @@
 #pragma once
 
-#include "Base/BaseTypes.h"
+#include "Base/Vector.h"
+#include "Entity/SortedEntityContainer.h"
 
 namespace DAVA
 {
@@ -10,14 +11,14 @@ class TransformSingleComponent
 public:
     Vector<Entity*> localTransformChanged;
     Vector<Entity*> transformParentChanged;
-    Vector<Entity*> worldTransformChanged;
+    SortedEntityContainer worldTransformChanged; //sorted by EntityFamily in TransformSystem
     Vector<Entity*> animationTransformChanged;
 
     void Clear()
     {
         localTransformChanged.clear();
         transformParentChanged.clear();
-        worldTransformChanged.clear();
+        worldTransformChanged.Clear();
         animationTransformChanged.clear();
     }
 };

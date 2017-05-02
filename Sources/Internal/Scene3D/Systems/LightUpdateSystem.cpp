@@ -24,11 +24,14 @@ LightUpdateSystem::LightUpdateSystem(Scene* scene)
 void LightUpdateSystem::Process(float32 timeElapsed)
 {
     TransformSingleComponent* tsc = GetScene()->transformSingleComponent;
-    for (Entity* entity : tsc->worldTransformChanged)
+    for (auto& pair : tsc->worldTransformChanged.map)
     {
-        if (entity->GetComponent(Component::LIGHT_COMPONENT))
+        if (pair.first->GetComponentsCount(Component::LIGHT_COMPONENT) > 0)
         {
-            RecalcLight(entity);
+            for (Entity* entity : pair.second)
+            {
+                RecalcLight(entity);
+            }
         }
     }
 }

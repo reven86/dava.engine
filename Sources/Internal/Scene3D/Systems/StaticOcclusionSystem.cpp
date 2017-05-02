@@ -90,16 +90,22 @@ void StaticOcclusionSystem::Process(float32 timeElapsed)
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::SCENE_STATIC_OCCLUSION_SYSTEM)
 
     TransformSingleComponent* tsc = GetScene()->transformSingleComponent;
-    for (Entity* entity : tsc->worldTransformChanged)
+    for (auto& pair : tsc->worldTransformChanged.map)
     {
-        StaticOcclusionDebugDrawComponent* debugDrawComponent = GetStaticOcclusionDebugDrawComponent(entity);
-        if (debugDrawComponent && debugDrawComponent->GetRenderObject())
+        if (pair.first->GetComponentsCount(Component::STATIC_OCCLUSION_DEBUG_DRAW_COMPONENT) > 0)
         {
-            RenderObject* object = debugDrawComponent->GetRenderObject();
-            // Update new transform pointer, and mark that transform is changed
-            Matrix4* worldTransformPointer = static_cast<TransformComponent*>(entity->GetComponent(Component::TRANSFORM_COMPONENT))->GetWorldTransformPtr();
-            object->SetWorldTransformPtr(worldTransformPointer);
-            GetScene()->renderSystem->MarkForUpdate(object);
+            for (Entity* entity : pair.second)
+            {
+                StaticOcclusionDebugDrawComponent* debugDrawComponent = GetStaticOcclusionDebugDrawComponent(entity);
+                if (debugDrawComponent && debugDrawComponent->GetRenderObject())
+                {
+                    RenderObject* object = debugDrawComponent->GetRenderObject();
+                    // Update new transform pointer, and mark that transform is changed
+                    Matrix4* worldTransformPointer = static_cast<TransformComponent*>(entity->GetComponent(Component::TRANSFORM_COMPONENT))->GetWorldTransformPtr();
+                    object->SetWorldTransformPtr(worldTransformPointer);
+                    GetScene()->renderSystem->MarkForUpdate(object);
+                }
+            }
         }
     }
 

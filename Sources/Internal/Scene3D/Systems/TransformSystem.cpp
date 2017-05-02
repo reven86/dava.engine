@@ -45,7 +45,6 @@ void TransformSystem::Process(float32 timeElapsed)
     {
         FindNodeThatRequireUpdate(updatableEntities[i]);
     }
-
     updatableEntities.clear();
 
     if (passedNodes)
@@ -112,7 +111,7 @@ void TransformSystem::TransformAllChildEntities(Entity* entity)
             else
                 transform->worldMatrix = transform->localMatrix * *(transform->parentMatrix);
             TransformSingleComponent* tsc = GetScene()->transformSingleComponent;
-            tsc->worldTransformChanged.push_back(entity);
+            tsc->worldTransformChanged.Push(entity);
         }
 
         entity->RemoveFlag(Entity::TRANSFORM_NEED_UPDATE | Entity::TRANSFORM_DIRTY);
@@ -141,7 +140,7 @@ void TransformSystem::HierahicFindUpdatableTransform(Entity* entity, bool forced
         {
             transform->worldMatrix = transform->localMatrix * *(transform->parentMatrix);
             TransformSingleComponent* tsc = GetScene()->transformSingleComponent;
-            tsc->worldTransformChanged.push_back(entity);
+            tsc->worldTransformChanged.Push(entity);
         }
     }
 

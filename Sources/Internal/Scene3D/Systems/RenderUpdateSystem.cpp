@@ -56,16 +56,22 @@ void RenderUpdateSystem::Process(float32 timeElapsed)
     DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::SCENE_RENDER_UPDATE_SYSTEM);
 
     TransformSingleComponent* tsc = GetScene()->transformSingleComponent;
-    for (Entity* entity : tsc->worldTransformChanged)
+    for (auto& pair : tsc->worldTransformChanged.map)
     {
-        RenderComponent* rc = static_cast<RenderComponent*>(entity->GetComponent(Component::RENDER_COMPONENT));
-        if (rc && rc->GetRenderObject())
+        if (pair.first->GetComponentsCount(Component::RENDER_COMPONENT) > 0)
         {
-            RenderObject* object = rc->GetRenderObject();
-            // Update new transform pointer, and mark that transform is changed
-            Matrix4* worldTransformPointer = (static_cast<TransformComponent*>(entity->GetComponent(Component::TRANSFORM_COMPONENT)))->GetWorldTransformPtr();
-            object->SetWorldTransformPtr(worldTransformPointer);
-            entity->GetScene()->renderSystem->MarkForUpdate(object);
+            for (Entity* entity : pair.second)
+            {
+                RenderComponent* rc = static_cast<RenderComponent*>(entity->GetComponent(Component::RENDER_COMPONENT));
+                if (rc->GetRenderObject())
+                {
+                    RenderObject* object = rc->GetRenderObject();
+                    // Update new transform pointer, and mark that transform is changed
+                    Matrix4* worldTransformPointer = (static_cast<TransformComponent*>(entity->GetComponent(Component::TRANSFORM_COMPONENT)))->GetWorldTransformPtr();
+                    object->SetWorldTransformPtr(worldTransformPointer);
+                    entity->GetScene()->renderSystem->MarkForUpdate(object);
+                }
+            }
         }
     }
 
