@@ -157,7 +157,7 @@ void UIScrollBarLinkSystem::LinkDelegate(UIControl* linkedControl)
 template <typename Predicate>
 void UIScrollBarLinkSystem::Unlink(int32 linkType, Predicate predicate)
 {
-    Vector<Link>::iterator it = links.begin();
+    auto it = links.begin();
     while ((it = std::find_if(it, links.end(), predicate)) != links.end())
     {
         it->type &= ~linkType;
