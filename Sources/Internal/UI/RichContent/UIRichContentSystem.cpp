@@ -168,13 +168,17 @@ public:
                 DefaultUIPackageBuilder pkgBuilder;
                 UIPackageLoader().LoadPackage(path, &pkgBuilder);
                 UIControl* obj = nullptr;
-                if (!controlName.empty())
+                UIPackage* pkg = pkgBuilder.GetPackage();
+                if (pkg != nullptr)
                 {
-                    obj = pkgBuilder.GetPackage()->GetControl(controlName);
-                }
-                else if (!prototypeName.empty())
-                {
-                    obj = pkgBuilder.GetPackage()->GetPrototype(prototypeName);
+                    if (!controlName.empty())
+                    {
+                        obj = pkg->GetControl(controlName);
+                    }
+                    else if (!prototypeName.empty())
+                    {
+                        obj = pkg->GetPrototype(prototypeName);
+                    }
                 }
                 if (obj != nullptr)
                 {
