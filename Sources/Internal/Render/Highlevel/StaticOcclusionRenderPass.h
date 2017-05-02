@@ -44,7 +44,7 @@ private:
     Vector<BatchWithOptions> meshRenderBatches;
 
     UnorderedSet<RenderBatch*> batchesWithoutDepth;
-    UnorderedSet<RenderBatch*> batchesWithDepth;
+    UnorderedSet<RenderBatch*> processedBatches;
 };
 };
 

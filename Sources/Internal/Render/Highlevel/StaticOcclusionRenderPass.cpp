@@ -94,23 +94,29 @@ bool StaticOcclusionRenderPass::ShouldDisableDepthWrite(RenderBatch* batch)
         return true;
     }
 
-    if (batchesWithDepth.count(batch) > 0)
+    if (processedBatches.count(batch) > 0)
     {
         return false;
     }
 
     RenderObject* ro = batch->GetRenderObject();
-    uint32 count = ro->GetRenderBatchCount();
-    for (uint32 i = 0; i < count; ++i)
+    uint32 rbCount = ro->GetRenderBatchCount();
+
+    bool isSwitchRO = false;
+    int32 switchIndex = -1;
+    int32 lodIndex = -1;
+    Vector<RenderBatch*> roBatches(rbCount);
+    for (uint32 i = 0; i < rbCount; ++i)
     {
-        int32 switchIndex = -1;
-        int32 lodIndex = -1;
-        RenderBatch* rb = ro->GetRenderBatch(i, lodIndex, switchIndex);
+        roBatches[i] = ro->GetRenderBatch(i, lodIndex, switchIndex);
         if (switchIndex > 0)
-            batchesWithoutDepth.insert(rb);
-        else
-            batchesWithDepth.insert(rb);
+            isSwitchRO = true;
     }
+
+    if (isSwitchRO)
+        batchesWithoutDepth.insert(roBatches.begin(), roBatches.end());
+    else
+        processedBatches.insert(roBatches.begin(), roBatches.end());
 
     return ShouldDisableDepthWrite(batch);
 }
