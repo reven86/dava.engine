@@ -26,6 +26,8 @@ static const DAVA::FastName TILEMASK_EDTIOR_TEXTURE_TOOL("toolTexture");
 
 static const DAVA::FastName TILEMASK_EDITOR_MATERIAL_PASS("2d");
 
+namespace TilemaskEditorSystemDetail
+{
 const std::array<DAVA::float32, 6 * (3 + 2)> buffer = // 6 vertecies by 5 floats: vec3 position, vec2 tex coord
 { { -1.f, -1.f, 0.f, 0.f, 0.f,
     -1.f, 1.f, 0.f, 0.f, 1.f,
@@ -33,6 +35,7 @@ const std::array<DAVA::float32, 6 * (3 + 2)> buffer = // 6 vertecies by 5 floats
     -1.f, -1.f, 0.f, 0.f, 0.f,
     1.f, 1.f, 0.f, 1.f, 1.f,
     1.f, -1.f, 0.f, 1.f, 0.f } };
+}
 
 TilemaskEditorSystem::TilemaskEditorSystem(DAVA::Scene* scene)
     : LandscapeEditorSystem(scene, "~res:/ResourceEditor/LandscapeEditor/Tools/cursor/cursor.png")
@@ -61,8 +64,8 @@ TilemaskEditorSystem::TilemaskEditorSystem(DAVA::Scene* scene)
 
     editorMaterial->PreBuildMaterial(TILEMASK_EDITOR_MATERIAL_PASS);
 
-    quadBuffer = rhi::CreateVertexBuffer(static_cast<DAVA::uint32>(buffer.size() * sizeof(DAVA::float32)));
-    rhi::UpdateVertexBuffer(quadBuffer, buffer.data(), 0, static_cast<DAVA::uint32>(buffer.size() * sizeof(DAVA::float32)));
+    quadBuffer = rhi::CreateVertexBuffer(static_cast<DAVA::uint32>(TilemaskEditorSystemDetail::buffer.size() * sizeof(DAVA::float32)));
+    rhi::UpdateVertexBuffer(quadBuffer, TilemaskEditorSystemDetail::buffer.data(), 0, static_cast<DAVA::uint32>(TilemaskEditorSystemDetail::buffer.size() * sizeof(DAVA::float32)));
     DAVA::Renderer::GetSignals().needRestoreResources.Connect(this, &TilemaskEditorSystem::UpdateVertexBuffer);
 
     quadPacket.vertexStreamCount = 1;
@@ -495,7 +498,7 @@ void TilemaskEditorSystem::UpdateVertexBuffer()
 {
     if (rhi::NeedRestoreVertexBuffer(quadBuffer))
     {
-        rhi::UpdateVertexBuffer(quadBuffer, buffer.data(), 0, static_cast<DAVA::uint32>(buffer.size() * sizeof(DAVA::float32)));
+        rhi::UpdateVertexBuffer(quadBuffer, TilemaskEditorSystemDetail::buffer.data(), 0, static_cast<DAVA::uint32>(TilemaskEditorSystemDetail::buffer.size() * sizeof(DAVA::float32)));
     }
 }
 
