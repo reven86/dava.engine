@@ -265,6 +265,11 @@ void dx9_InitCaps(const AdapterInfo& adapterInfo)
         MutableDeviceCaps::Get().isVertexTextureUnitsSupported = false;
     }
 
+    if (adapterInfo.info.VendorId == 0x10DE && (adapterInfo.info.DeviceId >> 4) == 0x014) //DeviceID from 0x0140 to 0x014F - NV43 chip from NVIDIA
+    {
+        MutableDeviceCaps::Get().isInstancingSupported = false;
+    }
+
     DX9CheckMultisampleSupport();
 }
 
