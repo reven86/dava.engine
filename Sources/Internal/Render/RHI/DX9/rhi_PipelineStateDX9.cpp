@@ -225,14 +225,13 @@ public:
         {
         };
 
-        ConstBuf();
         ~ConstBuf();
 
         void Construct(ProgType type, unsigned reg_i, unsigned reg_count, unsigned elem_count);
         void Destroy();
 
         unsigned ConstElementCount() const;
-        const void* InstData() const;
+        const void* InstData();
         void InvalidateInst();
 
         bool SetConst(unsigned const_i, unsigned count, const float* data);
@@ -241,11 +240,11 @@ public:
 
     private:
         ProgType progType = PROG_VERTEX;
-        float* value;
-        mutable float* inst;
-        unsigned elemCount;
-        unsigned regBase;
-        unsigned regCount;
+        float* value = nullptr;
+        float* inst = nullptr;
+        unsigned elementCount = 0;
+        unsigned registerBase = 0;
+        unsigned registerCount = 0;
     };
 
     struct
@@ -328,17 +327,6 @@ RHI_IMPL_POOL_SIZE(PipelineStateDX9_t::ConstBuf, RESOURCE_CONST_BUFFER, Pipeline
 
 //------------------------------------------------------------------------------
 
-PipelineStateDX9_t::ConstBuf::ConstBuf()
-    : value(nullptr)
-    , inst(nullptr)
-    , elemCount(0)
-    , regBase(DAVA::InvalidIndex)
-    , regCount(0)
-{
-}
-
-//------------------------------------------------------------------------------
-
 PipelineStateDX9_t::ConstBuf::~ConstBuf()
 {
     if (value)
@@ -357,12 +345,12 @@ void PipelineStateDX9_t::ConstBuf::Construct(ProgType ptype, unsigned reg_i, uns
     DVASSERT(reg_i != DAVA::InvalidIndex);
     DVASSERT(reg_count);
 
-    elemCount = elem_count;
-    regBase = reg_i;
-    regCount = reg_count;
+    elementCount = elem_count;
+    registerBase = reg_i;
+    registerCount = reg_count;
 
     progType = ptype;
-    value = (float*)(malloc(elemCount * 4 * sizeof(float)));
+    value = (float*)(malloc(elementCount * 4 * sizeof(float)));
     inst = nullptr;
 }
 
@@ -376,9 +364,9 @@ void PipelineStateDX9_t::ConstBuf::Destroy()
 
         value = nullptr;
         inst = nullptr;
-        elemCount = 0;
-        regBase = 0;
-        regCount = 0;
+        elementCount = 0;
+        registerBase = 0;
+        registerCount = 0;
     }
 }
 
@@ -387,18 +375,18 @@ void PipelineStateDX9_t::ConstBuf::Destroy()
 unsigned
 PipelineStateDX9_t::ConstBuf::ConstElementCount() const
 {
-    return elemCount;
+    return elementCount;
 }
 
 //------------------------------------------------------------------------------
 
 const void*
-PipelineStateDX9_t::ConstBuf::InstData() const
+PipelineStateDX9_t::ConstBuf::InstData()
 {
     if (!inst)
     {
-        inst = _DX9_DefConstRingBuf.Alloc(4 * elemCount);
-        memcpy(inst, value, elemCount * 4 * sizeof(float));
+        inst = _DX9_DefConstRingBuf.Alloc(4 * elementCount);
+        memcpy(inst, value, elementCount * 4 * sizeof(float));
     }
 
     return inst;
@@ -417,7 +405,7 @@ bool PipelineStateDX9_t::ConstBuf::SetConst(unsigned const_i, unsigned const_cou
 {
     bool success = false;
 
-    if (const_i + const_count <= elemCount)
+    if (const_i + const_count <= elementCount)
     {
         memcpy(value + const_i * 4, data, const_count * 4 * sizeof(float));
         inst = nullptr;
@@ -433,7 +421,7 @@ bool PipelineStateDX9_t::ConstBuf::SetConst(unsigned const_i, unsigned const_sub
 {
     bool success = false;
 
-    if (const_i <= elemCount && const_sub_i < 4)
+    if (const_i <= elementCount && const_sub_i < 4)
     {
         memcpy(value + const_i * 4 + const_sub_i, data, dataCount * sizeof(float));
         inst = nullptr;
@@ -450,9 +438,9 @@ void PipelineStateDX9_t::ConstBuf::SetToRHI(const void* inst_data) const
     HRESULT hr;
 
     if (progType == PROG_VERTEX)
-        hr = _D3D9_Device->SetVertexShaderConstantF(regBase, (const float*)inst_data, regCount);
+        hr = _D3D9_Device->SetVertexShaderConstantF(registerBase, (const float*)inst_data, registerCount);
     else
-        hr = _D3D9_Device->SetPixelShaderConstantF(regBase, (const float*)inst_data, regCount);
+        hr = _D3D9_Device->SetPixelShaderConstantF(registerBase, (const float*)inst_data, registerCount);
 
     DVASSERT(SUCCEEDED(hr));
 }
