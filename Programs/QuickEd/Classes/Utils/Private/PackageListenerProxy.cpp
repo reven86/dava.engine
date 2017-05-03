@@ -8,6 +8,8 @@
 
 #include <Reflection/ReflectedTypeDB.h>
 
+PackageListenerProxy::PackageListenerProxy() = default;
+
 PackageListenerProxy::PackageListenerProxy(PackageListener* listener, DAVA::TArc::ContextAccessor* accessor)
 {
     Init(listener, accessor);
