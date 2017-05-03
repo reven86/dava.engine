@@ -3,7 +3,7 @@
 #include "UI/UIControlSystem.h"
 #include "UI/ScrollHelper.h"
 #include "Reflection/ReflectionRegistrator.h"
-#include "UI/Update/UIUpdateComponent.h"
+#include "UI/Scroll/UIScrollComponent.h"
 
 namespace DAVA
 {
@@ -32,7 +32,7 @@ UIScrollViewContainer::UIScrollViewContainer(const Rect& rect)
 {
     this->SetInputEnabled(true);
     this->SetMultiInput(true);
-    GetOrCreateComponent<UIUpdateComponent>();
+    GetOrCreateComponent<UIScrollComponent>();
 }
 
 UIScrollViewContainer::~UIScrollViewContainer()
