@@ -38,5 +38,6 @@ private:
     void RemoveLink(UIRichContentComponent* component);
 
     Vector<Link> links;
+    Vector<Link> appendLinks;
 };
 }

@@ -165,31 +165,67 @@ public:
 
             if (!path.empty() && (!controlName.empty() || !prototypeName.empty()))
             {
-                DefaultUIPackageBuilder pkgBuilder;
-                UIPackageLoader().LoadPackage(path, &pkgBuilder);
-                UIControl* obj = nullptr;
-                UIPackage* pkg = pkgBuilder.GetPackage();
-                if (pkg != nullptr)
+                // Check that we not load self as rich object
+                bool valid = true;
                 {
-                    if (!controlName.empty())
+                    UIControl* ctrl = component->GetControl();
+                    while (ctrl != nullptr)
                     {
-                        obj = pkg->GetControl(controlName);
-                    }
-                    else if (!prototypeName.empty())
-                    {
-                        obj = pkg->GetPrototype(prototypeName);
+                        UIRichContentObjectComponent* objComp = ctrl->GetComponent<UIRichContentObjectComponent>();
+                        if (objComp)
+                        {
+                            if (path == objComp->GetPackagePath() &&
+                                controlName == objComp->GetControlName() &&
+                                prototypeName == objComp->GetPrototypeName())
+                            {
+                                valid = false;
+                                break;
+                            }
+                        }
+                        ctrl = ctrl->GetParent();
                     }
                 }
-                if (obj != nullptr)
+
+                if (valid)
                 {
-                    obj = obj->Clone(); // Clone control from package
-                    PrepareControl(obj, false);
-                    if (!name.empty())
+                    DefaultUIPackageBuilder pkgBuilder;
+                    UIPackageLoader().LoadPackage(path, &pkgBuilder);
+                    UIControl* obj = nullptr;
+                    UIPackage* pkg = pkgBuilder.GetPackage();
+                    if (pkg != nullptr)
                     {
-                        obj->SetName(name);
+                        if (!controlName.empty())
+                        {
+                            obj = pkg->GetControl(controlName);
+                        }
+                        else if (!prototypeName.empty())
+                        {
+                            obj = pkg->GetPrototype(prototypeName);
+                        }
                     }
-                    component->onCreateObject.Emit(obj);
-                    controls.emplace_back(obj);
+                    if (obj != nullptr)
+                    {
+                        obj = obj->Clone(); // Clone control from package
+                        PrepareControl(obj, false);
+
+                        UIRichContentObjectComponent* objComp = obj->GetOrCreateComponent<UIRichContentObjectComponent>();
+                        objComp->SetPackagePath(path);
+                        objComp->SetControlName(controlName);
+                        objComp->SetPrototypeName(prototypeName);
+
+                        if (!name.empty())
+                        {
+                            obj->SetName(name);
+                        }
+                        component->onCreateObject.Emit(obj);
+                        controls.emplace_back(obj);
+                    }
+                }
+                else
+                {
+                    Logger::Error("[UIRichContentSystem] Recursive object in rich content from '%s' with name '%s'!",
+                                  path.c_str(),
+                                  controlName.empty() ? prototypeName.c_str() : controlName.c_str());
                 }
             }
         }
@@ -303,6 +339,12 @@ void UIRichContentSystem::UnregisterComponent(UIControl* control, UIComponent* c
 
 void UIRichContentSystem::Process(float32 elapsedTime)
 {
+    // Add new links
+    if (!appendLinks.empty())
+    {
+        links.insert(links.end(), appendLinks.begin(), appendLinks.end());
+        appendLinks.clear();
+    }
     // Remove empty links
     if (!links.empty())
     {
@@ -315,8 +357,7 @@ void UIRichContentSystem::Process(float32 elapsedTime)
     // Process links
     for (Link& l : links)
     {
-        DVASSERT(l.component);
-        if (l.component->IsModified())
+        if (l.component && l.component->IsModified())
         {
             l.component->SetModified(false);
 
@@ -340,7 +381,7 @@ void UIRichContentSystem::AddLink(UIRichContentComponent* component)
 {
     DVASSERT(component);
     component->SetModified(true);
-    links.emplace_back(component);
+    appendLinks.emplace_back(component);
 }
 
 void UIRichContentSystem::RemoveLink(UIRichContentComponent* component)
@@ -349,9 +390,11 @@ void UIRichContentSystem::RemoveLink(UIRichContentComponent* component)
     auto findIt = std::find_if(links.begin(), links.end(), [&component](const Link& l) {
         return l.component == component;
     });
-    DVASSERT(findIt != links.end());
-    findIt->RemoveItems();
-    findIt->component = nullptr; // mark link for delete
+    if (findIt != links.end())
+    {
+        findIt->RemoveItems();
+        findIt->component = nullptr; // mark link for delete
+    }
 }
 
 UIRichContentSystem::Link::Link(UIRichContentComponent* c)

@@ -20,6 +20,7 @@
 #include "UI/Sound/UISoundComponent.h"
 #include "UI/Sound/UISoundValueFilterComponent.h"
 #include "UI/RichContent/UIRichContentComponent.h"
+#include "UI/RichContent/UIRichContentObjectComponent.h"
 #include "UI/Update/UIUpdateComponent.h"
 #include "UI/Update/UICustomUpdateDeltaComponent.h"
 #include "Utils/StringFormat.h"
@@ -121,6 +122,9 @@ UIComponent* UIComponent::CreateByType(uint32 componentType)
 
     case RICH_CONTENT_COMPONENT:
         return new UIRichContentComponent();
+
+    case RICH_CONTENT_OBJECT_COMPONENT:
+        return new UIRichContentObjectComponent();
 
     default:
         DVASSERT(false, Format("Can't create component with type %d", componentType).c_str());
