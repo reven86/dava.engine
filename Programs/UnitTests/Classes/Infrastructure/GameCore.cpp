@@ -222,7 +222,9 @@ void GameCore::OnTestFinished(const DAVA::String& testClassName, const DAVA::Str
 
 void GameCore::OnTestFailed(const String& testClassName, const String& testName, const String& condition, const char* filename, int lineno, const String& userMessage)
 {
+#if defined(__DAVAENGINE_DEBUG__)
     OnError();
+#endif //__DAVAENGINE_DEBUG__
 
     String errorString;
     if (userMessage.empty())
