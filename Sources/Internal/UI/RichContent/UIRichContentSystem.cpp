@@ -6,6 +6,7 @@
 #include "UI/UIStaticText.h"
 #include "UI/Layouts/UISizePolicyComponent.h"
 #include "UI/Layouts/UIFlowLayoutHintComponent.h"
+#include "UI/Layouts/UILayoutSourceRectComponent.h"
 #include "UI/RichContent/UIRichAliasMap.h"
 #include "UI/RichContent/UIRichContentComponent.h"
 #include "UI/RichContent/UIRichContentSystem.h"
@@ -87,6 +88,11 @@ public:
     void PrepareControl(UIControl* ctrl, bool autosize)
     {
         ctrl->SetClassesFromString(GetClass());
+
+        if (isEditorMode)
+        {
+            ctrl->GetOrCreateComponent<UILayoutSourceRectComponent>();
+        }
 
         if (autosize)
         {
