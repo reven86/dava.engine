@@ -1,6 +1,6 @@
 #pragma once
 
-#define RHI_RESOURCE_INCLUDE_BACKTRACE 1
+#define RHI_RESOURCE_INCLUDE_BACKTRACE 0
 
 #include "../rhi_Type.h"
 #include "Utils/StringFormat.h"
