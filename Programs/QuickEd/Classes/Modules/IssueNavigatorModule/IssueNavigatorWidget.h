@@ -4,6 +4,8 @@
 #include <QWidget>
 #include <QStandardItemModel>
 
+#include <FileSystem/FilePath.h>
+
 namespace DAVA
 {
 class Any;
@@ -40,6 +42,10 @@ public:
     void AddIssue(const Issue& issue);
     void ChangeMessage(DAVA::int32 sectionId, DAVA::int32 id, const DAVA::String& message);
     void RemoveIssue(DAVA::int32 sectionId, DAVA::int32 issueId);
+
+signals:
+    void JumpToControl(const DAVA::FilePath& packagePath, const DAVA::String& controlName);
+    void JumpToPackage(const DAVA::FilePath& packagePath);
 
 private slots:
     void OnActivated(const QModelIndex& index);

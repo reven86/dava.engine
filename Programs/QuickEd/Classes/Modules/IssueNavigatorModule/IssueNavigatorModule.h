@@ -2,6 +2,7 @@
 
 #include <Base/BaseTypes.h>
 #include <TArc/Core/ClientModule.h>
+#include <TArc/Utils/QtConnections.h>
 
 class IssueNavigatorWidget;
 class LayoutIssuesHandler;
@@ -12,11 +13,12 @@ class IssueNavigatorModule : public DAVA::TArc::ClientModule
 
 private:
     void PostInit() override;
-    void InitUI();
-    void RegisterOperations();
 
+    void JumpToControl(const DAVA::FilePath& packagePath, const DAVA::String& controlName);
+    void JumpToPackage(const DAVA::FilePath& packagePath);
+
+    DAVA::TArc::QtConnections connections;
     IssueNavigatorWidget* widget = nullptr;
 
-private:
     std::unique_ptr<LayoutIssuesHandler> layoutIssuesHandler;
 };

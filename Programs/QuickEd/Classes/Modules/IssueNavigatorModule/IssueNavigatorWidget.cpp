@@ -2,7 +2,6 @@
 
 #include "ui_IssueNavigatorWidget.h"
 
-
 #include <TArc/Core/FieldBinder.h>
 
 #include <QKeyEvent>
@@ -16,6 +15,7 @@ IssueNavigatorWidget::IssueNavigatorWidget(DAVA::TArc::ContextAccessor* accessor
     model = new QStandardItemModel();
     model->setHorizontalHeaderLabels(QStringList() << "Error"
                                                    << "Path To Control"
+                                                   << "Package Path"
                                                    << "Property Name");
 
     ui->treeView->setModel(model);
@@ -33,6 +33,7 @@ void IssueNavigatorWidget::AddIssue(const Issue& issue)
 
     items << new QStandardItem(QString::fromStdString(issue.message));
     items << new QStandardItem(QString::fromStdString(issue.pathToControl));
+    items << new QStandardItem(QString::fromStdString(issue.packagePath));
     items << new QStandardItem(QString::fromStdString(issue.propertyName));
 
     for (QStandardItem* item : items)
@@ -82,19 +83,16 @@ void IssueNavigatorWidget::RemoveIssue(DAVA::int32 sectionId_, DAVA::int32 issue
 
 void IssueNavigatorWidget::OnActivated(const QModelIndex& index)
 {
-    //    if (document != nullptr)
-    //    {
-    //        QString path = index.data(PACKAGE_DATA).toString();
-    //        if (index.data(CONTROL_DATA).isValid())
-    //        {
-    //            QString control = index.data(CONTROL_DATA).toString();
-    //            emit JumpToControl(FilePath(path.toStdString()), control.toStdString());
-    //        }
-    //        else
-    //        {
-    //            emit JumpToPackage(FilePath(path.toStdString()));
-    //        }
-    //    }
+    QString path = index.data(PACKAGE_DATA).toString();
+    if (index.data(CONTROL_DATA).isValid())
+    {
+        QString control = index.data(CONTROL_DATA).toString();
+        emit JumpToControl(DAVA::FilePath(path.toStdString()), control.toStdString());
+    }
+    else
+    {
+        emit JumpToPackage(DAVA::FilePath(path.toStdString()));
+    }
 }
 
 bool IssueNavigatorWidget::eventFilter(QObject* obj, QEvent* event)

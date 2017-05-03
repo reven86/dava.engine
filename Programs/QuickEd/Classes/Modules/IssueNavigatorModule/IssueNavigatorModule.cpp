@@ -19,12 +19,6 @@ DAVA_VIRTUAL_REFLECTION_IMPL(IssueNavigatorModule)
 
 void IssueNavigatorModule::PostInit()
 {
-    InitUI();
-    RegisterOperations();
-}
-
-void IssueNavigatorModule::InitUI()
-{
     using namespace DAVA::TArc;
     const char* title = "Issue Navigator";
     DockPanelInfo panelInfo;
@@ -33,15 +27,26 @@ void IssueNavigatorModule::InitUI()
     PanelKey key(title, panelInfo);
 
     widget = new IssueNavigatorWidget(GetAccessor());
+    connections.AddConnection(widget, &IssueNavigatorWidget::JumpToControl, MakeFunction(this, &IssueNavigatorModule::JumpToControl));
+    connections.AddConnection(widget, &IssueNavigatorWidget::JumpToPackage, MakeFunction(this, &IssueNavigatorModule::JumpToPackage));
+
     GetUI()->AddView(DAVA::TArc::mainWindowKey, key, widget);
 
     DAVA::int32 sectionId = 0;
-    layoutIssuesHandler.reset(new LayoutIssuesHandler(sectionId++, widget));
+    layoutIssuesHandler.reset(new LayoutIssuesHandler(GetAccessor(), sectionId++, widget));
 }
 
-void IssueNavigatorModule::RegisterOperations()
+void IssueNavigatorModule::JumpToControl(const DAVA::FilePath& packagePath, const DAVA::String& controlName)
 {
-    //    RegisterOperation(int operationID, Cls *object, Ret (Cls::*fn)(Args...) const)
+    const QString& path = QString::fromStdString(packagePath.GetAbsolutePathname());
+    const QString& name = QString::fromStdString(controlName);
+    InvokeOperation(QEGlobal::SelectControl.ID, path, name);
+}
+
+void IssueNavigatorModule::JumpToPackage(const DAVA::FilePath& packagePath)
+{
+    const QString& path = QString::fromStdString(packagePath.GetAbsolutePathname());
+    InvokeOperation(QEGlobal::OpenDocumentByPath.ID, path);
 }
 
 DECL_GUI_MODULE(IssueNavigatorModule);
