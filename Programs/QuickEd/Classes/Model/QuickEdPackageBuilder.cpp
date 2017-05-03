@@ -244,7 +244,6 @@ const ReflectedType* QuickEdPackageBuilder::BeginControlWithPath(const String& p
     }
 
     controlsStack.push_back(ControlDescr(SafeRetain(control), false));
-
     return ReflectedTypeDB::GetByPointer(control->GetControl());
 }
 
