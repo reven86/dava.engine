@@ -16,11 +16,36 @@
 
 namespace DAVA
 {
+class RichContentUIPackageBuilder : public DefaultUIPackageBuilder
+{
+public:
+    RichContentUIPackageBuilder(UIPackagesCache* _cache = nullptr)
+        : DefaultUIPackageBuilder(_cache)
+    {
+    }
+
+protected:
+    RefPtr<DAVA::UIControl> CreateControlByName(const DAVA::String& customClassName, const DAVA::String& className) override
+    {
+        if (ObjectFactory::Instance()->IsTypeRegistered(customClassName))
+        {
+            return RefPtr<UIControl>(ObjectFactory::Instance()->New<UIControl>(customClassName));
+        }
+        return RefPtr<UIControl>(ObjectFactory::Instance()->New<UIControl>(className));
+    }
+
+    std::unique_ptr<DAVA::DefaultUIPackageBuilder> CreateBuilder(DAVA::UIPackagesCache* packagesCache) override
+    {
+        return std::make_unique<RichContentUIPackageBuilder>(packagesCache);
+    }
+};
+
 class XMLRichContentBuilder final : public XMLParserDelegate
 {
 public:
-    XMLRichContentBuilder(UIRichContentComponent* component_)
+    XMLRichContentBuilder(UIRichContentComponent* component_, bool editorMode = false)
         : component(component_)
+        , isEditorMode(editorMode)
     {
         DVASSERT(component);
         PutClass(component->GetBaseClasses());
@@ -188,10 +213,10 @@ public:
 
                 if (valid)
                 {
-                    DefaultUIPackageBuilder pkgBuilder;
-                    UIPackageLoader().LoadPackage(path, &pkgBuilder);
+                    DefaultUIPackageBuilder* pkgBuilder = isEditorMode ? new RichContentUIPackageBuilder() : new DefaultUIPackageBuilder();
+                    UIPackageLoader().LoadPackage(path, pkgBuilder);
                     UIControl* obj = nullptr;
-                    UIPackage* pkg = pkgBuilder.GetPackage();
+                    UIPackage* pkg = pkgBuilder->GetPackage();
                     if (pkg != nullptr)
                     {
                         if (!controlName.empty())
@@ -220,6 +245,7 @@ public:
                         component->onCreateObject.Emit(obj);
                         controls.emplace_back(obj);
                     }
+                    SafeDelete(pkgBuilder);
                 }
                 else
                 {
@@ -287,6 +313,7 @@ public:
 
 private:
     bool needLineBreak = false;
+    bool isEditorMode = false;
     BiDiHelper::Direction direction = BiDiHelper::Direction::NEUTRAL;
     Vector<String> classesStack;
     Vector<RefPtr<UIControl>> controls;
@@ -295,6 +322,11 @@ private:
 };
 
 /*******************************************************************************************************/
+
+void UIRichContentSystem::SetEditorMode(bool editorMode)
+{
+    isEditorMode = editorMode;
+}
 
 void UIRichContentSystem::RegisterControl(UIControl* control)
 {
@@ -364,7 +396,7 @@ void UIRichContentSystem::Process(float32 elapsedTime)
             UIControl* root = l.component->GetControl();
             l.RemoveItems();
 
-            XMLRichContentBuilder builder(l.component);
+            XMLRichContentBuilder builder(l.component, isEditorMode);
             if (builder.Build("<span>" + l.component->GetText() + "</span>"))
             {
                 for (const RefPtr<UIControl>& ctrl : builder.GetControls())

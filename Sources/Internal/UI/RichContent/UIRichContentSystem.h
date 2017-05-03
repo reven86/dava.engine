@@ -15,6 +15,9 @@ public:
     UIRichContentSystem() = default;
     ~UIRichContentSystem() override = default;
 
+    void SetEditorMode(bool editorMode);
+    bool IsEditorMode() const;
+
     void RegisterControl(UIControl* control) override;
     void UnregisterControl(UIControl* control) override;
     void RegisterComponent(UIControl* control, UIComponent* component) override;
@@ -39,5 +42,11 @@ private:
 
     Vector<Link> links;
     Vector<Link> appendLinks;
+    bool isEditorMode = false;
 };
+
+inline bool UIRichContentSystem::IsEditorMode() const
+{
+    return isEditorMode;
+}
 }
