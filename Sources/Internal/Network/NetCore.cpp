@@ -71,7 +71,7 @@ NetCore::~NetCore()
         DVASSERT(netThread->GetState() == Thread::eThreadState::STATE_ENDED);
     }
 
-	DVASSERT(true == startingObjects.empty());
+    DVASSERT(true == startingObjects.empty());
     DVASSERT(true == runningObjects.empty());
     DVASSERT(true == dyingObjects.empty());
 
@@ -118,10 +118,10 @@ NetCore::TrackId NetCore::CreateController(const NetConfig& config, void* contex
     NetController* ctrl = new NetController(loop, registrar, context, readTimeout);
     if (true == ctrl->ApplyConfig(config))
     {
-		{
-			LockGuard<Mutex> lock(startingObjectsMutex);
-			startingObjects.insert(ctrl);
-		}
+        {
+            LockGuard<Mutex> lock(startingObjectsMutex);
+            startingObjects.insert(ctrl);
+        }
         loop->Post(Bind(&NetCore::DoStart, this, ctrl));
         return ObjectToTrackId(ctrl);
     }
@@ -170,33 +170,33 @@ void NetCore::DestroyController(TrackId id, Function<void()> callback)
         discovererId = INVALID_TRACK_ID;
     }
 
-	IController* ctrl = TryRemoveStartingObject(id);
-	if (ctrl)
-	{
-		if (callback)
-		{
-			callback();
-		}
-	}
-	else
-	{
-		ctrl = TryRemoveRunningObject(id);
-		if (ctrl)
-		{
-			if (callback)
-			{
-				controllerStoppedCallback.emplace(TrackIdToObject(id), callback);
-			}
-			{
-				LockGuard<Mutex> lock(dyingObjectsMutex);
-				dyingObjects.emplace(ctrl);
-			}
-			loop->Post(Bind(&NetCore::DoDestroy, this, ctrl));
-		}
-		else
-		{
-			DVASSERT(false, "passed controller is neither starting nor active");
-		}
+    IController* ctrl = TryRemoveStartingObject(id);
+    if (ctrl)
+    {
+        if (callback)
+        {
+            callback();
+        }
+    }
+    else
+    {
+        ctrl = TryRemoveRunningObject(id);
+        if (ctrl)
+        {
+            if (callback)
+            {
+                controllerStoppedCallback.emplace(TrackIdToObject(id), callback);
+            }
+            {
+                LockGuard<Mutex> lock(dyingObjectsMutex);
+                dyingObjects.emplace(ctrl);
+            }
+            loop->Post(Bind(&NetCore::DoDestroy, this, ctrl));
+        }
+        else
+        {
+            DVASSERT(false, "passed controller is neither starting nor active");
+        }
     }
 #endif
 }
@@ -206,28 +206,28 @@ void NetCore::DestroyControllerBlocked(TrackId id)
 #if !defined(DAVA_NETWORK_DISABLE)
     DVASSERT(state == State::ACTIVE);
 
-	IController* ctrl = TryRemoveStartingObject(id);
-	if (ctrl)
-	{
-		return;
-	}
-	else
+    IController* ctrl = TryRemoveStartingObject(id);
+    if (ctrl)
     {
-		ctrl = TryRemoveRunningObject(id);
-		if (ctrl)
-		{
-			{
-				LockGuard<Mutex> lock(dyingObjectsMutex);
-				dyingObjects.emplace(ctrl);
-			}
-			loop->Post(Bind(&NetCore::DoDestroy, this, ctrl));
+        return;
+    }
+    else
+    {
+        ctrl = TryRemoveRunningObject(id);
+        if (ctrl)
+        {
+            {
+                LockGuard<Mutex> lock(dyingObjectsMutex);
+                dyingObjects.emplace(ctrl);
+            }
+            loop->Post(Bind(&NetCore::DoDestroy, this, ctrl));
 
-			WaitForDestroyed(ctrl);
-		}
-		else
-		{
-			DVASSERT(false, "passed controller is neither starting nor active");
-		}
+            WaitForDestroyed(ctrl);
+        }
+        else
+        {
+            DVASSERT(false, "passed controller is neither starting nor active");
+        }
     }
 #endif
 }
@@ -250,10 +250,10 @@ void NetCore::WaitForDestroyed(IController* ctrl)
 
 bool NetCore::PostAllToDestroy()
 {
-	{
-		LockGuard<Mutex> lock(startingObjectsMutex);
-		startingObjects.clear();
-	}
+    {
+        LockGuard<Mutex> lock(startingObjectsMutex);
+        startingObjects.clear();
+    }
 
     LockGuard<Mutex> lock(dyingObjectsMutex);
     LockGuard<Mutex> lock2(runningObjectsMutex);
@@ -370,21 +370,21 @@ bool NetCore::TryDiscoverDevice(const Endpoint& endpoint)
 
 void NetCore::DoStart(IController* ctrl)
 {
-	bool toStart = false;
-	{
-		LockGuard<Mutex> lock(startingObjectsMutex);
-		LockGuard<Mutex> lock2(runningObjectsMutex);
-		bool wasInStarted = (startingObjects.erase(ctrl) > 0);
-		if (wasInStarted)
-		{
-			toStart = true;
-			runningObjects.insert(ctrl);
-		}
-	}
-	if (toStart)
-	{
-		ctrl->Start();
-	}
+    bool toStart = false;
+    {
+        LockGuard<Mutex> lock(startingObjectsMutex);
+        LockGuard<Mutex> lock2(runningObjectsMutex);
+        bool wasInStarted = (startingObjects.erase(ctrl) > 0);
+        if (wasInStarted)
+        {
+            toStart = true;
+            runningObjects.insert(ctrl);
+        }
+    }
+    if (toStart)
+    {
+        ctrl->Start();
+    }
 }
 
 void NetCore::DoRestart()
@@ -418,28 +418,28 @@ void NetCore::AllDestroyed()
 
 IController* NetCore::TryRemoveStartingObject(TrackId id)
 {
-	LockGuard<Mutex> lock(startingObjectsMutex);
-	Set<IController*>::const_iterator i = startingObjects.find(TrackIdToObject(id));
-	IController* ctrl = nullptr;
-	if (i != startingObjects.end())
-	{
-		ctrl = *i;
-		startingObjects.erase(i);
-	}
-	return ctrl;
+    LockGuard<Mutex> lock(startingObjectsMutex);
+    Set<IController*>::const_iterator i = startingObjects.find(TrackIdToObject(id));
+    IController* ctrl = nullptr;
+    if (i != startingObjects.end())
+    {
+        ctrl = *i;
+        startingObjects.erase(i);
+    }
+    return ctrl;
 }
 
 IController* NetCore::TryRemoveRunningObject(TrackId id)
 {
-	LockGuard<Mutex> lock(runningObjectsMutex);
-	Set<IController*>::const_iterator i = runningObjects.find(TrackIdToObject(id));
-	IController* ctrl = nullptr;
-	if (i != runningObjects.end())
-	{
-		ctrl = *i;
-		runningObjects.erase(i);
-	}
-	return ctrl;
+    LockGuard<Mutex> lock(runningObjectsMutex);
+    Set<IController*>::const_iterator i = runningObjects.find(TrackIdToObject(id));
+    IController* ctrl = nullptr;
+    if (i != runningObjects.end())
+    {
+        ctrl = *i;
+        runningObjects.erase(i);
+    }
+    return ctrl;
 }
 
 void NetCore::TrackedObjectStopped(IController* obj)
@@ -451,7 +451,11 @@ void NetCore::TrackedObjectStopped(IController* obj)
         LockGuard<Mutex> lock(dyingObjectsMutex);
         LockGuard<Mutex> lock2(runningObjectsMutex);
 
-        if (dyingObjects.erase(obj) == 0)
+        if (dyingObjects.erase(obj) > 0)
+        {
+            SafeDelete(obj);
+        }
+        else
         {
             DVASSERT(false && "dying object is not found");
         }
@@ -480,7 +484,7 @@ void NetCore::TrackedObjectStopped(IController* obj)
 size_t NetCore::ControllersCount() const
 {
     LockGuard<Mutex> lock(startingObjectsMutex);
-	LockGuard<Mutex> lock2(runningObjectsMutex);
+    LockGuard<Mutex> lock2(runningObjectsMutex);
     return startingObjects.size() + runningObjects.size();
 }
 

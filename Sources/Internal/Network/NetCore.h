@@ -153,7 +153,7 @@ public:
     TrackId CreateAnnouncer(const Endpoint& endpoint, uint32 sendPeriod, Function<size_t(size_t, void*)> needDataCallback, const Endpoint& tcpEndpoint = Endpoint(DEFAULT_TCP_ANNOUNCE_PORT));
     TrackId CreateDiscoverer(const Endpoint& endpoint, Function<void(size_t, const void*, const Endpoint&)> dataReadyCallback);
 
-	/** destroy controller with given `id` and invoke `callback` on destroy. Callback may be invoked synchronously*/
+    /** destroy controller with given `id` and invoke `callback` on destroy. Callback may be invoked synchronously*/
     void DestroyController(TrackId id, Function<void()> callback = nullptr);
     DAVA_DEPRECATED(void DestroyControllerBlocked(TrackId id)); // blocked functions are deprecated for use
     void DestroyAllControllers(Function<void()> callback);
@@ -194,7 +194,7 @@ private:
     void DoDestroy(IController* ctrl);
     void AllDestroyed();
 
-	IController* TryRemoveStartingObject(TrackId id);
+    IController* TryRemoveStartingObject(TrackId id);
     IController* TryRemoveRunningObject(TrackId id);
 
     void TrackedObjectStopped(IController* obj);
@@ -206,8 +206,8 @@ private:
     IOLoop* loop = nullptr; // Heart of NetCore and network library - event loop
     bool useSeparateThread = false;
 
-	mutable Mutex startingObjectsMutex;
-	Set<IController*> startingObjects;
+    mutable Mutex startingObjectsMutex;
+    Set<IController*> startingObjects;
 
     mutable Mutex runningObjectsMutex;
     Set<IController*> runningObjects;
