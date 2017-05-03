@@ -15,11 +15,16 @@ struct Buffer
 
 struct IDownloaderSubTask
 {
+    DLCDownloader::Task& task;
     int downloadOrderIndex = 0;
 
+    explicit IDownloaderSubTask(DLCDownloader::Task& t)
+        : task(t)
+    {
+    }
     virtual ~IDownloaderSubTask();
     virtual void OnDone(CURLMsg* msg) = 0;
-    virtual DLCDownloader::Task* GetTask() = 0;
+    virtual DLCDownloader::Task& GetTask() = 0;
     virtual CURL* GetEasyHandle() = 0;
     virtual DLCDownloader::IWriter* GetIWriter() = 0;
     virtual Buffer GetBuffer() = 0;
@@ -32,8 +37,8 @@ struct ICurlEasyStorage
     virtual CURL* CurlCreateHandle() = 0;
     virtual void CurlDeleteHandle(CURL* easy) = 0;
     virtual int GetFreeHandleCount() = 0;
-    virtual void Map(CURL* easy, IDownloaderSubTask* subTask) = 0;
-    virtual IDownloaderSubTask* FindInMap(CURL* easy) = 0;
+    virtual void Map(CURL* easy, IDownloaderSubTask& subTask) = 0;
+    virtual IDownloaderSubTask& FindInMap(CURL* easy) = 0;
     virtual void UnMap(CURL* easy) = 0;
     virtual int GetChankSize() = 0;
 };
@@ -48,12 +53,12 @@ struct DLCDownloader::Task
     int lastWritenSubTaskIndex = -1;
     std::unique_ptr<IWriter> writer;
     bool userWriter = false;
-    ICurlEasyStorage* curlStorage = nullptr;
+    ICurlEasyStorage& curlStorage;
 
     int64 restOffset = -1;
     int64 restSize = -1;
 
-    Task(ICurlEasyStorage* storage,
+    Task(ICurlEasyStorage& storage,
          const String& srcUrl,
          const String& dstPath,
          TaskType taskType,
@@ -78,6 +83,7 @@ struct DLCDownloader::Task
     static void OnErrorCurlMulti(int32 multiCode, Task* task, CURLM* multi, CURL* easy);
     static void OnErrorCurlEasy(int32 easyCode, Task* task, IDownloaderSubTask* subTask);
     static void OnErrorCurlErrno(int32 errnoVal, Task* task, IDownloaderSubTask* subTask);
+    static void OnErrorHttpCode(long httpCode, Task* task, IDownloaderSubTask* subTask);
 };
 
 class DLCDownloaderImpl : public DLCDownloader, public ICurlEasyStorage
@@ -123,8 +129,8 @@ private:
     void CurlDeleteHandle(CURL* easy) override;
     CURLM* GetMultiHandle() override;
     int GetFreeHandleCount() override;
-    void Map(CURL* easy, IDownloaderSubTask* subTask) override;
-    IDownloaderSubTask* FindInMap(CURL* easy) override;
+    void Map(CURL* easy, IDownloaderSubTask& subTask) override;
+    IDownloaderSubTask& FindInMap(CURL* easy) override;
     void UnMap(CURL* easy) override;
     int GetChankSize() override;
     void DeleteSubTaskHandler(IDownloaderSubTask* t);
@@ -148,6 +154,8 @@ private:
     Mutex mutexWaitingList;
     List<Task*> removedList;
     Mutex mutexRemovedList;
+
+    Thread::Id downlodThreadId = 0;
 
     // [start] next variables used only from Download thread
     List<Task*> tasks;

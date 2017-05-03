@@ -6,8 +6,10 @@
 #include <FileSystem/FileSystem.h>
 #include <Time/SystemTimer.h>
 #include <Utils/CRC32.h>
+#include <EmbeddedWebServer.h>
 
 #include <iomanip>
+#include <Engine/Engine.h>
 
 class MemBufWriter final : public DAVA::DLCDownloader::IWriter
 {
@@ -40,12 +42,13 @@ public:
         return current - start;
     }
 
-    void Truncate() override
+    bool Truncate() override
     {
         current = start;
+        return true;
     }
 
-    DAVA::uint64 SpaceLeft() override
+    DAVA::uint64 SpaceLeft() const
     {
         return end - current;
     }
@@ -56,13 +59,56 @@ private:
     char* end = nullptr;
 };
 
-static const DAVA::String URL = "http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz/smart_dlc/3.7.0.236.dvpk";
+static const DAVA::String URL = "http://127.0.0.1:8080/superpack_for_unittests.dvpk";
+// "http://127.0.0.1:8080/superpack_for_unittests.dvpk"; // embedded web server
 // "http://dl-wotblitz.wargaming.net/dlc/r11608713/3.7.0.236.dvpk"; // CDN
 // "http://by1-builddlc-01.corp.wargaming.local/DLC_Blitz/smart_dlc/3.7.0.236.dvpk" // local net server
 
+class EmbededWebServer
+{
+public:
+    EmbededWebServer()
+    {
+        using namespace DAVA;
+        FilePath downloadedPacksDir("~doc:/UnitTests/DLCManagerTest/packs/");
+
+        FileSystem* fs = GetEngineContext()->fileSystem;
+        // every time clear directory to download once again
+        fs->DeleteDirectory(downloadedPacksDir);
+        fs->CreateDirectory(downloadedPacksDir, true);
+
+        FilePath destPath = downloadedPacksDir + "superpack_for_unittests.dvpk";
+        FilePath srcPath = "~res:/superpack_for_unittests.dvpk";
+        if (!fs->IsFile(srcPath))
+        {
+            Logger::Error("no super pack file!");
+            TEST_VERIFY(false);
+        }
+
+        if (!fs->CopyFile(srcPath, destPath, true))
+        {
+            Logger::Error("can't copy super pack for unittest from res:/");
+            TEST_VERIFY(false);
+            return;
+        }
+
+        String path = downloadedPacksDir.GetAbsolutePathname();
+
+        if (!StartEmbeddedWebServer(path.c_str(), "8080"))
+        {
+            DAVA_THROW(DAVA::Exception, "can't start embedded web server");
+        }
+    }
+    ~EmbededWebServer()
+    {
+        DAVA::StopEmbeddedWebServer();
+    }
+};
+
 DAVA_TESTCLASS (DLCDownloaderTest)
 {
-    const DAVA::int64 FULL_SIZE_ON_SERVER = 1618083461;
+    EmbededWebServer embeddedServer;
+    const DAVA::int64 FULL_SIZE_ON_SERVER = 29738138; // old full dlc build size 1618083461;
 
     DAVA_TEST (GetFileSizeTest)
     {
@@ -84,12 +130,14 @@ DAVA_TESTCLASS (DLCDownloaderTest)
         TEST_VERIFY(info.timeoutSec >= 0);
         TEST_VERIFY(info.type == DLCDownloader::TaskType::SIZE);
 
+        TEST_VERIFY(status.error.httpCode == 200);
+        TEST_VERIFY(status.error.errorHappened == false);
         TEST_VERIFY(status.error.curlErr == 0);
-        TEST_VERIFY(status.error.curlEasyStrErr == nullptr);
+        TEST_VERIFY(status.error.errStr == nullptr);
         TEST_VERIFY(status.error.curlMErr == 0);
         TEST_VERIFY(status.error.fileErrno == 0);
         TEST_VERIFY(status.sizeDownloaded == 0);
-        TEST_VERIFY(status.state.Get() == DLCDownloader::TaskState::Finished);
+        TEST_VERIFY(status.state.load() == DLCDownloader::TaskState::Finished);
         TEST_VERIFY(status.sizeTotal == FULL_SIZE_ON_SERVER);
 
         downloader->RemoveTask(task);
@@ -122,12 +170,14 @@ DAVA_TESTCLASS (DLCDownloaderTest)
         TEST_VERIFY(info.timeoutSec >= 0);
         TEST_VERIFY(info.type == DLCDownloader::TaskType::FULL);
 
+        TEST_VERIFY(status.error.errorHappened == false);
+        TEST_VERIFY(status.error.httpCode <= 206);
         TEST_VERIFY(status.error.curlErr == 0);
-        TEST_VERIFY(status.error.curlEasyStrErr == nullptr);
+        TEST_VERIFY(status.error.errStr == nullptr);
         TEST_VERIFY(status.error.curlMErr == 0);
         TEST_VERIFY(status.error.fileErrno == 0);
         TEST_VERIFY(status.sizeDownloaded == 4);
-        TEST_VERIFY(status.state.Get() == DLCDownloader::TaskState::Finished);
+        TEST_VERIFY(status.state == DLCDownloader::TaskState::Finished);
         TEST_VERIFY(status.sizeTotal == 4);
 
         std::array<char, 4> shouldBe{ 'D', 'V', 'P', 'K' };
@@ -152,6 +202,7 @@ DAVA_TESTCLASS (DLCDownloaderTest)
         DLCDownloader::Task* task = nullptr;
         int64 finish = 0;
         float seconds = 0.f;
+        float sizeInGb = FULL_SIZE_ON_SERVER / (1024.f * 1024.f * 1024.f);
 
         DownloadManager* dm = DownloadManager::Instance();
 
@@ -171,7 +222,7 @@ DAVA_TESTCLASS (DLCDownloaderTest)
 
         seconds = (finish - start) / 1000.f;
 
-        Logger::Info("old downloader 1.5 Gb parts(%d) download from in house server for: %f", numOfParts, seconds);
+        Logger::Info("old downloader %f Gb parts(%d) download from in house server for: %f", sizeInGb, numOfParts, seconds);
         //// ----next-------------------------------------------------------
         {
             start = SystemTimer::GetMs();
@@ -185,11 +236,11 @@ DAVA_TESTCLASS (DLCDownloaderTest)
 
         seconds = (finish - start) / 1000.f;
 
-        Logger::Info("new downloader 1.5 Gb download from in house server for: %f", seconds);
+        Logger::Info("new downloader %f Gb download from in house server for: %f", sizeInGb, seconds);
 
         downloader->RemoveTask(task);
 
-        const uint32 crc32 = 0xDE5C2B62;
+        const uint32 crc32 = 0x89D4BC4E; // old crc32 for full build 0xDE5C2B62;
 
         uint32 crcFromFile = CRC32::ForFile(p);
 
@@ -257,7 +308,7 @@ DAVA_TESTCLASS (DLCDownloaderTest)
 
         seconds = (finish - start) / 1000.f;
 
-        Logger::Info("1024 part of 1.5 Gb download from in house server for: %f", seconds);
+        Logger::Info("1024 part of %f Gb download from in house server for: %f", sizeInGb, seconds);
 
         // free memory
         for (auto t : allTasks)
