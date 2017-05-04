@@ -1,3 +1,5 @@
+#include "UI/RichContent/UIRichContentSystem.h"
+
 #include "Base/ObjectFactory.h"
 #include "FileSystem/XMLParser.h"
 #include "Logger/Logger.h"
@@ -12,7 +14,6 @@
 #include "UI/RichContent/UIRichAliasMap.h"
 #include "UI/RichContent/UIRichContentComponent.h"
 #include "UI/RichContent/UIRichContentObjectComponent.h"
-#include "UI/RichContent/UIRichContentSystem.h"
 #include "UI/Styles/UIStyleSheetSystem.h"
 #include "Utils/BiDiHelper.h"
 #include "Utils/UTF8Utils.h"
@@ -222,8 +223,8 @@ public:
 
                 if (valid)
                 {
-                    DefaultUIPackageBuilder* pkgBuilder = isEditorMode ? new RichContentUIPackageBuilder() : new DefaultUIPackageBuilder();
-                    UIPackageLoader().LoadPackage(path, pkgBuilder);
+                    std::unique_ptr<DefaultUIPackageBuilder> pkgBuilder = isEditorMode ? std::make_unique<RichContentUIPackageBuilder>() : std::make_unique<DefaultUIPackageBuilder>();
+                    UIPackageLoader().LoadPackage(path, pkgBuilder.get());
                     UIControl* obj = nullptr;
                     UIPackage* pkg = pkgBuilder->GetPackage();
                     if (pkg != nullptr)
@@ -239,7 +240,6 @@ public:
                     }
                     if (obj != nullptr)
                     {
-                        obj = obj->Clone(); // Clone control from package
                         PrepareControl(obj, false);
 
                         UIRichContentObjectComponent* objComp = obj->GetOrCreateComponent<UIRichContentObjectComponent>();
@@ -254,7 +254,6 @@ public:
                         component->onCreateObject.Emit(obj);
                         controls.emplace_back(obj);
                     }
-                    SafeDelete(pkgBuilder);
                 }
                 else
                 {
