@@ -551,7 +551,7 @@ fragment_out fp_main( fragment_in input )
 
 
     #if ALPHABLEND && MATERIAL_TEXTURE
-        output.color = float4( color, textureColor0.a );
+        output.color = float4( float3(color.rgb), textureColor0.a );
     #elif MATERIAL_SKYBOX
         output.color = float4( color );
     #else
