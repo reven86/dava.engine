@@ -121,8 +121,7 @@ const DAVA::ReflectedType* UIPreviewPackageBuilder::BeginComponentPropertiesSect
     using namespace DAVA;
     if (UIComponent::BACKGROUND_COMPONENT == componentType)
     {
-        RefPtr<UIComponent> component = UIComponent::SafeCreateByType(componentType);
-        return ReflectedTypeDB::GetByPointer(component.Get());
+        return ReflectedTypeDB::Get<UIControlBackground>();
     }
 
     return nullptr;

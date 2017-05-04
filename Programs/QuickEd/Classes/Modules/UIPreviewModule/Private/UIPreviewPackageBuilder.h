@@ -10,8 +10,6 @@ class FilesCollection
 public:
     DAVA::Set<DAVA::FilePath> yamlFiles;
     DAVA::Set<DAVA::FilePath> spritesFolders;
-
-    DAVA::Set<DAVA::FilePath> soundsFiles;
     DAVA::Set<DAVA::FilePath> effectsFiles;
 };
 
