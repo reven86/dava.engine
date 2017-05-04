@@ -190,12 +190,9 @@ private:
 
     bool PostAllToDestroy();
     void WaitForAllDestroyed();
-    void WaitForDestroyed(IController*);
+    void WaitForDestroyed(TrackId);
     void DoDestroy(IController* ctrl);
     void AllDestroyed();
-
-    IController* TryRemoveStartingObject(TrackId id);
-    IController* TryRemoveRunningObject(TrackId id);
 
     void TrackedObjectStopped(IController* obj);
 
@@ -206,18 +203,23 @@ private:
     IOLoop* loop = nullptr; // Heart of NetCore and network library - event loop
     bool useSeparateThread = false;
 
-    mutable Mutex startingObjectsMutex;
-    Set<IController*> startingObjects;
+    struct ControllerContext
+    {
+        enum Status
+        {
+            STARTING,
+            RUNNING,
+            DESTROYING
+        } status = STARTING;
+        std::unique_ptr<IController> ctrl;
+        Function<void()> controllerStoppedCallback;
+    };
 
-    mutable Mutex runningObjectsMutex;
-    Set<IController*> runningObjects;
-
-    mutable Mutex dyingObjectsMutex;
-    Set<IController*> dyingObjects;
+    mutable Mutex controllersMutex;
+    Map<TrackId, ControllerContext> controllers;
 
     ServiceRegistrar registrar; //-V730_NOINIT
     Function<void()> allControllersStoppedCallback;
-    UnorderedMap<IController*, Function<void()>> controllerStoppedCallback;
 
     enum State
     {
