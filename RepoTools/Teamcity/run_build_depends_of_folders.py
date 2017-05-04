@@ -47,12 +47,21 @@ def __parser_args():
     arg_parser.add_argument( '--login', required = True )
     arg_parser.add_argument( '--password', required = True )
 
+    arg_parser.add_argument('--convert_to_merge_requests', required=False)
+
     return arg_parser.parse_args()
 
 def __run_build( args ):
     teamcity = team_city_api.TeamCityRequest( args.teamcity_url,
                                               args.login,
                                               args.password )
+
+    if args.convert_to_merge_requests:
+        if args.client_brunch and args.client_brunch != '<default>':
+            args.client_brunch = 'refs/pull-requests/' + args.client_brunch.replace('from', 'merge')
+
+        if args.framework_brunch and args.framework_brunch != '<default>':
+            args.framework_brunch = 'refs/pull-requests/' + args.framework_brunch.replace('from', 'merge')
 
     client_brunch = {}
     if args.client_brunch and args.client_brunch != '<default>':
