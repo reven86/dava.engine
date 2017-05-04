@@ -17,7 +17,10 @@ public:
     bool HasError() const;
     bool IsEmpty() const;
 
-    bool Process();
+    bool HasChanges() const;
+    void ResetChanges();
+    void MarkChanges();
+
     float32 Calculate(const Reflection& ref);
 
     const String& GetErrorMessage() const;

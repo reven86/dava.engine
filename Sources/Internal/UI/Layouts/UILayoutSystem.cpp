@@ -64,6 +64,7 @@ void UILayoutSystem::UnregisterControl(UIControl* control)
             LayoutFormula* formula = sizePolicyComponent->GetFormula(axis);
             if (formula != nullptr)
             {
+                formula->MarkChanges();
                 for (UILayoutSystemListener* listener : listeners)
                 {
                     listener->OnFormulaRemoved(control, static_cast<Vector2::eAxis>(axis), formula);
@@ -398,8 +399,9 @@ void UILayoutSystem::DoLayoutPhase(Vector2::eAxis axis)
         if (sizePolicy != nullptr)
         {
             LayoutFormula* formula = sizePolicy->GetFormula(axis);
-            if (formula != nullptr && formula->Process())
+            if (formula != nullptr && formula->HasChanges())
             {
+                formula->ResetChanges();
                 if (formula->IsEmpty())
                 {
                     for (UILayoutSystemListener* listener : listeners)

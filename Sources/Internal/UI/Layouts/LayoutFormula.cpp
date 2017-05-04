@@ -35,14 +35,19 @@ bool LayoutFormula::IsEmpty() const
     return errorMsg.empty() && !formula.IsValid();
 }
 
-bool LayoutFormula::Process()
+bool LayoutFormula::HasChanges() const
 {
-    if (hasChanges)
-    {
-        hasChanges = false;
-        return true;
-    }
-    return false;
+    return hasChanges;
+}
+
+void LayoutFormula::ResetChanges()
+{
+    hasChanges = false;
+}
+
+void LayoutFormula::MarkChanges()
+{
+    hasChanges = true;
 }
 
 float32 LayoutFormula::Calculate(const Reflection& ref)
