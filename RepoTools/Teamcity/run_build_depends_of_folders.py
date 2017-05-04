@@ -47,7 +47,7 @@ def __parser_args():
     arg_parser.add_argument( '--login', required = True )
     arg_parser.add_argument( '--password', required = True )
 
-    arg_parser.add_argument('--convert_to_merge_requests', required=False)
+    arg_parser.add_argument('--convert_to_merge_requests' )
 
     return arg_parser.parse_args()
 
