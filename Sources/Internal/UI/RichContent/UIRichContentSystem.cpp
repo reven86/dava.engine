@@ -252,7 +252,7 @@ public:
                             obj->SetName(name);
                         }
                         component->onCreateObject.Emit(obj);
-                        controls.emplace_back(obj);
+                        controls.emplace_back(SafeRetain(obj));
                     }
                 }
                 else
