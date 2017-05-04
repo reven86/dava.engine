@@ -209,6 +209,11 @@ DAVA_TESTCLASS (AnyAnyFnTest)
         TEST_VERIFY(!b.CanCast<Stub>());
     }
 
+    DAVA_TEST (FailTest)
+    {
+        TEST_VERIFY(false);
+    }
+
     DAVA_TEST (AutoStorageTest)
     {
         int32 v = 10203040;
