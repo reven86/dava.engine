@@ -116,7 +116,7 @@ DAVA_TESTCLASS (DLCDownloaderTest)
 
         DLCDownloader* downloader = DLCDownloader::Create();
         String url = URL;
-        DLCDownloader::Task* task = downloader->StartTask(url, "", DLCDownloader::TaskType::SIZE);
+        DLCDownloader::Task* task = downloader->StartGetContentSize(url);
 
         downloader->WaitTask(task);
 
@@ -156,7 +156,7 @@ DAVA_TESTCLASS (DLCDownloaderTest)
         String url = URL;
         int64 startRangeIndex = FULL_SIZE_ON_SERVER - 4;
         int64 rangeSize = 4;
-        DLCDownloader::Task* downloadLast4Bytes = downloader->StartTask(url, "", DLCDownloader::TaskType::FULL, &writer, startRangeIndex, rangeSize);
+        DLCDownloader::Task* downloadLast4Bytes = downloader->StartTask(url, writer, DLCDownloader::Range(startRangeIndex, rangeSize));
 
         downloader->WaitTask(downloadLast4Bytes);
 
@@ -227,7 +227,7 @@ DAVA_TESTCLASS (DLCDownloaderTest)
         {
             start = SystemTimer::GetMs();
 
-            task = downloader->StartTask(url, p, DLCDownloader::TaskType::FULL);
+            task = downloader->StartTask(url, p);
 
             downloader->WaitTask(task);
         }
@@ -246,7 +246,7 @@ DAVA_TESTCLASS (DLCDownloaderTest)
 
         TEST_VERIFY(crcFromFile == crc32);
         ////-----resume-downloading------------------------------------------------
-        File* file = File::Create(p, File::OPEN | File::WRITE | File::READ);
+        File* file = File::Create(p, File::OPEN | File::READ | File::WRITE);
         if (file)
         {
             uint64 fileSize = file->GetSize();
@@ -257,7 +257,7 @@ DAVA_TESTCLASS (DLCDownloaderTest)
 
             file->Release();
         }
-        task = downloader->StartTask(url, p, DLCDownloader::TaskType::RESUME);
+        task = downloader->ResumeTask(url, p);
 
         downloader->WaitTask(task);
         downloader->RemoveTask(task);
@@ -266,7 +266,7 @@ DAVA_TESTCLASS (DLCDownloaderTest)
         TEST_VERIFY(crcFromFile == crc32);
 
         ////-----multi-files-------------------------------------------------------
-        DLCDownloader::Task* taskSize = downloader->StartTask(url, "", DLCDownloader::TaskType::SIZE);
+        DLCDownloader::Task* taskSize = downloader->StartGetContentSize(url);
         downloader->WaitTask(taskSize);
         uint64 sizeTotal = downloader->GetTaskStatus(taskSize).sizeTotal;
 
@@ -295,7 +295,7 @@ DAVA_TESTCLASS (DLCDownloaderTest)
             String fileName = ss.str() + ".part";
             FilePath pathFull = dir + fileName;
             String full = pathFull.GetAbsolutePathname();
-            task = downloader->StartTask(url, full, DLCDownloader::TaskType::FULL, nullptr, firstIndex, nextIndex - firstIndex);
+            task = downloader->StartTask(url, full, DLCDownloader::Range(firstIndex, nextIndex - firstIndex));
             allTasks.push_back(task);
         }
 

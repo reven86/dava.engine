@@ -220,7 +220,7 @@ void DLCManagerTest::LoadResources()
 
     DLCDownloader::Hints hintsDefault;
     std::stringstream ss;
-    ss << "handles " << hintsDefault.numOfMaxEasyHandles << " buf_size " << hintsDefault.chankMemBuffSize;
+    ss << "handles " << hintsDefault.numOfMaxEasyHandles << " buf_size " << hintsDefault.chunkMemBuffSize;
 
     numHandlesInput = new UITextField(Rect(5, 410, 400, 20));
     numHandlesInput->SetFont(font);

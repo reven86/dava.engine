@@ -297,7 +297,7 @@ bool PackRequest::UpdateFileRequests()
         case LoadingPackFile:
         {
             DLCDownloader* dm = packManagerImpl->GetDownloader();
-            if (fileRequest.taskId == 0)
+            if (fileRequest.taskId == nullptr)
             {
                 if (fileRequest.sizeOfCompressedFile == 0)
                 {
@@ -323,9 +323,8 @@ bool PackRequest::UpdateFileRequests()
                 else
                 {
                     fs->DeleteFile(fileRequest.localFile); // just in case (hash not match, size not match...)
-
-                    fileRequest.taskId = dm->StartTask(fileRequest.url, fileRequest.localFile.GetAbsolutePathname(), DLCDownloader::TaskType::FULL, nullptr,
-                                                       fileRequest.startLoadingPos, fileRequest.sizeOfCompressedFile);
+                    // TODO find out why ResumeTask not working here
+                    fileRequest.taskId = dm->StartTask(fileRequest.url, fileRequest.localFile.GetAbsolutePathname(), DLCDownloader::Range(fileRequest.startLoadingPos, fileRequest.sizeOfCompressedFile));
                 }
             }
             else

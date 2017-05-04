@@ -96,14 +96,16 @@ public:
     DLCDownloaderImpl(DLCDownloaderImpl&&) = delete;
     DLCDownloaderImpl& operator=(const DLCDownloader&) = delete;
 
-    // Schedule download content or get content size (indicated by downloadMode)
-    Task* StartTask(const String& srcUrl,
-                    const String& dsrPath,
-                    TaskType taskType,
-                    IWriter* dstWriter = nullptr,
-                    int64 rangeOffset = -1,
-                    int64 rangeSize = -1,
-                    int32 timeout = 30) override;
+    Task* StartGetContentSize(const String& srcUrl) override;
+
+    Task* StartTask(const String& srcUrl, const String& dstPath, Range range = EmptyRange) override;
+
+    Task* StartTask(const String& srcUrl, IWriter& customWriter, Range range = EmptyRange) override;
+
+    Task* ResumeTask(const String& srcUrl, const String& dstPath, Range range = EmptyRange) override;
+
+    Task* ResumeTask(const String& srcUrl, IWriter& customWriter, Range range = EmptyRange) override;
+
     // Cancel download by ID (works for scheduled and current)
     void RemoveTask(Task* task) override;
 
@@ -123,6 +125,12 @@ private:
     void AddNewTasks();
     void ProcessMessagesFromMulti();
     void BalancingHandles();
+
+    Task* StartAnyTask(const String& srcUrl,
+                       const String& dsrPath,
+                       TaskType taskType,
+                       IWriter* dstWriter = nullptr,
+                       Range range = EmptyRange);
 
     // [start] implement ICurlEasyStorage interface
     CURL* CurlCreateHandle() override;

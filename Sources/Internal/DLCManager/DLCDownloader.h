@@ -7,9 +7,9 @@
 namespace DAVA
 {
 /**
-	This class is for downloading with HTTP protocol. You can perform next
-	tasks:
-	1. download file with one or more simultaneous handlers
+	This class is for downloading with HTTP protocol. You can perform the
+	following tasks:
+	1. download file with one or more simultaneous curl easy handlers
 	2. get remote file size
 	3. resume previous download
 	Also you can download into file or your custom buffer implementing
@@ -62,6 +62,7 @@ public:
     {
         int32 numOfMaxEasyHandles = 4; //!< how many curl easy handles will be used
         int32 chunkMemBuffSize = 1024 * 1024; //!< max buffer size per one download operation per curl easy handler
+        int32 timeout = 30; //!< timeout in seconds for curl easy handlers to wait on connect, dns request ets.
     };
 
     /**
@@ -98,6 +99,20 @@ public:
         /** truncate file(or buffer) to zero length, return false on error */
         virtual bool Truncate() = 0;
     };
+
+    struct Range
+    {
+        Range() = default;
+        Range(int64 offset_, int64 size_)
+            : offset(offset_)
+            , size(size_)
+        {
+        }
+        int64 offset = -1;
+        int64 size = -1;
+    };
+
+    static const Range EmptyRange;
 
     /**
 		Information for task during start
@@ -148,14 +163,16 @@ public:
 
     struct Task;
 
-    /** Schedule download content or get content size (indicated by downloadMode)*/
-    virtual Task* StartTask(const String& srcUrl,
-                            const String& dstPath,
-                            TaskType taskType,
-                            IWriter* customWriter = nullptr,
-                            int64 rangeOffset = -1,
-                            int64 rangeSize = -1,
-                            int32 timeout = 30) = 0;
+    /** Start http request to find out content size. */
+    virtual Task* StartGetContentSize(const String& srcUrl) = 0;
+    /** Start downloading to dstPath file */
+    virtual Task* StartTask(const String& srcUrl, const String& dstPath, Range range = EmptyRange) = 0;
+    /** Start downloading to custom writer */
+    virtual Task* StartTask(const String& srcUrl, IWriter& customWriter, Range range = EmptyRange) = 0;
+    /** Resume downloading to file starting from current file size */
+    virtual Task* ResumeTask(const String& srcUrl, const String& dstPath, Range range = EmptyRange) = 0;
+    /** Resume downloading to custom writer starting from current position */
+    virtual Task* ResumeTask(const String& srcUrl, IWriter& customWriter, Range range = EmptyRange) = 0;
 
     /**  Clear task data and free resources */
     virtual void RemoveTask(Task* task) = 0;

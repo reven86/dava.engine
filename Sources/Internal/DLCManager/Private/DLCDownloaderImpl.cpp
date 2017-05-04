@@ -9,6 +9,8 @@
 
 namespace DAVA
 {
+const DLCDownloader::Range DLCDownloader::EmptyRange;
+
 DLCDownloader::~DLCDownloader() = default;
 IDownloaderSubTask::~IDownloaderSubTask() = default;
 ICurlEasyStorage::~ICurlEasyStorage() = default;
@@ -21,14 +23,12 @@ public:
 
     explicit BufferWriter(int64 size)
     {
-        buf = new char[static_cast<unsigned>(size)];
-        DVASSERT(buf != nullptr);
         DVASSERT(size > 0);
-
+        buf = new char[static_cast<size_t>(size)];
         current = buf;
         end = buf + size;
     }
-    ~BufferWriter()
+    ~BufferWriter() override
     {
         delete[] buf;
         buf = nullptr;
@@ -171,7 +171,7 @@ struct DownloadChunkSubTask : IDownloaderSubTask
         , size(size_)
         , chankBuf(size_)
     {
-        if (offset == -1 || size <= 0)
+        if (offset >= 0 && size <= 0)
         {
             DAVA_THROW(Exception, "incorrect offset or size");
         }
@@ -709,15 +709,18 @@ DLCDownloaderImpl::~DLCDownloaderImpl()
     Deinitialize();
 }
 
-DLCDownloader::Task* DLCDownloaderImpl::StartTask(const String& srcUrl,
-                                                  const String& dstPath,
-                                                  TaskType taskType,
-                                                  IWriter* dstWriter,
-                                                  int64 rangeOffset,
-                                                  int64 rangeSize,
-                                                  int32 timeout)
+DLCDownloader::Task* DLCDownloaderImpl::StartAnyTask(const String& srcUrl,
+                                                     const String& dstPath,
+                                                     TaskType taskType,
+                                                     IWriter* dstWriter,
+                                                     Range range)
 {
     if (srcUrl.empty())
+    {
+        return nullptr;
+    }
+
+    if (dstPath.empty() && dstWriter == nullptr && taskType != TaskType::SIZE)
     {
         return nullptr;
     }
@@ -729,7 +732,7 @@ DLCDownloader::Task* DLCDownloaderImpl::StartTask(const String& srcUrl,
         return nullptr;
     }
 
-    if (rangeOffset >= 0 && rangeSize < 0)
+    if (range.offset >= 0 && range.size < 0)
     {
         return nullptr;
     }
@@ -739,9 +742,9 @@ DLCDownloader::Task* DLCDownloaderImpl::StartTask(const String& srcUrl,
                           dstPath,
                           taskType,
                           dstWriter,
-                          rangeOffset,
-                          rangeSize,
-                          timeout);
+                          range.offset,
+                          range.size,
+                          hints.timeout);
 
     {
         LockGuard<Mutex> lock(mutexInputList);
@@ -751,6 +754,35 @@ DLCDownloader::Task* DLCDownloaderImpl::StartTask(const String& srcUrl,
     downloadSem.Post(1);
 
     return task;
+}
+
+DLCDownloader::Task* DLCDownloaderImpl::StartGetContentSize(const String& srcUrl)
+{
+    if (srcUrl.empty())
+    {
+        return nullptr;
+    }
+    return StartAnyTask(srcUrl, "", TaskType::SIZE);
+}
+
+DLCDownloader::Task* DLCDownloaderImpl::StartTask(const String& srcUrl, const String& dstPath, Range range)
+{
+    return StartAnyTask(srcUrl, dstPath, TaskType::FULL, nullptr, range);
+}
+
+DLCDownloader::Task* DLCDownloaderImpl::StartTask(const String& srcUrl, IWriter& customWriter, Range range)
+{
+    return StartAnyTask(srcUrl, "", TaskType::FULL, &customWriter, range);
+}
+
+DLCDownloader::Task* DLCDownloaderImpl::ResumeTask(const String& srcUrl, const String& dstPath, Range range)
+{
+    return StartAnyTask(srcUrl, dstPath, TaskType::RESUME, nullptr, range);
+}
+
+DLCDownloader::Task* DLCDownloaderImpl::ResumeTask(const String& srcUrl, IWriter& customWriter, Range range)
+{
+    return StartAnyTask(srcUrl, "", TaskType::RESUME, &customWriter, range);
 }
 
 void DLCDownloaderImpl::RemoveTask(Task* task)
@@ -1189,7 +1221,6 @@ void DLCDownloaderImpl::SignalOnFinishedWaitingTasks()
             {
                 if (wt.task->status.state == TaskState::Finished)
                 {
-                    DVASSERT(wt.semaphore != nullptr);
                     wt.semaphore->Post();
                     return true;
                 }
@@ -1344,51 +1375,59 @@ void DLCDownloaderImpl::Task::OnErrorHttpCode(long httpCode, Task* task, IDownlo
 
 void DLCDownloaderImpl::DownloadThreadFunc()
 {
-    Thread* currentThread = Thread::Current();
-    DVASSERT(currentThread != nullptr);
-
-    downlodThreadId = currentThread->GetId();
-
-    bool downloading = false;
-
-    while (!currentThread->IsCancelling())
+    try
     {
-        if (!downloading)
+        Thread* currentThread = Thread::Current();
+        DVASSERT(currentThread != nullptr);
+
+        downlodThreadId = currentThread->GetId();
+
+        bool downloading = false;
+
+        while (!currentThread->IsCancelling())
         {
-            downloadSem.Wait();
-            downloading = true;
-        }
-
-        SignalOnFinishedWaitingTasks();
-
-        RemoveDeletedTasks();
-
-        AddNewTasks();
-
-        BalancingHandles();
-
-        while (downloading)
-        {
-            int numOfCurlWorkingHandles = CurlPerform();
-
-            ProcessMessagesFromMulti();
-
-            if (numOfCurlWorkingHandles == 0 && numOfRunningSubTasks == 0)
+            if (!downloading)
             {
-                downloading = false;
+                downloadSem.Wait();
+                downloading = true;
             }
 
-            if (downloading)
+            SignalOnFinishedWaitingTasks();
+
+            RemoveDeletedTasks();
+
+            AddNewTasks();
+
+            BalancingHandles();
+
+            while (downloading)
             {
-                if (!inputList.empty() && GetFreeHandleCount() > 0)
+                int numOfCurlWorkingHandles = CurlPerform();
+
+                ProcessMessagesFromMulti();
+
+                if (numOfCurlWorkingHandles == 0 && numOfRunningSubTasks == 0)
                 {
-                    // get more new task to do it simultaneously
-                    // and check removed and waiting tasks
-                    break;
+                    downloading = false;
+                }
+
+                if (downloading)
+                {
+                    if (!inputList.empty() && GetFreeHandleCount() > 0)
+                    {
+                        // get more new task to do it simultaneously
+                        // and check removed and waiting tasks
+                        break;
+                    }
                 }
             }
-        }
-    } // end while(!currentThread->IsCancelling())
+        } // end while(!currentThread->IsCancelling())
+    }
+    catch (Exception& ex)
+    {
+        Logger::Error("%s(%d)", ex.file.c_str(), ex.line);
+        throw;
+    }
 }
 
 int DLCDownloaderImpl::CurlPerform()

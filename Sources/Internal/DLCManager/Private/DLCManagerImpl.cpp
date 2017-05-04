@@ -536,9 +536,9 @@ void DLCManagerImpl::AskFooter()
 
     DVASSERT(0 == fullSizeServerData);
 
-    if (0 == downloadTaskId)
+    if (nullptr == downloadTaskId)
     {
-        downloadTaskId = downloader->StartTask(urlToSuperPack, "", DLCDownloader::TaskType::SIZE);
+        downloadTaskId = downloader->StartGetContentSize(urlToSuperPack);
     }
     else
     {
@@ -564,7 +564,7 @@ void DLCManagerImpl::AskFooter()
                 uint32 sizeofFooter = static_cast<uint32>(sizeof(initFooterOnServer));
 
                 memBufWriter.reset(new MemoryBufferWriter(&initFooterOnServer, sizeofFooter));
-                downloadTaskId = downloader->StartTask(urlToSuperPack, "", DLCDownloader::TaskType::FULL, memBufWriter.get(), downloadOffset, sizeofFooter);
+                downloadTaskId = downloader->StartTask(urlToSuperPack, *memBufWriter, DLCDownloader::Range(downloadOffset, sizeofFooter));
                 initState = InitState::LoadingRequestGetFooter;
                 log << "initState: " << ToString(initState) << std::endl;
             }
@@ -628,8 +628,8 @@ void DLCManagerImpl::AskFileTable()
 
     uint64 downloadOffset = fullSizeServerData - (sizeof(initFooterOnServer) + initFooterOnServer.info.filesTableSize);
 
-    downloadTaskId = downloader->StartTask(urlToSuperPack, localCacheFileTable.GetAbsolutePathname(), DLCDownloader::TaskType::FULL, nullptr, downloadOffset, buffer.size());
-    if (0 == downloadTaskId)
+    downloadTaskId = downloader->StartTask(urlToSuperPack, localCacheFileTable.GetAbsolutePathname(), DLCDownloader::Range(downloadOffset, buffer.size()));
+    if (nullptr == downloadTaskId)
     {
         DAVA_THROW(DAVA::Exception, "can't start downloading into buffer");
     }
@@ -744,8 +744,8 @@ void DLCManagerImpl::AskServerMeta()
 
     memBufWriter.reset(new MemoryBufferWriter(buffer.data(), buffer.size()));
 
-    downloadTaskId = downloader->StartTask(urlToSuperPack, "", DLCDownloader::TaskType::FULL, memBufWriter.get(), downloadOffset, downloadSize);
-    DVASSERT(0 != downloadTaskId);
+    downloadTaskId = downloader->StartTask(urlToSuperPack, *memBufWriter, DLCDownloader::Range(downloadOffset, downloadSize));
+    DVASSERT(nullptr != downloadTaskId);
 
     initState = InitState::LoadingRequestGetMeta;
     log << "initState: " << ToString(initState) << std::endl;
@@ -1213,6 +1213,7 @@ void DLCManagerImpl::StartScanDownloadedFiles()
     {
         scanState = ScanState::Starting;
         scanThread = Thread::Create(MakeFunction(this, &DLCManagerImpl::ThreadScanFunc));
+        scanThread->SetName("DLC::ThreadScanFunc");
         scanThread->Start();
     }
 }
