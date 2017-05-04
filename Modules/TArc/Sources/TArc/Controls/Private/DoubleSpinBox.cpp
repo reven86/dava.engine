@@ -4,14 +4,14 @@ namespace DAVA
 {
 namespace TArc
 {
-DoubleSpinBox::DoubleSpinBox(const ControlDescriptorBuilder<Fields>& fields, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent /*= nullptr*/)
-    : TBase(ControlDescriptor(fields), wrappersProcessor, model, parent)
+DoubleSpinBox::DoubleSpinBox(const Params& params, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent /*= nullptr*/)
+    : TBase(params, ControlDescriptor(params.fields), wrappersProcessor, model, parent)
 {
     setDecimals(6);
 }
 
-DoubleSpinBox::DoubleSpinBox(const ControlDescriptorBuilder<Fields>& fields, ContextAccessor* accessor, Reflection model, QWidget* parent /*= nullptr*/)
-    : TBase(ControlDescriptor(fields), accessor, model, parent)
+DoubleSpinBox::DoubleSpinBox(const Params& params, ContextAccessor* accessor, Reflection model, QWidget* parent /*= nullptr*/)
+    : TBase(params, ControlDescriptor(params.fields), accessor, model, parent)
 {
     setDecimals(6);
 }

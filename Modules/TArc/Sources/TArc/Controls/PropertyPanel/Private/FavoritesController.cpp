@@ -61,7 +61,7 @@ void FavoritesController::SetModelRoot(std::shared_ptr<PropertyNode> root)
 
     if (favoritedPathes.empty() == false)
     {
-        favoritedCreated.Emit(selfRoot, favoriteRoot, favoriteRoot->sortKey, true);
+        favoritedCreated.Emit(selfRoot, favoriteRoot, favoriteRoot->BuildID(), favoriteRoot->sortKey, true);
     }
 }
 
@@ -85,14 +85,14 @@ void FavoritesController::OnChildAdded(const std::shared_ptr<PropertyNode>& pare
 
     if (subFavorited.count(parent) > 0)
     {
-        favoritedCreated.Emit(parent, child, child->sortKey, false);
+        favoritedCreated.Emit(parent, child, child->BuildID(), child->sortKey, false);
         subFavorited.emplace(child);
     }
 
     int32 matchedIndex = MatchPath(child);
     if (matchedIndex != -1)
     {
-        favoritedCreated.Emit(favoriteRoot, child, matchedIndex, true);
+        favoritedCreated.Emit(favoriteRoot, child, BuildRootID(child), matchedIndex, true);
         subFavorited.emplace(child);
         favoritedRoots.emplace(child, matchedIndex);
     }
@@ -105,7 +105,7 @@ void FavoritesController::OnChildRemoved(const std::shared_ptr<PropertyNode>& ch
     auto subFavoriteIter = subFavorited.find(child);
     if (subFavoriteIter != subFavorited.end())
     {
-        favoriteDeleted.Emit(child);
+        favoriteDeleted.Emit(child, false);
         subFavorited.erase(child);
     }
 
@@ -156,7 +156,7 @@ void FavoritesController::AddFavorite(Vector<FastName>&& favoritePath)
     DVASSERT(favoritePath.size() > 1);
     if (favoritedPathes.empty())
     {
-        favoritedCreated.Emit(selfRoot, favoriteRoot, favoriteRoot->sortKey, true);
+        favoritedCreated.Emit(selfRoot, favoriteRoot, favoriteRoot->BuildID(), favoriteRoot->sortKey, true);
     }
     favoritedPathes.emplace_back(std::move(favoritePath));
 
@@ -206,7 +206,7 @@ void FavoritesController::AddFavorite(Vector<FastName>&& favoritePath)
         if (matched == true)
         {
             int32 pathIndex = static_cast<int32>(favoritedPathes.size()) - 1;
-            favoritedCreated.Emit(favoriteRoot, node, pathIndex, true);
+            favoritedCreated.Emit(favoriteRoot, node, BuildRootID(node), pathIndex, true);
             favoritedRoots.emplace(node, pathIndex);
             subFavorited.emplace(node);
             AddItemRecursive(node);
@@ -246,7 +246,7 @@ void FavoritesController::RemoveFavorite(const Vector<FastName>& favoritePath)
         {
             subFavorited.erase(fvRootIter->first);
             RemoveItemRecursive(fvRootIter->first);
-            favoriteDeleted.Emit(fvRootIter->first);
+            favoriteDeleted.Emit(fvRootIter->first, true);
             fvRootIter = favoritedRoots.erase(fvRootIter);
             continue;
         }
@@ -260,7 +260,7 @@ void FavoritesController::RemoveFavorite(const Vector<FastName>& favoritePath)
 
     if (favoritedPathes.empty() == true)
     {
-        favoriteDeleted.Emit(favoriteRoot);
+        favoriteDeleted.Emit(favoriteRoot, true);
     }
 }
 
@@ -270,10 +270,10 @@ void FavoritesController::ClearFavorites()
     for (auto& iter : favoritedRoots)
     {
         RemoveItemRecursive(iter.first);
-        favoriteDeleted.Emit(iter.first);
+        favoriteDeleted.Emit(iter.first, true);
     }
 
-    favoriteDeleted.Emit(favoriteRoot);
+    favoriteDeleted.Emit(favoriteRoot, true);
 
     favoritedRoots.clear();
     favoritedPathes.clear();
@@ -341,7 +341,7 @@ void FavoritesController::AddItemRecursive(const std::shared_ptr<PropertyNode>& 
     for (const std::shared_ptr<PropertyNode>& node : iter->second)
     {
         subFavorited.emplace(node);
-        favoritedCreated.Emit(parent, node, node->sortKey, false);
+        favoritedCreated.Emit(parent, node, node->BuildID(), node->sortKey, false);
         AddItemRecursive(node);
     }
 }
@@ -358,7 +358,7 @@ void FavoritesController::RemoveItemRecursive(const std::shared_ptr<PropertyNode
     {
         subFavorited.erase(node);
         RemoveItemRecursive(node);
-        favoriteDeleted.Emit(node);
+        favoriteDeleted.Emit(node, false);
     }
 }
 
@@ -380,6 +380,20 @@ void FavoritesController::BuildPathToNode(std::shared_ptr<PropertyNode> node, Ve
         }
     }
     std::reverse(path.begin(), path.end());
+}
+
+DAVA::String FavoritesController::BuildRootID(const std::shared_ptr<PropertyNode>& node) const
+{
+    DAVA::String id = node->BuildID();
+
+    auto iter = childToParent.find(node);
+    while (iter != childToParent.end())
+    {
+        id += iter->second->BuildID();
+        iter = childToParent.find(iter->second);
+    }
+
+    return id;
 }
 
 } // namespace TArc

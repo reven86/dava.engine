@@ -29,8 +29,9 @@ public:
         FieldCount
     };
 
-    ReflectedButton(const ControlDescriptorBuilder<Fields>& fields, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent = nullptr);
-    ReflectedButton(const ControlDescriptorBuilder<Fields>& fields, ContextAccessor* accessor, Reflection model, QWidget* parent = nullptr);
+    DECLARE_CONTROL_PARAMS(Fields);
+    ReflectedButton(const Params& params, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent = nullptr);
+    ReflectedButton(const Params& params, ContextAccessor* accessor, Reflection model, QWidget* parent = nullptr);
 
 private:
     void UpdateControl(const ControlDescriptor& changedfields) override;

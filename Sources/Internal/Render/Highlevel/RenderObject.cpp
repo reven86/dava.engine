@@ -44,9 +44,9 @@ DAVA_VIRTUAL_REFLECTION_IMPL(RenderObject::IndexedRenderBatch)
 {
     ReflectionRegistrator<IndexedRenderBatch>::Begin()
     .Field("renderBatch", &IndexedRenderBatch::renderBatch)[M::DisplayName("Render batch")]
-    .Field("lodIndex", &IndexedRenderBatch::lodIndex)[M::DisplayName("LOD index"), M::Range(-1, 3, 1)]
+    .Field("lodIndex", &IndexedRenderBatch::lodIndex)[M::DisplayName("LOD index"), M::Range(-1, 3, 1), M::ReadOnly()]
     // we have to put upper bound of switchIndex to 1 because in ResourceEditor we have asserts like this one DVASSERT(switch < 2)
-    .Field("switchIndex", &IndexedRenderBatch::switchIndex)[M::DisplayName("Switch index"), M::Range(-1, 1, 1)]
+    .Field("switchIndex", &IndexedRenderBatch::switchIndex)[M::DisplayName("Switch index"), M::Range(-1, 1, 1), M::ReadOnly()]
     .End();
 }
 

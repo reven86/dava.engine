@@ -26,7 +26,7 @@ namespace TextComponentValueDetail
 class MultilineEditDialog : public QDialog
 {
 public:
-    MultilineEditDialog(QWidget* parent, DataWrappersProcessor* processor, const String& initValue)
+    MultilineEditDialog(QWidget* parent, ContextAccessor* accessor, UI* ui, const WindowKey& wndKey, DataWrappersProcessor* processor, const String& initValue)
         : QDialog(parent)
         , value(initValue)
     {
@@ -38,9 +38,9 @@ public:
         layout->setMargin(0);
         layout->setSpacing(0);
 
-        ControlDescriptorBuilder<PlainTextEdit::Fields> descr;
-        descr[PlainTextEdit::Fields::Text] = "text";
-        PlainTextEdit* edit = new PlainTextEdit(descr, processor, Reflection::Create(ReflectedObject(this)), this);
+        PlainTextEdit::Params params(accessor, ui, wndKey);
+        params.fields[PlainTextEdit::Fields::Text] = "text";
+        PlainTextEdit* edit = new PlainTextEdit(params, processor, Reflection::Create(ReflectedObject(this)), this);
         edit->ForceUpdate();
         layout->AddControl(edit);
 
@@ -103,10 +103,10 @@ void TextComponentValue::SetText(const String& text)
 
 ControlProxy* TextComponentValue::CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor)
 {
-    ControlDescriptorBuilder<LineEdit::Fields> descr;
-    descr[LineEdit::Fields::Text] = "text";
-    descr[LineEdit::Fields::IsReadOnly] = readOnlyFieldName;
-    return new LineEdit(descr, wrappersProcessor, model, parent);
+    LineEdit::Params params(GetAccessor(), GetUI(), GetWindowKey());
+    params.fields[LineEdit::Fields::Text] = "text";
+    params.fields[LineEdit::Fields::IsReadOnly] = readOnlyFieldName;
+    return new LineEdit(params, wrappersProcessor, model, parent);
 }
 
 DAVA_VIRTUAL_REFLECTION_IMPL(TextComponentValue)
@@ -129,7 +129,7 @@ DAVA::TArc::ControlProxy* MultiLineTextComponentValue::CreateEditorWidget(QWidge
     QToolButton* button = new QToolButton(w->ToWidgetCast());
     button->setIcon(SharedIcon(":/QtIcons/pencil.png"));
     button->setIconSize(toolButtonIconSize);
-    button->setAutoRaise(true);
+    button->setAutoRaise(false);
     connections.AddConnection(button, &QToolButton::clicked, MakeFunction(this, &MultiLineTextComponentValue::OpenMultiLineEdit));
     layout->addWidget(button);
 
@@ -145,7 +145,7 @@ DAVA::TArc::ControlProxy* MultiLineTextComponentValue::CreateEditorWidget(QWidge
 
 void MultiLineTextComponentValue::OpenMultiLineEdit()
 {
-    TextComponentValueDetail::MultilineEditDialog dlg(realWidget, GetDataProcessor(), GetText());
+    TextComponentValueDetail::MultilineEditDialog dlg(realWidget, GetAccessor(), GetUI(), GetWindowKey(), GetDataProcessor(), GetText());
     if (dlg.exec() == QDialog::Accepted)
     {
         SetText(dlg.GetText());

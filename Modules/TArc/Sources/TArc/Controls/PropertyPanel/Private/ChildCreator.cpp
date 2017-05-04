@@ -7,6 +7,31 @@ namespace DAVA
 {
 namespace TArc
 {
+namespace ChildCreatorDetail
+{
+bool IsEqual(const std::shared_ptr<PropertyNode>& n1, const std::shared_ptr<PropertyNode>& n2)
+{
+    if (n1->propertyType == n2->propertyType &&
+        n1->idPostfix == n2->idPostfix &&
+        n1->sortKey == n2->sortKey &&
+        n1->field.ref.GetValueObject() == n2->field.ref.GetValueObject() &&
+        n1->field.key == n2->field.key)
+    {
+        if (n1->cachedValue == n2->cachedValue)
+        {
+            return true;
+        }
+
+        if (n1->field.ref.HasFields() == false && n2->field.ref.HasFields() == false)
+        {
+            return true;
+        }
+    }
+
+    return false;
+}
+}
+
 ChildCreator::ChildCreator()
     : extensions(ChildCreatorExtension::CreateDummy())
     , allocator(CreateDefaultAllocator())
@@ -68,7 +93,7 @@ void ChildCreator::UpdateSubTree(const std::shared_ptr<PropertyNode>& parent)
                 bool isEqual = false;
                 try
                 {
-                    isEqual = *children[i] == *currentChildren[i];
+                    isEqual = ChildCreatorDetail::IsEqual(children[i], currentChildren[i]);
                 }
                 catch (const Exception& e)
                 {

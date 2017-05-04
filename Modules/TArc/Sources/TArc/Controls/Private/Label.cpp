@@ -10,13 +10,13 @@ namespace DAVA
 {
 namespace TArc
 {
-Label::Label(const ControlDescriptorBuilder<Label::Fields>& fields, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent)
-    : ControlProxyImpl<QLabel>(ControlDescriptor(fields), wrappersProcessor, model, parent)
+Label::Label(const Params& params, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent)
+    : ControlProxyImpl<QLabel>(params, ControlDescriptor(params.fields), wrappersProcessor, model, parent)
 {
 }
 
-Label::Label(const ControlDescriptorBuilder<Label::Fields>& fields, ContextAccessor* accessor, Reflection model, QWidget* parent)
-    : ControlProxyImpl<QLabel>(ControlDescriptor(fields), accessor, model, parent)
+Label::Label(const Params& params, ContextAccessor* accessor, Reflection model, QWidget* parent)
+    : ControlProxyImpl<QLabel>(params, ControlDescriptor(params.fields), accessor, model, parent)
 {
 }
 

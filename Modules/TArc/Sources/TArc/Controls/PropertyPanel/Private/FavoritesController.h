@@ -41,8 +41,8 @@ public:
 
     void ClearFavorites();
 
-    Signal<const std::shared_ptr<PropertyNode>& /*parent*/, const std::shared_ptr<PropertyNode>&, int32 /*sortKey*/, bool /*root*/> favoritedCreated;
-    Signal<const std::shared_ptr<PropertyNode>&> favoriteDeleted;
+    Signal<const std::shared_ptr<PropertyNode>& /*parent*/, const std::shared_ptr<PropertyNode>&, const DAVA::String& /*mergeId*/, int32 /*sortKey*/, bool /*root*/> favoritedCreated;
+    Signal<const std::shared_ptr<PropertyNode>&, bool /*unfavorited*/> favoriteDeleted;
 
 private:
     void AddFavorite(Vector<FastName>&& favoritePath);
@@ -52,6 +52,8 @@ private:
     void AddItemRecursive(const std::shared_ptr<PropertyNode>& parent);
     void RemoveItemRecursive(const std::shared_ptr<PropertyNode>& parent);
     void BuildPathToNode(std::shared_ptr<PropertyNode> node, Vector<FastName>& path);
+
+    DAVA::String BuildRootID(const std::shared_ptr<PropertyNode>& node) const;
 
 private:
     std::shared_ptr<PropertyNode> selfRoot;

@@ -77,13 +77,16 @@ public:
     QModelIndex GetRegularRootIndex() const;
     QModelIndex GetFavoriteRootIndex() const;
 
+    Vector<FastName> GetIndexPath(const QModelIndex& index) const;
+    QModelIndex LookIndex(const Vector<FastName>& path) const;
+
 private:
     friend class BaseComponentValue;
     void OnChildAdded(const std::shared_ptr<PropertyNode>& parent, const std::shared_ptr<PropertyNode>& node);
     void OnChildRemoved(const std::shared_ptr<PropertyNode>& node);
 
-    void OnFavoritedAdded(const std::shared_ptr<PropertyNode>& parent, const std::shared_ptr<PropertyNode>& node, int32 sortKey, bool isRoot);
-    void OnFavoritedRemoved(const std::shared_ptr<PropertyNode>& node);
+    void OnFavoritedAdded(const std::shared_ptr<PropertyNode>& parent, const std::shared_ptr<PropertyNode>& node, const DAVA::String& id, int32 sortKey, bool isRoot);
+    void OnFavoritedRemoved(const std::shared_ptr<PropertyNode>& node, bool unfavorited);
 
     ReflectedPropertyItem* MapItem(const QModelIndex& item) const;
     QModelIndex MapItem(ReflectedPropertyItem* item) const;
@@ -93,7 +96,7 @@ private:
 
     template <typename T>
     std::shared_ptr<T> GetExtensionChain() const;
-    ReflectedPropertyItem* LookUpItem(const std::shared_ptr<PropertyNode>& node, const Vector<std::unique_ptr<ReflectedPropertyItem>>& children);
+    ReflectedPropertyItem* LookUpItem(const std::shared_ptr<PropertyNode>& node, const DAVA::String& lookupID, const Vector<std::unique_ptr<ReflectedPropertyItem>>& children);
 
     DataWrappersProcessor* GetWrappersProcessor(const std::shared_ptr<PropertyNode>& node);
     void GetExpandedListImpl(QModelIndexList& list, ReflectedPropertyItem* item) const;

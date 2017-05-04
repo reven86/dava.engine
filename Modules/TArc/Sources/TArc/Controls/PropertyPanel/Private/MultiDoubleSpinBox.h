@@ -30,12 +30,9 @@ public:
         FieldCount
     };
 
-    MultiDoubleSpinBox(const ControlDescriptorBuilder<Fields>& fields, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent = nullptr);
-    MultiDoubleSpinBox(const ControlDescriptorBuilder<Fields>& fields, ContextAccessor* accessor, Reflection model, QWidget* parent = nullptr);
-
-protected:
-    void focusInEvent(QFocusEvent* e) override;
-    bool eventFilter(QObject* obj, QEvent* event) override;
+    DECLARE_CONTROL_PARAMS(Fields);
+    MultiDoubleSpinBox(const Params& params, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent = nullptr);
+    MultiDoubleSpinBox(const Params& params, ContextAccessor* accessor, Reflection model, QWidget* parent = nullptr);
 
 private:
     template <typename T>
@@ -47,7 +44,6 @@ private:
     void UpdateControl(const ControlDescriptor& descriptor) override;
 
     Vector<ControlProxy*> subControls;
-    QWidget* lastFocusedItem = nullptr;
 };
 } // namespace TArc
 } // namespace DAVA

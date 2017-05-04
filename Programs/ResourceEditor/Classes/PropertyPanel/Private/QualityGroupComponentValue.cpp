@@ -20,7 +20,8 @@ namespace QualityGroupComponentValueDetail
 class Control : private QWidget, public DAVA::TArc::ControlProxy
 {
 public:
-    Control(QWidget* parent, const DAVA::Reflection& model, DAVA::TArc::DataWrappersProcessor* wrappersProcessor)
+    Control(QWidget* parent, const DAVA::Reflection& model, DAVA::TArc::DataWrappersProcessor* wrappersProcessor,
+            DAVA::TArc::ContextAccessor* accessor, DAVA::TArc::UI* ui, const DAVA::TArc::WindowKey& wndKey)
         : QWidget(parent)
     {
         using namespace DAVA::TArc;
@@ -34,23 +35,27 @@ public:
             filterLayout->setContentsMargins(0, 2, 0, 2);
             filterLayout->addWidget(new QLabel("Filter by Type", this));
 
-            ControlDescriptorBuilder<CheckBox::Fields> filterCheckBoxDescr;
-            filterCheckBoxDescr[CheckBox::Fields::Checked] = "filterByType";
-            filterCheckBoxDescr[CheckBox::Fields::IsReadOnly] = BaseComponentValue::readOnlyFieldName;
-            CheckBox* filterByTypeEditor = new CheckBox(filterCheckBoxDescr, wrappersProcessor, model, this);
-            filterLayout->AddControl(filterByTypeEditor);
-            subControls.push_back(filterByTypeEditor);
+            {
+                CheckBox::Params params(accessor, ui, wndKey);
+                params.fields[CheckBox::Fields::Checked] = "filterByType";
+                params.fields[CheckBox::Fields::IsReadOnly] = BaseComponentValue::readOnlyFieldName;
+                CheckBox* filterByTypeEditor = new CheckBox(params, wrappersProcessor, model, this);
+                filterLayout->AddControl(filterByTypeEditor);
+                subControls.push_back(filterByTypeEditor);
+            }
 
-            ControlDescriptorBuilder<ComboBox::Fields> modelTypesDescr;
-            modelTypesDescr[ComboBox::Fields::Value] = "modelType";
-            modelTypesDescr[ComboBox::Fields::IsReadOnly] = "isModelTypeReadOnly";
-            modelTypesDescr[ComboBox::Fields::Enumerator] = "modelTypes";
-            ComboBox* modelTypeEditor = new ComboBox(modelTypesDescr, wrappersProcessor, model, this);
-            QSizePolicy policy = modelTypeEditor->ToWidgetCast()->sizePolicy();
-            policy.setHorizontalPolicy(QSizePolicy::Expanding);
-            modelTypeEditor->ToWidgetCast()->setSizePolicy(policy);
-            filterLayout->AddControl(modelTypeEditor);
-            subControls.push_back(modelTypeEditor);
+            {
+                ComboBox::Params params(accessor, ui, wndKey);
+                params.fields[ComboBox::Fields::Value] = "modelType";
+                params.fields[ComboBox::Fields::IsReadOnly] = "isModelTypeReadOnly";
+                params.fields[ComboBox::Fields::Enumerator] = "modelTypes";
+                ComboBox* modelTypeEditor = new ComboBox(params, wrappersProcessor, model, this);
+                QSizePolicy policy = modelTypeEditor->ToWidgetCast()->sizePolicy();
+                policy.setHorizontalPolicy(QSizePolicy::Expanding);
+                modelTypeEditor->ToWidgetCast()->setSizePolicy(policy);
+                filterLayout->AddControl(modelTypeEditor);
+                subControls.push_back(modelTypeEditor);
+            }
 
             layout->addLayout(filterLayout);
         }
@@ -64,11 +69,12 @@ public:
             groupLayout->setSpacing(1);
 
             groupLayout->addWidget(new QLabel("Group", this), 0, Qt::AlignHCenter);
-            ControlDescriptorBuilder<ComboBox::Fields> groupDescr;
-            groupDescr[ComboBox::Fields::Value] = "group";
-            groupDescr[ComboBox::Fields::Enumerator] = "groups";
-            groupDescr[ComboBox::Fields::IsReadOnly] = "isGroupReadOnly";
-            ComboBox* groupComboBox = new ComboBox(groupDescr, wrappersProcessor, model, this);
+
+            ComboBox::Params params(accessor, ui, wndKey);
+            params.fields[ComboBox::Fields::Value] = "group";
+            params.fields[ComboBox::Fields::Enumerator] = "groups";
+            params.fields[ComboBox::Fields::IsReadOnly] = "isGroupReadOnly";
+            ComboBox* groupComboBox = new ComboBox(params, wrappersProcessor, model, this);
             groupLayout->AddControl(groupComboBox, 1);
             subControls.push_back(groupComboBox);
 
@@ -80,11 +86,11 @@ public:
             qualityLayout->setSpacing(1);
 
             qualityLayout->addWidget(new QLabel("Quality", this), 0, Qt::AlignHCenter);
-            ControlDescriptorBuilder<ComboBox::Fields> qualityDescr;
-            qualityDescr[ComboBox::Fields::Value] = "quality";
-            qualityDescr[ComboBox::Fields::Enumerator] = "qualities";
-            qualityDescr[ComboBox::Fields::IsReadOnly] = "isQualityReadOnly";
-            ComboBox* qualityComboBox = new ComboBox(qualityDescr, wrappersProcessor, model, this);
+            ComboBox::Params params(accessor, ui, wndKey);
+            params.fields[ComboBox::Fields::Value] = "quality";
+            params.fields[ComboBox::Fields::Enumerator] = "qualities";
+            params.fields[ComboBox::Fields::IsReadOnly] = "isQualityReadOnly";
+            ComboBox* qualityComboBox = new ComboBox(params, wrappersProcessor, model, this);
             qualityLayout->AddControl(qualityComboBox, 1);
             subControls.push_back(qualityComboBox);
 
@@ -194,7 +200,7 @@ bool QualityGroupComponentValue::IsValidValueToSet(const DAVA::Any& newValue, co
 
 DAVA::TArc::ControlProxy* QualityGroupComponentValue::CreateEditorWidget(QWidget* parent, const DAVA::Reflection& model, DAVA::TArc::DataWrappersProcessor* wrappersProcessor)
 {
-    return new QualityGroupComponentValueDetail::Control(parent, model, wrappersProcessor);
+    return new QualityGroupComponentValueDetail::Control(parent, model, wrappersProcessor, GetAccessor(), GetUI(), GetWindowKey());
 }
 
 bool QualityGroupComponentValue::IsSpannedControl() const

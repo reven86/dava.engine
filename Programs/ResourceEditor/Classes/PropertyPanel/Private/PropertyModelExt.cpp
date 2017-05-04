@@ -143,10 +143,10 @@ protected:
         layout->addWidget(nonConstThis->toolButton.data());
         nonConstThis->connections.AddConnection(nonConstThis->toolButton.data(), &QToolButton::clicked, MakeFunction(nonConstThis, &ComponentCreatorComponentValue::AddComponent));
 
-        ControlDescriptorBuilder<ComboBox::Fields> descr;
-        descr[ComboBox::Fields::Enumerator] = "types";
-        descr[ComboBox::Fields::Value] = "currentType";
-        w->AddControl(new ComboBox(descr, wrappersProcessor, model, w->ToWidgetCast()));
+        ComboBox::Params params(GetAccessor(), GetUI(), GetWindowKey());
+        params.fields[ComboBox::Fields::Enumerator] = "types";
+        params.fields[ComboBox::Fields::Value] = "currentType";
+        w->AddControl(new ComboBox(params, wrappersProcessor, model, w->ToWidgetCast()));
 
         return w;
     }

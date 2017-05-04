@@ -159,10 +159,10 @@ Qt::ItemFlags ReflectedPropertyModel::flags(const QModelIndex& index) const
 {
     DVASSERT(index.isValid());
     Qt::ItemFlags flags = Qt::ItemFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-    if (index.column() == 1)
+    ReflectedPropertyItem* item = MapItem(index);
+    if (item != nullptr)
     {
-        ReflectedPropertyItem* item = MapItem(index);
-        if (item != nullptr)
+        if (index.column() == 1 || item->value->IsSpannedControl() == true)
         {
             std::shared_ptr<const PropertyNode> node = item->GetPropertyNode(0);
             if (!node->field.ref.IsReadonly())
@@ -327,7 +327,7 @@ void ReflectedPropertyModel::OnChildAdded(const std::shared_ptr<PropertyNode>& p
 
     ReflectedPropertyItem* parentItem = iter->second;
 
-    ReflectedPropertyItem* childItem = LookUpItem(node, parentItem->children);
+    ReflectedPropertyItem* childItem = LookUpItem(node, node->BuildID(), parentItem->children);
     if (childItem != nullptr)
     {
         childItem->AddPropertyNode(node);
@@ -367,7 +367,7 @@ void ReflectedPropertyModel::OnChildRemoved(const std::shared_ptr<PropertyNode>&
     }
 }
 
-void ReflectedPropertyModel::OnFavoritedAdded(const std::shared_ptr<PropertyNode>& parent, const std::shared_ptr<PropertyNode>& node, int32 sortKey, bool isRoot)
+void ReflectedPropertyModel::OnFavoritedAdded(const std::shared_ptr<PropertyNode>& parent, const std::shared_ptr<PropertyNode>& node, const DAVA::String& id, int32 sortKey, bool isRoot)
 {
     auto itemIter = nodeToItem.find(node);
     if (itemIter != nodeToItem.end() && isRoot == true)
@@ -384,7 +384,7 @@ void ReflectedPropertyModel::OnFavoritedAdded(const std::shared_ptr<PropertyNode
 
     ReflectedPropertyItem* parentItem = favoriteParentIter->second;
 
-    ReflectedPropertyItem* childItem = LookUpItem(node, parentItem->children);
+    ReflectedPropertyItem* childItem = LookUpItem(node, id, parentItem->children);
     if (childItem != nullptr)
     {
         childItem->AddPropertyNode(node);
@@ -405,7 +405,7 @@ void ReflectedPropertyModel::OnFavoritedAdded(const std::shared_ptr<PropertyNode
     DVASSERT(newNode.second);
 }
 
-void ReflectedPropertyModel::OnFavoritedRemoved(const std::shared_ptr<PropertyNode>& node)
+void ReflectedPropertyModel::OnFavoritedRemoved(const std::shared_ptr<PropertyNode>& node, bool unfavorited)
 {
     auto fvIter = nodeToFavorite.find(node);
     DVASSERT(fvIter != nodeToFavorite.end());
@@ -414,21 +414,20 @@ void ReflectedPropertyModel::OnFavoritedRemoved(const std::shared_ptr<PropertyNo
 
     RemoveGuard guard(this, item);
     item->RemovePropertyNode(node);
-    bool needRemove = item->GetPropertyNodesCount() == 0;
-    if (needRemove)
+    if (item->GetPropertyNodesCount() == 0)
     {
         item->parent->RemoveChild(item->position);
     }
 
-    if (needRemove == true)
+    if (unfavorited == true)
     {
         auto itemIter = nodeToItem.find(node);
         if (itemIter != nodeToItem.end())
         {
             itemIter->second->SetFavorited(false);
         }
-        nodeToFavorite.erase(node);
     }
+    nodeToFavorite.erase(node);
 }
 
 ReflectedPropertyItem* ReflectedPropertyModel::MapItem(const QModelIndex& item) const
@@ -663,6 +662,65 @@ QModelIndex ReflectedPropertyModel::GetFavoriteRootIndex() const
     return QModelIndex();
 }
 
+Vector<FastName> ReflectedPropertyModel::GetIndexPath(const QModelIndex& index) const
+{
+    Vector<FastName> path;
+    if (index.isValid() == false)
+    {
+        return path;
+    }
+
+    path.reserve(8);
+    ReflectedPropertyItem* item = MapItem(index);
+    while (item != nullptr)
+    {
+        path.push_back(item->value->GetID());
+        item = item->parent;
+    }
+
+    std::reverse(path.begin(), path.end());
+    return path;
+}
+
+QModelIndex ReflectedPropertyModel::LookIndex(const Vector<FastName>& path) const
+{
+    ReflectedPropertyItem* item = rootItem.get();
+    if (path.empty() || path.front() != item->value->GetID())
+    {
+        return QModelIndex();
+    }
+
+    for (size_t i = 1; i < path.size(); ++i)
+    {
+        if (item == nullptr)
+        {
+            return QModelIndex();
+        }
+
+        FastName itemID = path[i];
+        size_t childCount = item->children.size();
+        ReflectedPropertyItem* nextItem = nullptr;
+        for (size_t childIndex = 0; childIndex < childCount; ++childIndex)
+        {
+            ReflectedPropertyItem* currentItem = item->children[childIndex].get();
+            if (itemID == currentItem->value->GetID())
+            {
+                nextItem = currentItem;
+                break;
+            }
+        }
+
+        item = nextItem;
+    }
+
+    if (item == nullptr)
+    {
+        return QModelIndex();
+    }
+
+    return MapItem(item);
+}
+
 void ReflectedPropertyModel::GetExpandedListImpl(QModelIndexList& list, ReflectedPropertyItem* item) const
 {
     if (item == nullptr)
@@ -685,12 +743,12 @@ void ReflectedPropertyModel::GetExpandedListImpl(QModelIndexList& list, Reflecte
     }
 }
 
-ReflectedPropertyItem* ReflectedPropertyModel::LookUpItem(const std::shared_ptr<PropertyNode>& node, const Vector<std::unique_ptr<ReflectedPropertyItem>>& items)
+ReflectedPropertyItem* ReflectedPropertyModel::LookUpItem(const std::shared_ptr<PropertyNode>& node, const DAVA::String& lookupID, const Vector<std::unique_ptr<ReflectedPropertyItem>>& items)
 {
     DVASSERT(node->field.ref.IsValid());
 
     ReflectedPropertyItem* result = nullptr;
-    FastName nodeID = FastName(node->BuildID());
+    FastName nodeID = FastName(lookupID);
 
     for (const std::unique_ptr<ReflectedPropertyItem>& item : items)
     {

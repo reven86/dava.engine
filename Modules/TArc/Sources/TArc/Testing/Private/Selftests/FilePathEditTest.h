@@ -87,9 +87,7 @@ public:
         Reflection model = Reflection::Create(&data);
 
         {
-            FilePathEdit::Params params;
-            params.ui = GetUI();
-            params.wndKey = wndKey;
+            FilePathEdit::Params params(GetAccessor(), GetUI(), wndKey);
             params.fields[FilePathEdit::Fields::Value] = "readOnlyValue";
             FilePathEdit* edit = new FilePathEdit(params, GetAccessor(), model);
             edit->SetObjectName("FilePathEdit_readOnlyValue");
@@ -97,9 +95,7 @@ public:
         }
 
         {
-            FilePathEdit::Params params;
-            params.ui = GetUI();
-            params.wndKey = wndKey;
+            FilePathEdit::Params params(GetAccessor(), GetUI(), wndKey);
             params.fields[FilePathEdit::Fields::Value] = "readOnlyMetaValue";
             FilePathEdit* edit = new FilePathEdit(params, GetAccessor(), model);
             edit->SetObjectName("FilePathEdit_readOnlyMetaValue");
@@ -107,9 +103,7 @@ public:
         }
 
         {
-            FilePathEdit::Params params;
-            params.ui = GetUI();
-            params.wndKey = wndKey;
+            FilePathEdit::Params params(GetAccessor(), GetUI(), wndKey);
             params.fields[FilePathEdit::Fields::Value] = "value";
             FilePathEdit* edit = new FilePathEdit(params, GetAccessor(), model);
             edit->SetObjectName("FilePathEdit_value");
@@ -117,9 +111,7 @@ public:
         }
 
         {
-            FilePathEdit::Params params;
-            params.ui = GetUI();
-            params.wndKey = wndKey;
+            FilePathEdit::Params params(GetAccessor(), GetUI(), wndKey);
             params.fields[FilePathEdit::Fields::Value] = "value";
             params.fields[FilePathEdit::Fields::IsEnabled] = "isEnabled";
             params.fields[FilePathEdit::Fields::IsReadOnly] = "isReadOnly";

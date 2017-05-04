@@ -5,6 +5,7 @@
 #include "TArc/DataProcessing/DataWrappersProcessor.h"
 #include "TArc/Controls/ControlDescriptor.h"
 #include "TArc/WindowSubSystem/QtTArcEvents.h"
+#include "TArc/WindowSubSystem/UI.h"
 #include "TArc/Utils/ScopedValueGuard.h"
 
 #include <QWidget>
@@ -16,6 +17,14 @@
     {\
         return (x);\
     }
+
+#define DECLARE_CONTROL_PARAMS(Fields) \
+    struct Params : BaseParams\
+    { \
+        Params(ContextAccessor* accessor, UI* ui, const WindowKey& wndKey) \
+            : BaseParams(accessor, ui, wndKey){} \
+        ControlDescriptorBuilder<Fields> fields; \
+    };
 
 namespace DAVA
 {
@@ -35,16 +44,31 @@ template <typename TBase>
 class ControlProxyImpl : protected TBase, public ControlProxy, protected DataListener
 {
 public:
-    ControlProxyImpl(const ControlDescriptor& descriptor_, DataWrappersProcessor* wrappersProcessor, Reflection model_, QWidget* parent)
+    struct BaseParams
+    {
+        BaseParams(ContextAccessor* accessor_, UI* ui_, WindowKey wndKey_)
+            : accessor(accessor_)
+            , ui(ui_)
+            , wndKey(wndKey_)
+        {
+        }
+
+        ContextAccessor* accessor = nullptr;
+        UI* ui = nullptr;
+        WindowKey wndKey = WindowKey("");
+    };
+    ControlProxyImpl(const BaseParams& params, const ControlDescriptor& descriptor_, DataWrappersProcessor* wrappersProcessor, Reflection model_, QWidget* parent)
         : TBase(parent)
+        , controlParams(params)
         , descriptor(descriptor_)
         , model(model_)
     {
         SetupControl(wrappersProcessor);
     }
 
-    ControlProxyImpl(const ControlDescriptor& descriptor_, ContextAccessor* accessor, Reflection model_, QWidget* parent)
+    ControlProxyImpl(const BaseParams& params, const ControlDescriptor& descriptor_, ContextAccessor* accessor, Reflection model_, QWidget* parent)
         : TBase(parent)
+        , controlParams(params)
         , descriptor(descriptor_)
         , model(model_)
     {
@@ -79,8 +103,9 @@ public:
 
 protected:
     template <typename TPrivate>
-    ControlProxyImpl(const ControlDescriptor& descriptor_, DataWrappersProcessor* wrappersProcessor, Reflection model_, TPrivate&& d, QWidget* parent)
+    ControlProxyImpl(const BaseParams& params, const ControlDescriptor& descriptor_, DataWrappersProcessor* wrappersProcessor, Reflection model_, TPrivate&& d, QWidget* parent)
         : TBase(std::move(d), parent)
+        , controlParams(params)
         , descriptor(descriptor_)
         , model(model_)
     {
@@ -88,8 +113,9 @@ protected:
     }
 
     template <typename TPrivate>
-    ControlProxyImpl(const ControlDescriptor& descriptor_, ContextAccessor* accessor, Reflection model_, TPrivate&& d, QWidget* parent)
+    ControlProxyImpl(const BaseParams& params, const ControlDescriptor& descriptor_, ContextAccessor* accessor, Reflection model_, TPrivate&& d, QWidget* parent)
         : TBase(std::move(d), parent)
+        , controlParams(params)
         , descriptor(descriptor_)
         , model(model_)
     {
@@ -222,6 +248,7 @@ protected:
 protected:
     Reflection model;
     DataWrapper wrapper;
+    BaseParams controlParams;
 
 private:
     ControlDescriptor descriptor;

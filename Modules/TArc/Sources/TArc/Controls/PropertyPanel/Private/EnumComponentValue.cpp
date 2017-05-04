@@ -44,11 +44,11 @@ bool EnumComponentValue::IsValidValueToSet(const Any& newValue, const Any& curre
 
 ControlProxy* EnumComponentValue::CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor)
 {
-    ControlDescriptorBuilder<ComboBox::Fields> descr;
-    descr[ComboBox::Fields::Value] = "value";
-    descr[ComboBox::Fields::IsReadOnly] = readOnlyFieldName;
+    ComboBox::Params params(GetAccessor(), GetUI(), GetWindowKey());
+    params.fields[ComboBox::Fields::Value] = "value";
+    params.fields[ComboBox::Fields::IsReadOnly] = readOnlyFieldName;
 
-    return new ComboBox(descr, wrappersProcessor, model, parent);
+    return new ComboBox(params, wrappersProcessor, model, parent);
 }
 
 DAVA_VIRTUAL_REFLECTION_IMPL(EnumComponentValue)

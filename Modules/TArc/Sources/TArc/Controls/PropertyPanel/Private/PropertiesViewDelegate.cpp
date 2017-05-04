@@ -77,7 +77,7 @@ void PropertiesViewDelegate::paint(QPainter* painter, const QStyleOptionViewItem
     }
     else
     {
-        painter->fillRect(opt.rect, opt.palette.window());
+        painter->fillRect(opt.rect, opt.backgroundBrush);
 
         AdjustEditorRect(opt);
         valueComponent->Draw(painter, opt);
@@ -166,7 +166,7 @@ void PropertiesViewDelegate::updateEditorGeometry(QWidget* editor, const QStyleO
 
 bool PropertiesViewDelegate::editorEvent(QEvent* event, QAbstractItemModel* model, const QStyleOptionViewItem& option, const QModelIndex& index)
 {
-    if (index.isValid() == false || index.column() == 0)
+    if (index.isValid() == false || event->spontaneous() == false)
     {
         return false;
     }
@@ -180,21 +180,21 @@ bool PropertiesViewDelegate::editorEvent(QEvent* event, QAbstractItemModel* mode
     {
         QMouseEvent* ev = static_cast<QMouseEvent*>(event);
 
-        BaseComponentValue* value = GetComponentValue(index);
-        QWidget* target = view->viewport();
         QPoint localPos = ev->pos();
-        QWidget* childAt = value->AcquireEditorWidget(option);
-        while (childAt != nullptr && childAt != target)
+        QWidget* target = LookupWidget(GetComponentValue(index), localPos, option);
+
+        if (ev->type() == QEvent::MouseButtonPress)
         {
-            localPos = childAt->mapFrom(target, localPos);
-            target = childAt;
-            childAt = target->childAt(localPos);
+            ResolveFocusWidget(target, localPos);
         }
 
-        QMouseEvent* newEvent = new QMouseEvent(ev->type(), localPos, ev->windowPos(), ev->screenPos(),
-                                                ev->button(), ev->buttons(), ev->modifiers(), ev->source());
-        newEvent->setTimestamp(ev->timestamp());
-        PlatformApi::Qt::GetApplication()->postEvent(target, newEvent);
+        if (target != nullptr)
+        {
+            QMouseEvent* newEvent = new QMouseEvent(ev->type(), localPos, ev->windowPos(), ev->screenPos(),
+                                                    ev->button(), ev->buttons(), ev->modifiers(), ev->source());
+            newEvent->setTimestamp(ev->timestamp());
+            PlatformApi::Qt::GetApplication()->postEvent(target, newEvent);
+        }
     }
     default:
         break;
@@ -204,6 +204,23 @@ bool PropertiesViewDelegate::editorEvent(QEvent* event, QAbstractItemModel* mode
 
 bool PropertiesViewDelegate::helpEvent(QHelpEvent* event, QAbstractItemView* view, const QStyleOptionViewItem& option, const QModelIndex& index)
 {
+    if (index.isValid() == false)
+    {
+        return false;
+    }
+
+    QPoint localPos = event->pos();
+    QWidget* target = LookupWidget(GetComponentValue(index), localPos, option);
+    if (target != nullptr)
+    {
+        QString tootip = target->toolTip();
+        if (tootip.isEmpty() == false)
+        {
+            QToolTip::showText(event->globalPos(), tootip, view->viewport(), option.rect);
+            return true;
+        }
+    }
+
     return false;
 }
 
@@ -288,11 +305,92 @@ bool PropertiesViewDelegate::eventFilter(QObject* object, QEvent* event)
                 QModelIndex index = value.value<QModelIndex>();
                 GetComponentValue(index)->ForceUpdate();
             }
-            return true;
         }
     }
 
     return QStyledItemDelegate::eventFilter(object, event);
+}
+
+QWidget* PropertiesViewDelegate::LookupWidget(BaseComponentValue* value, QPoint& pos, const QStyleOptionViewItem& options)
+{
+    QWidget* target = value->AcquireEditorWidget(options);
+    pos = target->mapFrom(view->viewport(), pos);
+    QWidget* childAt = nullptr;
+
+    while (true)
+    {
+        childAt = target->childAt(pos);
+        if (childAt == nullptr || childAt == target)
+        {
+            break;
+        }
+        pos = childAt->mapFrom(target, pos);
+        target = childAt;
+    }
+
+    return target;
+}
+
+void PropertiesViewDelegate::ResolveFocusWidget(QWidget* w, QPoint localPos)
+{
+    auto shouldSetFocus = [](QWidget* w)
+    {
+        QWidget* f = w;
+        QWidget* proxy = f->focusProxy();
+        while (proxy != nullptr)
+        {
+            f = proxy;
+            proxy = f->focusProxy();
+        }
+
+        if ((w->focusPolicy() & Qt::ClickFocus) != Qt::ClickFocus)
+        {
+            return false;
+        }
+        if (w != f && (f->focusPolicy() & Qt::ClickFocus) != Qt::ClickFocus)
+        {
+            return false;
+        }
+        return true;
+    };
+
+    QWidget* focusWidget = w;
+    while (focusWidget)
+    {
+        if (focusWidget->isEnabled() && focusWidget->rect().contains(localPos) && shouldSetFocus(focusWidget))
+        {
+            QPointer<QWidget> lockFocusWidget = focusWidget;
+            // catch by value!!!
+            executor.DelayedExecute([lockFocusWidget]()
+                                    {
+                                        if (lockFocusWidget.isNull() == false)
+                                        {
+                                            lockFocusWidget->setFocus(Qt::MouseFocusReason);
+                                        }
+                                    });
+            break;
+        }
+        if (focusWidget->isWindow())
+        {
+            break;
+        }
+
+        // find out whether this widget (or its proxy) already has focus
+        QWidget* f = focusWidget;
+        QWidget* focusProxy = focusWidget->focusProxy();
+        if (focusProxy)
+        {
+            f = focusProxy;
+        }
+
+        if (f->hasFocus())
+        {
+            break;
+        }
+
+        localPos += focusWidget->pos();
+        focusWidget = focusWidget->parentWidget();
+    }
 }
 
 } // namespace TArc

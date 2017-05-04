@@ -26,7 +26,8 @@ void ApplyRole(ControlDescriptorBuilder<TEnum>& descriptor, TEnum role, const St
 }
 
 template <typename T>
-QWidget* CreatedEditor(const Reflection& r, const MultiDoubleSpinBox::FieldDescriptor& fieldDescr, QWidget* parent, T* accessor, const Reflection& model, Vector<ControlProxy*>& subControls)
+QWidget* CreatedEditor(const Reflection& r, const MultiDoubleSpinBox::FieldDescriptor& fieldDescr, QWidget* parent, T* accessor,
+                       const MultiDoubleSpinBox::BaseParams& controlParams, Reflection& model, Vector<ControlProxy*>& subControls)
 {
     QWidget* result = new QWidget(parent);
     QtHBoxLayout* layout = new QtHBoxLayout(result);
@@ -36,15 +37,14 @@ QWidget* CreatedEditor(const Reflection& r, const MultiDoubleSpinBox::FieldDescr
     QLabel* label = new QLabel(QString::fromStdString(fieldDescr.valueRole + ":"), result);
     layout->addWidget(label);
 
-    ControlDescriptorBuilder<DoubleSpinBox::Fields> descr;
-    descr[DoubleSpinBox::Fields::Value] = fieldDescr.valueRole;
-    ApplyRole(descr, DoubleSpinBox::Fields::Range, fieldDescr.rangeRole);
-    ApplyRole(descr, DoubleSpinBox::Fields::IsReadOnly, fieldDescr.readOnlyRole);
-    ApplyRole(descr, DoubleSpinBox::Fields::Accuracy, fieldDescr.accuracyRole);
-    DoubleSpinBox* spinBox = new DoubleSpinBox(descr, accessor, model, result);
+    DoubleSpinBox::Params params(controlParams.accessor, controlParams.ui, controlParams.wndKey);
+    params.fields[DoubleSpinBox::Fields::Value] = fieldDescr.valueRole;
+    ApplyRole(params.fields, DoubleSpinBox::Fields::Range, fieldDescr.rangeRole);
+    ApplyRole(params.fields, DoubleSpinBox::Fields::IsReadOnly, fieldDescr.readOnlyRole);
+    ApplyRole(params.fields, DoubleSpinBox::Fields::Accuracy, fieldDescr.accuracyRole);
+    DoubleSpinBox* spinBox = new DoubleSpinBox(params, accessor, model, result);
     subControls.push_back(spinBox);
     layout->AddControl(spinBox);
-    spinBox->ToWidgetCast()->installEventFilter(parent);
 
     QWidget* editor = spinBox->ToWidgetCast();
     QSizePolicy policy = editor->sizePolicy();
@@ -55,38 +55,16 @@ QWidget* CreatedEditor(const Reflection& r, const MultiDoubleSpinBox::FieldDescr
 }
 }
 
-MultiDoubleSpinBox::MultiDoubleSpinBox(const ControlDescriptorBuilder<Fields>& fields, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent /*= nullptr*/)
-    : TBase(ControlDescriptor(fields), wrappersProcessor, model, parent)
+MultiDoubleSpinBox::MultiDoubleSpinBox(const Params& params, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent /*= nullptr*/)
+    : TBase(params, ControlDescriptor(params.fields), wrappersProcessor, model, parent)
 {
     SetupControl(wrappersProcessor);
 }
 
-MultiDoubleSpinBox::MultiDoubleSpinBox(const ControlDescriptorBuilder<Fields>& fields, ContextAccessor* accessor, Reflection model, QWidget* parent /*= nullptr*/)
-    : TBase(ControlDescriptor(fields), accessor, model, parent)
+MultiDoubleSpinBox::MultiDoubleSpinBox(const Params& params, ContextAccessor* accessor, Reflection model, QWidget* parent /*= nullptr*/)
+    : TBase(params, ControlDescriptor(params.fields), accessor, model, parent)
 {
     SetupControl(accessor);
-}
-
-void MultiDoubleSpinBox::focusInEvent(QFocusEvent* e)
-{
-    if (lastFocusedItem != nullptr)
-    {
-        lastFocusedItem->setFocus(e->reason());
-    }
-}
-
-bool MultiDoubleSpinBox::eventFilter(QObject* obj, QEvent* event)
-{
-    if (event->type() == QEvent::FocusIn)
-    {
-        QWidget* widget = qobject_cast<QWidget*>(obj);
-        if (widget != nullptr)
-        {
-            lastFocusedItem = widget;
-        }
-    }
-
-    return false;
 }
 
 template <typename T>
@@ -114,7 +92,7 @@ void MultiDoubleSpinBox::SetupControl(T* accessor)
 
         Reflection editableField = model.GetField(fieldDescr.valueRole);
         DVASSERT(editableField.IsValid());
-        layout->addWidget(MultiFieldsControlDetails::CreatedEditor(editableField, fieldDescr, this, accessor, model, subControls));
+        layout->addWidget(MultiFieldsControlDetails::CreatedEditor(editableField, fieldDescr, this, accessor, controlParams, model, subControls));
     }
 }
 

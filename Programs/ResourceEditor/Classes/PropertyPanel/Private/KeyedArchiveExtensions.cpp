@@ -66,17 +66,18 @@ void KeyedArchiveChildCreator::ExposeChildren(const std::shared_ptr<DAVA::TArc::
     if (parent->cachedValue.GetType() == Type::Instance<KeyedArchive*>())
     {
         Vector<Reflection::Field> fields = parent->field.ref.GetFields();
+        std::sort(fields.begin(), fields.end(), [](const Reflection::Field& node1, const Reflection::Field& node2)
+                  {
+                      return node1.key.Cast<String>() < node2.key.Cast<String>();
+                  });
+
         for (Reflection::Field& f : fields)
         {
             f.ref = Reflection::Create(f.ref, elementsMeta.get());
             std::shared_ptr<PropertyNode> node = allocator->CreatePropertyNode(parent, std::move(f), static_cast<int32>(children.size()), PropertyNode::RealProperty);
+            node->idPostfix = FastName(node->cachedValue.GetType()->GetName());
             children.push_back(node);
         }
-
-        std::sort(children.begin(), children.end(), [](const std::shared_ptr<PropertyNode>& node1, const std::shared_ptr<PropertyNode>& node2)
-                  {
-                      return node1->field.key.Cast<String>() < node2->field.key.Cast<String>();
-                  });
     }
     else
     {

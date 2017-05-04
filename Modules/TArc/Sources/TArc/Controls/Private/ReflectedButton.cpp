@@ -7,14 +7,14 @@ namespace DAVA
 {
 namespace TArc
 {
-ReflectedButton::ReflectedButton(const ControlDescriptorBuilder<Fields>& fields, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent)
-    : ControlProxyImpl<QToolButton>(fields, wrappersProcessor, model, parent)
+ReflectedButton::ReflectedButton(const Params& params, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent)
+    : ControlProxyImpl<QToolButton>(params, params.fields, wrappersProcessor, model, parent)
 {
     SetupControl();
 }
 
-ReflectedButton::ReflectedButton(const ControlDescriptorBuilder<Fields>& fields, ContextAccessor* accessor, Reflection model, QWidget* parent)
-    : ControlProxyImpl<QToolButton>(fields, accessor, model, parent)
+ReflectedButton::ReflectedButton(const Params& params, ContextAccessor* accessor, Reflection model, QWidget* parent)
+    : ControlProxyImpl<QToolButton>(params, params.fields, accessor, model, parent)
 {
     SetupControl();
 }

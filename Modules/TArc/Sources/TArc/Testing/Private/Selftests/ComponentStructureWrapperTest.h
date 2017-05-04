@@ -64,8 +64,8 @@ protected:
 
     DAVA::TArc::ControlProxy* CreateEditorWidget(QWidget* parent, const DAVA::Reflection& model, DAVA::TArc::DataWrappersProcessor* wrappersProcessor) override
     {
-        DAVA::TArc::ControlDescriptorBuilder<DAVA::TArc::EmptyWidget::Fields> descr;
-        return new DAVA::TArc::EmptyWidget(descr, wrappersProcessor, model, parent);
+        DAVA::TArc::EmptyWidget::Params params(GetAccessor(), GetUI(), GetWindowKey());
+        return new DAVA::TArc::EmptyWidget(params, wrappersProcessor, model, parent);
     }
 
     DAVA_VIRTUAL_REFLECTION_IN_PLACE(DummyComponentValue, DAVA::TArc::BaseComponentValue)

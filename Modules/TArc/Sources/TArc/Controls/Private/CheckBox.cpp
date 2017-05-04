@@ -7,14 +7,14 @@ namespace DAVA
 {
 namespace TArc
 {
-CheckBox::CheckBox(const ControlDescriptorBuilder<Fields>& fields, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent)
-    : ControlProxyImpl<QCheckBox>(ControlDescriptor(fields), wrappersProcessor, model, parent)
+CheckBox::CheckBox(const Params& params, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent)
+    : ControlProxyImpl<QCheckBox>(params, ControlDescriptor(params.fields), wrappersProcessor, model, parent)
 {
     SetupControl();
 }
 
-CheckBox::CheckBox(const ControlDescriptorBuilder<Fields>& fields, ContextAccessor* accessor, Reflection model, QWidget* parent)
-    : ControlProxyImpl<QCheckBox>(ControlDescriptor(fields), accessor, model, parent)
+CheckBox::CheckBox(const Params& params, ContextAccessor* accessor, Reflection model, QWidget* parent)
+    : ControlProxyImpl<QCheckBox>(params, ControlDescriptor(params.fields), accessor, model, parent)
 {
     SetupControl();
 }

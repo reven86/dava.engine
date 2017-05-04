@@ -52,8 +52,16 @@ void BaseComponentValue::Init(ReflectedPropertyModel* model_)
 void BaseComponentValue::Draw(QPainter* painter, const QStyleOptionViewItem& opt)
 {
     UpdateEditorGeometry(opt.rect);
+    bool isOpacue = realWidget->testAttribute(Qt::WA_NoSystemBackground);
+    realWidget->setAttribute(Qt::WA_NoSystemBackground, true);
     QPixmap pxmap = realWidget->grab();
+    realWidget->setAttribute(Qt::WA_NoSystemBackground, isOpacue);
     painter->drawPixmap(opt.rect, pxmap);
+    if (0)
+    {
+        QImage image = pxmap.toImage();
+        image.save("D:\\1.png");
+    }
 }
 
 void BaseComponentValue::UpdateGeometry(const QStyleOptionViewItem& opt)
@@ -309,7 +317,7 @@ void BaseComponentValue::CreateButtons(QLayout* layout, const M::CommandProducer
             button->setIcon(info.icon);
             button->setToolTip(info.tooltip);
             button->setIconSize(toolButtonIconSize);
-            button->setAutoRaise(true);
+            button->setAutoRaise(false);
             if (cmd->OnlyForSingleSelection() && nodes.size() > 1)
             {
                 button->setEnabled(false);

@@ -16,16 +16,16 @@ std::pair<const Type*, std::pair<Any, Any>> CreateRangePair()
 }
 }
 template <typename TBase, typename TEditableType>
-BaseSpinBox<TBase, TEditableType>::BaseSpinBox(const ControlDescriptor& descriptor, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent)
-    : ControlProxyImpl<TBase>(descriptor, wrappersProcessor, model, parent)
+BaseSpinBox<TBase, TEditableType>::BaseSpinBox(const BaseParams& params, const ControlDescriptor& descriptor, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent)
+    : ControlProxyImpl<TBase>(params, descriptor, wrappersProcessor, model, parent)
 {
     static_assert(std::is_base_of<QAbstractSpinBox, TBase>::value, "TBase should be derived from QAbstractSpinBox");
     SetupSpinBoxBase();
 }
 
 template <typename TBase, typename TEditableType>
-BaseSpinBox<TBase, TEditableType>::BaseSpinBox(const ControlDescriptor& descriptor, ContextAccessor* accessor, Reflection model, QWidget* parent)
-    : ControlProxyImpl<TBase>(descriptor, accessor, model, parent)
+BaseSpinBox<TBase, TEditableType>::BaseSpinBox(const BaseParams& params, const ControlDescriptor& descriptor, ContextAccessor* accessor, Reflection model, QWidget* parent)
+    : ControlProxyImpl<TBase>(params, descriptor, accessor, model, parent)
 {
     static_assert(std::is_base_of<QAbstractSpinBox, TBase>::value, "TBase should be derived from QAbstractSpinBox");
     SetupSpinBoxBase();
@@ -236,7 +236,11 @@ void BaseSpinBox<TBase, TEditableType>::fixup(QString& str) const
         if (v < this->minimum() || v > this->maximum())
         {
             QString message = QString("Out of bounds %1 : %2").arg(this->minimum()).arg(this->maximum());
-            QToolTip::showText(this->mapToGlobal(this->geometry().topLeft()), message);
+            NotificationParams notifParams;
+            notifParams.title = "Invalid value";
+            notifParams.message.message = message.toStdString();
+            notifParams.message.type = ::DAVA::Result::RESULT_ERROR;
+            this->controlParams.ui->ShowNotification(this->controlParams.wndKey, notifParams);
         }
     }
 }
@@ -244,6 +248,7 @@ void BaseSpinBox<TBase, TEditableType>::fixup(QString& str) const
 template <typename TBase, typename TEditableType>
 QValidator::State BaseSpinBox<TBase, TEditableType>::validate(QString& input, int& /*pos*/) const
 {
+    RETURN_IF_MODEL_LOST(QValidator::Invalid);
     ControlState currentState = stateHistory.top();
     if (currentState == ControlState::InvalidValue || currentState == ControlState::ValidValue)
     {
@@ -282,7 +287,11 @@ QValidator::State BaseSpinBox<TBase, TEditableType>::validate(QString& input, in
 
                 if (!r.message.empty())
                 {
-                    QToolTip::showText(this->mapToGlobal(QPoint(0, 0)), QString::fromStdString(r.message));
+                    NotificationParams notifParams;
+                    notifParams.title = "Invalid value";
+                    notifParams.message.message = r.message;
+                    notifParams.message.type = ::DAVA::Result::RESULT_ERROR;
+                    this->controlParams.ui->ShowNotification(this->controlParams.wndKey, notifParams);
                 }
 
                 result = ConvertValidationState(r.state);
@@ -331,7 +340,7 @@ QString BaseSpinBox<TBase, TEditableType>::textFromValue(TEditableType val) cons
 
         if (convertValToString == true)
         {
-            result = QString::number(val);
+            result = ToText(val);
         }
     }
     break;

@@ -19,8 +19,10 @@ public:
         FieldCount
     };
 
-    SubPropertiesEditor(const ControlDescriptorBuilder<Fields>& fields, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent = nullptr);
-    SubPropertiesEditor(const ControlDescriptorBuilder<Fields>& fields, ContextAccessor* accessor, Reflection model, QWidget* parent = nullptr);
+    DECLARE_CONTROL_PARAMS(Fields);
+
+    SubPropertiesEditor(const Params& params, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent = nullptr);
+    SubPropertiesEditor(const Params& params, ContextAccessor* accessor, Reflection model, QWidget* parent = nullptr);
 
 protected:
     void UpdateControl(const ControlDescriptor& descriptor) override;

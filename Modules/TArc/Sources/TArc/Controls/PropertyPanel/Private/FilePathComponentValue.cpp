@@ -31,9 +31,7 @@ bool FilePathComponentValue::IsValidValueToSet(const Any& newValue, const Any& c
 
 ControlProxy* FilePathComponentValue::CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor)
 {
-    FilePathEdit::Params p;
-    p.ui = GetUI();
-    p.wndKey = GetWindowKey();
+    FilePathEdit::Params p(GetAccessor(), GetUI(), GetWindowKey());
     p.fields[FilePathEdit::Fields::Value] = "value";
     p.fields[FilePathEdit::Fields::IsReadOnly] = readOnlyFieldName;
     return new FilePathEdit(p, wrappersProcessor, model, parent);

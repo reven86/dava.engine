@@ -19,6 +19,8 @@ namespace TArc
 {
 class LineEdit final : public ControlProxyImpl<QLineEdit>, private ValidatorDelegate
 {
+    using TBase = ControlProxyImpl<QLineEdit>;
+
 public:
     enum class Fields : uint32
     {
@@ -29,8 +31,10 @@ public:
         FieldCount
     };
 
-    LineEdit(const ControlDescriptorBuilder<Fields>& fields, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent = nullptr);
-    LineEdit(const ControlDescriptorBuilder<Fields>& fields, ContextAccessor* accessor, Reflection model, QWidget* parent = nullptr);
+    DECLARE_CONTROL_PARAMS(Fields);
+
+    LineEdit(const Params& params, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent = nullptr);
+    LineEdit(const Params& params, ContextAccessor* accessor, Reflection model, QWidget* parent = nullptr);
 
 private:
     void UpdateControl(const ControlDescriptor& changedFields) override;

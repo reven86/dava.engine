@@ -31,7 +31,8 @@ namespace PropertyPanel
 class AddKeyedArchiveItemWidget : public QWidget
 {
 public:
-    AddKeyedArchiveItemWidget(DAVA::TArc::ContextAccessor* accessor_, DAVA::Vector<DAVA::RefPtr<DAVA::KeyedArchive>>&& archives_, DAVA::int32 lastAddedType)
+    AddKeyedArchiveItemWidget(DAVA::TArc::ContextAccessor* accessor_, DAVA::TArc::UI* ui, const DAVA::TArc::WindowKey& wndKey,
+                              DAVA::Vector<DAVA::RefPtr<DAVA::KeyedArchive>>&& archives_, DAVA::int32 lastAddedType)
         : accessor(accessor_)
         , archives(std::move(archives_))
         , type(lastAddedType)
@@ -57,29 +58,30 @@ public:
         Reflection r = Reflection::Create(ReflectedObject(this));
 
         {
-            ControlDescriptorBuilder<LineEdit::Fields> descr;
-            descr[LineEdit::Fields::IsEnabled] = "isKeyEnabled";
-            descr[LineEdit::Fields::Text] = "key";
-            LineEdit* keyEdit = new LineEdit(descr, accessor, r, this);
+            LineEdit::Params params(accessor, ui, wndKey);
+            params.fields[LineEdit::Fields::IsEnabled] = "isKeyEnabled";
+            params.fields[LineEdit::Fields::Text] = "key";
+            LineEdit* keyEdit = new LineEdit(params, accessor, r, this);
             keyEdit->SetObjectName(QString("keyEdit"));
             layout->addWidget(keyEdit->ToWidgetCast(), 0, 1, 1, 2);
             lineEdit = keyEdit->ToWidgetCast();
+            setFocusProxy(lineEdit);
         }
 
         {
-            ControlDescriptorBuilder<ComboBox::Fields> descr;
-            descr[ComboBox::Fields::Enumerator] = "types";
-            descr[ComboBox::Fields::Value] = "type";
-            descr[ComboBox::Fields::IsReadOnly] = "isTypeDisabled";
-            ComboBox* typesCombo = new ComboBox(descr, accessor, r, this);
+            ComboBox::Params params(accessor, ui, wndKey);
+            params.fields[ComboBox::Fields::Enumerator] = "types";
+            params.fields[ComboBox::Fields::Value] = "type";
+            params.fields[ComboBox::Fields::IsReadOnly] = "isTypeDisabled";
+            ComboBox* typesCombo = new ComboBox(params, accessor, r, this);
             layout->addWidget(typesCombo->ToWidgetCast(), 1, 1, 1, 2);
         }
 
         {
-            ControlDescriptorBuilder<ComboBox::Fields> descr;
-            descr[ComboBox::Fields::Enumerator] = "presets";
-            descr[ComboBox::Fields::Value] = "presetIndex";
-            ComboBox* typesCombo = new ComboBox(descr, accessor, r, this);
+            ComboBox::Params params(accessor, ui, wndKey);
+            params.fields[ComboBox::Fields::Enumerator] = "presets";
+            params.fields[ComboBox::Fields::Value] = "presetIndex";
+            ComboBox* typesCombo = new ComboBox(params, accessor, r, this);
             layout->addWidget(typesCombo->ToWidgetCast(), 2, 1, 1, 2);
         }
 
@@ -93,15 +95,15 @@ public:
         setWindowOpacity(0.95);
     }
 
-    DAVA::Signal<const DAVA::String&, const DAVA::VariantType&> commitAddPropperty;
-
-private:
-    void showEvent(QShowEvent* event)
+    void Show()
     {
-        QWidget::showEvent(event);
+        show();
         lineEdit->setFocus();
     }
 
+    DAVA::Signal<const DAVA::String&, const DAVA::VariantType&> commitAddPropperty;
+
+private:
     void keyPressEvent(QKeyEvent* e)
     {
         if (!e->modifiers() || (e->modifiers() & Qt::KeypadModifier && e->key() == Qt::Key_Enter))
@@ -297,7 +299,7 @@ DAVA::TArc::ControlProxy* KeyedArchiveEditor::CreateEditorWidget(QWidget* parent
     QToolButton* button = new QToolButton();
     button->setIcon(SharedIcon(":/QtIcons/keyplus.png"));
     button->setIconSize(toolButtonIconSize);
-    button->setAutoRaise(true);
+    button->setAutoRaise(false);
 
     connections.AddConnection(button, &QToolButton::clicked, MakeFunction(this, &KeyedArchiveEditor::OnButtonClicked));
     layout->addWidget(button, 0, Qt::AlignLeft);
@@ -320,11 +322,11 @@ void KeyedArchiveEditor::OnButtonClicked()
 
     if (widget == nullptr)
     {
-        widget = new AddKeyedArchiveItemWidget(GetAccessor(), std::move(archives), lastAddedType);
+        widget = new AddKeyedArchiveItemWidget(GetAccessor(), GetUI(), GetWindowKey(), std::move(archives), lastAddedType);
         widget->commitAddPropperty.Connect(this, &KeyedArchiveEditor::AddProperty);
     }
 
-    widget->show();
+    widget->Show();
 
     QWidget* thisWidget = editorWidget->ToWidgetCast();
     QPoint topLeft = thisWidget->mapToGlobal(QPoint(0, 0));
@@ -383,12 +385,12 @@ bool KeyedArchiveComboPresetEditor::IsValidValueToSet(const DAVA::Any& newValue,
 
 DAVA::TArc::ControlProxy* KeyedArchiveComboPresetEditor::CreateEditorWidget(QWidget* parent, const DAVA::Reflection& model, DAVA::TArc::DataWrappersProcessor* wrappersProcessor)
 {
-    DAVA::TArc::ControlDescriptorBuilder<DAVA::TArc::ComboBox::Fields> descr;
-    descr[DAVA::TArc::ComboBox::Fields::Value] = "value";
-    descr[DAVA::TArc::ComboBox::Fields::Enumerator] = "values";
-    descr[DAVA::TArc::ComboBox::Fields::IsReadOnly] = readOnlyFieldName;
+    DAVA::TArc::ComboBox::Params params(GetAccessor(), GetUI(), GetWindowKey());
+    params.fields[DAVA::TArc::ComboBox::Fields::Value] = "value";
+    params.fields[DAVA::TArc::ComboBox::Fields::Enumerator] = "values";
+    params.fields[DAVA::TArc::ComboBox::Fields::IsReadOnly] = readOnlyFieldName;
 
-    return new DAVA::TArc::ComboBox(descr, wrappersProcessor, model, parent);
+    return new DAVA::TArc::ComboBox(params, wrappersProcessor, model, parent);
 }
 
 DAVA::Any KeyedArchiveComboPresetEditor::GetValueAny() const

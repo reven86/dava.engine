@@ -92,6 +92,7 @@ private:
     void SetDeveloperMode(bool isDevMode);
 
     void UpdateViewRootIndex();
+    void OnCurrentChanged(const QModelIndex& index, const QModelIndex& prev);
 
 private:
     FieldBinder binder;
@@ -101,6 +102,9 @@ private:
     std::unique_ptr<ReflectedPropertyModel> model;
     QtConnections connections;
     bool isExpandUpdate = false;
+
+    Vector<FastName> currentIndexPath;
+    bool isModelUpdate = false;
 
     eViewMode viewMode = VIEW_MODE_NORMAL;
 

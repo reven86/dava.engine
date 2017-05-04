@@ -1,5 +1,7 @@
 #pragma once
 
+#include <QtTools/Utils/QtDelayedExecutor.h>
+
 #include <QStyledItemDelegate>
 #include <QPersistentModelIndex>
 #include <QHash>
@@ -38,11 +40,14 @@ private:
     void UpdateSpanning(const QModelIndex& index, bool isSpanned) const;
 
     bool eventFilter(QObject* object, QEvent* event) override;
+    QWidget* LookupWidget(BaseComponentValue* value, QPoint& pos, const QStyleOptionViewItem& options);
+    void ResolveFocusWidget(QWidget* w, QPoint localPos);
 
 private:
     ReflectedPropertyModel* model = nullptr;
     QTreeView* view = nullptr;
     mutable QHash<QPersistentModelIndex, int> heightForWidthItems;
+    QtDelayedExecutor executor;
 };
 }
 }

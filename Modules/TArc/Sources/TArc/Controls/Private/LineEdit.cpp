@@ -4,20 +4,18 @@
 #include <Base/FastName.h>
 #include <Reflection/ReflectedMeta.h>
 
-#include <QToolTip>
-
 namespace DAVA
 {
 namespace TArc
 {
-LineEdit::LineEdit(const ControlDescriptorBuilder<LineEdit::Fields>& fields, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent)
-    : ControlProxyImpl<QLineEdit>(ControlDescriptor(fields), wrappersProcessor, model, parent)
+LineEdit::LineEdit(const Params& params, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent)
+    : ControlProxyImpl<QLineEdit>(params, ControlDescriptor(params.fields), wrappersProcessor, model, parent)
 {
     SetupControl();
 }
 
-LineEdit::LineEdit(const ControlDescriptorBuilder<LineEdit::Fields>& fields, ContextAccessor* accessor, Reflection model, QWidget* parent)
-    : ControlProxyImpl<QLineEdit>(ControlDescriptor(fields), accessor, model, parent)
+LineEdit::LineEdit(const Params& params, ContextAccessor* accessor, Reflection model, QWidget* parent)
+    : ControlProxyImpl<QLineEdit>(params, ControlDescriptor(params.fields), accessor, model, parent)
 {
     SetupControl();
 }
@@ -35,7 +33,11 @@ void LineEdit::EditingFinished()
 
     if (!isReadOnly())
     {
-        wrapper.SetFieldValue(GetFieldName(Fields::Text), text().toStdString());
+        String newText = text().toStdString();
+        if (GetFieldValue<String>(Fields::Text, "") != newText)
+        {
+            wrapper.SetFieldValue(GetFieldName(Fields::Text), newText);
+        }
     }
 }
 
@@ -87,8 +89,11 @@ M::ValidationResult LineEdit::Validate(const Any& value) const
 
 void LineEdit::ShowHint(const QString& message)
 {
-    QPoint pos = mapToGlobal(QPoint(0, 0));
-    QToolTip::showText(pos, message, this);
+    NotificationParams notifParams;
+    notifParams.title = "Invalid value";
+    notifParams.message.message = message.toStdString();
+    notifParams.message.type = ::DAVA::Result::RESULT_ERROR;
+    controlParams.ui->ShowNotification(controlParams.wndKey, notifParams);
 }
 
 } // namespace TArc

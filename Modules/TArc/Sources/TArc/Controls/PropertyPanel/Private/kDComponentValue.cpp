@@ -55,31 +55,25 @@ ControlProxy* kDComponentValue<T, TEditor, TComponent>::CreateEditorWidget(QWidg
         QWidget* containerWidget = w->ToWidgetCast();
 
         {
-            ColorPickerButton::Params params;
-            params.accessor = GetAccessor();
-            params.ui = GetUI();
-            params.wndKey = GetWindowKey();
+            ColorPickerButton::Params params(GetAccessor(), GetUI(), GetWindowKey());
             params.fields[ColorPickerButton::Fields::Color] = "value";
             params.fields[ColorPickerButton::Fields::IsReadOnly] = readOnlyFieldName;
             w->AddControl(new ColorPickerButton(params, wrappersProcessor, model, containerWidget));
         }
 
         {
-            ControlDescriptorBuilder<typename TEditor::Fields> descr;
-            descr[TEditor::Fields::FieldsList] = "fieldsList";
-            TEditor* editor = new TEditor(descr, wrappersProcessor, model, containerWidget);
+            typename TEditor::Params params(GetAccessor(), GetUI(), GetWindowKey());
+            params.fields[TEditor::Fields::FieldsList] = "fieldsList";
+            TEditor* editor = new TEditor(params, wrappersProcessor, model, containerWidget);
             w->AddControl(editor);
-            QWidget* editorWidget = editor->ToWidgetCast();
-            containerWidget->setFocusProxy(editorWidget);
-            containerWidget->setFocusPolicy(editorWidget->focusPolicy());
         }
 
         return w;
     }
 
-    ControlDescriptorBuilder<typename TEditor::Fields> descr;
-    descr[TEditor::Fields::FieldsList] = "fieldsList";
-    return new TEditor(descr, wrappersProcessor, model, parent);
+    typename TEditor::Params params(GetAccessor(), GetUI(), GetWindowKey());
+    params.fields[TEditor::Fields::FieldsList] = "fieldsList";
+    return new TEditor(params, wrappersProcessor, model, parent);
 }
 
 template <typename T, typename TEditor, typename TComponent>
