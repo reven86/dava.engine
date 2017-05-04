@@ -207,7 +207,7 @@ elseif( MACOS )
     list( APPEND RESOURCES_LIST  ${MACOS_XIB} )
     list( APPEND RESOURCES_LIST  ${MACOS_ICO} )
 
-    if( NOT DEPLOY_DIR_LIBS )
+    if( NOT DEPLOY_DIR_LIBS OR NOT DEPLOY )
         list( APPEND RESOURCES_LIST  ${DYLIB_FILES} )
     endif()
 
