@@ -24,9 +24,9 @@ fragment_out
     float4  color   : SV_TARGET0;
 };
 
-float4 decodeVector = float4(1.0, 255.0, 65025.0, 16581375.0);
-float MAGIC_TRESHOLD_2 = 1.0 / 255.0;
-float MAGIC_TRESHOLD_1 = 1.0 + 1.0 / 255.0;
+const float4 decodeVector = float4(1.0, 255.0, 65025.0, 16581375.0);
+const float MAGIC_TRESHOLD_2 = 1.0 / 255.0;
+const float MAGIC_TRESHOLD_1 = 1.0 + MAGIC_TRESHOLD_2;
 
 float4 EncodeFloat(float v)
 {
