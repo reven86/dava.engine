@@ -1230,7 +1230,7 @@ DAVA::FilePath SceneManagerModule::GetSceneSavePath(const DAVA::RefPtr<SceneEdit
 
 DAVA::FilePath SceneManagerModule::SaveEmitterFallback(const DAVA::String& entityName, const DAVA::String& emitterName)
 {
-    DAVA::FilePath defaultPath = SettingsManager::GetValue(Settings::Internal_ParticleLastEmitterDir).AsFilePath();
+    DAVA::FilePath defaultPath = SettingsManager::GetValue(Settings::Internal_ParticleLastSaveEmitterDir).AsFilePath();
     if (defaultPath.IsEmpty())
     {
         ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
@@ -1253,7 +1253,7 @@ DAVA::FilePath SceneManagerModule::SaveEmitterFallback(const DAVA::String& entit
     DAVA::FilePath result(savePath.toStdString());
     if (!result.IsEmpty())
     {
-        SettingsManager::SetValue(Settings::Internal_ParticleLastEmitterDir, DAVA::VariantType(result));
+        SettingsManager::SetValue(Settings::Internal_ParticleLastSaveEmitterDir, DAVA::VariantType(result));
     }
 
     return result;
