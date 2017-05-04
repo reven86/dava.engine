@@ -20,7 +20,7 @@ IssueNavigatorWidget::IssueNavigatorWidget(DAVA::TArc::ContextAccessor* accessor
 
     ui->treeView->setModel(model);
     connect(ui->treeView, &QTreeView::activated, this, &IssueNavigatorWidget::OnActivated);
-    ui->treeView->installEventFilter(this);
+    ui->treeView->installEventFilter(this); // Enter key doesn't invoke activated signal on mac.
 }
 
 IssueNavigatorWidget::~IssueNavigatorWidget()

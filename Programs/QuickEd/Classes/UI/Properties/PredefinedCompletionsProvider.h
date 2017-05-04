@@ -2,8 +2,6 @@
 
 #include "UI/Properties/CompletionsProvider.h"
 
-class PackageBaseNode;
-
 class PredefinedCompletionsProvider : public CompletionsProvider
 {
 public:
