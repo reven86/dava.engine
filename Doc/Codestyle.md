@@ -2,7 +2,6 @@ CPP Codestyle
 ========
 
 ## Code formatting
-
 #### Example
 The following example shows properly formatted code sample
 
@@ -157,7 +156,6 @@ This include
 * standart library types (String, Vector, etc.)
 
 ## Classes
-
 #### Class members initialization
 In-class member initialization is preferred over all other methods.
 
