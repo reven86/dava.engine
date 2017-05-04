@@ -247,10 +247,6 @@ void dx9_InitCaps(const AdapterInfo& adapterInfo)
         DAVA::SafeRelease(freqQuery);
     }
 
-    {
-        _DX9_EventQuerySupported = SUCCEEDED(_D3D9_Device->CreateQuery(D3DQUERYTYPE_EVENT, nullptr));
-    }
-
     const char* found = strstr(DeviceCaps().deviceDescription, "Radeon");
     if (found && strlen(found) >= strlen("Radeon X1000")) //filter Radeon X1000 Series
     {

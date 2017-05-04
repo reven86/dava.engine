@@ -113,17 +113,10 @@ public:
 
 struct SyncObjectDX9_t
 {
-    IDirect3DQuery9* eventQuery;
     uint32 frame;
     uint32 is_signaled : 1;
     uint32 is_used : 1;
-
-    void Issue(uint32 frame_n);
-    void Check(uint32 frame_n);
-    void Reset();
 };
-
-DAVA::Vector<IDirect3DQuery9*> eventQueryPoolDX9;
 
 typedef ResourcePool<CommandBufferDX9_t, RESOURCE_COMMAND_BUFFER, CommandBuffer::Descriptor, false> CommandBufferPoolDX9;
 typedef ResourcePool<RenderPassDX9_t, RESOURCE_RENDER_PASS, RenderPassConfig, false> RenderPassPoolDX9;
@@ -449,7 +442,6 @@ static Handle dx9_SyncObject_Create()
     Handle handle = SyncObjectPoolDX9::Alloc();
     SyncObjectDX9_t* sync = SyncObjectPoolDX9::Get(handle);
 
-    sync->eventQuery = nullptr;
     sync->is_signaled = false;
     sync->is_used = false;
 
@@ -461,12 +453,6 @@ static Handle dx9_SyncObject_Create()
 static void dx9_SyncObject_Delete(Handle obj)
 {
     DAVA::LockGuard<DAVA::Mutex> guard(_DX9_SyncObjectsSync);
-
-    SyncObjectDX9_t* sync = SyncObjectPoolDX9::Get(obj);
-    if (sync->eventQuery)
-    {
-        eventQueryPoolDX9.push_back(sync->eventQuery);
-    }
     SyncObjectPoolDX9::Free(obj);
 }
 
@@ -485,68 +471,6 @@ static bool dx9_SyncObject_IsSignaled(Handle obj)
         signaled = sync->is_signaled;
 
     return signaled;
-}
-
-void SyncObjectDX9_t::Issue(uint32 frame_n)
-{
-    frame = frame_n;
-    is_signaled = false;
-    is_used = true;
-
-    if (_DX9_EventQuerySupported)
-    {
-        if (eventQuery == nullptr)
-        {
-            if (eventQueryPoolDX9.empty())
-            {
-                HRESULT createEventQueryResult = _D3D9_Device->CreateQuery(D3DQUERYTYPE_EVENT, &eventQuery);
-                DVASSERT(SUCCEEDED(createEventQueryResult));
-            }
-            else
-            {
-                eventQuery = eventQueryPoolDX9.back();
-                eventQueryPoolDX9.pop_back();
-            }
-        }
-        eventQuery->Issue(D3DISSUE_END);
-    }
-}
-
-void SyncObjectDX9_t::Check(uint32 frame_n)
-{
-    if (is_used && !is_signaled)
-    {
-        if (eventQuery != nullptr)
-        {
-            BOOL querySignaled = FALSE;
-            if (eventQuery->GetData(&querySignaled, sizeof(BOOL), 0) == S_OK)
-                is_signaled = (querySignaled != FALSE);
-
-            is_signaled |= (frame_n - frame >= 8); //because eight is beautiful
-
-            if (is_signaled)
-            {
-                eventQueryPoolDX9.push_back(eventQuery);
-                eventQuery = nullptr;
-            }
-        }
-        else
-        {
-            is_signaled = (frame_n - frame >= 2);
-        }
-    }
-}
-
-void SyncObjectDX9_t::Reset()
-{
-    is_used = true;
-    is_signaled = true;
-
-    if (eventQuery != nullptr)
-    {
-        eventQueryPoolDX9.push_back(eventQuery);
-        eventQuery = nullptr;
-    }
 }
 
 CommandBufferDX9_t::CommandBufferDX9_t()
@@ -1069,7 +993,8 @@ static void _DX9_RejectFrame(const CommonImpl::Frame& frame)
     {
         DAVA::LockGuard<DAVA::Mutex> guard(_DX9_SyncObjectsSync);
         SyncObjectDX9_t* s = SyncObjectPoolDX9::Get(frame.sync);
-        s->Reset();
+        s->is_signaled = true;
+        s->is_used = true;
     }
     for (Handle p : frame.pass)
     {
@@ -1082,7 +1007,8 @@ static void _DX9_RejectFrame(const CommonImpl::Frame& frame)
             {
                 DAVA::LockGuard<DAVA::Mutex> guard(_DX9_SyncObjectsSync);
                 SyncObjectDX9_t* s = SyncObjectPoolDX9::Get(cc->sync);
-                s->Reset();
+                s->is_signaled = true;
+                s->is_used = true;
             }
             CommandBufferPoolDX9::Free(c);
         }
@@ -1136,6 +1062,14 @@ static void _DX9_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
 
     uint32 frame_n = frame.frameNumber;
 
+    if (frame.sync != InvalidHandle)
+    {
+        SyncObjectDX9_t* sync = SyncObjectPoolDX9::Get(frame.sync);
+        sync->frame = frame_n;
+        sync->is_signaled = false;
+        sync->is_used = true;
+    }
+
     PerfQueryDX9::BeginMeasurment();
     if (frame.perfQueryStart != InvalidHandle)
         PerfQueryDX9::IssueTimestampQuery(frame.perfQueryStart);
@@ -1155,7 +1089,9 @@ static void _DX9_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
             if (cb->sync != InvalidHandle)
             {
                 SyncObjectDX9_t* sync = SyncObjectPoolDX9::Get(cb->sync);
-                sync->Issue(frame_n);
+                sync->frame = frame_n;
+                sync->is_signaled = false;
+                sync->is_used = true;
             }
 
             CommandBufferPoolDX9::Free(cb_h);
@@ -1173,17 +1109,12 @@ static void _DX9_ExecuteQueuedCommands(const CommonImpl::Frame& frame)
 
     PerfQueryDX9::EndMeasurment();
 
-    if (frame.sync != InvalidHandle)
-    {
-        SyncObjectDX9_t* sync = SyncObjectPoolDX9::Get(frame.sync);
-        sync->Issue(frame_n);
-    }
-
     // update sync-objects
     _DX9_SyncObjectsSync.Lock();
     for (SyncObjectPoolDX9::Iterator s = SyncObjectPoolDX9::Begin(), s_end = SyncObjectPoolDX9::End(); s != s_end; ++s)
     {
-        s->Check(frame_n);
+        if (s->is_used && (frame_n - s->frame >= 2))
+            s->is_signaled = true;
     }
     _DX9_SyncObjectsSync.Unlock();
 }
@@ -1219,21 +1150,6 @@ void _DX9_ResetBlock()
     IndexBufferDX9::ReleaseAll();
     PerfQueryDX9::ReleaseAll();
     QueryBufferDX9::ReleaseAll();
-
-    _DX9_SyncObjectsSync.Lock();
-    {
-        for (SyncObjectPoolDX9::Iterator s = SyncObjectPoolDX9::Begin(), s_end = SyncObjectPoolDX9::End(); s != s_end; ++s)
-        {
-            DAVA::SafeRelease(s->eventQuery);
-        }
-
-        for (IDirect3DQuery9* q : eventQueryPoolDX9)
-        {
-            q->Release();
-        }
-        eventQueryPoolDX9.clear();
-    }
-    _DX9_SyncObjectsSync.Unlock();
 
     bool resetNotified = false;
     for (;;)
@@ -1278,7 +1194,7 @@ void _DX9_ResetBlock()
     for (SyncObjectPoolDX9::Iterator s = SyncObjectPoolDX9::Begin(), s_end = SyncObjectPoolDX9::End(); s != s_end; ++s)
     {
         if (s->is_used)
-            s->Reset();
+            s->is_signaled = true;
     }
     _DX9_SyncObjectsSync.Unlock();
 }
@@ -1710,7 +1626,7 @@ static void _DX9_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)
                     tsQuery->Issue(D3DISSUE_END);
                     disjointQuery->Issue(D3DISSUE_END);
 
-                    BOOL disjoint = TRUE;
+                    bool disjoint = true;
                     uint64 frequency = 0, timestamp = 0;
 
                     while (S_FALSE == tsQuery->GetData(&timestamp, sizeof(uint64), D3DGETDATA_FLUSH))
@@ -1720,23 +1636,28 @@ static void _DX9_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)
                     {
                         *reinterpret_cast<uint64*>(arg[0]) = DAVA::SystemTimer::GetUs();
 
-                        while (S_FALSE == disjointQuery->GetData(&disjoint, sizeof(BOOL), D3DGETDATA_FLUSH))
+                        while (S_FALSE == disjointQuery->GetData(&disjoint, sizeof(bool), D3DGETDATA_FLUSH))
                         {
                         };
                         while (S_FALSE == freqQuery->GetData(&frequency, sizeof(uint64), D3DGETDATA_FLUSH))
                         {
                         };
 
-                        if (disjoint == FALSE && frequency != 0)
+                        if (!disjoint && frequency)
                         {
                             *reinterpret_cast<uint64*>(arg[1]) = timestamp / (frequency / 1000000); //mcs
                         }
                     }
                 }
 
-                DAVA::SafeRelease(disjointQuery);
-                DAVA::SafeRelease(freqQuery);
-                DAVA::SafeRelease(tsQuery);
+                if (disjointQuery)
+                    disjointQuery->Release();
+
+                if (freqQuery)
+                    freqQuery->Release();
+
+                if (tsQuery)
+                    tsQuery->Release();
             }
         }
         break;

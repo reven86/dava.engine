@@ -17,6 +17,7 @@ struct InitParam;
 D3DFORMAT DX9_TextureFormat(TextureFormat format);
 
 const char* D3D9ErrorText(HRESULT hr);
+void ScheduleDeviceReset();
 
 extern IDirect3D9* _D3D9;
 extern IDirect3DDevice9* _D3D9_Device;
@@ -28,7 +29,5 @@ extern UINT _D3D9_Adapter;
 extern InitParam _DX9_InitParam;
 extern D3DPRESENT_PARAMETERS _DX9_PresentParam;
 extern DAVA::Mutex _DX9_ResetParamsMutex;
-
-extern bool _DX9_EventQuerySupported;
 
 } // namespace rhi

@@ -266,13 +266,13 @@ void ObtainPerfQueryMeasurment()
     {
         if (!frame->freq)
         {
-            BOOL disjoint = FALSE;
+            bool disjoint = false;
             uint64 frequency;
 
-            HRESULT hr = frame->disjointQuery->GetData(&disjoint, sizeof(BOOL), 0);
+            HRESULT hr = frame->disjointQuery->GetData(&disjoint, sizeof(bool), 0);
             if (hr == S_OK)
             {
-                frame->isValid = (disjoint == FALSE);
+                frame->isValid = !disjoint;
             }
 
             hr = frame->freqQuery->GetData(&frequency, sizeof(uint64), 0);
