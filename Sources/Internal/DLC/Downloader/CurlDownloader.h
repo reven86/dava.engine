@@ -19,7 +19,7 @@ public:
     CurlDownloader();
     virtual ~CurlDownloader();
 
-    static bool isCURLInit; // move to public, to other curl downloader know initialize is done
+    static bool isCURLInit; // move to public to let other downloaders know that curl is initialized
 protected:
     /**
         \brief Interrupts current download.

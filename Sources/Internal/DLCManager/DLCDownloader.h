@@ -6,6 +6,44 @@
 
 namespace DAVA
 {
+/**
+	This class is for downloading with HTTP protocol. You can perform next
+	tasks:
+	1. download file with one or more simultaneous handlers
+	2. get remote file size
+	3. resume previous download
+	Also you can download into file or your custom buffer implementing
+	```DLCDownloader::IWriter``` interface.
+	Typical usage:
+	```
+	DLCDownloader* downloader = DLCDownloader::Create();
+
+	// you can customize how many handles will be used and what buffer size
+	// to use per handle
+	Hints hints;
+	hints.numOfMaxEasyHandles = 1; // we download small file one handle enough
+	hints.chunkMemBuffSize = 16 * 1024; // 16 K for small file just file
+	downloader->SetHints(hints);
+
+	DLCDownloader::Task* task = downloader->StartTask(
+	    "http://someserver/index.html,
+	    "~doc:/file_from_server.file" ,
+		DLCDownloader::TaskType::FULL);
+
+	downloader->WaitTask(task);
+
+	auto& status = downloader->GetTaskStatus(task);
+
+	if (!status.error.errorHappened)
+	{
+		// Use downloaded file ...
+	}
+
+	downloader->RemoveTask(task);
+
+	DLCDownloader::Destroy(downloader);
+	```
+*/
 class DLCDownloader
 {
 public:
@@ -16,19 +54,29 @@ public:
     /** Destroy downloader instance */
     static void Destroy(DLCDownloader* downloader);
 
+    /**
+		You can customize some internal parameters before start requesting
+		tasks.
+	*/
     struct Hints
     {
         int32 numOfMaxEasyHandles = 4; //!< how many curl easy handles will be used
-        int32 chankMemBuffSize = 1024 * 1024; //!< max buffer size per one download operation per curl easy handler
+        int32 chunkMemBuffSize = 1024 * 1024; //!< max buffer size per one download operation per curl easy handler
     };
 
+    /**
+		Task can be in one of next states.
+	*/
     enum class TaskState : int32
     {
-        JustAdded, //!< only created task waiting for downloader thread.
+        JustAdded, //!< just created and added to download queue
         Downloading, //!< one or more curl handles is working.
         Finished //!< all done, now you can remove task with ```DLCDownloader::RemoveTask(Task*)```
     };
 
+    /**
+		Specify which task you need.
+	*/
     enum class TaskType : int32
     {
         FULL, //!< truncate file if exist and download again
@@ -36,6 +84,10 @@ public:
         SIZE //!< just return size of remote file see ```TaskStatus::sizeTotal```
     };
 
+    /**
+		If you need to output downloaded stream into socket or memory buffer
+		You can implement ```IWriter``` interface and pass it to ```StartTask```
+	*/
     struct IWriter
     {
         virtual ~IWriter() = default;
@@ -47,6 +99,9 @@ public:
         virtual bool Truncate() = 0;
     };
 
+    /**
+		Information for task during start
+	*/
     struct TaskInfo
     {
         String srcUrl; //!< URL to download from
@@ -56,7 +111,15 @@ public:
         int64 rangeOffset = -1; //!< index of first byte to download from or -1 [0 - first byte index]
         int64 rangeSize = -1; //!< size of downloaded range in bytes
     };
-
+    /**
+		Four types of error can happen during download process. All grouped
+		in one structure ```TaskError```.
+		1. problem with curl easy interface
+		2. problem with curl multi interface
+		3. problem with file operation
+		4. bad http request code
+		If any one error happened boolean flag ```errorHappened``` set to true.
+	*/
     struct TaskError
     {
         int32 curlErr = 0; //!< CURLE_OK == 0 see https://curl.haxx.se/libcurl/c/libcurl-errors.html
@@ -68,10 +131,12 @@ public:
         //!< and https://curl.haxx.se/libcurl/c/curl_easy_strerror.html
         bool errorHappened = false; //!< flag set to true if any error
     };
-
+    /**
+		Current status of any task.
+	*/
     struct TaskStatus
     {
-        std::atomic<TaskState> state{ TaskState::JustAdded };
+        std::atomic<TaskState> state{ TaskState::JustAdded }; //!< current state
         TaskError error; //!< full error info
         uint64 sizeTotal = 0; //!< size of remote file or range size to download
         uint64 sizeDownloaded = 0; //!< size written into IWritable(file)
@@ -101,7 +166,8 @@ public:
     virtual const TaskInfo& GetTaskInfo(Task* task) = 0;
     virtual const TaskStatus& GetTaskStatus(Task* task) = 0;
 
-    //
+    /** You can customize internal curl behavior. Do it just after new
+	```DLCDownloader``` created and before any task started.*/
     virtual void SetHints(const Hints& h) = 0;
 };
 }

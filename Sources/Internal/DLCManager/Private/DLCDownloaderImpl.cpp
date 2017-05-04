@@ -158,14 +158,14 @@ static size_t CurlDataRecvHandler(void* ptr, size_t size, size_t nmemb, void* pa
     return static_cast<size_t>(writen);
 }
 
-struct DownloadChankSubTask : IDownloaderSubTask
+struct DownloadChunkSubTask : IDownloaderSubTask
 {
     CURL* easy = nullptr;
     int64 offset;
     int64 size;
     BufferWriter chankBuf;
 
-    DownloadChankSubTask(DLCDownloader::Task& task_, int64 offset_, int64 size_)
+    DownloadChunkSubTask(DLCDownloader::Task& task_, int64 offset_, int64 size_)
         : IDownloaderSubTask(task_)
         , offset(offset_)
         , size(size_)
@@ -243,7 +243,7 @@ struct DownloadChankSubTask : IDownloaderSubTask
         task.curlStorage.Map(easy, *this);
     }
 
-    ~DownloadChankSubTask()
+    ~DownloadChunkSubTask()
     {
         Cleanup();
     }
@@ -591,20 +591,18 @@ struct DefaultWriter : DLCDownloader::IWriter
         FileSystem* fs = FileSystem::Instance();
         FilePath path = outputFile;
         fs->CreateDirectory(path.GetDirectory(), true);
-        f = File::Create(outputFile, File::OPEN | File::WRITE | File::CREATE);
+
+        f.reset(File::Create(outputFile, File::WRITE | File::APPEND));
+
         if (!f)
         {
             const char* err = strerror(errno);
             DAVA_THROW(Exception, "can't create output file: " + outputFile + " " + err);
         }
     }
-    ~DefaultWriter()
-    {
-        f->Release();
-        f = nullptr;
-    }
+    ~DefaultWriter() = default;
 
-    void MoveToEndOfFile()
+    void MoveToEndOfFile() const
     {
         bool result = f->Seek(0, File::eFileSeek::SEEK_FROM_END);
         DVASSERT(result);
@@ -628,7 +626,7 @@ struct DefaultWriter : DLCDownloader::IWriter
     }
 
 private:
-    File* f = nullptr;
+    ScopedPtr<File> f;
 };
 
 DLCDownloader::TaskStatus::TaskStatus() = default;
@@ -719,11 +717,6 @@ DLCDownloader::Task* DLCDownloaderImpl::StartTask(const String& srcUrl,
                                                   int64 rangeSize,
                                                   int32 timeout)
 {
-    if (nullptr == &srcUrl || nullptr == &dstPath)
-    {
-        return nullptr;
-    }
-
     if (srcUrl.empty())
     {
         return nullptr;
@@ -810,13 +803,13 @@ const DLCDownloader::TaskStatus& DLCDownloaderImpl::GetTaskStatus(Task* task)
 
 void DLCDownloaderImpl::SetHints(const Hints& h)
 {
-    if (h.numOfMaxEasyHandles != hints.numOfMaxEasyHandles || h.chankMemBuffSize != hints.chankMemBuffSize)
+    if (h.numOfMaxEasyHandles != hints.numOfMaxEasyHandles || h.chunkMemBuffSize != hints.chunkMemBuffSize)
     {
         if (h.numOfMaxEasyHandles <= 0)
         {
             DAVA_THROW(Exception, "you should set hints.numOfMaxEasyHandles > 0");
         }
-        if (h.chankMemBuffSize <= 0)
+        if (h.chunkMemBuffSize <= 0)
         {
             DAVA_THROW(Exception, "you should set hints.chankMemBuffSize > 0");
         }
@@ -1002,7 +995,7 @@ void DLCDownloaderImpl::UnMap(CURL* easy)
 
 int DLCDownloaderImpl::GetChankSize()
 {
-    return hints.chankMemBuffSize;
+    return hints.chunkMemBuffSize;
 }
 
 void DLCDownloaderImpl::DeleteSubTaskHandler(IDownloaderSubTask* t)
@@ -1062,14 +1055,14 @@ void DLCDownloader::Task::GenerateChankSubRequests(const int chankSize)
         if (restSize < chankSize)
         {
             // take rest range
-            IDownloaderSubTask* subTask = new DownloadChankSubTask(*this, restOffset, restSize);
+            IDownloaderSubTask* subTask = new DownloadChunkSubTask(*this, restOffset, restSize);
             subTasksWorking.push_back(subTask);
             restOffset += restSize;
             restSize = 0;
             break;
         }
 
-        IDownloaderSubTask* subTask = new DownloadChankSubTask(*this, restOffset, chankSize);
+        IDownloaderSubTask* subTask = new DownloadChunkSubTask(*this, restOffset, chankSize);
         subTasksWorking.push_back(subTask);
         restOffset += chankSize;
         restSize -= chankSize;
@@ -1250,7 +1243,7 @@ void DLCDownloaderImpl::ProcessMessagesFromMulti()
                 task.OnSubTaskDone();
                 if (!task.status.error.errorHappened)
                 {
-                    task.GenerateChankSubRequests(hints.chankMemBuffSize);
+                    task.GenerateChankSubRequests(hints.chunkMemBuffSize);
 
                     if (task.IsDone())
                     {
@@ -1272,7 +1265,7 @@ void DLCDownloaderImpl::BalancingHandles()
         {
             if (task->NeedHandle())
             {
-                task->GenerateChankSubRequests(hints.chankMemBuffSize);
+                task->GenerateChankSubRequests(hints.chunkMemBuffSize);
                 if (GetFreeHandleCount() == 0)
                 {
                     break;

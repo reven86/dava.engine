@@ -291,13 +291,17 @@ File* File::PureCreate(const FilePath& filePath, uint32 attributes)
     {
         file = FileAPI::OpenFile(path, "wb");
         if (!file)
+        {
             return nullptr;
+        }
     }
     else if ((attributes & File::APPEND) && (attributes & File::WRITE))
     {
         file = FileAPI::OpenFile(path, "ab");
         if (!file)
+        {
             return nullptr;
+        }
         if (0 != SetFilePos(file, 0, SEEK_END))
         {
             Logger::Error("fseek set error");

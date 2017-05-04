@@ -14,20 +14,20 @@ class FilePath;
 class File : public BaseObject
 {
 public:
-    //! File attributes enumeration
-    //! Remember engine support only
-    //! EFA_OPEN | EFA_READ
-    //! EFA_OPEN | EFA_READ | EFA_WRITE
-    //! EFA_CREATE | EFA_WRITE
-    //! EFA_APPEND | EFA_WRITE
-
+    /** File attributes enumeration
+     Remember engine support only
+     OPEN | READ - open existent file for reading
+     OPEN | READ | WRITE - open existing file for read-writing
+     CREATE | WRITE - create new file or open existing and truncate it
+     APPEND | WRITE - open existing file and move to end or create new
+	*/
     enum eFileAttributes : uint32
     {
-        CREATE = 0x1,
-        OPEN = 0x2,
-        READ = 0x4,
-        WRITE = 0x8,
-        APPEND = 0x10
+        CREATE = 0x1, //!< only for [CREATE | WRITE] mode
+        OPEN = 0x2, //!< for [OPEN | READ] or [OPEN | READ | WRITE]
+        READ = 0x4, //!< for [OPEN | READ] or [OPEN | READ | WRITE]
+        WRITE = 0x8, //!< for [CREATE | WRITE] or [APPEND | WRITE]
+        APPEND = 0x10 //!< for [APPEND | WRITE]
     };
 
     //! File seek enumeration

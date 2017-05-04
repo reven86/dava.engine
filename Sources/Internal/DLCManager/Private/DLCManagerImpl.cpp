@@ -238,7 +238,7 @@ void DLCManagerImpl::Initialize(const FilePath& dirToDownloadPacks_,
 
     DLCDownloader::Hints downloaderHints;
     downloaderHints.numOfMaxEasyHandles = static_cast<int>(hints.downloaderMaxHandles);
-    downloaderHints.chankMemBuffSize = static_cast<int>(hints.downloaderChankBufSize);
+    downloaderHints.chunkMemBuffSize = static_cast<int>(hints.downloaderChankBufSize);
 
     downloader->SetHints(downloaderHints);
 
