@@ -61,7 +61,8 @@ bool ComponentPropertiesSection::IsHiddenComponent(UIComponent::eType type)
 {
     return
     type == UIComponent::LAYOUT_ISOLATION_COMPONENT ||
-    type == UIComponent::LAYOUT_SOURCE_RECT_COMPONENT;
+    type == UIComponent::LAYOUT_SOURCE_RECT_COMPONENT ||
+    type == UIComponent::SCROLL_COMPONENT;
 }
 
 UIComponent* ComponentPropertiesSection::GetComponent() const
