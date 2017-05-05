@@ -30,6 +30,7 @@
 #include "Debug/ProfilerOverlay.h"
 #include "Engine/Engine.h"
 #include "Input/MouseDevice.h"
+#include "UI/RichContent/UIRichContentSystem.h"
 
 namespace DAVA
 {
@@ -43,6 +44,7 @@ UIControlSystem::UIControlSystem()
 
     AddSystem(std::make_unique<UIInputSystem>());
     AddSystem(std::make_unique<UIUpdateSystem>());
+    AddSystem(std::make_unique<UIRichContentSystem>());
     AddSystem(std::make_unique<UIStyleSheetSystem>());
     AddSystem(std::make_unique<UILayoutSystem>());
     AddSystem(std::make_unique<UIScrollSystem>());
