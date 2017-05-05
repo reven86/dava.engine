@@ -17,6 +17,7 @@
 #include "UI/Input/UIActionComponent.h"
 #include "UI/Input/UIActionBindingComponent.h"
 #include "UI/Scroll/UIScrollBarDelegateComponent.h"
+#include "UI/Scroll/UIScrollComponent.h"
 #include "UI/Sound/UISoundComponent.h"
 #include "UI/Sound/UISoundValueFilterComponent.h"
 #include "UI/Update/UIUpdateComponent.h"
@@ -105,6 +106,9 @@ UIComponent* UIComponent::CreateByType(uint32 componentType)
 
     case SCROLL_BAR_DELEGATE_COMPONENT:
         return new UIScrollBarDelegateComponent();
+
+    case SCROLL_COMPONENT:
+        return new UIScrollComponent();
 
     case SOUND_COMPONENT:
         return new UISoundComponent();
