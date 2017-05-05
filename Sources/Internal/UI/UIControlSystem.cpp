@@ -233,6 +233,7 @@ void UIControlSystem::UpdateControl(UIControl* control)
 {
     styleSheetSystem->Update(control);
     layoutSystem->Update(control);
+    GetSystem<UIScrollSystem>()->PrepareForScreenshot(control);
 }
 
 void UIControlSystem::ProcessScreenLogic()
