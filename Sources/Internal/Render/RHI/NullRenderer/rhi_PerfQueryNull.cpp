@@ -7,8 +7,13 @@
 
 namespace rhi
 {
-using PerfQueryNullPool = ResourcePool<ResourceNull_t, RESOURCE_PERFQUERY, NullResourceDescriptor>;
-RHI_IMPL_POOL(ResourceNull_t, RESOURCE_PERFQUERY, NullResourceDescriptor, false);
+struct PerfQueryNull_t : public ResourceImpl<PerfQueryNull_t, PerfQuery::Descriptor>
+{
+};
+RHI_IMPL_RESOURCE(PerfQueryNull_t, PerfQuery::Descriptor)
+
+using PerfQueryNullPool = ResourcePool<PerfQueryNull_t, RESOURCE_PERFQUERY, PerfQuery::Descriptor>;
+RHI_IMPL_POOL(PerfQueryNull_t, RESOURCE_PERFQUERY, PerfQuery::Descriptor, false);
 
 //////////////////////////////////////////////////////////////////////////
 

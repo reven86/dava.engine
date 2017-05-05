@@ -351,7 +351,7 @@ bool IsReady(Handle buf, uint32 objectIndex)
     return (*_Impl.impl_QueryBuffer_ObjectIsReady)(buf, objectIndex);
 }
 
-int Value(Handle buf, uint32 objectIndex)
+int32 Value(Handle buf, uint32 objectIndex)
 {
     return (*_Impl.impl_QueryBuffer_Value)(buf, objectIndex);
 }

@@ -11,14 +11,6 @@ using DAVA::uint32;
 struct Dispatch;
 struct InitParam;
 
-struct NullResourceDescriptor
-{
-};
-
-class ResourceNull_t : public ResourceImpl<ResourceNull_t, NullResourceDescriptor>
-{
-};
-
 void nullRenderer_Initialize(const InitParam& param);
 
 namespace VertexBufferNull

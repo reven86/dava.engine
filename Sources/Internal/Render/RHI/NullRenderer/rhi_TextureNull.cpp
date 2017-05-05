@@ -7,9 +7,8 @@
 
 namespace rhi
 {
-class TextureNull_t : public ResourceImpl<TextureNull_t, Texture::Descriptor>
+struct TextureNull_t : public ResourceImpl<TextureNull_t, Texture::Descriptor>
 {
-public:
     void* mappedData = nullptr;
 };
 RHI_IMPL_RESOURCE(TextureNull_t, Texture::Descriptor)

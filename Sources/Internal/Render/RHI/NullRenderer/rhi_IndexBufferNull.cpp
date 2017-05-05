@@ -7,9 +7,8 @@
 
 namespace rhi
 {
-class IndexBufferNull_t : public ResourceImpl<IndexBufferNull_t, IndexBuffer::Descriptor>
+struct IndexBufferNull_t : public ResourceImpl<IndexBufferNull_t, IndexBuffer::Descriptor>
 {
-public:
     void* mappedData = nullptr;
 };
 RHI_IMPL_RESOURCE(IndexBufferNull_t, IndexBuffer::Descriptor)

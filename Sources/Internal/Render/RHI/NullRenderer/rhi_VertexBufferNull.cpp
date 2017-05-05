@@ -7,9 +7,8 @@
 
 namespace rhi
 {
-class VertexBufferNull_t : public ResourceImpl<VertexBufferNull_t, VertexBuffer::Descriptor>
+struct VertexBufferNull_t : public ResourceImpl<VertexBufferNull_t, VertexBuffer::Descriptor>
 {
-public:
     void* mappedData = nullptr;
 };
 RHI_IMPL_RESOURCE(VertexBufferNull_t, VertexBuffer::Descriptor)

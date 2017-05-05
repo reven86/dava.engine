@@ -7,8 +7,13 @@
 
 namespace rhi
 {
-using QueryBufferNullPool = ResourcePool<ResourceNull_t, RESOURCE_QUERY_BUFFER, NullResourceDescriptor>;
-RHI_IMPL_POOL(ResourceNull_t, RESOURCE_QUERY_BUFFER, NullResourceDescriptor, false);
+struct QueryBufferNull_t : public ResourceImpl<QueryBufferNull_t, QueryBuffer::Descriptor>
+{
+};
+RHI_IMPL_RESOURCE(QueryBufferNull_t, QueryBuffer::Descriptor)
+
+using QueryBufferNullPool = ResourcePool<QueryBufferNull_t, RESOURCE_QUERY_BUFFER, QueryBuffer::Descriptor>;
+RHI_IMPL_POOL(QueryBufferNull_t, RESOURCE_QUERY_BUFFER, QueryBuffer::Descriptor, false);
 
 //////////////////////////////////////////////////////////////////////////
 
@@ -36,7 +41,7 @@ bool null_QueryBuffer_ObjectIsReady(Handle, uint32)
     return true;
 }
 
-int null_QueryBuffer_Value(Handle, uint32)
+int32 null_QueryBuffer_Value(Handle, uint32)
 {
     return 0;
 }

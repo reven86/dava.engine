@@ -7,8 +7,13 @@
 
 namespace rhi
 {
-using SamplerStateNullPool = ResourcePool<ResourceNull_t, RESOURCE_SAMPLER_STATE, NullResourceDescriptor>;
-RHI_IMPL_POOL(ResourceNull_t, RESOURCE_SAMPLER_STATE, NullResourceDescriptor, false);
+struct SamplerStateNull_t : public ResourceImpl<SamplerStateNull_t, SamplerState::Descriptor>
+{
+};
+RHI_IMPL_RESOURCE(SamplerStateNull_t, SamplerState::Descriptor)
+
+using SamplerStateNullPool = ResourcePool<SamplerStateNull_t, RESOURCE_SAMPLER_STATE, SamplerState::Descriptor>;
+RHI_IMPL_POOL(SamplerStateNull_t, RESOURCE_SAMPLER_STATE, SamplerState::Descriptor, false);
 
 //////////////////////////////////////////////////////////////////////////
 

@@ -10,8 +10,6 @@ namespace rhi
 {
 Dispatch DispatchNullRenderer = {};
 
-RHI_IMPL_RESOURCE(ResourceNull_t, NullResourceDescriptor)
-
 //////////////////////////////////////////////////////////////////////////
 
 void null_Reset(const ResetParam&)

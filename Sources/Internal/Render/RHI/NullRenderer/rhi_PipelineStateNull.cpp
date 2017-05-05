@@ -7,11 +7,21 @@
 
 namespace rhi
 {
-using ConstBufferNullPool = ResourcePool<ResourceNull_t, RESOURCE_CONST_BUFFER, NullResourceDescriptor>;
-using PipelineStateNullPool = ResourcePool<ResourceNull_t, RESOURCE_PIPELINE_STATE, NullResourceDescriptor>;
+struct ConstBufferNull_t : public ResourceImpl<ConstBufferNull_t, ConstBuffer::Descriptor>
+{
+};
+RHI_IMPL_RESOURCE(ConstBufferNull_t, ConstBuffer::Descriptor)
 
-RHI_IMPL_POOL(ResourceNull_t, RESOURCE_CONST_BUFFER, NullResourceDescriptor, false);
-RHI_IMPL_POOL(ResourceNull_t, RESOURCE_PIPELINE_STATE, NullResourceDescriptor, false);
+struct PipelineStateNull_t : public ResourceImpl<PipelineStateNull_t, PipelineState::Descriptor>
+{
+};
+RHI_IMPL_RESOURCE(PipelineStateNull_t, PipelineState::Descriptor)
+
+using ConstBufferNullPool = ResourcePool<ConstBufferNull_t, RESOURCE_CONST_BUFFER, ConstBuffer::Descriptor>;
+using PipelineStateNullPool = ResourcePool<PipelineStateNull_t, RESOURCE_PIPELINE_STATE, PipelineState::Descriptor>;
+
+RHI_IMPL_POOL(ConstBufferNull_t, RESOURCE_CONST_BUFFER, ConstBuffer::Descriptor, false);
+RHI_IMPL_POOL(PipelineStateNull_t, RESOURCE_PIPELINE_STATE, PipelineState::Descriptor, false);
 
 //////////////////////////////////////////////////////////////////////////
 

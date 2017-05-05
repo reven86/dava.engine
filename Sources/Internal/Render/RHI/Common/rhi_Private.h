@@ -55,7 +55,7 @@ void Delete(Handle buf);
 
 bool BufferIsReady(Handle buf);
 bool IsReady(Handle buf, uint32 objectIndex);
-int Value(Handle buf, uint32 objectIndex);
+int32 Value(Handle buf, uint32 objectIndex);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

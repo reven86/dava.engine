@@ -7,8 +7,13 @@
 
 namespace rhi
 {
-using SyncObjectNullPool = ResourcePool<ResourceNull_t, RESOURCE_SYNC_OBJECT, NullResourceDescriptor>;
-RHI_IMPL_POOL(ResourceNull_t, RESOURCE_SYNC_OBJECT, NullResourceDescriptor, false);
+struct SyncObjectNull_t : public ResourceImpl<SyncObjectNull_t, SyncObject::Descriptor>
+{
+};
+RHI_IMPL_RESOURCE(SyncObjectNull_t, SyncObject::Descriptor)
+
+using SyncObjectNullPool = ResourcePool<SyncObjectNull_t, RESOURCE_SYNC_OBJECT, SyncObject::Descriptor>;
+RHI_IMPL_POOL(SyncObjectNull_t, RESOURCE_SYNC_OBJECT, SyncObject::Descriptor, false);
 
 //////////////////////////////////////////////////////////////////////////
 

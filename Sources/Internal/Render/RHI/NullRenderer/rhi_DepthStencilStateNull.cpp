@@ -7,8 +7,13 @@
 
 namespace rhi
 {
-using DepthStencilStateNullPool = ResourcePool<ResourceNull_t, RESOURCE_DEPTHSTENCIL_STATE, NullResourceDescriptor>;
-RHI_IMPL_POOL(ResourceNull_t, RESOURCE_DEPTHSTENCIL_STATE, NullResourceDescriptor, false);
+struct DepthStencilStateNull_t : public ResourceImpl<DepthStencilStateNull_t, DepthStencilState::Descriptor>
+{
+};
+RHI_IMPL_RESOURCE(DepthStencilStateNull_t, DepthStencilState::Descriptor)
+
+using DepthStencilStateNullPool = ResourcePool<DepthStencilStateNull_t, RESOURCE_DEPTHSTENCIL_STATE, DepthStencilState::Descriptor>;
+RHI_IMPL_POOL(DepthStencilStateNull_t, RESOURCE_DEPTHSTENCIL_STATE, DepthStencilState::Descriptor, false);
 
 //////////////////////////////////////////////////////////////////////////
 

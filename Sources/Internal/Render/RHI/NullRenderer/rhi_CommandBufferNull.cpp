@@ -7,18 +7,22 @@
 
 namespace rhi
 {
-class RenderPassNull_t : public ResourceImpl<RenderPassNull_t, NullResourceDescriptor>
+struct RenderPassNull_t : public ResourceImpl<RenderPassNull_t, RenderPassConfig>
 {
-public:
     std::vector<Handle> cmdBuf;
 };
-RHI_IMPL_RESOURCE(RenderPassNull_t, NullResourceDescriptor)
+RHI_IMPL_RESOURCE(RenderPassNull_t, RenderPassConfig)
 
-using RenderPassNullPool = ResourcePool<RenderPassNull_t, RESOURCE_RENDER_PASS, NullResourceDescriptor>;
-using CommandBufferNullPool = ResourcePool<ResourceNull_t, RESOURCE_COMMAND_BUFFER, NullResourceDescriptor>;
+struct CommandBufferNull_t : public ResourceImpl<CommandBufferNull_t, CommandBuffer::Descriptor>
+{
+};
+RHI_IMPL_RESOURCE(CommandBufferNull_t, CommandBuffer::Descriptor)
 
-RHI_IMPL_POOL(RenderPassNull_t, RESOURCE_RENDER_PASS, NullResourceDescriptor, false);
-RHI_IMPL_POOL(ResourceNull_t, RESOURCE_COMMAND_BUFFER, NullResourceDescriptor, false);
+using RenderPassNullPool = ResourcePool<RenderPassNull_t, RESOURCE_RENDER_PASS, RenderPassConfig>;
+using CommandBufferNullPool = ResourcePool<CommandBufferNull_t, RESOURCE_COMMAND_BUFFER, CommandBuffer::Descriptor>;
+
+RHI_IMPL_POOL(RenderPassNull_t, RESOURCE_RENDER_PASS, RenderPassConfig, false);
+RHI_IMPL_POOL(CommandBufferNull_t, RESOURCE_COMMAND_BUFFER, CommandBuffer::Descriptor, false);
 
 //////////////////////////////////////////////////////////////////////////
 
