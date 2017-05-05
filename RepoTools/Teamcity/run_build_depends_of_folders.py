@@ -124,8 +124,11 @@ def __check_depends_of_folders( args ):
 
     for path_dep_folder in depends_folders:
         for path_brunch_folder in brunch_changes:
-            path =  path_brunch_folder['path']['parent']
-            if path_dep_folder in path:
+            path                =  path_brunch_folder['path']['parent']
+            path                = os.path.realpath( path )
+            realpath_dep_folder = os.path.realpath(path_dep_folder)
+
+            if realpath_dep_folder in path:
                 __print( "Build is required because changes affect folders {}".format( depends_folders ) )
                 return True
 
@@ -135,6 +138,10 @@ def __check_depends_of_folders( args ):
 
     if args.run_command != None :
         __print( "Command [{}] it is possible not to launch".format( args.run_command ) )
+
+    if args.configuration_id == None and args.run_command != None :
+        __print( "Build it is possible not to launch" )
+
 
     return False
 

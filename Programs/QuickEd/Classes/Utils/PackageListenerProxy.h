@@ -20,7 +20,7 @@ class FieldBinder;
 class PackageListenerProxy : public PackageListener
 {
 public:
-    PackageListenerProxy() = default;
+    PackageListenerProxy();
     PackageListenerProxy(PackageListener* listener, DAVA::TArc::ContextAccessor* accessor);
     ~PackageListenerProxy();
 

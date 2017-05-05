@@ -12,6 +12,7 @@
 #include "UI/Focus/UIFocusSystem.h"
 #include "UI/Input/UIInputSystem.h"
 #include "UI/Scroll/UIScrollBarLinkSystem.h"
+#include "UI/Scroll/UIScrollSystem.h"
 #include "UI/Sound/UISoundSystem.h"
 #include "UI/Render/UIRenderSystem.h"
 #include "Render/Renderer.h"
@@ -38,6 +39,7 @@ UIControlSystem::UIControlSystem()
     AddSystem(std::make_unique<UIUpdateSystem>());
     AddSystem(std::make_unique<UIStyleSheetSystem>());
     AddSystem(std::make_unique<UILayoutSystem>());
+    AddSystem(std::make_unique<UIScrollSystem>());
     AddSystem(std::make_unique<UIScrollBarLinkSystem>());
     AddSystem(std::make_unique<UISoundSystem>());
     AddSystem(std::make_unique<UIRenderSystem>(RenderSystem2D::Instance()));
