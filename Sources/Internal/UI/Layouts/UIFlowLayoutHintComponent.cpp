@@ -12,6 +12,7 @@ DAVA_VIRTUAL_REFLECTION_IMPL(UIFlowLayoutHintComponent)
     .DestructorByPointer([](UIFlowLayoutHintComponent* o) { o->Release(); })
     .Field("newLineBeforeThis", &UIFlowLayoutHintComponent::IsNewLineBeforeThis, &UIFlowLayoutHintComponent::SetNewLineBeforeThis)
     .Field("newLineAfterThis", &UIFlowLayoutHintComponent::IsNewLineAfterThis, &UIFlowLayoutHintComponent::SetNewLineAfterThis)
+    .Field("contentDirection", &UIFlowLayoutHintComponent::GetContentDirection, &UIFlowLayoutHintComponent::SetContentDirection)[M::EnumT<BiDiHelper::Direction>()]
     .End();
 }
 
@@ -52,6 +53,17 @@ bool UIFlowLayoutHintComponent::IsNewLineAfterThis() const
 void UIFlowLayoutHintComponent::SetNewLineAfterThis(bool flag)
 {
     flags.set(FLAG_NEW_LINE_AFTER_THIS, flag);
+    SetLayoutDirty();
+}
+
+BiDiHelper::Direction UIFlowLayoutHintComponent::GetContentDirection() const
+{
+    return contentDirection;
+}
+
+void UIFlowLayoutHintComponent::SetContentDirection(BiDiHelper::Direction direction)
+{
+    contentDirection = direction;
     SetLayoutDirty();
 }
 

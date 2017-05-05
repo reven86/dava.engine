@@ -294,13 +294,13 @@ void SelectionSystem::GetNodesForSelection(Vector<ControlNode*>& nodesUnderPoint
     auto findPredicate = [point](const ControlNode* node) -> bool {
         const UIControl* control = node->GetControl();
         DVASSERT(nullptr != control);
-        return control->GetVisibilityFlag() && control->IsPointInside(point);
+        return control->GetVisibilityFlag() && !control->IsHiddenForDebug() && control->IsPointInside(point);
     };
 
     auto stopPredicate = [](const ControlNode* node) -> bool {
         const UIControl* control = node->GetControl();
         DVASSERT(nullptr != control);
-        return !control->GetVisibilityFlag();
+        return !control->GetVisibilityFlag() || control->IsHiddenForDebug();
     };
     systemsManager->CollectControlNodes(std::back_inserter(nodesUnderPoint), findPredicate, stopPredicate);
 }
