@@ -297,6 +297,7 @@ bool PackRequest::UpdateFileRequests()
         case LoadingPackFile:
         {
             DLCDownloader* dm = packManagerImpl->GetDownloader();
+            String dstPath = fileRequest.localFile.GetAbsolutePathname();
             if (fileRequest.taskId == nullptr)
             {
                 if (fileRequest.sizeOfCompressedFile == 0)
@@ -323,8 +324,13 @@ bool PackRequest::UpdateFileRequests()
                 else
                 {
                     fs->DeleteFile(fileRequest.localFile); // just in case (hash not match, size not match...)
-                    // TODO find out why ResumeTask not working here
-                    fileRequest.taskId = dm->StartTask(fileRequest.url, fileRequest.localFile.GetAbsolutePathname(), DLCDownloader::Range(fileRequest.startLoadingPos, fileRequest.sizeOfCompressedFile));
+
+                    DLCDownloader::Range range = DLCDownloader::Range(fileRequest.startLoadingPos, fileRequest.sizeOfCompressedFile);
+                    fileRequest.taskId = dm->ResumeTask(fileRequest.url, dstPath, range);
+                    if (nullptr == fileRequest.taskId)
+                    {
+                        DAVA_THROW(Exception, "can't be, something very very wrong");
+                    }
                 }
             }
             else
@@ -362,7 +368,7 @@ bool PackRequest::UpdateFileRequests()
                             std::ostream& out = packManagerImpl->GetLog();
 
                             out << "can't download file: "
-                                << fileRequest.localFile.GetAbsolutePathname()
+                                << dstPath
                                 << " cause: " << err << std::endl;
 
                             if (status.error.fileErrno != 0)

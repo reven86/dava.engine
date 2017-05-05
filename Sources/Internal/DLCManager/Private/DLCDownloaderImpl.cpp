@@ -9,6 +9,7 @@
 
 namespace DAVA
 {
+DLCDownloader::Range::Range() = default;
 const DLCDownloader::Range DLCDownloader::EmptyRange;
 
 DLCDownloader::~DLCDownloader() = default;
@@ -566,10 +567,13 @@ void DLCDownloader::Task::OnSubTaskDone()
             {
                 Buffer b = nextSubTask->GetBuffer();
                 uint64 writen = writer->Save(b.ptr, b.size);
-                DVASSERT(writen == b.size);
+                if (writen != b.size)
+                {
+                    OnErrorCurlErrno(errno, this, nextSubTask);
+                }
 
                 Task& task = nextSubTask->GetTask();
-                task.status.sizeDownloaded += b.size;
+                task.status.sizeDownloaded += writen;
 
                 delete nextSubTask;
 
@@ -1063,6 +1067,7 @@ void DLCDownloaderImpl::DeleteTask(Task* task)
         for (auto& t : task->subTasksWorking)
         {
             DeleteSubTaskHandler(t);
+            delete t;
         }
 
         task->subTasksWorking.clear();
@@ -1070,6 +1075,7 @@ void DLCDownloaderImpl::DeleteTask(Task* task)
         for (auto& t : task->subTasksReadyToWrite)
         {
             DeleteSubTaskHandler(t);
+            delete t;
         }
 
         task->subTasksReadyToWrite.clear();
@@ -1146,6 +1152,8 @@ void DLCDownloader::Task::CorrectRangeToResumeDownloading()
     uint64 pos = writer->GetSeekPos();
     if (pos != std::numeric_limits<uint64>::max())
     {
+        restOffset = info.rangeOffset;
+        restSize = info.rangeSize;
         restOffset += pos;
         restSize -= pos;
     }
@@ -1157,7 +1165,7 @@ void DLCDownloader::Task::CorrectRangeToResumeDownloading()
 
 void DLCDownloader::Task::SetupResumeDownload()
 {
-    if (writer.get() == nullptr)
+    if (!writer)
     {
         DefaultWriter* w = nullptr;
         try

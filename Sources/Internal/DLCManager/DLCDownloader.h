@@ -102,7 +102,7 @@ public:
 
     struct Range
     {
-        Range() = default;
+        Range();
         Range(int64 offset_, int64 size_)
             : offset(offset_)
             , size(size_)
