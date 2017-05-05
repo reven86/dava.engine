@@ -89,9 +89,10 @@ void UIScrollSystem::PrepareForScreenshot(UIControl* control)
         }
     }
 
-    auto it = std::remove_if(scheduledControls.begin(), scheduledControls.end(), [](const ScheduledControl& c) {
-        return c.processed;
-    });
+    auto it = scheduledControls.erase(std::remove_if(scheduledControls.begin(), scheduledControls.end(), [](const ScheduledControl& c) {
+                                          return c.processed;
+                                      }),
+                                      scheduledControls.end());
 }
 
 void UIScrollSystem::PrepareForScreenshotImpl(UIControl* control)
