@@ -375,7 +375,7 @@ DAVA_TARC_TESTCLASS(DoubleSpinBoxTests)
 
         TEST_VERIFY(box->value() == 18.0);
         TEST_VERIFY(box->value() == module->model.value);
-        TEST_VERIFY(box->text() == QString::number(module->model.value));
+        TEST_VERIFY(box->text() == QString::number(module->model.value, 'f'));
 
         events.clear();
         SetFocus(box);
@@ -383,7 +383,7 @@ DAVA_TARC_TESTCLASS(DoubleSpinBoxTests)
         events.simulate(box);
         TEST_VERIFY(box->value() == 17.0);
         TEST_VERIFY(box->value() == module->model.value);
-        TEST_VERIFY(box->text() == QString::number(module->model.value));
+        TEST_VERIFY(box->text() == QString::number(module->model.value, 'f'));
 
         module->model.value = 10.0;
     }
