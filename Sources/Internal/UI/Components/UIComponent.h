@@ -46,7 +46,6 @@ public:
 public:
     UIComponent();
     UIComponent(const UIComponent& src);
-    virtual ~UIComponent();
 
     UIComponent& operator=(const UIComponent& src);
 
@@ -62,6 +61,9 @@ public:
     virtual UIComponent* Clone() const = 0;
 
     RefPtr<UIComponent> SafeClone() const;
+
+protected:
+    virtual ~UIComponent();
 
 private:
     UIControl* control;

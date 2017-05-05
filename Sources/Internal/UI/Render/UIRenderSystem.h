@@ -14,7 +14,7 @@ class UIScreenshoter;
 class UIScreen;
 class UIScreenTransition;
 
-class UIRenderSystem
+class UIRenderSystem final
 : public UISystem
 {
     friend class UIControlSystem;
@@ -34,12 +34,14 @@ public:
     void SetCurrentScreenTransition(const RefPtr<UIScreenTransition>& screenTransition);
     void SetPopupContainer(const RefPtr<UIControl>& popupContainer);
 
-private:
+protected:
     void OnControlVisible(UIControl* control) override;
     void OnControlInvisible(UIControl* control) override;
 
     void Process(float32 elapsedTime) override;
     void Render();
+
+private:
     void ForceRenderControl(UIControl* control);
 
     void RenderControlHierarhy(UIControl* control, const UIGeometricData& geometricData, const UIControlBackground* parentBackground);

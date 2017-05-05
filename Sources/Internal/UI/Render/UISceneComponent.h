@@ -4,7 +4,7 @@
 
 namespace DAVA
 {
-class UISceneComponent : public UIBaseComponent<UIComponent::SCENE_COMPONENT>
+class UISceneComponent final : public UIBaseComponent<UIComponent::SCENE_COMPONENT>
 {
     DAVA_VIRTUAL_REFLECTION(UISceneComponent, UIBaseComponent<UIComponent::SCENE_COMPONENT>);
 
@@ -14,9 +14,9 @@ public:
 
     UISceneComponent* Clone() const override;
 
-private:
-    ~UISceneComponent() override;
-
     UISceneComponent& operator=(const UISceneComponent&) = delete;
+
+protected:
+    ~UISceneComponent() override;
 };
 }
