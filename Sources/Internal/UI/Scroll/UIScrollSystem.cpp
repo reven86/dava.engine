@@ -100,12 +100,13 @@ void UIScrollSystem::PrepareForScreenshotImpl(UIControl* control)
             c->Update(0);
         }
 
-        auto it = std::find_if(scheduledControls.begin(), scheduledControls.end(), [control](const ScheduledControl& c) {
-            return c.control.Get() == control;
-        });
-        if (it != scheduledControls.end())
+        for (ScheduledControl& c : scheduledControls)
         {
-            it->marked = true;
+            if (c.control.Get() == control)
+            {
+                c.marked = true;
+                break;
+            }
         }
     }
 }
