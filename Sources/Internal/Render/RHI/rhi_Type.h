@@ -52,6 +52,7 @@ enum Api
     RHI_DX9,
     RHI_GLES2,
     RHI_METAL,
+    RHI_NULL_RENDERER,
 
     RHI_API_COUNT
 };
@@ -866,6 +867,24 @@ namespace CommandBuffer
 {
 struct
 Descriptor
+{
+};
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// perf-query
+namespace PerfQuery
+{
+struct Descriptor
+{
+};
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// const-buffer
+namespace ConstBuffer
+{
+struct Descriptor
 {
 };
 }
