@@ -1,12 +1,12 @@
 #include "UIRenderSystem.h"
-#include "Render/2D/Systems/RenderSystem2D.h"
-#include "UI/UIControl.h"
-#include "UI/UIScreenshoter.h"
-#include "UI/UI3DView.h"
-#include "UI/UIScreen.h"
-#include "UI/UIScreenTransition.h"
 #include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerMarkerNames.h"
+#include "Render/2D/Systems/RenderSystem2D.h"
+#include "UI/Render/UISceneComponent.h"
+#include "UI/UIControl.h"
+#include "UI/UIScreen.h"
+#include "UI/UIScreenTransition.h"
+#include "UI/UIScreenshoter.h"
 
 namespace DAVA
 {
@@ -25,19 +25,16 @@ UIRenderSystem::~UIRenderSystem() = default;
 
 void UIRenderSystem::OnControlVisible(UIControl* control)
 {
-    if (dynamic_cast<UI3DView*>(control) != nullptr)
-    {
-        ++ui3DViewCount;
-    }
+    uint32 cmpCount = control->GetComponentCount<UISceneComponent>();
+    ui3DViewCount += cmpCount;
 }
 
 void UIRenderSystem::OnControlInvisible(UIControl* control)
 {
-    if (dynamic_cast<UI3DView*>(control) != nullptr)
-    {
-        DVASSERT(ui3DViewCount > 0);
-        --ui3DViewCount;
-    }
+    uint32 cmpCount = control->GetComponentCount<UISceneComponent>();
+    ui3DViewCount -= cmpCount;
+
+    DVASSERT(ui3DViewCount >= 0);
 }
 
 void UIRenderSystem::Process(float32 elapsedTime)

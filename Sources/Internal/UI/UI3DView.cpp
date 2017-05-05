@@ -11,6 +11,7 @@
 #include "Scene3D/Systems/Controller/WASDControllerSystem.h"
 #include "Reflection/ReflectionRegistrator.h"
 #include "UI/Update/UIUpdateComponent.h"
+#include "UI/Render/UISceneComponent.h"
 
 namespace DAVA
 {
@@ -31,7 +32,8 @@ UI3DView::UI3DView(const Rect& rect)
     , fbScaleFactor(1.f)
     , fbRenderSize()
 {
-    GetOrCreateComponent<UIUpdateComponent>();
+    GetOrCreateComponent<UIUpdateComponent>(); //TODO Remove this code. move Update And Draw methods to UIRenderSystem.
+    GetOrCreateComponent<UISceneComponent>();
 }
 
 UI3DView::~UI3DView()
