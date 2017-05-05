@@ -59,6 +59,7 @@ public:
     bool Build(const String& text)
     {
         controls.clear();
+        direction = bidiHelper.GetDirectionUTF8String(text); // Detect text direction
         RefPtr<XMLParser> parser(new XMLParser());
         return parser->ParseBytes(reinterpret_cast<const unsigned char*>(text.c_str()), static_cast<int32>(text.length()), this);
     }
@@ -312,9 +313,6 @@ public:
             UIStaticText* ctrl = new UIStaticText();
             PrepareControl(ctrl, true);
             ctrl->SetUtf8Text(token);
-#if _DEBUG // TODO: Remove before merge
-            ctrl->SetForceBiDiSupportEnabled(true);
-#endif
             controls.emplace_back(ctrl);
         }
     }
