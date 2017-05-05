@@ -287,16 +287,16 @@ void PropertiesView::SetupUI()
 
     Reflection thisModel = Reflection::Create(ReflectedObject(this));
     {
-        ComboBox::Params params(params.accessor, params.ui, params.wndKey);
-        params.fields[ComboBox::Fields::Value] = "viewMode";
-        ComboBox* comboBox = new ComboBox(params, params.accessor, thisModel, toolBar);
+        ComboBox::Params controlParams(params.accessor, params.ui, params.wndKey);
+        controlParams.fields[ComboBox::Fields::Value] = "viewMode";
+        ComboBox* comboBox = new ComboBox(controlParams, params.accessor, thisModel, toolBar);
         toolBar->addWidget(comboBox->ToWidgetCast());
     }
 
     {
-        CheckBox::Params params(params.accessor, params.ui, params.wndKey);
-        params.fields[CheckBox::Fields::Checked] = "devMode";
-        CheckBox* checkBox = new CheckBox(params, params.accessor, thisModel, toolBar);
+        CheckBox::Params controlParams(params.accessor, params.ui, params.wndKey);
+        controlParams.fields[CheckBox::Fields::Checked] = "devMode";
+        CheckBox* checkBox = new CheckBox(controlParams, params.accessor, thisModel, toolBar);
         toolBar->addWidget(checkBox->ToWidgetCast());
     }
 

@@ -13,7 +13,7 @@
 #include <QCoreApplication>
 
 #define RETURN_IF_MODEL_LOST(x) \
-    if (wrapper.HasData() == false) \
+    if (this->wrapper.HasData() == false) \
     {\
         return (x);\
     }
