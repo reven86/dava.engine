@@ -57,10 +57,10 @@ def __run_build( args ):
                                               args.password )
 
     if args.convert_to_merge_requests:
-        if args.client_brunch and args.client_brunch != '<default>':
+        if args.client_brunch and (args.client_brunch != '<default>' and 'from' in args.client_brunch):
             args.client_brunch = 'refs/pull-requests/' + args.client_brunch.replace('from', 'merge')
 
-        if args.framework_brunch and args.framework_brunch != '<default>':
+        if args.framework_brunch and (args.framework_brunch != '<default>' and 'from' in args.framework_brunch):
             args.framework_brunch = 'refs/pull-requests/' + args.framework_brunch.replace('from', 'merge')
 
     client_brunch = {}
