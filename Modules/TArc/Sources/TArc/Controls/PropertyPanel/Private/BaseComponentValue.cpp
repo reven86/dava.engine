@@ -57,11 +57,6 @@ void BaseComponentValue::Draw(QPainter* painter, const QStyleOptionViewItem& opt
     QPixmap pxmap = realWidget->grab();
     realWidget->setAttribute(Qt::WA_NoSystemBackground, isOpacue);
     painter->drawPixmap(opt.rect, pxmap);
-    if (0)
-    {
-        QImage image = pxmap.toImage();
-        image.save("D:\\1.png");
-    }
 }
 
 void BaseComponentValue::UpdateGeometry(const QStyleOptionViewItem& opt)

@@ -19,7 +19,6 @@ Qt::CheckState BoolComponentValue::GetCheckState() const
 
 void BoolComponentValue::SetCheckState(Qt::CheckState checkState)
 {
-    qDebug() << "New check state : " << static_cast<int>(checkState);
     SetValue(checkState);
 }
 
