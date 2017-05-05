@@ -56,18 +56,20 @@ def __run_build( args ):
                                               args.login,
                                               args.password )
 
-    if args.convert_to_merge_requests:
-        if args.client_brunch and (args.client_brunch != '<default>' and 'from' in args.client_brunch):
-            args.client_brunch = 'refs/pull-requests/' + args.client_brunch.replace('from', 'merge')
-
-        if args.framework_brunch and (args.framework_brunch != '<default>' and 'from' in args.framework_brunch):
-            args.framework_brunch = 'refs/pull-requests/' + args.framework_brunch.replace('from', 'merge')
-
     client_brunch = {}
     if args.client_brunch and args.client_brunch != '<default>':
         client_brunch = {'client_branch': args.client_brunch }
 
-    teamcity_start_result = teamcity.run_build( args.configuration_id, args.framework_brunch, client_brunch  )
+    if args.convert_to_merge_requests:
+        if client_brunch and (client_brunch != '<default>' and 'from' in client_brunch):
+            client_brunch = client_brunch.replace('from', 'merge')
+
+        if args.framework_brunch and (args.framework_brunch != '<default>' and 'from' in args.framework_brunch):
+            framework_brunch = args.framework_brunch.replace('from', 'merge')
+    else:
+        framework_brunch = args.framework_brunch
+
+    teamcity_start_result = teamcity.run_build( args.configuration_id, framework_brunch, client_brunch  )
 
     build_status = ''
     build_status_text = ''
@@ -117,8 +119,6 @@ def __check_depends_of_folders( args ):
                                     args.login,
                                     args.password )
 
-
-    framework_brunch = framework_brunch.replace('refs/pull-requests/', '')
     brunch_info = stash.get_pull_requests_info( framework_brunch )
 
     merged_brunch = brunch_info['toRef']['id'].split('/').pop()
