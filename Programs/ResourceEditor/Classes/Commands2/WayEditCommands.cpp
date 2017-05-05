@@ -152,6 +152,7 @@ EdgeEditCommand::EdgeEditCommand(SceneEditor2* scene_, DAVA::PathComponent* path
     , edge(edge_)
 {
     DVASSERT(edge->destination != nullptr);
+    DVASSERT(edge->destination != waypoint);
     destination = edge->destination;
 
     isEdgeAdded = false;

@@ -407,6 +407,11 @@ void WayEditSystem::DefineAddOrRemoveEdges(const DAVA::Vector<DAVA::PathComponen
     using namespace DAVA;
     for (PathComponent::Waypoint* srcPoint : srcPoints)
     {
+        if (srcPoint == dstPoint)
+        {
+            continue;
+        }
+
         bool edgeFound = false;
         for (PathComponent::Edge* edge : srcPoint->edges)
         {
@@ -600,7 +605,7 @@ void WayEditSystem::PerformAdding(DAVA::Entity* sourceEntity, DAVA::Entity* clon
     sourceWayPoint->position = sourceEntity->GetLocalTransform().GetTranslationVector();
 
     PathComponent::Waypoint* clonedWayPoint = clonedComponent->GetWaypoint();
-    DVASSERT(sourceWayPoint == sourceWayPoint);
+    DVASSERT(clonedWayPoint == sourceWayPoint);
 
     PathComponent* path = sourceComponent->GetPath();
 
@@ -612,6 +617,7 @@ void WayEditSystem::PerformAdding(DAVA::Entity* sourceEntity, DAVA::Entity* clon
     SafeRelease(propertiesCopy);
 
     clonedComponent->Init(path, clonedWayPoint);
+    clonedEntity->SetNotRemovable(false);
     sourceEntity->GetParent()->AddNode(clonedEntity);
 
     UnorderedMap<PathComponent::Edge*, EdgeComponent*> edgeMap;
