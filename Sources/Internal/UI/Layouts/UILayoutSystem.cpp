@@ -86,7 +86,7 @@ void UILayoutSystem::ProcessControl(UIControl* control)
     bool positionDirty = control->IsLayoutPositionDirty();
     control->ResetLayoutDirty();
 
-    if (dirty || (orderDirty && HaveToLayoutAfterReorder(control)) || (positionDirty && control->GetComponent(UIComponent::LAYOUT_SOURCE_RECT_COMPONENT)))
+    if (dirty || (orderDirty && HaveToLayoutAfterReorder(control)) || (positionDirty && control->GetParent() && control->GetParent()->GetComponent(UIComponent::LAYOUT_SOURCE_RECT_COMPONENT)))
     {
         UIControl* container = FindNotDependentOnChildrenControl(control);
         ApplyLayout(container);
