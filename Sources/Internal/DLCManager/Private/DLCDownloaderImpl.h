@@ -7,6 +7,13 @@
 
 namespace DAVA
 {
+/**
+  We have to share curl global initialization and cleanup
+  cause it is not thread safe and is using in several modules
+*/
+void CurlGlobalInit();
+void CurlGlobalDeinit();
+
 struct Buffer
 {
     void* ptr = nullptr;

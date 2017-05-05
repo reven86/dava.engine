@@ -18,8 +18,6 @@ class CurlDownloader final : public Downloader
 public:
     CurlDownloader();
     virtual ~CurlDownloader();
-
-    static bool isCURLInit; // move to public to let other downloaders know that curl is initialized
 protected:
     /**
         \brief Interrupts current download.
