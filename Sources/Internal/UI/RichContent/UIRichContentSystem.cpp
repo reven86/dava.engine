@@ -91,11 +91,13 @@ public:
 
     void PrepareControl(UIControl* ctrl, bool autosize)
     {
-        ctrl->SetClassesFromString(GetClass());
+        ctrl->SetClassesFromString(ctrl->GetClassesAsString() + " " + GetClass());
 
         if (isEditorMode)
         {
-            ctrl->GetOrCreateComponent<UILayoutSourceRectComponent>();
+            UILayoutSourceRectComponent* src = ctrl->GetOrCreateComponent<UILayoutSourceRectComponent>();
+            src->SetSize(ctrl->GetSize());
+            src->SetPosition(ctrl->GetPosition());
         }
 
         if (autosize)
@@ -112,8 +114,6 @@ public:
             flh->SetNewLineBeforeThis(needLineBreak);
             needLineBreak = false;
         }
-
-        //ctrl->GetOrCreateComponent<UIRichContentItemComponent>();
     }
 
     void OnElementStarted(const String& elementName, const String& namespaceURI, const String& qualifedName, const Map<String, String>& attributes) override
