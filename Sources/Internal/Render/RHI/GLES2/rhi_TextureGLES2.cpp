@@ -921,70 +921,16 @@ unsigned GetFrameBuffer(const Handle* color, const TextureFace* face, const unsi
             }
             else
             {
-                if (tex->isCubeMap)
+                static const GLenum textureFaceMapping[] =
                 {
-                    #if defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
+                  GL_TEXTURE_CUBE_MAP_POSITIVE_X, GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
+                  GL_TEXTURE_CUBE_MAP_POSITIVE_Y, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
+                  GL_TEXTURE_CUBE_MAP_POSITIVE_Z, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z
+                };
+                DVASSERT(!tex->isCubeMap || (face[i] < countof(textureFaceMapping)));
 
-                    GLenum target = 0;
-
-                    switch (face[i])
-                    {
-                    case TEXTURE_FACE_POSITIVE_X:
-                        target = GL_TEXTURE_CUBE_MAP_POSITIVE_X;
-                        break;
-                    case TEXTURE_FACE_NEGATIVE_X:
-                        target = GL_TEXTURE_CUBE_MAP_NEGATIVE_X;
-                        break;
-                    case TEXTURE_FACE_POSITIVE_Y:
-                        target = GL_TEXTURE_CUBE_MAP_POSITIVE_Y;
-                        break;
-                    case TEXTURE_FACE_NEGATIVE_Y:
-                        target = GL_TEXTURE_CUBE_MAP_NEGATIVE_Y;
-                        break;
-                    case TEXTURE_FACE_POSITIVE_Z:
-                        target = GL_TEXTURE_CUBE_MAP_POSITIVE_Z;
-                        break;
-                    case TEXTURE_FACE_NEGATIVE_Z:
-                        target = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z;
-                        break;
-                    }
-
-                    GL_CALL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, target, tex->uid, level[i]));
-                    
-                    #else
-
-                    GLenum layer = 0;
-
-                    switch (face[i])
-                    {
-                    case TEXTURE_FACE_POSITIVE_X:
-                        layer = 0;
-                        break;
-                    case TEXTURE_FACE_NEGATIVE_X:
-                        layer = 1;
-                        break;
-                    case TEXTURE_FACE_POSITIVE_Y:
-                        layer = 2;
-                        break;
-                    case TEXTURE_FACE_NEGATIVE_Y:
-                        layer = 3;
-                        break;
-                    case TEXTURE_FACE_POSITIVE_Z:
-                        layer = 4;
-                        break;
-                    case TEXTURE_FACE_NEGATIVE_Z:
-                        layer = 5;
-                        break;
-                    }
-
-                    GL_CALL(glFramebufferTextureLayer(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, tex->uid, level[i], layer));
-                    
-                    #endif
-                }
-                else
-                {
-                    GL_CALL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, tex->uid, level[i]));
-                }
+                GLenum target = tex->isCubeMap ? textureFaceMapping[face[i]] : GL_TEXTURE_2D;
+                GL_CALL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, target, tex->uid, level[i]));
             }
         }
 
