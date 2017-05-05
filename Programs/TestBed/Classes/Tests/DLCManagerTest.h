@@ -55,13 +55,11 @@ private:
     DAVA::UITextField* packInput = nullptr;
     DAVA::UITextField* packNextInput = nullptr;
     DAVA::UITextField* numHandlesInput = nullptr;
-    DAVA::UITextField* buffSizeInput = nullptr;
     DAVA::UIControl* redControl = nullptr;
     DAVA::UIControl* greenControl = nullptr;
     DAVA::UIStaticText* description = nullptr;
     DAVA::UITextField* url = nullptr;
     DAVA::UITextField* filePathField = nullptr;
-    DAVA::UITextField* numOfThreadDownload = nullptr;
     DAVA::UIButton* checkFile = nullptr;
     DAVA::UIButton* startInit = nullptr;
     DAVA::UIButton* startSync = nullptr;
