@@ -118,6 +118,7 @@ def __check_depends_of_folders( args ):
                                     args.password )
 
 
+    framework_brunch = framework_brunch.replace('refs/pull-requests/', '')
     brunch_info = stash.get_pull_requests_info( framework_brunch )
 
     merged_brunch = brunch_info['toRef']['id'].split('/').pop()
