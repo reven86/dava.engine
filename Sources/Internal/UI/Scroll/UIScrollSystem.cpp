@@ -72,7 +72,7 @@ void UIScrollSystem::Process(DAVA::float32 elapsedTime)
 
     for (const ScheduledControl& c : scheduledControls)
     {
-        ApplyScrollToScheduledControl(c);
+        ScrollToScheduledControl(c);
     }
 
     scheduledControls.clear();
@@ -85,7 +85,7 @@ void UIScrollSystem::PrepareForScreenshot(UIControl* control)
     {
         if (c.processed)
         {
-            ApplyScrollToScheduledControl(c);
+            ScrollToScheduledControl(c);
         }
     }
 
@@ -136,7 +136,7 @@ void UIScrollSystem::ScheduleScrollToControlImpl(UIControl* control, bool withAn
     }
 }
 
-void UIScrollSystem::ApplyScrollToScheduledControl(const ScheduledControl& c)
+void UIScrollSystem::ScrollToScheduledControl(const ScheduledControl& c)
 {
     if (c.withAnimation)
     {

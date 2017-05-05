@@ -42,7 +42,7 @@ private:
 
     void PrepareForScreenshotImpl(UIControl* control);
     void ScheduleScrollToControlImpl(UIControl* control, bool withAnimation, float32 animationTime);
-    void ApplyScrollToScheduledControl(const ScheduledControl& c);
+    void ScrollToScheduledControl(const ScheduledControl& c);
     Vector<UIScrollViewContainer*> scrollViewContainers;
 
     Vector<ScheduledControl> scheduledControls;
