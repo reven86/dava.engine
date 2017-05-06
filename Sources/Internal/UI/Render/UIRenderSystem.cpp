@@ -116,7 +116,7 @@ void UIRenderSystem::SetPopupContainer(const RefPtr<UIControl>& _popupContainer)
 
 void UIRenderSystem::RenderControlHierarhy(UIControl* control, const UIGeometricData& geometricData, const UIControlBackground* parentBackground)
 {
-    if (!control->GetVisibilityFlag())
+    if (!control->GetVisibilityFlag() || control->IsHiddenForDebug())
         return;
 
     UIGeometricData drawData = control->GetLocalGeometricData();
