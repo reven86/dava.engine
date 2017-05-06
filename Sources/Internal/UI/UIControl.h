@@ -785,6 +785,9 @@ public:
     void SetDebugDrawColor(const Color& color);
     const Color& GetDebugDrawColor() const;
 
+    bool IsHiddenForDebug() const;
+    void SetHiddenForDebug(bool hidden);
+
     /**
      \brief Set the draw pivot point mode for the control.
      \param[in] mode draw pivot point mode
@@ -1003,6 +1006,7 @@ protected:
     bool exclusiveInput : 1;
     bool isInputProcessed : 1;
     bool visible : 1;
+    bool hiddenForDebug : 1;
     bool clipContents : 1;
     bool debugDrawEnabled : 1;
     bool multiInput : 1;

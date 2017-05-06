@@ -9,6 +9,7 @@
 #include "Engine/EngineTypes.h"
 #include "Engine/Qt/RenderWidget.h"
 #include "Engine/Private/EnginePrivateFwd.h"
+#include "Engine/Private/Qt/IWindowDelegate.h"
 #include "Engine/Private/Dispatcher/UIDispatcher.h"
 
 #include <QPointer>
@@ -22,7 +23,7 @@ namespace DAVA
 {
 namespace Private
 {
-class WindowBackend final : public TrackedObject, private RenderWidget::IWindowDelegate
+class WindowBackend final : public TrackedObject, private IWindowDelegate
 {
 public:
     WindowBackend(EngineBackend* engineBackend, Window* window);
@@ -65,9 +66,8 @@ private:
     void DoCloseWindow();
     void DoSetTitle(const char8* title);
     void DoSetMinimumSize(float32 width, float32 height);
-    void DoSetFullscreen(eFullscreen newMode);
 
-    // RenderWidget::Delegate
+    // IWindowDelegate
     void OnCreated() override;
     bool OnUserCloseRequest() override;
     void OnDestroyed() override;
@@ -107,12 +107,6 @@ private:
 
     class QtEventListener;
     QtEventListener* qtEventListener = nullptr;
-
-    class OGLContextBinder;
-    friend void AcquireContextImpl();
-    friend void ReleaseContextImpl();
-
-    std::unique_ptr<OGLContextBinder> contextBinder;
 };
 
 inline void* WindowBackend::GetHandle() const
