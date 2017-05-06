@@ -111,7 +111,8 @@ void SettingsManager::Init()
     CreateValue(Settings::Internal_EditorVersion, DAVA::VariantType(DAVA::String("local build")));
     CreateValue(Settings::Internal_CubemapLastFaceDir, DAVA::VariantType(DAVA::FilePath()));
     CreateValue(Settings::Internal_CubemapLastProjDir, DAVA::VariantType(DAVA::FilePath()));
-    CreateValue(Settings::Internal_ParticleLastEmitterDir, DAVA::VariantType(DAVA::FilePath()));
+    CreateValue(Settings::Internal_ParticleLastSaveEmitterDir, DAVA::VariantType(DAVA::FilePath()));
+    CreateValue(Settings::Internal_ParticleLastLoadEmitterDir, DAVA::VariantType(DAVA::FilePath()));
 
     CreateValue(Settings::Internal_RecentFiles, DAVA::VariantType(static_cast<DAVA::KeyedArchive*>(nullptr)));
     CreateValue(Settings::Internal_RecentProjects, DAVA::VariantType(static_cast<DAVA::KeyedArchive*>(nullptr)));
@@ -258,7 +259,8 @@ void SettingsManager::CreateValue(const DAVA::FastName& pathName, const DAVA::Va
 
 void SettingsManager::ResetPerProjectSettings()
 {
-    SetValue(Settings::Internal_ParticleLastEmitterDir, DAVA::VariantType(DAVA::FilePath()));
+    SetValue(Settings::Internal_ParticleLastSaveEmitterDir, DAVA::VariantType(DAVA::FilePath()));
+    SetValue(Settings::Internal_ParticleLastLoadEmitterDir, DAVA::VariantType(DAVA::FilePath()));
 }
 
 void SettingsManager::ResetToDefault()
