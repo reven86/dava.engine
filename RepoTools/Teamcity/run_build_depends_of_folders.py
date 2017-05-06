@@ -60,14 +60,14 @@ def __run_build( args ):
     if args.client_brunch and args.client_brunch != '<default>':
         client_brunch = {'client_branch': args.client_brunch }
 
+    framework_brunch = args.framework_brunch
+
     if args.convert_to_merge_requests:
         if client_brunch and (client_brunch != '<default>' and 'from' in client_brunch):
             client_brunch = client_brunch.replace('from', 'merge')
 
-        if args.framework_brunch and (args.framework_brunch != '<default>' and 'from' in args.framework_brunch):
-            framework_brunch = args.framework_brunch.replace('from', 'merge')
-    else:
-        framework_brunch = args.framework_brunch
+        if framework_brunch and (framework_brunch != '<default>' and 'from' in framework_brunch):
+            framework_brunch = framework_brunch.replace('from', 'merge')
 
     teamcity_start_result = teamcity.run_build( args.configuration_id, framework_brunch, client_brunch  )
 
