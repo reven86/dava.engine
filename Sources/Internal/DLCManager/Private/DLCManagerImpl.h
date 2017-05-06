@@ -211,6 +211,7 @@ private:
     Vector<uint32> startFileNameIndexesInUncompressedNames;
     DLCDownloader::Task* downloadTaskId = nullptr;
     uint64 fullSizeServerData = 0;
+    mutable Progress lastProgress;
 
     Hints hints{};
 

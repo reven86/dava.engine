@@ -247,14 +247,18 @@ void PackRequest::InitializeFileRequest(const uint32 fileIndex_,
 void PackRequest::DeleteJustDownloadedFileAndStartAgain(FileRequest& fileRequest)
 {
     fileRequest.downloadedFileSize = 0;
-    FileSystem::Instance()->DeleteFile(fileRequest.localFile);
+    bool deleteOk = FileSystem::Instance()->DeleteFile(fileRequest.localFile);
+    if (!deleteOk)
+    {
+        Logger::Error("DLCManager can't delete invalid file: %s", fileRequest.localFile.GetStringValue().c_str());
+    }
     fileRequest.status = LoadingPackFile;
 }
 
-void PackRequest::DisableRequestingAndFireSignalNoSpaceLeft(PackRequest::FileRequest& fileRequest)
+void PackRequest::DisableRequestingAndFireSignalNoSpaceLeft(FileRequest& fileRequest) const
 {
     int32 errnoValue = errno; // save in local variable if other error happen
-    packManagerImpl->GetLog() << "No space on device!!! Can't create or write file: "
+    packManagerImpl->GetLog() << "No space on device!!! errno(" << errnoValue << ") Can't create or write file: "
                               << fileRequest.localFile.GetAbsolutePathname()
                               << " disable DLCManager requesting" << std::endl;
     packManagerImpl->SetRequestingEnabled(false);
@@ -283,10 +287,18 @@ bool PackRequest::UpdateFileRequests()
                 uint64 fileSize = 0;
                 if (fs->GetFileSize(fileRequest.localFile, fileSize))
                 {
-                    DVASSERT(fileSize == fileRequest.sizeOfCompressedFile + sizeof(PackFormat::LitePack::Footer));
-                    fileRequest.downloadedFileSize = fileSize;
+                    if (fileSize == fileRequest.sizeOfCompressedFile + sizeof(PackFormat::LitePack::Footer))
+                    {
+                        fileRequest.downloadedFileSize = fileSize;
+                        callSignal = true;
+                    }
+                    else
+                    {
+                        // file exist but may be invalid so let's check it out
+                        fileRequest.status = CheckHash;
+                        callSignal = false;
+                    }
                 }
-                callSignal = true;
             }
             else
             {

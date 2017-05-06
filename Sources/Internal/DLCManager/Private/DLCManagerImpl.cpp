@@ -184,7 +184,7 @@ void DLCManagerImpl::ClearResouces()
         if (downloader != nullptr)
         {
             downloader->RemoveTask(downloadTaskId);
-            downloadTaskId = 0;
+            downloadTaskId = nullptr;
         }
     }
     fullSizeServerData = 0;
@@ -1090,7 +1090,8 @@ DLCManager::Progress DLCManagerImpl::GetProgress() const
 
     if (!IsInitialized())
     {
-        return progress;
+        lastProgress.isRequestingEnabled = false;
+        return lastProgress;
     }
 
     progress.isRequestingEnabled = true;
@@ -1117,6 +1118,11 @@ DLCManager::Progress DLCManagerImpl::GetProgress() const
             }
         }
     }
+
+    lastProgress.total = progress.total;
+    lastProgress.alreadyDownloaded = progress.alreadyDownloaded;
+    lastProgress.inQueue = progress.inQueue;
+    lastProgress.isRequestingEnabled = progress.isRequestingEnabled;
 
     return progress;
 }
@@ -1239,13 +1245,16 @@ void DLCManagerImpl::RecursiveScan(const FilePath& baseDir, const FilePath& dir,
             {
                 LocalFileInfo info;
                 info.relativeName = path.GetRelativePathname(baseDir);
-                FILE* f = FileAPI::OpenFile(path.GetAbsolutePathname(), "rb");
+                String fileName = path.GetAbsolutePathname();
+
+                FILE* f = FileAPI::OpenFile(fileName, "rb");
                 if (f == nullptr)
                 {
-                    Logger::Info("can't open file %s during scan", path.GetAbsolutePathname().c_str());
+                    Logger::Info("can't open file %s during scan", fileName.c_str());
                 }
                 else
                 {
+                    bool needDeleteIncompleteFile = false;
                     int32 footerSize = sizeof(PackFormat::LitePack::Footer);
                     if (0 == fseek(f, -footerSize, SEEK_END)) // TODO check SEEK_END may not work on all platforms
                     {
@@ -1257,14 +1266,21 @@ void DLCManagerImpl::RecursiveScan(const FilePath& baseDir, const FilePath& dir,
                         }
                         else
                         {
-                            Logger::Info("can't read footer in file: %s", path.GetAbsolutePathname().c_str());
+                            needDeleteIncompleteFile = true;
+                            Logger::Info("can't read footer in file: %s", fileName.c_str());
                         }
                     }
                     else
                     {
-                        Logger::Info("can't seek to dvpl footer in file: %s", path.GetAbsolutePathname().c_str());
+                        needDeleteIncompleteFile = true;
+                        Logger::Info("can't seek to dvpl footer in file: %s", fileName.c_str());
                     }
                     FileAPI::Close(f);
+                    if (needDeleteIncompleteFile)
+                    {
+                        int32 result = FileAPI::RemoveFile(fileName);
+                        DVASSERT(0 == result);
+                    }
                 }
                 files.push_back(info);
             }

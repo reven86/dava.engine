@@ -87,10 +87,10 @@ struct DLCDownloader::Task
     void SetupGetSizeDownload();
 
     // error handles
-    static void OnErrorCurlMulti(int32 multiCode, Task* task, CURLM* multi, CURL* easy);
-    static void OnErrorCurlEasy(int32 easyCode, Task* task, IDownloaderSubTask* subTask);
-    static void OnErrorCurlErrno(int32 errnoVal, Task* task, IDownloaderSubTask* subTask);
-    static void OnErrorHttpCode(long httpCode, Task* task, IDownloaderSubTask* subTask);
+    static void OnErrorCurlMulti(int32 multiCode, Task& task);
+    static void OnErrorCurlEasy(int32 easyCode, Task& task);
+    static void OnErrorCurlErrno(int32 errnoVal, Task& task);
+    static void OnErrorHttpCode(long httpCode, Task& task);
 };
 
 class DLCDownloaderImpl : public DLCDownloader, public ICurlEasyStorage

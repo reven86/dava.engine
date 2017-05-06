@@ -10,7 +10,7 @@ namespace DAVA
 class DLCManagerImpl;
 
 /**
-	Downdload several files
+	Download several files with one request
 */
 class PackRequest : public DLCManager::IRequest
 {
@@ -85,7 +85,7 @@ private:
                                FileRequest& fileRequest);
 
     static void DeleteJustDownloadedFileAndStartAgain(FileRequest& fileRequest);
-    void DisableRequestingAndFireSignalNoSpaceLeft(PackRequest::FileRequest& fileRequest);
+    void DisableRequestingAndFireSignalNoSpaceLeft(FileRequest& fileRequest) const;
     bool UpdateFileRequests();
 
     DLCManagerImpl* packManagerImpl = nullptr;
@@ -97,7 +97,7 @@ private:
 
     uint32 numOfDownloadedFile = 0;
 
-    // if this fild is false, you can check fileIndexes
+    // if this field is false, you can check fileIndexes
     // else fileIndexes maybe empty and wait initialization
     bool delayedRequest = true;
 };

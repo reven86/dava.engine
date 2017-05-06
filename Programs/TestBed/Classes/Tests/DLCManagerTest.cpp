@@ -274,7 +274,9 @@ void DLCManagerTest::WriteErrorOnDevice(const String& filePath, int32 errnoVal)
 {
     StringStream ss(logPring->GetUtf8Text());
     ss << "Error: can't write file: " << filePath << " errno: " << strerror(errnoVal) << std::endl;
-    logPring->SetUtf8Text(ss.str());
+    std::string str = ss.str();
+    logPring->SetUtf8Text(str);
+    Logger::Info("%s", str.c_str());
     DVASSERT(false);
 }
 
@@ -296,7 +298,10 @@ void DLCManagerTest::OnRequestUpdated(const DAVA::DLCManager::IRequest& request)
         ss << "\n total:" << (100.0 * p.alreadyDownloaded) / p.total << '%';
     }
 
-    packNameLoading->SetUtf8Text(ss.str());
+    std::string str = ss.str();
+    packNameLoading->SetUtf8Text(str);
+
+    Logger::Info("DLC %s", str.c_str());
 
     auto rect = redControl->GetRect();
     rect.dx = rect.dx * progress;
@@ -305,11 +310,10 @@ void DLCManagerTest::OnRequestUpdated(const DAVA::DLCManager::IRequest& request)
 
 void DLCManagerTest::OnNetworkReady(bool isReady)
 {
-    // To visualise on MacOS DownloadManager::Instance()->SetDownloadSpeedLimit(100000);
+    // To visualize on MacOS DownloadManager::Instance()->SetDownloadSpeedLimit(100000);
     // on MacOS slowly connect and then fast downloading
     std::stringstream ss;
-    const char* boolName = isReady ? "True" : "False";
-    ss << "nerwork ready = " << boolName;
+    ss << "network ready = " << std::boolalpha << isReady;
     Logger::Info("%s", ss.str().c_str());
 
     packNameLoading->SetUtf8Text("loading: " + ss.str());
