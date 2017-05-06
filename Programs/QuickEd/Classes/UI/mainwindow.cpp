@@ -57,7 +57,6 @@ MainWindow::MainWindow(DAVA::TArc::ContextAccessor* accessor, QWidget* parent)
 
     PreferencesStorage::Instance()->RegisterPreferences(this);
 
-    connect(ui->packageWidget, &PackageWidget::CurrentIndexChanged, ui->propertiesWidget, &PropertiesWidget::UpdateModel);
     connect(projectView, &ProjectView::ProjectChanged, ui->propertiesWidget, &PropertiesWidget::SetProject);
 
     qApp->installEventFilter(this);

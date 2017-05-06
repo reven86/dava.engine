@@ -14,6 +14,14 @@ class UIScreen;
 class UIScreenTransition;
 class UILayoutSystemListener;
 
+class UILayoutSystemListener
+{
+public:
+    virtual ~UILayoutSystemListener() = default;
+
+    virtual void OnControlLayouted(UIControl* control) = 0;
+};
+
 class UILayoutSystem : public UISystem
 {
 public:
