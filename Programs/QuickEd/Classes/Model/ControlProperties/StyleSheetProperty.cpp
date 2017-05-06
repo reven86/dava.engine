@@ -11,17 +11,14 @@
 
 using namespace DAVA;
 
-class UIStyleSheetPropertyWrapper
-: public DAVA::UIStyleSheetProperty
-  ,
-  public DAVA::BaseObject
+class UIStyleSheetPropertyWrapper : public BaseObject, public UIStyleSheetProperty
 {
     DAVA_VIRTUAL_REFLECTION_IN_PLACE(UIStyleSheetPropertyWrapper, BaseObject)
     {
         ReflectionRegistrator<UIStyleSheetPropertyWrapper>::Begin()
-        .Field("transition", &UIStyleSheetPropertyWrapper::transition)
-        .Field("transitionTime", &UIStyleSheetPropertyWrapper::transitionTime)
-        .Field("transitionFunction", &UIStyleSheetPropertyWrapper::transitionFunction)
+        .Field("transition", static_cast<bool UIStyleSheetPropertyWrapper::*>(&UIStyleSheetPropertyWrapper::transition))
+        .Field("transitionTime", static_cast<float32 UIStyleSheetPropertyWrapper::*>(&UIStyleSheetProperty::transitionTime))
+        .Field("transitionFunction", static_cast<Interpolation::FuncType UIStyleSheetPropertyWrapper::*>(&UIStyleSheetPropertyWrapper::transitionFunction))
         [
         M::EnumT<Interpolation::FuncType>()
         ]
@@ -29,8 +26,8 @@ class UIStyleSheetPropertyWrapper
     }
 
 public:
-    UIStyleSheetPropertyWrapper(const DAVA::UIStyleSheetProperty& src)
-        : DAVA::UIStyleSheetProperty(src)
+    UIStyleSheetPropertyWrapper(const UIStyleSheetProperty& src)
+        : UIStyleSheetProperty(src)
     {
     }
 };
