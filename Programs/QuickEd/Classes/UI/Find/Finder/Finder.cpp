@@ -67,7 +67,7 @@ void Finder::Process(const PackageNode* package, const SortedControlNodeSet& con
     PackageNodeInformation packageInfo(package, UIPackage::CURRENT_VERSION);
 
     FindFilter::ePackageStatus status = filter->AcceptPackage(&packageInfo);
-    if (status != FindFilter::PACKAGE_NOT_INTERESED)
+    if (status != FindFilter::PACKAGE_NOT_INTERESTED)
     {
         currentItem = FindItem(packageInfo.GetPath());
 
@@ -109,7 +109,7 @@ void Finder::CollectControls(FindItem& currentItem, const FindFilter& filter, co
 void Finder::ProcessPackage(FindItem& currentItem, const PackageInformation* package)
 {
     FindFilter::ePackageStatus status = filter->AcceptPackage(package);
-    if (status != FindFilter::PACKAGE_NOT_INTERESED)
+    if (status != FindFilter::PACKAGE_NOT_INTERESTED)
     {
         currentItem = FindItem(package->GetPath());
 

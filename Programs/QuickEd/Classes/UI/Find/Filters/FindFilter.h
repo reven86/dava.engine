@@ -8,7 +8,7 @@ class FindFilter
 public:
     enum ePackageStatus
     {
-        PACKAGE_NOT_INTERESED,
+        PACKAGE_NOT_INTERESTED,
         PACKAGE_CAN_ACCEPT_CONTROLS,
         PACKAGE_FOUND
     };

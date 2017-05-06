@@ -17,9 +17,9 @@ FindFilter::ePackageStatus CompositeFilter::AcceptPackage(const PackageInformati
     for (const std::shared_ptr<FindFilter>& filter : filters)
     {
         ePackageStatus status = filter->AcceptPackage(package);
-        if (status == PACKAGE_NOT_INTERESED)
+        if (status == PACKAGE_NOT_INTERESTED)
         {
-            return PACKAGE_NOT_INTERESED;
+            return PACKAGE_NOT_INTERESTED;
         }
         if (status == PACKAGE_CAN_ACCEPT_CONTROLS)
         {

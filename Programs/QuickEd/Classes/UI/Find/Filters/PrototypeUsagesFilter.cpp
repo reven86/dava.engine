@@ -28,7 +28,7 @@ FindFilter::ePackageStatus PrototypeUsagesFilter::AcceptPackage(const PackageInf
         }
     });
 
-    return imports ? PACKAGE_CAN_ACCEPT_CONTROLS : PACKAGE_NOT_INTERESED;
+    return imports ? PACKAGE_CAN_ACCEPT_CONTROLS : PACKAGE_NOT_INTERESTED;
 }
 
 bool PrototypeUsagesFilter::AcceptControl(const ControlInformation* control) const

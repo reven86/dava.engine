@@ -20,7 +20,7 @@ PackageVersionFilter::PackageVersionFilter(DAVA::int32 version_, eCmpType cmpTyp
 
 FindFilter::ePackageStatus PackageVersionFilter::AcceptPackage(const PackageInformation* package) const
 {
-    return CmpVersion(package->GetVersion()) ? PACKAGE_FOUND : PACKAGE_NOT_INTERESED;
+    return CmpVersion(package->GetVersion()) ? PACKAGE_FOUND : PACKAGE_NOT_INTERESTED;
 }
 
 bool PackageVersionFilter::AcceptControl(const ControlInformation* control) const

@@ -234,7 +234,7 @@ const ReflectedType* QuickEdPackageBuilder::BeginControlWithPath(const String& p
                 RefPtr<ControlNode> newChild(ControlNode::CreateFromControl(fakeControl.Get()));
 
                 results.AddResult(Result(Result::RESULT_ERROR, Format("Access to removed control by path '%s'", pathName.c_str())));
-                newChild->AddResult(Result(Result::RESULT_ERROR, Format("Control was removed in prototype")));
+                newChild->AddResult(Result(Result::RESULT_ERROR, "Control was removed in prototype"));
                 control->Add(newChild.Get());
                 child = newChild.Get();
             }

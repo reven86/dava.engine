@@ -76,7 +76,7 @@ inline bool ResultList::HasErrors() const
     return hasErrors;
 }
 
-bool ResultList::HasWarnings() const
+inline bool ResultList::HasWarnings() const
 {
     return hasWarnings;
 }
