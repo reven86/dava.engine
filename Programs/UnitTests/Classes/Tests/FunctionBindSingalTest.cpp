@@ -154,13 +154,21 @@ struct MindChangingClass
     MindChangingClass(Signal<>& sig)
         : signal(sig)
     {
-        id = signal.Connect(this, [this] { Tick(); });
+        id = signal.Connect(this, &MindChangingClass::Tik);
+        signal.Connect(this, &MindChangingClass::Tak);
+        signal.Connect(this, &MindChangingClass::Tak);
     }
 
-    void Tick()
+    void Tik()
     {
         count++;
         signal.Disconnect(id);
+    }
+
+    void Tak()
+    {
+        count++;
+        signal.Disconnect(this);
     }
 
     uint32 count = 0;
@@ -575,16 +583,30 @@ DAVA_TESTCLASS (FunctionBindSignalTest)
         // check disconnection correctness during signal emission
         {
             Signal<> signal;
+            int localCount = 0;
+
+            signal.Connect(this, [&localCount]() { localCount++; });
+            signal.Connect([&localCount]() { localCount++; });
+
             MindChangingClass mco(signal);
+
+            signal.Connect([&localCount]() { localCount++; });
+            signal.Connect(this, [&localCount]() { localCount++; });
+
             TEST_VERIFY(mco.count == 0);
 
             // increment count in signal handler
             signal.Emit();
-            TEST_VERIFY(mco.count == 1);
+            TEST_VERIFY(mco.count == 2);
+            TEST_VERIFY(localCount == 4);
+
+            signal.Disconnect(this);
+            localCount = 0;
 
             // second emission, mco is not connected to the signal, count isn't changed
             signal.Emit();
-            TEST_VERIFY(mco.count == 1);
+            TEST_VERIFY(mco.count == 2);
+            TEST_VERIFY(localCount == 2);
         }
     }
 };
