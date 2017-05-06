@@ -43,7 +43,7 @@ ComponentPropertiesSection::ComponentPropertiesSection(DAVA::UIControl* control_
         {
             String name = field.key.Get<String>();
             const IntrospectionProperty* sourceProp = sourceSection == nullptr ? nullptr : sourceSection->FindChildPropertyByName(name);
-            IntrospectionProperty* prop = new IntrospectionProperty(component, type_, name, field.ref, sourceProp, cloneType);
+            IntrospectionProperty* prop = IntrospectionProperty::Create(component, type_, name, field.ref, sourceProp, cloneType);
             AddProperty(prop);
             SafeRelease(prop);
         }
@@ -59,10 +59,10 @@ ComponentPropertiesSection::~ComponentPropertiesSection()
 
 bool ComponentPropertiesSection::IsHiddenComponent(UIComponent::eType type)
 {
-    return
-    type == UIComponent::LAYOUT_ISOLATION_COMPONENT ||
-    type == UIComponent::LAYOUT_SOURCE_RECT_COMPONENT ||
-    type == UIComponent::SCROLL_COMPONENT;
+    return (type == UIComponent::LAYOUT_ISOLATION_COMPONENT ||
+            type == UIComponent::LAYOUT_SOURCE_RECT_COMPONENT ||
+            type == UIComponent::SCROLL_COMPONENT ||
+            type == UIComponent::RICH_CONTENT_OBJECT_COMPONENT);
 }
 
 UIComponent* ComponentPropertiesSection::GetComponent() const
