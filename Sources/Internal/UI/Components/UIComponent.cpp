@@ -17,6 +17,8 @@
 #include "UI/Layouts/UILinearLayoutComponent.h"
 #include "UI/Layouts/UISizePolicyComponent.h"
 #include "UI/Render/UISceneComponent.h"
+#include "UI/RichContent/UIRichContentComponent.h"
+#include "UI/RichContent/UIRichContentObjectComponent.h"
 #include "UI/Scroll/UIScrollBarDelegateComponent.h"
 #include "UI/Scroll/UIScrollComponent.h"
 #include "UI/Sound/UISoundComponent.h"
@@ -122,6 +124,12 @@ UIComponent* UIComponent::CreateByType(uint32 componentType)
 
     case CUSTOM_UPDATE_DELTA_COMPONENT:
         return new UICustomUpdateDeltaComponent();
+
+    case RICH_CONTENT_COMPONENT:
+        return new UIRichContentComponent();
+
+    case RICH_CONTENT_OBJECT_COMPONENT:
+        return new UIRichContentObjectComponent();
 
     case SCENE_COMPONENT:
         return new UISceneComponent();

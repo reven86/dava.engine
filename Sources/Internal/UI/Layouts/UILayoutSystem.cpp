@@ -96,15 +96,25 @@ void UILayoutSystem::ProcessControl(UIControl* control)
     bool positionDirty = control->IsLayoutPositionDirty();
     control->ResetLayoutDirty();
 
-    if (layoutDirty || (orderDirty && HaveToLayoutAfterReorder(control)) || (positionDirty && control->GetComponent(UIComponent::LAYOUT_SOURCE_RECT_COMPONENT)))
+    if (layoutDirty || (orderDirty && HaveToLayoutAfterReorder(control)) || (positionDirty && control->GetParent() && control->GetParent()->GetComponent(UIComponent::LAYOUT_SOURCE_RECT_COMPONENT)))
     {
         UIControl* container = FindNotDependentOnChildrenControl(control);
         ApplyLayout(container);
+
+        if (listener != nullptr)
+        {
+            listener->OnControlLayouted(container);
+        }
     }
     else if (positionDirty && HaveToLayoutAfterReposition(control))
     {
         UIControl* container = control->GetParent();
         ApplyLayoutNonRecursive(container);
+
+        if (listener != nullptr)
+        {
+            listener->OnControlLayouted(container);
+        }
     }
 }
 
@@ -151,6 +161,16 @@ void UILayoutSystem::ApplyLayoutNonRecursive(UIControl* control)
     layoutData.clear();
 }
 
+UILayoutSystemListener* UILayoutSystem::GetListener() const
+{
+    return listener;
+}
+
+void UILayoutSystem::SetListener(UILayoutSystemListener* listener_)
+{
+    listener = listener_;
+}
+
 UIControl* UILayoutSystem::FindNotDependentOnChildrenControl(UIControl* control) const
 {
     UIControl* result = control;
@@ -158,7 +178,7 @@ UIControl* UILayoutSystem::FindNotDependentOnChildrenControl(UIControl* control)
     {
         UISizePolicyComponent* sizePolicy = result->GetParent()->GetComponent<UISizePolicyComponent>();
         if ((sizePolicy != nullptr && (sizePolicy->IsDependsOnChildren(Vector2::AXIS_X) || sizePolicy->IsDependsOnChildren(Vector2::AXIS_Y))) ||
-            result->GetComponent(UIComponent::LAYOUT_SOURCE_RECT_COMPONENT) != nullptr)
+            result->GetParent()->GetComponent(UIComponent::LAYOUT_SOURCE_RECT_COMPONENT) != nullptr)
         {
             result = result->GetParent();
         }

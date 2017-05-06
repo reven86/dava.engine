@@ -15,6 +15,14 @@ class UIControl;
 class UIScreen;
 class UIScreenTransition;
 
+class UILayoutSystemListener
+{
+public:
+    virtual ~UILayoutSystemListener() = default;
+
+    virtual void OnControlLayouted(UIControl* control) = 0;
+};
+
 class UILayoutSystem : public UISystem
 {
 public:
@@ -33,6 +41,9 @@ public:
 
     void SetDirty();
     void CheckDirty();
+
+    UILayoutSystemListener* GetListener() const;
+    void SetListener(UILayoutSystemListener* listener);
 
     void ManualApplyLayout(UIControl* control); //DON'T USE IT!
 
@@ -68,6 +79,8 @@ private:
     RefPtr<UIScreen> currentScreen;
     RefPtr<UIControl> popupContainer;
     RefPtr<UIScreenTransition> currentScreenTransition;
+
+    UILayoutSystemListener* listener = nullptr;
 
     friend UILayoutSystemTest;
 };
