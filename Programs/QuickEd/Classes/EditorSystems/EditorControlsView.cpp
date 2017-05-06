@@ -17,6 +17,7 @@
 #include <Base/Introspection.h>
 #include <UI/UIControl.h>
 #include <UI/UIControlSystem.h>
+#include <UI/Layouts/UILayoutSystem.h>
 #include <Base/BaseTypes.h>
 
 using namespace DAVA;
@@ -394,21 +395,14 @@ EditorControlsView::EditorControlsView(UIControl* canvasParent_, EditorSystemsMa
 
     InitFieldBinder();
 
-    UIControlSystem::Instance()->GetLayoutSystem()->SetListener(this);
+    UIControlSystem::Instance()->GetLayoutSystem()->AddListener(this);
 }
 
 EditorControlsView::~EditorControlsView()
 {
     canvasParent->RemoveControl(controlsCanvas.Get());
 
-    if (UIControlSystem::Instance()->GetLayoutSystem()->GetListener() == this)
-    {
-        UIControlSystem::Instance()->GetLayoutSystem()->SetListener(nullptr);
-    }
-    else
-    {
-        DVASSERT(false);
-    }
+    UIControlSystem::Instance()->GetLayoutSystem()->RemoveListener(this);
 }
 
 void EditorControlsView::InitFieldBinder()
