@@ -360,6 +360,11 @@ DAVA::ResultList ProjectData::Parse(const DAVA::FilePath& projectFile, const Yam
     const YamlNode* gfxDirsNode = projectDataNode->Get("GfxDirectories");
     if (gfxDirsNode != nullptr)
     {
+        if (gfxDirsNode->GetCount() > 0)
+        {
+            gfxDirectories.clear();
+        }
+
         for (uint32 index = 0; index < gfxDirsNode->GetCount(); ++index)
         {
             const YamlNode* gfxDirNode = gfxDirsNode->Get(index);
