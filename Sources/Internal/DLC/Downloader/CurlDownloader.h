@@ -18,6 +18,7 @@ class CurlDownloader final : public Downloader
 public:
     CurlDownloader();
     virtual ~CurlDownloader();
+
 protected:
     /**
         \brief Interrupts current download.
