@@ -525,7 +525,7 @@ void DLCDownloader::Task::FlushWriterAndReset()
 {
     if (userWriter)
     {
-        writer.release();
+        writer.release(); //-V530 user pass it by reference, just release it
     }
     else
     {
