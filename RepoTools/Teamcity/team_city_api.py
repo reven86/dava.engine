@@ -27,21 +27,28 @@ class TeamCityRequest:
             print "Unexpected error:", sys.exc_info()[0]
             raise
 
-    def run_build( self, configuration_id,  branch_name = '', properties={} ):
+    def run_build( self, configuration_id,  branch_name = '', properties={}, triggering_options=[] ):
 
         print "Launch build {} [ {} ]".format( configuration_id, branch_name )
+
+        comment = '<comment> <text>auto triggering</text> </comment>'
+
+        if triggering_options:
+            data = []
+            for key  in triggering_options:
+                data += [ '{}="true"'.format( key ) ]
+            triggering_options = '<triggeringOptions {}/>'.format( ' '.join(data) )
 
         if properties:
             data = ''
             for key, value in properties.iteritems():
                 data += '<property name="{}" value="{}"/>'.format( key, value )
-
             properties = '<properties>{}</properties>'.format(data)
 
         if branch_name:
             branch_name = ' branchName = "{}"'.format( branch_name )
 
-        parameter =  '<build{}><buildType id="{}" />{}</build>'.format(branch_name,configuration_id, properties)
+        parameter =  '<build{0}><buildType id="{1}" />{2}{3}{4}</build>'.format( branch_name, configuration_id, properties, triggering_options,comment )
 
         response = self.__request("buildQueue", parameter )
 

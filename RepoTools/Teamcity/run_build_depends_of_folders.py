@@ -58,7 +58,9 @@ def __run_build( args ):
     if args.client_brunch and args.client_brunch != '<default>':
         client_brunch = {'client_branch': args.client_brunch }
 
-    teamcity_start_result = teamcity.run_build( args.configuration_id, args.framework_brunch, client_brunch  )
+    triggering_options = [ 'queueAtTop' ]
+
+    teamcity_start_result = teamcity.run_build( args.configuration_id, args.framework_brunch, client_brunch, triggering_options  )
 
     build_status = ''
     build_status_text = ''
