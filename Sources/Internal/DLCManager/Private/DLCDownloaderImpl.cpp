@@ -181,14 +181,24 @@ static void CurlSetTimeout(DLCDownloader::Task& task, CURL* easyHandle)
 static size_t CurlDataRecvHandler(void* ptr, size_t size, size_t nmemb, void* part)
 {
     IDownloaderSubTask* subTask = static_cast<IDownloaderSubTask*>(part);
-    DVASSERT(subTask != nullptr);
-    DLCDownloader::IWriter* writer = subTask->GetIWriter();
-    DVASSERT(writer != nullptr);
+    if (subTask == nullptr)
+    {
+        DAVA_THROW(Exception, "nullptr, can't be, curl invalid call to CurlDataRecvHandler");
+    }
+    DLCDownloader::IWriter& writer = subTask->GetIWriter();
 
     size_t fullSizeToWrite = size * nmemb;
 
-    uint64 writen = writer->Save(ptr, fullSizeToWrite);
-    DVASSERT(writen == fullSizeToWrite);
+    uint64 writen = writer.Save(ptr, fullSizeToWrite);
+    if (writen != fullSizeToWrite)
+    {
+        Logger::Error("DLC can't write bytes from curl to buffer: size: %lld written_size: %lld", fullSizeToWrite, writen);
+        // curl receive more bytes or write to file or to buffer failed
+        // curl can receive more bytes if your Internet provider or HTTP server
+        // replay on your HTTP request different you ask
+        DLCDownloader::Task& task = subTask->GetTask();
+        DLCDownloader::Task::OnErrorCurlErrno(errno, task);
+    }
 
     return static_cast<size_t>(writen);
 }
@@ -336,9 +346,9 @@ struct DownloadChunkSubTask : IDownloaderSubTask
         return easy;
     }
 
-    DLCDownloader::IWriter* GetIWriter() override
+    DLCDownloader::IWriter& GetIWriter() override
     {
-        return &chankBuf;
+        return chankBuf;
     }
 
     Buffer GetBuffer() override
@@ -481,9 +491,9 @@ struct GetSizeSubTask : IDownloaderSubTask
         return easy;
     }
 
-    DLCDownloader::IWriter* GetIWriter() override
+    DLCDownloader::IWriter& GetIWriter() override
     {
-        return nullptr;
+        DAVA_THROW(Exception, "we shell never ask writer from GetSizeSubTask");
     }
 
     Buffer GetBuffer() override

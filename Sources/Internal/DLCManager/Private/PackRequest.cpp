@@ -45,10 +45,11 @@ void PackRequest::CancelCurrentsDownloads()
     {
         for (FileRequest& r : requests)
         {
-            if (r.taskId != 0)
+            if (r.taskId != nullptr)
             {
                 dm->RemoveTask(r.taskId);
                 r.taskId = nullptr;
+                r.status = LoadingPackFile; // to resume loading after update
             }
         }
     }
@@ -210,6 +211,7 @@ bool PackRequest::Update()
         if (requests.empty())
         {
             InitializeFileRequests();
+            // TODO fire signal on starting loading new pack
         }
 
         if (!IsDownloaded())
@@ -365,6 +367,9 @@ bool PackRequest::UpdateFileRequests()
                     break;
                     case DLCDownloader::TaskState::Finished:
                     {
+                        dm->RemoveTask(fileRequest.taskId);
+                        fileRequest.taskId = nullptr;
+
                         bool allGood = !status.error.errorHappened;
 
                         if (allGood)
@@ -376,18 +381,34 @@ bool PackRequest::UpdateFileRequests()
                         }
                         else
                         {
-                            String err = status.error.errStr;
                             std::ostream& out = packManagerImpl->GetLog();
 
-                            out << "can't download file: "
-                                << dstPath
-                                << " cause: " << err << std::endl;
+                            out << "can't download file: " << dstPath;
 
                             if (status.error.fileErrno != 0)
                             {
+                                out << " I/O error: " << status.error.errStr << std::endl;
                                 DisableRequestingAndFireSignalNoSpaceLeft(fileRequest);
-                                return false;
+                                return true;
                             }
+
+                            if (status.error.httpCode >= 400)
+                            {
+                                out << " httpCode error(" << status.error.httpCode << "): " << status.error.errStr << std::endl;
+                            }
+
+                            if (status.error.curlErr != 0)
+                            {
+                                out << " curl easy error(" << status.error.curlErr << "): " << status.error.errStr << std::endl;
+                            }
+
+                            if (status.error.curlMErr != 0)
+                            {
+                                out << " curl multi error(" << status.error.curlMErr << "): " << status.error.errStr << std::endl;
+                            }
+
+                            DeleteJustDownloadedFileAndStartAgain(fileRequest);
+                            return false;
                         }
                     }
                     break;

@@ -33,7 +33,7 @@ struct IDownloaderSubTask
     virtual void OnDone(CURLMsg* msg) = 0;
     virtual DLCDownloader::Task& GetTask() = 0;
     virtual CURL* GetEasyHandle() = 0;
-    virtual DLCDownloader::IWriter* GetIWriter() = 0;
+    virtual DLCDownloader::IWriter& GetIWriter() = 0;
     virtual Buffer GetBuffer() = 0;
 };
 

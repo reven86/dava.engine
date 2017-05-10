@@ -37,7 +37,6 @@ public:
 
         if (size > space)
         {
-            DVASSERT(false && "not enough buffer size");
             memcpy(current, ptr, static_cast<size_t>(space));
             current += space;
             return space;
@@ -369,7 +368,6 @@ void DLCManagerImpl::Update(float frameDelta)
 
 void DLCManagerImpl::WaitScanThreadToFinish()
 {
-    // TODO how to know scanThread - finished?
     if (scanState == ScanState::Done)
     {
         initState = InitState::MoveDeleyedRequestsToQueue;
@@ -546,7 +544,10 @@ void DLCManagerImpl::AskFooter()
 
         if (DLCDownloader::TaskState::Finished == status.state)
         {
-            bool allGood = status.error.curlErr == 0 && status.error.curlMErr == 0;
+            downloader->RemoveTask(downloadTaskId);
+            downloadTaskId = nullptr;
+
+            bool allGood = !status.error.errorHappened;
             if (allGood)
             {
                 fullSizeServerData = status.sizeTotal;
@@ -570,7 +571,6 @@ void DLCManagerImpl::AskFooter()
             }
             else
             {
-                DVASSERT(false); // TODO implement it better
                 initError = InitError::LoadingRequestFailed;
                 initErrorMsg = "failed get superpack size on server, download error: ";
                 log << initErrorMsg << std::endl;
@@ -587,7 +587,10 @@ void DLCManagerImpl::GetFooter()
 
     if (DLCDownloader::TaskState::Finished == status.state)
     {
-        bool allGood = status.error.curlErr == 0 && status.error.curlMErr == 0;
+        downloader->RemoveTask(downloadTaskId);
+        downloadTaskId = nullptr;
+
+        bool allGood = !status.error.errorHappened;
         if (allGood)
         {
             uint32 crc32 = CRC32::ForBuffer(reinterpret_cast<char*>(&initFooterOnServer.info), sizeof(initFooterOnServer.info));
@@ -637,65 +640,81 @@ void DLCManagerImpl::AskFileTable()
     log << "initState: " << ToString(initState) << std::endl;
 }
 
+void DLCManagerImpl::ReadContentAndExtractFileNames()
+{
+    uint64 fileSize = 0;
+    FileSystem* fs = FileSystem::Instance();
+
+    fs->GetFileSize(localCacheFileTable, fileSize);
+
+    buffer.resize(static_cast<size_t>(fileSize));
+
+    {
+        ScopedPtr<File> f(File::Create(localCacheFileTable, File::OPEN | File::READ));
+        f->Read(&buffer[0], static_cast<uint32>(buffer.size()));
+    }
+
+    uint32 crc32 = CRC32::ForBuffer(&buffer[0], buffer.size());
+    if (crc32 != initFooterOnServer.info.filesTableCrc32)
+    {
+        const char* err = "FileTable not match crc32";
+        Logger::Error("%s", err);
+        DAVA_THROW(DAVA::Exception, err);
+    }
+
+    uncompressedFileNames.clear();
+    PackArchive::ExtractFileTableData(initFooterOnServer,
+                                      buffer,
+                                      uncompressedFileNames,
+                                      usedPackFile.filesTable);
+
+    // fill fileNamesIndexes
+    startFileNameIndexesInUncompressedNames.clear();
+    startFileNameIndexesInUncompressedNames.reserve(usedPackFile.filesTable.data.files.size());
+    startFileNameIndexesInUncompressedNames.push_back(0); // first name, and skip last '\0' char
+    for (uint32 index = 0, last = static_cast<uint32>(uncompressedFileNames.size()) - 1;
+         index < last; ++index)
+    {
+        if (uncompressedFileNames[index] == '\0')
+        {
+            startFileNameIndexesInUncompressedNames.push_back(index + 1);
+        }
+    }
+
+    initState = InitState::CalculateLocalDBHashAndCompare;
+    log << "initState: " << ToString(initState) << std::endl;
+}
+
 void DLCManagerImpl::GetFileTable()
 {
     //Logger::FrameworkDebug("pack manager get_file_table");
 
-    DLCDownloader::TaskStatus status = downloader->GetTaskStatus(downloadTaskId);
+    DLCDownloader::TaskStatus status;
 
-    if (DLCDownloader::TaskState::Finished == status.state)
+    if (downloadTaskId != nullptr)
     {
-        bool allGood = status.error.curlErr == 0 && status.error.curlMErr == 0;
-        if (allGood)
+        status = downloader->GetTaskStatus(downloadTaskId);
+        if (DLCDownloader::TaskState::Finished == status.state)
         {
-            uint64 fileSize = 0;
-            FileSystem* fs = FileSystem::Instance();
+            downloader->RemoveTask(downloadTaskId);
+            downloadTaskId = nullptr;
 
-            fs->GetFileSize(localCacheFileTable, fileSize);
-
-            buffer.resize(static_cast<size_t>(fileSize));
-
+            bool allGood = !status.error.errorHappened;
+            if (allGood)
             {
-                ScopedPtr<File> f(File::Create(localCacheFileTable, File::OPEN | File::READ));
-                f->Read(&buffer[0], static_cast<uint32>(buffer.size()));
+                ReadContentAndExtractFileNames();
             }
-
-            uint32 crc32 = CRC32::ForBuffer(&buffer[0], buffer.size());
-            if (crc32 != initFooterOnServer.info.filesTableCrc32)
+            else
             {
-                const char* err = "FileTable not match crc32";
-                Logger::Error("%s", err);
-                DAVA_THROW(DAVA::Exception, err);
+                initError = InitError::LoadingRequestFailed;
+                initErrorMsg = "failed get fileTable from server, download error: ";
             }
-
-            uncompressedFileNames.clear();
-            PackArchive::ExtractFileTableData(initFooterOnServer,
-                                              buffer,
-                                              uncompressedFileNames,
-                                              usedPackFile.filesTable);
-
-            // fill fileNamesIndexes
-            startFileNameIndexesInUncompressedNames.clear();
-            startFileNameIndexesInUncompressedNames.reserve(usedPackFile.filesTable.data.files.size());
-            startFileNameIndexesInUncompressedNames.push_back(0); // first name, and skip last '\0' char
-            for (uint32 index = 0, last = static_cast<uint32>(uncompressedFileNames.size()) - 1;
-                 index < last; ++index)
-            {
-                if (uncompressedFileNames[index] == '\0')
-                {
-                    startFileNameIndexesInUncompressedNames.push_back(index + 1);
-                }
-            }
-
-            initState = InitState::CalculateLocalDBHashAndCompare;
-            log << "initState: " << ToString(initState) << std::endl;
         }
-        else
-        {
-            DVASSERT(false);
-            initError = InitError::LoadingRequestFailed;
-            initErrorMsg = "failed get fileTable from server, download error: ";
-        }
+    }
+    else
+    {
+        // we already have file without additional request
+        ReadContentAndExtractFileNames();
     }
 }
 
@@ -759,7 +778,10 @@ void DLCManagerImpl::GetServerMeta()
 
     if (DLCDownloader::TaskState::Finished == status.state)
     {
-        bool allGood = status.error.curlErr == 0 && status.error.curlMErr == 0;
+        downloader->RemoveTask(downloadTaskId);
+        downloadTaskId = nullptr;
+
+        bool allGood = !status.error.errorHappened;
         if (allGood)
         {
             initState = InitState::UnpakingDB;
@@ -767,7 +789,6 @@ void DLCManagerImpl::GetServerMeta()
         }
         else
         {
-            DVASSERT(false);
             initError = InitError::LoadingRequestFailed;
             initErrorMsg = "failed get meta from server, download error: ";
             log << initErrorMsg << std::endl;

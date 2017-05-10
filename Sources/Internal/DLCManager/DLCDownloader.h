@@ -142,7 +142,7 @@ public:
         int32 fileErrno = 0; //!< errno value after bad (open|read|write|close|truncate) operation to file
         int32 httpCode = 0; //!< last received HTTP response code
         //!< on see http://en.cppreference.com/w/cpp/error/errno_macros
-        const char* errStr = nullptr; //!< see https://curl.haxx.se/libcurl/c/curl_multi_strerror.html
+        const char* errStr = ""; //!< see https://curl.haxx.se/libcurl/c/curl_multi_strerror.html
         //!< and https://curl.haxx.se/libcurl/c/curl_easy_strerror.html
         bool errorHappened = false; //!< flag set to true if any error
     };

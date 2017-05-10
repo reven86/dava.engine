@@ -151,6 +151,7 @@ private:
     // helper functions
     void DeleteLocalMetaFiles();
     void ContinueInitialization(float frameDelta);
+    void ReadContentAndExtractFileNames();
 
     void SwapRequestAndUpdatePointers(PackRequest* request, PackRequest* newRequest);
     void SwapPointers(PackRequest* userRequestObject, PackRequest* newRequestObject);
