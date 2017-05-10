@@ -948,6 +948,11 @@ unsigned GetFrameBuffer(const Handle* color, const TextureFace* face, const unsi
                         DVASSERT(0, "Invalid TextureFace provided");
                     }
                 }
+                /*
+                 * GFX_COMPLETE
+                 * There was another function around, called "glFramebufferTextureLayer"
+                 * In case of emergency or sudden break of rendering to cubemap levels or layers contact s_reznik
+                 */
                 GL_CALL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, target, tex->uid, level[i]));
             }
         }
