@@ -50,7 +50,6 @@ public:
 
 signals:
     void SelectedNodesChanged(const SelectedNodes& selection);
-    void CurrentIndexChanged(PackageBaseNode* package);
 
 public slots:
     void OnCopy();
@@ -71,7 +70,6 @@ public slots:
     void OnMoveRight();
     void OnBeforeProcessNodes(const SelectedNodes& nodes);
     void OnAfterProcessNodes(const SelectedNodes& nodes);
-    void OnCurrentIndexChanged(const QModelIndex& index, const QModelIndex& previous);
 
 private:
     void SetSelectedNodes(const SelectedNodes& selection);
@@ -118,7 +116,6 @@ private:
     SelectionContainer selectionContainer;
     SelectedNodes expandedNodes;
     //source indexes
-    std::list<QPersistentModelIndex> currentIndexes;
     bool lastFilterTextEmpty = true;
     PackageContext* currentContext = nullptr;
 

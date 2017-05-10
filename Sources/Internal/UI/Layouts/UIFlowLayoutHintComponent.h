@@ -3,6 +3,7 @@
 
 #include "UI/Components/UIComponent.h"
 #include "Reflection/Reflection.h"
+#include "Utils/BiDiHelper.h"
 #include <bitset>
 
 namespace DAVA
@@ -32,6 +33,9 @@ public:
     bool IsNewLineAfterThis() const;
     void SetNewLineAfterThis(bool flag);
 
+    BiDiHelper::Direction GetContentDirection() const;
+    void SetContentDirection(BiDiHelper::Direction direction);
+
 private:
     void SetLayoutDirty();
 
@@ -44,6 +48,7 @@ private:
     };
 
     std::bitset<eFlags::FLAG_COUNT> flags;
+    BiDiHelper::Direction contentDirection = BiDiHelper::Direction::NEUTRAL;
 };
 }
 

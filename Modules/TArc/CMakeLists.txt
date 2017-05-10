@@ -27,7 +27,6 @@ set(QT_RES_FILES "Sources/TArc/Controls/*.qrc")
 set(QT_UI_FILES "Sources/TArc/Controls/ColorPicker/Private/Resources/*.ui")
 
 set(FIND_PACKAGE QT5)
-set(EXCLUDE_FROM_ALL 1)
 set(PACKAGE_QT5_INCLUDES Qt5Widgets_PRIVATE_INCLUDE_DIRS)
 
 setup_main_module()
