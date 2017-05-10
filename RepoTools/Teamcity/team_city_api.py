@@ -12,10 +12,10 @@ class TeamCityRequest:
         self.__session.auth = (login, password)
         self.__base_url     = ''.join((teamcity_url, "/httpAuth/app/rest/"))
 
-    def __request(self, uri, data=None):
+    def __request(self, url, data=None):
 
         try:
-            url = ''.join((self.__base_url, uri))
+            url = ''.join((self.__base_url, url))
             request_method = 'GET'
             if data:
                 request_method = 'POST'

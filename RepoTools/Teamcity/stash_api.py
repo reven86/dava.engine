@@ -10,11 +10,12 @@ class StashRequest:
         self.__session      = requests.Session()
         self.__session.auth = (login, password)
         self.__base_url     = ''.join((stash_url, "/rest/api/{}/projects/{}/repos/{}/".format( stash_api_version, stash_project, stesh_repo_name ) ) )
+        self.__commit_url   = ''.join( stash_url, "rest/build-status/1.0/commits/" )
 
-    def __request(self, uri, data=None):
+    def __request(self, url, data=None):
 
         try:
-            url = ''.join((self.__base_url, uri))
+            url = ''.join((self.__base_url, url))
             request_method = 'GET'
             if data:
                 request_method = 'POST'
@@ -37,3 +38,22 @@ class StashRequest:
     def get_commits(self, pull_requests ):
         response = self.__request("pull-requests/{}/commits".format(pull_requests))
         return json.loads( response.content )
+
+    def report_build_status( self, state, key, name, url, commit_id, description = "" ):
+
+        build_status_dict = {
+            "state": state,
+            "key": key,
+            "name": name,
+            "url": url,
+            "description": description
+        }
+
+        try:
+            commit_url = ''.join( self.__commit_url, commit_id )
+            response = requests.post( commit_url, params=None, auth=self.__session.auth,
+                                     headers={'Content-Type': 'application/json'}, data=json.dumps( build_status_dict ) )
+
+        except Exception as e:
+            print "Unexpected error:", e
+            raise
