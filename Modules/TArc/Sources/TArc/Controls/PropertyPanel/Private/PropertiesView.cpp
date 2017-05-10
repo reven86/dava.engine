@@ -186,6 +186,16 @@ protected:
         QTreeView::mouseReleaseEvent(event);
     }
 
+    bool edit(const QModelIndex& index, EditTrigger trigger, QEvent* event) override
+    {
+        if (trigger == SelectedClicked)
+        {
+            return QTreeView::edit(index, QAbstractItemView::EditKeyPressed, event);
+        }
+
+        return QTreeView::edit(index, trigger, event);
+    }
+
 private:
     PropertiesViewDetail::PropertiesHeaderView* headerView = nullptr;
     bool isInFavoritesEdit = false;
@@ -354,7 +364,10 @@ void PropertiesView::Update(UpdatePolicy policy)
             view->setCurrentIndex(currentIndex);
         }
     }
-    view->update();
+    else
+    {
+        view->clearSelection();
+    }
 }
 
 void PropertiesView::UpdateExpanded()

@@ -91,6 +91,7 @@ ReflectedPropertyModel::ReflectedPropertyModel(WindowKey wndKey_, ContextAccesso
 
     childCreator.nodeCreated.Connect(this, &ReflectedPropertyModel::OnChildAdded);
     childCreator.nodeRemoved.Connect(this, &ReflectedPropertyModel::OnChildRemoved);
+    childCreator.dataChanged.Connect(this, &ReflectedPropertyModel::OnDataChange);
     childCreator.nodeCreated.Connect(&favoritesController, &FavoritesController::OnChildAdded);
     childCreator.nodeRemoved.Connect(&favoritesController, &FavoritesController::OnChildRemoved);
 
@@ -367,6 +368,28 @@ void ReflectedPropertyModel::OnChildRemoved(const std::shared_ptr<PropertyNode>&
     }
 }
 
+void ReflectedPropertyModel::OnDataChange(const std::shared_ptr<PropertyNode>& node)
+{
+    auto emitSignal = [&](const QModelIndex& index)
+    {
+        QModelIndex valueColumnIndex = index.sibling(index.row(), 1);
+        emit dataChanged(index, valueColumnIndex);
+    };
+    {
+        auto iter = nodeToItem.find(node);
+        DVASSERT(iter != nodeToItem.end());
+        emitSignal(MapItem(iter->second));
+    }
+
+    {
+        auto iter = nodeToFavorite.find(node);
+        if (iter != nodeToFavorite.end())
+        {
+            emitSignal(MapItem(iter->second));
+        }
+    }
+}
+
 void ReflectedPropertyModel::OnFavoritedAdded(const std::shared_ptr<PropertyNode>& parent, const std::shared_ptr<PropertyNode>& node, const DAVA::String& id, int32 sortKey, bool isRoot)
 {
     auto itemIter = nodeToItem.find(node);
@@ -387,7 +410,7 @@ void ReflectedPropertyModel::OnFavoritedAdded(const std::shared_ptr<PropertyNode
     ReflectedPropertyItem* childItem = LookUpItem(node, id, parentItem->children);
     if (childItem != nullptr)
     {
-        childItem->AddPropertyNode(node);
+        childItem->AddPropertyNode(node, FastName(id));
     }
     else
     {
@@ -398,7 +421,7 @@ void ReflectedPropertyModel::OnFavoritedAdded(const std::shared_ptr<PropertyNode
         InsertGuard guard(this, parentItem, childPosition, childPosition);
         childItem = parentItem->CreateChild(std::move(valueComponent), childPosition, node->sortKey);
         childItem->SetFavorite(isRoot);
-        childItem->AddPropertyNode(node);
+        childItem->AddPropertyNode(node, FastName(id));
     }
 
     auto newNode = nodeToFavorite.emplace(node, childItem);

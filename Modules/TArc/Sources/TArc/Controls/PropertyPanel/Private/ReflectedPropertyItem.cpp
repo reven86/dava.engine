@@ -136,9 +136,9 @@ void ReflectedPropertyItem::RemoveChildren()
     children.clear();
 }
 
-void ReflectedPropertyItem::AddPropertyNode(const std::shared_ptr<PropertyNode>& node)
+void ReflectedPropertyItem::AddPropertyNode(const std::shared_ptr<PropertyNode>& node, const FastName& id)
 {
-    value->AddPropertyNode(node);
+    value->AddPropertyNode(node, id);
 }
 
 void ReflectedPropertyItem::RemovePropertyNode(const std::shared_ptr<PropertyNode>& node)

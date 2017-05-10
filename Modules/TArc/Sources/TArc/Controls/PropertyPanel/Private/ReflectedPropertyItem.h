@@ -51,7 +51,7 @@ private:
     void RemoveChild(int32 index);
     void RemoveChildren();
 
-    void AddPropertyNode(const std::shared_ptr<PropertyNode>& node);
+    void AddPropertyNode(const std::shared_ptr<PropertyNode>& node, const FastName& id = FastName());
     void RemovePropertyNode(const std::shared_ptr<PropertyNode>& node);
     void RemovePropertyNodes();
 

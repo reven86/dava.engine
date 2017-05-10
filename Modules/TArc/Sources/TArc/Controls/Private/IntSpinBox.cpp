@@ -50,18 +50,6 @@ QValidator::State IntSpinBox::TypeSpecificValidate(const QString& input) const
         {
             return QValidator::Intermediate;
         }
-
-        if (input[1].digitValue() == 0)
-        {
-            return QValidator::Invalid;
-        }
-    }
-    else
-    {
-        if (input.size() >= 2 && input[0].digitValue() == 0)
-        {
-            return QValidator::Invalid;
-        }
     }
 
     return QValidator::Acceptable;

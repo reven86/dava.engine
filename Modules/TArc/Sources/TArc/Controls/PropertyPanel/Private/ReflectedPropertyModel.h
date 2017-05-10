@@ -84,6 +84,7 @@ private:
     friend class BaseComponentValue;
     void OnChildAdded(const std::shared_ptr<PropertyNode>& parent, const std::shared_ptr<PropertyNode>& node);
     void OnChildRemoved(const std::shared_ptr<PropertyNode>& node);
+    void OnDataChange(const std::shared_ptr<PropertyNode>& node);
 
     void OnFavoritedAdded(const std::shared_ptr<PropertyNode>& parent, const std::shared_ptr<PropertyNode>& node, const DAVA::String& id, int32 sortKey, bool isRoot);
     void OnFavoritedRemoved(const std::shared_ptr<PropertyNode>& node, bool unfavorited);

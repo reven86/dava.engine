@@ -87,7 +87,7 @@ protected:
 
     std::shared_ptr<ModifyExtension> GetModifyInterface();
 
-    void AddPropertyNode(const std::shared_ptr<PropertyNode>& node);
+    void AddPropertyNode(const std::shared_ptr<PropertyNode>& node, const FastName& id);
     void RemovePropertyNode(const std::shared_ptr<PropertyNode>& node);
     void RemovePropertyNodes();
 

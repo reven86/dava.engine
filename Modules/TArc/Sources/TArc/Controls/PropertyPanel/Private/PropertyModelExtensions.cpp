@@ -208,14 +208,6 @@ ModifyExtension::MultiCommandInterface::MultiCommandInterface(std::shared_ptr<Mo
 void ModifyExtension::MultiCommandInterface::ModifyPropertyValue(const std::shared_ptr<PropertyNode>& node, const Any& newValue)
 {
     extension->ProduceCommand(node, newValue);
-    if (node->field.ref.IsValid())
-    {
-        node->cachedValue = node->field.ref.GetValue();
-    }
-    else
-    {
-        node->cachedValue = Any();
-    }
 }
 
 void ModifyExtension::MultiCommandInterface::Exec(std::unique_ptr<DAVA::Command>&& command)

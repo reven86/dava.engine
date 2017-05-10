@@ -41,7 +41,7 @@ private:
 
     bool eventFilter(QObject* object, QEvent* event) override;
     QWidget* LookupWidget(BaseComponentValue* value, QPoint& pos, const QStyleOptionViewItem& options);
-    void ResolveFocusWidget(QWidget* w, QPoint localPos);
+    QWidget* ResolveFocusWidget(QWidget* w, QPoint localPos);
 
 private:
     ReflectedPropertyModel* model = nullptr;

@@ -299,6 +299,7 @@ DAVA::TArc::ControlProxy* KeyedArchiveEditor::CreateEditorWidget(QWidget* parent
     QToolButton* button = new QToolButton();
     button->setIcon(SharedIcon(":/QtIcons/keyplus.png"));
     button->setIconSize(toolButtonIconSize);
+    button->setToolTip("Add keyed archive member");
     button->setAutoRaise(false);
 
     connections.AddConnection(button, &QToolButton::clicked, MakeFunction(this, &KeyedArchiveEditor::OnButtonClicked));

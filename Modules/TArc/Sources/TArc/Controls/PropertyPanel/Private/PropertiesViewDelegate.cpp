@@ -178,22 +178,44 @@ bool PropertiesViewDelegate::editorEvent(QEvent* event, QAbstractItemModel* mode
     case QEvent::MouseButtonDblClick:
     case QEvent::MouseMove:
     {
-        QMouseEvent* ev = static_cast<QMouseEvent*>(event);
-
-        QPoint localPos = ev->pos();
-        QWidget* target = LookupWidget(GetComponentValue(index), localPos, option);
-
-        if (ev->type() == QEvent::MouseButtonPress)
+        BaseComponentValue* value = GetComponentValue(index);
+        if (index.column() == 1 || value->IsSpannedControl() == true)
         {
-            ResolveFocusWidget(target, localPos);
-        }
+            QMouseEvent* ev = static_cast<QMouseEvent*>(event);
 
-        if (target != nullptr)
-        {
-            QMouseEvent* newEvent = new QMouseEvent(ev->type(), localPos, ev->windowPos(), ev->screenPos(),
-                                                    ev->button(), ev->buttons(), ev->modifiers(), ev->source());
-            newEvent->setTimestamp(ev->timestamp());
-            PlatformApi::Qt::GetApplication()->postEvent(target, newEvent);
+            QPoint localPos = ev->pos();
+            QWidget* target = LookupWidget(GetComponentValue(index), localPos, option);
+
+            QWidget* focusResolvedWidget = nullptr;
+            if (ev->type() == QEvent::MouseButtonRelease ||
+                ev->type() == QEvent::MouseButtonPress)
+            {
+                focusResolvedWidget = ResolveFocusWidget(target, localPos);
+            }
+
+            if (target != nullptr)
+            {
+                QMouseEvent* newEvent = new QMouseEvent(ev->type(), localPos, ev->windowPos(), ev->screenPos(),
+                                                        ev->button(), ev->buttons(), ev->modifiers(), ev->source());
+                newEvent->setTimestamp(ev->timestamp());
+                PlatformApi::Qt::GetApplication()->postEvent(target, newEvent);
+
+                if (focusResolvedWidget != nullptr)
+                {
+                    QPointer<QLineEdit> lockLineEdit = qobject_cast<QLineEdit*>(focusResolvedWidget);
+                    if (lockLineEdit.isNull() == false)
+                    {
+                        // catch by value
+                        executor.DelayedExecute([lockLineEdit]()
+                                                {
+                                                    if (lockLineEdit.isNull() == false)
+                                                    {
+                                                        lockLineEdit->selectAll();
+                                                    }
+                                                });
+                    }
+                }
+            }
         }
     }
     default:
@@ -250,7 +272,15 @@ bool PropertiesViewDelegate::UpdateSizeHints(int section, int newWidth)
             }
             else
             {
-                ++iter;
+                BaseComponentValue* value = GetComponentValue(iter.key());
+                if (value->HasHeightForWidth() == false)
+                {
+                    iter = heightForWidthItems.erase(iter);
+                }
+                else
+                {
+                    ++iter;
+                }
             }
         }
     }
@@ -324,6 +354,7 @@ QWidget* PropertiesViewDelegate::LookupWidget(BaseComponentValue* value, QPoint&
         {
             break;
         }
+
         pos = childAt->mapFrom(target, pos);
         target = childAt;
     }
@@ -331,7 +362,7 @@ QWidget* PropertiesViewDelegate::LookupWidget(BaseComponentValue* value, QPoint&
     return target;
 }
 
-void PropertiesViewDelegate::ResolveFocusWidget(QWidget* w, QPoint localPos)
+QWidget* PropertiesViewDelegate::ResolveFocusWidget(QWidget* w, QPoint localPos)
 {
     auto shouldSetFocus = [](QWidget* w)
     {
@@ -391,6 +422,8 @@ void PropertiesViewDelegate::ResolveFocusWidget(QWidget* w, QPoint localPos)
         localPos += focusWidget->pos();
         focusWidget = focusWidget->parentWidget();
     }
+
+    return focusWidget;
 }
 
 } // namespace TArc

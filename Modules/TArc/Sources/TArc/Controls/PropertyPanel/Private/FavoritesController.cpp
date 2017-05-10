@@ -277,6 +277,7 @@ void FavoritesController::ClearFavorites()
 
     favoritedRoots.clear();
     favoritedPathes.clear();
+    subFavorited.clear();
 }
 
 int32 FavoritesController::MatchPath(const std::shared_ptr<PropertyNode>& node)

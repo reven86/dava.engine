@@ -26,6 +26,7 @@ public:
     void UnregisterExtension(const std::shared_ptr<ChildCreatorExtension>& extension);
 
     Signal<const std::shared_ptr<PropertyNode>& /*parent*/, const std::shared_ptr<PropertyNode>& /*child*/> nodeCreated;
+    Signal<const std::shared_ptr<PropertyNode>& /*node*/> dataChanged;
     Signal<const std::shared_ptr<PropertyNode>& /*child*/> nodeRemoved;
 
 private:

@@ -317,7 +317,7 @@ void EntityChildCreator::ExposeChildren(const std::shared_ptr<DAVA::TArc::Proper
 
                     DAVA::Reflection::Field f(permanentName, Reflection(ref), nullptr);
                     std::shared_ptr<PropertyNode> node = allocator->CreatePropertyNode(parent, std::move(f), static_cast<size_t>(type), PropertyNode::RealProperty);
-                    node->idPostfix = FastName(Format("%s_%u", permanentName.c_str(), componentIndex));
+                    node->idPostfix = FastName(Format("%u", componentIndex));
                     children.push_back(node);
                 }
             }

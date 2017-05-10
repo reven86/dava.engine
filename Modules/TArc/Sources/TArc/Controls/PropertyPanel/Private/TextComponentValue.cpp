@@ -122,12 +122,13 @@ DAVA::TArc::ControlProxy* MultiLineTextComponentValue::CreateEditorWidget(QWidge
 {
     Widget* w = new Widget(parent);
     QHBoxLayout* layout = new QHBoxLayout();
-    layout->setMargin(0);
-    layout->setSpacing(0);
+    layout->setMargin(1);
+    layout->setSpacing(2);
     w->SetLayout(layout);
 
     QToolButton* button = new QToolButton(w->ToWidgetCast());
     button->setIcon(SharedIcon(":/QtIcons/pencil.png"));
+    button->setToolTip("Open multiline editor");
     button->setIconSize(toolButtonIconSize);
     button->setAutoRaise(false);
     connections.AddConnection(button, &QToolButton::clicked, MakeFunction(this, &MultiLineTextComponentValue::OpenMultiLineEdit));

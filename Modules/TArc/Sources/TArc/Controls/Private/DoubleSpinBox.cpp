@@ -71,23 +71,6 @@ QValidator::State DoubleSpinBox::TypeSpecificValidate(const QString& input) cons
         {
             return QValidator::Intermediate;
         }
-
-        if (inputSize < 3)
-        {
-            return QValidator::Acceptable;
-        }
-
-        if (input[1].digitValue() == 0 && input[2] != QChar('.'))
-        {
-            return QValidator::Invalid;
-        }
-    }
-    else
-    {
-        if (input.size() >= 2 && input[0].digitValue() == 0 && input[1] != QChar('.'))
-        {
-            return QValidator::Invalid;
-        }
     }
 
     int pointIndex = input.indexOf('.');

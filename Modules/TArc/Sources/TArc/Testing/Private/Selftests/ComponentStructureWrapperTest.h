@@ -47,7 +47,7 @@ public:
 
     void Add(const std::shared_ptr<DAVA::TArc::PropertyNode>& node)
     {
-        AddPropertyNode(node);
+        AddPropertyNode(node, DAVA::FastName());
     }
 
 protected:

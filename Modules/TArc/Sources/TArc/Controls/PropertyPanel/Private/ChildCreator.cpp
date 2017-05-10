@@ -9,26 +9,33 @@ namespace TArc
 {
 namespace ChildCreatorDetail
 {
-bool IsEqual(const std::shared_ptr<PropertyNode>& n1, const std::shared_ptr<PropertyNode>& n2)
+enum EqualResult
 {
-    if (n1->propertyType == n2->propertyType &&
-        n1->idPostfix == n2->idPostfix &&
-        n1->sortKey == n2->sortKey &&
-        n1->field.ref.GetValueObject() == n2->field.ref.GetValueObject() &&
-        n1->field.key == n2->field.key)
+    FullyEqual,
+    ValueChanged,
+    NotEqual
+};
+EqualResult CheckEqualWithCacheUpdating(const std::shared_ptr<PropertyNode>& sourceChild, const std::shared_ptr<PropertyNode>& newChild)
+{
+    if (sourceChild->propertyType == newChild->propertyType &&
+        sourceChild->idPostfix == newChild->idPostfix &&
+        sourceChild->sortKey == newChild->sortKey &&
+        sourceChild->field.ref.GetValueObject() == newChild->field.ref.GetValueObject() &&
+        sourceChild->field.key == newChild->field.key)
     {
-        if (n1->cachedValue == n2->cachedValue)
+        if (sourceChild->cachedValue == newChild->cachedValue)
         {
-            return true;
+            return FullyEqual;
         }
 
-        if (n1->field.ref.HasFields() == false && n2->field.ref.HasFields() == false)
+        if (sourceChild->field.ref.HasFields() == false && newChild->field.ref.HasFields() == false)
         {
-            return true;
+            sourceChild->cachedValue = newChild->cachedValue;
+            return ValueChanged;
         }
     }
 
-    return false;
+    return NotEqual;
 }
 }
 
@@ -90,20 +97,28 @@ void ChildCreator::UpdateSubTree(const std::shared_ptr<PropertyNode>& parent)
         {
             for (size_t i = 0; i < children.size(); ++i)
             {
-                bool isEqual = false;
+                ChildCreatorDetail::EqualResult result = ChildCreatorDetail::NotEqual;
                 try
                 {
-                    isEqual = ChildCreatorDetail::IsEqual(children[i], currentChildren[i]);
+                    result = ChildCreatorDetail::CheckEqualWithCacheUpdating(currentChildren[i], children[i]);
                 }
                 catch (const Exception& e)
                 {
                     Logger::Debug(e.what());
                 }
-                if (isEqual == false)
+
+                switch (result)
                 {
+                case ChildCreatorDetail::ValueChanged:
+                    dataChanged.Emit(currentChildren[i]);
+                    break;
+                case ChildCreatorDetail::NotEqual:
                     RemoveNode(currentChildren[i]);
                     std::swap(currentChildren[i], children[i]);
                     nodeCreated.Emit(parent, currentChildren[i]);
+                    break;
+                default:
+                    break;
                 }
             }
         }

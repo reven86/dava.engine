@@ -18,6 +18,7 @@
 #include <QPainter>
 #include <QToolButton>
 #include <QPainter>
+#include <QDebug>
 
 namespace DAVA
 {
@@ -166,7 +167,17 @@ DAVA::Any BaseComponentValue::GetValue() const
 
 void BaseComponentValue::SetValue(const Any& value)
 {
-    if (IsValidValueToSet(value, GetValue()))
+    Any currentValue = nodes.front()->field.ref.GetValue();
+    for (const std::shared_ptr<const PropertyNode>& node : nodes)
+    {
+        if (currentValue != node->field.ref.GetValue())
+        {
+            currentValue = GetMultipleValue();
+            break;
+        }
+    }
+
+    if (IsValidValueToSet(value, currentValue))
     {
         GetModifyInterface()->ModifyPropertyValue(nodes, value);
     }
@@ -177,16 +188,21 @@ std::shared_ptr<ModifyExtension> BaseComponentValue::GetModifyInterface()
     return model->GetExtensionChain<ModifyExtension>();
 }
 
-void BaseComponentValue::AddPropertyNode(const std::shared_ptr<PropertyNode>& node)
+void BaseComponentValue::AddPropertyNode(const std::shared_ptr<PropertyNode>& node, const FastName& id)
 {
+    FastName resolvedId = id;
+    if (resolvedId.IsValid() == false)
+    {
+        resolvedId = FastName(node->BuildID());
+    }
     if (nodes.empty() == true)
     {
-        itemID = FastName(node->BuildID());
+        itemID = resolvedId;
     }
 #if defined(__DAVAENGINE_DEBUG__)
     else
     {
-        DVASSERT(itemID == FastName(node->BuildID()));
+        DVASSERT(itemID == resolvedId);
         DVASSERT(nodes.front()->cachedValue.GetType() == node->cachedValue.GetType());
     }
 #endif
@@ -313,6 +329,7 @@ void BaseComponentValue::CreateButtons(QLayout* layout, const M::CommandProducer
             button->setToolTip(info.tooltip);
             button->setIconSize(toolButtonIconSize);
             button->setAutoRaise(false);
+            button->setFocusPolicy(Qt::StrongFocus);
             if (cmd->OnlyForSingleSelection() && nodes.size() > 1)
             {
                 button->setEnabled(false);
