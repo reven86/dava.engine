@@ -63,7 +63,7 @@ public:
 
     bool Save() const;
 
-    static const char* projectPathPropertyName;
+    static DAVA::FastName projectPathPropertyName;
 
 private:
     friend class ProjectModule;
