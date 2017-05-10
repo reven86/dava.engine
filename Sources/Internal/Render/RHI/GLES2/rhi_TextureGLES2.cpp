@@ -921,15 +921,33 @@ unsigned GetFrameBuffer(const Handle* color, const TextureFace* face, const unsi
             }
             else
             {
-                static const GLenum textureFaceMapping[] =
+                GLenum target = GL_TEXTURE_2D;
+                if (tex->isCubeMap)
                 {
-                  GL_TEXTURE_CUBE_MAP_POSITIVE_X, GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
-                  GL_TEXTURE_CUBE_MAP_POSITIVE_Y, GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
-                  GL_TEXTURE_CUBE_MAP_POSITIVE_Z, GL_TEXTURE_CUBE_MAP_NEGATIVE_Z
-                };
-                DVASSERT(!tex->isCubeMap || (face[i] < countof(textureFaceMapping)));
-
-                GLenum target = tex->isCubeMap ? textureFaceMapping[face[i]] : GL_TEXTURE_2D;
+                    switch (face[i])
+                    {
+                    case TextureFace::TEXTURE_FACE_POSITIVE_X:
+                        target = GL_TEXTURE_CUBE_MAP_POSITIVE_X;
+                        break;
+                    case TextureFace::TEXTURE_FACE_NEGATIVE_X:
+                        target = GL_TEXTURE_CUBE_MAP_NEGATIVE_X;
+                        break;
+                    case TextureFace::TEXTURE_FACE_POSITIVE_Y:
+                        target = GL_TEXTURE_CUBE_MAP_POSITIVE_Y;
+                        break;
+                    case TextureFace::TEXTURE_FACE_NEGATIVE_Y:
+                        target = GL_TEXTURE_CUBE_MAP_NEGATIVE_Y;
+                        break;
+                    case TextureFace::TEXTURE_FACE_POSITIVE_Z:
+                        target = GL_TEXTURE_CUBE_MAP_POSITIVE_Z;
+                        break;
+                    case TextureFace::TEXTURE_FACE_NEGATIVE_Z:
+                        target = GL_TEXTURE_CUBE_MAP_NEGATIVE_Z;
+                        break;
+                    default:
+                        DVASSERT(0, "Invalid TextureFace provided");
+                    }
+                }
                 GL_CALL(glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, target, tex->uid, level[i]));
             }
         }
