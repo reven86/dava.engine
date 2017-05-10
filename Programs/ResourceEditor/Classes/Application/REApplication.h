@@ -1,6 +1,8 @@
 #pragma once
 
-#include "TArc/Core/BaseApplication.h"
+#include <TArc/Core/BaseApplication.h>
+#include <FileSystem/KeyedArchive.h>
+#include <Base/RefPtr.h>
 
 #include <QString>
 
@@ -42,9 +44,10 @@ private:
     void Cleanup() override;
 
     void RegisterEditorAnyCasts() override;
-
     bool AllowMultipleInstances() const override;
     QString GetInstanceKey() const override;
+
+    DAVA::KeyedArchive* CreateOptions() const;
 
     bool isConsoleMode = false;
     DAVA::Vector<DAVA::String> cmdLine;
@@ -53,4 +56,5 @@ private:
     // singletons. In future we probably will try to move them into special module, or completely decompose
     SettingsManager* settingsManager = nullptr;
     BEAST_PROXY_TYPE* beastProxy = nullptr;
+    mutable DAVA::RefPtr<DAVA::KeyedArchive> appOptions;
 };
