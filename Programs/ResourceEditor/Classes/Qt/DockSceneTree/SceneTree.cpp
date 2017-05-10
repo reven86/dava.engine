@@ -753,7 +753,7 @@ protected:
 
         if (selectedPath.isEmpty() == false)
         {
-            FilePath yamlPath = selectedPath.toStdString();
+            DAVA::FilePath yamlPath = selectedPath.toStdString();
             SettingsManager::SetValue(Settings::Internal_ParticleLastLoadEmitterDir, DAVA::VariantType(yamlPath.GetDirectory()));
 
             GetScene()->Exec(CreateLoadCommand(yamlPath));
