@@ -66,10 +66,10 @@ def __run_build( args ):
 
     if args.convert_to_merge_requests:
         if client_brunch and (client_brunch != '<default>' and 'from' in client_brunch):
-            client_brunch = client_brunch.replace('from', 'merge')
+            client_brunch = "refs/pull-requests/" + client_brunch.replace('from', 'merge')
 
         if framework_brunch and (framework_brunch != '<default>' and 'from' in framework_brunch):
-            framework_brunch = framework_brunch.replace('from', 'merge')
+            framework_brunch = "refs/pull-requests/" + framework_brunch.replace('from', 'merge')
 
     teamcity_start_result = teamcity.run_build( args.configuration_id, framework_brunch, client_brunch, triggering_options  )
 
