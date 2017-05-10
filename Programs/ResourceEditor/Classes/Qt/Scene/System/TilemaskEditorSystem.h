@@ -92,6 +92,7 @@ protected:
 
     void CreateMaskTexture();
     void CreateMaskFromTexture(DAVA::Texture* texture);
+    void UpdateVertexBuffer();
 
     void CreateUndoPoint();
 
