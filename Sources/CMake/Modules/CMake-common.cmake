@@ -150,6 +150,9 @@ macro( processing_mix_data )
             get_filename_component( DATA_PATH ${DATA_PATH} ABSOLUTE )
             execute_process( COMMAND ${CMAKE_COMMAND} -E make_directory ${MIX_APP_DIR}/${GROUP_PATH} )
             if( NOT ARG_NOT_DATA_COPY )
+                if( WINDOWS_UAP )
+                    execute_process( COMMAND ${CMAKE_COMMAND} -E copy_directory ${DATA_PATH} ${MIX_APP_DIR}/${GROUP_PATH} )                
+                endif()
                 ADD_CUSTOM_COMMAND( TARGET DATA_COPY_${PROJECT_NAME}  
                    COMMAND ${CMAKE_COMMAND} -E copy_directory
                    ${DATA_PATH} 

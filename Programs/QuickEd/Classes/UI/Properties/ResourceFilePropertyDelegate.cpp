@@ -148,7 +148,7 @@ void ResourceFilePropertyDelegate::OnEditingFinished()
     QWidget* editor = lineEdit->parentWidget();
     DVASSERT(editor != nullptr);
     const QString& text = lineEdit->text();
-    if (!text.isEmpty() && !IsPathValid(text))
+    if (!text.isEmpty() && !IsPathValid(text, true))
     {
         return;
     }
@@ -163,19 +163,25 @@ void ResourceFilePropertyDelegate::OnTextChanged(const QString& text)
     QString textCopy(text);
 
     QColor globalTextColor = qApp->palette().color(QPalette::Text);
-    QColor nextColor = IsPathValid(text) ? globalTextColor : Qt::red;
+    QColor nextColor = IsPathValid(text, false) ? globalTextColor : Qt::red;
     palette.setColor(QPalette::Text, nextColor);
     lineEdit->setPalette(palette);
 }
 
-bool ResourceFilePropertyDelegate::IsPathValid(const QString& path)
+bool ResourceFilePropertyDelegate::IsPathValid(const QString& path, bool allowAnyExtension)
 {
     QString fullPath = path;
-    if (!fullPath.isEmpty() && !fullPath.endsWith(resourceExtension))
-    {
-        fullPath.append(resourceExtension);
-    }
     DAVA::FilePath filePath(QStringToString(fullPath));
+
+    if (!filePath.IsEmpty())
+    {
+        String ext = filePath.GetExtension();
+        String resExt = QStringToString(resourceExtension);
+        if (ext.empty() || !allowAnyExtension)
+        {
+            filePath.ReplaceExtension(resExt);
+        }
+    }
 
     DAVA::FileSystem* fileSystem = DAVA::Engine::Instance()->GetContext()->fileSystem;
     return fileSystem->Exists(filePath);

@@ -47,6 +47,8 @@ def __parser_args():
     arg_parser.add_argument( '--login', required = True )
     arg_parser.add_argument( '--password', required = True )
 
+    arg_parser.add_argument('--convert_to_merge_requests' )
+
     return arg_parser.parse_args()
 
 def __run_build( args ):
@@ -58,7 +60,16 @@ def __run_build( args ):
     if args.client_brunch and args.client_brunch != '<default>':
         client_brunch = {'client_branch': args.client_brunch }
 
-    teamcity_start_result = teamcity.run_build( args.configuration_id, args.framework_brunch, client_brunch  )
+    framework_brunch = args.framework_brunch
+
+    if args.convert_to_merge_requests:
+        if client_brunch and (client_brunch != '<default>' and 'from' in client_brunch):
+            client_brunch = client_brunch.replace('from', 'merge')
+
+        if framework_brunch and (framework_brunch != '<default>' and 'from' in framework_brunch):
+            framework_brunch = framework_brunch.replace('from', 'merge')
+
+    teamcity_start_result = teamcity.run_build( args.configuration_id, framework_brunch, client_brunch  )
 
     build_status = ''
     build_status_text = ''
@@ -108,7 +119,6 @@ def __check_depends_of_folders( args ):
                                     args.login,
                                     args.password )
 
-
     brunch_info = stash.get_pull_requests_info( framework_brunch )
 
     merged_brunch = brunch_info['toRef']['id'].split('/').pop()
@@ -124,8 +134,11 @@ def __check_depends_of_folders( args ):
 
     for path_dep_folder in depends_folders:
         for path_brunch_folder in brunch_changes:
-            path =  path_brunch_folder['path']['parent']
-            if path_dep_folder in path:
+            path                =  path_brunch_folder['path']['parent']
+            path                = os.path.realpath( path )
+            realpath_dep_folder = os.path.realpath(path_dep_folder)
+
+            if realpath_dep_folder in path:
                 __print( "Build is required because changes affect folders {}".format( depends_folders ) )
                 return True
 
@@ -135,6 +148,10 @@ def __check_depends_of_folders( args ):
 
     if args.run_command != None :
         __print( "Command [{}] it is possible not to launch".format( args.run_command ) )
+
+    if args.configuration_id == None and args.run_command != None :
+        __print( "Build it is possible not to launch" )
+
 
     return False
 
