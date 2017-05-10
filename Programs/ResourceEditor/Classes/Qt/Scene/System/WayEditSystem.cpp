@@ -203,9 +203,12 @@ void WayEditSystem::PerformRemoving(DAVA::Entity* entityToRemove)
     {
         for (auto& srcNode : edgesToRemovedPoint)
         {
-            PathComponent::Edge* newEdge = new PathComponent::Edge(true);
-            newEdge->destination = inaccessiblePoint;
-            sceneEditor->Exec(std::make_unique<AddEdgeCommand>(sceneEditor, path, srcNode.first, newEdge));
+            if (srcNode.first != inaccessiblePoint)
+            {
+                PathComponent::Edge* newEdge = new PathComponent::Edge(true);
+                newEdge->destination = inaccessiblePoint;
+                sceneEditor->Exec(std::make_unique<AddEdgeCommand>(sceneEditor, path, srcNode.first, newEdge));
+            }
         }
     }
 }
@@ -471,7 +474,14 @@ void WayEditSystem::RemoveEdges(DAVA::PathComponent* path, const DAVA::Vector<DA
 
     for (auto& node : edgesToRemove)
     {
-        sceneEditor->Exec(std::make_unique<RemoveEdgeCommand>(sceneEditor, path, node.first, node.second));
+        WayEditSystemDetail::AccessibleQueryParams params;
+        params.startPoint = path->GetStartWaypoint();
+        params.destinationPoint = node.second->destination;
+        params.excludeEdge = node.second;
+        if (WayEditSystemDetail::IsAccessible(params) == true)
+        {
+            sceneEditor->Exec(std::make_unique<RemoveEdgeCommand>(sceneEditor, path, node.first, node.second));
+        }
     }
 }
 
