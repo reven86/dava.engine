@@ -86,7 +86,7 @@ public:
         if (size > space)
         {
             uint64 buffSize = end - buf;
-            Logger::Warning("DLC BufferWriter: may be memory corruption: size: %llu space: %llu buffer_size: %llu", size, space, buffSize);
+            Logger::Warning("DLC BufferWriter can't save all data: size: %llu space: %llu buffer_size: %llu", size, space, buffSize);
             memcpy(current, ptr, static_cast<size_t>(space));
             current += space;
             return space;
