@@ -3,6 +3,7 @@
 #include "Base/BaseTypes.h"
 #include "Base/Singleton.h"
 #include "Functional/Signal.h"
+#include "Concurrency/Mutex.h"
 
 #include "DownloaderCommon.h"
 

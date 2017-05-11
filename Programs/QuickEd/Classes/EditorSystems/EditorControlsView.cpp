@@ -193,7 +193,7 @@ class BackgroundController final
 {
 public:
     BackgroundController(UIControl* nestedControl);
-    ~BackgroundController() = default;
+    ~BackgroundController();
     UIControl* GetGridControl() const;
     bool IsNestedControl(const UIControl* control) const;
     void RecalculateBackgroundProperties(DAVA::UIControl* control);
@@ -231,6 +231,11 @@ BackgroundController::BackgroundController(UIControl* nestedControl_)
     positionHolderControl->AddControl(counterpoiseControl.Get());
     counterpoiseControl->AddControl(nestedControl);
     nestedControl->GetOrCreateComponent(UIComponent::LAYOUT_ISOLATION_COMPONENT);
+}
+
+BackgroundController::~BackgroundController()
+{
+    nestedControl->RemoveComponent(UIComponent::LAYOUT_ISOLATION_COMPONENT);
 }
 
 UIControl* BackgroundController::GetGridControl() const
