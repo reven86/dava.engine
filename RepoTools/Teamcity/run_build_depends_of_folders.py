@@ -184,7 +184,7 @@ def main():
         if args.configuration_id != None :
             run_build_result = __run_build( args, ['queueAtTop'] )
 
-            if args.requestStashMode == 'true':
+            if args.request_stash_mode == 'true':
                 stash.report_build_status('INPROGRESS',
                                           args.configuration_id,
                                           args.configuration_id,
@@ -198,7 +198,7 @@ def main():
         __print_teamcity_set_parameter( 'env.build_required', 'true' )
 
     else:
-        if brunch_info != None and args.requestStashMode == 'true':
+        if brunch_info != None and args.request_stash_mode == 'true':
 
             build_status = teamcity.get_build_status( args.root_configuration_id )
 
