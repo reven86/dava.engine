@@ -5,6 +5,7 @@
 #include <Base/Result.h>
 #include <Base/BaseTypes.h>
 #include <Base/RefPtr.h>
+#include <Math/Math2D.h>
 #include <FileSystem/FilePath.h>
 
 #include <QString>
@@ -62,7 +63,7 @@ public:
 
     bool Save() const;
 
-    static const char* projectPathPropertyName;
+    static DAVA::FastName projectPathPropertyName;
 
 private:
     friend class ProjectModule;

@@ -48,7 +48,7 @@ struct Dispatch
     void (*impl_QueryBuffer_Delete)(Handle buf);
     bool (*impl_QueryBuffer_IsReady)(Handle buf);
     bool (*impl_QueryBuffer_ObjectIsReady)(Handle buf, uint32 objectIndex);
-    int (*impl_QueryBuffer_Value)(Handle buf, uint32 objectIndex);
+    int32 (*impl_QueryBuffer_Value)(Handle buf, uint32 objectIndex);
 
     Handle (*impl_PerfQuery_Create)();
     void (*impl_PerfQuery_Delete)(Handle query);
@@ -67,14 +67,7 @@ struct Dispatch
     void (*impl_PipelineState_Delete)(Handle);
     Handle (*impl_PipelineState_CreateVertexConstBuffer)(Handle, uint32);
     Handle (*impl_PipelineState_CreateFragmentConstBuffer)(Handle, uint32);
-    uint32 (*impl_PipelineState_VertexConstBufferCount)(Handle);
-    uint32 (*impl_PipelineState_VertexConstCount)(Handle, uint32);
-    bool (*impl_PipelineState_GetVertexConstInfo)(Handle, uint32, uint32, ProgConstInfo*);
-    uint32 (*impl_PipelineState_FragmentConstBufferCount)(Handle);
-    uint32 (*impl_PipelineState_FragmentConstCount)(Handle, uint32);
-    bool (*impl_PipelineState_GetFragmentConstInfo)(Handle, uint32, uint32, ProgConstInfo*);
 
-    uint32 (*impl_ConstBuffer_ConstCount)(Handle);
     bool (*impl_ConstBuffer_SetConst)(Handle, uint32, uint32, const float*);
     bool (*impl_ConstBuffer_SetConst1fv)(Handle, uint32, uint32, const float*, uint32);
     void (*impl_ConstBuffer_Delete)(Handle);

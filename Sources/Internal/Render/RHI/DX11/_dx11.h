@@ -2,6 +2,7 @@
 
 #include "Base/Platform.h"
 #include "Base/BaseObject.h"
+#include "Concurrency/Mutex.h"
 #include "../Common/rhi_RingBuffer.h"
 #include "../Common/rhi_Pool.h"
 #include "../Common/rhi_Private.h"

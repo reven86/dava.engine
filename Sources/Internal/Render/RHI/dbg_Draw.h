@@ -4,7 +4,9 @@
 //
 //  externals:
 
-    #include "rhi_Public.h"
+#include "rhi_Public.h"
+#include "Math/Math2D.h"
+#include "Math/Matrix4.h"
 
 //==============================================================================
 //
