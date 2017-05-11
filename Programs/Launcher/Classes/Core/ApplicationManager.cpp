@@ -49,6 +49,8 @@ ApplicationManager::ApplicationManager(ApplicationQuitController* quitController
     , mainWindow(new MainWindow(this))
     , taskManager(new TaskManager(this))
 {
+    using namespace std::placeholders;
+
     connect(mainWindow, &MainWindow::ShowPreferences, this, &ApplicationManager::OpenPreferencesEditor);
 
     connect(mainWindow, &MainWindow::CancelClicked, taskManager, &TaskManager::Terminate);
@@ -73,6 +75,7 @@ ApplicationManager::~ApplicationManager()
     ::SavePreferences(fileManager, configDownloader, baManagerClient, configRefresher);
 
     taskManager->Terminate();
+    delete taskManager;
     delete mainWindow;
     delete configDownloader;
 }
@@ -83,6 +86,12 @@ void ApplicationManager::Start()
     Refresh();
 }
 
+void ApplicationManager::AddTask(std::unique_ptr<BaseTask>&& task, QVector<Receiver> receivers)
+{
+    taskManager->AddTask(std::move(task),
+                         receivers << mainWindow->GetReceiver() << tasksLogger.GetReceiver());
+}
+
 void ApplicationManager::InstallApplication(const InstallApplicationParams& params)
 {
     AddTask<InstallApplicationTask>(params);
@@ -91,6 +100,7 @@ void ApplicationManager::InstallApplication(const InstallApplicationParams& para
 void ApplicationManager::Refresh()
 {
     std::unique_ptr<BaseTask> task = configDownloader->CreateTask();
+
     taskManager->AddTask(std::move(task), mainWindow->GetReceiver());
 }
 

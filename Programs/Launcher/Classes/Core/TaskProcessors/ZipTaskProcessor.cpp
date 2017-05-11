@@ -15,11 +15,15 @@ ZipTaskProcessor::TaskParams::TaskParams(std::unique_ptr<BaseTask>&& task_, cons
 
 ZipTaskProcessor::TaskParams::~TaskParams()
 {
-    if (process.state() != QProcess::NotRunning)
-    {
-        process.terminate();
-    }
     notifier.NotifyFinished(task.get());
+}
+
+ZipTaskProcessor::~ZipTaskProcessor()
+{
+    if (currentTaskParams != nullptr)
+    {
+        currentTaskParams->notifier = ReceiverNotifier();
+    }
 }
 
 void ZipTaskProcessor::AddTask(std::unique_ptr<BaseTask>&& task, ReceiverNotifier notifier)
@@ -27,7 +31,7 @@ void ZipTaskProcessor::AddTask(std::unique_ptr<BaseTask>&& task, ReceiverNotifie
     Q_ASSERT(task->GetTaskType() == BaseTask::ZIP_TASK);
     currentTaskParams = std::make_unique<TaskParams>(std::move(task), notifier);
     CheckProgramState();
-    if (currentTaskParams->task->GetError().isEmpty() == false)
+    if (currentTaskParams->task->HasError())
     {
         return;
     }
@@ -41,7 +45,10 @@ void ZipTaskProcessor::AddTask(std::unique_ptr<BaseTask>&& task, ReceiverNotifie
 
 void ZipTaskProcessor::Terminate()
 {
-    currentTaskParams = nullptr;
+    if (currentTaskParams != nullptr)
+    {
+        currentTaskParams->process.kill();
+    }
 }
 
 void ZipTaskProcessor::OnErrorOccurred(QProcess::ProcessError error)
@@ -74,6 +81,7 @@ void ZipTaskProcessor::OnFinished(int exitCode, QProcess::ExitStatus exitStatus)
     if (exitCode != 0 || exitStatus != QProcess::NormalExit)
     {
         currentTaskParams->task->SetError(QObject::tr("Archiver reports about error in current archive"));
+        currentTaskParams = nullptr;
     }
     else
     {
@@ -86,7 +94,7 @@ void ZipTaskProcessor::OnFinished(int exitCode, QProcess::ExitStatus exitStatus)
         }
         else
         {
-            Terminate();
+            currentTaskParams = nullptr;
         }
     }
 }

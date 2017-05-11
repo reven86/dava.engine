@@ -11,8 +11,8 @@ class ZipTaskProcessor final : public QObject, public BaseTaskProcessor
 {
     Q_OBJECT
 
-    void AddTask(std::unique_ptr<BaseTask>&& task, ReceiverNotifier notifier) override;
-    void Terminate() override;
+public:
+    ~ZipTaskProcessor();
 
 private slots:
     void OnErrorOccurred(QProcess::ProcessError error);
@@ -25,6 +25,10 @@ private:
         LIST_ARCHIVE,
         UNPACK
     };
+
+    void AddTask(std::unique_ptr<BaseTask>&& task, ReceiverNotifier notifier) override;
+    void Terminate() override;
+
     void ApplyState();
 
     void ProcessOutputForList(const QByteArray& line);

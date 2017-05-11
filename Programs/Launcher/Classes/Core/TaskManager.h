@@ -18,6 +18,7 @@ class TaskManager : public QObject
 
 public:
     TaskManager(QObject* parent = nullptr);
+    ~TaskManager();
 
     void AddTask(std::unique_ptr<BaseTask>&& task, const Receiver& receiver);
     void AddTask(std::unique_ptr<BaseTask>&& task, const QVector<Receiver>& receivers);

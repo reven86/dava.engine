@@ -1,9 +1,11 @@
 #pragma once
 
 #include "Data/ConfigParser.h"
+#include "Core/Receiver.h"
 #include "Core/ApplicationQuitController.h"
 #include "Core/Tasks/InstallApplicationTask.h"
 #include "Core/TaskManager.h"
+#include "Core/TasksLogger.h"
 #include "Gui/MainWindow.h"
 
 #include <QUrl>
@@ -33,6 +35,8 @@ public:
 
     template <typename T, typename... Arguments>
     std::unique_ptr<BaseTask> CreateTask(Arguments&&... args);
+
+    void AddTask(std::unique_ptr<BaseTask>&& task, QVector<Receiver> receivers = QVector<Receiver>());
 
     template <typename T, typename... Arguments>
     void AddTask(Arguments&&... args);
@@ -82,10 +86,14 @@ private slots:
 private:
     QString GetApplicationDirectory_kostil(const QString& branchID, const QString& appID) const;
 
+    ReceiverNotifier receiver;
+
     QString localConfigFilePath;
 
     ConfigParser localConfig;
     ConfigParser remoteConfig;
+
+    TasksLogger tasksLogger;
 
     ApplicationQuitController* quitController = nullptr;
 
@@ -111,11 +119,11 @@ std::unique_ptr<BaseTask> ApplicationManager::CreateTask(Arguments&&... args)
 template <typename T, typename... Arguments>
 void ApplicationManager::AddTask(Arguments&&... args)
 {
-    taskManager->AddTask(std::move(CreateTask<T>(std::forward<Arguments>(args)...)), mainWindow->GetReceiver());
+    AddTask(std::move(CreateTask<T>(std::forward<Arguments>(args)...)));
 }
 
 template <typename T, typename... Arguments>
 void ApplicationManager::AddTaskWithCB(std::function<void(const BaseTask*)> onFinished, Arguments&&... args)
 {
-    taskManager->AddTask(std::move(CreateTask<T>(std::forward<Arguments>(args)...)), { mainWindow->GetReceiver(), Receiver(onFinished) });
+    AddTask(std::move(CreateTask<T>(std::forward<Arguments>(args)...)), { Receiver(onFinished) });
 }

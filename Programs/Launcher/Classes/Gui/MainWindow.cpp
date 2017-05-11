@@ -386,7 +386,7 @@ void MainWindow::OnTaskProgress(const BaseTask* /*task*/, quint32 progress)
 
 void MainWindow::OnTaskStarted(const BaseTask* task)
 {
-    ui->textEdit_launcherStatus->append(QDateTime::currentDateTime().toString() + " : " + task->GetDescription());
+    ui->textEdit_launcherStatus->append(QTime::currentTime().toString() + " : " + task->GetDescription());
 
     BaseTask::eTaskType type = task->GetTaskType();
     if (type == BaseTask::DOWNLOAD_TASK || type == BaseTask::ZIP_TASK)
@@ -402,7 +402,7 @@ void MainWindow::OnTaskFinished(const BaseTask* task)
     const QString& error = task->GetError();
     if (error.isEmpty() == false)
     {
-        ui->textEdit_launcherStatus->append(QDateTime::currentDateTime().toString() + " : " + "<span style =\"color:#aa0000;\">" + error + "</span>");
+        ui->textEdit_launcherStatus->append(QTime::currentTime().toString() + " : " + "<span style =\"color:#aa0000;\">" + error + "</span>");
     }
     BaseTask::eTaskType type = task->GetTaskType();
     if (type == BaseTask::DOWNLOAD_TASK || type == BaseTask::ZIP_TASK)

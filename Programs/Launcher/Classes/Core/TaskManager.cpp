@@ -13,6 +13,8 @@ TaskManager::TaskManager(QObject* parent)
     taskProcessors[BaseTask::ASYNC_CHAIN] = std::make_unique<AsyncChainProcessor>();
 }
 
+TaskManager::~TaskManager() = default;
+
 void TaskManager::AddTask(std::unique_ptr<BaseTask>&& task, const Receiver& receiver)
 {
     taskProcessors[task->GetTaskType()]->AddTask(std::move(task), ReceiverNotifier(receiver));
