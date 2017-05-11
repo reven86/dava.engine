@@ -73,7 +73,7 @@ bool Any::operator==(const Any& any) const
 
     if (type != any.type)
     {
-        DVASSERT(false, "Comparing Any with different types");
+        // DVASSERT(false, "Comparing Any with different types");
         return false;
     }
 
