@@ -960,8 +960,8 @@ bool WindowBackend::OnSysCommand(int sysCommand)
         return true;
     }
 
-    // If screen timeout is disabled, do not show screen saver
-    if (sysCommand == SC_SCREENSAVE && !engineBackend->IsScreenTimeoutEnabled())
+    // If screen timeout is disabled and window is visible, do not show screen saver
+    if (sysCommand == SC_SCREENSAVE && window->IsVisible() && !engineBackend->IsScreenTimeoutEnabled())
     {
         return true;
     }
