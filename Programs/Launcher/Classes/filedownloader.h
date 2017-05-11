@@ -1,5 +1,4 @@
-#ifndef FILEDOWNLOADER_H
-#define FILEDOWNLOADER_H
+#pragma once
 
 #include <QNetworkAccessManager>
 #include <QNetworkReply>
@@ -25,5 +24,3 @@ private:
     QNetworkAccessManager* networkManager = nullptr;
     QNetworkReply* currentDownload = nullptr;
 };
-
-#endif // FILEDOWNLOADER_H

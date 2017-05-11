@@ -12,5 +12,7 @@
         <file>Icons/openfolder.png</file>
         <file>Icons/undo.png</file>
         <file>Icons/copy.png</file>
+        <file>Icons/red.png</file>
+        <file>Icons/green.png</file>
     </qresource>
 </RCC>

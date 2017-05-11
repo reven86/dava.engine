@@ -1,15 +1,12 @@
-#include "mainwindow.h"
-#include "errormessenger.h"
+#include "Core/ApplicationManager.h"
+#include "Utils/ErrorMessenger.h"
 
-#include "QtHelpers/RunGuard.h"
+#include <QtHelpers/ProcessHelper.h>
+#include <QtHelpers/HelperFunctions.h>
+#include <QtHelpers/RunGuard.h>
+
 #include <QApplication>
-
-void FrameworkDidLaunched()
-{
-}
-void FrameworkWillTerminate()
-{
-}
+#include <QStyleFactory>
 
 void LogMessageHandler(QtMsgType type, const QMessageLogContext&, const QString& msg)
 {
@@ -23,17 +20,29 @@ int main(int argc, char* argv[])
     a.setApplicationName("Launcher");
     const QString appUid = "{E5C30634-7624-4D0F-9DD9-C8D52AECA3D0}";
     const QString appUidPath = QCryptographicHash::hash((appUid + QApplication::applicationDirPath()).toUtf8(), QCryptographicHash::Sha1).toHex();
-    QtHelpers::RunGuard runGuard(appUidPath);
-    if (!runGuard.TryToRun())
-        return 0;
 
-    qInstallMessageHandler(LogMessageHandler);
+    QString appPath = QtHelpers::GetApplicationFilePath();
+    ApplicationQuitController appQuitController;
+    int retCode = 0;
+    {
+        QtHelpers::RunGuard runGuard(appUidPath);
+        if (runGuard.TryToRun())
+        {
+            qInstallMessageHandler(LogMessageHandler);
 
-    a.setAttribute(Qt::AA_UseHighDpiPixmaps);
+            a.setAttribute(Qt::AA_UseHighDpiPixmaps);
 
-    MainWindow w;
-    w.show();
-    w.setWindowState(Qt::WindowActive);
+            QApplication::setStyle(QStyleFactory::create("Fusion"));
 
-    return a.exec();
+            ApplicationManager appManager(&appQuitController);
+            appManager.Start();
+
+            retCode = a.exec();
+        }
+    }
+    if (appQuitController.requireRestart)
+    {
+        ProcessHelper::OpenApplication(appPath);
+    }
+    return retCode;
 }

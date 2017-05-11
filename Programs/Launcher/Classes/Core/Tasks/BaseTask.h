@@ -1,0 +1,71 @@
+#pragma once
+
+#include <QString>
+#include <QVariant>
+
+class ApplicationManager;
+
+//task data component
+class TaskDataHolder
+{
+public:
+    void SetUserData(const QVariant& data);
+    const QVariant& GetUserData() const;
+
+private:
+    QVariant userData;
+};
+
+//task operation result component
+class OperationResult
+{
+public:
+    //OperationProcessor member functions must work in inherited class const methods
+    void SetError(const QString& error) const;
+    QString GetError() const;
+
+    bool HasError() const;
+
+private:
+    mutable QString errorText;
+};
+
+class BaseTask : public TaskDataHolder, public OperationResult
+{
+public:
+    BaseTask(ApplicationManager* appManager);
+    virtual ~BaseTask() = default;
+
+    //enum to avoid dynamic casts
+    enum eTaskType
+    {
+        RUN_TASK,
+        DOWNLOAD_TASK,
+        ZIP_TASK,
+        ASYNC_CHAIN
+    };
+
+    virtual QString GetDescription() const = 0;
+
+    eTaskType GetTaskType() const;
+
+protected:
+    eTaskType taskType = RUN_TASK;
+    ApplicationManager* appManager = nullptr;
+
+private:
+    BaseTask(const BaseTask& task) = delete;
+    BaseTask(BaseTask&& task) = delete;
+    BaseTask& operator=(const BaseTask& task) = delete;
+    BaseTask& operator=(BaseTask&& task) = delete;
+};
+
+//base class for run tasks without progress bar
+class RunTask : public BaseTask
+{
+public:
+    virtual void Run() = 0;
+
+protected:
+    RunTask(ApplicationManager* appManager);
+};

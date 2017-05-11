@@ -16,6 +16,11 @@ void ProcessHelper::RunProcess(const QString& path)
     QDesktopServices::openUrl(QUrl("file:///" + path, QUrl::TolerantMode));
 }
 
+void ProcessHelper::OpenApplication(const QString& path)
+{
+    QProcess::startDetached("open", QStringList() << "-n" << path, path);
+}
+
 #endif
 
 #ifdef Q_OS_WIN
@@ -25,6 +30,11 @@ void ProcessHelper::RunProcess(const QString& path)
     int lastPos = path.lastIndexOf('/');
     QString workingDir = path.left(lastPos);
     QProcess::startDetached(path, QStringList(), workingDir);
+}
+
+void ProcessHelper::OpenApplication(const QString& path)
+{
+    RunProcess(path);
 }
 
 namespace ProcessHelperDetails
