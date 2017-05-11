@@ -34,7 +34,7 @@ class StashRequest:
         return json.loads( response.content )
 
     def get_pull_requests_changes(self, pull_requests ):
-        response = self.__request("pull-requests/{}/changes".format(pull_requests))
+        response = self.__request("pull-requests/{}/changes?limit=99999".format(pull_requests))
         return json.loads( response.content )
 
     def get_commits(self, pull_requests ):
