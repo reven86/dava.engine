@@ -31,11 +31,13 @@ const FastName NMaterialName::VERTEXCOLOR_FRAMEBLEND_ALPHABLEND = FastName("~res
 const FastName NMaterialName::SKYOBJECT = FastName("~res:/Materials/Skyobject.material");
 const FastName NMaterialName::VERTEXCOLOR_FRAMEBLEND_OPAQUE = FastName("~res:/Materials/VertexColor.FrameBlend.Opaque.material");
 const FastName NMaterialName::PIXELLIT_ALPHATEST = FastName("~res:/Materials/PixelLit.Alphatest.material");
-const FastName NMaterialName::SPEEDTREE = FastName("~res:/Materials/SpeedTreeLeaf.material");
+const FastName NMaterialName::SPEEDTREE_ALPHATEST = FastName("~res:/Materials/SpeedTreeLeaf.Alphatest.material");
 const FastName NMaterialName::SPEEDTREE_ALPHABLEND = FastName("~res:/Materials/SpeedTreeLeaf.Alphablend.material");
+const FastName NMaterialName::SPEEDTREE_ALPHABLEND_ALPHATEST = FastName("~res:/Materials/SpeedTreeLeaf.Alphablend.Alphatest.material");
 const FastName NMaterialName::SPEEDTREE_OPAQUE = FastName("~res:/Materials/SpeedTreeLeaf.Opaque.material");
-const FastName NMaterialName::SPHERICLIT_SPEEDTREE = FastName("~res:/Materials/SphericalLitAllQualities.SpeedTreeLeaf.material");
+const FastName NMaterialName::SPHERICLIT_SPEEDTREE_ALPHATEST = FastName("~res:/Materials/SphericalLitAllQualities.SpeedTreeLeaf.Alphatest.material");
 const FastName NMaterialName::SPHERICLIT_SPEEDTREE_ALPHABLEND = FastName("~res:/Materials/SphericalLitAllQualities.SpeedTreeLeaf.Alphablend.material");
+const FastName NMaterialName::SPHERICLIT_SPEEDTREE_ALPHABLEND_ALPHATEST = FastName("~res:/Materials/SphericalLitAllQualities.SpeedTreeLeaf.Alphablend.Alphatest.material");
 const FastName NMaterialName::SPHERICLIT_TEXTURED_OPAQUE = FastName("~res:/Materials/SphericalLitAllQualities.Textured.Opaque.material");
 const FastName NMaterialName::SPHERICLIT_TEXTURED_ALPHATEST = FastName("~res:/Materials/SphericalLitAllQualities.Textured.Alphatest.material");
 const FastName NMaterialName::SPHERICLIT_TEXTURED_ALPHABLEND = FastName("~res:/Materials/SphericalLitAllQualities.Textured.Alphablend.material");
@@ -167,6 +169,7 @@ const FastName NMaterialFlagName::FLAG_VIEWSPECULAR = FastName("VIEW_SPECULAR");
 const FastName NMaterialFlagName::FLAG_FRAME_BLEND = FastName("FRAME_BLEND");
 const FastName NMaterialFlagName::FLAG_FORCE_2D_MODE = FastName("FORCE_2D_MODE");
 
+const FastName NMaterialFlagName::FLAG_ALPHATEST = FastName("ALPHATESTVALUE");
 const FastName NMaterialFlagName::FLAG_ALPHATESTVALUE = FastName("ALPHATESTVALUE");
 const FastName NMaterialFlagName::FLAG_ALPHASTEPVALUE = FastName("ALPHASTEPVALUE");
 

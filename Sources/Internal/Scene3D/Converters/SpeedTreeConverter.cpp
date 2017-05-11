@@ -11,6 +11,9 @@
 
 namespace DAVA
 {
+const FastName SpeedTreeConverter::SPEED_TREE_MATERIAL_NAME_OLD("~res:/Materials/SpeedTreeLeaf.material");
+const FastName SpeedTreeConverter::SPEED_TREE_SPERICAL_LIT_MATERIAL_NAME_OLD("~res:/Materials/SphericalLitAllQualities.SpeedTreeLeaf.material");
+
 void SpeedTreeConverter::CalculateAnimationParams(SpeedTreeObject* object)
 {
     float32 treeHeight = object->GetBoundingBox().GetSize().z;
@@ -76,7 +79,7 @@ bool SpeedTreeConverter::IsTreeLeafBatch(RenderBatch* batch)
     if (batch && batch->GetPolygonGroup())
     {
         const FastName& materialFXName = batch->GetMaterial()->GetEffectiveFXName();
-        return (materialFXName == NMaterialName::SPEEDTREE) || (materialFXName == NMaterialName::SPHERICLIT_SPEEDTREE);
+        return (materialFXName == SPEED_TREE_MATERIAL_NAME_OLD) || (materialFXName == SPEED_TREE_SPERICAL_LIT_MATERIAL_NAME_OLD);
     }
 
     return false;
@@ -315,6 +318,15 @@ void SpeedTreeConverter::ConvertPolygonSortedGroups(Entity* scene)
     {
         if (material->HasLocalFlag(FLAG_SPEED_TREE_LEAF))
             material->AddFlag(NMaterialFlagName::FLAG_SPEED_TREE_OBJECT, material->GetLocalFlagValue(FLAG_SPEED_TREE_LEAF));
+
+        if (material->HasLocalFXName())
+        {
+            if (material->GetLocalFXName() == SPEED_TREE_MATERIAL_NAME_OLD)
+                material->SetFXName(NMaterialName::SPEEDTREE_ALPHATEST);
+
+            if (material->GetLocalFXName() == SPEED_TREE_SPERICAL_LIT_MATERIAL_NAME_OLD)
+                material->SetFXName(NMaterialName::SPHERICLIT_SPEEDTREE_ALPHATEST);
+        }
     }
 
     for (SpeedTreeObject* object : uniqTreeObjects)

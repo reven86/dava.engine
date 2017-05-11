@@ -37,11 +37,13 @@ public:
     static const FastName SKYOBJECT;
     static const FastName VERTEXCOLOR_FRAMEBLEND_OPAQUE;
     static const FastName PIXELLIT_ALPHATEST;
-    static const FastName SPEEDTREE;
+    static const FastName SPEEDTREE_ALPHATEST;
     static const FastName SPEEDTREE_ALPHABLEND;
+    static const FastName SPEEDTREE_ALPHABLEND_ALPHATEST;
     static const FastName SPEEDTREE_OPAQUE;
-    static const FastName SPHERICLIT_SPEEDTREE;
+    static const FastName SPHERICLIT_SPEEDTREE_ALPHATEST;
     static const FastName SPHERICLIT_SPEEDTREE_ALPHABLEND;
+    static const FastName SPHERICLIT_SPEEDTREE_ALPHABLEND_ALPHATEST;
     static const FastName SPHERICLIT_TEXTURED_OPAQUE;
     static const FastName SPHERICLIT_TEXTURED_ALPHATEST;
     static const FastName SPHERICLIT_TEXTURED_ALPHABLEND;
@@ -185,6 +187,7 @@ public:
     static const FastName FLAG_FRAME_BLEND;
     static const FastName FLAG_FORCE_2D_MODE;
 
+    static const FastName FLAG_ALPHATEST;
     static const FastName FLAG_ALPHATESTVALUE;
     static const FastName FLAG_ALPHASTEPVALUE;
 

@@ -22,6 +22,9 @@ public:
     void ConvertPolygonSortedGroups(Entity* scene);
 
 private:
+    static const FastName SPEED_TREE_MATERIAL_NAME_OLD;
+    static const FastName SPEED_TREE_SPERICAL_LIT_MATERIAL_NAME_OLD;
+
     void ConvertingPathRecursive(Entity* scene);
     void ConvertLeafPGForAnimations(PolygonGroup* geometry);
     void ConvertTrunkForAnimations(PolygonGroup* geometry);

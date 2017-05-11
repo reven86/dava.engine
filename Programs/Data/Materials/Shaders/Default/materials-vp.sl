@@ -173,9 +173,9 @@ vertex_out
     #endif
 
     #if !SPHERICAL_LIT  //legacy for old tree lighting
-        [material][a] property float4 treeLeafColorMul = float4(1.0,1.0,1.0,1.0) ;
+        [material][a] property float4 treeLeafColorMul = float4(0.5,0.5,0.5,0.5) ;
         [material][a] property float treeLeafOcclusionOffset = 0.0 ;
-        [material][a] property float treeLeafOcclusionMul = 1.0 ;
+        [material][a] property float treeLeafOcclusionMul = 0.5 ;
     #endif
     
     #if WIND_ANIMATION

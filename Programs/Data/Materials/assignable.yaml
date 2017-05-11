@@ -33,7 +33,7 @@
  path: PixelLit.SpecularMap.Opaque.material
 -
  name: "SpeedTree Alphatest"
- path: SpeedTreeLeaf.material
+ path: SpeedTreeLeaf.Alphatest.material
 -
  name: "SpeedTree Alphablend"
  path: SpeedTreeLeaf.Alphablend.material
@@ -42,7 +42,7 @@
  path: SpeedTreeLeaf.Opaque.material
 -
  name: "SphericalLit AllQualities SpeedTree Alphatest"
- path: SphericalLitAllQualities.SpeedTreeLeaf.material
+ path: SphericalLitAllQualities.SpeedTreeLeaf.Alphatest.material
 -
  name: "SphericalLit AllQualities SpeedTree Alphablend"
  path: SphericalLitAllQualities.SpeedTreeLeaf.Alphablend.material
