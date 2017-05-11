@@ -41,17 +41,8 @@ DAVA_VIRTUAL_REFLECTION_IMPL(PathComponent)
 //== Waypoint ==
 PathComponent::Waypoint::Waypoint()
     : name(FastName(""))
+    , properties(new KeyedArchive())
 {
-    properties = NULL;
-}
-
-PathComponent::Waypoint::Waypoint(bool withProperties)
-    : name(FastName(""))
-{
-    if (withProperties == true)
-    {
-        properties = new KeyedArchive();
-    }
 }
 
 PathComponent::Waypoint::~Waypoint()
@@ -99,15 +90,8 @@ void PathComponent::Waypoint::RemoveEdge(PathComponent::Edge* edge)
 
 //== Edge ==
 PathComponent::Edge::Edge()
+    : properties(new KeyedArchive())
 {
-}
-
-PathComponent::Edge::Edge(bool withProperties)
-{
-    if (withProperties)
-    {
-        properties = new KeyedArchive();
-    }
 }
 
 PathComponent::Edge::~Edge()
@@ -248,7 +232,7 @@ void PathComponent::Serialize(KeyedArchive* archive, SerializationContext* seria
                 wpArchieve->SetFastName("name", wp->name);
                 wpArchieve->SetVector3("position", wp->position);
                 wpArchieve->SetBool("isStarting", wp->isStarting);
-                if (wp->GetProperties() && wp->GetProperties()->Count() > 0)
+                if (wp->GetProperties())
                 {
                     wpArchieve->SetArchive("properties", wp->GetProperties());
                 }
@@ -260,7 +244,7 @@ void PathComponent::Serialize(KeyedArchive* archive, SerializationContext* seria
                     Edge* edge = wp->edges[e];
 
                     KeyedArchive* edgeArchieve = new KeyedArchive();
-                    if (edge->GetProperties() && edge->GetProperties()->Count() > 0)
+                    if (edge->GetProperties())
                     {
                         edgeArchieve->SetArchive("properties", edge->GetProperties());
                     }

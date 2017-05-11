@@ -18,7 +18,6 @@ public:
     struct Waypoint : public InspBase
     {
         Waypoint();
-        Waypoint(bool withProperties);
         ~Waypoint();
         Waypoint(const Waypoint&);
 
@@ -54,7 +53,6 @@ public:
     struct Edge : public InspBase
     {
         Edge();
-        Edge(bool withProperties);
         ~Edge();
         Edge(const Edge&);
 

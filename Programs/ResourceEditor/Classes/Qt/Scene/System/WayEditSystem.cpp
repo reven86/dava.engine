@@ -205,7 +205,7 @@ void WayEditSystem::PerformRemoving(DAVA::Entity* entityToRemove)
         {
             if (srcNode.first != inaccessiblePoint)
             {
-                PathComponent::Edge* newEdge = new PathComponent::Edge(true);
+                PathComponent::Edge* newEdge = new PathComponent::Edge();
                 newEdge->destination = inaccessiblePoint;
                 sceneEditor->Exec(std::make_unique<AddEdgeCommand>(sceneEditor, path, srcNode.first, newEdge));
             }
@@ -345,7 +345,7 @@ bool WayEditSystem::Input(DAVA::UIEvent* event)
                     waypointTransform = waypointTransform * parentTransform;
 
                     int32 waypointsCount = static_cast<int32>(pathComponent->GetPoints().size());
-                    PathComponent::Waypoint* waypoint = new PathComponent::Waypoint(true);
+                    PathComponent::Waypoint* waypoint = new PathComponent::Waypoint();
                     waypoint->name = FastName(Format("Waypoint_%d", waypointsCount));
                     waypoint->SetStarting(waypointsCount == 0);
                     waypoint->position = waypointTransform.GetTranslationVector();
@@ -445,7 +445,7 @@ void WayEditSystem::AddEdges(DAVA::PathComponent* path, const DAVA::Vector<DAVA:
 
     for (DAVA::PathComponent::Waypoint* waypoint : srcPoints)
     {
-        DAVA::PathComponent::Edge* newEdge = new DAVA::PathComponent::Edge(true);
+        DAVA::PathComponent::Edge* newEdge = new DAVA::PathComponent::Edge();
         newEdge->destination = nextWaypoint;
         sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new AddEdgeCommand(sceneEditor, path, waypoint, newEdge)));
     }
@@ -619,7 +619,7 @@ void WayEditSystem::PerformAdding(DAVA::Entity* sourceEntity, DAVA::Entity* clon
 
     PathComponent* path = sourceComponent->GetPath();
 
-    clonedWayPoint = new PathComponent::Waypoint(true);
+    clonedWayPoint = new PathComponent::Waypoint();
     clonedWayPoint->name = sourceWayPoint->name;
     clonedWayPoint->position = clonedEntity->GetLocalTransform().GetTranslationVector();
     KeyedArchive* propertiesCopy = new KeyedArchive(*sourceWayPoint->GetProperties());
@@ -644,7 +644,7 @@ void WayEditSystem::PerformAdding(DAVA::Entity* sourceEntity, DAVA::Entity* clon
     // add copy of edges from source point to cloned
     for (PathComponent::Edge* edge : sourceWayPoint->edges)
     {
-        PathComponent::Edge* newEdge = new PathComponent::Edge(true);
+        PathComponent::Edge* newEdge = new PathComponent::Edge();
         newEdge->destination = edge->destination;
         auto edgeMappingIter = edgeMap.find(edge);
         DVASSERT(edgeMappingIter != edgeMap.end());
@@ -653,7 +653,7 @@ void WayEditSystem::PerformAdding(DAVA::Entity* sourceEntity, DAVA::Entity* clon
     }
 
     // add edge from source point to cloned
-    PathComponent::Edge* newEdge = new PathComponent::Edge(true);
+    PathComponent::Edge* newEdge = new PathComponent::Edge();
     newEdge->destination = clonedWayPoint;
     sceneEditor->Exec(std::make_unique<AddEdgeCommand>(sceneEditor, path, sourceWayPoint, newEdge));
 }
