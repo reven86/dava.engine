@@ -205,7 +205,7 @@ static size_t CurlDataRecvHandler(void* ptr, size_t size, size_t nmemb, void* pa
     uint64 writen = writer.Save(ptr, fullSizeToWrite);
     if (writen != fullSizeToWrite)
     {
-        Logger::Error("DLC can't write bytes from curl to buffer: size: %lld written_size: %lld", fullSizeToWrite, writen);
+        Logger::Error("DLC can't write bytes from curl to buffer: size: %llu written_size: %llu", fullSizeToWrite, writen);
         // curl receive more bytes or write to file or to buffer failed
         // curl can receive more bytes if your Internet provider or HTTP server
         // replay on your HTTP request different you ask
@@ -221,13 +221,13 @@ struct DownloadChunkSubTask : IDownloaderSubTask
     CURL* easy = nullptr;
     int64 offset;
     int64 size;
-    BufferWriter chankBuf;
+    BufferWriter chunkBuf;
 
     DownloadChunkSubTask(DLCDownloader::Task& task_, int64 offset_, int64 size_)
         : IDownloaderSubTask(task_)
         , offset(offset_)
         , size(size_)
-        , chankBuf(size_)
+        , chunkBuf(size_)
     {
         if (offset >= 0 && size <= 0)
         {
@@ -244,11 +244,6 @@ struct DownloadChunkSubTask : IDownloaderSubTask
         }
 
         const char* url = task.info.srcUrl.c_str();
-        if (url == nullptr)
-        {
-            DAVA_THROW(Exception, "URL can't be nullptr");
-        }
-
         CURLcode code = curl_easy_setopt(easy, CURLOPT_URL, url);
         if (CURLE_OK != code)
         {
@@ -296,6 +291,7 @@ struct DownloadChunkSubTask : IDownloaderSubTask
         if (CURLM_OK != codem)
         {
             DLCDownloader::Task::OnErrorCurlMulti(codem, task);
+            return;
         }
 
         task.curlStorage.Map(easy, *this);
@@ -358,12 +354,12 @@ struct DownloadChunkSubTask : IDownloaderSubTask
 
     DLCDownloader::IWriter& GetIWriter() override
     {
-        return chankBuf;
+        return chunkBuf;
     }
 
     Buffer GetBuffer() override
     {
-        return chankBuf.GetBuffer();
+        return chunkBuf.GetBuffer();
     }
 };
 
@@ -391,11 +387,6 @@ struct GetSizeSubTask : IDownloaderSubTask
         }
 
         const char* url = task.info.srcUrl.c_str();
-        if (url == nullptr)
-        {
-            DAVA_THROW(Exception, "URL is nullptr, something bad happened");
-        }
-
         code = curl_easy_setopt(easy, CURLOPT_URL, url);
         if (code != CURLE_OK)
         {
@@ -503,7 +494,7 @@ struct GetSizeSubTask : IDownloaderSubTask
 
     DLCDownloader::IWriter& GetIWriter() override
     {
-        DAVA_THROW(Exception, "we shell never ask writer from GetSizeSubTask");
+        DAVA_THROW(Exception, "we should never ask writer from GetSizeSubTask");
     }
 
     Buffer GetBuffer() override

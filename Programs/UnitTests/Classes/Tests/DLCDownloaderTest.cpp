@@ -77,8 +77,8 @@ public:
         using namespace DAVA;
         if (allwaysReturnErrorStaticHtml)
         {
-            char* content = "server return more data then we ask! (we ask last 4 bytes) buffer overflow check";
-            char* mimeType = "text/plain";
+            const char* content = "server return more data then we ask! (we ask last 4 bytes) buffer overflow check";
+            const char* mimeType = "text/plain";
             int contentLength = strlen(content);
 
             mg_printf(conn,
