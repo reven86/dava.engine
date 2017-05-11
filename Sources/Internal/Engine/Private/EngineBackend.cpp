@@ -272,7 +272,6 @@ void EngineBackend::RunConsole()
     while (!quitConsole)
     {
         OnFrameConsole();
-        Thread::Sleep(1);
     }
     OnGameLoopStopped();
     OnEngineCleanup();

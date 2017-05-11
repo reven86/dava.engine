@@ -13,6 +13,7 @@
 
 #include <TArc/Core/ContextAccessor.h>
 #include <TArc/Core/FieldBinder.h>
+#include <TArc/DataProcessing/DataContext.h>
 
 #include <Base/BaseTypes.h>
 #include <UI/UIControl.h>
@@ -368,14 +369,14 @@ HUDAreaInfo HUDSystem::GetControlArea(const Vector2& pos, eSearchOrder searchOrd
             auto findIter = hudMap.find(node);
             DVASSERT(findIter != hudMap.end(), "hud map corrupted");
             const auto& hud = findIter->second;
-            if (hud->container->GetVisibilityFlag())
+            if (hud->container->GetVisibilityFlag() && !hud->container->IsHiddenForDebug())
             {
                 HUDAreaInfo::eArea area = static_cast<HUDAreaInfo::eArea>(end + sign * i);
                 auto hudControlsIter = hud->hudControls.find(area);
                 if (hudControlsIter != hud->hudControls.end())
                 {
                     const auto& controlContainer = hudControlsIter->second;
-                    if (controlContainer->GetVisibilityFlag() && controlContainer->IsPointInside(pos))
+                    if (controlContainer->GetVisibilityFlag() && !controlContainer->IsHiddenForDebug() && controlContainer->IsPointInside(pos))
                     {
                         return HUDAreaInfo(hud->node, area);
                     }
@@ -469,7 +470,10 @@ void HUDSystem::OnDisplayStateChanged(EditorSystemsManager::eDisplayState curren
 
 bool HUDSystem::CanProcessInput(DAVA::UIEvent* currentInput) const
 {
-    if (hudControl->GetParent() == nullptr)
+    using namespace DAVA::TArc;
+
+    DataContext* activeContext = accessor->GetActiveContext();
+    if (hudControl->GetParent() == nullptr || activeContext == nullptr)
     {
         return false;
     }

@@ -96,9 +96,11 @@ void TileTexturePreviewWidget::AddTexture(DAVA::Image* previewTexture, const DAV
 
         UpdateColor(static_cast<DAVA::uint32>(images.size() - 1));
 
-        DVASSERT(itemDelegate != nullptr);
-        itemDelegate = new TileTexturePreviewWidgetItemDelegate();
-        setItemDelegate(itemDelegate);
+        if (itemDelegate == nullptr)
+        {
+            itemDelegate = new TileTexturePreviewWidgetItemDelegate();
+            setItemDelegate(itemDelegate);
+        }
     }
 
     UpdateImage(static_cast<DAVA::uint32>(images.size() - 1));
