@@ -41,7 +41,7 @@ def __parser_args():
 ##
     arg_parser.add_argument( '--configuration_id'  )
     arg_parser.add_argument( '--root_configuration_id'  )
-    arg_parser.add_argument( '--requestStashMode', default = 'false', choices=[ 'true', 'false' ] )
+    arg_parser.add_argument( '--request_stash_mode', default = 'false', choices=[ 'true', 'false' ] )
     arg_parser.add_argument( '--teamcity_freq_requests', default = 60, type = int  )
 ##
     arg_parser.add_argument( '--run_command'  )
@@ -57,10 +57,10 @@ def __run_build( args, triggering_options = [] ):
 
     if args.convert_to_merge_requests == 'true':
         if client_brunch and '/from' in client_brunch:
-            client_brunch = client_brunch.replace('from', 'merge')
+            client_brunch = client_brunch.replace('/from', '/merge')
 
-        if framework_brunch and (framework_brunch != '<default>' and 'from' in framework_brunch):
-            framework_brunch = framework_brunch.replace('from', 'merge')
+        if framework_brunch and '/from' in framework_brunch:
+            framework_brunch = framework_brunch.replace('/from', '/merge')
 
     properties = {}
     if client_brunch and client_brunch != '<default>':
