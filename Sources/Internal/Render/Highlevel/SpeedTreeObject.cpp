@@ -97,10 +97,10 @@ void SpeedTreeObject::PrepareToRender(Camera* camera)
         if (pg)
         {
             int32 meshIndexCount = pg->GetPrimitiveCount() * 3;
-            if (meshIndexCount != pg->indexCount) //sorted polygon group
+            if (meshIndexCount != pg->GetIndexCount()) //sorted polygon group
             {
                 uint32 startIndex = meshIndexCount * directionIndex;
-                DVASSERT(uint32(pg->indexCount) >= uint32(startIndex + meshIndexCount));
+                DVASSERT(uint32(pg->GetIndexCount()) >= uint32(startIndex + meshIndexCount));
 
                 batch->startIndex = startIndex;
             }

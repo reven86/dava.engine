@@ -268,7 +268,7 @@ void SpeedTreeConverter::ConvertTrunkForAnimations(PolygonGroup* pg)
     pg->BuildBuffers();
 }
 
-void SpeedTreeConverter::ConvertPolygonSortedGroups(Entity* scene)
+void SpeedTreeConverter::ConvertPolygonGroupsPivot3(Entity* scene)
 {
     uniqPGs.clear();
     materials.clear();
@@ -284,7 +284,7 @@ void SpeedTreeConverter::ConvertPolygonSortedGroups(Entity* scene)
         int32 indCount = dataSource->GetIndexCount();
 
         int32 convertedFormat = (vertexFormat & ~EVF_PIVOT_DEPRECATED) | EVF_PIVOT4;
-        ScopedPtr<PolygonGroup> pg(new PolygonGroup());
+        PolygonGroup* pg = new PolygonGroup();
         pg->AllocateData(convertedFormat, vxCount, indCount);
 
         Memcpy(pg->indexArray, dataSource->indexArray, indCount * sizeof(int16));
@@ -310,14 +310,20 @@ void SpeedTreeConverter::ConvertPolygonSortedGroups(Entity* scene)
             }
         }
 
-        convertedPGs[dataSource] = SpeedTreeObject::CreateSortedPolygonGroup(pg);
+        pg->RecalcAABBox();
+        pg->BuildBuffers();
+
+        convertedPGs[dataSource] = pg;
     }
 
     static const FastName FLAG_SPEED_TREE_LEAF("SPEED_TREE_LEAF");
     for (NMaterial* material : materials)
     {
         if (material->HasLocalFlag(FLAG_SPEED_TREE_LEAF))
+        {
             material->AddFlag(NMaterialFlagName::FLAG_SPEED_TREE_OBJECT, material->GetLocalFlagValue(FLAG_SPEED_TREE_LEAF));
+            material->RemoveFlag(FLAG_SPEED_TREE_LEAF);
+        }
 
         if (material->HasLocalFXName())
         {

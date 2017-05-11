@@ -20,7 +20,7 @@ public:
     static Vector2 CalculateVertexAngle(PolygonGroup* pg, int32 vi, float32 treeHeight);
 
     void ConvertTrees(Entity* scene);
-    void ConvertPolygonSortedGroups(Entity* scene);
+    void ConvertPolygonGroupsPivot3(Entity* scene);
 
 private:
     static const FastName SPEED_TREE_MATERIAL_NAME_OLD;
