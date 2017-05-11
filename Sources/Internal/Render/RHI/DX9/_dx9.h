@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../rhi_Type.h"
+#include "Concurrency/Mutex.h"
 
 #if !defined(WIN32_LEAN_AND_MEAN)
     #define WIN32_LEAN_AND_MEAN

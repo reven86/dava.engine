@@ -1,6 +1,7 @@
 #include "Base/Platform.h"
 #include "Logger/Logger.h"
 #include "Debug/DVAssert.h"
+#include "Concurrency/Mutex.h"
 #include "Concurrency/LockGuard.h"
 
 #ifdef __DAVAENGINE_ANDROID__

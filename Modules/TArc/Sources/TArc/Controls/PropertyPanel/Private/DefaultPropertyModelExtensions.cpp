@@ -30,7 +30,7 @@ void DefaultChildCheatorExtension::ExposeChildren(const std::shared_ptr<const Pr
         UnorderedSet<String> groups;
         ForEachField(node->field.ref, [&](Reflection::Field&& field)
                      {
-                         if (field.ref.HasMeta<M::HiddenField>() == false)
+                         if (field.ref.GetMeta<M::HiddenField>() == nullptr)
                          {
                              const M::Group* groupMeta = field.ref.GetMeta<M::Group>();
                              if (groupMeta == nullptr)
@@ -115,11 +115,11 @@ std::unique_ptr<BaseComponentValue> DefaultEditorComponentExtension::GetEditor(c
 {
     if (node->propertyType == PropertyNode::RealProperty)
     {
-        if (node->field.ref.HasMeta<M::Enum>())
+        if (nullptr != node->field.ref.GetMeta<M::Enum>())
         {
             return std::make_unique<EnumComponentValue>();
         }
-        else if (node->field.ref.HasMeta<M::Flags>())
+        else if (nullptr != node->field.ref.GetMeta<M::Flags>())
         {
             return std::make_unique<FlagsComponentValue>();
         }
