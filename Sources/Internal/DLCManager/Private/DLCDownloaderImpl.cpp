@@ -61,10 +61,16 @@ public:
 
     explicit BufferWriter(int64 size)
     {
-        DVASSERT(size > 0);
-        buf = new char[static_cast<size_t>(size)];
-        current = buf;
-        end = buf + size;
+        if (size > 0)
+        {
+            buf = new char[static_cast<uint32>(size)];
+            current = buf;
+            end = buf + size;
+        }
+        else
+        {
+            DVASSERT(false);
+        }
     }
     ~BufferWriter() override
     {
