@@ -25,6 +25,10 @@ using DAVA::Logger;
 #include <atomic>
 #include <thread>
 
+#if defined(DAVA_ACQUIRE_OGL_CONTEXT_EVERYTIME)
+#define DAVA_DISABLE_CLEAR_ON_RESET 1
+#endif
+
 namespace rhi
 {
 //==============================================================================
@@ -1179,9 +1183,11 @@ void _DX9_ResetBlock()
     }
 
     Logger::Info("[DX9 RESET] reset succeeded ...");
+#if !defined(DAVA_DISABLE_CLEAR_ON_RESET)
     //clear buffer
     DX9_CALL(_D3D9_Device->Clear(0, NULL, D3DCLEAR_TARGET, D3DCOLOR_RGBA(0, 0, 0, 1), 1.0, 0), "Clear");
     _D3D9_Device->Present(NULL, NULL, NULL, NULL);
+#endif
 
     _DX9_FramesWithRestoreAttempt = 0;
 

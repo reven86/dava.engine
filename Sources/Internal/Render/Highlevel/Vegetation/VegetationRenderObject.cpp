@@ -686,17 +686,7 @@ void VegetationRenderObject::InitHeightTextureFromHeightmap(Heightmap* heightMap
         uint32 hmSize = uint32(heightmap->Size());
         DVASSERT(IsPowerOf2(hmSize));
 
-        Texture* tx = nullptr;
-        if (rhi::TextureFormatSupported(rhi::TEXTURE_FORMAT_R4G4B4A4))
-        {
-            tx = Texture::CreateFromData(FORMAT_RGBA4444, reinterpret_cast<uint8*>(heightMap->Data()), hmSize, hmSize, false);
-        }
-        else
-        {
-            Vector<float32> texData = BuildHeightmapFloatData(heightMap);
-            tx = Texture::CreateFromData(FORMAT_R32F, reinterpret_cast<uint8*>(texData.data()), hmSize, hmSize, false);
-        }
-
+        Texture* tx = Texture::CreateFromData(FORMAT_RGBA4444, reinterpret_cast<uint8*>(heightMap->Data()), hmSize, hmSize, false);
         tx->SetWrapMode(rhi::TEXADDR_CLAMP, rhi::TEXADDR_CLAMP);
         tx->SetMinMagFilter(rhi::TEXFILTER_LINEAR, rhi::TEXFILTER_LINEAR, rhi::TEXMIPFILTER_NONE);
 
@@ -712,23 +702,6 @@ void VegetationRenderObject::InitHeightTextureFromHeightmap(Heightmap* heightMap
 
         SafeRelease(tx);
     }
-}
-
-Vector<float32> VegetationRenderObject::BuildHeightmapFloatData(Heightmap* heightMap)
-{
-    uint32 hmSize = uint32(heightMap->Size());
-    Vector<float32> texData(hmSize * hmSize);
-
-    float32* texDataPtr = texData.data();
-    for (uint32 y = 0; y < hmSize; ++y)
-    {
-        for (uint32 x = 0; x < hmSize; ++x)
-        {
-            *texDataPtr++ = float32(heightMap->GetHeight(x, y)) / Heightmap::MAX_VALUE;
-        }
-    }
-
-    return texData;
 }
 
 float32 VegetationRenderObject::SampleHeight(int16 x, int16 y)
@@ -752,8 +725,7 @@ float32 VegetationRenderObject::SampleHeight(int16 x, int16 y)
 bool VegetationRenderObject::IsHardwareCapableToRenderVegetation()
 {
     const rhi::RenderDeviceCaps& deviceCaps = rhi::DeviceCaps();
-    bool result = deviceCaps.isVertexTextureUnitsSupported && deviceCaps.is32BitIndicesSupported &&
-    (rhi::TextureFormatSupported(rhi::TEXTURE_FORMAT_R4G4B4A4, rhi::PROG_VERTEX) || rhi::TextureFormatSupported(rhi::TEXTURE_FORMAT_R32F, rhi::PROG_VERTEX));
+    bool result = deviceCaps.isVertexTextureUnitsSupported && deviceCaps.is32BitIndicesSupported && rhi::TextureFormatSupported(rhi::TEXTURE_FORMAT_R4G4B4A4, rhi::PROG_VERTEX);
 
     return result;
 }
@@ -950,15 +922,7 @@ void VegetationRenderObject::RestoreRenderData()
         uint32 hmSize = uint32(heightmap->Size());
         DVASSERT(IsPowerOf2(hmSize));
 
-        if (heightmapTexture->GetFormat() == PixelFormat::FORMAT_RGBA4444)
-        {
-            heightmapTexture->TexImage(0, hmSize, hmSize, reinterpret_cast<uint8*>(heightmap->Data()), hmSize * hmSize * sizeof(uint16), 0);
-        }
-        else
-        {
-            Vector<float32> texData = BuildHeightmapFloatData(heightmap);
-            heightmapTexture->TexImage(0, hmSize, hmSize, reinterpret_cast<uint8*>(texData.data()), hmSize * hmSize * sizeof(float32), 0);
-        }
+        heightmapTexture->TexImage(0, hmSize, hmSize, reinterpret_cast<uint8*>(heightmap->Data()), hmSize * hmSize * sizeof(uint16), 0);
     }
 }
 
