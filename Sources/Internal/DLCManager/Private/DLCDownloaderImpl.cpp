@@ -1129,7 +1129,7 @@ void DLCDownloaderImpl::DeleteTask(Task* task)
     delete task;
 }
 
-void DLCDownloader::Task::GenerateChankSubRequests(const int chankSize)
+void DLCDownloader::Task::GenerateChunkSubRequests(const int chankSize)
 {
     while (NeedHandle() && curlStorage.GetFreeHandleCount() > 0)
     {
@@ -1180,7 +1180,7 @@ void DLCDownloader::Task::SetupFullDownload()
         restSize = info.rangeSize;
         const int chankSize = curlStorage.GetChankSize();
 
-        GenerateChankSubRequests(chankSize);
+        GenerateChunkSubRequests(chankSize);
     }
     else
     {
@@ -1233,6 +1233,9 @@ void DLCDownloader::Task::SetupResumeDownload()
         // we already know size to download
         // so correct range to download only rest of file
         CorrectRangeToResumeDownloading();
+
+        const int chankSize = curlStorage.GetChankSize();
+        GenerateChunkSubRequests(chankSize);
     }
     else
     {
@@ -1324,7 +1327,7 @@ void DLCDownloaderImpl::ProcessMessagesFromMulti()
             task.OnSubTaskDone();
             if (!task.status.error.errorHappened)
             {
-                task.GenerateChankSubRequests(hints.chunkMemBuffSize);
+                task.GenerateChunkSubRequests(hints.chunkMemBuffSize);
 
                 if (task.IsDone())
                 {
@@ -1345,7 +1348,7 @@ void DLCDownloaderImpl::BalancingHandles()
         {
             if (task->NeedHandle())
             {
-                task->GenerateChankSubRequests(hints.chunkMemBuffSize);
+                task->GenerateChunkSubRequests(hints.chunkMemBuffSize);
                 if (GetFreeHandleCount() == 0)
                 {
                     break;

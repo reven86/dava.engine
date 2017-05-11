@@ -80,7 +80,7 @@ struct DLCDownloader::Task
     bool IsDone() const;
     bool NeedHandle() const;
     void OnSubTaskDone();
-    void GenerateChankSubRequests(const int chankSize);
+    void GenerateChunkSubRequests(const int chankSize);
     void SetupFullDownload();
     void CorrectRangeToResumeDownloading();
     void SetupResumeDownload();
