@@ -34,12 +34,19 @@ void CurlGlobalInit()
 void CurlGlobalDeinit()
 {
     LockGuard<Mutex> lock(curlInitializeMut);
-    --counterCurlInitialization;
+    if (counterCurlInitialization > 0)
+    {
+        --counterCurlInitialization;
+    }
+    else
+    {
+        DVASSERT(counterCurlInitialization >= 0);
+    }
+
     if (counterCurlInitialization == 0)
     {
         curl_global_cleanup();
     }
-    DVASSERT(counterCurlInitialization >= 0);
 }
 
 DLCDownloader::~DLCDownloader() = default;
