@@ -40,7 +40,7 @@ def __parser_args():
     arg_parser.add_argument( '--check_folders', required = True  )
 ##
     arg_parser.add_argument( '--configuration_id'  )
-    arg_parser.add_argument( '--root_build_url'  )
+    arg_parser.add_argument( '--root_configuration_id'  )
     arg_parser.add_argument( '--requestStashMode', default = 'false', choices=[ 'true', 'false' ] )
     arg_parser.add_argument( '--teamcity_freq_requests', default = 60, type = int  )
 ##
@@ -199,10 +199,15 @@ def main():
 
     else:
         if brunch_info != None and args.requestStashMode == 'true':
+
+            build_status = teamcity.get_build_status( args.root_configuration_id )
+
+            root_build_url = build_status['webUrl']
+
             stash.report_build_status('SUCCESSFUL',
                                       args.configuration_id,
                                       args.configuration_id,
-                                      args.root_build_url,
+                                      root_build_url,
                                       brunch_info['fromRef']['latestCommit'],
                                       description="auto")
 
