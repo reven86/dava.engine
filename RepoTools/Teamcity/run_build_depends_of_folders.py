@@ -60,7 +60,7 @@ def __run_build( args, triggering_options = [] ):
             client_brunch = client_brunch.replace('from', 'merge')
 
         if framework_brunch and (framework_brunch != '<default>' and 'from' in framework_brunch):
-            framework_brunch = "refs/pull-requests/" + framework_brunch.replace('from', 'merge')
+            framework_brunch = framework_brunch.replace('from', 'merge')
 
     properties = {}
     if client_brunch and client_brunch != '<default>':
