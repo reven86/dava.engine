@@ -205,12 +205,14 @@ static size_t CurlDataRecvHandler(void* ptr, size_t size, size_t nmemb, void* pa
     uint64 writen = writer.Save(ptr, fullSizeToWrite);
     if (writen != fullSizeToWrite)
     {
-        Logger::Error("DLC can't write bytes from curl to buffer: size: %llu written_size: %llu", fullSizeToWrite, writen);
+        int32 errVal = errno;
+        // if buffer in memory and WebServer return more bytes we expect it is normal
+        Logger::Info("DLC can't write bytes from curl to buffer: size: %llu written_size: %llu errno: %d %s", fullSizeToWrite, writen, errVal, strerror(errVal));
         // curl receive more bytes or write to file or to buffer failed
         // curl can receive more bytes if your Internet provider or HTTP server
         // replay on your HTTP request different you ask
         DLCDownloader::Task& task = subTask->GetTask();
-        DLCDownloader::Task::OnErrorCurlErrno(errno, task);
+        DLCDownloader::Task::OnErrorCurlErrno(errVal, task);
     }
 
     return static_cast<size_t>(writen);
