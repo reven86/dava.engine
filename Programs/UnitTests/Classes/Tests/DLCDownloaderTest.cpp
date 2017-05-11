@@ -11,6 +11,8 @@
 #include <iomanip>
 #include <Engine/Engine.h>
 
+#include <Private/mongoose.h>
+
 class MemBufWriter final : public DAVA::DLCDownloader::IWriter
 {
 public:
@@ -30,7 +32,9 @@ public:
         uint64 space = SpaceLeft();
         if (size > space)
         {
-            DAVA_THROW(Exception, "memory corruption");
+            memcpy(current, ptr, static_cast<size_t>(space));
+            current += space;
+            return space;
         }
         memcpy(current, ptr, static_cast<size_t>(size));
         current += size;
@@ -67,6 +71,30 @@ static const DAVA::String URL = "http://127.0.0.1:8080/superpack_for_unittests.d
 class EmbededWebServer
 {
 public:
+    static volatile bool allwaysReturnErrorStaticHtml;
+    static DAVA::int32 OnHttpRequestHandler(mg_connection* conn)
+    {
+        using namespace DAVA;
+        if (allwaysReturnErrorStaticHtml)
+        {
+            char* content = "server return more data then we ask! (we ask last 4 bytes) buffer overflow check";
+            char* mimeType = "text/plain";
+            int contentLength = strlen(content);
+
+            mg_printf(conn,
+                      "HTTP/1.1 200 OK\r\n"
+                      "Cache: no-cache\r\n"
+                      "Content-Type: %s\r\n"
+                      "Content-Length: %d\r\n"
+                      "\r\n",
+                      mimeType,
+                      contentLength);
+            mg_write(conn, content, contentLength);
+            return 1;
+        }
+
+        return 0; // mongoose will handle request
+    }
     EmbededWebServer()
     {
         using namespace DAVA;
@@ -94,7 +122,7 @@ public:
 
         String path = downloadedPacksDir.GetAbsolutePathname();
 
-        if (!StartEmbeddedWebServer(path.c_str(), "8080"))
+        if (!StartEmbeddedWebServer(path.c_str(), "8080", &OnHttpRequestHandler))
         {
             DAVA_THROW(DAVA::Exception, "can't start embedded web server");
         }
@@ -104,6 +132,8 @@ public:
         DAVA::StopEmbeddedWebServer();
     }
 };
+
+volatile bool EmbededWebServer::allwaysReturnErrorStaticHtml = false;
 
 DAVA_TESTCLASS (DLCDownloaderTest)
 {
@@ -133,7 +163,7 @@ DAVA_TESTCLASS (DLCDownloaderTest)
         TEST_VERIFY(status.error.httpCode == 200);
         TEST_VERIFY(status.error.errorHappened == false);
         TEST_VERIFY(status.error.curlErr == 0);
-        TEST_VERIFY(status.error.errStr == nullptr);
+        TEST_VERIFY(status.error.errStr == String(""));
         TEST_VERIFY(status.error.curlMErr == 0);
         TEST_VERIFY(status.error.fileErrno == 0);
         TEST_VERIFY(status.sizeDownloaded == 0);
@@ -173,7 +203,7 @@ DAVA_TESTCLASS (DLCDownloaderTest)
         TEST_VERIFY(status.error.errorHappened == false);
         TEST_VERIFY(status.error.httpCode <= 206);
         TEST_VERIFY(status.error.curlErr == 0);
-        TEST_VERIFY(status.error.errStr == nullptr);
+        TEST_VERIFY(status.error.errStr == String(""));
         TEST_VERIFY(status.error.curlMErr == 0);
         TEST_VERIFY(status.error.fileErrno == 0);
         TEST_VERIFY(status.sizeDownloaded == 4);
@@ -272,7 +302,7 @@ DAVA_TESTCLASS (DLCDownloaderTest)
 
         uint64 firstIndex = 0;
         uint64 nextIndex = 0;
-        const uint64 lastIndex = sizeTotal - 1;
+        //const uint64 lastIndex = sizeTotal - 1;
 
         FilePath dir("~doc:/multy_tmp/");
         fs->DeleteDirectory(dir, true);
@@ -316,5 +346,54 @@ DAVA_TESTCLASS (DLCDownloaderTest)
             downloader->RemoveTask(t);
         }
         allTasks.clear();
+    }
+
+    DAVA_TEST (ISP_return_internalErrorPageTest)
+    {
+        using namespace DAVA;
+
+        EmbededWebServer::allwaysReturnErrorStaticHtml = true;
+
+        {
+            std::array<char, 4> buf;
+            MemBufWriter writer(buf.data(), buf.size());
+
+            DLCDownloader* downloader = DLCDownloader::Create();
+            String url = URL;
+            int64 startRangeIndex = FULL_SIZE_ON_SERVER - 4;
+            int64 rangeSize = 4;
+            DLCDownloader::Task* downloadLast4Bytes = downloader->StartTask(url, writer, DLCDownloader::Range(startRangeIndex, rangeSize));
+
+            downloader->WaitTask(downloadLast4Bytes);
+
+            auto& info = downloader->GetTaskInfo(downloadLast4Bytes);
+            auto& status = downloader->GetTaskStatus(downloadLast4Bytes);
+
+            TEST_VERIFY(info.rangeOffset == startRangeIndex);
+            TEST_VERIFY(info.rangeSize == rangeSize);
+            TEST_VERIFY(info.dstPath == "");
+            TEST_VERIFY(info.srcUrl == url);
+            TEST_VERIFY(info.timeoutSec >= 0);
+            TEST_VERIFY(info.type == DLCDownloader::TaskType::FULL);
+
+            TEST_VERIFY(status.error.errorHappened == true);
+            TEST_VERIFY(status.error.httpCode <= 206);
+            TEST_VERIFY(status.error.curlErr == 23); // error write
+            TEST_VERIFY(status.error.errStr != String(""));
+            TEST_VERIFY(status.error.curlMErr == 0);
+            TEST_VERIFY(status.error.fileErrno == 0);
+            TEST_VERIFY(status.sizeDownloaded == 4);
+            TEST_VERIFY(status.state == DLCDownloader::TaskState::Finished);
+            TEST_VERIFY(status.sizeTotal == 4);
+
+            std::array<char, 4> shouldBe{ 's', 'e', 'r', 'v' }; // first part
+            TEST_VERIFY(shouldBe == buf);
+
+            downloader->RemoveTask(downloadLast4Bytes);
+
+            DLCDownloader::Destroy(downloader);
+        }
+
+        EmbededWebServer::allwaysReturnErrorStaticHtml = false;
     }
 };

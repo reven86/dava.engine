@@ -1,5 +1,5 @@
 // I want all settings and build options to set in code
-// to keep CMakeLists.txt as simple as posible,
+// to keep CMakeLists.txt as simple as possible,
 // so include directly mongoose.c in current cpp file.
 
 #define _CRT_SECURE_NO_WARNINGS 1
@@ -41,7 +41,7 @@ static int LogMessage(const struct mg_connection* /*conn*/, const char* message)
     return 0;
 }
 
-bool StartEmbeddedWebServer(const char* documentRoot, const char* listeningPorts)
+bool StartEmbeddedWebServer(const char* documentRoot, const char* listeningPorts, OnRequestHandler callback)
 {
     if (ctxEmbeddedWebServer != nullptr)
     {
@@ -64,8 +64,9 @@ bool StartEmbeddedWebServer(const char* documentRoot, const char* listeningPorts
     };
 
     struct mg_callbacks callbacks;
-    callbacks.log_message = &LogMessage;
     memset(&callbacks, 0, sizeof(callbacks));
+    callbacks.log_message = &LogMessage;
+    callbacks.begin_request = callback;
 
     ctxEmbeddedWebServer = mg_start(&callbacks, nullptr, options);
 

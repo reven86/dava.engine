@@ -331,7 +331,7 @@ bool PackRequest::UpdateFileRequests()
                         return false;
                     }
                     f->Truncate(0);
-                    fileRequest.taskId = 0;
+                    fileRequest.taskId = nullptr;
                     fileRequest.status = CheckHash;
                     callSignal = true;
                 }

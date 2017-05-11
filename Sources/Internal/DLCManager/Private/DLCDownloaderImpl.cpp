@@ -187,7 +187,7 @@ static size_t CurlDataRecvHandler(void* ptr, size_t size, size_t nmemb, void* pa
     }
     DLCDownloader::IWriter& writer = subTask->GetIWriter();
 
-    size_t fullSizeToWrite = size * nmemb;
+    uint64 fullSizeToWrite = size * nmemb;
 
     uint64 writen = writer.Save(ptr, fullSizeToWrite);
     if (writen != fullSizeToWrite)
@@ -321,17 +321,14 @@ struct DownloadChunkSubTask : IDownloaderSubTask
             if (curlMsg->data.result == CURLE_PARTIAL_FILE && task.status.sizeDownloaded == task.info.rangeSize)
             {
                 // all good
-                CheckHttpCode(easy, task, this);
             }
             else
             {
                 DLCDownloader::Task::OnErrorCurlEasy(curlMsg->data.result, task);
             }
         }
-        else
-        {
-            CheckHttpCode(easy, task, this);
-        }
+
+        CheckHttpCode(easy, task, this);
 
         Cleanup();
     }
@@ -425,6 +422,8 @@ struct GetSizeSubTask : IDownloaderSubTask
 
     void OnDone(CURLMsg* curlMsg) override
     {
+        CheckHttpCode(easy, task, this);
+
         if (curlMsg->data.result != CURLE_OK)
         {
             DLCDownloader::Task::OnErrorCurlEasy(curlMsg->data.result, task);
@@ -439,8 +438,6 @@ struct GetSizeSubTask : IDownloaderSubTask
             }
             else
             {
-                CheckHttpCode(easy, task, this);
-
                 if (!task.status.error.errorHappened)
                 {
                     task.status.sizeTotal = static_cast<uint64>(sizeToDownload);
@@ -989,6 +986,14 @@ CURL* DLCDownloaderImpl::CurlCreateHandle()
         DAVA_THROW(Exception, strErr);
     }
 
+    //// https://curl.haxx.se/libcurl/c/CURLOPT_USERAGENT.html
+    //code = curl_easy_setopt(curlHandle, CURLOPT_USERAGENT, "SDLC");
+    //if (CURLE_OK != code)
+    //{
+    //	const char* strErr = curl_easy_strerror(code);
+    //	DAVA_THROW(Exception, strErr);
+    //}
+
     // https://curl.haxx.se/libcurl/c/CURLOPT_TCP_KEEPALIVE.html
     code = curl_easy_setopt(curlHandle, CURLOPT_TCP_KEEPALIVE, 1L);
     if (CURLE_OK != code)
@@ -1312,21 +1317,19 @@ void DLCDownloaderImpl::ProcessMessagesFromMulti()
             Task& task = subTask.GetTask();
 
             subTask.OnDone(curlMsg);
+
+            task.subTasksWorking.remove(&subTask);
+            task.subTasksReadyToWrite.push_back(&subTask);
+
+            task.OnSubTaskDone();
             if (!task.status.error.errorHappened)
             {
-                task.subTasksWorking.remove(&subTask);
-                task.subTasksReadyToWrite.push_back(&subTask);
+                task.GenerateChankSubRequests(hints.chunkMemBuffSize);
 
-                task.OnSubTaskDone();
-                if (!task.status.error.errorHappened)
+                if (task.IsDone())
                 {
-                    task.GenerateChankSubRequests(hints.chunkMemBuffSize);
-
-                    if (task.IsDone())
-                    {
-                        task.FlushWriterAndReset();
-                        task.status.state = TaskState::Finished;
-                    }
+                    task.FlushWriterAndReset();
+                    task.status.state = TaskState::Finished;
                 }
             }
         }
@@ -1354,11 +1357,6 @@ void DLCDownloaderImpl::BalancingHandles()
 
 void DLCDownloaderImpl::Task::OnErrorCurlMulti(int32 multiCode, Task& task)
 {
-    if (task.status.state == TaskState::Finished)
-    {
-        return; // do not overwrite previous error state
-    }
-
     task.status.error.errorHappened = true;
     task.status.error.curlMErr = multiCode;
     // static string literal from curl
@@ -1367,11 +1365,6 @@ void DLCDownloaderImpl::Task::OnErrorCurlMulti(int32 multiCode, Task& task)
 }
 void DLCDownloaderImpl::Task::OnErrorCurlEasy(int32 easyCode, Task& task)
 {
-    if (task.status.state == TaskState::Finished)
-    {
-        return; // do not overwrite previous error state
-    }
-
     task.status.error.errorHappened = true;
     task.status.error.curlErr = easyCode;
     // static string literal from curl
@@ -1380,11 +1373,6 @@ void DLCDownloaderImpl::Task::OnErrorCurlEasy(int32 easyCode, Task& task)
 }
 void DLCDownloaderImpl::Task::OnErrorCurlErrno(int32 errnoVal, Task& task)
 {
-    if (task.status.state == TaskState::Finished)
-    {
-        return; // do not overwrite previous error state
-    }
-
     task.status.error.errorHappened = true;
     task.status.error.fileErrno = errnoVal;
     // if other thread call strerror and change internal buffer - it will not crush still,
@@ -1395,11 +1383,6 @@ void DLCDownloaderImpl::Task::OnErrorCurlErrno(int32 errnoVal, Task& task)
 
 void DLCDownloaderImpl::Task::OnErrorHttpCode(long httpCode, Task& task)
 {
-    if (task.status.state == TaskState::Finished)
-    {
-        return; // do not overwrite previous error state
-    }
-
     task.status.error.errorHappened = true;
     task.status.error.httpCode = static_cast<int32>(httpCode);
     // if other thread call strerror and change internal buffer - it will not crush still,
