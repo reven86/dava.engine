@@ -3,14 +3,16 @@ import sys
 import requests
 import json
 
+__Stash = None
+
 class StashRequest:
     def __init__(self, stash_url,stash_api_version, stash_project, stesh_repo_name, login, password ):
 
         self.__headers      = {'Content-Type': 'application/json'}
         self.__session      = requests.Session()
         self.__session.auth = (login, password)
-        self.__base_url     = ''.join((stash_url, "/rest/api/{}/projects/{}/repos/{}/".format( stash_api_version, stash_project, stesh_repo_name ) ) )
-        self.__commit_url   = ''.join( stash_url, "rest/build-status/1.0/commits/" )
+        self.__base_url     = ''.join((stash_url, '/rest/api/{}/projects/{}/repos/{}/'.format( stash_api_version, stash_project, stesh_repo_name ) ) )
+        self.__commits_url  = stash_url + '/rest/build-status/1.0/commits/'
 
     def __request(self, url, data=None):
 
@@ -50,10 +52,24 @@ class StashRequest:
         }
 
         try:
-            commit_url = ''.join( self.__commit_url, commit_id )
-            response = requests.post( commit_url, params=None, auth=self.__session.auth,
+            commits_url = self.__commits_url + commit_id
+            response = requests.post( commits_url, params=None, auth=self.__session.auth,
                                      headers={'Content-Type': 'application/json'}, data=json.dumps( build_status_dict ) )
 
         except Exception as e:
             print "Unexpected error:", e
             raise
+
+
+
+
+def init( stash_url,stash_api_version, stash_project, stesh_repo_name, login, password ):
+    global __Stash
+    __Stash = StashRequest( stash_url,
+                            stash_api_version,
+                            stash_project,
+                            stesh_repo_name,
+                            login,
+                            password )
+def ptr():
+    return __Stash

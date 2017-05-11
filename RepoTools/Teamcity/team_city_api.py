@@ -3,6 +3,7 @@ import sys
 import requests
 import xml.etree.ElementTree as ET
 
+__TeamCity = None
 
 class TeamCityRequest:
     def __init__(self, teamcity_url, login, password ):
@@ -82,4 +83,11 @@ class TeamCityRequest:
 
         return root.attrib
 
+def init( teamcity_url, login, password ):
+    global __TeamCity
+    __TeamCity = TeamCityRequest( teamcity_url,
+                                  login,
+                                  password )
 
+def ptr():
+    return __TeamCity
