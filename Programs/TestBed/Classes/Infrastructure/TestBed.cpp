@@ -305,7 +305,7 @@ void TestBed::OnUpdate(DAVA::float32 frameDelta)
     DbgDraw::SetNormalTextSize();
 
     const float32 cpuTemperature = GetEngineContext()->deviceManager->GetCpuTemperature();
-    DbgDraw::Text2D(screenWidth - 100, 0.0f, rhi::NativeColorRGBA(1.0f, 1.0f, 1.0f, 0.5f), "CPU T: %.2f", cpuTemperature);
+    DbgDraw::Text2D(screenWidth - 100, 0, rhi::NativeColorRGBA(1.0f, 1.0f, 1.0f, 0.5f), "CPU T: %.2f", cpuTemperature);
 
     rhi::RenderPassConfig passConfig;
     passConfig.colorBuffer[0].loadAction = rhi::LOADACTION_LOAD;
