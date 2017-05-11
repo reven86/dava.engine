@@ -35,6 +35,7 @@
 #include <QOffscreenSurface>
 #include <QOpenGLContext>
 #include <QIcon>
+#include <QCloseEvent>
 
 namespace DAVA
 {
