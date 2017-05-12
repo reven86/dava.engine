@@ -164,8 +164,8 @@ while continue_process_stdout:
             teamcity_line_index = line.find("##teamcity")
             if teamcity_line_index != -1:
                 teamcity_line = line[teamcity_line_index:]
-            sys.stdout.write(line)
-            sys.stdout.flush()
+                sys.stdout.write(teamcity_line)
+                sys.stdout.flush()
             if line.find("Finish all tests.") != -1:    # this text marker helps to detect good \
                                                         #  finish tests on ios device (run with lldb)
                 # app_exit_code = 0
