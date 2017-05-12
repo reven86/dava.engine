@@ -90,7 +90,7 @@ void StopEmbeddedWebServer()
 #else
 namespace DAVA
 {
-bool StartEmbeddedWebServer(const char*, const char*)
+bool StartEmbeddedWebServer(const char*, const char*, OnRequestHandler)
 {
     // not supported platform
     return false;

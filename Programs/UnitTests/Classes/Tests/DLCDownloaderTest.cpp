@@ -1,5 +1,7 @@
 #include "UnitTests/UnitTests.h"
 
+#ifndef __DAVAENGINE_WIN_UAP__
+
 #include <DLCManager/DLCDownloader.h>
 #include <Logger/Logger.h>
 #include <DLC/Downloader/DownloadManager.h>
@@ -79,7 +81,7 @@ public:
         {
             const char* content = "server return more data then we ask! (we ask last 4 bytes) buffer overflow check";
             const char* mimeType = "text/plain";
-            int contentLength = strlen(content);
+            int contentLength = static_cast<int>(strlen(content));
 
             mg_printf(conn,
                       "HTTP/1.1 200 OK\r\n"
@@ -92,7 +94,6 @@ public:
             mg_write(conn, content, contentLength);
             return 1;
         }
-
         return 0; // mongoose will handle request
     }
     EmbededWebServer()
@@ -402,3 +403,4 @@ DAVA_TESTCLASS (DLCDownloaderTest)
         EmbededWebServer::allwaysReturnErrorStaticHtml = false;
     }
 };
+#endif

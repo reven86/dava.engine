@@ -211,7 +211,7 @@ bool PackRequest::Update()
         if (requests.empty())
         {
             InitializeFileRequests();
-            // TODO fire signal on starting loading new pack
+            packManagerImpl->requestStartLoading.Emit(*this);
         }
 
         if (!IsDownloaded())

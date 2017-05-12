@@ -206,6 +206,14 @@ void DLCManagerTest::LoadResources()
     lsDvpks->AddEvent(EVENT_TOUCH_DOWN, Message(this, &DLCManagerTest::OnListPacksClicked));
     AddControl(lsDvpks);
 
+    OnOffRequesting = new UIButton(Rect(420, 230, 100, 20));
+    OnOffRequesting->SetDebugDraw(true);
+    OnOffRequesting->SetStateFont(0xFF, font);
+    OnOffRequesting->SetStateFontColor(0xFF, Color::White);
+    OnOffRequesting->SetStateText(0xFF, L"On/Off");
+    OnOffRequesting->AddEvent(EVENT_TOUCH_DOWN, Message(this, &DLCManagerTest::OnOffRequestingClicked));
+    AddControl(OnOffRequesting);
+
     dirToListFiles = new UITextField(Rect(5, 300, 400, 20));
     dirToListFiles->SetFont(font);
     dirToListFiles->SetFontSize(14);
@@ -266,6 +274,7 @@ void DLCManagerTest::UnloadResources()
     SafeRelease(dirToListFiles);
     SafeRelease(numHandlesInput);
     SafeRelease(lsDirFromPacks);
+    SafeRelease(OnOffRequesting);
 
     BaseScreen::UnloadResources();
 }
@@ -381,6 +390,19 @@ void DLCManagerTest::OnListPacksClicked(DAVA::BaseObject* sender, void* data, vo
     String s = ss.str();
 
     packNameLoading->SetText(UTF8Utils::EncodeToWideString(s));
+}
+
+void DLCManagerTest::OnOffRequestingClicked(DAVA::BaseObject* sender, void* data, void* callerData)
+{
+    DLCManager& dm = *engine.GetContext()->dlcManager;
+    if (dm.IsRequestingEnabled())
+    {
+        dm.SetRequestingEnabled(false);
+    }
+    else
+    {
+        dm.SetRequestingEnabled(true);
+    }
 }
 
 void DLCManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* data, void* callerData)

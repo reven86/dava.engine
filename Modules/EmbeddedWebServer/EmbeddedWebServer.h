@@ -18,7 +18,7 @@ namespace DAVA
 using OnRequestHandler = int (*)(mg_connection* connection);
 
 /**
-	Start in separete thread web server.
+	Start in separate thread web server.
 	Example:
 	StartEmbeddedWebServer(
 		"/var/www",

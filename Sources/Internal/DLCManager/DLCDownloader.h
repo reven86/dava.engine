@@ -60,8 +60,8 @@ public:
 	*/
     struct Hints
     {
-        int32 numOfMaxEasyHandles = 4; //!< how many curl easy handles will be used
-        int32 chunkMemBuffSize = 1024 * 1024; //!< max buffer size per one download operation per curl easy handler
+        int32 numOfMaxEasyHandles = 8; //!< how many curl easy handles will be used
+        int32 chunkMemBuffSize = 512 * 1024; //!< max buffer size per one download operation per curl easy handler
         int32 timeout = 30; //!< timeout in seconds for curl easy handlers to wait on connect, dns request ets.
     };
 
