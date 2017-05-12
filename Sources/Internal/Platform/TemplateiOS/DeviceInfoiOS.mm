@@ -6,6 +6,7 @@
 #include "Utils/StringFormat.h"
 #import "Utils/NSStringUtils.h"
 #include "Base/GlobalEnum.h"
+#include "Base/TemplateHelpers.h"
 
 #import <UIKit/UIDevice.h>
 #import <UIKit/UIKit.h>

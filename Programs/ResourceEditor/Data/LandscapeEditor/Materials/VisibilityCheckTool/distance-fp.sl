@@ -5,17 +5,22 @@ fragment_in
 {
 #if defined(ENCODE_DISTANCE)
 
-    float3  directionFromPoint  : TEXCOORD0;
+    float3 directionFromPoint  : TEXCOORD0;
 
 #elif defined(DECODE_DISTANCE)
 
-    float3  directionFromPoint  : TEXCOORD0;
+    float3 directionFromPoint  : TEXCOORD0;
 
 #elif defined(REPROJECTION)
 
-    float4  reprojectedCoords   : TEXCOORD0;
-    float   distanceToOrigin    : TEXCOORD1;
-    float4  viewportCoords      : TEXCOORD2;
+    float4 reprojectedCoords   : TEXCOORD0;
+    float  distanceToOrigin    : TEXCOORD1;
+    float4 viewportCoords      : TEXCOORD2;
+
+#elif defined(DEBUG_2D)
+
+    float2 texCoord            : TEXCOORD0;
+
 #endif
 };
 
@@ -24,9 +29,8 @@ fragment_out
     float4  color   : SV_TARGET0;
 };
 
-const float4 decodeVector = float4(1.0, 255.0, 65025.0, 16581375.0);
-const float MAGIC_TRESHOLD_2 = 1.0 / 255.0;
-const float MAGIC_TRESHOLD_1 = 1.0 + MAGIC_TRESHOLD_2;
+#define MAGIC_TRESHOLD_2 (1.0 / 255.0)
+#define MAGIC_TRESHOLD_1 (1.0 + MAGIC_TRESHOLD_2)
 
 float4 EncodeFloat(float v)
 {
@@ -65,13 +69,16 @@ uniform sampler2D currentFrame;
 [material][a] property float2 viewportSize;
 [material][a] property float currentFrameCompleteness;
 
+#elif defined(DEBUG_2D)
+
+uniform samplerCUBE cubemap;
+
 #endif
 
 
-fragment_out
-fp_main( fragment_in input )
+fragment_out fp_main(fragment_in input)
 {
-    fragment_out    output;
+    fragment_out output;
 
 #if defined(PRERENDER)
 
@@ -114,6 +121,17 @@ fp_main( fragment_in input )
     float insideProjection = float((rpClamped.x == reprojectedUVW.x) && (rpClamped.y == reprojectedUVW.y) && (rpClamped.z == reprojectedUVW.z));
 
     output.color = lerp(currentColor, sampledColor, insideProjection * visibleInProjection);
+
+#elif DEBUG_2D
+    
+    float phi = input.texCoord.x * 2.0 * _PI;
+    float theta = (1.0 - input.texCoord.y) * _PI - _PI / 2.0;
+    float3 direction = float3(cos(phi) * cos(theta), sin(phi) * cos(theta), sin(theta));
+    float2 sampledDistance = texCUBE(cubemap, direction).xy;
+    sampledDistance.y = sqrt(sampledDistance.y);
+    sampledDistance = 1.0 - exp(-0.05 * sampledDistance);
+        
+    output.color = float4(sampledDistance, 0.0, 1.0);
 
 #else
 #   error Undefined

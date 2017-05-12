@@ -19,6 +19,8 @@ struct DeviceManagerImpl final
 
     void UpdateDisplayConfig();
 
+    float32 GetCpuTemperature() const;
+
     DeviceManager* deviceManager = nullptr;
     Private::MainDispatcher* mainDispatcher = nullptr;
 

@@ -1,21 +1,28 @@
 #pragma once
 
+#include "Debug/DVAssert.h"
+
 #ifndef __DAVA_Reflection__
 #include "Reflection/Reflection.h"
-#include "..\ReflectedObject.h"
+#include "Reflection/ReflectedObject.h"
 #endif
 
 namespace DAVA
 {
-inline ReflectedObject::ReflectedObject(void* ptr_, const ReflectedType* reflectedType_)
+inline ReflectedObject::ReflectedObject(void* ptr_, const ReflectedType* rtype_)
     : ptr(ptr_)
-    , reflectedType(reflectedType_)
+    , reflectedType(ReflectedTypeDB::GetByPointer(ptr_, rtype_->GetType()))
 {
+    if (nullptr == reflectedType)
+    {
+        reflectedType = rtype_;
+    }
 }
 
 template <typename T>
-inline ReflectedObject::ReflectedObject(T* ptr_)
+inline ReflectedObject::ReflectedObject(T* ptr_, bool isConst_)
     : ptr(ptr_)
+    , isConst(isConst_)
     , reflectedType(ReflectedTypeDB::GetByPointer(ptr_))
 {
 }
@@ -42,21 +49,6 @@ inline bool ReflectedObject::operator!=(const ReflectedObject& other) const
     isConst != other.isConst;
 }
 
-/*
-inline ReflectedObject::ReflectedObject(void* ptr_, const ReflectedType* reflectedType_)
-    : ptr(ptr_)
-    , reflectedType(reflectedType_)
-{
-}
-
-inline ReflectedObject::ReflectedObject(const void* ptr_, const ReflectedType* reflectedType_)
-    : ptr(const_cast<void*>(ptr_))
-    , reflectedType(reflectedType_)
-    , isConst(true)
-{
-}
-*/
-
 inline const ReflectedType* ReflectedObject::GetReflectedType() const
 {
     return reflectedType;
@@ -72,30 +64,57 @@ inline bool ReflectedObject::IsConst() const
     return isConst;
 }
 
+#if 0
+
+// This is performance optimal GetPtr() implementation but it wouldn't
+// work for classes with multiple inheritance or with virtual inheritance,
+// so we are forced now to use other GetPtr implementation that is making
+// appropriate pointer cast
 template <typename T>
 inline T* ReflectedObject::GetPtr() const
 {
-    const Type* reqType = Type::Instance<T>();
-    const Type* curType = reflectedType->GetType();
+    DVASSERT(IsValid());
+    DVASSERT(CanGet<T>());
 
-    bool canGet = (reqType == curType) || (reqType->Decay() == curType);
+    return static_cast<T*>(ptr);
+}
 
-    if (canGet)
+#else
+
+template <typename T>
+inline T* ReflectedObject::GetPtr() const // <-- GetPtrWithCast
+{
+    DVASSERT(IsValid());
+
+    if (CanGet<T>())
     {
         return static_cast<T*>(ptr);
     }
 
     void* tmp = nullptr;
-    bool canCast = TypeInheritance::DownCast(curType, reqType, ptr, &tmp);
+    bool canCast = TypeInheritance::DownCast(reflectedType->GetType(), Type::Instance<T>(), ptr, &tmp);
 
+#ifdef __DAVAENGINE_DEBUG__
     DVASSERT(canCast);
+#endif
 
     return static_cast<T*>(tmp);
 }
 
+#endif
+
 inline void* ReflectedObject::GetVoidPtr() const
 {
     return ptr;
+}
+
+template <typename T>
+inline bool ReflectedObject::CanGet() const
+{
+    const Type* reqType = Type::Instance<T>();
+    const Type* curType = reflectedType->GetType();
+
+    return ((reqType == curType) || (reqType->Decay() == curType));
 }
 
 } // namespace DAVA

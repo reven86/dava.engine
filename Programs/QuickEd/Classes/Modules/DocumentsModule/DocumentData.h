@@ -51,14 +51,14 @@ public:
     DAVA_DEPRECATED(void RefreshLayout());
     DAVA_DEPRECATED(void RefreshAllControlProperties());
 
-    static const char* packagePropertyName;
-    static const char* canSavePropertyName;
-    static const char* canUndoPropertyName;
-    static const char* canRedoPropertyName;
-    static const char* undoTextPropertyName;
-    static const char* redoTextPropertyName;
-    static const char* selectionPropertyName;
-    static const char* displayedRootControlsPropertyName;
+    static DAVA::FastName packagePropertyName;
+    static DAVA::FastName canSavePropertyName;
+    static DAVA::FastName canUndoPropertyName;
+    static DAVA::FastName canRedoPropertyName;
+    static DAVA::FastName undoTextPropertyName;
+    static DAVA::FastName redoTextPropertyName;
+    static DAVA::FastName selectionPropertyName;
+    static DAVA::FastName displayedRootControlsPropertyName;
 
 private:
     friend class DocumentsModule;

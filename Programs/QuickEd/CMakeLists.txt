@@ -13,6 +13,8 @@ set                   ( TOOL_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG
 include               ( CMake-common )
 
 if (DEPLOY)
+    dava_add_definitions(-DDEPLOY_BUILD)
+
     set (DEPLOY_ROOT ${DEPLOY_DIR})
 
     if ( WIN32 )

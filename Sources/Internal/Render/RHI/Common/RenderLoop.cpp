@@ -6,6 +6,7 @@
 #include "../rhi_Type.h"
 #include "Concurrency/AutoResetEvent.h"
 #include "Concurrency/Concurrency.h"
+#include "Concurrency/Mutex.h"
 #include "Debug/ProfilerCPU.h"
 #include "Debug/ProfilerMarkerNames.h"
 #include "Logger/Logger.h"
