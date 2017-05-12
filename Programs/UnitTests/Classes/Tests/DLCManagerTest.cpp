@@ -8,7 +8,7 @@
 #include <EmbeddedWebServer.h>
 
 #include "UnitTests/UnitTests.h"
-
+/*
 #ifndef __DAVAENGINE_WIN_UAP__
 
 struct DownloaderTest
@@ -145,3 +145,4 @@ DAVA_TESTCLASS (DLCManagerTest)
 };
 
 #endif // __DAVAENGINE_WIN_UAP__
+*/
