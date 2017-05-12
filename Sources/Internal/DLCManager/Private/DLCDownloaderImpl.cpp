@@ -6,6 +6,7 @@
 #include "FileSystem/File.h"
 #include "FileSystem/FileSystem.h"
 #include "Concurrency/LockGuard.h"
+#include <Engine/Engine.h>
 
 namespace DAVA
 {
@@ -639,7 +640,8 @@ struct DefaultWriter : DLCDownloader::IWriter
 {
     explicit DefaultWriter(const String& outputFile)
     {
-        FileSystem* fs = FileSystem::Instance();
+        FileSystem* fs = GetEngineContext()->fileSystem;
+
         FilePath path = outputFile;
         fs->CreateDirectory(path.GetDirectory(), true);
 
@@ -888,7 +890,7 @@ void DLCDownloaderImpl::SetHints(const Hints& h)
         }
         if (h.chunkMemBuffSize <= 0)
         {
-            DAVA_THROW(Exception, "you should set hints.chankMemBuffSize > 0");
+            DAVA_THROW(Exception, "you should set hints.chunkMemBuffSize > 0");
         }
         if (!inputList.empty())
         {
@@ -951,7 +953,7 @@ DLCDownloader::Task* DLCDownloaderImpl::AddOneMoreTask()
 
 CURL* DLCDownloaderImpl::CurlCreateHandle()
 {
-    DVASSERT(Thread::GetCurrentId() == downlodThreadId);
+    DVASSERT(Thread::GetCurrentId() == downloadThreadId);
     CURL* curlHandle = nullptr;
 
     if (reusableHandles.empty())
@@ -1020,7 +1022,7 @@ void DLCDownloaderImpl::CurlDeleteHandle(CURL* easy)
         DAVA_THROW(Exception, "easy is nullptr");
     }
 
-    DVASSERT(Thread::GetCurrentId() == downlodThreadId);
+    DVASSERT(Thread::GetCurrentId() == downloadThreadId);
 
     curl_easy_reset(easy);
     reusableHandles.push_back(easy);
@@ -1078,7 +1080,7 @@ void DLCDownloaderImpl::UnMap(CURL* easy)
     taskMap.erase(easy);
 }
 
-int DLCDownloaderImpl::GetChankSize()
+int DLCDownloaderImpl::GetChunkSize()
 {
     return hints.chunkMemBuffSize;
 }
@@ -1135,11 +1137,11 @@ void DLCDownloaderImpl::DeleteTask(Task* task)
     delete task;
 }
 
-void DLCDownloader::Task::GenerateChunkSubRequests(const int chankSize)
+void DLCDownloader::Task::GenerateChunkSubRequests(const int chunkSize)
 {
     while (NeedHandle() && curlStorage.GetFreeHandleCount() > 0)
     {
-        if (restSize < chankSize)
+        if (restSize < chunkSize)
         {
             // take rest range
             IDownloaderSubTask* subTask = new DownloadChunkSubTask(*this, restOffset, restSize);
@@ -1149,10 +1151,10 @@ void DLCDownloader::Task::GenerateChunkSubRequests(const int chankSize)
             break;
         }
 
-        IDownloaderSubTask* subTask = new DownloadChunkSubTask(*this, restOffset, chankSize);
+        IDownloaderSubTask* subTask = new DownloadChunkSubTask(*this, restOffset, chunkSize);
         subTasksWorking.push_back(subTask);
-        restOffset += chankSize;
-        restSize -= chankSize;
+        restOffset += chunkSize;
+        restSize -= chunkSize;
     }
 }
 
@@ -1184,9 +1186,9 @@ void DLCDownloader::Task::SetupFullDownload()
         // we already know size to download
         restOffset = info.rangeOffset;
         restSize = info.rangeSize;
-        const int chankSize = curlStorage.GetChankSize();
+        const int chunkSize = curlStorage.GetChunkSize();
 
-        GenerateChunkSubRequests(chankSize);
+        GenerateChunkSubRequests(chunkSize);
     }
     else
     {
@@ -1240,8 +1242,8 @@ void DLCDownloader::Task::SetupResumeDownload()
         // so correct range to download only rest of file
         CorrectRangeToResumeDownloading();
 
-        const int chankSize = curlStorage.GetChankSize();
-        GenerateChunkSubRequests(chankSize);
+        const int chunkSize = curlStorage.GetChunkSize();
+        GenerateChunkSubRequests(chunkSize);
     }
     else
     {
@@ -1407,7 +1409,7 @@ void DLCDownloaderImpl::DownloadThreadFunc()
         Thread* currentThread = Thread::Current();
         DVASSERT(currentThread != nullptr);
 
-        downlodThreadId = currentThread->GetId();
+        downloadThreadId = currentThread->GetId();
 
         bool downloading = false;
 

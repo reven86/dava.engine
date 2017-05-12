@@ -18,57 +18,6 @@ namespace DAVA
 DLCManager::~DLCManager() = default;
 DLCManager::IRequest::~IRequest() = default;
 
-class MemoryBufferWriter final : public DLCDownloader::IWriter
-{
-public:
-    MemoryBufferWriter(void* buff, size_t size)
-    {
-        DVASSERT(buff != nullptr);
-        DVASSERT(size > 0);
-
-        start = static_cast<char*>(buff);
-        current = start;
-        end = start + size;
-    }
-
-    uint64 Save(const void* ptr, uint64 size) override
-    {
-        uint64 space = SpaceLeft();
-
-        if (size > space)
-        {
-            memcpy(current, ptr, static_cast<size_t>(space));
-            current += space;
-            return space;
-        }
-
-        memcpy(current, ptr, static_cast<size_t>(size));
-        current += size;
-        return size;
-    }
-
-    uint64 GetSeekPos() override
-    {
-        return current - start;
-    }
-
-    bool Truncate() override
-    {
-        current = start;
-        return true;
-    }
-
-    uint64 SpaceLeft() const
-    {
-        return end - current;
-    }
-
-private:
-    char* start = nullptr;
-    char* current = nullptr;
-    char* end = nullptr;
-};
-
 const String& DLCManagerImpl::ToString(InitState state)
 {
     static const Vector<String> states{

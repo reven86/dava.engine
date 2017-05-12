@@ -47,7 +47,7 @@ struct ICurlEasyStorage
     virtual void Map(CURL* easy, IDownloaderSubTask& subTask) = 0;
     virtual IDownloaderSubTask& FindInMap(CURL* easy) = 0;
     virtual void UnMap(CURL* easy) = 0;
-    virtual int GetChankSize() = 0;
+    virtual int GetChunkSize() = 0;
 };
 
 struct DLCDownloader::Task
@@ -147,7 +147,7 @@ private:
     void Map(CURL* easy, IDownloaderSubTask& subTask) override;
     IDownloaderSubTask& FindInMap(CURL* easy) override;
     void UnMap(CURL* easy) override;
-    int GetChankSize() override;
+    int GetChunkSize() override;
     void DeleteSubTaskHandler(IDownloaderSubTask* t);
     // [end] implement ICurlEasyStorage interface
 
@@ -170,7 +170,7 @@ private:
     List<Task*> removedList;
     Mutex mutexRemovedList;
 
-    Thread::Id downlodThreadId = 0;
+    Thread::Id downloadThreadId = 0;
 
     // [start] next variables used only from Download thread
     List<Task*> tasks;

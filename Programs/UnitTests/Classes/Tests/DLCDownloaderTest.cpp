@@ -1,8 +1,8 @@
 #include "UnitTests/UnitTests.h"
 
 #ifndef __DAVAENGINE_WIN_UAP__
-
 #include <DLCManager/DLCDownloader.h>
+#include <DLCManager/Private/DLCManagerImpl.h>
 #include <Logger/Logger.h>
 #include <DLC/Downloader/DownloadManager.h>
 #include <FileSystem/FileSystem.h>
@@ -14,56 +14,6 @@
 #include <Engine/Engine.h>
 
 #include <Private/mongoose.h>
-
-class MemBufWriter final : public DAVA::DLCDownloader::IWriter
-{
-public:
-    MemBufWriter(void* buff, size_t size)
-    {
-        DVASSERT(buff != nullptr);
-        DVASSERT(size > 0);
-
-        start = static_cast<char*>(buff);
-        current = start;
-        end = start + size;
-    }
-
-    DAVA::uint64 Save(const void* ptr, DAVA::uint64 size) override
-    {
-        using namespace DAVA;
-        uint64 space = SpaceLeft();
-        if (size > space)
-        {
-            memcpy(current, ptr, static_cast<size_t>(space));
-            current += space;
-            return space;
-        }
-        memcpy(current, ptr, static_cast<size_t>(size));
-        current += size;
-        return size;
-    }
-
-    DAVA::uint64 GetSeekPos() override
-    {
-        return current - start;
-    }
-
-    bool Truncate() override
-    {
-        current = start;
-        return true;
-    }
-
-    DAVA::uint64 SpaceLeft() const
-    {
-        return end - current;
-    }
-
-private:
-    char* start = nullptr;
-    char* current = nullptr;
-    char* end = nullptr;
-};
 
 static const DAVA::String URL = "http://127.0.0.1:8080/superpack_for_unittests.dvpk";
 // "http://127.0.0.1:8080/superpack_for_unittests.dvpk"; // embedded web server
@@ -181,7 +131,7 @@ DAVA_TESTCLASS (DLCDownloaderTest)
         using namespace DAVA;
 
         std::array<char, 4> buf;
-        MemBufWriter writer(buf.data(), buf.size());
+        MemoryBufferWriter writer(buf.data(), buf.size());
 
         DLCDownloader* downloader = DLCDownloader::Create();
         String url = URL;
@@ -359,7 +309,7 @@ DAVA_TESTCLASS (DLCDownloaderTest)
             Logger::Info("just before start test errno: %d %s", errno, strerror(errno));
 
             std::array<char, 4> buf;
-            MemBufWriter writer(buf.data(), buf.size());
+            MemoryBufferWriter writer(buf.data(), buf.size());
 
             DLCDownloader* downloader = DLCDownloader::Create();
             String url = URL;
