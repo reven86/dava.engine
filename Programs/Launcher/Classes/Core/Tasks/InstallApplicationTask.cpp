@@ -25,10 +25,9 @@ QString InstallApplicationTask::GetDescription() const
 void InstallApplicationTask::Run()
 {
     QString description = QObject::tr("Downloading application %1").arg(appManager->GetAppName(params.app, params.newVersion.isToolSet));
-    appManager->AddTaskWithCB<DownloadTask>(WrapCB(std::bind(&InstallApplicationTask::OnLoaded, this, std::placeholders::_1)),
-                                            description,
-                                            params.newVersion.url
-                                            );
+    std::unique_ptr<BaseTask> task = appManager->CreateTask<DownloadTask>(description, params.newVersion.url);
+    task->SetOnSuccessCallback(std::bind(&InstallApplicationTask::OnLoaded, this, std::placeholders::_1));
+    appManager->AddTask(std::move(task));
 }
 
 void InstallApplicationTask::OnLoaded(const BaseTask* task)
@@ -56,8 +55,9 @@ void InstallApplicationTask::OnLoaded(const BaseTask* task)
         AppVersion* localVersion = localApp->GetVersion(0);
         if (localVersion != nullptr)
         {
-            //install if success
-            appManager->AddTaskWithCB<RemoveApplicationTask>(WrapCB(std::bind(&InstallApplicationTask::Install, this)), params.branch, params.app);
+            std::unique_ptr<BaseTask> task = appManager->CreateTask<RemoveApplicationTask>(params.branch, params.app);
+            task->SetOnSuccessCallback(std::bind(&InstallApplicationTask::Install, this));
+            appManager->AddTask(std::move(task));
             return;
         }
     }
@@ -74,7 +74,9 @@ void InstallApplicationTask::Install()
 
     if (params.newVersion.url.endsWith("zip"))
     {
-        appManager->AddTaskWithCB<UnzipTask>(WrapCB(std::bind(&InstallApplicationTask::OnInstalled, this)), filePath, appDirPath);
+        std::unique_ptr<BaseTask> task = appManager->CreateTask<UnzipTask>(filePath, appDirPath);
+        task->SetOnSuccessCallback(std::bind(&InstallApplicationTask::OnInstalled, this));
+        appManager->AddTask(std::move(task));
         return;
     }
     else
@@ -138,5 +140,5 @@ QStringList InstallApplicationTask::GetApplicationsToRestart(const QString& bran
             }
         }
     }
-    return appNames;
+    return appList;
 }

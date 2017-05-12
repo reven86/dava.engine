@@ -6,12 +6,16 @@ UnzipTask::UnzipTask(ApplicationManager* appManager, const QString& archivePath,
     , archivePath(archivePath)
     , outputPath(outputPath)
 {
-    taskType = ZIP_TASK;
 }
 
 QString UnzipTask::GetDescription() const
 {
     return QObject::tr("Unpacking archive");
+}
+
+BaseTask::eTaskType UnzipTask::GetTaskType() const
+{
+    return ZIP_TASK;
 }
 
 QString UnzipTask::GetArchivePath() const

@@ -16,11 +16,6 @@ ReceiverNotifier::ReceiverNotifier(const QVector<Receiver>& receivers_)
 {
 }
 
-void ReceiverNotifier::AddReceiver(Receiver receiver)
-{
-    receivers.push_back(receiver);
-}
-
 void ReceiverNotifier::NotifyStarted(const BaseTask* task)
 {
     for (Receiver& receiver : receivers)
@@ -45,11 +40,24 @@ void ReceiverNotifier::NotifyProgress(const BaseTask* task, quint32 progress)
 
 void ReceiverNotifier::NotifyFinished(const BaseTask* task)
 {
+    //first notify receiver that task if finished
+    //receiver can not produce another tasks on finished
+    //if you need to produce one - create AsyncChainTask
     for (Receiver& receiver : receivers)
     {
         if (receiver.onFinished)
         {
             receiver.onFinished(task);
         }
+    }
+
+    if (task->onFinishedCallback)
+    {
+        task->onFinishedCallback(task);
+    }
+
+    if (task->onSuccessCallback)
+    {
+        task->onSuccessCallback(task);
     }
 }

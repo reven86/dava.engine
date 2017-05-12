@@ -24,7 +24,9 @@ QString SelfUpdateTask::GetDescription() const
 void SelfUpdateTask::Run()
 {
     QString description = QObject::tr("Loading new launcher");
-    appManager->AddTaskWithCB<DownloadTask>(WrapCB(std::bind(&SelfUpdateTask::OnLoaded, this, std::placeholders::_1)), description, url);
+    std::unique_ptr<BaseTask> task = appManager->CreateTask<DownloadTask>(description, url);
+    task->SetOnSuccessCallback(std::bind(&SelfUpdateTask::OnLoaded, this, std::placeholders::_1));
+    appManager->AddTask(std::move(task));
 }
 
 void SelfUpdateTask::OnLoaded(const BaseTask* task)
@@ -43,7 +45,9 @@ void SelfUpdateTask::OnLoaded(const BaseTask* task)
     QString tempArchiveFilePath = fileManager->GetTempDownloadFilePath(url);
     QString selfUpdateDirPath = fileManager->GetSelfUpdateTempDirectory();
 
-    appManager->AddTaskWithCB<UnzipTask>(WrapCB(std::bind(&SelfUpdateTask::OnUnpacked, this)), tempArchiveFilePath, selfUpdateDirPath);
+    std::unique_ptr<BaseTask> zipTask = appManager->CreateTask<UnzipTask>(tempArchiveFilePath, selfUpdateDirPath);
+    zipTask->SetOnSuccessCallback(std::bind(&SelfUpdateTask::OnUnpacked, this));
+    appManager->AddTask(std::move(zipTask));
 }
 
 void SelfUpdateTask::OnUnpacked()

@@ -31,12 +31,22 @@ BaseTask::BaseTask(ApplicationManager* appManager_)
 {
 }
 
-BaseTask::eTaskType BaseTask::GetTaskType() const
+void BaseTask::SetOnFinishCallback(CallbackFn callback)
 {
-    return taskType;
+    onFinishedCallback = callback;
+}
+
+void BaseTask::SetOnSuccessCallback(CallbackFn callback)
+{
+    onSuccessCallback = callback;
 }
 
 RunTask::RunTask(ApplicationManager* appManager)
     : BaseTask(appManager)
 {
+}
+
+BaseTask::eTaskType RunTask::GetTaskType() const
+{
+    return BaseTask::RUN_TASK;
 }

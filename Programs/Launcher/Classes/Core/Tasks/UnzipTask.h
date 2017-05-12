@@ -8,6 +8,7 @@ public:
     UnzipTask(ApplicationManager* appManager, const QString& archivePath, const QString& outputPath);
 
     QString GetDescription() const override;
+    eTaskType GetTaskType() const override;
 
     QString GetArchivePath() const;
     QString GetOutputPath() const;

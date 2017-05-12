@@ -14,6 +14,7 @@ public:
     DownloadTask(ApplicationManager* appManager, const QString& description, const QUrl url);
 
     QString GetDescription() const override;
+    eTaskType GetTaskType() const override;
 
     //change it to QVector<std::pair<QIODevice*, QUrl>> later
     const QVector<QByteArray>& GetLoadedData() const;

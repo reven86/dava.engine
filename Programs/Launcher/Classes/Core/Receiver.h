@@ -32,8 +32,6 @@ public:
     ReceiverNotifier(Receiver receiver);
     ReceiverNotifier(const QVector<Receiver>& receivers);
 
-    void AddReceiver(Receiver receiver);
-
     //wrappers to avoid iteration over receivers
     void NotifyStarted(const BaseTask* task);
     void NotifyProgress(const BaseTask* task, quint32 progress);

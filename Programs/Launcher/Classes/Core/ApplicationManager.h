@@ -41,9 +41,6 @@ public:
     template <typename T, typename... Arguments>
     void AddTask(Arguments&&... args);
 
-    template <typename T, typename... Arguments>
-    void AddTaskWithCB(std::function<void(const BaseTask*)> onFinished, Arguments&&... args);
-
     void InstallApplication(const InstallApplicationParams& params);
 
     QString GetString(const QString& stringID) const;
@@ -120,10 +117,4 @@ template <typename T, typename... Arguments>
 void ApplicationManager::AddTask(Arguments&&... args)
 {
     AddTask(std::move(CreateTask<T>(std::forward<Arguments>(args)...)));
-}
-
-template <typename T, typename... Arguments>
-void ApplicationManager::AddTaskWithCB(std::function<void(const BaseTask*)> onFinished, Arguments&&... args)
-{
-    AddTask(std::move(CreateTask<T>(std::forward<Arguments>(args)...)), { Receiver(onFinished) });
 }

@@ -20,7 +20,9 @@ void UpdateConfigTask::Run()
 {
     appManager->GetRemoteConfig()->Clear();
     QString description = QObject::tr("Downloading configuration");
-    appManager->AddTaskWithCB<DownloadTask>(std::bind(&UpdateConfigTask::OnConfigLoaded, this, std::placeholders::_1), description, urls);
+    std::unique_ptr<BaseTask> task = appManager->CreateTask<DownloadTask>(description, urls);
+    task->SetOnFinishCallback(std::bind(&UpdateConfigTask::OnConfigLoaded, this, std::placeholders::_1));
+    appManager->AddTask(std::move(task));
 }
 
 void UpdateConfigTask::OnConfigLoaded(const BaseTask* task)

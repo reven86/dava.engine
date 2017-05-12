@@ -5,7 +5,6 @@ DownloadTask::DownloadTask(ApplicationManager* appManager, const QString& descri
     , description(description_)
     , urls(urls_)
 {
-    taskType = DOWNLOAD_TASK;
 }
 
 DownloadTask::DownloadTask(ApplicationManager* appManager, const QString& description_, const QUrl url)
@@ -13,7 +12,11 @@ DownloadTask::DownloadTask(ApplicationManager* appManager, const QString& descri
     , description(description_)
     , urls(1, url)
 {
-    taskType = DOWNLOAD_TASK;
+}
+
+BaseTask::eTaskType DownloadTask::GetTaskType() const
+{
+    return DOWNLOAD_TASK;
 }
 
 QString DownloadTask::GetDescription() const

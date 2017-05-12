@@ -6,15 +6,18 @@
 
 #include <functional>
 
-class AsyncChainTask : public QObject, public RunTask
+class AsyncChainTask : public QObject, public BaseTask
 {
     Q_OBJECT
 
 public:
     AsyncChainTask(ApplicationManager* appManager);
 
-    std::function<void(const BaseTask*)> WrapCB(std::function<void(const BaseTask*)> cb) const;
+    virtual void Run() = 0;
 
 signals:
     void Finished() const;
+
+private:
+    eTaskType GetTaskType() const override;
 };
