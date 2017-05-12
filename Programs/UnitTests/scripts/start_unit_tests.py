@@ -153,7 +153,7 @@ elif sys.platform == "darwin":
 
     sub_process = subprocess.Popen(commandLine, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
-app_exit_code = None
+app_exit_code = 0
 
 continue_process_stdout = True
 
