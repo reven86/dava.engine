@@ -13,8 +13,6 @@ set                   ( TOOL_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_CFG
 include               ( CMake-common )
 
 if (DEPLOY)
-    dava_add_definitions(-DDEPLOY_BUILD)
-
     set (DEPLOY_ROOT ${DEPLOY_DIR})
 
     if ( WIN32 )
@@ -52,6 +50,11 @@ include_directories   ( "Classes" )
 include_directories   ( "Classes/Helpers" )
 include_directories   ( "Classes/Controllers" )
 include_directories   ( "Classes/Models" )
+
+if (DEPLOY)
+    dava_add_definitions(-DDEPLOY_BUILD)
+endif()
+
 
 dava_add_definitions       ( 
 -DQT_OPENGL_LIB
