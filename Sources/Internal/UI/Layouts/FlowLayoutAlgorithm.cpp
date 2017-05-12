@@ -323,7 +323,7 @@ void FlowLayoutAlgorithm::LayoutLineVertically(ControlLayoutData& data, int32 fi
                 childSize = Clamp(childSize, sizePolicy->GetVerticalMinValue(), sizePolicy->GetVerticalMaxValue());
                 childData.SetSize(Vector2::AXIS_Y, childSize);
             }
-            else if (sizePolicy != nullptr && sizePolicy->GetHorizontalPolicy() == UISizePolicyComponent::FORMULA)
+            else if (sizePolicy != nullptr && sizePolicy->GetVerticalPolicy() == UISizePolicyComponent::FORMULA)
             {
                 SizeMeasuringAlgorithm alg(layoutData, childData, Vector2::AXIS_Y, sizePolicy);
                 alg.SetParentSize(data.GetHeight());
