@@ -1,7 +1,10 @@
 package com.dava.engine;
 
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.app.Application;
+import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
@@ -235,9 +238,37 @@ public final class DavaActivity extends Activity
         return activitySingleton.gamepadManager;
     }
 
+    private void restart()
+    {
+        try {
+            Intent intent = new Intent(this, DavaActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+
+            int pendingIntentId = 223344;
+            PendingIntent pendingIntent = PendingIntent.getActivity(this, pendingIntentId, intent, PendingIntent.FLAG_CANCEL_CURRENT);
+            AlarmManager alarmManager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
+            alarmManager.set(AlarmManager.RTC, System.currentTimeMillis() + 100, pendingIntent);
+            System.exit(0);
+        } catch (Exception e) {
+            Log.e(LOG_TAG, String.format("DavaActivity.restart failed: %s", e.toString()));
+        }
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
+        if (activitySingleton != null)
+        {
+            // dava.engine's is tightly bound to Activity lifecycle events. But in some cases on some devices Activity.onDestroy
+            // does not arrive when Activity is removed by system from memory while application with loaded shared libraries is
+            // still running. Later system may recreate Activity and Activity.onCreate handler tries to initialize again already
+            // running dava.engine and game which may lead to crash or unpredictable behaviour.
+            // Solution is to restart application.
+            Log.e(LOG_TAG, "DavaActivity.onCreate: restarting");
+            activitySingleton = null;
+            restart();
+        }
+
         Log.d(LOG_TAG, "DavaActivity.onCreate");
 
         activitySingleton = this;
