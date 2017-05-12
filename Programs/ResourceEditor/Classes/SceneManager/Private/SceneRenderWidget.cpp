@@ -70,7 +70,7 @@ void SceneRenderWidget::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, co
 {
     using namespace DAVA::TArc;
 
-    auto iter = std::find(fields.begin(), fields.end(), DAVA::Any(DAVA::String(SceneData::scenePropertyName)));
+    auto iter = std::find(fields.begin(), fields.end(), DAVA::Any(DAVA::FastName(SceneData::scenePropertyName)));
     if (iter == fields.end() && !fields.empty() && wrapper.HasData())
     {
         return;

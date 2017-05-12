@@ -11,11 +11,13 @@ using namespace DAVA;
 HasClassesFilter::HasClassesFilter(const Vector<String>& requiredClasses_)
     : requiredClasses(requiredClasses_)
 {
+    FastName classes("classes");
+
     std::sort(requiredClasses.begin(), requiredClasses.end());
 
     for (const auto& field : ReflectedTypeDB::Get<UIControl>()->GetStructure()->fields)
     {
-        if (field->name == "classes")
+        if (field->name == classes)
         {
             refMember = field.get();
         }

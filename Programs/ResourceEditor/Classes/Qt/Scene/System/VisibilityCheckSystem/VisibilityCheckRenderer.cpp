@@ -55,7 +55,7 @@ VisibilityCheckRenderer::VisibilityCheckRenderer()
     renderTargetConfig.colorBuffer[0].loadAction = rhi::LOADACTION_CLEAR;
     renderTargetConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_CLEAR;
     renderTargetConfig.priority = DAVA::PRIORITY_SERVICE_3D;
-    std::fill_n(renderTargetConfig.colorBuffer[0].clearColor, 4, 1.0f);
+    std::fill_n(renderTargetConfig.colorBuffer[0].clearColor, 4, std::numeric_limits<float>::max());
 
     rhi::DepthStencilState::Descriptor dsDesc;
     dsDesc.depthFunc = rhi::CMP_EQUAL;

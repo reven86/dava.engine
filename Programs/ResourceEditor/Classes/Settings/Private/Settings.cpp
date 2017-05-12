@@ -38,6 +38,8 @@ const FastName Settings::General_AssetCache_Ip = FastName("General/AssetCache/IP
 const FastName Settings::General_AssetCache_Port = FastName("General/AssetCache/Port");
 const FastName Settings::General_AssetCache_Timeout = FastName("General/AssetCache/Timeout");
 const FastName Settings::General_AutoConvertation = FastName("General/TextureBrowser/AutoConvertation");
+const FastName Settings::General_RenderBackend = FastName("General/Render/Backend");
+
 const FastName Settings::Scene_GridStep = FastName("Scene/GridStep");
 const FastName Settings::Scene_GridSize = FastName("Scene/GridSize");
 const FastName Settings::Scene_CameraSpeed0 = FastName("Scene/CameraSpeed0");
