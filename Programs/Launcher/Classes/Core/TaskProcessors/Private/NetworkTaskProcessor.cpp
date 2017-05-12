@@ -52,7 +52,10 @@ void NetworkTaskProcessor::StartNextTask()
     currentTask->notifier.NotifyStarted(currentTask->task.get());
 
     //on mac os x when connection fails once QNetworkAccessManager aborting each next  connection
-    networkAccessManager->clearAccessCache();
+    if (networkAccessManager->networkAccessible() != QNetworkAccessManager::Accessible)
+    {
+        networkAccessManager->clearAccessCache();
+    }
 
     std::vector<QUrl> urls = currentTask->task->GetUrls();
     Q_ASSERT(urls.empty() == false);
