@@ -86,10 +86,11 @@ void ApplicationManager::Start()
     Refresh();
 }
 
-void ApplicationManager::AddTask(std::unique_ptr<BaseTask>&& task, QVector<Receiver> receivers)
+void ApplicationManager::AddTask(std::unique_ptr<BaseTask>&& task, std::vector<Receiver> receivers)
 {
-    taskManager->AddTask(std::move(task),
-                         receivers << mainWindow->GetReceiver() << tasksLogger.GetReceiver());
+    receivers.push_back(mainWindow->GetReceiver());
+    receivers.push_back(tasksLogger.GetReceiver());
+    taskManager->AddTask(std::move(task), receivers);
 }
 
 void ApplicationManager::InstallApplication(const InstallApplicationParams& params)

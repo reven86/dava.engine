@@ -19,7 +19,7 @@ Receiver TasksLogger::GetReceiver() const
 
 void TasksLogger::OnTaskStarted(const BaseTask* task)
 {
-    ErrorMessenger::LogMessage(QtDebugMsg, QDateTime::currentDateTime().toString() + " : " + task->GetDescription());
+    ErrorMessenger::LogMessage(QtDebugMsg, QDateTime::currentDateTime().toString() + " : started " + task->GetDescription());
 }
 
 void TasksLogger::OnTaskFinished(const BaseTask* task)
@@ -27,5 +27,9 @@ void TasksLogger::OnTaskFinished(const BaseTask* task)
     if (task->HasError())
     {
         ErrorMessenger::LogMessage(QtWarningMsg, QDateTime::currentDateTime().toString() + " : " + "<span style =\"color:#aa0000;\">" + task->GetError() + "</span>");
+    }
+    else
+    {
+        ErrorMessenger::LogMessage(QtDebugMsg, QDateTime::currentDateTime().toString() + " : finished " + task->GetDescription());
     }
 }

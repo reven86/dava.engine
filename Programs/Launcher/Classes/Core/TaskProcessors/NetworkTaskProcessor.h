@@ -3,7 +3,6 @@
 #include "Core/TaskProcessors/BaseTaskProcessor.h"
 
 #include <QObject>
-#include <QList>
 #include <QNetworkAccessManager>
 
 #include <memory>
@@ -40,7 +39,7 @@ private:
         std::unique_ptr<DownloadTask> task;
         ReceiverNotifier notifier;
 
-        QList<QNetworkReply*> requests;
+        std::list<QNetworkReply*> requests;
     };
     QNetworkAccessManager* networkAccessManager;
     std::list<std::unique_ptr<TaskParams>> tasks;

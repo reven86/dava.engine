@@ -4,7 +4,6 @@
 
 #include <QObject>
 #include <QByteArray>
-#include <QMap>
 #include <QString>
 #include <QProcess>
 
@@ -56,7 +55,7 @@ private:
     QNetworkAccessManager* networkManager = nullptr;
 
     QByteArray protocolKey;
-    QMap<QProcess*, QString> startedCommandIDs;
+    std::map<QProcess*, QString> startedCommandIDs;
 
     Receiver receiver;
 };

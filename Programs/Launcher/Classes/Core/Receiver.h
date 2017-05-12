@@ -1,7 +1,7 @@
 #pragma once
 
-#include <QVector>
-
+#include <Qt>
+#include <vector>
 #include <functional>
 
 class BaseTask;
@@ -10,10 +10,6 @@ class Receiver
 {
 public:
     Receiver() = default;
-
-    //this c-tor used only to have onSuccess callback. onFinished callback will be replaced with onSuccess
-    //use this c-tor only for callback chain
-    Receiver(std::function<void(const BaseTask*)> onSuccess);
 
     //say to a user that application is started
     std::function<void(const BaseTask*)> onStarted;
@@ -30,7 +26,7 @@ class ReceiverNotifier final
 public:
     ReceiverNotifier() = default;
     ReceiverNotifier(Receiver receiver);
-    ReceiverNotifier(const QVector<Receiver>& receivers);
+    ReceiverNotifier(const std::vector<Receiver>& receivers);
 
     //wrappers to avoid iteration over receivers
     void NotifyStarted(const BaseTask* task);
@@ -38,5 +34,5 @@ public:
     void NotifyFinished(const BaseTask* task);
 
 private:
-    QVector<Receiver> receivers;
+    std::vector<Receiver> receivers;
 };

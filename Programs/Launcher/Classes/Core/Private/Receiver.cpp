@@ -1,17 +1,12 @@
 #include "Core/Receiver.h"
 #include "Core/Tasks/BaseTask.h"
 
-Receiver::Receiver(std::function<void(const BaseTask*)> onFinished_)
-    : onFinished(onFinished_)
-{
-}
-
 ReceiverNotifier::ReceiverNotifier(Receiver receiver)
     : receivers(1, receiver)
 {
 }
 
-ReceiverNotifier::ReceiverNotifier(const QVector<Receiver>& receivers_)
+ReceiverNotifier::ReceiverNotifier(const std::vector<Receiver>& receivers_)
     : receivers(receivers_)
 {
 }

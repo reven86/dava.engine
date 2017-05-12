@@ -11,17 +11,17 @@ const QVariant& TaskDataHolder::GetUserData() const
     return userData;
 }
 
-void OperationResult::SetError(const QString& error) const
+void ErrorHolder::SetError(const QString& error) const
 {
     errorText = error;
 }
 
-QString OperationResult::GetError() const
+QString ErrorHolder::GetError() const
 {
     return errorText;
 }
 
-bool OperationResult::HasError() const
+bool ErrorHolder::HasError() const
 {
     return errorText.isEmpty() == false;
 }

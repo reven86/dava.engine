@@ -2,19 +2,18 @@
 
 #include "Core/Tasks/AsyncChainTask.h"
 
-#include <QVector>
 #include <QUrl>
 #include <QString>
 
 class UpdateConfigTask : public AsyncChainTask
 {
 public:
-    UpdateConfigTask(ApplicationManager* appManager, const QVector<QUrl>& urls);
+    UpdateConfigTask(ApplicationManager* appManager, const std::vector<QUrl>& urls);
 
 private:
     QString GetDescription() const override;
     void Run() override;
 
     void OnConfigLoaded(const BaseTask* task);
-    QVector<QUrl> urls;
+    std::vector<QUrl> urls;
 };

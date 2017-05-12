@@ -241,8 +241,8 @@ void MainWindow::OnNewsLoaded(const BaseTask* task)
     {
         Q_ASSERT(task->GetTaskType() == BaseTask::DOWNLOAD_TASK);
         const DownloadTask* downloadTask = static_cast<const DownloadTask*>(task);
-        Q_ASSERT(downloadTask->GetLoadedData().isEmpty() == false);
-        ui->textBrowser->setHtml(downloadTask->GetLoadedData().first());
+        Q_ASSERT(downloadTask->GetLoadedData().empty() == false);
+        ui->textBrowser->setHtml(downloadTask->GetLoadedData().front());
     }
     else
     {

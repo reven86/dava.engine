@@ -134,7 +134,7 @@ QStringList FileManager::OwnDirectories() const
                          << path + FileManagerDetails::tempDir;
 }
 
-FileManager::EntireList FileManager::CreateEntireList(const QString& pathOut, const QString& pathIn, OperationResult* result) const
+FileManager::EntireList FileManager::CreateEntireList(const QString& pathOut, const QString& pathIn, ErrorHolder* result) const
 {
     EntireList entryList;
     QDir outDir(pathOut);
@@ -217,7 +217,7 @@ FileManager::EntireList FileManager::CreateEntireList(const QString& pathOut, co
     return entryList;
 }
 
-bool FileManager::MoveLauncherRecursively(const QString& pathOut, const QString& pathIn, OperationResult* result) const
+bool FileManager::MoveLauncherRecursively(const QString& pathOut, const QString& pathIn, ErrorHolder* result) const
 {
     EntireList entryList = CreateEntireList(pathOut, pathIn, result);
     if (entryList.isEmpty())

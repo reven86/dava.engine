@@ -54,20 +54,20 @@ void ConfigDownloader::SetUseTestAPI(bool use)
 
 std::unique_ptr<BaseTask> ConfigDownloader::CreateTask() const
 {
-    QVector<QUrl> urls;
+    std::vector<QUrl> urls;
     if (IsTestAPIUsed())
     {
-        urls.push_back(GetServerHostName() + GetURL(LauncherTestInfoURL));
+        urls.push_back(serverHostName + GetURL(LauncherTestInfoURL));
     }
     else
     {
-        urls.push_back(GetServerHostName() + GetURL(LauncherInfoURL));
+        urls.push_back(serverHostName + GetURL(LauncherInfoURL));
     }
 
     for (int i = StringsURL; i < URLTypesCount; ++i)
     {
         eURLType type = static_cast<eURLType>(i);
-        QUrl url(GetServerHostName() + GetURL(type));
+        QUrl url(serverHostName + GetURL(type));
         urls.push_back(url);
     }
     return std::unique_ptr<BaseTask>(new UpdateConfigTask(appManager, urls));

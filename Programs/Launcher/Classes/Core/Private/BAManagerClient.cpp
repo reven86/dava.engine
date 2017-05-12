@@ -196,7 +196,7 @@ void BAManagerClient::OnProcessFinished(int exitCode, QProcess::ExitStatus exitS
     process->deleteLater();
 
     QString commandID = startedCommandIDs[process];
-    startedCommandIDs.remove(process);
+    startedCommandIDs.erase(process);
     if (commandID.isEmpty())
     {
         ErrorMessenger::LogMessage(QtWarningMsg, "Internal error: process is not registered");

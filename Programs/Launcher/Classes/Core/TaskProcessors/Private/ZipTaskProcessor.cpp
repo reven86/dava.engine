@@ -29,11 +29,29 @@ ZipTaskProcessor::~ZipTaskProcessor()
 void ZipTaskProcessor::AddTask(std::unique_ptr<BaseTask>&& task, ReceiverNotifier notifier)
 {
     Q_ASSERT(task->GetTaskType() == BaseTask::ZIP_TASK);
+    Q_ASSERT(currentTaskParams == nullptr);
+
     currentTaskParams = std::make_unique<TaskParams>(std::move(task), notifier);
-    CheckProgramState();
-    if (currentTaskParams->task->HasError())
+
+    QString processAddr = GetArchiverPath();
+    if (QFile::exists(processAddr) == false)
     {
+        currentTaskParams->task->SetError(QObject::tr("Archiver tool was not found. Please, reinstall application"));
         return;
+    }
+    else
+    {
+        QString archivePath = currentTaskParams->task->GetArchivePath();
+        if (archivePath.endsWith(".zip") == false)
+        {
+            currentTaskParams->task->SetError(QObject::tr("Required file is not a zip archive"));
+            return;
+        }
+        else if (QFile::exists(archivePath) == false)
+        {
+            currentTaskParams->task->SetError(QObject::tr("Required archive doesn't exists"));
+            return;
+        }
     }
 
     connect(&currentTaskParams->process, &QProcess::readyReadStandardOutput, this, &ZipTaskProcessor::OnReadyReadStandardOutput);
@@ -87,8 +105,12 @@ void ZipTaskProcessor::OnFinished(int exitCode, QProcess::ExitStatus exitStatus)
     {
         if (currentTaskParams->state == LIST_ARCHIVE)
         {
-            const QList<quint64>& values = currentTaskParams->filesAndSizes.values();
-            currentTaskParams->totalSize = std::accumulate(values.begin(), values.end(), 0);
+            currentTaskParams->totalSize = std::accumulate(currentTaskParams->filesAndSizes.begin(),
+                                                           currentTaskParams->filesAndSizes.end(),
+                                                           0,
+                                                           [](quint64 value, const std::pair<QString, quint64>& pair) {
+                                                               return value + pair.second;
+                                                           });
             currentTaskParams->state = UNPACK;
             ApplyState();
         }
@@ -101,7 +123,7 @@ void ZipTaskProcessor::OnFinished(int exitCode, QProcess::ExitStatus exitStatus)
 
 void ZipTaskProcessor::OnReadyReadStandardOutput()
 {
-    while (currentTaskParams != nullptr && currentTaskParams->process.canReadLine())
+    while (currentTaskParams->process.canReadLine())
     {
         QByteArray line = currentTaskParams->process.readLine();
         if (currentTaskParams->state == LIST_ARCHIVE)
@@ -165,7 +187,7 @@ void ZipTaskProcessor::ProcessOutputForList(const QByteArray& line)
     }
 
     QString file = str.right(str.size() - NAME_INDEX);
-    Q_ASSERT(!currentTaskParams->filesAndSizes.contains(file));
+    Q_ASSERT(currentTaskParams->filesAndSizes.find(file) == currentTaskParams->filesAndSizes.end());
     currentTaskParams->filesAndSizes[file] = size;
 }
 
@@ -178,9 +200,10 @@ void ZipTaskProcessor::ProcessOutputForUnpack(const QByteArray& line)
         return;
     }
     str.remove(0, startStr.length());
-    if (currentTaskParams->filesAndSizes.contains(str))
+    auto iter = currentTaskParams->filesAndSizes.find(str);
+    if (iter != currentTaskParams->filesAndSizes.end())
     {
-        currentTaskParams->matchedSize += currentTaskParams->filesAndSizes[str];
+        currentTaskParams->matchedSize += iter->second;
     }
     float progress = (currentTaskParams->matchedSize * 100.0f) / currentTaskParams->totalSize;
     int progressInt = static_cast<int>(qRound(progress));
@@ -196,25 +219,4 @@ QString ZipTaskProcessor::GetArchiverPath() const
     "/../Resources/7za";
 #endif //Q_OS_MAC Q_OS_WIN
     return processAddr;
-}
-
-void ZipTaskProcessor::CheckProgramState() const
-{
-    QString processAddr = GetArchiverPath();
-    if (!QFile::exists(processAddr))
-    {
-        currentTaskParams->task->SetError(QObject::tr("Archiver tool was not found. Please, reinstall application"));
-    }
-    else
-    {
-        QString archivePath = currentTaskParams->task->GetArchivePath();
-        if (archivePath.endsWith(".zip") == false)
-        {
-            currentTaskParams->task->SetError(QObject::tr("Required file is not a zip archive"));
-        }
-        else if (QFile::exists(archivePath) == false)
-        {
-            currentTaskParams->task->SetError(QObject::tr("Required archive doesn't exists"));
-        }
-    }
 }

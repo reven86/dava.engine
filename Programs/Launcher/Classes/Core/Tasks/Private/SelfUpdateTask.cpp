@@ -33,10 +33,10 @@ void SelfUpdateTask::OnLoaded(const BaseTask* task)
 {
     Q_ASSERT(task->GetTaskType() == BaseTask::DOWNLOAD_TASK);
     const DownloadTask* downloadTask = static_cast<const DownloadTask*>(task);
-    Q_ASSERT(downloadTask->GetLoadedData().isEmpty() == false);
+    Q_ASSERT(downloadTask->GetLoadedData().empty() == false);
     FileManager* fileManager = appManager->GetFileManager();
     QString filePath = fileManager->GetTempDownloadFilePath(url);
-    bool archiveCreated = fileManager->CreateFileFromRawData(downloadTask->GetLoadedData().first(), filePath);
+    bool archiveCreated = fileManager->CreateFileFromRawData(downloadTask->GetLoadedData().front(), filePath);
     if (archiveCreated == false)
     {
         SetError(QObject::tr("Can not create archive %1!").arg(filePath));

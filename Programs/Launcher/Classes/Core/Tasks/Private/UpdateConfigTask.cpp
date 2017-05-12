@@ -5,7 +5,7 @@
 
 #include "Gui/MainWindow.h"
 
-UpdateConfigTask::UpdateConfigTask(ApplicationManager* appManager, const QVector<QUrl>& urls_)
+UpdateConfigTask::UpdateConfigTask(ApplicationManager* appManager, const std::vector<QUrl>& urls_)
     : AsyncChainTask(appManager)
     , urls(urls_)
 {

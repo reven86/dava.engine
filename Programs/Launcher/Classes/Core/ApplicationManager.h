@@ -36,7 +36,7 @@ public:
     template <typename T, typename... Arguments>
     std::unique_ptr<BaseTask> CreateTask(Arguments&&... args);
 
-    void AddTask(std::unique_ptr<BaseTask>&& task, QVector<Receiver> receivers = QVector<Receiver>());
+    void AddTask(std::unique_ptr<BaseTask>&& task, std::vector<Receiver> receivers = std::vector<Receiver>());
 
     template <typename T, typename... Arguments>
     void AddTask(Arguments&&... args);

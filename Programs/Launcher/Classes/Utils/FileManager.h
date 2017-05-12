@@ -29,7 +29,7 @@ public:
     bool MoveFileWithMakePath(const QString& currentPath, const QString& newPath);
 
     //this function move all files and folder except folders, which created by Launcher
-    bool MoveLauncherRecursively(const QString& pathOut, const QString& pathIn, OperationResult* result) const;
+    bool MoveLauncherRecursively(const QString& pathOut, const QString& pathIn, ErrorHolder* result) const;
 
     QString GetFilesDirectory() const;
 
@@ -52,7 +52,7 @@ private:
     QString GetDefaultFilesDirectory() const;
 
     QStringList OwnDirectories() const;
-    EntireList CreateEntireList(const QString& pathOut, const QString& pathIn, OperationResult* result) const;
+    EntireList CreateEntireList(const QString& pathOut, const QString& pathIn, ErrorHolder* result) const;
 
     QString filesDirectory;
 };

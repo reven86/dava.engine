@@ -54,23 +54,22 @@ void NetworkTaskProcessor::StartNextTask()
     //on mac os x when connection fails once QNetworkAccessManager aborting each next  connection
     networkAccessManager->clearAccessCache();
 
-    QVector<QUrl> urls = currentTask->task->GetUrls();
-    Q_ASSERT(urls.isEmpty() == false);
+    std::vector<QUrl> urls = currentTask->task->GetUrls();
+    Q_ASSERT(urls.empty() == false);
     for (const QUrl& url : urls)
     {
         QNetworkReply* reply = networkAccessManager->get(QNetworkRequest(url));
         connect(reply, &QNetworkReply::downloadProgress, this, &NetworkTaskProcessor::OnDownloadProgress);
-        currentTask->requests << reply;
+        currentTask->requests.push_back(reply);
     }
 }
 
 void NetworkTaskProcessor::OnDownloadFinished(QNetworkReply* reply)
 {
     Q_ASSERT(currentTask->task->GetTaskType() == BaseTask::DOWNLOAD_TASK);
-    Q_ASSERT(currentTask->requests.contains(reply));
     reply->deleteLater();
 
-    currentTask->requests.removeAll(reply);
+    currentTask->requests.remove(reply);
     if (reply->error() != QNetworkReply::NoError)
     {
         if (reply->error() != QNetworkReply::OperationCanceledError)
@@ -87,7 +86,7 @@ void NetworkTaskProcessor::OnDownloadFinished(QNetworkReply* reply)
     {
         currentTask->task->AddLoadedData(reply->readAll());
     }
-    if (currentTask->requests.isEmpty())
+    if (currentTask->requests.empty())
     {
         currentTask->notifier.NotifyFinished(currentTask->task.get());
         currentTask = nullptr;
@@ -117,9 +116,9 @@ void NetworkTaskProcessor::OnDownloadProgress(qint64 bytes, qint64 total)
     {
         return;
     }
-    int size = currentTask->task->GetUrls().size();
+    size_t size = currentTask->task->GetUrls().size();
     Q_ASSERT(size > 0);
     float multiplier = (100.0f * (size - currentTask->requests.size() + 1)) / size;
-    int progress = ((bytes * 1.0f) / total) * multiplier;
+    int progress = ((static_cast<float>(bytes)) / total) * multiplier;
     currentTask->notifier.NotifyProgress(currentTask->task.get(), progress);
 }

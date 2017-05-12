@@ -4,12 +4,9 @@
 #include <QPushButton>
 
 ButtonsWidget::ButtonsWidget(int rowNum, QWidget* parent)
-    :
-    QWidget(parent)
-    ,
-    ui(new Ui::ButtonsWidget)
-    ,
-    rowNumber(rowNum)
+    : QWidget(parent)
+    , ui(new Ui::ButtonsWidget)
+    , rowNumber(rowNum)
 {
     ui->setupUi(this);
 

@@ -19,7 +19,7 @@ private:
 };
 
 //task operation result component
-class OperationResult
+class ErrorHolder
 {
 public:
     //OperationProcessor member functions must work in inherited class const methods
@@ -32,7 +32,7 @@ private:
     mutable QString errorText;
 };
 
-class BaseTask : public TaskDataHolder, public OperationResult
+class BaseTask : public TaskDataHolder, public ErrorHolder
 {
 public:
     BaseTask(ApplicationManager* appManager);

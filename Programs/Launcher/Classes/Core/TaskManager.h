@@ -4,8 +4,6 @@
 #include "Core/Receiver.h"
 
 #include <QObject>
-#include <QVector>
-#include <QMap>
 
 #include <memory>
 
@@ -21,7 +19,7 @@ public:
     ~TaskManager();
 
     void AddTask(std::unique_ptr<BaseTask>&& task, const Receiver& receiver);
-    void AddTask(std::unique_ptr<BaseTask>&& task, const QVector<Receiver>& receivers);
+    void AddTask(std::unique_ptr<BaseTask>&& task, const std::vector<Receiver>& receivers);
 
 public slots:
     void Terminate();

@@ -17,10 +17,10 @@ TaskManager::~TaskManager() = default;
 
 void TaskManager::AddTask(std::unique_ptr<BaseTask>&& task, const Receiver& receiver)
 {
-    taskProcessors[task->GetTaskType()]->AddTask(std::move(task), ReceiverNotifier(receiver));
+    AddTask(std::move(task), std::vector<Receiver>(1, receiver));
 }
 
-void TaskManager::AddTask(std::unique_ptr<BaseTask>&& task, const QVector<Receiver>& receivers)
+void TaskManager::AddTask(std::unique_ptr<BaseTask>&& task, const std::vector<Receiver>& receivers)
 {
     taskProcessors[task->GetTaskType()]->AddTask(std::move(task), ReceiverNotifier(receivers));
 }

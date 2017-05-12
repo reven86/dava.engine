@@ -4,26 +4,25 @@
 
 #include <QString>
 #include <QUrl>
-#include <QVector>
 #include <QByteArray>
 
 class DownloadTask final : public BaseTask
 {
 public:
-    DownloadTask(ApplicationManager* appManager, const QString& description, const QVector<QUrl>& urls);
+    DownloadTask(ApplicationManager* appManager, const QString& description, const std::vector<QUrl>& urls);
     DownloadTask(ApplicationManager* appManager, const QString& description, const QUrl url);
 
     QString GetDescription() const override;
     eTaskType GetTaskType() const override;
 
-    //change it to QVector<std::pair<QIODevice*, QUrl>> later
-    const QVector<QByteArray>& GetLoadedData() const;
+    //change it to std::vector<std::pair<QIODevice*, QUrl>> later
+    const std::vector<QByteArray>& GetLoadedData() const;
     void AddLoadedData(const QByteArray& data);
 
-    const QVector<QUrl>& GetUrls() const;
+    const std::vector<QUrl>& GetUrls() const;
 
 protected:
     QString description;
-    QVector<QUrl> urls;
-    QVector<QByteArray> loadedData;
+    std::vector<QUrl> urls;
+    std::vector<QByteArray> loadedData;
 };
