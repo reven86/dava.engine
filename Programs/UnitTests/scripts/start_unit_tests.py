@@ -168,7 +168,6 @@ while continue_process_stdout:
                 sys.stdout.flush()
             if line.find("Finish all tests.") != -1:    # this text marker helps to detect good \
                                                         #  finish tests on ios device (run with lldb)
-                # app_exit_code = 0
                 if start_on_android:
                     # we want to exit from logcat process because sub_process.stdout.readline() will block
                     # current thread

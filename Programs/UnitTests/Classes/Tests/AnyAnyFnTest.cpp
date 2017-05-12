@@ -1,8 +1,6 @@
 #include "Base/Any.h"
 #include "Base/AnyFn.h"
 #include "Base/TypeInheritance.h"
-#include "Logger/Logger.h"
-#include "Debug/DVAssert.h"
 #include "Math/Vector.h"
 #include "UnitTests/UnitTests.h"
 #include <numeric>
@@ -209,21 +207,6 @@ DAVA_TESTCLASS (AnyAnyFnTest)
         TEST_VERIFY(t3 == t1);
         TEST_VERIFY(!a.CanCast<Stub>());
         TEST_VERIFY(!b.CanCast<Stub>());
-    }
-
-    DAVA_TEST (CrashTest1)
-    {
-        //        TEST_VERIFY(false);
-    }
-
-    DAVA_TEST (CrashTest2)
-    {
-        Logger::Error("error in %s", __FUNCTION__);
-    }
-
-    DAVA_TEST (CrashTest3)
-    {
-        DVASSERT(false, __FUNCTION__);
     }
 
     DAVA_TEST (AutoStorageTest)
