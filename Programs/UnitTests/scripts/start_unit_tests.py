@@ -220,7 +220,7 @@ if sys.platform == "darwin" and start_on_ios == False and start_on_android == Fa
 
     subprocess.call(params)
 
-if app_exit_code is None:
-    app_exit_code = sub_process.poll()
-
-sys.exit(app_exit_code)
+if app_exit_code == 1:
+    sys.exit(app_exit_code)
+else:
+    sys.exit(sub_process.returncode)
