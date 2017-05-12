@@ -27,22 +27,24 @@ public:
                             StaticOcclusionFrameResult& target, const StaticOcclusionData&, uint32 blockIndex);
 
 private:
-    bool ShouldEnableDepthWriteForRenderObject(RenderObject*);
+    bool ShouldDisableDepthWrite(RenderBatch*);
 
 private:
-    enum RenderBatchDepthOption : uint32
+    enum RenderBatchOption : uint32
     {
-        Option_DepthWriteDisabled = 0,
-        Option_DepthWriteEnabled = 1
+        OPTION_DISABLE_DEPTH = 1 << 0,
     };
-    using RenderBatchWithDepthOption = std::pair<RenderBatch*, RenderBatchDepthOption>;
+    using BatchWithOptions = std::pair<RenderBatch*, uint32>;
 
     rhi::HTexture colorBuffer;
     rhi::HTexture depthBuffer;
-    rhi::HDepthStencilState depthWriteStateState[2];
+    rhi::HDepthStencilState stateDisabledDepthWrite;
+
     Vector<RenderBatch*> terrainBatches;
-    UnorderedMap<RenderObject*, bool> switchRenderObjects;
-    Vector<RenderBatchWithDepthOption> meshBatchesWithDepthWriteOption;
+    Vector<BatchWithOptions> meshRenderBatches;
+
+    UnorderedSet<RenderBatch*> batchesWithoutDepth;
+    UnorderedSet<RenderBatch*> processedBatches;
 };
 };
 

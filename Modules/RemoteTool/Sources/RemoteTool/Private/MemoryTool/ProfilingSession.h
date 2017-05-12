@@ -6,6 +6,7 @@
 
 #include <Base/BaseTypes.h>
 #include <Base/RefPtr.h>
+#include <Math/MathHelpers.h>
 #include <Debug/DVAssert.h>
 #include <FileSystem/FilePath.h>
 #include <Network/PeerDesription.h>
