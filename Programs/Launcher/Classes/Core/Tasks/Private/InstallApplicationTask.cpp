@@ -26,7 +26,7 @@ void InstallApplicationTask::Run()
 {
     QString description = QObject::tr("Downloading application %1").arg(appManager->GetAppName(params.app, params.newVersion.isToolSet));
     std::unique_ptr<BaseTask> task = appManager->CreateTask<DownloadTask>(description, params.newVersion.url);
-    task->SetOnSuccessCallback(std::bind(&InstallApplicationTask::OnLoaded, this, std::placeholders::_1));
+    task->SetOnFinishCallback(WrapCallback(std::bind(&InstallApplicationTask::OnLoaded, this, std::placeholders::_1)));
     appManager->AddTask(std::move(task));
 }
 
@@ -56,7 +56,7 @@ void InstallApplicationTask::OnLoaded(const BaseTask* task)
         if (localVersion != nullptr)
         {
             std::unique_ptr<BaseTask> task = appManager->CreateTask<RemoveApplicationTask>(params.branch, params.app);
-            task->SetOnSuccessCallback(std::bind(&InstallApplicationTask::Install, this));
+            task->SetOnFinishCallback(WrapCallback(std::bind(&InstallApplicationTask::Install, this)));
             appManager->AddTask(std::move(task));
             return;
         }
@@ -75,7 +75,7 @@ void InstallApplicationTask::Install()
     if (params.newVersion.url.endsWith("zip"))
     {
         std::unique_ptr<BaseTask> task = appManager->CreateTask<UnzipTask>(filePath, appDirPath);
-        task->SetOnSuccessCallback(std::bind(&InstallApplicationTask::OnInstalled, this));
+        task->SetOnFinishCallback(WrapCallback(std::bind(&InstallApplicationTask::OnInstalled, this)));
         appManager->AddTask(std::move(task));
         return;
     }

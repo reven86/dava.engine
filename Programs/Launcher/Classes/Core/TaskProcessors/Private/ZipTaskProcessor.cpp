@@ -98,7 +98,10 @@ void ZipTaskProcessor::OnFinished(int exitCode, QProcess::ExitStatus exitStatus)
 {
     if (exitCode != 0 || exitStatus != QProcess::NormalExit)
     {
-        currentTaskParams->task->SetError(QObject::tr("Archiver reports about error in current archive"));
+        if (currentTaskParams->task->HasError() == false)
+        {
+            currentTaskParams->task->SetError(QObject::tr("Archiver reports about error in current archive"));
+        }
         currentTaskParams = nullptr;
     }
     else

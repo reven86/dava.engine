@@ -46,7 +46,7 @@ void SelfUpdateTask::OnLoaded(const BaseTask* task)
     QString selfUpdateDirPath = fileManager->GetSelfUpdateTempDirectory();
 
     std::unique_ptr<BaseTask> zipTask = appManager->CreateTask<UnzipTask>(tempArchiveFilePath, selfUpdateDirPath);
-    zipTask->SetOnSuccessCallback(std::bind(&SelfUpdateTask::OnUnpacked, this));
+    zipTask->SetOnFinishCallback(WrapCallback(std::bind(&SelfUpdateTask::OnUnpacked, this)));
     appManager->AddTask(std::move(zipTask));
 }
 

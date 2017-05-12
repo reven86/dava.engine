@@ -18,6 +18,10 @@ public:
 signals:
     void Finished() const;
 
+protected:
+    //use this function only to wrap children tasks
+    CallbackFn WrapCallback(CallbackFn cb) const;
+
 private:
     eTaskType GetTaskType() const override;
 };

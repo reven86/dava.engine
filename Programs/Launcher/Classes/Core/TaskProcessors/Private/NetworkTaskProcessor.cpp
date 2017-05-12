@@ -32,9 +32,11 @@ void NetworkTaskProcessor::Terminate()
 {
     if (currentTask)
     {
-        for (QNetworkReply* reply : currentTask->requests)
+        //QNetworkReply::abort can call OnDownloadFinished directly and after last call currentTask will be removed
+        for (int i = 0, count = currentTask->requests.size(); i < count; ++i)
         {
-            reply->abort();
+            auto iter = std::next(currentTask->requests.begin(), i);
+            (*iter)->abort();
         }
     }
 }
