@@ -209,7 +209,7 @@ def main():
                                       args.configuration_id,
                                       root_build_url,
                                       brunch_info['fromRef']['latestCommit'],
-                                      description="auto")
+                                      description="Tests were ignored due to changed files")
 
         __print_teamcity_set_parameter( 'env.build_required', 'false' )
 
