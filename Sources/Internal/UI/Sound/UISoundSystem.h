@@ -21,6 +21,8 @@ public:
 
     void SetGlobalParameter(const DAVA::FastName& parameter, float32 value);
 
+    void SetVolume(float32 volume);
+
 private:
     using SoundEventMap = UnorderedMap<FastName, RefPtr<SoundEvent>>;
     using GlobalParameterMap = UnorderedMap<FastName, float32>;
@@ -35,5 +37,7 @@ private:
 
     GlobalParameterMap globalParameters;
     SoundEventMap soundEvents;
+
+    float32 volume = 1.0f;
 };
 }
