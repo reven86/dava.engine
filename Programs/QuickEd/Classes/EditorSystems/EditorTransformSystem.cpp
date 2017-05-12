@@ -31,13 +31,16 @@ REGISTER_PREFERENCES_ON_START(EditorTransformSystem,
                               PREF_ARG("moveMagnetRange", DAVA::Vector2(7.0f, 7.0f)),
                               PREF_ARG("resizeMagnetRange", DAVA::Vector2(7.0f, 7.0f)),
                               PREF_ARG("pivotMagnetRange", DAVA::Vector2(7.0f, 7.0f)),
-                              PREF_ARG("moveStepByKeyboard", static_cast<DAVA::float32>(10.0f)),
-                              PREF_ARG("expandedMoveStepByKeyboard", static_cast<DAVA::float32>(1.0f)),
+                              PREF_ARG("moveStepByKeyboardX", static_cast<DAVA::float32>(10.0f)),
+                              PREF_ARG("moveStepByKeyboardY", static_cast<DAVA::float32>(10.0f)),
+                              PREF_ARG("expandedMoveStepByKeyboardX", static_cast<DAVA::float32>(1.0f)),
+                              PREF_ARG("expandedMoveStepByKeyboardY", static_cast<DAVA::float32>(1.0f)),
                               PREF_ARG("borderInParentToMagnet", DAVA::Vector2(20.0f, 20.0f)),
                               PREF_ARG("indentOfControlToManget", DAVA::Vector2(5.0f, 5.0f)),
                               PREF_ARG("shareOfSizeToMagnetPivot", DAVA::Vector2(0.25f, 0.25f)),
                               PREF_ARG("angleSegment", static_cast<DAVA::float32>(15.0f)),
-                              PREF_ARG("shiftInverted", false)
+                              PREF_ARG("shiftInverted", false),
+                              PREF_ARG("canMagnet", true)
                               )
 
 const EditorTransformSystem::CornersDirections EditorTransformSystem::cornersDirections =
@@ -340,25 +343,25 @@ void EditorTransformSystem::ProcessKey(Key key)
 {
     if (!selectedControlNodes.empty())
     {
-        float32 step = expandedMoveStepByKeyboard;
-        if (!IsShiftPressed())
+        Vector2 step(expandedMoveStepByKeyboardX, expandedMoveStepByKeyboardY);
+        if (IsShiftPressed())
         {
-            step = moveStepByKeyboard;
+            step.Set(moveStepByKeyboardX, moveStepByKeyboardY);
         }
         Vector2 deltaPos;
         switch (key)
         {
         case Key::LEFT:
-            deltaPos.dx -= step;
+            deltaPos.dx -= step.dx;
             break;
         case Key::UP:
-            deltaPos.dy -= step;
+            deltaPos.dy -= step.dy;
             break;
         case Key::RIGHT:
-            deltaPos.dx += step;
+            deltaPos.dx += step.dx;
             break;
         case Key::DOWN:
-            deltaPos.dy += step;
+            deltaPos.dy += step.dy;
             break;
         default:
             break;
@@ -376,7 +379,7 @@ void EditorTransformSystem::ProcessDrag(const Vector2& pos)
     switch (activeArea)
     {
     case HUDAreaInfo::FRAME_AREA:
-        MoveAllSelectedControlsByMouse(delta, !IsShiftPressed());
+        MoveAllSelectedControlsByMouse(delta, canMagnet);
         break;
     case HUDAreaInfo::TOP_LEFT_AREA:
     case HUDAreaInfo::TOP_CENTER_AREA:
@@ -801,7 +804,7 @@ Vector2 EditorTransformSystem::AdjustResizeToBorderAndToMinimum(Vector2 deltaSiz
 {
     Vector<MagnetLineInfo> magnets;
 
-    bool canAdjustResize = !IsShiftPressed() && activeControlNode->GetControl()->GetAngle() == 0.0f && activeControlNode->GetParent()->GetControl() != nullptr;
+    bool canAdjustResize = canMagnet && activeControlNode->GetControl()->GetAngle() == 0.0f && activeControlNode->GetParent()->GetControl() != nullptr;
     Vector2 adjustedDeltaToBorder(deltaSize);
     if (canAdjustResize)
     {
@@ -952,7 +955,7 @@ Vector2 EditorTransformSystem::AdjustPivotToNearestArea(Vector2& delta)
     Vector2 finalPivot(origPivot + deltaPivot + extraDelta);
 
     bool found = false;
-    if (!IsShiftPressed() && shareOfSizeToMagnetPivot.x > 0.0f && shareOfSizeToMagnetPivot.y > 0.0f)
+    if (IsShiftPressed() && shareOfSizeToMagnetPivot.x > 0.0f && shareOfSizeToMagnetPivot.y > 0.0f)
     {
         const float32 maxPivot = 1.0f;
 
@@ -1038,7 +1041,7 @@ bool EditorTransformSystem::RotateControl(const Vector2& pos)
 float32 EditorTransformSystem::AdjustRotateToFixedAngle(float32 deltaAngle, float32 originalAngle)
 {
     float32 finalAngle = originalAngle + deltaAngle;
-    if (!IsShiftPressed())
+    if (IsShiftPressed())
     {
         const int step = angleSegment; //fixed angle step
         int32 nearestTargetAngle = static_cast<int32>(finalAngle - static_cast<int32>(finalAngle) % step);
