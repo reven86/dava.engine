@@ -3,14 +3,17 @@
 namespace DAVA
 {
 class ReflectedType;
+
+/**
+*/
 class ReflectedObject final
 {
 public:
     ReflectedObject() = default;
-    ReflectedObject(void* ptr, const ReflectedType* reflectedType);
+    ReflectedObject(void* ptr, const ReflectedType* rtype);
 
     template <typename T>
-    ReflectedObject(T* ptr);
+    ReflectedObject(T* ptr, bool isConst = false);
 
     template <typename T>
     ReflectedObject(const T* ptr);
@@ -30,8 +33,11 @@ public:
 
 protected:
     void* ptr = nullptr;
-    const ReflectedType* reflectedType = nullptr;
 
+    const ReflectedType* reflectedType = nullptr;
     bool isConst = false;
+
+    template <typename T>
+    bool CanGet() const;
 };
 } // namespace DAVA

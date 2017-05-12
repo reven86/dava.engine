@@ -133,7 +133,7 @@ void BaseComponentValue::ForceUpdate()
 bool BaseComponentValue::IsReadOnly() const
 {
     Reflection r = nodes.front()->field.ref;
-    return r.IsReadonly() || r.HasMeta<M::ReadOnly>();
+    return r.IsReadonly() || (nullptr != r.GetMeta<M::ReadOnly>());
 }
 
 bool BaseComponentValue::IsSpannedControl() const

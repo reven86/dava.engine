@@ -170,7 +170,7 @@ bool FilePathEdit::IsFile() const
 {
     Reflection r = model.GetField(GetFieldName(Fields::Value));
     DVASSERT(r.IsValid());
-    return r.HasMeta<M::Directory>() == false;
+    return r.GetMeta<M::Directory>() == nullptr;
 }
 
 FileDialogParams FilePathEdit::GetFileDialogParams() const

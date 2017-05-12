@@ -93,7 +93,7 @@ struct TypeInitializer : public StaticSingleton<ComponentCreator>
             }
 
             const std::unique_ptr<ReflectedMeta>& meta = refType->GetStructure()->meta;
-            if (meta != nullptr && meta->HasMeta<M::CantBeCreatedManualyComponent>())
+            if (meta != nullptr && (nullptr != meta->GetMeta<M::CantBeCreatedManualyComponent>()))
             {
                 continue;
             }

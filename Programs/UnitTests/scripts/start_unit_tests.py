@@ -42,6 +42,8 @@ start_on_android = False
 start_on_ios = False
 start_on_uwp = False
 
+run_at_teamcity = False
+
 if len(sys.argv) > 1:
     if sys.argv[1] == "android":
         start_on_android = True
@@ -49,6 +51,13 @@ if len(sys.argv) > 1:
         start_on_ios = True
     elif sys.argv[1] == "uwp":
         start_on_uwp = True
+
+# define if tests were started on teamcity
+params_count = len(sys.argv)
+for index in range(1, params_count):
+    if sys.argv[index] == "--teamcity":
+        run_at_teamcity = True
+        break
 
 sub_process = None
 
@@ -69,8 +78,11 @@ def start_unittests_on_android_device():
         ["adb", "logcat", "-s", "TeamcityOutput", "AndroidRuntime:E", "ActivityManager:W"],
         stdout=subprocess.PIPE)
     # start unittests on device
-    subprocess.Popen(
-        ["adb", "shell", "am", "start", "-n", "com.dava.unittests/com.dava.engine.DavaActivity"])
+    commandLine = ["adb", "shell", "am", "start", "-n", "com.dava.unittests/com.dava.engine.DavaActivity"]
+    if run_at_teamcity == True:
+        commandLine.extend(["-es", "-teamcity"]) 
+
+    subprocess.Popen(commandLine)
     return sub_process
 
 def start_unittests_on_uwp_device():
@@ -84,29 +96,42 @@ def start_unittests_on_uwp_device():
 
     package_name = name[0]
     arch = sys.argv[2]
-    sub_process = subprocess.Popen(["../../../Bin/UWPRunner.exe", 
+
+    commandLine = ["../../../Bin/UWPRunner.exe", 
                                     '--package', package_name, 
                                     '--arch', arch,
-                                    '--tc_test', '--dava_app'],
-                                    stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    
+                                    '--tc_test', '--dava_app']
+    if run_at_teamcity == True:
+        commandLine.extend(['--cmd_line', '-teamcity']) 
+
+    sub_process = subprocess.Popen(commandLine, stdout=subprocess.PIPE, stderr=subprocess.PIPE)    
     return sub_process
 
 if start_on_ios:
+
+    commandLine = ["./ios-deploy", "-d", "--noninteractive", "-b", "../build/" + PRJ_NAME_BASE + PRJ_POSTFIX]
+    if run_at_teamcity == True:
+        commandLine.extend(["-a", "-teamcity"]) 
+
     # ../build/ios-deploy -d --noninteractive -b ../build/UnitTests.app
-    sub_process = subprocess.Popen(["./ios-deploy", "-d", "--noninteractive", "-b", "../build/" +
-                                    PRJ_NAME_BASE + PRJ_POSTFIX],
-                                   stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    sub_process = subprocess.Popen(commandLine, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     print("copy " + PRJ_NAME_BASE + PRJ_POSTFIX + " on device and run")
 elif start_on_android:
     sub_process = start_unittests_on_android_device()
 elif sys.platform == 'win32' and start_on_uwp == False:
+    commandLine = []
+
     if os.path.isfile("..\\Release\\app\\" + PRJ_NAME_BASE + PRJ_POSTFIX):  # run on build server (TeamCity)
-        sub_process = subprocess.Popen(["..\\Release\\app\\" + PRJ_NAME_BASE + PRJ_POSTFIX], cwd="./..",
-                                       stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        commandLine = ["..\\Release\\app\\" + PRJ_NAME_BASE + PRJ_POSTFIX]
     else:
-        sub_process = subprocess.Popen(["..\\Release\\" + PRJ_NAME_BASE + PRJ_POSTFIX], cwd="./..",
-                                       stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        commandLine = ["..\\Release\\" + PRJ_NAME_BASE + PRJ_POSTFIX]
+
+    if run_at_teamcity == True:
+        commandLine.extend(["-teamcity"])
+
+    sub_process = subprocess.Popen(commandLine, cwd="./..", stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+
 elif sys.platform == 'win32' and start_on_uwp == True:
     # run appx to Win10 device
     sub_process = start_unittests_on_uwp_device()
@@ -121,7 +146,12 @@ elif sys.platform == "darwin":
         # Xcode->Preferences->Location->DerivedData select relative
         app_path = "../DerivedData/TemplateProjectMacOS/Build/Products/Release/UnitTests.app/Contents/MacOS/" \
                    + PRJ_NAME_BASE
-    sub_process = subprocess.Popen([app_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+    commandLine = [app_path]
+    if run_at_teamcity == True:
+        commandLine.extend(["-teamcity"])
+
+    sub_process = subprocess.Popen(commandLine, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
 
 app_exit_code = None
 

@@ -10,6 +10,7 @@
 
 #include <vector>
 #include "../Common/rhi_Utils.h"
+#include "Concurrency/Mutex.h"
 #include "Concurrency/LockGuard.h"
 
 #define RHI_THREAD_SAFE_REMOTE_HEAP 1

@@ -49,6 +49,9 @@ public:
     float32 GetHeightAboveLandscape() const;
     void SetHeightAboveLandscape(float32);
 
+    bool GetDebugDrawEnabled() const;
+    void SetDebugDrawEnabled(bool);
+
     bool ShouldRebuildPoints() const;
     bool IsValid() const;
     void SetValid();
@@ -71,6 +74,7 @@ private:
     bool shouldNormalizeColor = true;
     bool shouldPlaceOnLandscape = true;
     bool shouldRebuildPointSet = true;
+    bool debugDrawEnabled = false;
 
 public:
     INTROSPECTION_EXTEND(VisibilityCheckComponent, Component,
@@ -84,7 +88,9 @@ public:
                          PROPERTY("Color", "Color", GetColor, SetColor, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("Normalize Color", "If enabled scales overlay's color to match current color.", ShouldNormalizeColor, SetShouldNormalizeColor, I_SAVE | I_VIEW | I_EDIT)
                          PROPERTY("Place on Landscape", "Snaps each point to landscape", ShouldPlaceOnLandscape, SetShouldPlaceOnLandscape, I_SAVE | I_VIEW | I_EDIT)
-                         PROPERTY("Height Above the Landscape", "Distance from landscape to each point", GetHeightAboveLandscape, SetHeightAboveLandscape, I_SAVE | I_VIEW | I_EDIT))
+                         PROPERTY("Height Above the Landscape", "Distance from landscape to each point", GetHeightAboveLandscape, SetHeightAboveLandscape, I_SAVE | I_VIEW | I_EDIT)
+                         PROPERTY("Debug draw", "Debug draw", GetDebugDrawEnabled, SetDebugDrawEnabled, I_SAVE | I_VIEW | I_EDIT)
+                         )
 
     DAVA_VIRTUAL_REFLECTION(VisibilityCheckComponent, Component);
 };

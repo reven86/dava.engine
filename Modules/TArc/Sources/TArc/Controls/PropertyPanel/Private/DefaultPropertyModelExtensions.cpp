@@ -129,11 +129,11 @@ std::unique_ptr<BaseComponentValue> DefaultEditorComponentExtension::GetEditor(c
 {
     if (node->propertyType == PropertyNode::RealProperty)
     {
-        if (node->field.ref.HasMeta<M::Enum>())
+        if (nullptr != node->field.ref.GetMeta<M::Enum>())
         {
             return std::make_unique<EnumComponentValue>();
         }
-        else if (node->field.ref.HasMeta<M::Flags>())
+        else if (nullptr != node->field.ref.GetMeta<M::Flags>())
         {
             return std::make_unique<FlagsComponentValue>();
         }
