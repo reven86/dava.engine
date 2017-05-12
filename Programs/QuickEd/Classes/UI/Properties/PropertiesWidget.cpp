@@ -15,8 +15,6 @@
 #include "Model/PackageHierarchy/ControlNode.h"
 #include "Model/PackageHierarchy/StyleSheetNode.h"
 
-#include <TArc/Core/FieldBinder.h>
-
 #include <UI/Components/UIComponent.h>
 #include <UI/UIControl.h>
 #include <UI/Styles/UIStyleSheetPropertyDataBase.h>
@@ -88,7 +86,9 @@ PropertiesWidget::~PropertiesWidget()
 void PropertiesWidget::SetAccessor(DAVA::TArc::ContextAccessor* accessor_)
 {
     accessor = accessor_;
-    BindFields();
+
+    documentDataWrapper = accessor->CreateWrapper(DAVA::ReflectedTypeDB::Get<DocumentData>());
+    documentDataWrapper.SetListener(this);
 
     propertiesModel->SetAccessor(accessor);
 }
@@ -361,123 +361,111 @@ void PropertiesWidget::ApplyExpanding()
     }
 }
 
-void PropertiesWidget::BindFields()
+void PropertiesWidget::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, const DAVA::Vector<DAVA::Any>& fields)
 {
     using namespace DAVA;
     using namespace DAVA::TArc;
 
-    fieldBinder.reset(new FieldBinder(accessor));
-    {
-        FieldDescriptor fieldDescr;
-        fieldDescr.type = ReflectedTypeDB::Get<DocumentData>();
-        fieldDescr.fieldName = FastName(DocumentData::packagePropertyName);
-        fieldBinder->BindField(fieldDescr, MakeFunction(this, &PropertiesWidget::OnPackageDataChanged));
-    }
-    {
-        FieldDescriptor fieldDescr;
-        fieldDescr.type = ReflectedTypeDB::Get<DocumentData>();
-        fieldDescr.fieldName = FastName(DocumentData::selectionPropertyName);
-        fieldBinder->BindField(fieldDescr, MakeFunction(this, &PropertiesWidget::OnSelectionDataChanged));
-    }
-}
-
-void PropertiesWidget::OnPackageDataChanged(const DAVA::Any& package)
-{
-    treeView->setEnabled(package.CanGet<PackageNode*>() && (package.Get<PackageNode*>() != nullptr));
-}
-
-void PropertiesWidget::OnSelectionDataChanged(const DAVA::Any& selectionData)
-{
-    using namespace DAVA;
-    using namespace DAVA::TArc;
-    DataContext* activeContext = accessor->GetActiveContext();
-    if (activeContext == nullptr)
+    if (wrapper.HasData() == false)
     {
         UpdateModel(nullptr);
+        treeView->setEnabled(false);
         return;
     }
+    bool selectionWasChanged = std::find(fields.begin(), fields.end(), DocumentData::selectionPropertyName) != fields.end();
+    bool packageWasChanged = std::find(fields.begin(), fields.end(), DocumentData::packagePropertyName) != fields.end();
 
-    //prepare selection
-    SelectedNodes selection = selectionData.Cast<SelectedNodes>(SelectedNodes());
-    for (auto iter = selection.begin(); iter != selection.end();)
+    if (packageWasChanged && selectionWasChanged)
     {
-        PackageBaseNode* node = *iter;
-        PackageBaseNode* parent = node->GetParent();
-        if (parent == nullptr || parent->GetParent() == nullptr)
-        {
-            iter = selection.erase(iter);
-        }
-        else
-        {
-            ++iter;
-        }
-    }
-
-    PropertiesWidgetData* widgetData = activeContext->GetData<PropertiesWidgetData>();
-
-    SelectedNodes& cachedSelection = widgetData->cachedSelection;
-    List<PackageBaseNode*>& selectionHistory = widgetData->selectionHistory;
-
-    if (selection.empty())
-    {
-        selectionHistory.clear();
-        cachedSelection.clear();
+        //clear last cached value because next selected value will be delayed
         UpdateModel(nullptr);
-        return;
     }
-
-    SortedPackageBaseNodeSet newSelection(CompareByLCA);
-    std::set_difference(selection.begin(),
-                        selection.end(),
-                        cachedSelection.begin(),
-                        cachedSelection.end(),
-                        std::inserter(newSelection, newSelection.end()));
-
-    if (newSelection.empty())
+    if (selectionWasChanged)
     {
-        SelectedNodes removedSelection;
-        std::set_difference(cachedSelection.begin(),
-                            cachedSelection.end(),
-                            selection.begin(),
+        //prepare selection
+        Any selectionData = documentDataWrapper.GetFieldValue(DocumentData::selectionPropertyName);
+        SelectedNodes selection = selectionData.Cast<SelectedNodes>(SelectedNodes());
+        for (auto iter = selection.begin(); iter != selection.end();)
+        {
+            PackageBaseNode* node = *iter;
+            PackageBaseNode* parent = node->GetParent();
+            if (parent == nullptr || parent->GetParent() == nullptr)
+            {
+                iter = selection.erase(iter);
+            }
+            else
+            {
+                ++iter;
+            }
+        }
+        DataContext* activeContext = accessor->GetActiveContext();
+        DVASSERT(activeContext != nullptr);
+        PropertiesWidgetData* widgetData = activeContext->GetData<PropertiesWidgetData>();
+
+        SelectedNodes& cachedSelection = widgetData->cachedSelection;
+        List<PackageBaseNode*>& selectionHistory = widgetData->selectionHistory;
+
+        if (selection.empty())
+        {
+            selectionHistory.clear();
+            cachedSelection.clear();
+            UpdateModel(nullptr);
+            return;
+        }
+
+        SortedPackageBaseNodeSet newSelection(CompareByLCA);
+        std::set_difference(selection.begin(),
                             selection.end(),
-                            std::inserter(removedSelection, removedSelection.end()));
+                            cachedSelection.begin(),
+                            cachedSelection.end(),
+                            std::inserter(newSelection, newSelection.end()));
 
-        for (PackageBaseNode* node : removedSelection)
+        if (newSelection.empty())
         {
-            selectionHistory.remove(node);
-        }
-        UpdateModel(selectionHistory.back());
-    }
-    else
-    {
-        //take any node from new selection. If this node is higher than cached selection top node, display properties for most top node from new selection
-        //otherwise if this node is lower than cached selection bottom node, display properties for most bottom node from new selection
-        PackageBaseNode* newSelectedNode = *newSelection.begin();
-        DVASSERT(newSelectedNode != nullptr);
+            SelectedNodes removedSelection;
+            std::set_difference(cachedSelection.begin(),
+                                cachedSelection.end(),
+                                selection.begin(),
+                                selection.end(),
+                                std::inserter(removedSelection, removedSelection.end()));
 
-        bool selectionAddedToTop = true;
-        if (cachedSelection.empty() == false)
-        {
-            PackageBaseNode* cachedTopNode = *cachedSelection.begin();
-            selectionAddedToTop = CompareByLCA(newSelectedNode, cachedTopNode);
-        }
-
-        if (selectionAddedToTop)
-        {
-            for (auto reverseIter = newSelection.rbegin(); reverseIter != newSelection.rend(); ++reverseIter)
+            for (PackageBaseNode* node : removedSelection)
             {
-                selectionHistory.push_back(*reverseIter);
+                selectionHistory.remove(node);
             }
-            UpdateModel(newSelectedNode);
+            UpdateModel(selectionHistory.back());
         }
         else
         {
-            for (PackageBaseNode* node : newSelection)
+            //take any node from new selection. If this node is higher than cached selection top node, display properties for most top node from new selection
+            //otherwise if this node is lower than cached selection bottom node, display properties for most bottom node from new selection
+            PackageBaseNode* newSelectedNode = *newSelection.begin();
+            DVASSERT(newSelectedNode != nullptr);
+
+            bool selectionAddedToTop = true;
+            if (cachedSelection.empty() == false)
             {
-                selectionHistory.push_back(node);
+                PackageBaseNode* cachedTopNode = *cachedSelection.begin();
+                selectionAddedToTop = CompareByLCA(newSelectedNode, cachedTopNode);
             }
-            UpdateModel(*newSelection.rbegin());
+
+            if (selectionAddedToTop)
+            {
+                for (auto reverseIter = newSelection.rbegin(); reverseIter != newSelection.rend(); ++reverseIter)
+                {
+                    selectionHistory.push_back(*reverseIter);
+                }
+                UpdateModel(newSelectedNode);
+            }
+            else
+            {
+                for (PackageBaseNode* node : newSelection)
+                {
+                    selectionHistory.push_back(node);
+                }
+                UpdateModel(*newSelection.rbegin());
+            }
         }
+        cachedSelection = selection;
     }
-    cachedSelection = selection;
 }
