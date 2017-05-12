@@ -132,8 +132,11 @@ const ReflectedType* StaticPackageInformationBuilder::BeginControlWithPrototype(
             return FilePath(pack->GetPath()).GetBasename() == packageName;
         });
 
-        prototypePackage = *it;
-        prototype = prototypePackage->FindPrototypeByName(prototypeName);
+        if (it != packages.end())
+        {
+            prototypePackage = *it;
+            prototype = prototypePackage->FindPrototypeByName(prototypeName);
+        }
     }
 
     if (prototype && prototypePackage)
