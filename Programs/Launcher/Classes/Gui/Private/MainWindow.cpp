@@ -384,9 +384,17 @@ void MainWindow::OnTaskProgress(const BaseTask* /*task*/, quint32 progress)
     ui->progressBar->setValue(progress);
 }
 
+void MainWindow::AddText(const QString& text, const QColor& color)
+{
+    QColor textColor = ui->textEdit_launcherStatus->textColor();
+    ui->textEdit_launcherStatus->setTextColor(color);
+    ui->textEdit_launcherStatus->append(QTime::currentTime().toString() + " : " + text);
+    ui->textEdit_launcherStatus->setTextColor(textColor);
+}
+
 void MainWindow::OnTaskStarted(const BaseTask* task)
 {
-    ui->textEdit_launcherStatus->append(QTime::currentTime().toString() + " : " + task->GetDescription());
+    AddText(task->GetDescription());
 
     BaseTask::eTaskType type = task->GetTaskType();
     if (type == BaseTask::DOWNLOAD_TASK || type == BaseTask::ZIP_TASK)
@@ -402,12 +410,15 @@ void MainWindow::OnTaskFinished(const BaseTask* task)
     const QString& error = task->GetError();
     if (error.isEmpty() == false)
     {
-        ui->textEdit_launcherStatus->append(QTime::currentTime().toString() + " : " + "<span style =\"color:#aa0000;\">" + error + "</span>");
+        AddText(error, "#aa0000");
     }
     BaseTask::eTaskType type = task->GetTaskType();
-    if (type == BaseTask::DOWNLOAD_TASK || type == BaseTask::ZIP_TASK)
+    if (type == BaseTask::DOWNLOAD_TASK)
     {
         OnConnectedChanged(error.isEmpty());
+    }
+    if (type == BaseTask::DOWNLOAD_TASK || type == BaseTask::ZIP_TASK)
+    {
         ui->stackedWidget_status->setCurrentIndex(1);
     }
 }

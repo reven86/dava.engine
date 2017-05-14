@@ -77,7 +77,7 @@ void ZipTaskProcessor::OnErrorOccurred(QProcess::ProcessError error)
         currentTaskParams->task->SetError(QObject::tr("Failed to launch archiver"));
         break;
     case QProcess::Crashed:
-        currentTaskParams->task->SetError(QObject::tr("Archiver crashed"));
+        currentTaskParams->task->SetError(QObject::tr("Archiver was stopped"));
         break;
     case QProcess::Timedout:
         currentTaskParams->task->SetError(QObject::tr("Archiver time out error"));

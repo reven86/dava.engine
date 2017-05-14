@@ -30,18 +30,18 @@ private slots:
 
 private:
     void StartNextTask();
-    void OnNetworkError();
 
     struct TaskParams
     {
         TaskParams(std::unique_ptr<BaseTask>&& task, ReceiverNotifier notifier);
+        ~TaskParams();
 
         std::unique_ptr<DownloadTask> task;
         ReceiverNotifier notifier;
 
         std::list<QNetworkReply*> requests;
     };
-    QNetworkAccessManager* networkAccessManager;
+    QNetworkAccessManager* networkAccessManager = nullptr;
     std::list<std::unique_ptr<TaskParams>> tasks;
     std::unique_ptr<TaskParams> currentTask;
 };

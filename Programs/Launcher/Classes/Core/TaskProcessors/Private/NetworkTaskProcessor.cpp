@@ -10,6 +10,11 @@ NetworkTaskProcessor::TaskParams::TaskParams(std::unique_ptr<BaseTask>&& task_, 
 {
 }
 
+NetworkTaskProcessor::TaskParams::~TaskParams()
+{
+    Q_ASSERT(requests.empty());
+}
+
 NetworkTaskProcessor::NetworkTaskProcessor()
     : QObject(nullptr)
     , networkAccessManager(new QNetworkAccessManager(this))
@@ -30,14 +35,13 @@ void NetworkTaskProcessor::AddTask(std::unique_ptr<BaseTask>&& task, ReceiverNot
 
 void NetworkTaskProcessor::Terminate()
 {
-    if (currentTask)
+    if (currentTask == nullptr)
     {
-        //QNetworkReply::abort can call OnDownloadFinished directly and after last call currentTask will be removed
-        for (int i = 0, count = currentTask->requests.size(); i < count; ++i)
-        {
-            auto iter = std::next(currentTask->requests.begin(), i);
-            (*iter)->abort();
-        }
+        return;
+    }
+    for (size_t i = 0, count = currentTask->requests.size(); i < count; ++i)
+    {
+        currentTask->requests.front()->abort();
     }
 }
 
@@ -56,7 +60,7 @@ void NetworkTaskProcessor::StartNextTask()
     //on mac os x when connection fails once QNetworkAccessManager aborting each next  connection
     if (networkAccessManager->networkAccessible() != QNetworkAccessManager::Accessible)
     {
-        networkAccessManager->clearAccessCache();
+        networkAccessManager->setNetworkAccessible(QNetworkAccessManager::Accessible);
     }
 
     std::vector<QUrl> urls = currentTask->task->GetUrls();
@@ -75,22 +79,23 @@ void NetworkTaskProcessor::OnDownloadFinished(QNetworkReply* reply)
     reply->deleteLater();
 
     currentTask->requests.remove(reply);
-    if (reply->error() != QNetworkReply::NoError)
-    {
-        if (reply->error() != QNetworkReply::OperationCanceledError)
-        {
-            currentTask->task->SetError(QObject::tr("Network error: %1").arg(reply->errorString()));
-            OnNetworkError();
-        }
-        else
-        {
-            currentTask->task->SetError(QObject::tr("Operation cancelled"));
-        }
-    }
-    else
+    if (reply->error() == QNetworkReply::NoError)
     {
         currentTask->task->AddLoadedData(reply->readAll());
     }
+    else
+    {
+        if (currentTask->task->HasError() == false)
+        {
+            currentTask->task->SetError(QObject::tr("Network error: %1").arg(reply->errorString()));
+        }
+        //we can receive error only for the some replies, and all other replies will hang
+        if (reply->error() != QNetworkReply::OperationCanceledError)
+        {
+            Terminate();
+        }
+    }
+
     if (currentTask->requests.empty())
     {
         currentTask->notifier.NotifyFinished(currentTask->task.get());
@@ -103,15 +108,13 @@ void NetworkTaskProcessor::OnAccessibleChanged(QNetworkAccessManager::NetworkAcc
 {
     if (accessible == QNetworkAccessManager::NotAccessible)
     {
-        OnNetworkError();
+        if (currentTask != nullptr)
+        {
+            currentTask->task->SetError(QObject::tr("Network is unaccessible"));
+            //on the os x after networkAccessibleChanged QNetworkReply may not send finished() signal
+            Terminate();
+        }
     }
-    //run next non-network task
-    StartNextTask();
-}
-
-void NetworkTaskProcessor::OnNetworkError()
-{
-    Terminate();
 }
 
 void NetworkTaskProcessor::OnDownloadProgress(qint64 bytes, qint64 total)

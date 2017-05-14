@@ -58,6 +58,7 @@ private:
     void RefreshBranchesList();
     void UpdateButtonsState(int rowNumber, ButtonsWidget::ButtonsState state);
     void OnConnectedChanged(bool connected);
+    void AddText(const QString& text, const QColor& color = Qt::black);
 
     void GetTableApplicationIDs(int rowNumber, QString& appID, QString& installedVersionID, QString& avalibleVersionID);
 
