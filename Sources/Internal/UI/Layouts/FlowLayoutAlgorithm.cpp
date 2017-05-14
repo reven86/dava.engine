@@ -129,7 +129,8 @@ void FlowLayoutAlgorithm::CollectLinesInformation(ControlLayoutData& data, Vecto
         {
             SizeMeasuringAlgorithm alg(layoutData, childData, Vector2::AXIS_X, sizePolicy);
             alg.SetParentSize(data.GetWidth());
-            childData.SetSize(Vector2::AXIS_X, alg.Calculate());
+            childSize = alg.Calculate();
+            childData.SetSize(Vector2::AXIS_X, childSize);
         }
 
         bool newLineBeforeThis = newLineBeforeNext;

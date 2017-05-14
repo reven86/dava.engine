@@ -146,7 +146,7 @@ float32 SizeMeasuringAlgorithm::Calculate()
         value = ClampValue(percentedValue);
     }
 
-    return value;
+    return Max(value, 0.0f);
 }
 
 float32 SizeMeasuringAlgorithm::CalculateFixedSize() const

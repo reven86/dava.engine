@@ -99,7 +99,7 @@ void LinearLayoutAlgorithm::InitializeParams(ControlLayoutData& data, Vector2::e
         {
             totalPercent += sizeHint->GetValueByAxis(axis);
         }
-        else
+        else if (sizeHint == nullptr || sizeHint->GetPolicyByAxis(axis) != UISizePolicyComponent::FORMULA)
         {
             fixedSize += childData.GetSize(axis);
         }
@@ -178,12 +178,9 @@ bool LinearLayoutAlgorithm::CalculateChildDependentOnParentSize(ControlLayoutDat
         alg.SetParentRestSize(restSize);
 
         float32 size = alg.Calculate();
-        if (size < 0.0f)
-        {
-            size = 0.0f;
-        }
         restSize -= size;
         childData.SetSize(axis, size);
+        return true;
     }
 
     return false;
