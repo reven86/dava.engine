@@ -85,7 +85,7 @@ void DAVA::TArc::SubPropertiesEditor::SetupControl(T* accessor)
     Vector<Reflection::Field> subFields = copyModel.GetFields();
     for (Reflection::Field& field : subFields)
     {
-        if (field.ref.HasMeta<M::SubProperty>())
+        if (nullptr != field.ref.GetMeta<M::SubProperty>())
         {
             String subFieldName = field.key.Cast<String>();
             QtHBoxLayout* subPropertyLayout = new QtHBoxLayout();

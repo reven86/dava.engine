@@ -92,8 +92,8 @@ DAVA_TARC_TESTCLASS(ComponentStructureWrapperTest)
     void CheckValueField(const DAVA::Reflection& field)
     {
         using namespace ComponentStructureWrapperTestDetail;
-        TEST_VERIFY(field.HasMeta<DAVA::M::Range>());
-        TEST_VERIFY(field.HasMeta<DAVA::M::Enum>());
+        TEST_VERIFY(nullptr != field.GetMeta<DAVA::M::Range>());
+        TEST_VERIFY(nullptr != field.GetMeta<DAVA::M::Enum>());
 
         const DAVA::M::Range* rangeMeta = field.GetMeta<DAVA::M::Range>();
         TEST_VERIFY(rangeMeta->minValue.Cast<int>() == 1);
@@ -103,13 +103,13 @@ DAVA_TARC_TESTCLASS(ComponentStructureWrapperTest)
         const DAVA::M::Enum* enumMeta = field.GetMeta<DAVA::M::Enum>();
         TEST_VERIFY(enumMeta->GetEnumMap() == GlobalEnumMap<DummyEnum>::Instance());
 
-        TEST_VERIFY(field.HasMeta<DAVA::M::ProxyMetaRequire>() == false);
+        TEST_VERIFY(nullptr == field.GetMeta<DAVA::M::ProxyMetaRequire>());
     }
 
     void CheckNoMetaField(const DAVA::Reflection& field)
     {
-        TEST_VERIFY(field.HasMeta<DAVA::M::Range>() == false);
-        TEST_VERIFY(field.HasMeta<DAVA::M::Enum>() == false);
+        TEST_VERIFY(nullptr == field.GetMeta<DAVA::M::Range>());
+        TEST_VERIFY(nullptr == field.GetMeta<DAVA::M::Enum>());
     }
 
     DAVA_TEST (ProxyMetaTest)
