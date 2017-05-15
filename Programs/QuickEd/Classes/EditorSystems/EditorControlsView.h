@@ -6,7 +6,7 @@
 #include "Utils/PackageListenerProxy.h"
 
 #include <TArc/DataProcessing/DataWrapper.h>
-#include <UI/Layouts/UILayoutSystem.h>
+#include <UI/Layouts/UILayoutSystemListener.h>
 #include <Base/BaseTypes.h>
 
 class EditorSystemsManager;
