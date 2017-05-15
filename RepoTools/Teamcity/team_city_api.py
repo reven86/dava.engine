@@ -28,7 +28,7 @@ class TeamCityRequest:
             print "Unexpected error:", sys.exc_info()[0]
             raise
 
-    def run_build( self, configuration_id,  branch_name = '', properties={}, triggering_options=[] ):
+    def run_build( self, configuration_id,  branch_name = '', properties={}, triggering_options=[], agent_id='' ):
 
         print "Launch build {} [ {} ]".format( configuration_id, branch_name )
 
@@ -40,6 +40,9 @@ class TeamCityRequest:
                 data += [ '{}="true"'.format( key ) ]
             triggering_options = '<triggeringOptions {}/>'.format( ' '.join(data) )
 
+        if agent_id:
+            agent_id = '<agent id="{}"/>'.format( agent_id )
+
         if properties:
             data = ''
             for key, value in properties.iteritems():
@@ -49,7 +52,7 @@ class TeamCityRequest:
         if branch_name:
             branch_name = ' branchName = "{}"'.format( branch_name )
 
-        parameter =  '<build{0}><buildType id="{1}" />{2}{3}{4}</build>'.format( branch_name, configuration_id, properties, triggering_options,comment )
+        parameter =  '<build{0}><buildType id="{1}" />{2}{3}{4}{5}</build>'.format( branch_name, configuration_id, properties, triggering_options,comment, agent_id )
 
         response = self.__request("buildQueue", parameter )
 
@@ -82,6 +85,12 @@ class TeamCityRequest:
         root.attrib['statusText'] = statusText
 
         return root.attrib
+
+    def agent_info_by_name(self, agent_name ):
+        response = self.__request("agents/name:{}/".format( agent_name ))
+        root = ET.fromstring( response.content )
+        return root.attrib
+
 
 def init( teamcity_url, login, password ):
     global __TeamCity
