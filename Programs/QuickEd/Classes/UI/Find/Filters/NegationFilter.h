@@ -8,8 +8,8 @@ class NegationFilter : public FindFilter
 public:
     NegationFilter(std::shared_ptr<FindFilter> filter);
 
-    bool CanAcceptPackage(const PackageInformation* package) const override;
-    bool CanAcceptControl(const ControlInformation* control) const override;
+    FindFilter::ePackageStatus AcceptPackage(const PackageInformation* package) const override;
+    bool AcceptControl(const ControlInformation* control) const override;
 
 private:
     std::shared_ptr<FindFilter> filter;
