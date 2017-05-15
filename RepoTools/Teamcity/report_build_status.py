@@ -79,7 +79,7 @@ def main():
                                    brunch_info['fromRef']['latestCommit'],
                                    description=args.description )
     else:
-        common_tool.__print( 'Is not a pull requests [{}]'.format( args.brunch ) )
+        common_tool.flush_print( 'Is not a pull requests [{}]'.format( args.brunch ) )
 
 if __name__ == '__main__':
     main()
