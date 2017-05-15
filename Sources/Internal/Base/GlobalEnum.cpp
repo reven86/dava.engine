@@ -21,6 +21,7 @@
 #include "UI/UIWebView.h"
 #include "Render/RHI/rhi_Type.h"
 #include "Render/Highlevel/BillboardRenderObject.h"
+#include "Utils/BiDiHelper.h"
 
 using namespace DAVA;
 
@@ -238,6 +239,14 @@ ENUM_DECLARE(TextBlock::eUseRtlAlign)
     ENUM_ADD_DESCR(TextBlock::RTL_DONT_USE, "DONT_USE");
     ENUM_ADD_DESCR(TextBlock::RTL_USE_BY_CONTENT, "USE_BY_CONTENT");
     ENUM_ADD_DESCR(TextBlock::RTL_USE_BY_SYSTEM, "USE_BY_SYSTEM");
+};
+
+ENUM_DECLARE(BiDiHelper::Direction)
+{
+    ENUM_ADD_DESCR(BiDiHelper::RTL, "RTL");
+    ENUM_ADD_DESCR(BiDiHelper::LTR, "LTR");
+    ENUM_ADD_DESCR(BiDiHelper::NEUTRAL, "NEUTRAL");
+    ENUM_ADD_DESCR(BiDiHelper::MIXED, "MIXED");
 };
 
 ENUM_DECLARE(UIList::eListOrientation)

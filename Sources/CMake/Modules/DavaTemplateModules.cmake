@@ -97,8 +97,6 @@ BINARY_WIN64_DIR_RELWITHDEB
 JAR_FOLDERS_ANDROID
 JAVA_FOLDERS_ANDROID
 #
-EXCLUDE_FROM_ALL
-#
 PLUGIN_OUT_DIR
 PLUGIN_OUT_DIR_${DAVA_PLATFORM_CURENT}
 #
@@ -166,7 +164,7 @@ macro( modules_tree_info_execute )
 endmacro()
 #
 macro( modules_tree_info )
-    if( NAME_MODULE )
+    if( NAME_MODULE AND ( NOT ${MODULE_TYPE} STREQUAL "PLUGIN" ) )
         append_property( LOADED_MODULES ${NAME_MODULE} )
     endif()
 
@@ -386,19 +384,16 @@ macro( setup_main_module )
 
     if( MODULE_COMPONENTS_VALUE_NAME )
         get_property(  MODULE_COMPONENTS GLOBAL PROPERTY COMPONENTS_${MODULE_COMPONENTS_VALUE_NAME} )
-        list (FIND MODULE_COMPONENTS "ALL" _index)
-        if ( ${_index} GREATER -1 AND NOT EXCLUDE_FROM_ALL)
-            set( INIT true )
-        else()
-            if( ORIGINAL_NAME_MODULE )
-                list (FIND MODULE_COMPONENTS ${ORIGINAL_NAME_MODULE} _index)
-                if ( ${_index} GREATER -1)
-                    set( INIT true )
-                endif()
-            else()
+
+        if( ORIGINAL_NAME_MODULE )
+            list (FIND MODULE_COMPONENTS ${ORIGINAL_NAME_MODULE} _index)
+            if ( ${_index} GREATER -1)
                 set( INIT true )
             endif()
-        endif() 
+        else()
+            set( INIT true )
+        endif()
+
     else()
         set( INIT true )
     endif()
@@ -445,8 +440,8 @@ macro( setup_main_module )
                 set( COVERAGE_STRING  )                
             endif()
 
-            set( MODULE_CACHE   ${ORIGINAL_NAME_MODULE}
-                                #${MODULE_COMPONENTS} 
+            set( MODULE_CACHE   "ROOT_${ORIGINAL_NAME_MODULE}"
+                                ${LOADED_MODULES} 
                                 ${DEFINITIONS} 
                                 ${DEFINITIONS_${DAVA_PLATFORM_CURENT}}  
                                 ${GLOBAL_DEFINITIONS_PROP}
@@ -710,19 +705,18 @@ macro( setup_main_module )
 #####
             set( CREATE_NEW_MODULE true )
 
-            # Temporarily disabled due to problems with stub / iml implementation of the module 
-            #if( ${MODULE_TYPE} STREQUAL "STATIC" )
-            #    get_property( MODULE_CACHE_LIST GLOBAL PROPERTY MODULE_CACHE_LIST )
-            #    list (FIND MODULE_CACHE_LIST ${MODULE_CACHE} _index)
-            #    if ( ${_index} GREATER -1 )
-            #        set( CREATE_NEW_MODULE )
-            #        list(GET MODULE_CACHE_LIST ${_index}  MODULE_CACHE )
-            #        get_property( MODULE_CACHE_LOADED_NAME GLOBAL PROPERTY ${MODULE_CACHE} )
-            #        set_property( GLOBAL PROPERTY CACHE_LOG_${NAME_MODULE}_MODULE_UNIQUE  false )
-            #        append_property( CACHE_LOG_${MODULE_CACHE_LOADED_NAME}_MODULE_USES_LIST ${NAME_MODULE} )  
-            #        set( NAME_MODULE ${MODULE_CACHE_LOADED_NAME} )
-            #    endif()
-            #endif()
+            if( ${MODULE_TYPE} STREQUAL "STATIC" )
+                get_property( MODULE_CACHE_LIST GLOBAL PROPERTY MODULE_CACHE_LIST )
+                list (FIND MODULE_CACHE_LIST ${MODULE_CACHE} _index)
+                if ( ${_index} GREATER -1 )
+                    set( CREATE_NEW_MODULE )
+                    list(GET MODULE_CACHE_LIST ${_index}  MODULE_CACHE )
+                    get_property( MODULE_CACHE_LOADED_NAME GLOBAL PROPERTY ${MODULE_CACHE} )
+                    set_property( GLOBAL PROPERTY CACHE_LOG_${NAME_MODULE}_MODULE_UNIQUE  false )
+                    append_property( CACHE_LOG_${MODULE_CACHE_LOADED_NAME}_MODULE_USES_LIST ${NAME_MODULE} )  
+                    set( NAME_MODULE ${MODULE_CACHE_LOADED_NAME} )
+                endif()
+            endif()
 
 ######
 

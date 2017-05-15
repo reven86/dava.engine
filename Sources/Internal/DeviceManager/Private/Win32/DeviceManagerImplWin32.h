@@ -27,6 +27,8 @@ struct DeviceManagerImpl final
 
     static BOOL CALLBACK DisplayEnumProc(HMONITOR hmonitor, HDC hdc, LPRECT rc, LPARAM lparam);
 
+    float32 GetCpuTemperature() const;
+
     DeviceManager* deviceManager = nullptr;
     Private::MainDispatcher* mainDispatcher = nullptr;
 };

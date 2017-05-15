@@ -35,7 +35,6 @@ UIComponent* UIComponent::CreateByType(const Type* componentType)
     if (isUIComponent)
     {
         const ReflectedType* reflType = ReflectedTypeDB::GetByType(componentType);
-
         Any obj = reflType->CreateObject(ReflectedType::CreatePolicy::ByPointer);
         return obj.Cast<UIComponent*>();
     }

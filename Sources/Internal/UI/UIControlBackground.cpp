@@ -499,6 +499,8 @@ void UIControlBackground::Draw(const UIGeometricData& parentGeometricData)
     case DRAW_STRETCH_BOTH:
     case DRAW_STRETCH_HORIZONTAL:
     case DRAW_STRETCH_VERTICAL:
+        drawState.usePerPixelAccuracy = (perPixelAccuracyType == PER_PIXEL_ACCURACY_FORCED) || ((perPixelAccuracyType == PER_PIXEL_ACCURACY_ENABLED) && (lastDrawPos == geometricData.position));
+        lastDrawPos = geometricData.position;
         RenderSystem2D::Instance()->DrawStretched(spr.Get(), &drawState, Vector2(leftStretchCap, topStretchCap), type, geometricData, &stretchData, drawColor);
         break;
 

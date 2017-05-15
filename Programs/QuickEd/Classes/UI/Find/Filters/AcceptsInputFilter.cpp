@@ -9,9 +9,10 @@ using namespace DAVA;
 
 AcceptsInputFilter::AcceptsInputFilter()
 {
+    static FastName noInput("noInput");
+
     for (const auto& field : ReflectedTypeDB::Get<UIControl>()->GetStructure()->fields)
     {
-        static FastName noInput("noInput");
         if (field->name == noInput)
         {
             refMember = field.get();

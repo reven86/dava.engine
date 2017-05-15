@@ -51,6 +51,11 @@ include_directories   ( "Classes/Helpers" )
 include_directories   ( "Classes/Controllers" )
 include_directories   ( "Classes/Models" )
 
+if (DEPLOY)
+    dava_add_definitions(-DDEPLOY_BUILD)
+endif()
+
+
 dava_add_definitions       ( 
 -DQT_OPENGL_LIB
 -DQT_GUI_LIB

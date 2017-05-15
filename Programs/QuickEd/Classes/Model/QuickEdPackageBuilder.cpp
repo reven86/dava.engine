@@ -212,13 +212,12 @@ const ReflectedType* QuickEdPackageBuilder::BeginControlWithPath(const String& p
                 break;
         }
     }
-
-    controlsStack.push_back(ControlDescr(SafeRetain(control), false));
-
-    if (control != nullptr)
-        return ReflectedTypeDB::GetByPointer(control->GetControl());
-    else
+    if (control == nullptr)
+    {
         return nullptr;
+    }
+    controlsStack.push_back(ControlDescr(SafeRetain(control), false));
+    return ReflectedTypeDB::GetByPointer(control->GetControl());
 }
 
 const ReflectedType* QuickEdPackageBuilder::BeginUnknownControl(const FastName& controlName, const YamlNode* node)

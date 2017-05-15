@@ -385,12 +385,12 @@ void UIPackageLoader::LoadControlPropertiesFromYamlNode(const ReflectedType* ref
 
     if (ref->GetStructure())
     {
+        static FastName componentsName("components");
+
         const Vector<std::unique_ptr<ReflectedStructure::Field>>& fields = ref->GetStructure()->fields;
         for (const std::unique_ptr<ReflectedStructure::Field>& field : fields)
         {
-            static FastName components("components");
-            const FastName& name = field->name;
-            if (name == components)
+            if (field->name == componentsName)
             {
                 // TODO: Make loading components by reflection here
                 continue;
@@ -399,7 +399,7 @@ void UIPackageLoader::LoadControlPropertiesFromYamlNode(const ReflectedType* ref
             Any res;
             if (node)
             {
-                res = ReadAnyFromYamlNode(field.get(), node, name);
+                res = ReadAnyFromYamlNode(field.get(), node, field->name);
                 if (!res.IsEmpty())
                 {
                     builder->BeginControlPropertiesSection(ref->GetPermanentName());

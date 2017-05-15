@@ -98,6 +98,28 @@ void AndroidBridge::InitializeJNI(JNIEnv* env)
     // Cache Java ClassLoader
     try
     {
+        // Get java.lang.String class
+        classString = env->FindClass("java/lang/String");
+        JNI::CheckJavaException(env, true);
+
+        classString = static_cast<jclass>(env->NewGlobalRef(classString));
+        JNI::CheckJavaException(env, true);
+
+        // Get String.getBytes method
+        methodString_getBytes = env->GetMethodID(classString, "getBytes", "(Ljava/lang/String;)[B");
+        JNI::CheckJavaException(env, true);
+
+        // Get String constructor with bytes and charset
+        methodString_initBytesCharset = env->GetMethodID(classString, "<init>", "([BLjava/lang/String;)V");
+        JNI::CheckJavaException(env, true);
+
+        // Get const String("UTF-8") global reference for converting jstring to/from utf-8 bytes
+        constUtf8CharsetName = env->NewStringUTF("UTF-8");
+        JNI::CheckJavaException(env, true);
+
+        constUtf8CharsetName = static_cast<jstring>(env->NewGlobalRef(constUtf8CharsetName));
+        JNI::CheckJavaException(env, true);
+
         // Get com.dava.engine.DavaActivity class which will be used to obtain ClassLoader instance
         jclass jclassDavaActivity = env->FindClass("com/dava/engine/DavaActivity");
         JNI::CheckJavaException(env, true);
@@ -106,6 +128,9 @@ void AndroidBridge::InitializeJNI(JNIEnv* env)
         JNI::CheckJavaException(env, true);
 
         methodDavaActivity_hideSplashView = env->GetMethodID(jclassDavaActivity, "hideSplashView", "()V");
+        JNI::CheckJavaException(env, true);
+
+        methodDavaActivity_notifyEngineRunning = env->GetMethodID(jclassDavaActivity, "notifyEngineRunning", "()V");
         JNI::CheckJavaException(env, true);
 
         // Get java.lang.Class<com.dava.engine.DavaActivity>
@@ -151,6 +176,20 @@ void AndroidBridge::HideSplashView()
     catch (const JNI::Exception& e)
     {
         ANDROID_LOG_ERROR("hideSplashView call failed: %s", e.what());
+    }
+}
+
+void AndroidBridge::NotifyEngineRunning()
+{
+    try
+    {
+        JNIEnv* env = GetEnv();
+        env->CallVoidMethod(androidBridge->activity, androidBridge->methodDavaActivity_notifyEngineRunning);
+        JNI::CheckJavaException(env, true);
+    }
+    catch (const JNI::Exception& e)
+    {
+        ANDROID_LOG_ERROR("notifyEngineRunning call failed: %s", e.what());
     }
 }
 
@@ -279,7 +318,7 @@ void AndroidBridge::PostQuitToActivity()
 
 jclass AndroidBridge::LoadJavaClass(JNIEnv* env, const char8* className, bool throwJniException)
 {
-    jstring name = JNI::CStrToJavaString(className);
+    jstring name = JavaStringFromModifiedUtfString(env, className);
     if (name != nullptr)
     {
         jobject obj = env->CallObjectMethod(androidBridge->classLoader, androidBridge->methodClassLoader_loadClass, name);
@@ -302,9 +341,71 @@ String AndroidBridge::toString(JNIEnv* env, jobject object)
     {
         jstring jstr = static_cast<jstring>(env->CallObjectMethod(object, androidBridge->methodObject_toString));
         JNI::CheckJavaException(env, false);
-        result = JNI::JavaStringToString(jstr, env);
+        result = JavaStringToModifiedUtfString(env, jstr);
     }
     return result;
+}
+
+jbyteArray AndroidBridge::JavaStringToUtf8Bytes(JNIEnv* env, jstring string)
+{
+    if (string != nullptr)
+    {
+        jbyteArray bytes = static_cast<jbyteArray>(env->CallObjectMethod(string, androidBridge->methodString_getBytes, androidBridge->constUtf8CharsetName));
+        JNI::CheckJavaException(env, true);
+        return bytes;
+    }
+    return nullptr;
+}
+
+jstring AndroidBridge::JavaStringFromUtf8Bytes(JNIEnv* env, jbyteArray bytes)
+{
+    if (bytes != nullptr)
+    {
+        jstring string = static_cast<jstring>(env->NewObject(androidBridge->classString, androidBridge->methodString_initBytesCharset, bytes, androidBridge->constUtf8CharsetName));
+        JNI::CheckJavaException(env, true);
+        return string;
+    }
+    return nullptr;
+}
+
+String AndroidBridge::JavaStringToModifiedUtfString(JNIEnv* env, jstring string)
+{
+    String result;
+    if (string != nullptr)
+    {
+        if (env == nullptr)
+        {
+            env = GetEnv();
+        }
+
+        if (env != nullptr)
+        {
+            const char* rawString = env->GetStringUTFChars(string, nullptr);
+            if (rawString != nullptr)
+            {
+                result = rawString;
+                env->ReleaseStringUTFChars(string, rawString);
+            }
+        }
+    }
+    return result;
+}
+
+jstring AndroidBridge::JavaStringFromModifiedUtfString(JNIEnv* env, const char* cstr)
+{
+    if (cstr != nullptr)
+    {
+        if (env == nullptr)
+        {
+            env = GetEnv();
+        }
+
+        if (env != nullptr)
+        {
+            return env->NewStringUTF(cstr);
+        }
+    }
+    return nullptr;
 }
 
 const String& AndroidBridge::GetExternalDocumentsDir()

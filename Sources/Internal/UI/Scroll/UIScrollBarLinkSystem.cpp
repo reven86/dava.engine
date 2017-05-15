@@ -4,6 +4,7 @@
 #include "UI/UIControl.h"
 #include "UI/UIControlHelpers.h"
 #include "UI/UIScrollBar.h"
+#include "Logger/Logger.h"
 
 namespace DAVA
 {
@@ -154,30 +155,32 @@ void UIScrollBarLinkSystem::LinkDelegate(UIControl* linkedControl)
 }
 
 template <typename Predicate>
-bool UIScrollBarLinkSystem::Unlink(int32 linkType, Predicate predicate)
+void UIScrollBarLinkSystem::Unlink(int32 linkType, Predicate predicate)
 {
-    auto it = std::find_if(links.begin(), links.end(), predicate);
-    if (it != links.end())
+    auto it = links.begin();
+    while ((it = std::find_if(it, links.end(), predicate)) != links.end())
     {
         it->type &= ~linkType;
         BreakLink(&(*it));
 
         if (!restoreLinks || it->type == 0)
         {
-            links.erase(it);
+            it = links.erase(it);
         }
-        return true;
+        else
+        {
+            ++it;
+        }
     }
-    return false;
 }
 
-bool UIScrollBarLinkSystem::UnlinkScrollBar(UIScrollBarDelegateComponent* component)
+void UIScrollBarLinkSystem::UnlinkScrollBar(UIScrollBarDelegateComponent* component)
 {
-    return Unlink(Link::SCROLL_BAR_LINKED, [component](const Link& l) { return l.component == component; });
+    Unlink(Link::SCROLL_BAR_LINKED, [component](const Link& l) { return l.component == component; });
 }
 
-bool UIScrollBarLinkSystem::UnlinkDelegate(UIControl* linkedControl)
+void UIScrollBarLinkSystem::UnlinkDelegate(UIControl* linkedControl)
 {
-    return Unlink(Link::DELEGATE_LINKED, [linkedControl](const Link& l) { return l.linkedControl == linkedControl; });
+    Unlink(Link::DELEGATE_LINKED, [linkedControl](const Link& l) { return l.linkedControl == linkedControl; });
 }
 }
