@@ -421,7 +421,7 @@ QMimeData* PackageModel::mimeData(const QModelIndexList& indices) const
         }
     }
 
-    for (PackageBaseNode* styleSheetNode : controlNodesForCopy)
+    for (PackageBaseNode* styleSheetNode : styleSheetNodesForCopy)
     {
         mimeData->AddStyle(static_cast<StyleSheetNode*>(styleSheetNode));
     }
@@ -466,53 +466,55 @@ void PackageModel::OnDropMimeData(const QMimeData* data, Qt::DropAction action, 
         const PackageMimeData* controlMimeData = DynamicTypeCheck<const PackageMimeData*>(data);
 
         const Vector<ControlNode*>& srcControls = controlMimeData->GetControls();
-        DVASSERT(!srcControls.empty());
-        Vector<ControlNode*> nodes;
-        emit BeforeProcessNodes(SelectedNodes(srcControls.begin(), srcControls.end()));
-        switch (action)
+        if (!srcControls.empty())
         {
-        case Qt::CopyAction:
-            nodes = executor.CopyControls(srcControls, destControlContainer, destIndex);
-            break;
-        case Qt::MoveAction:
-            nodes = executor.MoveControls(srcControls, destControlContainer, destIndex);
-            break;
-        case Qt::LinkAction:
-            nodes = executor.InsertInstances(srcControls, destControlContainer, destIndex);
-            break;
-        default:
-            DVASSERT(false && "unrecognised action!");
-        }
-        if (pos != nullptr && destNode != package->GetPackageControlsNode())
-        {
-            auto destControl = dynamic_cast<ControlNode*>(destNode);
-            if (destControl != nullptr)
+            Vector<ControlNode*> nodes;
+            emit BeforeProcessNodes(SelectedNodes(srcControls.begin(), srcControls.end()));
+            switch (action)
             {
-                for (const auto& node : nodes)
+            case Qt::CopyAction:
+                nodes = executor.CopyControls(srcControls, destControlContainer, destIndex);
+                break;
+            case Qt::MoveAction:
+                nodes = executor.MoveControls(srcControls, destControlContainer, destIndex);
+                break;
+            default:
+                // just do nothing
+                break;
+            }
+            if (pos != nullptr && destNode != package->GetPackageControlsNode())
+            {
+                auto destControl = dynamic_cast<ControlNode*>(destNode);
+                if (destControl != nullptr)
                 {
-                    PackageModel_local::SetAbsoulutePosToControlNode(package.Get(), node, destControl, *pos);
+                    for (const auto& node : nodes)
+                    {
+                        PackageModel_local::SetAbsoulutePosToControlNode(package.Get(), node, destControl, *pos);
+                    }
                 }
             }
+            emit AfterProcessNodes(SelectedNodes(nodes.begin(), nodes.end()));
         }
-        emit AfterProcessNodes(SelectedNodes(nodes.begin(), nodes.end()));
     }
     else if (destStylesContainer && data->hasFormat(PackageMimeData::MIME_TYPE))
     {
         const PackageMimeData* mimeData = DynamicTypeCheck<const PackageMimeData*>(data);
 
         const Vector<StyleSheetNode*>& srcStyles = mimeData->GetStyles();
-        DVASSERT(!srcStyles.empty());
-
-        switch (action)
+        if (!srcStyles.empty())
         {
-        case Qt::CopyAction:
-            executor.CopyStyles(srcStyles, destStylesContainer, destIndex);
-            break;
-        case Qt::MoveAction:
-            executor.MoveStyles(srcStyles, destStylesContainer, destIndex);
-            break;
-        default:
-            DVASSERT(false && "unrecognised action!");
+            switch (action)
+            {
+            case Qt::CopyAction:
+                executor.CopyStyles(srcStyles, destStylesContainer, destIndex);
+                break;
+            case Qt::MoveAction:
+                executor.MoveStyles(srcStyles, destStylesContainer, destIndex);
+                break;
+            default:
+                // just do nothing
+                break;
+            }
         }
     }
     else if (data->hasFormat("text/uri-list") && data->hasText())
