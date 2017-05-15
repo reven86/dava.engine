@@ -12,6 +12,10 @@ def flush_print_teamcity_set_parameter( name, value ):
     flush_print('##teamcity[setParameter name=\'{}\' value=\'{}\']'.format( name, value ) )
 
 def get_pull_requests_number( brunch ):
+
+    if  brunch == None:
+        return None;
+
     brunch     = brunch.split('/')
     brunch_len = len( brunch )
 
