@@ -1,15 +1,15 @@
 #!/usr/bin/env python
 import sys
 
-def __print( str ):
+def flush_print( str ):
     sys.stdout.write("{0}\n".format(str))
     sys.stdout.flush()
 
-def __print_teamcity_message( text, type, errorDetails = '' ):
-    __print('##teamcity[message text=\'{}\' errorDetails=\'{}\' status=\'{}\']'.format( text, errorDetails, type) )
+def flush_print_teamcity_message( text, type, errorDetails = '' ):
+    flush_print('##teamcity[message text=\'{}\' errorDetails=\'{}\' status=\'{}\']'.format( text, errorDetails, type) )
 
-def __print_teamcity_set_parameter( name, value ):
-    __print('##teamcity[setParameter name=\'{}\' value=\'{}\']'.format( name, value ) )
+def flush_print_teamcity_set_parameter( name, value ):
+    flush_print('##teamcity[setParameter name=\'{}\' value=\'{}\']'.format( name, value ) )
 
 def get_pull_requests_number( brunch ):
     brunch     = brunch.split('/')
