@@ -6,10 +6,19 @@ import json
 import time
 import team_city_api
 import stash_api
-import common_tool
 
 # The script runs the teamcity-build or executes the command if the
 # changes in the pull-request affect the specified folder list
+
+def __print( str ):
+    sys.stdout.write("{0}\n".format(str))
+    sys.stdout.flush()
+
+def __print_teamcity_message( text, type, errorDetails = '' ):
+    __print('##teamcity[message text=\'{}\' errorDetails=\'{}\' status=\'{}\']'.format( text, errorDetails, type) )
+
+def __print_teamcity_set_parameter( name, value ):
+    __print('##teamcity[setParameter name=\'{}\' value=\'{}\']'.format( name, value ) )
 
 def __parser_args():
     arg_parser = argparse.ArgumentParser()
@@ -80,23 +89,38 @@ def __wait_end_build( args, build_id ):#run_build_result['id']
         build_status_text     = teamcity_build_status['statusText']
 
         if build_status_text != build_status_text_old:
-            common_tool.__print( "{} ..".format( build_status_text ) )
+            __print( "{} ..".format( build_status_text ) )
 
         time.sleep( args.teamcity_freq_requests )
 
     if( teamcity_build_status[ 'status' ] != 'SUCCESS' ):
-        common_tool.__print_teamcity_message( 'Build failed !!!', 'ERROR', teamcity_build_status['webUrl'] )
+        __print_teamcity_message( 'Build failed !!!', 'ERROR', teamcity_build_status['webUrl'] )
+
+
+def get_pull_requests_number( brunch ):
+    brunch     = brunch.split('/')
+    brunch_len = len( brunch )
+
+    pull_requests_number = None
+
+    if brunch_len == 1:
+        if brunch[0].isdigit():
+            pull_requests_number = brunch[0]
+    else:
+        pull_requests_number = brunch[ brunch_len - 2 ]
+
+    return pull_requests_number
 
 
 def __check_depends_of_folders( args ):
-    common_tool.__print( "Check depends" )
+    __print( "Check depends" )
 
     stash = stash_api.ptr()
 
-    pull_requests_number = common_tool.get_pull_requests_number( args.framework_brunch )
+    pull_requests_number = get_pull_requests_number( args.framework_brunch )
 
     if pull_requests_number == None  :
-        common_tool.__print( "Build is required, because brunch == {}".format( args.framework_brunch ) )
+        __print( "Build is required, because brunch == {}".format( args.framework_brunch ) )
         return True,None
 
     brunch_info = stash.get_pull_requests_info( pull_requests_number )
@@ -104,7 +128,7 @@ def __check_depends_of_folders( args ):
     merged_brunch = brunch_info['toRef']['id'].split('/').pop()
 
     if merged_brunch != 'development' :
-        common_tool.__print( "Build is required, because brunch_toRef == {}".format( pull_requests_number ) )
+        __print( "Build is required, because brunch_toRef == {}".format( pull_requests_number ) )
         return True, brunch_info
 
     #changes folders check
@@ -119,17 +143,17 @@ def __check_depends_of_folders( args ):
             realpath_dep_folder = os.path.realpath(path_dep_folder)
 
             if realpath_dep_folder in path:
-                common_tool.__print( "Build is required because changes affect folders {}".format( depends_folders ) )
+                __print( "Build is required because changes affect folders {}".format( depends_folders ) )
                 return True, brunch_info
 
     if args.configuration_id != None :
-        common_tool.__print( "Build [{}] it is possible not to launch".format( args.configuration_id ) )
+        __print( "Build [{}] it is possible not to launch".format( args.configuration_id ) )
 
     if args.run_command != None :
-        common_tool.__print( "Command [{}] it is possible not to launch".format( args.run_command ) )
+        __print( "Command [{}] it is possible not to launch".format( args.run_command ) )
 
     if args.configuration_id == None and args.run_command != None :
-        common_tool.__print( "Build it is possible not to launch" )
+        __print( "Build it is possible not to launch" )
 
     return False, brunch_info
 
@@ -170,7 +194,8 @@ def main():
             else:
                 __wait_end_build( args, run_build_result['id'] )
 
-                common_tool.__print_teamcity_set_parameter( 'env.build_required', 'true' )
+
+        __print_teamcity_set_parameter( 'env.build_required', 'true' )
 
     else:
         if brunch_info != None and args.request_stash_mode == 'true':
@@ -186,7 +211,7 @@ def main():
                                       brunch_info['fromRef']['latestCommit'],
                                       description="Tests were ignored due to changed files")
 
-            common_tool.__print_teamcity_set_parameter( 'env.build_required', 'false' )
+        __print_teamcity_set_parameter( 'env.build_required', 'false' )
 
 
 
