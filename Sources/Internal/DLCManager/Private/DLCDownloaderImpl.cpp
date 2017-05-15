@@ -1229,11 +1229,8 @@ void DLCDownloader::Task::SetupResumeDownload()
             Logger::Error("%s %s %d", ex.what(), ex.file.c_str(), ex.line);
             return;
         }
-        if (w != nullptr)
-        {
-            writer.reset(w);
-            w->MoveToEndOfFile();
-        }
+        writer.reset(w);
+        w->MoveToEndOfFile();
     }
 
     if (info.rangeOffset != -1 && info.rangeSize != -1)
