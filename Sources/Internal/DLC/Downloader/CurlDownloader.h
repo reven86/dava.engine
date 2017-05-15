@@ -2,6 +2,7 @@
 
 #include "Downloader.h"
 #include "Time/RawTimer.h"
+#include "Concurrency/Mutex.h"
 
 extern "C"
 {

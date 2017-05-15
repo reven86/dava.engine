@@ -50,13 +50,13 @@
 #include "Commands2/Base/RECommandBatch.h"
 #include "Commands2/Base/RECommandNotificationObject.h"
 #include "Commands2/AddComponentCommand.h"
-#include "Commands2/ConvertPathCommands.h"
 #include "Commands2/CustomColorsCommands2.h"
 #include "Commands2/EntityAddCommand.h"
 #include "Commands2/HeightmapEditorCommands2.h"
 #include "Commands2/RemoveComponentCommand.h"
 #include "Commands2/TilemaskEditorCommands.h"
 #include "Commands2/LandscapeToolsToggleCommand.h"
+#include "Commands2/WayEditCommands.h"
 
 #include "Beast/BeastRunner.h"
 
@@ -301,24 +301,6 @@ void QtMainWindow::OnRenderingInitialized()
 void QtMainWindow::AfterInjectInit()
 {
     SetupStatusBar();
-}
-
-QString GetSaveFolderForEmitters()
-{
-    const DAVA::FilePath defaultPath = SettingsManager::GetValue(Settings::Internal_ParticleLastEmitterDir).AsFilePath();
-    QString particlesPath;
-    if (defaultPath.IsEmpty())
-    {
-        ProjectManagerData* data = REGlobal::GetDataNode<ProjectManagerData>();
-        DVASSERT(data != nullptr);
-        particlesPath = QString::fromStdString(data->GetParticlesConfigPath().GetAbsolutePathname());
-    }
-    else
-    {
-        particlesPath = QString::fromStdString(defaultPath.GetAbsolutePathname());
-    }
-
-    return particlesPath;
 }
 
 void QtMainWindow::SetupWidget()
@@ -1968,22 +1950,22 @@ void QtMainWindow::OnWayEditor()
         return;
     }
 
-    bool toEnable = !sceneEditor->pathSystem->IsPathEditEnabled();
-    DVASSERT(toEnable == ui->actionWayEditor->isChecked());
-
-    DAVA::int32 toolsEnabled = sceneEditor->GetEnabledTools();
-    if (toEnable && toolsEnabled)
+    if (sceneEditor->pathSystem->IsPathEditEnabled())
     {
-        DAVA::Logger::Error("Landscape tools should be disabled prior to enabling WayEditor");
-        ui->actionWayEditor->setChecked(false);
-        return;
+        sceneEditor->Exec(std::make_unique<DisableWayEditCommand>(sceneEditor.Get()));
     }
-
-    bool wasLocked = Selection::Lock();
-    sceneEditor->pathSystem->EnablePathEdit(toEnable);
-    if (wasLocked == false)
+    else
     {
-        Selection::Unlock();
+        DAVA::int32 toolsEnabled = sceneEditor->GetEnabledTools();
+        if (toolsEnabled)
+        {
+            DAVA::Logger::Error("Landscape tools should be disabled prior to enabling WayEditor");
+            ui->actionWayEditor->setChecked(false);
+        }
+        else
+        {
+            sceneEditor->Exec(std::make_unique<EnableWayEditCommand>(sceneEditor.Get()));
+        }
     }
 }
 
@@ -2210,7 +2192,7 @@ void QtMainWindow::OnAddPathEntity()
 
     DAVA::ScopedPtr<DAVA::Entity> pathEntity(new DAVA::Entity());
     pathEntity->SetName(ResourceEditor::PATH_NODE_NAME);
-    DAVA::PathComponent* pc = scene->pathSystem->CreatePathComponent();
+    DAVA::PathComponent* pc = new DAVA::PathComponent();
 
     pathEntity->AddComponent(pc);
     scene->Exec(std::unique_ptr<DAVA::Command>(new EntityAddCommand(pathEntity, scene.Get())));

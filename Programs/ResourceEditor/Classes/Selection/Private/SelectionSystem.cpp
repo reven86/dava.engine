@@ -224,7 +224,7 @@ void SelectionSystem::ProcessSelectedGroup(const SelectableGroup::CollectionType
     }
     else if (excludeSelection && (firstEntity != nullptr))
     {
-        ExcludeEntityFromSelection(firstEntity);
+        ExcludeEntityFromSelection(firstEntity, false);
     }
     else
     {
@@ -397,7 +397,7 @@ void SelectionSystem::RemoveEntity(DAVA::Entity* entity)
     SelectionSystemDetails::EnumerateSelectableObjects(entity, potentiallySelectedObjects);
     for (Selectable::Object* object : potentiallySelectedObjects)
     {
-        ExcludeEntityFromSelection(object);
+        ExcludeEntityFromSelection(object, true);
     }
 
     invalidSelectionBoxes = true;
@@ -624,9 +624,9 @@ void SelectionSystem::ExcludeSingleItem(Selectable::Object* entity)
     SetSelection(newSelection);
 }
 
-void SelectionSystem::ExcludeEntityFromSelection(Selectable::Object* entity)
+void SelectionSystem::ExcludeEntityFromSelection(Selectable::Object* entity, bool forceRemove)
 {
-    if (!IsLocked())
+    if (!IsLocked() || forceRemove == true)
     {
         ExcludeSingleItem(entity);
         invalidSelectionBoxes = true;
