@@ -265,7 +265,7 @@ bool UISizePolicyComponent::IsDependsOnChildren(int32 axis) const
 {
     DVASSERT(0 <= axis && axis < Vector2::AXIS_COUNT);
     eSizePolicy p = policy[axis].policy;
-    return p == PERCENT_OF_CHILDREN_SUM || p == PERCENT_OF_MAX_CHILD || p == PERCENT_OF_FIRST_CHILD || p == PERCENT_OF_LAST_CHILD;
+    return p == PERCENT_OF_CHILDREN_SUM || p == PERCENT_OF_MAX_CHILD || p == PERCENT_OF_FIRST_CHILD || p == PERCENT_OF_LAST_CHILD || p == FORMULA;
 }
 
 void UISizePolicyComponent::SetLayoutDirty()
