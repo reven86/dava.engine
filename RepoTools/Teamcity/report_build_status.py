@@ -30,7 +30,7 @@ def __parser_args():
     arg_parser.add_argument( '--configuration_id', required = True )
 
     arg_parser.add_argument( '--build_url' )
-    arg_parser.add_argument( '--root_configuration_id' )
+    arg_parser.add_argument( '--root_build_id' )
 
     arg_parser.add_argument( '--description', default = 'auto' )
 
@@ -63,8 +63,8 @@ def main():
     if pull_requests_number != None :
 
         build_url = args.build_url
-        if args.root_configuration_id :
-            build_status = teamcity.get_build_status(args.root_configuration_id)
+        if args.root_build_id :
+            build_status = teamcity.get_build_status(args.root_build_id)
             build_url = build_status['webUrl']
 
 
