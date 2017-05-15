@@ -25,11 +25,16 @@ def __parser_args():
     arg_parser.add_argument( '--login', required = True )
     arg_parser.add_argument( '--password', required = True )
 
-    arg_parser.add_argument( '--brunch', required = True )
+    # brunch or commit
+    arg_parser.add_argument( '--brunch' )
+    arg_parser.add_argument( '--commit' )
+
     arg_parser.add_argument( '--status', required = True, choices=[ 'INPROGRESS', 'SUCCESSFUL', 'FAILED' ] )
     arg_parser.add_argument( '--configuration_id', required = True )
 
     arg_parser.add_argument( '--build_url' )
+
+
     arg_parser.add_argument( '--root_build_id' )
 
     arg_parser.add_argument( '--description', default = 'auto' )
@@ -58,9 +63,17 @@ def main():
     stash    = stash_api.ptr()
     teamcity = team_city_api.ptr()
 
-    pull_requests_number = common_tool.get_pull_requests_number( args.brunch )
+    commit = None
 
-    if pull_requests_number != None :
+    pull_requests_number = common_tool.get_pull_requests_number( args.brunch )
+    if pull_requests_number != None:
+        brunch_info = stash.get_pull_requests_info(pull_requests_number)
+        commit = brunch_info['fromRef']['latestCommit']
+
+    if commit == None:
+        commit = args.commit
+
+    if commit != None :
 
         build_url = args.build_url
         if args.root_build_id :
@@ -70,16 +83,16 @@ def main():
 
         assert (build_url != None ), "build_url == None"
 
-        brunch_info = stash.get_pull_requests_info( pull_requests_number )
+
 
         stash.report_build_status( args.status,
                                    args.configuration_id,
                                    args.configuration_id,
                                    build_url,
-                                   brunch_info['fromRef']['latestCommit'],
+                                   commit,
                                    description=args.description )
     else:
-        common_tool.flush_print( 'Is not a pull requests [{}]'.format( args.brunch ) )
+        common_tool.flush_print( 'Is not a pull requests [{}] or commit [{}]  '.format( args.brunch, args.commit ) )
 
 if __name__ == '__main__':
     main()
