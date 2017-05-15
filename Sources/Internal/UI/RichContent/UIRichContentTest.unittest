@@ -1,0 +1,161 @@
+#include <Base/BaseTypes.h>
+#include <Base/RefPtr.h>
+#include <UI/DefaultUIPackageBuilder.h>
+#include <UI/UIPackageLoader.h>
+#include <UI/UIControlSystem.h>
+#include <UI/UIScreen.h>
+#include <UI/RichContent/UIRichAliasMap.h>
+#include <UI/RichContent/UIRichContentComponent.h>
+#include <UI/RichContent/UIRichContentSystem.h>
+
+#include "UnitTests/UnitTests.h"
+
+using namespace DAVA;
+
+DAVA_TESTCLASS(UIRichContentTest)
+{
+    BEGIN_FILES_COVERED_BY_TESTS()
+    FIND_FILES_IN_TARGET(DavaFramework)
+    DECLARE_COVERED_FILES("UIRichAliasMap.cpp")
+    DECLARE_COVERED_FILES("UIRichContentComponent.cpp")
+    DECLARE_COVERED_FILES("UIRichContentSystem.cpp")
+    END_FILES_COVERED_BY_TESTS();
+
+    RefPtr<UIControl> richControl;
+
+    UIRichContentTest()
+    {
+        RefPtr<UIScreen> screen(new UIScreen());
+        UIControlSystem::Instance()->SetScreen(screen.Get());
+        UIControlSystem::Instance()->Update();
+
+        DefaultUIPackageBuilder pkgBuilder;
+        UIPackageLoader().LoadPackage("~res:/UI/UIRichContentTest.yaml", &pkgBuilder);
+        richControl = pkgBuilder.GetPackage()->GetControl("RichControl");
+
+        screen->AddControl(richControl.Get());
+    }
+
+    ~UIRichContentTest()
+    {
+        UIControlSystem::Instance()->Reset();
+    }
+
+    void UpdateRichContentSystem()
+    {
+        UIRichContentSystem* sys = UIControlSystem::Instance()->GetSystem<UIRichContentSystem>();
+        sys->Process(0.f);
+    }
+
+    DAVA_TEST(BasicTest)
+    {
+        const String testData = R"(
+            <p class="text">Header</p><span class="text">Simple text<br /> with </span><img src="~res:/UI/Images/GoldPin.png" /><span class="text">image.</span>
+            <ul><li>Item 1</li><li>Item 2</li></ul>
+            <object path="~res:/UI/UIRichContentTest.yaml" prototype="ProtoControl" />
+            <object path="~res:/UI/UIRichContentTest.yaml" control="CustomControl" />
+        )";
+        UIRichContentComponent* c = richControl->GetOrCreateComponent<UIRichContentComponent>();
+        DVASSERT(c);
+        c->SetText(testData);
+
+        UpdateRichContentSystem();
+        TEST_VERIFY(richControl->GetChildren().size() == 14);
+    }
+
+    DAVA_TEST(BaseClassesTest)
+    {
+        const String testData = R"(
+            Simple <span class="red">red</span> text
+        )";
+        UIRichContentComponent* c = richControl->GetOrCreateComponent<UIRichContentComponent>();
+        DVASSERT(c);
+        c->SetBaseClasses("text");
+        c->SetText(testData);
+
+        UpdateRichContentSystem();
+        TEST_VERIFY(richControl->GetChildren().size() == 3);
+
+        c->SetBaseClasses("");
+    }
+
+    DAVA_TEST(AliasesTest)
+    {
+        const String testData = R"(
+            <h1>Header</h1><text>Simple text<nl/> with </text><GoldPin/><text>image.</text>
+        )";
+        UIRichContentComponent* c = richControl->GetOrCreateComponent<UIRichContentComponent>();
+        DVASSERT(c);
+
+        // Add aliases
+        UIRichAliasMap aliases;
+        // From Alias
+        {
+            UIRichAliasMap::Attributes attrs;
+            attrs["class"] = "dejavu";
+            UIRichAliasMap::Alias h1{"h1", "p", attrs};
+            aliases.PutAlias(h1);
+
+            const UIRichAliasMap::Alias& a = aliases.GetAlias("h1");
+            TEST_VERIFY(a.alias == h1.alias);
+            TEST_VERIFY(a.tag == h1.tag);
+            TEST_VERIFY(a.attributes == h1.attributes);
+        }
+        // From alias, tag and attributes
+        {
+            UIRichAliasMap::Attributes attrs;
+            attrs["class"] = "text";
+            aliases.PutAlias("text", "span", attrs);
+            TEST_VERIFY(aliases.GetAlias("text").attributes == attrs);
+        }
+        // From alias and tag
+        {
+            aliases.PutAlias("nl", "br");
+            TEST_VERIFY(aliases.HasAlias("nl"));
+        }
+        // From alias and xml source
+        {
+            aliases.PutAliasFromXml("GoldPin", "<img src=\"~res:/Gfx/UI/GoldPin\" />");
+            TEST_VERIFY(aliases.GetAlias("GoldPin").tag == "img");
+        }
+        // Negative tests
+        {
+            TEST_VERIFY(aliases.HasAlias("notDefined") == false);
+        }
+
+        c->SetText(testData);
+        c->SetAliases(aliases);
+
+        UpdateRichContentSystem();
+        TEST_VERIFY(richControl->GetChildren().size() == 6);
+
+        // Aliases from/to string
+        {
+            uint32 count = aliases.Count();
+            String aliasesStr = aliases.AsString();
+            aliases.FromString(aliasesStr);
+            TEST_VERIFY(count == aliases.Count());
+        }
+
+        // Remove aliases
+        {
+            aliases.RemoveAlias("h1");
+            TEST_VERIFY(aliases.HasAlias("h1") == false);
+            aliases.RemoveAll();
+            TEST_VERIFY(aliases.Count() == 0);
+        }
+        c->SetAliases(aliases);
+    }
+
+    DAVA_TEST(RichComponentTest)
+    {
+        RefPtr<UIRichContentComponent> orig;
+        orig = richControl->GetComponent<UIRichContentComponent>();
+        richControl->RemoveComponent(orig.Get());
+        RefPtr<UIRichContentComponent> copy(orig->Clone());
+        richControl->AddComponent(copy.Get());
+
+        TEST_VERIFY(orig->GetText() == copy->GetText());
+        TEST_VERIFY(orig->GetBaseClasses() == copy->GetBaseClasses());
+    }
+};

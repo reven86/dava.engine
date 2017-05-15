@@ -2,6 +2,7 @@
 #define __DAVAENGINE_UI_COMPONENT_H__
 
 #include "Base/BaseObject.h"
+#include "Math/Math2D.h"
 #include "Reflection/Reflection.h"
 #include "Reflection/ReflectionRegistrator.h"
 
@@ -33,10 +34,13 @@ public:
         ACTION_COMPONENT,
         ACTION_BINDING_COMPONENT,
         SCROLL_BAR_DELEGATE_COMPONENT,
+        SCROLL_COMPONENT,
         SOUND_COMPONENT,
         SOUND_VALUE_FILTER_COMPONENT,
         UPDATE_COMPONENT,
         CUSTOM_UPDATE_DELTA_COMPONENT,
+        RICH_CONTENT_COMPONENT,
+        RICH_CONTENT_OBJECT_COMPONENT,
 
         COMPONENT_COUNT
     };

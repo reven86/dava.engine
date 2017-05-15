@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Entity/Component.h"
+#include "Scene3D/Components/Waypoint/PathComponent.h"
 #include "Reflection/Reflection.h"
 #include "Base/Introspection.h"
 
@@ -20,55 +21,64 @@ public:
 
     WaypointComponent();
 
+    void Init(PathComponent* path, PathComponent::Waypoint* waypoint);
+    PathComponent* GetPath() const;
+    PathComponent::Waypoint* GetWaypoint() const;
+
     Component* Clone(Entity* toEntity) override;
     void Serialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
     void Deserialize(KeyedArchive* archive, SerializationContext* serializationContext) override;
 
-    void SetProperties(KeyedArchive* archieve);
-    KeyedArchive* GetProperties() const;
-
-    void SetPathName(const FastName& name);
     const FastName& GetPathName() const;
+    void SetPathName(const FastName& name);
 
-    void SetStarting(bool);
-    bool IsStarting() const;
+    KeyedArchive* GetProperties() const;
+    void SetProperties(KeyedArchive* arc);
+
+    bool IsStartingPoint() const;
 
 private:
-    FastName pathName;
-    KeyedArchive* properties;
-    bool isStarting = false;
+    PathComponent* path = nullptr;
+    PathComponent::Waypoint* waypoint = nullptr;
 
 public:
     INTROSPECTION_EXTEND(WaypointComponent, Component,
-                         MEMBER(pathName, "Path Name", I_VIEW)
-                         MEMBER(properties, "Waypoint properties", I_VIEW | I_EDIT)
+                         PROPERTY("Path Name", "Path Name", GetPathName, SetPathName, I_VIEW)
+                         PROPERTY("Waypoint properties", "Waypoint properties", GetProperties, SetProperties, I_VIEW | I_EDIT)
                          );
 
     DAVA_VIRTUAL_REFLECTION(WaypointComponent, Component);
 };
 
-inline KeyedArchive* WaypointComponent::GetProperties() const
+inline const FastName& WaypointComponent::GetPathName() const
 {
-    return properties;
+    DVASSERT(path != nullptr);
+    DVASSERT(waypoint != nullptr);
+    return path->GetName();
 }
 
 inline void WaypointComponent::SetPathName(const FastName& name)
 {
-    pathName = name;
+    DVASSERT(false);
 }
 
-inline const FastName& WaypointComponent::GetPathName() const
+inline KeyedArchive* WaypointComponent::GetProperties() const
 {
-    return pathName;
+    DVASSERT(path != nullptr);
+    DVASSERT(waypoint != nullptr);
+    return waypoint->GetProperties();
 }
 
-inline void WaypointComponent::SetStarting(bool newVal)
+inline void WaypointComponent::SetProperties(KeyedArchive* arc)
 {
-    isStarting = newVal;
+    DVASSERT(false);
 }
 
-inline bool WaypointComponent::IsStarting() const
+inline bool WaypointComponent::IsStartingPoint() const
 {
-    return isStarting;
+    DVASSERT(path != nullptr);
+    DVASSERT(waypoint != nullptr);
+    return waypoint->IsStarting();
 }
-}
+
+} // namespace DAVA

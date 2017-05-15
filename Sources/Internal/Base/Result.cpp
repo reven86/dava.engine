@@ -28,12 +28,12 @@ Result& Result::operator=(Result&& result)
 }
 
 ResultList::ResultList()
-    : allOk(true)
 {
 }
 
 ResultList::ResultList(const Result& result)
-    : allOk(result)
+    : hasErrors(result.type == Result::RESULT_ERROR)
+    , hasWarnings(result.type == Result::RESULT_WARNING)
 {
     results.push_back(result);
 }
@@ -44,7 +44,8 @@ ResultList::ResultList(Result&& result)
 }
 
 ResultList::ResultList(ResultList&& resultList)
-    : allOk(resultList.allOk)
+    : hasErrors(resultList.hasErrors)
+    , hasWarnings(resultList.hasWarnings)
     , results(std::move(resultList.results))
 {
 }
@@ -53,7 +54,8 @@ ResultList& ResultList::operator=(ResultList&& resultList)
 {
     if (this != &resultList)
     {
-        allOk = resultList.allOk;
+        hasErrors = resultList.hasErrors;
+        hasWarnings = resultList.hasWarnings;
         results = std::move(resultList.results);
     }
     return *this;
@@ -71,14 +73,16 @@ ResultList& ResultList::operator<<(Result&& result)
 
 ResultList& ResultList::AddResult(const Result& result)
 {
-    allOk &= result;
+    hasErrors |= result.type == Result::RESULT_ERROR;
+    hasWarnings |= result.type == Result::RESULT_WARNING;
     results.push_back(result);
     return *this;
 }
 
 ResultList& ResultList::AddResult(Result&& result)
 {
-    allOk &= result;
+    hasErrors |= result.type == Result::RESULT_ERROR;
+    hasWarnings |= result.type == Result::RESULT_WARNING;
     results.emplace_back(std::move(result));
     return *this;
 }
@@ -90,7 +94,8 @@ ResultList& ResultList::AddResult(const Result::ResultType type, const String& m
 
 ResultList& ResultList::AddResultList(const ResultList& resultList)
 {
-    allOk &= resultList.allOk;
+    hasErrors |= resultList.hasErrors;
+    hasWarnings |= resultList.hasWarnings;
     results.insert(results.end(), resultList.results.begin(), resultList.results.end());
     return *this;
 }
@@ -98,7 +103,8 @@ ResultList& ResultList::AddResultList(const ResultList& resultList)
 ResultList& ResultList::AddResultList(ResultList&& resultList)
 {
     DVASSERT(this != &resultList);
-    allOk &= resultList.allOk;
+    hasErrors |= resultList.hasErrors;
+    hasWarnings |= resultList.hasWarnings;
     if (results.empty())
     {
         results = std::move(resultList.results);
@@ -109,4 +115,23 @@ ResultList& ResultList::AddResultList(ResultList&& resultList)
         resultList.results.clear();
     }
     return *this;
+}
+
+String ResultList::GetResultMessages() const
+{
+    StringStream stream;
+    bool first = true;
+    for (const Result& result : results)
+    {
+        if (first)
+        {
+            first = false;
+        }
+        else
+        {
+            stream << std::endl;
+        }
+        stream << result.message;
+    }
+    return stream.str();
 }

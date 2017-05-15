@@ -2,9 +2,9 @@
 
 #include "EditorSystems/EditorSystemsManager.h"
 
+#include <Engine/Qt/IClientDelegate.h>
 #include <Engine/Qt/RenderWidget.h>
 
-#include <QWidget>
 #include <QFrame>
 #include <QCursor>
 #include <QPointer>
@@ -41,7 +41,7 @@ class QDragLeaveEvent;
 class QDropEvent;
 class QMenu;
 
-class PreviewWidget : public QFrame, private DAVA::RenderWidget::IClientDelegate
+class PreviewWidget : public QFrame, private DAVA::IClientDelegate
 {
     Q_OBJECT
 public:

@@ -1173,9 +1173,10 @@ void RenderSystem2D::DrawStretched(Sprite* sprite, Sprite::DrawState* state, Vec
     }
 
     transformMatr = flipMatrix * transformMatr;
-    if (needGenerateData || sd.transformMatr != transformMatr)
+    if (needGenerateData || sd.transformMatr != transformMatr || sd.usePerPixelAccuracy != state->usePerPixelAccuracy)
     {
         sd.transformMatr = transformMatr;
+        sd.usePerPixelAccuracy = state->usePerPixelAccuracy;
         sd.GenerateTransformData();
     }
 
@@ -1993,10 +1994,15 @@ uint32 StretchDrawData::GetVertexInTrianglesCount() const
 
 void StretchDrawData::GenerateTransformData()
 {
-    const uint32 size = uint32(vertices.size());
-    for (uint32 index = 0; index < size; ++index)
+    if (usePerPixelAccuracy)
     {
-        transformedVertices[index] = vertices[index] * transformMatr;
+        for (size_t i = 0, sz = vertices.size(); i < sz; ++i)
+            transformedVertices[i] = RenderSystem2D::Instance()->GetAlignedVertex(vertices[i] * transformMatr);
+    }
+    else
+    {
+        for (size_t i = 0, sz = vertices.size(); i < sz; ++i)
+            transformedVertices[i] = vertices[i] * transformMatr;
     }
 }
 

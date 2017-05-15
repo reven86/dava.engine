@@ -34,6 +34,7 @@ private:
     void LayoutLineVertically(ControlLayoutData& data, int32 firstIndex, int32 lastIndex, float32 top, float32 bottom);
 
     void CorrectPaddingAndSpacing(float32& padding, float32& spacing, bool dynamicPadding, bool dynamicSpacing, float32 restSize, int32 childrenCount);
+    void SortLineItemsByContentDirection(int32 firstIndex, int32 lastIndex, List<uint32>& order, int32& realLastIndex);
 
 private:
     Vector<ControlLayoutData>& layoutData;

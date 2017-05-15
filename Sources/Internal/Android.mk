@@ -434,6 +434,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/Render/RHI/Common/MCPP/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/RHI/Common/Parser/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Render/RHI/GLES2/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/Render/RHI/NullRenderer/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene2D/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene3D/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/Scene3D/Private/*.cpp) \
@@ -456,8 +457,11 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/UI/Components/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/Styles/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/Layouts/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/UI/Formula/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/UI/Formula/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/Focus/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/Input/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/UI/RichContent/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/Scroll/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/Sound/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/Private/*.cpp) \

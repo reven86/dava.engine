@@ -3,6 +3,7 @@
 
 #include "Base/BaseTypes.h"
 #include "Base/FastName.h"
+#include "Math/Math2D.h"
 
 namespace DAVA
 {
@@ -52,6 +53,7 @@ enum Api
     RHI_DX9,
     RHI_GLES2,
     RHI_METAL,
+    RHI_NULL_RENDERER,
 
     RHI_API_COUNT
 };
@@ -86,7 +88,7 @@ enum FillMode
 enum
 {
     MAX_CONST_BUFFER_COUNT = 8,
-    MAX_RENDER_TARGET_COUNT = 2,
+    MAX_RENDER_TARGET_COUNT = 4,
     MAX_FRAGMENT_TEXTURE_SAMPLER_COUNT = 8,
     MAX_VERTEX_TEXTURE_SAMPLER_COUNT = 2,
     MAX_VERTEX_STREAM_COUNT = 4,
@@ -866,6 +868,24 @@ namespace CommandBuffer
 {
 struct
 Descriptor
+{
+};
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// perf-query
+namespace PerfQuery
+{
+struct Descriptor
+{
+};
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// const-buffer
+namespace ConstBuffer
+{
+struct Descriptor
 {
 };
 }
