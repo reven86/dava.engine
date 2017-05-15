@@ -14,9 +14,6 @@ namespace rhi
 class PerfQueryGLES2_t
 {
 public:
-    struct Desc
-    {
-    };
     PerfQueryGLES2_t() = default;
     ~PerfQueryGLES2_t() = default;
 
@@ -28,8 +25,8 @@ public:
 
 //==============================================================================
 
-typedef ResourcePool<PerfQueryGLES2_t, RESOURCE_PERFQUERY, PerfQueryGLES2_t::Desc, false> PerfQueryGLES2Pool;
-RHI_IMPL_POOL(PerfQueryGLES2_t, RESOURCE_PERFQUERY, PerfQueryGLES2_t::Desc, false);
+typedef ResourcePool<PerfQueryGLES2_t, RESOURCE_PERFQUERY, PerfQuery::Descriptor, false> PerfQueryGLES2Pool;
+RHI_IMPL_POOL(PerfQueryGLES2_t, RESOURCE_PERFQUERY, PerfQuery::Descriptor, false);
 
 DAVA::Vector<GLuint> queryObjectPoolGLES2;
 DAVA::List<std::pair<PerfQueryGLES2_t*, GLuint>> pendingQueriesGLES2;

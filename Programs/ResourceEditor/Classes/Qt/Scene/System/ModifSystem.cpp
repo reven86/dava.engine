@@ -721,12 +721,12 @@ void EntityModificationSystem::CloneBegin()
         if (origEntity == nullptr)
             continue;
 
-        for (auto delegate : delegates)
+        for (EntityModificationSystemDelegate* delegate : delegates)
         {
             delegate->WillClone(origEntity);
         }
         DAVA::Entity* newEntity = origEntity->Clone();
-        for (auto delegate : delegates)
+        for (EntityModificationSystemDelegate* delegate : delegates)
         {
             delegate->DidCloned(origEntity, newEntity);
         }
@@ -775,8 +775,28 @@ void EntityModificationSystem::CloneEnd()
             {
                 cloneParent->RemoveNode(clonedEntities[i]);
 
-                // and add it once again with command
-                sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new EntityAddCommand(clonedEntities[i], cloneParent)));
+                DAVA::Entity* origEntity = modifEntities[i].object.AsEntity();
+                DVASSERT(origEntity != nullptr);
+
+                EntityModificationSystemDelegate* addadingDelegate = nullptr;
+                for (EntityModificationSystemDelegate* d : delegates)
+                {
+                    if (d->HasCustomClonedAddading(origEntity))
+                    {
+                        addadingDelegate = d;
+                        break;
+                    }
+                }
+
+                if (addadingDelegate == nullptr)
+                {
+                    // and add it once again with command
+                    sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new EntityAddCommand(clonedEntities[i], cloneParent)));
+                }
+                else
+                {
+                    addadingDelegate->PerformAdding(origEntity, clonedEntities[i]);
+                }
             }
 
             // make cloned entity selected

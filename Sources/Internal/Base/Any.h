@@ -164,16 +164,6 @@ struct AnyCompare
     static bool IsEqual(const Any&, const Any&);
 };
 
-/*
-/// \brief any cast.
-template <typename T>
-struct AnyCast
-{
-    static bool CanCast(const Any&);
-    static T Cast(const Any&);
-};
-*/
-
 /// \brief any cast.
 template <typename From, typename To>
 struct AnyCast
