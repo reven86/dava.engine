@@ -542,9 +542,28 @@ DAVA::RefPtr<PackageNode> DocumentsModule::CreatePackage(const QString& path)
 
     if (packageLoaded)
     {
-        RefPtr<PackageNode> packageRef = builder.BuildPackage();
-        DVASSERT(packageRef.Get() != nullptr);
-        return packageRef;
+        bool canLoadPackage = true;
+
+        if (builder.GetResults().HasErrors())
+        {
+            ModalMessageParams params;
+            params.icon = ModalMessageParams::Question;
+            params.title = QObject::tr("Document was loaded with errors.");
+
+            QString message = QObject::tr("Document by path:\n%1 was loaded with next errors:\n").arg(path);
+            message.append(QString::fromStdString(builder.GetResults().GetResultMessages()));
+            message.append("Would you like to load this document?");
+            params.message = message;
+            params.buttons = ModalMessageParams::Yes | ModalMessageParams::Cancel;
+            canLoadPackage = GetUI()->ShowModalMessage(DAVA::TArc::mainWindowKey, params) == ModalMessageParams::Yes;
+        }
+
+        if (canLoadPackage)
+        {
+            RefPtr<PackageNode> packageRef = builder.BuildPackage();
+            DVASSERT(packageRef.Get() != nullptr);
+            return packageRef;
+        }
     }
     else
     {
@@ -668,7 +687,10 @@ void DocumentsModule::CloseDocument(DAVA::uint64 id)
 
         if (ret == ModalMessageParams::Save)
         {
-            SaveDocument(id);
+            if (!SaveDocument(id))
+            {
+                return;
+            }
         }
         else if (ret == ModalMessageParams::Cancel)
         {
@@ -867,7 +889,7 @@ bool DocumentsModule::HasUnsavedDocuments() const
     return hasUnsaved;
 }
 
-void DocumentsModule::SaveDocument(const DAVA::TArc::DataContext::ContextID& contextID)
+bool DocumentsModule::SaveDocument(const DAVA::TArc::DataContext::ContextID& contextID)
 {
     using namespace DAVA::TArc;
     ContextAccessor* accessor = GetAccessor();
@@ -882,9 +904,24 @@ void DocumentsModule::SaveDocument(const DAVA::TArc::DataContext::ContextID& con
     watcherData->Unwatch(path);
     YamlPackageSerializer serializer;
     serializer.SerializePackage(data->package.Get());
+    if (serializer.HasErrors())
+    {
+        ModalMessageParams params;
+        params.title = QObject::tr("Can't save");
+        params.message = QObject::tr("Next Erros were occurred during serialization:\n");
+        params.message.append(QString::fromStdString(serializer.GetResults().GetResultMessages()));
+
+        params.buttons = ModalMessageParams::Ok;
+        params.icon = ModalMessageParams::Warning;
+        GetUI()->ShowModalMessage(DAVA::TArc::mainWindowKey, params);
+        return false;
+    }
+
     serializer.WriteToFile(data->package->GetPath());
     data->commandStack->SetClean();
     watcherData->Watch(path);
+
+    return true;
 }
 
 void DocumentsModule::SaveAllDocuments()
