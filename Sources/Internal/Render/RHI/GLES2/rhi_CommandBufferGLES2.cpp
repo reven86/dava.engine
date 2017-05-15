@@ -564,9 +564,9 @@ void CommandBufferGLES2_t::Execute()
 #if defined(__DAVAENGINE_IPHONE__)
                 ios_gl_begin_frame();
 #endif
-                Handle rt[MAX_RENDER_TARGET_COUNT];
-                TextureFace rt_face[MAX_RENDER_TARGET_COUNT];
-                unsigned rt_level[MAX_RENDER_TARGET_COUNT];
+                Handle rt[MAX_RENDER_TARGET_COUNT] = {};
+                TextureFace rt_face[MAX_RENDER_TARGET_COUNT] = {};
+                unsigned rt_level[MAX_RENDER_TARGET_COUNT] = {};
                 unsigned rt_count = 0;
                 bool apply_fb = true;
                 bool do_clear = true;
