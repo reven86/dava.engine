@@ -36,11 +36,6 @@ void BaseTask::SetOnFinishCallback(CallbackFn callback)
     onFinishedCallback = callback;
 }
 
-void BaseTask::SetOnSuccessCallback(CallbackFn callback)
-{
-    onSuccessCallback = callback;
-}
-
 RunTask::RunTask(ApplicationManager* appManager)
     : BaseTask(appManager)
 {

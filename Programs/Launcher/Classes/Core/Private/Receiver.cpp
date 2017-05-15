@@ -50,9 +50,4 @@ void ReceiverNotifier::NotifyFinished(const BaseTask* task)
     {
         task->onFinishedCallback(task);
     }
-
-    if (task->HasError() == false && task->onSuccessCallback)
-    {
-        task->onSuccessCallback(task);
-    }
 }

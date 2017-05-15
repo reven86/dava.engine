@@ -53,7 +53,6 @@ public:
 
     using CallbackFn = std::function<void(const BaseTask*)>;
     void SetOnFinishCallback(CallbackFn callback);
-    void SetOnSuccessCallback(CallbackFn callback);
 
 protected:
     ApplicationManager* appManager = nullptr;
@@ -67,7 +66,6 @@ private:
     BaseTask& operator=(BaseTask&& task) = delete;
 
     CallbackFn onFinishedCallback;
-    CallbackFn onSuccessCallback;
 };
 
 //base class for run tasks without progress bar

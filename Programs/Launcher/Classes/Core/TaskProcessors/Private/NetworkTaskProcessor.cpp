@@ -39,9 +39,10 @@ void NetworkTaskProcessor::Terminate()
     {
         return;
     }
-    for (size_t i = 0, count = currentTask->requests.size(); i < count; ++i)
+    std::list<QNetworkReply*> requests = currentTask->requests;
+    for (QNetworkReply* reply : requests)
     {
-        currentTask->requests.front()->abort();
+        reply->abort();
     }
 }
 
@@ -75,6 +76,7 @@ void NetworkTaskProcessor::StartNextTask()
 
 void NetworkTaskProcessor::OnDownloadFinished(QNetworkReply* reply)
 {
+    Q_ASSERT(currentTask != nullptr);
     Q_ASSERT(currentTask->task->GetTaskType() == BaseTask::DOWNLOAD_TASK);
     reply->deleteLater();
 
@@ -93,9 +95,9 @@ void NetworkTaskProcessor::OnDownloadFinished(QNetworkReply* reply)
         if (reply->error() != QNetworkReply::OperationCanceledError)
         {
             Terminate();
+            return;
         }
     }
-
     if (currentTask->requests.empty())
     {
         currentTask->notifier.NotifyFinished(currentTask->task.get());

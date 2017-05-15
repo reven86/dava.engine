@@ -25,12 +25,17 @@ void SelfUpdateTask::Run()
 {
     QString description = QObject::tr("Loading new launcher");
     std::unique_ptr<BaseTask> task = appManager->CreateTask<DownloadTask>(description, url);
-    task->SetOnSuccessCallback(std::bind(&SelfUpdateTask::OnLoaded, this, std::placeholders::_1));
+    task->SetOnFinishCallback(std::bind(&SelfUpdateTask::OnLoaded, this, std::placeholders::_1));
     appManager->AddTask(std::move(task));
 }
 
 void SelfUpdateTask::OnLoaded(const BaseTask* task)
 {
+    if (task->HasError())
+    {
+        return;
+    }
+
     Q_ASSERT(task->GetTaskType() == BaseTask::DOWNLOAD_TASK);
     const DownloadTask* downloadTask = static_cast<const DownloadTask*>(task);
     Q_ASSERT(downloadTask->GetLoadedData().empty() == false);
@@ -67,5 +72,5 @@ void SelfUpdateTask::OnUnpacked()
         qApp->quit();
     }
 
-    Finished();
+    emit Finished();
 }

@@ -8,7 +8,6 @@
 #include <memory>
 
 class BaseTaskProcessor;
-class QString;
 
 class TaskManager : public QObject
 {

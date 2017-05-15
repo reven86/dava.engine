@@ -53,11 +53,7 @@ void RemoveApplicationTask::Run()
     bool isToolSet = localVersion->isToolSet;
     if (isToolSet)
     {
-        //check that we can remove folder "toolset" first
-        for (const QString& fakeapp : localConfig->GetTranslatedToolsetApplications())
-        {
-            appNames << fakeapp;
-        }
+        appNames << localConfig->GetTranslatedToolsetApplications();
     }
     else
     {
@@ -65,7 +61,7 @@ void RemoveApplicationTask::Run()
     }
 
     using appWorkerFn = std::function<bool(const QString&, const QString&, AppVersion*)>;
-    auto forEachApp = [appNames, localConfig, this](appWorkerFn fn) -> bool {
+    auto forEachApp = [&appNames, localConfig, this](appWorkerFn fn) -> bool {
         for (const QString& fakeName : appNames)
         {
             Application* fakeApp = localConfig->GetApplication(branch, fakeName);
@@ -124,23 +120,16 @@ bool RemoveApplicationTask::TryStopApp(const QString& runPath) const
     using namespace std;
     if (appManager->GetAppsCommandsSender()->RequestQuit(runPath))
     {
-        QEventLoop eventLoop;
-        atomic<bool> isStillRunning(true);
-        auto ensureAppIsNotRunning = [&eventLoop, &isStillRunning, runPath]() {
-            QElapsedTimer timer;
-            timer.start();
-            const int maxWaitTimeMs = 10 * 1000;
-            while (timer.elapsed() < maxWaitTimeMs && isStillRunning)
-            {
-                const int waitTimeMs = 100;
-                this_thread::sleep_for(std::chrono::milliseconds(waitTimeMs));
-                isStillRunning = ProcessHelper::IsProcessRuning(runPath);
-            }
-            eventLoop.quit();
-        };
-        std::thread workerThread(QtHelpers::InvokeInAutoreleasePool, ensureAppIsNotRunning);
-        eventLoop.exec();
-        workerThread.join();
+        bool isStillRunning = true;
+        QElapsedTimer timer;
+        timer.start();
+        const int maxWaitTimeMs = 10 * 1000;
+        while (timer.elapsed() < maxWaitTimeMs && isStillRunning)
+        {
+            const int waitTimeMs = 100;
+            this_thread::sleep_for(std::chrono::milliseconds(waitTimeMs));
+            isStillRunning = ProcessHelper::IsProcessRuning(runPath);
+        }
         return isStillRunning == false;
     }
     return false;

@@ -292,8 +292,7 @@ void ApplicationManager::OnAppInstalled(const QString& branchID, const QString& 
 
 QString ApplicationManager::GetString(const QString& stringID) const
 {
-    QString string = stringID;
-    string = remoteConfig.GetString(stringID);
+    QString string = remoteConfig.GetString(stringID);
     if (string == stringID)
         string = localConfig.GetString(stringID);
     return string;
