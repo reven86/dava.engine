@@ -4,7 +4,7 @@
 #include "Math/MathDefines.h"
 #include "Reflection/ReflectionRegistrator.h"
 #include "Scripting/LuaScript.h"
-/*
+
 struct ReflClass : public DAVA::ReflectionBase
 {
     DAVA_VIRTUAL_REFLECTION(ReflClass);
@@ -655,4 +655,3 @@ end
         }
     }
 };
-*/
