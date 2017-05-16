@@ -84,6 +84,20 @@ class TeamCityRequest:
 
         root.attrib['statusText'] = statusText
 
+        build_type = root.find( 'buildType' )
+
+        root.attrib['config_name'] = build_type.attrib[ 'name' ]
+        root.attrib['config_path'] = build_type.attrib[ 'projectName' ].replace( ' ', '' )
+
+        root.attrib['config_path'] = '{}::{}'.format( root.attrib['config_path'] , root.attrib['config_name'] )
+
+        return root.attrib
+
+    def configuration_info(self, config_id ):
+        response = self.__request("buildTypes/id:{}/".format( config_id ))
+        root = ET.fromstring(response.content)
+        root.attrib['config_path'] = root.attrib[ 'projectName' ].replace( ' ', '' )
+        root.attrib['config_path'] = '{}::{}'.format( root.attrib['config_path'] , root.attrib['name'] )
         return root.attrib
 
     def agent_info_by_name(self, agent_name ):

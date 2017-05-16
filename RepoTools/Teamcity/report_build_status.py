@@ -82,11 +82,11 @@ def main():
 
         assert (build_url != None ), "build_url == None"
 
-
+        configuration_info = teamcity.configuration_info(args.configuration_id)
 
         stash.report_build_status( args.status,
                                    args.configuration_id,
-                                   args.configuration_id,
+                                   configuration_info['config_path'],
                                    build_url,
                                    commit,
                                    description=args.description )
