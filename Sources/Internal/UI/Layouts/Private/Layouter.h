@@ -5,6 +5,8 @@
 
 namespace DAVA
 {
+class LayoutFormula;
+
 class Layouter
 {
 public:

@@ -1,4 +1,5 @@
 #include "Layouter.h"
+#include "UI/Layouts/LayoutFormula.h"
 #include "UI/Layouts/Private/AnchorLayoutAlgorithm.h"
 #include "UI/Layouts/Private/FlowLayoutAlgorithm.h"
 #include "UI/Layouts/Private/LinearLayoutAlgorithm.h"
