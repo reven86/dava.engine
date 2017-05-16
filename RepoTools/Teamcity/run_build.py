@@ -6,7 +6,7 @@ import json
 import time
 import team_city_api
 import json
-
+import ast
 
 def __parser_args():
     arg_parser = argparse.ArgumentParser()
@@ -19,7 +19,7 @@ def __parser_args():
     arg_parser.add_argument( '--brunch', required = True )
 
     arg_parser.add_argument( '--queue_at_top', default = 'false', choices = [ 'true', 'false' ] )
-    arg_parser.add_argument( '--properties' ) #'{ "id":"123456789", ... }'
+    arg_parser.add_argument( '--properties' ) #'id1:2323,id2:ferwerwer,id3:dvdsf3434,...'
     arg_parser.add_argument( '--agent_name' )
 
     return arg_parser.parse_args()
@@ -42,6 +42,9 @@ def main():
 
     properties = {}
     if args.properties:
+        properties = args.properties.replace(":", "\":\"")
+        properties = properties.replace(",", "\",\"")
+        properties = "{{\"{0}\"}}".format( properties )
         properties = json.loads( properties )
 
     agent_id = None
