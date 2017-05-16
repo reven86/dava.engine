@@ -57,6 +57,9 @@ void CoreV2Test::LoadResources()
     buttonDisableClose = CreateUIButton(font, Rect(500, y, 200, h), "Disable close", &CoreV2Test::OnDisableEnableClose);
     buttonEnableClose = CreateUIButton(font, Rect(500, y += h + gap, 200, h), "Enable close", &CoreV2Test::OnDisableEnableClose);
 
+    buttonDisableScreenTimeout = CreateUIButton(font, Rect(500, y += h + gap, 200, h), "Disable screen timeout", &CoreV2Test::OnDisableEnableScreenTimeout);
+    buttonEnableScreenTimeout = CreateUIButton(font, Rect(500, y += h + gap, 200, h), "Enable screen timeout", &CoreV2Test::OnDisableEnableScreenTimeout);
+
     engine.windowCreated.Connect(this, &CoreV2Test::OnWindowCreated);
     engine.windowDestroyed.Connect(this, &CoreV2Test::OnWindowDestroyed);
     engine.SetCloseRequestHandler(MakeFunction(this, &CoreV2Test::OnWindowWantsToClose));
@@ -77,6 +80,8 @@ void CoreV2Test::UnloadResources()
     SafeRelease(buttonRunOnUI);
     SafeRelease(buttonDisableClose);
     SafeRelease(buttonEnableClose);
+    SafeRelease(buttonDisableScreenTimeout);
+    SafeRelease(buttonEnableScreenTimeout);
 
     SafeRelease(buttonDispTrigger1);
     SafeRelease(buttonDispTrigger2);
@@ -130,6 +135,20 @@ void CoreV2Test::OnDisableEnableClose(DAVA::BaseObject* obj, void* data, void* c
     {
         Logger::Debug("Closing application or window by user is enabled");
         closeDisabled = false;
+    }
+}
+
+void CoreV2Test::OnDisableEnableScreenTimeout(DAVA::BaseObject* obj, void* data, void* callerData)
+{
+    if (obj == buttonDisableScreenTimeout)
+    {
+        Logger::Debug("Screen timeout is disabled");
+        engine.SetScreenTimeoutEnabled(false);
+    }
+    else if (obj == buttonEnableScreenTimeout)
+    {
+        Logger::Debug("Screen timeout is enabled");
+        engine.SetScreenTimeoutEnabled(true);
     }
 }
 

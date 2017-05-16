@@ -73,7 +73,7 @@ bool UIPackageLoader::LoadPackage(const FilePath& packagePath, AbstractUIPackage
     YamlNode* rootNode = parser->GetRootNode();
     if (!rootNode) //empty yaml equal to empty UIPackage
     {
-        builder->BeginPackage(packagePath);
+        builder->BeginPackage(packagePath, UIPackage::CURRENT_VERSION);
         builder->EndPackage();
         return true;
     }
@@ -99,7 +99,7 @@ bool UIPackageLoader::LoadPackage(const YamlNode* rootNode, const FilePath& pack
         return false;
     }
 
-    builder->BeginPackage(packagePath);
+    builder->BeginPackage(packagePath, packageVersion);
 
     const YamlNode* importedPackagesNode = rootNode->Get("ImportedPackages");
     if (importedPackagesNode)

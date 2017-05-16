@@ -42,6 +42,11 @@ String ControlNodeInformation::GetPrototypePackagePath() const
     }
 }
 
+bool ControlNodeInformation::HasErrors() const
+{
+    return controlNode->HasErrors();
+}
+
 bool ControlNodeInformation::HasComponent(const DAVA::Type* componentType) const
 {
     return controlNode->GetControl()->GetComponentCount(componentType) > 0;

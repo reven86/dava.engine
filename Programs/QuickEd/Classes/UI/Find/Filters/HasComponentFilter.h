@@ -9,8 +9,8 @@ class HasComponentFilter : public FindFilter
 public:
     HasComponentFilter(const DAVA::Type* componentType);
 
-    bool CanAcceptPackage(const PackageInformation* package) const override;
-    bool CanAcceptControl(const ControlInformation* control) const override;
+    ePackageStatus AcceptPackage(const PackageInformation* package) const override;
+    bool AcceptControl(const ControlInformation* control) const override;
 
 private:
     const DAVA::Type* requiredComponentType;

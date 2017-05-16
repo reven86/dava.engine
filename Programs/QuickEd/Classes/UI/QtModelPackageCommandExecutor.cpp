@@ -37,6 +37,7 @@
 #include "Model/QuickEdPackageBuilder.h"
 
 #include <TArc/Core/ContextAccessor.h>
+#include <TArc/WindowSubSystem/UI.h>
 
 #include <UI/UIControl.h>
 #include <UI/UIPackageLoader.h>
@@ -70,14 +71,16 @@ String FormatNodeNames(const DAVA::Vector<T*>& nodes)
 }
 }
 
-QtModelPackageCommandExecutor::QtModelPackageCommandExecutor(DAVA::TArc::ContextAccessor* accessor_)
+QtModelPackageCommandExecutor::QtModelPackageCommandExecutor(DAVA::TArc::ContextAccessor* accessor_, DAVA::TArc::UI* ui_)
     : accessor(accessor_)
+    , ui(ui_)
 {
 }
 
 void QtModelPackageCommandExecutor::AddImportedPackagesIntoPackage(const DAVA::Vector<DAVA::FilePath> packagePaths, const PackageNode* package)
 {
     Vector<PackageNode*> importedPackages;
+    Result result;
     for (const FilePath& path : packagePaths)
     {
         if (package->FindImportedPackage(path) == nullptr && package->GetPath().GetFrameworkPath() != path.GetFrameworkPath())
@@ -87,16 +90,39 @@ void QtModelPackageCommandExecutor::AddImportedPackagesIntoPackage(const DAVA::V
             ProjectData* projectData = GetProjectData();
             if (UIPackageLoader(projectData->GetPrototypes()).LoadPackage(path, &builder))
             {
-                RefPtr<PackageNode> importedPackage = builder.BuildPackage();
-                if (package->GetImportedPackagesNode()->CanInsertImportedPackage(importedPackage.Get()))
+                if (!builder.GetResults().HasErrors())
                 {
-                    importedPackages.push_back(SafeRetain(importedPackage.Get()));
+                    RefPtr<PackageNode> importedPackage = builder.BuildPackage();
+                    if (package->GetImportedPackagesNode()->CanInsertImportedPackage(importedPackage.Get()))
+                    {
+                        importedPackages.push_back(SafeRetain(importedPackage.Get()));
+                    }
+                    else
+                    {
+                        result = Result(Result::RESULT_ERROR, Format("Package '%s' make cyclic import", path.GetFilename().c_str()));
+                        break;
+                    }
+                }
+                else
+                {
+                    result = Result(Result::RESULT_ERROR, Format("Package '%s' has errors", path.GetFilename().c_str()));
+                    break;
                 }
             }
+            else
+            {
+                result = Result(Result::RESULT_ERROR, Format("Can't load package '%s'", path.GetFilename().c_str()));
+                break;
+            }
+        }
+        else
+        {
+            result = Result(Result::RESULT_ERROR, "Can't import package into themself");
+            break;
         }
     }
 
-    if (!importedPackages.empty())
+    if (!importedPackages.empty() && result.type == Result::RESULT_SUCCESS)
     {
         DocumentData* documentData = GetDocumentData();
         documentData->BeginBatch("Insert Packages", static_cast<uint32>(importedPackages.size()));
@@ -107,6 +133,15 @@ void QtModelPackageCommandExecutor::AddImportedPackagesIntoPackage(const DAVA::V
         }
         importedPackages.clear();
         documentData->EndBatch();
+    }
+
+    if (result.type == Result::RESULT_ERROR)
+    {
+        using namespace DAVA::TArc;
+        NotificationParams params;
+        params.title = "Can't import package";
+        params.message = result;
+        ui->ShowNotification(mainWindowKey, params);
     }
 }
 
@@ -535,81 +570,84 @@ SelectedNodes QtModelPackageCommandExecutor::Paste(PackageNode* root, PackageBas
     ProjectData* projectData = GetProjectData();
     if (UIPackageLoader(projectData->GetPrototypes()).LoadPackage(parser->GetRootNode(), root->GetPath(), &builder))
     {
-        const Vector<PackageNode*>& importedPackages = builder.GetImportedPackages();
-        const Vector<ControlNode*>& controls = builder.GetRootControls();
-        const Vector<StyleSheetNode*>& styles = builder.GetStyles();
-
-        if (controlsDest != nullptr)
+        if (!builder.GetResults().HasErrors())
         {
-            Vector<ControlNode*> acceptedControls;
-            Vector<PackageNode*> acceptedPackages;
-            Vector<PackageNode*> declinedPackages;
+            const Vector<PackageNode*>& importedPackages = builder.GetImportedPackages();
+            const Vector<ControlNode*>& controls = builder.GetRootControls();
+            const Vector<StyleSheetNode*>& styles = builder.GetStyles();
 
-            for (PackageNode* importedPackage : importedPackages)
+            if (controlsDest != nullptr)
             {
-                if (importedPackage != root && importedPackage->GetParent() != root->GetImportedPackagesNode())
-                {
-                    if (root->GetImportedPackagesNode()->CanInsertImportedPackage(importedPackage))
-                        acceptedPackages.push_back(importedPackage);
-                    else
-                        declinedPackages.push_back(importedPackage);
-                }
-            }
+                Vector<ControlNode*> acceptedControls;
+                Vector<PackageNode*> acceptedPackages;
+                Vector<PackageNode*> declinedPackages;
 
-            for (ControlNode* control : controls)
-            {
-                if (dest->CanInsertControl(control, destIndex))
+                for (PackageNode* importedPackage : importedPackages)
                 {
-                    bool canInsert = true;
-                    for (PackageNode* declinedPackage : declinedPackages)
+                    if (importedPackage != root && importedPackage->GetParent() != root->GetImportedPackagesNode())
                     {
-                        if (control->IsDependsOnPackage(declinedPackage))
+                        if (root->GetImportedPackagesNode()->CanInsertImportedPackage(importedPackage))
+                            acceptedPackages.push_back(importedPackage);
+                        else
+                            declinedPackages.push_back(importedPackage);
+                    }
+                }
+
+                for (ControlNode* control : controls)
+                {
+                    if (dest->CanInsertControl(control, destIndex))
+                    {
+                        bool canInsert = true;
+                        for (PackageNode* declinedPackage : declinedPackages)
                         {
-                            canInsert = false;
-                            break;
+                            if (control->IsDependsOnPackage(declinedPackage))
+                            {
+                                canInsert = false;
+                                break;
+                            }
+                        }
+
+                        if (canInsert)
+                        {
+                            acceptedControls.push_back(control);
                         }
                     }
+                }
 
-                    if (canInsert)
+                if (!acceptedControls.empty())
+                {
+                    DocumentData* data = GetDocumentData();
+                    data->BeginBatch("Paste", static_cast<uint32>(acceptedControls.size()));
+                    for (PackageNode* importedPackage : acceptedPackages)
                     {
-                        acceptedControls.push_back(control);
+                        AddImportedPackageIntoPackageImpl(importedPackage, root);
                     }
+
+                    int32 index = destIndex;
+                    for (ControlNode* control : acceptedControls)
+                    {
+                        createdNodes.insert(control);
+                        InsertControl(control, controlsDest, index);
+                        index++;
+                    }
+
+                    data->EndBatch();
                 }
             }
-
-            if (!acceptedControls.empty())
+            else if (stylesDest != nullptr && !styles.empty())
             {
                 DocumentData* data = GetDocumentData();
-                data->BeginBatch("Paste", static_cast<uint32>(acceptedControls.size()));
-                for (PackageNode* importedPackage : acceptedPackages)
-                {
-                    AddImportedPackageIntoPackageImpl(importedPackage, root);
-                }
-
+                data->BeginBatch("Paste");
                 int32 index = destIndex;
-                for (ControlNode* control : acceptedControls)
+                for (StyleSheetNode* style : styles)
                 {
-                    createdNodes.insert(control);
-                    InsertControl(control, controlsDest, index);
+                    createdNodes.insert(style);
+                    data->ExecCommand<InsertStyleCommand>(style, stylesDest, index);
                     index++;
                 }
 
                 data->EndBatch();
             }
-        }
-        else if (stylesDest != nullptr && !styles.empty())
-        {
-            DocumentData* data = GetDocumentData();
-            data->BeginBatch("Paste");
-            int32 index = destIndex;
-            for (StyleSheetNode* style : styles)
-            {
-                createdNodes.insert(style);
-                data->ExecCommand<InsertStyleCommand>(style, stylesDest, index);
-                index++;
-            }
-
-            data->EndBatch();
         }
     }
     return createdNodes;
