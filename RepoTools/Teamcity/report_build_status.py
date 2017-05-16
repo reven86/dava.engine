@@ -10,7 +10,6 @@ import stash_api
 
 import common_tool
 
-
 def __parser_args():
     arg_parser = argparse.ArgumentParser()
 

@@ -11,7 +11,6 @@ import common_tool
 # The script runs the teamcity-build or executes the command if the
 # changes in the pull-request affect the specified folder list
 
-
 def __parser_args():
     arg_parser = argparse.ArgumentParser()
 
@@ -188,7 +187,6 @@ def main():
                                       description="Tests were ignored due to changed files")
 
         common_tool.flush_print_teamcity_set_parameter( 'env.build_required', 'false' )
-
 
 
 if __name__ == '__main__':
