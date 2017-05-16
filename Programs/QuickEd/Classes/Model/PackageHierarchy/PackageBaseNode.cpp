@@ -113,6 +113,21 @@ bool PackageBaseNode::IsReadOnly() const
     return parent ? parent->IsReadOnly() : true;
 }
 
+void PackageBaseNode::AddResult(const DAVA::Result& r)
+{
+    results.AddResult(r);
+}
+
+const ResultList& PackageBaseNode::GetResults() const
+{
+    return results;
+}
+
+bool PackageBaseNode::HasErrors() const
+{
+    return results.HasErrors();
+}
+
 namespace
 {
 uint32 CalculateDepth(const PackageBaseNode* node)

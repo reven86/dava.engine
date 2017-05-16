@@ -369,6 +369,7 @@ ENUM_DECLARE(UISizePolicyComponent::eSizePolicy)
     ENUM_ADD_DESCR(UISizePolicyComponent::PERCENT_OF_LAST_CHILD, "PercentOfLastChild");
     ENUM_ADD_DESCR(UISizePolicyComponent::PERCENT_OF_CONTENT, "PercentOfContent");
     ENUM_ADD_DESCR(UISizePolicyComponent::PERCENT_OF_PARENT, "PercentOfParent");
+    ENUM_ADD_DESCR(UISizePolicyComponent::FORMULA, "Formula");
 };
 
 ENUM_DECLARE(UILinearLayoutComponent::eOrientation)

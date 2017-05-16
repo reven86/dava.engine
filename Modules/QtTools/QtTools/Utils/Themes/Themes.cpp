@@ -278,5 +278,10 @@ QColor GetRulerWidgetBackgroungColor()
 QColor GetHighligtedItemTextColor()
 {
     return GetCurrentTheme() == Light ? QColor(0x37, 0x63, 0xAD) : QColor(0x88, 0xBB, 0xFF);
-};
+}
+
+QColor GetErrorColor()
+{
+    return GetCurrentTheme() == Light ? QColor(0xDF, 0x1A, 0x21) : QColor(0xCE, 0x3D, 0x42);
+}
 };

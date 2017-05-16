@@ -3,8 +3,9 @@
 
 #include "PackageBaseNode.h"
 
-#include "FileSystem/FilePath.h"
-#include "Base/Any.h"
+#include <FileSystem/FilePath.h>
+#include <Base/Any.h>
+#include <Base/Result.h>
 
 class ImportedPackagesNode;
 class PackageControlsNode;
@@ -128,6 +129,8 @@ private:
     DAVA::UIControlPackageContext* packageContext = nullptr;
     DAVA::Vector<PackageListener*> listeners;
     bool canUpdateAll = true;
+
+    DAVA::ResultList results;
 };
 
 #endif // __UI_EDITOR_PACKAGE_NODE_H__
