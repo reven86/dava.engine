@@ -64,7 +64,7 @@ def __run_build( args, triggering_options = [] ):
 
     properties = {}
     if client_brunch and client_brunch != '<default>':
-        properties = {'client_branch': client_brunch}
+        properties = {'config.client_branch': client_brunch}
 
     run_build_result = teamcity.run_build( args.configuration_id, framework_brunch, properties, triggering_options  )
 

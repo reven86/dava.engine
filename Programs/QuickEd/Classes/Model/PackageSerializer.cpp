@@ -21,11 +21,12 @@
 #include "ControlProperties/StyleSheetSelectorProperty.h"
 #include "ControlProperties/StyleSheetProperty.h"
 
-#include "UI/UIPackage.h"
-#include "UI/UIControl.h"
-
-#include "Utils/StringFormat.h"
 #include "Utils/QtDavaConvertion.h"
+
+#include <UI/UIPackage.h>
+#include <UI/UIControl.h>
+
+#include <Utils/StringFormat.h>
 
 using namespace DAVA;
 
@@ -89,6 +90,16 @@ void PackageSerializer::SerializePackageNodes(PackageNode* package, const DAVA::
     styles.clear();
 }
 
+bool PackageSerializer::HasErrors() const
+{
+    return results.HasErrors();
+}
+
+const DAVA::ResultList& PackageSerializer::GetResults() const
+{
+    return results;
+}
+
 void PackageSerializer::VisitPackage(PackageNode* node)
 {
     BeginMap("Header");
@@ -99,7 +110,13 @@ void PackageSerializer::VisitPackage(PackageNode* node)
     {
         BeginArray("ImportedPackages");
         for (const PackageNode* package : importedPackages)
+        {
+            if (package->HasErrors())
+            {
+                results.AddResult(Result(Result::RESULT_ERROR, Format("Package '%s' has errors.", package->GetPath().GetStringValue().c_str())));
+            }
             PutValue(package->GetPath().GetFrameworkPath(), true);
+        }
         EndArray();
     }
 
@@ -140,6 +157,10 @@ void PackageSerializer::VisitControls(PackageControlsNode* node)
 
 void PackageSerializer::VisitControl(ControlNode* node)
 {
+    if (node->HasErrors())
+    {
+        results.AddResult(Result(Result::RESULT_ERROR, Format("Control '%s' has errors.", node->GetName().c_str())));
+    }
     BeginMap();
 
     node->GetRootProperty()->Accept(this);

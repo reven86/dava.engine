@@ -18,6 +18,7 @@ namespace DAVA
 namespace TArc
 {
 class ContextAccessor;
+class UI;
 }
 }
 
@@ -35,6 +36,7 @@ public:
     ~PropertiesWidget();
 
     void SetAccessor(DAVA::TArc::ContextAccessor* accessor);
+    void SetUI(DAVA::TArc::UI* ui);
 
 public slots:
     void SetProject(const Project* project);
@@ -87,4 +89,5 @@ private:
     DAVA::TArc::DataWrapper documentDataWrapper;
 
     DAVA::TArc::ContextAccessor* accessor = nullptr;
+    DAVA::TArc::UI* ui = nullptr;
 };

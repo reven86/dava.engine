@@ -1,205 +1,55 @@
-#include <QApplication>
-#include "WayEditSystem.h"
-#include "Settings/SettingsManager.h"
-#include "Scene/System/PathSystem.h"
-#include "Scene/SceneEditor2.h"
-#include "Commands2/EntityAddCommand.h"
-#include "Commands2/EntityRemoveCommand.h"
-#include "Commands2/AddComponentCommand.h"
-#include "Commands2/RemoveComponentCommand.h"
-#include "Commands2/Base/RECommandNotificationObject.h"
+#include "Classes/Qt/Scene/System/WayEditSystem.h"
+#include "Classes/Qt/Scene/System/PathSystem.h"
+#include "Classes/Qt/Scene/SceneEditor2.h"
+#include "Classes/Commands2/WayEditCommands.h"
+#include "Classes/Commands2/Base/RECommandNotificationObject.h"
+#include "Classes/Settings/SettingsManager.h"
 
 #include "Classes/Selection/Selection.h"
 
-#include "Base/Singleton.h"
-#include "Debug/DVAssert.h"
-#include "Engine/Engine.h"
-#include "Engine/EngineContext.h"
-#include "Math/AABBox3.h"
-#include "Scene3D/Components/Waypoint/PathComponent.h"
-#include "Scene3D/Components/Waypoint/WaypointComponent.h"
-#include "Utils/Utils.h"
+#include <Base/Singleton.h>
+#include <Debug/DVAssert.h>
+#include <Engine/Engine.h>
+#include <Engine/EngineContext.h>
+#include <Math/AABBox3.h>
+#include <Scene3D/Components/Waypoint/PathComponent.h>
+#include <Scene3D/Components/Waypoint/WaypointComponent.h>
+#include <Utils/Utils.h>
 
 namespace WayEditSystemDetail
 {
-void RemoveEntityFromSelection(SelectableGroup& group, DAVA::Entity* entity)
+struct AccessibleQueryParams
 {
-    if (group.ContainsObject(entity))
-    {
-        group.Remove(entity);
-    }
-}
-}
+    DAVA::PathComponent::Waypoint* startPoint = nullptr;
+    DAVA::PathComponent::Waypoint* destinationPoint = nullptr;
+    DAVA::PathComponent::Waypoint* excludePoint = nullptr;
+    DAVA::PathComponent::Edge* excludeEdge = nullptr;
+};
 
-WayEditSystem::WayEditSystem(DAVA::Scene* scene, SceneCollisionSystem* collisionSystem_)
-    : DAVA::SceneSystem(scene)
-    , sceneEditor(static_cast<SceneEditor2*>(scene))
-    , collisionSystem(collisionSystem_)
+bool IsAccessibleImpl(const AccessibleQueryParams& params, DAVA::Set<DAVA::PathComponent::Waypoint*>& passedPoints)
 {
-}
-
-void WayEditSystem::AddEntity(DAVA::Entity* newWaypoint)
-{
-    waypointEntities.push_back(newWaypoint);
-
-    if (newWaypoint->GetNotRemovable())
+    DVASSERT(params.startPoint != nullptr);
+    DVASSERT(params.destinationPoint != nullptr);
+    if (params.startPoint == params.destinationPoint)
     {
-        auto parent = newWaypoint->GetParent();
-
-        // allow only one start point
-        DVASSERT(mapStartPoints.count(parent) == 0);
-
-        mapStartPoints[parent] = newWaypoint;
-    }
-}
-
-void WayEditSystem::RemoveEntity(DAVA::Entity* removedPoint)
-{
-    DAVA::FindAndRemoveExchangingWithLast(waypointEntities, removedPoint);
-    WayEditSystemDetail::RemoveEntityFromSelection(currentSelection, removedPoint);
-    WayEditSystemDetail::RemoveEntityFromSelection(selectedWaypoints, removedPoint);
-    WayEditSystemDetail::RemoveEntityFromSelection(prevSelectedWaypoints, removedPoint);
-
-    if (removedPoint->GetNotRemovable() == false)
-        return;
-
-    for (auto iter = mapStartPoints.begin(); iter != mapStartPoints.end(); ++iter)
-    {
-        if (iter->second == removedPoint)
-        {
-            mapStartPoints.erase(iter);
-            return;
-        }
-    }
-
-    DVASSERT(0, "Invalid (not tracked) starting waypoint removed");
-}
-
-void WayEditSystem::WillRemove(DAVA::Entity* removedPoint)
-{
-    if (IsWayEditEnabled() && GetWaypointComponent(removedPoint))
-    {
-        auto i = mapStartPoints.find(removedPoint->GetParent());
-        DVASSERT(i != mapStartPoints.end());
-        startPointForRemove = i->second;
-    }
-}
-
-void WayEditSystem::DidRemoved(DAVA::Entity* removedPoint)
-{
-    if (!IsWayEditEnabled() || !GetWaypointComponent(removedPoint))
-    {
-        return;
-    }
-
-    DAVA::EdgeComponent* edge;
-
-    // get points aiming at removed point, remove edges
-    DAVA::List<DAVA::Entity*> srcPoints;
-    for (auto waypoint : waypointEntities)
-    {
-        edge = FindEdgeComponent(waypoint, removedPoint);
-        if (edge)
-        {
-            sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new RemoveComponentCommand(waypoint, edge)));
-            srcPoints.push_back(waypoint);
-        }
-    }
-    // get points aimed by removed point, remove edges
-    DAVA::List<DAVA::Entity*> breachPoints;
-    DAVA::Entity* dest;
-    DAVA::uint32 count = removedPoint->GetComponentCount(DAVA::Component::EDGE_COMPONENT);
-    for (DAVA::uint32 i = 0; i < count; ++i)
-    {
-        edge = static_cast<DAVA::EdgeComponent*>(removedPoint->GetComponent(DAVA::Component::EDGE_COMPONENT, i));
-        DVASSERT(edge);
-
-        dest = edge->GetNextEntity();
-        if (dest)
-        {
-            breachPoints.push_back(dest);
-        }
-    }
-
-    // detect really breached points
-    for (auto breachPoint = breachPoints.begin(); breachPoint != breachPoints.end();)
-    {
-        DAVA::Set<DAVA::Entity*> passedPoints;
-        if (IsAccessible(startPointForRemove, *breachPoint, removedPoint, nullptr /*no excluding edge*/, passedPoints))
-        {
-            auto delPoint = breachPoint++;
-            breachPoints.erase(delPoint);
-        }
-        else
-            ++breachPoint;
-    }
-    startPointForRemove = nullptr;
-
-    // link source points and breached points
-    for (auto breachPoint : breachPoints)
-    {
-        for (auto srcPoint : srcPoints)
-        {
-            if (srcPoint == breachPoint)
-                continue;
-
-            DAVA::EdgeComponent* newEdge = new DAVA::EdgeComponent();
-            newEdge->SetNextEntity(breachPoint);
-
-            sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new AddComponentCommand(srcPoint, newEdge)));
-        }
-    }
-}
-
-void WayEditSystem::RemoveEdge(DAVA::Entity* srcWaypoint, DAVA::EdgeComponent* edgeComponent)
-{
-    DAVA::Entity* breachPoint = edgeComponent->GetNextEntity();
-    DAVA::Entity* startPoint = mapStartPoints[breachPoint->GetParent()];
-    DVASSERT(startPoint);
-
-    DAVA::Set<DAVA::Entity*> passedPoints;
-    if (IsAccessible(startPoint, breachPoint, nullptr /*no excluding point*/, edgeComponent, passedPoints))
-    {
-        sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new RemoveComponentCommand(srcWaypoint, edgeComponent)));
-    }
-}
-
-bool WayEditSystem::IsAccessible(DAVA::Entity* startPoint,
-                                 DAVA::Entity* breachPoint,
-                                 DAVA::Entity* excludingPoint,
-                                 DAVA::EdgeComponent* excludingEdge,
-                                 DAVA::Set<DAVA::Entity*>& passedPoints) const
-{
-    if (startPoint == breachPoint)
         return true;
+    }
 
-    DAVA::uint32 count = startPoint->GetComponentCount(DAVA::Component::EDGE_COMPONENT);
-    for (DAVA::uint32 i = 0; i < count; ++i)
+    for (DAVA::PathComponent::Edge* edge : params.startPoint->edges)
     {
-        DAVA::EdgeComponent* edge = static_cast<DAVA::EdgeComponent*>(startPoint->GetComponent(DAVA::Component::EDGE_COMPONENT, i));
-        DVASSERT(edge);
-
-        if (edge == excludingEdge)
+        if (edge == params.excludeEdge || edge->destination == params.excludePoint)
         {
             continue;
         }
 
-        DAVA::Entity* nextPoint = edge->GetNextEntity();
-        DVASSERT(nextPoint);
-
-        if (nextPoint == excludingPoint)
+        if (passedPoints.insert(edge->destination).second == false)
         {
             continue;
         }
 
-        auto insertRes = passedPoints.insert(nextPoint);
-        if (!insertRes.second)
-        {
-            // dest is already inserted. skip it to prevent loop
-            continue;
-        }
-
-        if (IsAccessible(nextPoint, breachPoint, excludingPoint, excludingEdge, passedPoints))
+        AccessibleQueryParams deeperParams = params;
+        deeperParams.startPoint = edge->destination;
+        if (IsAccessibleImpl(deeperParams, passedPoints) == true)
         {
             return true;
         }
@@ -208,22 +58,197 @@ bool WayEditSystem::IsAccessible(DAVA::Entity* startPoint,
     return false;
 }
 
+bool IsAccessible(const AccessibleQueryParams& params)
+{
+    DAVA::Set<DAVA::PathComponent::Waypoint*> passedPoints;
+    return IsAccessibleImpl(params, passedPoints);
+}
+}
+
+WayEditSystem::WayEditSystem(DAVA::Scene* scene)
+    : DAVA::SceneSystem(scene)
+{
+}
+
+void WayEditSystem::ImmediateEvent(DAVA::Component* component, DAVA::uint32 event)
+{
+    if (event == DAVA::EventSystem::LOCAL_TRANSFORM_CHANGED)
+    {
+        DAVA::Entity* parentEntity = component->GetEntity();
+        DAVA::WaypointComponent* waypoint = DAVA::GetWaypointComponent(parentEntity);
+        if (waypoint != nullptr)
+        {
+            waypoint->GetWaypoint()->position = parentEntity->GetLocalTransform().GetTranslationVector();
+        }
+    }
+}
+
+void WayEditSystem::AddEntity(DAVA::Entity* newWaypoint)
+{
+    waypointEntities.push_back(newWaypoint);
+}
+
+void WayEditSystem::RemoveEntity(DAVA::Entity* removedPoint)
+{
+    DAVA::FindAndRemoveExchangingWithLast(waypointEntities, removedPoint);
+    DAVA::WaypointComponent* waypointComponent = GetWaypointComponent(removedPoint);
+    if (waypointComponent == nullptr)
+    {
+        return;
+    }
+
+    DAVA::PathComponent::Waypoint* waypoint = waypointComponent->GetWaypoint();
+
+    if (currentSelection.ContainsObject(removedPoint))
+    {
+        currentSelection.Remove(removedPoint);
+    }
+
+    DAVA::FindAndRemoveExchangingWithLast(selectedWaypoints, waypoint);
+    DAVA::FindAndRemoveExchangingWithLast(prevSelectedWaypoints, waypoint);
+}
+
+bool WayEditSystem::HasCustomRemovingForEntity(DAVA::Entity* entityToRemove) const
+{
+    if (IsWayEditEnabled() == false)
+    {
+        DVASSERT(entityToRemove->GetComponentCount(DAVA::Component::WAYPOINT_COMPONENT) == 0);
+        DVASSERT(entityToRemove->GetComponentCount(DAVA::Component::EDGE_COMPONENT) == 0);
+        return false;
+    }
+
+    return GetWaypointComponent(entityToRemove) != nullptr;
+}
+
+void WayEditSystem::PerformRemoving(DAVA::Entity* entityToRemove)
+{
+    using namespace DAVA;
+    DVASSERT(IsWayEditEnabled() == true);
+
+    WaypointComponent* waypointComponent = GetWaypointComponent(entityToRemove);
+    DVASSERT(waypointComponent != nullptr);
+    DVASSERT(waypointComponent->GetWaypoint()->IsStarting() == false);
+
+    PathComponent* path = waypointComponent->GetPath();
+    PathComponent::Waypoint* waypointToRemove = waypointComponent->GetWaypoint();
+// lookup path that point was removed from
+#if defined(__DAVAENGINE_DEBUG__)
+    Entity* parentEntity = entityToRemove->GetParent();
+    bool pathFound = false;
+    DVASSERT(path == GetPathComponent(parentEntity));
+
+    bool waypointFound = false;
+    for (PathComponent::Waypoint* waypoint : path->GetPoints())
+    {
+        if (waypoint == waypointToRemove)
+        {
+            waypointFound = true;
+            break;
+        }
+    }
+    DVASSERT(waypointFound);
+#endif
+
+    Vector<std::pair<PathComponent::Waypoint*, PathComponent::Edge*>> edgesToRemovedPoint;
+
+    const Vector<PathComponent::Waypoint*>& pathPoints = path->GetPoints();
+    for (PathComponent::Waypoint* checkWaypoint : pathPoints)
+    {
+        if (checkWaypoint == waypointToRemove)
+        {
+            continue;
+        }
+
+        for (PathComponent::Edge* edge : checkWaypoint->edges)
+        {
+            if (edge->destination == waypointToRemove)
+            {
+                edgesToRemovedPoint.push_back(std::make_pair(checkWaypoint, edge));
+            }
+        }
+    }
+
+    PathComponent::Waypoint* startPoint = path->GetStartWaypoint();
+    DVASSERT(startPoint != nullptr);
+
+    WayEditSystemDetail::AccessibleQueryParams params;
+    params.startPoint = startPoint;
+    params.excludePoint = waypointToRemove;
+
+    Vector<PathComponent::Waypoint*> inaccessiblePoints;
+    for (PathComponent::Edge* edge : waypointToRemove->edges)
+    {
+        params.destinationPoint = edge->destination;
+        if (WayEditSystemDetail::IsAccessible(params) == false)
+        {
+            inaccessiblePoints.push_back(edge->destination);
+        }
+    }
+
+    SceneEditor2* sceneEditor = GetSceneEditor();
+    for (auto& edgeNode : edgesToRemovedPoint)
+    {
+        sceneEditor->Exec(std::make_unique<RemoveEdgeCommand>(sceneEditor, path, edgeNode.first, edgeNode.second));
+    }
+
+    Vector<PathComponent::Edge*> edgesToRemove = waypointToRemove->edges;
+    for (PathComponent::Edge* e : edgesToRemove)
+    {
+        sceneEditor->Exec(std::make_unique<RemoveEdgeCommand>(sceneEditor, path, waypointToRemove, e));
+    }
+
+    sceneEditor->Exec(std::make_unique<RemoveWaypointCommand>(sceneEditor, path, waypointToRemove));
+
+    for (PathComponent::Waypoint* inaccessiblePoint : inaccessiblePoints)
+    {
+        for (auto& srcNode : edgesToRemovedPoint)
+        {
+            if (srcNode.first != inaccessiblePoint)
+            {
+                PathComponent::Edge* newEdge = new PathComponent::Edge();
+                newEdge->destination = inaccessiblePoint;
+                sceneEditor->Exec(std::make_unique<AddEdgeCommand>(sceneEditor, path, srcNode.first, newEdge));
+            }
+        }
+    }
+}
+
+void WayEditSystem::SetScene(DAVA::Scene* scene)
+{
+    {
+        DAVA::Scene* currentScene = GetScene();
+        if (currentScene != nullptr)
+        {
+            currentScene->GetEventSystem()->UnregisterSystemForEvent(this, DAVA::EventSystem::LOCAL_TRANSFORM_CHANGED);
+        }
+    }
+
+    SceneSystem::SetScene(scene);
+
+    {
+        DAVA::Scene* currentScene = GetScene();
+        if (currentScene != nullptr)
+        {
+            currentScene->GetEventSystem()->RegisterSystemForEvent(this, DAVA::EventSystem::LOCAL_TRANSFORM_CHANGED);
+        }
+    }
+}
+
 void WayEditSystem::Process(DAVA::float32 timeElapsed)
 {
 }
 
 void WayEditSystem::ResetSelection()
 {
-    selectedWaypoints.Clear();
-    prevSelectedWaypoints.Clear();
-
-    underCursorPathEntity = NULL;
+    selectedWaypoints.clear();
+    prevSelectedWaypoints.clear();
+    underCursorPathEntity = nullptr;
 }
 
 void WayEditSystem::ProcessSelection(const SelectableGroup& selection)
 {
     prevSelectedWaypoints = selectedWaypoints;
-    selectedWaypoints.Clear();
+    selectedWaypoints.clear();
 
     if (currentSelection != selection)
     {
@@ -231,9 +256,10 @@ void WayEditSystem::ProcessSelection(const SelectableGroup& selection)
 
         for (auto entity : currentSelection.ObjectsOfType<DAVA::Entity>())
         {
-            if (GetWaypointComponent(entity) && GetPathComponent(entity->GetParent()))
+            DAVA::WaypointComponent* waypointComponent = GetWaypointComponent(entity);
+            if (waypointComponent != nullptr && GetPathComponent(entity->GetParent()))
             {
-                selectedWaypoints.Add(entity);
+                selectedWaypoints.push_back(waypointComponent->GetWaypoint());
             }
         }
     }
@@ -241,26 +267,29 @@ void WayEditSystem::ProcessSelection(const SelectableGroup& selection)
 
 bool WayEditSystem::Input(DAVA::UIEvent* event)
 {
-    if (isEnabled && (DAVA::eMouseButtons::LEFT == event->mouseButton))
+    using namespace DAVA;
+
+    SceneEditor2* sceneEditor = GetSceneEditor();
+    if (isEnabled && (eMouseButtons::LEFT == event->mouseButton))
     {
-        if (DAVA::UIEvent::Phase::MOVE == event->phase)
+        if (UIEvent::Phase::MOVE == event->phase)
         {
             underCursorPathEntity = nullptr;
-            const SelectableGroup::CollectionType& collObjects = collisionSystem->ObjectsRayTestFromCamera();
+            const SelectableGroup::CollectionType& collObjects = sceneEditor->collisionSystem->ObjectsRayTestFromCamera();
             if (collObjects.size() == 1)
             {
-                DAVA::Entity* firstEntity = collObjects.front().AsEntity();
+                Entity* firstEntity = collObjects.front().AsEntity();
                 if ((firstEntity != nullptr) && GetWaypointComponent(firstEntity) && GetPathComponent(firstEntity->GetParent()))
                 {
-                    underCursorPathEntity = firstEntity;
+                    underCursorPathEntity = GetWaypointComponent(firstEntity)->GetWaypoint();
                 }
             }
         }
-        else if (DAVA::UIEvent::Phase::BEGAN == event->phase)
+        else if (UIEvent::Phase::BEGAN == event->phase)
         {
             inCloneState = sceneEditor->modifSystem->InCloneState();
         }
-        else if (DAVA::UIEvent::Phase::ENDED == event->phase)
+        else if (UIEvent::Phase::ENDED == event->phase)
         {
             bool cloneJustDone = false;
             if (inCloneState && !sceneEditor->modifSystem->InCloneState())
@@ -271,8 +300,8 @@ bool WayEditSystem::Input(DAVA::UIEvent* event)
 
             ProcessSelection(Selection::GetSelection());
 
-            const auto& keyboard = DAVA::InputSystem::Instance()->GetKeyboard();
-            bool shiftPressed = keyboard.IsKeyPressed(DAVA::Key::LSHIFT) || keyboard.IsKeyPressed(DAVA::Key::RSHIFT);
+            const auto& keyboard = InputSystem::Instance()->GetKeyboard();
+            bool shiftPressed = keyboard.IsKeyPressed(Key::LSHIFT) || keyboard.IsKeyPressed(Key::RSHIFT);
 
             if (!shiftPressed)
             {
@@ -280,63 +309,79 @@ bool WayEditSystem::Input(DAVA::UIEvent* event)
                 return false;
             }
 
-            DAVA::Entity* currentWayParent = sceneEditor->pathSystem->GetCurrrentPath();
+            Entity* currentWayParent = sceneEditor->pathSystem->GetCurrrentPath();
             if (currentWayParent == nullptr)
             {
                 // we need to have entity with path component
                 return false;
             }
 
-            if (selectedWaypoints.IsEmpty() && cloneJustDone == false)
+            PathComponent* pathComponent = GetPathComponent(currentWayParent);
+            Vector<PathComponent::Waypoint*> validPrevPoints;
+            FilterSelection(pathComponent, prevSelectedWaypoints, validPrevPoints);
+
+            if (selectedWaypoints.empty() && cloneJustDone == false)
             {
-                DAVA::Vector3 lanscapeIntersectionPos;
-                bool lanscapeIntersected = collisionSystem->LandRayTestFromCamera(lanscapeIntersectionPos);
+                Vector3 lanscapeIntersectionPos;
+                bool lanscapeIntersected = sceneEditor->collisionSystem->LandRayTestFromCamera(lanscapeIntersectionPos);
 
                 // add new waypoint on the landscape
                 if (lanscapeIntersected)
                 {
-                    SelectableGroup validPrevPoints;
-                    FilterPrevSelection(currentWayParent, validPrevPoints);
-                    if (validPrevPoints.IsEmpty())
+                    if (validPrevPoints.empty())
                     {
-                        if (currentWayParent->CountChildEntitiesWithComponent(DAVA::Component::WAYPOINT_COMPONENT) > 0)
+                        if (pathComponent->GetPoints().size() > 0)
                         {
                             // current path has waypoints but none of them was selected. Point adding is denied
                             return false;
                         }
                     }
 
-                    DAVA::Entity* newWaypoint = CreateWayPoint(currentWayParent, lanscapeIntersectionPos);
+                    Matrix4 parentTransform = currentWayParent->GetWorldTransform();
+                    parentTransform.Inverse();
+
+                    Matrix4 waypointTransform;
+                    waypointTransform.SetTranslationVector(lanscapeIntersectionPos);
+                    waypointTransform = waypointTransform * parentTransform;
+
+                    int32 waypointsCount = static_cast<int32>(pathComponent->GetPoints().size());
+                    PathComponent::Waypoint* waypoint = new PathComponent::Waypoint();
+                    waypoint->name = FastName(Format("Waypoint_%d", waypointsCount));
+                    waypoint->SetStarting(waypointsCount == 0);
+                    waypoint->position = waypointTransform.GetTranslationVector();
 
                     Selection::Lock();
-                    sceneEditor->BeginBatch("Add Waypoint", 1 + validPrevPoints.GetSize());
-                    sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new EntityAddCommand(newWaypoint, currentWayParent)));
-                    if (!validPrevPoints.IsEmpty())
+                    sceneEditor->BeginBatch("Add Waypoint", static_cast<uint32>(1 + validPrevPoints.size()));
+                    sceneEditor->Exec(std::make_unique<AddWaypointCommand>(sceneEditor, pathComponent, waypoint));
+                    if (!validPrevPoints.empty())
                     {
-                        AddEdges(validPrevPoints, newWaypoint);
+                        AddEdges(pathComponent, validPrevPoints, waypoint);
                     }
                     sceneEditor->EndBatch();
 
-                    selectedWaypoints.Clear();
-                    selectedWaypoints.Add(newWaypoint);
+                    selectedWaypoints.clear();
+                    selectedWaypoints.push_back(waypoint);
                     Selection::Unlock();
-
-                    newWaypoint->Release();
                 }
             }
-            else if ((selectedWaypoints.GetSize() == 1) && (cloneJustDone == false))
+            else if ((selectedWaypoints.size() == 1) && (cloneJustDone == false))
             {
-                DAVA::Entity* nextWaypoint = selectedWaypoints.GetFirst().AsEntity();
-                SelectableGroup entitiesToAddEdge;
-                SelectableGroup entitiesToRemoveEdge;
-                DefineAddOrRemoveEdges(prevSelectedWaypoints, nextWaypoint, entitiesToAddEdge, entitiesToRemoveEdge);
-                size_t totalOperations = entitiesToAddEdge.GetSize() + entitiesToRemoveEdge.GetSize();
-                if (totalOperations > 0)
+                Vector<PathComponent::Waypoint*> filteredSelection;
+                FilterSelection(pathComponent, selectedWaypoints, filteredSelection);
+                if (filteredSelection.empty() == false)
                 {
-                    sceneEditor->BeginBatch(DAVA::Format("Add/remove edges pointed on entity %s", nextWaypoint->GetName().c_str()), static_cast<DAVA::uint32>(totalOperations));
-                    AddEdges(entitiesToAddEdge, nextWaypoint);
-                    RemoveEdges(entitiesToRemoveEdge, nextWaypoint);
-                    sceneEditor->EndBatch();
+                    PathComponent::Waypoint* nextWaypoint = selectedWaypoints.front();
+                    Vector<PathComponent::Waypoint*> srcPointToAddEdges;
+                    Vector<PathComponent::Waypoint*> srcPointToRemoveEdges;
+                    DefineAddOrRemoveEdges(validPrevPoints, nextWaypoint, srcPointToAddEdges, srcPointToRemoveEdges);
+                    size_t totalOperations = srcPointToAddEdges.size() + srcPointToRemoveEdges.size();
+                    if (totalOperations > 0)
+                    {
+                        sceneEditor->BeginBatch(DAVA::Format("Add/Remove edges pointed on entity %s", nextWaypoint->name.c_str()), static_cast<DAVA::uint32>(totalOperations));
+                        AddEdges(pathComponent, srcPointToAddEdges, nextWaypoint);
+                        RemoveEdges(pathComponent, srcPointToRemoveEdges, nextWaypoint);
+                        sceneEditor->EndBatch();
+                    }
                 }
             }
         }
@@ -344,87 +389,100 @@ bool WayEditSystem::Input(DAVA::UIEvent* event)
     return false;
 }
 
-void WayEditSystem::FilterPrevSelection(DAVA::Entity* parentEntity, SelectableGroup& ret)
+void WayEditSystem::FilterSelection(DAVA::PathComponent* path, const DAVA::Vector<DAVA::PathComponent::Waypoint*>& srcPoints, DAVA::Vector<DAVA::PathComponent::Waypoint*>& validPoints)
 {
-    for (auto entity : prevSelectedWaypoints.ObjectsOfType<DAVA::Entity>())
+    const DAVA::Vector<DAVA::PathComponent::Waypoint*>& points = path->GetPoints();
+    DAVA::Set<DAVA::PathComponent::Waypoint*> pathPoints(points.begin(), points.end());
+
+    validPoints.reserve(srcPoints.size());
+    for (DAVA::PathComponent::Waypoint* waypoint : srcPoints)
     {
-        if (parentEntity == entity->GetParent())
+        if (pathPoints.count(waypoint))
         {
-            ret.Add(entity);
+            validPoints.push_back(waypoint);
         }
     }
 }
 
-void WayEditSystem::DefineAddOrRemoveEdges(const SelectableGroup& srcPoints, DAVA::Entity* dstPoint, SelectableGroup& toAddEdge, SelectableGroup& toRemoveEdge)
+void WayEditSystem::DefineAddOrRemoveEdges(const DAVA::Vector<DAVA::PathComponent::Waypoint*>& srcPoints, DAVA::PathComponent::Waypoint* dstPoint,
+                                           DAVA::Vector<DAVA::PathComponent::Waypoint*>& toAddEdge, DAVA::Vector<DAVA::PathComponent::Waypoint*>& toRemoveEdge)
 {
-    for (auto srcPoint : prevSelectedWaypoints.ObjectsOfType<DAVA::Entity>())
+    using namespace DAVA;
+    for (PathComponent::Waypoint* srcPoint : srcPoints)
     {
-        if (dstPoint->GetParent() != srcPoint->GetParent())
+        if (srcPoint == dstPoint)
         {
-            //we don't allow connect different pathes
             continue;
         }
 
-        if (FindEdgeComponent(srcPoint, dstPoint))
+        bool edgeFound = false;
+        for (PathComponent::Edge* edge : srcPoint->edges)
         {
-            toRemoveEdge.Add(srcPoint);
+            if (edge->destination == dstPoint)
+            {
+                edgeFound = true;
+                break;
+            }
+        }
+
+        if (edgeFound)
+        {
+            toRemoveEdge.push_back(srcPoint);
         }
         else
         {
-            toAddEdge.Add(srcPoint);
+            toAddEdge.push_back(srcPoint);
         }
     }
 }
 
-void WayEditSystem::AddEdges(const SelectableGroup& group, DAVA::Entity* nextEntity)
+void WayEditSystem::AddEdges(DAVA::PathComponent* path, const DAVA::Vector<DAVA::PathComponent::Waypoint*>& srcPoints, DAVA::PathComponent::Waypoint* nextWaypoint)
 {
-    DVASSERT(nextEntity);
+    DVASSERT(path);
+    DVASSERT(nextWaypoint);
 
-    for (auto entity : group.ObjectsOfType<DAVA::Entity>())
+    SceneEditor2* sceneEditor = GetSceneEditor();
+
+    for (DAVA::PathComponent::Waypoint* waypoint : srcPoints)
     {
-        DAVA::EdgeComponent* edge = new DAVA::EdgeComponent();
-        edge->SetNextEntity(nextEntity);
-        sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new AddComponentCommand(entity, edge)));
+        DAVA::PathComponent::Edge* newEdge = new DAVA::PathComponent::Edge();
+        newEdge->destination = nextWaypoint;
+        sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new AddEdgeCommand(sceneEditor, path, waypoint, newEdge)));
     }
 }
 
-void WayEditSystem::RemoveEdges(const SelectableGroup& group, DAVA::Entity* nextEntity)
+void WayEditSystem::RemoveEdges(DAVA::PathComponent* path, const DAVA::Vector<DAVA::PathComponent::Waypoint*>& srcPoints, DAVA::PathComponent::Waypoint* nextWaypoint)
 {
-    for (auto entity : group.ObjectsOfType<DAVA::Entity>())
+    using namespace DAVA;
+    DVASSERT(path);
+    DVASSERT(nextWaypoint);
+
+    SceneEditor2* sceneEditor = GetSceneEditor();
+    Vector<std::pair<PathComponent::Waypoint*, PathComponent::Edge*>> edgesToRemove;
+    edgesToRemove.reserve(srcPoints.size());
+
+    for (PathComponent::Waypoint* srcPoint : srcPoints)
     {
-        DAVA::EdgeComponent* edgeToNextEntity = FindEdgeComponent(entity, nextEntity);
-        DVASSERT(edgeToNextEntity);
-        RemoveEdge(entity, edgeToNextEntity);
+        for (PathComponent::Edge* edge : srcPoint->edges)
+        {
+            if (edge->destination == nextWaypoint)
+            {
+                edgesToRemove.push_back(std::make_pair(srcPoint, edge));
+            }
+        }
     }
-}
 
-DAVA::Entity* WayEditSystem::CreateWayPoint(DAVA::Entity* parent, DAVA::Vector3 pos)
-{
-    DAVA::PathComponent* pc = DAVA::GetPathComponent(parent);
-    DVASSERT(pc);
-
-    DAVA::Entity* waypoint = new DAVA::Entity();
-
-    const DAVA::int32 childrenCount = parent->CountChildEntitiesWithComponent(DAVA::Component::WAYPOINT_COMPONENT);
-    waypoint->SetName(DAVA::FastName(DAVA::Format("Waypoint_%d", childrenCount)));
-
-    DAVA::WaypointComponent* wc = new DAVA::WaypointComponent();
-    wc->SetPathName(pc->GetName());
-    if (childrenCount == 0)
+    for (auto& node : edgesToRemove)
     {
-        waypoint->SetNotRemovable(true);
-        wc->SetStarting(true);
+        WayEditSystemDetail::AccessibleQueryParams params;
+        params.startPoint = path->GetStartWaypoint();
+        params.destinationPoint = node.second->destination;
+        params.excludeEdge = node.second;
+        if (WayEditSystemDetail::IsAccessible(params) == true)
+        {
+            sceneEditor->Exec(std::make_unique<RemoveEdgeCommand>(sceneEditor, path, node.first, node.second));
+        }
     }
-    waypoint->AddComponent(wc);
-
-    DAVA::Matrix4 pm = parent->GetWorldTransform();
-    pm.Inverse();
-
-    DAVA::Matrix4 m;
-    m.SetTranslationVector(pos);
-    waypoint->SetLocalTransform(m * pm);
-
-    return waypoint;
 }
 
 void WayEditSystem::ProcessCommand(const RECommandNotificationObject& commandNotification)
@@ -445,7 +503,22 @@ void WayEditSystem::Draw()
 {
     SceneEditor2* editorScene = static_cast<SceneEditor2*>(GetScene());
 
-    const SelectableGroup& selectionGroup = (currentSelection.IsEmpty()) ? selectedWaypoints : currentSelection;
+    DAVA::Set<DAVA::PathComponent::Waypoint*> selected;
+    if (currentSelection.IsEmpty())
+    {
+        selected.insert(selectedWaypoints.begin(), selectedWaypoints.end());
+    }
+    else
+    {
+        for (auto item : currentSelection.ObjectsOfType<DAVA::Entity>())
+        {
+            DAVA::WaypointComponent* waypointComponent = GetWaypointComponent(item);
+            if (waypointComponent != nullptr)
+            {
+                selected.insert(waypointComponent->GetWaypoint());
+            }
+        }
+    }
 
     const DAVA::uint32 count = static_cast<DAVA::uint32>(waypointEntities.size());
     for (DAVA::uint32 i = 0; i < count; ++i)
@@ -461,17 +534,18 @@ void WayEditSystem::Draw()
 
         DAVA::WaypointComponent* wpComponent = GetWaypointComponent(e);
         DVASSERT(wpComponent);
+        DAVA::PathComponent::Waypoint* waypoint = wpComponent->GetWaypoint();
 
         DAVA::float32 redValue = 0.0f;
         DAVA::float32 greenValue = 0.0f;
-        DAVA::float32 blueValue = wpComponent->IsStarting() ? 1.0f : 0.0f;
+        DAVA::float32 blueValue = wpComponent->IsStartingPoint() ? 1.0f : 0.0f;
 
-        if (e == underCursorPathEntity)
+        if (wpComponent->GetWaypoint() == underCursorPathEntity)
         {
             redValue = 0.6f;
             greenValue = 0.6f;
         }
-        else if (selectionGroup.ContainsObject(e))
+        else if (selected.count(waypoint))
         {
             redValue = 1.0f;
         }
@@ -481,9 +555,13 @@ void WayEditSystem::Draw()
         }
 
         DAVA::AABBox3 localBox = editorScene->collisionSystem->GetUntransformedBoundingBox(e);
-        DVASSERT(!localBox.IsEmpty());
-        editorScene->GetRenderSystem()->GetDebugDrawer()->DrawAABoxTransformed(localBox, e->GetWorldTransform(), DAVA::Color(redValue, greenValue, blueValue, 0.3f), DAVA::RenderHelper::DRAW_SOLID_DEPTH);
-        editorScene->GetRenderSystem()->GetDebugDrawer()->DrawAABoxTransformed(localBox, e->GetWorldTransform(), DAVA::Color(redValue, greenValue, blueValue, 1.0f), DAVA::RenderHelper::DRAW_WIRE_DEPTH);
+        // localBox.IsEmpty() == true, means that "e" was added into system on this frame
+        // and collision has not been calculated yet. We will draw this entity on next frame
+        if (localBox.IsEmpty() == false)
+        {
+            editorScene->GetRenderSystem()->GetDebugDrawer()->DrawAABoxTransformed(localBox, e->GetWorldTransform(), DAVA::Color(redValue, greenValue, blueValue, 0.3f), DAVA::RenderHelper::DRAW_SOLID_DEPTH);
+            editorScene->GetRenderSystem()->GetDebugDrawer()->DrawAABoxTransformed(localBox, e->GetWorldTransform(), DAVA::Color(redValue, greenValue, blueValue, 1.0f), DAVA::RenderHelper::DRAW_WIRE_DEPTH);
+        }
     }
 }
 
@@ -512,25 +590,72 @@ void WayEditSystem::UpdateSelectionMask()
     }
 }
 
-void WayEditSystem::WillClone(DAVA::Entity* originalEntity)
+bool WayEditSystem::HasCustomClonedAddading(DAVA::Entity* entityToClone) const
 {
+    if (isEnabled == true && GetWaypointComponent(entityToClone))
+    {
+        return true;
+    }
+
+    return false;
 }
 
-void WayEditSystem::DidCloned(DAVA::Entity* originalEntity, DAVA::Entity* newEntity)
+void WayEditSystem::PerformAdding(DAVA::Entity* sourceEntity, DAVA::Entity* clonedEntity)
 {
-    if (isEnabled && GetWaypointComponent(originalEntity) != nullptr)
+    using namespace DAVA;
+
+    DVASSERT(isEnabled == true);
+    WaypointComponent* sourceComponent = GetWaypointComponent(sourceEntity);
+    WaypointComponent* clonedComponent = GetWaypointComponent(clonedEntity);
+    DVASSERT(sourceComponent);
+    DVASSERT(clonedComponent);
+
+    PathComponent::Waypoint* sourceWayPoint = sourceComponent->GetWaypoint();
+    DVASSERT(sourceWayPoint != nullptr);
+    sourceWayPoint->position = sourceEntity->GetLocalTransform().GetTranslationVector();
+
+    PathComponent::Waypoint* clonedWayPoint = clonedComponent->GetWaypoint();
+    DVASSERT(clonedWayPoint == sourceWayPoint);
+
+    PathComponent* path = sourceComponent->GetPath();
+
+    clonedWayPoint = new PathComponent::Waypoint();
+    clonedWayPoint->name = sourceWayPoint->name;
+    clonedWayPoint->position = clonedEntity->GetLocalTransform().GetTranslationVector();
+    KeyedArchive* propertiesCopy = new KeyedArchive(*sourceWayPoint->GetProperties());
+    clonedWayPoint->SetProperties(propertiesCopy);
+    SafeRelease(propertiesCopy);
+
+    clonedComponent->Init(path, clonedWayPoint);
+    clonedEntity->SetNotRemovable(false);
+    sourceEntity->GetParent()->AddNode(clonedEntity);
+
+    UnorderedMap<PathComponent::Edge*, EdgeComponent*> edgeMap;
+    for (uint32 i = 0; i < clonedEntity->GetComponentCount(Component::EDGE_COMPONENT); ++i)
     {
-        DAVA::EdgeComponent* edge = new DAVA::EdgeComponent();
-        edge->SetNextEntity(newEntity);
-
-        if (newEntity->GetNotRemovable())
-        {
-            // prevent creating second "start" point
-            newEntity->SetNotRemovable(false);
-        }
-
-        sceneEditor->Exec(std::unique_ptr<DAVA::Command>(new AddComponentCommand(originalEntity, edge)));
+        EdgeComponent* edgeComponent = static_cast<EdgeComponent*>(clonedEntity->GetComponent(Component::EDGE_COMPONENT, i));
+        edgeMap[edgeComponent->GetEdge()] = edgeComponent;
     }
+
+    // add new waypoint
+    SceneEditor2* sceneEditor = GetSceneEditor();
+    sceneEditor->Exec(std::make_unique<AddWaypointCommand>(sceneEditor, path, clonedWayPoint));
+
+    // add copy of edges from source point to cloned
+    for (PathComponent::Edge* edge : sourceWayPoint->edges)
+    {
+        PathComponent::Edge* newEdge = new PathComponent::Edge();
+        newEdge->destination = edge->destination;
+        auto edgeMappingIter = edgeMap.find(edge);
+        DVASSERT(edgeMappingIter != edgeMap.end());
+        edgeMappingIter->second->Init(path, newEdge);
+        sceneEditor->Exec(std::make_unique<AddEdgeCommand>(sceneEditor, path, clonedWayPoint, newEdge));
+    }
+
+    // add edge from source point to cloned
+    PathComponent::Edge* newEdge = new PathComponent::Edge();
+    newEdge->destination = clonedWayPoint;
+    sceneEditor->Exec(std::make_unique<AddEdgeCommand>(sceneEditor, path, sourceWayPoint, newEdge));
 }
 
 bool WayEditSystem::AllowPerformSelectionHavingCurrent(const SelectableGroup& currentSelection)
@@ -539,7 +664,7 @@ bool WayEditSystem::AllowPerformSelectionHavingCurrent(const SelectableGroup& cu
     bool shiftPressed = keyboard.IsKeyPressed(DAVA::Key::LSHIFT) || keyboard.IsKeyPressed(DAVA::Key::RSHIFT);
     if (isEnabled && shiftPressed)
     {
-        return (selectedWaypoints.GetSize() > 0);
+        return (selectedWaypoints.size() > 0);
     }
 
     return true;
@@ -578,11 +703,16 @@ bool WayEditSystem::AllowChangeSelectionReplacingCurrent(const SelectableGroup& 
         }
 
         // only allow to select waypoints withing same path
-        if (entity->GetParent() != sceneEditor->pathSystem->GetCurrrentPath())
+        if (entity->GetParent() != GetSceneEditor()->pathSystem->GetCurrrentPath())
         {
             return false;
         }
     }
 
     return true;
+}
+
+SceneEditor2* WayEditSystem::GetSceneEditor() const
+{
+    return static_cast<SceneEditor2*>(GetScene());
 }
