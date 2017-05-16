@@ -4,9 +4,6 @@ namespace rhi
 {
 struct PerfQueryDX11_t
 {
-    struct Desc
-    {
-    };
     ID3D11Query* query = nullptr;
     uint64 timestamp = 0;
     uint64 freq = 0;
@@ -14,8 +11,8 @@ struct PerfQueryDX11_t
     uint32 isReady : 1;
     uint32 isFreqValid : 1;
 };
-using PerfQueryDX11Pool = ResourcePool<PerfQueryDX11_t, RESOURCE_PERFQUERY, PerfQueryDX11_t::Desc, false>;
-RHI_IMPL_POOL(PerfQueryDX11_t, RESOURCE_PERFQUERY, PerfQueryDX11_t::Desc, false);
+using PerfQueryDX11Pool = ResourcePool<PerfQueryDX11_t, RESOURCE_PERFQUERY, PerfQuery::Descriptor, false>;
+RHI_IMPL_POOL(PerfQueryDX11_t, RESOURCE_PERFQUERY, PerfQuery::Descriptor, false);
 
 struct PerfQueryFrameDX11
 {

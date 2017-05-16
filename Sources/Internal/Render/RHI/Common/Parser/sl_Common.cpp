@@ -73,6 +73,14 @@ StringPool::StringPool(Allocator* allocator)
 {
 }
 
+StringPool::~StringPool()
+{
+    for (int i = 0; i < stringArray.GetSize(); i++)
+    {
+        ::free(stringArray[i]);
+    }
+}
+
 const char* StringPool::AddString(const char* string)
 {
     for (int i = 0; i < stringArray.GetSize(); i++)
@@ -81,9 +89,9 @@ const char* StringPool::AddString(const char* string)
             return stringArray[i];
     }
 #if _MSC_VER
-    const char* dup = _strdup(string);
+    char* dup = _strdup(string);
 #else
-    const char* dup = strdup(string);
+    char* dup = strdup(string);
 #endif
     stringArray.PushBack(dup);
     return dup;

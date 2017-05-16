@@ -1,8 +1,11 @@
 #include "LinearLayoutAlgorithm.h"
 
-#include "UI/Layouts/Private/AnchorLayoutAlgorithm.h"
-#include "UI/Layouts/Private/LayoutHelpers.h"
 #include "UI/Layouts/UISizePolicyComponent.h"
+
+#include "UI/Layouts/Private/AnchorLayoutAlgorithm.h"
+#include "UI/Layouts/Private/SizeMeasuringAlgorithm.h"
+#include "UI/Layouts/Private/LayoutHelpers.h"
+
 #include "UI/UIControl.h"
 
 namespace DAVA
@@ -96,14 +99,15 @@ void LinearLayoutAlgorithm::InitializeParams(ControlLayoutData& data, Vector2::e
         {
             totalPercent += sizeHint->GetValueByAxis(axis);
         }
-        else
+        else if (sizeHint == nullptr || sizeHint->GetPolicyByAxis(axis) != UISizePolicyComponent::FORMULA)
         {
             fixedSize += childData.GetSize(axis);
         }
     }
 
+    currentSize = data.GetSize(axis);
     spacesCount = childrenCount - 1;
-    contentSize = data.GetSize(axis) - padding * 2.0f;
+    contentSize = currentSize - padding * 2.0f;
     restSize = contentSize - fixedSize - spacesCount * spacing;
 }
 
@@ -167,6 +171,18 @@ bool LinearLayoutAlgorithm::CalculateChildDependentOnParentSize(ControlLayoutDat
             childData.SetSize(axis, size);
         }
     }
+    else if (sizeHint != nullptr && sizeHint->GetPolicyByAxis(axis) == UISizePolicyComponent::FORMULA)
+    {
+        SizeMeasuringAlgorithm alg(layoutData, childData, axis, sizeHint);
+        alg.SetParentSize(currentSize);
+        alg.SetParentRestSize(restSize);
+
+        float32 size = alg.Calculate();
+        restSize -= size;
+        childData.SetSize(axis, size);
+        return true;
+    }
+
     return false;
 }
 

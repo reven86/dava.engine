@@ -6,6 +6,8 @@
 #include "PackageHierarchy/PackageVisitor.h"
 #include "ControlProperties/PropertyVisitor.h"
 
+#include <Base/Result.h>
+
 class PackageBaseNode;
 class AbstractProperty;
 class ValueProperty;
@@ -30,6 +32,9 @@ public:
     virtual void BeginArray(const DAVA::String& name, bool flow = false) = 0;
     virtual void BeginArray() = 0;
     virtual void EndArray() = 0;
+
+    bool HasErrors() const;
+    const DAVA::ResultList& GetResults() const;
 
 private: // PackageVisitor
     void VisitPackage(PackageNode* node) override;
@@ -73,6 +78,8 @@ private:
     DAVA::Vector<ControlNode*> controls;
     DAVA::Vector<ControlNode*> prototypes;
     DAVA::Vector<StyleSheetNode*> styles;
+
+    DAVA::ResultList results;
 };
 
 #endif // __QUICKED_PACKAGE_SERIALIZER_H__

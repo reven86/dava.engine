@@ -9,14 +9,7 @@ namespace DAVA
 class UIControl;
 class UIScreen;
 class UIScreenTransition;
-
-class UILayoutSystemListener
-{
-public:
-    virtual ~UILayoutSystemListener() = default;
-
-    virtual void OnControlLayouted(UIControl* control) = 0;
-};
+class UILayoutSystemListener;
 
 class UILayoutSystem : public UISystem
 {
@@ -25,6 +18,8 @@ public:
     ~UILayoutSystem() override;
 
     void Process(DAVA::float32 elapsedTime) override;
+    void UnregisterControl(UIControl* control) override;
+    void UnregisterComponent(UIControl* control, UIComponent* component) override;
 
     void SetCurrentScreen(const RefPtr<UIScreen>& screen);
     void SetCurrentScreenTransition(const RefPtr<UIScreenTransition>& screenTransition);
@@ -43,8 +38,8 @@ public:
     void SetDirty();
     void CheckDirty();
 
-    UILayoutSystemListener* GetListener() const;
-    void SetListener(UILayoutSystemListener* listener);
+    void AddListener(UILayoutSystemListener* listener);
+    void RemoveListener(UILayoutSystemListener* listener);
 
 private:
     void UpdateControl(UIControl* control);
@@ -62,7 +57,7 @@ private:
     RefPtr<UIControl> popupContainer;
     RefPtr<UIScreenTransition> currentScreenTransition;
 
-    UILayoutSystemListener* listener = nullptr;
+    Vector<UILayoutSystemListener*> listeners;
 };
 
 inline void UILayoutSystem::SetDirty()

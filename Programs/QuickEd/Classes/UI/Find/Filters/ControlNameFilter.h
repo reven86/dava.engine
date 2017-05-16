@@ -9,8 +9,8 @@ class ControlNameFilter : public FindFilter
 public:
     ControlNameFilter(const DAVA::String& pattern, bool caseSensitive);
 
-    bool CanAcceptPackage(const PackageInformation* package) const override;
-    bool CanAcceptControl(const ControlInformation* control) const override;
+    ePackageStatus AcceptPackage(const PackageInformation* package) const override;
+    bool AcceptControl(const ControlInformation* control) const override;
 
 private:
     QRegExp regExp;

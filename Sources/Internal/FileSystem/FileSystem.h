@@ -5,6 +5,7 @@
 #include "FileSystem/File.h"
 #include "FileSystem/FilePath.h"
 #include "FileSystem/ResourceArchive.h"
+#include "Concurrency/Mutex.h"
 
 /**
 	\defgroup filesystem File System
