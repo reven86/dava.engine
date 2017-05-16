@@ -151,7 +151,6 @@ def main():
     stash    = stash_api.ptr()
 
     teamcity = team_city_api.ptr()
-    configuration_info = teamcity.configuration_info(args.configuration_id)
 
     check_depends, brunch_info = __check_depends_of_folders( args )
     if check_depends == True:
@@ -164,7 +163,7 @@ def main():
             if args.request_stash_mode == 'true':
                 stash.report_build_status('INPROGRESS',
                                           args.configuration_id,
-                                          configuration_info['config_path'],
+                                          args.configuration_id,
                                           run_build_result['webUrl'],
                                           brunch_info['fromRef']['latestCommit'],
                                           description="runing")
@@ -175,11 +174,14 @@ def main():
 
     else:
         if brunch_info != None and args.request_stash_mode == 'true':
+
             build_status = teamcity.get_build_status( args.root_configuration_id )
+
             root_build_url = build_status['webUrl']
+
             stash.report_build_status('SUCCESSFUL',
                                       args.configuration_id,
-                                      configuration_info['config_path'],
+                                      args.configuration_id,
                                       root_build_url,
                                       brunch_info['fromRef']['latestCommit'],
                                       description="Tests were ignored due to changed files")
