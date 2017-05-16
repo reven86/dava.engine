@@ -92,6 +92,7 @@
 #include "UI/Update/UICustomUpdateDeltaComponent.h"
 #include "UI/RichContent/UIRichContentComponent.h"
 #include "UI/RichContent/UIRichContentObjectComponent.h"
+#include "UI/Scroll/UIScrollComponent.h"
 
 namespace DAVA
 {
@@ -323,6 +324,7 @@ GetEngineContext()->componentManager->RegisterComponent<type>();
     DELC_UI_COMPONENT(UIRichContentObjectComponent, "RichContentObject");
     DELC_UI_COMPONENT(UILayoutSourceRectComponent, "UILayoutSourceRectComponent");
     DELC_UI_COMPONENT(UILayoutIsolationComponent, "UILayoutIsolationComponent");
+    DELC_UI_COMPONENT(UIScrollComponent, "ScrollComponent");
 }
 
 void RegisterReflectionForBaseTypes()

@@ -3,6 +3,7 @@
 #include "Math/Math2D.h"
 #include "Base/BaseObject.h"
 #include "Reflection/Reflection.h"
+#include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {
@@ -51,6 +52,12 @@ inline UIControl* UIComponent::GetControl() const
 template <class T>
 class UIBaseComponent : public UIComponent
 {
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(UIBaseComponent, UIComponent)
+    {
+        DAVA::ReflectionRegistrator<UIBaseComponent>::Begin()
+        .End();
+    }
+
 public:
     int32 GetRuntimeType() const override
     {
