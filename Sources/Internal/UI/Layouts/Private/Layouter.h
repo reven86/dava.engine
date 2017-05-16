@@ -23,6 +23,9 @@ public:
 
     void SetRtl(bool rtl);
 
+    Function<void(UIControl*, Vector2::eAxis, const LayoutFormula*)> onFormulaRemoved;
+    Function<void(UIControl*, Vector2::eAxis, const LayoutFormula*)> onFormulaProcessed;
+
 private:
     Vector<ControlLayoutData> layoutData;
     bool isRtl = false;

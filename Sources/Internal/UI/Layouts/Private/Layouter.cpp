@@ -88,7 +88,11 @@ void Layouter::DoMeasurePhase(Vector2::eAxis axis)
     int32 lastIndex = static_cast<int32>(layoutData.size() - 1);
     for (int32 index = lastIndex; index >= 0; index--)
     {
-        SizeMeasuringAlgorithm(layoutData).Apply(layoutData[index], axis);
+        UISizePolicyComponent* sizePolicy = layoutData[index].GetControl()->GetComponent<UISizePolicyComponent>();
+        if (sizePolicy != nullptr)
+        {
+            SizeMeasuringAlgorithm(layoutData, layoutData[index], axis, sizePolicy).Apply();
+        }
     }
 }
 
@@ -127,6 +131,31 @@ void Layouter::DoLayoutPhase(Vector2::eAxis axis)
             else
             {
                 AnchorLayoutAlgorithm(layoutData, isRtl).Apply(*it, axis, false);
+            }
+        }
+
+        UISizePolicyComponent* sizePolicy = (*it).GetControl()->GetComponent<UISizePolicyComponent>();
+        if (sizePolicy != nullptr)
+        {
+            LayoutFormula* formula = sizePolicy->GetFormula(axis);
+            if (formula != nullptr && formula->HasChanges())
+            {
+                formula->ResetChanges();
+                if (formula->IsEmpty())
+                {
+                    if (onFormulaRemoved)
+                    {
+                        onFormulaRemoved(sizePolicy->GetControl(), axis, formula);
+                    }
+                    sizePolicy->RemoveFormula(axis);
+                }
+                else
+                {
+                    if (onFormulaProcessed)
+                    {
+                        onFormulaProcessed(sizePolicy->GetControl(), axis, formula);
+                    }
+                }
             }
         }
     }
