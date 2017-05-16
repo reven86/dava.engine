@@ -10,7 +10,6 @@
 
 #include <Base/BaseTypes.h>
 
-
 #include <QDockWidget>
 
 namespace DAVA
