@@ -791,6 +791,11 @@ void DocumentsModule::ReloadDocument(const DAVA::TArc::DataContext::ContextID& c
     DVASSERT(context != nullptr);
     DVASSERT(contextID == accessor->GetActiveContext()->GetID());
     DocumentData* currentData = context->GetData<DocumentData>();
+    if (currentData->CanClose() == false)
+    {
+        return;
+    }
+
     QString path = currentData->GetPackageAbsolutePath();
 
     RefPtr<PackageNode> package = CreatePackage(path);
