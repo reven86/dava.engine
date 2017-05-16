@@ -22,10 +22,6 @@ public:
     UILayoutSystem();
     ~UILayoutSystem() override;
 
-    void Process(DAVA::float32 elapsedTime) override;
-    void UnregisterControl(UIControl* control) override;
-    void UnregisterComponent(UIControl* control, UIComponent* component) override;
-
     void SetCurrentScreen(const RefPtr<UIScreen>& screen);
     void SetCurrentScreenTransition(const RefPtr<UIScreenTransition>& screenTransition);
     void SetPopupContainer(const RefPtr<UIControl>& popupContainer);
@@ -48,6 +44,10 @@ private:
     void Process(float32 elapsedTime) override;
     void ForceProcessControl(float32 elapsedTime, UIControl* control) override;
 
+    void UnregisterControl(UIControl* control) override;
+    void UnregisterComponent(UIControl* control, UIComponent* component) override;
+
+private:
     void ApplyLayout(UIControl* control);
     void ApplyLayoutNonRecursive(UIControl* control);
 
