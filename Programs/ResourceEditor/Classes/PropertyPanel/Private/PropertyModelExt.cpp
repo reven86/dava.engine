@@ -90,7 +90,7 @@ struct TypeInitializer : public StaticSingleton<ComponentCreator>
             }
 
             const std::unique_ptr<ReflectedMeta>& meta = refType->GetStructure()->meta;
-            if (meta != nullptr && meta->HasMeta<M::CantBeCreatedManualyComponent>())
+            if (meta != nullptr && (nullptr != meta->GetMeta<M::CantBeCreatedManualyComponent>()))
             {
                 continue;
             }
@@ -281,7 +281,7 @@ void EntityChildCreator::ExposeChildren(const std::shared_ptr<const DAVA::TArc::
 
             DAVA::TArc::ForEachField(componentsField, [this, &children](Reflection::Field&& field)
                                      {
-                                         if (!field.ref.HasMeta<M::HiddenField>())
+                                         if (nullptr == field.ref.GetMeta<M::HiddenField>())
                                          {
                                              Any value = field.ref.GetValue();
                                              DAVA::Reflection::Field f(GetValueReflectedType(field.ref)->GetPermanentName(), Reflection(field.ref), nullptr);
@@ -306,7 +306,7 @@ void EntityChildCreator::ExposeChildren(const std::shared_ptr<const DAVA::TArc::
     {
         DAVA::TArc::ForEachField(parent->field.ref, [this, &children](Reflection::Field&& field)
                                  {
-                                     if (field.ref.GetValueType() != DAVA::Type::Instance<DAVA::Vector<DAVA::Component*>>() && field.ref.HasMeta<M::HiddenField>() == false)
+                                     if (field.ref.GetValueType() != DAVA::Type::Instance<DAVA::Vector<DAVA::Component*>>() && field.ref.GetMeta<M::HiddenField>() == nullptr)
                                      {
                                          children.push_back(allocator->CreatePropertyNode(std::move(field), PropertyNode::RealProperty));
                                      }
