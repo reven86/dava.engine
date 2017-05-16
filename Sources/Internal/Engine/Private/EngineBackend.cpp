@@ -448,21 +448,27 @@ void EngineBackend::OnWindowCreated(Window* window)
         size_t nerased = justCreatedWindows.erase(window);
         DVASSERT(nerased == 1);
 
-        auto result = aliveWindows.insert(window);
-        DVASSERT(result.second == true);
+        DVASSERT(std::find(aliveWindows.begin(), aliveWindows.end(), window) == aliveWindows.end());
+        aliveWindows.push_back(window);
     }
     engine->windowCreated.Emit(window);
+
+    window->visibilityChanged.Connect(this, &EngineBackend::OnWindowVisibilityChanged);
 }
 
 void EngineBackend::OnWindowDestroyed(Window* window)
 {
     Logger::Info("EngineBackend::OnWindowDestroyed: enter");
 
+    window->visibilityChanged.Disconnect(this);
     engine->windowDestroyed.Emit(window);
 
-    // Remove window from alive window list and place it into dying window list to delete later
-    size_t nerased = aliveWindows.erase(window);
-    DVASSERT(nerased == 1);
+    // Remove window from alive window list
+    auto it = std::find(aliveWindows.begin(), aliveWindows.end(), window);
+    DVASSERT(it != aliveWindows.end());
+    aliveWindows.erase(it);
+
+    // Place it into dying window list to delete later
     dyingWindows.insert(window);
 
     if (aliveWindows.empty())
@@ -475,6 +481,32 @@ void EngineBackend::OnWindowDestroyed(Window* window)
     }
 
     Logger::Info("EngineBackend::OnWindowDestroyed: leave");
+}
+
+void EngineBackend::OnWindowVisibilityChanged(Window* window, bool visible)
+{
+    // Update atLeastOneWindowIsVisible variable
+    atLeastOneWindowIsVisible = false;
+    for (Window* w : GetWindows())
+    {
+        if (w->IsVisible())
+        {
+            atLeastOneWindowIsVisible = true;
+            break;
+        }
+    }
+
+    // Update screen timeout
+    if (atLeastOneWindowIsVisible)
+    {
+        // If at least one window is visible, switch to user setting
+        platformCore->SetScreenTimeoutEnabled(screenTimeoutEnabled);
+    }
+    else
+    {
+        // Enable screen timeout if all windows are hidden
+        platformCore->SetScreenTimeoutEnabled(true);
+    }
 }
 
 void EngineBackend::EventHandler(const MainDispatcherEvent& e)
@@ -990,6 +1022,18 @@ void EngineBackend::AdjustSystemTimer(int64 adjustMicro)
 {
     Logger::Info("System timer adjusted by %lld us", adjustMicro);
     SystemTimer::Adjust(adjustMicro);
+}
+
+void EngineBackend::SetScreenTimeoutEnabled(bool enabled)
+{
+    screenTimeoutEnabled = enabled;
+
+    // Apply this setting only if at least one window is shown
+    // Otherwise wait for it to be shown and apply it then
+    if (atLeastOneWindowIsVisible)
+    {
+        platformCore->SetScreenTimeoutEnabled(screenTimeoutEnabled);
+    }
 }
 
 bool EngineBackend::IsRunning() const
