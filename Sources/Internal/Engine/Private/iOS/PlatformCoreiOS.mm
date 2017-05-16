@@ -45,6 +45,12 @@ void PlatformCore::Quit()
     std::exit(exitCode);
 }
 
+void PlatformCore::SetScreenTimeoutEnabled(bool enabled)
+{
+    const BOOL idleTimerDisabled = enabled ? NO : YES;
+    [UIApplication sharedApplication].idleTimerDisabled = idleTimerDisabled;
+}
+
 int32 PlatformCore::OnFrame()
 {
     return engineBackend->OnFrame();

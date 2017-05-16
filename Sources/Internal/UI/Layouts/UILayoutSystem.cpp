@@ -13,6 +13,8 @@
 #include "UI/Layouts/UIFlowLayoutComponent.h"
 #include "UI/Layouts/UILinearLayoutComponent.h"
 #include "UI/Layouts/UISizePolicyComponent.h"
+#include "UI/Layouts/LayoutFormula.h"
+#include "UI/Layouts/UILayoutSystemListener.h"
 #include "UI/UIControl.h"
 #include "UI/UIScreen.h"
 #include "UI/UIScreenTransition.h"
@@ -25,6 +27,7 @@ UILayoutSystem::UILayoutSystem()
 
 UILayoutSystem::~UILayoutSystem()
 {
+    DVASSERT(listeners.empty());
 }
 
 void UILayoutSystem::Process(DAVA::float32 elapsedTime)
@@ -48,6 +51,45 @@ void UILayoutSystem::Process(DAVA::float32 elapsedTime)
     if (popupContainer.Valid())
     {
         Update(popupContainer.Get());
+    }
+}
+
+void UILayoutSystem::UnregisterControl(UIControl* control)
+{
+    UISizePolicyComponent* sizePolicyComponent = control->GetComponent<UISizePolicyComponent>();
+    if (sizePolicyComponent != nullptr)
+    {
+        for (int32 axis = Vector2::AXIS_X; axis < Vector2::AXIS_COUNT; axis++)
+        {
+            LayoutFormula* formula = sizePolicyComponent->GetFormula(axis);
+            if (formula != nullptr)
+            {
+                formula->MarkChanges();
+                for (UILayoutSystemListener* listener : listeners)
+                {
+                    listener->OnFormulaRemoved(control, static_cast<Vector2::eAxis>(axis), formula);
+                }
+            }
+        }
+    }
+}
+
+void UILayoutSystem::UnregisterComponent(UIControl* control, UIComponent* component)
+{
+    if (component->GetType() == UIComponent::SIZE_POLICY_COMPONENT)
+    {
+        UISizePolicyComponent* sizePolicyComponent = DynamicTypeCheck<UISizePolicyComponent*>(component);
+        for (int32 axis = Vector2::AXIS_X; axis < Vector2::AXIS_COUNT; axis++)
+        {
+            LayoutFormula* formula = sizePolicyComponent->GetFormula(axis);
+            if (formula != nullptr)
+            {
+                for (UILayoutSystemListener* listener : listeners)
+                {
+                    listener->OnFormulaRemoved(control, static_cast<Vector2::eAxis>(axis), formula);
+                }
+            }
+        }
     }
 }
 
@@ -91,7 +133,7 @@ void UILayoutSystem::ProcessControl(UIControl* control)
         UIControl* container = FindNotDependentOnChildrenControl(control);
         ApplyLayout(container);
 
-        if (listener != nullptr)
+        for (UILayoutSystemListener* listener : listeners)
         {
             listener->OnControlLayouted(container);
         }
@@ -101,7 +143,7 @@ void UILayoutSystem::ProcessControl(UIControl* control)
         UIControl* container = control->GetParent();
         ApplyLayoutNonRecursive(container);
 
-        if (listener != nullptr)
+        for (UILayoutSystemListener* listener : listeners)
         {
             listener->OnControlLayouted(container);
         }
@@ -162,14 +204,30 @@ void UILayoutSystem::Update(UIControl* root)
     UpdateControl(root);
 }
 
-UILayoutSystemListener* UILayoutSystem::GetListener() const
+void UILayoutSystem::AddListener(UILayoutSystemListener* listener)
 {
-    return listener;
+    auto it = std::find(listeners.begin(), listeners.end(), listener);
+    if (it == listeners.end())
+    {
+        listeners.push_back(listener);
+    }
+    else
+    {
+        DVASSERT(false);
+    }
 }
 
-void UILayoutSystem::SetListener(UILayoutSystemListener* listener_)
+void UILayoutSystem::RemoveListener(UILayoutSystemListener* listener)
 {
-    listener = listener_;
+    auto it = std::find(listeners.begin(), listeners.end(), listener);
+    if (it != listeners.end())
+    {
+        listeners.erase(it);
+    }
+    else
+    {
+        DVASSERT(false);
+    }
 }
 
 UIControl* UILayoutSystem::FindNotDependentOnChildrenControl(UIControl* control) const
@@ -291,7 +349,11 @@ void UILayoutSystem::DoMeasurePhase(Vector2::eAxis axis)
     int32 lastIndex = static_cast<int32>(layoutData.size() - 1);
     for (int32 index = lastIndex; index >= 0; index--)
     {
-        SizeMeasuringAlgorithm(layoutData).Apply(layoutData[index], axis);
+        UISizePolicyComponent* sizePolicy = layoutData[index].GetControl()->GetComponent<UISizePolicyComponent>();
+        if (sizePolicy != nullptr)
+        {
+            SizeMeasuringAlgorithm(layoutData, layoutData[index], axis, sizePolicy).Apply();
+        }
     }
 }
 
@@ -330,6 +392,31 @@ void UILayoutSystem::DoLayoutPhase(Vector2::eAxis axis)
             else
             {
                 AnchorLayoutAlgorithm(layoutData, isRtl).Apply(*it, axis, false);
+            }
+        }
+
+        UISizePolicyComponent* sizePolicy = (*it).GetControl()->GetComponent<UISizePolicyComponent>();
+        if (sizePolicy != nullptr)
+        {
+            LayoutFormula* formula = sizePolicy->GetFormula(axis);
+            if (formula != nullptr && formula->HasChanges())
+            {
+                formula->ResetChanges();
+                if (formula->IsEmpty())
+                {
+                    for (UILayoutSystemListener* listener : listeners)
+                    {
+                        listener->OnFormulaRemoved(sizePolicy->GetControl(), axis, formula);
+                    }
+                    sizePolicy->RemoveFormula(axis);
+                }
+                else
+                {
+                    for (UILayoutSystemListener* listener : listeners)
+                    {
+                        listener->OnFormulaProcessed(sizePolicy->GetControl(), axis, formula);
+                    }
+                }
             }
         }
     }
