@@ -65,29 +65,26 @@ void UIScrollSystem::UnregisterComponent(UIControl* control, UIComponent* compon
 
 void UIScrollSystem::Process(DAVA::float32 elapsedTime)
 {
-    for (UIScrollViewContainer* container : scrollViewContainers)
-    {
-        container->Update(elapsedTime);
-    }
-
     for (const ScheduledControl& c : scheduledControls)
     {
         ScrollToScheduledControl(c);
     }
-
     scheduledControls.clear();
+
+    for (UIScrollViewContainer* container : scrollViewContainers)
+    {
+        container->Update(elapsedTime);
+    }
 }
 
 void UIScrollSystem::PrepareForScreenshot(UIControl* control)
 {
-    PrepareForScreenshotImpl(control);
     for (ScheduledControl& c : scheduledControls)
     {
-        if (c.marked)
-        {
-            ScrollToScheduledControl(c);
-        }
+        ScrollToScheduledControl(c);
     }
+
+    PrepareForScreenshotImpl(control);
 }
 
 void UIScrollSystem::PrepareForScreenshotImpl(UIControl* control)
@@ -98,15 +95,6 @@ void UIScrollSystem::PrepareForScreenshotImpl(UIControl* control)
         if (c->GetComponent(UIComponent::SCROLL_COMPONENT) != nullptr)
         {
             c->Update(0);
-        }
-
-        for (ScheduledControl& c : scheduledControls)
-        {
-            if (c.control.Get() == control)
-            {
-                c.marked = true;
-                break;
-            }
         }
     }
 }
@@ -123,7 +111,7 @@ void UIScrollSystem::ScheduleScrollToControlWithAnimation(UIControl* control, fl
 
 void UIScrollSystem::ScheduleScrollToControlImpl(UIControl* control, bool withAnimation, float32 animationTime)
 {
-    auto it = std::find_if(scheduledControls.begin(), scheduledControls.end(), [control](const ScheduledControl& c) {
+    auto it = std::find_if(scheduledControls.begin(), scheduledControls.end(), [control](const ScheduledControl& c) -> bool {
         return c.control.Get() == control;
     });
 

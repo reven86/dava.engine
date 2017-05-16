@@ -38,7 +38,6 @@ private:
         RefPtr<UIControl> control;
         bool withAnimation = false;
         float32 animationTime = 0;
-        bool marked = false;
     };
 
     void PrepareForScreenshotImpl(UIControl* control);
