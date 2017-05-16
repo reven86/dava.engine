@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Functional/Function.h"
 #include "Math/Vector.h"
 #include "UI/Layouts/Private/ControlLayoutData.h"
 
