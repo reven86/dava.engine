@@ -44,6 +44,11 @@ String StaticControlInformation::GetPrototypePackagePath() const
     return prototypePackage->GetPath();
 }
 
+bool StaticControlInformation::HasErrors() const
+{
+    return results.HasErrors();
+}
+
 bool StaticControlInformation::HasComponent(UIComponent::eType componentType) const
 {
     const UnorderedMap<UIComponent::eType, int32>::const_iterator iter = componentCount.find(componentType);
@@ -132,4 +137,9 @@ void StaticControlInformation::SetComponentProperty(UIComponent::eType component
 {
     const ComponentPropertyId id = std::make_tuple(componentType, componentIndex, FastName(member.name));
     componentProperties[id] = value;
+}
+
+void StaticControlInformation::AddResult(const DAVA::Result& result)
+{
+    results.AddResult(result);
 }

@@ -24,12 +24,12 @@ HasClassesFilter::HasClassesFilter(const Vector<String>& requiredClasses_)
     }
 }
 
-bool HasClassesFilter::CanAcceptPackage(const PackageInformation* package) const
+FindFilter::ePackageStatus HasClassesFilter::AcceptPackage(const PackageInformation* package) const
 {
-    return true;
+    return PACKAGE_CAN_ACCEPT_CONTROLS;
 }
 
-bool HasClassesFilter::CanAcceptControl(const ControlInformation* control) const
+bool HasClassesFilter::AcceptControl(const ControlInformation* control) const
 {
     const Any& classesStr = control->GetControlPropertyValue(*refMember);
     if (classesStr.CanCast<String>())

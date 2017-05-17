@@ -9,12 +9,12 @@ HasComponentFilter::HasComponentFilter(UIComponent::eType componentType)
 {
 }
 
-bool HasComponentFilter::CanAcceptPackage(const PackageInformation* package) const
+FindFilter::ePackageStatus HasComponentFilter::AcceptPackage(const PackageInformation* package) const
 {
-    return true;
+    return PACKAGE_CAN_ACCEPT_CONTROLS;
 }
 
-bool HasComponentFilter::CanAcceptControl(const ControlInformation* control) const
+bool HasComponentFilter::AcceptControl(const ControlInformation* control) const
 {
     return control->HasComponent(requiredComponentType);
 }
