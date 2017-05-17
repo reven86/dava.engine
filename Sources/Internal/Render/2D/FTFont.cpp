@@ -64,6 +64,8 @@ private:
     };
     Vector<Glyph> glyphs;
 
+    bool initialized = false;
+
     void ClearString();
     int32 LoadString(float32 size, const WideString& str);
     void Prepare(FT_Face face, FT_Vector* advances);
@@ -269,7 +271,12 @@ FTInternalFont::FTInternalFont(const FilePath& path)
     FT_Error error = ftm->LookupFace(this, &face);
     if (error != FT_Err_Ok || face == nullptr)
     {
-        DVASSERT(false, "Error on lookup FT face");
+        // Error on lookup FT face
+        initialized = false;
+    }
+    else
+    {
+        initialized = true;
     }
 }
 
@@ -337,6 +344,16 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void* buff
                                                Vector<float32>* charSizes,
                                                bool contentScaleIncluded)
 {
+    if (!initialized)
+    {
+        if (charSizes)
+        {
+            uint32 strLen = uint32(str.length());
+            charSizes->assign(strLen, 0.f);
+        }
+        return Font::StringMetrics();
+    }
+
     drawStringMutex.Lock();
 
     bool drawNondefGlyph = Renderer::GetOptions()->IsOptionEnabled(RenderOptions::DRAW_NONDEF_GLYPH);
@@ -565,12 +582,22 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void* buff
 
 bool FTInternalFont::IsCharAvaliable(char16 ch)
 {
+    if (!initialized)
+    {
+        return false;
+    }
+
     uint32 index = ftm->LookupGlyphIndex(this, ch);
     return index != 0;
 }
 
 uint32 FTInternalFont::GetFontHeight(float32 size, float32 ascendScale, float32 descendScale)
 {
+    if (!initialized)
+    {
+        return 0;
+    }
+
     size = UIControlSystem::Instance()->vcs->ConvertVirtualToPhysicalY(size); // increase size for high dpi screens
     FT_Size ft_size = nullptr;
     if (ftm->LookupSize(this, size, &ft_size) == FT_Err_Ok)
@@ -585,6 +612,11 @@ uint32 FTInternalFont::GetFontHeight(float32 size, float32 ascendScale, float32 
 
 void FTInternalFont::Prepare(FT_Face face, FT_Vector* advances)
 {
+    if (!initialized)
+    {
+        return;
+    }
+
     FT_Vector* prevAdvance = 0;
     FT_UInt prevIndex = 0;
     const bool useKerning = (FT_HAS_KERNING(face) > 0);
