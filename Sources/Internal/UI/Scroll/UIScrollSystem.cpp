@@ -75,26 +75,26 @@ void UIScrollSystem::UnregisterComponent(UIControl* control, UIComponent* compon
 
 void UIScrollSystem::Process(DAVA::float32 elapsedTime)
 {
+    for (UIScrollViewContainer* container : scrollViewContainers)
+    {
+        container->Update(elapsedTime);
+    }
+
     for (const ScheduledControl& c : scheduledControls)
     {
         ScrollToScheduledControl(c);
     }
     scheduledControls.clear();
-
-    for (UIScrollViewContainer* container : scrollViewContainers)
-    {
-        container->Update(elapsedTime);
-    }
 }
 
 void UIScrollSystem::ForceProcessControl(float32 elapsedTime, UIControl* control)
 {
+    PrepareForScreenshotImpl(control);
+
     for (ScheduledControl& c : scheduledControls)
     {
         ScrollToScheduledControl(c);
     }
-
-    PrepareForScreenshotImpl(control);
 }
 
 void UIScrollSystem::PrepareForScreenshotImpl(UIControl* control)
