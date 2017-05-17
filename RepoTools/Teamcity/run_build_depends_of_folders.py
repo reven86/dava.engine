@@ -59,7 +59,7 @@ def __run_build( args, triggering_options = [] ):
     if client_brunch and client_brunch != '<default>':
         properties = {'config.client_branch': client_brunch}
 
-    run_build_result = teamcity.run_build( args.configuration_name, framework_brunch, properties, triggering_options  )
+    run_build_result = teamcity.run_build( args.configuration_name, framework_branch, properties, triggering_options  )
 
     return run_build_result
 
@@ -95,10 +95,10 @@ def __check_depends_of_folders( args ):
 
     stash = stash_api.ptr()
 
-    pull_requests_number = common_tool.get_pull_requests_number( args.framework_brunch )
+    pull_requests_number = common_tool.get_pull_requests_number( args.framework_branch )
 
     if pull_requests_number == None  :
-        common_tool.flush_print( "Build is required, because brunch == {}".format( args.framework_brunch ) )
+        common_tool.flush_print( "Build is required, because brunch == {}".format( args.framework_branch ) )
         return True,None
 
     brunch_info = stash.get_pull_requests_info( pull_requests_number )
@@ -172,7 +172,7 @@ def main():
             run_build_result = __run_build( args, ['queueAtTop'] )
 
             if args.request_stash_mode == 'true' :
-                if common_tool.get_pull_requests_number(args.framework_brunch) != None :
+                if common_tool.get_pull_requests_number(args.framework_branch) != None :
                     stash.report_build_status('INPROGRESS',
                                               request_configuration_id,
                                               request_configuration_info['config_path'],
