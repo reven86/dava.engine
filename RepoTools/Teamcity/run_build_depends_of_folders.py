@@ -25,7 +25,7 @@ def __parser_args():
     arg_parser.add_argument( '--password', required = True )
 ##
     arg_parser.add_argument( '--convert_to_merge_requests', default = 'false', choices=[ 'true', 'false' ] )
-    arg_parser.add_argument( '--framework_brunch', required = True )
+    arg_parser.add_argument( '--framework_branch', required = True )
     arg_parser.add_argument( '--client_brunch' )
 ##
     arg_parser.add_argument( '--check_folders', required = True  )
@@ -46,14 +46,14 @@ def __run_build( args, triggering_options = [] ):
     teamcity = team_city_api.ptr()
 
     client_brunch    = args.client_brunch
-    framework_brunch = args.framework_brunch
+    framework_branch = args.framework_branch
 
     if args.convert_to_merge_requests == 'true':
         if client_brunch and '/from' in client_brunch:
             client_brunch = client_brunch.replace('/from', '/merge')
 
-        if framework_brunch and '/from' in framework_brunch:
-            framework_brunch = framework_brunch.replace('/from', '/merge')
+        if framework_branch and '/from' in framework_branch:
+            framework_branch = framework_branch.replace('/from', '/merge')
 
     properties = {}
     if client_brunch and client_brunch != '<default>':

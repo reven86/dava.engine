@@ -16,16 +16,16 @@ def get_pull_requests_number( branch ):
     if  branch == None:
         return None;
 
-    brunch     = branch.split('/')
-    branch_len = len( brunch )
+    branch     = branch.split('/')
+    branch_len = len( branch )
 
     pull_requests_number = None
 
     if branch_len == 1:
-        if brunch[0].isdigit():
-            pull_requests_number = brunch[0]
+        if branch[0].isdigit():
+            pull_requests_number = branch[0]
     else:
-        pull_requests_number = brunch[ branch_len - 2 ]
+        pull_requests_number = branch[ branch_len - 2 ]
 
     return pull_requests_number
 
