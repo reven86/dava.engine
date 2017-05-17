@@ -98,7 +98,7 @@ def __check_depends_of_folders( args ):
     pull_requests_number = common_tool.get_pull_requests_number( args.framework_branch )
 
     if pull_requests_number == None  :
-        common_tool.flush_print( "Build is required, because brunch == {}".format( args.framework_branch ) )
+        common_tool.flush_print( "Build is required, because branch == {}".format( args.framework_branch ) )
         return True,None
 
     brunch_info = stash.get_pull_requests_info( pull_requests_number )
