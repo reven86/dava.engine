@@ -40,8 +40,9 @@ DAVA_VIRTUAL_REFLECTION_IMPL(PathComponent)
 
 //== Waypoint ==
 PathComponent::Waypoint::Waypoint()
+    : name(FastName(""))
+    , properties(new KeyedArchive())
 {
-    properties = NULL;
 }
 
 PathComponent::Waypoint::~Waypoint()
@@ -89,9 +90,8 @@ void PathComponent::Waypoint::RemoveEdge(PathComponent::Edge* edge)
 
 //== Edge ==
 PathComponent::Edge::Edge()
+    : properties(new KeyedArchive())
 {
-    properties = NULL;
-    destination = NULL;
 }
 
 PathComponent::Edge::~Edge()
@@ -346,6 +346,18 @@ void PathComponent::AddPoint(DAVA::PathComponent::Waypoint* point)
     waypoints.push_back(point);
 }
 
+void PathComponent::InsertPoint(Waypoint* point, uint32 beforeIndex)
+{
+    if (beforeIndex < waypoints.size())
+    {
+        waypoints.insert(waypoints.begin() + beforeIndex, point);
+    }
+    else
+    {
+        AddPoint(point);
+    }
+}
+
 void PathComponent::RemovePoint(DAVA::PathComponent::Waypoint* point)
 {
     uint32 waypointCount = static_cast<uint32>(waypoints.size());
@@ -369,6 +381,27 @@ void PathComponent::RemovePoint(DAVA::PathComponent::Waypoint* point)
         if (wp == point)
         {
             SafeDelete(waypoints[w]);
+            waypoints.erase(waypoints.begin() + w);
+            --w;
+            --waypointCount;
+        }
+    }
+}
+
+void PathComponent::ExtractPoint(Waypoint* point)
+{
+    uint32 waypointCount = static_cast<uint32>(waypoints.size());
+    for (uint32 w = 0; w < waypointCount; ++w)
+    {
+        Waypoint* wp = waypoints[w];
+
+        for (Edge* e : wp->edges)
+        {
+            DVASSERT(e->destination != point);
+        }
+
+        if (wp == point)
+        {
             waypoints.erase(waypoints.begin() + w);
             --w;
             --waypointCount;
