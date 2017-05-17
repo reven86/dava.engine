@@ -319,11 +319,11 @@ FT_Error FTInternalFont::OpenFace(FT_Library library, FT_Face* ftface)
     FT_Error error = FT_Open_Face(library, &args, 0, ftface);
     if (error == FT_Err_Unknown_File_Format)
     {
-        Logger::Error("FTInternalFont::FTInternalFont FT_Err_Unknown_File_Format: %s", fontFile->GetFilename().GetStringValue().c_str());
+        Logger::Error("FTInternalFont::FTInternalFont FT_Err_Unknown_File_Format: %s", fontPath.GetStringValue().c_str());
     }
     else if (error)
     {
-        Logger::Error("FTInternalFont::FTInternalFont cannot create font: %s", fontFile->GetFilename().GetStringValue().c_str());
+        Logger::Error("FTInternalFont::FTInternalFont cannot create font: %s", fontPath.GetStringValue().c_str());
     }
     return error;
 }
