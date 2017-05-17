@@ -400,14 +400,12 @@ void Logger::FileLog(const FilePath& customLogFileName, eLogLevel ll, const char
         {
             Array<char8, 128> prefix;
 
-#if defined(__DAVAENGINE_WIN_UAP__)
-            SYSTEMTIME st;
-            GetSystemTime(&st);
-            // then convert st to your precision needs
-            snprintf(&prefix[0], prefix.size(), "- %d:%d:%d.%d ", st.wHour, st.wMinute, st.wSecond, st.wMilliseconds);
-            file->Write(prefix.data(), static_cast<uint32>(strlen(prefix.data())));
-#endif
-            Snprintf(&prefix[0], prefix.size(), "%lld [%s] ", static_cast<int64>(std::time(nullptr)), GetLogLevelString(ll));
+            time_t timestamp = time(nullptr); //Time in UTC format
+            int32 seconds = timestamp % 60;
+            int32 minutes = (timestamp / 60) % 60;
+            int32 hours = (timestamp / 60 * 60) % 24;
+
+            Snprintf(&prefix[0], prefix.size(), "%02d:%02d:%02d [%s] ", hours, minutes, seconds, GetLogLevelString(ll));
             file->Write(prefix.data(), static_cast<uint32>(strlen(prefix.data())));
             file->Write(text, static_cast<uint32>(strlen(text)));
         }
