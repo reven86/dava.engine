@@ -52,7 +52,7 @@ class TeamCityRequest:
         if branch_name:
             branch_name = ' branchName = "{}"'.format( branch_name )
 
-        parameter =  '<build{0}><buildType id="{1}" />{2}{3}{4}{5}</build>'.format( branch_name, build_id, properties, triggering_options,comment, agent_id )
+        parameter =  '<build{0}><buildType id="{1}" />{2}{3}{4}{5}</build>'.format( branch_name, build_name, properties, triggering_options,comment, agent_id )
 
         response = self.__request("buildQueue", parameter )
 
