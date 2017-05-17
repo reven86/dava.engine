@@ -16,8 +16,8 @@ DuplicateObjectTool::DuplicateObjectTool(const DAVA::Vector<DAVA::String>& comma
 {
     using namespace DAVA;
 
-    options.AddOption(OptionName::File, VariantType(String("")), "Filename from DataSource/3d/ for dumping");
-    options.AddOption(OptionName::OutDir, VariantType(String("")), "Full path to file to write result of dumping");
+    options.AddOption(OptionName::File, VariantType(String("")), "Filename from DataSource/3d/ for duplicating");
+    options.AddOption(OptionName::OutDir, VariantType(String("")), "Full path to folder to write duplicates");
     options.AddOption(OptionName::Count, VariantType(1), "Count of duplicated objects");
 }
 
@@ -40,10 +40,18 @@ bool DuplicateObjectTool::PostInitInternal()
     const DAVA::EngineContext* engineCtx = DAVA::GetEngineContext();
     if (engineCtx->fileSystem->Exists(outDirPath))
     {
-        DAVA::Logger::Error("[DuplicateObjectTool] Output folder has already exists");
+        if (engineCtx->fileSystem->DeleteDirectory(outDirPath, true) == false)
+        {
+            DAVA::Logger::Error("[DuplicateObjectTool] Can't clear output folder");
+            return false;
+        }
+    }
+
+    if (engineCtx->fileSystem->CreateDirectory(outDirPath, true) == false)
+    {
+        DAVA::Logger::Error("[DuplicateObjectTool] Can't create output folder");
         return false;
     }
-    engineCtx->fileSystem->CreateDirectory(outDirPath);
 
     count = options.GetOption(OptionName::Count).AsInt32();
     return true;
@@ -55,7 +63,7 @@ DAVA::TArc::ConsoleModule::eFrameResult DuplicateObjectTool::OnFrameInternal()
     DAVA::SceneFileV2::eError result = scene->LoadScene(filePath);
     if (result != DAVA::SceneFileV2::ERROR_NO_ERROR)
     {
-        DAVA::Logger::Error("[DuplicateObjectTool] Can't open scene %s. Error code: %d", filePath.GetAbsolutePathname(), result);
+        DAVA::Logger::Error("[DuplicateObjectTool] Can't open scene %s. Error code: %d", filePath.GetAbsolutePathname().c_str(), result);
         return DAVA::TArc::ConsoleModule::eFrameResult::FINISHED;
     }
 
@@ -87,7 +95,7 @@ void DuplicateObjectTool::ShowHelpInternal()
     DAVA::Logger::Info("\t-duplicate -file /Users/SmokeTest/DataSource/3d/Map/Box.sc2 -outdir /Users/SmokeTest/DataSource/3d/Boxes/ -count 140");
 }
 
-RandomPlaceHingedEquip::RandomPlaceHingedEquip(const DAVA::Vector<DAVA::String>& commandLine)
+RandomPlaceHingedEquipment::RandomPlaceHingedEquipment(const DAVA::Vector<DAVA::String>& commandLine)
     : CommandLineModule(commandLine, "-placehingedequip")
 {
     using namespace DAVA;
@@ -97,20 +105,20 @@ RandomPlaceHingedEquip::RandomPlaceHingedEquip(const DAVA::Vector<DAVA::String>&
     options.AddOption(OptionName::ProcessDir, VariantType(String("")), "Library of hinged equip path. Each hinged equip object in separate folder");
 }
 
-bool RandomPlaceHingedEquip::PostInitInternal()
+bool RandomPlaceHingedEquipment::PostInitInternal()
 {
     const DAVA::EngineContext* engineCtx = DAVA::GetEngineContext();
 
     projectRootFolder = options.GetOption(OptionName::InDir).AsString();
     if (projectRootFolder.IsEmpty())
     {
-        DAVA::Logger::Error("[RandomPlaceHingedEquip] Project folder was not specified");
+        DAVA::Logger::Error("[RandomPlaceHingedEquipment] Project folder was not specified");
         return false;
     }
 
     if (engineCtx->fileSystem->Exists(projectRootFolder) == false)
     {
-        DAVA::Logger::Error("[RandomPlaceHingedEquip] Project folder does not exist");
+        DAVA::Logger::Error("[RandomPlaceHingedEquipment] Project folder does not exist");
         return false;
     }
     projectRootFolder.MakeDirectoryPathname();
@@ -119,20 +127,20 @@ bool RandomPlaceHingedEquip::PostInitInternal()
     DAVA::FilePath processFileList(options.GetOption(OptionName::ProcessFileList).AsString());
     if (processFileList.IsEmpty())
     {
-        DAVA::Logger::Error("[RandomPlaceHingedEquip] File with list of object to place hinged equip was not specified");
+        DAVA::Logger::Error("[RandomPlaceHingedEquipment] File with list of object to place hinged equip was not specified");
         return false;
     }
 
     if (engineCtx->fileSystem->Exists(processFileList) == false)
     {
-        DAVA::Logger::Error("[RandomPlaceHingedEquip] File with list of object to place hinged equip does not exist");
+        DAVA::Logger::Error("[RandomPlaceHingedEquipment] File with list of object to place hinged equip does not exist");
         return false;
     }
 
     DAVA::ScopedPtr<DAVA::File> scenesFile(DAVA::File::Create(processFileList, DAVA::File::OPEN | DAVA::File::READ));
     if (!scenesFile)
     {
-        DAVA::Logger::Error("[RandomPlaceHingedEquip] cannot open file with links %s", processFileList.GetAbsolutePathname().c_str());
+        DAVA::Logger::Error("[RandomPlaceHingedEquipment] cannot open file with links %s", processFileList.GetAbsolutePathname().c_str());
         return false;
     }
 
@@ -141,14 +149,14 @@ bool RandomPlaceHingedEquip::PostInitInternal()
         DAVA::String scenePath = scenesFile->ReadLine();
         if (scenePath.empty())
         {
-            DAVA::Logger::Warning("[RandomPlaceHingedEquip] found empty string in file %s", processFileList.GetAbsolutePathname().c_str());
+            DAVA::Logger::Warning("[RandomPlaceHingedEquipment] found empty string in file %s", processFileList.GetAbsolutePathname().c_str());
             continue;
         }
 
         DAVA::FilePath fullScenePath = projectRootFolder + scenePath;
         if (engineCtx->fileSystem->Exists(fullScenePath) == false)
         {
-            DAVA::Logger::Error("[RandomPlaceHingedEquip] Scene %s does not exist", fullScenePath.GetAbsolutePathname().c_str());
+            DAVA::Logger::Error("[RandomPlaceHingedEquipment] Scene %s does not exist", fullScenePath.GetAbsolutePathname().c_str());
             continue;
         }
         scenesPath.emplace_back(fullScenePath);
@@ -157,33 +165,33 @@ bool RandomPlaceHingedEquip::PostInitInternal()
     hindedEquipLibrary = options.GetOption(OptionName::ProcessDir).AsString();
     if (hindedEquipLibrary.IsEmpty())
     {
-        DAVA::Logger::Error("[RandomPlaceHingedEquip] Hinged equip library was not specified");
+        DAVA::Logger::Error("[RandomPlaceHingedEquipment] Hinged equip library was not specified");
         return false;
     }
+    hindedEquipLibrary.MakeDirectoryPathname();
 
     return true;
 }
 
-DAVA::TArc::ConsoleModule::eFrameResult RandomPlaceHingedEquip::OnFrameInternal()
+DAVA::TArc::ConsoleModule::eFrameResult RandomPlaceHingedEquipment::OnFrameInternal()
 {
     DAVA::Vector<DAVA::FilePath> hingedEquipPathes;
     DAVA::ScopedPtr<DAVA::FileList> hingedEquipFolders(new DAVA::FileList(hindedEquipLibrary, false));
     for (DAVA::uint32 dirIndex = 0; dirIndex < hingedEquipFolders->GetCount(); ++dirIndex)
     {
-        DAVA::FilePath filePath = hingedEquipFolders->GetPathname(dirIndex);
-        DAVA::String fileName = hingedEquipFolders->GetFilename(dirIndex);
-        if (fileName == "." || fileName == "..")
+        if (hingedEquipFolders->IsNavigationDirectory(dirIndex))
         {
             continue;
         }
 
+        DAVA::FilePath filePath = hingedEquipFolders->GetPathname(dirIndex);
         if (filePath.IsDirectoryPathname())
         {
             DAVA::ScopedPtr<DAVA::FileList> hingedEquipObject(new DAVA::FileList(filePath, false));
             for (DAVA::uint32 fileIndex = 0; fileIndex < hingedEquipObject->GetCount(); ++fileIndex)
             {
                 DAVA::FilePath objectPath = hingedEquipObject->GetPathname(fileIndex);
-                if (objectPath.GetExtension() == ".sc2")
+                if (objectPath.IsEqualToExtension(".sc2") == true)
                 {
                     hingedEquipPathes.push_back(objectPath);
                 }
@@ -198,11 +206,16 @@ DAVA::TArc::ConsoleModule::eFrameResult RandomPlaceHingedEquip::OnFrameInternal(
         DAVA::SceneFileV2::eError loadResult = scene->LoadScene(scenePath);
         if (loadResult != DAVA::SceneFileV2::ERROR_NO_ERROR)
         {
-            DAVA::Logger::Error("[RandomPlaceHingedEquip] Can't load scene %s", scenePath.GetAbsolutePathname().c_str());
+            DAVA::Logger::Error("[RandomPlaceHingedEquipment] Can't load scene %s", scenePath.GetAbsolutePathname().c_str());
             continue;
         }
 
-        DVASSERT(scene->GetChildrenCount() == 1);
+        if (scene->GetChildrenCount() != 1)
+        {
+            DAVA::Logger::Error("[RandomPlaceHingedEquipment] Scene %s doesn't ìeet requirements. Scene should has only one root entity", scenePath.GetAbsolutePathname().c_str());
+            continue;
+        }
+
         DAVA::Entity* rootEntity = scene->GetChild(0);
         DAVA::Matrix4 invertParentTranfsorm = rootEntity->GetWorldTransform();
         invertParentTranfsorm.Inverse();
@@ -239,11 +252,9 @@ DAVA::TArc::ConsoleModule::eFrameResult RandomPlaceHingedEquip::OnFrameInternal(
                     DAVA::Entity* hingedEntity = scene->cache.GetClone(hingedEquipPath);
                     if (hingedEntity == nullptr)
                     {
-                        DAVA::Logger::Error("[RandomPlaceHingedEquip] Can't load hinged equip %s", hingedEquipPath.GetAbsolutePathname().c_str());
+                        DAVA::Logger::Error("[RandomPlaceHingedEquipment] Can't load hinged equip %s", hingedEquipPath.GetAbsolutePathname().c_str());
                         continue;
                     }
-                    DAVA::KeyedArchive* customProps = GetOrCreateCustomProperties(hingedEntity)->GetArchive();
-                    customProps->SetString(ResourceEditor::EDITOR_REFERENCE_TO_OWNER, hingedEquipPath.GetAbsolutePathname());
 
                     DAVA::AABBox3 hingedBox = hingedEntity->GetWTMaximumBoundingBoxSlow();
                     DAVA::Vector3 hingedSize = hingedBox.GetSize();
@@ -273,19 +284,19 @@ DAVA::TArc::ConsoleModule::eFrameResult RandomPlaceHingedEquip::OnFrameInternal(
     return DAVA::TArc::ConsoleModule::eFrameResult::FINISHED;
 }
 
-void RandomPlaceHingedEquip::BeforeDestroyedInternal()
+void RandomPlaceHingedEquipment::BeforeDestroyedInternal()
 {
     SceneConsoleHelper::FlushRHI();
 }
 
-void RandomPlaceHingedEquip::ShowHelpInternal()
+void RandomPlaceHingedEquipment::ShowHelpInternal()
 {
     CommandLineModule::ShowHelpInternal();
 
     DAVA::Logger::Info("Examples:");
-    DAVA::Logger::Info("\t-placehingedequip -indir /Users/SmokeTest/DataSource/3d/ -processfilelist /Users/SmokeTest/objectList.txt -processdir /Users/SmokeTest/DataSource/3d/HingedEquip");
+    DAVA::Logger::Info("\t-placehingedequip -indir /Users/SmokeTest/DataSource/3d/ -processfilelist /Users/SmokeTest/objectList.txt -processdir /Users/SmokeTest/DataSource/3d/HingedEquip/");
 }
 
 DECL_CONSOLE_MODULE(DuplicateObjectTool, "-duplicate");
 
-DECL_CONSOLE_MODULE(RandomPlaceHingedEquip, "-placehingedequip");
+DECL_CONSOLE_MODULE(RandomPlaceHingedEquipment, "-placehingedequip");

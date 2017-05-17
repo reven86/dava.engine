@@ -25,10 +25,10 @@ private:
     }
 };
 
-class RandomPlaceHingedEquip : public CommandLineModule
+class RandomPlaceHingedEquipment : public CommandLineModule
 {
 public:
-    RandomPlaceHingedEquip(const DAVA::Vector<DAVA::String>& commandLine);
+    RandomPlaceHingedEquipment(const DAVA::Vector<DAVA::String>& commandLine);
 
 private:
     bool PostInitInternal() override;
@@ -40,9 +40,9 @@ private:
     DAVA::FilePath projectRootFolder;
     DAVA::FilePath hindedEquipLibrary;
 
-    DAVA_VIRTUAL_REFLECTION_IN_PLACE(RandomPlaceHingedEquip, CommandLineModule)
+    DAVA_VIRTUAL_REFLECTION_IN_PLACE(RandomPlaceHingedEquipment, CommandLineModule)
     {
-        DAVA::ReflectionRegistrator<RandomPlaceHingedEquip>::Begin()
+        DAVA::ReflectionRegistrator<RandomPlaceHingedEquipment>::Begin()
         .ConstructorByPointer<DAVA::Vector<DAVA::String>>()
         .End();
     }
