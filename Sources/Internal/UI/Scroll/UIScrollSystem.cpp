@@ -15,6 +15,16 @@ UIScrollSystem::~UIScrollSystem()
 {
 }
 
+void UIScrollSystem::ScheduleScrollToControl(UIControl* control)
+{
+    ScheduleScrollToControlImpl(control, false, 0.0f);
+}
+
+void UIScrollSystem::ScheduleScrollToControlWithAnimation(UIControl* control, float32 animationTime)
+{
+    ScheduleScrollToControlImpl(control, true, animationTime);
+}
+
 void UIScrollSystem::RegisterControl(UIControl* control)
 {
     if (control->GetComponent(UIComponent::SCROLL_COMPONENT))
@@ -77,7 +87,7 @@ void UIScrollSystem::Process(DAVA::float32 elapsedTime)
     }
 }
 
-void UIScrollSystem::PrepareForScreenshot(UIControl* control)
+void UIScrollSystem::ForceProcessControl(float32 elapsedTime, UIControl* control)
 {
     for (ScheduledControl& c : scheduledControls)
     {
@@ -91,22 +101,12 @@ void UIScrollSystem::PrepareForScreenshotImpl(UIControl* control)
 {
     for (UIControl* c : control->GetChildren())
     {
-        PrepareForScreenshot(c);
+        PrepareForScreenshotImpl(c);
         if (c->GetComponent(UIComponent::SCROLL_COMPONENT) != nullptr)
         {
             c->Update(0);
         }
     }
-}
-
-void UIScrollSystem::ScheduleScrollToControl(UIControl* control)
-{
-    ScheduleScrollToControlImpl(control, false, 0.0f);
-}
-
-void UIScrollSystem::ScheduleScrollToControlWithAnimation(UIControl* control, float32 animationTime)
-{
-    ScheduleScrollToControlImpl(control, true, animationTime);
 }
 
 void UIScrollSystem::ScheduleScrollToControlImpl(UIControl* control, bool withAnimation, float32 animationTime)

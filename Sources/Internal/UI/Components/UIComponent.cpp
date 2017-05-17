@@ -1,29 +1,30 @@
 #include "UIComponent.h"
 #include "UI/UIControl.h"
 
-#include "UI/Layouts/UILinearLayoutComponent.h"
-#include "UI/Layouts/UIFlowLayoutComponent.h"
-#include "UI/Layouts/UIFlowLayoutHintComponent.h"
-#include "UI/Layouts/UIIgnoreLayoutComponent.h"
-#include "UI/Layouts/UISizePolicyComponent.h"
-#include "UI/Layouts/UIAnchorComponent.h"
-#include "UI/Layouts/UILayoutSourceRectComponent.h"
-#include "UI/Layouts/UILayoutIsolationComponent.h"
-#include "UI/Input/UIModalInputComponent.h"
 #include "UI/Focus/UIFocusComponent.h"
 #include "UI/Focus/UIFocusGroupComponent.h"
 #include "UI/Focus/UINavigationComponent.h"
 #include "UI/Focus/UITabOrderComponent.h"
-#include "UI/Input/UIActionComponent.h"
 #include "UI/Input/UIActionBindingComponent.h"
+#include "UI/Input/UIActionComponent.h"
+#include "UI/Input/UIModalInputComponent.h"
+#include "UI/Layouts/UIAnchorComponent.h"
+#include "UI/Layouts/UIFlowLayoutComponent.h"
+#include "UI/Layouts/UIFlowLayoutHintComponent.h"
+#include "UI/Layouts/UIIgnoreLayoutComponent.h"
+#include "UI/Layouts/UILayoutIsolationComponent.h"
+#include "UI/Layouts/UILayoutSourceRectComponent.h"
+#include "UI/Layouts/UILinearLayoutComponent.h"
+#include "UI/Layouts/UISizePolicyComponent.h"
+#include "UI/Render/UISceneComponent.h"
+#include "UI/RichContent/UIRichContentComponent.h"
+#include "UI/RichContent/UIRichContentObjectComponent.h"
 #include "UI/Scroll/UIScrollBarDelegateComponent.h"
 #include "UI/Scroll/UIScrollComponent.h"
 #include "UI/Sound/UISoundComponent.h"
 #include "UI/Sound/UISoundValueFilterComponent.h"
-#include "UI/RichContent/UIRichContentComponent.h"
-#include "UI/RichContent/UIRichContentObjectComponent.h"
-#include "UI/Update/UIUpdateComponent.h"
 #include "UI/Update/UICustomUpdateDeltaComponent.h"
+#include "UI/Update/UIUpdateComponent.h"
 #include "Utils/StringFormat.h"
 
 namespace DAVA
@@ -129,6 +130,9 @@ UIComponent* UIComponent::CreateByType(uint32 componentType)
 
     case RICH_CONTENT_OBJECT_COMPONENT:
         return new UIRichContentObjectComponent();
+
+    case SCENE_COMPONENT:
+        return new UISceneComponent();
 
     default:
         DVASSERT(false, Format("Can't create component with type %d", componentType).c_str());

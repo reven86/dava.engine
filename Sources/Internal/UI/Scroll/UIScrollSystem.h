@@ -14,16 +14,17 @@ public:
     UIScrollSystem();
     ~UIScrollSystem() override;
 
+    void ScheduleScrollToControl(UIControl* control);
+    void ScheduleScrollToControlWithAnimation(UIControl* control, float32 animationTime);
+
+protected:
     void RegisterControl(UIControl* control) override;
     void UnregisterControl(UIControl* control) override;
     void RegisterComponent(UIControl* control, UIComponent* component) override;
     void UnregisterComponent(UIControl* control, UIComponent* component) override;
 
     void Process(DAVA::float32 elapsedTime) override;
-    void PrepareForScreenshot(UIControl* control);
-
-    void ScheduleScrollToControl(UIControl* control);
-    void ScheduleScrollToControlWithAnimation(UIControl* control, float32 animationTime);
+    void ForceProcessControl(float32 elapsedTime, UIControl* control) override;
 
 private:
     struct ScheduledControl

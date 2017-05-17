@@ -422,7 +422,7 @@ void UIButton::Input(UIEvent* currentInput)
     currentInput->SetInputHandledType(UIEvent::INPUT_HANDLED_SOFT); // Drag is not handled - see please DF-2508.
 }
 
-void UIButton::SystemDraw(const UIGeometricData& geometricData, const UIControlBackground* parentBackground)
+void UIButton::Draw(const UIGeometricData& geometricData)
 {
     if (oldControlState != GetState())
     {
@@ -431,11 +431,6 @@ void UIButton::SystemDraw(const UIGeometricData& geometricData, const UIControlB
         UIControl::SetBackground(GetActualBackgroundForState(GetState()));
     }
 
-    UIControl::SystemDraw(geometricData, parentBackground);
-}
-
-void UIButton::Draw(const UIGeometricData& geometricData)
-{
     UIControl::Draw(geometricData);
 
     if (selectedTextBlock)
