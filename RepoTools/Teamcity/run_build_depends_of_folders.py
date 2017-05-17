@@ -157,7 +157,7 @@ def main():
     request_configuration_id = args.request_configuration_id
 
     if request_configuration_id == None:
-        request_configuration_id = args.root_configuration_ids
+        request_configuration_id = args.root_configuration_id
 
     request_configuration_info = None
     if args.request_stash_mode == 'true' and request_configuration_id :
