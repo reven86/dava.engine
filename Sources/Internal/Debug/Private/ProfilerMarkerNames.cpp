@@ -20,10 +20,15 @@ const char* JOB_MANAGER = "JobManager";
 const char* SOUND_SYSTEM = "SoundSystem";
 const char* ANIMATION_MANAGER = "AnimationManager";
 const char* UI_UPDATE = "UI::Update";
-const char* UI_LAYOUTING = "UI::Layouting";
+const char* UI_DRAW = "UI::Draw";
+
+const char* UI_UPDATE_SYSTEM = "UIUpdateSystem";
+const char* UI_LAYOUT_SYSTEM = "UILayoutSystem";
+const char* UI_STYLE_SHEET_SYSTEM = "UIStyleSheetSystem";
+const char* UI_RENDER_SYSTEM = "UIRenderSystem";
+
 const char* UI_TEXTBLOCK_RECALC_PARAMS = "UI::TextBlock::CalculateParams";
 const char* UI_TEXTBLOCK_PREPARE = "UI::TextBlock::Prepare";
-const char* UI_DRAW = "UI::Draw";
 
 //Scene
 const char* SCENE_UPDATE = "Scene::Update";

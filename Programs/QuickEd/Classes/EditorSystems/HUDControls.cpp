@@ -138,11 +138,11 @@ void HUDContainer::InitFromGD(const UIGeometricData& gd)
     }
 }
 
-void HUDContainer::SystemDraw(const UIGeometricData& gd, const UIControlBackground* parentBackground)
+void HUDContainer::Draw(const UIGeometricData& gd)
 {
     auto controlGD = control->GetGeometricData();
     InitFromGD(controlGD);
-    ControlContainer::SystemDraw(gd, parentBackground);
+    ControlContainer::Draw(gd);
 }
 
 FrameControl::FrameControl(eType type_)
