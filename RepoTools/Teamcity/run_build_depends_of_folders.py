@@ -174,7 +174,7 @@ def main():
             if args.request_stash_mode == 'true' :
                 if common_tool.get_pull_requests_number(args.framework_branch) != None :
                     stash.report_build_status('INPROGRESS',
-                                              request_configuration_info['buildTypeId'],
+                                              request_configuration_info['project_id'],
                                               request_configuration_info['config_path'],
                                               run_build_result['webUrl'],
                                               branch_info['fromRef']['latestCommit'],
@@ -193,7 +193,7 @@ def main():
             root_build_url = build_status['webUrl']
 
             stash.report_build_status('SUCCESSFUL',
-                                      request_configuration_info['buildTypeId'],
+                                      request_configuration_info['project_id'],
                                       request_configuration_info['config_path'],
                                       root_build_url,
                                       branch_info['fromRef']['latestCommit'],

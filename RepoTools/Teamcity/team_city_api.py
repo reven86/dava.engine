@@ -86,6 +86,8 @@ class TeamCityRequest:
 
         build_type = root.find( 'buildType' )
 
+
+        root.attrib['project_id' ] = build_type.attrib[ 'projectId' ]
         root.attrib['config_name'] = build_type.attrib[ 'name' ]
         root.attrib['config_path'] = build_type.attrib[ 'projectName' ].replace( ' ', '' )
 
