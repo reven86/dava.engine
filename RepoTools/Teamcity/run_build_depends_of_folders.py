@@ -166,12 +166,12 @@ def main():
 
         if args.configuration_name != None :
             run_build_result = __run_build( args, ['queueAtTop'] )
-
+            config_path = teamcity.configuration_info( args.configuration_name )['config_path']
             if args.request_stash_mode == 'true' :
                 if common_tool.get_pull_requests_number(args.framework_branch) != None :
                     stash.report_build_status('INPROGRESS',
                                               args.configuration_name,
-                                              "Call",
+                                              config_path ,
                                               run_build_result['webUrl'],
                                               branch_info['fromRef']['latestCommit'],
                                               description="runing")
@@ -195,7 +195,7 @@ def main():
 
             if configuration_name == None:
                 configuration_name = request_configuration_info['project_id']
-                            
+
             stash.report_build_status('SUCCESSFUL',
                                       configuration_name,
                                       request_configuration_info['config_path'],
