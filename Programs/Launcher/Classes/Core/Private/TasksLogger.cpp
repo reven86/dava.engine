@@ -19,14 +19,14 @@ Receiver TasksLogger::GetReceiver() const
 
 void TasksLogger::OnTaskStarted(const BaseTask* task)
 {
-    ErrorMessenger::LogMessage(QtDebugMsg, QDateTime::currentDateTime().toString() + " : started " + task->GetDescription());
+    ErrorMessenger::LogMessage(QtDebugMsg, "started: " + task->GetDescription());
 }
 
 void TasksLogger::OnTaskFinished(const BaseTask* task)
 {
     if (task->HasError())
     {
-        ErrorMessenger::LogMessage(QtWarningMsg, QDateTime::currentDateTime().toString() + " : " + "<span style =\"color:#aa0000;\">" + task->GetError() + "</span>");
+        ErrorMessenger::LogMessage(QtWarningMsg, "error occurred: " + task->GetError() + " on task: " + task->GetDescription());
     }
-    ErrorMessenger::LogMessage(QtDebugMsg, QDateTime::currentDateTime().toString() + " : finished " + task->GetDescription());
+    ErrorMessenger::LogMessage(QtDebugMsg, "finished: " + task->GetDescription());
 }
