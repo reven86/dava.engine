@@ -6,12 +6,12 @@ import json
 __Stash = None
 
 class StashRequest:
-    def __init__(self, stash_url,stash_api_version, stash_project, stesh_repo_name, login, password ):
+    def __init__(self, stash_url,stash_api_version, stash_project, stash_repo_name, login, password ):
 
         self.__headers      = {'Content-Type': 'application/json'}
         self.__session      = requests.Session()
         self.__session.auth = (login, password)
-        self.__base_url     = ''.join((stash_url, '/rest/api/{}/projects/{}/repos/{}/'.format( stash_api_version, stash_project, stesh_repo_name ) ) )
+        self.__base_url     = ''.join((stash_url, '/rest/api/{}/projects/{}/repos/{}/'.format( stash_api_version, stash_project, stash_repo_name ) ) )
         self.__commits_url  = stash_url + '/rest/build-status/1.0/commits/'
 
     def __request(self, url, data=None):
@@ -63,12 +63,12 @@ class StashRequest:
 
 
 
-def init( stash_url,stash_api_version, stash_project, stesh_repo_name, login, password ):
+def init( stash_url,stash_api_version, stash_project, stash_repo_name, login, password ):
     global __Stash
     __Stash = StashRequest( stash_url,
                             stash_api_version,
                             stash_project,
-                            stesh_repo_name,
+                            stash_repo_name,
                             login,
                             password )
 def ptr():

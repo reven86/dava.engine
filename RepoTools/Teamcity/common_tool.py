@@ -11,21 +11,21 @@ def flush_print_teamcity_message( text, type, errorDetails = '' ):
 def flush_print_teamcity_set_parameter( name, value ):
     flush_print('##teamcity[setParameter name=\'{}\' value=\'{}\']'.format( name, value ) )
 
-def get_pull_requests_number( brunch ):
+def get_pull_requests_number( branch ):
 
-    if  brunch == None:
+    if  branch == None:
         return None;
 
-    brunch     = brunch.split('/')
-    brunch_len = len( brunch )
+    brunch     = branch.split('/')
+    branch_len = len( brunch )
 
     pull_requests_number = None
 
-    if brunch_len == 1:
+    if branch_len == 1:
         if brunch[0].isdigit():
             pull_requests_number = brunch[0]
     else:
-        pull_requests_number = brunch[ brunch_len - 2 ]
+        pull_requests_number = brunch[ branch_len - 2 ]
 
     return pull_requests_number
 

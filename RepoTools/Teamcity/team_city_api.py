@@ -28,9 +28,9 @@ class TeamCityRequest:
             print "Unexpected error:", sys.exc_info()[0]
             raise
 
-    def run_build( self, configuration_id,  branch_name = '', properties={}, triggering_options=[], agent_id='' ):
+    def run_build( self, build_name,  branch_name = '', properties={}, triggering_options=[], agent_id='' ):
 
-        print "Launch build {} [ {} ]".format( configuration_id, branch_name )
+        print "Launch build {} [ {} ]".format( build_name, branch_name )
 
         comment = '<comment> <text>auto triggering</text> </comment>'
 
@@ -52,7 +52,7 @@ class TeamCityRequest:
         if branch_name:
             branch_name = ' branchName = "{}"'.format( branch_name )
 
-        parameter =  '<build{0}><buildType id="{1}" />{2}{3}{4}{5}</build>'.format( branch_name, configuration_id, properties, triggering_options,comment, agent_id )
+        parameter =  '<build{0}><buildType id="{1}" />{2}{3}{4}{5}</build>'.format( branch_name, build_id, properties, triggering_options,comment, agent_id )
 
         response = self.__request("buildQueue", parameter )
 
@@ -93,8 +93,8 @@ class TeamCityRequest:
 
         return root.attrib
 
-    def configuration_info(self, config_id ):
-        response = self.__request("buildTypes/id:{}/".format( config_id ))
+    def configuration_info(self, configuration_name ):
+        response = self.__request("buildTypes/id:{}/".format( configuration_name ))
         root = ET.fromstring(response.content)
         root.attrib['config_path'] = root.attrib[ 'projectName' ].replace( ' ', '' )
         root.attrib['config_path'] = '{}::{}'.format( root.attrib['config_path'] , root.attrib['name'] )

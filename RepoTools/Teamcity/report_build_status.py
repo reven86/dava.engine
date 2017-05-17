@@ -17,15 +17,15 @@ def __parser_args():
 
     arg_parser.add_argument( '--stash_api_version', default = '1.0' )
     arg_parser.add_argument( '--stash_project', default = 'DF' )
-    arg_parser.add_argument( '--stesh_repo_name', default = 'dava.framework' )
+    arg_parser.add_argument( '--stash_repo_name', default = 'dava.framework' )
 
     arg_parser.add_argument( '--stash_url', required = True )
 
     arg_parser.add_argument( '--login', required = True )
     arg_parser.add_argument( '--password', required = True )
 
-    # brunch or commit
-    arg_parser.add_argument( '--brunch' )
+    # branch or commit
+    arg_parser.add_argument( '--branch' )
     arg_parser.add_argument( '--commit' )
 
     arg_parser.add_argument( '--status', required = True, choices=[ 'INPROGRESS', 'SUCCESSFUL', 'FAILED' ] )
@@ -50,7 +50,7 @@ def main():
     stash_api.init(     args.stash_url,
                         args.stash_api_version,
                         args.stash_project,
-                        args.stesh_repo_name,
+                        args.stash_repo_name,
                         args.login,
                         args.password )
 
@@ -64,10 +64,10 @@ def main():
 
     commit = None
 
-    pull_requests_number = common_tool.get_pull_requests_number( args.brunch )
+    pull_requests_number = common_tool.get_pull_requests_number( args.branch )
     if pull_requests_number != None:
-        brunch_info = stash.get_pull_requests_info(pull_requests_number)
-        commit = brunch_info['fromRef']['latestCommit']
+        branch_info = stash.get_pull_requests_info(pull_requests_number)
+        commit = branch_info['fromRef']['latestCommit']
 
     if commit == None:
         commit = args.commit
@@ -91,7 +91,7 @@ def main():
                                    commit,
                                    description=args.description )
     else:
-        common_tool.flush_print( 'Is not a pull requests [{}] or commit [{}]  '.format( args.brunch, args.commit ) )
+        common_tool.flush_print( 'Is not a pull requests [{}] or commit [{}]  '.format( args.branch, args.commit ) )
 
 if __name__ == '__main__':
     main()

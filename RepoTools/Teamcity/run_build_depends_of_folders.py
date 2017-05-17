@@ -16,7 +16,7 @@ def __parser_args():
 
     arg_parser.add_argument( '--stash_api_version', default = '1.0' )
     arg_parser.add_argument( '--stash_project', default = 'DF' )
-    arg_parser.add_argument( '--stesh_repo_name', default = 'dava.framework' )
+    arg_parser.add_argument( '--stash_repo_name', default = 'dava.framework' )
 
     arg_parser.add_argument( '--stash_url', required = True )
     arg_parser.add_argument( '--teamcity_url', required = True )
@@ -30,8 +30,10 @@ def __parser_args():
 ##
     arg_parser.add_argument( '--check_folders', required = True  )
 ##
-    arg_parser.add_argument( '--configuration_id'  )
-    arg_parser.add_argument( '--root_configuration_id'  )
+    arg_parser.add_argument( '--configuration_name'  )
+    arg_parser.add_argument( '--root_configuration_id', required = True )
+    arg_parser.add_argument( '--request_configuration_id'  )
+
     arg_parser.add_argument( '--request_stash_mode', default = 'false', choices=[ 'true', 'false' ] )
     arg_parser.add_argument( '--teamcity_freq_requests', default = 60, type = int  )
 ##
@@ -57,7 +59,7 @@ def __run_build( args, triggering_options = [] ):
     if client_brunch and client_brunch != '<default>':
         properties = {'config.client_branch': client_brunch}
 
-    run_build_result = teamcity.run_build( args.configuration_id, framework_brunch, properties, triggering_options  )
+    run_build_result = teamcity.run_build( args.configuration_name, framework_brunch, properties, triggering_options  )
 
     return run_build_result
 
@@ -122,13 +124,13 @@ def __check_depends_of_folders( args ):
                 common_tool.flush_print( "Build is required because changes affect folders {}".format( depends_folders ) )
                 return True, brunch_info
 
-    if args.configuration_id != None :
-        common_tool.flush_print( "Build [{}] it is possible not to launch".format( args.configuration_id ) )
+    if args.configuration_name != None :
+        common_tool.flush_print( "Build [{}] it is possible not to launch".format( args.configuration_name ) )
 
     if args.run_command != None :
         common_tool.flush_print( "Command [{}] it is possible not to launch".format( args.run_command ) )
 
-    if args.configuration_id == None and args.run_command != None :
+    if args.configuration_name == None and args.run_command != None :
         common_tool.flush_print( "Build it is possible not to launch" )
 
     return False, brunch_info
@@ -140,7 +142,7 @@ def main():
     stash_api.init(     args.stash_url,
                         args.stash_api_version,
                         args.stash_project,
-                        args.stesh_repo_name,
+                        args.stash_repo_name,
                         args.login,
                         args.password )
 
@@ -152,36 +154,47 @@ def main():
 
     teamcity = team_city_api.ptr()
 
+    request_configuration_id = args.request_configuration_id
+
+    if request_configuration_id == None:
+        request_configuration_id = args.configuration_name
+
+    request_configuration_info = None
+    if args.request_stash_mode == 'true' and request_configuration_id :
+        request_configuration_info = teamcity.get_build_status( request_configuration_id )
+
     check_depends, brunch_info = __check_depends_of_folders( args )
     if check_depends == True:
         if args.run_command != None :
             os.system( args.run_command )
 
-        if args.configuration_id != None :
+        if args.configuration_name != None :
             run_build_result = __run_build( args, ['queueAtTop'] )
 
-            if args.request_stash_mode == 'true':
-                stash.report_build_status('INPROGRESS',
-                                          args.configuration_id,
-                                          args.configuration_id,
-                                          run_build_result['webUrl'],
-                                          brunch_info['fromRef']['latestCommit'],
-                                          description="runing")
+            if args.request_stash_mode == 'true' :
+                if common_tool.get_pull_requests_number(args.framework_brunch) != None :
+                    stash.report_build_status('INPROGRESS',
+                                              request_configuration_id,
+                                              request_configuration_info['config_path'],
+                                              run_build_result['webUrl'],
+                                              brunch_info['fromRef']['latestCommit'],
+                                              description="runing")
             else:
                 __wait_end_build( args, run_build_result['id'] )
 
         common_tool.flush_print_teamcity_set_parameter( 'env.build_required', 'true' )
 
     else:
-        if brunch_info != None and args.request_stash_mode == 'true':
+
+        if brunch_info != None and args.request_stash_mode == 'true' and request_configuration_id:
 
             build_status = teamcity.get_build_status( args.root_configuration_id )
 
             root_build_url = build_status['webUrl']
 
             stash.report_build_status('SUCCESSFUL',
-                                      args.configuration_id,
-                                      args.configuration_id,
+                                      request_configuration_id,
+                                      request_configuration_info['config_path'],
                                       root_build_url,
                                       brunch_info['fromRef']['latestCommit'],
                                       description="Tests were ignored due to changed files")
