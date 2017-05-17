@@ -250,21 +250,32 @@ void MainWindow::OnNewsLoaded(const BaseTask* task)
     }
 }
 
-void MainWindow::ShowTable(const QString& branchID)
+void MainWindow::ShowTable(QString branchID)
 {
     ConfigParser* localConfig = appManager->GetLocalConfig();
     ConfigParser* remoteConfig = appManager->GetRemoteConfig();
 
-    if (branchID == CONFIG_LAUNCHER_WEBPAGE_KEY || branchID.isEmpty())
+    if (branchID.isEmpty() || branchID == CONFIG_LAUNCHER_WEBPAGE_KEY)
     {
-        ui->stackedWidget->setCurrentIndex(0);
-        QString description = QObject::tr("Loading news");
-        ui->textBrowser->setText(description);
-        Receiver tmpReceiver;
-        tmpReceiver.onFinished = std::bind(&MainWindow::OnNewsLoaded, this, std::placeholders::_1);
-        std::unique_ptr<BaseTask> task = appManager->CreateTask<DownloadTask>(description, localConfig->GetWebpageURL());
-        appManager->AddTaskWithCustomReceivers(std::move(task), { tmpReceiver });
-        return;
+        if (localConfig->GetWebpageURL().isEmpty() == false)
+        {
+            ui->stackedWidget->setCurrentIndex(0);
+            QString description = QObject::tr("Loading news");
+            ui->textBrowser->setText(description);
+            Receiver tmpReceiver;
+            tmpReceiver.onFinished = std::bind(&MainWindow::OnNewsLoaded, this, std::placeholders::_1);
+            std::unique_ptr<BaseTask> task = appManager->CreateTask<DownloadTask>(description, localConfig->GetWebpageURL());
+            appManager->AddTaskWithCustomReceivers(std::move(task), { tmpReceiver });
+            return;
+        }
+        else
+        {
+            Branch* firstAvailableBranch = localConfig->GetBranch(0);
+            if (firstAvailableBranch != nullptr)
+            {
+                branchID = firstAvailableBranch->id;
+            }
+        }
     }
 
     ui->stackedWidget->setCurrentIndex(1);

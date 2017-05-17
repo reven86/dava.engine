@@ -30,7 +30,7 @@ public:
 
     void RefreshApps();
 
-    void ShowTable(const QString& branchID);
+    void ShowTable(QString branchID);
 
     const Receiver& GetReceiver() const;
 
