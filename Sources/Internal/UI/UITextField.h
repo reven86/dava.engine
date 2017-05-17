@@ -371,7 +371,7 @@ public:
 
     void SetFontByPresetName(const String& presetName);
 
-    void SystemDraw(const UIGeometricData& geometricData, const DAVA::UIControlBackground* parentBackground) override;
+    void Draw(const UIGeometricData& geometricData) override;
 
     WideString GetVisibleText();
 
