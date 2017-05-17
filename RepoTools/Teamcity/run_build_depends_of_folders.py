@@ -191,8 +191,13 @@ def main():
 
             root_build_url = build_status['webUrl']
 
+            configuration_name = args.configuration_name
+
+            if configuration_name == None:
+                configuration_name = request_configuration_info['project_id']
+                            
             stash.report_build_status('SUCCESSFUL',
-                                      request_configuration_info['project_id'],
+                                      configuration_name,
                                       request_configuration_info['config_path'],
                                       root_build_url,
                                       branch_info['fromRef']['latestCommit'],
