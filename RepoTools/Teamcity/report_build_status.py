@@ -29,7 +29,7 @@ def __parser_args():
     arg_parser.add_argument( '--commit' )
 
     arg_parser.add_argument( '--status', required = True, choices=[ 'INPROGRESS', 'SUCCESSFUL', 'FAILED' ] )
-    arg_parser.add_argument( '--configuration_id', required = True )
+    arg_parser.add_argument( '--configuration_name', required = True )
 
     arg_parser.add_argument( '--build_url' )
 
@@ -82,10 +82,10 @@ def main():
 
         assert (build_url != None ), "build_url == None"
 
-        configuration_info = teamcity.configuration_info(args.configuration_id)
+        configuration_info = teamcity.configuration_info(args.configuration_name)
 
         stash.report_build_status( args.status,
-                                   args.configuration_id,
+                                   args.configuration_name,
                                    configuration_info['config_path'],
                                    build_url,
                                    commit,

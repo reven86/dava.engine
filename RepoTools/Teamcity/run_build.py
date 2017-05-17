@@ -15,7 +15,7 @@ def __parser_args():
     arg_parser.add_argument( '--login', required = True )
     arg_parser.add_argument( '--password', required = True )
 
-    arg_parser.add_argument( '--configuration_id', required = True )
+    arg_parser.add_argument( '--configuration_name', required = True )
     arg_parser.add_argument( '--branch', required = True )
 
     arg_parser.add_argument( '--queue_at_top', default = 'false', choices = [ 'true', 'false' ] )
@@ -51,7 +51,7 @@ def main():
     if args.agent_name:
         agent_id = teamcity.agent_info_by_name( args.agent_name )['id']
 
-    teamcity.run_build( args.configuration_id, args.branch, properties, triggering_options, agent_id )
+    teamcity.run_build( args.configuration_name, args.branch, properties, triggering_options, agent_id )
 
 if __name__ == '__main__':
     main()
