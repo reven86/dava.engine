@@ -26,7 +26,7 @@ def __parser_args():
 ##
     arg_parser.add_argument( '--convert_to_merge_requests', default = 'false', choices=[ 'true', 'false' ] )
     arg_parser.add_argument( '--framework_branch', required = True )
-    arg_parser.add_argument( '--client_brunch' )
+    arg_parser.add_argument( '--client_branch' )
 ##
     arg_parser.add_argument( '--check_folders', required = True  )
 ##
@@ -45,19 +45,19 @@ def __parser_args():
 def __run_build( args, triggering_options = [] ):
     teamcity = team_city_api.ptr()
 
-    client_brunch    = args.client_brunch
+    client_branch    = args.client_branch
     framework_branch = args.framework_branch
 
     if args.convert_to_merge_requests == 'true':
-        if client_brunch and '/from' in client_brunch:
-            client_brunch = client_brunch.replace('/from', '/merge')
+        if client_branch and '/from' in client_branch:
+            client_branch = client_branch.replace('/from', '/merge')
 
         if framework_branch and '/from' in framework_branch:
             framework_branch = framework_branch.replace('/from', '/merge')
 
     properties = {}
-    if client_brunch and client_brunch != '<default>':
-        properties = {'config.client_branch': client_brunch}
+    if client_branch and client_branch != '<default>':
+        properties = {'config.client_branch': client_branch}
 
     run_build_result = teamcity.run_build( args.configuration_name, framework_branch, properties, triggering_options  )
 
@@ -101,28 +101,28 @@ def __check_depends_of_folders( args ):
         common_tool.flush_print( "Build is required, because branch == {}".format( args.framework_branch ) )
         return True,None
 
-    brunch_info = stash.get_pull_requests_info( pull_requests_number )
+    branch_info = stash.get_pull_requests_info( pull_requests_number )
 
-    merged_brunch = brunch_info['toRef']['id'].split('/').pop()
+    merged_branch = branch_info['toRef']['id'].split('/').pop()
 
-    if merged_brunch != 'development' :
-        common_tool.flush_print( "Build is required, because brunch_toRef == {}".format( pull_requests_number ) )
-        return True, brunch_info
+    if merged_branch != 'development' :
+        common_tool.flush_print( "Build is required, because branch_toRef == {}".format( pull_requests_number ) )
+        return True, branch_info
 
     #changes folders check
-    brunch_changes =  stash.get_pull_requests_changes( pull_requests_number )[ 'values' ]
+    branch_changes =  stash.get_pull_requests_changes( pull_requests_number )[ 'values' ]
 
     depends_folders = args.check_folders.split(';')
 
     for path_dep_folder in depends_folders:
-        for path_brunch_folder in brunch_changes:
-            path                =  path_brunch_folder['path']['parent']
+        for path_branch_folder in branch_changes:
+            path                =  path_branch_folder['path']['parent']
             path                = os.path.realpath( path )
             realpath_dep_folder = os.path.realpath(path_dep_folder)
 
             if realpath_dep_folder in path:
                 common_tool.flush_print( "Build is required because changes affect folders {}".format( depends_folders ) )
-                return True, brunch_info
+                return True, branch_info
 
     if args.configuration_name != None :
         common_tool.flush_print( "Build [{}] it is possible not to launch".format( args.configuration_name ) )
@@ -133,7 +133,7 @@ def __check_depends_of_folders( args ):
     if args.configuration_name == None and args.run_command != None :
         common_tool.flush_print( "Build it is possible not to launch" )
 
-    return False, brunch_info
+    return False, branch_info
 
 def main():
 
@@ -163,7 +163,7 @@ def main():
     if args.request_stash_mode == 'true' and request_configuration_id :
         request_configuration_info = teamcity.get_build_status( request_configuration_id )
 
-    check_depends, brunch_info = __check_depends_of_folders( args )
+    check_depends, branch_info = __check_depends_of_folders( args )
     if check_depends == True:
         if args.run_command != None :
             os.system( args.run_command )
@@ -177,7 +177,7 @@ def main():
                                               request_configuration_id,
                                               request_configuration_info['config_path'],
                                               run_build_result['webUrl'],
-                                              brunch_info['fromRef']['latestCommit'],
+                                              branch_info['fromRef']['latestCommit'],
                                               description="runing")
             else:
                 __wait_end_build( args, run_build_result['id'] )
@@ -186,7 +186,7 @@ def main():
 
     else:
 
-        if brunch_info != None and args.request_stash_mode == 'true' and request_configuration_id:
+        if branch_info != None and args.request_stash_mode == 'true' and request_configuration_id:
 
             build_status = teamcity.get_build_status( args.root_configuration_id )
 
@@ -196,7 +196,7 @@ def main():
                                       request_configuration_id,
                                       request_configuration_info['config_path'],
                                       root_build_url,
-                                      brunch_info['fromRef']['latestCommit'],
+                                      branch_info['fromRef']['latestCommit'],
                                       description="Tests were ignored due to changed files")
 
         common_tool.flush_print_teamcity_set_parameter( 'env.build_required', 'false' )
