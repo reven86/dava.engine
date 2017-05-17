@@ -58,7 +58,6 @@ def main():
                         args.login,
                         args.password )
 
-
     stash    = stash_api.ptr()
     teamcity = team_city_api.ptr()
 

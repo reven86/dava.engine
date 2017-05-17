@@ -62,7 +62,6 @@ class StashRequest:
 
 
 
-
 def init( stash_url,stash_api_version, stash_project, stash_repo_name, login, password ):
     global __Stash
     __Stash = StashRequest( stash_url,
