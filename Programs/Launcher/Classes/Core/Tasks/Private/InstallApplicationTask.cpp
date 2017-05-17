@@ -27,7 +27,7 @@ void InstallApplicationTask::Run()
     QString description = QObject::tr("Downloading application %1").arg(appManager->GetAppName(params.app, params.newVersion.isToolSet));
     std::unique_ptr<BaseTask> task = appManager->CreateTask<DownloadTask>(description, params.newVersion.url);
     task->SetOnFinishCallback(WrapCallback(std::bind(&InstallApplicationTask::OnLoaded, this, std::placeholders::_1)));
-    appManager->AddTask(std::move(task));
+    appManager->AddTaskWithBaseReceivers(std::move(task));
 }
 
 void InstallApplicationTask::OnLoaded(const BaseTask* task)
@@ -58,7 +58,7 @@ void InstallApplicationTask::OnLoaded(const BaseTask* task)
         {
             std::unique_ptr<BaseTask> task = appManager->CreateTask<RemoveApplicationTask>(params.branch, params.app);
             task->SetOnFinishCallback(WrapCallback(std::bind(&InstallApplicationTask::Install, this)));
-            appManager->AddTask(std::move(task));
+            appManager->AddTaskWithBaseReceivers(std::move(task));
             return;
         }
     }
@@ -77,7 +77,7 @@ void InstallApplicationTask::Install()
     {
         std::unique_ptr<BaseTask> task = appManager->CreateTask<UnzipTask>(filePath, appDirPath);
         task->SetOnFinishCallback(WrapCallback(std::bind(&InstallApplicationTask::OnInstalled, this)));
-        appManager->AddTask(std::move(task));
+        appManager->AddTaskWithBaseReceivers(std::move(task));
         return;
     }
     else

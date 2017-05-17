@@ -65,7 +65,7 @@ ApplicationManager::ApplicationManager(ApplicationQuitController* quitController
     connect(configRefresher, &ConfigRefresher::RefreshConfig, this, &ApplicationManager::Refresh);
 
     localConfigFilePath = FileManager::GetDocumentsDirectory() + LOCAL_CONFIG_NAME;
-    AddTask<LoadLocalConfigTask>(localConfigFilePath);
+    AddTaskWithBaseReceivers<LoadLocalConfigTask>(localConfigFilePath);
 
     ::LoadPreferences(fileManager, configDownloader, baManagerClient, configRefresher);
 }
@@ -86,23 +86,25 @@ void ApplicationManager::Start()
     Refresh();
 }
 
-void ApplicationManager::AddTask(std::unique_ptr<BaseTask>&& task, std::vector<Receiver> receivers)
+void ApplicationManager::AddTaskWithBaseReceivers(std::unique_ptr<BaseTask>&& task)
 {
-    receivers.push_back(mainWindow->GetReceiver());
+    AddTaskWithCustomReceivers(std::move(task), { mainWindow->GetReceiver() });
+}
+
+void ApplicationManager::AddTaskWithCustomReceivers(std::unique_ptr<BaseTask>&& task, std::vector<Receiver> receivers)
+{
     receivers.push_back(tasksLogger.GetReceiver());
     taskManager->AddTask(std::move(task), receivers);
 }
 
 void ApplicationManager::InstallApplication(const InstallApplicationParams& params)
 {
-    AddTask<InstallApplicationTask>(params);
+    AddTaskWithBaseReceivers<InstallApplicationTask>(params);
 }
 
 void ApplicationManager::Refresh()
 {
-    std::unique_ptr<BaseTask> task = configDownloader->CreateTask();
-
-    taskManager->AddTask(std::move(task), mainWindow->GetReceiver());
+    AddTaskWithBaseReceivers(configDownloader->CreateTask());
 }
 
 void ApplicationManager::OpenPreferencesEditor()
@@ -115,7 +117,7 @@ void ApplicationManager::CheckUpdates()
     //check self-update
     if (remoteConfig.GetLauncherVersion() != localConfig.GetLauncherVersion())
     {
-        AddTask<SelfUpdateTask>(quitController, remoteConfig.GetLauncherURL());
+        AddTaskWithBaseReceivers<SelfUpdateTask>(quitController, remoteConfig.GetLauncherURL());
         return;
     }
 
@@ -313,11 +315,6 @@ MainWindow* ApplicationManager::GetMainWindow() const
     return mainWindow;
 }
 
-TaskManager* ApplicationManager::GetTaskManager() const
-{
-    return taskManager;
-}
-
 ConfigParser* ApplicationManager::GetLocalConfig()
 {
     return &localConfig;
@@ -350,12 +347,12 @@ void ApplicationManager::RunApplication(const QString& branchID, const QString& 
 
 void ApplicationManager::RunApplication(const QString& branchID, const QString& appID, const QString& versionID)
 {
-    AddTask<RunApplicationTask>(branchID, appID, versionID);
+    AddTaskWithBaseReceivers<RunApplicationTask>(branchID, appID, versionID);
 }
 
 void ApplicationManager::RemoveApplication(const QString& branchID, const QString& appID)
 {
-    AddTask<RemoveApplicationTask>(branchID, appID);
+    AddTaskWithBaseReceivers<RemoveApplicationTask>(branchID, appID);
 }
 
 QString ApplicationManager::GetAppName(const QString& appName, bool isToolSet) const

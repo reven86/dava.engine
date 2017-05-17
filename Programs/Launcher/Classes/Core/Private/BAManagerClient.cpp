@@ -297,7 +297,7 @@ void BAManagerClient::SilentUpdate(const QJsonObject& requestObj, const QString&
 
     std::unique_ptr<BaseTask> task = applicationManager->CreateTask<InstallApplicationTask>(params);
     task->SetUserData(commandID);
-    applicationManager->GetTaskManager()->AddTask(std::move(task), receiver);
+    applicationManager->AddTaskWithCustomReceivers(std::move(task), { receiver, applicationManager->GetMainWindow()->GetReceiver() });
 }
 
 void BAManagerClient::OnTaskFinished(const BaseTask* task)

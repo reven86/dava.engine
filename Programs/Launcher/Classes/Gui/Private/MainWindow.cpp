@@ -260,10 +260,10 @@ void MainWindow::ShowTable(const QString& branchID)
         ui->stackedWidget->setCurrentIndex(0);
         QString description = QObject::tr("Loading news");
         ui->textBrowser->setText(description);
-        Receiver receiver;
-        receiver.onFinished = std::bind(&MainWindow::OnNewsLoaded, this, std::placeholders::_1);
+        Receiver tmpReceiver;
+        tmpReceiver.onFinished = std::bind(&MainWindow::OnNewsLoaded, this, std::placeholders::_1);
         std::unique_ptr<BaseTask> task = appManager->CreateTask<DownloadTask>(description, localConfig->GetWebpageURL());
-        appManager->GetTaskManager()->AddTask(std::move(task), receiver);
+        appManager->AddTaskWithCustomReceivers(std::move(task), { tmpReceiver });
         return;
     }
 

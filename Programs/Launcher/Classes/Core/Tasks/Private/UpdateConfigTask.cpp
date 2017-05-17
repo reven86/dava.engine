@@ -22,7 +22,7 @@ void UpdateConfigTask::Run()
     QString description = QObject::tr("Downloading configuration");
     std::unique_ptr<BaseTask> task = appManager->CreateTask<DownloadTask>(description, urls);
     task->SetOnFinishCallback(std::bind(&UpdateConfigTask::OnConfigLoaded, this, std::placeholders::_1));
-    appManager->AddTask(std::move(task));
+    appManager->AddTaskWithBaseReceivers(std::move(task));
 }
 
 void UpdateConfigTask::OnConfigLoaded(const BaseTask* task)

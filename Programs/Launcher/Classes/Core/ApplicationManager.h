@@ -36,10 +36,11 @@ public:
     template <typename T, typename... Arguments>
     std::unique_ptr<BaseTask> CreateTask(Arguments&&... args);
 
-    void AddTask(std::unique_ptr<BaseTask>&& task, std::vector<Receiver> receivers = std::vector<Receiver>());
+    void AddTaskWithBaseReceivers(std::unique_ptr<BaseTask>&& task);
+    void AddTaskWithCustomReceivers(std::unique_ptr<BaseTask>&& task, std::vector<Receiver> receivers);
 
     template <typename T, typename... Arguments>
-    void AddTask(Arguments&&... args);
+    void AddTaskWithBaseReceivers(Arguments&&... args);
 
     void InstallApplication(const InstallApplicationParams& params);
 
@@ -52,7 +53,6 @@ public:
 
     AppsCommandsSender* GetAppsCommandsSender() const;
     MainWindow* GetMainWindow() const;
-    TaskManager* GetTaskManager() const;
     FileManager* GetFileManager() const;
 
     void OnAppInstalled(const QString& branchID, const QString& appID, const AppVersion& version);
@@ -114,7 +114,7 @@ std::unique_ptr<BaseTask> ApplicationManager::CreateTask(Arguments&&... args)
 }
 
 template <typename T, typename... Arguments>
-void ApplicationManager::AddTask(Arguments&&... args)
+void ApplicationManager::AddTaskWithBaseReceivers(Arguments&&... args)
 {
-    AddTask(std::move(CreateTask<T>(std::forward<Arguments>(args)...)));
+    AddTaskWithBaseReceivers(std::move(CreateTask<T>(std::forward<Arguments>(args)...)));
 }
