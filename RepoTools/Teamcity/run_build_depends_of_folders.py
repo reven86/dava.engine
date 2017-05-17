@@ -159,10 +159,6 @@ def main():
     if request_configuration_id == None:
         request_configuration_id = args.root_configuration_id
 
-    request_configuration_info = None
-    if args.request_stash_mode == 'true' and request_configuration_id :
-        request_configuration_info = teamcity.get_build_status( request_configuration_id )
-
     check_depends, branch_info = __check_depends_of_folders( args )
     if check_depends == True:
         if args.run_command != None :
@@ -174,8 +170,8 @@ def main():
             if args.request_stash_mode == 'true' :
                 if common_tool.get_pull_requests_number(args.framework_branch) != None :
                     stash.report_build_status('INPROGRESS',
-                                              request_configuration_info['project_id'],
-                                              request_configuration_info['config_path'],
+                                              args.configuration_name,
+                                              "Call",
                                               run_build_result['webUrl'],
                                               branch_info['fromRef']['latestCommit'],
                                               description="runing")
@@ -185,6 +181,9 @@ def main():
         common_tool.flush_print_teamcity_set_parameter( 'env.build_required', 'true' )
 
     else:
+        request_configuration_info = None
+        if args.request_stash_mode == 'true' and request_configuration_id:
+            request_configuration_info = teamcity.get_build_status(request_configuration_id)
 
         if branch_info != None and args.request_stash_mode == 'true' and request_configuration_id:
 
