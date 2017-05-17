@@ -15,7 +15,7 @@ public:
 
     virtual void Run() = 0;
 
-    //this isgnal is used only by AsyncChainTaskProcessor
+    //this signal is used only by AsyncChainTaskProcessor
     //later AsyncChainProcessor and AsyncChainTask must be replaced by std::function
     //it must be done when launcher will be able to start multiple tasks at once
 signals:

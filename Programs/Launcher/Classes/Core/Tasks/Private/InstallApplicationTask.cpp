@@ -43,6 +43,7 @@ void InstallApplicationTask::OnLoaded(const BaseTask* task)
     if (archiveCreated == false)
     {
         SetError(QObject::tr("Can not create archive %1!").arg(filePath));
+        emit Finished();
         return;
     }
 
@@ -89,6 +90,7 @@ void InstallApplicationTask::Install()
         else
         {
             SetError(QObject::tr("Moving downloaded application failed"));
+            emit Finished();
         }
     }
 }

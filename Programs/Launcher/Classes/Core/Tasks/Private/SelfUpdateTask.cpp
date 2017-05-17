@@ -25,17 +25,12 @@ void SelfUpdateTask::Run()
 {
     QString description = QObject::tr("Loading new launcher");
     std::unique_ptr<BaseTask> task = appManager->CreateTask<DownloadTask>(description, url);
-    task->SetOnFinishCallback(std::bind(&SelfUpdateTask::OnLoaded, this, std::placeholders::_1));
+    task->SetOnFinishCallback(WrapCallback(std::bind(&SelfUpdateTask::OnLoaded, this, std::placeholders::_1)));
     appManager->AddTask(std::move(task));
 }
 
 void SelfUpdateTask::OnLoaded(const BaseTask* task)
 {
-    if (task->HasError())
-    {
-        return;
-    }
-
     Q_ASSERT(task->GetTaskType() == BaseTask::DOWNLOAD_TASK);
     const DownloadTask* downloadTask = static_cast<const DownloadTask*>(task);
     Q_ASSERT(downloadTask->GetLoadedData().empty() == false);
@@ -45,6 +40,7 @@ void SelfUpdateTask::OnLoaded(const BaseTask* task)
     if (archiveCreated == false)
     {
         SetError(QObject::tr("Can not create archive %1!").arg(filePath));
+        emit Finished();
         return;
     }
     QString tempArchiveFilePath = fileManager->GetTempDownloadFilePath(url);

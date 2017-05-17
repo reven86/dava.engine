@@ -28,8 +28,5 @@ void TasksLogger::OnTaskFinished(const BaseTask* task)
     {
         ErrorMessenger::LogMessage(QtWarningMsg, QDateTime::currentDateTime().toString() + " : " + "<span style =\"color:#aa0000;\">" + task->GetError() + "</span>");
     }
-    else
-    {
-        ErrorMessenger::LogMessage(QtDebugMsg, QDateTime::currentDateTime().toString() + " : finished " + task->GetDescription());
-    }
+    ErrorMessenger::LogMessage(QtDebugMsg, QDateTime::currentDateTime().toString() + " : finished " + task->GetDescription());
 }
