@@ -1,6 +1,8 @@
 #include "Tests/UIScrollViewTest.h"
 
 #include "Render/2D/Sprite.h"
+#include "UI/Render/UIDebugRenderComponent.h"
+#include "UI/UIControlBackground.h"
 
 using namespace DAVA;
 

@@ -1,6 +1,7 @@
 #include "Tests/FontTest.h"
 
 #include <UI/Focus/UIFocusComponent.h>
+#include <UI/Render/UIDebugRenderComponent.h>
 #include <Engine/Engine.h>
 #include <Engine/Window.h>
 

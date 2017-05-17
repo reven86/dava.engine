@@ -1,5 +1,6 @@
 #include "Tests/WebViewTest.h"
 #include "UI/Update/UIUpdateComponent.h"
+#include "UI/Render/UIDebugRenderComponent.h"
 
 using namespace DAVA;
 

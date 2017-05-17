@@ -1,5 +1,6 @@
 #include "Tests/FormatsTest.h"
 #include "Render/PixelFormatDescriptor.h"
+#include "UI/Render/UIDebugRenderComponent.h"
 
 using namespace DAVA;
 
