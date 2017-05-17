@@ -23,6 +23,8 @@ public:
     void PrepareToQuit();
     void Quit();
 
+    void SetScreenTimeoutEnabled(bool enabled);
+
     // Forwarded methods from UWPApplication
     void OnLaunchedOrActivated(::Windows::ApplicationModel::Activation::IActivatedEventArgs ^ args);
     void OnWindowCreated(::Windows::UI::Xaml::Window ^ xamlWindow);
@@ -62,6 +64,10 @@ private:
     Mutex listenersMutex;
     List<PlatformApi::Win10::XamlApplicationListener*> xamlApplicationListeners;
     ::Windows::ApplicationModel::Activation::IActivatedEventArgs ^ savedActivatedEventArgs = nullptr;
+
+    // Variables for managing screen sleep timeout
+    Windows::System::Display::DisplayRequest ^ displayRequest = ref new Windows::System::Display::DisplayRequest();
+    bool displayRequestActive = false;
 
     static bool isPhoneContractPresent;
     static ::Windows::UI::Core::CoreDispatcher ^ coreDispatcher;

@@ -87,6 +87,11 @@ void PlatformCore::Quit()
     DVASSERT(engineBackend.IsEmbeddedGUIMode() == false);
 }
 
+void PlatformCore::SetScreenTimeoutEnabled(bool enabled)
+{
+    // TODO
+}
+
 QApplication* PlatformCore::GetApplication()
 {
     return qApp;

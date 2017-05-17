@@ -23,6 +23,8 @@ public:
     void PrepareToQuit();
     void Quit();
 
+    void SetScreenTimeoutEnabled(bool enabled);
+
     void OnGamepadAdded(int32 deviceId, const String& name, bool hasTriggerButtons);
     void OnGamepadRemoved(int32 deviceId);
 
