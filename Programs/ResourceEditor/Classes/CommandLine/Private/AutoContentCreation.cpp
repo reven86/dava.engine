@@ -212,7 +212,7 @@ DAVA::TArc::ConsoleModule::eFrameResult RandomPlaceHingedEquipment::OnFrameInter
 
         if (scene->GetChildrenCount() != 1)
         {
-            DAVA::Logger::Error("[RandomPlaceHingedEquipment] Scene %s doesn't ìeet requirements. Scene should has only one root entity", scenePath.GetAbsolutePathname().c_str());
+            DAVA::Logger::Error("[RandomPlaceHingedEquipment] Scene %s doesn't meet requirements. Scene should has only one root entity", scenePath.GetAbsolutePathname().c_str());
             continue;
         }
 
