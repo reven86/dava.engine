@@ -20,10 +20,7 @@ ZipTaskProcessor::TaskParams::~TaskParams()
 
 ZipTaskProcessor::~ZipTaskProcessor()
 {
-    if (currentTaskParams != nullptr)
-    {
-        currentTaskParams->notifier = ReceiverNotifier();
-    }
+    Q_ASSERT(currentTaskParams == nullptr);
 }
 
 void ZipTaskProcessor::AddTask(std::unique_ptr<BaseTask>&& task, ReceiverNotifier notifier)
@@ -66,6 +63,7 @@ void ZipTaskProcessor::Terminate()
     if (currentTaskParams != nullptr)
     {
         currentTaskParams->process.kill();
+        currentTaskParams->process.waitForFinished();
     }
 }
 
