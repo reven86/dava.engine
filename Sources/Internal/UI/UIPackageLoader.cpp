@@ -537,11 +537,16 @@ void UIPackageLoader::ProcessLegacyDebugDraw(const YamlNode* node, AbstractUIPac
             const Vector<std::unique_ptr<ReflectedStructure::Field>>& fields = componentRef->GetStructure()->fields;
             for (const std::unique_ptr<ReflectedStructure::Field>& field : fields)
             {
+                static const FastName enabledFieldName("enabled");
                 String name(field->name.c_str());
                 auto it = legacyDebugDrawMap.find(name);
                 if (it != legacyDebugDrawMap.end())
                 {
                     Any res = ReadAnyFromYamlNode(field.get(), node, it->second);
+                    if (res.IsEmpty() && enabledFieldName == field->name)
+                    {
+                        res = Any(false);
+                    }
                     builder->ProcessProperty(*field, res);
                 }
             }

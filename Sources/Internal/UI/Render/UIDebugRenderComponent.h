@@ -13,7 +13,7 @@ class UIDebugRenderComponent : public UIBaseComponent<UIComponent::DEBUG_RENDER_
 public:
     enum ePivotPointDrawMode
     {
-        DRAW_NEVER = 1, //!<Never draw the Pivot Point.
+        DRAW_NEVER = 0, //!<Never draw the Pivot Point.
         DRAW_ONLY_IF_NONZERO, //!<Draw the Pivot Point only if it is defined (nonzero).
         DRAW_ALWAYS //!<Always draw the Pivot Point mark.
     };
