@@ -86,6 +86,8 @@ private:
     void OnChildRemoved(const std::shared_ptr<PropertyNode>& node);
     void OnDataChange(const std::shared_ptr<PropertyNode>& node);
 
+    void EmitDataChangedSignals();
+
     void OnFavoritedAdded(const std::shared_ptr<PropertyNode>& parent, const std::shared_ptr<PropertyNode>& node, const DAVA::String& id, int32 sortKey, bool isRoot);
     void OnFavoritedRemoved(const std::shared_ptr<PropertyNode>& node, bool unfavorited);
 
@@ -106,6 +108,7 @@ private:
     std::unique_ptr<ReflectedPropertyItem> rootItem;
     UnorderedMap<std::shared_ptr<PropertyNode>, ReflectedPropertyItem*> nodeToItem;
     UnorderedMap<std::shared_ptr<PropertyNode>, ReflectedPropertyItem*> nodeToFavorite;
+    DAVA::Set<std::shared_ptr<PropertyNode>> dataChangedNodes;
 
     ChildCreator childCreator;
     FavoritesController favoritesController;

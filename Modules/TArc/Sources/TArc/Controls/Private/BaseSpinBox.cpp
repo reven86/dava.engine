@@ -129,6 +129,10 @@ void BaseSpinBox<TBase, TEditableType>::UpdateControl(const ControlDescriptor& c
             DAVA::Any value = fieldValue.GetValue();
             if (value.CanCast<TEditableType>())
             {
+                if (stateHistory.top() == ControlState::InvalidValue)
+                {
+                    ToValidState();
+                }
                 TEditableType v = value.Cast<TEditableType>();
                 this->setValue(v);
             }
@@ -176,12 +180,16 @@ void BaseSpinBox<TBase, TEditableType>::ValueChanged(TEditableType val)
         {
             if (IsEqualValue(inputValue, val))
             {
-                ToValidState();
-                this->wrapper.SetFieldValue(this->GetFieldName(BaseFields::Value), val);
-                UpdateRange();
-                if (this->hasFocus() == true)
+                Any currentValue = this->wrapper.GetFieldValue(this->GetFieldName(BaseFields::Value));
+                if (currentValue.CanCast<TEditableType>() == false || currentValue.Cast<TEditableType>() != val)
                 {
-                    ToEditingState();
+                    ToValidState();
+                    this->wrapper.SetFieldValue(this->GetFieldName(BaseFields::Value), val);
+                    UpdateRange();
+                    if (this->hasFocus() == true)
+                    {
+                        ToEditingState();
+                    }
                 }
             }
         }
@@ -362,17 +370,6 @@ TEditableType BaseSpinBox<TBase, TEditableType>::valueFromText(const QString& te
     TEditableType v = TEditableType();
     FromText(text, v);
     return v;
-}
-
-template <typename TBase, typename TEditableType>
-void BaseSpinBox<TBase, TEditableType>::keyPressEvent(QKeyEvent* event)
-{
-    ControlProxyImpl<TBase>::keyPressEvent(event);
-    int key = event->key();
-    if (key == Qt::Key_Enter || key == Qt::Key_Return)
-    {
-        this->valueChanged(this->value());
-    }
 }
 
 template <typename TBase, typename TEditableType>

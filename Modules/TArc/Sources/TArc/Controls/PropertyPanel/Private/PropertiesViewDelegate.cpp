@@ -138,6 +138,17 @@ QWidget* PropertiesViewDelegate::createEditor(QWidget* parent, const QStyleOptio
 void PropertiesViewDelegate::destroyEditor(QWidget* editor, const QModelIndex& index) const
 {
     editor->setProperty("modelIndex", QVariant());
+    QLineEdit* thisLineEdit = qobject_cast<QLineEdit*>(editor);
+    if (thisLineEdit != nullptr)
+    {
+        thisLineEdit->deselect();
+    }
+
+    QList<QLineEdit*> lineEdits = editor->findChildren<QLineEdit*>();
+    foreach (QLineEdit* edit, lineEdits)
+    {
+        edit->deselect();
+    }
 }
 
 void PropertiesViewDelegate::setEditorData(QWidget* editor, const QModelIndex& index) const

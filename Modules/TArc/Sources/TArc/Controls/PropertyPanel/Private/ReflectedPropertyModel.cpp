@@ -48,7 +48,7 @@ public:
     RemoveGuard(ReflectedPropertyModel* model_, ReflectedPropertyItem* item)
         : model(model_)
     {
-        if (item->GetChildCount() > 1)
+        if (item->GetPropertyNodesCount() > 1)
         {
             return;
         }
@@ -220,6 +220,7 @@ void ReflectedPropertyModel::Update()
 #if defined(REPORT_UPDATE_TIME)
     Logger::Debug(" === ReflectedPropertyModel::Update : %d for %d objects ===", static_cast<int32>(SystemTimer::GetMs() - start), rootItem->GetPropertyNodesCount());
 #endif
+    EmitDataChangedSignals();
 }
 
 void ReflectedPropertyModel::Update(ReflectedPropertyItem* item)
@@ -282,6 +283,8 @@ void ReflectedPropertyModel::UpdateFast()
 #if defined(REPORT_UPDATE_TIME)
     Logger::Debug(" === ReflectedPropertyModel::UpdateFast : %d ===", static_cast<int32>(SystemTimer::GetMs() - start));
 #endif
+
+    EmitDataChangedSignals();
 }
 
 void ReflectedPropertyModel::SetObjects(Vector<Reflection> objects)
@@ -346,6 +349,7 @@ void ReflectedPropertyModel::OnChildAdded(const std::shared_ptr<PropertyNode>& p
 
     auto newNode = nodeToItem.emplace(node, childItem);
     DVASSERT(newNode.second);
+    dataChangedNodes.insert(node);
 }
 
 void ReflectedPropertyModel::OnChildRemoved(const std::shared_ptr<PropertyNode>& node)
@@ -366,27 +370,40 @@ void ReflectedPropertyModel::OnChildRemoved(const std::shared_ptr<PropertyNode>&
     {
         nodeToItem.erase(node);
     }
+
+    dataChangedNodes.erase(node);
 }
 
 void ReflectedPropertyModel::OnDataChange(const std::shared_ptr<PropertyNode>& node)
 {
-    auto emitSignal = [&](const QModelIndex& index)
+    dataChangedNodes.insert(node);
+}
+
+void ReflectedPropertyModel::EmitDataChangedSignals()
+{
+    DAVA::Set<QModelIndex> indexesSet;
+    for (const std::shared_ptr<PropertyNode>& node : dataChangedNodes)
+    {
+        {
+            auto iter = nodeToItem.find(node);
+            DVASSERT(iter != nodeToItem.end());
+            indexesSet.insert(MapItem(iter->second));
+        }
+
+        {
+            auto iter = nodeToFavorite.find(node);
+            if (iter != nodeToFavorite.end())
+            {
+                indexesSet.insert(MapItem(iter->second));
+            }
+        }
+    }
+    dataChangedNodes.clear();
+
+    for (const QModelIndex& index : indexesSet)
     {
         QModelIndex valueColumnIndex = index.sibling(index.row(), 1);
         emit dataChanged(index, valueColumnIndex);
-    };
-    {
-        auto iter = nodeToItem.find(node);
-        DVASSERT(iter != nodeToItem.end());
-        emitSignal(MapItem(iter->second));
-    }
-
-    {
-        auto iter = nodeToFavorite.find(node);
-        if (iter != nodeToFavorite.end())
-        {
-            emitSignal(MapItem(iter->second));
-        }
     }
 }
 

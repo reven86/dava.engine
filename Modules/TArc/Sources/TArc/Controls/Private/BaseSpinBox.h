@@ -68,7 +68,6 @@ protected:
 private:
     QString textFromValue(TEditableType val) const override;
     TEditableType valueFromText(const QString& text) const override;
-    void keyPressEvent(QKeyEvent* event) override;
     void focusInEvent(QFocusEvent* event) override;
     void focusOutEvent(QFocusEvent* event) override;
 };
