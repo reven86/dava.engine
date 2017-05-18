@@ -47,7 +47,7 @@ void InstallApplicationTask::OnLoaded(const BaseTask* task)
         return;
     }
 
-    applicationsToRestart = GetApplicationsToRestart(params.branch, params.app, params.currentVersion);
+    applicationsToRestart = GetApplicationsToRestart(params.branch, params.app);
 
     //remove application if was installed
     Application* localApp = appManager->GetLocalConfig()->GetApplication(params.branch, params.app);
@@ -108,9 +108,11 @@ void InstallApplicationTask::OnInstalled()
     emit Finished();
 }
 
-QStringList InstallApplicationTask::GetApplicationsToRestart(const QString& branchID, const QString& appID, const AppVersion* installedVersion)
+QStringList InstallApplicationTask::GetApplicationsToRestart(const QString& branchID, const QString& appID)
 {
     QStringList appList;
+    const AppVersion* installedVersion = appManager->GetInstalledVersion(branchID, appID);
+
     if (installedVersion == nullptr)
     {
         return appList;

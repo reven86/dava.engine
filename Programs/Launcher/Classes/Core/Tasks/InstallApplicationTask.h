@@ -7,7 +7,6 @@ struct InstallApplicationParams
 {
     QString branch;
     QString app;
-    AppVersion* currentVersion;
     AppVersion newVersion;
 };
 
@@ -24,7 +23,7 @@ private:
     void Install();
     void OnInstalled();
 
-    QStringList GetApplicationsToRestart(const QString& branchID, const QString& appID, const AppVersion* installedVersion);
+    QStringList GetApplicationsToRestart(const QString& branchID, const QString& appID);
     bool CanTryStopApplication(const QString& applicationName) const;
 
     QString GetAppName() const;

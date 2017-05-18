@@ -155,7 +155,6 @@ void ApplicationManager::CheckUpdates()
                     InstallApplicationParams params;
                     params.branch = remoteBranch->id;
                     params.app = remoteApp->id;
-                    params.currentVersion = localAppVersion;
                     params.newVersion = *remoteAppVersion;
                     InstallApplication(params);
                 }

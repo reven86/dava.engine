@@ -194,7 +194,6 @@ void MainWindow::OnInstall(int rowNumber)
     params.branch = selectedBranchID;
     params.app = appID;
     params.newVersion = *newVersion;
-    params.currentVersion = appManager->GetLocalConfig()->GetAppVersion(selectedBranchID, appID, insVersionID);
     appManager->InstallApplication(params);
 }
 

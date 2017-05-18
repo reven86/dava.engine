@@ -293,7 +293,6 @@ void BAManagerClient::SilentUpdate(const QJsonObject& requestObj, const QString&
     params.app = applicationManager->GetString(appName);
 
     ::FillAppFields(&params.newVersion, requestObj, IsToolset(appName));
-    params.currentVersion = applicationManager->GetInstalledVersion(branchName, appName);
 
     std::unique_ptr<BaseTask> task = applicationManager->CreateTask<InstallApplicationTask>(params);
     task->SetUserData(commandID);
