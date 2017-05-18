@@ -106,23 +106,23 @@ IntrospectionProperty::~IntrospectionProperty()
     SafeRelease(object);
 }
 
-IntrospectionProperty* IntrospectionProperty::Create(UIControl* control, const String& name, const Reflection& ref, const IntrospectionProperty* sourceProperty, eCloneType cloneType)
+IntrospectionProperty* IntrospectionProperty::Create(BaseObject* object, uint32 componentType, const String& name, const Reflection& ref, const IntrospectionProperty* sourceProperty, eCloneType cloneType)
 {
     if (name == INTROSPECTION_PROPERTY_NAME_TEXT)
     {
-        return new LocalizedTextValueProperty(control, name, ref, sourceProperty, cloneType);
+        return new LocalizedTextValueProperty(object, name, ref, sourceProperty, cloneType);
     }
     else if (name == INTROSPECTION_PROPERTY_NAME_FONT)
     {
-        return new FontValueProperty(control, name, ref, sourceProperty, cloneType);
+        return new FontValueProperty(object, name, ref, sourceProperty, cloneType);
     }
     else if (name == INTROSPECTION_PROPERTY_NAME_VISIBLE)
     {
-        return new VisibleValueProperty(control, name, ref, sourceProperty, cloneType);
+        return new VisibleValueProperty(object, name, ref, sourceProperty, cloneType);
     }
     else
     {
-        return new IntrospectionProperty(control, -1, name, ref, sourceProperty, cloneType);
+        return new IntrospectionProperty(object, componentType, name, ref, sourceProperty, cloneType);
     }
 }
 
