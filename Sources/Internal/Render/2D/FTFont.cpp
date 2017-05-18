@@ -269,15 +269,7 @@ FTInternalFont::FTInternalFont(const FilePath& path)
 
     FT_Face face = nullptr;
     FT_Error error = ftm->LookupFace(this, &face);
-    if (error != FT_Err_Ok || face == nullptr)
-    {
-        // Error on lookup FT face
-        initialized = false;
-    }
-    else
-    {
-        initialized = true;
-    }
+    initialized = (error == FT_Err_Ok && face != nullptr);
 }
 
 FTInternalFont::~FTInternalFont()
@@ -348,8 +340,7 @@ Font::StringMetrics FTInternalFont::DrawString(const WideString& str, void* buff
     {
         if (charSizes)
         {
-            uint32 strLen = uint32(str.length());
-            charSizes->assign(strLen, 0.f);
+            charSizes->assign(str.length(), 0.f);
         }
         return Font::StringMetrics();
     }
