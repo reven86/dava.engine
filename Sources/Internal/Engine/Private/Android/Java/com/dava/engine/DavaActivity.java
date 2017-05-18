@@ -77,6 +77,9 @@ public final class DavaActivity extends Activity
         public void onRestart();
         public void onStop();
         public void onDestroy();
+        public void onWindowFocusChanged(boolean hasWindowFocus);
+        public void onConfigurationChanged(Configuration newConfig);
+        public void onBackPressed();
         public void onSaveInstanceState(Bundle outState);
         public void onActivityResult(int requestCode, int resultCode, Intent data);
         public void onNewIntent(Intent intent);
@@ -96,6 +99,9 @@ public final class DavaActivity extends Activity
         public void onRestart() {}
         public void onStop() {}
         public void onDestroy() {}
+        public void onWindowFocusChanged(boolean hasWindowFocus) {}
+        public void onConfigurationChanged(Configuration newConfig) {}
+        public void onBackPressed() {}
         public void onSaveInstanceState(Bundle outState) {}
         public void onActivityResult(int requestCode, int resultCode, Intent data) {}
         public void onNewIntent(Intent intent) {}
@@ -165,6 +171,9 @@ public final class DavaActivity extends Activity
     private static final int ON_ACTIVITY_RESULT = 8;
     private static final int ON_ACTIVITY_NEW_INTENT = 9;
     private static final int ON_ACTIVITY_REQUEST_PERMISSION_RESULT = 10;
+    private static final int ON_ACTIVITY_WINDOW_FOCUS_CHANGED = 11;
+    private static final int ON_ACTIVITY_CONFIGURATION_CHANGED = 12;
+    private static final int ON_ACTIVITY_BACK_PRESSED = 13;
 
     public static native void nativeInitializeEngine(String externalFilesDir,
                                                      String internalFilesDir,
@@ -474,6 +483,8 @@ public final class DavaActivity extends Activity
             hideNavigationBar();
             handleResume();
         }
+
+        notifyListeners(ON_ACTIVITY_WINDOW_FOCUS_CHANGED, hasWindowFocus);
     }
 
     @Override
@@ -481,6 +492,8 @@ public final class DavaActivity extends Activity
     {
         Log.d(LOG_TAG, "DavaActivity.onConfigurationChanged");
         super.onConfigurationChanged(newConfig);
+
+        notifyListeners(ON_ACTIVITY_CONFIGURATION_CHANGED, newConfig);
     }
 
     @Override
@@ -488,6 +501,8 @@ public final class DavaActivity extends Activity
     {
         // Do not call base class method to prevent finishing activity
         // and application on back pressed
+
+        notifyListeners(ON_ACTIVITY_BACK_PRESSED, null);
     }
 
     @Override
@@ -838,6 +853,17 @@ public final class DavaActivity extends Activity
             case ON_ACTIVITY_REQUEST_PERMISSION_RESULT:
                 RequestPermissionResultArgs requestResultArgs = (RequestPermissionResultArgs)arg;
                 l.onRequestPermissionsResult(requestResultArgs.requestCode, requestResultArgs.permissions, requestResultArgs.grantResults);
+                break;
+            case ON_ACTIVITY_WINDOW_FOCUS_CHANGED:
+                boolean hasWindowFocus = (Boolean)arg;
+                l.onWindowFocusChanged(hasWindowFocus);
+                break;
+            case ON_ACTIVITY_CONFIGURATION_CHANGED:
+                Configuration configuration = (Configuration)arg;
+                l.onConfigurationChanged(configuration);
+                break;
+            case ON_ACTIVITY_BACK_PRESSED:
+                l.onBackPressed();
                 break;
             }
         }
