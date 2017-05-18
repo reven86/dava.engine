@@ -176,6 +176,11 @@ public:
     */
     Window* PrimaryWindow() const;
 
+    /**
+        Return currently existing windows, including the primary one.
+    */
+    const Vector<Window*>& GetWindows() const;
+
     eEngineRunMode GetRunMode() const;
     bool IsStandaloneGUIMode() const;
     bool IsEmbeddedGUIMode() const;
@@ -191,7 +196,7 @@ public:
             - as console application (eEngineRunMode::CONSOLE_MODE)
             - as GUI application embedded into other framework (eEngineRunMode::GUI_EMBEDDED)
     
-        Application may list dava.engine's modules (subsystems) which she wants to use during execution. List may be empty.
+        Application may list dava.engine's modules (subsystems) which it wants to use during execution. The list may be empty.
         For now application may choose to create only several subsystems:
             - DownloadManager
             - JobManager
@@ -255,7 +260,7 @@ public:
         Handler can prevent window/application closing by returning false. This ability is
         supported only on desktop platforms: win32 and macOS.
         Typical usage is to return false in handler to prevent immediate window/app closing
-        and show dialog asking user whether she wants to close window/app. If she chooses to
+        and show dialog asking user whether he wants to close window/app. If he chooses to
         close window/app then application should call Window::Close or Engine::Quit.
         Handler is only invoked if window/app is closing by user request: by pressing Alt+F4 or
         by clicking mouse on window close button or by pressing Cmd+Q on macOS.
@@ -305,6 +310,14 @@ public:
         \note Only these platforms support suspending: Win10, iOS, Android.
     */
     bool IsSuspended() const;
+
+    /**
+        Set value indicating if screen timeout is enabled.
+        If value is `true`, screens will dim some time after last user interaction (if it's enabled in system settings),
+        otherwise screens will stay active even if there's no input.
+        By default, timeout is enabled.
+    */
+    void SetScreenTimeoutEnabled(bool enabled);
 
 public:
     Signal<> gameLoopStarted; //!< Emited just before entring game loop. Note: native windows are not created yet and renderer is not initialized.

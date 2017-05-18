@@ -9,8 +9,8 @@ class AcceptsInputFilter : public FindFilter
 public:
     AcceptsInputFilter();
 
-    bool CanAcceptPackage(const PackageInformation* package) const override;
-    bool CanAcceptControl(const ControlInformation* control) const override;
+    ePackageStatus AcceptPackage(const PackageInformation* package) const override;
+    bool AcceptControl(const ControlInformation* control) const override;
 
 private:
     const DAVA::ReflectedStructure::Field* refMember = nullptr;
