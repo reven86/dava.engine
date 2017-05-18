@@ -7,7 +7,6 @@ UIPopup::UIPopup(const Rect& rect)
     : UIScreen(rect)
     , isTransparent(true)
 {
-    SetFillBorderOrder(UIScreen::FILL_BORDER_NONE);
 }
 
 void UIPopup::Show()
