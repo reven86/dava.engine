@@ -5,8 +5,7 @@ project ( TestServer )
 set          ( CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_CURRENT_LIST_DIR}/../../Sources/CMake/Modules/" )
 include      ( CMake-common )
 
-
-set ( DAVA_COMPONENTS DAVA_DISABLE_AUTOTESTS )
+set ( DAVA_COMPONENTS "NetworkCore" DAVA_DISABLE_AUTOTESTS )
 set (DAVA_COREV2 1)
 dava_add_definitions(-D__DAVAENGINE_COREV2__)
 

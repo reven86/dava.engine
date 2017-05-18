@@ -1,0 +1,26 @@
+#include "UnitTests/UnitTests.h"
+
+#include "Engine/Engine.h"
+
+#if !defined(__DAVAENGINE_ANDROID__)
+
+#include "Network2.h"
+
+using namespace DAVA;
+
+DAVA_TESTCLASS (Network2Test)
+{
+    DAVA_TEST (CheckStatus)
+    {
+        const ModuleManager& moduleManager = *GetEngineContext()->moduleManager;
+        Network2* network2 = moduleManager.GetModule<Network2>();
+
+        auto statusList = network2->StatusList();
+
+        TEST_VERIFY(statusList.size() == 2);
+        TEST_VERIFY(statusList[0] == Network2::ES_UNKNOWN);
+        TEST_VERIFY(statusList[1] == Network2::ES_INIT);
+    }
+};
+
+#endif // !defined(__DAVAENGINE_ANDROID__)
