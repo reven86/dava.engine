@@ -308,7 +308,7 @@ DAVA_TESTCLASS (DLCDownloaderTest)
         {
             Logger::Info("just before start test errno: %d %s", errno, strerror(errno));
 
-            std::array<char, 4> buf;
+            std::array<char, 5> buf{ 'c', 'l', 'e', 'a', 'r' };
             MemoryBufferWriter writer(buf.data(), buf.size());
 
             DLCDownloader* downloader = DLCDownloader::Create();
@@ -338,11 +338,14 @@ DAVA_TESTCLASS (DLCDownloaderTest)
             {
                 Logger::Info("why is it so? errno: %d %s", status.error.fileErrno, strerror(status.error.fileErrno));
             }
-            TEST_VERIFY(status.sizeDownloaded == 4);
+            TEST_VERIFY(status.sizeDownloaded == 0);
             TEST_VERIFY(status.state == DLCDownloader::TaskState::Finished);
             TEST_VERIFY(status.sizeTotal == 4);
 
-            std::array<char, 4> shouldBe{ 's', 'e', 'r', 'v' }; // first part
+            // We want downloader do not touch output buffer as soon as
+            // error happened. So our buffer should be same.
+
+            std::array<char, 5> shouldBe{ 'c', 'l', 'e', 'a', 'r' }; // first part
             TEST_VERIFY(shouldBe == buf);
 
             downloader->RemoveTask(downloadLast4Bytes);
