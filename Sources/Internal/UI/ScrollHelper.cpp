@@ -81,6 +81,11 @@ void ScrollHelper::SetElementSize(float32 newSize)
     {
         virtualViewSize = elementSize;
     }
+
+    if (position + elementSize < virtualViewSize)
+    {
+        position = viewSize - elementSize;
+    }
 }
 
 float ScrollHelper::GetPosition() const
@@ -95,6 +100,11 @@ void ScrollHelper::SetViewSize(float32 size)
     if (viewSize > elementSize)
     {
         virtualViewSize = elementSize;
+    }
+
+    if (position + elementSize < virtualViewSize)
+    {
+        position = viewSize - elementSize;
     }
 }
 
