@@ -24,8 +24,11 @@ def get_pull_requests_number( branch ):
     if branch_len == 1:
         if branch[0].isdigit():
             pull_requests_number = branch[0]
-    else:
-        pull_requests_number = branch[ branch_len - 2 ]
+    elif branch_len >= 1:
+        postfix = branch[ branch_len - 1 ]
+        if postfix == 'from' or postfix == 'merge':
+            pull_requests_number = branch[ branch_len - 2 ]
+
 
     return pull_requests_number
 
