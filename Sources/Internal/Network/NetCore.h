@@ -216,7 +216,7 @@ private:
     };
 
     mutable Mutex controllersMutex;
-    Map<TrackId, ControllerContext> controllers;
+    UnorderedMap<TrackId, ControllerContext> controllers;
 
     ServiceRegistrar registrar; //-V730_NOINIT
     Function<void()> allControllersStoppedCallback;
