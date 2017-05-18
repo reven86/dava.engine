@@ -56,6 +56,11 @@ public:
         return true;
     }
 
+    void Close() override
+    {
+        // do nothing
+    }
+
     uint64 SpaceLeft() const
     {
         return end - current;
