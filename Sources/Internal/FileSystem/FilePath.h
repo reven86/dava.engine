@@ -259,7 +259,9 @@ public:
     int32 Compare(const FilePath& right) const;
 
     static bool IsAbsolutePathname(const String& pathname);
-    static String AddPath(const FilePath& folder, const String& addition);
+    
+    /** Return normalized concat of specified 'path' and 'addition', i.e. AddPath("abc", "def") => "abcdef" */
+    static String AddPath(const FilePath& path, const String& addition);
 
 private:
     void Initialize(const String& pathname);
