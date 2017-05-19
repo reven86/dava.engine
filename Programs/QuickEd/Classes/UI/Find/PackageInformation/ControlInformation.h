@@ -14,6 +14,7 @@ public:
     virtual DAVA::FastName GetName() const = 0;
     virtual DAVA::FastName GetPrototype() const = 0;
     virtual DAVA::String GetPrototypePackagePath() const = 0;
+    virtual bool HasErrors() const = 0;
 
     virtual bool HasComponent(DAVA::UIComponent::eType componentType) const = 0;
 

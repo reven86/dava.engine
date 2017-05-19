@@ -21,7 +21,7 @@ inline const ReflectedStructure* ReflectedType::GetStructure() const
     return structure.get();
 }
 
-inline ReflectedStructure* ReflectedType::GetStructure()
+inline ReflectedStructure* ReflectedType::EditStructure() const
 {
     return structure.get();
 }

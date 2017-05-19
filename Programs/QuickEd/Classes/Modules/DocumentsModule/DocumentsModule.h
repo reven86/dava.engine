@@ -65,7 +65,7 @@ private:
     void ReloadDocuments(const DAVA::Set<DAVA::TArc::DataContext::ContextID>& ids);
 
     bool HasUnsavedDocuments() const;
-    void SaveDocument(const DAVA::TArc::DataContext::ContextID& contextID);
+    bool SaveDocument(const DAVA::TArc::DataContext::ContextID& contextID);
     void SaveAllDocuments();
     void SaveCurrentDocument();
 

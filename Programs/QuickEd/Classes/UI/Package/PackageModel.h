@@ -11,6 +11,7 @@ namespace DAVA
 namespace TArc
 {
 class ContextAccessor;
+class UI;
 }
 }
 
@@ -33,6 +34,7 @@ public:
     ~PackageModel() override;
 
     void SetAccessor(DAVA::TArc::ContextAccessor* accessor);
+    void SetUI(DAVA::TArc::UI* ui);
 
     void Reset(PackageNode* package);
 
@@ -85,4 +87,5 @@ private: // PackageListener
 
     DAVA::RefPtr<PackageNode> package;
     DAVA::TArc::ContextAccessor* accessor = nullptr;
+    DAVA::TArc::UI* ui = nullptr;
 };

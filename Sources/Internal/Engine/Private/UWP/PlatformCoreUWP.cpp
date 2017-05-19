@@ -96,6 +96,27 @@ void PlatformCore::Quit()
     quitGameThread = true;
 }
 
+void PlatformCore::SetScreenTimeoutEnabled(bool enabled)
+{
+    engineBackend->GetPrimaryWindow()->RunOnUIThreadAsync([this, enabled]() {
+        if (displayRequestActive != enabled)
+        {
+            return;
+        }
+
+        if (enabled)
+        {
+            displayRequest->RequestRelease();
+            displayRequestActive = false;
+        }
+        else
+        {
+            displayRequest->RequestActive();
+            displayRequestActive = true;
+        }
+    });
+}
+
 void PlatformCore::OnLaunchedOrActivated(::Windows::ApplicationModel::Activation::IActivatedEventArgs ^ args)
 {
     using ::Windows::UI::Core::CoreDispatcher;

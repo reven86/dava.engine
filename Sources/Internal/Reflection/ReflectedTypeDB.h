@@ -25,11 +25,32 @@ class ReflectedTypeDB
     friend class ReflectionRegistrator;
 
 public:
+    struct Stats
+    {
+        size_t reflectedTypeCount = 0;
+        size_t reflectedTypeMemory = 0;
+        size_t reflectedStructCount = 0;
+        size_t reflectedStructWrapperCount = 0;
+        size_t reflectedStructWrapperClassCount = 0;
+        size_t reflectedStructWrapperClassMemory = 0;
+        size_t reflectedStructFieldsCount = 0;
+        size_t reflectedStructMethodsCount = 0;
+        size_t reflectedStructEnumsCount = 0;
+        size_t reflectedStructCtorsCount = 0;
+        size_t reflectedStructDtorsCount = 0;
+        size_t reflectedStructMetasCount = 0;
+        size_t reflectedStructMetaMCount = 0;
+        size_t reflectedStructMemory = 0;
+        size_t reflectedTypeDBMemory = 0;
+        size_t totalMemory = 0;
+    };
+
     template <typename T>
     static const ReflectedType* Get();
 
     template <typename T>
     static const ReflectedType* GetByPointer(const T* ptr);
+    static const ReflectedType* GetByPointer(const void* ptr, const Type* derefType);
 
     static const ReflectedType* GetByType(const Type* type);
     static const ReflectedType* GetByTypeName(const String& rttiName);
@@ -39,8 +60,9 @@ public:
 
     template <typename T, typename... Bases>
     static void RegisterBases();
-
     static void RegisterPermanentName(const ReflectedType* reflectedType, const String& permanentName);
+
+    static Stats GetStats();
 
 protected:
     template <typename T>

@@ -1,9 +1,12 @@
 #pragma once
 
-#include <QDockWidget>
-#include "Base/BaseTypes.h"
 #include "ui_PropertiesWidget.h"
 #include "EditorSystems/SelectionContainer.h"
+
+#include <QtTools/Updaters/ContinuousUpdater.h>
+#include <Base/BaseTypes.h>
+
+#include <QDockWidget>
 
 namespace DAVA
 {
@@ -11,6 +14,7 @@ namespace TArc
 {
 class FieldBinder;
 class ContextAccessor;
+class UI;
 }
 }
 
@@ -28,6 +32,7 @@ public:
     ~PropertiesWidget();
 
     void SetAccessor(DAVA::TArc::ContextAccessor* accessor);
+    void SetUI(DAVA::TArc::UI* ui);
 
 public slots:
     void SetProject(const Project* project);
@@ -54,13 +59,15 @@ private:
     QAction* CreateRemoveAction();
     QAction* CreateSeparator();
 
+    void UpdateModelInternal();
+
     void UpdateActions();
 
     void ApplyExpanding();
 
-    void OnPackageChanged(const DAVA::Any& package);
-
     void BindFields();
+    void OnPackageDataChanged(const DAVA::Any& package);
+    void OnSelectionDataChanged(const DAVA::Any& selection);
 
     QAction* addComponentAction = nullptr;
     QAction* addStylePropertyAction = nullptr;
@@ -70,9 +77,9 @@ private:
     PropertiesModel* propertiesModel = nullptr;
     PropertiesTreeItemDelegate* propertiesItemsDelegate = nullptr;
 
-    DAVA::Map<DAVA::String, bool> itemsState;
+    ContinuousUpdater nodeUpdater;
 
-    SelectionContainer selectionContainer;
+    DAVA::Map<DAVA::String, bool> itemsState;
 
     DAVA::String lastTopIndexPath;
     PackageBaseNode* selectedNode = nullptr; //node used to build model
@@ -80,4 +87,5 @@ private:
     std::unique_ptr<DAVA::TArc::FieldBinder> fieldBinder;
 
     DAVA::TArc::ContextAccessor* accessor = nullptr;
+    DAVA::TArc::UI* ui = nullptr;
 };

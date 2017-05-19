@@ -103,6 +103,11 @@ BOOL CALLBACK DeviceManagerImpl::DisplayEnumProc(HMONITOR hmonitor, HDC hdc, LPR
     return FALSE;
 }
 
+float32 DeviceManagerImpl::GetCpuTemperature() const
+{
+    return 0.0f;
+}
+
 } // namespace Private
 } // namespace DAVA
 
