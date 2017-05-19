@@ -16,7 +16,6 @@ class UIComponent : public BaseObject
 public:
     UIComponent();
     UIComponent(const UIComponent& src);
-    virtual ~UIComponent();
 
     UIComponent& operator=(const UIComponent& src);
 
@@ -34,6 +33,9 @@ public:
     virtual int32 GetRuntimeType() const = 0;
 
     virtual const Type* GetType() const = 0;
+    
+protected:
+    virtual ~UIComponent();
 
 private:
     UIControl* control;

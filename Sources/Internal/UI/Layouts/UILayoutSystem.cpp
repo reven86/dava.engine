@@ -32,27 +32,30 @@ UILayoutSystem::~UILayoutSystem()
     DVASSERT(listeners.empty());
 }
 
-void UILayoutSystem::Process(DAVA::float32 elapsedTime)
+void UILayoutSystem::Process(float32 elapsedTime)
 {
-    if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_UI_CONTROL_SYSTEM))
-    {
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::UI_LAYOUT_SYSTEM);
+
+    if (!IsAutoupdatesEnabled())
         return;
-    }
 
     CheckDirty();
 
+    if (!needUpdate)
+        return;
+
     if (currentScreenTransition.Valid())
     {
-        Update(currentScreenTransition.Get());
+        ProcessControlHierarhy(currentScreenTransition.Get());
     }
     else if (currentScreen.Valid())
     {
-        Update(currentScreen.Get());
+        ProcessControlHierarhy(currentScreen.Get());
     }
 
     if (popupContainer.Valid())
     {
-        Update(popupContainer.Get());
+        ProcessControlHierarhy(popupContainer.Get());
     }
 }
 
@@ -95,6 +98,16 @@ void UILayoutSystem::UnregisterComponent(UIControl* control, UIComponent* compon
     }
 }
 
+void UILayoutSystem::ForceProcessControl(float32 elapsedTime, UIControl* control)
+{
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::UI_LAYOUT_SYSTEM);
+
+    if (!needUpdate && !dirty)
+        return;
+
+    ProcessControlHierarhy(control);
+}
+
 void UILayoutSystem::SetCurrentScreen(const RefPtr<UIScreen>& screen)
 {
     currentScreen = screen;
@@ -122,15 +135,12 @@ void UILayoutSystem::SetRtl(bool rtl)
 
 void UILayoutSystem::ProcessControl(UIControl* control)
 {
-    if (!IsAutoupdatesEnabled())
-        return;
-
-    bool dirty = control->IsLayoutDirty();
+    bool layoutDirty = control->IsLayoutDirty();
     bool orderDirty = control->IsLayoutOrderDirty();
     bool positionDirty = control->IsLayoutPositionDirty();
     control->ResetLayoutDirty();
 
-    if (dirty || (orderDirty && HaveToLayoutAfterReorder(control)) || (positionDirty && control->GetParent() && control->GetParent()->GetComponent(Type::Instance<UILayoutSourceRectComponent>())))
+    if (layoutDirty || (orderDirty && HaveToLayoutAfterReorder(control)) || (positionDirty && control->GetParent() && control->GetParent()->GetComponent(Type::Instance<UILayoutSourceRectComponent>())))
     {
         UIControl* container = FindNotDependentOnChildrenControl(control);
         ApplyLayout(container);
@@ -173,8 +183,6 @@ void UILayoutSystem::ApplyLayout(UIControl* control)
 
     CollectControls(control, true);
 
-    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::UI_LAYOUTING);
-
     ProcessAxis(Vector2::AXIS_X, true);
     ProcessAxis(Vector2::AXIS_Y, true);
 
@@ -189,21 +197,12 @@ void UILayoutSystem::ApplyLayoutNonRecursive(UIControl* control)
 
     CollectControls(control, false);
 
-    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::UI_LAYOUTING);
-
     ProcessAxis(Vector2::AXIS_X, false);
     ProcessAxis(Vector2::AXIS_Y, false);
 
     ApplyPositions();
 
     layoutData.clear();
-}
-
-void UILayoutSystem::Update(UIControl* root)
-{
-    if (!(needUpdate || dirty) || !root)
-        return;
-    UpdateControl(root);
 }
 
 void UILayoutSystem::AddListener(UILayoutSystemListener* listener)
@@ -435,7 +434,8 @@ void UILayoutSystem::ApplyPositions()
         data.ApplyOnlyPositionLayoutToControl();
     }
 }
-void UILayoutSystem::UpdateControl(UIControl* control)
+
+void UILayoutSystem::ProcessControlHierarhy(UIControl* control)
 {
     ProcessControl(control);
 
@@ -448,7 +448,7 @@ void UILayoutSystem::UpdateControl(UIControl* control)
     while (it != endIt)
     {
         control->isIteratorCorrupted = false;
-        UpdateControl(*it);
+        ProcessControlHierarhy(*it);
         if (control->isIteratorCorrupted)
         {
             it = children.begin();

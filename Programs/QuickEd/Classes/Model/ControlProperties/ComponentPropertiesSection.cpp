@@ -6,6 +6,7 @@
 #include <UI/UIControl.h>
 #include <UI/Layouts/UILayoutIsolationComponent.h>
 #include <UI/Layouts/UILayoutSourceRectComponent.h>
+#include <UI/Render/UISceneComponent.h>
 #include <UI/RichContent/UIRichContentObjectComponent.h>
 #include <UI/Scroll/UIScrollComponent.h>
 #include <Utils/StringFormat.h>
@@ -67,7 +68,8 @@ bool ComponentPropertiesSection::IsHiddenComponent(const Type* type)
     return (type == Type::Instance<UILayoutIsolationComponent>() ||
             type == Type::Instance<UILayoutSourceRectComponent>() ||
             type == Type::Instance<UIScrollComponent>() ||
-            type == Type::Instance<UIRichContentObjectComponent>());
+            type == Type::Instance<UIRichContentObjectComponent>() ||
+            type == Type::Instance<UISceneComponent>());
 }
 
 UIComponent* ComponentPropertiesSection::GetComponent() const

@@ -85,6 +85,7 @@
 #include "UI/Layouts/UISizePolicyComponent.h"
 #include "UI/Layouts/UILayoutSourceRectComponent.h"
 #include "UI/Layouts/UILayoutIsolationComponent.h"
+#include "UI/Render/UISceneComponent.h"
 #include "UI/Scroll/UIScrollBarDelegateComponent.h"
 #include "UI/Sound/UISoundComponent.h"
 #include "UI/Sound/UISoundValueFilterComponent.h"
@@ -325,6 +326,9 @@ GetEngineContext()->componentManager->RegisterComponent<type>();
     DELC_UI_COMPONENT(UILayoutSourceRectComponent, "UILayoutSourceRectComponent");
     DELC_UI_COMPONENT(UILayoutIsolationComponent, "UILayoutIsolationComponent");
     DELC_UI_COMPONENT(UIScrollComponent, "ScrollComponent");
+    DELC_UI_COMPONENT(UISceneComponent, "SceneComponent");
+    
+#undef DELC_UI_COMPONENT
 }
 
 void RegisterReflectionForBaseTypes()

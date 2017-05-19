@@ -3,6 +3,7 @@
 #include <fstream>
 
 #include "DLCManager/DLCManager.h"
+#include "DLCManager/DLCDownloader.h"
 #include "DLCManager/Private/RequestManager.h"
 #include "FileSystem/Private/PackFormatSpec.h"
 #include "FileSystem/Private/PackMetaData.h"
@@ -15,6 +16,57 @@
 
 namespace DAVA
 {
+class MemoryBufferWriter final : public DLCDownloader::IWriter
+{
+public:
+    MemoryBufferWriter(void* buff, size_t size)
+    {
+        DVASSERT(buff != nullptr);
+        DVASSERT(size > 0);
+
+        start = static_cast<char*>(buff);
+        current = start;
+        end = start + size;
+    }
+
+    uint64 Save(const void* ptr, uint64 size) override
+    {
+        uint64 space = SpaceLeft();
+
+        if (size > space)
+        {
+            memcpy(current, ptr, static_cast<size_t>(space));
+            current += space;
+            return space;
+        }
+
+        memcpy(current, ptr, static_cast<size_t>(size));
+        current += size;
+        return size;
+    }
+
+    uint64 GetSeekPos() override
+    {
+        return current - start;
+    }
+
+    bool Truncate() override
+    {
+        current = start;
+        return true;
+    }
+
+    uint64 SpaceLeft() const
+    {
+        return end - current;
+    }
+
+private:
+    char* start = nullptr;
+    char* current = nullptr;
+    char* end = nullptr;
+};
+
 class DLCManagerImpl final : public DLCManager
 {
 public:
@@ -125,6 +177,11 @@ public:
 
     std::ostream& GetLog() const;
 
+    DLCDownloader* GetDownloader() const
+    {
+        return downloader.get();
+    }
+
 private:
     // initialization state functions
     void AskFooter();
@@ -143,6 +200,7 @@ private:
     // helper functions
     void DeleteLocalMetaFiles();
     void ContinueInitialization(float frameDelta);
+    void ReadContentAndExtractFileNames();
 
     void SwapRequestAndUpdatePointers(PackRequest* request, PackRequest* newRequest);
     void SwapPointers(PackRequest* userRequestObject, PackRequest* newRequestObject);
@@ -194,19 +252,23 @@ private:
     String initErrorMsg;
     InitState initState = InitState::Starting;
     InitError initError = InitError::AllGood;
+    std::unique_ptr<MemoryBufferWriter> memBufWriter;
     PackFormat::PackFile::FooterBlock initFooterOnServer; // temp superpack info for every new pack request or during initialization
     PackFormat::PackFile usedPackFile; // current superpack info
     Vector<uint8> buffer; // temp buff
     String uncompressedFileNames;
     UnorderedMap<String, const PackFormat::FileTableEntry*> mapFileData;
     Vector<uint32> startFileNameIndexesInUncompressedNames;
-    uint32 downloadTaskId = 0;
+    DLCDownloader::Task* downloadTaskId = nullptr;
     uint64 fullSizeServerData = 0;
+    mutable Progress lastProgress;
 
     Hints hints{};
 
     float32 timeWaitingNextInitializationAttempt = 0;
     uint32 retryCount = 0; // count every initialization error during session
+
+    std::unique_ptr<DLCDownloader> downloader;
 };
 
 inline uint32 DLCManagerImpl::GetServerFooterCrc32() const

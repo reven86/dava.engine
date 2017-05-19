@@ -2,6 +2,8 @@
 #include "UIUpdateComponent.h"
 #include "UICustomUpdateDeltaComponent.h"
 #include "UI/UIControl.h"
+#include "Debug/ProfilerCPU.h"
+#include "Debug/ProfilerMarkerNames.h"
 
 namespace DAVA
 {
@@ -91,10 +93,7 @@ void UIUpdateSystem::OnControlInvisible(UIControl* control)
 
 void UIUpdateSystem::Process(float32 elapsedTime)
 {
-    if (!Renderer::GetOptions()->IsOptionEnabled(RenderOptions::UPDATE_UI_CONTROL_SYSTEM))
-    {
-        return;
-    }
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::UI_UPDATE_SYSTEM);
 
     for (UpdateBind& b : binds)
     {
@@ -137,6 +136,47 @@ void UIUpdateSystem::Process(float32 elapsedTime)
             continue;
         }
     }
+}
+
+void UIUpdateSystem::ProcessControlHierarchy(float32 elapsedTime, UIControl* control)
+{
+    if (control->GetComponent(Type::Instance<UIUpdateComponent>()))
+    {
+        control->Update(elapsedTime);
+    }
+
+    control->isUpdated = true;
+    auto it = control->GetChildren().begin();
+    for (; it != control->GetChildren().end(); ++it)
+    {
+        (*it)->isUpdated = false;
+    }
+
+    it = control->GetChildren().begin();
+    control->isIteratorCorrupted = false;
+    while (it != control->GetChildren().end())
+    {
+        RefPtr<UIControl> child;
+        child = *it;
+        if (!child->isUpdated)
+        {
+            ProcessControlHierarchy(elapsedTime, child.Get());
+            if (control->isIteratorCorrupted)
+            {
+                it = control->GetChildren().begin();
+                control->isIteratorCorrupted = false;
+                continue;
+            }
+        }
+        ++it;
+    }
+}
+
+void UIUpdateSystem::ForceProcessControl(float32 elapsedTime, UIControl* control)
+{
+    DAVA_PROFILER_CPU_SCOPE(ProfilerCPUMarkerName::UI_UPDATE_SYSTEM);
+
+    ProcessControlHierarchy(elapsedTime, control);
 }
 
 UIUpdateSystem::UpdateBind::UpdateBind(UIUpdateComponent* uc, UICustomUpdateDeltaComponent* cdc)
