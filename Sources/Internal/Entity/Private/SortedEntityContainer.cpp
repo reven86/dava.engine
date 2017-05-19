@@ -30,6 +30,7 @@ void SortedEntityContainer::EraseEntity(const Entity* entity)
             {
                 vector[k] = vector[size - 1];
                 vector.pop_back();
+                size--;
             }
         }
     }
