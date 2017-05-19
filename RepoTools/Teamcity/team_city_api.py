@@ -28,9 +28,9 @@ class TeamCityRequest:
             print "Unexpected error:", sys.exc_info()[0]
             raise
 
-    def run_build( self, configuration_id,  branch_name = '', properties={}, triggering_options=[] ):
+    def run_build( self, build_name,  branch_name = '', properties={}, triggering_options=[], agent_id='' ):
 
-        print "Launch build {} [ {} ]".format( configuration_id, branch_name )
+        print "Launch build {} [ {} ]".format( build_name, branch_name )
 
         comment = '<comment> <text>auto triggering</text> </comment>'
 
@@ -39,6 +39,9 @@ class TeamCityRequest:
             for key  in triggering_options:
                 data += [ '{}="true"'.format( key ) ]
             triggering_options = '<triggeringOptions {}/>'.format( ' '.join(data) )
+
+        if agent_id:
+            agent_id = '<agent id="{}"/>'.format( agent_id )
 
         if properties:
             data = ''
@@ -49,7 +52,7 @@ class TeamCityRequest:
         if branch_name:
             branch_name = ' branchName = "{}"'.format( branch_name )
 
-        parameter =  '<build{0}><buildType id="{1}" />{2}{3}{4}</build>'.format( branch_name, configuration_id, properties, triggering_options,comment )
+        parameter =  '<build{0}><buildType id="{1}" />{2}{3}{4}{5}</build>'.format( branch_name, build_name, properties, triggering_options,comment, agent_id )
 
         response = self.__request("buildQueue", parameter )
 
@@ -81,7 +84,29 @@ class TeamCityRequest:
 
         root.attrib['statusText'] = statusText
 
+        build_type = root.find( 'buildType' )
+
+
+        root.attrib['project_id' ] = build_type.attrib[ 'projectId' ]
+        root.attrib['config_name'] = build_type.attrib[ 'name' ]
+        root.attrib['config_path'] = build_type.attrib[ 'projectName' ].replace( ' ', '' )
+
+        root.attrib['config_path'] = '{}::{}'.format( root.attrib['config_path'] , root.attrib['config_name'] )
+
         return root.attrib
+
+    def configuration_info(self, configuration_name ):
+        response = self.__request("buildTypes/id:{}/".format( configuration_name ))
+        root = ET.fromstring(response.content)
+        root.attrib['config_path'] = root.attrib[ 'projectName' ].replace( ' ', '' )
+        root.attrib['config_path'] = '{}::{}'.format( root.attrib['config_path'] , root.attrib['name'] )
+        return root.attrib
+
+    def agent_info_by_name(self, agent_name ):
+        response = self.__request("agents/name:{}/".format( agent_name ))
+        root = ET.fromstring( response.content )
+        return root.attrib
+
 
 def init( teamcity_url, login, password ):
     global __TeamCity
