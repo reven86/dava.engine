@@ -113,8 +113,7 @@ void OverdrawTest::LoadResources()
     CreateLabel({ texturePixelFormatXOffset, texturePixelFormatYOffset - buttonHeight, buttonWidth, buttonHeight }, L"Tex format");
     InitializeButtons(texturePixelFormatButtonsInfo, texturePixelFormatButtons, Message(this, &OverdrawTest::OnTextureFormatButtonClick));
 
-    //SetDebugDraw(false, false);
-    GetComponent<UIDebugRenderComponent>()->SetEnabled(false);
+    GetOrCreateComponent<UIDebugRenderComponent>()->SetEnabled(false);
 }
 
 void OverdrawTest::UnloadResources()
@@ -140,8 +139,7 @@ void OverdrawTest::CreateLabel(const DAVA::Rect&& rect, const WideString&& capti
     label->SetTextColor(Color::White);
     label->SetText(caption);
     label->SetTextAlign(ALIGN_HCENTER | ALIGN_VCENTER);
-    //label->SetDebugDraw(false);
-    label->GetComponent<UIDebugRenderComponent>()->SetEnabled(false);
+    label->GetOrCreateComponent<UIDebugRenderComponent>()->SetEnabled(false);
     AddControl(label);
 }
 
