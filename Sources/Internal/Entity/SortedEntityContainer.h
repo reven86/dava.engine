@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Base/HashMap.h"
+#include "Base/UnordererMap.h"
 #include "Base/Vector.h"
 
 namespace DAVA
@@ -12,7 +12,7 @@ class SortedEntityContainer
 public:
     void Push(Entity* entity);
     void Clear();
-
-    HashMap<EntityFamily*, Vector<Entity*>> map;
+    void EraseEntity(const Entity* entity);
+    UnorderedMap<EntityFamily*, Vector<Entity*>> map;
 };
 }

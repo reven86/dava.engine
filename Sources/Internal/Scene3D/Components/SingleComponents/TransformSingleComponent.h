@@ -14,12 +14,7 @@ public:
     SortedEntityContainer worldTransformChanged; //sorted by EntityFamily in TransformSystem
     Vector<Entity*> animationTransformChanged;
 
-    void Clear()
-    {
-        localTransformChanged.clear();
-        transformParentChanged.clear();
-        worldTransformChanged.Clear();
-        animationTransformChanged.clear();
-    }
+    void Clear();
+    void EraseEntity(const Entity* entity);
 };
 }

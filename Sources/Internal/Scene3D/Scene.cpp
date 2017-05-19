@@ -432,6 +432,7 @@ void Scene::RegisterEntity(Entity* entity)
 
 void Scene::UnregisterEntity(Entity* entity)
 {
+    transformSingleComponent->EraseEntity(entity);
     for (auto& system : systems)
     {
         system->UnregisterEntity(entity);

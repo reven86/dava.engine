@@ -15,4 +15,23 @@ void SortedEntityContainer::Clear()
 {
     map.clear();
 }
+
+void SortedEntityContainer::EraseEntity(const Entity* entity)
+{
+    EntityFamily* family = entity->GetFamily();
+    auto iter = map.find(family);
+    if (iter != map.end())
+    {
+        Vector<Entity*>& vector = iter->second;
+        size_t size = vector.size();
+        for (size_t k = 0; k < size; ++k)
+        {
+            if (vector[k] == entity)
+            {
+                vector[k] = vector[size - 1];
+                vector.pop_back();
+            }
+        }
+    }
+}
 }
