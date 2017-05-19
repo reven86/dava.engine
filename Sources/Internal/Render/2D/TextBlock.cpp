@@ -737,7 +737,7 @@ void TextBlock::CalculateCacheParams()
             stringSizes.push_back(textMetrics.width);
         }
     }
-    else //if(!isMultilineEnabled)
+    else //if(isMultilineEnabled)
     {
         DVASSERT(textBox->GetLinesCount() > 0, "Empty lines information");
 
@@ -748,7 +748,57 @@ void TextBlock::CalculateCacheParams()
         textMetrics.height = fontHeight * textBox->GetLinesCount() - yOffset;
         textMetrics.drawRect.dy = int32(std::ceil(textMetrics.height));
 
-        if (fittingType && (requestedSize.dy >= 0 /* || requestedSize.dx >= 0*/) && visualText.size() > 3)
+        if ((fittingType & FITTING_POINTS) && textMetrics.height > drawSize.y)
+        {
+            const uint32 actualLinesCount = textBox->GetLinesCount();
+            const uint32 drawableLines = Min(actualLinesCount, Max(1U, static_cast<uint32>((drawSize.y + yOffset + DAVA::EPSILON) / fontHeight)));
+            const TextBox::Line& lastDrawableLine = textBox->GetLine(drawableLines - 1);
+            WideString lineText = lastDrawableLine.visualString;
+            //if (textBox->GetLinesCount() > drawableLines) {
+            //	const TextBox::Line &firstInvisibleLine = textBox->GetLine(drawableLines);
+            //	lineText.append(firstInvisibleLine.visualString);
+            //}
+
+            Vector<float32> lineCharactersSizes;
+            Font::StringMetrics textMetrics = font->GetStringMetrics(lineText, &lineCharactersSizes);
+            WideString pointsStr;
+
+            static float32 FT_WIDTH_EPSILON = 0.3f;
+
+            uint32 length = static_cast<uint32>(lineCharactersSizes.size());
+            Font::StringMetrics pointsMetric = font->GetStringMetrics(L"...");
+            float32 fullWidth = static_cast<float32>(textMetrics.width + pointsMetric.width) - FT_WIDTH_EPSILON;
+            for (uint32 i = length; i > 0U; --i)
+            {
+                if (fullWidth <= drawSize.x)
+                {
+#if defined(LOCALIZATION_DEBUG)
+                    fittingTypeUsed = FITTING_POINTS;
+#endif
+                    pointsStr.assign(logicalText, 0, lastDrawableLine.start + i);
+                    break;
+                }
+                fullWidth -= lineCharactersSizes[i - 1];
+            }
+
+            pointsStr.append(L"...");
+            visualText = pointsStr;
+
+            textBox->SetText(visualText);
+            charactersSizes.clear();
+            StringUtils::GetLineBreaks(visualText, breaks);
+            font->GetStringMetrics(visualText, &charactersSizes);
+            textBox->Split(multilineWrapMode, breaks, charactersSizes, drawSize.dx);
+
+            fontHeight = float32(font->GetFontHeight() + yOffset);
+            textMetrics.height = fontHeight * textBox->GetLinesCount() - yOffset;
+            textMetrics.drawRect.dy = int32(std::ceil(textMetrics.height));
+
+#if defined(LOCALIZATION_DEBUG)
+            visualTextCroped = true;
+#endif
+        }
+        else if (fittingType && (requestedSize.dy >= 0 /* || requestedSize.dx >= 0*/) && visualText.size() > 3)
         {
             float32 lastSize = renderSize;
             bool isChanged = false;
