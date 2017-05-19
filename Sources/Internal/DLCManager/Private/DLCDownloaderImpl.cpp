@@ -107,7 +107,6 @@ public:
 
     void Close() override
     {
-        // do nothing with memory
         delete[] buf;
         buf = nullptr;
         current = nullptr;
@@ -637,16 +636,18 @@ void DLCDownloader::Task::OnSubTaskDone()
                 // previous sub task
                 if (status.state != TaskState::Finished)
                 {
+                    // any previous chunk write can change writer internal state
+                    // we have to check it before every write operation
                     if (!writer->IsClosed())
                     {
                         Buffer b = nextSubTask->GetBuffer();
                         uint64 writen = writer->Save(b.ptr, b.size);
                         if (writen != b.size)
                         {
+                            int32 errVal = errno;
                             writer->Close();
-                            OnErrorCurlErrno(errno, *this);
+                            OnErrorCurlErrno(errVal, *this);
                         }
-
                         status.sizeDownloaded += writen;
                     }
                 }
