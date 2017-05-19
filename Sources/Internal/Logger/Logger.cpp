@@ -403,7 +403,7 @@ void Logger::FileLog(const FilePath& customLogFileName, eLogLevel ll, const char
             time_t timestamp = time(nullptr); //Time in UTC format
             int32 seconds = timestamp % 60;
             int32 minutes = (timestamp / 60) % 60;
-            int32 hours = (timestamp / 60 * 60) % 24;
+            int32 hours = (timestamp / (60 * 60)) % 24;
 
             Snprintf(&prefix[0], prefix.size(), "%02d:%02d:%02d [%s] ", hours, minutes, seconds, GetLogLevelString(ll));
             file->Write(prefix.data(), static_cast<uint32>(strlen(prefix.data())));
