@@ -58,7 +58,14 @@ public:
 
     void Close() override
     {
-        // do nothing
+        start = nullptr;
+        current = nullptr;
+        end = nullptr;
+    }
+
+    bool IsClosed() const override
+    {
+        return current == nullptr;
     }
 
     uint64 SpaceLeft() const

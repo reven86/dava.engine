@@ -75,10 +75,7 @@ public:
     }
     ~BufferWriter() override
     {
-        delete[] buf;
-        buf = nullptr;
-        current = nullptr;
-        end = nullptr;
+        Close();
     }
 
     uint64 Save(const void* ptr, uint64 size) override
@@ -111,6 +108,15 @@ public:
     void Close() override
     {
         // do nothing with memory
+        delete[] buf;
+        buf = nullptr;
+        current = nullptr;
+        end = nullptr;
+    }
+
+    bool IsClosed() const override
+    {
+        return buf == nullptr;
     }
 
     uint64 SpaceLeft() const
@@ -206,25 +212,30 @@ static size_t CurlDataRecvHandler(void* ptr, size_t size, size_t nmemb, void* pa
     }
     DLCDownloader::IWriter& writer = subTask->GetIWriter();
 
-    uint64 fullSizeToWrite = size * nmemb;
-
-    uint64 writen = writer.Save(ptr, fullSizeToWrite);
-    if (writen != fullSizeToWrite)
+    // we have to check every time whether writer is closed, because
+    // any previous chunk can already close writer after error
+    if (!writer.IsClosed())
     {
-        int32 errVal = errno;
-        // close writer, internally it may close file and user can
-        // delete file
-        writer.Close();
-        // if buffer in memory and WebServer return more bytes we expect it is normal
-        Logger::Info("DLC can't write bytes from curl to buffer: size: %llu written_size: %llu errno: %d %s", fullSizeToWrite, writen, errVal, strerror(errVal));
-        // curl receive more bytes or write to file or to buffer failed
-        // curl can receive more bytes if your Internet provider or HTTP server
-        // replay on your HTTP request different you ask
-        DLCDownloader::Task& task = subTask->GetTask();
-        DLCDownloader::Task::OnErrorCurlErrno(errVal, task);
-    }
+        uint64 fullSizeToWrite = size * nmemb;
 
-    return static_cast<size_t>(writen);
+        uint64 writen = writer.Save(ptr, fullSizeToWrite);
+        if (writen != fullSizeToWrite)
+        {
+            int32 errVal = errno;
+            // close writer, internally it may close file and user can
+            // delete file
+            writer.Close();
+            // if buffer in memory and WebServer return more bytes we expect it is normal
+            Logger::Info("DLC can't write bytes from curl to buffer: size: %llu written_size: %llu errno: %d %s", fullSizeToWrite, writen, errVal, strerror(errVal));
+            // curl receive more bytes or write to file or to buffer failed
+            // curl can receive more bytes if your Internet provider or HTTP server
+            // replay on your HTTP request different you ask
+            DLCDownloader::Task& task = subTask->GetTask();
+            DLCDownloader::Task::OnErrorCurlErrno(errVal, task);
+        }
+        return static_cast<size_t>(writen);
+    }
+    return 0;
 }
 
 struct DownloadChunkSubTask : IDownloaderSubTask
@@ -626,15 +637,18 @@ void DLCDownloader::Task::OnSubTaskDone()
                 // previous sub task
                 if (status.state != TaskState::Finished)
                 {
-                    Buffer b = nextSubTask->GetBuffer();
-                    uint64 writen = writer->Save(b.ptr, b.size);
-                    if (writen != b.size)
+                    if (!writer->IsClosed())
                     {
-                        writer->Close();
-                        OnErrorCurlErrno(errno, *this);
-                    }
+                        Buffer b = nextSubTask->GetBuffer();
+                        uint64 writen = writer->Save(b.ptr, b.size);
+                        if (writen != b.size)
+                        {
+                            writer->Close();
+                            OnErrorCurlErrno(errno, *this);
+                        }
 
-                    status.sizeDownloaded += writen;
+                        status.sizeDownloaded += writen;
+                    }
                 }
 
                 delete nextSubTask;
@@ -671,10 +685,6 @@ struct DefaultWriter : DLCDownloader::IWriter
 
     void MoveToEndOfFile() const
     {
-        if (!f)
-        {
-            return;
-        }
         bool result = f->Seek(0, File::eFileSeek::SEEK_FROM_END);
         DVASSERT(result);
     }
@@ -682,35 +692,27 @@ struct DefaultWriter : DLCDownloader::IWriter
     // save next buffer bytes into memory or file
     uint64 Save(const void* ptr, uint64 size) override
     {
-        if (!f)
-        {
-            return 0;
-        }
-        uint64 writen = f->Write(ptr, static_cast<uint32>(size));
-        return writen;
+        return f->Write(ptr, static_cast<uint32>(size));
     }
     // return current size of saved byte stream
     uint64 GetSeekPos() override
     {
-        if (!f)
-        {
-            return std::numeric_limits<uint64>::max();
-        }
         return f->GetPos();
     }
 
     bool Truncate() override
     {
-        if (!f)
-        {
-            return false;
-        }
         return f->Truncate(0);
     }
 
     void Close() override
     {
         f.reset();
+    }
+
+    bool IsClosed() const override
+    {
+        return !f;
     }
 
 private:

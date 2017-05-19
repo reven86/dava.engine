@@ -95,8 +95,10 @@ public:
         virtual uint64 GetSeekPos() = 0;
         /** Truncate file(or buffer) to zero length, return false on error */
         virtual bool Truncate() = 0;
-        /** you have to close file handle */
+        /** Close internal resource (file handle, socket, free memory) */
         virtual void Close() = 0;
+        /** Check internal state */
+        virtual bool IsClosed() const = 0;
     };
 
     struct Range

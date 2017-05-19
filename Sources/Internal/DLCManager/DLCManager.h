@@ -97,8 +97,8 @@ public:
         uint32 numOfThreadsPerFileDownload = 1; //!< this value passed to DownloadManager
         uint32 timeoutForDownload = 30; //!< this value passed to DownloadManager
         uint32 retriesCountForDownload = 3; //!< this value passed to DownloadManager
-        uint32 downloaderMaxHandles = 4; //!< play with any values you like from 1 to max open file per process
-        uint32 downloaderChankBufSize = 1024 * 1024; //!< 1Mb RAM buffer for one handle, you can set any value in bytes
+        uint32 downloaderMaxHandles = 8; //!< play with any values you like from 1 to max open file per process
+        uint32 downloaderChankBufSize = 512 * 1024; //!< 512Kb RAM buffer for one handle, you can set any value in bytes
     };
 
     /** Start complex initialization process. You can call it again if need.
@@ -126,7 +126,7 @@ public:
     /** return nullptr if can't find pack */
     virtual const IRequest* RequestPack(const String& packName) = 0;
 
-    virtual bool IsPackInQueue(const String& packName);
+    virtual bool IsPackInQueue(const String& packName) = 0;
 
     /** Update request queue to first download dependency of selected request
         and then request itself */
@@ -145,11 +145,5 @@ public:
     /** Calculate statistic about downloading progress */
     virtual Progress GetProgress() const = 0;
 };
-
-// HACK to compile current Blitz client
-inline bool DLCManager::IsPackInQueue(const String& packName)
-{
-    return false;
-}
 
 } // end namespace DAVA
