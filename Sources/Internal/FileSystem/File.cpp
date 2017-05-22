@@ -562,7 +562,7 @@ bool File::Flush()
 #ifdef __DAVAENGINE_DEBUG__
     if (DebugFS::GenErrorOnWriteFailed())
     {
-        return 0;
+        return false;
     }
 #endif
     return 0 == fflush(file);
