@@ -13,6 +13,8 @@ void GetLineBreaks(const WideString& string, Vector<uint8>& breaks, const char8*
     breaks.resize(string.length(), LB_NOBREAK); // By default all characters not breakable
 #if defined(__DAVAENGINE_WINDOWS__) // sizeof(wchar_t) == 2
     set_linebreaks_utf16(reinterpret_cast<const utf16_t*>(string.c_str()), string.length(), locale, reinterpret_cast<char*>(&breaks.front()));
+#elif defined(__DAVAENGINE_LINUX__)
+// TODO: linux: build unibreak lib
 #else
     set_linebreaks_utf32(reinterpret_cast<const utf32_t*>(string.c_str()), string.length(), locale, reinterpret_cast<char*>(&breaks.front()));
 #endif

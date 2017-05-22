@@ -34,6 +34,49 @@ namespace DAVA
 {
 using UCharString = BasicString<UChar>;
 
+// TODO: linux
+#if defined(__DAVAENGINE_LINUX__)
+
+class TextBoxImpl final
+{
+public:
+    TextBoxImpl(TextBox* /*tb*/)
+    {
+    }
+    TextBoxImpl(TextBox* /*tb*/, const TextBoxImpl& /*src*/)
+    {
+    }
+    TextBoxImpl(const TextBoxImpl& /*src*/) = delete;
+    ~TextBoxImpl() = default;
+
+    void SetString(const WideString& /*str*/, const TextBox::DirectionMode /*mode*/)
+    {
+    }
+    void ChangeDirectionMode(const TextBox::DirectionMode /*mode*/)
+    {
+    }
+    void Shape()
+    {
+    }
+    void ReorderLines()
+    {
+    }
+    WideString AsString() const
+    {
+        return WideString();
+    }
+    TextBox::Direction GetDirection() const
+    {
+        return TextBox::Direction::LTR;
+    }
+    TextBox::Direction GetBaseDirection() const
+    {
+        return TextBox::Direction::LTR;
+    }
+};
+
+#else
+
 class TextBoxImpl final
 {
 public:
@@ -344,6 +387,7 @@ UCharString TextBoxImpl::ConvertW2U(const WideString& src)
     return UCharString(src.begin(), src.end());
 #endif
 }
+#endif
 
 /******************************************************************************/
 /******************************************************************************/
@@ -644,4 +688,5 @@ TextBox::Direction TextBox::GetBaseDirection() const
 {
     return pImpl->GetBaseDirection();
 }
-}
+
+} // namespace DAVA
