@@ -39,10 +39,10 @@ String disableTheseTestClasses = "ScriptTest";
 // TODO: linux
 String disableTheseTestClasses =
 "ArchiveTest "
-"ComponentsTest "
-"DataVaultTest "
+"CompressorTest "
 "DateTimeTest "
 "DeviceInfoTest "
+"DLCDownloaderTest "
 "DLCManagerTest "
 "FileListTest "
 "FileSystemTest "
@@ -55,6 +55,7 @@ String disableTheseTestClasses =
 "LocalizationTest "
 "SaveImageTest "
 "SceneIdTest "
+"ScriptTest "
 "StaticTextTest "
 "TextSizeTest "
 "TextureLoadingTest "
@@ -110,6 +111,7 @@ int DAVAMain(Vector<String> cmdline)
 
     Engine e;
 #if defined(__DAVAENGINE_LINUX__)
+    appOptions->SetInt32("renderer", rhi::RHI_NULL_RENDERER);
     e.Init(eEngineRunMode::CONSOLE_MODE, modules, appOptions);
 #else
     e.Init(eEngineRunMode::GUI_STANDALONE, modules, appOptions);
@@ -200,6 +202,12 @@ void GameCore::OnAppStarted()
         TEST_VERIFY(covergeFile);
         covergeFile->Flush();
 #endif // __DAVAENGINE_MACOS__
+    }
+
+    if (engine.GetRunMode() == eEngineRunMode::CONSOLE_MODE)
+    {
+        // Register at least one resource size as some tests directly on indirectly access virtual coordinate system
+        GetEngineContext()->uiControlSystem->vcs->RegisterAvailableResourceSize(1024, 768, "Gfx");
     }
 }
 

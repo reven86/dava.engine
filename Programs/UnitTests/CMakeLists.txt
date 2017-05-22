@@ -36,7 +36,7 @@ endif()
 dava_add_definitions(-DLOCALIZATION_DEBUG)
 
 if (NOT UNIX)
-    set ( DAVA_COMPONENTS "Sound" DAVA_DISABLE_AUTOTESTS )
+    set ( DAVA_COMPONENTS "Sound" "NetworkCore" DAVA_DISABLE_AUTOTESTS )
 else()
     set ( DAVA_COMPONENTS DAVA_DISABLE_AUTOTESTS )
 endif()
