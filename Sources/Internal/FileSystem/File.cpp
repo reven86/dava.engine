@@ -6,6 +6,7 @@
 #include "FileSystem/FileAPIHelper.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/Private/PackFormatSpec.h"
+#include "FileSystem/Private/CheckIOError.h"
 #include "FileSystem/ResourceArchive.h"
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
 
@@ -64,6 +65,12 @@ static int SetFilePos(FILE* f, int64 position, int32 seekDirection)
 
 File* File::Create(const FilePath& filePath, uint32 attributes)
 {
+#ifdef __DAVAENGINE_DEBUG__
+    if (GenErrorOnOpenFile())
+    {
+        return nullptr;
+    }
+#endif
     File* result = CreateFromSystemPath(filePath, attributes);
     return result; // easy debug on android(can set breakpoint on nullptr value in eclipse do not remove it)
 }
@@ -327,6 +334,12 @@ const FilePath& File::GetFilename()
 
 uint32 File::Write(const void* pointerToData, uint32 dataSize)
 {
+#ifdef __DAVAENGINE_DEBUG__
+    if (GenErrorOnWriteToFile())
+    {
+        return 0;
+    }
+#endif
 #if defined(__DAVAENGINE_ANDROID__)
     uint32 posBeforeWrite = GetPos();
 #endif
