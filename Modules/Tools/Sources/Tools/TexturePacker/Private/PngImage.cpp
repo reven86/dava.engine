@@ -364,6 +364,8 @@ void PngImageExt::DitherAlpha()
 
 Color PngImageExt::GetDitheredColorForPoint(int32 x, int32 y)
 {
+    const uint8* imageData = GetData();
+
     int32 count = 0;
     Color newColor(0.0f, 0.0f, 0.0f, 0.0f);
 
@@ -372,17 +374,17 @@ Color PngImageExt::GetDitheredColorForPoint(int32 x, int32 y)
     int32 startX = Max(x - 1, 0);
     int32 endX = Min(x + 1, static_cast<int32>(GetWidth()));
 
-    for (int32 alphaY = startY; alphaY < endY; ++alphaY)
+    for (int32 alphaY = startY; alphaY <= endY; ++alphaY)
     {
-        for (int32 alphaX = startX; alphaX < endX; ++alphaX)
+        for (int32 alphaX = startX; alphaX <= endX; ++alphaX)
         {
-            int32 offset = (y * GetWidth() + x) * 4;
-            if (GetData()[offset + 3])
+            int32 offset = (alphaY * GetWidth() + alphaX) * 4;
+            if (imageData[offset + 3])
             {
                 ++count;
-                newColor.r += static_cast<float32>(GetData()[offset]);
-                newColor.g += static_cast<float32>(GetData()[offset + 1]);
-                newColor.b += static_cast<float32>(GetData()[offset + 2]);
+                newColor.r += static_cast<float32>(imageData[offset]);
+                newColor.g += static_cast<float32>(imageData[offset + 1]);
+                newColor.b += static_cast<float32>(imageData[offset + 2]);
             }
         }
     }
