@@ -1034,6 +1034,8 @@ uint32 TextureDescriptor::GetConvertedCRC(eGPUFamily forGPU) const
         return convertedCRC;
 #endif
     }
+// TODO: linux
+#if !defined(__DAVAENGINE_LINUX__)
     else if (imageFormat == IMAGE_FORMAT_DDS)
     {
         uint32 convertedCRC = LibDdsHelper::GetCRCFromMetaData(filePath);
@@ -1043,6 +1045,7 @@ uint32 TextureDescriptor::GetConvertedCRC(eGPUFamily forGPU) const
         }
         return convertedCRC;
     }
+#endif
     else
     {
         Logger::Error("[TextureDescriptor::GetConvertedCRC] can't get compressed texture filename for %s", filePath.GetStringValue().c_str());
