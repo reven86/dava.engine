@@ -37,6 +37,11 @@ void PlatformCore::Quit()
     DVASSERT(0, "Implement PlatformCore::Quit");
 }
 
+void PlatformCore::SetScreenTimeoutEnabled(bool /*enabled*/)
+{
+    DVASSERT(0, "Implement PlatformCore::SetScreenTimeoutEnabled");
+}
+
 } // namespace Private
 } // namespace DAVA
 

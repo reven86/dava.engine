@@ -22,6 +22,8 @@ public:
     void PrepareToQuit();
     void Quit();
 
+    void SetScreenTimeoutEnabled(bool enabled);
+
 private:
     EngineBackend& engineBackend;
 };

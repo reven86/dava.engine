@@ -20,6 +20,11 @@ void DeviceManagerImpl::UpdateDisplayConfig()
 {
 }
 
+float32 DeviceManagerImpl::GetCpuTemperature() const
+{
+    return 0.f;
+}
+
 } // namespace Private
 } // namespace DAVA
 
