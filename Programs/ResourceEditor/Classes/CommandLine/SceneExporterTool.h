@@ -1,12 +1,11 @@
 #pragma once
 
-#include <Tools/TextureCompression/TextureConverter.h>
-#include <Tools/AssetCache/AssetCacheClient.h>
-
+#include "CommandLine/CommandLineModule.h"
 #include "Utils/SceneExporter/SceneExporter.h"
 
-#include "CommandLine/CommandLineModule.h"
-#include "Reflection/ReflectionRegistrator.h"
+#include <Tools/AssetCache/AssetCacheClient.h>
+
+#include <Reflection/ReflectionRegistrator.h>
 
 class SceneExporterTool : public CommandLineModule
 {
@@ -29,10 +28,10 @@ private:
     };
 
     SceneExporter::ExportedObjectCollection exportedObjects;
-    DAVA::AssetCacheClient::ConnectionParams connectionsParams;
+    SceneExporter::Params exportingParams;
 
-    DAVA::FilePath inFolder;
-    DAVA::FilePath outFolder;
+    DAVA::AssetCacheClient::ConnectionParams connectionsParams;
+    bool useAssetCache = false;
 
     DAVA::String filename;
     DAVA::String foldername;
@@ -40,14 +39,6 @@ private:
 
     eAction commandAction = ACTION_NONE;
     SceneExporter::eExportedObjectType commandObject = SceneExporter::OBJECT_NONE;
-
-    DAVA::Vector<DAVA::eGPUFamily> requestedGPUs;
-    DAVA::TextureConverter::eConvertQuality quality = DAVA::TextureConverter::ECQ_DEFAULT;
-
-    bool optimizeOnExport = true;
-    bool useAssetCache = false;
-    bool useHDTextures = false;
-    bool forceCompressTextures = false;
 
     DAVA_VIRTUAL_REFLECTION_IN_PLACE(SceneExporterTool, CommandLineModule)
     {

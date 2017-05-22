@@ -14,11 +14,13 @@ namespace SETestDetail
 {
 const DAVA::String projectStr = "~doc:/Test/SceneExporterTool/";
 const DAVA::String scenePathnameStr = projectStr + "DataSource/3d/Scene/testScene.sc2";
+const DAVA::String dataiOSStr = projectStr + "iOS/Data/3d/";
+const DAVA::String dataAndroidStr = projectStr + "android/Data/3d/";
 }
 
 DAVA_TARC_TESTCLASS(SceneExporterToolTest)
 {
-    void TestExportedTextures(const DAVA::FilePath& folder)
+    void TestExportedTextures(const DAVA::FilePath& folder, const DAVA::Vector<DAVA::eGPUFamily>& gpuForTest, bool useHD)
     {
         using namespace DAVA;
 
@@ -28,19 +30,19 @@ DAVA_TARC_TESTCLASS(SceneExporterToolTest)
             const FilePath& pathname = fileList->GetPathname(i);
             if (fileList->IsDirectory(i) && !fileList->IsNavigationDirectory(i))
             {
-                TestExportedTextures(pathname);
+                TestExportedTextures(pathname, gpuForTest, useHD);
             }
             else if (pathname.IsEqualToExtension(".tex"))
             {
                 std::unique_ptr<TextureDescriptor> descriptor(TextureDescriptor::CreateFromFile(pathname));
                 if (descriptor)
                 {
-                    for (eGPUFamily gpu : { eGPUFamily::GPU_MALI, eGPUFamily::GPU_ADRENO })
+                    for (eGPUFamily gpu : gpuForTest)
                     {
                         Vector<FilePath> pathes;
                         descriptor->CreateLoadPathnamesForGPU(gpu, pathes);
 
-                        TEST_VERIFY(pathes.size() == 2);
+                        TEST_VERIFY(pathes.size() == ((useHD) ? 2 : 1));
                         for (const FilePath& path : pathes)
                         {
                             TEST_VERIFY(FileSystem::Instance()->Exists(path));
@@ -77,6 +79,40 @@ DAVA_TARC_TESTCLASS(SceneExporterToolTest)
         return FilePath();
     }
 
+    bool CreateOutputConfig(const DAVA::FilePath& yamlConfig)
+    {
+        using namespace DAVA;
+
+        ScopedPtr<YamlNode> rootNode(YamlNode::CreateArrayNode(YamlNode::AR_BLOCK_REPRESENTATION));
+
+        {
+            YamlNode* iosNode = YamlNode::CreateMapNode(false);
+            iosNode->Set(String("outdir"), SETestDetail::dataiOSStr);
+
+            YamlNode* gpuNode = YamlNode::CreateArrayNode();
+            gpuNode->Add(GPUFamilyDescriptor::GetGPUName(eGPUFamily::GPU_POWERVR_IOS));
+
+            iosNode->Add(String("gpu"), gpuNode);
+            rootNode->Add(iosNode);
+        }
+
+        {
+            YamlNode* androidNode = YamlNode::CreateMapNode(false);
+            androidNode->Set(String("outdir"), SETestDetail::dataAndroidStr);
+
+            YamlNode* gpuNode = YamlNode::CreateArrayNode();
+            gpuNode->Add(GPUFamilyDescriptor::GetGPUName(eGPUFamily::GPU_MALI));
+            gpuNode->Add(GPUFamilyDescriptor::GetGPUName(eGPUFamily::GPU_ADRENO));
+
+            androidNode->Add(String("gpu"), gpuNode);
+            androidNode->Set(String("useHD"), true);
+
+            rootNode->Add(androidNode);
+        }
+
+        return YamlEmitter::SaveToYamlFile(yamlConfig, rootNode);
+    }
+
     DAVA_TEST (ExportSceneTest)
     {
         using namespace DAVA;
@@ -110,7 +146,7 @@ DAVA_TARC_TESTCLASS(SceneExporterToolTest)
             DAVA::TArc::ConsoleModuleTestExecution::ExecuteModule(tool.get());
 
             TEST_VERIFY(FileSystem::Instance()->Exists(dataPath + sceneRelativePathname));
-            TestExportedTextures(dataPath);
+            TestExportedTextures(dataPath, { eGPUFamily::GPU_MALI, eGPUFamily::GPU_ADRENO }, true);
 
             CommandLineModuleTestUtils::ClearTestFolder(dataPath);
         }
@@ -136,7 +172,7 @@ DAVA_TARC_TESTCLASS(SceneExporterToolTest)
             DAVA::TArc::ConsoleModuleTestExecution::ExecuteModule(tool.get());
 
             TEST_VERIFY(FileSystem::Instance()->Exists(dataPath + sceneRelativePathname));
-            TestExportedTextures(dataPath);
+            TestExportedTextures(dataPath, { eGPUFamily::GPU_MALI, eGPUFamily::GPU_ADRENO }, true);
 
             CommandLineModuleTestUtils::ClearTestFolder(dataPath);
         }
@@ -178,7 +214,7 @@ DAVA_TARC_TESTCLASS(SceneExporterToolTest)
             DAVA::TArc::ConsoleModuleTestExecution::ExecuteModule(tool.get());
 
             TEST_VERIFY(FileSystem::Instance()->Exists(dataPath + textureRelativePathname));
-            TestExportedTextures(dataPath);
+            TestExportedTextures(dataPath, { eGPUFamily::GPU_MALI, eGPUFamily::GPU_ADRENO }, true);
 
             CommandLineModuleTestUtils::ClearTestFolder(dataPath);
         }
@@ -203,7 +239,7 @@ DAVA_TARC_TESTCLASS(SceneExporterToolTest)
             std::unique_ptr<CommandLineModule> tool = std::make_unique<SceneExporterTool>(cmdLine);
             DAVA::TArc::ConsoleModuleTestExecution::ExecuteModule(tool.get());
 
-            TestExportedTextures(dataPath);
+            TestExportedTextures(dataPath, { eGPUFamily::GPU_MALI, eGPUFamily::GPU_ADRENO }, true);
 
             CommandLineModuleTestUtils::ClearTestFolder(dataPath);
         }
@@ -260,7 +296,47 @@ DAVA_TARC_TESTCLASS(SceneExporterToolTest)
 
         TEST_VERIFY(FileSystem::Instance()->Exists(dataPath + sceneRelativePathname));
         TEST_VERIFY(FileSystem::Instance()->Exists(dataPath + textureRelativePathname));
-        TestExportedTextures(dataPath);
+        TestExportedTextures(dataPath, { eGPUFamily::GPU_MALI, eGPUFamily::GPU_ADRENO }, true);
+
+        CommandLineModuleTestUtils::ClearTestFolder(SETestDetail::projectStr);
+    }
+
+    DAVA_TEST (ExportSceneTestOutput)
+    {
+        using namespace DAVA;
+
+        std::unique_ptr<CommandLineModuleTestUtils::TextureLoadingGuard> guard = CommandLineModuleTestUtils::CreateTextureGuard({ eGPUFamily::GPU_ORIGIN });
+        CommandLineModuleTestUtils::CreateProjectInfrastructure(SETestDetail::projectStr);
+        CommandLineModuleTestUtils::SceneBuilder::CreateFullScene(SETestDetail::scenePathnameStr);
+
+        FilePath dataSourcePath = SETestDetail::projectStr + "DataSource/3d/";
+        FilePath configPath = SETestDetail::projectStr + "config.yaml";
+        TEST_VERIFY(CreateOutputConfig(configPath));
+
+        String sceneRelativePathname = FilePath(SETestDetail::scenePathnameStr).GetRelativePathname(dataSourcePath);
+
+        {
+            Vector<String> cmdLine =
+            {
+              "ResourceEditor",
+              "-sceneexporter",
+              "-indir",
+              dataSourcePath.GetAbsolutePathname(),
+              "-output",
+              configPath.GetAbsolutePathname(),
+              "-processfile",
+              sceneRelativePathname,
+            };
+
+            std::unique_ptr<CommandLineModule> tool = std::make_unique<SceneExporterTool>(cmdLine);
+            DAVA::TArc::ConsoleModuleTestExecution::ExecuteModule(tool.get());
+
+            TEST_VERIFY(FileSystem::Instance()->Exists(SETestDetail::dataiOSStr + sceneRelativePathname));
+            TestExportedTextures(SETestDetail::dataiOSStr, { eGPUFamily::GPU_POWERVR_IOS }, false);
+
+            TEST_VERIFY(FileSystem::Instance()->Exists(SETestDetail::dataAndroidStr + sceneRelativePathname));
+            TestExportedTextures(SETestDetail::dataAndroidStr, { eGPUFamily::GPU_MALI, eGPUFamily::GPU_ADRENO }, true);
+        }
 
         CommandLineModuleTestUtils::ClearTestFolder(SETestDetail::projectStr);
     }
