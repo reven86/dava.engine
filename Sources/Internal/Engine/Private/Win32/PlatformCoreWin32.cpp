@@ -131,6 +131,18 @@ void PlatformCore::Quit()
     ::PostQuitMessage(engineBackend.GetExitCode());
 }
 
+void PlatformCore::SetScreenTimeoutEnabled(bool enabled)
+{
+    if (enabled)
+    {
+        SetThreadExecutionState(ES_CONTINUOUS);
+    }
+    else
+    {
+        SetThreadExecutionState(ES_DISPLAY_REQUIRED | ES_SYSTEM_REQUIRED | ES_CONTINUOUS);
+    }
+}
+
 void PlatformCore::EnableHighResolutionTimer(bool enable)
 {
     static UINT minTimerPeriod = 0;
