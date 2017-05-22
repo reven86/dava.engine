@@ -13,7 +13,6 @@
 #include "Engine/EngineTypes.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 #include "Engine/Private/Dispatcher/UIDispatcher.h"
-#include "Engine/EngineTypes.h"
 
 namespace rhi
 {

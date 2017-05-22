@@ -13,6 +13,7 @@
 #include "DAVAClassRegistrator.h"
 #include "Analytics/Analytics.h"
 #include "Analytics/LoggingBackend.h"
+#include "Animation/AnimationManager.h"
 #include "ReflectionDeclaration/ReflectionDeclaration.h"
 #include "Autotesting/AutotestingSystem.h"
 #include "Base/AllocatorFactory.h"
@@ -30,6 +31,7 @@
 #include "Engine/EngineSettings.h"
 #include "FileSystem/FileSystem.h"
 #include "FileSystem/KeyedArchive.h"
+#include "FileSystem/LocalizationSystem.h"
 #include "Job/JobManager.h"
 #include "Input/InputSystem.h"
 #include "Logger/Logger.h"
@@ -42,6 +44,7 @@
 #include "Platform/DPIHelper.h"
 #include "Platform/Steam.h"
 #include "PluginManager/PluginManager.h"
+#include "Render/2D/FontManager.h"
 #include "Render/2D/FTFont.h"
 #include "Render/2D/TextBlock.h"
 #include "Render/2D/Systems/RenderSystem2D.h"
@@ -55,6 +58,7 @@
 #include "UI/UIEvent.h"
 #include "UI/UIScreenManager.h"
 #include "UI/UIControlSystem.h"
+#include "Utils/Random.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/TemplateAndroid/AssetsManagerAndroid.h"
