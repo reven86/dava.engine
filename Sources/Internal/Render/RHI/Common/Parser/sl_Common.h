@@ -199,14 +199,14 @@ enum Target
 
 
 
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_POSIX__)
 
 #define stricmp strcasecmp
 #define strnicmp strncasecmp
 
 #endif
 
-#if defined(__DAVAENGINE_WIN32__) || defined(__DAVAENGINE_WIN_UAP__)
+#if defined(__DAVAENGINE_WINDOWS__)
 
     #define stricmp _strcmpi
 

@@ -78,7 +78,7 @@ bool ApiIsSupported(Api api)
     break;
 
     case RHI_GLES2:
-        #if !defined(__DAVAENGINE_WIN_UAP__)
+        #if !defined(__DAVAENGINE_WIN_UAP__) && !defined(__DAVAENGINE_LINUX__)
         supported = true;
         #endif
         break;
@@ -105,7 +105,7 @@ void InitializeImplementation(Api api, const InitParam& param)
         break;
 #endif
             
-#if !defined(__DAVAENGINE_WIN_UAP__)
+#if !defined(__DAVAENGINE_WIN_UAP__) && !defined(__DAVAENGINE_LINUX__)
     case RHI_GLES2:
         gles2_Initialize(param);
         break;
