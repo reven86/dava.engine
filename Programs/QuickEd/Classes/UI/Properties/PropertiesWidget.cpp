@@ -16,6 +16,8 @@
 #include "Model/PackageHierarchy/StyleSheetNode.h"
 
 #include <TArc/WindowSubSystem/UI.h>
+#include <TArc/Core/ContextAccessor.h>
+
 #include <UI/Components/UIComponent.h>
 #include <UI/UIControl.h>
 #include <UI/Styles/UIStyleSheetPropertyDataBase.h>
@@ -372,12 +374,14 @@ void PropertiesWidget::OnDataChanged(const DAVA::TArc::DataWrapper& wrapper, con
     using namespace DAVA;
     using namespace DAVA::TArc;
 
-    if (wrapper.HasData() == false)
+    bool hasData = wrapper.HasData();
+    treeView->setEnabled(hasData);
+    if (hasData == false)
     {
         UpdateModel(nullptr);
-        treeView->setEnabled(false);
         return;
     }
+
     bool selectionWasChanged = std::find(fields.begin(), fields.end(), DocumentData::selectionPropertyName) != fields.end();
     bool packageWasChanged = std::find(fields.begin(), fields.end(), DocumentData::packagePropertyName) != fields.end();
 
