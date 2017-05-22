@@ -359,17 +359,19 @@ void UIRichContentSystem::RegisterComponent(UIControl* control, UIComponent* com
 {
     UISystem::RegisterComponent(control, component);
 
-    if (component->GetType() == Type::Instance<UIRichContentComponent>())
+    UIRichContentComponent* richComponent = CastIfEqual<UIRichContentComponent*>(component);
+    if (richComponent != nullptr)
     {
-        AddLink(static_cast<UIRichContentComponent*>(component));
+        AddLink(richComponent);
     }
 }
 
 void UIRichContentSystem::UnregisterComponent(UIControl* control, UIComponent* component)
 {
-    if (component->GetType() == Type::Instance<UIRichContentComponent>())
+    UIRichContentComponent* richComponent = CastIfEqual<UIRichContentComponent*>(component);
+    if (richComponent != nullptr)
     {
-        RemoveLink(static_cast<UIRichContentComponent*>(component));
+        RemoveLink(richComponent);
     }
 
     UISystem::UnregisterComponent(control, component);

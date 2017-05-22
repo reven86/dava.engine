@@ -232,7 +232,7 @@ BackgroundController::BackgroundController(UIControl* nestedControl_)
     gridControl->AddControl(positionHolderControl.Get());
     positionHolderControl->AddControl(counterpoiseControl.Get());
     counterpoiseControl->AddControl(nestedControl);
-    nestedControl->GetOrCreateComponent(Type::Instance<UILayoutIsolationComponent>());
+    nestedControl->GetOrCreateComponent<UILayoutIsolationComponent>();
 }
 
 BackgroundController::~BackgroundController()

@@ -15,10 +15,10 @@
 namespace DAVA
 {
 UIStyleSheetPropertyDataBase::UIStyleSheetPropertyDataBase()
-    : controlGroup("", Type::Instance<UIControl>(), ReflectedTypeDB::Get<UIControl>())
+    : controlGroup("", nullptr, ReflectedTypeDB::Get<UIControl>())
     , bgGroup("bg", Type::Instance<UIControlBackground>(), ReflectedTypeDB::Get<UIControlBackground>())
-    , staticTextGroup("text", Type::Instance<UIControl>(), ReflectedTypeDB::Get<UIStaticText>())
-    , textFieldGroup("textField", Type::Instance<UIControl>(), ReflectedTypeDB::Get<UITextField>())
+    , staticTextGroup("text", nullptr, ReflectedTypeDB::Get<UIStaticText>())
+    , textFieldGroup("textField", nullptr, ReflectedTypeDB::Get<UITextField>())
     , linearLayoutGroup("linearLayout", Type::Instance<UILinearLayoutComponent>(), ReflectedTypeDB::Get<UILinearLayoutComponent>())
     , flowLayoutGroup("flowLayout", Type::Instance<UIFlowLayoutComponent>(), ReflectedTypeDB::Get<UIFlowLayoutComponent>())
     , flowLayoutHintGroup("flowLayoutHint", Type::Instance<UIFlowLayoutHintComponent>(), ReflectedTypeDB::Get<UIFlowLayoutHintComponent>())
