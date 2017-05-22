@@ -751,13 +751,9 @@ void TextBlock::CalculateCacheParams()
         if ((fittingType & FITTING_POINTS) && textMetrics.height > drawSize.y)
         {
             const uint32 actualLinesCount = textBox->GetLinesCount();
-            const uint32 drawableLines = Min(actualLinesCount, Max(1U, static_cast<uint32>((drawSize.y + yOffset + DAVA::EPSILON) / fontHeight)));
-            const TextBox::Line& lastDrawableLine = textBox->GetLine(drawableLines - 1);
+            const uint32 drawableLinesCount = Min(actualLinesCount, Max(1U, static_cast<uint32>((drawSize.y + yOffset + DAVA::EPSILON) / fontHeight)));
+            const TextBox::Line& lastDrawableLine = textBox->GetLine(drawableLinesCount - 1);
             WideString lineText = lastDrawableLine.visualString;
-            //if (textBox->GetLinesCount() > drawableLines) {
-            //	const TextBox::Line &firstInvisibleLine = textBox->GetLine(drawableLines);
-            //	lineText.append(firstInvisibleLine.visualString);
-            //}
 
             Vector<float32> lineCharactersSizes;
             Font::StringMetrics textMetrics = font->GetStringMetrics(lineText, &lineCharactersSizes);
@@ -770,12 +766,13 @@ void TextBlock::CalculateCacheParams()
             float32 fullWidth = static_cast<float32>(textMetrics.width + pointsMetric.width) - FT_WIDTH_EPSILON;
             for (uint32 i = length; i > 0U; --i)
             {
-                if (fullWidth <= drawSize.x)
+                uint32 logicalTextEnd = lastDrawableLine.start + i;
+                if (fullWidth <= drawSize.x && !StringUtils::IsWhitespace(logicalText[logicalTextEnd - 1]))
                 {
 #if defined(LOCALIZATION_DEBUG)
                     fittingTypeUsed = FITTING_POINTS;
 #endif
-                    pointsStr.assign(logicalText, 0, lastDrawableLine.start + i);
+                    pointsStr.assign(logicalText, 0, logicalTextEnd);
                     break;
                 }
                 fullWidth -= lineCharactersSizes[i - 1];
