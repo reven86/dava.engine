@@ -81,9 +81,9 @@ void UILayoutSystem::UnregisterControl(UIControl* control)
 
 void UILayoutSystem::UnregisterComponent(UIControl* control, UIComponent* component)
 {
-    if (component->GetType() == Type::Instance<UISizePolicyComponent>())
+    UISizePolicyComponent* sizePolicyComponent = CastIfEqual<UISizePolicyComponent*>(component);
+    if (sizePolicyComponent != nullptr)
     {
-        UISizePolicyComponent* sizePolicyComponent = DynamicTypeCheck<UISizePolicyComponent*>(component);
         for (int32 axis = Vector2::AXIS_X; axis < Vector2::AXIS_COUNT; axis++)
         {
             LayoutFormula* formula = sizePolicyComponent->GetFormula(axis);

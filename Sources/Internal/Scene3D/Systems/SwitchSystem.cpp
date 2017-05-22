@@ -35,7 +35,7 @@ void SwitchSystem::Process(float32 timeElapsed)
 
             sw->oldSwitchIndex = sw->newSwitchIndex;
 
-            ActionComponent* actionComponent = cast_if_equal<ActionComponent*>(entity->GetComponent(Component::ACTION_COMPONENT));
+            ActionComponent* actionComponent = CastIfEqual<ActionComponent*>(entity->GetComponent(Component::ACTION_COMPONENT));
             if (NULL != actionComponent)
             {
                 actionComponent->StartSwitch(sw->newSwitchIndex);

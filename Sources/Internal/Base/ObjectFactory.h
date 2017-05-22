@@ -92,8 +92,8 @@ public:
         {
             CreateObjectFunc newFunc = it->second;
 
-            //VI: cannot use cast_if_equal since we need to cast to base types
-            //VI: but cast_if_equal casts to the exact types only
+            //VI: cannot use CastIfEqual since we need to cast to base types
+            //VI: but CastIfEqual casts to the exact types only
             return static_cast<T*>((newFunc)());
         }
         DVASSERT(false, Format("Class %s creator not found.", name.c_str()).c_str());
