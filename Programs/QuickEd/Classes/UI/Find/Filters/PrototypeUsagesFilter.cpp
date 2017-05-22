@@ -10,11 +10,11 @@ PrototypeUsagesFilter::PrototypeUsagesFilter(const DAVA::String& packagePath_, c
 {
 }
 
-bool PrototypeUsagesFilter::CanAcceptPackage(const PackageInformation* package) const
+FindFilter::ePackageStatus PrototypeUsagesFilter::AcceptPackage(const PackageInformation* package) const
 {
     if (package->GetPath() == packagePath)
     {
-        return true;
+        return PACKAGE_CAN_ACCEPT_CONTROLS;
     }
 
     bool imports = false;
@@ -28,10 +28,10 @@ bool PrototypeUsagesFilter::CanAcceptPackage(const PackageInformation* package) 
         }
     });
 
-    return imports;
+    return imports ? PACKAGE_CAN_ACCEPT_CONTROLS : PACKAGE_NOT_INTERESTED;
 }
 
-bool PrototypeUsagesFilter::CanAcceptControl(const ControlInformation* control) const
+bool PrototypeUsagesFilter::AcceptControl(const ControlInformation* control) const
 {
     return control->GetPrototype() == prototypeName && control->GetPrototypePackagePath() == packagePath;
 }

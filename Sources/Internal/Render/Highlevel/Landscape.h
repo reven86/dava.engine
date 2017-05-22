@@ -9,6 +9,7 @@
 #include "FileSystem/FilePath.h"
 #include "MemoryManager/MemoryProfiler.h"
 #include "Render/Highlevel/LandscapeSubdivision.h"
+#include "Concurrency/Mutex.h"
 
 namespace DAVA
 {

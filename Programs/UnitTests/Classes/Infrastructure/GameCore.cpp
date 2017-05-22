@@ -33,9 +33,9 @@ String runOnlyTheseTestClasses = "";
 
 // List of names specifying which test classes shouldn't run. This list takes precedence over runOnlyTheseTests.
 // Names should be separated with ' ' or ',' or ';'
-String disableTheseTestClasses = "";
+String disableTheseTestClasses = "ScriptTest";
 
-bool teamcityOutputEnabled = true; // Flag whether to enable TeamCity output
+bool teamcityOutputEnabled = false; // Flag whether to enable TeamCity output
 bool teamcityCaptureStdout = false; // Flag whether to set TeamCity option 'captureStandardOutput=true'
 
 const String testCoverageFileName = "Tests.cover";
@@ -114,14 +114,9 @@ void GameCore::ProcessCommandLine()
     {
         disableTheseTestClasses = cmdline->GetCommandParam("-disable_test");
     }
-    if (cmdline->CommandIsFound("-noteamcity"))
-    {
-        teamcityOutputEnabled = false;
-    }
-    if (cmdline->CommandIsFound("-teamcity_capture_stdout"))
-    {
-        teamcityCaptureStdout = true;
-    }
+
+    teamcityOutputEnabled = cmdline->CommandIsFound("-teamcity");
+    teamcityCaptureStdout = cmdline->CommandIsFound("-teamcity_capture_stdout");
 }
 
 void GameCore::OnAppStarted()
@@ -222,7 +217,10 @@ void GameCore::OnTestFinished(const DAVA::String& testClassName, const DAVA::Str
 
 void GameCore::OnTestFailed(const String& testClassName, const String& testName, const String& condition, const char* filename, int lineno, const String& userMessage)
 {
-    OnError();
+    if (teamcityOutputEnabled == false)
+    {
+        OnError();
+    }
 
     String errorString;
     if (userMessage.empty())

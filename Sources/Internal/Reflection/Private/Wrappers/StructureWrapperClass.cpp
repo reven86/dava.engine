@@ -6,6 +6,8 @@ namespace DAVA
 StructureWrapperClass::StructureWrapperClass(const Type* type_)
     : rootType(ReflectedTypeDB::GetByType(type_))
 {
+    caps.hasRangeAccess = true;
+
     FillCache(rootType);
 }
 
@@ -60,17 +62,16 @@ bool StructureWrapperClass::HasFields(const ReflectedObject& object, const Value
     return !fieldsCache.empty();
 }
 
+size_t StructureWrapperClass::GetFieldsCount(const ReflectedObject& object, const ValueWrapper* vw) const
+{
+    return fieldsCache.size();
+}
+
 Reflection StructureWrapperClass::GetField(const ReflectedObject& object, const ValueWrapper* vw, const Any& key) const
 {
     if (!fieldsCache.empty())
     {
-        String name = key.Cast<String>(String());
-#if !defined(__DAVAENGINE_COREV2__)
-        if (name.empty())
-        {
-            name = key.Cast<const char*>();
-        }
-#endif
+        ReflectedStructure::Key name = key.Cast<ReflectedStructure::Key>(ReflectedStructure::Key());
         if (!name.empty())
         {
             auto it = fieldsNameIndexes.find(name);
@@ -103,6 +104,34 @@ Vector<Reflection::Field> StructureWrapperClass::GetFields(const ReflectedObject
     return ret;
 }
 
+Vector<Reflection::Field> StructureWrapperClass::GetFields(const ReflectedObject& object, const ValueWrapper* vw, size_t first, size_t count) const
+{
+    Vector<Reflection::Field> ret;
+
+    size_t sz = fieldsCache.size();
+
+    DVASSERT(first < sz);
+    DVASSERT(first + count <= sz);
+
+    if (first < sz)
+    {
+        size_t n = std::min(count, sz - first);
+
+        ret.reserve(n);
+        for (size_t i = first; i < (first + n); ++i)
+        {
+            const ReflectedStructure::Field* field = fieldsCache[i].field;
+
+            Any key(field->name);
+            Reflection ref(vw->GetValueObject(object), field->valueWrapper.get(), nullptr, field->meta.get());
+
+            ret.emplace_back(std::move(key), std::move(ref), fieldsCache[i].inheritFrom);
+        }
+    }
+
+    return ret;
+}
+
 bool StructureWrapperClass::HasMethods(const ReflectedObject& object, const ValueWrapper* vw) const
 {
     return !methodsCache.empty();
@@ -110,15 +139,19 @@ bool StructureWrapperClass::HasMethods(const ReflectedObject& object, const Valu
 
 AnyFn StructureWrapperClass::GetMethod(const ReflectedObject& object, const ValueWrapper* vw, const Any& key) const
 {
-    String name = key.Cast<String>(String());
-    if (!name.empty())
+    FastName name = key.Cast<FastName>(FastName());
+    if (name.IsValid())
     {
         void* this_ = vw->GetValueObject(object).GetVoidPtr();
 
-        auto it = methodsNameIndexes.find(name);
-        if (it != methodsNameIndexes.end())
+        ReflectedStructure::Key name = key.Cast<ReflectedStructure::Key>(ReflectedStructure::Key());
+        if (!name.empty())
         {
-            return methodsCache[it->second].method->fn.BindThis(this_);
+            auto it = methodsNameIndexes.find(name);
+            if (it != methodsNameIndexes.end())
+            {
+                return methodsCache[it->second].method->fn.BindThis(this_);
+            }
         }
     }
     return AnyFn();
@@ -135,10 +168,8 @@ Vector<Reflection::Method> StructureWrapperClass::GetMethods(const ReflectedObje
     {
         const ReflectedStructure::Method* method = methodEntry.method;
 
-        String key(method->name);
         AnyFn fn = method->fn.BindThis(this_);
-
-        ret.emplace_back(std::move(key), std::move(fn));
+        ret.emplace_back(method->name, std::move(fn));
     }
 
     return ret;

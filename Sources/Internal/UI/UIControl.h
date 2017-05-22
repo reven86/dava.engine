@@ -70,6 +70,7 @@ class UIControl : public AnimatedObject
 
     // Need for isIteratorCorrupted. See UILayoutSystem::UpdateControl.
     friend class UILayoutSystem;
+    friend class UIRenderSystem;
 
 public:
     /**
@@ -794,18 +795,9 @@ public:
      \param[in] hierarchic Is value need to be changed in all coltrol children.
      */
     void SetDrawPivotPointMode(eDebugDrawPivotMode mode, bool hierarchic = false);
+    eDebugDrawPivotMode GetDrawPivotPointMode() const;
 
 public:
-    /**
-     \brief Calls on every frame to process controls drawing.
-        Firstly this method calls Draw() for the curent control. When SystemDraw() called for the every control child.
-        And at the end DrawAfterChilds() called for current control.
-        Internal method used by ControlSystem.
-        Can be overriden to adjust draw hierarchy.
-     \param[in] geometricData Parent geometric data.
-     */
-    virtual void SystemDraw(const UIGeometricData& geometricData, const DAVA::UIControlBackground* parentBackground); // Internal method used by ControlSystem
-
     /**
      \brief set parent draw color into control
      \param[in] parentColor draw color of parent background.
@@ -987,9 +979,8 @@ private:
     List<UIControl*> children;
 
     DAVA_DEPRECATED(bool isUpdated = false);
-    DAVA_DEPRECATED(void SystemUpdate(float32 timeElapsed));
     // Need for old implementation of SystemUpdate.
-    friend class UIScreenshoter;
+    friend class UIUpdateSystem;
 
 public:
     //TODO: store geometric data in UIGeometricData
@@ -1042,9 +1033,6 @@ protected:
     void RegisterInputProcessors(int32 processorsCount);
     void UnregisterInputProcessor();
     void UnregisterInputProcessors(int32 processorsCount);
-
-    void DrawDebugRect(const UIGeometricData& geometricData, bool useAlpha = false);
-    void DrawPivotPoint(const Rect& drawRect);
 
 private:
     int32 tag = 0;
