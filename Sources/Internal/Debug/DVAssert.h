@@ -93,7 +93,7 @@ void RemoveAllHandlers();
 // TODO: release behaviour?
 #if defined(__DAVAENGINE_WINDOWS__)
 #define DVASSERT_HALT() __debugbreak()
-#elif defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
+#elif defined(__DAVAENGINE_POSIX__)
 void RaiseSigTrap();
 #define DVASSERT_HALT() RaiseSigTrap()
 #else

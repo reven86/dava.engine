@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_THREAD_H__
-#define __DAVAENGINE_THREAD_H__ 
+#pragma once
 
 #include <functional>
 
@@ -11,14 +10,14 @@
 #include "Concurrency/Mutex.h"
 #include "Functional/Function.h"
 
-#if !defined(__DAVAENGINE_WINDOWS__)
+#if defined(__DAVAENGINE_POSIX__)
 #include <pthread.h>
 #endif
 
 namespace DAVA
 {
 /**
-	\defgroup threads Thread wrappers
+    \defgroup threads Thread wrappers
 */
 
 #if defined(__DAVAENGINE_WINDOWS__)
@@ -74,15 +73,13 @@ public:
         STATE_KILLED
     };
 
-    /**
-    \brief main thread name
-    */
-    static const char* davaMainThreadName;
+    /** Main thread name */
+    static const char davaMainThreadName[];
 
     /**
-		\brief static function to detect if current thread is main thread of application
-		\returns true if now main thread executes
-	*/
+        \brief static function to detect if current thread is main thread of application
+        \returns true if now main thread executes
+    */
     static bool IsMainThread();
 
     /**
@@ -91,11 +88,11 @@ public:
     static Thread* Current();
 
     /**
-		\brief static function to create instance of thread object based on Message.
-		This functions create thread based on message. 
+        \brief static function to create instance of thread object based on Message.
+        This functions create thread based on message. 
         It do not start the thread until Start function called.
-		\returns ptr to thread object 
-	*/
+        \returns ptr to thread object 
+    */
     static Thread* Create(const Message& msg);
 
     /**
@@ -106,92 +103,65 @@ public:
      */
     static Thread* Create(const Procedure& proc);
 
-    /**
-     \brief Sets thread name. You should to use it before Thread::Start().
-     */
+    /** Set thread name. You should to use it before Thread::Start(). */
     inline void SetName(const String& _name);
     inline const String& GetName() const;
 
-    /**
-		\brief Start execution of the thread
-	*/
+    /** Start execution of the thread */
     void Start();
 
     /**
-		\brief get current thread state. 
+        \brief get current thread state. 
 
-		This function return state of the thread. It can be STATE_CREATED, STATE_RUNNING, STATE_ENDED.
-	*/
+        This function return state of the thread. It can be STATE_CREATED, STATE_RUNNING, STATE_ENDED.
+    */
     inline eThreadState GetState() const;
 
     void SetPriority(eThreadPriority priority);
     inline eThreadPriority GetPriority() const;
 
-    /** Wait until thread's finished.
-    */
+    /** Wait until thread's finished. */
     void Join();
     bool IsJoinable() const;
 
-    /** Kill thread by OS. No signals will be sent.
-    */
+    /** Kill thread by OS. No signals will be sent. */
     void Kill();
     static void KillAll();
 
-    /** Ask to cancel thred. User should to check state variable
-    */
+    /** Ask to cancel thread. User should to check state variable */
     inline void Cancel();
-    /** Check if someone asked thiead to cancel
-     */
+
+    /** Check if someone asked thread to cancel */
     inline bool IsCancelling() const;
     static void CancelAll();
 
-    /**
-     \brief Notifies the scheduler that the current thread is
-     willing to release its processor to other threads of the same or higher
-     priority.
+    /** Notify the scheduler that the current thread is willing to release its processor
+        to other threads of the same or higher priority.
      */
     static void Yield();
 
-    /**
-     \brief suspends the execution of the current thread until the time-out interval elapses
-     */
+    /** Suspend the execution of the current thread until the time-out interval elapses */
     static void Sleep(uint32 timeMS);
 
-    /**
-     \brief 
-     \returns returns unique current thread identifier.
-    */
+    /** Get current thread identifier */
     static Id GetCurrentId();
 
-    /**
-     \brief 
-     \returns returns current thread identifier as integer
-    */
+    /** Get current thread identifier as integer */
     static uint64 GetCurrentIdAsUInt64();
 
-    /**
-     \returns returns Id of Thread Object.
-     */
+    /** Get thread identifier of Thread object instance */
     inline Id GetId() const;
 
-    /**
-    \brief sets stack size of the thread. Stack size cannot be set to running thread
-    */
+    /** Set stack size of the thread. Stack size cannot be set to running thread */
     inline void SetStackSize(size_t size);
 
-    /**
-     \brief register current native thread handle and remember it's Id as Id of MainThread.
-     */
+    /** Register current native thread handle and remember it's Id as Id of MainThread. */
     static void InitMainThread();
 
-    /**
-    \brief sets name of current thread
-    */
+    /** Set name of the current thread */
     static void SetCurrentThreadName(const String& str);
 
-    /**
-    \brief bind current thread to specified processor. Thread cannot be run on other processors.
-    */
+    /** Bind current thread to specified processor. Thread cannot be run on other processors. */
     bool BindToProcessor(unsigned proc_n);
 
 private:
@@ -203,14 +173,10 @@ private:
     void Init();
     void Shutdown();
 
-    /**
-    \brief Kill thread native implementation (contains no Thread logic)
-    */
+    /** Kill thread native implementation (contains no Thread logic) */
     void KillNative();
 
-    /**
-    \brief Function which processes in separate thread. Used to launch user defined code and handle state.
-    */
+    /** Function which processes in separate thread. Used to launch user defined code and handle state. */
     static void ThreadFunction(void* param);
 
     Procedure threadFunc;
@@ -220,23 +186,15 @@ private:
     size_t stackSize;
     eThreadPriority threadPriority;
 
-    /**
-    \brief Native thread handle - variable which used to thread manipulations
-    */
+    /** Native thread handle - variable which used to thread manipulations */
     Handle handle;
-    /**
-    \brief Some value which is unique for any thread in current OS. Could be used only for equals comparision.
-    */
+    /** Some value which is unique for any thread in current OS. Could be used only for equals comparision. */
     Id id;
 
-    /**
-    \brief Name of the thread.
-    */
+    /** Name of the thread. */
     String name;
 
-    /**
-    \brief Full list of created DAVA::Thread's. Main thread is not DAVA::Thread, so it is not there.
-    */
+    /** Full list of created DAVA::Thread's. Main thread is not DAVA::Thread, so it is not there. */
     static Id mainThreadId;
     static Id glThreadId;
 };
@@ -288,6 +246,5 @@ inline Thread::eThreadPriority Thread::GetPriority() const
 {
     return threadPriority;
 }
-};
 
-#endif // __DAVAENGINE_THREAD_H__
+} // namespace DAVA

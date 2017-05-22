@@ -3,7 +3,7 @@
 #include "FileSystem/YamlParser.h"
 
 #ifdef __DAVAENGINE_WIN32__
-#include "shellapi.h"
+#include <shellapi.h>
 #endif // __DAVAENGINE_WIN32__
 
 namespace DAVA

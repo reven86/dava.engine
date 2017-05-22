@@ -1,5 +1,6 @@
 #include "Base/Platform.h"
-#if !defined(__DAVAENGINE_WINDOWS__)
+
+#if defined(__DAVAENGINE_POSIX__)
 
 #include <time.h>
 #include <thread>
@@ -145,7 +146,7 @@ uint64 Thread::GetCurrentIdAsUInt64()
 {
 #if defined(__DAVAENGINE_APPLE__)
     return reinterpret_cast<uint64>(GetCurrentId());
-#elif defined(__DAVAENGINE_ANDROID__)
+#elif defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_LINUX__)
     return static_cast<uint64>(GetCurrentId());
 #endif
 }
@@ -250,4 +251,4 @@ void Thread::SetPriority(eThreadPriority priority)
 
 } //  namespace DAVA
 
-#endif
+#endif // __DAVAENGINE_POSIX__

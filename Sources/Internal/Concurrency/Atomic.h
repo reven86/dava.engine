@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_ATOMIC_H__
-#define __DAVAENGINE_ATOMIC_H__
+#pragma once
 
 #include "Base/BaseTypes.h"
 #include "Base/Platform.h"
@@ -151,5 +150,3 @@ bool Atomic<T>::CompareAndSwap(T expected, T desired) DAVA_NOEXCEPT
 } //  namespace DAVA
 
 #endif
-
-#endif //  __DAVAENGINE_ATOMIC_H__
