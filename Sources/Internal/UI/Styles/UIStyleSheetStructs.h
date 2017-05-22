@@ -35,14 +35,14 @@ struct UIStyleSheetPropertyDescriptor
     Any defaultValue;
     const ReflectedStructure::Field* field = nullptr;
 
-    UIStyleSheetPropertyDescriptor(UIStyleSheetPropertyGroup* group_, FastName name_, const Any& defaultValue_)
+    UIStyleSheetPropertyDescriptor(UIStyleSheetPropertyGroup* group_, const char* name_, const Any& defaultValue_)
         : group(group_)
         , name(name_)
         , defaultValue(defaultValue_)
     {
         const ReflectedStructure* s = group->refType->GetStructure();
         auto it = std::find_if(s->fields.begin(), s->fields.end(), [&name_](const std::unique_ptr<ReflectedStructure::Field>& field) {
-            return field->name == name_;
+            return field->name == FastName(name_);
         });
         if (it != s->fields.end())
         {
