@@ -908,7 +908,12 @@ void EngineBackend::DestroySubsystems()
     SafeRelease(context->downloadManager);
     SafeRelease(context->soundSystem);
     SafeDelete(context->dlcManager);
-    SafeDelete(context->inputSystem);
+    if (context->inputSystem != nullptr)
+    {
+        delete context->inputSystem;
+        context->inputSystem = nullptr;
+    }
+
     SafeRelease(context->netCore);
 
 #if defined(__DAVAENGINE_ANDROID__)
@@ -916,7 +921,11 @@ void EngineBackend::DestroySubsystems()
 #endif
 
     SafeRelease(context->fileSystem);
-    SafeDelete(context->deviceManager);
+    if (context->deviceManager != nullptr)
+    {
+        delete context->deviceManager;
+        context->deviceManager = nullptr;
+    }
     SafeDelete(context->componentManager);
     SafeRelease(context->logger);
 }
