@@ -33,7 +33,40 @@ String runOnlyTheseTestClasses = "";
 
 // List of names specifying which test classes shouldn't run. This list takes precedence over runOnlyTheseTests.
 // Names should be separated with ' ' or ',' or ';'
+#if !defined(__DAVAENGINE_LINUX__)
 String disableTheseTestClasses = "";
+#else
+// TODO: linux
+String disableTheseTestClasses =
+"ArchiveTest "
+"ComponentsTest "
+"DataVaultTest "
+"DateTimeTest "
+"DeviceInfoTest "
+"DLCManagerTest "
+"FileListTest "
+"FileSystemTest "
+"FormatsTest "
+"GPUFamilyTest "
+"HDTest "
+"ImageSystemTest "
+"KeyedArchiveYamlTest "
+"LoadImageTest "
+"LocalizationTest "
+"SaveImageTest "
+"SceneIdTest "
+"StaticTextTest "
+"TextSizeTest "
+"TextureLoadingTest "
+"FormulaExecutorTest "
+"FormulaParserTest "
+"FormulaTest "
+"FormulaTokenizerTest "
+"UILayoutSystemTest "
+"UIControlHelpersTest "
+"UIControlHierarhyTest "
+"UIControlTest";
+#endif
 
 bool teamcityOutputEnabled = true; // Flag whether to enable TeamCity output
 bool teamcityCaptureStdout = false; // Flag whether to set TeamCity option 'captureStandardOutput=true'
@@ -76,7 +109,11 @@ int DAVAMain(Vector<String> cmdline)
     };
 
     Engine e;
+#if defined(__DAVAENGINE_LINUX__)
+    e.Init(eEngineRunMode::CONSOLE_MODE, modules, appOptions);
+#else
     e.Init(eEngineRunMode::GUI_STANDALONE, modules, appOptions);
+#endif
 
     GameCore g(e);
     e.Run();
@@ -92,7 +129,10 @@ GameCore::GameCore(DAVA::Engine& e)
     engine.gameLoopStarted.Connect(this, &GameCore::OnAppStarted);
     engine.gameLoopStopped.Connect(this, &GameCore::OnAppFinished);
     engine.update.Connect(this, &GameCore::Update);
-    engine.windowCreated.Connect(this, &GameCore::OnWindowCreated);
+    if (engine.GetRunMode() != eEngineRunMode::CONSOLE_MODE)
+    {
+        engine.windowCreated.Connect(this, &GameCore::OnWindowCreated);
+    }
 }
 
 void GameCore::Update(float32 timeElapsed)

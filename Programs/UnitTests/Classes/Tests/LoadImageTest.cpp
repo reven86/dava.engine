@@ -5,6 +5,9 @@ using namespace DAVA;
 
 DAVA_TESTCLASS (LoadImageTest)
 {
+// TODO: linux
+#if !defined(__DAVAENGINE_LINUX__)
+
     DAVA_TEST (JpegExifTest)
     {
         Vector<Image*> set;
@@ -144,4 +147,5 @@ DAVA_TESTCLASS (LoadImageTest)
         }
     }
 #endif
+#endif // !__DAVAENGINE_LINUX__
 };
