@@ -368,12 +368,13 @@ void DLCManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, vo
 
 void DLCManagerTest::OnIOErrorClicked(BaseObject*, void*, void*)
 {
-    IOErrorTypes ioErr;
-    ioErr.closeFile = true;
-    ioErr.createFile = true;
-    ioErr.openFile = true;
-    ioErr.readFile = true;
-    ioErr.writeFile = true;
+    DebugFS::IOErrorTypes ioErr;
+    ioErr.closeFailed = true;
+    ioErr.openOrCreateFailed = true;
+    ioErr.seekFailed = true;
+    ioErr.truncateFailed = true;
+    ioErr.readFailed = true;
+    ioErr.writeFailed = true;
     ioErr.ioErrorCode = ENOSPC; // no space on device
     GenerateIOErrorOnNextOperation(ioErr);
 }

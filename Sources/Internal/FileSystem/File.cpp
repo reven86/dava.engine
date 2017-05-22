@@ -36,7 +36,19 @@ File::~File()
     // which do not initialize file pointer (e.g. DynamicMemoryFile)
     if (file != nullptr)
     {
-        fclose(file);
+#ifdef __DAVAENGINE_DEBUG__
+        if (DebugFS::GenErrorOnCloseFailed())
+        {
+            return;
+        }
+#endif
+        int result = fclose(file);
+        DVASSERT(result == 0);
+        if (result != 0)
+        {
+            const String& s = filename.GetStringValue();
+            Logger::Error("failed close file: %s", s.c_str());
+        }
         file = nullptr;
     }
 }
@@ -63,15 +75,30 @@ static int SetFilePos(FILE* f, int64 position, int32 seekDirection)
 #endif
 }
 
-File* File::Create(const FilePath& filePath, uint32 attributes)
+File* File::Create(const FilePath& filename, uint32 attributes)
 {
 #ifdef __DAVAENGINE_DEBUG__
-    if (GenErrorOnOpenFile())
+    if (DebugFS::GenErrorOnOpenOrCreateFailed())
     {
         return nullptr;
     }
 #endif
-    File* result = CreateFromSystemPath(filePath, attributes);
+
+    if (filename.IsDirectoryPathname())
+    {
+        return nullptr;
+    }
+
+    File* result = PureCreate(filename, attributes);
+
+    if (!(attributes & (WRITE | CREATE | APPEND)))
+    {
+        FilePath compressedFile = filename + ".dvpl";
+        if (FileAPI::IsRegularFile(compressedFile.GetAbsolutePathname()))
+        {
+            result = CompressedCreate(compressedFile, attributes);
+        }
+    }
     return result; // easy debug on android(can set breakpoint on nullptr value in eclipse do not remove it)
 }
 
@@ -111,6 +138,12 @@ bool File::IsFileInMountedArchive(const String& packName, const String& relative
 
 File* File::CompressedCreate(const FilePath& filename, uint32 attributes)
 {
+#ifdef __DAVAENGINE_DEBUG__
+    if (DebugFS::GenErrorOnOpenOrCreateFailed())
+    {
+        return nullptr;
+    }
+#endif
     ScopedPtr<File> f(PureCreate(filename, attributes));
 
     if (!f)
@@ -179,27 +212,6 @@ File* File::CompressedCreate(const FilePath& filename, uint32 attributes)
 
     Logger::Error("incorrect compression type: %d file:", static_cast<int32>(footer.type), filename.GetAbsolutePathname().c_str());
     return nullptr;
-}
-
-File* File::CreateFromSystemPath(const FilePath& filename, uint32 attributes)
-{
-    if (filename.IsDirectoryPathname())
-    {
-        return nullptr;
-    }
-
-    File* result = PureCreate(filename, attributes);
-
-    if (!(attributes & (File::WRITE | File::CREATE | File::APPEND)))
-    {
-        FilePath compressedFile = filename + ".dvpl";
-        if (FileAPI::IsRegularFile(compressedFile.GetAbsolutePathname()))
-        {
-            result = CompressedCreate(compressedFile, attributes);
-        }
-    }
-
-    return result;
 }
 
 #ifdef __DAVAENGINE_ANDROID__
@@ -335,7 +347,7 @@ const FilePath& File::GetFilename()
 uint32 File::Write(const void* pointerToData, uint32 dataSize)
 {
 #ifdef __DAVAENGINE_DEBUG__
-    if (GenErrorOnWriteToFile())
+    if (DebugFS::GenErrorOnWriteFailed())
     {
         return 0;
     }
@@ -359,6 +371,12 @@ uint32 File::Write(const void* pointerToData, uint32 dataSize)
 
 uint32 File::Read(void* pointerToData, uint32 dataSize)
 {
+#ifdef __DAVAENGINE_DEBUG__
+    if (DebugFS::GenErrorOnReadFailed())
+    {
+        return 0;
+    }
+#endif
     //! Do not change order (1, dataSize), cause fread return count of size(2nd param) items
     //! May be performance issues
     return static_cast<uint32>(fread(pointerToData, 1, static_cast<size_t>(dataSize), file));
@@ -497,6 +515,12 @@ bool File::GetNextChar(uint8* nextChar)
 
 uint64 File::GetPos() const
 {
+#ifdef __DAVAENGINE_DEBUG__
+    if (DebugFS::GenErrorOnReadFailed())
+    {
+        return std::numeric_limits<uint64>::max();
+    }
+#endif
     return GetFilePos(file);
 }
 
@@ -507,6 +531,12 @@ uint64 File::GetSize() const
 
 bool File::Seek(int64 position, eFileSeek seekType)
 {
+#ifdef __DAVAENGINE_DEBUG__
+    if (DebugFS::GenErrorOnSeekFailed())
+    {
+        return false;
+    }
+#endif
     int realSeekType = 0;
     switch (seekType)
     {
@@ -529,6 +559,12 @@ bool File::Seek(int64 position, eFileSeek seekType)
 
 bool File::Flush()
 {
+#ifdef __DAVAENGINE_DEBUG__
+    if (DebugFS::GenErrorOnWriteFailed())
+    {
+        return 0;
+    }
+#endif
     return 0 == fflush(file);
 }
 
@@ -539,6 +575,12 @@ bool File::IsEof() const
 
 bool File::Truncate(uint64 size)
 {
+#ifdef __DAVAENGINE_DEBUG__
+    if (DebugFS::GenErrorOnTrancateFailed())
+    {
+        return false;
+    }
+#endif
 #if defined(__DAVAENGINE_WINDOWS__)
     return (0 == _chsize(_fileno(file), static_cast<long>(size)));
 #elif defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_ANDROID__)

@@ -3,17 +3,28 @@
 
 namespace DAVA
 {
+namespace DebugFS
+{
 struct IOErrorTypes
 {
+    // most interesting error codes(http://en.cppreference.com/w/cpp/header/cerrno):
+    // ENOSPC - No space left on device
+    // ENOENT - No such file or directory
+    // ENFILE - Too many files open in system
     int32 ioErrorCode = 0;
-    bool openFile = false;
-    bool createFile = false;
-    bool writeFile = false;
-    bool readFile = false;
-    bool closeFile = false;
+    bool openOrCreateFailed = false;
+    bool writeFailed = false;
+    bool readFailed = false;
+    bool seekFailed = false;
+    bool closeFailed = false;
+    bool truncateFailed = false;
 };
 void GenerateIOErrorOnNextOperation(IOErrorTypes types);
-bool GenErrorOnOpenFile();
-bool GenErrorOnWriteToFile();
-
+bool GenErrorOnOpenOrCreateFailed();
+bool GenErrorOnWriteFailed();
+bool GenErrorOnReadFailed();
+bool GenErrorOnSeekFailed();
+bool GenErrorOnCloseFailed();
+bool GenErrorOnTrancateFailed();
+}
 } // end namespace DAVA
