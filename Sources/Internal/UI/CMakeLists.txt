@@ -61,4 +61,6 @@ set( ERASE_FILES_NOT_MACOS       UIScreenManagerDefault.h
 set( ERASE_FILES_NOT_WIN         ${ERASE_FILES_NOT_MACOS} )
 set( ERASE_FILES_NOT_WINUAP      ${ERASE_FILES_NOT_MACOS} )
 
+set( ERASE_FILES_NOT_UNIX        ${ERASE_FILES_NOT_MACOS} )
+
 setup_main_module()

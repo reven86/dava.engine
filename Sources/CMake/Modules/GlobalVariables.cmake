@@ -62,6 +62,7 @@ set( DAVA_PLATFORM_LIST IOS
                         ANDROID 
                         WIN 
                         WINUAP
+                        UNIX
                         )
 
 if( IOS )
@@ -76,6 +77,8 @@ elseif( WIN32 AND NOT WINDOWS_UAP )
 elseif( WIN32 AND WINDOWS_UAP )
     set( DAVA_PLATFORM_CURENT WINUAP )
     set( WINUAP true )
+elseif (UNIX)
+    set( DAVA_PLATFORM_CURENT UNIX )
 endif()
 
 
@@ -149,7 +152,9 @@ elseif ( MACOS )
     
 elseif ( IOS )
     set ( DAVA_OPENSSL_PLATFORM "ios" )
-    
+
+elseif ( UNIX )
+    set ( DAVA_OPENSSL_PLATFORM "linux" )
 else ()
     message ( FATAL_ERROR "Unknown platform" )
     

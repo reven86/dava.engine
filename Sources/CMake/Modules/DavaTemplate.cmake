@@ -385,7 +385,7 @@ foreach( TEST_FOLDER ${EXTERNAL_TEST_FOLDERS} )
             configure_file( ${FILE}  ${OUT_FILE} COPYONLY)
             list( APPEND PROJECT_SOURCE_FILES ${OUT_FILE} )
         endforeach()
-    else()
+    elseif (NOT UNIX)
         list( APPEND PROJECT_SOURCE_FILES ${TEST_FILES} )
         source_group( "EXTERNAL_TEST" FILES ${TEST_FILES} )
 
