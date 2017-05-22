@@ -43,9 +43,13 @@ File::~File()
 static uint64 GetFilePos(FILE* f)
 {
 #if defined(__DAVAENGINE_WINDOWS__)
-    return _ftelli64(f);
+    int64 result = _ftelli64(f);
+    DVASSERT(-1 != result);
+    return static_cast<uint64>(result);
 #else
-    return static_cast<uint64>(ftello(f));
+    off_t result = ftello(f);
+    DVASSERT(-1 != result);
+    return static_cast<uint64>(result);
 #endif
 }
 
@@ -287,13 +291,17 @@ File* File::PureCreate(const FilePath& filePath, uint32 attributes)
     {
         file = FileAPI::OpenFile(path, "wb");
         if (!file)
+        {
             return nullptr;
+        }
     }
     else if ((attributes & File::APPEND) && (attributes & File::WRITE))
     {
         file = FileAPI::OpenFile(path, "ab");
         if (!file)
+        {
             return nullptr;
+        }
         if (0 != SetFilePos(file, 0, SEEK_END))
         {
             Logger::Error("fseek set error");

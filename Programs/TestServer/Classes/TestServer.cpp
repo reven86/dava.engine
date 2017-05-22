@@ -4,6 +4,8 @@
 #include <Debug/DVAssertDefaultHandlers.h>
 #include <Logger/Logger.h>
 
+#include <NetworkCore.h>
+
 using namespace DAVA;
 
 int DAVAMain(Vector<String> cmdline)

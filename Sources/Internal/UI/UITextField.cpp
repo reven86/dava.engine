@@ -711,13 +711,11 @@ void UITextField::SetFontByPresetName(const String& presetName)
     }
 }
 
-void UITextField::SystemDraw(const UIGeometricData& geometricData, const UIControlBackground* parentBackground)
+void UITextField::Draw(const UIGeometricData& geometricData)
 {
-    UIControl::SystemDraw(geometricData, parentBackground);
+    UIControl::Draw(geometricData);
 
-    UIGeometricData localData = GetLocalGeometricData();
-    localData.AddGeometricData(geometricData);
-    textFieldImpl->SystemDraw(localData);
+    textFieldImpl->SystemDraw(geometricData);
 }
 
 int32 UITextField::GetStartEditPolicyAsInt() const

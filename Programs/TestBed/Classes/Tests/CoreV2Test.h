@@ -35,6 +35,7 @@ private:
     void OnDispatcherTest(DAVA::BaseObject* obj, void* data, void* callerData);
 
     void OnDisableEnableClose(DAVA::BaseObject* obj, void* data, void* callerData);
+    void OnDisableEnableScreenTimeout(DAVA::BaseObject* obj, void* data, void* callerData);
 
     void OnWindowCreated(DAVA::Window* w);
     bool OnWindowWantsToClose(DAVA::Window* w);
@@ -64,6 +65,9 @@ private:
 
     DAVA::UIButton* buttonDisableClose = nullptr;
     DAVA::UIButton* buttonEnableClose = nullptr;
+
+    DAVA::UIButton* buttonDisableScreenTimeout = nullptr;
+    DAVA::UIButton* buttonEnableScreenTimeout = nullptr;
 
     bool closeDisabled = false;
 

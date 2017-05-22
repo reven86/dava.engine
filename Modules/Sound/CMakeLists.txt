@@ -76,8 +76,6 @@ set( DYNAMIC_LIBRARIES_WINUAP_DEBUG   ${LIBRARIES_FMOD}/win10/Win32/DEBUG/fmod_e
 
 set( JAR_FOLDERS_ANDROID             ${LIBRARIES_FMOD}/Android/jar )
 
-set(EXCLUDE_FROM_ALL true )
-
 setup_main_module()
 
 

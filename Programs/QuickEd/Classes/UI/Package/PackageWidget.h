@@ -20,6 +20,7 @@ class Any;
 namespace TArc
 {
 class ContextAccessor;
+class UI;
 }
 }
 
@@ -41,6 +42,7 @@ public:
     ~PackageWidget();
 
     void SetAccessor(DAVA::TArc::ContextAccessor* accessor);
+    void SetUI(DAVA::TArc::UI* ui);
 
     PackageModel* GetPackageModel() const;
     using ExpandedIndexes = QModelIndexList;
@@ -120,6 +122,7 @@ private:
     PackageContext* currentContext = nullptr;
 
     DAVA::TArc::ContextAccessor* accessor = nullptr;
+    DAVA::TArc::UI* ui = nullptr;
     DAVA::TArc::DataWrapper dataWrapper;
 };
 

@@ -17,6 +17,7 @@ namespace TArc
 {
 class FieldBinder;
 class ContextAccessor;
+class UI;
 }
 }
 
@@ -29,6 +30,7 @@ public:
     ~LibraryWidget() override;
 
     void SetAccessor(DAVA::TArc::ContextAccessor* accessor);
+    void SetUI(DAVA::TArc::UI* ui);
 
 private:
     void OnPackageChanged(const DAVA::Any& package);

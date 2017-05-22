@@ -464,9 +464,9 @@ bool PackMetaData::IsChild(uint32 parentPackIndex, uint32 childPackIndex) const
     auto it = find(begin(childPacks), end(childPacks), childPackIndex);
     if (it != end(childPacks))
     {
-        return false;
+        return true;
     }
-    return true;
+    return false;
 }
 
 } // end namespace DAVA

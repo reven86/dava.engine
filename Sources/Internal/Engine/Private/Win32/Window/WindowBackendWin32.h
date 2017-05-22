@@ -10,7 +10,6 @@
 #include <bitset>
 
 #include "Base/Platform.h"
-#include "Engine/EngineTypes.h"
 #include "Engine/Private/EnginePrivateFwd.h"
 #include "Engine/Private/Dispatcher/UIDispatcher.h"
 

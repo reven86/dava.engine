@@ -12,6 +12,7 @@ public:
     DAVA::FastName GetName() const override;
     DAVA::FastName GetPrototype() const override;
     DAVA::String GetPrototypePackagePath() const override;
+    bool HasErrors() const override;
 
     bool HasComponent(DAVA::UIComponent::eType componentType) const override;
 

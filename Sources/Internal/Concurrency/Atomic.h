@@ -11,7 +11,7 @@
 namespace DAVA
 {
 //-----------------------------------------------------------------------------
-//Atomic template class.
+//Atomic template class. DEPRECATED use std::atomic<T>
 //-----------------------------------------------------------------------------
 template <typename T>
 class Atomic

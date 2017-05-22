@@ -94,7 +94,7 @@ DAVA_TESTCLASS (DLCManagerTest)
 {
     DownloaderTest downloader;
 
-    DAVA::float32 timeLeftToInitAndDownloadPack = 20.0f; // seconds
+    DAVA::float32 timeLeftToInitAndDownloadPack = 40.0f; // seconds
 
     bool downloadOfVirtualPack = false;
 

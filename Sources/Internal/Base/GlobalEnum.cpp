@@ -357,6 +357,7 @@ ENUM_DECLARE(UIComponent::eType)
     ENUM_ADD_DESCR(UIComponent::CUSTOM_UPDATE_DELTA_COMPONENT, "CustomDeltaUpdate");
     ENUM_ADD_DESCR(UIComponent::RICH_CONTENT_COMPONENT, "RichContent");
     ENUM_ADD_DESCR(UIComponent::RICH_CONTENT_OBJECT_COMPONENT, "RichContentObject");
+    ENUM_ADD_DESCR(UIComponent::SCENE_COMPONENT, "SceneComponent");
 };
 
 ENUM_DECLARE(UISizePolicyComponent::eSizePolicy)
@@ -369,6 +370,7 @@ ENUM_DECLARE(UISizePolicyComponent::eSizePolicy)
     ENUM_ADD_DESCR(UISizePolicyComponent::PERCENT_OF_LAST_CHILD, "PercentOfLastChild");
     ENUM_ADD_DESCR(UISizePolicyComponent::PERCENT_OF_CONTENT, "PercentOfContent");
     ENUM_ADD_DESCR(UISizePolicyComponent::PERCENT_OF_PARENT, "PercentOfParent");
+    ENUM_ADD_DESCR(UISizePolicyComponent::FORMULA, "Formula");
 };
 
 ENUM_DECLARE(UILinearLayoutComponent::eOrientation)

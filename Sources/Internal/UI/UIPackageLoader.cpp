@@ -70,7 +70,7 @@ bool UIPackageLoader::LoadPackage(const FilePath& packagePath, AbstractUIPackage
     YamlNode* rootNode = parser->GetRootNode();
     if (!rootNode) //empty yaml equal to empty UIPackage
     {
-        builder->BeginPackage(packagePath);
+        builder->BeginPackage(packagePath, UIPackage::CURRENT_VERSION);
         builder->EndPackage();
         return true;
     }
@@ -96,7 +96,7 @@ bool UIPackageLoader::LoadPackage(const YamlNode* rootNode, const FilePath& pack
         return false;
     }
 
-    builder->BeginPackage(packagePath);
+    builder->BeginPackage(packagePath, packageVersion);
 
     const YamlNode* importedPackagesNode = rootNode->Get("ImportedPackages");
     if (importedPackagesNode)
@@ -382,11 +382,12 @@ void UIPackageLoader::LoadControlPropertiesFromYamlNode(const ReflectedType* ref
 
     if (ref->GetStructure())
     {
+        static FastName componentsName("components");
+
         const Vector<std::unique_ptr<ReflectedStructure::Field>>& fields = ref->GetStructure()->fields;
         for (const std::unique_ptr<ReflectedStructure::Field>& field : fields)
         {
-            const String& name = field->name;
-            if (name == "components")
+            if (field->name == componentsName)
             {
                 // TODO: Make loading components by reflection here
                 continue;
@@ -395,7 +396,7 @@ void UIPackageLoader::LoadControlPropertiesFromYamlNode(const ReflectedType* ref
             Any res;
             if (node)
             {
-                res = ReadAnyFromYamlNode(field.get(), node, name);
+                res = ReadAnyFromYamlNode(field.get(), node, field->name.c_str());
                 if (!res.IsEmpty())
                 {
                     builder->BeginControlPropertiesSection(ref->GetPermanentName());
@@ -458,7 +459,7 @@ void UIPackageLoader::LoadComponentPropertiesFromYamlNode(const YamlNode* node, 
 
                 if (res.IsEmpty())
                 {
-                    res = ReadAnyFromYamlNode(field.get(), nodeDescr.node, field->name);
+                    res = ReadAnyFromYamlNode(field.get(), nodeDescr.node, field->name.c_str());
                 }
 
                 builder->ProcessProperty(*field, res);
@@ -489,7 +490,7 @@ void UIPackageLoader::ProcessLegacyAligns(const YamlNode* node, AbstractUIPackag
             const Vector<std::unique_ptr<ReflectedStructure::Field>>& fields = componentRef->GetStructure()->fields;
             for (const std::unique_ptr<ReflectedStructure::Field>& field : fields)
             {
-                const String& name = field->name;
+                String name(field->name.c_str());
                 Any res = ReadAnyFromYamlNode(field.get(), node, legacyAlignsMap[name]);
                 builder->ProcessProperty(*field, res);
             }

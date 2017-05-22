@@ -168,6 +168,7 @@ void MemoryManager::Update()
     if (nullptr == symbolCollectorThread)
     {
         symbolCollectorThread = Thread::Create(MakeFunction(this, &MemoryManager::SymbolCollectorThread));
+        symbolCollectorThread->SetName("SymbolCollectorThread");
         symbolCollectorThread->Start();
     }
 

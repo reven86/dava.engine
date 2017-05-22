@@ -3,11 +3,14 @@
 #include <Engine/Engine.h>
 #include <Engine/EngineSettings.h>
 #include <Render/RHI/rhi_Public.h>
+#include <Render/RHI/dbg_Draw.h>
 
 #include <CommandLine/CommandLineParser.h>
 #include <Debug/DVAssertDefaultHandlers.h>
 #include <Time/DateTime.h>
 #include <Utils/Utils.h>
+#include <DeviceManager/DeviceManager.h>
+#include <UI/Render/UIRenderSystem.h>
 
 #include "Infrastructure/TestListScreen.h"
 #include "Tests/NotificationTest.h"
@@ -150,6 +153,7 @@ TestBed::TestBed(Engine& engine)
         engine.windowCreated.Connect(this, &TestBed::OnWindowCreated);
         engine.windowDestroyed.Connect(this, &TestBed::OnWindowDestroyed);
         engine.backgroundUpdate.Connect(this, &TestBed::OnBackgroundUpdate);
+        engine.update.Connect(this, &TestBed::OnUpdate);
 
         Window* w = engine.PrimaryWindow();
         w->sizeChanged.Connect(this, &TestBed::OnWindowSizeChanged);
@@ -234,7 +238,7 @@ void TestBed::OnWindowCreated(DAVA::Window* w)
 
     w->SetVirtualSize(vw, vh);
     w->GetUIControlSystem()->vcs->RegisterAvailableResourceSize(resW, resH, "Gfx");
-    w->GetUIControlSystem()->SetClearColor(Color::Black);
+    w->GetUIControlSystem()->GetRenderSystem()->SetClearColor(Color::Black);
 
     LocalizationSystem* ls = LocalizationSystem::Instance();
     ls->SetDirectory("~res:/Strings/");
@@ -288,6 +292,42 @@ void TestBed::OnBackgroundUpdate(DAVA::float32 frameDelta)
         Logger::Debug("****** TestBed::OnBackgroundUpdate");
         t = 0.f;
     }
+}
+
+void TestBed::OnUpdate(DAVA::float32 frameDelta)
+{
+    // Output cpu temperature
+
+    const int32 screenWidth = Renderer::GetFramebufferWidth();
+    const int32 screenHeight = Renderer::GetFramebufferHeight();
+
+    DbgDraw::EnsureInited();
+    DbgDraw::SetScreenSize(screenWidth, screenHeight);
+    DbgDraw::SetNormalTextSize();
+
+    const float32 cpuTemperature = GetEngineContext()->deviceManager->GetCpuTemperature();
+    DbgDraw::Text2D(screenWidth - 100, 0, rhi::NativeColorRGBA(1.0f, 1.0f, 1.0f, 0.5f), "CPU T: %.2f", cpuTemperature);
+
+    rhi::RenderPassConfig passConfig;
+    passConfig.colorBuffer[0].loadAction = rhi::LOADACTION_LOAD;
+    passConfig.colorBuffer[0].storeAction = rhi::STOREACTION_STORE;
+    passConfig.depthStencilBuffer.loadAction = rhi::LOADACTION_NONE;
+    passConfig.depthStencilBuffer.storeAction = rhi::STOREACTION_NONE;
+    passConfig.priority = PRIORITY_MAIN_2D - 10;
+    passConfig.viewport.x = 0;
+    passConfig.viewport.y = 0;
+    passConfig.viewport.width = screenWidth;
+    passConfig.viewport.height = screenHeight;
+
+    rhi::HPacketList packetList;
+    rhi::HRenderPass pass = rhi::AllocateRenderPass(passConfig, 1, &packetList);
+    rhi::BeginRenderPass(pass);
+    rhi::BeginPacketList(packetList);
+
+    DbgDraw::FlushBatched(packetList);
+
+    rhi::EndPacketList(packetList);
+    rhi::EndRenderPass(pass);
 }
 
 void TestBed::RunOnlyThisTest()
