@@ -19,12 +19,12 @@ def build_for_target(target, working_directory_path, root_project_path):
         _build_win32(working_directory_path, root_project_path)
    # elif target == 'win10':
    #     _build_win10(working_directory_path, root_project_path)
-    #elif target == 'macos':
-   #     _build_macos(working_directory_path, root_project_path)
-   # elif target == 'ios':
-   #     _build_ios(working_directory_path, root_project_path)
-   # elif target == 'android':
-   #     _build_android(working_directory_path, root_project_path)
+    elif target == 'macos':
+        _build_macos(working_directory_path, root_project_path)
+    elif target == 'ios':
+     _build_ios(working_directory_path, root_project_path)
+    elif target == 'android':
+        _build_android(working_directory_path, root_project_path)
 
 
 def get_download_info():
@@ -69,15 +69,15 @@ def _build_win32(working_directory_path, root_project_path):
     x64_binary_dst_path = os.path.join(binary_dst_path, 'x64')
 
     #build_utils.build_vs(project_x86_path, 'debug')
+    # build_utils.build_vs(project_x86_path, 'profile')
     build_utils.build_vs(project_x86_path, 'checked')
-    #build_utils.build_vs(project_x86_path, 'profile')
     build_utils.build_vs(project_x86_path, 'release')
     _copy_libs(os.path.join(source_folder_path, 'PhysX_3.4', 'Bin', 'vc12win32'), x86_binary_dst_path,  '.dll')
     _copy_libs(os.path.join(source_folder_path, 'PhysX_3.4', 'Lib', 'vc12win32'), x86_binary_dst_path,  '.lib')
 
     #build_utils.build_vs(project_x64_path, 'debug', 'x64')
+    # build_utils.build_vs(project_x64_path, 'profile', 'x64')
     build_utils.build_vs(project_x64_path, 'checked', 'x64')
-    #build_utils.build_vs(project_x64_path, 'profile', 'x64')
     build_utils.build_vs(project_x64_path, 'release', 'x64')
     _copy_libs(os.path.join(source_folder_path, 'PhysX_3.4', 'Bin', 'vc12win64'), x64_binary_dst_path,  '.dll')
     _copy_libs(os.path.join(source_folder_path, 'PhysX_3.4', 'Lib', 'vc12win64'), x64_binary_dst_path,  '.lib')
@@ -85,20 +85,39 @@ def _build_win32(working_directory_path, root_project_path):
     _copy_headers(source_folder_path, root_project_path)
 
 
-# def _build_macos(working_directory_path, root_project_path):
-#     source_folder_path = _download(working_directory_path)
-#     _patch_sources(source_folder_path)
-#     build_utils.build_and_copy_libraries_macos_cmake(
-#         os.path.join(source_folder_path, '_build'),
-#         source_folder_path,
-#         root_project_path,
-#         'googletest-distribution.xcodeproj', 'gmock',
-#         'libgmock.a', 'libgmock.a',
-#         target_lib_subdir='googlemock')
-#
-#     _copy_headers(source_folder_path, root_project_path)
-#
-#
+def _build_macos(working_directory_path, root_project_path):
+    source_folder_path = _download_and_extract(working_directory_path)
+    project_path = os.path.join(source_folder_path, 'PhysX_3.4', 'Source', 'compiler', 'xcode_osx64', 'PhysX.xcodeproj')
+
+    #build_utils.build_xcode_alltargets(project_path, 'debug')
+    # build_utils.build_xcode_alltargets(project_path, 'profile')
+    build_utils.build_xcode_alltargets(project_path, 'checked')
+    build_utils.build_xcode_alltargets(project_path, 'release')
+
+    binary_dst_path = os.path.join(root_project_path, 'Modules', 'Physics', 'Libs', 'MacOS')
+    _copy_libs(os.path.join(source_folder_path, 'PhysX_3.4', 'Lib', 'osx64'), binary_dst_path,  '.a')
+    _copy_libs(os.path.join(source_folder_path, 'PxShared', 'lib', 'osx64'), binary_dst_path, '.a')
+    _copy_headers(source_folder_path, root_project_path)
+
+def _build_ios(working_directory_path, root_project_path):
+    source_folder_path = _download_and_extract(working_directory_path)
+    _patch_sources('patch_ios.diff', working_directory_path)
+
+    project_path = os.path.join(source_folder_path, 'PhysX_3.4', 'Source', 'compiler', 'xcode_ios64', 'PhysX.xcodeproj')
+
+    # build_utils.build_xcode_alltargets(project_path, 'debug')
+    # build_utils.build_xcode_alltargets(project_path, 'profile')
+    build_utils.build_xcode_alltargets(project_path, 'checked')
+    build_utils.build_xcode_alltargets(project_path, 'release')
+
+    binary_dst_path = os.path.join(root_project_path, 'Modules', 'Physics', 'Libs', 'iOS')
+    _copy_libs(os.path.join(source_folder_path, 'PhysX_3.4', 'Lib', 'ios64'), binary_dst_path, '.a')
+    _copy_libs(os.path.join(source_folder_path, 'PxShared', 'lib', 'ios64'), binary_dst_path, '.a')
+    _copy_headers(source_folder_path, root_project_path)
+
+def _build_android(working_directory_path, root_project_path):
+    source_folder_path = _download_and_extract(working_directory_path)
+
 def _copy_headers(source_folder_path, root_project_path):
     copy_to_folder = os.path.join(root_project_path, 'Modules', 'Physics', 'Libs', 'Include')
     copy_from_folder = os.path.join(source_folder_path, 'PhysX_3.4', 'Include')
