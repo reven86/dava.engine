@@ -14,9 +14,19 @@ if( NOT DAVA_MEGASOLUTION AND NOT DISABLE_MEMORY_PROFILER )
     set ( DAVA_MEMORY_PROFILER 1 )
 endif()
 
+if (UNIX)
+    set ( DAVA_MEMORY_PROFILER 0 )
+endif()
+
 # Now unittests is core v2 only
 set (DAVA_COREV2 1)
 dava_add_definitions(-D__DAVAENGINE_COREV2__)
+
+if (UNIX)
+    dava_add_definitions(-DDISABLE_NATIVE_MOVIEVIEW)
+    dava_add_definitions(-DDISABLE_NATIVE_TEXTFIELD)
+    dava_add_definitions(-DDISABLE_NATIVE_WEBVIEW)
+endif()
 
 if ( WIN32 OR MACOS )
     find_package(DavaTools REQUIRED )
@@ -25,12 +35,17 @@ endif()
 # Enable LOCALIZATION_DEBUG in UnitTests to verify successful compilation
 dava_add_definitions(-DLOCALIZATION_DEBUG)
 
-set ( DAVA_COMPONENTS "Sound" DAVA_DISABLE_AUTOTESTS )
+if (NOT UNIX)
+    set ( DAVA_COMPONENTS "Sound" DAVA_DISABLE_AUTOTESTS )
+else()
+    set ( DAVA_COMPONENTS DAVA_DISABLE_AUTOTESTS )
+endif()
+
 if ( WIN32 AND NOT WINDOWS_UAP )
     list ( APPEND DAVA_COMPONENTS "CEFWebview" )
 endif ()
 
-if (NOT ANDROID)
+if (NOT ANDROID AND NOT UNIX)
     list ( APPEND DAVA_COMPONENTS "SampleModule" )
 endif()
 
