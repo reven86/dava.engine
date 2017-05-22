@@ -370,9 +370,9 @@ Color PngImageExt::GetDitheredColorForPoint(int32 x, int32 y)
     Color newColor(0.0f, 0.0f, 0.0f, 0.0f);
 
     int32 startY = Max(y - 1, 0);
-    int32 endY = Min(y + 1, static_cast<int32>(GetHeight()));
+    int32 endY = Min(y + 1, static_cast<int32>(GetHeight()) - 1);
     int32 startX = Max(x - 1, 0);
-    int32 endX = Min(x + 1, static_cast<int32>(GetWidth()));
+    int32 endX = Min(x + 1, static_cast<int32>(GetWidth()) - 1);
 
     for (int32 alphaY = startY; alphaY <= endY; ++alphaY)
     {
