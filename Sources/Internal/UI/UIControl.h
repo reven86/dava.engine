@@ -1070,6 +1070,13 @@ public:
     /** Remove component with specified 'runtimeType' at specified 'index'. */
     void RemoveComponent(int32 runtimeType, uint32 index = 0);
 
+    /** Remove UIComponent with specified type 'T' at specified 'index'. */
+    template <class T>
+    void RemoveComponent(int32 index = 0)
+    {
+        RemoveComponent(T::GetStaticRuntimeType(), index);
+    }
+
     /** Remove all components. */
     void RemoveAllComponents();
 

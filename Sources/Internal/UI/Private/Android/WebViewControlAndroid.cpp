@@ -586,7 +586,7 @@ void JniWebView::PageLoaded(int id, int* rawPixels, int width, int height)
     else
     {
         // reset sprite to prevent render old sprite under native webveiw
-        webView.RemoveComponent(Type::Instance<UIControlBackground>());
+        webView.RemoveComponent<UIControlBackground>();
     }
 }
 

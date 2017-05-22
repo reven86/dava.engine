@@ -260,7 +260,7 @@ void TextFieldPlatformImpl::SetText(const WideString& text)
 
             if (curText.empty())
             { // Immediately remove sprite image if new text is empty to get rid of some flickering
-                uiTextField->RemoveComponent(Type::Instance<UIControlBackground>());
+                uiTextField->RemoveComponent<UIControlBackground>();
             }
         }
     }
@@ -528,7 +528,7 @@ void TextFieldPlatformImpl::OnFocusChanged(bool hasFocus)
                 uiTextField->SetFocused();
             }
             uiTextField->StartEdit();
-            uiTextField->RemoveComponent(Type::Instance<UIControlBackground>());
+            uiTextField->RemoveComponent<UIControlBackground>();
         }
         else
         {

@@ -115,10 +115,11 @@ protected:
         using namespace DAVA::TArc;
 
         ContextAccessor* accessor = GetAccessor();
-        FileSystem* fs = accessor->GetEngineContext()->fileSystem;
+        const EngineContext* engineContext = accessor->GetEngineContext();
+        FileSystem* fs = engineContext->fileSystem;
         TEST_VERIFY(fs->Exists(path))
 
-        QuickEdPackageBuilder builder;
+        QuickEdPackageBuilder builder(engineContext);
         UIPackageLoader packageLoader;
         TEST_VERIFY(packageLoader.LoadPackage(path, &builder));
 

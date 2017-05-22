@@ -558,7 +558,7 @@ void TextFieldPlatformImpl::TextFieldUpdateTexture(uint32_t id, int32* rawPixels
         else
         {
             // reset sprite to prevent render old sprite under android view
-            textField.RemoveComponent(Type::Instance<UIControlBackground>());
+            textField.RemoveComponent<UIControlBackground>();
         }
     }
 }

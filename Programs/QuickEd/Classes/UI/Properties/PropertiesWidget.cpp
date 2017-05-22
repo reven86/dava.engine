@@ -200,8 +200,8 @@ void PropertiesWidget::OnSelectionChanged(const QItemSelection& /*selected*/, co
 QAction* PropertiesWidget::CreateAddComponentAction()
 {
     QMenu* addComponentMenu = new QMenu(this);
-    auto& components = GetEngineContext()->componentManager->GetRegisteredComponents();
-    for (auto& c : components)
+    const Vector<const Type*>& components = GetEngineContext()->componentManager->GetRegisteredComponents();
+    for (const Type* c : components)
     {
         if (!ComponentPropertiesSection::IsHiddenComponent(c))
         {

@@ -706,7 +706,7 @@ void TextFieldPlatformImpl::UpdateStaticTexture()
     else
     {
         // remove background component
-        davaTextField.RemoveComponent(Type::Instance<UIControlBackground>());
+        davaTextField.RemoveComponent<UIControlBackground>();
     }
 }
 

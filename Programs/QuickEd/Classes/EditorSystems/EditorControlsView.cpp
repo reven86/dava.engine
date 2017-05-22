@@ -237,7 +237,7 @@ BackgroundController::BackgroundController(UIControl* nestedControl_)
 
 BackgroundController::~BackgroundController()
 {
-    nestedControl->RemoveComponent(Type::Instance<UILayoutIsolationComponent>());
+    nestedControl->RemoveComponent<UILayoutIsolationComponent>();
 }
 
 UIControl* BackgroundController::GetGridControl() const

@@ -14,7 +14,6 @@
 #include "Model/PackageHierarchy/StyleSheetsNode.h"
 
 #include "Base/ObjectFactory.h"
-#include "Engine/Engine.h"
 #include "Entity/ComponentManager.h"
 #include "Reflection/ReflectedTypeDB.h"
 #include "UI/UIPackage.h"
@@ -29,9 +28,10 @@ using namespace DAVA;
 const String EXCEPTION_CLASS_UI_TEXT_FIELD = "UITextField";
 const String EXCEPTION_CLASS_UI_LIST = "UIList";
 
-QuickEdPackageBuilder::QuickEdPackageBuilder()
+QuickEdPackageBuilder::QuickEdPackageBuilder(const EngineContext* engineContext_)
     : currentObject(nullptr)
     , currentSection(nullptr)
+    , engineContext(engineContext_)
 {
 }
 
@@ -80,7 +80,7 @@ bool QuickEdPackageBuilder::ProcessImportedPackage(const String& packagePathStr,
         return false;
     }
 
-    QuickEdPackageBuilder builder;
+    QuickEdPackageBuilder builder(engineContext);
     builder.declinedPackages.insert(builder.declinedPackages.end(), declinedPackages.begin(), declinedPackages.end());
     builder.declinedPackages.push_back(packagePath);
 
@@ -262,7 +262,7 @@ void QuickEdPackageBuilder::EndControl(eControlPlace controlPlace)
     ControlNode* lastControl = SafeRetain(controlsStack.back().node);
 
     // the following code handles cases when component was created by control himself (UIParticles creates UIUpdateComponent for example)
-    ComponentManager* cm = GetEngineContext()->componentManager;
+    ComponentManager* cm = engineContext->componentManager;
     auto& components = cm->GetRegisteredComponents();
     for (auto& c : components)
     {

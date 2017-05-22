@@ -81,11 +81,12 @@ void QtModelPackageCommandExecutor::AddImportedPackagesIntoPackage(const DAVA::V
 {
     Vector<PackageNode*> importedPackages;
     Result result;
+    const EngineContext* engineContext = GetEngineContext();
     for (const FilePath& path : packagePaths)
     {
         if (package->FindImportedPackage(path) == nullptr && package->GetPath().GetFrameworkPath() != path.GetFrameworkPath())
         {
-            QuickEdPackageBuilder builder;
+            QuickEdPackageBuilder builder(engineContext);
 
             ProjectData* projectData = GetProjectData();
             if (UIPackageLoader(projectData->GetPrototypes()).LoadPackage(path, &builder))
@@ -117,7 +118,7 @@ void QtModelPackageCommandExecutor::AddImportedPackagesIntoPackage(const DAVA::V
         }
         else
         {
-            result = Result(Result::RESULT_ERROR, "Can't import package into themself");
+            result = Result(Result::RESULT_ERROR, "Can't import package into themselves");
             break;
         }
     }
@@ -559,7 +560,7 @@ SelectedNodes QtModelPackageCommandExecutor::Paste(PackageNode* root, PackageBas
         return createdNodes;
     }
 
-    QuickEdPackageBuilder builder;
+    QuickEdPackageBuilder builder(GetEngineContext());
 
     builder.AddImportedPackage(root);
     for (int32 i = 0; i < root->GetImportedPackagesNode()->GetCount(); i++)
