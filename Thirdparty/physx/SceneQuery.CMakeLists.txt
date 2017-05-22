@@ -1,0 +1,21 @@
+set(NAME_MODULE SceneQuery)
+
+set(MODULE_TYPE STATIC)#INLINE STATIC DYNAMIC 
+
+set(HPP_FILES_RECURSE *.h *.hpp)
+set(CPP_FILES_RECURSE *.cpp)
+
+set(DEBUG_POSTFIX "DEBUG")
+set(CHECKED_POSTFIX "CHECKED")
+set(PROFILE_POSTFIX "PROFILE")
+set(RELEASE_POSTFIX "")
+
+set(PhysXRoot "${CMAKE_CURRENT_SOURCE_DIR}/../../")
+
+set(INCLUDES_PRIVATE "${PhysXRoot}/Source/SceneQuery/include"
+                     "${PhysXRoot}/Source/SimulationController/include"
+                     "${PhysXRoot}/Source/LowLevel/API/include"
+                     "${PhysXRoot}/Source/PhysX/src"
+                     "${PhysXRoot}/Source/PhysX/src/buffering")
+
+setup_main_module()

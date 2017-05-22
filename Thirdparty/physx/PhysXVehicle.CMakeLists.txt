@@ -1,0 +1,21 @@
+set(NAME_MODULE PhysXVehicle)
+
+set(MODULE_TYPE STATIC)#INLINE STATIC DYNAMIC 
+
+set(PhysXRoot "${CMAKE_CURRENT_SOURCE_DIR}/../../")
+set(HPP_FILES_RECURSE *.h *.hpp)
+set(CPP_FILES_RECURSE *.cpp)
+
+set(DEBUG_POSTFIX "DEBUG")
+set(CHECKED_POSTFIX "CHECKED")
+set(PROFILE_POSTFIX "PROFILE")
+set(RELEASE_POSTFIX "")
+
+set(INCLUDES_PRIVATE "${PhysXRoot}/Source/PhysXVehicle/src"
+                     "${PhysXRoot}/Source/PhysXMetaData/extensions/include"
+                     "${PhysXRoot}/Source/PhysXMetaData/core/include"
+                     "${PhysXRoot}/Source/PhysXExtensions/src/serialization/Xml"
+                     "${PhysXRoot}/Source/PhysXVehicle/src/PhysXMetaData/include"
+                     "${PhysXRoot}/Source/PvdSDK/src")
+
+setup_main_module()

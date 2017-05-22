@@ -1,0 +1,19 @@
+set(NAME_MODULE LowLevelCloth)
+
+set(MODULE_TYPE STATIC)#INLINE STATIC DYNAMIC 
+
+set(HPP_FILES_RECURSE *.h *.hpp)
+set(CPP_FILES_RECURSE *.cpp)
+
+set(DEBUG_POSTFIX "DEBUG")
+set(CHECKED_POSTFIX "CHECKED")
+set(PROFILE_POSTFIX "PROFILE")
+set(RELEASE_POSTFIX "")
+
+set(PhysXRoot "${CMAKE_CURRENT_SOURCE_DIR}/../../")
+set(LowLevelCloth "${PhysXRoot}/Source/LowLevelCloth")
+
+set(INCLUDES_PRIVATE "${LowLevelCloth}/include"
+                     "${LowLevelCloth}/src")
+
+setup_main_module()

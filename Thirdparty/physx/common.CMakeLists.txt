@@ -1,0 +1,17 @@
+set(NAME_MODULE PhysXCommon)
+
+set(MODULE_TYPE STATIC)#INLINE STATIC DYNAMIC 
+
+set(PhysXRoot "${CMAKE_CURRENT_SOURCE_DIR}/../../")
+
+set(HPP_FILES *.h *.hpp)
+set(CPP_FILES *.cpp)
+
+set(CPP_FILES_RECURSIVE ${PhysXRoot}/Source/GeomUtils/*.cpp)
+
+set(DEBUG_POSTFIX "DEBUG")
+set(CHECKED_POSTFIX "CHECKED")
+set(PROFILE_POSTFIX "PROFILE")
+set(RELEASE_POSTFIX "")
+
+setup_main_module()

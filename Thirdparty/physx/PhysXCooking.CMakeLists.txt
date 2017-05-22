@@ -1,0 +1,22 @@
+set(NAME_MODULE PhysXCooking)
+
+set(MODULE_TYPE STATIC)#INLINE STATIC DYNAMIC 
+
+set(HPP_FILES_RECURSE *.h *.hpp)
+set(CPP_FILES_RECURSE *.cpp)
+
+set(DEBUG_POSTFIX "DEBUG")
+set(CHECKED_POSTFIX "CHECKED")
+set(PROFILE_POSTFIX "PROFILE")
+set(RELEASE_POSTFIX "")
+
+set(PhysXRoot "${CMAKE_CURRENT_SOURCE_DIR}/../../")
+set(PhysXCookingDir "${PhysXRoot}/Source/PhysXCooking")
+set(PhysXExtensionsDir "${PhysXRoot}/Source/PhysXExtensions")
+
+set(INCLUDES_PRIVATE "${PhysXCookingDir}/src"
+                     "${PhysXCookingDir}/src/mesh"
+                     "${PhysXCookingDir}/src/convex"
+                     "${PhysXExtensionsDir}/src")
+
+setup_main_module()

@@ -103,6 +103,10 @@ PLUGIN_OUT_DIR_${DAVA_PLATFORM_CURENT}
 PLUGIN_RELATIVE_PATH_TO_FOLDER
 PLUGIN_COPY_ADD_FILES 
 #
+DEBUG_POSTFIX
+CHECKED_POSTFIX
+PROFILE_POSTFIX
+RELEASE_POSTFIX
 )
 
 #
@@ -745,9 +749,16 @@ macro( setup_main_module )
                     set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/DEBUG" )
                 endif()
 
+                if (NOT DEBUG_POSTFIX)
+                    set(DEBUG_POSTFIX "Debug")
+                endif()
+
                 set_target_properties( ${NAME_MODULE} PROPERTIES
                                                                  DEBUG_OUTPUT_NAME "${NAME_MODULE}" 
-                                                                 DEBUG_POSTFIX "Debug")
+                                                                 DEBUG_POSTFIX ${DEBUG_POSTFIX}
+                                                                 CHECKED_POSTFIX ${CHECKED_POSTFIX}
+                                                                 PROFILE_POSTFIX ${PROFILE_POSTFIX}
+                                                                 RELEASE_POSTFIX ${RELEASE_POSTFIX})
 
                 if( WIN32 AND NOT DEPLOY )
                     set( BINARY_WIN32_DIR_RELEASE    "${CMAKE_CURRENT_BINARY_DIR}/Release" )

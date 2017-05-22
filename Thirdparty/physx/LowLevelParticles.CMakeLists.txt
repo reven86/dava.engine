@@ -1,0 +1,25 @@
+set(NAME_MODULE LowLevelParticles)
+
+set(MODULE_TYPE STATIC)#INLINE STATIC DYNAMIC 
+
+set(HPP_FILES_RECURSE *.h *.hpp)
+set(CPP_FILES_RECURSE *.cpp)
+
+set(DEBUG_POSTFIX "DEBUG")
+set(CHECKED_POSTFIX "CHECKED")
+set(PROFILE_POSTFIX "PROFILE")
+set(RELEASE_POSTFIX "")
+
+set(PhysXRoot "${CMAKE_CURRENT_SOURCE_DIR}/../../")
+set(LowLevelDir "${PhysXRoot}/Source/LowLevel")
+set(LowLevelParticles "${PhysXRoot}/Source/LowLevelParticles")
+
+set(INCLUDES_PRIVATE "${LowLevelDir}/API/include"
+             "${LowLevelDir}/common/include/utils"
+             "${LowLevelAABBDir}/include"
+             "${LowLevelAABBDir}/src"
+             "${LowLevelAABBDir}/unix/include"
+             "${LowLevelParticles}/include"
+             "${LowLevelParticles}/src")
+
+setup_main_module()

@@ -1,0 +1,29 @@
+set(NAME_MODULE LowLevel)
+
+set(MODULE_TYPE STATIC)#INLINE STATIC DYNAMIC 
+
+set(HPP_FILES_RECURSE *.h *.hpp)
+set(CPP_FILES_RECURSE *.cpp)
+
+set(DEBUG_POSTFIX "DEBUG")
+set(CHECKED_POSTFIX "CHECKED")
+set(PROFILE_POSTFIX "PROFILE")
+set(RELEASE_POSTFIX "")
+
+set(PhysXRoot "${CMAKE_CURRENT_SOURCE_DIR}/../../")
+set(LowLevel "${PhysXRoot}/Source/LowLevel")
+set(LowLevelDynamics "${PhysXRoot}/Source/LowLevelDynamics")
+
+set(INCLUDES_PRIVATE "${LowLevelDir}/API/include"
+                     "${LowLevelDir}/common/include"
+                     "${LowLevelDir}/common/include/pipeline"
+                     "${LowLevelDir}/common/include/pipeline/unix"
+                     "${LowLevelDir}/common/include/utils"
+                     "${LowLevelDir}/common/include/math"
+                     "${LowLevelDir}/common/software/include"
+                     "${LowLevelDir}/common/software/include/unix"
+                     "${LowLevelDynamics}/include"
+                     "${LowLevelDynamics}/src"
+                     "${LowLevelDynamics}/include/unix")
+
+setup_main_module()
