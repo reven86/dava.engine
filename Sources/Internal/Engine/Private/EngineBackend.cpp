@@ -273,6 +273,18 @@ void EngineBackend::DispatchOnMainThread(const Function<void()>& task, bool bloc
 void EngineBackend::RunConsole()
 {
     OnGameLoopStarted();
+
+    // Check whether to init null renderer
+    if (options->IsKeyExists("renderer"))
+    {
+        rhi::Api renderer = static_cast<rhi::Api>(options->GetInt32("renderer", rhi::RHI_GLES2));
+        if (renderer == rhi::RHI_NULL_RENDERER)
+        {
+            rhi::InitParam params{};
+            Renderer::Initialize(rhi::RHI_NULL_RENDERER, params);
+        }
+    }
+
     while (!quitConsole)
     {
         OnFrameConsole();
