@@ -90,6 +90,10 @@ File* File::Create(const FilePath& filename, uint32 attributes)
     }
 
     File* result = PureCreate(filename, attributes);
+    if (result != nullptr)
+    {
+        return result;
+    }
 
     if (!(attributes & (WRITE | CREATE | APPEND)))
     {
