@@ -309,7 +309,10 @@ void EngineBackend::OnGameLoopStopped()
     DVASSERT(justCreatedWindows.empty());
 
     engine->gameLoopStopped.Emit();
-    rhi::ShaderSourceCache::Save("~doc:/ShaderSource.bin");
+    if (!IsConsoleMode())
+    {
+        rhi::ShaderSourceCache::Save("~doc:/ShaderSource.bin");
+    }
 
     Logger::Info("EngineBackend::OnGameLoopStopped: leave");
 }
