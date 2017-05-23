@@ -131,6 +131,7 @@ public:
 
     const Type* GetValueType() const;
     ReflectedObject GetValueObject() const;
+    ReflectedObject GetDirectObject() const;
 
     Any GetValue() const;
     bool SetValue(const Any& value) const;
