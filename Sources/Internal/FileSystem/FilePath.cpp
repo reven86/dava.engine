@@ -169,6 +169,19 @@ void FilePath::InitializeBundleName()
 void FilePath::InitializeBundleName()
 {
     // TODO: linux
+    FilePath execDirectory = FileSystem::Instance()->GetCurrentExecutableDirectory();
+    FilePath workingDirectory = FileSystem::Instance()->GetCurrentWorkingDirectory();
+
+    SetBundleName(execDirectory + "Data/");
+
+    if (workingDirectory != execDirectory)
+    {
+        FilePath dataDirPath(workingDirectory + "Data/");
+        if (FileSystem::Instance()->Exists(dataDirPath))
+        {
+            AddResourcesFolder(dataDirPath);
+        }
+    }
 }
 #endif
 

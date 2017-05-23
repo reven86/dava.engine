@@ -38,23 +38,15 @@ String disableTheseTestClasses = "ScriptTest";
 #else
 // TODO: linux
 String disableTheseTestClasses =
-"ArchiveTest "
-"CompressorTest "
 "DateTimeTest "
 "DeviceInfoTest "
-"DLCDownloaderTest "
-"DLCManagerTest "
-"FileListTest "
-"FileSystemTest "
 "FormatsTest "
 "GPUFamilyTest "
 "HDTest "
 "ImageSystemTest "
-"KeyedArchiveYamlTest "
 "LoadImageTest "
 "LocalizationTest "
 "SaveImageTest "
-"SceneIdTest "
 "ScriptTest "
 "StaticTextTest "
 "TextSizeTest "

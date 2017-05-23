@@ -15,7 +15,7 @@
 #include "Core/Core.h"
 #include "Concurrency/LockGuard.h"
 
-#include "Engine/Engine.h"
+#include "Engine/Private/EngineBackend.h"
 
 #if defined(__DAVAENGINE_MACOS__)
 #include <copyfile.h>
@@ -460,7 +460,8 @@ FilePath FileSystem::GetCurrentExecutableDirectory()
 #else
 
 #if defined(__DAVAENGINE_COREV2__)
-    const String& str = Engine::Instance()->GetCommandLine().at(0);
+    // dava.engine's internals can invoke GetCurrentExecutableDirectory before Engine instance is created
+    const String& str = Private::EngineBackend::Instance()->GetCommandLine().at(0);
 #else
     const String& str = Core::Instance()->GetCommandLine().at(0);
 #endif
