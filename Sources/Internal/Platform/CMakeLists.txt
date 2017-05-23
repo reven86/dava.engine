@@ -14,8 +14,8 @@ set( HPP_FILES_WIN   TemplateWin32/*.h  )
 set( CPP_FILES_WINUAP TemplateWin32/*.cpp )
 set( HPP_FILES_WINUAP TemplateWin32/*.h  )
 
-set( CPP_FILES_UNIX Linux/*.cpp )
-set( HPP_FILES_UNIX Linux/*.h  )
+set( CPP_FILES_LINUX Linux/*.cpp )
+set( HPP_FILES_LINUX Linux/*.h  )
 
 set( ERASE_FILES_ANDROID  )
 

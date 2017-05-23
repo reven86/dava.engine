@@ -66,7 +66,9 @@ String disableTheseTestClasses =
 "UILayoutSystemTest "
 "UIControlHelpersTest "
 "UIControlHierarhyTest "
-"UIControlTest";
+"UIControlTest "
+"UIRichContentTest "
+;
 #endif
 
 bool teamcityOutputEnabled = false; // Flag whether to enable TeamCity output

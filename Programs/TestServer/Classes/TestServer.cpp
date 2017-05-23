@@ -4,9 +4,7 @@
 #include <Debug/DVAssertDefaultHandlers.h>
 #include <Logger/Logger.h>
 
-#if !defined(__DAVAENGINE_LINUX__)
 #include <NetworkCore.h>
-#endif // !__DAVAENGINE_LINUX__
 
 using namespace DAVA;
 

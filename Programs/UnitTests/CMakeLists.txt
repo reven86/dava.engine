@@ -38,14 +38,14 @@ dava_add_definitions(-DLOCALIZATION_DEBUG)
 if (NOT UNIX)
     set ( DAVA_COMPONENTS "Sound" "NetworkCore" DAVA_DISABLE_AUTOTESTS )
 else()
-    set ( DAVA_COMPONENTS DAVA_DISABLE_AUTOTESTS )
+    set ( DAVA_COMPONENTS "NetworkCore" DAVA_DISABLE_AUTOTESTS )
 endif()
 
 if ( WIN32 AND NOT WINDOWS_UAP )
     list ( APPEND DAVA_COMPONENTS "CEFWebview" )
 endif ()
 
-if (NOT ANDROID AND NOT UNIX)
+if (NOT ANDROID)
     list ( APPEND DAVA_COMPONENTS "SampleModule" )
 endif()
 
