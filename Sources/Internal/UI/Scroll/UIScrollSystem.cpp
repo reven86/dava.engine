@@ -28,7 +28,7 @@ void UIScrollSystem::ScheduleScrollToControlWithAnimation(UIControl* control, fl
 
 void UIScrollSystem::RegisterControl(UIControl* control)
 {
-    if (control->GetComponent(Type::Instance<UIScrollComponent>()))
+    if (control->GetComponent<UIScrollComponent>())
     {
         scrollViewContainers.push_back(DynamicTypeCheck<UIScrollViewContainer*>(control));
     }
@@ -36,7 +36,7 @@ void UIScrollSystem::RegisterControl(UIControl* control)
 
 void UIScrollSystem::UnregisterControl(UIControl* control)
 {
-    if (control->GetComponent(Type::Instance<UIScrollComponent>()))
+    if (control->GetComponent<UIScrollComponent>())
     {
         auto it = std::find(scrollViewContainers.begin(), scrollViewContainers.end(), control);
         if (it != scrollViewContainers.end())
@@ -103,7 +103,7 @@ void UIScrollSystem::PrepareForScreenshotImpl(UIControl* control)
     for (UIControl* c : control->GetChildren())
     {
         PrepareForScreenshotImpl(c);
-        if (c->GetComponent(Type::Instance<UIScrollComponent>()) != nullptr)
+        if (c->GetComponent<UIScrollComponent>() != nullptr)
         {
             c->Update(0);
         }
