@@ -1,8 +1,21 @@
 #pragma once
-#include "Base/BaseTypes.h"
 
 namespace DAVA
 {
+/**
+	Example: We want to generate IO error - no space on HDD
+
+	```
+	DAVA::DebugFS::IOErrorTypes ioErr;
+	ioErr.ioErrorCode = ENOSPC;
+	ioErr.openOrCreateFailed = true;
+	ioErr.writeFailed = true;
+
+	GenerateIOErrorOnNextOperation(ioErr);
+	```
+
+	Any call To File::Create or File::Write will generate IO error with code ENOSPC from <cerrno>
+*/
 namespace DebugFS
 {
 struct IOErrorTypes
@@ -11,7 +24,7 @@ struct IOErrorTypes
     // ENOSPC - No space left on device
     // ENOENT - No such file or directory
     // ENFILE - Too many files open in system
-    int32 ioErrorCode = 0;
+    int ioErrorCode = 0;
     bool openOrCreateFailed = false;
     bool writeFailed = false;
     bool readFailed = false;

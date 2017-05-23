@@ -516,7 +516,7 @@ bool File::GetNextChar(uint8* nextChar)
 uint64 File::GetPos() const
 {
 #ifdef __DAVAENGINE_DEBUG__
-    if (DebugFS::GenErrorOnReadFailed())
+    if (DebugFS::GenErrorOnSeekFailed())
     {
         return std::numeric_limits<uint64>::max();
     }

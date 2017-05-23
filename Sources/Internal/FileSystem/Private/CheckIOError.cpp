@@ -8,16 +8,20 @@ namespace DebugFS
 static IOErrorTypes ioErrors;
 void GenerateIOErrorOnNextOperation(IOErrorTypes types)
 {
+    bool anyError = types.closeFailed ||
+    types.openOrCreateFailed ||
+    types.readFailed ||
+    types.seekFailed ||
+    types.truncateFailed ||
+    types.writeFailed;
+
     if (types.ioErrorCode != 0)
     {
-        bool anyError = types.closeFailed ||
-        types.openOrCreateFailed ||
-        types.readFailed ||
-        types.seekFailed ||
-        types.truncateFailed ||
-        types.writeFailed;
-
         DVASSERT(anyError);
+    }
+    else
+    {
+        DVASSERT(anyError == false);
     }
     ioErrors = types;
 }
@@ -52,6 +56,7 @@ bool GenErrorOnSeekFailed()
 {
     if (ioErrors.seekFailed)
     {
+        errno = ioErrors.ioErrorCode;
         return true;
     }
     return false;
@@ -69,7 +74,7 @@ bool GenErrorOnTruncateFailed()
 {
     if (ioErrors.truncateFailed)
     {
-        errno = ioErrors.truncateFailed;
+        errno = ioErrors.ioErrorCode;
         return true;
     }
     return false;
