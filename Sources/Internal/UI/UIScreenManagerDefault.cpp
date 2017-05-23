@@ -87,7 +87,6 @@ int32 UIScreenManager::GetScreenId()
 {
     return activeScreenId;
 }
-
 }
 
 #endif // defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_WINDOWS__) || defined(__DAVAENGINE_LINUX__)

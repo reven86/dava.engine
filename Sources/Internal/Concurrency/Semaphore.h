@@ -26,7 +26,7 @@ public:
     void Wait();
 
 protected:
-    //!< platform dependent semaphore handle
+//!< platform dependent semaphore handle
 #if defined(__DAVAENGINE_LINUX__)
     // TODO: linux and other platforms
     // On linux semaphore handle does not fit into uintptr_t so now use heap-allocated handle.
