@@ -25,6 +25,6 @@ bool GenErrorOnWriteFailed();
 bool GenErrorOnReadFailed();
 bool GenErrorOnSeekFailed();
 bool GenErrorOnCloseFailed();
-bool GenErrorOnTrancateFailed();
+bool GenErrorOnTruncateFailed();
 }
 } // end namespace DAVA

@@ -576,7 +576,7 @@ bool File::IsEof() const
 bool File::Truncate(uint64 size)
 {
 #ifdef __DAVAENGINE_DEBUG__
-    if (DebugFS::GenErrorOnTrancateFailed())
+    if (DebugFS::GenErrorOnTruncateFailed())
     {
         return false;
     }

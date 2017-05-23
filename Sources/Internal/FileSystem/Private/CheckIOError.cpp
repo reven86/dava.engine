@@ -65,7 +65,7 @@ bool GenErrorOnCloseFailed()
     }
     return false;
 }
-bool GenErrorOnTrancateFailed()
+bool GenErrorOnTruncateFailed()
 {
     if (ioErrors.truncateFailed)
     {
