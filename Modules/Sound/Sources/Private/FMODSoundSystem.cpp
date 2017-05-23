@@ -550,7 +550,17 @@ void FMODSoundSystem::SetListenerPosition(const Vector3& position)
 {
     if (fmodEventSystem)
     {
-        FMOD_VERIFY(fmodEventSystem->set3DListenerAttributes(0, reinterpret_cast<const FMOD_VECTOR*>(&position), 0, 0, 0));
+        const bool isFinite = std::isfinite(position.x) && std::isfinite(position.y) && std::isfinite(position.z);
+        DVASSERT(isFinite);
+
+        if (isFinite)
+        {
+            FMOD_VERIFY(fmodEventSystem->set3DListenerAttributes(0, reinterpret_cast<const FMOD_VECTOR*>(&position), 0, 0, 0));
+        }
+        else
+        {
+            Logger::Error("[FMODSoundSystem::SetListenerPosition] Invalid vector was given: (%f, %f, %f), ignoring", position.x, position.y, position.z);
+        }
     }
 }
 
@@ -558,16 +568,29 @@ void FMODSoundSystem::SetListenerOrientation(const Vector3& forward, const Vecto
 {
     if (fmodEventSystem)
     {
-        Vector3 forwardNorm = forward;
-        forwardNorm.Normalize();
-        Vector3 upNorm = forwardNorm.CrossProduct(left);
-        upNorm.Normalize();
+        const bool isForwardFinite = std::isfinite(forward.x) && std::isfinite(forward.y) && std::isfinite(forward.z);
+        const bool isLeftFinite = std::isfinite(left.x) && std::isfinite(left.y) && std::isfinite(left.z);
+        DVASSERT(isForwardFinite);
+        DVASSERT(isLeftFinite);
 
-        DVASSERT(forwardNorm.SquareLength() > EPSILON);
-        DVASSERT(upNorm.SquareLength() > EPSILON);
-        DVASSERT(left.SquareLength() > EPSILON);
+        const bool isForwardNonZero = forward.SquareLength() > 0.0f;
+        const bool isLeftNonZero = left.SquareLength() > 0.0f;
+        DVASSERT(isForwardNonZero);
+        DVASSERT(isLeftNonZero);
 
-        FMOD_VERIFY(fmodEventSystem->set3DListenerAttributes(0, 0, 0, reinterpret_cast<FMOD_VECTOR*>(&forwardNorm), reinterpret_cast<FMOD_VECTOR*>(&upNorm)));
+        if (isForwardFinite && isLeftFinite && isForwardNonZero && isLeftNonZero)
+        {
+            Vector3 forwardNorm = forward;
+            forwardNorm.Normalize();
+            Vector3 upNorm = forwardNorm.CrossProduct(left);
+            upNorm.Normalize();
+
+            FMOD_VERIFY(fmodEventSystem->set3DListenerAttributes(0, 0, 0, reinterpret_cast<FMOD_VECTOR*>(&forwardNorm), reinterpret_cast<FMOD_VECTOR*>(&upNorm)));
+        }
+        else
+        {
+            Logger::Error("[FMODSoundSystem::SetListenerOrientation] Invalid vectors were given: forward=(%f, %f, %f), left=(%f, %f, %f). Ignoring", forward.x, forward.y, forward.z, left.x, left.y, left.z);
+        }
     }
 }
 
