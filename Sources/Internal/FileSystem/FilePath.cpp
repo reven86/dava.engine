@@ -888,13 +888,13 @@ bool FilePath::IsAbsolutePathname(const String& pathname)
     return false;
 }
 
-String FilePath::AddPath(const FilePath& folder, const String& addition)
+String FilePath::AddPath(const FilePath& path, const String& addition)
 {
-    if (folder.IsEmpty())
+    if (path.IsEmpty())
         return NormalizePathname(addition);
 
-    String absPathname = folder.absolutePathname + addition;
-    if (folder.pathType == PATH_IN_RESOURCES && absPathname.find("~res:") == 0)
+    String absPathname = path.absolutePathname + addition;
+    if (path.pathType == PATH_IN_RESOURCES && absPathname.find("~res:") == 0)
     {
         const String frameworkPath = GetSystemPathname("~res:/", PATH_IN_RESOURCES) + "Data";
         absPathname = NormalizePathname(frameworkPath + absPathname.substr(5));
