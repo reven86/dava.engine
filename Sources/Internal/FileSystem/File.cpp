@@ -36,12 +36,6 @@ File::~File()
     // which do not initialize file pointer (e.g. DynamicMemoryFile)
     if (file != nullptr)
     {
-#ifdef __DAVAENGINE_DEBUG__
-        if (DebugFS::GenErrorOnCloseFailed())
-        {
-            return;
-        }
-#endif
         int result = fclose(file);
         DVASSERT(result == 0);
         if (result != 0)
@@ -51,6 +45,10 @@ File::~File()
         }
         file = nullptr;
     }
+
+#ifdef __DAVAENGINE_DEBUG__
+    DebugFS::GenErrorOnCloseFailed();
+#endif
 }
 
 static uint64 GetFilePos(FILE* f)
