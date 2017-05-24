@@ -11,9 +11,10 @@ namespace DAVA
  Temporary component for backward compatibility with existing code.
  **WILL BE CHANGED** after design replays/custom speed logic.
  */
-class UICustomUpdateDeltaComponent : public UIBaseComponent<UICustomUpdateDeltaComponent>
+class UICustomUpdateDeltaComponent : public UIComponent
 {
     DAVA_VIRTUAL_REFLECTION(UICustomUpdateDeltaComponent, UIComponent);
+    IMPLEMENT_UI_COMPONENT(UICustomUpdateDeltaComponent);
 
 public:
     UICustomUpdateDeltaComponent();

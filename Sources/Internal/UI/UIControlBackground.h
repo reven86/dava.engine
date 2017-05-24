@@ -26,9 +26,10 @@ class NMaterial;
         with the set of requested rules.
      */
 
-class UIControlBackground : public UIBaseComponent<UIControlBackground>
+class UIControlBackground : public UIComponent
 {
     DAVA_VIRTUAL_REFLECTION(UIControlBackground, UIComponent);
+    IMPLEMENT_UI_COMPONENT(UIControlBackground);
 
 public:
     /**

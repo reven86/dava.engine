@@ -18,7 +18,7 @@ UISceneComponent::UISceneComponent() = default;
 UISceneComponent::~UISceneComponent() = default;
 
 UISceneComponent::UISceneComponent(const UISceneComponent& src)
-    : UIBaseComponent(src)
+    : UIComponent(src)
 {
 }
 

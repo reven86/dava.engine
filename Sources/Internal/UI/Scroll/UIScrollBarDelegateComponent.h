@@ -6,9 +6,10 @@
 
 namespace DAVA
 {
-class UIScrollBarDelegateComponent : public UIBaseComponent<UIScrollBarDelegateComponent>
+class UIScrollBarDelegateComponent : public UIComponent
 {
     DAVA_VIRTUAL_REFLECTION(UIScrollBarDelegateComponent, UIComponent);
+    IMPLEMENT_UI_COMPONENT(UIScrollBarDelegateComponent);
 
 public:
     UIScrollBarDelegateComponent();

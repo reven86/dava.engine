@@ -13,9 +13,10 @@ class UIControl;
  common traversal algorithm. It's usefull in cases when some ui-controls 
  hierarchy works in editor context with their own ui-controls hierarchy.
  */
-class UILayoutIsolationComponent : public UIBaseComponent<UILayoutIsolationComponent>
+class UILayoutIsolationComponent : public UIComponent
 {
     DAVA_VIRTUAL_REFLECTION(UILayoutIsolationComponent, UIComponent);
+    IMPLEMENT_UI_COMPONENT(UILayoutIsolationComponent);
 
 public:
     UILayoutIsolationComponent();

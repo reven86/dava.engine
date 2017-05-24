@@ -1,9 +1,9 @@
 #pragma once
 
-#include "Math/Math2D.h"
 #include "Base/BaseObject.h"
+#include "Engine/Engine.h"
+#include "Entity/ComponentManager.h"
 #include "Reflection/Reflection.h"
-#include "Reflection/ReflectionRegistrator.h"
 
 namespace DAVA
 {
@@ -51,40 +51,11 @@ inline UIControl* UIComponent::GetControl() const
     return control;
 }
 
-template <class T>
-class UIBaseComponent : public UIComponent
-{
-    DAVA_VIRTUAL_REFLECTION_IN_PLACE(UIBaseComponent, UIComponent)
-    {
-        DAVA::ReflectionRegistrator<UIBaseComponent>::Begin()
-        .End();
-    }
-
-public:
-    int32 GetRuntimeType() const override
-    {
-        return runtimeType;
-    }
-
-    static int32 GetStaticRuntimeType()
-    {
-        return runtimeType;
-    }
-
-    const Type* GetType() const override
-    {
-        return reflectionType;
-    }
-
-private:
-    static int32 runtimeType;
-    static const Type* reflectionType;
-    friend class ComponentManager;
-};
-
-template <class T>
-int32 UIBaseComponent<T>::runtimeType = -1;
-
-template <class T>
-const Type* UIBaseComponent<T>::reflectionType = Type::Instance<T>();
+#define IMPLEMENT_UI_COMPONENT(TYPE) \
+const Type* GetType() const override { return Type::Instance<TYPE>(); }; \
+int32 GetRuntimeType() const override \
+{ \
+    static int32 runtimeType = GetEngineContext()->componentManager->GetRuntimeType(GetType()); \
+    return runtimeType; \
+}
 }

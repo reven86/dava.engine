@@ -7,9 +7,10 @@
 
 namespace DAVA
 {
-class UILinearLayoutComponent : public UIBaseComponent<UILinearLayoutComponent>
+class UILinearLayoutComponent : public UIComponent
 {
     DAVA_VIRTUAL_REFLECTION(UILinearLayoutComponent, UIComponent);
+    IMPLEMENT_UI_COMPONENT(UILinearLayoutComponent);
 
 public:
     enum eOrientation

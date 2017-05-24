@@ -9,9 +9,10 @@
 
 namespace DAVA
 {
-class UINavigationComponent : public UIBaseComponent<UINavigationComponent>
+class UINavigationComponent : public UIComponent
 {
     DAVA_VIRTUAL_REFLECTION(UINavigationComponent, UIComponent);
+    IMPLEMENT_UI_COMPONENT(UINavigationComponent);
 
 public:
     enum Direction

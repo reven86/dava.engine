@@ -1,7 +1,6 @@
 #pragma once
 #include "Reflection/Reflection.h"
 #include "Reflection/ReflectedTypeDB.h"
-#include "UI/Components/UIComponent.h"
 
 namespace DAVA
 {
@@ -52,11 +51,10 @@ void ComponentManager::RegisterComponent()
     bool isUIComponent = std::is_base_of<UIComponent, T>::value;
     if (isUIComponent)
     {
-        T::runtimeType = runtimeComponentsCount;
-        T::reflectionType = Type::Instance<T>();
-        typeToRuntimeType[T::reflectionType] = runtimeComponentsCount;
+        const Type* reflectionType = Type::Instance<T>();
+        typeToRuntimeType[reflectionType] = runtimeComponentsCount;
 
-        sortedTypes.push_back(T::reflectionType);
+        sortedTypes.push_back(reflectionType);
         std::sort(sortedTypes.begin(), sortedTypes.end(),
                   [](const Type*& a, const Type*& b) -> bool
                   {

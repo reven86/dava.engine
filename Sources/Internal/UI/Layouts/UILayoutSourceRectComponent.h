@@ -10,12 +10,13 @@ class UIControl;
 /**
      \ingroup layouts
      Layout system uses this component to setup initial control position and size, because real control position and size
-     can be changed by layout system in previous invocation. This is usefull for QuickEd which uses this component for saving
+     can be changed by layout system in previous invocation. This is useful for QuickEd which uses this component for saving
      position and size entered by user.
      */
-class UILayoutSourceRectComponent : public UIBaseComponent<UILayoutSourceRectComponent>
+class UILayoutSourceRectComponent : public UIComponent
 {
-    DAVA_VIRTUAL_REFLECTION(UICustomUpdateDeltaComponent, UIComponent);
+    DAVA_VIRTUAL_REFLECTION(UILayoutSourceRectComponent, UIComponent);
+    IMPLEMENT_UI_COMPONENT(UILayoutSourceRectComponent);
 
 public:
     UILayoutSourceRectComponent();

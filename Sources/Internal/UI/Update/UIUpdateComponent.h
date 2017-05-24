@@ -11,9 +11,10 @@ namespace DAVA
  Temporary component for backward compatibility with existing code.
  **WILL BE REMOVED** after refactoring all `UIControl::Update` logic.
  */
-class UIUpdateComponent : public UIBaseComponent<UIUpdateComponent>
+class UIUpdateComponent : public UIComponent
 {
     DAVA_VIRTUAL_REFLECTION(UIUpdateComponent, UIComponent);
+    IMPLEMENT_UI_COMPONENT(UIUpdateComponent);
 
 public:
     UIUpdateComponent();

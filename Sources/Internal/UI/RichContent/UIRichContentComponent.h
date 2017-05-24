@@ -50,9 +50,10 @@ class UIControl;
     attributes `class="header"`.
 
 */
-class UIRichContentComponent : public UIBaseComponent<UIRichContentComponent>
+class UIRichContentComponent : public UIComponent
 {
-    DAVA_VIRTUAL_REFLECTION(UIRichContentComponent, UIBaseComponent<UIRichContentComponent>);
+    DAVA_VIRTUAL_REFLECTION(UIRichContentComponent, UIComponent);
+    IMPLEMENT_UI_COMPONENT(UIRichContentComponent);
 
 public:
     /** Default constructor. */
