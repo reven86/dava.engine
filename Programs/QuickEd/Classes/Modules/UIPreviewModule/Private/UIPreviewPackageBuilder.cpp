@@ -10,7 +10,7 @@ UIPreviewPackageBuilder::UIPreviewPackageBuilder(FilesCollection* cache_)
 {
 }
 
-void UIPreviewPackageBuilder::BeginPackage(const DAVA::FilePath& packagePath)
+void UIPreviewPackageBuilder::BeginPackage(const DAVA::FilePath& packagePath, DAVA::int32 version)
 {
     cache->yamlFiles.insert(packagePath);
 }
