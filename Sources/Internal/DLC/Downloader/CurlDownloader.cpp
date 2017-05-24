@@ -2,13 +2,12 @@
 #include "Logger/Logger.h"
 #include "FileSystem/File.h"
 #include "Concurrency/Thread.h"
+#include "DLCManager/Private/DLCDownloaderImpl.h"
 
 #include <curl/curl.h>
 
 namespace DAVA
 {
-bool CurlDownloader::isCURLInit = false;
-
 static DownloadError ErrorForEasyHandle(CURL* easyHandle, CURLcode status, bool isRangeRequestSent);
 static DownloadError HandleDownloadResults(CURLM* multiHandle, bool isRangeRequestSent);
 static DownloadError CurlmCodeToDownloadError(CURLMcode curlMultiCode);
@@ -51,15 +50,12 @@ CurlDownloader::CurlDownloader()
     , maxChunkSize(20 * 1024 * 1024)
     , minChunkSize(16 * 1024)
 {
-    if (!isCURLInit && CURLE_OK == curl_global_init(CURL_GLOBAL_ALL))
-    {
-        isCURLInit = true;
-    }
+    CurlGlobalInit();
 }
 
 CurlDownloader::~CurlDownloader()
 {
-    curl_global_cleanup();
+    CurlGlobalDeinit();
 }
 
 size_t CurlDownloader::CurlDataRecvHandler(void* ptr, size_t size, size_t nmemb, void* part)
