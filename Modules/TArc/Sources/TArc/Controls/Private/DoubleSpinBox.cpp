@@ -40,6 +40,11 @@ void DoubleSpinBox::UpdateControl(const ControlDescriptor& changedFields)
 
 bool DoubleSpinBox::FromText(const QString& input, double& output) const
 {
+    if (input == ".")
+    {
+        output = 0.0;
+        return true;
+    }
     bool isOk = false;
     output = input.toDouble(&isOk);
     return isOk;
@@ -71,12 +76,6 @@ QValidator::State DoubleSpinBox::TypeSpecificValidate(const QString& input) cons
         {
             return QValidator::Intermediate;
         }
-    }
-
-    int pointIndex = input.indexOf('.');
-    if (pointIndex != -1 && (input.size() - pointIndex) > decimals() + 1)
-    {
-        return QValidator::Invalid;
     }
 
     return QValidator::Acceptable;

@@ -74,6 +74,8 @@ public:
     bool IsDeveloperMode() const;
     void SetDeveloperMode(bool isDevMode);
 
+    bool IsEditorSpanned(const QModelIndex& index) const;
+
     QModelIndex GetRegularRootIndex() const;
     QModelIndex GetFavoriteRootIndex() const;
 
@@ -109,6 +111,7 @@ private:
     UnorderedMap<std::shared_ptr<PropertyNode>, ReflectedPropertyItem*> nodeToItem;
     UnorderedMap<std::shared_ptr<PropertyNode>, ReflectedPropertyItem*> nodeToFavorite;
     DAVA::Set<std::shared_ptr<PropertyNode>> dataChangedNodes;
+    DAVA::Set<ReflectedPropertyItem*> repaintRequire;
 
     ChildCreator childCreator;
     FavoritesController favoritesController;

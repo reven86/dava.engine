@@ -188,6 +188,11 @@ QualityGroupComponentValue::QualityGroupComponentValue()
     }
 }
 
+bool QualityGroupComponentValue::RepaintOnUpdateRequire() const
+{
+    return true;
+}
+
 DAVA::Any QualityGroupComponentValue::GetMultipleValue() const
 {
     return DAVA::Any();

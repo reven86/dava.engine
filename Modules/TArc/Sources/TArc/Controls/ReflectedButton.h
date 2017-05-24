@@ -22,11 +22,14 @@ public:
     {
         Clicked,
         Result,
-        Text,
-        Icon,
-        AutoRaise,
-        Enabled,
-        FieldCount
+        Text, // QString
+        Icon, // QIcon
+        IconSize, // QSize
+        AutoRaise, // bool
+        Enabled, // bool
+        Visible, // bool
+        Tooltip, // QString
+        FieldCount,
     };
 
     DECLARE_CONTROL_PARAMS(Fields);

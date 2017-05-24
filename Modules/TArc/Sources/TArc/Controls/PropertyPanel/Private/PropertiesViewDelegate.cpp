@@ -67,7 +67,6 @@ void PropertiesViewDelegate::paint(QPainter* painter, const QStyleOptionViewItem
 
     DVASSERT(valueComponent != nullptr);
     bool isSpanned = valueComponent->IsSpannedControl();
-    UpdateSpanning(index, isSpanned);
     if (index.column() == 0 && isSpanned == false)
     {
         QStyle* style = option.widget->style();
@@ -129,7 +128,6 @@ QWidget* PropertiesViewDelegate::createEditor(QWidget* parent, const QStyleOptio
     BaseComponentValue* valueComponent = GetComponentValue(index);
     QStyleOptionViewItem opt = option;
     AdjustEditorRect(opt);
-    UpdateSpanning(index, valueComponent->IsSpannedControl());
     QWidget* result = valueComponent->AcquireEditorWidget(opt);
     result->setProperty("modelIndex", index);
     return result;
@@ -171,7 +169,6 @@ void PropertiesViewDelegate::updateEditorGeometry(QWidget* editor, const QStyleO
     BaseComponentValue* valueComponent = GetComponentValue(index);
     QStyleOptionViewItem opt = option;
     AdjustEditorRect(opt);
-    UpdateSpanning(index, valueComponent->IsSpannedControl());
     valueComponent->UpdateGeometry(opt);
 }
 
@@ -317,14 +314,6 @@ bool PropertiesViewDelegate::UpdateSizeHints(int section, int newWidth)
     }
 
     return sizeHintChangedIndexes.isEmpty() == false;
-}
-
-void PropertiesViewDelegate::UpdateSpanning(const QModelIndex& index, bool isSpanned) const
-{
-    if (view->isFirstColumnSpanned(index.row(), index.parent()) != isSpanned)
-    {
-        view->setFirstColumnSpanned(index.row(), index.parent(), isSpanned);
-    }
 }
 
 bool PropertiesViewDelegate::eventFilter(QObject* object, QEvent* event)

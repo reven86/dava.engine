@@ -196,6 +196,16 @@ protected:
         return QTreeView::edit(index, trigger, event);
     }
 
+    void rowsInserted(const QModelIndex& index, int start, int end) override
+    {
+        QTreeView::rowsInserted(index, start, end);
+        for (int i = start; i <= end; ++i)
+        {
+            QModelIndex insertedIndex = index.child(i, 0);
+            setFirstColumnSpanned(i, index, propertiesModel->IsEditorSpanned(insertedIndex));
+        }
+    }
+
 private:
     PropertiesViewDetail::PropertiesHeaderView* headerView = nullptr;
     bool isInFavoritesEdit = false;

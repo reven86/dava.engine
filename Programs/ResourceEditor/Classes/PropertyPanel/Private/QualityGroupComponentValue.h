@@ -15,6 +15,8 @@ class QualityGroupComponentValue : public DAVA::TArc::BaseComponentValue
 public:
     QualityGroupComponentValue();
 
+    bool RepaintOnUpdateRequire() const override;
+
 protected:
     DAVA::Any GetMultipleValue() const override;
     bool IsValidValueToSet(const DAVA::Any& newValue, const DAVA::Any& currentValue) const override;

@@ -2,6 +2,7 @@
 
 #include "TArc/Controls/PropertyPanel/PropertyModelExtensions.h"
 #include "TArc/Controls/PropertyPanel/PropertyPanelMeta.h"
+#include "TArc/Controls/Widget.h"
 #include "TArc/Controls/ControlProxy.h"
 #include "TArc/Utils/QtConnections.h"
 #include "TArc/WindowSubSystem/UI.h"
@@ -66,6 +67,8 @@ public:
 
     virtual bool IsReadOnly() const;
     virtual bool IsSpannedControl() const;
+    virtual bool RepaintOnUpdateRequire() const;
+    bool IsVisible() const;
 
     const Style& GetStyle() const;
     void SetStyle(const Style& style);
@@ -103,11 +106,8 @@ protected:
 private:
     void UpdateEditorGeometry(const QRect& geometry) const;
 
-    void CreateButtons(QLayout* layout, const M::CommandProducerHolder* holder, bool isTypeButtons);
-
-    void OnFieldButtonClicked(int32 index);
-    void OnTypeButtonClicked(int32 index);
-    void CallButtonAction(const M::CommandProducerHolder* holder, int32 index);
+    void CreateButtons(Widget* widget, const M::CommandProducerHolder* holder);
+    void CallButtonAction(std::shared_ptr<M::CommandProducer> producer);
 
     ReflectedPropertyModel* model = nullptr;
     BaseComponentValue* thisValue = nullptr;
@@ -116,6 +116,9 @@ private:
     FastName itemID;
 
     QtConnections connections;
+    class ButtonModel;
+    Widget* buttonsLayout = nullptr;
+    DAVA::Vector<std::unique_ptr<ButtonModel>> buttonModels;
 
     DAVA_VIRTUAL_REFLECTION(BaseComponentValue);
 };
