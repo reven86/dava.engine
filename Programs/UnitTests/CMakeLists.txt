@@ -14,7 +14,7 @@ if( NOT DAVA_MEGASOLUTION AND NOT DISABLE_MEMORY_PROFILER )
     set ( DAVA_MEMORY_PROFILER 1 )
 endif()
 
-if (UNIX)
+if (LINUX)
     set ( DAVA_MEMORY_PROFILER 0 )
 endif()
 
@@ -22,7 +22,7 @@ endif()
 set (DAVA_COREV2 1)
 dava_add_definitions(-D__DAVAENGINE_COREV2__)
 
-if (UNIX)
+if (LINUX)
     dava_add_definitions(-DDISABLE_NATIVE_MOVIEVIEW)
     dava_add_definitions(-DDISABLE_NATIVE_TEXTFIELD)
     dava_add_definitions(-DDISABLE_NATIVE_WEBVIEW)
@@ -35,7 +35,8 @@ endif()
 # Enable LOCALIZATION_DEBUG in UnitTests to verify successful compilation
 dava_add_definitions(-DLOCALIZATION_DEBUG)
 
-if (NOT UNIX)
+if (NOT LINUX)
+    # Enable sound after fmod libraries
     set ( DAVA_COMPONENTS "Sound" "NetworkCore" DAVA_DISABLE_AUTOTESTS )
 else()
     set ( DAVA_COMPONENTS "NetworkCore" DAVA_DISABLE_AUTOTESTS )
