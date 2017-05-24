@@ -21,18 +21,26 @@ public:
     std::function<void(const BaseTask*)> onFinished;
 };
 
-class ReceiverNotifier final
+class Notifier final
 {
 public:
-    ReceiverNotifier() = default;
-    ReceiverNotifier(Receiver receiver);
-    ReceiverNotifier(const std::vector<Receiver>& receivers);
+    Notifier() = default;
+    Notifier(const Receiver& receiver);
+    Notifier(const std::vector<Receiver>& receivers);
 
     //wrappers to avoid iteration over receivers
     void NotifyStarted(const BaseTask* task);
     void NotifyProgress(const BaseTask* task, quint32 progress);
     void NotifyFinished(const BaseTask* task);
 
+    void AddReceiver(const Receiver& receiver);
+
+    void SetProgressDelimiter(int delimiter);
+    void IncrementStep();
+
 private:
     std::vector<Receiver> receivers;
+
+    int delimiter = 1;
+    int step = 0;
 };

@@ -9,10 +9,11 @@ void AsyncChainProcessor::OnFinished()
     StartNextTask();
 }
 
-void AsyncChainProcessor::AddTask(std::unique_ptr<BaseTask>&& task, ReceiverNotifier notifier)
+void AsyncChainProcessor::AddTask(std::unique_ptr<BaseTask>&& task, Notifier notifier)
 {
     Q_ASSERT(task->GetTaskType() == BaseTask::ASYNC_CHAIN);
     AsyncChainTask* chainTask = static_cast<AsyncChainTask*>(task.get());
+    chainTask->SetNotifier(notifier);
     connect(chainTask, &AsyncChainTask::Finished, this, &AsyncChainProcessor::OnFinished);
 
     tasks.emplace_back(std::move(task), notifier);
@@ -32,6 +33,7 @@ void AsyncChainProcessor::StartNextTask()
 
         TaskParams& params = tasks.front();
         params.notifier.NotifyStarted(params.task.get());
+        params.notifier.NotifyProgress(params.task.get(), 0);
         params.task->Run();
     }
 }
@@ -41,7 +43,7 @@ void AsyncChainProcessor::Terminate()
     //do nothing for now
 }
 
-AsyncChainProcessor::TaskParams::TaskParams(std::unique_ptr<BaseTask>&& task_, ReceiverNotifier notifier_)
+AsyncChainProcessor::TaskParams::TaskParams(std::unique_ptr<BaseTask>&& task_, Notifier notifier_)
     : task(static_cast<AsyncChainTask*>(task_.release()))
     , notifier(notifier_)
 {

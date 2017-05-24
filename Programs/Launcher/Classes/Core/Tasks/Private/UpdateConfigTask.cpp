@@ -21,11 +21,11 @@ void UpdateConfigTask::Run()
     appManager->GetRemoteConfig()->Clear();
     QString description = QObject::tr("Downloading configuration");
     std::unique_ptr<BaseTask> task = appManager->CreateTask<DownloadTask>(description, urls);
-    task->SetOnFinishCallback(std::bind(&UpdateConfigTask::OnConfigLoaded, this, std::placeholders::_1));
-    appManager->AddTaskWithBaseReceivers(std::move(task));
+    Q_ASSERT(task != nullptr);
+    appManager->AddTaskWithNotifier(std::move(task), notifier);
 }
 
-void UpdateConfigTask::OnConfigLoaded(const BaseTask* task)
+void UpdateConfigTask::OnFinished(const BaseTask* task)
 {
     if (task->HasError())
     {

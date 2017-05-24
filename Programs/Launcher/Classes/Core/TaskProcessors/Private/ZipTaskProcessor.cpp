@@ -1,21 +1,28 @@
 #include "Core/TaskProcessors/ZipTaskProcessor.h"
 #include "Core/Tasks/UnzipTask.h"
 
-#include <QProcess>
 #include <QApplication>
 #include <QDir>
 #include <QRegularExpression>
 
-ZipTaskProcessor::TaskParams::TaskParams(std::unique_ptr<BaseTask>&& task_, const ReceiverNotifier& notifier_)
+ZipTaskProcessor::TaskParams::TaskParams(std::unique_ptr<BaseTask>&& task_, const Notifier& notifier_)
     : task(static_cast<UnzipTask*>(task_.release()))
     , notifier(notifier_)
+    , process(new QProcess())
 {
     notifier.NotifyStarted(task.get());
 }
 
 ZipTaskProcessor::TaskParams::~TaskParams()
 {
+    Q_ASSERT(guard == false);
     notifier.NotifyFinished(task.get());
+
+    if (process.isNull() == false)
+    {
+        process->disconnect();
+        process->deleteLater();
+    }
 }
 
 ZipTaskProcessor::~ZipTaskProcessor()
@@ -23,7 +30,7 @@ ZipTaskProcessor::~ZipTaskProcessor()
     Q_ASSERT(currentTaskParams == nullptr);
 }
 
-void ZipTaskProcessor::AddTask(std::unique_ptr<BaseTask>&& task, ReceiverNotifier notifier)
+void ZipTaskProcessor::AddTask(std::unique_ptr<BaseTask>&& task, Notifier notifier)
 {
     Q_ASSERT(task->GetTaskType() == BaseTask::ZIP_TASK);
     Q_ASSERT(currentTaskParams == nullptr);
@@ -51,19 +58,21 @@ void ZipTaskProcessor::AddTask(std::unique_ptr<BaseTask>&& task, ReceiverNotifie
         }
     }
 
-    connect(&currentTaskParams->process, &QProcess::readyReadStandardOutput, this, &ZipTaskProcessor::OnReadyReadStandardOutput);
-    connect(&currentTaskParams->process, &QProcess::errorOccurred, this, &ZipTaskProcessor::OnErrorOccurred);
-    connect(&currentTaskParams->process, static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished), this, &ZipTaskProcessor::OnFinished);
+    connect(currentTaskParams->process, &QProcess::readyReadStandardOutput, this, &ZipTaskProcessor::OnReadyReadStandardOutput);
+    connect(currentTaskParams->process, &QProcess::errorOccurred, this, &ZipTaskProcessor::OnErrorOccurred);
+    connect(currentTaskParams->process, static_cast<void (QProcess::*)(int, QProcess::ExitStatus)>(&QProcess::finished), this, &ZipTaskProcessor::OnFinished);
 
     ApplyState();
 }
 
 void ZipTaskProcessor::Terminate()
 {
-    if (currentTaskParams != nullptr)
+    if (currentTaskParams != nullptr && terminateGuard == false)
     {
-        currentTaskParams->process.kill();
-        currentTaskParams->process.waitForFinished();
+        currentTaskParams->task->SetError("Archiver was stopped");
+        terminateGuard = true;
+        currentTaskParams = nullptr;
+        terminateGuard = false;
     }
 }
 
@@ -100,33 +109,30 @@ void ZipTaskProcessor::OnFinished(int exitCode, QProcess::ExitStatus exitStatus)
         {
             currentTaskParams->task->SetError(QObject::tr("Archiver reports about error in current archive"));
         }
-        currentTaskParams = nullptr;
     }
-    else
+    else if (currentTaskParams->state == LIST_ARCHIVE)
     {
-        if (currentTaskParams->state == LIST_ARCHIVE)
-        {
-            currentTaskParams->totalSize = std::accumulate(currentTaskParams->filesAndSizes.begin(),
-                                                           currentTaskParams->filesAndSizes.end(),
-                                                           0,
-                                                           [](quint64 value, const std::pair<QString, quint64>& pair) {
-                                                               return value + pair.second;
-                                                           });
-            currentTaskParams->state = UNPACK;
-            ApplyState();
-        }
-        else
-        {
-            currentTaskParams = nullptr;
-        }
+        currentTaskParams->totalSize = std::accumulate(currentTaskParams->filesAndSizes.begin(),
+                                                       currentTaskParams->filesAndSizes.end(),
+                                                       0,
+                                                       [](quint64 value, const std::pair<QString, quint64>& pair) {
+                                                           return value + pair.second;
+                                                       });
+        currentTaskParams->state = UNPACK;
+        ApplyState();
+        return;
+    }
+    if (terminateGuard == false)
+    {
+        currentTaskParams = nullptr;
     }
 }
 
 void ZipTaskProcessor::OnReadyReadStandardOutput()
 {
-    while (currentTaskParams->process.canReadLine())
+    while (currentTaskParams->process->canReadLine())
     {
-        QByteArray line = currentTaskParams->process.readLine();
+        QByteArray line = currentTaskParams->process->readLine();
         if (currentTaskParams->state == LIST_ARCHIVE)
         {
             ProcessOutputForList(line);
@@ -157,7 +163,7 @@ void ZipTaskProcessor::ApplyState()
                   << currentTaskParams->task->GetArchivePath()
                   << "-o" + nativeOutPath;
     }
-    currentTaskParams->process.start(processAddr, arguments);
+    currentTaskParams->process->start(processAddr, arguments);
 }
 
 void ZipTaskProcessor::ProcessOutputForList(const QByteArray& line)

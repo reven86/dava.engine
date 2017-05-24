@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Core/Tasks/BaseTask.h"
+#include "Core/Receiver.h"
 
 #include <QObject>
 
@@ -13,6 +14,8 @@ class AsyncChainTask : public QObject, public BaseTask
 public:
     AsyncChainTask(ApplicationManager* appManager);
 
+    void SetNotifier(const Notifier& notifier);
+
     virtual void Run() = 0;
 
     //this signal is used only by AsyncChainTaskProcessor
@@ -22,9 +25,11 @@ signals:
     void Finished() const;
 
 protected:
-    //use this function only to wrap children tasks
-    CallbackFn WrapCallback(CallbackFn cb) const;
+    Notifier notifier;
 
 private:
+    virtual int GetSubtasksCount() const;
+
     eTaskType GetTaskType() const override;
+    virtual void OnFinished(const BaseTask* task) = 0;
 };

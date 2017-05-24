@@ -34,6 +34,8 @@ public:
 
     const Receiver& GetReceiver() const;
 
+    QString GetSelectedBranchID() const;
+
 signals:
     void RefreshClicked();
     void RunClicked(int row);

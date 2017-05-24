@@ -26,8 +26,41 @@ void InstallApplicationTask::Run()
 {
     QString description = QObject::tr("Downloading application %1").arg(appManager->GetAppName(params.app, params.newVersion.isToolSet));
     std::unique_ptr<BaseTask> task = appManager->CreateTask<DownloadTask>(description, params.newVersion.url);
-    task->SetOnFinishCallback(WrapCallback(std::bind(&InstallApplicationTask::OnLoaded, this, std::placeholders::_1)));
-    appManager->AddTaskWithBaseReceivers(std::move(task));
+    appManager->AddTaskWithNotifier(std::move(task), notifier);
+}
+
+int InstallApplicationTask::GetSubtasksCount() const
+{
+    return NeedUnpack() ? 2 : 1;
+}
+
+void InstallApplicationTask::OnFinished(const BaseTask* task)
+{
+    if (task->HasError())
+    {
+        //if unpacking is cancelled - mainWindow will not refresh apps
+        appManager->GetMainWindow()->RefreshApps();
+        emit Finished();
+    }
+    else
+    {
+        switch (state)
+        {
+        case LOADING:
+            notifier.IncrementStep();
+            OnLoaded(task);
+            break;
+        case UNPACKING:
+            Install();
+            break;
+        case POST_INSTALL:
+            OnInstalled();
+            break;
+        default:
+            Q_ASSERT(false);
+            break;
+        }
+    }
 }
 
 void InstallApplicationTask::OnLoaded(const BaseTask* task)
@@ -39,6 +72,7 @@ void InstallApplicationTask::OnLoaded(const BaseTask* task)
     const DownloadTask* downloadTask = static_cast<const DownloadTask*>(task);
     Q_ASSERT(downloadTask->GetLoadedData().empty() == false);
 
+    //move this code to DownloadTask later
     bool archiveCreated = fileManager->CreateFileFromRawData(downloadTask->GetLoadedData().front(), filePath);
     if (archiveCreated == false)
     {
@@ -46,7 +80,7 @@ void InstallApplicationTask::OnLoaded(const BaseTask* task)
         emit Finished();
         return;
     }
-
+    state = UNPACKING;
     applicationsToRestart = GetApplicationsToRestart(params.branch, params.app);
 
     //remove application if was installed
@@ -57,8 +91,7 @@ void InstallApplicationTask::OnLoaded(const BaseTask* task)
         if (localVersion != nullptr)
         {
             std::unique_ptr<BaseTask> task = appManager->CreateTask<RemoveApplicationTask>(params.branch, params.app);
-            task->SetOnFinishCallback(WrapCallback(std::bind(&InstallApplicationTask::Install, this)));
-            appManager->AddTaskWithBaseReceivers(std::move(task));
+            appManager->AddTaskWithNotifier(std::move(task), notifier);
             return;
         }
     }
@@ -72,12 +105,11 @@ void InstallApplicationTask::Install()
     QString filePath = fileManager->GetTempDownloadFilePath(params.newVersion.url);
 
     QString appDirPath = appManager->GetApplicationDirectory(params.branch, params.app, params.newVersion.isToolSet, false);
-
-    if (params.newVersion.url.endsWith("zip"))
+    state = POST_INSTALL;
+    if (NeedUnpack())
     {
         std::unique_ptr<BaseTask> task = appManager->CreateTask<UnzipTask>(filePath, appDirPath);
-        task->SetOnFinishCallback(WrapCallback(std::bind(&InstallApplicationTask::OnInstalled, this)));
-        appManager->AddTaskWithBaseReceivers(std::move(task));
+        appManager->AddTaskWithNotifier(std::move(task), notifier);
         return;
     }
     else
@@ -145,4 +177,9 @@ QStringList InstallApplicationTask::GetApplicationsToRestart(const QString& bran
         }
     }
     return appList;
+}
+
+bool InstallApplicationTask::NeedUnpack() const
+{
+    return params.newVersion.url.endsWith("zip");
 }

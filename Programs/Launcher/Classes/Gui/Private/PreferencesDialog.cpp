@@ -22,7 +22,7 @@ const char* serverHostNameKey = "Ba-manager url";
 const char* useTestAPIKey = "use test API";
 };
 
-void PreferencesDialog::ShowPreferencesDialog(FileManager* fileManager, ConfigDownloader* configDownloader, ConfigRefresher* refresher, QWidget* parent)
+void PreferencesDialog::ShowPreferencesDialog(FileManager* fileManager, UrlsHolder* configDownloader, ConfigRefresher* refresher, QWidget* parent)
 {
     PreferencesDialog dialog(parent);
     dialog.Init(fileManager, configDownloader, refresher);
@@ -32,7 +32,7 @@ void PreferencesDialog::ShowPreferencesDialog(FileManager* fileManager, ConfigDo
     }
 }
 
-void SavePreferences(FileManager* fileManager, ConfigDownloader* configDownloader, BAManagerClient* commandListener, ConfigRefresher* refresher)
+void SavePreferences(FileManager* fileManager, UrlsHolder* configDownloader, BAManagerClient* commandListener, ConfigRefresher* refresher)
 {
     QJsonObject rootObject;
     rootObject[PreferencesDialogDetails::filesDirectoryKey] = fileManager->GetFilesDirectory();
@@ -56,7 +56,7 @@ void SavePreferences(FileManager* fileManager, ConfigDownloader* configDownloade
     }
 }
 
-void LoadPreferences(FileManager* fileManager, ConfigDownloader* configDownloader, BAManagerClient* commandListener, ConfigRefresher* refresher)
+void LoadPreferences(FileManager* fileManager, UrlsHolder* configDownloader, BAManagerClient* commandListener, ConfigRefresher* refresher)
 {
     QString filePath = FileManager::GetDocumentsDirectory() + PreferencesDialogDetails::settingsFileName;
     QFile settingsFile(filePath);
@@ -121,7 +121,7 @@ PreferencesDialog::PreferencesDialog(QWidget* parent)
     connect(lineEdit_serverHostName, &QLineEdit::textChanged, this, &PreferencesDialog::ProcessSaveButtonEnabled);
 }
 
-void PreferencesDialog::Init(FileManager* fileManager_, ConfigDownloader* configDownloader_, ConfigRefresher* refresher_)
+void PreferencesDialog::Init(FileManager* fileManager_, UrlsHolder* configDownloader_, ConfigRefresher* refresher_)
 {
     fileManager = fileManager_;
     configDownloader = configDownloader_;
@@ -137,27 +137,27 @@ void PreferencesDialog::Init(FileManager* fileManager_, ConfigDownloader* config
 
     label_currentPlatformBuildsLabel->setText(platformString + QString(" builds URL"));
 
-    urlWidgets[ConfigDownloader::LauncherInfoURL] = label_launcherInfoURL;
-    urlWidgets[ConfigDownloader::LauncherTestInfoURL] = label_launcherInfoTestURL;
-    urlWidgets[ConfigDownloader::StringsURL] = label_launcherMetaInfoURL;
-    urlWidgets[ConfigDownloader::FavoritesURL] = label_launcherFavoritesURL;
-    urlWidgets[ConfigDownloader::AllBuildsCurrentPlatformURL] = label_currentPlatformBuildsURL;
-    urlWidgets[ConfigDownloader::AllBuildsIOSURL] = label_IOSBuildsURL;
-    urlWidgets[ConfigDownloader::AllBuildsAndroidURL] = label_androidBuildsURL;
-    urlWidgets[ConfigDownloader::AllBuildsUWPURL] = label_UWPBuildsURL;
+    urlWidgets[UrlsHolder::LauncherInfoURL] = label_launcherInfoURL;
+    urlWidgets[UrlsHolder::LauncherTestInfoURL] = label_launcherInfoTestURL;
+    urlWidgets[UrlsHolder::StringsURL] = label_launcherMetaInfoURL;
+    urlWidgets[UrlsHolder::FavoritesURL] = label_launcherFavoritesURL;
+    urlWidgets[UrlsHolder::AllBuildsCurrentPlatformURL] = label_currentPlatformBuildsURL;
+    urlWidgets[UrlsHolder::AllBuildsIOSURL] = label_IOSBuildsURL;
+    urlWidgets[UrlsHolder::AllBuildsAndroidURL] = label_androidBuildsURL;
+    urlWidgets[UrlsHolder::AllBuildsUWPURL] = label_UWPBuildsURL;
 
-    copyURLWidgets[ConfigDownloader::LauncherInfoURL] = pushButton_copyLauncherInfoURL;
-    copyURLWidgets[ConfigDownloader::LauncherTestInfoURL] = pushButton_copyLauncherTestInfoURL;
-    copyURLWidgets[ConfigDownloader::StringsURL] = pushButton_copyMetaInfoURL;
-    copyURLWidgets[ConfigDownloader::FavoritesURL] = pushButton_copyFavoritesURL;
-    copyURLWidgets[ConfigDownloader::AllBuildsCurrentPlatformURL] = pushButton_copyCurrentPlatformBuildsURL;
-    copyURLWidgets[ConfigDownloader::AllBuildsAndroidURL] = pushButton_copyAndroidBuildsURL;
-    copyURLWidgets[ConfigDownloader::AllBuildsIOSURL] = pushButton_copyIOSBuildsURL;
-    copyURLWidgets[ConfigDownloader::AllBuildsUWPURL] = pushButton_copyUWPBuildsURL;
+    copyURLWidgets[UrlsHolder::LauncherInfoURL] = pushButton_copyLauncherInfoURL;
+    copyURLWidgets[UrlsHolder::LauncherTestInfoURL] = pushButton_copyLauncherTestInfoURL;
+    copyURLWidgets[UrlsHolder::StringsURL] = pushButton_copyMetaInfoURL;
+    copyURLWidgets[UrlsHolder::FavoritesURL] = pushButton_copyFavoritesURL;
+    copyURLWidgets[UrlsHolder::AllBuildsCurrentPlatformURL] = pushButton_copyCurrentPlatformBuildsURL;
+    copyURLWidgets[UrlsHolder::AllBuildsAndroidURL] = pushButton_copyAndroidBuildsURL;
+    copyURLWidgets[UrlsHolder::AllBuildsIOSURL] = pushButton_copyIOSBuildsURL;
+    copyURLWidgets[UrlsHolder::AllBuildsUWPURL] = pushButton_copyUWPBuildsURL;
 
-    for (int i = ConfigDownloader::LauncherInfoURL; i < ConfigDownloader::URLTypesCount; ++i)
+    for (int i = UrlsHolder::LauncherInfoURL; i < UrlsHolder::URLTypesCount; ++i)
     {
-        ConfigDownloader::eURLType type = static_cast<ConfigDownloader::eURLType>(i);
+        UrlsHolder::eURLType type = static_cast<UrlsHolder::eURLType>(i);
         urlWidgets[type]->setProperty(PreferencesDialogDetails::propertyKey, i);
         copyURLWidgets[type]->setProperty(PreferencesDialogDetails::propertyKey, i);
 
@@ -215,9 +215,9 @@ void PreferencesDialog::ProcessSaveButtonEnabled()
 
 void PreferencesDialog::OnServerHostNameChanged(const QString& name)
 {
-    for (int i = ConfigDownloader::LauncherInfoURL; i < ConfigDownloader::URLTypesCount; ++i)
+    for (int i = UrlsHolder::LauncherInfoURL; i < UrlsHolder::URLTypesCount; ++i)
     {
-        ConfigDownloader::eURLType type = static_cast<ConfigDownloader::eURLType>(i);
+        UrlsHolder::eURLType type = static_cast<UrlsHolder::eURLType>(i);
         QString text = name + configDownloader->GetURL(type);
 
         urlWidgets[type]->setText("<a href=\"" + text + "\">" + text + "</a>");
@@ -230,7 +230,7 @@ void PreferencesDialog::OnButtonCopyURLClicked()
     Q_ASSERT(button != nullptr);
     bool ok;
     int typeInt = button->property(PreferencesDialogDetails::propertyKey).toInt(&ok);
-    ConfigDownloader::eURLType type = static_cast<ConfigDownloader::eURLType>(typeInt);
+    UrlsHolder::eURLType type = static_cast<UrlsHolder::eURLType>(typeInt);
     Q_ASSERT(ok);
     Q_ASSERT(urlWidgets.contains(type));
     QString text = lineEdit_serverHostName->text() + configDownloader->GetURL(type);

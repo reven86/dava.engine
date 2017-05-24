@@ -15,18 +15,18 @@ private slots:
     void OnFinished();
 
 private:
-    void AddTask(std::unique_ptr<BaseTask>&& task, ReceiverNotifier notifier) override;
+    void AddTask(std::unique_ptr<BaseTask>&& task, Notifier notifier) override;
     void Terminate() override;
 
     void StartNextTask();
 
     struct TaskParams
     {
-        TaskParams(std::unique_ptr<BaseTask>&& task, ReceiverNotifier notifier);
+        TaskParams(std::unique_ptr<BaseTask>&& task, Notifier notifier);
         ~TaskParams();
 
         std::unique_ptr<AsyncChainTask> task;
-        ReceiverNotifier notifier;
+        Notifier notifier;
     };
     std::list<TaskParams> tasks;
 

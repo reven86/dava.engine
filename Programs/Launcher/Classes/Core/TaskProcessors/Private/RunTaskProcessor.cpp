@@ -2,7 +2,7 @@
 #include "Core/Tasks/BaseTask.h"
 #include "Core/Receiver.h"
 
-void RunTaskProcessor::AddTask(std::unique_ptr<BaseTask>&& task, ReceiverNotifier notifier)
+void RunTaskProcessor::AddTask(std::unique_ptr<BaseTask>&& task, Notifier notifier)
 {
     Q_ASSERT(task->GetTaskType() == BaseTask::RUN_TASK);
     RunTask* runTask = static_cast<RunTask*>(task.get());

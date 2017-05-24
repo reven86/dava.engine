@@ -3,8 +3,6 @@
 #include <QString>
 #include <QVariant>
 
-#include <functional>
-
 class ApplicationManager;
 
 //task data component
@@ -51,21 +49,16 @@ public:
     virtual QString GetDescription() const = 0;
     virtual eTaskType GetTaskType() const = 0;
 
-    using CallbackFn = std::function<void(const BaseTask*)>;
-    void SetOnFinishCallback(CallbackFn callback);
-
 protected:
     ApplicationManager* appManager = nullptr;
 
 private:
-    friend class ReceiverNotifier;
+    friend class Notifier;
 
     BaseTask(const BaseTask& task) = delete;
     BaseTask(BaseTask&& task) = delete;
     BaseTask& operator=(const BaseTask& task) = delete;
     BaseTask& operator=(BaseTask&& task) = delete;
-
-    CallbackFn onFinishedCallback;
 };
 
 //base class for run tasks without progress bar

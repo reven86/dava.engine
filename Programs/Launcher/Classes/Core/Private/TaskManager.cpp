@@ -4,6 +4,8 @@
 #include "Core/TaskProcessors/ZipTaskProcessor.h"
 #include "Core/TaskProcessors/AsyncChainProcessor.h"
 
+#include <QThread>
+
 TaskManager::TaskManager(QObject* parent)
     : QObject(parent)
 {
@@ -15,14 +17,9 @@ TaskManager::TaskManager(QObject* parent)
 
 TaskManager::~TaskManager() = default;
 
-void TaskManager::AddTask(std::unique_ptr<BaseTask>&& task, const Receiver& receiver)
+void TaskManager::AddTask(std::unique_ptr<BaseTask>&& task, const Notifier& notifier)
 {
-    AddTask(std::move(task), std::vector<Receiver>(1, receiver));
-}
-
-void TaskManager::AddTask(std::unique_ptr<BaseTask>&& task, const std::vector<Receiver>& receivers)
-{
-    taskProcessors[task->GetTaskType()]->AddTask(std::move(task), ReceiverNotifier(receivers));
+    taskProcessors[task->GetTaskType()]->AddTask(std::move(task), notifier);
 }
 
 void TaskManager::Terminate()

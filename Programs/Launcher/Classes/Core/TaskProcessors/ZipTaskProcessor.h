@@ -2,9 +2,11 @@
 
 #include "Core/TaskProcessors/BaseTaskProcessor.h"
 
+#include <QPointer>
 #include <QProcess>
 
 class UnzipTask;
+class QProcess;
 
 class ZipTaskProcessor final : public QObject, public BaseTaskProcessor
 {
@@ -25,7 +27,7 @@ private:
         UNPACK
     };
 
-    void AddTask(std::unique_ptr<BaseTask>&& task, ReceiverNotifier notifier) override;
+    void AddTask(std::unique_ptr<BaseTask>&& task, Notifier notifier) override;
     void Terminate() override;
 
     void ApplyState();
@@ -37,18 +39,21 @@ private:
 
     struct TaskParams
     {
-        TaskParams(std::unique_ptr<BaseTask>&& task, const ReceiverNotifier& notifier);
+        TaskParams(std::unique_ptr<BaseTask>&& task, const Notifier& notifier);
         ~TaskParams();
 
-        QProcess process;
         std::unique_ptr<UnzipTask> task;
+        Notifier notifier;
 
-        ReceiverNotifier notifier;
+        QPointer<QProcess> process;
+
         eState state = LIST_ARCHIVE;
         bool foundOutputData = false;
         std::map<QString, quint64> filesAndSizes;
         quint64 matchedSize = 0;
         quint64 totalSize = 0;
+        bool guard = false;
     };
     std::unique_ptr<TaskParams> currentTaskParams;
+    bool terminateGuard = false;
 };

@@ -1,14 +1,16 @@
 #pragma once
 
+#include <vector>
 #include <array>
 #include <memory>
 
 #include <QString>
+#include <QUrl>
 
 class BaseTask;
 class ApplicationManager;
 
-class ConfigDownloader
+class UrlsHolder
 {
 public:
     //word URL added to resolve name conflict
@@ -26,7 +28,7 @@ public:
         URLTypesCount
     };
 
-    ConfigDownloader(ApplicationManager* manager);
+    UrlsHolder(ApplicationManager* manager);
 
     QString GetURL(eURLType type) const;
     QString GetServerHostName() const;
@@ -35,7 +37,7 @@ public:
     bool IsTestAPIUsed() const;
     void SetUseTestAPI(bool use);
 
-    std::unique_ptr<BaseTask> CreateTask() const;
+    std::vector<QUrl> GetURLs() const;
 
 private:
     ApplicationManager* appManager = nullptr;

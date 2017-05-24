@@ -25,8 +25,36 @@ void SelfUpdateTask::Run()
 {
     QString description = QObject::tr("Loading new launcher");
     std::unique_ptr<BaseTask> task = appManager->CreateTask<DownloadTask>(description, url);
-    task->SetOnFinishCallback(WrapCallback(std::bind(&SelfUpdateTask::OnLoaded, this, std::placeholders::_1)));
-    appManager->AddTaskWithBaseReceivers(std::move(task));
+    appManager->AddTaskWithNotifier(std::move(task), notifier);
+}
+
+int SelfUpdateTask::GetSubtasksCount() const
+{
+    return 2;
+}
+
+void SelfUpdateTask::OnFinished(const BaseTask* task)
+{
+    if (task->HasError())
+    {
+        emit Finished();
+    }
+    else
+    {
+        switch (state)
+        {
+        case LOADING:
+            notifier.IncrementStep();
+            OnLoaded(task);
+            break;
+        case UNPACKING:
+            OnUnpacked();
+            break;
+        default:
+            Q_ASSERT(false);
+            break;
+        }
+    }
 }
 
 void SelfUpdateTask::OnLoaded(const BaseTask* task)
@@ -35,6 +63,7 @@ void SelfUpdateTask::OnLoaded(const BaseTask* task)
     const DownloadTask* downloadTask = static_cast<const DownloadTask*>(task);
     Q_ASSERT(downloadTask->GetLoadedData().empty() == false);
     FileManager* fileManager = appManager->GetFileManager();
+    //replace this code later with "Create file while loading"
     QString filePath = fileManager->GetTempDownloadFilePath(url);
     bool archiveCreated = fileManager->CreateFileFromRawData(downloadTask->GetLoadedData().front(), filePath);
     if (archiveCreated == false)
@@ -43,11 +72,14 @@ void SelfUpdateTask::OnLoaded(const BaseTask* task)
         emit Finished();
         return;
     }
+
+    state = UNPACKING;
+
     QString selfUpdateDirPath = fileManager->GetSelfUpdateTempDirectory();
 
     std::unique_ptr<BaseTask> zipTask = appManager->CreateTask<UnzipTask>(filePath, selfUpdateDirPath);
-    zipTask->SetOnFinishCallback(WrapCallback(std::bind(&SelfUpdateTask::OnUnpacked, this)));
-    appManager->AddTaskWithBaseReceivers(std::move(zipTask));
+
+    appManager->AddTaskWithNotifier(std::move(zipTask), notifier);
 }
 
 void SelfUpdateTask::OnUnpacked()
@@ -60,6 +92,7 @@ void SelfUpdateTask::OnUnpacked()
     QString selfUpdateDirPath = fileManager->GetSelfUpdateTempDirectory();
 
     //remove old launcher files except download folder, temp folder and update folder
+    //replace it with task later
     if (fileManager->MoveLauncherRecursively(appDirPath, tempDir, this)
         && fileManager->MoveLauncherRecursively(selfUpdateDirPath, appDirPath, this))
     {

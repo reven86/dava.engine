@@ -17,8 +17,7 @@ public:
     TaskManager(QObject* parent = nullptr);
     ~TaskManager();
 
-    void AddTask(std::unique_ptr<BaseTask>&& task, const Receiver& receiver);
-    void AddTask(std::unique_ptr<BaseTask>&& task, const std::vector<Receiver>& receivers);
+    void AddTask(std::unique_ptr<BaseTask>&& task, const Notifier& notifier);
 
 public slots:
     void Terminate();

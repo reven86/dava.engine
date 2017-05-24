@@ -1,18 +1,19 @@
-#include <Core/ApplicationManager.h>
-#include <Core/BAManagerClient.h>
-#include <Core/ConfigRefresher.h>
-#include <Core/ConfigDownloader.h>
+#include "Core/ApplicationManager.h"
+#include "Core/BAManagerClient.h"
+#include "Core/ConfigRefresher.h"
+#include "Core/UrlsHolder.h"
 
-#include <Core/Tasks/RunApplicationTask.h>
-#include <Core/Tasks/RemoveApplicationTask.h>
-#include <Core/Tasks/SelfUpdateTask.h>
-#include <Core/Tasks/LoadLocalConfigTask.h>
+#include "Core/Tasks/RunApplicationTask.h"
+#include "Core/Tasks/RemoveApplicationTask.h"
+#include "Core/Tasks/SelfUpdateTask.h"
+#include "Core/Tasks/LoadLocalConfigTask.h"
+#include "Core/Tasks/UpdateConfigTask.h"
 
-#include <Gui/PreferencesDialog.h>
+#include "Gui/PreferencesDialog.h"
 
-#include <Utils/AppsCommandsSender.h>
-#include <Utils/FileManager.h>
-#include <Utils/ErrorMessenger.h>
+#include "Utils/AppsCommandsSender.h"
+#include "Utils/FileManager.h"
+#include "Utils/ErrorMessenger.h"
 
 #include <QtHelpers/HelperFunctions.h>
 #include <QtHelpers/ProcessHelper.h>
@@ -45,7 +46,7 @@ ApplicationManager::ApplicationManager(ApplicationQuitController* quitController
     , commandsSender(new AppsCommandsSender(this))
     , baManagerClient(new BAManagerClient(this))
     , configRefresher(new ConfigRefresher(this))
-    , configDownloader(new ConfigDownloader(this))
+    , urlsHolder(new UrlsHolder(this))
     , mainWindow(new MainWindow(this))
     , taskManager(new TaskManager(this))
 {
@@ -67,17 +68,17 @@ ApplicationManager::ApplicationManager(ApplicationQuitController* quitController
     localConfigFilePath = FileManager::GetDocumentsDirectory() + LOCAL_CONFIG_NAME;
     AddTaskWithBaseReceivers<LoadLocalConfigTask>(localConfigFilePath);
 
-    ::LoadPreferences(fileManager, configDownloader, baManagerClient, configRefresher);
+    ::LoadPreferences(fileManager, urlsHolder, baManagerClient, configRefresher);
 }
 
 ApplicationManager::~ApplicationManager()
 {
-    ::SavePreferences(fileManager, configDownloader, baManagerClient, configRefresher);
+    ::SavePreferences(fileManager, urlsHolder, baManagerClient, configRefresher);
 
     taskManager->Terminate();
     delete taskManager;
     delete mainWindow;
-    delete configDownloader;
+    delete urlsHolder;
 }
 
 void ApplicationManager::Start()
@@ -94,7 +95,13 @@ void ApplicationManager::AddTaskWithBaseReceivers(std::unique_ptr<BaseTask>&& ta
 void ApplicationManager::AddTaskWithCustomReceivers(std::unique_ptr<BaseTask>&& task, std::vector<Receiver> receivers)
 {
     receivers.push_back(tasksLogger.GetReceiver());
-    taskManager->AddTask(std::move(task), receivers);
+    Notifier notifier(receivers);
+    AddTaskWithNotifier(std::move(task), notifier);
+}
+
+void ApplicationManager::AddTaskWithNotifier(std::unique_ptr<BaseTask>&& task, const Notifier& notifier)
+{
+    taskManager->AddTask(std::move(task), notifier);
 }
 
 void ApplicationManager::InstallApplication(const InstallApplicationParams& params)
@@ -104,12 +111,12 @@ void ApplicationManager::InstallApplication(const InstallApplicationParams& para
 
 void ApplicationManager::Refresh()
 {
-    AddTaskWithBaseReceivers(configDownloader->CreateTask());
+    AddTaskWithBaseReceivers<UpdateConfigTask>(urlsHolder->GetURLs());
 }
 
 void ApplicationManager::OpenPreferencesEditor()
 {
-    PreferencesDialog::ShowPreferencesDialog(fileManager, configDownloader, configRefresher, mainWindow);
+    PreferencesDialog::ShowPreferencesDialog(fileManager, urlsHolder, configRefresher, mainWindow);
 }
 
 void ApplicationManager::CheckUpdates()
@@ -288,7 +295,10 @@ void ApplicationManager::OnAppInstalled(const QString& branchID, const QString& 
     localConfig.InsertApplication(branchID, appID, version);
     localConfig.UpdateApplicationsNames();
     SaveLocalConfig();
-    mainWindow->ShowTable(branchID);
+    if (mainWindow->GetSelectedBranchID() == branchID)
+    {
+        mainWindow->ShowTable(branchID);
+    }
 }
 
 QString ApplicationManager::GetString(const QString& stringID) const

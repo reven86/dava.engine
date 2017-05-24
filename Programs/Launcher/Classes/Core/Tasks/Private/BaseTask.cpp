@@ -31,11 +31,6 @@ BaseTask::BaseTask(ApplicationManager* appManager_)
 {
 }
 
-void BaseTask::SetOnFinishCallback(CallbackFn callback)
-{
-    onFinishedCallback = callback;
-}
-
 RunTask::RunTask(ApplicationManager* appManager)
     : BaseTask(appManager)
 {

@@ -21,7 +21,7 @@ class AppsCommandsSender;
 class BAManagerClient;
 class ConfigRefresher;
 class FileDownloader;
-class ConfigDownloader;
+class UrlsHolder;
 
 class ApplicationManager : public QObject
 {
@@ -38,6 +38,7 @@ public:
 
     void AddTaskWithBaseReceivers(std::unique_ptr<BaseTask>&& task);
     void AddTaskWithCustomReceivers(std::unique_ptr<BaseTask>&& task, std::vector<Receiver> receivers);
+    void AddTaskWithNotifier(std::unique_ptr<BaseTask>&& task, const Notifier& norifier);
 
     template <typename T, typename... Arguments>
     void AddTaskWithBaseReceivers(Arguments&&... args);
@@ -83,7 +84,7 @@ private slots:
 private:
     QString GetApplicationDirectory_kostil(const QString& branchID, const QString& appID) const;
 
-    ReceiverNotifier receiver;
+    Notifier notifier;
 
     QString localConfigFilePath;
 
@@ -100,7 +101,7 @@ private:
     BAManagerClient* baManagerClient = nullptr;
     ConfigRefresher* configRefresher = nullptr;
 
-    ConfigDownloader* configDownloader = nullptr;
+    UrlsHolder* urlsHolder = nullptr;
 
     MainWindow* mainWindow = nullptr;
 

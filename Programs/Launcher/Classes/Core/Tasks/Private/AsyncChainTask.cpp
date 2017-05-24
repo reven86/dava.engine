@@ -5,21 +5,22 @@ AsyncChainTask::AsyncChainTask(ApplicationManager* appManager)
 {
 }
 
+void AsyncChainTask::SetNotifier(const Notifier& notifier_)
+{
+    notifier = notifier_;
+    Receiver receiver;
+    receiver.onFinished = std::bind(&AsyncChainTask::OnFinished, this, std::placeholders::_1);
+    notifier.AddReceiver(receiver);
+
+    notifier.SetProgressDelimiter(GetSubtasksCount());
+}
+
+int AsyncChainTask::GetSubtasksCount() const
+{
+    return 1;
+}
+
 BaseTask::eTaskType AsyncChainTask::GetTaskType() const
 {
     return ASYNC_CHAIN;
-}
-
-BaseTask::CallbackFn AsyncChainTask::WrapCallback(CallbackFn cb) const
-{
-    return [cb, this](const BaseTask* task) {
-        if (task->HasError())
-        {
-            emit Finished();
-        }
-        else
-        {
-            cb(task);
-        }
-    };
 }

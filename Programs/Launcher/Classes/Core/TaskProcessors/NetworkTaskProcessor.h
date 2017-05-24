@@ -20,7 +20,7 @@ public:
     NetworkTaskProcessor();
     ~NetworkTaskProcessor() override;
 
-    void AddTask(std::unique_ptr<BaseTask>&& task, ReceiverNotifier notifier) override;
+    void AddTask(std::unique_ptr<BaseTask>&& task, Notifier notifier) override;
     void Terminate() override;
 
 private slots:
@@ -33,11 +33,11 @@ private:
 
     struct TaskParams
     {
-        TaskParams(std::unique_ptr<BaseTask>&& task, ReceiverNotifier notifier);
+        TaskParams(std::unique_ptr<BaseTask>&& task, Notifier notifier);
         ~TaskParams();
 
         std::unique_ptr<DownloadTask> task;
-        ReceiverNotifier notifier;
+        Notifier notifier;
 
         std::list<QNetworkReply*> requests;
     };

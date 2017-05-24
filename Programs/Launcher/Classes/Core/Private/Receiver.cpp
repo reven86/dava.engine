@@ -1,17 +1,17 @@
 #include "Core/Receiver.h"
 #include "Core/Tasks/BaseTask.h"
 
-ReceiverNotifier::ReceiverNotifier(Receiver receiver)
+Notifier::Notifier(const Receiver& receiver)
     : receivers(1, receiver)
 {
 }
 
-ReceiverNotifier::ReceiverNotifier(const std::vector<Receiver>& receivers_)
+Notifier::Notifier(const std::vector<Receiver>& receivers_)
     : receivers(receivers_)
 {
 }
 
-void ReceiverNotifier::NotifyStarted(const BaseTask* task)
+void Notifier::NotifyStarted(const BaseTask* task)
 {
     for (Receiver& receiver : receivers)
     {
@@ -22,18 +22,18 @@ void ReceiverNotifier::NotifyStarted(const BaseTask* task)
     }
 }
 
-void ReceiverNotifier::NotifyProgress(const BaseTask* task, quint32 progress)
+void Notifier::NotifyProgress(const BaseTask* task, quint32 progress)
 {
     for (Receiver& receiver : receivers)
     {
         if (receiver.onProgress)
         {
-            receiver.onProgress(task, progress);
+            receiver.onProgress(task, (step * 100 + progress) / delimiter);
         }
     }
 }
 
-void ReceiverNotifier::NotifyFinished(const BaseTask* task)
+void Notifier::NotifyFinished(const BaseTask* task)
 {
     //first notify receiver that task if finished
     //receiver can not produce another tasks on finished
@@ -45,9 +45,20 @@ void ReceiverNotifier::NotifyFinished(const BaseTask* task)
             receiver.onFinished(task);
         }
     }
+}
 
-    if (task->onFinishedCallback)
-    {
-        task->onFinishedCallback(task);
-    }
+void Notifier::AddReceiver(const Receiver& receiver)
+{
+    receivers.push_back(receiver);
+}
+
+void Notifier::SetProgressDelimiter(int delimiter_)
+{
+    Q_ASSERT(delimiter_ > 0);
+    delimiter = delimiter_;
+}
+
+void Notifier::IncrementStep()
+{
+    step++;
 }

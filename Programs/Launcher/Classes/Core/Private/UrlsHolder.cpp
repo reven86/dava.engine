@@ -1,17 +1,16 @@
-#include "Core/ConfigDownloader.h"
+#include "Core/UrlsHolder.h"
 #include "Core/ApplicationManager.h"
 
-#include "Core/Tasks/UpdateConfigTask.h"
 
 #include "Utils/ErrorMessenger.h"
 
-ConfigDownloader::ConfigDownloader(ApplicationManager* appManager_)
+UrlsHolder::UrlsHolder(ApplicationManager* appManager_)
     : appManager(appManager_)
     , serverHostName("http://ba-manager.wargaming.net")
 {
 }
 
-QString ConfigDownloader::GetURL(eURLType type) const
+QString UrlsHolder::GetURL(eURLType type) const
 {
     switch (type)
     {
@@ -37,22 +36,22 @@ QString ConfigDownloader::GetURL(eURLType type) const
     }
 }
 
-QString ConfigDownloader::GetServerHostName() const
+QString UrlsHolder::GetServerHostName() const
 {
     return serverHostName;
 }
 
-bool ConfigDownloader::IsTestAPIUsed() const
+bool UrlsHolder::IsTestAPIUsed() const
 {
     return useTestAPI;
 }
 
-void ConfigDownloader::SetUseTestAPI(bool use)
+void UrlsHolder::SetUseTestAPI(bool use)
 {
     useTestAPI = use;
 }
 
-std::unique_ptr<BaseTask> ConfigDownloader::CreateTask() const
+std::vector<QUrl> UrlsHolder::GetURLs() const
 {
     std::vector<QUrl> urls;
     if (IsTestAPIUsed())
@@ -70,10 +69,10 @@ std::unique_ptr<BaseTask> ConfigDownloader::CreateTask() const
         QUrl url(serverHostName + GetURL(type));
         urls.push_back(url);
     }
-    return std::unique_ptr<BaseTask>(new UpdateConfigTask(appManager, urls));
+    return urls;
 }
 
-void ConfigDownloader::SetServerHostName(const QString& url)
+void UrlsHolder::SetServerHostName(const QString& url)
 {
     serverHostName = url;
 }

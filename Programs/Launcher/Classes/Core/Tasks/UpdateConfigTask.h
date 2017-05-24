@@ -14,6 +14,7 @@ private:
     QString GetDescription() const override;
     void Run() override;
 
-    void OnConfigLoaded(const BaseTask* task);
+    void OnFinished(const BaseTask* task) override;
+
     std::vector<QUrl> urls;
 };

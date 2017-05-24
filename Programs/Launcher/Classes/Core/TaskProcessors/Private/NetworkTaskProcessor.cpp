@@ -4,7 +4,7 @@
 
 #include <QNetworkReply>
 
-NetworkTaskProcessor::TaskParams::TaskParams(std::unique_ptr<BaseTask>&& task_, ReceiverNotifier notifier_)
+NetworkTaskProcessor::TaskParams::TaskParams(std::unique_ptr<BaseTask>&& task_, Notifier notifier_)
     : task(static_cast<DownloadTask*>(task_.release()))
     , notifier(notifier_)
 {
@@ -25,10 +25,10 @@ NetworkTaskProcessor::NetworkTaskProcessor()
 
 NetworkTaskProcessor::~NetworkTaskProcessor() = default;
 
-void NetworkTaskProcessor::AddTask(std::unique_ptr<BaseTask>&& task, ReceiverNotifier notifier)
+void NetworkTaskProcessor::AddTask(std::unique_ptr<BaseTask>&& task, Notifier notifier)
 {
     Q_ASSERT(task->GetTaskType() == BaseTask::DOWNLOAD_TASK);
-
+    Q_ASSERT(task != nullptr);
     tasks.emplace_back(new TaskParams(std::move(task), notifier));
     StartNextTask();
 }
@@ -66,17 +66,30 @@ void NetworkTaskProcessor::StartNextTask()
 
     std::vector<QUrl> urls = currentTask->task->GetUrls();
     Q_ASSERT(urls.empty() == false);
+
     for (const QUrl& url : urls)
     {
         QNetworkReply* reply = networkAccessManager->get(QNetworkRequest(url));
+        Q_ASSERT(reply != nullptr);
         connect(reply, &QNetworkReply::downloadProgress, this, &NetworkTaskProcessor::OnDownloadProgress);
+
+        //sometimes when windows PC go to sleep we got nullptr here with no reason
+        if (currentTask == nullptr)
+        {
+            return;
+        }
+
         currentTask->requests.push_back(reply);
     }
 }
 
 void NetworkTaskProcessor::OnDownloadFinished(QNetworkReply* reply)
 {
-    Q_ASSERT(currentTask != nullptr);
+    //on Windows we can receive this callback even if current task is empty
+    if (currentTask == nullptr)
+    {
+        return;
+    }
     Q_ASSERT(currentTask->task->GetTaskType() == BaseTask::DOWNLOAD_TASK);
     reply->deleteLater();
 
@@ -122,7 +135,7 @@ void NetworkTaskProcessor::OnAccessibleChanged(QNetworkAccessManager::NetworkAcc
 void NetworkTaskProcessor::OnDownloadProgress(qint64 bytes, qint64 total)
 {
     //on connection abort we have an empty currentTask and downloadProgress with arguments 0, 0
-    if (currentTask == nullptr)
+    if (currentTask == nullptr || total == -1)
     {
         return;
     }

@@ -110,6 +110,8 @@ MainWindow::MainWindow(ApplicationManager* appManager_, QWidget* parent)
     , appManager(appManager_)
 {
     ui->setupUi(this);
+    ui->textEdit_launcherStatus->setReadOnly(true);
+
     ui->action_updateConfiguration->setShortcuts(QList<QKeySequence>() << QKeySequence("F5") << QKeySequence("Ctrl+R"));
     connect(ui->action_updateConfiguration, &QAction::triggered, this, &MainWindow::RefreshClicked);
 
@@ -168,6 +170,11 @@ void MainWindow::OnCellDoubleClicked(QModelIndex index)
 const Receiver& MainWindow::GetReceiver() const
 {
     return receiver;
+}
+
+QString MainWindow::GetSelectedBranchID() const
+{
+    return selectedBranchID;
 }
 
 void MainWindow::OnRun(int rowNumber)
@@ -391,15 +398,16 @@ void MainWindow::OnConnectedChanged(bool connected)
 
 void MainWindow::OnTaskProgress(const BaseTask* /*task*/, quint32 progress)
 {
-    ui->progressBar->setValue(progress);
+    QMetaObject::invokeMethod(ui->progressBar, "setValue", Qt::QueuedConnection, Q_ARG(int, progress));
 }
 
 void MainWindow::AddText(const QString& text, const QColor& color)
 {
-    QColor textColor = ui->textEdit_launcherStatus->textColor();
-    ui->textEdit_launcherStatus->setTextColor(color);
-    ui->textEdit_launcherStatus->append(QTime::currentTime().toString() + " : " + text);
-    ui->textEdit_launcherStatus->setTextColor(textColor);
+    QTextEdit* textEdit = ui->textEdit_launcherStatus;
+    QTextCursor textCursor = textEdit->textCursor();
+    textCursor.movePosition(QTextCursor::End);
+    textEdit->setTextCursor(textCursor);
+    textEdit->insertHtml(QTime::currentTime().toString() + " : " + "<font color=\"" + color.name() + "\">" + text + "</font><br>");
 }
 
 void MainWindow::OnTaskStarted(const BaseTask* task)
@@ -411,7 +419,6 @@ void MainWindow::OnTaskStarted(const BaseTask* task)
     {
         ui->stackedWidget_status->setCurrentIndex(0);
         ui->progressBar->setFormat(task->GetDescription() + " %p%");
-        ui->progressBar->setValue(0);
     }
 }
 
@@ -425,7 +432,7 @@ void MainWindow::OnTaskFinished(const BaseTask* task)
     BaseTask::eTaskType type = task->GetTaskType();
     if (type == BaseTask::DOWNLOAD_TASK)
     {
-        OnConnectedChanged(error.isEmpty());
+        OnConnectedChanged(error.isEmpty() || error.contains("cancel", Qt::CaseInsensitive));
     }
     if (type == BaseTask::DOWNLOAD_TASK || type == BaseTask::ZIP_TASK)
     {

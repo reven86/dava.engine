@@ -1,10 +1,10 @@
 #pragma once
 
 #include "ui_preferencesdialog.h"
-#include "Core/ConfigDownloader.h"
+#include "Core/UrlsHolder.h"
 
 class FileManager;
-class ConfigDownloader;
+class UrlsHolder;
 class BAManagerClient;
 class ConfigRefresher;
 
@@ -13,7 +13,7 @@ class PreferencesDialog : public QDialog, private Ui::PreferencesDialog
     Q_OBJECT
 
 public:
-    static void ShowPreferencesDialog(FileManager* fileManager, ConfigDownloader* configDownloader, ConfigRefresher* configRefresher, QWidget* parent = nullptr);
+    static void ShowPreferencesDialog(FileManager* fileManager, UrlsHolder* configDownloader, ConfigRefresher* configRefresher, QWidget* parent = nullptr);
 
 private slots:
     void OnButtonCopyURLClicked();
@@ -23,16 +23,16 @@ private slots:
 
 private:
     PreferencesDialog(QWidget* parent = nullptr);
-    void Init(FileManager* fileManager, ConfigDownloader* configDownloader, ConfigRefresher* configRefresher);
+    void Init(FileManager* fileManager, UrlsHolder* configDownloader, ConfigRefresher* configRefresher);
     void AcceptData();
 
     FileManager* fileManager = nullptr;
-    ConfigDownloader* configDownloader = nullptr;
+    UrlsHolder* configDownloader = nullptr;
     ConfigRefresher* configRefresher = nullptr;
 
-    QMap<ConfigDownloader::eURLType, QLabel*> urlWidgets;
-    QMap<ConfigDownloader::eURLType, QPushButton*> copyURLWidgets;
+    QMap<UrlsHolder::eURLType, QLabel*> urlWidgets;
+    QMap<UrlsHolder::eURLType, QPushButton*> copyURLWidgets;
 };
 
-void SavePreferences(FileManager* fileManager, ConfigDownloader* configDownloader, BAManagerClient* commandListener, ConfigRefresher* configRefresher);
-void LoadPreferences(FileManager* fileManager, ConfigDownloader* configDownloader, BAManagerClient* commandListener, ConfigRefresher* configRefresher);
+void SavePreferences(FileManager* fileManager, UrlsHolder* configDownloader, BAManagerClient* commandListener, ConfigRefresher* configRefresher);
+void LoadPreferences(FileManager* fileManager, UrlsHolder* configDownloader, BAManagerClient* commandListener, ConfigRefresher* configRefresher);
