@@ -29,7 +29,7 @@ endif ()
 # as cross-compiling is possible.
 # cmake's variable UNIX is not suitable as it is defined for all unix-like system
 # including macos, android, linux.
-if ((${CMAKE_SYSTEM_NAME} STREQUAL "Linux") AND NOT ANDROID)
+if (CMAKE_SYSTEM_NAME AND ("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux") AND NOT ANDROID)
     set (LINUX 1)
 endif()
 
