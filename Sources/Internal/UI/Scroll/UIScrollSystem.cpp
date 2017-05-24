@@ -52,7 +52,7 @@ void UIScrollSystem::UnregisterControl(UIControl* control)
 
 void UIScrollSystem::RegisterComponent(UIControl* control, UIComponent* component)
 {
-    if (ReflectedTypeDB::GetByPointer(component)->GetType())
+    if (component->GetType() == Type::Instance<UIScrollComponent>())
     {
         scrollViewContainers.push_back(DynamicTypeCheck<UIScrollViewContainer*>(control));
     }
