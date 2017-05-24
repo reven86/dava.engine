@@ -31,8 +31,8 @@ REGISTER_PREFERENCES_ON_START(EditorTransformSystem,
                               PREF_ARG("moveMagnetRange", DAVA::Vector2(7.0f, 7.0f)),
                               PREF_ARG("resizeMagnetRange", DAVA::Vector2(7.0f, 7.0f)),
                               PREF_ARG("pivotMagnetRange", DAVA::Vector2(7.0f, 7.0f)),
-                              PREF_ARG("moveStepByKeyboard", static_cast<DAVA::float32>(10.0f)),
-                              PREF_ARG("expandedMoveStepByKeyboard", static_cast<DAVA::float32>(1.0f)),
+                              PREF_ARG("moveStepByKeyboard2", DAVA::Vector2(10.0f, 10.0f)),
+                              PREF_ARG("expandedmoveStepByKeyboard2", DAVA::Vector2(1.0f, 1.0f)),
                               PREF_ARG("borderInParentToMagnet", DAVA::Vector2(20.0f, 20.0f)),
                               PREF_ARG("indentOfControlToManget", DAVA::Vector2(5.0f, 5.0f)),
                               PREF_ARG("shareOfSizeToMagnetPivot", DAVA::Vector2(0.25f, 0.25f)),
@@ -341,10 +341,10 @@ void EditorTransformSystem::ProcessKey(Key key)
 {
     if (!selectedControlNodes.empty())
     {
-        Vector2 step(expandedMoveStepByKeyboard);
+        Vector2 step(expandedmoveStepByKeyboard2);
         if (IsShiftPressed())
         {
-            step = moveStepByKeyboard;
+            step = moveStepByKeyboard2;
         }
         Vector2 deltaPos;
         switch (key)
