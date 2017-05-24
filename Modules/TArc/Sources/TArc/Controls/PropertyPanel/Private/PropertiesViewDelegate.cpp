@@ -11,6 +11,8 @@
 #include <QtEvents>
 #include <QtGlobal>
 #include <QPainter>
+#include <QLineEdit>
+#include <QToolTip>
 
 namespace DAVA
 {

@@ -1,6 +1,7 @@
 #include "TArc/Controls/PropertyPanel/BaseComponentValue.h"
 #include "TArc/Controls/PropertyPanel/Private/ReflectedPropertyModel.h"
 #include "TArc/Controls/PropertyPanel/PropertyPanelMeta.h"
+#include "TArc/Controls/ReflectedButton.h"
 #include "TArc/Controls/QtBoxLayouts.h"
 
 #include "TArc/DataProcessing/DataWrappersProcessor.h"

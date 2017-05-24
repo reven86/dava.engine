@@ -353,6 +353,7 @@ void EditorMaterialSystem::ProcessCommand(const RECommandNotificationObject& com
                     {
                         RemoveMaterial(landObject->GetMaterial());
                         AddMaterials(landEntity);
+                        break;
                     }
                 }
             }
