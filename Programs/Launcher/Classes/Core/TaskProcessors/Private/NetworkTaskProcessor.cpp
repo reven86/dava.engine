@@ -105,7 +105,7 @@ void NetworkTaskProcessor::OnDownloadFinished(QNetworkReply* reply)
             currentTask->task->SetError(QObject::tr("Network error: %1").arg(reply->errorString()));
         }
         //we can receive error only for the some replies, and all other replies will hang
-        if (reply->error() != QNetworkReply::OperationCanceledError)
+        if (reply->error() != QNetworkReply::OperationCanceledError && currentTask->requests.empty() == false)
         {
             Terminate();
             return;

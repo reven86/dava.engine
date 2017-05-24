@@ -28,7 +28,7 @@ int main(int argc, char* argv[])
         QtHelpers::RunGuard runGuard(appUidPath);
         if (runGuard.TryToRun())
         {
-            //qInstallMessageHandler(LogMessageHandler);
+            qInstallMessageHandler(LogMessageHandler);
 
             a.setAttribute(Qt::AA_UseHighDpiPixmaps);
 

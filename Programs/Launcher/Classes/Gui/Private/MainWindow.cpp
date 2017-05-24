@@ -398,7 +398,7 @@ void MainWindow::OnConnectedChanged(bool connected)
 
 void MainWindow::OnTaskProgress(const BaseTask* /*task*/, quint32 progress)
 {
-    QMetaObject::invokeMethod(ui->progressBar, "setValue", Qt::QueuedConnection, Q_ARG(int, progress));
+    ui->progressBar->setValue(progress);
 }
 
 void MainWindow::AddText(const QString& text, const QColor& color)

@@ -15,7 +15,6 @@ ZipTaskProcessor::TaskParams::TaskParams(std::unique_ptr<BaseTask>&& task_, cons
 
 ZipTaskProcessor::TaskParams::~TaskParams()
 {
-    Q_ASSERT(guard == false);
     notifier.NotifyFinished(task.get());
 
     if (process.isNull() == false)
@@ -67,12 +66,11 @@ void ZipTaskProcessor::AddTask(std::unique_ptr<BaseTask>&& task, Notifier notifi
 
 void ZipTaskProcessor::Terminate()
 {
-    if (currentTaskParams != nullptr && terminateGuard == false)
+    if (currentTaskParams != nullptr)
     {
         currentTaskParams->task->SetError("Archiver was stopped");
-        terminateGuard = true;
+
         currentTaskParams = nullptr;
-        terminateGuard = false;
     }
 }
 
@@ -122,10 +120,7 @@ void ZipTaskProcessor::OnFinished(int exitCode, QProcess::ExitStatus exitStatus)
         ApplyState();
         return;
     }
-    if (terminateGuard == false)
-    {
-        currentTaskParams = nullptr;
-    }
+    currentTaskParams = nullptr;
 }
 
 void ZipTaskProcessor::OnReadyReadStandardOutput()

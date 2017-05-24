@@ -52,8 +52,6 @@ private:
         std::map<QString, quint64> filesAndSizes;
         quint64 matchedSize = 0;
         quint64 totalSize = 0;
-        bool guard = false;
     };
     std::unique_ptr<TaskParams> currentTaskParams;
-    bool terminateGuard = false;
 };

@@ -4,8 +4,6 @@
 #include "Core/TaskProcessors/ZipTaskProcessor.h"
 #include "Core/TaskProcessors/AsyncChainProcessor.h"
 
-#include <QThread>
-
 TaskManager::TaskManager(QObject* parent)
     : QObject(parent)
 {
