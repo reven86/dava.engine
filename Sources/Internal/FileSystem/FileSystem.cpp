@@ -822,7 +822,8 @@ const FilePath FileSystem::GetUserDocumentsPath()
     size_t bufsize = static_cast<size_t>(sysconf(_SC_GETPW_R_SIZE_MAX));
     if (bufsize == size_t(-1))
     {
-        bufsize = 4096;
+        // Like in sample in man for getpwuid_r: https://linux.die.net/man/3/getpwuid_r
+        bufsize = 16384;
     }
 
     Vector<char> buf(bufsize);

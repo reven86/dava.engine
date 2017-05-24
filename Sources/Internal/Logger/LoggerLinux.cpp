@@ -8,7 +8,7 @@ namespace DAVA
 {
 void Logger::PlatformLog(eLogLevel ll, const char8* text)
 {
-    std::fprintf(stderr, "[%s] %s", GetLogLevelString(ll), text);
+    std::fprintf(stdout, "[%s] %s", GetLogLevelString(ll), text);
 }
 } // namespace DAVA
 
