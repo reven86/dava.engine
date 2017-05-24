@@ -1,6 +1,5 @@
 set(NAME_MODULE SimulationController)
-
-set(MODULE_TYPE STATIC)#INLINE STATIC DYNAMIC 
+set(MODULE_TYPE STATIC)
 
 set(HPP_FILES_RECURSE *.h *.hpp)
 set(CPP_FILES_RECURSE *.cpp)
@@ -18,15 +17,15 @@ set(INCLUDES_PRIVATE "${PhysXRoot}/Source/SimulationController/include"
                      "${PhysXRoot}/Source/SimulationController/src/cloth"
                      "${PhysXRoot}/Source/LowLevel/unix/include"
                      "${PhysXRoot}/Source/LowLevel/API/include"
-                     "${PhysXRoot}/Source/LowLevel/software/include
+                     "${PhysXRoot}/Source/LowLevel/software/include"
                      "${PhysXRoot}/Source/LowLevel/common/include/math"
                      "${PhysXRoot}/Source/LowLevel/common/include/utils"
                      "${PhysXRoot}/Source/LowLevel/common/include/collision"
                      "${PhysXRoot}/Source/LowLevel/common/include/pipeline"
-                     "${PhysXRoot}/Source/LowLevel/LowLevelCloth/include"
-                     "${PhysXRoot}/Source/LowLevel/LowLevelAABB/include"
-                     "${PhysXRoot}/Source/LowLevel/LowLevelCloth/include"
-                     "${PhysXRoot}/Source/LowLevel/LowLevelDynamics/include"
-                     "${PhysXRoot}/Source/LowLevel/LowLevelParticles/include")
+                     "${PhysXRoot}/Source/LowLevelCloth/include"
+                     "${PhysXRoot}/Source/LowLevelAABB/include"
+                     "${PhysXRoot}/Source/LowLevelCloth/include"
+                     "${PhysXRoot}/Source/LowLevelDynamics/include"
+                     "${PhysXRoot}/Source/LowLevelParticles/include")
 
 setup_main_module()

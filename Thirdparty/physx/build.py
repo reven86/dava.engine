@@ -22,7 +22,7 @@ def build_for_target(target, working_directory_path, root_project_path):
     elif target == 'macos':
         _build_macos(working_directory_path, root_project_path)
     elif target == 'ios':
-     _build_ios(working_directory_path, root_project_path)
+        _build_ios(working_directory_path, root_project_path)
     elif target == 'android':
         _build_android(working_directory_path, root_project_path)
 
@@ -36,11 +36,14 @@ def _create_folder_if_not_exists(path):
         os.makedirs(path)
 
 
-def _copy_libs(src, dst, files_ext):
+def _copy_libs(src, dst, files_ext, recursive = False):
     _create_folder_if_not_exists(dst)
     for fileName in os.listdir(src):
-        if fileName.endswith(files_ext):
-            shutil.copyfile(os.path.join(src, fileName), os.path.join(dst, fileName))
+        fullFileName = os.path.join(src, fileName)
+        if fullFileName.endswith(files_ext):
+            shutil.copyfile(fullFileName, os.path.join(dst, fileName))
+        if recursive == True and os.path.isdir(fullFileName):
+            _copy_libs(fullFileName, dst, files_ext, recursive)
 
 
 def _download_and_extract(working_directory_path):
@@ -117,6 +120,44 @@ def _build_ios(working_directory_path, root_project_path):
 
 def _build_android(working_directory_path, root_project_path):
     source_folder_path = _download_and_extract(working_directory_path)
+
+    source_dir = os.path.join(source_folder_path, 'PhysX_3.4', 'Source')
+    shutil.copyfile(os.path.abspath('root.CMakeLists.txt'), os.path.join(source_dir, 'CMakeLists.txt'))
+    shutil.copyfile(os.path.abspath('common.CMakeLists.txt'), os.path.join(source_dir, 'Common', 'CMakeLists.txt'))
+    shutil.copyfile(os.path.abspath('LowLevel.CMakeLists.txt'), os.path.join(source_dir,'LowLevel', 'CMakeLists.txt'))
+    shutil.copyfile(os.path.abspath('LowLevelAABB.CMakeLists.txt'), os.path.join(source_dir, 'LowLevelAABB', 'CMakeLists.txt'))
+    shutil.copyfile(os.path.abspath('LowLevelCloth.CMakeLists.txt'), os.path.join(source_dir, 'LowLevelCloth', 'CMakeLists.txt'))
+    shutil.copyfile(os.path.abspath('LowLevelDynamics.CMakeLists.txt'), os.path.join(source_dir, 'LowLevelDynamics', 'CMakeLists.txt'))
+    shutil.copyfile(os.path.abspath('LowLevelParticles.CMakeLists.txt'), os.path.join(source_dir, 'LowLevelParticles', 'CMakeLists.txt'))
+    shutil.copyfile(os.path.abspath('PhysX.CMakeLists.txt'), os.path.join(source_dir, 'PhysX', 'CMakeLists.txt'))
+    shutil.copyfile(os.path.abspath('PhysXCharacterKinematic.CMakeLists.txt'), os.path.join(source_dir, 'PhysXCharacterKinematic', 'CMakeLists.txt'))
+    shutil.copyfile(os.path.abspath('PhysXCooking.CMakeLists.txt'), os.path.join(source_dir, 'PhysXCooking', 'CMakeLists.txt'))
+    shutil.copyfile(os.path.abspath('PhysXExtensions.CMakeLists.txt'), os.path.join(source_dir, 'PhysXExtensions', 'CMakeLists.txt'))
+    shutil.copyfile(os.path.abspath('PhysXVehicle.CMakeLists.txt'), os.path.join(source_dir, 'PhysXVehicle', 'CMakeLists.txt'))
+    shutil.copyfile(os.path.abspath('SceneQuery.CMakeLists.txt'), os.path.join(source_dir, 'SceneQuery', 'CMakeLists.txt'))
+    shutil.copyfile(os.path.abspath('SimulationController.CMakeLists.txt'), os.path.join(source_dir, 'SimulationController', 'CMakeLists.txt'))
+
+    pxSharedDir = os.path.join(source_folder_path, 'PxShared', 'src')
+    shutil.copyfile(os.path.abspath('fastxml.CMakeLists.txt'), os.path.join(pxSharedDir, 'fastxml', 'CMakeLists.txt'))
+    shutil.copyfile(os.path.abspath('foundation.CMakeLists.txt'), os.path.join(pxSharedDir, 'foundation', 'CMakeLists.txt'))
+    shutil.copyfile(os.path.abspath('task.CMakeLists.txt'), os.path.join(pxSharedDir, 'task', 'CMakeLists.txt'))
+    shutil.copyfile(os.path.abspath('pvd.CMakeLists.txt'), os.path.join(pxSharedDir, 'pvd', 'CMakeLists.txt'))
+
+    build_android_armeabiv7a_folder = os.path.join(working_directory_path, 'gen', 'build_android_armeabiv7a')
+    build_android_x86_folder = os.path.join(working_directory_path, 'gen', 'build_android_x86')
+    toolchain_filepath = os.path.join(root_project_path, 'Sources/CMake/Toolchains/android.toolchain.cmake')
+    android_ndk_folder_path = build_utils.get_android_ndk_path(root_project_path)
+
+    build_utils.cmake_generate_build_ndk(build_android_armeabiv7a_folder, source_dir, toolchain_filepath,
+                                         android_ndk_folder_path, 'armeabi-v7a',
+                                         ['-DFRAMEWORK_ROOT_PATH=' + root_project_path, '-Wno-dev'])
+
+    binary_dst_path = os.path.join(root_project_path, 'Modules', 'Physics', 'Libs', 'Android')
+    _copy_libs(build_android_armeabiv7a_folder, os.path.join(binary_dst_path, 'armeabi-v7a'), '.a', True)
+
+    #build_utils.cmake_generate_build_ndk(build_android_x86_folder, source_dir, toolchain_filepath,
+    #                                     android_ndk_folder_path, 'x86',
+    #                                     ['-DFRAMEWORK_ROOT_PATH=' + root_project_path, '-Wno-dev'])
 
 def _copy_headers(source_folder_path, root_project_path):
     copy_to_folder = os.path.join(root_project_path, 'Modules', 'Physics', 'Libs', 'Include')

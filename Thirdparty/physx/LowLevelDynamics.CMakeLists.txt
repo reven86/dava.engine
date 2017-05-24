@@ -1,5 +1,4 @@
 set(NAME_MODULE LowLevelDynamics)
-
 set(MODULE_TYPE STATIC)#INLINE STATIC DYNAMIC 
 
 set(HPP_FILES_RECURSE *.h *.hpp)
@@ -14,13 +13,16 @@ set(PhysXRoot "${CMAKE_CURRENT_SOURCE_DIR}/../../")
 set(LowLevelDir "${PhysXRoot}/Source/LowLevel")
 set(LowLevelAABBDir "${PhysXRoot}/Source/LowLevelAABB")
 
-set(INCLUDES_PRIVATE "${LowLevelDir}/API/include"
-             "${LowLevelDir}/common/include/utils"
-             "${LowLevelDir}/common/include/pipeline"
-             "${LowLevelDir}/common/software/include"
-             "${LowLevelDir}/common/software/include/unix"
-             "${LowLevelAABBDir}/include"
-             "${LowLevelAABBDir}/src"
-             "${LowLevelAABBDir}/unix/include")
+set(INCLUDES_PRIVATE "${PhysXRoot}/Source/LowLevel/API/include"
+             "${PhysXRoot}/Source/LowLevel/common/include/utils"
+             "${PhysXRoot}/Source/LowLevel/common/include/pipeline"
+             "${PhysXRoot}/Source/LowLevel/software/include"
+             "${PhysXRoot}/Source/LowLevel/software/include/unix"
+             "${PhysXRoot}/Source/LowLevelAABB/include"
+             "${PhysXRoot}/Source/LowLevelAABB/src"
+             "${PhysXRoot}/Source/LowLevelAABB/unix/include"
+             "${PhysXRoot}/Source/LowLevelDynamics/src"
+             "${PhysXRoot}/Source/LowLevelDynamics/include"
+             "${PhysXRoot}/Source/LowLevelDynamics/include/unix")
 
 setup_main_module()

@@ -1,5 +1,4 @@
 set(NAME_MODULE PhysXExtensions)
-
 set(MODULE_TYPE STATIC)#INLINE STATIC DYNAMIC 
 
 set(PhysXRoot "${CMAKE_CURRENT_SOURCE_DIR}/../../")

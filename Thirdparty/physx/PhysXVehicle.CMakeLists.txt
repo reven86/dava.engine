@@ -1,10 +1,25 @@
 set(NAME_MODULE PhysXVehicle)
-
 set(MODULE_TYPE STATIC)#INLINE STATIC DYNAMIC 
 
+get_filename_component(PhysXRoot "${CMAKE_CURRENT_SOURCE_DIR}/../../" ABSOLUTE)
 set(PhysXRoot "${CMAKE_CURRENT_SOURCE_DIR}/../../")
 set(HPP_FILES_RECURSE *.h *.hpp)
-set(CPP_FILES_RECURSE *.cpp)
+set(CPP_FILES ${PhysXRoot}/Source/PhysXVehicle/src/PxVehicleComponents.cpp
+              ${PhysXRoot}/Source/PhysXVehicle/src/PxVehicleDrive.cpp
+              ${PhysXRoot}/Source/PhysXVehicle/src/PxVehicleDrive4W.cpp
+              ${PhysXRoot}/Source/PhysXVehicle/src/PxVehicleDriveNW.cpp
+              ${PhysXRoot}/Source/PhysXVehicle/src/PxVehicleDriveTank.cpp
+              ${PhysXRoot}/Source/PhysXVehicle/src/PxVehicleMetaData.cpp
+              ${PhysXRoot}/Source/PhysXVehicle/src/PxVehicleNoDrive.cpp
+              ${PhysXRoot}/Source/PhysXVehicle/src/PxVehicleSDK.cpp
+              ${PhysXRoot}/Source/PhysXVehicle/src/PxVehicleSerialization.cpp
+              ${PhysXRoot}/Source/PhysXVehicle/src/PxVehicleSuspWheelTire4.cpp
+              ${PhysXRoot}/Source/PhysXVehicle/src/PxVehicleTireFriction.cpp
+              ${PhysXRoot}/Source/PhysXVehicle/src/PxVehicleUpdate.cpp
+              ${PhysXRoot}/Source/PhysXVehicle/src/PxVehicleWheels.cpp
+              ${PhysXRoot}/Source/PhysXVehicle/src/VehicleUtilControl.cpp
+              ${PhysXRoot}/Source/PhysXVehicle/src/VehicleUtilSetup.cpp
+              ${PhysXRoot}/Source/PhysXVehicle/src/VehicleUtilTelemetry.cpp)
 
 set(DEBUG_POSTFIX "DEBUG")
 set(CHECKED_POSTFIX "CHECKED")

@@ -1,4 +1,12 @@
 cmake_minimum_required (VERSION 3.0)
+
+function(JOIN OUTPUT_VAR INPUT_VAR)
+  foreach(FLAG ${INPUT_VAR})
+    set(TMP_VAR "${TMP_VAR} ${FLAG}")
+  endforeach()
+  set(${OUTPUT_VAR} "${TMP_VAR}" PARENT_SCOPE)
+endfunction()
+
 set(CMAKE_CONFIGURATION_TYPES "debug;checked;profile;release" CACHE STRING "limited configs" FORCE )
 project(PhysX)
 
@@ -36,141 +44,160 @@ include_directories("${PHYS_X_ROOT}/../PxShared/src/NvSimd/include")
 include_directories("${PHYS_X_ROOT}/../PxShared/src/filebuf/include")
 include_directories("${PHYS_X_ROOT}/Include")
 include_directories("${PHYS_X_ROOT}/Include/common")
+include_directories("${PHYS_X_ROOT}/Include/characterkinematic")
+include_directories("${PHYS_X_ROOT}/Include/extensions")
+include_directories("${PHYS_X_ROOT}/Include/cooking")
+include_directories("${PHYS_X_ROOT}/Include/cloth")
+include_directories("${PHYS_X_ROOT}/Include/particles")
 include_directories("${PHYS_X_ROOT}/Include/geometry")
+include_directories("${PHYS_X_ROOT}/Include/vehicle")
 include_directories("${PHYS_X_ROOT}/Include/GeomUtils")
 include_directories("${PHYS_X_ROOT}/Include/pvd")
 
-list(APPEND COMMON_DEFINES "-DANDROID")
-list(APPEND COMMON_DEFINES "-DGLES2")
-list(APPEND COMMON_DEFINES "-D__STDC_LIMIT_MACROS")
-list(APPEND COMMON_DEFINES "-D__ARM_ARCH_5__")
-list(APPEND COMMON_DEFINES "-D__ARM_ARCH_5T__")
-list(APPEND COMMON_DEFINES "-D__ARM_ARCH_5E__")
-list(APPEND COMMON_DEFINES "-D__ARM_ARCH_5TE__")
-list(APPEND COMMON_DEFINES "-DPX_PHYSX_STATIC_LIB")
+set(PxShaderPath ${PHYS_X_ROOT}/../PxShared/src/)
 
-list(APPEND COMMON_FLAGS "-MMD")
-list(APPEND COMMON_FLAGS "-Werror")
-list(APPEND COMMON_FLAGS "-fpic")
-list(APPEND COMMON_FLAGS "-fno-exceptions")
-list(APPEND COMMON_FLAGS "-mfpu=neon")
-list(APPEND COMMON_FLAGS "-marm")
-list(APPEND COMMON_FLAGS "-mfloat-abi=softfp")
-list(APPEND COMMON_FLAGS "-mthumb-interwork")
-list(APPEND COMMON_FLAGS "-Wall")
-list(APPEND COMMON_FLAGS "-Wextra")
-list(APPEND COMMON_FLAGS "-Wpedantic")
-list(APPEND COMMON_FLAGS "-Wstrict-aliasing=2")
-list(APPEND COMMON_FLAGS "-Wno-maybe-uninitialized")
-list(APPEND COMMON_FLAGS "-Wno-unused-variable")
-list(APPEND COMMON_FLAGS "-Wno-variadic-macros")
+include(CMake-common)
+include(ModuleHelper)
 
-list(APPEND COMMON_C_FLAGS "-std=c99")
+set(COMMON_DEFINES "-DANDROID"
+                   "-DGLES2"
+                   "-D__STDC_LIMIT_MACROS"
+                   "-D__ARM_ARCH_5__"
+                   "-D__ARM_ARCH_5T__"
+                   "-D__ARM_ARCH_5E__"
+                   "-D__ARM_ARCH_5TE__"
+                   "-DPX_PHYSX_STATIC_LIB")
 
-list(APPEND COMMON_CXX_FLAGS "-fno-rtti")
-list(APPEND COMMON_CXX_FLAGS "-Wno-invalid-offsetof")
+set(COMMON_FLAGS "-MMD"
+                 "-fpic"
+                 "-fno-exceptions"
+                 "-mfpu=neon"
+                 "-marm"
+                 "-mfloat-abi=softfp"
+                 "-Wall"
+                 "-Wextra"
+                 "-Wpedantic"
+                 "-fpack-struct=16"
+                 "-Wstrict-aliasing=2"
+                 "-Wno-uninitialized"
+                 "-Wno-unused-variable"
+                 "-Wno-variadic-macros")
+
+set(COMMON_C_FLAGS "-std=c99")
+
+set(COMMON_CXX_FLAGS "-fno-rtti"
+                     "-Wno-invalid-offsetof")
 
 ############################################################################
 # DEBUG
 ############################################################################
 
-set(DEBUG_DEFINES ${COMMON_DEFINES})
-list(APPEND DEBUG_DEFINES "-D_DEBUG")
-list(APPEND DEBUG_DEFINES "-DPX_DEBUG=1")
-list(APPEND DEBUG_DEFINES "-DPX_CHECKED=1")
-list(APPEND DEBUG_DEFINES "-DPX_SUPPORT_PVD=1")
-list(APPEND DEBUG_DEFINES "-DPX_NVTX=1")
+set(DEBUG_DEFINES ${COMMON_DEFINES}
+                  "-D_DEBUG"
+                  "-DPX_DEBUG=1"
+                  "-DPX_CHECKED=1"
+                  "-DPX_SUPPORT_PVD=1"
+                  "-DPX_NVTX=1")
 
-set(DEBUG_COMMON_FLAGS ${COMMON_FLAGS})
-list(APPEND DEBUG_COMMON_FLAGS "-g3")
-list(APPEND DEBUG_COMMON_FLAGS "-gdwarf-2")
+set(DEBUG_COMMON_FLAGS ${COMMON_FLAGS}
+                       "-g3"
+                       "-gdwarf-2"
+                       ${DEBUG_DEFINES})
 
-set(DEBUG_C_FLAGS "${DEBUG_COMMON_FLAGS} ${COMMON_C_FLAGS}")
-set(DEBUG_CXX_FLAGS "${DEBUG_COMMON_FLAGS} ${COMMON_CXX_FLAGS}")
+set(DEBUG_C_FLAGS ${DEBUG_COMMON_FLAGS} ${COMMON_C_FLAGS})
+set(DEBUG_CXX_FLAGS ${DEBUG_COMMON_FLAGS} ${COMMON_CXX_FLAGS})
+
+join(DEBUG_C_FLAGS "${DEBUG_C_FLAGS}")
+join(DEBUG_CXX_FLAGS "${DEBUG_CXX_FLAGS}")
 
 set(CMAKE_C_FLAGS_DEBUG  "${CMAKE_C_FLAGS} ${DEBUG_C_FLAGS}")
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} ${DEBUG_CXX_FLAGS} ${DEBUG_DEFINES}")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} ${DEBUG_CXX_FLAGS}")
 
 ############################################################################
 # CHECKED
 ############################################################################
-set(CHECKED_DEFINES ${COMMON_DEFINES})
-list(APPEND CHECKED_DEFINES "-DNDEBUG")
-list(APPEND CHECKED_DEFINES "-DPX_CHECKED=1")
-list(APPEND CHECKED_DEFINES "-DPX_SUPPORT_PVD=1")
-list(APPEND CHECKED_DEFINES "-DPX_NVTX=1")
+set(CHECKED_DEFINES ${COMMON_DEFINES}
+                    "-DNDEBUG"
+                    "-DPX_CHECKED=1"
+                    "-DPX_SUPPORT_PVD=1"
+                    "-DPX_NVTX=1")
 
-set(CHECKED_COMMON_FLAGS ${COMMON_FLAGS})
-list(APPEND CHECKED_COMMON_FLAGS "-g3")
-list(APPEND CHECKED_COMMON_FLAGS "-gdwarf-2")
-list(APPEND CHECKED_COMMON_FLAGS "-O3")
-list(APPEND CHECKED_COMMON_FLAGS "-fno-strict-aliasing")
-list(APPEND CHECKED_COMMON_FLAGS "-ffunction-sections")
-list(APPEND CHECKED_COMMON_FLAGS "-funwind-tables")
-list(APPEND CHECKED_COMMON_FLAGS "-fstack-protector")
-list(APPEND CHECKED_COMMON_FLAGS "-fomit-frame-pointer")
-list(APPEND CHECKED_COMMON_FLAGS "-funswitch-loops")
-list(APPEND CHECKED_COMMON_FLAGS "-finline-limit=300")
+set(CHECKED_COMMON_FLAGS ${COMMON_FLAGS}
+                         "-g3"
+                         "-gdwarf-2"
+                         "-O3"
+                         "-fno-strict-aliasing"
+                         "-ffunction-sections"
+                         "-funwind-tables"
+                         "-fstack-protector"
+                         "-fomit-frame-pointer"
+                         ${CHECKED_DEFINES})
 
-set(CHECKED_C_FLAGS "${CHECKED_COMMON_FLAGS} ${COMMON_C_FLAGS}")
-set(CHECKED_CXX_FLAGS "${CHECKED_COMMON_FLAGS} ${COMMON_CXX_FLAGS}")
+set(CHECKED_C_FLAGS ${CHECKED_COMMON_FLAGS} ${COMMON_C_FLAGS})
+set(CHECKED_CXX_FLAGS ${CHECKED_COMMON_FLAGS} ${COMMON_CXX_FLAGS})
+
+join(CHECKED_C_FLAGS "${CHECKED_C_FLAGS}")
+join(CHECKED_CXX_FLAGS "${CHECKED_CXX_FLAGS}")
 
 set(CMAKE_C_FLAGS_CHECKED  "${CMAKE_C_FLAGS} ${CHECKED_C_FLAGS}")
-set(CMAKE_CXX_FLAGS_CHECKED "${CMAKE_CXX_FLAGS} ${CHECKED_CXX_FLAGS} ${CHECKED_DEFINES}")
+set(CMAKE_CXX_FLAGS_CHECKED "${CMAKE_CXX_FLAGS} ${CHECKED_CXX_FLAGS}")
 
 ############################################################################
 # PROFILE
 ############################################################################
-set(PROFILE_DEFINES ${COMMON_DEFINES})
-list(APPEND PROFILE_DEFINES "-DNDEBUG")
-list(APPEND PROFILE_DEFINES "-PX_PROFILE=1")
-list(APPEND PROFILE_DEFINES "-DPX_SUPPORT_PVD=1")
-list(APPEND PROFILE_DEFINES "-DPX_NVTX=1")
+set(PROFILE_DEFINES ${COMMON_DEFINES}
+                    "-DNDEBUG"
+                    "-PX_PROFILE=1"
+                    "-DPX_SUPPORT_PVD=1"
+                    "-DPX_NVTX=1")
 
-set(PROFILE_COMMON_FLAGS ${COMMON_FLAGS})
-list(APPEND PROFILE_COMMON_FLAGS "-O3")
-list(APPEND PROFILE_COMMON_FLAGS "-fno-strict-aliasing")
-list(APPEND PROFILE_COMMON_FLAGS "-ffunction-sections")
-list(APPEND PROFILE_COMMON_FLAGS "-funwind-tables")
-list(APPEND PROFILE_COMMON_FLAGS "-fstack-protector")
-list(APPEND PROFILE_COMMON_FLAGS "-fomit-frame-pointer")
-list(APPEND PROFILE_COMMON_FLAGS "-funswitch-loops")
-list(APPEND PROFILE_COMMON_FLAGS "-finline-limit=300")
+set(PROFILE_COMMON_FLAGS ${COMMON_FLAGS}
+                         "-O3"
+                         "-fno-strict-aliasing"
+                         "-ffunction-sections"
+                         "-funwind-tables"
+                         "-fstack-protector"
+                         "-fomit-frame-pointer"
+                         ${PROFILE_DEFINES})
 
-set(PROFILE_C_FLAGS "${PROFILE_COMMON_FLAGS} ${COMMON_C_FLAGS}")
-set(PROFILE_CXX_FLAGS "${PROFILE_COMMON_FLAGS} ${COMMON_CXX_FLAGS}")
+set(PROFILE_C_FLAGS ${PROFILE_COMMON_FLAGS} ${COMMON_C_FLAGS})
+set(PROFILE_CXX_FLAGS ${PROFILE_COMMON_FLAGS} ${COMMON_CXX_FLAGS})
+
+join(PROFILE_C_FLAGS "${PROFILE_C_FLAGS}")
+join(PROFILE_CXX_FLAGS "${PROFILE_CXX_FLAGS}")
 
 set(CMAKE_C_FLAGS_PROFILE  "${CMAKE_C_FLAGS} ${PROFILE_C_FLAGS}")
-set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS} ${PROFILE_CXX_FLAGS} ${PROFILE_DEFINES}")
+set(CMAKE_CXX_FLAGS_PROFILE "${CMAKE_CXX_FLAGS} ${PROFILE_CXX_FLAGS}")
 
 ############################################################################
 # RELEASE
 ############################################################################
-set(RELEASE_DEFINES ${COMMON_DEFINES})
-list(APPEND RELEASE_DEFINES "-DNDEBUG")
-list(APPEND RELEASE_DEFINES "-DPX_SUPPORT_PVD=0")
+set(RELEASE_DEFINES ${COMMON_DEFINES}
+                    "-DNDEBUG"
+                    "-DPX_SUPPORT_PVD=0")
 
-set(RELEASE_COMMON_FLAGS ${COMMON_FLAGS})
-list(APPEND RELEASE_COMMON_FLAGS "-O3")
-list(APPEND RELEASE_COMMON_FLAGS "-fno-strict-aliasing")
-list(APPEND RELEASE_COMMON_FLAGS "-ffunction-sections")
-list(APPEND RELEASE_COMMON_FLAGS "-funwind-tables")
-list(APPEND RELEASE_COMMON_FLAGS "-fstack-protector")
-list(APPEND RELEASE_COMMON_FLAGS "-fomit-frame-pointer")
-list(APPEND RELEASE_COMMON_FLAGS "-funswitch-loops")
-list(APPEND RELEASE_COMMON_FLAGS "-finline-limit=300")
+set(RELEASE_COMMON_FLAGS ${COMMON_FLAGS}
+                         "-O3"
+                         "-fno-strict-aliasing"
+                         "-ffunction-sections"
+                         "-funwind-tables"
+                         "-fstack-protector"
+                         "-fomit-frame-pointer"
+                         ${RELEASE_DEFINES})
 
-set(RELEASE_C_FLAGS "${RELEASE_COMMON_FLAGS} ${COMMON_C_FLAGS}")
-set(RELEASE_CXX_FLAGS "${RELEASE_COMMON_FLAGS} ${COMMON_CXX_FLAGS}")
+set(RELEASE_C_FLAGS ${RELEASE_COMMON_FLAGS} ${COMMON_C_FLAGS})
+set(RELEASE_CXX_FLAGS ${RELEASE_COMMON_FLAGS} ${COMMON_CXX_FLAGS})
+
+join(RELEASE_C_FLAGS "${RELEASE_C_FLAGS}")
+join(RELEASE_CXX_FLAGS "${RELEASE_CXX_FLAGS}")
 
 set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS} ${RELEASE_C_FLAGS}")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} ${RELEASE_CXX_FLAGS} ${RELEASE_DEFINES}")
-
-set(PxShaderPath ${PHYS_X_ROOT}/../PxShared/src/)
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS} ${RELEASE_CXX_FLAGS}")
 
 add_module_subdirectory(LowLevel "LowLevel")
 add_module_subdirectory(LowLevelAABB "LowLevelAABB")
 add_module_subdirectory(LowLevelCloth "LowLevelCloth")
+add_module_subdirectory(LowLevelDynamics "LowLevelDynamics")
 add_module_subdirectory(LowLevelParticles "LowLevelParticles")
 add_module_subdirectory(PhysXCommon "Common")
 add_module_subdirectory(PhysX "PhysX")
@@ -181,8 +208,8 @@ add_module_subdirectory(PhysXVehicle "PhysXVehicle")
 add_module_subdirectory(SceneQuery "SceneQuery")
 add_module_subdirectory(SimulationController "SimulationController")
 
-add_module_subdirectory(PsFastXml "${PHYS_X_ROOT}/fastxml")
-add_module_subdirectory(PxFoundation "${PHYS_X_ROOT}/foundation")
-add_module_subdirectory(PxTask "${PHYS_X_ROOT}/task")
-add_module_subdirectory(PxPvdSDK "${PHYS_X_ROOT}/pvd")
+add_module_subdirectory(PsFastXml "${PxShaderPath}/fastxml")
+add_module_subdirectory(PxFoundation "${PxShaderPath}/foundation")
+add_module_subdirectory(PxTask "${PxShaderPath}/task")
+add_module_subdirectory(PxPvdSDK "${PxShaderPath}/pvd")
 
