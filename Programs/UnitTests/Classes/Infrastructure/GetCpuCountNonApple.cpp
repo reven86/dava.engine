@@ -3,7 +3,7 @@
 
 using namespace DAVA;
 
-#if defined(__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_LINUX__)
 
 #include <unistd.h>
 

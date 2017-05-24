@@ -28,14 +28,17 @@ const Array<std::unique_ptr<ImageFormatInterface>, ImageFormat::IMAGE_FORMAT_COU
 {
     static Array<std::unique_ptr<ImageFormatInterface>, ImageFormat::IMAGE_FORMAT_COUNT> wrappers =
     {
-      std::unique_ptr<ImageFormatInterface>(new LibPngHelper()),
-      std::unique_ptr<ImageFormatInterface>(new LibDdsHelper()),
-      std::unique_ptr<ImageFormatInterface>(new LibPVRHelper()),
-      std::unique_ptr<ImageFormatInterface>(new LibJpegHelper()),
-      std::unique_ptr<ImageFormatInterface>(new LibTgaHelper()),
-      std::unique_ptr<ImageFormatInterface>(new LibWebPHelper()),
-      std::unique_ptr<ImageFormatInterface>(new LibPSDHelper()),
-      std::unique_ptr<ImageFormatInterface>(new LibHDRHelper())
+        std::unique_ptr<ImageFormatInterface>(new LibPngHelper()),
+// TODO: linux
+#if !defined(__DAVAENGINE_LINUX__)
+        std::unique_ptr<ImageFormatInterface>(new LibDdsHelper()),
+#endif
+        std::unique_ptr<ImageFormatInterface>(new LibPVRHelper()),
+        std::unique_ptr<ImageFormatInterface>(new LibJpegHelper()),
+        std::unique_ptr<ImageFormatInterface>(new LibTgaHelper()),
+        std::unique_ptr<ImageFormatInterface>(new LibWebPHelper()),
+        std::unique_ptr<ImageFormatInterface>(new LibPSDHelper()),
+        std::unique_ptr<ImageFormatInterface>(new LibHDRHelper())
     };
 
     return wrappers;

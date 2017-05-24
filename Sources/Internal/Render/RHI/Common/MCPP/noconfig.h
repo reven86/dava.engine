@@ -32,7 +32,7 @@
 
 /* Define host compiler.            */
 //#if defined(__DAVAENGINE_MACOS__)  ||  defined(__DAVAENGINE_IPHONE__)
-#if defined(__GNUC__) && (defined(__APPLE_CPP__) || defined(__APPLE_CC__) || defined(__MACOS_CLASSIC__) || defined(__ANDROID__) || defined(ANDROID))
+#if defined(__GNUC__) && (defined(__APPLE_CPP__) || defined(__APPLE_CC__) || defined(__MACOS_CLASSIC__) || defined(__ANDROID__) || defined(ANDROID) || defined(__linux__))
 #define HOST_COMPILER GNUC
 #else
 #define HOST_COMPILER MSC
@@ -544,7 +544,7 @@
 #define HAVE_STDINT_H TRUE
 #endif
 #define HOST_HAVE_LONG_LONG TRUE 
-#if HOST_SYSTEM == SYS_LINUX
+#if HOST_SYSTEM == SYS_LINUX || defined(__linux__)
 #define HOST_HAVE_STPCPY TRUE
 #endif
 #if HOST_SYSTEM == SYS_MAC

@@ -54,7 +54,7 @@ void RemoveHandler(const Handler handler)
 }
 }
 
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_POSIX__)
 void RaiseSigTrap()
 {
     raise(SIGTRAP);

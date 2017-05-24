@@ -14,6 +14,8 @@
 #include "Engine/Private/iOS/Window/WindowBackendiOS.h"
 #elif defined(__DAVAENGINE_ANDROID__)
 #include "Engine/Private/Android/Window/WindowBackendAndroid.h"
+#elif defined(__DAVAENGINE_LINUX__)
+#include "Engine/Private/Linux/Window/WindowBackendLinux.h"
 #else
 #if defined(__DAVAENGINE_COREV2__)
 // Do not emit error when building with old core implementation

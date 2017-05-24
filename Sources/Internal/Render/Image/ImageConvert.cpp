@@ -44,21 +44,30 @@ bool ConvertImage(const Image* srcImage, Image* dstImage)
     PixelFormat dstFormat = dstImage->format;
 
     Function<bool(const Image*, Image*)> decompressFn = nullptr;
+
+// TODO: linux
+#if !defined(__DAVAENGINE_LINUX__)
     if (LibDdsHelper::CanDecompressFrom(srcFormat))
     {
         decompressFn = &LibDdsHelper::DecompressToRGBA;
     }
-    else if (LibPVRHelper::CanDecompressFrom(srcFormat))
+    else
+#endif
+    if (LibPVRHelper::CanDecompressFrom(srcFormat))
     {
         decompressFn = &LibPVRHelper::DecompressToRGBA;
     }
 
     Function<bool(const Image*, Image*)> compressFn = nullptr;
+// TODO: linux
+#if !defined(__DAVAENGINE_LINUX__)
     if (LibDdsHelper::CanCompressTo(dstFormat))
     {
         compressFn = &LibDdsHelper::CompressFromRGBA;
     }
-    else if (LibPVRHelper::CanCompressTo(dstFormat))
+    else
+#endif
+    if (LibPVRHelper::CanCompressTo(dstFormat))
     {
         compressFn = &LibPVRHelper::CompressFromRGBA;
     }
@@ -221,8 +230,14 @@ bool CanConvertDirect(PixelFormat inFormat, PixelFormat outFormat)
 
 bool CanConvertFromTo(PixelFormat inFormat, PixelFormat outFormat)
 {
+#if !defined(__DAVAENGINE_LINUX__)
     bool inCompressed = LibDdsHelper::CanDecompressFrom(inFormat) || LibPVRHelper::CanDecompressFrom(inFormat);
     bool outCompressed = LibDdsHelper::CanCompressTo(outFormat) || LibPVRHelper::CanCompressTo(outFormat);
+#else
+    // TODO: linux
+    bool inCompressed = LibPVRHelper::CanDecompressFrom(inFormat);
+    bool outCompressed = LibPVRHelper::CanCompressTo(outFormat);
+#endif
 
     if (!inCompressed && !outCompressed)
     {

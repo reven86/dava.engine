@@ -61,7 +61,7 @@ BOOL SymGetSearchPath(HANDLE hProcess, PSTR SearchPath, DWORD SearchPathLength)
     return FALSE;
 }
 
-#elif defined(__DAVAENGINE_APPLE__)
+#elif defined(__DAVAENGINE_APPLE__) || defined(__DAVAENGINE_LINUX__)
 #   include <execinfo.h>
 #   include <dlfcn.h>
 #   include <cxxabi.h>
@@ -69,7 +69,7 @@ BOOL SymGetSearchPath(HANDLE hProcess, PSTR SearchPath, DWORD SearchPathLength)
 #   include <dlfcn.h>
 #   include <cxxabi.h>
 #   include <unwind.h>
-#include <android/log.h>
+#   include <android/log.h>
 #endif
 
 namespace DAVA
@@ -165,7 +165,7 @@ String DemangleFrameSymbol(const char8* symbol)
 #if defined(__DAVAENGINE_WINDOWS__)
     // On Win32 SymFromAddr returns already undecorated name
     return String(symbol);
-#elif defined(__DAVAENGINE_APPLE__) || defined(__DAVAENGINE_ANDROID__)
+#elif defined(__DAVAENGINE_POSIX__)
     String result;
     char* demangled = abi::__cxa_demangle(symbol, nullptr, nullptr, nullptr);
     if (demangled != nullptr)
@@ -215,7 +215,7 @@ String GetFrameSymbol(void* frame, bool demangle)
         }
     }
 
-#elif defined(__DAVAENGINE_APPLE__) || defined(__DAVAENGINE_ANDROID__)
+#elif defined(__DAVAENGINE_POSIX__)
     Dl_info dlinfo;
     if (dladdr(frame, &dlinfo) != 0 && dlinfo.dli_sname != nullptr)
     {
@@ -246,7 +246,7 @@ DAVA_NOINLINE size_t GetBacktrace(void** frames, size_t depth)
 #if defined(__DAVAENGINE_WINDOWS__)
         // CaptureStackBackTrace is supported either on Win32 and WinUAP
         sz = CaptureStackBackTrace(0, static_cast<DWORD>(depth), frames, nullptr);
-#elif defined(__DAVAENGINE_APPLE__)
+#elif defined(__DAVAENGINE_APPLE__) || defined(__DAVAENGINE_LINUX__)
         sz = backtrace(frames, static_cast<int>(depth));
 #elif defined(__DAVAENGINE_ANDROID__)
         BacktraiceDetails::StackCrawlState state;

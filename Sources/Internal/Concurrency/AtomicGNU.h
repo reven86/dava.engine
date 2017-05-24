@@ -1,5 +1,4 @@
-#ifndef __DAVAENGINE_ATOMIC_GNU_H__
-#define __DAVAENGINE_ATOMIC_GNU_H__
+#pragma once
 
 #ifndef USE_CPP11_CONCURRENCY
 
@@ -61,4 +60,3 @@ bool Atomic<T>::CompareAndSwap(T expected, T desired) DAVA_NOEXCEPT
 } //  namespace DAVA
 
 #endif //  !USE_CPP11_CONCURRENCY
-#endif //  __DAVAENGINE_ATOMIC_GNU_H__

@@ -22,8 +22,16 @@ function ( load_config CONFIG_FILE )
 endfunction ()
 
 if( APPLE AND NOT IOS AND NOT ANDROID )
-	set( MACOS 1 )
+    set( MACOS 1 )
 endif ()
+
+# Detect linux platform by comparing CMAKE_SYSTEM_NAME value with "Linux" excluding android
+# as cross-compiling is possible.
+# cmake's variable UNIX is not suitable as it is defined for all unix-like system
+# including macos, android, linux.
+if (CMAKE_SYSTEM_NAME AND ("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux") AND NOT ANDROID)
+    set (LINUX 1)
+endif()
 
 if( TEAMCITY_DEPLOY )
     set( OUTPUT_TO_BUILD_DIR true )
@@ -62,6 +70,7 @@ set( DAVA_PLATFORM_LIST IOS
                         ANDROID 
                         WIN 
                         WINUAP
+                        LINUX
                         )
 
 if( IOS )
@@ -76,6 +85,8 @@ elseif( WIN32 AND NOT WINDOWS_UAP )
 elseif( WIN32 AND WINDOWS_UAP )
     set( DAVA_PLATFORM_CURENT WINUAP )
     set( WINUAP true )
+elseif (LINUX)
+    set( DAVA_PLATFORM_CURENT LINUX )
 endif()
 
 
@@ -149,7 +160,9 @@ elseif ( MACOS )
     
 elseif ( IOS )
     set ( DAVA_OPENSSL_PLATFORM "ios" )
-    
+
+elseif ( LINUX )
+    set ( DAVA_OPENSSL_PLATFORM "linux" )
 else ()
     message ( FATAL_ERROR "Unknown platform" )
     

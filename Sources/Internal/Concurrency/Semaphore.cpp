@@ -6,7 +6,7 @@
 
 #if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__)
 #include <dispatch/dispatch.h>
-#elif defined(__DAVAENGINE_ANDROID__)
+#elif defined(__DAVAENGINE_ANDROID__) || defined(__DAVAENGINE_LINUX__)
 #include <semaphore.h>
 #endif //PLATFORMS
 
@@ -22,6 +22,8 @@ static_assert(sizeof(dispatch_semaphore_t) == sizeof(uintptr_t), "fix native sem
 #elif defined(__DAVAENGINE_ANDROID__)
 // sem_t semaphore;
 static_assert(sizeof(sem_t) == sizeof(uintptr_t), "fix native semaphore type");
+#elif defined(__DAVAENGINE_LINUX__)
+// For now use heap-allocated handle
 #endif //PLATFORMS
 
 
@@ -114,5 +116,37 @@ void Semaphore::Wait()
 {
     sem_wait(reinterpret_cast<sem_t*>(&semaphore));
 }
+
+#elif defined(__DAVAENGINE_LINUX__)
+
+// ##########################################################################################################
+// Linux implementation
+// ##########################################################################################################
+
+Semaphore::Semaphore(uint32 count)
+    : semaphore(static_cast<void*>(new sem_t))
+{
+    sem_init(static_cast<sem_t*>(semaphore), 0, count);
+}
+
+Semaphore::~Semaphore()
+{
+    sem_destroy(static_cast<sem_t*>(semaphore));
+}
+
+void Semaphore::Post(uint32 count)
+{
+    while (count-- > 0)
+    {
+        sem_post(static_cast<sem_t*>(semaphore));
+    }
+}
+
+void Semaphore::Wait()
+{
+    sem_wait(static_cast<sem_t*>(semaphore));
+}
+
 #endif
+
 } // end namespace DAVA

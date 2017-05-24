@@ -34,8 +34,13 @@ PackMetaData::PackMetaData(const FilePath& metaDb)
 
     size_t numIndexes = 0;
 
+    //////////////////////////////////////////////////////////////////////////////////////////
+    // Note! Use long long instead of DAVA::int64 as on linux 64bit DAVA::int64 is long.    //
+    // But function sqlite::get_col_from_db has no specialization/overload for `long` type. //
+    //////////////////////////////////////////////////////////////////////////////////////////
+
     db << "SELECT count(*) FROM files"
-    >> [&](int64 countIndexes)
+    >> [&](long long countIndexes)
     {
         DVASSERT(countIndexes > 0);
         numIndexes = static_cast<size_t>(countIndexes);
@@ -52,7 +57,7 @@ PackMetaData::PackMetaData(const FilePath& metaDb)
     size_t numPacks = 0;
 
     db << "SELECT count(*) FROM packs"
-    >> [&](int64 countPacks)
+    >> [&](long long countPacks)
     {
         DVASSERT(countPacks > 0);
         numPacks = static_cast<size_t>(countPacks);

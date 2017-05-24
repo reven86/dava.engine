@@ -138,6 +138,7 @@ ENUM_DECLARE(DeviceInfo::ePlatform)
     ENUM_ADD_DESCR(DeviceInfo::PLATFORM_WIN32, "Win32");
     ENUM_ADD_DESCR(DeviceInfo::PLATFORM_DESKTOP_WIN_UAP, "Windows Desktop UAP");
     ENUM_ADD_DESCR(DeviceInfo::PLATFORM_PHONE_WIN_UAP, "Windows Phone UAP");
+    ENUM_ADD_DESCR(DeviceInfo::PLATFORM_LINUX, "Linux");
     ENUM_ADD_DESCR(DeviceInfo::PLATFORM_UNKNOWN_VALUE, "Unknown");
 }
 

@@ -23,7 +23,5 @@ public:
     void OnUpdate(DAVA::float32 frameDelta);
 
 private:
-
     DAVA::Engine& engine;
 };
-

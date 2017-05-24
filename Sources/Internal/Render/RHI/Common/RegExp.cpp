@@ -31,7 +31,7 @@ inline char _regex_tcsnextc(const char* str)
 {
     return *str;
 }
-#if defined(__DAVAENGINE_IPHONE__) || defined(__DAVAENGINE_MACOS__) || defined(__DAVAENGINE_ANDROID__)
+#if defined(__DAVAENGINE_POSIX__)
 #define _regex_tcsdup strdup
 #else
 #define _regex_tcsdup _strdup

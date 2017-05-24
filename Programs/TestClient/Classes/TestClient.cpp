@@ -11,10 +11,10 @@ int DAVAMain(Vector<String> cmdline)
     Assert::SetupDefaultHandlers();
 
     eEngineRunMode runmode = eEngineRunMode::CONSOLE_MODE;
-    
+
     Vector<String> modules
     {
-        "JobManager"
+      "JobManager"
     };
 
     Engine e;
