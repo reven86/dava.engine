@@ -6,6 +6,7 @@
 #include <DLCManager/DLCManager.h>
 #include <UI/Focus/UIFocusComponent.h>
 #include <EmbeddedWebServer.h>
+#include <DLCManager/DLCDownloader.h>
 
 using namespace DAVA;
 
@@ -50,7 +51,7 @@ void DLCManagerTest::LoadResources()
 
     packInput = new UITextField(Rect(5, 10, 400, 20));
     packInput->SetFont(font);
-    packInput->SetText(L"0");
+    packInput->SetUtf8Text("all_level_packs");
     packInput->SetFontSize(14);
     packInput->SetDebugDraw(true);
     packInput->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
@@ -173,18 +174,6 @@ void DLCManagerTest::LoadResources()
     checkFile->AddEvent(EVENT_TOUCH_DOWN, Message(this, &DLCManagerTest::OnCheckFileClicked));
     AddControl(checkFile);
 
-    numOfThreadDownload = new UITextField(Rect(5, 410, 400, 20));
-    numOfThreadDownload->SetFont(font);
-    numOfThreadDownload->SetFontSize(14);
-    numOfThreadDownload->SetUtf8Text("1");
-    numOfThreadDownload->SetDebugDraw(true);
-    numOfThreadDownload->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
-    numOfThreadDownload->SetInputEnabled(true);
-    numOfThreadDownload->GetOrCreateComponent<UIFocusComponent>();
-    numOfThreadDownload->SetDelegate(this);
-    numOfThreadDownload->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
-    AddControl(numOfThreadDownload);
-
     startInit = new UIButton(Rect(420, 410, 100, 20));
     startInit->SetDebugDraw(true);
     startInit->SetStateFont(0xFF, font);
@@ -217,6 +206,14 @@ void DLCManagerTest::LoadResources()
     lsDvpks->AddEvent(EVENT_TOUCH_DOWN, Message(this, &DLCManagerTest::OnListPacksClicked));
     AddControl(lsDvpks);
 
+    OnOffRequesting = new UIButton(Rect(420, 230, 100, 20));
+    OnOffRequesting->SetDebugDraw(true);
+    OnOffRequesting->SetStateFont(0xFF, font);
+    OnOffRequesting->SetStateFontColor(0xFF, Color::White);
+    OnOffRequesting->SetStateText(0xFF, L"On/Off");
+    OnOffRequesting->AddEvent(EVENT_TOUCH_DOWN, Message(this, &DLCManagerTest::OnOffRequestingClicked));
+    AddControl(OnOffRequesting);
+
     dirToListFiles = new UITextField(Rect(5, 300, 400, 20));
     dirToListFiles->SetFont(font);
     dirToListFiles->SetFontSize(14);
@@ -228,6 +225,22 @@ void DLCManagerTest::LoadResources()
     dirToListFiles->SetDelegate(this);
     dirToListFiles->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
     AddControl(dirToListFiles);
+
+    DLCDownloader::Hints hintsDefault;
+    std::stringstream ss;
+    ss << "handles " << hintsDefault.numOfMaxEasyHandles << " buf_size " << hintsDefault.chunkMemBuffSize;
+
+    numHandlesInput = new UITextField(Rect(5, 410, 400, 20));
+    numHandlesInput->SetFont(font);
+    numHandlesInput->SetFontSize(14);
+    numHandlesInput->SetUtf8Text(ss.str());
+    numHandlesInput->SetDebugDraw(true);
+    numHandlesInput->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
+    numHandlesInput->SetInputEnabled(true);
+    numHandlesInput->GetOrCreateComponent<UIFocusComponent>();
+    numHandlesInput->SetDelegate(this);
+    numHandlesInput->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
+    AddControl(numHandlesInput);
 
     lsDirFromPacks = new UIButton(Rect(420, 300, 100, 20));
     lsDirFromPacks->SetDebugDraw(true);
@@ -259,8 +272,9 @@ void DLCManagerTest::UnloadResources()
     SafeRelease(checkFile);
     SafeRelease(startInit);
     SafeRelease(dirToListFiles);
+    SafeRelease(numHandlesInput);
     SafeRelease(lsDirFromPacks);
-    SafeRelease(numOfThreadDownload);
+    SafeRelease(OnOffRequesting);
 
     BaseScreen::UnloadResources();
 }
@@ -269,7 +283,9 @@ void DLCManagerTest::WriteErrorOnDevice(const String& filePath, int32 errnoVal)
 {
     StringStream ss(logPring->GetUtf8Text());
     ss << "Error: can't write file: " << filePath << " errno: " << strerror(errnoVal) << std::endl;
-    logPring->SetUtf8Text(ss.str());
+    std::string str = ss.str();
+    logPring->SetUtf8Text(str);
+    Logger::Info("%s", str.c_str());
     DVASSERT(false);
 }
 
@@ -282,14 +298,19 @@ void DLCManagerTest::OnRequestUpdated(const DAVA::DLCManager::IRequest& request)
     float32 progress = static_cast<float32>(current) / total;
 
     std::stringstream ss;
-    ss << "downloading: " << packName << " : " << current << "/" << total << " (" << (progress * 100) << ")%";
+    ss << "downloading: " << packName << " : (" << (progress * 100) << ")%";
 
-    if (request.IsDownloaded())
+    DLCManager& dm = *engine.GetContext()->dlcManager;
+    auto p = dm.GetProgress();
+    if (p.total > 0)
     {
-        ss << " DOWNLOADED!!!";
+        ss << "\n total:" << (100.0 * p.alreadyDownloaded) / p.total << '%';
     }
 
-    packNameLoading->SetUtf8Text(ss.str());
+    std::string str = ss.str();
+    packNameLoading->SetUtf8Text(str);
+
+    Logger::Info("DLC %s", str.c_str());
 
     auto rect = redControl->GetRect();
     rect.dx = rect.dx * progress;
@@ -298,11 +319,10 @@ void DLCManagerTest::OnRequestUpdated(const DAVA::DLCManager::IRequest& request)
 
 void DLCManagerTest::OnNetworkReady(bool isReady)
 {
-    // To visualise on MacOS DownloadManager::Instance()->SetDownloadSpeedLimit(100000);
+    // To visualize on MacOS DownloadManager::Instance()->SetDownloadSpeedLimit(100000);
     // on MacOS slowly connect and then fast downloading
     std::stringstream ss;
-    const char* boolName = isReady ? "True" : "False";
-    ss << "nerwork ready = " << boolName;
+    ss << "network ready = " << std::boolalpha << isReady;
     Logger::Info("%s", ss.str().c_str());
 
     packNameLoading->SetUtf8Text("loading: " + ss.str());
@@ -323,10 +343,21 @@ void DLCManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, vo
 
     dm.networkReady.DisconnectAll();
     dm.networkReady.Connect(this, &DLCManagerTest::OnNetworkReady);
-    DLCManager::Hints hints;
-    int numThreads = stoi(numOfThreadDownload->GetUtf8Text());
-    hints.numOfThreadsPerFileDownload = static_cast<uint32>(numThreads);
     dm.initializeFinished.Connect(this, &DLCManagerTest::OnInitializeFinished);
+
+    std::stringstream ss(numHandlesInput->GetUtf8Text());
+    int numHandles = 0;
+    int bufSize = 0;
+    String text;
+    ss >> text >> numHandles; // skip "handles " // last read num
+    ss >> text >> bufSize; // skip " buf_size " // last read num
+
+    DVASSERT(numHandles > 0);
+    DVASSERT(bufSize > 0);
+
+    DLCManager::Hints hints;
+    hints.downloaderMaxHandles = static_cast<uint32>(numHandles);
+    hints.downloaderChankBufSize = static_cast<uint32>(bufSize);
 
     dm.Initialize(folderWithDownloadedPacks, urlToServerSuperpack, hints);
 
@@ -346,12 +377,9 @@ void DLCManagerTest::OnStartSyncClicked(DAVA::BaseObject* sender, void* data, vo
 void DLCManagerTest::OnClearDocsClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
     DLCManager& dm = *engine.GetContext()->dlcManager;
-    if (!FileSystem::Instance()->DeleteDirectory(folderWithDownloadedPacks, true))
-    {
-        std::stringstream ss(logPring->GetUtf8Text());
-        ss << "can't delete dir: " << folderWithDownloadedPacks.GetAbsolutePathname() << std::endl;
-        logPring->SetUtf8Text(ss.str());
-    }
+
+    FileSystem::Instance()->DeleteDirectory(folderWithDownloadedPacks, true);
+
     packNameLoading->SetText(L"done: unmount all dvpk's, and remove dir with downloaded dvpk's");
 }
 
@@ -362,6 +390,19 @@ void DLCManagerTest::OnListPacksClicked(DAVA::BaseObject* sender, void* data, vo
     String s = ss.str();
 
     packNameLoading->SetText(UTF8Utils::EncodeToWideString(s));
+}
+
+void DLCManagerTest::OnOffRequestingClicked(DAVA::BaseObject* sender, void* data, void* callerData)
+{
+    DLCManager& dm = *engine.GetContext()->dlcManager;
+    if (dm.IsRequestingEnabled())
+    {
+        dm.SetRequestingEnabled(false);
+    }
+    else
+    {
+        dm.SetRequestingEnabled(true);
+    }
 }
 
 void DLCManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* data, void* callerData)
@@ -438,13 +479,7 @@ void DLCManagerTest::OnStartStopLocalServerClicked(DAVA::BaseObject* sender, voi
         FilePath resPath("~res:/TestData/PackManagerTest/superpack_for_unittests.dvpk");
         FilePath docPath("~doc:/DLCManagerTest/superpack_for_unittests.dvpk");
 
-        if (!fs->CopyFile(resPath, docPath, true))
-        {
-            StringStream ss(logPring->GetUtf8Text());
-            ss << "Error: can't copy superpack_for_unittest.dvpk "
-               << resPath.GetStringValue() << " to " << docPath.GetStringValue() << std::endl;
-            logPring->SetUtf8Text(ss.str());
-        }
+        fs->CopyFile(resPath, docPath, true);
 
         docPath = docPath.GetDirectory();
 
@@ -453,14 +488,16 @@ void DLCManagerTest::OnStartStopLocalServerClicked(DAVA::BaseObject* sender, voi
         const char* docRoot = absPath.c_str();
         const char* ports = "8080";
 
-        StringStream ss(logPring->GetUtf8Text());
         if (!StartEmbeddedWebServer(docRoot, ports))
         {
-            ss << "Error: can't start embedded web server" << std::endl;
+            StringStream ss(logPring->GetUtf8Text());
+            ss << "Error starting embedded web server" << std::endl;
+            logPring->SetUtf8Text(ss.str());
         }
-        ss << "from: " << resPath.GetAbsolutePathname() << std::endl
-           << "to: " << docPath.GetAbsolutePathname() << std::endl;
-        logPring->SetUtf8Text(ss.str());
+        else
+        {
+            logPring->SetUtf8Text("start embedded web server done");
+        }
     }
     else if (sender == stopServerButton)
     {
