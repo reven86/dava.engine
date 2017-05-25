@@ -272,7 +272,7 @@ size_t QualityGroupComponentValue::GetModelTypeIndex() const
         }
     }
 
-    isDifferentGroups = false;
+    isDifferentModelTypes = false;
     if (modelType.IsValid() == false)
     {
         return 0;
