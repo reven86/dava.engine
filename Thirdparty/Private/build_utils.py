@@ -386,6 +386,11 @@ def get_autotools_ios_env():
 
     return env
 
+def get_autotools_linux_env():
+    env = os.environ.copy()
+    env['CC'] = '/usr/local/bin/clang'
+    env['CXX'] = '/usr/local/bin/clang++'
+    return env
 
 def get_autotools_android_arm_env(root_project_path, enable_stl=False):
     android_ndk_folder_path = get_android_ndk_path(root_project_path)

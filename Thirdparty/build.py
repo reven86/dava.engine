@@ -21,6 +21,10 @@ output_path = os.path.abspath('output')
 imported_builders = {}
 # List of invoked builders to avoid multiple invokes
 invoked_builders = {}
+# Host platform: win32, darwin, linux
+# For linux sys.platform contains 'linux2' on python 2.x and 'linux' on python 3.x
+# Use host_platform not sys.platform
+host_platform = None
 
 
 def rmtree_error(operation, name, exc):
@@ -65,7 +69,7 @@ def build_library(name, targets, skip_dependencies):
     # Get builder module
     builder = import_library_builder_module(name)
 
-    current_platform = sys.platform
+    current_platform = host_platform
     supported_targets = builder.get_supported_targets(current_platform)
 
     # Check if it should be built on current platform
@@ -117,7 +121,7 @@ def build_library(name, targets, skip_dependencies):
         traceback.print_exc()
         result = False
 
-    # Revert workind dir change
+    # Revert working dir changes
     os.chdir('..')
 
     return result
@@ -143,17 +147,16 @@ def print_info(library, targets):
     builder = import_library_builder_module(library)
     download_url = builder.get_download_info()
     supported_targets = {'win32': builder.get_supported_targets('win32'),
-                         'darwin': builder.get_supported_targets('darwin')}
-    supported_build_platforms = builder.get_supported_build_platforms()
+                         'darwin': builder.get_supported_targets('darwin'),
+                         'linux': builder.get_supported_targets('linux')}
     dependencies = get_dependencies_for_library(
         import_library_builder_module(library),
         targets)
     print ('{}\nDownload url: {}\nSupported targets: {}\n'
-           'Supported build platforms: {}\nDependencies: {}\n').format(
+           'Dependencies: {}\n').format(
                 library,
                 download_url,
                 supported_targets,
-                supported_build_platforms,
                 dependencies)
 
 
@@ -200,11 +203,17 @@ def parse_args():
     return args
 
 if __name__ == "__main__":
+    # Detect host platform
+    host_platform = sys.platform
+    # For linux sys.platform contains 'linux2' on python 2.x and 'linux' on python 3.x
+    if host_platform.startswith('linux'):
+        host_platform = 'linux'
+
     # List of all targets
-    if sys.platform == 'win32':
+    if host_platform == 'win32':
         all_targets = ['win32', 'win10', 'android']
     else:
-        all_targets = ['ios', 'macos', 'android']
+        all_targets = ['ios', 'macos', 'android', 'linux']
 
     # Setup and parse arguments
 
