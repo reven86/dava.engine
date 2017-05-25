@@ -42,6 +42,7 @@ public:
     bool CanSave() const;
     bool CanUndo() const;
     bool CanRedo() const;
+    bool CanClose() const;
 
     QString GetUndoText() const;
     QString GetRedoText() const;
@@ -72,6 +73,7 @@ private:
     SortedControlNodeSet displayedRootControls;
 
     bool documentExists = true;
+    DAVA::uint32 startedBatches = 0;
 
     DAVA_VIRTUAL_REFLECTION(DocumentData, DAVA::TArc::DataNode);
 };
