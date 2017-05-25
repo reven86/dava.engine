@@ -1,5 +1,6 @@
 #include "TArc/Controls/PropertyPanel/BaseComponentValue.h"
 #include "TArc/Controls/PropertyPanel/Private/ReflectedPropertyModel.h"
+#include "TArc/Controls/PropertyPanel/Private/WidgetRenderHelper.h"
 #include "TArc/Controls/PropertyPanel/PropertyPanelMeta.h"
 #include "TArc/Controls/ReflectedButton.h"
 #include "TArc/Controls/QtBoxLayouts.h"
@@ -17,7 +18,6 @@
 #include <QtEvents>
 #include <QStyle>
 #include <QStyleOption>
-#include <QPainter>
 #include <QPainter>
 #include <QDebug>
 
@@ -135,7 +135,12 @@ void BaseComponentValue::Draw(QPainter* painter, const QStyleOptionViewItem& opt
     UpdateEditorGeometry(opt.rect);
     bool isOpacue = realWidget->testAttribute(Qt::WA_NoSystemBackground);
     realWidget->setAttribute(Qt::WA_NoSystemBackground, true);
-    QPixmap pxmap = realWidget->grab();
+    // Original QWidget::grab has a bug. It doesn't take into consideration screen's "devicePixelRatio"
+    // So i had to write my own implementation of grab method.
+    // To get access to private parts of QWidget i had to "reinterpret_cast" realWidget to my helper.
+    // It will be same until WidgetRenderHelper does not have any data, only one method.
+    WidgetRenderHelper* renderHelper = reinterpret_cast<WidgetRenderHelper*>(realWidget);
+    QPixmap pxmap = renderHelper->davaGrab(painter->device()->devicePixelRatioF(), realWidget->rect());
     realWidget->setAttribute(Qt::WA_NoSystemBackground, isOpacue);
     painter->drawPixmap(opt.rect, pxmap);
 }
