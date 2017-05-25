@@ -146,9 +146,6 @@ void UILayoutSystem::SetRtl(bool rtl)
 
 void UILayoutSystem::ProcessControl(UIControl* control)
 {
-    if (!IsAutoupdatesEnabled())
-        return;
-
     bool layoutDirty = control->IsLayoutDirty();
     bool orderDirty = control->IsLayoutOrderDirty();
     bool positionDirty = control->IsLayoutPositionDirty();
