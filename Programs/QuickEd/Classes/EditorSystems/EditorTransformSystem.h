@@ -100,7 +100,7 @@ private:
     DAVA::Vector2 moveMagnetRange;
     DAVA::Vector2 resizeMagnetRange;
     DAVA::Vector2 pivotMagnetRange;
-    
+
     DAVA::Vector2 moveStepByKeyboard2;
     DAVA::Vector2 expandedmoveStepByKeyboard2;
 
