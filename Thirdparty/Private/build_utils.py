@@ -120,6 +120,16 @@ def build_xcode_alltargets(project, configuration):
         print "Failed with return code %s" % proc.returncode
         raise
 
+def build_make_target(output_folder_path, target):
+    print "Building target %s in %s ..." % (target, output_folder_path)
+    # make <target> -C <output_folder_path>
+    proc = subprocess.Popen(["make", target, '-C', output_folder_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    for line in proc.stdout:
+        print_verbose(line)
+    proc.wait()
+    if proc.returncode != 0:
+        print "Failed with return code %s" % proc.returncode
+        raise
 
 def copy_files(from_dir, to_dir, wildcard):
     print "Copying %s from %s to %s" % (wildcard, from_dir, to_dir)
@@ -185,6 +195,10 @@ def cmake_generate_build_vs(output_folder_path, src_folder_path, cmake_generator
 def cmake_generate_build_xcode(output_folder_path, src_folder_path, cmake_generator, project, target, cmake_additional_args = []):
     cmake_generate(output_folder_path, src_folder_path, cmake_generator, cmake_additional_args)
     build_xcode_target(os.path.join(output_folder_path, project), target, 'Release')
+
+def cmake_generate_build_make(output_folder_path, src_folder_path, cmake_generator, target, cmake_additional_args = []):
+    cmake_generate(output_folder_path, src_folder_path, cmake_generator, cmake_additional_args)
+    build_make_target(output_folder_path, target)
 
 
 def cmake_generate_build_ndk(output_folder_path, src_folder_path, toolchain_filepath, android_ndk_path, abi, cmake_additional_args = []):
@@ -636,6 +650,23 @@ def build_and_copy_libraries_android_cmake(
 
     return (build_android_x86_folder, build_android_armeabiv7a_folder)
 
+def build_and_copy_libraries_linux_cmake(
+        gen_folder_path,
+        source_folder_path,
+        root_project_path,
+        target,
+        lib_name,
+        cmake_additional_args = []):
+
+    build_folder = os.path.join(gen_folder_path, 'build_linux')
+    cmake_generate_build_make(build_folder, source_folder_path, build_config.get_cmake_generator_linux(), target, cmake_additional_args)
+
+    # Move built files into Libs/lib_CMake
+    # TODO: update pathes after switching to new folders structure
+    target_dir = os.path.join(root_project_path, 'Libs/lib_CMake/linux')
+    shutil.copyfile(os.path.join(build_folder, lib_name),
+                    os.path.join(target_dir, lib_name))
+    return build_folder
 
 def build_with_autotools(source_folder_path, configure_args, install_dir, env=None, configure_exec_name='configure', make_exec_name='make', postclean=True):
     if isinstance(configure_exec_name, list):
