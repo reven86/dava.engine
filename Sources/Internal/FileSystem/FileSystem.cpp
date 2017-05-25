@@ -3,6 +3,7 @@
 
 #include "Base/Platform.h"
 #include "Base/Exception.h"
+#include "Debug/Backtrace.h"
 
 #include "FileSystem/FileAPIHelper.h"
 #include "FileSystem/FileSystem.h"
@@ -273,6 +274,12 @@ bool FileSystem::DeleteFile(const FilePath& filePath)
 
     // function unlink return 0 on success, -1 on error
     const auto& fileName = filePath.GetAbsolutePathname();
+
+#if defined(__DAVAENGINE_DEBUG__DISABLE_FOR_NOW)
+    String backTrace = Debug::GetBacktraceString();
+    Logger::Debug("DeleteFile backtrace(%s):\n%s", fileName.c_str(), backTrace.c_str());
+#endif
+
     int res = FileAPI::RemoveFile(fileName);
     if (res == 0)
     {

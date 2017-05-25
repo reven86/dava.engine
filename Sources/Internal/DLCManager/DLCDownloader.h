@@ -3,6 +3,7 @@
 #include "Base/BaseTypes.h"
 
 #include <atomic>
+#include <iosfwd>
 
 namespace DAVA
 {
@@ -188,4 +189,7 @@ public:
 	```DLCDownloader``` created and before any task started.*/
     virtual void SetHints(const Hints& h) = 0;
 };
+
+std::ostream& operator<<(std::ostream&, const DLCDownloader::TaskError&);
+std::ostream& operator<<(std::ostream&, const DLCDownloader::TaskStatus&);
 }

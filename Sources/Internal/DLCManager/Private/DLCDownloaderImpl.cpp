@@ -6,7 +6,7 @@
 #include "FileSystem/File.h"
 #include "FileSystem/FileSystem.h"
 #include "Concurrency/LockGuard.h"
-#include <Engine/Engine.h>
+#include "Engine/Engine.h"
 
 namespace DAVA
 {
@@ -48,6 +48,39 @@ void CurlGlobalDeinit()
     {
         curl_global_cleanup();
     }
+}
+
+std::ostream& operator<<(std::ostream& stream, const DLCDownloader::TaskError& error)
+{
+    stream << " err_happened: " << std::boolalpha << error.errorHappened;
+    stream << " http_code: " << error.httpCode;
+    stream << " curl_err: " << error.curlErr;
+    stream << " curlm_err: " << error.curlMErr;
+    stream << " errno: " << error.fileErrno;
+    stream << " err_str: " << error.errStr;
+    return stream;
+}
+
+std::ostream& operator<<(std::ostream& stream, const DLCDownloader::TaskStatus& status)
+{
+    stream << "task status: ";
+    switch (status.state)
+    {
+    case DLCDownloader::TaskState::Finished:
+        stream << "finished";
+        break;
+    case DLCDownloader::TaskState::Downloading:
+        stream << "downloading";
+        break;
+    case DLCDownloader::TaskState::JustAdded:
+        stream << "just_added";
+        break;
+    }
+    stream << " downloaded: " << status.sizeDownloaded;
+    stream << " total_size: " << status.sizeTotal;
+    stream << " error: " << status.error;
+
+    return stream;
 }
 
 DLCDownloader::~DLCDownloader() = default;
@@ -177,7 +210,6 @@ static void CurlSetTimeout(DLCDownloader::Task& task, CURL* easyHandle)
     if (code != CURLE_OK)
     {
         DLCDownloader::Task::OnErrorCurlEasy(code, task);
-        return;
     }
 
     // we could set operation time limit which produce timeout if operation takes time.
@@ -185,14 +217,12 @@ static void CurlSetTimeout(DLCDownloader::Task& task, CURL* easyHandle)
     if (code != CURLE_OK)
     {
         DLCDownloader::Task::OnErrorCurlEasy(code, task);
-        return;
     }
 
     code = curl_easy_setopt(easyHandle, CURLOPT_DNS_CACHE_TIMEOUT, operationTimeout);
     if (code != CURLE_OK)
     {
         DLCDownloader::Task::OnErrorCurlEasy(code, task);
-        return;
     }
 
     code = curl_easy_setopt(easyHandle, CURLOPT_SERVER_RESPONSE_TIMEOUT, operationTimeout);
@@ -269,21 +299,18 @@ struct DownloadChunkSubTask : IDownloaderSubTask
         if (CURLE_OK != code)
         {
             DLCDownloader::Task::OnErrorCurlEasy(code, task);
-            return;
         }
 
         code = curl_easy_setopt(easy, CURLOPT_WRITEFUNCTION, CurlDataRecvHandler);
         if (code != CURLE_OK)
         {
             DLCDownloader::Task::OnErrorCurlEasy(code, task);
-            return;
         }
 
         code = curl_easy_setopt(easy, CURLOPT_WRITEDATA, this);
         if (code != CURLE_OK)
         {
             DLCDownloader::Task::OnErrorCurlEasy(code, task);
-            return;
         }
 
         char buf[128] = { 0 };
@@ -297,22 +324,16 @@ struct DownloadChunkSubTask : IDownloaderSubTask
         if (code != CURLE_OK)
         {
             DLCDownloader::Task::OnErrorCurlEasy(code, task);
-            return;
         }
 
         // set all timeouts
         CurlSetTimeout(task, easy);
 
         CURLM* multi = task.curlStorage.GetMultiHandle();
-        if (multi == nullptr)
-        {
-            DAVA_THROW(Exception, "multi is nullptr");
-        }
         CURLMcode codem = curl_multi_add_handle(multi, easy);
         if (CURLM_OK != codem)
         {
             DLCDownloader::Task::OnErrorCurlMulti(codem, task);
-            return;
         }
 
         task.curlStorage.Map(easy, *this);
@@ -396,16 +417,10 @@ struct GetSizeSubTask : IDownloaderSubTask
         downloadOrderIndex = task.lastCreateSubTaskIndex;
 
         easy = task.curlStorage.CurlCreateHandle();
-        if (easy == nullptr)
-        {
-            DAVA_THROW(Exception, "can't create easy handle, something bad happened");
-        }
-
         CURLcode code = curl_easy_setopt(easy, CURLOPT_HEADER, 0L);
         if (code != CURLE_OK)
         {
             DLCDownloader::Task::OnErrorCurlEasy(code, task);
-            return;
         }
 
         const char* url = task.info.srcUrl.c_str();
@@ -413,7 +428,6 @@ struct GetSizeSubTask : IDownloaderSubTask
         if (code != CURLE_OK)
         {
             DLCDownloader::Task::OnErrorCurlEasy(code, task);
-            return;
         }
 
         // Don't return the header (we'll use curl_getinfo();
@@ -421,20 +435,13 @@ struct GetSizeSubTask : IDownloaderSubTask
         if (code != CURLE_OK)
         {
             DLCDownloader::Task::OnErrorCurlEasy(code, task);
-            return;
         }
 
         CURLM* multi = task.curlStorage.GetMultiHandle();
-        if (multi == nullptr)
-        {
-            DAVA_THROW(Exception, "multi is nullptr, something bad happened");
-        }
-
         CURLMcode codem = curl_multi_add_handle(multi, easy);
         if (code != CURLE_OK)
         {
             DLCDownloader::Task::OnErrorCurlMulti(codem, task);
-            return;
         }
 
         task.curlStorage.Map(easy, *this);
@@ -500,9 +507,9 @@ struct GetSizeSubTask : IDownloaderSubTask
     {
         if (easy != nullptr)
         {
-            ICurlEasyStorage& storage = task.curlStorage;
             task.curlStorage.UnMap(easy);
 
+            ICurlEasyStorage& storage = task.curlStorage;
             CURLM* multi = storage.GetMultiHandle();
             CURLMcode code = curl_multi_remove_handle(multi, easy);
             if (CURLM_OK != code)
@@ -579,14 +586,14 @@ void DLCDownloader::Task::FlushWriterAndReset()
 
 DLCDownloader::Task::~Task()
 {
+    FlushWriterAndReset();
+
     status.error.curlErr = 0;
     status.error.curlMErr = 0;
     status.error.httpCode = 0;
     status.error.errorHappened = false;
     status.sizeDownloaded = 0;
     status.sizeTotal = 0;
-
-    FlushWriterAndReset();
 
     userWriter = false;
 }
@@ -1043,14 +1050,6 @@ CURL* DLCDownloaderImpl::CurlCreateHandle()
         DAVA_THROW(Exception, strErr);
     }
 
-    //// https://curl.haxx.se/libcurl/c/CURLOPT_USERAGENT.html
-    //code = curl_easy_setopt(curlHandle, CURLOPT_USERAGENT, "SDLC");
-    //if (CURLE_OK != code)
-    //{
-    //	const char* strErr = curl_easy_strerror(code);
-    //	DAVA_THROW(Exception, strErr);
-    //}
-
     // https://curl.haxx.se/libcurl/c/CURLOPT_TCP_KEEPALIVE.html
     code = curl_easy_setopt(curlHandle, CURLOPT_TCP_KEEPALIVE, 1L);
     if (CURLE_OK != code)
@@ -1073,7 +1072,7 @@ void DLCDownloaderImpl::CurlDeleteHandle(CURL* easy)
 
     DVASSERT(Thread::GetCurrentId() == downloadThreadId);
 
-    // Make sure that easy handle hasn't been returned already
+    // Make sure that easy handle didn't returned already
     DVASSERT(std::find(reusableHandles.begin(), reusableHandles.end(), easy) == reusableHandles.end());
 
     curl_easy_reset(easy);
@@ -1102,6 +1101,11 @@ void DLCDownloaderImpl::Map(CURL* easy, IDownloaderSubTask& subTask)
     {
         DAVA_THROW(Exception, "easy is nullptr");
     }
+    auto it = taskMap.find(easy);
+    if (it != end(taskMap))
+    {
+        DAVA_THROW(Exception, "easy handle already in map!");
+    }
     taskMap.emplace(easy, &subTask);
 }
 
@@ -1129,7 +1133,15 @@ void DLCDownloaderImpl::UnMap(CURL* easy)
     {
         DAVA_THROW(Exception, "easy is nullptr");
     }
-    taskMap.erase(easy);
+    auto it = taskMap.find(easy);
+    if (it != end(taskMap))
+    {
+        taskMap.erase(easy);
+    }
+    else
+    {
+        DAVA_THROW(Exception, "no easy handle in map");
+    }
 }
 
 int DLCDownloaderImpl::GetChunkSize()
@@ -1333,6 +1345,29 @@ void DLCDownloaderImpl::AddNewTasks()
     }
 }
 
+void DLCDownloaderImpl::ConsumeSubTask(CURLMsg* curlMsg, CURL* easyHandle)
+{
+    IDownloaderSubTask& subTask = FindInMap(easyHandle);
+    Task& task = subTask.GetTask();
+
+    subTask.OnDone(curlMsg);
+
+    task.subTasksWorking.remove(&subTask);
+    task.subTasksReadyToWrite.push_back(&subTask);
+
+    task.OnSubTaskDone();
+    if (!task.status.error.errorHappened)
+    {
+        task.GenerateChunkSubRequests(hints.chunkMemBuffSize);
+
+        if (task.IsDone())
+        {
+            task.FlushWriterAndReset();
+            task.status.state = TaskState::Finished;
+        }
+    }
+}
+
 void DLCDownloaderImpl::ProcessMessagesFromMulti()
 {
     CURLMsg* curlMsg = nullptr;
@@ -1344,25 +1379,13 @@ void DLCDownloaderImpl::ProcessMessagesFromMulti()
         if (curlMsg && (curlMsg->msg == CURLMSG_DONE))
         {
             CURL* easyHandle = curlMsg->easy_handle;
-
-            IDownloaderSubTask& subTask = FindInMap(easyHandle);
-            Task& task = subTask.GetTask();
-
-            subTask.OnDone(curlMsg);
-
-            task.subTasksWorking.remove(&subTask);
-            task.subTasksReadyToWrite.push_back(&subTask);
-
-            task.OnSubTaskDone();
-            if (!task.status.error.errorHappened)
+            try
             {
-                task.GenerateChunkSubRequests(hints.chunkMemBuffSize);
-
-                if (task.IsDone())
-                {
-                    task.FlushWriterAndReset();
-                    task.status.state = TaskState::Finished;
-                }
+                ConsumeSubTask(curlMsg, easyHandle);
+            }
+            catch (Exception& ex)
+            {
+                Logger::Error("Exception: %s file: %s(%d) easyHandle: 0x%p", ex.file.c_str(), ex.what(), static_cast<int>(ex.line), easyHandle);
             }
         }
     } while (curlMsg != nullptr);
@@ -1390,26 +1413,50 @@ void DLCDownloaderImpl::BalancingHandles()
 void DLCDownloaderImpl::Task::OnErrorCurlMulti(int32 multiCode, Task& task)
 {
     task.status.error.errorHappened = true;
-    task.status.error.curlMErr = multiCode;
-    // static string literal from curl
-    task.status.error.errStr = curl_multi_strerror(static_cast<CURLMcode>(multiCode));
+    // do now overwrite previous same type error
+    if (task.status.error.curlMErr == 0) // CURLM_OK == 0
+    {
+        task.status.error.curlMErr = multiCode;
+        // static string literal from curl
+        task.status.error.errStr = curl_multi_strerror(static_cast<CURLMcode>(multiCode));
+    }
+
+    if (task.writer && !task.writer->IsClosed())
+    {
+        task.writer->Close();
+    }
     task.status.state = TaskState::Finished;
 }
 void DLCDownloaderImpl::Task::OnErrorCurlEasy(int32 easyCode, Task& task)
 {
     task.status.error.errorHappened = true;
-    task.status.error.curlErr = easyCode;
-    // static string literal from curl
-    task.status.error.errStr = curl_easy_strerror(static_cast<CURLcode>(easyCode));
+    // do now overwrite previous same type error
+    if (task.status.error.curlErr == 0) // CURLE_OK == 0
+    {
+        task.status.error.curlErr = easyCode;
+        task.status.error.errStr = curl_easy_strerror(static_cast<CURLcode>(easyCode)); // static string literal from curl
+    }
+    if (task.writer && !task.writer->IsClosed())
+    {
+        task.writer->Close();
+    }
     task.status.state = TaskState::Finished;
 }
 void DLCDownloaderImpl::Task::OnErrorCurlErrno(int32 errnoVal, Task& task)
 {
     task.status.error.errorHappened = true;
-    task.status.error.fileErrno = errnoVal;
-    // if other thread call strerror and change internal buffer - it will not crush still,
-    // and we have fileErrno saved, so I am satisfied
-    task.status.error.errStr = strerror(errnoVal);
+    // do now overwrite previous same type error
+    if (task.status.error.fileErrno == 0)
+    {
+        task.status.error.fileErrno = errnoVal;
+        // if other thread call strerror and change internal buffer - it will not crush still,
+        // and we have fileErrno saved, so I am satisfied
+        task.status.error.errStr = strerror(errnoVal);
+    }
+    if (task.writer && !task.writer->IsClosed())
+    {
+        task.writer->Close();
+    }
     task.status.state = TaskState::Finished;
 }
 
@@ -1420,6 +1467,10 @@ void DLCDownloaderImpl::Task::OnErrorHttpCode(long httpCode, Task& task)
     // if other thread call strerror and change internal buffer - it will not crush still,
     // and we have fileErrno saved, so I am satisfied
     task.status.error.errStr = "bad http result code";
+    if (task.writer && !task.writer->IsClosed())
+    {
+        task.writer->Close();
+    }
     task.status.state = TaskState::Finished;
 }
 

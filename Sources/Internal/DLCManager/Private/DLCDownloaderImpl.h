@@ -130,6 +130,7 @@ private:
     bool TakeNewTaskFromInputList();
     void SignalOnFinishedWaitingTasks();
     void AddNewTasks();
+    void ConsumeSubTask(CURLMsg* curlMsg, CURL* easyHandle);
     void ProcessMessagesFromMulti();
     void BalancingHandles();
 

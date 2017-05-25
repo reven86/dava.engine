@@ -486,6 +486,7 @@ void DLCManagerImpl::AskFooter()
     if (nullptr == downloadTaskId)
     {
         downloadTaskId = downloader->StartGetContentSize(urlToSuperPack);
+        DVASSERT(nullptr != downloadTaskId);
     }
     else
     {
@@ -502,7 +503,10 @@ void DLCManagerImpl::AskFooter()
                 fullSizeServerData = status.sizeTotal;
                 if (fullSizeServerData == 0)
                 {
-                    DAVA_THROW(DAVA::Exception, "can't get size of file on server side");
+                    StringStream ss;
+                    ss << "can't get size of file on server side (status: " << status << ")"
+                       << " url: " << urlToSuperPack;
+                    DAVA_THROW(DAVA::Exception, ss.str());
                 }
 
                 if (fullSizeServerData < sizeof(PackFormat::PackFile))
@@ -1226,7 +1230,7 @@ void DLCManagerImpl::RecursiveScan(const FilePath& baseDir, const FilePath& dir,
                 {
                     bool needDeleteIncompleteFile = false;
                     int32 footerSize = sizeof(PackFormat::LitePack::Footer);
-                    if (0 == fseek(f, -footerSize, SEEK_END)) // TODO check SEEK_END may not work on all platforms
+                    if (0 == fseek(f, -footerSize, SEEK_END))
                     {
                         PackFormat::LitePack::Footer footer;
                         if (footerSize == fread(&footer, 1, footerSize, f))
@@ -1249,7 +1253,10 @@ void DLCManagerImpl::RecursiveScan(const FilePath& baseDir, const FilePath& dir,
                     if (needDeleteIncompleteFile)
                     {
                         int32 result = FileAPI::RemoveFile(fileName);
-                        DVASSERT(0 == result);
+                        if (0 != result)
+                        {
+                            Logger::Error("can't delete incomplete file: %s", fileName.c_str());
+                        }
                     }
                 }
                 files.push_back(info);
@@ -1306,6 +1313,8 @@ void DLCManagerImpl::ThreadScanFunc()
         return;
     }
 
+    FileSystem* fs = GetEngineContext()->fileSystem;
+
     for (const LocalFileInfo& info : localFiles)
     {
         relativeNameWithoutDvpl = info.relativeName.substr(0, info.relativeName.size() - 5);
@@ -1315,7 +1324,7 @@ void DLCManagerImpl::ThreadScanFunc()
             if (entry->compressedCrc32 != info.crc32Hash || entry->compressedSize != info.compressedSize)
             {
                 Logger::Info("hash not match for file: %s delete it", info.relativeName.c_str());
-                FileSystem::Instance()->DeleteFile(dirToDownloadedPacks + info.relativeName);
+                fs->DeleteFile(dirToDownloadedPacks + info.relativeName);
             }
             else
             {
@@ -1326,7 +1335,7 @@ void DLCManagerImpl::ThreadScanFunc()
         else
         {
             // no such file on server, delete it
-            FileSystem::Instance()->DeleteFile(dirToDownloadedPacks + info.relativeName);
+            fs->DeleteFile(dirToDownloadedPacks + info.relativeName);
         }
     }
 
