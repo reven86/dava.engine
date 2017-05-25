@@ -1,3 +1,5 @@
+PATCHED: switched ARHCS from "$(ARCHS_STANDARD_64_BIT)" to "$(ARCHS_STANDARD_32_64_BIT)"
+
 From 57f48a2cb6776a5362f875a2c041575f7aa108f4 Mon Sep 17 00:00:00 2001
 From: y_rakhuba <y_rakhuba@wargaming.net>
 Date: Mon, 22 May 2017 12:03:37 +0300
