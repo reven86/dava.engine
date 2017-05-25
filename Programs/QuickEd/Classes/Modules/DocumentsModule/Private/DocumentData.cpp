@@ -41,11 +41,14 @@ void DocumentData::ExecCommand(std::unique_ptr<DAVA::Command>&& command)
 
 void DocumentData::BeginBatch(const DAVA::String& batchName, DAVA::uint32 commandsCount)
 {
+    startedBatches++;
     commandStack->BeginBatch(batchName, commandsCount);
 }
 
 void DocumentData::EndBatch()
 {
+    DVASSERT(startedBatches != 0);
+    startedBatches--;
     commandStack->EndBatch();
 }
 
@@ -127,6 +130,11 @@ bool DocumentData::CanUndo() const
 bool DocumentData::CanRedo() const
 {
     return commandStack->CanRedo();
+}
+
+bool DocumentData::CanClose() const
+{
+    return startedBatches == 0;
 }
 
 QString DocumentData::GetRedoText() const
