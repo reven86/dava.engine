@@ -19,6 +19,7 @@ After registration, UIComponent can be created through UIComponent::CreateByType
 UIComponent registration also introduces 'runtimeType' (just integer) for UIComponent. 
 'runtimeType' can be used for UIComponents management in UIControl along with its' Type. 'runtimeType' is typically used for optimization (for example, indeces in array). You cannot rely on actual 'runtimeType' value between launches of the application.
 */
+class UIComponent;
 class ComponentManager
 {
 public:
