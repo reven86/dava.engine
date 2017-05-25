@@ -6,7 +6,7 @@
 
 using namespace DAVA;
 
-class TestUIComponent : public UIBaseComponent<TestUIComponent>
+class TestUIComponent : public UIComponent
 {
 };
 
