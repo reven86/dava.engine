@@ -73,12 +73,6 @@ void NetworkTaskProcessor::StartNextTask()
         Q_ASSERT(reply != nullptr);
         connect(reply, &QNetworkReply::downloadProgress, this, &NetworkTaskProcessor::OnDownloadProgress);
 
-        //sometimes when windows PC go to sleep we got nullptr here with no reason
-        if (currentTask == nullptr)
-        {
-            return;
-        }
-
         currentTask->requests.push_back(reply);
     }
 }
