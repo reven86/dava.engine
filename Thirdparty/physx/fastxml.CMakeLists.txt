@@ -1,8 +1,9 @@
 set(NAME_MODULE PsFastXml)
 set(MODULE_TYPE STATIC)#INLINE STATIC DYNAMIC 
 
+get_filename_component(PhysXRoot "${CMAKE_CURRENT_SOURCE_DIR}/../../../" ABSOLUTE)
 set(HPP_FILES_RECURSE *.h *.hpp)
-set(CPP_FILES_RECURSE *.cpp)
+set(CPP_FILES ${PhysXRoot}/PxShared/src/fastxml/src/PsFastXml.cpp)
 
 set(DEBUG_POSTFIX "DEBUG")
 set(CHECKED_POSTFIX "CHECKED")

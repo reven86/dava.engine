@@ -33,6 +33,7 @@ include_directories("${PHYS_X_ROOT}/Source/GeomUtils/src/mesh")
 include_directories("${PHYS_X_ROOT}/Source/GeomUtils/src/hf")
 include_directories("${PHYS_X_ROOT}/Source/GeomUtils/src/pcm")
 include_directories("${PHYS_X_ROOT}/Source/GeomUtils/src/ccd")
+include_directories("${PHYS_X_ROOT}/Source/GeomUtils/src/sweep")
 include_directories("${PHYS_X_ROOT}/Source/GeomUtils/src")
 
 include_directories("${PHYS_X_ROOT}/../Externals/nvToolsExt/1/include")
