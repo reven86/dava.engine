@@ -4,6 +4,7 @@
 
 #include <Engine/Engine.h>
 #include <DeviceManager/DeviceManager.h>
+#include <UI/Render/UIDebugRenderComponent.h>
 
 using namespace DAVA;
 
