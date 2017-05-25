@@ -3,6 +3,7 @@
 #include "Render/Image/ImageSystem.h"
 #include "Time/SystemTimer.h"
 #include "Utils/UTF8Utils.h"
+#include "UI/Render/UIDebugRenderComponent.h"
 
 using namespace DAVA;
 
