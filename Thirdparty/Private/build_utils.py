@@ -662,15 +662,18 @@ def build_and_copy_libraries_linux_cmake(
         root_project_path,
         target,
         lib_name,
-        cmake_additional_args = []):
+        cmake_additional_args = [],
+        target_lib_subdir=''):
 
     build_folder = os.path.join(gen_folder_path, 'build_linux')
     cmake_generate_build_make(build_folder, source_folder_path, build_config.get_cmake_generator_linux(), target, cmake_additional_args)
 
     # Move built files into Libs/lib_CMake
     # TODO: update pathes after switching to new folders structure
+    source_dir = os.path.join(build_folder, target_lib_subdir)
     target_dir = os.path.join(root_project_path, 'Libs/lib_CMake/linux')
-    shutil.copyfile(os.path.join(build_folder, lib_name),
+
+    shutil.copyfile(os.path.join(source_dir, lib_name),
                     os.path.join(target_dir, lib_name))
     return build_folder
 
