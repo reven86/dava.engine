@@ -668,7 +668,14 @@ def build_and_copy_libraries_linux_cmake(
                     os.path.join(target_dir, lib_name))
     return build_folder
 
-def build_with_autotools(source_folder_path, configure_args, install_dir, env=None, configure_exec_name='configure', make_exec_name='make', postclean=True):
+def build_with_autotools(source_folder_path,
+                         configure_args,
+                         install_dir,
+                         env=None,
+                         configure_exec_name='configure',
+                         make_exec_name='make',
+                         postclean=True,
+                         optional_params=None):
     if isinstance(configure_exec_name, list):
         if sys.platform == 'win32':
             cmd = list(configure_exec_name)
@@ -686,6 +693,9 @@ def build_with_autotools(source_folder_path, configure_args, install_dir, env=No
         if not os.path.exists(install_dir):
             os.makedirs(install_dir)
         cmd.append('--prefix=' + install_dir)
+
+    if optional_params is not None:
+        cmd.append(optional_params)
 
     enable_shell = sys.platform == 'win32'
 
