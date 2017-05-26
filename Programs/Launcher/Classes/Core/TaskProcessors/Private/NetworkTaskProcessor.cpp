@@ -73,7 +73,12 @@ void NetworkTaskProcessor::StartNextTask()
         Q_ASSERT(reply != nullptr);
         connect(reply, &QNetworkReply::downloadProgress, this, &NetworkTaskProcessor::OnDownloadProgress);
 
-        currentTask->requests.push_back(reply);
+        //in some cases currentTask is empty
+        //as an example QNetworkReply can call finished() signal immidiately
+        if (currentTask != nullptr)
+        {
+            currentTask->requests.push_back(reply);
+        }
     }
 }
 

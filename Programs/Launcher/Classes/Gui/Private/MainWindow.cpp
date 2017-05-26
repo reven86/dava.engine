@@ -430,9 +430,9 @@ void MainWindow::OnTaskFinished(const BaseTask* task)
         AddText(error, "#aa0000");
     }
     BaseTask::eTaskType type = task->GetTaskType();
-    if (type == BaseTask::DOWNLOAD_TASK)
+    if (type == BaseTask::DOWNLOAD_TASK && error.contains("cancel", Qt::CaseInsensitive) == false)
     {
-        OnConnectedChanged(error.isEmpty() || error.contains("cancel", Qt::CaseInsensitive));
+        OnConnectedChanged(error.isEmpty());
     }
     if (type == BaseTask::DOWNLOAD_TASK || type == BaseTask::ZIP_TASK)
     {
