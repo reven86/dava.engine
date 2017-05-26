@@ -72,9 +72,9 @@ public:
         QtVBoxLayout* layout = new QtVBoxLayout(w);
 
         {
-            ControlDescriptorBuilder<ComboBoxCheckable::Fields> descriptor;
-            descriptor[ComboBoxCheckable::Fields::Value] = "value";
-            ComboBoxCheckable* comboBox = new ComboBoxCheckable(descriptor, GetAccessor(), reflectedModel);
+            ComboBoxCheckable::Params params(GetAccessor(), GetUI(), wndKey);
+            params.fields[ComboBoxCheckable::Fields::Value] = "value";
+            ComboBoxCheckable* comboBox = new ComboBoxCheckable(params, GetAccessor(), reflectedModel);
             comboBox->SetObjectName("ComboBoxCheckable");
             layout->AddControl(comboBox);
         }

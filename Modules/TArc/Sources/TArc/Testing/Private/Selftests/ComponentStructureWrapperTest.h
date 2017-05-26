@@ -7,7 +7,6 @@
 #include "TArc/Controls/PropertyPanel/BaseComponentValue.h"
 #include "TArc/Controls/PropertyPanel/Private/ComponentStructureWrapper.h"
 #include "TArc/Controls/PropertyPanel/PropertyPanelMeta.h"
-#include "TArc/Controls/PropertyPanel/StaticEditorDrawer.h"
 
 #include <Reflection/ReflectedMeta.h>
 #include <Reflection/ReflectionRegistrator.h>
@@ -48,7 +47,7 @@ public:
 
     void Add(const std::shared_ptr<DAVA::TArc::PropertyNode>& node)
     {
-        AddPropertyNode(node);
+        AddPropertyNode(node, DAVA::FastName());
     }
 
 protected:
@@ -63,10 +62,10 @@ protected:
         return true;
     }
 
-    DAVA::TArc::ControlProxy* CreateEditorWidget(QWidget* parent, const DAVA::Reflection& model, DAVA::TArc::DataWrappersProcessor* wrappersProcessor) const override
+    DAVA::TArc::ControlProxy* CreateEditorWidget(QWidget* parent, const DAVA::Reflection& model, DAVA::TArc::DataWrappersProcessor* wrappersProcessor) override
     {
-        DAVA::TArc::ControlDescriptorBuilder<DAVA::TArc::EmptyWidget::Fields> descr;
-        return new DAVA::TArc::EmptyWidget(descr, wrappersProcessor, model, parent);
+        DAVA::TArc::EmptyWidget::Params params(GetAccessor(), GetUI(), GetWindowKey());
+        return new DAVA::TArc::EmptyWidget(params, wrappersProcessor, model, parent);
     }
 
     DAVA_VIRTUAL_REFLECTION_IN_PLACE(DummyComponentValue, DAVA::TArc::BaseComponentValue)

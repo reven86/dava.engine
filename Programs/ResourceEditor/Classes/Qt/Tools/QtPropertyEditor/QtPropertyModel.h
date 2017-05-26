@@ -4,6 +4,8 @@
 #include "Base/Introspection.h"
 #include "QtPropertyData.h"
 
+#include <TArc/WindowSubSystem/QtTArcEvents.h>
+
 #include <QAbstractItemModel>
 #include <QEvent>
 
@@ -50,7 +52,7 @@ signals:
 protected:
     enum
     {
-        DataRefreshRequired = QEvent::User + 1
+        DataRefreshRequired = static_cast<DAVA::int32>(DAVA::TArc::EventsTable::End)
     };
 
     friend class QtPropertyData;

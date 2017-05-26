@@ -26,13 +26,7 @@ public:
         FieldCount
     };
 
-    struct Params
-    {
-        ContextAccessor* accessor = nullptr;
-        UI* ui = nullptr;
-        WindowKey wndKey = FastName("");
-        ControlDescriptorBuilder<Fields> fields;
-    };
+    DECLARE_CONTROL_PARAMS(Fields);
 
     ColorPickerButton(const Params& params, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent = nullptr);
     ColorPickerButton(const Params& params, ContextAccessor* accessor, Reflection model, QWidget* parent = nullptr);
@@ -45,10 +39,6 @@ private:
     void SetupControl();
 
     void ButtonReleased();
-
-    UI* ui = nullptr;
-    WindowKey wndKey;
-    ContextAccessor* contextAccessor = nullptr;
 
     const M::Range* rangeMeta = nullptr;
     Any cachedColor;

@@ -14,6 +14,7 @@ public:
 
 protected:
     void BeginBatch(const DAVA::String& text, DAVA::uint32 commandCount) override;
+    void ProduceCommand(const std::shared_ptr<DAVA::TArc::PropertyNode>& node, const DAVA::Any& newValue) override;
     void ProduceCommand(const DAVA::Reflection::Field& object, const DAVA::Any& newValue) override;
     void Exec(std::unique_ptr<DAVA::Command>&& command) override;
     void EndBatch() override;
@@ -27,7 +28,7 @@ private:
 class EntityChildCreator : public DAVA::TArc::ChildCreatorExtension
 {
 public:
-    void ExposeChildren(const std::shared_ptr<const DAVA::TArc::PropertyNode>& parent, DAVA::Vector<std::shared_ptr<DAVA::TArc::PropertyNode>>& children) const override;
+    void ExposeChildren(const std::shared_ptr<DAVA::TArc::PropertyNode>& parent, DAVA::Vector<std::shared_ptr<DAVA::TArc::PropertyNode>>& children) const override;
 };
 
 class EntityEditorCreator : public DAVA::TArc::EditorComponentExtension
