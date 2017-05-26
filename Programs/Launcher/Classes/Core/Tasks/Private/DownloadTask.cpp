@@ -38,3 +38,13 @@ const std::vector<QUrl>& DownloadTask::GetUrls() const
 {
     return urls;
 }
+
+bool DownloadTask::IsCancelled() const
+{
+    return isCancelled;
+}
+
+void DownloadTask::SetCancelled(bool cancelled)
+{
+    isCancelled = cancelled;
+}

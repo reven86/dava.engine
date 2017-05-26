@@ -21,8 +21,13 @@ public:
 
     const std::vector<QUrl>& GetUrls() const;
 
+    bool IsCancelled() const;
+    void SetCancelled(bool cancelled);
+
 protected:
     QString description;
     std::vector<QUrl> urls;
     std::vector<QByteArray> loadedData;
+
+    bool isCancelled = false;
 };

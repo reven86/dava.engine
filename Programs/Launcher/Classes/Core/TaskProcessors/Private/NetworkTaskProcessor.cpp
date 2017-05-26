@@ -39,6 +39,9 @@ void NetworkTaskProcessor::Terminate()
     {
         return;
     }
+
+    currentTask->task->SetCancelled(true);
+
     std::list<QNetworkReply*> requests = currentTask->requests;
     for (QNetworkReply* reply : requests)
     {
