@@ -17,7 +17,7 @@ class PackRequest : public DLCManager::IRequest
 {
 public:
     PackRequest(DLCManagerImpl& packManager_, const String& packName, Vector<uint32> fileIndexes_);
-    void CancelCurrentsDownloads();
+    void CancelCurrentDownloads();
     PackRequest(DLCManagerImpl& packManager_, const String& requestedPackName);
 
     ~PackRequest() override;
@@ -87,10 +87,10 @@ private:
 
     static void DeleteJustDownloadedFileAndStartAgain(FileRequest& fileRequest);
     void DisableRequestingAndFireSignalNoSpaceLeft(FileRequest& fileRequest) const;
-    void CheckLocalFileState(bool& callSignal, FileSystem* fs, FileRequest& fileRequest);
-    void CheckLoadingStatusOfFileRequest(bool& callSignal, FileRequest& fileRequest, DLCDownloader* dm, String dstPath);
-    void LoadingPackFileState(bool& callSignal, FileSystem* fs, FileRequest& fileRequest);
-    void CheckHaskState(bool& callSignal, FileRequest& fileRequest);
+    bool CheckLocalFileState(FileSystem* fs, FileRequest& fileRequest);
+    bool CheckLoadingStatusOfFileRequest(FileRequest& fileRequest, DLCDownloader* dm, const String& dstPath);
+    bool LoadingPackFileState(FileSystem* fs, FileRequest& fileRequest);
+    bool CheckHaskState(FileRequest& fileRequest);
     bool UpdateFileRequests();
 
     DLCManagerImpl* packManagerImpl = nullptr;

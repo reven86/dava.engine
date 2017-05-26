@@ -38,16 +38,16 @@ PackRequest& PackRequest::operator=(PackRequest&& other)
     return *this;
 }
 
-void PackRequest::CancelCurrentsDownloads()
+void PackRequest::CancelCurrentDownloads()
 {
-    DLCDownloader* dm = packManagerImpl->GetDownloader();
-    if (dm)
+    DLCDownloader* downloader = packManagerImpl->GetDownloader();
+    if (downloader)
     {
         for (FileRequest& r : requests)
         {
             if (r.task != nullptr)
             {
-                dm->RemoveTask(r.task);
+                downloader->RemoveTask(r.task);
                 r.task = nullptr;
                 r.status = LoadingPackFile; // to resume loading after update
             }
@@ -57,7 +57,7 @@ void PackRequest::CancelCurrentsDownloads()
 
 PackRequest::~PackRequest()
 {
-    CancelCurrentsDownloads();
+    CancelCurrentDownloads();
     packManagerImpl = nullptr;
     requests.clear();
     fileIndexes.clear();
@@ -73,7 +73,7 @@ void PackRequest::Start()
 
 void PackRequest::Stop()
 {
-    CancelCurrentsDownloads();
+    CancelCurrentDownloads();
 }
 
 const String& PackRequest::GetRequestedPackName() const
@@ -240,7 +240,7 @@ void PackRequest::InitializeFileRequest(const uint32 fileIndex_,
     fileRequest.sizeOfUncompressedFile = fileUncompressedSize_;
     fileRequest.fileIndex = fileIndex_;
     fileRequest.status = Wait;
-    fileRequest.task = 0;
+    fileRequest.task = nullptr;
     fileRequest.url = url_;
     fileRequest.downloadedFileSize = 0;
     fileRequest.compressionType = compressionType_;
@@ -268,7 +268,7 @@ void PackRequest::DisableRequestingAndFireSignalNoSpaceLeft(FileRequest& fileReq
     packManagerImpl->fileErrorOccured.Emit(fileRequest.localFile.GetAbsolutePathname().c_str(), errnoValue);
 }
 
-void PackRequest::CheckLocalFileState(bool& callSignal, FileSystem* fs, FileRequest& fileRequest)
+bool PackRequest::CheckLocalFileState(FileSystem* fs, FileRequest& fileRequest)
 {
     if (packManagerImpl->IsFileReady(fileRequest.fileIndex))
     {
@@ -279,23 +279,21 @@ void PackRequest::CheckLocalFileState(bool& callSignal, FileSystem* fs, FileRequ
             if (fileSize == fileRequest.sizeOfCompressedFile + sizeof(PackFormat::LitePack::Footer))
             {
                 fileRequest.downloadedFileSize = fileSize;
-                callSignal = true;
+                return true;
             }
-            else
-            {
-                // file exist but may be invalid so let's check it out
-                fileRequest.status = CheckHash;
-                callSignal = false;
-            }
+            // file exist but may be invalid so let's check it out
+            fileRequest.status = CheckHash;
+            return false;
         }
     }
     else
     {
         fileRequest.status = LoadingPackFile;
     }
+    return false;
 }
 
-void PackRequest::CheckLoadingStatusOfFileRequest(bool& callSignal, PackRequest::FileRequest& fileRequest, DLCDownloader* dm, String dstPath)
+bool PackRequest::CheckLoadingStatusOfFileRequest(FileRequest& fileRequest, DLCDownloader* dm, const String& dstPath)
 {
     DLCDownloader::TaskStatus status = dm->GetTaskStatus(fileRequest.task);
     {
@@ -308,7 +306,7 @@ void PackRequest::CheckLoadingStatusOfFileRequest(bool& callSignal, PackRequest:
             if (fileRequest.downloadedFileSize != status.sizeDownloaded)
             {
                 fileRequest.downloadedFileSize = status.sizeDownloaded;
-                callSignal = true;
+                return true;
             }
         }
         break;
@@ -324,47 +322,44 @@ void PackRequest::CheckLoadingStatusOfFileRequest(bool& callSignal, PackRequest:
                 fileRequest.task = nullptr;
                 fileRequest.downloadedFileSize = status.sizeDownloaded;
                 fileRequest.status = CheckHash;
-                callSignal = true;
+                return true;
             }
-            else
+
+            std::ostream& out = packManagerImpl->GetLog();
+
+            out << "can't download file: " << dstPath;
+
+            if (status.error.fileErrno != 0)
             {
-                std::ostream& out = packManagerImpl->GetLog();
-
-                out << "can't download file: " << dstPath;
-
-                if (status.error.fileErrno != 0)
-                {
-                    out << " I/O error: " << status.error.errStr << std::endl;
-                    DisableRequestingAndFireSignalNoSpaceLeft(fileRequest);
-                    callSignal = true;
-                    return;
-                }
-
-                if (status.error.httpCode >= 400)
-                {
-                    out << status << std::endl;
-                }
-
-                if (status.error.curlErr != 0)
-                {
-                    out << status << std::endl;
-                }
-
-                if (status.error.curlMErr != 0)
-                {
-                    out << status << std::endl;
-                }
-
-                DeleteJustDownloadedFileAndStartAgain(fileRequest);
-                callSignal = false;
+                out << " I/O error: " << status.error.errStr << std::endl;
+                DisableRequestingAndFireSignalNoSpaceLeft(fileRequest);
+                return true;
             }
+
+            if (status.error.httpCode >= 400)
+            {
+                out << status << std::endl;
+            }
+
+            if (status.error.curlErr != 0)
+            {
+                out << status << std::endl;
+            }
+
+            if (status.error.curlMErr != 0)
+            {
+                out << status << std::endl;
+            }
+
+            DeleteJustDownloadedFileAndStartAgain(fileRequest);
+            return false;
         }
-        break;
         }
     }
+    return false;
 }
 
-void PackRequest::LoadingPackFileState(bool& callSignal, FileSystem* fs, FileRequest& fileRequest)
+bool PackRequest::LoadingPackFileState(FileSystem* fs, FileRequest& fileRequest)
 {
     DLCDownloader* dm = packManagerImpl->GetDownloader();
     String dstPath = fileRequest.localFile.GetAbsolutePathname();
@@ -378,38 +373,34 @@ void PackRequest::LoadingPackFileState(bool& callSignal, FileSystem* fs, FileReq
             if (dirCreate == FileSystem::DIRECTORY_CANT_CREATE)
             {
                 DisableRequestingAndFireSignalNoSpaceLeft(fileRequest);
-                callSignal = true;
-                return;
+                return false;
             }
             ScopedPtr<File> f(File::Create(fileRequest.localFile, File::CREATE | File::WRITE));
             if (!f)
             {
                 DisableRequestingAndFireSignalNoSpaceLeft(fileRequest);
-                callSignal = true;
-                return;
+                return false;
             }
             f->Truncate(0);
             fileRequest.task = nullptr;
             fileRequest.status = CheckHash;
-            callSignal = true;
+            return true;
         }
-        else
+
+        DLCDownloader::Range range = DLCDownloader::Range(fileRequest.startLoadingPos, fileRequest.sizeOfCompressedFile);
+        fileRequest.task = dm->ResumeTask(fileRequest.url, dstPath, range);
+        if (nullptr == fileRequest.task)
         {
-            DLCDownloader::Range range = DLCDownloader::Range(fileRequest.startLoadingPos, fileRequest.sizeOfCompressedFile);
-            fileRequest.task = dm->ResumeTask(fileRequest.url, dstPath, range);
-            if (nullptr == fileRequest.task)
-            {
-                DAVA_THROW(Exception, "can't be, something very very wrong");
-            }
+            Logger::Error("can't create task: url: %s, dstPath: %s, range: %lld-%lld", fileRequest.url, dstPath.c_str(), range.size, range.offset);
+            fileRequest.status = Wait; // lets start all over again
         }
+        return false;
     }
-    else
-    {
-        CheckLoadingStatusOfFileRequest(callSignal, fileRequest, dm, dstPath);
-    }
+
+    return CheckLoadingStatusOfFileRequest(fileRequest, dm, dstPath);
 }
 
-void PackRequest::CheckHaskState(bool& callSignal, FileRequest& fileRequest)
+bool PackRequest::CheckHaskState(FileRequest& fileRequest)
 {
     uint32 fileCrc32 = CRC32::ForFile(fileRequest.localFile);
     if (fileCrc32 == fileRequest.hashFromMeta)
@@ -429,36 +420,35 @@ void PackRequest::CheckHaskState(bool& callSignal, FileRequest& fileRequest)
             {
                 // not enough space
                 DisableRequestingAndFireSignalNoSpaceLeft(fileRequest);
-                callSignal = false;
-                return;
+                return false;
             }
         }
 
         DVASSERT(fileRequest.downloadedFileSize == footer.sizeCompressed);
 
         fileRequest.downloadedFileSize += sizeof(footer);
-
         fileRequest.status = Ready;
-        callSignal = true;
 
         packManagerImpl->SetFileIsReady(fileRequest.fileIndex);
+
+        return true;
     }
-    else
-    {
-        // try download again
-        DeleteJustDownloadedFileAndStartAgain(fileRequest);
-        callSignal = false;
-    }
+
+    // try download again
+    DeleteJustDownloadedFileAndStartAgain(fileRequest);
+    return false;
 }
 
 bool PackRequest::UpdateFileRequests()
 {
-    bool callSignal = false;
+    // return true if at least one part file continue downloading
+    bool callUpdateSignal = false;
 
     FileSystem* fs = GetEngineContext()->fileSystem;
 
     for (FileRequest& fileRequest : requests)
     {
+        bool downloadedMore = false;
         switch (fileRequest.status)
         {
         case Wait:
@@ -468,17 +458,17 @@ bool PackRequest::UpdateFileRequests()
         }
         case CheckLocalFile:
         {
-            CheckLocalFileState(callSignal, fs, fileRequest);
+            downloadedMore = CheckLocalFileState(fs, fileRequest);
             break;
         }
         case LoadingPackFile:
         {
-            LoadingPackFileState(callSignal, fs, fileRequest);
+            downloadedMore = LoadingPackFileState(fs, fileRequest);
             break;
         }
         case CheckHash:
         {
-            CheckHaskState(callSignal, fileRequest);
+            downloadedMore = CheckHaskState(fileRequest);
             break;
         }
         case Ready:
@@ -486,10 +476,15 @@ bool PackRequest::UpdateFileRequests()
         case Error:
             break;
         } // end switch
+
+        if (!callUpdateSignal)
+        {
+            callUpdateSignal = downloadedMore;
+        }
     } // end for requests
 
     // call signal only once during update
-    return callSignal;
+    return callUpdateSignal;
 }
 
 } // end namespace DAVA

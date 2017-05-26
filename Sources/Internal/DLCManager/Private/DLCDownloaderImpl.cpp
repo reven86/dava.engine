@@ -1,6 +1,7 @@
 #include "DLCManager/Private/DLCDownloaderImpl.h"
 
 #include "DLC/Downloader/CurlDownloader.h"
+#include "Debug/Backtrace.h"
 
 #include "Logger/Logger.h"
 #include "FileSystem/File.h"
@@ -1072,7 +1073,7 @@ void DLCDownloaderImpl::CurlDeleteHandle(CURL* easy)
 
     DVASSERT(Thread::GetCurrentId() == downloadThreadId);
 
-    // Make sure that easy handle didn't returned already
+    // Make sure that easy handle hasn't been returned already
     DVASSERT(std::find(reusableHandles.begin(), reusableHandles.end(), easy) == reusableHandles.end());
 
     curl_easy_reset(easy);
@@ -1385,7 +1386,14 @@ void DLCDownloaderImpl::ProcessMessagesFromMulti()
             }
             catch (Exception& ex)
             {
-                Logger::Error("Exception: %s file: %s(%d) easyHandle: 0x%p", ex.file.c_str(), ex.what(), static_cast<int>(ex.line), easyHandle);
+                String backtrace = Debug::GetBacktraceString(ex.callstack);
+
+                Logger::Error("Exception what: %s file: %s(%d) easyHandle: %p\n%s",
+                              ex.what(),
+                              ex.file.c_str(),
+                              static_cast<int>(ex.line),
+                              easyHandle,
+                              backtrace.c_str());
             }
         }
     } while (curlMsg != nullptr);
