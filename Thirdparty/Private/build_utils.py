@@ -133,6 +133,12 @@ def build_make_target(output_folder_path, target):
 
 def copy_files(from_dir, to_dir, wildcard):
     print "Copying %s from %s to %s" % (wildcard, from_dir, to_dir)
+
+    # First create destination dir if it does not exist, else
+    # shutil.copy will copy all files into one with name 'to_dir'
+    if not os.path.exists(to_dir):
+        os.makedirs(to_dir)
+
     for file in glob.glob(from_dir+"/"+wildcard):
         shutil.copy(file, to_dir)
 
