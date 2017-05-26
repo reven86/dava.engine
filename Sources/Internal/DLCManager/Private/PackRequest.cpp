@@ -391,7 +391,7 @@ bool PackRequest::LoadingPackFileState(FileSystem* fs, FileRequest& fileRequest)
         fileRequest.task = dm->ResumeTask(fileRequest.url, dstPath, range);
         if (nullptr == fileRequest.task)
         {
-            Logger::Error("can't create task: url: %s, dstPath: %s, range: %lld-%lld", fileRequest.url, dstPath.c_str(), range.size, range.offset);
+            Logger::Error("can't create task: url: %s, dstPath: %s, range: %lld-%lld", fileRequest.url.c_str(), dstPath.c_str(), range.size, range.offset);
             fileRequest.status = Wait; // lets start all over again
         }
         return false;
