@@ -1,6 +1,7 @@
 import os
 import build_utils
 import build_config
+import shutil
 
 
 def get_supported_targets(platform):
@@ -147,3 +148,6 @@ def _build_linux(working_directory_path, root_project_path):
         ['--disable-shared', '--enable-static'],
         install_dir,
         env=env)
+
+    shutil.copyfile(os.path.join(install_dir, 'lib/libogg.a'),
+                    os.path.join(root_project_path, 'Libs/lib_CMake/linux/libogg.a'))
