@@ -300,10 +300,6 @@ bool FileManager::CreateFileFromRawData(const QByteArray& dataToWrite, const QSt
 
 void FileManager::SetFilesDirectory(const QString& newDirPath)
 {
-    //we still have a errors with existed temp directories, so lets make sure that those directories are removed
-    DeleteDirectory(GetTempDirectory());
-    DeleteDirectory(GetSelfUpdateTempDirectory());
-
     QString oldFilesDirectory = GetFilesDirectory();
     filesDirectory = QDir::fromNativeSeparators(newDirPath);
     if (!filesDirectory.endsWith("/"))

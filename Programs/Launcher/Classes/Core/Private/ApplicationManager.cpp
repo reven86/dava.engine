@@ -83,7 +83,16 @@ ApplicationManager::~ApplicationManager()
 
 void ApplicationManager::Start()
 {
+    //TODO: remove it on version 30
+    //this code used only to support version 27 and older
+    FileManager::DeleteDirectory(fileManager->GetLauncherDirectory() + "temp/");
+
+    //this code is used to cleanup temp directories after self-update
+    FileManager::DeleteDirectory(fileManager->GetTempDirectory());
+    FileManager::DeleteDirectory(fileManager->GetTempDirectory());
+
     mainWindow->show();
+
     Refresh();
 }
 
@@ -121,10 +130,6 @@ void ApplicationManager::OpenPreferencesEditor()
 
 void ApplicationManager::CheckUpdates()
 {
-    //TODO: remove it on version 30
-    //this code used only to support version 27 and older
-    FileManager::DeleteDirectory(fileManager->GetLauncherDirectory() + "temp/");
-
     //check self-update
     if (remoteConfig.GetLauncherVersion() != localConfig.GetLauncherVersion())
     {

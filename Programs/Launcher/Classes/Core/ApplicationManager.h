@@ -77,6 +77,8 @@ public:
     //this is a helper to get executable file name
     static QString GetLocalAppPath(const AppVersion* version, const QString& appID);
 
+    void CleanUpTempDirectories();
+
 private slots:
     void Refresh();
     void OpenPreferencesEditor();
