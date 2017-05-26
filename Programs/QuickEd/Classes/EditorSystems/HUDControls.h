@@ -3,6 +3,8 @@
 #include "UI/UIControl.h"
 #include "EditorSystemsManager.h"
 
+#include <Functional/TrackedObject.h>
+
 class VisibleValueProperty;
 
 class ControlContainer : public DAVA::UIControl
@@ -20,15 +22,16 @@ protected:
     bool systemVisible = true;
 };
 
-class HUDContainer : public ControlContainer
+class HUDContainer : public ControlContainer, public DAVA::TrackedObject
 {
 public:
     explicit HUDContainer(const ControlNode* node);
     void AddChild(ControlContainer* container);
     void InitFromGD(const DAVA::UIGeometricData& geometricData) override;
-    void Draw(const DAVA::UIGeometricData& geometricData) override;
 
 private:
+    void OnUpdate(DAVA::float32);
+
     ~HUDContainer() override = default;
     const ControlNode* node = nullptr;
     VisibleValueProperty* visibleProperty = nullptr;
