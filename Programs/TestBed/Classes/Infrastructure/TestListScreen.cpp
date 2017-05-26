@@ -2,6 +2,7 @@
 #include <Utils/UTF8Utils.h>
 
 #include <UI/Layouts/UISizePolicyComponent.h>
+#include <UI/Render/UIDebugRenderComponent.h>
 
 using namespace DAVA;
 
@@ -28,7 +29,7 @@ void TestListScreen::LoadResources()
 
     testsGrid = new UIList(Rect(), UIList::ORIENTATION_VERTICAL);
     testsGrid->SetDelegate(this);
-    testsGrid->SetDebugDraw(true);
+    testsGrid->GetOrCreateComponent<UIDebugRenderComponent>();
 
     UISizePolicyComponent* sizePolicy = testsGrid->GetOrCreateComponent<UISizePolicyComponent>();
     sizePolicy->SetHorizontalPolicy(UISizePolicyComponent::PERCENT_OF_PARENT);
@@ -66,7 +67,7 @@ UIListCell* TestListScreen::CellAtIndex(UIList* list, int32 index)
     if (c == nullptr)
     { //if cell of requested type isn't find in the store create new cell
         c = new UIListCell(Rect(), cellName);
-        c->SetDebugDraw(true);
+        c->GetOrCreateComponent<UIDebugRenderComponent>();
         {
             UISizePolicyComponent* sizePolicy = c->GetOrCreateComponent<UISizePolicyComponent>();
             sizePolicy->SetHorizontalPolicy(UISizePolicyComponent::PERCENT_OF_PARENT);
@@ -82,7 +83,7 @@ UIListCell* TestListScreen::CellAtIndex(UIList* list, int32 index)
 
         font->SetSize(static_cast<float32>(20));
         buttonText->SetFont(font);
-        buttonText->SetDebugDraw(true);
+        buttonText->GetOrCreateComponent<UIDebugRenderComponent>();
         {
             UISizePolicyComponent* sizePolicy = buttonText->GetOrCreateComponent<UISizePolicyComponent>();
             sizePolicy->SetHorizontalPolicy(UISizePolicyComponent::PERCENT_OF_PARENT);

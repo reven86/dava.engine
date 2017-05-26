@@ -33,22 +33,22 @@ bool NumberComponentValue<T>::IsValidValueToSet(const Any& newValue, const Any& 
 }
 
 template <typename T>
-ControlProxy* NumberComponentValue<T>::CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor) const
+ControlProxy* NumberComponentValue<T>::CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor)
 {
     const Type* t = Type::Instance<T>();
     if (t == Type::Instance<float32>() || t == Type::Instance<float64>())
     {
-        ControlDescriptorBuilder<DoubleSpinBox::Fields> descr;
-        descr[DoubleSpinBox::Fields::Value] = "value";
-        descr[DoubleSpinBox::Fields::IsReadOnly] = readOnlyFieldName;
-        return new DoubleSpinBox(descr, wrappersProcessor, model, parent);
+        DoubleSpinBox::Params params(GetAccessor(), GetUI(), GetWindowKey());
+        params.fields[DoubleSpinBox::Fields::Value] = "value";
+        params.fields[DoubleSpinBox::Fields::IsReadOnly] = readOnlyFieldName;
+        return new DoubleSpinBox(params, wrappersProcessor, model, parent);
     }
     else
     {
-        ControlDescriptorBuilder<IntSpinBox::Fields> descr;
-        descr[IntSpinBox::Fields::Value] = "value";
-        descr[IntSpinBox::Fields::IsReadOnly] = readOnlyFieldName;
-        return new IntSpinBox(descr, wrappersProcessor, model, parent);
+        IntSpinBox::Params params(GetAccessor(), GetUI(), GetWindowKey());
+        params.fields[IntSpinBox::Fields::Value] = "value";
+        params.fields[IntSpinBox::Fields::IsReadOnly] = readOnlyFieldName;
+        return new IntSpinBox(params, wrappersProcessor, model, parent);
     }
 }
 

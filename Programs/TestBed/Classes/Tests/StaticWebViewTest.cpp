@@ -3,6 +3,7 @@
 #include "Render/2D/Sprite.h"
 #include "UI/UIControlSystem.h"
 #include "UI/Focus/UIFocusComponent.h"
+#include "UI/Render/UIDebugRenderComponent.h"
 #include "Utils/Utils.h"
 
 namespace
@@ -85,7 +86,7 @@ void StaticWebViewTest::LoadResources()
     webView1 = new UIWebView(Rect(5, 5, 400, 300));
     webView1->SetVisibilityFlag(true);
     webView1->SetRenderToTexture(true);
-    webView1->SetDebugDraw(true);
+    webView1->GetOrCreateComponent<UIDebugRenderComponent>();
     webView1->SetDelegate(webviewDelegate);
     webView1->OpenURL("http://en.cppreference.com/");
     webView1->GetOrCreateComponent<UIFocusComponent>();
@@ -93,7 +94,7 @@ void StaticWebViewTest::LoadResources()
 
     webView2 = new UIWebView(Rect(410, 50, 400, 300));
     webView2->SetVisibilityFlag(true);
-    webView2->SetDebugDraw(true);
+    webView2->GetOrCreateComponent<UIDebugRenderComponent>();
     webView2->OpenFromBuffer(htmlCuteCats, "~res:/TestData/TransparentWebViewTest/");
     webView2->GetOrCreateComponent<UIFocusComponent>();
     AddControl(webView2);
@@ -101,7 +102,7 @@ void StaticWebViewTest::LoadResources()
     webView3 = new UIWebView(Rect(820, 70, 400, 300));
     webView3->SetVisibilityFlag(true);
     webView3->SetRenderToTexture(true);
-    webView3->SetDebugDraw(true);
+    webView3->GetOrCreateComponent<UIDebugRenderComponent>();
     webView3->SetDelegate(webviewDelegate);
     webView3->LoadHtmlString(htmlString);
     webView3->GetOrCreateComponent<UIFocusComponent>();
@@ -118,7 +119,7 @@ void StaticWebViewTest::LoadResources()
     ScopedPtr<Sprite> sprite(Sprite::CreateFromSourceFile(imgPath));
     UIControlBackground* overlapedImageBg = overlapedImage->GetOrCreateComponent<UIControlBackground>();
     overlapedImageBg->SetSprite(sprite, 0);
-    overlapedImage->SetDebugDraw(true);
+    overlapedImage->GetOrCreateComponent<UIDebugRenderComponent>();
     AddControl(overlapedImage);
 
     FilePath srcDir("~res:/TestData/TransparentWebViewTest/");
@@ -228,7 +229,7 @@ UIButton* StaticWebViewTest::CreateUIButton(Font* font, const Rect& rect, const 
     button->SetStateFont(0xFF, font);
     button->SetStateText(0xFF, str);
     button->SetStateFontColor(0xFF, Color::White);
-    button->SetDebugDraw(true);
+    button->GetOrCreateComponent<UIDebugRenderComponent>();
     button->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, targetFunction));
     AddControl(button);
     return button;

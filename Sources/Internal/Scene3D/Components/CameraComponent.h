@@ -34,6 +34,6 @@ public:
                          PROPERTY("camera", "Camera", GetCamera, SetCamera, I_SAVE | I_VIEW | I_EDIT)
                          );
 
-    DAVA_VIRTUAL_REFLECTION(CameraComponent);
+    DAVA_VIRTUAL_REFLECTION(CameraComponent, Component);
 };
 }

@@ -16,7 +16,7 @@ namespace ComponentExtensionsDetail
 class RemoveComponentProducer : public DAVA::M::CommandProducer
 {
 public:
-    bool IsApplyable(const DAVA::Reflection& field) const override
+    bool IsApplyable(const std::shared_ptr<DAVA::TArc::PropertyNode>& node) const override
     {
         return true;
     }
@@ -31,9 +31,9 @@ public:
         return info;
     }
 
-    std::unique_ptr<DAVA::Command> CreateCommand(const DAVA::Reflection& field, const Params& params) const override
+    std::unique_ptr<DAVA::Command> CreateCommand(const std::shared_ptr<DAVA::TArc::PropertyNode>& node, const Params& params) const override
     {
-        DAVA::Component* component = *field.GetValueObject().GetPtr<DAVA::Component*>();
+        DAVA::Component* component = node->field.ref.GetValueObject().GetPtr<DAVA::Component>();
         DAVA::Entity* entity = component->GetEntity();
         return std::unique_ptr<DAVA::Command>(new RemoveComponentCommand(entity, component));
     }
@@ -42,7 +42,7 @@ public:
 class ActionsEditProducer : public DAVA::M::CommandProducer
 {
 public:
-    bool IsApplyable(const DAVA::Reflection& field) const override
+    bool IsApplyable(const std::shared_ptr<DAVA::TArc::PropertyNode>& node) const override
     {
         return true;
     }
@@ -62,12 +62,12 @@ public:
         return info;
     }
 
-    std::unique_ptr<DAVA::Command> CreateCommand(const DAVA::Reflection& field, const Params& params) const override
+    std::unique_ptr<DAVA::Command> CreateCommand(const std::shared_ptr<DAVA::TArc::PropertyNode>& node, const Params& params) const override
     {
         using namespace DAVA;
         using namespace TArc;
 
-        Component* component = *field.GetValueObject().GetPtr<Component*>();
+        Component* component = node->field.ref.GetValueObject().GetPtr<Component>();
         ActionComponent* actionComponent = DynamicTypeCheck<ActionComponent*>(component);
         Entity* entity = component->GetEntity();
 
@@ -90,7 +90,7 @@ public:
 class SoundsEditProducer : public DAVA::M::CommandProducer
 {
 public:
-    bool IsApplyable(const DAVA::Reflection& field) const override
+    bool IsApplyable(const std::shared_ptr<DAVA::TArc::PropertyNode>& node) const override
     {
         return true;
     }
@@ -110,12 +110,12 @@ public:
         return info;
     }
 
-    std::unique_ptr<DAVA::Command> CreateCommand(const DAVA::Reflection& field, const Params& params) const override
+    std::unique_ptr<DAVA::Command> CreateCommand(const std::shared_ptr<DAVA::TArc::PropertyNode>& node, const Params& params) const override
     {
         using namespace DAVA;
         using namespace TArc;
 
-        Component* component = *field.GetValueObject().GetPtr<Component*>();
+        Component* component = node->field.ref.GetValueObject().GetPtr<Component>();
         SoundComponent* soundComponent = DynamicTypeCheck<SoundComponent*>(component);
         Entity* entity = component->GetEntity();
 
@@ -133,7 +133,7 @@ public:
 class TriggerWaveProducer : public DAVA::M::CommandProducer
 {
 public:
-    bool IsApplyable(const DAVA::Reflection& field) const override
+    bool IsApplyable(const std::shared_ptr<DAVA::TArc::PropertyNode>& node) const override
     {
         return true;
     }
@@ -153,12 +153,12 @@ public:
         return info;
     }
 
-    std::unique_ptr<DAVA::Command> CreateCommand(const DAVA::Reflection& field, const Params& params) const override
+    std::unique_ptr<DAVA::Command> CreateCommand(const std::shared_ptr<DAVA::TArc::PropertyNode>& node, const Params& params) const override
     {
         using namespace DAVA;
         using namespace TArc;
 
-        Component* component = *field.GetValueObject().GetPtr<Component*>();
+        Component* component = node->field.ref.GetValueObject().GetPtr<Component>();
         WaveComponent* waveComponent = DynamicTypeCheck<WaveComponent*>(component);
         waveComponent->Trigger();
 
