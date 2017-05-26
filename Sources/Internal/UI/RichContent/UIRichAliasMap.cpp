@@ -46,19 +46,19 @@ private:
 
 void UIRichAliasMap::PutAlias(const Alias& alias)
 {
-    aliases[alias.alias] = alias;
+    aliases.push_back(alias);
     asStringDirty = true;
 }
 
 void UIRichAliasMap::PutAlias(const String& alias, const String& tag, const Attributes& attributes)
 {
-    aliases[alias] = Alias{ alias, tag, attributes };
+    aliases.push_back(Alias{ alias, tag, attributes });
     asStringDirty = true;
 }
 
 void UIRichAliasMap::PutAlias(const String& alias, const String& tag)
 {
-    aliases[alias] = Alias{ alias, tag };
+    aliases.push_back(Alias{ alias, tag });
     asStringDirty = true;
 }
 
@@ -78,12 +78,18 @@ void UIRichAliasMap::PutAliasFromXml(const String& alias, const String& xmlSrc)
 
 bool UIRichAliasMap::HasAlias(const String& alias) const
 {
-    return aliases.find(alias) != aliases.end();
+    return std::find_if(aliases.begin(), aliases.end(), [&alias](const Alias& a) { return a.alias == alias; }) != aliases.end();
 }
 
 const UIRichAliasMap::Alias& UIRichAliasMap::GetAlias(const String& alias) const
 {
-    return aliases.at(alias);
+    auto it = std::find_if(aliases.begin(), aliases.end(), [&alias](const Alias& a) { return a.alias == alias; });
+    if (it != aliases.end())
+    {
+        return *it;
+    }
+    static const UIRichAliasMap::Alias EMPTY_ALIAS;
+    return EMPTY_ALIAS;
 }
 
 uint32 UIRichAliasMap::Count() const
@@ -93,7 +99,7 @@ uint32 UIRichAliasMap::Count() const
 
 void UIRichAliasMap::RemoveAlias(const String& alias)
 {
-    aliases.erase(alias);
+    aliases.erase(std::remove_if(aliases.begin(), aliases.end(), [&alias](const Alias& a) { return a.alias == alias; }), aliases.end());
     asStringDirty = true;
 }
 
@@ -108,10 +114,8 @@ const String& UIRichAliasMap::AsString()
     if (asStringDirty)
     {
         asStringTemp.clear();
-        for (const auto& pair : aliases)
+        for (const Alias& alias : aliases)
         {
-            const Alias& alias = pair.second;
-
             asStringTemp += alias.alias + ",<" + alias.tag;
             for (const auto& pair : alias.attributes)
             {
@@ -148,7 +152,7 @@ void UIRichAliasMap::FromString(const String& aliases)
 
 bool UIRichAliasMap::operator==(const UIRichAliasMap& b) const
 {
-    const auto pred = [](const std::pair<String, Alias>& a, const std::pair<String, Alias>& b) { return (a == b); };
+    const auto pred = [](const Alias& a, const Alias& b) { return (a == b); };
 
     return (aliases.size() == b.aliases.size() &&
             std::equal(aliases.begin(), aliases.end(), b.aliases.begin(), pred));
@@ -161,7 +165,7 @@ bool UIRichAliasMap::operator!=(const UIRichAliasMap& b) const
 
 bool UIRichAliasMap::Alias::operator==(const Alias& b) const
 {
-    const auto pred = [](const std::pair<String, String>& a, const std::pair<String, String>& b) { return (a == b); };
+    const auto pred = [](const Attributes::value_type& a, const Attributes::value_type& b) { return (a == b); };
 
     return (alias == b.alias &&
             tag == b.tag &&

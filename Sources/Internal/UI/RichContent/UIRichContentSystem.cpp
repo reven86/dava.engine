@@ -120,9 +120,9 @@ public:
     void OnElementStarted(const String& elementName, const String& namespaceURI, const String& qualifedName, const Map<String, String>& attributes) override
     {
         const UIRichAliasMap& aliases = component->GetAliases();
-        if (aliases.HasAlias(elementName))
+        const UIRichAliasMap::Alias& alias = aliases.GetAlias(elementName);
+        if (!alias.tag.empty())
         {
-            const UIRichAliasMap::Alias& alias = aliases.GetAlias(elementName);
             ProcessTagBegin(alias.tag, alias.attributes);
         }
         else
@@ -134,9 +134,9 @@ public:
     void OnElementEnded(const String& elementName, const String& namespaceURI, const String& qualifedName) override
     {
         const UIRichAliasMap& aliases = component->GetAliases();
-        if (aliases.HasAlias(elementName))
+        const UIRichAliasMap::Alias& alias = aliases.GetAlias(elementName);
+        if (!alias.tag.empty())
         {
-            const UIRichAliasMap::Alias& alias = aliases.GetAlias(elementName);
             ProcessTagEnd(alias.tag);
         }
         else
