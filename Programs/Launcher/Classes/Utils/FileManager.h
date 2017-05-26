@@ -35,6 +35,8 @@ public:
 
     QString GetLauncherDirectory() const;
 
+    bool IsInQuarantine() const;
+
     static QString GetFileNameFromURL(const QString& url);
     static QString GetDocumentsDirectory();
     static bool DeleteDirectory(const QString& path);
@@ -55,4 +57,7 @@ private:
     EntireList CreateEntireList(const QString& pathOut, const QString& pathIn, ErrorHolder* result) const;
 
     QString filesDirectory;
+
+    QString launcherDirectory;
+    bool isInQuarantine = false;
 };

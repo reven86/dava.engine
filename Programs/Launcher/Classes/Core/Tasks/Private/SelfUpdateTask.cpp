@@ -23,6 +23,14 @@ QString SelfUpdateTask::GetDescription() const
 
 void SelfUpdateTask::Run()
 {
+    FileManager* fileManager = appManager->GetFileManager();
+    if (fileManager->IsInQuarantine())
+    {
+        SetError(QObject::tr("Launcher is in quarantine and can not be updated! Move it from Downloads folder, please!"));
+        emit Finished();
+        return;
+    }
+
     QString description = QObject::tr("Loading new launcher");
     std::unique_ptr<BaseTask> task = appManager->CreateTask<DownloadTask>(description, url);
     appManager->AddTaskWithNotifier(std::move(task), notifier);
@@ -38,6 +46,7 @@ void SelfUpdateTask::OnFinished(const BaseTask* task)
     if (task->HasError())
     {
         emit Finished();
+        return;
     }
     else
     {

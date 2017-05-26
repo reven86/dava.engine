@@ -85,8 +85,19 @@ QString FileManager::GetDocumentsDirectory()
 FileManager::FileManager(QObject* parent /*= nullptr*/)
     : QObject(parent)
 {
+    //by default we need to use launcher directory, because MoveFiles works only between single hard drive
+    //but on os x we can start application in temp directory. In this case we need to use filesDirectory
+    launcherDirectory = QtHelpers::GetApplicationDirPath();
+#ifdef Q_OS_MAC
+    if (launcherDirectory.contains("AppTranslocation"))
+    {
+        launcherDirectory = GetDocumentsDirectory();
+        isInQuarantine = true;
+    }
+#endif //Q_OS_MAC
+
     //init dir with default value
-    filesDirectory = GetLauncherDirectory();
+    filesDirectory = launcherDirectory;
 }
 
 QString FileManager::GetBaseAppsDirectory() const
@@ -222,6 +233,10 @@ bool FileManager::MoveLauncherRecursively(const QString& pathOut, const QString&
     EntireList entryList = CreateEntireList(pathOut, pathIn, result);
     if (entryList.isEmpty())
     {
+        if (result->HasError() == false)
+        {
+            result->SetError(QObject::tr("Can not move launcher files: no files found in path %1").arg(pathOut));
+        }
         return false;
     }
     bool success = true;
@@ -231,8 +246,8 @@ bool FileManager::MoveLauncherRecursively(const QString& pathOut, const QString&
         if (moveResult == false)
         {
             result->SetError(QObject::tr("Can not move entry %1 to %2").arg(entry.first.absoluteFilePath()).arg(entry.second));
+            success = false;
         }
-        success &= moveResult;
     }
     return success;
 }
@@ -355,14 +370,10 @@ bool FileManager::MoveFileWithMakePath(const QString& currentPath, const QString
 
 QString FileManager::GetLauncherDirectory() const
 {
-    //by default we need to use launcher directory, because MoveFiles works only between single hard drive
-    //but on os x we can start application in temp directory. In this case we need to use filesDirectory
-    QString launcherDirectory = QtHelpers::GetApplicationDirPath();
-#ifdef Q_OS_MAC
-    if (launcherDirectory.contains("AppTranslocation"))
-    {
-        launcherDirectory = GetDocumentsDirectory();
-    }
-#endif //Q_OS_MAC
     return launcherDirectory;
+}
+
+bool FileManager::IsInQuarantine() const
+{
+    return isInQuarantine;
 }

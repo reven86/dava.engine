@@ -40,7 +40,6 @@ void ZipTaskProcessor::AddTask(std::unique_ptr<BaseTask>&& task, Notifier notifi
     if (QFile::exists(processAddr) == false)
     {
         currentTaskParams->task->SetError(QObject::tr("Archiver tool was not found. Please, reinstall application"));
-        return;
     }
     else
     {
@@ -48,13 +47,17 @@ void ZipTaskProcessor::AddTask(std::unique_ptr<BaseTask>&& task, Notifier notifi
         if (archivePath.endsWith(".zip") == false)
         {
             currentTaskParams->task->SetError(QObject::tr("Required file is not a zip archive"));
-            return;
         }
         else if (QFile::exists(archivePath) == false)
         {
             currentTaskParams->task->SetError(QObject::tr("Required archive doesn't exists"));
-            return;
         }
+    }
+
+    if (currentTaskParams->task->HasError())
+    {
+        currentTaskParams = nullptr;
+        return;
     }
 
     connect(currentTaskParams->process, &QProcess::readyReadStandardOutput, this, &ZipTaskProcessor::OnReadyReadStandardOutput);
