@@ -273,12 +273,7 @@ bool FileSystem::DeleteFile(const FilePath& filePath)
     DVASSERT(filePath.GetType() != FilePath::PATH_IN_RESOURCES);
 
     // function unlink return 0 on success, -1 on error
-    const auto& fileName = filePath.GetAbsolutePathname();
-
-#if defined(__DAVAENGINE_DEBUG__DISABLE_FOR_NOW)
-    String backTrace = Debug::GetBacktraceString();
-    Logger::Debug("DeleteFile backtrace(%s):\n%s", fileName.c_str(), backTrace.c_str());
-#endif
+    String fileName = filePath.GetAbsolutePathname();
 
     int res = FileAPI::RemoveFile(fileName);
     if (res == 0)
@@ -518,7 +513,7 @@ bool FileSystem::IsFile(const FilePath& pathToCheck) const
         return true;
     }
 
-    nativePath += ".dvpl";
+    nativePath += extDvpl;
 
     if (FileAPI::IsRegularFile(nativePath))
     {

@@ -1215,7 +1215,7 @@ void DLCManagerImpl::RecursiveScan(const FilePath& baseDir, const FilePath& dir,
         }
         else
         {
-            if (path.GetExtension() == ".dvpl")
+            if (path.GetExtension() == extDvpl)
             {
                 LocalFileInfo info;
                 info.relativeName = path.GetRelativePathname(baseDir);

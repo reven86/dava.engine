@@ -29,6 +29,8 @@
 
 namespace DAVA
 {
+const String extDvpl(".dvpl");
+
 File::~File()
 {
     // Though File object is created through Create methods returning nullptr on error
@@ -95,7 +97,7 @@ File* File::Create(const FilePath& filename, uint32 attributes)
 
     if (!(attributes & (WRITE | CREATE | APPEND)))
     {
-        FilePath compressedFile = filename + ".dvpl";
+        FilePath compressedFile = filename + extDvpl;
         if (FileAPI::IsRegularFile(compressedFile.GetAbsolutePathname()))
         {
             result = CompressedCreate(compressedFile, attributes);

@@ -7,6 +7,8 @@
 namespace DAVA
 {
 class FilePath;
+
+extern const String extDvpl;
 /**
 	\ingroup filesystem
 	\brief class to work with file on disk

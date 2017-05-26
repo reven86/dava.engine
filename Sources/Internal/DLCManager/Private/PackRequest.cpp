@@ -233,7 +233,7 @@ void PackRequest::InitializeFileRequest(const uint32 fileIndex_,
                                         const Compressor::Type compressionType_,
                                         FileRequest& fileRequest)
 {
-    fileRequest.localFile = fileName_ + ".dvpl";
+    fileRequest.localFile = fileName_ + extDvpl;
     fileRequest.hashFromMeta = hash_;
     fileRequest.startLoadingPos = startLoadingPos_;
     fileRequest.sizeOfCompressedFile = fileComressedSize_;
