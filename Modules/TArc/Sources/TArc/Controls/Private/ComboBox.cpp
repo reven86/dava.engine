@@ -13,14 +13,14 @@ namespace DAVA
 {
 namespace TArc
 {
-ComboBox::ComboBox(const ControlDescriptorBuilder<Fields>& fields, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent)
-    : ControlProxyImpl<QComboBox>(ControlDescriptor(fields), wrappersProcessor, model, parent)
+ComboBox::ComboBox(const Params& params, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent)
+    : ControlProxyImpl<QComboBox>(params, ControlDescriptor(params.fields), wrappersProcessor, model, parent)
 {
     SetupControl();
 }
 
-ComboBox::ComboBox(const ControlDescriptorBuilder<Fields>& fields, ContextAccessor* accessor, Reflection model, QWidget* parent)
-    : ControlProxyImpl<QComboBox>(ControlDescriptor(fields), accessor, model, parent)
+ComboBox::ComboBox(const Params& params, ContextAccessor* accessor, Reflection model, QWidget* parent)
+    : ControlProxyImpl<QComboBox>(params, ControlDescriptor(params.fields), accessor, model, parent)
 {
     SetupControl();
 }

@@ -62,8 +62,10 @@ public:
         OperationInvoker* invoker = nullptr;
         UI* ui = nullptr;
         FieldDescriptor objectsField;
+        FieldDescriptor developerModeField;
         String settingsNodeName;
         std::weak_ptr<Updater> updater;
+        bool isInDevMode = false;
     };
 
     PropertiesView(const Params& params);
@@ -86,6 +88,12 @@ private:
     eViewMode GetViewMode() const;
     void SetViewMode(eViewMode mode);
 
+    bool IsInDeveloperMode() const;
+    void SetDeveloperMode(bool isDevMode);
+
+    void UpdateViewRootIndex();
+    void OnCurrentChanged(const QModelIndex& index, const QModelIndex& prev);
+
 private:
     FieldBinder binder;
     Params params;
@@ -94,6 +102,11 @@ private:
     std::unique_ptr<ReflectedPropertyModel> model;
     QtConnections connections;
     bool isExpandUpdate = false;
+
+    Vector<FastName> currentIndexPath;
+    bool isModelUpdate = false;
+
+    eViewMode viewMode = VIEW_MODE_NORMAL;
 
     DAVA_REFLECTION(PropertiesView);
 };

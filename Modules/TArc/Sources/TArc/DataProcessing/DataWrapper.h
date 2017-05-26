@@ -53,6 +53,8 @@ private:
     DataWrapper(const ReflectedType* type);
     DataWrapper(const DataAccessor& accessor);
 
+    void SetDebugName(const String& name);
+
     void SetContext(DataContext* context);
     void ClearListener(DataListener* listenerForCheck);
 

@@ -1,11 +1,12 @@
 #pragma once
 
-#include "Concurrency/Thread.h"
-#include "Concurrency/Mutex.h"
+#include <Concurrency/Thread.h>
+#include <Concurrency/Mutex.h>
 
-#include "Functional/Function.h"
+#include <Functional/Function.h>
 
-#include "Base/BaseTypes.h"
+#include <Base/BaseTypes.h>
+#include <Logger/Logger.h>
 
 namespace DAVA
 {
@@ -44,11 +45,22 @@ public:
 private:
     friend class ObjectsPoolTest;
     static const size_t INVALID_INDEX;
+
+    struct ObjectMemoryTraits
+    {
+        enum : size_t
+        {
+            ObjectSize = sizeof(T),
+            VoidSize = sizeof(void*),
+            Count = static_cast<size_t>((ObjectSize + VoidSize - 1) / static_cast<double>(VoidSize))
+        };
+    };
+
     struct ObjectNode
     {
         size_t nodeGeneration;
         size_t nextIndex;
-        T object;
+        Array<void*, ObjectMemoryTraits::Count> object;
     };
 
     struct PoolNode
@@ -88,7 +100,7 @@ private:
     PoolNode* AllocateNewBatch();
 
     const size_t batchSize;
-    Vector<PoolNode> objectBatches;
+    List<PoolNode> objectBatches;
     TLockStrategy lockStrategy;
 };
 
@@ -125,7 +137,6 @@ ObjectsPool<T, TLockStrategy>::ObjectsPool(size_t batchSize_, size_t initialBatc
     : batchSize(batchSize_)
 {
     DVASSERT(initialBatchCount > 0);
-    objectBatches.reserve(initialBatchCount);
 }
 
 template <typename T, typename TLockStrategy>
@@ -145,6 +156,7 @@ std::shared_ptr<T> ObjectsPool<T, TLockStrategy>::RequestObject()
     if (poolNode == nullptr)
     {
         poolNode = AllocateNewBatch();
+        Logger::FrameworkDebug("ObjectsPool: allocate new batch");
     }
 
     ObjectNode* result = poolNode->batchHead;
@@ -155,8 +167,9 @@ std::shared_ptr<T> ObjectsPool<T, TLockStrategy>::RequestObject()
         nextObject = poolNode->batchStart + result->nextIndex;
     }
     poolNode->batchHead = nextObject;
+    new (result->object.data()) T();
 
-    return std::shared_ptr<T>(&result->object, MakeFunction(this, &ObjectsPool<T, TLockStrategy>::ReleaseObject));
+    return std::shared_ptr<T>(reinterpret_cast<T*>(result->object.data()), MakeFunction(this, &ObjectsPool<T, TLockStrategy>::ReleaseObject));
 }
 
 template <typename T, typename TLockStrategy>
@@ -165,10 +178,11 @@ void ObjectsPool<T, TLockStrategy>::ReleaseObject(T* object)
     LockGuard guard(lockStrategy);
     DVASSERT(IsOurMemory(object));
     ObjectNode* objectNode = reinterpret_cast<ObjectNode*>(reinterpret_cast<uint8_t*>(object) - 2 * sizeof(size_t));
+    object->~T();
     size_t generation = objectNode->nodeGeneration;
     DVASSERT(generation < objectBatches.size());
 
-    PoolNode& poolNode = objectBatches[generation];
+    PoolNode& poolNode = *std::next(objectBatches.begin(), generation);
     if (poolNode.batchHead == nullptr)
     {
         objectNode->nextIndex = INVALID_INDEX;

@@ -5,19 +5,18 @@
 
 #include <QLineEdit>
 #include <QtEvents>
-#include <QToolTip>
 
 namespace DAVA
 {
 namespace TArc
 {
-IntSpinBox::IntSpinBox(const ControlDescriptorBuilder<Fields>& fields, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent)
-    : TBase(ControlDescriptor(fields), wrappersProcessor, model, parent)
+IntSpinBox::IntSpinBox(const Params& params, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent)
+    : TBase(params, ControlDescriptor(params.fields), wrappersProcessor, model, parent)
 {
 }
 
-IntSpinBox::IntSpinBox(const ControlDescriptorBuilder<Fields>& fields, ContextAccessor* accessor, Reflection model, QWidget* parent)
-    : TBase(ControlDescriptor(fields), accessor, model, parent)
+IntSpinBox::IntSpinBox(const Params& params, ContextAccessor* accessor, Reflection model, QWidget* parent)
+    : TBase(params, ControlDescriptor(params.fields), accessor, model, parent)
 {
 }
 
@@ -50,18 +49,6 @@ QValidator::State IntSpinBox::TypeSpecificValidate(const QString& input) const
         if (input.size() == 1)
         {
             return QValidator::Intermediate;
-        }
-
-        if (input[1].digitValue() == 0)
-        {
-            return QValidator::Invalid;
-        }
-    }
-    else
-    {
-        if (input.size() >= 2 && input[1].digitValue() == 0)
-        {
-            return QValidator::Invalid;
         }
     }
 

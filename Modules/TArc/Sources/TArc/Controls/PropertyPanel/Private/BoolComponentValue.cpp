@@ -1,9 +1,12 @@
 #include "TArc/Controls/PropertyPanel/Private/BoolComponentValue.h"
 #include "TArc/Controls/CheckBox.h"
 #include "TArc/Controls/PropertyPanel/PropertyModelExtensions.h"
+#include "TArc/Controls/CommonStrings.h"
 
 #include <Reflection/ReflectionRegistrator.h>
 #include <Reflection/ReflectedMeta.h>
+
+#include <QDebug>
 
 namespace DAVA
 {
@@ -31,13 +34,13 @@ bool BoolComponentValue::IsValidValueToSet(const Any& newValue, const Any& curre
     return newCheckedState != Qt::PartiallyChecked && newCheckedState != currentCheckedState;
 }
 
-ControlProxy* BoolComponentValue::CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor) const
+ControlProxy* BoolComponentValue::CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor)
 {
-    ControlDescriptorBuilder<CheckBox::Fields> descr;
-    descr[CheckBox::Fields::Checked] = "bool";
-    descr[CheckBox::Fields::TextHint] = "textHint";
-    descr[CheckBox::Fields::IsReadOnly] = readOnlyFieldName;
-    return new CheckBox(descr, wrappersProcessor, model, parent);
+    CheckBox::Params params(GetAccessor(), GetUI(), GetWindowKey());
+    params.fields[CheckBox::Fields::Checked] = "bool";
+    params.fields[CheckBox::Fields::TextHint] = "textHint";
+    params.fields[CheckBox::Fields::IsReadOnly] = readOnlyFieldName;
+    return new CheckBox(params, wrappersProcessor, model, parent);
 }
 
 String BoolComponentValue::GetTextHint() const
@@ -50,7 +53,7 @@ String BoolComponentValue::GetTextHint() const
         Qt::CheckState state = GetValue().Cast<Qt::CheckState>();
         if (state == Qt::PartiallyChecked)
         {
-            result = "< multiple values >";
+            result = MultipleValuesString;
         }
         else
         {
