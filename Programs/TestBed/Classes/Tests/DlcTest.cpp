@@ -7,6 +7,7 @@
 #include "UI/Focus/UIFocusComponent.h"
 #include "Utils/StringUtils.h"
 #include "UI/Update/UIUpdateComponent.h"
+#include "UI/Render/UIDebugRenderComponent.h"
 
 #if defined(__DAVAENGINE_ANDROID__)
 #include "Platform/DeviceInfo.h"

@@ -1,5 +1,6 @@
 #include "Tests/MultilineTest.h"
 #include "UI/Focus/UIFocusComponent.h"
+#include "UI/Render/UIDebugRenderComponent.h"
 
 using namespace DAVA;
 

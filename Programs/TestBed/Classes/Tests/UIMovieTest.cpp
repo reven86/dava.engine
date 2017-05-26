@@ -1,6 +1,7 @@
 #include "Tests/UIMovieTest.h"
 #include "Engine/Engine.h"
 #include "UI/Update/UIUpdateComponent.h"
+#include "UI/Render/UIDebugRenderComponent.h"
 
 namespace
 {

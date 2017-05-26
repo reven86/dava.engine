@@ -3,6 +3,7 @@
 #include "Render/2D/Sprite.h"
 #include "UI/UIControlSystem.h"
 #include "UI/Focus/UIFocusComponent.h"
+#include "UI/Render/UIDebugRenderComponent.h"
 #include "Utils/Utils.h"
 
 namespace

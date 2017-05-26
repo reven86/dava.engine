@@ -2,6 +2,7 @@
 #include <Utils/UTF8Utils.h>
 
 #include <UI/Layouts/UISizePolicyComponent.h>
+#include <UI/Render/UIDebugRenderComponent.h>
 
 using namespace DAVA;
 

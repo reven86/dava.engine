@@ -1,6 +1,7 @@
 #include <functional>
 #include <time.h>
 #include "Tests/FunctionSignalTest.h"
+#include "UI/Render/UIDebugRenderComponent.h"
 
 using namespace DAVA;
 

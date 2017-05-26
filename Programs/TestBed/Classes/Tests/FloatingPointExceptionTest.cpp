@@ -1,4 +1,5 @@
 #include "Tests/FloatingPointExceptionTest.h"
+#include "UI/Render/UIDebugRenderComponent.h"
 
 #include <numeric>
 

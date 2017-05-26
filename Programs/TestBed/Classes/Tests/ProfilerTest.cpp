@@ -4,6 +4,7 @@
 #include "UI/UIStaticText.h"
 #include "UI/UIButton.h"
 #include "UI/UIControlSystem.h"
+#include "UI/Render/UIDebugRenderComponent.h"
 #include "Render/2D/Font.h"
 #include "Scene3D/Scene.h"
 #include "Debug/ProfilerOverlay.h"
