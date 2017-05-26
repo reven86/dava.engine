@@ -1,6 +1,7 @@
 #include "Tests/FontTest.h"
 
 #include <UI/Focus/UIFocusComponent.h>
+#include <UI/Render/UIDebugRenderComponent.h>
 #include <Engine/Engine.h>
 #include <Engine/Window.h>
 
@@ -60,7 +61,7 @@ void FontTest::LoadResources()
     previewText = new UIStaticText(Rect(10, 40, 400, 200));
     previewText->SetFont(ftFont);
     previewText->SetTextColor(Color::White);
-    previewText->SetDebugDraw(true);
+    previewText->GetOrCreateComponent<UIDebugRenderComponent>();
     previewText->SetTextAlign(ALIGN_TOP | ALIGN_LEFT);
     previewText->SetMultiline(true);
     AddControl(previewText);
@@ -77,7 +78,7 @@ void FontTest::LoadResources()
     inputText->SetFont(uiFont);
     inputText->SetTextColor(Color::White);
     inputText->SetTextAlign(ALIGN_TOP | ALIGN_LEFT);
-    inputText->SetDebugDraw(true);
+    inputText->GetOrCreateComponent<UIDebugRenderComponent>();
     inputText->SetDelegate(inputDelegate = new InputDelegate(previewText));
     inputText->SetMultiline(true);
     AddControl(inputText);
@@ -92,7 +93,7 @@ void FontTest::LoadResources()
     ScopedPtr<UIButton> button(new UIButton(Rect(420, 40, 100, 20)));
     button->SetStateFont(0xFF, uiFont);
     button->SetStateText(0xFF, L"FreeType");
-    button->SetDebugDraw(true);
+    button->GetOrCreateComponent<UIDebugRenderComponent>();
     button->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FontTest::OnFontSelectClick));
     button->SetTag(Font::TYPE_FT);
     AddControl(button);
@@ -100,7 +101,7 @@ void FontTest::LoadResources()
     button = new UIButton(Rect(530, 40, 100, 20));
     button->SetStateFont(0xFF, uiFont);
     button->SetStateText(0xFF, L"Distance");
-    button->SetDebugDraw(true);
+    button->GetOrCreateComponent<UIDebugRenderComponent>();
     button->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FontTest::OnFontSelectClick));
     button->SetTag(Font::TYPE_DISTANCE);
     AddControl(button);
@@ -108,7 +109,7 @@ void FontTest::LoadResources()
     button = new UIButton(Rect(640, 40, 100, 20));
     button->SetStateFont(0xFF, uiFont);
     button->SetStateText(0xFF, L"Graphic");
-    button->SetDebugDraw(true);
+    button->GetOrCreateComponent<UIDebugRenderComponent>();
     button->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FontTest::OnFontSelectClick));
     button->SetTag(Font::TYPE_GRAPHIC);
     AddControl(button);
@@ -130,7 +131,7 @@ void FontTest::LoadResources()
     button = new UIButton(Rect(420, 100, 100, 20));
     button->SetStateFont(0xFF, uiFont);
     button->SetStateText(0xFF, L"Increase");
-    button->SetDebugDraw(true);
+    button->GetOrCreateComponent<UIDebugRenderComponent>();
     button->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FontTest::OnFontSizeClick));
     button->SetTag(INCREASE_SIZE_TAG);
     AddControl(button);
@@ -138,7 +139,7 @@ void FontTest::LoadResources()
     button = new UIButton(Rect(530, 100, 100, 20));
     button->SetStateFont(0xFF, uiFont);
     button->SetStateText(0xFF, L"Decrease");
-    button->SetDebugDraw(true);
+    button->GetOrCreateComponent<UIDebugRenderComponent>();
     button->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &FontTest::OnFontSizeClick));
     button->SetTag(DECREASE_SIZE_TAG);
     AddControl(button);

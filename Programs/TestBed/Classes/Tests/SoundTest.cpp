@@ -2,6 +2,7 @@
 
 #include "Engine/Engine.h"
 #include "UI/Focus/UIFocusComponent.h"
+#include "UI/Render/UIDebugRenderComponent.h"
 
 using namespace DAVA;
 
@@ -36,7 +37,7 @@ void SoundTest::LoadResources()
     playSoundButtonGroup1->SetStateFont(0xFF, font);
     playSoundButtonGroup1->SetStateFontColor(0xFF, Color::White);
     playSoundButtonGroup1->SetStateText(0xFF, L"Play sound");
-    playSoundButtonGroup1->SetDebugDraw(true);
+    playSoundButtonGroup1->GetOrCreateComponent<UIDebugRenderComponent>();
     playSoundButtonGroup1->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &SoundTest::OnPlaySoundGroup1));
     AddControl(playSoundButtonGroup1);
     SafeRelease(playSoundButtonGroup1);
@@ -45,7 +46,7 @@ void SoundTest::LoadResources()
     buttonSetSpeedGroup1->SetStateFont(0xFF, font);
     buttonSetSpeedGroup1->SetStateFontColor(0xFF, Color::White);
     buttonSetSpeedGroup1->SetStateText(0xFF, L"Set speed");
-    buttonSetSpeedGroup1->SetDebugDraw(true);
+    buttonSetSpeedGroup1->GetOrCreateComponent<UIDebugRenderComponent>();
     buttonSetSpeedGroup1->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &SoundTest::OnApplySpeedGroup1));
     AddControl(buttonSetSpeedGroup1);
     SafeRelease(buttonSetSpeedGroup1);
@@ -53,7 +54,7 @@ void SoundTest::LoadResources()
     speedTextFieldGroup1 = new UITextField(Rect(225, 120, 45, 50));
     speedTextFieldGroup1->GetOrCreateComponent<UIFocusComponent>();
     speedTextFieldGroup1->SetFont(font);
-    speedTextFieldGroup1->SetDebugDraw(true);
+    speedTextFieldGroup1->GetOrCreateComponent<UIDebugRenderComponent>();
     speedTextFieldGroup1->SetTextAlign(ALIGN_HCENTER | ALIGN_VCENTER);
     speedTextFieldGroup1->SetText(L"1.0");
     AddControl(speedTextFieldGroup1);
@@ -73,7 +74,7 @@ void SoundTest::LoadResources()
     playSoundButtonGroup2->SetStateFont(0xFF, font);
     playSoundButtonGroup2->SetStateFontColor(0xFF, Color::White);
     playSoundButtonGroup2->SetStateText(0xFF, L"Play sound");
-    playSoundButtonGroup2->SetDebugDraw(true);
+    playSoundButtonGroup2->GetOrCreateComponent<UIDebugRenderComponent>();
     playSoundButtonGroup2->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &SoundTest::OnPlaySoundGroup2));
     AddControl(playSoundButtonGroup2);
     SafeRelease(playSoundButtonGroup2);
@@ -82,7 +83,7 @@ void SoundTest::LoadResources()
     buttonSetSpeedGroup2->SetStateFont(0xFF, font);
     buttonSetSpeedGroup2->SetStateFontColor(0xFF, Color::White);
     buttonSetSpeedGroup2->SetStateText(0xFF, L"Set speed");
-    buttonSetSpeedGroup2->SetDebugDraw(true);
+    buttonSetSpeedGroup2->GetOrCreateComponent<UIDebugRenderComponent>();
     buttonSetSpeedGroup2->AddEvent(UIButton::EVENT_TOUCH_DOWN, Message(this, &SoundTest::OnApplySpeedGroup2));
     AddControl(buttonSetSpeedGroup2);
     SafeRelease(buttonSetSpeedGroup2);
@@ -90,7 +91,7 @@ void SoundTest::LoadResources()
     speedTextFieldGroup2 = new UITextField(Rect(525, 120, 45, 50));
     speedTextFieldGroup2->GetOrCreateComponent<UIFocusComponent>();
     speedTextFieldGroup2->SetFont(font);
-    speedTextFieldGroup2->SetDebugDraw(true);
+    speedTextFieldGroup2->GetOrCreateComponent<UIDebugRenderComponent>();
     speedTextFieldGroup2->SetTextAlign(ALIGN_HCENTER | ALIGN_VCENTER);
     speedTextFieldGroup2->SetText(L"1.0");
     AddControl(speedTextFieldGroup2);
