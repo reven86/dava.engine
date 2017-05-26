@@ -7,8 +7,12 @@ import build_config
 def get_supported_targets(platform):
     if platform == 'win32':
         return ['win32', 'win10']
-    else:
+    elif platform == 'darwin':
         return ['macos']
+    elif platform == 'linux':
+        return ['linux']
+    else:
+        return []
 
 
 def get_dependencies_for_target(target):
@@ -22,6 +26,8 @@ def build_for_target(target, working_directory_path, root_project_path):
         _build_win10(working_directory_path, root_project_path)
     elif target == 'macos':
         _build_macos(working_directory_path, root_project_path)
+    elif target == 'linux':
+        _build_linux(working_directory_path, root_project_path)
 
 
 def get_download_info():
@@ -255,6 +261,30 @@ def _build_macos(working_directory_path, root_project_path):
             os.path.join('Libs/lib_CMake/mac/libvorbisfile_macos.a')))
 
     _copy_headers(install_dir_macos, root_project_path)
+
+def _build_linux(working_directory_path, root_project_path):
+    source_folder_path = _download_and_extract(working_directory_path)
+
+    env = build_utils.get_autotools_linux_env()
+    install_dir = os.path.join(working_directory_path, 'gen/install_linux')
+    ogg_install_dir = os.path.join(working_directory_path, '../libogg/gen/install_linux')
+
+    build_utils.build_with_autotools(
+        source_folder_path,
+        ['--with-ogg=' + ogg_install_dir,
+         '--disable-examples',
+         '--disable-shared',
+         '--enable-static'],
+        install_dir,
+        env=env,
+        postclean=False)
+
+    shutil.copyfile(os.path.join(install_dir, 'lib/libvorbis.a'),
+                    os.path.join(root_project_path, 'Libs/lib_CMake/linux/libvorbis.a'))
+    shutil.copyfile(os.path.join(install_dir, 'lib/libvorbisfile.a'),
+                    os.path.join(root_project_path, 'Libs/lib_CMake/linux/libvorbisfile.a'))
+
+    _copy_headers(install_dir, root_project_path)
 
 
 def _copy_headers(source_folder_path, root_project_path):
