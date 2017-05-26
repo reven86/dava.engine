@@ -9,8 +9,12 @@ import build_utils
 def get_supported_targets(platform):
     if platform == 'win32':
         return ['win32', 'win10']
-    else:
+    elif platform == 'darwin':
         return ['macos', 'ios', 'android']
+    elif platform == 'linux':
+        return ['android', 'linux']
+    else:
+        return []
 
 
 def get_dependencies_for_target(target):
@@ -28,6 +32,8 @@ def build_for_target(target, working_directory_path, root_project_path):
         _build_ios(working_directory_path, root_project_path)
     elif target == 'android':
         _build_android(working_directory_path, root_project_path)
+    elif target == 'linux':
+        _build_linux(working_directory_path, root_project_path)
 
 
 def get_download_info():
@@ -406,6 +412,32 @@ def _build_android(working_directory_path, root_project_path):
         os.path.join(librariess_android_root, 'x86/libcrypto.a'))
 
     _copy_headers(install_dir_arm, root_project_path, 'android')
+
+
+def _build_linux(working_directory_path, root_project_path):
+    source_folder_path = _download_and_extract(working_directory_path)
+    _patch_sources(source_folder_path, working_directory_path)
+
+    env = build_utils.get_autotools_linux_env()
+    install_dir = os.path.join(working_directory_path, 'gen/install_linux')
+
+    configure_args=list(_configure_args)
+    configure_args.append('linux-x86_64')
+
+    build_utils.build_with_autotools(
+        source_folder_path,
+        configure_args,
+        install_dir,
+        env=env,
+        configure_exec_name='Configure',
+        postclean=False)
+
+    shutil.copyfile(os.path.join(install_dir, 'lib/libssl.a'),
+                    os.path.join(root_project_path, 'Libs/lib_CMake/linux/libssl.a'))
+    shutil.copyfile(os.path.join(install_dir, 'lib/libcrypto.a'),
+                    os.path.join(root_project_path, 'Libs/lib_CMake/linux/libcrypto.a'))
+
+    _copy_headers(install_dir, root_project_path, 'linux')
 
 
 def _get_ios_env():
