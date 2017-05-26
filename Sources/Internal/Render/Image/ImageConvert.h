@@ -276,7 +276,7 @@ struct ConvertRGB565toRGBA8888
 {
     inline void operator()(const uint16* input, uint32* output)
     {
-        //r-channel in LSB
+        //r-channel in least significant bits
         uint16 pixel = *input;
         uint32 b = (((pixel >> 11) & 0x01F) << 3);
         uint32 g = (((pixel >> 5) & 0x03F) << 2);
