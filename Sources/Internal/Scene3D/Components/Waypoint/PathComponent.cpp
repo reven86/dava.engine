@@ -31,7 +31,7 @@ DAVA_VIRTUAL_REFLECTION_IMPL(PathComponent::Edge)
 
 DAVA_VIRTUAL_REFLECTION_IMPL(PathComponent)
 {
-    ReflectionRegistrator<PathComponent>::Begin()
+    ReflectionRegistrator<PathComponent>::Begin()[M::CantBeCreatedManualyComponent()]
     .ConstructorByPointer()
     .Field("name", &PathComponent::name)[M::DisplayName("Name")]
     .Field("color", &PathComponent::color)[M::DisplayName("Color")]

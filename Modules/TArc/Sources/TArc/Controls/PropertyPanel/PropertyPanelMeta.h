@@ -1,5 +1,7 @@
 #pragma once
 
+#include "TArc/Controls/PropertyPanel/PropertyModelExtensions.h"
+
 #include <Command/Command.h>
 #include <Reflection/Reflection.h>
 #include <Reflection/ReflectedMeta.h>
@@ -46,12 +48,12 @@ public:
     };
 
     virtual ~CommandProducer() = default;
-    virtual bool IsApplyable(const Reflection& field) const = 0;
+    virtual bool IsApplyable(const std::shared_ptr<DAVA::TArc::PropertyNode>& field) const = 0;
     virtual Info GetInfo() const = 0;
     virtual bool OnlyForSingleSelection() const;
     virtual void CreateCache(DAVA::TArc::ContextAccessor* accessor);
     virtual void ClearCache();
-    virtual std::unique_ptr<Command> CreateCommand(const Reflection& field, const Params& params) const = 0;
+    virtual std::unique_ptr<Command> CreateCommand(const std::shared_ptr<DAVA::TArc::PropertyNode>& field, const Params& params) const = 0;
 };
 
 class CommandProducerHolder

@@ -21,10 +21,10 @@ namespace DAVA
 DAVA_VIRTUAL_REFLECTION_IMPL(Camera)
 {
     ReflectionRegistrator<Camera>::Begin()
-    .Field("aspect", &Camera::GetAspect, &Camera::SetAspect)[M::DisplayName("Aspect")]
-    .Field("znear", &Camera::GetZNear, &Camera::SetZNear)[M::DisplayName("Near plane")]
-    .Field("zfar", &Camera::GetZFar, &Camera::SetZFar)[M::DisplayName("Far plane")]
-    .Field("fovx", &Camera::GetFOV, &Camera::SetFOV)[M::DisplayName("FovX")]
+    .Field("aspect", &Camera::GetAspect, &Camera::SetAspect)[M::DisplayName("Aspect"), M::Range(0.0001f, Any(), 1.0f)]
+    .Field("znear", &Camera::GetZNear, &Camera::SetZNear)[M::DisplayName("Near plane"), M::Range(0.0001f, Any(), 1.0f)]
+    .Field("zfar", &Camera::GetZFar, &Camera::SetZFar)[M::DisplayName("Far plane"), M::Range(0.0001f, Any(), 1.0f)]
+    .Field("fovx", &Camera::GetFOV, &Camera::SetFOV)[M::DisplayName("FovX"), M::Range(1.0f, 179.0f, 1.0f)]
     .Field("ortho", &Camera::GetIsOrtho, &Camera::SetIsOrtho)[M::DisplayName("Is Ortho")]
     .Field("orthoWidth", &Camera::GetOrthoWidth, &Camera::SetOrthoWidth)[M::DisplayName("Ortho Width")]
     .Field("position", &Camera::GetPosition, &Camera::SetPosition)[M::DisplayName("Position")]

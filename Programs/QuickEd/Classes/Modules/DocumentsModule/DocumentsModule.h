@@ -54,7 +54,6 @@ private:
     DAVA::TArc::DataContext::ContextID OpenDocument(const QString& path);
     DAVA::RefPtr<PackageNode> CreatePackage(const QString& path);
 
-    void CloseActiveDocument();
     void CloseDocument(DAVA::uint64 id);
     void CloseAllDocuments();
     void DeleteAllDocuments();

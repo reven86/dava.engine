@@ -7,6 +7,8 @@
 // TODO: plarform defines
 #elif defined(__DAVAENGINE_MACOS__)
 
+#import <IOKit/pwr_mgt/IOPMLib.h>
+
 #include "Functional/Signal.h"
 
 #include "Engine/Private/EnginePrivateFwd.h"
@@ -26,6 +28,8 @@ public:
     void PrepareToQuit();
     void Quit();
 
+    void SetScreenTimeoutEnabled(bool enabled);
+
     int OnFrame();
 
     // Through this signal WindowOsX gets notified about application hidden/unhidden state has changed
@@ -35,6 +39,10 @@ public:
     EngineBackend* engineBackend = nullptr;
 
     std::unique_ptr<CoreNativeBridge> bridge;
+
+private:
+    bool screenTimeoutEnabled = true;
+    IOPMAssertionID screenTimeoutAssertionId = kIOPMNullAssertionID;
 };
 
 } // namespace Private

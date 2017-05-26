@@ -160,7 +160,7 @@ DAVA::FilePath GetValidDir(bool withScene)
     {
         if (DAVA::FilePath::ContainPath(scenePath, dataSourcePath.GetAbsolutePathname().c_str()))
         {
-            resultPath = scenePath;
+            resultPath = scenePath.GetDirectory();
         }
     }
 
@@ -173,56 +173,59 @@ DAVA::M::ValidationResult ValidateHeightMap(const DAVA::Any& value, const DAVA::
     M::ValidationResult result;
 
     FilePath heightMapPath = value.Cast<FilePath>();
-    FilePath validDir = GetValidDir(true);
-    if (FilePath::ContainPath(heightMapPath, validDir) == false)
+    if (heightMapPath.IsEmpty() == false)
     {
-        result.state = M::ValidationResult::eState::Invalid;
-        result.message = Format("\"%s\" is wrong. It's allowed to select only from %s", heightMapPath.GetAbsolutePathname().c_str(), validDir.GetAbsolutePathname().c_str());
-        return result;
-    }
-
-    if (heightMapPath.IsEqualToExtension(".heightmap") == false)
-    {
-        auto extension = heightMapPath.GetExtension();
-        auto imageFormat = ImageSystem::GetImageFormatForExtension(extension);
-
-        if (IMAGE_FORMAT_UNKNOWN != imageFormat)
-        {
-            auto imgSystem = ImageSystem::GetImageFormatInterface(imageFormat);
-            Size2i size = imgSystem->GetImageInfo(heightMapPath).GetImageSize();
-            if (size.dx != size.dy)
-            {
-                result.state = M::ValidationResult::eState::Invalid;
-                result.message = Format("\"%s\" has wrong size: landscape requires square heightmap.", heightMapPath.GetAbsolutePathname().c_str());
-                return result;
-            }
-
-            if (!IsPowerOf2(size.dx))
-            {
-                result.state = M::ValidationResult::eState::Invalid;
-                result.message = Format("\"%s\" has wrong size: landscape requires square heightmap with size 2^n.", heightMapPath.GetAbsolutePathname().c_str());
-                return result;
-            }
-
-            Vector<Image*> imageVector;
-            ImageSystem::Load(heightMapPath, imageVector);
-            DVASSERT(imageVector.size());
-
-            PixelFormat format = imageVector[0]->GetPixelFormat();
-
-            for_each(imageVector.begin(), imageVector.end(), SafeRelease<Image>);
-            if (format != FORMAT_A8 && format != FORMAT_A16)
-            {
-                result.state = M::ValidationResult::eState::Invalid;
-                result.message = Format("\"%s\" is wrong: png file should be in format A8 or A16.", heightMapPath.GetAbsolutePathname().c_str());
-                return result;
-            }
-        }
-        else
+        FilePath validDir = GetValidDir(true);
+        if (FilePath::ContainPath(heightMapPath, validDir) == false)
         {
             result.state = M::ValidationResult::eState::Invalid;
-            result.message = Format("\"%s\" is wrong: should be *.png, *.tga, *.jpeg or *.heightmap.", heightMapPath.GetAbsolutePathname().c_str());
+            result.message = Format("\"%s\" is wrong. It's allowed to select only from %s", heightMapPath.GetAbsolutePathname().c_str(), validDir.GetAbsolutePathname().c_str());
             return result;
+        }
+
+        if (heightMapPath.IsEqualToExtension(".heightmap") == false)
+        {
+            auto extension = heightMapPath.GetExtension();
+            auto imageFormat = ImageSystem::GetImageFormatForExtension(extension);
+
+            if (IMAGE_FORMAT_UNKNOWN != imageFormat)
+            {
+                auto imgSystem = ImageSystem::GetImageFormatInterface(imageFormat);
+                Size2i size = imgSystem->GetImageInfo(heightMapPath).GetImageSize();
+                if (size.dx != size.dy)
+                {
+                    result.state = M::ValidationResult::eState::Invalid;
+                    result.message = Format("\"%s\" has wrong size: landscape requires square heightmap.", heightMapPath.GetAbsolutePathname().c_str());
+                    return result;
+                }
+
+                if (!IsPowerOf2(size.dx))
+                {
+                    result.state = M::ValidationResult::eState::Invalid;
+                    result.message = Format("\"%s\" has wrong size: landscape requires square heightmap with size 2^n.", heightMapPath.GetAbsolutePathname().c_str());
+                    return result;
+                }
+
+                Vector<Image*> imageVector;
+                ImageSystem::Load(heightMapPath, imageVector);
+                DVASSERT(imageVector.size());
+
+                PixelFormat format = imageVector[0]->GetPixelFormat();
+
+                for_each(imageVector.begin(), imageVector.end(), SafeRelease<Image>);
+                if (format != FORMAT_A8 && format != FORMAT_A16)
+                {
+                    result.state = M::ValidationResult::eState::Invalid;
+                    result.message = Format("\"%s\" is wrong: png file should be in format A8 or A16.", heightMapPath.GetAbsolutePathname().c_str());
+                    return result;
+                }
+            }
+            else
+            {
+                result.state = M::ValidationResult::eState::Invalid;
+                result.message = Format("\"%s\" is wrong: should be *.png, *.tga, *.jpeg or *.heightmap.", heightMapPath.GetAbsolutePathname().c_str());
+                return result;
+            }
         }
     }
 

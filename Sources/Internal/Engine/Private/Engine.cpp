@@ -45,6 +45,11 @@ Window* Engine::PrimaryWindow() const
     return engineBackend->GetPrimaryWindow();
 }
 
+const Vector<Window*>& Engine::GetWindows() const
+{
+    return engineBackend->GetWindows();
+}
+
 eEngineRunMode Engine::GetRunMode() const
 {
     return engineBackend->GetRunMode();
@@ -108,6 +113,11 @@ const KeyedArchive* Engine::GetOptions() const
 bool Engine::IsSuspended() const
 {
     return engineBackend->IsSuspended();
+}
+
+void Engine::SetScreenTimeoutEnabled(bool enabled)
+{
+    engineBackend->SetScreenTimeoutEnabled(enabled);
 }
 
 } // namespace DAVA

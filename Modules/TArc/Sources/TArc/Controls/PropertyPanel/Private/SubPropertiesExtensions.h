@@ -9,7 +9,7 @@ namespace TArc
 class SubPropertyValueChildCreator : public ChildCreatorExtension
 {
 public:
-    void ExposeChildren(const std::shared_ptr<const PropertyNode>& parent, Vector<std::shared_ptr<PropertyNode>>& children) const override;
+    void ExposeChildren(const std::shared_ptr<PropertyNode>& parent, Vector<std::shared_ptr<PropertyNode>>& children) const override;
 };
 
 class SubPropertyEditorCreator : public EditorComponentExtension

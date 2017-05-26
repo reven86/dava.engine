@@ -7,6 +7,38 @@ namespace DAVA
 {
 namespace TArc
 {
+namespace ChildCreatorDetail
+{
+enum EqualResult
+{
+    FullyEqual,
+    ValueChanged,
+    NotEqual
+};
+EqualResult CheckEqualWithCacheUpdating(const std::shared_ptr<PropertyNode>& sourceChild, const std::shared_ptr<PropertyNode>& newChild)
+{
+    if (sourceChild->propertyType == newChild->propertyType &&
+        sourceChild->idPostfix == newChild->idPostfix &&
+        sourceChild->sortKey == newChild->sortKey &&
+        sourceChild->field.ref.GetValueObject() == newChild->field.ref.GetValueObject() &&
+        sourceChild->field.key == newChild->field.key)
+    {
+        if (sourceChild->cachedValue == newChild->cachedValue)
+        {
+            return FullyEqual;
+        }
+
+        if (sourceChild->field.ref.HasFields() == false && newChild->field.ref.HasFields() == false)
+        {
+            sourceChild->cachedValue = newChild->cachedValue;
+            return ValueChanged;
+        }
+    }
+
+    return NotEqual;
+}
+}
+
 ChildCreator::ChildCreator()
     : extensions(ChildCreatorExtension::CreateDummy())
     , allocator(CreateDefaultAllocator())
@@ -26,7 +58,7 @@ std::shared_ptr<PropertyNode> ChildCreator::CreateRoot(Reflection::Field&& refle
     return rootNode;
 }
 
-void ChildCreator::UpdateSubTree(const std::shared_ptr<const PropertyNode>& parent)
+void ChildCreator::UpdateSubTree(const std::shared_ptr<PropertyNode>& parent)
 {
     DVASSERT(parent != nullptr);
     Vector<std::shared_ptr<PropertyNode>> children;
@@ -40,7 +72,7 @@ void ChildCreator::UpdateSubTree(const std::shared_ptr<const PropertyNode>& pare
         newItems = std::move(children);
         for (size_t i = 0; i < newItems.size(); ++i)
         {
-            nodeCreated.Emit(parent, newItems[i], static_cast<int32>(i));
+            nodeCreated.Emit(parent, newItems[i]);
         }
     }
     else
@@ -58,27 +90,35 @@ void ChildCreator::UpdateSubTree(const std::shared_ptr<const PropertyNode>& pare
             std::swap(children, currentChildren);
             for (size_t i = 0; i < currentChildren.size(); ++i)
             {
-                nodeCreated.Emit(parent, currentChildren[i], static_cast<int32>(i));
+                nodeCreated.Emit(parent, currentChildren[i]);
             }
         }
         else
         {
             for (size_t i = 0; i < children.size(); ++i)
             {
-                bool isEqual = false;
+                ChildCreatorDetail::EqualResult result = ChildCreatorDetail::NotEqual;
                 try
                 {
-                    isEqual = *children[i] == *currentChildren[i];
+                    result = ChildCreatorDetail::CheckEqualWithCacheUpdating(currentChildren[i], children[i]);
                 }
                 catch (const Exception& e)
                 {
                     Logger::Debug(e.what());
                 }
-                if (isEqual == false)
+
+                switch (result)
                 {
+                case ChildCreatorDetail::ValueChanged:
+                    dataChanged.Emit(currentChildren[i]);
+                    break;
+                case ChildCreatorDetail::NotEqual:
                     RemoveNode(currentChildren[i]);
                     std::swap(currentChildren[i], children[i]);
-                    nodeCreated.Emit(parent, currentChildren[i], static_cast<int32>(i));
+                    nodeCreated.Emit(parent, currentChildren[i]);
+                    break;
+                default:
+                    break;
                 }
             }
         }
@@ -101,6 +141,12 @@ void ChildCreator::RemoveNode(const std::shared_ptr<PropertyNode>& parent)
 void ChildCreator::Clear()
 {
     propertiesIndex.clear();
+}
+
+void ChildCreator::SetDevMode(bool isDevMode)
+{
+    DVASSERT(extensions != nullptr);
+    extensions->SetDevelopertMode(isDevMode);
 }
 
 void ChildCreator::RegisterExtension(const std::shared_ptr<ChildCreatorExtension>& extension)

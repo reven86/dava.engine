@@ -7,6 +7,8 @@
 #include "UI/UISystem.h"
 #include "Base/RefPtr.h"
 
+struct UILayoutSystemTest;
+
 namespace DAVA
 {
 class UIControl;
@@ -20,10 +22,6 @@ public:
     UILayoutSystem();
     ~UILayoutSystem() override;
 
-    void Process(DAVA::float32 elapsedTime) override;
-    void UnregisterControl(UIControl* control) override;
-    void UnregisterComponent(UIControl* control, UIComponent* component) override;
-
     void SetCurrentScreen(const RefPtr<UIScreen>& screen);
     void SetCurrentScreenTransition(const RefPtr<UIScreenTransition>& screenTransition);
     void SetPopupContainer(const RefPtr<UIControl>& popupContainer);
@@ -34,15 +32,20 @@ public:
     bool IsAutoupdatesEnabled() const;
     void SetAutoupdatesEnabled(bool enabled);
 
-    void ProcessControl(UIControl* control);
-    void ManualApplyLayout(UIControl* control);
-
-    void Update(UIControl* root);
     void SetDirty();
     void CheckDirty();
 
     void AddListener(UILayoutSystemListener* listener);
     void RemoveListener(UILayoutSystemListener* listener);
+
+    void ManualApplyLayout(UIControl* control); //DON'T USE IT!
+
+protected:
+    void Process(float32 elapsedTime) override;
+    void ForceProcessControl(float32 elapsedTime, UIControl* control) override;
+
+    void UnregisterControl(UIControl* control) override;
+    void UnregisterComponent(UIControl* control, UIComponent* component) override;
 
 private:
     void ApplyLayout(UIControl* control);
@@ -62,7 +65,8 @@ private:
     void ApplySizesAndPositions();
     void ApplyPositions();
 
-    void UpdateControl(UIControl* control);
+    void ProcessControlHierarhy(UIControl* control);
+    void ProcessControl(UIControl* control);
 
     bool isRtl = false;
     bool autoupdatesEnabled = true;
@@ -74,6 +78,8 @@ private:
     RefPtr<UIScreenTransition> currentScreenTransition;
 
     Vector<UILayoutSystemListener*> listeners;
+
+    friend UILayoutSystemTest;
 };
 
 inline void UILayoutSystem::SetDirty()

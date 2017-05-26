@@ -2,6 +2,7 @@
 #include "TArc/Controls/PropertyPanel/Private/ComponentStructureWrapper.h"
 #include "TArc/Controls/PropertyPanel/PropertyPanelMeta.h"
 #include "TArc/Controls/FilePathEdit.h"
+#include "TArc/Controls/CommonStrings.h"
 
 #include <Reflection/ReflectionRegistrator.h>
 
@@ -11,12 +12,16 @@ namespace TArc
 {
 Any FilePathComponentValue::GetMultipleValue() const
 {
-    return Any();
+    return Any(MultipleValuesString);
 }
 
 bool FilePathComponentValue::IsValidValueToSet(const Any& newValue, const Any& currentValue) const
 {
-    if (currentValue.CanCast<FilePath>() == false)
+    if (newValue.Cast<String>(MultipleValuesString) == String(MultipleValuesString))
+    {
+        return false;
+    }
+    if (currentValue.CanGet<FilePath>() == false)
     {
         return true;
     }
@@ -24,11 +29,9 @@ bool FilePathComponentValue::IsValidValueToSet(const Any& newValue, const Any& c
     return newValue.Cast<FilePath>() != currentValue.Cast<FilePath>();
 }
 
-ControlProxy* FilePathComponentValue::CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor) const
+ControlProxy* FilePathComponentValue::CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor)
 {
-    FilePathEdit::Params p;
-    p.ui = GetUI();
-    p.wndKey = GetWindowKey();
+    FilePathEdit::Params p(GetAccessor(), GetUI(), GetWindowKey());
     p.fields[FilePathEdit::Fields::Value] = "value";
     p.fields[FilePathEdit::Fields::IsReadOnly] = readOnlyFieldName;
     return new FilePathEdit(p, wrappersProcessor, model, parent);

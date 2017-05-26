@@ -3,9 +3,12 @@
 
 #include <Engine/Engine.h>
 #include <FileSystem/DynamicMemoryFile.h>
+#include <FileSystem/Private/CheckIOError.h>
 #include <DLCManager/DLCManager.h>
 #include <UI/Focus/UIFocusComponent.h>
+#include <UI/Render/UIDebugRenderComponent.h>
 #include <EmbeddedWebServer.h>
+#include <DLCManager/DLCDownloader.h>
 
 using namespace DAVA;
 
@@ -50,9 +53,9 @@ void DLCManagerTest::LoadResources()
 
     packInput = new UITextField(Rect(5, 10, 400, 20));
     packInput->SetFont(font);
-    packInput->SetText(L"0");
+    packInput->SetUtf8Text("all_level_packs");
     packInput->SetFontSize(14);
-    packInput->SetDebugDraw(true);
+    packInput->GetOrCreateComponent<UIDebugRenderComponent>();
     packInput->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
     packInput->SetInputEnabled(true);
     packInput->GetOrCreateComponent<UIFocusComponent>();
@@ -64,7 +67,7 @@ void DLCManagerTest::LoadResources()
     packNextInput->SetFont(font);
     packNextInput->SetText(L"1");
     packNextInput->SetFontSize(14);
-    packNextInput->SetDebugDraw(true);
+    packNextInput->GetOrCreateComponent<UIDebugRenderComponent>();
     packNextInput->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
     packNextInput->SetInputEnabled(true);
     packNextInput->GetOrCreateComponent<UIFocusComponent>();
@@ -73,7 +76,7 @@ void DLCManagerTest::LoadResources()
     AddControl(packNextInput);
 
     loadPack = new UIButton(Rect(420, 10, 100, 20));
-    loadPack->SetDebugDraw(true);
+    loadPack->GetOrCreateComponent<UIDebugRenderComponent>();
     loadPack->SetStateFont(0xFF, font);
     loadPack->SetStateFontColor(0xFF, Color::White);
     loadPack->SetStateText(0xFF, L"start loading");
@@ -81,7 +84,7 @@ void DLCManagerTest::LoadResources()
     AddControl(loadPack);
 
     loadNext = new UIButton(Rect(420, 40, 100, 20));
-    loadNext->SetDebugDraw(true);
+    loadNext->GetOrCreateComponent<UIDebugRenderComponent>();
     loadNext->SetStateFont(0xFF, font);
     loadNext->SetStateFontColor(0xFF, Color::White);
     loadNext->SetStateText(0xFF, L"next loading");
@@ -89,7 +92,7 @@ void DLCManagerTest::LoadResources()
     AddControl(loadNext);
 
     startServerButton = new UIButton(Rect(420, 70, 100, 20));
-    startServerButton->SetDebugDraw(true);
+    startServerButton->GetOrCreateComponent<UIDebugRenderComponent>();
     startServerButton->SetStateFont(0xFF, font);
     startServerButton->SetStateFontColor(0xFF, Color::White);
     startServerButton->SetStateText(0xFF, L"start server");
@@ -97,7 +100,7 @@ void DLCManagerTest::LoadResources()
     AddControl(startServerButton);
 
     stopServerButton = new UIButton(Rect(420, 100, 100, 20));
-    stopServerButton->SetDebugDraw(true);
+    stopServerButton->GetOrCreateComponent<UIDebugRenderComponent>();
     stopServerButton->SetStateFont(0xFF, font);
     stopServerButton->SetStateFontColor(0xFF, Color::White);
     stopServerButton->SetStateText(0xFF, L"stop server");
@@ -109,7 +112,7 @@ void DLCManagerTest::LoadResources()
     packNameLoading->SetTextColor(Color::White);
     packNameLoading->SetMultiline(true);
     packNameLoading->SetText(L"loading: ");
-    packNameLoading->SetDebugDraw(true);
+    packNameLoading->GetOrCreateComponent<UIDebugRenderComponent>();
     packNameLoading->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
     AddControl(packNameLoading);
 
@@ -118,25 +121,23 @@ void DLCManagerTest::LoadResources()
     logPring->SetTextColor(Color::White);
     logPring->SetMultiline(true);
     logPring->SetUtf8Text("");
-    logPring->SetDebugDraw(true);
+    logPring->GetOrCreateComponent<UIDebugRenderComponent>();
     logPring->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
     AddControl(logPring);
 
     redControl = new UIControl(Rect(5, 360, 500, 10));
-    redControl->SetDebugDrawColor(Color(1.f, 0.f, 0.f, 1.f));
-    redControl->SetDebugDraw(true);
+    redControl->GetOrCreateComponent<UIDebugRenderComponent>()->SetDrawColor(Color(1.f, 0.f, 0.f, 1.f));
     AddControl(redControl);
 
     greenControl = new UIControl(Rect(5, 360, 0, 10));
-    greenControl->SetDebugDrawColor(Color(0.f, 1.f, 0.f, 1.f));
-    greenControl->SetDebugDraw(true);
+    greenControl->GetOrCreateComponent<UIDebugRenderComponent>()->SetDrawColor(Color(0.f, 1.f, 0.f, 1.f));
     AddControl(greenControl);
 
     description = new UIStaticText(Rect(5, 70, 400, 200));
     description->SetFont(font);
     description->SetTextColor(Color::White);
     description->SetMultiline(true);
-    description->SetDebugDraw(true);
+    description->GetOrCreateComponent<UIDebugRenderComponent>();
     description->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
     UpdateDescription();
     AddControl(description);
@@ -145,7 +146,7 @@ void DLCManagerTest::LoadResources()
     url->SetFont(font);
     url->SetFontSize(14);
     url->SetText(UTF8Utils::EncodeToWideString(urlToServerSuperpack));
-    url->SetDebugDraw(true);
+    url->GetOrCreateComponent<UIDebugRenderComponent>();
     url->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
     url->SetInputEnabled(true);
     url->GetOrCreateComponent<UIFocusComponent>();
@@ -157,7 +158,7 @@ void DLCManagerTest::LoadResources()
     filePathField->SetFont(font);
     filePathField->SetFontSize(14);
     filePathField->SetText(UTF8Utils::EncodeToWideString("~res:/3d/LandscapeTest/landscapetest.sc2"));
-    filePathField->SetDebugDraw(true);
+    filePathField->GetOrCreateComponent<UIDebugRenderComponent>();
     filePathField->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
     filePathField->SetInputEnabled(true);
     filePathField->GetOrCreateComponent<UIFocusComponent>();
@@ -166,43 +167,31 @@ void DLCManagerTest::LoadResources()
     AddControl(filePathField);
 
     checkFile = new UIButton(Rect(420, 380, 100, 20));
-    checkFile->SetDebugDraw(true);
+    checkFile->GetOrCreateComponent<UIDebugRenderComponent>();
     checkFile->SetStateFont(0xFF, font);
     checkFile->SetStateFontColor(0xFF, Color::White);
     checkFile->SetStateText(0xFF, L"check file");
     checkFile->AddEvent(EVENT_TOUCH_DOWN, Message(this, &DLCManagerTest::OnCheckFileClicked));
     AddControl(checkFile);
 
-    numOfThreadDownload = new UITextField(Rect(5, 410, 400, 20));
-    numOfThreadDownload->SetFont(font);
-    numOfThreadDownload->SetFontSize(14);
-    numOfThreadDownload->SetUtf8Text("1");
-    numOfThreadDownload->SetDebugDraw(true);
-    numOfThreadDownload->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
-    numOfThreadDownload->SetInputEnabled(true);
-    numOfThreadDownload->GetOrCreateComponent<UIFocusComponent>();
-    numOfThreadDownload->SetDelegate(this);
-    numOfThreadDownload->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
-    AddControl(numOfThreadDownload);
-
     startInit = new UIButton(Rect(420, 410, 100, 20));
-    startInit->SetDebugDraw(true);
+    startInit->GetOrCreateComponent<UIDebugRenderComponent>();
     startInit->SetStateFont(0xFF, font);
     startInit->SetStateFontColor(0xFF, Color::White);
     startInit->SetStateText(0xFF, L"PM init");
     startInit->AddEvent(EVENT_TOUCH_DOWN, Message(this, &DLCManagerTest::OnStartInitClicked));
     AddControl(startInit);
 
-    startSync = new UIButton(Rect(420, 440, 100, 20));
-    startSync->SetDebugDraw(true);
-    startSync->SetStateFont(0xFF, font);
-    startSync->SetStateFontColor(0xFF, Color::White);
-    startSync->SetStateText(0xFF, L"PM sync");
-    startSync->AddEvent(EVENT_TOUCH_DOWN, Message(this, &DLCManagerTest::OnStartSyncClicked));
-    AddControl(startSync);
+    genIOError = new UIButton(Rect(420, 440, 100, 20));
+    genIOError->GetOrCreateComponent<UIDebugRenderComponent>();
+    genIOError->SetStateFont(0xFF, font);
+    genIOError->SetStateFontColor(0xFF, Color::White);
+    genIOError->SetStateText(0xFF, L"IO error");
+    genIOError->AddEvent(EVENT_TOUCH_DOWN, Message(this, &DLCManagerTest::OnIOErrorClicked));
+    AddControl(genIOError);
 
     clearDocs = new UIButton(Rect(420, 470, 100, 20));
-    clearDocs->SetDebugDraw(true);
+    clearDocs->GetOrCreateComponent<UIDebugRenderComponent>();
     clearDocs->SetStateFont(0xFF, font);
     clearDocs->SetStateFontColor(0xFF, Color::White);
     clearDocs->SetStateText(0xFF, L"rm dvpk's");
@@ -210,18 +199,26 @@ void DLCManagerTest::LoadResources()
     AddControl(clearDocs);
 
     lsDvpks = new UIButton(Rect(420, 500, 100, 20));
-    lsDvpks->SetDebugDraw(true);
+    lsDvpks->GetOrCreateComponent<UIDebugRenderComponent>();
     lsDvpks->SetStateFont(0xFF, font);
     lsDvpks->SetStateFontColor(0xFF, Color::White);
     lsDvpks->SetStateText(0xFF, L"ls dvpk's");
     lsDvpks->AddEvent(EVENT_TOUCH_DOWN, Message(this, &DLCManagerTest::OnListPacksClicked));
     AddControl(lsDvpks);
 
+    OnOffRequesting = new UIButton(Rect(420, 230, 100, 20));
+    OnOffRequesting->GetOrCreateComponent<UIDebugRenderComponent>();
+    OnOffRequesting->SetStateFont(0xFF, font);
+    OnOffRequesting->SetStateFontColor(0xFF, Color::White);
+    OnOffRequesting->SetStateText(0xFF, L"On/Off");
+    OnOffRequesting->AddEvent(EVENT_TOUCH_DOWN, Message(this, &DLCManagerTest::OnOffRequestingClicked));
+    AddControl(OnOffRequesting);
+
     dirToListFiles = new UITextField(Rect(5, 300, 400, 20));
     dirToListFiles->SetFont(font);
     dirToListFiles->SetFontSize(14);
     dirToListFiles->SetText(UTF8Utils::EncodeToWideString("~res:/3d/"));
-    dirToListFiles->SetDebugDraw(true);
+    dirToListFiles->GetOrCreateComponent<UIDebugRenderComponent>();
     dirToListFiles->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
     dirToListFiles->SetInputEnabled(true);
     dirToListFiles->GetOrCreateComponent<UIFocusComponent>();
@@ -229,8 +226,24 @@ void DLCManagerTest::LoadResources()
     dirToListFiles->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
     AddControl(dirToListFiles);
 
+    DLCDownloader::Hints hintsDefault;
+    std::stringstream ss;
+    ss << "handles " << hintsDefault.numOfMaxEasyHandles << " buf_size " << hintsDefault.chunkMemBuffSize;
+
+    numHandlesInput = new UITextField(Rect(5, 410, 400, 20));
+    numHandlesInput->SetFont(font);
+    numHandlesInput->SetFontSize(14);
+    numHandlesInput->SetUtf8Text(ss.str());
+    numHandlesInput->GetOrCreateComponent<UIDebugRenderComponent>();
+    numHandlesInput->SetTextColor(Color(0.0, 1.0, 0.0, 1.0));
+    numHandlesInput->SetInputEnabled(true);
+    numHandlesInput->GetOrCreateComponent<UIFocusComponent>();
+    numHandlesInput->SetDelegate(this);
+    numHandlesInput->SetTextAlign(ALIGN_LEFT | ALIGN_VCENTER);
+    AddControl(numHandlesInput);
+
     lsDirFromPacks = new UIButton(Rect(420, 300, 100, 20));
-    lsDirFromPacks->SetDebugDraw(true);
+    lsDirFromPacks->GetOrCreateComponent<UIDebugRenderComponent>();
     lsDirFromPacks->SetStateFont(0xFF, font);
     lsDirFromPacks->SetStateFontColor(0xFF, Color::White);
     lsDirFromPacks->SetStateText(0xFF, L"ls in dvpk");
@@ -243,7 +256,7 @@ void DLCManagerTest::UnloadResources()
     SafeRelease(loadNext);
     SafeRelease(packNextInput);
     SafeRelease(lsDvpks);
-    SafeRelease(startSync);
+    SafeRelease(genIOError);
     SafeRelease(clearDocs);
     SafeRelease(packInput);
     SafeRelease(loadPack);
@@ -259,8 +272,9 @@ void DLCManagerTest::UnloadResources()
     SafeRelease(checkFile);
     SafeRelease(startInit);
     SafeRelease(dirToListFiles);
+    SafeRelease(numHandlesInput);
     SafeRelease(lsDirFromPacks);
-    SafeRelease(numOfThreadDownload);
+    SafeRelease(OnOffRequesting);
 
     BaseScreen::UnloadResources();
 }
@@ -269,8 +283,9 @@ void DLCManagerTest::WriteErrorOnDevice(const String& filePath, int32 errnoVal)
 {
     StringStream ss(logPring->GetUtf8Text());
     ss << "Error: can't write file: " << filePath << " errno: " << strerror(errnoVal) << std::endl;
-    logPring->SetUtf8Text(ss.str());
-    DVASSERT(false);
+    std::string str = ss.str();
+    logPring->SetUtf8Text(str);
+    Logger::Info("%s", str.c_str());
 }
 
 void DLCManagerTest::OnRequestUpdated(const DAVA::DLCManager::IRequest& request)
@@ -282,14 +297,19 @@ void DLCManagerTest::OnRequestUpdated(const DAVA::DLCManager::IRequest& request)
     float32 progress = static_cast<float32>(current) / total;
 
     std::stringstream ss;
-    ss << "downloading: " << packName << " : " << current << "/" << total << " (" << (progress * 100) << ")%";
+    ss << "downloading: " << packName << " : (" << (progress * 100) << ")%";
 
-    if (request.IsDownloaded())
+    DLCManager& dm = *engine.GetContext()->dlcManager;
+    auto p = dm.GetProgress();
+    if (p.total > 0)
     {
-        ss << " DOWNLOADED!!!";
+        ss << "\n total:" << (100.0 * p.alreadyDownloaded) / p.total << '%';
     }
 
-    packNameLoading->SetUtf8Text(ss.str());
+    std::string str = ss.str();
+    packNameLoading->SetUtf8Text(str);
+
+    Logger::Info("DLC %s", str.c_str());
 
     auto rect = redControl->GetRect();
     rect.dx = rect.dx * progress;
@@ -298,11 +318,10 @@ void DLCManagerTest::OnRequestUpdated(const DAVA::DLCManager::IRequest& request)
 
 void DLCManagerTest::OnNetworkReady(bool isReady)
 {
-    // To visualise on MacOS DownloadManager::Instance()->SetDownloadSpeedLimit(100000);
+    // To visualize on MacOS DownloadManager::Instance()->SetDownloadSpeedLimit(100000);
     // on MacOS slowly connect and then fast downloading
     std::stringstream ss;
-    const char* boolName = isReady ? "True" : "False";
-    ss << "nerwork ready = " << boolName;
+    ss << "network ready = " << std::boolalpha << isReady;
     Logger::Info("%s", ss.str().c_str());
 
     packNameLoading->SetUtf8Text("loading: " + ss.str());
@@ -323,10 +342,21 @@ void DLCManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, vo
 
     dm.networkReady.DisconnectAll();
     dm.networkReady.Connect(this, &DLCManagerTest::OnNetworkReady);
-    DLCManager::Hints hints;
-    int numThreads = stoi(numOfThreadDownload->GetUtf8Text());
-    hints.numOfThreadsPerFileDownload = static_cast<uint32>(numThreads);
     dm.initializeFinished.Connect(this, &DLCManagerTest::OnInitializeFinished);
+
+    std::stringstream ss(numHandlesInput->GetUtf8Text());
+    int numHandles = 0;
+    int bufSize = 0;
+    String text;
+    ss >> text >> numHandles; // skip "handles " // last read num
+    ss >> text >> bufSize; // skip " buf_size " // last read num
+
+    DVASSERT(numHandles > 0);
+    DVASSERT(bufSize > 0);
+
+    DLCManager::Hints hints;
+    hints.downloaderMaxHandles = static_cast<uint32>(numHandles);
+    hints.downloaderChankBufSize = static_cast<uint32>(bufSize);
 
     dm.Initialize(folderWithDownloadedPacks, urlToServerSuperpack, hints);
 
@@ -335,23 +365,25 @@ void DLCManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, vo
     packNameLoading->SetText(L"done: start initialize PackManager");
 }
 
-void DLCManagerTest::OnStartSyncClicked(DAVA::BaseObject* sender, void* data, void* callerData)
+void DLCManagerTest::OnIOErrorClicked(BaseObject*, void*, void*)
 {
-    /*
-    packNameLoading->SetText(L"done: start sync");
-    IPackManager& pm = Core::Instance()->GetPackManager();
-    */
+    DebugFS::IOErrorTypes ioErr;
+    ioErr.closeFailed = true;
+    ioErr.openOrCreateFailed = true;
+    ioErr.seekFailed = true;
+    ioErr.truncateFailed = true;
+    ioErr.readFailed = true;
+    ioErr.writeFailed = true;
+    ioErr.ioErrorCode = ENOSPC; // no space on device
+    GenerateIOErrorOnNextOperation(ioErr);
 }
 
 void DLCManagerTest::OnClearDocsClicked(DAVA::BaseObject* sender, void* data, void* callerData)
 {
     DLCManager& dm = *engine.GetContext()->dlcManager;
-    if (!FileSystem::Instance()->DeleteDirectory(folderWithDownloadedPacks, true))
-    {
-        std::stringstream ss(logPring->GetUtf8Text());
-        ss << "can't delete dir: " << folderWithDownloadedPacks.GetAbsolutePathname() << std::endl;
-        logPring->SetUtf8Text(ss.str());
-    }
+
+    FileSystem::Instance()->DeleteDirectory(folderWithDownloadedPacks, true);
+
     packNameLoading->SetText(L"done: unmount all dvpk's, and remove dir with downloaded dvpk's");
 }
 
@@ -362,6 +394,19 @@ void DLCManagerTest::OnListPacksClicked(DAVA::BaseObject* sender, void* data, vo
     String s = ss.str();
 
     packNameLoading->SetText(UTF8Utils::EncodeToWideString(s));
+}
+
+void DLCManagerTest::OnOffRequestingClicked(DAVA::BaseObject* sender, void* data, void* callerData)
+{
+    DLCManager& dm = *engine.GetContext()->dlcManager;
+    if (dm.IsRequestingEnabled())
+    {
+        dm.SetRequestingEnabled(false);
+    }
+    else
+    {
+        dm.SetRequestingEnabled(true);
+    }
 }
 
 void DLCManagerTest::OnStartDownloadClicked(DAVA::BaseObject* sender, void* data, void* callerData)
@@ -438,13 +483,7 @@ void DLCManagerTest::OnStartStopLocalServerClicked(DAVA::BaseObject* sender, voi
         FilePath resPath("~res:/TestData/PackManagerTest/superpack_for_unittests.dvpk");
         FilePath docPath("~doc:/DLCManagerTest/superpack_for_unittests.dvpk");
 
-        if (!fs->CopyFile(resPath, docPath, true))
-        {
-            StringStream ss(logPring->GetUtf8Text());
-            ss << "Error: can't copy superpack_for_unittest.dvpk "
-               << resPath.GetStringValue() << " to " << docPath.GetStringValue() << std::endl;
-            logPring->SetUtf8Text(ss.str());
-        }
+        fs->CopyFile(resPath, docPath, true);
 
         docPath = docPath.GetDirectory();
 
@@ -453,14 +492,16 @@ void DLCManagerTest::OnStartStopLocalServerClicked(DAVA::BaseObject* sender, voi
         const char* docRoot = absPath.c_str();
         const char* ports = "8080";
 
-        StringStream ss(logPring->GetUtf8Text());
         if (!StartEmbeddedWebServer(docRoot, ports))
         {
-            ss << "Error: can't start embedded web server" << std::endl;
+            StringStream ss(logPring->GetUtf8Text());
+            ss << "Error starting embedded web server" << std::endl;
+            logPring->SetUtf8Text(ss.str());
         }
-        ss << "from: " << resPath.GetAbsolutePathname() << std::endl
-           << "to: " << docPath.GetAbsolutePathname() << std::endl;
-        logPring->SetUtf8Text(ss.str());
+        else
+        {
+            logPring->SetUtf8Text("start embedded web server done");
+        }
     }
     else if (sender == stopServerButton)
     {

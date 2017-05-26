@@ -7,14 +7,14 @@ namespace DAVA
 {
 namespace TArc
 {
-CheckBox::CheckBox(const ControlDescriptorBuilder<Fields>& fields, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent)
-    : ControlProxyImpl<QCheckBox>(ControlDescriptor(fields), wrappersProcessor, model, parent)
+CheckBox::CheckBox(const Params& params, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent)
+    : ControlProxyImpl<QCheckBox>(params, ControlDescriptor(params.fields), wrappersProcessor, model, parent)
 {
     SetupControl();
 }
 
-CheckBox::CheckBox(const ControlDescriptorBuilder<Fields>& fields, ContextAccessor* accessor, Reflection model, QWidget* parent)
-    : ControlProxyImpl<QCheckBox>(ControlDescriptor(fields), accessor, model, parent)
+CheckBox::CheckBox(const Params& params, ContextAccessor* accessor, Reflection model, QWidget* parent)
+    : ControlProxyImpl<QCheckBox>(params, ControlDescriptor(params.fields), accessor, model, parent)
 {
     SetupControl();
 }
@@ -77,14 +77,25 @@ void CheckBox::StateChanged(int newState)
 
     if (newState != Qt::PartiallyChecked)
     {
+        Any currentValue = GetFieldValue(Fields::Checked, Any());
         setTristate(false);
         if (dataType == eContainedDataType::TYPE_CHECK_STATE)
         {
-            wrapper.SetFieldValue(GetFieldName(Fields::Checked), Any(checkState()));
+            Any newValue = Any(checkState());
+            if (currentValue != newValue)
+            {
+                wrapper.SetFieldValue(GetFieldName(Fields::Checked), newValue);
+            }
         }
         else if (dataType == eContainedDataType::TYPE_BOOL)
         {
-            wrapper.SetFieldValue(GetFieldName(Fields::Checked), Any(checkState() == Qt::Checked));
+            Qt::CheckState checkStateValue = checkState();
+            DVASSERT(checkStateValue != Qt::PartiallyChecked);
+            Any newValue = Any(checkStateValue == Qt::Checked ? true : false);
+            if (currentValue != newValue)
+            {
+                wrapper.SetFieldValue(GetFieldName(Fields::Checked), newValue);
+            }
         }
         else
         {

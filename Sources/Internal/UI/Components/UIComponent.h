@@ -41,6 +41,9 @@ public:
         CUSTOM_UPDATE_DELTA_COMPONENT,
         RICH_CONTENT_COMPONENT,
         RICH_CONTENT_OBJECT_COMPONENT,
+        SCENE_COMPONENT,
+        DEBUG_RENDER_COMPONENT,
+        CLIP_CONTENT_COMPONENT,
 
         COMPONENT_COUNT
     };
@@ -48,7 +51,6 @@ public:
 public:
     UIComponent();
     UIComponent(const UIComponent& src);
-    virtual ~UIComponent();
 
     UIComponent& operator=(const UIComponent& src);
 
@@ -64,6 +66,9 @@ public:
     virtual UIComponent* Clone() const = 0;
 
     RefPtr<UIComponent> SafeClone() const;
+
+protected:
+    virtual ~UIComponent();
 
 private:
     UIControl* control;

@@ -42,7 +42,7 @@ bool kDComponentValue<T, TEditor, TComponent>::IsValidValueToSet(const Any& newV
 }
 
 template <typename T, typename TEditor, typename TComponent>
-ControlProxy* kDComponentValue<T, TEditor, TComponent>::CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor) const
+ControlProxy* kDComponentValue<T, TEditor, TComponent>::CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor)
 {
     if (Type::Instance<T>() == Type::Instance<Color>())
     {
@@ -52,28 +52,28 @@ ControlProxy* kDComponentValue<T, TEditor, TComponent>::CreateEditorWidget(QWidg
         layout->setMargin(0);
         w->SetLayout(layout);
 
+        QWidget* containerWidget = w->ToWidgetCast();
+
         {
-            ColorPickerButton::Params params;
-            params.accessor = GetAccessor();
-            params.ui = GetUI();
-            params.wndKey = GetWindowKey();
+            ColorPickerButton::Params params(GetAccessor(), GetUI(), GetWindowKey());
             params.fields[ColorPickerButton::Fields::Color] = "value";
             params.fields[ColorPickerButton::Fields::IsReadOnly] = readOnlyFieldName;
-            w->AddControl(new ColorPickerButton(params, wrappersProcessor, model, w->ToWidgetCast()));
+            w->AddControl(new ColorPickerButton(params, wrappersProcessor, model, containerWidget));
         }
 
         {
-            ControlDescriptorBuilder<typename TEditor::Fields> descr;
-            descr[TEditor::Fields::FieldsList] = "fieldsList";
-            w->AddControl(new TEditor(descr, wrappersProcessor, model, w->ToWidgetCast()));
+            typename TEditor::Params params(GetAccessor(), GetUI(), GetWindowKey());
+            params.fields[TEditor::Fields::FieldsList] = "fieldsList";
+            TEditor* editor = new TEditor(params, wrappersProcessor, model, containerWidget);
+            w->AddControl(editor);
         }
 
         return w;
     }
 
-    ControlDescriptorBuilder<typename TEditor::Fields> descr;
-    descr[TEditor::Fields::FieldsList] = "fieldsList";
-    return new TEditor(descr, wrappersProcessor, model, parent);
+    typename TEditor::Params params(GetAccessor(), GetUI(), GetWindowKey());
+    params.fields[TEditor::Fields::FieldsList] = "fieldsList";
+    return new TEditor(params, wrappersProcessor, model, parent);
 }
 
 template <typename T, typename TEditor, typename TComponent>
@@ -173,7 +173,7 @@ Any kDComponentValue<T, TEditor, TComponent>::GetFullValue() const
 }
 
 template <typename T, typename TEditor, typename TComponent>
-void kDComponentValue<T, TEditor, TComponent>::SetFillValue(const Any& v)
+void kDComponentValue<T, TEditor, TComponent>::SetFullValue(const Any& v)
 {
     SetValue(v);
 }
@@ -300,7 +300,7 @@ DAVA_VIRTUAL_TEMPLATE_SPECIALIZATION_REFLECTION_IMPL(ColorComponentValue)
     .Field("G", &ColorComponentValue::Get2Axis, &ColorComponentValue::Set2Axis)
     .Field("B", &ColorComponentValue::Get3Axis, &ColorComponentValue::Set3Axis)
     .Field("A", &ColorComponentValue::Get4Axis, &ColorComponentValue::Set4Axis)
-    .Field("value", &ColorComponentValue::GetFullValue, &ColorComponentValue::SetFillValue)
+    .Field("value", &ColorComponentValue::GetFullValue, &ColorComponentValue::SetFullValue)
     .Field("accuracy", &ColorComponentValue::GetAccuracy, nullptr)
     .Field("rRange", &ColorComponentValue::Get1AxisRange, nullptr)
     .Field("gRange", &ColorComponentValue::Get2AxisRange, nullptr)
