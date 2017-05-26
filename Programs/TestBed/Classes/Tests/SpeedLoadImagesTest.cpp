@@ -3,6 +3,7 @@
 #include "Render/Image/ImageSystem.h"
 #include "Time/SystemTimer.h"
 #include "Utils/UTF8Utils.h"
+#include "UI/Render/UIDebugRenderComponent.h"
 
 using namespace DAVA;
 
@@ -29,7 +30,7 @@ void SpeedLoadImagesTest::LoadResources()
         button->SetStateFont(0xFF, font);
         button->SetStateFontColor(0xFF, Color::White);
         button->SetStateText(0xFF, str);
-        button->SetDebugDraw(true);
+        button->GetOrCreateComponent<UIDebugRenderComponent>();
         button->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, m);
         AddControl(button);
         SafeRelease(button);

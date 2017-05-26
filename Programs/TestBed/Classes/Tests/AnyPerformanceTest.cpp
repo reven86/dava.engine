@@ -1,6 +1,7 @@
 #include "Base/Any.h"
 #include "Tests/AnyPerformanceTest.h"
 #include "UI/Focus/UIFocusComponent.h"
+#include "UI/Render/UIDebugRenderComponent.h"
 
 using namespace DAVA;
 
@@ -28,7 +29,7 @@ void AnyPerformanceTest::LoadResources()
     AddControl(uitext);
 
     testCount = new UITextField(Rect(110, y, 100, h));
-    testCount->SetDebugDraw(true);
+    testCount->GetOrCreateComponent<UIDebugRenderComponent>();
     testCount->SetFont(font);
     testCount->SetInputEnabled(true);
     testCount->SetText(L"1000");
@@ -37,7 +38,7 @@ void AnyPerformanceTest::LoadResources()
 
     y += dy;
     ScopedPtr<UIButton> testCreate(new UIButton(Rect(10, y, 200, h)));
-    testCreate->SetDebugDraw(true);
+    testCreate->GetOrCreateComponent<UIDebugRenderComponent>();
     testCreate->SetStateFont(0xFF, font);
     testCreate->SetStateFontColor(0xFF, Color::White);
     testCreate->SetStateText(0xFF, L"CreateTest");
@@ -50,7 +51,7 @@ void AnyPerformanceTest::LoadResources()
 
     y += dy;
     ScopedPtr<UIButton> testGetSet(new UIButton(Rect(10, y, 200, h)));
-    testGetSet->SetDebugDraw(true);
+    testGetSet->GetOrCreateComponent<UIDebugRenderComponent>();
     testGetSet->SetStateFont(0xFF, font);
     testGetSet->SetStateFontColor(0xFF, Color::White);
     testGetSet->SetStateText(0xFF, L"GetSetTest");

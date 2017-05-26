@@ -16,6 +16,8 @@
 #include "UI/Layouts/UILayoutSourceRectComponent.h"
 #include "UI/Layouts/UILinearLayoutComponent.h"
 #include "UI/Layouts/UISizePolicyComponent.h"
+#include "UI/Render/UIClipContentComponent.h"
+#include "UI/Render/UIDebugRenderComponent.h"
 #include "UI/Render/UISceneComponent.h"
 #include "UI/RichContent/UIRichContentComponent.h"
 #include "UI/RichContent/UIRichContentObjectComponent.h"
@@ -133,6 +135,12 @@ UIComponent* UIComponent::CreateByType(uint32 componentType)
 
     case SCENE_COMPONENT:
         return new UISceneComponent();
+
+    case DEBUG_RENDER_COMPONENT:
+        return new UIDebugRenderComponent();
+
+    case CLIP_CONTENT_COMPONENT:
+        return new UIClipContentComponent();
 
     default:
         DVASSERT(false, Format("Can't create component with type %d", componentType).c_str());
