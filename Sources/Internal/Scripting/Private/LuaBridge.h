@@ -51,8 +51,12 @@ Get string from top of stack and pop it.
 String PopString(lua_State* L);
 
 /**
-Dump Lua stack to Debug output.
+Dump Lua stack to output stream.
 */
 void DumpStack(lua_State* L, std::ostream& os);
+/**
+Dump Lua callstack to output stream. Can be called from error handler only!
+*/
+void DumpCallstack(lua_State* L, std::ostream& os);
 }
 }
