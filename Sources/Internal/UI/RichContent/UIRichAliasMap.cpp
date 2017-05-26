@@ -88,7 +88,7 @@ const UIRichAliasMap::Alias& UIRichAliasMap::GetAlias(const String& alias) const
     {
         return *it;
     }
-    static const UIRichAliasMap::Alias EMPTY_ALIAS;
+    static const UIRichAliasMap::Alias EMPTY_ALIAS = {};
     return EMPTY_ALIAS;
 }
 
