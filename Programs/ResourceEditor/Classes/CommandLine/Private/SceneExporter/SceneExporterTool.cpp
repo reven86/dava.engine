@@ -8,14 +8,17 @@
 #include <Tools/AssetCache/AssetCache.h>
 #include <Tools/TextureCompression/TextureConverter.h>
 
-#include "Logger/Logger.h"
-#include "FileSystem/File.h"
-#include "FileSystem/FileList.h"
-#include "Platform/DeviceInfo.h"
-#include "Render/GPUFamilyDescriptor.h"
-#include "Render/Highlevel/Heightmap.h"
-#include "Time/DateTime.h"
-#include "Utils/UTF8Utils.h"
+#include <Base/ScopedPtr.h>
+#include <Logger/Logger.h>
+#include <FileSystem/File.h>
+#include <FileSystem/FileList.h>
+#include <FileSystem/YamlNode.h>
+#include <FileSystem/YamlParser.h>
+#include <Platform/DeviceInfo.h>
+#include <Render/GPUFamilyDescriptor.h>
+#include <Render/Highlevel/Heightmap.h>
+#include <Time/DateTime.h>
+#include <Utils/UTF8Utils.h>
 
 namespace SceneExporterToolDetail
 {
@@ -131,6 +134,8 @@ bool ReadOutputsFromFile(const DAVA::FilePath& yamlConfig, DAVA::Vector<SceneExp
             const Vector<YamlNode*>& yamlNodes = rootNode->AsVector();
             for (YamlNode* propertyNode : yamlNodes)
             {
+                bool outputIsCorrect = true;
+
                 FilePath outDir;
                 const YamlNode* outdirNode = propertyNode->Get("outdir");
                 if (outdirNode != nullptr)
@@ -140,10 +145,8 @@ bool ReadOutputsFromFile(const DAVA::FilePath& yamlConfig, DAVA::Vector<SceneExp
                 }
                 else
                 {
-                    Logger::Error("[SceneExporterTool] Cannot open %s", yamlConfig.GetStringValue().c_str());
-
-                    fileIsCorrect = false;
-                    continue;
+                    Logger::Error("[SceneExporterTool] Wrong file format: 'outdir' is missing");
+                    outputIsCorrect = false;
                 }
 
                 Vector<eGPUFamily> requestedGPUs;
@@ -158,7 +161,7 @@ bool ReadOutputsFromFile(const DAVA::FilePath& yamlConfig, DAVA::Vector<SceneExp
                         if (gpu == eGPUFamily::GPU_INVALID)
                         {
                             Logger::Error("Wrong gpu name: %s", gpuName.c_str());
-                            fileIsCorrect = false;
+                            outputIsCorrect = false;
                         }
                         else
                         {
@@ -169,9 +172,7 @@ bool ReadOutputsFromFile(const DAVA::FilePath& yamlConfig, DAVA::Vector<SceneExp
                 else
                 {
                     Logger::Error("[SceneExporterTool] Empty gpu list for %s", outDir.GetStringValue().c_str());
-
-                    fileIsCorrect = false;
-                    continue;
+                    outputIsCorrect = false;
                 }
 
                 bool useHD = false;
@@ -181,7 +182,14 @@ bool ReadOutputsFromFile(const DAVA::FilePath& yamlConfig, DAVA::Vector<SceneExp
                     useHD = hdNode->AsBool();
                 }
 
-                outputs.emplace_back(outDir, requestedGPUs, DAVA::TextureConverter::ECQ_VERY_HIGH, useHD);
+                if (outputIsCorrect)
+                {
+                    outputs.emplace_back(outDir, requestedGPUs, DAVA::TextureConverter::ECQ_VERY_HIGH, useHD);
+                }
+                else
+                {
+                    fileIsCorrect = false;
+                }
             }
 
             return fileIsCorrect;

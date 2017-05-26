@@ -1,12 +1,17 @@
 #include "CommandLine/SceneExporterTool.h"
 #include "CommandLine/Private/CommandLineModuleTestUtils.h"
-#include "TArc/Testing/ConsoleModuleTestExecution.h"
-#include "TArc/Testing/TArcUnitTests.h"
 
-#include "Base/BaseTypes.h"
-#include "FileSystem/FilePath.h"
-#include "FileSystem/FileList.h"
-#include "Render/TextureDescriptor.h"
+#include <TArc/Testing/ConsoleModuleTestExecution.h>
+#include <TArc/Testing/TArcUnitTests.h>
+
+#include <Base/BaseTypes.h>
+#include <FileSystem/YamlNode.h>
+#include <FileSystem/YamlParser.h>
+#include <FileSystem/YamlEmitter.h>
+#include <FileSystem/FilePath.h>
+#include <FileSystem/FileList.h>
+#include <Render/GPUFamilyDescriptor.h>
+#include <Render/TextureDescriptor.h>
 
 #include <functional>
 

@@ -94,3 +94,6 @@ private:
     SceneExporter::Params exportingParams;
     DAVA::Vector<ExportedObjectCollection> objectsToExport;
 };
+
+bool operator==(const SceneExporter::ExportedObject& left, const SceneExporter::ExportedObject& right);
+bool operator<(const SceneExporter::ExportedObject& left, const SceneExporter::ExportedObject& right);
