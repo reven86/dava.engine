@@ -133,7 +133,7 @@ void ExecDX11(DX11Command* command, uint32 cmdCount, bool forceExecute)
     RenderLoop::IssueImmediateCommand(&cmd);
 }
 
-bool ExecDX11DeviceCommand(DX11Command cmd, const char* cmdName, const char* fileName, uint32 line)
+HRESULT ExecDX11DeviceCommand(DX11Command cmd, const char* cmdName)
 {
     DVASSERT(cmd.func >= DX11Command::DEVICE_FIRST_COMMAND);
     DVASSERT(cmd.func < DX11Command::DEVICE_LAST_COMMAND);
@@ -146,14 +146,13 @@ bool ExecDX11DeviceCommand(DX11Command cmd, const char* cmdName, const char* fil
     }
     else
     {
-        // call occured from secondary (non-render thread)
+        // call occurred from secondary (non-render thread)
         // validate device before sending commands to execution
         ValidateDX11Device(cmdName);
         ExecDX11(&cmd, 1, false);
     }
 
-    DX11_ProcessCallResult(cmd.retval, cmdName, fileName, line);
-    return SUCCEEDED(cmd.retval);
+    return cmd.retval;
 }
 
 void ValidateDX11Device(const char* call)
@@ -216,7 +215,7 @@ bool DX11_CheckResult(HRESULT hr, const char* call, const char* fileName, const 
     return true;
 }
 
-void DX11_ProcessCallResult(HRESULT hr, const char* call, const char* fileName, const uint32 line)
+bool DX11_ProcessCallResult(HRESULT hr, const char* call, const char* fileName, const uint32 line)
 {
     if ((hr == DXGI_ERROR_DEVICE_REMOVED) || (hr == DXGI_ERROR_DEVICE_RESET))
     {
@@ -235,6 +234,8 @@ void DX11_ProcessCallResult(HRESULT hr, const char* call, const char* fileName, 
         const char* errorText = DX11_GetErrorText(hr);
         DAVA::Logger::Error("DX11 Device call %s\nat %s [%u] failed:\n%s", call, fileName, line, errorText);
     }
+
+    return SUCCEEDED(hr);
 }
 
 bool dx11_HasDebugLayers()
@@ -585,13 +586,19 @@ static bool dx11_NeedRestoreResources()
 
 static bool dx11_TextureFormatSupported(TextureFormat format, ProgType)
 {
-    UINT formatSupport = 0;
     DXGI_FORMAT dxgiFormat = DX11_TextureFormat(format);
-
     if (dxgiFormat != DXGI_FORMAT_UNKNOWN)
-        DX11DeviceCommand(DX11Command::CHECK_FORMAT_SUPPORT, dxgiFormat, &formatSupport);
+    {
+        UINT formatSupport = 0;
+        HRESULT hr = ExecDX11DeviceCommand(DX11Command(DX11Command::CHECK_FORMAT_SUPPORT, dxgiFormat, &formatSupport), "DX11Command::CHECK_FORMAT_SUPPORT");
 
-    return (formatSupport & D3D11_FORMAT_SUPPORT_TEXTURE2D) != 0;
+        if (hr == S_OK)
+        {
+            return (formatSupport & D3D11_FORMAT_SUPPORT_TEXTURE2D) != 0;
+        }
+    }
+
+    return false;
 }
 
 static void dx11_Uninitialize()

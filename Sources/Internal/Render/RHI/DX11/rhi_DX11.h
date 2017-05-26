@@ -114,11 +114,11 @@ void SetupDispatch(Dispatch* dispatch);
 
 void ValidateDX11Device(const char* call);
 void ExecDX11(DX11Command* cmd, uint32 cmdCount, bool forceExecute = false);
-bool ExecDX11DeviceCommand(DX11Command cmd, const char* cmdName, const char* fileName, uint32 line);
+HRESULT ExecDX11DeviceCommand(DX11Command cmd, const char* cmdName);
 bool DX11_CheckResult(HRESULT, const char* call, const char* fileName, const uint32 line);
-void DX11_ProcessCallResult(HRESULT hr, const char* call, const char* fileName, const uint32 line);
+bool DX11_ProcessCallResult(HRESULT hr, const char* call, const char* fileName, const uint32 line);
 uint32 DX11_GetMaxSupportedMultisampleCount(ID3D11Device* device);
 
-#define DX11DeviceCommand(CMD, ...) ExecDX11DeviceCommand(DX11Command(CMD, __VA_ARGS__), #CMD, __FILE__, __LINE__)
+#define DX11DeviceCommand(CMD, ...) DX11_ProcessCallResult(ExecDX11DeviceCommand(DX11Command(CMD, __VA_ARGS__), #CMD), #CMD, __FILE__, __LINE__)
 #define DX11Check(HR) DX11_CheckResult(HR, #HR, __FILE__, __LINE__)
 }
