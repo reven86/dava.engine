@@ -109,6 +109,12 @@ PROFILE_POSTFIX
 RELEASE_POSTFIX
 )
 
+macro(apply_default_value VAR DEFAULT_VALUE)
+     if (NOT ${VAR})
+        set(${VAR} ${DEFAULT_VALUE} PARENT_SCOPE)
+     endif()
+endmacro()
+
 #
 set(  GLOBAL_PROPERTY_VALUES ${MAIN_MODULE_VALUES}  TARGET_MODULES_LIST 
                                                     QT_DEPLOY_LIST_VALUE 
@@ -749,9 +755,10 @@ macro( setup_main_module )
                     set_target_properties ( ${PROJECT_NAME} PROPERTIES LINK_FLAGS_RELEASE "/DEBUG" )
                 endif()
 
-                if (NOT DEBUG_POSTFIX)
-                    set(DEBUG_POSTFIX "Debug")
-                endif()
+                apply_default_value(DEBUG_POSTFIX "Debug")
+                apply_default_value(CHECKED_POSTFIX "")
+                apply_default_value(PROFILE_POSTFIX "")
+                apply_default_value(RELEASE_POSTFIX "")
 
                 set_target_properties( ${NAME_MODULE} PROPERTIES
                                                                  DEBUG_OUTPUT_NAME "${NAME_MODULE}" 

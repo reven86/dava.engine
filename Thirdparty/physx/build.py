@@ -1,7 +1,6 @@
 import os
 import shutil
 import build_utils
-import build_config
 
 
 def get_supported_targets(platform):
@@ -39,12 +38,12 @@ def _create_folder_if_not_exists(path):
 
 def _copy_libs(src, dst, files_ext, recursive = False):
     _create_folder_if_not_exists(dst)
-    for fileName in os.listdir(src):
-        fullFileName = os.path.join(src, fileName)
-        if fullFileName.endswith(files_ext):
-            shutil.copyfile(fullFileName, os.path.join(dst, fileName))
-        if recursive == True and os.path.isdir(fullFileName):
-            _copy_libs(fullFileName, dst, files_ext, recursive)
+    for file_name in os.listdir(src):
+        full_file_name = os.path.join(src, file_name)
+        if full_file_name.endswith(files_ext):
+            shutil.copyfile(full_file_name, os.path.join(dst, file_name))
+        if recursive and os.path.isdir(full_file_name):
+            _copy_libs(full_file_name, dst, files_ext, recursive)
 
 
 def _download_and_extract(working_directory_path):
