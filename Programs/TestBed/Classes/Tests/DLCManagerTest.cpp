@@ -3,6 +3,7 @@
 
 #include <Engine/Engine.h>
 #include <FileSystem/DynamicMemoryFile.h>
+#include <FileSystem/Private/CheckIOError.h>
 #include <DLCManager/DLCManager.h>
 #include <UI/Focus/UIFocusComponent.h>
 #include <UI/Render/UIDebugRenderComponent.h>
@@ -181,13 +182,13 @@ void DLCManagerTest::LoadResources()
     startInit->AddEvent(EVENT_TOUCH_DOWN, Message(this, &DLCManagerTest::OnStartInitClicked));
     AddControl(startInit);
 
-    startSync = new UIButton(Rect(420, 440, 100, 20));
-    startSync->GetOrCreateComponent<UIDebugRenderComponent>();
-    startSync->SetStateFont(0xFF, font);
-    startSync->SetStateFontColor(0xFF, Color::White);
-    startSync->SetStateText(0xFF, L"PM sync");
-    startSync->AddEvent(EVENT_TOUCH_DOWN, Message(this, &DLCManagerTest::OnStartSyncClicked));
-    AddControl(startSync);
+    genIOError = new UIButton(Rect(420, 440, 100, 20));
+    genIOError->GetOrCreateComponent<UIDebugRenderComponent>();
+    genIOError->SetStateFont(0xFF, font);
+    genIOError->SetStateFontColor(0xFF, Color::White);
+    genIOError->SetStateText(0xFF, L"IO error");
+    genIOError->AddEvent(EVENT_TOUCH_DOWN, Message(this, &DLCManagerTest::OnIOErrorClicked));
+    AddControl(genIOError);
 
     clearDocs = new UIButton(Rect(420, 470, 100, 20));
     clearDocs->GetOrCreateComponent<UIDebugRenderComponent>();
@@ -255,7 +256,7 @@ void DLCManagerTest::UnloadResources()
     SafeRelease(loadNext);
     SafeRelease(packNextInput);
     SafeRelease(lsDvpks);
-    SafeRelease(startSync);
+    SafeRelease(genIOError);
     SafeRelease(clearDocs);
     SafeRelease(packInput);
     SafeRelease(loadPack);
@@ -285,7 +286,6 @@ void DLCManagerTest::WriteErrorOnDevice(const String& filePath, int32 errnoVal)
     std::string str = ss.str();
     logPring->SetUtf8Text(str);
     Logger::Info("%s", str.c_str());
-    DVASSERT(false);
 }
 
 void DLCManagerTest::OnRequestUpdated(const DAVA::DLCManager::IRequest& request)
@@ -365,12 +365,17 @@ void DLCManagerTest::OnStartInitClicked(DAVA::BaseObject* sender, void* data, vo
     packNameLoading->SetText(L"done: start initialize PackManager");
 }
 
-void DLCManagerTest::OnStartSyncClicked(DAVA::BaseObject* sender, void* data, void* callerData)
+void DLCManagerTest::OnIOErrorClicked(BaseObject*, void*, void*)
 {
-    /*
-    packNameLoading->SetText(L"done: start sync");
-    IPackManager& pm = Core::Instance()->GetPackManager();
-    */
+    DebugFS::IOErrorTypes ioErr;
+    ioErr.closeFailed = true;
+    ioErr.openOrCreateFailed = true;
+    ioErr.seekFailed = true;
+    ioErr.truncateFailed = true;
+    ioErr.readFailed = true;
+    ioErr.writeFailed = true;
+    ioErr.ioErrorCode = ENOSPC; // no space on device
+    GenerateIOErrorOnNextOperation(ioErr);
 }
 
 void DLCManagerTest::OnClearDocsClicked(DAVA::BaseObject* sender, void* data, void* callerData)
