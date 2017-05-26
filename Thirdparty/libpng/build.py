@@ -7,8 +7,12 @@ import build_utils
 def get_supported_targets(platform):
     if platform == 'win32':
         return ['win32', 'win10', 'android']
+    elif platform == 'darwin':
+        return ['macos']
+    elif platform == 'linux':
+        return ['linux']
     else:
-        return ['macos', 'ios', 'android']
+        return []
 
 
 def get_dependencies_for_target(target):
@@ -29,11 +33,13 @@ def build_for_target(target, working_directory_path, root_project_path):
         _build_ios(working_directory_path, root_project_path)
     elif target == 'android':
         _build_android(working_directory_path, root_project_path)
+    elif target == 'linux':
+        _build_linux(working_directory_path, root_project_path)
 
 
 def get_download_info():
-    return {'win32': 'https://sourceforge.net/projects/libpng/files/libpng16/1.6.25/lpng1625.zip',
-            'others': 'https://sourceforge.net/projects/libpng/files/libpng16/1.6.25/libpng-1.6.25.tar.gz'}
+    return {'win32': 'https://sourceforge.net/projects/libpng/files/libpng16/older-releases/1.6.25/lpng1625.zip',
+            'others': 'https://sourceforge.net/projects/libpng/files/libpng16/older-releases/1.6.25/libpng-1.6.25.tar.gz'}
 
 
 def _download_and_extract(working_directory_path):
@@ -149,6 +155,20 @@ def _build_android(working_directory_path, root_project_path):
         root_project_path,
         'libpng16.a',
         'libpng.a')
+
+    _copy_headers(source_folder_path, root_project_path)
+
+
+def _build_linux(working_directory_path, root_project_path):
+    source_folder_path = _download_and_extract(working_directory_path)
+    _patch_sources(source_folder_path, working_directory_path)
+
+    build_utils.build_and_copy_libraries_linux_cmake(
+        gen_folder_path=os.path.join(working_directory_path, 'gen'),
+        source_folder_path=source_folder_path,
+        root_project_path=root_project_path,
+        target="all",
+        lib_name='libpng.a')
 
     _copy_headers(source_folder_path, root_project_path)
 
