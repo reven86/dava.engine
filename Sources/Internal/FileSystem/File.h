@@ -177,15 +177,6 @@ private:
     static File* LoadFileFromMountedArchive(const String& packName, const String& relative);
     static bool IsFileInMountedArchive(const String& packName, const String& relative);
     /**
-    \brief funciton to create a file instance with give attributes
-    this function must be used for opening existing files also
-    \param[in] filePath absolute system path to file
-    \param[in] attributes combinations of eFileAttributes
-    \returns file instance
-    */
-    static File* CreateFromSystemPath(const FilePath& filePath, uint32 attributes);
-
-    /**
     \brief funciton to create a file instance with give attributes directly without framework path management.
     \param[in] filePath absolute system path to file
     \param[in] attributes combinations of eFileAttributes
@@ -198,7 +189,6 @@ private:
 
     FILE* file = nullptr;
     uint64 size = 0;
-    friend class FileSystem;
 };
 
 template <class T>
