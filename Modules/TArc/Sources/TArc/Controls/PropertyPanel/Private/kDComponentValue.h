@@ -21,7 +21,7 @@ public:
 protected:
     Any GetMultipleValue() const override;
     bool IsValidValueToSet(const Any& newValue, const Any& currentValue) const override;
-    ControlProxy* CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor) const override;
+    ControlProxy* CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor) override;
 
 private:
     Any Get1Axis() const;
@@ -38,7 +38,7 @@ private:
     void Set6Axis(const Any& v);
 
     Any GetFullValue() const;
-    void SetFillValue(const Any& v);
+    void SetFullValue(const Any& v);
 
     int32 GetAccuracy() const;
     const M::Range* Get1AxisRange() const;

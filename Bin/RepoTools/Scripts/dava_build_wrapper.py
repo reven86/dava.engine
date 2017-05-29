@@ -240,12 +240,12 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument('--incrediBuild', default='false', choices=['true', 'false'])
-    parser.add_argument('--config', default='Debug', choices=['Debug', 'Release'])
+    parser.add_argument('--config', required=True)
     parser.add_argument('--teamcityLog', default='false', choices=['true', 'false'])
     parser.add_argument('--pathToRoot')
     parser.add_argument('--pathToDava', required=True)
     parser.add_argument('--pathToBuild', required=True)
-    parser.add_argument('--nativeOptions', help='Native options for cmake, for example "/p:Platform=x86"')
+    parser.add_argument('--nativeOptions', help='Native options for cmake, for example: --nativeOptions="/p:Platform=x86"')
 
     options = parser.parse_args()
 

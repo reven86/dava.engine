@@ -1,7 +1,6 @@
 #include "DLCManager/Private/PackRequest.h"
 #include "DLCManager/Private/DLCManagerImpl.h"
 #include "FileSystem/Private/PackMetaData.h"
-#include "DLC/Downloader/DownloadManager.h"
 #include "FileSystem/FileSystem.h"
 #include "Utils/CRC32.h"
 #include "Utils/Utils.h"
@@ -41,15 +40,16 @@ PackRequest& PackRequest::operator=(PackRequest&& other)
 
 void PackRequest::CancelCurrentsDownloads()
 {
-    DownloadManager* dm = DownloadManager::Instance();
+    DLCDownloader* dm = packManagerImpl->GetDownloader();
     if (dm)
     {
         for (FileRequest& r : requests)
         {
-            if (r.taskId != 0)
+            if (r.taskId != nullptr)
             {
-                dm->Cancel(r.taskId);
-                r.taskId = 0;
+                dm->RemoveTask(r.taskId);
+                r.taskId = nullptr;
+                r.status = LoadingPackFile; // to resume loading after update
             }
         }
     }
@@ -211,6 +211,7 @@ bool PackRequest::Update()
         if (requests.empty())
         {
             InitializeFileRequests();
+            packManagerImpl->requestStartLoading.Emit(*this);
         }
 
         if (!IsDownloaded())
@@ -248,14 +249,18 @@ void PackRequest::InitializeFileRequest(const uint32 fileIndex_,
 void PackRequest::DeleteJustDownloadedFileAndStartAgain(FileRequest& fileRequest)
 {
     fileRequest.downloadedFileSize = 0;
-    FileSystem::Instance()->DeleteFile(fileRequest.localFile);
+    bool deleteOk = FileSystem::Instance()->DeleteFile(fileRequest.localFile);
+    if (!deleteOk)
+    {
+        Logger::Error("DLCManager can't delete invalid file: %s", fileRequest.localFile.GetStringValue().c_str());
+    }
     fileRequest.status = LoadingPackFile;
 }
 
-void PackRequest::DisableRequestingAndFireSignalNoSpaceLeft(PackRequest::FileRequest& fileRequest)
+void PackRequest::DisableRequestingAndFireSignalNoSpaceLeft(FileRequest& fileRequest) const
 {
     int32 errnoValue = errno; // save in local variable if other error happen
-    packManagerImpl->GetLog() << "No space on device!!! Can't create or write file: "
+    packManagerImpl->GetLog() << "No space on device!!! errno(" << errnoValue << ") Can't create or write file: "
                               << fileRequest.localFile.GetAbsolutePathname()
                               << " disable DLCManager requesting" << std::endl;
     packManagerImpl->SetRequestingEnabled(false);
@@ -284,10 +289,18 @@ bool PackRequest::UpdateFileRequests()
                 uint64 fileSize = 0;
                 if (fs->GetFileSize(fileRequest.localFile, fileSize))
                 {
-                    DVASSERT(fileSize == fileRequest.sizeOfCompressedFile + sizeof(PackFormat::LitePack::Footer));
-                    fileRequest.downloadedFileSize = fileSize;
+                    if (fileSize == fileRequest.sizeOfCompressedFile + sizeof(PackFormat::LitePack::Footer))
+                    {
+                        fileRequest.downloadedFileSize = fileSize;
+                        callSignal = true;
+                    }
+                    else
+                    {
+                        // file exist but may be invalid so let's check it out
+                        fileRequest.status = CheckHash;
+                        callSignal = false;
+                    }
                 }
-                callSignal = true;
             }
             else
             {
@@ -297,8 +310,9 @@ bool PackRequest::UpdateFileRequests()
         }
         case LoadingPackFile:
         {
-            DownloadManager* dm = DownloadManager::Instance();
-            if (fileRequest.taskId == 0)
+            DLCDownloader* dm = packManagerImpl->GetDownloader();
+            String dstPath = fileRequest.localFile.GetAbsolutePathname();
+            if (fileRequest.taskId == nullptr)
             {
                 if (fileRequest.sizeOfCompressedFile == 0)
                 {
@@ -317,76 +331,87 @@ bool PackRequest::UpdateFileRequests()
                         return false;
                     }
                     f->Truncate(0);
-                    fileRequest.taskId = 0;
+                    fileRequest.taskId = nullptr;
                     fileRequest.status = CheckHash;
                     callSignal = true;
                 }
                 else
                 {
                     fs->DeleteFile(fileRequest.localFile); // just in case (hash not match, size not match...)
-                    const DLCManager::Hints& h = packManagerImpl->GetHints();
-                    fileRequest.taskId = dm->DownloadRange(fileRequest.url,
-                                                           fileRequest.localFile,
-                                                           fileRequest.startLoadingPos,
-                                                           fileRequest.sizeOfCompressedFile,
-                                                           RESUMED,
-                                                           h.numOfThreadsPerFileDownload,
-                                                           h.timeoutForDownload,
-                                                           h.retriesCountForDownload);
+
+                    DLCDownloader::Range range = DLCDownloader::Range(fileRequest.startLoadingPos, fileRequest.sizeOfCompressedFile);
+                    fileRequest.taskId = dm->ResumeTask(fileRequest.url, dstPath, range);
+                    if (nullptr == fileRequest.taskId)
+                    {
+                        DAVA_THROW(Exception, "can't be, something very very wrong");
+                    }
                 }
             }
             else
             {
                 // TODO move to separate function
-                DownloadStatus downloadStatus;
-                if (dm->GetStatus(fileRequest.taskId, downloadStatus))
+                DLCDownloader::TaskStatus status = dm->GetTaskStatus(fileRequest.taskId);
                 {
-                    switch (downloadStatus)
+                    switch (status.state)
                     {
-                    case DL_PENDING:
+                    case DLCDownloader::TaskState::JustAdded:
                         break;
-                    case DL_IN_PROGRESS:
+                    case DLCDownloader::TaskState::Downloading:
                     {
-                        uint64 progress = 0;
-                        if (dm->GetProgress(fileRequest.taskId, progress))
+                        if (fileRequest.downloadedFileSize != status.sizeDownloaded)
                         {
-                            fileRequest.downloadedFileSize = progress;
-                            uint64 s = GetSize();
-                            uint64 ds = GetDownloadedSize();
-                            DVASSERT(s > 0);
-                            DVASSERT(s >= ds);
+                            fileRequest.downloadedFileSize = status.sizeDownloaded;
                             callSignal = true;
                         }
                     }
                     break;
-                    case DL_FINISHED:
+                    case DLCDownloader::TaskState::Finished:
                     {
-                        DownloadError downloadError = DLE_NO_ERROR;
-                        if (dm->GetError(fileRequest.taskId, downloadError))
+                        dm->RemoveTask(fileRequest.taskId);
+                        fileRequest.taskId = nullptr;
+
+                        bool allGood = !status.error.errorHappened;
+
+                        if (allGood)
                         {
-                            if (DLE_NO_ERROR != downloadError)
-                            {
-                                String err = DLC::ToString(downloadError);
-                                packManagerImpl->GetLog() << "can't download file: "
-                                                          << fileRequest.localFile.GetAbsolutePathname()
-                                                          << " cause: " << err << std::endl;
-
-                                if (DLE_FILE_ERROR == downloadError)
-                                {
-                                    DisableRequestingAndFireSignalNoSpaceLeft(fileRequest);
-                                    return false;
-                                }
-                            }
+                            fileRequest.taskId = nullptr;
+                            fileRequest.downloadedFileSize = status.sizeDownloaded;
+                            fileRequest.status = CheckHash;
+                            callSignal = true;
                         }
-                        dm->GetProgress(fileRequest.taskId, fileRequest.downloadedFileSize);
+                        else
+                        {
+                            std::ostream& out = packManagerImpl->GetLog();
 
-                        fileRequest.taskId = 0;
-                        fileRequest.status = CheckHash;
-                        callSignal = true;
+                            out << "can't download file: " << dstPath;
+
+                            if (status.error.fileErrno != 0)
+                            {
+                                out << " I/O error: " << status.error.errStr << std::endl;
+                                DisableRequestingAndFireSignalNoSpaceLeft(fileRequest);
+                                return true;
+                            }
+
+                            if (status.error.httpCode >= 400)
+                            {
+                                out << " httpCode error(" << status.error.httpCode << "): " << status.error.errStr << std::endl;
+                            }
+
+                            if (status.error.curlErr != 0)
+                            {
+                                out << " curl easy error(" << status.error.curlErr << "): " << status.error.errStr << std::endl;
+                            }
+
+                            if (status.error.curlMErr != 0)
+                            {
+                                out << " curl multi error(" << status.error.curlMErr << "): " << status.error.errStr << std::endl;
+                            }
+
+                            DeleteJustDownloadedFileAndStartAgain(fileRequest);
+                            return false;
+                        }
                     }
                     break;
-                    case DL_UNKNOWN:
-                        break;
                     }
                 }
             }

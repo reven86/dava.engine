@@ -16,7 +16,7 @@ namespace DAVA
 {
 class FMODSoundSystem;
 
-class FMODSoundEvent : public SoundEvent
+class FMODSoundEvent final : public SoundEvent
 {
 public:
     static FMOD_RESULT F_CALLBACK FMODEventCallback(FMOD_EVENT* event, FMOD_EVENT_CALLBACKTYPE type, void* param1, void* param2, void* userdata);
@@ -46,7 +46,7 @@ public:
     virtual String GetEventName() const;
     virtual float32 GetMaxDistance() const;
 
-protected:
+private:
     FMODSoundEvent(const FastName& eventName, FMODSoundSystem* rootSoundSystem);
     void ApplyParamsToEvent(FMOD::Event* event);
     void InitParamsMap();

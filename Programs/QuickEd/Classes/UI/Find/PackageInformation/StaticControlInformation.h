@@ -2,6 +2,8 @@
 
 #include "UI/Find/PackageInformation/ControlInformation.h"
 
+#include <Base/Result.h>
+
 class StaticPackageInformation;
 
 class StaticControlInformation
@@ -15,6 +17,7 @@ public:
     DAVA::FastName GetName() const override;
     DAVA::FastName GetPrototype() const override;
     DAVA::String GetPrototypePackagePath() const override;
+    bool HasErrors() const override;
 
     bool HasComponent(DAVA::UIComponent::eType componentType) const override;
 
@@ -36,6 +39,8 @@ public:
     void SetControlProperty(const DAVA::ReflectedStructure::Field& member, const DAVA::Any& value);
     void SetComponentProperty(DAVA::UIComponent::eType componentType, DAVA::int32 componentIndex, const DAVA::ReflectedStructure::Field& member, const DAVA::Any& value);
 
+    void AddResult(const DAVA::Result& result);
+
 private:
     using ComponentPropertyId = std::tuple<DAVA::UIComponent::eType, DAVA::int32, DAVA::FastName>;
 
@@ -51,4 +56,6 @@ private:
     DAVA::Map<ComponentPropertyId, DAVA::Any> componentProperties;
 
     DAVA::Vector<std::shared_ptr<StaticControlInformation>> children;
+
+    DAVA::ResultList results;
 };

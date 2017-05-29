@@ -20,6 +20,8 @@ struct Meta : public T
 class Type;
 class ReflectedMeta final
 {
+    friend class ReflectedTypeDB; // friend for stast calculation
+
 public:
     ReflectedMeta() = default;
 
@@ -32,10 +34,9 @@ public:
     ReflectedMeta(Meta<T, IndexT>&& meta);
 
     template <typename T>
-    bool HasMeta() const;
-
-    template <typename T>
     const T* GetMeta() const;
+
+    const void* GetMeta(const Type* metaType) const;
 
     template <typename T, typename IndexT>
     void Emplace(Meta<T, IndexT>&& meta);
@@ -63,12 +64,17 @@ namespace M
 using ReadOnly = Meta<Metas::ReadOnly>;
 
 /**
-    \ingroup
+    \ingroup metas
     Mark field as invisible in property panel
 */
 using HiddenField = Meta<Metas::HiddenField>;
 /**
-    \ingroup
+    \ingroup metas
+    Mark field to be visible only in developer mode of property panel
+*/
+using DeveloperModeOnly = Meta<Metas::DeveloperModeOnly>;
+/**
+    \ingroup metas
     Name of property that should be shown for user instead of field name
 */
 using DisplayName = Meta<Metas::DisplayName>;
@@ -221,13 +227,23 @@ using ValueDescription = Meta<Metas::ValueDescription>;
 using SubProperty = Meta<Metas::SubProperty>;
 
 /**
+    \ingroup metas
     Says that value can be changed at some unpredictable moment and
     Reflection's client should update value as often as possible
 */
 using FrequentlyChangedValue = Meta<Metas::FrequentlyChangedValue>;
 
-/** Type that derived from Component and marked by this Meta couldn't be created in PropertyPanel */
+/**
+    \ingroup metas
+    Type that derived from Component and marked by this Meta couldn't be created in PropertyPanel
+*/
 using CantBeCreatedManualyComponent = Meta<Metas::CantBeCreatedManualyComponent>;
+
+/**
+    \ingroup metas
+    Type that derived from Component and marked by this Meta couldn't be created in PropertyPanel
+*/
+using CantBeDeletedManualyComponent = Meta<Metas::CantBeDeletedManualyComponent>;
 }
 
 } // namespace DAVA

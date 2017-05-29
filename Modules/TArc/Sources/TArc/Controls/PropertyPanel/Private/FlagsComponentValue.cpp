@@ -32,12 +32,12 @@ bool FlagsComponentValue::IsValidValueToSet(const Any& newValue, const Any& curr
     return newIntValue != currentIntValue;
 }
 
-ControlProxy* FlagsComponentValue::CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor) const
+ControlProxy* FlagsComponentValue::CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor)
 {
-    ControlDescriptorBuilder<ComboBoxCheckable::Fields> descr;
-    descr[ComboBoxCheckable::Fields::Value] = "value";
-    descr[ComboBoxCheckable::Fields::IsReadOnly] = readOnlyFieldName;
-    return new ComboBoxCheckable(descr, wrappersProcessor, model, parent);
+    ComboBoxCheckable::Params params(GetAccessor(), GetUI(), GetWindowKey());
+    params.fields[ComboBoxCheckable::Fields::Value] = "value";
+    params.fields[ComboBoxCheckable::Fields::IsReadOnly] = readOnlyFieldName;
+    return new ComboBoxCheckable(params, wrappersProcessor, model, parent);
 }
 
 Any FlagsComponentValue::GetValueAny() const

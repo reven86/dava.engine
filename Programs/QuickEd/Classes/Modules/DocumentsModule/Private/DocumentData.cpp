@@ -9,14 +9,14 @@
 DAVA_VIRTUAL_REFLECTION_IMPL(DocumentData)
 {
     DAVA::ReflectionRegistrator<DocumentData>::Begin()
-    .Field(packagePropertyName, &DocumentData::GetPackageNode, nullptr)
-    .Field(canSavePropertyName, &DocumentData::CanSave, nullptr)
-    .Field(canUndoPropertyName, &DocumentData::CanUndo, nullptr)
-    .Field(canRedoPropertyName, &DocumentData::CanRedo, nullptr)
-    .Field(undoTextPropertyName, &DocumentData::GetUndoText, nullptr)
-    .Field(redoTextPropertyName, &DocumentData::GetRedoText, nullptr)
-    .Field(selectionPropertyName, &DocumentData::GetSelectedNodes, &DocumentData::SetSelectedNodes)
-    .Field(displayedRootControlsPropertyName, &DocumentData::GetDisplayedRootControls, &DocumentData::SetDisplayedRootControls)
+    .Field(packagePropertyName.c_str(), &DocumentData::GetPackageNode, nullptr)
+    .Field(canSavePropertyName.c_str(), &DocumentData::CanSave, nullptr)
+    .Field(canUndoPropertyName.c_str(), &DocumentData::CanUndo, nullptr)
+    .Field(canRedoPropertyName.c_str(), &DocumentData::CanRedo, nullptr)
+    .Field(undoTextPropertyName.c_str(), &DocumentData::GetUndoText, nullptr)
+    .Field(redoTextPropertyName.c_str(), &DocumentData::GetRedoText, nullptr)
+    .Field(selectionPropertyName.c_str(), &DocumentData::GetSelectedNodes, &DocumentData::SetSelectedNodes)
+    .Field(displayedRootControlsPropertyName.c_str(), &DocumentData::GetDisplayedRootControls, &DocumentData::SetDisplayedRootControls)
     .End();
 }
 
@@ -41,11 +41,14 @@ void DocumentData::ExecCommand(std::unique_ptr<DAVA::Command>&& command)
 
 void DocumentData::BeginBatch(const DAVA::String& batchName, DAVA::uint32 commandsCount)
 {
+    startedBatches++;
     commandStack->BeginBatch(batchName, commandsCount);
 }
 
 void DocumentData::EndBatch()
 {
+    DVASSERT(startedBatches != 0);
+    startedBatches--;
     commandStack->EndBatch();
 }
 
@@ -129,6 +132,11 @@ bool DocumentData::CanRedo() const
     return commandStack->CanRedo();
 }
 
+bool DocumentData::CanClose() const
+{
+    return startedBatches == 0;
+}
+
 QString DocumentData::GetRedoText() const
 {
     const DAVA::Command* command = commandStack->GetRedoCommand();
@@ -159,11 +167,11 @@ void DocumentData::RefreshAllControlProperties()
     package->GetPrototypes()->RefreshControlProperties();
 }
 
-const char* DocumentData::packagePropertyName = "package";
-const char* DocumentData::canSavePropertyName = "can save";
-const char* DocumentData::canUndoPropertyName = "can undo";
-const char* DocumentData::canRedoPropertyName = "can redo";
-const char* DocumentData::undoTextPropertyName = "undo text";
-const char* DocumentData::redoTextPropertyName = "redo text";
-const char* DocumentData::selectionPropertyName = "selection";
-const char* DocumentData::displayedRootControlsPropertyName = "displayed root controls";
+DAVA::FastName DocumentData::packagePropertyName{ "package" };
+DAVA::FastName DocumentData::canSavePropertyName{ "can save" };
+DAVA::FastName DocumentData::canUndoPropertyName{ "can undo" };
+DAVA::FastName DocumentData::canRedoPropertyName{ "can redo" };
+DAVA::FastName DocumentData::undoTextPropertyName{ "undo text" };
+DAVA::FastName DocumentData::redoTextPropertyName{ "redo text" };
+DAVA::FastName DocumentData::selectionPropertyName{ "selection" };
+DAVA::FastName DocumentData::displayedRootControlsPropertyName{ "displayed root controls" };

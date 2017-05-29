@@ -19,7 +19,7 @@ public:
     UIPackage* GetPackage() const;
     UIPackage* FindInCache(const String& packagePath) const;
 
-    void BeginPackage(const FilePath& packagePath) override;
+    void BeginPackage(const FilePath& packagePath, int32 version) override;
     void EndPackage() override;
 
     bool ProcessImportedPackage(const String& packagePath, AbstractUIPackageLoader* loader) override;

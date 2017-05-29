@@ -16,7 +16,9 @@ public:
 
     bool HasFields(const ReflectedObject& object, const ValueWrapper* vw) const override;
     Reflection GetField(const ReflectedObject& obj, const ValueWrapper* vw, const Any& key) const override;
+    size_t GetFieldsCount(const ReflectedObject& object, const ValueWrapper* vw) const override;
     Vector<Reflection::Field> GetFields(const ReflectedObject& obj, const ValueWrapper* vw) const override;
+    Vector<Reflection::Field> GetFields(const ReflectedObject& obj, const ValueWrapper* vw, size_t, size_t) const override;
     bool HasMethods(const ReflectedObject& object, const ValueWrapper* vw) const override;
     AnyFn GetMethod(const ReflectedObject& object, const ValueWrapper* vw, const Any& key) const override;
     Vector<Reflection::Method> GetMethods(const ReflectedObject& object, const ValueWrapper* vw) const override;

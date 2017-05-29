@@ -37,7 +37,7 @@ public:
     AbstractUIPackageBuilder();
     virtual ~AbstractUIPackageBuilder();
 
-    virtual void BeginPackage(const FilePath& packagePath) = 0;
+    virtual void BeginPackage(const FilePath& packagePath, int32 version) = 0;
     virtual void EndPackage() = 0;
 
     virtual bool ProcessImportedPackage(const String& packagePath, AbstractUIPackageLoader* loader) = 0;

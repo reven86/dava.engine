@@ -1,6 +1,7 @@
 #include <functional>
 #include <time.h>
 #include "Tests/FunctionSignalTest.h"
+#include "UI/Render/UIDebugRenderComponent.h"
 
 using namespace DAVA;
 
@@ -52,7 +53,7 @@ void FunctionSignalTest::LoadResources()
     runResult = new UIStaticText(Rect(10, 10, 450, 600));
     runResult->SetFont(font12);
     runResult->SetTextColor(Color::White);
-    runResult->SetDebugDraw(true);
+    runResult->GetOrCreateComponent<UIDebugRenderComponent>();
     runResult->SetMultiline(true);
     runResult->SetTextAlign(ALIGN_LEFT | ALIGN_TOP);
     AddControl(runResult);
@@ -63,7 +64,7 @@ void FunctionSignalTest::LoadResources()
     runButton->SetStateText(0xFF, L"Start bench test");
     runButton->SetStateText(UIButton::STATE_DISABLED, L"Running...");
     runButton->SetDisabled(false);
-    runButton->SetDebugDraw(true);
+    runButton->GetOrCreateComponent<UIDebugRenderComponent>();
     runButton->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, &FunctionSignalTest::OnButtonPress));
     AddControl(runButton);
 }
