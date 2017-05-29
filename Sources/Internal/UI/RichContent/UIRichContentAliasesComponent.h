@@ -6,7 +6,6 @@
 
 namespace DAVA
 {
-class UIControl;
 
 /**
     RichContent compoent support tag aliases. Any alias contains alias

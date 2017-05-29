@@ -90,6 +90,7 @@ DAVA_TESTCLASS(UIRichContentTest)
         UIRichContentComponent* c = richControl->GetOrCreateComponent<UIRichContentComponent>();
         UIRichContentAliasesComponent* ca = richControl->GetOrCreateComponent<UIRichContentAliasesComponent>();
         DVASSERT(c);
+        DVASSERT(ca);
 
         // Add aliases
         UIRichAliasMap aliases;
