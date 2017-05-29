@@ -1,5 +1,7 @@
 #include "TArc/Controls/PropertyPanel/Private/WidgetRenderHelper.h"
 
+#include <Debug/DVAssert.h>
+
 #include <QtWidgets/private/qwidget_p.h>
 
 namespace DAVA
