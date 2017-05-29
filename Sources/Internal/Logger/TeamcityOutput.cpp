@@ -1,5 +1,6 @@
 #include "Logger/TeamcityOutput.h"
 #include "Utils/Utils.h"
+#include "Engine/Engine.h"
 
 #include <iostream>
 
@@ -14,7 +15,8 @@ namespace DAVA
 {
 void TeamcityOutput::Output(Logger::eLogLevel ll, const char8* text)
 {
-    if (ll < Logger::Instance()->GetLogLevel())
+    Logger* logger = GetEngineContext()->logger;
+    if (ll < logger->GetLogLevel())
         return;
 
     String outStr = NormalizeString(text);

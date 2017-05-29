@@ -7,6 +7,7 @@
 
 #include "Utils/Utils.h"
 #include "Utils/StringFormat.h"
+#include "Engine/Engine.h"
 
 namespace DAVA
 {
@@ -149,7 +150,7 @@ void Logger::Log(eLogLevel ll, const char8* text, ...) const
 
 void Logger::FrameworkDebug(const char8* text, ...)
 {
-    Logger* log = Logger::Instance();
+    Logger* log = GetEngineContext()->logger;
     if (nullptr != log)
     {
         va_list vl;
@@ -161,7 +162,7 @@ void Logger::FrameworkDebug(const char8* text, ...)
 
 void Logger::Debug(const char8* text, ...)
 {
-    Logger* log = Logger::Instance();
+    Logger* log = GetEngineContext()->logger;
     if (nullptr != log)
     {
         va_list vl;
@@ -173,7 +174,7 @@ void Logger::Debug(const char8* text, ...)
 
 void Logger::Info(const char8* text, ...)
 {
-    Logger* log = Logger::Instance();
+    Logger* log = GetEngineContext()->logger;
     if (nullptr != log)
     {
         va_list vl;
@@ -185,7 +186,7 @@ void Logger::Info(const char8* text, ...)
 
 void Logger::Warning(const char8* text, ...)
 {
-    Logger* log = Logger::Instance();
+    Logger* log = GetEngineContext()->logger;
     if (nullptr != log)
     {
         va_list vl;
@@ -197,7 +198,7 @@ void Logger::Warning(const char8* text, ...)
 
 void Logger::Error(const char8* text, ...)
 {
-    Logger* log = Logger::Instance();
+    Logger* log = GetEngineContext()->logger;
     if (nullptr != log)
     {
         va_list vl;
@@ -209,7 +210,7 @@ void Logger::Error(const char8* text, ...)
 
 void Logger::FrameworkDebugToFile(const FilePath& customLogFileName, const char8* text, ...)
 {
-    Logger* log = Logger::Instance();
+    Logger* log = GetEngineContext()->logger;
     if (nullptr != log)
     {
         va_list vl;
@@ -221,7 +222,7 @@ void Logger::FrameworkDebugToFile(const FilePath& customLogFileName, const char8
 
 void Logger::DebugToFile(const FilePath& customLogFileName, const char8* text, ...)
 {
-    Logger* log = Logger::Instance();
+    Logger* log = GetEngineContext()->logger;
     if (nullptr != log)
     {
         va_list vl;
@@ -233,7 +234,7 @@ void Logger::DebugToFile(const FilePath& customLogFileName, const char8* text, .
 
 void Logger::InfoToFile(const FilePath& customLogFileName, const char8* text, ...)
 {
-    Logger* log = Logger::Instance();
+    Logger* log = GetEngineContext()->logger;
     if (nullptr != log)
     {
         va_list vl;
@@ -245,7 +246,7 @@ void Logger::InfoToFile(const FilePath& customLogFileName, const char8* text, ..
 
 void Logger::WarningToFile(const FilePath& customLogFileName, const char8* text, ...)
 {
-    Logger* log = Logger::Instance();
+    Logger* log = GetEngineContext()->logger;
     if (nullptr != log)
     {
         va_list vl;
@@ -257,7 +258,7 @@ void Logger::WarningToFile(const FilePath& customLogFileName, const char8* text,
 
 void Logger::ErrorToFile(const FilePath& customLogFileName, const char8* text, ...)
 {
-    Logger* log = Logger::Instance();
+    Logger* log = GetEngineContext()->logger;
     if (nullptr != log)
     {
         va_list vl;
@@ -269,7 +270,7 @@ void Logger::ErrorToFile(const FilePath& customLogFileName, const char8* text, .
 
 void Logger::LogToFile(const FilePath& customLogFileName, eLogLevel ll, const char8* text, ...)
 {
-    Logger* log = Logger::Instance();
+    Logger* log = GetEngineContext()->logger;
     if (nullptr != log)
     {
         va_list vl;
@@ -281,14 +282,14 @@ void Logger::LogToFile(const FilePath& customLogFileName, eLogLevel ll, const ch
 
 void Logger::AddCustomOutput(DAVA::LoggerOutput* lo)
 {
-    Logger* log = Logger::Instance();
+    Logger* log = GetEngineContext()->logger;
     if (nullptr != log && nullptr != lo)
         log->customOutputs.push_back(lo);
 }
 
 void Logger::RemoveCustomOutput(DAVA::LoggerOutput* lo)
 {
-    Logger* log = Logger::Instance();
+    Logger* log = GetEngineContext()->logger;
     if (nullptr != log && nullptr != lo)
     {
         auto& outputs = log->customOutputs;
