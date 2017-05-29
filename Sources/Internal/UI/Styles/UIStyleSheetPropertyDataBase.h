@@ -35,7 +35,7 @@ private:
     UIStyleSheetPropertyGroup bgGroup;
     UIStyleSheetPropertyGroup staticTextGroup;
     UIStyleSheetPropertyGroup textFieldGroup;
-    UIStyleSheetPropertyGroup particlesGroup;
+    UIStyleSheetPropertyGroup particleEffectGroup;
 
     UIStyleSheetPropertyGroup linearLayoutGroup;
     UIStyleSheetPropertyGroup flowLayoutGroup;

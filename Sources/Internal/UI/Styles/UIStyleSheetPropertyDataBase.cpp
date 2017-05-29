@@ -19,7 +19,7 @@ UIStyleSheetPropertyDataBase::UIStyleSheetPropertyDataBase()
     , bgGroup("bg", UIComponent::BACKGROUND_COMPONENT, ReflectedTypeDB::Get<UIControlBackground>())
     , staticTextGroup("text", -1, ReflectedTypeDB::Get<UIStaticText>())
     , textFieldGroup("textField", -1, ReflectedTypeDB::Get<UITextField>())
-    , particlesGroup("particles", -1, ReflectedTypeDB::Get<UIParticles>())
+    , particleEffectGroup("particleEffect", -1, ReflectedTypeDB::Get<UIParticles>())
     , linearLayoutGroup("linearLayout", UIComponent::LINEAR_LAYOUT_COMPONENT, ReflectedTypeDB::Get<UILinearLayoutComponent>())
     , flowLayoutGroup("flowLayout", UIComponent::FLOW_LAYOUT_COMPONENT, ReflectedTypeDB::Get<UIFlowLayoutComponent>())
     , flowLayoutHintGroup("flowLayoutHint", UIComponent::FLOW_LAYOUT_HINT_COMPONENT, ReflectedTypeDB::Get<UIFlowLayoutHintComponent>())
@@ -56,9 +56,9 @@ UIStyleSheetPropertyDataBase::UIStyleSheetPropertyDataBase()
                      UIStyleSheetPropertyDescriptor(&staticTextGroup, "shadowcolor", Color::Black),
                      UIStyleSheetPropertyDescriptor(&staticTextGroup, "textalign", ALIGN_HCENTER | ALIGN_VCENTER),
 
-                     UIStyleSheetPropertyDescriptor(&particlesGroup, "effectPath", FilePath()),
-                     UIStyleSheetPropertyDescriptor(&particlesGroup, "autoStart", false),
-                     UIStyleSheetPropertyDescriptor(&particlesGroup, "startDelay", 0.0f),
+                     UIStyleSheetPropertyDescriptor(&particleEffectGroup, "effectPath", FilePath()),
+                     UIStyleSheetPropertyDescriptor(&particleEffectGroup, "autoStart", false),
+                     UIStyleSheetPropertyDescriptor(&particleEffectGroup, "startDelay", 0.0f),
 
                      UIStyleSheetPropertyDescriptor(&linearLayoutGroup, "enabled", true),
                      UIStyleSheetPropertyDescriptor(&linearLayoutGroup, "orientation", UILinearLayoutComponent::LEFT_TO_RIGHT),

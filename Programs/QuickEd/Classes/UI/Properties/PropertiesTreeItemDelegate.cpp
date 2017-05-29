@@ -91,7 +91,7 @@ PropertiesTreeItemDelegate::PropertiesTreeItemDelegate(QObject* parent)
     propertyNameTypeItemDelegates[PropertyPath("*", "bg-gradient")] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
     propertyNameTypeItemDelegates[PropertyPath("*", "bg-contour")] = new ResourceFilePropertyDelegate(gfxExtension, "/Gfx/", this);
     propertyNameTypeItemDelegates[PropertyPath("*", "text-font")] = new FontPropertyDelegate(this);
-    propertyNameTypeItemDelegates[PropertyPath("*", "particles-effectPath")] = new ResourceFilePropertyDelegate(particleExtension, "/3d/", this);
+    propertyNameTypeItemDelegates[PropertyPath("*", "particleEffect-effectPath")] = new ResourceFilePropertyDelegate(particleExtension, "/3d/", this);
 
     propertyNameTypeItemDelegates[PropertyPath("RichContent", "aliases")] = new TablePropertyDelegate(QList<QString>({ "Alias", "Xml" }), this);
     propertyNameTypeItemDelegates[PropertyPath("Sound", "*")] = new FMODEventPropertyDelegate(this);
