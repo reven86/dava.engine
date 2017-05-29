@@ -80,9 +80,7 @@ set( DYNAMIC_LIBRARIES_WIN64        ${DAVA_DYNAMIC_LIBRARIES_WIN64} )
   
 set( DYNAMIC_LIBRARIES_ANDROID      ${DAVA_DYNAMIC_LIBRARIES_ANDROID} )
 
-# TODO: linux
-# For now use system dynamic libraries (should be manually installed: yum install ... )
-set( STATIC_LIBRARIES_LINUX         "-ldl -lsqlite3 -lz -lpng -lwebp -ljpeg -lfreetype -llua -lcrypto -lssl -lcurl -luv -lyaml -lxml2")
+set( STATIC_LIBRARIES_LINUX         ${DAVA_STATIC_LIBRARIES_LINUX} )
 
 set( SRC_FOLDERS                    "." )
  
