@@ -323,11 +323,14 @@ vertex_out vp_main( vertex_in input )
 
 #elif SPEED_TREE_OBJECT
 
-    float4  eyeCoordsPosition4;
-
     float3 position = lerp(input.position.xyz, input.pivot.xyz, input.pivot.w);
     float3 billboardOffset = input.position.xyz - position.xyz;
     
+    #if CUT_LEAF
+	    float pivotDistance = dot(position.xyz, float3(worldViewMatrix[0].z, worldViewMatrix[1].z, worldViewMatrix[2].z)) + worldViewMatrix[3].z;
+        billboardOffset *= step(-cutDistance, pivotDistance);
+    #endif
+	
     #if WIND_ANIMATION
     
         //inAngleSinCos:          x: cos(T0);  y: sin(T0);
@@ -348,13 +351,7 @@ vertex_out vp_main( vertex_in input )
 
     #endif
     
-    eyeCoordsPosition4 = mul( float4(position, 1.0), worldViewMatrix );
-    
-    #if CUT_LEAF
-        billboardOffset *= step(-cutDistance, eyeCoordsPosition4.z);
-    #endif
-    
-    eyeCoordsPosition4 += float4(worldScale * billboardOffset, 0.0);
+    float4 eyeCoordsPosition4 = mul( float4(position, 1.0), worldViewMatrix ) + float4(worldScale * billboardOffset, 0.0);
 
     output.position = mul(eyeCoordsPosition4, projMatrix);
 
