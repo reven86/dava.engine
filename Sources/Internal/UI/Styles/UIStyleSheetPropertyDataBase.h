@@ -16,7 +16,7 @@ public StaticSingleton<UIStyleSheetPropertyDataBase>
 {
 public:
     virtual ~UIStyleSheetPropertyDataBase();
-    static const int32 STYLE_SHEET_PROPERTY_COUNT = 71;
+    static const int32 STYLE_SHEET_PROPERTY_COUNT = 74;
 
     UIStyleSheetPropertyDataBase();
 
@@ -35,6 +35,7 @@ private:
     UIStyleSheetPropertyGroup bgGroup;
     UIStyleSheetPropertyGroup staticTextGroup;
     UIStyleSheetPropertyGroup textFieldGroup;
+    UIStyleSheetPropertyGroup particlesGroup;
 
     UIStyleSheetPropertyGroup linearLayoutGroup;
     UIStyleSheetPropertyGroup flowLayoutGroup;
