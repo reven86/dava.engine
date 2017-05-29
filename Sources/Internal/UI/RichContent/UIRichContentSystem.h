@@ -7,6 +7,7 @@
 namespace DAVA
 {
 class UIControl;
+class UIRichContentAliasesComponent;
 class UIRichContentComponent;
 
 class UIRichContentSystem final : public UISystem
@@ -28,21 +29,27 @@ public:
 private:
     struct Link final
     {
-        Link(UIRichContentComponent* c);
+        UIControl* control = nullptr;
+        UIRichContentComponent* component = nullptr;
+        Vector<UIRichContentAliasesComponent*> aliasesComponents;
+        Vector<RefPtr<UIControl>> richItems;
 
         void AddItem(const RefPtr<UIControl>& item);
         void RemoveItems();
-
-        UIRichContentComponent* component = nullptr;
-        Vector<RefPtr<UIControl>> richItems;
+        void AddAliases(UIRichContentAliasesComponent* component);
+        void RemoveAliases(UIRichContentAliasesComponent* component);
     };
 
     void AddLink(UIRichContentComponent* component);
     void RemoveLink(UIRichContentComponent* component);
+    void AddAliases(UIControl* control, UIRichContentAliasesComponent* component);
+    void RemoveAliases(UIControl* control, UIRichContentAliasesComponent* component);
 
     Vector<Link> links;
     Vector<Link> appendLinks;
     bool isEditorMode = false;
+
+    friend class XMLRichContentBuilder;
 };
 
 inline bool UIRichContentSystem::IsEditorMode() const

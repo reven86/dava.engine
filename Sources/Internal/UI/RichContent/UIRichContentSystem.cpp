@@ -1,6 +1,7 @@
 #include "UI/RichContent/UIRichContentSystem.h"
 
 #include "Base/ObjectFactory.h"
+#include "Debug/DVAssert.h"
 #include "FileSystem/XMLParser.h"
 #include "Logger/Logger.h"
 #include "UI/DefaultUIPackageBuilder.h"
@@ -12,6 +13,7 @@
 #include "UI/Layouts/UIFlowLayoutHintComponent.h"
 #include "UI/Layouts/UILayoutSourceRectComponent.h"
 #include "UI/RichContent/UIRichAliasMap.h"
+#include "UI/RichContent/UIRichContentAliasesComponent.h"
 #include "UI/RichContent/UIRichContentComponent.h"
 #include "UI/RichContent/UIRichContentObjectComponent.h"
 #include "UI/Styles/UIStyleSheetSystem.h"
@@ -48,12 +50,15 @@ protected:
 class XMLRichContentBuilder final : public XMLParserDelegate
 {
 public:
-    XMLRichContentBuilder(UIRichContentComponent* component_, bool editorMode = false)
-        : component(component_)
+    XMLRichContentBuilder(UIRichContentSystem::Link* link_, bool editorMode = false)
+        : link(link_)
         , isEditorMode(editorMode)
     {
-        DVASSERT(component);
-        PutClass(component->GetBaseClasses());
+        DVASSERT(link);
+        defaultClasses = link->component->GetBaseClasses();
+        classesInheritance = link->component->GetClassesInheritance();
+
+        PutClass(defaultClasses);
     }
 
     bool Build(const String& text)
@@ -71,7 +76,17 @@ public:
 
     void PutClass(const String& clazz)
     {
-        String compositeClass = GetClass() + " " + clazz;
+        String compositeClass;
+        if (classesInheritance)
+        {
+            compositeClass = GetClass();
+            if (!clazz.empty())
+            {
+                compositeClass += " ";
+            }
+        }
+        compositeClass += clazz;
+
         classesStack.push_back(compositeClass);
     }
 
@@ -119,30 +134,32 @@ public:
 
     void OnElementStarted(const String& elementName, const String& namespaceURI, const String& qualifedName, const Map<String, String>& attributes) override
     {
-        const UIRichAliasMap& aliases = component->GetAliases();
-        if (aliases.HasAlias(elementName))
+        for (UIRichContentAliasesComponent* c : link->aliasesComponents)
         {
-            const UIRichAliasMap::Alias& alias = aliases.GetAlias(elementName);
-            ProcessTagBegin(alias.tag, alias.attributes);
+            const UIRichAliasMap& aliases = c->GetAliases();
+            if (aliases.HasAlias(elementName))
+            {
+                const UIRichAliasMap::Alias& alias = aliases.GetAlias(elementName);
+                ProcessTagBegin(alias.tag, alias.attributes);
+                return;
+            }
         }
-        else
-        {
-            ProcessTagBegin(elementName, attributes);
-        }
+        ProcessTagBegin(elementName, attributes);
     }
 
     void OnElementEnded(const String& elementName, const String& namespaceURI, const String& qualifedName) override
     {
-        const UIRichAliasMap& aliases = component->GetAliases();
-        if (aliases.HasAlias(elementName))
+        for (UIRichContentAliasesComponent* c : link->aliasesComponents)
         {
-            const UIRichAliasMap::Alias& alias = aliases.GetAlias(elementName);
-            ProcessTagEnd(alias.tag);
+            const UIRichAliasMap& aliases = c->GetAliases();
+            if (aliases.HasAlias(elementName))
+            {
+                const UIRichAliasMap::Alias& alias = aliases.GetAlias(elementName);
+                ProcessTagEnd(alias.tag);
+                return;
+            }
         }
-        else
-        {
-            ProcessTagEnd(elementName);
-        }
+        ProcessTagEnd(elementName);
     }
 
     void OnFoundCharacters(const String& chars) override
@@ -154,7 +171,10 @@ public:
     {
         // Global attributes
         String classes;
-        GetAttribute(attributes, "class", classes);
+        if (!GetAttribute(attributes, "class", classes) && !classesInheritance)
+        {
+            classes = defaultClasses;
+        }
         PutClass(classes);
 
         // Tag
@@ -204,7 +224,7 @@ public:
                 // Check that we not load self as rich object
                 bool valid = true;
                 {
-                    UIControl* ctrl = component->GetControl();
+                    UIControl* ctrl = link->control;
                     while (ctrl != nullptr)
                     {
                         UIRichContentObjectComponent* objComp = ctrl->GetComponent<UIRichContentObjectComponent>();
@@ -252,7 +272,7 @@ public:
                         {
                             obj->SetName(name);
                         }
-                        component->onCreateObject.Emit(obj);
+                        link->component->onCreateObject.Emit(obj);
                         controls.emplace_back(SafeRetain(obj));
                     }
                 }
@@ -320,11 +340,13 @@ public:
 private:
     bool needLineBreak = false;
     bool isEditorMode = false;
+    bool classesInheritance = false;
     BiDiHelper::Direction direction = BiDiHelper::Direction::NEUTRAL;
+    String defaultClasses;
     Vector<String> classesStack;
     Vector<RefPtr<UIControl>> controls;
     BiDiHelper bidiHelper;
-    UIRichContentComponent* component = nullptr;
+    UIRichContentSystem::Link* link = nullptr;
 };
 
 /*******************************************************************************************************/
@@ -363,6 +385,10 @@ void UIRichContentSystem::RegisterComponent(UIControl* control, UIComponent* com
     {
         AddLink(static_cast<UIRichContentComponent*>(component));
     }
+    else if (component->GetType() == UIRichContentAliasesComponent::C_TYPE)
+    {
+        AddAliases(control, static_cast<UIRichContentAliasesComponent*>(component));
+    }
 }
 
 void UIRichContentSystem::UnregisterComponent(UIControl* control, UIComponent* component)
@@ -370,6 +396,10 @@ void UIRichContentSystem::UnregisterComponent(UIControl* control, UIComponent* c
     if (component->GetType() == UIRichContentComponent::C_TYPE)
     {
         RemoveLink(static_cast<UIRichContentComponent*>(component));
+    }
+    else if (component->GetType() == UIRichContentAliasesComponent::C_TYPE)
+    {
+        RemoveAliases(control, static_cast<UIRichContentAliasesComponent*>(component));
     }
 
     UISystem::UnregisterComponent(control, component);
@@ -395,20 +425,29 @@ void UIRichContentSystem::Process(float32 elapsedTime)
     // Process links
     for (Link& l : links)
     {
-        if (l.component && l.component->IsModified())
+        if (l.component)
         {
+            bool update = l.component->IsModified();
             l.component->SetModified(false);
-
-            UIControl* root = l.component->GetControl();
-            l.RemoveItems();
-
-            XMLRichContentBuilder builder(l.component, isEditorMode);
-            if (builder.Build("<span>" + l.component->GetText() + "</span>"))
+            for (UIRichContentAliasesComponent* c : l.aliasesComponents)
             {
-                for (const RefPtr<UIControl>& ctrl : builder.GetControls())
+                update |= c->IsModified();
+                c->SetModified(false);
+            }
+
+            if (update)
+            {
+                UIControl* root = l.component->GetControl();
+                l.RemoveItems();
+
+                XMLRichContentBuilder builder(&l, isEditorMode);
+                if (builder.Build("<span>" + l.component->GetText() + "</span>"))
                 {
-                    root->AddControl(ctrl.Get());
-                    l.AddItem(ctrl);
+                    for (const RefPtr<UIControl>& ctrl : builder.GetControls())
+                    {
+                        root->AddControl(ctrl.Get());
+                        l.AddItem(ctrl);
+                    }
                 }
             }
         }
@@ -419,7 +458,19 @@ void UIRichContentSystem::AddLink(UIRichContentComponent* component)
 {
     DVASSERT(component);
     component->SetModified(true);
-    appendLinks.emplace_back(component);
+
+    Link link;
+    link.component = component;
+    link.control = component->GetControl();
+
+    uint32 count = link.control->GetComponentCount<UIRichContentAliasesComponent>();
+    for (uint32 i = 0; i < count; ++i)
+    {
+        UIRichContentAliasesComponent* c = link.control->GetComponent<UIRichContentAliasesComponent>(i);
+        link.AddAliases(c);
+    }
+
+    appendLinks.push_back(std::move(link));
 }
 
 void UIRichContentSystem::RemoveLink(UIRichContentComponent* component)
@@ -433,12 +484,33 @@ void UIRichContentSystem::RemoveLink(UIRichContentComponent* component)
         findIt->RemoveItems();
         findIt->component = nullptr; // mark link for delete
     }
+
+    appendLinks.erase(std::remove_if(appendLinks.begin(), appendLinks.end(), [&component](const Link& l) {
+                          return l.component == component;
+                      }),
+                      appendLinks.end());
 }
 
-UIRichContentSystem::Link::Link(UIRichContentComponent* c)
-    : component(c)
-    , richItems()
+void UIRichContentSystem::AddAliases(UIControl* control, UIRichContentAliasesComponent* component)
 {
+    auto findIt = std::find_if(links.begin(), links.end(), [&control](const Link& l) {
+        return l.control == control;
+    });
+    if (findIt != links.end())
+    {
+        findIt->AddAliases(component);
+    }
+}
+
+void UIRichContentSystem::RemoveAliases(UIControl* control, UIRichContentAliasesComponent* component)
+{
+    auto findIt = std::find_if(links.begin(), links.end(), [&control](const Link& l) {
+        return l.control == control;
+    });
+    if (findIt != links.end())
+    {
+        findIt->RemoveAliases(component);
+    }
 }
 
 void UIRichContentSystem::Link::AddItem(const RefPtr<UIControl>& item)
@@ -460,5 +532,23 @@ void UIRichContentSystem::Link::RemoveItems()
         }
     }
     richItems.clear();
+}
+
+void UIRichContentSystem::Link::AddAliases(UIRichContentAliasesComponent* component)
+{
+    auto it = std::find(aliasesComponents.begin(), aliasesComponents.end(), component);
+    if (it == aliasesComponents.end())
+    {
+        aliasesComponents.push_back(component);
+    }
+}
+
+void UIRichContentSystem::Link::RemoveAliases(UIRichContentAliasesComponent* component)
+{
+    auto it = std::find(aliasesComponents.begin(), aliasesComponents.end(), component);
+    if (it != aliasesComponents.end())
+    {
+        aliasesComponents.erase(it);
+    }
 }
 }
