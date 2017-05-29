@@ -39,7 +39,8 @@ def build_for_target(target, working_directory_path, root_project_path):
 def get_download_info():
     # Win 10 uses different sources - maintained by Microsoft
     return {'win10': 'https://github.com/Microsoft/openssl/archive/OpenSSL_1_0_2j_WinRT.tar.gz',
-            'others': 'https://www.openssl.org/source/openssl-1.1.0b.tar.gz'}
+            'others': 'https://www.openssl.org/source/openssl-1.0.2l.tar.gz'}
+
 
 
 def _download_and_extract(working_directory_path, win10=False):
@@ -416,7 +417,8 @@ def _build_android(working_directory_path, root_project_path):
 
 def _build_linux(working_directory_path, root_project_path):
     source_folder_path = _download_and_extract(working_directory_path)
-    _patch_sources(source_folder_path, working_directory_path)
+    # TODO: patch if neccessary (current patch does not apply to 1.0.1l)
+    #_patch_sources(source_folder_path, working_directory_path)
 
     env = build_utils.get_autotools_linux_env()
     install_dir = os.path.join(working_directory_path, 'gen/install_linux')
@@ -430,6 +432,7 @@ def _build_linux(working_directory_path, root_project_path):
         install_dir,
         env=env,
         configure_exec_name='Configure',
+        make_targets=['depend', 'all', 'install'],
         postclean=False)
 
     shutil.copyfile(os.path.join(install_dir, 'lib/libssl.a'),

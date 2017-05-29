@@ -272,10 +272,11 @@ def _build_linux(working_directory_path, root_project_path):
     install_dir = os.path.join(working_directory_path, 'gen/install_linux')
     build_utils.build_with_autotools(
         source_folder_path,
-        ['--disable-shared', '--enable-static'],
+        # exclude python bindings as make install requires sudo
+        # also exclude lzma support as it requires lzma library
+        ['--disable-shared', '--enable-static', '--without-python', '--without-lzma'],
         install_dir,
-        env=env,
-        optional_params='--without-python') # exclude python bindings as make install requires sudo
+        env=env) 
 
     lib_path = os.path.join(install_dir, 'lib/libxml2.a')
     shutil.copyfile(

@@ -63,7 +63,7 @@ def unzip_inplace(path):
     extension = os.path.splitext(path)[1]
     if extension == '.zip':
         ref = zipfile.ZipFile(path, 'r')
-    elif extension == '.gz' or extension == '.tgz' or extension=='.bz2':
+    elif extension == '.gz' or extension == '.tgz' or extension=='.bz2' or extension=='.tar':
         ref = tarfile.open(path, 'r')
     ref.extractall(os.path.dirname(path))
     ref.close()
@@ -683,19 +683,21 @@ def build_with_autotools(source_folder_path,
                          env=None,
                          configure_exec_name='configure',
                          make_exec_name='make',
-                         postclean=True,
-                         optional_params=None):
+                         make_targets=['all', 'install'],
+                         postclean=True):
     if isinstance(configure_exec_name, list):
         if sys.platform == 'win32':
             cmd = list(configure_exec_name)
         else:
             cmd = ['./{}'.format(configure_exec_name[0])]
             cmd.extend(configure_exec_name[1:])
+            cmd.insert(0, 'sh')
     else:
         if sys.platform == 'win32':
             cmd = [configure_exec_name]
         else:
             cmd = ['./{}'.format(configure_exec_name)]
+            cmd.insert(0, 'sh')
 
     cmd.extend(configure_args)
     if install_dir is not None:
@@ -703,23 +705,16 @@ def build_with_autotools(source_folder_path,
             os.makedirs(install_dir)
         cmd.append('--prefix=' + install_dir)
 
-    if optional_params is not None:
-        cmd.append(optional_params)
-
     enable_shell = sys.platform == 'win32'
 
     run_process(cmd, process_cwd=source_folder_path, environment=env, shell=enable_shell)
 
-    cmd = [make_exec_name, 'all']
-    run_process(cmd, process_cwd=source_folder_path, environment=env, shell=enable_shell)
+    if postclean:
+        make_targets.append('clean')
 
-    if install_dir is not None:
-        cmd = [make_exec_name, 'install']
+    for target in make_targets:
+        cmd = [make_exec_name, target]
         run_process(cmd, process_cwd=source_folder_path, environment=env, shell=enable_shell)
-
-        if postclean:
-            cmd = [make_exec_name, 'clean']
-            run_process(cmd, process_cwd=source_folder_path, environment=env, shell=enable_shell)
 
 
 def run_once(fn):
