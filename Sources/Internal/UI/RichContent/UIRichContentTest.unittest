@@ -5,6 +5,7 @@
 #include <UI/UIControlSystem.h>
 #include <UI/UIScreen.h>
 #include <UI/RichContent/UIRichAliasMap.h>
+#include <UI/RichContent/UIRichContentAliasesComponent.h>
 #include <UI/RichContent/UIRichContentComponent.h>
 #include <UI/RichContent/UIRichContentSystem.h>
 
@@ -72,11 +73,13 @@ DAVA_TESTCLASS(UIRichContentTest)
         DVASSERT(c);
         c->SetBaseClasses("text");
         c->SetText(testData);
+        c->SetClassesInheritance(true);
 
         UpdateRichContentSystem();
         TEST_VERIFY(richControl->GetChildren().size() == 3);
 
         c->SetBaseClasses("");
+        c->SetClassesInheritance(false);
     }
 
     DAVA_TEST(AliasesTest)
@@ -85,6 +88,7 @@ DAVA_TESTCLASS(UIRichContentTest)
             <h1>Header</h1><text>Simple text<nl/> with </text><GoldPin/><text>image.</text>
         )";
         UIRichContentComponent* c = richControl->GetOrCreateComponent<UIRichContentComponent>();
+        UIRichContentAliasesComponent* ca = richControl->GetOrCreateComponent<UIRichContentAliasesComponent>();
         DVASSERT(c);
 
         // Add aliases
@@ -124,7 +128,7 @@ DAVA_TESTCLASS(UIRichContentTest)
         }
 
         c->SetText(testData);
-        c->SetAliases(aliases);
+        ca->SetAliases(aliases);
 
         UpdateRichContentSystem();
         TEST_VERIFY(richControl->GetChildren().size() == 6);
@@ -144,7 +148,7 @@ DAVA_TESTCLASS(UIRichContentTest)
             aliases.RemoveAll();
             TEST_VERIFY(aliases.Count() == 0);
         }
-        c->SetAliases(aliases);
+        ca->SetAliases(aliases);
     }
 
     DAVA_TEST(RichComponentTest)

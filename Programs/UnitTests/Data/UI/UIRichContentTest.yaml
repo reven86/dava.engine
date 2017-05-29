@@ -37,6 +37,7 @@ Controls:
     size: [380.000000, 352.000000]
     components:
         RichContent: {}
+        RichContentAliases: {}
 -   class: "UIControl"
     name: "CustomControl"
     size: [32.000000, 32.000000]
