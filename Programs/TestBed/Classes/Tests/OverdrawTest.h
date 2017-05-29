@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Infrastructure/BaseScreen.h"
+#include <UI/Render/UIDebugRenderComponent.h>
 
 namespace OverdrawPerformanceTester
 {
@@ -64,9 +65,9 @@ inline void OverdrawTest::InitializeButtons(const Array<ButtonInfo, arrSize>& bu
     {
         UIButton* btn = CreateButton(buttonsInfo[i].rect, buttonsInfo[i].caption);
         btn->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, msg);
+        UIDebugRenderComponent* debugCmp = btn->GetOrCreateComponent<UIDebugRenderComponent>();
         if (isFirstButtonGreen && i == 0)
-            btn->SetDebugDrawColor(Color::Green);
-        btn->SetDebugDraw(true);
+            debugCmp->SetDrawColor(Color::Green);
         btn->SetTag(buttonsInfo[i].tag);
         AddControl(btn);
         buttonsMap[btn] = buttonsInfo[i];

@@ -86,7 +86,6 @@ VariantType* GetCustomPropertiesValueRecursive(Entity* fromEntity, const String&
 
 PathComponent* GetPathComponent(const Entity* fromEntity);
 WaypointComponent* GetWaypointComponent(const Entity* fromEntity);
-EdgeComponent* FindEdgeComponent(const Entity* fromEntity, const Entity* toEntity);
 }
 
 #endif //__DAVAENGINE_COMPONENT_HELPERS_H__

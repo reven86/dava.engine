@@ -15,10 +15,12 @@ class QualityGroupComponentValue : public DAVA::TArc::BaseComponentValue
 public:
     QualityGroupComponentValue();
 
+    bool RepaintOnUpdateRequire() const override;
+
 protected:
     DAVA::Any GetMultipleValue() const override;
     bool IsValidValueToSet(const DAVA::Any& newValue, const DAVA::Any& currentValue) const override;
-    DAVA::TArc::ControlProxy* CreateEditorWidget(QWidget* parent, const DAVA::Reflection& model, DAVA::TArc::DataWrappersProcessor* wrappersProcessor) const override;
+    DAVA::TArc::ControlProxy* CreateEditorWidget(QWidget* parent, const DAVA::Reflection& model, DAVA::TArc::DataWrappersProcessor* wrappersProcessor) override;
     bool IsSpannedControl() const override;
 
 private:

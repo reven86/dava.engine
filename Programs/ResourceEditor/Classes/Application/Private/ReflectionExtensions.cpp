@@ -36,18 +36,18 @@ void RegisterRenderComponentExtensions()
 
 void RegisterNMaterialExtensions()
 {
-    EmplaceFieldMeta<RenderBatch>("material", CreateNMaterialCommandProducer());
+    EmplaceFieldMeta<RenderBatch>(FastName("material"), CreateNMaterialCommandProducer());
 }
 
 void RegisterFilePathExtensions(DAVA::TArc::ContextAccessor* accessor)
 {
     // HeightMap
-    EmplaceFieldMeta<Landscape>("heightmapPath", CreateHeightMapValidator(accessor));
-    EmplaceFieldMeta<Landscape>("heightmapPath", CreateHeightMapFileMeta(accessor));
-    EmplaceFieldMeta<VegetationRenderObject>("lightmap", CreateTextureValidator(accessor));
-    EmplaceFieldMeta<VegetationRenderObject>("lightmap", CreateTextureFileMeta(accessor));
-    EmplaceFieldMeta<VegetationRenderObject>("customGeometry", CreateSceneValidator(accessor));
-    EmplaceFieldMeta<VegetationRenderObject>("customGeometry", CreateSceneFileMeta(accessor));
+    EmplaceFieldMeta<Landscape>(FastName("heightmapPath"), CreateHeightMapValidator(accessor));
+    EmplaceFieldMeta<Landscape>(FastName("heightmapPath"), CreateHeightMapFileMeta(accessor));
+    EmplaceFieldMeta<VegetationRenderObject>(FastName("lightmap"), CreateTextureValidator(accessor));
+    EmplaceFieldMeta<VegetationRenderObject>(FastName("lightmap"), CreateTextureFileMeta(accessor));
+    EmplaceFieldMeta<VegetationRenderObject>(FastName("customGeometry"), CreateSceneValidator(accessor));
+    EmplaceFieldMeta<VegetationRenderObject>(FastName("customGeometry"), CreateSceneFileMeta(accessor));
 }
 
 void RegisterComponentsExtensions()
@@ -71,8 +71,15 @@ void RegisterComponentsExtensions()
             DVASSERT(false, "We has component that derived from DAVA::Component, but without created ReflectedType");
         }
 
+        const ReflectedStructure* structure = refType->GetStructure();
+        DVASSERT(structure != nullptr, "Somebody has forgotten to declare reflected structure for component");
+
         M::CommandProducerHolder holder;
-        holder.AddCommandProducer(CreateRemoveComponentProducer());
+        if (structure->meta == nullptr || structure->meta->GetMeta<M::CantBeDeletedManualyComponent>() == nullptr)
+        {
+            holder.AddCommandProducer(CreateRemoveComponentProducer());
+        }
+
         if (derived.type == actionComponent)
         {
             holder.AddCommandProducer(CreateActionsEditProducer());

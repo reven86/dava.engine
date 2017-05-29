@@ -74,12 +74,6 @@ public:
      */
     void Unsubscribe(Texture* screenshot);
 
-    /** 
-    Update hierarchy of control and update layouts and styles.
-    Called automatically if argument `prepareControl` of any `MakeScreenshot` is True.
-    */
-    void PrepareControl(UIControl* control);
-
 private:
     struct ScreenshotWaiter
     {

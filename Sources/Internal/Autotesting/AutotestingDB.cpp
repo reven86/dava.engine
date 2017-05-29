@@ -174,34 +174,28 @@ void AutotestingDB::WriteLogHeader()
     Format("Client:%s\nClientRevision:%s\n", autoSys->branch.c_str(), autoSys->branchRev.c_str()) +
     Format("Framework:%s\nFrameworkRevision:%s\n", autoSys->framework.c_str(), autoSys->frameworkRev.c_str()) +
     Format("TestGroup:%s\nFileName:%s\n", autoSys->groupName.c_str(), autoSys->testFileName.c_str());
-    WriteLog(message.c_str());
-    Logger::Debug("AutotestingDB::Log: [%s:%s] INFO", autoSys->GetCurrentTimeString().c_str(), message.c_str());
-}
-
-void AutotestingDB::WriteLog(const char8* text, ...)
-{
-    if (!text || text[0] == '\0')
-        return;
-    File* file = File::Create(logFilePath, File::APPEND | File::WRITE);
-    if (!file)
-    {
-        Logger::Error("Can't open/create log file.");
-        return;
-    }
-    va_list vl;
-    va_start(vl, text);
-    char tmp[4096] = { 0 };
-    vsnprintf(tmp, sizeof(tmp) - 2, text, vl);
-    file->Write(text, static_cast<uint32>(sizeof(char) * strlen(tmp)));
-    file->Release();
-    va_end(vl);
+    Log("INFO", message);
 }
 
 void AutotestingDB::Log(const String& level, const String& message)
 {
-    String textLog = Format("[%s:%s] %s\n", autoSys->GetCurrentTimeString().c_str(), level.c_str(), message.c_str());
-    Logger::Debug("AutotestingDB::Log: [%s:%s] %s", autoSys->GetCurrentTimeString().c_str(), level.c_str(), message.c_str());
-    WriteLog(textLog.c_str());
+    static const Map<String, Logger::eLogLevel> stringToLevel
+    {
+      { "INFO", Logger::LEVEL_INFO },
+      { "DEBUG", Logger::LEVEL_DEBUG },
+      { "ERROR", Logger::LEVEL_ERROR },
+    };
+
+    Logger::Debug("AutotestingDB::Log: [%s] %s", level.c_str(), message.c_str());
+
+    Logger* logger = Logger::Instance();
+
+    auto it = stringToLevel.find(level);
+    Logger::eLogLevel logLevel = (it != stringToLevel.end()) ? it->second : Logger::LEVEL_ERROR;
+    Logger::eLogLevel oldLogLevel = logger->GetLogLevel();
+    logger->SetLogLevel(Logger::LEVEL_DEBUG);
+    Logger::LogToFile(logFilePath, logLevel, "%s", message.c_str());
+    logger->SetLogLevel(oldLogLevel);
 }
 
 bool AutotestingDB::SaveKeyedArchiveToDevice(const String& archiveName, KeyedArchive* archive)

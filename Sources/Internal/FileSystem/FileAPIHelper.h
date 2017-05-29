@@ -17,6 +17,7 @@ FILE* OpenFile(const String& fileName, const String& mode);
 int32 Close(FILE* f);
 /**
 	fileName - utf8 string
+	return 0 on success
 */
 int32 RemoveFile(const String& fileName);
 /**

@@ -46,6 +46,9 @@ UIPackageLoader::UIPackageLoader(const Map<String, DAVA::Set<FastName>>& legacyP
     {
         DVASSERT(false); // we have to remove legacy aligns support if min supported version more than version with legacy aligns
     }
+
+    legacyDebugDrawMap["enabled"] = "debugDraw";
+    legacyDebugDrawMap["drawColor"] = "debugDrawColor";
 }
 
 UIPackageLoader::~UIPackageLoader()
@@ -70,7 +73,7 @@ bool UIPackageLoader::LoadPackage(const FilePath& packagePath, AbstractUIPackage
     YamlNode* rootNode = parser->GetRootNode();
     if (!rootNode) //empty yaml equal to empty UIPackage
     {
-        builder->BeginPackage(packagePath);
+        builder->BeginPackage(packagePath, UIPackage::CURRENT_VERSION);
         builder->EndPackage();
         return true;
     }
@@ -96,7 +99,7 @@ bool UIPackageLoader::LoadPackage(const YamlNode* rootNode, const FilePath& pack
         return false;
     }
 
-    builder->BeginPackage(packagePath);
+    builder->BeginPackage(packagePath, packageVersion);
 
     const YamlNode* importedPackagesNode = rootNode->Get("ImportedPackages");
     if (importedPackagesNode)
@@ -354,6 +357,16 @@ void UIPackageLoader::LoadControl(const YamlNode* node, AbstractUIPackageBuilder
         {
             ProcessLegacyAligns(node, builder);
         }
+
+        if (version <= LAST_VERSION_WITH_LEGACY_DEBUG_DRAW)
+        {
+            ProcessLegacyDebugDraw(node, builder);
+        }
+
+        if (version <= LAST_VERSION_WITH_LEGACY_CLIP_CONTENT)
+        {
+            ProcessLegacyClipContent(node, builder);
+        }
     }
 
     // load children
@@ -382,11 +395,12 @@ void UIPackageLoader::LoadControlPropertiesFromYamlNode(const ReflectedType* ref
 
     if (ref->GetStructure())
     {
+        static FastName componentsName("components");
+
         const Vector<std::unique_ptr<ReflectedStructure::Field>>& fields = ref->GetStructure()->fields;
         for (const std::unique_ptr<ReflectedStructure::Field>& field : fields)
         {
-            const String& name = field->name;
-            if (name == "components")
+            if (field->name == componentsName)
             {
                 // TODO: Make loading components by reflection here
                 continue;
@@ -395,7 +409,7 @@ void UIPackageLoader::LoadControlPropertiesFromYamlNode(const ReflectedType* ref
             Any res;
             if (node)
             {
-                res = ReadAnyFromYamlNode(field.get(), node, name);
+                res = ReadAnyFromYamlNode(field.get(), node, field->name.c_str());
                 if (!res.IsEmpty())
                 {
                     builder->BeginControlPropertiesSection(ref->GetPermanentName());
@@ -458,7 +472,7 @@ void UIPackageLoader::LoadComponentPropertiesFromYamlNode(const YamlNode* node, 
 
                 if (res.IsEmpty())
                 {
-                    res = ReadAnyFromYamlNode(field.get(), nodeDescr.node, field->name);
+                    res = ReadAnyFromYamlNode(field.get(), nodeDescr.node, field->name.c_str());
                 }
 
                 builder->ProcessProperty(*field, res);
@@ -469,7 +483,7 @@ void UIPackageLoader::LoadComponentPropertiesFromYamlNode(const YamlNode* node, 
     }
 }
 
-void UIPackageLoader::ProcessLegacyAligns(const YamlNode* node, AbstractUIPackageBuilder* builder)
+void UIPackageLoader::ProcessLegacyAligns(const YamlNode* node, AbstractUIPackageBuilder* builder) const
 {
     bool hasAnchorProperties = false;
     for (const auto& it : legacyAlignsMap)
@@ -489,12 +503,64 @@ void UIPackageLoader::ProcessLegacyAligns(const YamlNode* node, AbstractUIPackag
             const Vector<std::unique_ptr<ReflectedStructure::Field>>& fields = componentRef->GetStructure()->fields;
             for (const std::unique_ptr<ReflectedStructure::Field>& field : fields)
             {
-                const String& name = field->name;
-                Any res = ReadAnyFromYamlNode(field.get(), node, legacyAlignsMap[name]);
-                builder->ProcessProperty(*field, res);
+                String name(field->name.c_str());
+                auto it = legacyAlignsMap.find(name);
+                if (it != legacyAlignsMap.end())
+                {
+                    Any res = ReadAnyFromYamlNode(field.get(), node, it->second);
+                    builder->ProcessProperty(*field, res);
+                }
             }
         }
 
+        builder->EndComponentPropertiesSection();
+    }
+}
+
+void UIPackageLoader::ProcessLegacyDebugDraw(const YamlNode* node, AbstractUIPackageBuilder* builder) const
+{
+    bool hasDebugDrawProperties = false;
+    for (const auto& it : legacyDebugDrawMap)
+    {
+        if (node->Get(it.second))
+        {
+            hasDebugDrawProperties = true;
+            break;
+        }
+    }
+
+    if (hasDebugDrawProperties)
+    {
+        const ReflectedType* componentRef = builder->BeginComponentPropertiesSection(UIComponent::DEBUG_RENDER_COMPONENT, 0);
+        if (componentRef != nullptr && componentRef->GetStructure() != nullptr)
+        {
+            const Vector<std::unique_ptr<ReflectedStructure::Field>>& fields = componentRef->GetStructure()->fields;
+            for (const std::unique_ptr<ReflectedStructure::Field>& field : fields)
+            {
+                static const FastName enabledFieldName("enabled");
+                String name(field->name.c_str());
+                auto it = legacyDebugDrawMap.find(name);
+                if (it != legacyDebugDrawMap.end())
+                {
+                    Any res = ReadAnyFromYamlNode(field.get(), node, it->second);
+                    if (res.IsEmpty() && enabledFieldName == field->name)
+                    {
+                        res = Any(false);
+                    }
+                    builder->ProcessProperty(*field, res);
+                }
+            }
+        }
+
+        builder->EndComponentPropertiesSection();
+    }
+}
+
+void UIPackageLoader::ProcessLegacyClipContent(const YamlNode* node, AbstractUIPackageBuilder* builder) const
+{
+    if (node->Get("clip"))
+    {
+        builder->BeginComponentPropertiesSection(UIComponent::CLIP_CONTENT_COMPONENT, 0);
         builder->EndComponentPropertiesSection();
     }
 }
@@ -541,7 +607,7 @@ Vector<UIPackageLoader::ComponentNode> UIPackageLoader::ExtractComponentNodes(co
     return components;
 }
 
-Any UIPackageLoader::ReadAnyFromYamlNode(const ReflectedStructure::Field* fieldRef, const YamlNode* node, const String& name)
+Any UIPackageLoader::ReadAnyFromYamlNode(const ReflectedStructure::Field* fieldRef, const YamlNode* node, const String& name) const
 {
     const YamlNode* valueNode = node->Get(name);
 

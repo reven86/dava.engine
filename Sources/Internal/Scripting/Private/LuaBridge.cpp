@@ -304,9 +304,13 @@ int32 AnyFn__call(lua_State* L)
             return luaL_error(L, "Too much arguments (%d) to invoke AnyFn", nargs);
         }
     }
-    catch (const LuaException& e)
+    catch (const std::exception& e)
     {
         return luaL_error(L, e.what());
+    }
+    catch (...)
+    {
+        return luaL_error(L, "Unknown C++ exception");
     }
     AnyToLua(L, result);
     return 1;
@@ -392,7 +396,7 @@ int32 Reflection__index(lua_State* L)
         name.Set(size_t(lua_tointeger(L, 2)) - 1); // -1 because in Lua first item in array has index 1
         break;
     case LUA_TSTRING:
-        name.Set(String(lua_tostring(L, 2)));
+        name.Set(FastName(lua_tostring(L, 2)));
         break;
     default:
         return luaL_error(L, "Wrong key type \"%s\"!", lua_typename(L, ltype));
@@ -411,11 +415,14 @@ int32 Reflection__index(lua_State* L)
         return 1;
     }
 
-    AnyFn method = self->GetMethod(name.Get<String>());
-    if (method.IsValid())
+    if (name.CanCast<String>())
     {
-        lua_pushdvanyfn(L, method);
-        return 1;
+        AnyFn method = self->GetMethod(name.Cast<String>());
+        if (method.IsValid())
+        {
+            lua_pushdvanyfn(L, method);
+            return 1;
+        }
     }
 
     lua_pushnil(L);
@@ -438,7 +445,7 @@ int32 Reflection__newindex(lua_State* L)
         name.Set(size_t(lua_tointeger(L, 2)) - 1); // -1 because in Lua first item in array has index 1
         break;
     case LUA_TSTRING:
-        name.Set(String(lua_tostring(L, 2)));
+        name.Set(FastName(lua_tostring(L, 2)));
         break;
     default:
         return luaL_error(L, "Wrong key type \"%s\"!", lua_typename(L, ltype));
@@ -452,9 +459,13 @@ int32 Reflection__newindex(lua_State* L)
             Any value = LuaToAny(L, 3, refl.GetValueType());
             refl.SetValue(value);
         }
-        catch (const LuaException& e)
+        catch (const std::exception& e)
         {
             return luaL_error(L, e.what());
+        }
+        catch (...)
+        {
+            return luaL_error(L, "Unknown C++ exception");
         }
     }
     return 0;
@@ -688,11 +699,10 @@ String PopString(lua_State* L)
 void DumpStack(lua_State* L, std::ostream& os)
 {
     int32 count = lua_gettop(L);
-    os << "Lua stack (top: " << count << ")" << (count > 0 ? ":" : "");
+    os << "Lua stack (top: " << count << ")" << (count > 0 ? ":" : "") << std::endl;
     for (int32 i = 1; i <= count; ++i)
     {
-        os << std::endl
-           << "  " << i << ") <" << luaL_typename(L, i) << ">";
+        os << "  " << i << ") <" << luaL_typename(L, i) << ">";
         int ltype = lua_type(L, i);
         switch (ltype)
         {
@@ -716,6 +726,22 @@ void DumpStack(lua_State* L, std::ostream& os)
         default:
             break;
         }
+        os << std::endl;
+    }
+}
+
+void DumpCallstack(lua_State* L, std::ostream& os)
+{
+    int32 count = lua_gettop(L);
+    os << "Lua callstack:" << std::endl;
+    lua_Debug ar = { 0 };
+    int level = 1;
+    while (lua_getstack(L, level++, &ar))
+    {
+        lua_getinfo(L, "lnS", &ar);
+        os << "   > " << (ar.name ? ar.name : "(nil)")
+           << ", (" << ar.short_src << ": " << ar.currentline << ")"
+           << std::endl;
     }
 }
 }

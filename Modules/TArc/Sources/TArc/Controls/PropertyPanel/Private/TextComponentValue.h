@@ -1,9 +1,13 @@
 #pragma once
 
 #include "TArc/Controls/PropertyPanel/BaseComponentValue.h"
+#include "TArc/Utils/QtConnections.h"
 
 #include <Reflection/Reflection.h>
 #include <Base/BaseTypes.h>
+
+#include <QPointer>
+#include <QDialog>
 
 namespace DAVA
 {
@@ -18,14 +22,24 @@ public:
 protected:
     Any GetMultipleValue() const override;
     bool IsValidValueToSet(const Any& newValue, const Any& currentValue) const override;
-    ControlProxy* CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor) const override;
+    ControlProxy* CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor) override;
 
-private:
     String GetText() const;
     void SetText(const String& text);
 
 private:
     DAVA_VIRTUAL_REFLECTION(TextComponentValue, BaseComponentValue);
+};
+
+class MultiLineTextComponentValue : public TextComponentValue
+{
+protected:
+    ControlProxy* CreateEditorWidget(QWidget* parent, const Reflection& model, DataWrappersProcessor* wrappersProcessor) override;
+
+    void OpenMultiLineEdit();
+
+private:
+    QtConnections connections;
 };
 }
 }

@@ -8,31 +8,44 @@ namespace DAVA
 {
 DAVA_VIRTUAL_REFLECTION_IMPL(WaypointComponent)
 {
-    ReflectionRegistrator<WaypointComponent>::Begin()[M::CantBeCreatedManualyComponent()]
+    ReflectionRegistrator<WaypointComponent>::Begin()[M::CantBeCreatedManualyComponent(), M::CantBeDeletedManualyComponent()]
     .ConstructorByPointer()
-    .Field("pathName", &WaypointComponent::pathName)[M::ReadOnly(), M::DisplayName("Path Name")]
-    .Field("properties", &WaypointComponent::properties)[M::DisplayName("Waypoint properties")]
+    .Field("pathName", &WaypointComponent::GetPathName, nullptr)[M::ReadOnly(), M::DisplayName("Path Name")]
+    .Field("properties", &WaypointComponent::GetProperties, nullptr)[M::DisplayName("Waypoint properties")]
     .End();
 }
 
 WaypointComponent::WaypointComponent()
     : Component()
 {
-    properties = new KeyedArchive();
 }
 
 WaypointComponent::~WaypointComponent()
 {
-    SafeRelease(properties);
+}
+
+void WaypointComponent::Init(PathComponent* path_, PathComponent::Waypoint* waypoint_)
+{
+    path = path_;
+    waypoint = waypoint_;
+}
+
+PathComponent* WaypointComponent::GetPath() const
+{
+    return path;
+}
+
+PathComponent::Waypoint* WaypointComponent::GetWaypoint() const
+{
+    return waypoint;
 }
 
 Component* WaypointComponent::Clone(Entity* toEntity)
 {
     WaypointComponent* newComponent = new WaypointComponent();
     newComponent->SetEntity(toEntity);
-    newComponent->SetProperties(properties);
-    newComponent->SetPathName(pathName);
-    newComponent->SetStarting(false);
+    newComponent->path = path;
+    newComponent->waypoint = waypoint;
     return newComponent;
 }
 
@@ -44,11 +57,5 @@ void WaypointComponent::Serialize(KeyedArchive* archive, SerializationContext* s
 void WaypointComponent::Deserialize(KeyedArchive* archive, SerializationContext* serializationContext)
 {
     DVASSERT(false);
-}
-
-void WaypointComponent::SetProperties(KeyedArchive* archieve)
-{
-    SafeRelease(properties);
-    properties = new KeyedArchive(*archieve);
 }
 }

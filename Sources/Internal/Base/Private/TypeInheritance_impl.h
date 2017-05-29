@@ -6,20 +6,20 @@
 
 namespace DAVA
 {
-namespace RttiInheritanceDetail
+namespace TypeInheritanceDetail
 {
 static uint32_t stubData = 0xcccccccc;
 
 template <typename From, typename To>
 std::ptrdiff_t GetPtrDiff()
 {
-    From* from = reinterpret_cast<From*>(&stubData);
-    To* to = static_cast<To*>(from);
+    const From* from = reinterpret_cast<const From*>(&stubData);
+    const To* to = static_cast<const To*>(from);
 
     ptrdiff_t ret = reinterpret_cast<uintptr_t>(to) - reinterpret_cast<uintptr_t>(from);
     return ret;
 }
-} // RttiInheritanceDetail
+} // namespace TypeInheritanceDetail
 
 inline const Vector<TypeInheritance::Info>& TypeInheritance::GetBaseTypes() const
 {
@@ -68,12 +68,14 @@ bool TypeInheritance::AddBaseType()
 
     if (nullptr == inheritance)
     {
+        Type* editType = const_cast<Type*>(type);
+
         inheritance = new TypeInheritance();
-        type->inheritance.reset(inheritance);
+        editType->inheritance.reset(inheritance);
     }
 
     const Type* base = Type::Instance<B>();
-    inheritance->baseTypesInfo.push_back({ base, RttiInheritanceDetail::GetPtrDiff<T, B>() });
+    inheritance->baseTypesInfo.push_back({ base, TypeInheritanceDetail::GetPtrDiff<T, B>() });
     return true;
 }
 
@@ -85,12 +87,14 @@ bool TypeInheritance::AddDerivedType()
 
     if (nullptr == inheritance)
     {
+        Type* editType = const_cast<Type*>(type);
+
         inheritance = new TypeInheritance();
-        type->inheritance.reset(inheritance);
+        editType->inheritance.reset(inheritance);
     }
 
     const Type* derived = Type::Instance<D>();
-    inheritance->derivedTypesInfo.push_back({ derived, RttiInheritanceDetail::GetPtrDiff<T, D>() });
+    inheritance->derivedTypesInfo.push_back({ derived, TypeInheritanceDetail::GetPtrDiff<T, D>() });
     return true;
 }
 } // namespace DAVA
