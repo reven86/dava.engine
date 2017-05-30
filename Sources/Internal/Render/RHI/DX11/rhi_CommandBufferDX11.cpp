@@ -1640,6 +1640,11 @@ static void dx11_ExecImmediateCommand(CommonImpl::ImmediateCommand* command)
         {
             ValidateDX11Device("CheckFormatSupport");
             cmd->retval = dx11.device->CheckFormatSupport((DXGI_FORMAT)(arg[0]), (UINT*)(arg[1]));
+            if (cmd->retval == E_FAIL)
+            {
+                cmd->retval = S_OK;
+                *reinterpret_cast<UINT*>(arg[1]) = 0;
+            }
             break;
         }
         default:
