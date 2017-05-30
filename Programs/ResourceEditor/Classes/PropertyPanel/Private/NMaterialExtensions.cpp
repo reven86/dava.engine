@@ -12,15 +12,15 @@ using namespace DAVA;
 class OpenMaterialEditorProducer : public DAVA::M::CommandProducer
 {
 public:
-    bool IsApplyable(const Reflection& field) const override;
+    bool IsApplyable(const std::shared_ptr<DAVA::TArc::PropertyNode>& node) const override;
     Info GetInfo() const override;
     bool OnlyForSingleSelection() const override;
-    std::unique_ptr<Command> CreateCommand(const Reflection& field, const Params& params) const override;
+    std::unique_ptr<Command> CreateCommand(const std::shared_ptr<DAVA::TArc::PropertyNode>& node, const Params& params) const override;
 };
 
-bool OpenMaterialEditorProducer::IsApplyable(const Reflection& field) const
+bool OpenMaterialEditorProducer::IsApplyable(const std::shared_ptr<DAVA::TArc::PropertyNode>& node) const
 {
-    return field.GetValueType() == Type::Instance<NMaterial*>();
+    return node->field.ref.GetValueType() == Type::Instance<NMaterial*>();
 }
 
 M::CommandProducer::Info OpenMaterialEditorProducer::GetInfo() const
@@ -36,9 +36,9 @@ bool OpenMaterialEditorProducer::OnlyForSingleSelection() const
     return true;
 }
 
-std::unique_ptr<Command> OpenMaterialEditorProducer::CreateCommand(const Reflection& field, const Params& params) const
+std::unique_ptr<Command> OpenMaterialEditorProducer::CreateCommand(const std::shared_ptr<DAVA::TArc::PropertyNode>& node, const Params& params) const
 {
-    NMaterial* material = *field.GetValueObject().GetPtr<NMaterial*>();
+    NMaterial* material = *node->field.ref.GetValueObject().GetPtr<NMaterial*>();
     params.invoker->Invoke(REGlobal::ShowMaterial.ID, material);
     return std::unique_ptr<Command>();
 }

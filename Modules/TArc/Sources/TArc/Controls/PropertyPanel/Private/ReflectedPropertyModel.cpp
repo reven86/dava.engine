@@ -3,7 +3,6 @@
 #include "TArc/Controls/PropertyPanel/Private/EmptyComponentValue.h"
 #include "TArc/Controls/PropertyPanel/Private/DefaultPropertyModelExtensions.h"
 #include "TArc/Controls/PropertyPanel/PropertyPanelMeta.h"
-#include "TArc/Controls/PropertyPanel/KeyedArchiveChildCreator.h"
 #include "TArc/Controls/PropertyPanel/Private/SubPropertiesExtensions.h"
 
 #include <Engine/PlatformApi.h>
@@ -16,26 +15,13 @@
 
 #include <QPalette>
 
+//#define REPORT_UPDATE_TIME
+
 namespace DAVA
 {
 namespace TArc
 {
-struct FavoriteItemValue
-{
-    DAVA_REFLECTION(FavoriteItemValue);
-};
-
-DAVA_REFLECTION_IMPL(FavoriteItemValue)
-{
-    ReflectionRegistrator<FavoriteItemValue>::Begin()
-    .End();
-}
-
 const char* expandedItemsKey = "expandedItems";
-const char* favoritedItemsKey = "favoritedItems";
-const char* favoritedCountKey = "favoritesCount";
-const char* favoritedElementKey = "favoritesElement_%u";
-const char* isFavoritesViewOnlyKey = "isFavoritesViewOnly";
 
 class ReflectedPropertyModel::InsertGuard final
 {
@@ -43,24 +29,13 @@ public:
     InsertGuard(ReflectedPropertyModel* model_, ReflectedPropertyItem* item, int first, int last)
         : model(model_)
     {
-        // When mode works in FavoritesOnly mode, view doesn't know about regular part of model data
-        // so we should not to open begin\end InsertRows session
-        if (model->IsFavoriteOnly())
-        {
-            return;
-        }
-
-        sessionOpened = true;
         QModelIndex index = model->MapItem(item);
         model->beginInsertRows(index, first, last);
     }
 
     ~InsertGuard()
     {
-        if (sessionOpened == true)
-        {
-            model->endInsertRows();
-        }
+        model->endInsertRows();
     }
 
     ReflectedPropertyModel* model;
@@ -70,13 +45,10 @@ public:
 class ReflectedPropertyModel::RemoveGuard final
 {
 public:
-    RemoveGuard(ReflectedPropertyModel* model_, ReflectedPropertyItem* item, bool forceOpenSession)
+    RemoveGuard(ReflectedPropertyModel* model_, ReflectedPropertyItem* item)
         : model(model_)
     {
-        // When mode works in FavoritesOnly mode, view doesn't know about regular part of model data
-        // so we should not to open begin\end RemoveRows session
-        // but if there is a favorite item has been removed we should remove it from view.
-        if (forceOpenSession == false && (model->IsFavoriteOnly() || item->GetChildCount() > 1))
+        if (item->GetPropertyNodesCount() > 1)
         {
             return;
         }
@@ -112,19 +84,23 @@ ReflectedPropertyModel::ReflectedPropertyModel(WindowKey wndKey_, ContextAccesso
     RegisterExtension(ModifyExtension::CreateDummy());
 
     RegisterExtension(std::make_shared<DefaultChildCheatorExtension>());
-    RegisterExtension(std::make_shared<KeyedArchiveChildCreator>());
     RegisterExtension(std::make_shared<SubPropertyValueChildCreator>());
 
     RegisterExtension(std::make_shared<DefaultEditorComponentExtension>(ui));
     RegisterExtension(std::make_shared<SubPropertyEditorCreator>());
 
-    childCreator.nodeCreated.Connect(this, &ReflectedPropertyModel::ChildAdded);
-    childCreator.nodeRemoved.Connect(this, &ReflectedPropertyModel::ChildRemoved);
+    childCreator.nodeCreated.Connect(this, &ReflectedPropertyModel::OnChildAdded);
+    childCreator.nodeRemoved.Connect(this, &ReflectedPropertyModel::OnChildRemoved);
+    childCreator.dataChanged.Connect(this, &ReflectedPropertyModel::OnDataChange);
+    childCreator.nodeCreated.Connect(&favoritesController, &FavoritesController::OnChildAdded);
+    childCreator.nodeRemoved.Connect(&favoritesController, &FavoritesController::OnChildRemoved);
+
+    favoritesController.favoritedCreated.Connect(this, &ReflectedPropertyModel::OnFavoritedAdded);
+    favoritesController.favoriteDeleted.Connect(this, &ReflectedPropertyModel::OnFavoritedRemoved);
 }
 
 ReflectedPropertyModel::~ReflectedPropertyModel()
 {
-    favoritedPathes.clear();
     SetObjects(Vector<DAVA::Reflection>());
     rootItem.reset();
 }
@@ -135,11 +111,13 @@ ReflectedPropertyModel::~ReflectedPropertyModel()
 
 int ReflectedPropertyModel::rowCount(const QModelIndex& parent) const
 {
-    ReflectedPropertyItem* item = MapItem(parent);
-    if (item == nullptr)
+    if (parent.isValid() == false)
     {
         return 0;
     }
+
+    ReflectedPropertyItem* item = MapItem(parent);
+    DVASSERT(item != nullptr);
     return item->GetChildCount();
 }
 
@@ -182,10 +160,10 @@ Qt::ItemFlags ReflectedPropertyModel::flags(const QModelIndex& index) const
 {
     DVASSERT(index.isValid());
     Qt::ItemFlags flags = Qt::ItemFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
-    if (index.column() == 1)
+    ReflectedPropertyItem* item = MapItem(index);
+    if (item != nullptr)
     {
-        ReflectedPropertyItem* item = MapItem(index);
-        if (item != nullptr)
+        if (index.column() == 1 || item->value->IsSpannedControl() == true)
         {
             std::shared_ptr<const PropertyNode> node = item->GetPropertyNode(0);
             if (!node->field.ref.IsReadonly())
@@ -209,22 +187,21 @@ QModelIndex ReflectedPropertyModel::index(int row, int column, const QModelIndex
         return QModelIndex();
     }
 
-    ReflectedPropertyItem* root = GetSmartRoot();
-    if (root == nullptr)
-    {
-        return QModelIndex();
-    }
-
-    return createIndex(row, column, root);
+    return MapItem(rootItem.get());
 }
 
 QModelIndex ReflectedPropertyModel::parent(const QModelIndex& index) const
 {
     DVASSERT(index.isValid());
     ReflectedPropertyItem* item = reinterpret_cast<ReflectedPropertyItem*>(index.internalPointer());
-    if (item == nullptr || item == GetSmartRoot())
+    if (item == nullptr)
     {
         return QModelIndex();
+    }
+
+    if (item == rootItem.get())
+    {
+        return MapItem(rootItem.get());
     }
 
     return createIndex(item->position, 0, item->parent);
@@ -241,15 +218,14 @@ void ReflectedPropertyModel::Update()
     fastWrappersProcessor.Sync();
     wrappersProcessor.Sync();
 #if defined(REPORT_UPDATE_TIME)
-    Logger::Debug(" === ReflectedPropertyModel::Update : %d ===", static_cast<int32>(SystemTimer::GetMs() - start));
+    Logger::Debug(" === ReflectedPropertyModel::Update : %d for %d objects ===", static_cast<int32>(SystemTimer::GetMs() - start), rootItem->GetPropertyNodesCount());
 #endif
-
-    RefreshFavoritesRoot();
+    EmitDataChangedSignals();
 }
 
 void ReflectedPropertyModel::Update(ReflectedPropertyItem* item)
 {
-    if (item == favoritesRoot)
+    if (item->IsFavorite())
     {
         return;
     }
@@ -268,7 +244,7 @@ void ReflectedPropertyModel::Update(ReflectedPropertyItem* item)
 
 void ReflectedPropertyModel::UpdateFastImpl(ReflectedPropertyItem* item)
 {
-    if (item == favoritesRoot)
+    if (item->IsFavorite())
     {
         return;
     }
@@ -308,166 +284,237 @@ void ReflectedPropertyModel::UpdateFast()
     Logger::Debug(" === ReflectedPropertyModel::UpdateFast : %d ===", static_cast<int32>(SystemTimer::GetMs() - start));
 #endif
 
-    RefreshFavoritesRoot();
-}
-
-void ReflectedPropertyModel::HideEditor(ReflectedPropertyItem* item)
-{
-    if (item->value != nullptr)
-    {
-        item->value->HideEditor();
-    }
-
-    for (int32 i = 0; i < item->GetChildCount(); ++i)
-    {
-        HideEditor(item->GetChild(i));
-    }
+    EmitDataChangedSignals();
 }
 
 void ReflectedPropertyModel::SetObjects(Vector<Reflection> objects)
 {
     wrappersProcessor.Shoutdown();
+    fastWrappersProcessor.Shoutdown();
 
     int childCount = static_cast<int>(rootItem->GetChildCount());
     if (childCount != 0)
     {
         nodeToItem.clear();
+        nodeToFavorite.clear();
+        repaintRequire.clear();
         beginResetModel();
         rootItem->RemoveChildren();
+        favoritesController.Reset();
         endResetModel();
 
         childCreator.Clear();
-        favoritesRoot = nullptr;
-        itemToFavorite.clear();
-        favoriteToItem.clear();
     }
     rootItem->RemovePropertyNodes();
 
+    bool rootSet = false;
     for (Reflection& obj : objects)
     {
         Reflection::Field field(String("SelfRoot"), std::move(obj), nullptr);
         std::shared_ptr<PropertyNode> rootNode = childCreator.CreateRoot(std::move(field));
         nodeToItem.emplace(rootNode, rootItem.get());
         rootItem->AddPropertyNode(rootNode);
+        if (rootSet == false)
+        {
+            favoritesController.SetModelRoot(rootNode);
+            rootSet = true;
+        }
     }
     objects.clear();
 
     Update();
+    EmitDataChangedSignals();
 }
 
-void ReflectedPropertyModel::ChildAdded(std::shared_ptr<const PropertyNode> parent, std::shared_ptr<PropertyNode> node, int32 childPosition)
+void ReflectedPropertyModel::OnChildAdded(const std::shared_ptr<PropertyNode>& parent, const std::shared_ptr<PropertyNode>& node)
 {
     auto iter = nodeToItem.find(parent);
     DVASSERT(iter != nodeToItem.end());
 
     ReflectedPropertyItem* parentItem = iter->second;
 
-    ReflectedPropertyItem* childItem = LookUpItem(node, parentItem->children);
+    ReflectedPropertyItem* childItem = LookUpItem(node, node->BuildID(), parentItem->children);
     if (childItem != nullptr)
     {
         childItem->AddPropertyNode(node);
-        auto iter = itemToFavorite.find(childItem);
-        if (iter != itemToFavorite.end())
-        {
-            iter->second->AddPropertyNode(node);
-        }
     }
     else
     {
         std::unique_ptr<BaseComponentValue> valueComponent = GetExtensionChain<EditorComponentExtension>()->GetEditor(node);
         valueComponent->Init(this);
 
-        if (favoritesRoot != nullptr)
-        {
-            ++childPosition;
-        }
-
+        int32 childPosition = parentItem->LookupChildPosition(node->sortKey);
         InsertGuard guard(this, parentItem, childPosition, childPosition);
         childItem = parentItem->CreateChild(std::move(valueComponent), childPosition, node->sortKey);
         childItem->AddPropertyNode(node);
+        if (childItem->value->RepaintOnUpdateRequire())
+        {
+            repaintRequire.insert(childItem);
+        }
     }
 
     auto newNode = nodeToItem.emplace(node, childItem);
     DVASSERT(newNode.second);
+    dataChangedNodes.insert(node);
 }
 
-void ReflectedPropertyModel::ChildRemoved(std::shared_ptr<PropertyNode> node)
+void ReflectedPropertyModel::OnChildRemoved(const std::shared_ptr<PropertyNode>& node)
 {
-    auto removeItemFn = [&](ReflectedPropertyItem* item, bool forceRemove) -> bool
-    {
-        RemoveGuard guard(this, item, forceRemove);
-        item->RemovePropertyNode(node);
-        bool needRemove = item->GetPropertyNodesCount() == 0;
-        if (needRemove)
-        {
-            item->parent->RemoveChild(item->position);
-        }
-
-        return needRemove;
-    };
-
     auto iter = nodeToItem.find(node);
     DVASSERT(iter != nodeToItem.end());
     ReflectedPropertyItem* item = iter->second;
-    // We try to remove regular item first.
-    // In favoritesOnly mode view does not know about this item,
-    // so there is no need to call begin/end RemoveRows.
-    bool itemRemoved = removeItemFn(item, false);
-    if (itemRemoved == true)
+
+    RemoveGuard guard(this, item);
+    item->RemovePropertyNode(node);
+    bool needRemove = item->GetPropertyNodesCount() == 0;
+    if (needRemove)
+    {
+        item->parent->RemoveChild(item->position);
+        repaintRequire.erase(item);
+    }
+
+    if (needRemove == true)
     {
         nodeToItem.erase(node);
     }
 
-    auto favoriteIter = itemToFavorite.find(item);
+    dataChangedNodes.erase(node);
+}
 
-    if (favoriteIter != itemToFavorite.end())
+void ReflectedPropertyModel::OnDataChange(const std::shared_ptr<PropertyNode>& node)
+{
+    dataChangedNodes.insert(node);
+}
+
+void ReflectedPropertyModel::EmitDataChangedSignals()
+{
+    DAVA::Set<QModelIndex> indexesSet;
+    for (const std::shared_ptr<PropertyNode>& node : dataChangedNodes)
     {
-        // Favorite item we should remove from view anyway, so make forceRemove
-        // to open begin\end RemoveRows even in favoritesOnly mode
-        bool favoriteRemoved = removeItemFn(favoriteIter->second, true);
-        DVASSERT(itemRemoved == favoriteRemoved);
-        if (favoriteRemoved == true)
         {
-            favoriteToItem.erase(favoriteIter->second);
-            itemToFavorite.erase(favoriteIter);
+            auto iter = nodeToItem.find(node);
+            DVASSERT(iter != nodeToItem.end());
+            indexesSet.insert(MapItem(iter->second));
+        }
+
+        {
+            auto iter = nodeToFavorite.find(node);
+            if (iter != nodeToFavorite.end())
+            {
+                indexesSet.insert(MapItem(iter->second));
+            }
         }
     }
+    dataChangedNodes.clear();
+
+    for (ReflectedPropertyItem* item : repaintRequire)
+    {
+        if (item->value->IsVisible() == false)
+        {
+            indexesSet.insert(MapItem(item));
+        }
+    }
+
+    for (const QModelIndex& index : indexesSet)
+    {
+        QModelIndex valueColumnIndex = index.sibling(index.row(), 1);
+        emit dataChanged(index, valueColumnIndex);
+    }
+}
+
+void ReflectedPropertyModel::OnFavoritedAdded(const std::shared_ptr<PropertyNode>& parent, const std::shared_ptr<PropertyNode>& node, const DAVA::String& id, int32 sortKey, bool isRoot)
+{
+    auto itemIter = nodeToItem.find(node);
+    if (itemIter != nodeToItem.end() && isRoot == true)
+    {
+        itemIter->second->SetFavorited(true);
+    }
+
+    auto favoriteParentIter = nodeToFavorite.find(parent);
+    if (favoriteParentIter == nodeToFavorite.end())
+    {
+        favoriteParentIter = nodeToItem.find(parent);
+        DVASSERT(favoriteParentIter != nodeToItem.end());
+    }
+
+    ReflectedPropertyItem* parentItem = favoriteParentIter->second;
+
+    ReflectedPropertyItem* childItem = LookUpItem(node, id, parentItem->children);
+    if (childItem != nullptr)
+    {
+        childItem->AddPropertyNode(node, FastName(id));
+    }
+    else
+    {
+        std::unique_ptr<BaseComponentValue> valueComponent = GetExtensionChain<EditorComponentExtension>()->GetEditor(node);
+        valueComponent->Init(this);
+
+        int32 childPosition = parentItem->LookupChildPosition(sortKey);
+        InsertGuard guard(this, parentItem, childPosition, childPosition);
+        childItem = parentItem->CreateChild(std::move(valueComponent), childPosition, node->sortKey);
+        childItem->SetFavorite(isRoot);
+        childItem->AddPropertyNode(node, FastName(id));
+
+        if (childItem->value->RepaintOnUpdateRequire())
+        {
+            repaintRequire.insert(childItem);
+        }
+    }
+
+    auto newNode = nodeToFavorite.emplace(node, childItem);
+    DVASSERT(newNode.second);
+}
+
+void ReflectedPropertyModel::OnFavoritedRemoved(const std::shared_ptr<PropertyNode>& node, bool unfavorited)
+{
+    auto fvIter = nodeToFavorite.find(node);
+    DVASSERT(fvIter != nodeToFavorite.end());
+
+    ReflectedPropertyItem* item = fvIter->second;
+
+    RemoveGuard guard(this, item);
+    item->RemovePropertyNode(node);
+    if (item->GetPropertyNodesCount() == 0)
+    {
+        item->parent->RemoveChild(item->position);
+        repaintRequire.erase(item);
+    }
+
+    if (unfavorited == true)
+    {
+        auto itemIter = nodeToItem.find(node);
+        if (itemIter != nodeToItem.end())
+        {
+            itemIter->second->SetFavorited(false);
+        }
+    }
+    nodeToFavorite.erase(node);
 }
 
 ReflectedPropertyItem* ReflectedPropertyModel::MapItem(const QModelIndex& item) const
 {
-    if (item.isValid())
+    if (item.isValid() == false)
     {
-        ReflectedPropertyItem* p = reinterpret_cast<ReflectedPropertyItem*>(item.internalPointer());
-        if (p == nullptr)
-        {
-            p = GetSmartRoot();
-        }
-        return p->GetChild(item.row());
+        return nullptr;
     }
 
-    return GetSmartRoot();
+    ReflectedPropertyItem* p = reinterpret_cast<ReflectedPropertyItem*>(item.internalPointer());
+    if (p == nullptr)
+    {
+        return rootItem.get();
+    }
+    return p->GetChild(item.row());
 }
 
 QModelIndex ReflectedPropertyModel::MapItem(ReflectedPropertyItem* item) const
 {
     DVASSERT(item != nullptr);
-    if (item == GetSmartRoot())
+    if (item == rootItem.get())
     {
-        return QModelIndex();
+        return createIndex(0, 0, nullptr);
     }
 
     return createIndex(item->position, 0, item->parent);
-}
-
-ReflectedPropertyItem* ReflectedPropertyModel::GetSmartRoot() const
-{
-    if (showFavoriteOnly)
-    {
-        return favoritesRoot;
-    }
-
-    return rootItem.get();
 }
 
 void ReflectedPropertyModel::RegisterExtension(const std::shared_ptr<ExtensionChain>& extension)
@@ -523,7 +570,7 @@ void ReflectedPropertyModel::SetExpanded(bool expanded, const QModelIndex& index
     while (currentIndex.isValid())
     {
         ReflectedPropertyItem* item = MapItem(currentIndex);
-        reflectedPath.push_front(FastName(item->GetPropertyName().toStdString()));
+        reflectedPath.push_front(item->GetID());
         currentIndex = currentIndex.parent();
     }
 
@@ -537,10 +584,14 @@ void ReflectedPropertyModel::SetExpanded(bool expanded, const QModelIndex& index
     }
 }
 
-QModelIndexList ReflectedPropertyModel::GetExpandedList() const
+QModelIndexList ReflectedPropertyModel::GetExpandedList(const QModelIndex& rootIndex) const
 {
     QModelIndexList result;
-    GetExpandedListImpl(result, GetSmartRoot());
+    if (expandedItems.PushRoot(rootItem->GetID()))
+    {
+        GetExpandedListImpl(result, rootItem.get());
+        expandedItems.PopRoot();
+    }
     return result;
 }
 
@@ -551,7 +602,7 @@ QModelIndexList ReflectedPropertyModel::GetExpandedChildren(const QModelIndex& i
     while (currentIndex.isValid())
     {
         ReflectedPropertyItem* item = MapItem(currentIndex);
-        reflectedPath.push_front(FastName(item->GetPropertyName().toStdString()));
+        reflectedPath.push_front(item->GetID());
         currentIndex = currentIndex.parent();
     }
 
@@ -575,14 +626,7 @@ void ReflectedPropertyModel::SaveState(PropertiesItem& propertyRoot) const
     PropertiesItem expandedItemsSettings = propertyRoot.CreateSubHolder(expandedItemsKey);
     expandedItems.Save(expandedItemsSettings);
 
-    PropertiesItem favoritesListSettings = propertyRoot.CreateSubHolder(favoritedItemsKey);
-    favoritesListSettings.Set(favoritedCountKey, static_cast<int32>(favoritedPathes.size()));
-    for (size_t i = 0; i < favoritedPathes.size(); ++i)
-    {
-        favoritesListSettings.Set(Format(favoritedElementKey, static_cast<uint32>(i)), favoritedPathes[i]);
-    }
-
-    propertyRoot.Set(isFavoritesViewOnlyKey, showFavoriteOnly);
+    favoritesController.Save(propertyRoot);
 }
 
 void ReflectedPropertyModel::LoadState(const PropertiesItem& propertyRoot)
@@ -590,21 +634,7 @@ void ReflectedPropertyModel::LoadState(const PropertiesItem& propertyRoot)
     PropertiesItem expandedItemsSettings = propertyRoot.CreateSubHolder(expandedItemsKey);
     expandedItems.Load(expandedItemsSettings);
 
-    PropertiesItem favoritesListSettings = propertyRoot.CreateSubHolder(favoritedItemsKey);
-    uint32 count = static_cast<uint32>(favoritesListSettings.Get(favoritedCountKey, int32(0)));
-    favoritedPathes.reserve(count);
-
-    for (uint32 i = 0; i < count; ++i)
-    {
-        favoritedPathes.push_back(favoritesListSettings.Get<Vector<FastName>>(Format(favoritedElementKey, static_cast<uint32>(i))));
-    }
-
-    showFavoriteOnly = propertyRoot.Get(isFavoritesViewOnlyKey, false);
-}
-
-void ReflectedPropertyModel::HideEditors()
-{
-    HideEditor(rootItem.get());
+    favoritesController.Load(propertyRoot);
 }
 
 bool ReflectedPropertyModel::IsFavorite(const QModelIndex& index) const
@@ -618,118 +648,143 @@ bool ReflectedPropertyModel::IsFavorite(const QModelIndex& index) const
     return false;
 }
 
+bool ReflectedPropertyModel::IsInFavoriteHierarchy(const QModelIndex& index) const
+{
+    ReflectedPropertyItem* item = MapItem(index);
+    bool isFavorite = false;
+    while (isFavorite == false && item != nullptr)
+    {
+        isFavorite |= item->IsFavorite();
+        isFavorite |= item->IsFavorited();
+        item = item->parent;
+    }
+
+    return isFavorite;
+}
+
 void ReflectedPropertyModel::AddFavorite(const QModelIndex& index)
 {
     ReflectedPropertyItem* item = MapItem(index);
     DVASSERT(item->IsFavorited() == false);
     DVASSERT(item->IsFavorite() == false);
+    DVASSERT(item->GetPropertyNodesCount() > 0);
 
-    favoritedPathes.emplace_back();
-    Vector<FastName>& currentFavorite = favoritedPathes.back();
-    currentFavorite.reserve(8);
-    while (item != nullptr)
-    {
-        currentFavorite.push_back(item->GetName());
-        item = item->parent;
-    }
-    std::reverse(currentFavorite.begin(), currentFavorite.end());
-
-    RefreshFavoritesRoot();
+    favoritesController.AddFavorite(item->GetPropertyNode(0));
 }
 
 void ReflectedPropertyModel::RemoveFavorite(const QModelIndex& index)
 {
-    SCOPE_EXIT
-    {
-        RefreshFavoritesRoot();
-    };
-
     ReflectedPropertyItem* item = MapItem(index);
     if (item->GetPropertyNode(0)->propertyType == PropertyNode::FavoritesProperty)
     {
-        favoritedPathes.clear();
-        for (auto iter = favoriteToItem.begin(); iter != favoriteToItem.end(); ++iter)
-        {
-            iter->second->SetFavorited(false);
-        }
-        favoriteToItem.clear();
-        itemToFavorite.clear();
+        favoritesController.ClearFavorites();
         return;
     }
 
-    if (item->IsFavorite())
+    DVASSERT(item->IsFavorited() == true || item->IsFavorite() == true);
+    DVASSERT(item->GetPropertyNodesCount() > 0);
+
+    favoritesController.RemoveFavorite(item->GetPropertyNode(0));
+}
+
+bool ReflectedPropertyModel::IsDeveloperMode() const
+{
+    DVASSERT(extensions.empty() == false);
+    return extensions.begin()->second->IsDeveloperMode();
+}
+
+void ReflectedPropertyModel::SetDeveloperMode(bool isDevMode)
+{
+    childCreator.SetDevMode(isDevMode);
+    for (auto& iter : extensions)
     {
-        auto iter = favoriteToItem.find(item);
-        DVASSERT(iter != favoriteToItem.end());
-        item = iter->second;
+        iter.second->SetDevelopertMode(isDevMode);
+    }
+}
+
+bool ReflectedPropertyModel::IsEditorSpanned(const QModelIndex& index) const
+{
+    return MapItem(index)->value->IsSpannedControl();
+}
+
+QModelIndex ReflectedPropertyModel::GetRegularRootIndex() const
+{
+    return MapItem(rootItem.get());
+}
+
+QModelIndex ReflectedPropertyModel::GetFavoriteRootIndex() const
+{
+    if (rootItem->GetChildCount() < 1)
+    {
+        return QModelIndex();
     }
 
-    DVASSERT(item->IsFavorited() == true);
-    item->SetFavorited(false);
-
-    { // Remove item from caches ...
-        auto favoriteIter = itemToFavorite.find(item);
-        DVASSERT(favoriteIter != itemToFavorite.end());
-
-        ReflectedPropertyItem* f = favoriteIter->second;
-        favoriteToItem.erase(f);
-        itemToFavorite.erase(favoriteIter);
-
-        { // and from items hierarchy
-            beginRemoveRows(MapItem(f->parent), f->position, f->position);
-            f->parent->RemoveChild(f->position);
-            endRemoveRows();
-        }
+    ReflectedPropertyItem* item = rootItem->GetChild(0);
+    if (item->GetPropertyNode(0)->propertyType == PropertyNode::FavoritesProperty)
+    {
+        return MapItem(item);
     }
 
+    return QModelIndex();
+}
+
+Vector<FastName> ReflectedPropertyModel::GetIndexPath(const QModelIndex& index) const
+{
     Vector<FastName> path;
-    path.reserve(8);
+    if (index.isValid() == false)
+    {
+        return path;
+    }
 
+    path.reserve(8);
+    ReflectedPropertyItem* item = MapItem(index);
     while (item != nullptr)
     {
-        path.push_back(item->GetName());
+        path.push_back(item->value->GetID());
         item = item->parent;
     }
 
     std::reverse(path.begin(), path.end());
-
-    size_t pathSize = path.size();
-    auto iter = favoritedPathes.begin();
-    auto endIter = favoritedPathes.end();
-    while (iter != endIter)
-    {
-        if (iter->size() != pathSize)
-        {
-            ++iter;
-            continue;
-        }
-
-        if ((*iter) == path)
-        {
-            iter = favoritedPathes.erase(iter);
-            break;
-        }
-        else
-            ++iter;
-    }
+    return path;
 }
 
-bool ReflectedPropertyModel::IsFavoriteOnly() const
+QModelIndex ReflectedPropertyModel::LookIndex(const Vector<FastName>& path) const
 {
-    return showFavoriteOnly;
-}
-
-void ReflectedPropertyModel::SetFavoriteOnly(bool isFavoriteOnly_)
-{
-    if (showFavoriteOnly == isFavoriteOnly_)
+    ReflectedPropertyItem* item = rootItem.get();
+    if (path.empty() || path.front() != item->value->GetID())
     {
-        return;
+        return QModelIndex();
     }
 
-    uint32 childCount = rootItem->GetChildCount();
-    beginResetModel();
-    showFavoriteOnly = isFavoriteOnly_;
-    endResetModel();
+    for (size_t i = 1; i < path.size(); ++i)
+    {
+        if (item == nullptr)
+        {
+            return QModelIndex();
+        }
+
+        FastName itemID = path[i];
+        size_t childCount = item->children.size();
+        ReflectedPropertyItem* nextItem = nullptr;
+        for (size_t childIndex = 0; childIndex < childCount; ++childIndex)
+        {
+            ReflectedPropertyItem* currentItem = item->children[childIndex].get();
+            if (itemID == currentItem->value->GetID())
+            {
+                nextItem = currentItem;
+                break;
+            }
+        }
+
+        item = nextItem;
+    }
+
+    if (item == nullptr)
+    {
+        return QModelIndex();
+    }
+
+    return MapItem(item);
 }
 
 void ReflectedPropertyModel::GetExpandedListImpl(QModelIndexList& list, ReflectedPropertyItem* item) const
@@ -743,7 +798,7 @@ void ReflectedPropertyModel::GetExpandedListImpl(QModelIndexList& list, Reflecte
     for (int32 i = 0; i < childCount; ++i)
     {
         ReflectedPropertyItem* child = item->GetChild(i);
-        FastName propertyName = FastName(child->GetPropertyName().toStdString());
+        FastName propertyName = FastName(child->GetID());
         if (expandedItems.HasChildInCurrentRoot(propertyName))
         {
             list << MapItem(child);
@@ -754,209 +809,17 @@ void ReflectedPropertyModel::GetExpandedListImpl(QModelIndexList& list, Reflecte
     }
 }
 
-void ReflectedPropertyModel::RefreshFavoritesRoot()
-{
-    if (rootItem->GetChildCount() == 0)
-    {
-        return;
-    }
-
-    if (favoritedPathes.empty() == true)
-    {
-        if (favoritesRoot != nullptr)
-        {
-            ReflectedPropertyItem* parentItem = favoritesRoot->parent;
-            QModelIndex parentIndex = MapItem(parentItem);
-            beginRemoveRows(parentIndex, favoritesRoot->position, favoritesRoot->position);
-            parentItem->RemoveChild(favoritesRoot->position);
-            endRemoveRows();
-
-            favoritesRoot = nullptr;
-        }
-
-        return;
-    }
-
-    if (favoritesRoot != nullptr && favoritesRoot->GetChildCount() == favoritedPathes.size())
-    {
-        return;
-    }
-
-    static FavoriteItemValue favoriteValueItem;
-    bool favoriteRootIsEmpty = favoritesRoot == nullptr;
-    if (favoriteRootIsEmpty == true)
-    {
-        beginInsertRows(QModelIndex(), 0, 0);
-        std::unique_ptr<BaseComponentValue> emptyComponentValue = std::make_unique<EmptyComponentValue>();
-        BaseComponentValue::Style style;
-        style.bgColor = QPalette::AlternateBase;
-        style.fontBold = true;
-        style.fontColor = QPalette::ButtonText;
-        emptyComponentValue->SetStyle(style);
-        emptyComponentValue->Init(this);
-        favoritesRoot = rootItem->CreateChild(std::move(emptyComponentValue), 0, -2);
-        favoritesRoot->SetFavorite(true);
-
-        std::shared_ptr<PropertyNode> favoriteNode = std::make_shared<PropertyNode>();
-        favoriteNode->field.key = String("Favorites");
-        favoriteNode->field.ref = Reflection::Create(&favoriteValueItem);
-        favoriteNode->propertyType = PropertyNode::FavoritesProperty;
-        favoriteNode->cachedValue = favoriteNode->field.ref.GetValue();
-
-        favoritesRoot->AddPropertyNode(favoriteNode);
-    }
-
-    Set<size_t> candidates;
-    for (size_t i = 0; i < favoritedPathes.size(); ++i)
-    {
-        candidates.insert(i);
-    }
-
-    for (int32 childIndex = 0; childIndex != favoritesRoot->GetChildCount(); ++childIndex)
-    {
-        ReflectedPropertyItem* f = favoritesRoot->GetChild(childIndex);
-        ReflectedPropertyItem* item = favoriteToItem.find(f)->second;
-
-        auto candidateIter = candidates.begin();
-        while (candidateIter != candidates.end())
-        {
-            const Vector<FastName>& path = favoritedPathes[*candidateIter];
-            bool pathIsEqual = true;
-            ReflectedPropertyItem* currentItem = item;
-
-            auto pathIter = path.rbegin();
-            auto pathEndIter = path.rend();
-
-            while (true)
-            {
-                bool pathFinished = pathIter == pathEndIter;
-                bool itemHierarchyFinished = currentItem == nullptr;
-                if (pathFinished == true && itemHierarchyFinished == true)
-                {
-                    break;
-                }
-
-                if (pathFinished == true || itemHierarchyFinished == true)
-                {
-                    pathIsEqual = false;
-                    break;
-                }
-
-                if (currentItem->GetName() != *pathIter)
-                {
-                    pathIsEqual = false;
-                    break;
-                }
-
-                currentItem = currentItem->parent;
-                ++pathIter;
-            }
-
-            if (pathIsEqual)
-            {
-                candidateIter = candidates.erase(candidateIter);
-            }
-            else
-            {
-                ++candidateIter;
-            }
-        }
-    }
-
-    RefreshFavorites(rootItem.get(), 0, favoriteRootIsEmpty, candidates);
-
-    if (favoriteRootIsEmpty == true)
-    {
-        endInsertRows();
-    }
-}
-
-void ReflectedPropertyModel::RefreshFavorites(ReflectedPropertyItem* item, uint32 level, bool insertSessionIsOpen, const Set<size_t>& candidates)
-{
-    FastName itemName = item->GetName();
-    bool itemFoundInPath = false;
-
-    for (size_t pathIndex : candidates)
-    {
-        const Vector<FastName>& path = favoritedPathes[pathIndex];
-        uint32 pathSize = static_cast<uint32>(path.size());
-        if (pathSize <= level)
-        {
-            continue;
-        }
-
-        if (path[level] == itemName)
-        {
-            if (level + 1 == pathSize)
-            {
-                if (insertSessionIsOpen == false)
-                {
-                    int position = static_cast<int>(pathIndex);
-                    beginInsertRows(MapItem(favoritesRoot), position, position);
-                }
-
-                ReflectedPropertyItem* copyItem = CreateDeepCopy(item, favoritesRoot, pathIndex);
-                favoriteToItem.emplace(copyItem, item);
-                itemToFavorite.emplace(item, copyItem);
-
-                item->SetFavorited(true);
-                copyItem->SetFavorite(true);
-
-                if (insertSessionIsOpen == false)
-                {
-                    endInsertRows();
-                }
-            }
-            else
-            {
-                itemFoundInPath = true;
-            }
-        }
-    }
-
-    if (itemFoundInPath == true)
-    {
-        int32 childCount = item->GetChildCount();
-        for (int32 i = 0; i < childCount; ++i)
-        {
-            RefreshFavorites(item->GetChild(i), level + 1, insertSessionIsOpen, candidates);
-        }
-    }
-}
-
-ReflectedPropertyItem* ReflectedPropertyModel::CreateDeepCopy(ReflectedPropertyItem* itemToCopy, ReflectedPropertyItem* copyParent, size_t positionInParent)
-{
-    std::unique_ptr<BaseComponentValue> valueComponent = GetExtensionChain<EditorComponentExtension>()->GetEditor(itemToCopy->GetPropertyNode(0));
-    valueComponent->Init(this);
-    int32 pos = static_cast<int32>(positionInParent);
-    ReflectedPropertyItem* copyItem = copyParent->CreateChild(std::move(valueComponent), pos, pos);
-    for (int32 i = 0; i < itemToCopy->GetPropertyNodesCount(); ++i)
-    {
-        copyItem->AddPropertyNode(itemToCopy->GetPropertyNode(i));
-    }
-
-    for (int32 childIndex = 0; childIndex < itemToCopy->GetChildCount(); ++childIndex)
-    {
-        CreateDeepCopy(itemToCopy->GetChild(childIndex), copyItem, itemToCopy->GetChildCount());
-    }
-
-    return copyItem;
-}
-
-ReflectedPropertyItem* ReflectedPropertyModel::LookUpItem(const std::shared_ptr<PropertyNode>& node, const Vector<std::unique_ptr<ReflectedPropertyItem>>& items)
+ReflectedPropertyItem* ReflectedPropertyModel::LookUpItem(const std::shared_ptr<PropertyNode>& node, const DAVA::String& lookupID, const Vector<std::unique_ptr<ReflectedPropertyItem>>& items)
 {
     DVASSERT(node->field.ref.IsValid());
 
     ReflectedPropertyItem* result = nullptr;
-    const ReflectedType* valueType = node->field.ref.GetValueObject().GetReflectedType();
+    FastName nodeID = FastName(lookupID);
 
     for (const std::unique_ptr<ReflectedPropertyItem>& item : items)
     {
         DVASSERT(item->GetPropertyNodesCount() > 0);
-        std::shared_ptr<const PropertyNode> etalonNode = item->GetPropertyNode(0);
-        const ReflectedType* etalonItemType = node->field.ref.GetValueObject().GetReflectedType();
-
-        if (valueType == etalonItemType && etalonNode->field.key == node->field.key)
+        if (item->GetID() == nodeID)
         {
             result = item.get();
             break;

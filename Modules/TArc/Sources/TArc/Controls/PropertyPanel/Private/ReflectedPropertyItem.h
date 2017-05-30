@@ -30,7 +30,7 @@ public:
     std::shared_ptr<PropertyNode> GetPropertyNode(int32 index) const;
 
     QString GetPropertyName() const;
-    FastName GetName() const;
+    FastName GetID() const;
 
     bool IsFavorite() const;
     void SetFavorite(bool isFavorite);
@@ -43,14 +43,15 @@ private:
     ReflectedPropertyItem(ReflectedPropertyModel* model, std::unique_ptr<BaseComponentValue>&& value);
     ReflectedPropertyItem(ReflectedPropertyModel* model, ReflectedPropertyItem* parent, int32 position, std::unique_ptr<BaseComponentValue>&& value);
     ReflectedPropertyItem* CreateChild(std::unique_ptr<BaseComponentValue>&& value, int32 childPosition, int32 sortKey);
-    ReflectedPropertyItem* CreateChild(std::unique_ptr<BaseComponentValue>&& value, int32 childPosition);
+
+    int32 LookupChildPosition(int32 sortKey);
 
     int32 GetChildCount() const;
     ReflectedPropertyItem* GetChild(int32 index) const;
     void RemoveChild(int32 index);
     void RemoveChildren();
 
-    void AddPropertyNode(const std::shared_ptr<PropertyNode>& node);
+    void AddPropertyNode(const std::shared_ptr<PropertyNode>& node, const FastName& id = FastName());
     void RemovePropertyNode(const std::shared_ptr<PropertyNode>& node);
     void RemovePropertyNodes();
 

@@ -3,19 +3,18 @@
 #include <Reflection/ReflectedMeta.h>
 
 #include <QMimeData>
-#include <QToolTip>
 
 namespace DAVA
 {
 namespace TArc
 {
-PlainTextEdit::PlainTextEdit(const ControlDescriptorBuilder<PlainTextEdit::Fields>& fields, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent)
-    : ControlProxyImpl<QPlainTextEdit>(ControlDescriptor(fields), wrappersProcessor, model, parent)
+PlainTextEdit::PlainTextEdit(const Params& params, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent)
+    : ControlProxyImpl<QPlainTextEdit>(params, ControlDescriptor(params.fields), wrappersProcessor, model, parent)
 {
 }
 
-PlainTextEdit::PlainTextEdit(const ControlDescriptorBuilder<PlainTextEdit::Fields>& fields, ContextAccessor* accessor, Reflection model, QWidget* parent)
-    : ControlProxyImpl<QPlainTextEdit>(ControlDescriptor(fields), accessor, model, parent)
+PlainTextEdit::PlainTextEdit(const Params& params, ContextAccessor* accessor, Reflection model, QWidget* parent)
+    : ControlProxyImpl<QPlainTextEdit>(params, ControlDescriptor(params.fields), accessor, model, parent)
 {
 }
 

@@ -18,8 +18,9 @@ public:
         FieldCount
     };
 
-    EmptyWidget(const ControlDescriptorBuilder<Fields>& fields, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent = nullptr);
-    EmptyWidget(const ControlDescriptorBuilder<Fields>& fields, ContextAccessor* accessor, Reflection model, QWidget* parent = nullptr);
+    DECLARE_CONTROL_PARAMS(Fields);
+    EmptyWidget(const Params& params, DataWrappersProcessor* wrappersProcessor, Reflection model, QWidget* parent = nullptr);
+    EmptyWidget(const Params& params, ContextAccessor* accessor, Reflection model, QWidget* parent = nullptr);
 
 protected:
     void UpdateControl(const ControlDescriptor& descriptor) override;
