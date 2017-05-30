@@ -1,6 +1,7 @@
 #include "Tests/UILoggingTest.h"
 #include "Analytics/Analytics.h"
 #include "Analytics/LoggingBackend.h"
+#include "UI/Render/UIDebugRenderComponent.h"
 
 #if defined(__DAVAENGINE_COREV2__)
 #include "Engine/Engine.h"
@@ -58,7 +59,7 @@ UIButton* UILoggingTest::CreateUIButton(Font* font, const Rect& rect,
 
     button->SetStateFont(0xFF, font);
     button->SetStateFontColor(0xFF, Color::White);
-    button->SetDebugDraw(true);
+    button->GetOrCreateComponent<UIDebugRenderComponent>();
     button->AddEvent(UIControl::EVENT_TOUCH_UP_INSIDE, Message(this, onClick));
 
     return button;

@@ -457,6 +457,7 @@ LOCAL_SRC_FILES := \
                      $(wildcard $(LOCAL_PATH)/UI/Components/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/Styles/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/Layouts/*.cpp) \
+                     $(wildcard $(LOCAL_PATH)/UI/Layouts/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/Formula/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/Formula/Private/*.cpp) \
                      $(wildcard $(LOCAL_PATH)/UI/Focus/*.cpp) \

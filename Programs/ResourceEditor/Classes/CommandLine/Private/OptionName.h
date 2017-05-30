@@ -62,6 +62,7 @@ public:
     static const DAVA::String Camera;
 
     static const DAVA::String Validate;
+    static const DAVA::String Count;
 
     static const DAVA::String MakeNameForGPU(DAVA::eGPUFamily gpuFamily);
 };

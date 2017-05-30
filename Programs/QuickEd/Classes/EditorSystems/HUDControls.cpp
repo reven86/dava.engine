@@ -6,6 +6,7 @@
 
 #include <Render/2D/Sprite.h>
 #include <Render/2D/Systems/RenderSystem2D.h>
+#include <Engine/Engine.h>
 
 using namespace DAVA;
 
@@ -74,6 +75,8 @@ HUDContainer::HUDContainer(const ControlNode* node_)
     control = node->GetControl();
     visibleProperty = node->GetRootProperty()->GetVisibleProperty();
     DVASSERT(nullptr != control && nullptr != visibleProperty);
+
+    Engine::Instance()->update.Connect(this, &HUDContainer::OnUpdate);
 }
 
 void HUDContainer::AddChild(ControlContainer* container)
@@ -138,11 +141,10 @@ void HUDContainer::InitFromGD(const UIGeometricData& gd)
     }
 }
 
-void HUDContainer::Draw(const UIGeometricData& gd)
+void HUDContainer::OnUpdate(float32)
 {
     auto controlGD = control->GetGeometricData();
     InitFromGD(controlGD);
-    ControlContainer::Draw(gd);
 }
 
 FrameControl::FrameControl(eType type_)

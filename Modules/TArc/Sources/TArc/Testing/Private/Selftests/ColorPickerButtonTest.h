@@ -86,10 +86,7 @@ public:
         DAVA::Reflection reflectedModel = DAVA::Reflection::Create(&dataSource);
 
         {
-            ColorPickerButton::Params params;
-            params.ui = GetUI();
-            params.wndKey = ColorPickerButtonTestDetails::wndKey;
-            params.accessor = GetAccessor();
+            ColorPickerButton::Params params(GetAccessor(), GetUI(), wndKey);
             params.fields[ColorPickerButton::Fields::Color] = "value";
             params.fields[ColorPickerButton::Fields::IsReadOnly] = "isReadOnly";
 
@@ -99,10 +96,7 @@ public:
         }
 
         {
-            ColorPickerButton::Params params;
-            params.ui = GetUI();
-            params.wndKey = ColorPickerButtonTestDetails::wndKey;
-            params.accessor = GetAccessor();
+            ColorPickerButton::Params params(GetAccessor(), GetUI(), wndKey);
             params.fields[ColorPickerButton::Fields::Color] = "readOnlyValue";
 
             ColorPickerButton* button = new DAVA::TArc::ColorPickerButton(params, GetAccessor(), reflectedModel);
@@ -111,10 +105,7 @@ public:
         }
 
         {
-            ColorPickerButton::Params params;
-            params.ui = GetUI();
-            params.wndKey = ColorPickerButtonTestDetails::wndKey;
-            params.accessor = GetAccessor();
+            ColorPickerButton::Params params(GetAccessor(), GetUI(), wndKey);
             params.fields[ColorPickerButton::Fields::Color] = "writableValue";
 
             ColorPickerButton* button = new DAVA::TArc::ColorPickerButton(params, GetAccessor(), reflectedModel);
@@ -123,10 +114,7 @@ public:
         }
 
         {
-            ColorPickerButton::Params params;
-            params.ui = GetUI();
-            params.wndKey = ColorPickerButtonTestDetails::wndKey;
-            params.accessor = GetAccessor();
+            ColorPickerButton::Params params(GetAccessor(), GetUI(), wndKey);
             params.fields[ColorPickerButton::Fields::Color] = "valueWithRange";
 
             ColorPickerButton* button = new DAVA::TArc::ColorPickerButton(params, GetAccessor(), reflectedModel);
@@ -135,10 +123,7 @@ public:
         }
 
         {
-            ColorPickerButton::Params params;
-            params.ui = GetUI();
-            params.wndKey = ColorPickerButtonTestDetails::wndKey;
-            params.accessor = GetAccessor();
+            ColorPickerButton::Params params(GetAccessor(), GetUI(), wndKey);
             params.fields[ColorPickerButton::Fields::Color] = "value";
             params.fields[ColorPickerButton::Fields::Range] = "range";
 
