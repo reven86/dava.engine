@@ -126,9 +126,7 @@ void LocalNotificationImpl::RequestPermissions()
     if ([version compare:@"8.0" options:NSNumericSearch] != NSOrderedAscending)
     {
         UIApplication* app = [UIApplication sharedApplication];
-
         UIUserNotificationSettings* currentSettings = [app currentUserNotificationSettings];
-
         UIUserNotificationType notifications = (UIUserNotificationTypeAlert | UIUserNotificationTypeBadge | UIUserNotificationTypeSound);
 
         if (currentSettings.types != notifications)
