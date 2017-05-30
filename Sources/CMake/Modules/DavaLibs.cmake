@@ -68,6 +68,7 @@ set( DAVA_STATIC_LIBRARIES_ANDROID  "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libxml.a
 
 set( DAVA_STATIC_LIBRARIES_LINUX
                                     "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libcurl.a"
+                                    "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libdxt.a"
                                     "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libfreetype.a"
                                     "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/libjpeg.a"
                                     "${DAVA_THIRD_PARTY_LIBRARIES_PATH}/liblua.a"

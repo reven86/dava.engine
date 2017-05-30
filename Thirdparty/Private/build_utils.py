@@ -142,6 +142,19 @@ def copy_files(from_dir, to_dir, wildcard):
     for file in glob.glob(from_dir+"/"+wildcard):
         shutil.copy(file, to_dir)
 
+def copy_files_by_name(from_dir, to_dir, filenames):
+    # First create destination dir if it does not exist, else
+    # shutil.copy will copy all files into one with name 'to_dir'
+    if not os.path.exists(to_dir):
+        os.makedirs(to_dir)
+
+    for file in filenames:
+        print "Copying %s from %s to %s" % (file, from_dir, to_dir)
+
+        src = os.path.join(from_dir, file)
+        dst = os.path.join(to_dir, file)
+        shutil.copy(src, dst)
+
 
 def clean_copy_includes(from_dir, to_dir):
     print "Copying includes from %s to %s" % (from_dir, to_dir)
