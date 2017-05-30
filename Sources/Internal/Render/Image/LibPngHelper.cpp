@@ -267,10 +267,7 @@ DAVA::ImageInfo DAVA::LibPngHelper::GetImageInfo(File* infile) const
         return ImageInfo();
     }
 
-// TODO: linux
-#if !defined(__DAVAENGINE_LINUX__)
     png_set_option(png_ptr, PNG_SKIP_sRGB_CHECK_PROFILE, PNG_OPTION_ON); //disable "iCCP: known incorrect sRGB profile" warning
-#endif
 
     png_infop info_ptr = png_create_info_struct(png_ptr);
     if (nullptr == info_ptr)
@@ -413,10 +410,7 @@ eErrorCode LibPngHelper::ReadPngFile(File* infile, Image* image, PixelFormat tar
         return eErrorCode::ERROR_READ_FAIL; // out of memory
     }
 
-// TODO: linux
-#if !defined(__DAVAENGINE_LINUX__)
     png_set_option(png_ptr, PNG_SKIP_sRGB_CHECK_PROFILE, PNG_OPTION_ON); //disable "iCCP: known incorrect sRGB profile" warning
-#endif
 
     png_infop info_ptr = nullptr;
     info_ptr = png_create_info_struct(png_ptr);

@@ -2,7 +2,7 @@
 #include "Render/2D/Systems/RenderSystem2D.h"
 #include "Logger/Logger.h"
 
-#if !defined(__DAVAENGINE_ANDROID__) && !defined(__DAVAENGINE_LINUX__)
+#if !defined(__DAVAENGINE_ANDROID__)
 
 #include <theora/theoradec.h>
 
@@ -366,4 +366,4 @@ void TheoraPlayer::Draw(const UIGeometricData& geometricData)
 }
 }
 
-#endif //#if !defined(__DAVAENGINE_ANDROID__) && !defined(__DAVAENGINE_LINUX__)
+#endif //#if !defined(__DAVAENGINE_ANDROID__)
