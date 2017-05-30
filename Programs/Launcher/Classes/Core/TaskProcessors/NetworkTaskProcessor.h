@@ -8,6 +8,7 @@
 #include <memory>
 
 class DownloadTask;
+class QTimer;
 class QString;
 class QNetworkAccessManager;
 class QNetworkReply;
@@ -27,6 +28,7 @@ private slots:
     void OnDownloadFinished(QNetworkReply* reply);
     void OnAccessibleChanged(QNetworkAccessManager::NetworkAccessibility accessible);
     void OnDownloadProgress(qint64 bytes, qint64 total);
+    void OnTimer();
 
 private:
     void StartNextTask();
@@ -42,6 +44,8 @@ private:
         std::list<QNetworkReply*> requests;
     };
     QNetworkAccessManager* networkAccessManager = nullptr;
+    QTimer* connectionGuard = nullptr;
+
     std::list<std::unique_ptr<TaskParams>> tasks;
     std::unique_ptr<TaskParams> currentTask;
 };

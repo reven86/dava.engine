@@ -3,6 +3,7 @@
 #include "Core/Receiver.h"
 
 #include <QNetworkReply>
+#include <QTimer>
 
 NetworkTaskProcessor::TaskParams::TaskParams(std::unique_ptr<BaseTask>&& task_, Notifier notifier_)
     : task(static_cast<DownloadTask*>(task_.release()))
@@ -18,9 +19,14 @@ NetworkTaskProcessor::TaskParams::~TaskParams()
 NetworkTaskProcessor::NetworkTaskProcessor()
     : QObject(nullptr)
     , networkAccessManager(new QNetworkAccessManager(this))
+    , connectionGuard(new QTimer(this))
 {
     connect(networkAccessManager, &QNetworkAccessManager::finished, this, &NetworkTaskProcessor::OnDownloadFinished);
     connect(networkAccessManager, &QNetworkAccessManager::networkAccessibleChanged, this, &NetworkTaskProcessor::OnAccessibleChanged);
+
+    connectionGuard->setSingleShot(true);
+    connectionGuard->setInterval(1 * 60 * 1000);
+    connect(connectionGuard, &QTimer::timeout, this, &NetworkTaskProcessor::OnTimer);
 }
 
 NetworkTaskProcessor::~NetworkTaskProcessor() = default;
@@ -85,6 +91,10 @@ void NetworkTaskProcessor::StartNextTask()
             currentTask->requests.push_back(reply);
         }
     }
+    if (currentTask != nullptr)
+    {
+        connectionGuard->start();
+    }
 }
 
 void NetworkTaskProcessor::OnDownloadFinished(QNetworkReply* reply)
@@ -117,6 +127,7 @@ void NetworkTaskProcessor::OnDownloadFinished(QNetworkReply* reply)
     }
     if (currentTask->requests.empty())
     {
+        connectionGuard->stop();
         currentTask->notifier.NotifyFinished(currentTask->task.get());
         currentTask = nullptr;
         StartNextTask();
@@ -143,9 +154,20 @@ void NetworkTaskProcessor::OnDownloadProgress(qint64 bytes, qint64 total)
     {
         return;
     }
+    connectionGuard->start();
+
     size_t size = currentTask->task->GetUrls().size();
     Q_ASSERT(size > 0);
     float multiplier = (100.0f * (size - currentTask->requests.size() + 1)) / size;
     int progress = ((static_cast<float>(bytes)) / total) * multiplier;
     currentTask->notifier.NotifyProgress(currentTask->task.get(), progress);
+}
+
+void NetworkTaskProcessor::OnTimer()
+{
+    if (currentTask != nullptr)
+    {
+        currentTask->task->SetError("Operation cancelled by timeout");
+    }
+    Terminate();
 }
