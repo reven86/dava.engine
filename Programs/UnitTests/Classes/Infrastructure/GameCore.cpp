@@ -39,18 +39,8 @@ String disableTheseTestClasses = "ScriptTest";
 // TODO: linux
 String disableTheseTestClasses =
 "DateTimeTest "
-"DeviceInfoTest "
-"FormatsTest "
-"GPUFamilyTest "
-"HDTest "
-"ImageSystemTest "
-"LoadImageTest "
 "LocalizationTest "
-"SaveImageTest "
 "ScriptTest "
-"StaticTextTest "
-"TextSizeTest "
-"TextureLoadingTest "
 "FormulaExecutorTest "
 "FormulaParserTest "
 "FormulaTest "
